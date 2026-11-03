@@ -12,16 +12,7 @@ export type PartsWarned = {
     /** コメントの機能に読み書きの関数が要ることを出したか */
     missingStore: boolean;
 };
-/** `attachParts` の戻り値 */
-export type PartsHandle = {
-    /** 付けた部品を外す。読み込みを待っている間に呼ぶと、読めた後に付けない */
-    detach: () => void;
-    /** 付けたコメントの `reload` を呼ぶ。コメントを付けていないときは解決した Promise を返す */
-    reloadComments: () => Promise<void>;
-    /** 付けたコメントの `focus` を呼ぶ。コメントを付けていないときは何もしない */
-    focusComment: (id: string) => void;
-};
-/** `mount` が描くたびに呼ぶ。ビューの印とコメントの機能があるときだけ部品のモジュールを読んで付け、外す関数と付けたコメントの操作を返す */
+/** `mount` が描くたびに呼ぶ。ビューの印とコメントの機能があるときだけ部品のモジュールを読んで付け、外す関数を返す */
 export declare function attachParts(options: {
     /** 描いた要素 */
     root: HTMLElement;
@@ -35,4 +26,4 @@ export declare function attachParts(options: {
     isCurrent: () => boolean;
     /** `mount` ごとに控える、読み書きの関数が無いことを出したか */
     warned: PartsWarned;
-}): PartsHandle;
+}): () => void;

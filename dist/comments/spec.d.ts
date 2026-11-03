@@ -25,17 +25,6 @@ export type MdmarkCommentStore = {
         docId: string;
         comment: MdmarkCommentDraft;
     }) => Promise<MdmarkComment>;
-    /** コメントの本文を書き換える。持つときだけ吹き出しに「編集」を出す */
-    update?: (target: {
-        docId: string;
-        id: string;
-        body: string;
-    }) => Promise<void>;
-    /** コメントを削除する。持つときだけ吹き出しに「削除」を出す */
-    remove?: (target: {
-        docId: string;
-        id: string;
-    }) => Promise<void>;
 };
 /** `mountComments` の Promise の値 */
 export type MdmarkCommentsHandle = {
@@ -44,9 +33,7 @@ export type MdmarkCommentsHandle = {
 };
 /** `load`・`save` が返した値が `MdmarkComment` の形かを返す */
 export declare function isComment(value: unknown): value is MdmarkComment;
-/** 読み書きの関数が `load`・`save` の関数を持ち、`update`・`remove` を持つなら関数かを確かめ、合わなければ `name` を含む `TypeError` を投げる */
-export declare function checkCommentStore(store: unknown, name: string): asserts store is MdmarkCommentStore;
-/** `mountComments` の引数を確かめ、合わなければ誤った引数の名前を含む `TypeError` を投げる */
+/** `mountComments`（と `mount` の `commentStore`）の引数を確かめ、合わなければ誤った引数の名前を含む `TypeError` を投げる */
 export declare function checkCommentOptions(el: unknown, opts: unknown): asserts opts is {
     store: MdmarkCommentStore;
     docId: string;

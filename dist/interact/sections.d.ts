@@ -1,7 +1,5 @@
 /** 要素を囲む閉じた節を外側から開き、選ばれていないタブの中ならそのタブも選び、表の行（`tr`）でなければ `scrollIntoView` する。URL の `#ID` で移るときと右側の目次の項目で移るときに使う */
 export declare function revealTarget(target: HTMLElement): void;
-/** 要素を囲む閉じた節とタブを開き、閉じた行の詳細の中なら、その行の開閉のボタンを押した状態にして詳細の行を出す。スクロールしない。コメントの印へ移るときに使う */
-export declare function openEnclosing(target: HTMLElement): void;
 /** `root` の中の、操作を付けた全ての節を、`open` が `true` なら開く。`false` なら、見出しが h1 の節を開き、h2〜h4 の節を閉じる */
 export declare function foldAllSections(options: {
     /** 描いた本文 */

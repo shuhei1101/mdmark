@@ -8,7 +8,7 @@ export type FilterValue = {
     column: number;
     /** `select` の選んだ値 */
     values?: string[] | undefined;
-    /** `text` のキーワード */
+    /** `text` の含む文字 */
     text?: string | undefined;
     /** `date` の開始日（`YYYY-MM-DD`） */
     from?: string | undefined;
@@ -90,16 +90,3 @@ export declare function stickyRange(options: {
 };
 /** `location.hash` の最後の `#` の後ろを戻した文字を返す。戻せないときはそのまま、`#` が無ければ空文字 */
 export declare function rowIdFromHash(hash: string): string;
-/** 見出しの行ごとのセルの `rowspan`・`colspan` から、列ごとに、その列だけを覆い最下段まで届くセルの位置を返す。複数の列をまたぐセルしか無い列は `undefined` */
-export declare function bottomHeadCells(rows: Array<Array<{
-    rowSpan: number;
-    colSpan: number;
-}>>): Array<{
-    row: number;
-    cell: number;
-} | undefined>;
-/** 表示している行の結合する列の値から、列ごとに隣り合う同じ値の範囲の `rowspan` を決める。範囲の始まりは覆う行の数、続く行は 0。左にある結合する列の範囲の切れ目でも切る */
-export declare function mergeSpans(options: {
-    values: string[][];
-    columns: number[];
-}): number[][];

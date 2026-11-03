@@ -14,5 +14,4 @@ export declare function renderParam(definition: MdmarkParamDefinition, state: {
     value?: number;
     copy?: CopyState;
     id: string;
-    copyLabel?: string;
 }): string;

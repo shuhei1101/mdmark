@@ -3,7 +3,7 @@ import type { MdmarkMarkArgs, WarningItem } from "../../extensions.ts";
 import { type CodeLine } from "../../parts/code-block.ts";
 /** 印だけの行コメントの頭。長いものから照らす */
 export declare const LINE_COMMENT_HEADS: readonly string[];
-/** `code` の印の引数を、題・行番号の有無・強調する行・最初から畳む行に読む。知らないキー・指定、読めない `highlight=`・`fold=` の番号、コードブロックの行の数を超える行の番号は、当てずに警告にする */
+/** `code` の印の引数を、題・行番号の有無・強調する行に読む。知らないキー・指定、読めない `highlight=` の番号、コードブロックの行の数を超える行の番号は、当てずに警告にする */
 export declare function readCodeSpec(options: {
     args: MdmarkMarkArgs;
     lineCount: number;
@@ -11,18 +11,9 @@ export declare function readCodeSpec(options: {
     title: string;
     lineNumbers: boolean;
     highlights: Set<number>;
-    folds: Set<number>;
     warnings: WarningItem[];
 };
-/** 行の文字から `measureIndents` でインデントのレベルを、`foldLinesOf` で畳む行の数を決めて行に付け、`folds` の行のうち畳める行に `folded` を付ける。畳めない行は当てずに警告にする */
-export declare function readFolds(options: {
-    lines: CodeLine[];
-    folds: Set<number>;
-}): {
-    lines: CodeLine[];
-    warnings: WarningItem[];
-};
-/** コードブロックの中身を行に分け、行末の `[!code ++]`・`[!code --]`・`[!code highlight]`・`[!code focus]`・`[!code error]`・`[!code warning]` を行の種類にして印を外す。行コメントが印だけなら印の直前の行コメントの頭も外し、外した後の行末の空白も外す。`[\!code …]` は `\` を外した文字にする。知らない印（`[!code blink]` など）はその行に当てず書いた文字のままにし、警告にする */
+/** コードブロックの中身を行に分け、行末の `[!code ++]`・`[!code --]`・`[!code highlight]` を行の種類にして印を外す。行コメントが印だけなら印の直前の行コメントの頭も外し、外した後の行末の空白も外す。`[\!code …]` は `\` を外した文字にする。知らない印（`[!code focus]` など）はその行に当てず書いた文字のままにし、警告にする */
 export declare function readLineMarks(source: string): {
     lines: CodeLine[];
     warnings: WarningItem[];

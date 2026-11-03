@@ -1,4 +1,4 @@
-import { type MdmarkCommentStore } from "./comments/spec.ts";
+import type { MdmarkCommentStore } from "./comments/spec.ts";
 import { type MdmarkConfig } from "./config.ts";
 import { type DiffMode, type DiffSource } from "./diff/source.ts";
 import type { MdmarkAlias } from "./knowledge/aliases.ts";
@@ -24,32 +24,13 @@ export type MountOptions = {
     diffMode?: DiffMode;
     /** コメントの読み書きの関数。`comments` の機能がオンのときだけ使う。渡すときは `docId` も要る */
     commentStore?: MdmarkCommentStore;
-    /** 比較元の Markdown。渡すと、本文の中で比較元から変えたブロックを `blocks` と同じ色で塗り分ける。`null` と省いたときは色分けしない */
-    baseMarkdown?: string | null;
-    /** `+columns` の表で列の表示を切り替えるたびに呼ぶ */
-    onColumnsChange?: (event: MdmarkColumnsChange) => void;
-};
-/** `onColumnsChange` が受け取る列の表示 */
-export type MdmarkColumnsChange = {
-    /** 本文の中の `+columns` の表の出現順（0 から。削除したブロックの中の表は数えない） */
-    tableIndex: number;
-    /** 隠している列の見出しの文字（列の順） */
-    hidden: string[];
 };
 /** `mount` の戻り値 */
 export type MountHandle = {
-    /** 本文だけを描き直す。設定は `mount` に渡したものを使う。`options.baseMarkdown` を渡すと比較元を差し替え、`null` で外す。`destroy` の後は何もしない */
-    update: (markdown: string, options?: {
-        baseMarkdown?: string | null;
-    }) => void;
+    /** 本文だけを描き直す。設定は `mount` に渡したものを使う。`destroy` の後は何もしない */
+    update: (markdown: string) => void;
     /** 要素の中を空にして class `mdmark` とテーマの属性を外し、印刷の受け取りを外す。2 回目以降は何もしない */
     destroy: () => void;
-    /** 本文を描き直さずにコメントを読み直し、印を付け直してから解決する。コメントを付けていないときと `destroy` の後は解決する */
-    reloadComments: () => Promise<void>;
-    /** その `id` のコメントの印へ移って強調する。印が無い `id` と `destroy` の後は何もしない */
-    focusComment: (id: string) => void;
 };
-/** 比較元が文字列か `null` か `undefined` かを確かめ、違えば `baseMarkdown` を含む `TypeError` を投げる */
-export declare function checkBaseMarkdown(value: unknown): asserts value is string | null | undefined;
-/** 要素の中に文書を描き、記法の操作を付け、外部ライブラリと拡張の印を描かせ、ビューとコメントの部品を付け、印刷の受け取りを付けて、描き直しと片付けの関数を返す。`diffSource` か `commentStore` を渡して `docId` が無いとき、`commentStore`・`baseMarkdown`・`onColumnsChange` が合わないときは、何も描かずに `TypeError` を投げる */
+/** 要素の中に文書を描き、記法の操作を付け、外部ライブラリと拡張の印を描かせ、ビューとコメントの部品を付け、印刷の受け取りを付けて、描き直しと片付けの関数を返す。`diffSource` か `commentStore` を渡して `docId` が無いとき、`commentStore` が `load`・`save` の関数を持たないときは、何も描かずに `TypeError` を投げる */
 export declare function mount(el: HTMLElement, opts: MountOptions): MountHandle;

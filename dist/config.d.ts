@@ -12,20 +12,12 @@ export type MdmarkConfig = {
     syntax?: {
         url?: string;
     };
-    /** 文書が指すファイルの探し方（CLI と VS Code 拡張機能だけが読む） */
-    assets?: {
-        root?: string;
-    };
     /** 右側の目次の設定。`mode` は出し方（`hover` / `fixed`）。知らない値も受けて `resolveConfig` が `hover` にするため、型は `string` */
     "side-toc"?: {
         mode?: string;
     };
     /** 配色のテーマの名前（`COLOR_THEMES` のどれか）。知らない値も受けて `resolveConfig` が `DEFAULT_COLOR_THEME` にするため、型は `string` */
     colorTheme?: string;
-    /** 部品の文言の設定。`paramCopy` は操作できる部品の今の値をコピーするボタンの文言。空文字も受けて `resolveConfig` が `DEFAULT_LABELS.paramCopy` にする */
-    labels?: {
-        paramCopy?: string;
-    };
 };
 /** ツールチップを持ち主の上と下のどちらに先に出すか。`top` は上に出し、上に収まらないときだけ下に出す。`bottom` は下に出し、下に収まらず上に収まるときだけ上に出す */
 export type TooltipPlacement = "top" | "bottom";
@@ -60,19 +52,11 @@ export type ResolvedConfig = {
     };
     /** 設定の `colorTheme` が `COLOR_THEMES` にあればその値、それ以外は `DEFAULT_COLOR_THEME` */
     colorTheme: ColorTheme;
-    /** 設定の `labels.paramCopy` が空でない文字列ならその値、それ以外は `DEFAULT_LABELS.paramCopy` */
-    labels: {
-        paramCopy: string;
-    };
 };
 /** mdmark に入れた配色のテーマの名前の並び。`resolveConfig`・CLI の点検と書き出しの警告が照らす */
 export declare const COLOR_THEMES: readonly ColorTheme[];
 /** 設定に `colorTheme` が無いか知らない名前のときのテーマ。配色の値は `src/index.css` の `:root` の既定のまま */
 export declare const DEFAULT_COLOR_THEME: ColorTheme;
-/** 設定の `labels.paramCopy` が空でない文字列でないときの部品の文言 */
-export declare const DEFAULT_LABELS: {
-    paramCopy: string;
-};
 /** この版が知っている機能とその既定 */
 export declare const DEFAULT_FEATURES: Record<string, boolean>;
 /** 設定の `syntax.url` が無いときに読む highlight.js の `es/` フォルダの URL。バージョンを固定する */

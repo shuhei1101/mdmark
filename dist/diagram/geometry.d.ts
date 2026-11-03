@@ -29,9 +29,4 @@ export declare function niceTicks(values: number[]): {
     max: number;
     step: number;
 };
-/** 目盛りごとに、0 以上の値は 0 から上へ、負の値は 0 から下へ、系列の順に積み上げた下端と上端を返す */
-export declare function stackSeries(series: number[][]): Array<Array<{
-    from: number;
-    to: number;
-}>>;
 export {};

@@ -1,6 +1,6 @@
 export type { MdmarkComment, MdmarkCommentDraft, MdmarkCommentStore, MdmarkCommentsHandle, } from "./comments/spec.ts";
 export type { MdmarkConfig } from "./config.ts";
-export type { MdmarkChartDefinition, MdmarkErDefinition, MdmarkFlowDefinition, MdmarkParamDefinition, MdmarkSequenceDefinition, } from "./diagram/definition.ts";
+export type { MdmarkChartDefinition, MdmarkFlowDefinition, MdmarkParamDefinition, MdmarkSequenceDefinition, } from "./diagram/definition.ts";
 export type { DiffMode, DiffRevision, DiffSource } from "./diff/source.ts";
 export { diffModes } from "./diff/source.ts";
 export type { MdmarkExtension, MdmarkExtensionModule, MdmarkMarkArgs, } from "./extensions.ts";
@@ -14,7 +14,7 @@ export type { MdmarkAvoidedMatch, MdmarkMatch, MdmarkMatches, MdmarkMatchTarget,
 export { collectMatches } from "./knowledge/matches.ts";
 export type { MdmarkReferences } from "./knowledge/references.ts";
 export { collectReferences } from "./knowledge/references.ts";
-export type { MdmarkColumnsChange, MountHandle, MountOptions, } from "./mount.ts";
+export type { MountHandle, MountOptions } from "./mount.ts";
 export { mount } from "./mount.ts";
 export { mountComments, mountView } from "./mount-parts.ts";
 export { render } from "./render/index.ts";

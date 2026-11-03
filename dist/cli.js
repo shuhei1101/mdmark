@@ -2995,7 +2995,7 @@ var require_compile2 = __commonJS({
       const schOrFunc = root.refs[ref];
       if (schOrFunc)
         return schOrFunc;
-      let _sch = resolve12.call(this, root, ref);
+      let _sch = resolve13.call(this, root, ref);
       if (_sch === void 0) {
         const schema = (_a3 = root.localRefs) === null || _a3 === void 0 ? void 0 : _a3[ref];
         const { schemaId } = this.opts;
@@ -3022,7 +3022,7 @@ var require_compile2 = __commonJS({
     function sameSchemaEnv(s1, s2) {
       return s1.schema === s2.schema && s1.root === s2.root && s1.baseId === s2.baseId;
     }
-    function resolve12(root, ref) {
+    function resolve13(root, ref) {
       let sch;
       while (typeof (sch = this.refs[ref]) == "string")
         ref = sch;
@@ -3852,7 +3852,7 @@ var require_fast_uri2 = __commonJS({
       }
       return uri;
     }
-    function resolve12(baseURI, relativeURI, options) {
+    function resolve13(baseURI, relativeURI, options) {
       const schemelessOptions = options ? Object.assign({ scheme: "null" }, options) : { scheme: "null" };
       const {
         parsed: baseParsed,
@@ -3885,49 +3885,49 @@ var require_fast_uri2 = __commonJS({
       schemelessOptions.skipEscape = true;
       return serialize(resolved, schemelessOptions);
     }
-    function resolveComponent(base, relative9, options, skipNormalization) {
+    function resolveComponent(base, relative10, options, skipNormalization) {
       const target = {};
       if (!skipNormalization) {
         base = parse7(serialize(base, options), options);
-        relative9 = parse7(serialize(relative9, options), options);
+        relative10 = parse7(serialize(relative10, options), options);
       }
       options = options || {};
-      if (!options.tolerant && relative9.scheme) {
-        target.scheme = relative9.scheme;
-        target.userinfo = relative9.userinfo;
-        target.host = relative9.host;
-        target.port = relative9.port;
-        target.path = removeDotSegments(relative9.path || "");
-        target.query = relative9.query;
+      if (!options.tolerant && relative10.scheme) {
+        target.scheme = relative10.scheme;
+        target.userinfo = relative10.userinfo;
+        target.host = relative10.host;
+        target.port = relative10.port;
+        target.path = removeDotSegments(relative10.path || "");
+        target.query = relative10.query;
       } else {
-        if (relative9.userinfo !== void 0 || relative9.host !== void 0 || relative9.port !== void 0) {
-          target.userinfo = relative9.userinfo;
-          target.host = relative9.host;
-          target.port = relative9.port;
-          target.path = removeDotSegments(relative9.path || "");
-          target.query = relative9.query;
+        if (relative10.userinfo !== void 0 || relative10.host !== void 0 || relative10.port !== void 0) {
+          target.userinfo = relative10.userinfo;
+          target.host = relative10.host;
+          target.port = relative10.port;
+          target.path = removeDotSegments(relative10.path || "");
+          target.query = relative10.query;
         } else {
-          if (!relative9.path) {
+          if (!relative10.path) {
             target.path = base.path;
-            if (relative9.query !== void 0) {
-              target.query = relative9.query;
+            if (relative10.query !== void 0) {
+              target.query = relative10.query;
             } else {
               target.query = base.query;
             }
           } else {
-            if (relative9.path[0] === "/") {
-              target.path = removeDotSegments(relative9.path);
+            if (relative10.path[0] === "/") {
+              target.path = removeDotSegments(relative10.path);
             } else {
               if ((base.userinfo !== void 0 || base.host !== void 0 || base.port !== void 0) && !base.path) {
-                target.path = "/" + relative9.path;
+                target.path = "/" + relative10.path;
               } else if (!base.path) {
-                target.path = relative9.path;
+                target.path = relative10.path;
               } else {
-                target.path = base.path.slice(0, base.path.lastIndexOf("/") + 1) + relative9.path;
+                target.path = base.path.slice(0, base.path.lastIndexOf("/") + 1) + relative10.path;
               }
               target.path = removeDotSegments(target.path);
             }
-            target.query = relative9.query;
+            target.query = relative10.query;
           }
           target.userinfo = base.userinfo;
           target.host = base.host;
@@ -3935,7 +3935,7 @@ var require_fast_uri2 = __commonJS({
         }
         target.scheme = base.scheme;
       }
-      target.fragment = relative9.fragment;
+      target.fragment = relative10.fragment;
       return target;
     }
     function equal(uriA, uriB, options) {
@@ -4221,7 +4221,7 @@ var require_fast_uri2 = __commonJS({
     var fastUri = {
       SCHEMES,
       normalize: normalize2,
-      resolve: resolve12,
+      resolve: resolve13,
       resolveComponent,
       equal,
       serialize,
@@ -9411,7 +9411,7 @@ var require_lucide = __commonJS({
       ["path", { d: "M7 7h10v10" }],
       ["path", { d: "M7 17 17 7" }]
     ];
-    var ArrowUpToLine2 = [
+    var ArrowUpToLine = [
       ["path", { d: "M5 3h14" }],
       ["path", { d: "m18 13-6-6-6 6" }],
       ["path", { d: "M12 7v14" }]
@@ -12036,7 +12036,7 @@ var require_lucide = __commonJS({
       ["path", { d: "M12 7v4" }],
       ["path", { d: "M7.998 9.003a5 5 0 1 0 8-.005" }]
     ];
-    var CircleQuestionMark2 = [
+    var CircleQuestionMark = [
       ["circle", { cx: "12", cy: "12", r: "10" }],
       ["path", { d: "M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" }],
       ["path", { d: "M12 17h.01" }]
@@ -14434,7 +14434,7 @@ var require_lucide = __commonJS({
     var FlagTriangleRight = [
       ["path", { d: "M6 22V2.8a.8.8 0 0 1 1.17-.71l11.38 5.69a.8.8 0 0 1 0 1.44L6 15.5" }]
     ];
-    var Flag2 = [
+    var Flag = [
       [
         "path",
         {
@@ -17397,7 +17397,7 @@ var require_lucide = __commonJS({
       ["path", { d: "M12 12v10" }],
       ["path", { d: "M7 22h10" }]
     ];
-    var Maximize22 = [
+    var Maximize2 = [
       ["path", { d: "M15 3h6v6" }],
       ["path", { d: "m21 3-7 7" }],
       ["path", { d: "m3 21 7-7" }],
@@ -18897,7 +18897,7 @@ var require_lucide = __commonJS({
         }
       ]
     ];
-    var Pause2 = [
+    var Pause = [
       ["rect", { x: "14", y: "3", width: "5", height: "18", rx: "1" }],
       ["rect", { x: "5", y: "3", width: "5", height: "18", rx: "1" }]
     ];
@@ -19319,7 +19319,7 @@ var require_lucide = __commonJS({
       ["path", { d: "m16.042 16.042-8.034 4.686A2 2 0 0 1 5 19V5" }],
       ["path", { d: "m2 2 20 20" }]
     ];
-    var Play2 = [
+    var Play = [
       [
         "path",
         { d: "M5 5a2 2 0 0 1 3.008-1.728l11.997 6.998a2 2 0 0 1 .003 3.458l-12 7A2 2 0 0 1 5 19z" }
@@ -22417,7 +22417,7 @@ var require_lucide = __commonJS({
       ["path", { d: "M9 22v-8" }],
       ["path", { d: "M9 2v4" }]
     ];
-    var Table3 = [
+    var Table = [
       ["path", { d: "M12 3v18" }],
       ["rect", { width: "18", height: "18", x: "3", y: "3", rx: "2" }],
       ["path", { d: "M3 9h18" }],
@@ -24174,7 +24174,7 @@ var require_lucide = __commonJS({
       ["path", { d: "M18 8 6 20" }],
       ["path", { d: "m6 8 12 12" }]
     ];
-    var Wrench2 = [
+    var Wrench = [
       [
         "path",
         {
@@ -24424,7 +24424,7 @@ var require_lucide = __commonJS({
       ArrowUpRightFromSquare: SquareArrowOutUpRight,
       ArrowUpRightSquare: SquareArrowUpRight,
       ArrowUpSquare: SquareArrowUp,
-      ArrowUpToLine: ArrowUpToLine2,
+      ArrowUpToLine,
       ArrowUpWideNarrow,
       ArrowUpZA,
       ArrowUpZa: ArrowUpZA,
@@ -24764,7 +24764,7 @@ var require_lucide = __commonJS({
       CircleFadingPlay,
       CircleFadingPlus,
       CircleGauge,
-      CircleHelp: CircleQuestionMark2,
+      CircleHelp: CircleQuestionMark,
       CircleMinus,
       CircleOff,
       CircleParking,
@@ -24776,7 +24776,7 @@ var require_lucide = __commonJS({
       CirclePlus,
       CirclePoundSterling,
       CirclePower,
-      CircleQuestionMark: CircleQuestionMark2,
+      CircleQuestionMark,
       CircleSlash,
       CircleSlash2,
       CircleSlashed: CircleSlash2,
@@ -25118,7 +25118,7 @@ var require_lucide = __commonJS({
       FishSymbol,
       FishingHook,
       FishingRod,
-      Flag: Flag2,
+      Flag,
       FlagOff,
       FlagTriangleLeft,
       FlagTriangleRight,
@@ -25307,7 +25307,7 @@ var require_lucide = __commonJS({
       HeartX,
       Heater,
       Helicopter,
-      HelpCircle: CircleQuestionMark2,
+      HelpCircle: CircleQuestionMark,
       HelpingHand: HandHelping,
       Hexagon,
       Highlighter,
@@ -25512,7 +25512,7 @@ var require_lucide = __commonJS({
       MarsStroke,
       Martini,
       Maximize,
-      Maximize2: Maximize22,
+      Maximize2,
       Medal,
       Megaphone,
       MegaphoneOff,
@@ -25714,7 +25714,7 @@ var require_lucide = __commonJS({
       ParkingSquare: SquareParking,
       ParkingSquareOff: SquareParkingOff,
       PartyPopper,
-      Pause: Pause2,
+      Pause,
       PauseCircle: CirclePause,
       PauseOctagon: OctagonPause,
       PawPrint,
@@ -25769,7 +25769,7 @@ var require_lucide = __commonJS({
       PlaneLanding,
       PlaneTakeoff,
       PlantPot,
-      Play: Play2,
+      Play,
       PlayCircle: CirclePlay,
       PlayOff,
       PlaySquare: SquarePlay,
@@ -26172,7 +26172,7 @@ var require_lucide = __commonJS({
       Sword,
       Swords,
       Syringe,
-      Table: Table3,
+      Table,
       Table2,
       TableCellsMerge,
       TableCellsSplit,
@@ -26425,7 +26425,7 @@ var require_lucide = __commonJS({
       Workflow,
       Worm,
       WrapText: TextWrap,
-      Wrench: Wrench2,
+      Wrench,
       WrenchOff,
       X: X2,
       XCircle: CircleX,
@@ -26621,7 +26621,7 @@ var require_lucide = __commonJS({
     exports.ArrowUpRightFromSquare = SquareArrowOutUpRight;
     exports.ArrowUpRightSquare = SquareArrowUpRight;
     exports.ArrowUpSquare = SquareArrowUp;
-    exports.ArrowUpToLine = ArrowUpToLine2;
+    exports.ArrowUpToLine = ArrowUpToLine;
     exports.ArrowUpWideNarrow = ArrowUpWideNarrow;
     exports.ArrowUpZA = ArrowUpZA;
     exports.ArrowUpZa = ArrowUpZA;
@@ -26961,7 +26961,7 @@ var require_lucide = __commonJS({
     exports.CircleFadingPlay = CircleFadingPlay;
     exports.CircleFadingPlus = CircleFadingPlus;
     exports.CircleGauge = CircleGauge;
-    exports.CircleHelp = CircleQuestionMark2;
+    exports.CircleHelp = CircleQuestionMark;
     exports.CircleMinus = CircleMinus;
     exports.CircleOff = CircleOff;
     exports.CircleParking = CircleParking;
@@ -26973,7 +26973,7 @@ var require_lucide = __commonJS({
     exports.CirclePlus = CirclePlus;
     exports.CirclePoundSterling = CirclePoundSterling;
     exports.CirclePower = CirclePower;
-    exports.CircleQuestionMark = CircleQuestionMark2;
+    exports.CircleQuestionMark = CircleQuestionMark;
     exports.CircleSlash = CircleSlash;
     exports.CircleSlash2 = CircleSlash2;
     exports.CircleSlashed = CircleSlash2;
@@ -27315,7 +27315,7 @@ var require_lucide = __commonJS({
     exports.FishSymbol = FishSymbol;
     exports.FishingHook = FishingHook;
     exports.FishingRod = FishingRod;
-    exports.Flag = Flag2;
+    exports.Flag = Flag;
     exports.FlagOff = FlagOff;
     exports.FlagTriangleLeft = FlagTriangleLeft;
     exports.FlagTriangleRight = FlagTriangleRight;
@@ -27504,7 +27504,7 @@ var require_lucide = __commonJS({
     exports.HeartX = HeartX;
     exports.Heater = Heater;
     exports.Helicopter = Helicopter;
-    exports.HelpCircle = CircleQuestionMark2;
+    exports.HelpCircle = CircleQuestionMark;
     exports.HelpingHand = HandHelping;
     exports.Hexagon = Hexagon;
     exports.Highlighter = Highlighter;
@@ -27709,7 +27709,7 @@ var require_lucide = __commonJS({
     exports.MarsStroke = MarsStroke;
     exports.Martini = Martini;
     exports.Maximize = Maximize;
-    exports.Maximize2 = Maximize22;
+    exports.Maximize2 = Maximize2;
     exports.Medal = Medal;
     exports.Megaphone = Megaphone;
     exports.MegaphoneOff = MegaphoneOff;
@@ -27911,7 +27911,7 @@ var require_lucide = __commonJS({
     exports.ParkingSquare = SquareParking;
     exports.ParkingSquareOff = SquareParkingOff;
     exports.PartyPopper = PartyPopper;
-    exports.Pause = Pause2;
+    exports.Pause = Pause;
     exports.PauseCircle = CirclePause;
     exports.PauseOctagon = OctagonPause;
     exports.PawPrint = PawPrint;
@@ -27966,7 +27966,7 @@ var require_lucide = __commonJS({
     exports.PlaneLanding = PlaneLanding;
     exports.PlaneTakeoff = PlaneTakeoff;
     exports.PlantPot = PlantPot;
-    exports.Play = Play2;
+    exports.Play = Play;
     exports.PlayCircle = CirclePlay;
     exports.PlayOff = PlayOff;
     exports.PlaySquare = SquarePlay;
@@ -28369,7 +28369,7 @@ var require_lucide = __commonJS({
     exports.Sword = Sword;
     exports.Swords = Swords;
     exports.Syringe = Syringe;
-    exports.Table = Table3;
+    exports.Table = Table;
     exports.Table2 = Table2;
     exports.TableCellsMerge = TableCellsMerge;
     exports.TableCellsSplit = TableCellsSplit;
@@ -28622,7 +28622,7 @@ var require_lucide = __commonJS({
     exports.Workflow = Workflow;
     exports.Worm = Worm;
     exports.WrapText = TextWrap;
-    exports.Wrench = Wrench2;
+    exports.Wrench = Wrench;
     exports.WrenchOff = WrenchOff;
     exports.X = X2;
     exports.XCircle = CircleX;
@@ -31163,11 +31163,11 @@ function compareDocumentPosition(nodeA, nodeB) {
 function uniqueSort(nodes) {
   nodes = nodes.filter((node2, index, array2) => !array2.includes(node2, index + 1));
   nodes.sort((a, b) => {
-    const relative9 = compareDocumentPosition(a, b);
-    if (relative9 & DocumentPosition.PRECEDING) {
+    const relative10 = compareDocumentPosition(a, b);
+    if (relative10 & DocumentPosition.PRECEDING) {
       return -1;
     }
-    if (relative9 & DocumentPosition.FOLLOWING) {
+    if (relative10 & DocumentPosition.FOLLOWING) {
       return 1;
     }
     return 0;
@@ -33553,14 +33553,14 @@ var require_sanitize_html = __commonJS({
 
 // src/cli/main.ts
 import { existsSync } from "node:fs";
-import { dirname as dirname10, join as join13, resolve as resolve11 } from "node:path";
+import { dirname as dirname10, join as join15, resolve as resolve12 } from "node:path";
 import { parseArgs } from "node:util";
 
 // src/plugin/http.ts
 import {
   createServer
 } from "node:http";
-import { join as join8 } from "node:path";
+import { join as join10 } from "node:path";
 import { Readable } from "node:stream";
 
 // node_modules/@modelcontextprotocol/server/dist/chunk-Br0eD_fh.mjs
@@ -37039,7 +37039,7 @@ var recursive = /* @__PURE__ */ new WeakMap();
 var NONE = 0;
 var ASSUMED = 1;
 var PROVEN = 2;
-function isRecursive(inst, stack, resolve12) {
+function isRecursive(inst, stack, resolve13) {
   const cached2 = recursive.get(inst);
   if (cached2 !== void 0)
     return cached2 ? PROVEN : NONE;
@@ -37049,7 +37049,7 @@ function isRecursive(inst, stack, resolve12) {
   let result = NONE;
   const check = (child) => {
     if (result !== PROVEN && child?._zod) {
-      const answer = isRecursive(child, stack, resolve12);
+      const answer = isRecursive(child, stack, resolve13);
       if (answer > result)
         result = answer;
     }
@@ -37060,7 +37060,7 @@ function isRecursive(inst, stack, resolve12) {
       const desc = Object.getOwnPropertyDescriptor(sh, key);
       if (spread && !desc.enumerable)
         continue;
-      const child = desc.get ? ASSUMED : desc.value?._zod ? isRecursive(desc.value, stack, resolve12) : NONE;
+      const child = desc.get ? ASSUMED : desc.value?._zod ? isRecursive(desc.value, stack, resolve13) : NONE;
       if (child > answer)
         answer = child;
     }
@@ -37124,7 +37124,7 @@ function isRecursive(inst, stack, resolve12) {
       break;
     // `$ZodLazy` caches its inner on the def, so a resolved edge is followed exactly
     case "lazy": {
-      const inner = def._cachedInner ?? (resolve12 ? inst._zod.innerType : void 0);
+      const inner = def._cachedInner ?? (resolve13 ? inst._zod.innerType : void 0);
       merge2(inner ? isRecursive(inner, stack, false) : ASSUMED);
       break;
     }
@@ -45108,14 +45108,14 @@ function inputRequiredRoundsExceededMessage(method, maxRounds) {
   return `Multi-round-trip request '${method}' still required input after ${maxRounds} rounds (inputRequired.maxRounds)`;
 }
 function sleep(ms, signal) {
-  return new Promise((resolve12, reject) => {
+  return new Promise((resolve13, reject) => {
     if (signal?.aborted) {
       reject(signal.reason instanceof SdkError ? signal.reason : new SdkError(SdkErrorCode.RequestTimeout, String(signal.reason)));
       return;
     }
     const timer = setTimeout(() => {
       signal?.removeEventListener("abort", onAbort);
-      resolve12();
+      resolve13();
     }, ms);
     const onAbort = () => {
       clearTimeout(timer);
@@ -45914,7 +45914,7 @@ var Protocol = class {
     const flowStartedAt = Date.now();
     let onAbort;
     let cleanupMessageId;
-    return new Promise((resolve12, reject) => {
+    return new Promise((resolve13, reject) => {
       const earlyReject = (error2) => {
         reject(error2);
       };
@@ -45983,7 +45983,7 @@ var Protocol = class {
         }
         if (decoded.kind === "invalid") return reject(decoded.error);
         if (decoded.kind === "input_required") {
-          if (options?.allowInputRequired === true) return resolve12(manualInputRequiredValue(decoded));
+          if (options?.allowInputRequired === true) return resolve13(manualInputRequiredValue(decoded));
           const flow = {
             codec,
             request,
@@ -45995,11 +45995,11 @@ var Protocol = class {
               params
             }, resultSchema, legOptions)
           };
-          return resolve12(this._resolveNonCompleteResult(decoded, flow));
+          return resolve13(this._resolveNonCompleteResult(decoded, flow));
         }
         const result = decoded.result;
         validateStandardSchema(resultSchema, result).then((parseResult) => {
-          if (parseResult.success) resolve12(parseResult.data);
+          if (parseResult.success) resolve13(parseResult.data);
           else reject(new SdkError(SdkErrorCode.InvalidResult, `Invalid result for ${request.method}: ${parseResult.error}`));
         }, reject);
       });
@@ -48906,7 +48906,7 @@ var require_compile = /* @__PURE__ */ __commonJSMin(((exports) => {
     ref = (0, resolve_1.resolveUrl)(this.opts.uriResolver, baseId, ref);
     const schOrFunc = root.refs[ref];
     if (schOrFunc) return schOrFunc;
-    let _sch = resolve12.call(this, root, ref);
+    let _sch = resolve13.call(this, root, ref);
     if (_sch === void 0) {
       const schema = (_a3 = root.localRefs) === null || _a3 === void 0 ? void 0 : _a3[ref];
       const { schemaId } = this.opts;
@@ -48932,7 +48932,7 @@ var require_compile = /* @__PURE__ */ __commonJSMin(((exports) => {
   function sameSchemaEnv(s1, s2) {
     return s1.schema === s2.schema && s1.root === s2.root && s1.baseId === s2.baseId;
   }
-  function resolve12(root, ref) {
+  function resolve13(root, ref) {
     let sch;
     while (typeof (sch = this.refs[ref]) == "string") ref = sch;
     return sch || this.schemas[ref] || resolveSchema.call(this, root, ref);
@@ -49382,47 +49382,47 @@ var require_fast_uri = /* @__PURE__ */ __commonJSMin(((exports, module) => {
     else if (typeof uri === "object") uri = parse7(serialize(uri, options), options);
     return uri;
   }
-  function resolve12(baseURI, relativeURI, options) {
+  function resolve13(baseURI, relativeURI, options) {
     const schemelessOptions = options ? Object.assign({ scheme: "null" }, options) : { scheme: "null" };
     const resolved = resolveComponent(parse7(baseURI, schemelessOptions), parse7(relativeURI, schemelessOptions), schemelessOptions, true);
     schemelessOptions.skipEscape = true;
     return serialize(resolved, schemelessOptions);
   }
-  function resolveComponent(base, relative9, options, skipNormalization) {
+  function resolveComponent(base, relative10, options, skipNormalization) {
     const target = {};
     if (!skipNormalization) {
       base = parse7(serialize(base, options), options);
-      relative9 = parse7(serialize(relative9, options), options);
+      relative10 = parse7(serialize(relative10, options), options);
     }
     options = options || {};
-    if (!options.tolerant && relative9.scheme) {
-      target.scheme = relative9.scheme;
-      target.userinfo = relative9.userinfo;
-      target.host = relative9.host;
-      target.port = relative9.port;
-      target.path = removeDotSegments(relative9.path || "");
-      target.query = relative9.query;
+    if (!options.tolerant && relative10.scheme) {
+      target.scheme = relative10.scheme;
+      target.userinfo = relative10.userinfo;
+      target.host = relative10.host;
+      target.port = relative10.port;
+      target.path = removeDotSegments(relative10.path || "");
+      target.query = relative10.query;
     } else {
-      if (relative9.userinfo !== void 0 || relative9.host !== void 0 || relative9.port !== void 0) {
-        target.userinfo = relative9.userinfo;
-        target.host = relative9.host;
-        target.port = relative9.port;
-        target.path = removeDotSegments(relative9.path || "");
-        target.query = relative9.query;
+      if (relative10.userinfo !== void 0 || relative10.host !== void 0 || relative10.port !== void 0) {
+        target.userinfo = relative10.userinfo;
+        target.host = relative10.host;
+        target.port = relative10.port;
+        target.path = removeDotSegments(relative10.path || "");
+        target.query = relative10.query;
       } else {
-        if (!relative9.path) {
+        if (!relative10.path) {
           target.path = base.path;
-          if (relative9.query !== void 0) target.query = relative9.query;
+          if (relative10.query !== void 0) target.query = relative10.query;
           else target.query = base.query;
         } else {
-          if (relative9.path[0] === "/") target.path = removeDotSegments(relative9.path);
+          if (relative10.path[0] === "/") target.path = removeDotSegments(relative10.path);
           else {
-            if ((base.userinfo !== void 0 || base.host !== void 0 || base.port !== void 0) && !base.path) target.path = "/" + relative9.path;
-            else if (!base.path) target.path = relative9.path;
-            else target.path = base.path.slice(0, base.path.lastIndexOf("/") + 1) + relative9.path;
+            if ((base.userinfo !== void 0 || base.host !== void 0 || base.port !== void 0) && !base.path) target.path = "/" + relative10.path;
+            else if (!base.path) target.path = relative10.path;
+            else target.path = base.path.slice(0, base.path.lastIndexOf("/") + 1) + relative10.path;
             target.path = removeDotSegments(target.path);
           }
-          target.query = relative9.query;
+          target.query = relative10.query;
         }
         target.userinfo = base.userinfo;
         target.host = base.host;
@@ -49430,7 +49430,7 @@ var require_fast_uri = /* @__PURE__ */ __commonJSMin(((exports, module) => {
       }
       target.scheme = base.scheme;
     }
-    target.fragment = relative9.fragment;
+    target.fragment = relative10.fragment;
     return target;
   }
   function equal(uriA, uriB, options) {
@@ -49556,7 +49556,7 @@ var require_fast_uri = /* @__PURE__ */ __commonJSMin(((exports, module) => {
   const fastUri = {
     SCHEMES,
     normalize: normalize2,
-    resolve: resolve12,
+    resolve: resolve13,
     resolveComponent,
     equal,
     serialize,
@@ -53467,9 +53467,9 @@ function createListenRouter(options) {
   const { bus, onerror } = options;
   const maxSubscriptions = options.maxSubscriptions ?? DEFAULT_MAX_SUBSCRIPTIONS;
   const keepAliveMs = options.keepAliveMs ?? DEFAULT_SSE_KEEP_ALIVE_MS;
-  const open2 = /* @__PURE__ */ new Set();
+  const open3 = /* @__PURE__ */ new Set();
   function serve(message, signal, capabilities, serverInfo) {
-    if (open2.size >= maxSubscriptions) {
+    if (open3.size >= maxSubscriptions) {
       onerror?.(/* @__PURE__ */ new Error(`subscriptions/listen refused: subscription limit reached (${maxSubscriptions})`));
       return jsonRpcError(message.id, -32603, "Subscription limit reached");
     }
@@ -53525,7 +53525,7 @@ data: ${JSON.stringify({
       }
       if (keepAliveTimer !== void 0) clearInterval(keepAliveTimer);
       abortCleanup?.();
-      open2.delete(teardown);
+      open3.delete(teardown);
       try {
         controller.close();
       } catch {
@@ -53549,7 +53549,7 @@ data: ${JSON.stringify({
           writeNotification(note.method, note.params);
         });
         keepAliveTimer = armSseKeepAlive(keepAliveMs, () => writeFrame(": keepalive\n\n"));
-        open2.add(teardown);
+        open3.add(teardown);
       },
       cancel() {
         teardown(false);
@@ -53574,10 +53574,10 @@ data: ${JSON.stringify({
   return {
     serve,
     closeAll() {
-      for (const teardown of open2) teardown(true);
+      for (const teardown of open3) teardown(true);
     },
     get openCount() {
-      return open2.size;
+      return open3.size;
     }
   };
 }
@@ -53643,9 +53643,9 @@ function validateScopeChallenge(challenge) {
   if (challenge.errorDescription !== void 0 && !/^[\u0020-\u0021\u0023-\u005B\u005D-\u007E]+$/.test(challenge.errorDescription)) throw new TypeError("scope challenge errorDescription must satisfy the RFC 6750 error-description grammar");
   return challenge;
 }
-async function findScopeChallenge(requests, authInfo, resolve12) {
+async function findScopeChallenge(requests, authInfo, resolve13) {
   for (const request of requests) {
-    const challenge = await resolve12({
+    const challenge = await resolve13({
       request,
       ...authInfo !== void 0 && { authInfo }
     });
@@ -55129,15 +55129,15 @@ var PerRequestHTTPServerTransport = class {
     };
     if (isJSONRPCRequest(message)) {
       this._requestId = message.id;
-      let resolve12;
+      let resolve13;
       let reject;
       const promise = new Promise((promiseResolve, promiseReject) => {
-        resolve12 = promiseResolve;
+        resolve13 = promiseResolve;
         reject = promiseReject;
       });
       this._deferredResponse = {
         promise,
-        resolve: resolve12,
+        resolve: resolve13,
         reject,
         settled: false
       };
@@ -55769,9 +55769,9 @@ data:
       const streamId = crypto.randomUUID();
       const initRequest = messages.find((m) => isInitializeRequest(m));
       const clientProtocolVersion = initRequest ? initRequest.params.protocolVersion : req.headers.get("mcp-protocol-version") ?? DEFAULT_NEGOTIATED_PROTOCOL_VERSION;
-      if (this._enableJsonResponse) return new Promise((resolve12) => {
+      if (this._enableJsonResponse) return new Promise((resolve13) => {
         this._streamMapping.set(streamId, {
-          resolveJson: resolve12,
+          resolveJson: resolve13,
           cleanup: () => {
             this._streamMapping.delete(streamId);
           }
@@ -56558,10 +56558,11 @@ function checkArguments(options) {
 
 // src/plugin/tools.ts
 import { statSync } from "node:fs";
-import { isAbsolute as isAbsolute2 } from "node:path";
+import { readFile as readFile9 } from "node:fs/promises";
+import { isAbsolute as isAbsolute2, join as join9 } from "node:path";
 
 // src/cli/build.ts
-import { join as join6, resolve as resolve6 } from "node:path";
+import { join as join5, resolve as resolve5 } from "node:path";
 
 // src/knowledge/paths.ts
 var SCHEME_PATTERN = /^[a-z][a-z0-9+.-]*:/i;
@@ -56626,9 +56627,6 @@ var COLOR_THEMES = [
   "theme-contrast"
 ];
 var DEFAULT_COLOR_THEME = "dev-swiss";
-var DEFAULT_LABELS = {
-  paramCopy: "\u4ECA\u306E\u5024\u3092\u5199\u3059"
-};
 var DEFAULT_FEATURES = {
   print: true,
   table: true,
@@ -56651,15 +56649,7 @@ var DEFAULT_FEATURES = {
   hints: true,
   views: true,
   comments: false,
-  "side-toc": true,
-  "back-to-top": true,
-  "text-color": true,
-  images: true,
-  gallery: true,
-  lightbox: true,
-  media: true,
-  gif: true,
-  cards: true
+  "side-toc": true
 };
 var DEFAULT_SYNTAX_URL = "https://cdn.jsdelivr.net/npm/@highlightjs/cdn-assets@11.12.0/es/";
 var DEFAULT_LIBRARIES = {};
@@ -56689,18 +56679,13 @@ function resolveConfig(options) {
   const syntax = { url: typeof url2 === "string" ? url2 : DEFAULT_SYNTAX_URL };
   const mode = config3?.["side-toc"]?.mode === "fixed" ? "fixed" : "hover";
   const colorTheme = COLOR_THEMES.find((name) => name === config3?.colorTheme) ?? DEFAULT_COLOR_THEME;
-  const paramCopy = config3?.labels?.paramCopy;
-  const labels = {
-    paramCopy: typeof paramCopy === "string" && paramCopy !== "" ? paramCopy : DEFAULT_LABELS.paramCopy
-  };
   return {
     features,
     libraries,
     tooltips: { placement },
     syntax,
     sideToc: { mode },
-    colorTheme,
-    labels
+    colorTheme
   };
 }
 
@@ -57343,14 +57328,8 @@ function validateConfig(raw, file) {
   if (raw.tooltips !== void 0 && !isValidTooltips(raw.tooltips, file, issues)) {
     delete config3.tooltips;
   }
-  if (raw.labels !== void 0 && !isValidLabels(raw.labels, file, issues)) {
-    delete config3.labels;
-  }
   if (raw.syntax !== void 0 && !isValidSyntax(raw.syntax, file, issues)) {
     delete config3.syntax;
-  }
-  if (raw.assets !== void 0 && !isValidAssets(raw.assets, file, issues)) {
-    delete config3.assets;
   }
   if (raw["side-toc"] !== void 0 && !isValidSideToc(raw["side-toc"], file, issues)) {
     delete config3["side-toc"];
@@ -57404,29 +57383,6 @@ function isValidTooltips(value, file, issues) {
   }
   return true;
 }
-function isValidLabels(value, file, issues) {
-  if (!isRecord3(value)) {
-    issues.push(
-      schemaIssue(
-        file,
-        "labels",
-        "`labels` \u306F\u90E8\u54C1\u306E\u6587\u8A00\u306E\u30AD\u30FC\u3068\u5024\u3067\u66F8\u3044\u3066\u304F\u3060\u3055\u3044\u3002"
-      )
-    );
-    return false;
-  }
-  if (value.paramCopy !== void 0 && (typeof value.paramCopy !== "string" || value.paramCopy === "")) {
-    issues.push(
-      schemaIssue(
-        file,
-        "labels.paramCopy",
-        "`labels.paramCopy` \u306F\u7A7A\u3067\u306A\u3044\u6587\u5B57\u5217\u3067\u66F8\u3044\u3066\u304F\u3060\u3055\u3044\u3002"
-      )
-    );
-    return false;
-  }
-  return true;
-}
 function isValidSideToc(value, file, issues) {
   if (!isRecord3(value)) {
     issues.push(
@@ -57444,29 +57400,6 @@ function isValidSideToc(value, file, issues) {
         file,
         "side-toc.mode",
         "`side-toc.mode` \u306F `hover` \u304B `fixed` \u3067\u66F8\u3044\u3066\u304F\u3060\u3055\u3044\u3002"
-      )
-    );
-    return false;
-  }
-  return true;
-}
-function isValidAssets(value, file, issues) {
-  if (!isRecord3(value)) {
-    issues.push(
-      schemaIssue(
-        file,
-        "assets",
-        "`assets` \u306F `root` \u3092\u6301\u3064\u30AD\u30FC\u3068\u5024\u3067\u66F8\u3044\u3066\u304F\u3060\u3055\u3044\u3002"
-      )
-    );
-    return false;
-  }
-  if (value.root !== void 0 && typeof value.root !== "string") {
-    issues.push(
-      schemaIssue(
-        file,
-        "assets.root",
-        "`assets.root` \u306F\u8A2D\u5B9A\u30D5\u30A1\u30A4\u30EB\u306E\u30D5\u30A9\u30EB\u30C0\u304B\u3089\u306E\u30D5\u30A9\u30EB\u30C0\u306E\u30D1\u30B9\u306E\u6587\u5B57\u5217\u3067\u66F8\u3044\u3066\u304F\u3060\u3055\u3044\u3002"
       )
     );
     return false;
@@ -57654,7 +57587,7 @@ function documentTitle(doc) {
 
 // src/cli/embed.ts
 import { readFile as readFile3 } from "node:fs/promises";
-import { dirname as dirname4, extname as extname3, resolve as resolve4 } from "node:path";
+import { dirname as dirname3, extname as extname2, resolve as resolve3 } from "node:path";
 import { build as build2 } from "esbuild";
 
 // node_modules/mdurl/index.mjs
@@ -58068,8 +58001,8 @@ var REBuilder = class {
   escapeRE(str) {
     return str.replace(/[.?*+^$[\]\\(){}|-]/g, "\\$&");
   }
-  nestedPairRE(open2, close, depth = 4) {
-    const openRE = this.escapeRE(open2);
+  nestedPairRE(open3, close, depth = 4) {
+    const openRE = this.escapeRE(open3);
     const closeRE = this.escapeRE(close);
     const atom = `(?:(?!${this.src_ZCc}|${openRE}|${closeRE}).)`;
     let pair = `${openRE}${atom}{0,1000}${closeRE}`;
@@ -62208,58 +62141,6 @@ _defineProperty(MarkdownIt, "ParserInline", ParserInline);
 _defineProperty(MarkdownIt, "StateInline", StateInline);
 var MarkdownItCallable = callable(MarkdownIt);
 
-// src/code-fold-logic.ts
-function measureIndents(texts) {
-  const heads = texts.map(
-    (text2) => text2.trim() === "" ? void 0 : /^[ \t]*/.exec(text2)?.[0] ?? ""
-  );
-  const spaceCounts = heads.flatMap((head) => {
-    const spaces = head?.replaceAll("	", "").length ?? 0;
-    return spaces > 0 ? [spaces] : [];
-  });
-  const unit = spaceCounts.length > 0 ? Math.min(...spaceCounts) : 1;
-  return heads.map((head) => {
-    if (head === void 0) {
-      return void 0;
-    }
-    const spaces = head.replaceAll("	", "").length;
-    const tabs = head.length - spaces;
-    return tabs + Math.floor(spaces / unit);
-  });
-}
-function foldLinesOf(indents) {
-  return indents.map((indent, index) => {
-    if (indent === void 0) {
-      return void 0;
-    }
-    let last = index;
-    for (let next = index + 1; next < indents.length; next++) {
-      const level = indents[next];
-      if (level === void 0) {
-        continue;
-      }
-      if (level <= indent) {
-        break;
-      }
-      last = next;
-    }
-    return last > index ? last - index : void 0;
-  });
-}
-function hiddenLinesOf(options) {
-  const { foldLines, folded } = options;
-  const hidden = /* @__PURE__ */ new Set();
-  foldLines.forEach((count, index) => {
-    if (count === void 0 || !folded[index]) {
-      return;
-    }
-    for (let line = index + 1; line <= index + count; line++) {
-      hidden.add(line);
-    }
-  });
-  return hidden;
-}
-
 // src/parts/escape.ts
 function escapeHtml2(text2) {
   return text2.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;").replaceAll("'", "&#39;");
@@ -62283,9 +62164,6 @@ var ICONS = {
   plug: import_lucide.Plug,
   database: import_lucide.Database,
   globe: import_lucide.Globe,
-  "circle-question-mark": import_lucide.CircleQuestionMark,
-  wrench: import_lucide.Wrench,
-  flag: import_lucide.Flag,
   server: import_lucide.Server,
   sigma: import_lucide.Sigma,
   info: import_lucide.Info,
@@ -62303,7 +62181,6 @@ var ICONS = {
   "chevrons-down-up": import_lucide.ChevronsDownUp,
   ellipsis: import_lucide.Ellipsis,
   "arrow-up": import_lucide.ArrowUp,
-  "arrow-up-to-line": import_lucide.ArrowUpToLine,
   "arrow-down": import_lucide.ArrowDown,
   "arrow-right": import_lucide.ArrowRight,
   funnel: import_lucide.Funnel,
@@ -62311,11 +62188,7 @@ var ICONS = {
   file: import_lucide.File,
   "file-diff": import_lucide.FileDiff,
   folder: import_lucide.Folder,
-  menu: import_lucide.Menu,
-  "maximize-2": import_lucide.Maximize2,
-  pause: import_lucide.Pause,
-  play: import_lucide.Play,
-  table: import_lucide.Table
+  menu: import_lucide.Menu
 };
 function renderNode([tag, attributes]) {
   const attrs = Object.entries(attributes).filter(([, value]) => value !== void 0).map(([name, value]) => ` ${name}="${value}"`).join("");
@@ -62328,30 +62201,11 @@ function iconSvg(name) {
 
 // src/parts/code-block.ts
 var SYNTAX_ATTRIBUTE = "data-mdmark-syntax";
-function renderCodeFoldToggle(options) {
-  const { expanded, from, to, controls } = options;
-  const icon = expanded ? "chevron-down" : "chevron-right";
-  return `<button class="mdmark-code-fold" type="button" aria-expanded="${expanded}" aria-controls="${escapeHtml2(controls)}" aria-label="${from} \u884C\u76EE\u304B\u3089 ${to} \u884C\u76EE"><span class="mdmark-code-fold-icon" data-icon="${icon}">${iconSvg(icon)}</span></button>`;
-}
-function renderCodeFoldMore(options) {
-  const { from, to } = options;
-  return `<button class="mdmark-code-fold-more" type="button" aria-label="${from} \u884C\u76EE\u304B\u3089 ${to} \u884C\u76EE\u3092\u5C55\u958B">\u22EF</button>`;
-}
-function codeLineId(base, index) {
-  return `${base}-line-${index + 1}`;
-}
 function renderLine(options) {
-  const { line, number: number4, fold } = options;
-  const attributes = [
-    fold ? ` id="${escapeHtml2(fold.id)}"` : "",
-    number4 === void 0 ? "" : ` data-line="${number4}"`,
-    line.kind === void 0 ? "" : ` data-kind="${line.kind}"`,
-    line.indent ? ` data-indent="${line.indent}"` : "",
-    line.foldLines === void 0 ? "" : ` data-fold-lines="${line.foldLines}"`,
-    line.folded ? ' data-folded="true"' : "",
-    fold?.hidden ? " hidden" : ""
-  ].join("");
-  return `<span class="mdmark-code-line"${attributes}>${fold?.toggle ?? ""}<span class="mdmark-code-text">${escapeHtml2(line.text)}</span>${fold?.more ?? ""}</span>`;
+  const { line, number: number4 } = options;
+  const lineAttribute = number4 === void 0 ? "" : ` data-line="${number4}"`;
+  const kindAttribute = line.kind === void 0 ? "" : ` data-kind="${line.kind}"`;
+  return `<span class="mdmark-code-line"${lineAttribute}${kindAttribute}><span class="mdmark-code-text">${escapeHtml2(line.text)}</span></span>`;
 }
 var COPY_LABELS = {
   idle: { text: "\u30B3\u30D4\u30FC", icon: "copy" },
@@ -62379,17 +62233,12 @@ function renderLanguageLabel(options) {
 }
 function renderCodeBlock(options) {
   const { language, title, lineNumbers, lines, syntax } = options;
-  const { fileName = "", bar = true, copyState, foldButtons } = options;
-  const split = lineNumbers || lines.some(
-    (line) => line.kind !== void 0 || Boolean(line.indent) || line.foldLines !== void 0
-  );
+  const { fileName = "", bar = true, copyState } = options;
+  const split = lineNumbers || lines.some((line) => line.kind !== void 0);
   const classes = split ? [
     "mdmark-code-lines",
     ...lineNumbers ? ["mdmark-code-numbered"] : [],
-    ...lines.some((line) => line.kind === "add" || line.kind === "del") ? ["mdmark-code-signs"] : [],
-    ...lines.some((line) => line.kind === "focus") ? ["mdmark-code-has-focus"] : [],
-    // 開閉のボタンを置くときは、`mount` と同じく開閉のボタンの列の幅を取る
-    ...foldButtons && lines.some((line) => line.foldLines !== void 0) ? ["mdmark-code-foldable"] : []
+    ...lines.some((line) => line.kind === "add" || line.kind === "del") ? ["mdmark-code-signs"] : []
   ] : [];
   const preClass = classes.length ? ` class="${classes.join(" ")}"` : "";
   const label = escapeHtml2(labelOf({ title, fileName, language }));
@@ -62398,37 +62247,8 @@ function renderCodeBlock(options) {
     syntax ? `${SYNTAX_ATTRIBUTE}="${escapeHtml2(syntax)}"` : "",
     lineNumbers ? `style="--mdmark-code-digits: ${String(lines.length).length}"` : ""
   ].filter(Boolean).map((attribute) => ` ${attribute}`).join("");
-  const hidden = foldButtons ? hiddenLinesOf({
-    foldLines: lines.map((line) => line.foldLines),
-    folded: lines.map((line) => line.folded === true)
-  }) : /* @__PURE__ */ new Set();
-  const foldOf = (line, index) => {
-    if (!foldButtons) {
-      return void 0;
-    }
-    const count = line.foldLines ?? 0;
-    const range = { from: index + 2, to: index + 1 + count };
-    const controls = Array.from(
-      { length: count },
-      (_, offset) => codeLineId("mdmark-code", index + 1 + offset)
-    ).join(" ");
-    return {
-      id: codeLineId("mdmark-code", index),
-      hidden: hidden.has(index),
-      toggle: count > 0 ? renderCodeFoldToggle({
-        expanded: !line.folded,
-        ...range,
-        controls
-      }) : "",
-      more: count > 0 && line.folded ? renderCodeFoldMore(range) : ""
-    };
-  };
   const body = split ? lines.map(
-    (line, index) => renderLine({
-      line,
-      number: lineNumbers ? index + 1 : void 0,
-      fold: foldOf(line, index)
-    })
+    (line, index) => renderLine({ line, number: lineNumbers ? index + 1 : void 0 })
   ).join("\n") : escapeHtml2(lines.map((line) => line.text).join("\n")) + (lines.length > 0 ? "\n" : "");
   const pre = `<pre${preClass} tabindex="0" aria-label="${label}"><code${codeAttributes}>${body}</code></pre>`;
   if (!bar) {
@@ -62751,27 +62571,12 @@ function readRelated(item) {
   return item.paths === void 0 ? { to: item.to, type: item.type, when: item.when } : { to: item.to, type: item.type, when: item.when, paths: item.paths };
 }
 
-// src/parts/colors.ts
-var COLOR_NAMES = [
-  "blue",
-  "red",
-  "green",
-  "yellow",
-  "orange",
-  "purple",
-  "gray"
-];
-function isColorName(value) {
-  return COLOR_NAMES.includes(value);
-}
-
 // src/diagram/definition.ts
 var DIAGRAM_DIRECTIVES = {
   flow: { name: "\u30D5\u30ED\u30FC\u56F3", call: "\u3053\u306E\u56F3" },
   sequence: { name: "\u30B7\u30FC\u30B1\u30F3\u30B9\u56F3", call: "\u3053\u306E\u56F3" },
   chart: { name: "\u30B0\u30E9\u30D5", call: "\u3053\u306E\u30B0\u30E9\u30D5" },
-  param: { name: "\u64CD\u4F5C\u3067\u304D\u308B\u90E8\u54C1", call: "\u3053\u306E\u90E8\u54C1" },
-  er: { name: "ER \u56F3", call: "\u3053\u306E ER \u56F3" }
+  param: { name: "\u64CD\u4F5C\u3067\u304D\u308B\u90E8\u54C1", call: "\u3053\u306E\u90E8\u54C1" }
 };
 var NODE_KINDS = [
   "llm",
@@ -62779,11 +62584,7 @@ var NODE_KINDS = [
   "script",
   "mcp",
   "data",
-  "external",
-  "start",
-  "question",
-  "action",
-  "result"
+  "external"
 ];
 var LANE_KINDS = ["llm", "mcp", "data"];
 var LINE_KINDS = [
@@ -62793,29 +62594,13 @@ var LINE_KINDS = [
   "reply",
   "loop"
 ];
-var SERIES_RANGE = { min: 1, max: 6 };
+var SERIES_RANGE = { min: 1, max: 4 };
 var CHART_TYPES = [
   "line",
   "bar",
   "pie",
-  "scatter",
-  "area",
-  "stacked-bar",
-  "stacked-area",
-  "horizontal-bar",
-  "donut",
-  "radar",
-  "bubble",
-  "combo"
+  "scatter"
 ];
-var ITEM_CHART_TYPES = ["pie", "donut"];
-var NUMERIC_X_CHART_TYPES = ["scatter", "bubble"];
-var MIN_TICKS = {
-  line: 2,
-  area: 2,
-  "stacked-area": 2,
-  radar: 3
-};
 var KNOB_DIGITS = 10;
 var JSON_PROBLEM_HEAD = "JSON \u3068\u3057\u3066\u8AAD\u3081\u307E\u305B\u3093";
 function missingSymbols(text2) {
@@ -62938,7 +62723,7 @@ function checkNode(value, index, problems) {
     return void 0;
   }
   const name = typeof node2.name === "string" ? node2.name : `${index + 1} \u3064\u76EE`;
-  const label = `\u30CE\u30FC\u30C9\u300C${name}\u300D`;
+  const label = `\u7BB1\u300C${name}\u300D`;
   problems.expect(node2.name, "\u6587\u5B57", `nodes[${index}].name`);
   const id = typeof node2.id === "string" ? node2.id : void 0;
   problems.expect(node2.id, "\u6587\u5B57", `${label}\u306E id`);
@@ -63011,11 +62796,11 @@ function checkWire(value, index, nodeIds, problems) {
     const end = wire[key];
     if (typeof end !== "string") {
       problems.add(
-        `${label}\u306E ${key} \u304C\u3042\u308A\u307E\u305B\u3093\u3002\u7AEF\u306E\u30CE\u30FC\u30C9\u306E id \u3067\u66F8\u3044\u3066\u304F\u3060\u3055\u3044`
+        `${label}\u306E ${key} \u304C\u3042\u308A\u307E\u305B\u3093\u3002\u7AEF\u306E\u7BB1\u306E id \u3067\u66F8\u3044\u3066\u304F\u3060\u3055\u3044`
       );
     } else if (!nodeIds.has(end)) {
       problems.add(
-        `${label}\u306E\u7AEF\u306E\u30CE\u30FC\u30C9 ${end} \u304C\u3042\u308A\u307E\u305B\u3093\u3002\u30CE\u30FC\u30C9\u306E id \u3067\u66F8\u3044\u3066\u304F\u3060\u3055\u3044`
+        `${label}\u306E\u7AEF\u306E\u7BB1 ${end} \u304C\u3042\u308A\u307E\u305B\u3093\u3002\u7BB1\u306E id \u3067\u66F8\u3044\u3066\u304F\u3060\u3055\u3044`
       );
     }
   }
@@ -63071,7 +62856,7 @@ function checkFlow(source, problems) {
   );
   checkDuplicates(
     nodeIds.filter((id) => id !== void 0),
-    "\u30CE\u30FC\u30C9",
+    "\u7BB1",
     problems
   );
   const wires = asArray(source.wires, "wires", problems);
@@ -63228,60 +63013,43 @@ function checkNumericXAxis(source, problems) {
     );
   }
 }
-function checkYAxis(source, problems, key = "y") {
-  const y = asObject(source[key], key, problems);
+function checkYAxis(source, problems) {
+  const y = asObject(source.y, "y", problems);
   if (!y) {
     return;
   }
-  problems.expect(y.label, "\u6587\u5B57", `${key}.label`);
-  const given = ["min", "max", "step"].filter((name) => y[name] !== void 0);
+  problems.expect(y.label, "\u6587\u5B57", "y.label");
+  const given = ["min", "max", "step"].filter((key) => y[key] !== void 0);
   if (given.length === 0) {
     return;
   }
   if (given.length < 3) {
     problems.add(
-      `${key} \u306E min\u30FBmax\u30FBstep \u306F 3 \u3064\u3068\u3082\u66F8\u304F\u304B\u30013 \u3064\u3068\u3082\u7701\u3044\u3066\u304F\u3060\u3055\u3044\u3002\u7701\u304F\u3068\u30C7\u30FC\u30BF\u304B\u3089\u5207\u308A\u307E\u3059`
+      "y \u306E min\u30FBmax\u30FBstep \u306F 3 \u3064\u3068\u3082\u66F8\u304F\u304B\u30013 \u3064\u3068\u3082\u7701\u3044\u3066\u304F\u3060\u3055\u3044\u3002\u7701\u304F\u3068\u30C7\u30FC\u30BF\u304B\u3089\u5207\u308A\u307E\u3059"
     );
     return;
   }
   const numbers = ["min", "max", "step"].map(
-    (name) => problems.expect(y[name], "\u6570", `${key}.${name}`)
+    (key) => problems.expect(y[key], "\u6570", `y.${key}`)
   );
   if (numbers.every(Boolean)) {
     if (y.min >= y.max) {
       problems.add(
-        `${key}.min \u304C ${key}.max \u4EE5\u4E0A\u3067\u3059\u3002min \u306F max \u3088\u308A\u5C0F\u3055\u304F\u3057\u3066\u304F\u3060\u3055\u3044`
+        "y.min \u304C y.max \u4EE5\u4E0A\u3067\u3059\u3002min \u306F max \u3088\u308A\u5C0F\u3055\u304F\u3057\u3066\u304F\u3060\u3055\u3044"
       );
     }
     if (y.step <= 0) {
-      problems.add(`${key}.step \u304C 0 \u4EE5\u4E0B\u3067\u3059\u3002step \u306F\u6B63\u306E\u6570\u306B\u3057\u3066\u304F\u3060\u3055\u3044`);
+      problems.add("y.step \u304C 0 \u4EE5\u4E0B\u3067\u3059\u3002step \u306F\u6B63\u306E\u6570\u306B\u3057\u3066\u304F\u3060\u3055\u3044");
     }
   }
 }
-function checkTupleList(points, label, bubble, problems) {
+function checkPairList(points, label, problems) {
   const list2 = asArray(points, `${label}\u306E points`, problems);
-  const shape = bubble ? "[x, y, size]" : "[x, y]";
   if (list2 && !list2.every(
-    (point) => Array.isArray(point) && point.length === (bubble ? 3 : 2) && point.every((value) => isType(value, "\u6570"))
+    (point) => Array.isArray(point) && point.length === 2 && point.every((value) => isType(value, "\u6570"))
   )) {
     problems.add(
-      `${label}\u306E points \u306B ${shape} \u3067\u306A\u3044\u70B9\u304C\u3042\u308A\u307E\u3059\u3002\u70B9\u306F ${shape} \u306E\u6570\u306E\u7D44\u3067\u66F8\u3044\u3066\u304F\u3060\u3055\u3044`
-    );
-  }
-}
-function checkComboSeries(entry, label, hasY2, problems) {
-  if (entry.as !== void 0 && entry.as !== "line" && entry.as !== "bar") {
-    problems.add(
-      `${label}\u306E as ${String(entry.as)} \u306F\u4F7F\u3048\u307E\u305B\u3093\u3002as \u306F line\u30FBbar \u306E\u3069\u3061\u3089\u304B\u3067\u66F8\u3044\u3066\u304F\u3060\u3055\u3044`
-    );
-  }
-  if (entry.axis !== void 0 && entry.axis !== "y" && entry.axis !== "y2") {
-    problems.add(
-      `${label}\u306E axis ${String(entry.axis)} \u306F\u4F7F\u3048\u307E\u305B\u3093\u3002axis \u306F y\u30FBy2 \u306E\u3069\u3061\u3089\u304B\u3067\u66F8\u3044\u3066\u304F\u3060\u3055\u3044`
-    );
-  } else if (entry.axis === "y2" && !hasY2) {
-    problems.add(
-      `${label}\u306E axis \u304C y2 \u3067\u3059\u304C\u3001y2 \u304C\u3042\u308A\u307E\u305B\u3093\u3002\u53F3\u306E\u7E26\u306E\u8EF8\u3092 y2 \u306B\u66F8\u3044\u3066\u304F\u3060\u3055\u3044`
+      `${label}\u306E points \u306B [x, y] \u3067\u306A\u3044\u70B9\u304C\u3042\u308A\u307E\u3059\u3002\u70B9\u306F [x, y] \u306E\u6570\u306E\u7D44\u3067\u66F8\u3044\u3066\u304F\u3060\u3055\u3044`
     );
   }
 }
@@ -63319,26 +63087,17 @@ function checkChart(source, problems) {
     );
     return;
   }
-  if (ITEM_CHART_TYPES.includes(type)) {
+  if (type === "pie") {
     checkPieItems(source, problems);
     return;
   }
   let tickCount;
-  if (NUMERIC_X_CHART_TYPES.includes(type)) {
+  if (type === "scatter") {
     checkNumericXAxis(source, problems);
   } else {
-    tickCount = checkTickAxis(source, MIN_TICKS[type] ?? 1, problems);
+    tickCount = checkTickAxis(source, type === "line" ? 2 : 1, problems);
   }
   checkYAxis(source, problems);
-  if (type === "combo" && source.y2 !== void 0) {
-    checkYAxis(source, problems, "y2");
-  }
-  if (type === "bubble") {
-    const size = asObject(source.size, "size", problems);
-    if (size) {
-      problems.expect(size.label, "\u6587\u5B57", "size.label");
-    }
-  }
   const series = asArray(source.series, "series", problems);
   if (!series) {
     return;
@@ -63355,23 +63114,10 @@ function checkChart(source, problems) {
     }
     const name = typeof entry.name === "string" ? entry.name : `${index + 1} \u3064\u76EE`;
     problems.expect(entry.name, "\u6587\u5B57", `series[${index}].name`);
-    if (NUMERIC_X_CHART_TYPES.includes(type)) {
-      checkTupleList(
-        entry.points,
-        `\u7CFB\u5217\u300C${name}\u300D`,
-        type === "bubble",
-        problems
-      );
+    if (type === "scatter") {
+      checkPairList(entry.points, `\u7CFB\u5217\u300C${name}\u300D`, problems);
     } else {
       checkPointList(entry.points, `\u7CFB\u5217\u300C${name}\u300D`, tickCount, problems);
-    }
-    if (type === "combo") {
-      checkComboSeries(
-        entry,
-        `\u7CFB\u5217\u300C${name}\u300D`,
-        source.y2 !== void 0,
-        problems
-      );
     }
   });
 }
@@ -63436,149 +63182,11 @@ function checkParam(source, problems) {
     }
   }
 }
-var ER_TABLE_KIND_LIST = [
-  "master",
-  "transaction"
-];
-var ER_CARDINALITY_LIST = [
-  "1",
-  "0..1",
-  "1..n",
-  "0..n"
-];
-function checkOptionalBoolean(value, path, problems) {
-  if (value !== void 0) {
-    problems.expect(value, "\u771F\u507D\u5024", path);
-  }
-}
-function checkErTable(value, index, problems) {
-  const table2 = asObject(value, `tables[${index}]`, problems);
-  if (!table2) {
-    return void 0;
-  }
-  const name = typeof table2.label === "string" ? table2.label : `${index + 1} \u3064\u76EE`;
-  const label = `\u30C6\u30FC\u30D6\u30EB\u300C${name}\u300D`;
-  problems.expect(table2.id, "\u6587\u5B57", `${label}\u306E id`);
-  problems.expect(table2.name, "\u6587\u5B57", `${label}\u306E name`);
-  problems.expect(table2.label, "\u6587\u5B57", `tables[${index}].label`);
-  for (const key of ["x", "y", "w"]) {
-    problems.expect(table2[key], "\u6570", `${label}\u306E ${key}`);
-  }
-  checkOptionalText(table2.desc, `${label}\u306E desc`, problems);
-  checkOptionalBoolean(table2.folded, `${label}\u306E folded`, problems);
-  if (table2.kind !== void 0) {
-    if (typeof table2.kind !== "string" || !ER_TABLE_KIND_LIST.includes(table2.kind)) {
-      problems.add(
-        `${label}\u306E\u7A2E\u985E ${String(table2.kind)} \u306F\u4F7F\u3048\u307E\u305B\u3093\u3002\u4F7F\u3048\u308B\u7A2E\u985E\u306F ${ER_TABLE_KIND_LIST.join("\u30FB")} \u3067\u3059`
-      );
-    }
-  }
-  if (table2.color !== void 0 && !isColorName(String(table2.color))) {
-    problems.add(
-      `${label}\u306E\u8272 ${String(table2.color)} \u306F\u8272\u306E\u540D\u524D\u3067\u306F\u3042\u308A\u307E\u305B\u3093\u3002\u4F7F\u3048\u308B\u8272\u306E\u540D\u524D\u306F ${COLOR_NAMES.join("\u30FB")} \u3067\u3059`
-    );
-  }
-  const columns = [];
-  const list2 = asArray(table2.columns, `${label}\u306E columns`, problems) ?? [];
-  list2.forEach((item, i) => {
-    const column = asObject(item, `${label}\u306E columns[${i}]`, problems);
-    if (!column) {
-      return;
-    }
-    if (problems.expect(column.name, "\u6587\u5B57", `${label}\u306E columns[${i}].name`)) {
-      columns.push(column.name);
-    }
-    problems.expect(column.type, "\u6587\u5B57", `${label}\u306E columns[${i}].type`);
-    for (const key of ["pk", "fk", "nn"]) {
-      checkOptionalBoolean(
-        column[key],
-        `${label}\u306E columns[${i}].${key}`,
-        problems
-      );
-    }
-    checkOptionalText(column.desc, `${label}\u306E columns[${i}].desc`, problems);
-  });
-  const seen = /* @__PURE__ */ new Set();
-  for (const column of columns) {
-    if (seen.has(column)) {
-      problems.add(
-        `${label}\u306E\u5217\u306E\u540D\u524D ${column} \u304C 2 \u3064\u4EE5\u4E0A\u3042\u308A\u307E\u3059\u3002\u5225\u306E\u540D\u524D\u306B\u3057\u3066\u304F\u3060\u3055\u3044`
-      );
-      break;
-    }
-    seen.add(column);
-  }
-  return typeof table2.id === "string" ? { id: table2.id, columns } : void 0;
-}
-function checkErCardinality(value, path, problems) {
-  if (typeof value !== "string" || !ER_CARDINALITY_LIST.includes(value)) {
-    problems.add(
-      value === void 0 ? `${path} \u304C\u3042\u308A\u307E\u305B\u3093\u3002${ER_CARDINALITY_LIST.join("\u30FB")} \u306E\u3069\u308C\u304B\u3067\u66F8\u3044\u3066\u304F\u3060\u3055\u3044` : `${path} \u306E ${String(value)} \u306F\u4F7F\u3048\u307E\u305B\u3093\u3002\u4F7F\u3048\u308B\u591A\u91CD\u5EA6\u306F ${ER_CARDINALITY_LIST.join("\u30FB")} \u3067\u3059`
-    );
-  }
-}
-function checkErEnd(relation, side, label, tables, problems) {
-  const tableId = relation[side];
-  const column = relation[side === "from" ? "fromColumn" : "toColumn"];
-  const where = side === "from" ? "\u5143" : "\u5148";
-  if (!problems.expect(tableId, "\u6587\u5B57", `${label}\u306E ${side}`)) {
-    return;
-  }
-  if (!problems.expect(
-    column,
-    "\u6587\u5B57",
-    `${label}\u306E ${side === "from" ? "fromColumn" : "toColumn"}`
-  )) {
-    return;
-  }
-  const columns = tables.get(tableId);
-  if (columns === void 0) {
-    problems.add(
-      `${label}\u306E${where}\u306E\u30C6\u30FC\u30D6\u30EB ${String(tableId)} \u304C\u3042\u308A\u307E\u305B\u3093\u3002\u30C6\u30FC\u30D6\u30EB\u306E id \u3067\u66F8\u3044\u3066\u304F\u3060\u3055\u3044`
-    );
-  } else if (!columns.includes(column)) {
-    problems.add(
-      `${label}\u306E${where}\u306E\u5217 ${String(tableId)}.${String(column)} \u304C\u30C6\u30FC\u30D6\u30EB ${String(tableId)} \u306B\u3042\u308A\u307E\u305B\u3093`
-    );
-  }
-}
-function checkEr(source, problems) {
-  checkHead(source, problems);
-  problems.expect(source.width, "\u6570", "width");
-  const tables = /* @__PURE__ */ new Map();
-  const ids = [];
-  const list2 = asArray(source.tables, "tables", problems) ?? [];
-  list2.forEach((value, index) => {
-    const table2 = checkErTable(value, index, problems);
-    if (table2) {
-      ids.push(table2.id);
-      tables.set(table2.id, table2.columns);
-    }
-  });
-  checkDuplicates(ids, "\u30C6\u30FC\u30D6\u30EB", problems);
-  const relations = asArray(source.relations, "relations", problems) ?? [];
-  relations.forEach((value, index) => {
-    const relation = asObject(value, `relations[${index}]`, problems);
-    if (!relation) {
-      return;
-    }
-    const label = typeof relation.label === "string" ? `\u95A2\u4FC2\u300C${relation.label}\u300D` : `${index + 1} \u3064\u76EE\u306E\u95A2\u4FC2`;
-    checkErEnd(relation, "from", label, tables, problems);
-    checkErEnd(relation, "to", label, tables, problems);
-    checkErCardinality(relation.fromCard, `${label}\u306E fromCard`, problems);
-    checkErCardinality(relation.toCard, `${label}\u306E toCard`, problems);
-    checkOptionalText(relation.label, `${label}\u306E label`, problems);
-    if (relation.midX !== void 0) {
-      problems.expect(relation.midX, "\u6570", `${label}\u306E midX`);
-    }
-  });
-}
 var CHECKERS = {
   flow: checkFlow,
   sequence: checkSequence,
   chart: checkChart,
-  param: checkParam,
-  er: checkEr
+  param: checkParam
 };
 function readDefinition(directive, blocks) {
   const [block2] = blocks;
@@ -63696,12 +63304,10 @@ var SYNTAX_MARKS = {
   sequence: "diagrams",
   chart: "diagrams",
   param: "diagrams",
-  er: "diagrams",
   html: "html",
-  code: "code",
-  gallery: "gallery"
+  code: "code"
 };
-var DIAGRAM_MARKS = ["flow", "sequence", "chart", "param", "er"];
+var DIAGRAM_MARKS = ["flow", "sequence", "chart", "param"];
 var MARK_TOKEN = "mdmark_mark";
 function parseMarkArgs(text2) {
   const value = { args: [], keys: {} };
@@ -63934,10 +63540,10 @@ function findClose(tokens, openIndex, name) {
   return -1;
 }
 function findNestedClose(tokens, openIndex) {
-  const open2 = tokens[openIndex];
+  const open3 = tokens[openIndex];
   for (let index = openIndex + 1; index < tokens.length; index++) {
     const token = tokens[index];
-    if (token?.nesting === -1 && token.level === open2?.level && token.type === open2?.type.replace("_open", "_close")) {
+    if (token?.nesting === -1 && token.level === open3?.level && token.type === open3?.type.replace("_open", "_close")) {
       return index;
     }
   }
@@ -63971,21 +63577,12 @@ function backlinksRule(state) {
 
 // src/parts/badge.ts
 function renderBadge(options) {
-  const color = options.color === void 0 ? "" : ` data-color="${options.color}"`;
-  return `<span class="mdmark-badge"${color}>${escapeHtml2(options.label)}</span>`;
+  return `<span class="mdmark-badge">${escapeHtml2(options.label)}</span>`;
 }
 
 // src/render/syntax/badges.ts
 var BADGE_PREFIX = "badge:";
 var ESCAPED_PREFIX = "badge\\:";
-function splitBadgeColor(text2) {
-  const at = text2.indexOf(":");
-  const head = text2.slice(0, at);
-  if (at < 0 || !isColorName(head)) {
-    return { label: text2 };
-  }
-  return { color: head, label: text2.slice(at + 1) };
-}
 function buildBadges(state) {
   if (!featureOn(state, "badge")) {
     return;
@@ -63996,10 +63593,12 @@ function buildBadges(state) {
       if (child.type !== "code_inline") {
         continue;
       }
-      const badge = child.content.startsWith(BADGE_PREFIX) ? splitBadgeColor(child.content.slice(BADGE_PREFIX.length)) : void 0;
-      if (badge !== void 0 && badge.label.trim() !== "") {
+      if (child.content.startsWith(BADGE_PREFIX) && child.content.slice(BADGE_PREFIX.length).trim() !== "") {
         child.type = "html_inline";
-        child.content = markOwn(renderBadge(badge), nonce);
+        child.content = markOwn(
+          renderBadge({ label: child.content.slice(BADGE_PREFIX.length) }),
+          nonce
+        );
       } else if (child.content.startsWith(ESCAPED_PREFIX)) {
         child.content = `${BADGE_PREFIX}${child.content.slice(ESCAPED_PREFIX.length)}`;
       }
@@ -64023,50 +63622,36 @@ var CALLOUT_TITLES = {
   caution: "\u6CE8\u610F"
 };
 function renderCallout(options) {
-  const { kind, collapsed = false, open: open2 = false, body } = options;
-  const title = options.title === void 0 ? CALLOUT_TITLES[kind] : `<span class="mdmark-visually-hidden">${CALLOUT_TITLES[kind]}: </span>${options.title}`;
+  const { kind, collapsed = false, open: open3 = false, body } = options;
+  const title = CALLOUT_TITLES[kind];
   const classes = `markdown-alert markdown-alert-${kind}`;
   if (collapsed) {
-    return `<details class="${classes}"${open2 ? " open" : ""}><summary class="markdown-alert-title">${title}</summary>${body}</details>`;
+    return `<details class="${classes}"${open3 ? " open" : ""}><summary class="markdown-alert-title">${title}</summary>${body}</details>`;
   }
   return `<div class="${classes}"><p class="markdown-alert-title">${title}</p>${body}</div>`;
 }
 
 // src/render/syntax/callouts.ts
-var CALLOUT_PATTERN = /^\[!([A-Za-z]+)\]([-+]?)(?:\s+|$)/;
-function readCallout(options) {
-  const { state, tokens, openIndex } = options;
+var CALLOUT_PATTERN = /^\[!([A-Za-z]+)\](-?)$/;
+function readCallout(tokens, openIndex) {
   const paragraph2 = tokens[openIndex + 1];
   const inline2 = tokens[openIndex + 2];
+  const first = inline2?.children?.[0];
   if (paragraph2?.type !== "paragraph_open" || inline2?.type !== "inline") {
     return void 0;
   }
-  const children = inline2.children ?? [];
-  const lineEnd = children.findIndex((child) => child.type === "softbreak");
-  const line = children.slice(0, lineEnd < 0 ? children.length : lineEnd);
-  const [first, ...others] = line;
+  const second = inline2.children?.[1];
   const match = first?.type === "text" ? CALLOUT_PATTERN.exec(first.content) : null;
-  if (!first || !match) {
+  if (!match || second && second.type !== "softbreak") {
     return void 0;
   }
   const name = (match[1] ?? "").toLowerCase();
   const kind = CALLOUT_KINDS.find((candidate) => candidate === name) ?? "note";
-  const sign = match[2] ?? "";
-  const rest = new state.Token("text", "", 0);
-  rest.content = first.content.slice(match[0].length);
-  const title = state.md.renderer.renderInline([rest, ...others], state.md.options, state.env).trim();
-  return {
-    kind,
-    collapsed: sign !== "",
-    open: sign === "+",
-    ...title ? { title } : {}
-  };
+  return { kind, collapsed: match[2] === "-" };
 }
 function removeTitleLine(tokens, openIndex) {
   const inline2 = tokens[openIndex + 2];
-  const children = inline2.children ?? [];
-  const lineEnd = children.findIndex((child) => child.type === "softbreak");
-  inline2.children = lineEnd < 0 ? [] : children.slice(lineEnd + 1);
+  inline2.children = (inline2.children ?? []).slice(2);
   inline2.content = inline2.content.replace(/^[^\n]*\n?/, "");
   if (inline2.children.length > 0) {
     return [];
@@ -64077,13 +63662,11 @@ function buildCallouts(state) {
   if (!featureOn(state, "callout")) {
     return;
   }
-  state.tokens = buildCalloutsIn(state, state.tokens);
-}
-function buildCalloutsIn(state, tokens) {
+  const tokens = state.tokens;
   const out = [];
   for (let index = 0; index < tokens.length; index++) {
     const token = tokens[index];
-    const callout = token?.type === "blockquote_open" ? readCallout({ state, tokens, openIndex: index }) : void 0;
+    const callout = token?.type === "blockquote_open" ? readCallout(tokens, index) : void 0;
     const closeIndex = callout ? findNestedClose(tokens, index) : -1;
     if (!token || !callout || closeIndex < 0) {
       if (token) {
@@ -64095,104 +63678,14 @@ function buildCalloutsIn(state, tokens) {
     const html = renderCallout({ ...callout, body: SLOT_MARKER });
     const [head = "", tail = ""] = html.split(SLOT_MARKER);
     out.push(ownBlock(state, head, token));
-    const body = tokens.slice(index + 1, closeIndex).filter((inner) => !emptied.includes(inner));
-    out.push(...buildCalloutsIn(state, body));
+    for (let position = index + 1; position < closeIndex; position++) {
+      const inner = tokens[position];
+      if (!emptied.includes(inner)) {
+        out.push(inner);
+      }
+    }
     out.push(ownBlock(state, tail));
     index = closeIndex;
-  }
-  return out;
-}
-
-// src/parts/card.ts
-function fileNameOf(href) {
-  const path = href.split(/[?#]/, 1)[0] ?? "";
-  return path.slice(path.lastIndexOf("/") + 1);
-}
-function renderCard(options) {
-  const { kind, href, title, fileKind } = options;
-  const name = fileNameOf(href);
-  const domain = kind === "link" ? new URL(href).host : name.slice(name.lastIndexOf(".") + 1).toUpperCase();
-  const url2 = kind === "link" ? href : name;
-  const fileAttribute = kind === "file" && fileKind !== void 0 ? ` data-file-kind="${fileKind}"` : "";
-  return `<a class="mdmark-card" data-card="${kind}"${fileAttribute} href="${escapeHtml2(href)}"><span class="mdmark-card-icon" aria-hidden="true"></span><span class="mdmark-card-title">${escapeHtml2(title)}</span><span class="mdmark-card-meta"><span class="mdmark-card-domain">${escapeHtml2(domain)}</span><span class="mdmark-card-url">${escapeHtml2(url2)}</span></span></a>`;
-}
-
-// src/render/syntax/cards.ts
-var ATTACHMENT_KINDS = {
-  pdf: "pdf",
-  doc: "doc",
-  docx: "doc",
-  odt: "doc",
-  rtf: "doc",
-  xls: "sheet",
-  xlsx: "sheet",
-  ods: "sheet",
-  csv: "sheet",
-  tsv: "sheet",
-  ppt: "slide",
-  pptx: "slide",
-  odp: "slide",
-  key: "slide",
-  zip: "archive",
-  gz: "archive",
-  tar: "archive",
-  "7z": "archive",
-  txt: "text"
-};
-var WEB_URL_PATTERN = /^https?:\/\//i;
-var AUTOLINK_MARKUPS = ["linkify", "autolink"];
-function extensionOf(href) {
-  const path = href.split(/[?#]/, 1)[0] ?? "";
-  const name = path.slice(path.lastIndexOf("/") + 1);
-  const dot = name.lastIndexOf(".");
-  return dot < 0 ? "" : name.slice(dot + 1).toLowerCase();
-}
-function cardOf(href, text2, autolinked) {
-  if (href.startsWith("#")) {
-    return void 0;
-  }
-  const fileKind = ATTACHMENT_KINDS[extensionOf(href)];
-  if (fileKind !== void 0) {
-    return { kind: "file", href, title: text2, fileKind };
-  }
-  if (!WEB_URL_PATTERN.test(href) || extensionOf(href) === "md") {
-    return void 0;
-  }
-  const title = autolinked ? text2.replace(WEB_URL_PATTERN, "") : text2;
-  return { kind: "link", href, title };
-}
-function soleLinkOf(inline2) {
-  const rest = (inline2?.children ?? []).filter(
-    (child) => !(child.type === "text" && child.content.trim() === "")
-  );
-  const open2 = rest[0];
-  const close = rest.at(-1);
-  if (open2?.type !== "link_open" || close?.type !== "link_close" || rest.length < 2) {
-    return void 0;
-  }
-  const inner = rest.slice(1, -1);
-  if (!inner.every((child) => child.type === "text")) {
-    return void 0;
-  }
-  return { open: open2, text: inner.map((child) => child.content).join("") };
-}
-function buildCards(state) {
-  if (!featureOn(state, "cards")) {
-    return;
-  }
-  const tokens = state.tokens;
-  const out = [];
-  for (let index = 0; index < tokens.length; index++) {
-    const token = tokens[index];
-    const link2 = token.type === "paragraph_open" ? soleLinkOf(tokens[index + 1]) : void 0;
-    const autolinked = AUTOLINK_MARKUPS.includes(link2?.open.markup ?? "");
-    const spec = link2 && (!autolinked || WEB_URL_PATTERN.test(link2.text)) ? cardOf(String(link2.open.attrGet("href") ?? ""), link2.text, autolinked) : void 0;
-    if (!spec) {
-      out.push(token);
-      continue;
-    }
-    out.push(ownBlock(state, renderCard(spec), token));
-    index += 2;
   }
   state.tokens = out;
 }
@@ -64212,14 +63705,7 @@ function unclosedWarning(mark) {
 }
 
 // src/render/syntax/code-blocks.ts
-var LINE_MARK_KINDS = {
-  "++": "add",
-  "--": "del",
-  highlight: "highlight",
-  focus: "focus",
-  error: "error",
-  warning: "warning"
-};
+var LINE_MARK_KINDS = { "++": "add", "--": "del", highlight: "highlight" };
 var LINE_MARK_PATTERN = /\[!code\s+([^\]]*?)\s*\](?:\s*(?:-->|\*\/))?\s*$/;
 var ESCAPED_MARK_PATTERN = /\[\\!code(?=\s)/g;
 var LINE_COMMENT_HEADS = [
@@ -64231,9 +63717,9 @@ var LINE_COMMENT_HEADS = [
   ";"
 ];
 var ANYWHERE_COMMENT_HEADS = ["<!--", "//", "/*"];
-var CODE_SPEC_LIST = "`title=`\u30FB`lines`\u30FB`highlight=`\u30FB`fold=`";
-var LINE_MARK_LIST = "`[!code ++]`\u30FB`[!code --]`\u30FB`[!code highlight]`\u30FB`[!code focus]`\u30FB`[!code error]`\u30FB`[!code warning]`";
-var CODE_KEYS = ["title", "highlight", "fold"];
+var CODE_SPEC_LIST = "`title=`\u30FB`lines`\u30FB`highlight=`";
+var LINE_MARK_LIST = "`[!code ++]`\u30FB`[!code --]`\u30FB`[!code highlight]`";
+var CODE_KEYS = ["title", "highlight"];
 var CODE_FLAGS = ["lines"];
 function readRange(part) {
   const single = /^(\d+)$/.exec(part);
@@ -64247,34 +63733,6 @@ function readRange(part) {
   }
   const [from, to] = [Number(range[1]), Number(range[2])];
   return from <= to ? [from, to] : void 0;
-}
-function readLineNumbers(options) {
-  const { key, value, lineCount, warnings } = options;
-  const numbers = /* @__PURE__ */ new Set();
-  if (value === void 0) {
-    return numbers;
-  }
-  for (const part of value.split(",")) {
-    const range = readRange(part);
-    if (range === void 0) {
-      warnings.push({
-        label: part || `${key}=`,
-        message: "\u8AAD\u3081\u306A\u3044\u884C\u306E\u6307\u5B9A\u3067\u3059\u3002`2`\u30FB`4-6` \u306E\u3088\u3046\u306B\u3001\u884C\u306E\u756A\u53F7\u3068\u7BC4\u56F2\u3092\u30B3\u30F3\u30DE\u3067\u4E26\u3079\u3066\u304F\u3060\u3055\u3044\u3002"
-      });
-      continue;
-    }
-    const [from, to] = range;
-    if (from < 1 || to > lineCount) {
-      warnings.push({
-        label: part,
-        message: `\u30B3\u30FC\u30C9\u30D6\u30ED\u30C3\u30AF\u306B\u7121\u3044\u884C\u306E\u756A\u53F7\u3067\u3059\u3002\u30B3\u30FC\u30C9\u30D6\u30ED\u30C3\u30AF\u306F ${lineCount} \u884C\u3067\u3059\u3002\u884C\u306E\u756A\u53F7\u3092 1\u301C${lineCount} \u3067\u66F8\u3044\u3066\u304F\u3060\u3055\u3044\u3002`
-      });
-    }
-    for (let line = Math.max(from, 1); line <= Math.min(to, lineCount); line++) {
-      numbers.add(line);
-    }
-  }
-  return numbers;
 }
 function readCodeSpec(options) {
   const { args, lineCount } = options;
@@ -64302,23 +63760,34 @@ function readCodeSpec(options) {
       message: "\u984C\u304C\u3042\u308A\u307E\u305B\u3093\u3002`title=app.ts` \u306E\u3088\u3046\u306B\u66F8\u3044\u3066\u304F\u3060\u3055\u3044\u3002"
     });
   }
-  const highlights = readLineNumbers({
-    key: "highlight",
-    value: args.keys.highlight,
-    lineCount,
-    warnings
-  });
-  const folds = readLineNumbers({
-    key: "fold",
-    value: args.keys.fold,
-    lineCount,
-    warnings
-  });
+  const highlights = /* @__PURE__ */ new Set();
+  const highlight = args.keys.highlight;
+  if (highlight !== void 0) {
+    for (const part of highlight.split(",")) {
+      const range = readRange(part);
+      if (range === void 0) {
+        warnings.push({
+          label: part || "highlight=",
+          message: "\u8AAD\u3081\u306A\u3044\u884C\u306E\u6307\u5B9A\u3067\u3059\u3002`2`\u30FB`4-6` \u306E\u3088\u3046\u306B\u3001\u884C\u306E\u756A\u53F7\u3068\u7BC4\u56F2\u3092\u30B3\u30F3\u30DE\u3067\u4E26\u3079\u3066\u304F\u3060\u3055\u3044\u3002"
+        });
+        continue;
+      }
+      const [from, to] = range;
+      if (from < 1 || to > lineCount) {
+        warnings.push({
+          label: part,
+          message: `\u30B3\u30FC\u30C9\u30D6\u30ED\u30C3\u30AF\u306B\u7121\u3044\u884C\u306E\u756A\u53F7\u3067\u3059\u3002\u30B3\u30FC\u30C9\u30D6\u30ED\u30C3\u30AF\u306F ${lineCount} \u884C\u3067\u3059\u3002\u884C\u306E\u756A\u53F7\u3092 1\u301C${lineCount} \u3067\u66F8\u3044\u3066\u304F\u3060\u3055\u3044\u3002`
+        });
+      }
+      for (let line = Math.max(from, 1); line <= Math.min(to, lineCount); line++) {
+        highlights.add(line);
+      }
+    }
+  }
   return {
     title,
     lineNumbers: args.args.includes("lines"),
     highlights,
-    folds,
     warnings
   };
 }
@@ -64337,33 +63806,6 @@ function dropCommentHead(text2) {
     }
   }
   return trimmed;
-}
-function readFolds(options) {
-  const { lines, folds } = options;
-  const indents = measureIndents(lines.map((line) => line.text));
-  const foldLines = foldLinesOf(indents);
-  const warnings = [];
-  for (const number4 of [...folds].sort((a, b) => a - b)) {
-    if (foldLines[number4 - 1] === void 0) {
-      warnings.push({
-        label: String(number4),
-        message: `${number4} \u884C\u76EE\u306F\u3001\u6B21\u306E\u884C\u304C\u3088\u308A\u6DF1\u3044\u30A4\u30F3\u30C7\u30F3\u30C8\u3067\u306A\u3044\u305F\u3081\u7573\u3081\u307E\u305B\u3093\u3002`
-      });
-    }
-  }
-  return {
-    lines: lines.map((line, index) => {
-      const indent = indents[index];
-      const count = foldLines[index];
-      return {
-        ...line,
-        ...indent ? { indent } : {},
-        ...count === void 0 ? {} : { foldLines: count },
-        ...count !== void 0 && folds.has(index + 1) ? { folded: true } : {}
-      };
-    }),
-    warnings
-  };
 }
 function readLineMarks(source) {
   const warnings = [];
@@ -64490,14 +63932,13 @@ function buildCodeBlocks(state) {
     const code2 = codeOn && spec?.name === "code" && !spec.closing ? spec : void 0;
     const { lines: read, warnings: lineWarnings } = codeOn ? readLineMarks(token.content) : { lines: plainLines(token.content), warnings: [] };
     const options = code2 ? readCodeSpec({ args: code2.args, lineCount: read.length }) : void 0;
-    const marked = read.map(
+    const lines = read.map(
       (line, position) => line.kind === void 0 && options?.highlights.has(position + 1) ? { ...line, kind: "highlight" } : line
     );
-    const { lines, warnings: foldWarnings } = codeOn ? readFolds({ lines: marked, folds: options?.folds ?? /* @__PURE__ */ new Set() }) : { lines: marked, warnings: [] };
     pushWarnings(out, state, {
       mark: code2?.raw,
       message: "\u306E\u8AAD\u3081\u306A\u3044\u6307\u5B9A\u3092\u5F53\u3066\u305A\u306B\u63CF\u3044\u3066\u3044\u307E\u3059\u3002",
-      items: [...options?.warnings ?? [], ...foldWarnings]
+      items: options?.warnings ?? []
     });
     for (const warning of lineWarnings) {
       out.push(warningBlock(state, { message: warning.message }));
@@ -65085,69 +64526,6 @@ function matchableChildren(inline2) {
   return positions;
 }
 
-// src/diagram/er.ts
-var ER_TABLE_KINDS = {
-  master: { label: "\u30DE\u30B9\u30BF\u30FC", color: "blue" },
-  transaction: { label: "\u30C8\u30E9\u30F3\u30B6\u30AF\u30B7\u30E7\u30F3", color: "orange" }
-};
-var ER_CARDINALITIES = {
-  "1": "1 \u3064",
-  "0..1": "0 \u304B 1 \u3064",
-  "1..n": "1 \u3064\u4EE5\u4E0A",
-  "0..n": "0 \u4EE5\u4E0A"
-};
-var ER_COLUMN_KEYS = {
-  pk: { text: "PK", title: "\u4E3B\u30AD\u30FC" },
-  fk: { text: "FK", title: "\u5916\u90E8\u30AD\u30FC" },
-  nn: { text: "NN", title: "NOT NULL" }
-};
-var ER_METRICS = {
-  /** 見出しの高さ */
-  head: 44,
-  /** 列の行の高さ */
-  row: 26,
-  /** 畳んだときの `非表示 {数} 列` の行の高さ */
-  rest: 24,
-  /** 枠と余白 */
-  frame: 4,
-  /** 図の下の余白 */
-  bottom: 32
-};
-function isKeyColumn(column) {
-  return column.pk === true || column.fk === true;
-}
-function visibleColumns(table2, folded) {
-  return folded ? table2.columns.filter(isKeyColumn) : table2.columns;
-}
-function erTableHeight(options) {
-  const { table: table2, folded } = options;
-  const rows = visibleColumns(table2, folded).length;
-  return ER_METRICS.head + rows * ER_METRICS.row + (folded ? ER_METRICS.rest : 0) + ER_METRICS.frame;
-}
-function columnY(table2, name, folded) {
-  const index = visibleColumns(table2, folded).findIndex((c) => c.name === name);
-  if (index < 0) {
-    return table2.y + ER_METRICS.head / 2;
-  }
-  return table2.y + ER_METRICS.head + ER_METRICS.row * (index + 0.5) + ER_METRICS.frame / 2;
-}
-function erRelationRoute(options) {
-  const { relation, from, to, folded } = options;
-  const stacked = from.x === to.x;
-  const dir = stacked || to.x > from.x ? 1 : -1;
-  const x1 = dir > 0 ? from.x + from.w : from.x;
-  const x2 = stacked || dir < 0 ? to.x + to.w : to.x;
-  const y1 = columnY(from, relation.fromColumn, folded(from.id));
-  const y2 = columnY(to, relation.toColumn, folded(to.id));
-  const mid = relation.midX ?? (x1 + x2) / 2;
-  return {
-    d: `M${x1},${y1} H${mid} V${y2} H${x2}`,
-    start: { x: x1, y: y1, dir },
-    end: { x: x2, y: y2, dir: stacked ? 1 : dir === 1 ? -1 : 1 },
-    label: { x: mid, y: (y1 + y2) / 2 }
-  };
-}
-
 // src/diagram/geometry.ts
 var JUMP_RADIUS = 6;
 var OVERLAP_OFFSET = 4;
@@ -65269,788 +64647,6 @@ function niceTicks(values) {
   const max = tidy(Math.ceil(highest / step) * step);
   return { min, max: max > min ? max : tidy(min + step), step: tidy(step) };
 }
-function stackSeries(series) {
-  const positive = [];
-  const negative = [];
-  return series.map(
-    (points) => points.map((value, index) => {
-      const totals = value >= 0 ? positive : negative;
-      const from = totals[index] ?? 0;
-      const to = tidy(from + value);
-      totals[index] = to;
-      return { from, to };
-    })
-  );
-}
-
-// src/parts/chart.ts
-var SERIES_STYLES = [
-  {
-    color: "--mdmark-color-series-1",
-    dash: "",
-    point: "circle",
-    fill: "solid"
-  },
-  {
-    color: "--mdmark-color-series-2",
-    dash: "7 4",
-    point: "square",
-    fill: "hatch"
-  },
-  {
-    color: "--mdmark-color-series-3",
-    dash: "1 4",
-    point: "triangle",
-    fill: "dot"
-  },
-  {
-    color: "--mdmark-color-series-4",
-    dash: "9 3 1 3",
-    point: "diamond",
-    fill: "grid"
-  },
-  {
-    color: "--mdmark-color-series-5",
-    dash: "9 3 1 3 1 3",
-    point: "triangle-down",
-    fill: "vertical"
-  },
-  {
-    color: "--mdmark-color-series-6",
-    dash: "3 2",
-    point: "cross",
-    fill: "horizontal"
-  }
-];
-var CHART = {
-  width: 640,
-  height: 320,
-  pad: { top: 36, right: 24, bottom: 56, left: 56 }
-};
-var Y2_PAD = 56;
-var HORIZONTAL_PAD = 112;
-var POINT_SIZE = 4.5;
-var SCATTER_POINT_SIZE = 5.5;
-var CROSS_ARM = 0.45;
-var PIE = { radius: 118, labelGap: 16, hole: 0.58 };
-var DONUT_TEXT = { total: 2, caption: 22 };
-var BAR = { maxWidth: 28, share: 0.72 };
-var TOTAL_GAP = 6;
-var RADAR = { radius: 104, labelGap: 14 };
-var BUBBLE_MAX_RADIUS = 24;
-var CENTER_COS = 0.2;
-function num(value) {
-  return String(Number(value.toFixed(2)));
-}
-function pointShapeOf(series) {
-  return SERIES_STYLES[(series - 1) % SERIES_STYLES.length]?.point ?? "circle";
-}
-function polygonPoint(points) {
-  return `<path class="mdmark-diagram-point" d="M${points.map(([x, y]) => `${num(x)},${num(y)}`).join(" L")} z"></path>`;
-}
-function pointSvg(series, x, y, size = POINT_SIZE) {
-  const s = size;
-  const shape = pointShapeOf(series);
-  switch (shape) {
-    case "circle":
-      return `<circle class="mdmark-diagram-point" cx="${num(x)}" cy="${num(y)}" r="${s}"></circle>`;
-    case "square":
-      return `<rect class="mdmark-diagram-point" x="${num(x - s)}" y="${num(y - s)}" width="${s * 2}" height="${s * 2}"></rect>`;
-    case "triangle":
-      return polygonPoint([
-        [x, y - s - 1],
-        [x + s + 1, y + s],
-        [x - s - 1, y + s]
-      ]);
-    case "diamond":
-      return polygonPoint([
-        [x, y - s - 1],
-        [x + s + 1, y],
-        [x, y + s + 1],
-        [x - s - 1, y]
-      ]);
-    case "triangle-down":
-      return polygonPoint([
-        [x, y + s + 1],
-        [x + s + 1, y - s],
-        [x - s - 1, y - s]
-      ]);
-    case "cross": {
-      const w = s * CROSS_ARM;
-      return polygonPoint([
-        [x - w, y - s],
-        [x + w, y - s],
-        [x + w, y - w],
-        [x + s, y - w],
-        [x + s, y + w],
-        [x + w, y + w],
-        [x + w, y + s],
-        [x - w, y + s],
-        [x - w, y + w],
-        [x - s, y + w],
-        [x - s, y - w],
-        [x - w, y - w]
-      ]);
-    }
-  }
-}
-var FILL_BODIES = {
-  solid: '<rect class="mdmark-diagram-pattern-solid" width="8" height="8"></rect>',
-  hatch: '<path class="mdmark-diagram-pattern-ink" d="M-2,2 L2,-2 M0,8 L8,0 M6,10 L10,6"></path>',
-  dot: '<circle class="mdmark-diagram-pattern-dot" cx="4" cy="4" r="1.8"></circle>',
-  grid: '<path class="mdmark-diagram-pattern-ink-thin" d="M0,0 L8,8 M8,0 L0,8"></path>',
-  vertical: '<path class="mdmark-diagram-pattern-ink" d="M4,0 V8"></path>',
-  horizontal: '<path class="mdmark-diagram-pattern-ink" d="M0,4 H8"></path>'
-};
-function fillPatterns(id) {
-  const tint = '<rect class="mdmark-diagram-pattern-tint" width="8" height="8"></rect>';
-  return SERIES_STYLES.map((style, index) => {
-    const body = style.fill === "solid" ? FILL_BODIES.solid : `${tint}${FILL_BODIES[style.fill]}`;
-    return `<pattern id="${id}-fill-${index + 1}" data-series="${index + 1}" patternunits="userSpaceOnUse" width="8" height="8">${body}</pattern>`;
-  }).join("");
-}
-function axisOf(axis, values) {
-  if (axis?.min !== void 0 && axis.max !== void 0 && axis.step !== void 0) {
-    return { min: axis.min, max: axis.max, step: axis.step };
-  }
-  return niceTicks(values);
-}
-function ticksOf(axis) {
-  const values = [];
-  const rows = Math.round((axis.max - axis.min) / axis.step);
-  for (let index = 0; index <= rows; index++) {
-    values.push(Number((axis.min + index * axis.step).toPrecision(12)));
-  }
-  return values;
-}
-function yScale(axis, box) {
-  return (value) => box.bottom - (value - axis.min) * (box.bottom - box.top) / (axis.max - axis.min);
-}
-function yAxisSvg(options) {
-  const { axis, label, yAt, box, side = "left" } = options;
-  const right = side === "right";
-  const x = right ? box.right + 8 : box.left - 8;
-  const svg = [];
-  for (const value of ticksOf(axis)) {
-    if (!right) {
-      svg.push(
-        `<line class="mdmark-diagram-grid" x1="${box.left}" y1="${num(yAt(value))}" x2="${box.right}" y2="${num(yAt(value))}"></line>`
-      );
-    }
-    svg.push(
-      `<text class="mdmark-diagram-axis-text" x="${x}" y="${num(yAt(value) + 4)}" text-anchor="${right ? "start" : "end"}">${num(value)}</text>`
-    );
-  }
-  svg.push(
-    `<text class="mdmark-diagram-axis-text" x="${x}" y="${box.top - 18}" text-anchor="${right ? "end" : "start"}">${escapeHtml2(label)}</text>`
-  );
-  return svg;
-}
-function axisLinesSvg(label, box, right = false) {
-  return [
-    `<line class="mdmark-diagram-axis" x1="${box.left}" y1="${box.bottom}" x2="${box.right}" y2="${box.bottom}"></line>`,
-    `<line class="mdmark-diagram-axis" x1="${box.left}" y1="${box.top - 8}" x2="${box.left}" y2="${box.bottom}"></line>`,
-    ...right ? [
-      `<line class="mdmark-diagram-axis" x1="${box.right}" y1="${box.top - 8}" x2="${box.right}" y2="${box.bottom}"></line>`
-    ] : [],
-    `<text class="mdmark-diagram-axis-text" x="${num((box.left + box.right) / 2)}" y="${box.bottom + 44}" text-anchor="middle">${escapeHtml2(label)}</text>`
-  ];
-}
-function xTicksSvg(ticks, xAt, box) {
-  return ticks.map(
-    (tick, index) => `<text class="mdmark-diagram-axis-text" x="${num(xAt(index))}" y="${box.bottom + 20}" text-anchor="middle">${escapeHtml2(tick)}</text>`
-  );
-}
-function pathOf(points, close = false) {
-  return `M${points.map(([x, y]) => `${num(x)},${num(y)}`).join(" L")}${close ? " Z" : ""}`;
-}
-function seriesLineSvg(n, points, close = false) {
-  return [
-    `<path class="mdmark-diagram-series" data-series="${n}" d="${pathOf(points, close)}"></path>`,
-    `<g data-series="${n}">${points.map(([x, y]) => pointSvg(n, x, y)).join("")}</g>`
-  ];
-}
-function seriesAreaSvg(options) {
-  const { n, id, className, points } = options;
-  return `<g data-series="${n}"><path class="${className}" d="${pathOf(points, true)}" fill="url(#${id}-fill-${n})"></path></g>`;
-}
-function barRect(options) {
-  const { n, id, x, y, width, height } = options;
-  return `<rect class="mdmark-diagram-bar" x="${num(x)}" y="${num(y)}" width="${num(width)}" height="${num(height)}" fill="url(#${id}-fill-${n})"></rect>`;
-}
-function tickedLabel(input) {
-  return input.series.map(
-    (entry) => `${entry.name}: ${entry.points.map((value, position) => `${input.ticks[position]} ${value}`).join("\u30FB")}`
-  ).join("\u3002");
-}
-function edgeScale(ticks, box) {
-  return (index) => box.left + index * (box.right - box.left) / Math.max(1, ticks.length - 1);
-}
-function bandScale(count, box) {
-  const band = (box.right - box.left) / Math.max(1, count);
-  return { band, xAt: (index) => box.left + band * (index + 0.5) };
-}
-function lineChart(input, box, options) {
-  const { ticks, series, yAxis, xLabel } = input;
-  const axis = axisOf(
-    yAxis,
-    series.flatMap((entry) => entry.points)
-  );
-  const xAt = edgeScale(ticks, box);
-  const yAt = yScale(axis, box);
-  const base = yAt(Math.min(Math.max(0, axis.min), axis.max));
-  const svg = [
-    ...options.area ? [`<defs>${fillPatterns(options.id)}</defs>`] : [],
-    ...yAxisSvg({ axis, label: yAxis?.label ?? "", yAt, box }),
-    ...xTicksSvg(ticks, xAt, box),
-    ...axisLinesSvg(xLabel, box)
-  ];
-  const lines = [];
-  series.forEach((entry, index) => {
-    const n = index + 1;
-    const points = entry.points.map((value, position) => [
-      xAt(position),
-      yAt(value)
-    ]);
-    if (options.area) {
-      const bottom = points.map(([x]) => [x, base]).reverse();
-      svg.push(
-        seriesAreaSvg({
-          n,
-          id: options.id,
-          className: "mdmark-diagram-area",
-          points: [...points, ...bottom]
-        })
-      );
-    }
-    lines.push(...seriesLineSvg(n, points));
-  });
-  svg.push(...lines);
-  return {
-    svg,
-    label: series.map((entry) => `${entry.name}: ${entry.points.join("\u30FB")}`).join("\u3002")
-  };
-}
-function stackedAreaChart(input, box, id) {
-  const { ticks, series, yAxis, xLabel } = input;
-  const stacked = stackSeries(series.map((entry) => entry.points));
-  const axis = axisOf(
-    yAxis,
-    stacked.flat().flatMap((range) => [range.from, range.to])
-  );
-  const xAt = edgeScale(ticks, box);
-  const yAt = yScale(axis, box);
-  const svg = [
-    `<defs>${fillPatterns(id)}</defs>`,
-    ...yAxisSvg({ axis, label: yAxis?.label ?? "", yAt, box }),
-    ...xTicksSvg(ticks, xAt, box)
-  ];
-  stacked.forEach((ranges, index) => {
-    const top = ranges.map((range, position) => [
-      xAt(position),
-      yAt(range.to)
-    ]);
-    const bottom = ranges.map((range, position) => [
-      xAt(position),
-      yAt(range.from)
-    ]).reverse();
-    svg.push(
-      seriesAreaSvg({
-        n: index + 1,
-        id,
-        className: "mdmark-diagram-stacked-area",
-        points: [...top, ...bottom]
-      })
-    );
-  });
-  svg.push(...axisLinesSvg(xLabel, box));
-  return { svg, label: tickedLabel(input) };
-}
-function barChart(input, box, id) {
-  const { ticks, series, yAxis, xLabel } = input;
-  const axis = axisOf(
-    yAxis,
-    series.flatMap((entry) => entry.points)
-  );
-  const { band, xAt } = bandScale(ticks.length, box);
-  const yAt = yScale(axis, box);
-  const barWidth = Math.min(BAR.maxWidth, band * BAR.share / series.length);
-  const svg = [
-    `<defs>${fillPatterns(id)}</defs>`,
-    ...yAxisSvg({ axis, label: yAxis?.label ?? "", yAt, box }),
-    ...xTicksSvg(ticks, xAt, box)
-  ];
-  series.forEach((entry, index) => {
-    const n = index + 1;
-    const bars = entry.points.map(
-      (value, position) => barRect({
-        n,
-        id,
-        x: xAt(position) - barWidth * series.length / 2 + barWidth * index + 1,
-        y: Math.min(yAt(value), yAt(0)),
-        width: barWidth - 2,
-        height: Math.abs(yAt(value) - yAt(0))
-      })
-    );
-    svg.push(`<g data-series="${n}">${bars.join("")}</g>`);
-  });
-  svg.push(...axisLinesSvg(xLabel, box));
-  return { svg, label: tickedLabel(input) };
-}
-function stackedBarChart(input, box, id) {
-  const { ticks, series, yAxis, xLabel } = input;
-  const stacked = stackSeries(series.map((entry) => entry.points));
-  const axis = axisOf(
-    yAxis,
-    stacked.flat().flatMap((range) => [range.from, range.to])
-  );
-  const { band, xAt } = bandScale(ticks.length, box);
-  const yAt = yScale(axis, box);
-  const barWidth = Math.min(BAR.maxWidth * 2, band * BAR.share);
-  const svg = [
-    `<defs>${fillPatterns(id)}</defs>`,
-    ...yAxisSvg({ axis, label: yAxis?.label ?? "", yAt, box }),
-    ...xTicksSvg(ticks, xAt, box)
-  ];
-  stacked.forEach((ranges, index) => {
-    const n = index + 1;
-    const bars = ranges.map(
-      (range, position) => barRect({
-        n,
-        id,
-        x: xAt(position) - barWidth / 2,
-        y: Math.min(yAt(range.from), yAt(range.to)),
-        width: barWidth,
-        height: Math.abs(yAt(range.to) - yAt(range.from))
-      })
-    );
-    svg.push(`<g data-series="${n}">${bars.join("")}</g>`);
-  });
-  ticks.forEach((_, position) => {
-    const values = series.map((entry) => entry.points[position] ?? 0);
-    const total = values.reduce((sum, value) => sum + value, 0);
-    const top = values.filter((value) => value > 0).reduce((sum, value) => sum + value, 0);
-    svg.push(
-      `<text class="mdmark-diagram-value-text" x="${num(xAt(position))}" y="${num(yAt(top) - TOTAL_GAP)}" text-anchor="middle">${num(total)}</text>`
-    );
-  });
-  svg.push(...axisLinesSvg(xLabel, box));
-  return { svg, label: tickedLabel(input) };
-}
-function horizontalBarChart(input, box, id) {
-  const { ticks, series, yAxis, xLabel } = input;
-  const area = { ...box, left: HORIZONTAL_PAD };
-  const axis = axisOf(
-    yAxis,
-    series.flatMap((entry) => entry.points)
-  );
-  const xAt = (value) => area.left + (value - axis.min) * (area.right - area.left) / (axis.max - axis.min);
-  const band = (area.bottom - area.top) / Math.max(1, ticks.length);
-  const yAt = (index) => area.top + band * (index + 0.5);
-  const barHeight = Math.min(BAR.maxWidth, band * BAR.share / series.length);
-  const zero = xAt(Math.min(Math.max(0, axis.min), axis.max));
-  const svg = [
-    `<defs>${fillPatterns(id)}</defs>`,
-    ...xNumberAxisSvg(axis, xAt, area),
-    ...ticks.map(
-      (tick, index) => `<text class="mdmark-diagram-axis-text" x="${area.left - 8}" y="${num(yAt(index) + 4)}" text-anchor="end">${escapeHtml2(tick)}</text>`
-    ),
-    `<text class="mdmark-diagram-axis-text" x="${area.left - 8}" y="${area.top - 18}" text-anchor="end">${escapeHtml2(xLabel)}</text>`
-  ];
-  series.forEach((entry, index) => {
-    const n = index + 1;
-    const bars = entry.points.map(
-      (value, position) => barRect({
-        n,
-        id,
-        x: Math.min(xAt(value), zero),
-        y: yAt(position) - barHeight * series.length / 2 + barHeight * index + 1,
-        width: Math.abs(xAt(value) - zero),
-        height: barHeight - 2
-      })
-    );
-    svg.push(`<g data-series="${n}">${bars.join("")}</g>`);
-  });
-  svg.push(
-    `<line class="mdmark-diagram-axis" x1="${area.left}" y1="${area.bottom}" x2="${area.right}" y2="${area.bottom}"></line>`,
-    `<line class="mdmark-diagram-axis" x1="${num(zero)}" y1="${area.top - 8}" x2="${num(zero)}" y2="${area.bottom}"></line>`,
-    `<text class="mdmark-diagram-axis-text" x="${num((area.left + area.right) / 2)}" y="${area.bottom + 44}" text-anchor="middle">${escapeHtml2(yAxis?.label ?? "")}</text>`
-  );
-  return { svg, label: tickedLabel(input) };
-}
-function percentsOf(values) {
-  const total = values.reduce((sum, value) => sum + value, 0);
-  const exact = values.map((value) => value / total * 100);
-  const floors = exact.map(Math.floor);
-  let rest = 100 - floors.reduce((sum, value) => sum + value, 0);
-  const byRemainder = exact.map((value, index) => ({ index, remainder: value - Math.floor(value) })).sort((a, b) => b.remainder - a.remainder || a.index - b.index);
-  for (const { index } of byRemainder) {
-    if (rest <= 0) {
-      break;
-    }
-    floors[index] = (floors[index] ?? 0) + 1;
-    rest -= 1;
-  }
-  return floors;
-}
-function anchorOf(angle) {
-  const cos = Math.cos(angle);
-  if (Math.abs(cos) < CENTER_COS) {
-    return "middle";
-  }
-  return cos > 0 ? "start" : "end";
-}
-function slicePath(options) {
-  const { cx, cy, radius, inner, from, sweep } = options;
-  const at = (angle, distance) => `${num(cx + distance * Math.cos(angle))},${num(cy + distance * Math.sin(angle))}`;
-  const large = sweep > Math.PI ? 1 : 0;
-  const outer = `${at(from, radius)} A${radius},${radius} 0 ${large} 1 ${at(from + sweep, radius)}`;
-  if (inner <= 0) {
-    return `M${cx},${cy} L${outer} Z`;
-  }
-  return `M${outer} L${at(from + sweep, inner)} A${num(inner)},${num(inner)} 0 ${large} 0 ${at(from, inner)} Z`;
-}
-function pieChart(options) {
-  const { items, unit, id, donut } = options;
-  const cx = CHART.width / 2;
-  const cy = CHART.height / 2;
-  const { radius, labelGap } = PIE;
-  const total = items.reduce((sum, item) => sum + item.value, 0);
-  const percents = percentsOf(items.map((item) => item.value));
-  const svg = [`<defs>${fillPatterns(id)}</defs>`];
-  let angle = -Math.PI / 2;
-  items.forEach((item, index) => {
-    const n = index + 1;
-    const sweep = Math.min(
-      item.value / total * Math.PI * 2,
-      Math.PI * 2 - 1e-4
-    );
-    const d = slicePath({
-      cx,
-      cy,
-      radius,
-      inner: donut ? radius * PIE.hole : 0,
-      from: angle,
-      sweep
-    });
-    svg.push(
-      `<g data-series="${n}"><path class="mdmark-diagram-slice" d="${d}" fill="url(#${id}-fill-${n})"></path></g>`
-    );
-    const middle = angle + sweep / 2;
-    const lx = cx + (radius + labelGap) * Math.cos(middle);
-    const ly = cy + (radius + labelGap) * Math.sin(middle);
-    svg.push(
-      `<text class="mdmark-diagram-value-text" x="${num(lx)}" y="${num(ly + 5)}" text-anchor="${anchorOf(middle)}">${percents[index]}%</text>`
-    );
-    angle += sweep;
-  });
-  if (donut) {
-    svg.push(
-      `<text class="mdmark-diagram-total-text" x="${cx}" y="${cy + DONUT_TEXT.total}" text-anchor="middle">${num(total)}</text>`,
-      `<text class="mdmark-diagram-axis-text" x="${cx}" y="${cy + DONUT_TEXT.caption}" text-anchor="middle">${escapeHtml2(`\u5408\u8A08${unit}`)}</text>`
-    );
-  }
-  return {
-    svg,
-    label: items.map(
-      (item, index) => `${item.name}: ${item.value}${unit}\uFF08${percents[index]}%\uFF09`
-    ).join("\u3002")
-  };
-}
-function radarChart(input, id) {
-  const { ticks, series, yAxis } = input;
-  const axis = axisOf(
-    yAxis,
-    series.flatMap((entry) => entry.points)
-  );
-  const cx = CHART.width / 2;
-  const cy = CHART.height / 2;
-  const { radius, labelGap } = RADAR;
-  const angleOf = (index) => -Math.PI / 2 + index * Math.PI * 2 / Math.max(1, ticks.length);
-  const at = (index, distance) => [
-    cx + distance * Math.cos(angleOf(index)),
-    cy + distance * Math.sin(angleOf(index))
-  ];
-  const distanceOf = (value) => (Math.min(Math.max(value, axis.min), axis.max) - axis.min) * radius / (axis.max - axis.min);
-  const svg = [`<defs>${fillPatterns(id)}</defs>`];
-  for (const value of ticksOf(axis)) {
-    if (value === axis.min) {
-      continue;
-    }
-    const ring = ticks.map((_, index) => at(index, distanceOf(value)));
-    svg.push(
-      `<path class="mdmark-diagram-radar-grid" d="${pathOf(ring, true)}"></path>`,
-      `<text class="mdmark-diagram-axis-text" x="${num(cx + 4)}" y="${num(cy - distanceOf(value) - 3)}" text-anchor="start">${num(value)}</text>`
-    );
-  }
-  ticks.forEach((tick, index) => {
-    const [x, y] = at(index, radius);
-    const [lx, ly] = at(index, radius + labelGap);
-    svg.push(
-      `<line class="mdmark-diagram-axis" x1="${cx}" y1="${cy}" x2="${num(x)}" y2="${num(y)}"></line>`,
-      `<text class="mdmark-diagram-axis-text" x="${num(lx)}" y="${num(ly + 4)}" text-anchor="${anchorOf(angleOf(index))}">${escapeHtml2(tick)}</text>`
-    );
-  });
-  const lines = [];
-  series.forEach((entry, index) => {
-    const n = index + 1;
-    const points = entry.points.map(
-      (value, position) => at(position, distanceOf(value))
-    );
-    svg.push(
-      seriesAreaSvg({ n, id, className: "mdmark-diagram-area", points })
-    );
-    lines.push(...seriesLineSvg(n, points, true));
-  });
-  svg.push(...lines);
-  return { svg, label: tickedLabel(input) };
-}
-function xNumberAxisSvg(axis, xAt, box) {
-  return ticksOf(axis).flatMap((value) => [
-    `<line class="mdmark-diagram-grid" x1="${num(xAt(value))}" y1="${box.top}" x2="${num(xAt(value))}" y2="${box.bottom}"></line>`,
-    `<text class="mdmark-diagram-axis-text" x="${num(xAt(value))}" y="${box.bottom + 20}" text-anchor="middle">${num(value)}</text>`
-  ]);
-}
-function scatterChart(input, box) {
-  const { series, xLabel, yAxis, bubble } = input;
-  const xAxis = niceTicks(
-    series.flatMap((entry) => entry.points.map((p) => p[0] ?? 0))
-  );
-  const yRange = axisOf(
-    yAxis,
-    series.flatMap((entry) => entry.points.map((p) => p[1] ?? 0))
-  );
-  const xAt = (value) => box.left + (value - xAxis.min) * (box.right - box.left) / (xAxis.max - xAxis.min);
-  const yAt = yScale(yRange, box);
-  const largest = Math.max(
-    0,
-    ...series.flatMap((entry) => entry.points.map((p) => p[2] ?? 0))
-  );
-  const svg = [
-    ...bubble ? [`<defs>${fillPatterns(bubble.id)}</defs>`] : [],
-    ...yAxisSvg({ axis: yRange, label: yAxis?.label ?? "", yAt, box }),
-    ...xNumberAxisSvg(xAxis, xAt, box),
-    ...axisLinesSvg(xLabel, box)
-  ];
-  series.forEach((entry, index) => {
-    const n = index + 1;
-    const marks = entry.points.map(([x = 0, y = 0, size = 0]) => {
-      if (!bubble) {
-        return pointSvg(n, xAt(x), yAt(y), SCATTER_POINT_SIZE);
-      }
-      const r = largest > 0 ? BUBBLE_MAX_RADIUS * Math.sqrt(Math.max(0, size) / largest) : 0;
-      return `<circle class="mdmark-diagram-bubble" cx="${num(xAt(x))}" cy="${num(yAt(y))}" r="${num(r)}" fill="url(#${bubble.id}-fill-${n})"></circle>`;
-    });
-    svg.push(`<g data-series="${n}">${marks.join("")}</g>`);
-  });
-  return {
-    svg,
-    label: series.map(
-      (entry) => `${entry.name}: ${entry.points.map(
-        ([x, y, size]) => bubble ? `(${x}, ${y}, ${bubble.label} ${size})` : `(${x}, ${y})`
-      ).join("\u30FB")}`
-    ).join("\u3002")
-  };
-}
-function comboChart(definition, box, id) {
-  const ticks = definition.x?.ticks ?? [];
-  const series = definition.series ?? [];
-  const pointsOf = (entry) => entry.points;
-  const onY2 = (entry) => entry.axis === "y2" && definition.y2 !== void 0;
-  const area = definition.y2 ? { ...box, right: CHART.width - Y2_PAD } : box;
-  const left = axisOf(
-    definition.y,
-    series.filter((entry) => !onY2(entry)).flatMap(pointsOf)
-  );
-  const right = definition.y2 ? axisOf(definition.y2, series.filter(onY2).flatMap(pointsOf)) : void 0;
-  const leftAt = yScale(left, area);
-  const rightAt = right ? yScale(right, area) : leftAt;
-  const { band, xAt } = bandScale(ticks.length, area);
-  const bars = series.filter((entry) => entry.as === "bar");
-  const barWidth = Math.min(
-    BAR.maxWidth,
-    band * BAR.share / Math.max(1, bars.length)
-  );
-  const svg = [
-    `<defs>${fillPatterns(id)}</defs>`,
-    ...yAxisSvg({
-      axis: left,
-      label: definition.y?.label ?? "",
-      yAt: leftAt,
-      box: area
-    }),
-    ...right ? yAxisSvg({
-      axis: right,
-      label: definition.y2?.label ?? "",
-      yAt: rightAt,
-      box: area,
-      side: "right"
-    }) : [],
-    ...xTicksSvg(ticks, xAt, area)
-  ];
-  const lines = [];
-  series.forEach((entry, index) => {
-    const n = index + 1;
-    const yAt = onY2(entry) ? rightAt : leftAt;
-    if (entry.as !== "bar") {
-      lines.push(
-        ...seriesLineSvg(
-          n,
-          pointsOf(entry).map((value, position) => [
-            xAt(position),
-            yAt(value)
-          ])
-        )
-      );
-      return;
-    }
-    const order = bars.indexOf(entry);
-    const rects = pointsOf(entry).map(
-      (value, position) => barRect({
-        n,
-        id,
-        x: xAt(position) - barWidth * bars.length / 2 + barWidth * order + 1,
-        y: Math.min(yAt(value), yAt(0)),
-        width: barWidth - 2,
-        height: Math.abs(yAt(value) - yAt(0))
-      })
-    );
-    svg.push(`<g data-series="${n}">${rects.join("")}</g>`);
-  });
-  svg.push(
-    ...axisLinesSvg(definition.x?.label ?? "", area, right !== void 0),
-    ...lines
-  );
-  return {
-    svg,
-    label: tickedLabel({
-      ticks,
-      series: series.map((entry) => ({
-        name: entry.name,
-        points: pointsOf(entry)
-      })),
-      yAxis: definition.y,
-      xLabel: definition.x?.label ?? ""
-    })
-  };
-}
-function renderChart(definition, id) {
-  const { pad } = CHART;
-  const box = {
-    left: pad.left,
-    right: CHART.width - pad.right,
-    top: pad.top,
-    bottom: CHART.height - pad.bottom
-  };
-  const type = definition.type ?? "line";
-  const series = definition.series ?? [];
-  const xLabel = definition.x?.label ?? "";
-  const input = {
-    ticks: definition.x?.ticks ?? [],
-    series,
-    yAxis: definition.y,
-    xLabel
-  };
-  const scatterInput = {
-    series,
-    xLabel,
-    yAxis: definition.y
-  };
-  const items = definition.items ?? [];
-  const unit = definition.unit ?? "";
-  const bodies = {
-    line: () => lineChart(input, box, { id, area: false }),
-    area: () => lineChart(input, box, { id, area: true }),
-    "stacked-area": () => stackedAreaChart(input, box, id),
-    bar: () => barChart(input, box, id),
-    "stacked-bar": () => stackedBarChart(input, box, id),
-    "horizontal-bar": () => horizontalBarChart(input, box, id),
-    pie: () => pieChart({ items, unit, id, donut: false }),
-    donut: () => pieChart({ items, unit, id, donut: true }),
-    scatter: () => scatterChart(scatterInput, box),
-    bubble: () => scatterChart(
-      {
-        ...scatterInput,
-        bubble: { label: definition.size?.label ?? "", id }
-      },
-      box
-    ),
-    radar: () => radarChart(input, id),
-    combo: () => comboChart(definition, box, id)
-  };
-  const body = bodies[type]();
-  const label = `${definition.title}\u3002${body.label}`;
-  return {
-    html: `<svg class="mdmark-diagram-wires" width="${CHART.width}" height="${CHART.height}" role="img" aria-label="${escapeHtml2(label)}">${body.svg.join("")}</svg>`,
-    width: CHART.width,
-    height: CHART.height,
-    tips: "",
-    jumps: false,
-    terms: false
-  };
-}
-
-// src/parts/er.ts
-var END = {
-  /** 内側の縦線 */
-  bar: 6,
-  /** 外側の縦線 */
-  outerBar: 11,
-  /** 鳥の足の付け根 */
-  crow: 10,
-  /** 鳥の足の開き（縦の半分） */
-  crowSpread: 7,
-  /** 縦線の高さの半分 */
-  barHalf: 6,
-  /** 丸の半径 */
-  ring: 4
-};
-function erTableColor(table2) {
-  return table2.color ?? (table2.kind ? ER_TABLE_KINDS[table2.kind].color : void 0);
-}
-function erFoldIcon(folded) {
-  return iconSvg(folded ? "chevrons-up-down" : "chevrons-down-up");
-}
-function erRestText(hidden) {
-  return `\u975E\u8868\u793A ${hidden} \u5217`;
-}
-function plainDefinitionText(value) {
-  return value.replace(/\{\{(.+?)\}\}/g, "$1");
-}
-function renderErTable(options) {
-  const { table: table2, tipId, text: text2 } = options;
-  const folded = table2.folded === true;
-  const color = erTableColor(table2);
-  const label = escapeHtml2(plainDefinitionText(table2.label));
-  const others = table2.columns.filter((c) => !isKeyColumn(c)).length;
-  const fold = others > 0 ? `<button class="mdmark-diagram-er-fold" type="button" aria-expanded="${folded ? "false" : "true"}" aria-label="\u300C${label}\u300D\u306E\u4E3B\u30AD\u30FC\u3068\u5916\u90E8\u30AD\u30FC\u4EE5\u5916\u306E\u5217" data-er-fold="${escapeHtml2(table2.id)}">${erFoldIcon(folded)}</button>` : "";
-  const info = tipId === void 0 ? "" : `<button class="mdmark-diagram-info" type="button" aria-label="\u300C${label}\u300D\u306E\u8AAC\u660E" aria-describedby="${escapeHtml2(tipId)}" data-tip-owner="${escapeHtml2(`table:${table2.id}`)}">${iconSvg("info")}</button>`;
-  const kind = table2.kind ? `<span class="mdmark-diagram-er-kind">${ER_TABLE_KINDS[table2.kind].label}</span>` : "";
-  const rows = table2.columns.map((column) => {
-    const keys = ["pk", "fk", "nn"].filter((key) => column[key]).map(
-      (key) => `<abbr class="mdmark-diagram-er-key" data-key="${key}" title="${ER_COLUMN_KEYS[key].title}">${ER_COLUMN_KEYS[key].text}</abbr>`
-    ).join("");
-    const hidden = folded && !isKeyColumn(column) ? ' hidden="hidden"' : "";
-    return `<li class="mdmark-diagram-er-column" data-column="${escapeHtml2(column.name)}"${column.pk ? ' data-pk=""' : ""}${hidden}><span class="mdmark-diagram-er-keys">${keys}</span><span class="mdmark-diagram-er-name">${text2(column.name)}</span><span class="mdmark-diagram-er-type">${text2(column.type)}</span></li>`;
-  }).join("");
-  const rest = others > 0 ? `<li class="mdmark-diagram-er-rest"${folded ? "" : ' hidden="hidden"'}>${erRestText(others)}</li>` : "";
-  return `<div class="mdmark-diagram-er-table${info ? " has-tip" : ""}" data-node="${escapeHtml2(table2.id)}"${color ? ` data-color="${color}"` : ""} style="left:${table2.x}px;top:${table2.y}px;width:${table2.w}px"><div class="mdmark-diagram-er-head">${fold}<span class="mdmark-diagram-er-title">${iconSvg("table")}<span class="mdmark-diagram-er-physical">${text2(table2.name)}</span></span><span class="mdmark-diagram-er-sub"><span class="mdmark-diagram-er-logical">${text2(table2.label)}</span>${kind}</span><span class="mdmark-diagram-er-actions">${info}</span></div><ul class="mdmark-diagram-er-columns" aria-label="\u300C${label}\u300D\u306E\u5217">${rows}${rest}</ul></div>`;
-}
-function erEndSvg(options) {
-  const { x, y, dir, card } = options;
-  const at = (d) => x + dir * d;
-  const bar = (d) => `<line class="mdmark-diagram-er-end" x1="${at(d)}" y1="${y - END.barHalf}" x2="${at(d)}" y2="${y + END.barHalf}"></line>`;
-  const ring = (d) => `<circle class="mdmark-diagram-er-end" data-ring="" cx="${at(d)}" cy="${y}" r="${END.ring}"></circle>`;
-  const crow = `<path class="mdmark-diagram-er-end" d="M${at(END.crow)},${y} L${at(0)},${y - END.crowSpread} M${at(END.crow)},${y} L${at(0)},${y} M${at(END.crow)},${y} L${at(0)},${y + END.crowSpread}"></path>`;
-  const ringAt = END.outerBar + END.ring - 1;
-  const shapes = {
-    "1": [bar(END.bar), bar(END.outerBar)],
-    "0..1": [bar(END.bar), ring(ringAt)],
-    "1..n": [crow, bar(ringAt)],
-    "0..n": [crow, ring(ringAt + 1)]
-  };
-  return shapes[card].join("");
-}
 
 // src/parts/diagram.ts
 var LINE_STYLES = {
@@ -66065,24 +64661,8 @@ var KIND_STYLES = {
   dm: { tag: "\u610F\u601D\u6C7A\u5B9A\u30E2\u30C7\u30EB", legend: "\u610F\u601D\u6C7A\u5B9A\u30E2\u30C7\u30EB", icon: "split" },
   script: { tag: "\u30B9\u30AF\u30EA\u30D7\u30C8", legend: "\u30B9\u30AF\u30EA\u30D7\u30C8", icon: "code-xml" },
   mcp: { tag: "MCP", legend: "MCP", icon: "plug" },
-  data: {
-    tag: "\u30C7\u30FC\u30BF",
-    legend: "\u30C7\u30FC\u30BF\uFF08\u4E0B\u306E\u89D2\u304C\u4E38\u3044\u30CE\u30FC\u30C9\uFF09",
-    icon: "database"
-  },
-  external: { tag: "\u5916\u90E8", legend: "\u5916\u90E8\u306E\u30B7\u30B9\u30C6\u30E0", icon: "globe" },
-  start: { tag: "\u958B\u59CB", legend: "\u958B\u59CB", icon: "play" },
-  question: { tag: "\u8CEA\u554F", legend: "\u8CEA\u554F", icon: "circle-question-mark" },
-  action: { tag: "\u30A2\u30AF\u30B7\u30E7\u30F3", legend: "\u30A2\u30AF\u30B7\u30E7\u30F3", icon: "wrench" },
-  result: { tag: "\u7D50\u679C", legend: "\u7D50\u679C", icon: "flag" }
-};
-var CIRCLE_INSET = 0.1464;
-var KIND_SAMPLES = {
-  data: '<path d="M1,1 H17 V9 Q17,13 13,13 H5 Q1,13 1,9 Z"></path>',
-  start: '<circle cx="9" cy="7" r="6"></circle>',
-  question: '<polygon points="9,0.5 17.5,7 9,13.5 0.5,7"></polygon>',
-  action: '<rect x="1" y="1" width="16" height="12" rx="1"></rect>',
-  result: '<rect x="1" y="1" width="16" height="12" rx="6"></rect>'
+  data: { tag: "\u30C7\u30FC\u30BF", legend: "\u30C7\u30FC\u30BF\uFF08\u4E0B\u306E\u89D2\u304C\u4E38\u3044\u7BB1\uFF09", icon: "database" },
+  external: { tag: "\u5916\u90E8", legend: "\u5916\u90E8\u306E\u30B7\u30B9\u30C6\u30E0", icon: "globe" }
 };
 var OUTSIDE_FRAME = "\uFF08\u67A0\u306E\u5916\uFF09";
 var HEAD_SIZE = 9;
@@ -66096,8 +64676,17 @@ var SEQ = {
   firstY: 116,
   bandW: 200
 };
+var CHART = {
+  width: 640,
+  height: 320,
+  pad: { top: 36, right: 24, bottom: 56, left: 56 }
+};
+var POINT_SIZE = 4.5;
+var SCATTER_POINT_SIZE = 5.5;
+var PIE = { radius: 118, labelGap: 16 };
+var BAR = { maxWidth: 28, share: 0.72 };
 var VIEWPORT_KEYS = "+ - 0 ArrowLeft ArrowUp ArrowDown ArrowRight";
-function num2(value) {
+function num(value) {
   return String(Number(value.toFixed(2)));
 }
 function renderDiagramTip(tip) {
@@ -66106,15 +64695,6 @@ function renderDiagramTip(tip) {
   const hidden = tip.open ? "" : ' hidden="hidden"';
   if (tip.kind === "hint") {
     return `<span class="mdmark-diagram-tip mdmark-hint-tip" id="${escapeHtml2(tip.id)}" role="tooltip" data-tip-for="${owner}"${hidden}><span class="mdmark-term-tip-section">${hint}</span></span>`;
-  }
-  if (tip.kind === "table" && tip.table) {
-    const table2 = tip.table;
-    const desc = table2.desc === void 0 ? "" : `<span class="mdmark-term-tip-meaning">${escapeHtml2(table2.desc)}</span>`;
-    const rows = table2.columns.filter((column) => column.desc).map(
-      (column) => `<dt><code>${escapeHtml2(column.name)}</code></dt><dd>${escapeHtml2(column.desc ?? "")}</dd>`
-    ).join("");
-    const columns = rows ? `<dl class="mdmark-diagram-tip-io mdmark-diagram-er-tip-columns">${rows}</dl>` : "";
-    return `<div class="mdmark-diagram-tip" id="${escapeHtml2(tip.id)}" role="tooltip" data-tip-for="${owner}"${hidden}><span class="mdmark-term-tip-section"><span class="mdmark-term-tip-heading">${escapeHtml2(plainDefinitionText(table2.label))}\uFF08${escapeHtml2(plainDefinitionText(table2.name))}\uFF09</span>${desc}${columns}</span></div>`;
   }
   const body = tip.kind === "io" && tip.io ? `<dl class="mdmark-diagram-tip-io"><dt>\u5165\u529B</dt><dd>${escapeHtml2(tip.io.in)}</dd><dt>\u51E6\u7406</dt><dd>${escapeHtml2(tip.io.do)}</dd><dt>\u51FA\u529B</dt><dd>${escapeHtml2(tip.io.out)}</dd></dl>${hint}` : `<span class="mdmark-term-tip-meaning">${escapeHtml2(tip.tip ?? "")}</span>`;
   return `<div class="mdmark-diagram-tip" id="${escapeHtml2(tip.id)}" role="tooltip" data-tip-for="${owner}"${hidden}><span class="mdmark-term-tip-section"><span class="mdmark-term-tip-heading">${escapeHtml2(tip.label)}</span>${body}</span></div>`;
@@ -66151,8 +64731,8 @@ function renderText(text2, tips, lookup, found) {
   }).join("");
 }
 function boxStyle(box) {
-  const size = box.w === void 0 || box.h === void 0 ? "" : `;width:${num2(box.w)}px;height:${num2(box.h)}px`;
-  return ` style="left:${num2(box.x)}px;top:${num2(box.y)}px${size}${box.inset ?? ""}"`;
+  const size = box.w === void 0 || box.h === void 0 ? "" : `;width:${num(box.w)}px;height:${num(box.h)}px`;
+  return ` style="left:${num(box.x)}px;top:${num(box.y)}px${size}"`;
 }
 function markerDefs(id) {
   return Object.keys(LINE_STYLES).map((line) => {
@@ -66197,21 +64777,6 @@ function labelPosition(points) {
   }
   return best;
 }
-function nodeInset(kind, box) {
-  if (kind === "question") {
-    return `;padding:${num2(box.h / 4)}px ${num2(box.w / 4)}px`;
-  }
-  if (kind === "start") {
-    return `;padding:${Number((box.w * CIRCLE_INSET).toFixed(1))}px`;
-  }
-  return "";
-}
-function diamondSvg(box) {
-  const w = num2(box.w);
-  const h = num2(box.h);
-  const points = `${num2(box.w / 2)},0 ${w},${num2(box.h / 2)} ${num2(box.w / 2)},${h} 0,${num2(box.h / 2)}`;
-  return `<svg class="mdmark-diagram-node-shape" viewBox="0 0 ${w} ${h}" aria-hidden="true"><polygon points="${points}"></polygon></svg>`;
-}
 function renderNode2(options) {
   const { node: node2, box, tips, lookup, found, hints } = options;
   const kind = KIND_STYLES[node2.kind];
@@ -66232,7 +64797,7 @@ function renderNode2(options) {
     const what = node2.io ? "\u5165\u529B\u30FB\u51E6\u7406\u30FB\u51FA\u529B" : "\u8AAC\u660E";
     info = `<button class="mdmark-diagram-info" type="button" aria-label="\u300C${escapeHtml2(node2.name)}\u300D\u306E${what}" aria-describedby="${id}" data-tip-owner="${escapeHtml2(owner)}">${iconSvg("info")}</button>`;
   }
-  return `<div class="mdmark-diagram-node${hasTip ? " has-tip" : ""}" data-kind="${node2.kind}" data-node="${escapeHtml2(node2.id)}"${boxStyle({ ...box, inset: nodeInset(node2.kind, box) })}>${node2.kind === "question" ? diamondSvg(box) : ""}<span class="mdmark-diagram-node-kind">${iconSvg(kind.icon)}<span>${tag}</span></span><span class="mdmark-diagram-node-name">${name}</span>${sub}${info}</div>`;
+  return `<div class="mdmark-diagram-node${hasTip ? " has-tip" : ""}" data-kind="${node2.kind}" data-node="${escapeHtml2(node2.id)}"${boxStyle(box)}><span class="mdmark-diagram-node-kind">${iconSvg(kind.icon)}<span>${tag}</span></span><span class="mdmark-diagram-node-name">${name}</span>${sub}${info}</div>`;
 }
 function renderFlow(definition, id, hints, lookup) {
   const tips = createTips(id);
@@ -66262,7 +64827,7 @@ function renderFlow(definition, id, hints, lookup) {
     })
   ).join("");
   parts.push(
-    `<svg class="mdmark-diagram-wires" width="${num2(definition.width)}" height="${num2(definition.height)}" aria-hidden="true">${wires}</svg>`
+    `<svg class="mdmark-diagram-wires" width="${num(definition.width)}" height="${num(definition.height)}" aria-hidden="true">${wires}</svg>`
   );
   for (const node2 of definition.nodes) {
     parts.push(renderNode2({ node: node2, box: node2, tips, lookup, found, hints }));
@@ -66310,7 +64875,7 @@ function renderSequence(definition, id, lookup, hints = true) {
   if (definition.loop && first && last) {
     const backY = rowY(0) - 27;
     svg.push(
-      `<rect class="mdmark-diagram-loop-band" x="12" y="${num2(rowY(0) - 30)}" width="${num2(bandX)}" height="${num2(lastY - rowY(0) + 48)}" rx="8"></rect>`
+      `<rect class="mdmark-diagram-loop-band" x="12" y="${num(rowY(0) - 30)}" width="${num(bandX)}" height="${num(lastY - rowY(0) + 48)}" rx="8"></rect>`
     );
     const points = [
       [column.get(last.to) ?? 0, lastY + 14],
@@ -66341,7 +64906,7 @@ function renderSequence(definition, id, lookup, hints = true) {
   }
   for (const x of column.values()) {
     svg.push(
-      `<line class="mdmark-diagram-lifeline" x1="${num2(x)}" y1="${SEQ.headTop + SEQ.headH}" x2="${num2(x)}" y2="${num2(height - 12)}"></line>`
+      `<line class="mdmark-diagram-lifeline" x1="${num(x)}" y1="${SEQ.headTop + SEQ.headH}" x2="${num(x)}" y2="${num(height - 12)}"></line>`
     );
   }
   definition.steps.forEach((step, index) => {
@@ -66391,10 +64956,10 @@ function renderSequence(definition, id, lookup, hints = true) {
     })
   ).join("");
   const html = [
-    `<svg class="mdmark-diagram-wires" width="${num2(width)}" height="${num2(height)}" aria-hidden="true">${svg.join("")}</svg>`,
+    `<svg class="mdmark-diagram-wires" width="${num(width)}" height="${num(height)}" aria-hidden="true">${svg.join("")}</svg>`,
     ...labels,
     // 相手の名前の行: 別の層にし、縦に動かしても表示する枠の上端に留める
-    `<div class="mdmark-diagram-seq-heads" style="width:${num2(width)}px;height:${SEQ.headTop + SEQ.headH + 8}px">${heads}</div>`
+    `<div class="mdmark-diagram-seq-heads" style="width:${num(width)}px;height:${SEQ.headTop + SEQ.headH + 8}px">${heads}</div>`
   ].join("");
   return {
     html,
@@ -66405,156 +64970,278 @@ function renderSequence(definition, id, lookup, hints = true) {
     terms: found.terms
   };
 }
-function renderEr(definition, id, hints, lookup) {
-  const tips = createTips(id);
-  const found = { terms: false };
-  const text2 = (value) => renderText(value, tips, lookup, found);
-  const tables = new Map(definition.tables.map((table2) => [table2.id, table2]));
-  const folded = (tableId) => tables.get(tableId)?.folded === true;
-  const svg = [];
-  const labels = [];
-  definition.relations.forEach((relation, index) => {
-    const from = tables.get(relation.from);
-    const to = tables.get(relation.to);
-    if (!from || !to) {
-      return;
-    }
-    const route = erRelationRoute({ relation, from, to, folded });
-    const mid = relation.midX === void 0 ? "" : ` data-er-mid-x="${relation.midX}"`;
-    svg.push(
-      `<g data-er-relation="${index}" data-er-from="${escapeHtml2(relation.from)}" data-er-from-column="${escapeHtml2(relation.fromColumn)}" data-er-from-card="${relation.fromCard}" data-er-to="${escapeHtml2(relation.to)}" data-er-to-column="${escapeHtml2(relation.toColumn)}" data-er-to-card="${relation.toCard}"${mid}><path class="mdmark-diagram-wire" data-line="er" d="${route.d}"></path><g class="mdmark-diagram-er-ends">${erEndSvg({ ...route.start, card: relation.fromCard })}${erEndSvg({ ...route.end, card: relation.toCard })}</g></g>`
-    );
-    if (relation.label) {
-      labels.push(
-        `<span class="mdmark-diagram-label" data-line="er" data-er-relation="${index}" style="left:${route.label.x}px;top:${route.label.y}px">${text2(relation.label)}</span>`
-      );
-    }
-  });
-  const height = Math.max(
-    0,
-    ...definition.tables.map(
-      (table2) => table2.y + erTableHeight({ table: table2, folded: table2.folded === true })
-    )
-  ) + ER_METRICS.bottom;
-  const parts = [
-    `<svg class="mdmark-diagram-wires" width="${num2(definition.width)}" height="${num2(height)}" aria-hidden="true">${svg.join("")}</svg>`
-  ];
-  for (const table2 of definition.tables) {
-    const described = table2.desc !== void 0 || table2.columns.some((column) => column.desc);
-    const tipId = hints && described ? tips.add({
-      kind: "table",
-      label: plainDefinitionText(table2.label),
-      table: table2,
-      owner: `table:${table2.id}`
-    }) : void 0;
-    parts.push(renderErTable({ table: table2, tipId, text: text2 }));
+function pointSvg(series, x, y, size = POINT_SIZE) {
+  if (series === 1) {
+    return `<circle class="mdmark-diagram-point" cx="${num(x)}" cy="${num(y)}" r="${size}"></circle>`;
   }
-  parts.push(...labels);
+  if (series === 2) {
+    return `<rect class="mdmark-diagram-point" x="${num(x - size)}" y="${num(y - size)}" width="${size * 2}" height="${size * 2}"></rect>`;
+  }
+  if (series === 3) {
+    return `<path class="mdmark-diagram-point" d="M${num(x)},${num(y - size - 1)} L${num(x + size + 1)},${num(y + size)} L${num(x - size - 1)},${num(y + size)} z"></path>`;
+  }
+  return `<path class="mdmark-diagram-point" d="M${num(x)},${num(y - size - 1)} L${num(x + size + 1)},${num(y)} L${num(x)},${num(y + size + 1)} L${num(x - size - 1)},${num(y)} z"></path>`;
+}
+function fillPatterns(id) {
+  const base = '<rect class="mdmark-diagram-pattern-tint" width="8" height="8"></rect>';
+  const bodies = [
+    '<rect class="mdmark-diagram-pattern-solid" width="8" height="8"></rect>',
+    `${base}<path class="mdmark-diagram-pattern-ink" d="M-2,2 L2,-2 M0,8 L8,0 M6,10 L10,6"></path>`,
+    `${base}<circle class="mdmark-diagram-pattern-dot" cx="4" cy="4" r="1.8"></circle>`,
+    `${base}<path class="mdmark-diagram-pattern-ink-thin" d="M0,0 L8,8 M8,0 L0,8"></path>`
+  ];
+  return bodies.map(
+    (body, index) => `<pattern id="${id}-fill-${index + 1}" data-series="${index + 1}" patternunits="userSpaceOnUse" width="8" height="8">${body}</pattern>`
+  ).join("");
+}
+function axisOf(axis, values) {
+  if (axis?.min !== void 0 && axis.max !== void 0 && axis.step !== void 0) {
+    return { min: axis.min, max: axis.max, step: axis.step };
+  }
+  return niceTicks(values);
+}
+function ticksOf(axis) {
+  const values = [];
+  const rows = Math.round((axis.max - axis.min) / axis.step);
+  for (let index = 0; index <= rows; index++) {
+    values.push(Number((axis.min + index * axis.step).toPrecision(12)));
+  }
+  return values;
+}
+function yAxisSvg(options) {
+  const { axis, label, yAt, box } = options;
+  const svg = [];
+  for (const value of ticksOf(axis)) {
+    svg.push(
+      `<line class="mdmark-diagram-grid" x1="${box.left}" y1="${num(yAt(value))}" x2="${box.right}" y2="${num(yAt(value))}"></line>`,
+      `<text class="mdmark-diagram-axis-text" x="${box.left - 8}" y="${num(yAt(value) + 4)}" text-anchor="end">${num(value)}</text>`
+    );
+  }
+  svg.push(
+    `<text class="mdmark-diagram-axis-text" x="${box.left - 8}" y="${box.top - 18}" text-anchor="start">${escapeHtml2(label)}</text>`
+  );
+  return svg;
+}
+function axisLinesSvg(label, box) {
+  return [
+    `<line class="mdmark-diagram-axis" x1="${box.left}" y1="${box.bottom}" x2="${box.right}" y2="${box.bottom}"></line>`,
+    `<line class="mdmark-diagram-axis" x1="${box.left}" y1="${box.top - 8}" x2="${box.left}" y2="${box.bottom}"></line>`,
+    `<text class="mdmark-diagram-axis-text" x="${num((box.left + box.right) / 2)}" y="${box.bottom + 44}" text-anchor="middle">${escapeHtml2(label)}</text>`
+  ];
+}
+function xTicksSvg(ticks, xAt, box) {
+  return ticks.map(
+    (tick, index) => `<text class="mdmark-diagram-axis-text" x="${num(xAt(index))}" y="${box.bottom + 20}" text-anchor="middle">${escapeHtml2(tick)}</text>`
+  );
+}
+function lineChart(input, box) {
+  const { ticks, series, yAxis, xLabel } = input;
+  const axis = axisOf(
+    yAxis,
+    series.flatMap((entry) => entry.points)
+  );
+  const xAt = (index) => box.left + index * (box.right - box.left) / Math.max(1, ticks.length - 1);
+  const yAt = (value) => box.bottom - (value - axis.min) * (box.bottom - box.top) / (axis.max - axis.min);
+  const svg = [
+    ...yAxisSvg({ axis, label: yAxis?.label ?? "", yAt, box }),
+    ...xTicksSvg(ticks, xAt, box),
+    ...axisLinesSvg(xLabel, box)
+  ];
+  series.forEach((entry, index) => {
+    const n = index + 1;
+    const points = entry.points.map((value, position) => [
+      xAt(position),
+      yAt(value)
+    ]);
+    const path = points.map(([x, y]) => `${num(x)},${num(y)}`).join(" L");
+    svg.push(
+      `<path class="mdmark-diagram-series" data-series="${n}" d="M${path}"></path>`,
+      `<g data-series="${n}">${points.map(([x, y]) => pointSvg(n, x, y)).join("")}</g>`
+    );
+  });
   return {
-    html: parts.join(""),
-    width: definition.width,
-    height,
-    tips: tips.html(),
-    jumps: false,
-    terms: found.terms
+    svg,
+    label: series.map((entry) => `${entry.name}: ${entry.points.join("\u30FB")}`).join("\u3002")
   };
 }
-function isErDefinition(definition) {
-  return "tables" in definition;
+function barChart(input, box, id) {
+  const { ticks, series, yAxis, xLabel } = input;
+  const axis = axisOf(
+    yAxis,
+    series.flatMap((entry) => entry.points)
+  );
+  const band = (box.right - box.left) / ticks.length;
+  const xAt = (index) => box.left + band * (index + 0.5);
+  const yAt = (value) => box.bottom - (value - axis.min) * (box.bottom - box.top) / (axis.max - axis.min);
+  const barWidth = Math.min(BAR.maxWidth, band * BAR.share / series.length);
+  const svg = [
+    `<defs>${fillPatterns(id)}</defs>`,
+    ...yAxisSvg({ axis, label: yAxis?.label ?? "", yAt, box }),
+    ...xTicksSvg(ticks, xAt, box)
+  ];
+  series.forEach((entry, index) => {
+    const n = index + 1;
+    const bars = entry.points.map((value, position) => {
+      const x = xAt(position) - barWidth * series.length / 2 + barWidth * index;
+      const top = Math.min(yAt(value), yAt(0));
+      return `<rect class="mdmark-diagram-bar" x="${num(x + 1)}" y="${num(top)}" width="${num(barWidth - 2)}" height="${num(Math.abs(yAt(value) - yAt(0)))}" fill="url(#${id}-fill-${n})"></rect>`;
+    });
+    svg.push(`<g data-series="${n}">${bars.join("")}</g>`);
+  });
+  svg.push(...axisLinesSvg(xLabel, box));
+  return {
+    svg,
+    label: series.map(
+      (entry) => `${entry.name}: ${entry.points.map((value, position) => `${ticks[position]} ${value}`).join("\u30FB")}`
+    ).join("\u3002")
+  };
+}
+function percentsOf(values) {
+  const total = values.reduce((sum, value) => sum + value, 0);
+  const exact = values.map((value) => value / total * 100);
+  const floors = exact.map(Math.floor);
+  let rest = 100 - floors.reduce((sum, value) => sum + value, 0);
+  const byRemainder = exact.map((value, index) => ({ index, remainder: value - Math.floor(value) })).sort((a, b) => b.remainder - a.remainder || a.index - b.index);
+  for (const { index } of byRemainder) {
+    if (rest <= 0) {
+      break;
+    }
+    floors[index] = (floors[index] ?? 0) + 1;
+    rest -= 1;
+  }
+  return floors;
+}
+function pieChart(items, unit, id) {
+  const cx = CHART.width / 2;
+  const cy = CHART.height / 2;
+  const { radius, labelGap } = PIE;
+  const total = items.reduce((sum, item) => sum + item.value, 0);
+  const percents = percentsOf(items.map((item) => item.value));
+  const svg = [`<defs>${fillPatterns(id)}</defs>`];
+  const at = (angle2, distance) => [
+    cx + distance * Math.cos(angle2),
+    cy + distance * Math.sin(angle2)
+  ];
+  let angle = -Math.PI / 2;
+  items.forEach((item, index) => {
+    const n = index + 1;
+    const sweep = Math.min(
+      item.value / total * Math.PI * 2,
+      Math.PI * 2 - 1e-4
+    );
+    const [x1, y1] = at(angle, radius);
+    const [x2, y2] = at(angle + sweep, radius);
+    svg.push(
+      `<g data-series="${n}"><path class="mdmark-diagram-slice" d="M${cx},${cy} L${num(x1)},${num(y1)} A${radius},${radius} 0 ${sweep > Math.PI ? 1 : 0} 1 ${num(x2)},${num(y2)} Z" fill="url(#${id}-fill-${n})"></path></g>`
+    );
+    const middle = angle + sweep / 2;
+    const [lx, ly] = at(middle, radius + labelGap);
+    const anchor2 = Math.abs(Math.cos(middle)) < 0.2 ? "middle" : Math.cos(middle) > 0 ? "start" : "end";
+    svg.push(
+      `<text class="mdmark-diagram-value-text" x="${num(lx)}" y="${num(ly + 5)}" text-anchor="${anchor2}">${percents[index]}%</text>`
+    );
+    angle += sweep;
+  });
+  return {
+    svg,
+    label: items.map(
+      (item, index) => `${item.name}: ${item.value}${unit}\uFF08${percents[index]}%\uFF09`
+    ).join("\u3002")
+  };
+}
+function scatterChart(input, box) {
+  const { series, xLabel, yAxis } = input;
+  const xAxis = niceTicks(
+    series.flatMap((entry) => entry.points.map((p) => p[0]))
+  );
+  const yScale = axisOf(
+    yAxis,
+    series.flatMap((entry) => entry.points.map((p) => p[1]))
+  );
+  const xAt = (value) => box.left + (value - xAxis.min) * (box.right - box.left) / (xAxis.max - xAxis.min);
+  const yAt = (value) => box.bottom - (value - yScale.min) * (box.bottom - box.top) / (yScale.max - yScale.min);
+  const svg = yAxisSvg({ axis: yScale, label: yAxis?.label ?? "", yAt, box });
+  for (const value of ticksOf(xAxis)) {
+    svg.push(
+      `<line class="mdmark-diagram-grid" x1="${num(xAt(value))}" y1="${box.top}" x2="${num(xAt(value))}" y2="${box.bottom}"></line>`,
+      `<text class="mdmark-diagram-axis-text" x="${num(xAt(value))}" y="${box.bottom + 20}" text-anchor="middle">${num(value)}</text>`
+    );
+  }
+  svg.push(...axisLinesSvg(xLabel, box));
+  series.forEach((entry, index) => {
+    const n = index + 1;
+    svg.push(
+      `<g data-series="${n}">${entry.points.map(([x, y]) => pointSvg(n, xAt(x), yAt(y), SCATTER_POINT_SIZE)).join("")}</g>`
+    );
+  });
+  return {
+    svg,
+    label: series.map(
+      (entry) => `${entry.name}: ${entry.points.map(([x, y]) => `(${x}, ${y})`).join("\u30FB")}`
+    ).join("\u3002")
+  };
+}
+function renderChart(definition, id) {
+  const { pad } = CHART;
+  const box = {
+    left: pad.left,
+    right: CHART.width - pad.right,
+    top: pad.top,
+    bottom: CHART.height - pad.bottom
+  };
+  const type = definition.type ?? "line";
+  const series = definition.series ?? [];
+  const xLabel = definition.x?.label ?? "";
+  let body;
+  if (type === "pie") {
+    body = pieChart(definition.items ?? [], definition.unit ?? "", id);
+  } else if (type === "scatter") {
+    body = scatterChart(
+      {
+        series,
+        xLabel,
+        yAxis: definition.y
+      },
+      box
+    );
+  } else {
+    const input = {
+      ticks: definition.x?.ticks ?? [],
+      series,
+      yAxis: definition.y,
+      xLabel
+    };
+    body = type === "bar" ? barChart(input, box, id) : lineChart(input, box);
+  }
+  const label = `${definition.title}\u3002${body.label}`;
+  return {
+    html: `<svg class="mdmark-diagram-wires" width="${CHART.width}" height="${CHART.height}" role="img" aria-label="${escapeHtml2(label)}">${body.svg.join("")}</svg>`,
+    width: CHART.width,
+    height: CHART.height,
+    tips: "",
+    jumps: false,
+    terms: false
+  };
 }
 function isChartDefinition(definition) {
-  return !("wires" in definition) && !("participants" in definition) && !("tables" in definition);
+  return !("wires" in definition) && !("participants" in definition);
 }
-function erLegend(definition) {
-  const items = [];
-  for (const kind of Object.keys(ER_TABLE_KINDS)) {
-    if (definition.tables.some((table2) => table2.kind === kind)) {
-      items.push({
-        sample: `er-kind-${kind}`,
-        label: `${ER_TABLE_KINDS[kind].label}\u306E\u30C6\u30FC\u30D6\u30EB`
-      });
-    }
-  }
-  for (const key of Object.keys(ER_COLUMN_KEYS)) {
-    if (definition.tables.some((table2) => table2.columns.some((c) => c[key]))) {
-      items.push({ sample: `er-key-${key}`, label: ER_COLUMN_KEYS[key].title });
-    }
-  }
-  const used = new Set(
-    definition.relations.flatMap((relation) => [
-      relation.fromCard,
-      relation.toCard
-    ])
-  );
-  for (const card of Object.keys(ER_CARDINALITIES)) {
-    if (used.has(card)) {
-      items.push({ sample: `er-card-${card}`, label: ER_CARDINALITIES[card] });
-    }
-  }
-  return items;
-}
-function erLegendSample(sample) {
-  if (sample.startsWith("er-kind-")) {
-    const kind = sample.slice("er-kind-".length);
-    const style = ER_TABLE_KINDS[kind];
-    return `<span class="mdmark-diagram-er-kind mdmark-diagram-er-kind-sample" data-color="${style.color}" aria-hidden="true">${style.label}</span>`;
-  }
-  if (sample.startsWith("er-key-")) {
-    const key = sample.slice("er-key-".length);
-    return `<span class="mdmark-diagram-er-key" data-key="${key}" aria-hidden="true">${ER_COLUMN_KEYS[key].text}</span>`;
-  }
-  if (sample.startsWith("er-card-")) {
-    const card = sample.slice("er-card-".length);
-    return `<svg class="mdmark-diagram-legend-sample mdmark-diagram-er-sample" width="34" height="16" aria-hidden="true"><path class="mdmark-diagram-wire" data-line="er" d="M8,8 H34"></path>${erEndSvg({ x: 4, y: 8, dir: 1, card })}</svg>`;
-  }
-  return void 0;
-}
-var FILL_LEGEND_TYPES = [
-  "bar",
-  "stacked-bar",
-  "stacked-area",
-  "horizontal-bar",
-  "bubble"
-];
 function chartLegend(definition) {
   const type = definition.type ?? "line";
-  const unit = definition.unit ?? "";
   if (type === "pie") {
+    const unit = definition.unit ?? "";
     return (definition.items ?? []).map((item, index) => ({
       sample: `fill-${index + 1}`,
       label: `${item.name}\uFF08${item.value}${unit}\uFF09`
     }));
   }
-  if (type === "donut") {
-    return (definition.items ?? []).map((item, index) => ({
-      sample: `fill-${index + 1}`,
-      label: `${item.name}: ${item.value}${unit}`
-    }));
-  }
-  const items = (definition.series ?? []).map((series, index) => {
-    const n = index + 1;
-    if (type === "combo") {
-      const side = definition.y2 === void 0 ? "" : series.axis === "y2" ? "\uFF08\u53F3\u306E\u8EF8\uFF09" : "\uFF08\u5DE6\u306E\u8EF8\uFF09";
-      return {
-        sample: series.as === "bar" ? `fill-${n}` : `series-${n}`,
-        label: `${series.name}${side}`
-      };
-    }
-    const sample = FILL_LEGEND_TYPES.includes(type) ? "fill" : type === "scatter" ? "point" : "series";
-    return { sample: `${sample}-${n}`, label: series.name };
-  });
-  if (type === "bubble") {
-    items.push({
-      sample: "bubble",
-      label: `\u5186\u306E\u9762\u7A4D: ${definition.size?.label ?? ""}`
-    });
-  }
-  return items;
+  const sample = type === "bar" ? "fill" : type === "scatter" ? "point" : "series";
+  return (definition.series ?? []).map((series, index) => ({
+    sample: `${sample}-${index + 1}`,
+    label: series.name
+  }));
 }
 function legendFor(definition, drawn) {
-  if (isErDefinition(definition)) {
-    return erLegend(definition);
-  }
   if (isChartDefinition(definition)) {
     return chartLegend(definition);
   }
@@ -66574,7 +65261,7 @@ function legendFor(definition, drawn) {
   if (frame) {
     items.push(
       { sample: "frame", label: "\u30B7\u30B9\u30C6\u30E0\u306E\u67A0" },
-      { sample: "lane", label: "\u5C64\u306E\u80CC\u666F\uFF08\u5C64\u306E\u30CE\u30FC\u30C9\u306E\u8272\uFF09" }
+      { sample: "lane", label: "\u5C64\u306E\u80CC\u666F\uFF08\u5C64\u306E\u7BB1\u306E\u8272\uFF09" }
     );
   }
   const lines = new Set(
@@ -66596,7 +65283,7 @@ function legendFor(definition, drawn) {
     const hint = nodes.some((node2) => node2.hint && !node2.io);
     items.push({
       sample: "info",
-      label: io && hint ? "\u8AAC\u660E\u3084\u5165\u529B\u30FB\u51E6\u7406\u30FB\u51FA\u529B\u304C\u51FA\u308B\u30CE\u30FC\u30C9" : io ? "\u5165\u529B\u30FB\u51E6\u7406\u30FB\u51FA\u529B\u304C\u51FA\u308B\u30CE\u30FC\u30C9" : "\u8AAC\u660E\u304C\u51FA\u308B\u30CE\u30FC\u30C9"
+      label: io && hint ? "\u8AAC\u660E\u3084\u5165\u529B\u30FB\u51E6\u7406\u30FB\u51FA\u529B\u304C\u51FA\u308B\u7BB1" : io ? "\u5165\u529B\u30FB\u51E6\u7406\u30FB\u51FA\u529B\u304C\u51FA\u308B\u7BB1" : "\u8AAC\u660E\u304C\u51FA\u308B\u7BB1"
     });
   }
   const hasTip = hints && (isFlow ? definition.wires.some((wire) => wire.tip) : definition.steps.some((step) => step.tip));
@@ -66610,12 +65297,8 @@ function legendSample(id, sample) {
   if (sample === "underline") {
     return "";
   }
-  const er = erLegendSample(sample);
-  if (er !== void 0) {
-    return er;
-  }
   if (sample in KIND_STYLES) {
-    const shape = KIND_SAMPLES[sample] ?? '<rect x="1" y="1" width="16" height="12" rx="3"></rect>';
+    const shape = sample === "data" ? '<path d="M1,1 H17 V9 Q17,13 13,13 H5 Q1,13 1,9 Z"></path>' : '<rect x="1" y="1" width="16" height="12" rx="3"></rect>';
     return `<svg class="mdmark-diagram-legend-sample" data-kind="${sample}" width="18" height="14" aria-hidden="true">${shape}</svg>`;
   }
   if (sample in LINE_STYLES) {
@@ -66635,9 +65318,6 @@ function legendSample(id, sample) {
   if (sample.startsWith("series-")) {
     const n = Number(sample.slice("series-".length));
     return `<svg class="mdmark-diagram-legend-sample" width="34" height="12" aria-hidden="true"><path class="mdmark-diagram-series" data-series="${n}" d="M1,6 H33"></path><g data-series="${n}">${pointSvg(n, 17, 6)}</g></svg>`;
-  }
-  if (sample === "bubble") {
-    return '<svg class="mdmark-diagram-legend-sample mdmark-diagram-legend-bubble" width="30" height="16" aria-hidden="true"><circle cx="5" cy="11" r="3"></circle><circle cx="20" cy="8" r="7"></circle></svg>';
   }
   if (sample === "frame") {
     return '<svg class="mdmark-diagram-legend-sample mdmark-diagram-legend-frame" width="18" height="14" aria-hidden="true"><rect x="1" y="1" width="16" height="12" rx="4"></rect></svg>';
@@ -66659,7 +65339,6 @@ function renderLegendItem(id, item) {
 }
 function renderTools(frame) {
   const zoom = frame.zoom ?? 1;
-  const fit = frame.fit ?? 1;
   const tool = (name, label, icon, disabled = false) => `<button class="mdmark-diagram-tool" type="button" data-tool="${name}" aria-label="${label}"${disabled ? ' disabled="disabled"' : ""}>${iconSvg(icon)}</button>`;
   const pan = [
     tool("left", "\u5DE6\u3078\u52D5\u304B\u3059", "chevron-left"),
@@ -66668,29 +65347,20 @@ function renderTools(frame) {
     tool("right", "\u53F3\u3078\u52D5\u304B\u3059", "chevron-right")
   ].join("");
   const screen = frame.modal ? tool("close", "\u5168\u753B\u9762\u3092\u9589\u3058\u308B", "x") : tool("fullscreen", "\u5168\u753B\u9762\u3067\u958B\u304F", "expand");
-  const percent = `${Math.round(zoom / fit * 100)}%`;
+  const percent = `${Math.round(zoom * 100)}%`;
   const zoomButton = `<button class="mdmark-diagram-tool mdmark-diagram-zoom" type="button" data-tool="fit" aria-label="\u500D\u7387 ${percent}\u3002\u5168\u4F53\u304C\u53CE\u307E\u308B\u500D\u7387\u306B\u623B\u3059">${percent}</button>`;
-  return `<div class="mdmark-diagram-tools" role="toolbar" aria-label="\u300C${escapeHtml2(frame.title)}\u300D\u306E\u8868\u793A"><div class="mdmark-diagram-tools-group" data-group="pan"${zoom > fit ? "" : ' hidden="hidden"'}>${pan}</div><div class="mdmark-diagram-tools-group" data-group="zoom">${tool("out", "\u7E2E\u5C0F", "minus", zoom <= fit)}${zoomButton}${tool("in", "\u62E1\u5927", "plus", zoom >= ZOOM.max)}</div><div class="mdmark-diagram-tools-group" data-group="screen">${screen}</div></div>`;
+  return `<div class="mdmark-diagram-tools" role="toolbar" aria-label="\u300C${escapeHtml2(frame.title)}\u300D\u306E\u8868\u793A"><div class="mdmark-diagram-tools-group" data-group="pan"${zoom > 1 ? "" : ' hidden="hidden"'}>${pan}</div><div class="mdmark-diagram-tools-group" data-group="zoom">${tool("out", "\u7E2E\u5C0F", "minus", zoom <= 1)}${zoomButton}${tool("in", "\u62E1\u5927", "plus", zoom >= ZOOM.max)}</div><div class="mdmark-diagram-tools-group" data-group="screen">${screen}</div></div>`;
 }
 function renderDiagramFrame(frame, body) {
   const id = escapeHtml2(frame.id);
   const zoom = frame.zoom ?? 1;
-  const sizer = `width:${num2(body.width * zoom)}px;height:${num2(body.height * zoom)}px`;
-  const stage = `width:${num2(body.width)}px;height:${num2(body.height)}px${zoom === 1 ? "" : `;transform:scale(${num2(zoom)})`}`;
+  const sizer = `width:${num(body.width * zoom)}px;height:${num(body.height * zoom)}px`;
+  const stage = `width:${num(body.width)}px;height:${num(body.height)}px${zoom === 1 ? "" : `;transform:scale(${num(zoom)})`}`;
   const legend = renderLegendItems(id, frame.legend);
   return `<figure class="mdmark-diagram" data-diagram="${frame.kind}"><figcaption class="mdmark-diagram-head" id="${id}-title"><span class="mdmark-diagram-title">${escapeHtml2(frame.title)}</span><span class="mdmark-diagram-meta">\u7BC4\u56F2: ${escapeHtml2(frame.scope)}\u30FB\u66F4\u65B0\u65E5: <time datetime="${escapeHtml2(frame.updated)}">${escapeHtml2(frame.updated)}</time></span></figcaption><div class="mdmark-diagram-box">${renderTools(frame)}<div class="mdmark-diagram-viewport" tabindex="0" role="group" aria-roledescription="\u56F3" aria-labelledby="${id}-title" aria-keyshortcuts="${VIEWPORT_KEYS}"><div class="mdmark-diagram-sizer" style="${sizer}"><div class="mdmark-diagram-stage" style="${stage}">${body.html}</div></div></div>${body.tips}</div><ul class="mdmark-diagram-legend" aria-label="\u51E1\u4F8B">${legend}</ul><svg class="mdmark-diagram-defs" width="0" height="0" aria-hidden="true"><defs>${markerDefs(id)}</defs></svg></figure>`;
 }
 function renderDiagram(options) {
-  const {
-    kind,
-    definition,
-    id,
-    lookup,
-    zoom,
-    fit,
-    modal,
-    hints = true
-  } = options;
+  const { kind, definition, id, lookup, zoom, modal, hints = true } = options;
   let part;
   if (kind === "flow") {
     part = renderFlow(definition, id, hints, lookup);
@@ -66701,8 +65371,6 @@ function renderDiagram(options) {
       lookup,
       hints
     );
-  } else if (kind === "er") {
-    part = renderEr(definition, id, hints, lookup);
   } else {
     part = renderChart(definition, id);
   }
@@ -66715,7 +65383,6 @@ function renderDiagram(options) {
       legend: legendFor(definition, { ...part, hints }),
       id,
       ...zoom === void 0 ? {} : { zoom },
-      ...fit === void 0 ? {} : { fit },
       ...modal === void 0 ? {} : { modal }
     },
     part
@@ -66762,7 +65429,7 @@ function renderParam(definition, state) {
     definition: paramChart(definition, value),
     id: `${state.id}-chart`
   });
-  return `<div class="mdmark-param" role="group" aria-labelledby="${id}-title"><p class="mdmark-param-title" id="${id}-title">${escapeHtml2(definition.title)}</p><div class="mdmark-param-controls"><div class="mdmark-param-knob"><label for="${id}-knob">${escapeHtml2(knob.label)}</label><output for="${id}-knob" id="${id}-value">${value}</output><input type="range" id="${id}-knob" min="${knob.min}" max="${knob.max}" step="${knob.step}" value="${value}"><span class="mdmark-param-range" aria-hidden="true"><small>${knob.min}</small><small>${knob.max}</small></span></div><div class="mdmark-param-actions"><button class="mdmark-param-copy" type="button">${iconSvg("copy")}${escapeHtml2(state.copyLabel ?? DEFAULT_LABELS.paramCopy)}</button>${status}</div>${fallback}</div>${chart}</div>`;
+  return `<div class="mdmark-param" role="group" aria-labelledby="${id}-title"><p class="mdmark-param-title" id="${id}-title">${escapeHtml2(definition.title)}</p><div class="mdmark-param-controls"><div class="mdmark-param-knob"><label for="${id}-knob">${escapeHtml2(knob.label)}</label><output for="${id}-knob" id="${id}-value">${value}</output><input type="range" id="${id}-knob" min="${knob.min}" max="${knob.max}" step="${knob.step}" value="${value}"><span class="mdmark-param-range" aria-hidden="true"><small>${knob.min}</small><small>${knob.max}</small></span></div><div class="mdmark-param-actions"><button class="mdmark-param-copy" type="button">${iconSvg("copy")}\u4ECA\u306E\u5024\u3092\u5199\u3059</button>${status}</div>${fallback}</div>${chart}</div>`;
 }
 
 // src/render/syntax/diagrams.ts
@@ -66826,10 +65493,7 @@ function buildDiagrams(state) {
       if (directive === "param") {
         const param = definition;
         env.paramDefinitions.push(param);
-        html = renderParam(param, {
-          id: `${PARAM_ID_PREFIX}-${count}`,
-          copyLabel: env.labels?.paramCopy
-        });
+        html = renderParam(param, { id: `${PARAM_ID_PREFIX}-${count}` });
       } else {
         html = renderDiagram({
           kind: directive,
@@ -66850,46 +65514,6 @@ function buildDiagrams(state) {
   }
   state.tokens = out;
 }
-function blockMark(token) {
-  if (token.type !== "html_block") {
-    return void 0;
-  }
-  const found = [...token.content.matchAll(MARK_PATTERN)];
-  const [only] = found;
-  if (found.length !== 1 || !only || token.content.replace(MARK_PATTERN, "").trim()) {
-    return void 0;
-  }
-  return { name: only[2] ?? "", closing: only[1] === "/" };
-}
-function findDiagramBlocks(markdown) {
-  const tokens = new MarkdownItCallable({ html: true }).parse(markdown, {});
-  const found = [];
-  for (let index = 0; index < tokens.length; index++) {
-    const token = tokens[index];
-    const mark = token ? blockMark(token) : void 0;
-    if (!token || !mark || mark.closing || !Object.hasOwn(DIAGRAM_DIRECTIVES, mark.name)) {
-      continue;
-    }
-    let end = tokens.length;
-    for (let next = index + 1; next < tokens.length; next++) {
-      const candidate = tokens[next];
-      const close = candidate ? blockMark(candidate) : void 0;
-      if (close?.closing && close.name === mark.name && candidate?.level === token.level) {
-        end = next;
-        break;
-      }
-    }
-    found.push({
-      directive: mark.name,
-      line: (token.map?.[0] ?? 0) + 1,
-      blocks: jsonBlocks(tokens.slice(index + 1, end)).map(
-        (block2) => block2.replace(/\n$/, "")
-      )
-    });
-    index = end;
-  }
-  return found;
-}
 
 // src/parts/figure.ts
 function renderFigure(options) {
@@ -66900,1914 +65524,6 @@ function renderFigure(options) {
   const figcaption = `<figcaption class="mdmark-figure-caption"><b>${label} ${number4}</b>${text2}</figcaption>`;
   const content = kind === "image" ? `${body}${figcaption}` : `${figcaption}${body}`;
   return `<figure class="mdmark-figure"${idAttribute}>${content}</figure>`;
-}
-
-// src/parts/image.ts
-function renderImageOpener(options) {
-  const { alt, img, icon = true } = options;
-  const iconHtml = icon ? `<span class="mdmark-image-open-icon" aria-hidden="true">${iconSvg("maximize-2")}</span>` : "";
-  return `<button class="mdmark-image-open" type="button" aria-label="\u753B\u50CF\u3092\u62E1\u5927: ${escapeHtml2(alt)}">${img}${iconHtml}</button>`;
-}
-function renderImageFigure(options) {
-  const {
-    src,
-    alt,
-    caption,
-    width,
-    align,
-    lightbox = true,
-    only,
-    id,
-    label,
-    opener = true,
-    gif = false
-  } = options;
-  const className = `mdmark-figure mdmark-image${only ? ` mdmark-only-${only}` : ""}`;
-  const idAttribute = id === void 0 ? "" : ` id="${escapeHtml2(id)}"`;
-  const alignAttribute = align === void 0 ? "" : ` data-align="${align}"`;
-  const style = width === void 0 ? "" : ` style="--mdmark-image-width: ${escapeHtml2(width)}"`;
-  const flags = `${lightbox ? "" : " data-nolightbox"}${gif ? " data-gif" : ""}`;
-  const img = `<img src="${escapeHtml2(src)}" alt="${escapeHtml2(alt)}"${flags}>`;
-  const body = opener && lightbox ? renderImageOpener({ alt, img, icon: !gif }) : img;
-  const head = label === void 0 ? "" : `<b>${escapeHtml2(label)}</b>`;
-  const text2 = caption === void 0 ? "" : escapeHtml2(caption);
-  const figcaption = head === "" && text2 === "" ? "" : `<figcaption class="mdmark-figure-caption">${head}${text2}</figcaption>`;
-  return `<figure class="${className}"${idAttribute}${alignAttribute}${style}>${body}${figcaption}</figure>`;
-}
-
-// src/parts/media.ts
-function renderMedia(options) {
-  const {
-    kind,
-    src,
-    alt,
-    caption,
-    width,
-    poster,
-    autoplay = false,
-    muted = false,
-    loop = false
-  } = options;
-  const video = kind === "video";
-  const flags = [
-    "controls",
-    autoplay ? "autoplay" : "",
-    autoplay || muted ? "muted" : "",
-    loop ? "loop" : "",
-    video ? "playsinline" : ""
-  ].filter((flag) => flag !== "").map((flag) => ` ${flag}`).join("");
-  const posterUrl = video && poster !== void 0 ? escapeHtml2(poster) : "";
-  const posterAttribute = posterUrl === "" ? "" : ` poster="${posterUrl}"`;
-  const player = `<${kind} src="${escapeHtml2(src)}"${flags} preload="metadata" aria-label="${escapeHtml2(alt)}"${posterAttribute}></${kind}>`;
-  const print = posterUrl === "" ? "" : `<img class="mdmark-media-print" src="${posterUrl}" alt="">`;
-  const figcaption = caption === void 0 || caption === "" ? "" : `<figcaption class="mdmark-figure-caption">${escapeHtml2(caption)}</figcaption>`;
-  const style = width === void 0 ? "" : ` style="--mdmark-image-width: ${escapeHtml2(width)}"`;
-  return `<figure class="mdmark-figure mdmark-media"${style}>${player}${print}${figcaption}</figure>`;
-}
-
-// src/table-logic.ts
-var FILTER_KINDS = ["select", "text", "date"];
-function parseNumberCell(text2) {
-  const normalized = text2.replaceAll(",", "").trim();
-  if (normalized === "" || !Number.isFinite(Number(normalized))) {
-    return void 0;
-  }
-  return Number(normalized);
-}
-var collator = new Intl.Collator("ja", { numeric: true });
-function compareCells(a, b) {
-  const left = parseNumberCell(a);
-  const right = parseNumberCell(b);
-  if (left !== void 0 && right !== void 0) {
-    return left - right;
-  }
-  return collator.compare(a, b);
-}
-function toIsoDate(text2) {
-  const match = /^(\d{4})[-/](\d{1,2})[-/](\d{1,2})$/.exec(text2.trim());
-  if (!match) {
-    return void 0;
-  }
-  const [, year, month, day] = match;
-  return `${year}-${month?.padStart(2, "0")}-${day?.padStart(2, "0")}`;
-}
-function matchesFilter(cell, kind, value) {
-  if (kind === "select") {
-    return !value.values?.length || value.values.includes(cell);
-  }
-  if (kind === "text") {
-    return !value.text || cell.toLowerCase().includes(value.text.toLowerCase());
-  }
-  if (!value.from && !value.to) {
-    return true;
-  }
-  const date4 = toIsoDate(cell);
-  if (date4 === void 0) {
-    return false;
-  }
-  return (!value.from || date4 >= value.from) && (!value.to || date4 <= value.to);
-}
-var TOTAL_CALCS = ["sum", "avg", "count"];
-var TOTAL_LABELS = {
-  sum: "\u5408\u8A08",
-  avg: "\u5E73\u5747",
-  count: "\u4EF6\u6570"
-};
-var NO_VALUE = "\u2014";
-var totalFormat = new Intl.NumberFormat("ja", { maximumFractionDigits: 2 });
-function computeTotal(cells, calc) {
-  if (calc === "count") {
-    return totalFormat.format(
-      cells.filter((cell) => cell.trim() !== "").length
-    );
-  }
-  const numbers = cells.map(parseNumberCell).filter((value) => value !== void 0);
-  const sum = numbers.reduce((total, value) => total + value, 0);
-  if (calc === "sum") {
-    return totalFormat.format(sum);
-  }
-  return numbers.length > 0 ? totalFormat.format(sum / numbers.length) : NO_VALUE;
-}
-function findUnreadableTotals(options) {
-  const { rows, totals } = options;
-  const found = [];
-  for (const { column, calc } of totals) {
-    if (calc === "count") {
-      continue;
-    }
-    const values = /* @__PURE__ */ new Set();
-    for (const row of rows) {
-      const cell = row[column] ?? "";
-      if (cell.trim() !== "" && parseNumberCell(cell) === void 0) {
-        values.add(cell);
-      }
-    }
-    if (values.size > 0) {
-      found.push({ column, calc, values: [...values] });
-    }
-  }
-  return found;
-}
-function bottomHeadCells(rows) {
-  const grid = rows.map(() => []);
-  for (const [row, cells] of rows.entries()) {
-    let column = 0;
-    for (const [cell, span] of cells.entries()) {
-      while (grid[row]?.[column]) {
-        column += 1;
-      }
-      for (let r = row; r < Math.min(rows.length, row + span.rowSpan); r++) {
-        for (let c = column; c < column + span.colSpan; c++) {
-          const line = grid[r];
-          if (line) {
-            line[c] = { row, cell, colSpan: span.colSpan };
-          }
-        }
-      }
-      column += span.colSpan;
-    }
-  }
-  const bottom = grid.at(-1) ?? [];
-  return Array.from(
-    bottom,
-    (item) => item && item.colSpan === 1 ? { row: item.row, cell: item.cell } : void 0
-  );
-}
-function mergeSpans(options) {
-  const { values, columns } = options;
-  const spans = values.map(() => columns.map(() => 1));
-  const starts = columns.map(() => 0);
-  for (let row = 1; row < values.length; row++) {
-    let broken = false;
-    for (const [index] of columns.entries()) {
-      const start = starts[index] ?? 0;
-      const same = values[row]?.[index] === values[start]?.[index];
-      if (broken || !same) {
-        broken = true;
-        starts[index] = row;
-        continue;
-      }
-      const startSpans = spans[start];
-      const rowSpans = spans[row];
-      if (startSpans && rowSpans) {
-        startSpans[index] = (startSpans[index] ?? 1) + 1;
-        rowSpans[index] = 0;
-      }
-    }
-  }
-  return spans;
-}
-
-// src/parts/table.ts
-function plainText(html) {
-  return html.replace(/<[^>]*>/g, "").replaceAll("&lt;", "<").replaceAll("&gt;", ">").replaceAll("&quot;", '"').replaceAll("&#39;", "'").replaceAll("&amp;", "&");
-}
-function drawerId(id, column) {
-  return `${id}-drawer-${column}`;
-}
-function renderFilterFields(options) {
-  const { filter: filter2, value } = options;
-  if (filter2?.kind === "text") {
-    return `<label class="mdmark-filter-field">\u542B\u3080\u6587\u5B57<input type="text" value="${escapeHtml2(value?.text ?? "")}"></label>`;
-  }
-  if (filter2?.kind === "date") {
-    return `<div class="mdmark-filter-range"><label class="mdmark-filter-field">\u958B\u59CB\u65E5<input type="date" value="${escapeHtml2(value?.from ?? "")}"></label><label class="mdmark-filter-field">\u7D42\u4E86\u65E5<input type="date" value="${escapeHtml2(value?.to ?? "")}"></label></div>`;
-  }
-  const checked = new Set(value?.values ?? []);
-  const items = (filter2?.values ?? []).map(
-    (candidate) => `<li><label><input type="checkbox" value="${escapeHtml2(candidate)}"${checked.has(candidate) ? " checked" : ""}>${escapeHtml2(candidate)}</label></li>`
-  ).join("");
-  return `<label class="mdmark-filter-field">\u5019\u88DC\u3092\u691C\u7D22<input class="mdmark-filter-search" type="search"></label><ul class="mdmark-filter-options">${items}</ul><p class="mdmark-filter-none" hidden>\u4E00\u81F4\u3059\u308B\u5019\u88DC\u304C\u3042\u308A\u307E\u305B\u3093</p>`;
-}
-function renderTableTools(options) {
-  const {
-    id,
-    column,
-    label,
-    features,
-    filter: filter2,
-    active = false,
-    pinVisible = false,
-    pinPressed = false
-  } = options;
-  const open2 = options.open ?? false;
-  const escapedLabel = escapeHtml2(label);
-  const controls = drawerId(id, column);
-  const filterable = features.includes("filter") && filter2 !== void 0;
-  const title = features.includes("sort") ? `<button class="mdmark-sort" type="button">${escapedLabel}</button>` : `<span class="mdmark-th-label">${escapedLabel}</span>`;
-  const filterButton = filterable ? `<button class="mdmark-filter${active ? " is-active" : ""}" type="button" aria-label="\u300C${escapedLabel}\u300D\u3067\u7D5E\u308A\u8FBC\u3080" aria-expanded="${open2}" aria-controls="${escapeHtml2(controls)}"><span class="mdmark-visually-hidden">${active ? "\uFF08\u7D5E\u308A\u8FBC\u307F\u4E2D\uFF09" : ""}</span></button>` : "";
-  const pinButton = features.includes("pin") ? `<button class="mdmark-pin" type="button" aria-label="\u300C${escapedLabel}\u300D\u307E\u3067\u3092\u5DE6\u7AEF\u306B\u7559\u3081\u308B" aria-pressed="${pinPressed}"${pinVisible ? "" : " hidden"}></button>` : "";
-  const tools = filterButton || pinButton ? `<span class="mdmark-th-tools">${filterButton}${pinButton}</span>` : "";
-  const drawer = filterable ? `<div class="mdmark-filter-drawer" id="${escapeHtml2(controls)}" role="dialog" aria-label="\u300C${escapedLabel}\u300D\u3067\u7D5E\u308A\u8FBC\u3080" data-filter-kind="${filter2.kind}" data-column="${column}"${open2 ? "" : " hidden"}><p class="mdmark-filter-title">\u300C${escapedLabel}\u300D\u3067\u7D5E\u308A\u8FBC\u3080</p>${renderFilterFields(options)}<button class="mdmark-filter-clear" type="button">\u7D5E\u308A\u8FBC\u307F\u3092\u89E3\u9664</button></div>` : "";
-  return {
-    header: `<span class="mdmark-th">${title}${tools}</span>`,
-    drawer
-  };
-}
-function isActive(value) {
-  return Boolean(
-    value?.values?.length || value?.text || value?.from || value?.to
-  );
-}
-function sortedIndexes(options) {
-  const rows = options.rows ?? [];
-  const indexes = rows.map((_, index) => index);
-  const sort = options.sort;
-  if (!sort) {
-    return indexes;
-  }
-  const sign = sort.direction === "ascending" ? 1 : -1;
-  return indexes.sort(
-    (a, b) => sign * compareCells(
-      plainText(rows[a]?.[sort.column] ?? ""),
-      plainText(rows[b]?.[sort.column] ?? "")
-    )
-  );
-}
-var COPY_STATES = {
-  idle: { label: "\u8868\u3092\u30B3\u30D4\u30FC", icon: "copy" },
-  copied: { label: "\u30B3\u30D4\u30FC\u3057\u307E\u3057\u305F", icon: "check" },
-  failed: { label: "\u30B3\u30D4\u30FC\u3067\u304D\u307E\u305B\u3093\u3067\u3057\u305F", icon: "circle-alert" }
-};
-function renderCopyButtonContent(state) {
-  const { icon, label } = COPY_STATES[state];
-  return `${iconSvg(icon)}<span class="mdmark-copy-label">${label}</span><span class="mdmark-copy-caret" data-icon="chevron-down">${iconSvg("chevron-down")}</span>`;
-}
-var COPY_FORMATS = {
-  markdown: {
-    name: "Markdown \u306E\u8868",
-    note: "\u6587\u66F8\u306B\u8CBC\u308B\u3068\u305D\u306E\u307E\u307E\u8868\u306B\u306A\u308B"
-  },
-  tsv: { name: "TSV", note: "\u8868\u8A08\u7B97\u30BD\u30D5\u30C8\u306B\u8CBC\u308B\u3068\u30BB\u30EB\u306B\u5206\u304B\u308C\u308B" }
-};
-function menuId(id) {
-  return `${id}-columns`;
-}
-function totalsMenuId(id) {
-  return `${id}-totals`;
-}
-function copyMenuId(id) {
-  return `${id}-copy`;
-}
-function renderTableBar(options) {
-  const { id, features, labels, shown, total, hiddenColumns } = options;
-  const copyState = options.copyState ?? "idle";
-  const open2 = options.openColumns ?? false;
-  const hidden = new Set(hiddenColumns);
-  const calcs = TOTAL_CALCS.filter((calc) => options.totals?.includes(calc));
-  const shownCalcs = new Set(options.shownTotals ?? calcs);
-  const hiddenCalcs = calcs.filter((calc) => !shownCalcs.has(calc));
-  const counting = features.includes("count");
-  const columns = features.includes("columns");
-  const totaling = features.includes("total") && calcs.length > 0;
-  const copying = features.includes("copy");
-  const count = counting ? `<p class="mdmark-table-count" aria-live="polite"><span aria-hidden="true">${shown} / ${total} \u4EF6</span><span class="mdmark-visually-hidden">${total} \u4EF6\u4E2D ${shown} \u4EF6\u3092\u8868\u793A</span></p>` : "";
-  const columnsToggle = columns ? `<button class="mdmark-table-tool mdmark-columns-toggle${hidden.size > 0 ? " is-active" : ""}" type="button" aria-expanded="${open2}" aria-controls="${escapeHtml2(menuId(id))}">${iconSvg("columns-3")}\u5217\u8A2D\u5B9A<span class="mdmark-visually-hidden">${hidden.size > 0 ? `\uFF08${hidden.size} \u5217\u3092\u96A0\u3057\u3066\u3044\u307E\u3059\uFF09` : ""}</span></button>` : "";
-  const totalsToggle = totaling ? `<button class="mdmark-table-tool mdmark-totals-toggle${hiddenCalcs.length > 0 ? " is-active" : ""}" type="button" aria-expanded="${options.openTotals ?? false}" aria-controls="${escapeHtml2(totalsMenuId(id))}">${iconSvg("sigma")}\u96C6\u8A08<span class="mdmark-visually-hidden">${hiddenCalcs.length > 0 ? `\uFF08${hiddenCalcs.length} \u4EF6\u3092\u975E\u8868\u793A\u306B\u3057\u3066\u3044\u307E\u3059\uFF09` : ""}</span></button>` : "";
-  const copy = copying ? `<button class="mdmark-table-tool mdmark-copy" type="button" data-state="${copyState}" aria-expanded="${options.openCopy ?? false}" aria-controls="${escapeHtml2(copyMenuId(id))}">${renderCopyButtonContent(copyState)}</button>` : "";
-  const tools = columnsToggle || totalsToggle || copy ? `<div class="mdmark-table-tools">${columnsToggle}${totalsToggle}${copy}</div>` : "";
-  const status = totaling || copying ? `<span class="mdmark-visually-hidden mdmark-table-status" role="status">${copying && copyState !== "idle" ? COPY_STATES[copyState].label : ""}</span>` : "";
-  const items = labels.map(
-    (label, index) => `<li><label><input type="checkbox" value="${index}"${hidden.has(index) ? "" : " checked"}${index === 0 ? " disabled" : ""}>${escapeHtml2(label)}</label></li>`
-  ).join("");
-  const columnsMenu = columns ? `<div class="mdmark-columns-menu" id="${escapeHtml2(menuId(id))}" role="dialog" aria-label="\u8868\u793A\u3059\u308B\u5217"${open2 ? "" : " hidden"}><p class="mdmark-columns-title">\u8868\u793A\u3059\u308B\u5217</p><ul class="mdmark-columns-options">${items}</ul><p class="mdmark-columns-note">\u5148\u982D\u306E\u5217\u306F\u96A0\u305B\u307E\u305B\u3093</p><button class="mdmark-columns-reset" type="button">\u30EA\u30BB\u30C3\u30C8</button></div>` : "";
-  const totalItems = calcs.map(
-    (calc) => `<li><label><input type="checkbox" value="${calc}"${shownCalcs.has(calc) ? " checked" : ""}>${TOTAL_LABELS[calc]}</label></li>`
-  ).join("");
-  const totalsMenu = totaling ? `<div class="mdmark-totals-menu mdmark-table-menu" id="${escapeHtml2(totalsMenuId(id))}" role="dialog" aria-label="\u8868\u793A\u3059\u308B\u96C6\u8A08"${options.openTotals ? "" : " hidden"}><p class="mdmark-totals-title">\u8868\u793A\u3059\u308B\u96C6\u8A08</p><ul class="mdmark-totals-options">${totalItems}</ul></div>` : "";
-  const formats = ["markdown", "tsv"].map(
-    (format2) => `<button class="mdmark-copy-format" type="button" data-format="${format2}"><span class="mdmark-copy-format-name">${COPY_FORMATS[format2].name}</span><span class="mdmark-copy-format-note">${COPY_FORMATS[format2].note}</span></button>`
-  ).join("");
-  const copyMenu = copying ? `<div class="mdmark-copy-menu mdmark-table-menu" id="${escapeHtml2(copyMenuId(id))}" role="dialog" aria-label="\u30B3\u30D4\u30FC\u306E\u5F62\u5F0F"${options.openCopy ? "" : " hidden"}>${formats}</div>` : "";
-  return {
-    bar: count || tools ? `<div class="mdmark-table-bar">${count}${tools}${status}</div>` : "",
-    menus: `${columnsMenu}${totalsMenu}${copyMenu}`
-  };
-}
-function renderTotalRows(options) {
-  const { columns, totals, shown, hiddenColumns, labels } = options;
-  const rows = TOTAL_CALCS.filter(
-    (calc) => totals.some((total) => total.calc === calc)
-  ).map((calc) => {
-    const own2 = totals.filter((total) => total.calc === calc);
-    const cells = Array.from({ length: columns }, (_, column) => {
-      const total = own2.find((candidate) => candidate.column === column);
-      const hidden = hiddenColumns.includes(column) ? " hidden" : "";
-      const label = ` data-label="${escapeHtml2(labels[column] ?? "")}"`;
-      const name = column === 0 ? `<span class="mdmark-total-name">${TOTAL_LABELS[calc]}</span>` : "";
-      if (!total) {
-        return `<td${label}${hidden}>${name}</td>`;
-      }
-      return `<td${label} data-total="${calc}"${hidden}>${name}<span class="mdmark-total-value">${escapeHtml2(total.value)}</span></td>`;
-    });
-    const rowHidden = shown !== void 0 && !shown.includes(calc) ? " hidden" : "";
-    return `<tr class="mdmark-table-total" data-total-kind="${calc}"${rowHidden}>${cells.join("")}</tr>`;
-  });
-  return `<tfoot>${rows.join("")}</tfoot>`;
-}
-function renderCopyPanel(options) {
-  const { id, format: format2, text: text2 } = options;
-  const titleId = `${id}-title`;
-  const noteId = `${id}-note`;
-  const target = format2 === "tree" ? "\u30C4\u30EA\u30FC\u306E\u30C6\u30AD\u30B9\u30C8" : `\u300C${COPY_FORMATS[format2].name}\u300D\u306E\u4E2D\u8EAB`;
-  return `<div class="mdmark-copy-panel" role="group" aria-labelledby="${escapeHtml2(titleId)}"><div class="mdmark-copy-panel-head"><p class="mdmark-copy-panel-title" id="${escapeHtml2(titleId)}">${iconSvg("circle-alert")}\u30AF\u30EA\u30C3\u30D7\u30DC\u30FC\u30C9\u306B\u30B3\u30D4\u30FC\u3067\u304D\u307E\u305B\u3093\u3067\u3057\u305F</p><button class="mdmark-copy-panel-close" type="button" aria-label="\u9589\u3058\u308B">${iconSvg("x")}</button></div><p class="mdmark-copy-panel-note" id="${escapeHtml2(noteId)}">${target}\u3092\u9078\u629E\u3057\u3066\u3044\u307E\u3059\u3002Ctrl+C\uFF08Mac \u306F \u2318C\uFF09\u3067\u30B3\u30D4\u30FC\u3057\u3066\u304F\u3060\u3055\u3044\u3002</p><textarea class="mdmark-copy-panel-text" readonly rows="6" aria-labelledby="${escapeHtml2(titleId)} ${escapeHtml2(noteId)}">${escapeHtml2(text2)}</textarea></div>`;
-}
-function renderFoldedColumn(options) {
-  const { id, columns, label, name, html, open: open2 = false } = options;
-  return {
-    toggle: `<button class="mdmark-row-toggle mdmark-fold-toggle" type="button" aria-expanded="${open2}" aria-controls="${escapeHtml2(id)}" aria-label="\u300C${escapeHtml2(label)}\u300D\u306E${escapeHtml2(name)}"></button>`,
-    row: `<tr class="mdmark-row-detail mdmark-fold-detail" id="${escapeHtml2(id)}"${open2 ? "" : " hidden"}><td colspan="${columns}"><div class="mdmark-fold-part"><p class="mdmark-fold-name">${escapeHtml2(name)}</p><div class="mdmark-fold-value">${html}</div></div></td></tr>`
-  };
-}
-function renderRowLink(content, id, label, notice) {
-  const message = notice === "copied" ? `${iconSvg("check")}\u30EA\u30F3\u30AF\u3092\u30B3\u30D4\u30FC\u3057\u307E\u3057\u305F` : notice === "failed" ? `${iconSvg("circle-alert")}\u30EA\u30F3\u30AF\u3092\u30B3\u30D4\u30FC\u3067\u304D\u307E\u305B\u3093\u3067\u3057\u305F` : "";
-  const state = notice === void 0 ? "" : ` data-state="${notice}"`;
-  return `<span class="mdmark-row-link-cell">${content}<a class="mdmark-row-anchor" href="#${escapeHtml2(id)}" aria-label="\u300C${escapeHtml2(label)}\u300D\u306E\u884C\u3078\u306E\u30EA\u30F3\u30AF">${iconSvg("link")}</a><span class="mdmark-row-link-notice" role="status"${state}>${message}</span></span>`;
-}
-function renderCheckCell(value) {
-  return value === "true" ? `<span class="mdmark-check" role="img" aria-label="\u306F\u3044">${iconSvg("check")}</span>` : '<span class="mdmark-visually-hidden">\u3044\u3044\u3048</span>';
-}
-function isCheckValue(text2) {
-  return text2 === "true" || text2 === "false";
-}
-function renderTableBody(options, id) {
-  const columns = options.columns ?? [];
-  const rows = options.rows ?? [];
-  const filters = options.filters ?? [];
-  const values = options.filterValues ?? [];
-  const pinned = options.overflow ? options.pinned ?? options.rowHeader ?? 0 : 0;
-  const rowHeader = options.rowHeader ?? 0;
-  const hidden = new Set(
-    options.features.includes("columns") ? options.hiddenColumns ?? options.hide ?? [] : []
-  );
-  const hiddenAttribute = (column) => hidden.has(column) ? " hidden" : "";
-  const lastColumn = columns.length - 1;
-  const folded = isFolded(options, hidden);
-  const unfolded = new Set(options.unfoldedRows ?? []);
-  const drawers = [];
-  const highlightOf = (column) => options.highlight?.find((item) => item.column === column)?.color;
-  const wideColumns = new Set(options.wide ?? []);
-  const checkColumns = new Set(options.check ?? []);
-  const cellClass = (column, extra = []) => {
-    const names = [
-      ...column < pinned ? column === pinned - 1 ? ["is-pinned-col", "is-pinned-edge"] : ["is-pinned-col"] : [],
-      ...folded && column === lastColumn ? ["mdmark-fold-col"] : [],
-      ...highlightOf(column) ? ["mdmark-col-highlight"] : [],
-      ...wideColumns.has(column) ? ["mdmark-wide"] : [],
-      ...checkColumns.has(column) ? ["mdmark-align-center"] : [],
-      ...extra
-    ];
-    const color = highlightOf(column);
-    const colorAttribute = color ? ` data-color="${color}"` : "";
-    return `${names.length > 0 ? ` class="${names.join(" ")}"` : ""}${colorAttribute}`;
-  };
-  const headCell = (column, index) => {
-    const filter2 = filters.find((candidate) => candidate.column === index);
-    const value = values.find((candidate) => candidate.column === index);
-    const tools = renderTableTools({
-      id,
-      column: index,
-      label: plainText(column),
-      features: options.features,
-      filter: filter2 && {
-        kind: filter2.kind,
-        values: [...new Set(rows.map((row) => plainText(row[index] ?? "")))]
-      },
-      active: isActive(value),
-      open: options.openFilter === index,
-      value,
-      pinVisible: options.overflow === true,
-      pinPressed: pinned > 0 && index === pinned - 1
-    });
-    drawers.push(tools.drawer);
-    const sorted = options.sort?.column === index ? ` aria-sort="${options.sort.direction}"` : "";
-    const header = options.features.includes("sort") || options.features.includes("filter") || options.features.includes("pin") ? tools.header : escapeHtml2(plainText(column));
-    return `<th${cellClass(index)}${sorted}${hiddenAttribute(index)}>${header}</th>`;
-  };
-  const head = options.headRows ? renderHeadRows(options.headRows, columns, headCell) : `<tr>${columns.map(headCell).join("")}</tr>`;
-  const rowLinking = options.features.includes("rowlink");
-  const labels = columns.map(plainText);
-  const shownRows = [];
-  const matches = (row) => values.every((value) => {
-    const filter2 = filters.find((c) => c.column === value.column);
-    return filter2 ? matchesFilter(plainText(row[value.column] ?? ""), filter2.kind, value) : true;
-  });
-  const order = sortedIndexes(options);
-  const mergeColumns = options.mergeColumns ?? [];
-  const shownOrder = order.filter((rowIndex) => matches(rows[rowIndex] ?? []));
-  const spans = mergeSpans({
-    values: shownOrder.map(
-      (rowIndex) => mergeColumns.map((column) => plainText(rows[rowIndex]?.[column] ?? ""))
-    ),
-    columns: mergeColumns
-  });
-  const spanOf = new Map(
-    shownOrder.map((rowIndex, position) => [rowIndex, spans[position] ?? []])
-  );
-  const body = order.map((rowIndex) => {
-    const row = rows[rowIndex] ?? [];
-    const match = matches(row);
-    if (match) {
-      shownRows.push(row);
-    }
-    const rowId = rowLinking ? options.rowIds?.[rowIndex] : void 0;
-    const targeted = rowLinking && options.targetRow === rowIndex;
-    const foldId = `${id}-fold-${rowIndex}`;
-    const fold = folded ? renderFoldedColumn({
-      id: foldId,
-      columns: columns.length - hidden.size,
-      label: plainText(row[0] ?? ""),
-      name: labels[lastColumn] ?? "",
-      html: row[lastColumn] ?? "",
-      open: unfolded.has(rowIndex)
-    }) : void 0;
-    const cells = row.map((text2, index) => {
-      const checkValue = checkColumns.has(index) && isCheckValue(text2) ? text2 : void 0;
-      const cell = checkValue ? renderCheckCell(checkValue) : text2;
-      const valueAttribute = checkValue ? ` data-value="${checkValue}"` : "";
-      const linked = index === 0 && rowId !== void 0 ? renderRowLink(
-        cell,
-        rowId,
-        plainText(cell),
-        targeted ? options.rowLinkNotice : void 0
-      ) : cell;
-      const content = index === 0 && fold ? `<span class="mdmark-row-head">${fold.toggle}${linked}</span>` : linked;
-      const merge2 = mergeColumns.indexOf(index);
-      const span = merge2 >= 0 ? spanOf.get(rowIndex)?.[merge2] : void 0;
-      const spanAttribute = span !== void 0 && span > 1 ? ` rowspan="${span}"` : "";
-      const mergedHidden = span === 0 && !hidden.has(index) ? " hidden" : "";
-      const classes = cellClass(index, spanAttribute ? ["is-merged"] : []);
-      const tag = index < rowHeader ? "th" : "td";
-      const scope = tag === "th" ? ' scope="row"' : "";
-      return `<${tag}${scope}${classes}${spanAttribute}${valueAttribute} data-label="${escapeHtml2(labels[index] ?? "")}"${hiddenAttribute(index)}${mergedHidden}>${content}</${tag}>`;
-    }).join("");
-    const idAttribute = rowId === void 0 ? "" : ` id="${escapeHtml2(rowId)}"`;
-    const target = targeted ? " data-target" : "";
-    const rowColor = options.rowColors?.[rowIndex];
-    const colorAttribute = rowColor ? ` data-color="${rowColor}"` : "";
-    const line = `<tr${idAttribute}${target}${colorAttribute}${match ? "" : " hidden"}>${cells}</tr>`;
-    return fold ? `${line}${fold.row}` : line;
-  }).join("");
-  const empty = `<tr class="mdmark-table-empty"${shownRows.length > 0 ? " hidden" : ""}><td colspan="${columns.length - hidden.size}">\u4E00\u81F4\u3059\u308B\u884C\u304C\u3042\u308A\u307E\u305B\u3093</td></tr>`;
-  const totals = options.features.includes("total") ? options.totals ?? [] : [];
-  const unreadable = findUnreadableTotals({
-    rows: rows.map((row) => row.map(plainText)),
-    totals
-  });
-  const footer = totals.length > 0 ? renderTotalRows({
-    columns: columns.length,
-    totals: totals.map((total) => ({
-      ...total,
-      value: unreadable.some(
-        (item) => item.column === total.column && item.calc === total.calc
-      ) ? "" : computeTotal(
-        shownRows.map((row) => plainText(row[total.column] ?? "")),
-        total.calc
-      )
-    })),
-    shown: options.shownTotals,
-    hiddenColumns: [...hidden],
-    labels
-  }) : "";
-  const { bar, menus } = renderTableBar({
-    id,
-    features: options.features,
-    labels,
-    shown: shownRows.length,
-    total: rows.length,
-    hiddenColumns: [...hidden],
-    openColumns: options.openColumns ?? false,
-    copyState: options.copyState ?? "idle",
-    totals: totals.map((total) => total.calc),
-    shownTotals: options.shownTotals,
-    openTotals: options.openTotals ?? false,
-    openCopy: options.openCopy ?? false
-  });
-  const panel = options.copyFallback ? renderCopyPanel({ id: `${id}-panel`, ...options.copyFallback }) : "";
-  return `${bar}${panel}<table tabindex="0" aria-label="\u8868"><thead>${head}</thead><tbody>${body}${empty}</tbody>${footer}</table>${menus}${drawers.join("")}`;
-}
-function renderHeadRows(headRows, columns, headCell) {
-  const bottom = bottomHeadCells(
-    headRows.map(
-      (cells) => cells.map((cell) => ({
-        rowSpan: cell.rowspan ?? 1,
-        colSpan: cell.colspan ?? 1
-      }))
-    )
-  );
-  return headRows.map((cells, row) => {
-    const html = cells.map((cell, index) => {
-      const column = bottom.findIndex(
-        (item) => item?.row === row && item.cell === index
-      );
-      const rowspan = cell.rowspan ?? 1;
-      const colspan = cell.colspan ?? 1;
-      const spans = `${rowspan > 1 ? ` rowspan="${rowspan}"` : ""}${colspan > 1 ? ` colspan="${colspan}"` : ""}`;
-      const scope = colspan > 1 ? "colgroup" : "col";
-      if (column >= 0) {
-        return headCell(columns[column] ?? cell.html, column).replace(
-          "<th",
-          `<th${spans} scope="${scope}"`
-        );
-      }
-      return `<th${spans} scope="${scope}">${escapeHtml2(plainText(cell.html))}</th>`;
-    }).join("");
-    return `<tr>${html}</tr>`;
-  }).join("");
-}
-function isFolded(options, hidden) {
-  const lastColumn = (options.columns ?? []).length - 1;
-  return options.folded === true && lastColumn > 0 && !hidden.has(lastColumn);
-}
-function renderTable(options) {
-  const kind = options.kind ?? "default";
-  const filters = options.features.includes("filter") ? options.filters ?? [] : [];
-  const filterAttribute = filters.length ? ` data-filter="${filters.map((filter2) => `${filter2.column}:${filter2.kind}`).join(" ")}"` : "";
-  const hide2 = options.features.includes("columns") ? options.hide ?? [] : [];
-  const hideAttribute = hide2.length ? ` data-hide="${hide2.join(" ")}"` : "";
-  const totals = options.features.includes("total") ? options.totals ?? [] : [];
-  const totalAttribute = totals.length ? ` data-total="${totals.map((total) => `${total.column}:${total.calc}`).join(" ")}"` : "";
-  const pinAttribute = options.pin !== void 0 && options.features.includes("pin") ? ` data-pin="${options.pin}"` : "";
-  const check = options.check ?? [];
-  const checkAttribute = check.length ? ` data-check="${check.join(" ")}"` : "";
-  const content = options.body ?? renderTableBody(options, options.id ?? "mdmark-table");
-  const collapse = options.collapse ?? "none";
-  const title = options.title ?? `\u8868\uFF08${options.rows?.length ?? options.rowCount ?? 0} \u884C\uFF09`;
-  const inner = collapse === "none" ? content : `<details class="mdmark-table-details"${collapse === "open" ? " open" : ""}><summary>${escapeHtml2(title)}</summary>${content}</details>`;
-  const hiddenColumns = new Set(
-    options.features.includes("columns") ? options.hiddenColumns ?? options.hide ?? [] : []
-  );
-  const foldedClass = options.body === void 0 && isFolded(options, hiddenColumns) ? " is-folded" : "";
-  const mergeColumns = options.mergeColumns ?? [];
-  const mergeAttribute = mergeColumns.length ? ` data-merge-columns="${mergeColumns.join(" ")}"` : "";
-  return `<div class="mdmark-table${foldedClass}" data-kind="${kind}" data-features="${options.features.join(" ")}"${filterAttribute}${hideAttribute}${totalAttribute}${pinAttribute}${checkAttribute}${mergeAttribute}>${inner}</div>`;
-}
-
-// src/render/syntax/collapse.ts
-var COLLAPSE_ARGS = ["closed", "open"];
-var TITLE_KEY = "title";
-function readCollapse(args) {
-  const closed = args.args.includes("closed");
-  const open2 = args.args.includes("open");
-  const collapse = closed ? "closed" : open2 ? "open" : "none";
-  const items = [];
-  if (closed && open2) {
-    items.push({
-      label: "closed \u3068 open",
-      message: "\u306E `closed` \u3068 `open` \u306F\u540C\u6642\u306B\u66F8\u3051\u307E\u305B\u3093\u3002\u3069\u3061\u3089\u304B 1 \u3064\u306B\u3057\u3066\u304F\u3060\u3055\u3044\u3002`closed` \u3092\u5F53\u3066\u3066\u63CF\u3044\u3066\u3044\u307E\u3059\u3002"
-    });
-  }
-  const { [TITLE_KEY]: titleValue, ...keys } = args.keys;
-  let title;
-  if (titleValue !== void 0) {
-    if (collapse === "none") {
-      items.push({
-        label: `${TITLE_KEY}=`,
-        message: "\u306F `closed` \u304B `open` \u3068\u4E00\u7DD2\u306B\u66F8\u304D\u307E\u3059\u3002\u5F53\u3066\u305A\u306B\u3001\u6298\u308A\u7573\u307F\u306B\u5165\u308C\u305A\u63CF\u3044\u3066\u3044\u307E\u3059\u3002"
-      });
-    } else if (titleValue === "") {
-      items.push({
-        label: `${TITLE_KEY}=`,
-        message: "\u306E\u898B\u51FA\u3057\u304C\u3042\u308A\u307E\u305B\u3093\u3002`title=\u6E96\u5099` \u306E\u3088\u3046\u306B\u66F8\u3044\u3066\u304F\u3060\u3055\u3044\u3002\u898B\u51FA\u3057\u306F\u4E2D\u8EAB\u304B\u3089\u4F5C\u3063\u3066\u3044\u307E\u3059\u3002"
-      });
-    } else {
-      title = titleValue;
-    }
-  }
-  return {
-    collapse,
-    title,
-    items,
-    rest: {
-      args: args.args.filter((arg) => !COLLAPSE_ARGS.includes(arg)),
-      keys
-    }
-  };
-}
-
-// src/render/syntax/headings.ts
-function slugBase(text2) {
-  return text2.toLowerCase().trim().replace(/[^\p{L}\p{N}\p{M}_\- ]/gu, "").replaceAll(" ", "-");
-}
-function slugify2(text2, used) {
-  const base = slugBase(text2) || "heading";
-  const count = used.get(base);
-  if (count === void 0) {
-    used.set(base, 0);
-    return base;
-  }
-  used.set(base, count + 1);
-  return `${base}-${count + 1}`;
-}
-function assignHeadingIds(state) {
-  const env = envOf(state);
-  const used = /* @__PURE__ */ new Map();
-  const tokens = state.tokens;
-  for (let index = 0; index < tokens.length; index++) {
-    const open2 = tokens[index];
-    const inline2 = tokens[index + 1];
-    if (open2?.type !== "heading_open" || inline2?.type !== "inline") {
-      continue;
-    }
-    const text2 = textOf(inline2);
-    const id = slugify2(text2, used);
-    open2.attrSet("id", id);
-    open2.attrSet("data-mdmark-own", env.nonce);
-    env.headings.push({ level: Number(open2.tag.slice(1)), id, text: text2 });
-    if (featureOn(state, "anchors")) {
-      const anchor2 = new state.Token("html_inline", "", 0);
-      anchor2.content = markOwn(
-        `<a class="mdmark-anchor" href="#${escapeHtml2(id)}" aria-label="\u300C${escapeHtml2(text2)}\u300D\u3078\u306E\u30EA\u30F3\u30AF"></a>`,
-        env.nonce
-      );
-      anchor2.meta = { role: "heading-anchor" };
-      inline2.children?.push(anchor2);
-    }
-  }
-}
-
-// src/render/syntax/table-cells.ts
-var MERGE_UP = "^^";
-var MERGE_LEFT = "<<";
-function mergeWarning(options) {
-  const { label, row, column, reason } = options;
-  return {
-    label,
-    message: `${row + 1} \u884C\u76EE\u306E ${column + 1} \u5217\u76EE\u306F\u3001${reason}\u3002\u66F8\u3044\u305F\u6587\u5B57\u306E\u307E\u307E\u63CF\u3044\u3066\u3044\u307E\u3059\u3002`
-  };
-}
-function sourceOf(cells, row, column) {
-  return cells[row]?.[column]?.source ?? [row, column];
-}
-function planCellMerges(options) {
-  const { cells: texts, headRows } = options;
-  const cells = texts.map(
-    (row) => row.map(() => ({ rowspan: 1, colspan: 1 }))
-  );
-  const warnings = [];
-  const mergeColumns = /* @__PURE__ */ new Set();
-  for (const [row, values] of texts.entries()) {
-    for (const [column, text2] of values.entries()) {
-      const cell = cells[row]?.[column];
-      if (!cell || text2 !== MERGE_UP && text2 !== MERGE_LEFT) {
-        continue;
-      }
-      const up = text2 === MERGE_UP;
-      const reason = up ? planUp({ cells, row, column, headRows }) : planLeft({ cells, row, column });
-      if (reason) {
-        warnings.push(mergeWarning({ label: text2, row, column, reason }));
-      } else if (up && row >= headRows) {
-        mergeColumns.add(column);
-      }
-    }
-  }
-  return {
-    cells,
-    mergeColumns: [...mergeColumns].sort((a, b) => a - b),
-    warnings
-  };
-}
-function planUp(options) {
-  const { cells, row, column, headRows } = options;
-  if (row === 0) {
-    return "\u4E0A\u306B\u7D50\u5408\u3059\u308B\u30BB\u30EB\u304C\u3042\u308A\u307E\u305B\u3093";
-  }
-  if (row === headRows) {
-    return "\u898B\u51FA\u3057\u306E\u884C\u3068\u672C\u6587\u306E\u884C\u3092\u307E\u305F\u3044\u3067\u7D50\u5408\u3067\u304D\u307E\u305B\u3093";
-  }
-  const [sourceRow, sourceColumn] = sourceOf(cells, row - 1, column);
-  const source = cells[sourceRow]?.[sourceColumn];
-  if (!source || sourceColumn !== column || source.colspan !== 1 || sourceRow + source.rowspan !== row) {
-    return "\u4E0A\u306E\u30BB\u30EB\u3068\u7D50\u5408\u3059\u308B\u3068\u77E9\u5F62\u306B\u306A\u3089\u306A\u3044\u305F\u3081\u7D50\u5408\u3067\u304D\u307E\u305B\u3093";
-  }
-  source.rowspan += 1;
-  const cell = cells[row]?.[column];
-  if (cell) {
-    cell.merged = "up";
-    cell.source = [sourceRow, sourceColumn];
-  }
-  return void 0;
-}
-function planLeft(options) {
-  const { cells, row, column } = options;
-  if (column === 0) {
-    return "\u5DE6\u306B\u7D50\u5408\u3059\u308B\u30BB\u30EB\u304C\u3042\u308A\u307E\u305B\u3093";
-  }
-  const [sourceRow, sourceColumn] = sourceOf(cells, row, column - 1);
-  const source = cells[sourceRow]?.[sourceColumn];
-  if (!source || sourceRow !== row || source.rowspan !== 1 || sourceColumn + source.colspan !== column) {
-    return "\u5DE6\u306E\u30BB\u30EB\u3068\u7D50\u5408\u3059\u308B\u3068\u77E9\u5F62\u306B\u306A\u3089\u306A\u3044\u305F\u3081\u7D50\u5408\u3067\u304D\u307E\u305B\u3093";
-  }
-  source.colspan += 1;
-  const cell = cells[row]?.[column];
-  if (cell) {
-    cell.merged = "left";
-    cell.source = [sourceRow, sourceColumn];
-  }
-  return void 0;
-}
-
-// src/render/syntax/tables.ts
-var TABLE_KINDS = {
-  default: ["pin"],
-  data: ["sort", "pin", "filter"],
-  plain: []
-};
-var TABLE_FEATURES = [
-  "sort",
-  "pin",
-  "filter",
-  "count",
-  "columns",
-  "total",
-  "copy",
-  "rowlink"
-];
-var WRITABLE_KINDS = ["data", "plain"];
-var COLOR_KEYS = ["highlight", "row-color", "row-at"];
-var DEFAULT_HIGHLIGHT_COLOR = "blue";
-function codes(values) {
-  return values.map((value) => `\`${value}\``).join("\u30FB");
-}
-function readFilters(value, headers, warnings) {
-  const filters = [];
-  for (const item of value.split(",").map((part) => part.trim())) {
-    if (!item) {
-      continue;
-    }
-    const colon = headers.includes(item) ? -1 : item.lastIndexOf(":");
-    const name = colon > 0 ? item.slice(0, colon) : item;
-    const kind = colon > 0 ? item.slice(colon + 1) : "select";
-    const column = headers.indexOf(name);
-    if (column < 0) {
-      warnings.push({
-        label: name,
-        message: `\u306E\u5217\u540D \`${name}\` \u306F\u8868\u306B\u3042\u308A\u307E\u305B\u3093\u3002\u8868\u306E\u898B\u51FA\u3057\u306E\u6587\u5B57\u3067\u66F8\u3044\u3066\u304F\u3060\u3055\u3044\u3002`
-      });
-    } else if (!FILTER_KINDS.includes(kind)) {
-      warnings.push({
-        label: kind,
-        message: `\u306E\u7D5E\u308A\u8FBC\u307F\u306E\u7A2E\u985E \`${kind}\` \u306F\u4F7F\u3048\u307E\u305B\u3093\u3002\u4F7F\u3048\u308B\u7A2E\u985E\u306F ${codes(FILTER_KINDS)} \u3067\u3059\u3002\`${name}\` \u306E\u5217\u306B\u306F\u7D5E\u308A\u8FBC\u307F\u3092\u4ED8\u3051\u305A\u306B\u63CF\u3044\u3066\u3044\u307E\u3059\u3002`
-      });
-    } else {
-      filters.push({ column, kind });
-    }
-  }
-  return filters;
-}
-function readHide(value, headers, warnings) {
-  const hide2 = [];
-  for (const name of value.split(",").map((part) => part.trim())) {
-    if (!name) {
-      continue;
-    }
-    const column = headers.indexOf(name);
-    if (column < 0) {
-      warnings.push({
-        label: name,
-        message: `\u306E\u5217\u540D \`${name}\` \u306F\u8868\u306B\u3042\u308A\u307E\u305B\u3093\u3002\u8868\u306E\u898B\u51FA\u3057\u306E\u6587\u5B57\u3067\u66F8\u3044\u3066\u304F\u3060\u3055\u3044\u3002`
-      });
-    } else if (column === 0) {
-      warnings.push({
-        label: name,
-        message: `\u306E\u5217 \`${name}\` \u306F\u5148\u982D\u306E\u5217\u306E\u305F\u3081\u96A0\u305B\u307E\u305B\u3093\u3002\u5148\u982D\u306E\u5217\u306F\u884C\u306E\u8B58\u5225\u5B50\u3068\u884C\u3078\u306E\u30EA\u30F3\u30AF\u306E\u7F6E\u304D\u5834\u6240\u306A\u306E\u3067\u3001\u96A0\u3055\u305A\u306B\u63CF\u3044\u3066\u3044\u307E\u3059\u3002`
-      });
-    } else if (!hide2.includes(column)) {
-      hide2.push(column);
-    }
-  }
-  return hide2;
-}
-function readColumns(value, headers, warnings) {
-  const columns = [];
-  for (const name of value.split(",").map((part) => part.trim())) {
-    if (!name) {
-      continue;
-    }
-    const column = headers.indexOf(name);
-    if (column < 0) {
-      warnings.push(unknownColumn(name));
-    } else if (!columns.includes(column)) {
-      columns.push(column);
-    }
-  }
-  return columns;
-}
-function readTotals(value, headers, warnings) {
-  const totals = [];
-  for (const item of value.split(",").map((part) => part.trim())) {
-    if (!item) {
-      continue;
-    }
-    const colon = headers.includes(item) ? -1 : item.lastIndexOf(":");
-    const name = colon > 0 ? item.slice(0, colon) : item;
-    const calc = colon > 0 ? item.slice(colon + 1) : "";
-    const column = headers.indexOf(name);
-    if (column < 0) {
-      warnings.push({
-        label: name,
-        message: `\u306E\u5217\u540D \`${name}\` \u306F\u8868\u306B\u3042\u308A\u307E\u305B\u3093\u3002\u8868\u306E\u898B\u51FA\u3057\u306E\u6587\u5B57\u3067\u66F8\u3044\u3066\u304F\u3060\u3055\u3044\u3002`
-      });
-    } else if (!TOTAL_CALCS.includes(calc)) {
-      warnings.push({
-        label: calc || item,
-        message: `\u306E\u8A08\u7B97 \`${calc}\` \u306F\u4F7F\u3048\u307E\u305B\u3093\u3002\`total=\u5217\u540D:\u8A08\u7B97\` \u306E\u5F62\u3067\u66F8\u304D\u3001\u4F7F\u3048\u308B\u8A08\u7B97\u306F ${codes(TOTAL_CALCS)} \u3067\u3059\u3002\`${name}\` \u306E\u5217\u306F\u96C6\u8A08\u305B\u305A\u306B\u63CF\u3044\u3066\u3044\u307E\u3059\u3002`
-      });
-    } else {
-      const duplicated = totals.some(
-        (total) => total.column === column && total.calc === calc
-      );
-      if (!duplicated) {
-        totals.push({ column, calc });
-      }
-    }
-  }
-  return totals;
-}
-function readHeaderCount(options) {
-  const { key, value, limit, unit, fallback, warnings } = options;
-  const count = /^\d+$/.test(value) ? Number(value) : 0;
-  if (count >= 1 && count < limit) {
-    return count;
-  }
-  warnings.push({
-    label: `${key}=`,
-    message: `\`${value}\` \u306F\u4F7F\u3048\u307E\u305B\u3093\u30021 \u4EE5\u4E0A\u3067\u8868\u306E${unit}\u306E\u6570\uFF08${limit}\uFF09\u3088\u308A\u5C0F\u3055\u3044\u6574\u6570\u3092\u6307\u5B9A\u3057\u3066\u304F\u3060\u3055\u3044\u3002\u65E2\u5B9A\u306E ${fallback} \u3067\u63CF\u3044\u3066\u3044\u307E\u3059`
-  });
-  return fallback;
-}
-function readTableSpec(args, headers, rowCount) {
-  const warnings = [];
-  let kind = "default";
-  const featureArgs = [];
-  const unknownKinds = [];
-  const { collapse, title, items, rest } = readCollapse(
-    args ?? { args: [], keys: {} }
-  );
-  for (const arg of rest.args) {
-    if (arg.startsWith("+") || arg.startsWith("-")) {
-      featureArgs.push(arg);
-    } else if (WRITABLE_KINDS.includes(arg) && kind === "default") {
-      kind = arg;
-    } else {
-      unknownKinds.push(arg);
-    }
-  }
-  const features = [...TABLE_KINDS[kind]];
-  const applied = [];
-  const unknownFeatures = [];
-  for (const arg of featureArgs) {
-    const name = arg.slice(1);
-    if (!TABLE_FEATURES.includes(name)) {
-      unknownFeatures.push(arg);
-      continue;
-    }
-    applied.push(arg);
-    const position = features.indexOf(name);
-    if (arg.startsWith("+") && position < 0) {
-      features.push(name);
-    } else if (arg.startsWith("-") && position >= 0) {
-      features.splice(position, 1);
-    }
-  }
-  const appliedText = applied.length ? `\u65E2\u5B9A\u306E\u7A2E\u985E\u306B ${codes(applied)} \u3092\u5F53\u3066\u3066\u63CF\u3044\u3066\u3044\u307E\u3059\u3002` : "\u65E2\u5B9A\u306E\u7A2E\u985E\u3067\u63CF\u3044\u3066\u3044\u307E\u3059\u3002";
-  for (const unknown2 of unknownKinds) {
-    warnings.push({
-      label: unknown2,
-      message: `\u306E\u7A2E\u985E \`${unknown2}\` \u306F\u4F7F\u3048\u307E\u305B\u3093\u3002\u4F7F\u3048\u308B\u7A2E\u985E\u306F ${codes(WRITABLE_KINDS)} \u3067\u3059\u3002${appliedText}`
-    });
-  }
-  for (const arg of unknownFeatures) {
-    warnings.push({
-      label: arg,
-      message: `\u4F7F\u3048\u306A\u3044\u6A5F\u80FD\u3067\u3059\u3002\u4F7F\u3048\u308B\u6A5F\u80FD\u306F ${codes(TABLE_FEATURES)} \u3067\u3059`
-    });
-  }
-  let filters = [];
-  let hide2 = [];
-  let totals = [];
-  let headRows = 1;
-  let rowHeader = 0;
-  let pin;
-  let wide = [];
-  let check = [];
-  const keyFeatures = {
-    hide: "columns",
-    total: "total",
-    pin: "pin"
-  };
-  for (const [key, value] of Object.entries(rest.keys)) {
-    const needed = keyFeatures[key];
-    if (needed && !features.includes(needed)) {
-      warnings.push({
-        label: `${key}=`,
-        message: `\`+${needed}\` \u3092\u66F8\u3044\u305F\u8868\u3067\u3060\u3051\u4F7F\u3048\u307E\u3059\u3002\u5F53\u3066\u305A\u306B\u63CF\u3044\u3066\u3044\u307E\u3059`
-      });
-    } else if (key === "filter") {
-      filters = readFilters(value, headers, warnings);
-    } else if (key === "hide") {
-      hide2 = readHide(value, headers, warnings);
-    } else if (key === "total") {
-      totals = readTotals(value, headers, warnings);
-    } else if (key === "header-rows") {
-      headRows = readHeaderCount({
-        key,
-        value,
-        limit: rowCount,
-        unit: "\u884C",
-        fallback: 1,
-        warnings
-      });
-    } else if (key === "row-header") {
-      rowHeader = readHeaderCount({
-        key,
-        value,
-        limit: headers.length,
-        unit: "\u5217",
-        fallback: 0,
-        warnings
-      });
-    } else if (key === "pin") {
-      const column = headers.indexOf(value.trim());
-      if (column < 0) {
-        warnings.push(unknownColumn(value.trim()));
-      } else {
-        pin = column;
-      }
-    } else if (key === "wide") {
-      wide = readColumns(value, headers, warnings);
-    } else if (key === "check") {
-      check = readColumns(value, headers, warnings);
-    } else if (COLOR_KEYS.includes(key)) {
-    } else {
-      warnings.push({
-        label: `${key}=`,
-        message: `\u4F7F\u3048\u306A\u3044\u30AD\u30FC\u3067\u3059\u3002\u4F7F\u3048\u308B\u30AD\u30FC\u306F ${codes(["filter=", "hide=", "total=", "pin=", "wide=", "check=", "header-rows=", "row-header=", ...COLOR_KEYS.map((name) => `${name}=`)])} \u3067\u3059`
-      });
-    }
-  }
-  warnings.push(...items);
-  return {
-    kind,
-    features,
-    filters,
-    collapse,
-    title,
-    warnings,
-    hide: hide2,
-    totals,
-    headRows,
-    rowHeader,
-    pin,
-    wide,
-    check
-  };
-}
-function unknownColumn(name) {
-  return {
-    label: name,
-    message: `\u306E\u5217\u540D \`${name}\` \u306F\u8868\u306B\u3042\u308A\u307E\u305B\u3093\u3002\u8868\u306E\u898B\u51FA\u3057\u306E\u6587\u5B57\u3067\u66F8\u3044\u3066\u304F\u3060\u3055\u3044\u3002`
-  };
-}
-function unknownColor(name) {
-  return {
-    label: name,
-    message: `\u306E \`${name}\` \u306F\u8272\u306E\u540D\u524D\u3067\u306F\u3042\u308A\u307E\u305B\u3093\u3002\u4F7F\u3048\u308B\u8272\u306E\u540D\u524D\u306F ${codes(COLOR_NAMES)} \u3067\u3059\u3002\u8272\u3092\u4ED8\u3051\u305A\u306B\u63CF\u3044\u3066\u3044\u307E\u3059\u3002`
-  };
-}
-function missingEquals(item, form) {
-  return {
-    label: item,
-    message: `\u306E \`${item}\` \u306B \`=\` \u304C\u3042\u308A\u307E\u305B\u3093\u3002\`${form}\` \u306E\u5F62\u3067\u66F8\u3044\u3066\u304F\u3060\u3055\u3044\u3002`
-  };
-}
-function readHighlight(value, headers, warnings) {
-  const highlight = [];
-  for (const item of value.split(",").map((part) => part.trim())) {
-    if (!item) {
-      continue;
-    }
-    const colon = headers.includes(item) ? -1 : item.lastIndexOf(":");
-    const name = colon > 0 ? item.slice(0, colon) : item;
-    const color = colon > 0 ? item.slice(colon + 1) : DEFAULT_HIGHLIGHT_COLOR;
-    const column = headers.indexOf(name);
-    if (column < 0) {
-      warnings.push(unknownColumn(name));
-    } else if (!isColorName(color)) {
-      warnings.push(unknownColor(color));
-    } else {
-      highlight.push({ column, color });
-    }
-  }
-  return highlight;
-}
-function splitColumnHead(item, headers) {
-  for (let colon = item.indexOf(":"); colon > 0; colon = item.indexOf(":", colon + 1)) {
-    const column = headers.indexOf(item.slice(0, colon));
-    if (column >= 0) {
-      return { column, rest: item.slice(colon + 1) };
-    }
-  }
-  return void 0;
-}
-function readRowColor(value, headers, cells, rows, warnings) {
-  let column;
-  for (const item of value.split(",").map((part) => part.trim())) {
-    if (!item) {
-      continue;
-    }
-    const head = splitColumnHead(item, headers);
-    let pair = item;
-    if (head) {
-      column = head.column;
-      pair = head.rest;
-    } else if (column === void 0) {
-      const colon = item.indexOf(":");
-      warnings.push(unknownColumn(colon > 0 ? item.slice(0, colon) : item));
-      continue;
-    }
-    const equals = pair.lastIndexOf("=");
-    if (equals < 0) {
-      warnings.push(missingEquals(pair, "\u5217\u540D:\u5024=\u8272"));
-      continue;
-    }
-    const color = pair.slice(equals + 1);
-    if (!isColorName(color)) {
-      warnings.push(unknownColor(color));
-      continue;
-    }
-    const cell = pair.slice(0, equals);
-    for (const [row, values] of cells.entries()) {
-      if (values[column]?.trim() === cell) {
-        rows[row] = color;
-      }
-    }
-  }
-}
-function readRowAt(value, rows, warnings) {
-  for (const item of value.split(",").map((part) => part.trim())) {
-    if (!item) {
-      continue;
-    }
-    const equals = item.indexOf("=");
-    if (equals < 0) {
-      warnings.push(missingEquals(item, "\u4F4D\u7F6E=\u8272"));
-      continue;
-    }
-    const position = item.slice(0, equals);
-    const color = item.slice(equals + 1);
-    const range = /^(\d+)(?:-(\d+))?$/.exec(position);
-    const first = Number(range?.[1]);
-    const last = Number(range?.[2] ?? range?.[1]);
-    if (!range || first < 1 || last < first || last > rows.length) {
-      warnings.push({
-        label: position,
-        message: `\u306E\u884C\u306E\u4F4D\u7F6E \`${position}\` \u306F\u8868\u306B\u3042\u308A\u307E\u305B\u3093\u3002\u8868\u306E\u672C\u6587\u306F ${rows.length} \u884C\u3067\u3059\u3002\u884C\u306E\u4F4D\u7F6E\u3092 1\u301C${rows.length} \u3067\u66F8\u3044\u3066\u304F\u3060\u3055\u3044\u3002`
-      });
-    } else if (!isColorName(color)) {
-      warnings.push(unknownColor(color));
-    } else {
-      rows.fill(color, first - 1, last);
-    }
-  }
-}
-function readTableColors(args, headers, cells) {
-  const warnings = [];
-  const keys = args?.keys ?? {};
-  const highlight = keys.highlight === void 0 ? [] : readHighlight(keys.highlight, headers, warnings);
-  const rows = cells.map(() => null);
-  if (keys["row-color"] !== void 0) {
-    readRowColor(keys["row-color"], headers, cells, rows, warnings);
-  }
-  if (keys["row-at"] !== void 0) {
-    readRowAt(keys["row-at"], rows, warnings);
-  }
-  return { highlight, rows, warnings };
-}
-function applyTableColors(state, tableOpen, colors) {
-  const tokens = state.tokens;
-  const nonce = envOf(state).nonce;
-  const colorOf = new Map(
-    colors.highlight.map((item) => [item.column, item.color])
-  );
-  let inBody = false;
-  let row = -1;
-  let column = 0;
-  for (const index of ownTokenIndexes(tokens, tableOpen)) {
-    const token = tokens[index];
-    if (!token) {
-      continue;
-    }
-    if (token.type === "tbody_open") {
-      inBody = true;
-    } else if (token.type === "tr_open") {
-      column = 0;
-      row += inBody ? 1 : 0;
-      const color = inBody ? colors.rows[row] : null;
-      if (color) {
-        token.attrSet("data-color", color);
-        token.attrSet("data-mdmark-own", nonce);
-      }
-    } else if (token.type === "th_open" || token.type === "td_open") {
-      const color = colorOf.get(column);
-      if (color) {
-        token.attrJoin("class", "mdmark-col-highlight");
-        token.attrSet("data-color", color);
-        token.attrSet("data-mdmark-own", nonce);
-      }
-      column += 1;
-    }
-  }
-}
-function applyColumnStyles(state, tableOpen, spec) {
-  if (spec.wide.length === 0 && spec.check.length === 0) {
-    return;
-  }
-  const tokens = state.tokens;
-  const nonce = envOf(state).nonce;
-  let inBody = false;
-  let column = 0;
-  for (const index of ownTokenIndexes(tokens, tableOpen)) {
-    const token = tokens[index];
-    if (!token) {
-      continue;
-    }
-    if (token.type === "tbody_open") {
-      inBody = true;
-    } else if (token.type === "tr_open") {
-      column = 0;
-    } else if (token.type === "th_open" || token.type === "td_open") {
-      const checking = spec.check.includes(column);
-      if (spec.wide.includes(column)) {
-        token.attrJoin("class", "mdmark-wide");
-        token.attrSet("data-mdmark-own", nonce);
-      }
-      if (checking) {
-        token.attrJoin("class", "mdmark-align-center");
-        token.attrSet("data-mdmark-own", nonce);
-      }
-      const inline2 = tokens[index + 1];
-      const text2 = inline2?.type === "inline" ? textOf(inline2).trim() : "";
-      if (checking && inBody && inline2 && isCheckValue(text2)) {
-        token.attrSet("data-value", text2);
-        const html = new state.Token("html_inline", "", 0);
-        html.content = markOwn(renderCheckCell(text2), nonce);
-        inline2.children = [html];
-      }
-      column += 1;
-    }
-  }
-}
-function ownTokenIndexes(tokens, tableOpen) {
-  const indexes = [];
-  let depth = 0;
-  for (let index = tableOpen; index < tokens.length; index++) {
-    const type = tokens[index]?.type;
-    if (type === "table_open") {
-      depth += 1;
-    } else if (type === "table_close") {
-      depth -= 1;
-      if (depth === 0) {
-        break;
-      }
-    } else if (depth === 1) {
-      indexes.push(index);
-    }
-  }
-  return indexes;
-}
-function bodyRowCount(tokens, tableOpen) {
-  let count = 0;
-  let inBody = false;
-  for (const index of ownTokenIndexes(tokens, tableOpen)) {
-    const type = tokens[index]?.type;
-    if (type === "tbody_open") {
-      inBody = true;
-    } else if (type === "tbody_close") {
-      inBody = false;
-    } else if (inBody && type === "tr_open") {
-      count += 1;
-    }
-  }
-  return count;
-}
-function rowIdOf(text2, taken) {
-  const base = slugBase(text2) || "row";
-  let id = base;
-  for (let count = 1; taken.has(id); count++) {
-    id = `${base}-${count}`;
-  }
-  taken.add(id);
-  return id;
-}
-function linkRows(state, tokens, tableOpen, taken) {
-  const nonce = envOf(state).nonce;
-  const inlineHtml = (html) => {
-    const token = new state.Token("html_inline", "", 0);
-    token.content = markOwn(html, nonce);
-    return token;
-  };
-  let inBody = false;
-  for (const index of ownTokenIndexes(tokens, tableOpen)) {
-    const token = tokens[index];
-    if (token?.type === "tbody_open") {
-      inBody = true;
-    } else if (inBody && token?.type === "tr_open") {
-      const inline2 = tokens.slice(index + 1).find((t) => t.type === "inline");
-      if (!inline2) {
-        continue;
-      }
-      const text2 = textOf(inline2);
-      const id = rowIdOf(text2, taken);
-      token.attrSet("id", id);
-      token.attrSet("data-mdmark-own", nonce);
-      const [open2 = "", close = ""] = renderRowLink(
-        SLOT_MARKER,
-        id,
-        text2
-      ).split(SLOT_MARKER);
-      inline2.children = [
-        inlineHtml(open2),
-        ...inline2.children ?? [],
-        inlineHtml(close)
-      ];
-    }
-  }
-}
-function isItemWarning(item) {
-  return /^[+-]/.test(item.label) || item.label.endsWith("=") || item.label === MERGE_UP || item.label === MERGE_LEFT;
-}
-function warningsOf(mark, warnings) {
-  const items = warnings.filter(isItemWarning);
-  const sentences = warnings.filter((warning) => !isItemWarning(warning));
-  const result = sentences.map((warning) => ({
-    mark,
-    message: warning.message
-  }));
-  if (items.length) {
-    result.push({
-      mark,
-      message: "\u306E\u8AAD\u3081\u306A\u3044\u6307\u5B9A\u3092\u5F53\u3066\u305A\u306B\u63CF\u3044\u3066\u3044\u307E\u3059\u3002",
-      items
-    });
-  }
-  return result;
-}
-function decorateAttributes(state) {
-  const tokens = state.tokens;
-  let heading2 = "";
-  let headers = [];
-  let column = 0;
-  const outers = [];
-  for (let index = 0; index < tokens.length; index++) {
-    const token = tokens[index];
-    const next = tokens[index + 1];
-    if (!token) {
-      continue;
-    }
-    if (token.type === "heading_open") {
-      heading2 = next ? textOf(next) : "";
-    } else if (token.type === "table_open") {
-      token.attrSet("tabindex", "0");
-      token.attrSet("aria-label", heading2 ? `\u8868: ${heading2}` : "\u8868");
-      outers.push({ headers, column });
-      headers = [];
-    } else if (token.type === "table_close") {
-      ({ headers, column } = outers.pop() ?? { headers: [], column: 0 });
-    } else if (token.type === "tr_open") {
-      column = 0;
-    } else if (token.type === "th_open") {
-      headers.push(next ? textOf(next) : "");
-    } else if (token.type === "td_open") {
-      token.attrSet("data-label", headers[column] ?? "");
-      column += 1;
-    }
-  }
-}
-function bodyCellsOf(tokens, tableOpen) {
-  const rows = [];
-  let inBody = false;
-  for (const index of ownTokenIndexes(tokens, tableOpen)) {
-    const token = tokens[index];
-    if (token?.type === "tbody_open") {
-      inBody = true;
-    } else if (inBody && token?.type === "tr_open") {
-      rows.push([]);
-    } else if (inBody && (token?.type === "td_open" || token?.type === "th_open")) {
-      const inline2 = tokens[index + 1];
-      rows.at(-1)?.push(inline2 ? textOf(inline2) : "");
-    }
-  }
-  return rows;
-}
-function unreadableTotalWarnings(options) {
-  const { tokens, tableOpen, totals } = options;
-  const headers = headersOf(tokens, tableOpen);
-  return findUnreadableTotals({
-    rows: bodyCellsOf(tokens, tableOpen),
-    totals
-  }).map((item) => ({
-    message: `\u300C${headers[item.column] ?? ""}\u300D\u306E\u5217\u306B\u6570\u3068\u3057\u3066\u8AAD\u3081\u306A\u3044\u5024 ${codes(item.values)} \u304C\u3042\u308B\u305F\u3081\u3001${TOTAL_LABELS[item.calc]}\u3092\u51FA\u3057\u3066\u3044\u307E\u305B\u3093\u3002\u6570\u3092\u66F8\u304F\u304B\u3001\u30BB\u30EB\u3092\u7A7A\u306B\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
-  }));
-}
-function headersOf(tokens, tableOpen) {
-  let headers = [];
-  for (let index = tableOpen; index < tokens.length; index++) {
-    const token = tokens[index];
-    if (token?.type === "thead_close") {
-      break;
-    }
-    if (token?.type === "tr_open") {
-      headers = [];
-    } else if (token?.type === "th_open" && tokens[index + 1]) {
-      headers.push(textOf(tokens[index + 1]));
-    }
-  }
-  return headers;
-}
-function rowCellsOf(tokens, tableOpen) {
-  const rows = [];
-  let head = true;
-  for (const index of ownTokenIndexes(tokens, tableOpen)) {
-    const type = tokens[index]?.type;
-    if (type === "tbody_open") {
-      head = false;
-    } else if (type === "tr_open") {
-      rows.push({ head, cells: [] });
-    } else if (type === "th_open" || type === "td_open") {
-      rows.at(-1)?.cells.push({ open: index, close: index });
-    } else if (type === "th_close" || type === "td_close") {
-      const cell = rows.at(-1)?.cells.at(-1);
-      if (cell) {
-        cell.close = index;
-      }
-    }
-  }
-  return rows;
-}
-function toHeadCell(open2, close) {
-  open2.type = "th_open";
-  open2.tag = "th";
-  if (close) {
-    close.type = "th_close";
-    close.tag = "th";
-  }
-}
-function moveRowsToHead(tokens, tableOpen, count) {
-  const own2 = ownTokenIndexes(tokens, tableOpen);
-  const theadClose = own2.find((i) => tokens[i]?.type === "thead_close");
-  const tbodyOpen = own2.find((i) => tokens[i]?.type === "tbody_open");
-  if (theadClose === void 0 || tbodyOpen === void 0) {
-    return;
-  }
-  const rowEnds = own2.filter(
-    (i) => i > tbodyOpen && tokens[i]?.type === "tr_close"
-  );
-  const end = rowEnds[count - 1];
-  if (end === void 0) {
-    return;
-  }
-  const moved = tokens.splice(tbodyOpen + 1, end - tbodyOpen);
-  tokens.splice(theadClose, 0, ...moved);
-  for (const row of rowCellsOf(tokens, tableOpen).filter((r) => r.head)) {
-    for (const cell of row.cells) {
-      const open2 = tokens[cell.open];
-      if (open2?.type === "td_open") {
-        toHeadCell(open2, tokens[cell.close]);
-        open2.attrs = (open2.attrs ?? []).filter(
-          ([name]) => name !== "data-label"
-        );
-      }
-    }
-  }
-}
-function mergeTableCells(options) {
-  const { state, tableOpen, spec, dropped } = options;
-  const tokens = state.tokens;
-  const nonce = envOf(state).nonce;
-  if (spec.headRows > 1) {
-    moveRowsToHead(tokens, tableOpen, spec.headRows - 1);
-  }
-  const rows = rowCellsOf(tokens, tableOpen);
-  if (spec.headRows > 1) {
-    const labels = headersOf(tokens, tableOpen);
-    for (const row of rows.filter((r) => !r.head)) {
-      for (const [column, cell] of row.cells.entries()) {
-        tokens[cell.open]?.attrSet("data-label", labels[column] ?? "");
-      }
-    }
-  }
-  const texts = rows.map(
-    (row) => row.cells.map((cell) => {
-      const inline2 = tokens[cell.open + 1];
-      return inline2?.type === "inline" ? textOf(inline2) : "";
-    })
-  );
-  const plan = planCellMerges({ cells: texts, headRows: spec.headRows });
-  const setOwn = (token, name, value) => {
-    token.attrSet(name, value);
-    token.attrSet("data-mdmark-own", nonce);
-  };
-  for (const [r, row] of rows.entries()) {
-    for (const [c, cell] of row.cells.entries()) {
-      const open2 = tokens[cell.open];
-      const planned = plan.cells[r]?.[c];
-      if (!open2 || !planned) {
-        continue;
-      }
-      if (row.head && planned.merged) {
-        for (let index = cell.open; index <= cell.close; index++) {
-          const token = tokens[index];
-          if (token) {
-            dropped.add(token);
-          }
-        }
-        continue;
-      }
-      if (!row.head && c < spec.rowHeader) {
-        toHeadCell(open2, tokens[cell.close]);
-        open2.attrs = [["scope", "row"], ...open2.attrs ?? []];
-        open2.attrSet("data-mdmark-own", nonce);
-      }
-      if (planned.merged && planned.source) {
-        const [sourceRow, sourceColumn] = planned.source;
-        const source = rows[sourceRow]?.cells[sourceColumn];
-        const from = source ? tokens[source.open + 1] : void 0;
-        const to = tokens[cell.open + 1];
-        if (from?.type === "inline" && to?.type === "inline") {
-          to.content = from.content;
-          to.children = [...from.children ?? []];
-        }
-        setOwn(open2, "data-merge", planned.merged);
-        setOwn(open2, "hidden", "hidden");
-        continue;
-      }
-      if (planned.rowspan > 1) {
-        setOwn(open2, "rowspan", String(planned.rowspan));
-      }
-      if (planned.colspan > 1) {
-        setOwn(open2, "colspan", String(planned.colspan));
-      }
-      if (row.head && (spec.headRows > 1 || planned.rowspan > 1 || planned.colspan > 1)) {
-        setOwn(open2, "scope", planned.colspan > 1 ? "colgroup" : "col");
-      }
-    }
-  }
-  return { mergeColumns: plan.mergeColumns, warnings: plan.warnings };
-}
-function collectRanges(tokens) {
-  const ranges = [];
-  tokens.forEach((token, index) => {
-    const mark = markOf(token);
-    if (mark?.name === "table" && !mark.closing) {
-      ranges.push({
-        open: index,
-        close: findClose(tokens, index, "table"),
-        mark,
-        warned: false
-      });
-    }
-  });
-  return ranges;
-}
-function decorateTables(state) {
-  decorateAttributes(state);
-  if (!featureOn(state, "table")) {
-    return;
-  }
-  const tokens = state.tokens;
-  const ranges = collectRanges(tokens);
-  const taken = new Set(envOf(state).headings.map((heading2) => heading2.id));
-  const out = [];
-  const openTables = [];
-  const dropped = /* @__PURE__ */ new Set();
-  for (let index = 0; index < tokens.length; index++) {
-    const token = tokens[index];
-    if (!token || dropped.has(token)) {
-      continue;
-    }
-    const mark = markOf(token);
-    if (mark?.name === "table") {
-      continue;
-    }
-    const outer = openTables.at(-1);
-    if (token.type === "table_close" && outer) {
-      openTables.pop();
-      out.push(token);
-      const close = ownBlock(state, outer.tail);
-      close.meta = { role: "table-close" };
-      out.push(close);
-      continue;
-    }
-    if (token.type !== "table_open") {
-      out.push(token);
-      continue;
-    }
-    const range = ranges.filter(
-      (candidate) => candidate.open < index && candidate.open > (outer?.open ?? -1) && (candidate.close < 0 || index < candidate.close)
-    ).pop();
-    const viewSpec = token.meta?.tableSpec;
-    const rowCount = bodyRowCount(tokens, index) + 1;
-    let spec = viewSpec ?? readTableSpec(range?.mark.args, headersOf(tokens, index), rowCount);
-    let mergeColumns = [];
-    if (range && !viewSpec) {
-      if (spec.headRows > 1) {
-        const bottom = bodyCellsOf(tokens, index)[spec.headRows - 2] ?? [];
-        spec = readTableSpec(range.mark.args, bottom, rowCount);
-      }
-      const merged = mergeTableCells({
-        state,
-        tableOpen: index,
-        spec,
-        dropped
-      });
-      mergeColumns = merged.mergeColumns;
-      spec.warnings.push(...merged.warnings);
-    }
-    const filtering = spec.features.includes("filter");
-    const html = renderTable({
-      kind: spec.kind,
-      features: spec.features,
-      filters: filtering ? spec.filters : [],
-      collapse: spec.collapse,
-      title: spec.title,
-      rowCount: bodyRowCount(tokens, index),
-      hide: spec.hide,
-      totals: spec.totals,
-      mergeColumns,
-      pin: spec.pin,
-      check: spec.check,
-      body: SLOT_MARKER
-    });
-    if (spec.features.includes("rowlink")) {
-      linkRows(state, tokens, index, taken);
-    }
-    const colors = readTableColors(
-      range?.mark.args,
-      headersOf(tokens, index),
-      bodyCellsOf(tokens, index)
-    );
-    applyTableColors(state, index, colors);
-    applyColumnStyles(state, index, spec);
-    const [head = "", tail = ""] = html.split(SLOT_MARKER);
-    const divEnd = head.indexOf(">") + 1;
-    const warnings = range ? warningsOf(range.mark.raw, spec.warnings) : [];
-    if (range && range.close < 0 && !range.warned) {
-      range.warned = true;
-      warnings.push(unclosedWarning(range.mark));
-    }
-    if (range) {
-      for (const warning of warningsOf(range.mark.raw, colors.warnings)) {
-        out.push(warningBlock(state, warning));
-      }
-    }
-    if (spec.features.includes("total")) {
-      for (const warning of unreadableTotalWarnings({
-        tokens,
-        tableOpen: index,
-        totals: spec.totals
-      })) {
-        out.push(warningBlock(state, warning));
-      }
-    }
-    const open2 = ownBlock(
-      state,
-      head.slice(0, divEnd),
-      range ? tokens[range.open] : token
-    );
-    open2.meta = { role: "table-open" };
-    out.push(open2);
-    for (const warning of warnings) {
-      out.push(warningBlock(state, warning));
-    }
-    out.push(ownBlock(state, head.slice(divEnd)));
-    out.push(token);
-    openTables.push({ open: index, tail });
-  }
-  state.tokens = out;
-}
-
-// src/render/syntax/images.ts
-var MEDIA_EXTENSIONS = {
-  video: ["mp4", "m4v", "webm", "mov", "ogv"],
-  audio: ["mp3", "m4a", "aac", "ogg", "oga", "opus", "wav", "flac"]
-};
-var IMAGE_ATTRIBUTE_NAMES = [
-  "width",
-  "align",
-  "nolightbox",
-  "autoplay",
-  "muted",
-  "loop",
-  "poster"
-];
-var MEDIA_ONLY_ATTRIBUTES = ["autoplay", "muted", "loop", "poster"];
-var ALIGNS = ["left", "center", "right"];
-var MAX_WIDTH_PERCENT = 100;
-var ONLY_PATTERN = /#only-(dark|light)$/;
-var ATTRIBUTE_PATTERN = /^\{([^{}]*)\}/;
-function mediaKindOf(src) {
-  const path = src.split(/[?#]/)[0] ?? "";
-  const name = path.slice(path.lastIndexOf("/") + 1);
-  const dot = name.lastIndexOf(".");
-  const extension = dot < 0 ? "" : name.slice(dot + 1).toLowerCase();
-  if (MEDIA_EXTENSIONS.video.includes(extension)) {
-    return "video";
-  }
-  if (MEDIA_EXTENSIONS.audio.includes(extension)) {
-    return "audio";
-  }
-  return extension === "gif" ? "gif" : "image";
-}
-function readWidth(value) {
-  const pixels = /^(\d+)(?:px)?$/.exec(value);
-  if (pixels && Number(pixels[1]) >= 1) {
-    return `${Number(pixels[1])}px`;
-  }
-  const percent = /^(\d+)%$/.exec(value);
-  const amount = Number(percent?.[1]);
-  if (percent && amount >= 1 && amount <= MAX_WIDTH_PERCENT) {
-    return `${amount}%`;
-  }
-  return void 0;
-}
-function readImageAttributes(text2, kind, inline2) {
-  const attributes = {
-    kind,
-    lightbox: true,
-    autoplay: false,
-    muted: false,
-    loop: false,
-    items: []
-  };
-  const media = kind === "video" || kind === "audio";
-  const unreadable = (label, message) => attributes.items.push({ label, message });
-  for (const part of text2.split(/\s+/).filter((item) => item !== "")) {
-    const equals = part.indexOf("=");
-    const name = equals < 0 ? part : part.slice(0, equals);
-    const value = equals < 0 ? void 0 : part.slice(equals + 1);
-    if (MEDIA_ONLY_ATTRIBUTES.includes(name) && !media) {
-      unreadable(part, "\u52D5\u753B\u3068\u97F3\u58F0\u306B\u3060\u3051\u66F8\u3051\u308B\u5C5E\u6027\u3067\u3059\u3002");
-    } else if (name === "width" && value !== void 0) {
-      const width = readWidth(value);
-      if (width === void 0) {
-        unreadable(
-          part,
-          `\u5E45\u306F \`300\`\u30FB\`300px\` \u306E px \u304B\u3001\`1%\`\u301C\`${MAX_WIDTH_PERCENT}%\` \u3067\u66F8\u3044\u3066\u304F\u3060\u3055\u3044\u3002`
-        );
-      } else {
-        attributes.width = width;
-      }
-    } else if (name === "align" && inline2) {
-      unreadable(
-        name,
-        "\u6587\u306E\u4E2D\u306E\u753B\u50CF\u306B\u306F\u66F8\u3051\u306A\u3044\u5C5E\u6027\u3067\u3059\u3002\u753B\u50CF\u3060\u3051\u306E\u6BB5\u843D\u306B\u3057\u3066\u304F\u3060\u3055\u3044\u3002"
-      );
-    } else if (name === "align" && ALIGNS.includes(value)) {
-      attributes.align = value;
-    } else if (name === "align") {
-      unreadable(part, `\u914D\u7F6E\u306F ${codes(ALIGNS)} \u3067\u66F8\u3044\u3066\u304F\u3060\u3055\u3044\u3002`);
-    } else if (part === "nolightbox") {
-      attributes.lightbox = false;
-    } else if (part === "autoplay" || part === "muted" || part === "loop") {
-      attributes[part] = true;
-    } else if (name === "poster" && kind === "video" && value) {
-      attributes.poster = value;
-    } else if (name === "poster") {
-      unreadable(part, "\u52D5\u753B\u306B\u3060\u3051\u3001`poster=\u30D1\u30B9` \u306E\u5F62\u3067\u66F8\u3051\u308B\u5C5E\u6027\u3067\u3059\u3002");
-    } else {
-      unreadable(part, "\u4F7F\u3048\u306A\u3044\u5C5E\u6027\u3067\u3059\u3002");
-    }
-  }
-  if (attributes.autoplay) {
-    attributes.muted = true;
-  }
-  return attributes;
-}
-function imageAttributesOf(token) {
-  return token.meta?.mdmarkImage;
-}
-function soleImageOf(inline2) {
-  const rest = (inline2?.children ?? []).filter(
-    (child) => !(child.type === "text" && child.content.trim() === "")
-  );
-  const [only] = rest;
-  return rest.length === 1 && only?.type === "image" ? only : void 0;
-}
-function kindOf(state, src) {
-  const kind = mediaKindOf(src);
-  const media = kind === "video" || kind === "audio";
-  return media && !featureOn(state, "media") ? "image" : kind;
-}
-var ATTRIBUTE_LIST = codes(IMAGE_ATTRIBUTE_NAMES);
-function readImages(state) {
-  const images = featureOn(state, "images");
-  const nonce = envOf(state).nonce;
-  const warnings = [];
-  for (const [index, token] of state.tokens.entries()) {
-    const children = token.children;
-    if (token.type !== "inline" || !children) {
-      continue;
-    }
-    const sole = soleImageOf(token);
-    const items = [];
-    for (const [position, child] of children.entries()) {
-      if (child.type !== "image") {
-        continue;
-      }
-      const src = String(child.attrGet("src") ?? "");
-      const kind = kindOf(state, src);
-      const next = children[position + 1];
-      const found = images && next?.type === "text" ? ATTRIBUTE_PATTERN.exec(next.content) : null;
-      const inline2 = child !== sole && !isSoleWithAttributes(children, position);
-      const attributes = readImageAttributes(found?.[1] ?? "", kind, inline2);
-      if (found && next) {
-        next.content = next.content.slice(found[0].length);
-      }
-      child.meta = { ...child.meta ?? {}, mdmarkImage: attributes };
-      if (kind === "gif") {
-        child.attrSet("data-gif", "");
-      }
-      if (inline2 && attributes.width !== void 0) {
-        child.attrSet("style", `--mdmark-image-width: ${attributes.width}`);
-        child.attrSet("data-mdmark-own", nonce);
-      }
-      items.push(...attributes.items);
-    }
-    token.children = children.filter(
-      (child) => !(child.type === "text" && child.content === "")
-    );
-    if (items.length) {
-      warnings.push({ index, items });
-    }
-  }
-  for (const { index, items } of warnings.reverse()) {
-    state.tokens.splice(
-      blockStartOf(state.tokens, index),
-      0,
-      warningBlock(state, {
-        message: `\u753B\u50CF\u306E\u8AAD\u3081\u306A\u3044\u5C5E\u6027\u3092\u5F53\u3066\u305A\u306B\u63CF\u3044\u3066\u3044\u307E\u3059\u3002\u66F8\u3051\u308B\u5C5E\u6027\u306F ${ATTRIBUTE_LIST} \u3067\u3059\u3002`,
-        items
-      })
-    );
-  }
-}
-function isSoleWithAttributes(children, position) {
-  return children.every((child, at) => {
-    if (at === position) {
-      return true;
-    }
-    if (child.type !== "text") {
-      return false;
-    }
-    const content = at === position + 1 ? child.content.replace(ATTRIBUTE_PATTERN, "") : child.content;
-    return content.trim() === "";
-  });
-}
-function blockStartOf(tokens, index) {
-  let at = index;
-  while (at > 0 && (tokens[at]?.level ?? 0) > 0) {
-    at -= 1;
-  }
-  return at;
-}
-function altOf(image2) {
-  const children = image2.children ?? [];
-  return children.length ? children.map((child) => child.content).join("") : image2.content;
-}
-function onlyOf(src) {
-  return ONLY_PATTERN.exec(src)?.[1];
-}
-function imageFigureHtml(image2, extra = {}) {
-  const src = String(image2.attrGet("src") ?? "");
-  const attributes = imageAttributesOf(image2);
-  const title = String(image2.attrGet("title") ?? "");
-  return renderImageFigure({
-    src,
-    alt: altOf(image2),
-    ...title ? { caption: title } : {},
-    ...attributes?.width === void 0 ? {} : { width: attributes.width },
-    ...attributes?.align === void 0 ? {} : { align: attributes.align },
-    lightbox: attributes?.lightbox ?? true,
-    ...onlyOf(src) === void 0 ? {} : { only: onlyOf(src) },
-    ...extra,
-    opener: false,
-    gif: attributes?.kind === "gif"
-  });
-}
-function mediaHtml(image2, kind) {
-  const attributes = imageAttributesOf(image2);
-  const title = String(image2.attrGet("title") ?? "");
-  return renderMedia({
-    kind,
-    src: String(image2.attrGet("src") ?? ""),
-    alt: altOf(image2),
-    ...title ? { caption: title } : {},
-    ...attributes?.width === void 0 ? {} : { width: attributes.width },
-    ...attributes?.poster === void 0 ? {} : { poster: attributes.poster },
-    autoplay: attributes?.autoplay ?? false,
-    muted: attributes?.muted ?? false,
-    loop: attributes?.loop ?? false
-  });
-}
-function mediaKindOfToken(image2) {
-  const kind = imageAttributesOf(image2)?.kind;
-  return kind === "video" || kind === "audio" ? kind : void 0;
-}
-function buildImageFigures(state) {
-  const images = featureOn(state, "images");
-  const media = featureOn(state, "media");
-  if (!images && !media) {
-    return;
-  }
-  const tokens = state.tokens;
-  const out = [];
-  for (let index = 0; index < tokens.length; index++) {
-    const token = tokens[index];
-    const inline2 = tokens[index + 1];
-    const close = tokens[index + 2];
-    if (token.type !== "paragraph_open" || inline2?.type !== "inline") {
-      out.push(token);
-      continue;
-    }
-    const sole = soleImageOf(inline2);
-    const soleMedia = sole ? mediaKindOfToken(sole) : void 0;
-    if (sole && soleMedia && media) {
-      out.push(ownBlock(state, mediaHtml(sole, soleMedia), token));
-      index += 2;
-      continue;
-    }
-    if (sole && images && !soleMedia) {
-      out.push(ownBlock(state, imageFigureHtml(sole), token));
-      index += 2;
-      continue;
-    }
-    const after = [];
-    let linkDepth = 0;
-    const children = [];
-    for (const child of inline2.children ?? []) {
-      linkDepth += child.type === "link_open" ? 1 : child.type === "link_close" ? -1 : 0;
-      const kind = child.type === "image" ? mediaKindOfToken(child) : void 0;
-      if (kind && media && linkDepth === 0) {
-        after.push(ownBlock(state, mediaHtml(child, kind), token));
-        continue;
-      }
-      const only = child.type === "image" ? onlyOf(String(child.attrGet("src") ?? "")) : void 0;
-      if (only && images) {
-        child.attrJoin("class", `mdmark-only-${only}`);
-        child.attrSet("data-mdmark-own", envOf(state).nonce);
-      }
-      children.push(child);
-    }
-    inline2.children = children;
-    out.push(token, inline2);
-    if (close) {
-      out.push(close);
-    }
-    out.push(...after);
-    index += 2;
-  }
-  state.tokens = out;
 }
 
 // src/render/syntax/figures.ts
@@ -68827,13 +65543,8 @@ function matchingClose(tokens, start, match) {
   }
   return -1;
 }
-function figureTarget(state, start) {
-  const tokens = state.tokens;
+function figureTarget(tokens, start) {
   const first = tokens[start];
-  const firstMark = markOf(first);
-  if (first && firstMark?.name === "gallery" && !firstMark.closing && featureOn(state, "gallery")) {
-    return { kind: "image", end: start, caption: "", gallery: first };
-  }
   if (first?.meta?.[DIAGRAM_META] === true) {
     return { kind: "image", end: start, caption: "" };
   }
@@ -68841,13 +65552,10 @@ function figureTarget(state, start) {
     const children = tokens[start + 1]?.children ?? [];
     const image2 = children.find((child) => child.type === "image");
     if (image2 && children.every((child) => child.type === "image")) {
-      const kind = imageAttributesOf(image2)?.kind;
-      const still = kind !== "video" && kind !== "audio";
       return {
         kind: "image",
         end: start + 2,
-        caption: String(image2.attrGet("title") ?? ""),
-        ...still && children.length === 1 && featureOn(state, "images") ? { image: image2 } : {}
+        caption: String(image2.attrGet("title") ?? "")
       };
     }
     return void 0;
@@ -68883,11 +65591,11 @@ function rewriteReferences(state, inline2, figures) {
   const broken = [];
   const children = inline2.children ?? [];
   for (let index = 0; index < children.length; index++) {
-    const open2 = children[index];
-    if (open2?.type !== "link_open") {
+    const open3 = children[index];
+    if (open3?.type !== "link_open") {
       continue;
     }
-    const id = referencedId(open2.attrGet("href"));
+    const id = referencedId(open3.attrGet("href"));
     if (id === void 0) {
       continue;
     }
@@ -68919,7 +65627,7 @@ function numberFigures(state) {
   for (let index = 0; index < tokens.length; index++) {
     const token = tokens[index];
     const mark = markOf(token);
-    const target = mark?.name === "fig" && !mark.closing ? figureTarget(state, index + 1) : void 0;
+    const target = mark?.name === "fig" && !mark.closing ? figureTarget(tokens, index + 1) : void 0;
     if (!token || !mark || !target) {
       if (token) {
         out.push(token);
@@ -68940,31 +65648,9 @@ function numberFigures(state) {
     } else {
       figures.set(id, { kind: target.kind, number: number4 });
     }
-    const figureId = duplicated ? void 0 : id;
-    if (target.gallery) {
-      target.gallery.meta = {
-        ...target.gallery.meta,
-        figure: { id: figureId, number: number4 }
-      };
-      continue;
-    }
-    if (target.image) {
-      out.push(
-        ownBlock(
-          state,
-          imageFigureHtml(target.image, {
-            ...figureId === void 0 ? {} : { id: `fig-${figureId}` },
-            label: `\u56F3 ${number4}`
-          }),
-          token
-        )
-      );
-      index = target.end;
-      continue;
-    }
     const html = renderFigure({
       kind: target.kind,
-      id: figureId,
+      id: duplicated ? void 0 : id,
       number: number4,
       caption: target.caption,
       body: SLOT_MARKER
@@ -68999,134 +65685,6 @@ function numberFigures(state) {
     result.push(token);
   }
   state.tokens = result;
-}
-
-// src/parts/gallery.ts
-var DEFAULT_COLS = 2;
-function renderGallery(options) {
-  const { cols = DEFAULT_COLS, body } = options;
-  return `<div class="mdmark-gallery" style="--mdmark-gallery-cols: ${cols}"><div class="mdmark-gallery-grid">${body}</div></div>`;
-}
-
-// src/render/syntax/gallery.ts
-var GALLERY_COLS = { min: 1, max: 6, default: 2 };
-var SUBFIGURE_LETTERS = "abcdefghijklmnopqrstuvwxyz";
-function readGalleryOptions(mark) {
-  const items = [];
-  let cols = GALLERY_COLS.default;
-  for (const part of (mark.rest ?? "").split(/\s+/).filter(Boolean)) {
-    const equals = part.indexOf("=");
-    const key = equals < 0 ? void 0 : part.slice(0, equals);
-    const value = part.slice(equals + 1);
-    const count = Number(value);
-    if (key === void 0) {
-      items.push({
-        label: part,
-        message: "\u4F7F\u3048\u306A\u3044\u6307\u5B9A\u3067\u3059\u3002\u4F7F\u3048\u308B\u6307\u5B9A\u306F `cols=` \u3067\u3059\u3002"
-      });
-    } else if (key !== "cols") {
-      items.push({
-        label: part,
-        message: "\u4F7F\u3048\u306A\u3044\u30AD\u30FC\u3067\u3059\u3002\u4F7F\u3048\u308B\u30AD\u30FC\u306F `cols=` \u3067\u3059\u3002"
-      });
-    } else if (/^\d+$/.test(value) && count >= GALLERY_COLS.min && count <= GALLERY_COLS.max) {
-      cols = count;
-    } else {
-      items.push({
-        label: part,
-        message: `\u5217\u306E\u6570\u306F ${GALLERY_COLS.min}\u301C${GALLERY_COLS.max} \u306E\u6574\u6570\u3067\u66F8\u3044\u3066\u304F\u3060\u3055\u3044\u3002${GALLERY_COLS.default} \u5217\u3067\u63CF\u3044\u3066\u3044\u307E\u3059\u3002`
-      });
-    }
-  }
-  return { cols, items };
-}
-function imagesIn(tokens) {
-  return tokens.flatMap(
-    (token) => (token.children ?? []).filter((child) => child.type === "image")
-  );
-}
-function galleryWarnings(mark, options) {
-  const warnings = [];
-  const max = SUBFIGURE_LETTERS.length;
-  const messages = [];
-  if (options.count === 0) {
-    messages.push("\u306E\u7BC4\u56F2\u306B\u753B\u50CF\u304C\u3042\u308A\u307E\u305B\u3093\u3002\u7BC4\u56F2\u306E\u4E2D\u306B\u753B\u50CF\u3092\u66F8\u3044\u3066\u304F\u3060\u3055\u3044\u3002");
-  } else if (options.count > max) {
-    messages.push(
-      `\u306E\u7BC4\u56F2\u306E\u753B\u50CF\u304C ${options.count} \u679A\u3042\u308A\u307E\u3059\u3002\u753B\u50CF\u306F ${max} \u679A\u307E\u3067\u306B\u3057\u3066\u304F\u3060\u3055\u3044\u3002${max + 1} \u679A\u76EE\u304B\u3089\u306F\u30B5\u30D6\u56F3\u306E\u756A\u53F7\u3092\u4ED8\u3051\u305A\u306B\u63CF\u3044\u3066\u3044\u307E\u3059\u3002`
-    );
-  }
-  if (options.items.length) {
-    messages.push("\u306E\u8AAD\u3081\u306A\u3044\u6307\u5B9A\u3092\u5F53\u3066\u305A\u306B\u63CF\u3044\u3066\u3044\u307E\u3059\u3002");
-  }
-  if (messages.length) {
-    warnings.push({
-      mark: mark.raw,
-      message: messages.join(""),
-      ...options.items.length ? { items: options.items } : {}
-    });
-  }
-  if (!options.closed) {
-    warnings.push(unclosedWarning(mark));
-  }
-  return warnings;
-}
-function buildGallery(state) {
-  if (!featureOn(state, "gallery")) {
-    return;
-  }
-  const tokens = state.tokens;
-  const out = [];
-  for (let index = 0; index < tokens.length; index++) {
-    const token = tokens[index];
-    const mark = markOf(token);
-    if (mark?.name !== "gallery" || mark.closing) {
-      out.push(token);
-      continue;
-    }
-    const close = findClose(tokens, index, "gallery");
-    const end = close < 0 ? tokens.length : close;
-    const images = imagesIn(tokens.slice(index + 1, end));
-    const { cols, items } = readGalleryOptions(mark);
-    const figure = token.meta.figure;
-    for (const warning of galleryWarnings(mark, {
-      items,
-      count: images.length,
-      closed: close >= 0
-    })) {
-      out.push(warningBlock(state, warning));
-    }
-    const [figureHead = "", figureTail = ""] = figure ? splitSlots(
-      renderFigure({
-        kind: "image",
-        ...figure.id === void 0 ? {} : { id: figure.id },
-        number: figure.number,
-        body: SLOT_MARKER
-      })
-    ) : [];
-    const [galleryHead = "", galleryTail = ""] = splitSlots(
-      renderGallery({ cols, body: SLOT_MARKER })
-    );
-    out.push(ownBlock(state, `${figureHead}${galleryHead}`, token));
-    for (const [position, image2] of images.entries()) {
-      const letter = figure ? SUBFIGURE_LETTERS[position] : void 0;
-      out.push(
-        ownBlock(
-          state,
-          imageFigureHtml(
-            image2,
-            figure && letter ? {
-              ...figure.id === void 0 ? {} : { id: `fig-${figure.id}-${letter}` },
-              label: `\u56F3 ${figure.number}${letter}`
-            } : {}
-          )
-        )
-      );
-    }
-    out.push(ownBlock(state, `${galleryTail}${figureTail}`));
-    index = end;
-  }
-  state.tokens = out;
 }
 
 // src/render/syntax/glossary.ts
@@ -69269,6 +65827,46 @@ function glossaryRule(state) {
   state.tokens = out;
 }
 
+// src/render/syntax/headings.ts
+function slugBase(text2) {
+  return text2.toLowerCase().trim().replace(/[^\p{L}\p{N}\p{M}_\- ]/gu, "").replaceAll(" ", "-");
+}
+function slugify2(text2, used) {
+  const base = slugBase(text2) || "heading";
+  const count = used.get(base);
+  if (count === void 0) {
+    used.set(base, 0);
+    return base;
+  }
+  used.set(base, count + 1);
+  return `${base}-${count + 1}`;
+}
+function assignHeadingIds(state) {
+  const env = envOf(state);
+  const used = /* @__PURE__ */ new Map();
+  const tokens = state.tokens;
+  for (let index = 0; index < tokens.length; index++) {
+    const open3 = tokens[index];
+    const inline2 = tokens[index + 1];
+    if (open3?.type !== "heading_open" || inline2?.type !== "inline") {
+      continue;
+    }
+    const text2 = textOf(inline2);
+    const id = slugify2(text2, used);
+    open3.attrSet("id", id);
+    open3.attrSet("data-mdmark-own", env.nonce);
+    env.headings.push({ level: Number(open3.tag.slice(1)), id, text: text2 });
+    if (featureOn(state, "anchors")) {
+      const anchor2 = new state.Token("html_inline", "", 0);
+      anchor2.content = markOwn(
+        `<a class="mdmark-anchor" href="#${escapeHtml2(id)}" aria-label="\u300C${escapeHtml2(text2)}\u300D\u3078\u306E\u30EA\u30F3\u30AF"></a>`,
+        env.nonce
+      );
+      inline2.children?.push(anchor2);
+    }
+  }
+}
+
 // src/parts/embedded-html.ts
 function renderEmbeddedHtml(props) {
   const { html, wide = false } = props;
@@ -69356,24 +65954,11 @@ var DIAGRAM_ONLY_TAGS = /* @__PURE__ */ new Set([
   "label"
 ]);
 var DROP_ATTRIBUTE = "data-mdmark-drop";
-var DIAGRAM_STYLE_PATTERN = /^(?:\s*(?:(?:left|top|width|height):-?\d+(?:\.\d+)?px|padding:\d+(?:\.\d+)?px(?: \d+(?:\.\d+)?px)?|transform:scale\(\d+(?:\.\d+)?\))\s*;?)+$/;
+var DIAGRAM_STYLE_PATTERN = /^(?:\s*(?:(?:left|top|width|height):-?\d+(?:\.\d+)?px|transform:scale\(\d+(?:\.\d+)?\))\s*;?)+$/;
 var CODE_DIGITS_PATTERN = /^\s*--mdmark-code-digits\s*:\s*(\d+)\s*;?\s*$/;
-var IMAGE_WIDTH_PATTERN = /^\s*--mdmark-image-width\s*:\s*(\d+(?:px|%))\s*;?\s*$/;
-var GALLERY_COLS_PATTERN = /^\s*--mdmark-gallery-cols\s*:\s*([1-6])\s*;?\s*$/;
-var MEDIA_TAGS = /* @__PURE__ */ new Set(["video", "audio"]);
 var SOURCE_LINE_ATTRIBUTE = "data-source-line";
 var SOURCE_LINE_PATTERN = /^\d+$/;
-var DATA_IMAGE_PATTERN = /^data:image\/(?:png|jpeg|gif|webp|svg\+xml);base64,[A-Za-z0-9+/=]*(?:#only-(?:light|dark))?$/;
-function dropDataUrls(tagName, attribs) {
-  const imageAttribute = tagName === "img" ? "src" : tagName === "video" ? "poster" : void 0;
-  const imageUrl = imageAttribute === void 0 ? void 0 : attribs[imageAttribute];
-  if (imageAttribute !== void 0 && imageUrl?.startsWith("data:") && !DATA_IMAGE_PATTERN.test(imageUrl)) {
-    delete attribs[imageAttribute];
-  }
-  if (MEDIA_TAGS.has(tagName) && attribs.src?.startsWith("data:")) {
-    delete attribs.src;
-  }
-}
+var DATA_IMAGE_PATTERN = /^data:image\/(?:png|jpeg|gif|webp|svg\+xml);base64,[A-Za-z0-9+/=]*$/;
 function fixTabindex(tagName, attribs) {
   const next = { ...attribs };
   if (next.tabindex !== void 0) {
@@ -69410,7 +65995,7 @@ function dropSyntaxAttributes(tagName, attribs) {
       if (keep) {
         next[name] = value;
       }
-    } else if (!(tagName === "abbr" && name === "title") && name !== "id" && name !== "hidden" && name !== "colspan" && name !== "rowspan" && name !== "scope" && !name.startsWith("aria-") && // 図の部品の属性は、図の部品が出した要素だけが持つ（`input` の `type`・`disabled` は、描くときに付け直した値）
+    } else if (name !== "id" && name !== "hidden" && name !== "colspan" && !name.startsWith("aria-") && // 図の部品の属性は、図の部品が出した要素だけが持つ（`input` の `type`・`disabled` は、描くときに付け直した値）
     (!DIAGRAM_ATTRIBUTE_SET.has(name) || tagName === "input" && (name === "type" || name === "disabled"))) {
       next[name] = value;
     }
@@ -69473,7 +66058,6 @@ var SANITIZE_OPTIONS = {
     "nav",
     "figure",
     "figcaption",
-    ...MEDIA_TAGS,
     ...DIAGRAM_ONLY_TAGS
   ],
   allowedAttributes: {
@@ -69484,30 +66068,15 @@ var SANITIZE_OPTIONS = {
       "data-*",
       "hidden",
       "colspan",
-      "rowspan",
-      "scope",
       ...DIAGRAM_ATTRIBUTES
     ],
     a: ["href", "title"],
     img: ["src", "alt", "title"],
-    // ER 図の列のマーカーの名前（文書に書いた `abbr` の `title` は `dropSyntaxAttributes` が落とす）
-    abbr: ["title"],
     details: ["open"],
     input: ["type", "disabled", "checked"],
     pre: ["tabindex"],
     table: ["tabindex"],
-    span: ["tabindex"],
-    video: [
-      "src",
-      "controls",
-      "autoplay",
-      "muted",
-      "loop",
-      "playsinline",
-      "preload",
-      "poster"
-    ],
-    audio: ["src", "controls", "autoplay", "muted", "loop", "preload"]
+    span: ["tabindex"]
   },
   // 図の部品の要素以外から取り除く要素は、印を付けた要素を中身ごと消す
   exclusiveFilter: (frame) => frame.attribs[DROP_ATTRIBUTE] !== void 0,
@@ -69518,12 +66087,8 @@ var SANITIZE_OPTIONS = {
     li: ["task-list-item"]
   },
   allowedSchemes: ["http", "https", "mailto"],
-  // 画像の `src` と動画の `poster` は `data:` URL も許す（残す形は `transformTags` が絞る）
-  allowedSchemesByTag: {
-    img: ["http", "https", "data"],
-    video: ["http", "https", "data"],
-    audio: ["http", "https", "data"]
-  },
+  // 画像の `src` だけ、`data:` URL も許す（種類は `transformTags` が絞る）
+  allowedSchemesByTag: { img: ["http", "https", "data"] },
   // postcss を呼ばない。`style` 属性は許可せず、列の揃えだけを class に移す
   parseStyleAttributes: false
 };
@@ -69587,14 +66152,6 @@ function filterEmbeddedStyle(style) {
 function ownStyle(style) {
   if (DIAGRAM_STYLE_PATTERN.test(style)) {
     return style;
-  }
-  if (style.includes("--mdmark-image-width")) {
-    const width = IMAGE_WIDTH_PATTERN.exec(style)?.[1];
-    return width === void 0 ? "" : `--mdmark-image-width: ${width}`;
-  }
-  if (style.includes("--mdmark-gallery-cols")) {
-    const cols = GALLERY_COLS_PATTERN.exec(style)?.[1];
-    return cols === void 0 ? "" : `--mdmark-gallery-cols: ${cols}`;
   }
   if (style.includes("--mdmark-code-digits")) {
     const digits = CODE_DIGITS_PATTERN.exec(style)?.[1];
@@ -69668,7 +66225,9 @@ function sanitizeEmbedded(html, onText) {
         if (tagName === "button") {
           next.type = "button";
         }
-        dropDataUrls(tagName, next);
+        if (tagName === "img" && next.src?.startsWith("data:") && !DATA_IMAGE_PATTERN.test(next.src)) {
+          delete next.src;
+        }
         if (DIAGRAM_ONLY_TAGS.has(tagName) && tagName !== "button") {
           next[DROP_ATTRIBUTE] = "1";
         }
@@ -69689,7 +66248,9 @@ function sanitize(html, nonce) {
         if (next[SOURCE_LINE_ATTRIBUTE] !== void 0 && !SOURCE_LINE_PATTERN.test(next[SOURCE_LINE_ATTRIBUTE])) {
           delete next[SOURCE_LINE_ATTRIBUTE];
         }
-        dropDataUrls(tagName, next);
+        if (tagName === "img" && next.src?.startsWith("data:") && !DATA_IMAGE_PATTERN.test(next.src)) {
+          delete next.src;
+        }
         const align = TEXT_ALIGN_PATTERN.exec(attribs.style ?? "")?.[1];
         if (align && ALIGN_VALUES.includes(align)) {
           next.class = [next.class, `mdmark-align-${align}`].filter(Boolean).join(" ");
@@ -69701,7 +66262,7 @@ function sanitize(html, nonce) {
         } else {
           next.style = kept;
         }
-        if (!own2 && (DIAGRAM_ONLY_TAGS.has(tagName) || MEDIA_TAGS.has(tagName))) {
+        if (!own2 && DIAGRAM_ONLY_TAGS.has(tagName)) {
           next[DROP_ATTRIBUTE] = "1";
         }
         return { tagName, attribs: next };
@@ -70039,10 +66600,7 @@ function takeParts(options) {
         if (directive === "param") {
           const param = definition;
           definitions.push(param);
-          part = renderParam(param, {
-            id: `${PARAM_ID_PREFIX2}-${count}`,
-            copyLabel: env.labels?.paramCopy
-          });
+          part = renderParam(param, { id: `${PARAM_ID_PREFIX2}-${count}` });
         } else {
           part = renderDiagram({
             kind: directive,
@@ -70086,8 +66644,8 @@ function applyHints(options) {
     const [raw, closing = "", rawName = "", attributes = "", selfClosing = ""] = match;
     const name = rawName.toLowerCase();
     if (closing === "/") {
-      const open2 = stack.pop();
-      out += `${open2?.inside ?? ""}${raw}${open2?.after ?? ""}`;
+      const open3 = stack.pop();
+      out += `${open3?.inside ?? ""}${raw}${open3?.after ?? ""}`;
       continue;
     }
     const found = hintAttribute.exec(attributes);
@@ -70178,11 +66736,11 @@ function buildHtml(options) {
     hints: featureOn(state, "hints")
   });
   const body = restoreParts(markOwn(hinted, env.nonce), taken.parts, env.nonce);
-  const [open2 = "", close = ""] = splitSlots(
+  const [open3 = "", close = ""] = splitSlots(
     renderEmbeddedHtml({ html: SLOT_MARKER })
   );
   return {
-    html: `${markOwn(open2, env.nonce)}${body}${close}`,
+    html: `${markOwn(open3, env.nonce)}${body}${close}`,
     params: taken.params
   };
 }
@@ -70237,16 +66795,16 @@ function renderRowDetail(options) {
     row,
     columns,
     label,
-    open: open2 = false,
+    open: open3 = false,
     toggle = true,
     foldedColumn,
     body
   } = options;
-  const hidden = toggle && !open2 ? " hidden" : "";
+  const hidden = toggle && !open3 ? " hidden" : "";
   const folded = foldedColumn ? `<div class="mdmark-fold-part"><p class="mdmark-fold-name">${escapeHtml2(foldedColumn.name)}</p><div class="mdmark-fold-value">${foldedColumn.html}</div></div>` : "";
   return {
     row: `<tr class="mdmark-row-detail" data-row="${row}" id="${escapeHtml2(id)}"${hidden}><td colspan="${columns}">${folded}${body}</td></tr>`,
-    toggle: toggle ? `<button class="mdmark-row-toggle" type="button" aria-expanded="${open2}" aria-controls="${escapeHtml2(id)}" aria-label="\u300C${escapeHtml2(label)}\u300D\u306E\u8A73\u7D30"></button>` : ""
+    toggle: toggle ? `<button class="mdmark-row-toggle" type="button" aria-expanded="${open3}" aria-controls="${escapeHtml2(id)}" aria-label="\u300C${escapeHtml2(label)}\u300D\u306E\u8A73\u7D30"></button>` : ""
   };
 }
 
@@ -70360,7 +66918,7 @@ function attachRowDetails(state) {
 }
 
 // src/parts/section.ts
-function plainText2(html) {
+function plainText(html) {
   return html.replace(/<[^>]*>/g, "");
 }
 function renderSection2(options) {
@@ -70368,16 +66926,16 @@ function renderSection2(options) {
     level,
     id,
     title,
-    open: open2 = true,
+    open: open3 = true,
     toggle = true,
     anchor: anchor2 = true,
     body
   } = options;
   const escapedId = escapeHtml2(id);
-  const heading2 = toggle ? `<button class="mdmark-section-toggle" type="button" aria-expanded="${open2}" aria-controls="section-${escapedId}">${title}</button>` : title;
-  const anchorHtml = anchor2 ? `<a class="mdmark-anchor" href="#${escapedId}" aria-label="\u300C${plainText2(title)}\u300D\u3078\u306E\u30EA\u30F3\u30AF"></a>` : "";
-  const hidden = toggle && !open2 ? ' hidden="until-found"' : "";
-  return `<h${level} class="mdmark-heading" id="${escapedId}">${heading2}${anchorHtml}</h${level}><div class="mdmark-section-body" id="section-${escapedId}" data-section="${open2 ? "open" : "closed"}"${hidden}>${body}</div>`;
+  const heading2 = toggle ? `<button class="mdmark-section-toggle" type="button" aria-expanded="${open3}" aria-controls="section-${escapedId}">${title}</button>` : title;
+  const anchorHtml = anchor2 ? `<a class="mdmark-anchor" href="#${escapedId}" aria-label="\u300C${plainText(title)}\u300D\u3078\u306E\u30EA\u30F3\u30AF"></a>` : "";
+  const hidden = toggle && !open3 ? ' hidden="until-found"' : "";
+  return `<h${level} class="mdmark-heading" id="${escapedId}">${heading2}${anchorHtml}</h${level}><div class="mdmark-section-body" id="section-${escapedId}" data-section="${open3 ? "open" : "closed"}"${hidden}>${body}</div>`;
 }
 
 // src/render/syntax/sections.ts
@@ -70463,8 +67021,50 @@ function wrapSections(state) {
 
 // src/parts/collapsible.ts
 function renderCollapsible(options) {
-  const { title, open: open2, body } = options;
-  return `<details class="mdmark-collapsible"${open2 ? " open" : ""}><summary>${escapeHtml2(title)}</summary>${body}</details>`;
+  const { title, open: open3, body } = options;
+  return `<details class="mdmark-collapsible"${open3 ? " open" : ""}><summary>${escapeHtml2(title)}</summary>${body}</details>`;
+}
+
+// src/render/syntax/collapse.ts
+var COLLAPSE_ARGS = ["closed", "open"];
+var TITLE_KEY = "title";
+function readCollapse(args) {
+  const closed = args.args.includes("closed");
+  const open3 = args.args.includes("open");
+  const collapse = closed ? "closed" : open3 ? "open" : "none";
+  const items = [];
+  if (closed && open3) {
+    items.push({
+      label: "closed \u3068 open",
+      message: "\u306E `closed` \u3068 `open` \u306F\u540C\u6642\u306B\u66F8\u3051\u307E\u305B\u3093\u3002\u3069\u3061\u3089\u304B 1 \u3064\u306B\u3057\u3066\u304F\u3060\u3055\u3044\u3002`closed` \u3092\u5F53\u3066\u3066\u63CF\u3044\u3066\u3044\u307E\u3059\u3002"
+    });
+  }
+  const { [TITLE_KEY]: titleValue, ...keys } = args.keys;
+  let title;
+  if (titleValue !== void 0) {
+    if (collapse === "none") {
+      items.push({
+        label: `${TITLE_KEY}=`,
+        message: "\u306F `closed` \u304B `open` \u3068\u4E00\u7DD2\u306B\u66F8\u304D\u307E\u3059\u3002\u5F53\u3066\u305A\u306B\u3001\u6298\u308A\u7573\u307F\u306B\u5165\u308C\u305A\u63CF\u3044\u3066\u3044\u307E\u3059\u3002"
+      });
+    } else if (titleValue === "") {
+      items.push({
+        label: `${TITLE_KEY}=`,
+        message: "\u306E\u898B\u51FA\u3057\u304C\u3042\u308A\u307E\u305B\u3093\u3002`title=\u6E96\u5099` \u306E\u3088\u3046\u306B\u66F8\u3044\u3066\u304F\u3060\u3055\u3044\u3002\u898B\u51FA\u3057\u306F\u4E2D\u8EAB\u304B\u3089\u4F5C\u3063\u3066\u3044\u307E\u3059\u3002"
+      });
+    } else {
+      title = titleValue;
+    }
+  }
+  return {
+    collapse,
+    title,
+    items,
+    rest: {
+      args: args.args.filter((arg) => !COLLAPSE_ARGS.includes(arg)),
+      keys
+    }
+  };
 }
 
 // src/render/syntax/steps.ts
@@ -70573,13 +67173,846 @@ function buildSteps(state) {
   state.tokens = out;
 }
 
-// src/parts/tabs.ts
-function plainText3(html) {
+// src/table-logic.ts
+var FILTER_KINDS = ["select", "text", "date"];
+function parseNumberCell(text2) {
+  const normalized = text2.replaceAll(",", "").trim();
+  if (normalized === "" || !Number.isFinite(Number(normalized))) {
+    return void 0;
+  }
+  return Number(normalized);
+}
+var collator = new Intl.Collator("ja", { numeric: true });
+function compareCells(a, b) {
+  const left = parseNumberCell(a);
+  const right = parseNumberCell(b);
+  if (left !== void 0 && right !== void 0) {
+    return left - right;
+  }
+  return collator.compare(a, b);
+}
+function toIsoDate(text2) {
+  const match = /^(\d{4})[-/](\d{1,2})[-/](\d{1,2})$/.exec(text2.trim());
+  if (!match) {
+    return void 0;
+  }
+  const [, year, month, day] = match;
+  return `${year}-${month?.padStart(2, "0")}-${day?.padStart(2, "0")}`;
+}
+function matchesFilter(cell, kind, value) {
+  if (kind === "select") {
+    return !value.values?.length || value.values.includes(cell);
+  }
+  if (kind === "text") {
+    return !value.text || cell.toLowerCase().includes(value.text.toLowerCase());
+  }
+  if (!value.from && !value.to) {
+    return true;
+  }
+  const date4 = toIsoDate(cell);
+  if (date4 === void 0) {
+    return false;
+  }
+  return (!value.from || date4 >= value.from) && (!value.to || date4 <= value.to);
+}
+var TOTAL_CALCS = ["sum", "avg", "count"];
+var TOTAL_LABELS = {
+  sum: "\u5408\u8A08",
+  avg: "\u5E73\u5747",
+  count: "\u4EF6\u6570"
+};
+var NO_VALUE = "\u2014";
+var totalFormat = new Intl.NumberFormat("ja", { maximumFractionDigits: 2 });
+function computeTotal(cells, calc) {
+  if (calc === "count") {
+    return totalFormat.format(
+      cells.filter((cell) => cell.trim() !== "").length
+    );
+  }
+  const numbers = cells.map(parseNumberCell).filter((value) => value !== void 0);
+  const sum = numbers.reduce((total, value) => total + value, 0);
+  if (calc === "sum") {
+    return totalFormat.format(sum);
+  }
+  return numbers.length > 0 ? totalFormat.format(sum / numbers.length) : NO_VALUE;
+}
+function findUnreadableTotals(options) {
+  const { rows, totals } = options;
+  const found = [];
+  for (const { column, calc } of totals) {
+    if (calc === "count") {
+      continue;
+    }
+    const values = /* @__PURE__ */ new Set();
+    for (const row of rows) {
+      const cell = row[column] ?? "";
+      if (cell.trim() !== "" && parseNumberCell(cell) === void 0) {
+        values.add(cell);
+      }
+    }
+    if (values.size > 0) {
+      found.push({ column, calc, values: [...values] });
+    }
+  }
+  return found;
+}
+
+// src/parts/table.ts
+function plainText2(html) {
   return html.replace(/<[^>]*>/g, "").replaceAll("&lt;", "<").replaceAll("&gt;", ">").replaceAll("&quot;", '"').replaceAll("&#39;", "'").replaceAll("&amp;", "&");
 }
-function withoutLinks(html) {
-  return html.replace(/<\/?a\b[^>]*>/gi, "");
+function drawerId(id, column) {
+  return `${id}-drawer-${column}`;
 }
+function renderFilterFields(options) {
+  const { filter: filter2, value } = options;
+  if (filter2?.kind === "text") {
+    return `<label class="mdmark-filter-field">\u542B\u3080\u6587\u5B57<input type="text" value="${escapeHtml2(value?.text ?? "")}"></label>`;
+  }
+  if (filter2?.kind === "date") {
+    return `<div class="mdmark-filter-range"><label class="mdmark-filter-field">\u958B\u59CB\u65E5<input type="date" value="${escapeHtml2(value?.from ?? "")}"></label><label class="mdmark-filter-field">\u7D42\u4E86\u65E5<input type="date" value="${escapeHtml2(value?.to ?? "")}"></label></div>`;
+  }
+  const checked = new Set(value?.values ?? []);
+  const items = (filter2?.values ?? []).map(
+    (candidate) => `<li><label><input type="checkbox" value="${escapeHtml2(candidate)}"${checked.has(candidate) ? " checked" : ""}>${escapeHtml2(candidate)}</label></li>`
+  ).join("");
+  return `<label class="mdmark-filter-field">\u5019\u88DC\u3092\u691C\u7D22<input class="mdmark-filter-search" type="search"></label><ul class="mdmark-filter-options">${items}</ul><p class="mdmark-filter-none" hidden>\u4E00\u81F4\u3059\u308B\u5019\u88DC\u304C\u3042\u308A\u307E\u305B\u3093</p>`;
+}
+function renderTableTools(options) {
+  const {
+    id,
+    column,
+    label,
+    features,
+    filter: filter2,
+    active = false,
+    pinVisible = false,
+    pinPressed = false
+  } = options;
+  const open3 = options.open ?? false;
+  const escapedLabel = escapeHtml2(label);
+  const controls = drawerId(id, column);
+  const filterable = features.includes("filter") && filter2 !== void 0;
+  const title = features.includes("sort") ? `<button class="mdmark-sort" type="button">${escapedLabel}</button>` : `<span class="mdmark-th-label">${escapedLabel}</span>`;
+  const filterButton = filterable ? `<button class="mdmark-filter${active ? " is-active" : ""}" type="button" aria-label="\u300C${escapedLabel}\u300D\u3067\u7D5E\u308A\u8FBC\u3080" aria-expanded="${open3}" aria-controls="${escapeHtml2(controls)}"><span class="mdmark-visually-hidden">${active ? "\uFF08\u7D5E\u308A\u8FBC\u307F\u4E2D\uFF09" : ""}</span></button>` : "";
+  const pinButton = features.includes("pin") ? `<button class="mdmark-pin" type="button" aria-label="\u300C${escapedLabel}\u300D\u307E\u3067\u3092\u5DE6\u7AEF\u306B\u7559\u3081\u308B" aria-pressed="${pinPressed}"${pinVisible ? "" : " hidden"}></button>` : "";
+  const tools = filterButton || pinButton ? `<span class="mdmark-th-tools">${filterButton}${pinButton}</span>` : "";
+  const drawer = filterable ? `<div class="mdmark-filter-drawer" id="${escapeHtml2(controls)}" role="dialog" aria-label="\u300C${escapedLabel}\u300D\u3067\u7D5E\u308A\u8FBC\u3080" data-filter-kind="${filter2.kind}" data-column="${column}"${open3 ? "" : " hidden"}><p class="mdmark-filter-title">\u300C${escapedLabel}\u300D\u3067\u7D5E\u308A\u8FBC\u3080</p>${renderFilterFields(options)}<button class="mdmark-filter-clear" type="button">\u7D5E\u308A\u8FBC\u307F\u3092\u5916\u3059</button></div>` : "";
+  return {
+    header: `<span class="mdmark-th">${title}${tools}</span>`,
+    drawer
+  };
+}
+function isActive(value) {
+  return Boolean(
+    value?.values?.length || value?.text || value?.from || value?.to
+  );
+}
+function sortedIndexes(options) {
+  const rows = options.rows ?? [];
+  const indexes = rows.map((_, index) => index);
+  const sort = options.sort;
+  if (!sort) {
+    return indexes;
+  }
+  const sign = sort.direction === "ascending" ? 1 : -1;
+  return indexes.sort(
+    (a, b) => sign * compareCells(
+      plainText2(rows[a]?.[sort.column] ?? ""),
+      plainText2(rows[b]?.[sort.column] ?? "")
+    )
+  );
+}
+var COPY_STATES = {
+  idle: { label: "\u8868\u3092\u30B3\u30D4\u30FC", icon: "copy" },
+  copied: { label: "\u30B3\u30D4\u30FC\u3057\u307E\u3057\u305F", icon: "check" },
+  failed: { label: "\u30B3\u30D4\u30FC\u3067\u304D\u307E\u305B\u3093\u3067\u3057\u305F", icon: "circle-alert" }
+};
+function renderCopyButtonContent(state) {
+  const { icon, label } = COPY_STATES[state];
+  return `${iconSvg(icon)}<span class="mdmark-copy-label">${label}</span><span class="mdmark-copy-caret" data-icon="chevron-down">${iconSvg("chevron-down")}</span>`;
+}
+var COPY_FORMATS = {
+  markdown: {
+    name: "Markdown \u306E\u8868",
+    note: "\u6587\u66F8\u306B\u8CBC\u308B\u3068\u305D\u306E\u307E\u307E\u8868\u306B\u306A\u308B"
+  },
+  tsv: { name: "TSV", note: "\u8868\u8A08\u7B97\u30BD\u30D5\u30C8\u306B\u8CBC\u308B\u3068\u30BB\u30EB\u306B\u5206\u304B\u308C\u308B" }
+};
+function menuId(id) {
+  return `${id}-columns`;
+}
+function totalsMenuId(id) {
+  return `${id}-totals`;
+}
+function copyMenuId(id) {
+  return `${id}-copy`;
+}
+function renderTableBar(options) {
+  const { id, features, labels, shown, total, hiddenColumns } = options;
+  const copyState = options.copyState ?? "idle";
+  const open3 = options.openColumns ?? false;
+  const hidden = new Set(hiddenColumns);
+  const calcs = TOTAL_CALCS.filter((calc) => options.totals?.includes(calc));
+  const shownCalcs = new Set(options.shownTotals ?? calcs);
+  const hiddenCalcs = calcs.filter((calc) => !shownCalcs.has(calc));
+  const counting = features.includes("count");
+  const columns = features.includes("columns");
+  const totaling = features.includes("total") && calcs.length > 0;
+  const copying = features.includes("copy");
+  const count = counting ? `<p class="mdmark-table-count" aria-live="polite"><span aria-hidden="true">${shown} / ${total} \u4EF6</span><span class="mdmark-visually-hidden">${total} \u4EF6\u4E2D ${shown} \u4EF6\u3092\u8868\u793A</span></p>` : "";
+  const columnsToggle = columns ? `<button class="mdmark-table-tool mdmark-columns-toggle${hidden.size > 0 ? " is-active" : ""}" type="button" aria-expanded="${open3}" aria-controls="${escapeHtml2(menuId(id))}">${iconSvg("columns-3")}\u5217\u306E\u8868\u793A<span class="mdmark-visually-hidden">${hidden.size > 0 ? `\uFF08${hidden.size} \u5217\u3092\u96A0\u3057\u3066\u3044\u307E\u3059\uFF09` : ""}</span></button>` : "";
+  const totalsToggle = totaling ? `<button class="mdmark-table-tool mdmark-totals-toggle${hiddenCalcs.length > 0 ? " is-active" : ""}" type="button" aria-expanded="${options.openTotals ?? false}" aria-controls="${escapeHtml2(totalsMenuId(id))}">${iconSvg("sigma")}\u96C6\u8A08<span class="mdmark-visually-hidden">${hiddenCalcs.length > 0 ? `\uFF08${hiddenCalcs.length} \u4EF6\u3092\u96A0\u3057\u3066\u3044\u307E\u3059\uFF09` : ""}</span></button>` : "";
+  const copy = copying ? `<button class="mdmark-table-tool mdmark-copy" type="button" data-state="${copyState}" aria-expanded="${options.openCopy ?? false}" aria-controls="${escapeHtml2(copyMenuId(id))}">${renderCopyButtonContent(copyState)}</button>` : "";
+  const tools = columnsToggle || totalsToggle || copy ? `<div class="mdmark-table-tools">${columnsToggle}${totalsToggle}${copy}</div>` : "";
+  const status = totaling || copying ? `<span class="mdmark-visually-hidden mdmark-table-status" role="status">${copying && copyState !== "idle" ? COPY_STATES[copyState].label : ""}</span>` : "";
+  const items = labels.map(
+    (label, index) => `<li><label><input type="checkbox" value="${index}"${hidden.has(index) ? "" : " checked"}${index === 0 ? " disabled" : ""}>${escapeHtml2(label)}</label></li>`
+  ).join("");
+  const columnsMenu = columns ? `<div class="mdmark-columns-menu" id="${escapeHtml2(menuId(id))}" role="dialog" aria-label="\u8868\u793A\u3059\u308B\u5217"${open3 ? "" : " hidden"}><p class="mdmark-columns-title">\u8868\u793A\u3059\u308B\u5217</p><ul class="mdmark-columns-options">${items}</ul><p class="mdmark-columns-note">\u5148\u982D\u306E\u5217\u306F\u96A0\u305B\u307E\u305B\u3093</p><button class="mdmark-columns-reset" type="button">\u65E2\u5B9A\u306B\u623B\u3059</button></div>` : "";
+  const totalItems = calcs.map(
+    (calc) => `<li><label><input type="checkbox" value="${calc}"${shownCalcs.has(calc) ? " checked" : ""}>${TOTAL_LABELS[calc]}</label></li>`
+  ).join("");
+  const totalsMenu = totaling ? `<div class="mdmark-totals-menu mdmark-table-menu" id="${escapeHtml2(totalsMenuId(id))}" role="dialog" aria-label="\u51FA\u3059\u96C6\u8A08"${options.openTotals ? "" : " hidden"}><p class="mdmark-totals-title">\u51FA\u3059\u96C6\u8A08</p><ul class="mdmark-totals-options">${totalItems}</ul></div>` : "";
+  const formats = ["markdown", "tsv"].map(
+    (format2) => `<button class="mdmark-copy-format" type="button" data-format="${format2}"><span class="mdmark-copy-format-name">${COPY_FORMATS[format2].name}</span><span class="mdmark-copy-format-note">${COPY_FORMATS[format2].note}</span></button>`
+  ).join("");
+  const copyMenu = copying ? `<div class="mdmark-copy-menu mdmark-table-menu" id="${escapeHtml2(copyMenuId(id))}" role="dialog" aria-label="\u30B3\u30D4\u30FC\u306E\u5F62\u5F0F"${options.openCopy ? "" : " hidden"}>${formats}</div>` : "";
+  return {
+    bar: count || tools ? `<div class="mdmark-table-bar">${count}${tools}${status}</div>` : "",
+    menus: `${columnsMenu}${totalsMenu}${copyMenu}`
+  };
+}
+function renderTotalRows(options) {
+  const { columns, totals, shown, hiddenColumns, labels } = options;
+  const rows = TOTAL_CALCS.filter(
+    (calc) => totals.some((total) => total.calc === calc)
+  ).map((calc) => {
+    const own2 = totals.filter((total) => total.calc === calc);
+    const cells = Array.from({ length: columns }, (_, column) => {
+      const total = own2.find((candidate) => candidate.column === column);
+      const hidden = hiddenColumns.includes(column) ? " hidden" : "";
+      const label = ` data-label="${escapeHtml2(labels[column] ?? "")}"`;
+      const name = column === 0 ? `<span class="mdmark-total-name">${TOTAL_LABELS[calc]}</span>` : "";
+      if (!total) {
+        return `<td${label}${hidden}>${name}</td>`;
+      }
+      return `<td${label} data-total="${calc}"${hidden}>${name}<span class="mdmark-total-value">${escapeHtml2(total.value)}</span></td>`;
+    });
+    const rowHidden = shown !== void 0 && !shown.includes(calc) ? " hidden" : "";
+    return `<tr class="mdmark-table-total" data-total-kind="${calc}"${rowHidden}>${cells.join("")}</tr>`;
+  });
+  return `<tfoot>${rows.join("")}</tfoot>`;
+}
+function renderCopyPanel(options) {
+  const { id, format: format2, text: text2 } = options;
+  const titleId = `${id}-title`;
+  const noteId = `${id}-note`;
+  const target = format2 === "tree" ? "\u30C4\u30EA\u30FC\u306E\u30C6\u30AD\u30B9\u30C8" : `\u300C${COPY_FORMATS[format2].name}\u300D\u306E\u4E2D\u8EAB`;
+  return `<div class="mdmark-copy-panel" role="group" aria-labelledby="${escapeHtml2(titleId)}"><div class="mdmark-copy-panel-head"><p class="mdmark-copy-panel-title" id="${escapeHtml2(titleId)}">${iconSvg("circle-alert")}\u30AF\u30EA\u30C3\u30D7\u30DC\u30FC\u30C9\u306B\u30B3\u30D4\u30FC\u3067\u304D\u307E\u305B\u3093\u3067\u3057\u305F</p><button class="mdmark-copy-panel-close" type="button" aria-label="\u9589\u3058\u308B">${iconSvg("x")}</button></div><p class="mdmark-copy-panel-note" id="${escapeHtml2(noteId)}">${target}\u3092\u9078\u629E\u3057\u3066\u3044\u307E\u3059\u3002Ctrl+C\uFF08Mac \u306F \u2318C\uFF09\u3067\u30B3\u30D4\u30FC\u3057\u3066\u304F\u3060\u3055\u3044\u3002</p><textarea class="mdmark-copy-panel-text" readonly rows="6" aria-labelledby="${escapeHtml2(titleId)} ${escapeHtml2(noteId)}">${escapeHtml2(text2)}</textarea></div>`;
+}
+function renderFoldedColumn(options) {
+  const { id, columns, label, name, html, open: open3 = false } = options;
+  return {
+    toggle: `<button class="mdmark-row-toggle mdmark-fold-toggle" type="button" aria-expanded="${open3}" aria-controls="${escapeHtml2(id)}" aria-label="\u300C${escapeHtml2(label)}\u300D\u306E${escapeHtml2(name)}"></button>`,
+    row: `<tr class="mdmark-row-detail mdmark-fold-detail" id="${escapeHtml2(id)}"${open3 ? "" : " hidden"}><td colspan="${columns}"><div class="mdmark-fold-part"><p class="mdmark-fold-name">${escapeHtml2(name)}</p><div class="mdmark-fold-value">${html}</div></div></td></tr>`
+  };
+}
+function renderRowLink(content, id, label, notice) {
+  const message = notice === "copied" ? `${iconSvg("check")}\u30EA\u30F3\u30AF\u3092\u30B3\u30D4\u30FC\u3057\u307E\u3057\u305F` : notice === "failed" ? `${iconSvg("circle-alert")}\u30EA\u30F3\u30AF\u3092\u30B3\u30D4\u30FC\u3067\u304D\u307E\u305B\u3093\u3067\u3057\u305F` : "";
+  const state = notice === void 0 ? "" : ` data-state="${notice}"`;
+  return `<span class="mdmark-row-link-cell">${content}<a class="mdmark-row-anchor" href="#${escapeHtml2(id)}" aria-label="\u300C${escapeHtml2(label)}\u300D\u306E\u884C\u3078\u306E\u30EA\u30F3\u30AF">${iconSvg("link")}</a><span class="mdmark-row-link-notice" role="status"${state}>${message}</span></span>`;
+}
+function renderTableBody(options, id) {
+  const columns = options.columns ?? [];
+  const rows = options.rows ?? [];
+  const filters = options.filters ?? [];
+  const values = options.filterValues ?? [];
+  const pinned = options.overflow ? options.pinned ?? 0 : 0;
+  const hidden = new Set(
+    options.features.includes("columns") ? options.hiddenColumns ?? options.hide ?? [] : []
+  );
+  const hiddenAttribute = (column) => hidden.has(column) ? " hidden" : "";
+  const lastColumn = columns.length - 1;
+  const folded = isFolded(options, hidden);
+  const unfolded = new Set(options.unfoldedRows ?? []);
+  const drawers = [];
+  const cellClass = (column) => {
+    const names = [
+      ...column < pinned ? column === pinned - 1 ? ["is-pinned-col", "is-pinned-edge"] : ["is-pinned-col"] : [],
+      ...folded && column === lastColumn ? ["mdmark-fold-col"] : []
+    ];
+    return names.length > 0 ? ` class="${names.join(" ")}"` : "";
+  };
+  const head = columns.map((column, index) => {
+    const filter2 = filters.find((candidate) => candidate.column === index);
+    const value = values.find((candidate) => candidate.column === index);
+    const tools = renderTableTools({
+      id,
+      column: index,
+      label: plainText2(column),
+      features: options.features,
+      filter: filter2 && {
+        kind: filter2.kind,
+        values: [...new Set(rows.map((row) => plainText2(row[index] ?? "")))]
+      },
+      active: isActive(value),
+      open: options.openFilter === index,
+      value,
+      pinVisible: options.overflow === true,
+      pinPressed: pinned > 0 && index === pinned - 1
+    });
+    drawers.push(tools.drawer);
+    const sorted = options.sort?.column === index ? ` aria-sort="${options.sort.direction}"` : "";
+    const header = options.features.includes("sort") || options.features.includes("filter") || options.features.includes("pin") ? tools.header : escapeHtml2(plainText2(column));
+    return `<th${cellClass(index)}${sorted}${hiddenAttribute(index)}>${header}</th>`;
+  }).join("");
+  const rowLinking = options.features.includes("rowlink");
+  const labels = columns.map(plainText2);
+  const shownRows = [];
+  const body = sortedIndexes(options).map((rowIndex) => {
+    const row = rows[rowIndex] ?? [];
+    const match = values.every((value) => {
+      const filter2 = filters.find((c) => c.column === value.column);
+      return filter2 ? matchesFilter(
+        plainText2(row[value.column] ?? ""),
+        filter2.kind,
+        value
+      ) : true;
+    });
+    if (match) {
+      shownRows.push(row);
+    }
+    const rowId = rowLinking ? options.rowIds?.[rowIndex] : void 0;
+    const targeted = rowLinking && options.targetRow === rowIndex;
+    const foldId = `${id}-fold-${rowIndex}`;
+    const fold = folded ? renderFoldedColumn({
+      id: foldId,
+      columns: columns.length - hidden.size,
+      label: plainText2(row[0] ?? ""),
+      name: labels[lastColumn] ?? "",
+      html: row[lastColumn] ?? "",
+      open: unfolded.has(rowIndex)
+    }) : void 0;
+    const cells = row.map((cell, index) => {
+      const linked = index === 0 && rowId !== void 0 ? renderRowLink(
+        cell,
+        rowId,
+        plainText2(cell),
+        targeted ? options.rowLinkNotice : void 0
+      ) : cell;
+      const content = index === 0 && fold ? `<span class="mdmark-row-head">${fold.toggle}${linked}</span>` : linked;
+      return `<td${cellClass(index)} data-label="${escapeHtml2(labels[index] ?? "")}"${hiddenAttribute(index)}>${content}</td>`;
+    }).join("");
+    const idAttribute = rowId === void 0 ? "" : ` id="${escapeHtml2(rowId)}"`;
+    const target = targeted ? " data-target" : "";
+    const line = `<tr${idAttribute}${target}${match ? "" : " hidden"}>${cells}</tr>`;
+    return fold ? `${line}${fold.row}` : line;
+  }).join("");
+  const empty = `<tr class="mdmark-table-empty"${shownRows.length > 0 ? " hidden" : ""}><td colspan="${columns.length - hidden.size}">\u4E00\u81F4\u3059\u308B\u884C\u304C\u3042\u308A\u307E\u305B\u3093</td></tr>`;
+  const totals = options.features.includes("total") ? options.totals ?? [] : [];
+  const unreadable = findUnreadableTotals({
+    rows: rows.map((row) => row.map(plainText2)),
+    totals
+  });
+  const footer = totals.length > 0 ? renderTotalRows({
+    columns: columns.length,
+    totals: totals.map((total) => ({
+      ...total,
+      value: unreadable.some(
+        (item) => item.column === total.column && item.calc === total.calc
+      ) ? "" : computeTotal(
+        shownRows.map((row) => plainText2(row[total.column] ?? "")),
+        total.calc
+      )
+    })),
+    shown: options.shownTotals,
+    hiddenColumns: [...hidden],
+    labels
+  }) : "";
+  const { bar, menus } = renderTableBar({
+    id,
+    features: options.features,
+    labels,
+    shown: shownRows.length,
+    total: rows.length,
+    hiddenColumns: [...hidden],
+    openColumns: options.openColumns ?? false,
+    copyState: options.copyState ?? "idle",
+    totals: totals.map((total) => total.calc),
+    shownTotals: options.shownTotals,
+    openTotals: options.openTotals ?? false,
+    openCopy: options.openCopy ?? false
+  });
+  const panel = options.copyFallback ? renderCopyPanel({ id: `${id}-panel`, ...options.copyFallback }) : "";
+  return `${bar}${panel}<table tabindex="0" aria-label="\u8868"><thead><tr>${head}</tr></thead><tbody>${body}${empty}</tbody>${footer}</table>${menus}${drawers.join("")}`;
+}
+function isFolded(options, hidden) {
+  const lastColumn = (options.columns ?? []).length - 1;
+  return options.folded === true && lastColumn > 0 && !hidden.has(lastColumn);
+}
+function renderTable(options) {
+  const kind = options.kind ?? "default";
+  const filters = options.features.includes("filter") ? options.filters ?? [] : [];
+  const filterAttribute = filters.length ? ` data-filter="${filters.map((filter2) => `${filter2.column}:${filter2.kind}`).join(" ")}"` : "";
+  const hide2 = options.features.includes("columns") ? options.hide ?? [] : [];
+  const hideAttribute = hide2.length ? ` data-hide="${hide2.join(" ")}"` : "";
+  const totals = options.features.includes("total") ? options.totals ?? [] : [];
+  const totalAttribute = totals.length ? ` data-total="${totals.map((total) => `${total.column}:${total.calc}`).join(" ")}"` : "";
+  const content = options.body ?? renderTableBody(options, options.id ?? "mdmark-table");
+  const collapse = options.collapse ?? "none";
+  const title = options.title ?? `\u8868\uFF08${options.rows?.length ?? options.rowCount ?? 0} \u884C\uFF09`;
+  const inner = collapse === "none" ? content : `<details class="mdmark-table-details"${collapse === "open" ? " open" : ""}><summary>${escapeHtml2(title)}</summary>${content}</details>`;
+  const hiddenColumns = new Set(
+    options.features.includes("columns") ? options.hiddenColumns ?? options.hide ?? [] : []
+  );
+  const foldedClass = options.body === void 0 && isFolded(options, hiddenColumns) ? " is-folded" : "";
+  return `<div class="mdmark-table${foldedClass}" data-kind="${kind}" data-features="${options.features.join(" ")}"${filterAttribute}${hideAttribute}${totalAttribute}>${inner}</div>`;
+}
+
+// src/render/syntax/tables.ts
+var TABLE_KINDS = {
+  default: ["pin"],
+  data: ["sort", "pin", "filter"],
+  plain: []
+};
+var TABLE_FEATURES = [
+  "sort",
+  "pin",
+  "filter",
+  "count",
+  "columns",
+  "total",
+  "copy",
+  "rowlink"
+];
+var WRITABLE_KINDS = ["data", "plain"];
+function codes(values) {
+  return values.map((value) => `\`${value}\``).join("\u30FB");
+}
+function readFilters(value, headers, warnings) {
+  const filters = [];
+  for (const item of value.split(",").map((part) => part.trim())) {
+    if (!item) {
+      continue;
+    }
+    const colon = headers.includes(item) ? -1 : item.lastIndexOf(":");
+    const name = colon > 0 ? item.slice(0, colon) : item;
+    const kind = colon > 0 ? item.slice(colon + 1) : "select";
+    const column = headers.indexOf(name);
+    if (column < 0) {
+      warnings.push({
+        label: name,
+        message: `\u306E\u5217\u540D \`${name}\` \u306F\u8868\u306B\u3042\u308A\u307E\u305B\u3093\u3002\u8868\u306E\u898B\u51FA\u3057\u306E\u6587\u5B57\u3067\u66F8\u3044\u3066\u304F\u3060\u3055\u3044\u3002`
+      });
+    } else if (!FILTER_KINDS.includes(kind)) {
+      warnings.push({
+        label: kind,
+        message: `\u306E\u7D5E\u308A\u8FBC\u307F\u306E\u7A2E\u985E \`${kind}\` \u306F\u4F7F\u3048\u307E\u305B\u3093\u3002\u4F7F\u3048\u308B\u7A2E\u985E\u306F ${codes(FILTER_KINDS)} \u3067\u3059\u3002\`${name}\` \u306E\u5217\u306B\u306F\u7D5E\u308A\u8FBC\u307F\u3092\u4ED8\u3051\u305A\u306B\u63CF\u3044\u3066\u3044\u307E\u3059\u3002`
+      });
+    } else {
+      filters.push({ column, kind });
+    }
+  }
+  return filters;
+}
+function readHide(value, headers, warnings) {
+  const hide2 = [];
+  for (const name of value.split(",").map((part) => part.trim())) {
+    if (!name) {
+      continue;
+    }
+    const column = headers.indexOf(name);
+    if (column < 0) {
+      warnings.push({
+        label: name,
+        message: `\u306E\u5217\u540D \`${name}\` \u306F\u8868\u306B\u3042\u308A\u307E\u305B\u3093\u3002\u8868\u306E\u898B\u51FA\u3057\u306E\u6587\u5B57\u3067\u66F8\u3044\u3066\u304F\u3060\u3055\u3044\u3002`
+      });
+    } else if (column === 0) {
+      warnings.push({
+        label: name,
+        message: `\u306E\u5217 \`${name}\` \u306F\u5148\u982D\u306E\u5217\u306E\u305F\u3081\u96A0\u305B\u307E\u305B\u3093\u3002\u5148\u982D\u306E\u5217\u306F\u884C\u306E\u8B58\u5225\u5B50\u3068\u884C\u3078\u306E\u30EA\u30F3\u30AF\u306E\u7F6E\u304D\u5834\u6240\u306A\u306E\u3067\u3001\u96A0\u3055\u305A\u306B\u63CF\u3044\u3066\u3044\u307E\u3059\u3002`
+      });
+    } else if (!hide2.includes(column)) {
+      hide2.push(column);
+    }
+  }
+  return hide2;
+}
+function readTotals(value, headers, warnings) {
+  const totals = [];
+  for (const item of value.split(",").map((part) => part.trim())) {
+    if (!item) {
+      continue;
+    }
+    const colon = headers.includes(item) ? -1 : item.lastIndexOf(":");
+    const name = colon > 0 ? item.slice(0, colon) : item;
+    const calc = colon > 0 ? item.slice(colon + 1) : "";
+    const column = headers.indexOf(name);
+    if (column < 0) {
+      warnings.push({
+        label: name,
+        message: `\u306E\u5217\u540D \`${name}\` \u306F\u8868\u306B\u3042\u308A\u307E\u305B\u3093\u3002\u8868\u306E\u898B\u51FA\u3057\u306E\u6587\u5B57\u3067\u66F8\u3044\u3066\u304F\u3060\u3055\u3044\u3002`
+      });
+    } else if (!TOTAL_CALCS.includes(calc)) {
+      warnings.push({
+        label: calc || item,
+        message: `\u306E\u8A08\u7B97 \`${calc}\` \u306F\u4F7F\u3048\u307E\u305B\u3093\u3002\`total=\u5217\u540D:\u8A08\u7B97\` \u306E\u5F62\u3067\u66F8\u304D\u3001\u4F7F\u3048\u308B\u8A08\u7B97\u306F ${codes(TOTAL_CALCS)} \u3067\u3059\u3002\`${name}\` \u306E\u5217\u306F\u96C6\u8A08\u305B\u305A\u306B\u63CF\u3044\u3066\u3044\u307E\u3059\u3002`
+      });
+    } else {
+      const duplicated = totals.some(
+        (total) => total.column === column && total.calc === calc
+      );
+      if (!duplicated) {
+        totals.push({ column, calc });
+      }
+    }
+  }
+  return totals;
+}
+function readTableSpec(args, headers) {
+  const warnings = [];
+  let kind = "default";
+  const featureArgs = [];
+  const unknownKinds = [];
+  const { collapse, title, items, rest } = readCollapse(
+    args ?? { args: [], keys: {} }
+  );
+  for (const arg of rest.args) {
+    if (arg.startsWith("+") || arg.startsWith("-")) {
+      featureArgs.push(arg);
+    } else if (WRITABLE_KINDS.includes(arg) && kind === "default") {
+      kind = arg;
+    } else {
+      unknownKinds.push(arg);
+    }
+  }
+  const features = [...TABLE_KINDS[kind]];
+  const applied = [];
+  const unknownFeatures = [];
+  for (const arg of featureArgs) {
+    const name = arg.slice(1);
+    if (!TABLE_FEATURES.includes(name)) {
+      unknownFeatures.push(arg);
+      continue;
+    }
+    applied.push(arg);
+    const position = features.indexOf(name);
+    if (arg.startsWith("+") && position < 0) {
+      features.push(name);
+    } else if (arg.startsWith("-") && position >= 0) {
+      features.splice(position, 1);
+    }
+  }
+  const appliedText = applied.length ? `\u65E2\u5B9A\u306E\u7A2E\u985E\u306B ${codes(applied)} \u3092\u5F53\u3066\u3066\u63CF\u3044\u3066\u3044\u307E\u3059\u3002` : "\u65E2\u5B9A\u306E\u7A2E\u985E\u3067\u63CF\u3044\u3066\u3044\u307E\u3059\u3002";
+  for (const unknown2 of unknownKinds) {
+    warnings.push({
+      label: unknown2,
+      message: `\u306E\u7A2E\u985E \`${unknown2}\` \u306F\u4F7F\u3048\u307E\u305B\u3093\u3002\u4F7F\u3048\u308B\u7A2E\u985E\u306F ${codes(WRITABLE_KINDS)} \u3067\u3059\u3002${appliedText}`
+    });
+  }
+  for (const arg of unknownFeatures) {
+    warnings.push({
+      label: arg,
+      message: `\u4F7F\u3048\u306A\u3044\u6A5F\u80FD\u3067\u3059\u3002\u4F7F\u3048\u308B\u6A5F\u80FD\u306F ${codes(TABLE_FEATURES)} \u3067\u3059`
+    });
+  }
+  let filters = [];
+  let hide2 = [];
+  let totals = [];
+  const keyFeatures = {
+    hide: "columns",
+    total: "total"
+  };
+  for (const [key, value] of Object.entries(rest.keys)) {
+    const needed = keyFeatures[key];
+    if (needed && !features.includes(needed)) {
+      warnings.push({
+        label: `${key}=`,
+        message: `\`+${needed}\` \u3092\u66F8\u3044\u305F\u8868\u3067\u3060\u3051\u4F7F\u3048\u307E\u3059\u3002\u5F53\u3066\u305A\u306B\u63CF\u3044\u3066\u3044\u307E\u3059`
+      });
+    } else if (key === "filter") {
+      filters = readFilters(value, headers, warnings);
+    } else if (key === "hide") {
+      hide2 = readHide(value, headers, warnings);
+    } else if (key === "total") {
+      totals = readTotals(value, headers, warnings);
+    } else {
+      warnings.push({
+        label: `${key}=`,
+        message: `\u4F7F\u3048\u306A\u3044\u30AD\u30FC\u3067\u3059\u3002\u4F7F\u3048\u308B\u30AD\u30FC\u306F ${codes(["filter=", "hide=", "total="])} \u3067\u3059`
+      });
+    }
+  }
+  warnings.push(...items);
+  return { kind, features, filters, collapse, title, warnings, hide: hide2, totals };
+}
+function ownTokenIndexes(tokens, tableOpen) {
+  const indexes = [];
+  let depth = 0;
+  for (let index = tableOpen; index < tokens.length; index++) {
+    const type = tokens[index]?.type;
+    if (type === "table_open") {
+      depth += 1;
+    } else if (type === "table_close") {
+      depth -= 1;
+      if (depth === 0) {
+        break;
+      }
+    } else if (depth === 1) {
+      indexes.push(index);
+    }
+  }
+  return indexes;
+}
+function bodyRowCount(tokens, tableOpen) {
+  let count = 0;
+  let inBody = false;
+  for (const index of ownTokenIndexes(tokens, tableOpen)) {
+    const type = tokens[index]?.type;
+    if (type === "tbody_open") {
+      inBody = true;
+    } else if (type === "tbody_close") {
+      inBody = false;
+    } else if (inBody && type === "tr_open") {
+      count += 1;
+    }
+  }
+  return count;
+}
+function rowIdOf(text2, taken) {
+  const base = slugBase(text2) || "row";
+  let id = base;
+  for (let count = 1; taken.has(id); count++) {
+    id = `${base}-${count}`;
+  }
+  taken.add(id);
+  return id;
+}
+function linkRows(state, tokens, tableOpen, taken) {
+  const nonce = envOf(state).nonce;
+  const inlineHtml = (html) => {
+    const token = new state.Token("html_inline", "", 0);
+    token.content = markOwn(html, nonce);
+    return token;
+  };
+  let inBody = false;
+  for (const index of ownTokenIndexes(tokens, tableOpen)) {
+    const token = tokens[index];
+    if (token?.type === "tbody_open") {
+      inBody = true;
+    } else if (inBody && token?.type === "tr_open") {
+      const inline2 = tokens.slice(index + 1).find((t) => t.type === "inline");
+      if (!inline2) {
+        continue;
+      }
+      const text2 = textOf(inline2);
+      const id = rowIdOf(text2, taken);
+      token.attrSet("id", id);
+      token.attrSet("data-mdmark-own", nonce);
+      const [open3 = "", close = ""] = renderRowLink(
+        SLOT_MARKER,
+        id,
+        text2
+      ).split(SLOT_MARKER);
+      inline2.children = [
+        inlineHtml(open3),
+        ...inline2.children ?? [],
+        inlineHtml(close)
+      ];
+    }
+  }
+}
+function isItemWarning(item) {
+  return /^[+-]/.test(item.label) || item.label.endsWith("=");
+}
+function warningsOf(mark, warnings) {
+  const items = warnings.filter(isItemWarning);
+  const sentences = warnings.filter((warning) => !isItemWarning(warning));
+  const result = sentences.map((warning) => ({
+    mark,
+    message: warning.message
+  }));
+  if (items.length) {
+    result.push({
+      mark,
+      message: "\u306E\u8AAD\u3081\u306A\u3044\u6307\u5B9A\u3092\u5F53\u3066\u305A\u306B\u63CF\u3044\u3066\u3044\u307E\u3059\u3002",
+      items
+    });
+  }
+  return result;
+}
+function decorateAttributes(state) {
+  const tokens = state.tokens;
+  let heading2 = "";
+  let headers = [];
+  let column = 0;
+  const outers = [];
+  for (let index = 0; index < tokens.length; index++) {
+    const token = tokens[index];
+    const next = tokens[index + 1];
+    if (!token) {
+      continue;
+    }
+    if (token.type === "heading_open") {
+      heading2 = next ? textOf(next) : "";
+    } else if (token.type === "table_open") {
+      token.attrSet("tabindex", "0");
+      token.attrSet("aria-label", heading2 ? `\u8868: ${heading2}` : "\u8868");
+      outers.push({ headers, column });
+      headers = [];
+    } else if (token.type === "table_close") {
+      ({ headers, column } = outers.pop() ?? { headers: [], column: 0 });
+    } else if (token.type === "tr_open") {
+      column = 0;
+    } else if (token.type === "th_open") {
+      headers.push(next ? textOf(next) : "");
+    } else if (token.type === "td_open") {
+      token.attrSet("data-label", headers[column] ?? "");
+      column += 1;
+    }
+  }
+}
+function bodyCellsOf(tokens, tableOpen) {
+  const rows = [];
+  let inBody = false;
+  for (const index of ownTokenIndexes(tokens, tableOpen)) {
+    const token = tokens[index];
+    if (token?.type === "tbody_open") {
+      inBody = true;
+    } else if (inBody && token?.type === "tr_open") {
+      rows.push([]);
+    } else if (inBody && token?.type === "td_open") {
+      const inline2 = tokens[index + 1];
+      rows.at(-1)?.push(inline2 ? textOf(inline2) : "");
+    }
+  }
+  return rows;
+}
+function unreadableTotalWarnings(options) {
+  const { tokens, tableOpen, totals } = options;
+  const headers = headersOf(tokens, tableOpen);
+  return findUnreadableTotals({
+    rows: bodyCellsOf(tokens, tableOpen),
+    totals
+  }).map((item) => ({
+    message: `\u300C${headers[item.column] ?? ""}\u300D\u306E\u5217\u306B\u6570\u3068\u3057\u3066\u8AAD\u3081\u306A\u3044\u5024 ${codes(item.values)} \u304C\u3042\u308B\u305F\u3081\u3001${TOTAL_LABELS[item.calc]}\u3092\u51FA\u3057\u3066\u3044\u307E\u305B\u3093\u3002\u6570\u3092\u66F8\u304F\u304B\u3001\u30BB\u30EB\u3092\u7A7A\u306B\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
+  }));
+}
+function headersOf(tokens, tableOpen) {
+  const headers = [];
+  for (let index = tableOpen; index < tokens.length; index++) {
+    const token = tokens[index];
+    if (token?.type === "thead_close") {
+      break;
+    }
+    if (token?.type === "th_open" && tokens[index + 1]) {
+      headers.push(textOf(tokens[index + 1]));
+    }
+  }
+  return headers;
+}
+function collectRanges(tokens) {
+  const ranges = [];
+  tokens.forEach((token, index) => {
+    const mark = markOf(token);
+    if (mark?.name === "table" && !mark.closing) {
+      ranges.push({
+        open: index,
+        close: findClose(tokens, index, "table"),
+        mark,
+        warned: false
+      });
+    }
+  });
+  return ranges;
+}
+function decorateTables(state) {
+  decorateAttributes(state);
+  if (!featureOn(state, "table")) {
+    return;
+  }
+  const tokens = state.tokens;
+  const ranges = collectRanges(tokens);
+  const taken = new Set(envOf(state).headings.map((heading2) => heading2.id));
+  const out = [];
+  const openTables = [];
+  for (let index = 0; index < tokens.length; index++) {
+    const token = tokens[index];
+    if (!token) {
+      continue;
+    }
+    const mark = markOf(token);
+    if (mark?.name === "table") {
+      continue;
+    }
+    const outer = openTables.at(-1);
+    if (token.type === "table_close" && outer) {
+      openTables.pop();
+      out.push(token);
+      const close = ownBlock(state, outer.tail);
+      close.meta = { role: "table-close" };
+      out.push(close);
+      continue;
+    }
+    if (token.type !== "table_open") {
+      out.push(token);
+      continue;
+    }
+    const range = ranges.filter(
+      (candidate) => candidate.open < index && candidate.open > (outer?.open ?? -1) && (candidate.close < 0 || index < candidate.close)
+    ).pop();
+    const viewSpec = token.meta?.tableSpec;
+    const spec = viewSpec ?? readTableSpec(range?.mark.args, headersOf(tokens, index));
+    const filtering = spec.features.includes("filter");
+    const html = renderTable({
+      kind: spec.kind,
+      features: spec.features,
+      filters: filtering ? spec.filters : [],
+      collapse: spec.collapse,
+      title: spec.title,
+      rowCount: bodyRowCount(tokens, index),
+      hide: spec.hide,
+      totals: spec.totals,
+      body: SLOT_MARKER
+    });
+    if (spec.features.includes("rowlink")) {
+      linkRows(state, tokens, index, taken);
+    }
+    const [head = "", tail = ""] = html.split(SLOT_MARKER);
+    const divEnd = head.indexOf(">") + 1;
+    const warnings = range ? warningsOf(range.mark.raw, spec.warnings) : [];
+    if (range && range.close < 0 && !range.warned) {
+      range.warned = true;
+      warnings.push(unclosedWarning(range.mark));
+    }
+    if (spec.features.includes("total")) {
+      for (const warning of unreadableTotalWarnings({
+        tokens,
+        tableOpen: index,
+        totals: spec.totals
+      })) {
+        out.push(warningBlock(state, warning));
+      }
+    }
+    const open3 = ownBlock(
+      state,
+      head.slice(0, divEnd),
+      range ? tokens[range.open] : token
+    );
+    open3.meta = { role: "table-open" };
+    out.push(open3);
+    for (const warning of warnings) {
+      out.push(warningBlock(state, warning));
+    }
+    out.push(ownBlock(state, head.slice(divEnd)));
+    out.push(token);
+    openTables.push({ open: index, tail });
+  }
+  state.tokens = out;
+}
+
+// src/parts/tabs.ts
 function renderTabs(options) {
   const {
     id,
@@ -70592,11 +68025,11 @@ function renderTabs(options) {
   } = options;
   const mounted = selected !== void 0;
   const tablist = mounted ? `<div class="mdmark-tablist" role="tablist">${titles.map(
-    (title2, index) => `<button class="mdmark-tab" type="button" role="tab" id="${escapeHtml2(id)}-tab-${index}" aria-controls="${escapeHtml2(id)}-panel-${index}" aria-selected="${index === selected}" tabindex="${index === selected ? 0 : -1}">${withoutLinks(title2)}</button>`
+    (title2, index) => `<button class="mdmark-tab" type="button" role="tab" id="${escapeHtml2(id)}-tab-${index}" aria-controls="${escapeHtml2(id)}-panel-${index}" aria-selected="${index === selected}" tabindex="${index === selected ? 0 : -1}">${escapeHtml2(title2)}</button>`
   ).join("")}</div>` : "";
   const body = panels.map((panel, index) => {
     const attributes = mounted ? ` role="tabpanel" id="${escapeHtml2(id)}-panel-${index}" aria-labelledby="${escapeHtml2(id)}-tab-${index}"${index === selected ? "" : " hidden"}` : "";
-    return `<div class="mdmark-tab-panel"${attributes}><p class="mdmark-tab-title">${titles[index] ?? ""}</p>${panel}</div>`;
+    return `<div class="mdmark-tab-panel"${attributes}><p class="mdmark-tab-title">${escapeHtml2(titles[index] ?? "")}</p>${panel}</div>`;
   }).join("");
   const groupAttribute = group === void 0 ? "" : ` data-group="${escapeHtml2(group)}"`;
   const tabs = `<div class="mdmark-tabs"${groupAttribute}>${tablist}${body}</div>`;
@@ -70604,7 +68037,7 @@ function renderTabs(options) {
     return tabs;
   }
   return renderCollapsible({
-    title: title ?? `\u30BF\u30D6\uFF08${titles.map(plainText3).join("\u30FB")}\uFF09`,
+    title: title ?? `\u30BF\u30D6\uFF08${titles.join("\u30FB")}\uFF09`,
     open: collapse === "open",
     body: tabs
   });
@@ -70657,33 +68090,12 @@ function readTabsOptions(mark) {
     }
   };
 }
-function findTabsClose(tokens, openIndex) {
-  let depth = 0;
-  let nested = false;
-  for (let index = openIndex + 1; index < tokens.length; index++) {
-    const mark = markOf(tokens[index]);
-    if (mark?.name !== "tabs") {
-      continue;
-    }
-    if (!mark.closing) {
-      depth += 1;
-      nested = true;
-    } else if (depth === 0) {
-      return { close: index, nested };
-    } else {
-      depth -= 1;
-    }
-  }
-  return { close: -1, nested };
-}
 function buildTabs(state) {
   if (!featureOn(state, "tabs")) {
     return;
   }
-  state.tokens = buildTabsIn(state, state.tokens);
-}
-function buildTabsIn(state, tokens) {
   const env = envOf(state);
+  const tokens = state.tokens;
   const out = [];
   for (let index = 0; index < tokens.length; index++) {
     const token = tokens[index];
@@ -70698,18 +68110,12 @@ function buildTabsIn(state, tokens) {
     if (warning) {
       out.push(warningBlock(state, warning));
     }
-    const { close: closeIndex, nested } = findTabsClose(tokens, index);
+    const closeIndex = findClose(tokens, index, "tabs");
+    const end = closeIndex < 0 ? tokens.length : closeIndex;
+    const content = tokens.slice(index + 1, end);
     if (closeIndex < 0) {
       out.push(warningBlock(state, unclosedWarning(mark)));
-      if (nested) {
-        out.push(
-          ...tokens.slice(index + 1).filter((candidate) => markOf(candidate)?.name !== "tabs")
-        );
-        break;
-      }
     }
-    const end = closeIndex < 0 ? tokens.length : closeIndex;
-    const content = buildTabsIn(state, tokens.slice(index + 1, end));
     const first = content.find(
       (candidate) => candidate.type === "heading_open"
     );
@@ -70726,17 +68132,9 @@ function buildTabsIn(state, tokens) {
     const separators = content.map((candidate, position) => ({ candidate, position })).filter(
       ({ candidate }) => candidate.type === "heading_open" && candidate.tag === first.tag && candidate.level === first.level
     );
-    const titles = separators.map(({ position }) => {
-      const inline2 = content[position + 1];
-      return inline2 ? state.md.renderer.renderInline(
-        // 見出しのアンカーはタブ名に入れない
-        (inline2.children ?? []).filter(
-          (child) => child.meta?.role !== "heading-anchor"
-        ),
-        state.md.options,
-        state.env
-      ) : "";
-    });
+    const titles = separators.map(
+      ({ position }) => textOf(content[position + 1])
+    );
     const ids = new Set(
       separators.map(({ candidate }) => candidate.attrGet("id"))
     );
@@ -70773,151 +68171,7 @@ function buildTabsIn(state, tokens) {
     );
     index = end;
   }
-  return out;
-}
-
-// src/parts/text-color.ts
-function renderTextColor(options) {
-  return `<span class="mdmark-color" data-color="${options.color}">${options.text}</span>`;
-}
-
-// src/render/syntax/text-color.ts
-var BRACKET_PATTERN = /\[|\]\{color=([^}]*)\}/g;
-var COLOR_LIST = COLOR_NAMES.map((name) => `\`${name}\``).join("\u30FB");
-function splitPieces(state, children) {
-  const pieces = [];
-  let level = 0;
-  let linkDepth = 0;
-  for (const child of children) {
-    if (child.type === "link_open") {
-      linkDepth += 1;
-    } else if (child.type === "link_close") {
-      linkDepth -= 1;
-    }
-    if (child.type !== "text" || linkDepth > 0) {
-      pieces.push({ kind: "token", token: child });
-      level += child.nesting;
-      continue;
-    }
-    let last = 0;
-    for (const found of child.content.matchAll(BRACKET_PATTERN)) {
-      const at = found.index ?? 0;
-      if (at > last) {
-        pieces.push({
-          kind: "token",
-          token: textToken2(state, child.content.slice(last, at))
-        });
-      }
-      pieces.push(
-        found[1] === void 0 ? { kind: "open", level } : { kind: "close", level, color: found[1], raw: found[0] }
-      );
-      last = at + found[0].length;
-    }
-    if (last === 0) {
-      pieces.push({ kind: "token", token: child });
-    } else if (last < child.content.length) {
-      pieces.push({
-        kind: "token",
-        token: textToken2(state, child.content.slice(last))
-      });
-    }
-  }
-  return pieces;
-}
-function pairBrackets(pieces) {
-  const pairs = /* @__PURE__ */ new Map();
-  const opens = [];
-  for (const [index, piece] of pieces.entries()) {
-    if (piece.kind === "open") {
-      opens.push(index);
-    } else if (piece.kind === "close") {
-      let found = opens.length - 1;
-      while (found >= 0 && pieces[opens[found]].level !== piece.level) {
-        found -= 1;
-      }
-      if (found >= 0) {
-        const [openAt] = opens.splice(found);
-        pairs.set(openAt, index);
-      }
-    }
-  }
-  return pairs;
-}
-function buildTextColors(state) {
-  if (!featureOn(state, "text-color")) {
-    return;
-  }
-  const nonce = envOf(state).nonce;
-  const warnings = [];
-  for (const [index, token] of state.tokens.entries()) {
-    if (token.type !== "inline" || !token.children?.length) {
-      continue;
-    }
-    const pieces = splitPieces(state, token.children);
-    const pairs = pairBrackets(pieces);
-    if (pairs.size === 0) {
-      continue;
-    }
-    const closes = new Map([...pairs].map(([open2, close]) => [close, open2]));
-    const unknown2 = [];
-    const children = [];
-    for (const [at, piece] of pieces.entries()) {
-      if (piece.kind === "token") {
-        children.push(piece.token);
-        continue;
-      }
-      const openAt = piece.kind === "open" ? at : closes.get(at);
-      const closeAt = piece.kind === "close" ? at : pairs.get(at);
-      const close = closeAt === void 0 ? void 0 : pieces[closeAt];
-      if (openAt === void 0 || close?.kind !== "close") {
-        children.push(
-          textToken2(state, piece.kind === "open" ? "[" : piece.raw)
-        );
-        continue;
-      }
-      if (!isColorName(close.color)) {
-        if (piece.kind === "open") {
-          unknown2.push(close.color);
-        }
-        continue;
-      }
-      const [before, after] = splitSlots(
-        markOwn(
-          renderTextColor({ color: close.color, text: SLOT_MARKER }),
-          nonce
-        )
-      );
-      const html = new state.Token("html_inline", "", 0);
-      html.content = (piece.kind === "open" ? before : after) ?? "";
-      children.push(html);
-    }
-    token.children = children;
-    if (unknown2.length) {
-      warnings.push({ index, unknown: unknown2 });
-    }
-  }
-  for (const { index, unknown: unknown2 } of warnings.reverse()) {
-    const names = unknown2.map((name) => `\`${name}\``).join("\u30FB");
-    state.tokens.splice(
-      blockStartOf2(state.tokens, index),
-      0,
-      warningBlock(state, {
-        message: `${names} \u306F\u8272\u306E\u540D\u524D\u3067\u306F\u3042\u308A\u307E\u305B\u3093\u3002\u4F7F\u3048\u308B\u8272\u306E\u540D\u524D\u306F ${COLOR_LIST} \u3067\u3059\u3002\u8272\u3092\u4ED8\u3051\u305A\u306B\u63CF\u3044\u3066\u3044\u307E\u3059\u3002`
-      })
-    );
-  }
-}
-function blockStartOf2(tokens, index) {
-  let at = index;
-  while (at > 0 && (tokens[at]?.level ?? 0) > 0) {
-    at -= 1;
-  }
-  return at;
-}
-function textToken2(state, content) {
-  const token = new state.Token("text", "", 0);
-  token.content = content;
-  return token;
+  state.tokens = out;
 }
 
 // src/parts/toc.ts
@@ -71038,11 +68292,11 @@ function fileIconOf(name) {
   const extension = dot < 0 ? "" : name.slice(dot + 1).toLowerCase();
   return ICON_BY_EXTENSION.get(extension) ?? "file";
 }
-function folderOpenByDefault(depth, open2) {
-  if (open2 === "all") {
+function folderOpenByDefault(depth, open3) {
+  if (open3 === "all") {
     return true;
   }
-  return depth < (open2 === void 0 ? 1 : Number(open2));
+  return depth < (open3 === void 0 ? 1 : Number(open3));
 }
 function renderTreeCopyContent(state) {
   const label = COPY_LABELS2[state];
@@ -71072,21 +68326,21 @@ function renderNode4(node2, context, depth, path) {
     return `<li class="mdmark-tree-folder"><span class="mdmark-tree-row">${name}${note}</span><ul>${nested}</ul></li>`;
   }
   const listId = `${context.id}-${path}`;
-  const open2 = folderOpenByDefault(depth, context.open);
-  return `<li class="mdmark-tree-folder"><span class="mdmark-tree-row"><button class="mdmark-tree-toggle" type="button" aria-expanded="${open2}" aria-controls="${escapeHtml2(listId)}">${name}</button>${note}</span><ul id="${escapeHtml2(listId)}"${open2 ? "" : ' hidden="until-found"'}>${nested}</ul></li>`;
+  const open3 = folderOpenByDefault(depth, context.open);
+  return `<li class="mdmark-tree-folder"><span class="mdmark-tree-row"><button class="mdmark-tree-toggle" type="button" aria-expanded="${open3}" aria-controls="${escapeHtml2(listId)}">${name}</button>${note}</span><ul id="${escapeHtml2(listId)}"${open3 ? "" : ' hidden="until-found"'}>${nested}</ul></li>`;
 }
 function renderTree(options) {
   const {
     nodes,
     source,
-    open: open2,
+    open: open3,
     interactive = false,
     copyState,
     copyFallback = false,
     id = "mdmark-tree"
   } = options;
-  const context = { interactive, open: open2, id };
-  const openAttribute = open2 === void 0 ? "" : ` data-open="${escapeHtml2(open2)}"`;
+  const context = { interactive, open: open3, id };
+  const openAttribute = open3 === void 0 ? "" : ` data-open="${escapeHtml2(open3)}"`;
   const bar = interactive ? renderTreeBar({ copyState: copyState ?? "idle" }) : "";
   const list2 = `<ul class="mdmark-tree-list" aria-label="\u30D5\u30A1\u30A4\u30EB\u30C4\u30EA\u30FC">${nodes.map((node2, index) => renderNode4(node2, context, 0, String(index))).join("")}</ul>`;
   const panel = interactive && copyFallback ? renderCopyPanel({ id: `${id}-panel`, format: "tree", text: source }) : "";
@@ -71147,7 +68401,7 @@ function parseTree(source, renderNote = escapeHtml2) {
 }
 function readTreeOptions(mark) {
   const items = [];
-  let open2;
+  let open3;
   for (const [key, value] of Object.entries(mark.args.keys)) {
     if (key !== OPEN_KEY) {
       items.push({
@@ -71155,7 +68409,7 @@ function readTreeOptions(mark) {
         message: `\u4F7F\u3048\u306A\u3044\u30AD\u30FC\u3067\u3059\u3002\u4F7F\u3048\u308B\u30AD\u30FC\u306F \`${OPEN_KEY}=\` \u3067\u3059`
       });
     } else if (value === "all" || LEVELS_PATTERN.test(value)) {
-      open2 = value;
+      open3 = value;
     } else {
       items.push({
         label: `${OPEN_KEY}=${value}`,
@@ -71170,10 +68424,10 @@ function readTreeOptions(mark) {
     });
   }
   if (items.length === 0) {
-    return open2 === void 0 ? {} : { open: open2 };
+    return open3 === void 0 ? {} : { open: open3 };
   }
   return {
-    ...open2 === void 0 ? {} : { open: open2 },
+    ...open3 === void 0 ? {} : { open: open3 },
     warning: {
       mark: mark.raw,
       message: "\u306E\u8AAD\u3081\u306A\u3044\u6307\u5B9A\u3092\u5F53\u3066\u305A\u306B\u63CF\u3044\u3066\u3044\u307E\u3059\u3002",
@@ -71339,12 +68593,8 @@ function readView(options) {
       // ビューの表には件数・列の表示の切り替え・集計を付けない
       hide: [],
       totals: [],
-      wide: [],
-      check: [],
       collapse: "none",
-      warnings: [],
-      headRows: 1,
-      rowHeader: 0
+      warnings: []
     },
     viewSpec: { group, mode, boardDisabled, icons },
     warnings
@@ -71363,18 +68613,18 @@ function buildViews(state) {
     return;
   }
   const tokens = state.tokens;
-  for (let open2 = tokens.length - 1; open2 >= 0; open2--) {
-    const mark = markOf(tokens[open2]);
+  for (let open3 = tokens.length - 1; open3 >= 0; open3--) {
+    const mark = markOf(tokens[open3]);
     if (mark?.name !== "view" || mark.closing) {
       continue;
     }
-    const close = findClose(tokens, open2, "view");
+    const close = findClose(tokens, open3, "view");
     const end = close < 0 ? tokens.length : close;
     const warnings = [];
     if (close < 0) {
       warnings.push(unclosedWarning(mark));
     }
-    const table2 = firstTable(tokens, open2 + 1, end);
+    const table2 = firstTable(tokens, open3 + 1, end);
     const tableOpen = tokens[table2];
     if (tableOpen === void 0) {
       warnings.push({
@@ -71394,10 +68644,10 @@ function buildViews(state) {
       };
       const wrapper = `<div class="mdmark-view" data-view="${escapeHtml2(JSON.stringify(reading.viewSpec))}">`;
       tokens.splice(end, 0, ownBlock(state, "</div>"));
-      tokens.splice(open2 + 1, 0, ownBlock(state, wrapper));
+      tokens.splice(open3 + 1, 0, ownBlock(state, wrapper));
     }
     for (const [offset, warning] of warnings.entries()) {
-      pushWarning(state, open2 + offset, warning);
+      pushWarning(state, open3 + offset, warning);
     }
   }
 }
@@ -71432,9 +68682,9 @@ function revertFuzzyLinks(state) {
       continue;
     }
     for (let index = 0; index < children.length; index++) {
-      const open2 = children[index];
+      const open3 = children[index];
       const text2 = children[index + 1];
-      if (open2?.type !== "link_open" || open2.markup !== "linkify" || !text2) {
+      if (open3?.type !== "link_open" || open3.markup !== "linkify" || !text2) {
         continue;
       }
       if (EXPLICIT_LINK_PATTERN.test(text2.content)) {
@@ -71538,15 +68788,10 @@ function createParser() {
     ["mdmark_build_callouts", buildCallouts],
     ["mdmark_build_file_trees", buildFileTrees],
     ["mdmark_build_badges", buildBadges],
-    ["mdmark_build_text_colors", buildTextColors],
     ["mdmark_build_diagrams", buildDiagrams],
     ["mdmark_build_embedded_html", buildEmbeddedHtml],
     ["mdmark_build_code_blocks", buildCodeBlocks],
-    ["mdmark_read_images", readImages],
     ["mdmark_number_figures", numberFigures],
-    ["mdmark_build_gallery", buildGallery],
-    ["mdmark_build_image_figures", buildImageFigures],
-    ["mdmark_build_cards", buildCards],
     ["mdmark_terms", termsRule],
     ["mdmark_wrap_sections", wrapSections],
     ["mdmark_build_toc", buildToc],
@@ -71591,7 +68836,6 @@ function renderDocument(options) {
   const env = {
     libraries: options.config.libraries,
     defaults: options.config.features,
-    labels: options.config.labels,
     featureArgs: [],
     features: {},
     headings: [],
@@ -71613,287 +68857,6 @@ function renderDocument(options) {
   };
 }
 
-// src/cli/assets.ts
-import { copyFile, mkdir, stat as stat2 } from "node:fs/promises";
-import {
-  basename as basename3,
-  dirname as dirname3,
-  extname as extname2,
-  isAbsolute,
-  join as join3,
-  relative as relative2,
-  resolve as resolve3,
-  sep as sep2
-} from "node:path";
-var EXTERNAL_PATTERN = /^(?:[a-z][a-z0-9+.-]*:|\/\/)/i;
-var POSTER_PATTERN = /^\{(?:[^{}]*\s)?poster=([^\s}]+)[^{}]*\}/;
-var IMG_SRC_PATTERN = /<img\b[^>]*?\bsrc\s*=\s*(?:"([^"]*)"|'([^']*)')/gi;
-var KIND_LABELS = {
-  image: "\u753B\u50CF",
-  video: "\u52D5\u753B",
-  audio: "\u97F3\u58F0",
-  poster: "\u753B\u50CF",
-  attachment: "\u6DFB\u4ED8"
-};
-function isRelative(src) {
-  return src !== "" && !EXTERNAL_PATTERN.test(src) && !src.startsWith("#") && !src.startsWith("/");
-}
-function extensionOf2(src) {
-  return extname2(src.split(/[?#]/, 1)[0] ?? "").slice(1).toLowerCase();
-}
-function refKindOf(src) {
-  const kind = mediaKindOf(src);
-  return kind === "video" || kind === "audio" ? kind : "image";
-}
-function findAssetRefs(markdown) {
-  const tokens = new MarkdownItCallable({ html: true }).parse(markdown, {});
-  const lineStarts = [0];
-  for (const [index, char] of [...markdown].entries()) {
-    if (char === "\n") {
-      lineStarts.push(index + 1);
-    }
-  }
-  const lineOf = (offset) => {
-    let line = 0;
-    while (line + 1 < lineStarts.length && (lineStarts[line + 1] ?? 0) <= offset) {
-      line += 1;
-    }
-    return line + 1;
-  };
-  const refs = [];
-  for (const token of tokens) {
-    if (!token.map) {
-      continue;
-    }
-    const [startLine] = token.map;
-    let cursor = lineStarts[startLine] ?? 0;
-    const push = (parsed, kind) => {
-      const src = [parsed, decodeSrc(parsed)].find(
-        (candidate) => markdown.indexOf(candidate, cursor) >= 0
-      );
-      const at = src === void 0 ? -1 : markdown.indexOf(src, cursor);
-      if (src !== void 0) {
-        cursor = at + src.length;
-      }
-      const line = at >= 0 ? lineOf(at) : startLine + 1;
-      refs.push({ src: src ?? parsed, kind, line, offset: at });
-    };
-    const sources = [];
-    const children = token.children ?? [];
-    for (const [position, child] of children.entries()) {
-      if (child.type === "image") {
-        const src = String(child.attrGet("src") ?? "");
-        sources.push({ src, kind: refKindOf(src) });
-        const next = children[position + 1];
-        const poster = next?.type === "text" ? POSTER_PATTERN.exec(next.content)?.[1] : void 0;
-        if (poster !== void 0) {
-          sources.push({ src: poster, kind: "poster" });
-        }
-      } else if (child.type === "link_open") {
-        const href = String(child.attrGet("href") ?? "");
-        if (ATTACHMENT_KINDS[extensionOf2(href)] !== void 0) {
-          sources.push({ src: href, kind: "attachment" });
-        }
-      } else if (child.type === "html_inline") {
-        for (const src of imgSources(child.content)) {
-          sources.push({ src, kind: "image" });
-        }
-      }
-    }
-    if (token.type === "html_block") {
-      for (const src of imgSources(token.content)) {
-        sources.push({ src, kind: "image" });
-      }
-    }
-    for (const { src, kind } of sources) {
-      if (isRelative(src)) {
-        push(src, kind);
-      }
-    }
-  }
-  return refs;
-}
-function imgSources(html) {
-  return [...html.matchAll(IMG_SRC_PATTERN)].map(
-    (match) => match[1] ?? match[2] ?? ""
-  );
-}
-function collectAssetRefs(markdown) {
-  return findAssetRefs(markdown).map(({ src, kind, line }) => ({
-    src,
-    kind,
-    line
-  }));
-}
-function decodeSrc(src) {
-  try {
-    return decodeURI(src);
-  } catch {
-    return src;
-  }
-}
-function pathOf2(src) {
-  return decodeSrc(src.split(/[?#]/, 1)[0] ?? "");
-}
-async function resolveAssetFile(src, options) {
-  const path = pathOf2(src);
-  const roots = options.assetsRoot === void 0 ? [options.docDir] : [options.docDir, options.assetsRoot];
-  for (const root of roots) {
-    const file = resolve3(root, path);
-    try {
-      if ((await stat2(file)).isFile()) {
-        return file;
-      }
-    } catch {
-    }
-  }
-  return void 0;
-}
-function suffixOf(src) {
-  const at = src.search(/[?#]/);
-  return at < 0 ? "" : src.slice(at);
-}
-function toPosix2(path) {
-  return path.split(sep2).join("/");
-}
-function copyTargetOf(file, baseDir, used) {
-  const inside2 = relative2(baseDir, file);
-  if (inside2 !== "" && !inside2.startsWith("..") && !isAbsolute(inside2)) {
-    return toPosix2(inside2);
-  }
-  const extension = extname2(file);
-  const stem = basename3(file, extension);
-  let name = `external/${stem}${extension}`;
-  for (let count = 1; used.has(name); count += 1) {
-    name = `external/${stem}-${count}${extension}`;
-  }
-  return name;
-}
-async function copyMedia(options) {
-  const { markdown, docFile, assetsRoot, baseDir, out, copied } = options;
-  const filesName = `${basename3(out, extname2(out))}_files`;
-  const filesDir = join3(dirname3(out), filesName);
-  const warnings = [];
-  const replacements = [];
-  for (const ref of findAssetRefs(markdown)) {
-    if (ref.kind !== "video" && ref.kind !== "audio") {
-      continue;
-    }
-    const file = await resolveAssetFile(ref.src, {
-      docDir: dirname3(docFile),
-      assetsRoot
-    });
-    if (file === void 0) {
-      warnings.push(
-        `${KIND_LABELS[ref.kind]} \`${ref.src}\` \u3092\u8AAD\u3081\u307E\u305B\u3093\u3002\u30D1\u30B9\u3092\u76F4\u3059\u304B\u30D5\u30A1\u30A4\u30EB\u3092\u7F6E\u3044\u3066\u304F\u3060\u3055\u3044\u3002`
-      );
-      continue;
-    }
-    let target = copied.get(file);
-    if (target === void 0) {
-      target = copyTargetOf(file, baseDir, new Set(copied.values()));
-      const dest = join3(filesDir, ...target.split("/"));
-      try {
-        await mkdir(dirname3(dest), { recursive: true });
-        await copyFile(file, dest);
-      } catch (error2) {
-        const reason = error2 instanceof Error ? error2.message : String(error2);
-        throw new CliError(
-          `${filesDir} \u306B\u66F8\u3051\u307E\u305B\u3093\uFF08${reason}\uFF09\u3002\u51FA\u529B\u5148\u306E\u30D5\u30A9\u30EB\u30C0\u3092\u78BA\u304B\u3081\u3066\u304F\u3060\u3055\u3044\u3002`
-        );
-      }
-      copied.set(file, target);
-    }
-    if (ref.offset >= 0) {
-      replacements.push({
-        offset: ref.offset,
-        src: ref.src,
-        to: `${filesName}/${target}${suffixOf(ref.src)}`
-      });
-    }
-  }
-  let result = markdown;
-  for (const { offset, src, to } of replacements.reverse()) {
-    result = `${result.slice(0, offset)}${to}${result.slice(offset + src.length)}`;
-  }
-  return { markdown: result, warnings };
-}
-async function checkMissingFiles(options) {
-  const issues = [];
-  for (const ref of collectAssetRefs(options.markdown)) {
-    const found = await resolveAssetFile(ref.src, {
-      docDir: dirname3(options.docFile),
-      assetsRoot: options.assetsRoot
-    });
-    if (found === void 0) {
-      issues.push({
-        file: options.file,
-        where: String(ref.line),
-        kind: "missing_file",
-        message: `${KIND_LABELS[ref.kind]}\u306E\u30D5\u30A1\u30A4\u30EB \`${ref.src}\` \u304C\u898B\u3064\u304B\u308A\u307E\u305B\u3093\u3002\u30D1\u30B9\u3092\u76F4\u3059\u304B\u3001\u6587\u66F8\u306E\u30D5\u30A9\u30EB\u30C0\u304B \`assets.root\` \u306E\u30D5\u30A9\u30EB\u30C0\u306B\u30D5\u30A1\u30A4\u30EB\u3092\u7F6E\u3044\u3066\u304F\u3060\u3055\u3044\u3002`
-      });
-    }
-  }
-  return issues;
-}
-
-// src/cli/html.ts
-var ASSET_SCHEME = "mdmark-asset:";
-var PAYLOAD_ID = "mdmark-payload";
-var MENU_ICON = '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2.75 4h10.5"/><path d="M2.75 8h10.5"/><path d="M2.75 12h10.5"/></svg>';
-var CLOSE_ICON = '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4 4l8 8"/><path d="M12 4l-8 8"/></svg>';
-var BUNDLE_BODY = [
-  '<div class="mdmark-bundle">',
-  '<aside class="mdmark-bundle-side"></aside>',
-  '<main class="mdmark-bundle-main">',
-  '<div class="mdmark-bundle-bar">',
-  `<button class="mdmark-bundle-button" type="button" aria-haspopup="dialog" aria-expanded="false" aria-controls="mdmark-doc-list-panel" data-panel-open>${MENU_ICON}\u6587\u66F8\u306E\u4E00\u89A7</button>`,
-  '<span class="mdmark-bundle-bar-title" data-bar-title></span>',
-  "</div>",
-  '<article class="mdmark" data-doc-view></article>',
-  "</main>",
-  "</div>",
-  '<dialog class="mdmark-bundle-panel" id="mdmark-doc-list-panel" closedby="any" aria-labelledby="mdmark-doc-list-panel-title">',
-  '<div class="mdmark-bundle-panel-head">',
-  '<p class="mdmark-bundle-panel-title" id="mdmark-doc-list-panel-title">\u6587\u66F8\u306E\u4E00\u89A7</p>',
-  `<button class="mdmark-bundle-button is-icon" type="button" aria-label="\u6587\u66F8\u306E\u4E00\u89A7\u3092\u9589\u3058\u308B" data-panel-close>${CLOSE_ICON}</button>`,
-  "</div>",
-  "<div data-panel-body></div>",
-  "</dialog>"
-].join("");
-var DOCUMENT_BODY = '<article class="mdmark"></article>';
-function escapeStyle(css) {
-  return css.replace(/<\/(style)/gi, "<\\/$1");
-}
-function encodePayload(payload) {
-  return JSON.stringify(payload).replaceAll("<", "\\u003c");
-}
-function assembleHtml(parts) {
-  const { payload, distCss, themeCss, script } = parts;
-  const entry = payload.docs.find((doc) => doc.path === payload.entry);
-  const title = escapeHtml2(entry?.title ?? payload.entry);
-  const body = payload.kind === "bundle" ? BUNDLE_BODY : DOCUMENT_BODY;
-  const styles = [distCss, themeCss ?? ""].filter((css) => css !== "").map((css) => `<style>${escapeStyle(css)}</style>`).join("");
-  return [
-    "<!doctype html>",
-    '<html lang="ja">',
-    "<head>",
-    '<meta charset="utf-8">',
-    '<meta name="viewport" content="width=device-width, initial-scale=1">',
-    '<meta name="color-scheme" content="light dark">',
-    `<title>${title}</title>`,
-    styles,
-    "</head>",
-    "<body>",
-    body,
-    `<script type="application/json" id="${PAYLOAD_ID}">${encodePayload(payload)}</script>`,
-    `<script type="module">${script}</script>`,
-    "</body>",
-    "</html>",
-    ""
-  ].join("\n");
-}
-
 // src/cli/embed.ts
 var BROWSER_TARGETS = ["chrome99", "firefox98", "safari16.4"];
 var URL_NAMESPACE = "http-url";
@@ -71905,7 +68868,7 @@ var IMAGE_MIME = {
   ".webp": "image/webp",
   ".svg": "image/svg+xml"
 };
-var EXTERNAL_PATTERN2 = /^(?:[a-z][a-z0-9+.-]*:|\/\/)/i;
+var EXTERNAL_PATTERN = /^(?:[a-z][a-z0-9+.-]*:|\/\/)/i;
 var HTTP_PATTERN = /^https?:\/\//i;
 var fetchByUrl = async (url2) => {
   const response = await fetch(url2);
@@ -71944,11 +68907,13 @@ function usedSyntaxLanguages(options) {
   return [...languages].sort();
 }
 function usedParts(options) {
-  return options.markdowns.some(
+  const { markdowns, view } = options;
+  const found = markdowns.some(
     (markdown) => [...markdown.matchAll(MARK_PATTERN)].some(
       ([, closing, name]) => closing !== "/" && name === "view"
     )
   );
+  return found ? { view } : {};
 }
 function urlPlugin(fetchText) {
   return {
@@ -71979,7 +68944,7 @@ async function bundleModule(entry, baseDir, fetchText = fetchByUrl) {
   try {
     const result = await build2({
       absWorkingDir: baseDir,
-      entryPoints: [HTTP_PATTERN.test(entry) ? entry : resolve4(baseDir, entry)],
+      entryPoints: [HTTP_PATTERN.test(entry) ? entry : resolve3(baseDir, entry)],
       bundle: true,
       format: "esm",
       platform: "browser",
@@ -72000,68 +68965,6 @@ async function bundleModule(entry, baseDir, fetchText = fetchByUrl) {
     return { error: `${entry}: ${reason}` };
   }
 }
-var DYNAMIC_IMPORT_PATTERN = /\bimport\s*\(/;
-function hasDynamicImport(code2) {
-  return DYNAMIC_IMPORT_PATTERN.test(code2);
-}
-function cacheFetchText(fetchText = fetchByUrl) {
-  const cache = /* @__PURE__ */ new Map();
-  return (url2) => {
-    let pending = cache.get(url2);
-    if (!pending) {
-      pending = fetchText(url2);
-      cache.set(url2, pending);
-    }
-    return pending;
-  };
-}
-function createViewerEntry(options) {
-  const { viewer, view, embeds } = options;
-  const literal2 = (value) => JSON.stringify(value);
-  const lines = [`import { startViewer } from ${literal2(viewer)};`];
-  if (embeds.view) {
-    lines.push(`import * as viewPart from ${literal2(view)};`);
-  }
-  const languages = Object.entries(embeds.syntax?.languages ?? {});
-  if (embeds.syntax) {
-    lines.push(`import syntaxCore from ${literal2(embeds.syntax.core)};`);
-    languages.forEach(([, path], position) => {
-      lines.push(`import syntaxLanguage${position} from ${literal2(path)};`);
-    });
-  }
-  const lazy2 = (path) => `() => import(${literal2(path)})`;
-  const libraries = Object.entries(embeds.libraries).map(([name, path]) => `${literal2(name)}: ${lazy2(path)}`).join(", ");
-  const extensions2 = embeds.extensions.map(lazy2).join(", ");
-  const syntax = embeds.syntax ? `, syntax: { core: { default: syntaxCore }, languages: { ${languages.map(
-    ([name], position) => `${literal2(name)}: { default: syntaxLanguage${position} }`
-  ).join(", ")} } }` : "";
-  lines.push(
-    `startViewer(document, { parts: ${embeds.view ? "{ view: viewPart }" : "{}"}${syntax}, libraries: { ${libraries} }, extensions: [${extensions2}] });`
-  );
-  return `${lines.join("\n")}
-`;
-}
-async function bundleViewer(options) {
-  const { entry, baseDir, fetchText } = options;
-  const result = await build2({
-    absWorkingDir: baseDir,
-    stdin: { contents: entry, resolveDir: baseDir, loader: "js" },
-    bundle: true,
-    format: "esm",
-    platform: "browser",
-    target: BROWSER_TARGETS,
-    minify: true,
-    write: false,
-    outfile: "viewer.js",
-    plugins: [urlPlugin(fetchText)],
-    logLevel: "silent"
-  });
-  const code2 = result.outputFiles[0]?.text;
-  if (code2 === void 0) {
-    throw new Error("\u8D77\u52D5\u306E\u51E6\u7406\u3092\u675F\u306D\u305F\u7D50\u679C\u304C\u3042\u308A\u307E\u305B\u3093");
-  }
-  return code2.replace(/<\/(script)/gi, "<\\/$1").replaceAll("<!--", "<\\x21--");
-}
 function findImageSources(markdown) {
   const tokens = new MarkdownItCallable({ html: true }).parse(markdown, {});
   const found = [];
@@ -72076,11 +68979,11 @@ function findImageSources(markdown) {
         const src = child.attrGet("src");
         sources.push(typeof src === "string" ? src : "");
       } else if (child.type === "html_inline") {
-        sources.push(...imgSources2(child.content));
+        sources.push(...imgSources(child.content));
       }
     }
     if (token.type === "html_block") {
-      sources.push(...imgSources2(token.content));
+      sources.push(...imgSources(token.content));
     }
     for (const src of sources) {
       if (src !== "") {
@@ -72090,82 +68993,54 @@ function findImageSources(markdown) {
   }
   return found;
 }
-function imgSources2(html) {
+function imgSources(html) {
   return [
     ...html.matchAll(/<img\b[^>]*?\bsrc\s*=\s*(?:"([^"]*)"|'([^']*)')/gi)
   ].map((match) => match[1] ?? match[2] ?? "");
 }
-async function inlineImages(markdown, docFile, options = {}) {
+async function inlineImages(markdown, docFile) {
+  const lines = markdown.split("\n");
   const warnings = [];
-  const warned = /* @__PURE__ */ new Set();
-  for (const { src } of findImageSources(markdown)) {
-    const media = ["video", "audio"].includes(mediaKindOf(src));
-    if (isAbsoluteSrc(src) && !media && !warned.has(src)) {
-      warned.add(src);
-      warnings.push(
-        `\u753B\u50CF \`${src}\` \u306F\u7D76\u5BFE URL \u306E\u305F\u3081\u57CB\u3081\u307E\u305B\u3093\u3002\u958B\u3044\u305F\u3068\u304D\u306B\u5916\u3078\u8981\u6C42\u3057\u307E\u3059\u3002`
-      );
-    }
-  }
-  const urls = /* @__PURE__ */ new Map();
-  const replacements = [];
-  for (const ref of findAssetRefs(markdown)) {
-    if (ref.kind !== "image" && ref.kind !== "poster") {
+  const dataUrls = /* @__PURE__ */ new Map();
+  for (const { start, end, src } of findImageSources(markdown)) {
+    if (src.startsWith("data:")) {
       continue;
     }
-    if (!urls.has(ref.src)) {
-      urls.set(ref.src, await readImage(ref.src, docFile, options, warnings));
+    if (!dataUrls.has(src)) {
+      dataUrls.set(src, await readImage(src, docFile, warnings));
     }
-    const url2 = urls.get(ref.src);
-    if (url2 !== void 0 && ref.offset >= 0) {
-      replacements.push({
-        offset: ref.offset,
-        src: ref.src,
-        to: `${url2}${fragmentOf(ref.src)}`
-      });
+    const dataUrl = dataUrls.get(src);
+    if (dataUrl === void 0) {
+      continue;
+    }
+    for (let line = start; line < end; line += 1) {
+      lines[line] = (lines[line] ?? "").replaceAll(src, dataUrl);
     }
   }
-  let result = markdown;
-  for (const { offset, src, to } of replacements.reverse()) {
-    result = `${result.slice(0, offset)}${to}${result.slice(offset + src.length)}`;
+  return { markdown: lines.join("\n"), warnings };
+}
+async function readImage(src, docFile, warnings) {
+  if (EXTERNAL_PATTERN.test(src) || src.startsWith("/")) {
+    warnings.push(
+      `\u753B\u50CF \`${src}\` \u306F\u7D76\u5BFE URL \u306E\u305F\u3081\u57CB\u3081\u307E\u305B\u3093\u3002\u958B\u3044\u305F\u3068\u304D\u306B\u5916\u3078\u8981\u6C42\u3057\u307E\u3059\u3002`
+    );
+    return void 0;
   }
-  return { markdown: result, warnings };
-}
-function isAbsoluteSrc(src) {
-  return !src.startsWith("data:") && (EXTERNAL_PATTERN2.test(src) || src.startsWith("/"));
-}
-function fragmentOf(src) {
-  const at = src.indexOf("#");
-  return at < 0 ? "" : src.slice(at);
-}
-async function readImage(src, docFile, options, warnings) {
-  const mime = IMAGE_MIME[extname3(src.split(/[?#]/)[0] ?? "").toLowerCase()];
+  const mime = IMAGE_MIME[extname2(src.split(/[?#]/)[0] ?? "").toLowerCase()];
   if (mime === void 0) {
     warnings.push(
       `\u753B\u50CF \`${src}\` \u306F\u57CB\u3081\u3089\u308C\u306A\u3044\u5F62\u5F0F\u3067\u3059\u3002png\u30FBjpg\u30FBjpeg\u30FBgif\u30FBwebp\u30FBsvg \u306B\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
     );
     return void 0;
   }
-  const file = await resolveAssetFile(src, {
-    docDir: dirname4(docFile),
-    assetsRoot: options.assetsRoot
-  });
-  const shared = file === void 0 ? void 0 : options.assets?.get(file);
-  if (shared) {
-    return `${ASSET_SCHEME}${shared.key}`;
+  let decoded = src;
+  try {
+    decoded = decodeURI(src);
+  } catch {
   }
   try {
-    if (file === void 0) {
-      throw new Error("not found");
-    }
-    const bytes = await readFile3(file);
-    const url2 = `data:${mime};base64,${bytes.toString("base64")}`;
-    if (options.assets === void 0) {
-      return url2;
-    }
-    const key = String(options.assets.size + 1);
-    options.assets.set(file, { key, url: url2 });
-    return `${ASSET_SCHEME}${key}`;
+    const bytes = await readFile3(resolve3(dirname3(docFile), decoded));
+    return `data:${mime};base64,${bytes.toString("base64")}`;
   } catch {
     warnings.push(
       `\u753B\u50CF \`${src}\` \u3092\u8AAD\u3081\u307E\u305B\u3093\u3002\u30D1\u30B9\u3092\u76F4\u3059\u304B\u753B\u50CF\u3092\u7F6E\u3044\u3066\u304F\u3060\u3055\u3044\u3002`
@@ -72191,7 +69066,7 @@ function findOutsideLinks(markdown, docPath, paths) {
       }
       const target = resolveLink(docPath, href);
       const written = decodeHref(href);
-      if (target !== void 0 && extname3(target) === ".md" && !paths.has(target) && !outside.includes(written)) {
+      if (target !== void 0 && extname2(target) === ".md" && !paths.has(target) && !outside.includes(written)) {
         outside.push(written);
       }
     }
@@ -72200,15 +69075,15 @@ function findOutsideLinks(markdown, docPath, paths) {
 }
 
 // src/cli/export.ts
-import { mkdir as mkdir2, readFile as readFile5, stat as stat3, writeFile } from "node:fs/promises";
+import { mkdir, readFile as readFile5, writeFile } from "node:fs/promises";
 import {
-  basename as basename5,
-  dirname as dirname5,
-  extname as extname4,
-  join as join5,
-  relative as relative3,
-  resolve as resolve5,
-  sep as sep3
+  basename as basename4,
+  dirname as dirname4,
+  extname as extname3,
+  join as join4,
+  relative as relative2,
+  resolve as resolve4,
+  sep as sep2
 } from "node:path";
 
 // src/knowledge/references.ts
@@ -72340,7 +69215,7 @@ function collectReferences(input) {
 
 // src/cli/aliases.ts
 import { readFile as readFile4 } from "node:fs/promises";
-import { basename as basename4, join as join4 } from "node:path";
+import { basename as basename3, join as join3 } from "node:path";
 import { parse as parse4, YAMLParseError as YAMLParseError2 } from "yaml";
 function isRecord6(value) {
   return typeof value === "object" && value !== null && !Array.isArray(value);
@@ -72350,7 +69225,7 @@ async function loadAliases(loaded) {
   if (rows === void 0) {
     return { aliases: void 0, issues: [] };
   }
-  const configName = basename4(loaded.path);
+  const configName = basename3(loaded.path);
   const readIssues = [];
   const sources = [];
   const rowIds = /* @__PURE__ */ new Set();
@@ -72386,7 +69261,7 @@ async function loadAliases(loaded) {
     for (const file of files) {
       try {
         const data = parse4(
-          await readFile4(join4(loaded.dir, file), "utf8")
+          await readFile4(join3(loaded.dir, file), "utf8")
         );
         sources.push({ rowId: row.id, path: file, data });
       } catch (error2) {
@@ -72408,24 +69283,76 @@ async function loadAliases(loaded) {
   return { aliases: built.aliases, issues: [...readIssues, ...built.problems] };
 }
 
+// src/cli/html.ts
+var PAYLOAD_ID = "mdmark-payload";
+var MENU_ICON = '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2.75 4h10.5"/><path d="M2.75 8h10.5"/><path d="M2.75 12h10.5"/></svg>';
+var CLOSE_ICON = '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4 4l8 8"/><path d="M12 4l-8 8"/></svg>';
+var BUNDLE_BODY = [
+  '<div class="mdmark-bundle">',
+  '<aside class="mdmark-bundle-side"></aside>',
+  '<main class="mdmark-bundle-main">',
+  '<div class="mdmark-bundle-bar">',
+  `<button class="mdmark-bundle-button" type="button" aria-haspopup="dialog" aria-expanded="false" aria-controls="mdmark-doc-list-panel" data-panel-open>${MENU_ICON}\u6587\u66F8\u306E\u4E00\u89A7</button>`,
+  '<span class="mdmark-bundle-bar-title" data-bar-title></span>',
+  "</div>",
+  '<article class="mdmark" data-doc-view></article>',
+  "</main>",
+  "</div>",
+  '<dialog class="mdmark-bundle-panel" id="mdmark-doc-list-panel" closedby="any" aria-labelledby="mdmark-doc-list-panel-title">',
+  '<div class="mdmark-bundle-panel-head">',
+  '<p class="mdmark-bundle-panel-title" id="mdmark-doc-list-panel-title">\u6587\u66F8\u306E\u4E00\u89A7</p>',
+  `<button class="mdmark-bundle-button is-icon" type="button" aria-label="\u6587\u66F8\u306E\u4E00\u89A7\u3092\u9589\u3058\u308B" data-panel-close>${CLOSE_ICON}</button>`,
+  "</div>",
+  "<div data-panel-body></div>",
+  "</dialog>"
+].join("");
+var DOCUMENT_BODY = '<article class="mdmark"></article>';
+function escapeStyle(css) {
+  return css.replace(/<\/(style)/gi, "<\\/$1");
+}
+function encodePayload(payload) {
+  return JSON.stringify(payload).replaceAll("<", "\\u003c");
+}
+function assembleHtml(parts) {
+  const { payload, distCss, themeCss, viewer } = parts;
+  const entry = payload.docs.find((doc) => doc.path === payload.entry);
+  const title = escapeHtml2(entry?.title ?? payload.entry);
+  const body = payload.kind === "bundle" ? BUNDLE_BODY : DOCUMENT_BODY;
+  const styles = [distCss, themeCss ?? ""].filter((css) => css !== "").map((css) => `<style>${escapeStyle(css)}</style>`).join("");
+  return [
+    "<!doctype html>",
+    '<html lang="ja">',
+    "<head>",
+    '<meta charset="utf-8">',
+    '<meta name="viewport" content="width=device-width, initial-scale=1">',
+    '<meta name="color-scheme" content="light dark">',
+    `<title>${title}</title>`,
+    styles,
+    "</head>",
+    "<body>",
+    body,
+    `<script type="application/json" id="${PAYLOAD_ID}">${encodePayload(payload)}</script>`,
+    `<script type="module">${viewer}</script>`,
+    "</body>",
+    "</html>",
+    ""
+  ].join("\n");
+}
+
 // src/cli/export.ts
 var GLOSSARY_ID_PREFIX = "mdmark-glossary-";
-function toPosix3(path) {
-  return path.split(sep3).join("/");
+function toPosix2(path) {
+  return path.split(sep2).join("/");
 }
 function reasonOf(error2) {
   return (error2 instanceof Error ? error2.message : String(error2)).split("\n")[0] ?? "";
-}
-var URL_PATTERN = /^https?:\/\//;
-function moduleSource(path, baseDir) {
-  return URL_PATTERN.test(path) ? path : resolve5(baseDir, path);
 }
 async function prepareReferences(options) {
   const { loaded, kind, markdowns } = options;
   const info = await readIndexWithDocuments(loaded);
   const index = info ? normalizeIndex(info.raw).index : void 0;
   const baseDir = info ? info.indexDir : loaded.dir;
-  const indexPathOf = (path) => toPosix3(relative3(baseDir, join5(loaded.dir, path)));
+  const indexPathOf = (path) => toPosix2(relative2(baseDir, join4(loaded.dir, path)));
   const byPath = (path) => index?.docs.find((doc) => normalizePath(doc.path) === indexPathOf(path));
   const glossaryPaths = kind === "bundle" ? loaded.config.build?.glossary ?? [] : [];
   const referenceDocs = [...index?.docs ?? []];
@@ -72459,22 +69386,18 @@ async function prepareReferences(options) {
   };
 }
 async function bundleSyntax(options) {
-  const { languages, url: url2, loaded, warnings, fetchText } = options;
+  const { languages, url: url2, loaded, warnings } = options;
   if (languages.length === 0) {
     return void 0;
   }
   const folder = url2.endsWith("/") ? url2 : `${url2}/`;
   const bundle = async (path) => {
-    const result = await bundleModule(
-      `${folder}${path}`,
-      loaded.dir,
-      fetchText
-    );
+    const result = await bundleModule(`${folder}${path}`, loaded.dir);
     if ("code" in result) {
-      return moduleSource(`${folder}${path}`, loaded.dir);
+      return result.code;
     }
     warnings.push(
-      `${basename5(loaded.path)}: \u8272\u5206\u3051\u306E\u30E9\u30A4\u30D6\u30E9\u30EA \`${folder}${path}\` \u3092\u675F\u306D\u3089\u308C\u307E\u305B\u3093\uFF08${result.error}\uFF09\u3002\`syntax.url\` \u3092\u76F4\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
+      `${basename4(loaded.path)}: \u8272\u5206\u3051\u306E\u30E9\u30A4\u30D6\u30E9\u30EA \`${folder}${path}\` \u3092\u675F\u306D\u3089\u308C\u307E\u305B\u3093\uFF08${result.error}\uFF09\u3002\`syntax.url\` \u3092\u76F4\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
     );
     return void 0;
   };
@@ -72484,60 +69407,25 @@ async function bundleSyntax(options) {
   }
   const bundled = {};
   for (const language of languages) {
-    const source = await bundle(`languages/${language}.min.js`);
-    if (source !== void 0) {
-      bundled[language] = source;
+    const code2 = await bundle(`languages/${language}.min.js`);
+    if (code2 !== void 0) {
+      bundled[language] = code2;
     }
   }
   return { core, languages: bundled };
 }
-async function resolveAssetsRoot(loaded, warnings) {
-  const root = loaded.config.assets?.root;
-  if (root === void 0) {
-    return void 0;
-  }
-  const dir = resolve5(loaded.dir, root);
-  try {
-    if ((await stat3(dir)).isDirectory()) {
-      return dir;
-    }
-  } catch {
-  }
-  warnings.push(
-    `${basename5(loaded.path)}: \`assets.root\` \u306E\u30D5\u30A9\u30EB\u30C0 \`${root}\` \u304C\u3042\u308A\u307E\u305B\u3093\u3002\u6587\u66F8\u306E\u30D5\u30A9\u30EB\u30C0\u3060\u3051\u3067\u63A2\u3057\u307E\u3059\u3002`
-  );
-  return void 0;
-}
 async function prepareEmbeds(options) {
-  const { loaded, docs, kind, entry, out, fetchText } = options;
+  const { loaded, docs, kind, entry } = options;
   const warnings = [];
-  const configName = basename5(loaded.path);
-  const assetsRoot = await resolveAssetsRoot(loaded, warnings);
+  const configName = basename4(loaded.path);
   const originals = /* @__PURE__ */ new Map();
   const inlined = /* @__PURE__ */ new Map();
-  const copied = /* @__PURE__ */ new Map();
-  const assets = kind === "bundle" ? /* @__PURE__ */ new Map() : void 0;
   for (const doc of docs) {
     const original = await readFile5(doc.file, "utf8");
-    const media = await copyMedia({
-      markdown: original,
-      docFile: doc.file,
-      assetsRoot,
-      baseDir: loaded.dir,
-      out,
-      copied
-    });
-    const result = await inlineImages(media.markdown, doc.file, {
-      assetsRoot,
-      ...assets ? { assets } : {}
-    });
+    const result = await inlineImages(original, doc.file);
     originals.set(doc.path, original);
     inlined.set(doc.path, result.markdown);
-    warnings.push(
-      ...[...media.warnings, ...result.warnings].map(
-        (text2) => `${doc.path}: ${text2}`
-      )
-    );
+    warnings.push(...result.warnings.map((text2) => `${doc.path}: ${text2}`));
   }
   const libraries = resolveConfig({ config: loaded.config }).libraries;
   const urls = Object.fromEntries(
@@ -72550,17 +69438,12 @@ async function prepareEmbeds(options) {
     const url2 = urls[mark] ?? "";
     let pending = bundled.get(url2);
     if (!pending) {
-      pending = bundleModule(url2, loaded.dir, fetchText);
+      pending = bundleModule(url2, loaded.dir);
       bundled.set(url2, pending);
     }
     const result = await pending;
     if ("code" in result) {
-      modules[mark] = moduleSource(url2, loaded.dir);
-      if (hasDynamicImport(result.code)) {
-        warnings.push(
-          dynamicImportWarning(configName, `\u5916\u90E8\u30E9\u30A4\u30D6\u30E9\u30EA \`${mark}\``)
-        );
-      }
+      modules[mark] = result.code;
     } else {
       warnings.push(
         `${configName}: \u5916\u90E8\u30E9\u30A4\u30D6\u30E9\u30EA \`${mark}\` \u3092\u675F\u306D\u3089\u308C\u307E\u305B\u3093\uFF08${result.error}\uFF09\u3002URL \u304B\u30D1\u30B9\u3092\u76F4\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
@@ -72569,12 +69452,9 @@ async function prepareEmbeds(options) {
   }
   const extensions2 = [];
   for (const path of loaded.config.extensions ?? []) {
-    const result = await bundleModule(path, loaded.dir, fetchText);
+    const result = await bundleModule(path, loaded.dir);
     if ("code" in result) {
-      extensions2.push(moduleSource(path, loaded.dir));
-      if (hasDynamicImport(result.code)) {
-        warnings.push(dynamicImportWarning(configName, `\u62E1\u5F35 \`${path}\``));
-      }
+      extensions2.push(result.code);
     } else {
       warnings.push(
         `${configName}: \u62E1\u5F35 \`${path}\` \u3092\u675F\u306D\u3089\u308C\u307E\u305B\u3093\uFF08${result.error}\uFF09\u3002\u30D1\u30B9\u3092\u76F4\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
@@ -72585,7 +69465,7 @@ async function prepareEmbeds(options) {
   const theme = loaded.config.theme;
   if (theme !== void 0) {
     try {
-      themeCss = await readFile5(resolve5(loaded.dir, theme), "utf8");
+      themeCss = await readFile5(resolve4(loaded.dir, theme), "utf8");
     } catch (error2) {
       warnings.push(
         `${configName}: \u4F7F\u3046\u5074\u306E CSS \`${theme}\` \u3092\u8AAD\u3081\u307E\u305B\u3093\uFF08${reasonOf(error2)}\uFF09\u3002\u30D1\u30B9\u3092\u76F4\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
@@ -72599,8 +69479,7 @@ async function prepareEmbeds(options) {
     }),
     url: resolveConfig({ config: loaded.config }).syntax.url,
     loaded,
-    warnings,
-    fetchText
+    warnings
   });
   const aliasResult = await loadAliases(loaded);
   for (const issue2 of aliasResult.issues) {
@@ -72610,7 +69489,7 @@ async function prepareEmbeds(options) {
   const colorTheme = loaded.config.colorTheme;
   if (colorTheme !== void 0 && !COLOR_THEMES.some((t) => t === colorTheme)) {
     warnings.push(
-      `${basename5(loaded.path)}: \u4E0D\u660E\u306A\u30C6\u30FC\u30DE\u540D ${colorTheme} \u3067\u3059\u3002\u65E2\u5B9A\u306E ${DEFAULT_COLOR_THEME} \u3067\u63CF\u753B\u3057\u307E\u3059\u3002`
+      `${basename4(loaded.path)}: \u4E0D\u660E\u306A\u30C6\u30FC\u30DE\u540D ${colorTheme} \u3067\u3059\u3002\u65E2\u5B9A\u306E ${DEFAULT_COLOR_THEME} \u3067\u63CF\u753B\u3057\u307E\u3059\u3002`
     );
   }
   const refs = await prepareReferences({ ...options, markdowns: originals });
@@ -72621,8 +69500,7 @@ async function prepareEmbeds(options) {
       ...loaded.config.tooltips ? { tooltips: loaded.config.tooltips } : {},
       ...loaded.config["side-toc"] ? { "side-toc": loaded.config["side-toc"] } : {},
       ...colorTheme !== void 0 ? { colorTheme } : {},
-      ...loaded.config.labels ? { labels: loaded.config.labels } : {},
-      // 埋めたモジュールは開いたときに束ねたモジュールを渡すため、値は印の名前にする（埋められなかった印が外へ要求しない）
+      // 埋めたモジュールは開いたときに URL に替えるため、値は印の名前にする（埋められなかった印が外へ要求しない）
       libraries: Object.fromEntries(
         Object.keys(libraries).map((name) => [name, name])
       )
@@ -72643,33 +69521,22 @@ async function prepareEmbeds(options) {
       };
     }),
     entry,
-    ...aliasResult.aliases ? { aliases: aliasResult.aliases } : {},
-    ...assets ? {
-      assets: Object.fromEntries(
-        [...assets.values()].map((asset) => [asset.key, asset.url])
-      )
-    } : {}
-  };
-  const embeds = {
-    libraries: modules,
+    modules,
     extensions: extensions2,
     ...syntax ? { syntax } : {},
-    view: usedParts({ markdowns: [...originals.values()] })
+    ...aliasResult.aliases ? { aliases: aliasResult.aliases } : {}
   };
-  return { payload, embeds, themeCss, warnings };
-}
-function dynamicImportWarning(configName, what) {
-  return `${configName}: ${what} \u306F\u675F\u306D\u305F\u5F8C\u3082\u52D5\u7684 import() \u304C\u6B8B\u308A\u3001blob: \u3068\u52D5\u7684 import \u3092\u8A31\u3055\u306A\u3044\u74B0\u5883\u3067\u306F\u8AAD\u307F\u8FBC\u3081\u307E\u305B\u3093\u3002\u8AAD\u3080\u5148\u3092\u30EA\u30C6\u30E9\u30EB\u306E\u6587\u5B57\u5217\u306B\u3057\u3066\u304F\u3060\u3055\u3044\u3002`;
+  return { payload, themeCss, warnings };
 }
 async function readDistAssets(options) {
   const { distDir, kind } = options;
   let distCss;
-  const viewer = resolve5(distDir, "viewer.js");
-  const view = resolve5(distDir, "view.js");
+  let viewer;
+  let view;
   try {
-    distCss = await readFile5(join5(distDir, "index.css"), "utf8");
-    await stat3(viewer);
-    await stat3(view);
+    distCss = await readFile5(join4(distDir, "index.css"), "utf8");
+    viewer = await readFile5(join4(distDir, "viewer.js"), "utf8");
+    view = await readFile5(join4(distDir, "view.js"), "utf8");
   } catch (error2) {
     throw new CliError(
       `\u914D\u5E03\u7269\u3092\u8AAD\u3081\u307E\u305B\u3093\uFF08${reasonOf(error2)}\uFF09\u3002mdmark \u3092\u5165\u308C\u76F4\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
@@ -72678,7 +69545,7 @@ async function readDistAssets(options) {
   if (kind === "bundle") {
     try {
       distCss += `
-${await readFile5(join5(distDir, "viewer.css"), "utf8")}`;
+${await readFile5(join4(distDir, "viewer.css"), "utf8")}`;
     } catch (error2) {
       if (!(error2 instanceof Error && "code" in error2 && error2.code === "ENOENT")) {
         throw error2;
@@ -72690,7 +69557,7 @@ ${await readFile5(join5(distDir, "viewer.css"), "utf8")}`;
 async function writeHtml(options) {
   const { file, display, html } = options;
   try {
-    await mkdir2(dirname5(file), { recursive: true });
+    await mkdir(dirname4(file), { recursive: true });
     await writeFile(file, html);
   } catch (error2) {
     throw new CliError(
@@ -72701,7 +69568,7 @@ async function writeHtml(options) {
 async function exportDocument(options) {
   const { cwd } = options;
   const loaded = await requireConfig(cwd, options.config);
-  const docFile = resolve5(cwd, options.file);
+  const docFile = resolve4(cwd, options.file);
   try {
     await readFile5(docFile);
   } catch {
@@ -72709,31 +69576,27 @@ async function exportDocument(options) {
       `\u6587\u66F8\u304C\u7121\u3044: ${options.file} \u304C\u898B\u3064\u304B\u308A\u307E\u305B\u3093\u3002\u6587\u66F8\u306E\u30D1\u30B9\u3092\u76F4\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
     );
   }
-  const path = normalizePath(toPosix3(relative3(loaded.dir, docFile)));
-  const outFile = options.out ? resolve5(cwd, options.out) : join5(dirname5(docFile), `${basename5(docFile, extname4(docFile))}.html`);
-  const display = options.out ?? toPosix3(relative3(cwd, outFile));
-  const fetchText = cacheFetchText();
-  const { payload, embeds, themeCss, warnings } = await prepareEmbeds({
+  const path = normalizePath(toPosix2(relative2(loaded.dir, docFile)));
+  const outFile = options.out ? resolve4(cwd, options.out) : join4(dirname4(docFile), `${basename4(docFile, extname3(docFile))}.html`);
+  const display = options.out ?? toPosix2(relative2(cwd, outFile));
+  const { payload, themeCss, warnings } = await prepareEmbeds({
     loaded,
     docs: [{ path, file: docFile }],
     kind: "document",
-    entry: path,
-    out: outFile,
-    fetchText
+    entry: path
   });
   const { distCss, viewer, view } = await readDistAssets({
     distDir: options.distDir,
     kind: "document"
   });
-  const script = await bundleViewer({
-    entry: createViewerEntry({ viewer, view, embeds }),
-    baseDir: loaded.dir,
-    fetchText
+  payload.parts = usedParts({
+    markdowns: payload.docs.map((doc) => doc.markdown),
+    view
   });
   await writeHtml({
     file: outFile,
     display,
-    html: assembleHtml({ payload, distCss, themeCss, script })
+    html: assembleHtml({ payload, distCss, themeCss, viewer })
   });
   return { out: outFile, display, warnings };
 }
@@ -72785,20 +69648,15 @@ async function buildSite(options) {
       );
     }
   }
-  const out = resolve6(loaded.dir, build3.out);
-  const fetchText = cacheFetchText();
   const {
     payload,
-    embeds,
     themeCss,
     warnings: embedWarnings
   } = await prepareEmbeds({
     loaded,
-    docs: paths.map((path) => ({ path, file: join6(loaded.dir, path) })),
+    docs: paths.map((path) => ({ path, file: join5(loaded.dir, path) })),
     kind: "bundle",
-    entry,
-    out,
-    fetchText
+    entry
   });
   warnings.unshift(...embedWarnings);
   for (const doc of payload.docs) {
@@ -72812,15 +69670,15 @@ async function buildSite(options) {
     distDir: options.distDir,
     kind: "bundle"
   });
-  const script = await bundleViewer({
-    entry: createViewerEntry({ viewer, view, embeds }),
-    baseDir: loaded.dir,
-    fetchText
+  payload.parts = usedParts({
+    markdowns: payload.docs.map((doc) => doc.markdown),
+    view
   });
+  const out = resolve5(loaded.dir, build3.out);
   await writeHtml({
     file: out,
     display: build3.out,
-    html: assembleHtml({ payload, distCss, themeCss, script })
+    html: assembleHtml({ payload, distCss, themeCss, viewer })
   });
   return { out, display: build3.out, docs: paths.length, warnings };
 }
@@ -72837,139 +69695,8 @@ async function runBuild(options, io) {
 }
 
 // src/cli/check.ts
-import { readFile as readFile6, stat as stat4 } from "node:fs/promises";
-import { basename as basename6, join as join7, relative as relative5, resolve as resolve8, sep as sep5 } from "node:path";
-
-// src/diagram/check.ts
-var LABEL_METRICS = {
-  kindSize: 11,
-  nameSize: 14,
-  subSize: 12,
-  lineHeight: 1.4,
-  padY: 6,
-  padX: 10
-};
-var HALF_WIDTH = 0.6;
-function isWide(char) {
-  const code2 = char.codePointAt(0) ?? 0;
-  return !(code2 <= 126 || code2 >= 65377 && code2 <= 65439);
-}
-function labelLineCount(options) {
-  const { text: text2, fontSize, width } = options;
-  if (text2 === "") {
-    return 0;
-  }
-  let lines = 1;
-  let used = 0;
-  for (const char of text2) {
-    const advance = isWide(char) ? fontSize : fontSize * HALF_WIDTH;
-    if (used > 0 && used + advance > width) {
-      lines += 1;
-      used = 0;
-    }
-    used += advance;
-  }
-  return lines;
-}
-function overlaps2(a, b) {
-  return a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
-}
-function inside(rect, outer) {
-  return rect.x >= outer.x && rect.y >= outer.y && rect.x + rect.w <= outer.x + outer.w && rect.y + rect.h <= outer.y + outer.h;
-}
-function crosses(from, to, rect) {
-  const [x1, y1] = from;
-  const dx = to[0] - x1;
-  const dy = to[1] - y1;
-  let enter = 0;
-  let leave = 1;
-  const edges = [
-    [-dx, x1 - rect.x],
-    [dx, rect.x + rect.w - x1],
-    [-dy, y1 - rect.y],
-    [dy, rect.y + rect.h - y1]
-  ];
-  for (const [p, q] of edges) {
-    if (p === 0) {
-      if (q <= 0) {
-        return false;
-      }
-      continue;
-    }
-    const t = q / p;
-    if (p < 0) {
-      enter = Math.max(enter, t);
-    } else {
-      leave = Math.min(leave, t);
-    }
-  }
-  return enter < leave;
-}
-function drawnText(text2) {
-  return text2.replace(/\{\{(.+?)\}\}/g, "$1");
-}
-function labelTooLong(node2) {
-  const { kindSize, nameSize, subSize, lineHeight, padX } = LABEL_METRICS;
-  const width = node2.w - padX * 2;
-  const nameLines = labelLineCount({
-    text: drawnText(node2.name),
-    fontSize: nameSize,
-    width
-  });
-  const subLines = labelLineCount({
-    text: drawnText(node2.sub ?? ""),
-    fontSize: subSize,
-    width
-  });
-  const height = (kindSize + nameLines * nameSize + subLines * subSize) * lineHeight;
-  return height > node2.h;
-}
-function checkFlowLayout(definition) {
-  const { nodes, wires, frame } = definition;
-  const issues = [];
-  nodes.forEach((node2, index) => {
-    for (const other of nodes.slice(index + 1)) {
-      if (overlaps2(node2, other)) {
-        issues.push({ kind: "diagram_node_overlap", ids: [node2.id, other.id] });
-      }
-    }
-  });
-  const canvas = {
-    x: 0,
-    y: 0,
-    w: definition.width,
-    h: definition.height
-  };
-  for (const node2 of nodes) {
-    const straddles = frame !== void 0 && overlaps2(node2, frame) && !inside(node2, frame);
-    if (!inside(node2, canvas) || straddles) {
-      issues.push({ kind: "diagram_node_overflow", ids: [node2.id] });
-    }
-  }
-  for (const wire of wires) {
-    const segments = wire.points.slice(1).map((point, index) => [
-      wire.points[index] ?? point,
-      point
-    ]);
-    for (const node2 of nodes) {
-      if (node2.id === wire.from || node2.id === wire.to) {
-        continue;
-      }
-      if (segments.some(([from, to]) => crosses(from, to, node2))) {
-        issues.push({
-          kind: "diagram_wire_crosses_node",
-          ids: [wire.id, node2.id]
-        });
-      }
-    }
-  }
-  for (const node2 of nodes) {
-    if (labelTooLong(node2)) {
-      issues.push({ kind: "diagram_label_too_long", ids: [node2.id] });
-    }
-  }
-  return issues;
-}
+import { readFile as readFile6, stat as stat2 } from "node:fs/promises";
+import { basename as basename5, join as join6, relative as relative4, resolve as resolve7, sep as sep4 } from "node:path";
 
 // src/knowledge/tags.ts
 var NEAR_TAG_MAX_DISTANCE = 2;
@@ -73042,6 +69769,62 @@ function nearestTag(options) {
     }
   }
   return nearest?.name;
+}
+function resolvedNames(doc, vocabulary) {
+  const names = (doc.tags ?? []).map((tag) => {
+    const { name } = readDocTag(tag);
+    return vocabulary?.byWord.get(name)?.name ?? name;
+  });
+  return [...new Set(names)];
+}
+function countTags(options) {
+  const { docs, vocabulary } = options;
+  const counts = /* @__PURE__ */ new Map();
+  for (const doc of docs) {
+    for (const name of resolvedNames(doc, vocabulary)) {
+      counts.set(name, (counts.get(name) ?? 0) + 1);
+    }
+  }
+  return [...counts.entries()].map(([name, count]) => ({ name, count })).sort((a, b) => {
+    if (a.count !== b.count) {
+      return b.count - a.count;
+    }
+    const orderA = vocabulary?.order.get(a.name);
+    const orderB = vocabulary?.order.get(b.name);
+    if (orderA !== void 0 && orderB !== void 0) {
+      return orderA - orderB;
+    }
+    if (orderA !== void 0 || orderB !== void 0) {
+      return orderA === void 0 ? 1 : -1;
+    }
+    return a.name < b.name ? -1 : a.name > b.name ? 1 : 0;
+  });
+}
+function listTags(options) {
+  const { index, query } = options;
+  const vocabulary = buildTagVocabulary(index.tags);
+  if (vocabulary === void 0) {
+    return [];
+  }
+  const docCounts = /* @__PURE__ */ new Map();
+  for (const doc of index.docs) {
+    for (const name of resolvedNames(doc, vocabulary)) {
+      docCounts.set(name, (docCounts.get(name) ?? 0) + 1);
+    }
+  }
+  const word = query === void 0 ? void 0 : normalizeWord(query);
+  return vocabulary.tags.filter(
+    (tag) => word === void 0 || [tag.name, ...tag.aliases ?? [], tag.description ?? ""].some(
+      (field) => normalizeWord(field).includes(word)
+    )
+  ).map((tag) => ({
+    name: tag.name,
+    group: tag.group ?? null,
+    description: tag.description ?? null,
+    aliases: tag.aliases ?? [],
+    deprecated: tag.deprecated ?? null,
+    docs: docCounts.get(tag.name) ?? 0
+  }));
 }
 
 // src/knowledge/check.ts
@@ -73421,7 +70204,7 @@ function checkIndex(input) {
 // src/cli/git.ts
 import { execFile } from "node:child_process";
 import { realpath } from "node:fs/promises";
-import { relative as relative4, resolve as resolve7, sep as sep4 } from "node:path";
+import { relative as relative3, resolve as resolve6, sep as sep3 } from "node:path";
 import { promisify } from "node:util";
 var execFileAsync = promisify(execFile);
 function unresolvableBase(base, reason) {
@@ -73474,7 +70257,7 @@ async function changedPathsSince(options) {
   const realIndexDir = await realpath(indexDir);
   const paths = new Set(
     [...changed, ...added].map(
-      (path) => relative4(realIndexDir, resolve7(realTop, path)).split(sep4).join("/")
+      (path) => relative3(realIndexDir, resolve6(realTop, path)).split(sep3).join("/")
     )
   );
   return [...paths];
@@ -73483,50 +70266,19 @@ async function changedPathsSince(options) {
 // src/cli/check.ts
 async function exists(path) {
   try {
-    await stat4(path);
+    await stat2(path);
     return true;
   } catch {
     return false;
   }
 }
-function toPosix4(path) {
-  return path.split(sep5).join("/");
-}
-async function isDirectory(path) {
-  try {
-    return (await stat4(path)).isDirectory();
-  } catch {
-    return false;
-  }
-}
-async function checkDocumentFiles(loaded) {
-  const root = loaded.config.assets?.root;
-  const assetsRoot = root !== void 0 && await isDirectory(resolve8(loaded.dir, root)) ? resolve8(loaded.dir, root) : void 0;
-  const issues = [];
-  for (const doc of await collectCheckDocuments(loaded)) {
-    issues.push(
-      ...await checkMissingFiles({
-        markdown: doc.markdown,
-        docFile: resolve8(loaded.dir, doc.path),
-        file: doc.path,
-        assetsRoot
-      })
-    );
-  }
-  return issues;
+function toPosix3(path) {
+  return path.split(sep4).join("/");
 }
 async function checkReferencedFiles(loaded, file) {
   const issues = [];
-  const { theme, extensions: extensions2, assets } = loaded.config;
-  if (assets?.root !== void 0 && !await isDirectory(resolve8(loaded.dir, assets.root))) {
-    issues.push({
-      file,
-      where: "assets.root",
-      kind: "schema",
-      message: `\`assets.root\` \u306E\u30D5\u30A9\u30EB\u30C0 \`${assets.root}\` \u304C\u898B\u3064\u304B\u308A\u307E\u305B\u3093\u3002\u30D1\u30B9\u3092\u76F4\u3059\u304B\u30D5\u30A9\u30EB\u30C0\u3092\u7F6E\u3044\u3066\u304F\u3060\u3055\u3044\u3002`
-    });
-  }
-  if (theme !== void 0 && !await exists(resolve8(loaded.dir, theme))) {
+  const { theme, extensions: extensions2 } = loaded.config;
+  if (theme !== void 0 && !await exists(resolve7(loaded.dir, theme))) {
     issues.push({
       file,
       where: "theme",
@@ -73535,7 +70287,7 @@ async function checkReferencedFiles(loaded, file) {
     });
   }
   for (const [position, path] of (extensions2 ?? []).entries()) {
-    if (!await exists(resolve8(loaded.dir, path))) {
+    if (!await exists(resolve7(loaded.dir, path))) {
       issues.push({
         file,
         where: `extensions[${position}]`,
@@ -73595,7 +70347,7 @@ async function checkIndexFile(loaded, base) {
     }
     return [
       {
-        file: toPosix4(loaded.config.index),
+        file: toPosix3(loaded.config.index),
         where: "",
         kind: "schema",
         message: error2.message
@@ -73605,7 +70357,7 @@ async function checkIndexFile(loaded, base) {
   if (!read) {
     return [];
   }
-  const indexDirFromConfig = toPosix4(relative5(loaded.dir, read.indexDir));
+  const indexDirFromConfig = toPosix3(relative4(loaded.dir, read.indexDir));
   const changedPaths = base === void 0 ? void 0 : await changedPathsSince({
     cwd: loaded.dir,
     base,
@@ -73619,7 +70371,7 @@ async function checkIndexFile(loaded, base) {
   }).map((issue2) => ({
     ...issue2,
     // 索引のずれは設定ファイルのフォルダからの相対パスで出ているので、文書のずれだけ索引のフォルダの分を足す
-    file: issue2.file === read.indexFile || indexDirFromConfig === "" ? issue2.file : join7(indexDirFromConfig, issue2.file).split(sep5).join("/")
+    file: issue2.file === read.indexFile || indexDirFromConfig === "" ? issue2.file : join6(indexDirFromConfig, issue2.file).split(sep4).join("/")
   }));
 }
 async function importBundledCode(code2) {
@@ -73631,7 +70383,7 @@ async function loadExtensionDirectives(loaded, file, importCode = importBundledC
   const issues = [];
   for (const [position, path] of (loaded.config.extensions ?? []).entries()) {
     const where = `extensions[${position}]`;
-    if (!await exists(resolve8(loaded.dir, path))) {
+    if (!await exists(resolve7(loaded.dir, path))) {
       continue;
     }
     const bundled = await bundleModule(path, loaded.dir);
@@ -73691,9 +70443,9 @@ async function collectCheckDocuments(loaded) {
   try {
     const read = await readIndexWithDocuments(loaded);
     if (read) {
-      const indexDirFromConfig = toPosix4(relative5(loaded.dir, read.indexDir));
+      const indexDirFromConfig = toPosix3(relative4(loaded.dir, read.indexDir));
       for (const [key, markdown] of Object.entries(read.documents)) {
-        documents.set(toPosix4(join7(indexDirFromConfig, key)), markdown);
+        documents.set(toPosix3(join6(indexDirFromConfig, key)), markdown);
       }
     }
   } catch (error2) {
@@ -73705,7 +70457,7 @@ async function collectCheckDocuments(loaded) {
   if (build3) {
     for (const path of await collectBuildDocuments(loaded.dir, build3)) {
       if (!documents.has(path)) {
-        documents.set(path, await readFile6(resolve8(loaded.dir, path), "utf8"));
+        documents.set(path, await readFile6(resolve7(loaded.dir, path), "utf8"));
       }
     }
   }
@@ -73734,70 +70486,22 @@ function checkUnknownMarks(documents, config3, directives) {
   }
   return issues;
 }
-function flowLayoutMessage(title, issue2) {
-  const [first = "", second = ""] = issue2.ids;
-  switch (issue2.kind) {
-    case "diagram_node_overlap":
-      return `${title}: \u30CE\u30FC\u30C9 \`${first}\` \u3068 \`${second}\` \u304C\u91CD\u306A\u3063\u3066\u3044\u307E\u3059\u3002\u3069\u3061\u3089\u304B\u306E \`x\`\u30FB\`y\`\u30FB\`w\`\u30FB\`h\` \u3092\u4FEE\u6B63\u3057\u3066\u304F\u3060\u3055\u3044\u3002`;
-    case "diagram_node_overflow":
-      return `${title}: \u30CE\u30FC\u30C9 \`${first}\` \u304C\u56F3\u306E\u5E45\u30FB\u9AD8\u3055\u306E\u5916\u306B\u51FA\u3066\u3044\u308B\u304B\u3001\u30B7\u30B9\u30C6\u30E0\u306E\u67A0\u306E\u7E01\u306B\u307E\u305F\u304C\u3063\u3066\u3044\u307E\u3059\u3002\u30CE\u30FC\u30C9\u306E \`x\`\u30FB\`y\`\u30FB\`w\`\u30FB\`h\` \u304B\u3001\u56F3\u306E \`width\`\u30FB\`height\`\u30FB\`frame\` \u3092\u4FEE\u6B63\u3057\u3066\u304F\u3060\u3055\u3044\u3002`;
-    case "diagram_wire_crosses_node":
-      return `${title}: \u7DDA \`${first}\` \u304C\u30CE\u30FC\u30C9 \`${second}\` \u306E\u4E2D\u3092\u901A\u3063\u3066\u3044\u307E\u3059\u3002\u7DDA\u306E \`points\` \u304B\u3001\u30CE\u30FC\u30C9\u306E \`x\`\u30FB\`y\` \u3092\u4FEE\u6B63\u3057\u3066\u304F\u3060\u3055\u3044\u3002`;
-    case "diagram_label_too_long":
-      return `${title}: \u30CE\u30FC\u30C9 \`${first}\` \u306E\u6587\u5B57\u304C\u3001\u6298\u308A\u8FD4\u3057\u3066\u3082\u30CE\u30FC\u30C9\u306B\u53CE\u307E\u308A\u307E\u305B\u3093\u3002\u30CE\u30FC\u30C9\u306E \`w\`\u30FB\`h\` \u3092\u5E83\u3052\u308B\u304B\u3001\u6587\u5B57\u3092\u77ED\u304F\u3057\u3066\u304F\u3060\u3055\u3044\u3002`;
-  }
-}
-function checkDiagrams(documents) {
-  const issues = [];
-  for (const document2 of documents) {
-    for (const found of findDiagramBlocks(document2.markdown)) {
-      const where = String(found.line);
-      const result = readDefinition(found.directive, found.blocks);
-      if (!result.ok || result.definition === void 0) {
-        const warning = definitionWarning(found.directive, result.problems);
-        issues.push({
-          file: document2.path,
-          where,
-          kind: "diagram_invalid",
-          message: [
-            warning.message,
-            ...warning.items.map((item) => item.message)
-          ].join(" ")
-        });
-        continue;
-      }
-      if (found.directive !== "flow") {
-        continue;
-      }
-      const definition = result.definition;
-      const title = definition.title || found.directive;
-      for (const issue2 of checkFlowLayout(definition)) {
-        issues.push({
-          file: document2.path,
-          where,
-          kind: issue2.kind,
-          message: flowLayoutMessage(title, issue2)
-        });
-      }
-    }
-  }
-  return issues;
-}
 async function collectCheckIssues(path, options = {}) {
   const read = await loadConfig(path);
-  const file = basename6(path);
+  const file = basename5(path);
   const { config: config3, issues: shapeIssues } = validateConfig(read.raw, file);
   const loaded = { path, dir: read.dir, config: config3 };
   const referenced = await checkReferencedFiles(loaded, file);
   const build3 = await checkBuild(loaded, file);
   const indexIssues = await checkIndexFile(loaded, options.base);
   const aliasIssues = (await loadAliases(loaded)).issues;
-  const missingFiles = await checkDocumentFiles(loaded);
   const checkMarks = options.unknownMarks !== false;
   const extensions2 = checkMarks ? await loadExtensionDirectives(loaded, file) : { directives: /* @__PURE__ */ new Set(), issues: [] };
-  const documents = await collectCheckDocuments(loaded);
-  const unknownMarks = checkMarks ? checkUnknownMarks(documents, config3, extensions2.directives) : [];
-  const diagrams = checkDiagrams(documents);
+  const unknownMarks = checkMarks ? checkUnknownMarks(
+    await collectCheckDocuments(loaded),
+    config3,
+    extensions2.directives
+  ) : [];
   return [
     ...shapeIssues,
     ...referenced,
@@ -73807,9 +70511,7 @@ async function collectCheckIssues(path, options = {}) {
     ...build3.noDocuments,
     ...indexIssues,
     ...aliasIssues,
-    ...missingFiles,
-    ...unknownMarks,
-    ...diagrams
+    ...unknownMarks
   ];
 }
 async function runCheck(options, io) {
@@ -73826,13 +70528,646 @@ async function runCheck(options, io) {
   return issues.length === 0 ? 0 : 1;
 }
 
+// src/cli/index-file.ts
+import { open as open2, readFile as readFile7, rename, rm, writeFile as writeFile2 } from "node:fs/promises";
+import { basename as basename6, dirname as dirname5, join as join7, relative as relative5, resolve as resolve8, sep as sep5 } from "node:path";
+import { setTimeout as sleep2 } from "node:timers/promises";
+import { isMap, isSeq, parseDocument as parseDocument3 } from "yaml";
+function toPosix4(path) {
+  return path.split(sep5).join("/");
+}
+var INDEX_LOCK_SUFFIX = ".lock";
+var INDEX_LOCK_RETRY_MS = 50;
+var INDEX_LOCK_TIMEOUT_MS = 5e3;
+var INDEX_MISSING_MESSAGE = "\u8A2D\u5B9A\u306B index \u304C\u3042\u308A\u307E\u305B\u3093\u3002index \u306B\u7D22\u5F15\u306E\u30D5\u30A1\u30A4\u30EB\u306E\u30D1\u30B9\u3092\u66F8\u3044\u3066\u304F\u3060\u3055\u3044\u3002";
+var LIST_KEYS2 = { doc: "docs", term: "terms", tag: "tags" };
+var ITEM_KEYS = { doc: "id", term: "id", tag: "name" };
+async function requireIndexWithDocuments(loaded) {
+  const read = await readIndexWithDocuments(loaded);
+  if (read === void 0) {
+    throw new CliError(INDEX_MISSING_MESSAGE);
+  }
+  return read;
+}
+function applyIndexUpdate(options) {
+  const { document: document2, kind, id, item } = options;
+  const key = LIST_KEYS2[kind];
+  const itemKey = ITEM_KEYS[kind];
+  const found = document2.get(key, true);
+  let list2 = isSeq(found) ? found : void 0;
+  const position = list2 ? list2.items.findIndex((node2) => isMap(node2) && node2.get(itemKey) === id) : -1;
+  let action;
+  if (item === null) {
+    if (list2 === void 0 || position < 0) {
+      throw new CliError(
+        `\`${id}\` \u306F\u7D22\u5F15\u306E \`${key}\` \u306B\u3042\u308A\u307E\u305B\u3093\u3002ID \u3092\u78BA\u304B\u3081\u3066\u304F\u3060\u3055\u3044\u3002`
+      );
+    }
+    list2.items.splice(position, 1);
+    if (kind === "tag" && list2.items.length === 0) {
+      document2.delete(key);
+    }
+    action = "removed";
+  } else {
+    const { [itemKey]: _ignored, ...rest } = item;
+    const node2 = document2.createNode({ [itemKey]: id, ...rest });
+    if (list2 === void 0) {
+      list2 = document2.createNode([]);
+      document2.set(key, list2);
+    }
+    if (position >= 0) {
+      list2.items[position] = node2;
+      action = "replaced";
+    } else {
+      list2.items.push(node2);
+      action = "added";
+    }
+  }
+  return { action, problems: normalizeIndex(document2.toJS()).problems };
+}
+async function tryCreateLock(lockPath) {
+  try {
+    const handle = await open2(lockPath, "wx");
+    await handle.close();
+    return true;
+  } catch (error2) {
+    if (error2.code === "EEXIST") {
+      return false;
+    }
+    throw error2;
+  }
+}
+async function acquireLock(options) {
+  const { lockPath, display, timeoutMs } = options;
+  const deadline = Date.now() + timeoutMs;
+  while (!await tryCreateLock(lockPath)) {
+    if (Date.now() >= deadline) {
+      throw new CliError(
+        `\u7D22\u5F15 ${display} \u306F\u66F8\u304D\u63DB\u3048\u4E2D\u3067\u3059\uFF08${display}${INDEX_LOCK_SUFFIX} \u304C\u3042\u308A\u307E\u3059\uFF09\u3002\u5C11\u3057\u5F85\u3063\u3066\u304B\u3089\u547C\u3073\u76F4\u3059\u304B\u3001\u66F8\u304D\u63DB\u3048\u4E2D\u3067\u306A\u3051\u308C\u3070 ${display}${INDEX_LOCK_SUFFIX} \u3092\u6D88\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
+      );
+    }
+    await sleep2(INDEX_LOCK_RETRY_MS);
+  }
+}
+async function readIndexDocument(indexPath, display) {
+  let reason;
+  try {
+    const document2 = parseDocument3(await readFile7(indexPath, "utf8"));
+    const first = document2.errors[0];
+    if (first === void 0) {
+      return document2;
+    }
+    reason = first.message.split("\n")[0] ?? first.message;
+  } catch (error2) {
+    reason = error2 instanceof Error ? error2.message.split("\n")[0] ?? error2.message : String(error2);
+  }
+  throw new CliError(
+    `\u7D22\u5F15 ${display} \u3092\u8AAD\u3081\u307E\u305B\u3093\uFF08${reason}\uFF09\u3002\u8A2D\u5B9A\u306E index \u306E\u30D1\u30B9\u3092\u76F4\u3059\u304B\u3001\u7D22\u5F15\u3092\u7F6E\u3044\u3066\u304F\u3060\u3055\u3044\u3002`
+  );
+}
+async function updateIndexFile(options) {
+  const { loaded, kind, id, item } = options;
+  const index = loaded.config.index;
+  if (index === void 0) {
+    throw new CliError(INDEX_MISSING_MESSAGE);
+  }
+  const indexPath = resolve8(loaded.dir, index);
+  const display = toPosix4(relative5(loaded.dir, indexPath));
+  const lockPath = `${indexPath}${INDEX_LOCK_SUFFIX}`;
+  await acquireLock({
+    lockPath,
+    display,
+    timeoutMs: options.lockTimeoutMs ?? INDEX_LOCK_TIMEOUT_MS
+  });
+  const tempPath = join7(
+    dirname5(indexPath),
+    `.${basename6(indexPath)}.${process.pid}.tmp`
+  );
+  try {
+    const document2 = await readIndexDocument(indexPath, display);
+    const { action, problems } = applyIndexUpdate({
+      document: document2,
+      kind,
+      id,
+      item
+    });
+    if (problems.length > 0) {
+      const lines = problems.map(
+        (problem) => `${problem.where}: ${problem.message}`
+      );
+      throw new CliError(
+        `\u66F8\u304D\u63DB\u3048\u305F\u5F8C\u306E\u7D22\u5F15\u304C\u7D22\u5F15\u306E\u5F62\u306B\u5408\u3044\u307E\u305B\u3093\u3002\u5408\u308F\u306A\u3044\u3068\u3053\u308D\u3092\u76F4\u3057\u3066\u304F\u3060\u3055\u3044\u3002
+${lines.join("\n")}`
+      );
+    }
+    try {
+      await writeFile2(tempPath, document2.toString({ lineWidth: 0 }));
+      await rename(tempPath, indexPath);
+    } catch (error2) {
+      await rm(tempPath, { force: true });
+      throw error2;
+    }
+    return { action, index: display };
+  } finally {
+    await rm(lockPath, { force: true });
+  }
+}
+
+// src/knowledge/find.ts
+var INVERSE_RELATION_TYPES = {
+  requires: "required_by",
+  references: "referenced_by",
+  replaces: "replaced_by",
+  part_of: "has_part",
+  change_together: "change_together"
+};
+function matchesText(doc, text2) {
+  const word = normalizeWord(text2);
+  return [doc.title, ...doc.aliases ?? [], doc.description ?? ""].some(
+    (field) => normalizeWord(field).includes(word)
+  );
+}
+function normalizeTag(name, vocabulary) {
+  return vocabulary === void 0 ? name : resolveTag({ vocabulary, name })?.name ?? name;
+}
+function docTags(doc, vocabulary) {
+  return (doc.tags ?? []).map((tag) => {
+    const { name, main: main2 } = readDocTag(tag);
+    return { name: normalizeTag(name, vocabulary), main: main2 };
+  });
+}
+function relatedOf(from, to) {
+  return (from?.related ?? []).map(readRelated).filter((related) => related.to === to);
+}
+function relationsOf(options) {
+  const { doc, source, sourceId, backlinks } = options;
+  const outgoing = relatedOf(source, doc.id).map(
+    ({ type, when }) => ({ direction: "outgoing", type, when })
+  );
+  const incoming = relatedOf(doc, sourceId).map(
+    ({ type, when }) => ({
+      direction: "incoming",
+      type: type === null ? null : INVERSE_RELATION_TYPES[type],
+      when
+    })
+  );
+  if (outgoing.length === 0 && (backlinks[doc.id] ?? []).includes(sourceId)) {
+    outgoing.push({ direction: "outgoing", type: null, when: null });
+  }
+  if (incoming.length === 0 && (backlinks[sourceId] ?? []).includes(doc.id)) {
+    incoming.push({ direction: "incoming", type: null, when: null });
+  }
+  return [...outgoing, ...incoming];
+}
+function findDocs(options) {
+  const { index, references, text: text2, tags, anyTags, relatedTo } = options;
+  const vocabulary = buildTagVocabulary(index.tags);
+  const unknownTags = [];
+  if (vocabulary !== void 0) {
+    for (const tag of /* @__PURE__ */ new Set([...tags ?? [], ...anyTags ?? []])) {
+      if (resolveTag({ vocabulary, name: tag }) === void 0) {
+        unknownTags.push({ tag, nearest: nearestTag({ vocabulary, tag }) });
+      }
+    }
+  }
+  const wantedAll = (tags ?? []).map((tag) => normalizeTag(tag, vocabulary));
+  const wantedAny = (anyTags ?? []).map((tag) => normalizeTag(tag, vocabulary));
+  let docs = index.docs;
+  if (text2 !== void 0) {
+    docs = docs.filter((doc) => matchesText(doc, text2));
+  }
+  if (tags !== void 0) {
+    docs = docs.filter((doc) => {
+      const names = docTags(doc, vocabulary).map((tag) => tag.name);
+      return wantedAll.every((tag) => names.includes(tag));
+    });
+  }
+  if (anyTags !== void 0 && anyTags.length > 0) {
+    docs = docs.filter((doc) => {
+      const names = docTags(doc, vocabulary).map((tag) => tag.name);
+      return wantedAny.some((tag) => names.includes(tag));
+    });
+  }
+  if (relatedTo !== void 0) {
+    const backlinks = references?.backlinks ?? {};
+    docs = docs.filter(
+      (doc) => doc.id !== relatedTo && ((backlinks[relatedTo] ?? []).includes(doc.id) || (backlinks[doc.id] ?? []).includes(relatedTo))
+    );
+  }
+  const wanted = /* @__PURE__ */ new Set([...wantedAll, ...wantedAny]);
+  const isMain = (doc) => docTags(doc, vocabulary).some((tag) => tag.main && wanted.has(tag.name));
+  const ranked = docs.map((doc) => ({ doc, main: isMain(doc) }));
+  ranked.sort((a, b) => Number(b.main) - Number(a.main));
+  const found = ranked.map(({ doc }) => doc);
+  const relations = {};
+  if (relatedTo !== void 0) {
+    const source = index.docs.find((doc) => doc.id === relatedTo);
+    for (const doc of found) {
+      relations[doc.id] = relationsOf({
+        doc,
+        source,
+        sourceId: relatedTo,
+        backlinks: references?.backlinks ?? {}
+      });
+    }
+  }
+  return { docs: found, relations, unknownTags };
+}
+
+// src/plugin/guide.ts
+import { readFile as readFile8 } from "node:fs/promises";
+import { isAbsolute, join as join8, relative as relative6, resolve as resolve9 } from "node:path";
+var GUIDE_INDEX_FILE = "index.json";
+var GUIDE_RESULT_LIMIT = 5e4;
+var NEAREST_NAME_COUNT = 3;
+var GUIDE_SCHEMA = 1;
+var ENTRY_KEYS = ["name", "when", "summary", "page"];
+var PAGE_PREFIX = "docs/";
+var PAGE_SUFFIX = ".md";
+function isRecord7(value) {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+function parseGuideIndex(value) {
+  const entries = [];
+  const problems = [];
+  if (!isRecord7(value)) {
+    problems.push({ where: "", message: "\u7D22\u5F15\u306F\u30AA\u30D6\u30B8\u30A7\u30AF\u30C8\u306B\u3057\u307E\u3059" });
+    return { entries, problems };
+  }
+  for (const key of Object.keys(value)) {
+    if (key !== "schema" && key !== "guides") {
+      problems.push({ where: key, message: `\`${key}\` \u306F\u66F8\u3051\u307E\u305B\u3093` });
+    }
+  }
+  if (value.schema !== GUIDE_SCHEMA) {
+    problems.push({
+      where: "schema",
+      message: `\`schema\` \u306F ${GUIDE_SCHEMA} \u306B\u3057\u307E\u3059`
+    });
+  }
+  if (!Array.isArray(value.guides)) {
+    problems.push({
+      where: "guides",
+      message: "`guides` \u306F\u884C\u306E\u4E26\u3073\u306B\u3057\u307E\u3059"
+    });
+    return { entries, problems };
+  }
+  const names = /* @__PURE__ */ new Set();
+  value.guides.forEach((item, position) => {
+    const where = `guides[${position}]`;
+    if (!isRecord7(item)) {
+      problems.push({ where, message: "\u884C\u306F\u30AA\u30D6\u30B8\u30A7\u30AF\u30C8\u306B\u3057\u307E\u3059" });
+      return;
+    }
+    const before = problems.length;
+    for (const key of Object.keys(item)) {
+      if (!ENTRY_KEYS.includes(key)) {
+        problems.push({
+          where: `${where}.${key}`,
+          message: `\`${key}\` \u306F\u66F8\u3051\u307E\u305B\u3093`
+        });
+      }
+    }
+    for (const key of ENTRY_KEYS) {
+      const field = item[key];
+      if (typeof field !== "string" || field === "") {
+        problems.push({
+          where: `${where}.${key}`,
+          message: `\`${key}\` \u306F\u7A7A\u3067\u306A\u3044\u6587\u5B57\u5217\u306B\u3057\u307E\u3059`
+        });
+      }
+    }
+    const { name, page } = item;
+    if (typeof name === "string" && name !== "") {
+      if (names.has(name)) {
+        problems.push({
+          where: `${where}.name`,
+          message: `\u540D\u524D \`${name}\` \u304C\u91CD\u306A\u3063\u3066\u3044\u307E\u3059`
+        });
+      }
+      names.add(name);
+    }
+    if (typeof page === "string" && page !== "" && !(page.startsWith(PAGE_PREFIX) && page.endsWith(PAGE_SUFFIX))) {
+      problems.push({
+        where: `${where}.page`,
+        message: `\`page\` \u306F \`${PAGE_PREFIX}\` \u3067\u59CB\u307E\u308A \`${PAGE_SUFFIX}\` \u3067\u7D42\u308F\u308B\u30D1\u30B9\u306B\u3057\u307E\u3059`
+      });
+    }
+    if (problems.length === before) {
+      entries.push(item);
+    }
+  });
+  return { entries, problems };
+}
+async function readGuideIndex(guideDir) {
+  const path = join8(guideDir, GUIDE_INDEX_FILE);
+  let reason;
+  try {
+    const { entries, problems } = parseGuideIndex(
+      JSON.parse(await readFile8(path, "utf8"))
+    );
+    const first = problems[0];
+    if (first === void 0) {
+      return entries;
+    }
+    reason = `${first.where}: ${first.message}`;
+  } catch (error2) {
+    reason = error2 instanceof Error ? error2.message.split("\n")[0] ?? error2.message : String(error2);
+  }
+  throw new CliError(
+    `\u4F7F\u3044\u65B9\u96C6\u306E\u7D22\u5F15 ${path} \u3092\u8AAD\u3081\u307E\u305B\u3093\uFF08${reason}\uFF09\u3002\u30D7\u30E9\u30B0\u30A4\u30F3\u3092\u5165\u308C\u76F4\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
+  );
+}
+function editDistance2(a, b) {
+  let previous = Array.from({ length: b.length + 1 }, (_, index) => index);
+  for (let i = 1; i <= a.length; i += 1) {
+    const current = [i];
+    for (let j = 1; j <= b.length; j += 1) {
+      const cost = a[i - 1] === b[j - 1] ? 0 : 1;
+      current[j] = Math.min(
+        (previous[j] ?? 0) + 1,
+        (current[j - 1] ?? 0) + 1,
+        (previous[j - 1] ?? 0) + cost
+      );
+    }
+    previous = current;
+  }
+  return previous[b.length] ?? 0;
+}
+function nearestNames(options) {
+  const { name, names, count } = options;
+  return names.map((candidate, order) => ({
+    candidate,
+    order,
+    distance: editDistance2(name, candidate)
+  })).sort((a, b) => a.distance - b.distance || a.order - b.order).slice(0, count).map((item) => item.candidate);
+}
+async function readPage(options) {
+  const { guideDir, entry } = options;
+  const path = resolve9(guideDir, entry.page);
+  const fromGuide = relative6(resolve9(guideDir), path);
+  const failure2 = new CliError(
+    `\u4F7F\u3044\u65B9\u96C6\u306E ${entry.name} \u306E\u30DA\u30FC\u30B8 ${entry.page} \u3092\u8AAD\u3081\u307E\u305B\u3093\u3002\u30D7\u30E9\u30B0\u30A4\u30F3\u3092\u5165\u308C\u76F4\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
+  );
+  if (fromGuide.startsWith("..") || isAbsolute(fromGuide)) {
+    throw failure2;
+  }
+  try {
+    return await readFile8(path, "utf8");
+  } catch {
+    throw failure2;
+  }
+}
+async function readGuides(options) {
+  const { guideDir, entries } = options;
+  const names = [...new Set(options.names)];
+  const indexNames = entries.map((entry) => entry.name);
+  const unknown2 = names.filter((name) => !indexNames.includes(name));
+  if (unknown2.length > 0) {
+    throw new CliError(
+      unknown2.map((name) => {
+        const near = nearestNames({
+          name,
+          names: indexNames,
+          count: NEAREST_NAME_COUNT
+        });
+        return `\u4F7F\u3044\u65B9\u96C6\u306B ${name} \u304C\u3042\u308A\u307E\u305B\u3093\uFF08\u8FD1\u3044\u540D\u524D: ${near.join("\u30FB")}\uFF09\u3002\u7D22\u5F15\u306E\u540D\u524D\u3092\u6E21\u3057\u3066\u304F\u3060\u3055\u3044\u3002`;
+      }).join("\n")
+    );
+  }
+  const bodies = [];
+  for (const name of names) {
+    const entry = entries.find((candidate) => candidate.name === name);
+    if (entry === void 0) {
+      continue;
+    }
+    bodies.push({ name, body: await readPage({ guideDir, entry }) });
+  }
+  const total = bodies.reduce((sum, item) => sum + item.body.length, 0);
+  if (total > GUIDE_RESULT_LIMIT) {
+    const counts = bodies.map((item) => `${item.name}: ${item.body.length}`).join("\u3001");
+    throw new CliError(
+      `\u672C\u6587\u306E\u5408\u8A08\u304C ${GUIDE_RESULT_LIMIT} \u6587\u5B57\u3092\u8D85\u3048\u307E\u3059\uFF08${counts}\uFF09\u3002\u540D\u524D\u3092\u5206\u3051\u3066\u547C\u3093\u3067\u304F\u3060\u3055\u3044\u3002`
+    );
+  }
+  return bodies.map((item) => ({
+    name: item.name,
+    text: `# ${item.name}
+
+${item.body}`
+  }));
+}
+
+// src/plugin/results.ts
+var VIEW_FIELDS = {
+  brief: [],
+  standard: ["path", "aliases"],
+  full: ["path", "aliases", "related", "referenced_by"]
+};
+var FIND_DOCS_HINT = "\u7D9A\u304D\u304C\u3042\u308A\u307E\u3059\u3002tags\u30FBany_tags\u30FBtext \u3067\u7D5E\u308B\u304B\u3001count_only \u3067\u4EF6\u6570\u3060\u3051\u3092\u78BA\u304B\u3081\u3066\u304F\u3060\u3055\u3044\u3002";
+var CURSOR_ERROR_MESSAGE = "cursor \u3092\u8AAD\u3081\u306A\u3044\u304B\u3001\u7D5E\u308A\u8FBC\u307F\u306E\u6761\u4EF6\u304C next_cursor \u3092\u8FD4\u3057\u305F\u547C\u3073\u51FA\u3057\u3068\u9055\u3044\u307E\u3059\u3002cursor \u3092\u7701\u3044\u3066\u5148\u982D\u304B\u3089\u5F15\u304D\u76F4\u3057\u3066\u304F\u3060\u3055\u3044\u3002";
+function encodeCursor(cursor) {
+  return Buffer.from(JSON.stringify(cursor), "utf8").toString("base64url");
+}
+function sameFilter(a, b) {
+  const keys = ["text", "tags", "any_tags", "related_to"];
+  return keys.every((key) => JSON.stringify(a[key]) === JSON.stringify(b[key]));
+}
+function decodeCursor(options) {
+  const { cursor, filter: filter2 } = options;
+  let parsed;
+  try {
+    parsed = JSON.parse(Buffer.from(cursor, "base64url").toString("utf8"));
+  } catch {
+    throw new CliError(CURSOR_ERROR_MESSAGE);
+  }
+  const candidate = parsed;
+  if (typeof candidate !== "object" || candidate === null || typeof candidate.offset !== "number" || !Number.isInteger(candidate.offset) || candidate.offset < 0 || typeof candidate.filter !== "object" || candidate.filter === null || !sameFilter(candidate.filter, filter2)) {
+    throw new CliError(CURSOR_ERROR_MESSAGE);
+  }
+  return candidate.offset;
+}
+function selectDocFields(options) {
+  const { view, include, exclude } = options;
+  const wanted = /* @__PURE__ */ new Set([...VIEW_FIELDS[view], ...include]);
+  for (const field of exclude) {
+    wanted.delete(field);
+  }
+  const fields = VIEW_FIELDS.full.filter((field) => wanted.has(field));
+  const omitted = VIEW_FIELDS.full.filter((field) => !wanted.has(field)).map((field) => ({ field, how: `include: ["${field}"]` }));
+  return { fields, omitted };
+}
+function toDocRow(options) {
+  const { doc, chars, fields, references, relations } = options;
+  const row = {
+    id: doc.id,
+    title: doc.title,
+    description: doc.description ?? null,
+    tags: (doc.tags ?? []).map(readDocTag),
+    chars
+  };
+  for (const field of fields) {
+    if (field === "path") {
+      row.path = doc.path;
+    } else if (field === "aliases") {
+      row.aliases = doc.aliases ?? [];
+    } else if (field === "related") {
+      row.related = (doc.related ?? []).map(readRelated);
+    } else {
+      row.referenced_by = references?.backlinks[doc.id]?.length ?? 0;
+    }
+  }
+  if (relations !== void 0) {
+    row.relations = relations;
+  }
+  return row;
+}
+function unknownTagWarning(unknown2) {
+  return unknown2.nearest === void 0 ? `\u30BF\u30B0 ${unknown2.tag} \u306F\u8A9E\u5F59\u306B\u306A\u304F\u3001\u8FD1\u3044\u30BF\u30B0\u3082\u3042\u308A\u307E\u305B\u3093\u3002list_tags \u3067\u8A9E\u5F59\u3092\u78BA\u304B\u3081\u3066\u304F\u3060\u3055\u3044\u3002` : `\u30BF\u30B0 ${unknown2.tag} \u306F\u8A9E\u5F59\u306B\u3042\u308A\u307E\u305B\u3093\u3002\u8FD1\u3044\u30BF\u30B0\u306F ${unknown2.nearest} \u3067\u3059\u3002`;
+}
+function escapeCell(text2) {
+  return text2.replaceAll("|", "\\|").replace(/\r?\n/g, " ");
+}
+function cellOf(value) {
+  if (value === null || value === void 0) {
+    return "-";
+  }
+  if (Array.isArray(value)) {
+    return value.length === 0 ? "-" : escapeCell(value.join("\u30FB"));
+  }
+  return escapeCell(String(value));
+}
+function tableRow(cells) {
+  return `| ${cells.join(" | ")} |`;
+}
+function tableHead(headers) {
+  return [tableRow(headers), tableRow(headers.map(() => "---"))];
+}
+function tagsCell(tags) {
+  const names = tags.map(
+    (tag) => tag.main ? `${tag.name}\uFF08\u4E3B\u984C\uFF09` : tag.name
+  );
+  return cellOf(names);
+}
+function relatedCell(related) {
+  const items = related.map(
+    ({ to, type }) => type === null ? to : `${to}\uFF08${type}\uFF09`
+  );
+  return cellOf(items);
+}
+function relationsCell(relations) {
+  const items = relations.map(
+    ({ direction, type }) => type === null ? direction : `${direction} ${type}`
+  );
+  return cellOf(items);
+}
+var FIELD_HEADERS = {
+  path: "\u30D1\u30B9",
+  aliases: "\u5225\u540D",
+  related: "\u95A2\u9023\u3059\u308B\u6587\u66F8",
+  referenced_by: "\u88AB\u53C2\u7167\u306E\u6570"
+};
+function formatFindDocs(result) {
+  const docs = result.docs;
+  const parts = [];
+  parts.push(
+    docs === void 0 ? `\u7DCF\u4EF6\u6570 ${result.total} \u4EF6\u30FB\u5408\u8A08\u6587\u5B57\u6570 ${result.total_chars}` : `\u7DCF\u4EF6\u6570 ${result.total} \u4EF6\u30FB\u8FD4\u3057\u305F\u4EF6\u6570 ${result.returned} \u4EF6\u30FB\u5408\u8A08\u6587\u5B57\u6570 ${result.total_chars}\u30FBnext_cursor: ${result.next_cursor ?? "\u306A\u3057"}`
+  );
+  if (docs !== void 0 && docs.length > 0) {
+    const fields = VIEW_FIELDS.full.filter((field) => field in (docs[0] ?? {}));
+    const withRelations = "relations" in (docs[0] ?? {});
+    const lines = tableHead([
+      "ID",
+      "\u984C",
+      "\u6982\u8981",
+      "\u30BF\u30B0",
+      "\u6587\u5B57\u6570",
+      ...fields.map((field) => FIELD_HEADERS[field]),
+      ...withRelations ? ["\u95A2\u4FC2"] : []
+    ]);
+    for (const doc of docs) {
+      lines.push(
+        tableRow([
+          cellOf(doc.id),
+          cellOf(doc.title),
+          cellOf(doc.description),
+          tagsCell(doc.tags),
+          cellOf(doc.chars),
+          ...fields.map(
+            (field) => field === "related" ? relatedCell(doc[field]) : cellOf(doc[field])
+          ),
+          ...withRelations ? [relationsCell(doc.relations)] : []
+        ])
+      );
+    }
+    parts.push(lines.join("\n"));
+  }
+  const tagCounts = result.tag_counts ?? [];
+  if (tagCounts.length > 0) {
+    parts.push(
+      `\u30BF\u30B0\u3054\u3068\u306E\u4EF6\u6570: ${tagCounts.map((tag) => `${tag.name} ${tag.count}`).join("\u30FB")}`
+    );
+  }
+  const omitted = result.omitted ?? [];
+  if (omitted.length > 0) {
+    parts.push(
+      `\u7701\u3044\u305F\u9805\u76EE: ${omitted.map((item) => `${item.field}\uFF08${item.how}\uFF09`).join("\u30FB")}`
+    );
+  }
+  const warnings = result.warnings ?? [];
+  if (warnings.length > 0) {
+    parts.push(warnings.join("\n"));
+  }
+  if (typeof result.hint === "string") {
+    parts.push(result.hint);
+  }
+  return parts.join("\n\n");
+}
+function formatListTags(tags) {
+  const lines = tableHead([
+    "\u540D\u524D",
+    "\u30B0\u30EB\u30FC\u30D7",
+    "\u8AAC\u660E",
+    "\u5225\u540D",
+    "\u632F\u308A\u66FF\u3048\u5148",
+    "\u6587\u66F8\u306E\u6570"
+  ]);
+  for (const tag of tags) {
+    lines.push(
+      tableRow([
+        cellOf(tag.name),
+        cellOf(tag.group),
+        cellOf(tag.description),
+        cellOf(tag.aliases),
+        cellOf(tag.deprecated),
+        cellOf(tag.docs)
+      ])
+    );
+  }
+  return lines.join("\n");
+}
+
 // src/plugin/tools.ts
 var PROJECT_DIR_ARG = "project_dir";
 var PROJECT_DIR_ERROR_MESSAGE = "\u5F15\u6570 project_dir \u304C\u7121\u3044\u304B\u3001\u3042\u308B\u4F5C\u696D\u306E\u30D5\u30A9\u30EB\u30C0\u306E\u7D76\u5BFE\u30D1\u30B9\u3067\u306F\u3042\u308A\u307E\u305B\u3093\u3002mdmark \u306E\u30D7\u30E9\u30B0\u30A4\u30F3\u3092\u5165\u308C\u305F Claude Code \u306E\u30BB\u30C3\u30B7\u30E7\u30F3\u304B\u3089\u547C\u3093\u3067\u304F\u3060\u3055\u3044\u3002";
+var FIND_DOCS_DEFAULT_LIMIT = 20;
+var FIND_DOCS_MAX_LIMIT = 100;
+function requireProjectDir(context) {
+  if (context.projectDir === void 0) {
+    throw new Error("\u4F5C\u696D\u306E\u30D5\u30A9\u30EB\u30C0\u304C\u3042\u308A\u307E\u305B\u3093");
+  }
+  return context.projectDir;
+}
 var CONFIG_DESCRIPTION = "\u4F7F\u3046\u8A2D\u5B9A\u30D5\u30A1\u30A4\u30EB\u306E\u30D1\u30B9\u3002\u7701\u304F\u3068\u3001\u30BB\u30C3\u30B7\u30E7\u30F3\u306E\u30D5\u30A9\u30EB\u30C0\u304B\u3089\u4E0A\u3078 mdmark.config.yaml \u3092\u63A2\u3059";
+async function runReadGuide(args, context) {
+  const { guideDir } = context;
+  const entries = await readGuideIndex(guideDir);
+  const pages = await readGuides({ guideDir, entries, names: args.names });
+  return { texts: pages.map((page) => page.text) };
+}
 async function runExportHtml(args, context) {
   const { out, warnings } = await exportDocument({
-    cwd: context.projectDir,
+    cwd: requireProjectDir(context),
     file: args.file,
     out: args.out,
     config: args.config,
@@ -73842,23 +71177,146 @@ async function runExportHtml(args, context) {
 }
 async function runBuildSite(args, context) {
   const { out, docs, warnings } = await buildSite({
-    cwd: context.projectDir,
+    cwd: requireProjectDir(context),
     config: args.config,
     distDir: context.distDir
   });
   return { json: { out, docs, warnings } };
 }
 async function runCheckTool(args, context) {
-  const path = await findConfigFile(context.projectDir, args.config);
+  const path = await findConfigFile(requireProjectDir(context), args.config);
   const issues = await collectCheckIssues(
     path,
     args.base === void 0 ? {} : { base: args.base }
   );
   return { json: { issues } };
 }
+async function countChars(options) {
+  const { path, documents, indexDir } = options;
+  const body = documents.get(normalizePath(path));
+  if (body !== void 0) {
+    return [...body].length;
+  }
+  try {
+    return [...await readFile9(join9(indexDir, path), "utf8")].length;
+  } catch {
+    return null;
+  }
+}
+async function runFindDocs(args, context) {
+  const loaded = await requireConfig(requireProjectDir(context), args.config);
+  const read = await requireIndexWithDocuments(loaded);
+  const { index } = normalizeIndex(read.raw);
+  const filter2 = {
+    ...args.text !== void 0 && { text: args.text },
+    ...args.tags !== void 0 && { tags: args.tags },
+    ...args.any_tags !== void 0 && { any_tags: args.any_tags },
+    ...args.related_to !== void 0 && { related_to: args.related_to }
+  };
+  const offset = args.cursor === void 0 ? 0 : decodeCursor({ cursor: args.cursor, filter: filter2 });
+  const { fields, omitted } = selectDocFields({
+    view: args.view ?? "brief",
+    include: args.include ?? [],
+    exclude: args.exclude ?? []
+  });
+  const references = args.related_to === void 0 && !fields.includes("referenced_by") ? void 0 : collectReferences({
+    index,
+    documents: read.documents,
+    config: { features: loaded.config.features ?? {} }
+  });
+  const { docs, relations, unknownTags } = findDocs({
+    index,
+    references,
+    text: args.text,
+    tags: args.tags,
+    anyTags: args.any_tags,
+    relatedTo: args.related_to
+  });
+  const documents = new Map(
+    Object.entries(read.documents).map(([path, body]) => [
+      normalizePath(path),
+      body
+    ])
+  );
+  const chars = await Promise.all(
+    docs.map(
+      (doc) => countChars({ path: doc.path, documents, indexDir: read.indexDir })
+    )
+  );
+  const summary = {
+    total: docs.length,
+    total_chars: chars.reduce((sum, count) => sum + (count ?? 0), 0),
+    tag_counts: countTags({
+      docs,
+      vocabulary: buildTagVocabulary(index.tags)
+    }),
+    warnings: unknownTags.map(unknownTagWarning)
+  };
+  const limit = args.limit ?? FIND_DOCS_DEFAULT_LIMIT;
+  const next = offset + limit;
+  const hasMore = !args.count_only && next < docs.length;
+  const result = args.count_only ? summary : {
+    total: summary.total,
+    returned: docs.slice(offset, next).length,
+    total_chars: summary.total_chars,
+    next_cursor: hasMore ? encodeCursor({ offset: next, filter: filter2 }) : null,
+    hint: hasMore ? FIND_DOCS_HINT : null,
+    tag_counts: summary.tag_counts,
+    warnings: summary.warnings,
+    omitted,
+    docs: docs.slice(offset, next).map(
+      (doc, position) => toDocRow({
+        doc,
+        chars: chars[offset + position] ?? null,
+        fields,
+        references,
+        relations: args.related_to === void 0 ? void 0 : relations[doc.id]
+      })
+    )
+  };
+  return args.format === "json" ? { structured: result } : { texts: [formatFindDocs(result)] };
+}
+async function runListTags(args, context) {
+  const loaded = await requireConfig(requireProjectDir(context), args.config);
+  const read = await requireIndexWithDocuments(loaded);
+  const { index } = normalizeIndex(read.raw);
+  const tags = listTags({ index, query: args.query });
+  return args.format === "json" ? { structured: { tags } } : { texts: [formatListTags(tags)] };
+}
+async function runUpdateIndex(args, context) {
+  const loaded = await requireConfig(requireProjectDir(context), args.config);
+  const { action, index } = await updateIndexFile({
+    loaded,
+    kind: args.kind,
+    id: args.id,
+    item: args.item
+  });
+  return { json: { action, index } };
+}
 var TOOLS = [
   {
+    name: "read_guide",
+    usesProjectDir: false,
+    description: "mdmark \u306E\u8A18\u6CD5\u30FB\u90E8\u54C1\u30FB\u56F3\u306E\u63CF\u304D\u65B9\u30FB\u62E1\u5F35\u306E\u4ED5\u65B9\u3092\u78BA\u304B\u3081\u308B\u3068\u304D\u306B\u3001\u4F7F\u3044\u65B9\u96C6\u306E\u7D22\u5F15\u306E\u540D\u524D\u3092\u6E21\u3057\u3066\u672C\u6587\u3092\u8AAD\u3080\u3002\u5F15\u6570 names \u306F\u7D22\u5F15\u306E\u540D\u524D\u306E\u914D\u5217\uFF081 \u4EF6\u4EE5\u4E0A\uFF09\u3002\u540D\u524D\u3054\u3068\u306B\u300C# {\u540D\u524D}\u300D\u3067\u59CB\u307E\u308B\u672C\u6587\u306E\u30C6\u30AD\u30B9\u30C8\u3092\u3001\u6E21\u3057\u305F\u9806\u306B\u8FD4\u3059\u3002\u7D22\u5F15\u306B\u7121\u3044\u540D\u524D\u304C\u3042\u308B\u3068\u304D\u306F\u3001\u8FD1\u3044\u540D\u524D\u3092\u6DFB\u3048\u305F\u30A8\u30E9\u30FC\u3092\u8FD4\u3059\u3002",
+    inputSchema: {
+      type: "object",
+      properties: {
+        names: {
+          type: "array",
+          items: { type: "string" },
+          minItems: 1,
+          description: "\u8AAD\u3080\u4F7F\u3044\u65B9\u96C6\u306E\u540D\u524D\uFF08\u7D22\u5F15\u306E\u540D\u524D\uFF09\u306E\u4E26\u3073"
+        }
+      },
+      required: ["names"],
+      additionalProperties: false
+    },
+    run: (args, context) => runReadGuide(args, context),
+    annotations: { readOnlyHint: true }
+  },
+  {
     name: "export_html",
+    usesProjectDir: true,
     description: "Markdown \u306E\u6587\u66F8\u3092 1 \u3064\u3001\u5916\u3078\u8981\u6C42\u3057\u306A\u3044 1 \u679A\u306E HTML \u306B\u66F8\u304D\u51FA\u3059\uFF08mdmark export \u3068\u540C\u3058\u51E6\u7406\uFF09\u3002\u5F15\u6570 file \u306F\u66F8\u304D\u51FA\u3059\u6587\u66F8\u3001out \u306F\u66F8\u304D\u51FA\u3059 HTML \u306E\u30D1\u30B9\uFF08\u7701\u304F\u3068\u6587\u66F8\u3068\u540C\u3058\u30D5\u30A9\u30EB\u30C0\u306E .html\uFF09\u3002\u66F8\u304D\u51FA\u3057\u305F HTML \u306E\u7D76\u5BFE\u30D1\u30B9 out \u3068\u8B66\u544A warnings \u3092 JSON \u3067\u8FD4\u3059\u3002",
     inputSchema: {
       type: "object",
@@ -73881,6 +71339,7 @@ var TOOLS = [
   },
   {
     name: "build_site",
+    usesProjectDir: true,
     description: "\u8A2D\u5B9A\u306E build \u3067\u6C7A\u3081\u305F\u6587\u66F8\u3092\u3001\u884C\u304D\u6765\u3067\u304D\u308B 1 \u679A\u306E HTML \u306B\u307E\u3068\u3081\u308B\uFF08mdmark build \u3068\u540C\u3058\u51E6\u7406\uFF09\u3002\u66F8\u304D\u51FA\u3057\u305F HTML \u306E\u7D76\u5BFE\u30D1\u30B9 out\u30FB\u5165\u308C\u305F\u6587\u66F8\u306E\u6570 docs\u30FB\u8B66\u544A warnings \u3092 JSON \u3067\u8FD4\u3059\u3002",
     inputSchema: {
       type: "object",
@@ -73894,6 +71353,7 @@ var TOOLS = [
   },
   {
     name: "check",
+    usesProjectDir: true,
     description: "\u8A2D\u5B9A\u306E\u5F62\u30FB\u7D22\u5F15\u3068\u6587\u66F8\u306E\u305A\u308C\u30FBbuild \u306E\u5BFE\u8C61\u306E\u6709\u7121\u30FB\u77E5\u3089\u306A\u3044\u5370\u3092\u70B9\u691C\u3059\u308B\uFF08mdmark check \u3068\u540C\u3058\u51E6\u7406\uFF09\u3002\u8A2D\u5B9A\u30FB\u7D22\u5F15\u30FB\u6587\u66F8\u306F\u66F8\u304D\u63DB\u3048\u306A\u3044\u3002\u305A\u308C\u306E\u4E00\u89A7 issues\uFF08file\u30FBwhere\u30FBkind\u30FBmessage\uFF09\u3092 JSON \u3067\u8FD4\u3057\u3001\u305A\u308C\u304C\u3042\u3063\u3066\u3082\u30A8\u30E9\u30FC\u306B\u3057\u306A\u3044\u3002base \u306B\u6BD4\u3079\u308B\u57FA\u6E96\u306E git \u306E ref\uFF08\u4F8B origin/develop\uFF09\u3092\u6E21\u3059\u3068\u3001\u57FA\u6E96\u3068 HEAD \u306E merge-base \u304B\u3089\u5909\u308F\u3063\u305F\u6587\u66F8\u3092\u6BD4\u3079\u3001change_together \u306E\u7D44\u306E\u3046\u3061\u7247\u65B9\u3060\u3051\u304C\u5909\u308F\u3063\u305F\u76F4\u3057\u5FD8\u308C\u3082\u8FD4\u3059\u3002",
     inputSchema: {
       type: "object",
@@ -73909,6 +71369,137 @@ var TOOLS = [
     },
     run: (args, context) => runCheckTool(args, context),
     annotations: { readOnlyHint: true }
+  },
+  {
+    name: "find_docs",
+    usesProjectDir: true,
+    description: "\u8A2D\u5B9A\u306E index \u306E\u7D22\u5F15\u304B\u3089\u3001\u984C\u30FB\u5225\u540D\u30FB\u6982\u8981\u306E\u8A9E\u3001\u30BF\u30B0\u306E AND / OR\u3001\u95A2\u4FC2\u3059\u308B\u6587\u66F8\u3067\u6587\u66F8\u3092\u5F15\u304F\u3002\u6761\u4EF6\u306F\u5168\u3066\u3092\u6E80\u305F\u3059\u6587\u66F8\u306B\u7D5E\u308A\u3001\u6E21\u3057\u305F\u30BF\u30B0\u304C\u4E3B\u984C\u306E\u30BF\u30B0\u306B\u5F53\u305F\u308B\u6587\u66F8\u3092\u4E0A\u306B\u4E26\u3079\u3066\u3001limit \u4EF6\uFF08\u65E2\u5B9A 20\u3001\u4E0A\u9650 100\uFF09\u305A\u3064\u8FD4\u3059\u3002tags \u306F\u5168\u3066\u3092\u6301\u3064\u6587\u66F8\uFF08AND\uFF09\u3001any_tags \u306F\u3069\u308C\u304B\u3092\u6301\u3064\u6587\u66F8\uFF08OR\uFF09\u3067\u3001\u8A9E\u5F59\u306E\u5225\u540D\u306F\u8A9E\u5F59\u306E\u30BF\u30B0\u306E\u540D\u524D\u3068\u3057\u3066\u5F15\u304F\u3002\u30BF\u30B0\u3092\u6E21\u3059\u524D\u306B\u3001list_tags \u3067\u8A9E\u5F59\u3092\u78BA\u304B\u3081\u3089\u308C\u308B\u3002\u8A9E\u5F59\u306B\u7121\u3044\u30BF\u30B0\u3092\u6E21\u3057\u3066\u3082\u62D2\u307E\u305A\u3001\u8B66\u544A warnings \u306B\u8FD1\u3044\u30BF\u30B0\u3092\u6DFB\u3048\u308B\u3002\u7D9A\u304D\u304C\u3042\u308B\u3068\u304D\u306F next_cursor \u3092 cursor \u306B\u6E21\u3059\uFF08\u7D5E\u308A\u8FBC\u307F\u306E\u6761\u4EF6\u306F\u524D\u306E\u547C\u3073\u51FA\u3057\u3068\u540C\u3058\u306B\u3059\u308B\uFF09\u3002view\uFF08brief\u30FBstandard\u30FBfull\uFF09\u3068 include\u30FBexclude \u3067\u5404\u884C\u306B\u8FD4\u3059\u9805\u76EE\u3092\u9078\u3073\u3001\u7701\u3044\u305F\u9805\u76EE\u306F omitted \u306B\u53D6\u308A\u65B9\u3064\u304D\u3067\u8FD4\u3059\u3002count_only: true \u306F\u7DCF\u4EF6\u6570\u30FB\u5408\u8A08\u6587\u5B57\u6570\u30FB\u30BF\u30B0\u3054\u3068\u306E\u4EF6\u6570\u3060\u3051\u3092\u8FD4\u3059\u3002format \u306F markdown\uFF08\u65E2\u5B9A\u3002\u8868\u306E\u30C6\u30AD\u30B9\u30C8\u3060\u3051\uFF09\u304B json\uFF08structuredContent \u3068 text \u306B\u540C\u3058 JSON\uFF09\u3002",
+    inputSchema: {
+      type: "object",
+      properties: {
+        text: {
+          type: "string",
+          description: "\u984C\u30FB\u5225\u540D\u30FB\u6982\u8981\u306E\u3069\u308C\u304B\u306B\u542B\u307E\u308C\u308B\u8A9E\u3002\u8A9E\u3068\u984C\u30FB\u5225\u540D\u30FB\u6982\u8981\u306E\u4E21\u65B9\u3092 NFKC\u30FB\u82F1\u5B57\u306E\u5C0F\u6587\u5B57\u5316\u30FB\u524D\u5F8C\u306E\u7A7A\u767D\u306E\u9664\u53BB\u3067\u6B63\u898F\u5316\u3057\u3066\u6BD4\u3079\u308B"
+        },
+        tags: {
+          type: "array",
+          items: { type: "string" },
+          description: "\u5168\u3066\u3092\u6301\u3064\u6587\u66F8\u306B\u7D5E\u308B\u30BF\u30B0\uFF08AND\uFF09"
+        },
+        any_tags: {
+          type: "array",
+          items: { type: "string" },
+          description: "\u3069\u308C\u304B\u3092\u6301\u3064\u6587\u66F8\u306B\u7D5E\u308B\u30BF\u30B0\uFF08OR\uFF09\u3002tags \u3068\u4E00\u7DD2\u306B\u6E21\u3059\u3068\u3001\u4E21\u65B9\u3092\u6E80\u305F\u3059\u6587\u66F8\u306B\u7D5E\u308B"
+        },
+        related_to: {
+          type: "string",
+          description: "\u3053\u306E\u6587\u66F8\u306E ID \u304B\u3089\u53C2\u7167\u3057\u3066\u3044\u308B\u6587\u66F8\u3068\u3001\u3053\u306E\u6587\u66F8\u3092\u53C2\u7167\u3057\u3066\u3044\u308B\u6587\u66F8\u306B\u7D5E\u308B"
+        },
+        limit: {
+          type: "integer",
+          minimum: 1,
+          maximum: FIND_DOCS_MAX_LIMIT,
+          description: `1 \u56DE\u306B\u8FD4\u3059\u6587\u66F8\u306E\u4EF6\u6570\u3002\u65E2\u5B9A ${FIND_DOCS_DEFAULT_LIMIT}`
+        },
+        cursor: {
+          type: "string",
+          description: "\u524D\u306E\u7D50\u679C\u306E next_cursor\u3002\u7D9A\u304D\u306E\u6587\u66F8\u3092\u8FD4\u3059"
+        },
+        view: {
+          type: "string",
+          enum: ["brief", "standard", "full"],
+          description: "\u5404\u884C\u306B\u8FD4\u3059\u9805\u76EE\u306E\u7D44\u3002brief \u306F ID\u30FB\u984C\u30FB\u6982\u8981\u30FB\u30BF\u30B0\u30FB\u6587\u5B57\u6570\u3001standard \u306F brief \u306B\u30D1\u30B9\u30FB\u5225\u540D\u3001full \u306F standard \u306B\u95A2\u9023\u3059\u308B\u6587\u66F8\u30FB\u88AB\u53C2\u7167\u306E\u6570\u3092\u52A0\u3048\u308B\u3002\u65E2\u5B9A brief"
+        },
+        include: {
+          type: "array",
+          items: {
+            type: "string",
+            enum: ["path", "aliases", "related", "referenced_by"]
+          },
+          description: "view \u306E\u7D44\u306B\u52A0\u3048\u308B\u9805\u76EE"
+        },
+        exclude: {
+          type: "array",
+          items: {
+            type: "string",
+            enum: ["path", "aliases", "related", "referenced_by"]
+          },
+          description: "view \u306E\u7D44\u304B\u3089\u9664\u304F\u9805\u76EE\uFF08include \u306E\u5F8C\u306B\u5F53\u3066\u308B\uFF09"
+        },
+        count_only: {
+          type: "boolean",
+          description: "true \u306E\u3068\u304D\u3001\u6587\u66F8\u306E\u884C\u3092\u8FD4\u3055\u305A\u3001\u7DCF\u4EF6\u6570\u30FB\u5408\u8A08\u6587\u5B57\u6570\u30FB\u30BF\u30B0\u3054\u3068\u306E\u4EF6\u6570\u3060\u3051\u3092\u8FD4\u3059"
+        },
+        format: {
+          type: "string",
+          enum: ["markdown", "json"],
+          description: "\u7D50\u679C\u306E\u5F62\u5F0F\u3002\u65E2\u5B9A markdown"
+        },
+        config: { type: "string", description: CONFIG_DESCRIPTION }
+      },
+      required: [],
+      additionalProperties: false
+    },
+    run: (args, context) => runFindDocs(args, context),
+    annotations: { readOnlyHint: true }
+  },
+  {
+    name: "update_index",
+    usesProjectDir: true,
+    description: "\u8A2D\u5B9A\u306E index \u306E\u7D22\u5F15\u306E\u3001\u6587\u66F8\u30FB\u7528\u8A9E\u306E ID \u304B\u30BF\u30B0\u306E\u8A9E\u5F59\u306E\u540D\u524D\u306E\u9805\u76EE\u3092\u7F6E\u304D\u63DB\u3048\u308B\u3002ID\uFF08\u30BF\u30B0\u306F\u540D\u524D\uFF09\u304C\u7121\u3051\u308C\u3070\u672B\u5C3E\u306B\u8FFD\u52A0\u3057\u3001item \u304C null \u306A\u3089\u305D\u306E\u9805\u76EE\u3092\u6D88\u3059\u3002\u66F8\u304F\u524D\u306B\u3001\u66F8\u304D\u63DB\u3048\u305F\u5F8C\u306E\u7D22\u5F15\u3092\u7D22\u5F15\u306E\u30B9\u30AD\u30FC\u30DE\u3067\u691C\u67FB\u3057\u3001\u5408\u308F\u306A\u3051\u308C\u3070\u66F8\u304B\u305A\u306B\u30A8\u30E9\u30FC\u3092\u8FD4\u3059\u3002\u6587\u66F8\u306E related \u306F\u3001to\uFF08\u76F8\u624B\u306E\u6587\u66F8\u306E id\uFF09\u30FBtype\uFF08requires\u30FBreferences\u30FBreplaces\u30FBpart_of\u30FBchange_together \u306E\u3069\u308C\u304B\uFF09\u30FBwhen\uFF08\u3044\u3064\u8AAD\u3080\u304B\u306E 1 \u6587\uFF09\u3068\u3001\u4EFB\u610F\u3067 paths\uFF08\u95A2\u9023\u304C\u5F53\u305F\u308B\u30D5\u30A1\u30A4\u30EB\u306E glob \u306E\u4E26\u3073\uFF09\u3092\u6301\u3064\u30AA\u30D6\u30B8\u30A7\u30AF\u30C8\u306E\u4E26\u3073\u3067\u6E21\u3059\u3002\u3057\u305F\u3053\u3068 action\uFF08added\u30FBreplaced\u30FBremoved\uFF09\u3068\u7D22\u5F15\u306E\u30D1\u30B9 index \u3092 JSON \u3067\u8FD4\u3059\u3002",
+    inputSchema: {
+      type: "object",
+      properties: {
+        kind: {
+          type: "string",
+          enum: ["doc", "term", "tag"],
+          description: "\u66F8\u304D\u63DB\u3048\u308B\u306E\u304C\u6587\u66F8\uFF08doc\uFF09\u304B\u7528\u8A9E\uFF08term\uFF09\u304B\u30BF\u30B0\u306E\u8A9E\u5F59\uFF08tag\uFF09\u304B"
+        },
+        id: {
+          type: "string",
+          minLength: 1,
+          description: "\u6587\u66F8\u304B\u7528\u8A9E\u306E ID\u3001\u30BF\u30B0\u306E\u8A9E\u5F59\u306E\u540D\u524D"
+        },
+        item: {
+          type: ["object", "null"],
+          description: "\u305D\u306E\u9805\u76EE\u306E\u4E2D\u8EAB\uFF08id\u30FBname \u3092\u9664\u304F\u30AD\u30FC\uFF09\u3002\u9805\u76EE\u3054\u3068\u7F6E\u304D\u63DB\u3048\u308B\u3002null \u306A\u3089\u9805\u76EE\u3092\u6D88\u3059"
+        },
+        config: { type: "string", description: CONFIG_DESCRIPTION }
+      },
+      required: ["kind", "id", "item"],
+      additionalProperties: false
+    },
+    run: (args, context) => runUpdateIndex(
+      args,
+      context
+    )
+  },
+  {
+    name: "list_tags",
+    usesProjectDir: true,
+    description: "\u8A2D\u5B9A\u306E index \u306E\u7D22\u5F15\u306E\u30BF\u30B0\u306E\u8A9E\u5F59\u3092\u3001\u30BF\u30B0\u3054\u3068\u306E\u540D\u524D\u30FB\u30B0\u30EB\u30FC\u30D7\u30FB\u8AAC\u660E\u30FB\u5225\u540D\u30FB\u632F\u308A\u66FF\u3048\u5148\u3068\u3001\u4ED8\u3044\u3066\u3044\u308B\u6587\u66F8\u306E\u6570\u3064\u304D\u3067\u3001\u8A9E\u5F59\u306E\u4E26\u3073\u3067\u8FD4\u3059\u3002\u4ED8\u3044\u3066\u3044\u308B\u6587\u66F8\u304C 0 \u4EF6\u306E\u30BF\u30B0\u3082\u8FD4\u3059\u3002query \u3092\u6E21\u3059\u3068\u3001\u540D\u524D\u30FB\u5225\u540D\u30FB\u8AAC\u660E\u306E\u3069\u308C\u304B\u306B\u542B\u307E\u308C\u308B\u30BF\u30B0\u306B\u7D5E\u308B\uFF08query \u3068\u540D\u524D\u30FB\u5225\u540D\u30FB\u8AAC\u660E\u306E\u4E21\u65B9\u3092 NFKC\u30FB\u82F1\u5B57\u306E\u5C0F\u6587\u5B57\u5316\u30FB\u524D\u5F8C\u306E\u7A7A\u767D\u306E\u9664\u53BB\u3067\u6B63\u898F\u5316\u3057\u3066\u6BD4\u3079\u308B\uFF09\u3002\u8A9E\u5F59\u304C\u591A\u3044\u3068\u304D\u306B\u3001find_docs \u3078\u6E21\u3059\u30BF\u30B0\u3092\u9078\u3076\u305F\u3081\u306B\u547C\u3076\u3002format \u306F markdown\uFF08\u65E2\u5B9A\u3002\u8868\u306E\u30C6\u30AD\u30B9\u30C8\u3060\u3051\uFF09\u304B json\uFF08structuredContent \u3068 text \u306B\u540C\u3058 JSON\uFF09\u3002",
+    inputSchema: {
+      type: "object",
+      properties: {
+        query: {
+          type: "string",
+          description: "\u30BF\u30B0\u306E\u540D\u524D\u30FB\u5225\u540D\u30FB\u8AAC\u660E\u306E\u3069\u308C\u304B\u306B\u542B\u307E\u308C\u308B\u8A9E\u3002\u8A9E\u3068\u540D\u524D\u30FB\u5225\u540D\u30FB\u8AAC\u660E\u306E\u4E21\u65B9\u3092 NFKC\u30FB\u82F1\u5B57\u306E\u5C0F\u6587\u5B57\u5316\u30FB\u524D\u5F8C\u306E\u7A7A\u767D\u306E\u9664\u53BB\u3067\u6B63\u898F\u5316\u3057\u3066\u6BD4\u3079\u308B"
+        },
+        format: {
+          type: "string",
+          enum: ["markdown", "json"],
+          description: "\u7D50\u679C\u306E\u5F62\u5F0F\u3002\u65E2\u5B9A markdown"
+        },
+        config: { type: "string", description: CONFIG_DESCRIPTION }
+      },
+      required: [],
+      additionalProperties: false
+    },
+    run: (args, context) => runListTags(
+      args,
+      context
+    ),
+    annotations: { readOnlyHint: true }
   }
 ];
 function isProjectDir(value) {
@@ -73920,20 +71511,33 @@ async function callTool(options) {
     content: [{ type: "text", text: text2 }],
     isError: true
   });
-  if (typeof options.args !== "object" || options.args === null) {
-    return failure2(PROJECT_DIR_ERROR_MESSAGE);
-  }
-  const { [PROJECT_DIR_ARG]: projectDir, ...args } = options.args;
-  if (!isProjectDir(projectDir)) {
-    return failure2(PROJECT_DIR_ERROR_MESSAGE);
+  let args = options.args;
+  let projectDir;
+  if (tool.usesProjectDir && typeof args === "object" && args !== null) {
+    const { [PROJECT_DIR_ARG]: given, ...rest } = args;
+    if (!isProjectDir(given)) {
+      return failure2(PROJECT_DIR_ERROR_MESSAGE);
+    }
+    projectDir = given;
+    args = rest;
   }
   const mismatch = checkArguments({ schema: tool.inputSchema, args });
   if (mismatch !== void 0) {
     return failure2(mismatch);
   }
   try {
-    const output = await tool.run(args, { ...roots, projectDir });
-    return { content: [{ type: "text", text: JSON.stringify(output.json) }] };
+    const output = await tool.run(args, {
+      ...roots,
+      projectDir
+    });
+    if (output.structured !== void 0) {
+      return {
+        content: [{ type: "text", text: JSON.stringify(output.structured) }],
+        structuredContent: output.structured
+      };
+    }
+    const texts = output.texts ?? [JSON.stringify(output.json ?? {})];
+    return { content: texts.map((text2) => ({ type: "text", text: text2 })) };
   } catch (error2) {
     if (error2 instanceof CliError) {
       return failure2(error2.message);
@@ -73949,7 +71553,7 @@ ${error2 instanceof Error ? error2.stack ?? "" : ""}`
 
 // src/plugin/mcp.ts
 var SERVER_NAME = "mdmark";
-var INSTRUCTIONS = 'mdmark \u306F Markdown \u6587\u66F8\u306E\u8A18\u6CD5\u30FB\u90E8\u54C1\u30FB\u56F3\u3092\u63CF\u304F\u30E9\u30A4\u30D6\u30E9\u30EA\u3067\u3001\u3053\u306E MCP \u30B5\u30FC\u30D0\u30FC\u306F mdmark \u306E\u6587\u66F8\u306E\u70B9\u691C\uFF08check\uFF09\u30FBHTML \u3078\u306E\u66F8\u304D\u51FA\u3057\uFF08export_html\uFF09\u30FB1 \u679A\u3078\u306E\u307E\u3068\u3081\uFF08build_site\uFF09\u3092\u6301\u3064\u3002\nmdmark \u306E\u8A18\u6CD5\u30FB\u90E8\u54C1\u30FB\u56F3\u306E\u66F8\u304D\u65B9\u306F\u3001\u4F7F\u3044\u65B9\u96C6\u3068\u3057\u3066 dev-docs \u306E\u914D\u4FE1\u5143 mdmark \u306B\u3042\u308B\u3002\nmdmark \u306E\u6587\u66F8\u3092\u66F8\u304F\u524D\u306B\u3001dev-docs \u306E search_docs \u3067 source: "mdmark" \u306E kind \u304C docs \u306E\u6587\u66F8\u3092\u30BF\u30B0 topic:\u4F7F\u3044\u65B9\u96C6 \u3067\u7D5E\u3063\u3066\u4E00\u89A7\u3092\u5F15\u304D\u3001\u5F53\u3066\u306F\u307E\u308B\u30DA\u30FC\u30B8\u3092 view: "full" \u3067\u8AAD\u3080\u3002\u4F5C\u696D\u5834\u6240\u304C mdmark \u306E\u30EA\u30DD\u30B8\u30C8\u30EA\u306E\u5916\u306A\u3089 outside_scope: true \u3092\u4ED8\u3051\u308B\u3002\ndev-docs \u304C\u7121\u3044\u3001\u307E\u305F\u306F\u914D\u4FE1\u5143 mdmark \u304C\u767B\u9332\u3055\u308C\u3066\u3044\u306A\u3044\u3068\u304D\u306F\u3001dev-docs \u304C\u7121\u3044\u306E\u3067\u898B\u3064\u304B\u308A\u307E\u305B\u3093\u3002\n\u66F8\u3044\u305F\u5F8C\u306F check \u3067\u70B9\u691C\u3057\u3001\u56F3\u306F\u4F7F\u3044\u65B9\u96C6\u306E\u300E\u63CF\u3044\u305F\u56F3\u3092\u78BA\u304B\u3081\u308B\u300F\u306E\u624B\u9806\u3067\u78BA\u304B\u3081\u308B\u3002\n\u8A18\u6CD5\u3092\u4F7F\u308F\u306A\u3044 Markdown \u306E\u7DE8\u96C6\u3068\u30B3\u30FC\u30C9\u306E\u8ABF\u67FB\u306B\u306F\u3001\u3053\u306E MCP \u30B5\u30FC\u30D0\u30FC\u3068\u4F7F\u3044\u65B9\u96C6\u306F\u8981\u3089\u306A\u3044\u3002';
+var INSTRUCTIONS = "mdmark \u306E\u8A18\u6CD5\u30FB\u90E8\u54C1\u30FB\u56F3\u306E\u63CF\u304D\u65B9\u30FB\u62E1\u5F35\u306E\u4ED5\u65B9\u306F\u3001\u4F7F\u3044\u65B9\u96C6\u306E\u7D22\u5F15\u306E\u540D\u524D\u3092 read_guide \u306B\u6E21\u3059\u3068\u8AAD\u3081\u308B\u3002\u6587\u66F8\u306E\u66F8\u304D\u51FA\u3057\u306F export_html\u3001\u307E\u3068\u3081\u306F build_site\u3001\u70B9\u691C\u306F check\u3001\u7D22\u5F15\u306E\u6587\u66F8\u306E\u691C\u7D22\u306F find_docs\u3001\u30BF\u30B0\u306E\u8A9E\u5F59\u306E\u4E00\u89A7\u306F list_tags\u3001\u7D22\u5F15\u306E\u66F8\u304D\u63DB\u3048\u306F update_index \u3067\u884C\u3048\u308B\u3002";
 function createMcpServer(options) {
   const { roots, version: version2, stderr } = options;
   const server = new McpServer(
@@ -74067,7 +71671,8 @@ async function runServe(options) {
   const { env, packageDir, version: version2, signal, stdout, stderr } = options;
   const port = readPort({ env });
   const roots = {
-    distDir: join8(packageDir, "dist")
+    guideDir: join10(packageDir, "plugin", "guide"),
+    distDir: join10(packageDir, "dist")
   };
   const handler = createMcpHandler(
     () => createMcpServer({ roots, version: version2, stderr }),
@@ -74077,12 +71682,12 @@ async function runServe(options) {
     void respond({ handler, req, res, port, stderr });
   });
   const listening = await new Promise(
-    (resolve12, reject) => {
+    (resolve13, reject) => {
       server.once(
         "error",
-        (error2) => error2.code === "EADDRINUSE" ? resolve12("in_use") : reject(error2)
+        (error2) => error2.code === "EADDRINUSE" ? resolve13("in_use") : reject(error2)
       );
-      server.listen(port, LISTEN_HOST, () => resolve12("listening"));
+      server.listen(port, LISTEN_HOST, () => resolve13("listening"));
     }
   );
   if (listening === "in_use") {
@@ -74092,23 +71697,23 @@ async function runServe(options) {
   stdout(
     `MCP \u30B5\u30FC\u30D0\u30FC\u3092\u8D77\u52D5\u3057\u307E\u3057\u305F: http://${LISTEN_HOST}:${port}${MCP_PATH}`
   );
-  await new Promise((resolve12) => {
+  await new Promise((resolve13) => {
     if (signal.aborted) {
-      resolve12();
+      resolve13();
       return;
     }
-    signal.addEventListener("abort", () => resolve12(), { once: true });
+    signal.addEventListener("abort", () => resolve13(), { once: true });
   });
-  await new Promise((resolve12) => {
-    server.close(() => resolve12());
+  await new Promise((resolve13) => {
+    server.close(() => resolve13());
     server.closeAllConnections();
   });
   return 0;
 }
 
 // src/cli/init.ts
-import { mkdir as mkdir3, readFile as readFile7, writeFile as writeFile2 } from "node:fs/promises";
-import { dirname as dirname6, join as join9 } from "node:path";
+import { mkdir as mkdir2, readFile as readFile10, writeFile as writeFile3 } from "node:fs/promises";
+import { dirname as dirname6, join as join11 } from "node:path";
 var TEMPLATE_FILES = [
   { path: "mdmark.config.yaml", source: "mdmark.config.yaml" },
   { path: "theme.css", source: "theme.css" },
@@ -74139,18 +71744,18 @@ async function runInit(options, io) {
     if (template.language !== void 0 && template.language !== wanted) {
       continue;
     }
-    const target = join9(dir, template.path);
-    const source = await readFile7(join9(templatesDir, template.source), "utf8");
+    const target = join11(dir, template.path);
+    const source = await readFile10(join11(templatesDir, template.source), "utf8");
     const content = template.path === CONFIG_TEMPLATE ? source.replace(VERSION_LINE_PATTERN, `version: ${version2}`) : source;
     try {
-      await mkdir3(dirname6(target), { recursive: true });
+      await mkdir2(dirname6(target), { recursive: true });
     } catch (error2) {
       throw new CliError(
         `${template.path} \u306B\u66F8\u3051\u307E\u305B\u3093\uFF08${reasonOf2(error2)}\uFF09\u3002\u7F6E\u304F\u5148\u306E\u30D5\u30A9\u30EB\u30C0\u3092\u78BA\u304B\u3081\u3066\u304F\u3060\u3055\u3044\u3002`
       );
     }
     try {
-      await writeFile2(target, content, { flag: "wx" });
+      await writeFile3(target, content, { flag: "wx" });
       io.stdout(`\u7F6E\u3044\u305F: ${template.path}`);
     } catch (error2) {
       if (error2 instanceof Error && "code" in error2 && error2.code === "EEXIST") {
@@ -74192,13 +71797,13 @@ function createLinePrompter(options) {
 }
 
 // src/cli/upgrade.ts
-import { readFile as readFile9, stat as stat7, writeFile as writeFile5 } from "node:fs/promises";
-import { basename as basename7, dirname as dirname9, join as join12, relative as relative8, resolve as resolve10, sep as sep6 } from "node:path";
-import { isMap as isMap2, parse as parse6, parseDocument as parseDocument4 } from "yaml";
+import { readFile as readFile12, stat as stat5, writeFile as writeFile6 } from "node:fs/promises";
+import { basename as basename7, dirname as dirname9, join as join14, relative as relative9, resolve as resolve11, sep as sep6 } from "node:path";
+import { isMap as isMap3, parse as parse6, parseDocument as parseDocument5 } from "yaml";
 
 // src/cli/backup.ts
-import { copyFile as copyFile2, mkdir as mkdir4, readdir, stat as stat5, writeFile as writeFile3 } from "node:fs/promises";
-import { dirname as dirname7, isAbsolute as isAbsolute3, join as join10, relative as relative6 } from "node:path";
+import { copyFile, mkdir as mkdir3, readdir, stat as stat3, writeFile as writeFile4 } from "node:fs/promises";
+import { dirname as dirname7, isAbsolute as isAbsolute3, join as join12, relative as relative7 } from "node:path";
 var BACKUP_DIR = {
   root: ".mdmark",
   backups: ".mdmark/backup"
@@ -74221,7 +71826,7 @@ function stamp(now) {
 }
 async function exists2(path) {
   try {
-    await stat5(path);
+    await stat3(path);
     return true;
   } catch {
     return false;
@@ -74230,7 +71835,7 @@ async function exists2(path) {
 async function takeBackup(options) {
   const { dir, files, now } = options;
   for (const file of files) {
-    const path = relative6(dir, file);
+    const path = relative7(dir, file);
     if (path.startsWith("..") || isAbsolute3(path)) {
       throw new CliError(
         `${file} \u306E\u5199\u3057\u3092\u53D6\u308C\u307E\u305B\u3093\uFF08\u8A2D\u5B9A\u30D5\u30A1\u30A4\u30EB\u306E\u30D5\u30A9\u30EB\u30C0\u306E\u5916\u306B\u3042\u308A\u307E\u3059\uFF09\u3002\u4F55\u3082\u66F8\u304D\u63DB\u3048\u3066\u3044\u307E\u305B\u3093\u3002`
@@ -74238,18 +71843,18 @@ async function takeBackup(options) {
     }
   }
   try {
-    const backups = join10(dir, BACKUP_DIR.backups);
-    await mkdir4(backups, { recursive: true });
-    await writeFile3(join10(dir, BACKUP_DIR.root, IGNORE_FILE), IGNORE_CONTENT);
-    let backupDir = join10(backups, stamp(now));
+    const backups = join12(dir, BACKUP_DIR.backups);
+    await mkdir3(backups, { recursive: true });
+    await writeFile4(join12(dir, BACKUP_DIR.root, IGNORE_FILE), IGNORE_CONTENT);
+    let backupDir = join12(backups, stamp(now));
     for (let count = 2; await exists2(backupDir); count += 1) {
-      backupDir = join10(backups, `${stamp(now)}-${count}`);
+      backupDir = join12(backups, `${stamp(now)}-${count}`);
     }
-    await mkdir4(backupDir);
+    await mkdir3(backupDir);
     for (const file of files) {
-      const target = join10(backupDir, relative6(dir, file));
-      await mkdir4(dirname7(target), { recursive: true });
-      await copyFile2(file, target);
+      const target = join12(backupDir, relative7(dir, file));
+      await mkdir3(dirname7(target), { recursive: true });
+      await copyFile(file, target);
     }
     return backupDir;
   } catch (error2) {
@@ -74267,10 +71872,10 @@ async function restoreBackup(options) {
     if (!entry.isFile()) {
       continue;
     }
-    const source = join10(entry.parentPath, entry.name);
-    const target = join10(options.dir, relative6(options.backupDir, source));
-    await mkdir4(dirname7(target), { recursive: true });
-    await copyFile2(source, target);
+    const source = join12(entry.parentPath, entry.name);
+    const target = join12(options.dir, relative7(options.backupDir, source));
+    await mkdir3(dirname7(target), { recursive: true });
+    await copyFile(source, target);
   }
 }
 
@@ -74310,15 +71915,15 @@ function changelogRows(options) {
 
 // src/cli/migrations.ts
 import { execFile as execFile2 } from "node:child_process";
-import { readdir as readdir2, readFile as readFile8, stat as stat6, writeFile as writeFile4 } from "node:fs/promises";
-import { dirname as dirname8, isAbsolute as isAbsolute4, join as join11, relative as relative7, resolve as resolve9 } from "node:path";
+import { readdir as readdir2, readFile as readFile11, stat as stat4, writeFile as writeFile5 } from "node:fs/promises";
+import { dirname as dirname8, isAbsolute as isAbsolute4, join as join13, relative as relative8, resolve as resolve10 } from "node:path";
 import { promisify as promisify2 } from "node:util";
 import {
-  isMap,
+  isMap as isMap2,
   isScalar,
-  isSeq,
+  isSeq as isSeq2,
   parse as parse5,
-  parseDocument as parseDocument3
+  parseDocument as parseDocument4
 } from "yaml";
 var MIGRATIONS_DIR = {
   root: "migrations",
@@ -74338,7 +71943,7 @@ var STEP_KEYS = {
 var COMMON_KEYS = ["op", "description", "destructive"];
 var STEP_FILES = ["config", "index"];
 var CALL_FILES = ["config", "index", "documents"];
-function isRecord7(value) {
+function isRecord8(value) {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 function reasonOf4(error2) {
@@ -74349,7 +71954,7 @@ function isFilled2(value) {
   return typeof value === "string" && value !== "";
 }
 function validateStep(item, where, problem) {
-  if (!isRecord7(item)) {
+  if (!isRecord8(item)) {
     problem(where, "\u624B\u9806\u306F\u30AD\u30FC\u3068\u5024\u3067\u66F8\u3044\u3066\u304F\u3060\u3055\u3044\u3002");
     return;
   }
@@ -74416,7 +72021,7 @@ function validateStep(item, where, problem) {
       requireStepFile();
       requireString("key");
       const mapping = item.mapping;
-      if (!isRecord7(mapping)) {
+      if (!isRecord8(mapping)) {
         problem(
           `${where}.mapping`,
           "mapping \u306F\u5143\u306E\u5024\u3068\u65B0\u3057\u3044\u5024\u306E\u8868\u3067\u66F8\u3044\u3066\u304F\u3060\u3055\u3044\u3002"
@@ -74471,7 +72076,7 @@ function validateSteps(raw, file) {
   const problem = (where, message) => {
     problems.push(`${file}: ${where}: ${message}`);
   };
-  if (!isRecord7(raw)) {
+  if (!isRecord8(raw)) {
     problem("steps", "steps \u306E\u4E26\u3073\u3092\u66F8\u3044\u3066\u304F\u3060\u3055\u3044\u3002");
     return { steps: [], problems };
   }
@@ -74495,7 +72100,7 @@ function validateSteps(raw, file) {
 }
 async function isFile2(path) {
   try {
-    return (await stat6(path)).isFile();
+    return (await stat4(path)).isFile();
   } catch {
     return false;
   }
@@ -74503,7 +72108,7 @@ async function isFile2(path) {
 async function readStepsFile(dir, label) {
   let raw;
   try {
-    raw = parse5(await readFile8(join11(dir, MIGRATIONS_DIR.steps), "utf8"));
+    raw = parse5(await readFile11(join13(dir, MIGRATIONS_DIR.steps), "utf8"));
   } catch (error2) {
     return {
       steps: [],
@@ -74518,8 +72123,8 @@ async function readStepsFile(dir, label) {
     if (step.op !== "call") {
       continue;
     }
-    const script = resolve9(dir, step.script);
-    const path = relative7(dir, script);
+    const script = resolve10(dir, step.script);
+    const path = relative8(dir, script);
     if (path.startsWith("..") || isAbsolute4(path)) {
       result.problems.push(
         `${label}: steps[${index}].script: \u7248\u306E\u30D5\u30A9\u30EB\u30C0\u306E\u5916\u3092\u6307\u3057\u3066\u3044\u307E\u3059\u3002`
@@ -74533,7 +72138,7 @@ async function readStepsFile(dir, label) {
   return result;
 }
 async function loadMigrationVersions(options) {
-  const root = join11(options.packageDir, MIGRATIONS_DIR.root);
+  const root = join13(options.packageDir, MIGRATIONS_DIR.root);
   let names;
   try {
     names = (await readdir2(root, { withFileTypes: true })).filter((entry) => entry.isDirectory()).map((entry) => entry.name);
@@ -74546,7 +72151,7 @@ async function loadMigrationVersions(options) {
   const loaded = [];
   const problems = [];
   for (const version2 of versions) {
-    const dir = join11(root, version2);
+    const dir = join13(root, version2);
     const result = await readStepsFile(
       dir,
       `${MIGRATIONS_DIR.root}/${version2}/${MIGRATIONS_DIR.steps}`
@@ -74573,7 +72178,7 @@ function renameKey(doc, from, to) {
   const newName = toPath[toPath.length - 1] ?? "";
   if (fromParent.join(".") === toParent.join(".")) {
     const parent = fromParent.length === 0 ? doc.contents : doc.getIn(fromParent, true);
-    if (isMap(parent)) {
+    if (isMap2(parent)) {
       const pair = parent.items.find(
         (item) => isScalar(item.key) && item.key.value === oldName
       );
@@ -74610,7 +72215,7 @@ function mapScalar(node2, mapping) {
 }
 function mapValues(doc, key, mapping) {
   const node2 = doc.getIn(key.split("."), true);
-  if (isSeq(node2)) {
+  if (isSeq2(node2)) {
     let changed = false;
     for (const item of node2.items) {
       changed = mapScalar(item, mapping) || changed;
@@ -74658,13 +72263,13 @@ function stepFiles(versions, target) {
   return [...files];
 }
 async function editYaml(path, edit) {
-  const doc = parseDocument3(await readFile8(path, "utf8"));
+  const doc = parseDocument4(await readFile11(path, "utf8"));
   const [first] = doc.errors;
   if (first) {
     throw new Error(`${path} \u3092 YAML \u3068\u3057\u3066\u8AAD\u3081\u307E\u305B\u3093\uFF08${reasonOf4(first)}\uFF09`);
   }
   if (edit(doc)) {
-    await writeFile4(path, doc.toString({ flowCollectionPadding: false }));
+    await writeFile5(path, doc.toString({ flowCollectionPadding: false }));
   }
 }
 async function applyStep(options) {
@@ -74673,15 +72278,15 @@ async function applyStep(options) {
     switch (step.op) {
       case "replace_mark":
         for (const path of target.documents) {
-          const text2 = await readFile8(path, "utf8");
+          const text2 = await readFile11(path, "utf8");
           const replaced = replaceMark(text2, step.from, step.to);
           if (replaced !== text2) {
-            await writeFile4(path, replaced);
+            await writeFile5(path, replaced);
           }
         }
         return;
       case "call": {
-        const script = resolve9(version2.dir, step.script);
+        const script = resolve10(version2.dir, step.script);
         try {
           await execFileAsync2(
             process.execPath,
@@ -74689,7 +72294,7 @@ async function applyStep(options) {
             { cwd: dirname8(target.configPath) }
           );
         } catch (error2) {
-          const code2 = isRecord7(error2) && typeof error2.code === "number" ? `\u7D42\u4E86\u30B3\u30FC\u30C9 ${error2.code} \u3067\u7D42\u308F\u308A\u307E\u3057\u305F` : reasonOf4(error2);
+          const code2 = isRecord8(error2) && typeof error2.code === "number" ? `\u7D42\u4E86\u30B3\u30FC\u30C9 ${error2.code} \u3067\u7D42\u308F\u308A\u307E\u3057\u305F` : reasonOf4(error2);
           throw new Error(`\u30B9\u30AF\u30EA\u30D7\u30C8 ${step.script} \u304C${code2}`);
         }
         return;
@@ -74727,7 +72332,7 @@ async function applyStep(options) {
 var CONFIRM_ANSWER = "y";
 var VERSION_QUESTION = "\u624B\u5143\u306E\u7248\uFF08v{MAJOR}.{MINOR}.{PATCH}\uFF09\u3092\u5165\u308C\u3066\u304F\u3060\u3055\u3044:";
 var CONFIRM_QUESTION = `\u58CA\u3059\u624B\u9806\u3092\u5F53\u3066\u3066\u3088\u3044\u3067\u3059\u304B\uFF08${CONFIRM_ANSWER} \u3067\u5F53\u3066\u308B\uFF09:`;
-function isRecord8(value) {
+function isRecord9(value) {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 function toPosix5(path) {
@@ -74735,7 +72340,7 @@ function toPosix5(path) {
 }
 async function isFile3(path) {
   try {
-    return (await stat7(path)).isFile();
+    return (await stat5(path)).isFile();
   } catch {
     return false;
   }
@@ -74758,17 +72363,17 @@ async function askRequired(ask, question) {
   return answer;
 }
 async function writeConfigVersion(configPath, version2) {
-  const doc = parseDocument4(await readFile9(configPath, "utf8"));
+  const doc = parseDocument5(await readFile12(configPath, "utf8"));
   if (doc.contents === null || doc.has("version")) {
     doc.set("version", version2);
-  } else if (isMap2(doc.contents)) {
+  } else if (isMap3(doc.contents)) {
     doc.contents.items.unshift(doc.createPair("version", version2));
   } else {
     throw new CliError(
       `${basename7(configPath)} \u304C\u30AD\u30FC\u3068\u5024\u306E\u5F62\u3067\u306F\u3042\u308A\u307E\u305B\u3093\u3002\u8A2D\u5B9A\u306E\u30AD\u30FC\u3092\u66F8\u3044\u3066\u304F\u3060\u3055\u3044\u3002`
     );
   }
-  await writeFile5(configPath, doc.toString({ flowCollectionPadding: false }));
+  await writeFile6(configPath, doc.toString({ flowCollectionPadding: false }));
 }
 async function createTarget(options) {
   const { configPath, raw } = options;
@@ -74779,20 +72384,20 @@ async function createTarget(options) {
   const documents = /* @__PURE__ */ new Set();
   if (config3.build) {
     for (const path of await collectBuildDocuments(dir, config3.build)) {
-      documents.add(resolve10(dir, path));
+      documents.add(resolve11(dir, path));
     }
   }
   try {
     const read = await readIndexWithDocuments(loaded);
     for (const path of Object.keys(read?.documents ?? {})) {
-      documents.add(resolve10(read?.indexDir ?? dir, path));
+      documents.add(resolve11(read?.indexDir ?? dir, path));
     }
   } catch (error2) {
     if (!(error2 instanceof CliError)) {
       throw error2;
     }
   }
-  const indexPath = config3.index === void 0 ? void 0 : resolve10(dir, config3.index);
+  const indexPath = config3.index === void 0 ? void 0 : resolve11(dir, config3.index);
   return {
     configPath,
     indexPath: indexPath !== void 0 && await isFile3(indexPath) ? indexPath : void 0,
@@ -74814,7 +72419,7 @@ async function printPlan(options) {
   }
   let text2;
   try {
-    text2 = await readFile9(join12(packageDir, CHANGELOG_FILE), "utf8");
+    text2 = await readFile12(join14(packageDir, CHANGELOG_FILE), "utf8");
   } catch (error2) {
     throw new CliError(
       `\u5909\u66F4\u5C65\u6B74\u3092\u8AAD\u3081\u307E\u305B\u3093\uFF08${error2 instanceof Error ? error2.message : String(error2)}\uFF09\u3002mdmark \u3092\u5165\u308C\u76F4\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
@@ -74839,7 +72444,7 @@ async function askValues(options) {
       if (path === void 0) {
         continue;
       }
-      const doc = parseDocument4(await readFile9(path, "utf8"));
+      const doc = parseDocument5(await readFile12(path, "utf8"));
       if (doc.hasIn(step.key.split("."))) {
         continue;
       }
@@ -74860,7 +72465,7 @@ async function runUpgrade(options, io, ask) {
   const loaded = await loadConfig(configPath);
   const dir = loaded.dir;
   const local = assertVersion(
-    isRecord8(loaded.raw) && loaded.raw.version !== void 0 ? loaded.raw.version : await askRequired(ask, VERSION_QUESTION)
+    isRecord9(loaded.raw) && loaded.raw.version !== void 0 ? loaded.raw.version : await askRequired(ask, VERSION_QUESTION)
   );
   const target = options.cliVersion;
   io.stdout(`\u624B\u5143\u306E\u7248: ${local}`);
@@ -74932,7 +72537,7 @@ async function runUpgrade(options, io, ask) {
     throw error2;
   }
   await writeConfigVersion(configPath, target);
-  io.stdout(`\u5199\u3057: ${toPosix5(relative8(dir, backupDir))}`);
+  io.stdout(`\u5199\u3057: ${toPosix5(relative9(dir, backupDir))}`);
   io.stdout(`\u7248\u3092 ${target} \u306B\u3057\u307E\u3057\u305F`);
   return 0;
 }
@@ -74953,7 +72558,7 @@ function isParseArgsError(error2) {
 }
 function findPackageRoot(from) {
   let dir = from;
-  while (!existsSync(join13(dir, PACKAGE_FILE))) {
+  while (!existsSync(join15(dir, PACKAGE_FILE))) {
     const parent = dirname10(dir);
     if (parent === dir) {
       throw new CliError(
@@ -74984,9 +72589,9 @@ async function main(argv, io, ask) {
       case "init":
         return await runInit(
           {
-            dir: resolve11(io.cwd, rest[0] ?? "."),
+            dir: resolve12(io.cwd, rest[0] ?? "."),
             js: values.js === true,
-            templatesDir: join13(root, "templates"),
+            templatesDir: join15(root, "templates"),
             version: cliVersion()
           },
           io
@@ -75003,14 +72608,14 @@ async function main(argv, io, ask) {
             file,
             out: values.out,
             config: values.config,
-            distDir: join13(root, "dist")
+            distDir: join15(root, "dist")
           },
           io
         );
       }
       case "build":
         return await runBuild(
-          { config: values.config, distDir: join13(root, "dist") },
+          { config: values.config, distDir: join15(root, "dist") },
           io
         );
       case "upgrade":
