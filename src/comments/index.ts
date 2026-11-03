@@ -13,11 +13,22 @@ import {
   draftFromRange,
   locateComments,
 } from "./anchor.ts";
+import { attachCommentActions } from "./bubble.ts";
 import {
   isComment,
   type MdmarkComment,
   type MdmarkCommentStore,
 } from "./spec.ts";
+
+/** `attachComments` の Promise の値 */
+export type CommentsController = {
+  /** 印を外して文字を元に戻し、置いた要素と受け取りを外す。2 回目以降は何もしない */
+  detach: () => void;
+  /** `load` を呼び直して印を付け直す */
+  reload: () => Promise<void>;
+  /** その `id` のコメントの印へ移って強調する */
+  focus: (id: string) => void;
+};
 
 /** コメントの部品のモジュール（`dist/comments.js`）が export する関数 */
 export type CommentsPartModule = {
@@ -26,7 +37,8 @@ export type CommentsPartModule = {
     root: HTMLElement;
     store: MdmarkCommentStore;
     docId: string;
-  }) => Promise<() => void>;
+    reveal?: (element: HTMLElement) => void;
+  }) => Promise<CommentsController>;
 };
 
 /** 選んだ文字の始まりと終わりが同じ 1 つに入っていればボタンを出すブロック */
@@ -127,15 +139,21 @@ export async function attachComments(options: {
   store: MdmarkCommentStore;
   /** 対象の ID */
   docId: string;
-}): Promise<() => void> {
-  const { root, store, docId } = options;
+  /** 印を囲む閉じた節と行の詳細を開く */
+  reveal?: (element: HTMLElement) => void;
+}): Promise<CommentsController> {
+  const { root, store, docId, reveal } = options;
   let destroyed = false;
   let comments: MdmarkComment[] = [];
   // 印 → その印に付いたコメント
   const marked = new Map<HTMLElement, MdmarkComment[]>();
   let open: OpenPopover | undefined;
+  // 開いている吹き出しの修正と削除の操作
+  let actions: { cancel: () => boolean } | undefined;
   let pending: Range | undefined;
   let frame = 0;
+  // 読み直しの番号。後から読み直したら前の読み直しの結果を捨てる
+  let reloadCount = 0;
 
   // ─── 読み込み ───
   try {
@@ -287,6 +305,7 @@ export async function attachComments(options: {
     element.remove();
     returnTo.setAttribute("aria-expanded", "false");
     open = undefined;
+    actions = undefined;
     if (returnFocus) {
       returnTo.focus();
     }
@@ -425,10 +444,15 @@ export async function attachComments(options: {
     }
     closeBubble(false);
     const list = marked.get(mark) ?? [];
+    const canEdit = typeof store.update === "function";
+    const canRemove = typeof store.remove === "function";
     const bubble = elementFrom(
       renderCommentBubble({
         quote: list[0]?.quote ?? mark.textContent ?? "",
         bodies: list.map((comment) => comment.body),
+        ids: list.map((comment) => comment.id),
+        canEdit,
+        canRemove,
       }),
     );
     document.body.append(bubble);
@@ -443,7 +467,58 @@ export async function attachComments(options: {
     bubble
       .querySelector(".mdmark-comment-close")
       ?.addEventListener("click", () => closeBubble(true));
+    if (canEdit || canRemove) {
+      actions = attachCommentActions({
+        bubble,
+        store,
+        docId,
+        isActive: () => !destroyed,
+        onUpdated,
+        onRemoved,
+      });
+    }
     bubble.focus();
+  };
+
+  // ─── 修正と削除の反映 ───
+  /** 修正できたコメントの本文を、控えたコメントと印に付いたコメントで書き換える */
+  const onUpdated = (id: string, body: string): void => {
+    const replace = (comment: MdmarkComment): MdmarkComment =>
+      comment.id === id ? { ...comment, body } : comment;
+    comments = comments.map(replace);
+    for (const [mark, list] of marked) {
+      marked.set(mark, list.map(replace));
+    }
+  };
+  /** 削除できたコメントを除き、コメントが残らない印は外す。同じ印にコメントが残るかを返す */
+  const onRemoved = (id: string): boolean => {
+    comments = comments.filter((comment) => comment.id !== id);
+    let remains = true;
+    for (const [mark, list] of [...marked]) {
+      if (!list.some((comment) => comment.id === id)) {
+        continue;
+      }
+      const rest = list.filter((comment) => comment.id !== id);
+      if (rest.length > 0) {
+        marked.set(mark, rest);
+        continue;
+      }
+      // 開いている吹き出しの印なら閉じ、フォーカスを移す先のブロックを控えてから印を外す
+      remains = false;
+      const wasOpen = open?.kind === "bubble" && open.returnTo === mark;
+      if (wasOpen) {
+        closeBubble(false);
+      }
+      const block = mark.parentElement?.closest<HTMLElement>(COMMENT_BLOCKS);
+      marked.delete(mark);
+      mark.replaceWith(...mark.childNodes);
+      if (wasOpen && block) {
+        block.setAttribute("tabindex", "-1");
+        block.focus({ preventScroll: true });
+      }
+    }
+    root.normalize();
+    return remains;
   };
 
   // ─── 受け取り ───
@@ -475,7 +550,7 @@ export async function attachComments(options: {
     }
     if (open.kind === "form") {
       cancelForm();
-    } else {
+    } else if (!actions?.cancel()) {
       closeBubble(true);
     }
   };
@@ -512,7 +587,57 @@ export async function attachComments(options: {
   document.addEventListener("scroll", onFollow, true);
   window.addEventListener("resize", onFollow);
 
-  return () => {
+  // ─── 読み直しと印へ移る ───
+  /** `load` を呼び直し、読めたら印と一覧を付け直す。読めなければ印を残して reject する */
+  const reload = async (): Promise<void> => {
+    reloadCount += 1;
+    const count = reloadCount;
+    let loaded: unknown;
+    try {
+      loaded = await store.load({ docId });
+    } catch (error) {
+      if (destroyed || count !== reloadCount) {
+        return;
+      }
+      console.error("[mdmark] コメントを読み込めません", "load", docId, error);
+      throw error;
+    }
+    if (destroyed || count !== reloadCount) {
+      return;
+    }
+    if (!Array.isArray(loaded) || !loaded.every(isComment)) {
+      console.error("[mdmark] コメントを読み込めません", "load", docId, loaded);
+      throw new TypeError("load が返した値がコメントの配列の形に合いません");
+    }
+    comments = loaded;
+    closeBubble(false);
+    applyMarks();
+  };
+  /** その `id` のコメントの印を開いて見せ、フォーカスを移して強調する */
+  const focus = (id: string): void => {
+    if (destroyed) {
+      return;
+    }
+    const targets = [...marked]
+      .filter(([, list]) => list.some((comment) => comment.id === id))
+      .map(([mark]) => mark);
+    const first = targets[0];
+    if (!first) {
+      return;
+    }
+    for (const mark of marked.keys()) {
+      mark.removeAttribute("data-focused");
+    }
+    reveal?.(first);
+    first.scrollIntoView({ block: "nearest" });
+    first.focus();
+    for (const mark of targets) {
+      mark.setAttribute("data-focused", "");
+    }
+  };
+
+  /** 受け取りを外し、置いた要素と印を取り除く */
+  const detach = (): void => {
     if (destroyed) {
       return;
     }
@@ -537,4 +662,6 @@ export async function attachComments(options: {
       document.getElementById(COMMENT_HINT_ID)?.remove();
     }
   };
+
+  return { detach, reload, focus };
 }

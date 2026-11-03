@@ -1,4 +1,4 @@
-import type { MdmarkCommentStore } from "./comments/spec.ts";
+import { checkCommentStore, type MdmarkCommentStore } from "./comments/spec.ts";
 import {
   type MdmarkConfig,
   type ResolvedConfig,
@@ -22,7 +22,7 @@ import type { MdmarkAlias } from "./knowledge/aliases.ts";
 import type { MdmarkIndex } from "./knowledge/index-shape.ts";
 import type { MdmarkReferences } from "./knowledge/references.ts";
 import { loadLibraries } from "./libraries.ts";
-import { attachParts } from "./mount-parts.ts";
+import { attachParts, type PartsHandle } from "./mount-parts.ts";
 import { renderNotice } from "./parts/notice.ts";
 import { attachPrint } from "./print.ts";
 import { renderDocument } from "./render/index.ts";
@@ -47,14 +47,33 @@ export type MountOptions = {
   diffMode?: DiffMode;
   /** コメントの読み書きの関数。`comments` の機能がオンのときだけ使う。渡すときは `docId` も要る */
   commentStore?: MdmarkCommentStore;
+  /** 比較元の Markdown。渡すと、本文の中で比較元から変えたブロックを `blocks` と同じ色で塗り分ける。`null` と省いたときは色分けしない */
+  baseMarkdown?: string | null;
+  /** `+columns` の表で列の表示を切り替えるたびに呼ぶ */
+  onColumnsChange?: (event: MdmarkColumnsChange) => void;
+};
+
+/** `onColumnsChange` が受け取る列の表示 */
+export type MdmarkColumnsChange = {
+  /** 本文の中の `+columns` の表の出現順（0 から。削除したブロックの中の表は数えない） */
+  tableIndex: number;
+  /** 隠している列の見出しの文字（列の順） */
+  hidden: string[];
 };
 
 /** `mount` の戻り値 */
 export type MountHandle = {
-  /** 本文だけを描き直す。設定は `mount` に渡したものを使う。`destroy` の後は何もしない */
-  update: (markdown: string) => void;
+  /** 本文だけを描き直す。設定は `mount` に渡したものを使う。`options.baseMarkdown` を渡すと比較元を差し替え、`null` で外す。`destroy` の後は何もしない */
+  update: (
+    markdown: string,
+    options?: { baseMarkdown?: string | null },
+  ) => void;
   /** 要素の中を空にして class `mdmark` とテーマの属性を外し、印刷の受け取りを外す。2 回目以降は何もしない */
   destroy: () => void;
+  /** 本文を描き直さずにコメントを読み直し、印を付け直してから解決する。コメントを付けていないときと `destroy` の後は解決する */
+  reloadComments: () => Promise<void>;
+  /** その `id` のコメントの印へ移って強調する。印が無い `id` と `destroy` の後は何もしない */
+  focusComment: (id: string) => void;
 };
 
 /** 描く先の要素に付ける class。本文の CSS はこの class の下に当たる */
@@ -109,6 +128,15 @@ function createDiffHtmlRenderer(options: {
   };
 }
 
+/** 比較元が文字列か `null` か `undefined` かを確かめ、違えば `baseMarkdown` を含む `TypeError` を投げる */
+export function checkBaseMarkdown(
+  value: unknown,
+): asserts value is string | null | undefined {
+  if (value !== undefined && value !== null && typeof value !== "string") {
+    throw new TypeError("baseMarkdown は文字列か null で渡してください");
+  }
+}
+
 /** HTML 文字列から要素を 1 つ作る */
 function parseElement(html: string): HTMLElement {
   const template = document.createElement("template");
@@ -139,9 +167,9 @@ function drawColoredBlocks(options: {
   return afterTemplate.content;
 }
 
-/** 要素の中に文書を描き、記法の操作を付け、外部ライブラリと拡張の印を描かせ、ビューとコメントの部品を付け、印刷の受け取りを付けて、描き直しと片付けの関数を返す。`diffSource` か `commentStore` を渡して `docId` が無いとき、`commentStore` が `load`・`save` の関数を持たないときは、何も描かずに `TypeError` を投げる */
+/** 要素の中に文書を描き、記法の操作を付け、外部ライブラリと拡張の印を描かせ、ビューとコメントの部品を付け、印刷の受け取りを付けて、描き直しと片付けの関数を返す。`diffSource` か `commentStore` を渡して `docId` が無いとき、`commentStore`・`baseMarkdown`・`onColumnsChange` が合わないときは、何も描かずに `TypeError` を投げる */
 export function mount(el: HTMLElement, opts: MountOptions): MountHandle {
-  const { diffSource, commentStore, docId } = opts;
+  const { diffSource, commentStore, docId, onColumnsChange } = opts;
   if (diffSource !== undefined && docId === undefined) {
     throw new TypeError("diffSource を渡すときは docId も渡してください");
   }
@@ -149,15 +177,14 @@ export function mount(el: HTMLElement, opts: MountOptions): MountHandle {
     if (docId === undefined) {
       throw new TypeError("commentStore を渡すときは docId も渡してください");
     }
-    if (
-      typeof commentStore.load !== "function" ||
-      typeof commentStore.save !== "function"
-    ) {
-      throw new TypeError(
-        "commentStore は load と save の関数を持つオブジェクトで渡してください",
-      );
-    }
+    checkCommentStore(commentStore, "commentStore");
   }
+  checkBaseMarkdown(opts.baseMarkdown);
+  if (onColumnsChange !== undefined && typeof onColumnsChange !== "function") {
+    throw new TypeError("onColumnsChange は関数で渡してください");
+  }
+  // 比較元の Markdown（無ければ色分けしない）
+  let base = opts.baseMarkdown ?? undefined;
   // 同じ要素へ 2 回目の mount を呼ぶと、前の描画を先に片付ける
   mounted.get(el)?.destroy();
   const diffMode = normalizeDiffMode(opts.diffMode);
@@ -172,8 +199,8 @@ export function mount(el: HTMLElement, opts: MountOptions): MountHandle {
   let detachInteractions: (() => void) | undefined;
   // 今の文書に付けた差分を外す関数
   let detachDiff: (() => void) | undefined;
-  // 今の文書に付けたビューとコメントの部品を外す関数
-  let detachParts: (() => void) | undefined;
+  // 今の文書に付けたビューとコメントの部品
+  let parts: PartsHandle | undefined;
   // 今の文書に付けた右側の目次を外す関数
   let detachSideToc: (() => void) | undefined;
   // 右側の目次の状態（`mount` ごとに 1 つ。描き直しでも保つ）
@@ -192,8 +219,12 @@ export function mount(el: HTMLElement, opts: MountOptions): MountHandle {
     detachSideToc = undefined;
     detachDiff?.();
     detachDiff = undefined;
-    detachParts?.();
-    detachParts = undefined;
+    parts?.detach();
+    parts = undefined;
+    // 比較元があって本文と違うときは、比較元と比べて色分けする
+    const from =
+      coloredFrom ??
+      (base !== undefined && base !== markdown ? base : undefined);
     const rendered = renderDocument({
       markdown,
       config,
@@ -202,14 +233,14 @@ export function mount(el: HTMLElement, opts: MountOptions): MountHandle {
       references: opts.references,
       aliases: opts.aliases,
     });
-    if (coloredFrom === undefined) {
+    if (from === undefined) {
       el.innerHTML = rendered.html;
     } else {
       el.replaceChildren(
         drawColoredBlocks({
           rendered: rendered.html,
           after: markdown,
-          before: coloredFrom,
+          before: from,
           render: (source) =>
             renderDocument({
               markdown: source,
@@ -244,6 +275,7 @@ export function mount(el: HTMLElement, opts: MountOptions): MountHandle {
       features,
       paramDefinitions: rendered.paramDefinitions,
       placement: config.tooltips.placement,
+      onColumnsChange,
     });
     // 読み込みの完了は待たない
     void loadLibraries({
@@ -259,7 +291,7 @@ export function mount(el: HTMLElement, opts: MountOptions): MountHandle {
       isCurrent: () => !destroyed && generation === current,
       modules: syntaxModules,
     });
-    detachParts = attachParts({
+    parts = attachParts({
       root: body,
       features,
       commentStore,
@@ -277,8 +309,8 @@ export function mount(el: HTMLElement, opts: MountOptions): MountHandle {
           hideWith: aside ? [aside] : [],
           open: diffMode === "open",
         });
-      } else if (coloredFrom === undefined) {
-        // 色分けせずに描いたときだけ、比べる 2 つの本文を取り出す。取り出しの完了は待たない
+      } else if (base === undefined && from === undefined) {
+        // 比較元が無く、色分けせずに描いたときだけ、比べる 2 つの本文を取り出す。取り出しの完了は待たない
         void loadDiffPair({ source: diffSource, docId }).then((pair) => {
           if (destroyed || generation !== current) {
             return;
@@ -303,10 +335,17 @@ export function mount(el: HTMLElement, opts: MountOptions): MountHandle {
     isEnabled: () => features[PRINT_FEATURE] === true,
   });
   const handle: MountHandle = {
-    update: (markdown) => {
-      if (!destroyed) {
-        draw(markdown);
+    update: (markdown, options) => {
+      if (destroyed) {
+        return;
       }
+      if (options !== undefined) {
+        checkBaseMarkdown(options.baseMarkdown);
+        if (options.baseMarkdown !== undefined) {
+          base = options.baseMarkdown ?? undefined;
+        }
+      }
+      draw(markdown);
     },
     destroy: () => {
       if (destroyed) {
@@ -316,13 +355,20 @@ export function mount(el: HTMLElement, opts: MountOptions): MountHandle {
       detachInteractions?.();
       detachSideToc?.();
       detachDiff?.();
-      detachParts?.();
+      parts?.detach();
       detachPrint();
       el.innerHTML = "";
       el.classList.remove(ROOT_CLASS);
       el.removeAttribute(COLOR_THEME_ATTRIBUTE);
       if (mounted.get(el) === handle) {
         mounted.delete(el);
+      }
+    },
+    reloadComments: () =>
+      destroyed || !parts ? Promise.resolve() : parts.reloadComments(),
+    focusComment: (id) => {
+      if (!destroyed) {
+        parts?.focusComment(id);
       }
     },
   };

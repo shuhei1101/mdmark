@@ -25,6 +25,14 @@ export type MdmarkCommentStore = {
     docId: string;
     comment: MdmarkCommentDraft;
   }) => Promise<MdmarkComment>;
+  /** コメントの本文を書き換える。持つときだけ吹き出しに「編集」を出す */
+  update?: (target: {
+    docId: string;
+    id: string;
+    body: string;
+  }) => Promise<void>;
+  /** コメントを削除する。持つときだけ吹き出しに「削除」を出す */
+  remove?: (target: { docId: string; id: string }) => Promise<void>;
 };
 
 /** `mountComments` の Promise の値 */
@@ -53,7 +61,28 @@ export function isComment(value: unknown): value is MdmarkComment {
   );
 }
 
-/** `mountComments`（と `mount` の `commentStore`）の引数を確かめ、合わなければ誤った引数の名前を含む `TypeError` を投げる */
+/** 読み書きの関数が `load`・`save` の関数を持ち、`update`・`remove` を持つなら関数かを確かめ、合わなければ `name` を含む `TypeError` を投げる */
+export function checkCommentStore(
+  store: unknown,
+  name: string,
+): asserts store is MdmarkCommentStore {
+  const record = (store ?? {}) as Partial<
+    Record<keyof MdmarkCommentStore, unknown>
+  >;
+  if (typeof record.load !== "function" || typeof record.save !== "function") {
+    throw new TypeError(
+      `${name} は load と save の関数を持つオブジェクトで渡してください`,
+    );
+  }
+  const optional = [record.update, record.remove];
+  if (
+    optional.some((value) => value !== undefined && typeof value !== "function")
+  ) {
+    throw new TypeError(`${name} の update と remove は関数で渡してください`);
+  }
+}
+
+/** `mountComments` の引数を確かめ、合わなければ誤った引数の名前を含む `TypeError` を投げる */
 export function checkCommentOptions(
   el: unknown,
   opts: unknown,
@@ -62,14 +91,10 @@ export function checkCommentOptions(
     throw new TypeError("el は HTMLElement で渡してください");
   }
   const { store, docId } = (opts ?? {}) as {
-    store?: Partial<MdmarkCommentStore> | null;
+    store?: unknown;
     docId?: unknown;
   };
-  if (typeof store?.load !== "function" || typeof store.save !== "function") {
-    throw new TypeError(
-      "opts.store は load と save の関数を持つオブジェクトで渡してください",
-    );
-  }
+  checkCommentStore(store, "opts.store");
   if (!isFilled(docId)) {
     throw new TypeError("opts.docId は空でない文字列で渡してください");
   }

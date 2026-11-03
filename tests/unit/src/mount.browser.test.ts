@@ -734,10 +734,10 @@ function blockParagraphs(
 test("test_mount_when_base_markdown", async () => {
   // 準備
   const el = createElement();
-  // 実行
+  // 実行: 空行どうしで合わないよう、共通の段落 C を 2 行にする
   await mountTracked(el, {
-    markdown: "A\n\nB\n\nC\n",
-    baseMarkdown: "A\n\nC\n\nD\n",
+    markdown: "A\n\nB\n\nC1\nC2\n",
+    baseMarkdown: "A\n\nC1\nC2\n\nD\n",
   });
   // 検証
   expect(blockParagraphs(el, "add")).toEqual(["B"]);
