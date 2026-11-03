@@ -95,11 +95,13 @@
     });
   }
 
-  // Esc: 開いているツールチップを閉じる。フォーカスは番号に残す
+  // Esc: 開いているツールチップを閉じる。フォーカスは番号に残し、ツールチップの中のリンクにあったときは番号へ戻す
   document.addEventListener("keydown", (event) => {
     if (event.key !== "Escape") return;
     for (const ref of refs) {
       if (!ref.classList.contains("is-open")) continue;
+      // ツールチップの中のリンクにフォーカスがあったときは番号へ戻す
+      if (ref.querySelector(".mdmark-fn-tip").contains(document.activeElement)) ref.querySelector(".mdmark-fn-link").focus();
       close(ref);
       ref.classList.add("is-dismissed");
     }

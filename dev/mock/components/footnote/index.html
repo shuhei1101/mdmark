@@ -82,11 +82,11 @@
         </article>
       </section>
 
-      <!-- 中身が長い: 定義の段落ごとに積む。高さの上限を超えるとツールチップの中をスクロールする -->
+      <!-- 中身が長い: 定義の段落ごとに積む。高さの上限を超えるとツールチップの中をスクロールする。リンクを持つ中身は用語のツールチップと同じく role="group" と aria-label にし、番号の aria-details で指す（番号の次の Tab で中のリンクへ移る） -->
       <section aria-labelledby="state-long">
-        <h2 class="catalog-label" id="state-long">中身が長い（定義の 2 段落・行内のコード・リンク）</h2>
+        <h2 class="catalog-label" id="state-long">中身が長い（定義の 2 段落・行内のコード・リンク。番号の次の Tab で中のリンクへ移る）</h2>
         <article class="mdmark catalog-tip-space-long">
-<p>配色はテーマで変えられます<sup class="mdmark-fn-ref is-open" data-mock-static><a class="mdmark-fn-link" id="l-fnref-1-0" href="#l-fn-1" aria-describedby="l-tip-1-0"><span class="mdmark-visually-hidden">脚注 </span>1</a><span class="mdmark-fn-tip" id="l-tip-1-0" role="tooltip"><span class="mdmark-fn-tip-title">脚注 1</span><span class="mdmark-fn-tip-body">既定のテーマは dev-swiss で、<code>colorTheme</code> で theme-paper・theme-slate・theme-contrast を選べる。</span><span class="mdmark-fn-tip-body">明暗は OS の配色に合わせ、<a href="#state-long">テーマを選ぶ</a> の手順で固定できる。</span></span></sup>。</p>
+<p>配色はテーマで変えられます<sup class="mdmark-fn-ref is-open" data-mock-static><a class="mdmark-fn-link" id="l-fnref-1-0" href="#l-fn-1" aria-details="l-tip-1-0"><span class="mdmark-visually-hidden">脚注 </span>1</a><span class="mdmark-fn-tip" id="l-tip-1-0" role="group" aria-label="脚注 1"><span class="mdmark-fn-tip-title">脚注 1</span><span class="mdmark-fn-tip-body">既定のテーマは dev-swiss で、<code>colorTheme</code> で theme-paper・theme-slate・theme-contrast を選べる。</span><span class="mdmark-fn-tip-body">明暗は OS の配色に合わせ、<a href="#state-long">テーマを選ぶ</a> の手順で固定できる。</span></span></sup>。</p>
         </article>
       </section>
 
@@ -145,7 +145,7 @@
         </article>
       </section>
 
-      <!-- 機能のオフ: 設定か文書の <!-- features: -footnotes --> でオフにすると、参照も定義も書いた文字のまま -->
+      <!-- 機能のオフ: 設定か文書の features のマーカーでオフにすると、参照も定義も書いた文字のまま -->
       <section aria-labelledby="state-off">
         <h2 class="catalog-label" id="state-off">脚注の機能をオフにした文書（書いた文字のまま、定義の行も書いた位置に残る）</h2>
         <article class="mdmark">
