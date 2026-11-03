@@ -354,7 +354,8 @@ test("test_take_footnote_definitions_when_syntax", () => {
 // 定義の中の見出しで節を作らず、一覧は節の外に置く（正常系）
 test("test_take_footnote_definitions_when_heading", () => {
   // 準備
-  const markdown = "## 節\n\n本文[^a]。\n\n[^a]: ## 定義の見出し\n";
+  const markdown =
+    "<!-- toc -->\n\n## 節\n\n本文[^a]。\n\n[^a]: 補足\n\n    ### 定義の見出し\n";
   // 実行
   const { html } = renderDoc(markdown);
   // 検証
@@ -363,4 +364,7 @@ test("test_take_footnote_definitions_when_heading", () => {
   const listAt = html.indexOf('<details class="mdmark-footnotes"');
   expect(html.slice(0, listAt).endsWith("</div>")).toBe(true);
   expect(byId(html, "mdmark-fn-1")).toContain("定義の見出し");
+  // 定義の中の見出しは ID を持たず、目次に載らない
+  expect(html).not.toContain('id="定義の見出し"');
+  expect(outerHtml(html, "mdmark-toc")).not.toContain("定義の見出し");
 });
