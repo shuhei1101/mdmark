@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <!-- viewport: スマホ幅で等倍に表示する -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- color-scheme: 明るい配色とダークの両方を持つことをブラウザへ伝える（配色は OS の設定に従う） -->
+  <meta name="color-scheme" content="light dark">
+  <title>comment-margin-marker | mdmark の部品のモック</title>
+  <!-- 配布物の CSS（ライブラリ本体） -->
+  <link rel="stylesheet" href="../../../../dist/index.css">
+  <!-- この PR で追加する余白のマーカーの規則（番号で共有するアセット） -->
+  <link rel="stylesheet" href="../../refs/277/assets/margin.css">
+  <!-- 使う側のページの見た目と、カタログの並べ方 -->
+  <link rel="stylesheet" href="../../refs/277/assets/scene.css">
+</head>
+<body>
+  <main class="host">
+    <div class="catalog">
+      <h1 class="catalog-title">余白のマーカー</h1>
+      <p class="catalog-note">本文の右の余白に、コメントの箇所の行の高さで置くボタン。押すと箇所までスクロールし、その箇所の吹き出しを開く。印刷では出さない。</p>
+
+      <!-- 既定: 箇所 1 つの行に、コメントのアイコンだけのマーカーを置く。[style] top: 描く処理が箇所の行の中ほどの位置で入れる値（ここでは固定） -->
+      <section aria-labelledby="state-default">
+        <h2 class="catalog-label" id="state-default">箇所が 1 つの行</h2>
+        <div class="mdmark catalog-doc">
+          <div class="mdmark-content"><p>描いた文書の見た目は<mark class="mdmark-comment-mark" tabindex="0" role="button" aria-haspopup="dialog" aria-expanded="false">テーマの変数</mark>で変える。</p></div>
+          <div class="mdmark-comment-margin"><button class="mdmark-comment-marker" type="button" aria-label="コメント 「テーマの変数」" style="top: 0.9rem"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M22 17a2 2 0 0 1-2 2H6.828a2 2 0 0 0-1.414.586l-2.202 2.202A.71.71 0 0 1 2 21.286V5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2z"/></svg></button></div>
+        </div>
+      </section>
+
+      <!-- 同じ行の箇所（案 A・推奨）: 1 つにまとめて箇所の数を添え、押すと行の最初の箇所の吹き出しを開く -->
+      <section aria-labelledby="state-merge">
+        <h2 class="catalog-label" id="state-merge">同じ行に箇所が 2 つ（案 A: まとめて数を添える）</h2>
+        <div class="mdmark catalog-doc">
+          <div class="mdmark-content"><p>電話は<mark class="mdmark-comment-mark" tabindex="0" role="button" aria-haspopup="dialog" aria-expanded="false">担当者</mark>が返す割合が高く、<mark class="mdmark-comment-mark" tabindex="0" role="button" aria-haspopup="dialog" aria-expanded="false">返信の目安</mark>を超えやすい。</p></div>
+          <div class="mdmark-comment-margin"><button class="mdmark-comment-marker" type="button" aria-label="コメント 2 件、「担当者」" style="top: 0.9rem"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M22 17a2 2 0 0 1-2 2H6.828a2 2 0 0 0-1.414.586l-2.202 2.202A.71.71 0 0 1 2 21.286V5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2z"/></svg><span>2</span></button></div>
+        </div>
+      </section>
+
+      <!-- 同じ行の箇所（案 B）: 箇所ごとのマーカーを横に並べる。[style] --mdmark-comment-marker-index: 同じ行の何番目か -->
+      <section aria-labelledby="state-row">
+        <h2 class="catalog-label" id="state-row">同じ行に箇所が 2 つ（案 B: 横に並べる）</h2>
+        <div class="mdmark catalog-doc">
+          <div class="mdmark-content"><p>電話は<mark class="mdmark-comment-mark" tabindex="0" role="button" aria-haspopup="dialog" aria-expanded="false">担当者</mark>が返す割合が高く、<mark class="mdmark-comment-mark" tabindex="0" role="button" aria-haspopup="dialog" aria-expanded="false">返信の目安</mark>を超えやすい。</p></div>
+          <div class="mdmark-comment-margin"><button class="mdmark-comment-marker" type="button" aria-label="コメント 「担当者」" style="top: 0.9rem"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M22 17a2 2 0 0 1-2 2H6.828a2 2 0 0 0-1.414.586l-2.202 2.202A.71.71 0 0 1 2 21.286V5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2z"/></svg></button><button class="mdmark-comment-marker" type="button" aria-label="コメント 「返信の目安」" style="top: 0.9rem; --mdmark-comment-marker-index: 1"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M22 17a2 2 0 0 1-2 2H6.828a2 2 0 0 0-1.414.586l-2.202 2.202A.71.71 0 0 1 2 21.286V5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2z"/></svg></button></div>
+        </div>
+      </section>
+
+      <!-- 吹き出しを開いている箇所: 箇所の印が aria-expanded="true" の間、マーカーの地と文字の色を反転する -->
+      <section aria-labelledby="state-current">
+        <h2 class="catalog-label" id="state-current">吹き出しを開いている箇所</h2>
+        <div class="mdmark catalog-doc">
+          <div class="mdmark-content"><p>描いた文書の見た目は<mark class="mdmark-comment-mark" tabindex="0" role="button" aria-haspopup="dialog" aria-expanded="true">テーマの変数</mark>で変える。</p></div>
+          <div class="mdmark-comment-margin"><button class="mdmark-comment-marker" type="button" aria-label="コメント 「テーマの変数」" data-current style="top: 0.9rem"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M22 17a2 2 0 0 1-2 2H6.828a2 2 0 0 0-1.414.586l-2.202 2.202A.71.71 0 0 1 2 21.286V5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2z"/></svg></button></div>
+        </div>
+      </section>
+
+      <!-- 閉じた中の箇所（案 A・推奨）: 閉じたセクションの見出しの行に、線を破線にしたマーカーを置く。押すとセクションを開いてから箇所へ移る -->
+      <section aria-labelledby="state-closed">
+        <h2 class="catalog-label" id="state-closed">閉じたセクションの中の箇所（案 A: 開く見出しの行に出す）</h2>
+        <div class="mdmark catalog-doc">
+          <div class="mdmark-content"><h3 class="mdmark-heading"><button class="mdmark-section-toggle" type="button" aria-expanded="false">補足</button></h3></div>
+          <div class="mdmark-comment-margin"><button class="mdmark-comment-marker" type="button" aria-label="コメント 「閉じた箇所」（閉じたセクションの中）" data-closed="section" style="top: 0.85rem"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M22 17a2 2 0 0 1-2 2H6.828a2 2 0 0 0-1.414.586l-2.202 2.202A.71.71 0 0 1 2 21.286V5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2z"/></svg></button></div>
+        </div>
+      </section>
+
+      <!-- 置き場所（案 B）: 余白の幅を取らず、本文の列の右端の内側に重ねる。行末の文字と重なる -->
+      <section aria-labelledby="state-inside">
+        <h2 class="catalog-label" id="state-inside">本文の列の右端の内側に置く（置き場所の案 B）</h2>
+        <div class="mdmark catalog-doc" data-place="inside">
+          <div class="mdmark-content"><p>描いた文書の見た目は<mark class="mdmark-comment-mark" tabindex="0" role="button" aria-haspopup="dialog" aria-expanded="false">テーマの変数</mark>で変える。行の長さの上限は本文の列が持つため、長い行は本文の列の右端まで届き、右端の内側に重ねたマーカーが行末の文字と重なる。見出しの大きさ・行間・色も同じ変数で変える。</p></div>
+          <div class="mdmark-comment-margin"><button class="mdmark-comment-marker" type="button" aria-label="コメント 「テーマの変数」" style="top: 0.9rem"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M22 17a2 2 0 0 1-2 2H6.828a2 2 0 0 0-1.414.586l-2.202 2.202A.71.71 0 0 1 2 21.286V5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2z"/></svg></button></div>
+        </div>
+      </section>
+    </div>
+  </main>
+</body>
+</html>

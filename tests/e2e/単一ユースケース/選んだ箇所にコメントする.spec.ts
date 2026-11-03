@@ -250,3 +250,187 @@ test("test_error_when_store_missing", async ({ page }) => {
   expect(logged).toHaveLength(1);
   expect(logged[0]).toContain("commentStore");
 });
+
+/** 縦の中ほどを比べる相手。選んだ文字の印（`mark`）か、CSS セレクタで指す要素（`selector`） */
+type LineTarget = { mark: string } | { selector: string };
+
+/** 相手の最初の行の縦の中ほどと、選んだ文字の余白のマーカーの縦の中ほどの差（px） */
+async function middleGap(page: Page, quote: string, target: LineTarget) {
+  return page.evaluate(
+    ({ quote, target }) => {
+      const marker = [
+        ...document.querySelectorAll<HTMLElement>(
+          "#doc .mdmark-comment-margin .mdmark-comment-marker",
+        ),
+      ].find((el) => el.getAttribute("aria-label")?.includes(`「${quote}」`));
+      const line =
+        "mark" in target
+          ? [
+              ...document.querySelectorAll("#doc mark.mdmark-comment-mark"),
+            ].find((mark) => mark.textContent === target.mark)
+          : document.querySelector(target.selector);
+      if (!marker || !line) {
+        return Number.POSITIVE_INFINITY;
+      }
+      const lineRect = line.getClientRects()[0] ?? line.getBoundingClientRect();
+      const markerRect = marker.getBoundingClientRect();
+      return Math.abs(
+        lineRect.top +
+          lineRect.height / 2 -
+          (markerRect.top + markerRect.height / 2),
+      );
+    },
+    { quote, target },
+  );
+}
+
+/** 選んだ文字の印を包む閉じた要素を `aria-controls` で指す開くボタンの CSS セレクタ */
+async function openerSelector(page: Page, quote: string) {
+  const id = await page
+    .locator("#doc mark.mdmark-comment-mark", { hasText: quote })
+    .evaluate((mark) => mark.closest("[hidden]")?.id ?? "");
+  return `#doc [aria-controls="${id}"]`;
+}
+
+// 余白に置くマーカーと縦の中ほどを比べるときの許容差（px）
+const MIDDLE_TOLERANCE = 1;
+
+// 画面の高さを超える段落の後に、閉じたセクション・2 つのタブ・`テーマの変数` の段落を並べた文書
+const MARGIN_MARKDOWN = [
+  ...Array.from(
+    { length: 40 },
+    (_, i) => `間の段落 ${i + 1} は、画面の高さを超えるまで並べる本文。\n`,
+  ),
+  "## 補足",
+  "",
+  "<!-- section: closed -->",
+  "",
+  "閉じた中の閉じた箇所を読む。",
+  "",
+  "## 手順",
+  "",
+  "<!-- tabs -->",
+  "",
+  "### macOS",
+  "",
+  "macOS の手順",
+  "",
+  "### Windows",
+  "",
+  "Windows のタブの箇所を読む。",
+  "",
+  "<!-- /tabs -->",
+  "",
+  PARAGRAPH,
+  "",
+].join("\n");
+
+/** 前後の文字を持たない、選んだ文字だけのコメント */
+function quoteComment(id: string, quote: string) {
+  return { id, quote, prefix: "", suffix: "", body: `${quote}へのコメント` };
+}
+
+// 余白のマーカーを押して印へ移り、幅の変化とタブの切り替えでマーカーを置き直す（正常シナリオ（余白のマーカーから移る））
+test("test_normal_when_jumped_from_margin", async ({ page }) => {
+  // 準備
+  await openPage(page, builtRoot);
+  await installCommentStore(page, {
+    loaded: [
+      quoteComment("c1", "テーマの変数"),
+      quoteComment("c2", "閉じた箇所"),
+      quoteComment("c3", "タブの箇所"),
+      quoteComment("c4", "無い文字"),
+    ],
+  });
+  // 実行
+  await mountDocument(page, {
+    markdown: MARGIN_MARKDOWN,
+    config: COMMENTS_ON,
+    docId: DOC_ID,
+    useCommentStore: true,
+  });
+  // 検証: 本文の右の余白に、箇所が見つかったコメントのマーカーだけが出る
+  const margin = page.locator("#doc .mdmark-comment-margin");
+  const themeMarker = margin.getByRole("button", {
+    name: "コメント 「テーマの変数」",
+    exact: true,
+  });
+  await expect(themeMarker).toHaveCount(1);
+  await expect(margin.getByRole("button", { name: /無い文字/ })).toHaveCount(0);
+  const themeMark = page.locator("#doc mark.mdmark-comment-mark", {
+    hasText: "テーマの変数",
+  });
+  await expect
+    .poll(() => middleGap(page, "テーマの変数", { mark: "テーマの変数" }))
+    .toBeLessThanOrEqual(MIDDLE_TOLERANCE);
+  // 検証: 閉じた中の箇所のマーカーは、開くボタンの行に破線で出る
+  const closedMarker = margin.getByRole("button", {
+    name: "コメント 「閉じた箇所」（閉じたセクションの中）",
+  });
+  const tabMarker = margin.getByRole("button", {
+    name: "コメント 「タブの箇所」（選ばれていないタブの中）",
+  });
+  await expect(closedMarker).toHaveAttribute("data-closed", "section");
+  await expect(tabMarker).toHaveAttribute("data-closed", "tab");
+  await expect(closedMarker).toHaveCSS("border-top-style", "dashed");
+  await expect(tabMarker).toHaveCSS("border-top-style", "dashed");
+  const sectionOpener = await openerSelector(page, "閉じた箇所");
+  const tabOpener = await openerSelector(page, "タブの箇所");
+  await expect
+    .poll(() => middleGap(page, "閉じた箇所", { selector: sectionOpener }))
+    .toBeLessThanOrEqual(MIDDLE_TOLERANCE);
+  await expect
+    .poll(() => middleGap(page, "タブの箇所", { selector: tabOpener }))
+    .toBeLessThanOrEqual(MIDDLE_TOLERANCE);
+  // 実行: 余白のマーカーを押す
+  await themeMarker.click();
+  // 検証: 印が画面に入り、吹き出しが開く
+  const bubble = page.locator(".mdmark-comment-bubble");
+  await expect(themeMark).toBeInViewport();
+  await expect(bubble).toBeVisible();
+  await expect(bubble.locator(".mdmark-comment-body")).toHaveText(
+    "テーマの変数へのコメント",
+  );
+  // 実行: 吹き出しを閉じ、マーカーにフォーカスして Enter を押す
+  await page.keyboard.press("Escape");
+  await expect(bubble).toBeHidden();
+  await themeMarker.focus();
+  await page.keyboard.press("Enter");
+  // 検証
+  await expect(bubble).toBeVisible();
+  await page.keyboard.press("Escape");
+  // 実行: 描く先の要素の幅を狭める
+  await page.locator("#doc").evaluate((el) => {
+    el.style.width = "360px";
+  });
+  // 検証: 折り返し直した印の行の高さへ置き直す
+  await expect
+    .poll(() => middleGap(page, "テーマの変数", { mark: "テーマの変数" }))
+    .toBeLessThanOrEqual(MIDDLE_TOLERANCE);
+  // 実行: 閉じたセクションの見出しの行のマーカーを押す
+  await closedMarker.click();
+  // 検証: セクションが開き、印まで移って吹き出しが開く
+  const closedMark = page.locator("#doc mark.mdmark-comment-mark", {
+    hasText: "閉じた箇所",
+  });
+  await expect(page.locator(sectionOpener)).toHaveAttribute(
+    "aria-expanded",
+    "true",
+  );
+  await expect(closedMark).toBeInViewport();
+  await expect(bubble.locator(".mdmark-comment-body")).toHaveText(
+    "閉じた箇所へのコメント",
+  );
+  await page.keyboard.press("Escape");
+  // 実行: 2 つ目のタブに切り替える
+  await page.locator(tabOpener).click();
+  // 検証: タブの中の印の行の高さにマーカーが出る
+  const shownTabMarker = margin.getByRole("button", {
+    name: "コメント 「タブの箇所」",
+    exact: true,
+  });
+  await expect(shownTabMarker).not.toHaveAttribute("data-closed");
+  await expect
+    .poll(() => middleGap(page, "タブの箇所", { mark: "タブの箇所" }))
+    .toBeLessThanOrEqual(MIDDLE_TOLERANCE);
+});

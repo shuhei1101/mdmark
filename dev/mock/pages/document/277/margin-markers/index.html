@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <!-- viewport: スマホ幅で等倍に表示する -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- color-scheme: 明るい配色とダークの両方を持つことをブラウザへ伝える -->
+  <meta name="color-scheme" content="light dark">
+  <title>document / margin-markers（本文の右の余白のコメントのマーカー） | mdmark のモック</title>
+  <!-- 配布物の CSS（ライブラリ本体） -->
+  <link rel="stylesheet" href="../../../../../../dist/index.css">
+  <!-- この PR で追加する余白のマーカーの規則（番号で共有するアセット） -->
+  <link rel="stylesheet" href="../../../../refs/277/assets/margin.css">
+  <!-- 使う側のページの見た目と、モック専用の操作列 -->
+  <link rel="stylesheet" href="../../../../refs/277/assets/scene.css">
+  <!-- 配布物の mount でコメントの機能をオンにして文書を描き、余白のマーカーのモックを付ける -->
+  <script type="module" src="../../../../refs/277/assets/scene.js"></script>
+</head>
+<body>
+  <!-- モック専用の操作列: 未確定の論点の案と右側の目次の出し方の切り替え。[data-scene-axis] [data-scene-value]: scene.js が行き先の URL と今の案の aria-current を当てる -->
+  <div class="mock-bar">
+    <div class="mock-bar-group" role="group" aria-label="置き場所">
+      <span class="mock-bar-label">置き場所</span>
+      <a class="mock-bar-item" data-scene-axis="place" data-scene-value="between">A: 本文の列と目次の間（推奨）</a>
+      <a class="mock-bar-item" data-scene-axis="place" data-scene-value="inside">B: 本文の列の右端の内側</a>
+    </div>
+    <div class="mock-bar-group" role="group" aria-label="同じ行の箇所">
+      <span class="mock-bar-label">同じ行の箇所</span>
+      <a class="mock-bar-item" data-scene-axis="same" data-scene-value="merge">A: 1 つにまとめて数を添える（推奨）</a>
+      <a class="mock-bar-item" data-scene-axis="same" data-scene-value="row">B: 横に並べる</a>
+    </div>
+    <div class="mock-bar-group" role="group" aria-label="閉じた中の箇所">
+      <span class="mock-bar-label">閉じた中の箇所</span>
+      <a class="mock-bar-item" data-scene-axis="closed" data-scene-value="opener">A: 開く見出しの行に出す（推奨）</a>
+      <a class="mock-bar-item" data-scene-axis="closed" data-scene-value="none">B: 開くまで出さない</a>
+    </div>
+    <div class="mock-bar-group" role="group" aria-label="右側の目次の出し方">
+      <span class="mock-bar-label">右側の目次</span>
+      <a class="mock-bar-item" data-scene-axis="mode" data-scene-value="hover">hover（既定）</a>
+      <a class="mock-bar-item" data-scene-axis="mode" data-scene-value="fixed">fixed</a>
+    </div>
+  </div>
+
+  <!-- 使う側のページのトップバー（mdmark の外） -->
+  <header class="host-bar">使う側のアプリ</header>
+
+  <nav class="crumbs" aria-label="パンくずリスト">
+    <a href="../../../index.md">pages</a> / <a href="../../index.md">document</a> / <a href="../index.md">277</a> / margin-markers
+  </nav>
+
+  <main class="host">
+    <!-- mount で描く先の要素 -->
+    <div id="doc"></div>
+  </main>
+</body>
+</html>

@@ -827,6 +827,7 @@ handle.destroy();
 | `--mdmark-tab-strong-weight` | `700` | タブ名の強調（`**`）の太さ |
 | `--mdmark-tab-strong-color` | `var(--mdmark-color-heading)` | タブ名の強調（`**`）の色。選んでいないタブでもこの色にする |
 | `--mdmark-view-column-width` | `12rem` | ビューのボードの列の最小の幅。描く先の幅に収まらない列はボードの中で横にスクロールする |
+| `--mdmark-comment-margin-width` | `2.25rem` | `mount` でコメントを付けた文書の、本文の列の右に置く余白の列の幅。余白のマーカーをこの列に並べる |
 | `--mdmark-h1-marker` | なし（記号を出さない） | 見出し 1 の前に置く記号。引用符で囲んだ文字列で書く |
 | `--mdmark-h2-marker` | なし（記号を出さない） | 見出し 2 の前に置く記号。引用符で囲んだ文字列で書く |
 | `--mdmark-h3-marker` | なし（記号を出さない） | 見出し 3 の前に置く記号。引用符で囲んだ文字列で書く |

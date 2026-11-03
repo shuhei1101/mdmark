@@ -1453,6 +1453,74 @@ flows:
       - 段落を足した `update` の後も `テーマの変数` に印があり、`load` が済んだ回数は 2
       - 書き換えた `update` の後、本文に印が無く、文書の末尾の「箇所が見つからないコメント」の一覧に選んだ文字と本文がある
     test: test_normal_when_comments_reanchored
+  - name: 正常系（余白のマーカーから移る）
+    summary: 印のある行の高さに余白のマーカーを置き、押すと印までスクロールして吹き出しを開き、幅の変化で置き直す
+    setup:
+      - name: 配布物を読んだページ
+        description: '正常系（コメントを付ける）と同じ。`opts.config` は `{ features: { comments: true }, "side-toc": { mode: "hover" } }`、描く先の要素は幅 960px・画面の高さは 600px'
+      - name: コメントの読み書きの関数
+        description: '`load` が、`quote` が `テーマの変数`・`担当者`・`返信の目安`・`無い文字` のコメントを 1 件ずつ返す'
+      - name: 長い Markdown
+        description: h2 の見出しを 1 つ持ち、画面の高さを超える段落を並べた文書。先頭の段落は `電話は担当者が返す割合が高く、返信の目安を超えやすい。`、末尾の段落は `描いた文書の見た目はテーマの変数で変える。`
+      - name: Mock
+        description: 正常系（コメントを付ける）と同じ
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        participant S as 読み書きの関数
+        P->>M: mount(el, { markdown, config, docId, commentStore })
+        M->>S: load({ docId })
+        S-->>M: コメント 4 件
+        M->>P: 印と、余白の列の余白のマーカー
+        P->>M: 「テーマの変数」の余白のマーカーを押す
+        M->>P: 印までスクロールし、吹き出しを開く
+        P->>P: 描く先の要素の幅を 360px にする
+        M->>P: 余白のマーカーを置き直す
+    expected:
+      - '`el` の子が `div.mdmark-content`・`div.mdmark-comment-margin`・`aside.mdmark-side-toc` の順に並ぶ'
+      - 余白の列の `button.mdmark-comment-marker` が 2 つで、`無い文字` のマーカーが無い
+      - 先頭の段落の行のマーカーは 1 つで、文字 `2` と `aria-label` `コメント 2 件、「担当者」` を持ち、縦の中ほどが `担当者` の印の行の縦の中ほどと 1px 以内
+      - '`テーマの変数` のマーカーを押すと、`テーマの変数` の印が画面に入り、印の `aria-expanded` が `true` で、マーカーが `data-current` を持つ'
+      - 吹き出しを Esc で閉じてからマーカーにフォーカスして Enter を押しても、同じく吹き出しが開く
+      - 幅を 360px にして行が折り返し直した次のフレームで、`テーマの変数` のマーカーの縦の中ほどが印の行の縦の中ほどと 1px 以内
+      - 印刷のメディアでは余白の列の `display` の計算値が `none`
+    test: test_normal_when_jumped_from_margin_marker
+    refs:
+      - dev/設計書/シナリオ/単一ユースケース/選んだ箇所にコメントする#scenarios[正常シナリオ（余白のマーカーから移る）]
+  - name: 正常系（閉じた中の箇所の余白のマーカー）
+    summary: 閉じた節・選ばれていないタブ・閉じた行の詳細の中の印は、開くボタンの行に破線のマーカーを置き、押すと開いてから印へ移る
+    setup:
+      - name: 配布物を読んだページ
+        description: '正常系（コメントを付ける）と同じ。`opts.config.features` は `{ comments: true, "side-toc": false }`'
+      - name: コメントの読み書きの関数
+        description: '`load` が、`quote` が `閉じた箇所`・`タブの箇所`・`行の箇所` のコメントを 1 件ずつ返す'
+      - name: 閉じた中を持つ Markdown
+        description: '`<!-- section: closed -->` で閉じた h2 `補足` の節の中に `閉じた箇所`、2 つのタブを持つ範囲の 2 つ目のタブの中に `タブの箇所`、行の詳細を持つ表の 1 行目の詳細の中に `行の箇所` を置いた文書'
+      - name: Mock
+        description: 正常系（コメントを付ける）と同じ
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        participant S as 読み書きの関数
+        P->>M: mount(el, { markdown, config, docId, commentStore })
+        M->>S: load({ docId })
+        S-->>M: コメント 3 件
+        M->>P: 開くボタンの行に破線の余白のマーカー
+        P->>M: 「補足」の行の余白のマーカーを押す
+        M->>P: 節を開き、印までスクロールして吹き出しを開く
+        P->>M: 2 つ目のタブを選ぶ
+        M->>P: タブの中の印の行へ余白のマーカーを置き直す
+    expected:
+      - '`el` の子が `div.mdmark-content`・`div.mdmark-comment-margin` の順に並び、余白の列の上端が本文の列の上端と同じで、余白の列の左端が本文の列の右端より右'
+      - '`閉じた箇所` のマーカーが `data-closed="section"` と `aria-label` `コメント 「閉じた箇所」（閉じたセクションの中）` を持ち、縦の中ほどが `補足` の開閉のボタンの縦の中ほどと 1px 以内'
+      - '`タブの箇所` のマーカーが `data-closed="tab"` を持ち 2 つ目のタブの行にあり、`行の箇所` のマーカーが `data-closed="row"` を持ち 1 行目の行の詳細の開閉のボタンの行にある'
+      - '`補足` の行のマーカーを押すと、`補足` の開閉のボタンの `aria-expanded` が `true` になり、`閉じた箇所` の印が画面に入ってその吹き出しが開き、マーカーが `data-closed` を持たずに印の行へ移る'
+      - 2 つ目のタブを選ぶと、`タブの箇所` のマーカーが `data-closed` を持たず、縦の中ほどが印の行の縦の中ほどと 1px 以内
+    test: test_normal_when_margin_marker_in_closed
+    refs:
+      - dev/設計書/シナリオ/単一ユースケース/選んだ箇所にコメントする#scenarios[正常シナリオ（余白のマーカーから移る）]
   - name: 正常系（コメントの機能を外す）
     summary: '`comments` が既定のオフのときは、読み書きの関数を渡しても呼ばず、ボタンを出さない'
     setup:
@@ -3624,7 +3692,7 @@ flows:
       - dev/設計書/シナリオ/単一ユースケース/文書を印刷する#scenarios[正常シナリオ（畳んだコードと入れ子の注意書きを開いて出す）]
 lead: 使う側のページが、要素と Markdown と設定を渡し、要素の中に文書を描く。戻り値で本文の差し替えと片付けができる。
 idempotent: false
-side_effects: '`el` の中身と class を書き換え、記法の操作のイベントを `el` の中に付ける。`side-toc` がオンで見出しがあるとき、`el` の中を本文の列と右側の目次に分け、見出しの位置を `IntersectionObserver` で見る。`window` の `beforeprint`・`afterprint`・`hashchange` と、絞り込みのドロワーを開いている間だけ `document` の `pointerdown`・`keydown` を受け取る。図の部品か埋め込んだ HTML があるとき、図の表示する枠と埋め込んだ HTML の大きさを `ResizeObserver` で見、ツールチップを開いている間だけ `document` の `keydown`・`pointerdown` と `window` の `scroll`・`resize` を受け取り、全画面の間だけ `el` の中に `dialog` を置く。操作できる部品の写すボタン・表のコピー・行の URL のコピー・コードブロックのコピー・ファイルツリーのコピーでクリップボードに書く。表があるとき、表の大きさと描く先の要素の幅を `ResizeObserver` で見、`animation-timeline` を持たないブラウザでは `window` と文書の中の `scroll` と `window` の `resize` を受け取る。`data-group` を持つタブがあるとき、localStorage の `mdmark-tabs:{group}` を描くたびに読み、読む人がタブを選ぶと書く。そのとき、ページの中の `el` の外にある同じ `group` のタブ群の選択も書き換える。文書に外部ライブラリか拡張の印があるとき、そのモジュールを読む。色分けの対象のコードブロックがあるとき、`syntax.url` の先の core と、使う言語のモジュールを読む。`opts.diffSource` を渡したとき、読む人が差分を開くと（`opts.diffMode` が `open` なら描いた時点、`blocks` なら描くたびに）取り出し元の `revisions`・`content` を呼び、差分の行を出している間だけミニマップの帯を置き、送り先のスクロールの `scroll` と `window` の `resize` を受け取る。文書にビューの印があるとき、ビューの部品のモジュールを読む。`comments` がオンで `opts.commentStore` を渡したとき、コメントの部品のモジュールを読み、`load` を描くたびに 1 回呼び、保存で `save` を呼ぶ。その間は `document` の `selectionchange` を受け取り、コメントのボタン・入力欄・吹き出しを `document.body` に置く'
+side_effects: '`el` の中身と class を書き換え、記法の操作のイベントを `el` の中に付ける。`side-toc` がオンで見出しがあるとき、`el` の中を本文の列と右側の目次に分け、見出しの位置を `IntersectionObserver` で見る。`window` の `beforeprint`・`afterprint`・`hashchange` と、絞り込みのドロワーを開いている間だけ `document` の `pointerdown`・`keydown` を受け取る。図の部品か埋め込んだ HTML があるとき、図の表示する枠と埋め込んだ HTML の大きさを `ResizeObserver` で見、ツールチップを開いている間だけ `document` の `keydown`・`pointerdown` と `window` の `scroll`・`resize` を受け取り、全画面の間だけ `el` の中に `dialog` を置く。操作できる部品の写すボタン・表のコピー・行の URL のコピー・コードブロックのコピー・ファイルツリーのコピーでクリップボードに書く。表があるとき、表の大きさと描く先の要素の幅を `ResizeObserver` で見、`animation-timeline` を持たないブラウザでは `window` と文書の中の `scroll` と `window` の `resize` を受け取る。`data-group` を持つタブがあるとき、localStorage の `mdmark-tabs:{group}` を描くたびに読み、読む人がタブを選ぶと書く。そのとき、ページの中の `el` の外にある同じ `group` のタブ群の選択も書き換える。文書に外部ライブラリか拡張の印があるとき、そのモジュールを読む。色分けの対象のコードブロックがあるとき、`syntax.url` の先の core と、使う言語のモジュールを読む。`opts.diffSource` を渡したとき、読む人が差分を開くと（`opts.diffMode` が `open` なら描いた時点、`blocks` なら描くたびに）取り出し元の `revisions`・`content` を呼び、差分の行を出している間だけミニマップの帯を置き、送り先のスクロールの `scroll` と `window` の `resize` を受け取る。文書にビューの印があるとき、ビューの部品のモジュールを読む。`comments` がオンで `opts.commentStore` を渡したとき、コメントの部品のモジュールを読み、`load` を描くたびに 1 回呼び、保存で `save` を呼ぶ。その間は `document` の `selectionchange` を受け取り、コメントのボタン・入力欄・吹き出しを `document.body` に置く。あわせて本文の列の右に余白の列を置き、描く先の要素の大きさを `ResizeObserver`、描く先の要素の中の開閉・切り替えを `MutationObserver` で見る'
 callers:
   - dev/設計書/シナリオ/単一ユースケース/文書を描く#
   - dev/設計書/シナリオ/単一ユースケース/テーマを上書きする#
@@ -3944,6 +4012,13 @@ constraints:
   - item: コメントの箇所
     constraint: 描くたび（`mount`・`update`）に `load` を 1 回呼び、コメントごとに、本文の文字の中で `prefix + quote + suffix` が一致する箇所、無ければ `quote` が 1 か所だけ一致する箇所の `quote` を印で包む。同じ箇所のコメントは 1 つの印にまとめ、吹き出しに並べる。箇所が見つからないコメントは、文書の末尾の「箇所が見つからないコメント」の一覧（選んだ文字と本文）に出し、空なら置かない。`load` を読めないときは印を付けず、新しいコメントは付けられる。印は本文の文字を変えず、`destroy` で外す
     notes: 一覧の題と文言は画面設計『文書』
+  - item: 余白のマーカー
+    constraint: '`comments` がオンで `opts.commentStore` を渡したとき、`el` の中を `div.mdmark-content` とその右の余白の列 `div.mdmark-comment-margin`（幅 `--mdmark-comment-margin-width`）に分け、右側の目次があるときは余白の列を `aside.mdmark-side-toc` の前に置く。印ごとに、印のある行の縦の中ほどへ余白のマーカー（`button.mdmark-comment-marker`）を置く。行の上端の差が 4px 以内の印は 1 つのマーカーにまとめて箇所の数を添え、押すと行の最初の印へ移る。閉じた節・選ばれていないタブ・閉じた行の詳細の中の印は、いちばん外側の閉じた要素を `aria-controls` で指す開くボタンの行に、`data-closed`（`section`・`tab`・`row`）を持つマーカーを置く。上のマーカーと重なるときは重ならない位置まで下げる。箇所が見つからないコメントにはマーカーを置かない。`mountComments` は余白の列を置かない'
+    notes: 置き場所・同じ行の箇所・閉じた中の箇所はモック作成で案 A に決定（確認ログ）。読み上げ名・アイコン・色は部品設計
+  - item: 余白のマーカーから移る
+    constraint: マーカーを押すか、フォーカスして Enter・Space を押すと、印を包む閉じた要素を外側から開き、印が画面の中ほどに入るまでスクロールして、その印の吹き出しを開く（印の押下と同じ処理）。吹き出しを開いている印のマーカーは `data-current` を持つ
+  - item: 余白のマーカーの置き直し
+    constraint: 印の付け直し（描くたびの `load`・保存）・描く先の要素の大きさの変化・節と行の詳細の開閉・タブの切り替え・吹き出しの開閉で、`requestAnimationFrame` で 1 フレームに 1 回にまとめて置き直す。印刷では余白の列を出さない。`destroy` で余白の列と受け取りを外す
   - item: 配色の切り替え
     constraint: '描く先の要素かその祖先が持つ class で、画面の配色を次の優先順に決める。(1) `mdmark-theme-dark` はダーク、`mdmark-theme-light` はライト (2) `vscode-high-contrast-light`・`vscode-light` はライト、`vscode-dark` と、`vscode-high-contrast-light` を一緒に持たない `vscode-high-contrast` はダーク (3) どれも無ければ `prefers-color-scheme`。同じ優先度の class が両方あるときは、描く先に近い祖先の class に従う。ダークの値は `prefers-color-scheme: dark` のときと同じ変数の値で、差分のミニマップの色も同じ規則で決める。印刷では class によらず明るい配色にする'
     notes: '`vscode-*` は VS Code が Webview の `body` に付ける class。`mdmark-theme-*` は、使う側が OS やホストの配色によらず固定するときに付ける（VS Code 拡張機能の `mdmark.preview.theme` が `light`・`dark` のとき）。使う側が層の外で上書きした変数は、どの配色でも層の中の値に勝つ'
@@ -3983,7 +4058,7 @@ constraints:
     constraint: URL の `#` の後ろ（`#` が 2 つあれば最後の `#` の後ろ）を `decodeURIComponent` した ID（読めないときはそのまま）が、選ばれていないタブの中身（入れ子のタブを含む）の中の要素を指すとき（描いたときと `hashchange`）、外側のタブから順にその要素を含むタブを選び、外側の閉じた節を開いてから要素へスクロールする。見出し・表の行を含め、`id` を持つ全ての要素に当てる。描いたときは localStorage に残したタブ名より URL の ID を優先する。URL の ID で選んだタブは localStorage に残さず、同じ `group` のほかのタブ群も切り替えない
     notes: '`src/interact/sections.ts` の `revealHashTarget` は、タブの中の要素の処理をタブの操作に任せる（受付判断のレビュー）'
   - item: 右側の目次
-    constraint: '`side-toc` がオンで、文書に h1〜h3 の見出しが 1 つ以上あるとき、`el` の中を、本文（`render` の HTML）を入れた `div.mdmark-content` と、その右の `aside.mdmark-side-toc` に分ける。`aside` には、右端の線（見出しごとの短い線。`aria-hidden`）・目次を出すボタン・パネル（`nav`。タイトル `目次`・ピン止めのボタン・すべて展開とすべて折りたたむのボタン・項目の一覧）を置く。項目は h1〜h3 の見出しを階層どおりに入れ子にした `ul` の、各見出しの `#{ID}` へのリンクで、閉じた節と選ばれていないタブの中の見出しも載せる。見出しが無いか `side-toc` がオフのときは分けず、`el` の中は本文だけにする。`--mdmark-content-width` は本文の列に当てる。差分を開いている間は `aside` を隠す（制約「差分を開く UI」）。印刷では `aside` を出さず、本文の列を紙の幅いっぱいに出す'
+    constraint: '`side-toc` がオンで、文書に h1〜h3 の見出しが 1 つ以上あるとき、`el` の中を、本文（`render` の HTML）を入れた `div.mdmark-content` と、その右の `aside.mdmark-side-toc` に分ける。`aside` には、右端の線（見出しごとの短い線。`aria-hidden`）・目次を出すボタン・パネル（`nav`。タイトル `目次`・ピン止めのボタン・すべて展開とすべて折りたたむのボタン・項目の一覧）を置く。項目は h1〜h3 の見出しを階層どおりに入れ子にした `ul` の、各見出しの `#{ID}` へのリンクで、閉じた節と選ばれていないタブの中の見出しも載せる。見出しが無いか `side-toc` がオフのときは分けず、`el` の中は本文だけにする（余白の列を置くときを除く。制約「余白のマーカー」）。`--mdmark-content-width` は本文の列に当てる。差分を開いている間は `aside` を隠す（制約「差分を開く UI」）。印刷では `aside` を出さず、本文の列を紙の幅いっぱいに出す'
     notes: 読み上げ名・ボタンの文言・アイコンは画面設計『文書』と部品設計。パネルの `nav` は `aria-label="右側の目次"` で、本文の中の目次（`<!-- toc -->`）と読み上げ名を分ける
   - item: 右側の目次の出し方
     constraint: '`side-toc.mode` が `hover` のとき、パネルは隠して置き（透明にしてポインターを受けない。Tab では項目へ移れる）、右端の線にポインターを乗せている間と、パネルの中にフォーカスがある間だけ出す。ピン止めのボタン（`aria-pressed`）を押すと、ポインターとフォーカスが外れても出し続け、パネルを本文に重ねず右の列に置く。押し直すと外す。ポインターを乗せられない端末（`hover: none`）では、右端の線の代わりに目次を出すボタンを置く。`fixed` のときは右端の線を置かず、目次を出すボタン（三点リーダーのアイコン・`aria-expanded`・`aria-controls`）を押すとパネルを右の列に出し続け、押し直すと隠す。目次を出すボタンで出したパネルの中にフォーカスがある間の Esc は、パネルを隠してフォーカスを目次を出すボタンへ戻す。ピン止めと目次を出すボタンの状態は保存せず、`mount` のたびに外した状態で始め、`update` では保つ'
