@@ -5,4 +5,4 @@ items:
   - page: VSCode拡張機能/
     summary: VS Code 拡張機能のコマンド・Webview とのメッセージ・配布物のワークフロー
   - page: ClaudeCodeプラグイン/
-    summary: Claude Code プラグインの SessionStart のフックと MCP のツール
+    summary: Claude Code プラグインの MCP のツールと PreToolUse のフック

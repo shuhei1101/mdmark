@@ -16,16 +16,6 @@ export type ToolResult = {
   texts: string[];
 };
 
-/** フックを子プロセスで流した結果 */
-export type HookResult = {
-  /** 終了コード */
-  code: number;
-  /** 標準出力 */
-  stdout: string;
-  /** 標準エラー */
-  stderr: string;
-};
-
 /** ずれの一覧の 1 件 */
 export type Issue = {
   file: string;
@@ -46,28 +36,6 @@ function expandPluginRoot(
       arg.replaceAll("${CLAUDE_PLUGIN_ROOT}", pluginDir),
     ),
   };
-}
-
-/** `hooks/hooks.json` の SessionStart のコマンドを、`CLAUDE_PLUGIN_ROOT` を `pluginDir` にして子プロセスで流す。終了コードが 0 以外でも例外を投げず、結果を返す */
-export async function runSessionStartHook(
-  pluginDir: string,
-): Promise<HookResult> {
-  const hooks = JSON.parse(
-    await readFile(join(pluginDir, "hooks", "hooks.json"), "utf8"),
-  );
-  const { command, args } = expandPluginRoot(
-    hooks.hooks.SessionStart[0].hooks[0],
-    pluginDir,
-  );
-  const run = launch({
-    command,
-    args,
-    cwd: pluginDir,
-    env: childEnv({ CLAUDE_PLUGIN_ROOT: pluginDir }),
-  });
-  run.child.stdin?.end();
-  const code = await run.exited;
-  return { code, stdout: run.stdout(), stderr: run.stderr() };
 }
 
 /** `mdmark serve` を起動したままの子プロセス */

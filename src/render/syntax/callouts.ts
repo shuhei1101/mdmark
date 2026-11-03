@@ -7,36 +7,56 @@ import {
 import { SLOT_MARKER } from "../../parts/own.ts";
 import { featureOn, findNestedClose, ownBlock } from "./tokens.ts";
 
-/** 引用の 1 行目に書く `[!種類]`（末尾に `-` を許す） */
-const CALLOUT_PATTERN = /^\[!([A-Za-z]+)\](-?)$/;
+/** 引用の 1 行目の頭に書く `[!種類]`（末尾に `-`・`+` を許し、後ろに空白とタイトルを続けられる） */
+const CALLOUT_PATTERN = /^\[!([A-Za-z]+)\]([-+]?)(?:\s+|$)/;
 
-/** 引用の最初の段落の 1 行目から、注意書きの種類を読む。注意書きでなければ `undefined` */
-function readCallout(
-  tokens: Token[],
-  openIndex: number,
-): { kind: CalloutKind; collapsed: boolean } | undefined {
+/** 引用の最初の段落の 1 行目（最初の `softbreak` の手前まで）から、注意書きの種類・開閉・タイトルの HTML を読む。注意書きでなければ `undefined` */
+export function readCallout(options: {
+  state: StateCore;
+  tokens: Token[];
+  openIndex: number;
+}):
+  | { kind: CalloutKind; collapsed: boolean; open: boolean; title?: string }
+  | undefined {
+  const { state, tokens, openIndex } = options;
   const paragraph = tokens[openIndex + 1];
   const inline = tokens[openIndex + 2];
-  const first = inline?.children?.[0];
   if (paragraph?.type !== "paragraph_open" || inline?.type !== "inline") {
     return undefined;
   }
-  const second = inline.children?.[1];
+  const children = inline.children ?? [];
+  const lineEnd = children.findIndex((child) => child.type === "softbreak");
+  const line = children.slice(0, lineEnd < 0 ? children.length : lineEnd);
+  const [first, ...others] = line;
   const match =
     first?.type === "text" ? CALLOUT_PATTERN.exec(first.content) : null;
-  if (!match || (second && second.type !== "softbreak")) {
+  if (!first || !match) {
     return undefined;
   }
   const name = (match[1] ?? "").toLowerCase();
   const kind = CALLOUT_KINDS.find((candidate) => candidate === name) ?? "note";
-  return { kind, collapsed: match[2] === "-" };
+  const sign = match[2] ?? "";
+  // 種類の後ろの文字と、1 行目の残りの行内のトークンをタイトルにする
+  const rest = new state.Token("text", "", 0);
+  rest.content = first.content.slice(match[0].length);
+  const title = state.md.renderer
+    .renderInline([rest, ...others], state.md.options, state.env)
+    .trim();
+  return {
+    kind,
+    collapsed: sign !== "",
+    open: sign === "+",
+    ...(title ? { title } : {}),
+  };
 }
 
-/** 種類の文字の 1 行を、引用の最初の段落から外す。段落が空になれば段落ごと外す */
+/** 種類とタイトルの 1 行を、引用の最初の段落から外す。段落が空になれば段落ごと外す */
 function removeTitleLine(tokens: Token[], openIndex: number): Token[] {
   const inline = tokens[openIndex + 2] as Token;
-  // 種類の文字と、その後の改行を外す
-  inline.children = (inline.children ?? []).slice(2);
+  const children = inline.children ?? [];
+  const lineEnd = children.findIndex((child) => child.type === "softbreak");
+  // 1 行目と、その後の改行を外す
+  inline.children = lineEnd < 0 ? [] : children.slice(lineEnd + 1);
   inline.content = inline.content.replace(/^[^\n]*\n?/, "");
   if (inline.children.length > 0) {
     return [];
@@ -44,18 +64,22 @@ function removeTitleLine(tokens: Token[], openIndex: number): Token[] {
   return tokens.slice(openIndex + 1, openIndex + 4);
 }
 
-/** `callout` がオンなら、1 行目が `[!種類]` の引用を注意書きの部品にし、種類の文字を本文から外す。知らない種類は `note` */
+/** `callout` がオンなら、1 行目が `[!種類]` の引用を注意書きの部品にし、1 行目を本文から外す。知らない種類は `note`。注意書きの本文の中の引用も注意書きにする */
 export function buildCallouts(state: StateCore): void {
   if (!featureOn(state, "callout")) {
     return;
   }
-  const tokens = state.tokens;
+  state.tokens = buildCalloutsIn(state, state.tokens);
+}
+
+/** トークンの並びの中の注意書きの引用を部品にした並びを返す */
+function buildCalloutsIn(state: StateCore, tokens: Token[]): Token[] {
   const out: Token[] = [];
   for (let index = 0; index < tokens.length; index++) {
     const token = tokens[index];
     const callout =
       token?.type === "blockquote_open"
-        ? readCallout(tokens, index)
+        ? readCallout({ state, tokens, openIndex: index })
         : undefined;
     const closeIndex = callout ? findNestedClose(tokens, index) : -1;
     if (!token || !callout || closeIndex < 0) {
@@ -68,14 +92,12 @@ export function buildCallouts(state: StateCore): void {
     const html = renderCallout({ ...callout, body: SLOT_MARKER });
     const [head = "", tail = ""] = html.split(SLOT_MARKER);
     out.push(ownBlock(state, head, token));
-    for (let position = index + 1; position < closeIndex; position++) {
-      const inner = tokens[position] as Token;
-      if (!emptied.includes(inner)) {
-        out.push(inner);
-      }
-    }
+    const body = tokens
+      .slice(index + 1, closeIndex)
+      .filter((inner) => !emptied.includes(inner));
+    out.push(...buildCalloutsIn(state, body));
     out.push(ownBlock(state, tail));
     index = closeIndex;
   }
-  state.tokens = out;
+  return out;
 }

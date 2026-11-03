@@ -1,4 +1,5 @@
 import { expect, test } from "vitest";
+import type { TableOptions } from "../../../../src/parts/table.ts";
 import {
   findTag,
   findTags,
@@ -140,7 +141,7 @@ test("test_render_table_when_all_features", async () => {
   // 検証: 帯
   const bar = innerHtml(html, 'class="mdmark-table-bar"');
   expect(bar).toContain("3 / 3 件");
-  expect(bar).toContain("列の表示");
+  expect(bar).toContain("列設定");
   expect(bar).toContain("表をコピー");
   // 検証: 隠した説明の列の見出し・セル・集計のセル
   const head = innerHtml(html, "<thead");
@@ -171,7 +172,7 @@ test("test_render_table_when_all_features", async () => {
   }
 });
 
-// 件数と列の表示とコピーの帯を返す（正常系）
+// 件数と列設定とコピーの帯を返す（正常系）
 test("test_render_table_bar", async () => {
   // 準備
   const { renderTableBar } = await loadTable();
@@ -190,13 +191,13 @@ test("test_render_table_bar", async () => {
   expect(bar).toContain("3 件中 2 件を表示");
   const toggle = findTag(bar, "mdmark-columns-toggle");
   expect(toggle).toContain('aria-expanded="false"');
-  expect(bar).toContain("列の表示");
+  expect(bar).toContain("列設定");
   const copy = findTag(bar, "mdmark-copy");
   expect(copy).toContain('data-state="idle"');
   expect(outerHtml(bar, "mdmark-copy")).toContain("表をコピー");
   expect(outerHtml(bar, "mdmark-copy")).toContain("chevron-down");
   expect(findTag(bar, "mdmark-table-status")).toContain('role="status"');
-  // 検証: 列の表示のメニュー
+  // 検証: 列設定のメニュー
   expect(findTag(menus, "mdmark-columns-menu")).toMatch(/\shidden\b/);
   const checkboxes = findTags(menus, 'type="checkbox"');
   expect(checkboxes).toHaveLength(3);
@@ -205,7 +206,7 @@ test("test_render_table_bar", async () => {
   expect(checkboxes[1]).not.toMatch(/\schecked\b/);
   expect(checkboxes[2]).toMatch(/\schecked\b/);
   expect(menus).toContain("先頭の列は隠せません");
-  expect(menus).toContain("既定に戻す");
+  expect(menus).toContain("リセット");
   // 検証: コピーの形式のメニュー
   expect(findTag(menus, 'aria-label="コピーの形式"')).toMatch(/\shidden\b/);
   const formats = findTags(menus, "data-format=");
@@ -233,7 +234,7 @@ test("test_render_table_bar_when_copy_failed", async () => {
   expect(findTag(bar, "mdmark-copy")).toContain('data-state="failed"');
   expect(bar).toContain("コピーできませんでした");
   expect(bar).not.toContain("mdmark-table-count");
-  expect(bar).not.toContain("列の表示");
+  expect(bar).not.toContain("列設定");
   expect(menus).not.toContain("mdmark-columns-menu");
 });
 
@@ -258,10 +259,10 @@ test("test_render_table_bar_when_totals", async () => {
   expect(toggle).toContain("is-active");
   expect(toggle).toContain('aria-expanded="true"');
   expect(outerHtml(bar, "mdmark-totals-toggle")).toContain(
-    "（2 件を隠しています）",
+    "（2 件を非表示にしています）",
   );
   // 検証: 集計のメニュー
-  const menu = findTag(menus, 'aria-label="出す集計"');
+  const menu = findTag(menus, 'aria-label="表示する集計"');
   expect(menu).not.toMatch(/\shidden\b/);
   const checkboxes = findTags(menus, 'type="checkbox"');
   expect(checkboxes.map((tag) => /value="([^"]*)"/.exec(tag)?.[1])).toEqual([
@@ -452,7 +453,7 @@ test("test_render_table_tools", async () => {
   expect(findTag(drawer, "mdmark-filter-drawer")).toMatch(/\shidden\b/);
   expect(drawer).toContain("候補を検索");
   expect(findTags(drawer, 'type="checkbox"')).toHaveLength(2);
-  expect(drawer).toContain("絞り込みを外す");
+  expect(drawer).toContain("絞り込みを解除");
 });
 
 // 日付のドロワーは開始日と終了日の欄を持つ（正常系）
@@ -718,6 +719,97 @@ test("test_render_table_when_colors", async () => {
     undefined,
     undefined,
   ]);
+});
+
+/** 部品設計『表』の `Merged` の引数 */
+const MERGED: TableOptions = {
+  kind: "data",
+  features: ["sort", "pin", "filter"],
+  columns: ["地域", "支店", "売上（万円）", "件数", "売上（万円）", "件数"],
+  rows: [
+    ["東日本", "札幌", "120", "14", "135", "16"],
+    ["東日本", "仙台", "98", "11", "102", "12"],
+    ["東日本", "東京", "310", "40", "342", "45"],
+    ["西日本", "大阪", "260", "31", "248", "29"],
+    ["西日本", "福岡", "140", "17", "151", "19"],
+  ],
+  headRows: [
+    [
+      { html: "地域", column: 0, rowspan: 2 },
+      { html: "支店", column: 1, rowspan: 2 },
+      { html: "上期", column: 2, colspan: 2 },
+      { html: "下期", column: 4, colspan: 2 },
+    ],
+    [
+      { html: "売上（万円）", column: 2 },
+      { html: "件数", column: 3 },
+      { html: "売上（万円）", column: 4 },
+      { html: "件数", column: 5 },
+    ],
+  ],
+  rowHeader: 1,
+  mergeColumns: [0],
+};
+
+/** 本文の各行の 1 列目の `<th scope="row">` の開始タグと文字 */
+function rowHeadsOf(html: string): Array<{ tag: string; text: string }> {
+  return rowsOf(innerHtml(html, "<tbody"))
+    .filter((row) => row.includes('scope="row"'))
+    .map((row) => {
+      const tag = findTag(row, 'scope="row"');
+      return { tag, text: plainText(innerHtml(row, 'scope="row"')).trim() };
+    });
+}
+
+// 多段の見出しと行見出しと結合したセルを描き、ボタンを最下段に置く（正常系）
+test("test_render_table_when_merged", async () => {
+  // 準備
+  const { renderTable } = await loadTable();
+  // 実行
+  const html = renderTable({ ...MERGED });
+  // 検証: 見出し
+  const headRows = rowsOf(innerHtml(html, "<thead"));
+  expect(headRows).toHaveLength(2);
+  const upper = outerHtml(headRows[0] ?? "", 'colspan="2"');
+  expect(findTag(upper, 'colspan="2"')).toContain('scope="colgroup"');
+  expect(upper).toContain("上期");
+  expect(upper).not.toContain("mdmark-sort");
+  expect(findTags(headRows[1] ?? "", "mdmark-sort").length).toBeGreaterThan(0);
+  // 検証: 行見出しと結合
+  const heads = rowHeadsOf(html);
+  expect(heads).toHaveLength(5);
+  expect(heads[0]?.text).toBe("東日本");
+  expect(heads[0]?.tag).toContain('rowspan="3"');
+  expect(heads[0]?.tag).toContain("is-merged");
+  for (const head of heads.slice(1, 3)) {
+    expect(head.tag).toMatch(/\shidden\b/);
+  }
+});
+
+// 並べ替えた順で隣り合う同じ値だけを結合する（正常系）
+test("test_render_table_when_merged_sorted", async () => {
+  // 準備
+  const { renderTable } = await loadTable();
+  // 実行
+  const html = renderTable({
+    ...MERGED,
+    sort: { column: 4, direction: "descending" },
+  });
+  // 検証: 東京・大阪・福岡・札幌・仙台の順で、地域は 東・西・西・東・東
+  const heads = rowHeadsOf(html);
+  expect(heads.map((head) => head.text)).toEqual([
+    "東日本",
+    "西日本",
+    "西日本",
+    "東日本",
+    "東日本",
+  ]);
+  expect(heads[0]?.tag).not.toContain("rowspan");
+  expect(heads[1]?.tag).toContain('rowspan="2"');
+  expect(heads[2]?.tag).toMatch(/\shidden\b/);
+  expect(heads[3]?.tag).toContain('rowspan="2"');
+  expect(heads[4]?.tag).toMatch(/\shidden\b/);
+  expect(heads.filter((head) => /\shidden\b/.test(head.tag))).toHaveLength(2);
 });
 
 // 留める列と真偽値の列を属性に持たせ、広く取る列と真偽値のセルを描く（正常系）

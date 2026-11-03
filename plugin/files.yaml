@@ -13,7 +13,7 @@ files:
       - to: dev/設計書/モジュール構成/ClaudeCodeプラグイン/プラグインのビルド.ts
         type: implements
   - path: hooks/hooks.json
-    description: モジュール構成『ClaudeCodeプラグイン / プラグインのビルド』のうち「SessionStart で scripts/session-start.js、6 つのツールの PreToolUse で scripts/pre-tool-use.js を流す」を受け持つ。プラグインの配布物の作り方を変えるときに読む。
+    description: モジュール構成『ClaudeCodeプラグイン / プラグインのビルド』のうち「`project_dir` を使うツールの PreToolUse で scripts/pre-tool-use.js を流す」を受け持つ。プラグインの配布物の作り方を変えるときに読む。
     tags: [topic:プラグイン, tool:claude-code, tool:esbuild]
     related:
       - to: dev/設計書/モジュール構成/ClaudeCodeプラグイン/プラグインのビルド.ts

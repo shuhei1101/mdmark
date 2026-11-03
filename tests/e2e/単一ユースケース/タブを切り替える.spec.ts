@@ -329,3 +329,109 @@ test("test_error_when_closed_and_open", async ({ page }) => {
   await expect(fold.locator("summary")).toHaveText("タブ（macOS・Windows）");
   await expect(fold.locator("[role=tablist]")).toBeHidden();
 });
+
+/** 外側の macOS・Windows のタブの macOS の中に、zsh・bash のタブを入れ子にした範囲（`innerClosed` が false なら内側の閉じのマーカーを除く） */
+function nestedTabs(innerClosed: boolean): string {
+  return [
+    "<!-- tabs -->",
+    "",
+    "### macOS",
+    "",
+    "<!-- tabs -->",
+    "",
+    "#### zsh",
+    "",
+    "zsh の段落",
+    "",
+    "#### bash",
+    "",
+    "bash の段落",
+    "",
+    ...(innerClosed ? ["<!-- /tabs -->", ""] : []),
+    "### Windows",
+    "",
+    "Windows の段落",
+    "",
+    "<!-- /tabs -->",
+    "",
+  ].join("\n");
+}
+
+// 外側のタブの中に内側のタブを描き、内側と外側を別々に切り替える（正常シナリオ（入れ子のタブ））
+test("test_normal_when_nested", async ({ page }) => {
+  // 準備
+  await openPage(page, builtRoot);
+  await mountDocument(page, { markdown: nestedTabs(true) });
+  const outer = tabGroup(page, 0);
+  const outerTabs = outer.locator(":scope > [role=tablist] > [role=tab]");
+  const inner = outer.locator(".mdmark-tabs");
+  const innerTabs = inner.locator(":scope > [role=tablist] > [role=tab]");
+  // 検証: 描いた直後
+  await expect(outerTabs).toHaveText(["macOS", "Windows"]);
+  await expect(innerTabs).toHaveText(["zsh", "bash"]);
+  await expect(page.locator("#doc .mdmark-syntax-warning")).toHaveCount(0);
+  await expect(page.locator("#doc")).not.toContainText("<!--");
+  // 実行: 内側の bash を押す
+  await inner.getByRole("tab", { name: "bash" }).click();
+  // 検証
+  await expectSelected(inner, "bash", ["zsh"]);
+  await expect(outer.getByRole("tab", { name: "macOS" })).toHaveAttribute(
+    "aria-selected",
+    "true",
+  );
+  // 実行: 外側の Windows を押す
+  await outer.getByRole("tab", { name: "Windows" }).click();
+  // 検証
+  await expect(page.getByText("Windows の段落")).toBeVisible();
+  for (const hidden of ["zsh の段落", "bash の段落"]) {
+    await expect(page.getByText(hidden)).toBeHidden();
+  }
+});
+
+// 見出しの太字を保ったタブ名を描き、強調の見た目を CSS 変数で上書きできる（正常シナリオ（太字のタブ名））
+test("test_normal_when_bold_tab_name", async ({ page }) => {
+  // 準備
+  await openPage(page, builtRoot);
+  // 実行
+  await mountDocument(page, {
+    markdown: tabsRange(["**案 A**", "案 B"]).replaceAll(
+      "**案 A** の段落",
+      "案 A の段落",
+    ),
+  });
+  // 検証
+  const first = page.getByRole("tab", { name: "案 A" });
+  const second = page.getByRole("tab", { name: "案 B" });
+  await expect(first.locator("strong")).toHaveText("案 A");
+  await expect(second.locator("strong")).toHaveCount(0);
+  await expect(page.locator("#doc [role=tablist]")).not.toContainText("**");
+  // 実行: デザイントークンを上書きする
+  await page.addStyleTag({
+    content: ".mdmark { --mdmark-tab-strong-color: rgb(1, 2, 3); }",
+  });
+  // 検証
+  await expect(first.locator("strong")).toHaveCSS("color", "rgb(1, 2, 3)");
+});
+
+// 内側の閉じが無い入れ子は、外側の開きに書き方の警告を置き、範囲の中身をタブにせず出す（異常シナリオ（入れ子の閉じが足りない））
+test("test_error_when_nested_unclosed", async ({ page }) => {
+  // 準備
+  await openPage(page, builtRoot);
+  // 実行
+  await mountDocument(page, { markdown: nestedTabs(false) });
+  // 検証
+  const warning = page.locator("#doc .mdmark-syntax-warning");
+  await expect(warning).toHaveCount(1);
+  await expect(warning).toContainText("閉じ");
+  await expectBefore(warning, page.locator("#doc h3", { hasText: "macOS" }));
+  await expect(page.locator("#doc [role=tablist]")).toHaveCount(0);
+  for (const heading of ["macOS", "Windows"]) {
+    await expect(page.locator("#doc h3", { hasText: heading })).toBeVisible();
+  }
+  for (const heading of ["zsh", "bash"]) {
+    await expect(page.locator("#doc h4", { hasText: heading })).toBeVisible();
+  }
+  for (const body of ["zsh の段落", "bash の段落", "Windows の段落"]) {
+    await expect(page.getByText(body)).toBeVisible();
+  }
+});

@@ -30,3 +30,36 @@ test("test_render_callout_when_collapsed", async () => {
     '<details class="markdown-alert markdown-alert-note"><summary class="markdown-alert-title">補足</summary>',
   );
 });
+
+// タイトルの頭に読み上げだけの種類の名前を置く（正常系）
+test("test_render_callout_when_titled", async () => {
+  // 準備
+  const { renderCallout } = await loadCallout();
+  // 実行
+  const html = renderCallout({
+    kind: "tip",
+    title: "設定を先に確認する",
+    body: "<p>本文</p>",
+  });
+  // 検証
+  expect(html).toContain(
+    '<p class="markdown-alert-title"><span class="mdmark-visually-hidden">ヒント: </span>設定を先に確認する</p>',
+  );
+});
+
+// 開いた状態の折り畳みにする（正常系）
+test("test_render_callout_when_open", async () => {
+  // 準備
+  const { renderCallout } = await loadCallout();
+  // 実行
+  const html = renderCallout({
+    kind: "warning",
+    collapsed: true,
+    open: true,
+    body: "<p>本文</p>",
+  });
+  // 検証
+  expect(html).toContain(
+    '<details class="markdown-alert markdown-alert-warning" open>',
+  );
+});

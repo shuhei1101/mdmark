@@ -89,7 +89,6 @@ test("test_run_pre_tool_use_when_matcher", async () => {
   expect(matcher).toBe(
     PROJECT_DIR_TOOLS.map((name) => `${TOOL_NAME_PREFIX}${name}`).join("|"),
   );
-  expect(new RegExp(matcher).test(`${TOOL_NAME_PREFIX}read_guide`)).toBe(false);
   for (const name of PROJECT_DIR_TOOLS) {
     expect(new RegExp(matcher).test(`${TOOL_NAME_PREFIX}${name}`)).toBe(true);
   }
@@ -99,8 +98,6 @@ test("test_run_pre_tool_use_when_matcher", async () => {
     "export_html",
   ]);
   expect([...PROJECT_DIR_TOOLS].sort()).toEqual(
-    TOOLS.filter((tool) => tool.usesProjectDir)
-      .map((tool) => tool.name)
-      .sort(),
+    TOOLS.map((tool) => tool.name).sort(),
   );
 });

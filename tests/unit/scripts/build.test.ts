@@ -269,15 +269,15 @@ test("test_main_when_migrations_invalid", {
   expect(stderr()).toContain("migrations/next/steps.yaml");
 });
 
-// 使い方集の索引が上限を超えると dist/ とプラグインの生成物を残さずに終わる（異常系）
-test("test_main_when_guide_index_too_long", {
+// 使い方集の索引が無いページを指すと dist/ とプラグインの生成物を残さずに終わる（異常系）
+test("test_main_when_guide_index_invalid", {
   timeout: MAIN_BUILD_TIMEOUT_MS,
 }, async () => {
   // 準備
   const { main } = await loadBuild();
   const root = await createBuildRoot("v0.0.0\n");
   const files: Record<string, string> = {
-    "src/plugin/session-start.ts": "export {};\n",
+    "src/plugin/pre-tool-use.ts": "export {};\n",
     "guide/index.yaml": [
       "schema: 1",
       "guides:",
@@ -287,7 +287,6 @@ test("test_main_when_guide_index_too_long", {
       "    page: docs/a.md",
       "",
     ].join("\n"),
-    "docs/a.md": "# A\n",
     "plugin/.claude-plugin/plugin.json":
       '{"name":"mdmark","version":"v0.0.0"}\n',
   };
@@ -297,16 +296,12 @@ test("test_main_when_guide_index_too_long", {
   }
   const stderr = captureStderr();
   // 実行
-  const code = await main([], {
-    root,
-    maxBytes: MAX_BYTES,
-    guideContextLimit: 1,
-  });
+  const code = await main([], { root, maxBytes: MAX_BYTES });
   // 検証
   expect(code).toBe(1);
   expect(existsSync(join(root, "dist"))).toBe(false);
   expect(existsSync(join(root, "plugin", "scripts"))).toBe(false);
-  expect(stderr()).toContain("上限 1 文字");
+  expect(stderr()).toContain("guide/index.yaml:guides[0].page");
 });
 
 // 対応ブラウザの下限に無い API を確かめずに使うと dist/ を消して終わる（異常系）

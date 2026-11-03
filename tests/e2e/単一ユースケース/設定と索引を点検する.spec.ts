@@ -2,8 +2,11 @@ import { existsSync } from "node:fs";
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import {
+  BROKEN_FLOW,
+  CLEAN_FLOW,
   createChangeTogetherDir,
   expect,
+  flowLines,
   git,
   linesOf,
   runCli,
@@ -379,4 +382,61 @@ test("test_normal_when_files_missing", async ({ builtRoot, tempDir }) => {
   );
   expect(lines.some((text) => text.includes("images/logo.png"))).toBe(false);
   expect(existsSync(join(dir, "dist"))).toBe(false);
+});
+
+// 図の定義の誤りと配置のずれを、図の定義の場所を指す行で出し、終了コード 0 以外で終わる（正常シナリオ（図の定義にずれがある））
+test("test_normal_when_diagram_drift", async ({ builtRoot, tempDir }) => {
+  // 準備
+  const dir = await createCleanDir(builtRoot, tempDir);
+  const duplicated = {
+    ...CLEAN_FLOW,
+    nodes: [
+      { id: "api", kind: "script", x: 20, y: 20, w: 100, h: 60, name: "API" },
+      { id: "api", kind: "script", x: 220, y: 20, w: 100, h: 60, name: "API" },
+    ],
+    wires: [],
+  };
+  const head = ["# A", "", ...flowLines(duplicated)];
+  const a = [
+    ...head,
+    ...Array.from({ length: 19 - head.length }, () => ""),
+    ...flowLines(BROKEN_FLOW),
+    "",
+  ];
+  await writeFiles(dir, {
+    "a.md": a.join("\n"),
+    "b.md": ["# B", "", ...flowLines(CLEAN_FLOW), ""].join("\n"),
+  });
+  const before = await snapshot(dir);
+  // 実行
+  const result = await runCli(builtRoot, ["check"], dir);
+  // 検証
+  expect(result.code).not.toBe(0);
+  const lines = linesOf(result.stdout);
+  // 定義の誤りは 1 行で、重なった id と修正の方法がある
+  const invalid = lines.filter((line) => line.startsWith("a.md:3: "));
+  expect(invalid).toHaveLength(1);
+  expect(invalid[0]).toMatch(/^a\.md:3: diagram_invalid: /);
+  expect(invalid[0]).toContain("api");
+  // 配置のずれは 4 つの種類で 1 行ずつあり、対象の id と修正の方法がある
+  const layout = lines.filter((line) => line.startsWith("a.md:20: "));
+  expect(layout).toHaveLength(4);
+  for (const [kind, ids] of [
+    ["diagram_node_overlap", ["web", "db"]],
+    ["diagram_node_overflow", ["queue"]],
+    ["diagram_wire_crosses_node", ["w1", "cache"]],
+    ["diagram_label_too_long", ["batch"]],
+  ] as const) {
+    const found = layout.filter((line) =>
+      line.startsWith(`a.md:20: ${kind}: `),
+    );
+    expect(found, kind).toHaveLength(1);
+    for (const id of ids) {
+      expect(found[0]).toContain(id);
+    }
+    expect(found[0]).toContain("ください");
+  }
+  // ずれの無い図の文書を指す行が無い
+  expect(lines.some((line) => line.startsWith("b.md"))).toBe(false);
+  expect(await snapshot(dir)).toEqual(before);
 });

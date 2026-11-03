@@ -64,7 +64,71 @@ scenarios:
       - 引用が class `markdown-alert-note` の枠になっている
       - 枠に本文の段落がある
     test: test_normal_when_unknown_kind
-lead: 文書を書く人が GitHub と同じ `> [!NOTE]` などの引用で注意書きを書くと、mdmark が種類ごとの題・色・アイコンを持つ枠に描く。末尾に `-` を付けた注意書きは閉じた折り畳みにする。
+  - name: 正常シナリオ（タイトルを付けた注意書き）
+    setup:
+      - name: mdmark を読むページ
+        description: 正常シナリオと同じ
+      - name: タイトルを持つ注意書きの Markdown
+        description: 1 行目が `> [!TIP] 設定を先に確認する` で、本文の段落を持つ引用の文書
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を渡して描かせる
+        M->>M: 種類の後ろの文字をタイトルとして読む
+        M-->>P: タイトルを持つ TIP の注意書きの枠を描く
+        P-->>U: 注意書きを表示
+    expected:
+      - 引用が class `markdown-alert-tip` の枠になり、TIP のアイコンがある
+      - 枠のタイトルが `設定を先に確認する` で、読み上げで種類が TIP であることが分かる
+      - 本文に `[!TIP]` とタイトルの文字が出ていない
+    test: test_normal_when_titled
+  - name: 正常シナリオ（開いた折りたたみの注意書き）
+    setup:
+      - name: mdmark を読むページ
+        description: 正常シナリオと同じ
+      - name: 開いた折りたたみの注意書きの Markdown
+        description: 1 行目が `> [!NOTE]+ 詳細` で、本文の段落を持つ引用の文書
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を渡して描かせる
+        M-->>P: 開いた折りたたみの注意書きを描く
+        U->>P: 注意書きのタイトルを押す
+        P-->>U: 閉じた注意書き
+    expected:
+      - 描いた直後、注意書きは開いていて、タイトル `詳細` と本文の段落が表示されている
+      - タイトルを押した後、本文の段落が表示されていない
+    test: test_normal_when_expanded
+  - name: 正常シナリオ（入れ子の注意書き）
+    setup:
+      - name: mdmark を読むページ
+        description: 正常シナリオと同じ
+      - name: 入れ子の注意書きの Markdown
+        description: '`> [!WARNING]` の引用の中に、`> > [!TIP]` で始まる引用と本文の段落を持つ文書'
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を渡して描かせる
+        M->>M: 引用の入れ子ごとに種類を読む
+        M-->>P: WARNING の枠の中に TIP の枠を描く
+        P-->>U: 注意書きを表示
+    expected:
+      - class `markdown-alert-warning` の枠の中に、class `markdown-alert-tip` の枠がある
+      - 2 つの枠のそれぞれに本文の段落があり、`[!WARNING]`・`[!TIP]` の文字が出ていない
+    test: test_normal_when_nested
+lead: 文書を書く人が GitHub と同じ `> [!NOTE]` などの引用で注意書きを書くと、mdmark が種類ごとの題・色・アイコンを持つ枠に描く。種類の後ろの文字はタイトルにし、末尾に `-` を付けた注意書きは閉じた、`+` を付けた注意書きは開いた折り畳みにする。注意書きは入れ子にできる。
 issue: 4
 primary_actor: 文書を書く人
 stakeholders:

@@ -1,0 +1,15 @@
+$ npm run test:unit
+
+> test:unit
+> vitest run --project 'unit*'
+
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-notation-add-notation-and-check-items
+
+
+ Test Files  184 passed (184)
+      Tests  1340 passed (1340)
+   Start at  19:02:09
+   Duration  67.93s (worker 43%, tests 37%, import 17%, transform 2%)
+
+exit=0

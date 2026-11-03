@@ -1,5 +1,14 @@
 import { expect, type Locator, type Page, test } from "@playwright/test";
-import { BAR_TEXT, PIE_TEXT, SCATTER_TEXT } from "../chart.ts";
+import {
+  BAR_TEXT,
+  BUBBLE_CHART,
+  COMBO_CHART,
+  DONUT_CHART,
+  manySeriesChart,
+  PIE_TEXT,
+  SCATTER_TEXT,
+  twoSeriesChart,
+} from "../chart.ts";
 import {
   flowMarkdown,
   judgementMarkdown,
@@ -507,4 +516,212 @@ test("test_normal_when_scatter", async ({ page }) => {
     numbersOf(await svgTexts(figure, 'svg[role=img] text[text-anchor="end"]'))
       .length,
   ).toBeGreaterThan(2);
+});
+
+/** 定義を `<!-- chart -->` の範囲にする */
+function chartRange(definition: Record<string, unknown>): string {
+  return wrapDirective("chart", JSON.stringify(definition, null, 2));
+}
+
+/** 図の中の棒の `rect` の位置と大きさ */
+async function barBoxes(figure: Locator) {
+  return figure
+    .locator("svg[role=img] g[data-series] > .mdmark-diagram-bar")
+    .evaluateAll((rects) =>
+      rects.map((rect) => ({
+        series: rect.parentElement?.getAttribute("data-series"),
+        x: Number(rect.getAttribute("x")),
+        y: Number(rect.getAttribute("y")),
+        width: Number(rect.getAttribute("width")),
+        height: Number(rect.getAttribute("height")),
+      })),
+    );
+}
+
+// 追加した 8 つの種類のグラフを、タイトルと凡例つきで図の枠に描き、積み上げは同じ項目の値を積んだ高さにする（正常シナリオ（追加したグラフの種類））
+test("test_normal_when_more_chart_types", async ({ page }) => {
+  // 準備
+  await openPage(page, builtRoot);
+  const definitions = [
+    twoSeriesChart("area"),
+    twoSeriesChart("stacked-bar"),
+    twoSeriesChart("stacked-area"),
+    twoSeriesChart("horizontal-bar"),
+    DONUT_CHART,
+    twoSeriesChart("radar"),
+    BUBBLE_CHART,
+    COMBO_CHART,
+  ];
+  // 実行
+  await mountDocument(page, {
+    markdown: definitions.map(chartRange).join("\n"),
+  });
+  // 検証: 8 つの図に、タイトルと系列の名前を載せた凡例がある
+  const figures = page.locator(
+    '#doc figure.mdmark-diagram[data-diagram="chart"]',
+  );
+  await expect(figures).toHaveCount(8);
+  for (const [index, definition] of definitions.entries()) {
+    const figure = figures.nth(index);
+    await expect(figure.locator(".mdmark-diagram-title")).toHaveText(
+      String(definition.title),
+    );
+    const names = (
+      (definition.series ?? definition.items) as { name: string }[]
+    ).map(({ name }) => name);
+    const legend = await figure
+      .locator('ul[aria-label="凡例"] li')
+      .allInnerTexts();
+    for (const name of names) {
+      expect(
+        legend.some((text) => text.includes(name)),
+        `${String(definition.type)} の ${name}`,
+      ).toBe(true);
+    }
+    await expect(figure.locator("svg[role=img]")).toBeVisible();
+  }
+  // 検証: 積み上げの棒は、同じ項目の 2 つ目の系列が 1 つ目の上に載り、高さの和が値の和に比例する
+  const stacked = await barBoxes(figures.nth(1));
+  const first = stacked.filter((bar) => bar.series === "1");
+  const second = stacked.filter((bar) => bar.series === "2");
+  expect(first).toHaveLength(3);
+  expect(second).toHaveLength(3);
+  const unit = (first[0]?.height ?? 0) / 3;
+  for (const [index, total] of [7, 6, 8].entries()) {
+    const lower = first[index];
+    const upper = second[index];
+    expect(upper?.x).toBe(lower?.x);
+    expect((upper?.y ?? 0) + (upper?.height ?? 0)).toBeCloseTo(
+      lower?.y ?? 0,
+      1,
+    );
+    expect((lower?.height ?? 0) + (upper?.height ?? 0)).toBeCloseTo(
+      unit * total,
+      1,
+    );
+  }
+  // 検証: 積み上げの面は、上の系列の面の下端が下の系列の面の上端を通る
+  const areas = figures
+    .nth(2)
+    .locator("svg[role=img] .mdmark-diagram-stacked-area");
+  const shapes = await areas.evaluateAll((paths) =>
+    paths.map((path) => path.getAttribute("d") ?? ""),
+  );
+  expect(shapes.length).toBeGreaterThanOrEqual(2);
+  const top = (d: string) => d.split(" L").slice(0, 3).join(" L").slice(1);
+  const bottomReversed = (d: string) =>
+    d.replace(/ Z$/, "").split(" L").slice(3).reverse().join(" L");
+  expect(bottomReversed(shapes[1] ?? "")).toBe(top(shapes[0] ?? ""));
+  // 検証: 組み合わせは、1 つ目の系列を棒、2 つ目の系列を折れ線で同じ軸に描く
+  const combo = figures.nth(7);
+  await expect(
+    combo.locator('svg[role=img] g[data-series="1"] > .mdmark-diagram-bar'),
+  ).toHaveCount(3);
+  await expect(
+    combo.locator('svg[role=img] path.mdmark-diagram-series[data-series="2"]'),
+  ).toHaveCount(1);
+  await expect(page.locator("#doc .mdmark-syntax-warning")).toHaveCount(0);
+});
+
+/** グラフの系列ごとの、線の色・線の模様・点のマーカーの形・塗りの組 */
+async function seriesSignatures(figure: Locator): Promise<string[]> {
+  return figure.locator("svg[role=img] g[data-series]").evaluateAll((groups) =>
+    groups.map((group) => {
+      const n = group.getAttribute("data-series");
+      const path = group
+        .closest("svg")
+        ?.querySelector(`path.mdmark-diagram-series[data-series="${n}"]`);
+      const style = path ? getComputedStyle(path) : undefined;
+      const point = group.querySelector(".mdmark-diagram-point");
+      const bar = group.querySelector(".mdmark-diagram-bar");
+      return [
+        style?.stroke,
+        style?.strokeDasharray,
+        point?.tagName,
+        point?.getAttribute("d")?.match(/[ML]/g)?.length,
+        bar?.getAttribute("fill"),
+      ].join("|");
+    }),
+  );
+}
+
+/** 系列の色と背景の色の、相対輝度のコントラスト比の最小 */
+async function minSeriesContrast(figure: Locator): Promise<number> {
+  return figure.evaluate((element) => {
+    const toRgb = (color: string): number[] => {
+      const canvas = document.createElement("canvas");
+      canvas.width = 1;
+      canvas.height = 1;
+      const context = canvas.getContext("2d");
+      if (!context) return [0, 0, 0];
+      context.fillStyle = color;
+      context.fillRect(0, 0, 1, 1);
+      return [...context.getImageData(0, 0, 1, 1).data].slice(0, 3);
+    };
+    const luminance = (rgb: number[]): number => {
+      const [r = 0, g = 0, b = 0] = rgb.map((value) => {
+        const c = value / 255;
+        return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+      });
+      return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+    };
+    let background = "";
+    for (
+      let node: Element | null = element;
+      node && (background === "" || background === "rgba(0, 0, 0, 0)");
+      node = node.parentElement
+    ) {
+      background = getComputedStyle(node).backgroundColor;
+    }
+    const base = luminance(toRgb(background));
+    const ratios = [
+      ...element.querySelectorAll("svg[role=img] path.mdmark-diagram-series"),
+    ].map((path) => {
+      const value = luminance(toRgb(getComputedStyle(path).stroke));
+      const [light, dark] = value > base ? [value, base] : [base, value];
+      return (light + 0.05) / (dark + 0.05);
+    });
+    return Math.min(...ratios);
+  });
+}
+
+// 6 つの系列を、色・点のマーカー・塗りの模様の組を変えて描き、ライトとダークのどちらでも背景と見分けられる（正常シナリオ（5 つ以上の系列））
+test("test_normal_when_many_series", async ({ page }) => {
+  // 準備
+  await page.emulateMedia({ colorScheme: "light" });
+  await openPage(page, builtRoot);
+  // 実行
+  await mountDocument(page, {
+    markdown: [
+      chartRange(manySeriesChart("line", 6)),
+      chartRange(manySeriesChart("bar", 6)),
+    ].join("\n"),
+  });
+  // 検証: 6 つの系列と凡例の 6 つの名前
+  const figures = page.locator(
+    '#doc figure.mdmark-diagram[data-diagram="chart"]',
+  );
+  await expect(figures).toHaveCount(2);
+  const names = Array.from({ length: 6 }, (_, index) => `窓口${index + 1}`);
+  for (const figure of [figures.nth(0), figures.nth(1)]) {
+    const legend = await figure
+      .locator('ul[aria-label="凡例"] li')
+      .allInnerTexts();
+    expect(legend.map((text) => text.trim())).toEqual(names);
+  }
+  // 検証: 系列ごとの色・点のマーカー・塗りの模様の組が互いに異なる
+  const line = figures.nth(0);
+  await expect(
+    line.locator("svg[role=img] path.mdmark-diagram-series"),
+  ).toHaveCount(6);
+  expect(new Set(await seriesSignatures(line)).size).toBe(6);
+  const bar = figures.nth(1);
+  await expect(
+    bar.locator("svg[role=img] g[data-series] > .mdmark-diagram-bar"),
+  ).toHaveCount(30);
+  expect(new Set(await seriesSignatures(bar)).size).toBe(6);
+  // 検証: ライトとダークのどちらでも、系列の色が背景と見分けられる
+  expect(await minSeriesContrast(line)).toBeGreaterThanOrEqual(3);
+  await page.emulateMedia({ colorScheme: "dark" });
+  expect(await minSeriesContrast(line)).toBeGreaterThanOrEqual(3);
 });

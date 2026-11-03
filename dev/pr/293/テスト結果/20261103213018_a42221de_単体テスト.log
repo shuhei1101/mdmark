@@ -1,0 +1,14 @@
+$ npm run test:unit
+
+> test:unit
+> vitest run --project 'unit*'
+
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/chore-plugin-guide-dev-docs-source
+
+
+ Test Files  182 passed (182)
+      Tests  1289 passed (1289)
+   Start at  21:26:47
+   Duration  89.15s (worker 47%, tests 33%, import 18%, transform 2%)
+

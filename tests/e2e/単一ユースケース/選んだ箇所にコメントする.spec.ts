@@ -595,7 +595,7 @@ test("test_normal_when_reloaded", async ({ page }) => {
   await expect(page.locator("#doc mark.mdmark-comment-mark")).toHaveCount(1);
   await page.locator("#doc th button.mdmark-sort").click();
   const rows = page.locator("#doc tbody td");
-  await expect(rows).toHaveText(["a", "b", "c"]);
+  await expect(rows).toHaveText(["c", "b", "a"]);
   // 実行
   const result = await reloadComments(page);
   // 検証
@@ -605,7 +605,7 @@ test("test_normal_when_reloaded", async ({ page }) => {
     "CSS",
   ]);
   expect((await readCommentCalls(page)).load).toHaveLength(2);
-  await expect(rows).toHaveText(["a", "b", "c"]);
+  await expect(rows).toHaveText(["c", "b", "a"]);
 });
 
 // focusComment で印を画面に入れてフォーカスを移し、強調する（正常シナリオ（コメントの箇所へ移る））

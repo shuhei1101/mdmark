@@ -1,11 +1,22 @@
 import { readFile, stat } from "node:fs/promises";
 import { basename, join, relative, resolve, sep } from "node:path";
 import { COLOR_THEMES, MARK_NAME_PATTERN, resolveConfig } from "../config.ts";
+import {
+  checkFlowLayout,
+  type FlowLayoutIssue,
+  type FlowLayoutKind,
+} from "../diagram/check.ts";
+import {
+  definitionWarning,
+  type MdmarkFlowDefinition,
+  readDefinition,
+} from "../diagram/definition.ts";
 import type { MdmarkAliasProblem } from "../knowledge/aliases.ts";
 import { checkIndex, type MdmarkIndexIssue } from "../knowledge/check.ts";
 import { normalizePath } from "../knowledge/paths.ts";
 import { FEATURES_MARK, SYNTAX_MARKS } from "../render/marks.ts";
 import { findMarks } from "../render/parser.ts";
+import { findDiagramBlocks } from "../render/syntax/diagrams.ts";
 import { loadAliases } from "./aliases.ts";
 import { checkMissingFiles } from "./assets.ts";
 import {
@@ -33,6 +44,8 @@ export type CheckIssue = {
     | "no_documents"
     | "unknown_mark"
     | "missing_file"
+    | "diagram_invalid"
+    | FlowLayoutKind
     | "alias_no_files"
     | "alias_unreadable"
     | MdmarkAliasProblem["kind"]
@@ -360,7 +373,62 @@ export function checkUnknownMarks(
   return issues;
 }
 
-/** 設定ファイルを読み、設定の形・設定が指すファイル・`build` の対象・`checkIndex`・文書の本文の知らない印のずれをこの並びで返す。`unknownMarks` が `false` なら、拡張を読み込まず、知らない印を点検しない。`base` があり設定に `index` があれば、`change_together` の直し忘れも確かめる */
+/** フロー図の配置のずれ 1 件の内容（図の題・対象の `id`・修正方法の 1 文） */
+function flowLayoutMessage(title: string, issue: FlowLayoutIssue): string {
+  const [first = "", second = ""] = issue.ids;
+  switch (issue.kind) {
+    case "diagram_node_overlap":
+      return `${title}: ノード \`${first}\` と \`${second}\` が重なっています。どちらかの \`x\`・\`y\`・\`w\`・\`h\` を修正してください。`;
+    case "diagram_node_overflow":
+      return `${title}: ノード \`${first}\` が図の幅・高さの外に出ているか、システムの枠の縁にまたがっています。ノードの \`x\`・\`y\`・\`w\`・\`h\` か、図の \`width\`・\`height\`・\`frame\` を修正してください。`;
+    case "diagram_wire_crosses_node":
+      return `${title}: 線 \`${first}\` がノード \`${second}\` の中を通っています。線の \`points\` か、ノードの \`x\`・\`y\` を修正してください。`;
+    case "diagram_label_too_long":
+      return `${title}: ノード \`${first}\` の文字が、折り返してもノードに収まりません。ノードの \`w\`・\`h\` を広げるか、文字を短くしてください。`;
+  }
+}
+
+/** 文書ごとに図の部品の範囲を読み、読めない定義を 1 件の `diagram_invalid`、読めたフロー図の定義を `checkFlowLayout` のずれにする。並びは文書の順、同じ文書の中は行の順 */
+export function checkDiagrams(
+  documents: Array<{ path: string; markdown: string }>,
+): CheckIssue[] {
+  const issues: CheckIssue[] = [];
+  for (const document of documents) {
+    for (const found of findDiagramBlocks(document.markdown)) {
+      const where = String(found.line);
+      const result = readDefinition(found.directive, found.blocks);
+      if (!result.ok || result.definition === undefined) {
+        const warning = definitionWarning(found.directive, result.problems);
+        issues.push({
+          file: document.path,
+          where,
+          kind: "diagram_invalid",
+          message: [
+            warning.message,
+            ...warning.items.map((item) => item.message),
+          ].join(" "),
+        });
+        continue;
+      }
+      if (found.directive !== "flow") {
+        continue;
+      }
+      const definition = result.definition as MdmarkFlowDefinition;
+      const title = definition.title || found.directive;
+      for (const issue of checkFlowLayout(definition)) {
+        issues.push({
+          file: document.path,
+          where,
+          kind: issue.kind,
+          message: flowLayoutMessage(title, issue),
+        });
+      }
+    }
+  }
+  return issues;
+}
+
+/** 設定ファイルを読み、設定の形・設定が指すファイル・`build` の対象・`checkIndex`・文書の本文の知らない印・図の部品の定義のずれをこの並びで返す。`unknownMarks` が `false` なら、拡張を読み込まず、知らない印を点検しない。`base` があり設定に `index` があれば、`change_together` の直し忘れも確かめる */
 export async function collectCheckIssues(
   path: string,
   options: { unknownMarks?: boolean; base?: string } = {},
@@ -378,13 +446,11 @@ export async function collectCheckIssues(
   const extensions = checkMarks
     ? await loadExtensionDirectives(loaded, file)
     : { directives: new Set<string>(), issues: [] };
+  const documents = await collectCheckDocuments(loaded);
   const unknownMarks = checkMarks
-    ? checkUnknownMarks(
-        await collectCheckDocuments(loaded),
-        config,
-        extensions.directives,
-      )
+    ? checkUnknownMarks(documents, config, extensions.directives)
     : [];
+  const diagrams = checkDiagrams(documents);
   return [
     ...shapeIssues,
     ...referenced,
@@ -396,6 +462,7 @@ export async function collectCheckIssues(
     ...aliasIssues,
     ...missingFiles,
     ...unknownMarks,
+    ...diagrams,
   ];
 }
 

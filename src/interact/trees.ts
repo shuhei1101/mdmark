@@ -18,7 +18,7 @@ const COPIED_ANNOUNCEMENT = "ツリーのテキストをコピーしました";
 
 /** コピーできなかったことの読み上げ */
 const COPY_FAILED_ANNOUNCEMENT =
-  "クリップボードにコピーできませんでした。選択したツリーのテキストを手でコピーできます";
+  "クリップボードにコピーできませんでした。選択したツリーのテキストを手動でコピーできます";
 
 /** 注釈の列を測る canvas の文脈 */
 const measureContext =

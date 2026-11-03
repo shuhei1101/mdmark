@@ -431,3 +431,51 @@ test("test_normal_when_destructive_with_yes", async ({
   expect(work.b).toBe("# B\n\n<!-- callout -->\n");
   expect(config.version).toBe("v0.5.0");
 });
+
+// 当てた後の点検で図の定義のずれが見つかると、バックアップから戻し、ずれの行を出して終わる（異常シナリオ（当てた後の点検で図の定義にずれがある））
+test("test_error_when_diagram_drift", async ({ package050, tempDir }) => {
+  // 準備
+  await setMigrations(package050, migrationFiles());
+  const dir = await createWork(tempDir);
+  const overlap = {
+    title: "重なり",
+    scope: "点検",
+    updated: "2026-11-03",
+    width: 400,
+    height: 200,
+    nodes: [
+      { id: "web", kind: "script", x: 20, y: 20, w: 100, h: 60, name: "Web" },
+      { id: "db", kind: "data", x: 60, y: 40, w: 100, h: 60, name: "DB" },
+    ],
+    wires: [],
+  };
+  const a = [
+    WORK_FILES["docs/a.md"],
+    "<!-- flow -->",
+    "",
+    "```json",
+    JSON.stringify(overlap),
+    "```",
+    "",
+    "<!-- /flow -->",
+    "",
+  ].join("\n");
+  await writeFiles(dir, { "docs/a.md": a });
+  const index = await readFile(join(dir, "docs", "index.yaml"), "utf8");
+  // 実行
+  const result = await runCli(package050, ["upgrade"], dir);
+  // 検証
+  expect(result.code).not.toBe(0);
+  const flowLine = a.split("\n").indexOf("<!-- flow -->") + 1;
+  const overlapLine = linesOf(result.stderr).find((line) =>
+    line.startsWith(`docs/a.md:${flowLine}: diagram_node_overlap:`),
+  );
+  expect(overlapLine).toContain("web");
+  expect(overlapLine).toContain("db");
+  const work = await readWork(dir);
+  expect(work.config).toBe(OLD_CONFIG);
+  expect(parse(work.config).version).toBe("v0.3.0");
+  expect(work.a).toBe(a);
+  expect(work.b).toBe(WORK_FILES["docs/b.md"]);
+  expect(await readFile(join(dir, "docs", "index.yaml"), "utf8")).toBe(index);
+});
