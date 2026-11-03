@@ -5568,6 +5568,11 @@
       gap: 6px;
       height: 26px;
       padding: 0 10px;
+
+      /* 畳んだ列の行 */
+      &[hidden] {
+        display: none;
+      }
     }
 
     /* 主キーの列の名前: 太字にする */
@@ -5627,6 +5632,11 @@
       border-block-start: 1px dashed var(--mdmark-color-border);
       color: var(--mdmark-color-muted);
       line-height: 24px;
+
+      /* 開いているテーブルの非表示の行 */
+      &[hidden] {
+        display: none;
+      }
     }
 
     /* 関係の線: 実線。端に多重度の記号を置くので矢じりは付けない */
