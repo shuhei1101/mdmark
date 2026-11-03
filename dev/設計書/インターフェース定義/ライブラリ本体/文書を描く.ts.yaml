@@ -3375,9 +3375,349 @@ flows:
     test: test_normal_when_color_preset_overridden
     refs:
       - dev/設計書/シナリオ/単一ユースケース/テーマを上書きする#scenarios[正常シナリオ（色のプリセットを上書きする）]
+  - name: 正常系（比較元の Markdown で強調する）
+    summary: '`opts.baseMarkdown` を渡すと、取り出し元を使わずに本文の中のブロックを追加と削除の色で塗り分ける'
+    setup:
+      - name: 配布物を読んだページ
+        description: 正常系と同じ。`opts.diffSource` は渡さない
+      - name: 比較元の Markdown
+        description: 段落 A・段落 B・段落 C の 3 つの段落を持つ文書
+      - name: 描く Markdown
+        description: 比較元の段落 A の語を 1 つ書き換え、段落 B を削除し、段落 C の後に段落 D を追加した文書
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: mount(el, { markdown, baseMarkdown })
+        M->>M: 比較元と本文を描いてブロックに分け、行で比べる
+        M->>P: 追加と削除の色を当てたブロックで本文を描く
+    expected:
+      - 段落 A と段落 D が class `mdmark-diff-block`・`data-kind="add"` の要素に包まれ、段落 C は包まれていない
+      - 段落 A と段落 C の間に、段落 B を包んだ `data-kind="del"` の要素がある
+      - 「変更を見る」のボタンと差分の場所が無い
+    test: test_normal_when_base_markdown
+  - name: 正常系（比較元を差し替える）
+    summary: '`update` の第 2 引数で比較元を差し替え、省くと前の比較元を保ち、`null` で強調を外す'
+    setup:
+      - name: 文書を描いた要素
+        description: 正常系（比較元の Markdown で強調する）の比較元と描く Markdown を `mount` で描いた要素
+      - name: 次の比較元の Markdown
+        description: 描く Markdown から段落 D だけを除いた文書
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: update(markdown, { baseMarkdown: 次の比較元 })
+        M->>P: 段落 D だけを追加の色で描く
+        P->>M: update(markdown)
+        M->>P: 次の比較元との強調のまま描く
+        P->>M: update(markdown, { baseMarkdown: null })
+        M->>P: 色を当てずに描く
+    expected:
+      - 次の比較元へ差し替えた後、`data-kind="add"` の要素は段落 D の 1 つだけで、`data-kind="del"` の要素が無い
+      - 第 2 引数を省いた `update` の後も、`data-kind="add"` の要素は段落 D の 1 つだけ
+      - '`baseMarkdown: null` の `update` の後、class `mdmark-diff-block` の要素が無く、本文が `opts.baseMarkdown` を省いて描いたときと同じ HTML'
+    test: test_normal_when_base_replaced
+  - name: 正常系（取り出し元と比較元を両方渡す）
+    summary: '`opts.diffSource` と `opts.baseMarkdown` を両方渡すと、本文の中の強調は比較元で行い、取り出し元は差分を開く UI にだけ使う'
+    setup:
+      - name: 配布物を読んだページ
+        description: 正常系（比較元の Markdown で強調する）と同じ。`opts.docId` は `guide`
+      - name: 取り出し元
+        description: リビジョン 2 つを返し、`revisions`・`content` の呼び出しを記録する
+      - name: Mock
+        description: 取り出し元はページの中のメモリーで返す
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        participant D as 取り出し元
+        P->>M: mount(el, { markdown, baseMarkdown, docId, diffSource, diffMode: "blocks" })
+        M->>P: 比較元で色を当てた本文
+        P->>M: mount(el, { markdown, baseMarkdown, docId, diffSource })
+        M->>P: 比較元で色を当てた本文と「変更を見る」
+        P->>M: 「変更を見る」を押す
+        M->>D: revisions・content
+        D-->>M: リビジョンと本文
+        M->>P: 差分の行
+    expected:
+      - '`diffMode: "blocks"` で描いたとき、本文の色は正常系（比較元の Markdown で強調する）と同じで、`revisions`・`content` が 1 回も呼ばれない'
+      - '`diffMode` を省いて描いたとき、本文の色は同じで「変更を見る」のボタンがあり、押す前は `revisions` が呼ばれない'
+      - 「変更を見る」を押すと、取り出し元の 2 つのリビジョンの差分の行が出る
+    test: test_normal_when_base_with_diff_source
+  - name: 異常系（比較元が文字列でない・TypeError）
+    summary: '`opts.baseMarkdown` か `update` の `baseMarkdown` が文字列でも `null` でもないと、描かずに投げる'
+    setup:
+      - name: 配布物を読んだページ
+        description: 正常系と同じ
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: mount(el, { markdown, baseMarkdown: 1 })
+        M-->>P: TypeError
+        P->>M: mount(el, { markdown }) の後 update(markdown, { baseMarkdown: 1 })
+        M-->>P: TypeError
+    expected:
+      - '`mount` が、メッセージに `baseMarkdown` を含む `TypeError` を投げ、`el` の中が空で class `mdmark` を持たない'
+      - '`update` が、メッセージに `baseMarkdown` を含む `TypeError` を投げ、`el` の中が前に描いた本文のまま'
+    test: test_error_when_base_not_string
+  - name: 正常系（列の表示を知らせる）
+    summary: '`+columns` の表で列を出し入れするたびに、表の番号と隠している列の名前を `opts.onColumnsChange` に渡す'
+    setup:
+      - name: 配布物を読んだページ
+        description: 正常系と同じ。受けた引数を配列に記録する `onColumnsChange` を渡す
+      - name: 列を隠す表を 2 つ持つ Markdown
+        description: '表の印で囲まない表を 1 つ置き、続けて `<!-- table: data +columns -->` で名前・説明・更新日の 3 列の表と、`<!-- table: data +columns hide=備考 -->` で名前・備考の 2 列の表を囲んだ文書'
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: mount(el, { markdown, onColumnsChange })
+        M->>P: 2 つ目の +columns の表の備考を隠して描く
+        P->>M: 1 つ目の表で更新日、説明の順にチェックを外す
+        M->>P: onColumnsChange({ tableIndex: 0, hidden: [説明, 更新日] })
+        P->>M: 2 つ目の表で備考にチェックを入れ、「既定に戻す」を押す
+        M->>P: onColumnsChange({ tableIndex: 1, hidden: [] })
+        M->>P: onColumnsChange({ tableIndex: 1, hidden: [備考] })
+        P->>M: update(markdown)
+        M->>P: 描き直す
+    expected:
+      - 描いた直後と `update` の後には `onColumnsChange` が呼ばれていない
+      - '更新日のチェックを外すと `{ tableIndex: 0, hidden: ["更新日"] }`、続けて説明を外すと `{ tableIndex: 0, hidden: ["説明", "更新日"] }`（表の列の並びの順）で呼ばれる'
+      - '備考にチェックを入れると `{ tableIndex: 1, hidden: [] }`、「既定に戻す」を押すと `{ tableIndex: 1, hidden: ["備考"] }` で呼ばれる'
+      - 呼ばれた回数は操作の回数（4 回）と同じ
+    test: test_normal_when_columns_changed
+  - name: 異常系（列の表示の知らせが例外を投げる）
+    summary: '`opts.onColumnsChange` が例外を投げても、列の表示の切り替えは済ませて `console.error` に出す'
+    setup:
+      - name: 配布物を読んだページ
+        description: 正常系（列の表示を知らせる）と同じで、`onColumnsChange` が `Error("boom")` を投げる
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 1 つ目の表で説明のチェックを外す
+        M->>P: onColumnsChange(...)
+        P-->>M: 例外
+        M->>M: console.error に出す
+    expected:
+      - 説明の列の見出しとセルが `hidden` になっている
+      - '`console.error` が 1 回呼ばれ、引数に `onColumnsChange` と元のエラーを含む'
+      - 例外が `mount` の呼び出し元とイベントの外へ出ない
+    test: test_error_when_columns_callback_throws
+  - name: 正常系（コメントを修正・削除する）
+    summary: '読み書きの関数が `update`・`remove` を持つと、吹き出しの「編集」「削除」から修正し、確認を経て削除する'
+    setup:
+      - name: 配布物を読んだページ
+        description: 正常系（コメントを付ける）と同じ
+      - name: コメントの読み書きの関数
+        description: '`load` が `テーマの変数` に付いた `id` が `c1` のコメントと、`CSS` に付いた `id` が `c2` のコメントを返し、`update`・`remove` は受けた引数を記録して解決する'
+      - name: 段落を持つ Markdown
+        description: '`描いた文書の見た目はテーマの変数で変える。CSS を書いて上書きする。` の段落を 1 つ持つ文書'
+      - name: Mock
+        description: 読み書きの関数はページの中のメモリーで返す
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        participant S as 読み書きの関数
+        P->>M: テーマの変数の印を押す
+        M->>P: 「編集」「削除」の付いた吹き出し
+        P->>M: 「編集」を押し、本文を書き換えて保存する
+        M->>S: update({ docId, id: c1, body })
+        S-->>M: 解決
+        M->>P: 書き換えた本文の吹き出し
+        P->>M: CSS の印の吹き出しの「削除」を押す
+        M->>P: 削除の確認
+        P->>M: 確認の「削除」を押す
+        M->>S: remove({ docId, id: c2 })
+        S-->>M: 解決
+        M->>P: CSS の印を外した本文
+    expected:
+      - 吹き出しのコメントごとに、`aria-label` が `編集`・`削除` のボタンがある
+      - 「編集」を押すと、そのコメントの場所が本文を入れた入力欄に替わり、入力欄へフォーカスが移る
+      - '保存を押すと `update` が `{ docId: "guide", id: "c1", body: 書き換えた本文 }` で 1 回呼ばれ、吹き出しに書き換えた本文が出て、そのコメントの「編集」へフォーカスが移る。`テーマの変数` の印は付いたまま'
+      - 「削除」を押すと、コメントの下に `このコメントを削除しますか? 削除すると元に戻せません。` とキャンセル・削除のボタンが出て、キャンセルへフォーカスが移る。この時点で `remove` は呼ばれていない
+      - '確認の「削除」を押すと `remove` が `{ docId: "guide", id: "c2" }` で 1 回呼ばれ、`CSS` の印が外れて本文の文字が元の並びに戻り、その段落が `tabindex="-1"` を持ってフォーカスを受ける'
+    test: test_normal_when_comment_edited_and_removed
+  - name: 正常系（修正・削除の関数が無い）
+    summary: '読み書きの関数が `update`・`remove` を持たないときは、吹き出しに「編集」「削除」を出さない'
+    setup:
+      - name: 配布物を読んだページ
+        description: 正常系（コメントを付ける）と同じ
+      - name: コメントの読み書きの関数
+        description: '`load`・`save` だけを持ち、`load` が `テーマの変数` のコメント 1 件を返す'
+      - name: Mock
+        description: 正常系（コメントを付ける）と同じ
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: テーマの変数の印を押す
+        M->>P: 本文だけの吹き出し
+    expected:
+      - 吹き出しに `aria-label` が `編集`・`削除` のボタンが無い
+      - '`console.error` が呼ばれない'
+    test: test_normal_when_comment_store_without_edit
+  - name: 異常系（コメントを修正できない）
+    summary: '`update` が reject すると、入力欄と書き換えた本文を残して知らせを出す'
+    setup:
+      - name: 配布物を読んだページ
+        description: 正常系（コメントを付ける）と同じ
+      - name: 修正できない読み書きの関数
+        description: 正常系（コメントを修正・削除する）と同じで、`update` が `Error("network")` で reject する
+      - name: Mock
+        description: 正常系（コメントを付ける）と同じ
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        participant S as 読み書きの関数
+        P->>M: 「編集」を押し、本文を書き換えて保存する
+        M->>S: update({ docId, id: c1, body })
+        S-->>M: reject
+        M->>P: 入力欄に知らせを出す
+    expected:
+      - 入力欄が開いたままで、書き換えた本文が残っている
+      - '`role="alert"` の要素が `コメントを保存できませんでした。書いたコメントは残っています。もう一度「保存」を押してください。` を持ち、入力欄が `aria-invalid="true"` を持つ'
+      - キャンセルを押すと、吹き出しに書き換える前の本文が出る
+      - '`console.error` が 1 回呼ばれ、引数に `update`・`guide`・`c1`・元のエラーを含む'
+    test: test_error_when_comment_update_rejected
+  - name: 異常系（コメントを削除できない）
+    summary: '`remove` が reject すると、コメントと印を残し、削除の確認を開いたまま知らせを出す'
+    setup:
+      - name: 配布物を読んだページ
+        description: 正常系（コメントを付ける）と同じ
+      - name: 削除できない読み書きの関数
+        description: 正常系（コメントを修正・削除する）と同じで、`remove` が `Error("network")` で reject する
+      - name: Mock
+        description: 正常系（コメントを付ける）と同じ
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        participant S as 読み書きの関数
+        P->>M: 「削除」を押し、確認の「削除」を押す
+        M->>S: remove({ docId, id: c2 })
+        S-->>M: reject
+        M->>P: 削除の確認に知らせを出す
+    expected:
+      - '`CSS` の印が付いたままで、吹き出しにコメントの本文が残っている'
+      - '`role="alert"` の要素が `コメントを削除できませんでした。もう一度「削除」を押してください。` を持ち、削除の確認が開いたまま'
+      - '`console.error` が 1 回呼ばれ、引数に `remove`・`guide`・`c2`・元のエラーを含む'
+    test: test_error_when_comment_remove_rejected
+  - name: 正常系（コメントを読み直す）
+    summary: '`reloadComments` で `load` を呼び直し、本文を描き直さずに印だけを付け直す'
+    setup:
+      - name: 配布物を読んだページ
+        description: 正常系（コメントを付ける）と同じ
+      - name: コメントの読み書きの関数
+        description: '1 回目の `load` は `テーマの変数` のコメント 1 件、2 回目は `テーマの変数` と `CSS` のコメント 2 件を返す'
+      - name: 段落と表を持つ Markdown
+        description: '正常系（コメントを修正・削除する）の段落の後に、`<!-- table: data +sort -->` で囲んだ名前の列の表（行は `b`・`a`・`c` の順）を置いた文書'
+      - name: Mock
+        description: 正常系（コメントを付ける）と同じ
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        participant S as 読み書きの関数
+        P->>M: mount(el, { markdown, config, docId, commentStore })
+        M->>S: load({ docId })
+        S-->>M: コメント 1 件
+        P->>M: 表の名前の列を昇順に並べ替える
+        P->>M: reloadComments()
+        M->>S: load({ docId })
+        S-->>M: コメント 2 件
+        M->>P: 印を付け直して解決する
+    expected:
+      - '`reloadComments()` の Promise が解決した時点で、`テーマの変数` と `CSS` に印がある'
+      - '`load` が 2 回呼ばれる'
+      - 表の行が並べ替えた順（`a`・`b`・`c`）のまま
+    test: test_normal_when_comments_reloaded
+  - name: 正常系（コメントの機能が無いときの読み直し）
+    summary: '`comments` がオフか読み書きの関数を渡さないときの `reloadComments` は、`load` を呼ばずに解決する'
+    setup:
+      - name: 配布物を読んだページ
+        description: 正常系と同じ。`opts.config` は渡さず、`opts.docId` は `guide`
+      - name: コメントの読み書きの関数
+        description: 正常系（コメントを付ける）と同じ
+      - name: Mock
+        description: 正常系（コメントを付ける）と同じ
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: reloadComments()
+        M-->>P: 解決
+    expected:
+      - '`reloadComments()` の Promise が `undefined` で解決する'
+      - '`load` が呼ばれない'
+    test: test_normal_when_comments_reload_disabled
+  - name: 異常系（コメントを読み直せない）
+    summary: '`reloadComments` の `load` が reject すると、今の印を残して Promise を reject する'
+    setup:
+      - name: 配布物を読んだページ
+        description: 正常系（コメントを付ける）と同じ
+      - name: 読み直せない読み書きの関数
+        description: '1 回目の `load` は `テーマの変数` のコメント 1 件を返し、2 回目は `Error("network")` で reject する'
+      - name: Mock
+        description: 正常系（コメントを付ける）と同じ
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        participant S as 読み書きの関数
+        P->>M: reloadComments()
+        M->>S: load({ docId })
+        S-->>M: reject
+        M-->>P: reject
+    expected:
+      - '`reloadComments()` の Promise が元のエラーで reject される'
+      - '`テーマの変数` の印が付いたまま'
+      - '`console.error` が 1 回呼ばれ、引数に `load`・`guide`・元のエラーを含む'
+    test: test_error_when_comments_reload_rejected
+  - name: 正常系（コメントの箇所へ移る）
+    summary: '`focusComment` で、そのコメントの印を画面に入れてフォーカスを移し、強調する'
+    setup:
+      - name: 配布物を読んだページ
+        description: 正常系（コメントを付ける）と同じ。`el` の高さは文書の末尾の段落が画面の外になる高さ
+      - name: コメントの読み書きの関数
+        description: '`load` が、先頭の段落の `先頭の語` に付いた `id` が `c1` のコメントと、末尾の段落の `末尾の語` に付いた `id` が `c9` のコメントを返す'
+      - name: 段落の多い Markdown
+        description: 30 の段落を持ち、先頭の段落に `先頭の語`、末尾の段落に `末尾の語` を含む文書
+      - name: Mock
+        description: 正常系（コメントを付ける）と同じ
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: focusComment("c1")
+        M->>P: 先頭の語の印を強調する
+        P->>M: focusComment("c9")
+        M->>P: 末尾の語の印を画面に入れて強調する
+        P->>M: focusComment("none")
+        M->>P: 何もしない
+    expected:
+      - '`focusComment("c1")` の後、`先頭の語` の印が `data-focused` を持ち、フォーカスを受けている'
+      - '`focusComment("c9")` の後、`末尾の語` の印が画面に入り、`data-focused` を持つ印はそれ 1 つだけ'
+      - 吹き出しは開かない
+      - '`focusComment("none")` の後、スクロールの位置・フォーカス・`data-focused` が変わらず、`console.error` が呼ばれない'
+    test: test_normal_when_comment_focused
 lead: 使う側のページが、要素と Markdown と設定を渡し、要素の中に文書を描く。戻り値で本文の差し替えと片付けができる。
 idempotent: false
-side_effects: '`el` の中身と class を書き換え、記法の操作のイベントを `el` の中に付ける。`side-toc` がオンで見出しがあるとき、`el` の中を本文の列と右側の目次に分け、見出しの位置を `IntersectionObserver` で見る。`window` の `beforeprint`・`afterprint`・`hashchange` と、絞り込みのドロワーを開いている間だけ `document` の `pointerdown`・`keydown` を受け取る。図の部品か埋め込んだ HTML があるとき、図の表示する枠と埋め込んだ HTML の大きさを `ResizeObserver` で見、ツールチップを開いている間だけ `document` の `keydown` と `window` の `scroll`・`resize` を受け取り、全画面の間だけ `el` の中に `dialog` を置く。操作できる部品の写すボタン・表のコピー・行の URL のコピー・コードブロックのコピー・ファイルツリーのコピーでクリップボードに書く。表があるとき、表の大きさと描く先の要素の幅を `ResizeObserver` で見、`animation-timeline` を持たないブラウザでは `window` と文書の中の `scroll` と `window` の `resize` を受け取る。`data-group` を持つタブがあるとき、localStorage の `mdmark-tabs:{group}` を描くたびに読み、読む人がタブを選ぶと書く。そのとき、ページの中の `el` の外にある同じ `group` のタブ群の選択も書き換える。文書に外部ライブラリか拡張の印があるとき、そのモジュールを読む。色分けの対象のコードブロックがあるとき、`syntax.url` の先の core と、使う言語のモジュールを読む。`opts.diffSource` を渡したとき、読む人が差分を開くと（`opts.diffMode` が `open` なら描いた時点、`blocks` なら描くたびに）取り出し元の `revisions`・`content` を呼び、差分の行を出している間だけミニマップの帯を置き、送り先のスクロールの `scroll` と `window` の `resize` を受け取る。文書にビューの印があるとき、ビューの部品のモジュールを読む。`comments` がオンで `opts.commentStore` を渡したとき、コメントの部品のモジュールを読み、`load` を描くたびに 1 回呼び、保存で `save` を呼ぶ。その間は `document` の `selectionchange` を受け取り、コメントのボタン・入力欄・吹き出しを `document.body` に置く'
+side_effects: '`el` の中身と class を書き換え、記法の操作のイベントを `el` の中に付ける。`side-toc` がオンで見出しがあるとき、`el` の中を本文の列と右側の目次に分け、見出しの位置を `IntersectionObserver` で見る。`window` の `beforeprint`・`afterprint`・`hashchange` と、絞り込みのドロワーを開いている間だけ `document` の `pointerdown`・`keydown` を受け取る。図の部品か埋め込んだ HTML があるとき、図の表示する枠と埋め込んだ HTML の大きさを `ResizeObserver` で見、ツールチップを開いている間だけ `document` の `keydown` と `window` の `scroll`・`resize` を受け取り、全画面の間だけ `el` の中に `dialog` を置く。操作できる部品の写すボタン・表のコピー・行の URL のコピー・コードブロックのコピー・ファイルツリーのコピーでクリップボードに書く。表があるとき、表の大きさと描く先の要素の幅を `ResizeObserver` で見、`animation-timeline` を持たないブラウザでは `window` と文書の中の `scroll` と `window` の `resize` を受け取る。`data-group` を持つタブがあるとき、localStorage の `mdmark-tabs:{group}` を描くたびに読み、読む人がタブを選ぶと書く。そのとき、ページの中の `el` の外にある同じ `group` のタブ群の選択も書き換える。文書に外部ライブラリか拡張の印があるとき、そのモジュールを読む。色分けの対象のコードブロックがあるとき、`syntax.url` の先の core と、使う言語のモジュールを読む。`opts.diffSource` を渡したとき、読む人が差分を開くと（`opts.diffMode` が `open` なら描いた時点、`blocks` なら描くたびに）取り出し元の `revisions`・`content` を呼び、差分の行を出している間だけミニマップの帯を置き、送り先のスクロールの `scroll` と `window` の `resize` を受け取る。文書にビューの印があるとき、ビューの部品のモジュールを読む。`comments` がオンで `opts.commentStore` を渡したとき、コメントの部品のモジュールを読み、`load` を描くたびに 1 回呼び、保存で `save`、読み書きの関数が持つときは吹き出しの修正で `update`・削除で `remove`、`reloadComments` で `load` を呼ぶ。その間は `document` の `selectionchange` を受け取り、コメントのボタン・入力欄・吹き出しを `document.body` に置く'
 callers:
   - dev/設計書/シナリオ/単一ユースケース/文書を描く#
   - dev/設計書/シナリオ/単一ユースケース/テーマを上書きする#
@@ -3476,6 +3816,22 @@ request:
     description: コメントを読み込み、保存する関数。`comments` がオンのときだけ使う
     constraints: '`opts.docId` と一緒に渡す'
     notes: 形は制約の「コメントの読み書きの関数」。保存先は mdmark が持たず、使う側が書く
+  - name: opts.baseMarkdown
+    type: string | null
+    required: false
+    default: なし（比較元で強調しない）
+    location: argument
+    description: 比較元の Markdown。渡すと、本文の中で比較元から追加・変更したブロックと削除したブロックを、`opts.diffMode` が `blocks` のときと同じ色で塗り分ける
+    constraints: 文字列か `null`。それ以外は `TypeError`
+    notes: '`opts.diffSource` は要らない。`null` は省いたときと同じ。`update` の第 2 引数で差し替える'
+  - name: opts.onColumnsChange
+    type: '(event: MdmarkColumnsChange) => void'
+    required: false
+    default: なし（知らせない）
+    location: argument
+    description: '`+columns` の表で列の表示を切り替えるたびに呼ぶ関数。`MdmarkColumnsChange` は `tableIndex`（本文の中の `+columns` の表の出現順の番号。0 から）と `hidden`（隠している列の見出しの文字の並び。表の列の順）'
+    constraints: 関数。それ以外は `TypeError`
+    notes: 描いた直後の `hide=` の状態と、`update` で描き直したときは呼ばない
   - name: opts.config.tooltips.placement
     type: '"top" | "bottom"'
     required: false
@@ -3544,9 +3900,17 @@ request_example: |-
   ```
 response:
   - name: update
-    type: '(markdown: string) => void'
+    type: '(markdown: string, options?: { baseMarkdown?: string | null }) => void'
     description: 本文だけを描き直し、記法の操作を付け直す。設定は `mount` に渡したものを使う
-    notes: '`destroy` の後は何もしない'
+    notes: '`destroy` の後は何もしない。`options.baseMarkdown` を渡すと比較元を差し替え、`null` で比較元を外す。`options` か `options.baseMarkdown` を省くと前の比較元のまま描く'
+  - name: reloadComments
+    type: () => Promise<void>
+    description: 本文を描き直さずに `opts.commentStore.load` を呼び直し、コメントの印を付け直す
+    notes: '`comments` がオフ・`opts.commentStore` が無い・コメントの部品のモジュールを読めないとき、`destroy` の後は、`load` を呼ばずに解決する'
+  - name: focusComment
+    type: '(id: string) => void'
+    description: その `id` のコメントの印を画面に入れてフォーカスを移し、強調する
+    notes: 印が無い `id`（箇所が見つからないコメントと、`load` を待っている間を含む）と `destroy` の後は何もしない
   - name: destroy
     type: () => void
     description: '`el` の中を空にして class `mdmark` を外し、記法の操作と `beforeprint`・`afterprint`・`hashchange`・`document` の受け取りを外す'
@@ -3564,11 +3928,26 @@ exceptions:
     condition: 取り出し元の `revisions`・`content` が reject するか、返した値が制約の「差分の取り出し元」の形に合わない
     notes: 例外を投げず、差分の場所を知らせの枠に替え、文書の本文は描いたまま残す。取り出し元の関数の名前・文書の `id`・リビジョンの `id`・元のエラーか合わなかった値を `console.error` に出す
   - name: TypeError（コメント）
-    condition: '`opts.commentStore` を渡し、`opts.docId` を渡さないか、`opts.commentStore` が `load`・`save` の関数を持たない'
+    condition: '`opts.commentStore` を渡し、`opts.docId` を渡さないか、`opts.commentStore` が `load`・`save` の関数を持たないか、`update`・`remove` を関数でない値で持つ'
     notes: 何も描かずに投げる。メッセージに `docId` か `commentStore` を含める
   - name: なし（コメントを保存できない）
     condition: '`save` が reject するか、返した値が制約の「コメントの読み書きの関数」の形に合わない'
     notes: 例外を投げず、入力欄に書いた本文を残して `role="alert"` の知らせを出し、印を付けない。`save`・文書の `id`・元のエラーを `console.error` に出す
+  - name: TypeError（比較元）
+    condition: '`opts.baseMarkdown` か `update` の `options.baseMarkdown` が、文字列でも `null` でもない'
+    notes: '`mount` は何も描かずに、`update` は前の本文を残して投げる。メッセージに `baseMarkdown` を含める'
+  - name: TypeError（列の表示の知らせ）
+    condition: '`opts.onColumnsChange` を関数でない値で渡す'
+    notes: 何も描かずに投げる。メッセージに `onColumnsChange` を含める
+  - name: なし（列の表示の知らせが例外を投げる）
+    condition: '`opts.onColumnsChange` が例外を投げる'
+    notes: 列の表示の切り替えは済ませ、`onColumnsChange` と元のエラーを `console.error` に出す
+  - name: なし（コメントを修正・削除できない）
+    condition: '`update`・`remove` が reject する'
+    notes: 例外を投げない。修正は入力欄と書き換えた本文を残し、削除はコメントと印を残して削除の確認を開いたまま、`role="alert"` の知らせを出す。関数の名前・文書の `id`・コメントの `id`・元のエラーを `console.error` に出す
+  - name: reject（コメントを読み直せない）
+    condition: '`reloadComments` の `load` が reject するか、返した値が制約の「コメントの読み書きの関数」の形に合わない'
+    notes: '`reloadComments` の Promise を元のエラーで reject し、今の印を残す。`load`・文書の `id`・元のエラーか合わなかった値を `console.error` に出す'
   - name: なし（コメントの読み書きの関数が無い）
     condition: '`comments` がオンで `opts.commentStore` を渡さない'
     notes: 例外を投げず、コメントのボタンを出さない。コメントの機能に読み書きの関数が要ることを `mount` ごとに 1 回だけ `console.error` に出す
@@ -3697,6 +4076,14 @@ constraints:
   - item: コメントの箇所
     constraint: 描くたび（`mount`・`update`）に `load` を 1 回呼び、コメントごとに、本文の文字の中で `prefix + quote + suffix` が一致する箇所、無ければ `quote` が 1 か所だけ一致する箇所の `quote` を印で包む。同じ箇所のコメントは 1 つの印にまとめ、吹き出しに並べる。箇所が見つからないコメントは、文書の末尾の「箇所が見つからないコメント」の一覧（選んだ文字と本文）に出し、空なら置かない。`load` を読めないときは印を付けず、新しいコメントは付けられる。印は本文の文字を変えず、`destroy` で外す
     notes: 一覧の題と文言は画面設計『文書』
+  - item: コメントの修正と削除
+    constraint: '`opts.commentStore` が `update({ docId, id, body }: { docId: string; id: string; body: string }): Promise<void>` と `remove({ docId, id }: { docId: string; id: string }): Promise<void>` の両方を持つときだけ、吹き出しのコメントごとに、本文の右上へ `aria-label`・`title` が `編集`・`削除` のアイコンのボタンを置く（片方だけ持つときはそちらのボタンだけを置く）。「編集」は、そのコメントの場所を本文を入れた入力欄（「キャンセル」「保存」）に替えて入力欄へフォーカスを移し、本文が空のまま保存すると `コメントを書いてから保存してください。` を出す。保存を待つ間は保存のボタンを押せなくして `保存しています…` にし、解決したら書き換えた本文を出してそのコメントの「編集」へフォーカスを移す。reject したら入力欄と本文を残し、`role="alert"` で `コメントを保存できませんでした。書いたコメントは残っています。もう一度「保存」を押してください。` を出す。キャンセルと Esc で入力欄を閉じ、書き換える前の本文に戻して「編集」へフォーカスを移す。「削除」は、そのコメントの下に `このコメントを削除しますか? 削除すると元に戻せません。` と「キャンセル」「削除」を出してキャンセルへフォーカスを移す。確認の「削除」で `remove` を呼び、待つ間は押せなくして `削除しています…` にする。解決したらコメントを吹き出しから除き、同じ印にコメントが残れば次のコメント（無ければ前のコメント）の「編集」へフォーカスを移し、残らなければ印を外して吹き出しを閉じ、印を含んでいたブロックに `tabindex="-1"` を付けてフォーカスを移す（スクロールしない）。reject したらコメントと印を残し、削除の確認を開いたまま `role="alert"` で `コメントを削除できませんでした。もう一度「削除」を押してください。` を出す。修正・削除を待つ間に描き直すか `destroy` したときは、その結果を描かない'
+    notes: 修正・削除のボタンの置き方と削除の確認は確認ログの決定。見た目は部品設計『コメントの吹き出し』
+  - item: コメントの読み直し
+    constraint: '`reloadComments` は `load` を 1 回呼び、解決したら今の印を外してから制約「コメントの箇所」のとおり印と「箇所が見つからないコメント」の一覧を付け直し、その後に Promise を解決する。本文の HTML と記法の操作の状態（並べ替え・絞り込み・開閉）は変えない。開いている吹き出しは閉じ、書いている入力欄は残す。待つ間に `update`・`destroy`・次の `reloadComments` があったときは、その結果を描かずに解決する'
+  - item: コメントの箇所へ移る
+    constraint: '`focusComment(id)` は、その `id` のコメントを持つ印を、閉じた節・閉じた表の行の詳細の中なら開いてから `scrollIntoView({ block: "nearest" })` で画面に入れ、フォーカスを移して `data-focused` を付ける。ほかの印の `data-focused` は外す。吹き出しは開かない。`data-focused` は次の `focusComment` と、印を付け直す（描き直し・読み直し）まで残す'
+    notes: 強調の見た目（背景を濃くし、2px の線で全周を囲む）は部品設計『コメントの印』とモックの合意
   - item: 配色の切り替え
     constraint: '描く先の要素かその祖先が持つ class で、画面の配色を次の優先順に決める。(1) `mdmark-theme-dark` はダーク、`mdmark-theme-light` はライト (2) `vscode-high-contrast-light`・`vscode-light` はライト、`vscode-dark` と、`vscode-high-contrast-light` を一緒に持たない `vscode-high-contrast` はダーク (3) どれも無ければ `prefers-color-scheme`。同じ優先度の class が両方あるときは、描く先に近い祖先の class に従う。ダークの値は `prefers-color-scheme: dark` のときと同じ変数の値で、差分のミニマップの色も同じ規則で決める。印刷では class によらず明るい配色にする'
     notes: '`vscode-*` は VS Code が Webview の `body` に付ける class。`mdmark-theme-*` は、使う側が OS やホストの配色によらず固定するときに付ける（VS Code 拡張機能の `mdmark.preview.theme` が `light`・`dark` のとき）。使う側が層の外で上書きした変数は、どの配色でも層の中の値に勝つ'
@@ -3770,9 +4157,16 @@ constraints:
   - item: 対応する差分の出し方
     constraint: 配布物の `dist/index.js` は `diffModes`（`readonly ["button", "open", "blocks"]`）を名前付きで公開する。使う側は、読んだ配布物が `diffModes` を持たないか目的の出し方を含まないとき、その出し方に対応しないバージョンと見なす
     notes: '`opts.diffMode` を知らない前のバージョンの `mount` は指定を黙って無視するため、使う側が描く前に見分けられるようにする（VS Code 拡張機能の差分に対応しないバージョンの理由）'
+  - item: 型の配布
+    constraint: '`opts.baseMarkdown`・`opts.onColumnsChange`・`update` の第 2 引数・`reloadComments`・`focusComment` を `dist/mount.d.ts` の `MountOptions`・`MountHandle` に入れ、`MdmarkColumnsChange` を `dist/mount.d.ts` に書き出して `dist/index.d.ts` から名前付きで公開する'
   - item: 描いた文書のブロックの色分け
     constraint: 前と後の Markdown をそれぞれ今の描き方で描き、ブロックに分ける。ブロックは、本文の直下か節の中身（`div.mdmark-section-body`）の直下の要素のうち `mdmark-section-body` を除くもの（見出し・段落・リスト・表・コードブロック・注意書き・埋め込んだ HTML の範囲 等）で、節の中身はその中のブロックに分ける。リストはいちばん外の項目（`li`）、表は `tbody` の行（`tr`）を 1 つのブロックにする。ブロックの行の範囲は `data-source-line` から次のブロックの `data-source-line` の前まで。制約「差分の計算」の行の比べで、後のブロックの範囲に足した行があれば追加の色を当てる。前のブロックで範囲の空白だけでない行が全て消した行のものは削除の候補にし、制約「書き換えと入れ替えの見分け」で削除したブロックを決める
     notes: 確認ログの色分けの描き方（B）とリストと表の単位（A）。`sections` は既定でオンで、見出しの後ろは `mdmark-section-body` に入る（`src/render/syntax/sections.ts` の `wrapSections`）。節の開閉・右側の目次・アンカーは普通の描き方のまま使う
+  - item: 比較元の Markdown
+    constraint: '`opts.baseMarkdown` が文字列のとき、取り出し元を呼ばずに、前を `opts.baseMarkdown`、後を `opts.markdown` として制約「描いた文書のブロックの色分け」のとおり本文を描く。`opts.diffSource` も渡したときは、本文の中の色分けに比較元を使い、取り出し元は差分を開く UI（`opts.diffMode` が `button`・`open`）にだけ使う。`opts.diffMode` が `blocks` のときは取り出し元の `revisions`・`content` を呼ばない。`update` で比較元を差し替えたときと、比較元のまま本文を差し替えたときは、色分けを計算し直す'
+    notes: 取り出し元との優先はシナリオ『比較元のMarkdownを渡して変更を強調する』の決定。比較元で色を当てた本文は、制約「描く本文」の `render` の出力と同じではない
+  - item: 列の表示の知らせ
+    constraint: '`+columns` の表の列のチェックボックスを切り替えたときと「既定に戻す」を押したときに、表示を切り替えた後で `opts.onColumnsChange({ tableIndex, hidden })` を 1 回呼ぶ。`tableIndex` は本文の中の `+columns` の表の出現順（削除したブロックの中の表は数えない）。`hidden` は `hidden` にした列の見出しの文字（`textContent` の前後の空白を除いたもの）を表の列の順に並べた新しい配列'
   - item: 書き換えと入れ替えの見分け
     constraint: 同じ変えた塊の中で、削除の候補と追加の色を当てた後のブロックを前から順に対にし、対のブロックの文字を語ごとに比べる。同じ文字の数が長い方の文字の数の半分以上なら書き換えとして削除を出さず、半分未満なら入れ替えとして削除と追加の両方を出す。対にならない削除の候補は削除したブロックにする
     notes: 確認ログのモックへの合意（語を書き換えた段落は追加だけ、別の段落に入れ替えたときは削除と追加が並ぶ）
