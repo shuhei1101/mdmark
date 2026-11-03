@@ -1,0 +1,19 @@
+$ (rc=0; npm run lint || rc=1; npm run typecheck || rc=1; npm --prefix vscode run typecheck || rc=1; exit $rc)
+
+> lint
+> biome check .
+
+Checked 606 files in 3s. No fixes applied.
+
+> typecheck
+> tsc --noEmit
+
+tests/e2e/単一ユースケース/配布物をビルドして検査する.spec.ts(215,7): error TS2353: Object literal may only specify known properties, and 'guideContextLimit' does not exist in type '{ root: string; maxBytes: number; }'.
+tests/integration/lib/build.test.ts(321,5): error TS2353: Object literal may only specify known properties, and 'guideContextLimit' does not exist in type '{ root: string; maxBytes: number; }'.
+
+> mdmark-vscode@0.1.0 typecheck
+> tsc --noEmit
+
+exit=1
+
+残る違反 2 件は、インターフェース定義とシナリオで削除した「索引の文字数が上限を超える」異常系の結合テスト（tests/integration/lib/build.test.ts）と E2E（tests/e2e/単一ユースケース/配布物をビルドして検査する.spec.ts）が渡す guideContextLimit。結合テスト作成・E2E テスト作成の工程でテストごと削除する。

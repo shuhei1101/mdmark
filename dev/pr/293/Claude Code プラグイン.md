@@ -64,3 +64,18 @@
 ## テスト結果
 
 ドキュメント修正: 関係する単体・結合テストは無い（公開ドキュメントと dev-docs の配信元の設定だけを修正し、コードを変えないため）
+
+### 単体
+
+| ファイル | メソッド | 変更種別 | 結果 | 補足 |
+| --- | --- | --- | --- | --- |
+| `npm run test:unit` | 全実行 | 実行のみ | ✅ | 182 ファイル・1289 テスト pass<br>`テスト結果/20261103213018_a42221de_単体テスト.log` |
+| `tests/unit/src/plugin/tools.test.ts` | 全実行 | 修正 | ✅ | `read_guide`・`texts`・`usesProjectDir` のテストを削除し、`project_dir` を必須にした |
+| `tests/unit/src/plugin/mcp.test.ts` | 全実行 | 修正 | ✅ | 3 つのツール・`check` だけの `readOnlyHint`・instructions の文字数 |
+| `tests/unit/src/plugin/arguments.test.ts` | 全実行 | 修正 | ✅ | `read_guide` の形をテストの形と `export_html` に置き換えた |
+| `tests/unit/src/plugin/http.test.ts` | 全実行 | 修正 | ✅ | `plugin/guide` を置かずにリポジトリの直下で起動 |
+| `tests/unit/src/plugin/pre-tool-use.test.ts` | 全実行 | 修正 | ✅ | matcher と `TOOLS` の名前の一致 |
+| `tests/unit/src/plugin/guide.test.ts` | 全実行 | 修正 | ✅ | `parseGuideIndex` 以外のテストを削除 |
+| `tests/unit/src/plugin/session-start.test.ts` | 全実行 | 削除 | - | SessionStart のフックを削除したため |
+| `tests/unit/scripts/build-plugin.test.ts` | 全実行 | 修正 | ✅ | 使い方集を写す・リンクの書き換え・文字数のテストを削除 |
+| `tests/unit/scripts/build.test.ts` | 全実行 | 修正 | ✅ | `test_main_when_guide_index_too_long` を `test_main_when_guide_index_invalid` に置き換えた |
