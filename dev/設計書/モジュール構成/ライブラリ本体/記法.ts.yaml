@@ -5,13 +5,14 @@ directory: |-
   src/render/syntax/
   ├── headings.ts     # 見出しの ID とアンカー
   ├── sections.ts     # 節の囲み
-  ├── tables.ts       # 表の種類・機能・絞り込みと、表の属性・列と行の色
+  ├── tables.ts       # 表の種類・機能・絞り込みと、表の属性・列と行の色・多段の見出しと行見出しとセルの結合
+  ├── table-cells.ts  # 表の `^^`・`<<` のセルの結合の計画（トークンを使わない）
   ├── collapse.ts     # 表・タブ・ステップの折り畳みの指定（closed・open・title=）の読み取り
   ├── views.ts        # ビューの印の囲み
   ├── row-details.ts  # 行の詳細
-  ├── tabs.ts         # タブ
+  ├── tabs.ts         # タブと、入れ子のタブの開きと閉じの対応
   ├── steps.ts        # ステップ
-  ├── callouts.ts     # 注意書き
+  ├── callouts.ts     # 注意書きと、注意書きのタイトル・開閉・入れ子
   ├── tree.ts         # ファイルツリー
   ├── badges.ts       # バッジとバッジの色
   ├── text-color.ts   # 本文の文字の色
@@ -21,7 +22,7 @@ directory: |-
   ├── figures.ts      # 図表の番号と参照
   ├── toc.ts          # 目次
   ├── html.ts         # 埋め込んだ HTML
-  ├── code-blocks.ts  # コードブロックの題・行番号・行の強調とコードの行の印・色分けの対象の言語
+  ├── code-blocks.ts  # コードブロックの題・行番号・行の強調とコードの行の印・畳む行・色分けの対象の言語
   ├── warnings.ts     # 書き方の警告を差し込む助け
   └── tokens.ts       # 記法のコアルールが共有するトークンの助け（印の読み取り・閉じの印の探索・機能の判定）
   ```
@@ -55,6 +56,12 @@ data_models:
       - name: title
         type: string | undefined
         description: 折り畳みの見出し（`title=` の値）。`collapse` が `none` の表と、値の無い `title=` では入れない
+      - name: headRows
+        type: number
+        description: '`header-rows=` で `thead` にする表の先頭の行の数（既定 1）。数でない値と、表の行の数以上の値は 1 にする'
+      - name: rowHeader
+        type: number
+        description: '`row-header=` で `<th scope="row">` にする本文の各行の先頭の列の数（既定 0）。数でない値と、表の列の数以上の値は 0 にする'
   - name: TreeNode
     title: ツリーの項目
     container: src/parts/tree.ts
@@ -167,6 +174,23 @@ data_models:
     status: planned
     introduced:
       pr: 263
+  - name: CellMergePlan
+    title: セルの結合の計画
+    container: src/render/syntax/table-cells.ts
+    summary: 表のセルの文字の格子から決めた、セルごとの結合と、結合できない `^^`・`<<` の警告
+    properties:
+    - name: cells
+      type: 'Array<Array<{ rowspan: number; colspan: number; merged?: "up" | "left"; source?: [number, number] }>>'
+      description: 行と列の位置ごとのセル。結合の始まりのセルは `rowspan`・`colspan` に覆う数（覆わないときは 1）、結合したセルは `merged` に向きと `source` に始まりのセルの位置（行・列）を持つ。結合できない `^^`・`<<` は `merged` を持たない
+    - name: mergeColumns
+      type: number[]
+      description: 本文の行に `^^` の結合を持つ列の位置（小さい順）
+    - name: warnings
+      type: WarningItem[]
+      description: 結合する相手の無い `^^`・`<<` の項目（ラベルは `^^`・`<<`、本文に行と列の位置）
+    status: planned
+    introduced:
+      pr: 275
 constants:
   - name: TABLE_KINDS
     title: 表の種類と機能
@@ -397,7 +421,7 @@ functions:
     container: src/render/syntax/tables.ts
     kind: 関数
     scope: internal
-    summary: 表の印の引数と表の見出しから `TableSpec` を作る。印が無い表は `default`。`closed`・`open`・`title=` は `readCollapse` で読み、その項目を `warnings` に入れる。`hide=` は `columns`、`total=` は `total` を付けた表でだけ読み、機能の無い表のキー・先頭の列の `hide=`・表に無い列名・知らない計算は警告にする
+    summary: 表の印の引数と表の見出しから `TableSpec` を作る。印が無い表は `default`。`closed`・`open`・`title=` は `readCollapse` で読み、その項目を `warnings` に入れる。`hide=` は `columns`、`total=` は `total` を付けた表でだけ読み、機能の無い表のキー・先頭の列の `hide=`・表に無い列名・知らない計算は警告にする。`header-rows=`・`row-header=` は正の整数として読み取り、数でない値・`header-rows=` の表の行の数以上の値・`row-header=` の表の列の数以上の値は既定にして警告にする
     args:
       - name: args
         type: MdmarkMarkArgs | undefined
@@ -407,6 +431,10 @@ functions:
         type: string[]
         required: true
         description: 表の見出しの文字
+      - name: rowCount
+        type: number
+        required: true
+        description: 表の行の数（見出しの行を含む）
     returns:
       type: TableSpec
       description: 表の指定
@@ -441,6 +469,18 @@ functions:
         condition: 見出し `名前` で、`data closed title=リリースの一覧` と `data title=一覧` をそれぞれ読む
         mock: なし
         expected: 1 つ目は `collapse` が `closed`、`title` が `リリースの一覧`、`warnings` が空。2 つ目は `collapse` が `none`、`title` が無く、`warnings` に `title=` の項目
+      - name: test_read_table_spec_when_header_rows
+        case: 正常
+        summary: 見出しの行の数と行見出しの列の数を読み取る
+        condition: 見出し 4 列・行の数 5 で、`data header-rows=2 row-header=1`
+        mock: なし
+        expected: '`headRows` が 2、`rowHeader` が 1、`warnings` が空'
+      - name: test_read_table_spec_when_header_rows_invalid
+        case: 異常
+        summary: 表に収まらない数と数でない値を既定にして警告にする
+        condition: 見出し 3 列・行の数 3 で、`data header-rows=5 row-header=x` と `data row-header=3` をそれぞれ読み取る
+        mock: なし
+        expected: 1 つ目は `headRows` が 1、`rowHeader` が 0、`warnings` に `header-rows=`（本文に表の行の数 3）と `row-header=` の項目。2 つ目は `rowHeader` が 0、`warnings` に `row-header=`（本文に表の列の数 3）の項目
     callees:
       - '#functions[readCollapse]'
   - name: decorateTables
@@ -448,7 +488,7 @@ functions:
     container: src/render/syntax/tables.ts
     kind: 関数
     scope: internal
-    summary: コアルール。表に読み上げの名前と `tabindex`、セルに列名を付ける（今の処理）。`table` がオンなら、表の印の範囲の表と囲まない表を `readTableSpec` の指定で部品『表』の囲み（`data-kind`・`data-features`・`data-filter`・`data-hide`・`data-total`・折り畳み）に入れ（折り畳みの見出しは `title` か `表（{本文の行の数} 行）`）、`rowlink` の表は本文の各行に `rowIdOf` の `id`（`taken` は `env.headings` の ID と前の行の ID）を付けて先頭のセルに行へのリンクを置き、警告を囲みの頭に差し込む。`+total` の表は `findUnreadableTotals` で `sum`・`avg` の列の数として読めないセルを探し、列と計算ごとに 1 つずつの警告（値の並びは読めない値を `codes` で行内のコードにして `・` でつなぐ）を表の上に差し込む。閉じの印が無ければ文書の終わりまでを範囲にして警告を差し込む。表の範囲は `table_open` と `table_close` の入れ子の数で数え、自分の `table_open` に対応する `table_close` までにする。範囲の中の表（行の詳細の中の表）も部品『表』の囲みに入れ、当てる表の印の範囲は外の表の `table_open` より後ろで開くものに限る（無ければ `default`。外の表の印の指定は当てない）。表の範囲の中の表の印のトークンは、外の表と一緒に移さず使い切る。本文の行の数・`rowlink`・`total` は、入れ子の数が自分の表と同じ行だけを対象にする。セルの列名は、見出しを表ごとに積み、`table_close` で外の表の見出しに戻して付ける。`table` がオンなら、表のマーカーの範囲の表と囲まない表に `readTableColors` の色を当て、強調する列の `th`・`td` のトークンに class `mdmark-col-highlight` と `data-color`、色を付ける本文の行の `tr` のトークンに `data-color` を付け（どちらも `data-mdmark-own` を付ける）、読めない色の指定を表の囲みの頭の警告の項目に入れる
+    summary: コアルール。表に読み上げの名前と `tabindex`、セルに列名を付ける（今の処理）。`table` がオンなら、表の印の範囲の表と囲まない表を `readTableSpec` の指定で部品『表』の囲み（`data-kind`・`data-features`・`data-filter`・`data-hide`・`data-total`・折り畳み）に入れ（折り畳みの見出しは `title` か `表（{本文の行の数} 行）`）、`rowlink` の表は本文の各行に `rowIdOf` の `id`（`taken` は `env.headings` の ID と前の行の ID）を付けて先頭のセルに行へのリンクを置き、警告を囲みの頭に差し込む。`+total` の表は `findUnreadableTotals` で `sum`・`avg` の列の数として読めないセルを探し、列と計算ごとに 1 つずつの警告（値の並びは読めない値を `codes` で行内のコードにして `・` でつなぐ）を表の上に差し込む。閉じの印が無ければ文書の終わりまでを範囲にして警告を差し込む。表の範囲は `table_open` と `table_close` の入れ子の数で数え、自分の `table_open` に対応する `table_close` までにする。範囲の中の表（行の詳細の中の表）も部品『表』の囲みに入れ、当てる表の印の範囲は外の表の `table_open` より後ろで開くものに限る（無ければ `default`。外の表の印の指定は当てない）。表の範囲の中の表の印のトークンは、外の表と一緒に移さず使い切る。本文の行の数・`rowlink`・`total` は、入れ子の数が自分の表と同じ行だけを対象にする。セルの列名は、見出しを表ごとに積み、`table_close` で外の表の見出しに戻して付ける。`table` がオンなら、表のマーカーの範囲の表と囲まない表に `readTableColors` の色を当て、強調する列の `th`・`td` のトークンに class `mdmark-col-highlight` と `data-color`、色を付ける本文の行の `tr` のトークンに `data-color` を付け（どちらも `data-mdmark-own` を付ける）、読めない色の指定を表の囲みの頭の警告の項目に入れる。表のマーカーの範囲の表は、`headRows` が 2 以上なら本文の先頭の `headRows - 1` 行を `thead` へ移し、`rowHeader` の列の本文のセルを `<th scope="row">` にし、セルの文字の格子を `planCellMerges` に渡して結合を当てる。見出しの行は始まりのセルに `rowspan`・`colspan`（`colspan` を持つセルは `scope="colgroup"`、ほかは `scope="col"`）を付けて結合したセルのトークンを削除し、本文の行は結合したセルの中身を始まりのセルの中身のトークンのコピーに替えて `data-merge` と `hidden` を付け、始まりのセルに `rowspan`・`colspan` を付ける。`mergeColumns` を `data-merge-columns` に写し、`warnings` を表の囲みの頭の警告の項目に入れる。追加した属性はどれも `data-mdmark-own` を持つトークンに付ける。表のマーカーの範囲の外の表は結合しない
     description: 今の `src/render/parser.ts` の `decorateTables` をここへ移す。並べ替え・ピン止め・絞り込みのボタンは `mount` が付ける
     args:
       - name: state
@@ -461,6 +501,7 @@ functions:
       - '#functions[pushWarning]'
       - dev/設計書/モジュール構成/ライブラリ本体/部品.ts#functions[renderTable]
       - '#functions[readTableColors]'
+      - '#functions[planCellMerges]'
     unit_tests:
       - name: test_decorate_tables
         case: 正常
@@ -522,6 +563,18 @@ functions:
         condition: '`<!-- table: data highlight=金額 row-color=状態:完了=green row-at=2=red -->` 〜 `<!-- /table -->` の表（列 `名前`・`状態`・`金額`、状態 `完了`・`保留`）'
         mock: なし
         expected: 金額の列の `th` と 2 つの `td` が class `mdmark-col-highlight` と `data-color="blue"` を持ち、本文の `tr` が上から `data-color="green"`・`data-color="red"`、書き方の警告が無い
+      - name: test_decorate_tables_when_cells_merged
+        case: 正常
+        summary: 多段の見出し・行見出し・結合したセルにし、マーカーの外の表は結合しない
+        condition: インターフェース定義『文書をHTML文字列にする』の「正常系（表のセルの結合と多段の見出し）」の文書
+        mock: なし
+        expected: 囲んだ表の `thead` に `tr` が 2 つで、1 段目の 2 列目の `th` が `colspan="2"` と `scope="colgroup"` を持ち、1 段目に `<<` のセルが無い。本文の 1 列目が `<th scope="row">` で、1 行目が `rowspan="3"`、2・3 行目が `A`・`data-merge="up"`・`hidden` を持つ。囲みが `data-merge-columns="0"` を持ち、囲まない表のセルが `^^`・`<<` のまま
+      - name: test_decorate_tables_when_merge_invalid
+        case: 異常
+        summary: 読めない header-rows= と結合する相手の無いセルを 1 つの警告にまとめ、文字のまま出す
+        condition: インターフェース定義『文書をHTML文字列にする』の「正常系（読めないセルの結合）」の文書
+        mock: なし
+        expected: 表の前の警告が 1 つで、項目に `header-rows=`・`^^`・`<<` がある。`thead` の `tr` が 1 つで、`^^`・`<<` のセルが `rowspan`・`colspan`・`data-merge` を持たない
     refs:
       - '#functions[readTableSpec]'
       - '#functions[rowIdOf]'
@@ -560,7 +613,7 @@ functions:
     container: src/render/syntax/tabs.ts
     kind: 関数
     scope: internal
-    summary: コアルール。`tabs` がオンなら、`tabs` の範囲を最初に出る見出しの階層で区切り、部品『タブ』（`selected` 無し）の囲みと中身にする。印の引数は `readTabsOptions` で読み、読めた `group` と折り畳みの指定（`collapse`・`title`）を部品へ渡し、読めない指定の警告を範囲の前に差し込む。区切りの見出しのトークンは取り除く。見出しが無ければ警告を差し込み、中身をそのまま残す
+    summary: コアルール。`tabs` がオンなら、`tabs` の範囲を最初に出る見出しの階層で区切り、部品『タブ』（`selected` 無し）の囲みと中身にする。印の引数は `readTabsOptions` で読み、読めた `group` と折り畳みの指定（`collapse`・`title`）を部品へ渡し、読めない指定の警告を範囲の前に差し込む。区切りの見出しのトークンは取り除く。見出しが無ければ警告を差し込み、中身をそのまま残す。範囲の閉じは `findTabsClose` で入れ子を数えて探し、中身の中のタブのマーカーの範囲も同じ処理でタブにする（内側のタブは外側の中身の中で、内側の範囲で最初に出る見出しの階層で区切る）。タブ名は区切りの見出しの `inline` のトークンを `state.md.renderer.renderInline` で HTML にしたもの（`**` の強調は `strong` のまま）を部品へ渡し、折り畳みの見出しの既定にはタブ名のタグを除いた文字を使う。閉じの無い開きは、範囲の中に別のタブの開きを持たなければ文書の終わりまでを範囲にし、持てばその開きの場所に閉じの無い警告を 1 つ差し込み、文書の終わりまでのタブのマーカーをどれもタブにせず、見出しと中身をそのまま残す
     args:
       - name: state
         type: StateCore
@@ -571,6 +624,7 @@ functions:
       - '#functions[readTabsOptions]'
       - dev/設計書/モジュール構成/ライブラリ本体/部品.ts#functions[renderTabs]
       - '#functions[pushWarning]'
+      - '#functions[findTabsClose]'
     unit_tests:
       - name: test_build_tabs
         case: 正常
@@ -602,6 +656,24 @@ functions:
         condition: '`<!-- tabs: closed -->` で `### uv`・`### pip` を囲んだ範囲'
         mock: なし
         expected: '`open` を持たない `<details class="mdmark-collapsible"><summary>タブ（uv・pip）</summary>` の中に `mdmark-tabs` があり、書き方の警告が無い'
+      - name: test_build_tabs_when_nested
+        case: 正常
+        summary: 入れ子のタブを外側の中身の中のタブにする
+        condition: インターフェース定義『文書をHTML文字列にする』の「正常系（入れ子のタブと強調したタブ名）」の文書
+        mock: なし
+        expected: 外側の `mdmark-tabs` の直下の `mdmark-tab-panel` が 2 つで、`macOS` の中身に `zsh`・`bash` の `mdmark-tabs` がある。書き方の警告が無い
+      - name: test_build_tabs_when_strong_title
+        case: 正常
+        summary: 見出しの強調をタブ名の strong に残す
+        condition: '`### **Windows**` と `### macOS` を囲んだ範囲'
+        mock: なし
+        expected: '`<p class="mdmark-tab-title"><strong>Windows</strong></p>` があり、`**` が無い'
+      - name: test_build_tabs_when_nested_unclosed
+        case: 異常
+        summary: 閉じの足りない入れ子は外側の開きに警告を置き、タブにしない
+        condition: インターフェース定義『文書をHTML文字列にする』の「正常系（閉じの足りない入れ子のタブ）」の文書
+        mock: なし
+        expected: 外側の開きの場所に書き方の警告が 1 つあり、`mdmark-tabs` が無く、`<h3` の `macOS`・`Windows` と `<h4` の `zsh`・`bash` が残る
   - name: buildSteps
     title: ステップにする
     container: src/render/syntax/steps.ts
@@ -648,7 +720,7 @@ functions:
     container: src/render/syntax/callouts.ts
     kind: 関数
     scope: internal
-    summary: コアルール。`callout` がオンなら、1 行目が `[!種類]`（末尾に `-` を許す）の引用を部品『注意書き』にし、種類の文字を本文から外す。知らない種類は `note`
+    summary: コアルール。`callout` がオンなら、1 行目が `[!種類]`（末尾に `-` を許す）の引用を部品『注意書き』にし、種類の文字を本文から外す。知らない種類は `note`。1 行目は `readCallout` で読み取り、`+` は開いた折り畳み、種類の後ろの文字はタイトルとして部品へ渡し、1 行目を本文から削除する。注意書きの本文の範囲（引用の開きに対応する閉じまで）は同じ処理に渡し、中の引用も注意書きにする
     args:
       - name: state
         type: StateCore
@@ -657,6 +729,7 @@ functions:
     side_effects: '`state.tokens` を書き換える'
     callees:
       - dev/設計書/モジュール構成/ライブラリ本体/部品.ts#functions[renderCallout]
+      - '#functions[readCallout]'
     unit_tests:
       - name: test_build_callouts
         case: 正常
@@ -670,6 +743,12 @@ functions:
         condition: '`[!WARNING]-` と `[!FAQ]` の引用'
         mock: なし
         expected: 1 つ目が `<details class="markdown-alert markdown-alert-warning">`、2 つ目が `markdown-alert-note`
+      - name: test_build_callouts_when_titled_and_nested
+        case: 正常
+        summary: タイトル・+・入れ子の注意書きにする
+        condition: インターフェース定義『文書をHTML文字列にする』の「正常系（注意書きのタイトルと入れ子）」の文書
+        mock: なし
+        expected: '1 つ目のタイトルが `設定を先に確認する` で頭に読み上げだけの `ヒント: `、2 つ目が `open` を持つ `details` で `summary` が `詳細`、`markdown-alert-warning` の中に `markdown-alert-tip` があり、`[!` が無い'
   - name: parseTree
     title: 罫線のツリーを読む
     container: src/render/syntax/tree.ts
@@ -970,7 +1049,7 @@ functions:
       2. 引数を `parseMarkArgs` で読む。使えるキーは `group`・`default`・`filter`・`icons`。知らないキーは項目つきの警告にする
       3. 範囲に表が無ければ、範囲に表が無い警告を差し込み、中身はそのまま残す
       4. 最初の表の見出しの行の文字を列名にして、`group=`・`filter=` の列名を位置にし、`filter=` の種類を `FILTER_KINDS`、`icons=` の名前を `VIEW_ICON_NAMES` で確かめる。表に無い `group=` の列は `boardDisabled` に警告の `id` を入れ、表に無い `filter=` の列・知らない絞り込みの種類・使えないアイコンはその指定だけを当てずに警告にする（文言は画面設計『文書』の書き方の警告）
-      5. 表の `table_open` に、`data` の種類・`sort` と読めた `filter=` の列を持ち、`hide`・`totals` を空にした `TableSpec` を当てる（ビューの表に件数・列の表示の切り替え・集計は付けない）（`decorateTables` が表の部品にする）
+      5. 表の `table_open` に、`data` の種類・`sort` と読めた `filter=` の列を持ち、`hide`・`totals` を空にした `TableSpec` を当てる（ビューの表に件数・列設定・集計は付けない）（`decorateTables` が表の部品にする）
       6. 範囲を `<div class="mdmark-view" data-view="{ViewSpec の JSON}">` の開きと閉じの `html_block`（`markOwn`）で挟む。`mode` は `default=`、無ければ `group=` が当たれば `board`、それ以外は `table`。`default=board` で `group=` が当たらないときは `table`
     unit_tests:
       - name: test_build_views
@@ -1105,15 +1184,15 @@ functions:
     container: src/render/syntax/code-blocks.ts
     kind: 関数
     scope: internal
-    summary: '`code` の印の引数を、題・行番号の有無・強調する行に読む。知らないキー・指定、読めない `highlight=` の番号、コードブロックの行の数を超える行の番号は、当てずに警告にする'
+    summary: '`code` の印の引数を、題・行番号の有無・強調する行・最初から畳む行に読む。知らないキー・指定、読めない `highlight=`・`fold=` の番号、コードブロックの行の数を超える行の番号は、当てずに警告にする。`fold=` は `highlight=` と同じ書き方で読み取る'
     args:
       - name: options
         type: '{ args: MdmarkMarkArgs; lineCount: number }'
         required: true
         description: '`args` は `parseMarkArgs` が読んだ印の引数、`lineCount` は印を外した後のコードブロックの行の数'
     returns:
-      type: '{ title: string; lineNumbers: boolean; highlights: Set<number>; warnings: WarningItem[] }'
-      description: 題（無ければ空）・行番号を出すか・強調する行の番号（1 から）・読めなかった指定
+      type: '{ title: string; lineNumbers: boolean; highlights: Set<number>; folds: Set<number>; warnings: WarningItem[] }'
+      description: 題（無ければ空）・行番号を出すか・強調する行の番号（1 から）・最初から畳む行の番号（1 から）・読めなかった指定
     unit_tests:
       - name: test_read_code_spec
         case: 正常
@@ -1133,12 +1212,18 @@ functions:
         condition: '`highlight=2,5,x,3-1`、`lineCount` が 3'
         mock: なし
         expected: '`highlights` が 2 だけ、`warnings` に `5`・`x`・`3-1` がある'
+      - name: test_read_code_spec_when_fold
+        case: 正常
+        summary: 最初から畳む行を読み取り、無い行を警告にする
+        condition: '`fold=2,4-5,99`、`lineCount` が 6'
+        mock: なし
+        expected: '`folds` が 2・4・5、`warnings` に `99` の項目がある'
   - name: readLineMarks
     title: コードの行の印を読む
     container: src/render/syntax/code-blocks.ts
     kind: 関数
     scope: internal
-    summary: コードブロックの中身を行に分け、行末の `[!code ++]`・`[!code --]`・`[!code highlight]` を行の種類にして印を外す。行コメントが印だけなら印の直前の行コメントの頭（`LINE_COMMENT_HEADS`）も外し、外した後の行末の空白も外す。`[\!code …]` は `\` を外した文字にする。知らない印（`[!code focus]` など）はその行に当てず書いた文字のままにし、警告にする
+    summary: コードブロックの中身を行に分け、行末の `[!code ++]`・`[!code --]`・`[!code highlight]`・`[!code focus]`・`[!code error]`・`[!code warning]` を行の種類（`add`・`del`・`highlight`・`focus`・`error`・`warning`）にして印を外す。行コメントが印だけなら印の直前の行コメントの頭（`LINE_COMMENT_HEADS`）も外し、外した後の行末の空白も外す。`[\!code …]` は `\` を外した文字にする。知らない印（`[!code blink]` など）はその行に当てず書いた文字のままにし、警告にする
     args:
       - name: source
         type: string
@@ -1154,6 +1239,12 @@ functions:
         condition: '`let count = 1; // [!code ++]`・`foo(); // 消す [!code --]`・`x = 1  # [!code highlight]`・`<p>a</p> <!-- [!code ++] -->`・`a; /* [!code --] */`・`foo();// [!code ++]`・`i-- [!code ++]`'
         mock: なし
         expected: '`{ text: "let count = 1;", kind: "add" }`・`{ text: "foo(); // 消す", kind: "del" }`・`{ text: "x = 1", kind: "highlight" }`・`{ text: "<p>a</p>", kind: "add" }`・`{ text: "a;", kind: "del" }`・`{ text: "foo();", kind: "add" }`・`{ text: "i--", kind: "add" }`'
+      - name: test_read_line_marks_when_focus_error_warning
+        case: 正常
+        summary: focus・error・warning を行の種類にする
+        condition: '`a(); // [!code focus]`・`b(); # [!code error]`・`c(); /* [!code warning] */`'
+        mock: なし
+        expected: '`{ text: "a();", kind: "focus" }`・`{ text: "b();", kind: "error" }`・`{ text: "c();", kind: "warning" }`'
       - name: test_read_line_marks_when_escaped
         case: 正常
         summary: 打ち消した印は `\` を外した文字にして当てない
@@ -1163,15 +1254,15 @@ functions:
       - name: test_read_line_marks_when_unknown
         case: 異常
         summary: 知らない印は当てずに警告にする
-        condition: '`foo(); // [!code focus]`'
+        condition: '`foo(); // [!code blink]`'
         mock: なし
-        expected: '`{ text: "foo(); // [!code focus]" }` と、`[!code focus]` の警告'
+        expected: '`{ text: "foo(); // [!code blink]" }` と、`[!code blink]` の警告'
   - name: buildCodeBlocks
     title: コードブロックを飾る
     container: src/render/syntax/code-blocks.ts
     kind: 関数
     scope: internal
-    summary: 'コアルール。残っている `fence` のトークンごとに、情報文字列を `splitInfoString` で言語とファイル名に分けてから次を行う。`code` がオンのときは `readLineMarks` で行を読み、直前のトークンが `code` の印なら `readCodeSpec` で指定を読み、全てのコードブロックを部品『コードブロック』（言語・ファイル名・題・行番号・行と、`syntax` がオンなら言語を `syntaxLanguageOf` で引いた色分けの言語。`copyState` は渡さない）の `ownBlock` に置き換える。帯の右端のコピーのボタンは `mount` が付ける。`code` がオフのときは行の印を外さず中身の行をそのまま使い、`syntax` がオンで色分けの言語を持つコードブロックだけを帯を持たない部品（`bar: false`）に置き換え、それ以外は `fence` のまま情報文字列の最初の語を言語に書き換える（`ts:app.ts` の `code` の class を `language-ts` にし、`:` の前が空なら最初の語を外す）。`readCodeSpec` と `readLineMarks` の読めない指定はコードブロックの前に警告を差し込む。後ろが `fence` でない `code` の印の場所にも警告を差し込む（`code` がオンのときだけ）。言語 `tree`・図の部品・埋め込んだ HTML のコードブロックは、先のコアルールが最初の語との一致で `fence` でなくしているため当たらず、`tree:src` のように `:ファイル名` を付けたものはここで普通のコードブロックとして描く'
+    summary: 'コアルール。残っている `fence` のトークンごとに、情報文字列を `splitInfoString` で言語とファイル名に分けてから次を行う。`code` がオンのときは `readLineMarks` で行を読み、直前のトークンが `code` の印なら `readCodeSpec` で指定を読み、全てのコードブロックを部品『コードブロック』（言語・ファイル名・題・行番号・行と、`syntax` がオンなら言語を `syntaxLanguageOf` で引いた色分けの言語。`copyState` は渡さない）の `ownBlock` に置き換える。帯の右端のコピーのボタンは `mount` が付ける。`code` がオフのときは行の印を外さず中身の行をそのまま使い、`syntax` がオンで色分けの言語を持つコードブロックだけを帯を持たない部品（`bar: false`）に置き換え、それ以外は `fence` のまま情報文字列の最初の語を言語に書き換える（`ts:app.ts` の `code` の class を `language-ts` にし、`:` の前が空なら最初の語を外す）。`code` がオンのときは、`readFolds` で行にインデントのレベル・畳む行の数・`fold=` の畳んだ状態を付けてから部品へ渡す。`readCodeSpec` と `readLineMarks` と `readFolds` の読めない指定はコードブロックの前に警告を差し込む。後ろが `fence` でない `code` の印の場所にも警告を差し込む（`code` がオンのときだけ）。言語 `tree`・図の部品・埋め込んだ HTML のコードブロックは、先のコアルールが最初の語との一致で `fence` でなくしているため当たらず、`tree:src` のように `:ファイル名` を付けたものはここで普通のコードブロックとして描く'
     args:
       - name: state
         type: StateCore
@@ -1185,6 +1276,7 @@ functions:
       - dev/設計書/モジュール構成/ライブラリ本体/部品.ts#functions[renderCodeBlock]
       - '#functions[syntaxLanguageOf]'
       - '#functions[splitInfoString]'
+      - '#functions[readFolds]'
     unit_tests:
       - name: test_build_code_blocks
         case: 正常
@@ -1213,9 +1305,9 @@ functions:
       - name: test_build_code_blocks_when_unknown_line_mark
         case: 異常
         summary: 知らない印だけのコードブロックの前に警告を差し込む
-        condition: '`foo(); // [!code focus]` だけのコードブロック'
+        condition: '`foo(); // [!code blink]` だけのコードブロック'
         mock: なし
-        expected: コードブロックの前に警告（本文に `[!code focus]`）があり、部品の中身は `foo(); // [!code focus]` のまま
+        expected: コードブロックの前に警告（本文に `[!code blink]`）があり、部品の中身は `foo(); // [!code blink]` のまま
       - name: test_build_code_blocks_when_no_fence
         case: 異常
         summary: 後ろにコードブロックの無い印を警告にする
@@ -1252,6 +1344,24 @@ functions:
         condition: 言語 `dockerfile`・`docker`・`diff`・`patch` のコードブロック。`syntax` はオン
         mock: なし
         expected: '`data-mdmark-syntax` が順に `dockerfile`・`dockerfile`・`diff`・`diff`'
+      - name: test_build_code_blocks_when_foldable
+        case: 正常
+        summary: インデントのある行と畳める行を行に分け、fold= の行を畳んだ状態にする
+        condition: インターフェース定義『文書をHTML文字列にする』の「正常系（畳める行とインデント）」の文書
+        mock: なし
+        expected: yaml の 1 行目が `data-fold-lines="3"`、2 行目が `data-indent="1"`・`data-fold-lines="1"`・`data-folded`、3 行目が `data-indent="2"`。json のオブジェクトを開く行の `data-fold-lines` が閉じ括弧の行を含まない。`tree` のコードブロックが `mdmark-code-line` を持たない
+      - name: test_build_code_blocks_when_fold_invalid
+        case: 異常
+        summary: 畳めない fold= の行を警告にする
+        condition: インターフェース定義『文書をHTML文字列にする』の「正常系（畳めない行の fold=）」の文書
+        mock: なし
+        expected: コードブロックの前の警告が 1 つで、項目に `3` と `99` があり、1 行目だけが `data-folded` を持つ
+      - name: test_build_code_blocks_when_focus
+        case: 正常
+        summary: focus の行を持つ pre に mdmark-code-has-focus を付ける
+        condition: インターフェース定義『文書をHTML文字列にする』の「正常系（focus・error・warning の行）」の文書
+        mock: なし
+        expected: '`pre` が `mdmark-code-lines` と `mdmark-code-has-focus` を持ち、1〜3 行目が `data-kind` の `focus`・`error`・`warning`'
     reason: 色分けの対象を、mdmark が出した要素だけが持ち続ける属性 `data-mdmark-syntax` で示すため、印も行の印も持たない色分けの対象も部品に置き換える（`fence` のままだと `code` の属性は sanitize が生の HTML と同じく落とす）。部品は `pre` に同じ読み上げの名前と `tabindex` を付け、`markSourceLines` が元の行番号を付けるため、出力は `fence` のときと属性 1 つだけ違う
   - name: syntaxLanguageOf
     title: 色分けの言語を引く
@@ -1878,6 +1988,145 @@ functions:
     status: planned
     introduced:
       pr: 263
+  - name: planCellMerges
+    title: セルの結合を決める
+    container: src/render/syntax/table-cells.ts
+    kind: 関数
+    scope: internal
+    summary: 表のセルの文字の格子から、`^^`（上のセルと結合）・`<<`（左のセルと結合）の結合を決める。結合したセルは、上か左のセルが結合したセルならその始まりのセルにたどって覆う数を増やす。見出しと本文をまたぐ `^^`（本文の最初の行）・最初の行の `^^`・最初の列の `<<` と、縦と横の結合が交わって矩形にならない結合は結合せず警告にする
+    args:
+    - name: options
+      type: '{ cells: string[][]; headRows: number }'
+      required: true
+      description: '`cells` は行ごとのセルの文字（前後の空白を除いたもの。見出しの行を含む）、`headRows` は見出しの行の数'
+    returns:
+      type: CellMergePlan
+      description: セルごとの結合と、結合する列と警告
+    unit_tests:
+    - name: test_plan_cell_merges
+      case: 正常
+      summary: 見出しの横の結合と本文の縦の結合を決める
+      condition: '`headRows` が 2 で、1 行目 `地域`・`上期`・`<<`、2 行目 `^^`・`売上`・`件数`、3 行目 `東`・`1`・`2`、4 行目 `^^`・`3`・`4`'
+      mock: なし
+      expected: 1 行目の 1 列目が `rowspan` 2、2 列目が `colspan` 2、3 列目が `merged` `left` と `source` `[0, 1]`。3 行目の 1 列目が `rowspan` 2、4 行目の 1 列目が `merged` `up` と `source` `[2, 0]`。`mergeColumns` が `[0]`、`warnings` が空
+    - name: test_plan_cell_merges_when_chained
+      case: 正常
+      summary: 続けて書いた ^^ を同じ始まりのセルにまとめる
+      condition: '`headRows` が 1 で、本文の 1 列目が `A`・`^^`・`^^`・`B`'
+      mock: なし
+      expected: '`A` のセルが `rowspan` 3、続く 2 つが `source` `[1, 0]`、`B` が `rowspan` 1'
+    - name: test_plan_cell_merges_when_no_partner
+      case: 異常
+      summary: 結合する相手の無い ^^・<< と、見出しと本文をまたぐ ^^ を警告にする
+      condition: '`headRows` が 1 で、見出しの 1 列目が `<<`、本文の 1 行目の 2 列目が `^^`'
+      mock: なし
+      expected: どのセルも `merged` を持たず、`rowspan`・`colspan` が 1。`warnings` が 2 つで、ラベルが `<<`・`^^`
+    - name: test_plan_cell_merges_when_not_rectangle
+      case: 異常
+      summary: 矩形にならない結合を警告にする
+      condition: '`headRows` が 1 で、本文の 1 行目 `A`・`<<`、2 行目 `^^`・`x`'
+      mock: なし
+      expected: 2 行目の 1 列目が `merged` を持たず、`warnings` にその `^^` の項目がある
+    status: planned
+    introduced:
+      pr: 275
+  - name: findTabsClose
+    title: タブの閉じを探す
+    container: src/render/syntax/tabs.ts
+    kind: 関数
+    scope: internal
+    summary: '`openIndex` のタブのマーカーと同じ階層のタブの開きと閉じを数え、対応する閉じの位置を返す。共通の `findClose` は使わない（タブ以外のマーカーの閉じの対応を変えないため）'
+    args:
+    - name: tokens
+      type: Token[]
+      required: true
+      description: トークンの並び
+    - name: openIndex
+      type: number
+      required: true
+      description: タブの開きのマーカーの位置
+    returns:
+      type: '{ close: number; nested: boolean }'
+      description: '`close` は対応する閉じの位置（無ければ `-1`）、`nested` は範囲（閉じが無ければ文書の終わりまで）に別のタブの開きを持つか'
+    unit_tests:
+    - name: test_find_tabs_close
+      case: 正常
+      summary: 入れ子の閉じを飛ばして外側の閉じを返す
+      condition: 開き・開き・閉じ・閉じのタブのマーカーの並びで、1 つ目の開き
+      mock: なし
+      expected: '`close` が 4 つ目の位置、`nested` が `true`'
+    - name: test_find_tabs_close_when_unclosed
+      case: 異常
+      summary: 閉じが足りなければ -1 を返す
+      condition: 開き・開き・閉じの並びで、1 つ目の開き
+      mock: なし
+      expected: '`close` が `-1`、`nested` が `true`'
+    status: planned
+    introduced:
+      pr: 275
+  - name: readCallout
+    title: 注意書きの 1 行目を読み取る
+    container: src/render/syntax/callouts.ts
+    kind: 関数
+    scope: internal
+    summary: 引用の最初の段落の 1 行目（最初の `softbreak` の手前まで）が `[!種類]` で始まるかを `CALLOUT_PATTERN` で読み取り、末尾の `-`・`+` と、後ろの空白の後の文字をタイトルにする。タイトルは 1 行目の残りの行内のトークンを `state.md.renderer.renderInline` で HTML にしたもの
+    args:
+    - name: options
+      type: '{ state: StateCore; tokens: Token[]; openIndex: number }'
+      required: true
+      description: markdown-it の状態とトークンの並び、`blockquote_open` の位置
+    returns:
+      type: '{ kind: CalloutKind; collapsed: boolean; open: boolean; title?: string } | undefined'
+      description: 種類・折り畳みか・開いた状態か・タイトルの HTML。注意書きでなければ `undefined`
+    unit_tests:
+    - name: test_read_callout
+      case: 正常
+      summary: 種類と開閉とタイトルを読み取る
+      condition: 1 行目が `[!TIP] 設定を **先に** 確認する`・`[!NOTE]+ 詳細`・`[!WARNING]-`・`[!FAQ]` の引用
+      mock: なし
+      expected: 1 つ目が `tip`・`collapsed` `false`・タイトル `設定を <strong>先に</strong> 確認する`、2 つ目が `note`・`collapsed` `true`・`open` `true`・タイトル `詳細`、3 つ目が `warning`・`collapsed` `true`・`open` `false`・タイトル無し、4 つ目が `note`
+    - name: test_read_callout_when_not_callout
+      case: 正常
+      summary: 1 行目が種類で始まらない引用は注意書きにしない
+      condition: 1 行目が `メモ [!TIP]` の引用と、1 行目が `[!TIP]x`（空白の無い後ろの文字）の引用
+      mock: なし
+      expected: どちらも `undefined`
+    status: planned
+    introduced:
+      pr: 275
+  - name: readFolds
+    title: 行のインデントと畳む行を決める
+    container: src/render/syntax/code-blocks.ts
+    kind: 関数
+    scope: internal
+    summary: 行の文字から `measureIndents` でインデントのレベルを、`foldLinesOf` で畳む行の数を決めて行に付け、`folds` の行のうち畳める行に `folded` を付ける。畳めない行（コードブロックに無い行は `readCodeSpec` が除く）は当てずに警告にする
+    args:
+    - name: options
+      type: '{ lines: CodeLine[]; folds: Set<number> }'
+      required: true
+      description: '`readLineMarks` の行と、`readCodeSpec` の最初から畳む行の番号'
+    returns:
+      type: '{ lines: CodeLine[]; warnings: WarningItem[] }'
+      description: '`indent`・`foldLines`・`folded` を付けた行と、畳めない行の警告'
+    callees:
+    - dev/設計書/モジュール構成/ライブラリ本体/操作.ts#functions[measureIndents]
+    - dev/設計書/モジュール構成/ライブラリ本体/操作.ts#functions[foldLinesOf]
+    unit_tests:
+    - name: test_read_folds
+      case: 正常
+      summary: インデントと畳む行を付け、指定の行を畳んだ状態にする
+      condition: '`a:`・`  b:`・`    c: 1`・`  d: 2` の行と、`folds` が 2'
+      mock: なし
+      expected: '`indent` が 0・1・2・1、`foldLines` が 3・1・無し・無し、2 行目だけが `folded`、`warnings` が空'
+    - name: test_read_folds_when_not_foldable
+      case: 異常
+      summary: 畳めない行を警告にする
+      condition: '`a:`・`  b: 1`・`c: 2` の行と、`folds` が 2・3'
+      mock: なし
+      expected: どの行も `folded` を持たず、`warnings` に `2`・`3` の項目がある
+    status: planned
+    introduced:
+      pr: 275
 notes:
   コアルールの順: 描画の `createParser` が登録する。印 → 機能の重ね合わせ → 見出し → 用語集の表 → 行の詳細 → ビュー → 表 → タブ → ステップ → 注意書き → ファイルツリー → バッジ → 本文の文字の色 → 図の部品 → 埋め込んだ HTML → コードブロック → 画像の属性と種類 → 図表の番号 → ギャラリー → 画像と動画と音声の図 → カード → 用語の下線 → 節 → 目次 → 関連文書の一覧 → タスクリスト → www の自動リンク → 残った印を取り除く。行の詳細は表の囲みより前、節は記法の警告を差し込んだ後、目次は見出しの ID を付けた後。埋め込んだ HTML は用語の下線より前に置き、`html_block` にした中身を用語の下線が重ねて照合しないようにする。画像の属性は図表の番号より前に読み、図表の番号がギャラリーに番号を渡してからギャラリーを囲む。残った画像だけの段落は、その後に図にする
   部品の差し込み方: 中身を持つ部品（節・タブ・注意書き・行の詳細・図表の番号・表）は、中身の代わりに `SLOT_MARKER` を渡して HTML を作り、`markOwn` を掛けてから `SLOT_MARKER` の前後で分け、開きと閉じの `html_block` のトークンで中身のトークンを挟む。中身の HTML には `markOwn` を掛けない。見出し・表など Markdown から作ったトークンに付ける記法の属性は、同じトークンに `data-mdmark-own` も付ける。埋め込んだ HTML は例外で、`sanitizeEmbedded` で先に落とした中身にも `markOwn` を掛ける
