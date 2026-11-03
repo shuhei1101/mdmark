@@ -277,7 +277,7 @@ functions:
     kind: 関数
     scope: internal
     summary: '`html: true`・`linkify: true` の markdown-it に、足すコアルールを登録して返す'
-    description: 'コアルールは `inline` の後に次の順で登録する: 印（`takeMarks`）→ 文書の機能（`resolveDocumentFeatures`）→ 見出し（`assignHeadingIds`）→ 用語集の表（`glossaryRule`）→ 行の詳細 → 表（`decorateTables`。今の表の属性もここ）→ タブ → ステップ → 注意書き → ファイルツリー → バッジ → 本文の文字の色（`buildTextColors`）→ コードブロック（`buildCodeBlocks`。図の部品・埋め込んだ HTML より後）→ 画像の属性と種類（`readImages`）→ 図表の番号 → ギャラリー（`buildGallery`）→ 画像と動画と音声の図（`buildImageFigures`）→ カード（`buildCards`）→ 用語の下線（`termsRule`）→ 節 → 目次 → 脚注の一覧（`buildFootnoteList`）→ 関連文書の一覧（`backlinksRule`）→ タスクリスト → www の自動リンク → 残った印（`dropMarks`）→ 元の行番号（`markSourceLines`）。脚注の定義・参照・行内の脚注の block・inline のルールと、`inline` の直後のコアルール（`collectFootnotes`。印より前）は `useFootnotes` で登録する。記法のコアルールは『記法』、用語と関連文書のコアルールは『索引と用語』。コードブロックの `pre` の属性は `renderer.rules.fence` を包んで付け、読み上げの名前はエスケープする（部品『HTML の特別な文字をエスケープする』）。www の自動リンクは `linkify.set({ fuzzyLink: true })` にし、スキームも `www.` もメールの `@` も持たない自動リンクを文字に戻す'
+    description: 'コアルールは `inline` の後に次の順で登録する: 印（`takeMarks`）→ 文書の機能（`resolveDocumentFeatures`）→ 脚注の定義（`collectFootnotes`）→ 見出し（`assignHeadingIds`）→ 用語集の表（`glossaryRule`）→ 行の詳細 → 表（`decorateTables`。今の表の属性もここ）→ タブ → ステップ → 注意書き → ファイルツリー → バッジ → 本文の文字の色（`buildTextColors`）→ コードブロック（`buildCodeBlocks`。図の部品・埋め込んだ HTML より後）→ 画像の属性と種類（`readImages`）→ 図表の番号 → ギャラリー（`buildGallery`）→ 画像と動画と音声の図（`buildImageFigures`）→ カード（`buildCards`）→ 用語の下線（`termsRule`）→ 節 → 目次 → 脚注の一覧（`buildFootnoteList`）→ 関連文書の一覧（`backlinksRule`）→ タスクリスト → www の自動リンク → 残った印（`dropMarks`）→ 元の行番号（`markSourceLines`）。脚注の定義・参照・行内の脚注の block・inline のルールは `useFootnotes` で登録する。記法のコアルールは『記法』、用語と関連文書のコアルールは『索引と用語』。コードブロックの `pre` の属性は `renderer.rules.fence` を包んで付け、読み上げの名前はエスケープする（部品『HTML の特別な文字をエスケープする』）。www の自動リンクは `linkify.set({ fuzzyLink: true })` にし、スキームも `www.` もメールの `@` も持たない自動リンクを文字に戻す'
     returns:
       type: MarkdownIt
       description: 解析器
@@ -327,6 +327,7 @@ functions:
     callees:
       - dev/設計書/モジュール構成/ライブラリ本体/記法.ts#functions[useFootnotes]
       - dev/設計書/モジュール構成/ライブラリ本体/記法.ts#functions[buildFootnoteList]
+      - dev/設計書/モジュール構成/ライブラリ本体/記法.ts#functions[collectFootnotes]
   - name: takeMarks
     title: 印を拾って置き換える
     container: src/render/marks.ts

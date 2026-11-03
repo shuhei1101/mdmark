@@ -2176,7 +2176,7 @@ functions:
     container: src/render/syntax/footnotes.ts
     kind: 関数
     scope: internal
-    summary: 解析器に、block の `mdmark_footnote_def`（`reference` の前。`alt` は `paragraph`・`reference`）、inline の `mdmark_footnote_inline`（`image` の後）と `mdmark_footnote_ref`（その後。`link` より後なので `[^x](url)` はリンクを優先する）、core の `mdmark_collect_footnotes`（`inline` の後）を登録し、`mdmark_footnote_ref` のトークンの描き方を `renderer.rules` に置く。末尾の一覧のコアルール `buildFootnoteList` は `createParser` が関連文書の一覧の前に登録する
+    summary: 解析器に、block の `mdmark_footnote_def`（`reference` の前。`alt` は `paragraph`・`reference`）、inline の `mdmark_footnote_inline`（`image` の後）と `mdmark_footnote_ref`（その後。`link` より後なので `[^x](url)` はリンクを優先する）を登録し、`mdmark_footnote_ref` のトークンの描き方を `renderer.rules` に置く。コアルールの `collectFootnotes`（文書の機能の後）と `buildFootnoteList`（関連文書の一覧の前）は `createParser` が登録する
     args:
       - name: parser
         type: MarkdownIt
@@ -2187,7 +2187,6 @@ functions:
       - '#functions[readFootnoteDefinition]'
       - '#functions[readFootnoteReference]'
       - '#functions[readInlineFootnote]'
-      - '#functions[collectFootnotes]'
       - '#functions[footnoteBodies]'
       - dev/設計書/モジュール構成/ライブラリ本体/部品.ts#functions[renderFootnoteRef]
       - dev/設計書/モジュール構成/ライブラリ本体/部品.ts#functions[markOwn]
@@ -2313,16 +2312,13 @@ functions:
     container: src/render/syntax/footnotes.ts
     kind: 関数
     scope: internal
-    summary: コアルール（`inline` の後）。文書の `html_block` の `features` の印と `env.defaults.footnotes` から脚注の機能を決める（印の引数の読み方は `parseMarkArgs`・`resolveFeatures` と同じ。コードブロックの中は `fence` のトークンなので数えない）。オンなら、`mdmark_footnote_def_open`〜`close` のトークンを本文から取り除き、`meta.first` の定義だけを `definitions` に入れる（取り除いた定義は用語の下線など後のコアルールに渡らない）。オフなら、`mdmark_footnote_ref` を `meta.source` の `text` のトークンに戻し、定義の囲みを外して最初の段落の頭に `meta.source` を戻し、書いた位置に残し、`env.mdmarkFootnotes` を消す
+    summary: コアルール（文書の機能 `resolveDocumentFeatures` の直後、見出し `assignHeadingIds` の前）。`env.features.footnotes` で脚注の機能を判定し、印は読まない。オンなら、`mdmark_footnote_def_open`〜`close` のトークンを本文から取り除き、`meta.first` の定義だけを `definitions` に入れる（取り除いた定義は用語の下線など後のコアルールに渡らない）。オフなら、`mdmark_footnote_ref` を `meta.source` の `text` のトークンに戻し、定義の囲みを外して最初の段落の頭に `meta.source` を戻し、書いた位置に残し、`env.mdmarkFootnotes` を消す
     args:
       - name: state
         type: StateCore
         required: true
         description: markdown-it の状態
     side_effects: '`state.tokens` と `env.mdmarkFootnotes` を書き換える'
-    callees:
-      - dev/設計書/モジュール構成/ライブラリ本体/描画.ts#functions[parseMarkArgs]
-      - dev/設計書/モジュール構成/ライブラリ本体/設定と機能.ts#functions[resolveFeatures]
     unit_tests:
       - name: test_collect_footnotes_when_disabled_by_mark
         case: 正常
