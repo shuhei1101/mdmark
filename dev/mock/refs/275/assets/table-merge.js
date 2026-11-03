@@ -1,4 +1,4 @@
-// #275 の表の見本: 多段の見出し・行見出し・セルの結合（^^・<<）・並べ替えの後の結合し直し・既定のピン止め・pin=・wide=・check= の真偽値。
+// #275 の表の見本: 多段の見出し・行見出し・セルの結合（^^・<<）・並べ替えの後の結合し直し・行見出しの列までのピン止め。
 // [data-mock-table275] に、window.mdmarkMockTables275 の同じ名前の定義から表を描き、並べ替えとピン止めを付ける。
 // syntax.js の後に読む（syntax.js は描く前の表にしか操作を付けないため、この表の操作はこのスクリプトが持つ）
 
@@ -8,7 +8,6 @@
     ascending: '<path d="m5 12 7-7 7 7"/><path d="M12 19V5"/>',
     descending: '<path d="M12 5v14"/><path d="m19 12-7 7-7-7"/>',
     pin: '<path d="M12 17v5"/><path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/>',
-    check: '<path d="M20 6 9 17l-5-5"/>',
     warning: '<path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/>',
   };
   const SORT_CYCLE = ["none", "descending", "ascending"];
@@ -91,12 +90,6 @@
     return spans;
   };
 
-  /** 真偽値のセル: true は ✓、false は空欄。読み上げにはどちらも値を渡す。 */
-  const checkCell = (value) =>
-    value === "true"
-      ? `<span class="mdmark-check" role="img" aria-label="はい">${svg("check")}</span>`
-      : `<span class="mdmark-visually-hidden">いいえ</span>`;
-
   /** 書き方の警告の枠。 */
   const warningHtml = (html) =>
     `<div class="mdmark-syntax-warning"><p class="mdmark-syntax-warning-title">${svg("warning")}書き方の警告</p><p>${html}</p></div>`;
@@ -106,8 +99,6 @@
     const head = resolveHead(def.head);
     const body = resolveBody(def.body);
     const rowHeader = def.rowHeader ?? 0;
-    const checkCol = def.check ? head.names.indexOf(def.check) : -1;
-    const wideCol = def.wide ? head.names.indexOf(def.wide) : -1;
     const numeric = head.names.map((_, c) => body.rows.every((row) => row[c] === "" || !Number.isNaN(Number(String(row[c]).replace(/,/g, "")))));
     const state = { order: body.rows.map((_, i) => i), sortCol: -1, direction: "none", pinned: def.pinned ?? 0 };
     const visible = () => state.order.map((i) => body.rows[i]).filter((row) => !def.filter || row[def.filter.col] === def.filter.value);
@@ -120,13 +111,11 @@
         .map((cell) => {
           const bottom = cell.row + cell.rowspan === head.rows && cell.colspan === 1;
           const span = `${cell.rowspan > 1 ? ` rowspan="${cell.rowspan}"` : ""}${cell.colspan > 1 ? ` colspan="${cell.colspan}"` : ""}`;
-          const align = numeric[cell.col] && cell.colspan === 1 && cell.col !== checkCol ? ' class="mdmark-align-right"' : cell.col === checkCol ? ' class="mdmark-align-center"' : "";
+          const align = numeric[cell.col] && cell.colspan === 1 ? ' class="mdmark-align-right"' : "";
           const scope = cell.colspan > 1 ? ' scope="colgroup"' : ' scope="col"';
           if (!bottom) return `<th${span}${scope} data-col="${cell.col}"${align}><span class="mdmark-th"><span>${esc(cell.text)}</span></span></th>`;
           // 列ごとに分かれた最下段の見出し: 並べ替え・ピン止めのボタンを置く
-          const pin = def.noPin
-            ? ""
-            : `<span class="mdmark-th-tools"><button class="mdmark-pin" type="button" aria-pressed="false" aria-label="「${esc(cell.text)}」の列までピン止め" title="「${esc(cell.text)}」の列までピン止め">${svg("pin")}</button></span>`;
+          const pin = `<span class="mdmark-th-tools"><button class="mdmark-pin" type="button" aria-pressed="false" aria-label="「${esc(cell.text)}」の列までピン止め" title="「${esc(cell.text)}」の列までピン止め">${svg("pin")}</button></span>`;
           return `<th${span}${scope} data-col="${cell.col}"${align}><span class="mdmark-th"><button class="mdmark-sort" type="button" data-sort-col="${cell.col}">${esc(cell.text)}${svg("sort")}</button>${pin}</span></th>`;
         })
         .join("");
@@ -144,9 +133,9 @@
             .map((value, c) => {
               if (spans[r][c] === 0) return "";
               const rs = spans[r][c] > 1 ? ` rowspan="${spans[r][c]}"` : "";
-              const cls = [numeric[c] && c !== checkCol ? "mdmark-align-right" : "", c === checkCol ? "mdmark-align-center" : "", c === wideCol ? "mdmark-wide" : "", spans[r][c] > 1 ? "is-merged" : ""].filter(Boolean).join(" ");
+              const cls = [numeric[c] ? "mdmark-align-right" : "", spans[r][c] > 1 ? "is-merged" : ""].filter(Boolean).join(" ");
               const attrs = `${rs}${cls ? ` class="${cls}"` : ""} data-col="${c}" data-label="${esc(head.names[c])}"`;
-              const content = c === checkCol ? checkCell(value) : esc(value);
+              const content = esc(value);
               return c < rowHeader ? `<th scope="row"${attrs}>${content}</th>` : `<td${attrs}>${content}</td>`;
             })
             .join("");

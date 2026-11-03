@@ -1,4 +1,4 @@
-/* #275 の表の追加分: 本文の行の地・多段の見出し・行見出し・結合したセル・wide= の列・check= の ✓。
+/* #275 の表の追加分: 本文の行の地・多段の見出し・行見出し・結合したセル。
    拡張記法の規則（refs/19/assets/syntax.css）の後に読む */
 
 @layer mdmark {
@@ -32,36 +32,6 @@
     /* 縦に結合したセル: 結合した範囲の上端に値を置く */
     .mdmark-table :is(th, td).is-merged {
       vertical-align: top;
-    }
-
-    /* wide= の列: 折り返さず、値の長さの幅を取る。はみ出した分は表の中で横にスクロールする */
-    .mdmark-table :is(th, td).mdmark-wide {
-      white-space: nowrap;
-    }
-
-    /* check= の列: ✓ と空欄を中央に置く */
-    .mdmark-table :is(th, td).mdmark-align-center {
-      text-align: center;
-
-      .mdmark-th {
-        justify-content: center;
-      }
-    }
-
-    /* 真偽値の ✓: 本文の色の太い線のアイコン */
-    .mdmark-check {
-      display: inline-flex;
-      vertical-align: middle;
-
-      .mdmark-icon {
-        width: 1.1em;
-        height: 1.1em;
-        fill: none;
-        stroke: currentcolor;
-        stroke-width: 3;
-        stroke-linecap: round;
-        stroke-linejoin: round;
-      }
     }
   }
 }
