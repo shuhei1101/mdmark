@@ -11,10 +11,11 @@ directory: |-
   ├── comments/
   │   ├── spec.ts          # 公開の型 MdmarkComment・MdmarkCommentDraft・MdmarkCommentStore・MdmarkCommentsHandle、引数とコメントの形の検査（dist/index.js）
   │   ├── anchor.ts        # 選んだ範囲から下書きを作る・本文の文字から箇所を探す（dist/comments.js）
+  │   ├── margin.ts        # 本文の列の右の余白の列に、箇所の行の高さで余白のマーカーを置く（dist/comments.js）
   │   └── index.ts         # dist/comments.js の入口。attachComments
   └── parts/
       ├── view.ts          # ビューの HTML とアイコンの形（dist/view.js）
-      └── comment.ts       # コメントのボタン・入力欄・印・吹き出し・箇所が見つからないコメントの一覧の HTML（dist/comments.js）
+      └── comment.ts       # コメントのボタン・入力欄・印・吹き出し・箇所が見つからないコメントの一覧・余白のマーカーの HTML（dist/comments.js）
   ```
 diagrams:
   - name: 全体
@@ -166,7 +167,7 @@ data_models:
     summary: '`dist/comments.js` が export する関数'
     properties:
       - name: attachComments
-        type: '(options: { root: HTMLElement; store: MdmarkCommentStore; docId: string }) => Promise<() => void>'
+        type: '(options: { root: HTMLElement; store: MdmarkCommentStore; docId: string; margin?: boolean }) => Promise<() => void>'
         description: '`mountComments` と `mount` が呼ぶ'
 constants:
   - name: PART_MODULE_FILES
@@ -239,6 +240,26 @@ constants:
     container: src/comments/index.ts
     summary: ボタン・入力欄・吹き出しを画面の端から離す幅
     value: '8'
+  - name: SAME_LINE_PX
+    title: 同じ行とみなす差
+    container: src/comments/margin.ts
+    summary: 箇所の行の上端の差がこの値以下なら、同じ行として 1 つのマーカーにまとめる
+    value: '4'
+  - name: MARKER_GAP_PX
+    title: マーカーの間の幅
+    container: src/comments/margin.ts
+    summary: 上下に並んだマーカーの間に空ける幅
+    value: '4'
+  - name: MAX_OPEN_DEPTH
+    title: 開く処理の上限
+    container: src/comments/margin.ts
+    summary: 閉じた中の箇所へ移るとき、入れ子の閉じた要素を外側から開く処理を繰り返す上限
+    value: '4'
+  - name: CLOSED_LABELS
+    title: 閉じた中の種類の文言
+    container: src/parts/comment.ts
+    summary: 余白のマーカーの読み上げ名に添える、閉じた中の種類ごとの文言
+    value: '{ section: "閉じたセクションの中", tab: "選ばれていないタブの中", row: "閉じた行の詳細の中" }'
   - name: COMMENT_MESSAGES
     title: 入力欄の知らせ
     container: src/parts/comment.ts
@@ -435,7 +456,7 @@ functions:
       description: 付けた部品を外す関数。読み込みを待っている間に呼ぶと、読めた後に付けない
     process: |-
       1. `features.views` がオンで `root` に `div.mdmark-view` があれば `loadPartModule("view")` を待ち、`isCurrent()` で外していなければ、`div.mdmark-view` ごとに `attachView` を呼んで外す関数を控える
-      2. `features.comments` がオンで `commentStore` と `docId` があれば `loadPartModule("comments")` を待ち、`isCurrent()` で外していなければ `attachComments({ root, store: commentStore, docId })` を待って外す関数を控える（待つ間に外したら、得た外す関数をすぐ呼ぶ）。`features.comments` がオンで `commentStore` を渡していなければ、モジュールを読まず、コメントの機能に読み書きの関数が要ることを `console.error` に出す（`mount` ごとに 1 回。`mount` が渡す `warned` で控える）
+      2. `features.comments` がオンで `commentStore` と `docId` があれば `loadPartModule("comments")` を待ち、`isCurrent()` で外していなければ `attachComments({ root, store: commentStore, docId, margin: true })` を待って外す関数を控える（待つ間に外したら、得た外す関数をすぐ呼ぶ）。`features.comments` がオンで `commentStore` を渡していなければ、モジュールを読まず、コメントの機能に読み書きの関数が要ることを `console.error` に出す（`mount` ごとに 1 回。`mount` が渡す `warned` で控える）
       3. 読めないときは付けずに、部品の名前（`view` か `comments`）・URL・元のエラーを `console.error` に 1 回出す（ページの中で部品ごとに 1 回）。ビューの印の場所は `render` の表のまま残す
       4. 外す関数は、外した印を立て、控えた外す関数を逆の順に呼ぶ。続けて `root` の中の要素ごとに、`mountedViews`・`mountedComments` に残っている戻り値の `destroy` を呼ぶ（拡張の `draw` から呼んだ `mountView`・`mountComments` を、`mount` の `update`・`destroy` で片付ける）
     unit_tests:
@@ -871,9 +892,9 @@ functions:
     side_effects: '`root` の中の文字を印で包み、ボタン・一覧を置き、`document` と `window` に受け取りを付ける。`store.load`・`store.save` を呼ぶ'
     args:
       - name: options
-        type: '{ root: HTMLElement; store: MdmarkCommentStore; docId: string }'
+        type: '{ root: HTMLElement; store: MdmarkCommentStore; docId: string; margin?: boolean }'
         required: true
-        description: 範囲の要素・読み書きの関数・対象の ID
+        description: 範囲の要素・読み書きの関数・対象の ID・余白のマーカーを置くか（`mount` だけが `true` を渡す。既定は `false`）
     returns:
       type: Promise<() => void>
       description: 印を外して文字を元に戻し、置いた要素と受け取りを外す関数
@@ -887,6 +908,7 @@ functions:
       7. 印の押下・Enter・Space で `renderCommentBubble` の吹き出しを開いて印の `aria-expanded` を `true` にし、吹き出しへフォーカスを移す。閉じるボタンと Esc で閉じて印へフォーカスを戻し、外側の押下でも閉じる
       8. `scroll`（捕捉）と `resize` で、開いている枠かボタンを元の箇所に付いていかせる
       9. 外す関数は、受け取りを外し、置いた要素と `PENDING_HIGHLIGHT` を消し、印を中の文字の節に戻して `normalize` する
+      10. `margin` が `true` で `root` が `div.mdmark-content` のときは、手順 2 の後に `attachMarginMarkers({ content: root })` を呼び、外す関数を手順 9 で呼ぶ。印の付け直し（保存）と吹き出しの開閉は、`attachMarginMarkers` が `root` の中の変化から拾う
     unit_tests:
       - name: test_attach_comments_when_loaded
         case: 正常
@@ -940,6 +962,104 @@ functions:
       - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[コメントの操作]
       - dev/設計書/インターフェース定義/ライブラリ本体/コメントを付ける.ts#
       - dev/設計書/画面設計/文書.ts#
+  - name: attachMarginMarkers
+    title: 余白のマーカーを付ける
+    container: src/comments/margin.ts
+    summary: 本文の列の右に余白の列を置き、印の行の縦の中ほどに余白のマーカーを置いて、押すと印へ移る操作と置き直しを付け、外す関数を返す
+    kind: 関数
+    scope: internal
+    side_effects: '`content` の直後に余白の列の要素を置き、`content` の親を `ResizeObserver`、`content` の中を `MutationObserver` で見る'
+    args:
+      - name: options
+        type: '{ content: HTMLElement }'
+        required: true
+        description: 本文の列（`div.mdmark-content`）
+    returns:
+      type: () => void
+      description: 余白の列と受け取りを外す関数
+    process: |-
+      1. `renderCommentMarker` を入れる `div.mdmark-comment-margin` を `content` の直後に置く
+      2. 置き直しは、`content` の中の `mark.mdmark-comment-mark` ごとに、祖先のうち `hidden` を持ついちばん外側の要素を探す。無ければ印、あれば `aria-controls` でその要素の ID を指す開くボタンを基準の要素にし、閉じた中の種類（`[role="tabpanel"]` は `tab`・`.mdmark-row-detail` は `row`・それ以外は `section`）を控える。開くボタンが無い印は除く
+      3. 基準の要素の最初の行の矩形（`getClientRects()[0]`）から、余白の列の上端からの上端と高さを測り、`layoutMarkers` で行ごとにまとめた縦の中ほどを得る。まとめた行ごとに、行の最初の印の文字・箇所の数・`aria-expanded="true"` の印を含むか・閉じた中の種類で `renderCommentMarker` を描き、`top` に縦の中ほどを入れて余白の列の中身を置き換える
+      4. マーカーの押下（Enter・Space を含む）で、行の最初の印について、祖先の `hidden` のいちばん外側の要素の開くボタンを押すことを `MAX_OPEN_DEPTH` 回まで繰り返し、印を `scrollIntoView({ block: "center" })` してから印の `click()` を呼ぶ
+      5. `content` の中の子の増減と、`hidden`・`aria-expanded`・`class` の属性の変化（余白の列の中を除く）と、`content` の親の大きさの変化で、`requestAnimationFrame` で 1 フレームに 1 回にまとめて手順 2〜3 を行う
+      6. 外す関数は、受け取りと予約したフレームを外し、余白の列を取り除く
+    callees:
+      - '#functions[layoutMarkers]'
+      - '#functions[renderCommentMarker]'
+    unit_tests:
+      - name: test_attach_margin_markers
+        case: 正常
+        summary: 印の行の縦の中ほどにマーカーを置き、押すと吹き出しを開く
+        condition: '`div.mdmark-content` の 2 つの段落の文字を印で包み、印の `click` を控える'
+        mock: なし
+        expected: '`content` の直後に `div.mdmark-comment-margin` があり、マーカーが 2 つで、それぞれの `top` が印の行の縦の中ほど。1 つ目を押すと 1 つ目の印の `click` が 1 回呼ばれる'
+      - name: test_attach_margin_markers_when_closed
+        case: 正常
+        summary: 閉じた中の印は開くボタンの行に置き、押すと開いてから印を押す
+        condition: '`hidden` を持つ節の中身の中の印と、`aria-controls` でその中身を指し、押すと `hidden` を外すボタン'
+        mock: なし
+        expected: マーカーが `data-closed="section"` を持ち、`top` がボタンの行の縦の中ほど。押すとボタンが押され、印の `click` が呼ばれる
+      - name: test_attach_margin_markers_when_no_opener
+        case: 正常
+        summary: 開くボタンが無い閉じた中の印にはマーカーを置かない
+        condition: '`hidden` を持ち ID の無い要素の中の印'
+        mock: なし
+        expected: マーカーが無い
+      - name: test_attach_margin_markers_when_changed
+        case: 正常
+        summary: 中の変化で次のフレームに置き直す
+        condition: 付けた後に段落を 1 つ足し、その文字を印で包む
+        mock: なし
+        expected: 次のフレームでマーカーが 1 つ増える。余白の列の中の書き換えでは置き直さない
+      - name: test_attach_margin_markers_when_detached
+        case: 正常
+        summary: 外すと余白の列を取り除く
+        condition: 付けた後に外す関数を呼び、段落を足す
+        mock: なし
+        expected: 余白の列が無く、次のフレームでも置かない
+    refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[余白のマーカー]
+      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[余白のマーカーから移る]
+      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[余白のマーカーの置き直し]
+  - name: layoutMarkers
+    title: マーカーの縦の位置を決める
+    container: src/comments/margin.ts
+    summary: 行の上端と高さの並びから、同じ行をまとめ、重ならないように下げたマーカーの縦の中ほどを返す
+    kind: 関数
+    scope: internal
+    args:
+      - name: options
+        type: '{ lines: Array<{ top: number; height: number }>; markerSize: number }'
+        required: true
+        description: 箇所ごとの行の上端と高さ（px。並びは問わない）と、マーカーの高さ（px）
+    returns:
+      type: 'Array<{ center: number; indexes: number[] }>'
+      description: 上から順のまとめた行ごとの、マーカーの縦の中ほどと、その行に入る `lines` の添え字
+    process: |-
+      1. `lines` を上端の順に並べ、直前のまとまりの最初の行との上端の差が `SAME_LINE_PX` 以下なら同じまとまりに入れる
+      2. まとまりごとに、最初の行の上端 + 高さ / 2 を縦の中ほどにし、直前のマーカーの縦の中ほど + `markerSize` + `MARKER_GAP_PX` より上なら、その値まで下げる
+    unit_tests:
+      - name: test_layout_markers
+        case: 正常
+        summary: 行の縦の中ほどを返す
+        condition: '`lines` が `[{ top: 100, height: 20 }, { top: 0, height: 20 }]`、`markerSize: 24`'
+        mock: なし
+        expected: '`[{ center: 10, indexes: [1] }, { center: 110, indexes: [0] }]`'
+      - name: test_layout_markers_when_same_line
+        case: 正常
+        summary: 上端の差が 4 以下の行を 1 つにまとめる
+        condition: '`lines` が `[{ top: 0, height: 20 }, { top: 3, height: 20 }]`'
+        mock: なし
+        expected: まとまりが 1 つで `indexes` が `[0, 1]`
+      - name: test_layout_markers_when_overlapping
+        case: 正常
+        summary: 上のマーカーと重なると下げる
+        condition: '`lines` が `[{ top: 0, height: 20 }, { top: 20, height: 20 }]`、`markerSize: 24`'
+        mock: なし
+        expected: 2 つ目の `center` が `38`（10 + 24 + 4）
+    refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[余白のマーカー]
   - name: placePopover
     title: 枠を箇所に置く
     container: src/comments/index.ts
@@ -1093,6 +1213,36 @@ functions:
         expected: 空の文字
     refs:
       - dev/設計書/部品設計/箇所が見つからないコメントの一覧.ts#
+  - name: renderCommentMarker
+    title: 余白のマーカーの HTML
+    container: src/parts/comment.ts
+    summary: 部品設計『余白のマーカー』の HTML を返す
+    kind: 関数
+    scope: public
+    args:
+      - name: props
+        type: '{ quote: string; count?: number; current?: boolean; closed?: "section" | "tab" | "row" }'
+        required: true
+        description: 部品設計の引数
+    returns:
+      type: string
+      description: '`button.mdmark-comment-marker` の HTML'
+    process: 1. 選んだ文字をエスケープし、`count` が 2 以上なら `{count} 件、` を、`closed` があれば `CLOSED_LABELS` の文言を括弧で添えた読み上げ名を `aria-label` と `title` に入れ、`data-current`・`data-closed` を書き、コメントのアイコン（`aria-hidden`）と、`count` が 2 以上なら数の `span` を置く
+    unit_tests:
+      - name: test_render_comment_marker
+        case: 正常
+        summary: 読み上げ名に選んだ文字をエスケープして入れる
+        condition: '`{ quote: "<b>x</b>" }`'
+        mock: なし
+        expected: '`type="button"`、`aria-label` が `コメント 「&lt;b&gt;x&lt;/b&gt;」`、数の `span` と `data-current`・`data-closed` が無い'
+      - name: test_render_comment_marker_when_merged_and_closed
+        case: 正常
+        summary: 数と閉じた中の種類を出す
+        condition: '`{ quote: "担当者", count: 2, closed: "tab", current: true }`'
+        mock: なし
+        expected: '`aria-label` が `コメント 2 件、「担当者」（選ばれていないタブの中）`、`span` が `2`、`data-closed="tab"`・`data-current` を持つ'
+    refs:
+      - dev/設計書/部品設計/余白のマーカー.ts#
 notes:
   配布ファイルの分け方: '`src/views/index.ts` と `src/comments/index.ts` は別の esbuild の入口で、使う関数（表の部品・表の操作・知らせの枠など）をそれぞれのファイルに束ねる（`dist/index.js` を `import` しない）。`dist/index.js` は `src/part-modules.ts`・`src/mount-parts.ts`・2 つの `spec.ts` だけを持ち、部品の HTML と操作を持たない。部品の CSS は `src/index.css` に入れる'
 test_files:
@@ -1104,5 +1254,7 @@ test_files:
   - tests/unit/src/comments/anchor.test.ts
   - tests/unit/src/comments/anchor.browser.test.ts
   - tests/unit/src/comments/index.browser.test.ts
+  - tests/unit/src/comments/margin.test.ts
+  - tests/unit/src/comments/margin.browser.test.ts
   - tests/unit/src/parts/view.test.ts
   - tests/unit/src/parts/comment.test.ts
