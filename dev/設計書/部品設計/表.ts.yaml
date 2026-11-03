@@ -174,6 +174,8 @@ states:
         value: '[["#245","表","はみ出す表で先頭の列を既定でピン止めし、pin= と wide= と check= を使えるようにする","未着手","2026-11-21"],["#249","コード","tree を除く全てのコードブロックでインデントによる畳む・開くと縦線を付ける","未着手","2026-11-28"]]'
       - name: overflow
         value: 'true'
+      - name: pin
+        value: '1'
       - name: pinned
         value: '2'
       - name: wide
@@ -695,6 +697,12 @@ args:
     default: '0'
     enabled_when: '`overflow` が `true` のとき'
     description: 左端に留める列の数（0 は留めない）。`mount` は描いた直後に `data-pin` の列まで（無ければ 1）にする
+  - name: pin
+    type: 整数
+    required: false
+    default: なし（`data-pin` を持たない）
+    enabled_when: '`features` に `pin` を含むとき'
+    description: '`pin=` で留める最後の列の位置。囲みの `data-pin` に写す'
   - name: wide
     type: 配列
     required: false

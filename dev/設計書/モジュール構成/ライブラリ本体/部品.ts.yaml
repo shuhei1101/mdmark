@@ -329,7 +329,7 @@ functions:
       - name: test_render_table_when_columns_specified
         case: 正常
         summary: 留める列と真偽値の列を属性に持たせ、広く取る列と真偽値のセルを描く
-        condition: '部品設計の `PinAndWide`（`pin: 1` を加える）と `Check`'
+        condition: 部品設計の `PinAndWide` と `Check`
         mock: なし
         expected: 1 つ目の囲みが `data-pin="1"` を持ち、概要の列の見出しと各セルが class `mdmark-wide` を持ち、2 列目までのセルが `is-pinned-col`。2 つ目の囲みが `data-check="2"` を持ち、必須の列の `true` のセルが `data-value="true"` と `mdmark-check`、`false` のセルが `data-value="false"` と `いいえ`、既定の列は文字のまま
   - name: renderCheckCell
@@ -337,7 +337,7 @@ functions:
     container: src/parts/table.ts
     kind: 関数
     scope: internal
-    summary: '`true` は `<span class="mdmark-check" role="img" aria-label="はい">` に lucide の `check` の SVG を入れた HTML、`false` は `<span class="mdmark-visually-hidden">いいえ</span>` を返す。どちらも `markOwn` で mdmark の要素の印を付ける'
+    summary: '`true` は `<span class="mdmark-check" role="img" aria-label="はい">` に lucide の `check` の SVG を入れた HTML、`false` は `<span class="mdmark-visually-hidden">いいえ</span>` を返す'
     args:
       - name: value
         type: '"true" | "false"'
@@ -346,8 +346,6 @@ functions:
     returns:
       type: string
       description: セルの中身の HTML
-    callees:
-      - '#functions[markOwn]'
     unit_tests:
       - name: test_render_check_cell
         case: 正常
