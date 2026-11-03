@@ -2,6 +2,7 @@ import { readFileSync } from "node:fs";
 import { createServer, type Server } from "node:http";
 import { createRequire } from "node:module";
 import { join, resolve } from "node:path";
+import { runInNewContext } from "node:vm";
 import { build } from "esbuild";
 import type { HLJSApi, LanguageFn } from "highlight.js";
 import type { SideTocMode } from "../src/config.ts";
@@ -75,6 +76,8 @@ import { renderTree, type TreeNode } from "../src/parts/tree.ts";
 import { renderView } from "../src/parts/view.ts";
 import { sanitizeEmbedded } from "../src/render/sanitize.ts";
 import { syntaxLanguageOf } from "../src/render/syntax/code-blocks.ts";
+import { planCellMerges } from "../src/render/syntax/table-cells.ts";
+import { warningsOf } from "../src/render/syntax/tables.ts";
 import { renderConfigBand } from "../vscode/src/webview/parts/config-band.ts";
 import { renderMediaError } from "../vscode/src/webview/parts/media-error.ts";
 import {
@@ -325,6 +328,44 @@ function sampleText(name: string): string {
     throw new Error(`見本の定義が無い: ${name}`);
   }
   return text;
+}
+
+// #275 で追加したグラフの種類の見本（モックと同じ定義）
+const CHART_SAMPLES_FILE = join(
+  REPO_ROOT,
+  "dev",
+  "mock",
+  "refs",
+  "275",
+  "assets",
+  "samples.js",
+);
+
+/** モックの見本のスクリプトから、名前 `name` のグラフの定義を取り出す（モックの表の `kind` は定義に含めない） */
+function mockChart(name: string): MdmarkChartDefinition {
+  const window: { mdmarkMockDiagrams: Record<string, unknown> } = {
+    mdmarkMockDiagrams: {},
+  };
+  runInNewContext(readFileSync(CHART_SAMPLES_FILE, "utf8"), { window });
+  const found = window.mdmarkMockDiagrams[name] as
+    | (MdmarkChartDefinition & { kind?: string })
+    | undefined;
+  if (found === undefined) {
+    throw new Error(`モックの見本の定義が無い: ${name}`);
+  }
+  const { kind: _kind, ...definition } = found;
+  return JSON.parse(JSON.stringify(definition)) as MdmarkChartDefinition;
+}
+
+/** 系列が上限より多いストーリーの書き方の警告: 見本の 6 つの系列に 1 つ足して読ませる */
+function tooManySeriesDefinition(): string {
+  const definition = mockChart("reply-time-6");
+  definition.series?.push({ name: "代理店", points: [33, 30, 28, 27, 25] });
+  const { message, items } = definitionWarning(
+    "chart",
+    readDefinition("chart", [JSON.stringify(definition)]).problems,
+  );
+  return renderSyntaxWarning({ message, items });
 }
 
 /** 見本の定義を読んだ値 */
@@ -757,7 +798,18 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
       id: String(args.id ?? ""),
       docs: args.docs as Array<{ title: string; href: string }>,
     }),
-  table: (args) => renderTable(args as TableOptions),
+  table: (args) => {
+    // 結合する相手の無い `^^`・`<<` は、記法と同じ書き方の警告を表の前に置く
+    const options = args as TableOptions;
+    const plan = planCellMerges({
+      cells: [options.columns ?? [], ...(options.rows ?? [])],
+      headRows: 1,
+    });
+    const warnings = warningsOf("<!-- table: data -->", plan.warnings).map(
+      (warning) => renderSyntaxWarning(warning),
+    );
+    return warnings.join("") + renderTable(options);
+  },
   view: (args) =>
     renderView(args as unknown as Parameters<typeof renderView>[0]),
   "comment-button": () => STATIC_POPOVER_STYLE + renderCommentButton(),
@@ -802,14 +854,36 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
       kind: args.kind as CalloutKind,
       collapsed: args.collapsed as boolean | undefined,
       open: args.open as boolean | undefined,
-      body: bodyOf(args, SAMPLE_BODY),
+      title: args.title as string | undefined,
+      // 入れ子のストーリーは、本文の段落の後ろに補足の注意書きを置く
+      body:
+        args.nested === true
+          ? `<p>設定を書き換える前に、今の設定のバックアップを取ってください。</p>${renderCallout(
+              {
+                kind: "note",
+                body: "<p>バックアップは <code>mdmark upgrade</code> が自動で作ります。</p>",
+              },
+            )}`
+          : bodyOf(args, SAMPLE_BODY),
     }),
   tabs: (args) => {
     const titles = args.titles as string[];
     return renderTabs({
       id: "story",
       titles,
-      panels: titles.map((title) => `<p>${title} の中身の見本です。</p>`),
+      panels: titles.map((title, index) =>
+        // 入れ子のストーリーは、2 つ目の中身に内側のタブを置く
+        args.nested === true && index === 1
+          ? renderTabs({
+              id: "story-inner",
+              titles: ["PowerShell", "WSL"],
+              panels: ["PowerShell", "WSL"].map(
+                (inner) => `<p>${inner} の中身の見本です。</p>`,
+              ),
+              selected: 0,
+            })
+          : `<p>${title} の中身の見本です。</p>`,
+      ),
       selected: args.selected as number | undefined,
       group: args.group as string | undefined,
       collapse: args.collapse as "none" | "closed" | "open" | undefined,
@@ -1022,8 +1096,13 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
     if (args.invalid === true) {
       return invalidDefinition("chart", "reply-time");
     }
+    if (args.tooMany === true) {
+      return tooManySeriesDefinition();
+    }
     let definition: MdmarkChartDefinition;
-    if (args.type === "bar") {
+    if (typeof args.sample === "string") {
+      definition = mockChart(args.sample);
+    } else if (args.type === "bar") {
       definition = args.series === 4 ? BAR_FOUR_SAMPLE : BAR_SAMPLE;
     } else if (args.type === "pie") {
       definition = PIE_SAMPLE;

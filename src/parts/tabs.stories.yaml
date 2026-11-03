@@ -52,3 +52,18 @@ stories:
       selected: 0
       collapse: open
       title: 入れ方
+  - name: Nested
+    parameters:
+      server:
+        id: tabs
+    args:
+      titles: '["macOS","Windows"]'
+      selected: 1
+      nested: true
+  - name: StrongTitle
+    parameters:
+      server:
+        id: tabs
+    args:
+      titles: '["<strong>案 A</strong> SVG のまま","<strong>案 B</strong> Chart.js"]'
+      selected: 0
