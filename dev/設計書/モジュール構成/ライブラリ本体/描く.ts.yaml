@@ -4,8 +4,8 @@ directory: |-
   ```tree
   src/
   ├── mount.ts            # 公開関数 mount と、描いた要素の控え
-  ├── libraries.ts        # 印の場所に外部ライブラリのモジュールを描かせる loadLibraries
-  ├── highlight.ts        # 色分けのライブラリを読んでコードブロックを色分けする highlightCodeBlocks と、埋めたモジュールの URL の控え
+  ├── libraries.ts        # 印の場所に外部ライブラリのモジュールを描かせる loadLibraries と、埋めたモジュールの控え
+  ├── highlight.ts        # 色分けのライブラリを読んでコードブロックを色分けする highlightCodeBlocks と、埋めたモジュールの控え
   ├── highlight-lines.ts  # 色分けした HTML を行に分ける splitHighlightedLines・highlightLines（DOM を使わない）
   └── print.ts            # 印刷の前後で折り畳みを開いて戻す attachPrint
   ```
@@ -113,17 +113,17 @@ data_models:
       - name: draw
         type: '(slot: HTMLElement, args: string[]) => void | Promise<void>'
         description: 印の場所の要素と、印の引数を受けて描く
-  - name: SyntaxModuleUrls
-    title: 埋めた色分けのモジュールの URL
+  - name: EmbeddedSyntax
+    title: 埋めた色分けのモジュール
     container: src/highlight.ts
-    summary: 書き出した HTML の起動の処理が `setSyntaxModuleUrls` で渡す、埋めた色分けのモジュールの `blob:` URL
+    summary: 書き出した HTML の起動の処理が `setEmbeddedSyntax` で渡す、同じスクリプトに束ねた色分けのモジュール
     properties:
       - name: core
-        type: string
-        description: 本体（`core.min.js`）の URL
+        type: '{ default?: unknown } | undefined'
+        description: 本体（`core.min.js`）のモジュール。埋めなかったときは持たない
       - name: languages
-        type: Record<string, string>
-        description: 言語のモジュール名から URL を引く表。埋めなかった言語は持たない
+        type: 'Record<string, { default?: unknown }>'
+        description: 言語のモジュール名からモジュールを引く表。埋めなかった言語は持たない
     status: planned
     introduced:
       pr: 97
@@ -169,14 +169,22 @@ constants:
     container: src/libraries.ts
     summary: モジュールが描き終えた印の場所に付ける属性。読み込み中の破線と高さを外すのに使う
     value: '"data-mdmark-drawn"'
-  - name: syntaxModuleUrls
-    title: 埋めた色分けのモジュールの URL の控え
+  - name: embeddedSyntax
+    title: 埋めた色分けのモジュールの控え
     container: src/highlight.ts
-    summary: '`setSyntaxModuleUrls` が入れる `SyntaxModuleUrls`。無ければ `syntax.url` から読む。モジュールの中の `let` で持ち、ページの中の全ての `mount` に効く'
+    summary: '`setEmbeddedSyntax` が入れる `EmbeddedSyntax`。無ければ `syntax.url` から読む。モジュールの中の `let` で持ち、ページの中の全ての `mount` に効く'
     value: undefined
     status: planned
     introduced:
       pr: 97
+  - name: embeddedLibraries
+    title: 埋めた外部ライブラリの控え
+    container: src/libraries.ts
+    summary: '`setEmbeddedLibraries` が入れる、印の名前から外部ライブラリのモジュールを返す関数を引く表。無ければ対応表の URL から読む。モジュールの中の `let` で持ち、ページの中の全ての `mount` に効く'
+    value: undefined
+    status: planned
+    introduced:
+      pr: 296
   - name: COLOR_THEME_ATTRIBUTE
     title: テーマの属性
     container: src/mount.ts
@@ -506,7 +514,7 @@ functions:
     scope: internal
     is_async: true
     summary: 要素の中の印の場所ごとに、登録した拡張なら引数を検査して `load` で、対応表なら URL でモジュールを読んで `draw` を呼ぶ。引数が合わない場所は書き方の警告に、読めない・描けない・検査が失敗する場所は知らせの枠に替える
-    description: '同じ名前のモジュールは 1 回の呼び出しの中で 1 回だけ読む（2 回目からは同じ Promise を待つ）。拡張は対応表より優先し、`draw` に `parseMarkArgs` の値を渡す（対応表のモジュールには今のまま引数の配列を渡す）。拡張の知らせの枠は `source: "extension"` で、名前は拡張の `name`。書き方の警告は `renderSyntaxWarning` に印の文字・拡張の名前・`validateMarkArgs` の項目を渡す。印の場所が無ければ何も読まない。読み込みと `draw` に時間の上限は置かない'
+    description: '同じ名前のモジュールは 1 回の呼び出しの中で 1 回だけ読む（2 回目からは同じ Promise を待つ）。拡張は対応表より優先し、`draw` に `parseMarkArgs` の値を渡す（対応表のモジュールには今のまま引数の配列を渡す）。拡張の知らせの枠は `source: "extension"` で、名前は拡張の `name`。書き方の警告は `renderSyntaxWarning` に印の文字・拡張の名前・`validateMarkArgs` の項目を渡す。印の場所が無ければ何も読まない。`embeddedLibraries` があるときは、URL を読まずに表の関数でモジュールを読み、表に無い名前は読めないものとして知らせの枠にする（ページの隣のファイルや CDN へ要求しない）。読み込みと `draw` に時間の上限は置かない'
     side_effects: 印の場所の要素の属性を書き換え、失敗した場所を知らせの枠に置き換える。失敗を `console.error` に出す
     args:
       - name: options
@@ -521,7 +529,7 @@ functions:
       2. 拾った要素ごとに並行して次を行う
          - `data-mdmark-slot` の名前で対応表の行を引く。行が無い（文書に生の HTML で書かれた）要素は取り除き、ほかは行わない
          - 行の `url` を `document.baseURI` を基準に解決する
-         - 名前ごとに 1 回だけモジュールを読む（モジュールを読む）
+         - 名前ごとに 1 回だけモジュールを読む。`embeddedLibraries` があるときはその名前の関数を呼び、無い名前は `Error`（埋めていない）で拒否する。無いときは解決した URL で読む（モジュールを読む）
          - `data-mdmark-args` を空白で区切った引数で、モジュールの `draw` を呼んで待つ
          - 待った後に `isCurrent()` が `false` なら何もしない
          - 描けたら、要素から `role` を外し `DRAWN_ATTRIBUTE` を付ける
@@ -600,6 +608,12 @@ functions:
         condition: '`load` が拒否される拡張と、`validate` が拒否される拡張の場所'
         mock: '`console.error` を控える関数で包む'
         expected: どちらも `mdmark-notice` で本文が `表示に使う拡張（…）` で始まり、`console.error` に拡張の名前と元のエラー
+      - name: test_load_libraries_when_embedded
+        case: 正常
+        summary: 埋めた外部ライブラリは URL を読まずに表の関数で読み、表に無い名前は知らせの枠にする
+        condition: '`setEmbeddedLibraries({ "test-lib": 関数 })` の後に、`test-lib` と `other` の印の場所。対応表は両方を持つ。終えたら `setEmbeddedLibraries(undefined)`'
+        mock: '`importModule` を見張る。表の関数は `draw` を持つモジュールを返す'
+        expected: '`importModule` が呼ばれず、`test-lib` の場所が `data-mdmark-drawn` を持ち、`other` の場所が `renderNotice` の HTML に替わる'
   - name: attachPrint
     title: 印刷の前後で折り畳みと記法を開く
     container: src/print.ts
@@ -662,7 +676,7 @@ functions:
     scope: internal
     is_async: true
     summary: 要素の中の `code[data-mdmark-syntax]` が 1 つ以上あれば、色分けのライブラリの本体と使う言語のモジュールを読み、読めた言語の `code` の中身を色分けした HTML に置き換える
-    description: 読む先は、`syntaxModuleUrls` があればその URL（`languages` に無い言語は読まず、`console.error` にも出さない）、無ければ `url` を `document.baseURI` を基準に解決した `{url}core.min.js` と `{url}languages/{モジュール名}.min.js`。読んだモジュールは `modules`（URL → 読み込みの Promise）に控え、同じ `mount` の描き直しでは読み直さない。色分けの HTML は highlight.js が文字をエスケープしてから `span` を付けたもので、sanitize を通さない。待ちに時間の上限は置かない
+    description: 読む先は、`embeddedSyntax` があればそのモジュール（URL を読まない。`core` が無ければ色分けせずに終え、`languages` に無い言語は色分けしない。どちらも `console.error` に出さない）、無ければ `url` を `document.baseURI` を基準に解決した `{url}core.min.js` と `{url}languages/{モジュール名}.min.js`。読んだモジュールは `modules`（URL → 読み込みの Promise）に控え、同じ `mount` の描き直しでは読み直さない。色分けの HTML は highlight.js が文字をエスケープしてから `span` を付けたもので、sanitize を通さない。待ちに時間の上限は置かない
     side_effects: '`code` と `mdmark-code-text` の中身を置き換える。本体に言語を登録する。読めないモジュールを `console.error` に出す'
     args:
       - name: options
@@ -721,12 +735,18 @@ functions:
         condition: '`test_highlight_code_blocks` と同じ要素を 2 つ作り、同じ `modules` で順に呼ぶ'
         mock: '`test_highlight_code_blocks` と同じ'
         expected: '`importModule` が合わせて 3 回で、両方の要素が色分けされる'
-      - name: test_highlight_code_blocks_when_module_urls
+      - name: test_highlight_code_blocks_when_embedded
         case: 正常
-        summary: 埋めたモジュールの URL があればそこから読み、埋めていない言語は読まない
-        condition: '`setSyntaxModuleUrls({ core: "blob:core", languages: { typescript: "blob:ts" } })` の後に `test_highlight_code_blocks` と同じ要素。終えたら `setSyntaxModuleUrls(undefined)`'
-        mock: '`importModule` が `blob:core` に本体、`blob:ts` に typescript を返す。`console.error` を見張る'
-        expected: '`importModule` が `blob:core` と `blob:ts` の 2 回だけ。`typescript` の `code` は色分けし、`yaml` の `code` は前と同じで、`console.error` が呼ばれない'
+        summary: 埋めたモジュールがあれば URL を読まずに使い、埋めていない言語は色分けしない
+        condition: '`setEmbeddedSyntax({ core: 本体, languages: { typescript: 言語 } })`（npm の `highlight.js` の本体と typescript）の後に `test_highlight_code_blocks` と同じ要素。終えたら `setEmbeddedSyntax(undefined)`'
+        mock: '`importModule` と `console.error` を見張る'
+        expected: '`importModule` が呼ばれない。`typescript` の `code` は色分けし、`yaml` の `code` は前と同じで、`console.error` が呼ばれない'
+      - name: test_highlight_code_blocks_when_embedded_without_core
+        case: 正常
+        summary: 本体を埋めていなければ何も読まずに色分けせずに残す
+        condition: '`setEmbeddedSyntax({ languages: {} })` の後に `test_highlight_code_blocks` と同じ要素。終えたら `setEmbeddedSyntax(undefined)`'
+        mock: '`importModule` と `console.error` を見張る'
+        expected: '`importModule` と `console.error` が呼ばれず、両方の `code` の HTML が前と同じ'
       - name: test_highlight_code_blocks_when_dockerfile_and_diff
         case: 正常
         summary: dockerfile と、行の印を持つ diff を色分けする
@@ -739,24 +759,42 @@ functions:
     status: planned
     introduced:
       pr: 97
-  - name: setSyntaxModuleUrls
-    title: 埋めた色分けのモジュールの URL を入れる
+  - name: setEmbeddedSyntax
+    title: 埋めた色分けのモジュールを入れる
     container: src/highlight.ts
     kind: 関数
     scope: internal
-    summary: '`syntaxModuleUrls` を置き換える。`undefined` で `syntax.url` から読む形に戻す'
-    side_effects: '`syntaxModuleUrls` を書き換える'
+    summary: '`embeddedSyntax` を置き換える。`undefined` で `syntax.url` から読む形に戻す'
+    side_effects: '`embeddedSyntax` を書き換える'
     args:
-      - name: urls
-        type: SyntaxModuleUrls | undefined
+      - name: modules
+        type: EmbeddedSyntax | undefined
         required: true
-        description: 埋めたモジュールの URL
+        description: 埋めた色分けのモジュール
     returns:
       type: void
       description: なし
     status: planned
     introduced:
       pr: 97
+  - name: setEmbeddedLibraries
+    title: 埋めた外部ライブラリを入れる
+    container: src/libraries.ts
+    kind: 関数
+    scope: internal
+    summary: '`embeddedLibraries` を置き換える。`undefined` で対応表の URL から読む形に戻す'
+    side_effects: '`embeddedLibraries` を書き換える'
+    args:
+      - name: loaders
+        type: 'Record<string, () => Promise<LibraryModule>> | undefined'
+        required: true
+        description: 印の名前から外部ライブラリのモジュールを返す関数を引く表
+    returns:
+      type: void
+      description: なし
+    status: planned
+    introduced:
+      pr: 296
   - name: highlightLines
     title: 色分けした行を作る
     container: src/highlight-lines.ts
