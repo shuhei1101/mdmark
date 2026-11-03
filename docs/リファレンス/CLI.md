@@ -166,13 +166,13 @@ npx github:shuhei1101/mdmark#v{版} build [--config {設定ファイル}]
 
 ## 設定と索引を点検する
 
-設定の形・索引と文書のずれ・`build` の対象の有無・設定の `aliases` のずれ・文書の本文にある知らない印・文書が指す見つからないファイルを点検する。
+設定の形・索引と文書のずれ・`build` の対象の有無・設定の `aliases` のずれ・文書の本文にある知らない印・文書が指す見つからないファイル・図の部品の定義を点検する。
 ずれの一覧を標準出力に出し、設定・索引・文書・エイリアスの YAML は書き換えない。
 手順は [点検する](../使い方/書き出す/点検する.md)。
 
 ずれ 1 つを 1 行（`{ファイル}:{場所}: {種類}: {内容}`。場所が空のときは `{ファイル}: {種類}: {内容}`）で並べ、最後に `ずれ {件数} 件` の行を出す。
 ファイルは設定ファイルのあるフォルダからの相対パス。
-並びは `schema` → `unknown_color_theme` → `no_documents` → `checkIndex` が返した並び → エイリアスのずれ（[`buildAliases`](./API.md#エイリアスを作る) が返した並び。`alias_no_files`・`alias_unreadable` は読んだ行の順にその場所へ置く） → `unknown_mark` → `missing_file`（どちらも文書のパスの順、同じ文書の中は行の順）。
+並びは `schema` → `unknown_color_theme` → `no_documents` → `checkIndex` が返した並び → エイリアスのずれ（[`buildAliases`](./API.md#エイリアスを作る) が返した並び。`alias_no_files`・`alias_unreadable` は読んだ行の順にその場所へ置く） → `missing_file` → `unknown_mark` → `diagram_` で始まる種類（いずれも文書のパスの順、同じ文書の中は行の順）。
 内容は、何が合わないかと直し方の日本語の 1 文。
 
 ```text
@@ -214,11 +214,18 @@ mdmark.config.yaml:build: schema: `build.out` がありません。書き出す 
 | `duplicate_alias_id` | エイリアスの `id` が、前のエイリアス（`env` を含む）と重なっている |
 | `unknown_mark` | 文書の本文に、記法の印・`features`・`libraries` の対応表・`extensions` の拡張の印・`check.ignore` の名前のどれにも当たらない印がある。場所は印のある行の番号 |
 | `missing_file` | 文書が相対パスで指す画像（動画の `poster` を含む）・動画・音声・添付のカードにするファイルが、文書のフォルダにもアセットのルートにも無い。場所は書いた行の番号。内容は書いたパスと種類（画像・動画・音声・添付）と直し方。コードブロックと行内のコードの中・絶対 URL・`#` で始まるリンクは点検しない |
+| `diagram_invalid` | `flow`・`sequence`・`chart`・`param` の印の中の `json` のコードブロックの部品の定義を読めないか、部品の形に合わない。内容は描いたときに出す書き方の警告と同じ文 |
+| `diagram_node_overlap` | フロー図の 2 つの箱が重なっている |
+| `diagram_node_overflow` | フロー図の箱が図の幅・高さの外に出ているか、システムの枠の縁にまたがっている |
+| `diagram_wire_crosses_node` | フロー図の線が、`from`・`to` でない箱を通っている |
+| `diagram_label_too_long` | フロー図の箱の文字が、折り返しても箱に収まらない |
 
 <!-- /table -->
 
 `missing_doc` から `deprecated_tag` までは、`checkIndex` が返す `kind` と同じ（[点検が返すずれ](./索引.md#点検が返すずれ)）。
 `duplicate_alias_row_id` から `duplicate_alias_id` までは、`buildAliases` が返す `kind` と同じ（[エイリアスを作る](./API.md#エイリアスを作る)）。
+`diagram_` で始まる種類の場所は図の開く印の行の番号で、内容は図の題（無いときは印の名前）・箱の `id`・直し方。
+図の点検はブラウザを使わず、フロー図は配置まで確かめる。埋め込んだ HTML の custom element は点検しない。
 タグのずれは、索引がタグの語彙（`tags`）を記載しているときだけ出る。
 `missed_change_together` は、`--base` を渡したときだけ出る。
 エイリアスのずれは、設定に `aliases` があるときだけ出る。`enabled` が `false` の行は読まない。`env` のレコードも種類と必須のキーを確かめ、ずれがあれば出す。

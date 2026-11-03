@@ -1,0 +1,1449 @@
+$ npm run test:unit
+
+> test:unit
+> vitest run --project 'unit*'
+
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-notation-add-notation-and-check-items
+
+ ❯ |unit| tests/unit/src/render/syntax/table-cells.test.ts (4 tests | 4 failed) 2622ms
+   × test_plan_cell_merges 727ms
+   × test_plan_cell_merges_when_chained 340ms
+   × test_plan_cell_merges_when_no_partner 567ms
+   × test_plan_cell_merges_when_not_rectangle 987ms
+ ❯ |unit| tests/unit/src/render/sanitize.test.ts (21 tests | 1 failed) 3014ms
+   × test_sanitize_when_cell_span 4ms
+ ❯ |unit| tests/unit/src/parts/code-block.test.ts (14 tests | 5 failed) 3702ms
+   × test_render_code_block_when_line_kinds 9ms
+   × test_render_code_block_when_indented 3ms
+   × test_render_code_block_when_fold_buttons 1ms
+   × test_render_code_fold_toggle 1ms
+   × test_render_code_fold_more 0ms
+ ❯ |unit| tests/unit/src/parts/table.test.ts (26 tests | 6 failed) 4332ms
+   × test_render_table_when_all_features 10ms
+   × test_render_table_bar 5ms
+   × test_render_table_bar_when_totals 3ms
+   × test_render_table_tools 1ms
+   × test_render_table_when_merged 2ms
+   × test_render_table_when_merged_sorted 3ms
+ ❯ |unit| tests/unit/src/code-fold-logic.test.ts (9 tests | 9 failed) 5627ms
+   × test_measure_indents 722ms
+   × test_measure_indents_when_four_spaces 120ms
+   × test_fold_lines_of 645ms
+   × test_fold_lines_of_when_trailing_blank 178ms
+   × test_hidden_lines_of 347ms
+   × test_hidden_lines_of_when_outer_folded 1555ms
+   × test_guide_range_of 808ms
+   × test_guide_range_of_when_level_skipped 545ms
+   × test_guide_range_of_when_outside 703ms
+ ❯ |unit| tests/unit/src/parts/chart.test.ts (9 tests | 9 failed) 5400ms
+   × test_render_chart_when_stacked_bar 834ms
+   × test_render_chart_when_stacked_negative 337ms
+   × test_render_chart_when_area 568ms
+   × test_render_chart_when_horizontal_bar 986ms
+   × test_render_chart_when_donut 610ms
+   × test_render_chart_when_radar 541ms
+   × test_render_chart_when_bubble 275ms
+   × test_render_chart_when_combo 196ms
+   × test_render_chart_when_six_series 1052ms
+ ❯ |unit| tests/unit/src/parts/diagram.test.ts (17 tests | 1 failed) 167ms
+   × test_legend_for_when_chart_types_added 9ms
+ ❯ |unit-browser (chromium)| tests/unit/src/interact/tabs.browser.test.ts (13 tests | 1 failed) 458ms
+   × test_attach_tabs_when_nested 329ms
+ ❯ |unit| tests/unit/src/diagram/check.test.ts (3 tests | 3 failed) 943ms
+   × test_check_flow_layout 471ms
+   × test_check_flow_layout_when_broken 305ms
+   × test_label_line_count 165ms
+ ❯ |unit-browser (chromium)| tests/unit/src/interact/code-blocks.browser.test.ts (5 tests | 1 failed) 1506ms
+   × test_attach_code_copy_when_folded 1052ms
+ ❯ |unit| tests/unit/src/diagram/definition.test.ts (14 tests | 3 failed) 50ms
+   × test_read_definition_when_chart_types_added 15ms
+   × test_read_definition_when_chart_series_too_many 4ms
+   × test_read_definition_when_bubble_point 2ms
+ ❯ |unit-browser (chromium)| tests/unit/src/print.browser.test.ts (6 tests | 1 failed) 2730ms
+   × test_attach_print_when_code_folded 522ms
+ ❯ |unit-browser (chromium)| tests/unit/src/interact/code-folds.browser.test.ts (5 tests | 5 failed) 3880ms
+   × test_attach_code_folds 1258ms
+   × test_attach_code_folds_when_shift 828ms
+   × test_attach_code_folds_when_initial 561ms
+   × test_attach_code_folds_when_hovered 628ms
+   × test_set_code_fold_open 604ms
+ ❯ |unit| tests/unit/src/diagram/geometry.test.ts (7 tests | 1 failed) 21ms
+   × test_stack_series 6ms
+ ❯ |unit| tests/unit/src/render/syntax/tabs.test.ts (14 tests | 5 failed) 114ms
+   × test_build_tabs_when_nested 16ms
+   × test_build_tabs_when_strong_title 6ms
+   × test_build_tabs_when_nested_unclosed 2ms
+   × test_find_tabs_close 1ms
+   × test_find_tabs_close_when_unclosed 1ms
+ ❯ |unit| tests/unit/src/render/syntax/diagrams.test.ts (6 tests | 1 failed) 110ms
+   × test_find_diagram_blocks 2ms
+ ❯ |unit| tests/unit/src/render/syntax/code-blocks.test.ts (29 tests | 7 failed) 139ms
+   × test_read_code_spec_when_fold 8ms
+   × test_read_line_marks_when_focus_error_warning 5ms
+   × test_read_folds 0ms
+   × test_read_folds_when_not_foldable 0ms
+   × test_build_code_blocks_when_foldable 5ms
+   × test_build_code_blocks_when_fold_invalid 2ms
+   × test_build_code_blocks_when_focus 2ms
+ ❯ |unit| tests/unit/src/render/syntax/tables.test.ts (25 tests | 4 failed) 168ms
+   × test_read_table_spec_when_header_rows 5ms
+   × test_read_table_spec_when_header_rows_invalid 3ms
+   × test_decorate_tables_when_cells_merged 8ms
+   × test_decorate_tables_when_merge_invalid 14ms
+ ❯ |unit| tests/unit/src/render/syntax/callouts.test.ts (5 tests | 3 failed) 69ms
+   × test_build_callouts_when_titled_and_nested 16ms
+   × test_read_callout 2ms
+   × test_read_callout_when_not_callout 1ms
+ ❯ |unit| tests/unit/src/parts/tabs.test.ts (5 tests | 1 failed) 37ms
+   × test_render_tabs_when_strong_title 7ms
+ ❯ |unit-browser (chromium)| tests/unit/src/interact/tables.browser.test.ts (46 tests | 12 failed) 7994ms
+   × test_attach_tables_when_sorted 622ms
+   × test_attach_tables_when_filtered 235ms
+   × test_attach_tables_when_copied_after_sorted 399ms
+   × test_attach_tables_when_copy_denied 187ms
+   × test_attach_tables_when_totals_toggled 281ms
+   × test_attach_tables_when_nested_table_sorted 176ms
+   × test_attach_tables_when_merged_sorted 245ms
+   × test_attach_tables_when_row_header_pinned 1216ms
+   × test_bottom_head_cells 168ms
+   × test_bottom_head_cells_when_spanning 161ms
+   × test_merge_spans 2092ms
+   × test_merge_spans_when_left_breaks 517ms
+ ❯ |unit| tests/unit/src/parts/callout.test.ts (4 tests | 1 failed) 26ms
+   × test_render_callout_when_titled 14ms
+ ❯ |unit| tests/unit/src/cli/check.test.ts (25 tests | 3 failed) 15246ms
+   × test_collect_check_issues_when_diagram 22ms
+   × test_check_diagrams 0ms
+   × test_check_diagrams_when_clean 0ms
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 87 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit| tests/unit/src/code-fold-logic.test.ts > test_measure_indents
+Error: Cannot find module 'file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-notation-add-notation-and-check-items/src/code-fold-logic.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-notation-add-notation-and-check-items/tests/unit/src/code-fold-logic.test.ts
+ ❯ tests/unit/src/code-fold-logic.test.ts:17:30
+     15| test("test_measure_indents", async () => {
+     16|   // 準備
+     17|   const { measureIndents } = await loadLogic();
+       |                              ^
+     18|   // 実行
+     19|   const indents = measureIndents(["a:", "  b:", "    c: 1", "", "\td"]…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/87]⎯
+
+ FAIL  |unit| tests/unit/src/code-fold-logic.test.ts > test_measure_indents_when_four_spaces
+Error: Cannot find module 'file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-notation-add-notation-and-check-items/src/code-fold-logic.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-notation-add-notation-and-check-items/tests/unit/src/code-fold-logic.test.ts
+ ❯ tests/unit/src/code-fold-logic.test.ts:27:30
+     25| test("test_measure_indents_when_four_spaces", async () => {
+     26|   // 準備
+     27|   const { measureIndents } = await loadLogic();
+       |                              ^
+     28|   // 実行
+     29|   const indents = measureIndents(["{", "    a", "        b", "}"]);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/87]⎯
+
+ FAIL  |unit| tests/unit/src/code-fold-logic.test.ts > test_fold_lines_of
+Error: Cannot find module 'file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-notation-add-notation-and-check-items/src/code-fold-logic.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-notation-add-notation-and-check-items/tests/unit/src/code-fold-logic.test.ts
+ ❯ tests/unit/src/code-fold-logic.test.ts:37:27
+     35| test("test_fold_lines_of", async () => {
+     36|   // 準備
+     37|   const { foldLinesOf } = await loadLogic();
+       |                           ^
+     38|   // 実行
+     39|   const foldLines = foldLinesOf([0, 1, 2, 1, 0]);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/87]⎯
+
+ FAIL  |unit| tests/unit/src/code-fold-logic.test.ts > test_fold_lines_of_when_trailing_blank
+Error: Cannot find module 'file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-notation-add-notation-and-check-items/src/code-fold-logic.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-notation-add-notation-and-check-items/tests/unit/src/code-fold-logic.test.ts
+ ❯ tests/unit/src/code-fold-logic.test.ts:47:27
+     45| test("test_fold_lines_of_when_trailing_blank", async () => {
+     46|   // 準備
+     47|   const { foldLinesOf } = await loadLogic();
+       |                           ^
+     48|   // 実行
+     49|   const foldLines = foldLinesOf([0, 1, undefined, 0]);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/87]⎯
+
+ FAIL  |unit| tests/unit/src/code-fold-logic.test.ts > test_hidden_lines_of
+Error: Cannot find module 'file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-notation-add-notation-and-check-items/src/code-fold-logic.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-notation-add-notation-and-check-items/tests/unit/src/code-fold-logic.test.ts
+ ❯ tests/unit/src/code-fold-logic.test.ts:57:29
+     55| test("test_hidden_lines_of", async () => {
+     56|   // 準備
+     57|   const { hiddenLinesOf } = await loadLogic();
+       |                             ^
+     58|   // 実行
+     59|   const hidden = hiddenLinesOf({
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/87]⎯
+
+ FAIL  |unit| tests/unit/src/code-fold-logic.test.ts > test_hidden_lines_of_when_outer_folded
+Error: Cannot find module 'file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-notation-add-notation-and-check-items/src/code-fold-logic.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-notation-add-notation-and-check-items/tests/unit/src/code-fold-logic.test.ts
+ ❯ tests/unit/src/code-fold-logic.test.ts:70:29
+     68| test("test_hidden_lines_of_when_outer_folded", async () => {
+     69|   // 準備
+     70|   const { hiddenLinesOf } = await loadLogic();
+       |                             ^
+     71|   // 実行
+     72|   const hidden = hiddenLinesOf({
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/87]⎯
+
+ FAIL  |unit| tests/unit/src/code-fold-logic.test.ts > test_guide_range_of
+Error: Cannot find module 'file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-notation-add-notation-and-check-items/src/code-fold-logic.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-notation-add-notation-and-check-items/tests/unit/src/code-fold-logic.test.ts
+ ❯ tests/unit/src/code-fold-logic.test.ts:83:28
+     81| test("test_guide_range_of", async () => {
+     82|   // 準備
+     83|   const { guideRangeOf } = await loadLogic();
+       |                            ^
+     84|   // 実行
+     85|   const range = guideRangeOf({
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/87]⎯
+
+ FAIL  |unit| tests/unit/src/code-fold-logic.test.ts > test_guide_range_of_when_level_skipped
+Error: Cannot find module 'file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-notation-add-notation-and-check-items/src/code-fold-logic.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-notation-add-notation-and-check-items/tests/unit/src/code-fold-logic.test.ts
+ ❯ tests/unit/src/code-fold-logic.test.ts:97:28
+     95| test("test_guide_range_of_when_level_skipped", async () => {
+     96|   // 準備
+     97|   const { guideRangeOf } = await loadLogic();
+       |                            ^
+     98|   // 実行
+     99|   const range = guideRangeOf({
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/87]⎯
+
+ FAIL  |unit| tests/unit/src/code-fold-logic.test.ts > test_guide_range_of_when_outside
+Error: Cannot find module 'file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-notation-add-notation-and-check-items/src/code-fold-logic.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-notation-add-notation-and-check-items/tests/unit/src/code-fold-logic.test.ts
+ ❯ tests/unit/src/code-fold-logic.test.ts:111:28
+    109| test("test_guide_range_of_when_outside", async () => {
+    110|   // 準備
+    111|   const { guideRangeOf } = await loadLogic();
+       |                            ^
+    112|   // 実行
+    113|   const range = guideRangeOf({
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/87]⎯
+
+ FAIL  |unit| tests/unit/src/cli/check.test.ts > test_collect_check_issues_when_diagram
+AssertionError: expected [] to have a length of 1 but got +0
+
+- Expected
++ Received
+
+- 1
++ 0
+
+ ❯ tests/unit/src/cli/check.test.ts:632:22
+    630|       issue.kind.startsWith("diagram_"),
+    631|     );
+    632|     expect(diagrams).toHaveLength(1);
+       |                      ^
+    633|     expect(diagrams[0]).toMatchObject({
+    634|       file: "docs/a.md",
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/87]⎯
+
+ FAIL  |unit| tests/unit/src/cli/check.test.ts > test_check_diagrams
+TypeError: checkDiagrams is not a function
+ ❯ tests/unit/src/cli/check.test.ts:657:18
+    655|   const flowLine = markdown.split("\n").indexOf("<!-- flow -->") + 1;
+    656|   // 実行
+    657|   const issues = checkDiagrams([{ path: "a.md", markdown }]);
+       |                  ^
+    658|   // 検証
+    659|   expect(flowLine).toBe(10);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/87]⎯
+
+ FAIL  |unit| tests/unit/src/cli/check.test.ts > test_check_diagrams_when_clean
+TypeError: checkDiagrams is not a function
+ ❯ tests/unit/src/cli/check.test.ts:685:18
+    683|   ];
+    684|   // 実行
+    685|   const issues = checkDiagrams(documents);
+       |                  ^
+    686|   // 検証
+    687|   expect(issues).toEqual([]);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[12/87]⎯
+
+ FAIL  |unit| tests/unit/src/diagram/check.test.ts > test_check_flow_layout
+Error: Cannot find module '/src/diagram/check.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-notation-add-notation-and-check-items/tests/unit/src/diagram/check.test.ts
+ ❯ tests/unit/src/diagram/check.test.ts:56:31
+     54| test("test_check_flow_layout", async () => {
+     55|   // 準備
+     56|   const { checkFlowLayout } = await loadCheck();
+       |                               ^
+     57|   const touching = {
+     58|     title: "接するだけ",
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[13/87]⎯
+
+ FAIL  |unit| tests/unit/src/diagram/check.test.ts > test_check_flow_layout_when_broken
+Error: Cannot find module '/src/diagram/check.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-notation-add-notation-and-check-items/tests/unit/src/diagram/check.test.ts
+ ❯ tests/unit/src/diagram/check.test.ts:80:31
+     78| test("test_check_flow_layout_when_broken", async () => {
+     79|   // 準備
+     80|   const { checkFlowLayout } = await loadCheck();
+       |                               ^
+     81|   // 実行
+     82|   const issues = checkFlowLayout(BROKEN_FLOW);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[14/87]⎯
+
+ FAIL  |unit| tests/unit/src/diagram/check.test.ts > test_label_line_count
+Error: Cannot find module '/src/diagram/check.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-notation-add-notation-and-check-items/tests/unit/src/diagram/check.test.ts
+ ❯ tests/unit/src/diagram/check.test.ts:104:30
+    102| test("test_label_line_count", async () => {
+    103|   // 準備
+    104|   const { labelLineCount } = await loadCheck();
+       |                              ^
+    105|   // 実行
+    106|   const wide = labelLineCount({
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[15/87]⎯
+
+ FAIL  |unit| tests/unit/src/diagram/definition.test.ts > test_read_definition_when_chart_types_added
+AssertionError: expected [ Array(1) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   "グラフの種類 area は使えません。使える種類は line・bar・pie・scatter です",
++ ]
+
+ ❯ tests/unit/src/diagram/definition.test.ts:246:29
+    244|   expect(results).toHaveLength(9);
+    245|   for (const result of results) {
+    246|     expect(result.problems).toEqual([]);
+       |                             ^
+    247|     expect(result.ok).toBe(true);
+    248|   }
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[16/87]⎯
+
+ FAIL  |unit| tests/unit/src/diagram/definition.test.ts > test_read_definition_when_chart_series_too_many
+AssertionError: expected '系列が 7 つです。系列は 1〜4 つで書いてください' to contain '6 つ'
+
+Expected: "6 つ"
+Received: "系列が 7 つです。系列は 1〜4 つで書いてください"
+
+ ❯ tests/unit/src/diagram/definition.test.ts:282:32
+    280|     expect(result.problems[0]).toContain(word);
+    281|     expect(result.problems[0]).toContain("7");
+    282|     expect(result.problems[0]).toContain("6 つ");
+       |                                ^
+    283|   }
+    284| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[17/87]⎯
+
+ FAIL  |unit| tests/unit/src/diagram/definition.test.ts > test_read_definition_when_bubble_point
+AssertionError: expected 'グラフの種類 bubble は使えません。使える種類は line・bar・…' to contain '[x, y, size]'
+
+Expected: "[x, y, size]"
+Received: "グラフの種類 bubble は使えません。使える種類は line・bar・pie・scatter です"
+
+ ❯ tests/unit/src/diagram/definition.test.ts:304:30
+    302|   // 検証
+    303|   expect(result.ok).toBe(false);
+    304|   expect(result.problems[0]).toContain("[x, y, size]");
+       |                              ^
+    305| });
+    306|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[18/87]⎯
+
+ FAIL  |unit| tests/unit/src/diagram/geometry.test.ts > test_stack_series
+TypeError: stackSeries is not a function
+ ❯ tests/unit/src/diagram/geometry.test.ts:112:19
+    110|   const { stackSeries } = await loadGeometry();
+    111|   // 実行
+    112|   const stacked = stackSeries([
+       |                   ^
+    113|     [3, 1],
+    114|     [4, -2],
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[19/87]⎯
+
+ FAIL  |unit| tests/unit/src/parts/callout.test.ts > test_render_callout_when_titled
+AssertionError: expected '<div class="markdown-alert markdown-a…' to contain '<p class="markdown-alert-title"><span…'
+
+Expected: "<p class="markdown-alert-title"><span class="mdmark-visually-hidden">ヒント: </span>設定を先に確認する</p>"
+Received: "<div class="markdown-alert markdown-alert-tip"><p class="markdown-alert-title">ヒント</p><p>本文</p></div>"
+
+ ❯ tests/unit/src/parts/callout.test.ts:45:16
+     43|   });
+     44|   // 検証
+     45|   expect(html).toContain(
+       |                ^
+     46|     '<p class="markdown-alert-title"><span class="mdmark-visually-hidd…
+     47|   );
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[20/87]⎯
+
+ FAIL  |unit| tests/unit/src/parts/chart.test.ts > test_render_chart_when_stacked_bar
+Error: Cannot find module '/src/parts/chart.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-notation-add-notation-and-check-items/tests/unit/src/parts/chart.test.ts
+ ❯ tests/unit/src/parts/chart.test.ts:67:27
+     65| test("test_render_chart_when_stacked_bar", async () => {
+     66|   // 準備
+     67|   const { renderChart } = await loadChart();
+       |                           ^
+     68|   const definition = chartOf({
+     69|     type: "stacked-bar",
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[21/87]⎯
+
+ FAIL  |unit| tests/unit/src/parts/chart.test.ts > test_render_chart_when_stacked_negative
+Error: Cannot find module '/src/parts/chart.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-notation-add-notation-and-check-items/tests/unit/src/parts/chart.test.ts
+ ❯ tests/unit/src/parts/chart.test.ts:95:27
+     93| test("test_render_chart_when_stacked_negative", async () => {
+     94|   // 準備
+     95|   const { renderChart } = await loadChart();
+       |                           ^
+     96|   const definition = chartOf({
+     97|     type: "stacked-bar",
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[22/87]⎯
+
+ FAIL  |unit| tests/unit/src/parts/chart.test.ts > test_render_chart_when_area
+Error: Cannot find module '/src/parts/chart.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-notation-add-notation-and-check-items/tests/unit/src/parts/chart.test.ts
+ ❯ tests/unit/src/parts/chart.test.ts:119:27
+    117| test("test_render_chart_when_area", async () => {
+    118|   // 準備
+    119|   const { renderChart } = await loadChart();
+       |                           ^
+    120|   const base = {
+    121|     x: { label: "週", ticks: ["1", "2", "3"] },
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[23/87]⎯
+
+ FAIL  |unit| tests/unit/src/parts/chart.test.ts > test_render_chart_when_horizontal_bar
+Error: Cannot find module '/src/parts/chart.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-notation-add-notation-and-check-items/tests/unit/src/parts/chart.test.ts
+ ❯ tests/unit/src/parts/chart.test.ts:170:27
+    168| test("test_render_chart_when_horizontal_bar", async () => {
+    169|   // 準備
+    170|   const { renderChart } = await loadChart();
+       |                           ^
+    171|   const definition = chartOf({
+    172|     type: "horizontal-bar",
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[24/87]⎯
+
+ FAIL  |unit| tests/unit/src/parts/chart.test.ts > test_render_chart_when_donut
+Error: Cannot find module '/src/parts/chart.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-notation-add-notation-and-check-items/tests/unit/src/parts/chart.test.ts
+ ❯ tests/unit/src/parts/chart.test.ts:190:27
+    188| test("test_render_chart_when_donut", async () => {
+    189|   // 準備
+    190|   const { renderChart } = await loadChart();
+       |                           ^
+    191|   const definition = chartOf({
+    192|     type: "donut",
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[25/87]⎯
+
+ FAIL  |unit| tests/unit/src/parts/chart.test.ts > test_render_chart_when_radar
+Error: Cannot find module '/src/parts/chart.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-notation-add-notation-and-check-items/tests/unit/src/parts/chart.test.ts
+ ❯ tests/unit/src/parts/chart.test.ts:218:27
+    216| test("test_render_chart_when_radar", async () => {
+    217|   // 準備
+    218|   const { renderChart } = await loadChart();
+       |                           ^
+    219|   const definition = chartOf({
+    220|     type: "radar",
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[26/87]⎯
+
+ FAIL  |unit| tests/unit/src/parts/chart.test.ts > test_render_chart_when_bubble
+Error: Cannot find module '/src/parts/chart.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-notation-add-notation-and-check-items/tests/unit/src/parts/chart.test.ts
+ ❯ tests/unit/src/parts/chart.test.ts:248:27
+    246| test("test_render_chart_when_bubble", async () => {
+    247|   // 準備
+    248|   const { renderChart } = await loadChart();
+       |                           ^
+    249|   const definition = chartOf({
+    250|     type: "bubble",
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[27/87]⎯
+
+ FAIL  |unit| tests/unit/src/parts/chart.test.ts > test_render_chart_when_combo
+Error: Cannot find module '/src/parts/chart.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-notation-add-notation-and-check-items/tests/unit/src/parts/chart.test.ts
+ ❯ tests/unit/src/parts/chart.test.ts:277:27
+    275| test("test_render_chart_when_combo", async () => {
+    276|   // 準備
+    277|   const { renderChart } = await loadChart();
+       |                           ^
+    278|   const definition = chartOf({
+    279|     type: "combo",
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[28/87]⎯
+
+ FAIL  |unit| tests/unit/src/parts/chart.test.ts > test_render_chart_when_six_series
+Error: Cannot find module '/src/parts/chart.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-notation-add-notation-and-check-items/tests/unit/src/parts/chart.test.ts
+ ❯ tests/unit/src/parts/chart.test.ts:307:27
+    305| test("test_render_chart_when_six_series", async () => {
+    306|   // 準備
+    307|   const { renderChart } = await loadChart();
+       |                           ^
+    308|   const definition = chartOf({
+    309|     type: "line",
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[29/87]⎯
+
+ FAIL  |unit| tests/unit/src/parts/code-block.test.ts > test_render_code_block_when_line_kinds
+AssertionError: expected '<pre class="mdmark-code-lines" tabind…' to contain 'mdmark-code-has-focus'
+
+Expected: "mdmark-code-has-focus"
+Received: "<pre class="mdmark-code-lines" tabindex="0" aria-label="コード: ts">"
+
+ ❯ tests/unit/src/parts/code-block.test.ts:284:15
+    282|   const pre = findTag(html, "<pre");
+    283|   expect(pre).toContain("mdmark-code-lines");
+    284|   expect(pre).toContain("mdmark-code-has-focus");
+       |               ^
+    285|   const lines = findTags(html, 'class="mdmark-code-line"');
+    286|   expect(lines.map((tag) => /data-kind="([^"]*)"/.exec(tag)?.[1])).toE…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[30/87]⎯
+
+ FAIL  |unit| tests/unit/src/parts/code-block.test.ts > test_render_code_block_when_indented
+AssertionError: expected '<span class="mdmark-code-line" data-l…' to contain 'data-indent="1"'
+
+Expected: "data-indent="1""
+Received: "<span class="mdmark-code-line" data-line="2">"
+
+ ❯ tests/unit/src/parts/code-block.test.ts:308:20
+    306|   const lines = findTags(html, 'class="mdmark-code-line"');
+    307|   expect(lines).toHaveLength(12);
+    308|   expect(lines[1]).toContain('data-indent="1"');
+       |                    ^
+    309|   expect(lines[0]).toContain('data-fold-lines="10"');
+    310|   expect(lines[2]).toContain('data-fold-lines="4"');
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[31/87]⎯
+
+ FAIL  |unit| tests/unit/src/parts/code-block.test.ts > test_render_code_block_when_fold_buttons
+Error: 開始タグが無い: class="mdmark-code-fold"
+ ❯ findTag tests/unit/helpers/html.ts:10:11
+      8|   const tag = startTags(html).find((candidate) => candidate.includes(n…
+      9|   if (tag === undefined) {
+     10|     throw new Error(`開始タグが無い: ${needle}`);
+       |           ^
+     11|   }
+     12|   return tag;
+ ❯ tests/unit/src/parts/code-block.test.ts:330:10
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[32/87]⎯
+
+ FAIL  |unit| tests/unit/src/parts/code-block.test.ts > test_render_code_fold_toggle
+TypeError: renderCodeFoldToggle is not a function
+ ❯ tests/unit/src/parts/code-block.test.ts:356:16
+    354|   const { renderCodeFoldToggle } = await loadCodeBlock();
+    355|   // 実行
+    356|   const html = renderCodeFoldToggle({
+       |                ^
+    357|     expanded: false,
+    358|     from: 4,
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[33/87]⎯
+
+ FAIL  |unit| tests/unit/src/parts/code-block.test.ts > test_render_code_fold_more
+TypeError: renderCodeFoldMore is not a function
+ ❯ tests/unit/src/parts/code-block.test.ts:378:16
+    376|   const { renderCodeFoldMore } = await loadCodeBlock();
+    377|   // 実行
+    378|   const html = renderCodeFoldMore({ from: 4, to: 7 });
+       |                ^
+    379|   // 検証
+    380|   const button = findTag(html, "<button");
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[34/87]⎯
+
+ FAIL  |unit| tests/unit/src/parts/diagram.test.ts > test_legend_for_when_chart_types_added
+AssertionError: expected [ '件数', '割合' ] to include '件数（左の軸）'
+ ❯ tests/unit/src/parts/diagram.test.ts:500:23
+    498|   const donutLabels = legendFor(donut, drawn).map((item) => item.label…
+    499|   // 検証
+    500|   expect(comboLabels).toContain("件数（左の軸）");
+       |                       ^
+    501|   expect(comboLabels).toContain("割合（右の軸）");
+    502|   expect(bubbleLabels).toContain("円の面積: 件数");
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[35/87]⎯
+
+ FAIL  |unit| tests/unit/src/parts/table.test.ts > test_render_table_when_all_features
+AssertionError: expected '<p class="mdmark-table-count" aria-li…' to contain '列設定'
+
+Expected: "列設定"
+Received: "<p class="mdmark-table-count" aria-live="polite"><span aria-hidden="true">3 / 3 件</span><span class="mdmark-visually-hidden">3 件中 3 件を表示</span></p><div class="mdmark-table-tools"><button class="mdmark-table-tool mdmark-columns-toggle is-active" type="button" aria-expanded="false" aria-controls="mdmark-table-columns"><svg class="mdmark-diagram-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="18" height="18" x="3" y="3" rx="2"></rect><path d="M9 3v18"></path><path d="M15 3v18"></path></svg>列の表示<span class="mdmark-visually-hidden">（1 列を隠しています）</span></button><button class="mdmark-table-tool mdmark-totals-toggle" type="button" aria-expanded="false" aria-controls="mdmark-table-totals"><svg class="mdmark-diagram-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 7V5a1 1 0 0 0-1-1H6.5a.5.5 0 0 0-.4.8l4.5 6a2 2 0 0 1 0 2.4l-4.5 6a.5.5 0 0 0 .4.8H17a1 1 0 0 0 1-1v-2"></path></svg>集計<span class="mdmark-visually-hidden"></span></button><button class="mdmark-table-tool mdmark-copy" type="button" data-state="idle" aria-expanded="false" aria-controls="mdmark-table-copy"><svg class="mdmark-diagram-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"></rect><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"></path></svg><span class="mdmark-copy-label">表をコピー</span><span class="mdmark-copy-caret" data-icon="chevron-down"><svg class="mdmark-diagram-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg></span></button></div><span class="mdmark-visually-hidden mdmark-table-status" role="status"></span>"
+
+ ❯ tests/unit/src/parts/table.test.ts:143:15
+    141|   const bar = innerHtml(html, 'class="mdmark-table-bar"');
+    142|   expect(bar).toContain("3 / 3 件");
+    143|   expect(bar).toContain("列設定");
+       |               ^
+    144|   expect(bar).toContain("表をコピー");
+    145|   // 検証: 隠した説明の列の見出し・セル・集計のセル
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[36/87]⎯
+
+ FAIL  |unit| tests/unit/src/parts/table.test.ts > test_render_table_bar
+AssertionError: expected '<div class="mdmark-table-bar"><p clas…' to contain '列設定'
+
+Expected: "列設定"
+Received: "<div class="mdmark-table-bar"><p class="mdmark-table-count" aria-live="polite"><span aria-hidden="true">2 / 3 件</span><span class="mdmark-visually-hidden">3 件中 2 件を表示</span></p><div class="mdmark-table-tools"><button class="mdmark-table-tool mdmark-columns-toggle is-active" type="button" aria-expanded="false" aria-controls="t1-columns"><svg class="mdmark-diagram-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="18" height="18" x="3" y="3" rx="2"></rect><path d="M9 3v18"></path><path d="M15 3v18"></path></svg>列の表示<span class="mdmark-visually-hidden">（1 列を隠しています）</span></button><button class="mdmark-table-tool mdmark-copy" type="button" data-state="idle" aria-expanded="false" aria-controls="t1-copy"><svg class="mdmark-diagram-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"></rect><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"></path></svg><span class="mdmark-copy-label">表をコピー</span><span class="mdmark-copy-caret" data-icon="chevron-down"><svg class="mdmark-diagram-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg></span></button></div><span class="mdmark-visually-hidden mdmark-table-status" role="status"></span></div>"
+
+ ❯ tests/unit/src/parts/table.test.ts:193:15
+    191|   const toggle = findTag(bar, "mdmark-columns-toggle");
+    192|   expect(toggle).toContain('aria-expanded="false"');
+    193|   expect(bar).toContain("列設定");
+       |               ^
+    194|   const copy = findTag(bar, "mdmark-copy");
+    195|   expect(copy).toContain('data-state="idle"');
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[37/87]⎯
+
+ FAIL  |unit| tests/unit/src/parts/table.test.ts > test_render_table_bar_when_totals
+AssertionError: expected '<button class="mdmark-table-tool mdma…' to contain '（2 件を非表示にしています）'
+
+Expected: "（2 件を非表示にしています）"
+Received: "<button class="mdmark-table-tool mdmark-totals-toggle is-active" type="button" aria-expanded="true" aria-controls="t1-totals"><svg class="mdmark-diagram-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 7V5a1 1 0 0 0-1-1H6.5a.5.5 0 0 0-.4.8l4.5 6a2 2 0 0 1 0 2.4l-4.5 6a.5.5 0 0 0 .4.8H17a1 1 0 0 0 1-1v-2"></path></svg>集計<span class="mdmark-visually-hidden">（2 件を隠しています）</span></button>"
+
+ ❯ tests/unit/src/parts/table.test.ts:260:50
+    258|   expect(toggle).toContain("is-active");
+    259|   expect(toggle).toContain('aria-expanded="true"');
+    260|   expect(outerHtml(bar, "mdmark-totals-toggle")).toContain(
+       |                                                  ^
+    261|     "（2 件を非表示にしています）",
+    262|   );
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[38/87]⎯
+
+ FAIL  |unit| tests/unit/src/parts/table.test.ts > test_render_table_tools
+AssertionError: expected '<div class="mdmark-filter-drawer" id=…' to contain '絞り込みを解除'
+
+Expected: "絞り込みを解除"
+Received: "<div class="mdmark-filter-drawer" id="t1-drawer-0" role="dialog" aria-label="「名前」で絞り込む" data-filter-kind="select" data-column="0" hidden><p class="mdmark-filter-title">「名前」で絞り込む</p><label class="mdmark-filter-field">候補を検索<input class="mdmark-filter-search" type="search"></label><ul class="mdmark-filter-options"><li><label><input type="checkbox" value="りんご">りんご</label></li><li><label><input type="checkbox" value="みかん">みかん</label></li></ul><p class="mdmark-filter-none" hidden>一致する候補がありません</p><button class="mdmark-filter-clear" type="button">絞り込みを外す</button></div>"
+
+ ❯ tests/unit/src/parts/table.test.ts:455:18
+    453|   expect(drawer).toContain("候補を検索");
+    454|   expect(findTags(drawer, 'type="checkbox"')).toHaveLength(2);
+    455|   expect(drawer).toContain("絞り込みを解除");
+       |                  ^
+    456| });
+    457|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[39/87]⎯
+
+ FAIL  |unit| tests/unit/src/parts/table.test.ts > test_render_table_when_merged
+AssertionError: expected [ Array(1) ] to have a length of 2 but got 1
+
+- Expected
++ Received
+
+- 2
++ 1
+
+ ❯ tests/unit/src/parts/table.test.ts:771:20
+    769|   // 検証: 見出し
+    770|   const headRows = rowsOf(innerHtml(html, "<thead"));
+    771|   expect(headRows).toHaveLength(2);
+       |                    ^
+    772|   const upper = outerHtml(headRows[0] ?? "", 'colspan="2"');
+    773|   expect(findTag(upper, 'colspan="2"')).toContain('scope="colgroup"');
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[40/87]⎯
+
+ FAIL  |unit| tests/unit/src/parts/table.test.ts > test_render_table_when_merged_sorted
+AssertionError: expected [] to deeply equal [ '東日本', '西日本', '西日本', '東日本', '東日本' ]
+
+- Expected
++ Received
+
+- [
+-   "東日本",
+-   "西日本",
+-   "西日本",
+-   "東日本",
+-   "東日本",
+- ]
++ []
+
+ ❯ tests/unit/src/parts/table.test.ts:799:42
+    797|   // 検証: 東京・大阪・福岡・札幌・仙台の順で、地域は 東・西・西・東・東
+    798|   const heads = rowHeadsOf(html);
+    799|   expect(heads.map((head) => head.text)).toEqual([
+       |                                          ^
+    800|     "東日本",
+    801|     "西日本",
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[41/87]⎯
+
+ FAIL  |unit| tests/unit/src/parts/tabs.test.ts > test_render_tabs_when_strong_title
+AssertionError: expected 'id="t-tab-0" aria-controls="t-panel-0…' to contain '<strong>案 A</strong>'
+
+Expected: "<strong>案 A</strong>"
+Received: "id="t-tab-0" aria-controls="t-panel-0" aria-selected="true" tabindex="0">&lt;strong&gt;案 A&lt;/strong&gt; SVG のまま"
+
+ ❯ tests/unit/src/parts/tabs.test.ts:115:20
+    113|     html.indexOf("</button>"),
+    114|   );
+    115|   expect(firstTab).toContain("<strong>案 A</strong>");
+       |                    ^
+    116|   expect(html).toContain(
+    117|     '<p class="mdmark-tab-title"><strong>案 A</strong> SVG のまま</p>',
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[42/87]⎯
+
+ FAIL  |unit| tests/unit/src/render/sanitize.test.ts > test_sanitize_when_cell_span
+AssertionError: expected '<th colspan="2">' to contain 'rowspan="2"'
+
+Expected: "rowspan="2""
+Received: "<th colspan="2">"
+
+ ❯ tests/unit/src/render/sanitize.test.ts:427:15
+    425|   // 検証
+    426|   const own = /<th\b[^>]*>/.exec(sanitized)?.[0] ?? "";
+    427|   expect(own).toContain('rowspan="2"');
+       |               ^
+    428|   expect(own).toContain('colspan="2"');
+    429|   expect(own).toContain('scope="colgroup"');
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[43/87]⎯
+
+ FAIL  |unit| tests/unit/src/render/syntax/callouts.test.ts > test_build_callouts_when_titled_and_nested
+AssertionError: expected '<blockquote>\n<p>[!TIP] 設定を先に確認する\nヒン…' to contain '<p class="markdown-alert-title"><span…'
+
+- Expected
++ Received
+
+- <p class="markdown-alert-title"><span class="mdmark-visually-hidden">ヒント: </span>設定を先に確認する</p>
++ <blockquote>
++ <p>[!TIP] 設定を先に確認する
++ ヒントの本文</p>
++ </blockquote>
++ <blockquote>
++ <p>[!NOTE]+ 詳細
++ 補足の本文</p>
++ </blockquote>
++ <div class="markdown-alert markdown-alert-warning"><p class="markdown-alert-title">警告</p><p>警告の本文</p>
++ <blockquote>
++ <p>[!TIP]
++ 中のヒントの本文</p>
++ </blockquote>
++ </div>
+
+ ❯ tests/unit/src/render/syntax/callouts.test.ts:85:16
+     83|   const { html } = renderDoc(markdown);
+     84|   // 検証
+     85|   expect(html).toContain(
+       |                ^
+     86|     '<p class="markdown-alert-title"><span class="mdmark-visually-hidd…
+     87|   );
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[44/87]⎯
+
+ FAIL  |unit| tests/unit/src/render/syntax/callouts.test.ts > test_read_callout
+TypeError: readCallout is not a function
+ ❯ tests/unit/src/render/syntax/callouts.test.ts:124:5
+    122|   // 実行
+    123|   const read = opens.map((openIndex) =>
+    124|     readCallout({ state, tokens: state.tokens, openIndex }),
+       |     ^
+    125|   );
+    126|   // 検証
+ ❯ tests/unit/src/render/syntax/callouts.test.ts:123:22
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[45/87]⎯
+
+ FAIL  |unit| tests/unit/src/render/syntax/callouts.test.ts > test_read_callout_when_not_callout
+TypeError: readCallout is not a function
+ ❯ tests/unit/src/render/syntax/callouts.test.ts:155:5
+    153|   // 実行
+    154|   const read = opens.map((openIndex) =>
+    155|     readCallout({ state, tokens: state.tokens, openIndex }),
+       |     ^
+    156|   );
+    157|   // 検証
+ ❯ tests/unit/src/render/syntax/callouts.test.ts:154:22
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[46/87]⎯
+
+ FAIL  |unit| tests/unit/src/render/syntax/code-blocks.test.ts > test_read_code_spec_when_fold
+TypeError: spec.folds is not iterable
+ ❯ tests/unit/src/render/syntax/code-blocks.test.ts:448:19
+    446|   const spec = readCodeSpec({ args, lineCount: 6 });
+    447|   // 検証
+    448|   expect([...spec.folds]).toEqual([2, 4, 5]);
+       |                   ^
+    449|   expect(warningText(spec.warnings)).toContain("99");
+    450| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[47/87]⎯
+
+ FAIL  |unit| tests/unit/src/render/syntax/code-blocks.test.ts > test_read_line_marks_when_focus_error_warning
+AssertionError: expected [ …(3) ] to deeply equal [ …(3) ]
+
+- Expected
++ Received
+
+  [
+    {
+-     "kind": "focus",
+-     "text": "a();",
++     "text": "a(); // [!code focus]",
+    },
+    {
+-     "kind": "error",
+-     "text": "b();",
++     "text": "b(); # [!code error]",
+    },
+    {
+-     "kind": "warning",
+-     "text": "c();",
++     "text": "c(); /* [!code warning] */",
+    },
+  ]
+
+ ❯ tests/unit/src/render/syntax/code-blocks.test.ts:464:17
+    462|   const { lines, warnings } = readLineMarks(source);
+    463|   // 検証
+    464|   expect(lines).toEqual([
+       |                 ^
+    465|     { text: "a();", kind: "focus" },
+    466|     { text: "b();", kind: "error" },
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[48/87]⎯
+
+ FAIL  |unit| tests/unit/src/render/syntax/code-blocks.test.ts > test_read_folds
+TypeError: readFolds is not a function
+ ❯ tests/unit/src/render/syntax/code-blocks.test.ts:483:16
+    481|   ];
+    482|   // 実行
+    483|   const read = readFolds({ lines, folds: new Set([2]) });
+       |                ^
+    484|   // 検証
+    485|   expect(read.lines.map((line) => line.indent ?? 0)).toEqual([0, 1, 2,…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[49/87]⎯
+
+ FAIL  |unit| tests/unit/src/render/syntax/code-blocks.test.ts > test_read_folds_when_not_foldable
+TypeError: readFolds is not a function
+ ❯ tests/unit/src/render/syntax/code-blocks.test.ts:507:16
+    505|   const lines = [{ text: "a:" }, { text: "  b: 1" }, { text: "c: 2" }];
+    506|   // 実行
+    507|   const read = readFolds({ lines, folds: new Set([2, 3]) });
+       |                ^
+    508|   // 検証
+    509|   expect(read.lines.some((line) => line.folded === true)).toBe(false);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[50/87]⎯
+
+ FAIL  |unit| tests/unit/src/render/syntax/code-blocks.test.ts > test_build_code_blocks_when_foldable
+AssertionError: expected [] to have a length of 4 but got +0
+
+- Expected
++ Received
+
+- 4
++ 0
+
+ ❯ tests/unit/src/render/syntax/code-blocks.test.ts:556:16
+    554|   // 検証
+    555|   const [yaml = [], json = []] = codeLineTags(html);
+    556|   expect(yaml).toHaveLength(4);
+       |                ^
+    557|   expect(yaml[0]).toContain('data-fold-lines="3"');
+    558|   expect(yaml[1]).toContain('data-indent="1"');
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[51/87]⎯
+
+ FAIL  |unit| tests/unit/src/render/syntax/code-blocks.test.ts > test_build_code_blocks_when_fold_invalid
+AssertionError: expected [ …(2) ] to have a length of 1 but got 2
+
+- Expected
++ Received
+
+- 1
++ 2
+
+ ❯ tests/unit/src/render/syntax/code-blocks.test.ts:590:51
+    588|   const { html } = renderDoc(markdown, { syntax: false });
+    589|   // 検証
+    590|   expect(findTags(html, "mdmark-syntax-warning")).toHaveLength(1);
+       |                                                   ^
+    591|   const warning = html.slice(
+    592|     html.indexOf("mdmark-syntax-warning"),
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[52/87]⎯
+
+ FAIL  |unit| tests/unit/src/render/syntax/code-blocks.test.ts > test_build_code_blocks_when_focus
+AssertionError: expected '<pre tabindex="0" aria-label="コード: ts…' to contain 'mdmark-code-lines'
+
+Expected: "mdmark-code-lines"
+Received: "<pre tabindex="0" aria-label="コード: ts">"
+
+ ❯ tests/unit/src/render/syntax/code-blocks.test.ts:626:15
+    624|   // 検証
+    625|   const pre = findTag(html, "<pre");
+    626|   expect(pre).toContain("mdmark-code-lines");
+       |               ^
+    627|   expect(pre).toContain("mdmark-code-has-focus");
+    628|   const [lines = []] = codeLineTags(html);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[53/87]⎯
+
+ FAIL  |unit| tests/unit/src/render/syntax/diagrams.test.ts > test_find_diagram_blocks
+TypeError: findDiagramBlocks is not a function
+ ❯ tests/unit/src/render/syntax/diagrams.test.ts:114:17
+    112|   ].join("\n");
+    113|   // 実行
+    114|   const found = findDiagramBlocks(markdown);
+       |                 ^
+    115|   // 検証
+    116|   expect(found).toHaveLength(2);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[54/87]⎯
+
+ FAIL  |unit| tests/unit/src/render/syntax/table-cells.test.ts > test_plan_cell_merges
+Error: Cannot find module '/src/render/syntax/table-cells.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-notation-add-notation-and-check-items/tests/unit/src/render/syntax/table-cells.test.ts
+ ❯ tests/unit/src/render/syntax/table-cells.test.ts:10:30
+      8| test("test_plan_cell_merges", async () => {
+      9|   // 準備
+     10|   const { planCellMerges } = await loadTableCells();
+       |                              ^
+     11|   const cells = [
+     12|     ["地域", "上期", "<<"],
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[55/87]⎯
+
+ FAIL  |unit| tests/unit/src/render/syntax/table-cells.test.ts > test_plan_cell_merges_when_chained
+Error: Cannot find module '/src/render/syntax/table-cells.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-notation-add-notation-and-check-items/tests/unit/src/render/syntax/table-cells.test.ts
+ ❯ tests/unit/src/render/syntax/table-cells.test.ts:32:30
+     30| test("test_plan_cell_merges_when_chained", async () => {
+     31|   // 準備
+     32|   const { planCellMerges } = await loadTableCells();
+       |                              ^
+     33|   const cells = [["列"], ["A"], ["^^"], ["^^"], ["B"]];
+     34|   // 実行
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[56/87]⎯
+
+ FAIL  |unit| tests/unit/src/render/syntax/table-cells.test.ts > test_plan_cell_merges_when_no_partner
+Error: Cannot find module '/src/render/syntax/table-cells.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-notation-add-notation-and-check-items/tests/unit/src/render/syntax/table-cells.test.ts
+ ❯ tests/unit/src/render/syntax/table-cells.test.ts:47:30
+     45| test("test_plan_cell_merges_when_no_partner", async () => {
+     46|   // 準備
+     47|   const { planCellMerges } = await loadTableCells();
+       |                              ^
+     48|   const cells = [
+     49|     ["<<", "値"],
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[57/87]⎯
+
+ FAIL  |unit| tests/unit/src/render/syntax/table-cells.test.ts > test_plan_cell_merges_when_not_rectangle
+Error: Cannot find module '/src/render/syntax/table-cells.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-notation-add-notation-and-check-items/tests/unit/src/render/syntax/table-cells.test.ts
+ ❯ tests/unit/src/render/syntax/table-cells.test.ts:68:30
+     66| test("test_plan_cell_merges_when_not_rectangle", async () => {
+     67|   // 準備
+     68|   const { planCellMerges } = await loadTableCells();
+       |                              ^
+     69|   const cells = [
+     70|     ["列", "値"],
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[58/87]⎯
+
+ FAIL  |unit| tests/unit/src/render/syntax/tables.test.ts > test_read_table_spec_when_header_rows
+AssertionError: expected undefined to be 2 // Object.is equality
+
+- Expected:
+2
+
++ Received:
+undefined
+
+ ❯ tests/unit/src/render/syntax/tables.test.ts:603:25
+    601|   const spec = readTableSpec(args, ["a", "b", "c", "d"], 5);
+    602|   // 検証
+    603|   expect(spec.headRows).toBe(2);
+       |                         ^
+    604|   expect(spec.rowHeader).toBe(1);
+    605|   expect(spec.warnings).toEqual([]);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[59/87]⎯
+
+ FAIL  |unit| tests/unit/src/render/syntax/tables.test.ts > test_read_table_spec_when_header_rows_invalid
+AssertionError: expected undefined to be 1 // Object.is equality
+
+- Expected:
+1
+
++ Received:
+undefined
+
+ ❯ tests/unit/src/render/syntax/tables.test.ts:618:26
+    616|   const second = readTableSpec(wide, ["a", "b", "c"], 3);
+    617|   // 検証
+    618|   expect(first.headRows).toBe(1);
+       |                          ^
+    619|   expect(first.rowHeader).toBe(0);
+    620|   const headerRows = first.warnings.find((item) =>
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[60/87]⎯
+
+ FAIL  |unit| tests/unit/src/render/syntax/tables.test.ts > test_decorate_tables_when_cells_merged
+AssertionError: expected [ '<tr' ] to have a length of 2 but got 1
+
+- Expected
++ Received
+
+- 2
++ 1
+
+ ❯ tests/unit/src/render/syntax/tables.test.ts:662:34
+    660|     marked.indexOf("</thead>"),
+    661|   );
+    662|   expect(matches(thead, /<tr/g)).toHaveLength(2);
+       |                                  ^
+    663|   const firstRow = thead.slice(0, thead.indexOf("</tr>"));
+    664|   const headCells = findTags(firstRow, "<th");
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[61/87]⎯
+
+ FAIL  |unit| tests/unit/src/render/syntax/tables.test.ts > test_decorate_tables_when_merge_invalid
+AssertionError: expected [ …(2) ] to have a length of 1 but got 2
+
+- Expected
++ Received
+
+- 1
++ 2
+
+ ❯ tests/unit/src/render/syntax/tables.test.ts:706:20
+    704|   // 検証
+    705|   const warnings = findTags(html, "mdmark-syntax-warning");
+    706|   expect(warnings).toHaveLength(1);
+       |                    ^
+    707|   const warning = html.slice(
+    708|     html.indexOf("mdmark-syntax-warning"),
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[62/87]⎯
+
+ FAIL  |unit| tests/unit/src/render/syntax/tabs.test.ts > test_build_tabs_when_nested
+AssertionError: expected [ 'class="mdmark-tabs"' ] to have a length of 2 but got 1
+
+- Expected
++ Received
+
+- 2
++ 1
+
+ ❯ tests/unit/src/render/syntax/tabs.test.ts:244:49
+    242|   const { html } = renderDoc(markdown);
+    243|   // 検証
+    244|   expect(matches(html, /class="mdmark-tabs"/g)).toHaveLength(2);
+       |                                                 ^
+    245|   expect(matches(html, /class="mdmark-tab-panel"/g)).toHaveLength(4);
+    246|   const macos = innerHtml(html, "mdmark-tab-panel");
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[63/87]⎯
+
+ FAIL  |unit| tests/unit/src/render/syntax/tabs.test.ts > test_build_tabs_when_strong_title
+AssertionError: expected '<div class="mdmark-tabs"><div class="…' to contain '<p class="mdmark-tab-title"><strong>W…'
+
+- Expected
++ Received
+
+- <p class="mdmark-tab-title"><strong>Windows</strong></p>
++ <div class="mdmark-tabs"><div class="mdmark-tab-panel"><p class="mdmark-tab-title">Windows</p><p>Windows の手順</p>
++ </div><div class="mdmark-tab-panel"><p class="mdmark-tab-title">macOS</p><p>macOS の手順</p>
++ </div></div>
+
+ ❯ tests/unit/src/render/syntax/tabs.test.ts:277:16
+    275|   const { html } = renderDoc(markdown);
+    276|   // 検証
+    277|   expect(html).toContain(
+       |                ^
+    278|     '<p class="mdmark-tab-title"><strong>Windows</strong></p>',
+    279|   );
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[64/87]⎯
+
+ FAIL  |unit| tests/unit/src/render/syntax/tabs.test.ts > test_build_tabs_when_nested_unclosed
+AssertionError: expected [] to have a length of 1 but got +0
+
+- Expected
++ Received
+
+- 1
++ 0
+
+ ❯ tests/unit/src/render/syntax/tabs.test.ts:290:51
+    288|   const { html } = renderDoc(markdown);
+    289|   // 検証
+    290|   expect(findTags(html, "mdmark-syntax-warning")).toHaveLength(1);
+       |                                                   ^
+    291|   expect(html.indexOf("mdmark-syntax-warning")).toBeLessThan(
+    292|     html.indexOf("<h3"),
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[65/87]⎯
+
+ FAIL  |unit| tests/unit/src/render/syntax/tabs.test.ts > test_find_tabs_close
+TypeError: findTabsClose is not a function
+ ❯ tests/unit/src/render/syntax/tabs.test.ts:318:17
+    316|   const marks = tabsMarkIndexes(markdown);
+    317|   // 実行
+    318|   const found = findTabsClose(tokens, marks[0] ?? -1);
+       |                 ^
+    319|   // 検証
+    320|   expect(marks).toHaveLength(4);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[66/87]⎯
+
+ FAIL  |unit| tests/unit/src/render/syntax/tabs.test.ts > test_find_tabs_close_when_unclosed
+TypeError: findTabsClose is not a function
+ ❯ tests/unit/src/render/syntax/tabs.test.ts:332:17
+    330|   const marks = tabsMarkIndexes(markdown);
+    331|   // 実行
+    332|   const found = findTabsClose(tokens, marks[0] ?? -1);
+       |                 ^
+    333|   // 検証
+    334|   expect(marks).toHaveLength(3);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[67/87]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/print.browser.test.ts > test_attach_print_when_code_folded
+AssertionError: expected undefined to be true // Object.is equality
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/print.browser.test.ts/test_attach_print_when_code_folded.png
+
+[32m- Expected:[39m
+true
+
+[31m+ Received:[39m
+undefined
+
+ ❯ tests/unit/src/print.browser.test.ts:216:23
+    214|     expect(line.hasAttribute("hidden")).toBe(false);
+    215|   }
+    216|   expect(inner?.open).toBe(true);
+       |                       ^
+    217|   // 実行
+    218|   window.dispatchEvent(new Event("afterprint"));
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=7a6596e7:5235:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[68/87]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/code-blocks.browser.test.ts > test_attach_code_copy_when_folded
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/code-folds.browser.test.ts > test_attach_code_folds
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/code-folds.browser.test.ts > test_attach_code_folds_when_shift
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/code-folds.browser.test.ts > test_attach_code_folds_when_initial
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/code-folds.browser.test.ts > test_attach_code_folds_when_hovered
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/code-folds.browser.test.ts > test_set_code_fold_open
+TypeError: Failed to fetch dynamically imported module: http://localhost:63317/src/interact/code-folds.ts
+
+Failure screenshots:
+  - .vitest/attachments/failure-screenshots/code-blocks.browser.test.ts/test_attach_code_copy_when_folded.png
+  - .vitest/attachments/failure-screenshots/code-folds.browser.test.ts/test_attach_code_folds.png
+  - .vitest/attachments/failure-screenshots/code-folds.browser.test.ts/test_attach_code_folds_when_shift.png
+  - .vitest/attachments/failure-screenshots/code-folds.browser.test.ts/test_attach_code_folds_when_initial.png
+  - .vitest/attachments/failure-screenshots/code-folds.browser.test.ts/test_attach_code_folds_when_hovered.png
+  - .vitest/attachments/failure-screenshots/code-folds.browser.test.ts/test_set_code_fold_open.png
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[69/87]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/tables.browser.test.ts > test_attach_tables_when_sorted
+AssertionError: expected [ '2', '10', '33' ] to deeply equal [ '33', '10', '2' ]
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/tables.browser.test.ts/test_attach_tables_when_sorted.png
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[2m  [[22m
+[32m-   "33",[39m
+[32m-   "10",[39m
+[2m    "2",[22m
+[31m+   "10",[39m
+[31m+   "33",[39m
+[2m  ][22m
+
+ ❯ tests/unit/src/interact/tables.browser.test.ts:474:32
+    472|   // 実行・検証
+    473|   button?.click();
+    474|   expect(columnTexts(root, 1)).toEqual(["33", "10", "2"]);
+       |                                ^
+    475|   expect(header?.getAttribute("aria-sort")).toBe("descending");
+    476|   button?.click();
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=7a6596e7:5235:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[70/87]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/tables.browser.test.ts > test_attach_tables_when_filtered
+AssertionError: expected [ <tr>…(2)</tr> ] to have a length of 3 but got 1
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/tables.browser.test.ts/test_attach_tables_when_filtered.png
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- 3[39m
+[31m+ 1[39m
+
+ ❯ Proxy.<anonymous> node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/index.uwTEEBsB-BOVeGxWF.js?v=7a6596e7:2639:20
+ ❯ Proxy.<anonymous> node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/index.uwTEEBsB-BOVeGxWF.js?v=7a6596e7:2439:14
+ ❯ tests/unit/src/interact/tables.browser.test.ts:515:55
+    513|   );
+    514|   clear?.click();
+    515|   expect(bodyRows(root).filter((row) => !row.hidden)).toHaveLength(3);
+       |                                                       ^
+    516|   expect(drawer.hasAttribute("hidden")).toBe(false);
+    517|   // 実行・検証: 表の外を押す
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=7a6596e7:5235:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[71/87]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/tables.browser.test.ts > test_attach_tables_when_copied_after_sorted
+AssertionError: expected [ '1', '2', '3' ] to deeply equal [ '3', '2', '1' ]
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/tables.browser.test.ts/test_attach_tables_when_copied_after_sorted.png
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[2m  [[22m
+[32m-   "3",[39m
+[32m-   "2",[39m
+[2m    "1",[22m
+[31m+   "2",[39m
+[31m+   "3",[39m
+[2m  ][22m
+
+ ❯ tests/unit/src/interact/tables.browser.test.ts:877:32
+    875|   });
+    876|   // 検証
+    877|   expect(columnTexts(root, 1)).toEqual(["3", "2", "1"]);
+       |                                ^
+    878|   expect(writeText).toHaveBeenCalledWith("名前\t値\nb\t3\nc\t2\na\t1");
+    879| });
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=7a6596e7:5235:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[72/87]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/tables.browser.test.ts > test_attach_tables_when_copy_denied
+AssertionError: expected 'クリップボードにコピーできませんでした。選択したMarkdown の表を手…' to be 'クリップボードにコピーできませんでした。選択したMarkdown の表を手…' // Object.is equality
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/tables.browser.test.ts/test_attach_tables_when_copy_denied.png
+
+Expected: [32m"クリップボードにコピーできませんでした。選択したMarkdown の表を手[7m動[27mでコピーできます"[39m
+Received: [31m"クリップボードにコピーできませんでした。選択したMarkdown の表を手でコピーできます"[39m
+
+ ❯ tests/unit/src/interact/tables.browser.test.ts:931:30
+    929|       true,
+    930|     );
+    931|     expect(statusText(root)).toBe(
+       |                              ^
+    932|       "クリップボードにコピーできませんでした。選択したMarkdown の表を手動でコピーできます",
+    933|     );
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=7a6596e7:5235:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[73/87]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/tables.browser.test.ts > test_attach_tables_when_totals_toggled
+AssertionError: expected '集計（1 件を隠しています）' to contain '（1 件を非表示にしています）'
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/tables.browser.test.ts/test_attach_tables_when_totals_toggled.png
+
+Expected: [32m"（1 件を[7m非表示に[27mしています）"[39m
+Received: [31m"[7m集計[27m（1 件を[7m隠[27mしています）"[39m
+
+ ❯ tests/unit/src/interact/tables.browser.test.ts:1086:30
+    1084|   expect(avgRow()?.hasAttribute("hidden")).toBe(true);
+    1085|   expect(toggle.classList.contains("is-active")).toBe(true);
+    1086|   expect(toggle.textContent).toContain("（1 件を非表示にしています）");
+       |                              ^
+    1087|   expect(statusText(root)).toBe("平均の行を隠しました");
+    1088|   // 実行・検証: 入れ直すと戻る
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=7a6596e7:5235:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[74/87]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/tables.browser.test.ts > test_attach_tables_when_nested_table_sorted
+AssertionError: expected 'ascending' to be 'descending' // Object.is equality
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/tables.browser.test.ts/test_attach_tables_when_nested_table_sorted.png
+
+Expected: [32m"[7mde[27mscending"[39m
+Received: [31m"[7ma[27mscending"[39m
+
+ ❯ tests/unit/src/interact/tables.browser.test.ts:1439:48
+    1437|   findButtonLike(nestedHead, "button.mdmark-sort").click();
+    1438|   // 検証: 中の表だけが降順になり、親の表の行の並びと見出しは変わらない
+    1439|   expect(nestedHead.getAttribute("aria-sort")).toBe("descending");
+       |                                                ^
+    1440|   const parentRows = [...(parentTable.tBodies[0]?.rows ?? [])].filter(
+    1441|     (row) => !row.classList.contains("mdmark-row-detail"),
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=7a6596e7:5235:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[75/87]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/tables.browser.test.ts > test_attach_tables_when_merged_sorted
+AssertionError: expected <button …(2)></button> to be null
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/tables.browser.test.ts/test_attach_tables_when_merged_sorted.png
+
+[32m- Expected:[39m
+null
+
+[31m+ Received:[39m
+<button
+  class="mdmark-sort"
+  type="button"
+>
+  区分
+</button>
+
+ ❯ tests/unit/src/interact/tables.browser.test.ts:1484:48
+    1482|     );
+    1483|   // 検証: ボタンは 2 段目の th にだけある
+    1484|   expect(headRows[0]?.querySelector("button")).toBeNull();
+       |                                                ^
+    1485|   expect(sortButton).toBeTruthy();
+    1486|   // 実行: 数値の列を降順に並べ替える
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=7a6596e7:5235:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[76/87]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/tables.browser.test.ts > test_attach_tables_when_row_header_pinned
+AssertionError: expected 'false' to be 'true' // Object.is equality
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/tables.browser.test.ts/test_attach_tables_when_row_header_pinned.png
+
+Expected: [32m"[7mtru[27me"[39m
+Received: [31m"[7mfals[27me"[39m
+
+ ❯ tests/unit/src/interact/tables.browser.test.ts:1547:51
+    1545|   const pins = root.querySelectorAll<HTMLButtonElement>("button.mdmark…
+    1546|   await vi.waitFor(() => {
+    1547|     expect(pins[1]?.getAttribute("aria-pressed")).toBe("true");
+       |                                                   ^
+    1548|   });
+    1549|   const cells = root.querySelector("tbody tr")?.cells;
+ ❯ checkCallback node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/index.uwTEEBsB-BOVeGxWF.js?v=7a6596e7:6080:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[77/87]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/tables.browser.test.ts > test_bottom_head_cells
+TypeError: bottomHeadCells is not a function
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/tables.browser.test.ts/test_bottom_head_cells.png
+
+ ❯ tests/unit/src/interact/tables.browser.test.ts:1573:17
+    1571|   ];
+    1572|   // 実行
+    1573|   const cells = bottomHeadCells(rows);
+       |                 ^
+    1574|   // 検証
+    1575|   expect(cells).toEqual([
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=7a6596e7:5235:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[78/87]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/tables.browser.test.ts > test_bottom_head_cells_when_spanning
+TypeError: bottomHeadCells is not a function
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/tables.browser.test.ts/test_bottom_head_cells_when_spanning.png
+
+ ❯ tests/unit/src/interact/tables.browser.test.ts:1593:17
+    1591|   ];
+    1592|   // 実行
+    1593|   const cells = bottomHeadCells(rows);
+       |                 ^
+    1594|   // 検証
+    1595|   expect(cells).toEqual([{ row: 0, cell: 0 }, undefined, undefined]);
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=7a6596e7:5235:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[79/87]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/tables.browser.test.ts > test_merge_spans
+TypeError: mergeSpans is not a function
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/tables.browser.test.ts/test_merge_spans.png
+
+ ❯ tests/unit/src/interact/tables.browser.test.ts:1603:17
+    1601|   const { mergeSpans } = await loadLogic();
+    1602|   // 実行
+    1603|   const spans = mergeSpans({
+       |                 ^
+    1604|     values: [["A"], ["A"], ["B"], ["A"]],
+    1605|     columns: [0],
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=7a6596e7:5235:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[80/87]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/tables.browser.test.ts > test_merge_spans_when_left_breaks
+TypeError: mergeSpans is not a function
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/tables.browser.test.ts/test_merge_spans_when_left_breaks.png
+
+ ❯ tests/unit/src/interact/tables.browser.test.ts:1616:17
+    1614|   const { mergeSpans } = await loadLogic();
+    1615|   // 実行
+    1616|   const spans = mergeSpans({
+       |                 ^
+    1617|     values: [
+    1618|       ["東", "札幌"],
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=7a6596e7:5235:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[81/87]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/tabs.browser.test.ts > test_attach_tabs_when_nested
+AssertionError: expected [ <div …(2)>…(1)</div> ] to have a length of 2 but got 1
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/tabs.browser.test.ts/test_attach_tabs_when_nested.png
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- 2[39m
+[31m+ 1[39m
+
+ ❯ Proxy.<anonymous> node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/index.uwTEEBsB-BOVeGxWF.js?v=7a6596e7:2639:20
+ ❯ Proxy.<anonymous> node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/index.uwTEEBsB-BOVeGxWF.js?v=7a6596e7:2439:14
+ ❯ tests/unit/src/interact/tabs.browser.test.ts:370:17
+    368|   // 検証: 外側と内側の並びがあり、強調したタブ名の strong を残す
+    369|   const lists = [...root.querySelectorAll('[role="tablist"]')];
+    370|   expect(lists).toHaveLength(2);
+       |                 ^
+    371|   const tabsOf = (list: Element | undefined): HTMLButtonElement[] => [
+    372|     ...(list?.querySelectorAll<HTMLButtonElement>('[role="tab"]') ?? […
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=7a6596e7:5235:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[82/87]⎯
+
+
+ Test Files  23 failed | 161 passed (184)
+      Tests  87 failed | 1243 passed (1330)
+   Start at  15:06:10
+   Duration  81.26s (worker 46%, tests 31%, import 18%, transform 5%)
+
+exit=1

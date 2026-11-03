@@ -127,3 +127,50 @@ stories:
       language: ts
       copyState: failed
       lines: '[{"text":"import { mount } from \"mdmark\";"}]'
+  - name: Focus
+    parameters:
+      server:
+        id: code-block
+    args:
+      language: 'ts'
+      lineNumbers: true
+      lines: '[{"text":"export function mount(element, markdown, options = {}) {","foldLines":10},{"text":"  const config = withDefaults(options);","indent":1},{"text":"  for (const block of parse(markdown)) {","kind":"focus","indent":1,"foldLines":4},{"text":"    if (block.kind === \"table\") {","kind":"focus","indent":2,"foldLines":1},{"text":"      attachTable(block, config.features);","indent":3},{"text":"    }","indent":2},{"text":"    element.append(render(block));","indent":2},{"text":"  }","indent":1},{"text":"  return () => {","indent":1,"foldLines":1},{"text":"    element.replaceChildren();","indent":2},{"text":"  };","indent":1},{"text":"}"}]'
+  - name: ErrorWarning
+    parameters:
+      server:
+        id: code-block
+    args:
+      language: 'ts'
+      lineNumbers: true
+      lines: '[{"text":"export function mount(element, markdown, options = {}) {","foldLines":10},{"text":"  const config = withDefaults(options);","kind":"warning","indent":1},{"text":"  for (const block of parse(markdown)) {","indent":1,"foldLines":4},{"text":"    if (block.kind === \"table\") {","indent":2,"foldLines":1},{"text":"      attachTable(block, config.features);","kind":"error","indent":3},{"text":"    }","indent":2},{"text":"    element.append(render(block));","indent":2},{"text":"  }","indent":1},{"text":"  return () => {","indent":1,"foldLines":1},{"text":"    element.replaceChildren();","indent":2},{"text":"  };","indent":1},{"text":"}"}]'
+  - name: Foldable
+    parameters:
+      server:
+        id: code-block
+    args:
+      language: 'ts'
+      lineNumbers: true
+      lines: '[{"text":"export function mount(element, markdown, options = {}) {","foldLines":10},{"text":"  const config = withDefaults(options);","indent":1},{"text":"  for (const block of parse(markdown)) {","indent":1,"foldLines":4},{"text":"    if (block.kind === \"table\") {","indent":2,"foldLines":1},{"text":"      attachTable(block, config.features);","indent":3},{"text":"    }","indent":2},{"text":"    element.append(render(block));","indent":2},{"text":"  }","indent":1},{"text":"  return () => {","indent":1,"foldLines":1},{"text":"    element.replaceChildren();","indent":2},{"text":"  };","indent":1},{"text":"}"}]'
+  - name: Folded
+    parameters:
+      server:
+        id: code-block
+    args:
+      language: 'ts'
+      lineNumbers: true
+      lines: '[{"text":"export function mount(element, markdown, options = {}) {","foldLines":10},{"text":"  const config = withDefaults(options);","indent":1},{"text":"  for (const block of parse(markdown)) {","indent":1,"foldLines":4,"folded":true},{"text":"    if (block.kind === \"table\") {","indent":2,"foldLines":1},{"text":"      attachTable(block, config.features);","indent":3},{"text":"    }","indent":2},{"text":"    element.append(render(block));","indent":2},{"text":"  }","indent":1},{"text":"  return () => {","indent":1,"foldLines":1},{"text":"    element.replaceChildren();","indent":2},{"text":"  };","indent":1},{"text":"}"}]'
+  - name: FoldNested
+    parameters:
+      server:
+        id: code-block
+    args:
+      language: 'ts'
+      lineNumbers: true
+      lines: '[{"text":"export function mount(element, markdown, options = {}) {","foldLines":10},{"text":"  const config = withDefaults(options);","indent":1},{"text":"  for (const block of parse(markdown)) {","indent":1,"foldLines":4,"folded":true},{"text":"    if (block.kind === \"table\") {","indent":2,"foldLines":1,"folded":true},{"text":"      attachTable(block, config.features);","indent":3},{"text":"    }","indent":2},{"text":"    element.append(render(block));","indent":2},{"text":"  }","indent":1},{"text":"  return () => {","indent":1,"foldLines":1,"folded":true},{"text":"    element.replaceChildren();","indent":2},{"text":"  };","indent":1},{"text":"}"}]'
+  - name: FoldNoLineNumbers
+    parameters:
+      server:
+        id: code-block
+    args:
+      language: 'yaml'
+      lines: '[{"text":"version: \"0.9\""},{"text":"features:","foldLines":2},{"text":"  table: true","indent":1},{"text":"  diagram: true","indent":1},{"text":"libraries:","foldLines":3},{"text":"  highlight:","indent":1,"foldLines":2,"folded":true},{"text":"    url: https://cdn.jsdelivr.net/npm/highlight.js","indent":2},{"text":"    version: 11.11.1","indent":2},{"text":"build:","foldLines":1},{"text":"  - docs/使い方/導入/README.md","indent":1}]'

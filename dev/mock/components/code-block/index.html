@@ -25,11 +25,16 @@
   <!-- コードブロックの帯（言語のラベルとコピーボタン）の規則（#151 で共有するアセット） -->
   <link rel="stylesheet" href="../../refs/151/assets/code-block.css">
   <link rel="stylesheet" href="../../refs/151/assets/code-block-print.css" media="print" data-print-styles>
+  <!-- focus・error・warning の行・畳む・開く・インデントの縦線の規則と印刷の規則（#275 の追加分） -->
+  <link rel="stylesheet" href="../../refs/275/assets/code-block.css">
+  <link rel="stylesheet" href="../../refs/275/assets/code-block-print.css" media="print" data-print-styles>
   <!-- 配色の切り替え -->
   <script src="../../refs/16/assets/sample.js" defer></script>
   <!-- モックの「印刷の見え方」の切り替え -->
   <script src="../../refs/65/assets/code-block.js" defer></script>
   <!-- コードブロックの帯（言語のラベルとコピーボタン）の操作 -->
+  <!-- 行のマーカー・畳む・開く・縦線の見本を行に分けて描く（#275。コピーのボタンより先に読む） -->
+  <script src="../../refs/275/assets/code-fold.js" defer></script>
   <script src="../../refs/151/assets/code-block.js" defer></script>
 </head>
 <body>
@@ -483,6 +488,141 @@ npx mdmark build --out dist/stock.html</code></pre>
 <span class="hljs-addition">+  copy: true</span></code></pre>
         </article>
       </section>
+      <!-- #275 [!code focus]: focus の行のほかを薄くする。ポインターを乗せるかフォーカスすると全ての行を戻す -->
+      <section aria-labelledby="state-275-focus">
+        <h2 class="catalog-label" id="state-275-focus">行のマーカー focus（3〜4 行目。ほかの行を薄くし、ポインターを乗せると戻す）</h2>
+        <article class="mdmark">
+<pre tabindex="0" aria-label="コード: ts" data-mock-code275 data-numbered data-marks="3:focus,4:focus"><code class="language-ts">export function mount(element, markdown, options = {}) {
+  const config = withDefaults(options);
+  for (const block of parse(markdown)) {
+    if (block.kind === "table") {
+      attachTable(block, config.features);
+    }
+    element.append(render(block));
+  }
+  return () =&gt; {
+    element.replaceChildren();
+  };
+}</code></pre>
+        </article>
+      </section>
+
+      <!-- #275 [!code error]・[!code warning]: 色の地と左の線に加え、行頭の × と ! で色以外でも見分ける -->
+      <section aria-labelledby="state-275-error-warning">
+        <h2 class="catalog-label" id="state-275-error-warning">行のマーカー error と warning（行頭の × と !）</h2>
+        <article class="mdmark">
+<pre tabindex="0" aria-label="コード: ts" data-mock-code275 data-numbered data-marks="2:warning,5:error"><code class="language-ts">export function mount(element, markdown, options = {}) {
+  const config = withDefaults(options);
+  for (const block of parse(markdown)) {
+    if (block.kind === "table") {
+      attachTable(block, config.features);
+    }
+    element.append(render(block));
+  }
+  return () =&gt; {
+    element.replaceChildren();
+  };
+}</code></pre>
+        </article>
+      </section>
+
+      <!-- #275 インデントによる畳む・開く: 次の行が深い行を畳める行にする。▾ は行番号の右に、ポインターを乗せたときとフォーカスのときだけ出す -->
+      <section aria-labelledby="state-275-fold">
+        <h2 class="catalog-label" id="state-275-fold">畳める行（行番号の右の ▾ はポインターを乗せた行だけに出す。全て開いた状態）</h2>
+        <article class="mdmark">
+<pre tabindex="0" aria-label="コード: ts" data-mock-code275 data-numbered><code class="language-ts">export function mount(element, markdown, options = {}) {
+  const config = withDefaults(options);
+  for (const block of parse(markdown)) {
+    if (block.kind === "table") {
+      attachTable(block, config.features);
+    }
+    element.append(render(block));
+  }
+  return () =&gt; {
+    element.replaceChildren();
+  };
+}</code></pre>
+        </article>
+      </section>
+
+      <!-- #275 畳んだ行: ▸ を常に出し、行の後ろに ⋯ の札を出す。行の数は出さない。閉じ括弧の行は残す。Shift を押しながら押すと入れ子もまとめて畳む・開く -->
+      <section aria-labelledby="state-275-folded">
+        <h2 class="catalog-label" id="state-275-folded">畳んだ行（fold=3。▸ を常に出し、行の後ろに ⋯。閉じ括弧の行は残す）</h2>
+        <article class="mdmark">
+<pre tabindex="0" aria-label="コード: ts" data-mock-code275 data-numbered data-fold="3"><code class="language-ts">export function mount(element, markdown, options = {}) {
+  const config = withDefaults(options);
+  for (const block of parse(markdown)) {
+    if (block.kind === "table") {
+      attachTable(block, config.features);
+    }
+    element.append(render(block));
+  }
+  return () =&gt; {
+    element.replaceChildren();
+  };
+}</code></pre>
+        </article>
+      </section>
+
+      <!-- #275 Shift で入れ子をまとめて畳んだ後、外側だけを開いた状態: 内側の行は畳んだまま残る -->
+      <section aria-labelledby="state-275-fold-nested">
+        <h2 class="catalog-label" id="state-275-fold-nested">入れ子をまとめて畳んだ後に外側だけを開いた（1 行目を Shift を押しながら畳み、1 行目だけを開いた状態）</h2>
+        <article class="mdmark">
+<pre tabindex="0" aria-label="コード: ts" data-mock-code275 data-numbered data-fold="3,4,9"><code class="language-ts">export function mount(element, markdown, options = {}) {
+  const config = withDefaults(options);
+  for (const block of parse(markdown)) {
+    if (block.kind === "table") {
+      attachTable(block, config.features);
+    }
+    element.append(render(block));
+  }
+  return () =&gt; {
+    element.replaceChildren();
+  };
+}</code></pre>
+        </article>
+      </section>
+
+      <!-- #275 行番号の無いコードブロック: 左の余白に畳むボタンの列を取る。縦線はインデントの 1 レベルごと -->
+      <section aria-labelledby="state-275-fold-plain">
+        <h2 class="catalog-label" id="state-275-fold-plain">行番号の無いコードブロック（YAML。左の余白に ▾ を置く）</h2>
+        <article class="mdmark">
+<pre tabindex="0" aria-label="コード: yaml" data-mock-code275 data-fold="6"><code class="language-yaml">version: "0.9"
+features:
+  table: true
+  diagram: true
+libraries:
+  highlight:
+    url: https://cdn.jsdelivr.net/npm/highlight.js
+    version: 11.11.1
+build:
+  - docs/使い方/導入/README.md</code></pre>
+        </article>
+      </section>
+
+      <!-- #275 畳めない行の fold=: 書き方の警告を出し、その行の指定を外して描く -->
+      <section aria-labelledby="state-275-fold-warning">
+        <h2 class="catalog-label" id="state-275-fold-warning">畳めない行の fold=（fold=3,6。異常シナリオ）</h2>
+        <article class="mdmark">
+<div class="mdmark-syntax-warning">
+  <p class="mdmark-syntax-warning-title"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg>書き方の警告</p>
+  <p><code>&lt;!-- code: fold=3,6 --&gt;</code> の 6 行目は畳めません（次の行が 6 行目より深くありません）。6 行目の指定を無視して描いています。</p>
+</div>
+<pre tabindex="0" aria-label="コード: ts" data-mock-code275 data-numbered data-fold="3"><code class="language-ts">export function mount(element, markdown, options = {}) {
+  const config = withDefaults(options);
+  for (const block of parse(markdown)) {
+    if (block.kind === "table") {
+      attachTable(block, config.features);
+    }
+    element.append(render(block));
+  }
+  return () =&gt; {
+    element.replaceChildren();
+  };
+}</code></pre>
+        </article>
+      </section>
+
     </div>
   </main>
 </body>

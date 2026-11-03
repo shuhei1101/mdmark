@@ -109,3 +109,91 @@ test("test_long", async () => {
   expect(inside).toBe(true);
   await expect(pageOverflows(page)).resolves.toBe(false);
 });
+
+// タイトルを持つ注意書きは、種類の名前の代わりにタイトルを出し、種類は読み上げの文字とアイコンで示す（Titled）
+test("test_titled", async () => {
+  // 準備・実行
+  const page = await holder.openStory("parts-callout--titled");
+  // 検証
+  const heading = page.locator(".markdown-alert-tip .markdown-alert-title");
+  // 種類の名前は読み上げにだけ残し、見える文字はタイトル
+  await expect(
+    heading.locator(".mdmark-visually-hidden").textContent(),
+  ).resolves.toBe("ヒント: ");
+  await expect(heading.textContent()).resolves.toBe(
+    "ヒント: 設定を先に確認する",
+  );
+  await expect(
+    heading
+      .locator(".mdmark-visually-hidden")
+      .evaluate((element) => element.getBoundingClientRect().width),
+  ).resolves.toBeLessThanOrEqual(1);
+  const icon = await heading.evaluate(
+    (element) => getComputedStyle(element, "::before").maskImage,
+  );
+  expect(icon).toContain("data:image/svg+xml");
+});
+
+// タイトルを持つ閉じた注意書きは、閉じた状態でタイトルだけを出す（TitledCollapsed）
+test("test_titled_collapsed", async () => {
+  // 準備・実行
+  const page = await holder.openStory("parts-callout--titled-collapsed");
+  // 検証
+  const alert = page.locator("details.markdown-alert-warning");
+  await expect(
+    alert.evaluate((el) => (el as HTMLDetailsElement).open),
+  ).resolves.toBe(false);
+  await expect(
+    alert.locator("summary.markdown-alert-title").textContent(),
+  ).resolves.toBe("警告: 古いバージョンの設定");
+  await expect(
+    alert.locator("summary .mdmark-visually-hidden").textContent(),
+  ).resolves.toBe("警告: ");
+  await expect(alert.locator("p").isVisible()).resolves.toBe(false);
+});
+
+// `+` の折り畳みは開いた状態で描き、タイトルを押すと閉じる（OpenPlus）
+test("test_open_plus", async () => {
+  // 準備
+  const page = await holder.openStory("parts-callout--open-plus");
+  const alert = page.locator("details.markdown-alert-warning");
+  // 検証: 開いた状態
+  await expect(
+    alert.evaluate((el) => (el as HTMLDetailsElement).open),
+  ).resolves.toBe(true);
+  await expect(alert.locator("p").isVisible()).resolves.toBe(true);
+  // 実行: タイトルを押す
+  await alert.locator("summary").click();
+  // 検証: 閉じる
+  await expect(
+    alert.evaluate((el) => (el as HTMLDetailsElement).open),
+  ).resolves.toBe(false);
+});
+
+// 入れ子の注意書きは、外側の本文の中に同じ見た目の枠で収まる（Nested）
+test("test_nested", async () => {
+  // 準備・実行
+  const page = await holder.openStory("parts-callout--nested");
+  // 検証
+  const outer = page.locator(".mdmark > .markdown-alert-warning");
+  const inner = outer.locator(":scope > .markdown-alert-note");
+  await expect(inner.count()).resolves.toBe(1);
+  const boxes = await outer.evaluate((element) => {
+    const nested = element.querySelector(".markdown-alert-note");
+    const box = element.getBoundingClientRect();
+    const innerBox = nested?.getBoundingClientRect();
+    return {
+      inside: innerBox
+        ? innerBox.left >= box.left && innerBox.right <= box.right
+        : false,
+      outerLeft: getComputedStyle(element).borderLeftStyle,
+      innerLeft: nested ? getComputedStyle(nested).borderLeftStyle : "",
+    };
+  });
+  expect(boxes.inside).toBe(true);
+  expect(boxes.innerLeft).toBe(boxes.outerLeft);
+  await expect(
+    inner.locator(".markdown-alert-title").innerText(),
+  ).resolves.toBe("補足");
+  await expect(pageOverflows(page)).resolves.toBe(false);
+});

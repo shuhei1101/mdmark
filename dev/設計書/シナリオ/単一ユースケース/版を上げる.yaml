@@ -229,6 +229,28 @@ scenarios:
       - 設定の `version` が `v0.5.0`
       - 終了コードが 0
     test: test_normal_when_destructive_with_yes
+  - name: 異常シナリオ（当てた後の点検で図の定義にずれがある）
+    setup:
+      - name: 図の定義にずれを持つ手元の版が古いフォルダ
+        description: 正常シナリオのフォルダの文書 1 つに、座標の重なる 2 つのノードを持つフロー図の部品の定義を記載したもの
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant C as mdmark CLI
+        participant F as フォルダ
+        W->>C: mdmark upgrade
+        C->>F: バックアップを取り、v0.4.0・v0.5.0 の手順を当てる
+        C->>C: 点検を流す（図の定義のずれがある）
+        C->>F: バックアップから戻す
+        C-->>W: ずれの一覧・終了コード 0 以外
+    expected:
+      - 設定・索引・文書が当てる前と同じ中身に戻っている
+      - 設定の `version` が `v0.3.0` のまま
+      - 出力に、その文書の図の定義を指すノードの重なりのずれの行が出る
+      - 終了コードが 0 以外
+    test: test_error_when_diagram_drift
 lead: 文書を書く人が `mdmark upgrade` を流し、設定の手元の版から目標の版までの移行の手順を版の順に当て、点検を通してから設定の版を書き換え、その範囲の変更履歴を受け取る。
 issue: 10
 primary_actor: 文書を書く人

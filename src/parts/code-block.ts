@@ -1,3 +1,4 @@
+import { hiddenLinesOf } from "../code-fold-logic.ts";
 import { escapeHtml } from "./escape.ts";
 import { iconSvg } from "./icons.ts";
 
@@ -9,19 +10,71 @@ export type CodeLine = {
   /** コードの行の印を外した行の文字（エスケープ前） */
   text: string;
   /** 行の種類。無ければ飾らない行 */
-  kind?: "add" | "del" | "highlight" | undefined;
+  kind?:
+    | "add"
+    | "del"
+    | "highlight"
+    | "focus"
+    | "error"
+    | "warning"
+    | undefined;
+  /** インデントのレベル。無ければインデントの無い行か空行 */
+  indent?: number | undefined;
+  /** 畳める行の後ろの畳む行の数。無ければ畳めない行 */
+  foldLines?: number | undefined;
+  /** 最初から畳んだ状態か */
+  folded?: boolean | undefined;
 };
 
-/** 行を `mdmark-code-line` にする。`data-line` は行番号を出すときだけ、`data-kind` は種類を持つ行だけ付ける */
+/** 行の開閉のボタンの HTML を返す */
+export function renderCodeFoldToggle(options: {
+  /** 開いているか */
+  expanded: boolean;
+  /** 畳む範囲の最初の行番号（1 から） */
+  from: number;
+  /** 畳む範囲の最後の行番号（1 から） */
+  to: number;
+  /** 畳む行の `id` を空白で並べたもの */
+  controls: string;
+}): string {
+  const { expanded, from, to, controls } = options;
+  const icon = expanded ? "chevron-down" : "chevron-right";
+  return `<button class="mdmark-code-fold" type="button" aria-expanded="${expanded}" aria-controls="${escapeHtml(controls)}" aria-label="${from} 行目から ${to} 行目"><span class="mdmark-code-fold-icon" data-icon="${icon}">${iconSvg(icon)}</span></button>`;
+}
+
+/** 畳んだ行の末尾に置く `⋯` のボタンの HTML を返す */
+export function renderCodeFoldMore(options: {
+  /** 畳んだ範囲の最初の行番号（1 から） */
+  from: number;
+  /** 畳んだ範囲の最後の行番号（1 から） */
+  to: number;
+}): string {
+  const { from, to } = options;
+  return `<button class="mdmark-code-fold-more" type="button" aria-label="${from} 行目から ${to} 行目を展開">⋯</button>`;
+}
+
+/** 行の `id`（開閉のボタンの `aria-controls` が指す） */
+export function codeLineId(base: string, index: number): string {
+  return `${base}-line-${index + 1}`;
+}
+
+/** 行を `mdmark-code-line` にする。`data-line` は行番号を出すときだけ、`data-kind` は種類を持つ行だけ、`data-indent`・`data-fold-lines`・`data-folded` は持つ行だけ付ける。`fold` を渡すと開閉のボタンと `⋯` を置く */
 function renderLine(options: {
   line: CodeLine;
   number: number | undefined;
+  fold?: { id: string; hidden: boolean; toggle: string; more: string };
 }): string {
-  const { line, number } = options;
-  const lineAttribute = number === undefined ? "" : ` data-line="${number}"`;
-  const kindAttribute =
-    line.kind === undefined ? "" : ` data-kind="${line.kind}"`;
-  return `<span class="mdmark-code-line"${lineAttribute}${kindAttribute}><span class="mdmark-code-text">${escapeHtml(line.text)}</span></span>`;
+  const { line, number, fold } = options;
+  const attributes = [
+    fold ? ` id="${escapeHtml(fold.id)}"` : "",
+    number === undefined ? "" : ` data-line="${number}"`,
+    line.kind === undefined ? "" : ` data-kind="${line.kind}"`,
+    line.indent ? ` data-indent="${line.indent}"` : "",
+    line.foldLines === undefined ? "" : ` data-fold-lines="${line.foldLines}"`,
+    line.folded ? ' data-folded="true"' : "",
+    fold?.hidden ? " hidden" : "",
+  ].join("");
+  return `<span class="mdmark-code-line"${attributes}>${fold?.toggle ?? ""}<span class="mdmark-code-text">${escapeHtml(line.text)}</span>${fold?.more ?? ""}</span>`;
 }
 
 /** コピーのボタンの状態 */
@@ -86,16 +139,32 @@ export function renderCodeBlock(options: {
   bar?: boolean | undefined;
   /** 渡すと帯の右端にコピーのボタンを置く */
   copyState?: CodeCopyState | undefined;
+  /** 行の開閉のボタンを置くか（既定 `false`） */
+  foldButtons?: boolean | undefined;
 }): string {
   const { language, title, lineNumbers, lines, syntax } = options;
-  const { fileName = "", bar = true, copyState } = options;
-  const split = lineNumbers || lines.some((line) => line.kind !== undefined);
+  const { fileName = "", bar = true, copyState, foldButtons } = options;
+  const split =
+    lineNumbers ||
+    lines.some(
+      (line) =>
+        line.kind !== undefined ||
+        Boolean(line.indent) ||
+        line.foldLines !== undefined,
+    );
   const classes = split
     ? [
         "mdmark-code-lines",
         ...(lineNumbers ? ["mdmark-code-numbered"] : []),
         ...(lines.some((line) => line.kind === "add" || line.kind === "del")
           ? ["mdmark-code-signs"]
+          : []),
+        ...(lines.some((line) => line.kind === "focus")
+          ? ["mdmark-code-has-focus"]
+          : []),
+        // 開閉のボタンを置くときは、`mount` と同じく開閉のボタンの列の幅を取る
+        ...(foldButtons && lines.some((line) => line.foldLines !== undefined)
+          ? ["mdmark-code-foldable"]
           : []),
       ]
     : [];
@@ -111,10 +180,44 @@ export function renderCodeBlock(options: {
     .filter(Boolean)
     .map((attribute) => ` ${attribute}`)
     .join("");
+  const hidden = foldButtons
+    ? hiddenLinesOf({
+        foldLines: lines.map((line) => line.foldLines),
+        folded: lines.map((line) => line.folded === true),
+      })
+    : new Set<number>();
+  /** 開閉のボタンを置くときの、行の `id`・隠すか・ボタン・`⋯` */
+  const foldOf = (line: CodeLine, index: number) => {
+    if (!foldButtons) {
+      return undefined;
+    }
+    const count = line.foldLines ?? 0;
+    const range = { from: index + 2, to: index + 1 + count };
+    const controls = Array.from({ length: count }, (_, offset) =>
+      codeLineId("mdmark-code", index + 1 + offset),
+    ).join(" ");
+    return {
+      id: codeLineId("mdmark-code", index),
+      hidden: hidden.has(index),
+      toggle:
+        count > 0
+          ? renderCodeFoldToggle({
+              expanded: !line.folded,
+              ...range,
+              controls,
+            })
+          : "",
+      more: count > 0 && line.folded ? renderCodeFoldMore(range) : "",
+    };
+  };
   const body = split
     ? lines
         .map((line, index) =>
-          renderLine({ line, number: lineNumbers ? index + 1 : undefined }),
+          renderLine({
+            line,
+            number: lineNumbers ? index + 1 : undefined,
+            fold: foldOf(line, index),
+          }),
         )
         .join("\n")
     : escapeHtml(lines.map((line) => line.text).join("\n")) +

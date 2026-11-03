@@ -1,6 +1,6 @@
 import { readFile, writeFile } from "node:fs/promises";
 import { join } from "node:path";
-import { expect, runCli, test, writeFiles } from "../cli.ts";
+import { expect, linesOf, runCli, test, writeFiles } from "../cli.ts";
 import {
   CARD_MARKDOWN,
   CARD_SOURCE,
@@ -45,6 +45,29 @@ test("test_normal", async ({ builtRoot, tempDir, page }) => {
   expect(tsc.stdout).toBe("");
   expect(tsc.code).toBe(0);
   const theme = await readFile(join(dir, "theme.css"), "utf8");
+  // 準備: 見本の図の文書を書き、索引に載せ、設定の extensions に固有の部品を記載する
+  const sample = `${CARD_MARKDOWN}\n${await flowMarkdown()}\n図の外の意思決定モデル。\n`;
+  const config = await readFile(join(dir, "mdmark.config.yaml"), "utf8");
+  await writeFiles(dir, {
+    "mdmark.config.yaml": `${config}\nextensions: [extensions/card.js]\n`,
+    "docs/sample.md": sample,
+    "index.yaml": [
+      "schema: 1",
+      "docs:",
+      "  - id: sample",
+      "    path: docs/sample.md",
+      "    title: 見本の図",
+      "terms:",
+      "  - id: dm",
+      "    term: 意思決定モデル",
+      "    meaning: 選択肢から選ぶだけの、速く安い判断用の AI",
+      "",
+    ].join("\n"),
+  });
+  // 実行・検証: 図の定義のずれを含めて、ずれ 0 件で終わる
+  const check = await runCli(builtRoot, ["check"], dir);
+  expect(linesOf(check.stdout)).toEqual(["ずれ 0 件"]);
+  expect(check.code).toBe(0);
   // 実行: 固有の部品と CSS を読むページで、見本の図の文書を描く
   await openPage(page, builtRoot, { hostCss: `${theme}\n${HOST_CSS}` });
   await routeCard(
@@ -52,10 +75,7 @@ test("test_normal", async ({ builtRoot, tempDir, page }) => {
     await readFile(join(dir, "extensions/card.js"), "utf8"),
   );
   await registerCard(page);
-  await mountDocument(page, {
-    markdown: `${CARD_MARKDOWN}\n${await flowMarkdown()}\n図の外の意思決定モデル。\n`,
-    index: TERM_INDEX,
-  });
+  await mountDocument(page, { markdown: sample, index: TERM_INDEX });
   // 検証: フロー図が枠・3 層・題と凡例つきで描かれ、残った交差は line jump になる
   const figure = page.locator("#doc figure.mdmark-diagram");
   await expect(figure).toHaveCount(1);
@@ -211,4 +231,109 @@ test("test_error_when_type_mismatch", async ({ builtRoot, tempDir, page }) => {
   await mountDocument(page, { markdown: `${CARD_MARKDOWN}\n本文の段落\n` });
   await expect(page.locator("#doc .host-card")).toHaveText("固有の題");
   await expect(page.locator("#doc > p")).toHaveText("本文の段落");
+});
+
+/** 2 つのノードが重なる座標と、ノードの幅に収まらない長さの名前を持つ（`broken` が true）か、修正した後のフロー図の文書 */
+function driftFlowMarkdown(broken: boolean): string {
+  return wrapDirective(
+    "flow",
+    JSON.stringify(
+      {
+        title: "受け付けの流れ",
+        scope: "点検",
+        updated: "2026-11-03",
+        width: 480,
+        height: 200,
+        nodes: [
+          {
+            id: "intake",
+            kind: "script",
+            x: 20,
+            y: 40,
+            w: 120,
+            h: 60,
+            name: "受け付け",
+          },
+          {
+            id: "store",
+            kind: "data",
+            x: broken ? 80 : 300,
+            y: 40,
+            w: 120,
+            h: 60,
+            name: broken
+              ? "問い合わせの本文と添付を保存する先".repeat(3)
+              : "保存先",
+          },
+        ],
+        wires: [],
+      },
+      null,
+      2,
+    ),
+  );
+}
+
+// 図の定義のずれを 1 回目の点検で見つけ、修正した後の 2 回目の点検を通し、箱が重ならず名前が収まる図を描く（異常シナリオ（図の定義にずれがある））
+test("test_error_when_diagram_drift", async ({ builtRoot, tempDir, page }) => {
+  // 準備: 雛形を置き、ずれを持つ図の文書を書いて索引に載せる
+  const dir = await tempDir();
+  const init = await runCli(builtRoot, ["init"], dir);
+  expect(init.code).toBe(0);
+  const file = join(dir, "docs", "flow.md");
+  const broken = `# 流れ\n\n${driftFlowMarkdown(true)}`;
+  await writeFiles(dir, {
+    "docs/flow.md": broken,
+    "index.yaml": [
+      "schema: 1",
+      "docs:",
+      "  - id: flow",
+      "    path: docs/flow.md",
+      "    title: 流れ",
+      "",
+    ].join("\n"),
+  });
+  const flowLine = broken.split("\n").indexOf("<!-- flow -->") + 1;
+  // 実行・検証: 1 回目の点検は、箱の重なりとラベルの長さのずれを出して終了コードが 0 以外
+  const first = await runCli(builtRoot, ["check"], dir);
+  expect(first.code).not.toBe(0);
+  const lines = linesOf(first.stdout);
+  const overlap = lines.find((line) =>
+    line.startsWith(`docs/flow.md:${flowLine}: diagram_node_overlap:`),
+  );
+  expect(overlap).toContain("intake");
+  expect(overlap).toContain("store");
+  const label = lines.find((line) =>
+    line.startsWith(`docs/flow.md:${flowLine}: diagram_label_too_long:`),
+  );
+  expect(label).toContain("store");
+  // 検証: 点検は文書を書き換えない
+  expect(await readFile(file, "utf8")).toBe(broken);
+  // 実行・検証: 修正した後の 2 回目の点検は、ずれ 0 件で終了コードが 0
+  const fixed = `# 流れ\n\n${driftFlowMarkdown(false)}`;
+  await writeFile(file, fixed);
+  const second = await runCli(builtRoot, ["check"], dir);
+  expect(linesOf(second.stdout)).toEqual(["ずれ 0 件"]);
+  expect(second.code).toBe(0);
+  // 実行: 修正した文書を描く
+  await openPage(page, builtRoot);
+  await mountDocument(page, { markdown: fixed });
+  // 検証: 箱が重ならず、名前が箱の中に収まる
+  const nodes = page.locator("#doc .mdmark-diagram-node");
+  await expect(nodes).toHaveCount(2);
+  const [a, b] = await Promise.all([
+    nodes.nth(0).boundingBox(),
+    nodes.nth(1).boundingBox(),
+  ]);
+  expect((a?.x ?? 0) + (a?.width ?? 0)).toBeLessThanOrEqual(b?.x ?? 0);
+  for (const index of [0, 1]) {
+    const fits = await nodes
+      .nth(index)
+      .evaluate(
+        (node) =>
+          node.scrollWidth <= node.clientWidth &&
+          node.scrollHeight <= node.clientHeight,
+      );
+    expect(fits).toBe(true);
+  }
 });

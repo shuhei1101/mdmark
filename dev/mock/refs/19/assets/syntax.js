@@ -22,7 +22,7 @@
   };
 
   // 並べ替えの向きの順番（押すたびに次へ進み、最後の次は先頭へ戻る）
-  const SORT_CYCLE = ["none", "ascending", "descending"];
+  const SORT_CYCLE = ["none", "descending", "ascending"];
 
   // 並べ替えのアイコンの線（24 の格子。lucide の chevrons-up-down・arrow-up・arrow-down の形）
   const SORT_ICON_SHAPES = {

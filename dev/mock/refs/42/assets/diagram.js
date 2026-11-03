@@ -289,11 +289,17 @@
     return { html: parts.join(""), width, height };
   };
 
-  /** 系列の点の印（1 丸・2 四角・3 三角・4 菱形）の SVG。 */
+  /** 系列の点の印（1 丸・2 四角・3 三角・4 菱形・5 逆三角・6 十字）の SVG。 */
   const pointSvg = (n, x, y, s = POINT_SIZE) => {
     if (n === 1) return `<circle class="mdmark-diagram-point" cx="${x}" cy="${y}" r="${s}"/>`;
     if (n === 2) return `<rect class="mdmark-diagram-point" x="${x - s}" y="${y - s}" width="${s * 2}" height="${s * 2}"/>`;
     if (n === 3) return `<path class="mdmark-diagram-point" d="M${x},${y - s - 1} L${x + s + 1},${y + s} L${x - s - 1},${y + s} z"/>`;
+    if (n === 5) return `<path class="mdmark-diagram-point" d="M${x},${y + s + 1} L${x + s + 1},${y - s} L${x - s - 1},${y - s} z"/>`;
+    if (n === 6) {
+      const a = s + 1;
+      const b = s / 2.4;
+      return `<path class="mdmark-diagram-point" d="M${x - b},${y - a} H${x + b} V${y - b} H${x + a} V${y + b} H${x + b} V${y + a} H${x - b} V${y + b} H${x - a} V${y - b} H${x - b} z"/>`;
+    }
     return `<path class="mdmark-diagram-point" d="M${x},${y - s - 1} L${x + s + 1},${y} L${x},${y + s + 1} L${x - s - 1},${y} z"/>`;
   };
 
@@ -315,9 +321,9 @@
     return list;
   };
 
-  /** 系列の塗りの模様（1 塗りつぶし・2 斜線・3 点・4 格子）。折れ線の模様（実線・破線・点線・一点鎖線）と同じ順に、線から面へ移した形。 */
+  /** 系列の塗りの模様（1 塗りつぶし・2 斜線・3 点・4 格子・5 縦線・6 横線）。折れ線の模様（実線・破線・点線・一点鎖線・二点鎖線・細かい破線）と同じ順に、線から面へ移した形。 */
   const fillDefs = (fid) =>
-    [1, 2, 3, 4]
+    [1, 2, 3, 4, 5, 6]
       .map((n) => {
         const tint = "fill:color-mix(in srgb, var(--series-color) 22%, var(--mdmark-color-bg))";
         const ink = "stroke:var(--series-color);stroke-width:2;stroke-linecap:square";
@@ -326,6 +332,8 @@
           `<rect width="8" height="8" style="${tint}"/><path d="M-2,2 L2,-2 M0,8 L8,0 M6,10 L10,6" style="${ink}"/>`,
           `<rect width="8" height="8" style="${tint}"/><circle cx="4" cy="4" r="1.8" style="fill:var(--series-color)"/>`,
           `<rect width="8" height="8" style="${tint}"/><path d="M0,0 L8,8 M8,0 L0,8" style="stroke:var(--series-color);stroke-width:1.25"/>`,
+          `<rect width="8" height="8" style="${tint}"/><path d="M2,0 V8 M6,0 V8" style="stroke:var(--series-color);stroke-width:1.5"/>`,
+          `<rect width="8" height="8" style="${tint}"/><path d="M0,2 H8 M0,6 H8" style="stroke:var(--series-color);stroke-width:1.5"/>`,
         ][n - 1];
         return `<pattern id="${fid}-fill-${n}" data-series="${n}" patternUnits="userSpaceOnUse" width="8" height="8" style="--series-color:var(--mdmark-color-series-${n})">${body}</pattern>`;
       })
@@ -437,12 +445,221 @@
     return { svg, label: def.series.map((s) => `${s.name}: ${s.points.map(([px, py]) => `(${px}, ${py})`).join("・")}`).join("。") };
   };
 
-  /** グラフの本体（軸・目盛り・系列）を種類（折れ線・棒・円・散布図）ごとに描き、図の大きさを返す。 */
+  /** 項目の名前の横の軸の位置（折れ線・面は端から端、棒は帯の中央）。 */
+  const bandXAt = (ticks, box) => {
+    const band = (box.right - box.left) / ticks.length;
+    return { band, xAt: (i) => box.left + band * (i + 0.5) };
+  };
+
+  /** 面: 系列の線の下を系列の色の薄い面で塗る。stacked は値を積み上げ、面を系列の塗りの模様で分ける。 */
+  const areaSvg = (def, box, fid, stacked) => {
+    const ticks = def.x.ticks;
+    const tops = ticks.map((_, j) => def.series.reduce((sum, s) => sum + s.points[j], 0));
+    const y = niceAxis(def.y, stacked ? tops : def.series.flatMap((s) => s.points), true);
+    const xAt = (i) => box.left + (i * (box.right - box.left)) / (ticks.length - 1);
+    const yAt = (v) => box.bottom - ((v - y.min) * (box.bottom - box.top)) / (y.max - y.min);
+    const svg = [...yAxisSvg(y, yAt, box), ...xTicksSvg(ticks, xAt, box)];
+    const base = ticks.map(() => 0);
+    def.series.forEach((series, i) => {
+      const n = i + 1;
+      const low = [...base];
+      const high = series.points.map((v, j) => (stacked ? low[j] + v : v));
+      const top = high.map((v, j) => [xAt(j), yAt(v)]);
+      const bottom = (stacked ? low : base.map(() => 0)).map((v, j) => [xAt(j), yAt(v)]).reverse();
+      const fill = stacked ? `url(#${fid}-fill-${n})` : "color-mix(in srgb, var(--series-color) 14%, transparent)";
+      svg.push(`<g data-series="${n}"><path class="mdmark-diagram-area" d="M${[...top, ...bottom].map((p) => p.join(",")).join(" L")} Z" style="fill:${fill}"/></g>`);
+      svg.push(`<path class="mdmark-diagram-series" data-series="${n}" d="M${top.map((p) => p.join(",")).join(" L")}"/>`);
+      svg.push(`<g data-series="${n}">${top.map(([px, py]) => pointSvg(n, px, py)).join("")}</g>`);
+      if (stacked) high.forEach((v, j) => (base[j] = v));
+    });
+    svg.push(...axisLinesSvg(def.x, box));
+    return { svg, label: def.series.map((s) => `${s.name}: ${s.points.join("・")}`).join("。") };
+  };
+
+  /** 積み上げの棒: 項目ごとに 1 本の棒に系列を積み、系列を色と塗りの模様の組で分ける。棒の上に合計を出す。 */
+  const stackedBarSvg = (def, box, fid) => {
+    const ticks = def.x.ticks;
+    const tops = ticks.map((_, j) => def.series.reduce((sum, s) => sum + s.points[j], 0));
+    const y = niceAxis(def.y, tops, true);
+    const { band, xAt } = bandXAt(ticks, box);
+    const yAt = (v) => box.bottom - ((v - y.min) * (box.bottom - box.top)) / (y.max - y.min);
+    const barW = Math.min(44, band * 0.56);
+    const svg = [...yAxisSvg(y, yAt, box), ...xTicksSvg(ticks, xAt, box)];
+    const base = ticks.map(() => 0);
+    def.series.forEach((series, i) => {
+      const n = i + 1;
+      const bars = series.points.map((v, j) => {
+        const rect = `<rect class="mdmark-diagram-bar" data-stacked="" x="${xAt(j) - barW / 2}" y="${yAt(base[j] + v)}" width="${barW}" height="${yAt(base[j]) - yAt(base[j] + v)}" fill="url(#${fid}-fill-${n})"/>`;
+        base[j] += v;
+        return rect;
+      });
+      svg.push(`<g data-series="${n}">${bars.join("")}</g>`);
+    });
+    tops.forEach((v, j) => svg.push(`<text class="mdmark-diagram-value-text" x="${xAt(j)}" y="${yAt(v) - 6}" text-anchor="middle">${v}</text>`));
+    svg.push(...axisLinesSvg(def.x, box));
+    return { svg, label: def.series.map((s) => `${s.name}: ${s.points.map((v, j) => `${ticks[j]} ${v}`).join("・")}`).join("。") };
+  };
+
+  /** 横棒: 項目を縦に並べ、値を横の長さで出す。項目の名前は左の余白に置く。 */
+  const horizontalBarSvg = (def, box, fid) => {
+    const ticks = def.x.ticks;
+    const left = box.left + 64;
+    const x = niceAxis(def.y, def.series.flatMap((s) => s.points), true);
+    const band = (box.bottom - box.top) / ticks.length;
+    const yAt = (i) => box.top + band * (i + 0.5);
+    const xAt = (v) => left + ((v - x.min) * (box.right - left)) / (x.max - x.min);
+    const barH = Math.min(18, (band * 0.72) / def.series.length);
+    const svg = [];
+    for (const v of ticksOf(x)) {
+      svg.push(`<line class="mdmark-diagram-grid" x1="${xAt(v)}" y1="${box.top}" x2="${xAt(v)}" y2="${box.bottom}"/>`);
+      svg.push(`<text class="mdmark-diagram-axis-text" x="${xAt(v)}" y="${box.bottom + 20}" text-anchor="middle">${v}</text>`);
+    }
+    ticks.forEach((t, i) => svg.push(`<text class="mdmark-diagram-axis-text" x="${left - 8}" y="${yAt(i) + 4}" text-anchor="end">${esc(t)}</text>`));
+    def.series.forEach((series, i) => {
+      const n = i + 1;
+      const bars = series.points.map((v, j) => {
+        const y0 = yAt(j) - (barH * def.series.length) / 2 + barH * i;
+        return `<rect class="mdmark-diagram-bar" x="${xAt(0)}" y="${y0 + 1}" width="${xAt(v) - xAt(0)}" height="${barH - 2}" fill="url(#${fid}-fill-${n})"/>`;
+      });
+      svg.push(`<g data-series="${n}">${bars.join("")}</g>`);
+    });
+    svg.push(`<line class="mdmark-diagram-axis" x1="${left}" y1="${box.top - 8}" x2="${left}" y2="${box.bottom}"/>`);
+    svg.push(`<line class="mdmark-diagram-axis" x1="${left}" y1="${box.bottom}" x2="${box.right}" y2="${box.bottom}"/>`);
+    svg.push(`<text class="mdmark-diagram-axis-text" x="${(left + box.right) / 2}" y="${box.bottom + 44}" text-anchor="middle">${esc(def.y.label)}</text>`);
+    svg.push(`<text class="mdmark-diagram-axis-text" x="${left - 8}" y="${box.top - 18}" text-anchor="end">${esc(def.x.label)}</text>`);
+    return { svg, label: def.series.map((s) => `${s.name}: ${s.points.map((v, j) => `${ticks[j]} ${v}`).join("・")}`).join("。") };
+  };
+
+  /** ドーナツ: 円の中央を抜き、中央に合計を出す。割合は扇形の外に出す。 */
+  const donutSvg = (def, fid) => {
+    const { svg, label } = pieSvg(def, fid);
+    const total = def.items.reduce((sum, item) => sum + item.value, 0);
+    svg.push(`<circle class="mdmark-diagram-donut-hole" cx="${CHART_W / 2}" cy="${CHART_H / 2}" r="64"/>`);
+    svg.push(`<text class="mdmark-diagram-value-text" x="${CHART_W / 2}" y="${CHART_H / 2 + 2}" text-anchor="middle" style="font-size:22px">${total}</text>`);
+    svg.push(`<text class="mdmark-diagram-axis-text" x="${CHART_W / 2}" y="${CHART_H / 2 + 22}" text-anchor="middle">合計${esc(def.unit ?? "")}</text>`);
+    return { svg, label };
+  };
+
+  /** レーダー: 目盛りの項目を放射状の軸にし、系列を色と線の模様・点の印の多角形で引く。 */
+  const radarSvg = (def) => {
+    const ticks = def.x.ticks;
+    const cx = CHART_W / 2;
+    const cy = CHART_H / 2 + 6;
+    const r = 112;
+    const y = niceAxis(def.y, def.series.flatMap((s) => s.points), true);
+    const at = (j, v) => {
+      const a = -Math.PI / 2 + (j * Math.PI * 2) / ticks.length;
+      const rr = ((v - y.min) / (y.max - y.min)) * r;
+      return [cx + rr * Math.cos(a), cy + rr * Math.sin(a)];
+    };
+    const svg = [];
+    for (const v of ticksOf(y).slice(1)) {
+      svg.push(`<path class="mdmark-diagram-grid" fill="none" d="M${ticks.map((_, j) => at(j, v).join(",")).join(" L")} Z"/>`);
+      const [, ty] = at(0, v);
+      svg.push(`<text class="mdmark-diagram-axis-text" x="${cx - 5}" y="${ty + 4}" text-anchor="end">${v}</text>`);
+    }
+    ticks.forEach((t, j) => {
+      const [ex, ey] = at(j, y.max);
+      svg.push(`<line class="mdmark-diagram-grid" x1="${cx}" y1="${cy}" x2="${ex}" y2="${ey}"/>`);
+      const [lx, ly] = at(j, y.max + (y.max - y.min) * 0.14);
+      const anchor = Math.abs(lx - cx) < 4 ? "middle" : lx > cx ? "start" : "end";
+      svg.push(`<text class="mdmark-diagram-axis-text" x="${lx}" y="${ly + 4}" text-anchor="${anchor}">${esc(t)}</text>`);
+    });
+    def.series.forEach((series, i) => {
+      const n = i + 1;
+      const pts = series.points.map((v, j) => at(j, v));
+      svg.push(`<g data-series="${n}"><path class="mdmark-diagram-area" d="M${pts.map((p) => p.join(",")).join(" L")} Z" style="fill:color-mix(in srgb, var(--series-color) 10%, transparent)"/></g>`);
+      svg.push(`<path class="mdmark-diagram-series" data-series="${n}" d="M${pts.map((p) => p.join(",")).join(" L")} Z"/>`);
+      svg.push(`<g data-series="${n}">${pts.map(([px, py]) => pointSvg(n, px, py)).join("")}</g>`);
+    });
+    return { svg, label: def.series.map((s) => `${s.name}: ${s.points.map((v, j) => `${ticks[j]} ${v}`).join("・")}`).join("。") };
+  };
+
+  /** バブル: 散布図の点を 3 つ目の値の面積の円にし、系列を色と塗りの模様の組で分ける。 */
+  const bubbleSvg = (def, box, fid) => {
+    const all = def.series.flatMap((s) => s.points);
+    const x = niceAxis(def.x, all.map((p) => p[0]), false);
+    const y = niceAxis(def.y, all.map((p) => p[1]), false);
+    const maxSize = Math.max(...all.map((p) => p[2]));
+    const xAt = (v) => box.left + ((v - x.min) * (box.right - box.left)) / (x.max - x.min);
+    const yAt = (v) => box.bottom - ((v - y.min) * (box.bottom - box.top)) / (y.max - y.min);
+    const rOf = (v) => 4 + 20 * Math.sqrt(v / maxSize);
+    const svg = [...yAxisSvg(y, yAt, box)];
+    for (const v of ticksOf(x)) {
+      svg.push(`<line class="mdmark-diagram-grid" x1="${xAt(v)}" y1="${box.top}" x2="${xAt(v)}" y2="${box.bottom}"/>`);
+      svg.push(`<text class="mdmark-diagram-axis-text" x="${xAt(v)}" y="${box.bottom + 20}" text-anchor="middle">${v}</text>`);
+    }
+    svg.push(...axisLinesSvg(def.x, box));
+    def.series.forEach((series, i) => {
+      const n = i + 1;
+      svg.push(`<g data-series="${n}">${series.points.map(([px, py, size]) => `<circle class="mdmark-diagram-bubble" cx="${xAt(px)}" cy="${yAt(py)}" r="${rOf(size)}" fill="url(#${fid}-fill-${n})"/>`).join("")}</g>`);
+    });
+    return { svg, label: def.series.map((s) => `${s.name}: ${s.points.map(([px, py, size]) => `(${px}, ${py}, ${def.size?.label ?? "大きさ"} ${size})`).join("・")}`).join("。") };
+  };
+
+  /** 折れ線と棒の組み合わせ: as が bar の系列を棒、line の系列を折れ線で描く。axis が y2 の系列は右の縦の軸で読む。 */
+  const comboSvg = (def, box, fid) => {
+    const ticks = def.x.ticks;
+    const right = def.y2 ? box.right - 40 : box.right;
+    const inner = { ...box, right };
+    const onY = def.series.filter((s) => s.axis !== "y2");
+    const onY2 = def.series.filter((s) => s.axis === "y2");
+    const y = niceAxis(def.y, onY.flatMap((s) => s.points), true);
+    const y2 = def.y2 ? niceAxis(def.y2, onY2.flatMap((s) => s.points), true) : null;
+    const { band, xAt } = bandXAt(ticks, inner);
+    const at = (axis) => (v) => inner.bottom - ((v - axis.min) * (inner.bottom - inner.top)) / (axis.max - axis.min);
+    const yAt = at(y);
+    const svg = [...yAxisSvg(y, yAt, inner), ...xTicksSvg(ticks, xAt, inner)];
+    if (y2) {
+      const y2At = at(y2);
+      for (const v of ticksOf(y2)) svg.push(`<text class="mdmark-diagram-axis-text" x="${right + 8}" y="${y2At(v) + 4}" text-anchor="start">${v}</text>`);
+      svg.push(`<line class="mdmark-diagram-axis" x1="${right}" y1="${inner.top - 8}" x2="${right}" y2="${inner.bottom}"/>`);
+      svg.push(`<text class="mdmark-diagram-axis-text" x="${right + 8}" y="${inner.top - 18}" text-anchor="end">${esc(def.y2.label)}</text>`);
+    }
+    const bars = def.series.filter((s) => s.as === "bar");
+    const barW = Math.min(28, (band * 0.6) / Math.max(1, bars.length));
+    def.series.forEach((series, i) => {
+      const n = i + 1;
+      const axisAt = series.axis === "y2" ? at(y2) : yAt;
+      if (series.as === "bar") {
+        const k = bars.indexOf(series);
+        const rects = series.points.map((v, j) => {
+          const x0 = xAt(j) - (barW * bars.length) / 2 + barW * k;
+          return `<rect class="mdmark-diagram-bar" x="${x0 + 1}" y="${axisAt(v)}" width="${barW - 2}" height="${axisAt(0) - axisAt(v)}" fill="url(#${fid}-fill-${n})"/>`;
+        });
+        svg.push(`<g data-series="${n}">${rects.join("")}</g>`);
+        return;
+      }
+      const pts = series.points.map((v, j) => [xAt(j), axisAt(v)]);
+      svg.push(`<path class="mdmark-diagram-series" data-series="${n}" d="M${pts.map((p) => p.join(",")).join(" L")}"/>`);
+      svg.push(`<g data-series="${n}">${pts.map(([px, py]) => pointSvg(n, px, py)).join("")}</g>`);
+    });
+    svg.push(...axisLinesSvg(def.x, inner));
+    return { svg, label: def.series.map((s) => `${s.name}: ${s.points.map((v, j) => `${ticks[j]} ${v}`).join("・")}`).join("。") };
+  };
+
+  // 系列を塗りの模様で分ける種類（凡例の見本を塗りにし、模様の定義を置く）
+  const FILL_TYPES = new Set(["bar", "pie", "stacked-bar", "stacked-area", "horizontal-bar", "donut", "bubble", "combo"]);
+
+  /** グラフの本体（軸・目盛り・系列）を種類ごとに描き、図の大きさを返す。 */
   const renderChart = (def, fid) => {
     const box = { left: CHART_PAD.left, right: CHART_W - CHART_PAD.right, top: CHART_PAD.top, bottom: CHART_H - CHART_PAD.bottom };
     const type = def.type ?? "line";
-    const body = type === "bar" ? barSvg(def, box, fid) : type === "pie" ? pieSvg(def, fid) : type === "scatter" ? scatterSvg(def, box) : lineSvg(def, box);
-    const defs = type === "bar" || type === "pie" ? `<defs>${fillDefs(fid)}</defs>` : "";
+    const renderers = {
+      bar: () => barSvg(def, box, fid),
+      pie: () => pieSvg(def, fid),
+      scatter: () => scatterSvg(def, box),
+      area: () => areaSvg(def, box, fid, false),
+      "stacked-area": () => areaSvg(def, box, fid, true),
+      "stacked-bar": () => stackedBarSvg(def, box, fid),
+      "horizontal-bar": () => horizontalBarSvg(def, box, fid),
+      donut: () => donutSvg(def, fid),
+      radar: () => radarSvg(def),
+      bubble: () => bubbleSvg(def, box, fid),
+      combo: () => comboSvg(def, box, fid),
+    };
+    const body = (renderers[type] ?? (() => lineSvg(def, box)))();
+    const defs = FILL_TYPES.has(type) ? `<defs>${fillDefs(fid)}</defs>` : "";
     return {
       html: `<svg class="mdmark-diagram-wires" width="${CHART_W}" height="${CHART_H}" role="img" aria-label="${esc(`${def.title}。${body.label}`)}">${defs}${body.svg.join("")}</svg>`,
       width: CHART_W,
@@ -478,14 +695,20 @@
   /** 凡例の散布図の点の見本（点の印だけ）。 */
   const pointSample = (n) => `<svg class="mdmark-diagram-legend-sample" width="14" height="14" aria-hidden="true"><g data-series="${n}">${pointSvg(n, 7, 7, SCATTER_POINT_SIZE)}</g></svg>`;
 
+  /** 凡例のバブルの大きさの見本（大小 2 つの円）。 */
+  const bubbleSample = () =>
+    `<svg class="mdmark-diagram-legend-sample" width="30" height="16" aria-hidden="true"><circle cx="6" cy="10" r="4" fill="none" stroke="var(--mdmark-color-muted)" stroke-width="1.5"/><circle cx="21" cy="8" r="7" fill="none" stroke="var(--mdmark-color-muted)" stroke-width="1.5"/></svg>`;
+
   /** 図の定義に出る色・形・線・矢じり・印を全て載せた凡例の項目。 */
   const legendItems = (def, fid) => {
     const item = (sample, text) => `<li class="mdmark-diagram-legend-item">${sample}<span>${text}</span></li>`;
     if (def.kind === "chart") {
       const type = def.type ?? "line";
-      if (type === "bar") return def.series.map((s, i) => item(fillSample(fid, i + 1), esc(s.name)));
-      if (type === "pie") return def.items.map((it, i) => item(fillSample(fid, i + 1), `${esc(it.name)}（${esc(it.value)}${esc(def.unit ?? "")}）`));
+      if (type === "pie" || type === "donut") return def.items.map((it, i) => item(fillSample(fid, i + 1), `${esc(it.name)}（${esc(it.value)}${esc(def.unit ?? "")}）`));
       if (type === "scatter") return def.series.map((s, i) => item(pointSample(i + 1), esc(s.name)));
+      if (type === "combo") return def.series.map((s, i) => item(s.as === "bar" ? fillSample(fid, i + 1) : seriesSample(i + 1), `${esc(s.name)}${def.y2 ? `（${s.axis === "y2" ? "右" : "左"}の軸）` : ""}`));
+      if (type === "bubble") return [...def.series.map((s, i) => item(fillSample(fid, i + 1), esc(s.name))), item(bubbleSample(), `円の面積: ${esc(def.size.label)}`)];
+      if (FILL_TYPES.has(type)) return def.series.map((s, i) => item(fillSample(fid, i + 1), esc(s.name)));
       return def.series.map((s, i) => item(seriesSample(i + 1), esc(s.name)));
     }
     const nodes = def.kind === "sequence" ? def.participants : def.nodes;

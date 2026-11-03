@@ -153,3 +153,77 @@ test("test_open_title", async () => {
     ["false", "-1"],
   ]);
 });
+
+// 入れ子のタブは、外側と内側の並びをそれぞれ持ち、選んだ外側の中身の中に内側のタブを出す（Nested）
+test("test_nested", async () => {
+  // 準備・実行
+  const page = await holder.openStory("parts-tabs--nested");
+  // 検証
+  const lists = page.locator("[role=tablist]");
+  await expect(lists.count()).resolves.toBe(2);
+  await expect(
+    lists.nth(0).locator(":scope > [role=tab]").allTextContents(),
+  ).resolves.toEqual(["macOS", "Windows"]);
+  await expect(
+    lists.nth(1).locator(":scope > [role=tab]").allTextContents(),
+  ).resolves.toEqual(["PowerShell", "WSL"]);
+  await expect(
+    lists.nth(0).locator("[aria-selected=true]").innerText(),
+  ).resolves.toBe("Windows");
+  await expect(
+    lists.nth(1).locator("[aria-selected=true]").innerText(),
+  ).resolves.toBe("PowerShell");
+  await expect(lists.nth(1).isVisible()).resolves.toBe(true);
+  await expect(
+    page.getByText("PowerShell の中身の見本です。").isVisible(),
+  ).resolves.toBe(true);
+  await expect(
+    page.getByText("WSL の中身の見本です。").isVisible(),
+  ).resolves.toBe(false);
+  // 内側のタブは、外側の中身の上と間を空ける
+  const gap = await lists.nth(1).evaluate((list) => {
+    const panel = list.closest(".mdmark-tab-panel");
+    const outerList = panel?.parentElement?.querySelector(
+      ":scope > [role=tablist]",
+    );
+    return outerList
+      ? list.getBoundingClientRect().top -
+          outerList.getBoundingClientRect().bottom
+      : 0;
+  });
+  expect(gap).toBeGreaterThan(0);
+  await expect(pageOverflows(page)).resolves.toBe(false);
+});
+
+// 強調したタブ名は、選んでいないタブでも強調の色と太さで出す（StrongTitle）
+test("test_strong_title", async () => {
+  // 準備・実行
+  const page = await holder.openStory("parts-tabs--strong-title");
+  // 検証
+  const strongs = page.locator("[role=tab] strong");
+  await expect(strongs.count()).resolves.toBe(2);
+  const styles = await strongs.evaluateAll((elements) =>
+    elements.map((element) => {
+      const probe = document.createElement("span");
+      probe.style.color = "var(--mdmark-tab-strong-color)";
+      probe.style.fontWeight = "var(--mdmark-tab-strong-weight)";
+      element.parentElement?.append(probe);
+      const expected = getComputedStyle(probe);
+      const result = {
+        color: getComputedStyle(element).color,
+        weight: getComputedStyle(element).fontWeight,
+        expectedColor: expected.color,
+        expectedWeight: expected.fontWeight,
+      };
+      probe.remove();
+      return result;
+    }),
+  );
+  for (const style of styles) {
+    expect(style.color).toBe(style.expectedColor);
+    expect(style.weight).toBe(style.expectedWeight);
+  }
+  await expect(
+    page.locator("[role=tab][aria-selected=false]").innerText(),
+  ).resolves.toBe("案 B Chart.js");
+});

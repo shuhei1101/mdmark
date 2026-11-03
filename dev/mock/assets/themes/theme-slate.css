@@ -32,6 +32,8 @@
   --mdmark-color-series-2: #047857;
   --mdmark-color-series-3: #6d28d9;
   --mdmark-color-series-4: #a24a06;
+  --mdmark-color-series-5: #be185d;
+  --mdmark-color-series-6: #0e7490;
   --mdmark-color-code-highlight-bg: #fdf2c4;
   --mdmark-color-code-highlight-line: #a24a06;
   --mdmark-color-diff-del-bg: #fbe4e4;
@@ -86,6 +88,8 @@
     --mdmark-color-series-2: #6ee7b7;
     --mdmark-color-series-3: #c4b5fd;
     --mdmark-color-series-4: #fdba74;
+    --mdmark-color-series-5: #f9a8d4;
+    --mdmark-color-series-6: #bef264;
     --mdmark-color-code-highlight-bg: #4d3f12;
     --mdmark-color-code-highlight-line: #fbbf24;
     --mdmark-color-diff-del-bg: #2e1c24;

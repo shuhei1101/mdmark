@@ -507,7 +507,7 @@ test("test_error_when_tree_clipboard_denied", async ({ page }) => {
   const panel = tree.locator(".mdmark-copy-panel");
   await expect(panel).toBeVisible();
   await expect(panel).toContainText("クリップボードにコピーできませんでした");
-  await expect(tree.locator('[role="status"]')).toContainText("手でコピー");
+  await expect(tree.locator('[role="status"]')).toContainText("手動でコピー");
   const textarea = panel.locator("textarea");
   await expect(textarea).toHaveValue(NOTE_TREE.join("\n"));
   const selection = await textarea.evaluate((element) => {
