@@ -3,11 +3,11 @@ import { expect, test, vi } from "vitest";
 /** 部品のモジュールを読む処理を読み込む（実装が無い間は各テストが個別に失敗する） */
 const loadPartModules = () => import("../../../src/part-modules.ts");
 
-/** 読んだ控えと URL の差し替えを空にした、部品のモジュールを読む処理を返す */
+/** 読んだ控えと読み込みの差し替えを空にした、部品のモジュールを読む処理を返す */
 async function freshPartModules() {
   const partModules = await loadPartModules();
   partModules.partModules.clear();
-  partModules.partModuleUrls.clear();
+  partModules.partModuleLoaders.clear();
   return partModules;
 }
 
@@ -29,19 +29,18 @@ test("test_load_part_module", async () => {
   expect(first.module).toBe(VIEW_MODULE);
 });
 
-// 差し替えた URL から読む（正常系）
-test("test_load_part_module_when_url_replaced", async () => {
+// 差し替えた関数で読み、URL を読まない（正常系）
+test("test_load_part_module_when_loader", async () => {
   // 準備
-  const { loadPartModule, setPartModuleUrl } = await freshPartModules();
-  const importModule = vi.fn(async () => ({
-    attachComments: async () => () => {},
-  }));
-  setPartModuleUrl("comments", "blob:x");
+  const { loadPartModule, setPartModuleLoader } = await freshPartModules();
+  const importModule = vi.fn(async (_url: string) => VIEW_MODULE);
+  setPartModuleLoader("view", async () => VIEW_MODULE);
   // 実行
-  const loaded = await loadPartModule("comments", importModule);
+  const loaded = await loadPartModule("view", importModule);
   // 検証
-  expect(importModule).toHaveBeenCalledWith("blob:x");
-  expect(loaded.url).toBe("blob:x");
+  expect(importModule).not.toHaveBeenCalled();
+  expect(loaded.module).toBe(VIEW_MODULE);
+  expect(loaded.url).toBe("view.js");
 });
 
 // 関数を export しないモジュールを拒む（異常系）

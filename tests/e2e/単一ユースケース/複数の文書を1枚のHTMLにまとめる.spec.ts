@@ -2,15 +2,21 @@ import { existsSync } from "node:fs";
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import {
+  CHART_SOURCE,
   expect,
+  GREET_TEXT_SOURCE,
+  GREET_WITH_IMPORT_SOURCE,
   linesOf,
   openStandalone,
+  openWithCsp,
   PNG_BYTES,
   runCli,
   test,
+  VIEW_SOURCE,
   writeFiles,
   writeSampleDocs,
 } from "../cli.ts";
+import { SYNTAX_ES_ROOT } from "../dist-page.ts";
 import { openStandaloneWithFiles, readMediaSamples } from "../media.ts";
 
 // 3 つの文書を、文書をまたぐ用語と被参照が効く 1 枚にまとめる（正常シナリオ）
@@ -287,4 +293,76 @@ test("test_normal_when_media_embedded", async ({
   // 検証: 外へのネットワークの要求が 0 件
   await page.waitForLoadState("networkidle");
   expect(opened.externalRequests()).toEqual([]);
+});
+
+// 全ての文書が使うモジュールを 1 つのスクリプトに束ね、blob: と動的 import を許さない環境で開いて文書を移る（正常シナリオ（blob: と動的 import を許さない環境で開く））
+test("test_normal_when_blob_and_dynamic_import_blocked", async ({
+  builtRoot,
+  tempDir,
+  page,
+}) => {
+  // 準備
+  const dir = await tempDir();
+  const vendor: Record<string, string> = {};
+  for (const file of ["core.min.js", "languages/typescript.min.js"]) {
+    vendor[`vendor/highlightjs/es/${file}`] = await readFile(
+      join(SYNTAX_ES_ROOT, file),
+      "utf8",
+    );
+  }
+  await writeFiles(dir, {
+    "mdmark.config.yaml": [
+      "extensions: [extensions/greet.js]",
+      "libraries:",
+      "  chart: lib/chart.js",
+      "syntax:",
+      "  url: vendor/highlightjs/es/",
+      "build:",
+      '  include: ["*.md"]',
+      "  entry: README.md",
+      "  out: dist/docs.html",
+      "",
+    ].join("\n"),
+    "extensions/greet.js": GREET_WITH_IMPORT_SOURCE,
+    "extensions/greet-text.js": GREET_TEXT_SOURCE,
+    "lib/chart.js": CHART_SOURCE,
+    "README.md": [
+      "# 入口",
+      "",
+      "[ガイド](guide.md) を読む。",
+      "",
+      "<!-- greet: 世界 -->",
+      "",
+      "```ts",
+      "const count: number = 1;",
+      "```",
+      "",
+    ].join("\n"),
+    "guide.md": ["# ガイド", "", VIEW_SOURCE, "", "<!-- chart: a -->", ""].join(
+      "\n",
+    ),
+    ...vendor,
+  });
+  // 実行
+  const result = await runCli(builtRoot, ["build"], dir);
+  // 検証
+  expect(result.code).toBe(0);
+  expect(existsSync(join(dir, "dist", "docs.html"))).toBe(true);
+  const opened = await openWithCsp(page, join(dir, "dist", "docs.html"));
+  const article = page.locator("article.mdmark");
+  await expect(article.locator("h1")).toContainText("入口");
+  await expect(
+    article.locator("[data-mdmark-slot]", { hasText: "greet:読んだ:世界" }),
+  ).toHaveCount(1);
+  await expect(
+    article.locator('code.language-ts span[class*="hljs-"]').first(),
+  ).toBeVisible();
+  await article.locator('p a[href="#/guide.md"]').click();
+  await expect(article.locator("h1")).toContainText("ガイド");
+  await expect(article.locator(".mdmark-view")).toHaveCount(1);
+  await expect(article.locator("canvas")).toHaveCount(1);
+  await expect(article.locator(".mdmark-notice")).toHaveCount(0);
+  expect(await opened.violations()).toEqual([]);
+  expect(opened.blobRequests()).toEqual([]);
+  await opened.close();
 });

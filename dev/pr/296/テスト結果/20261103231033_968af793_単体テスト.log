@@ -1,0 +1,808 @@
+$ npm run test:unit
+
+> test:unit
+> vitest run --project 'unit*'
+
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/fix-export-inline-embedded-modules
+
+ ❯ |unit| tests/unit/src/cli/embed.test.ts (21 tests | 8 failed) 2878ms
+   × test_used_parts 4ms
+   × test_has_dynamic_import 1ms
+   × test_cache_fetch_text 0ms
+   × test_create_viewer_entry 0ms
+   × test_create_viewer_entry_when_nothing_embedded 0ms
+   × test_bundle_viewer 4ms
+   × test_bundle_viewer_when_script_close 4ms
+   × test_bundle_viewer_when_html_comment_open 3ms
+ ❯ |unit| tests/unit/src/cli/export.test.ts (19 tests | 6 failed) 10610ms
+   × test_prepare_embeds 6399ms
+   × test_prepare_embeds_when_unreadable 15ms
+   × test_prepare_embeds_when_syntax 34ms
+   × test_prepare_embeds_when_syntax_unreadable 19ms
+   × test_prepare_embeds_when_syntax_language_unreadable 51ms
+   × test_prepare_embeds_when_dynamic_import_left 16ms
+ ❯ |unit-browser (chromium)| tests/unit/src/mount-parts.browser.test.ts (15 tests | 15 failed) 5082ms
+   × test_mount_view 3076ms
+   × test_mount_view_when_invalid 131ms
+   × test_mount_view_when_module_unavailable 138ms
+   × test_mount_comments 220ms
+   × test_mount_comments_when_invalid 171ms
+   × test_mount_comments_when_module_unavailable 123ms
+   × test_attach_parts 166ms
+   × test_attach_parts_when_no_marks 107ms
+   × test_attach_parts_when_comments_without_store 106ms
+   × test_attach_parts_when_detached_while_loading 138ms
+   × test_attach_parts_when_module_unavailable 156ms
+   × test_attach_parts_when_parts_mounted_inside 139ms
+   × test_attach_parts_when_comments_reloaded 104ms
+   × test_attach_parts_when_comments_reload_disabled 147ms
+   × test_attach_parts_when_comments_reload_after_detach 158ms
+ ❯ |unit-browser (chromium)| tests/unit/src/libraries.browser.test.ts (12 tests | 1 failed) 263ms
+   × test_load_libraries_when_embedded 211ms
+ ❯ |unit-browser (chromium)| tests/unit/src/mount.browser.test.ts (37 tests | 1 failed) 2358ms
+   × test_mount_when_comments_delegated 190ms
+ ❯ |unit-browser (chromium)| tests/unit/src/highlight.browser.test.ts (9 tests | 2 failed) 471ms
+   × test_highlight_code_blocks_when_embedded 209ms
+   × test_highlight_code_blocks_when_embedded_without_core 224ms
+ ❯ |unit-browser (chromium)| tests/unit/src/mount-view.browser.test.ts (2 tests | 2 failed) 379ms
+   × test_mount_when_view_marked 234ms
+   × test_mount_when_comments_without_side_toc 146ms
+ ❯ |unit-browser (chromium)| tests/unit/src/viewer/index.browser.test.ts (2 tests | 2 failed) 586ms
+   × test_start_viewer 494ms
+   × test_start_viewer_when_aliases 92ms
+ ❯ |unit| tests/unit/src/viewer/modules.test.ts (3 tests | 3 failed) 508ms
+   × test_prepare_modules 501ms
+   × test_prepare_modules_when_extension_fails 5ms
+   × test_prepare_modules_when_syntax 1ms
+ ❯ |unit| tests/unit/src/part-modules.test.ts (4 tests | 4 failed) 9ms
+   × test_load_part_module 7ms
+   × test_load_part_module_when_loader 1ms
+   × test_load_part_module_when_shape_mismatch 1ms
+   × test_load_part_module_when_rejected 0ms
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 44 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit| tests/unit/src/part-modules.test.ts > test_load_part_module
+TypeError: Cannot read properties of undefined (reading 'clear')
+ ❯ freshPartModules tests/unit/src/part-modules.test.ts:10:33
+      8|   const partModules = await loadPartModules();
+      9|   partModules.partModules.clear();
+     10|   partModules.partModuleLoaders.clear();
+       |                                 ^
+     11|   return partModules;
+     12| }
+ ❯ tests/unit/src/part-modules.test.ts:20:30
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/49]⎯
+
+ FAIL  |unit| tests/unit/src/part-modules.test.ts > test_load_part_module_when_loader
+TypeError: Cannot read properties of undefined (reading 'clear')
+ ❯ freshPartModules tests/unit/src/part-modules.test.ts:10:33
+      8|   const partModules = await loadPartModules();
+      9|   partModules.partModules.clear();
+     10|   partModules.partModuleLoaders.clear();
+       |                                 ^
+     11|   return partModules;
+     12| }
+ ❯ tests/unit/src/part-modules.test.ts:35:51
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/49]⎯
+
+ FAIL  |unit| tests/unit/src/part-modules.test.ts > test_load_part_module_when_shape_mismatch
+TypeError: Cannot read properties of undefined (reading 'clear')
+ ❯ freshPartModules tests/unit/src/part-modules.test.ts:10:33
+      8|   const partModules = await loadPartModules();
+      9|   partModules.partModules.clear();
+     10|   partModules.partModuleLoaders.clear();
+       |                                 ^
+     11|   return partModules;
+     12| }
+ ❯ tests/unit/src/part-modules.test.ts:49:30
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/49]⎯
+
+ FAIL  |unit| tests/unit/src/part-modules.test.ts > test_load_part_module_when_rejected
+TypeError: Cannot read properties of undefined (reading 'clear')
+ ❯ freshPartModules tests/unit/src/part-modules.test.ts:10:33
+      8|   const partModules = await loadPartModules();
+      9|   partModules.partModules.clear();
+     10|   partModules.partModuleLoaders.clear();
+       |                                 ^
+     11|   return partModules;
+     12| }
+ ❯ tests/unit/src/part-modules.test.ts:66:30
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/49]⎯
+
+ FAIL  |unit| tests/unit/src/cli/embed.test.ts > test_used_parts
+AssertionError: expected { view: undefined } to be true // Object.is equality
+
+- Expected:
+true
+
++ Received:
+{
+  "view": undefined,
+}
+
+ ❯ tests/unit/src/cli/embed.test.ts:41:20
+     39|   const withoutView = usedParts({ markdowns: [unmarked] });
+     40|   // 検証
+     41|   expect(withView).toBe(true);
+       |                    ^
+     42|   expect(withoutView).toBe(false);
+     43| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/49]⎯
+
+ FAIL  |unit| tests/unit/src/cli/embed.test.ts > test_has_dynamic_import
+TypeError: hasDynamicImport is not a function
+ ❯ tests/unit/src/cli/embed.test.ts:314:10
+    312|   const { hasDynamicImport } = await loadEmbed();
+    313|   // 実行・検証
+    314|   expect(hasDynamicImport("a.load=()=>import(n)")).toBe(true);
+       |          ^
+    315|   expect(hasDynamicImport("import (n)")).toBe(true);
+    316|   expect(hasDynamicImport("const x=1")).toBe(false);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/49]⎯
+
+ FAIL  |unit| tests/unit/src/cli/embed.test.ts > test_cache_fetch_text
+TypeError: cacheFetchText is not a function
+ ❯ tests/unit/src/cli/embed.test.ts:324:18
+    322|   const { cacheFetchText } = await loadEmbed();
+    323|   const fetchText = vi.fn(async (url: string) => `本文:${url}`);
+    324|   const cached = cacheFetchText(fetchText);
+       |                  ^
+    325|   // 実行
+    326|   const first = await cached("https://cdn.example/a.js");
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/49]⎯
+
+ FAIL  |unit| tests/unit/src/cli/embed.test.ts > test_create_viewer_entry
+TypeError: createViewerEntry is not a function
+ ❯ tests/unit/src/cli/embed.test.ts:340:18
+    338|   const { createViewerEntry } = await loadEmbed();
+    339|   // 実行
+    340|   const source = createViewerEntry({
+       |                  ^
+    341|     viewer: "/w/dist/viewer.js",
+    342|     view: "/w/dist/view.js",
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/49]⎯
+
+ FAIL  |unit| tests/unit/src/cli/embed.test.ts > test_create_viewer_entry_when_nothing_embedded
+TypeError: createViewerEntry is not a function
+ ❯ tests/unit/src/cli/embed.test.ts:377:18
+    375|   const { createViewerEntry } = await loadEmbed();
+    376|   // 実行
+    377|   const source = createViewerEntry({
+       |                  ^
+    378|     viewer: "/w/dist/viewer.js",
+    379|     view: "/w/dist/view.js",
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/49]⎯
+
+ FAIL  |unit| tests/unit/src/cli/embed.test.ts > test_bundle_viewer
+TypeError: bundleViewer is not a function
+ ❯ tests/unit/src/cli/embed.test.ts:423:24
+    421|   );
+    422|   // 実行
+    423|   const script = await bundleViewer({
+       |                        ^
+    424|     entry: fixtureEntry(dir),
+    425|     baseDir: dir,
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/49]⎯
+
+ FAIL  |unit| tests/unit/src/cli/embed.test.ts > test_bundle_viewer_when_script_close
+TypeError: bundleViewer is not a function
+ ❯ tests/unit/src/cli/embed.test.ts:444:24
+    442|   );
+    443|   // 実行
+    444|   const script = await bundleViewer({
+       |                        ^
+    445|     entry: fixtureEntry(dir),
+    446|     baseDir: dir,
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/49]⎯
+
+ FAIL  |unit| tests/unit/src/cli/embed.test.ts > test_bundle_viewer_when_html_comment_open
+TypeError: bundleViewer is not a function
+ ❯ tests/unit/src/cli/embed.test.ts:463:24
+    461|   });
+    462|   // 実行
+    463|   const script = await bundleViewer({
+       |                        ^
+    464|     entry: `export { value } from ${JSON.stringify(join(dir, "ext.js")…
+    465|     baseDir: dir,
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[12/49]⎯
+
+ FAIL  |unit| tests/unit/src/cli/export.test.ts > test_prepare_embeds
+TypeError: Cannot read properties of undefined (reading 'libraries')
+ ❯ tests/unit/src/cli/export.test.ts:59:36
+     57|   });
+     58|   // 検証
+     59|   expect(Object.keys(result.embeds.libraries)).toEqual(["test-lib"]);
+       |                                    ^
+     60|   expect(result.embeds.extensions).toEqual([join(dir, "extensions/gree…
+     61|   expect(result.themeCss).toContain("--mdmark-radius");
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[13/49]⎯
+
+ FAIL  |unit| tests/unit/src/cli/export.test.ts > test_prepare_embeds_when_unreadable
+TypeError: Cannot read properties of undefined (reading 'libraries')
+ ❯ tests/unit/src/cli/export.test.ts:85:24
+     83|   });
+     84|   // 検証
+     85|   expect(result.embeds.libraries).toEqual({});
+       |                        ^
+     86|   const warnings = result.warnings.join("\n");
+     87|   expect(warnings).toContain("test-lib");
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[14/49]⎯
+
+ FAIL  |unit| tests/unit/src/cli/export.test.ts > test_prepare_embeds_when_syntax
+TypeError: Cannot read properties of undefined (reading 'syntax')
+ ❯ tests/unit/src/cli/export.test.ts:360:24
+    358|   });
+    359|   // 検証
+    360|   expect(result.embeds.syntax?.core).toBe(join(dir, "hl/core.min.js"));
+       |                        ^
+    361|   expect(Object.keys(result.embeds.syntax?.languages ?? {})).toEqual([
+    362|     "typescript",
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[15/49]⎯
+
+ FAIL  |unit| tests/unit/src/cli/export.test.ts > test_prepare_embeds_when_syntax_unreadable
+TypeError: Cannot read properties of undefined (reading 'syntax')
+ ❯ tests/unit/src/cli/export.test.ts:385:24
+    383|   });
+    384|   // 検証
+    385|   expect(result.embeds.syntax).toBeUndefined();
+       |                        ^
+    386|   expect(result.warnings).toHaveLength(1);
+    387|   expect(result.warnings[0]).toContain("missing/core.min.js");
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[16/49]⎯
+
+ FAIL  |unit| tests/unit/src/cli/export.test.ts > test_prepare_embeds_when_syntax_language_unreadable
+TypeError: Cannot read properties of undefined (reading 'syntax')
+ ❯ tests/unit/src/cli/export.test.ts:412:36
+    410|   });
+    411|   // 検証
+    412|   expect(Object.keys(result.embeds.syntax?.languages ?? {})).toEqual([
+       |                                    ^
+    413|     "typescript",
+    414|   ]);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[17/49]⎯
+
+ FAIL  |unit| tests/unit/src/cli/export.test.ts > test_prepare_embeds_when_dynamic_import_left
+TypeError: Cannot read properties of undefined (reading 'extensions')
+ ❯ tests/unit/src/cli/export.test.ts:444:24
+    442|   });
+    443|   // 検証
+    444|   expect(result.embeds.extensions).toHaveLength(1);
+       |                        ^
+    445|   expect(result.warnings).toHaveLength(1);
+    446|   expect(result.warnings[0]).toContain("extensions/dynamic.js");
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[18/49]⎯
+
+ FAIL  |unit| tests/unit/src/viewer/modules.test.ts > test_prepare_modules
+TypeError: Cannot read properties of undefined (reading 'libraries')
+ ❯ prepareModules src/viewer/modules.ts:44:49
+     42| ): Promise<MdmarkConfig> {
+     43|   const libraries: Record<string, string> = {};
+     44|   for (const name of Object.keys(payload.config.libraries ?? {})) {
+       |                                                 ^
+     45|     libraries[name] = UNAVAILABLE_MODULE;
+     46|   }
+ ❯ tests/unit/src/viewer/modules.test.ts:42:9
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[19/49]⎯
+
+ FAIL  |unit| tests/unit/src/viewer/modules.test.ts > test_prepare_modules
+ FAIL  |unit| tests/unit/src/viewer/modules.test.ts > test_prepare_modules_when_extension_fails
+ FAIL  |unit| tests/unit/src/viewer/modules.test.ts > test_prepare_modules_when_syntax
+TypeError: setEmbeddedSyntax is not a function
+ ❯ tests/unit/src/viewer/modules.test.ts:25:3
+     23|   const { setEmbeddedLibraries } = await loadLibraries();
+     24|   const { partModules, partModuleLoaders } = await loadPartModules();
+     25|   setEmbeddedSyntax(undefined);
+       |   ^
+     26|   setEmbeddedLibraries(undefined);
+     27|   partModules.clear();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[20/49]⎯
+
+ FAIL  |unit| tests/unit/src/viewer/modules.test.ts > test_prepare_modules_when_extension_fails
+AssertionError: promise rejected "TypeError: Cannot read properties of unde…" instead of resolving
+ ❯ tests/unit/src/viewer/modules.test.ts:82:25
+     80|   );
+     81|   // 検証
+     82|   await expect(prepared).resolves.toBeUndefined();
+       |                         ^
+     83|   expect(register).toHaveBeenCalledTimes(1);
+     84|   expect(register).toHaveBeenCalledWith(GREET);
+
+Caused by: TypeError: Cannot read properties of undefined (reading 'libraries')
+ ❯ prepareModules src/viewer/modules.ts:44:49
+ ❯ tests/unit/src/viewer/modules.test.ts:68:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[21/49]⎯
+
+ FAIL  |unit| tests/unit/src/viewer/modules.test.ts > test_prepare_modules_when_syntax
+TypeError: Cannot read properties of undefined (reading 'libraries')
+ ❯ prepareModules src/viewer/modules.ts:44:49
+     42| ): Promise<MdmarkConfig> {
+     43|   const libraries: Record<string, string> = {};
+     44|   for (const name of Object.keys(payload.config.libraries ?? {})) {
+       |                                                 ^
+     45|     libraries[name] = UNAVAILABLE_MODULE;
+     46|   }
+ ❯ tests/unit/src/viewer/modules.test.ts:99:9
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[22/49]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/highlight.browser.test.ts > test_highlight_code_blocks_when_embedded
+TypeError: setEmbeddedSyntax is not a function
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/highlight.browser.test.ts/test_highlight_code_blocks_when_embedded.png
+
+ ❯ tests/unit/src/highlight.browser.test.ts:235:3
+    233|   const yamlBefore = root.querySelectorAll("code")[1]?.innerHTML;
+    234|   const importModule = createImport();
+    235|   setEmbeddedSyntax({
+       |   ^
+    236|     core: { default: core.newInstance() },
+    237|     languages: { typescript: { default: typescript } },
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=93f5da88:5235:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[23/49]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/highlight.browser.test.ts > test_highlight_code_blocks_when_embedded_without_core
+TypeError: setEmbeddedSyntax is not a function
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/highlight.browser.test.ts/test_highlight_code_blocks_when_embedded_without_core.png
+
+ ❯ tests/unit/src/highlight.browser.test.ts:269:3
+    267|   );
+    268|   const importModule = createImport();
+    269|   setEmbeddedSyntax({ languages: {} });
+       |   ^
+    270|   try {
+    271|     // 実行
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=93f5da88:5235:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[24/49]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/libraries.browser.test.ts > test_load_libraries_when_embedded
+TypeError: setEmbeddedLibraries is not a function
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/libraries.browser.test.ts/test_load_libraries_when_embedded.png
+
+ ❯ tests/unit/src/libraries.browser.test.ts:376:3
+    374|   const importModule = vi.fn<ImportModule>();
+    375|   spyConsoleError();
+    376|   setEmbeddedLibraries({
+       |   ^
+    377|     "test-lib": async (): Promise<LibraryModule> => ({ draw }),
+    378|   });
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=93f5da88:5235:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[25/49]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/mount-parts.browser.test.ts > test_mount_view
+TypeError: Cannot read properties of undefined (reading 'clear')
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/mount-parts.browser.test.ts/test_mount_view.png
+
+ ❯ resetParts tests/unit/src/mount-parts.browser.test.ts:89:21
+     87|   const { partModules, partModuleLoaders } = await loadPartModules();
+     88|   partModules.clear();
+     89|   partModuleLoaders.clear();
+       |                     ^
+     90|   return recorder;
+     91| }
+ ❯ tests/unit/src/mount-parts.browser.test.ts:171:20
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=93f5da88:5235:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[26/49]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/mount-parts.browser.test.ts > test_mount_view_when_invalid
+TypeError: Cannot read properties of undefined (reading 'clear')
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/mount-parts.browser.test.ts/test_mount_view_when_invalid.png
+
+ ❯ resetParts tests/unit/src/mount-parts.browser.test.ts:89:21
+     87|   const { partModules, partModuleLoaders } = await loadPartModules();
+     88|   partModules.clear();
+     89|   partModuleLoaders.clear();
+       |                     ^
+     90|   return recorder;
+     91| }
+ ❯ tests/unit/src/mount-parts.browser.test.ts:189:20
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=93f5da88:5235:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[27/49]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/mount-parts.browser.test.ts > test_mount_view_when_module_unavailable
+TypeError: Cannot read properties of undefined (reading 'clear')
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/mount-parts.browser.test.ts/test_mount_view_when_module_unavailable.png
+
+ ❯ resetParts tests/unit/src/mount-parts.browser.test.ts:89:21
+     87|   const { partModules, partModuleLoaders } = await loadPartModules();
+     88|   partModules.clear();
+     89|   partModuleLoaders.clear();
+       |                     ^
+     90|   return recorder;
+     91| }
+ ❯ tests/unit/src/mount-parts.browser.test.ts:205:3
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=93f5da88:5235:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[28/49]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/mount-parts.browser.test.ts > test_mount_comments
+TypeError: Cannot read properties of undefined (reading 'clear')
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/mount-parts.browser.test.ts/test_mount_comments.png
+
+ ❯ resetParts tests/unit/src/mount-parts.browser.test.ts:89:21
+     87|   const { partModules, partModuleLoaders } = await loadPartModules();
+     88|   partModules.clear();
+     89|   partModuleLoaders.clear();
+       |                     ^
+     90|   return recorder;
+     91| }
+ ❯ tests/unit/src/mount-parts.browser.test.ts:223:20
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=93f5da88:5235:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[29/49]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/mount-parts.browser.test.ts > test_mount_comments_when_invalid
+TypeError: Cannot read properties of undefined (reading 'clear')
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/mount-parts.browser.test.ts/test_mount_comments_when_invalid.png
+
+ ❯ resetParts tests/unit/src/mount-parts.browser.test.ts:89:21
+     87|   const { partModules, partModuleLoaders } = await loadPartModules();
+     88|   partModules.clear();
+     89|   partModuleLoaders.clear();
+       |                     ^
+     90|   return recorder;
+     91| }
+ ❯ tests/unit/src/mount-parts.browser.test.ts:245:3
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=93f5da88:5235:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[30/49]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/mount-parts.browser.test.ts > test_mount_comments_when_module_unavailable
+TypeError: Cannot read properties of undefined (reading 'clear')
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/mount-parts.browser.test.ts/test_mount_comments_when_module_unavailable.png
+
+ ❯ resetParts tests/unit/src/mount-parts.browser.test.ts:89:21
+     87|   const { partModules, partModuleLoaders } = await loadPartModules();
+     88|   partModules.clear();
+     89|   partModuleLoaders.clear();
+       |                     ^
+     90|   return recorder;
+     91| }
+ ❯ tests/unit/src/mount-parts.browser.test.ts:261:3
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=93f5da88:5235:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[31/49]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/mount-parts.browser.test.ts > test_attach_parts
+TypeError: Cannot read properties of undefined (reading 'clear')
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/mount-parts.browser.test.ts/test_attach_parts.png
+
+ ❯ resetParts tests/unit/src/mount-parts.browser.test.ts:89:21
+     87|   const { partModules, partModuleLoaders } = await loadPartModules();
+     88|   partModules.clear();
+     89|   partModuleLoaders.clear();
+       |                     ^
+     90|   return recorder;
+     91| }
+ ❯ tests/unit/src/mount-parts.browser.test.ts:277:20
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=93f5da88:5235:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[32/49]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/mount-parts.browser.test.ts > test_attach_parts_when_no_marks
+TypeError: Cannot read properties of undefined (reading 'clear')
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/mount-parts.browser.test.ts/test_attach_parts_when_no_marks.png
+
+ ❯ resetParts tests/unit/src/mount-parts.browser.test.ts:89:21
+     87|   const { partModules, partModuleLoaders } = await loadPartModules();
+     88|   partModules.clear();
+     89|   partModuleLoaders.clear();
+       |                     ^
+     90|   return recorder;
+     91| }
+ ❯ tests/unit/src/mount-parts.browser.test.ts:300:20
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=93f5da88:5235:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[33/49]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/mount-parts.browser.test.ts > test_attach_parts_when_comments_without_store
+TypeError: Cannot read properties of undefined (reading 'clear')
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/mount-parts.browser.test.ts/test_attach_parts_when_comments_without_store.png
+
+ ❯ resetParts tests/unit/src/mount-parts.browser.test.ts:89:21
+     87|   const { partModules, partModuleLoaders } = await loadPartModules();
+     88|   partModules.clear();
+     89|   partModuleLoaders.clear();
+       |                     ^
+     90|   return recorder;
+     91| }
+ ❯ tests/unit/src/mount-parts.browser.test.ts:320:20
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=93f5da88:5235:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[34/49]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/mount-parts.browser.test.ts > test_attach_parts_when_detached_while_loading
+TypeError: Cannot read properties of undefined (reading 'clear')
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/mount-parts.browser.test.ts/test_attach_parts_when_detached_while_loading.png
+
+ ❯ resetParts tests/unit/src/mount-parts.browser.test.ts:89:21
+     87|   const { partModules, partModuleLoaders } = await loadPartModules();
+     88|   partModules.clear();
+     89|   partModuleLoaders.clear();
+       |                     ^
+     90|   return recorder;
+     91| }
+ ❯ tests/unit/src/mount-parts.browser.test.ts:344:20
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=93f5da88:5235:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[35/49]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/mount-parts.browser.test.ts > test_attach_parts_when_module_unavailable
+TypeError: Cannot read properties of undefined (reading 'clear')
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/mount-parts.browser.test.ts/test_attach_parts_when_module_unavailable.png
+
+ ❯ resetParts tests/unit/src/mount-parts.browser.test.ts:89:21
+     87|   const { partModules, partModuleLoaders } = await loadPartModules();
+     88|   partModules.clear();
+     89|   partModuleLoaders.clear();
+       |                     ^
+     90|   return recorder;
+     91| }
+ ❯ tests/unit/src/mount-parts.browser.test.ts:369:3
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=93f5da88:5235:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[36/49]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/mount-parts.browser.test.ts > test_attach_parts_when_parts_mounted_inside
+TypeError: Cannot read properties of undefined (reading 'clear')
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/mount-parts.browser.test.ts/test_attach_parts_when_parts_mounted_inside.png
+
+ ❯ resetParts tests/unit/src/mount-parts.browser.test.ts:89:21
+     87|   const { partModules, partModuleLoaders } = await loadPartModules();
+     88|   partModules.clear();
+     89|   partModuleLoaders.clear();
+       |                     ^
+     90|   return recorder;
+     91| }
+ ❯ tests/unit/src/mount-parts.browser.test.ts:394:20
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=93f5da88:5235:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[37/49]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/mount-parts.browser.test.ts > test_attach_parts_when_comments_reloaded
+TypeError: Cannot read properties of undefined (reading 'clear')
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/mount-parts.browser.test.ts/test_attach_parts_when_comments_reloaded.png
+
+ ❯ resetParts tests/unit/src/mount-parts.browser.test.ts:89:21
+     87|   const { partModules, partModuleLoaders } = await loadPartModules();
+     88|   partModules.clear();
+     89|   partModuleLoaders.clear();
+       |                     ^
+     90|   return recorder;
+     91| }
+ ❯ tests/unit/src/mount-parts.browser.test.ts:433:20
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=93f5da88:5235:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[38/49]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/mount-parts.browser.test.ts > test_attach_parts_when_comments_reload_disabled
+TypeError: Cannot read properties of undefined (reading 'clear')
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/mount-parts.browser.test.ts/test_attach_parts_when_comments_reload_disabled.png
+
+ ❯ resetParts tests/unit/src/mount-parts.browser.test.ts:89:21
+     87|   const { partModules, partModuleLoaders } = await loadPartModules();
+     88|   partModules.clear();
+     89|   partModuleLoaders.clear();
+       |                     ^
+     90|   return recorder;
+     91| }
+ ❯ tests/unit/src/mount-parts.browser.test.ts:461:20
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=93f5da88:5235:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[39/49]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/mount-parts.browser.test.ts > test_attach_parts_when_comments_reload_after_detach
+TypeError: Cannot read properties of undefined (reading 'clear')
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/mount-parts.browser.test.ts/test_attach_parts_when_comments_reload_after_detach.png
+
+ ❯ resetParts tests/unit/src/mount-parts.browser.test.ts:89:21
+     87|   const { partModules, partModuleLoaders } = await loadPartModules();
+     88|   partModules.clear();
+     89|   partModuleLoaders.clear();
+       |                     ^
+     90|   return recorder;
+     91| }
+ ❯ tests/unit/src/mount-parts.browser.test.ts:497:20
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=93f5da88:5235:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[40/49]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/mount-view.browser.test.ts > test_mount_when_view_marked
+TypeError: Cannot read properties of undefined (reading 'clear')
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/mount-view.browser.test.ts/test_mount_when_view_marked.png
+
+ ❯ tests/unit/src/mount-view.browser.test.ts:76:21
+     74|     await loadPartModules();
+     75|   partModules.clear();
+     76|   partModuleLoaders.clear();
+       |                     ^
+     77|   moduleUrl = URL.createObjectURL(
+     78|     new Blob([VIEW_MODULE_CODE], { type: "text/javascript" }),
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=93f5da88:5235:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[41/49]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/mount-view.browser.test.ts > test_mount_when_view_marked
+ FAIL  |unit-browser (chromium)| tests/unit/src/mount-view.browser.test.ts > test_mount_when_comments_without_side_toc
+TypeError: Cannot read properties of undefined (reading 'clear')
+
+Failure screenshots:
+  - .vitest/attachments/failure-screenshots/mount-view.browser.test.ts/test_mount_when_view_marked.png
+  - .vitest/attachments/failure-screenshots/mount-view.browser.test.ts/test_mount_when_comments_without_side_toc.png
+
+ ❯ tests/unit/src/mount-view.browser.test.ts:60:21
+     58|   const { partModules, partModuleLoaders } = await loadPartModules();
+     59|   partModules.clear();
+     60|   partModuleLoaders.clear();
+       |                     ^
+     61|   if (moduleUrl !== undefined) {
+     62|     URL.revokeObjectURL(moduleUrl);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[42/49]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/mount-view.browser.test.ts > test_mount_when_comments_without_side_toc
+TypeError: Cannot read properties of undefined (reading 'clear')
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/mount-view.browser.test.ts/test_mount_when_comments_without_side_toc.png
+
+ ❯ tests/unit/src/mount-view.browser.test.ts:120:21
+    118|     await loadPartModules();
+    119|   partModules.clear();
+    120|   partModuleLoaders.clear();
+       |                     ^
+    121|   moduleUrl = URL.createObjectURL(
+    122|     new Blob([COMMENTS_MODULE_CODE], { type: "text/javascript" }),
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=93f5da88:5235:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[43/49]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/mount.browser.test.ts > test_mount_when_comments_delegated
+TypeError: setPartModuleLoader is not a function
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/mount.browser.test.ts/test_mount_when_comments_delegated.png
+
+ ❯ tests/unit/src/mount.browser.test.ts:975:3
+    973|     ),
+    974|   );
+    975|   setPartModuleLoader("comments", () => import(/* @vite-ignore */ url)…
+       |   ^
+    976|   try {
+    977|     const el = createElement();
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=93f5da88:5235:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[44/49]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/viewer/index.browser.test.ts > test_start_viewer
+TypeError: Cannot convert undefined or null to object
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/index.browser.test.ts/test_start_viewer.png
+
+ ❯ prepareModules src/viewer/modules.ts:47:37
+     45|     libraries[name] = UNAVAILABLE_MODULE;
+     46|   }
+     47|   for (const [name, code] of Object.entries(payload.modules)) {
+       |                                     ^
+     48|     libraries[name] = deps.createUrl(code);
+     49|   }
+ ❯ startViewer src/viewer/index.ts:16:24
+ ❯ tests/unit/src/viewer/index.browser.test.ts:31:9
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=93f5da88:5235:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[45/49]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/viewer/index.browser.test.ts > test_start_viewer_when_aliases
+TypeError: Cannot convert undefined or null to object
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/index.browser.test.ts/test_start_viewer_when_aliases.png
+
+ ❯ prepareModules src/viewer/modules.ts:47:37
+     45|     libraries[name] = UNAVAILABLE_MODULE;
+     46|   }
+     47|   for (const [name, code] of Object.entries(payload.modules)) {
+       |                                     ^
+     48|     libraries[name] = deps.createUrl(code);
+     49|   }
+ ❯ startViewer src/viewer/index.ts:16:24
+ ❯ tests/unit/src/viewer/index.browser.test.ts:64:9
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=93f5da88:5235:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[46/49]⎯
+
+⎯⎯⎯⎯⎯⎯ Unhandled Errors ⎯⎯⎯⎯⎯⎯
+
+Vitest caught 1 unhandled error during the test run.
+This might cause false positive tests. Resolve unhandled errors to make sure your tests are not affected.
+
+⎯⎯⎯⎯ Unhandled Rejection ⎯⎯⎯⎯⎯
+TypeError: Cannot convert undefined or null to object
+ ❯ prepareModules src/viewer/modules.ts:47:37
+     45|     libraries[name] = UNAVAILABLE_MODULE;
+     46|   }
+     47|   for (const [name, code] of Object.entries(payload.modules)) {
+       |                                     ^
+     48|     libraries[name] = deps.createUrl(code);
+     49|   }
+ ❯ startViewer src/viewer/index.ts:16:24
+ ❯ src/viewer/index.ts:37:6
+
+This error originated in "tests/unit/src/viewer/index.browser.test.ts" test file. It doesn't mean the error was thrown inside the file itself, but while it was running.
+The last test to run before this error was "test_start_viewer". This means either:
+- the error was thrown while Vitest was running this test, or
+- the error was thrown after the test completed, and this was the most recent test at that point.
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+
+
+ Test Files  10 failed | 178 passed (188)
+      Tests  44 failed | 1355 passed (1399)
+     Errors  1 error
+   Start at  23:08:45
+   Duration  103.55s (worker 66%, tests 20%, import 10%, transform 4%)
+

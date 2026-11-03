@@ -3,13 +3,16 @@ import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { expect, test } from "vitest";
 import {
+  GREET_WITH_IMPORT_SOURCE,
   linesOf,
   PNG_BYTES,
+  readHighlightVendor,
   readMediaSamples,
   runCli,
   TEST_LIB_SOURCE,
   useBrowser,
   useTempDirs,
+  VIEW_SOURCE,
   writeFiles,
 } from "../cli.ts";
 
@@ -419,4 +422,72 @@ test("test_error_when_media_copy_unwritable", async () => {
     "ファイル\n",
   );
   expect(existsSync(join(dir, "dist", "docs.html"))).toBe(false);
+});
+
+// 全ての文書が使うモジュールを 1 つのスクリプトに束ね、blob: と動的 import を許さない環境でも文書を移って描く（正常系（blob: と動的 import を許さない環境で開く））
+test("test_normal_when_blob_and_dynamic_import_blocked", async () => {
+  // 準備
+  const dir = await createTempDir();
+  await writeFiles(dir, {
+    "mdmark.config.yaml": [
+      "extensions: [extensions/greet.js]",
+      "libraries:",
+      "  test-lib: lib/test-lib.js",
+      "syntax:",
+      "  url: vendor/highlightjs/es/",
+      "build:",
+      '  include: ["*.md"]',
+      "  entry: README.md",
+      "  out: dist/docs.html",
+      "",
+    ].join("\n"),
+    "extensions/greet.js": GREET_WITH_IMPORT_SOURCE,
+    "extensions/greet-text.js": 'export const TEXT = "読んだ";\n',
+    "lib/test-lib.js": TEST_LIB_SOURCE,
+    "README.md": [
+      "# 入口",
+      "",
+      "[ガイド](guide.md) を読む。",
+      "",
+      "<!-- greet: 世界 -->",
+      "",
+      "```ts",
+      "const count: number = 1;",
+      "```",
+      "",
+    ].join("\n"),
+    "guide.md": [
+      "# ガイド",
+      "",
+      VIEW_SOURCE,
+      "",
+      "<!-- test-lib: a -->",
+      "",
+    ].join("\n"),
+    ...(await readHighlightVendor()),
+  });
+  // 実行
+  const result = await runCli(["build"], dir);
+  // 検証
+  expect(result.code).toBe(0);
+  expect(result.stderr).toBe("");
+  const opened = await browser.openWithCsp(join(dir, "dist", "docs.html"));
+  const { page } = opened;
+  await page.waitForFunction(
+    () =>
+      document.querySelector("article [data-mdmark-slot]")?.textContent ===
+      "greet:読んだ:世界",
+  );
+  await page.waitForSelector('article code.language-ts span[class^="hljs-"]');
+  await page.locator('article p a[href="#/guide.md"]').click();
+  await page.waitForSelector("article .mdmark-view");
+  await page.waitForFunction(() =>
+    [...document.querySelectorAll("article [data-mdmark-slot]")].some(
+      (slot) => slot.textContent === "drawn:a",
+    ),
+  );
+  await expect(page.locator("article .mdmark-notice").count()).resolves.toBe(0);
+  await expect(opened.violations()).resolves.toEqual([]);
+  expect(opened.inlineUrlScripts()).toEqual([]);
+  await opened.close();
 });

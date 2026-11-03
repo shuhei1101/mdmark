@@ -9,7 +9,7 @@ directory: |-
   ├── alias-schema.ts # 設定の aliases の行の JSON Schema での検査
   ├── aliases.ts    # aliases の行の paths の YAML の読み取りとエイリアスの組み立て
   ├── documents.ts  # build の対象の文書・索引と索引の文書の読み取り・文書の題
-  ├── embed.ts      # 外部ライブラリと拡張の束ね・色分けの言語の拾い出し・画像の埋め込み・1 枚に含まれない文書へのリンク
+  ├── embed.ts      # 外部ライブラリと拡張の束ね・起動の処理と埋めるモジュールの 1 つのスクリプトへの束ね・色分けの言語の拾い出し・画像の埋め込み・1 枚に含まれない文書へのリンク
   ├── assets.ts     # 画像・動画・音声・添付の参照の拾い出し・アセットのルートでの探索・動画と音声のコピー・見つからないファイルの点検
   ├── html.ts       # 書き出す HTML の組み立て
   ├── init.ts       # mdmark init
@@ -103,24 +103,35 @@ data_models:
       - name: entry
         type: string
         description: 最初に開く文書の `path`
-      - name: modules
-        type: Record<string, string>
-        description: 印の名前から束ねたモジュールのコードを引く表
-      - name: extensions
-        type: string[]
-        description: 束ねた拡張のモジュールのコード
-      - name: parts
-        type: Partial<Record<"view", string>> | undefined
-        description: 埋めた部品のモジュールのコード。無いときは空として扱う。文書にビューの印があるときだけ `dist/view.js` を入れる（書き出した HTML はコメントの読み書きの関数を持たないため、コメントの部品は埋めない）
-      - name: syntax
-        type: '{ core: string; languages: Record<string, string> } | undefined'
-        description: 束ねた色分けのライブラリのコード。`core` は本体、`languages` は言語のモジュール名からコードを引く表。文書に色分けの対象があり本体を束ねられたときだけ持つ
       - name: aliases
         type: MdmarkAlias[] | undefined
         description: '`loadAliases` が作ったエイリアス（`env` を含まない）。設定に `aliases` が無ければ持たない'
       - name: assets
         type: Record<string, string> | undefined
         description: '`bundle` で埋めた画像のキーから `data:` URL を引く表。複数の文書が指す同じ画像を 1 回だけ持つ。`document` では持たない'
+  - name: ViewerEmbeds
+    title: 起動の処理と束ねるモジュール
+    container: src/cli/embed.ts
+    usecase: 共通
+    summary: '`prepareEmbeds` が束ねられることを確かめた、起動の処理と 1 つのスクリプトに束ねるモジュールの読み先（URL か絶対パス）'
+    properties:
+      - name: libraries
+        type: Record<string, string>
+        description: 文書に印があり束ねられた外部ライブラリの、印の名前から読み先を引く表
+      - name: extensions
+        type: string[]
+        description: 束ねられた設定の `extensions` の拡張の読み先。設定の順
+      - name: syntax
+        type: '{ core: string; languages: Record<string, string> } | undefined'
+        description: 束ねられた色分けの本体の読み先と、言語のモジュール名から読み先を引く表。文書に色分けの対象があり本体を束ねられたときだけ持つ
+      - name: view
+        type: boolean
+        description: ビューの部品を束ねるか。文書にビューの印があるときだけ `true`（書き出した HTML はコメントの読み書きの関数を持たないため、コメントの部品は束ねない）
+    refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/文書をHTMLに書き出す.ts#constraints[束ねるスクリプト]
+    status: planned
+    introduced:
+      pr: 296
   - name: AssetRef
     title: ファイルの参照
     container: src/cli/assets.ts
@@ -614,6 +625,139 @@ functions:
     status: planned
     introduced:
       pr: 32
+  - name: hasDynamicImport
+    title: 動的 import が残るかを確かめる
+    container: src/cli/embed.ts
+    usecase: 共通
+    summary: 束ねたコードに動的 `import()` の呼び出し（`import(` の並び。間の空白を許す）が残るかを返す
+    description: 変数を渡す `import()` は esbuild が取り込めず、束ねた後もコードに残る
+    kind: 関数
+    scope: internal
+    args:
+      - name: code
+        type: string
+        required: true
+        description: '`bundleModule` が束ねたコード'
+    returns:
+      type: boolean
+      description: 動的 `import()` が残るか
+    unit_tests:
+      - name: test_has_dynamic_import
+        case: 正常
+        summary: 残った動的 import を見つけ、無ければ false
+        condition: '`a.load=()=>import(n)`・`import (n)`・`const x=1`'
+        mock: なし
+        expected: 順に `true`・`true`・`false`
+    status: planned
+    introduced:
+      pr: 296
+  - name: cacheFetchText
+    title: URL を読む関数を控え付きにする
+    container: src/cli/embed.ts
+    usecase: 共通
+    summary: 同じ URL を 1 回だけ読む `FetchText` を返す。`prepareEmbeds` の確かめと `bundleViewer` が同じ関数を使い、同じ URL を 2 回読まない
+    description: URL ごとに読み込みの Promise を控える。拒否した Promise も控え、読み直さない
+    kind: 関数
+    scope: internal
+    args:
+      - name: fetchText
+        type: FetchText
+        required: false
+        default: '`fetch` で本文を読む'
+        passing: injected
+        description: URL を読む関数（テストで差し替える）
+    returns:
+      type: FetchText
+      description: 控え付きの URL を読む関数
+    unit_tests:
+      - name: test_cache_fetch_text
+        case: 正常
+        summary: 同じ URL を 1 回だけ読む
+        condition: 同じ URL で 2 回、別の URL で 1 回呼ぶ
+        mock: 呼ばれた URL を控える `fetchText`
+        expected: '`fetchText` が 2 回呼ばれ、同じ URL の 2 回は同じ本文'
+    status: planned
+    introduced:
+      pr: 296
+  - name: createViewerEntry
+    title: 起動の処理の入口を作る
+    container: src/cli/embed.ts
+    usecase: 共通
+    summary: 起動の処理・部品・色分けを静的な `import`、外部ライブラリと拡張をリテラルの動的 `import()` を返す関数で取り込み、`startViewer(document, 埋めたモジュール)` を呼ぶ入口のモジュールのソースを返す
+    description: 読み先は `JSON.stringify` した文字列リテラルで書く。`syntax` の本体と言語は `default` の import、ビューの部品は名前空間の import にする
+    kind: 関数
+    scope: internal
+    args:
+      - name: options
+        type: '{ viewer: string; view: string; embeds: ViewerEmbeds }'
+        required: true
+        description: '`dist/viewer.js`・`dist/view.js` の絶対パスと、束ねるモジュールの読み先'
+    returns:
+      type: string
+      description: 入口のモジュールの JavaScript のソース
+    process: |-
+      1. `viewer` から `startViewer` を import する行を置く
+      2. `embeds.view` が `true` なら `view` を名前空間で import する行を置く
+      3. `embeds.syntax` があれば、本体と言語ごとに `default` を import する行を置く
+      4. `startViewer(document, { parts, syntax, libraries, extensions })` を呼ぶ行を置く。`libraries` は印の名前ごとの `() => import("{読み先}")`、`extensions` は `embeds.extensions` の順の `() => import("{読み先}")`
+    unit_tests:
+      - name: test_create_viewer_entry
+        case: 正常
+        summary: 部品と色分けを静的に、外部ライブラリと拡張を関数で取り込む
+        condition: '`embeds` が `{ view: true, libraries: { chart: "https://cdn.example/chart.js" }, extensions: ["/w/ext.js"], syntax: { core: "/w/hl/core.min.js", languages: { typescript: "/w/hl/languages/typescript.min.js" } } }`'
+        mock: なし
+        expected: ソースに `dist/viewer.js`・`dist/view.js`・`core.min.js`・`typescript.min.js` の静的な `import` があり、`chart` と拡張は `() => import("…")` で、`startViewer(document,` を 1 回呼ぶ
+      - name: test_create_viewer_entry_when_nothing_embedded
+        case: 正常
+        summary: 埋めるものが無ければ起動の処理だけを取り込む
+        condition: '`embeds` が `{ view: false, libraries: {}, extensions: [] }`'
+        mock: なし
+        expected: '`import` は `startViewer` の 1 行だけで、`parts` が `{}`、`syntax` を持たない'
+    status: planned
+    introduced:
+      pr: 296
+  - name: bundleViewer
+    title: 起動の処理と埋めるモジュールを束ねる
+    container: src/cli/embed.ts
+    usecase: 共通
+    summary: '`createViewerEntry` のソースを入口に、esbuild で分割せずに 1 つの ES モジュールのスクリプトに束ね、`</script` の並びを `<\/script` に、`<!--` の並びを `<\x21--` に替えて返す'
+    description: '`bundleModule` と同じ設定（`bundle: true`・`format: esm`・`minify: true`・対応ブラウザの `target`・`http:`・`https:` の import を `fetchText` で読むプラグイン）で、入口は `stdin`（`resolveDir` は設定ファイルのあるフォルダ）。リテラルとパターンの動的 `import()` は同じスクリプトに取り込まれ、評価は呼び出しまで遅れる。`</script` の並び（大文字小文字を問わない）は `<\/script` に、`<!--` の並びは `<\x21--` に替え、HTML の `script` 要素が途中で閉じないように、また script data escaped state に入って閉じなくならないようにする。esbuild はコードのトークンとして `<!--` を出力せず、どちらの並びも文字列・テンプレート・正規表現・コメントの中にしか現れないため、替えても意味は変わらない（`String.raw` の raw の値だけが変わる）。`prepareEmbeds` が確かめたモジュールだけを渡すため、束ねる失敗は例外のまま投げる'
+    kind: 関数
+    scope: internal
+    is_async: true
+    side_effects: URL の先を読む
+    args:
+      - name: options
+        type: '{ entry: string; baseDir: string; fetchText: FetchText }'
+        required: true
+        description: '`createViewerEntry` のソース、設定ファイルのあるフォルダ、URL を読む関数'
+    returns:
+      type: Promise<string>
+      description: 束ねたスクリプト
+    unit_tests:
+      - name: test_bundle_viewer
+        case: 正常
+        summary: 入口と関数で取り込んだモジュールを 1 つに束ね、動的 import を残さない
+        condition: 一時フォルダに `startViewer` を export する `viewer.js` と、`load` の中で `./part.js` を動的 `import()` で読む `ext.js`。入口は `viewer.js` を静的に、`ext.js` を `() => import(…)` で取り込む
+        mock: 一時フォルダ
+        expected: 戻り値に `import(` と `from"` の並びが無く、`part.js` の中身を含む
+      - name: test_bundle_viewer_when_script_close
+        case: 正常
+        summary: '`</script` を替えて返す'
+        condition: '`ext.js` が `/*! </SCRIPT> */` の注釈を持つ'
+        mock: 一時フォルダ
+        expected: 戻り値に `</script` の並び（大文字小文字を問わない）が無く、`<\/SCRIPT>` がある
+      - name: test_bundle_viewer_when_html_comment_open
+        case: 正常
+        summary: '`<!--` を替え、評価した文字列は元と同じ'
+        condition: '`ext.js` が `"<!-- <script>"` の文字列を export する'
+        mock: 一時フォルダ
+        expected: 戻り値に `<!--` の並びが無く、戻り値を評価して取り出した文字列が `<!-- <script>`
+    refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/文書をHTMLに書き出す.ts#constraints[束ねるスクリプト]
+    status: planned
+    introduced:
+      pr: 296
   - name: inlineImages
     title: 画像を埋める
     container: src/cli/embed.ts
@@ -714,15 +858,15 @@ functions:
     title: 書き出す HTML を組み立てる
     container: src/cli/html.ts
     usecase: 共通
-    summary: 配布物の CSS・使う側の CSS・起動の処理（`dist/viewer.js`）・書き出しの中身を埋めた 1 枚の HTML を返す
-    description: '`<style>` に配布物の CSS、続けて使う側の CSS、`<script type="application/json" id="mdmark-payload">` に書き出しの中身、`<script type="module">` に起動の処理を置く。`kind` が `bundle` のときは画面設計『まとめたHTML』の骨組み、`document` のときは描く先の要素だけを `body` に置く。`#mdmark-payload` の JSON だけは、`JSON.stringify` した文字列の `<` を `\u003c`（JSON の文字列のエスケープ）に替え、文書の `</script>` で要素が閉じないようにする。起動の処理（`dist/viewer.js`）は替えずに置く（`</script` の並びを持たないことは `buildDist` が検める）。ページの題は `entry` の文書の題'
+    summary: 配布物の CSS・使う側の CSS・束ねたスクリプト・書き出しの中身を埋めた 1 枚の HTML を返す
+    description: '`<style>` に配布物の CSS、続けて使う側の CSS、`<script type="application/json" id="mdmark-payload">` に書き出しの中身、`src` を持たない `<script type="module">` に起動の処理と埋めるモジュールを束ねたスクリプトを置く。`kind` が `bundle` のときは画面設計『まとめたHTML』の骨組み、`document` のときは描く先の要素だけを `body` に置く。`#mdmark-payload` の JSON だけは、`JSON.stringify` した文字列の `<` を `\u003c`（JSON の文字列のエスケープ）に替え、文書の `</script>` で要素が閉じないようにする。束ねたスクリプトは替えずに置く（`</script` と `<!--` の並びは `bundleViewer` が替えてある）。ページの題は `entry` の文書の題'
     kind: 関数
     scope: public
     args:
       - name: parts
-        type: '{ payload: ExportPayload; distCss: string; themeCss?: string; viewer: string }'
+        type: '{ payload: ExportPayload; distCss: string; themeCss?: string; script: string }'
         required: true
-        description: 埋めるもの
+        description: 埋めるもの。`script` は `bundleViewer` が返した束ねたスクリプト
     returns:
       type: string
       description: HTML の文字列
@@ -888,33 +1032,33 @@ functions:
     title: 埋めるものを用意する
     container: src/cli/export.ts
     usecase: 共通
-    summary: 文書の画像を埋め、印のある外部ライブラリと設定の拡張を束ね、`theme` を読み、索引があれば参照の表を作って、書き出しの中身と警告を返す。設定に `assets.root` があれば設定ファイルのフォルダから解決し、文書ごとに `copyMedia`（書き出しの中で共有する `copied` を渡す）の後に `inlineImages` を呼ぶ。`bundle` では `inlineImages` に共有の表を渡し、埋めた画像を `payload.assets` に入れる。設定の `features` で `images`・`media` をオフにした文書も同じく扱う
-    description: '`export` と `build` に共通の処理。埋める設定には、設定の `features`・`tooltips`・`side-toc`・`colorTheme`・`labels` をあるときだけ写す。`colorTheme` が `COLOR_THEMES` に無い名前のときも写したうえで、警告 `{設定ファイル}: 不明なテーマ名 {名前} です。既定の dev-swiss で描画します。` を 1 件出す。同じ URL のモジュールは 1 回だけ束ねる。文書の色分けの言語を `usedSyntaxLanguages` で拾い、1 つ以上あれば設定の `syntax.url`（無ければ `DEFAULT_SYNTAX_URL`）の `core.min.js` と言語ごとの `languages/{モジュール名}.min.js` を `bundleModule` で束ねて `payload.syntax` に入れる（相対パスは設定ファイルのあるフォルダを基準に読む。束ねたコードは esbuild の既定で頭の著作権表示を残す）。本体を束ねられなければ言語も束ねず `payload.syntax` を持たない。言語のモジュールだけ束ねられなければ、その言語を `payload.syntax.languages` に入れず、警告を 1 件出す（その言語のコードブロックは色分けせずに描く）。埋める設定には `syntax` を写さない（開いたときに外へ要求しない）。設定に `aliases` があれば `loadAliases` の `aliases` を `payload.aliases` に入れ、`issues` は 1 件ずつ警告 `{file}:{where}: {kind}: {message}`（`where` が空なら `{file}: {kind}: {message}`）にする（終了コードは変えない）。警告は `{ファイル}: {内容}` の文字列で、読めない画像・絶対 URL の画像・束ねられないモジュールと拡張・束ねられない色分けのライブラリ（`{設定ファイル}: 色分けのライブラリ \`{URL}\` を束ねられません（{理由}）。\`syntax.url\` を直してください。`）・読めない `theme`・読めない索引の文書を出す'
+    summary: 文書の画像を埋め、印のある外部ライブラリと設定の拡張と色分けのモジュールが束ねられることを確かめて読み先を集め、`theme` を読み、索引があれば参照の表を作って、書き出しの中身と警告を返す。設定に `assets.root` があれば設定ファイルのフォルダから解決し、文書ごとに `copyMedia`（書き出しの中で共有する `copied` を渡す）の後に `inlineImages` を呼ぶ。`bundle` では `inlineImages` に共有の表を渡し、埋めた画像を `payload.assets` に入れる。設定の `features` で `images`・`media` をオフにした文書も同じく扱う
+    description: '`export` と `build` に共通の処理。埋める設定には、設定の `features`・`tooltips`・`side-toc`・`colorTheme`・`labels` をあるときだけ写す。`colorTheme` が `COLOR_THEMES` に無い名前のときも写したうえで、警告 `{設定ファイル}: 不明なテーマ名 {名前} です。既定の dev-swiss で描画します。` を 1 件出す。外部ライブラリ・拡張・色分けのモジュールは 1 つずつ `bundleModule` で束ねてみて、束ねられたものだけの読み先（URL はそのまま、パスは設定ファイルのあるフォルダを基準にした絶対パス）を `embeds` に入れる。同じ URL のモジュールは 1 回だけ束ねる。外部ライブラリと拡張で、束ねたコードに `hasDynamicImport` が当たるものは `embeds` に入れたうえで、警告 `{設定ファイル}: 拡張 \`{パス}\` は束ねた後も動的 import() が残り、blob: と動的 import を許さない環境では読み込めません。読む先をリテラルの文字列にしてください。`（外部ライブラリは `外部ライブラリ \`{印の名前}\``）を 1 件出す。文書の色分けの言語を `usedSyntaxLanguages` で拾い、1 つ以上あれば設定の `syntax.url`（無ければ `DEFAULT_SYNTAX_URL`）の `core.min.js` と言語ごとの `languages/{モジュール名}.min.js` を確かめて `embeds.syntax` に入れる（束ねたコードは esbuild の既定で頭の著作権表示を残す）。本体を束ねられなければ言語も確かめず `embeds.syntax` を持たない。言語のモジュールだけ束ねられなければ、その言語を `embeds.syntax.languages` に入れず、警告を 1 件出す（その言語のコードブロックは色分けせずに描く）。埋める設定には `syntax` を写さない（開いたときに外へ要求しない）。設定に `aliases` があれば `loadAliases` の `aliases` を `payload.aliases` に入れ、`issues` は 1 件ずつ警告 `{file}:{where}: {kind}: {message}`（`where` が空なら `{file}: {kind}: {message}`）にする（終了コードは変えない）。警告は `{ファイル}: {内容}` の文字列で、読めない画像・絶対 URL の画像・束ねられないモジュールと拡張・束ねられない色分けのライブラリ（`{設定ファイル}: 色分けのライブラリ \`{URL}\` を束ねられません（{理由}）。\`syntax.url\` を直してください。`）・読めない `theme`・読めない索引の文書を出す'
     kind: 関数
     scope: internal
     is_async: true
     side_effects: 外部ライブラリの URL の先を読む
     args:
       - name: options
-        type: "{ loaded: LoadedConfig; docs: Array<{ path: string; file: string }>; kind: 'document' | 'bundle'; entry: string; out: string }"
+        type: "{ loaded: LoadedConfig; docs: Array<{ path: string; file: string }>; kind: 'document' | 'bundle'; entry: string; out: string; fetchText: FetchText }"
         required: true
-        description: 読んだ設定、埋める文書のパスと絶対パス、種類、最初に開く文書、出力の HTML の絶対パス
+        description: 読んだ設定、埋める文書のパスと絶対パス、種類、最初に開く文書、出力の HTML の絶対パス、URL を読む関数（`bundleViewer` と共有する `cacheFetchText` の関数）
     returns:
-      type: 'Promise<{ payload: ExportPayload; themeCss?: string; warnings: string[] }>'
-      description: 書き出しの中身・使う側の CSS・警告
+      type: 'Promise<{ payload: ExportPayload; embeds: ViewerEmbeds; themeCss?: string; warnings: string[] }>'
+      description: 書き出しの中身・束ねるモジュールの読み先・使う側の CSS・警告
     unit_tests:
       - name: test_prepare_embeds
         case: 正常
         summary: 印のあるモジュールだけを束ね、拡張と theme を読む
         condition: '`libraries` に `test-lib`（印あり）と `other`（印なし）、`extensions` に 1 つ、`theme` あり'
         mock: 一時フォルダに手元のモジュールを置く
-        expected: '`payload.modules` のキーが `test-lib` だけ、`payload.extensions` が 1 件、`themeCss` があり、`warnings` が空'
+        expected: '`embeds.libraries` のキーが `test-lib` だけ、`embeds.extensions` が拡張の絶対パスの 1 件、`themeCss` があり、`warnings` が空'
       - name: test_prepare_embeds_when_unreadable
         case: 正常
         summary: 読めないものを警告にして続ける
         condition: '`test-lib` が無いファイルを指し、`theme` も無い'
         mock: 一時フォルダ
-        expected: '`payload.modules` が空、`warnings` に `test-lib` と `theme` のパスが入る'
+        expected: '`embeds.libraries` が空、`warnings` に `test-lib` と `theme` のパスが入る'
       - name: test_prepare_embeds_when_index
         case: 正常
         summary: 索引があれば参照の表と docId を入れる
@@ -938,19 +1082,25 @@ functions:
         summary: 文書が使う言語だけ色分けのモジュールを束ね、埋める設定に `syntax` を写さない
         condition: 文書に `ts` のコードブロック。設定の `syntax.url` が一時フォルダの `hl/`
         mock: 一時フォルダの `hl/core.min.js` と `hl/languages/typescript.min.js`・`hl/languages/yaml.min.js` に手元のモジュールを置く
-        expected: '`payload.syntax.core` があり、`payload.syntax.languages` のキーが `typescript` だけ。`payload.config` が `syntax` を持たず、`warnings` が空'
+        expected: '`embeds.syntax.core` が `hl/core.min.js` の絶対パスで、`embeds.syntax.languages` のキーが `typescript` だけ。`payload.config` が `syntax` を持たず、`warnings` が空'
       - name: test_prepare_embeds_when_syntax_unreadable
         case: 正常
         summary: 色分けの本体を束ねられなければ警告にして埋めずに続ける
         condition: 文書に `ts` のコードブロック。設定の `syntax.url` が無いフォルダ `missing/`
         mock: 一時フォルダ
-        expected: '`payload.syntax` が無く、`warnings` に `missing/core.min.js` と `syntax.url` を含む 1 件'
+        expected: '`embeds.syntax` が無く、`warnings` に `missing/core.min.js` と `syntax.url` を含む 1 件'
       - name: test_prepare_embeds_when_syntax_language_unreadable
         case: 正常
         summary: 束ねられない言語だけ埋めずに警告にし、他の言語は埋める
         condition: 文書に `ts` と `yml` のコードブロック。設定の `syntax.url` が一時フォルダの `hl/`
         mock: 一時フォルダの `hl/core.min.js` と `hl/languages/typescript.min.js` だけに手元のモジュールを置き、`yaml.min.js` は置かない
-        expected: '`payload.syntax.languages` のキーが `typescript` だけで、`warnings` に `hl/languages/yaml.min.js` と `syntax.url` を含む 1 件'
+        expected: '`embeds.syntax.languages` のキーが `typescript` だけで、`warnings` に `hl/languages/yaml.min.js` と `syntax.url` を含む 1 件'
+      - name: test_prepare_embeds_when_dynamic_import_left
+        case: 正常
+        summary: 束ねた後に動的 import が残る拡張を入れたうえで警告にする
+        condition: '`extensions` に、`load` の中で `import(name)`（変数を渡す）を書いた拡張 1 つ'
+        mock: 一時フォルダ
+        expected: '`embeds.extensions` が 1 件で、`warnings` に拡張のパスと `動的 import()` を含む 1 件'
       - name: test_prepare_embeds_when_side_toc_mode
         case: 正常
         summary: 設定の `side-toc` を埋める設定に写す
@@ -977,7 +1127,9 @@ functions:
         expected: '`guide_files/` に `demo.mp4` があり、`payload.docs[0].markdown` の `src` がコピーへの相対パスで、`poster` と画像が `data:` URL'
     callees:
       - '#functions[usedLibraryMarks]'
+      - '#functions[usedParts]'
       - '#functions[bundleModule]'
+      - '#functions[hasDynamicImport]'
       - '#functions[inlineImages]'
       - '#functions[readIndexWithDocuments]'
       - '#functions[documentTitle]'
@@ -1018,7 +1170,7 @@ functions:
         case: 正常
         summary: 既定の出力に HTML を書く
         condition: '`file: guide.md`、`--out` 無し'
-        mock: 一時フォルダと、中身を短くした `dist/index.css`・`dist/viewer.js`
+        mock: 一時フォルダと、中身を短くした `dist/index.css`・`startViewer` を export する `dist/viewer.js`・`dist/view.js`
         expected: '0 を返し、`guide.html` があり、標準出力が `書き出した: guide.html`'
       - name: test_run_export_when_document_missing
         case: 異常
@@ -1072,7 +1224,7 @@ functions:
         case: 正常
         summary: 3 つの文書をまとめて build.out に書く
         condition: '`include: ["**/*.md"]` が 3 つに当たる'
-        mock: 一時フォルダと、中身を短くした `dist/index.css`・`dist/viewer.js`
+        mock: 一時フォルダと、中身を短くした `dist/index.css`・`startViewer` を export する `dist/viewer.js`・`dist/view.js`
         expected: '0 を返し、標準出力が `書き出した: dist/docs.html（文書 3 件）`、中身の `docs` が 3 件'
       - name: test_run_build_when_link_outside_bundle
         case: 正常
@@ -1111,8 +1263,8 @@ functions:
     title: 配布物を読む
     container: src/cli/export.ts
     usecase: 共通
-    summary: '`dist/index.css`・`dist/viewer.js`・`dist/view.js` を読み、`bundle` では `dist/viewer.css` を CSS の後ろに足す'
-    description: '`dist/viewer.css` が無いときは足さずに続ける（それ以外の読めない理由はそのまま投げる）。`index.css` か `viewer.js` を読めなければ `CliError`'
+    summary: '`dist/index.css` を読み、`dist/viewer.js`・`dist/view.js` があることを確かめて絶対パスを返し、`bundle` では `dist/viewer.css` を CSS の後ろに足す'
+    description: '`dist/viewer.css` が無いときは足さずに続ける（それ以外の読めない理由はそのまま投げる）。`index.css` を読めないか、`viewer.js`・`view.js` が無ければ `CliError`'
     kind: 関数
     scope: public
     is_async: true
@@ -1123,10 +1275,10 @@ functions:
         description: '`dist/` の場所と書き出しの種類'
     returns:
       type: 'Promise<{ distCss: string; viewer: string; view: string }>'
-      description: 埋める CSS・起動の処理・ビューの部品のモジュール
+      description: 埋める CSS と、起動の処理（`dist/viewer.js`）・ビューの部品のモジュール（`dist/view.js`）の絶対パス
     exceptions:
       - name: CliError
-        condition: '`index.css`・`viewer.js`・`view.js` のどれかを読めない'
+        condition: '`index.css` を読めないか、`viewer.js`・`view.js` が無い'
         message: 配布物を読めません（{理由}）。mdmark を入れ直してください。
     status: planned
     introduced:
@@ -1381,25 +1533,25 @@ functions:
   - name: usedParts
     title: 埋める部品を選ぶ
     container: src/cli/embed.ts
-    summary: 埋める文書にビューの印があれば、書き出しの中身の `parts` に `dist/view.js` のコードを入れた表を返す。`runExport` と `runBuild` が `readDistAssets` の後に呼ぶ
+    summary: 埋める文書にビューの印があれば `true` を返す。`prepareEmbeds` が `embeds.view` に入れる
     kind: 関数
     scope: internal
     args:
       - name: options
-        type: '{ markdowns: string[]; view: string }'
+        type: '{ markdowns: string[] }'
         required: true
-        description: 埋める文書の Markdown と `dist/view.js` のコード
+        description: 埋める文書の Markdown
     returns:
-      type: Partial<Record<"view", string>>
-      description: 埋める部品のコード。印が無ければ空
-    process: 1. `MARK_PATTERN` で印を拾い、閉じでない `view` の印を持つ Markdown が 1 つでもあれば `{ view }` を返す。無ければ `{}`
+      type: boolean
+      description: ビューの部品を束ねるか
+    process: 1. `MARK_PATTERN` で印を拾い、閉じでない `view` の印を持つ Markdown が 1 つでもあれば `true` を返す。無ければ `false`
     unit_tests:
       - name: test_used_parts
         case: 正常
-        summary: ビューの印があるときだけ部品を埋める
+        summary: ビューの印があるときだけ部品を束ねる
         condition: '`<!-- view: group=状態 -->` を持つ文書と、印の無い文書だけ'
         mock: なし
-        expected: '前者は `{ view: "…" }`、後者は `{}`'
+        expected: 前者は `true`、後者は `false`
     refs:
       - dev/設計書/インターフェース定義/ライブラリ本体/文書をHTMLに書き出す.ts#
   - name: exportDocument
@@ -1424,7 +1576,7 @@ functions:
       1. 設定を読む（設定を読んで形を検める）
       2. 文書が無ければ例外にする
       3. 出力のパスを決める。`out` が無ければ文書と同じフォルダの拡張子を `.html` にしたパス
-      4. 埋めるものを用意し、配布物を読み、使う部品を入れて HTML を組み立てて書く（埋めるものを用意する・配布物を読む・HTML を書く）
+      4. URL を読む関数を `cacheFetchText` で作って埋めるものを用意し、配布物を読み、起動の処理と埋めるモジュールを 1 つのスクリプトに束ねて HTML を組み立てて書く（埋めるものを用意する・配布物を読む・起動の処理の入口を作る・起動の処理と埋めるモジュールを束ねる・HTML を書く）
       5. 絶対パス・見せるパス・警告を返す
     exceptions:
       - name: CliError
@@ -1435,7 +1587,7 @@ functions:
         case: 正常
         summary: HTML を書いて絶対パスと警告を返す
         condition: '`file: guide.md`、`out` 無し、文書に読めない画像が 1 つ'
-        mock: 一時フォルダと、中身を短くした `dist/index.css`・`dist/viewer.js`・`dist/view.js`
+        mock: 一時フォルダと、中身を短くした `dist/index.css`・`startViewer` を export する `dist/viewer.js`・`dist/view.js`
         expected: '`out` が `guide.html` の絶対パスでファイルがあり、`display` が `guide.html`、`warnings` が 1 件'
       - name: test_export_document_when_document_missing
         case: 異常
@@ -1448,14 +1600,16 @@ functions:
         case: 異常
         summary: 動画のコピー先へ書けなければ HTML を書かずに CliError
         condition: 文書に `![操作](demo.mp4)`、出力のフォルダに `guide_files` という名前のファイル
-        mock: 一時フォルダと、中身を短くした `dist/index.css`・`dist/viewer.js`・`dist/view.js`
+        mock: 一時フォルダと、中身を短くした `dist/index.css`・`startViewer` を export する `dist/viewer.js`・`dist/view.js`
         expected: '`CliError` を投げ、`guide.html` が無い'
         exception: 設定の誤り・文書が無い・出力先へ書けない
     callees:
       - '#functions[requireConfig]'
       - '#functions[prepareEmbeds]'
       - '#functions[readDistAssets]'
-      - '#functions[usedParts]'
+      - '#functions[cacheFetchText]'
+      - '#functions[createViewerEntry]'
+      - '#functions[bundleViewer]'
       - '#functions[assembleHtml]'
       - '#functions[writeHtml]'
     refs:
@@ -1486,8 +1640,8 @@ functions:
       1. 設定を読み、`build` が無ければ例外にする（設定を読んで形を検める）
       2. まとめる文書を集め、0 件なら例外にする（build の対象の文書を集める）
       3. 最初に開く文書を決め、`build.entry`・`build.glossary` がまとめる文書に当たらないことを警告にする
-      4. 埋めるものを用意し、1 枚に含まれない文書へのリンクを警告に足す（埋めるものを用意する・1 枚に含まれない文書へのリンク）
-      5. 配布物を読み、使う部品を入れて HTML を書く
+      4. URL を読む関数を `cacheFetchText` で作って埋めるものを用意し、1 枚に含まれない文書へのリンクを警告に足す（埋めるものを用意する・1 枚に含まれない文書へのリンク）
+      5. 配布物を読み、起動の処理と埋めるモジュールを 1 つのスクリプトに束ねて HTML を書く（起動の処理の入口を作る・起動の処理と埋めるモジュールを束ねる）
       6. 絶対パス・`build.out`・文書の数・警告を返す
     exceptions:
       - name: CliError
@@ -1498,7 +1652,7 @@ functions:
         case: 正常
         summary: まとめて絶対パスと文書の数を返す
         condition: '`include: ["**/*.md"]` が 2 つに当たり、`out: dist/docs.html`'
-        mock: 一時フォルダと、中身を短くした `dist/index.css`・`dist/viewer.js`・`dist/view.js`
+        mock: 一時フォルダと、中身を短くした `dist/index.css`・`startViewer` を export する `dist/viewer.js`・`dist/view.js`
         expected: '`out` が `dist/docs.html` の絶対パスでファイルがあり、`docs` が 2、`warnings` が空'
       - name: test_build_site_when_entry_outside
         case: 正常
@@ -1517,7 +1671,7 @@ functions:
         case: 正常
         summary: 同じ画像を 1 回だけ埋める
         condition: '`a.md` と `b.md` が同じ `img/a.png` を指す'
-        mock: 一時フォルダと、中身を短くした `dist/index.css`・`dist/viewer.js`・`dist/view.js`
+        mock: 一時フォルダと、中身を短くした `dist/index.css`・`startViewer` を export する `dist/viewer.js`・`dist/view.js`
         expected: 書いた HTML の中の `data:image/png;base64,` が 1 つで、`payload.assets` が 1 件
     callees:
       - '#functions[requireConfig]'
@@ -1525,7 +1679,9 @@ functions:
       - '#functions[findOutsideLinks]'
       - '#functions[prepareEmbeds]'
       - '#functions[readDistAssets]'
-      - '#functions[usedParts]'
+      - '#functions[cacheFetchText]'
+      - '#functions[createViewerEntry]'
+      - '#functions[bundleViewer]'
       - '#functions[assembleHtml]'
       - '#functions[writeHtml]'
     refs:

@@ -30,8 +30,11 @@ const PART_EXPORTS: Readonly<Record<PartName, readonly string[]>> = {
   comments: ["attachComments"],
 };
 
-/** 書き出した HTML の起動の処理が、埋めたコードの `blob:` URL を入れる。無い名前は `PART_MODULE_FILES` を `import.meta.url` から解決する */
-export const partModuleUrls = new Map<PartName, string>();
+/** 書き出した HTML の起動の処理が、同じスクリプトに束ねた部品のモジュールを返す関数を入れる。無い名前は `PART_MODULE_FILES` を `import.meta.url` から解決して読む */
+export const partModuleLoaders = new Map<
+  PartName,
+  () => Promise<Record<string, unknown>>
+>();
 
 /** 部品の名前から読み込みの Promise を引く。ページの中で 1 回だけ読む（失敗も控え、読み直さない） */
 export const partModules = new Map<PartName, Promise<LoadedPart<PartName>>>();
@@ -48,7 +51,7 @@ function withUrl(error: unknown, url: string): Error {
   return new Error(String(error), { cause: url });
 }
 
-/** 部品のモジュールを URL から読み、export の形を確かめて返す */
+/** 部品のモジュールを読み、export の形を確かめて返す。`url` はエラーの `cause` と戻り値に持たせる */
 async function readPartModule(
   name: PartName,
   url: string,
@@ -82,15 +85,23 @@ export function loadPartModule<Name extends PartName>(
   if (loaded !== undefined) {
     return loaded as Promise<LoadedPart<Name>>;
   }
-  const url =
-    partModuleUrls.get(name) ??
-    new URL(`./${PART_MODULE_FILES[name]}`, import.meta.url).href;
-  const loading = readPartModule(name, url, importModule);
+  const loader = partModuleLoaders.get(name);
+  const loading =
+    loader === undefined
+      ? readPartModule(
+          name,
+          new URL(`./${PART_MODULE_FILES[name]}`, import.meta.url).href,
+          importModule,
+        )
+      : readPartModule(name, PART_MODULE_FILES[name], loader);
   partModules.set(name, loading);
   return loading as Promise<LoadedPart<Name>>;
 }
 
-/** 部品のモジュールの URL を差し替える。書き出した HTML の起動の処理が呼ぶ */
-export function setPartModuleUrl(name: PartName, url: string): void {
-  partModuleUrls.set(name, url);
+/** 部品のモジュールの読み込みを、モジュールを返す関数に差し替える。書き出した HTML の起動の処理が呼ぶ */
+export function setPartModuleLoader(
+  name: PartName,
+  loader: () => Promise<Record<string, unknown>>,
+): void {
+  partModuleLoaders.set(name, loader);
 }
