@@ -1,4 +1,5 @@
 import { join } from "node:path";
+import { pathToFileURL } from "node:url";
 import { expect, test, vi } from "vitest";
 import { useTempDirs, writeFiles } from "../../helpers/cli.ts";
 
@@ -25,21 +26,20 @@ test("test_used_library_marks", async () => {
   expect([...marks]).toEqual(["chart"]);
 });
 
-// ビューの印があるときだけ部品を埋める（正常系）
+// ビューの印があるときだけ部品を束ねる（正常系）
 test("test_used_parts", async () => {
   // 準備
   const { usedParts } = await loadEmbed();
-  const viewCode = "export const drawView = () => {};";
   const marked =
     "<!-- view: group=状態 -->\n\n| 題 |\n| --- |\n| a |\n\n<!-- /view -->\n";
   const unmarked =
     "<!-- table: data -->\n\n| 題 |\n| --- |\n| a |\n\n<!-- /table -->\n";
   // 実行
-  const withView = usedParts({ markdowns: [unmarked, marked], view: viewCode });
-  const withoutView = usedParts({ markdowns: [unmarked], view: viewCode });
+  const withView = usedParts({ markdowns: [unmarked, marked] });
+  const withoutView = usedParts({ markdowns: [unmarked] });
   // 検証
-  expect(withView).toEqual({ view: viewCode });
-  expect(withoutView).toEqual({});
+  expect(withView).toBe(true);
+  expect(withoutView).toBe(false);
 });
 
 // 手元のファイルとその import を 1 つに束ねる（正常系）
@@ -304,4 +304,172 @@ test("test_inline_images_when_shared", async () => {
   expect(keyOf(first.markdown)).toBeDefined();
   expect(keyOf(second.markdown)).toBe(keyOf(first.markdown));
   expect(assets.size).toBe(1);
+});
+
+// 残った動的 import を見つけ、無ければ false（正常系）
+test("test_has_dynamic_import", async () => {
+  // 準備
+  const { hasDynamicImport } = await loadEmbed();
+  // 実行・検証
+  expect(hasDynamicImport("a.load=()=>import(n)")).toBe(true);
+  expect(hasDynamicImport("import (n)")).toBe(true);
+  expect(hasDynamicImport("const x=1")).toBe(false);
+});
+
+// 同じ URL を 1 回だけ読む（正常系）
+test("test_cache_fetch_text", async () => {
+  // 準備
+  const { cacheFetchText } = await loadEmbed();
+  const fetchText = vi.fn(async (url: string) => `本文:${url}`);
+  const cached = cacheFetchText(fetchText);
+  // 実行
+  const first = await cached("https://cdn.example/a.js");
+  const second = await cached("https://cdn.example/a.js");
+  const other = await cached("https://cdn.example/b.js");
+  // 検証
+  expect(fetchText).toHaveBeenCalledTimes(2);
+  expect(second).toBe(first);
+  expect(other).toBe("本文:https://cdn.example/b.js");
+});
+
+// 部品と色分けを静的に、外部ライブラリと拡張を関数で取り込む（正常系）
+test("test_create_viewer_entry", async () => {
+  // 準備
+  const { createViewerEntry } = await loadEmbed();
+  // 実行
+  const source = createViewerEntry({
+    viewer: "/w/dist/viewer.js",
+    view: "/w/dist/view.js",
+    embeds: {
+      view: true,
+      libraries: { chart: "https://cdn.example/chart.js" },
+      extensions: ["/w/ext.js"],
+      syntax: {
+        core: "/w/hl/core.min.js",
+        languages: { typescript: "/w/hl/languages/typescript.min.js" },
+      },
+    },
+  });
+  // 検証
+  const staticImports = [
+    ...source.matchAll(/^import\s.*from\s*"([^"]+)"/gm),
+  ].map((match) => match[1]);
+  expect(staticImports).toEqual(
+    expect.arrayContaining([
+      "/w/dist/viewer.js",
+      "/w/dist/view.js",
+      "/w/hl/core.min.js",
+      "/w/hl/languages/typescript.min.js",
+    ]),
+  );
+  expect(source).toContain('() => import("https://cdn.example/chart.js")');
+  expect(source).toContain('() => import("/w/ext.js")');
+  expect(staticImports).not.toContain("https://cdn.example/chart.js");
+  expect(staticImports).not.toContain("/w/ext.js");
+  expect(source.match(/startViewer\(document,/g)).toHaveLength(1);
+});
+
+// 埋めるものが無ければ起動の処理だけを取り込む（正常系）
+test("test_create_viewer_entry_when_nothing_embedded", async () => {
+  // 準備
+  const { createViewerEntry } = await loadEmbed();
+  // 実行
+  const source = createViewerEntry({
+    viewer: "/w/dist/viewer.js",
+    view: "/w/dist/view.js",
+    embeds: { view: false, libraries: {}, extensions: [] },
+  });
+  // 検証
+  const imports = source.match(/^import\s/gm) ?? [];
+  expect(imports).toHaveLength(1);
+  expect(source).toMatch(
+    /^import\s.*startViewer.*from\s*"\/w\/dist\/viewer\.js"/m,
+  );
+  expect(source).toContain("parts: {}");
+  expect(source).not.toContain("syntax");
+});
+
+/** startViewer を export する起動の処理と、load の中で ./part.js を動的 import で読む拡張を置く */
+async function writeViewerFixture(
+  dir: string,
+  extension: string,
+): Promise<void> {
+  await writeFiles(dir, {
+    "viewer.js":
+      "export function startViewer(doc, embedded) { globalThis.__embedded = embedded; }\n",
+    "ext.js": extension,
+    "part.js": 'export const partMarker = "part-module-marker";\n',
+  });
+}
+
+/** viewer.js を静的に、ext.js を関数で取り込む入口 */
+function fixtureEntry(dir: string): string {
+  return [
+    `import { startViewer } from ${JSON.stringify(join(dir, "viewer.js"))};`,
+    `startViewer(document, { parts: {}, libraries: {}, extensions: [() => import(${JSON.stringify(join(dir, "ext.js"))})] });`,
+  ].join("\n");
+}
+
+// 入口と関数で取り込んだモジュールを 1 つに束ね、動的 import を残さない（正常系）
+test("test_bundle_viewer", async () => {
+  // 準備
+  const { bundleViewer } = await loadEmbed();
+  const dir = await createTempDir();
+  await writeViewerFixture(
+    dir,
+    'export default { name: "ext", load: () => import("./part.js") };\n',
+  );
+  // 実行
+  const script = await bundleViewer({
+    entry: fixtureEntry(dir),
+    baseDir: dir,
+    fetchText: vi.fn(),
+  });
+  // 検証
+  expect(script).not.toContain("import(");
+  expect(script).not.toContain('from"');
+  expect(script).toContain("part-module-marker");
+});
+
+// </script を替えて返す（正常系）
+test("test_bundle_viewer_when_script_close", async () => {
+  // 準備
+  const { bundleViewer } = await loadEmbed();
+  const dir = await createTempDir();
+  await writeViewerFixture(
+    dir,
+    '/*! </SCRIPT> */\nexport default { name: "ext", load: async () => ({}) };\n',
+  );
+  // 実行
+  const script = await bundleViewer({
+    entry: fixtureEntry(dir),
+    baseDir: dir,
+    fetchText: vi.fn(),
+  });
+  // 検証
+  expect(script).not.toMatch(/<\/script/i);
+  expect(script).toContain("<\\/SCRIPT>");
+});
+
+// <!-- を替え、評価した文字列は元と同じ（正常系）
+test("test_bundle_viewer_when_html_comment_open", async () => {
+  // 準備
+  const { bundleViewer } = await loadEmbed();
+  const dir = await createTempDir();
+  await writeFiles(dir, {
+    "ext.js": 'export const value = "<!-- <script>";\n',
+  });
+  // 実行
+  const script = await bundleViewer({
+    entry: `export { value } from ${JSON.stringify(join(dir, "ext.js"))};`,
+    baseDir: dir,
+    fetchText: vi.fn(),
+  });
+  // 検証
+  expect(script).not.toContain("<!--");
+  await writeFiles(dir, { "out.mjs": script });
+  const evaluated = (await import(
+    /* @vite-ignore */ pathToFileURL(join(dir, "out.mjs")).href
+  )) as { value: string };
+  expect(evaluated.value).toBe("<!-- <script>");
 });

@@ -641,26 +641,6 @@ test("test_find_too_large_outputs_when_unsized", async () => {
   expect(tooLarge).toEqual([]);
 });
 
-// esbuild が替えた形は通す（正常系）
-test("test_assert_no_script_close", async () => {
-  // 準備
-  const { assertNoScriptClose } = await loadBuild();
-  // 実行・検証
-  expect(() =>
-    assertNoScriptClose('const t="<\\/SCRIPT>"', "dist/viewer.js"),
-  ).not.toThrow();
-});
-
-// 大文字を含む </script の並びを拒む（異常系）
-test("test_assert_no_script_close_when_found", async () => {
-  // 準備
-  const { assertNoScriptClose } = await loadBuild();
-  // 実行・検証
-  expect(() => assertNoScriptClose("x</SCRIPT>y", "dist/viewer.js")).toThrow(
-    /dist\/viewer\.js[\s\S]*<\/script/,
-  );
-});
-
 const execFileAsync = promisify(execFile);
 
 // 公開の型を使う側のファイル
