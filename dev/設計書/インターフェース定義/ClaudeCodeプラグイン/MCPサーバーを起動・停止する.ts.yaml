@@ -130,6 +130,8 @@ constraints:
     constraint: '`initialize` の `instructions` に、使う場面と順序を事実の文で記載する。mdmark の記法・部品・図の書き方は使い方集として dev-docs の配信元 `mdmark` にあり、文書を書く前に dev-docs の `search_docs` で `source: "mdmark"` の `kind` が `docs` の文書をタグ `topic:使い方集` で絞って一覧を引き、当てはまるページを `view: "full"` で読むこと（作業場所が mdmark の外なら `outside_scope: true`）。dev-docs が無い、または配信元 `mdmark` が登録されていないときは「dev-docs が無いので見つかりません」であること。書いた後は `check` で点検し、図は使い方集の『描いた図を確かめる』の手順で確かめること。書き出しは `export_html`、まとめは `build_site` であること。記法を使わない Markdown の編集とコードの調査には要らないこと'
     decided_by: dev/設計書/外部ライブラリ/ClaudeCode#limitations[MCP の instructions の文字数]
     notes: 4,096 文字以下。使い方集の選び方（最初に『文書の書き方』を読む等）は配信元の説明書（`dev-docs.yaml` の `instructions`）に置き、同じ文を instructions に置かない
+  - item: ツールのログ
+    constraint: ツールの処理が想定しない例外で止まったときは、標準エラーにツール名と例外のメッセージとスタックを書き、その呼び出しを `isError` にして例外のメッセージを返す。サーバーは止めない
   - item: ログ
     constraint: 起動したときに待ち受ける URL を標準出力に 1 行出す
 refs:

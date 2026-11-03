@@ -58,22 +58,22 @@ catalogs:
         kind: ファイル
         purpose: プラグインのフックの定義
         params:
-          - name: hooks.SessionStart[].hooks[].type
+          - name: hooks.PreToolUse[].hooks[].type
             type: "'command'"
             required: true
             description: コマンドを流すフック
-          - name: hooks.SessionStart[].hooks[].command
+          - name: hooks.PreToolUse[].hooks[].command
             type: string
             required: true
             description: 流すコマンド
-          - name: hooks.SessionStart[].hooks[].args
+          - name: hooks.PreToolUse[].hooks[].args
             type: string[]
             required: false
             description: 引数。`${CLAUDE_PLUGIN_ROOT}` が展開される
           - name: hooks.PreToolUse[].matcher
             type: string
             required: false
-            description: フックを流すツール名の正規表現。MCP のツールは `mcp__plugin_{プラグイン}_{サーバー}__{ツール}` の完全名で当てる。`hooks[]` は SessionStart と同じ形
+            description: フックを流すツール名の正規表現。MCP のツールは `mcp__plugin_{プラグイン}_{サーバー}__{ツール}` の完全名で当てる
       - name: package.json・package-lock.json
         kind: ファイル
         purpose: プラグインの実行時の依存。導入時に Claude Code が入れる
@@ -93,18 +93,6 @@ catalogs:
   - name: フックの出力
     version: 2.1.309
     entries:
-      - name: hookSpecificOutput.additionalContext
-        kind: JSON のキー
-        purpose: SessionStart のフックが標準出力に書く JSON で、セッションの文脈に加わる文
-        params:
-          - name: hookSpecificOutput.hookEventName
-            type: "'SessionStart'"
-            required: true
-            description: フックの種類
-          - name: hookSpecificOutput.additionalContext
-            type: string
-            required: true
-            description: 文脈に加える文
       - name: hookSpecificOutput.updatedInput
         kind: JSON のキー
         purpose: PreToolUse のフックが標準出力に書く JSON で、ツールに渡す引数を置き換える。`permissionDecision` を書かなければ許可の判定は変わらない
@@ -145,11 +133,6 @@ install: |-
   /plugin install mdmark@mdmark
   ```
 limitations:
-  - item: additionalContext の文字数
-    content: 10,000 文字を超えると先頭 2,000 文字だけが渡る
-  - item: MCP サーバーの接続の待ち
-    content: '`MCP_TIMEOUT`（既定 30 秒）のうちに接続しないとサーバーを使えない'
-    notes: PoC で `npx github:` で CLI を取る形は空の npm のキャッシュから 53 秒かかった
   - item: MCP の instructions の文字数
     content: '4,096 文字を超えた分は切られる。v2.1.296 より前は 2,048 文字。`CLAUDE_CODE_MAX_MCP_DESCRIPTION_LENGTH` で変えられる'
     notes: '[MCP](https://code.claude.com/docs/en/mcp) の「For MCP server authors」'
