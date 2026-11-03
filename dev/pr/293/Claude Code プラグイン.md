@@ -18,7 +18,7 @@
 | ドキュメント | [dev/設計書/外部ライブラリ/ClaudeCode.yaml](https://github.com/shuhei1101/mdmark/blob/develop/dev/%E8%A8%AD%E8%A8%88%E6%9B%B8/%E5%A4%96%E9%83%A8%E3%83%A9%E3%82%A4%E3%83%96%E3%83%A9%E3%83%AA/ClaudeCode.yaml) | プラグインの導入・SessionStart のフック | SessionStart のフックの記述を削除 |
 | ドキュメント | [dev/設計書/外部ライブラリ/dev-docs.yaml](https://github.com/shuhei1101/mdmark/blob/chore/plugin/guide-dev-docs-source/dev/%E8%A8%AD%E8%A8%88%E6%9B%B8/%E5%A4%96%E9%83%A8%E3%83%A9%E3%82%A4%E3%83%96%E3%83%A9%E3%83%AA/dev-docs.yaml)（新規） | dev-docs の端末の設定・配信元の設定・`search_docs` | 使い方集を参照する先として採用する |
 | 実装 | [src/plugin/guide.ts](https://github.com/shuhei1101/mdmark/blob/develop/src/plugin/guide.ts) | 使い方集の索引の検査と読み取り・本文の読み取り・近い名前 | 本文の読み取りと近い名前を削除 |
-| 実装 | [src/plugin/tools.ts](https://github.com/shuhei1101/mdmark/blob/develop/src/plugin/tools.ts) | `read_guide`・`export_html`・`build_site`・`check` の定義と処理 | `read_guide` を削除 |
+| 実装 | [src/plugin/tools.ts](https://github.com/shuhei1101/mdmark/blob/develop/src/plugin/tools.ts) | `read_guide`・`export_html`・`build_site`・`check` の定義と処理 | `read_guide` と、全てのツールが `true` になる `usesProjectDir` を削除 |
 | 実装 | [src/plugin/mcp.ts](https://github.com/shuhei1101/mdmark/blob/develop/src/plugin/mcp.ts) | MCP サーバーの組み立てと `INSTRUCTIONS` | instructions を書き換え |
 | 実装 | [src/plugin/session-start.ts](https://github.com/shuhei1101/mdmark/blob/develop/src/plugin/session-start.ts) | SessionStart のフックの入口 | 削除 |
 | 実装 | [scripts/build-plugin.ts](https://github.com/shuhei1101/mdmark/blob/develop/scripts/build-plugin.ts) | プラグインのビルド | 変更 |
@@ -59,6 +59,7 @@
 | 単一ユースケース設計 | `e944c524..c34f67b8` | - |
 | インターフェース定義設計 | `c34f67b8..b3f44101` | - |
 | インターフェース定義設計 | `e48f30bf..387b9f63` | レビューの指摘の修正 |
+| モジュール構成設計 | `8d81e7de..df58aa0d` | - |
 
 ## テスト結果
 
