@@ -316,7 +316,8 @@ test("test_build_footnote_list", () => {
   expect(list.startsWith('<details class="mdmark-footnotes">')).toBe(true);
   expect(innerHtml(list, "<summary")).toBe("脚注（1 件）");
   const listAt = html.indexOf(list);
-  expect(html.lastIndexOf("</section>")).toBeLessThan(listAt);
+  // 一覧は節の中身（div.mdmark-section-body）の外に置く
+  expect(html.slice(0, listAt).endsWith("</div>")).toBe(true);
   expect(html.indexOf("mdmark-backlinks")).toBeGreaterThan(listAt);
   expect(html).not.toContain("data-mdmark-own");
   expect(list).toContain('id="mdmark-fn-1"');
@@ -357,9 +358,9 @@ test("test_take_footnote_definitions_when_heading", () => {
   // 実行
   const { html } = renderDoc(markdown);
   // 検証
-  expect(matches(html, /<section\b/g)).toHaveLength(1);
-  expect(matches(html, /<\/section>/g)).toHaveLength(1);
+  // 節は本文の見出しの 1 つだけで、一覧はその節の中身の外に置く
+  expect(matches(html, /class="mdmark-section-body"/g)).toHaveLength(1);
   const listAt = html.indexOf('<details class="mdmark-footnotes"');
-  expect(html.lastIndexOf("</section>")).toBeLessThan(listAt);
+  expect(html.slice(0, listAt).endsWith("</div>")).toBe(true);
   expect(byId(html, "mdmark-fn-1")).toContain("定義の見出し");
 });
