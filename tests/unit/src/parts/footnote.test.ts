@@ -83,7 +83,11 @@ test("test_render_footnotes", async () => {
         html: "<p>CSS 変数と層の外の CSS で上書きする。</p>",
         refCount: 1,
       },
-      { number: 2, html: "<p>file:// で開き、外への要求は 0 件。</p>", refCount: 1 },
+      {
+        number: 2,
+        html: "<p>file:// で開き、外への要求は 0 件。</p>",
+        refCount: 1,
+      },
     ],
   });
   // 検証
@@ -133,7 +137,9 @@ test("test_render_footnotes_when_referenced_twice", async () => {
   const texts = html
     .split('<a class="mdmark-fn-back"')
     .slice(1)
-    .map((part) => plainText(part.slice(part.indexOf(">") + 1).split("</a>")[0] ?? ""));
+    .map((part) =>
+      plainText(part.slice(part.indexOf(">") + 1).split("</a>")[0] ?? ""),
+    );
   expect(texts).toEqual(["a", "b"]);
 });
 

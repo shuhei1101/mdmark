@@ -58,7 +58,10 @@ test("test_use_footnotes", () => {
   const firstTip = findTag(html, 'id="mdmark-fn-tip-1-0"');
   expect(firstTip).toContain('role="group"');
   expect(firstTip).toContain('aria-label="脚注 1"');
-  const firstBodies = findTags(byId(html, "mdmark-fn-tip-1-0"), "mdmark-fn-tip-body");
+  const firstBodies = findTags(
+    byId(html, "mdmark-fn-tip-1-0"),
+    "mdmark-fn-tip-body",
+  );
   expect(firstBodies).toHaveLength(2);
   expect(byId(html, "mdmark-fn-tip-1-0")).toContain(
     '<a href="https://example.com">詳しく</a>',
@@ -99,9 +102,7 @@ test("test_read_footnote_definition", () => {
   const { html } = renderDoc(markdown);
   // 検証
   const tip = byId(html, "mdmark-fn-tip-1-0");
-  expect(
-    findTags(tip, "mdmark-fn-tip-body").length,
-  ).toBe(2);
+  expect(findTags(tip, "mdmark-fn-tip-body").length).toBe(2);
   expect(plainText(tip)).toBe("脚注 11 段落目2 段落目");
   const item = byId(html, "mdmark-fn-1");
   expect(matches(item, /<p>/g)).toHaveLength(2);

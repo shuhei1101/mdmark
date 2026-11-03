@@ -70,7 +70,9 @@ test("test_attach_footnotes_when_jump", async () => {
   const hash = location.hash;
   const ref = root.querySelector<HTMLElement>(".mdmark-fn-ref");
   const link = root.querySelector<HTMLElement>(".mdmark-fn-link");
-  const list = root.querySelector<HTMLDetailsElement>("details.mdmark-footnotes");
+  const list = root.querySelector<HTMLDetailsElement>(
+    "details.mdmark-footnotes",
+  );
   const item = root.querySelector<HTMLElement>(".mdmark-fn-item");
   const back = root.querySelector<HTMLElement>(".mdmark-fn-back");
   // 実行
@@ -110,7 +112,11 @@ test("test_attach_footnotes_unique_ids", async () => {
     const back = root.querySelector(".mdmark-fn-back");
     const describedBy = link?.getAttribute("aria-describedby") ?? "";
     expect(document.getElementById(describedBy)).toBe(tip);
-    expect(document.getElementById(link?.getAttribute("href")?.slice(1) ?? "")).toBe(item);
-    expect(document.getElementById(back?.getAttribute("href")?.slice(1) ?? "")).toBe(link);
+    expect(
+      document.getElementById(link?.getAttribute("href")?.slice(1) ?? ""),
+    ).toBe(item);
+    expect(
+      document.getElementById(back?.getAttribute("href")?.slice(1) ?? ""),
+    ).toBe(link);
   }
 });
