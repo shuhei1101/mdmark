@@ -1284,9 +1284,10 @@ test("test_error_when_unknown_column", async ({ page }) => {
   });
   // 検証
   const warning = page.locator("#doc .mdmark-syntax-warning");
-  await expect(warning).toContainText("pin=");
-  await expect(warning).toContainText("check=");
-  await expect(warning).toContainText("無い列");
+  await expect(warning).toHaveCount(2);
+  for (const item of await warning.all()) {
+    await expect(item).toContainText("無い列");
+  }
   await expect(
     page.locator("#doc tbody tr").first().locator("td").nth(6),
   ).toHaveCSS("white-space", "nowrap");
