@@ -927,7 +927,7 @@
     figure.dataset.kind = def.kind;
     // グループのタイトルを上端に留めるか（定義の stickyTitles: false で切る）
     figure.dataset.stickyTitles = def.stickyTitles === false ? "off" : "on";
-    // リサイズハンドル: 文書の中の図だけに置く（全画面のモーダルの中と、機能をオフにした文書には置かない）
+    // リサイズハンドル: 文書の中の図だけに置く（全画面のモーダルの中と、機能をオフにした文書には置かない）。高さを ↑↓ で変える区切りとして role="separator" にし、今の高さを aria-valuenow で伝える
     const resizable = !modal && !figure.closest('[data-mock-resize="off"]');
     const legend = legendItems(def, fid);
     figure.innerHTML = `
@@ -940,7 +940,7 @@
         <div class="mdmark-diagram-viewport" tabindex="0" role="group" aria-roledescription="図" aria-labelledby="${fid}-title" aria-keyshortcuts="+ - 0 ArrowLeft ArrowUp ArrowDown ArrowRight">
           <div class="mdmark-diagram-sizer"><div class="mdmark-diagram-stage" style="width:${body.width}px;height:${body.height}px">${body.html}</div></div>
         </div>
-        ${resizable ? `<button class="mdmark-diagram-resize" type="button" aria-label="「${esc(def.title)}」の表示の高さ" aria-keyshortcuts="ArrowUp ArrowDown" title="ドラッグか ↑ ↓ で高さを変える。ダブルクリックで元の高さに戻す">${icon("grip")}</button>` : ""}
+        ${resizable ? `<div class="mdmark-diagram-resize" role="separator" tabindex="0" aria-orientation="horizontal" aria-label="「${esc(def.title)}」の表示の高さ" aria-keyshortcuts="ArrowUp ArrowDown" title="ドラッグか ↑ ↓ で高さを変える。ダブルクリックで元の高さに戻す">${icon("grip")}</div>` : ""}
         ${tips.list.map((t) => `<div class="mdmark-diagram-tip" id="${t.id}" role="tooltip" data-tip-for="${esc(t.label)}" hidden>${t.html}</div>`).join("")}
       </div>
       <ul class="mdmark-diagram-legend" aria-label="凡例"${legend.length ? "" : " hidden"}>${legend.join("")}</ul>
@@ -999,6 +999,16 @@
     };
     viewport.addEventListener("scroll", stickHeads, { passive: true });
 
+    /** リサイズハンドルの今の高さ・最小・最大（px）を読み上げに伝える。 */
+    const handleEl = figure.querySelector(".mdmark-diagram-resize");
+    const updateHandle = () => {
+      if (!handleEl) return;
+      const max = Math.round(state.height * Math.max(state.scale, Math.min(1, viewport.clientWidth / state.width)));
+      handleEl.setAttribute("aria-valuemin", String(RESIZE_MIN_PX));
+      handleEl.setAttribute("aria-valuemax", String(Math.max(RESIZE_MIN_PX, max)));
+      handleEl.setAttribute("aria-valuenow", String(Math.round(viewport.offsetHeight)));
+    };
+
     /** グループ（システムの枠・層）のタイトルを、グループが表示枠に見えている間だけ上端に留める。システムの枠のタイトルの下に層のタイトルを重ねる。 */
     const stickies = figure.dataset.stickyTitles === "off" ? [] : [...figure.querySelectorAll("[data-sticky-top]")];
     const stickTitles = () => {
@@ -1028,6 +1038,7 @@
       sizer.style.height = `${state.height * scale}px`;
       stickHeads();
       stickTitles();
+      updateHandle();
       // 今の倍率のボタン: 全体が収まる倍率を 100% とした倍率を出し、押すと開いたときの倍率と位置に戻ることを読み上げの名前に書く
       zoomText.textContent = `${Math.round((scale / state.fit) * 100)}%`;
       zoomText.setAttribute("aria-label", `倍率 ${zoomText.textContent}。全体が収まる倍率に戻す`);
@@ -1154,11 +1165,12 @@
       viewport.style.maxHeight = "none";
       viewport.style.height = `${state.userHeight}px`;
       sessionStorage.setItem(heightKey, String(state.userHeight));
-      if (state.atFit) reset();
-      else {
-        state.fit = fitScale();
-        apply(Math.max(state.fit, state.scale));
-      }
+
+      // 今の倍率のまま見える範囲だけを広げ、全体が収まる倍率（0 と倍率の表示で戻る倍率）は変えた高さで計算し直す
+      state.fit = fitScale();
+      state.atFit = false;
+      apply(Math.max(state.fit, state.scale));
+      updateHandle();
     };
     if (handle) {
       const saved = Number(figure.dataset.mockHeight ?? sessionStorage.getItem(heightKey));

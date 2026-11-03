@@ -601,6 +601,7 @@
       z-index: 3;
       display: grid;
       place-items: center;
+      box-sizing: border-box;
       width: 28px;
       height: 16px;
       padding: 0;
