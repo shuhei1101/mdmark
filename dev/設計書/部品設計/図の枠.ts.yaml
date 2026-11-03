@@ -97,6 +97,10 @@ events:
     value: '`dialog` の `open`'
     description: '`mount` が `modal` を `true` にした枠を `dialog` に描いて開き、閉じたら消して全画面のボタンへフォーカスを戻す'
 css_properties:
+  - name: --mdmark-color-bg-opaque
+    syntax: <color>
+    default: var(--mdmark-color-bg)
+    description: 右上のボタンと全画面のモーダルの地の色
   - name: --mdmark-diagram-max-height
     syntax: <length>
     default: 36rem

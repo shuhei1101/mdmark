@@ -54,9 +54,9 @@ events:
     value: ボタンの `aria-pressed`
     description: '`mount` が `paused` を切り替える'
 css_properties:
-  - name: --mdmark-color-bg
+  - name: --mdmark-color-bg-opaque
     syntax: <color>
-    default: '#ffffff（ダーク #111113）'
+    default: var(--mdmark-color-bg)
     description: ボタンの地の色
   - name: --mdmark-color-border
     syntax: <color>

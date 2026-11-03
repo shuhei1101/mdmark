@@ -102,6 +102,10 @@ events:
     value: ボタンの `data-fold-all`（`open` / `close`）
     description: '`mount` が文書の全ての節を開く。折りたたむときは h1 の節を開き、h2〜h4 の節を閉じる'
 css_properties:
+  - name: --mdmark-color-bg-opaque
+    syntax: <color>
+    default: var(--mdmark-color-bg)
+    description: 目次を出すボタンと目次のパネル（狭い幅の目次を含む）の地の色
   - name: --mdmark-color-link
     syntax: <color>
     default: '#0f766e（ダーク #2dd4bf）'
