@@ -74,10 +74,11 @@ test("test_mount_when_view_marked", async () => {
     await loadPartModules();
   partModules.clear();
   partModuleLoaders.clear();
-  moduleUrl = URL.createObjectURL(
+  const url = URL.createObjectURL(
     new Blob([VIEW_MODULE_CODE], { type: "text/javascript" }),
   );
-  setPartModuleLoader("view", () => import(/* @vite-ignore */ moduleUrl));
+  moduleUrl = url;
+  setPartModuleLoader("view", () => import(/* @vite-ignore */ url));
   const el = document.createElement("div");
   document.body.append(el);
   elements.push(el);
@@ -118,10 +119,11 @@ test("test_mount_when_comments_without_side_toc", async () => {
     await loadPartModules();
   partModules.clear();
   partModuleLoaders.clear();
-  moduleUrl = URL.createObjectURL(
+  const url = URL.createObjectURL(
     new Blob([COMMENTS_MODULE_CODE], { type: "text/javascript" }),
   );
-  setPartModuleLoader("comments", () => import(/* @vite-ignore */ moduleUrl));
+  moduleUrl = url;
+  setPartModuleLoader("comments", () => import(/* @vite-ignore */ url));
   const el = document.createElement("div");
   document.body.append(el);
   elements.push(el);
