@@ -227,3 +227,146 @@ test("test_render_code_copy", async () => {
     expect(findTag(html, "mdmark-code-status")).toContain('role="status"');
   }
 });
+
+/** 部品設計『コードブロック』の `Foldable` の行（`foldedLine` の行番号の行だけ `folded`） */
+function foldableLines(foldedLine?: number) {
+  const lines = [
+    { text: "export function mount(element, markdown, options = {}) {", foldLines: 10 },
+    { text: "  const config = withDefaults(options);", indent: 1 },
+    { text: "  for (const block of parse(markdown)) {", indent: 1, foldLines: 4 },
+    { text: '    if (block.kind === "table") {', indent: 2, foldLines: 1 },
+    { text: "      attachTable(block, config.features);", indent: 3 },
+    { text: "    }", indent: 2 },
+    { text: "    element.append(render(block));", indent: 2 },
+    { text: "  }", indent: 1 },
+    { text: "  return () => {", indent: 1, foldLines: 1 },
+    { text: "    element.replaceChildren();", indent: 2 },
+    { text: "  };", indent: 1 },
+    { text: "}" },
+  ];
+  return lines.map((line, index) =>
+    index + 1 === foldedLine ? { ...line, folded: true } : line,
+  );
+}
+
+/** HTML の `mdmark-code-line` を、行ごとの開始タグから次の行の手前までの文字列にして返す */
+function codeLinesOf(html: string): string[] {
+  const parts = html.split('<span class="mdmark-code-line"').slice(1);
+  return parts.map((part) => `<span class="mdmark-code-line"${part}`);
+}
+
+// focus・error・warning の行に種類を付ける（正常系）
+test("test_render_code_block_when_line_kinds", async () => {
+  // 準備
+  const { renderCodeBlock } = await loadCodeBlock();
+  // 実行
+  const html = renderCodeBlock({
+    language: "ts",
+    title: "",
+    lineNumbers: false,
+    lines: [
+      { text: "a();", kind: "focus" },
+      { text: "b();", kind: "error" },
+      { text: "c();", kind: "warning" },
+      { text: "d();" },
+    ],
+  });
+  // 検証
+  const pre = findTag(html, "<pre");
+  expect(pre).toContain("mdmark-code-lines");
+  expect(pre).toContain("mdmark-code-has-focus");
+  const lines = findTags(html, 'class="mdmark-code-line"');
+  expect(lines.map((tag) => /data-kind="([^"]*)"/.exec(tag)?.[1])).toEqual([
+    "focus",
+    "error",
+    "warning",
+    undefined,
+  ]);
+});
+
+// インデントと畳む行の属性を行に付ける（正常系）
+test("test_render_code_block_when_indented", async () => {
+  // 準備
+  const { renderCodeBlock } = await loadCodeBlock();
+  // 実行
+  const html = renderCodeBlock({
+    language: "ts",
+    title: "",
+    lineNumbers: true,
+    lines: foldableLines(),
+  });
+  // 検証
+  const lines = findTags(html, 'class="mdmark-code-line"');
+  expect(lines).toHaveLength(12);
+  expect(lines[1]).toContain('data-indent="1"');
+  expect(lines[0]).toContain('data-fold-lines="10"');
+  expect(lines[2]).toContain('data-fold-lines="4"');
+  expect(html).not.toContain("mdmark-code-fold");
+});
+
+// 畳んだ行の後ろを隠し、開閉のボタンと ⋯ を置く（正常系）
+test("test_render_code_block_when_fold_buttons", async () => {
+  // 準備
+  const { renderCodeBlock } = await loadCodeBlock();
+  // 実行
+  const html = renderCodeBlock({
+    language: "ts",
+    title: "",
+    lineNumbers: true,
+    lines: foldableLines(3),
+    foldButtons: true,
+  });
+  // 検証
+  const lines = codeLinesOf(html);
+  expect(lines).toHaveLength(12);
+  const third = lines[2] ?? "";
+  expect(findTag(third, 'class="mdmark-code-fold"')).toContain('aria-expanded="false"');
+  expect(third).toContain("mdmark-code-fold-more");
+  for (const line of lines.slice(3, 7)) {
+    expect(findTag(line, 'class="mdmark-code-line"')).toMatch(/\shidden\b/);
+  }
+  expect(findTag(lines[7] ?? "", 'class="mdmark-code-line"')).not.toMatch(/\shidden\b/);
+  const toggles = findTags(html, 'class="mdmark-code-fold"');
+  const others = toggles.filter((tag) => !tag.includes('aria-expanded="false"'));
+  expect(toggles.length).toBeGreaterThan(1);
+  expect(others).toHaveLength(toggles.length - 1);
+  for (const tag of others) {
+    expect(tag).toContain('aria-expanded="true"');
+  }
+});
+
+// 開閉の状態と範囲を読み上げの名前に持つ（正常系）
+test("test_render_code_fold_toggle", async () => {
+  // 準備
+  const { renderCodeFoldToggle } = await loadCodeBlock();
+  // 実行
+  const html = renderCodeFoldToggle({
+    expanded: false,
+    from: 4,
+    to: 7,
+    controls: "c-4 c-5 c-6 c-7",
+  });
+  // 検証
+  const button = findTag(html, "<button");
+  expect(button).toContain('class="mdmark-code-fold"');
+  expect(button).toContain('type="button"');
+  expect(button).toContain('aria-expanded="false"');
+  expect(button).toContain('aria-label="4 行目から 7 行目"');
+  expect(button).toContain('aria-controls="c-4 c-5 c-6 c-7"');
+  expect(html).toContain("<svg");
+  expect(html).toContain("chevron-right");
+});
+
+// 開く範囲を読み上げの名前に持つ（正常系）
+test("test_render_code_fold_more", async () => {
+  // 準備
+  const { renderCodeFoldMore } = await loadCodeBlock();
+  // 実行
+  const html = renderCodeFoldMore({ from: 4, to: 7 });
+  // 検証
+  const button = findTag(html, "<button");
+  expect(button).toContain('class="mdmark-code-fold-more"');
+  expect(button).toContain('type="button"');
+  expect(button).toContain('aria-label="4 行目から 7 行目を展開"');
+  expect(html).toContain("⋯");
+});

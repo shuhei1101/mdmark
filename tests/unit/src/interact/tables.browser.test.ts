@@ -461,7 +461,7 @@ test("test_row_id_from_hash", async () => {
   expect(ids).toEqual(["みかん", "みかん", "%E3%81", ""]);
 });
 
-// 3 回の押下で昇順・降順・元の並びになる（正常系）
+// 3 回の押下で降順・昇順・元の並びになる（正常系）
 test("test_attach_tables_when_sorted", async () => {
   // 準備
   const { attachTables } = await loadTables();
@@ -471,11 +471,11 @@ test("test_attach_tables_when_sorted", async () => {
   const button = header?.querySelector<HTMLButtonElement>("button.mdmark-sort");
   // 実行・検証
   button?.click();
-  expect(columnTexts(root, 1)).toEqual(["2", "10", "33"]);
-  expect(header?.getAttribute("aria-sort")).toBe("ascending");
-  button?.click();
   expect(columnTexts(root, 1)).toEqual(["33", "10", "2"]);
   expect(header?.getAttribute("aria-sort")).toBe("descending");
+  button?.click();
+  expect(columnTexts(root, 1)).toEqual(["2", "10", "33"]);
+  expect(header?.getAttribute("aria-sort")).toBe("ascending");
   button?.click();
   expect(columnTexts(root, 1)).toEqual(["10", "2", "33"]);
   expect(header?.hasAttribute("aria-sort")).toBe(false);
@@ -507,9 +507,9 @@ test("test_attach_tables_when_filtered", async () => {
   // 実行・検証: 候補を選ぶ
   findCheckbox(drawer, "りんご").click();
   expect(bodyRows(root).filter((row) => !row.hidden)).toHaveLength(1);
-  // 実行・検証: 絞り込みを外す
+  // 実行・検証: 絞り込みを解除
   const clear = [...drawer.querySelectorAll("button")].find((button) =>
-    button.textContent?.includes("絞り込みを外す"),
+    button.textContent?.includes("絞り込みを解除"),
   );
   clear?.click();
   expect(bodyRows(root).filter((row) => !row.hidden)).toHaveLength(3);
@@ -738,7 +738,7 @@ test("test_attach_tables_when_columns_toggled", async () => {
   for (const cell of columnCells(root, 2)) {
     expect(cell.hasAttribute("hidden")).toBe(true);
   }
-  // 実行・検証: 既定に戻す
+  // 実行・検証: リセット
   findButton(root, "button.mdmark-columns-reset").click();
   for (const cell of columnCells(root, 1)) {
     expect(cell.hasAttribute("hidden")).toBe(true);
@@ -867,8 +867,7 @@ test("test_attach_tables_when_copied_after_sorted", async () => {
   const sortButton = root
     .querySelectorAll("thead th")[1]
     ?.querySelector<HTMLButtonElement>("button.mdmark-sort");
-  // 実行: 値の列を昇順・降順に並べ替えてから TSV でコピーする
-  sortButton?.click();
+  // 実行: 値の列を降順に並べ替えてから TSV でコピーする
   sortButton?.click();
   chooseCopyFormat(root, "tsv");
   await vi.waitFor(() => {
@@ -879,7 +878,7 @@ test("test_attach_tables_when_copied_after_sorted", async () => {
   expect(writeText).toHaveBeenCalledWith("名前\t値\nb\t3\nc\t2\na\t1");
 });
 
-// 拒まれたら手でコピーするパネルを出し、Esc で閉じる（正常系）
+// 拒まれたら手動でコピーするパネルを出し、Esc で閉じる（正常系）
 test("test_attach_tables_when_copy_denied", async () => {
   // 準備
   vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] });
@@ -930,7 +929,7 @@ test("test_attach_tables_when_copy_denied", async () => {
       true,
     );
     expect(statusText(root)).toBe(
-      "クリップボードにコピーできませんでした。選択したMarkdown の表を手でコピーできます",
+      "クリップボードにコピーできませんでした。選択したMarkdown の表を手動でコピーできます",
     );
     // 検証: パネルの中の Esc で閉じてフォーカスを戻す
     document.activeElement?.dispatchEvent(
@@ -1084,7 +1083,7 @@ test("test_attach_tables_when_totals_toggled", async () => {
   checkbox("avg").click();
   expect(avgRow()?.hasAttribute("hidden")).toBe(true);
   expect(toggle.classList.contains("is-active")).toBe(true);
-  expect(toggle.textContent).toContain("（1 件を隠しています）");
+  expect(toggle.textContent).toContain("（1 件を非表示にしています）");
   expect(statusText(root)).toBe("平均の行を隠しました");
   // 実行・検証: 入れ直すと戻る
   checkbox("avg").click();
@@ -1265,7 +1264,7 @@ test("test_attach_tables_when_folded_with_row_detail", async () => {
   expect(detail?.hasAttribute("hidden")).toBe(false);
 });
 
-// 列の表示で最終列を隠すと畳みを外し、前の列を最終列として決め直す（正常系）
+// 列設定で最終列を隠すと畳みを外し、前の列を最終列として決め直す（正常系）
 test("test_attach_tables_when_fold_column_hidden", async () => {
   // 準備
   addStyles();
@@ -1279,7 +1278,7 @@ test("test_attach_tables_when_fold_column_hidden", async () => {
   await vi.waitFor(() => {
     expect(table?.classList.contains("is-folded")).toBe(true);
   });
-  // 実行: 列の表示で説明のチェックを外す
+  // 実行: 列設定で説明のチェックを外す
   findButton(root, "button.mdmark-columns-toggle").click();
   const checkboxes = [
     ...root.querySelectorAll<HTMLInputElement>(
@@ -1436,8 +1435,8 @@ test("test_attach_tables_when_nested_table_sorted", async () => {
   }
   // 実行: 中の表の 1 列目の並べ替えのボタンを押す
   findButtonLike(nestedHead, "button.mdmark-sort").click();
-  // 検証: 中の表だけが昇順になり、親の表の行の並びと見出しは変わらない
-  expect(nestedHead.getAttribute("aria-sort")).toBe("ascending");
+  // 検証: 中の表だけが降順になり、親の表の行の並びと見出しは変わらない
+  expect(nestedHead.getAttribute("aria-sort")).toBe("descending");
   const parentRows = [...(parentTable.tBodies[0]?.rows ?? [])].filter(
     (row) => !row.classList.contains("mdmark-row-detail"),
   );
@@ -1448,4 +1447,182 @@ test("test_attach_tables_when_nested_table_sorted", async () => {
   for (const cell of parentTable.tHead?.rows[0]?.cells ?? []) {
     expect(cell.hasAttribute("aria-sort")).toBe(false);
   }
+});
+
+/** 見出しが 2 段で、分類の列を `^^` で結合した表（数値は上から `3`・`1`・`4`・`2`） */
+const MERGED_TABLE = [
+  "<!-- table: data header-rows=2 filter=分類 +copy -->",
+  "",
+  "| 区分 | << |",
+  "| --- | --- |",
+  "| 分類 | 数値 |",
+  "| A | 3 |",
+  "| ^^ | 1 |",
+  "| B | 4 |",
+  "| ^^ | 2 |",
+  "",
+  "<!-- /table -->",
+  "",
+].join("\n");
+
+// 最下段の見出しにボタンを置き、並べ替え・絞り込みの後に結合し直す（正常系）
+test("test_attach_tables_when_merged_sorted", async () => {
+  // 準備
+  const writeText = vi.fn<(text: string) => Promise<void>>(() =>
+    Promise.resolve(),
+  );
+  stubClipboard(writeText);
+  const { attachTables } = await loadTables();
+  const { root } = createRoot(MERGED_TABLE);
+  detachers.push(attachTables(root));
+  const headRows = root.querySelectorAll<HTMLTableRowElement>("thead tr");
+  const sortButton = headRows[1]?.cells[1]?.querySelector<HTMLButtonElement>(
+    "button.mdmark-sort",
+  );
+  // 検証: ボタンは 2 段目の th にだけある
+  expect(headRows[0]?.querySelector("button")).toBeNull();
+  expect(sortButton).toBeTruthy();
+  // 実行: 数値の列を降順に並べ替える
+  sortButton?.click();
+  // 検証: 隣り合う同じ値が無く、分類のセルを結合しない
+  expect(columnTexts(root, 1)).toEqual(["4", "3", "2", "1"]);
+  for (const cell of columnCells(root, 0).slice(1)) {
+    expect(cell.hasAttribute("rowspan")).toBe(false);
+    expect(cell.hasAttribute("hidden")).toBe(false);
+  }
+  // 実行: 分類を A に絞り込む
+  const { drawer } = openDrawer(root);
+  findCheckbox(drawer, "A").click();
+  // 検証: A の 2 行を出し、1 行目の分類のセルを結合し直す
+  const visible = bodyRows(root).filter((row) => !row.hidden);
+  expect(visible).toHaveLength(2);
+  expect(visible[0]?.cells[0]?.getAttribute("rowspan")).toBe("2");
+  // 実行: TSV でコピーする
+  chooseCopyFormat(root, "tsv");
+  await vi.waitFor(() => {
+    expect(writeText).toHaveBeenCalledTimes(1);
+  });
+  // 検証: 各行の分類が A で、結合の記号を含まない
+  const [text] = writeText.mock.calls[0] ?? [""];
+  const rows = text.split("\n").slice(-2);
+  for (const row of rows) {
+    expect(row.split("\t")[0]).toBe("A");
+  }
+  expect(text).not.toContain("^^");
+  expect(text).not.toContain("<<");
+});
+
+// 行見出しを持つはみ出す表を、描いた直後に行見出しの列まで留める（正常系）
+test("test_attach_tables_when_row_header_pinned", async () => {
+  // 準備
+  addStyles();
+  const { attachTables } = await loadTables();
+  const headers = Array.from(
+    { length: 10 },
+    (_, i) => `とても長い列の名前${i + 1}`,
+  );
+  const { root } = createRoot(
+    [
+      "<!-- table: data row-header=2 -->",
+      "",
+      `| ${headers.join(" | ")} |`,
+      `| ${headers.map(() => "---").join(" | ")} |`,
+      ...Array.from(
+        { length: 5 },
+        (_, row) => `| ${headers.map((_, i) => `値${row + 1}-${i + 1}`).join(" | ")} |`,
+      ),
+      "",
+      "<!-- /table -->",
+      "",
+    ].join("\n"),
+  );
+  setRootWidth(root, 320);
+  // 実行
+  detachers.push(attachTables(root));
+  // 検証: 2 列目のピン止めが押した状態で、行見出しの列までを留める
+  const pins = root.querySelectorAll<HTMLButtonElement>("button.mdmark-pin");
+  await vi.waitFor(() => {
+    expect(pins[1]?.getAttribute("aria-pressed")).toBe("true");
+  });
+  const cells = root.querySelector("tbody tr")?.cells;
+  if (!cells) {
+    throw new Error("本文の行が無い");
+  }
+  expect(getComputedStyle(cells[0]).position).toBe("sticky");
+  expect(getComputedStyle(cells[1]).position).toBe("sticky");
+  expect(getComputedStyle(cells[2]).position).not.toBe("sticky");
+});
+
+// 縦に結合したセルと 2 段目のセルを選ぶ（正常系）
+test("test_bottom_head_cells", async () => {
+  // 準備
+  const { bottomHeadCells } = await loadLogic();
+  const rows = [
+    [
+      { rowSpan: 2, colSpan: 1 },
+      { rowSpan: 1, colSpan: 2 },
+    ],
+    [
+      { rowSpan: 1, colSpan: 1 },
+      { rowSpan: 1, colSpan: 1 },
+    ],
+  ];
+  // 実行
+  const cells = bottomHeadCells(rows);
+  // 検証
+  expect(cells).toEqual([
+    { row: 0, cell: 0 },
+    { row: 1, cell: 0 },
+    { row: 1, cell: 1 },
+  ]);
+});
+
+// またぐセルしか無い列を undefined にする（正常系）
+test("test_bottom_head_cells_when_spanning", async () => {
+  // 準備
+  const { bottomHeadCells } = await loadLogic();
+  const rows = [
+    [
+      { rowSpan: 1, colSpan: 1 },
+      { rowSpan: 1, colSpan: 2 },
+    ],
+  ];
+  // 実行
+  const cells = bottomHeadCells(rows);
+  // 検証
+  expect(cells).toEqual([{ row: 0, cell: 0 }, undefined, undefined]);
+});
+
+// 隣り合う同じ値だけを結合する（正常系）
+test("test_merge_spans", async () => {
+  // 準備
+  const { mergeSpans } = await loadLogic();
+  // 実行
+  const spans = mergeSpans({
+    values: [["A"], ["A"], ["B"], ["A"]],
+    columns: [0],
+  });
+  // 検証
+  expect(spans).toEqual([[2], [0], [1], [1]]);
+});
+
+// 左の列の切れ目で右の列も切る（正常系）
+test("test_merge_spans_when_left_breaks", async () => {
+  // 準備
+  const { mergeSpans } = await loadLogic();
+  // 実行
+  const spans = mergeSpans({
+    values: [
+      ["東", "札幌"],
+      ["東", "札幌"],
+      ["西", "札幌"],
+    ],
+    columns: [0, 1],
+  });
+  // 検証
+  expect(spans).toEqual([
+    [2, 2],
+    [0, 0],
+    [1, 1],
+  ]);
 });

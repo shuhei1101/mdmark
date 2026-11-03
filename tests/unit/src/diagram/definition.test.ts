@@ -4,6 +4,7 @@ import type {
   MdmarkFlowDefinition,
 } from "../../../../src/diagram/definition.ts";
 import {
+  ADDED_CHART_DEFINITIONS,
   INQUIRY_COUNT_TEXT,
   INQUIRY_HINT_TEXT,
   LENGTH_TIME_TEXT,
@@ -229,4 +230,73 @@ test("test_read_definition_when_chart_shape_mismatch", async () => {
   for (const name of ["min", "max", "step"]) {
     expect(axis.problems[0], name).toContain(name);
   }
+});
+
+// 追加したグラフの種類の定義を読める（正常系）
+test("test_read_definition_when_chart_types_added", async () => {
+  // 準備
+  const { readDefinition } = await loadDefinition();
+  // 実行
+  const results = ADDED_CHART_DEFINITIONS.map((definition) =>
+    readDefinition("chart", [JSON.stringify(definition)]),
+  );
+  // 検証
+  expect(results).toHaveLength(9);
+  for (const result of results) {
+    expect(result.problems).toEqual([]);
+    expect(result.ok).toBe(true);
+  }
+});
+
+// 系列と項目の 7 つ以上を読めない箇所にする（異常系）
+test("test_read_definition_when_chart_series_too_many", async () => {
+  // 準備
+  const { readDefinition } = await loadDefinition();
+  const base = { title: "題", scope: "範囲", updated: "2026-11-03" };
+  const sevenSeries = {
+    ...base,
+    type: "line",
+    x: { label: "横", ticks: ["a", "b"] },
+    y: { label: "縦" },
+    series: [1, 2, 3, 4, 5, 6, 7].map((n) => ({ name: `系列${n}`, points: [n, n] })),
+  };
+  const sevenItems = {
+    ...base,
+    type: "donut",
+    items: [1, 2, 3, 4, 5, 6, 7].map((n) => ({ name: `項目${n}`, value: n })),
+  };
+  // 実行
+  const line = readDefinition("chart", [JSON.stringify(sevenSeries)]);
+  const donut = readDefinition("chart", [JSON.stringify(sevenItems)]);
+  // 検証
+  for (const [result, word] of [
+    [line, "系列"],
+    [donut, "項目"],
+  ] as const) {
+    expect(result.ok).toBe(false);
+    expect(result.problems[0]).toContain(word);
+    expect(result.problems[0]).toContain("7");
+    expect(result.problems[0]).toContain("6 つ");
+  }
+});
+
+// バブルの点の形を確かめる（異常系）
+test("test_read_definition_when_bubble_point", async () => {
+  // 準備
+  const { readDefinition } = await loadDefinition();
+  const bubble = {
+    title: "題",
+    scope: "範囲",
+    updated: "2026-11-03",
+    type: "bubble",
+    x: { label: "横" },
+    y: { label: "縦" },
+    size: { label: "件数" },
+    series: [{ name: "系列", points: [[1, 2]] }],
+  };
+  // 実行
+  const result = readDefinition("chart", [JSON.stringify(bubble)]);
+  // 検証
+  expect(result.ok).toBe(false);
+  expect(result.problems[0]).toContain("[x, y, size]");
 });

@@ -104,3 +104,79 @@ export function wrapHtml(html: string, head = ""): string {
     "",
   ].join("\n");
 }
+
+/** 題・範囲・更新日 */
+const CHART_BASE = {
+  title: "追加したグラフの種類",
+  scope: "10 月の第 2 週",
+  updated: "2026-11-03",
+};
+
+/** 窓口の 2 つの目盛りと、2 つの系列 */
+const TICKED_CHART = {
+  ...CHART_BASE,
+  x: { label: "窓口", ticks: ["メール", "電話"] },
+  y: { label: "件" },
+  series: [
+    { name: "自動返信", points: [3, 1] },
+    { name: "担当者", points: [4, 2] },
+  ],
+};
+
+/** インターフェース定義『文書をHTML文字列にする』の「正常系（追加したグラフの種類）」の 9 つの定義（追加した 8 つの種類と、系列 6 つの `line`） */
+export const ADDED_CHART_DEFINITIONS: Array<Record<string, unknown>> = [
+  { ...TICKED_CHART, type: "area" },
+  { ...TICKED_CHART, type: "stacked-bar" },
+  { ...TICKED_CHART, type: "stacked-area" },
+  { ...TICKED_CHART, type: "horizontal-bar" },
+  {
+    ...CHART_BASE,
+    type: "donut",
+    unit: " 件",
+    items: [
+      { name: "よくある質問で答えた", value: 186 },
+      { name: "担当者へ回した", value: 92 },
+    ],
+  },
+  {
+    ...CHART_BASE,
+    type: "radar",
+    x: { label: "観点", ticks: ["速さ", "正確さ", "丁寧さ"] },
+    y: { label: "点", min: 0, max: 5, step: 1 },
+    series: [
+      { name: "自動返信", points: [5, 3, 2] },
+      { name: "担当者", points: [2, 5, 5] },
+    ],
+  },
+  {
+    ...CHART_BASE,
+    type: "bubble",
+    x: { label: "本文の長さ（字）" },
+    y: { label: "分" },
+    size: { label: "件数" },
+    series: [
+      { name: "自動返信", points: [[120, 6, 4], [260, 9, 16]] },
+      { name: "担当者", points: [[300, 30, 9], [500, 40, 1]] },
+    ],
+  },
+  {
+    ...CHART_BASE,
+    type: "combo",
+    x: { label: "窓口", ticks: ["メール", "電話"] },
+    y: { label: "件" },
+    series: [
+      { name: "件数", points: [3, 1], as: "bar" },
+      { name: "割合", points: [4, 2], as: "line" },
+    ],
+  },
+  {
+    ...CHART_BASE,
+    type: "line",
+    x: { label: "週", ticks: ["1", "2", "3"] },
+    y: { label: "件" },
+    series: [1, 2, 3, 4, 5, 6].map((n) => ({
+      name: `系列 ${n}`,
+      points: [n, n + 1, n + 2],
+    })),
+  },
+];

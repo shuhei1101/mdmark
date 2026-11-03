@@ -331,3 +331,56 @@ test("test_reveal_tab_target_when_outside", async () => {
   expect(() => revealTabTarget(heading)).not.toThrow();
   expect(selectedTitle(root, 0)).toBe("macOS");
 });
+
+/** 外側の macOS の中に内側のタブを持ち、外側の 2 つ目のタブ名を強調した文書 */
+const NESTED_TABS_MARKDOWN = [
+  "<!-- tabs -->",
+  "",
+  "### macOS",
+  "",
+  "<!-- tabs -->",
+  "",
+  "#### zsh",
+  "",
+  "zsh の手順",
+  "",
+  "#### bash",
+  "",
+  "bash の手順",
+  "",
+  "<!-- /tabs -->",
+  "",
+  "### **Windows**",
+  "",
+  "Windows の手順",
+  "",
+  "<!-- /tabs -->",
+  "",
+].join("\n");
+
+// 入れ子のタブをそれぞれの並びで切り替え、強調したタブ名をボタンに残す（正常系）
+test("test_attach_tabs_when_nested", async () => {
+  // 準備
+  const { attachTabs } = await loadTabs();
+  const { root } = createRoot(NESTED_TABS_MARKDOWN);
+  // 実行
+  detachers.push(attachTabs(root));
+  // 検証: 外側と内側の並びがあり、強調したタブ名の strong を残す
+  const lists = [...root.querySelectorAll('[role="tablist"]')];
+  expect(lists).toHaveLength(2);
+  const tabsOf = (list: Element | undefined): HTMLButtonElement[] => [
+    ...(list?.querySelectorAll<HTMLButtonElement>('[role="tab"]') ?? []),
+  ];
+  const [outer, inner] = lists.map((list) => tabsOf(list));
+  expect(outer.map((tab) => tab.textContent)).toEqual(["macOS", "Windows"]);
+  expect(inner.map((tab) => tab.textContent)).toEqual(["zsh", "bash"]);
+  expect(outer[1]?.querySelector("strong")).not.toBeNull();
+  // 実行・検証: 内側の bash を押しても外側の選択は変わらない
+  inner[1]?.click();
+  expect(inner[1]?.getAttribute("aria-selected")).toBe("true");
+  expect(outer[0]?.getAttribute("aria-selected")).toBe("true");
+  // 実行・検証: 内側の矢印は内側の並びの中だけで動く
+  inner[1]?.focus();
+  press("ArrowRight");
+  expect(document.activeElement).toBe(inner[0]);
+});

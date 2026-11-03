@@ -457,3 +457,49 @@ test("test_render_flow_when_hint", async () => {
   expect(label).not.toBe("");
   expect(off.html).toContain(label);
 });
+
+// 組み合わせ・バブル・ドーナツの凡例を出す（正常系）
+test("test_legend_for_when_chart_types_added", async () => {
+  // 準備
+  const { legendFor } = await loadDiagram();
+  const base = { title: "題", scope: "範囲", updated: "2026-11-03" };
+  const combo = {
+    ...base,
+    type: "combo",
+    x: { label: "月", ticks: ["1", "2"] },
+    y: { label: "件" },
+    y2: { label: "%" },
+    series: [
+      { name: "件数", points: [1, 2], as: "bar" },
+      { name: "割合", points: [3, 4], as: "line", axis: "y2" },
+    ],
+  } as MdmarkChartDefinition;
+  const bubble = {
+    ...base,
+    type: "bubble",
+    x: { label: "横" },
+    y: { label: "縦" },
+    size: { label: "件数" },
+    series: [{ name: "問い合わせ", points: [[1, 2, 3]] }],
+  } as MdmarkChartDefinition;
+  const donut = {
+    ...base,
+    type: "donut",
+    unit: " 件",
+    items: [
+      { name: "答えた", value: 186 },
+      { name: "回した", value: 92 },
+    ],
+  } as MdmarkChartDefinition;
+  const drawn = { jumps: false, terms: false };
+  // 実行
+  const comboLabels = legendFor(combo, drawn).map((item) => item.label);
+  const bubbleLabels = legendFor(bubble, drawn).map((item) => item.label);
+  const donutLabels = legendFor(donut, drawn).map((item) => item.label);
+  // 検証
+  expect(comboLabels).toContain("件数（左の軸）");
+  expect(comboLabels).toContain("割合（右の軸）");
+  expect(bubbleLabels).toContain("円の面積: 件数");
+  expect(donutLabels).toContain("答えた: 186 件");
+  expect(donutLabels).toContain("回した: 92 件");
+});
