@@ -1,0 +1,1 @@
+# 書き出した HTML で blob: URL と動的 import をやめ、1 つの script に束ねる
