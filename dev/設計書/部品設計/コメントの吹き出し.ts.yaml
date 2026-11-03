@@ -73,6 +73,21 @@ states:
         value: ここは <b>太字</b> にしたい。見出しも同じにする
       - name: editState
         value: saving
+  - name: UpdateEmpty
+    description: 本文を空にしたまま保存し、知らせを出している
+    args:
+      - name: quote
+        value: テーマの変数
+      - name: bodies
+        value: '["ここは <b>太字</b> にしたい"]'
+      - name: canEdit
+        value: 'true'
+      - name: editIndex
+        value: '0'
+      - name: draft
+        value: "''"
+      - name: editState
+        value: empty
   - name: UpdateFailed
     description: 書き換えた本文を保存できなかった
     args:
