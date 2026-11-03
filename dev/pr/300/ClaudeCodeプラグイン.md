@@ -36,3 +36,14 @@
 ### ドキュメント修正
 
 テスト実行方法の記載だけの変更で、関係する単体・結合テストは無い。
+
+### E2E
+
+E2E は planner が実行せず、tester がスプリントの release ブランチで実行する。
+
+| ファイル | メソッド | 変更種別 | 結果 | 補足 |
+| --- | --- | --- | --- | --- |
+| `tests/e2e/単一ユースケース/MCPサーバーを起動・停止する.spec.ts` | `test_normal_when_start`・`test_normal_when_stop`・`test_error_when_port_in_use` | 変更 | - | 未実行 |
+| `tests/e2e/単一ユースケース/MCPサーバーを起動・停止する.spec.ts` | `test_normal_when_port_overridden` | 削除 | - | - |
+| `tests/e2e/単一ユースケース/ClaudeCodeにプラグインを入れる.spec.ts` | `test_normal`・`test_error_when_server_not_running` | 変更 | - | 未実行 |
+| `tests/e2e/複合ユースケース/MCPサーバーを起動してプラグインからつなぐ.spec.ts` | `test_normal`・`test_error_when_server_not_running` | 変更 | - | 未実行 |
