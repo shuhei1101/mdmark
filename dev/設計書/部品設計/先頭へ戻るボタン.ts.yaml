@@ -44,9 +44,11 @@ css_properties:
     description: ボタンのアイコンの色
   - name: --mdmark-color-surface
     syntax: <color>
+    default: '#f4f4f5（ダーク #1b1b1f）'
     description: ポインターを乗せている間のボタンの地の色
   - name: --mdmark-color-text
     syntax: <color>
+    default: '#18181b（ダーク #ededef）'
     description: ポインターを乗せている間のアイコンの色
   - name: --mdmark-color-current-bg
     syntax: <color>
