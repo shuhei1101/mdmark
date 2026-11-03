@@ -4458,10 +4458,10 @@
 
   /* 脚注: 本文の番号・番号のツールチップ・文書の末尾の脚注の一覧 */
   .mdmark {
-    /* 番号とツールチップの組: ツールチップを番号の上に置く基準。上付きでも行の高さを広げない */
+    /* 番号とツールチップの組: ツールチップを番号の上に置く基準。上付きでも行の高さを広げない。番号はリンクなので操作できる文字の下限（11px）を下回らない */
     .mdmark-fn-ref {
       position: relative;
-      font-size: 0.75em;
+      font-size: max(0.75em, 11px);
       line-height: 0;
       vertical-align: super;
     }
@@ -4627,6 +4627,24 @@
       &:focus-visible {
         outline: 2px solid var(--mdmark-color-link);
         outline-offset: 2px;
+      }
+    }
+  }
+
+  /* 狭い画面（71rem 以下）: スクリプトが動かないときの脚注のツールチップを、用語のツールチップと同じく番号の位置ではなく描く先の要素の左端から出して画面に収める。スクリプトが動くときは style が位置を指す */
+  @media (max-width: 71rem) {
+    .mdmark {
+      /* 番号とツールチップの組: 基準を外し、描く先の要素を基準にする */
+      .mdmark-fn-ref {
+        position: static;
+      }
+
+      /* ツールチップ: 描く先の要素の左端から、番号の直後に出す。番号の上に出す既定も下に開いたときも位置を指さず、番号との間の透明な線を上に置く */
+      .mdmark-fn-tip,
+      .mdmark-fn-ref.is-below .mdmark-fn-tip {
+        inset-block: auto;
+        border-block-start: 0.4em solid transparent;
+        border-block-end: 1px solid var(--mdmark-color-muted);
       }
     }
   }
