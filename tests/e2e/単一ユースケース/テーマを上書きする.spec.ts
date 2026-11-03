@@ -263,3 +263,70 @@ test("test_normal_when_color_preset_overridden", async ({ page }) => {
   await expect(text).toHaveText("決め手の 1 文");
   await expect(text).toHaveCSS("color", "rgb(0, 0, 128)");
 });
+
+// 地を透明にし `--mdmark-color-bg-opaque` に周りの面の色を指定すると、本文の地は透け、表の端・図のツールチップ・全画面の図はその色で描く（正常シナリオ（地を透明にして周りの面の色を指定する））
+test("test_normal_when_bg_transparent_with_opaque_color", async ({ page }) => {
+  // 準備
+  const surrounding = "rgb(240, 240, 240)";
+  await page.emulateMedia({ colorScheme: "light" });
+  const hostCss = `body { background: ${surrounding} } .mdmark { --mdmark-color-bg: transparent; --mdmark-color-bg-opaque: ${surrounding} }`;
+  await openPage(page, builtRoot, { hostCss });
+  const table =
+    "| a | b | c |\n| --- | --- | --- |\n| 1 | 2 | 3 |\n| 4 | 5 | 6 |\n| 7 | 8 | 9 |\n";
+  // 実行
+  await mountDocument(page, {
+    markdown: `${table}\n${await flowMarkdown()}`,
+  });
+  // 検証: 本文の地は透ける
+  await expect(page.locator("#doc")).toHaveCSS(
+    "background-color",
+    "rgba(0, 0, 0, 0)",
+  );
+  // 検証: 表の本文の行の高さの真ん中で、左右の枠の内側の画素が周りの面の色
+  const tableBox = await page.locator("#doc table").boundingBox();
+  const rowBox = await page.locator("#doc tbody tr").first().boundingBox();
+  if (!tableBox || !rowBox) {
+    throw new Error("表が描かれていない");
+  }
+  const y = rowBox.y + rowBox.height / 2;
+  const pixels = await page.screenshot({
+    clip: { x: tableBox.x, y: y - 1, width: tableBox.width, height: 2 },
+    scale: "css",
+  });
+  const colors = await page.evaluate(
+    async ({ data, right }) => {
+      const image = new Image();
+      image.src = `data:image/png;base64,${data}`;
+      await image.decode();
+      const canvas = document.createElement("canvas");
+      canvas.width = image.width;
+      canvas.height = image.height;
+      const context = canvas.getContext("2d");
+      context?.drawImage(image, 0, 0);
+      return [2, right].map((x) => {
+        const d = context?.getImageData(x, 0, 1, 1).data;
+        return `rgb(${d?.[0]}, ${d?.[1]}, ${d?.[2]})`;
+      });
+    },
+    {
+      data: pixels.toString("base64"),
+      right: Math.floor(tableBox.width) - 3,
+    },
+  );
+  expect(colors).toEqual([surrounding, surrounding]);
+  // 実行・検証: 図のツールチップ
+  const label = page.locator("#doc .mdmark-diagram-label.has-tip").first();
+  await label.hover();
+  const tipId = await label.getAttribute("aria-describedby");
+  await expect(page.locator(`[id="${tipId}"]`)).toHaveCSS(
+    "background-color",
+    surrounding,
+  );
+  // 実行・検証: 全画面の図
+  await page.mouse.move(0, 0);
+  await page.locator('#doc button[aria-label="全画面で開く"]').first().click();
+  await expect(page.locator("#doc dialog[open]")).toHaveCSS(
+    "background-color",
+    surrounding,
+  );
+});

@@ -107,9 +107,9 @@ css_properties:
     syntax: <color>
     default: '#e4e4e7（ダーク #26262b）'
     description: 選んだタブを囲む線と、中身の枠の線の色
-  - name: --mdmark-color-bg
+  - name: --mdmark-color-bg-opaque
     syntax: <color>
-    default: '#ffffff（ダーク #131316）'
+    default: var(--mdmark-color-bg)
     description: 選んだタブと中身の地の色
   - name: --mdmark-color-heading
     syntax: <color>

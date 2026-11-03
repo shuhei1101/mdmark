@@ -1,0 +1,15 @@
+$ npm run test:unit
+
+> test:unit
+> vitest run --project 'unit*'
+
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/fix-interact-tooltip-and-drag-ops
+
+
+ Test Files  177 passed (177)
+      Tests  1240 passed (1240)
+   Start at  03:31:23
+   Duration  58.83s (worker 44%, tests 34%, import 19%, transform 2%)
+
+rc=0

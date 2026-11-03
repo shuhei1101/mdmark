@@ -18,6 +18,8 @@
     --mdmark-heading-rule-width: 0px;
     --mdmark-table-rule-inline: 1px;
     --mdmark-color-bg: #ffffff;
+    /* 浮く部品・覆い・混ぜる先の不透明な地。配色の規則は置かず、:root の --mdmark-color-bg に追従させる */
+    --mdmark-color-bg-opaque: var(--mdmark-color-bg);
     --mdmark-color-text: #18181b;
     --mdmark-color-heading: #18181b;
     --mdmark-color-muted: #52525b;
@@ -1532,6 +1534,7 @@
     padding: var(--mdmark-padding);
     border-radius: var(--mdmark-radius);
     background: var(--mdmark-color-bg);
+    --mdmark-color-bg-opaque: var(--mdmark-color-bg);
     color: var(--mdmark-color-text);
     font-family: var(--mdmark-font-body);
     font-size: var(--mdmark-font-size);
@@ -1747,10 +1750,14 @@
     /* 横スクロールする表: 地の色を敷き、続きがある側の端に影を出す（コードブロックと同じ重ね合わせを地の色で覆う） */
     table {
       background:
-        linear-gradient(to right, var(--mdmark-color-bg) 30%, transparent) left
-        / 2.5em 100% no-repeat local,
-        linear-gradient(to left, var(--mdmark-color-bg) 30%, transparent) right
-        / 2.5em 100% no-repeat local,
+        linear-gradient(
+          to right,
+          var(--mdmark-color-bg-opaque) 30%,
+          transparent
+        )
+        left / 2.5em 100% no-repeat local,
+        linear-gradient(to left, var(--mdmark-color-bg-opaque) 30%, transparent)
+        right / 2.5em 100% no-repeat local,
         radial-gradient(
           farthest-side at 0 50%,
           var(--mdmark-color-scroll-shadow),
@@ -1763,7 +1770,7 @@
           transparent
         )
         right / 0.9em 100% no-repeat scroll,
-        var(--mdmark-color-bg);
+        var(--mdmark-color-bg-opaque);
     }
 
     /* 表のセル: 横スクロールの影が透けるよう、地を透明にする（見出し行の面の色より前に当てる） */
@@ -1979,7 +1986,7 @@
       /* 絞り込み中の列・押した後のピン: 本文の地と線と塗ったアイコンで、押す前と見分ける */
       &:is(.is-active, [aria-pressed="true"]) {
         border-color: var(--mdmark-color-border);
-        background: var(--mdmark-color-bg);
+        background: var(--mdmark-color-bg-opaque);
         color: var(--mdmark-color-text);
       }
 
@@ -2002,14 +2009,14 @@
       }
 
       thead th {
-        background: var(--mdmark-color-bg);
+        background: var(--mdmark-color-bg-opaque);
       }
     }
 
     /* ピン止めした列: 表の左端に留め、後ろのセルが透けないよう表と同じ地の色を敷く（左の位置は描く処理が列の幅から入れる） */
     .mdmark-table :is(th, td).is-pinned-col {
       position: sticky;
-      background: var(--mdmark-color-bg);
+      background: var(--mdmark-color-bg-opaque);
     }
 
     /* ピン止めした列の見出し: 見出し行と左端の両方に留まるので前に出し、見出しの色を敷く */
@@ -2087,7 +2094,7 @@
       /* 列を隠している間の列の表示のボタン: 本文の地と塗ったアイコンで、全ての列を出しているときと見分ける */
       &.is-active {
         border-color: var(--mdmark-color-muted);
-        background: var(--mdmark-color-bg);
+        background: var(--mdmark-color-bg-opaque);
 
         .mdmark-diagram-icon {
           fill: currentColor;
@@ -2117,7 +2124,7 @@
       overflow: auto;
       border: 1px solid var(--mdmark-color-border);
       border-radius: var(--mdmark-radius);
-      background: var(--mdmark-color-bg);
+      background: var(--mdmark-color-bg-opaque);
       color: var(--mdmark-color-text);
       font-family: var(--mdmark-font-body);
       font-size: 0.875rem;
@@ -2401,7 +2408,7 @@
       overflow: auto;
       border: 1px solid var(--mdmark-color-border);
       border-radius: var(--mdmark-radius);
-      background: var(--mdmark-color-bg);
+      background: var(--mdmark-color-bg-opaque);
       color: var(--mdmark-color-text);
       font-family: var(--mdmark-font-body);
       font-size: 0.875rem;
@@ -2468,7 +2475,7 @@
       padding: calc(var(--mdmark-space) * 0.75);
       border: 1px solid var(--mdmark-color-callout-caution);
       border-radius: var(--mdmark-radius);
-      background: var(--mdmark-color-bg);
+      background: var(--mdmark-color-bg-opaque);
       font-size: 0.875rem;
     }
 
@@ -2566,7 +2573,7 @@
       padding: 0.1em 0.5em;
       border: 1px solid var(--mdmark-color-border);
       border-radius: calc(var(--mdmark-radius) - 2px);
-      background: var(--mdmark-color-bg);
+      background: var(--mdmark-color-bg-opaque);
       color: var(--mdmark-color-text);
       font-size: 0.8em;
       font-weight: 400;
@@ -2638,7 +2645,7 @@
       overflow: auto;
       border: 1px solid var(--mdmark-color-border);
       border-radius: var(--mdmark-radius);
-      background: var(--mdmark-color-bg);
+      background: var(--mdmark-color-bg-opaque);
       color: var(--mdmark-color-text);
       font-family: var(--mdmark-font-body);
       font-size: 0.875rem;
@@ -2670,7 +2677,7 @@
         padding: 0 0.6em;
         border: 1px solid var(--mdmark-color-border);
         border-radius: calc(var(--mdmark-radius) - 2px);
-        background: var(--mdmark-color-bg);
+        background: var(--mdmark-color-bg-opaque);
         color: var(--mdmark-color-text);
         font: inherit;
 
@@ -2799,7 +2806,7 @@
 
     /* 行の詳細の行: 表の幅いっぱいのセルに Markdown を描き、本文の地の色で表の行（面の色）と分ける */
     .mdmark-row-detail > td {
-      background: var(--mdmark-color-bg);
+      background: var(--mdmark-color-bg-opaque);
       white-space: normal;
 
       /* 詳細の中身: 表が横にスクロールしても見えている幅に収め、左端に留める（幅は描く処理が表の見えている幅を変数に入れる） */
@@ -2825,13 +2832,13 @@
         color-mix(
           in oklab,
           var(--mdmark-callout-color) 40%,
-          var(--mdmark-color-bg)
+          var(--mdmark-color-bg-opaque)
         );
       border-radius: var(--mdmark-radius);
       background: color-mix(
         in oklab,
         var(--mdmark-callout-color) 7%,
-        var(--mdmark-color-bg)
+        var(--mdmark-color-bg-opaque)
       );
     }
 
@@ -2944,8 +2951,8 @@
       /* 選んだタブ: 線で囲んで中身の地とつなげ、形と地の色でも選んだタブだと分かるようにする */
       &[aria-selected="true"] {
         border-color: var(--mdmark-color-border);
-        border-block-end-color: var(--mdmark-color-bg);
-        background: var(--mdmark-color-bg);
+        border-block-end-color: var(--mdmark-color-bg-opaque);
+        background: var(--mdmark-color-bg-opaque);
         color: var(--mdmark-color-heading);
       }
     }
@@ -3120,7 +3127,7 @@
 
       &:hover {
         border-color: var(--mdmark-color-border);
-        background: var(--mdmark-color-bg);
+        background: var(--mdmark-color-bg-opaque);
         color: var(--mdmark-color-text);
       }
 
@@ -4100,7 +4107,7 @@
       border: 1px solid var(--mdmark-color-muted);
       border-block-end: 0.4em solid transparent;
       border-radius: var(--mdmark-radius);
-      background: var(--mdmark-color-bg) padding-box;
+      background: var(--mdmark-color-bg-opaque) padding-box;
       color: var(--mdmark-color-text);
       font-size: 0.875rem;
       font-weight: normal;
@@ -4284,7 +4291,7 @@
 
       &:hover {
         border-color: var(--mdmark-color-border);
-        background: var(--mdmark-color-bg);
+        background: var(--mdmark-color-bg-opaque);
         color: var(--mdmark-color-text);
       }
 
@@ -4441,7 +4448,11 @@
 
     /* 凡例の箱の見本: 種類の色の線と地。データは下の角が丸い */
     .mdmark-diagram-legend-sample[data-kind] {
-      fill: color-mix(in srgb, var(--node-color) 10%, var(--mdmark-color-bg));
+      fill: color-mix(
+        in srgb,
+        var(--node-color) 10%,
+        var(--mdmark-color-bg-opaque)
+      );
       stroke: var(--node-color);
       stroke-width: 1.5;
     }
@@ -4458,7 +4469,7 @@
       fill: color-mix(
         in srgb,
         var(--mdmark-color-diagram-llm) 14%,
-        var(--mdmark-color-bg)
+        var(--mdmark-color-bg-opaque)
       );
     }
 
@@ -4506,7 +4517,7 @@
     .mdmark-diagram-box {
       position: relative;
       border-radius: var(--mdmark-radius);
-      background: var(--mdmark-color-bg);
+      background: var(--mdmark-color-bg-opaque);
       /* 既定値は :root に置かず、描く先の要素で変えた --mdmark-color-border に追従させる */
       box-shadow: var(
         --mdmark-diagram-box-shadow,
@@ -4544,7 +4555,7 @@
       padding: 0;
       border: 1px solid var(--mdmark-color-border);
       border-radius: var(--mdmark-radius);
-      background: var(--mdmark-color-bg);
+      background: var(--mdmark-color-bg-opaque);
       color: var(--mdmark-color-text);
       cursor: pointer;
 
@@ -4693,7 +4704,7 @@
       background: color-mix(
         in srgb,
         var(--lane-color) var(--mdmark-diagram-lane-tint),
-        var(--mdmark-color-bg)
+        var(--mdmark-color-bg-opaque)
       );
     }
 
@@ -4771,7 +4782,7 @@
       padding: 6px 10px;
       border: 1.5px solid var(--node-color);
       border-radius: 8px;
-      background: var(--mdmark-color-bg);
+      background: var(--mdmark-color-bg-opaque);
       line-height: 1.35;
 
       /* データのノード: 下の角を大きく丸めて入れ物に見せる */
@@ -4856,7 +4867,7 @@
       width: 100%;
       height: 100%;
       overflow: visible;
-      fill: var(--mdmark-color-bg);
+      fill: var(--mdmark-color-bg-opaque);
       stroke: var(--node-color);
       stroke-width: 1.5;
       stroke-linejoin: round;
@@ -5019,7 +5030,7 @@
       padding: 0 6px;
       border: 1px solid var(--mdmark-color-border);
       border-radius: 4px;
-      background: var(--mdmark-color-bg);
+      background: var(--mdmark-color-bg-opaque);
       color: var(--mdmark-color-muted);
       font-size: 12px;
       line-height: 1.5;
@@ -5060,7 +5071,7 @@
       position: absolute;
       top: 0;
       left: 0;
-      background: var(--mdmark-color-bg);
+      background: var(--mdmark-color-bg-opaque);
 
       /* 縦に動かして下にメッセージが流れている間だけ、境目の線を引く */
       &.is-stuck {
@@ -5131,7 +5142,7 @@
     /* 系列の点の印: 系列ごとの形（1 丸・2 四角・3 三角・4 菱形）を系列の色で塗る */
     .mdmark-diagram-point {
       fill: var(--series-color);
-      stroke: var(--mdmark-color-bg);
+      stroke: var(--mdmark-color-bg-opaque);
       stroke-width: 1.5;
     }
 
@@ -5143,7 +5154,7 @@
 
     /* 円の扇形: 系列の模様で塗り、隣の扇形とは地の色の隙間で分ける */
     .mdmark-diagram-slice {
-      stroke: var(--mdmark-color-bg);
+      stroke: var(--mdmark-color-bg-opaque);
       stroke-width: 2;
       stroke-linejoin: round;
     }
@@ -5175,7 +5186,11 @@
     }
 
     .mdmark-diagram-pattern-tint {
-      fill: color-mix(in srgb, var(--series-color) 22%, var(--mdmark-color-bg));
+      fill: color-mix(
+        in srgb,
+        var(--series-color) 22%,
+        var(--mdmark-color-bg-opaque)
+      );
     }
 
     :is(.mdmark-diagram-pattern-solid, .mdmark-diagram-pattern-dot) {
@@ -5233,7 +5248,7 @@
       padding: 0.5em 0.75em;
       border: 1px solid var(--mdmark-color-muted);
       border-radius: var(--mdmark-radius);
-      background: var(--mdmark-color-bg);
+      background: var(--mdmark-color-bg-opaque);
       color: var(--mdmark-color-text);
       font-size: 0.875rem;
       line-height: 1.6;
@@ -5507,7 +5522,7 @@
       padding: 1rem;
       border: 1px solid var(--mdmark-color-border);
       border-radius: var(--mdmark-radius);
-      background: var(--mdmark-color-bg);
+      background: var(--mdmark-color-bg-opaque);
       color: var(--mdmark-color-text);
 
       /* モーダルの後ろ: 文書を暗くして、図だけを見せる */
@@ -5661,7 +5676,7 @@
 
       /* 注意書き: 自分の色のタイトルを読めるよう、面の色の上に本文の背景を敷く */
       > .markdown-alert {
-        background: var(--mdmark-color-bg);
+        background: var(--mdmark-color-bg-opaque);
       }
 
       /* 追加・変更したブロック */
@@ -5754,7 +5769,7 @@
       min-height: 32px;
       border: 1px solid var(--mdmark-color-border);
       border-radius: var(--mdmark-radius);
-      background: var(--mdmark-color-bg);
+      background: var(--mdmark-color-bg-opaque);
       color: var(--mdmark-color-text);
       font: inherit;
       font-size: 0.875rem;
@@ -6018,7 +6033,7 @@
           position: relative;
           border-color: var(--mdmark-color-link);
           background: var(--mdmark-color-link);
-          color: var(--mdmark-color-bg);
+          color: var(--mdmark-color-bg-opaque);
         }
       }
     }
@@ -6198,7 +6213,7 @@
       /* 選んだビュー: 見出しの色の濃い地で塗り、文字を本文の地の色にする */
       &[aria-pressed="true"] {
         background: var(--mdmark-color-heading);
-        color: var(--mdmark-color-bg);
+        color: var(--mdmark-color-bg-opaque);
       }
 
       /* 押せないボード（書き方の警告が理由を書く）: 薄くし、押せない指の形にする */
@@ -6274,7 +6289,7 @@
       padding: 0.55rem 0.7rem;
       border: 1px solid var(--mdmark-color-border);
       border-radius: calc(var(--mdmark-radius) - 2px);
-      background: var(--mdmark-color-bg);
+      background: var(--mdmark-color-bg-opaque);
     }
 
     /* 項目の題（先頭の列の値） */
@@ -6460,7 +6475,7 @@
     padding: 0 0.75em;
     border: 1px solid var(--mdmark-color-border);
     border-radius: var(--mdmark-radius);
-    background: var(--mdmark-color-bg);
+    background: var(--mdmark-color-bg-opaque);
     color: var(--mdmark-color-text);
     font-family: var(--mdmark-font-body);
     font-size: 0.875rem;
@@ -6498,7 +6513,7 @@
     padding: 0.75rem;
     border: 1px solid var(--mdmark-color-border);
     border-radius: var(--mdmark-radius);
-    background: var(--mdmark-color-bg);
+    background: var(--mdmark-color-bg-opaque);
     color: var(--mdmark-color-text);
     font-family: var(--mdmark-font-body);
     font-size: 0.875rem;
@@ -6594,7 +6609,7 @@
       padding: 0.4rem 0.6rem;
       border: 1px solid var(--mdmark-color-border);
       border-radius: calc(var(--mdmark-radius) - 2px);
-      background: var(--mdmark-color-bg);
+      background: var(--mdmark-color-bg-opaque);
       color: var(--mdmark-color-text);
       font: inherit;
       font-weight: 400;
@@ -6661,7 +6676,7 @@
     &.is-primary {
       border-color: var(--mdmark-color-text);
       background: var(--mdmark-color-text);
-      color: var(--mdmark-color-bg);
+      color: var(--mdmark-color-bg-opaque);
       font-weight: 600;
     }
 
@@ -7174,7 +7189,7 @@
       padding: 0;
       border: 1px solid var(--mdmark-color-border);
       border-radius: var(--mdmark-radius);
-      background: var(--mdmark-color-bg);
+      background: var(--mdmark-color-bg-opaque);
       color: var(--mdmark-color-muted);
       font-size: 1rem;
       cursor: pointer;
@@ -7255,7 +7270,7 @@
       );
       border: 1px solid var(--mdmark-color-border);
       border-radius: var(--mdmark-radius);
-      background: var(--mdmark-color-bg);
+      background: var(--mdmark-color-bg-opaque);
       color: var(--mdmark-color-text);
     }
 
@@ -7478,7 +7493,7 @@
         min-width: 0;
         inset-block-start: var(--mdmark-sticky-top, 0px);
         padding-block: 0.25rem;
-        background: var(--mdmark-color-bg);
+        background: var(--mdmark-color-bg-opaque);
 
         /* 目次を出すボタン: 帯の幅いっぱいに広げ、今いる節の見出しを左、三点リーダーを右に置く */
         .mdmark-side-toc-toggle {
@@ -7618,7 +7633,7 @@
       border-color: color-mix(
         in oklab,
         var(--mdmark-accent-text) 40%,
-        var(--mdmark-color-bg)
+        var(--mdmark-color-bg-opaque)
       );
       background: var(--mdmark-accent-bg);
       color: var(--mdmark-accent-text);
@@ -7735,7 +7750,7 @@
       height: 2rem;
       border: 1px solid var(--mdmark-color-border);
       border-radius: var(--mdmark-radius);
-      background: var(--mdmark-color-bg);
+      background: var(--mdmark-color-bg-opaque);
       color: var(--mdmark-color-text);
       opacity: 0;
     }
@@ -7859,7 +7874,7 @@
       padding: 0;
       border: 1px solid var(--mdmark-color-border);
       border-radius: var(--mdmark-radius);
-      background: var(--mdmark-color-bg);
+      background: var(--mdmark-color-bg-opaque);
       color: var(--mdmark-color-text);
       cursor: pointer;
 
@@ -8005,7 +8020,7 @@
       padding: 0;
       border: 1px solid var(--mdmark-color-border);
       border-radius: var(--mdmark-radius);
-      background: var(--mdmark-color-bg);
+      background: var(--mdmark-color-bg-opaque);
       color: var(--mdmark-color-text);
 
       &[open] {
@@ -8072,7 +8087,7 @@
       padding: 0;
       border: 1px solid var(--mdmark-color-border);
       border-radius: var(--mdmark-radius);
-      background: var(--mdmark-color-bg);
+      background: var(--mdmark-color-bg-opaque);
       color: var(--mdmark-color-text);
       cursor: pointer;
 

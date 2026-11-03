@@ -92,9 +92,9 @@ css_properties:
     syntax: <color>
     default: '#18181b（ダーク #ededef）'
     description: 「コメントを保存」のボタンの地と線の色
-  - name: --mdmark-color-bg
+  - name: --mdmark-color-bg-opaque
     syntax: <color>
-    default: '#ffffff（ダーク #131316）'
+    default: var(--mdmark-color-bg)
     description: 「コメントを保存」のボタンの文字の色
 accessibility:
   - 枠は `role="dialog"`・`aria-label="コメントを書く"` で、開いたら本文の欄へフォーカスを移す

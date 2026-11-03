@@ -837,7 +837,8 @@ handle.destroy();
 
 | 変数 | 明るい配色 | ダークの配色 | 使う場所 |
 | --- | --- | --- | --- |
-| `--mdmark-color-bg` | `#ffffff` | `#131316` | 描く先の要素の地と、表の本文の行の地。「コメントを保存」のボタンの文字 |
+| `--mdmark-color-bg` | `#ffffff` | `#131316` | 描く先の要素とまとめた HTML の地 |
+| `--mdmark-color-bg-opaque` | `var(--mdmark-color-bg)` | `var(--mdmark-color-bg)` | ツールチップ・メニュー・全画面の図などの浮く部品、表の本文の行と横スクロールの影を隠す覆い・留める見出し・選んだタブの地、注意書き・図・バッジで色を混ぜる先の色、「コメントを保存」のボタンの文字。`--mdmark-color-bg` を透明にするときは、周りの面の色を指定する |
 | `--mdmark-color-text` | `#18181b` | `#ededef` | 本文の文字と、コメントの入力欄の「コメントを保存」のボタンの地と線 |
 | `--mdmark-color-heading` | `#18181b` | `#ededef` | 見出しの文字 |
 | `--mdmark-color-muted` | `#52525b` | `#b4b4bc` | 引用・読み込み中の枠の文字 |
