@@ -11,15 +11,12 @@ import {
 } from "@modelcontextprotocol/client";
 import type { McpHttpHandler } from "@modelcontextprotocol/server";
 import { afterEach, expect, test, vi } from "vitest";
-import { useTempDirs, writeFiles } from "../../helpers/cli.ts";
 
 /** HTTP の待ち受けを読み込む（実装が無い間は各テストが個別に失敗する） */
 const loadHttp = () => import("../../../../src/plugin/http.ts");
 
 /** CLI の誤りを読み込む */
 const loadErrors = () => import("../../../../src/cli/errors.ts");
-
-const createTempDir = useTempDirs();
 
 const servers: Server[] = [];
 
