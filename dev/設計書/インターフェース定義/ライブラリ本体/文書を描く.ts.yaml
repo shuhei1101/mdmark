@@ -1492,7 +1492,7 @@ flows:
     summary: 閉じた節・選ばれていないタブ・閉じた行の詳細の中の印は、開くボタンの行に破線のマーカーを置き、押すと開いてから印へ移る
     setup:
       - name: 配布物を読んだページ
-        description: '正常系（コメントを付ける）と同じ。`opts.config.features` は `{ comments: true }`（`side-toc` は既定のオフ）'
+        description: '正常系（コメントを付ける）と同じ。`opts.config.features` は `{ comments: true, "side-toc": false }`'
       - name: コメントの読み書きの関数
         description: '`load` が、`quote` が `閉じた箇所`・`タブの箇所`・`行の箇所` のコメントを 1 件ずつ返す'
       - name: 閉じた中を持つ Markdown
