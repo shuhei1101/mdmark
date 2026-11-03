@@ -15,12 +15,12 @@ scenarios:
         participant D as dev-docs
         C->>M: initialize
         M-->>C: instructions（書く前に使い方集を参照し、書いた後に check で点検する）
-        C->>D: search_docs（source: mdmark、タグ topic:使い方集）
+        C->>D: search_docs（source: mdmark、kind: docs、タグ topic:使い方集）
         D-->>C: 使い方集のページの一覧
         C->>D: search_docs（ID: writing のページ、view: full）
         D-->>C: ページの本文
     expected:
-      - mdmark の MCP サーバーの instructions に、書く前に dev-docs の `search_docs` で mdmark の配信元をタグ `topic:使い方集` で絞って使い方集を参照し、書いた後に `check` で点検する動線がある
+      - mdmark の MCP サーバーの instructions に、書く前に dev-docs の `search_docs` で mdmark の配信元の `docs` の行をタグ `topic:使い方集` で絞って使い方集を参照し、書いた後に `check` で点検する動線がある
       - タグで絞った一覧に、`guide/index.yaml` の全ての `page` のページがある
       - '`writing` の `page`（`docs/使い方/書く/文書の書き方.md`）の本文が、リポジトリのそのファイルと一致する'
     test: test_normal

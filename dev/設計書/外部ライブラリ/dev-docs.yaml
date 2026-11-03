@@ -78,7 +78,7 @@ catalogs:
           - name: filter
             type: Condition | Group
             required: false
-            description: 'メタデータの条件。タグで絞るときは `{"field": "tags", "op": "eq", "values": ["topic:使い方集"]}`'
+            description: 'メタデータの条件。`docs` の行の文書をタグで絞るときは `{"and": [{"field": "tags", "op": "eq", "values": ["topic:使い方集"]}, {"field": "kind", "op": "eq", "values": ["docs"]}]}`'
           - name: view
             type: "'ids' | 'summary' | 'full' | 'count'"
             required: false
@@ -100,7 +100,7 @@ adoption: 採用
 upstream: shuhei1101/dev-docs
 verification:
   state: 未確認
-  detail: mdmark の配信元をタグ `topic:使い方集` で絞った `search_docs` が使い方集のページを返すことは、E2E の作成のときに確かめる
+  detail: mdmark の配信元の `docs` の行をタグ `topic:使い方集` で絞った `search_docs` が使い方集のページを返すことは、E2E の作成のときに確かめる
 license: 未確認（リポジトリにライセンスのファイルが無い）。mdmark は dev-docs を配布物に含めない
 official_url: https://github.com/shuhei1101/dev-docs
 docs_url: https://github.com/shuhei1101/dev-docs/blob/develop/docs/リファレンス/文書のMCP.md

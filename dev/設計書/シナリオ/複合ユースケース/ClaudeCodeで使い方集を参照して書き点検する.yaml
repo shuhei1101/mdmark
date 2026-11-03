@@ -20,7 +20,7 @@ scenarios:
         click E "../単一ユースケース/ClaudeCodeから点検と書き出しを呼ぶ.yaml#正常シナリオ"
     expected:
       - mdmark の MCP の instructions に、書く前に dev-docs の `search_docs` で mdmark の配信元の使い方集を参照し、書いた後に `check` で点検する動線がある
-      - dev-docs の `search_docs` で mdmark の配信元をタグ `topic:使い方集` で絞って引くと、`guide/index.yaml` の全ての `page` のページが返り、`writing` の `page`（`docs/使い方/書く/文書の書き方.md`）の本文がリポジトリのそのファイルと一致する
+      - dev-docs の `search_docs` で mdmark の配信元の `docs` の行をタグ `topic:使い方集` で絞って引くと、`guide/index.yaml` の全ての `page` のページが返り、`writing` の `page`（`docs/使い方/書く/文書の書き方.md`）の本文がリポジトリのそのファイルと一致する
       - 知らないマーカーを書いた文書で `check` がずれを 1 件返し、マーカーを修正した後の `check` が空のずれの一覧を返す
       - mdmark の MCP のツールの一覧に `read_guide` が無い
     test: test_normal

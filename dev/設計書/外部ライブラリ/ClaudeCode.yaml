@@ -150,6 +150,9 @@ limitations:
   - item: MCP サーバーの接続の待ち
     content: '`MCP_TIMEOUT`（既定 30 秒）のうちに接続しないとサーバーを使えない'
     notes: PoC で `npx github:` で CLI を取る形は空の npm のキャッシュから 53 秒かかった
+  - item: MCP の instructions の文字数
+    content: '4,096 文字を超えた分は切られる。v2.1.296 より前は 2,048 文字。`CLAUDE_CODE_MAX_MCP_DESCRIPTION_LENGTH` で変えられる'
+    notes: '[MCP](https://code.claude.com/docs/en/mcp) の「For MCP server authors」'
   - item: ツールの結果の大きさ
     content: 50,000 文字を超えた結果はファイルに逃がし、本文の代わりにパスを渡す
   - item: プラグインの依存の導入
