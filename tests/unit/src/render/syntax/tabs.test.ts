@@ -287,7 +287,7 @@ test("test_build_tabs_when_nested_unclosed", () => {
   // 実行
   const { html } = renderDoc(markdown);
   // 検証
-  expect(findTags(html, "mdmark-syntax-warning")).toHaveLength(1);
+  expect(findTags(html, 'class="mdmark-syntax-warning"')).toHaveLength(1);
   expect(html.indexOf("mdmark-syntax-warning")).toBeLessThan(
     html.indexOf("<h3"),
   );

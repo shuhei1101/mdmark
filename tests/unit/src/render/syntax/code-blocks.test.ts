@@ -587,7 +587,7 @@ test("test_build_code_blocks_when_fold_invalid", () => {
   // 実行
   const { html } = renderDoc(markdown, { syntax: false });
   // 検証
-  expect(findTags(html, "mdmark-syntax-warning")).toHaveLength(1);
+  expect(findTags(html, 'class="mdmark-syntax-warning"')).toHaveLength(1);
   const warning = html.slice(
     html.indexOf("mdmark-syntax-warning"),
     html.indexOf("<pre"),

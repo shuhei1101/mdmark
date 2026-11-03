@@ -1640,7 +1640,7 @@ test("test_attach_tables_when_row_header_pinned", async () => {
   await vi.waitFor(() => {
     expect(pins[1]?.getAttribute("aria-pressed")).toBe("true");
   });
-  const cells = root.querySelector("tbody tr")?.cells;
+  const cells = root.querySelector<HTMLTableRowElement>("tbody tr")?.cells;
   if (!cells) {
     throw new Error("本文の行が無い");
   }

@@ -23,6 +23,9 @@ import { findTag, matches, outerHtml, plainText } from "../../helpers/html.ts";
 /** 図の部品を読み込む（実装が無い間は各テストが個別に失敗する） */
 const loadDiagram = () => import("../../../../src/parts/diagram.ts");
 
+/** グラフの部品を読み込む（`renderChart` はモジュール構成『図』で `src/parts/chart.ts` に置く） */
+const loadChart = () => import("../../../../src/parts/chart.ts");
+
 /** 図の枠を描くときの本体 */
 const BODY = {
   html: '<svg class="mdmark-diagram-wires"></svg>',
@@ -226,7 +229,7 @@ test("test_render_sequence", async () => {
 // 系列ごとに線と点を描き、読み上げに値を載せる（正常系）
 test("test_render_chart", async () => {
   // 準備
-  const { renderChart } = await loadDiagram();
+  const { renderChart } = await loadChart();
   const definition = parsed<MdmarkChartDefinition>(REPLY_TIME_TEXT);
   // 実行
   const { html, tips } = renderChart(definition, "d1");
@@ -377,7 +380,7 @@ test("test_render_diagram_frame_when_zoom_button", async () => {
 // 棒を系列ごとの塗りの模様で描き、縦の軸をデータから切る（正常系）
 test("test_render_chart_when_bar", async () => {
   // 準備
-  const { renderChart } = await loadDiagram();
+  const { renderChart } = await loadChart();
   const definition = parsed<MdmarkChartDefinition>(INQUIRY_COUNT_TEXT);
   // 実行
   const { html } = renderChart(definition, "d1");
@@ -395,7 +398,7 @@ test("test_render_chart_when_bar", async () => {
 // 扇形の外に合計 100 の整数の割合を置き、凡例に名前と値を出す（正常系）
 test("test_render_chart_when_pie", async () => {
   // 準備
-  const { renderChart } = await loadDiagram();
+  const { renderChart } = await loadChart();
   const definition = parsed<MdmarkChartDefinition>(REPLY_KIND_TEXT);
   // 実行
   const { html } = renderChart(definition, "d1");
@@ -414,7 +417,7 @@ test("test_render_chart_when_pie", async () => {
 // 横と縦を数値の軸にして系列ごとの形の点を置く（正常系）
 test("test_render_chart_when_scatter", async () => {
   // 準備
-  const { renderChart } = await loadDiagram();
+  const { renderChart } = await loadChart();
   const definition = parsed<MdmarkChartDefinition>(LENGTH_TIME_TEXT);
   // 実行
   const { html } = renderChart(definition, "d1");

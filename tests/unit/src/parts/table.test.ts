@@ -1,4 +1,5 @@
 import { expect, test } from "vitest";
+import type { TableOptions } from "../../../../src/parts/table.ts";
 import {
   findTag,
   findTags,
@@ -721,7 +722,7 @@ test("test_render_table_when_colors", async () => {
 });
 
 /** 部品設計『表』の `Merged` の引数 */
-const MERGED = {
+const MERGED: TableOptions = {
   kind: "data",
   features: ["sort", "pin", "filter"],
   columns: ["地域", "支店", "売上（万円）", "件数", "売上（万円）", "件数"],
@@ -748,7 +749,7 @@ const MERGED = {
   ],
   rowHeader: 1,
   mergeColumns: [0],
-} as const;
+};
 
 /** 本文の各行の 1 列目の `<th scope="row">` の開始タグと文字 */
 function rowHeadsOf(html: string): Array<{ tag: string; text: string }> {
