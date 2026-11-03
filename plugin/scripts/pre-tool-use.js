@@ -5,14 +5,7 @@ const require = __createRequire(import.meta.url);
 // src/plugin/pre-tool-use.ts
 var PROJECT_DIR_ENV = "CLAUDE_PROJECT_DIR";
 var TOOL_NAME_PREFIX = "mcp__plugin_mdmark_mdmark__";
-var PROJECT_DIR_TOOLS = [
-  "find_docs",
-  "list_tags",
-  "update_index",
-  "check",
-  "export_html",
-  "build_site"
-];
+var PROJECT_DIR_TOOLS = ["check", "export_html", "build_site"];
 var PROJECT_DIR_ARG = "project_dir";
 async function runPreToolUse(options) {
   const { env, input, stdout } = options;

@@ -16,6 +16,9 @@ declare const ICONS: {
     plug: IconNode;
     database: IconNode;
     globe: IconNode;
+    "circle-question-mark": IconNode;
+    wrench: IconNode;
+    flag: IconNode;
     server: IconNode;
     sigma: IconNode;
     info: IconNode;
@@ -33,6 +36,7 @@ declare const ICONS: {
     "chevrons-down-up": IconNode;
     ellipsis: IconNode;
     "arrow-up": IconNode;
+    "arrow-up-to-line": IconNode;
     "arrow-down": IconNode;
     "arrow-right": IconNode;
     funnel: IconNode;
@@ -41,6 +45,10 @@ declare const ICONS: {
     "file-diff": IconNode;
     folder: IconNode;
     menu: IconNode;
+    "maximize-2": IconNode;
+    pause: IconNode;
+    play: IconNode;
+    table: IconNode;
 };
 /** 図と記法で使う lucide のアイコンの名前 */
 export type IconName = keyof typeof ICONS;

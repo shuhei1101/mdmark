@@ -1,4 +1,5 @@
 import { type FilterKind, type FilterValue, type TotalCalc } from "../table-logic.ts";
+import type { ColorName } from "./colors.ts";
 /** 表の種類 */
 export type TableKind = "default" | "data" | "plain";
 /** 表の機能 */
@@ -87,6 +88,36 @@ export type TableOptions = {
     body?: string;
     /** ドロワーの `id` の頭（既定 `mdmark-table`）。ビューの中の表のように、文書の中に表が 2 つ以上あるときに重ならない値を渡す */
     id?: string;
+    /** 強調する列の位置と色 */
+    highlight?: Array<{
+        column: number;
+        color: ColorName;
+    }>;
+    /** 本文の行ごとの色（色を付けない行は `null`） */
+    rowColors?: Array<ColorName | null>;
+    /** `pin=` で留める最後の列の位置（`data-pin`） */
+    pin?: number | undefined;
+    /** 折り返さずに広く取る列の位置 */
+    wide?: number[];
+    /** 真偽値を ✓ と空欄で出す列の位置（`data-check`） */
+    check?: number[];
+    /** 見出しの段ごとのセル。渡すと `columns` の代わりに見出しの行をこの段で描く */
+    headRows?: TableHeadCell[][];
+    /** 本文の各行で `<th scope="row">` にする先頭の列の数（既定 0） */
+    rowHeader?: number;
+    /** 表示している行の隣り合う同じ値を結合する列の位置（小さい順） */
+    mergeColumns?: number[];
+};
+/** 多段の見出しのセル */
+export type TableHeadCell = {
+    /** セルの HTML */
+    html: string;
+    /** セルの左端の列の位置 */
+    column: number;
+    /** 覆う行の数（既定 1） */
+    rowspan?: number;
+    /** 覆う列の数（既定 1） */
+    colspan?: number;
 };
 /** 見出しのボタンとドロワーを作る引数 */
 export type TableToolsOptions = {
@@ -223,5 +254,9 @@ export declare function renderFoldedColumn(options: {
 };
 /** 行へのリンクの印を持つ先頭のセルの HTML を返す。`content` は先頭のセルの中身（`SLOT_MARKER` を渡して前後に分けられる）。`notice` を渡すと、URL をコピーした結果を印の横の知らせに出す */
 export declare function renderRowLink(content: string, id: string, label: string, notice?: "copied" | "failed"): string;
+/** 真偽値のセルの中身の HTML を返す。`true` は ✓ のアイコン、`false` は読み上げだけの `いいえ` */
+export declare function renderCheckCell(value: "true" | "false"): string;
+/** セルの文字が真偽値か */
+export declare function isCheckValue(text: string): text is "true" | "false";
 /** 表を囲む HTML を返す。`body` を渡すと囲みだけを作り、渡さなければ `columns`・`rows` から表を作る */
 export declare function renderTable(options: TableOptions): string;

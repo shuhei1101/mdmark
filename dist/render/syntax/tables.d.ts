@@ -1,5 +1,6 @@
 import type { StateCore, Token } from "markdown-it";
 import type { MdmarkMarkArgs, WarningItem } from "../../extensions.ts";
+import { type ColorName } from "../../parts/colors.ts";
 import { type TableFeature, type TableFilter, type TableKind, type TableTotal } from "../../parts/table.ts";
 import { FILTER_KINDS } from "../../table-logic.ts";
 import { type SyntaxWarning } from "./warnings.ts";
@@ -26,18 +27,42 @@ export type TableSpec = {
     hide: number[];
     /** `total=` で集計する列。`total` の無い表・表に無い列名・知らない計算は入れない */
     totals: TableTotal[];
+    /** `header-rows=` で `thead` にする表の先頭の行の数（既定 1）。数でない値と、表の行の数以上の値は 1 にする */
+    headRows: number;
+    /** `row-header=` で `<th scope="row">` にする本文の各行の先頭の列の数（既定 0）。数でない値と、表の列の数以上の値は 0 にする */
+    rowHeader: number;
+    /** `pin=` で留める最後の列の位置。`pin` の無い表・表に無い列名では入れない */
+    pin?: number | undefined;
+    /** `wide=` で広く取る列の位置。表に無い列名は入れない */
+    wide: number[];
+    /** `check=` で真偽値を ✓ と空欄で出す列の位置。表に無い列名は入れない */
+    check: number[];
+};
+/** 表の色の指定を読んだ結果 */
+export type TableColors = {
+    /** 強調する列の位置と色。色を省いた列は `blue` */
+    highlight: Array<{
+        column: number;
+        color: ColorName;
+    }>;
+    /** 本文の行ごとの色。色を付けない行は `null` */
+    rows: Array<ColorName | null>;
+    /** 読めなかった指定 */
+    warnings: WarningItem[];
 };
 /** 並びをコードにして `・` でつなぐ */
 export declare function codes(values: readonly string[]): string;
 /** `filter=` の値を、表の見出しの文字と照らして読む */
 export declare function readFilters(value: string, headers: string[], warnings: WarningItem[]): TableFilter[];
 /** 表の印の引数と表の見出しから `TableSpec` を作る。印が無い表は `default` */
-export declare function readTableSpec(args: MdmarkMarkArgs | undefined, headers: string[]): TableSpec;
+export declare function readTableSpec(args: MdmarkMarkArgs | undefined, headers: string[], rowCount: number): TableSpec;
+/** 表の印の `highlight=`・`row-color=`・`row-at=` を、表の見出しと本文の行のセルの文字で照らして読む */
+export declare function readTableColors(args: MdmarkMarkArgs | undefined, headers: string[], cells: string[][]): TableColors;
 /** 先頭のセルの文字から行の ID を作る。見出しの ID と同じ規則で、`taken` にあれば `-1`・`-2` と番号を上げる。作れないときは `row` を元にする。返した ID を `taken` に足す */
 export declare function rowIdOf(text: string, taken: Set<string>): string;
 /** 表の指定の警告を、書き方の警告に渡す値にする: 項目の形のものは 1 つにまとめ、1 文のものは 1 つずつ */
 export declare function warningsOf(mark: string, warnings: WarningItem[]): SyntaxWarning[];
-/** 表の見出しの文字を集める */
+/** 表の見出しの文字を集める。見出しが多段なら最下段の行の文字 */
 export declare function headersOf(tokens: Token[], tableOpen: number): string[];
 /** 表に読み上げの名前と tabindex を付け、`table` がオンなら、表の印の範囲の表と囲まない表を表の部品の囲みに入れる */
 export declare function decorateTables(state: StateCore): void;
