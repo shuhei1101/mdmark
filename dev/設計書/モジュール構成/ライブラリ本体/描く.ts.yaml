@@ -308,7 +308,7 @@ functions:
         summary: 見出しのある文書に右側の目次を置き、記法の操作を本文の列に付ける
         condition: '`# 手引き`・`## 導入`・表を描く。設定は省く'
         mock: なし
-        expected: '`el` の子が `div.mdmark-content` と `aside.mdmark-side-toc[data-mode="hover"]`。表の操作のボタンと節の開閉のボタンが本文の列の中にある'
+        expected: '`el` の子が `div.mdmark-content`・`aside.mdmark-side-toc[data-mode="hover"]`・`button.mdmark-back-to-top`。表の操作のボタンと節の開閉のボタンが本文の列の中にある'
       - name: test_mount_when_side_toc_kept_on_update
         case: 正常
         summary: 描き直しても右側の目次を 1 つだけ置き、ピン止めを保つ
