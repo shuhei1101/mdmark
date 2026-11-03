@@ -38,10 +38,10 @@
 
 | 対象 | 方針 | 補足 |
 | --- | --- | --- |
-| 使い方集の参照先 | mdmark のクローン（develop の worktree）を登録した配信元の `guide` の行から参照する。プラグインはコピーも登録もしない | ほかのプロジェクトからは `search_docs` に `outside_scope: true` を指定する |
+| 使い方集の参照先 | mdmark のクローン（develop の worktree）を登録した配信元 `mdmark` の `docs` の行を、タグ `topic:使い方集` で絞って参照する。プラグインはコピーも登録もしない | ほかのプロジェクトからは `search_docs` に `outside_scope: true` を指定する |
 | `read_guide` | MCP のツール・処理・テストから削除する | 破壊的変更 |
 | MCP の instructions | 使う場面・使わない場面・ツールの順序（書く前に dev-docs の `search_docs` で使い方集を参照 → 書く → `check` で点検、図は `diagram-check` の手順）を事実の文で記載する | 規約『注入文の書き分けと書き方』。instructions は 4,096 字以下 |
-| 配信元の説明書 | mdmark の `dev-docs.yaml` の `instructions` に、使い方集の探し方（`guide` の行の一覧を引く・`writing` と記法のページを読む）を記載する | instructions と同じ文を 2 か所に置かない |
+| 配信元の説明書 | mdmark の `dev-docs.yaml` の `instructions` に、使い方集の探し方（タグ `topic:使い方集` で絞って一覧を引く・`writing` と記法のページを読む）を記載する | instructions と同じ文を 2 か所に置かない |
 | SessionStart | フックとその処理・テストを削除する | - |
 | dev-docs が無いとき | MCP の instructions に、dev-docs が無い、または mdmark の配信元が登録されていないときは「dev-docs が無いので見つかりません」と記載する | - |
 | 既存機能への影響 | `export_html`・`build_site`・`check` と PreToolUse のフックは変えない | - |
@@ -54,6 +54,7 @@
 | --- | --- | --- |
 | 複合ユースケース設計 | `5f5d0743..b0599a4d` | - |
 | 複合ユースケース設計 | `b0599a4d..c01be231` | 使い方集の参照先と SessionStart の削除の確認事項の回答を反映 |
+| 複合ユースケース設計 | `c01be231..e944c524` | レビューの指摘の修正 |
 
 ## テスト結果
 
