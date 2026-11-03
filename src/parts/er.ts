@@ -39,15 +39,21 @@ export function erRestText(hidden: number): string {
   return `非表示 ${hidden} 列`;
 }
 
-/** ER 図のテーブル（見出しと列の行）の HTML。全ての列の行を出し、畳んだテーブルは主キーでも外部キーでもない列の行を隠す */
+/** 定義の文字から `{{`・`}}` を除く（読み上げの名前とツールチップの題に使う） */
+export function plainDefinitionText(value: string): string {
+  return value.replace(/\{\{(.+?)\}\}/g, "$1");
+}
+
+/** ER 図のテーブル（見出しと列の行）の HTML。全ての列の行を出し、畳んだテーブルは主キーでも外部キーでもない列の行を隠す。`text` は定義の文字を HTML にする関数 */
 export function renderErTable(options: {
   table: MdmarkErTable;
   tipId: string | undefined;
+  text: (value: string) => string;
 }): string {
-  const { table, tipId } = options;
+  const { table, tipId, text } = options;
   const folded = table.folded === true;
   const color = erTableColor(table);
-  const label = escapeHtml(table.label);
+  const label = escapeHtml(plainDefinitionText(table.label));
   const others = table.columns.filter((c) => !isKeyColumn(c)).length;
   const fold =
     others > 0
@@ -70,14 +76,14 @@ export function renderErTable(options: {
         )
         .join("");
       const hidden = folded && !isKeyColumn(column) ? ' hidden="hidden"' : "";
-      return `<li class="mdmark-diagram-er-column" data-column="${escapeHtml(column.name)}"${column.pk ? ' data-pk=""' : ""}${hidden}><span class="mdmark-diagram-er-keys">${keys}</span><span class="mdmark-diagram-er-name">${escapeHtml(column.name)}</span><span class="mdmark-diagram-er-type">${escapeHtml(column.type)}</span></li>`;
+      return `<li class="mdmark-diagram-er-column" data-column="${escapeHtml(column.name)}"${column.pk ? ' data-pk=""' : ""}${hidden}><span class="mdmark-diagram-er-keys">${keys}</span><span class="mdmark-diagram-er-name">${text(column.name)}</span><span class="mdmark-diagram-er-type">${text(column.type)}</span></li>`;
     })
     .join("");
   const rest =
     others > 0
       ? `<li class="mdmark-diagram-er-rest"${folded ? "" : ' hidden="hidden"'}>${erRestText(others)}</li>`
       : "";
-  return `<div class="mdmark-diagram-er-table${info ? " has-tip" : ""}" data-node="${escapeHtml(table.id)}"${color ? ` data-color="${color}"` : ""} style="left:${table.x}px;top:${table.y}px;width:${table.w}px"><div class="mdmark-diagram-er-head">${fold}<span class="mdmark-diagram-er-title">${iconSvg("table")}<span class="mdmark-diagram-er-physical">${escapeHtml(table.name)}</span></span><span class="mdmark-diagram-er-sub"><span class="mdmark-diagram-er-logical">${label}</span>${kind}</span><span class="mdmark-diagram-er-actions">${info}</span></div><ul class="mdmark-diagram-er-columns" aria-label="「${label}」の列">${rows}${rest}</ul></div>`;
+  return `<div class="mdmark-diagram-er-table${info ? " has-tip" : ""}" data-node="${escapeHtml(table.id)}"${color ? ` data-color="${color}"` : ""} style="left:${table.x}px;top:${table.y}px;width:${table.w}px"><div class="mdmark-diagram-er-head">${fold}<span class="mdmark-diagram-er-title">${iconSvg("table")}<span class="mdmark-diagram-er-physical">${text(table.name)}</span></span><span class="mdmark-diagram-er-sub"><span class="mdmark-diagram-er-logical">${text(table.label)}</span>${kind}</span><span class="mdmark-diagram-er-actions">${info}</span></div><ul class="mdmark-diagram-er-columns" aria-label="「${label}」の列">${rows}${rest}</ul></div>`;
 }
 
 /** 関係の線の端の多重度の記号（`1` は縦線 2 本、`0..1` は縦線と丸、`1..n` は鳥の足と縦線、`0..n` は鳥の足と丸）。`dir` は線がテーブルから出る向き */

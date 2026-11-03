@@ -21,7 +21,7 @@ import {
 } from "../diagram/er.ts";
 import { jumpPaths, polylinePath, ZOOM } from "../diagram/geometry.ts";
 import { pointSvg, renderChart, SCATTER_POINT_SIZE } from "./chart.ts";
-import { erEndSvg, renderErTable } from "./er.ts";
+import { erEndSvg, plainDefinitionText, renderErTable } from "./er.ts";
 import { escapeHtml } from "./escape.ts";
 import { type IconName, iconSvg } from "./icons.ts";
 
@@ -199,7 +199,7 @@ export function renderDiagramTip(tip: DiagramTip): string {
     const columns = rows
       ? `<dl class="mdmark-diagram-tip-io mdmark-diagram-er-tip-columns">${rows}</dl>`
       : "";
-    return `<div class="mdmark-diagram-tip" id="${escapeHtml(tip.id)}" role="tooltip" data-tip-for="${owner}"${hidden}><span class="mdmark-term-tip-section"><span class="mdmark-term-tip-heading">${escapeHtml(table.label)}（${escapeHtml(table.name)}）</span>${desc}${columns}</span></div>`;
+    return `<div class="mdmark-diagram-tip" id="${escapeHtml(tip.id)}" role="tooltip" data-tip-for="${owner}"${hidden}><span class="mdmark-term-tip-section"><span class="mdmark-term-tip-heading">${escapeHtml(plainDefinitionText(table.label))}（${escapeHtml(plainDefinitionText(table.name))}）</span>${desc}${columns}</span></div>`;
   }
   const body =
     tip.kind === "io" && tip.io
@@ -601,8 +601,12 @@ export function renderEr(
   definition: MdmarkErDefinition,
   id: string,
   hints: boolean,
+  lookup?: TermLookup,
 ): DiagramPart {
   const tips = createTips(id);
+  const found = { terms: false };
+  const text = (value: string): string =>
+    renderText(value, tips, lookup, found);
   const tables = new Map(definition.tables.map((table) => [table.id, table]));
   const folded = (tableId: string): boolean =>
     tables.get(tableId)?.folded === true;
@@ -622,7 +626,7 @@ export function renderEr(
     );
     if (relation.label) {
       labels.push(
-        `<span class="mdmark-diagram-label" data-line="er" data-er-relation="${index}" style="left:${route.label.x}px;top:${route.label.y}px">${escapeHtml(relation.label)}</span>`,
+        `<span class="mdmark-diagram-label" data-line="er" data-er-relation="${index}" style="left:${route.label.x}px;top:${route.label.y}px">${text(relation.label)}</span>`,
       );
     }
   });
@@ -644,12 +648,12 @@ export function renderEr(
       hints && described
         ? tips.add({
             kind: "table",
-            label: table.label,
+            label: plainDefinitionText(table.label),
             table,
             owner: `table:${table.id}`,
           })
         : undefined;
-    parts.push(renderErTable({ table, tipId }));
+    parts.push(renderErTable({ table, tipId, text }));
   }
   parts.push(...labels);
   return {
@@ -658,7 +662,7 @@ export function renderEr(
     height,
     tips: tips.html(),
     jumps: false,
-    terms: false,
+    terms: found.terms,
   };
 }
 
@@ -1015,7 +1019,7 @@ export function renderDiagram(options: {
       hints,
     );
   } else if (kind === "er") {
-    part = renderEr(definition as MdmarkErDefinition, id, hints);
+    part = renderEr(definition as MdmarkErDefinition, id, hints, lookup);
   } else {
     part = renderChart(definition as MdmarkChartDefinition, id);
   }
