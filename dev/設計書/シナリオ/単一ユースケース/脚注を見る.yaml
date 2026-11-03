@@ -155,3 +155,26 @@ scenarios:
       - 段落に `[^missing]` が書いた文字のまま出ている
       - 番号と文書の末尾の脚注の一覧が無い
     test: test_error_when_definition_missing
+  - name: 正常シナリオ（番号から末尾の一覧へ移る）
+    setup:
+      - name: mdmark を読むページ
+        description: 正常シナリオと同じ
+      - name: 脚注を持つ Markdown
+        description: 正常シナリオと同じ
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を渡して描かせる
+        M-->>P: 末尾に閉じた脚注の一覧を置いて描く
+        U->>P: 番号 2 を押す
+        P-->>U: 一覧を開き、脚注 2 の項目を表示
+        U->>P: 一覧を閉じ、Tab で番号 1 へフォーカスを移して Enter を押す
+        P-->>U: 一覧を開き、脚注 1 の項目を表示
+    expected:
+      - 番号 `2` を押すと、末尾の脚注の一覧が開き、`行内の補足` の項目が画面の中に入り、その項目にフォーカスが移る
+      - 番号 `1` にフォーカスして Enter を押すと、閉じていた一覧が開き、`出典の説明` の項目が画面の中に入り、その項目にフォーカスが移る
+    test: test_normal_when_jump_to_list
