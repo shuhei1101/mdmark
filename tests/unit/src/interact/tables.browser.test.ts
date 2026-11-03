@@ -1449,3 +1449,91 @@ test("test_attach_tables_when_nested_table_sorted", async () => {
     expect(cell.hasAttribute("aria-sort")).toBe(false);
   }
 });
+
+/** `+columns` の表の Markdown（列 `名前`・`状態`・`説明`）。`hide` を渡すと最初から隠す列を指定する */
+function columnsTable(hide?: string): string {
+  return [
+    hide
+      ? `<!-- table: data +columns hide=${hide} -->`
+      : "<!-- table: data +columns -->",
+    "",
+    "| 名前 | 状態 | 説明 |",
+    "| --- | --- | --- |",
+    "| a | 完了 | 一つ目 |",
+    "| b | 作業中 | 二つ目 |",
+    "",
+    "<!-- /table -->",
+    "",
+  ].join("\n");
+}
+
+/** 列の表示のメニューを開き、列名のチェックボックスを返す */
+function columnCheckboxes(wrapper: HTMLElement): HTMLInputElement[] {
+  findButton(wrapper, "button.mdmark-columns-toggle").click();
+  return [
+    ...wrapper.querySelectorAll<HTMLInputElement>(
+      '.mdmark-columns-menu input[type="checkbox"]',
+    ),
+  ];
+}
+
+// 列の表示を切り替えるたびに、表の番号と隠している列の見出しで知らせる（正常系）
+test("test_attach_tables_when_columns_notified", async () => {
+  // 準備: 1 つ目は削除したブロックの中、2 つ目は 3 列目を隠した表、3 つ目は隠していない表
+  const { attachTables } = await loadTables();
+  const { root } = createRoot(
+    [columnsTable(), columnsTable("説明"), columnsTable()].join("\n"),
+  );
+  const wrappers = [...root.querySelectorAll<HTMLElement>(".mdmark-table")];
+  const deleted = document.createElement("div");
+  deleted.className = "mdmark-diff-block";
+  deleted.dataset.kind = "del";
+  wrappers[0]?.before(deleted);
+  deleted.append(wrappers[0] as HTMLElement);
+  const third = wrappers[2];
+  if (!third) {
+    throw new Error("3 つ目の表が無い");
+  }
+  const onColumnsChange = vi.fn();
+  // 実行・検証: 付けた時点では知らせない
+  detachers.push(attachTables(root, { onColumnsChange }));
+  expect(onColumnsChange).not.toHaveBeenCalled();
+  // 実行・検証: 3 つ目の表で `状態` のチェックを外す
+  columnCheckboxes(third)[1]?.click();
+  expect(onColumnsChange).toHaveBeenLastCalledWith({
+    tableIndex: 1,
+    hidden: ["状態"],
+  });
+  // 実行・検証: 既定に戻す
+  findButton(third, "button.mdmark-columns-reset").click();
+  expect(onColumnsChange).toHaveBeenLastCalledWith({
+    tableIndex: 1,
+    hidden: [],
+  });
+  expect(onColumnsChange).toHaveBeenCalledTimes(2);
+});
+
+// 知らせが例外を投げても列の表示を切り替える（異常系）
+test("test_attach_tables_when_columns_callback_throws", async () => {
+  // 準備
+  const { attachTables } = await loadTables();
+  const { root } = createRoot(columnsTable());
+  const error = new Error("知らせの失敗");
+  const onColumnsChange = vi.fn(() => {
+    throw error;
+  });
+  const consoleError = vi.spyOn(console, "error").mockImplementation(() => {});
+  detachers.push(attachTables(root, { onColumnsChange }));
+  // 実行: 2 列目のチェックを外す
+  columnCheckboxes(root)[1]?.click();
+  // 検証
+  for (const cell of columnCells(root, 1)) {
+    expect(cell.hasAttribute("hidden")).toBe(true);
+  }
+  expect(onColumnsChange).toHaveBeenCalledTimes(1);
+  expect(consoleError).toHaveBeenCalledWith(
+    expect.any(String),
+    "onColumnsChange",
+    error,
+  );
+});

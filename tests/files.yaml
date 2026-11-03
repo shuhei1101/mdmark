@@ -1132,6 +1132,12 @@ files:
     related:
       - to: src/comments/index
         type: tests
+  - path: unit/src/comments/bubble.browser.test.ts
+    description: src/comments/bubble.ts（「吹き出しのコメントの修正と削除の操作（dist/comments.js）」）を確かめるブラウザで流す単体テスト。bubble.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, topic:ビュー, topic:コメント]
+    related:
+      - to: src/comments/bubble
+        type: tests
   - path: unit/src/comments/spec.test.ts
     description: src/comments/spec.ts（「公開の型 MdmarkComment・MdmarkCommentDraft・MdmarkCommentStore・MdmarkCommentsHandle、引数とコメントの形の検査（dist/index.js）」）を確かめる単体テスト。spec.ts を変えたときに、合わせて見修正するケースを探すときに読む。
     tags: [topic:単体テスト, tool:vitest, topic:ビュー, topic:コメント]

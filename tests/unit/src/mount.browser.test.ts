@@ -719,3 +719,271 @@ test("test_mount_when_diff_blocks_failed", async () => {
   expect(el.querySelector(".mdmark-diff-block")).toBeNull();
   expect(consoleError.mock.calls.flat()).toContain(error);
 });
+
+/** 差分のブロックの種類ごとに、包んだ段落の文字を上から順に返す */
+function blockParagraphs(
+  el: HTMLElement,
+  kind: "add" | "del",
+): (string | undefined)[] {
+  return [
+    ...el.querySelectorAll(`div.mdmark-diff-block[data-kind="${kind}"]`),
+  ].map((block) => block.querySelector("p")?.textContent ?? undefined);
+}
+
+// 比較元を渡すと、取り出し元なしで変えたブロックを色分けして描く（正常系）
+test("test_mount_when_base_markdown", async () => {
+  // 準備
+  const el = createElement();
+  // 実行
+  await mountTracked(el, {
+    markdown: "A\n\nB\n\nC\n",
+    baseMarkdown: "A\n\nC\n\nD\n",
+  });
+  // 検証
+  expect(blockParagraphs(el, "add")).toEqual(["B"]);
+  expect(blockParagraphs(el, "del")).toEqual(["D"]);
+  expect(el.querySelector(".mdmark-diff-toggle")).toBeNull();
+});
+
+// 比較元が本文と同じなら色分けしない（正常系）
+test("test_mount_when_base_markdown_same", async () => {
+  // 準備
+  const el = createElement();
+  // 実行
+  await mountTracked(el, { markdown: "# A\n", baseMarkdown: "# A\n" });
+  // 検証
+  expect(el.querySelector(".mdmark-diff-block")).toBeNull();
+});
+
+// update で比較元を差し替え、省くと前の比較元のまま、null で外す（正常系）
+test("test_mount_when_base_replaced", async () => {
+  // 準備
+  const el = createElement();
+  const handle = await mountTracked(el, {
+    markdown: "A\n",
+    baseMarkdown: "A\n\nB\n",
+  });
+  // 実行・検証: 比較元を差し替える
+  handle.update("A\n\nC\n", { baseMarkdown: "A\n" });
+  expect(blockParagraphs(el, "add")).toEqual(["C"]);
+  // 実行・検証: 省くと前の比較元のまま
+  handle.update("A\n\nD\n");
+  expect(blockParagraphs(el, "add")).toEqual(["D"]);
+  // 実行・検証: null で外す
+  handle.update("A\n\nD\n", { baseMarkdown: null });
+  expect(el.querySelector(".mdmark-diff-block")).toBeNull();
+});
+
+// 比較元と取り出し元を両方渡すと、色分けに比較元を使い、取り出し元は差分を開く UI にだけ使う（正常系）
+test("test_mount_when_base_with_diff_source", async () => {
+  // 準備
+  const calls: string[] = [];
+  const diffSource = {
+    revisions: async (docId: string) => {
+      calls.push(`revisions:${docId}`);
+      return DIFF_REVISIONS;
+    },
+    content: async ({ revisionId }: { revisionId: string }) => {
+      calls.push(`content:${revisionId}`);
+      return "";
+    },
+  };
+  const blocksEl = createElement();
+  const buttonEl = createElement();
+  const options = {
+    markdown: "A\n\nB\n",
+    baseMarkdown: "A\n",
+    docId: "guide",
+    diffSource,
+  };
+  // 実行
+  await mountTracked(blocksEl, { ...options, diffMode: "blocks" });
+  await mountTracked(buttonEl, { ...options, diffMode: "button" });
+  await new Promise((resolve) => setTimeout(resolve, 50));
+  // 検証
+  expect(blockParagraphs(blocksEl, "add")).toEqual(["B"]);
+  expect(blockParagraphs(buttonEl, "add")).toEqual(["B"]);
+  expect(buttonEl.querySelector(".mdmark-diff-toggle")).not.toBeNull();
+  expect(calls).toEqual([]);
+});
+
+// 比較元が文字列でも null でもないと投げる（異常系）
+test("test_mount_when_base_not_string", async () => {
+  // 準備
+  const { mount } = await loadMount();
+  const el = createElement();
+  el.innerHTML = "<p>前の中身</p>";
+  const updated = createElement();
+  const handle = await mountTracked(updated, { markdown: "# A" });
+  // 実行・検証: mount
+  expect(() =>
+    mount(el, { markdown: "# A", baseMarkdown: 1 as unknown as string }),
+  ).toThrow(TypeError);
+  expect(() =>
+    mount(el, { markdown: "# A", baseMarkdown: 1 as unknown as string }),
+  ).toThrow("baseMarkdown");
+  expect(el.innerHTML).toBe("<p>前の中身</p>");
+  // 実行・検証: update
+  expect(() =>
+    handle.update("# B", { baseMarkdown: 1 as unknown as string }),
+  ).toThrow(TypeError);
+  expect(() =>
+    handle.update("# B", { baseMarkdown: 1 as unknown as string }),
+  ).toThrow("baseMarkdown");
+  expect(updated.querySelector("h1")?.textContent).toBe("A");
+});
+
+// 列の表示の知らせが関数でないと投げる（異常系）
+test("test_mount_when_columns_callback_not_function", async () => {
+  // 準備
+  const { mount } = await loadMount();
+  const el = createElement();
+  el.innerHTML = "<p>前の中身</p>";
+  const opts = {
+    markdown: "# A",
+    onColumnsChange: "x" as unknown as MountOptions["onColumnsChange"],
+  };
+  // 実行・検証
+  expect(() => mount(el, opts)).toThrow(TypeError);
+  expect(() => mount(el, opts)).toThrow("onColumnsChange");
+  expect(el.innerHTML).toBe("<p>前の中身</p>");
+});
+
+// 列の表示を切り替えると知らせ、描いたときと update では知らせない（正常系）
+test("test_mount_when_columns_changed", async () => {
+  // 準備
+  const el = createElement();
+  const markdown = [
+    "<!-- table: data +columns hide=説明 -->",
+    "",
+    "| 名前 | 状態 | 説明 |",
+    "| --- | --- | --- |",
+    "| a | 完了 | 一つ目 |",
+    "",
+    "<!-- /table -->",
+    "",
+  ].join("\n");
+  const onColumnsChange = vi.fn();
+  const handle = await mountTracked(el, { markdown, onColumnsChange });
+  // 実行・検証: 描いたときと update では呼ばない
+  handle.update(markdown);
+  expect(onColumnsChange).not.toHaveBeenCalled();
+  // 実行: 列の表示で `状態` のチェックを外す
+  el.querySelector<HTMLButtonElement>("button.mdmark-columns-toggle")?.click();
+  el.querySelectorAll<HTMLInputElement>(
+    '.mdmark-columns-menu input[type="checkbox"]',
+  )[1]?.click();
+  // 検証
+  expect(onColumnsChange).toHaveBeenCalledTimes(1);
+  expect(onColumnsChange).toHaveBeenCalledWith({
+    tableIndex: 0,
+    hidden: ["状態", "説明"],
+  });
+});
+
+// 読み書きの関数の update・remove が関数でないと投げる（異常系）
+test("test_mount_when_comment_store_edit_invalid", async () => {
+  // 準備
+  const { mount } = await loadMount();
+  const el = createElement();
+  el.innerHTML = "<p>前の中身</p>";
+  const commentStore = {
+    load: async () => [],
+    save: async () => ({
+      id: "c1",
+      quote: "a",
+      prefix: "",
+      suffix: "",
+      body: "b",
+    }),
+    update: 1,
+  } as unknown as MountOptions["commentStore"];
+  // 実行・検証
+  expect(() =>
+    mount(el, { markdown: "# A", docId: "guide", commentStore }),
+  ).toThrow(TypeError);
+  expect(() =>
+    mount(el, { markdown: "# A", docId: "guide", commentStore }),
+  ).toThrow("commentStore");
+  expect(el.innerHTML).toBe("<p>前の中身</p>");
+});
+
+/** 部品のモジュールを読む処理を読み込む */
+const loadPartModules = () => import("../../../src/part-modules.ts");
+
+/** 代役のコメントのモジュールが呼ばれたことを控える場所（グローバル） */
+declare global {
+  var __mdmarkMountCommentsTest:
+    | { reload: number; focus: string[] }
+    | undefined;
+}
+
+// reloadComments・focusComment を今の描画の部品に任せ、destroy の後は呼ばない（正常系）
+test("test_mount_when_comments_delegated", async () => {
+  // 準備
+  const recorder = { reload: 0, focus: [] as string[] };
+  globalThis.__mdmarkMountCommentsTest = recorder;
+  const { partModules, partModuleUrls, setPartModuleUrl } =
+    await loadPartModules();
+  partModules.clear();
+  const url = URL.createObjectURL(
+    new Blob(
+      [
+        `const rec = globalThis.__mdmarkMountCommentsTest;
+export async function attachComments() {
+  return {
+    detach: () => {},
+    reload: async () => { rec.reload += 1; },
+    focus: (id) => { rec.focus.push(id); },
+  };
+}`,
+      ],
+      { type: "text/javascript" },
+    ),
+  );
+  setPartModuleUrl("comments", url);
+  try {
+    const el = createElement();
+    const handle = await mountTracked(el, {
+      markdown: "本文",
+      config: { features: { comments: true } },
+      docId: "guide",
+      commentStore: { load: async () => [], save: vi.fn() },
+    });
+    // 実行
+    await handle.reloadComments();
+    handle.focusComment("c1");
+    handle.destroy();
+    await handle.reloadComments();
+    handle.focusComment("c1");
+    // 検証
+    expect(recorder.reload).toBe(1);
+    expect(recorder.focus).toEqual(["c1"]);
+  } finally {
+    partModules.clear();
+    partModuleUrls.clear();
+    URL.revokeObjectURL(url);
+    globalThis.__mdmarkMountCommentsTest = undefined;
+  }
+});
+
+// 文字列・null・undefined は通す（正常系）
+test("test_check_base_markdown", async () => {
+  // 準備
+  const { checkBaseMarkdown } = await loadMount();
+  // 実行・検証
+  for (const value of ["# A", "", null, undefined]) {
+    expect(() => checkBaseMarkdown(value)).not.toThrow();
+  }
+});
+
+// それ以外は投げる（異常系）
+test("test_check_base_markdown_when_invalid", async () => {
+  // 準備
+  const { checkBaseMarkdown } = await loadMount();
+  // 実行・検証
+  for (const value of [1, {}]) {
+    expect(() => checkBaseMarkdown(value)).toThrow(TypeError);
+    expect(() => checkBaseMarkdown(value)).toThrow("baseMarkdown");
+  }
+});
