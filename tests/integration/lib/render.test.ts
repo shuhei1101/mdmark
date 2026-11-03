@@ -1179,7 +1179,8 @@ test("test_normal_when_chart_types", async () => {
     ),
   );
   expect(fills.size).toBe(2);
-  expect(matches(bar, /<pattern[^>]*patternunits/g)).toHaveLength(4);
+  // 塗りの模様は、系列の上限の 6 つ分を定義に置く
+  expect(matches(bar, /<pattern[^>]*patternunits/g)).toHaveLength(6);
   const ticks = matches(
     bar,
     /<text[^>]*class="mdmark-diagram-axis-text"[^>]*text-anchor="end"[^>]*>-?\d+<\/text>/g,
@@ -1456,7 +1457,7 @@ test("test_normal_when_code_block_syntax_invalid", async () => {
     "<!-- code: highlight=2,5 -->",
     "",
     ...block(["const a = 1;", "const b = 2;", "const c = 3;"]),
-    ...block(["foo(); // [!code focus]"]),
+    ...block(["foo(); // [!code blink]"]),
     "<!-- code: title=app.ts -->",
     "",
     "直後の段落",
@@ -1482,12 +1483,12 @@ test("test_normal_when_code_block_syntax_invalid", async () => {
     spaceBox = "",
   ] = boxes.map(plainText);
   expect(keyBox).toContain("color=");
-  for (const key of ["title=", "lines", "highlight="]) {
+  for (const key of ["title=", "lines", "highlight=", "fold="]) {
     expect(keyBox).toContain(key);
   }
   expect(lineBox).toContain("5");
   expect(lineBox).toContain("3 行");
-  expect(markBox).toContain("[!code focus]");
+  expect(markBox).toContain("[!code blink]");
   expect(markBox).toContain("[!code ++]");
   expect(fenceBox).toContain("直後にコードブロックがありません");
   expect(spaceBox).toContain("App.ts");
@@ -1499,7 +1500,7 @@ test("test_normal_when_code_block_syntax_invalid", async () => {
     /data-kind="highlight"><span class="mdmark-code-text">const b = 2;/,
   );
   expect(focused).not.toContain("mdmark-code-line");
-  expect(focused).toContain("// [!code focus]");
+  expect(focused).toContain("// [!code blink]");
   expect(html).toContain("<p>直後の段落</p>");
 });
 
@@ -2241,4 +2242,592 @@ test("test_normal_when_media_features_disabled", async () => {
   expect(html).toContain(
     '<a href="https://example.com/docs">https://example.com/docs</a>',
   );
+});
+
+/** グラフの部品の定義の共通の項目（範囲と更新日） */
+const CHART_META = { scope: "10 月", updated: "2026-10-31" };
+
+/** グラフの部品の定義を `<!-- chart -->` の範囲の json のコードブロックにする */
+function chartBlock(definition: Record<string, unknown>): string {
+  return wrapDirective(
+    "chart",
+    JSON.stringify({ ...CHART_META, ...definition }, null, 2),
+  );
+}
+
+/** 横の軸の目盛り 3 つと、2 つの系列を持つグラフの部品の定義 */
+function twoSeriesChart(type: string): Record<string, unknown> {
+  return {
+    type,
+    title: `${type} のグラフ`,
+    x: { label: "週", ticks: ["1", "2", "3"] },
+    y: { label: "件" },
+    series: [
+      { name: "メール", points: [3, 5, 2] },
+      { name: "フォーム", points: [4, 1, 6] },
+    ],
+  };
+}
+
+/** 系列の数を指定した折れ線のグラフの部品の定義 */
+function lineChart(count: number): Record<string, unknown> {
+  return {
+    type: "line",
+    title: `${count} つの系列`,
+    x: { label: "週", ticks: ["1", "2", "3"] },
+    y: { label: "件" },
+    series: Array.from({ length: count }, (_, index) => ({
+      name: `窓口${index + 1}`,
+      points: [index, index + 1, index + 2],
+    })),
+  };
+}
+
+/** 項目 2 つのドーナツのグラフの部品の定義 */
+const DONUT_CHART = {
+  type: "donut",
+  title: "返信の種類",
+  items: [
+    { name: "自動", value: 3 },
+    { name: "担当者", value: 5 },
+  ],
+};
+
+/** 棒と折れ線を組み合わせ、`y2` を持たないグラフの部品の定義 */
+const COMBO_CHART = {
+  type: "combo",
+  title: "件数と解決数",
+  x: { label: "週", ticks: ["1", "2", "3"] },
+  y: { label: "件" },
+  series: [
+    { name: "件数", as: "bar", points: [3, 5, 2] },
+    { name: "解決数", as: "line", points: [4, 1, 6] },
+  ],
+};
+
+/** 描いた HTML の図を、`figure.mdmark-diagram` ごとに書いた順に返す */
+function chartFigures(html: string): string[] {
+  return html.split('<figure class="mdmark-diagram"').slice(1);
+}
+
+/** 棒の `rect` の属性の値を数にして返す */
+function rectBox(tag: string): {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+} {
+  const value = (name: string): number =>
+    Number(new RegExp(`\\s${name}="([^"]*)"`).exec(tag)?.[1]);
+  return {
+    x: value("x"),
+    y: value("y"),
+    width: value("width"),
+    height: value("height"),
+  };
+}
+
+/** 図の中の、凡例の見本を除いた棒の `rect` を書いた順に返す */
+function chartBars(figure: string): string[] {
+  const svg = /<svg[^>]*role="img"[\s\S]*?<\/svg>/.exec(figure)?.[0] ?? "";
+  return matches(svg, /<rect[^>]*class="mdmark-diagram-bar"[^>]*>/g);
+}
+
+// 表の印の `header-rows=`・`row-header=` と `^^`・`<<` で、多段の見出し・行見出し・結合したセルを出す（正常系）
+test("test_normal_when_table_cells_merged", async () => {
+  // 準備
+  const render = await loadRender();
+  const markdown = [
+    "<!-- table: data header-rows=2 row-header=1 -->",
+    "",
+    "| 区分 | 値 | << | 備考 |",
+    "| --- | --- | --- | --- |",
+    "| 分類 | 件数 | 時間 | メモ |",
+    "| A | 1 | 2 | x |",
+    "| ^^ | 3 | 4 | y |",
+    "| ^^ | 5 | 6 | z |",
+    "",
+    "<!-- /table -->",
+    "",
+    "| 列A | 列B |",
+    "| --- | --- |",
+    "| ^^ | << |",
+    "",
+  ].join("\n");
+  // 実行
+  const html = render(markdown);
+  // 検証
+  const [merged = "", plain = ""] = html
+    .split('<div class="mdmark-table"')
+    .slice(1);
+  const head = innerHtml(merged, "<thead");
+  const headRows = matches(head, /<tr>[\s\S]*?<\/tr>/g);
+  expect(headRows).toHaveLength(2);
+  expect(startTags(headRows[0] ?? "", "th")[1]).toContain('colspan="2"');
+  expect(headRows[0]).not.toContain("&lt;&lt;");
+  const bodyRows = matches(innerHtml(merged, "<tbody"), /<tr>[\s\S]*?<\/tr>/g);
+  for (const row of bodyRows) {
+    expect(startTags(row, "th")[0]).toContain('scope="row"');
+  }
+  const firsts = bodyRows.map((row) => startTags(row, "th")[0] ?? "");
+  expect(firsts[0]).toContain('rowspan="3"');
+  for (const [index, row] of bodyRows.slice(1).entries()) {
+    expect(firsts[index + 1]).toContain('data-merge="up"');
+    expect(firsts[index + 1]).toContain("hidden");
+    expect(row).toMatch(/<th[^>]*>A<\/th>/);
+  }
+  expect(merged.slice(0, merged.indexOf(">"))).toContain(
+    'data-merge-columns="0"',
+  );
+  expect(plain).toContain('<td data-label="列A">^^</td>');
+  expect(plain).toContain("&lt;&lt;");
+  expect(plain).not.toMatch(/rowspan|colspan|data-merge/);
+  expect(html).not.toContain('<div class="mdmark-syntax-warning"');
+});
+
+// 読めない `header-rows=` と、結合する相手の無い `^^`・`<<` を書き方の警告にし、文字のまま出す（正常系）
+test("test_normal_when_table_merge_invalid", async () => {
+  // 準備
+  const render = await loadRender();
+  const markdown = [
+    "<!-- table: data header-rows=5 -->",
+    "",
+    "| << | 列B |",
+    "| --- | --- |",
+    "| x | ^^ |",
+    "| y | z |",
+    "",
+    "<!-- /table -->",
+    "",
+  ].join("\n");
+  // 実行
+  const html = render(markdown);
+  // 検証
+  const [box = ""] = warnings(html).map(plainText);
+  expect(html.indexOf("mdmark-syntax-warning")).toBeLessThan(
+    html.indexOf("<table"),
+  );
+  expect(box).toContain("header-rows=");
+  expect(box).toContain("3");
+  expect(box).toContain("<<");
+  expect(box).toContain("左に結合するセルがありません");
+  expect(box).toContain("^^");
+  expect(box).toContain("見出しの行と本文の行をまたいで結合できません");
+  expect(matches(innerHtml(html, "<thead"), /<tr>/g)).toHaveLength(1);
+  expect(html).toContain("<th>&lt;&lt;</th>");
+  expect(html).toContain('<td data-label="列B">^^</td>');
+  expect(html).not.toMatch(/rowspan|colspan/);
+  expect(html).toContain('data-features="sort pin filter"');
+});
+
+// 注意書きのタイトル・`+` の開いた折り畳み・入れ子を出す（正常系）
+test("test_normal_when_callout_titled_and_nested", async () => {
+  // 準備
+  const render = await loadRender();
+  const markdown = [
+    "> [!TIP] 設定を先に確認する",
+    "> タイトルを付けた本文",
+    "",
+    "> [!NOTE]+ 詳細",
+    "> 開いて描く本文",
+    "",
+    "> [!WARNING]",
+    "> 外側の本文",
+    ">",
+    "> > [!TIP]",
+    "> > 内側の本文",
+    "",
+  ].join("\n");
+  // 実行
+  const html = render(markdown);
+  // 検証
+  expect(html).toContain(
+    '<div class="markdown-alert markdown-alert-tip"><p class="markdown-alert-title"><span class="mdmark-visually-hidden">ヒント: </span>設定を先に確認する</p><p>タイトルを付けた本文</p>',
+  );
+  expect(html).toMatch(
+    /<details class="markdown-alert markdown-alert-note" open><summary[^>]*>[\s\S]*?詳細<\/summary><p>開いて描く本文<\/p>/,
+  );
+  const warning = html.slice(html.indexOf("markdown-alert-warning"));
+  expect(warning).toMatch(
+    /<p>外側の本文<\/p>\s*<div class="markdown-alert markdown-alert-tip">[\s\S]*?<p>内側の本文<\/p>/,
+  );
+  for (const mark of ["[!TIP]", "[!NOTE]", "[!WARNING]"]) {
+    expect(html).not.toContain(mark);
+  }
+});
+
+/** 外側のタブの `macOS` の中に内側のタブを置いた Markdown。`closeInner` が偽なら内側の閉じの印を書かない */
+function nestedTabs(closeInner: boolean): string {
+  return [
+    "<!-- tabs -->",
+    "",
+    "### macOS",
+    "",
+    "<!-- tabs -->",
+    "",
+    "#### zsh",
+    "",
+    "zsh の本文",
+    "",
+    "#### bash",
+    "",
+    "bash の本文",
+    "",
+    ...(closeInner ? ["<!-- /tabs -->", ""] : []),
+    "### **Windows**",
+    "",
+    "Windows の本文",
+    "",
+    "<!-- /tabs -->",
+    "",
+  ].join("\n");
+}
+
+// タブの中にタブを入れ子にし、強調したタブ名を強調のまま出す（正常系）
+test("test_normal_when_tabs_nested", async () => {
+  // 準備
+  const render = await loadRender();
+  // 実行
+  const html = render(nestedTabs(true));
+  // 検証
+  expect(html).toMatch(
+    /^<div class="mdmark-tabs"><div class="mdmark-tab-panel"><p class="mdmark-tab-title">macOS<\/p><div class="mdmark-tabs">/,
+  );
+  const inner = html.slice(html.indexOf('<div class="mdmark-tabs">', 1));
+  expect(inner).toContain('<p class="mdmark-tab-title">zsh</p>');
+  expect(inner).toContain('<p class="mdmark-tab-title">bash</p>');
+  // 内側のタブを除いた外側の直下のパネルは macOS と Windows の 2 つ
+  const outer = html.replace(
+    /<div class="mdmark-tabs"><div class="mdmark-tab-panel"><p class="mdmark-tab-title">zsh[\s\S]*?bash の本文<\/p>\s*<\/div><\/div>/,
+    "",
+  );
+  expect(matches(outer, /class="mdmark-tab-panel"/g)).toHaveLength(2);
+  expect(html).toContain(
+    '<p class="mdmark-tab-title"><strong>Windows</strong></p>',
+  );
+  expect(html).not.toContain("**");
+  expect(html).not.toContain("mdmark-syntax-warning");
+  expect(html).not.toContain("<!--");
+});
+
+// 内側の閉じの印が無い入れ子のタブは、外側の開きに書き方の警告を置き、見出しと本文のまま出す（正常系）
+test("test_normal_when_nested_tabs_unclosed", async () => {
+  // 準備
+  const render = await loadRender();
+  // 実行
+  const html = render(nestedTabs(false));
+  // 検証
+  const boxes = warnings(html);
+  expect(boxes).toHaveLength(1);
+  expect(html.indexOf("mdmark-syntax-warning")).toBeLessThan(
+    html.indexOf("macOS"),
+  );
+  expect(plainText(boxes[0] ?? "")).toContain("閉じの印");
+  expect(html).not.toContain('<div class="mdmark-tabs"');
+  for (const [tag, name] of [
+    ["h3", "macOS"],
+    ["h3", "<strong>Windows</strong>"],
+    ["h4", "zsh"],
+    ["h4", "bash"],
+  ]) {
+    expect(html).toMatch(new RegExp(`<${tag}[^>]*>${name}<a `));
+  }
+  for (const body of ["zsh の本文", "bash の本文", "Windows の本文"]) {
+    expect(html).toContain(`<p>${body}</p>`);
+  }
+});
+
+// 追加したグラフの種類と 6 つの系列を、題と凡例を持つ図に描く（正常系）
+test("test_normal_when_chart_types_added", async () => {
+  // 準備
+  const render = await loadRender();
+  const stackedBar = {
+    type: "stacked-bar",
+    title: "積み上げの棒",
+    x: { label: "窓口", ticks: ["メール", "電話"] },
+    y: { label: "件" },
+    series: [
+      { name: "回答", points: [3, 5] },
+      { name: "回送", points: [4, 1] },
+    ],
+  };
+  const bubble = {
+    type: "bubble",
+    title: "長さと時間と件数",
+    x: { label: "字" },
+    y: { label: "分" },
+    size: { label: "件数" },
+    series: [
+      {
+        name: "自動",
+        points: [
+          [1, 2, 3],
+          [2, 3, 4],
+        ],
+      },
+      {
+        name: "担当者",
+        points: [
+          [3, 1, 2],
+          [4, 2, 5],
+        ],
+      },
+    ],
+  };
+  const markdown = [
+    chartBlock(twoSeriesChart("area")),
+    chartBlock(stackedBar),
+    chartBlock(twoSeriesChart("stacked-area")),
+    chartBlock(twoSeriesChart("horizontal-bar")),
+    chartBlock(DONUT_CHART),
+    chartBlock(twoSeriesChart("radar")),
+    chartBlock(bubble),
+    chartBlock(COMBO_CHART),
+    chartBlock(lineChart(6)),
+  ].join("\n");
+  // 実行
+  const html = render(markdown);
+  // 検証
+  const figures = chartFigures(html);
+  expect(figures).toHaveLength(9);
+  for (const figure of figures) {
+    expect(figure).toMatch(/^ data-diagram="chart"/);
+    expect(figure).toContain("mdmark-diagram-title");
+    expect(figure).toContain("mdmark-diagram-legend");
+  }
+  expect(html).not.toContain("mdmark-syntax-warning");
+  const [
+    ,
+    stacked = "",
+    ,
+    horizontal = "",
+    donut = "",
+    ,
+    ,
+    combo = "",
+    six = "",
+  ] = figures;
+  // 積み上げの棒: 1 つ目の項目で 2 つ目の系列が 1 つ目の上に載り、高さの和が値 7 の高さ
+  const [first, , second] = chartBars(stacked).map(rectBox);
+  expect(second?.x).toBe(first?.x);
+  expect((second?.y ?? 0) + (second?.height ?? 0)).toBeCloseTo(first?.y ?? 0);
+  const unit = (first?.height ?? 0) / 3;
+  expect((first?.height ?? 0) + (second?.height ?? 0)).toBeCloseTo(unit * 7);
+  // 横の棒: 値が大きいほど幅が広く、縦の位置で項目を分ける
+  const bars = chartBars(horizontal).map(rectBox);
+  const [three, five, two] = bars;
+  expect(five?.width).toBeGreaterThan(three?.width ?? 0);
+  expect(three?.width).toBeGreaterThan(two?.width ?? 0);
+  expect(new Set(bars.slice(0, 3).map((bar) => bar.y)).size).toBe(3);
+  expect(new Set(bars.slice(0, 3).map((bar) => bar.x)).size).toBe(1);
+  // ドーナツ: 扇形が外と内の 2 つの弧を持つ
+  const slices = matches(
+    donut,
+    /<path class="mdmark-diagram-slice" d="[^"]*"/g,
+  );
+  expect(slices).toHaveLength(2);
+  for (const slice of slices) {
+    expect(matches(slice, / A/g)).toHaveLength(2);
+  }
+  // 組み合わせ: 1 つ目の系列が棒、2 つ目の系列が折れ線
+  expect(chartBars(combo)).toHaveLength(3);
+  expect(combo).toMatch(
+    /<path class="mdmark-diagram-series" data-series="2" d="M[^"]* L/,
+  );
+  // 6 つの系列の折れ線: 系列 1〜6 と凡例の 6 つの名前
+  for (let index = 1; index <= 6; index += 1) {
+    expect(six).toContain(`data-series="${index}"`);
+    expect(six).toContain(`窓口${index}`);
+  }
+});
+
+// 系列（ドーナツは項目）が 6 つを超えるグラフを描かず、書き方の警告にする（正常系）
+test("test_normal_when_chart_series_too_many", async () => {
+  // 準備
+  const render = await loadRender();
+  const manyItems = {
+    ...DONUT_CHART,
+    items: Array.from({ length: 7 }, (_, index) => ({
+      name: `種類${index + 1}`,
+      value: index + 1,
+    })),
+  };
+  const markdown = [
+    chartBlock(lineChart(7)),
+    chartBlock(manyItems),
+    chartBlock(lineChart(6)),
+    "段落の本文",
+    "",
+  ].join("\n");
+  // 実行
+  const html = render(markdown);
+  // 検証
+  const [series = "", items = ""] = warnings(html).map(plainText);
+  expect(series).toContain("系列が 7 つ");
+  expect(series).toContain("1〜6");
+  expect(items).toContain("項目が 7 つ");
+  expect(items).toContain("1〜6");
+  expect(chartFigures(html)).toHaveLength(1);
+  expect(html).toContain("<p>段落の本文</p>");
+});
+
+// 埋め込んだ HTML の中のドーナツと組み合わせのチャートを、`<!-- chart -->` と同じ図に描く（正常系）
+test("test_normal_when_embedded_chart_types_added", async () => {
+  // 準備
+  const render = await loadRender();
+  const element = (definition: Record<string, unknown>): string =>
+    `<mdmark-chart>${JSON.stringify({ ...CHART_META, ...definition })}</mdmark-chart>`;
+  const markdown = [
+    wrapHtml(`<div>${element(DONUT_CHART)}${element(COMBO_CHART)}</div>`),
+    chartBlock(DONUT_CHART),
+    chartBlock(COMBO_CHART),
+  ].join("\n");
+  // 実行
+  const html = render(markdown);
+  // 検証
+  const normalized = (pattern: RegExp): string[] =>
+    matches(html, pattern).map((part) =>
+      part.replace(/mdmark-diagram-\d+/g, "mdmark-diagram-N"),
+    );
+  const svgs = normalized(/<svg[^>]*role="img"[\s\S]*?<\/svg>/g);
+  expect(svgs).toHaveLength(4);
+  expect(svgs[0]).toBe(svgs[2]);
+  expect(svgs[1]).toBe(svgs[3]);
+  const legends = normalized(
+    /<(?:ul|div)[^>]*mdmark-diagram-legend[\s\S]*?<\/(?:ul|div)>/g,
+  );
+  expect(legends[0]).toBe(legends[2]);
+  expect(legends[1]).toBe(legends[3]);
+  expect(html).not.toContain("mdmark-syntax-warning");
+  expect(html).not.toContain("<mdmark-chart");
+});
+
+// 行末の `[!code focus]`・`[!code error]`・`[!code warning]` を行の種類にし、マーカーを取り除く（正常系）
+test("test_normal_when_code_focus_error_warning", async () => {
+  // 準備
+  const render = await loadRender();
+  const markdown = [
+    "```ts",
+    "foo(); // [!code focus]",
+    "bar(); // [!code error]",
+    "baz(); // [!code warning]",
+    "qux();",
+    "```",
+    "",
+  ].join("\n");
+  // 実行
+  const html = render(markdown);
+  // 検証
+  const [pre = ""] = startTags(html, "pre");
+  expect(pre).toContain('class="mdmark-code-lines mdmark-code-has-focus"');
+  const lines = startTags(html, "span").filter((tag) =>
+    tag.includes('"mdmark-code-line"'),
+  );
+  expect(lines.map((tag) => /data-kind="([^"]*)"/.exec(tag)?.[1])).toEqual([
+    "focus",
+    "error",
+    "warning",
+    undefined,
+  ]);
+  expect(html).not.toContain("[!code");
+  expect(html).not.toContain("//");
+});
+
+/** 行に分けたコードブロックの、行ごとの開始タグを書いた順に返す */
+function codeLineTags(block: string): string[] {
+  return startTags(block, "span").filter((tag) =>
+    tag.includes('"mdmark-code-line"'),
+  );
+}
+
+// インデントのある行に深さと畳める行の数を付け、`fold=` の行を畳んで出す（正常系）
+test("test_normal_when_code_foldable", async () => {
+  // 準備
+  const render = await loadRender();
+  const markdown = [
+    "<!-- code: fold=2 -->",
+    "",
+    "```yaml",
+    "a:",
+    "  b:",
+    "    c: 1",
+    "  d: 2",
+    "```",
+    "",
+    "```json",
+    "{",
+    '  "a": {',
+    '    "b": 1',
+    "  }",
+    "}",
+    "```",
+    "",
+    "```tree",
+    "src/",
+    "├── a.ts",
+    "```",
+    "",
+  ].join("\n");
+  // 実行
+  const html = render(markdown);
+  // 検証
+  const [yaml = "", json = ""] = codeBlocks(html);
+  const [a = "", b = "", c = "", d = ""] = codeLineTags(yaml);
+  expect(a).toContain('data-fold-lines="3"');
+  expect(a).not.toContain("data-indent");
+  expect(b).toContain('data-indent="1"');
+  expect(b).toContain('data-fold-lines="1"');
+  expect(b).toContain("data-folded");
+  expect(c).toContain('data-indent="2"');
+  expect(d).toContain('data-indent="1"');
+  expect(d).not.toContain("data-fold-lines");
+  // 閉じ括弧の行は畳む行に含めない
+  const [open = "", inner = ""] = codeLineTags(json);
+  expect(open).toContain('data-fold-lines="3"');
+  expect(inner).toContain('data-fold-lines="1"');
+  const tree = html.slice(html.indexOf('class="mdmark-tree"'));
+  expect(tree).not.toContain("mdmark-code-line");
+  expect(tree).not.toContain("data-fold-lines");
+  expect(html).not.toContain("mdmark-syntax-warning");
+});
+
+// 畳めない行とコードブロックに無い行の `fold=` を書き方の警告にし、畳める行だけを畳む（正常系）
+test("test_normal_when_code_fold_invalid", async () => {
+  // 準備
+  const render = await loadRender();
+  const markdown = [
+    "<!-- code: fold=1,3,99 -->",
+    "",
+    "```yaml",
+    "a:",
+    "  b: 1",
+    "c: 2",
+    "d: 3",
+    "e: 4",
+    "```",
+    "",
+  ].join("\n");
+  // 実行
+  const html = render(markdown);
+  // 検証
+  const boxes = warnings(html);
+  expect(boxes).toHaveLength(1);
+  expect(html.indexOf("mdmark-syntax-warning")).toBeLessThan(
+    html.indexOf("<pre"),
+  );
+  const box = plainText(boxes[0] ?? "");
+  expect(box).toContain("3 行目");
+  expect(box).toContain("畳めません");
+  expect(box).toContain("99");
+  const lines = codeLineTags(html);
+  expect(lines.map((tag) => tag.includes("data-folded"))).toEqual([
+    true,
+    false,
+    false,
+    false,
+    false,
+  ]);
+  for (const text of ["a:", "  b: 1", "c: 2", "d: 3", "e: 4"]) {
+    expect(html).toContain(`<span class="mdmark-code-text">${text}</span>`);
+  }
 });

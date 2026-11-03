@@ -1,5 +1,6 @@
 import type { MdmarkParamDefinition } from "../diagram/definition.ts";
-import { legendFor, renderChart, renderLegendItems } from "../parts/diagram.ts";
+import { renderChart } from "../parts/chart.ts";
+import { legendFor, renderLegendItems } from "../parts/diagram.ts";
 import { paramChart, paramJson, renderCopyStatus } from "../parts/param.ts";
 import { renumberIds } from "./diagrams.ts";
 

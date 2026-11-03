@@ -10,7 +10,7 @@ export type FilterValue = {
   column: number;
   /** `select` の選んだ値 */
   values?: string[] | undefined;
-  /** `text` の含む文字 */
+  /** `text` のキーワード */
   text?: string | undefined;
   /** `date` の開始日（`YYYY-MM-DD`） */
   from?: string | undefined;
@@ -239,4 +239,64 @@ export function rowIdFromHash(hash: string): string {
   } catch {
     return raw;
   }
+}
+
+/** 見出しの行ごとのセルの `rowspan`・`colspan` から、列ごとに、その列だけを覆い最下段まで届くセルの位置を返す。複数の列をまたぐセルしか無い列は `undefined` */
+export function bottomHeadCells(
+  rows: Array<Array<{ rowSpan: number; colSpan: number }>>,
+): Array<{ row: number; cell: number } | undefined> {
+  // 格子の行ごとに、上の段から縦に結合したセルが覆う列を控える
+  const grid: Array<Array<{ row: number; cell: number; colSpan: number }>> =
+    rows.map(() => []);
+  for (const [row, cells] of rows.entries()) {
+    let column = 0;
+    for (const [cell, span] of cells.entries()) {
+      while (grid[row]?.[column]) {
+        column += 1;
+      }
+      for (let r = row; r < Math.min(rows.length, row + span.rowSpan); r++) {
+        for (let c = column; c < column + span.colSpan; c++) {
+          const line = grid[r];
+          if (line) {
+            line[c] = { row, cell, colSpan: span.colSpan };
+          }
+        }
+      }
+      column += span.colSpan;
+    }
+  }
+  const bottom = grid.at(-1) ?? [];
+  return Array.from(bottom, (item) =>
+    item && item.colSpan === 1 ? { row: item.row, cell: item.cell } : undefined,
+  );
+}
+
+/** 表示している行の結合する列の値から、列ごとに隣り合う同じ値の範囲の `rowspan` を決める。範囲の始まりは覆う行の数、続く行は 0。左にある結合する列の範囲の切れ目でも切る */
+export function mergeSpans(options: {
+  values: string[][];
+  columns: number[];
+}): number[][] {
+  const { values, columns } = options;
+  const spans = values.map(() => columns.map(() => 1));
+  // 列ごとの、今の範囲の始まりの行
+  const starts = columns.map(() => 0);
+  for (let row = 1; row < values.length; row++) {
+    let broken = false;
+    for (const [index] of columns.entries()) {
+      const start = starts[index] ?? 0;
+      const same = values[row]?.[index] === values[start]?.[index];
+      if (broken || !same) {
+        broken = true;
+        starts[index] = row;
+        continue;
+      }
+      const startSpans = spans[start];
+      const rowSpans = spans[row];
+      if (startSpans && rowSpans) {
+        startSpans[index] = (startSpans[index] ?? 1) + 1;
+        rowSpans[index] = 0;
+      }
+    }
+  }
+  return spans;
 }

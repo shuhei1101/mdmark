@@ -93,14 +93,14 @@
     <ul class="mdmark-filter-options">${options}</ul>
     <p class="mdmark-filter-none" hidden>一致する候補がありません</p>`;
     } else if (kind === "text") {
-      body = `<label class="mdmark-filter-field">含む文字<input type="search" autocomplete="off" value="${escape(value ?? "")}"></label>`;
+      body = `<label class="mdmark-filter-field">キーワード<input type="search" autocomplete="off" value="${escape(value ?? "")}"></label>`;
     } else {
       body = `<div class="mdmark-filter-range"><label class="mdmark-filter-field">開始日<input type="date"></label><label class="mdmark-filter-field">終了日<input type="date"></label></div>`;
     }
     return `<div class="mdmark-filter-drawer" id="${id}-filter-${index}" role="dialog" hidden aria-label="「${name}」で絞り込む" data-filter-kind="${kind}" data-column="${index}">
     <p class="mdmark-filter-title">「${name}」で絞り込む</p>
     ${body}
-    <button class="mdmark-filter-clear" type="button">絞り込みを外す</button>
+    <button class="mdmark-filter-clear" type="button">絞り込みを解除</button>
   </div>`;
   };
 

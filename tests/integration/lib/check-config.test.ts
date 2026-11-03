@@ -425,3 +425,155 @@ test("test_normal_when_files_missing", async () => {
   expect(await readFile(join(dir, "docs", "guide.md"), "utf8")).toBe(guide);
   expect(existsSync(join(dir, "dist"))).toBe(false);
 });
+
+/** 座標の重なるノード `web` と `db`、`frame` の右端をまたぐノード `queue`、ノード `cache` の中を通る線 `w1`、名前が長いノード `batch` を持つフロー図の定義 */
+const BROKEN_FLOW = {
+  title: "配置のずれ",
+  scope: "点検",
+  updated: "2026-11-03",
+  width: 800,
+  height: 400,
+  frame: { title: "システム", x: 20, y: 20, w: 600, h: 360 },
+  nodes: [
+    { id: "web", kind: "script", x: 40, y: 40, w: 100, h: 50, name: "Web" },
+    { id: "db", kind: "data", x: 80, y: 60, w: 100, h: 50, name: "DB" },
+    { id: "cache", kind: "data", x: 300, y: 200, w: 100, h: 50, name: "Cache" },
+    {
+      id: "queue",
+      kind: "script",
+      x: 580,
+      y: 200,
+      w: 100,
+      h: 50,
+      name: "Queue",
+    },
+    {
+      id: "batch",
+      kind: "script",
+      x: 40,
+      y: 300,
+      w: 120,
+      h: 48,
+      name: "あ".repeat(30),
+    },
+  ],
+  wires: [
+    {
+      id: "w1",
+      from: "web",
+      to: "queue",
+      line: "flow",
+      points: [
+        [140, 225],
+        [580, 225],
+      ],
+    },
+  ],
+};
+
+/** ずれの無いフロー図の定義（ノード 2 つと線 1 本） */
+const CLEAN_FLOW = {
+  title: "整った図",
+  scope: "点検",
+  updated: "2026-11-03",
+  width: 400,
+  height: 200,
+  nodes: [
+    { id: "a", kind: "script", x: 20, y: 20, w: 100, h: 60, name: "A" },
+    { id: "b", kind: "script", x: 220, y: 20, w: 100, h: 60, name: "B" },
+  ],
+  wires: [
+    {
+      id: "w",
+      from: "a",
+      to: "b",
+      line: "flow",
+      points: [
+        [120, 50],
+        [220, 50],
+      ],
+    },
+  ],
+};
+
+/** フロー図の定義を `<!-- flow -->` の範囲の行にする */
+function flowLines(definition: unknown): string[] {
+  return [
+    "<!-- flow -->",
+    "",
+    "```json",
+    JSON.stringify(definition),
+    "```",
+    "",
+    "<!-- /flow -->",
+  ];
+}
+
+// 図の定義の読めない箇所と配置のずれを、文書と行を指す行で出し、終了コード 1 で終わる（正常系（図の定義にずれがある））
+test("test_normal_when_diagram_drift", async () => {
+  // 準備
+  const dir = await createTempDir();
+  await runCli(["init", dir], dir);
+  const duplicated = {
+    ...CLEAN_FLOW,
+    nodes: [
+      { id: "api", kind: "script", x: 20, y: 20, w: 100, h: 60, name: "API" },
+      { id: "api", kind: "script", x: 220, y: 20, w: 100, h: 60, name: "API" },
+    ],
+    wires: [],
+  };
+  const head = ["# A", "", ...flowLines(duplicated)];
+  const a = [
+    ...head,
+    ...Array.from({ length: 19 - head.length }, () => ""),
+    ...flowLines(BROKEN_FLOW),
+    "",
+  ];
+  await writeFiles(dir, {
+    "docs/a.md": a.join("\n"),
+    "docs/b.md": ["# B", "", ...flowLines(CLEAN_FLOW), ""].join("\n"),
+    "index.yaml": [
+      "schema: 1",
+      "docs:",
+      "  - id: a",
+      "    path: docs/a.md",
+      "    title: A",
+      "  - id: b",
+      "    path: docs/b.md",
+      "    title: B",
+      "",
+    ].join("\n"),
+  });
+  const files = ["mdmark.config.yaml", "index.yaml", "docs/a.md", "docs/b.md"];
+  const read = () =>
+    Promise.all(files.map((path) => readFile(join(dir, path), "utf8")));
+  const before = await read();
+  // 実行
+  const result = await runCli(["check"], dir);
+  // 検証
+  expect(a.indexOf("<!-- flow -->", 3) + 1).toBe(20);
+  expect(result.code).toBe(1);
+  const lines = linesOf(result.stdout);
+  const invalid = lines.filter((line) =>
+    line.startsWith("docs/a.md:3: diagram_invalid:"),
+  );
+  expect(invalid).toHaveLength(1);
+  expect(invalid[0]).toContain("api");
+  for (const [kind, ids] of [
+    ["diagram_node_overlap", ["web", "db"]],
+    ["diagram_node_overflow", ["queue"]],
+    ["diagram_wire_crosses_node", ["w1", "cache"]],
+    ["diagram_label_too_long", ["batch"]],
+  ] as const) {
+    const found = lines.filter((line) =>
+      line.startsWith(`docs/a.md:20: ${kind}:`),
+    );
+    expect(found).toHaveLength(1);
+    for (const id of ids) {
+      expect(found[0]).toContain(id);
+    }
+  }
+  expect(lines.some((line) => line.includes("docs/b.md"))).toBe(false);
+  expect(lines.at(-1)).toBe("ずれ 5 件");
+  expect(await read()).toEqual(before);
+});

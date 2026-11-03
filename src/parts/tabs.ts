@@ -1,11 +1,27 @@
 import { renderCollapsible } from "./collapsible.ts";
 import { escapeHtml } from "./escape.ts";
 
+/** タブ名の行内の HTML から、タグを除き文字参照を文字に戻した文字を取り出す */
+function plainText(html: string): string {
+  return html
+    .replace(/<[^>]*>/g, "")
+    .replaceAll("&lt;", "<")
+    .replaceAll("&gt;", ">")
+    .replaceAll("&quot;", '"')
+    .replaceAll("&#39;", "'")
+    .replaceAll("&amp;", "&");
+}
+
+/** タブ名の行内の HTML から、リンク（`a`）のタグを外して中身だけを残す。ボタンの中に対話的な要素を置かない */
+function withoutLinks(html: string): string {
+  return html.replace(/<\/?a\b[^>]*>/gi, "");
+}
+
 /** タブを描く。`group` を渡すと `data-group` に写す。`selected` を渡すとタブの並びを付け、選んだもの以外の中身を `hidden` にする。`collapse` が `closed`・`open` なら、折り畳みに入れる */
 export function renderTabs(options: {
   /** タブの id の頭 */
   id: string;
-  /** タブ名 */
+  /** タブ名の行内の HTML（エスケープ済み） */
   titles: string[];
   /** タブごとの中身の HTML（`SLOT_MARKER` を渡せる） */
   panels: string[];
@@ -32,7 +48,7 @@ export function renderTabs(options: {
     ? `<div class="mdmark-tablist" role="tablist">${titles
         .map(
           (title, index) =>
-            `<button class="mdmark-tab" type="button" role="tab" id="${escapeHtml(id)}-tab-${index}" aria-controls="${escapeHtml(id)}-panel-${index}" aria-selected="${index === selected}" tabindex="${index === selected ? 0 : -1}">${escapeHtml(title)}</button>`,
+            `<button class="mdmark-tab" type="button" role="tab" id="${escapeHtml(id)}-tab-${index}" aria-controls="${escapeHtml(id)}-panel-${index}" aria-selected="${index === selected}" tabindex="${index === selected ? 0 : -1}">${withoutLinks(title)}</button>`,
         )
         .join("")}</div>`
     : "";
@@ -41,7 +57,7 @@ export function renderTabs(options: {
       const attributes = mounted
         ? ` role="tabpanel" id="${escapeHtml(id)}-panel-${index}" aria-labelledby="${escapeHtml(id)}-tab-${index}"${index === selected ? "" : " hidden"}`
         : "";
-      return `<div class="mdmark-tab-panel"${attributes}><p class="mdmark-tab-title">${escapeHtml(titles[index] ?? "")}</p>${panel}</div>`;
+      return `<div class="mdmark-tab-panel"${attributes}><p class="mdmark-tab-title">${titles[index] ?? ""}</p>${panel}</div>`;
     })
     .join("");
   const groupAttribute =
@@ -51,7 +67,7 @@ export function renderTabs(options: {
     return tabs;
   }
   return renderCollapsible({
-    title: title ?? `タブ（${titles.join("・")}）`,
+    title: title ?? `タブ（${titles.map(plainText).join("・")}）`,
     open: collapse === "open",
     body: tabs,
   });

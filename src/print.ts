@@ -1,6 +1,7 @@
+import { setCodeFoldOpen } from "./interact/code-folds.ts";
 import { setFolderOpen } from "./interact/trees.ts";
 
-/** 印刷の前に開いた折り畳み・節・行の詳細・ファイルツリーのフォルダ・タブの中身 */
+/** 印刷の前に開いた折り畳み・節・行の詳細・ファイルツリーのフォルダ・コードブロックの畳んだ行・タブの中身 */
 type Expanded = {
   details: HTMLDetailsElement[];
   sections: HTMLElement[];
@@ -8,6 +9,7 @@ type Expanded = {
   panels: HTMLElement[];
   tabs: HTMLElement[];
   folders: Element[];
+  codeFolds: Element[];
 };
 
 /** 何も開いていない状態 */
@@ -19,10 +21,11 @@ function nothingExpanded(): Expanded {
     panels: [],
     tabs: [],
     folders: [],
+    codeFolds: [],
   };
 }
 
-/** 印刷の前に、要素の中の閉じた折り畳み・閉じた節・行の詳細・ファイルツリーの閉じたフォルダを開き、タブの全ての中身を出し、印刷の後に開いたものだけを戻す受け取りを `window` に付け、外す関数を返す */
+/** 印刷の前に、要素の中の閉じた折り畳み・閉じた節・行の詳細・ファイルツリーの閉じたフォルダ・コードブロックの畳んだ行を開き、タブの全ての中身を出し、印刷の後に開いたものだけを戻す受け取りを `window` に付け、外す関数を返す */
 export function attachPrint(options: {
   /** 描いた要素 */
   root: HTMLElement;
@@ -53,9 +56,15 @@ export function attachPrint(options: {
       folders: [
         ...root.querySelectorAll('.mdmark-tree-toggle[aria-expanded="false"]'),
       ],
+      codeFolds: [
+        ...root.querySelectorAll('.mdmark-code-fold[aria-expanded="false"]'),
+      ],
     };
     for (const folder of expanded.folders) {
       setFolderOpen(folder, true);
+    }
+    for (const toggle of expanded.codeFolds) {
+      setCodeFoldOpen(toggle, true);
     }
     for (const details of expanded.details) {
       details.open = true;
@@ -88,6 +97,9 @@ export function attachPrint(options: {
     }
     for (const folder of expanded.folders) {
       setFolderOpen(folder, false);
+    }
+    for (const toggle of expanded.codeFolds) {
+      setCodeFoldOpen(toggle, false);
     }
     expanded = nothingExpanded();
   };

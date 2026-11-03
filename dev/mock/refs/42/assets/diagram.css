@@ -690,6 +690,33 @@
         --series-color: var(--mdmark-color-series-4);
         stroke-dasharray: 9 3 1 3;
       }
+
+      &[data-series="5"] {
+        --series-color: var(--mdmark-color-series-5);
+        stroke-dasharray: 9 3 1 3 1 3;
+      }
+
+      &[data-series="6"] {
+        --series-color: var(--mdmark-color-series-6);
+        stroke-dasharray: 3 2;
+      }
+    }
+
+    /* 面（面・積み上げの面・レーダー）: 塗りは系列ごとに style で渡し、線は系列の線（.mdmark-diagram-series）が引く */
+    .mdmark-diagram-area {
+      stroke: none;
+    }
+
+    /* バブル: 系列の模様で塗り、系列の色の線で縁取る。重なりの下の円も読めるよう少し透かす */
+    .mdmark-diagram-bubble {
+      stroke: var(--series-color);
+      stroke-width: 1.5;
+      fill-opacity: 0.85;
+    }
+
+    /* ドーナツの中央の穴: 地の色で抜く */
+    .mdmark-diagram-donut-hole {
+      fill: var(--mdmark-color-bg);
     }
 
     /* 系列の点の印: 系列ごとの形（1 丸・2 四角・3 三角・4 菱形）を系列の色で塗る */
@@ -739,6 +766,16 @@
     /* 系列 4 の点の色 */
     g[data-series="4"] {
       --series-color: var(--mdmark-color-series-4);
+    }
+
+    /* 系列 5 の点の色 */
+    g[data-series="5"] {
+      --series-color: var(--mdmark-color-series-5);
+    }
+
+    /* 系列 6 の点の色 */
+    g[data-series="6"] {
+      --series-color: var(--mdmark-color-series-6);
     }
 
     /* ---------- 図のツールチップ ---------- */

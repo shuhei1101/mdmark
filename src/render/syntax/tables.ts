@@ -27,6 +27,7 @@ import {
 import type { Mark } from "../marks.ts";
 import { readCollapse } from "./collapse.ts";
 import { slugBase } from "./headings.ts";
+import { MERGE_LEFT, MERGE_UP, planCellMerges } from "./table-cells.ts";
 import {
   envOf,
   featureOn,
@@ -84,6 +85,10 @@ export type TableSpec = {
   hide: number[];
   /** `total=` で集計する列。`total` の無い表・表に無い列名・知らない計算は入れない */
   totals: TableTotal[];
+  /** `header-rows=` で `thead` にする表の先頭の行の数（既定 1）。数でない値と、表の行の数以上の値は 1 にする */
+  headRows: number;
+  /** `row-header=` で `<th scope="row">` にする本文の各行の先頭の列の数（既定 0）。数でない値と、表の列の数以上の値は 0 にする */
+  rowHeader: number;
   /** `pin=` で留める最後の列の位置。`pin` の無い表・表に無い列名では入れない */
   pin?: number | undefined;
   /** `wide=` で広く取る列の位置。表に無い列名は入れない */
@@ -235,10 +240,32 @@ function readTotals(
   return totals;
 }
 
+/** `header-rows=`・`row-header=` の値を、`limit` 未満の正の整数として読む。読めないときは警告を足して `fallback` を返す */
+function readHeaderCount(options: {
+  key: string;
+  value: string;
+  limit: number;
+  unit: string;
+  fallback: number;
+  warnings: WarningItem[];
+}): number {
+  const { key, value, limit, unit, fallback, warnings } = options;
+  const count = /^\d+$/.test(value) ? Number(value) : 0;
+  if (count >= 1 && count < limit) {
+    return count;
+  }
+  warnings.push({
+    label: `${key}=`,
+    message: `\`${value}\` は使えません。1 以上で表の${unit}の数（${limit}）より小さい整数を指定してください。既定の ${fallback} で描いています`,
+  });
+  return fallback;
+}
+
 /** 表の印の引数と表の見出しから `TableSpec` を作る。印が無い表は `default` */
 export function readTableSpec(
   args: MdmarkMarkArgs | undefined,
   headers: string[],
+  rowCount: number,
 ): TableSpec {
   const warnings: WarningItem[] = [];
   let kind: TableKind = "default";
@@ -292,6 +319,8 @@ export function readTableSpec(
   let filters: TableFilter[] = [];
   let hide: number[] = [];
   let totals: TableTotal[] = [];
+  let headRows = 1;
+  let rowHeader = 0;
   let pin: number | undefined;
   let wide: number[] = [];
   let check: number[] = [];
@@ -314,6 +343,24 @@ export function readTableSpec(
       hide = readHide(value, headers, warnings);
     } else if (key === "total") {
       totals = readTotals(value, headers, warnings);
+    } else if (key === "header-rows") {
+      headRows = readHeaderCount({
+        key,
+        value,
+        limit: rowCount,
+        unit: "行",
+        fallback: 1,
+        warnings,
+      });
+    } else if (key === "row-header") {
+      rowHeader = readHeaderCount({
+        key,
+        value,
+        limit: headers.length,
+        unit: "列",
+        fallback: 0,
+        warnings,
+      });
     } else if (key === "pin") {
       const column = headers.indexOf(value.trim());
       if (column < 0) {
@@ -330,7 +377,7 @@ export function readTableSpec(
     } else {
       warnings.push({
         label: `${key}=`,
-        message: `使えないキーです。使えるキーは ${codes(["filter=", "hide=", "total=", "pin=", "wide=", "check=", ...COLOR_KEYS.map((name) => `${name}=`)])} です`,
+        message: `使えないキーです。使えるキーは ${codes(["filter=", "hide=", "total=", "pin=", "wide=", "check=", "header-rows=", "row-header=", ...COLOR_KEYS.map((name) => `${name}=`)])} です`,
       });
     }
   }
@@ -344,6 +391,8 @@ export function readTableSpec(
     warnings,
     hide,
     totals,
+    headRows,
+    rowHeader,
     pin,
     wide,
     check,
@@ -693,9 +742,14 @@ function linkRows(
   }
 }
 
-/** 項目の形（`+機能`・`キー=`）の警告か、1 文の警告かを見分ける */
+/** 項目の形（`+機能`・`キー=`・結合できない `^^`・`<<`）の警告か、1 文の警告かを見分ける */
 function isItemWarning(item: WarningItem): boolean {
-  return /^[+-]/.test(item.label) || item.label.endsWith("=");
+  return (
+    /^[+-]/.test(item.label) ||
+    item.label.endsWith("=") ||
+    item.label === MERGE_UP ||
+    item.label === MERGE_LEFT
+  );
 }
 
 /** 表の指定の警告を、書き方の警告に渡す値にする: 項目の形のものは 1 つにまとめ、1 文のものは 1 つずつ */
@@ -775,7 +829,10 @@ function bodyCellsOf(tokens: Token[], tableOpen: number): string[][] {
       inBody = true;
     } else if (inBody && token?.type === "tr_open") {
       rows.push([]);
-    } else if (inBody && token?.type === "td_open") {
+    } else if (
+      inBody &&
+      (token?.type === "td_open" || token?.type === "th_open")
+    ) {
       const inline = tokens[index + 1];
       rows.at(-1)?.push(inline ? textOf(inline) : "");
     }
@@ -799,19 +856,180 @@ function unreadableTotalWarnings(options: {
   }));
 }
 
-/** 表の見出しの文字を集める */
+/** 表の見出しの文字を集める。見出しが多段なら最下段の行の文字 */
 export function headersOf(tokens: Token[], tableOpen: number): string[] {
-  const headers: string[] = [];
+  let headers: string[] = [];
   for (let index = tableOpen; index < tokens.length; index++) {
     const token = tokens[index];
     if (token?.type === "thead_close") {
       break;
     }
-    if (token?.type === "th_open" && tokens[index + 1]) {
+    if (token?.type === "tr_open") {
+      headers = [];
+    } else if (token?.type === "th_open" && tokens[index + 1]) {
       headers.push(textOf(tokens[index + 1] as Token));
     }
   }
   return headers;
+}
+
+/** 表の行のセルのトークンの位置 */
+type RowCells = {
+  /** 見出しの行か */
+  head: boolean;
+  /** セルごとの開きと閉じのトークンの位置 */
+  cells: Array<{ open: number; close: number }>;
+};
+
+/** `tableOpen` の表の行ごとに、セルの開きと閉じのトークンの位置を集める */
+function rowCellsOf(tokens: Token[], tableOpen: number): RowCells[] {
+  const rows: RowCells[] = [];
+  let head = true;
+  for (const index of ownTokenIndexes(tokens, tableOpen)) {
+    const type = tokens[index]?.type;
+    if (type === "tbody_open") {
+      head = false;
+    } else if (type === "tr_open") {
+      rows.push({ head, cells: [] });
+    } else if (type === "th_open" || type === "td_open") {
+      rows.at(-1)?.cells.push({ open: index, close: index });
+    } else if (type === "th_close" || type === "td_close") {
+      const cell = rows.at(-1)?.cells.at(-1);
+      if (cell) {
+        cell.close = index;
+      }
+    }
+  }
+  return rows;
+}
+
+/** セルの開きと閉じのトークンを `th` にする */
+function toHeadCell(open: Token, close: Token | undefined): void {
+  open.type = "th_open";
+  open.tag = "th";
+  if (close) {
+    close.type = "th_close";
+    close.tag = "th";
+  }
+}
+
+/** 本文の先頭の `count` 行を `thead` の終わりへ移し、セルを `th` にする */
+function moveRowsToHead(tokens: Token[], tableOpen: number, count: number) {
+  const own = ownTokenIndexes(tokens, tableOpen);
+  const theadClose = own.find((i) => tokens[i]?.type === "thead_close");
+  const tbodyOpen = own.find((i) => tokens[i]?.type === "tbody_open");
+  if (theadClose === undefined || tbodyOpen === undefined) {
+    return;
+  }
+  const rowEnds = own.filter(
+    (i) => i > tbodyOpen && tokens[i]?.type === "tr_close",
+  );
+  const end = rowEnds[count - 1];
+  if (end === undefined) {
+    return;
+  }
+  const moved = tokens.splice(tbodyOpen + 1, end - tbodyOpen);
+  tokens.splice(theadClose, 0, ...moved);
+  for (const row of rowCellsOf(tokens, tableOpen).filter((r) => r.head)) {
+    for (const cell of row.cells) {
+      const open = tokens[cell.open];
+      if (open?.type === "td_open") {
+        toHeadCell(open, tokens[cell.close]);
+        // 本文のセルに写した列名は、見出しにしたセルには要らない
+        open.attrs = (open.attrs ?? []).filter(
+          ([name]) => name !== "data-label",
+        );
+      }
+    }
+  }
+}
+
+/** 表の印の範囲の表に、多段の見出し・行見出し・セルの結合を当て、本文の行で結合した列と結合できない警告を返す。見出しの結合したセルのトークンは `dropped` に入れる */
+function mergeTableCells(options: {
+  state: StateCore;
+  tableOpen: number;
+  spec: TableSpec;
+  dropped: Set<Token>;
+}): { mergeColumns: number[]; warnings: WarningItem[] } {
+  const { state, tableOpen, spec, dropped } = options;
+  const tokens = state.tokens;
+  const nonce = envOf(state).nonce;
+  if (spec.headRows > 1) {
+    moveRowsToHead(tokens, tableOpen, spec.headRows - 1);
+  }
+  const rows = rowCellsOf(tokens, tableOpen);
+  if (spec.headRows > 1) {
+    // 本文のセルの列名を、見出しの最下段の文字に替える
+    const labels = headersOf(tokens, tableOpen);
+    for (const row of rows.filter((r) => !r.head)) {
+      for (const [column, cell] of row.cells.entries()) {
+        tokens[cell.open]?.attrSet("data-label", labels[column] ?? "");
+      }
+    }
+  }
+  const texts = rows.map((row) =>
+    row.cells.map((cell) => {
+      const inline = tokens[cell.open + 1];
+      return inline?.type === "inline" ? textOf(inline) : "";
+    }),
+  );
+  const plan = planCellMerges({ cells: texts, headRows: spec.headRows });
+  /** 開きのトークンに、mdmark が付けた属性として値を付ける */
+  const setOwn = (token: Token, name: string, value: string): void => {
+    token.attrSet(name, value);
+    token.attrSet("data-mdmark-own", nonce);
+  };
+  for (const [r, row] of rows.entries()) {
+    for (const [c, cell] of row.cells.entries()) {
+      const open = tokens[cell.open];
+      const planned = plan.cells[r]?.[c];
+      if (!open || !planned) {
+        continue;
+      }
+      if (row.head && planned.merged) {
+        for (let index = cell.open; index <= cell.close; index++) {
+          const token = tokens[index];
+          if (token) {
+            dropped.add(token);
+          }
+        }
+        continue;
+      }
+      if (!row.head && c < spec.rowHeader) {
+        toHeadCell(open, tokens[cell.close]);
+        // 行見出しの `scope` は開始タグの先頭に置く
+        open.attrs = [["scope", "row"], ...(open.attrs ?? [])];
+        open.attrSet("data-mdmark-own", nonce);
+      }
+      if (planned.merged && planned.source) {
+        const [sourceRow, sourceColumn] = planned.source;
+        const source = rows[sourceRow]?.cells[sourceColumn];
+        const from = source ? tokens[source.open + 1] : undefined;
+        const to = tokens[cell.open + 1];
+        if (from?.type === "inline" && to?.type === "inline") {
+          to.content = from.content;
+          to.children = [...(from.children ?? [])];
+        }
+        setOwn(open, "data-merge", planned.merged);
+        // 値の無い属性は落とされるため、属性の名前を値にする
+        setOwn(open, "hidden", "hidden");
+        continue;
+      }
+      if (planned.rowspan > 1) {
+        setOwn(open, "rowspan", String(planned.rowspan));
+      }
+      if (planned.colspan > 1) {
+        setOwn(open, "colspan", String(planned.colspan));
+      }
+      if (
+        row.head &&
+        (spec.headRows > 1 || planned.rowspan > 1 || planned.colspan > 1)
+      ) {
+        setOwn(open, "scope", planned.colspan > 1 ? "colgroup" : "col");
+      }
+    }
+  }
+  return { mergeColumns: plan.mergeColumns, warnings: plan.warnings };
 }
 
 /** 表の印の範囲を集める */
@@ -844,9 +1062,11 @@ export function decorateTables(state: StateCore): void {
   const out: Token[] = [];
   // 囲みに入れて閉じていない表の `table_open` の位置と、閉じるときに置く囲みの終わり
   const openTables: Array<{ open: number; tail: string }> = [];
+  // 見出しの結合したセルのトークン（囲みに移さない）
+  const dropped = new Set<Token>();
   for (let index = 0; index < tokens.length; index++) {
     const token = tokens[index];
-    if (!token) {
+    if (!token || dropped.has(token)) {
       continue;
     }
     const mark = markOf(token);
@@ -878,8 +1098,26 @@ export function decorateTables(state: StateCore): void {
     // ビューの印が表の指定を当てた表は、その指定で表の部品にする
     const viewSpec = (token.meta as { tableSpec?: TableSpec } | null)
       ?.tableSpec;
-    const spec =
-      viewSpec ?? readTableSpec(range?.mark.args, headersOf(tokens, index));
+    const rowCount = bodyRowCount(tokens, index) + 1;
+    let spec =
+      viewSpec ??
+      readTableSpec(range?.mark.args, headersOf(tokens, index), rowCount);
+    let mergeColumns: number[] = [];
+    if (range && !viewSpec) {
+      if (spec.headRows > 1) {
+        // 列名は見出しの最下段の行から読む
+        const bottom = bodyCellsOf(tokens, index)[spec.headRows - 2] ?? [];
+        spec = readTableSpec(range.mark.args, bottom, rowCount);
+      }
+      const merged = mergeTableCells({
+        state,
+        tableOpen: index,
+        spec,
+        dropped,
+      });
+      mergeColumns = merged.mergeColumns;
+      spec.warnings.push(...merged.warnings);
+    }
     const filtering = spec.features.includes("filter");
     const html = renderTable({
       kind: spec.kind,
@@ -890,6 +1128,7 @@ export function decorateTables(state: StateCore): void {
       rowCount: bodyRowCount(tokens, index),
       hide: spec.hide,
       totals: spec.totals,
+      mergeColumns,
       pin: spec.pin,
       check: spec.check,
       body: SLOT_MARKER,

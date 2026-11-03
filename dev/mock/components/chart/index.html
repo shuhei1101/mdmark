@@ -24,6 +24,8 @@
   <script src="../../refs/42/assets/samples.js" defer></script>
   <!-- 棒・円・散布図の定義の見本（#45 で共有するアセット。diagram.js の前に読む） -->
   <script src="../../refs/45/assets/samples.js" defer></script>
+  <!-- #275 で追加するグラフの種類と 6 つの系列の定義の見本（diagram.js の前に読む） -->
+  <script src="../../refs/275/assets/samples.js" defer></script>
   <script src="../../refs/42/assets/diagram.js" defer></script>
 </head>
 <body>
@@ -86,6 +88,78 @@
         <h2 class="catalog-label" id="state-scatter">散布図 系列 2 つ（横と縦の両方が数値の軸。点の印で分ける）</h2>
         <article class="mdmark">
           <figure data-mock-diagram="length-time"></figure>
+        </article>
+      </section>
+
+      <!-- #275 系列 6 つ: 5 つ目（ピンク・二点鎖線・逆三角）と 6 つ目（緑・細かい破線・十字）を追加し、6 つまで色と模様とマーカーの組で見分ける -->
+      <section aria-labelledby="state-six">
+        <h2 class="catalog-label" id="state-six">系列 6 つ（5 つ目以降の色・線の模様・点のマーカー）</h2>
+        <article class="mdmark">
+          <figure data-mock-diagram="reply-time-6"></figure>
+        </article>
+      </section>
+
+      <!-- #275 面: 折れ線の下を系列の色の薄い面で塗る。線の模様と点のマーカーは折れ線と同じ -->
+      <section aria-labelledby="state-area">
+        <h2 class="catalog-label" id="state-area">面 系列 2 つ（線の下を系列の色の薄い面で塗る）</h2>
+        <article class="mdmark">
+          <figure data-mock-diagram="visits-area"></figure>
+        </article>
+      </section>
+
+      <!-- #275 積み上げの面: 値を積み上げ、面を系列の塗りの模様で分ける -->
+      <section aria-labelledby="state-stacked-area">
+        <h2 class="catalog-label" id="state-stacked-area">積み上げの面 系列 3 つ（面を塗りの模様で分ける）</h2>
+        <article class="mdmark">
+          <figure data-mock-diagram="visits-stacked-area"></figure>
+        </article>
+      </section>
+
+      <!-- #275 積み上げの棒: 項目ごとに 1 本の棒に系列を積み、棒の上に合計を出す -->
+      <section aria-labelledby="state-stacked-bar">
+        <h2 class="catalog-label" id="state-stacked-bar">積み上げの棒 系列 3 つ（棒の上に合計）</h2>
+        <article class="mdmark">
+          <figure data-mock-diagram="inquiry-stacked"></figure>
+        </article>
+      </section>
+
+      <!-- #275 横棒: 項目を縦に並べ、値を横の長さで出す -->
+      <section aria-labelledby="state-horizontal-bar">
+        <h2 class="catalog-label" id="state-horizontal-bar">横棒 系列 2 つ（項目の名前を左に並べる）</h2>
+        <article class="mdmark">
+          <figure data-mock-diagram="inquiry-horizontal"></figure>
+        </article>
+      </section>
+
+      <!-- #275 ドーナツ: 円の中央を抜き、中央に合計、扇形の外に割合を出す -->
+      <section aria-labelledby="state-donut">
+        <h2 class="catalog-label" id="state-donut">ドーナツ 項目 4 つ（中央に合計）</h2>
+        <article class="mdmark">
+          <figure data-mock-diagram="reply-kind-donut"></figure>
+        </article>
+      </section>
+
+      <!-- #275 レーダー: 観点を放射状の軸にし、系列を色と線の模様・点のマーカーの多角形で引く -->
+      <section aria-labelledby="state-radar">
+        <h2 class="catalog-label" id="state-radar">レーダー 系列 2 つ・軸 5 つ</h2>
+        <article class="mdmark">
+          <figure data-mock-diagram="review-radar"></figure>
+        </article>
+      </section>
+
+      <!-- #275 バブル: 散布図の点を 3 つ目の値の面積の円にし、凡例に円の面積が何の値かを出す -->
+      <section aria-labelledby="state-bubble">
+        <h2 class="catalog-label" id="state-bubble">バブル 系列 2 つ（円の面積が 3 つ目の値）</h2>
+        <article class="mdmark">
+          <figure data-mock-diagram="inquiry-bubble"></figure>
+        </article>
+      </section>
+
+      <!-- #275 折れ線と棒の組み合わせ: 棒は左の軸、折れ線は右の軸で読む。凡例にどちらの軸かを出す -->
+      <section aria-labelledby="state-combo">
+        <h2 class="catalog-label" id="state-combo">折れ線と棒の組み合わせ（右の縦の軸）</h2>
+        <article class="mdmark">
+          <figure data-mock-diagram="inquiry-combo"></figure>
         </article>
       </section>
 

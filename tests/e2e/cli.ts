@@ -276,3 +276,86 @@ export async function writeSampleDocs(
     "img/a.png": PNG_BYTES,
   });
 }
+
+/** 座標の重なるノード `web` と `db`、システムの枠の右端をまたぐノード `queue`、ノード `cache` の中を通る線 `w1`、名前が長いノード `batch` を持つフロー図の定義 */
+export const BROKEN_FLOW = {
+  title: "配置のずれ",
+  scope: "点検",
+  updated: "2026-11-03",
+  width: 800,
+  height: 400,
+  frame: { title: "システム", x: 20, y: 20, w: 600, h: 360 },
+  nodes: [
+    { id: "web", kind: "script", x: 40, y: 40, w: 100, h: 50, name: "Web" },
+    { id: "db", kind: "data", x: 80, y: 60, w: 100, h: 50, name: "DB" },
+    { id: "cache", kind: "data", x: 300, y: 200, w: 100, h: 50, name: "Cache" },
+    {
+      id: "queue",
+      kind: "script",
+      x: 580,
+      y: 200,
+      w: 100,
+      h: 50,
+      name: "Queue",
+    },
+    {
+      id: "batch",
+      kind: "script",
+      x: 40,
+      y: 300,
+      w: 120,
+      h: 48,
+      name: "あ".repeat(30),
+    },
+  ],
+  wires: [
+    {
+      id: "w1",
+      from: "web",
+      to: "queue",
+      line: "flow",
+      points: [
+        [140, 225],
+        [580, 225],
+      ],
+    },
+  ],
+};
+
+/** ずれの無いフロー図の定義（ノード 2 つと線 1 本） */
+export const CLEAN_FLOW = {
+  title: "整った図",
+  scope: "点検",
+  updated: "2026-11-03",
+  width: 400,
+  height: 200,
+  nodes: [
+    { id: "a", kind: "script", x: 20, y: 20, w: 100, h: 60, name: "A" },
+    { id: "b", kind: "script", x: 220, y: 20, w: 100, h: 60, name: "B" },
+  ],
+  wires: [
+    {
+      id: "w",
+      from: "a",
+      to: "b",
+      line: "flow",
+      points: [
+        [120, 50],
+        [220, 50],
+      ],
+    },
+  ],
+};
+
+/** フロー図の定義を `<!-- flow -->` の範囲の行にする */
+export function flowLines(definition: unknown): string[] {
+  return [
+    "<!-- flow -->",
+    "",
+    "```json",
+    JSON.stringify(definition),
+    "```",
+    "",
+    "<!-- /flow -->",
+  ];
+}

@@ -1,4 +1,5 @@
 import { expect, test } from "vitest";
+import { parseMarkArgs } from "../../../../../src/render/marks.ts";
 import {
   findTags,
   matches,
@@ -19,7 +20,7 @@ test("test_read_table_spec", async () => {
     keys: { filter: "名前,更新日:date" },
   };
   // 実行
-  const spec = readTableSpec(args, ["名前", "値", "更新日"]);
+  const spec = readTableSpec(args, ["名前", "値", "更新日"], 10);
   // 検証
   expect(spec).toEqual({
     kind: "data",
@@ -34,6 +35,8 @@ test("test_read_table_spec", async () => {
     totals: [],
     wide: [],
     check: [],
+    headRows: 1,
+    rowHeader: 0,
   });
 });
 
@@ -46,7 +49,7 @@ test("test_read_table_spec_when_unknown", async () => {
     keys: { size: "2", filter: "無い列,名前:range" },
   };
   // 実行
-  const spec = readTableSpec(args, ["名前", "値"]);
+  const spec = readTableSpec(args, ["名前", "値"], 10);
   // 検証
   expect(spec.kind).toBe("default");
   expect(spec.features).toEqual(["pin", "sort"]);
@@ -75,7 +78,7 @@ test("test_read_table_spec_when_features", async () => {
     keys: { hide: "説明", total: "数量:sum,名前:count" },
   };
   // 実行
-  const spec = readTableSpec(args, ["名前", "説明", "数量"]);
+  const spec = readTableSpec(args, ["名前", "説明", "数量"], 10);
   // 検証
   expect(spec.features).toEqual([
     "sort",
@@ -109,8 +112,8 @@ test("test_read_table_spec_when_feature_keys_invalid", async () => {
     keys: { total: "数量:sum", hide: "単価" },
   };
   // 実行
-  const first = readTableSpec(invalid, headers);
-  const second = readTableSpec(withoutFeatures, headers);
+  const first = readTableSpec(invalid, headers, 10);
+  const second = readTableSpec(withoutFeatures, headers, 10);
   // 検証: 読めない集計と隠す列
   expect(first.totals).toEqual([{ column: 2, calc: "avg" }]);
   expect(first.hide).toEqual([]);
@@ -139,7 +142,11 @@ test("test_read_table_spec_when_columns", async () => {
     keys: { pin: "物理名", wide: "説明", check: "必須,既定" },
   };
   // 実行
-  const spec = readTableSpec(args, ["No", "物理名", "説明", "必須", "既定"]);
+  const spec = readTableSpec(
+    args,
+    ["No", "物理名", "説明", "必須", "既定"],
+    10,
+  );
   // 検証
   expect(spec.pin).toBe(1);
   expect(spec.wide).toEqual([2]);
@@ -158,8 +165,8 @@ test("test_read_table_spec_when_column_keys_invalid", async () => {
   };
   const withoutPin = { args: ["data", "-pin"], keys: { pin: "名前" } };
   // 実行
-  const first = readTableSpec(unknownColumns, headers);
-  const second = readTableSpec(withoutPin, headers);
+  const first = readTableSpec(unknownColumns, headers, 10);
+  const second = readTableSpec(withoutPin, headers, 10);
   // 検証: 表に無い列名
   expect(first.pin).toBeUndefined();
   expect(first.wide).toEqual([1]);
@@ -357,10 +364,13 @@ test("test_read_table_spec_when_title", async () => {
   const titled = readTableSpec(
     { args: ["data", "closed"], keys: { title: "リリースの一覧" } },
     ["名前"],
+    10,
   );
-  const alone = readTableSpec({ args: ["data"], keys: { title: "一覧" } }, [
-    "名前",
-  ]);
+  const alone = readTableSpec(
+    { args: ["data"], keys: { title: "一覧" } },
+    ["名前"],
+    10,
+  );
   // 検証
   expect(titled.collapse).toBe("closed");
   expect(titled.title).toBe("リリースの一覧");
@@ -687,4 +697,136 @@ test("test_read_table_colors_when_unreadable", async () => {
   expect(labels).toEqual(
     expect.arrayContaining(["無い列", "pink", "保留", "9"]),
   );
+});
+
+// 見出しの行の数と行見出しの列の数を読み取る（正常系）
+test("test_read_table_spec_when_header_rows", async () => {
+  // 準備
+  const { readTableSpec } = await loadTables();
+  const args = parseMarkArgs("data header-rows=2 row-header=1");
+  // 実行
+  const spec = readTableSpec(args, ["a", "b", "c", "d"], 5);
+  // 検証
+  expect(spec.headRows).toBe(2);
+  expect(spec.rowHeader).toBe(1);
+  expect(spec.warnings).toEqual([]);
+});
+
+// 表に収まらない数と数でない値を既定にして警告にする（異常系）
+test("test_read_table_spec_when_header_rows_invalid", async () => {
+  // 準備
+  const { readTableSpec } = await loadTables();
+  const outside = parseMarkArgs("data header-rows=5 row-header=x");
+  const wide = parseMarkArgs("data row-header=3");
+  // 実行
+  const first = readTableSpec(outside, ["a", "b", "c"], 3);
+  const second = readTableSpec(wide, ["a", "b", "c"], 3);
+  // 検証
+  expect(first.headRows).toBe(1);
+  expect(first.rowHeader).toBe(0);
+  const headerRows = first.warnings.find((item) =>
+    item.label.includes("header-rows="),
+  );
+  expect(headerRows?.message).toContain("3");
+  expect(
+    first.warnings.some((item) => item.label.includes("row-header=")),
+  ).toBe(true);
+  expect(second.rowHeader).toBe(0);
+  const rowHeader = second.warnings.find((item) =>
+    item.label.includes("row-header="),
+  );
+  expect(rowHeader?.message).toContain("3");
+});
+
+// 多段の見出し・行見出し・結合したセルにし、マーカーの外の表は結合しない（正常系）
+test("test_decorate_tables_when_cells_merged", () => {
+  // 準備
+  const markdown = [
+    "<!-- table: data header-rows=2 row-header=1 -->",
+    "",
+    "| 地域 | 上期 | << | 下期 |",
+    "| --- | --- | --- | --- |",
+    "| 地域 | 売上 | 件数 | 売上 |",
+    "| A | 1 | 2 | 3 |",
+    "| ^^ | 4 | 5 | 6 |",
+    "| ^^ | 7 | 8 | 9 |",
+    "",
+    "<!-- /table -->",
+    "",
+    "| 列 | 値 |",
+    "| --- | --- |",
+    "| ^^ | << |",
+    "",
+  ].join("\n");
+  // 実行
+  const { html } = renderDoc(markdown);
+  // 検証
+  const marked = outerHtml(html, 'data-kind="data"');
+  const thead = marked.slice(
+    marked.indexOf("<thead"),
+    marked.indexOf("</thead>"),
+  );
+  expect(matches(thead, /<tr/g)).toHaveLength(2);
+  const firstRow = thead.slice(0, thead.indexOf("</tr>"));
+  const headCells = findTags(firstRow, "<th").filter(
+    (tag) => !tag.startsWith("<thead"),
+  );
+  expect(headCells[1]).toContain('colspan="2"');
+  expect(headCells[1]).toContain('scope="colgroup"');
+  expect(firstRow).not.toContain("&lt;&lt;");
+  const tbody = marked.slice(marked.indexOf("<tbody"));
+  const rowHeads = findTags(tbody, '<th scope="row"');
+  expect(rowHeads).toHaveLength(3);
+  expect(rowHeads[0]).toContain('rowspan="3"');
+  for (const cell of rowHeads.slice(1)) {
+    expect(cell).toContain('data-merge="up"');
+    expect(cell).toContain("hidden");
+  }
+  expect(matches(tbody, /<th[^>]*data-merge="up"[^>]*>A<\/th>/g)).toHaveLength(
+    2,
+  );
+  expect(marked).toContain('data-merge-columns="0"');
+  const plain = html.slice(html.lastIndexOf("<table"));
+  expect(plain).toContain("^^");
+  expect(plain).toContain("&lt;&lt;");
+  expect(plain).not.toContain("data-merge");
+  expect(plain).not.toContain("rowspan");
+  expect(html).not.toContain("mdmark-syntax-warning");
+});
+
+// 読めない header-rows= と結合する相手の無いセルを 1 つの警告にまとめ、文字のまま出す（異常系）
+test("test_decorate_tables_when_merge_invalid", () => {
+  // 準備
+  const markdown = [
+    "<!-- table: data header-rows=5 -->",
+    "",
+    "| << | 値 |",
+    "| --- | --- |",
+    "| a | ^^ |",
+    "| b | 2 |",
+    "",
+    "<!-- /table -->",
+    "",
+  ].join("\n");
+  // 実行
+  const { html } = renderDoc(markdown);
+  // 検証
+  const warnings = findTags(html, 'class="mdmark-syntax-warning"');
+  expect(warnings).toHaveLength(1);
+  const warning = html.slice(
+    html.indexOf("mdmark-syntax-warning"),
+    html.indexOf("<table"),
+  );
+  expect(warning).toContain("header-rows=");
+  expect(warning).toContain("^^");
+  expect(warning).toContain("&lt;&lt;");
+  const table = html.slice(html.indexOf("<table"));
+  const thead = table.slice(table.indexOf("<thead"), table.indexOf("</thead>"));
+  expect(matches(thead, /<tr/g)).toHaveLength(1);
+  expect(table).toContain("^^");
+  expect(table).toContain("&lt;&lt;");
+  expect(table).not.toContain("rowspan");
+  expect(table).not.toContain("colspan");
+  expect(table).not.toContain("data-merge=");
+  expect(html).toContain('data-features="sort pin filter"');
 });

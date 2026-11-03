@@ -611,3 +611,56 @@ test("test_normal_when_back_to_top_hidden_in_print", async ({ page }) => {
   expect((box?.x ?? 0) + (box?.width ?? 0)).toBeGreaterThan(1280 / 2);
   expect((box?.y ?? 0) + (box?.height ?? 0)).toBeGreaterThan(800 / 2);
 });
+
+// 印刷の前に畳んだコードの行と入れ子の閉じた注意書きを開き、開閉のボタンを出さず、印刷の後に戻す（正常シナリオ（畳んだコードと入れ子の注意書きを開いて出す））
+test("test_normal_when_code_folded", async ({ page }) => {
+  // 準備
+  await openPage(page, builtRoot);
+  await mountDocument(page, {
+    markdown: [
+      "<!-- code: fold=2 -->",
+      "",
+      "```yaml",
+      "a:",
+      "  b:",
+      "    c: 1",
+      "  d: 2",
+      "```",
+      "",
+      "> [!NOTE]+ 外側",
+      "> 外側の本文",
+      ">",
+      "> > [!TIP]- 内側",
+      "> > 内側の本文",
+      "",
+    ].join("\n"),
+    config: { features: { syntax: false } },
+  });
+  const lines = page.locator("#doc .mdmark-code-line");
+  const inner = page.locator("#doc details.markdown-alert-tip");
+  await expect(lines.nth(2)).toBeHidden();
+  await expect(inner).not.toHaveAttribute("open", "");
+  // 実行: 印刷の前
+  await page.emulateMedia({ media: "print" });
+  await sendPrintEvent(page, "beforeprint");
+  // 検証: 全ての行と入れ子の注意書きの本文が出て、開閉のボタンと ⋯ が出ていない
+  for (const index of [0, 1, 2, 3]) {
+    await expect(lines.nth(index)).toBeVisible();
+  }
+  await expect(page.getByText("内側の本文")).toBeVisible();
+  for (const button of await page
+    .locator("#doc :is(.mdmark-code-fold, .mdmark-code-fold-more)")
+    .all()) {
+    await expect(button).toBeHidden();
+  }
+  // 実行: 印刷の後
+  await page.emulateMedia({ media: "screen" });
+  await sendPrintEvent(page, "afterprint");
+  // 検証: 2 行目を畳み、入れ子の注意書きを閉じる
+  await expect(lines.nth(2)).toBeHidden();
+  await expect(
+    lines.nth(1).locator(":scope > .mdmark-code-fold"),
+  ).toHaveAttribute("aria-expanded", "false");
+  await expect(inner).not.toHaveAttribute("open", "");
+  await expect(page.getByText("内側の本文")).toBeHidden();
+});

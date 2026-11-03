@@ -46,6 +46,27 @@ scenarios:
       - 正しい定義のチャートが描かれている
       - 段落が描かれている
     test: test_error_when_definition_invalid
+  - name: 正常シナリオ（追加したグラフの種類）
+    setup:
+      - name: 文書を描くページ
+        description: 正常シナリオと同じ
+      - name: 追加した種類のチャートを置いた Markdown
+        description: '`<!-- html -->` の範囲の `html` のコードブロックに、種類がドーナツの `<mdmark-chart>` と、種類が折れ線と棒の組み合わせの `<mdmark-chart>` を置く文書'
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 読む人
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を渡して描かせる
+        M->>M: mdmark-chart の定義を読み、グラフの部品で種類ごとに描く
+        M-->>P: 図の枠に載せた 2 つのチャートと、HTML の残り
+        P-->>U: 文書を表示
+    expected:
+      - 2 つの `<mdmark-chart>` の場所に、`<!-- chart -->` で描いたときと同じドーナツと、折れ線と棒の組み合わせのグラフが、タイトルと凡例つきで図の枠に載って描かれている
+      - 書き方の警告が無い
+    test: test_normal_when_more_chart_types
 lead: 文書を書く人が、埋め込んだ HTML の中に図の部品の custom element（`<mdmark-chart>` など）を置き、中身に部品の定義（JSON）だけを書く。mdmark が、`<!-- chart -->` などの印と同じ図の部品で、HTML のその場所に図の枠に載せて描く。グラフの種類ごとの描き方は『図を描く』が確かめる。
 issue: 6
 primary_actor: 文書を書く人（AI を含む）
