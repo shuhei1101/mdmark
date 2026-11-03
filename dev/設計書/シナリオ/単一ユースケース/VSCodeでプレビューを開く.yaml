@@ -1,4 +1,4 @@
-title: "VSCodeでプレビューを開く"
+title: VSCodeでプレビューを開く
 scenarios:
   - name: 正常シナリオ
     setup:
@@ -160,6 +160,29 @@ scenarios:
       - パネルに、版を決められない（タグ一覧を取れず前回の版も無い）ことを示す理由と「リロード」のボタンが出る
       - 配布物の要求が 0 件
     test: test_error_when_version_undecidable
+  - name: 正常シナリオ（範囲のスクリプトと CSS）
+    setup:
+      - name: 見本のワークスペース
+        description: '`<!-- html -->` の範囲に `html`・`css`・`ts` のコードブロックを 1 つずつ置いた Markdown と、`features.html-scripts` を `true` にした `mdmark.config.yaml` を置いたフォルダ'
+      - name: Mock
+        description: 正常シナリオと同じ。加えて、範囲の `ts` の型を外す変換のライブラリを、配布物と同じ手元のサーバーから配る
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant EX as 拡張機能
+        participant PV as プレビュー（Webview）
+        W->>EX: mdmark.openPreviewToSide
+        EX->>PV: 横の列にパネルを開く
+        EX->>PV: Markdown の全文と設定を送る
+        PV->>PV: mount で描き、範囲の関数をページの nonce を付けた script 要素で動かす
+        PV-->>W: 範囲の css と ts を当てた文書
+        W->>PV: 範囲の箱を押す
+        PV-->>W: 根の要素に class が付いた表示
+    expected:
+      - パネルの範囲の箱の背景が `css` の色で描かれる
+      - 範囲の箱を押すと根の要素に class `is-open` が付く
+      - パネルの CSP の値が正常シナリオと同じで、CSP の違反が 0 件
+    test: test_normal_when_range_scripts
 lead: 文書を書く人が、VS Code で開いている Markdown の横に、mdmark で描いたプレビューを開く。拡張機能は読む mdmark の版を決め、jsDelivr の版付きの URL から配布物を読んで描く。
 issue: 22
 primary_actor: 文書を書く人

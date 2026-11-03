@@ -1,4 +1,4 @@
-title: "表を操作する"
+title: 表を操作する
 scenarios:
   - name: 正常シナリオ
     setup:
@@ -845,6 +845,231 @@ scenarios:
     expected:
       - 行見出しの 1 列目と 2 列目が左端に見えていて、2 列目のピン止めのボタンの `aria-pressed` が `true`
     test: test_normal_when_row_header_pinned
+  - name: 正常シナリオ（列を並べ替える）
+    setup:
+      - name: mdmark を読むページ
+        description: 正常シナリオと同じ
+      - name: 列の並べ替えを付けた表を持つ Markdown
+        description: '`<!-- table: data +reorder -->` 〜 `<!-- /table -->` で囲んだ 4 列 3 行の表と、`+reorder` を付けない `<!-- table: data -->` の表を 1 つずつ持つ文書'
+        notes: 列は左から `名前`・`型`・`既定`・`説明`
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を渡して描かせる
+        M-->>P: 見出しに並べ替えのつまみと列のメニューを持つ表を描く
+        U->>P: 説明の列の見出しのつまみを名前の列の左へドラッグする
+        M->>M: 列の順を入れ替える
+        P-->>U: 説明の列が先頭の表
+        U->>P: 型の列の列のメニューをキーボードで開き、右へ移動を選ぶ
+        P-->>U: 型の列が 1 つ右へ動いた表
+        U->>P: 名前の列の見出しの並べ替えのボタンを押す
+        P-->>U: 行を並べ替えた表（列の順は変わらない）
+    expected:
+      - ドラッグの後、`+reorder` の表の列が `説明`・`名前`・`型`・`既定` の順で、全ての行のセルが見出しと同じ順に動いている
+      - 列のメニューの「右へ移動」の後、列が `説明`・`名前`・`既定`・`型` の順になり、フォーカスが動かした列の見出しに残る
+      - 先頭の列の列のメニューの「左へ移動」と、末尾の列の列のメニューの「右へ移動」が `disabled`
+      - 見出しの並べ替えのボタンを押しても列は動かず、行だけが並べ替わる
+      - 行を並べ替えた後と絞り込んだ後も、動かした列の順が保たれている
+      - '`+reorder` を付けない表の見出しに、並べ替えのつまみと列のメニューの左右へ動かす項目が無い'
+      - ページを開き直すと、列は Markdown に記載した順に戻る
+    test: test_normal_when_columns_reordered
+  - name: 正常シナリオ（結合した見出しとピン止めの列を並べ替える）
+    setup:
+      - name: mdmark を読むページ
+        description: 正常シナリオと同じ
+        notes: 描く先の要素の幅は、表が横にスクロールする幅
+      - name: 結合した見出しとピン止めを持つ Markdown
+        description: '`<!-- table: data +reorder header-rows=2 pin=名前 -->` で囲んだ表を持つ文書'
+        notes: 1 段目は `名前`・`設定`（`<<` で 3 列にまたがる）・`備考`。2 段目は `名前`・`型`・`既定`・`必須`・`備考`
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を渡して描かせる
+        M-->>P: 2 段の見出しで、名前の列までを留めた表を描く
+        U->>P: 既定の列を型の列の左へドラッグする
+        P-->>U: 設定の見出しの下で列が入れ替わった表
+        U->>P: 型の列を備考の列の右へドラッグする
+        P-->>U: 列の順が変わらない表
+        U->>P: 備考の列を名前の列の左へドラッグする
+        P-->>U: 列の順が変わらない表
+    expected:
+      - 既定の列のドラッグの後、2 段目が `名前`・`既定`・`型`・`必須`・`備考` の順で、1 段目の `設定` は 3 列にまたがったまま
+      - 結合した見出しの範囲の外へのドラッグでは、ドロップできる位置の線が出ず、列の順が変わらない
+      - ピン止めした列とピン止めしていない列の境をまたぐドラッグでは、列の順が変わらない
+      - 結合した見出しの範囲の端の列は、範囲の外へ向かう列のメニューの項目が `disabled`
+      - 横にスクロールしても、名前の列が左端に留まっている
+    test: test_normal_when_reordered_within_groups
+  - name: 正常シナリオ（キーの列を階層で描く）
+    setup:
+      - name: mdmark を読むページ
+        description: 正常シナリオと同じ
+      - name: 階層の表を持つ Markdown
+        description: '`<!-- table: data tree=キー type=型 required=必須 default=既定 -->` で囲み、キー・型・必須・既定・説明の列を持つ表の文書'
+        notes: キーは `features.table`・`features.html`・`aliases[].id`・`aliases[].metadata.alias_type.type`。`features`・`aliases[]`・`aliases[].metadata`・`aliases[].metadata.alias_type` の行は無い。型は `bool`・`string`・`a \| b` の値、必須は `features.table` だけ `✓`、既定は `features.table` だけ `true`
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を渡して描かせる
+        M->>M: キーをドットと [] で分け、表に無い親の行を補う
+        M-->>P: キーの列を階層で描いた表
+        U->>P: aliases[].metadata.alias_type.type の行のキーにポインターを乗せる
+        P-->>U: 全体のパスのツールチップ
+        U->>P: ⧉ を押す
+        P-->>U: 全体のパスをコピーした知らせ
+    expected:
+      - キーの列に、表に無い親（`features`・`aliases[]`・`aliases[].metadata`・`aliases[].metadata.alias_type`）の行が薄い斜体のキーだけで補われ、補った行の他の列は空
+      - 各行のキーの列は末尾の名前（`table`・`type` など）だけを出し、階層の深さのインデントと縦線で親子を示す
+      - キーの列には行ごとの横線が無く、縦線が行をまたいでつながっている
+      - キーにポインターを乗せるとフォーカスでも、全体のパス `aliases[].metadata.alias_type.type` のツールチップが出る
+      - ⧉ を押すと全体のパスがクリップボードに入り、知らせが出る
+      - 型の列は値ごとに色の違うバッジで、`a \| b` は値ごとのチップで出る
+      - 必須の列は出ず、`features.table` のキーの後ろに赤い * がある
+      - 既定の列は薄い等幅で出て、空のセルに文字が無い
+      - 見出しに行の並べ替えのボタンが無い
+      - マーカーに対応しない表示では、キーの列は記載したとおりの全体のパスで読める
+    test: test_normal_when_tree
+  - name: 正常シナリオ（階層を畳む・開く）
+    setup:
+      - name: mdmark を読むページ
+        description: 正常シナリオと同じ
+      - name: 階層の表を持つ Markdown
+        description: 正常シナリオ（キーの列を階層で描く）と同じ
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を渡して描かせる
+        M-->>P: 子を持つ行に ▾ を出した表（既定は開く）
+        U->>P: aliases[] の行の ▾ を押す
+        P-->>U: aliases[] の子孫を畳んだ表
+        U->>P: aliases[] の行の ▸ を押す
+        P-->>U: 子だけを開き、子の開閉の状態を保った表
+        U->>P: Shift を押しながら aliases[] の ▾ を押す
+        P-->>U: aliases[] と入れ子を全て畳んだ表
+        U->>P: Shift を押しながら aliases[] の ▸ を押す
+        P-->>U: aliases[] と入れ子を全て開いた表
+    expected:
+      - 子を持つ行だけに、縦線の後ろ・キーのすぐ左に ▾ があり、描いた直後は全ての行が見えている
+      - ▾ を押すと子孫の行が隠れ、ボタンが ▸ になり `aria-expanded` が `false`
+      - Shift を押しながら押すと、入れ子の行の開閉もまとめて変わる
+      - ボタンにフォーカスして Enter・Space でも同じように畳む・開く
+      - 畳んだ行も表のコピーと集計には含まれる
+    test: test_normal_when_tree_folded
+  - name: 正常シナリオ（階層の表を絞り込む）
+    setup:
+      - name: mdmark を読むページ
+        description: 正常シナリオと同じ
+      - name: 階層の表を持つ Markdown
+        description: 正常シナリオ（キーの列を階層で描く）の表のマーカーに `filter=キー:text` を加えた文書
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を渡して描かせる
+        U->>P: キーの列の絞り込みに type と入れる
+        M->>M: 当たった行と、その親の行を残す
+        P-->>U: 絞り込んだ表
+    expected:
+      - '`aliases[].metadata.alias_type.type` の行と、その親の `aliases[]`・`aliases[].metadata`・`aliases[].metadata.alias_type` の行だけが出ている'
+      - 当たった単語 `type` の部分に色が付き、親の行の文字には付かない
+      - 件数の表示は当たった行の数を数え、残した親の行を数えない
+      - 絞り込みを解除すると、絞り込む前の開閉の状態に戻る
+    test: test_normal_when_tree_filtered
+  - name: 正常シナリオ（階層の行を選ぶ）
+    setup:
+      - name: mdmark を読むページ
+        description: 正常シナリオと同じ
+      - name: 階層の表を持つ Markdown
+        description: 正常シナリオ（キーの列を階層で描く）と同じ
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を渡して描かせる
+        U->>P: features.html の行を押す
+        P-->>U: 同じ親の範囲の縦線を濃くした表
+        U->>P: features.html の行をもう一度押す
+        P-->>U: 選ぶ前の表
+    expected:
+      - 行を押すと、その行が `aria-selected="true"` になり、同じ親（`features`）を持つ行の範囲のその階層の縦線が濃く引かれる
+      - 別の行を押すと、前の行の選択が解除され、新しい行の範囲の縦線が濃くなる
+      - 同じ行をもう一度押すと選択が解除され、縦線が元の濃さに戻る
+      - 行のキーの ⧉ と ▾ を押しても、行の選択は変わらない
+    test: test_normal_when_tree_row_selected
+  - name: 正常シナリオ（YAML の見本と連動する）
+    setup:
+      - name: mdmark を読むページ
+        description: 正常シナリオと同じ
+      - name: 見本を結んだ階層の表を持つ Markdown
+        description: 正常シナリオ（キーの列を階層で描く）の表のマーカーに `example=設定の見本` を加え、見出し `設定の見本` の下に `<!-- tabs -->` で囲んだ `最小`・`エイリアス` の 2 つのタブを置き、それぞれに `yaml` のコードブロックを 1 つ持つ文書
+        notes: '`最小` の見本は `features.table` だけ、`エイリアス` の見本は `aliases[].id` と `aliases[].metadata.alias_type.type` を持つ'
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を渡して描かせる
+        M-->>P: 表の横に見本のタブを結んだ表
+        U->>P: features.table の行を押す
+        P-->>U: 最小の見本の features.table の行に色を付けた表
+        U->>P: エイリアスのタブを選び、見本の aliases の id の行を押す
+        P-->>U: aliases[].id の行を選んだ表
+        U->>P: 見本の表示を切り替えるボタンを押す
+        P-->>U: 見本を隠した表
+    expected:
+      - 表の横に、見出し `設定の見本` の下のタブが見本として出ており、既定で表示されている
+      - 表の `features.table` の行を押すと、`最小` の見本の `table:` の行に色が付く
+      - 見本の `id:` の行を押すと、表の `aliases[].id` の行が選ばれる
+      - 選んだキーが開いているタブの見本に無いとき、見本のどの行にも色が付かない
+      - 見本の表示を切り替えるボタンで見本を隠すと、表が見本の幅まで広がり、ボタンの `aria-pressed` が変わる
+      - マーカーに対応しない表示では、見出し `設定の見本` の下にコードブロックが記載したとおりに出る
+    test: test_normal_when_tree_linked_to_example
+  - name: 異常シナリオ（読めない階層の指定）
+    setup:
+      - name: mdmark を読むページ
+        description: 正常シナリオと同じ
+      - name: 読めない指定の階層の表を持つ Markdown
+        description: 表に無い列名の `tree=キー名`・`tree=` の無い `type=型`・文書に無い見出しの `example=見本` を、表のマーカーごとに 1 つずつ持つ 3 つの表の文書
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を渡して描かせる
+        M->>M: 表に無い列名・tree= の無い引数・無い見出しを見つける
+        M-->>P: 表の上に書き方の警告、表は読めた指定だけで描く
+        P-->>U: 警告と表を表示
+    expected:
+      - 3 つの表の上に、それぞれ読めなかった指定を挙げた書き方の警告がある
+      - '`tree=` に表に無い列名を指定した表は、階層にせず普通の表で描かれている'
+      - '`tree=` の無い `type=` の表は、型の列をバッジにせず文字のまま出している'
+      - 見出しが無い `example=` の表は、階層では描かれ、見本と表示を切り替えるボタンが無い
+    test: test_error_when_tree_options_invalid
 lead: '文書を書く人が `<!-- table: 種類 +機能 -機能 -->` 〜 `<!-- /table -->` で表を囲み、読む人が描かれた表を見出し行を見ながらページのスクロールで読み、列で並べ替え・絞り込み・ピン止めし、閉じた表を開き、表と行の URL をコピーする。'
 issue: 4
 primary_actor: 文書を読む人

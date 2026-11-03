@@ -167,6 +167,33 @@ scenarios:
       - リンクで移った文書で、ビューが描かれ、Chart.js の印の場所に `canvas` が描かれ、知らせの枠が出ない
       - 開いてから文書を移った後までに、CSP の違反（`securitypolicyviolation`）が 0 件で、`blob:` の URL への要求が 0 件
     test: test_normal_when_blob_and_dynamic_import_blocked
+  - name: 正常シナリオ（範囲のスクリプトと CSS）
+    setup:
+      - name: 範囲のスクリプトを持つ文書
+        description: '`<!-- html -->` の範囲に `html`・`css`・`ts` のコードブロックを 1 つずつ置いた文書と、範囲を持たない文書の 2 つを `build` に指定し、`features.html-scripts` を `true` にした設定'
+        notes: '`ts` は箱を押すと根の要素に class `is-open` を付け外しし、`destroy` で `window.__mdmarkDestroyed` を 1 増やす'
+      - name: Mock
+        description: '正常シナリオ（blob: と動的 import を許さない環境で開く）と同じ'
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant C as mdmark CLI
+        participant F as 出力の HTML
+        actor R as 読む人
+        W->>C: mdmark build
+        C->>C: 範囲の ts の型を外し、範囲ごとに登録する形にする
+        C->>F: 範囲の関数を束ねたスクリプトに加えた 1 枚の HTML を書く
+        C-->>W: 出力のパス・終了コード 0
+        R->>F: 範囲を持つ文書を開く
+        F-->>R: 範囲の css と ts を当てた文書
+        R->>F: 文書の一覧で範囲を持たない文書へ移る
+        F-->>R: 範囲を持たない文書
+    expected:
+      - 終了コードが 0 で、指定した出力に HTML が 1 つある
+      - 範囲を持つ文書で、範囲の箱の背景が `css` の色で描かれ、押すと根の要素に class `is-open` が付く
+      - 範囲を持たない文書へ移ると、範囲の `destroy` が 1 回呼ばれ、範囲の `css` が移った先の文書に当たっていない
+      - 開いてから文書を移り終えるまでに、CSP の違反が 0 件で、`blob:` の URL への要求が 0 件
+    test: test_normal_when_range_scripts
 lead: 文書を書く人が設定の `build` で対象を決めて `mdmark build` を流し、参照・被参照・用語のツールチップが効く 1 枚の HTML にまとめる。
 issue: 9
 primary_actor: 文書を書く人

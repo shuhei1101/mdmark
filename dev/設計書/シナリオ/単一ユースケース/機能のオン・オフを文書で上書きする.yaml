@@ -1,4 +1,4 @@
-title: "機能のオン・オフを文書で上書きする"
+title: 機能のオン・オフを文書で上書きする
 scenarios:
   - name: 正常シナリオ
     setup:
@@ -266,6 +266,29 @@ scenarios:
       - URL だけの段落がカードにならず、リンクとして描かれている
       - '`<!-- features: ... -->` のマーカーは本文に出ていない'
     test: test_normal_when_media_features_disabled
+  - name: 正常シナリオ（範囲のスクリプトを文書でオンにする）
+    setup:
+      - name: mdmark を読むページ
+        description: 正常シナリオと同じ
+        notes: 設定の `features` は `html-scripts` を書かない（既定のオフ）
+      - name: 範囲のスクリプトをオンにする Markdown
+        description: '先頭に `<!-- features: +html-scripts -->` を持ち、`<!-- html -->` の範囲に `html`・`css`・`ts` のコードブロックを 1 つずつ置いた文書'
+      - name: Mock
+        description: 正常シナリオと同じ。加えて、範囲の `ts` の型を外す変換のライブラリを手元のモジュールに差し替える
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を渡して描かせる
+        M->>M: 設定の features に文書のマーカーを重ねる
+        M-->>P: 範囲の css と ts を当てた HTML
+        P-->>U: 文書を表示
+    expected:
+      - 範囲の箱の背景が `css` の色で描かれている
+      - 範囲の `ts` の既定のエクスポートの関数が、範囲の根の要素で 1 回呼ばれている
+      - 本文にマーカーの文字が出ていない
+    test: test_normal_when_range_scripts_enabled_by_document
 lead: '使う側が設定の `features` で機能のオン・オフの既定を決め、文書を書く人が文書の `<!-- features: +機能 -機能 -->` でその文書だけ上書きする。この Issue が持つ機能の印刷（`print`）で確かめる。'
 issue: 3
 primary_actor: 文書を書く人

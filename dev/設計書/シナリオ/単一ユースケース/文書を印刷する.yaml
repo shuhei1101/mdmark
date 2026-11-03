@@ -1,4 +1,4 @@
-title: "文書を印刷する"
+title: 文書を印刷する
 scenarios:
   - name: 正常シナリオ
     setup:
@@ -294,6 +294,32 @@ scenarios:
       - 印刷の前のイベントの後、コードの開閉のボタンと ⋯ が印刷に出ていない
       - 印刷の後のイベントの後、コードの 2 行目が畳まれ、入れ子の注意書きが閉じている
     test: test_normal_when_code_folded
+  - name: 正常シナリオ（畳んだ階層の行と隠した見本を開いて出す）
+    setup:
+      - name: 文書を描いたページ
+        description: 正常シナリオ（記法を開いて出す）と同じ
+      - name: 階層の表と見本を持つ Markdown
+        description: 表を操作する.yaml の正常シナリオ（YAML の見本と連動する）と同じ文書
+      - name: Mock
+        description: 正常シナリオ（記法を開いて出す）と同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant B as ブラウザ
+        participant M as mdmark
+        U->>B: aliases[] の行を畳み、見本を隠す
+        U->>B: 印刷を始める
+        B->>M: 印刷の前のイベント
+        M->>M: 畳んだ階層の行と隠した見本を開く
+        B-->>U: 印刷の出力
+        B->>M: 印刷の後のイベント
+        M->>M: 印刷の前の表示に戻す
+        B-->>U: 画面の表示に戻る
+    expected:
+      - 印刷の前のイベントの後、階層の表の全ての行と、見本の全てのタブの中身が表示されている
+      - 印刷の前のイベントの後、▾・⧉・見本の表示を切り替えるボタンが印刷に出ていない
+      - 印刷の後のイベントの後、`aliases[]` の子孫が畳まれ、見本が隠れている
+    test: test_normal_when_tree_folded
 lead: 読む人が mdmark の描いた文書を印刷・PDF にすると、折り畳みを全て開き、図表を改ページで切らず、ダークの配色を解除し、リンクの URL を併記して出す。印刷を終えると画面の表示に戻る。
 issue: 3
 primary_actor: 文書を読む人
