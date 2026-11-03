@@ -1,0 +1,241 @@
+$ npm run test:unit
+
+> test:unit
+> vitest run --project 'unit*'
+
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/chore-plugin-guide-dev-docs-source
+
+ ❯ |unit| tests/unit/src/plugin/tools.test.ts (14 tests | 6 failed) 6555ms
+   × test_call_tool 6040ms
+   × test_call_tool_when_cli_error 15ms
+   × test_call_tool_when_unexpected_error 7ms
+   × test_call_tool_when_project_dir 2ms
+   × test_call_tool_when_project_dir_missing 2ms
+   × test_call_tool_when_project_dir_invalid 2ms
+ ❯ |unit| tests/unit/scripts/build-plugin.test.ts (12 tests | 1 failed) 3797ms
+   × test_build_plugin_when_guide_invalid 11ms
+ ❯ |unit| tests/unit/src/plugin/http.test.ts (11 tests | 1 failed) 9903ms
+   × test_run_serve 124ms
+ ❯ |unit| tests/unit/scripts/build.test.ts (27 tests | 1 failed) 60573ms
+   × test_main_when_guide_index_invalid 1335ms
+ ❯ |unit| tests/unit/src/plugin/pre-tool-use.test.ts (4 tests | 1 failed) 7439ms
+   × test_run_pre_tool_use_when_matcher 7382ms
+ ❯ |unit| tests/unit/src/plugin/mcp.test.ts (2 tests | 1 failed) 8187ms
+   × test_create_mcp_server 8179ms
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 11 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit| tests/unit/scripts/build-plugin.test.ts > test_build_plugin_when_guide_invalid
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ tests/unit/scripts/build-plugin.test.ts:284:68
+    282|   });
+    283|   // 検証
+    284|   expect(problems.some((line) => line.includes("guides[0].page"))).toB…
+       |                                                                    ^
+    285|   expect(existsSync(join(root, "plugin", "scripts"))).toBe(false);
+    286| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/11]⎯
+
+ FAIL  |unit| tests/unit/scripts/build.test.ts > test_main_when_guide_index_invalid
+AssertionError: expected +0 to be 1 // Object.is equality
+
+- Expected
++ Received
+
+- 1
++ 0
+
+ ❯ tests/unit/scripts/build.test.ts:301:16
+    299|   const code = await main([], { root, maxBytes: MAX_BYTES });
+    300|   // 検証
+    301|   expect(code).toBe(1);
+       |                ^
+    302|   expect(existsSync(join(root, "dist"))).toBe(false);
+    303|   expect(existsSync(join(root, "plugin", "scripts"))).toBe(false);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/11]⎯
+
+ FAIL  |unit| tests/unit/src/plugin/http.test.ts > test_run_serve
+AssertionError: expected [ { name: 'read_guide', …(3) }, …(3) ] to have a length of 3 but got 4
+
+- Expected
++ Received
+
+- 3
++ 4
+
+ ❯ tests/unit/src/plugin/http.test.ts:242:17
+    240|   const code = await serving;
+    241|   // 検証
+    242|   expect(tools).toHaveLength(3);
+       |                 ^
+    243|   expect(code).toBe(0);
+    244|   await expect(fetch(url)).rejects.toThrow();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/11]⎯
+
+ FAIL  |unit| tests/unit/src/plugin/mcp.test.ts > test_create_mcp_server
+AssertionError: expected [ { name: 'read_guide', …(7) }, …(3) ] to have a length of 3 but got 4
+
+- Expected
++ Received
+
+- 3
++ 4
+
+ ❯ tests/unit/src/plugin/mcp.test.ts:53:17
+     51|     TOOLS.map((tool) => tool.name).sort(),
+     52|   );
+     53|   expect(tools).toHaveLength(3);
+       |                 ^
+     54|   for (const tool of tools) {
+     55|     expect(Object.keys(tool.inputSchema.properties ?? {})).not.toConta…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/11]⎯
+
+ FAIL  |unit| tests/unit/src/plugin/pre-tool-use.test.ts > test_run_pre_tool_use_when_matcher
+AssertionError: expected [ Array(3) ] to deeply equal [ 'build_site', 'check', …(2) ]
+
+- Expected
++ Received
+
+  [
+    "build_site",
+    "check",
+    "export_html",
+-   "read_guide",
+  ]
+
+ ❯ tests/unit/src/plugin/pre-tool-use.test.ts:100:41
+     98|     "export_html",
+     99|   ]);
+    100|   expect([...PROJECT_DIR_TOOLS].sort()).toEqual(
+       |                                         ^
+    101|     TOOLS.map((tool) => tool.name).sort(),
+    102|   );
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/11]⎯
+
+ FAIL  |unit| tests/unit/src/plugin/tools.test.ts > test_call_tool
+SyntaxError: Unexpected token '引', "引数 project"... is not valid JSON
+ ❯ tests/unit/src/plugin/tools.test.ts:72:15
+     70|   const texts = textsOf(result);
+     71|   expect(texts).toHaveLength(1);
+     72|   expect(JSON.parse(texts[0] ?? "")).toEqual({ out: "/a.html" });
+       |               ^
+     73|   expect(result.isError).toBeFalsy();
+     74| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/11]⎯
+
+ FAIL  |unit| tests/unit/src/plugin/tools.test.ts > test_call_tool_when_cli_error
+AssertionError: expected [ '引数 project_dir は使えません。使える引数は  です。' ] to deeply equal [ '直し方の文' ]
+
+- Expected
++ Received
+
+  [
+-   "直し方の文",
++   "引数 project_dir は使えません。使える引数は  です。",
+  ]
+
+ ❯ tests/unit/src/plugin/tools.test.ts:122:27
+    120|   // 検証
+    121|   expect(result.isError).toBe(true);
+    122|   expect(textsOf(result)).toEqual(["直し方の文"]);
+       |                           ^
+    123|   expect(stderr).toEqual([]);
+    124| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/11]⎯
+
+ FAIL  |unit| tests/unit/src/plugin/tools.test.ts > test_call_tool_when_unexpected_error
+AssertionError: expected '引数 project_dir は使えません。使える引数は  です。' to contain 'boom'
+
+Expected: "boom"
+Received: "引数 project_dir は使えません。使える引数は  です。"
+
+ ❯ tests/unit/src/plugin/tools.test.ts:144:38
+    142|   // 検証
+    143|   expect(result.isError).toBe(true);
+    144|   expect(textsOf(result).join("\n")).toContain("boom");
+       |                                      ^
+    145|   const logged = stderr.join("\n");
+    146|   expect(logged).toContain("check");
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/11]⎯
+
+ FAIL  |unit| tests/unit/src/plugin/tools.test.ts > test_call_tool_when_project_dir
+AssertionError: expected true to be falsy
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ tests/unit/src/plugin/tools.test.ts:182:26
+    180|   });
+    181|   // 検証
+    182|   expect(result.isError).toBeFalsy();
+       |                          ^
+    183|   expect(run).toHaveBeenCalledTimes(1);
+    184|   const [args, context] = run.mock.calls[0] as unknown as [
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/11]⎯
+
+ FAIL  |unit| tests/unit/src/plugin/tools.test.ts > test_call_tool_when_project_dir_missing
+AssertionError: expected undefined to be true // Object.is equality
+
+- Expected:
+true
+
++ Received:
+undefined
+
+ ❯ tests/unit/src/plugin/tools.test.ts:207:26
+    205|   });
+    206|   // 検証
+    207|   expect(result.isError).toBe(true);
+       |                          ^
+    208|   expect(textsOf(result)).toEqual([PROJECT_DIR_ERROR_MESSAGE]);
+    209|   expect(run).not.toHaveBeenCalled();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/11]⎯
+
+ FAIL  |unit| tests/unit/src/plugin/tools.test.ts > test_call_tool_when_project_dir_invalid
+AssertionError: expected [ Array(1) ] to deeply equal [ Array(1) ]
+
+- Expected
++ Received
+
+  [
+-   "引数 project_dir が無いか、ある作業のフォルダの絶対パスではありません。mdmark のプラグインを入れた Claude Code のセッションから呼んでください。",
++   "引数 project_dir は使えません。使える引数は config です。",
+  ]
+
+ ❯ tests/unit/src/plugin/tools.test.ts:230:29
+    228|     // 検証
+    229|     expect(result.isError).toBe(true);
+    230|     expect(textsOf(result)).toEqual([PROJECT_DIR_ERROR_MESSAGE]);
+       |                             ^
+    231|   }
+    232|   expect(run).not.toHaveBeenCalled();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/11]⎯
+
+
+ Test Files  6 failed | 176 passed (182)
+      Tests  11 failed | 1278 passed (1289)
+   Start at  21:20:43
+   Duration  103.61s (worker 72%, tests 17%, import 8%, transform 3%)
+

@@ -151,7 +151,7 @@ function launch(options: {
 /** `hooks/hooks.json` の `event` のコマンドを、`CLAUDE_PLUGIN_ROOT` を `pluginDir` にして子プロセスで流す。`input` を標準入力に渡す。終了コードが 0 以外でも例外を投げず、結果を返す */
 async function runHook(options: {
   pluginDir: string;
-  event: "SessionStart" | "PreToolUse";
+  event: "PreToolUse";
   env: Record<string, string>;
   input: string;
 }): Promise<HookResult> {
@@ -176,13 +176,6 @@ async function runHook(options: {
   run.child.stdin?.end(input);
   const code = await run.exited;
   return { code, stdout: run.stdout(), stderr: run.stderr() };
-}
-
-/** `hooks/hooks.json` の SessionStart のコマンドを流す */
-export async function runSessionStartHook(
-  pluginDir: string,
-): Promise<HookResult> {
-  return runHook({ pluginDir, event: "SessionStart", env: {}, input: "" });
 }
 
 /** `hooks/hooks.json` の PreToolUse のコマンドを、標準入力に `input` を渡して流す。`env` は子プロセスの環境変数に重ねる（`CLAUDE_PROJECT_DIR` はここで渡したものだけが届く） */

@@ -200,14 +200,10 @@ test("test_normal", { timeout: BUILD_TIMEOUT_MS }, async () => {
     expect(existsSync(join(root, "dist", name))).toBe(true);
   }
   // Claude Code のプラグインの生成物と、バージョン。MCP サーバーは束ねない
-  for (const path of [
-    "scripts/session-start.js",
-    "scripts/pre-tool-use.js",
-    "guide/index.json",
-  ]) {
-    expect(existsSync(join(root, "plugin", path))).toBe(true);
-  }
-  for (const path of ["server", "dist"]) {
+  expect(existsSync(join(root, "plugin", "scripts", "pre-tool-use.js"))).toBe(
+    true,
+  );
+  for (const path of ["scripts/session-start.js", "guide", "server", "dist"]) {
     expect(existsSync(join(root, "plugin", path))).toBe(false);
   }
   const manifest = JSON.parse(
@@ -301,31 +297,6 @@ test("test_error_when_dist_file_too_large", {
   expect(code).toBe(1);
   expect(existsSync(join(root, "dist"))).toBe(false);
   expect(errors.join("\n")).toMatch(/index\.js[^\n]*\d/);
-});
-
-// セッションに渡す索引の文が上限を超えると、配布物を残さずに終わる（異常系）
-// コマンドに上限を差し替える口が無いため、main に guideContextLimit: 1 を渡す
-test("test_error_when_guide_index_too_long", {
-  timeout: BUILD_TIMEOUT_MS,
-}, async () => {
-  // 準備
-  const root = await createWorkTree("v0.0.0\n");
-  const errors: string[] = [];
-  vi.spyOn(console, "error").mockImplementation((...args: unknown[]) => {
-    errors.push(args.join(" "));
-  });
-  // 実行
-  const code = await main([], {
-    root,
-    maxBytes: 20 * 1024 * 1024,
-    guideContextLimit: 1,
-  });
-  // 検証
-  expect(code).toBe(1);
-  expect(existsSync(join(root, "dist"))).toBe(false);
-  expect(existsSync(join(root, "plugin", "scripts"))).toBe(false);
-  expect(existsSync(join(root, "plugin", "guide"))).toBe(false);
-  expect(errors.join("\n")).toMatch(/使い方集の索引が \d+ 文字で、上限 1 文字/);
 });
 
 /** 作業ツリーの `src/index.ts` の末尾（最上位）に、コードを足す */

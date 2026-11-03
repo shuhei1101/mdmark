@@ -1,7 +1,7 @@
 import { existsSync } from "node:fs";
 import { cp, mkdtemp, readFile, rm, symlink } from "node:fs/promises";
 import { tmpdir } from "node:os";
-import { join, resolve } from "node:path";
+import { join, relative, resolve, sep } from "node:path";
 import { afterEach, expect, test } from "vitest";
 
 /** 拡張機能のビルドを読み込む（実装が無い間は各テストが個別に失敗する） */
@@ -9,6 +9,15 @@ const loadBuild = () => import("../../../../vscode/scripts/build.ts");
 
 const REPO_ROOT = resolve(import.meta.dirname, "../../../..");
 const roots: string[] = [];
+/** `vscode/` の複製から除外する、依存と生成物・取得物（`vscode/` からの相対パス） */
+const EXCLUDED = [
+  "node_modules",
+  ".vscode-test",
+  "out",
+  "dist",
+  "media/preview.js",
+  "media/preview.css",
+];
 
 afterEach(async () => {
   await Promise.all(
@@ -23,10 +32,16 @@ test("test_build_extension", async () => {
   const temp = await mkdtemp(join(tmpdir(), "mdmark-vscode-build-"));
   roots.push(temp);
   const root = join(temp, "vscode");
-  // 作業ツリーの `vscode/` を複製し、依存は作業ツリーのものを読む
-  await cp(join(REPO_ROOT, "vscode"), root, {
+  // 作業ツリーの `vscode/` を、依存と生成物・取得物を除外して複製し、依存は作業ツリーのものを読む
+  const source = join(REPO_ROOT, "vscode");
+  await cp(source, root, {
     recursive: true,
-    filter: (source) => !source.includes("node_modules"),
+    filter: (path) => {
+      const entry = relative(source, path).split(sep).join("/");
+      return !EXCLUDED.some(
+        (excluded) => entry === excluded || entry.startsWith(`${excluded}/`),
+      );
+    },
   });
   const dependencies = existsSync(join(REPO_ROOT, "vscode", "node_modules"))
     ? join(REPO_ROOT, "vscode", "node_modules")

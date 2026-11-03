@@ -122,29 +122,10 @@ requirements:
     status: planned
     introduced:
       pr: 69
-  - name: 使い方集の索引の文字数
-    english_name: guide_context_length
-    category: 性能
-    external_constraint: SessionStart のフックの additionalContext は 10,000 文字を超えると先頭 2,000 文字だけが渡る
-    source_kind: 外部ライブラリの制限
-    source: dev/設計書/外部ライブラリ/ClaudeCode#limitations[additionalContext の文字数]
-    value: '10000'
-    unit: 文字 以下
-    rationale: 超えると索引の大半が届かないため、外部の上限をそのまま決定値にする。PoC（#73）の 8,982 文字は末尾まで届いた
-    measurement: プラグインのビルドが、セッションに渡す索引の文（formatGuideContext）の文字数を数える
-    overflow: ビルドが文字数と上限を標準エラーに出して失敗する。索引の行を減らすか、概要を短くしてから、ビルドし直す
-    status: planned
-    introduced:
-      pr: 72
-    verification:
-      device: WSL2 上の Node
-      version: Node v24.14.0（1,395 文字）
-      date: '2026-10-31'
-      result: 合格
   - name: 確かめた Claude Code のバージョン
     english_name: claude_code_version
     category: 動作環境
-    external_constraint: プラグイン・SessionStart のフック・MCP の挙動は Claude Code のバージョンで変わる。バージョンは使う側の手元のものを使い、mdmark は固定しない
+    external_constraint: プラグイン・フック・MCP の挙動は Claude Code のバージョンで変わる。バージョンは使う側の手元のものを使い、mdmark は固定しない
     source_kind: 外部ライブラリの制限
     source: dev/設計書/外部ライブラリ/ClaudeCode#version
     value: 2.1.309

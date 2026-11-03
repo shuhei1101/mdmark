@@ -47,8 +47,7 @@ test("test_normal_when_start", async ({ builtRoot }) => {
     expect(stdout).toContain(`http://127.0.0.1:${DEFAULT_PORT}/mcp`);
     expect(listening).toBe(true);
     expect(running).toBe(true);
-    expect(tools).toContain("read_guide");
-    expect(tools).toHaveLength(7);
+    expect([...tools].sort()).toEqual(["build_site", "check", "export_html"]);
   } finally {
     await release();
   }
@@ -74,7 +73,7 @@ test("test_normal_when_port_overridden", async ({ builtRoot }) => {
     expect(stdout).toContain(`http://127.0.0.1:${port}/mcp`);
     expect(overridden).toBe(true);
     expect(defaulted).toBe(false);
-    expect(tools).toHaveLength(7);
+    expect(tools).toHaveLength(3);
   } finally {
     await release();
   }

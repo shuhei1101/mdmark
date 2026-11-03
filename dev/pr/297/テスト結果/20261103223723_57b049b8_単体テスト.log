@@ -1,0 +1,14 @@
+$ npm run test:unit
+
+> test:unit
+> vitest run --project 'unit*'
+
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/test-vscode-build-test-copy-exclude-generated
+
+
+ Test Files  183 passed (183)
+      Tests  1311 passed (1311)
+   Start at  22:35:37
+   Duration  91.79s (worker 71%, tests 17%, import 8%, transform 3%)
+

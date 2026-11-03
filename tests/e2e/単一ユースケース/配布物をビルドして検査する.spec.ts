@@ -129,14 +129,10 @@ test("test_normal", async () => {
   expect(declarations).toContain("MdmarkExtension");
   expect(await readBuiltVersion()).toBe(CLONE_VERSION);
   // Claude Code のプラグインの生成物と、バージョン
-  for (const path of [
-    "scripts/session-start.js",
-    "scripts/pre-tool-use.js",
-    "guide/index.json",
-  ]) {
-    expect(existsSync(join(root, "plugin", path)), path).toBe(true);
-  }
-  for (const path of ["server", "dist"]) {
+  expect(existsSync(join(root, "plugin", "scripts", "pre-tool-use.js"))).toBe(
+    true,
+  );
+  for (const path of ["scripts/session-start.js", "guide", "server", "dist"]) {
     expect(existsSync(join(root, "plugin", path)), path).toBe(false);
   }
   expect(await readPluginVersion()).toBe(CLONE_VERSION);
@@ -195,34 +191,6 @@ test("test_error_when_dist_file_too_large", async () => {
   expect(code).toBe(1);
   expect(existsSync(join(root, "dist"))).toBe(false);
   expect(errors.join("\n")).toMatch(/index\.js[^\n]*\d/);
-});
-
-// セッションに渡す索引の文が上限を超えると、配布物を残さずに終わる（異常シナリオ）
-// コマンドに上限を差し替える口が無いため、main に guideContextLimit: 1 を渡す
-test("test_error_when_guide_index_too_long", async () => {
-  // 準備
-  const errors: string[] = [];
-  const original = console.error;
-  console.error = (...args: unknown[]) => {
-    errors.push(args.join(" "));
-  };
-  // 実行
-  let code: number;
-  try {
-    code = await main([], {
-      root,
-      maxBytes: 20 * 1024 * 1024,
-      guideContextLimit: 1,
-    });
-  } finally {
-    console.error = original;
-  }
-  // 検証
-  expect(code).toBe(1);
-  expect(existsSync(join(root, "dist"))).toBe(false);
-  expect(existsSync(join(root, "plugin", "scripts"))).toBe(false);
-  expect(existsSync(join(root, "plugin", "guide"))).toBe(false);
-  expect(errors.join("\n")).toMatch(/使い方集の索引が \d+ 文字で、上限 1 文字/);
 });
 
 // 対応ブラウザの下限に無い API を確かめずに使うと、書いた配布物を消して終わる（異常シナリオ）

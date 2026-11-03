@@ -12,4 +12,4 @@ VS Code で Markdown のプレビューを出し、HTML・PDF にする拡張機
 
 版を上げるときは、CLI で移行の手順を当てる: [版を上げる](./docs/使い方/導入/版を上げる.md)
 
-Claude Code に使い方の索引と書き出し・点検のツールを渡す: [Claude Code で使う](./docs/使い方/ClaudeCodeで使う/README.md)
+Claude Code に使い方集への動線と書き出し・点検のツールを渡す: [Claude Code で使う](./docs/使い方/ClaudeCodeで使う/README.md)
