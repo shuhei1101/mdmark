@@ -384,3 +384,35 @@ test("test_attach_tabs_when_nested", async () => {
   press("ArrowRight");
   expect(document.activeElement).toBe(inner[0]);
 });
+
+// タブ名のリンクはボタンでは文字にし、中身のタブ名には残す（正常系）
+test("test_attach_tabs_when_link_title", async () => {
+  // 準備
+  const { attachTabs } = await loadTabs();
+  const { root } = createRoot(
+    [
+      "<!-- tabs -->",
+      "",
+      "### [設定](https://example.com)",
+      "",
+      "設定の手順",
+      "",
+      "### **案 B**",
+      "",
+      "案 B の手順",
+      "",
+      "<!-- /tabs -->",
+      "",
+    ].join("\n"),
+  );
+  // 実行
+  detachers.push(attachTabs(root));
+  // 検証
+  const tabs = [...root.querySelectorAll<HTMLButtonElement>('[role="tab"]')];
+  expect(tabs.map((tab) => tab.textContent)).toEqual(["設定", "案 B"]);
+  expect(tabs[0]?.querySelector("a")).toBeNull();
+  expect(tabs[1]?.querySelector("strong")).not.toBeNull();
+  expect(
+    root.querySelector(".mdmark-tab-panel .mdmark-tab-title a"),
+  ).not.toBeNull();
+});
