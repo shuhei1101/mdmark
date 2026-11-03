@@ -32,6 +32,7 @@ const DEFAULT_FEATURES = {
   views: true,
   comments: false,
   "side-toc": true,
+  "back-to-top": true,
   "text-color": true,
   images: true,
   gallery: true,
@@ -150,6 +151,7 @@ test("test_resolve_config_when_side_toc_mode_given", async () => {
   expect(resolvedUnknown.sideToc.mode).toBe("hover");
   expect(resolvedEmpty.sideToc.mode).toBe("hover");
   expect(resolvedEmpty.features["side-toc"]).toBe(true);
+  expect(resolvedEmpty.features["back-to-top"]).toBe(true);
 });
 
 // COLOR_THEMES の名前だけを受け、他の値と無いときは dev-swiss にする（正常系）
