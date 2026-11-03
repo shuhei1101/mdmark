@@ -1236,7 +1236,7 @@ elements:
     status: planned
   - name: 脚注の一覧
     id: footnotes
-    kind: nav
+    kind: details
     component: dev/設計書/部品設計/脚注の一覧.ts#
     args:
       - name: items
