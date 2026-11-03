@@ -23,13 +23,19 @@
     return p;
   };
 
-  /** 1 件のコメントを、本文と「編集」「削除」の表示に戻す。 */
+  // 編集・削除のアイコン（24 の格子。lucide の形）
+  const PENCIL_ICON =
+    '<svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg>';
+  const TRASH_ICON =
+    '<svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>';
+
+  /** 1 件のコメントを、本文と「編集」「削除」のアイコンのボタンの表示に戻す。 */
   const renderView = (item, body) => {
     item.dataset.body = body;
     item.innerHTML = `<p class="mdmark-comment-body"></p>
-      <div class="mdmark-comment-item-actions">
-        <button class="mdmark-comment-text-button" type="button" data-action="edit">編集</button>
-        <button class="mdmark-comment-text-button" type="button" data-action="remove">削除</button>
+      <div class="mdmark-comment-icon-actions">
+        <button class="mdmark-comment-icon-button" type="button" data-action="edit" aria-label="編集" title="編集">${PENCIL_ICON}</button>
+        <button class="mdmark-comment-icon-button" type="button" data-action="remove" aria-label="削除" title="削除">${TRASH_ICON}</button>
       </div>`;
     item.querySelector(".mdmark-comment-body").textContent = body;
   };
@@ -53,7 +59,7 @@
   /** 1 件のコメントの下に、削除の確認を出す。 */
   const renderConfirm = (item) => {
     renderView(item, item.dataset.body);
-    item.querySelector(".mdmark-comment-item-actions").remove();
+    item.querySelector(".mdmark-comment-icon-actions").remove();
     const confirm = document.createElement("div");
     confirm.className = "mdmark-comment-confirm";
     confirm.innerHTML = `<p>このコメントを削除しますか? 削除すると元に戻せません。</p>

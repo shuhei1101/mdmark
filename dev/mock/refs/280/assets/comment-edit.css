@@ -10,29 +10,20 @@
     outline-offset: 2px;
   }
 
-  /* 吹き出しの 1 件のコメント: 本文と操作を縦に並べる */
+  /* 吹き出しの 1 件のコメント: 本文・知らせ・削除の確認を縦に並べる */
   .mdmark-comment-item {
     display: grid;
     gap: 0.4rem;
   }
 
-  /* 案 A: 本文の下に、文字のボタンを右に寄せて並べる */
-  .mdmark-comment-item-actions {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.25rem;
-    justify-content: flex-end;
-  }
-
-  /* 編集・削除の文字のボタンとアイコンのボタン: 枠を持たず、hover で面の色を付ける。押す範囲は 24px 以上 */
-  :is(.mdmark-comment-text-button, .mdmark-comment-icon-button) {
+  /* 編集・削除のアイコンのボタン: 枠を持たず、hover で面の色を付ける。押す範囲は 24px 以上 */
+  .mdmark-comment-icon-button {
     display: inline-flex;
-    gap: 0.3em;
     align-items: center;
     justify-content: center;
     min-width: 1.75rem;
     min-height: 1.75rem;
-    padding: 0 0.5em;
+    padding: 0;
     border: 1px solid transparent;
     border-radius: calc(var(--mdmark-radius) - 2px);
     background: transparent;
@@ -51,15 +42,14 @@
     }
   }
 
-  /* アイコンのボタン: 正方形にする */
-  .mdmark-comment-icon-button {
-    padding: 0;
-  }
-
-  /* 案 B: 本文の右上に、アイコンだけのボタンを並べる */
+  /* 本文の右上に、アイコンだけのボタンを並べる。知らせと削除の確認は本文の下に全幅で置く */
   .mdmark-comment-item.is-icon-actions {
     grid-template-columns: minmax(0, 1fr) auto;
     align-items: start;
+
+    > :not(.mdmark-comment-body, .mdmark-comment-icon-actions) {
+      grid-column: 1 / -1;
+    }
   }
 
   .mdmark-comment-icon-actions {
