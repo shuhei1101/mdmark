@@ -65,7 +65,7 @@
 
 /* ---------- hover で開く目次の位置 ---------- */
 
-/* A（推奨）: 目次の枠を画面に固定し、上端を「見えている枠の上端（スクロールする場所の上端に --mdmark-sticky-top を足した位置）と、描いた文書の上端の低いほう」に余白を足した位置に出す。
+/* A（推奨）: 目次の枠を画面に固定し、上端を、文書のどこを読んでいても見えている枠の上端（スクロールする場所の上端に --mdmark-sticky-top を足した位置）に余白を足した位置に出す。
    上端・横の位置・右端の線まで届く最小の高さは proposal.js がスクロールのたびに入れる */
 :root[data-position="viewport"] .mdmark .mdmark-side-toc[data-mode="hover"]:not([data-pinned]) .mdmark-side-toc-panel {
   position: fixed;

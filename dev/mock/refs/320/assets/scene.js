@@ -46,8 +46,20 @@ function paragraphs(topic) {
   ].join("\n\n");
 }
 
-/** 描く文書: 見出し 1 の下に見出し 2・見出し 3 を並べ、節の間に区切り線を置く */
-const markdown = [
+/** 狭い幅（右側の目次が帯になる 48rem 未満）: 帯と見出しの線・区切り線だけを確かめるため、短い文書を描く */
+const NARROW = matchMedia("(width < 48rem)").matches;
+
+/** 狭い幅の文書: 見出し 1 の下に見出し 2 を 2 つと区切り線を置き、段落は 1 つずつにする */
+const shortMarkdown = [
+  "# 問い合わせ窓口の見直し",
+  "窓口ごとの件数と返信までの時間を並べ、来月からの受け持ちを決める。",
+  "## 窓口ごとの件数\n\nメールとフォームは自動返信で大半を返せていて、電話は担当者が返す割合が高い。",
+  "---",
+  "## 返信までの時間\n\n受け付けてから最初の返信を送るまでを数える。",
+].join("\n\n");
+
+/** 広い幅の文書: 見出し 1 の下に見出し 2・見出し 3 を並べ、節の間に区切り線を置く。hover で開く位置を確かめるため画面より長くする */
+const longMarkdown = [
   "# 問い合わせ窓口の見直し",
   "窓口ごとの件数と返信までの時間を並べ、来月からの受け持ちを決める。",
   `## 導入\n\n${paragraphs("導入")}`,
@@ -61,6 +73,8 @@ const markdown = [
   `## 受け持ちの組み替え\n\n${paragraphs("受け持ちの組み替え")}`,
   `## 来月の予定\n\n${paragraphs("来月の予定")}`,
 ].join("\n\n");
+
+const markdown = NARROW ? shortMarkdown : longMarkdown;
 
 /** 要素が現れるまで待つ */
 async function waitFor(selector) {
