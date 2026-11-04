@@ -15,7 +15,7 @@
     --mdmark-padding: 1.5rem;
     --mdmark-radius: 4px;
     --mdmark-heading-weight: 700;
-    --mdmark-heading-rule-width: 0px;
+    --mdmark-heading-rule-width: 1px;
     --mdmark-table-rule-inline: 1px;
     --mdmark-color-bg: #ffffff;
     /* 浮く部品・覆い・混ぜる先の不透明な地。配色の規則は置かず、:root の --mdmark-color-bg に追従させる */
@@ -1572,6 +1572,12 @@
     border-radius: var(--mdmark-radius);
     background: var(--mdmark-color-bg);
     --mdmark-color-bg-opaque: var(--mdmark-color-bg);
+    /* 見出し 1・見出し 2 の下の線の色: 枠線の色を 70% で地の色に混ぜ、区切り線より薄くする */
+    --mdmark-color-border-muted: color-mix(
+      in oklab,
+      var(--mdmark-color-border) 70%,
+      var(--mdmark-color-bg)
+    );
     color: var(--mdmark-color-text);
     font-family: var(--mdmark-font-body);
     font-size: var(--mdmark-font-size);
@@ -1605,7 +1611,7 @@
     h1 {
       padding-block-end: 0.3em;
       border-block-end: var(--mdmark-heading-rule-width) solid
-        var(--mdmark-color-border);
+        var(--mdmark-color-border-muted);
       font-size: 1.9em;
 
       /* 見出しの前に置く記号（変数に値があるときだけ出る） */
@@ -1620,7 +1626,7 @@
       margin-block-start: calc(var(--mdmark-space) * 2.25);
       padding-block-end: 0.3em;
       border-block-end: var(--mdmark-heading-rule-width) solid
-        var(--mdmark-color-border);
+        var(--mdmark-color-border-muted);
       font-size: 1.45em;
 
       /* 見出しの前に置く記号 */
@@ -1807,11 +1813,11 @@
       color: var(--mdmark-color-muted);
     }
 
-    /* 区切り線 */
+    /* 区切り線: 見出し 1・見出し 2 の線より太い 0.25em にする */
     hr {
       margin-block: calc(var(--mdmark-space) * 1.75);
       border: 0;
-      border-block-start: 1px solid var(--mdmark-color-border);
+      border-block-start: 0.25em solid var(--mdmark-color-border);
     }
 
     /* 折り畳み */
@@ -8271,25 +8277,20 @@
       color: var(--mdmark-color-text);
     }
 
-    /* 目次の頭: 題とピン止めのボタン */
+    /* 目次の頭: タイトルを置かず、まとめて開閉するボタンの並びを左、ピン止めのボタンを右に 1 行で並べ、下の線で項目と分ける */
     .mdmark-side-toc-head {
       display: flex;
       gap: 0.5rem;
       align-items: center;
       justify-content: space-between;
       min-height: 1.75rem;
-      padding: 0.375rem 0.375rem 0.375rem 0.75rem;
+      padding: 0.375rem;
+      border-block-end: 1px solid var(--mdmark-color-border);
     }
 
-    /* 目次の題 */
-    .mdmark-side-toc-title {
-      margin: 0;
-      color: var(--mdmark-color-heading);
-      font-weight: 600;
-    }
-
-    /* ピン止めのボタン（hover の出し方だけ）: 押した後は線と塗ったアイコンで、押す前と見分ける */
+    /* ピン止めのボタン（hover の出し方だけ）: 押した後はアイコンの形と選択中の背景で、押す前と見分ける */
     .mdmark-side-toc-pin {
+      margin-inline-start: auto;
       display: inline-grid;
       place-items: center;
       width: 1.75rem;
@@ -8312,23 +8313,36 @@
         outline-offset: 1px;
       }
 
+      /* 押す前のアイコン（点線の右の列）と押した後のアイコン（実線の右の列）: aria-pressed で片方を出す */
+      .mdmark-side-toc-pin-off,
+      .mdmark-side-toc-pin-on {
+        display: inline-grid;
+      }
+
+      .mdmark-side-toc-pin-on {
+        display: none;
+      }
+
       &[aria-pressed="true"] {
         border-color: var(--mdmark-color-border);
+        background: var(--mdmark-color-current-bg);
         color: var(--mdmark-color-link);
 
-        .mdmark-diagram-icon {
-          fill: currentColor;
+        .mdmark-side-toc-pin-off {
+          display: none;
+        }
+
+        .mdmark-side-toc-pin-on {
+          display: inline-grid;
         }
       }
     }
 
-    /* 目次の上部のまとめて開閉するボタンの並び */
+    /* 目次の頭のまとめて開閉するボタンの並び */
     .mdmark-side-toc-actions {
       display: flex;
       flex-wrap: wrap;
       gap: 0.375rem;
-      padding: 0 0.75rem 0.5rem;
-      border-block-end: 1px solid var(--mdmark-color-border);
     }
 
     /* 目次の項目の並び: 見出しの階層どおりに入れ子にし、収まらない分は枠の中でスクロールする */
@@ -8434,6 +8448,18 @@
 
         .mdmark-side-toc-panel {
           position: static;
+        }
+      }
+
+      /* ポインターを置ける端末の広い幅でピン止めしていないとき: 目次の枠を画面に固定し、文書のどこを読んでいても見えている枠の上端に出す。位置と、右端の線まで届く高さの下限は attachSideToc が入れる */
+      @media (hover: hover) {
+        @container mdmark (width >= 48rem) {
+          &:not([data-pinned]) .mdmark-side-toc-panel {
+            position: fixed;
+            inset-block-start: var(--mdmark-side-toc-panel-top, 0px);
+            inset-inline-end: var(--mdmark-side-toc-panel-end, 0px);
+            min-height: var(--mdmark-side-toc-panel-min-height, auto);
+          }
         }
       }
 
