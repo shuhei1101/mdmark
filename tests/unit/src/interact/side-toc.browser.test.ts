@@ -723,6 +723,12 @@ test("test_attach_side_toc_when_hover_edge_avoids_minimap", async () => {
     state: createState(),
   });
   const aside = result.aside as HTMLElement;
+  const minimap = document.createElement("div");
+  minimap.className = "mdmark-diff-minimap";
+  minimap.style.cssText =
+    "position: fixed; top: 0; right: 0; bottom: 0; width: 14px;";
+  // 描いた直後のレイアウトで出る scroll を数えないよう、次の描画を待ってから受け取る
+  await new Promise((resolve) => requestAnimationFrame(resolve));
   const scroll = vi.fn();
   const resize = vi.fn();
   window.addEventListener("scroll", scroll);
@@ -731,16 +737,13 @@ test("test_attach_side_toc_when_hover_edge_avoids_minimap", async () => {
     window.removeEventListener("scroll", scroll);
     window.removeEventListener("resize", resize);
   });
-  const minimap = document.createElement("div");
-  minimap.className = "mdmark-diff-minimap";
-  minimap.style.cssText =
-    "position: fixed; top: 0; right: 0; bottom: 0; width: 14px;";
-  // 実行・検証: 帯を追加した後は、帯の左端から 8px 左
+  // 実行・検証: 帯を追加した後は、帯の左端から 8px 左（画面の幅が小数のとき、`clientWidth` の丸めの差が出ないよう帯の左端から決める）
   document.body.append(minimap);
   track(() => minimap.remove());
   await vi.waitFor(() => {
+    const { left } = minimap.getBoundingClientRect();
     expect(panelVariable(aside, "--mdmark-side-toc-panel-end")).toBe(
-      `${14 + 8}px`,
+      `${document.documentElement.clientWidth - (left - 8)}px`,
     );
   });
   // 実行・検証: 帯を削除した後は、画面の右端（スクロールバーを除く）から 1rem
