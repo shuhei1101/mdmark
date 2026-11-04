@@ -2,6 +2,27 @@
 @layer mdmark {
   /* ---- テーブル設定（列の表示・非表示と並べ替え） ---- */
 
+  /* テーブル設定のボタン: アイコンだけ。名前はツールチップと読み上げで伝え、隠した列の数をバッジで出す */
+  .mdmark-table-settings-toggle.is-icon-only {
+    position: relative;
+    justify-content: center;
+    min-inline-size: 2rem;
+    padding-inline: 0.4rem;
+  }
+  .mdmark-table-tool-badge {
+    position: absolute;
+    inset-block-start: -0.4rem;
+    inset-inline-end: -0.4rem;
+    min-inline-size: 1.1rem;
+    padding: 0 0.25rem;
+    border-radius: 999px;
+    background: var(--mdmark-color-link);
+    color: var(--mdmark-color-bg);
+    font-size: 0.6875rem;
+    line-height: 1.1rem;
+    text-align: center;
+  }
+
   /* テーブル設定のパネル: 表の上の帯のボタンで開く。列の一覧を縦に並べる */
   .mdmark-table-settings {
     position: absolute;
