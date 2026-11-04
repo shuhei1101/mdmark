@@ -602,6 +602,8 @@ test("test_attach_side_toc_when_hover_panel_reaches_rail", async () => {
   document.body.prepend(spacer);
   track(() => spacer.remove());
   const { root } = createRoot(longDocument());
+  // 広い幅（48rem 以上）にして、右端の線を出す（テストの画面の既定の幅は狭い幅の帯になる）
+  root.style.width = "1000px";
   // 文書の後ろの余白: 描いた文書が画面の上へ抜けるまでスクロールできるようにする
   const after = document.createElement("div");
   after.style.height = "3000px";
@@ -620,6 +622,7 @@ test("test_attach_side_toc_when_hover_panel_reaches_rail", async () => {
     panelVariable(aside, "--mdmark-side-toc-panel-top"),
   );
   // 検証: 文書の先頭では、右端の線の上端から 2rem の位置まで届く高さ
+  expect(rail.getBoundingClientRect().height).toBeGreaterThan(0);
   expect(panelVariable(aside, "--mdmark-side-toc-panel-min-height")).toBe(
     `${rail.getBoundingClientRect().top + 2 * rootFontSize() - top}px`,
   );
