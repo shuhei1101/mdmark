@@ -626,12 +626,12 @@ test("test_attach_side_toc_when_hover_panel_reaches_rail", async () => {
   expect(panelVariable(aside, "--mdmark-side-toc-panel-min-height")).toBe(
     `${rail.getBoundingClientRect().top + 2 * rootFontSize() - top}px`,
   );
-  // 実行: 右端の線が枠の上端より上に来るまでスクロールする
+  // 実行: 文書の末尾までスクロールする
   window.scrollTo(0, document.documentElement.scrollHeight);
-  // 検証
+  // 検証: 右端の線の上端が枠の上端に留まるため、線から 2rem の位置まで届く高さ
   await vi.waitFor(() => {
     expect(panelVariable(aside, "--mdmark-side-toc-panel-min-height")).toBe(
-      "0px",
+      `${2 * rootFontSize()}px`,
     );
   });
 });
