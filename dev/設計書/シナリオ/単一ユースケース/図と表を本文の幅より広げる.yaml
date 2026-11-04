@@ -87,6 +87,55 @@ scenarios:
       - マーカーの場所に、閉じのマーカー `<!-- /wide -->` が無いことを書いた書き方の警告がある
       - 表が段落と同じ幅で描かれている
     test: test_error_when_unclosed
+  - name: 正常シナリオ（広げた幅と本文の幅を切り替える）
+    setup:
+      - name: mdmark を読むページ
+        description: 正常シナリオと同じ
+      - name: wide の範囲を持つ Markdown
+        description: 正常シナリオと同じ
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を渡して描かせる
+        M-->>P: 広げた wide の範囲と、範囲の右上の切り替えのボタンを描く
+        U->>P: 切り替えのボタンを押す
+        P-->>U: 本文の幅に戻した範囲
+        U->>P: もう一度押す
+        P-->>U: 広げた範囲
+    expected:
+      - 描いた直後、範囲が広がり、右上にラベルの無いアイコンだけのボタンがあり、読み上げ名が本文の幅で表示することを示し、`aria-pressed` が `true`
+      - 押した後、範囲の幅が段落の幅と等しくなり、ボタンのアイコンと読み上げ名が広げて表示することを示し、`aria-pressed` が `false`
+      - もう一度押すと、範囲が広がった幅に戻る
+      - ボタンはフォーカスして Enter でも押せる
+      - 狭い画面では切り替える幅が同じため、ボタンが出ていない
+    test: test_normal_when_toggled
+  - name: 正常シナリオ（本文の幅から始める）
+    setup:
+      - name: mdmark を読むページ
+        description: 正常シナリオと同じ
+      - name: 本文の幅から始める wide の範囲を持つ Markdown
+        description: 正常シナリオの文書の 8 列の表を、本文の幅から始める指定の wide のマーカーで囲んだ文書
+        notes: '指定の書き方（モックでは `<!-- wide: closed -->`）はインターフェース定義で決める'
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を渡して描かせる
+        M-->>P: 本文の幅の wide の範囲と、広げるボタンを描く
+        U->>P: 切り替えのボタンを押す
+        P-->>U: 広げた範囲
+    expected:
+      - 描いた直後、範囲の幅が段落の幅と等しく、ボタンの `aria-pressed` が `false`
+      - ボタンを押した後、範囲が段落より広くなる
+      - 本文にマーカーの文字と書き方の警告が出ていない
+    test: test_normal_when_starts_narrow
 lead: 文書を書く人が `<!-- wide -->` 〜 `<!-- /wide -->` で図・表・画像を囲み、mdmark がその範囲を本文の幅（`--mdmark-content-width`）を越えて広げる。
 issue: 220
 primary_actor: 文書を書く人
@@ -97,6 +146,6 @@ trigger: 使う側のページが、wide のマーカーを持つ文書を描か
 preconditions:
   - ページが版を固定した URL で mdmark の JavaScript と CSS を読んでいる
   - wide の機能がオン（既定）
-success_guarantee: wide の範囲が本文の幅を越えて描く先の要素の幅まで広がり、右の目次とまとめた HTML の文書の一覧に重ならない。狭い画面では本文の幅に収まり、収まらない中身は範囲の中で横にスクロールする。
+success_guarantee: wide の範囲が本文の幅を越えて描く先の要素の幅まで広がり、右の目次とまとめた HTML の文書の一覧に重ならない。読む人は範囲の右上のボタンで、広げた幅と本文の幅を切り替えられる。狭い画面では本文の幅に収まり、収まらない中身は範囲の中で横にスクロールする。
 minimal_guarantee: 閉じのマーカーが無い範囲は、書き方の警告を出して本文の幅で描く。
 test_file: tests/e2e/単一ユースケース/図と表を本文の幅より広げる.spec.ts
