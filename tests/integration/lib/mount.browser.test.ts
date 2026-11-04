@@ -9789,3 +9789,162 @@ test("test_normal_when_footnotes_printed", async () => {
   sendPrintEvent("afterprint");
   expect(list.open).toBe(false);
 });
+
+/** 表と重なる位置で右側の目次を出す Markdown: `## 導入` と `## 使い方` の間に、集計の行とピン止めした列を持つ 10 列 30 行の表 */
+function sideTocTableMarkdown(): string {
+  const columns = [
+    "名前",
+    "数量",
+    ...Array.from({ length: 8 }, (_, i) => `説明の長い列 ${i + 1}`),
+  ];
+  const rows = Array.from(
+    { length: 30 },
+    (_, row) =>
+      `| 品目 ${row + 1} | ${row + 1} | ${Array.from(
+        { length: 8 },
+        (_, col) => `折り返さない長さの値 ${row + 1}-${col + 1}`,
+      ).join(" | ")} |`,
+  );
+  return [
+    "## 導入",
+    "",
+    sideTocFiller(),
+    "<!-- table: data +total total=数量:sum pin=名前 -->",
+    "",
+    `| ${columns.join(" | ")} |`,
+    `|${" --- |".repeat(columns.length)}`,
+    ...rows,
+    "",
+    "<!-- /table -->",
+    "",
+    "## 使い方",
+    "",
+    sideTocFiller(),
+  ].join("\n");
+}
+
+/** 計算した `z-index` を数にする（`auto` は 0） */
+function zIndexOf(element: Element): number {
+  const value = getComputedStyle(element).zIndex;
+  return value === "auto" ? 0 : Number(value);
+}
+
+// 表の見出し行を画面の上端に留めた位置で、hover で開いた右側の目次を表より手前に出す（正常系（表と重なる位置で右側の目次を出す））
+test("test_normal_when_side_toc_over_table", async () => {
+  await withViewport(1280, async () => {
+    // 準備
+    const el = createElement();
+    await mountTracked(el, { markdown: sideTocTableMarkdown() });
+    const { aside, panel, rail } = sideTocOf(el);
+    const table = find<HTMLTableElement>(el, ".mdmark-table table");
+    // 実行: 表の見出し行が画面の上端に留まる位置までスクロールする
+    window.scrollTo(
+      0,
+      table.getBoundingClientRect().top + window.scrollY + 300,
+    );
+    await vi.waitFor(() => {
+      expect(find(table, "thead th").getBoundingClientRect().top).toBeLessThan(
+        panel.getBoundingClientRect().bottom,
+      );
+    });
+    // 実行: 右端の線にポインターを乗せる
+    await userEvent.hover(rail);
+    await vi.waitFor(() => {
+      expect(panelOpacity(panel)).toBe("1");
+    });
+    // 前提: 表の右側が開いた枠の下まで届いている
+    const box = panel.getBoundingClientRect();
+    expect(table.parentElement?.getBoundingClientRect().right).toBeGreaterThan(
+      box.left,
+    );
+    // 検証: 枠の矩形の中の格子状の点で、最も手前の要素がどれも右側の目次の中にある
+    const outside: string[] = [];
+    for (let y = box.top + 4; y < box.bottom - 4; y += 16) {
+      for (let x = box.left + 4; x < box.right - 4; x += 24) {
+        const hit = document.elementFromPoint(x, y);
+        if (!hit || !aside.contains(hit)) {
+          outside.push(
+            `${hit?.tagName ?? "null"}@${Math.round(x)},${Math.round(y)}`,
+          );
+        }
+      }
+    }
+    expect(outside).toEqual([]);
+    // 検証: 右側の目次の z-index が、見出し行・集計の行・ピン止めした列のセルのどれより大きい
+    const cells = [
+      ...table.querySelectorAll("thead th, tfoot td, .is-pinned-col"),
+    ];
+    expect(cells.length).toBeGreaterThan(0);
+    const cellMax = Math.max(...cells.map(zIndexOf));
+    expect(zIndexOf(aside)).toBeGreaterThan(cellMax);
+  });
+});
+
+// 文書の末尾までスクロールしても、右端の線と hover で開くパネルをスクロールする場所の上端の近くに留める（正常系（文書の末尾まで右側の目次を留める））
+test("test_normal_when_side_toc_scrolled_to_end", async () => {
+  await withViewport(1280, async () => {
+    for (const where of ["box", "page"] as const) {
+      // 準備: 高さ 600px のスクロールする要素の中か、ページ全体のスクロールで描く
+      const el = createElement();
+      let scroller: HTMLElement = document.documentElement;
+      if (where === "box") {
+        const box = document.createElement("div");
+        box.style.cssText = "height: 600px; overflow-y: auto;";
+        document.body.append(box);
+        elements.push(box);
+        box.append(el);
+        scroller = box;
+      }
+      el.style.setProperty("--mdmark-sticky-top", "48px");
+      const handle = await mountTracked(el, { markdown: SIDE_TOC_MARKDOWN });
+      const { panel, rail } = sideTocOf(el);
+      const space =
+        Number.parseFloat(getComputedStyle(document.documentElement).fontSize) *
+        Number.parseFloat(
+          getComputedStyle(el).getPropertyValue("--mdmark-space"),
+        );
+      const frame = () =>
+        where === "box"
+          ? scroller.getBoundingClientRect()
+          : { top: 0, bottom: document.documentElement.clientHeight };
+      const scrollTo = (top: number) => {
+        if (where === "box") {
+          scroller.scrollTop = top;
+          scroller.dispatchEvent(new Event("scroll"));
+        } else {
+          window.scrollTo(0, top);
+        }
+      };
+      const max = () => scroller.scrollHeight - scroller.clientHeight;
+      // 実行・検証: 文書の途中と末尾までスクロールする
+      for (const top of [max() / 2, max()]) {
+        scrollTo(top);
+        await vi.waitFor(() => {
+          expect(rail.getBoundingClientRect().top).toBeCloseTo(
+            frame().top + 48 + space,
+            0,
+          );
+        });
+        expect(rail.getBoundingClientRect().bottom).toBeLessThanOrEqual(
+          frame().bottom,
+        );
+      }
+      // 実行・検証: 末尾で右端の線にポインターを乗せる
+      await userEvent.hover(rail);
+      await vi.waitFor(() => {
+        expect(panelOpacity(panel)).toBe("1");
+      });
+      expect(
+        Math.abs(
+          panel.getBoundingClientRect().top - rail.getBoundingClientRect().top,
+        ),
+      ).toBeLessThanOrEqual(1);
+      // 後始末: 次の場合の前に外す
+      await userEvent.unhover(rail);
+      handle.destroy();
+      handles.splice(handles.indexOf(handle), 1);
+      el.remove();
+      scrollTo(0);
+    }
+  });
+});
