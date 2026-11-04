@@ -115,36 +115,38 @@ mark.mdmark-highlight[data-color="gray"] { background: var(--mdmark-color-accent
 .demo-with-toc .mdmark-wide { width: auto; max-width: none; margin-inline-start: 0; transform: none; }
 
 
-/* RAW の切り替えの見た目の案。どの案もボタンらしい枠を持たず、本文のリンクと同じ青（--mdmark-color-link）で押せることを示す */
+/* RAW の切り替えの見た目の案。どの案もボタンらしい枠を持たず、色のプリセットの青（--mdmark-color-accent-blue-text。地と薄い青の面の両方に 4.5:1 以上）で押せることを示す */
 .mdmark-raw-toggle, .mdmark-raw-seg-item {
   appearance: none;
   border: 0;
   background: none;
   padding: 0.1em 0.3em;
-  color: var(--mdmark-color-link);
+  color: var(--mdmark-color-accent-blue-text);
   font: inherit;
   font-family: var(--mdmark-font-mono);
   font-size: 0.8em;
   letter-spacing: 0.04em;
   cursor: pointer;
   border-radius: 4px;
+  min-width: 24px;
+  min-height: 24px;
 }
-:is(.mdmark-raw-toggle, .mdmark-raw-seg-item):focus-visible { outline: 2px solid var(--mdmark-color-link); outline-offset: 1px; }
+:is(.mdmark-raw-toggle, .mdmark-raw-seg-item):focus-visible { outline: 2px solid var(--mdmark-color-accent-blue-text); outline-offset: 1px; }
 /* 案 A: 青い文字。押した状態は太字と下線 */
 .mdmark-raw-toggle[data-raw-style="a"]:hover { text-decoration: underline; }
 .mdmark-raw-toggle[data-raw-style="a"][aria-pressed="true"] { font-weight: 700; text-decoration: underline; text-underline-offset: 3px; }
 /* 案 B: 「表 | RAW」。選んだ側に青い下線、選んでいない側は控えめな文字の色 */
 .mdmark-raw-seg { display: inline-flex; gap: 0.2em; align-items: center; }
 .mdmark-raw-seg-item[aria-pressed="false"] { color: var(--mdmark-color-muted); }
-.mdmark-raw-seg-item[aria-pressed="true"] { box-shadow: inset 0 -2px 0 var(--mdmark-color-link); border-radius: 0; font-weight: 700; }
+.mdmark-raw-seg-item[aria-pressed="true"] { box-shadow: inset 0 -2px 0 var(--mdmark-color-accent-blue-text); border-radius: 0; font-weight: 700; }
 /* 案 C: コードのアイコン。押していない状態は控えめな色、押した状態は青いアイコンと薄い青の面 */
 .mdmark-raw-toggle[data-raw-style="c"] { display: inline-grid; place-items: center; width: 1.9em; height: 1.9em; padding: 0; color: var(--mdmark-color-muted); font-size: 1em; }
 .mdmark-raw-toggle[data-raw-style="c"] .mdmark-icon { width: 1.1em; height: 1.1em; }
-.mdmark-raw-toggle[data-raw-style="c"]:hover { color: var(--mdmark-color-link); }
-.mdmark-raw-toggle[data-raw-style="c"][aria-pressed="true"] { color: var(--mdmark-color-link); background: var(--mdmark-color-accent-blue-bg); }
+.mdmark-raw-toggle[data-raw-style="c"]:hover { color: var(--mdmark-color-accent-blue-text); }
+.mdmark-raw-toggle[data-raw-style="c"][aria-pressed="true"] { color: var(--mdmark-color-accent-blue-text); background: var(--mdmark-color-accent-blue-bg); }
 /* 案 D: 小さな札。押していない状態は細い枠、押した状態は青い枠と薄い青の面 */
 .mdmark-raw-toggle[data-raw-style="d"] { border: 1px solid var(--mdmark-color-border); border-radius: 999px; padding: 0 0.6em; line-height: 1.6; }
-.mdmark-raw-toggle[data-raw-style="d"][aria-pressed="true"] { border-color: var(--mdmark-color-link); background: var(--mdmark-color-accent-blue-bg); font-weight: 700; }
+.mdmark-raw-toggle[data-raw-style="d"][aria-pressed="true"] { border-color: var(--mdmark-color-accent-blue-text); background: var(--mdmark-color-accent-blue-bg); font-weight: 700; }
 
 /* wide の切り替えのボタン: 範囲の右上にラベルの無いアイコンだけを置き、押すたびに本文の幅と広げた幅を切り替える */
 .mdmark-wide-bar { display: flex; justify-content: flex-end; }
@@ -161,8 +163,8 @@ mark.mdmark-highlight[data-color="gray"] { background: var(--mdmark-color-accent
   color: var(--mdmark-color-muted);
   cursor: pointer;
 }
-.mdmark-wide-toggle:hover { color: var(--mdmark-color-link); background: var(--mdmark-color-surface); }
-.mdmark-wide-toggle:focus-visible { outline: 2px solid var(--mdmark-color-link); outline-offset: 1px; }
+.mdmark-wide-toggle:hover { color: var(--mdmark-color-accent-blue-text); background: var(--mdmark-color-surface); }
+.mdmark-wide-toggle:focus-visible { outline: 2px solid var(--mdmark-color-accent-blue-text); outline-offset: 1px; }
 .mdmark-wide-toggle .mdmark-icon { width: 1.1em; height: 1.1em; }
 /* 広げた状態は「縮める」、本文の幅の状態は「広げる」のアイコンを出す */
 .mdmark-wide[data-state="wide"] .mdmark-wide-icon-expand,
