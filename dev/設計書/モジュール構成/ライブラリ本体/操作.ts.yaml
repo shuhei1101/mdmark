@@ -1362,7 +1362,7 @@ functions:
         summary: hover で開く目次の枠に、右端の線の上端から線 3 本分まで届く高さの下限を入れる
         case: 正常
         condition: '画面全体がスクロールするページで、描く先の要素の上に高さ 200px の要素を置いて `mode: "hover"` で付ける（文書の先頭で右端の線が枠の上端より下にある）'
-        expected: '`--mdmark-side-toc-panel-min-height` が、右端の線の上端に `SIDE_TOC_RAIL_COVER_REM` を足した位置から `--mdmark-side-toc-panel-top` を引いた高さ（px）。線が枠の上端より上に来るまでスクロールした後は `0px`'
+        expected: '`--mdmark-side-toc-panel-min-height` が、右端の線の上端に `SIDE_TOC_RAIL_COVER_REM` を足した位置から `--mdmark-side-toc-panel-top` を引いた高さ（px）。文書の末尾までスクロールした後は、右端の線の上端が枠の上端に留まるため `SIDE_TOC_RAIL_COVER_REM`（rem）を px にした高さ'
         mock: なし
       - name: test_attach_side_toc_when_hover_rail_placed
         summary: 右端の線の位置と高さを、aside の上端・見えている枠の上端と下端から決める
