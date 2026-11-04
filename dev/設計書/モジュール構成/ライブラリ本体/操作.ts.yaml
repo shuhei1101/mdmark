@@ -1376,6 +1376,12 @@ functions:
         condition: '画面全体がスクロールするページで、画面より狭い描く先の要素に `mode: "hover"` で付けた後、`document.body` に右端に貼り付けた幅 14px の `div.mdmark-diff-minimap` を追加して次の描画を待ち、続けてその要素を削除して次の描画を待つ'
         mock: なし
         expected: 追加した後の `--mdmark-side-toc-panel-end` が `14 + SIDE_TOC_AVOID_GAP_PX`（px）、削除した後は画面の右端から `document.documentElement.clientWidth` までの幅に `SIDE_TOC_EDGE_GAP_REM`（rem）を px にして足した値。どちらもスクロールと `resize` を起こさない。外した後に帯を追加しても値が変わらない
+      - name: test_attach_side_toc_when_hover_edge_clamped
+        summary: 画面の右端より右へはみ出すスクロールする要素では、画面の端から右端の位置を決める
+        case: 正常
+        condition: '左端を画面の左端に置き、幅を画面より 100px 広くした縦にスクロールする要素の中に、見出しが 3 つの長い本文を描いた要素を置いて `mode: "hover"` で付ける'
+        mock: なし
+        expected: '`--mdmark-side-toc-panel-end` が `SIDE_TOC_EDGE_GAP_REM`（rem）を px にした値（スクロールする要素の右端ではなく `document.documentElement.clientWidth` を右端にする）'
     status: planned
     introduced:
       pr: 166
