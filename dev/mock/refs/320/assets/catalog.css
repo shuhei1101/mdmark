@@ -1,0 +1,32 @@
+/* 右側の目次の頭のカタログだけの規則（mdmark の層の外） */
+
+/* カタログの見本の描く先: 文書の並びの格子を使わず、見本を並びの中に置く */
+.catalog .mdmark {
+  display: block;
+  padding: 0;
+  background: transparent;
+}
+
+/* 見本の右側の目次: 画面に留めず、並びの中に置く */
+.catalog .mdmark-side-toc {
+  position: static;
+}
+
+/* ピン止めのボタンのホバーとフォーカスの見た目を固定する（:hover・:focus-visible と同じ値） */
+.catalog .mdmark-side-toc-pin {
+  &.is-hover {
+    border-color: var(--mdmark-color-border);
+    color: var(--mdmark-color-text);
+  }
+
+  &.is-focus {
+    outline: 2px solid var(--mdmark-color-link);
+    outline-offset: 1px;
+  }
+}
+
+/* カタログの本文: 地の色の上に置く */
+.catalog-page {
+  padding: 16px 24px 48px;
+  background: var(--mdmark-color-bg);
+}
