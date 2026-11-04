@@ -362,9 +362,9 @@ print(f"{len(docs)} 件を描きました", None, True)</code></pre>
 <span class="mdmark-code-line" data-line="6"><span class="mdmark-code-text">}</span></span></code></pre>
 </figure>
 <figure class="mdmark-code">
-  <pre class="mdmark-code-lines mdmark-code-wrap" tabindex="0" aria-label="コード"><code class="language-ts" style="--mdmark-code-digits: 1"><span class="mdmark-code-line" data-line="1"><span class="mdmark-code-text"><span class="hljs-keyword">import</span> { mount } <span class="hljs-keyword">from</span> <span class="hljs-string">&quot;mdmark&quot;</span>;</span></span>
-<span class="mdmark-code-line" data-line="2"><span class="mdmark-code-text"><span class="hljs-keyword">const</span> url = <span class="hljs-string">&quot;https://cdn.jsdelivr.net/gh/shuhei1101/mdmark@v0.10.0/dist/index.js&quot;</span>; <span class="hljs-comment">// 版を固定した URL から配布物を読み、描く先の要素に文書を描く</span></span></span>
-<span class="mdmark-code-line" data-line="3"><span class="mdmark-code-text"><span class="hljs-title function_">mount</span>(<span class="hljs-variable language_">document</span>.<span class="hljs-title function_">querySelector</span>(<span class="hljs-string">&quot;#doc&quot;</span>), markdown);</span></span></code></pre>
+  <pre class="mdmark-code-lines mdmark-code-wrap" tabindex="0" aria-label="コード"><code class="language-ts" style="--mdmark-code-digits: 1"><span class="mdmark-code-line"><span class="mdmark-code-text"><span class="hljs-keyword">import</span> { mount } <span class="hljs-keyword">from</span> <span class="hljs-string">&quot;mdmark&quot;</span>;</span></span>
+<span class="mdmark-code-line"><span class="mdmark-code-text"><span class="hljs-keyword">const</span> url = <span class="hljs-string">&quot;https://cdn.jsdelivr.net/gh/shuhei1101/mdmark@v0.10.0/dist/index.js&quot;</span>; <span class="hljs-comment">// 版を固定した URL から配布物を読み、描く先の要素に文書を描く</span></span></span>
+<span class="mdmark-code-line"><span class="mdmark-code-text"><span class="hljs-title function_">mount</span>(<span class="hljs-variable language_">document</span>.<span class="hljs-title function_">querySelector</span>(<span class="hljs-string">&quot;#doc&quot;</span>), markdown);</span></span></code></pre>
 </figure>
         </article>
       </section>

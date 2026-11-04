@@ -461,9 +461,11 @@
         background: color-mix(in oklab, var(--node-color) 8%, var(--mdmark-color-bg));
       }
 
-      /* 説明の印: 箱を覆うリンクの上に重ね、押してもリンク先を開かない */
+      /* 説明の印: 箱を覆うリンクの上に重ね、押してもリンク先を開かない。隣り合うリンクと押し分けられるよう 24px を取る */
       & .mdmark-diagram-info {
         z-index: 1;
+        width: 24px;
+        height: 24px;
       }
     }
 
