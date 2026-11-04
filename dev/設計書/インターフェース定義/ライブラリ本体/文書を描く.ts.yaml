@@ -4372,6 +4372,55 @@ flows:
     test: test_normal_when_footnotes_printed
     refs:
       - dev/設計書/シナリオ/単一ユースケース/文書を印刷する#scenarios[正常シナリオ（脚注の一覧を開いて出す）]
+  - name: 正常系（表と重なる位置で右側の目次を出す）
+    summary: 表の見出し行を画面の上端に留めた位置で、hover で開いた右側の目次を表より手前に出す
+    setup:
+      - name: 配布物を読んだページ
+        description: 正常系（右側の目次をホバーで出してピン止めする）と同じ
+      - name: 幅の広い表を持つ Markdown
+        description: '`## 導入`・`## 使い方` の見出しの間に、`<!-- table: data +total total=数量:sum pin=名前 -->` 〜 `<!-- /table -->` で囲んだ 10 列 30 行の表を置いた文書'
+        notes: 表は描く先の要素の幅を越え、見出し行と集計の行の右側のセルが右側の目次のパネルの下に重なる
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: mount(el, { markdown })
+        P->>M: 表の見出し行を画面の上端に留める位置までスクロールする
+        M->>P: 見出し行を画面の上端に留める
+        P->>M: 右端の線にポインターを乗せる
+        M->>P: 右側の目次を表より手前に出す
+    expected:
+      - ポインターを乗せた後、パネルの矩形の中の格子状の点で `document.elementFromPoint` が返す要素が、どれも `aside.mdmark-side-toc` の中にある
+      - '`aside.mdmark-side-toc` の計算した `z-index` が、`thead th`・`tfoot td`・`.is-pinned-col` のセルの計算した `z-index` のどれより大きい'
+    test: test_normal_when_side_toc_over_table
+  - name: 正常系（文書の末尾まで右側の目次を留める）
+    summary: 文書の末尾までスクロールしても、右端の線と hover で開くパネルをスクロールする場所の上端の近くに留める
+    setup:
+      - name: 配布物を読んだページ
+        description: 正常系（右側の目次をホバーで出してピン止めする）と同じ
+        notes: '画面の高さは 800px。`el` を高さ 600px の `overflow-y: auto` の要素の中に置く場合と、ページ全体でスクロールする場合の 2 通り'
+      - name: 見出しを持つ Markdown
+        description: 正常系（右側の目次をホバーで出してピン止めする）と同じ文書
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: mount(el, { markdown })
+        P->>M: スクロールする場所を文書の途中までスクロールする
+        M->>P: 右端の線を留める
+        P->>M: 末尾までスクロールする
+        M->>P: 右端の線を同じ位置に留める
+        P->>M: 右端の線にポインターを乗せる
+        M->>P: 右側の目次を出す
+    expected:
+      - 途中と末尾のどちらでも、右端の線の `getBoundingClientRect().top` が、スクロールする場所の上端に `--mdmark-space`（既定 0.875rem）を足した値と 1px 以内で等しい
+      - 途中と末尾のどちらでも、右端の線の `getBoundingClientRect().bottom` が、スクロールする場所の下端以下
+      - 末尾でポインターを乗せた後、パネルが不透明で、`getBoundingClientRect().top` が右端の線の上端と 1px 以内で等しい
+    test: test_normal_when_side_toc_scrolled_to_end
 lead: 使う側のページが、要素と Markdown と設定を渡し、要素の中に文書を描く。戻り値で本文の差し替えと片付けができる。
 idempotent: false
 side_effects: '`el` の中身と class を書き換え、記法の操作のイベントを `el` の中に付ける。`side-toc` がオンで見出しがあるとき、`el` の中を本文の列と右側の目次に分け、見出しの位置を `IntersectionObserver` で見る。`back-to-top` がオンのとき、`el` の子に先頭へ戻るボタンを置き、スクロールする場所が画面全体なら `window` の `scroll`、`el` に最も近いスクロールする祖先の要素なら `document` の `scroll`（捕捉の段）と、`window` の `resize` を受け取り、`document.body` と `el` の子の追加・削除を `MutationObserver` で見る。`window` の `beforeprint`・`afterprint`・`hashchange` と、絞り込みのドロワーを開いている間だけ `document` の `pointerdown`・`keydown` を受け取る。図の部品か埋め込んだ HTML があるとき、図の表示する枠と埋め込んだ HTML の大きさを `ResizeObserver` で見、ツールチップを開いている間だけ `document` の `keydown`・`pointerdown` と `window` の `scroll`・`resize` を受け取り、全画面の間だけ `el` の中に `dialog` を置く。操作できる部品の写すボタン・表のコピー・行の URL のコピー・コードブロックのコピー・ファイルツリーのコピーでクリップボードに書く。表があるとき、表の大きさと描く先の要素の幅を `ResizeObserver` で見、`animation-timeline` を持たないブラウザでは `window` と文書の中の `scroll` と `window` の `resize` を受け取る。`data-group` を持つタブがあるとき、localStorage の `mdmark-tabs:{group}` を描くたびに読み、読む人がタブを選ぶと書く。そのとき、ページの中の `el` の外にある同じ `group` のタブ群の選択も書き換える。文書に外部ライブラリか拡張の印があるとき、そのモジュールを読む。色分けの対象のコードブロックがあるとき、`syntax.url` の先の core と、使う言語のモジュールを読む。`opts.diffSource` を渡したとき、読む人が差分を開くと（`opts.diffMode` が `open` なら描いた時点、`blocks` なら描くたびに）取り出し元の `revisions`・`content` を呼び、差分の行を出している間だけミニマップの帯を置き、送り先のスクロールの `scroll` と `window` の `resize` を受け取る。文書にビューの印があるとき、ビューの部品のモジュールを読む。`comments` がオンで `opts.commentStore` を渡したとき、コメントの部品のモジュールを読み、`load` を描くたびに 1 回呼び、保存で `save`、読み書きの関数が持つときは吹き出しの修正で `update`・削除で `remove`、`reloadComments` で `load` を呼ぶ。その間は `document` の `selectionchange` を受け取り、コメントのボタン・入力欄・吹き出しを `document.body` に置く。あわせて本文の列の右に余白の列を置き、描く先の要素の大きさを `ResizeObserver`、描く先の要素の中の開閉・切り替えを `MutationObserver` で見る'
@@ -4869,4 +4918,7 @@ constraints:
   - item: 脚注の操作
     constraint: 番号のリンクにポインターを乗せたときとフォーカスしたときにツールチップを出し、用語のツールチップと同じ作法（制約「ツールチップの操作」。上へ移しても出したまま・Esc で消してフォーカスを番号に残す・中のリンクへ Tab で移れる・画面に対して置く・`tooltips.placement`）で開閉する。番号を押すと（Enter を含む）、ツールチップを閉じて、ポインターかフォーカスが番号を離れるまで開き直さず、閉じた末尾の一覧を開いて該当の項目を画面の中に入れ、項目に `tabindex="-1"` を付けてからフォーカスを項目へ移す（`render` の出力は `tabindex` を持たず、sanitize の許可を広げない）。一覧の戻るリンクを押すと、参照の番号を画面の中に入れ、フォーカスを番号へ移す。どちらも URL の `#` を書き換えず、`el` の中で `id` を引く（まとめた HTML で `#` のリンクを書き換えても、開いている文書の中で移る）。用語のツールチップと同じく、1 つのページに文書を 2 つ以上描いても重ならないよう、脚注の番号・ツールチップ・一覧の項目の `id` をモジュールの通し番号で振り直し、それを指す `href`・`aria-describedby`・`aria-details` も直す。`update` で付け直し、`destroy` で外す。印刷ではツールチップと戻るリンクを出さず、番号は上付きのまま出す
     notes: 要素の形は dev/設計書/インターフェース定義/ライブラリ本体/文書をHTML文字列にする.ts の制約『脚注』。WAI-ARIA の役割は部品設計で決める
+  - item: 右側の目次の重なりと留める位置
+    constraint: 右側の目次（`aside`）は、出し方と幅によらず、本文の全ての要素（表の見出し行・集計の行・ピン止めした列のセルを含む）より手前に描く。広い幅の `hover` の右端の線は、本文の上端がその位置より上へスクロールした後、文書の末尾までのどこを読んでいても、スクロールする場所の上端から `--mdmark-sticky-top` と `--mdmark-space` を足した位置に留め、高さをスクロールする場所に収める（描く先の要素の下端で押し上げない）。hover で開くパネルの上端も同じ位置にする
+    notes: '#285。スクロールする場所は、描く先の要素に最も近い縦にスクロールする祖先の要素か、無ければ画面。重なりの順を CSS 変数で持つかと、右端の線の留め方はモジュール構成設計'
 test_file: tests/integration/lib/mount.browser.test.ts
