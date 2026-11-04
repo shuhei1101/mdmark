@@ -3,9 +3,9 @@ implementation: src/parts/side-toc.ts#renderSideToc
 story: Parts/SideToc
 states:
   - name: HoverRail
-    description: hover の出し方で目次を隠し、右端に見出しの数の線だけを出す
+    description: hover の出し方で目次を隠し、右端に見出しの数の線だけを出す。本文をスクロールした後は、文書の末尾まで、線を見えている枠の上端（スクロールする場所の上端に `--mdmark-sticky-top` を足した位置）から `--mdmark-space` 下に留め、線の並びの高さを見えている枠に収める
   - name: HoverShown
-    description: hover の出し方で目次を出している（指したかフォーカスで出た状態）。枠は画面に固定し、文書のどこを読んでいても、見えている枠の上端（スクロールする場所の上端に `--mdmark-sticky-top` を足した位置）から `--mdmark-space` 下に出す。枠は、右端の線の上端から線 3 本分の位置まで届く高さを下限に持ち、線から枠へポインターを動かしても hover が切れない
+    description: hover の出し方で目次を出している（指したかフォーカスで出た状態）。枠は画面に固定し、文書のどこを読んでいても、見えている枠の上端（スクロールする場所の上端に `--mdmark-sticky-top` を足した位置）から `--mdmark-space` 下に出す。枠は、右端の線の上端から線 3 本分の位置まで届く高さを下限に持ち、線から枠へポインターを動かしても hover が切れない。枠は、表の見出し行・集計の行・ピン止めした列のセルを含む本文の全ての要素より手前に出す
     args:
       - name: open
         value: 'true'
@@ -125,7 +125,7 @@ css_properties:
   - name: --mdmark-sticky-top
     syntax: <length>
     default: 0px
-    description: 右側の目次と狭い幅の帯を画面に留める位置と、hover で開く目次の枠の上端の、画面（スクロールする場所）の上端からのずれ
+    description: 右側の目次（右端の線を含む）と狭い幅の帯を画面に留める位置と、hover で開く目次の枠の上端の、画面（スクロールする場所）の上端からのずれ
   - name: --mdmark-space
     syntax: <length>
     default: 0.875rem
@@ -144,6 +144,7 @@ refs:
   - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[狭い幅の右側の目次]
   - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[今いる節]
   - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[すべて展開・すべて折りたたむ]
+  - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[右側の目次の重なりと留める位置]
 status: planned
 introduced:
   pr: 166

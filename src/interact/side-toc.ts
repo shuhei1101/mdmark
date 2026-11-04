@@ -31,6 +31,9 @@ const SIDE_TOC_RAIL_COVER_REM = 2;
 const PANEL_OFFSET =
   "calc(var(--mdmark-sticky-top, 0px) + var(--mdmark-space))";
 
+/** 右端の線の下端と、見えている枠・描く先の要素の下端との間（CSS の長さ） */
+const RAIL_GAP = "var(--mdmark-space)";
+
 /** 今いる節を決める線の帯だけを見る `IntersectionObserver` の余白（画面の上から線までを帯にする） */
 const LINE_BAND_MARGIN = `0px 0px -${(1 - CURRENT_LINE_RATIO) * 100}% 0px`;
 
@@ -70,29 +73,39 @@ export function pickCurrentHeading(options: {
   return picked?.id;
 }
 
-/** hover で開く目次の枠の位置を、スクロールする場所の上端と右端の線から決めて aside の CSS 変数に入れる。外す関数は受け取りを外す */
+/** hover で開く目次の枠と右端の線の位置を、スクロールする場所の上端と下端・aside・描く先の要素から決めて aside の CSS 変数に入れる。外す関数は受け取りを外す */
 function followPanelPosition(el: HTMLElement, aside: HTMLElement): () => void {
-  const rail = aside.querySelector(".mdmark-side-toc-rail") as HTMLElement;
   const scroll = findScrollContainer(el);
   // CSS の長さ（rem・px など）を px にするための、見えない要素
   const probe = document.createElement("span");
   probe.hidden = true;
   probe.style.marginTop = PANEL_OFFSET;
+  probe.style.marginBottom = RAIL_GAP;
   aside.append(probe);
 
   const update = (): void => {
-    const frameTop = scroll.page
-      ? 0
-      : scroll.target.getBoundingClientRect().top;
-    const top = frameTop + Number.parseFloat(getComputedStyle(probe).marginTop);
+    const frame = scroll.page
+      ? undefined
+      : scroll.target.getBoundingClientRect();
+    const viewportHeight = document.documentElement.clientHeight;
+    const frameTop = frame ? frame.top : 0;
+    const frameBottom = frame
+      ? Math.min(frame.bottom, viewportHeight)
+      : viewportHeight;
+    const probeStyle = getComputedStyle(probe);
+    const top = frameTop + Number.parseFloat(probeStyle.marginTop);
+    const gap = Number.parseFloat(probeStyle.marginBottom);
     const rem = Number.parseFloat(
       getComputedStyle(document.documentElement).fontSize,
     );
-    const reach =
-      rail.getBoundingClientRect().top + SIDE_TOC_RAIL_COVER_REM * rem - top;
-    const end =
-      document.documentElement.clientWidth -
-      aside.getBoundingClientRect().right;
+    const asideRect = aside.getBoundingClientRect();
+    // 右端の線の上端: 文書の先頭では aside の位置、スクロールした後は枠の上端と同じ位置
+    const railTop = Math.max(asideRect.top, top);
+    // 右端の線の下端: 見えている枠と描く先の要素の両方に収める
+    const railBottom = Math.min(frameBottom, el.getBoundingClientRect().bottom);
+    const railHeight = Math.max(railBottom - railTop - gap, 0);
+    const reach = railTop + SIDE_TOC_RAIL_COVER_REM * rem - top;
+    const end = document.documentElement.clientWidth - asideRect.right;
     // 位置を全て読んでから書く（書いた後に読み直してレイアウトを計算し直さない）
     aside.style.setProperty("--mdmark-side-toc-panel-top", `${top}px`);
     aside.style.setProperty("--mdmark-side-toc-panel-end", `${end}px`);
@@ -100,6 +113,9 @@ function followPanelPosition(el: HTMLElement, aside: HTMLElement): () => void {
       "--mdmark-side-toc-panel-min-height",
       `${Math.max(reach, 0)}px`,
     );
+    aside.style.setProperty("--mdmark-side-toc-rail-top", `${railTop}px`);
+    aside.style.setProperty("--mdmark-side-toc-rail-height", `${railHeight}px`);
+    aside.toggleAttribute("data-rail-outside", railHeight === 0);
   };
 
   update();

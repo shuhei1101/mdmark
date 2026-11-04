@@ -514,3 +514,151 @@ test("test_normal_when_side_toc_in_narrow_width", async ({ page }) => {
     }),
   ).toBe(false);
 });
+
+// 表と重なる位置で右側の目次を出す文書: `## 導入` と `## 使い方` の間に、集計の行とピン止めした列を持つ 10 列 30 行の表
+const SIDE_TOC_TABLE_MARKDOWN = [
+  "## 導入",
+  "",
+  "導入の段落",
+  "",
+  FILLER,
+  "<!-- table: data +total total=数量:sum pin=名前 -->",
+  "",
+  `| 名前 | 数量 | ${Array.from({ length: 8 }, (_, i) => `説明の長い列 ${i + 1}`).join(" | ")} |`,
+  `|${" --- |".repeat(10)}`,
+  ...Array.from(
+    { length: 30 },
+    (_, row) =>
+      `| 品目 ${row + 1} | ${row + 1} | ${Array.from(
+        { length: 8 },
+        (_, col) => `折り返さない長さの値 ${row + 1}-${col + 1}`,
+      ).join(" | ")} |`,
+  ),
+  "",
+  "<!-- /table -->",
+  "",
+  "## 使い方",
+  "",
+  "使い方の段落",
+  "",
+  FILLER,
+].join("\n");
+
+// 表の見出し行を画面の上端に留めた位置で右端にポインターを置くと、右側の目次が表より手前に出て、項目で見出しへ移る（正常シナリオ（表と重なる位置で右側の目次をホバーで出す））
+test("test_normal_when_side_toc_over_table", async ({ page }) => {
+  // 準備
+  await mountSideToc(page, { markdown: SIDE_TOC_TABLE_MARKDOWN });
+  // 実行: 表の見出し行が画面の上端に留まるまでスクロールし、右端にポインターを置く
+  await page
+    .locator("#doc .mdmark-table table")
+    .evaluate((table) =>
+      window.scrollTo(
+        0,
+        table.getBoundingClientRect().top + window.scrollY + 300,
+      ),
+    );
+  await hoverRailTop(page);
+  // 検証: 枠の中のどの位置でも、最も手前の要素が右側の目次の中にある
+  await expectPanelShown(page, true);
+  const outside = await sidePanel(page).evaluate((panel) => {
+    const aside = panel.closest("aside") as HTMLElement;
+    const box = panel.getBoundingClientRect();
+    const hits: string[] = [];
+    for (let y = box.top + 4; y < box.bottom - 4; y += 16) {
+      for (let x = box.left + 4; x < box.right - 4; x += 24) {
+        const hit = document.elementFromPoint(x, y);
+        if (!hit || !aside.contains(hit)) {
+          hits.push(
+            `${hit?.tagName ?? "null"}@${Math.round(x)},${Math.round(y)}`,
+          );
+        }
+      }
+    }
+    return hits;
+  });
+  expect(outside).toEqual([]);
+  // 検証: 右側の目次の z-index が、表の見出し行・集計の行・ピン止めした列のセルのどれより大きい
+  const zIndexes = await page.locator("#doc").evaluate((doc) => {
+    const z = (element: Element) => {
+      const value = getComputedStyle(element).zIndex;
+      return value === "auto" ? 0 : Number(value);
+    };
+    const cells = [
+      ...doc.querySelectorAll(
+        ".mdmark-table thead th, .mdmark-table tfoot td, .mdmark-table .is-pinned-col",
+      ),
+    ];
+    return {
+      aside: z(doc.querySelector("aside.mdmark-side-toc") as Element),
+      cells: cells.length,
+      cellMax: Math.max(...cells.map(z)),
+    };
+  });
+  expect(zIndexes.cells).toBeGreaterThan(0);
+  expect(zIndexes.aside).toBeGreaterThan(zIndexes.cellMax);
+  // 実行・検証: 「使い方」を押す
+  await sideLink(page, "使い方").click();
+  await expect(page.locator('#doc [id="使い方"]')).toBeInViewport();
+  expect(decodeURIComponent(new URL(page.url()).hash)).toBe("#使い方");
+});
+
+// 文書の途中と末尾のどちらまでスクロールしても、右端の線と hover で開いた目次の上端が見えている枠の上端に留まる（正常シナリオ（文書の末尾までスクロールしても右側の目次の上端が見切れない））
+test("test_normal_when_side_toc_scrolled_to_end", async ({ page }) => {
+  for (const height of [800, 500]) {
+    for (const where of ["box", "page"] as const) {
+      // 準備: 画面の高さの 75% のスクロールする要素の中か、ページ全体のスクロールで描く
+      await page.setViewportSize({ width: 1280, height });
+      await openPage(page, builtRoot, {
+        hostCss: "#doc { --mdmark-sticky-top: 48px; }",
+      });
+      if (where === "box") {
+        await page.evaluate((boxHeight) => {
+          const box = document.createElement("div");
+          box.id = "box";
+          box.style.cssText = `height: ${boxHeight}px; overflow-y: auto;`;
+          document.body.append(box);
+          box.append(document.getElementById("doc") as HTMLElement);
+        }, height * 0.75);
+      }
+      await mountDocument(page, { markdown: SIDE_TOC_MARKDOWN });
+      const expectedTop = await expectedPanelTop(page);
+      const frame = () =>
+        page.evaluate(() => {
+          const box = document.getElementById("box");
+          return box
+            ? {
+                top: box.getBoundingClientRect().top,
+                bottom: box.getBoundingClientRect().bottom,
+              }
+            : { top: 0, bottom: document.documentElement.clientHeight };
+        });
+      const scrollTo = (ratio: number) =>
+        page.evaluate((ratio) => {
+          const scroller =
+            document.getElementById("box") ?? document.documentElement;
+          scroller.scrollTop =
+            (scroller.scrollHeight - scroller.clientHeight) * ratio;
+        }, ratio);
+      const rail = page.locator("#doc .mdmark-side-toc-rail");
+      for (const ratio of [0.5, 1]) {
+        // 実行: 文書の途中・末尾までスクロールする
+        await scrollTo(ratio);
+        // 検証: 右端の線の上端が見えている枠の上端から --mdmark-sticky-top と --mdmark-space 下にあり、下端が枠に収まる
+        const { top, bottom } = await frame();
+        await expect
+          .poll(async () => (await rail.boundingBox())?.y)
+          .toBeCloseTo(top + expectedTop, 0);
+        const box = await rail.boundingBox();
+        expect((box?.y ?? 0) + (box?.height ?? 0)).toBeLessThanOrEqual(bottom);
+      }
+      // 実行・検証: 末尾で右端にポインターを置く
+      await hoverRailTop(page);
+      await expectPanelShown(page, true);
+      expect(await panelTop(page)).toBeCloseTo(
+        (await frame()).top + expectedTop,
+        0,
+      );
+      await page.mouse.move(10, 10);
+    }
+  }
+});

@@ -626,12 +626,77 @@ test("test_attach_side_toc_when_hover_panel_reaches_rail", async () => {
   expect(panelVariable(aside, "--mdmark-side-toc-panel-min-height")).toBe(
     `${rail.getBoundingClientRect().top + 2 * rootFontSize() - top}px`,
   );
-  // 実行: 右端の線が枠の上端より上に来るまでスクロールする
+  // 実行: 文書の末尾までスクロールする
   window.scrollTo(0, document.documentElement.scrollHeight);
-  // 検証
+  // 検証: 右端の線の上端が枠の上端に留まるため、線から 2rem の位置まで届く高さ
   await vi.waitFor(() => {
     expect(panelVariable(aside, "--mdmark-side-toc-panel-min-height")).toBe(
-      "0px",
+      `${2 * rootFontSize()}px`,
     );
   });
+});
+
+// 右端の線の位置と高さを、aside の上端・見えている枠の上端と下端から決める（正常系）
+test("test_attach_side_toc_when_hover_rail_placed", async () => {
+  // 準備
+  addStyles();
+  const { attachSideToc } = await loadSideToc();
+  const box = document.createElement("div");
+  box.style.cssText =
+    "position: fixed; top: 100px; left: 0; width: 1000px; height: 400px; overflow-y: auto;";
+  document.body.append(box);
+  track(() => box.remove());
+  const before = document.createElement("div");
+  before.style.height = "200px";
+  const after = document.createElement("div");
+  after.style.height = "450px";
+  const { root } = createRoot(longDocument());
+  box.append(before, root, after);
+  root.style.setProperty("--mdmark-sticky-top", "8px");
+  const result = attachSideToc({
+    el: root,
+    mode: "hover",
+    sections: true,
+    state: createState(),
+  });
+  track(result.detach);
+  const aside = result.aside as HTMLElement;
+  const rail = find(aside, ".mdmark-side-toc-rail");
+  const space =
+    Number.parseFloat(
+      getComputedStyle(root).getPropertyValue("--mdmark-space"),
+    ) * rootFontSize();
+  const fixedTop = 100 + 8 + space;
+  // 検証: スクロールの前は aside の上端
+  expect(panelVariable(aside, "--mdmark-side-toc-rail-top")).toBe(
+    `${aside.getBoundingClientRect().top}px`,
+  );
+  expect(
+    Number.parseFloat(panelVariable(aside, "--mdmark-side-toc-rail-top")),
+  ).toBeGreaterThan(
+    Number.parseFloat(panelVariable(aside, "--mdmark-side-toc-panel-top")),
+  );
+  // 実行: 描く先の要素の下端が見えている枠の下端より 50px 下にある位置（文書の末尾の手前）までスクロールする
+  box.scrollTop += root.getBoundingClientRect().bottom - (100 + 400) - 50;
+  box.dispatchEvent(new Event("scroll"));
+  // 検証
+  await vi.waitFor(() => {
+    expect(panelVariable(aside, "--mdmark-side-toc-rail-top")).toBe(
+      `${fixedTop}px`,
+    );
+  });
+  expect(panelVariable(aside, "--mdmark-side-toc-rail-height")).toBe(
+    `${100 + 400 - fixedTop - space}px`,
+  );
+  expect(aside.hasAttribute("data-rail-outside")).toBe(false);
+  expect(rail.getBoundingClientRect().top).toBeCloseTo(fixedTop, 0);
+  // 実行: 描く先の要素の下の要素まで（要素の末尾まで）スクロールする
+  box.scrollTop = box.scrollHeight;
+  box.dispatchEvent(new Event("scroll"));
+  // 検証: 描く先の要素の下端が線の上端より上にあるため、線を出さない
+  await vi.waitFor(() => {
+    expect(panelVariable(aside, "--mdmark-side-toc-rail-height")).toBe("0px");
+  });
+  expect(aside.hasAttribute("data-rail-outside")).toBe(true);
+  expect(getComputedStyle(rail).display).toBe("none");
 });

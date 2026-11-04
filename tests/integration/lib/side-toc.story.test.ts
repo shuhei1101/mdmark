@@ -81,8 +81,8 @@ test("test_hover_rail", async () => {
 test("test_hover_shown", async () => {
   // 準備
   const page = await holder.openStory("parts-sidetoc--hover-shown", WIDE);
-  // 実行
-  await page.locator(".mdmark-side-toc-rail").hover();
+  // 実行: ポインターを乗せると開いた目次が右端の線を覆うため、乗せた後に線が最も手前にあるかは確かめない
+  await page.locator(".mdmark-side-toc-rail").hover({ force: true });
   // 検証
   await expect(
     styleOf(page, ".mdmark-side-toc-panel", "opacity"),
