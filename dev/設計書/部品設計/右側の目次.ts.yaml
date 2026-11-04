@@ -5,7 +5,7 @@ states:
   - name: HoverRail
     description: hover の出し方で目次を隠し、右端に見出しの数の線だけを出す
   - name: HoverShown
-    description: hover の出し方で目次を出している（指したかフォーカスで出た状態）。枠は画面に固定し、文書のどこを読んでいても、見えている枠の上端（スクロールする場所の上端に `--mdmark-sticky-top` を足した位置）から `--mdmark-space` 下に出す
+    description: hover の出し方で目次を出している（指したかフォーカスで出た状態）。枠は画面に固定し、文書のどこを読んでいても、見えている枠の上端（スクロールする場所の上端に `--mdmark-sticky-top` を足した位置）から `--mdmark-space` 下に出す。枠は、右端の線の上端から線 3 本分の位置まで届く高さを下限に持ち、線から枠へポインターを動かしても hover が切れない
     args:
       - name: open
         value: 'true'
