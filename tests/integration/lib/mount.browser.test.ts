@@ -10051,7 +10051,9 @@ test("test_normal_when_side_toc_at_scroll_edge", async () => {
         await vi.waitFor(() => expect(minimapBands()).toHaveLength(1));
         // 検証: 線とパネルの右端が、ミニマップの帯の左端から 8px 左
         await vi.waitFor(() => {
-          const band = (minimapBands()[0] as HTMLElement).getBoundingClientRect();
+          const band = (
+            minimapBands()[0] as HTMLElement
+          ).getBoundingClientRect();
           expect(
             Math.abs(band.left - 8 - rail.getBoundingClientRect().right),
           ).toBeLessThanOrEqual(1);
