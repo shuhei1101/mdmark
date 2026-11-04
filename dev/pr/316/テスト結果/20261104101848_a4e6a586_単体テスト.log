@@ -1,0 +1,14 @@
+$ npm run test:unit
+
+> test:unit
+> vitest run --project 'unit*'
+
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/chore-deps-markdown-it-15-0-3
+
+
+ Test Files  193 passed (193)
+      Tests  1422 passed (1422)
+   Start at  10:17:05
+   Duration  64.67s (worker 73%, tests 16%, import 8%, transform 4%)
+

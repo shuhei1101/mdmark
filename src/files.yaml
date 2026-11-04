@@ -283,6 +283,12 @@ files:
     related:
       - to: dev/設計書/モジュール構成/ライブラリ本体/操作.ts
         type: implements
+  - path: interact/footnotes.ts
+    description: モジュール構成『ライブラリ本体 / 操作』のうち「脚注のツールチップの開閉と、番号と末尾の一覧の行き来」を受け持つ。脚注の操作を変えるときに読む。
+    tags: [topic:脚注, topic:ツールチップ]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/操作.ts
+        type: implements
   - path: interact/gif.ts
     description: モジュール構成『ライブラリ本体 / 操作』のうち「GIF を止める・再生するボタン」を受け持つ。描いた文書での読む人の操作を変えるときに読む。
     tags: [topic:dom, topic:イベント, topic:gif]
@@ -775,6 +781,28 @@ files:
     related:
       - to: dev/設計書/部品設計/フロー図.ts
         type: implements
+  - path: parts/footnote-ref.stories.yaml
+    description: 部品設計『脚注の番号』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに読む。
+    tags: [topic:ストーリー, tool:storybook, topic:部品, topic:脚注]
+    related:
+      - to: dev/設計書/部品設計/脚注の番号.ts
+        type: implements
+  - path: parts/footnote.ts
+    description: モジュール構成『ライブラリ本体 / 部品』のうち「脚注の番号の renderFootnoteRef と脚注の一覧の renderFootnotes」を受け持つ。部品が返す HTML を変えるときに読む。
+    tags: [topic:部品, tool:html, topic:脚注]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/部品.ts
+        type: implements
+      - to: dev/設計書/部品設計/脚注の番号.ts
+        type: implements
+      - to: dev/設計書/部品設計/脚注の一覧.ts
+        type: implements
+  - path: parts/footnotes.stories.yaml
+    description: 部品設計『脚注の一覧』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに読む。
+    tags: [topic:ストーリー, tool:storybook, topic:部品, topic:脚注]
+    related:
+      - to: dev/設計書/部品設計/脚注の一覧.ts
+        type: implements
   - path: parts/gallery.stories.yaml
     description: 部品設計『ギャラリー』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに読む。
     tags: [topic:ストーリー, tool:storybook, topic:部品, topic:ギャラリー]
@@ -1204,6 +1232,12 @@ files:
   - path: render/syntax/figures.ts
     description: モジュール構成『ライブラリ本体 / 記法』のうち「図表の番号と参照」を受け持つ。記法の書き方や出力する HTML を変えるときに読む。
     tags: [topic:markdown, topic:構文, tool:markdown-it, topic:図表の番号]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/記法.ts
+        type: implements
+  - path: render/syntax/footnotes.ts
+    description: モジュール構成『ライブラリ本体 / 記法』のうち「脚注の定義・参照・行内の脚注の読み取りと、末尾の一覧・機能のオフの文字への戻し」を受け持つ。記法の書き方や出力する HTML を変えるときに読む。
+    tags: [topic:markdown, topic:構文, tool:markdown-it, topic:脚注]
     related:
       - to: dev/設計書/モジュール構成/ライブラリ本体/記法.ts
         type: implements

@@ -17,6 +17,7 @@ const DEFAULT_FEATURES = {
   steps: true,
   tree: true,
   badge: true,
+  footnotes: true,
   code: true,
   syntax: true,
   toc: true,

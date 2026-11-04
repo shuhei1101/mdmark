@@ -37,8 +37,17 @@ test("test_render_side_toc", async () => {
   expect(findTag(html, "mdmark-side-toc-pin")).toContain(
     'aria-pressed="false"',
   );
+  const pin = innerHtml(html, "mdmark-side-toc-pin");
+  expect(pin).toContain("mdmark-side-toc-pin-off");
+  expect(pin).toContain("mdmark-side-toc-pin-on");
   expect(html).toContain('data-fold-all="open"');
   expect(html).toContain('data-fold-all="close"');
+  // 目次の頭: まとめて開閉するボタンの並び → ピン止めの順で、タイトルを持たない
+  expect(innerHtml(html, "mdmark-side-toc-head")).toMatch(
+    /^<div class="mdmark-side-toc-actions">[\s\S]*<\/div><button class="mdmark-side-toc-pin"[\s\S]*<\/button>$/,
+  );
+  expect(html).not.toContain("mdmark-side-toc-title");
+  expect(html).not.toContain(">目次<");
 });
 
 // 出し方と出している状態を属性に写す（正常系）
@@ -71,6 +80,9 @@ test("test_render_side_toc_when_without_sections", async () => {
   const html = renderSideToc({ headings: [...HEADINGS], sections: false });
   // 検証
   expect(html).not.toContain("data-fold-all");
+  expect(innerHtml(html, "mdmark-side-toc-head")).toMatch(
+    /^<button class="mdmark-side-toc-pin"[\s\S]*<\/button>$/,
+  );
 });
 
 // 今いる節の項目・線・狭い幅の帯の文字を付ける（正常系）

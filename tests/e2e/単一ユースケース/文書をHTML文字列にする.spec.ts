@@ -189,3 +189,31 @@ test("test_normal_when_aliases", async () => {
   expect(html).not.toContain("<script");
   expect(html).not.toContain("<!--");
 });
+
+// 脚注を持つ文書を、番号・ツールチップの中身・末尾の閉じた一覧を持つ HTML 文字列にする（正常シナリオ（脚注を持つ文書））
+test("test_normal_when_footnotes", async () => {
+  // 準備・実行
+  const html = await renderInNode(
+    builtRoot,
+    "出典がある[^src] と行内^[行内の補足]。\n\n[^src]: 出典の説明\n",
+  );
+  // 検証
+  expect(matchAll(html, /<sup class="mdmark-fn-ref">/g)).toHaveLength(2);
+  expect(html).toMatch(
+    /<span class="mdmark-visually-hidden">脚注 <\/span>1<\/a>/,
+  );
+  expect(html).toMatch(
+    /<span class="mdmark-visually-hidden">脚注 <\/span>2<\/a>/,
+  );
+  expect(html).toMatch(/class="mdmark-fn-tip-body">出典の説明</);
+  expect(html).toMatch(/class="mdmark-fn-tip-body">行内の補足</);
+  expect(html.trimEnd()).toMatch(
+    /<details class="mdmark-footnotes">[\s\S]*<\/details>$/,
+  );
+  expect(html).not.toContain("[^src]");
+});
+
+/** 正規表現（`g` 付き）に合う文字列を全て返す */
+function matchAll(text: string, pattern: RegExp): string[] {
+  return text.match(pattern) ?? [];
+}

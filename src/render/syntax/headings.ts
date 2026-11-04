@@ -1,6 +1,7 @@
 import type { StateCore } from "markdown-it";
 import { escapeHtml } from "../../parts/escape.ts";
 import { markOwn } from "../../parts/own.ts";
+import { outsideFootnoteDefinitions } from "./footnotes.ts";
 import { envOf, featureOn, textOf } from "./tokens.ts";
 
 /** GitHub と同じ規則で文字を ID の元にする。作れないときは空文字 */
@@ -24,11 +25,12 @@ export function slugify(text: string, used: Map<string, number>): string {
   return `${base}-${count + 1}`;
 }
 
-/** 全ての見出しに ID を付け、`anchors` がオンなら見出しの文字の後にアンカーを足し、見出しを `env.headings` に控える */
+/** 脚注の定義の外の全ての見出しに ID を付け、`anchors` がオンなら見出しの文字の後にアンカーを足し、見出しを `env.headings` に控える */
 export function assignHeadingIds(state: StateCore): void {
   const env = envOf(state);
   const used = new Map<string, number>();
-  const tokens = state.tokens;
+  // 脚注の定義の中の見出しは、目次に載せないよう ID を振らない
+  const tokens = outsideFootnoteDefinitions(state.tokens);
   for (let index = 0; index < tokens.length; index++) {
     const open = tokens[index];
     const inline = tokens[index + 1];

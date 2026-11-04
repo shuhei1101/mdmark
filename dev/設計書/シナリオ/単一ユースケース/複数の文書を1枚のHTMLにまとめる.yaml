@@ -167,6 +167,33 @@ scenarios:
       - リンクで移った文書で、ビューが描かれ、Chart.js の印の場所に `canvas` が描かれ、知らせの枠が出ない
       - 開いてから文書を移った後までに、CSP の違反（`securitypolicyviolation`）が 0 件で、`blob:` の URL への要求が 0 件
     test: test_normal_when_blob_and_dynamic_import_blocked
+  - name: 正常シナリオ（脚注を持つ文書）
+    setup:
+      - name: 脚注を持つ文書群
+        description: 入口の文書と、入口からリンクする文書の 2 つ。どちらも段落に `[^1]` と定義を持ち、定義の中身は入口が `入口の補足`、もう 1 つが `別の文書の補足`。`build` の設定
+        notes: 2 つの文書で同じラベル `1` を使い、文書をまたいだ戻るリンクの取り違えを決定的に起こす
+      - name: Mock
+        description: 外部ライブラリは相対パスの手元のモジュール
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant C as mdmark CLI
+        participant F as build.out
+        actor R as 読む人
+        W->>C: mdmark build
+        C->>F: 2 つの文書を埋めた HTML を書く
+        C-->>W: 出力のパス・入れた文書の数・終了コード 0
+        R->>F: file:// で開き、リンクで別の文書へ移る
+        R->>F: 末尾の脚注の一覧を開き、脚注 1 の戻るリンクを押す
+        F-->>R: 同じ文書の番号 1 の場所
+    expected:
+      - 終了コードが 0 で、`build.out` に HTML が 1 つある
+      - リンクで移った文書の番号 `1` にポインターを乗せると `別の文書の補足` のツールチップが出る
+      - 末尾の一覧の戻るリンクを押すと、開いている文書は入れ替わらず、その文書の番号 `1` が画面の中に入る
+      - 外への要求が 0 件
+    test: test_normal_when_footnotes
+    refs:
+      - dev/設計書/シナリオ/単一ユースケース/脚注を見る#scenarios[正常シナリオ（末尾の一覧から本文へ戻る）]
   - name: 正常シナリオ（取り込みとアイコンを埋める）
     setup:
       - name: 取り込みとアイコンを持つ文書群

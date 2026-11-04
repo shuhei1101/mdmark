@@ -294,6 +294,33 @@ scenarios:
       - 印刷の前のイベントの後、コードの開閉のボタンと ⋯ が印刷に出ていない
       - 印刷の後のイベントの後、コードの 2 行目が畳まれ、入れ子の注意書きが閉じている
     test: test_normal_when_code_folded
+  - name: 正常シナリオ（脚注の一覧を開いて出す）
+    setup:
+      - name: 文書を描いたページ
+        description: 正常シナリオ（記法を開いて出す）と同じ
+      - name: 脚注を持つ Markdown
+        description: '段落に `[^src]` と定義 `[^src]: 出典の説明` を持つ文書'
+      - name: Mock
+        description: 正常シナリオと同じ。印刷の終わりは、媒体を `screen` に戻して印刷の後のイベントを送ることで代える
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant B as ブラウザ
+        participant M as mdmark
+        U->>B: 印刷を始める
+        B->>M: 印刷の前のイベント
+        M->>M: 閉じた脚注の一覧を開く
+        B-->>U: 印刷の出力
+        B->>M: 印刷の後のイベント
+        M->>M: 脚注の一覧を閉じ直す
+        B-->>U: 画面の表示に戻る
+    expected:
+      - 印刷の前のイベントの後、文書の末尾の脚注の一覧が開いていて、`1` と `出典の説明` が表示されている
+      - 印刷の前のイベントの後も、本文の番号 `1` は上付きの数字で出ていて、脚注のツールチップが出ていない
+      - 印刷の後のイベントの後、脚注の一覧が閉じている
+    test: test_normal_when_footnotes_printed
+    refs:
+      - dev/設計書/シナリオ/単一ユースケース/脚注を見る#scenarios[正常シナリオ]
   - name: 正常シナリオ（改ページと details の範囲と wide の範囲）
     setup:
       - name: 文書を描いたページ

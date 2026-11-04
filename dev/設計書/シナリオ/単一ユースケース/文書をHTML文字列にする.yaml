@@ -102,6 +102,28 @@ scenarios:
       - 文字列に、`単体テスト` の下線の要素と、コード `npm run test:unit` とコピーのボタンを持つ要素がある
       - 文字列に `script` 要素と印の文字（`<!--`）が無い
     test: test_normal_when_aliases
+  - name: 正常シナリオ（脚注を持つ文書）
+    setup:
+      - name: 配布物を読む Node の処理
+        description: 正常シナリオと同じ
+      - name: 脚注を持つ Markdown
+        description: '段落に `[^src]` と行内の `^[行内の補足]` を持ち、定義 `[^src]: 出典の説明` を持つ文書'
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        participant C as 使う側の処理
+        participant M as mdmark
+        C->>M: Markdown を渡して HTML 文字列にさせる
+        M->>M: 脚注の参照と定義を読み、番号を振る
+        M-->>C: 脚注の番号と末尾の一覧を持つ HTML 文字列
+    expected:
+      - 文字列に、番号 `1`・`2` の上付きの要素と、それぞれの脚注の中身 `出典の説明`・`行内の補足` を持つ要素がある
+      - 文字列の末尾に、閉じた脚注の一覧の要素がある
+      - 文字列に `[^src]` と定義の行の文字が無い
+    test: test_normal_when_footnotes
+    refs:
+      - dev/設計書/シナリオ/単一ユースケース/脚注を見る#scenarios[正常シナリオ]
   - name: 正常シナリオ（取り込む文書を渡す）
     setup:
       - name: 取り込む文書の表

@@ -201,6 +201,31 @@ scenarios:
       - '`libraries` に無いファイルのモジュールを書いた印の場所に知らせの枠が出る'
       - 開いてから描き終えるまでに、CSP の違反（`securitypolicyviolation`）が 0 件で、`blob:` の URL への要求が 0 件
     test: test_normal_when_blob_and_dynamic_import_blocked
+  - name: 正常シナリオ（脚注を持つ文書）
+    setup:
+      - name: 脚注を持つ文書
+        description: '段落に `[^src]` と定義 `[^src]: 出典の説明` を持つ文書 1 つと、設定'
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant C as mdmark CLI
+        participant F as 出力の HTML
+        actor R as 読む人
+        W->>C: mdmark export 文書のパス
+        C->>F: 配布物と本文を埋めた HTML を書く
+        C-->>W: 出力のパス・終了コード 0
+        R->>F: file:// で開き、番号にポインターを乗せ、末尾の一覧を開く
+        F-->>R: 脚注のツールチップと開いた一覧
+    expected:
+      - 終了コードが 0 で、指定した出力に HTML が 1 つある
+      - file:// で開くと、番号 `1` にポインターを乗せたとき `出典の説明` のツールチップが出る
+      - 末尾の脚注の一覧は閉じていて、見出しを押すと `1` と `出典の説明` が出る
+      - 外への要求が 0 件
+    test: test_normal_when_footnotes
+    refs:
+      - dev/設計書/シナリオ/単一ユースケース/脚注を見る#scenarios[正常シナリオ]
   - name: 正常シナリオ（取り込みとアイコンを埋める）
     setup:
       - name: 取り込みとアイコンを持つ文書

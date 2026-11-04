@@ -6,6 +6,7 @@ import { attachCodeFolds } from "./code-folds.ts";
 import { attachDiagramTips } from "./diagram-tips.ts";
 import { attachDiagrams } from "./diagrams.ts";
 import { attachEmbeddedHtml } from "./embedded-html.ts";
+import { attachFootnotes } from "./footnotes.ts";
 import { attachGifs } from "./gif.ts";
 import { attachLightbox } from "./lightbox.ts";
 import { attachParams } from "./params.ts";
@@ -16,7 +17,7 @@ import { attachTabs } from "./tabs.ts";
 import { attachTermTips } from "./terms.ts";
 import { attachFileTrees } from "./trees.ts";
 
-/** 機能がオンの記法だけ（節と行の詳細・表・タブの順に）操作を付け、`table` がオンなら表の見出し行と集計の行を留める処理を、`code` がオンならコードブロックのコピーを付け、`tree` がオンならファイルツリーの開閉とコピーを付け、`diagrams` がオンなら図と操作できる部品の操作を付け、`glossary` か `backlinks` がオンなら用語のツールチップの操作を付け、`html` がオンなら埋め込んだ HTML の幅の操作を（`hints` もオンならヒントの操作も）付け、`lightbox` がオンなら画像の拡大を、`gif` がオンならその後に GIF の止める・再生するボタンを付け、まとめて外す関数を返す */
+/** 機能がオンの記法だけ（節と行の詳細・表・タブの順に）操作を付け、`table` がオンなら表の見出し行と集計の行を留める処理を、`code` がオンならコードブロックのコピーを付け、`tree` がオンならファイルツリーの開閉とコピーを付け、`footnotes` がオンなら脚注のツールチップと一覧への移動を付け、`diagrams` がオンなら図と操作できる部品の操作を付け、`glossary` か `backlinks` がオンなら用語のツールチップの操作を付け、`html` がオンなら埋め込んだ HTML の幅の操作を（`hints` もオンならヒントの操作も）付け、`lightbox` がオンなら画像の拡大を、`gif` がオンならその後に GIF の止める・再生するボタンを付け、まとめて外す関数を返す */
 export function attachInteractions(options: {
   /** 描いた要素 */
   root: HTMLElement;
@@ -60,6 +61,9 @@ export function attachInteractions(options: {
   if (features.diagrams === true) {
     detachers.push(attachDiagrams({ root, placement }));
     detachers.push(attachParams(root, paramDefinitions));
+  }
+  if (features.footnotes === true) {
+    detachers.push(attachFootnotes({ root, placement }));
   }
   if (features.glossary === true || features.backlinks === true) {
     detachers.push(attachTermTips({ root, placement }));
