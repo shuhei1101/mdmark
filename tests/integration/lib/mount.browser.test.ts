@@ -9949,3 +9949,126 @@ test("test_normal_when_side_toc_scrolled_to_end", async () => {
     }
   });
 });
+
+/** 右端の線の右端から、見えている枠のスクロールバーを除いた右端までの距離（px） */
+function railGapToFrame(rail: HTMLElement, frameRight: number): number {
+  return frameRight - rail.getBoundingClientRect().right;
+}
+
+// 描く先の要素が画面より狭いときも、ピン止めしていない右端の線とパネルをスクロールする場所の右端から 1rem に置き、差分のミニマップを避ける（正常系（右側の目次をスクロールする場所の右端に置く））
+test("test_normal_when_side_toc_at_scroll_edge", async () => {
+  await withViewport(1600, async () => {
+    const rem = Number.parseFloat(
+      getComputedStyle(document.documentElement).fontSize,
+    );
+    for (const where of ["page", "box"] as const) {
+      // 準備: ページ全体のスクロールでは幅 992px を左端から 312px に、スクロールする要素の中では幅 800px を左に寄せて描く
+      const el = createElement();
+      let scroller: HTMLElement | undefined;
+      if (where === "box") {
+        scroller = document.createElement("div");
+        scroller.style.cssText =
+          "position: fixed; top: 0; left: 0; width: 1200px; height: 600px; overflow-y: auto;";
+        document.body.append(scroller);
+        elements.push(scroller);
+        scroller.append(el);
+        el.style.width = "800px";
+      } else {
+        el.style.cssText = "width: 992px; margin-left: 312px;";
+      }
+      const handle = await mountTracked(el, { markdown: SIDE_TOC_MARKDOWN });
+      const { panel, pin, rail, content } = sideTocOf(el);
+      /** 見えている枠のスクロールバーを除いた右端 */
+      const frameRight = () =>
+        scroller
+          ? scroller.getBoundingClientRect().left +
+            scroller.clientLeft +
+            scroller.clientWidth
+          : document.documentElement.clientWidth;
+      /** 右端の線の右端が el の右端より右で、見えている枠の右端から 1rem にあることを確かめる */
+      const expectAtEdge = async () => {
+        await vi.waitFor(() => {
+          expect(rail.getBoundingClientRect().right).toBeGreaterThan(
+            el.getBoundingClientRect().right,
+          );
+          expect(
+            Math.abs(railGapToFrame(rail, frameRight()) - rem),
+          ).toBeLessThanOrEqual(1);
+        });
+      };
+      // 検証: 描いた直後
+      await expectAtEdge();
+      // 実行・検証: 文書の途中までスクロールした後
+      if (scroller) {
+        scroller.scrollTop = scroller.scrollHeight / 2;
+        scroller.dispatchEvent(new Event("scroll"));
+      } else {
+        window.scrollTo(0, document.documentElement.scrollHeight / 2);
+      }
+      await expectAtEdge();
+      // 実行・検証: 右端の線にポインターを乗せると、同じ右端にパネルを出す
+      await userEvent.hover(rail);
+      await vi.waitFor(() => {
+        expect(panelOpacity(panel)).toBe("1");
+      });
+      expect(
+        Math.abs(
+          panel.getBoundingClientRect().right -
+            rail.getBoundingClientRect().right,
+        ),
+      ).toBeLessThanOrEqual(1);
+      // 実行・検証: ピン止めすると、パネルを el の中の右の列に出す
+      await userEvent.click(pin);
+      await vi.waitFor(() => {
+        expect(panel.getBoundingClientRect().right).toBeLessThanOrEqual(
+          el.getBoundingClientRect().right,
+        );
+      });
+      expect(content.getBoundingClientRect().right).toBeLessThan(
+        panel.getBoundingClientRect().left,
+      );
+      await userEvent.click(pin);
+      await userEvent.unhover(rail);
+      if (where === "page") {
+        // 準備: 同じページの別の要素で、スクロールせずに差分を開く
+        const changed = BACK_TO_TOP_MARKDOWN.replace(
+          "付録の段落 9 は",
+          "付録の段落 9 を書き換えた本文は",
+        );
+        const source = createDiffSource({}, DIFF_REVISIONS.slice(1), {
+          r1: BACK_TO_TOP_MARKDOWN,
+          r2: changed,
+        });
+        const other = createElement();
+        other.style.cssText = "width: 200px;";
+        await mountTracked(other, {
+          markdown: changed,
+          docId: "guide",
+          diffSource: source,
+          diffMode: "open",
+        });
+        await waitForDiffLines(other);
+        await vi.waitFor(() => expect(minimapBands()).toHaveLength(1));
+        // 検証: 線とパネルの右端が、ミニマップの帯の左端から 8px 左
+        await vi.waitFor(() => {
+          const band = (minimapBands()[0] as HTMLElement).getBoundingClientRect();
+          expect(
+            Math.abs(band.left - 8 - rail.getBoundingClientRect().right),
+          ).toBeLessThanOrEqual(1);
+          expect(
+            Math.abs(band.left - 8 - panel.getBoundingClientRect().right),
+          ).toBeLessThanOrEqual(1);
+        });
+        // 実行・検証: スクロールせずに差分を閉じると、帯が削除され、線が 1rem の位置に戻る
+        await userEvent.click(diffToggle(other));
+        await vi.waitFor(() => expect(minimapBands()).toHaveLength(0));
+        await expectAtEdge();
+      }
+      // 後始末: 次の場合の前に外す
+      handle.destroy();
+      handles.splice(handles.indexOf(handle), 1);
+      el.remove();
+      window.scrollTo(0, 0);
+    }
+  });
+});
