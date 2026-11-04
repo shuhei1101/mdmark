@@ -8159,13 +8159,14 @@
   .mdmark {
     /* ---------- 右側の目次 ---------- */
 
-    /* 右側の目次: 本文の右の列。文書を読み進めても、使う側が留めた帯の下で画面に留める */
+    /* 右側の目次: 本文の右の列。文書を読み進めても、使う側が留めた帯の下で画面に留める。表の見出し行・集計の行（3）とピン止めした列（4）より手前に描く */
     .mdmark-side-toc {
       position: sticky;
       inset-block-start: calc(
         var(--mdmark-sticky-top, 0px) +
         var(--mdmark-space)
       );
+      z-index: 5;
       display: flex;
       flex: none;
       flex-direction: column;
@@ -8460,6 +8461,23 @@
             inset-inline-end: var(--mdmark-side-toc-panel-end, 0px);
             min-height: var(--mdmark-side-toc-panel-min-height, auto);
           }
+
+          /* 右端の線も画面に固定し、aside の高さを持たせない（描く先の要素の下端で押し上げられない）。位置と、見えている枠と描く先の要素に収める高さは attachSideToc が入れる。aside は線の幅を取っておく */
+          &:not([data-pinned]) {
+            min-width: 1.5rem;
+
+            .mdmark-side-toc-rail {
+              position: fixed;
+              inset-block-start: var(--mdmark-side-toc-rail-top, 0px);
+              inset-inline-end: var(--mdmark-side-toc-panel-end, 0px);
+              height: var(--mdmark-side-toc-rail-height, auto);
+            }
+          }
+
+          /* 描く先の要素の下端が右端の線の上端より上に来たとき: 線を出さない */
+          &[data-rail-outside]:not([data-pinned]) .mdmark-side-toc-rail {
+            display: none;
+          }
         }
       }
 
@@ -8511,7 +8529,6 @@
       /* 帯: 本文の列の上の 1 行を幅いっぱいに取り、文書を読み進めても使う側が留めた帯の下に留める */
       .mdmark-side-toc[data-mode] {
         order: -1;
-        z-index: 1;
         flex-basis: 100%;
         min-width: 0;
         inset-block-start: var(--mdmark-sticky-top, 0px);
