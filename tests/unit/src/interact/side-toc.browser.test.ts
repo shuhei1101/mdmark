@@ -551,13 +551,13 @@ test("test_attach_side_toc_when_hover_panel_placed", async () => {
   const { attachSideToc } = await loadSideToc();
   const box = document.createElement("div");
   box.style.cssText =
-    "position: fixed; top: 100px; left: 0; width: 1000px; height: 400px; overflow-y: auto;";
+    "position: fixed; top: 100px; left: 0; width: calc(100% - 40px); height: 400px; overflow-y: auto;";
   document.body.append(box);
   track(() => box.remove());
   const { root } = createRoot(longDocument());
   box.append(root);
   // aside の右端に依らないことを確かめるため、描く先の要素をスクロールする要素より狭くして左に寄せる
-  root.style.width = "700px";
+  root.style.width = "50%";
   root.style.setProperty("--mdmark-sticky-top", "8px");
   const result = attachSideToc({
     el: root,
@@ -571,9 +571,14 @@ test("test_attach_side_toc_when_hover_panel_placed", async () => {
       getComputedStyle(root).getPropertyValue("--mdmark-space"),
     ) * rootFontSize();
   const expectedTop = `${100 + 8 + space}px`;
+  // スクロールする要素の右端（スクロールバーを除き、画面からはみ出す分は画面の端）から 1rem
+  const { clientWidth } = document.documentElement;
   const boxRect = box.getBoundingClientRect();
-  const expectedEnd = () =>
-    `${document.documentElement.clientWidth - (boxRect.left + box.clientLeft + box.clientWidth) + rootFontSize()}px`;
+  const boxRight = Math.min(
+    boxRect.left + box.clientLeft + box.clientWidth,
+    clientWidth,
+  );
+  const expectedEnd = () => `${clientWidth - boxRight + rootFontSize()}px`;
   // 実行・検証: 付けた直後
   expect(panelVariable(aside, "--mdmark-side-toc-panel-top")).toBe(expectedTop);
   expect(panelVariable(aside, "--mdmark-side-toc-panel-end")).toBe(
