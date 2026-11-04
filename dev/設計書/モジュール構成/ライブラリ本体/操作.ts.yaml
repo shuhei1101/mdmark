@@ -1367,7 +1367,7 @@ functions:
       - name: test_attach_side_toc_when_hover_rail_placed
         summary: 右端の線の位置と高さを、aside の上端・見えている枠の上端と下端から決める
         case: 正常
-        condition: '上端が画面の 100px の位置にある高さ 400px の縦にスクロールする要素の中に、描く先の要素の上に高さ 200px の要素と、下に高さ 300px の要素を置き、見出しが 3 つの長い本文を `--mdmark-sticky-top: 8px` で `mode: "hover"` で付け、描く先の要素の下端が見えている枠の下端より下にある位置（文書の末尾の手前）と、描く先の要素の下の要素までスクロールした位置（要素の末尾）で、それぞれ次の描画を待つ'
+        condition: '上端が画面の 100px の位置にある高さ 400px の縦にスクロールする要素の中に、描く先の要素の上に高さ 200px の要素と、下に高さ 450px の要素を置き（末尾までスクロールすると、描く先の要素の下端が線の上端より上に来る高さ）、見出しが 3 つの長い本文を `--mdmark-sticky-top: 8px` で `mode: "hover"` で付け、描く先の要素の下端が見えている枠の下端より下にある位置（文書の末尾の手前）と、描く先の要素の下の要素までスクロールした位置（要素の末尾）で、それぞれ次の描画を待つ'
         mock: なし
         expected: スクロールの前は `--mdmark-side-toc-rail-top` が aside の上端（`--mdmark-side-toc-panel-top` より大きい）。文書の末尾の手前では `100 + 8 + --mdmark-space`（px）で、`--mdmark-side-toc-rail-height` が `100 + 400 - --mdmark-side-toc-rail-top - --mdmark-space`（px）、aside が `data-rail-outside` を持たず、右端の線の `getBoundingClientRect().top` が `--mdmark-side-toc-rail-top` と等しい。要素の末尾では、描く先の要素の下端が線の上端より上にあるため `--mdmark-side-toc-rail-height` が `0px` で、aside が `data-rail-outside` を持ち、右端の線が表示されていない
     status: planned
