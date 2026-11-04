@@ -1,0 +1,58 @@
+/* コードブロック・ファイルツリーの折り返しの規則（#328 で共有するアセット）。
+   実装では src/index.css に足す */
+
+/* 折り返しの既定: 層の外に、要素名だけの pre より詳細度の高いセレクタで置く。
+   使う側の要素名だけの pre への汎用の CSS（white-space: pre-wrap など）で既定の「折り返さない」を変えない */
+.mdmark pre.mdmark-code-lines {
+  white-space: pre;
+  overflow-wrap: normal;
+}
+
+.mdmark .mdmark-tree .mdmark-tree-list {
+  white-space: nowrap;
+  overflow-wrap: normal;
+}
+
+/* code の印の wrap: 行を枠の幅で折り返す。行番号と行頭の印は折り返した行の 1 行目にだけ出る */
+.mdmark pre.mdmark-code-lines.mdmark-code-wrap {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+
+  code {
+    width: auto;
+  }
+}
+
+/* tree の印の wrap: 名前と注釈を項目の中で折り返す。続きの行は名前の頭に揃え、罫線と入れ子の位置は変えない */
+.mdmark .mdmark-tree.mdmark-tree-wrap .mdmark-tree-list {
+  white-space: normal;
+  overflow-x: visible;
+
+  .mdmark-tree-row {
+    flex-wrap: wrap;
+    align-items: flex-start;
+  }
+
+  .mdmark-tree-head {
+    flex: 0 1 auto;
+    align-items: flex-start;
+    min-width: 0;
+
+    > .mdmark-icon,
+    > .mdmark-tree-spacer {
+      margin-block-start: 0.2em;
+    }
+  }
+
+  /* 注釈の列を揃えず、名前の後ろに続けて折り返す */
+  .mdmark-tree-row:has(.mdmark-tree-note) > .mdmark-tree-head {
+    min-width: 0;
+    margin-inline-end: 1em;
+  }
+
+  .mdmark-tree-label,
+  .mdmark-tree-note {
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+}

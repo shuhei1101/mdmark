@@ -29,6 +29,9 @@
   <link rel="stylesheet" href="../../refs/275/assets/code-block.css">
   <link rel="stylesheet" href="../../refs/275/assets/code-block-print.css" media="print" data-print-styles>
   <!-- 配色の切り替え -->
+  <!-- 折り返しの規則（#328 で共有するアセット）と、使う側の pre への汎用の CSS の見本 -->
+  <link rel="stylesheet" href="../../refs/328/assets/wrap.css">
+  <link rel="stylesheet" href="./style.css">
   <script src="../../refs/16/assets/sample.js" defer></script>
   <!-- モックの「印刷の見え方」の切り替え -->
   <script src="../../refs/65/assets/code-block.js" defer></script>
@@ -323,6 +326,45 @@ print(f"{len(docs)} 件を描きました", None, True)</code></pre>
   <pre class="mdmark-code-lines mdmark-code-numbered mdmark-code-signs" tabindex="0" aria-label="コード: src/render/syntax/a-file-name-that-is-much-longer-than-the-box-width-on-phones.ts"><code class="language-ts" style="--mdmark-code-digits: 1"><span class="mdmark-code-line" data-line="1"><span class="mdmark-code-text"><span class="hljs-keyword">const</span> url = <span class="hljs-string">&quot;https://cdn.jsdelivr.net/gh/shuhei1101/mdmark@v0.6.0/dist/index.js&quot;</span>;</span></span>
 <span class="mdmark-code-line" data-line="2" data-kind="del"><span class="mdmark-code-text"><span class="hljs-keyword">export</span> <span class="hljs-keyword">const</span> <span class="hljs-title function_">decorate</span> = (<span class="hljs-params"><span class="hljs-attr">tokens</span>: <span class="hljs-title class_">Token</span>[], <span class="hljs-attr">options</span>: { title?: <span class="hljs-built_in">string</span>; lines: <span class="hljs-built_in">boolean</span>; highlight: <span class="hljs-built_in">number</span>[] }</span>) =&gt; tokens;</span></span>
 <span class="mdmark-code-line" data-line="3" data-kind="add"><span class="mdmark-code-text"><span class="hljs-keyword">export</span> <span class="hljs-keyword">const</span> decorate = (<span class="hljs-attr">tokens</span>: <span class="hljs-title class_">Token</span>[], <span class="hljs-attr">options</span>: <span class="hljs-title class_">CodeBlockOptions</span>, <span class="hljs-attr">warnings</span>: <span class="hljs-title class_">SyntaxWarning</span>[]): <span class="hljs-title class_">Token</span>[] =&gt; <span class="hljs-title function_">applyCodeBlockOptions</span>(tokens, options, warnings);</span></span></code></pre>
+</figure>
+        </article>
+      </section>
+
+      <!-- 折り返す（#294）: code の印の wrap。長い行を枠の幅で折り返し、行番号は折り返した行の 1 行目にだけ出る。コピーには折り返しの改行が入らない -->
+      <section aria-labelledby="state-wrap">
+        <h2 class="catalog-label" id="state-wrap">折り返す（code: lines wrap）と、印の無いブロック（横スクロール）</h2>
+        <article class="mdmark">
+<figure class="mdmark-code">
+  <figcaption class="mdmark-code-title"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/></svg>app.ts</figcaption>
+  <pre class="mdmark-code-lines mdmark-code-numbered mdmark-code-wrap" tabindex="0" aria-label="コード: app.ts"><code class="language-ts" style="--mdmark-code-digits: 1"><span class="mdmark-code-line" data-line="1"><span class="mdmark-code-text"><span class="hljs-keyword">import</span> { mount } <span class="hljs-keyword">from</span> <span class="hljs-string">&quot;mdmark&quot;</span>;</span></span>
+<span class="mdmark-code-line" data-line="2"><span class="mdmark-code-text"><span class="hljs-keyword">const</span> url = <span class="hljs-string">&quot;https://cdn.jsdelivr.net/gh/shuhei1101/mdmark@v0.10.0/dist/index.js&quot;</span>; <span class="hljs-comment">// 版を固定した URL から配布物を読み、描く先の要素に文書を描く</span></span></span>
+<span class="mdmark-code-line" data-line="3"><span class="mdmark-code-text"><span class="hljs-title function_">mount</span>(<span class="hljs-variable language_">document</span>.<span class="hljs-title function_">querySelector</span>(<span class="hljs-string">&quot;#doc&quot;</span>), markdown);</span></span></code></pre>
+</figure>
+<figure class="mdmark-code">
+  <figcaption class="mdmark-code-title"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/></svg>app.ts</figcaption>
+  <pre class="mdmark-code-lines mdmark-code-numbered" tabindex="0" aria-label="コード: app.ts"><code class="language-ts" style="--mdmark-code-digits: 1"><span class="mdmark-code-line" data-line="1"><span class="mdmark-code-text"><span class="hljs-keyword">import</span> { mount } <span class="hljs-keyword">from</span> <span class="hljs-string">&quot;mdmark&quot;</span>;</span></span>
+<span class="mdmark-code-line" data-line="2"><span class="mdmark-code-text"><span class="hljs-keyword">const</span> url = <span class="hljs-string">&quot;https://cdn.jsdelivr.net/gh/shuhei1101/mdmark@v0.10.0/dist/index.js&quot;</span>; <span class="hljs-comment">// 版を固定した URL から配布物を読み、描く先の要素に文書を描く</span></span></span>
+<span class="mdmark-code-line" data-line="3"><span class="mdmark-code-text"><span class="hljs-title function_">mount</span>(<span class="hljs-variable language_">document</span>.<span class="hljs-title function_">querySelector</span>(<span class="hljs-string">&quot;#doc&quot;</span>), markdown);</span></span></code></pre>
+</figure>
+        </article>
+      </section>
+
+      <!-- 使う側の pre への汎用の CSS（#294）: 使う側が層の外に .md pre { white-space: pre-wrap; overflow-wrap: anywhere } を書いても、印の無いブロックは折り返さず、JSON の字下げも崩れない。wrap のブロックは折り返す -->
+      <section aria-labelledby="state-host-pre">
+        <h2 class="catalog-label" id="state-host-pre">使う側の pre への汎用の CSS を当てた文書（印の無いブロックは折り返さない）</h2>
+        <article class="mdmark mock-host-pre">
+<figure class="mdmark-code">
+  <pre class="mdmark-code-lines mdmark-code-numbered" tabindex="0" aria-label="コード"><code class="language-json" style="--mdmark-code-digits: 1"><span class="mdmark-code-line" data-line="1"><span class="mdmark-code-text">{</span></span>
+<span class="mdmark-code-line" data-line="2"><span class="mdmark-code-text">  <span class="hljs-attr">&quot;title&quot;</span>: <span class="hljs-string">&quot;問い合わせの処理&quot;</span>,</span></span>
+<span class="mdmark-code-line" data-line="3"><span class="mdmark-code-text">  <span class="hljs-attr">&quot;nodes&quot;</span>: [</span></span>
+<span class="mdmark-code-line" data-line="4"><span class="mdmark-code-text">    { <span class="hljs-attr">&quot;id&quot;</span>: <span class="hljs-string">&quot;recv&quot;</span>, <span class="hljs-attr">&quot;kind&quot;</span>: <span class="hljs-string">&quot;script&quot;</span>, <span class="hljs-attr">&quot;name&quot;</span>: <span class="hljs-string">&quot;問い合わせを受け取る&quot;</span>, <span class="hljs-attr">&quot;href&quot;</span>: <span class="hljs-string">&quot;https://example.com/spec&quot;</span> }</span></span>
+<span class="mdmark-code-line" data-line="5"><span class="mdmark-code-text">  ]</span></span>
+<span class="mdmark-code-line" data-line="6"><span class="mdmark-code-text">}</span></span></code></pre>
+</figure>
+<figure class="mdmark-code">
+  <pre class="mdmark-code-lines mdmark-code-wrap" tabindex="0" aria-label="コード"><code class="language-ts" style="--mdmark-code-digits: 1"><span class="mdmark-code-line" data-line="1"><span class="mdmark-code-text"><span class="hljs-keyword">import</span> { mount } <span class="hljs-keyword">from</span> <span class="hljs-string">&quot;mdmark&quot;</span>;</span></span>
+<span class="mdmark-code-line" data-line="2"><span class="mdmark-code-text"><span class="hljs-keyword">const</span> url = <span class="hljs-string">&quot;https://cdn.jsdelivr.net/gh/shuhei1101/mdmark@v0.10.0/dist/index.js&quot;</span>; <span class="hljs-comment">// 版を固定した URL から配布物を読み、描く先の要素に文書を描く</span></span></span>
+<span class="mdmark-code-line" data-line="3"><span class="mdmark-code-text"><span class="hljs-title function_">mount</span>(<span class="hljs-variable language_">document</span>.<span class="hljs-title function_">querySelector</span>(<span class="hljs-string">&quot;#doc&quot;</span>), markdown);</span></span></code></pre>
 </figure>
         </article>
       </section>

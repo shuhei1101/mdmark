@@ -81,6 +81,58 @@
         </article>
       </section>
 
+      <!-- 座標を省いた判定フローチャート（#272）: 定義に x・y・w・h と線の points・図の width・height を書かず、mdmark が配置した結果。
+           開始から上から下へ質問を並べ、次の質問へ続く側を下、アクションと結果へ進む側を右へ置く。両方が結果なら NO を下、YES を右へ置く -->
+      <section aria-labelledby="state-judgement-auto">
+        <h2 class="catalog-label" id="state-judgement-auto">座標を省いた判定フローチャート（自動で配置した結果）</h2>
+        <article class="mdmark">
+<pre><code>{ "title": "問い合わせの返信の判定", "scope": "問い合わせを受け取ったとき", "updated": "2026-11-04",
+  "nodes": [
+    { "id": "start", "kind": "start", "name": "問い合わせを受け取る" },
+    { "id": "q1", "kind": "question", "name": "よくある質問で答えられるか" },
+    { "id": "a1", "kind": "action", "name": "よくある質問のリンクを添える" },
+    { "id": "q2", "kind": "question", "name": "担当者が答えられるか" },
+    { "id": "r1", "kind": "result", "name": "返信を送信する" },
+    { "id": "r2", "kind": "result", "name": "開発に起票する" } ],
+  "wires": [
+    { "id": "j-start", "from": "start", "to": "q1", "line": "flow" },
+    { "id": "j-q1-yes", "from": "q1", "to": "a1", "line": "flow", "label": "YES" },
+    { "id": "j-q1-no", "from": "q1", "to": "q2", "line": "flow", "label": "NO" },
+    { "id": "j-a1", "from": "a1", "to": "r1", "line": "flow" },
+    { "id": "j-q2-yes", "from": "q2", "to": "r1", "line": "flow", "label": "YES" },
+    { "id": "j-q2-no", "from": "q2", "to": "r2", "line": "flow", "label": "NO" } ] }</code></pre>
+          <figure data-mock-diagram="judgement-auto"></figure>
+        </article>
+      </section>
+
+      <!-- リンク先を持つノード（#310）: 箱の全体がリンク。名前は本文のリンクと同じ色と下線、文字の上も押せる形のカーソル。リンク先を持たない箱は今のまま -->
+      <section aria-labelledby="state-link">
+        <h2 class="catalog-label" id="state-link">リンク先を持つノード（受け取る・分類するがリンク。記録するはリンク先を持たない）</h2>
+        <article class="mdmark">
+          <figure data-mock-diagram="linked"></figure>
+        </article>
+      </section>
+
+      <!-- リンク先を持つノードのホバーとフォーカス: ホバーは箱の地に種類の色をうっすら敷く。フォーカスは箱の外側に枠 -->
+      <section aria-labelledby="state-link-hover">
+        <h2 class="catalog-label" id="state-link-hover">リンク先を持つノードのホバー（受け取る）とフォーカス（分類する）</h2>
+        <article class="mdmark">
+          <figure data-mock-diagram="linked" data-mock-link-state></figure>
+        </article>
+      </section>
+
+      <!-- 許可しないリンク先（#310）: javascript: と id: のリンク先は本文のリンクと同じ許可で落とし、箱をリンクにせず書き方の警告を出す -->
+      <section aria-labelledby="state-link-blocked">
+        <h2 class="catalog-label" id="state-link-blocked">許可しないリンク先（書き方の警告。箱はリンクにしない）</h2>
+        <article class="mdmark">
+<div class="mdmark-syntax-warning">
+  <p class="mdmark-syntax-warning-title"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg>書き方の警告</p>
+  <p>フロー図の部品の定義のリンク先を使えません。箱 <code>recv</code> のリンク先 <code>javascript:alert(1)</code>、箱 <code>classify</code> のリンク先 <code>id:spec#items</code> は、<code>http</code>・<code>https</code>・<code>mailto</code>・相対パスではありません。この 2 つの箱はリンクにせずに描いています。</p>
+</div>
+          <figure data-mock-diagram="linked-blocked"></figure>
+        </article>
+      </section>
+
       <!-- 知らない種類: 書き方の警告の「使える種類」に、追加した 4 種類が並ぶ -->
       <section aria-labelledby="state-unknown-kind">
         <h2 class="catalog-label" id="state-unknown-kind">知らない種類（書き方の警告の使える種類に追加した種類が並ぶ）</h2>
