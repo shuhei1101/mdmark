@@ -924,8 +924,8 @@ elements:
       - name: sections
         value: '`sections` の機能がオンで、文書に節が 1 つ以上あるか'
     position: 描く先の要素 > 本文の列の右（狭い幅では本文の列の上の帯）
-    description: 本文の列の右に置き、画面に留める目次。hover は右端の線だけを出し、指すかフォーカスで目次を本文に重ねて出す。fixed は目次を出すボタンでサイドバーを開閉する。描く先の要素の幅が 48rem 未満のときは、`--mdmark-sticky-top` の位置に留める帯で今いる節の見出しと目次を出すボタンを出し、目次は帯の下に本文へ重ねて開く。パネルの `nav` は `aria-label="右側の目次"` で、本文の目次（`aria-label="目次"`）とランドマークの名前を分ける。印刷では出さない
-    label: 目次
+    description: 本文の列の右に置き、画面に留める目次。hover は右端の線だけを出し、指すかフォーカスで目次を本文に重ねて出す。重ねて出す目次の枠は画面に固定し、文書のどこを読んでいても、見えている枠の上端（スクロールする場所の上端に `--mdmark-sticky-top` を足した位置）から `--mdmark-space` 下に出し、右端の線の上端から線 3 本分の位置まで届く高さを下限に持つ（線から枠へポインターを動かしても hover が切れない）。目次の上端にはタイトルを置かず、すべて展開・すべて折りたたむを左、ピン止めを右に 1 行で並べる。fixed は目次を出すボタンでサイドバーを開閉する。描く先の要素の幅が 48rem 未満のときは、`--mdmark-sticky-top` の位置に留める帯で今いる節の見出しと目次を出すボタンを出し、目次は帯の下に本文へ重ねて開く。パネルの `nav` は `aria-label="右側の目次"` で、本文の目次（`aria-label="目次"`）とランドマークの名前を分ける。印刷では出さない
+    label: 右側の目次（パネルの `nav` の `aria-label`。見えるタイトルは持たない）
     io: 表示
     visible_when: '`side-toc` がオンで、文書に h1〜h3 の見出しが 1 つ以上あるとき。差分を開いている間と印刷では出さない'
     initial_value: 目次を出していない・ピン止めしていない状態（`mount` のたびに戻し、`update` では保つ）。今いる節は画面の高さの 25% の線より上の最後の見出し
@@ -956,8 +956,8 @@ elements:
   - name: 目次のピン止めのボタン
     id: side-toc-pin
     kind: button
-    position: 描く先の要素 > 右側の目次 > タイトルの横
-    description: ピンのアイコンだけのボタン。`aria-pressed` でピン止めしているかを示す
+    position: 描く先の要素 > 右側の目次 > 上端の右
+    description: 点線の右の列のアイコン（lucide の `panel-right-dashed`）だけのボタン。押した後は実線の右の列のアイコン（`panel-right`）と選択中の背景にする。`aria-pressed` でピン止めしているかを示す
     label: 目次をピン止め（`aria-label`・`title`）
     visible_when: hover の出し方で目次を出しているとき（狭い幅では出さない）
     initial_value: '`aria-pressed="false"`'
@@ -970,7 +970,7 @@ elements:
   - name: すべて展開のボタン
     id: fold-all-open
     kind: button
-    position: 描く先の要素 > 右側の目次 > 上部
+    position: 描く先の要素 > 右側の目次 > 上端の左
     description: 文字を持たず、上下に開く矢印のアイコンだけを持つボタン
     label: すべて展開（`aria-label`・`title`）
     visible_when: 右側の目次を出していて、`sections` がオンで文書に節が 1 つ以上あるとき
@@ -984,7 +984,7 @@ elements:
   - name: すべて折りたたむのボタン
     id: fold-all-close
     kind: button
-    position: 描く先の要素 > 右側の目次 > 上部
+    position: 描く先の要素 > 右側の目次 > 上端の左
     description: 文字を持たず、内側へ閉じる矢印のアイコンだけを持つボタン
     label: すべて折りたたむ（`aria-label`・`title`）
     visible_when: すべて展開のボタンと同じ

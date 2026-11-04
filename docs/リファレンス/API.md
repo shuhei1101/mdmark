@@ -824,11 +824,11 @@ handle.destroy();
 | `--mdmark-padding` | `1.5rem` | 描く先の要素の内側の余白 |
 | `--mdmark-radius` | `4px` | 角丸の大きさ（描く先の要素・コードブロック・引用・折り畳み・読み込み中の枠・知らせの枠・書き方の警告・注意書き）。表の外側の枠は 2 倍 |
 | `--mdmark-heading-weight` | `700` | 見出しの太さ |
-| `--mdmark-heading-rule-width` | `0px` | 見出し 1・見出し 2 の下の線の太さ。`0` のままだと線が出ない |
+| `--mdmark-heading-rule-width` | `1px` | 見出し 1・見出し 2 の下の線の太さ。線を出したくないときは `0` を指定する |
 | `--mdmark-table-rule-inline` | `1px` | 表のセルの左右の線の太さ（`plain` の種類は `0`） |
 | `--mdmark-back-to-top-size` | `2.75rem` | 先頭へ戻るボタンの幅と高さ |
 | `--mdmark-back-to-top-gap` | `1rem` | 先頭へ戻るボタンと、スクロールする場所の右端・下端の間 |
-| `--mdmark-sticky-top` | `0px` | 表の見出し行と、右側の目次・狭い幅の帯を留める位置の、画面の上端からのずれ。ページの上端に固定したヘッダーを持つ使う側は、その高さを渡す |
+| `--mdmark-sticky-top` | `0px` | 表の見出し行と、右側の目次・狭い幅の帯を留める位置と、hover で開く右側の目次の枠の上端の、画面の上端からのずれ。ページの上端に固定したヘッダーを持つ使う側は、その高さを渡す |
 | `--mdmark-color-footnote-ref` | `var(--mdmark-color-link)` | 本文の脚注の番号（`[1]`）の色 |
 | `--mdmark-color-term-underline` | `var(--mdmark-color-muted)` | 用語の語と文書の別名の、破線の下線の色 |
 | `--mdmark-color-avoided-underline` | `var(--mdmark-color-notice-border)` | やめた言い方の語の、波線の下線の色 |
@@ -863,6 +863,7 @@ handle.destroy();
 | `--mdmark-color-muted` | `#52525b` | `#b4b4bc` | 引用・読み込み中の枠の文字 |
 | `--mdmark-color-link` | `#0f766e` | `#2dd4bf` | リンクとフォーカスの枠 |
 | `--mdmark-color-border` | `#e4e4e7` | `#26262b` | 枠・罫線・読み込み中の枠の破線 |
+| `--mdmark-color-border-muted` | `color-mix(in oklab, var(--mdmark-color-border) 70%, var(--mdmark-color-bg))` | 同じ | 見出し 1・見出し 2 の下の線。テーマの `--mdmark-color-border` と `--mdmark-color-bg` から作るため、テーマごとの値を持たない。`.mdmark` で宣言するため、上書きは `:root` ではなく `.mdmark` に記載する |
 | `--mdmark-color-surface` | `#f4f4f5` | `#1b1b1f` | コード・引用の面 |
 | `--mdmark-color-scroll-shadow` | `rgb(24 24 27 / 0.14)` | `rgb(0 0 0 / 0.6)` | 表とコードブロックに横の続きがあることを示す影 |
 | `--mdmark-color-notice-bg` | `#f9eee8` | `#2a251d` | 知らせの枠の地 |

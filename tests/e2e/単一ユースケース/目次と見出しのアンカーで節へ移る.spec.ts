@@ -277,6 +277,74 @@ test("test_normal_when_side_toc_pinned", async ({ page }) => {
   await expectPanelShown(page, false);
 });
 
+/** 右端の線の上端の近くにポインターを置く（線は画面より高いため、locator の hover だとスクロールしてしまう） */
+async function hoverRailTop(page: Page): Promise<void> {
+  const box = await page.locator("#doc .mdmark-side-toc-rail").boundingBox();
+  if (box === null) {
+    throw new Error("右端の線が画面に無い");
+  }
+  await page.mouse.move(box.x + box.width / 2, Math.max(box.y, 0) + 8);
+}
+
+/** hover で開く目次の枠の上端に期待する位置: 画面の上端から --mdmark-sticky-top と --mdmark-space を足した位置（px） */
+function expectedPanelTop(page: Page): Promise<number> {
+  return page.locator("#doc").evaluate((doc) => {
+    const probe = document.createElement("span");
+    probe.style.marginTop =
+      "calc(var(--mdmark-sticky-top, 0px) + var(--mdmark-space))";
+    doc.append(probe);
+    const top = Number.parseFloat(getComputedStyle(probe).marginTop);
+    probe.remove();
+    return top;
+  });
+}
+
+/** 右側の目次の枠の上端（px） */
+async function panelTop(page: Page): Promise<number> {
+  const box = await sidePanel(page).boundingBox();
+  if (box === null) {
+    throw new Error("右側の目次の枠が無い");
+  }
+  return box.y;
+}
+
+// 文書の途中でも先頭でも、hover で開く目次を画面の上端寄りの同じ位置に出し、上端にはタイトルを置かず 3 つのボタンを並べる（正常シナリオ（文書の途中で右側の目次をホバーで出す））
+test("test_normal_when_side_toc_hovered_after_scroll", async ({ page }) => {
+  // 準備
+  await mountSideToc(page);
+  const expectedTop = await expectedPanelTop(page);
+  // 実行: 「使い方」の節までスクロールし、右端にポインターを置く
+  await page.locator('#doc [id="使い方"]').scrollIntoViewIfNeeded();
+  await hoverRailTop(page);
+  // 検証: 上端の構成
+  await expectPanelShown(page, true);
+  const head = sidePanel(page).locator(".mdmark-side-toc-head");
+  await expect(head.locator("button")).toHaveCount(3);
+  await expect(head.locator('[data-fold-all="open"]')).toHaveAttribute(
+    "aria-label",
+    "すべて展開",
+  );
+  await expect(head.locator('[data-fold-all="close"]')).toHaveAttribute(
+    "aria-label",
+    "すべて折りたたむ",
+  );
+  await expect(head.locator(".mdmark-side-toc-pin")).toHaveAttribute(
+    "aria-label",
+    "目次をピン止め",
+  );
+  await expect(head).not.toContainText("目次");
+  // 検証: 文書の途中で開いた枠の上端
+  expect(await panelTop(page)).toBeCloseTo(expectedTop, 0);
+  // 実行: ポインターを本文へ動かし、文書の先頭まで戻って右端にポインターを置く
+  await page.mouse.move(10, 400);
+  await expectPanelShown(page, false);
+  await page.evaluate(() => window.scrollTo(0, 0));
+  await hoverRailTop(page);
+  // 検証: スクロールしたときと同じ位置
+  await expectPanelShown(page, true);
+  expect(await panelTop(page)).toBeCloseTo(expectedTop, 0);
+});
+
 // fixed は目次を出すボタンで開閉し、右端にポインターを置いても出ない（正常シナリオ（右側の目次をサイドバーで出す））
 test("test_normal_when_side_toc_fixed", async ({ page }) => {
   // 準備

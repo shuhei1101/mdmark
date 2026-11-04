@@ -1008,7 +1008,7 @@ functions:
   - name: renderSideToc
     title: 右側の目次を描く
     container: src/parts/side-toc.ts
-    summary: 部品設計『右側の目次』の HTML を返す。深いレベルの見出しは直前の浅いレベルの入れ子にし、右端の線を見出しの数だけ並べる。項目のリンクは `href="#{id}"` と、見出しの ID を持つ `data-heading-id` を持つ。`sections` が `false` ならすべて展開・すべて折りたたむを置かない。アイコンは lucide の ellipsis・pin・chevrons-up-down・chevrons-down-up（`src/parts/icons.ts` に Ellipsis と ChevronsDownUp を追加する）
+    summary: 部品設計『右側の目次』の HTML を返す。深いレベルの見出しは直前の浅いレベルの入れ子にし、右端の線を見出しの数だけ並べる。項目のリンクは `href="#{id}"` と、見出しの ID を持つ `data-heading-id` を持つ。`sections` が `false` ならすべて展開・すべて折りたたむを置かない。目次の頭にはタイトルを置かず、まとめて開閉するボタンの並び（`sections` が `true` のとき）とピン止めのボタンをこの順に置く。ピン止めのボタンには押す前のアイコン（`panel-right-dashed`、`mdmark-side-toc-pin-off`）と押した後のアイコン（`panel-right`、`mdmark-side-toc-pin-on`）を両方置き、CSS が `aria-pressed` で片方を出す。アイコンは lucide の ellipsis・panel-right-dashed・panel-right・chevrons-up-down・chevrons-down-up（`src/parts/icons.ts` に PanelRightDashed と PanelRight を追加する。`pin` は表のピン止めで使うため残す）
     kind: 関数
     scope: internal
     args:
@@ -1027,7 +1027,7 @@ functions:
         summary: 見出しを入れ子にし、右端の線と読み上げ名を付ける
         condition: '`手引き`（h1）・`導入`（h2）・`前提`（h3）・`使い方`（h2）を既定の引数で渡す'
         mock: なし
-        expected: '`data-mode="hover"`、`nav` が `aria-label="右側の目次"`、`手引き` の `li` の中に `導入`・`使い方`、`導入` の `li` の中に `#前提` のリンクがあり、`data-heading-id="前提"` を持つ。右端の線が 4 本で `aria-hidden="true"`。目次を出すボタンが `aria-expanded="false"` で `aria-controls="mdmark-side-toc-panel"`、ピン止めが `aria-pressed="false"`、`data-fold-all="open"` と `data-fold-all="close"` のボタンがある'
+        expected: '`data-mode="hover"`、`nav` が `aria-label="右側の目次"`、`手引き` の `li` の中に `導入`・`使い方`、`導入` の `li` の中に `#前提` のリンクがあり、`data-heading-id="前提"` を持つ。右端の線が 4 本で `aria-hidden="true"`。目次を出すボタンが `aria-expanded="false"` で `aria-controls="mdmark-side-toc-panel"`、ピン止めが `aria-pressed="false"` で `mdmark-side-toc-pin-off` と `mdmark-side-toc-pin-on` の 2 つのアイコンを持ち、`data-fold-all="open"` と `data-fold-all="close"` のボタンがある。`mdmark-side-toc-head` の子が `mdmark-side-toc-actions` と `mdmark-side-toc-pin` の順で、`mdmark-side-toc-title` と「目次」の文字が無い'
       - name: test_render_side_toc_when_fixed_open
         case: 正常
         summary: 出し方と出している状態を属性に写す
@@ -1039,7 +1039,7 @@ functions:
         summary: sections が false ならすべて展開・すべて折りたたむを置かない
         condition: '`sections: false`'
         mock: なし
-        expected: '`data-fold-all` を持つボタンが無い'
+        expected: '`data-fold-all` を持つボタンが無く、`mdmark-side-toc-head` の子が `mdmark-side-toc-pin` だけ'
       - name: test_render_side_toc_when_current
         case: 正常
         summary: 今いる節の項目・線・狭い幅の帯の文字を付ける

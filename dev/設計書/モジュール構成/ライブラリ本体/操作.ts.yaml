@@ -1261,7 +1261,7 @@ functions:
   - name: attachSideToc
     title: 右側の目次を付ける
     container: src/interact/side-toc.ts
-    summary: 描く先の要素の子を本文の列（`div.mdmark-content`）に包み、その後ろに `renderSideToc` の右側の目次を置いて操作を付ける。見出しが無ければ何も置かず `content` に `el` を返す。目次を出すボタンで `data-open` と `aria-expanded`、ピン止めで `data-pinned` と `aria-pressed` を切り替えて `state` に控える。出したパネルで Esc を押すとパネルを隠して目次を出すボタンへフォーカスを戻す。すべて展開・すべて折りたたみで `foldAllSections` を呼ぶ。項目を押すと、リンクの `data-heading-id` の ID の見出しを `revealTarget` で開いて移り（`href` は読まない。まとめた HTML は `rewriteLinks` で `href` を書き換える）（既定の動きは止めない）、`el` の幅が `NARROW_WIDTH_REM` 未満ならパネルを隠す。IntersectionObserver・`hashchange`・本文の列の `click` と `keyup`・すべて展開とすべて折りたたむの押下を受けて、次の描画のタイミングに今いる節を決め直す。決め直すときは、祖先に `hidden` を持つ見出し（閉じた節の中身と選ばれていないタブの中身の中の見出し）を除いて `pickCurrentHeading` に渡し、決まった見出しの項目に `aria-current="location"`、右端の線のその見出しの線に `data-current` を付け、目次を出すボタンの `mdmark-side-toc-current`（狭い幅の帯に出る文字）に見出しの文字を置く。外す関数は包む前の子の並びへ戻す
+    summary: 描く先の要素の子を本文の列（`div.mdmark-content`）に包み、その後ろに `renderSideToc` の右側の目次を置いて操作を付ける。見出しが無ければ何も置かず `content` に `el` を返す。目次を出すボタンで `data-open` と `aria-expanded`、ピン止めで `data-pinned` と `aria-pressed` を切り替えて `state` に控える。出したパネルで Esc を押すとパネルを隠して目次を出すボタンへフォーカスを戻す。すべて展開・すべて折りたたみで `foldAllSections` を呼ぶ。項目を押すと、リンクの `data-heading-id` の ID の見出しを `revealTarget` で開いて移り（`href` は読まない。まとめた HTML は `rewriteLinks` で `href` を書き換える）（既定の動きは止めない）、`el` の幅が `NARROW_WIDTH_REM` 未満ならパネルを隠す。IntersectionObserver・`hashchange`・本文の列の `click` と `keyup`・すべて展開とすべて折りたたむの押下を受けて、次の描画のタイミングに今いる節を決め直す。決め直すときは、祖先に `hidden` を持つ見出し（閉じた節の中身と選ばれていないタブの中身の中の見出し）を除いて `pickCurrentHeading` に渡し、決まった見出しの項目に `aria-current="location"`、右端の線のその見出しの線に `data-current` を付け、目次を出すボタンの `mdmark-side-toc-current`（狭い幅の帯に出る文字）に見出しの文字を置く。hover の出し方では、付けたときと、`findScrollContainer` のスクロールする場所と画面の `scroll`・`resize` のたびに、hover で開く目次の枠の位置を aside の `--mdmark-side-toc-panel-top`（見えている枠の上端 = スクロールする場所が画面全体なら 0、要素ならその上端に、`--mdmark-sticky-top` と `--mdmark-space` を足した位置）・`--mdmark-side-toc-panel-end`（画面の右端から aside の右端まで）・`--mdmark-side-toc-panel-min-height`（右端の線の上端に `SIDE_TOC_RAIL_COVER_REM` を足した位置までの高さ。0 未満は 0）に px で入れる。外す関数は包む前の子の並びへ戻し、位置を決める受け取りを外す
     kind: 関数
     scope: internal
     side_effects: '`el` の子を本文の列へ移し、右側の目次の要素を追加し、`state` を書き換える'
@@ -1278,6 +1278,7 @@ functions:
       - '#functions[pickCurrentHeading]'
       - '#functions[revealTarget]'
       - '#functions[foldAllSections]'
+      - '#functions[findScrollContainer]'
     unit_tests:
       - name: test_attach_side_toc
         case: 正常
@@ -1351,6 +1352,18 @@ functions:
         condition: '`attachSections` で閉じた `## 導入` の中の `### 注意` の項目の `href` を `#/a.md#注意` に書き換えてから押す'
         mock: '`Element.prototype.scrollIntoView` を記録する関数に差し替える'
         expected: '`導入` の中身が `hidden` を持たず、`注意` で `scrollIntoView` が呼ばれる'
+      - name: test_attach_side_toc_when_hover_panel_placed
+        summary: hover で開く目次の枠の位置を、見えている枠の上端と右端の線から決める
+        case: 正常
+        condition: '上端が画面の 100px の位置にある高さ 400px の縦にスクロールする要素の中に、見出しが 3 つの長い本文を描いた要素を置き、`--mdmark-sticky-top: 8px` で `mode: "hover"` で付け、要素を下へスクロールして次の描画を待つ'
+        expected: aside の `--mdmark-side-toc-panel-top` が、スクロールの前と後のどちらも `100 + 8 + --mdmark-space`（px）で、`--mdmark-side-toc-panel-end` が画面の右端から aside の右端までの幅。外した後にスクロールしても値が変わらない
+        mock: なし
+      - name: test_attach_side_toc_when_hover_panel_reaches_rail
+        summary: hover で開く目次の枠に、右端の線の上端から線 3 本分まで届く高さの下限を入れる
+        case: 正常
+        condition: '画面全体がスクロールするページで、描く先の要素の上に高さ 200px の要素を置いて `mode: "hover"` で付ける（文書の先頭で右端の線が枠の上端より下にある）'
+        expected: '`--mdmark-side-toc-panel-min-height` が、右端の線の上端に `SIDE_TOC_RAIL_COVER_REM` を足した位置から `--mdmark-side-toc-panel-top` を引いた高さ（px）。線が枠の上端より上に来るまでスクロールした後は `0px`'
+        mock: なし
     status: planned
     introduced:
       pr: 166
@@ -2103,3 +2116,10 @@ constants:
     status: planned
     introduced:
       pr: 275
+  - name: SIDE_TOC_RAIL_COVER_REM
+    title: 右端の線を枠で覆う高さ
+    container: src/interact/side-toc.ts
+    summary: hover で開く目次の枠が、右端の線の上端から届かせる高さ（rem）。線 3 本分で、線から枠へポインターを動かしても右側の目次の外を通らず hover が切れない
+    value: '2'
+    introduced:
+      pr: 320
