@@ -1,8 +1,9 @@
 /* 右側の目次の頭のカタログだけの規則（mdmark の層の外） */
 
-/* カタログの見本の描く先: 文書の並びの格子を使わず、見本を並びの中に置く */
+/* カタログの見本の描く先: 文書の並びの格子を使わず、見本を並びの中に置く。狭い幅の帯にしないよう、コンテナクエリの対象から外す */
 .catalog .mdmark {
   display: block;
+  container-type: normal;
   padding: 0;
   background: transparent;
 }

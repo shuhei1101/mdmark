@@ -36,11 +36,11 @@ function pinButton(icon, state) {
   return `<button class="mdmark-side-toc-pin ${state.className}" type="button" aria-pressed="${state.pressed}" aria-label="目次をピン止め" title="目次をピン止め">${iconSvg(name)}</button>`;
 }
 
-/** 右側の目次の枠: 頭（まとめて開閉するボタンとピン止め）と項目の並び */
-function panel({ head }) {
+/** 右側の目次の枠: 頭（まとめて開閉するボタンとピン止め）と項目の並び。カタログに並べる見本ごとに、ランドマークの名前へ見本の名前を添える */
+function panel({ head, name }) {
   return (
     '<div class="mdmark catalog-toc"><aside class="mdmark-side-toc" data-mode="hover" data-pinned>' +
-    '<nav class="mdmark-side-toc-panel" aria-label="右側の目次">' +
+    `<nav class="mdmark-side-toc-panel" aria-label="右側の目次（${name}）">` +
     `<div class="mdmark-side-toc-head">${head}</div>` +
     '<ul class="mdmark-side-toc-list"><li><a href="#c">問い合わせ窓口の見直し</a><ul>' +
     '<li><a href="#c" aria-current="location">導入</a><ul><li><a href="#c">前提</a></li></ul></li>' +
@@ -66,8 +66,8 @@ for (const option of OPTIONS) {
     "beforeend",
     `<section><h2 class="catalog-label">${option.label}</h2>` +
       `<ul class="catalog-states">${states}</ul>` +
-      `<ul class="catalog-states"><li class="catalog-state">${panel({ head: ACTIONS + pinButton(option.icon, STATES[0]) })}目次の頭（押す前）</li>` +
-      `<li class="catalog-state">${panel({ head: ACTIONS + pinButton(option.icon, STATES[3]) })}目次の頭（押した後）</li></ul></section>`,
+      `<ul class="catalog-states"><li class="catalog-state">${panel({ head: ACTIONS + pinButton(option.icon, STATES[0]), name: `${option.label}・押す前` })}目次の頭（押す前）</li>` +
+      `<li class="catalog-state">${panel({ head: ACTIONS + pinButton(option.icon, STATES[3]), name: `${option.label}・押した後` })}目次の頭（押した後）</li></ul></section>`,
   );
 }
 
@@ -75,7 +75,7 @@ for (const option of OPTIONS) {
 catalog.insertAdjacentHTML(
   "beforeend",
   '<section><h2 class="catalog-label">出し方と機能による頭の並び</h2><ul class="catalog-states">' +
-    `<li class="catalog-state">${panel({ head: ACTIONS })}fixed の出し方（ピン止めを出さない）</li>` +
-    `<li class="catalog-state">${panel({ head: pinButton("panel", STATES[0]) })}sections がオフの文書（ピン止めだけ）</li>` +
+    `<li class="catalog-state">${panel({ head: ACTIONS, name: "fixed の出し方" })}fixed の出し方（ピン止めを出さない）</li>` +
+    `<li class="catalog-state">${panel({ head: pinButton("panel", STATES[0]), name: "sections がオフの文書" })}sections がオフの文書（ピン止めだけ）</li>` +
     "</ul></section>",
 );

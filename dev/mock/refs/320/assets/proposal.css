@@ -65,13 +65,24 @@
 
 /* ---------- hover で開く目次の位置 ---------- */
 
-/* A（推奨）: 目次の枠を画面に固定し、上端を --mdmark-sticky-top に余白を足した位置に出す。
-   横の位置と、右端の線まで届く最小の高さは proposal.js が右端の線の位置から入れる */
+/* A（推奨）: 目次の枠を画面に固定し、上端を「見えている枠の上端（スクロールする場所の上端に --mdmark-sticky-top を足した位置）と、描いた文書の上端の低いほう」に余白を足した位置に出す。
+   上端・横の位置・右端の線まで届く最小の高さは proposal.js がスクロールのたびに入れる */
 :root[data-position="viewport"] .mdmark .mdmark-side-toc[data-mode="hover"]:not([data-pinned]) .mdmark-side-toc-panel {
   position: fixed;
-  inset-block-start: calc(var(--mdmark-sticky-top, 0px) + var(--mdmark-space));
+  inset-block-start: var(--proposal-panel-top, 0px);
   inset-inline-end: var(--proposal-panel-end, 0px);
   min-height: var(--proposal-panel-min-height, auto);
+}
+
+/* 撮影用の URL の ?open=1: ポインターを置いたときと同じく目次の枠を出したままにする（ポインターを置く操作は画面をスクロールさせるため） */
+:root[data-open] .mdmark .mdmark-side-toc[data-mode="hover"] .mdmark-side-toc-panel {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* 描く場所の「横のはみ出しを隠す祖先の中」: 祖先の overflow-x: hidden で、右側の目次の sticky が画面に留まらない使う側のページ */
+body[data-host="clip"] .scroll-box {
+  overflow-x: hidden;
 }
 
 /* ---------- 配色 ---------- */

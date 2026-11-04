@@ -48,18 +48,35 @@ export function applyPinIcon(pin, icon) {
   new MutationObserver(render).observe(pin, { attributes: true, attributeFilter: ["aria-pressed"] });
 }
 
-/** 案 A の位置: 目次の枠の右端を右側の目次の右端に合わせ、枠が右端の線の上端まで届く最小の高さを入れる */
+/** 描く先の要素に最も近い、縦にスクロールする祖先の要素を返す（無ければ null で、画面全体がスクロールする） */
+function scrollParent(element) {
+  for (let node = element.parentElement; node; node = node.parentElement) {
+    const { overflowY } = getComputedStyle(node);
+    if ((overflowY === "auto" || overflowY === "scroll") && node.scrollHeight > node.clientHeight) return node;
+  }
+  return null;
+}
+
+/** 案 A の位置: 目次の枠の上端を、見えている枠の上端と描いた文書の上端の低いほうに合わせ、右端を右側の目次の右端に合わせ、右端の線の上端まで届く最小の高さを入れる */
 export function followRail(aside) {
+  const root = aside.closest(".mdmark");
   const rail = aside.querySelector(".mdmark-side-toc-rail");
-  const panel = aside.querySelector(".mdmark-side-toc-panel");
+  const scroller = scrollParent(root);
   const update = () => {
+    const style = getComputedStyle(root);
+    const stickyTop = Number.parseFloat(style.getPropertyValue("--mdmark-sticky-top")) || 0;
+    const space = Number.parseFloat(style.getPropertyValue("--mdmark-space")) * Number.parseFloat(style.fontSize);
+    // 見えている枠の上端: スクロールする要素の中なら要素の上端、画面全体なら画面の上端
+    const frameTop = (scroller ? scroller.getBoundingClientRect().top : 0) + stickyTop;
+    const top = Math.max(frameTop, root.getBoundingClientRect().top) + space;
+    aside.style.setProperty("--proposal-panel-top", `${top}px`);
     aside.style.setProperty("--proposal-panel-end", `${document.documentElement.clientWidth - aside.getBoundingClientRect().right}px`);
     // 線から枠へポインターを動かしても hover が切れないよう、枠の下端を線の上から 3 本分の位置より下にする
-    const reach = rail.getBoundingClientRect().top + RAIL_COVER_PX - panel.getBoundingClientRect().top;
+    const reach = rail.getBoundingClientRect().top + RAIL_COVER_PX - top;
     aside.style.setProperty("--proposal-panel-min-height", `${Math.max(reach, 0)}px`);
   };
   update();
-  addEventListener("scroll", update, { passive: true });
+  (scroller ?? window).addEventListener("scroll", update, { passive: true });
   addEventListener("resize", update);
 }
 

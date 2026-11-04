@@ -17,7 +17,7 @@
   <script type="module" src="../../../../refs/320/assets/scene.js"></script>
 </head>
 <body>
-  <!-- モック専用の操作列: 未確定の論点の案と、配色・目次の出し方の切り替え。[data-scene-axis] [data-scene-value]: scene.js が行き先の URL と今の案の aria-current を当てる -->
+  <!-- モック専用の操作列: 未確定の論点の案と、配色・目次の出し方・描く場所の切り替え。[data-scene-axis] [data-scene-value]: scene.js が行き先の URL と今の案の aria-current を当てる -->
   <div class="mock-bar">
     <div class="mock-bar-group" role="group" aria-label="見出しの線の色">
       <span class="mock-bar-label">見出しの線の色</span>
@@ -47,6 +47,12 @@
       <a class="mock-bar-item" data-scene-axis="mode" data-scene-value="hover">hover（既定）</a>
       <a class="mock-bar-item" data-scene-axis="mode" data-scene-value="fixed">fixed</a>
     </div>
+    <div class="mock-bar-group" role="group" aria-label="描く場所">
+      <span class="mock-bar-label">描く場所</span>
+      <a class="mock-bar-item" data-scene-axis="host" data-scene-value="window">画面全体がスクロール</a>
+      <a class="mock-bar-item" data-scene-axis="host" data-scene-value="box">スクロールする要素の中</a>
+      <a class="mock-bar-item" data-scene-axis="host" data-scene-value="clip">横のはみ出しを隠す祖先の中</a>
+    </div>
   </div>
 
   <!-- 使う側のページのトップバー（mdmark の外） -->
@@ -57,8 +63,11 @@
   </nav>
 
   <main class="host">
-    <!-- mount で描く先の要素 -->
-    <div id="doc"></div>
+    <!-- スクロールする要素: 描く場所が「スクロールする要素の中」のときだけ高さ 600px で縦にスクロールする -->
+    <div class="scroll-box">
+      <!-- mount で描く先の要素 -->
+      <div id="doc"></div>
+    </div>
   </main>
 </body>
 </html>

@@ -1,11 +1,11 @@
 // 見出しの線と右側の目次を見る場面: 配布物の mount で長い文書を描き、#320 の案を当てる。
-// URL の ?rule=・?icon=・?position=・?scheme=・?mode= で未確定の論点の案と、配色・目次の出し方を選ぶ
+// URL の ?rule=・?icon=・?position=・?scheme=・?mode=・?host= で未確定の論点の案と、配色・目次の出し方・描く場所を選ぶ
 
 import { mount } from "../../../../../dist/index.js";
 import { applyProposal } from "./proposal.js";
 
 /** 案の軸ごとの既定（URL に無いときの値。未確定の論点は推奨の案） */
-const DEFAULTS = { rule: "muted", icon: "panel", position: "viewport", scheme: "light", mode: "hover" };
+const DEFAULTS = { rule: "muted", icon: "panel", position: "viewport", scheme: "light", mode: "hover", host: "window" };
 
 const params = new URLSearchParams(location.search);
 const scene = Object.fromEntries(
@@ -32,6 +32,10 @@ for (const link of document.querySelectorAll("[data-scene-axis]")) {
 document.documentElement.dataset.rule = scene.rule;
 document.documentElement.dataset.position = scene.position;
 document.documentElement.dataset.scheme = scene.scheme;
+// 描く場所: 「スクロールする要素の中」は #287 の scene.css が高さ 600px で縦にスクロールする要素にする
+document.body.dataset.host = scene.host;
+// 撮影用の ?open=1: hover の目次の枠を出したままにする（操作列には置かない）
+if (params.has("open")) document.documentElement.dataset.open = "";
 
 /** 節の段落: 画面の高さより長くするため、節ごとに 3 段落を置く */
 function paragraphs(topic) {
