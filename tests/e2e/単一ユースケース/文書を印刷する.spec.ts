@@ -664,3 +664,31 @@ test("test_normal_when_code_folded", async ({ page }) => {
   await expect(inner).not.toHaveAttribute("open", "");
   await expect(page.getByText("内側の本文")).toBeHidden();
 });
+
+// 印刷の前に閉じた脚注の一覧を開き、ツールチップを出さず、印刷の後に閉じ直す（正常シナリオ（脚注の一覧を開いて出す））
+test("test_normal_when_footnotes_printed", async ({ page }) => {
+  // 準備
+  await openPage(page, builtRoot);
+  await mountDocument(page, {
+    markdown: "出典がある[^src]。\n\n[^src]: 出典の説明\n",
+  });
+  const doc = page.locator("#doc");
+  const list = doc.locator("details.mdmark-footnotes");
+  // 実行
+  await page.emulateMedia({ media: "print" });
+  await sendPrintEvent(page, "beforeprint");
+  // 検証
+  await expect(list).toHaveAttribute("open", "");
+  await expect(list.locator(".mdmark-fn-item")).toContainText("出典の説明");
+  await expect(doc.locator(".mdmark-fn-ref")).toHaveCSS(
+    "vertical-align",
+    "super",
+  );
+  await doc.locator(".mdmark-fn-link").hover();
+  await expect(doc.locator(".mdmark-fn-tip")).toBeHidden();
+  // 実行
+  await page.emulateMedia({ media: "screen" });
+  await sendPrintEvent(page, "afterprint");
+  // 検証
+  await expect(list).not.toHaveAttribute("open", "");
+});

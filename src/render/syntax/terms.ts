@@ -9,6 +9,7 @@ import {
 import { relativeHref } from "../../knowledge/paths.ts";
 import { markOwn } from "../../parts/own.ts";
 import { renderTermTip } from "../../parts/term-tip.ts";
+import { outsideFootnoteDefinitions } from "./footnotes.ts";
 import { envOf } from "./tokens.ts";
 
 /** 用語のツールチップの `id` の頭 */
@@ -156,7 +157,8 @@ export function termsRule(state: StateCore): void {
     return `${TIP_ID_PREFIX}${tipNumber}`;
   };
 
-  forEachInline(state.tokens, (inline, section) => {
+  // 脚注の定義の中身には用語の下線を付けない
+  forEachInline(outsideFootnoteDefinitions(state.tokens), (inline, section) => {
     if (section !== seenSection) {
       seenSection = section;
       seen = { terms: new Set(), docs: new Set(), avoided: new Set() };

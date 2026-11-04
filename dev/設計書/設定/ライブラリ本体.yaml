@@ -1,4 +1,4 @@
-title: "設定: ライブラリ本体"
+title: '設定: ライブラリ本体'
 lead: 使う側が `mdmark.config.yaml` に書く設定のキー。使う側のサーバーが読んだオブジェクトを `mount`・`render` の `opts.config` に渡すか、mdmark の CLI が読んで書き出しに使う。この一覧はライブラリ本体と CLI が読むキーを持ち、形の正を JSON Schema `schemas/mdmark.config.schema.json` に置く。
 files:
   - file: mdmark.config.yaml
@@ -595,5 +595,16 @@ settings:
     status: planned
     notes:
       Schema の変更: '`schemas/mdmark.config.schema.json` にキーを足すので、`migrations/no-steps.yaml` に行を置く（書いていない設定はそのまま読める）'
+  - key: features.footnotes
+    title: 脚注の機能
+    file: mdmark.config.yaml
+    type: boolean
+    required: false
+    default: 'true'
+    description: '`[^ラベル]` と `[^ラベル]: 中身`、行内の `^[中身]` を、本文の番号・番号のツールチップ・文書の末尾の閉じた脚注の一覧にする。オフのときは、参照・定義・行内の脚注を書いた文字のまま描く'
+    reload: reload
+    status: planned
+    introduced:
+      pr: 311
 refs:
   - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#

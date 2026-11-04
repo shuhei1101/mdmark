@@ -1,0 +1,15 @@
+$ npm run test:unit
+
+> test:unit
+> vitest run --project 'unit*'
+
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/design-document-heading-rule-and-side-toc-head
+
+
+ Test Files  193 passed (193)
+      Tests  1424 passed (1424)
+   Start at  13:09:51
+   Duration  57.04s (worker 45%, tests 35%, import 18%, transform 3%)
+
+exit=0

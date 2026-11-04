@@ -78,6 +78,12 @@ files:
   - path: components/flow-diagram/index.html
     description: '部品『flow-diagram』のモック: システムの枠と 3 層・外部のシステム・線の種類・線の交差・ループの戻りを持つフロー図と、拡大して動かしたときに上端に留めたシステムの枠と層のタイトル・留めない図。部品の見た目や状態を決めるときに読む。'
     tags: [topic:モック, topic:図]
+  - path: components/footnote/index.html
+    description: '部品『footnote』のモック: 本文の参照の場所の上付きの番号と番号のツールチップ、文書の末尾の閉じた脚注の一覧と本文へ戻るリンク、同じ脚注の複数回の参照・定義の無い参照・機能のオフ・印刷の見え方。部品の見た目や状態を決めるときに読む。'
+    tags: [topic:モック]
+  - path: components/footnote/style.css
+    description: 'モック『footnote』の見た目: 脚注の部品のカタログだけの規則（開いたツールチップの見本の高さ）。このモックの見た目を変えるときに読む。'
+    tags: [topic:モック, tool:css]
   - path: components/hint/index.html
     description: '部品『hint』のモック: `data-hint` を持つ要素の右上のマーカー・行内の破線の下線と、図のツールチップと同じ見た目のツールチップ。部品の見た目や状態を決めるときに読む。'
     tags: [topic:モック]
@@ -126,6 +132,9 @@ files:
   - path: components/settings-gear/style.css
     description: 'モック『settings-gear』の見た目: 設定を開く歯車のボタンのカタログ: 状態を縦に並べる（この部品のモックだけの規則）。このモックの見た目を変えるときに読む。'
     tags: [topic:モック, tool:css]
+  - path: components/side-toc-head/index.html
+    description: '部品『side-toc-head』のモック: 右側の目次の頭（すべて展開・すべて折りたたむ・ピン止めの 3 つのボタン）と、ピン止めのボタンのアイコンの案ごとの押す前・ホバー・フォーカス・押した後。部品の見た目や状態を決めるときに読む。'
+    tags: [topic:モック, topic:目次]
   - path: components/steps/index.html
     description: '部品『steps』のモック: 番号と線でつないだ手順と、閉じたステップ・`title=` のタイトル・読めない指定の書き方の警告。部品の見た目や状態を決めるときに読む。'
     tags: [topic:モック]
@@ -326,6 +335,12 @@ files:
     tags: [topic:モック, tool:css]
   - path: pages/document/32/index.md
     description: '#32（サーバー無しで Markdown を 1 枚で完結する HTML に書き出し、複数の文書を 1 枚にまとめる CLI を作る）の画面のモックの案の一覧。案ごとの違いを見比べるときに読む。'
+    tags: [topic:モック]
+  - path: pages/document/320/heading-and-side-toc/index.html
+    description: '#320 の画面のモックの案『heading-and-side-toc』: 配布物の mount で描いた長い文書に、見出し 1・見出し 2 の下の薄い線と 0.25em の区切り線を当て、右側の目次の上端からラベルを削除する。見出しの線の色・ピン止めのアイコン・hover で開く位置の案を操作列で切り替える。画面の見た目や振る舞いを決めるときに読む。'
+    tags: [topic:モック, topic:目次]
+  - path: pages/document/320/index.md
+    description: '#320（描いた文書の表示の改善 2 件）の画面のモックの案の一覧。案ごとの違いを見比べるときに読む。'
     tags: [topic:モック]
   - path: pages/document/42/diagram-doc/app.js
     description: 'モック『diagram-doc』の動き: 使う側の固有の部品のモックと、モックの「固有の定義を当てる場所」の切り替え。このモックの動きを変えるときに読む。'
@@ -710,11 +725,41 @@ files:
   - path: refs/308/index.md
     description: '#308（描いた文書の表示を改善する）の PR のモックへのリンク集。この PR で作ったモックを探すときに読む。'
     tags: [topic:モック]
+  - path: refs/311/assets/footnote-print.css
+    description: '#311 のモックが共通で読む素材: 脚注の印刷の規則（ツールチップと戻るリンクを出さず、末尾の一覧を開いて出す）。複数のモックに効く見た目や動きを変えるときに読む。'
+    tags: [topic:モック, tool:css]
+  - path: refs/311/assets/footnote.css
+    description: '#311 のモックが共通で読む素材: 脚注の本文の番号・番号のツールチップ・末尾の脚注の一覧と戻るリンクの規則。複数のモックに効く見た目や動きを変えるときに読む。'
+    tags: [topic:モック, tool:css]
+  - path: refs/311/assets/footnote.js
+    description: '#311 のモックが共通で読む素材: 脚注の番号のツールチップの開閉・番号から末尾の一覧への移動・戻るリンク・印刷の前後の一覧の開閉。複数のモックに効く見た目や動きを変えるときに読む。'
+    tags: [topic:モック, tool:javascript]
+  - path: refs/311/index.md
+    description: '#311（脚注をツールチップと末尾の一覧で描く）の PR のモックへのリンク集。この PR で作ったモックを探すときに読む。'
+    tags: [topic:モック]
   - path: refs/32/assets/bundle.css
     description: '#32 のモックが共通で読む素材: まとめた HTML の画面（bundle）と文書の一覧の部品（doc-list）の規則。複数のモックに効く見た目や動きを変えるときに読む。'
     tags: [topic:モック, topic:書き出し, tool:css]
   - path: refs/32/index.md
     description: '#32（サーバー無しで Markdown を 1 枚で完結する HTML に書き出し、複数の文書を 1 枚にまとめる CLI を作る）の PR のモックへのリンク集。この PR で作ったモックを探すときに読む。'
+    tags: [topic:モック]
+  - path: refs/320/assets/catalog.css
+    description: '#320 のモックが共通で読む素材: 右側の目次の頭のカタログだけの規則（見本を並びの中に置き、ホバーとフォーカスの見た目を固定する）。複数のモックに効く見た目や動きを変えるときに読む。'
+    tags: [topic:モック, tool:css]
+  - path: refs/320/assets/catalog.js
+    description: '#320 のモックが共通で読む素材: 右側の目次の頭のカタログを、ピン止めのアイコンの案ごとのボタンの状態と頭の並びで組み立てる。複数のモックに効く見た目や動きを変えるときに読む。'
+    tags: [topic:モック, topic:目次]
+  - path: refs/320/assets/proposal.css
+    description: '#320 のモックが共通で読む素材: 見出し 1・見出し 2 の下の線の色の案・0.25em の区切り線・右側の目次の上端の並び・hover で開く位置の案・ダークの配色。複数のモックに効く見た目や動きを変えるときに読む。'
+    tags: [topic:モック, topic:目次, tool:css]
+  - path: refs/320/assets/proposal.js
+    description: '#320 のモックが共通で読む素材: 配布物が描いた右側の目次に、ラベルの削除とボタンの並び替え・ピン止めのアイコンの案・hover で開く位置の案を当てる。複数のモックに効く見た目や動きを変えるときに読む。'
+    tags: [topic:モック, topic:目次]
+  - path: refs/320/assets/scene.js
+    description: '#320 のモックが共通で読む素材: 配布物の mount で見出しと区切り線を持つ長い文書を描き、操作列の案を当てる。複数のモックに効く見た目や動きを変えるときに読む。'
+    tags: [topic:モック]
+  - path: refs/320/index.md
+    description: '#320（描いた文書の表示の改善 2 件）の PR のモックへのリンク集。この PR で作ったモックを探すときに読む。'
     tags: [topic:モック]
   - path: refs/42/assets/diagram.css
     id: dev/mock/refs/42/assets/diagram.css

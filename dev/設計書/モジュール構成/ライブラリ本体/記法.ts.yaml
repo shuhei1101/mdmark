@@ -1,4 +1,4 @@
-title: "ライブラリ本体 / 記法"
+title: ライブラリ本体 / 記法
 lead: 印と記法を HTML にする markdown-it のコアルール。記法ごとに 1 ファイルで、トークンの並びを書き換え、部品の HTML を差し込む。機能がオフの記法は何もしない。読めない指定は書き方の警告を差し込み、読めた指定で描く。
 directory: |-
   ```tree
@@ -13,6 +13,7 @@ directory: |-
   ├── tabs.ts         # タブと、入れ子のタブの開きと閉じの対応
   ├── steps.ts        # ステップ
   ├── callouts.ts     # 注意書きと、注意書きのタイトル・開閉・入れ子
+  ├── footnotes.ts    # 脚注の定義・参照・行内の脚注の読み取りと、末尾の一覧・機能のオフの文字への戻し
   ├── tree.ts         # ファイルツリー
   ├── badges.ts       # バッジとバッジの色
   ├── text-color.ts   # 本文の文字の色
@@ -188,18 +189,32 @@ data_models:
     container: src/render/syntax/table-cells.ts
     summary: 表のセルの文字の格子から決めた、セルごとの結合と、結合できない `^^`・`<<` の警告
     properties:
-    - name: cells
-      type: 'Array<Array<{ rowspan: number; colspan: number; merged?: "up" | "left"; source?: [number, number] }>>'
-      description: 行と列の位置ごとのセル。結合の始まりのセルは `rowspan`・`colspan` に覆う数（覆わないときは 1）、結合したセルは `merged` に向きと `source` に始まりのセルの位置（行・列）を持つ。結合できない `^^`・`<<` は `merged` を持たない
-    - name: mergeColumns
-      type: number[]
-      description: 本文の行に `^^` の結合を持つ列の位置（小さい順）
-    - name: warnings
-      type: WarningItem[]
-      description: 結合する相手の無い `^^`・`<<` の項目（ラベルは `^^`・`<<`、本文に行と列の位置）
+      - name: cells
+        type: 'Array<Array<{ rowspan: number; colspan: number; merged?: "up" | "left"; source?: [number, number] }>>'
+        description: 行と列の位置ごとのセル。結合の始まりのセルは `rowspan`・`colspan` に覆う数（覆わないときは 1）、結合したセルは `merged` に向きと `source` に始まりのセルの位置（行・列）を持つ。結合できない `^^`・`<<` は `merged` を持たない
+      - name: mergeColumns
+        type: number[]
+        description: 本文の行に `^^` の結合を持つ列の位置（小さい順）
+      - name: warnings
+        type: WarningItem[]
+        description: 結合する相手の無い `^^`・`<<` の項目（ラベルは `^^`・`<<`、本文に行と列の位置）
     status: planned
     introduced:
       pr: 275
+  - name: FootnoteState
+    title: 脚注の状態
+    container: src/render/syntax/footnotes.ts
+    summary: 1 回の解析で読んだ脚注の定義と参照。`RenderEnv` の `mdmarkFootnotes` に入れ、描くごとに作り直す
+    properties:
+      - name: definitions
+        type: Map<string, Token[] | null>
+        description: 正規化したラベルごとの定義のブロックのトークン。block の工程でキーだけを `null` で入れ、`collectFootnotes` が最初の定義のトークンを入れる
+      - name: notes
+        type: 'Array<{ key: string | null; inline: Token[] | null; refCount: number }>'
+        description: 参照した順の脚注。位置 + 1 が番号。行内の脚注は `collectFootnotes` が定義の囲みにするまで `key` が `null` で `inline` に中身のトークンを持つ
+      - name: numbers
+        type: Map<string, number>
+        description: ラベルごとの `notes` の位置
 constants:
   - name: TABLE_KINDS
     title: 表の種類と機能
@@ -357,7 +372,7 @@ functions:
     container: src/render/syntax/headings.ts
     kind: 関数
     scope: internal
-    summary: コアルール。全ての `heading_open` に `slugify` の ID を付け、`anchors` がオンなら見出しの中にアンカーを足す。見出しの ID と文字を `env.headings` に足す。class `mdmark-heading` は `wrapSections` が h2〜h4 に付ける
+    summary: コアルール。脚注の定義の囲みの外（`outsideFootnoteDefinitions`。定義の中の見出しを目次と右側の目次に載せないため）の全ての `heading_open` に `slugify` の ID を付け、`anchors` がオンなら見出しの中にアンカーを足す。見出しの ID と文字を `env.headings` に足す。class `mdmark-heading` は `wrapSections` が h2〜h4 に付ける
     args:
       - name: state
         type: StateCore
@@ -366,6 +381,7 @@ functions:
     side_effects: '`state.tokens` と `env.headings` を書き換える'
     callees:
       - '#functions[slugify]'
+      - '#functions[outsideFootnoteDefinitions]'
     unit_tests:
       - name: test_assign_heading_ids
         case: 正常
@@ -1983,7 +1999,7 @@ functions:
     container: src/render/syntax/cards.ts
     kind: 関数
     scope: internal
-    summary: コアルール。`cards` がオンなら、段落の `inline` の子が前後の空白の `text` を除いて `link_open`・文字・`link_close` だけのものを `cardOf` で見分け、カードになるものは段落を部品『カード』の `html_block` に置き換える
+    summary: コアルール。`cards` がオンなら、段落の `inline` の子が前後の空白の `text` を除いて `link_open`・文字・`link_close` だけのものを `cardOf` で見分け、カードになるものは段落を部品『カード』の `html_block` に置き換える。脚注の定義の囲み（`mdmark_footnote_def_open`〜`close`）の中の段落は、ツールチップでリンクのまま読めるようカードにしない
     args:
       - name: state
         type: StateCore
@@ -2024,38 +2040,38 @@ functions:
     scope: internal
     summary: 表のセルの文字の格子から、`^^`（上のセルと結合）・`<<`（左のセルと結合）の結合を決める。結合したセルは、上か左のセルが結合したセルならその始まりのセルにたどって覆う数を増やす。見出しと本文をまたぐ `^^`（本文の最初の行）・最初の行の `^^`・最初の列の `<<` と、縦と横の結合が交わって矩形にならない結合は結合せず警告にする
     args:
-    - name: options
-      type: '{ cells: string[][]; headRows: number }'
-      required: true
-      description: '`cells` は行ごとのセルの文字（前後の空白を除いたもの。見出しの行を含む）、`headRows` は見出しの行の数'
+      - name: options
+        type: '{ cells: string[][]; headRows: number }'
+        required: true
+        description: '`cells` は行ごとのセルの文字（前後の空白を除いたもの。見出しの行を含む）、`headRows` は見出しの行の数'
     returns:
       type: CellMergePlan
       description: セルごとの結合と、結合する列と警告
     unit_tests:
-    - name: test_plan_cell_merges
-      case: 正常
-      summary: 見出しの横の結合と本文の縦の結合を決める
-      condition: '`headRows` が 2 で、1 行目 `地域`・`上期`・`<<`、2 行目 `^^`・`売上`・`件数`、3 行目 `東`・`1`・`2`、4 行目 `^^`・`3`・`4`'
-      mock: なし
-      expected: 1 行目の 1 列目が `rowspan` 2、2 列目が `colspan` 2、3 列目が `merged` `left` と `source` `[0, 1]`。3 行目の 1 列目が `rowspan` 2、4 行目の 1 列目が `merged` `up` と `source` `[2, 0]`。`mergeColumns` が `[0]`、`warnings` が空
-    - name: test_plan_cell_merges_when_chained
-      case: 正常
-      summary: 続けて書いた ^^ を同じ始まりのセルにまとめる
-      condition: '`headRows` が 1 で、本文の 1 列目が `A`・`^^`・`^^`・`B`'
-      mock: なし
-      expected: '`A` のセルが `rowspan` 3、続く 2 つが `source` `[1, 0]`、`B` が `rowspan` 1'
-    - name: test_plan_cell_merges_when_no_partner
-      case: 異常
-      summary: 結合する相手の無い ^^・<< と、見出しと本文をまたぐ ^^ を警告にする
-      condition: '`headRows` が 1 で、見出しの 1 列目が `<<`、本文の 1 行目の 2 列目が `^^`'
-      mock: なし
-      expected: どのセルも `merged` を持たず、`rowspan`・`colspan` が 1。`warnings` が 2 つで、ラベルが `<<`・`^^`
-    - name: test_plan_cell_merges_when_not_rectangle
-      case: 異常
-      summary: 矩形にならない結合を警告にする
-      condition: '`headRows` が 1 で、本文の 1 行目 `A`・`<<`、2 行目 `^^`・`x`'
-      mock: なし
-      expected: 2 行目の 1 列目が `merged` を持たず、`warnings` にその `^^` の項目がある
+      - name: test_plan_cell_merges
+        case: 正常
+        summary: 見出しの横の結合と本文の縦の結合を決める
+        condition: '`headRows` が 2 で、1 行目 `地域`・`上期`・`<<`、2 行目 `^^`・`売上`・`件数`、3 行目 `東`・`1`・`2`、4 行目 `^^`・`3`・`4`'
+        mock: なし
+        expected: 1 行目の 1 列目が `rowspan` 2、2 列目が `colspan` 2、3 列目が `merged` `left` と `source` `[0, 1]`。3 行目の 1 列目が `rowspan` 2、4 行目の 1 列目が `merged` `up` と `source` `[2, 0]`。`mergeColumns` が `[0]`、`warnings` が空
+      - name: test_plan_cell_merges_when_chained
+        case: 正常
+        summary: 続けて書いた ^^ を同じ始まりのセルにまとめる
+        condition: '`headRows` が 1 で、本文の 1 列目が `A`・`^^`・`^^`・`B`'
+        mock: なし
+        expected: '`A` のセルが `rowspan` 3、続く 2 つが `source` `[1, 0]`、`B` が `rowspan` 1'
+      - name: test_plan_cell_merges_when_no_partner
+        case: 異常
+        summary: 結合する相手の無い ^^・<< と、見出しと本文をまたぐ ^^ を警告にする
+        condition: '`headRows` が 1 で、見出しの 1 列目が `<<`、本文の 1 行目の 2 列目が `^^`'
+        mock: なし
+        expected: どのセルも `merged` を持たず、`rowspan`・`colspan` が 1。`warnings` が 2 つで、ラベルが `<<`・`^^`
+      - name: test_plan_cell_merges_when_not_rectangle
+        case: 異常
+        summary: 矩形にならない結合を警告にする
+        condition: '`headRows` が 1 で、本文の 1 行目 `A`・`<<`、2 行目 `^^`・`x`'
+        mock: なし
+        expected: 2 行目の 1 列目が `merged` を持たず、`warnings` にその `^^` の項目がある
     status: planned
     introduced:
       pr: 275
@@ -2066,30 +2082,30 @@ functions:
     scope: internal
     summary: '`openIndex` のタブのマーカーと同じ階層のタブの開きと閉じを数え、対応する閉じの位置を返す。共通の `findClose` は使わない（タブ以外のマーカーの閉じの対応を変えないため）'
     args:
-    - name: tokens
-      type: Token[]
-      required: true
-      description: トークンの並び
-    - name: openIndex
-      type: number
-      required: true
-      description: タブの開きのマーカーの位置
+      - name: tokens
+        type: Token[]
+        required: true
+        description: トークンの並び
+      - name: openIndex
+        type: number
+        required: true
+        description: タブの開きのマーカーの位置
     returns:
       type: '{ close: number; nested: boolean }'
       description: '`close` は対応する閉じの位置（無ければ `-1`）、`nested` は範囲（閉じが無ければ文書の終わりまで）に別のタブの開きを持つか'
     unit_tests:
-    - name: test_find_tabs_close
-      case: 正常
-      summary: 入れ子の閉じを飛ばして外側の閉じを返す
-      condition: 開き・開き・閉じ・閉じのタブのマーカーの並びで、1 つ目の開き
-      mock: なし
-      expected: '`close` が 4 つ目の位置、`nested` が `true`'
-    - name: test_find_tabs_close_when_unclosed
-      case: 異常
-      summary: 閉じが足りなければ -1 を返す
-      condition: 開き・開き・閉じの並びで、1 つ目の開き
-      mock: なし
-      expected: '`close` が `-1`、`nested` が `true`'
+      - name: test_find_tabs_close
+        case: 正常
+        summary: 入れ子の閉じを飛ばして外側の閉じを返す
+        condition: 開き・開き・閉じ・閉じのタブのマーカーの並びで、1 つ目の開き
+        mock: なし
+        expected: '`close` が 4 つ目の位置、`nested` が `true`'
+      - name: test_find_tabs_close_when_unclosed
+        case: 異常
+        summary: 閉じが足りなければ -1 を返す
+        condition: 開き・開き・閉じの並びで、1 つ目の開き
+        mock: なし
+        expected: '`close` が `-1`、`nested` が `true`'
     status: planned
     introduced:
       pr: 275
@@ -2100,26 +2116,26 @@ functions:
     scope: internal
     summary: 引用の最初の段落の 1 行目（最初の `softbreak` の手前まで）が `[!種類]` で始まるかを `CALLOUT_PATTERN` で読み取り、末尾の `-`・`+` と、後ろの空白の後の文字をタイトルにする。タイトルは 1 行目の残りの行内のトークンを `state.md.renderer.renderInline` で HTML にしたもの
     args:
-    - name: options
-      type: '{ state: StateCore; tokens: Token[]; openIndex: number }'
-      required: true
-      description: markdown-it の状態とトークンの並び、`blockquote_open` の位置
+      - name: options
+        type: '{ state: StateCore; tokens: Token[]; openIndex: number }'
+        required: true
+        description: markdown-it の状態とトークンの並び、`blockquote_open` の位置
     returns:
       type: '{ kind: CalloutKind; collapsed: boolean; open: boolean; title?: string } | undefined'
       description: 種類・折り畳みか・開いた状態か・タイトルの HTML。注意書きでなければ `undefined`
     unit_tests:
-    - name: test_read_callout
-      case: 正常
-      summary: 種類と開閉とタイトルを読み取る
-      condition: 1 行目が `[!TIP] 設定を **先に** 確認する`・`[!NOTE]+ 詳細`・`[!WARNING]-`・`[!FAQ]` の引用
-      mock: なし
-      expected: 1 つ目が `tip`・`collapsed` `false`・タイトル `設定を <strong>先に</strong> 確認する`、2 つ目が `note`・`collapsed` `true`・`open` `true`・タイトル `詳細`、3 つ目が `warning`・`collapsed` `true`・`open` `false`・タイトル無し、4 つ目が `note`
-    - name: test_read_callout_when_not_callout
-      case: 正常
-      summary: 1 行目が種類で始まらない引用は注意書きにしない
-      condition: 1 行目が `メモ [!TIP]` の引用と、1 行目が `[!TIP]x`（空白の無い後ろの文字）の引用
-      mock: なし
-      expected: どちらも `undefined`
+      - name: test_read_callout
+        case: 正常
+        summary: 種類と開閉とタイトルを読み取る
+        condition: 1 行目が `[!TIP] 設定を **先に** 確認する`・`[!NOTE]+ 詳細`・`[!WARNING]-`・`[!FAQ]` の引用
+        mock: なし
+        expected: 1 つ目が `tip`・`collapsed` `false`・タイトル `設定を <strong>先に</strong> 確認する`、2 つ目が `note`・`collapsed` `true`・`open` `true`・タイトル `詳細`、3 つ目が `warning`・`collapsed` `true`・`open` `false`・タイトル無し、4 つ目が `note`
+      - name: test_read_callout_when_not_callout
+        case: 正常
+        summary: 1 行目が種類で始まらない引用は注意書きにしない
+        condition: 1 行目が `メモ [!TIP]` の引用と、1 行目が `[!TIP]x`（空白の無い後ろの文字）の引用
+        mock: なし
+        expected: どちらも `undefined`
     status: planned
     introduced:
       pr: 275
@@ -2130,32 +2146,290 @@ functions:
     scope: internal
     summary: 行の文字から `measureIndents` でインデントのレベルを、`foldLinesOf` で畳む行の数を決めて行に付け、`folds` の行のうち畳める行に `folded` を付ける。畳めない行（コードブロックに無い行は `readCodeSpec` が除く）は当てずに警告にする
     args:
-    - name: options
-      type: '{ lines: CodeLine[]; folds: Set<number> }'
-      required: true
-      description: '`readLineMarks` の行と、`readCodeSpec` の最初から畳む行の番号'
+      - name: options
+        type: '{ lines: CodeLine[]; folds: Set<number> }'
+        required: true
+        description: '`readLineMarks` の行と、`readCodeSpec` の最初から畳む行の番号'
     returns:
       type: '{ lines: CodeLine[]; warnings: WarningItem[] }'
       description: '`indent`・`foldLines`・`folded` を付けた行と、畳めない行の警告'
     callees:
-    - dev/設計書/モジュール構成/ライブラリ本体/操作.ts#functions[measureIndents]
-    - dev/設計書/モジュール構成/ライブラリ本体/操作.ts#functions[foldLinesOf]
+      - dev/設計書/モジュール構成/ライブラリ本体/操作.ts#functions[measureIndents]
+      - dev/設計書/モジュール構成/ライブラリ本体/操作.ts#functions[foldLinesOf]
     unit_tests:
-    - name: test_read_folds
-      case: 正常
-      summary: インデントと畳む行を付け、指定の行を畳んだ状態にする
-      condition: '`a:`・`  b:`・`    c: 1`・`  d: 2` の行と、`folds` が 2'
-      mock: なし
-      expected: '`indent` が 0・1・2・1、`foldLines` が 3・1・無し・無し、2 行目だけが `folded`、`warnings` が空'
-    - name: test_read_folds_when_not_foldable
-      case: 異常
-      summary: 畳めない行を警告にする
-      condition: '`a:`・`  b: 1`・`c: 2` の行と、`folds` が 2・3'
-      mock: なし
-      expected: どの行も `folded` を持たず、`warnings` に `2`・`3` の項目がある
+      - name: test_read_folds
+        case: 正常
+        summary: インデントと畳む行を付け、指定の行を畳んだ状態にする
+        condition: '`a:`・`  b:`・`    c: 1`・`  d: 2` の行と、`folds` が 2'
+        mock: なし
+        expected: '`indent` が 0・1・2・1、`foldLines` が 3・1・無し・無し、2 行目だけが `folded`、`warnings` が空'
+      - name: test_read_folds_when_not_foldable
+        case: 異常
+        summary: 畳めない行を警告にする
+        condition: '`a:`・`  b: 1`・`c: 2` の行と、`folds` が 2・3'
+        mock: なし
+        expected: どの行も `folded` を持たず、`warnings` に `2`・`3` の項目がある
     status: planned
     introduced:
       pr: 275
+  - name: useFootnotes
+    title: 脚注のルールを登録する
+    container: src/render/syntax/footnotes.ts
+    kind: 関数
+    scope: internal
+    summary: 解析器に、block の `mdmark_footnote_def`（`reference` の前。`alt` は `paragraph`・`reference`）、inline の `mdmark_footnote_inline`（`image` の後）と `mdmark_footnote_ref`（その後。`link` より後なので `[^x](url)` はリンクを優先する）を登録し、`mdmark_footnote_ref`（番号とツールチップ）と `mdmark_footnote_list`（末尾の一覧）のトークンの描き方を `renderer.rules` に置く。どちらも全てのコアルールの後に、`footnoteBodies` で描いた中身の外にだけ `markOwn` を掛けて描く。コアルールの `collectFootnotes`（文書の機能の後）・`buildFootnoteList`（関連文書の一覧の前）・`takeFootnoteDefinitions`（最後）は `createParser` が登録する
+    args:
+      - name: parser
+        type: MarkdownIt
+        required: true
+        description: '`createParser` が作った解析器'
+    side_effects: 解析器のルールと `renderer.rules` に足す
+    callees:
+      - '#functions[readFootnoteDefinition]'
+      - '#functions[readFootnoteReference]'
+      - '#functions[readInlineFootnote]'
+      - '#functions[footnoteBodies]'
+      - dev/設計書/モジュール構成/ライブラリ本体/部品.ts#functions[renderFootnoteRef]
+      - dev/設計書/モジュール構成/ライブラリ本体/部品.ts#functions[markOwn]
+    unit_tests:
+      - name: test_use_footnotes
+        case: 正常
+        summary: 参照・定義・行内の脚注を番号とツールチップにする
+        condition: インターフェース定義『文書をHTML文字列にする』の「正常系（脚注）」の文書
+        mock: なし
+        expected: '`mdmark-fnref-1-0`・`mdmark-fnref-2-0` の番号があり、脚注 1 のツールチップが `role="group"`、脚注 2 が `role="tooltip"` で、`[^`・`^[` が残らない'
+      - name: test_use_footnotes_when_link_label
+        case: 正常
+        summary: リンクと重なる参照はリンクを優先する
+        condition: '`[^x](https://example.com)` と定義 `[^x]: 補足`'
+        mock: なし
+        expected: 文字 `^x` の `https://example.com` へのリンクで、番号と一覧が無い
+  - name: readFootnoteDefinition
+    title: 脚注の定義を読む
+    container: src/render/syntax/footnotes.ts
+    kind: 関数
+    scope: internal
+    summary: 'block のルール。行頭（字下げ 3 まで）の `[^ラベル]:`（ラベルは空白を含まない。`normalizeReference` で正規化する）を読み、`:` の後ろから字下げ 4 で続く行までを `blkIndent` を 4 増やして `state.md.block.tokenize` で解析し、`mdmark_footnote_def_open`（`meta.key`・`meta.first`・`meta.source`）と `mdmark_footnote_def_close` で囲む。最初に出たラベルだけ `FootnoteState.definitions` にキーを入れる。書き換えた `bMarks`・`tShift`・`sCount`・`blkIndent`・`parentType` は戻す。`meta.source` は行頭の `[^ラベル]: ` の文字（機能のオフで書いた文字に戻すため）'
+    args:
+      - name: state
+        type: StateBlock
+        required: true
+        description: markdown-it の状態
+      - name: startLine
+        type: number
+        required: true
+        description: 読み始める行
+      - name: endLine
+        type: number
+        required: true
+        description: 読める最後の行
+      - name: silent
+        type: boolean
+        required: true
+        description: 当たるかだけを返すか
+    returns:
+      type: boolean
+      description: 定義として読んだか
+    side_effects: '`state.tokens` に足し、`env.mdmarkFootnotes` を作る'
+    unit_tests:
+      - name: test_read_footnote_definition
+        case: 正常
+        summary: 字下げ 4 で続く段落を定義に含める
+        condition: '`[^long]: 1 段落目` 、空行、`    2 段落目`、空行、`終わり` と、本文の `[^long]`'
+        mock: なし
+        expected: 脚注 1 の中身が 2 つの段落で、`終わり` は本文の段落
+      - name: test_read_footnote_definition_when_case_and_duplicate
+        case: 正常
+        summary: 大文字小文字を区別せず、最初の定義を採る
+        condition: インターフェース定義『文書をHTML文字列にする』の「正常系（脚注の照合）」の文書
+        mock: なし
+        expected: '`[^Note]`・`[^note]` が脚注 1、中身が `1 つ目`、`2 つ目` と `使わない` が出力に無い'
+      - name: test_read_footnote_definition_when_indented_code
+        case: 正常
+        summary: 字下げ 4 以上の `[^x]:` は定義にしない
+        condition: '`    [^x]: コード` の行だけの文書'
+        mock: なし
+        expected: コードブロックになり、脚注の一覧が無い
+  - name: readFootnoteReference
+    title: 脚注の参照を読む
+    container: src/render/syntax/footnotes.ts
+    kind: 関数
+    scope: internal
+    summary: inline のルール。`[^ラベル]` のラベルを正規化し、`FootnoteState.definitions` にあるときだけ `mdmark_footnote_ref` のトークン（`meta.id`・`meta.refIndex`・`meta.source`）にする。初めてのラベルは `notes` の末尾に足して番号を振り、同じラベルは同じ番号で `refCount` を増やす。定義の無いラベルは当てず、書いた文字のまま残す
+    args:
+      - name: state
+        type: StateInline
+        required: true
+        description: markdown-it の状態
+      - name: silent
+        type: boolean
+        required: true
+        description: 当たるかだけを返すか
+    returns:
+      type: boolean
+      description: 参照として読んだか
+    side_effects: '`state.tokens` と `env.mdmarkFootnotes` に足す'
+    unit_tests:
+      - name: test_read_footnote_reference_when_missing
+        case: 正常
+        summary: 定義の無い参照は文字のまま
+        condition: '`定義の無い参照[^missing]。`'
+        mock: なし
+        expected: '`[^missing]` が文字で残り、脚注の一覧が無い'
+      - name: test_read_footnote_reference_when_twice
+        case: 正常
+        summary: 同じラベルの 2 回目は同じ番号で通し番号を増やす
+        condition: '2 つの段落の `[^note]` と定義 `[^note]: 共通の補足`'
+        mock: なし
+        expected: '`mdmark-fnref-1-0` と `mdmark-fnref-1-1` があり、一覧の項目は 1 つで戻るリンクが 2 つ'
+  - name: readInlineFootnote
+    title: 行内の脚注を読む
+    container: src/render/syntax/footnotes.ts
+    kind: 関数
+    scope: internal
+    summary: inline のルール。`^[中身]` を `md.helpers.parseLinkLabel` で閉じまで読み、中身を `md.inline.parse` したトークンを `notes` に足して番号を振り、`mdmark_footnote_ref` のトークン（`meta.source` は `^[中身]`）にする
+    args:
+      - name: state
+        type: StateInline
+        required: true
+        description: markdown-it の状態
+      - name: silent
+        type: boolean
+        required: true
+        description: 当たるかだけを返すか
+    returns:
+      type: boolean
+      description: 行内の脚注として読んだか
+    side_effects: '`state.tokens` と `env.mdmarkFootnotes` に足す'
+    unit_tests:
+      - name: test_read_inline_footnote
+        case: 正常
+        summary: 行内の脚注に参照の順で番号を振る
+        condition: '`先[^a] と ^[行内の *補足*]` と定義 `[^a]: A`'
+        mock: なし
+        expected: '`[^a]` が 1、行内の脚注が 2 で、脚注 2 の中身が `行内の <em>補足</em>`'
+  - name: collectFootnotes
+    title: 脚注の定義を集める
+    container: src/render/syntax/footnotes.ts
+    kind: 関数
+    scope: internal
+    summary: コアルール（文書の機能 `resolveDocumentFeatures` の直後、見出し `assignHeadingIds` の前）。`env.features.footnotes` で脚注の機能を判定し、印は読まない。オンなら、定義は本文に残したまま後のコアルールを本文と同じく通し、行内の脚注の中身を 1 段落の定義の囲み（キーは制御文字で始める `\u0000inline:{位置}`）にして文書の末尾に足し、脚注の `key` をそのキーにする。オフなら、`mdmark_footnote_ref` を `meta.source` の `text` のトークンに戻し、定義の囲みを外して最初の段落の頭に `meta.source` を戻し、書いた位置に残し、`env.mdmarkFootnotes` を消す
+    args:
+      - name: state
+        type: StateCore
+        required: true
+        description: markdown-it の状態
+    side_effects: '`state.tokens` と `env.mdmarkFootnotes` を書き換える'
+    unit_tests:
+      - name: test_collect_footnotes_when_disabled_by_mark
+        case: 正常
+        summary: 文書の印で外すと書いた文字のまま書いた位置に残す
+        condition: インターフェース定義『文書をHTML文字列にする』の「正常系（脚注の機能を外す）」の文書
+        mock: なし
+        expected: '`[^src]`・`^[補足]` が文字のままでリンクでなく、`<p>[^src]: 出典の説明</p>` が `終わり` の前にあり、`mdmark-fn-` の要素が無い'
+      - name: test_collect_footnotes_when_disabled_by_config
+        case: 正常
+        summary: 設定で外した脚注も文字のままにする
+        condition: '`features.footnotes: false` と、印の無い脚注の文書'
+        mock: なし
+        expected: 参照と定義が文字のまま
+      - name: test_collect_footnotes_when_mark_in_code
+        case: 正常
+        summary: コードブロックの中の印は数えない
+        condition: '`md` のコードブロックの中に `<!-- features: -footnotes -->` を持ち、本文に脚注を持つ文書'
+        mock: なし
+        expected: 脚注が番号になる
+      - name: test_collect_footnotes_when_terms
+        case: 正常
+        summary: 脚注の中身には用語の下線を引かない
+        condition: '用語 `ワークスペース` を持つ索引と、定義 `[^1]: ワークスペースの説明` を持つ文書'
+        mock: なし
+        expected: ツールチップと一覧の中の `ワークスペース` に `mdmark-term` が無い
+  - name: footnoteBodies
+    title: 脚注の中身を段落ごとに描く
+    container: src/render/syntax/footnotes.ts
+    kind: 関数
+    scope: internal
+    summary: 脚注 1 つの中身を、部品『脚注の番号』のツールチップに入れる段落ごとの行内の HTML（`p` を外したもの）と、一覧に入れるブロックの HTML にして返す。段落の `inline` は `renderer.renderInline`、段落でないブロックは描いた HTML から要素を除いた文字を 1 段落にする。中身は `takeFootnoteDefinitions` が控えた定義のトークン（行内の脚注も同じ）
+    args:
+      - name: options
+        type: '{ md: MarkdownIt; env: RenderEnv; note: FootnoteState["notes"][number] }'
+        required: true
+        description: 解析器・解析の環境・脚注 1 つ
+    returns:
+      type: '{ bodies: string[]; html: string }'
+      description: ツールチップの段落と一覧の HTML
+    callees:
+      - dev/設計書/モジュール構成/ライブラリ本体/部品.ts#functions[escapeHtml]
+    unit_tests:
+      - name: test_footnote_bodies_when_list
+        case: 正常
+        summary: 段落でないブロックは文字の段落にする
+        condition: 定義が 1 段落と字下げ 4 のリスト `- a` `- b` を持つ脚注
+        mock: なし
+        expected: '`bodies` が 2 つで、`<p>` と `<ul>` を含まず、2 つ目に `a` と `b` の文字がある。`html` は `<p>` と `<ul>` を持つ'
+  - name: buildFootnoteList
+    title: 脚注の一覧を置く
+    container: src/render/syntax/footnotes.ts
+    kind: 関数
+    scope: internal
+    summary: コアルール（節・目次の後、関連文書の一覧の前）。`env.mdmarkFootnotes` の `notes` が 1 つ以上あれば、`mdmark_footnote_list` のトークンを末尾に足す（節の外に置かれ、関連文書の一覧はその後ろに足される）。中身は描くときに、部品『脚注の一覧』に中身を差し込み口（`SLOT_MARKER`。最後の段落の閉じの前後）で渡して描く
+    args:
+      - name: state
+        type: StateCore
+        required: true
+        description: markdown-it の状態
+    side_effects: '`state.tokens` に足す'
+    callees:
+      - '#functions[footnoteBodies]'
+      - dev/設計書/モジュール構成/ライブラリ本体/部品.ts#functions[renderFootnotes]
+      - dev/設計書/モジュール構成/ライブラリ本体/部品.ts#functions[markOwn]
+    unit_tests:
+      - name: test_build_footnote_list
+        case: 正常
+        summary: 本文の節の後ろ・関連文書の一覧の前に閉じた一覧を置く
+        condition: '`## 節` の段落に `[^1]`、定義 `[^1]: 補足`、参照の表で被参照を持つ文書'
+        mock: なし
+        expected: '`details.mdmark-footnotes` が `section` の外、`nav.mdmark-backlinks` の前にあり、`summary` が `脚注（1 件）`。`data-mdmark-own` は sanitize の後に残らず、`id`・`href` が残る'
+  - name: takeFootnoteDefinitions
+    title: 脚注の定義を取り出す
+    container: src/render/syntax/footnotes.ts
+    kind: 関数
+    scope: internal
+    summary: コアルール（全てのコアルールの後）。本文と同じコアルールを通した `mdmark_footnote_def_open`〜`close` を本文から取り除き、`meta.first` の定義の中身だけを `definitions` に入れる
+    args:
+      - name: state
+        type: StateCore
+        required: true
+        description: markdown-it の状態
+    side_effects: '`state.tokens` と `env.mdmarkFootnotes.definitions` を書き換える'
+    unit_tests:
+      - name: test_take_footnote_definitions_when_syntax
+        case: 正常
+        summary: 定義と行内の脚注の中身にも、本文と同じ記法とリンクの扱いを当てる
+        condition: 本文・定義・行内の脚注のそれぞれに `README.md`・`example.com`・バッジ `badge:新規` を持つ文書
+        mock: なし
+        expected: 本文・ツールチップ・一覧のどれでも `README.md` がリンクにならず、バッジが `span.mdmark-badge` になる
+      - name: test_take_footnote_definitions_when_heading
+        case: 正常
+        summary: 定義の中の見出しで節を作らず ID を振らず、一覧は節の外に置く
+        condition: '`<!-- toc -->` と `## 節` の段落に `[^a]` と、定義 `[^a]: 補足` と字下げ 4 の `### 定義の見出し`'
+        mock: なし
+        expected: '`div.mdmark-section-body` が 1 つだけで、一覧がその後ろにあり、一覧の項目に `定義の見出し` があり、`id="定義の見出し"` が無く、`nav.mdmark-toc` に `定義の見出し` が無い'
+  - name: outsideFootnoteDefinitions
+    title: 脚注の定義の外のトークンを返す
+    container: src/render/syntax/footnotes.ts
+    kind: 関数
+    scope: internal
+    summary: '`mdmark_footnote_def_open`〜`close` の囲みを除いたトークンの並びを返す（用語の下線を脚注の中身に付けないために `termsRule` が、定義の中の見出しに ID を振らないために `assignHeadingIds` が使う）'
+    args:
+      - name: tokens
+        type: Token[]
+        required: true
+        description: トークンの並び
+    returns:
+      type: Token[]
+      description: 定義の囲みの外のトークン（同じトークンを指す）
 notes:
   コアルールの順: 描画の `createParser` が登録する。印 → 機能の重ね合わせ → 見出し → 用語集の表 → 行の詳細 → ビュー → 表 → タブ → ステップ → 注意書き → ファイルツリー → バッジ → 本文の文字の色 → 図の部品 → 埋め込んだ HTML → コードブロック → 画像の属性と種類 → 図表の番号 → ギャラリー → 画像と動画と音声の図 → カード → 用語の下線 → 節 → 目次 → 関連文書の一覧 → タスクリスト → www の自動リンク → 残った印を取り除く。行の詳細は表の囲みより前、節は記法の警告を差し込んだ後、目次は見出しの ID を付けた後。埋め込んだ HTML は用語の下線より前に置き、`html_block` にした中身を用語の下線が重ねて照合しないようにする。画像の属性は図表の番号より前に読み、図表の番号がギャラリーに番号を渡してからギャラリーを囲む。残った画像だけの段落は、その後に図にする
   部品の差し込み方: 中身を持つ部品（節・タブ・注意書き・行の詳細・図表の番号・表）は、中身の代わりに `SLOT_MARKER` を渡して HTML を作り、`markOwn` を掛けてから `SLOT_MARKER` の前後で分け、開きと閉じの `html_block` のトークンで中身のトークンを挟む。中身の HTML には `markOwn` を掛けない。見出し・表など Markdown から作ったトークンに付ける記法の属性は、同じトークンに `data-mdmark-own` も付ける。埋め込んだ HTML は例外で、`sanitizeEmbedded` で先に落とした中身にも `markOwn` を掛ける
@@ -2180,3 +2454,4 @@ test_files:
   - tests/unit/src/render/syntax/gallery.test.ts
   - tests/unit/src/render/syntax/cards.test.ts
   - tests/unit/src/render/syntax/table-cells.test.ts
+  - tests/unit/src/render/syntax/footnotes.test.ts

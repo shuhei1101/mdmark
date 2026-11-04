@@ -5802,12 +5802,29 @@ test("test_normal_when_side_toc_hovered_and_pinned", async () => {
       actions.compareDocumentPosition(list) & Node.DOCUMENT_POSITION_FOLLOWING,
     ).toBeTruthy();
     expect(actions.querySelectorAll("[data-fold-all]")).toHaveLength(2);
+    // 目次の頭: タイトルを置かず、まとめて開閉するボタンの並び → ピン止めの順
+    expect(
+      [...find(panel, ".mdmark-side-toc-head").children].map(
+        (child) => child.className,
+      ),
+    ).toEqual(["mdmark-side-toc-actions", "mdmark-side-toc-pin"]);
+    expect(panel.textContent).not.toContain("目次");
+    // 開いた枠は画面に固定し、見えている枠（画面）の上端から --mdmark-space 下に出す
+    const space =
+      Number.parseFloat(getComputedStyle(document.documentElement).fontSize) *
+      Number.parseFloat(
+        getComputedStyle(el).getPropertyValue("--mdmark-space"),
+      );
+    expect(getComputedStyle(panel).position).toBe("fixed");
+    expect(panel.getBoundingClientRect().top).toBeCloseTo(space, 0);
     // 実行・検証: 「使い方」の項目を押す
     await userEvent.click(linkOf("使い方"));
     await vi.waitFor(() => {
       expect(decodeURIComponent(location.hash)).toBe("#使い方");
       expect(inViewport(find(el, '[id="使い方"]'))).toBe(true);
     });
+    // 文書の途中へ移った後も、開いた枠は同じ位置に出る
+    expect(panel.getBoundingClientRect().top).toBeCloseTo(space, 0);
     // 実行・検証: ピン止めして、ポインターを本文へ動かす
     await userEvent.click(pin);
     expect(pin.getAttribute("aria-pressed")).toBe("true");
@@ -6038,7 +6055,8 @@ test("test_normal_when_all_sections_toggled", async () => {
         button.compareDocumentPosition(list) & Node.DOCUMENT_POSITION_FOLLOWING,
       ).toBeTruthy();
     }
-    await userEvent.hover(rail);
+    // ポインターを乗せると開いた目次が右端の線を覆うため、乗せた後に線が最も手前にあるかは確かめない
+    await userEvent.hover(rail, { force: true });
     // 実行・検証: すべて展開
     await userEvent.click(open);
     expect(expandedOf(el, ids)).toEqual([
@@ -9663,4 +9681,271 @@ test("test_normal_when_er_table_tooltip", async () => {
   // 検証
   expect(document.activeElement).toBe(info);
   expect(tip.hidden).toBe(false);
+});
+
+/** 脚注 1 はリンクを持ち、脚注 2 は持たない文書（インターフェース定義『文書をHTML文字列にする』の正常系（脚注）と同じ） */
+const FOOTNOTES_MARKDOWN = [
+  "出典がある[^src]。",
+  "",
+  "[^src]: 出典の説明",
+  "",
+  "    [詳しく](https://example.com)",
+  "",
+  "行内にも書ける^[行内の補足]。",
+  "",
+].join("\n");
+
+/** 描いた要素の中の、`n` 番目（1 から）の脚注の番号の組 */
+function footnoteRef(el: Element, n: number): HTMLElement {
+  const ref = el.querySelectorAll<HTMLElement>(".mdmark-fn-ref")[n - 1];
+  if (!ref) {
+    throw new Error(`脚注の番号が無い: ${n}`);
+  }
+  return ref;
+}
+
+// 脚注の番号にポインター・フォーカスでツールチップを出し、中のリンクへ Tab で移り、Esc で消す（正常系）
+test("test_normal_when_footnote_tooltip", async () => {
+  // 準備
+  const el = createElement();
+  // 実行
+  await mountTracked(el, { markdown: FOOTNOTES_MARKDOWN });
+  // 検証
+  const first = footnoteRef(el, 1);
+  const second = footnoteRef(el, 2);
+  const secondTip = find<HTMLElement>(second, ".mdmark-fn-tip");
+  // 番号 2: ポインターを乗せると出て、ツールチップの上へ移っても出たまま
+  await userEvent.hover(find(second, ".mdmark-fn-link"));
+  expect(isOpen(secondTip)).toBe(true);
+  expect(secondTip.textContent).toContain("行内の補足");
+  await userEvent.hover(secondTip);
+  expect(isOpen(secondTip)).toBe(true);
+  await userEvent.unhover(secondTip);
+  // 番号 1: フォーカスで出て、Tab で中のリンクへ移り、その間も出たまま
+  const firstLink = find<HTMLElement>(first, ".mdmark-fn-link");
+  const firstTip = find<HTMLElement>(first, ".mdmark-fn-tip");
+  firstLink.focus();
+  expect(isOpen(firstTip)).toBe(true);
+  expect(find(firstTip, ".mdmark-fn-tip-title").textContent).toBe("脚注 1");
+  await userEvent.keyboard("{Tab}");
+  expect(document.activeElement?.textContent).toBe("詳しく");
+  expect(isOpen(firstTip)).toBe(true);
+  // Esc: ツールチップが消え、フォーカスが番号 1 に戻る
+  await userEvent.keyboard("{Escape}");
+  expect(isOpen(firstTip)).toBe(false);
+  expect(document.activeElement).toBe(firstLink);
+  // id はページの中で一意に振り直され、属性がそれを指す
+  const ids = [...el.querySelectorAll("[id]")].map((element) => element.id);
+  expect(new Set(ids).size).toBe(ids.length);
+  for (const ref of [first, second]) {
+    const link = find<HTMLElement>(ref, ".mdmark-fn-link");
+    const tip = find<HTMLElement>(ref, ".mdmark-fn-tip");
+    const pointer =
+      link.getAttribute("aria-details") ??
+      link.getAttribute("aria-describedby");
+    expect(pointer).toBe(tip.id);
+    expect(tip.id).not.toMatch(/^mdmark-fn-tip-\d+-\d+$/);
+    const item = el.querySelector(
+      `[id="${link.getAttribute("href")?.slice(1)}"]`,
+    );
+    expect(item?.classList.contains("mdmark-fn-item")).toBe(true);
+  }
+});
+
+// 番号を押すと閉じた一覧を開いて項目へ移り、戻るリンクで番号へ戻る（正常系）
+test("test_normal_when_footnote_jump", async () => {
+  // 準備
+  const el = createElement();
+  await mountTracked(el, { markdown: FOOTNOTES_MARKDOWN });
+  const hash = location.hash;
+  const second = footnoteRef(el, 2);
+  const secondLink = find<HTMLElement>(second, ".mdmark-fn-link");
+  const list = find<HTMLDetailsElement>(el, "details.mdmark-footnotes");
+  expect(list.open).toBe(false);
+  // 実行
+  await userEvent.click(secondLink);
+  // 検証
+  expect(list.open).toBe(true);
+  const item = el.querySelectorAll<HTMLElement>(".mdmark-fn-item")[1];
+  expect(document.activeElement).toBe(item);
+  expect(item?.getAttribute("tabindex")).toBe("-1");
+  expect(isOpen(find(second, ".mdmark-fn-tip"))).toBe(false);
+  expect(location.hash).toBe(hash);
+  // 実行
+  await userEvent.click(find(item as HTMLElement, ".mdmark-fn-back"));
+  // 検証
+  expect(document.activeElement).toBe(secondLink);
+  expect(location.hash).toBe(hash);
+});
+
+// 印刷の前に閉じた脚注の一覧を開き、印刷の後に閉じ直す（正常系）
+test("test_normal_when_footnotes_printed", async () => {
+  // 準備
+  const el = createElement();
+  await mountTracked(el, { markdown: FOOTNOTES_MARKDOWN });
+  const list = find<HTMLDetailsElement>(el, "details.mdmark-footnotes");
+  // 実行・検証
+  sendPrintEvent("beforeprint");
+  expect(list.open).toBe(true);
+  sendPrintEvent("afterprint");
+  expect(list.open).toBe(false);
+});
+
+/** 表と重なる位置で右側の目次を出す Markdown: `## 導入` と `## 使い方` の間に、集計の行とピン止めした列を持つ 10 列 30 行の表 */
+function sideTocTableMarkdown(): string {
+  const columns = [
+    "名前",
+    "数量",
+    ...Array.from({ length: 8 }, (_, i) => `説明の長い列 ${i + 1}`),
+  ];
+  const rows = Array.from(
+    { length: 30 },
+    (_, row) =>
+      `| 品目 ${row + 1} | ${row + 1} | ${Array.from(
+        { length: 8 },
+        (_, col) => `折り返さない長さの値 ${row + 1}-${col + 1}`,
+      ).join(" | ")} |`,
+  );
+  return [
+    "## 導入",
+    "",
+    sideTocFiller(),
+    "<!-- table: data +total total=数量:sum pin=名前 -->",
+    "",
+    `| ${columns.join(" | ")} |`,
+    `|${" --- |".repeat(columns.length)}`,
+    ...rows,
+    "",
+    "<!-- /table -->",
+    "",
+    "## 使い方",
+    "",
+    sideTocFiller(),
+  ].join("\n");
+}
+
+/** 計算した `z-index` を数にする（`auto` は 0） */
+function zIndexOf(element: Element): number {
+  const value = getComputedStyle(element).zIndex;
+  return value === "auto" ? 0 : Number(value);
+}
+
+// 表の見出し行を画面の上端に留めた位置で、hover で開いた右側の目次を表より手前に出す（正常系（表と重なる位置で右側の目次を出す））
+test("test_normal_when_side_toc_over_table", async () => {
+  await withViewport(1280, async () => {
+    // 準備
+    const el = createElement();
+    await mountTracked(el, { markdown: sideTocTableMarkdown() });
+    const { aside, panel, rail } = sideTocOf(el);
+    const table = find<HTMLTableElement>(el, ".mdmark-table table");
+    // 実行: 表の見出し行が画面の上端に留まる位置までスクロールする
+    window.scrollTo(
+      0,
+      table.getBoundingClientRect().top + window.scrollY + 300,
+    );
+    await vi.waitFor(() => {
+      expect(find(table, "thead th").getBoundingClientRect().top).toBeLessThan(
+        panel.getBoundingClientRect().bottom,
+      );
+    });
+    // 実行: 右端の線にポインターを乗せる
+    await userEvent.hover(rail);
+    await vi.waitFor(() => {
+      expect(panelOpacity(panel)).toBe("1");
+    });
+    // 前提: 表の右側が開いた枠の下まで届いている
+    const box = panel.getBoundingClientRect();
+    expect(table.parentElement?.getBoundingClientRect().right).toBeGreaterThan(
+      box.left,
+    );
+    // 検証: 枠の矩形の中の格子状の点で、最も手前の要素がどれも右側の目次の中にある
+    const outside: string[] = [];
+    for (let y = box.top + 4; y < box.bottom - 4; y += 16) {
+      for (let x = box.left + 4; x < box.right - 4; x += 24) {
+        const hit = document.elementFromPoint(x, y);
+        if (!hit || !aside.contains(hit)) {
+          outside.push(
+            `${hit?.tagName ?? "null"}@${Math.round(x)},${Math.round(y)}`,
+          );
+        }
+      }
+    }
+    expect(outside).toEqual([]);
+    // 検証: 右側の目次の z-index が、見出し行・集計の行・ピン止めした列のセルのどれより大きい
+    const cells = [
+      ...table.querySelectorAll("thead th, tfoot td, .is-pinned-col"),
+    ];
+    expect(cells.length).toBeGreaterThan(0);
+    const cellMax = Math.max(...cells.map(zIndexOf));
+    expect(zIndexOf(aside)).toBeGreaterThan(cellMax);
+  });
+});
+
+// 文書の末尾までスクロールしても、右端の線と hover で開くパネルをスクロールする場所の上端の近くに留める（正常系（文書の末尾まで右側の目次を留める））
+test("test_normal_when_side_toc_scrolled_to_end", async () => {
+  await withViewport(1280, async () => {
+    for (const where of ["box", "page"] as const) {
+      // 準備: 高さ 600px のスクロールする要素の中か、ページ全体のスクロールで描く
+      const el = createElement();
+      let scroller: HTMLElement = document.documentElement;
+      if (where === "box") {
+        const box = document.createElement("div");
+        box.style.cssText = "height: 600px; overflow-y: auto;";
+        document.body.append(box);
+        elements.push(box);
+        box.append(el);
+        scroller = box;
+      }
+      el.style.setProperty("--mdmark-sticky-top", "48px");
+      const handle = await mountTracked(el, { markdown: SIDE_TOC_MARKDOWN });
+      const { panel, rail } = sideTocOf(el);
+      const space =
+        Number.parseFloat(getComputedStyle(document.documentElement).fontSize) *
+        Number.parseFloat(
+          getComputedStyle(el).getPropertyValue("--mdmark-space"),
+        );
+      const frame = () =>
+        where === "box"
+          ? scroller.getBoundingClientRect()
+          : { top: 0, bottom: document.documentElement.clientHeight };
+      const scrollTo = (top: number) => {
+        if (where === "box") {
+          scroller.scrollTop = top;
+          scroller.dispatchEvent(new Event("scroll"));
+        } else {
+          window.scrollTo(0, top);
+        }
+      };
+      const max = () => scroller.scrollHeight - scroller.clientHeight;
+      // 実行・検証: 文書の途中と末尾までスクロールする
+      for (const top of [max() / 2, max()]) {
+        scrollTo(top);
+        await vi.waitFor(() => {
+          expect(rail.getBoundingClientRect().top).toBeCloseTo(
+            frame().top + 48 + space,
+            0,
+          );
+        });
+        expect(rail.getBoundingClientRect().bottom).toBeLessThanOrEqual(
+          frame().bottom,
+        );
+      }
+      // 実行・検証: 末尾で右端の線にポインターを乗せる
+      await userEvent.hover(rail);
+      await vi.waitFor(() => {
+        expect(panelOpacity(panel)).toBe("1");
+      });
+      expect(
+        Math.abs(
+          panel.getBoundingClientRect().top - rail.getBoundingClientRect().top,
+        ),
+      ).toBeLessThanOrEqual(1);
+      // 後始末: 次の場合の前に外す
+      await userEvent.unhover(rail);
+      handle.destroy();
+      handles.splice(handles.indexOf(handle), 1);
+      el.remove();
+      scrollTo(0);
+    }
+  });
 });

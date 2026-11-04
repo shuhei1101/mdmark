@@ -1,5 +1,6 @@
 import type { SideTocMode } from "../config.ts";
 import { renderSideToc, type SideTocHeading } from "../parts/side-toc.ts";
+import { findScrollContainer } from "./scroller.ts";
 import { foldAllSections, revealTarget } from "./sections.ts";
 import { visibleText } from "./text.ts";
 
@@ -22,6 +23,16 @@ const SIDE_TOC_HEADING_SELECTOR = "h1[id], h2[id], h3[id]";
 
 /** 埋め込んだ HTML の枠 */
 const EMBEDDED_HTML_SELECTOR = ".mdmark-html";
+
+/** hover で開く目次の枠が、右端の線の上端から届かせる高さ（rem）。線 3 本分で、線から枠へポインターを動かしても hover が切れない */
+const SIDE_TOC_RAIL_COVER_REM = 2;
+
+/** hover で開く目次の枠の上端の、見えている枠の上端からのずれ（CSS の長さ） */
+const PANEL_OFFSET =
+  "calc(var(--mdmark-sticky-top, 0px) + var(--mdmark-space))";
+
+/** 右端の線の下端と、見えている枠・描く先の要素の下端との間（CSS の長さ） */
+const RAIL_GAP = "var(--mdmark-space)";
 
 /** 今いる節を決める線の帯だけを見る `IntersectionObserver` の余白（画面の上から線までを帯にする） */
 const LINE_BAND_MARGIN = `0px 0px -${(1 - CURRENT_LINE_RATIO) * 100}% 0px`;
@@ -60,6 +71,68 @@ export function pickCurrentHeading(options: {
     above[above.length - 1] ??
     headings.find((heading) => heading.top < viewportHeight);
   return picked?.id;
+}
+
+/** hover で開く目次の枠と右端の線の位置を、スクロールする場所の上端と下端・aside・描く先の要素から決めて aside の CSS 変数に入れる。外す関数は受け取りを外す */
+function followPanelPosition(el: HTMLElement, aside: HTMLElement): () => void {
+  const scroll = findScrollContainer(el);
+  // CSS の長さ（rem・px など）を px にするための、見えない要素
+  const probe = document.createElement("span");
+  probe.hidden = true;
+  probe.style.marginTop = PANEL_OFFSET;
+  probe.style.marginBottom = RAIL_GAP;
+  aside.append(probe);
+
+  const update = (): void => {
+    const frame = scroll.page
+      ? undefined
+      : scroll.target.getBoundingClientRect();
+    const viewportHeight = document.documentElement.clientHeight;
+    const frameTop = frame ? frame.top : 0;
+    const frameBottom = frame
+      ? Math.min(frame.bottom, viewportHeight)
+      : viewportHeight;
+    const probeStyle = getComputedStyle(probe);
+    const top = frameTop + Number.parseFloat(probeStyle.marginTop);
+    const gap = Number.parseFloat(probeStyle.marginBottom);
+    const rem = Number.parseFloat(
+      getComputedStyle(document.documentElement).fontSize,
+    );
+    const asideRect = aside.getBoundingClientRect();
+    // 右端の線の上端: 文書の先頭では aside の位置、スクロールした後は枠の上端と同じ位置
+    const railTop = Math.max(asideRect.top, top);
+    // 右端の線の下端: 見えている枠と描く先の要素の両方に収める
+    const railBottom = Math.min(frameBottom, el.getBoundingClientRect().bottom);
+    const railHeight = Math.max(railBottom - railTop - gap, 0);
+    const reach = railTop + SIDE_TOC_RAIL_COVER_REM * rem - top;
+    const end = document.documentElement.clientWidth - asideRect.right;
+    // 位置を全て読んでから書く（書いた後に読み直してレイアウトを計算し直さない）
+    aside.style.setProperty("--mdmark-side-toc-panel-top", `${top}px`);
+    aside.style.setProperty("--mdmark-side-toc-panel-end", `${end}px`);
+    aside.style.setProperty(
+      "--mdmark-side-toc-panel-min-height",
+      `${Math.max(reach, 0)}px`,
+    );
+    aside.style.setProperty("--mdmark-side-toc-rail-top", `${railTop}px`);
+    aside.style.setProperty("--mdmark-side-toc-rail-height", `${railHeight}px`);
+    aside.toggleAttribute("data-rail-outside", railHeight === 0);
+  };
+
+  update();
+  // スクロールする要素の中でも、画面全体のスクロールで要素の位置が変わるため両方で決め直す
+  if (!scroll.page) {
+    scroll.target.addEventListener("scroll", update, { passive: true });
+  }
+  window.addEventListener("scroll", update, { passive: true });
+  window.addEventListener("resize", update);
+  return () => {
+    if (!scroll.page) {
+      scroll.target.removeEventListener("scroll", update);
+    }
+    window.removeEventListener("scroll", update);
+    window.removeEventListener("resize", update);
+    probe.remove();
+  };
 }
 
 /** 描く先の要素の子を本文の列に包み、その後ろに右側の目次を置いて操作を付ける。見出しが無ければ何も置かない。外す関数は包む前の子の並びへ戻す */
@@ -218,11 +291,14 @@ export function attachSideToc(options: {
     }
   }
   requestUpdate();
+  // hover の出し方だけ、開く目次の枠を見えている枠の上端に合わせる
+  const unfollow = mode === "hover" ? followPanelPosition(el, aside) : () => {};
 
   return {
     content,
     aside,
     detach: () => {
+      unfollow();
       aside.removeEventListener("click", onClick);
       aside.removeEventListener("keydown", onKeyDown);
       content.removeEventListener("click", requestUpdate);

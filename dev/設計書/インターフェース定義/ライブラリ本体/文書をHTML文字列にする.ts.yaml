@@ -1,4 +1,4 @@
-title: "文書をHTML文字列にする"
+title: 文書をHTML文字列にする
 entry:
   kind: operation
   value: '`render(markdown, opts)`（配布物 `dist/index.js` の公開関数）'
@@ -1382,6 +1382,82 @@ flows:
     test: test_normal_when_code_fold_invalid
     refs:
       - dev/設計書/シナリオ/単一ユースケース/コードブロックを飾る#scenarios[異常シナリオ（畳めない行の fold=）]
+  - name: 正常系（脚注）
+    summary: '`[^ラベル]`・定義・行内の `^[中身]` を、番号・ツールチップ・末尾の閉じた一覧にする'
+    setup:
+      - name: 配布物を読んだ Node の処理
+        description: 正常系と同じ
+      - name: 脚注を持つ Markdown
+        description: '1 つ目の段落に `[^src]`、2 つ目の段落に行内の `^[行内の補足]` を持ち、文書の途中に定義 `[^src]: 出典の説明` と、字下げ 4 で続く段落 `[詳しく](https://example.com)` を置いた文書'
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        participant C as 使う側の処理
+        participant M as mdmark
+        C->>M: render(markdown)
+        M->>M: 脚注の定義と参照を読み、参照した順に番号を振る
+        M-->>C: 番号・ツールチップ・末尾の一覧を持つ HTML 文字列
+    expected:
+      - 1 つ目の段落に `a.mdmark-fn-link`（`id="mdmark-fnref-1-0"`・`href="#mdmark-fn-1"`・文字 `1`）、2 つ目の段落に同じ形の `2` がある
+      - 番号 1 のツールチップが `role="group"`・`aria-label="脚注 1"` で、タイトル `脚注 1` と `出典の説明`・`詳しく` のリンクを持ち、番号のリンクの `aria-details` がその `id` を指す
+      - 番号 2 のツールチップが `role="tooltip"` で `行内の補足` を持ち、番号のリンクの `aria-describedby` がその `id` を指す
+      - 文字列の末尾に `open` を持たない `details.mdmark-footnotes` があり、`summary` が `脚注（2 件）` で、`li#mdmark-fn-1` と `li#mdmark-fn-2` がこの順で、それぞれ `href="#mdmark-fnref-{番号}-0"` の戻るリンクを持つ
+      - 文字列に `[^src]`・`^[`・定義の行の文字が無い
+    test: test_normal_when_footnotes
+    refs:
+      - dev/設計書/シナリオ/単一ユースケース/文書をHTML文字列にする#scenarios[正常シナリオ（脚注を持つ文書）]
+  - name: 正常系（脚注の照合）
+    summary: ラベルを大文字小文字を区別せずに照合し、最初の定義を採り、定義の無い参照とリンクを文字のまま残す
+    setup:
+      - name: 配布物を読んだ Node の処理
+        description: 正常系と同じ
+      - name: 照合を試す Markdown
+        description: '段落に `[^Note]` と `[^note]` と `[^missing]` と `[^x](https://example.com)` を持ち、定義 `[^note]: 1 つ目` と `[^NOTE]: 2 つ目`、参照されない定義 `[^unused]: 使わない` を持つ文書'
+        notes: GitHub（cmark-gfm）の照合の規則と同じかを確かめる
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        participant C as 使う側の処理
+        participant M as mdmark
+        C->>M: render(markdown)
+        M->>M: ラベルを正規化して照合し、最初の定義を採る
+        M-->>C: HTML 文字列
+    expected:
+      - '`[^Note]` と `[^note]` がどちらも番号 `1` で、参照の `id` が `mdmark-fnref-1-0`・`mdmark-fnref-1-1`'
+      - 脚注 1 の中身が `1 つ目` で、`2 つ目` が文字列のどこにも無い
+      - '`[^missing]` が書いた文字のまま残る'
+      - '`[^x](https://example.com)` が、文字 `^x` の `https://example.com` へのリンクになる'
+      - 末尾の一覧の項目は 1 つで、戻るリンクが 2 つ（文字 `a`・`b`）あり、`使わない` が文字列に無い
+    test: test_normal_when_footnotes_matched
+    refs:
+      - dev/設計書/シナリオ/単一ユースケース/脚注を見る#scenarios[正常シナリオ（同じ脚注を複数回参照する）]
+      - dev/設計書/シナリオ/単一ユースケース/脚注を見る#scenarios[異常シナリオ（定義の無い参照）]
+  - name: 正常系（脚注の機能を外す）
+    summary: 文書の印で `footnotes` を外し、参照と定義を書いた文字のまま書いた位置に残す
+    setup:
+      - name: 配布物を読んだ Node の処理
+        description: 正常系と同じ
+      - name: 脚注を外す Markdown
+        description: '先頭に `<!-- features: -footnotes -->` を持ち、段落に `[^src]` と行内の `^[補足]`、その次の段落に定義 `[^src]: 出典の説明`、その次に段落 `終わり` を持つ文書'
+        notes: 定義の行がリンク参照の定義として読まれないことを決定的に起こす
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        participant C as 使う側の処理
+        participant M as mdmark
+        C->>M: render(markdown)
+        M->>M: 文書の印で脚注の機能を外し、脚注のトークンを文字に戻す
+        M-->>C: HTML 文字列
+    expected:
+      - 段落に `[^src]` と `^[補足]` が書いた文字のままあり、`[^src]` がリンクになっていない
+      - '定義が `<p>[^src]: 出典の説明</p>` として `終わり` の段落の前にある'
+      - 文字列に class `mdmark-fn-` で始まる要素と `details.mdmark-footnotes` が無い
+    test: test_normal_when_footnotes_disabled
+    refs:
+      - dev/設計書/シナリオ/単一ユースケース/機能のオン・オフを文書で上書きする#scenarios[正常シナリオ（脚注の機能を外す）]
 lead: 使う側（書き出し・ビルドの処理やサーバー）が、画面を持たずに Markdown を HTML 文字列にする。`mount` が描く本文と同じ文字列を、ブラウザでも Node でも返す。
 idempotent: true
 side_effects: なし（外部ライブラリも読まない）
@@ -1516,14 +1592,14 @@ constraints:
     constraint: '`render` は色分けせず、色分けのライブラリを読まない（返す HTML に `hljs-*` の class を入れない）。色分けは `mount` が描いた後に、色分けの対象の `code` に `render` が付ける属性 `data-mdmark-syntax="{言語のモジュール名}"`（言語は制約『コードブロック』の `:` の前）を手掛かりに行う（文書に書いた生の HTML のこの属性は sanitize が落とす）。機能 `syntax` は機能のオン・オフの一つとして文書の `<!-- features: -syntax -->` を受け、返す `features` に含める'
     notes: '`render` を同期のまま保ち、外部ライブラリの印を `mount` だけが描く今の役割分担と揃える（要件.md の推奨案 A）。色分けの中身は dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts の制約『色分けの対象』〜『色分けを読めないとき』'
   - item: 色の名前
-    constraint: '色の名前は `blue`・`red`・`green`・`yellow`・`orange`・`purple`・`gray`（小文字だけ）。表のマーカー・バッジ・本文の文字の属性に書いた色の名前を、出力の要素の `data-color` に写す。色の名前の一覧に無い名前は、その指定を当てずに制約「書き手の誤り」と同じ書き方の警告を置き、本文に書いた名前と色の名前の一覧を出す'
+    constraint: 色の名前は `blue`・`red`・`green`・`yellow`・`orange`・`purple`・`gray`（小文字だけ）。表のマーカー・バッジ・本文の文字の属性に書いた色の名前を、出力の要素の `data-color` に写す。色の名前の一覧に無い名前は、その指定を当てずに制約「書き手の誤り」と同じ書き方の警告を置き、本文に書いた名前と色の名前の一覧を出す
     notes: 色の名前の一覧は確認ログの決定。色の値は CSS 変数（インターフェース定義『文書を描く』の制約「色のプリセット」）
   - item: 表の列と行の色
-    constraint: '表のマーカーの `highlight=列名[:色],…` は、見出しの文字が列名と一致する列の `th` と `td` に class `mdmark-col-highlight` と `data-color="{色}"`（省いたときは `blue`）を付ける。`row-color=列名:値=色,値=色,…` は、その列のセルの文字（タグを除いたもの）が値と一致する本文の行の `tr` に `data-color="{色}"` を付ける（`列名:` を書いた項目から次の `列名:` までが同じ列に当たる）。`row-at=位置=色,…` は、本文の行の位置（見出し行を除いて 1 から。`2-4` で範囲）の `tr` に `data-color` を付ける。1 つの行に `row-color=` と `row-at=` の両方が当たるときは `row-at=` の色にする。どの種類の表でも書ける。表に無い列名・表に無い行の位置・`=` の無い項目は、制約「書き手の誤り」と同じく当てずに書き方の警告にする'
+    constraint: 表のマーカーの `highlight=列名[:色],…` は、見出しの文字が列名と一致する列の `th` と `td` に class `mdmark-col-highlight` と `data-color="{色}"`（省いたときは `blue`）を付ける。`row-color=列名:値=色,値=色,…` は、その列のセルの文字（タグを除いたもの）が値と一致する本文の行の `tr` に `data-color="{色}"` を付ける（`列名:` を書いた項目から次の `列名:` までが同じ列に当たる）。`row-at=位置=色,…` は、本文の行の位置（見出し行を除いて 1 から。`2-4` で範囲）の `tr` に `data-color` を付ける。1 つの行に `row-color=` と `row-at=` の両方が当たるときは `row-at=` の色にする。どの種類の表でも書ける。表に無い列名・表に無い行の位置・`=` の無い項目は、制約「書き手の誤り」と同じく当てずに書き方の警告にする
     notes: 色以外の見分け（見出しの下端の線・行の上下の線）は CSS で付ける。行の色は `tr` に付くので、並べ替え・絞り込みの後も行に付いたまま動く
   - item: バッジの色
-    constraint: '頭が `badge:` の行内のコードで、`badge:` の後ろの最初の `:` の前が色の名前のときだけ、`<span class="mdmark-badge" data-color="{色}">{2 つ目の `:` の後ろ}</span>` にする。最初の `:` の前が色の名前でないときと `:` が無いときは、今のとおり `badge:` の後ろを全てラベルにする。色の名前の後ろが空か空白だけのときはバッジにせず、`<code>` のまま出す'
-    notes: '前のバージョンで ``badge:red:x`` と書いた文書は、ラベルが `red:x` から `x` に変わる（変更履歴で知らせる）。色の名前に当たらない頭は書き方の警告にしない'
+    constraint: 頭が `badge:` の行内のコードで、`badge:` の後ろの最初の `:` の前が色の名前のときだけ、`<span class="mdmark-badge" data-color="{色}">{2 つ目の `:` の後ろ}</span>` にする。最初の `:` の前が色の名前でないときと `:` が無いときは、今のとおり `badge:` の後ろを全てラベルにする。色の名前の後ろが空か空白だけのときはバッジにせず、`<code>` のまま出す
+    notes: 前のバージョンで ``badge:red:x`` と書いた文書は、ラベルが `red:x` から `x` に変わる（変更履歴で知らせる）。色の名前に当たらない頭は書き方の警告にしない
   - item: 本文の文字の色
     constraint: '`text-color` がオンのとき、角括弧で囲んだ文字の直後の `{color=色}`（リンクの `[文字](URL)` を除く）を、`<span class="mdmark-color" data-color="{色}">{角括弧の中の文字}</span>` にする。角括弧の中は行内の Markdown として描く。知らない色の名前は、角括弧と属性を外した文字を色を付けずに出し、段落の前に書き方の警告を置く。`text-color` がオフのときは、書いた文字のまま出す'
     notes: 色だけで意味を伝えないよう、太字は CSS で付ける（確認ログ）
@@ -1547,4 +1623,7 @@ constraints:
     notes: 種類のアイコンは CSS で付ける（lucide）。`iframe` の埋め込みとタイトルの取得はしない（D-39）
   - item: 新しい記法の要素と属性
     constraint: 制約「残す要素・属性」の記法が出した要素だけに、`video`・`audio` と属性の `controls`・`autoplay`・`muted`・`loop`・`playsinline`・`preload`・`poster`、`data-color`・`data-align`・`data-nolightbox`・`data-gif`・`data-card`・`data-file-kind`、`style` の `--mdmark-image-width`・`--mdmark-gallery-cols` を許す。`poster` の URL は制約「URL のスキーム」と同じ見分けで残す。文書に書いた生の HTML の `video`・`audio`・`source` は残さない
+  - item: 脚注
+    constraint: '`footnotes` がオンのとき、`[^ラベル]`（ラベルは空白を含まない）、行頭の `[^ラベル]: 中身`（4 文字の字下げで続く段落を含む）、行内の `^[中身]` を脚注として読む。ラベルは markdown-it の `normalizeReference`（大文字小文字と空白の正規化）で照合し、同じラベルの定義が複数あるときは最初の定義を採る。番号は本文で最初に参照した順に 1 から振り、同じ脚注の 2 回目以降の参照も同じ番号にする。定義の無い参照は書いた文字のまま出し、参照されない定義は出さない。`[^ラベル](URL)` はリンクを優先する。参照の場所には `sup.mdmark-fn-ref` を置き、その中に番号のリンク `a.mdmark-fn-link`（`id="mdmark-fnref-{番号}-{その脚注の参照の通し番号}"`・`href="#mdmark-fn-{番号}"`）とツールチップ `span.mdmark-fn-tip`（`id="mdmark-fn-tip-{番号}-{参照の通し番号}"`。タイトル `脚注 {番号}` と、定義の段落ごとの中身）を置く。ツールチップの中身がリンクを持つときは `role="group"`・`aria-label="脚注 {番号}"` と番号のリンクの `aria-details`、持たないときは `role="tooltip"` と `aria-describedby` にする。脚注が 1 つ以上ある文書は、本文の節の後ろ・関連文書の一覧の前に、閉じた `details.mdmark-footnotes`（`summary` は `脚注（{件数} 件）`）とその中の `ol.mdmark-footnotes-list` を置き、脚注ごとの項目 `li.mdmark-fn-item`（`id="mdmark-fn-{番号}"`）に、定義の中身と参照ごとの戻るリンク `a.mdmark-fn-back`（`href="#mdmark-fnref-{番号}-{参照の通し番号}"`。参照が 2 つ以上のときは a・b の文字を添える）を置く。ツールチップと一覧の中の脚注の中身には、用語の下線とやめた言い方のマーカーを付けない。`footnotes` がオフのとき（設定か文書の `features` の印）、参照・定義・行内の脚注は書いた文字のまま出し、定義は書いた位置に段落として残す'
+    notes: 部品の要素の形とアイコンは部品設計で決める。読み取りは自前の block・inline・core のルール（ライブラリ選定で決定）
 test_file: tests/integration/lib/render.test.ts
