@@ -1261,7 +1261,7 @@ functions:
   - name: attachSideToc
     title: 右側の目次を付ける
     container: src/interact/side-toc.ts
-    summary: 描く先の要素の子を本文の列（`div.mdmark-content`）に包み、その後ろに `renderSideToc` の右側の目次を置いて操作を付ける。見出しが無ければ何も置かず `content` に `el` を返す。目次を出すボタンで `data-open` と `aria-expanded`、ピン止めで `data-pinned` と `aria-pressed` を切り替えて `state` に控える。出したパネルで Esc を押すとパネルを隠して目次を出すボタンへフォーカスを戻す。すべて展開・すべて折りたたみで `foldAllSections` を呼ぶ。項目を押すと、リンクの `data-heading-id` の ID の見出しを `revealTarget` で開いて移り（`href` は読まない。まとめた HTML は `rewriteLinks` で `href` を書き換える）（既定の動きは止めない）、`el` の幅が `NARROW_WIDTH_REM` 未満ならパネルを隠す。IntersectionObserver・`hashchange`・本文の列の `click` と `keyup`・すべて展開とすべて折りたたむの押下を受けて、次の描画のタイミングに今いる節を決め直す。決め直すときは、祖先に `hidden` を持つ見出し（閉じた節の中身と選ばれていないタブの中身の中の見出し）を除いて `pickCurrentHeading` に渡し、決まった見出しの項目に `aria-current="location"`、右端の線のその見出しの線に `data-current` を付け、目次を出すボタンの `mdmark-side-toc-current`（狭い幅の帯に出る文字）に見出しの文字を置く。hover の出し方では、付けたときと、`findScrollContainer` のスクロールする場所と画面の `scroll`・`resize` のたびに、hover で開く目次の枠の位置を aside の `--mdmark-side-toc-panel-top`（見えている枠の上端 = スクロールする場所が画面全体なら 0、要素ならその上端に、`--mdmark-sticky-top` と `--mdmark-space` を足した位置）・`--mdmark-side-toc-panel-end`（画面の右端から aside の右端まで）・`--mdmark-side-toc-panel-min-height`（右端の線の上端に `SIDE_TOC_RAIL_COVER_REM` を足した位置までの高さ。0 未満は 0）と、右端の線の位置を `--mdmark-side-toc-rail-top`（aside の上端と `--mdmark-side-toc-panel-top` の大きい方。右端の線の上端はこの値で決める）・`--mdmark-side-toc-rail-height`（画面の下端・スクロールする要素の下端・描く先の要素の下端のうち最も小さい位置から、`--mdmark-side-toc-rail-top` と `--mdmark-space` を引いた高さ。0 未満は 0）に px で入れる。その高さが 0 のとき（描く先の要素の下端が線の上端より上にある）は aside に `data-rail-outside` を付け、それ以外は外す。外す関数は包む前の子の並びへ戻し、位置を決める受け取りを外す
+    summary: 描く先の要素の子を本文の列（`div.mdmark-content`）に包み、その後ろに `renderSideToc` の右側の目次を置いて操作を付ける。見出しが無ければ何も置かず `content` に `el` を返す。目次を出すボタンで `data-open` と `aria-expanded`、ピン止めで `data-pinned` と `aria-pressed` を切り替えて `state` に控える。出したパネルで Esc を押すとパネルを隠して目次を出すボタンへフォーカスを戻す。すべて展開・すべて折りたたみで `foldAllSections` を呼ぶ。項目を押すと、リンクの `data-heading-id` の ID の見出しを `revealTarget` で開いて移り（`href` は読まない。まとめた HTML は `rewriteLinks` で `href` を書き換える）（既定の動きは止めない）、`el` の幅が `NARROW_WIDTH_REM` 未満ならパネルを隠す。IntersectionObserver・`hashchange`・本文の列の `click` と `keyup`・すべて展開とすべて折りたたむの押下を受けて、次の描画のタイミングに今いる節を決め直す。決め直すときは、祖先に `hidden` を持つ見出し（閉じた節の中身と選ばれていないタブの中身の中の見出し）を除いて `pickCurrentHeading` に渡し、決まった見出しの項目に `aria-current="location"`、右端の線のその見出しの線に `data-current` を付け、目次を出すボタンの `mdmark-side-toc-current`（狭い幅の帯に出る文字）に見出しの文字を置く。hover の出し方では、付けたときと、`findScrollContainer` のスクロールする場所と画面の `scroll`・`resize` と、`document.body` の子の追加・削除（`MutationObserver`。差分のミニマップの帯の出し入れ）のたびに、hover で開く目次の枠の位置を aside の `--mdmark-side-toc-panel-top`（見えている枠の上端 = スクロールする場所が画面全体なら 0、要素ならその上端に、`--mdmark-sticky-top` と `--mdmark-space` を足した位置）・`--mdmark-side-toc-panel-end`（右端の線と枠の右端。画面の右端から、スクロールする場所のスクロールバーを除いた右端（画面全体なら `document.documentElement.clientWidth`、要素ならその左端に `clientLeft` と `clientWidth` を足した位置。画面からはみ出す分は画面の端）までの幅に `SIDE_TOC_EDGE_GAP_REM` を足した値。`document.body` の子の `.mdmark-diff-minimap` のうち、幅が 0 でなく、その右端から左へパネルの幅までの横の範囲と重なるものがあれば、画面の右端からその左端までの幅に `SIDE_TOC_AVOID_GAP_PX` を足した値。描く先の要素の位置は使わない。aside は CSS の `min-width` で線の幅を取ったままにし、ピン止めの有無で本文の列の幅を変えない）・`--mdmark-side-toc-panel-min-height`（右端の線の上端に `SIDE_TOC_RAIL_COVER_REM` を足した位置までの高さ。0 未満は 0）と、右端の線の位置を `--mdmark-side-toc-rail-top`（aside の上端と `--mdmark-side-toc-panel-top` の大きい方。右端の線の上端はこの値で決める）・`--mdmark-side-toc-rail-height`（画面の下端・スクロールする要素の下端・描く先の要素の下端のうち最も小さい位置から、`--mdmark-side-toc-rail-top` と `--mdmark-space` を引いた高さ。0 未満は 0）に px で入れる。その高さが 0 のとき（描く先の要素の下端が線の上端より上にある）は aside に `data-rail-outside` を付け、それ以外は外す。外す関数は包む前の子の並びへ戻し、位置を決める受け取りを外す
     kind: 関数
     scope: internal
     side_effects: '`el` の子を本文の列へ移し、右側の目次の要素を追加し、`state` を書き換える'
@@ -1356,7 +1356,7 @@ functions:
         summary: hover で開く目次の枠の位置を、見えている枠の上端と右端の線から決める
         case: 正常
         condition: '上端が画面の 100px の位置にある高さ 400px の縦にスクロールする要素の中に、見出しが 3 つの長い本文を描いた要素を置き、`--mdmark-sticky-top: 8px` で `mode: "hover"` で付け、要素を下へスクロールして次の描画を待つ'
-        expected: aside の `--mdmark-side-toc-panel-top` が、スクロールの前と後のどちらも `100 + 8 + --mdmark-space`（px）で、`--mdmark-side-toc-panel-end` が画面の右端から aside の右端までの幅。外した後にスクロールしても値が変わらない
+        expected: aside の `--mdmark-side-toc-panel-top` が、スクロールの前と後のどちらも `100 + 8 + --mdmark-space`（px）で、`--mdmark-side-toc-panel-end` が、画面の右端からスクロールする要素の左端に `clientLeft` と `clientWidth` を足した位置までの幅に `SIDE_TOC_EDGE_GAP_REM`（rem）を px にして足した値で、aside の右端の位置によらない（スクロールする要素より描く先の要素を狭くして左に寄せる）。外した後にスクロールしても値が変わらない
         mock: なし
       - name: test_attach_side_toc_when_hover_panel_reaches_rail
         summary: hover で開く目次の枠に、右端の線の上端から線 3 本分まで届く高さの下限を入れる
@@ -1370,6 +1370,12 @@ functions:
         condition: '上端が画面の 100px の位置にある高さ 400px の縦にスクロールする要素の中に、描く先の要素の上に高さ 200px の要素と、下に高さ 450px の要素を置き（末尾までスクロールすると、描く先の要素の下端が線の上端より上に来る高さ）、見出しが 3 つの長い本文を `--mdmark-sticky-top: 8px` で `mode: "hover"` で付け、描く先の要素の下端が見えている枠の下端より下にある位置（文書の末尾の手前）と、描く先の要素の下の要素までスクロールした位置（要素の末尾）で、それぞれ次の描画を待つ'
         mock: なし
         expected: スクロールの前は `--mdmark-side-toc-rail-top` が aside の上端（`--mdmark-side-toc-panel-top` より大きい）。文書の末尾の手前では `100 + 8 + --mdmark-space`（px）で、`--mdmark-side-toc-rail-height` が `100 + 400 - --mdmark-side-toc-rail-top - --mdmark-space`（px）、aside が `data-rail-outside` を持たず、右端の線の `getBoundingClientRect().top` が `--mdmark-side-toc-rail-top` と等しい。要素の末尾では、描く先の要素の下端が線の上端より上にあるため `--mdmark-side-toc-rail-height` が `0px` で、aside が `data-rail-outside` を持ち、右端の線が表示されていない
+      - name: test_attach_side_toc_when_hover_edge_avoids_minimap
+        summary: 差分のミニマップの帯が出たときと消えたときに、スクロールせずに右端の位置を決め直す
+        case: 正常
+        condition: '画面全体がスクロールするページで、画面より狭い描く先の要素に `mode: "hover"` で付けた後、`document.body` に右端に貼り付けた幅 14px の `div.mdmark-diff-minimap` を追加して次の描画を待ち、続けてその要素を削除して次の描画を待つ'
+        mock: なし
+        expected: 追加した後の `--mdmark-side-toc-panel-end` が `14 + SIDE_TOC_AVOID_GAP_PX`（px）、削除した後は画面の右端から `document.documentElement.clientWidth` までの幅に `SIDE_TOC_EDGE_GAP_REM`（rem）を px にして足した値。どちらもスクロールと `resize` を起こさない。外した後に帯を追加しても値が変わらない
     status: planned
     introduced:
       pr: 166
@@ -2129,3 +2135,23 @@ constants:
     value: '2'
     introduced:
       pr: 320
+  - name: SIDE_TOC_EDGE_GAP_REM
+    title: スクロールする場所の右端と右側の目次の間
+    container: src/interact/side-toc.ts
+    summary: hover でピン止めしていない右端の線と目次の枠の右端の、スクロールする場所の右端からの間（rem）。先頭へ戻るボタンの `--mdmark-back-to-top-gap` の既定と同じ
+    value: '1'
+    refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[右側の目次の重なりと留める位置]
+    status: planned
+    introduced:
+      pr: 323
+  - name: SIDE_TOC_AVOID_GAP_PX
+    title: 差分のミニマップと右側の目次の間
+    container: src/interact/side-toc.ts
+    summary: 差分のミニマップの帯と横の範囲が重なるとき、帯の左端から右端の線と目次の枠の右端までに空ける幅（px）。`BACK_TO_TOP_AVOID_GAP_PX` と同じ値
+    value: '8'
+    refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[右側の目次の重なりと留める位置]
+    status: planned
+    introduced:
+      pr: 323
