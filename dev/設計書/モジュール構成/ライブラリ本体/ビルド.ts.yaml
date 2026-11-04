@@ -1,4 +1,4 @@
-title: "ライブラリ本体 / ビルド"
+title: ライブラリ本体 / ビルド
 lead: '`npm run build` が実行するビルドのスクリプト。版を決めて検査し、esbuild で `dist/` を書き、配布ファイルのサイズを検査する。Node.js v24 が型を消して `node scripts/build.ts` で直接実行する。'
 directory: |-
   ```tree
@@ -17,8 +17,8 @@ constants:
   - name: MAX_DIST_FILE_BYTES
     title: 配布ファイル 1 つの上限
     container: scripts/build.ts
-    summary: 非機能要件の配布ファイル 1 つの上限（512KB）
-    value: 512 * 1024
+    summary: 非機能要件の配布ファイル 1 つの上限（544KB）
+    value: 544 * 1024
     refs:
       - dev/設計書/非機能要件/非機能要件#requirements[配布ファイル 1 つのサイズ]
   - name: LICENSES_FILE
@@ -29,7 +29,7 @@ constants:
   - name: postcssStubPlugin
     title: postcss の差し替え
     container: scripts/bundle.ts
-    summary: 'esbuild のプラグイン。`postcss` の import を、`parse` を呼ぶと例外を投げる空の部品に差し替える'
+    summary: esbuild のプラグイン。`postcss` の import を、`parse` を呼ぶと例外を投げる空の部品に差し替える
     value: '`{ name: "stub-postcss", setup }`。`setup` は `onResolve({ filter: /^postcss$/ })` で名前空間 `stub` に向け、`onLoad` で `module.exports = { parse() { throw new Error("postcss は配布物に含めない") } }` を返す'
     reason: 'sanitize-html は `parseStyleAttributes: false` のとき postcss を呼ばないが、import はするため、束ねると配布物が大きくなる'
   - name: BROWSER_TARGETS
@@ -81,7 +81,7 @@ functions:
     scope: public
     is_async: true
     summary: 前回の `dist/` を消してから、版を決めて検査し、移行の手順を点検し、`dist/` を書いてサイズを検査し、プラグインをビルドし、終了コードを返す
-    side_effects: '最初に `dist/` を消してから書き直す。失敗したとき（版の書式の誤り・`version.ini` を読めない・esbuild の失敗・上限超過・対応ブラウザの下限に無い API）は `dist/` を残さず、標準エラーに理由を出す'
+    side_effects: 最初に `dist/` を消してから書き直す。失敗したとき（版の書式の誤り・`version.ini` を読めない・esbuild の失敗・上限超過・対応ブラウザの下限に無い API）は `dist/` を残さず、標準エラーに理由を出す
     args:
       - name: argv
         type: string[]

@@ -1,4 +1,4 @@
-title: "ライブラリ本体 / 索引と用語"
+title: ライブラリ本体 / 索引と用語
 lead: 索引の形の検査・参照の表・索引の点検・タグの語彙の照合と、用語集の表の読み取り・用語と文書の別名の照合・ツールチップと関連文書の一覧の部品・ツールチップの操作。索引の処理は DOM に頼らず、Node とブラウザで同じ結果を返す。
 directory: |-
   ```tree
@@ -623,7 +623,7 @@ functions:
     kind: 関数
     scope: internal
     summary: 文字列の中で、始まりと終わりが語の区切り（`wordStarts`）に揃う辞書の語の位置を、重ならないよう長い語を先に返す
-    description: '区切り方は実行環境の辞書に依るため、要件とシナリオの語の区切りを Node と対応ブラウザの単体テストで確かめる。元の文字列を `wordStarts` の区切りごとに NFKC と英字の小文字化をかけてつなぎ、`normalizeWord` で正規化した辞書の語が区切りの境目から境目までに一致する箇所を、元の文字列の位置に戻して返す。区切りごとに正規化するため、NFKC で長さが変わる文字があっても位置は元の区切りに揃う。`word` は `words` に渡したままの語で、正規化した後に同じになる語が複数あるときは `words` で先の語'
+    description: 区切り方は実行環境の辞書に依るため、要件とシナリオの語の区切りを Node と対応ブラウザの単体テストで確かめる。元の文字列を `wordStarts` の区切りごとに NFKC と英字の小文字化をかけてつなぎ、`normalizeWord` で正規化した辞書の語が区切りの境目から境目までに一致する箇所を、元の文字列の位置に戻して返す。区切りごとに正規化するため、NFKC で長さが変わる文字があっても位置は元の区切りに揃う。`word` は `words` に渡したままの語で、正規化した後に同じになる語が複数あるときは `words` で先の語
     args:
       - name: text
         type: string
@@ -881,7 +881,7 @@ functions:
     kind: 関数
     scope: internal
     summary: 本文のテキストのトークンを `findWords` で辞書と照合し、当たった語を語とツールチップの組（`renderTermTip`）に置き換える
-    description: 辞書は `buildDictionary` で、索引の `terms`・エイリアス（`env.aliases`）・描く文書の用語集の表・他の文書の用語集の表（`references.glossary`、索引の `docs` の順）・文書の `aliases`（`backlinks` がオンのとき）から作る。同じ用語の `id` は節（見出しから次の同じか上の階の見出しまで）ごとに最初の 1 回だけ下線を付ける。コード・リンク・見出し・用語集の表の中は照合しない。テキストのトークンを語の前後のテキストと、語の位置の `html_inline`（`renderTermTip` の HTML）に分ける。下線の語は辞書の語ではなく、テキストの一致した範囲の本文の表記のまま出す。ツールチップの `id` は文書の中の通し番号で `mdmark-term-{番号}` にする（ページで一意にするのは `attachTermTips`）。やめた言い方は、`words` の後ろに `avoided` の語を足した並びで照合する（同じ長さなら用語の語・別名と文書の別名が先に当たる）。当たった語は用語 → やめた言い方 → 文書の別名の順に引き、やめた言い方なら `renderTermTip` に `replacement` を渡す（文書の別名と同じ語でも、関連文書を出さずにやめた言い方にする。点検の `findAvoidedTerms` と揃える）。やめた言い方は節ごとに言い方ごとの最初の 1 回だけで、用語の下線とは別に数える。辞書の用語が `alias` を持つ語は `renderTermTip` に `alias` を渡し（`meaning`・`docs` は渡さない。文書の別名と同じ語でも関連文書を出さない）、辞書の `id`（`alias:{id}`）ごとに節ごとの最初の 1 回だけ下線を付ける。代わりの用語が `alias` を持つやめた言い方は、`replacement` を `{ term, meaning }`（`avoid` の種類は `meaning` を渡さない）にする。`glossary` と `backlinks` が両方オフのときは何もしない
+    description: 辞書は `buildDictionary` で、索引の `terms`・エイリアス（`env.aliases`）・描く文書の用語集の表・他の文書の用語集の表（`references.glossary`、索引の `docs` の順）・文書の `aliases`（`backlinks` がオンのとき）から作る。同じ用語の `id` は節（見出しから次の同じか上の階の見出しまで）ごとに最初の 1 回だけ下線を付ける。コード・リンク・見出し・用語集の表・脚注の定義の囲み（`outsideFootnoteDefinitions` で除く）の中は照合しない。テキストのトークンを語の前後のテキストと、語の位置の `html_inline`（`renderTermTip` の HTML）に分ける。下線の語は辞書の語ではなく、テキストの一致した範囲の本文の表記のまま出す。ツールチップの `id` は文書の中の通し番号で `mdmark-term-{番号}` にする（ページで一意にするのは `attachTermTips`）。やめた言い方は、`words` の後ろに `avoided` の語を足した並びで照合する（同じ長さなら用語の語・別名と文書の別名が先に当たる）。当たった語は用語 → やめた言い方 → 文書の別名の順に引き、やめた言い方なら `renderTermTip` に `replacement` を渡す（文書の別名と同じ語でも、関連文書を出さずにやめた言い方にする。点検の `findAvoidedTerms` と揃える）。やめた言い方は節ごとに言い方ごとの最初の 1 回だけで、用語の下線とは別に数える。辞書の用語が `alias` を持つ語は `renderTermTip` に `alias` を渡し（`meaning`・`docs` は渡さない。文書の別名と同じ語でも関連文書を出さない）、辞書の `id`（`alias:{id}`）ごとに節ごとの最初の 1 回だけ下線を付ける。代わりの用語が `alias` を持つやめた言い方は、`replacement` を `{ term, meaning }`（`avoid` の種類は `meaning` を渡さない）にする。`glossary` と `backlinks` が両方オフのときは何もしない
     args:
       - name: state
         type: StateCore
@@ -895,6 +895,7 @@ functions:
       - '#functions[findWords]'
       - '#functions[relativeHref]'
       - '#functions[renderTermTip]'
+      - dev/設計書/モジュール構成/ライブラリ本体/記法.ts#functions[outsideFootnoteDefinitions]
     unit_tests:
       - name: test_terms_rule
         case: 正常

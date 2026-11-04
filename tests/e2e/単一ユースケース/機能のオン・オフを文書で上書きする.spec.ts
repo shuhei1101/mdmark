@@ -345,3 +345,20 @@ test("test_normal_when_back_to_top_disabled", async ({ page }) => {
   await expect(page.locator("#doc button.mdmark-back-to-top")).toHaveCount(0);
   expect(await page.locator("#doc").innerText()).not.toContain("features");
 });
+
+// 設定でオンの脚注を、文書のマーカーでその文書だけオフにし、書いた文字のまま描く（正常シナリオ（脚注の機能を外す））
+test("test_normal_when_footnotes_disabled", async ({ page }) => {
+  // 準備
+  await openPage(page, builtRoot);
+  // 実行
+  await mountDocument(page, {
+    markdown:
+      "<!-- features: -footnotes -->\n\n出典がある[^src]。\n\n[^src]: 出典の説明\n",
+  });
+  // 検証
+  const doc = page.locator("#doc");
+  await expect(doc.locator(".mdmark-fn-ref")).toHaveCount(0);
+  await expect(doc.locator("details.mdmark-footnotes")).toHaveCount(0);
+  await expect(doc.locator("p").first()).toHaveText("出典がある[^src]。");
+  expect(await doc.innerHTML()).not.toContain("features:");
+});

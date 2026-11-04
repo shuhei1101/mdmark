@@ -1,4 +1,4 @@
-title: "ライブラリ本体 / 部品"
+title: ライブラリ本体 / 部品
 lead: 文書の中に mdmark が置く UI の部品を HTML 文字列で返す関数と、Storybook のストーリー。DOM に頼らず、ブラウザと Node で同じ出力になる。
 directory: |-
   ```tree
@@ -17,6 +17,7 @@ directory: |-
   ├── collapsible.ts               # タブとステップの折り畳みの renderCollapsible
   ├── tree.ts                      # ファイルツリーの renderTree・renderTreeBar・fileIconOf・folderOpenByDefault
   ├── badge.ts                     # バッジの renderBadge（色を含む）
+  ├── footnote.ts                  # 脚注の番号の renderFootnoteRef と脚注の一覧の renderFootnotes
   ├── code-block.ts                # コードブロックの renderCodeBlock と renderCodeCopy と、行の開閉のボタンの renderCodeFoldToggle・renderCodeFoldMore
   ├── toc.ts                       # 目次の renderToc
   ├── section.ts                   # 節の renderSection
@@ -1007,7 +1008,7 @@ functions:
   - name: renderSideToc
     title: 右側の目次を描く
     container: src/parts/side-toc.ts
-    summary: 部品設計『右側の目次』の HTML を返す。深いレベルの見出しは直前の浅いレベルの入れ子にし、右端の線を見出しの数だけ並べる。項目のリンクは `href="#{id}"` と、見出しの ID を持つ `data-heading-id` を持つ。`sections` が `false` ならすべて展開・すべて折りたたむを置かない。アイコンは lucide の ellipsis・pin・chevrons-up-down・chevrons-down-up（`src/parts/icons.ts` に Ellipsis と ChevronsDownUp を追加する）
+    summary: 部品設計『右側の目次』の HTML を返す。深いレベルの見出しは直前の浅いレベルの入れ子にし、右端の線を見出しの数だけ並べる。項目のリンクは `href="#{id}"` と、見出しの ID を持つ `data-heading-id` を持つ。`sections` が `false` ならすべて展開・すべて折りたたむを置かない。目次の頭にはタイトルを置かず、まとめて開閉するボタンの並び（`sections` が `true` のとき）とピン止めのボタンをこの順に置く。ピン止めのボタンには押す前のアイコン（`panel-right-dashed`、`mdmark-side-toc-pin-off`）と押した後のアイコン（`panel-right`、`mdmark-side-toc-pin-on`）を両方置き、CSS が `aria-pressed` で片方を出す。アイコンは lucide の ellipsis・panel-right-dashed・panel-right・chevrons-up-down・chevrons-down-up（`src/parts/icons.ts` に PanelRightDashed と PanelRight を追加する。`pin` は表のピン止めで使うため残す）
     kind: 関数
     scope: internal
     args:
@@ -1026,7 +1027,7 @@ functions:
         summary: 見出しを入れ子にし、右端の線と読み上げ名を付ける
         condition: '`手引き`（h1）・`導入`（h2）・`前提`（h3）・`使い方`（h2）を既定の引数で渡す'
         mock: なし
-        expected: '`data-mode="hover"`、`nav` が `aria-label="右側の目次"`、`手引き` の `li` の中に `導入`・`使い方`、`導入` の `li` の中に `#前提` のリンクがあり、`data-heading-id="前提"` を持つ。右端の線が 4 本で `aria-hidden="true"`。目次を出すボタンが `aria-expanded="false"` で `aria-controls="mdmark-side-toc-panel"`、ピン止めが `aria-pressed="false"`、`data-fold-all="open"` と `data-fold-all="close"` のボタンがある'
+        expected: '`data-mode="hover"`、`nav` が `aria-label="右側の目次"`、`手引き` の `li` の中に `導入`・`使い方`、`導入` の `li` の中に `#前提` のリンクがあり、`data-heading-id="前提"` を持つ。右端の線が 4 本で `aria-hidden="true"`。目次を出すボタンが `aria-expanded="false"` で `aria-controls="mdmark-side-toc-panel"`、ピン止めが `aria-pressed="false"` で `mdmark-side-toc-pin-off` と `mdmark-side-toc-pin-on` の 2 つのアイコンを持ち、`data-fold-all="open"` と `data-fold-all="close"` のボタンがある。`mdmark-side-toc-head` の子が `mdmark-side-toc-actions` と `mdmark-side-toc-pin` の順で、`mdmark-side-toc-title` と「目次」の文字が無い'
       - name: test_render_side_toc_when_fixed_open
         case: 正常
         summary: 出し方と出している状態を属性に写す
@@ -1038,7 +1039,7 @@ functions:
         summary: sections が false ならすべて展開・すべて折りたたむを置かない
         condition: '`sections: false`'
         mock: なし
-        expected: '`data-fold-all` を持つボタンが無い'
+        expected: '`data-fold-all` を持つボタンが無く、`mdmark-side-toc-head` の子が `mdmark-side-toc-pin` だけ'
       - name: test_render_side_toc_when_current
         case: 正常
         summary: 今いる節の項目・線・狭い幅の帯の文字を付ける
@@ -1537,22 +1538,22 @@ functions:
     scope: internal
     summary: 畳める行の行番号の右に置く開閉のボタン（`type="button"`・class `mdmark-code-fold`・`aria-expanded`・`aria-controls`・読み上げの名前 `{開始} 行目から {終了} 行目`・`chevron-down` か `chevron-right` のアイコン）の HTML を返す
     args:
-    - name: options
-      type: '{ expanded: boolean; from: number; to: number; controls: string }'
-      required: true
-      description: 開いているか、畳む範囲の最初と最後の行番号（1 から）、畳む行の `id` を空白で並べたもの
+      - name: options
+        type: '{ expanded: boolean; from: number; to: number; controls: string }'
+        required: true
+        description: 開いているか、畳む範囲の最初と最後の行番号（1 から）、畳む行の `id` を空白で並べたもの
     returns:
       type: string
       description: '`<button class="mdmark-code-fold"` で始まる HTML'
     callees:
-    - dev/設計書/モジュール構成/ライブラリ本体/図.ts#functions[iconSvg]
+      - dev/設計書/モジュール構成/ライブラリ本体/図.ts#functions[iconSvg]
     unit_tests:
-    - name: test_render_code_fold_toggle
-      case: 正常
-      summary: 開閉の状態と範囲を読み上げの名前に持つ
-      condition: '`expanded` が `false`、`from` が 4、`to` が 7'
-      mock: なし
-      expected: '`aria-expanded="false"`・`aria-label="4 行目から 7 行目"` と `chevron-right` の svg を持つ'
+      - name: test_render_code_fold_toggle
+        case: 正常
+        summary: 開閉の状態と範囲を読み上げの名前に持つ
+        condition: '`expanded` が `false`、`from` が 4、`to` が 7'
+        mock: なし
+        expected: '`aria-expanded="false"`・`aria-label="4 行目から 7 行目"` と `chevron-right` の svg を持つ'
     status: planned
     introduced:
       pr: 275
@@ -1563,23 +1564,89 @@ functions:
     scope: internal
     summary: 畳んだ行の末尾に置く `⋯` のボタン（`type="button"`・class `mdmark-code-fold-more`・読み上げの名前 `{開始} 行目から {終了} 行目を展開`）の HTML を返す
     args:
-    - name: options
-      type: '{ from: number; to: number }'
-      required: true
-      description: 畳んだ範囲の最初と最後の行番号（1 から）
+      - name: options
+        type: '{ from: number; to: number }'
+        required: true
+        description: 畳んだ範囲の最初と最後の行番号（1 から）
     returns:
       type: string
       description: '`<button class="mdmark-code-fold-more"` で始まる HTML'
     unit_tests:
-    - name: test_render_code_fold_more
-      case: 正常
-      summary: 開く範囲を読み上げの名前に持つ
-      condition: '`from` が 4、`to` が 7'
-      mock: なし
-      expected: '`aria-label="4 行目から 7 行目を展開"` と文字 `⋯` を持つ'
+      - name: test_render_code_fold_more
+        case: 正常
+        summary: 開く範囲を読み上げの名前に持つ
+        condition: '`from` が 4、`to` が 7'
+        mock: なし
+        expected: '`aria-label="4 行目から 7 行目を展開"` と文字 `⋯` を持つ'
     status: planned
     introduced:
       pr: 275
+  - name: renderFootnoteRef
+    title: 脚注の番号を描く
+    container: src/parts/footnote.ts
+    kind: 関数
+    scope: internal
+    summary: 部品設計『脚注の番号』の HTML を返す。`bodies` のどれかが `<a ` を持つときはツールチップを `role="group"`・`aria-label="脚注 {number}"` にして番号のリンクから `aria-details` で指し、持たないときは `role="tooltip"` にして `aria-describedby` で指す。`bodies` は描いた HTML なのでエスケープしない
+    args:
+      - name: options
+        type: '{ number: number; refIndex?: number; bodies: string[]; below?: boolean }'
+        required: true
+        description: 部品設計の引数（`refIndex` の既定は 0、`below` の既定は `false`）
+    returns:
+      type: string
+      description: '`<sup class="mdmark-fn-ref">` の HTML'
+    unit_tests:
+      - name: test_render_footnote_ref
+        case: 正常
+        summary: 番号のリンクと role tooltip のツールチップを組む
+        condition: 部品設計の `Closed`
+        mock: なし
+        expected: '`a.mdmark-fn-link` が `id="mdmark-fnref-1-0"`・`href="#mdmark-fn-1"`・`aria-describedby="mdmark-fn-tip-1-0"` を持ち、中に視覚で隠す `脚注 ` と `1`。`span.mdmark-fn-tip` が `role="tooltip"` で、タイトル `脚注 1` と `span.mdmark-fn-tip-body` 1 つを持つ'
+      - name: test_render_footnote_ref_when_link
+        case: 正常
+        summary: 中身がリンクを持つと role group にする
+        condition: 部品設計の `WithLink`
+        mock: なし
+        expected: ツールチップが `role="group"`・`aria-label="脚注 1"` で、番号のリンクが `aria-details="mdmark-fn-tip-1-0"` を持ち `aria-describedby` を持たない
+      - name: test_render_footnote_ref_when_below
+        case: 正常
+        summary: below で is-below を付け、refIndex を id に使う
+        condition: '`number: 12`・`refIndex: 1`・`below: true`'
+        mock: なし
+        expected: '`sup` が class `is-below` を持ち、`id="mdmark-fnref-12-1"`・`id="mdmark-fn-tip-12-1"`'
+  - name: renderFootnotes
+    title: 脚注の一覧を描く
+    container: src/parts/footnote.ts
+    kind: 関数
+    scope: internal
+    summary: 部品設計『脚注の一覧』の HTML を返す。`items` が空なら空文字。項目の最後の `</p>` の前（`p` が無ければ末尾）に、`refCount` の数の戻るリンクを置く。`html` は描いた HTML なのでエスケープしない
+    args:
+      - name: options
+        type: '{ items: Array<{ number: number; html: string; refCount: number }>; open?: boolean }'
+        required: true
+        description: 部品設計の引数（`open` の既定は `false`）
+    returns:
+      type: string
+      description: '`<details class="mdmark-footnotes">` の HTML か空文字'
+    unit_tests:
+      - name: test_render_footnotes
+        case: 正常
+        summary: 件数の見出しで閉じた一覧を組む
+        condition: 部品設計の `Closed`
+        mock: なし
+        expected: '`details` が `open` を持たず、`summary` が `脚注（2 件）`。`ol.mdmark-footnotes-list` に `li#mdmark-fn-1`・`li#mdmark-fn-2` が並び、それぞれ `</p>` の前に `href="#mdmark-fnref-{番号}-0"` の `a.mdmark-fn-back` を 1 つ持つ'
+      - name: test_render_footnotes_when_referenced_twice
+        case: 正常
+        summary: 2 回参照した脚注に a・b の戻るリンクを置く
+        condition: 部品設計の `ReferencedTwice`
+        mock: なし
+        expected: 戻るリンクが 2 つで、`href` が `#mdmark-fnref-1-0`・`#mdmark-fnref-1-1`、文字に `a`・`b` を持つ
+      - name: test_render_footnotes_when_empty
+        case: 正常
+        summary: 項目が無ければ一覧を置かない
+        condition: '`items: []`'
+        mock: なし
+        expected: 空文字
 notes:
   ストーリー: '`*.stories.yaml` は `title`（部品設計の `story`）と、部品設計の `states` ごとの `stories[].name`・`stories[].parameters.server.id`（部品の id。ファイル名の頭）・`stories[].args` を持つ。`embed` の配列の引数は `a,b` の 1 つの文字列で書く。この PR で足す部品の配列・オブジェクトの引数は JSON の文字列で書く（戻し方は『部品の描画』）。中身を持つ部品のストーリーは、中身に部品ごとの見本の HTML を渡す'
   印の付け方: 部品の関数は `markOwn` を掛けない。記法のコアルールと `mount` の操作が、差し込む前に掛ける
@@ -1612,6 +1679,7 @@ test_files:
   - tests/unit/src/parts/media.test.ts
   - tests/unit/src/parts/gif.test.ts
   - tests/unit/src/parts/card.test.ts
+  - tests/unit/src/parts/footnote.test.ts
 data_models:
   - name: CodeLine
     title: コードの行

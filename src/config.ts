@@ -82,6 +82,7 @@ export const DEFAULT_FEATURES: Record<string, boolean> = {
   steps: true,
   tree: true,
   badge: true,
+  footnotes: true,
   code: true,
   syntax: true,
   toc: true,

@@ -1,14 +1,14 @@
-title: "sanitize-html"
-kind: "ライブラリ"
+title: sanitize-html
+kind: ライブラリ
 version:
-  current: 2.18.0
-  latest: 2.18.0
-  checked_on: '2026-10-13'
+  current: 2.18.1
+  latest: 2.18.1
+  checked_on: '2026-11-04'
   source: package.json
-  pinning: 完全一致（2.18.0 より前の版には 2026 年の勧告がある）。依存は lockfile で固定する
+  pinning: 完全一致（2.18.0 より前の版には 2026 年の勧告があり、2.18.1 で再帰の無制限によるスタックオーバーフローを修正したため、それより前の版にしない）。依存は lockfile で固定する
 catalogs:
   - name: API
-    version: 2.18.0
+    version: 2.18.1
     entries:
       - name: sanitizeHtml
         kind: 関数
@@ -49,7 +49,7 @@ catalogs:
             type: string
             description: 落とした後の HTML。許可していない要素は要素だけが落ち、中の文字は残る（`script`・`style` は中身ごと落ちる）。HTML コメントは落ちる
 lead: 許可する要素・属性・URL のスキームを列挙し、HTML 文字列からそれ以外を落とすサニタイザー。DOM を使わず htmlparser2 で HTML を読む。
-purl: pkg:npm/sanitize-html@2.18.0
+purl: pkg:npm/sanitize-html@2.18.1
 dependency_scope: 必須
 adoption: 採用
 upstream: apostrophecms/apostrophe
@@ -65,7 +65,7 @@ selection:
   consequences: 'ビルドで postcss を空の部品に差し替え、`parseStyleAttributes: false` にする。`style` 属性は許可せず、列の揃えは `transformTags` で `text-align` の値だけを `mdmark-align-*` の class に移す。`mdmark-*` の要素名は許可を列挙で持つ。'
 install: |-
   ```bash
-  npm i -E sanitize-html@2.18.0
+  npm i -E sanitize-html@2.18.1
   npm i -D -E @types/sanitize-html@2.16.2
   ```
 notes:

@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <!-- viewport: スマホ幅で等倍に表示する -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- color-scheme: 明るい配色とダークの両方を持つことをブラウザへ伝える -->
+  <meta name="color-scheme" content="light dark">
+  <title>components / side-toc-head（右側の目次の頭とピン止めのボタン） | mdmark のモック</title>
+  <!-- 配布物の CSS（ライブラリ本体） -->
+  <link rel="stylesheet" href="../../../../dist/index.css">
+  <!-- この PR の案（番号で共有するアセット） -->
+  <link rel="stylesheet" href="../../refs/320/assets/proposal.css">
+  <!-- モック専用の操作列とカタログの並び（#287 で共有するアセット） -->
+  <link rel="stylesheet" href="../../refs/287/assets/scene.css">
+  <!-- このカタログだけの規則 -->
+  <link rel="stylesheet" href="../../refs/320/assets/catalog.css">
+  <!-- ピン止めのアイコンの案ごとに、ボタンの状態と頭の並びを並べる -->
+  <script type="module" src="../../refs/320/assets/catalog.js"></script>
+</head>
+<body>
+  <!-- モック専用の操作列: 配色の切り替え。[data-scene-axis] [data-scene-value]: catalog.js が行き先の URL と今の配色の aria-current を当てる -->
+  <div class="mock-bar">
+    <div class="mock-bar-group" role="group" aria-label="配色">
+      <span class="mock-bar-label">配色</span>
+      <a class="mock-bar-item" data-scene-axis="scheme" data-scene-value="light">ライト</a>
+      <a class="mock-bar-item" data-scene-axis="scheme" data-scene-value="dark">ダーク</a>
+    </div>
+  </div>
+
+  <main class="catalog-page">
+    <nav class="crumbs" aria-label="パンくずリスト">
+      <a href="../index.md">components</a> / side-toc-head
+    </nav>
+    <div class="catalog" id="catalog">
+      <section>
+        <h1 class="catalog-title">右側の目次の頭とピン止めのボタン</h1>
+        <p class="catalog-note">「目次」のラベルを置かず、すべて展開・すべて折りたたむ・ピン止めの 3 つのボタンを 1 行に並べる。ピン止めのアイコンの案ごとに、押す前と押した後の形を比べる。</p>
+      </section>
+    </div>
+  </main>
+</body>
+</html>

@@ -1,0 +1,101 @@
+/* #320 の案: 見出し 1・見出し 2 の下の線と区切り線、右側の目次の上端・ピン止めのアイコン・hover で開く位置。
+   配布物 dist/index.css の後に読み、案の分だけを上書きする。html の data-rule・data-position・data-scheme は proposal.js が当てる */
+
+/* ---------- 見出しの線と区切り線 ---------- */
+
+/* 見出しの線の色: 新しい変数 --mdmark-color-border-muted を、各テーマの --mdmark-color-border を地の色へ寄せた色で持つ */
+:root {
+  --mdmark-heading-rule-width: 1px;
+
+  /* A（推奨）: GitHub の borderColor-muted と同じく、枠線の色を 70% で地の色に混ぜる */
+  --mdmark-color-border-muted: color-mix(in oklab, var(--mdmark-color-border) 70%, var(--mdmark-color-bg));
+}
+
+/* B: 枠線の色と地の色の中間 */
+:root[data-rule="half"] {
+  --mdmark-color-border-muted: color-mix(in oklab, var(--mdmark-color-border) 50%, var(--mdmark-color-bg));
+}
+
+/* 比べるための色: 見出しの線を区切り線と同じ枠線の色で描く */
+:root[data-rule="border"] {
+  --mdmark-color-border-muted: var(--mdmark-color-border);
+}
+
+/* 線を出したくない使う側: 太さに 0 を当てたときの見え方 */
+:root[data-rule="none"] {
+  --mdmark-heading-rule-width: 0px;
+}
+
+.mdmark {
+  /* 見出し 1・見出し 2: 下の線を薄い枠線の色で描く。文字と線の間の 0.3em は配布物の規則のまま */
+  :is(h1, h2) {
+    border-block-end-color: var(--mdmark-color-border-muted);
+  }
+
+  /* 区切り線: GitHub と同じ 0.25em の太さにする */
+  hr {
+    border-block-start-width: 0.25em;
+  }
+}
+
+/* ---------- 右側の目次の上端 ---------- */
+
+.mdmark {
+  /* 目次の頭: 「目次」のラベルを置かず、すべて展開・すべて折りたたむを左、ピン止めを右に 1 行で並べる。下の線で項目の並びと分ける */
+  .mdmark-side-toc-head {
+    padding: 0.375rem;
+    border-block-end: 1px solid var(--mdmark-color-border);
+  }
+
+  /* 頭へ移したまとめて開閉するボタンの並び: 頭の中では余白と下の線を持たない */
+  .mdmark-side-toc-head .mdmark-side-toc-actions {
+    padding: 0;
+    border-block-end: 0;
+  }
+
+  /* ピン止めのボタンを押した後: アイコンは塗らずに形を変え、選択中の背景と印の色で押す前と見分ける */
+  .mdmark-side-toc-pin[aria-pressed="true"] {
+    background: var(--mdmark-color-current-bg);
+
+    .mdmark-diagram-icon {
+      fill: none;
+    }
+  }
+}
+
+/* ---------- hover で開く目次の位置 ---------- */
+
+/* A（推奨）: 目次の枠を画面に固定し、上端を、文書のどこを読んでいても見えている枠の上端（スクロールする場所の上端に --mdmark-sticky-top を足した位置）に余白を足した位置に出す。
+   上端・横の位置・右端の線まで届く最小の高さは proposal.js がスクロールのたびに入れる */
+:root[data-position="viewport"] .mdmark .mdmark-side-toc[data-mode="hover"]:not([data-pinned]) .mdmark-side-toc-panel {
+  position: fixed;
+  inset-block-start: var(--proposal-panel-top, 0px);
+  inset-inline-end: var(--proposal-panel-end, 0px);
+  min-height: var(--proposal-panel-min-height, auto);
+}
+
+/* 撮影用の URL の ?open=1: ポインターを置いたときと同じく目次の枠を出したままにする（ポインターを置く操作は画面をスクロールさせるため） */
+:root[data-open] .mdmark .mdmark-side-toc[data-mode="hover"] .mdmark-side-toc-panel {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* 描く場所の「横のはみ出しを隠す祖先の中」: 祖先の overflow-x: hidden で、右側の目次の sticky が画面に留まらない使う側のページ */
+body[data-host="clip"] .scroll-box {
+  overflow-x: hidden;
+}
+
+/* ---------- 配色 ---------- */
+
+/* モックの操作列の「ダーク」: OS の設定によらず、既定のテーマのダークの値を当てる（配布物は prefers-color-scheme で切り替えるため） */
+:root[data-scheme="dark"] {
+  --mdmark-color-bg: #131316;
+  --mdmark-color-text: #ededef;
+  --mdmark-color-heading: #ededef;
+  --mdmark-color-muted: #b4b4bc;
+  --mdmark-color-link: #2dd4bf;
+  --mdmark-color-border: #26262b;
+  --mdmark-color-surface: #1b1b1f;
+  --mdmark-color-current-bg: #10302c;
+  color-scheme: dark;
+}
