@@ -1,0 +1,41 @@
+$ npm run test:unit
+
+> test:unit
+> vitest run --project 'unit*'
+
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/fix-side-toc-panel-stacking-and-sticky-top
+
+ ❯ |unit-browser (chromium)| tests/unit/src/interact/side-toc.browser.test.ts (19 tests | 1 failed) 1745ms
+   × test_attach_side_toc_when_hover_rail_placed 276ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/side-toc.browser.test.ts > test_attach_side_toc_when_hover_rail_placed
+AssertionError: expected '' to be '324px' // Object.is equality
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/side-toc.browser.test.ts/test_attach_side_toc_when_hover_rail_placed.png
+
+- Expected
++ Received
+
+- 324px
+
+ ❯ tests/unit/src/interact/side-toc.browser.test.ts:671:62
+    669|   const fixedTop = 100 + 8 + space;
+    670|   // 検証: スクロールの前は aside の上端
+    671|   expect(panelVariable(aside, "--mdmark-side-toc-rail-top")).toBe(
+       |                                                              ^
+    672|     `${aside.getBoundingClientRect().top}px`,
+    673|   );
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=a3008d30:5235:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 192 passed (193)
+      Tests  1 failed | 1424 passed (1425)
+   Start at  16:06:05
+   Duration  60.30s (worker 72%, tests 16%, import 8%, transform 3%)
+
