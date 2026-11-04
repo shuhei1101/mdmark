@@ -366,3 +366,43 @@ test("test_normal_when_blob_and_dynamic_import_blocked", async ({
   expect(opened.blobRequests()).toEqual([]);
   await opened.close();
 });
+
+// 同じラベルの脚注を持つ 2 つの文書をまとめ、移った文書の脚注のツールチップと戻るリンクがその文書の中で効く（正常シナリオ（脚注を持つ文書））
+test("test_normal_when_footnotes", async ({ builtRoot, tempDir, page }) => {
+  // 準備
+  const dir = await tempDir();
+  await writeSampleDocs(dir, {
+    readme:
+      "# 入口\n\n[使い方](使い方/guide.md) を読む[^1]。\n\n[^1]: 入口の補足\n",
+  });
+  await writeFiles(dir, {
+    "使い方/guide.md":
+      "# 使い方\n\n別の文書にも脚注がある[^1]。\n\n[^1]: 別の文書の補足\n",
+  });
+  // 実行
+  const result = await runCli(builtRoot, ["build"], dir);
+  // 検証
+  expect(result.code).toBe(0);
+  expect(existsSync(join(dir, "dist", "docs.html"))).toBe(true);
+  const opened = await openStandalone(page, {
+    tempDir,
+    htmlFile: join(dir, "dist", "docs.html"),
+  });
+  await page.locator('article p a[href="#/使い方/guide.md"]').click();
+  const article = page.locator("article.mdmark");
+  await expect(article.locator("h1")).toContainText("使い方");
+  const link = article.locator(".mdmark-fn-link");
+  await link.hover();
+  const tip = article.locator(".mdmark-fn-tip");
+  await expect(tip).toBeVisible();
+  await expect(tip).toContainText("別の文書の補足");
+  await page.mouse.move(0, 0);
+  const list = article.locator("details.mdmark-footnotes");
+  await list.locator("summary").click();
+  await list.locator(".mdmark-fn-back").click();
+  // 開いている文書は入れ替わらず、その文書の番号へ戻る
+  await expect(article.locator("h1")).toContainText("使い方");
+  await expect(link).toBeFocused();
+  await expect(link).toBeInViewport();
+  expect(opened.externalRequests()).toEqual([]);
+});
