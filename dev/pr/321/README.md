@@ -1,0 +1,1 @@
+# sanitize-html を 2.18.1 に上げ、2.18.0 の勧告 GHSA-c9rx-x947-fp3h を解消する
