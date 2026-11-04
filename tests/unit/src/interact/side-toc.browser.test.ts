@@ -529,9 +529,7 @@ test("test_attach_side_toc_when_fold_all_moves_current", async () => {
 
 /** ルートの文字の大きさ（px）。`--mdmark-space` などの rem を px にする */
 function rootFontSize(): number {
-  return Number.parseFloat(
-    getComputedStyle(document.documentElement).fontSize,
-  );
+  return Number.parseFloat(getComputedStyle(document.documentElement).fontSize);
 }
 
 /** 見出しが 3 つの、画面より長い本文の Markdown を返す */
@@ -567,15 +565,14 @@ test("test_attach_side_toc_when_hover_panel_placed", async () => {
   });
   const aside = result.aside as HTMLElement;
   const space =
-    Number.parseFloat(getComputedStyle(root).getPropertyValue("--mdmark-space")) *
-    rootFontSize();
+    Number.parseFloat(
+      getComputedStyle(root).getPropertyValue("--mdmark-space"),
+    ) * rootFontSize();
   const expectedTop = `${100 + 8 + space}px`;
   const expectedEnd = () =>
     `${document.documentElement.clientWidth - aside.getBoundingClientRect().right}px`;
   // 実行・検証: 付けた直後
-  expect(panelVariable(aside, "--mdmark-side-toc-panel-top")).toBe(
-    expectedTop,
-  );
+  expect(panelVariable(aside, "--mdmark-side-toc-panel-top")).toBe(expectedTop);
   expect(panelVariable(aside, "--mdmark-side-toc-panel-end")).toBe(
     expectedEnd(),
   );
@@ -592,9 +589,7 @@ test("test_attach_side_toc_when_hover_panel_placed", async () => {
   box.style.top = "50px";
   window.dispatchEvent(new Event("resize"));
   box.dispatchEvent(new Event("scroll"));
-  expect(panelVariable(aside, "--mdmark-side-toc-panel-top")).toBe(
-    expectedTop,
-  );
+  expect(panelVariable(aside, "--mdmark-side-toc-panel-top")).toBe(expectedTop);
 });
 
 // hover で開く目次の枠に、右端の線の上端から線 3 本分まで届く高さの下限を入れる（正常系）
