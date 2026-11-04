@@ -4405,6 +4405,8 @@ flows:
         description: 正常系（右側の目次をホバーで出してピン止めする）と同じ文書
       - name: Mock
         description: 差し替える依存は無い
+      - name: 留める位置のずれ
+        description: '描く先の `div` に `--mdmark-sticky-top: 48px` を当てる'
     flow: |-
       sequenceDiagram
         participant P as 使う側のページ
@@ -4417,7 +4419,7 @@ flows:
         P->>M: 右端の線にポインターを乗せる
         M->>P: 右側の目次を出す
     expected:
-      - 途中と末尾のどちらでも、右端の線の `getBoundingClientRect().top` が、スクロールする場所の上端に `--mdmark-space`（既定 0.875rem）を足した値と 1px 以内で等しい
+      - 途中と末尾のどちらでも、右端の線の `getBoundingClientRect().top` が、スクロールする場所の上端に `--mdmark-sticky-top`（48px）と `--mdmark-space`（既定 0.875rem）を足した値と 1px 以内で等しい
       - 途中と末尾のどちらでも、右端の線の `getBoundingClientRect().bottom` が、スクロールする場所の下端以下
       - 末尾でポインターを乗せた後、パネルが不透明で、`getBoundingClientRect().top` が右端の線の上端と 1px 以内で等しい
     test: test_normal_when_side_toc_scrolled_to_end
