@@ -28,6 +28,8 @@
   <!-- focus・error・warning の行・畳む・開く・インデントの縦線の規則と印刷の規則（#275 の追加分） -->
   <link rel="stylesheet" href="../../refs/275/assets/code-block.css">
   <link rel="stylesheet" href="../../refs/275/assets/code-block-print.css" media="print" data-print-styles>
+  <!-- ファイルツリーの規則（#225 で共有するアセット。使う側の pre への汎用の CSS の場面で使う） -->
+  <link rel="stylesheet" href="../../refs/225/assets/tree.css">
   <!-- 配色の切り替え -->
   <!-- 折り返しの規則（#328 で共有するアセット）と、使う側の pre への汎用の CSS の見本 -->
   <link rel="stylesheet" href="../../refs/328/assets/wrap.css">
@@ -38,6 +40,8 @@
   <!-- コードブロックの帯（言語のラベルとコピーボタン）の操作 -->
   <!-- 行のマーカー・畳む・開く・縦線の見本を行に分けて描く（#275。コピーのボタンより先に読む） -->
   <script src="../../refs/275/assets/code-fold.js" defer></script>
+  <!-- ファイルツリー（罫線の pre をツリーに置き換える。コピーのボタンより先に読む） -->
+  <script src="../../refs/225/assets/tree.js" defer></script>
   <script src="../../refs/151/assets/code-block.js" defer></script>
 </head>
 <body>
@@ -349,7 +353,7 @@ print(f"{len(docs)} 件を描きました", None, True)</code></pre>
         </article>
       </section>
 
-      <!-- 使う側の pre への汎用の CSS（#294）: 使う側が層の外に .md pre { white-space: pre-wrap; overflow-wrap: anywhere } を書いても、印の無いブロックは折り返さず、JSON の字下げも崩れない。wrap のブロックは折り返す -->
+      <!-- 使う側の pre への汎用の CSS（#294）: 使う側が層の外に .md pre { white-space: pre-wrap; overflow-wrap: anywhere } を書いても、印の無いブロックとファイルツリーは折り返さず、JSON の字下げとツリーの罫線・入れ子も崩れない。wrap のブロックは折り返す -->
       <section aria-labelledby="state-host-pre">
         <h2 class="catalog-label" id="state-host-pre">使う側の pre への汎用の CSS を当てた文書（印の無いブロックは折り返さない）</h2>
         <article class="mdmark mock-host-pre">
@@ -361,6 +365,10 @@ print(f"{len(docs)} 件を描きました", None, True)</code></pre>
 <span class="mdmark-code-line" data-line="5"><span class="mdmark-code-text">  ]</span></span>
 <span class="mdmark-code-line" data-line="6"><span class="mdmark-code-text">}</span></span></code></pre>
 </figure>
+<pre data-mock-tree data-open="all">very-long-folder-name-for-the-generated-design-documents/
+├── a-file-name-that-is-much-longer-than-the-box-width-on-phones.config.ts # 使う側の pre への CSS でも折り返さない
+└── parts/
+    └── notice.ts</pre>
 <figure class="mdmark-code">
   <pre class="mdmark-code-lines mdmark-code-wrap" tabindex="0" aria-label="コード"><code class="language-ts" style="--mdmark-code-digits: 1"><span class="mdmark-code-line"><span class="mdmark-code-text"><span class="hljs-keyword">import</span> { mount } <span class="hljs-keyword">from</span> <span class="hljs-string">&quot;mdmark&quot;</span>;</span></span>
 <span class="mdmark-code-line"><span class="mdmark-code-text"><span class="hljs-keyword">const</span> url = <span class="hljs-string">&quot;https://cdn.jsdelivr.net/gh/shuhei1101/mdmark@v0.10.0/dist/index.js&quot;</span>; <span class="hljs-comment">// 版を固定した URL から配布物を読み、描く先の要素に文書を描く</span></span></span>

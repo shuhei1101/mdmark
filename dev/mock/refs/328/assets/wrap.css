@@ -32,11 +32,13 @@
   white-space: normal;
   overflow-x: visible;
 
+  /* 注釈は名前の下の行に置く。行の先頭から折り返さず、名前の頭（開閉のマーカーとアイコンの右）から始める */
   .mdmark-tree-row {
     flex-wrap: wrap;
     align-items: flex-start;
   }
 
+  /* 名前の塊: 長い名前はアイコンの右の列の中で折り返す */
   .mdmark-tree-head {
     flex: 0 1 auto;
     align-items: flex-start;
@@ -48,14 +50,19 @@
     }
   }
 
-  /* 注釈の列を揃えず、名前の後ろに続けて折り返す。注釈までの点線は引かない */
+  /* 注釈の列を揃えず、注釈までの点線は引かない */
   .mdmark-tree-row:has(.mdmark-tree-note) > .mdmark-tree-head {
     min-width: 0;
-    margin-inline-end: 1em;
 
     &::after {
       display: none;
     }
+  }
+
+  /* 名前の頭の位置: 開閉のマーカーの幅 + 間隔 + アイコンの幅 + 間隔 */
+  .mdmark-tree-note {
+    flex: 1 0 100%;
+    padding-inline-start: calc(var(--mdmark-tree-chevron) + 1.8em);
   }
 
   .mdmark-tree-label,
