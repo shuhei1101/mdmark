@@ -2985,3 +2985,123 @@ test("test_normal_when_er_diagram_invalid", async () => {
   expect(findTags(html, 'class="mdmark-diagram"')).toHaveLength(1);
   expect(html).toContain("<p>段落</p>");
 });
+
+/** 1 つ目の段落に参照、2 つ目の段落に行内の脚注を持ち、途中に 2 段落の定義を置いた文書 */
+const FOOTNOTES_MARKDOWN = [
+  "出典がある[^src]。",
+  "",
+  "[^src]: 出典の説明",
+  "",
+  "    [詳しく](https://example.com)",
+  "",
+  "行内にも書ける^[行内の補足]。",
+  "",
+].join("\n");
+
+// `[^ラベル]`・定義・行内の `^[中身]` を、番号・ツールチップ・末尾の閉じた一覧にする（正常系）
+test("test_normal_when_footnotes", async () => {
+  // 準備
+  const render = await loadRender();
+  // 実行
+  const html = render(FOOTNOTES_MARKDOWN);
+  // 検証
+  const [first = "", second = ""] = html.split("</p>");
+  const firstLink = findTag(first, "mdmark-fn-link");
+  expect(firstLink).toContain('id="mdmark-fnref-1-0"');
+  expect(firstLink).toContain('href="#mdmark-fn-1"');
+  expect(plainText(innerHtml(first, "mdmark-fn-link"))).toBe("脚注 1");
+  const secondLink = findTag(second, "mdmark-fn-link");
+  expect(secondLink).toContain('id="mdmark-fnref-2-0"');
+  expect(plainText(innerHtml(second, "mdmark-fn-link"))).toBe("脚注 2");
+  const firstTip = findTag(html, 'id="mdmark-fn-tip-1-0"');
+  expect(firstTip).toContain('role="group"');
+  expect(firstTip).toContain('aria-label="脚注 1"');
+  expect(firstLink).toContain('aria-details="mdmark-fn-tip-1-0"');
+  const firstTipBody = innerHtml(html, 'id="mdmark-fn-tip-1-0"');
+  expect(plainText(innerHtml(firstTipBody, "mdmark-fn-tip-title"))).toBe(
+    "脚注 1",
+  );
+  expect(firstTipBody).toContain("出典の説明");
+  expect(firstTipBody).toContain('<a href="https://example.com">詳しく</a>');
+  expect(findTag(html, 'id="mdmark-fn-tip-2-0"')).toContain('role="tooltip"');
+  expect(secondLink).toContain('aria-describedby="mdmark-fn-tip-2-0"');
+  expect(innerHtml(html, 'id="mdmark-fn-tip-2-0"')).toContain("行内の補足");
+  const list = findTag(html, "mdmark-footnotes");
+  expect(list).toBe('<details class="mdmark-footnotes">');
+  expect(html.trimEnd().endsWith("</details>")).toBe(true);
+  expect(innerHtml(html, "<summary")).toBe("脚注（2 件）");
+  const items = findTags(html, "mdmark-fn-item").map(
+    (tag) => /id="([^"]*)"/.exec(tag)?.[1],
+  );
+  expect(items).toEqual(["mdmark-fn-1", "mdmark-fn-2"]);
+  for (const number of [1, 2]) {
+    expect(innerHtml(html, `id="mdmark-fn-${number}"`)).toContain(
+      `href="#mdmark-fnref-${number}-0"`,
+    );
+  }
+  expect(html).not.toContain("[^src]");
+  expect(html).not.toContain("^[");
+});
+
+// ラベルを大文字小文字を区別せずに照合し、最初の定義を採り、定義の無い参照とリンクを文字のまま残す（正常系）
+test("test_normal_when_footnotes_matched", async () => {
+  // 準備
+  const render = await loadRender();
+  const markdown = [
+    "[^Note] と [^note] と [^missing] と [^x](https://example.com)",
+    "",
+    "[^note]: 1 つ目",
+    "",
+    "[^NOTE]: 2 つ目",
+    "",
+    "[^unused]: 使わない",
+    "",
+  ].join("\n");
+  // 実行
+  const html = render(markdown);
+  // 検証
+  const refs = findTags(html, "mdmark-fn-link").map(
+    (tag) => /id="([^"]*)"/.exec(tag)?.[1],
+  );
+  expect(refs).toEqual(["mdmark-fnref-1-0", "mdmark-fnref-1-1"]);
+  expect(plainText(innerHtml(html, 'id="mdmark-fn-tip-1-0"'))).toBe(
+    "脚注 11 つ目",
+  );
+  // 戻るリンクの読み上げの名前（`2 つ目の参照`）は除き、画面に出る文字で確かめる
+  expect(plainText(html)).not.toContain("2 つ目");
+  expect(html).toContain("[^missing]");
+  expect(html).toContain('<a href="https://example.com">^x</a>');
+  expect(findTags(html, "mdmark-fn-item")).toHaveLength(1);
+  const backs = findTags(innerHtml(html, 'id="mdmark-fn-1"'), "mdmark-fn-back");
+  expect(backs).toHaveLength(2);
+  expect(
+    matches(innerHtml(html, 'id="mdmark-fn-1"'), /<\/svg>([ab])<\/a>/g),
+  ).toEqual(["</svg>a</a>", "</svg>b</a>"]);
+  expect(html).not.toContain("使わない");
+});
+
+// 文書の印で `footnotes` を外し、参照と定義を書いた文字のまま書いた位置に残す（正常系）
+test("test_normal_when_footnotes_disabled", async () => {
+  // 準備
+  const render = await loadRender();
+  const markdown = [
+    "<!-- features: -footnotes -->",
+    "",
+    "出典がある[^src] と ^[補足]。",
+    "",
+    "[^src]: 出典の説明",
+    "",
+    "終わり",
+    "",
+  ].join("\n");
+  // 実行
+  const html = render(markdown);
+  // 検証
+  expect(html).toContain("<p>出典がある[^src] と ^[補足]。</p>");
+  expect(html).not.toContain("<a ");
+  const definitionAt = html.indexOf("<p>[^src]: 出典の説明</p>");
+  expect(definitionAt).toBeGreaterThan(-1);
+  expect(definitionAt).toBeLessThan(html.indexOf("<p>終わり</p>"));
+  expect(html).not.toMatch(/class="mdmark-fn-/);
+  expect(html).not.toContain("mdmark-footnotes");
+});

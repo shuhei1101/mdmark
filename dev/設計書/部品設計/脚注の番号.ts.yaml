@@ -1,0 +1,92 @@
+title: 脚注の番号
+lead: 本文の脚注の参照の場所に、印の色で角括弧付きの上付きの番号を置き、隣に「脚注 {番号}」のタイトルと脚注の中身を持つツールチップを置く。HTML 文字列を返し、ブラウザと Node で同じ出力になる。開閉・置き場所・一覧への移動は `mount` の操作が付ける。
+implementation: src/parts/footnote.ts#renderFootnoteRef
+story: Parts/FootnoteRef
+test_file: tests/integration/lib/footnote.story.test.ts
+args:
+  - name: number
+    type: 整数
+    required: true
+    choices: 1 以上
+    description: 脚注の番号。本文の番号とツールチップのタイトル `脚注 {number}` に出す
+  - name: refIndex
+    type: 整数
+    required: false
+    default: '0'
+    choices: 0 以上
+    description: その脚注の何回目の参照か（0 から）。番号のリンクの `id`（`mdmark-fnref-{number}-{refIndex}`）とツールチップの `id`（`mdmark-fn-tip-{number}-{refIndex}`）に使う
+  - name: bodies
+    type: 配列
+    required: true
+    description: 脚注の中身の段落ごとの HTML（行内の要素だけ。定義を描いた段落の `p` を外した中身）。段落ごとに `span.mdmark-fn-tip-body` に入れて積む
+  - name: below
+    type: 真偽値
+    required: false
+    default: 'false'
+    description: 番号の下に開いた見た目にするか。`true` なら `sup.mdmark-fn-ref` に `is-below` を付ける（`mount` が上に収まらない番号に付けるのと同じ class）。`render` は渡さない
+states:
+  - name: Closed
+    description: 開く前。印の色の `[1]` だけが出て、ツールチップは隠れている
+    args:
+      - name: number
+        value: '1'
+      - name: bodies
+        value: '["CSS 変数と層の外の CSS で上書きする。"]'
+  - name: Open
+    description: ツールチップを番号の上に開いた。タイトル `脚注 1` と中身を持つ `role="tooltip"` のツールチップ
+    args:
+      - name: number
+        value: '1'
+      - name: bodies
+        value: '["CSS 変数と層の外の CSS で上書きする。"]'
+  - name: Below
+    description: 上に収まらず番号の下に開いた。`is-below` が付き、透明な線はツールチップの上側にある
+    args:
+      - name: number
+        value: '1'
+      - name: bodies
+        value: '["CSS 変数と層の外の CSS で上書きする。"]'
+      - name: below
+        value: 'true'
+  - name: WithLink
+    description: 中身がリンクを持つ。`role="group"`・`aria-label="脚注 1"` のツールチップで、番号のリンクが `aria-details` で指す
+    args:
+      - name: number
+        value: '1'
+      - name: bodies
+        value: '["明暗は OS の配色に合わせ、<a href=\"../使い方/カスタマイズ/テーマを上書きする.md\">テーマを選ぶ</a> の手順で固定できる。"]'
+  - name: Long
+    description: 定義が 2 段落と行内のコードを持つ。段落ごとに積み、幅の上限で折り返す
+    args:
+      - name: number
+        value: '1'
+      - name: bodies
+        value: '["既定のテーマは dev-swiss で、<code>colorTheme</code> で theme-paper・theme-slate・theme-contrast を選べる。", "印刷では、選んだテーマの明るい配色で出す。"]'
+  - name: TwoDigits
+    description: 2 桁の番号。角括弧と桁を揃えた数字で出す
+    args:
+      - name: number
+        value: '12'
+      - name: refIndex
+        value: '1'
+      - name: bodies
+        value: '["同じ脚注の 2 回目の参照。"]'
+css_properties:
+  - name: --mdmark-color-footnote-ref
+    syntax: <color>
+    default: var(--mdmark-color-link)
+    description: 本文の番号と一覧の番号の色
+accessibility:
+  - 番号のリンクの読み上げ名は `脚注 {番号}`（`脚注 ` は `mdmark-visually-hidden` で隠して置き、角括弧は CSS で付ける）
+  - 中身がリンクを持たないときは `role="tooltip"` と番号のリンクの `aria-describedby`、持つときは `role="group"`・`aria-label="脚注 {番号}"` と `aria-details` にする（用語のツールチップと同じ分け方）
+  - 用語の破線の下線と、上付き・角括弧・印の色の形で見分け、色だけに頼らない
+  - フォーカスの枠を印の色の 2px の線で出す
+refs:
+  - dev/設計書/インターフェース定義/ライブラリ本体/文書をHTML文字列にする.ts#constraints[脚注]
+  - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[脚注の操作]
+status: planned
+notes:
+  出力の形: '`<sup class="mdmark-fn-ref"><a class="mdmark-fn-link" id="mdmark-fnref-{number}-{refIndex}" href="#mdmark-fn-{number}" aria-describedby|aria-details="mdmark-fn-tip-{number}-{refIndex}"><span class="mdmark-visually-hidden">脚注 </span>{number}</a><span class="mdmark-fn-tip" id="mdmark-fn-tip-{number}-{refIndex}" role="tooltip|group"><span class="mdmark-fn-tip-title">脚注 {number}</span><span class="mdmark-fn-tip-body">{bodies[i]}</span>…</span></sup>`。`bodies` が `a` 要素を持つかで `role` を選ぶ。モックは `dev/mock/components/footnote/`（[確認ログ](../../pr/311/確認ログ.md)）'
+  ツールチップの段落: '`sup` の中にブロック要素（`p`）を置かないよう、定義の段落の `p` を外して `span.mdmark-fn-tip-body` に入れる（PoC の所見）。段落以外のブロック（リスト・コードブロック）は文字にして段落として積む'
+  番号の文字の大きさ: 本文の 0.75 倍の上付きにし、操作できる文字の下限の 11px を下回らない（`max(0.75em, 11px)`）
+  狭い画面: 71rem 以下でスクリプトが位置を指していないときは、用語のツールチップと同じく、上下とも描く先の要素の左端から番号の直後に出す

@@ -1,0 +1,31 @@
+/* 脚注の印刷の規則。実装では @media print で当てる（このファイルは link の media="print" で読む）。
+   モックの「印刷の見え方」は、この link の media を all に切り替えて画面にも当てる */
+
+/* mdmark の層: 印刷のときの脚注 */
+@layer mdmark {
+  .mdmark {
+    /* 番号のツールチップ: 開いていても紙に出さない。番号は上付きの数字のまま残し、末尾の一覧と対応させる */
+    .mdmark-fn-ref .mdmark-fn-tip {
+      display: none !important;
+    }
+
+    /* 番号のリンク: 紙では押せないので、リンクの URL を併記しない */
+    .mdmark-fn-link::after {
+      content: "]" !important;
+    }
+
+    /* 戻るリンク: 紙では押せないので出さない */
+    .mdmark-fn-back {
+      display: none;
+    }
+
+    /* 一覧の見出し: 開閉の印を出さない */
+    .mdmark-footnotes > summary {
+      list-style: none;
+
+      &::-webkit-details-marker {
+        display: none;
+      }
+    }
+  }
+}

@@ -1,4 +1,4 @@
-title: "文書を描く"
+title: 文書を描く
 entry:
   kind: operation
   value: '`mount(el, opts)`（配布物 `dist/index.js` の公開関数）'
@@ -4098,7 +4098,7 @@ flows:
       - 例外が `mount` の呼び出し元とイベントの外へ出ない
     test: test_error_when_columns_callback_throws
   - name: 正常系（コメントを修正・削除する）
-    summary: '読み書きの関数が `update`・`remove` を持つと、吹き出しの「編集」「削除」から修正し、確認を経て削除する'
+    summary: 読み書きの関数が `update`・`remove` を持つと、吹き出しの「編集」「削除」から修正し、確認を経て削除する
     setup:
       - name: 配布物を読んだページ
         description: 正常系（コメントを付ける）と同じ
@@ -4133,7 +4133,7 @@ flows:
       - '確認の「削除」を押すと `remove` が `{ docId: "guide", id: "c2" }` で 1 回呼ばれ、`CSS` の印が外れて本文の文字が元の並びに戻り、その段落が `tabindex="-1"` を持ってフォーカスを受ける'
     test: test_normal_when_comment_edited_and_removed
   - name: 正常系（修正・削除の関数が無い）
-    summary: '読み書きの関数が `update`・`remove` を持たないときは、吹き出しに「編集」「削除」を出さない'
+    summary: 読み書きの関数が `update`・`remove` を持たないときは、吹き出しに「編集」「削除」を出さない
     setup:
       - name: 配布物を読んだページ
         description: 正常系（コメントを付ける）と同じ
@@ -4204,7 +4204,7 @@ flows:
       - name: 配布物を読んだページ
         description: 正常系（コメントを付ける）と同じ
       - name: コメントの読み書きの関数
-        description: '1 回目の `load` は `テーマの変数` のコメント 1 件、2 回目は `テーマの変数` と `CSS` のコメント 2 件を返す'
+        description: 1 回目の `load` は `テーマの変数` のコメント 1 件、2 回目は `テーマの変数` と `CSS` のコメント 2 件を返す
       - name: 段落と表を持つ Markdown
         description: '正常系（コメントを修正・削除する）の段落の後に、`<!-- table: data +sort -->` で囲んだ名前の列の表（行は `b`・`a`・`c` の順）を置いた文書'
       - name: Mock
@@ -4252,7 +4252,7 @@ flows:
       - name: 配布物を読んだページ
         description: 正常系（コメントを付ける）と同じ
       - name: 読み直せない読み書きの関数
-        description: '1 回目の `load` は `テーマの変数` のコメント 1 件を返し、2 回目は `Error("network")` で reject する'
+        description: 1 回目の `load` は `テーマの変数` のコメント 1 件を返し、2 回目は `Error("network")` で reject する
       - name: Mock
         description: 正常系（コメントを付ける）と同じ
     flow: |-
@@ -4296,6 +4296,82 @@ flows:
       - 吹き出しは開かない
       - '`focusComment("none")` の後、スクロールの位置・フォーカス・`data-focused` が変わらず、`console.error` が呼ばれない'
     test: test_normal_when_comment_focused
+  - name: 正常系（脚注のツールチップ）
+    summary: 脚注の番号にポインター・フォーカスでツールチップを出し、中のリンクへ Tab で移り、Esc で消す
+    setup:
+      - name: 配布物を読んだページ
+        description: 正常系と同じ
+      - name: 脚注を持つ Markdown
+        description: インターフェース定義『文書をHTML文字列にする』の正常系（脚注）と同じ文書（脚注 1 はリンクを持ち、脚注 2 は持たない）
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: mount(el, { markdown })
+        M->>P: 参照の場所に番号を置いて描く
+        P->>P: 番号 2 にポインターを乗せる
+        P->>P: 番号 1 にフォーカスし、Tab を押し、Esc を押す
+    expected:
+      - 番号 2 にポインターを乗せると `行内の補足` のツールチップが出て、ツールチップの上へポインターを移しても出たまま
+      - 番号 1 にフォーカスすると `脚注 1` のツールチップが出て、Tab で `詳しく` のリンクへフォーカスが移り、その間も出たまま
+      - Esc でツールチップが消え、フォーカスが番号 1 に戻る
+      - 番号・ツールチップ・一覧の項目の `id` がページの中で一意な値に振り直され、`aria-describedby`・`aria-details`・`href` が振り直した `id` を指す
+    test: test_normal_when_footnote_tooltip
+    refs:
+      - dev/設計書/シナリオ/単一ユースケース/脚注を見る#scenarios[正常シナリオ]
+      - dev/設計書/シナリオ/単一ユースケース/脚注を見る#scenarios[正常シナリオ（キーボードで読む）]
+  - name: 正常系（脚注の番号と一覧を行き来する）
+    summary: 番号を押すと閉じた一覧を開いて項目へ移り、戻るリンクで番号へ戻る
+    setup:
+      - name: 配布物を読んだページ
+        description: 正常系と同じ
+      - name: 脚注を持つ Markdown
+        description: 正常系（脚注のツールチップ）と同じ文書
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: mount(el, { markdown })
+        M->>P: 末尾に閉じた脚注の一覧を置いて描く
+        P->>P: 番号 2 を押す
+        P->>P: 脚注 2 の戻るリンクを押す
+    expected:
+      - 番号 2 を押した後、`details.mdmark-footnotes` が `open` を持ち、脚注 2 の項目にフォーカスがあり、番号 2 のツールチップが出ていない
+      - 戻るリンクを押した後、番号 2 のリンクにフォーカスがある
+      - どちらの後も `location.hash` が変わっていない
+    test: test_normal_when_footnote_jump
+    refs:
+      - dev/設計書/シナリオ/単一ユースケース/脚注を見る#scenarios[正常シナリオ（番号から末尾の一覧へ移る）]
+      - dev/設計書/シナリオ/単一ユースケース/脚注を見る#scenarios[正常シナリオ（末尾の一覧から本文へ戻る）]
+  - name: 正常系（印刷の前に脚注の一覧を開く）
+    summary: 印刷の前に閉じた脚注の一覧を開き、印刷の後に閉じ直す
+    setup:
+      - name: 配布物を読んだページ
+        description: 正常系と同じ
+      - name: 脚注を持つ Markdown
+        description: 正常系（脚注のツールチップ）と同じ文書
+        notes: '`print` は既定のオン'
+      - name: Mock
+        description: 差し替える依存は無い。印刷は `beforeprint`・`afterprint` のイベントを送ることで代える
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: mount(el, { markdown })
+        P->>M: beforeprint
+        M->>P: 閉じた脚注の一覧を開く
+        P->>M: afterprint
+        M->>P: 開いた一覧を閉じ直す
+    expected:
+      - '`beforeprint` の後、`details.mdmark-footnotes` が `open` を持つ'
+      - '`afterprint` の後、`details.mdmark-footnotes` が `open` を持たない'
+    test: test_normal_when_footnotes_printed
+    refs:
+      - dev/設計書/シナリオ/単一ユースケース/文書を印刷する#scenarios[正常シナリオ（脚注の一覧を開いて出す）]
 lead: 使う側のページが、要素と Markdown と設定を渡し、要素の中に文書を描く。戻り値で本文の差し替えと片付けができる。
 idempotent: false
 side_effects: '`el` の中身と class を書き換え、記法の操作のイベントを `el` の中に付ける。`side-toc` がオンで見出しがあるとき、`el` の中を本文の列と右側の目次に分け、見出しの位置を `IntersectionObserver` で見る。`back-to-top` がオンのとき、`el` の子に先頭へ戻るボタンを置き、スクロールする場所が画面全体なら `window` の `scroll`、`el` に最も近いスクロールする祖先の要素なら `document` の `scroll`（捕捉の段）と、`window` の `resize` を受け取り、`document.body` と `el` の子の追加・削除を `MutationObserver` で見る。`window` の `beforeprint`・`afterprint`・`hashchange` と、絞り込みのドロワーを開いている間だけ `document` の `pointerdown`・`keydown` を受け取る。図の部品か埋め込んだ HTML があるとき、図の表示する枠と埋め込んだ HTML の大きさを `ResizeObserver` で見、ツールチップを開いている間だけ `document` の `keydown`・`pointerdown` と `window` の `scroll`・`resize` を受け取り、全画面の間だけ `el` の中に `dialog` を置く。操作できる部品の写すボタン・表のコピー・行の URL のコピー・コードブロックのコピー・ファイルツリーのコピーでクリップボードに書く。表があるとき、表の大きさと描く先の要素の幅を `ResizeObserver` で見、`animation-timeline` を持たないブラウザでは `window` と文書の中の `scroll` と `window` の `resize` を受け取る。`data-group` を持つタブがあるとき、localStorage の `mdmark-tabs:{group}` を描くたびに読み、読む人がタブを選ぶと書く。そのとき、ページの中の `el` の外にある同じ `group` のタブ群の選択も書き換える。文書に外部ライブラリか拡張の印があるとき、そのモジュールを読む。色分けの対象のコードブロックがあるとき、`syntax.url` の先の core と、使う言語のモジュールを読む。`opts.diffSource` を渡したとき、読む人が差分を開くと（`opts.diffMode` が `open` なら描いた時点、`blocks` なら描くたびに）取り出し元の `revisions`・`content` を呼び、差分の行を出している間だけミニマップの帯を置き、送り先のスクロールの `scroll` と `window` の `resize` を受け取る。文書にビューの印があるとき、ビューの部品のモジュールを読む。`comments` がオンで `opts.commentStore` を渡したとき、コメントの部品のモジュールを読み、`load` を描くたびに 1 回呼び、保存で `save`、読み書きの関数が持つときは吹き出しの修正で `update`・削除で `remove`、`reloadComments` で `load` を呼ぶ。その間は `document` の `selectionchange` を受け取り、コメントのボタン・入力欄・吹き出しを `document.body` に置く。あわせて本文の列の右に余白の列を置き、描く先の要素の大きさを `ResizeObserver`、描く先の要素の中の開閉・切り替えを `MutationObserver` で見る'
@@ -4350,7 +4426,7 @@ request:
     default: '`comments` を除く全ての機能が `true`'
     location: argument
     description: '機能のオン・オフの既定。文書の `<!-- features: +機能 -機能 -->` がその文書だけ上書きする'
-    notes: 知らない機能名は無視する。機能は `print`（印刷の前に折り畳みと記法を開く）と、記法ごとの `table`・`callout`・`tabs`・`steps`・`tree`・`badge`・`code`・`toc`・`side-toc`（右側の目次）・`anchors`・`sections`・`row-details`・`figures`、先頭へ戻るボタンの `back-to-top`、図の部品の `diagrams`、埋め込んだ HTML の `html`、図と埋め込んだ HTML のヒント（`data-hint`・`hint`・`io`・線の `tip`）のツールチップの `hints`、用語のツールチップの `glossary`、被参照の一覧と文書の別名の `backlinks`、ビューの印の `views`、選んだ箇所へのコメントの `comments`（`comments` だけ既定は `false`）
+    notes: 知らない機能名は無視する。機能は `print`（印刷の前に折り畳みと記法を開く）と、記法ごとの `table`・`callout`・`tabs`・`steps`・`tree`・`badge`・`code`・`toc`・`side-toc`（右側の目次）・`anchors`・`sections`・`row-details`・`figures`、先頭へ戻るボタンの `back-to-top`、図の部品の `diagrams`、埋め込んだ HTML の `html`、図と埋め込んだ HTML のヒント（`data-hint`・`hint`・`io`・線の `tip`）のツールチップの `hints`、用語のツールチップの `glossary`、被参照の一覧と文書の別名の `backlinks`、ビューの印の `views`、脚注の `footnotes`、選んだ箇所へのコメントの `comments`（`comments` だけ既定は `false`）
   - name: opts.config.libraries
     type: Record<string, string>
     required: false
@@ -4564,7 +4640,7 @@ constraints:
     notes: 印の名前は `code` 要素で囲む。設定の `libraries` で足した印は図の印として扱う
   - item: テーマ
     constraint: mdmark の CSS は `@layer mdmark` に入る。使う側は層の外の CSS と `--mdmark-` の変数で上書きする。mdmark は使う側の `theme.css` を読まない（使う側のページが `<link>` で読む）
-    notes: '層の外で読むことが上書きの条件で、ページの `<link>` なら使う側がその条件を直に満たせ、`render` の出力にも同じ書き方で当たる'
+    notes: 層の外で読むことが上書きの条件で、ページの `<link>` なら使う側がその条件を直に満たせ、`render` の出力にも同じ書き方で当たる
   - item: 対応ブラウザ
     constraint: Chrome 99・Firefox 98・Safari 16.4 以上
     decided_by: dev/設計書/非機能要件/非機能要件#
@@ -4575,7 +4651,7 @@ constraints:
   - item: 節と行の詳細の開閉
     constraint: 節は見出しの文字を `aria-expanded`・`aria-controls` を持つボタンにし、閉じた節の `mdmark-section-body` を `hidden="until-found"` にする（`data-section="closed"` は閉じた状態で始める）。URL の `#ID` が閉じた節の中を指すとき（描いたときと `hashchange`）と、ページ内検索が閉じた節の中に当たったときは、その節を開く。行の詳細は、詳細を持つ行の先頭のセルに `aria-expanded`・`aria-controls` を持つボタンを置き、`mdmark-row-detail` の行を `hidden` で開閉する（描いた直後は閉じる）
   - item: 印刷で記法を開く
-    constraint: '`print` がオンのとき、`beforeprint` で閉じた `details`（閉じた表・閉じた注意書きと入れ子の注意書きを含む）・閉じた節・行の詳細・閉じたツリーのフォルダ・畳んだコードの行・列を畳んだ ER 図のテーブル（全ての列を出し、関係の線を結び直す）を開き、タブの全ての中身をタブ名を題にして縦に並べる。`afterprint` で、開いたものだけを閉じ直し、印刷の前に選んでいたタブだけを出す'
+    constraint: '`print` がオンのとき、`beforeprint` で閉じた `details`（閉じた表・閉じた注意書きと入れ子の注意書きを含む）・閉じた節・行の詳細・閉じたツリーのフォルダ・畳んだコードの行・列を畳んだ ER 図のテーブル（全ての列を出し、関係の線を結び直す）・閉じた脚注の一覧を開き、タブの全ての中身をタブ名を題にして縦に並べる。`afterprint` で、開いたものだけを閉じ直し、印刷の前に選んでいたタブだけを出す'
   - item: 拡張の印
     constraint: 登録した拡張の印の場所は、拡張の `schema` で引数を検査し、合えば `load` で読んだモジュールの `draw` に描かせる。合わなければ書き方の警告、読めなければ知らせの枠に替える
     notes: dev/設計書/インターフェース定義/ライブラリ本体/拡張を登録する.ts
@@ -4772,7 +4848,7 @@ constraints:
   - item: ファイルツリーの開閉とコピー
     constraint: '`tree` がオンのとき、`div.mdmark-tree` の上に種類 `tree` とコピーボタンの帯を置き、子を持つフォルダの名前とアイコンを `aria-expanded`・`aria-controls` を持つボタンにする。`data-open` が `all` なら全て、数ならルートの深さを 0 として深さがその数より浅いフォルダ、無ければルートだけを開き、閉じたフォルダの入れ子の `ul` を `hidden="until-found"` にする。Shift を押しながらの開閉は入れ子のフォルダも同じ状態にする。コピーは `data-source` を書き、書けないときは表のコピーと同じパネルを出す'
   - item: 色のプリセット
-    constraint: '色の名前ごとに、面の薄い色 `--mdmark-color-accent-{色}-bg` と文字の色 `--mdmark-color-accent-{色}-text` の CSS 変数を、選べるテーマのそれぞれの明るい配色と暗い配色で持つ（色の名前は インターフェース定義『文書をHTML文字列にする』の制約「色の名前」）。`data-color` を持つ強調した列のセルと行は面の薄い色、バッジは面の薄い色と文字の色、本文の文字の色の `mdmark-color` は文字の色と太字にする。強調した列の見出しのセルに下端の線、色を付けた行に上下の線を付ける。どの組も、文字と面のコントラストを 4.5:1 以上にする。印刷では選んだテーマの明るい配色の値で色を残す'
+    constraint: 色の名前ごとに、面の薄い色 `--mdmark-color-accent-{色}-bg` と文字の色 `--mdmark-color-accent-{色}-text` の CSS 変数を、選べるテーマのそれぞれの明るい配色と暗い配色で持つ（色の名前は インターフェース定義『文書をHTML文字列にする』の制約「色の名前」）。`data-color` を持つ強調した列のセルと行は面の薄い色、バッジは面の薄い色と文字の色、本文の文字の色の `mdmark-color` は文字の色と太字にする。強調した列の見出しのセルに下端の線、色を付けた行に上下の線を付ける。どの組も、文字と面のコントラストを 4.5:1 以上にする。印刷では選んだテーマの明るい配色の値で色を残す
     notes: 値は dev/設計書/デザイン方針.md。使う側は層の外でこの変数を上書きできる（制約「テーマ」）
   - item: 不透明な地
     constraint: '`--mdmark-color-bg` は描く先の要素（`.mdmark`）とまとめた HTML（`.mdmark-bundle`）の地だけに使い、浮く部品・覆い・留める見出しの地と、地の色を混ぜた塗り・地の色の線と文字は `--mdmark-color-bg-opaque` を使う。`--mdmark-color-bg-opaque` の既定は `var(--mdmark-color-bg)` で、`:root` と `.mdmark` で宣言する'
@@ -4790,4 +4866,7 @@ constraints:
   - item: 先頭へ戻るボタン
     constraint: '`back-to-top` がオンのとき、`el` の子の末尾に `button.mdmark-back-to-top`（`type="button"`・`aria-label` と `title` は `先頭へ戻る`・lucide の `arrow-up-to-line` のアイコン）を置き、`update` で本文を描き直しても残す。スクロールする場所は、`el` に最も近い、`overflow-y` が `auto` か `scroll` でスクロールできる祖先の要素とし、無ければ画面全体にする。スクロールする場所の上端から `el` の上端までのスクロールの量が、スクロールする場所の高さ（`clientHeight`）未満の間はボタンを `hidden` にする。出している間は、スクロールする場所の右端と下端（スクロールバーを除き、画面からはみ出す分は画面の端）から `--mdmark-back-to-top-gap`（既定 16px）の位置に固定する。差分のミニマップの帯か余白の列（`div.mdmark-comment-margin`）とボタンの横の範囲が重なるときは、ボタンの右端をその部品の左端から 8px 左へずらす（縦の位置とスクロールの位置では動かさない）。右側の目次のパネルは、ボタンを出している間はボタンの上端より上で終わるよう高さを縮める。押すと、スクロールする場所を `el` の上端（画面全体なら `--mdmark-sticky-top` を引いた位置）へスクロールし（`prefers-reduced-motion: reduce` なら `behavior: "auto"`、ほかは `smooth`）、`div.mdmark-content`（無ければ `el`）に `tabindex="-1"` を付けて `preventScroll` でフォーカスを移す。スクロールする場所は、本文を描いた後と `update` の後に決め直す。画面全体なら `window` の `scroll` を、祖先の要素なら `document` の `scroll` を捕捉の段で受け（祖先の要素の外の画面や祖先の枠のスクロールでも位置が変わるため）、`window` の `resize`、`document.body` の子の追加・削除（ミニマップの帯）と `el` の子の追加・削除（余白の列）とあわせて 1 フレームに 1 回置き直す。ライトボックスと図の全画面のモーダルは top layer に出るため、開いている間はボタンがその後ろに隠れて操作できない。印刷では出さない。`destroy` でボタンと受け取りを外す'
     notes: 出し始める量・避けるときの位置・祖先の要素の扱いはモックへの合意（dev/pr/287/確認ログ.md）。ボタンの見た目と状態は部品設計
+  - item: 脚注の操作
+    constraint: 番号のリンクにポインターを乗せたときとフォーカスしたときにツールチップを出し、用語のツールチップと同じ作法（制約「ツールチップの操作」。上へ移しても出したまま・Esc で消してフォーカスを番号に残す・中のリンクへ Tab で移れる・画面に対して置く・`tooltips.placement`）で開閉する。番号を押すと（Enter を含む）、ツールチップを閉じて、ポインターかフォーカスが番号を離れるまで開き直さず、閉じた末尾の一覧を開いて該当の項目を画面の中に入れ、項目に `tabindex="-1"` を付けてからフォーカスを項目へ移す（`render` の出力は `tabindex` を持たず、sanitize の許可を広げない）。一覧の戻るリンクを押すと、参照の番号を画面の中に入れ、フォーカスを番号へ移す。どちらも URL の `#` を書き換えず、`el` の中で `id` を引く（まとめた HTML で `#` のリンクを書き換えても、開いている文書の中で移る）。用語のツールチップと同じく、1 つのページに文書を 2 つ以上描いても重ならないよう、脚注の番号・ツールチップ・一覧の項目の `id` をモジュールの通し番号で振り直し、それを指す `href`・`aria-describedby`・`aria-details` も直す。`update` で付け直し、`destroy` で外す。印刷ではツールチップと戻るリンクを出さず、番号は上付きのまま出す
+    notes: 要素の形は dev/設計書/インターフェース定義/ライブラリ本体/文書をHTML文字列にする.ts の制約『脚注』。WAI-ARIA の役割は部品設計で決める
 test_file: tests/integration/lib/mount.browser.test.ts

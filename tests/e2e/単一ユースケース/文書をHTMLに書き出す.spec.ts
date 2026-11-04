@@ -502,3 +502,38 @@ test("test_normal_when_blob_and_dynamic_import_blocked", async ({
   expect(opened.blobRequests()).toEqual([]);
   await opened.close();
 });
+
+// 脚注を持つ文書を書き出し、file:// で開いて番号のツールチップと末尾の一覧を読む（正常シナリオ（脚注を持つ文書））
+test("test_normal_when_footnotes", async ({ builtRoot, tempDir, page }) => {
+  // 準備
+  const dir = await tempDir();
+  await writeFiles(dir, {
+    "mdmark.config.yaml": "features: {}\n",
+    "notes.md": "出典がある[^src]。\n\n[^src]: 出典の説明\n",
+  });
+  // 実行
+  const result = await runCli(
+    builtRoot,
+    ["export", "notes.md", "--out", "out/notes.html"],
+    dir,
+  );
+  // 検証
+  expect(result.code).toBe(0);
+  expect(existsSync(join(dir, "out", "notes.html"))).toBe(true);
+  const opened = await openStandalone(page, {
+    tempDir,
+    htmlFile: join(dir, "out", "notes.html"),
+  });
+  const article = page.locator("article.mdmark");
+  const tip = article.locator(".mdmark-fn-tip");
+  await article.locator(".mdmark-fn-link").hover();
+  await expect(tip).toBeVisible();
+  await expect(tip).toContainText("出典の説明");
+  const list = article.locator("details.mdmark-footnotes");
+  await expect(list).not.toHaveAttribute("open", "");
+  await list.locator("summary").click();
+  const item = list.locator(".mdmark-fn-item");
+  await expect(item).toBeVisible();
+  await expect(item).toContainText("出典の説明");
+  expect(opened.externalRequests()).toEqual([]);
+});
