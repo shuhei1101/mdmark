@@ -289,6 +289,6 @@ stakeholders:
 trigger: 使う側のページが、mdmark の CSS と自分の CSS を読んで文書を描く
 preconditions:
   - ページが版を固定した URL で mdmark の JavaScript と CSS を読んでいる
-success_guarantee: 使う側が mdmark の層の外に書いた CSS は、詳細度によらず mdmark の CSS に勝つ。ただし、コードブロックとファイルツリーの折り返しは記法の `wrap` で決まり、使う側の `pre` への CSS で変わらない。
+success_guarantee: 使う側が mdmark の層の外に書いた CSS は、詳細度によらず mdmark の CSS に勝つ。ただし、コードブロックとファイルツリーの折り返しは記法の `wrap` で決まり、使う側の要素名だけの `pre` への汎用の CSS で変わらない。
 minimal_guarantee: 使う側が CSS を書かなくても、既定の見た目で文書が描かれる。
 test_file: tests/e2e/単一ユースケース/テーマを上書きする.spec.ts
