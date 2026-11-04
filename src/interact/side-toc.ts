@@ -28,7 +28,8 @@ const EMBEDDED_HTML_SELECTOR = ".mdmark-html";
 const SIDE_TOC_RAIL_COVER_REM = 2;
 
 /** hover で開く目次の枠の上端の、見えている枠の上端からのずれ（CSS の長さ） */
-const PANEL_OFFSET = "calc(var(--mdmark-sticky-top, 0px) + var(--mdmark-space))";
+const PANEL_OFFSET =
+  "calc(var(--mdmark-sticky-top, 0px) + var(--mdmark-space))";
 
 /** 今いる節を決める線の帯だけを見る `IntersectionObserver` の余白（画面の上から線までを帯にする） */
 const LINE_BAND_MARGIN = `0px 0px -${(1 - CURRENT_LINE_RATIO) * 100}% 0px`;
