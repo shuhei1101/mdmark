@@ -34,6 +34,13 @@ function currentIds(page: Page): Promise<(string | null)[]> {
     );
 }
 
+/** 目次の頭の子の class を並びの順に返す */
+function headChildren(page: Page): Promise<string[]> {
+  return page
+    .locator(".mdmark-side-toc-head")
+    .evaluate((head) => [...head.children].map((child) => child.className));
+}
+
 /** パネルの左端が画面の中にあるか */
 function panelInViewport(page: Page): Promise<boolean> {
   return page.locator(".mdmark-side-toc-panel").evaluate((panel) => {
@@ -85,6 +92,18 @@ test("test_hover_shown", async () => {
   await expect(
     page.locator(".mdmark-side-toc-bar[data-current]").count(),
   ).resolves.toBe(1);
+  // 目次の頭: タイトルを置かず、まとめて開閉するボタンの並び → ピン止めの順。ピン止めは押す前のアイコンを出す
+  await expect(headChildren(page)).resolves.toEqual([
+    "mdmark-side-toc-actions",
+    "mdmark-side-toc-pin",
+  ]);
+  await expect(page.locator(".mdmark-side-toc-title").count()).resolves.toBe(0);
+  await expect(
+    styleOf(page, ".mdmark-side-toc-pin-off", "display"),
+  ).resolves.not.toBe("none");
+  await expect(
+    styleOf(page, ".mdmark-side-toc-pin-on", "display"),
+  ).resolves.toBe("none");
   await expect(
     page
       .locator('.mdmark-side-toc a[aria-current="location"]')
@@ -112,6 +131,16 @@ test("test_hover_pinned", async () => {
   );
   await expect(currentIds(page)).resolves.toEqual(["使い方"]);
   await expect(panelInViewport(page)).resolves.toBe(true);
+  // ピン止めした後: 押した後のアイコン（実線の右の列）と選択中の背景
+  await expect(
+    styleOf(page, ".mdmark-side-toc-pin-on", "display"),
+  ).resolves.not.toBe("none");
+  await expect(
+    styleOf(page, ".mdmark-side-toc-pin-off", "display"),
+  ).resolves.toBe("none");
+  await expect(
+    styleOf(page, ".mdmark-side-toc-pin", "background-color"),
+  ).resolves.toBe("rgb(230, 243, 241)");
 });
 
 // fixed でサイドバーを閉じると、目次を出すボタンだけを出す（FixedClosed）
@@ -160,6 +189,7 @@ test("test_without_sections", async () => {
   const page = await holder.openStory("parts-sidetoc--without-sections", WIDE);
   // 検証
   await expect(page.locator("[data-fold-all]").count()).resolves.toBe(0);
+  await expect(headChildren(page)).resolves.toEqual(["mdmark-side-toc-pin"]);
   await expect(page.locator(".mdmark-side-toc-list a").count()).resolves.toBe(
     4,
   );

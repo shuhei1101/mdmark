@@ -5802,12 +5802,29 @@ test("test_normal_when_side_toc_hovered_and_pinned", async () => {
       actions.compareDocumentPosition(list) & Node.DOCUMENT_POSITION_FOLLOWING,
     ).toBeTruthy();
     expect(actions.querySelectorAll("[data-fold-all]")).toHaveLength(2);
+    // 目次の頭: タイトルを置かず、まとめて開閉するボタンの並び → ピン止めの順
+    expect(
+      [...find(panel, ".mdmark-side-toc-head").children].map(
+        (child) => child.className,
+      ),
+    ).toEqual(["mdmark-side-toc-actions", "mdmark-side-toc-pin"]);
+    expect(panel.textContent).not.toContain("目次");
+    // 開いた枠は画面に固定し、見えている枠（画面）の上端から --mdmark-space 下に出す
+    const space =
+      Number.parseFloat(getComputedStyle(document.documentElement).fontSize) *
+      Number.parseFloat(
+        getComputedStyle(el).getPropertyValue("--mdmark-space"),
+      );
+    expect(getComputedStyle(panel).position).toBe("fixed");
+    expect(panel.getBoundingClientRect().top).toBeCloseTo(space, 0);
     // 実行・検証: 「使い方」の項目を押す
     await userEvent.click(linkOf("使い方"));
     await vi.waitFor(() => {
       expect(decodeURIComponent(location.hash)).toBe("#使い方");
       expect(inViewport(find(el, '[id="使い方"]'))).toBe(true);
     });
+    // 文書の途中へ移った後も、開いた枠は同じ位置に出る
+    expect(panel.getBoundingClientRect().top).toBeCloseTo(space, 0);
     // 実行・検証: ピン止めして、ポインターを本文へ動かす
     await userEvent.click(pin);
     expect(pin.getAttribute("aria-pressed")).toBe("true");
