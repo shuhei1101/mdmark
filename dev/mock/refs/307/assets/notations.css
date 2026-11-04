@@ -148,7 +148,8 @@ mark.mdmark-highlight[data-color="gray"] { background: var(--mdmark-color-accent
 .mdmark-raw-toggle[data-raw-style="d"] { border: 1px solid var(--mdmark-color-border); border-radius: 999px; padding: 0 0.6em; line-height: 1.6; }
 .mdmark-raw-toggle[data-raw-style="d"][aria-pressed="true"] { border-color: var(--mdmark-color-accent-blue-text); background: var(--mdmark-color-accent-blue-bg); font-weight: 700; }
 
-/* wide の切り替えのボタン: 範囲の右上にラベルの無いアイコンだけを置き、押すたびに本文の幅と広げた幅を切り替える */
+/* wide の切り替えのボタン: 範囲の上の帯（本文の幅）の右端にラベルの無いアイコンだけを置き、押すたびに本文の幅と広げた幅を切り替える。
+   帯は本文の幅のまま変わらないため、どちらの状態でもボタンは段落の右端の真上に残る */
 .mdmark-wide-bar { display: flex; justify-content: flex-end; }
 .mdmark-wide-toggle {
   appearance: none;
@@ -166,9 +167,9 @@ mark.mdmark-highlight[data-color="gray"] { background: var(--mdmark-color-accent
 .mdmark-wide-toggle:hover { color: var(--mdmark-color-accent-blue-text); background: var(--mdmark-color-surface); }
 .mdmark-wide-toggle:focus-visible { outline: 2px solid var(--mdmark-color-accent-blue-text); outline-offset: 1px; }
 .mdmark-wide-toggle .mdmark-icon { width: 1.1em; height: 1.1em; }
-/* 広げた状態は「縮める」、本文の幅の状態は「広げる」のアイコンを出す */
-.mdmark-wide[data-state="wide"] .mdmark-wide-icon-expand,
-.mdmark-wide[data-state="narrow"] .mdmark-wide-icon-shrink { display: none; }
+/* 読み上げ名は「広げて表示」に固定し、押した状態（広げた状態）は aria-pressed で示す。アイコンだけを状態で切り替える */
+.mdmark-wide-toggle[aria-pressed="true"] .mdmark-wide-icon-expand,
+.mdmark-wide-toggle[aria-pressed="false"] .mdmark-wide-icon-shrink { display: none; }
 /* 本文の幅の状態: 範囲を本文の幅に戻す */
 .mdmark-wide[data-state="narrow"] { width: auto; max-width: none; margin-inline-start: 0; transform: none; }
 /* 狭い画面では切り替える幅が同じのため、ボタンを出さない */

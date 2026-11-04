@@ -21,12 +21,9 @@ document.addEventListener("click", (event) => {
   // wide の切り替えのボタン: 押すたびに本文の幅と広げた幅を切り替える
   const toggle = event.target.closest(".mdmark-wide-toggle");
   if (toggle) {
-    const range = toggle.closest(".mdmark-wide");
+    const range = toggle.closest(".mdmark-wide-bar").nextElementSibling;
     const wide = range.dataset.state !== "wide";
     range.dataset.state = wide ? "wide" : "narrow";
     toggle.setAttribute("aria-pressed", String(wide));
-    const label = wide ? "本文の幅で表示" : "広げて表示";
-    toggle.setAttribute("aria-label", label);
-    toggle.title = label;
   }
 });
