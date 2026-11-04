@@ -662,3 +662,99 @@ test("test_normal_when_side_toc_scrolled_to_end", async ({ page }) => {
     }
   }
 });
+
+// 描く先の要素が画面より狭いときも、右端の線と目次の枠を見えている枠の右端から同じ距離に置き、ピン止めすると描く先の要素の中に戻す（正常シナリオ（描く先の要素が画面より狭いときも右側の目次を画面の右端に出す））
+test("test_normal_when_side_toc_at_viewport_edge", async ({ page }) => {
+  const gaps: number[] = [];
+  for (const where of ["page", "box"] as const) {
+    // 準備: 画面 1600x800 で、ページ全体のスクロールは幅 992px の要素を左端から 312px に、スクロールする要素の中は 1200x600 の中の幅 800px を左に寄せて描く
+    await page.setViewportSize({ width: 1600, height: 800 });
+    await openPage(page, builtRoot, {
+      hostCss:
+        where === "page"
+          ? "#doc { width: 992px; margin-left: 312px; }"
+          : "#doc { width: 800px; }",
+    });
+    if (where === "box") {
+      await page.evaluate(() => {
+        const box = document.createElement("div");
+        box.id = "box";
+        box.style.cssText =
+          "position: fixed; top: 0; left: 0; width: 1200px; height: 600px; overflow-y: auto;";
+        document.body.append(box);
+        box.append(document.getElementById("doc") as HTMLElement);
+      });
+    }
+    await mountDocument(page, { markdown: SIDE_TOC_MARKDOWN });
+    const rail = page.locator("#doc .mdmark-side-toc-rail");
+    /** 右端の線の右端・描く先の要素の右端・見えている枠のスクロールバーを除いた右端（px） */
+    const edges = () =>
+      page.evaluate(() => {
+        const box = document.getElementById("box");
+        const rail = document.querySelector(
+          "#doc .mdmark-side-toc-rail",
+        ) as HTMLElement;
+        return {
+          rail: rail.getBoundingClientRect().right,
+          doc: (
+            document.getElementById("doc") as HTMLElement
+          ).getBoundingClientRect().right,
+          frame: box
+            ? box.getBoundingClientRect().left +
+              box.clientLeft +
+              box.clientWidth
+            : document.documentElement.clientWidth,
+        };
+      });
+    /** 右端の線の右端が描く先の要素の右端より右にあることを確かめ、見えている枠の右端までの距離を控える */
+    const recordGap = async () => {
+      await expect
+        .poll(async () => {
+          const { rail, doc } = await edges();
+          return rail > doc;
+        })
+        .toBe(true);
+      const { rail, frame } = await edges();
+      expect(rail).toBeLessThan(frame);
+      gaps.push(frame - rail);
+    };
+    // 検証: 描いた直後
+    await recordGap();
+    // 実行・検証: 「使い方」の節までスクロールした後
+    await page.evaluate(() => {
+      document.getElementById("使い方")?.scrollIntoView();
+    });
+    await recordGap();
+    // 実行・検証: 画面の右端にポインターを置くと、線と同じ右端に目次の枠を出す
+    await hoverRailTop(page);
+    await expectPanelShown(page, true);
+    const panelBox = await sidePanel(page).boundingBox();
+    const railBox = await rail.boundingBox();
+    expect(
+      Math.abs(
+        (panelBox?.x ?? 0) +
+          (panelBox?.width ?? 0) -
+          ((railBox?.x ?? 0) + (railBox?.width ?? 0)),
+      ),
+    ).toBeLessThanOrEqual(1);
+    // 実行・検証: ピン止めすると、目次の枠を描く先の要素の中の右の列に出す
+    await page.locator("#doc .mdmark-side-toc-pin").click();
+    await expect
+      .poll(async () => {
+        const panel = await sidePanel(page).boundingBox();
+        const doc = await edges();
+        return (panel?.x ?? 0) + (panel?.width ?? 0) <= doc.doc;
+      })
+      .toBe(true);
+    const content = await page.locator("#doc .mdmark-content").boundingBox();
+    const pinned = await sidePanel(page).boundingBox();
+    expect((content?.x ?? 0) + (content?.width ?? 0)).toBeLessThan(
+      pinned?.x ?? 0,
+    );
+    await page.mouse.move(10, 10);
+  }
+  // 検証: 2 通りの置き方 × 描いた直後とスクロールした後の 4 つで、見えている枠の右端までの距離が等しい
+  for (const gap of gaps) {
+    expect(Math.abs(gap - (gaps[0] ?? 0))).toBeLessThanOrEqual(1);
+  }
+});
