@@ -1,4 +1,4 @@
-title: "参照の表を作る"
+title: 参照の表を作る
 entry:
   kind: operation
   value: '`collectReferences(input)`（配布物 `dist/index.js` の公開関数）'
@@ -190,7 +190,7 @@ constraints:
     constraint: Node とブラウザのどちらでも同じ結果を返す。DOM に頼らない
   - item: 本文のリンクの解決
     constraint: リンクの `href` の `#` 以降と `?` 以降を除き、パーセントエンコードを戻してから（`decodeURI`。戻せないときはそのまま）、参照元の `path` のフォルダを基準に相対パスを解決し、索引の `path` と比べる。スキームを持つ URL・`#` だけのリンク・索引の外を指すリンクは参照にしない
-    notes: markdown-it 15.0.2 は `link_open` の `href` の ASCII 以外の文字を符号化する（`../設計/arch.md` → `../%E8%A8%AD%E8%A8%88/arch.md`）ため、戻してから比べる
+    notes: markdown-it 15.0.3 は `link_open` の `href` の ASCII 以外の文字を符号化する（`../設計/arch.md` → `../%E8%A8%AD%E8%A8%88/arch.md`）ため、戻してから比べる
   - item: 文書の別名の照合
     constraint: 用語のツールチップと同じ照合（語の区切りに揃う、照合の前に正規化する、コード・リンク・見出し・用語集の表の中を除く）を使う
     notes: 節ごとの最初の 1 回の制限は下線のもので、参照の有無には効かない

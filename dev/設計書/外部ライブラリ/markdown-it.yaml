@@ -1,14 +1,14 @@
-title: "markdown-it"
-kind: "ライブラリ"
+title: markdown-it
+kind: ライブラリ
 version:
-  current: 15.0.2
-  latest: 15.0.2
-  checked_on: '2026-10-13'
+  current: 15.0.3
+  latest: 15.0.3
+  checked_on: '2026-11-04'
   source: package.json
-  pinning: 完全一致（15.0.1・15.0.2 で計算量の DoS を直したため、それより前の版にしない）。依存は lockfile で固定する
+  pinning: 完全一致（15.0.1・15.0.2・15.0.3 で計算量の DoS を直したため、それより前の版にしない）。依存は lockfile で固定する
 catalogs:
   - name: API
-    version: 15.0.2
+    version: 15.0.3
     entries:
       - name: MarkdownIt
         kind: クラス
@@ -87,7 +87,7 @@ catalogs:
             required: true
             description: 値
 lead: CommonMark に沿って Markdown をトークン列に解析し、HTML 文字列へ描くパーサー。トークンを書き換えるルールとプラグインで拡張できる。
-purl: pkg:npm/markdown-it@15.0.2
+purl: pkg:npm/markdown-it@15.0.3
 dependency_scope: 必須
 adoption: 採用
 upstream: markdown-it/markdown-it
@@ -103,5 +103,5 @@ selection:
   consequences: 'タスクリスト・www の自動リンク・取り消し線の `<del>` は自前のコアルールで足す。生の HTML を通す（`html: true`）ため、出力は sanitize-html にかけてから描く。'
 install: |-
   ```bash
-  npm i -E markdown-it@15.0.2
+  npm i -E markdown-it@15.0.3
   ```
