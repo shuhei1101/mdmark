@@ -1,5 +1,5 @@
-title: "lucide"
-kind: "ライブラリ"
+title: lucide
+kind: ライブラリ
 version:
   current: 1.59.0
   latest: 1.59.0
@@ -165,6 +165,12 @@ catalogs:
         status: planned
         introduced:
           pr: 263
+      - name: panel-right-dashed
+        kind: アイコン
+        purpose: 右側の目次のピン止め（押す前）
+      - name: panel-right
+        kind: アイコン
+        purpose: 右側の目次のピン止め（押した後）
 lead: 線で描く 24 の格子の SVG アイコン集。アイコンごとに `path` などの要素の並びを持つ。
 purl: pkg:npm/lucide@1.59.0
 upstream: lucide-icons/lucide
