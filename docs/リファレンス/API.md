@@ -863,7 +863,7 @@ handle.destroy();
 | `--mdmark-color-muted` | `#52525b` | `#b4b4bc` | 引用・読み込み中の枠の文字 |
 | `--mdmark-color-link` | `#0f766e` | `#2dd4bf` | リンクとフォーカスの枠 |
 | `--mdmark-color-border` | `#e4e4e7` | `#26262b` | 枠・罫線・読み込み中の枠の破線 |
-| `--mdmark-color-border-muted` | `color-mix(in oklab, var(--mdmark-color-border) 70%, var(--mdmark-color-bg))` | 同じ | 見出し 1・見出し 2 の下の線。テーマの `--mdmark-color-border` と `--mdmark-color-bg` から作るため、テーマごとの値を持たない |
+| `--mdmark-color-border-muted` | `color-mix(in oklab, var(--mdmark-color-border) 70%, var(--mdmark-color-bg))` | 同じ | 見出し 1・見出し 2 の下の線。テーマの `--mdmark-color-border` と `--mdmark-color-bg` から作るため、テーマごとの値を持たない。`.mdmark` で宣言するため、上書きは `:root` ではなく `.mdmark` に記載する |
 | `--mdmark-color-surface` | `#f4f4f5` | `#1b1b1f` | コード・引用の面 |
 | `--mdmark-color-scroll-shadow` | `rgb(24 24 27 / 0.14)` | `rgb(0 0 0 / 0.6)` | 表とコードブロックに横の続きがあることを示す影 |
 | `--mdmark-color-notice-bg` | `#f9eee8` | `#2a251d` | 知らせの枠の地 |
