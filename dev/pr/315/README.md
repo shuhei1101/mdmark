@@ -1,0 +1,1 @@
+# 用語集などのページのリードと index.yaml の summary を統一する
