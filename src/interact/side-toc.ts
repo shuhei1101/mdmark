@@ -90,11 +90,12 @@ function followPanelPosition(el: HTMLElement, aside: HTMLElement): () => void {
     );
     const reach =
       rail.getBoundingClientRect().top + SIDE_TOC_RAIL_COVER_REM * rem - top;
+    const end =
+      document.documentElement.clientWidth -
+      aside.getBoundingClientRect().right;
+    // 位置を全て読んでから書く（書いた後に読み直してレイアウトを計算し直さない）
     aside.style.setProperty("--mdmark-side-toc-panel-top", `${top}px`);
-    aside.style.setProperty(
-      "--mdmark-side-toc-panel-end",
-      `${document.documentElement.clientWidth - aside.getBoundingClientRect().right}px`,
-    );
+    aside.style.setProperty("--mdmark-side-toc-panel-end", `${end}px`);
     aside.style.setProperty(
       "--mdmark-side-toc-panel-min-height",
       `${Math.max(reach, 0)}px`,
