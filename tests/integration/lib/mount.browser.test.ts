@@ -6055,7 +6055,8 @@ test("test_normal_when_all_sections_toggled", async () => {
         button.compareDocumentPosition(list) & Node.DOCUMENT_POSITION_FOLLOWING,
       ).toBeTruthy();
     }
-    await userEvent.hover(rail);
+    // ポインターを乗せると開いた目次が右端の線を覆うため、乗せた後に線が最も手前にあるかは確かめない
+    await userEvent.hover(rail, { force: true });
     // 実行・検証: すべて展開
     await userEvent.click(open);
     expect(expandedOf(el, ids)).toEqual([
