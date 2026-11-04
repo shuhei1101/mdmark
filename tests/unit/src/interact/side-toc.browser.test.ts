@@ -762,3 +762,29 @@ test("test_attach_side_toc_when_hover_edge_avoids_minimap", async () => {
   await new Promise((resolve) => requestAnimationFrame(resolve));
   expect(panelVariable(aside, "--mdmark-side-toc-panel-end")).toBe(before);
 });
+
+// 画面の右端より右へはみ出すスクロールする要素では、画面の端から右端の位置を決める（正常系）
+test("test_attach_side_toc_when_hover_edge_clamped", async () => {
+  // 準備
+  addStyles();
+  const { attachSideToc } = await loadSideToc();
+  const box = document.createElement("div");
+  box.style.cssText =
+    "position: fixed; top: 0; left: 0; width: calc(100% + 100px); height: 400px; overflow-y: auto;";
+  document.body.append(box);
+  track(() => box.remove());
+  const { root } = createRoot(longDocument());
+  box.append(root);
+  // 実行
+  const result = attachSideToc({
+    el: root,
+    mode: "hover",
+    sections: true,
+    state: createState(),
+  });
+  // 検証
+  const aside = result.aside as HTMLElement;
+  expect(panelVariable(aside, "--mdmark-side-toc-panel-end")).toBe(
+    `${rootFontSize()}px`,
+  );
+});
