@@ -2121,6 +2121,5 @@ constants:
     container: src/interact/side-toc.ts
     summary: hover で開く目次の枠が、右端の線の上端から届かせる高さ（rem）。線 3 本分で、線から枠へポインターを動かしても右側の目次の外を通らず hover が切れない
     value: '2'
-    status: planned
     introduced:
       pr: 320
