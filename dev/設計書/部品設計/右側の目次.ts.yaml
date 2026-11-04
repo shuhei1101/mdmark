@@ -1,11 +1,11 @@
-title: "右側の目次"
-implementation: "src/parts/side-toc.ts#renderSideToc"
-story: "Parts/SideToc"
+title: 右側の目次
+implementation: src/parts/side-toc.ts#renderSideToc
+story: Parts/SideToc
 states:
   - name: HoverRail
     description: hover の出し方で目次を隠し、右端に見出しの数の線だけを出す
   - name: HoverShown
-    description: hover の出し方で目次を出している（指したかフォーカスで出た状態）
+    description: hover の出し方で目次を出している（指したかフォーカスで出た状態）。枠は画面に固定し、文書のどこを読んでいても、見えている枠の上端（スクロールする場所の上端に `--mdmark-sticky-top` を足した位置）から `--mdmark-space` 下に出す
     args:
       - name: open
         value: 'true'
@@ -109,27 +109,31 @@ css_properties:
   - name: --mdmark-color-link
     syntax: <color>
     default: '#0f766e（ダーク #2dd4bf）'
-    description: 今いる節の項目の文字と右端の線の色
+    description: 今いる節の項目の文字、右端の線、ピン止めした後のピン止めのアイコンの色
   - name: --mdmark-color-current-bg
     syntax: <color>
     default: '#e6f3f1（ダーク #10302c）'
-    description: 今いる節の項目と、目次を出しているときの目次を出すボタンの背景
+    description: 今いる節の項目、目次を出しているときの目次を出すボタン、ピン止めした後のピン止めのボタンの背景
   - name: --mdmark-color-border
     syntax: <color>
     default: '#e4e4e7（ダーク #26262b）'
-    description: 目次の枠・ボタンの枠・今いる節でない右端の線の色
+    description: 目次の枠・ボタンの枠・目次の上端と項目の間の線・今いる節でない右端の線の色
   - name: --mdmark-color-muted
     syntax: <color>
     default: '#52525b（ダーク #b4b4bc）'
-    description: 目次のタイトルとボタンのアイコンの色
+    description: ボタンのアイコンの色
   - name: --mdmark-sticky-top
     syntax: <length>
     default: 0px
-    description: 右側の目次と狭い幅の帯を画面に留める位置の、画面の上端からのずれ
+    description: 右側の目次と狭い幅の帯を画面に留める位置と、hover で開く目次の枠の上端の、画面（スクロールする場所）の上端からのずれ
+  - name: --mdmark-space
+    syntax: <length>
+    default: 0.875rem
+    description: hover で開く目次の枠の上端を、`--mdmark-sticky-top` の位置から下げる余白
 accessibility:
-  - 目次のパネルは `nav` で、`aria-label="右側の目次"` を持つ。見えるタイトルは「目次」のままにし、本文の `<!-- toc -->` の目次（`aria-label="目次"`）とランドマークの名前を分ける
+  - 目次のパネルは `nav` で、`aria-label="右側の目次"` を持つ。見えるタイトルは持たず、本文の `<!-- toc -->` の目次（`aria-label="目次"`）とランドマークの名前を分ける
   - 目次を出すボタンは `aria-label`・`title` を「目次を表示」にし、`aria-expanded`・`aria-controls` で目次を出しているかを示す
-  - ピン止めのボタンは `aria-label`・`title` を「目次をピン止め」にし、`aria-pressed` で状態を示す
+  - ピン止めのボタンは `aria-label`・`title` を「目次をピン止め」にし、`aria-pressed` で状態を示す。押した後はアイコンの形（点線の右の列から実線の右の列）と選択中の背景でも示し、色だけで示さない
   - すべて展開・すべて折りたたむのボタンは文字を持たず、`aria-label`・`title` を「すべて展開」「すべて折りたたむ」にする
   - 今いる節の項目は `aria-current="location"` を持ち、背景と文字の色で示す（太さは変えない）
   - 右端の線は `aria-hidden="true"` で読み上げない。hover の出し方でも、キーボードのフォーカス（`:focus-visible` の要素）が目次の中に入れば目次を出す。ポインターで押したボタンに残るフォーカスでは出し続けない
@@ -147,5 +151,5 @@ aliases:
   - サイドの目次
   - side-toc
 notes:
-  補足: '`<aside class="mdmark-side-toc" data-mode="{mode}"><button class="mdmark-side-toc-toggle" type="button" aria-expanded="{open}" aria-controls="{パネルの ID}" aria-label="目次を表示" title="目次を表示"><span class="mdmark-side-toc-current">{今いる節の見出し}</span>{三点リーダーのアイコン}</button><div class="mdmark-side-toc-rail" aria-hidden="true"><span class="mdmark-side-toc-bar" data-level="{level}"></span>…</div><nav class="mdmark-side-toc-panel" id="{パネルの ID}" aria-label="右側の目次"><div class="mdmark-side-toc-head"><p class="mdmark-side-toc-title">目次</p><button class="mdmark-side-toc-pin" type="button" aria-pressed="{pinned}" aria-label="目次をピン止め" title="目次をピン止め">{ピンのアイコン}</button></div><div class="mdmark-side-toc-actions"><button class="mdmark-fold-all" type="button" data-fold-all="open" aria-label="すべて展開" title="すべて展開">…</button><button class="mdmark-fold-all" type="button" data-fold-all="close" aria-label="すべて折りたたむ" title="すべて折りたたむ">…</button></div><ul class="mdmark-side-toc-list"><li><a href="#{id}">{text}</a><ul>…</ul></li></ul></nav></aside>`。アイコンは lucide の ellipsis・pin・chevrons-up-down・chevrons-down-up。狭い幅の帯は描く先の要素の幅で切り替えるため、ストーリーではなく `mount` の結合テスト（`test_normal_when_side_toc_in_narrow_width`）で確かめる。ストーリーの結合テストは `tests/integration/lib/side-toc.story.test.ts`。モックは `dev/mock/components/toc/` と `dev/mock/refs/166/assets/side-toc.js`'
+  補足: '`<aside class="mdmark-side-toc" data-mode="{mode}"><button class="mdmark-side-toc-toggle" type="button" aria-expanded="{open}" aria-controls="{パネルの ID}" aria-label="目次を表示" title="目次を表示"><span class="mdmark-side-toc-current">{今いる節の見出し}</span>{三点リーダーのアイコン}</button><div class="mdmark-side-toc-rail" aria-hidden="true"><span class="mdmark-side-toc-bar" data-level="{level}"></span>…</div><nav class="mdmark-side-toc-panel" id="{パネルの ID}" aria-label="右側の目次"><div class="mdmark-side-toc-head"><div class="mdmark-side-toc-actions"><button class="mdmark-fold-all" type="button" data-fold-all="open" aria-label="すべて展開" title="すべて展開">…</button><button class="mdmark-fold-all" type="button" data-fold-all="close" aria-label="すべて折りたたむ" title="すべて折りたたむ">…</button></div><button class="mdmark-side-toc-pin" type="button" aria-pressed="{pinned}" aria-label="目次をピン止め" title="目次をピン止め">{ピン止めのアイコン}</button></div><ul class="mdmark-side-toc-list"><li><a href="#{id}">{text}</a><ul>…</ul></li></ul></nav></aside>`。アイコンは lucide の ellipsis・panel-right-dashed（ピン止めを押す前）・panel-right（ピン止めを押した後）・chevrons-up-down・chevrons-down-up。まとめて開閉するボタンの並びは `sections` がオフのとき置かず、ピン止めのボタンは fixed の出し方では CSS で隠す。狭い幅の帯は描く先の要素の幅で切り替えるため、ストーリーではなく `mount` の結合テスト（`test_normal_when_side_toc_in_narrow_width`）で確かめる。ストーリーの結合テストは `tests/integration/lib/side-toc.story.test.ts`。モックは `dev/mock/components/toc/`・`dev/mock/refs/166/assets/side-toc.js` と、上端の並び・ピン止めのアイコン・hover で開く位置の `dev/mock/components/side-toc-head/`・`dev/mock/refs/320/assets/proposal.js`'
 test_file: tests/integration/lib/side-toc.story.test.ts
