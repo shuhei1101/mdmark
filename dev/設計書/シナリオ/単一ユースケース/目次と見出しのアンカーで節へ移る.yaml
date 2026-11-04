@@ -1,4 +1,4 @@
-title: "目次と見出しのアンカーで節へ移る"
+title: 目次と見出しのアンカーで節へ移る
 scenarios:
   - name: 正常シナリオ
     setup:
@@ -318,6 +318,31 @@ scenarios:
       - '`使い方` を押した後、`使い方` の見出しが画面に入っている'
       - '`使い方` を押した後、目次を出すボタンの `aria-expanded` が `false` で、右側の目次が表示されておらず、`使い方` の段落がどの要素にも覆われていない'
     test: test_normal_when_side_toc_in_narrow_width
+  - name: 正常シナリオ（文書の途中で右側の目次をホバーで出す）
+    setup:
+      - name: mdmark を読むページ
+        description: 正常シナリオ（右側の目次をホバーで出す）と同じ
+      - name: 見出しを持つ Markdown
+        description: 正常シナリオ（右側の目次をホバーで出す）と同じ文書
+        notes: 各節の段落は、画面の高さより長い
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を渡して描かせる
+        M-->>P: 文書と、隠した右側の目次を描く
+        U->>P: 「使い方」の節までスクロールし、右端にポインターを置く
+        P-->>U: 画面の上端寄りに右側の目次を表示
+        U->>P: ポインターを本文へ動かし、文書の先頭まで戻って右端にポインターを置く
+        P-->>U: 同じ位置に右側の目次を表示
+    expected:
+      - 右側の目次の上部に「目次」の文字が無く、すべて展開・すべて折りたたむ・目次をピン止めの 3 つのボタンだけがある
+      - '`使い方` の節までスクロールして右端にポインターを置いた後、右側の目次が表示され、その上端が右端の線の位置によらず、画面の上端から `--mdmark-sticky-top` に目次の上の余白を足した位置にある'
+      - 文書の先頭まで戻って右端にポインターを置いた後も、右側の目次の上端がスクロールしたときと同じ位置にある
+    test: test_normal_when_side_toc_hovered_after_scroll
 lead: mdmark が見出しに GitHub と同じ規則の ID とその ID へのリンクを付け、文書の `<!-- toc -->` の場所と描いた文書の右側に見出しの目次を置く。読む人は目次や見出しのリンクから節へ移り、右側の目次で今いる節を確かめ、節の URL を人へ渡す。
 issue: 4
 primary_actor: 文書を読む人
