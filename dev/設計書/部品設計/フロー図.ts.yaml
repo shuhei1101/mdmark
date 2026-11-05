@@ -22,12 +22,28 @@ states:
     description: 知らない種類のノード。書き方の警告の使える種類に、追加した 4 種類を含む 10 種類が並ぶ
   - name: Invalid
     description: 定義を読めない。図の代わりに書き方の警告を出す
-lead: システムの枠と3 つの層、ノードと線を定義の座標に置く構成図。判定フローチャートは開始・質問・アクション・結果のノードを YES / NO のラベルの線でつなぐ。線は種類ごとに色と模様の組で描き、横の線が縦の線と交わる点に飛び越えの弧を入れる。
+  - name: JudgementAuto
+    description: 座標を省いた判定フローチャートを配置した結果。開始の下に質問を左の列に並べ、右へ出す線の先を同じ行の右の列に置く
+    notes:
+      定義: モックの `judgement-auto`
+  - name: LinkedNodes
+    description: リンク先を持つノード。名前が本文のリンクと同じ色と下線で、リンク先を持たないノードは今のまま。`io` を持つリンクのノードは右上の印をリンクの上に重ねる
+    notes:
+      定義: モックの `linked`
+  - name: LinkedNodeHoverFocus
+    description: リンク先を持つノードのホバー（ノードの地に種類の色をうっすら敷く）とフォーカス（ノードの外側に枠）
+    notes:
+      定義: モックの `linked`。モックの「リンク先を持つノードのホバーとフォーカス」の場面
+  - name: LinkNotAllowed
+    description: 許さないリンク先（`javascript:`・`id:`）を持つノード。図の前に書き方の警告を置き、ノードはリンクにしない
+    notes:
+      定義: モックの「許可しないリンク先」の場面
+lead: システムの枠と3 つの層、ノードと線を定義の座標に置く構成図。判定フローチャートは開始・質問・アクション・結果のノードを YES / NO のラベルの線でつなぐ（座標を省いた定義は配置した座標で描く）。リンク先を持つノードは、ノードの全体を覆うリンクにする。線は種類ごとに色と模様の組で描き、横の線が縦の線と交わる点に飛び越えの弧を入れる。
 args:
   - name: definition
     type: オブジェクト
     required: true
-    description: フロー図の定義（`MdmarkFlowDefinition`。`width`・`height`・`frame`・`lanes`・`nodes`・`wires`）。ノードは `kind`（`llm`・`dm`・`script`・`mcp`・`data`・`external`・`start`・`question`・`action`・`result`）、線は `line`（`flow`・`read`・`write`・`reply`・`loop`）を持つ
+    description: フロー図の定義（`MdmarkFlowDefinition`。`width`・`height`・`frame`・`lanes`・`nodes`・`wires`）。ノードは `kind`（`llm`・`dm`・`script`・`mcp`・`data`・`external`・`start`・`question`・`action`・`result`）、線は `line`（`flow`・`read`・`write`・`reply`・`loop`）を持つ。ノードはリンク先 `href` を持て、許すリンク先のノードはノードの全体を覆う `a.mdmark-diagram-node-link` を持ち、ノードの要素に class `has-link` が付く。判定フローチャートの 4 つの種類だけの定義は、ノードの `x`・`y`・`w`・`h`、線の `points`、図の `width`・`height` を全て省ける（描く処理が配置してからこの部品に渡す）
 css_properties:
   - name: --mdmark-color-bg-opaque
     syntax: <color>
@@ -91,6 +107,7 @@ accessibility:
   - 判定フローチャートのアイコンは開始 = play・質問 = circle-question-mark・アクション = wrench・結果 = flag。判定フローチャートのノードはアイコンと種類の名前の行を中央に置く
   - 線の種類は色と模様（破線の間隔・太さ・矢じり）の組で分ける
   - ノードと線のラベルの文字は選べ、読み上げに出る。線の svg と質問の菱形の svg は `aria-hidden`
+  - リンク先を持つノードは、色だけでなく名前の下線でも押せることを示す。リンクの読み上げの名前はノードの名前で、フォーカスの枠はノードの外側に出す。右上の印はリンクと別にフォーカスでき、Tab の順はリンク、印
 status: planned
 introduced:
   pr: 42

@@ -1458,6 +1458,80 @@ flows:
     test: test_normal_when_footnotes_disabled
     refs:
       - dev/設計書/シナリオ/単一ユースケース/機能のオン・オフを文書で上書きする#scenarios[正常シナリオ（脚注の機能を外す）]
+  - name: 正常系（座標を省いた判定フローチャート）
+    summary: 座標を省いた判定フローチャートを配置して描き、座標を省けない定義を書き方の警告にする
+    setup:
+      - name: 配布物を読んだ Node の処理
+        description: 正常系と同じ
+      - name: 座標を省いた定義を持つ Markdown
+        description: 『図を描く』の正常シナリオ（座標を省いた判定フローチャート）の定義、1 つのノードだけに `x`・`y`・`w`・`h` を書いた同じ定義、座標を省いた `llm` のノードを持つ定義、段落を持つ文書
+        notes: 定義はモック `dev/mock/components/flow-diagram/` の「座標を省いた判定フローチャート」と同じ形
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        participant C as 使う側の処理
+        participant M as mdmark
+        C->>M: render(markdown)
+        M->>M: 座標を省いた判定フローチャートを配置する
+        M->>M: 座標を省けない定義の場所を書き方の警告に替える
+        M-->>C: HTML 文字列
+    expected:
+      - '`figure.mdmark-diagram` が 1 つだけあり、6 つのノードと 6 本の線がある'
+      - 開始のノードの `top` が最も小さく、質問 1・質問 2 のノードが同じ `left` で上から順に並ぶ
+      - 質問 1 の `YES` の先のアクションのノードが質問 1 の右にあり、質問 2 の `YES`・`NO` の先はそれぞれ右と下にある
+      - どの 2 つのノードの矩形も重ならず、全てのノードが図の幅と高さの中にある
+      - 線のパスが縦と横の線分だけで、`from`・`to` でないノードの矩形と交わらない
+      - 2 つ目と 3 つ目の図の場所に書き方の警告があり、2 つ目は座標を全て書くか全て省く直し方、3 つ目は `llm` と座標を省けるのは判定フローチャートの 4 つの種類だけであることが書かれている
+      - 段落がある
+      - 同じ定義を 2 回描くと同じ文字列が返る
+    test: test_normal_when_flowchart_auto_layout
+  - name: 正常系（ノードのリンク先）
+    summary: リンク先を持つノードをリンクにし、許さないリンク先のノードをリンクにせず書き方の警告にする
+    setup:
+      - name: 配布物を読んだ Node の処理
+        description: 正常系と同じ
+      - name: リンク先を持つ定義を持つ Markdown
+        description: ノード 5 つのフロー図の定義を持つ文書。`a` は `href` が `https://example.com/spec` で `io` を持つ。`b` は `./other.md`、`c` は `javascript:alert(1)`、`d` は `id:spec#items` を持ち、`e` は `href` を持たない
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        participant C as 使う側の処理
+        participant M as mdmark
+        C->>M: render(markdown)
+        M->>M: ノードのリンク先を本文のリンクと同じ許可で確かめる
+        M-->>C: HTML 文字列
+    expected:
+      - '`a`・`b` のノードが class `has-link` と、書いた `href` を持つ `a.mdmark-diagram-node-link` を持ち、`a.mdmark-diagram-node-link` の読み上げの名前がノードの名前'
+      - '`a` のノードの `io` の印が `a.mdmark-diagram-node-link` の中に無く、その後ろにある'
+      - '`c`・`d`・`e` のノードが `a` 要素と `has-link` を持たず、名前が描かれている'
+      - 図の前に書き方の警告が 1 つあり、`c`・`d` と `javascript:alert(1)`・`id:spec#items` と使えるリンク先が書かれている
+      - 文字列に `javascript:` が無い
+    test: test_normal_when_node_link
+  - name: 正常系（折り返す）
+    summary: '`wrap` を持つコードブロックとファイルツリーに折り返す class を付け、値を持つ `wrap=` を書き方の警告にする'
+    setup:
+      - name: 配布物を読んだ Node の処理
+        description: 正常系と同じ
+      - name: 折り返すマーカーを持つ Markdown
+        description: '`<!-- code: lines wrap -->` の直後の 3 行の言語 `ts` のコードブロック、`<!-- code: wrap -->` の直後の 1 行のコードブロック、マーカーの無いコードブロック、`<!-- tree: open=all wrap -->` の直後の言語 `tree` のコードブロック、`<!-- code: wrap=yes -->` の直後のコードブロックを持つ文書'
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        participant C as 使う側の処理
+        participant M as mdmark
+        C->>M: render(markdown)
+        M->>M: code と tree のマーカーの wrap を読む
+        M-->>C: HTML 文字列
+    expected:
+      - 1 つ目の `pre` が class `mdmark-code-lines mdmark-code-numbered mdmark-code-wrap` を持ち、`data-line` が 1〜3 の行が 3 つある
+      - 2 つ目の `pre` が `mdmark-code-lines` と `mdmark-code-wrap` を持ち、`mdmark-code-numbered` を持たない
+      - 3 つ目の `pre` が `mdmark-code-wrap` を持たない
+      - ファイルツリーの `div.mdmark-tree` が `data-open="all"` と class `mdmark-tree-wrap` を持つ
+      - 5 つ目のコードブロックの前に書き方の警告があり、本文に `wrap=yes` と値を付けずに `wrap` と書く直し方があり、その `pre` が `mdmark-code-wrap` を持たない
+    test: test_normal_when_wrap
 lead: 使う側（書き出し・ビルドの処理やサーバー）が、画面を持たずに Markdown を HTML 文字列にする。`mount` が描く本文と同じ文字列を、ブラウザでも Node でも返す。
 idempotent: true
 side_effects: なし（外部ライブラリも読まない）
@@ -1535,7 +1609,7 @@ constraints:
   - item: タブ
     constraint: '`<!-- tabs -->` の範囲を `<div class="mdmark-tabs">` で囲み、範囲で最初に出る見出しの階層で区切った中身ごとに `<div class="mdmark-tab-panel">` に入れる。区切りの見出しは `<p class="mdmark-tab-title">{見出しの行内の HTML}</p>` に替え（`**` の強調は `strong` のまま残す）、本文の見出しとして残さない。全ての中身を隠さずに出す（タブの並びと切り替えは `mount` が付ける）。`<!-- tabs: group=名前 -->` の範囲は `<div class="mdmark-tabs" data-group="{名前}">` にし、組は写すだけで選択は持たない。範囲の中の `<!-- tabs -->` は入れ子として数え、開きと閉じを内側から対応させる。内側のタブは、内側の範囲で最初に出る見出しの階層で区切り、`mdmark-tab-panel` の中に `mdmark-tabs` を入れる。閉じの無い開きは、範囲の中に別のタブの開きを持たなければ文書の終わりまでを範囲にし、持てばその開きから文書の終わりまでのタブの印をどれもタブにせず、見出しと中身をそのまま出す'
   - item: ステップ・ファイルツリー・バッジ
-    constraint: '`<!-- steps -->` の範囲の番号付きリストの `ol` に class `mdmark-steps` を付ける。言語 `tree` のコードブロックを `<ul class="mdmark-tree" aria-label="ファイルツリー">` の入れ子にし、項目を `<li class="mdmark-tree-folder">`（名前が `/` で終わるか子を持つ）・`<li class="mdmark-tree-file">` と `<span class="mdmark-tree-name">` にする。頭が `badge:` の行内のコードを `<span class="mdmark-badge">{頭を外した文言}</span>` にし、`badge\:` の行内のコードは `\` を外した `<code>` にする。`badge:` の後ろが空か空白だけの行内のコードはバッジにせず、`<code>` のまま出す'
+    constraint: '`<!-- steps -->` の範囲の番号付きリストの `ol` に class `mdmark-steps` を付ける。言語 `tree` のコードブロックを `<div class="mdmark-tree">` の中の `<ul class="mdmark-tree-list" aria-label="ファイルツリー">` の入れ子にし、項目を `<li class="mdmark-tree-folder">`（名前が `/` で終わるか子を持つ）・`<li class="mdmark-tree-file">` と `<span class="mdmark-tree-name">` にする。直前の `<!-- tree: {引数} -->` の `wrap`（`open=` と空白で並べて書ける）は、そのツリーの `div.mdmark-tree` に class `mdmark-tree-wrap` を付ける。頭が `badge:` の行内のコードを `<span class="mdmark-badge">{頭を外した文言}</span>` にし、`badge\:` の行内のコードは `\` を外した `<code>` にする。`badge:` の後ろが空か空白だけの行内のコードはバッジにせず、`<code>` のまま出す'
   - item: 見出しの ID とアンカー
     constraint: 全ての見出しに GitHub と同じ規則の `id` を付ける（小文字にし、英数字・`-`・`_`・空白と英字以外の文字のほかを落とし、空白を `-` にする。同じ ID の 2 つ目から `-1`・`-2` を付ける）。見出しの ID は機能に関わらず付ける。`anchors` がオンのとき、見出しの中に `<a class="mdmark-anchor" href="#{ID}" aria-label="「{見出しの文字}」へのリンク">` を足す
   - item: 目次
@@ -1547,13 +1621,13 @@ constraints:
   - item: 図と表の番号
     constraint: '`<!-- fig: {ID} -->` の直後の画像の段落と表を `<figure class="mdmark-figure" id="fig-{ID}">` に入れ、文書の頭から種類ごとに数えた番号を付ける。画像は下に `<figcaption class="mdmark-figure-caption"><b>図 {番号}</b>{画像の title}</figcaption>`、表は上に `<figcaption class="mdmark-figure-caption"><b>表 {番号}</b></figcaption>` を置く。本文の `#fig-{ID}` へのリンクの文字を、その図表の `図 {番号}`・`表 {番号}` に替える'
   - item: 書き手の誤り
-    constraint: 記法の印の知らない種類・`+機能`・`-機能`・キー・値（表に無い列名・知らない絞り込みの種類・知らない集計の計算・`hide=` の先頭の列、`+total` の無い表の `total=`・`+columns` の無い表の `hide=` を含む）、閉じの印の無い範囲（印から文書の終わりまでを範囲にする）、見出しの無いタブの範囲、タブの印の値の無い `group=`・`group=` 以外のキー・`キー=値` の形でない指定（値の無い `group=` は組を持たないタブにする）、番号付きリストの無いステップの範囲、表に無い行を指す行の詳細、切れた図表の参照、重なった図表の ID、読めない行を持つファイルツリー、コードブロックの印の知らないキー・読めない `highlight=` の番号・コードブロックに無い行の番号、直後にコードブロックの無いコードブロックの印、知らないコードの行の印（`[!code blink]` など。その行には当てず、書いた文字のまま出す）、`fold=` の畳めない行（コードブロックに無い行と、次の空でない行が深くない行）の番号、`header-rows=` の誤り（数でないか、表の行の数以上）、`row-header=` の誤り（数でないか、表の列の数以上。行見出しを持たない表として描く）、結合するセルの無い `^^`・`<<`（制約「表」）、閉じの無い入れ子のタブの開き（場所は外側の開き）、`total` の表の `sum`・`avg` の列にある空でなく数として読めないセル（読み方は dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts の制約『表の操作』。その列のその集計のセルは `mount` が空にする）では、読めた指定だけを当てて描き、その箇所の前に `<div class="mdmark-syntax-warning" role="note">` と題 `<p class="mdmark-syntax-warning-title">書き方の警告</p>` と、読めない指定と直し方の本文を置く。`features` の印の知らない機能名は今のとおり知らせずに無視する
+    constraint: 記法の印の知らない種類・`+機能`・`-機能`・キー・値（表に無い列名・知らない絞り込みの種類・知らない集計の計算・`hide=` の先頭の列、`+total` の無い表の `total=`・`+columns` の無い表の `hide=` を含む）、閉じの印の無い範囲（印から文書の終わりまでを範囲にする）、見出しの無いタブの範囲、タブの印の値の無い `group=`・`group=` 以外のキー・`キー=値` の形でない指定（値の無い `group=` は組を持たないタブにする）、番号付きリストの無いステップの範囲、表に無い行を指す行の詳細、切れた図表の参照、重なった図表の ID、読めない行を持つファイルツリー、コードブロックの印の知らないキー・読めない `highlight=` の番号・コードブロックに無い行の番号、直後にコードブロックの無いコードブロックの印、コードブロックとファイルツリーの印の値を持つ `wrap=`（`wrap` を当てない）、フロー図のノードの許可しないリンク先（制約「ノードのリンク先」。場所は図の前）、知らないコードの行の印（`[!code blink]` など。その行には当てず、書いた文字のまま出す）、`fold=` の畳めない行（コードブロックに無い行と、次の空でない行が深くない行）の番号、`header-rows=` の誤り（数でないか、表の行の数以上）、`row-header=` の誤り（数でないか、表の列の数以上。行見出しを持たない表として描く）、結合するセルの無い `^^`・`<<`（制約「表」）、閉じの無い入れ子のタブの開き（場所は外側の開き）、`total` の表の `sum`・`avg` の列にある空でなく数として読めないセル（読み方は dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts の制約『表の操作』。その列のその集計のセルは `mount` が空にする）では、読めた指定だけを当てて描き、その箇所の前に `<div class="mdmark-syntax-warning" role="note">` と題 `<p class="mdmark-syntax-warning-title">書き方の警告</p>` と、読めない指定と直し方の本文を置く。`features` の印の知らない機能名は今のとおり知らせずに無視する
     notes: 本文の文言は画面設計『文書』
   - item: 図の部品
     constraint: '`<!-- flow -->`・`<!-- sequence -->`・`<!-- chart -->`・`<!-- param -->`・`<!-- er -->` 〜 閉じの印の範囲にある言語 `json` のコードブロック 1 つを部品の定義として読み、形（`dist/index.d.ts` の `MdmarkFlowDefinition`・`MdmarkSequenceDefinition`・`MdmarkChartDefinition`・`MdmarkParamDefinition`・`MdmarkErDefinition`）を確かめて、`<figure class="mdmark-diagram" data-diagram="{種類}">` に題（題名・範囲・更新日）・図・凡例をこの順に描く（`param` は `div.mdmark-param` に描き、中のグラフを `data-diagram="chart"` の図の枠にする）。範囲の中のコードブロック以外の Markdown と定義の JSON は出力に残さない。定義の文字（箱の名前・補足・線のラベル・テーブルと列の名前と型・ツールチップの中身）は文字として出し、`{{語}}` はその語を用語の照合に回す。ツールチップの中身は `role="tooltip"` と `hidden` を持つ要素で図の中に置き、拡大・縮小・移動・全画面のボタンと操作は `mount` が付ける。グラフの定義の `type` は `line`（省いたとき）・`bar`・`pie`・`scatter`・`area`・`stacked-bar`・`stacked-area`・`horizontal-bar`・`donut`・`radar`・`bubble`・`combo` で、系列（円とドーナツは項目）は 1〜6 つ。`stacked-bar`・`stacked-area` は同じ項目の系列の値を積み上げた高さ（負の値は 0 の下へ積む。`stacked-bar` は棒の上に合計を出す）、`horizontal-bar` は項目を縦・値を横の軸、`donut` は中を空けた扇形と、中央の合計と `合計{unit}`、`radar` は `ticks` を軸にした多角形、`bubble` は点の 3 つ目の値に面積が比例する円（凡例に `円の面積: {size.label}`）、`combo` は系列ごとの `as`（`line`・`bar`）で折れ線と棒を同じ横の軸に描き、`axis` が `y2` の系列は `y2` の右の縦の軸で読む（`y2` を持つときは凡例の系列の名前に `（左の軸）`・`（右の軸）` を添える）。棒・面・円・ドーナツは系列を色と塗りの模様の組、折れ線・散布図・バブル・レーダーは色と点の形の組で描き分け、円とドーナツは扇形の外に割合（整数の %）、凡例に項目の名前と値を出す。値の軸の範囲を省いたときは、データの最小と最大を含む 1・2・5×10 のべき乗の刻みで切る'
     notes: 定義の形の項目はモジュール構成設計で型に書く。見本は `dev/mock/refs/42/assets/samples.js`
   - item: 図の見た目の決まり
-    constraint: フロー図は定義の座標のとおりに箱と線を置き、自動配置はしない。`frame` をシステムの枠、`lanes` を枠の中の層（層の箱の色をうっすら敷く）にする。線の種類（`flow`・`read`・`write`・`reply`・`loop`）は色と模様（破線の間隔・太さ・矢じり）の組で描き分ける。横の線が縦の線と交わる点は横の線に飛び越えの弧（line jump）を入れ、同じ向きで重なる線はずらす。シーケンス図は相手を定義の順に左から右へ、メッセージを時刻の順に上から下へ並べ、`loop` は右の帯を通る破線と戻り先のラベルにする。グラフは系列を色と線の模様と点の形の組で描き分ける。凡例には定義に出る箱の種類・線の種類・系列だけを載せ、枠・層・交差・ツールチップの印・用語の下線は図にあるときだけ載せる
+    constraint: フロー図は定義の座標のとおりに箱と線を置き、座標を省いた判定フローチャートだけを制約「自動の配置」で置く。`frame` をシステムの枠、`lanes` を枠の中の層（層の箱の色をうっすら敷く）にする。線の種類（`flow`・`read`・`write`・`reply`・`loop`）は色と模様（破線の間隔・太さ・矢じり）の組で描き分ける。横の線が縦の線と交わる点は横の線に飛び越えの弧（line jump）を入れ、同じ向きで重なる線はずらす。シーケンス図は相手を定義の順に左から右へ、メッセージを時刻の順に上から下へ並べ、`loop` は右の帯を通る破線と戻り先のラベルにする。グラフは系列を色と線の模様と点の形の組で描き分ける。凡例には定義に出る箱の種類・線の種類・系列だけを載せ、枠・層・交差・ツールチップの印・用語の下線は図にあるときだけ載せる
     notes: 色と模様の値はデザイン方針と CSS 変数（モジュール構成設計）
   - item: ER 図
     constraint: '`er` の定義は、テーブル（`id`・物理名 `name`・論理名 `label`・種類 `kind`・色 `color`・概要 `desc`・座標 `x`・`y`・幅 `w`・畳んだ状態で開く `folded`・列 `columns`）と関係（元 `from`・`fromColumn`・`fromCard`、先 `to`・`toColumn`・`toCard`、ラベル `label`、縦の線の位置 `midX`）を持つ。テーブルは定義の座標のとおりに置き、自動配置はしない。テーブルの見出しに lucide の `table` のアイコンと物理名、論理名と種類の札（`master` は `マスター`、`transaction` は `トランザクション`。`kind` の無いテーブルは札を出さない）を出し、列（`name`・`type`・主キー `pk`・外部キー `fk`・NOT NULL `nn`・説明 `desc`）を定義の順に 1 行ずつ、`PK`・`FK`・`NN` のマーカー（`abbr`。`title` が `主キー`・`外部キー`・`NOT NULL`）・名前・型で並べる。テーブルの `data-color` は `color`、無ければ種類の既定の色（`master` は `blue`、`transaction` は `orange`）にし、どちらも無いテーブルは `data-color` を持たない。関係は、元の列の行から先の列の行へ横・縦・横の直角の線で結び（縦の線は `midX`、省いたときは両端の中間）、両端に多重度の記号（`1` は縦線 2 本、`0..1` は縦線と丸、`1..n` は鳥の足と縦線、`0..n` は鳥の足と丸）を置き、`label` を縦の線の中ほどに出す。同じ `x` のテーブルどうしの関係は両方の右の辺から出す。主キーでも外部キーでもない列を持つテーブルの見出しに、列の開閉のボタン（読み上げの名前 `「{論理名}」の主キーと外部キー以外の列`、`aria-expanded` は `folded` が `true` のとき `false`）を置く。`folded` が `true` のテーブルは主キーと外部キーの列だけを出し、`非表示 {数} 列` の行を置く。関係の列が畳まれて見えないときは、線を見出しの縦の中ほどへ結ぶ。`desc` を持つテーブルと、`desc` を持つ列のあるテーブルは、見出しに説明のボタン（読み上げの名前 `「{論理名}」の説明`）を置き、`role="tooltip"` と `hidden` を持つ中身に `{論理名}（{物理名}）`・概要・`desc` を持つ列の名前と説明を入れる（`hints` がオフのときは置かない）。凡例には、図にあるテーブルの種類の札・列のマーカー・多重度の記号だけを載せる（説明のボタンと用語の下線は載せない。制約「図の見た目の決まり」の凡例の決まりより優先する）'
@@ -1562,7 +1636,7 @@ constraints:
     constraint: '`param` は題・スライダー（`input type="range"`。`min`・`max`・`step` と既定の値を定義から写す）と今の値の `output`・今の値を写すボタン・既定の値の系列で描いたグラフを出す。グラフの系列は、定義の `table`（スライダーの値ごとの点の並び）から引く。値を変えて描き直す操作と写す操作は `mount` が付ける'
     notes: 文書に式やスクリプトを書かせない（D-22）ため、計算した点を定義に持たせる
   - item: 図の定義の誤り
-    constraint: 図の部品の範囲に `json` のコードブロックが無いか 2 つ以上ある、JSON として読めない、または形に合わないときは、その図だけを描かず、その場所に書き方の警告を置く。警告は図の種類の名前を主語にし、JSON として読めないときは行と読めた最後の部分と足りない記号、形に合わないときは読めない箇所と直し方を文で書く。線の端が無い箱の `id` を指す・`id` が重なる・系列の点の数が横の目盛りの数と合わない・グラフの系列（円とドーナツは項目）が 7 つ以上ある・ER 図の関係の元か先が無いテーブルの `id` かそのテーブルに無い列を指す・テーブルの `id` か同じテーブルの列の名前が重なる・`kind` が `master`・`transaction` でない・`color` が色の名前でない・多重度が `1`・`0..1`・`1..n`・`0..n` でないのも形の誤りにする。ほかの図と本文は描く
+    constraint: 図の部品の範囲に `json` のコードブロックが無いか 2 つ以上ある、JSON として読めない、または形に合わないときは、その図だけを描かず、その場所に書き方の警告を置く。警告は図の種類の名前を主語にし、JSON として読めないときは行と読めた最後の部分と足りない記号、形に合わないときは読めない箇所と直し方を文で書く。線の端が無い箱の `id` を指す・`id` が重なる・系列の点の数が横の目盛りの数と合わない・グラフの系列（円とドーナツは項目）が 7 つ以上ある・ER 図の関係の元か先が無いテーブルの `id` かそのテーブルに無い列を指す・テーブルの `id` か同じテーブルの列の名前が重なる・`kind` が `master`・`transaction` でない・`color` が色の名前でない・多重度が `1`・`0..1`・`1..n`・`0..n` でない・フロー図の座標（ノードの `x`・`y`・`w`・`h`、線の `points`、図の `width`・`height`）を書いたものと省いたものが混ざる・座標を省いたフロー図が `start`・`question`・`action`・`result` 以外の種類のノードを持つ（内容に、座標を省けるのは判定フローチャートの 4 つの種類だけであることと、座標を書くか種類を変える直し方を書く）のも形の誤りにする。ほかの図と本文は描く
     notes: 本文の文言は画面設計『文書』
   - item: 拡張の印の定義
     constraint: 登録した拡張の印を範囲で書き、範囲に `json` のコードブロックを置いたときも、印の場所の要素だけを出し、範囲の中身と定義の JSON は出力に残さない。登録していない印の範囲のうち、中身が `json` のコードブロックだけのものは中身ごと取り除く（それ以外の範囲は今のとおり印だけを取り除く）
@@ -1583,7 +1657,7 @@ constraints:
     constraint: '`<!-- view: 引数 -->` 〜 `<!-- /view -->` の範囲を class `mdmark-view` の `div` にし、印の引数を読んだ指定を `data-view` に JSON（`group` は分ける列の位置か `null`、`mode` は `board`・`table`、`boardDisabled` は `group=` の列が表に無いときの書き方の警告の `id` か空、`icons` は読めた `icons=` の対応）で持たせ、中に範囲の表を記法の表と同じ形（`filter=` は表の `data-filter`）で残す。ボードと切り替えは `mount` が作るため、`render` の出力だけを読む表示では表のまま読める。書き方の誤りは書き方の警告にし、`views` がオフのときは `mdmark-view` を作らず表だけを出す'
     notes: 引数と警告の種類はインターフェース定義『文書を描く』の制約の「ビューの印」
   - item: コードブロック
-    constraint: 'コードブロックの情報文字列の最初の語を最初の `:` で分け、前を言語、後ろをファイル名として読み、`code` の class を `language-{言語}` にする（`code` のオン・オフによらない。`:` の前が空のときは言語もファイル名も持たないものとして扱う）。言語 `tree`・図の部品の範囲の `json`・埋め込んだ HTML の範囲の `html` は、最初の語がその言語とちょうど一致するときだけ当て、`:ファイル名` を付けたものは普通のコードブロックとして描く（埋め込んだ HTML の範囲では、`html` のコードブロックが無いときの警告を置く）。`code` がオンのとき、コードブロックの直前の `<!-- code: {引数} -->` を次のコードブロックへの指定として読む。引数は `title=題`（題。印の引数は空白で区切るため題に空白は書けず、空白の後ろは別の引数として読む）・`lines`（行番号）・`highlight=行,…`（強調する行。`2`・`4-6` を `,` で並べる）・`fold=行,…`（最初から畳む行。`highlight=` と同じ書き方）。コードブロックの行末の行コメントの `[!code ++]`・`[!code --]`・`[!code highlight]`・`[!code focus]`・`[!code error]`・`[!code warning]` を行の種類（`add`・`del`・`highlight`・`focus`・`error`・`warning`）として読んで印を外し、行コメントが印だけなら印の直前の行コメントの頭（`//`・`#`・`--`・`;`・`<!--` 〜 `-->`・`/*` 〜 `*/`）も外し、外した後の行末の空白も外す。`[\!code …]` は `\` を外した文字のまま出す。行番号・強調・行の種類・インデントのある行のどれかを持つコードブロックは、`pre` に class `mdmark-code-lines`（行番号を持てば `mdmark-code-numbered`、`add`・`del` の行を持てば `mdmark-code-signs`、`focus` の行を持てば `mdmark-code-has-focus` も）を付け、`code` の中身を行ごとに `<span class="mdmark-code-line" data-line="{行番号}" data-kind="{種類}"><span class="mdmark-code-text">{行の文字}</span></span>` に分けて改行でつなぐ（`data-line` は行番号を持つときだけ、`data-kind` は種類を持つ行だけ）。インデントのある行は `data-indent="{レベル}"` を持つ（コードブロックの中の最も小さいインデントの幅を 1 レベル、タブを 1 レベルとする）。次の空でない行がより深い行は畳める行とし、`data-fold-lines="{畳む行の数}"`（次の同じ深さ以下の行の手前まで。範囲の末尾の空行は含めない）を持つ。`fold=` の畳める行は `data-folded` も持つ。行番号を持つときは `code` の `style` に `--mdmark-code-digits: {行の数の桁の数}` を置く。コードブロックを `<div class="mdmark-code">`（題を持てば `<figure class="mdmark-code">`）で囲み、`pre` の前にラベルの帯 `<div class="mdmark-code-bar">`（題を持てば `<figcaption class="mdmark-code-title mdmark-code-bar">`）を置く。帯の左端には、言語を持つとき `<span class="mdmark-code-lang"><span class="mdmark-code-lang-name" aria-hidden="true">{言語}</span><span class="mdmark-code-file">{ファイル名}</span></span>`（`mdmark-code-file` はファイル名を持つときだけ）を置き、題を持つときはその後ろに題の文字を置く。`pre` の読み上げの名前は、題を持てば `コード: {題}`、ファイル名を持てば `コード: {ファイル名}`、言語を持てば `コード: {言語}`、どれも無ければ `コード` にする。コピーのボタンは `mount` が帯の右端に付ける。行番号と行頭の `+`・`-` は HTML の文字に入れない（CSS の擬似要素で出し、選んで写す中身に入らない）。言語 `tree` のコードブロックと、図の部品・埋め込んだ HTML の範囲のコードブロックには当てない。印も行の印もインデントのある行も持たないコードブロックは、帯で囲むほかは今のとおり描く。`code` がオフのときは印を取り除き、コードブロックを今のとおり描く（行の印は書いた文字のまま出す）'
+    constraint: 'コードブロックの情報文字列の最初の語を最初の `:` で分け、前を言語、後ろをファイル名として読み、`code` の class を `language-{言語}` にする（`code` のオン・オフによらない。`:` の前が空のときは言語もファイル名も持たないものとして扱う）。言語 `tree`・図の部品の範囲の `json`・埋め込んだ HTML の範囲の `html` は、最初の語がその言語とちょうど一致するときだけ当て、`:ファイル名` を付けたものは普通のコードブロックとして描く（埋め込んだ HTML の範囲では、`html` のコードブロックが無いときの警告を置く）。`code` がオンのとき、コードブロックの直前の `<!-- code: {引数} -->` を次のコードブロックへの指定として読む。引数は `title=題`（題。印の引数は空白で区切るため題に空白は書けず、空白の後ろは別の引数として読む）・`lines`（行番号）・`highlight=行,…`（強調する行。`2`・`4-6` を `,` で並べる）・`fold=行,…`（最初から畳む行。`highlight=` と同じ書き方）・`wrap`（長い行を枠の幅で折り返す）。コードブロックの行末の行コメントの `[!code ++]`・`[!code --]`・`[!code highlight]`・`[!code focus]`・`[!code error]`・`[!code warning]` を行の種類（`add`・`del`・`highlight`・`focus`・`error`・`warning`）として読んで印を外し、行コメントが印だけなら印の直前の行コメントの頭（`//`・`#`・`--`・`;`・`<!--` 〜 `-->`・`/*` 〜 `*/`）も外し、外した後の行末の空白も外す。`[\!code …]` は `\` を外した文字のまま出す。行番号・強調・行の種類・インデントのある行・`wrap` のどれかを持つコードブロックは、`pre` に class `mdmark-code-lines`（行番号を持てば `mdmark-code-numbered`、`wrap` を持てば `mdmark-code-wrap`、`add`・`del` の行を持てば `mdmark-code-signs`、`focus` の行を持てば `mdmark-code-has-focus` も）を付け、`code` の中身を行ごとに `<span class="mdmark-code-line" data-line="{行番号}" data-kind="{種類}"><span class="mdmark-code-text">{行の文字}</span></span>` に分けて改行でつなぐ（`data-line` は行番号を持つときだけ、`data-kind` は種類を持つ行だけ）。インデントのある行は `data-indent="{レベル}"` を持つ（コードブロックの中の最も小さいインデントの幅を 1 レベル、タブを 1 レベルとする）。次の空でない行がより深い行は畳める行とし、`data-fold-lines="{畳む行の数}"`（次の同じ深さ以下の行の手前まで。範囲の末尾の空行は含めない）を持つ。`fold=` の畳める行は `data-folded` も持つ。行番号を持つときは `code` の `style` に `--mdmark-code-digits: {行の数の桁の数}` を置く。コードブロックを `<div class="mdmark-code">`（題を持てば `<figure class="mdmark-code">`）で囲み、`pre` の前にラベルの帯 `<div class="mdmark-code-bar">`（題を持てば `<figcaption class="mdmark-code-title mdmark-code-bar">`）を置く。帯の左端には、言語を持つとき `<span class="mdmark-code-lang"><span class="mdmark-code-lang-name" aria-hidden="true">{言語}</span><span class="mdmark-code-file">{ファイル名}</span></span>`（`mdmark-code-file` はファイル名を持つときだけ）を置き、題を持つときはその後ろに題の文字を置く。`pre` の読み上げの名前は、題を持てば `コード: {題}`、ファイル名を持てば `コード: {ファイル名}`、言語を持てば `コード: {言語}`、どれも無ければ `コード` にする。コピーのボタンは `mount` が帯の右端に付ける。行番号と行頭の `+`・`-` は HTML の文字に入れない（CSS の擬似要素で出し、選んで写す中身に入らない）。言語 `tree` のコードブロックと、図の部品・埋め込んだ HTML の範囲のコードブロックには当てない。印も行の印もインデントのある行も持たないコードブロックは、帯で囲むほかは今のとおり描く。`code` がオフのときは印を取り除き、コードブロックを今のとおり描く（行の印は書いた文字のまま出す）'
     notes: 見た目はモック `dev/mock/components/code-block/`。題の前のファイルのアイコンは CSS で付ける。`mdmark-code-text` の中身は、`mount` が描いた後に色分けした HTML に置き換える（制約『コードブロックの色分け』）
   - item: 元の行番号
     constraint: 本文のブロック（見出し・段落・リスト・リストの項目・表・表の行・コードブロック・引用・水平線・注意書き・印の範囲を囲む要素）の開始の要素に、そのブロックが Markdown で始まる行の番号を `data-source-line` で出す。番号は 0 始まり（Markdown の 1 行目が `0`）。入れ子のブロックはそれぞれの開始の行を持つ。sanitize は `data-source-line` を全ての要素で残す
@@ -1626,4 +1700,12 @@ constraints:
   - item: 脚注
     constraint: '`footnotes` がオンのとき、`[^ラベル]`（ラベルは空白を含まない）、行頭の `[^ラベル]: 中身`（4 文字の字下げで続く段落を含む）、行内の `^[中身]` を脚注として読む。ラベルは markdown-it の `normalizeReference`（大文字小文字と空白の正規化）で照合し、同じラベルの定義が複数あるときは最初の定義を採る。番号は本文で最初に参照した順に 1 から振り、同じ脚注の 2 回目以降の参照も同じ番号にする。定義の無い参照は書いた文字のまま出し、参照されない定義は出さない。`[^ラベル](URL)` はリンクを優先する。参照の場所には `sup.mdmark-fn-ref` を置き、その中に番号のリンク `a.mdmark-fn-link`（`id="mdmark-fnref-{番号}-{その脚注の参照の通し番号}"`・`href="#mdmark-fn-{番号}"`）とツールチップ `span.mdmark-fn-tip`（`id="mdmark-fn-tip-{番号}-{参照の通し番号}"`。タイトル `脚注 {番号}` と、定義の段落ごとの中身）を置く。ツールチップの中身がリンクを持つときは `role="group"`・`aria-label="脚注 {番号}"` と番号のリンクの `aria-details`、持たないときは `role="tooltip"` と `aria-describedby` にする。脚注が 1 つ以上ある文書は、本文の節の後ろ・関連文書の一覧の前に、閉じた `details.mdmark-footnotes`（`summary` は `脚注（{件数} 件）`）とその中の `ol.mdmark-footnotes-list` を置き、脚注ごとの項目 `li.mdmark-fn-item`（`id="mdmark-fn-{番号}"`）に、定義の中身と参照ごとの戻るリンク `a.mdmark-fn-back`（`href="#mdmark-fnref-{番号}-{参照の通し番号}"`。参照が 2 つ以上のときは a・b の文字を添える）を置く。ツールチップと一覧の中の脚注の中身には、用語の下線とやめた言い方のマーカーを付けない。`footnotes` がオフのとき（設定か文書の `features` の印）、参照・定義・行内の脚注は書いた文字のまま出し、定義は書いた位置に段落として残す'
     notes: 部品の要素の形とアイコンは部品設計で決める。読み取りは自前の block・inline・core のルール（ライブラリ選定で決定）
+  - item: 自動の配置
+    constraint: フロー図の定義の全てのノードが `x`・`y`・`w`・`h` を、全ての線が `points` を持たず、図が `width`・`height` を持たず、ノードの種類が全て `start`・`question`・`action`・`result` のとき、mdmark が配置して描く。`start` を一番上に置き、`start` から線をたどって `question` を左の列に上から下へ並べる。`question` から出る線は、先が `question` の線を下、先が `action`・`result` の線を右へ出し、両方の先が `action`・`result` ならラベル `NO` の線を下、`YES` の線を右へ出す。右へ出した線の先のノードはその `question` と同じ行の右の列に、下へ出した線の先の `action`・`result` はその `question` の下の左の列に置き、`action` の先は同じ列の下へ続ける。複数の線が入るノードは、`question` から右へ出る線の先の位置（その `question` と同じ行）を優先して 1 つだけ置き、その線が無ければ最初にたどった線の先の位置に置く。線をたどって届かないノードは、届くノードの下に定義の順に並べる。ノードの大きさは種類と名前の文字から、インターフェース定義『設定と索引を点検する』の制約「ラベルの長さの目安」で収まる大きさにする。線は縦と横だけの折れ線で、`from`・`to` でないノードの中を通らない点を求める。図の `width`・`height` は、ノードと線を囲む大きさに余白を足した値にする。配置した結果は、同じ座標を書いた定義と同じ HTML に描く
+    decided_by: dev/設計書/シナリオ/単一ユースケース/図を描く#scenarios[正常シナリオ（座標を省いた判定フローチャート）]
+    notes: 配置の決まりはリファレンス『フローチャートの決まり』。列と行の関係はモックの素材 `dev/mock/refs/42/assets/samples.js` の `judgement-auto` と同じ。向きは確認ログの決定（自動の配置の向き、推奨案 A）。間隔・余白・大きさの値はモジュール構成設計
+  - item: ノードのリンク先
+    constraint: フロー図のノードはリンク先 `href`（文字列）を持てる。`href` を制約「URL のスキーム」と同じ許可（`http`・`https`・`mailto` と相対 URL）で確かめ、許すノードはノードの全体を覆う `<a class="mdmark-diagram-node-link" href="{href}">`（読み上げの名前はノードの名前。開く先は本文のリンクと同じく同じタブ）にし、ノードの要素（`div.mdmark-diagram-node`）に class `has-link` を付ける。`io`・`hint` の印はリンクの中に入れず、リンクの後ろに置く。許さないリンク先（`javascript:`・`id:` など）のノードはリンクにせず名前を描き、図の前に、ノードの `id` と書いたリンク先と使えるリンク先を書いた書き方の警告を置く（許さないノードが複数なら 1 つの警告に並べる）。図は描く
+    decided_by: dev/設計書/シナリオ/単一ユースケース/図を描く#scenarios[異常シナリオ（ノードのリンク先を許可しない）]
+    notes: '`id:` などの参照は使う側が URL に変えてから定義に書く（要件.md の未確定、推奨 A）。リンクの見た目は確認ログの決定（名前を本文のリンクと同じ色と下線、推奨案 A）'
 test_file: tests/integration/lib/render.test.ts

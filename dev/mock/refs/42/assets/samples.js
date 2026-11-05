@@ -194,6 +194,81 @@ window.mdmarkMockDiagrams = {
     ],
   },
 
+  // 座標を省いた判定フローチャートを自動で配置した結果: 開始から上から下へ質問を並べ、次の質問へ続く側を下、結果やアクションへ進む側を右へ置く。
+  // 両方が結果のときは NO を下、YES を右へ置く。ノードの大きさは種類ごとに同じ（開始 100×100・質問 280×136・アクション 200×72・結果 200×60）、間は縦 40px・横 120px
+  "judgement-auto": {
+    kind: "flow",
+    title: "問い合わせの返信の判定",
+    scope: "問い合わせを受け取ったとき",
+    updated: "2026-11-04",
+    width: 684,
+    height: 584,
+    nodes: [
+      { id: "start", kind: "start", x: 150, y: 16, w: 100, h: 100, name: "問い合わせを受け取る" },
+      { id: "q1", kind: "question", x: 60, y: 156, w: 280, h: 136, name: "よくある質問で答えられるか" },
+      { id: "a1", kind: "action", x: 460, y: 188, w: 200, h: 72, name: "よくある質問のリンクを添える" },
+      { id: "q2", kind: "question", x: 60, y: 332, w: 280, h: 136, name: "担当者が答えられるか" },
+      { id: "r1", kind: "result", x: 460, y: 370, w: 200, h: 60, name: "返信を送信する" },
+      { id: "r2", kind: "result", x: 100, y: 508, w: 200, h: 60, name: "開発に起票する" },
+    ],
+    wires: [
+      { id: "j-start", line: "flow", points: [[200, 116], [200, 156]] },
+      { id: "j-q1-yes", line: "flow", points: [[340, 224], [460, 224]], label: "YES", labelAt: [400, 224] },
+      { id: "j-q1-no", line: "flow", points: [[200, 292], [200, 332]], label: "NO", labelAt: [200, 312] },
+      { id: "j-a1", line: "flow", points: [[560, 260], [560, 370]] },
+      { id: "j-q2-yes", line: "flow", points: [[340, 400], [460, 400]], label: "YES", labelAt: [400, 400] },
+      { id: "j-q2-no", line: "flow", points: [[200, 468], [200, 508]], label: "NO", labelAt: [200, 488] },
+    ],
+  },
+
+  // リンク先を持つノード: 受け取るは https の URL、分類するは相対パスと入力・処理・出力、記録するはリンク先を持たない
+  linked: {
+    kind: "flow",
+    title: "問い合わせの処理",
+    scope: "受け取りから記録まで",
+    updated: "2026-11-04",
+    width: 708,
+    height: 152,
+    nodes: [
+      { id: "recv", kind: "script", x: 24, y: 40, w: 180, h: 72, name: "問い合わせを受け取る", href: "https://example.com/spec" },
+      {
+        id: "classify",
+        kind: "llm",
+        x: 264,
+        y: 40,
+        w: 180,
+        h: 72,
+        name: "分類する",
+        href: "./other.md",
+        io: { in: "問い合わせの本文", do: "種類を 1 つ選ぶ", out: "種類と確度" },
+      },
+      { id: "store", kind: "data", x: 504, y: 40, w: 180, h: 72, name: "記録する", shape: "db" },
+    ],
+    wires: [
+      { id: "w-recv", line: "flow", points: [[204, 76], [264, 76]] },
+      { id: "w-classify", line: "write", points: [[444, 76], [504, 76]] },
+    ],
+  },
+
+  // 許可しないリンク先を書いたノード: リンクにせず、名前だけを描く（linked と同じ並びでリンク先を持たない）
+  "linked-blocked": {
+    kind: "flow",
+    title: "問い合わせの処理",
+    scope: "受け取りから記録まで",
+    updated: "2026-11-04",
+    width: 708,
+    height: 152,
+    nodes: [
+      { id: "recv", kind: "script", x: 24, y: 40, w: 180, h: 72, name: "問い合わせを受け取る" },
+      { id: "classify", kind: "llm", x: 264, y: 40, w: 180, h: 72, name: "分類する" },
+      { id: "store", kind: "data", x: 504, y: 40, w: 180, h: 72, name: "記録する", shape: "db" },
+    ],
+    wires: [
+      { id: "w-recv", line: "flow", points: [[204, 76], [264, 76]] },
+      { id: "w-classify", line: "write", points: [[444, 76], [504, 76]] },
+    ],
+  },
+
   // 判定フローチャートの長い文: 質問の文が長いときは菱形を大きくし、文字は菱形に内接する中央の四角（幅と高さの半分）で文節ごとに折り返す
   "judgement-long": {
     kind: "flow",

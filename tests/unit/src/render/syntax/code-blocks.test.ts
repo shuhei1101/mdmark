@@ -633,3 +633,26 @@ test("test_build_code_blocks_when_focus", () => {
   expect(html).not.toContain("[!code");
   expect(innerHtml(html, "<pre")).not.toContain("//");
 });
+
+// wrap を読み、値を持つ wrap= を警告にする（正常系）
+test("test_read_code_spec_when_wrap", async () => {
+  // 準備
+  const { readCodeSpec } = await loadCodeBlocks();
+  // 実行
+  const wrapped = readCodeSpec({
+    args: parseMarkArgs("lines wrap"),
+    lineCount: 3,
+  });
+  const valued = readCodeSpec({
+    args: parseMarkArgs("wrap=yes"),
+    lineCount: 3,
+  });
+  // 検証
+  expect(wrapped.wrap).toBe(true);
+  expect(wrapped.lineNumbers).toBe(true);
+  expect(wrapped.warnings).toEqual([]);
+  expect(valued.wrap).toBe(false);
+  const text = warningText(valued.warnings);
+  expect(text).toContain("wrap=yes");
+  expect(text).toContain("wrap と書いて");
+});

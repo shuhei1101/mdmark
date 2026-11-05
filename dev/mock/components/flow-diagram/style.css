@@ -62,3 +62,15 @@
     border-radius: 999px;
   }
 }
+
+/* リンク先を持つノードのホバーとフォーカスの見本: 1 つ目の箱をホバー、2 つ目の箱をフォーカスの見た目で止める */
+[data-mock-link-state] {
+  .mdmark-diagram-node.has-link[data-node="recv"] {
+    background: color-mix(in oklab, var(--node-color) 8%, var(--mdmark-color-bg));
+  }
+
+  .mdmark-diagram-node[data-node="classify"] .mdmark-diagram-node-link {
+    outline: 2px solid var(--mdmark-color-link);
+    outline-offset: 2px;
+  }
+}

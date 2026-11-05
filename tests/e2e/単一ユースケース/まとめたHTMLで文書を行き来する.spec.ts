@@ -140,3 +140,66 @@ test("test_error_when_url_points_missing_document", async ({
   ).toHaveText("文書A");
   expect(opened.pageErrors()).toEqual([]);
 });
+
+// B のフロー図の C を指すノードを押すと C へ移り、戻るで B へ戻る（正常シナリオ（フロー図のノードのリンク））
+test("test_normal_when_flow_node_link", async ({
+  builtRoot,
+  tempDir,
+  page,
+}) => {
+  // 準備
+  const dir = await tempDir();
+  const flow = {
+    title: "行き先",
+    scope: "文書の行き来",
+    updated: "2026-11-05",
+    width: 260,
+    height: 152,
+    nodes: [
+      {
+        id: "to-c",
+        kind: "script",
+        x: 30,
+        y: 40,
+        w: 200,
+        h: 72,
+        name: "文書C を開く",
+        href: "C.md",
+      },
+    ],
+    wires: [],
+  };
+  await writeFiles(dir, {
+    ...DOCUMENTS,
+    "B.md": [
+      DOCUMENTS["B.md"],
+      "<!-- flow -->",
+      "",
+      "```json",
+      JSON.stringify(flow),
+      "```",
+      "",
+      "<!-- /flow -->",
+      "",
+    ].join("\n"),
+  });
+  expect((await runCli(builtRoot, ["build"], dir)).code).toBe(0);
+  const h1 = page.locator("article.mdmark h1");
+  const opened = await openStandalone(page, {
+    tempDir,
+    htmlFile: join(dir, "dist", "docs.html"),
+  });
+  // 実行・検証: 文書の一覧で B を選ぶ
+  await page.locator('.mdmark-bundle-side a[data-doc-path="B.md"]').click();
+  await expect(h1).toContainText("文書B");
+  // 実行・検証: B のフロー図の C を指すノードを押すと C が出る
+  await page
+    .locator('article [data-node="to-c"] a.mdmark-diagram-node-link')
+    .click();
+  await expect(h1).toContainText("文書C");
+  await expect(page).toHaveURL(/#\/C\.md$/);
+  // 実行・検証: 戻るで B が出る
+  await page.goBack();
+  await expect(h1).toContainText("文書B");
+  expect(opened.externalRequests()).toEqual([]);
+});

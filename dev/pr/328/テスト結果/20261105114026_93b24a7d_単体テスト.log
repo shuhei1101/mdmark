@@ -1,0 +1,531 @@
+$ npm run test:unit
+
+> test:unit
+> vitest run --project 'unit*'
+
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-notation-flow-layout-lint-wrap-link
+
+ ❯ |unit| tests/unit/src/parts/diagram.test.ts (23 tests | 1 failed) 2149ms
+   × test_render_flow_when_node_link 5ms
+ ❯ |unit| tests/unit/src/render/sanitize.test.ts (22 tests | 1 failed) 1905ms
+   × test_is_allowed_url 3ms
+ ❯ |unit| tests/unit/src/render/syntax/code-blocks.test.ts (30 tests | 1 failed) 56ms
+   × test_read_code_spec_when_wrap 5ms
+ ❯ |unit| tests/unit/src/diagram/definition.test.ts (21 tests | 4 failed) 53ms
+   × test_read_definition_when_coordinates_omitted 9ms
+   × test_read_definition_when_coordinates_mixed 3ms
+   × test_read_definition_when_coordinates_omitted_not_judgement 1ms
+   × test_node_link_problems 1ms
+ ❯ |unit| tests/unit/src/parts/code-block.test.ts (15 tests | 1 failed) 120ms
+   × test_render_code_block_when_wrap 5ms
+ ❯ |unit| tests/unit/src/cli/check.test.ts (27 tests | 2 failed) 14660ms
+   × test_run_check_when_text 25ms
+   × test_run_check_when_arguments_conflict 27ms
+ ❯ |unit| tests/unit/src/plugin/tools.test.ts (15 tests | 1 failed) 9133ms
+   × test_run_check_tool_when_text_and_key 19ms
+ ❯ |unit| tests/unit/src/parts/tree.test.ts (8 tests | 1 failed) 204ms
+   × test_render_tree_when_wrap 12ms
+ ❯ |unit-browser (chromium)| tests/unit/src/interact/zoom.browser.test.ts (6 tests | 1 failed) 884ms
+   × test_attach_zoom_when_dragged_on_link 702ms
+ ❯ |unit| tests/unit/src/render/syntax/tree.test.ts (10 tests | 1 failed) 119ms
+   × test_read_tree_options_when_wrap 12ms
+ ❯ |unit| tests/unit/src/render/index.test.ts (8 tests | 2 failed) 3151ms
+   × test_collect_warnings 3ms
+   × test_collect_warnings_when_clean 0ms
+ ❯ |unit| tests/unit/src/cli/markdown-check.test.ts (7 tests | 7 failed) 64ms
+   × test_check_markdown_source 32ms
+   × test_check_markdown_source_when_yaml_key 8ms
+   × test_check_markdown_source_when_extension 7ms
+   × test_check_markdown_source_when_no_config 2ms
+   × test_read_yaml_key 3ms
+   × test_read_yaml_key_when_plain 2ms
+   × test_read_yaml_key_when_missing 6ms
+ ❯ |unit| tests/unit/src/diagram/layout.test.ts (4 tests | 4 failed) 62ms
+   × test_layout_flowchart 44ms
+   × test_layout_flowchart_when_both_results 2ms
+   × test_layout_flowchart_when_long_name 8ms
+   × test_layout_flowchart_when_unreachable 6ms
+ ❯ |unit| tests/unit/src/render/syntax/warnings.test.ts (1 test | 1 failed) 32ms
+   × test_collect_warnings_rule 31ms
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 28 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/zoom.browser.test.ts > test_attach_zoom_when_dragged_on_link
+AssertionError: expected +0 to be 40 // Object.is equality
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/zoom.browser.test.ts/test_attach_zoom_when_dragged_on_link.png
+
+- Expected
++ Received
+
+- 40
++ 0
+
+ ❯ tests/unit/src/interact/zoom.browser.test.ts:197:42
+    195|     link.dispatchEvent(first);
+    196|     // 検証
+    197|     expect(viewport.scrollLeft - before).toBe(40);
+       |                                          ^
+    198|     expect(first.defaultPrevented).toBe(true);
+    199|     expect(reached).toHaveLength(0);
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=cd780f49:5235:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/28]⎯
+
+ FAIL  |unit| tests/unit/src/cli/check.test.ts > test_run_check_when_text
+AssertionError: expected +0 to be 1 // Object.is equality
+
+- Expected
++ Received
+
+- 1
++ 0
+
+ ❯ tests/unit/src/cli/check.test.ts:700:16
+    698|   const code = await runCheck({ text: WARNINGS_MARKDOWN }, io);
+    699|   // 検証
+    700|   expect(code).toBe(1);
+       |                ^
+    701|   expect(stdout.map((line) => line.split(": ")[0])).toEqual([
+    702|     "-:1",
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/28]⎯
+
+ FAIL  |unit| tests/unit/src/cli/check.test.ts > test_run_check_when_arguments_conflict
+AssertionError: expected [Function] to throw error matching /--text[\s\S]*--base/ but got '比べる基準 main を引けません（fatal: not a git re…'
+
+- Expected:
+/--text[\s\S]*--base/
+
++ Received:
+"比べる基準 main を引けません（fatal: not a git repository (or any of the parent directories): .git）。ref を直すか、履歴を取得してください（CI の checkout は fetch-depth: 0）。"
+
+ ❯ tests/unit/src/cli/check.test.ts:724:25
+    722|   // 検証
+    723|   await expect(withBase).rejects.toBeInstanceOf(CliError);
+    724|   await expect(withBase).rejects.toThrow(/--text[\s\S]*--base/);
+       |                         ^
+    725|   await expect(withoutKey).rejects.toBeInstanceOf(CliError);
+    726|   await expect(withoutKey).rejects.toThrow(/--key/);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/28]⎯
+
+ FAIL  |unit| tests/unit/src/cli/markdown-check.test.ts > test_check_markdown_source
+Error: Cannot find module '/src/cli/markdown-check.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-notation-flow-layout-lint-wrap-link/tests/unit/src/cli/markdown-check.test.ts
+ ❯ tests/unit/src/cli/markdown-check.test.ts:44:35
+     42| test("test_check_markdown_source", async () => {
+     43|   // 準備
+     44|   const { checkMarkdownSource } = await loadMarkdownCheck();
+       |                                   ^
+     45|   const cwd = await createConfigDir();
+     46|   // 実行
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/28]⎯
+
+ FAIL  |unit| tests/unit/src/cli/markdown-check.test.ts > test_check_markdown_source_when_yaml_key
+Error: Cannot find module '/src/cli/markdown-check.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-notation-flow-layout-lint-wrap-link/tests/unit/src/cli/markdown-check.test.ts
+ ❯ tests/unit/src/cli/markdown-check.test.ts:65:35
+     63| test("test_check_markdown_source_when_yaml_key", async () => {
+     64|   // 準備
+     65|   const { checkMarkdownSource } = await loadMarkdownCheck();
+       |                                   ^
+     66|   const cwd = await createConfigDir({ "records.yaml": RECORDS_YAML });
+     67|   // 実行
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/28]⎯
+
+ FAIL  |unit| tests/unit/src/cli/markdown-check.test.ts > test_check_markdown_source_when_extension
+Error: Cannot find module '/src/cli/markdown-check.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-notation-flow-layout-lint-wrap-link/tests/unit/src/cli/markdown-check.test.ts
+ ❯ tests/unit/src/cli/markdown-check.test.ts:83:35
+     81| test("test_check_markdown_source_when_extension", async () => {
+     82|   // 準備
+     83|   const { checkMarkdownSource } = await loadMarkdownCheck();
+       |                                   ^
+     84|   const cwd = await createTempDir();
+     85|   await writeFiles(cwd, {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/28]⎯
+
+ FAIL  |unit| tests/unit/src/cli/markdown-check.test.ts > test_check_markdown_source_when_no_config
+Error: Cannot find module '/src/cli/markdown-check.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-notation-flow-layout-lint-wrap-link/tests/unit/src/cli/markdown-check.test.ts
+ ❯ tests/unit/src/cli/markdown-check.test.ts:111:35
+    109| test("test_check_markdown_source_when_no_config", async () => {
+    110|   // 準備
+    111|   const { checkMarkdownSource } = await loadMarkdownCheck();
+       |                                   ^
+    112|   const cwd = await createTempDir();
+    113|   // 実行
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/28]⎯
+
+ FAIL  |unit| tests/unit/src/cli/markdown-check.test.ts > test_read_yaml_key
+Error: Cannot find module '/src/cli/markdown-check.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-notation-flow-layout-lint-wrap-link/tests/unit/src/cli/markdown-check.test.ts
+ ❯ tests/unit/src/cli/markdown-check.test.ts:126:27
+    124| test("test_read_yaml_key", async () => {
+    125|   // 準備
+    126|   const { readYamlKey } = await loadMarkdownCheck();
+       |                           ^
+    127|   const dir = await createTempDir();
+    128|   await writeFiles(dir, { "records.yaml": RECORDS_YAML });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/28]⎯
+
+ FAIL  |unit| tests/unit/src/cli/markdown-check.test.ts > test_read_yaml_key_when_plain
+Error: Cannot find module '/src/cli/markdown-check.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-notation-flow-layout-lint-wrap-link/tests/unit/src/cli/markdown-check.test.ts
+ ❯ tests/unit/src/cli/markdown-check.test.ts:142:27
+    140| test("test_read_yaml_key_when_plain", async () => {
+    141|   // 準備
+    142|   const { readYamlKey } = await loadMarkdownCheck();
+       |                           ^
+    143|   const dir = await createTempDir();
+    144|   await writeFiles(dir, {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/28]⎯
+
+ FAIL  |unit| tests/unit/src/cli/markdown-check.test.ts > test_read_yaml_key_when_missing
+Error: Cannot find module '/src/cli/markdown-check.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-notation-flow-layout-lint-wrap-link/tests/unit/src/cli/markdown-check.test.ts
+ ❯ tests/unit/src/cli/markdown-check.test.ts:161:27
+    159| test("test_read_yaml_key_when_missing", async () => {
+    160|   // 準備
+    161|   const { readYamlKey } = await loadMarkdownCheck();
+       |                           ^
+    162|   const { CliError } = await import("../../../../src/cli/errors.ts");
+    163|   const dir = await createTempDir();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/28]⎯
+
+ FAIL  |unit| tests/unit/src/diagram/definition.test.ts > test_read_definition_when_coordinates_omitted
+AssertionError: expected [ 'width がありません。数で書いてください', …(31) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   "width がありません。数で書いてください",
++   "height がありません。数で書いてください",
++   "ノード「問い合わせを受け取る」の x がありません。数で書いてください",
++   "ノード「問い合わせを受け取る」の y がありません。数で書いてください",
++   "ノード「問い合わせを受け取る」の w がありません。数で書いてください",
++   "ノード「問い合わせを受け取る」の h がありません。数で書いてください",
++   "ノード「よくある質問で答えられるか」の x がありません。数で書いてください",
++   "ノード「よくある質問で答えられるか」の y がありません。数で書いてください",
++   "ノード「よくある質問で答えられるか」の w がありません。数で書いてください",
++   "ノード「よくある質問で答えられるか」の h がありません。数で書いてください",
++   "ノード「よくある質問のリンクを添える」の x がありません。数で書いてください",
++   "ノード「よくある質問のリンクを添える」の y がありません。数で書いてください",
++   "ノード「よくある質問のリンクを添える」の w がありません。数で書いてください",
++   "ノード「よくある質問のリンクを添える」の h がありません。数で書いてください",
++   "ノード「担当者が答えられるか」の x がありません。数で書いてください",
++   "ノード「担当者が答えられるか」の y がありません。数で書いてください",
++   "ノード「担当者が答えられるか」の w がありません。数で書いてください",
++   "ノード「担当者が答えられるか」の h がありません。数で書いてください",
++   "ノード「返信を送信する」の x がありません。数で書いてください",
++   "ノード「返信を送信する」の y がありません。数で書いてください",
++   "ノード「返信を送信する」の w がありません。数で書いてください",
++   "ノード「返信を送信する」の h がありません。数で書いてください",
++   "ノード「開発に起票する」の x がありません。数で書いてください",
++   "ノード「開発に起票する」の y がありません。数で書いてください",
++   "ノード「開発に起票する」の w がありません。数で書いてください",
++   "ノード「開発に起票する」の h がありません。数で書いてください",
++   "線 j-start の points がありません。配列で書いてください",
++   "線 j-q1-yes の points がありません。配列で書いてください",
++   "線 j-q1-no の points がありません。配列で書いてください",
++   "線 j-a1 の points がありません。配列で書いてください",
++   "線 j-q2-yes の points がありません。配列で書いてください",
++   "線 j-q2-no の points がありません。配列で書いてください",
++ ]
+
+ ❯ tests/unit/src/diagram/definition.test.ts:409:27
+    407|   const result = readDefinition("flow", [JUDGEMENT_AUTO_TEXT]);
+    408|   // 検証
+    409|   expect(result.problems).toEqual([]);
+       |                           ^
+    410|   expect(result.ok).toBe(true);
+    411|   const definition = (result as { definition: MdmarkFlowDefinition })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/28]⎯
+
+ FAIL  |unit| tests/unit/src/diagram/definition.test.ts > test_read_definition_when_coordinates_mixed
+AssertionError: expected 'width がありません。数で書いてください' to be '座標（x・y・w・h・points・width・height）を書いたもの…' // Object.is equality
+
+Expected: "座標（x・y・w・h・points・width・height）を書いたものと省いたものが混ざっています。全て書くか、全て省いてください"
+Received: "width がありません。数で書いてください"
+
+ ❯ tests/unit/src/diagram/definition.test.ts:439:30
+    437|   // 検証
+    438|   expect(result.ok).toBe(false);
+    439|   expect(result.problems[0]).toBe(
+       |                              ^
+    440|     "座標（x・y・w・h・points・width・height）を書いたものと省いたものが混ざっています。全て書くか、全て省いてくだ…
+    441|   );
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[12/28]⎯
+
+ FAIL  |unit| tests/unit/src/diagram/definition.test.ts > test_read_definition_when_coordinates_omitted_not_judgement
+AssertionError: expected 'width がありません。数で書いてください' to match /^ノード「分類」の種類 llm では座標を省けません。/
+
+- Expected:
+/^ノード「分類」の種類 llm では座標を省けません。/
+
++ Received:
+"width がありません。数で書いてください"
+
+ ❯ tests/unit/src/diagram/definition.test.ts:462:30
+    460|   // 検証
+    461|   expect(result.ok).toBe(false);
+    462|   expect(result.problems[0]).toMatch(
+       |                              ^
+    463|     /^ノード「分類」の種類 llm では座標を省けません。/,
+    464|   );
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[13/28]⎯
+
+ FAIL  |unit| tests/unit/src/diagram/definition.test.ts > test_node_link_problems
+TypeError: nodeLinkProblems is not a function
+ ❯ tests/unit/src/diagram/definition.test.ts:485:20
+    483|   );
+    484|   // 実行
+    485|   const problems = nodeLinkProblems(definition);
+       |                    ^
+    486|   // 検証
+    487|   expect(problems).toEqual([
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[14/28]⎯
+
+ FAIL  |unit| tests/unit/src/diagram/layout.test.ts > test_layout_flowchart
+Error: Cannot find module '/src/diagram/layout.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-notation-flow-layout-lint-wrap-link/tests/unit/src/diagram/layout.test.ts
+ ❯ tests/unit/src/diagram/layout.test.ts:45:31
+     43| test("test_layout_flowchart", async () => {
+     44|   // 準備
+     45|   const { layoutFlowchart } = await loadLayout();
+       |                               ^
+     46|   const { checkFlowLayout } = await loadCheck();
+     47|   const definition = parsed<MdmarkFlowDefinition>(JUDGEMENT_AUTO_TEXT);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[15/28]⎯
+
+ FAIL  |unit| tests/unit/src/diagram/layout.test.ts > test_layout_flowchart_when_both_results
+Error: Cannot find module '/src/diagram/layout.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-notation-flow-layout-lint-wrap-link/tests/unit/src/diagram/layout.test.ts
+ ❯ tests/unit/src/diagram/layout.test.ts:81:31
+     79| test("test_layout_flowchart_when_both_results", async () => {
+     80|   // 準備
+     81|   const { layoutFlowchart } = await loadLayout();
+       |                               ^
+     82|   const definition = {
+     83|     title: "判定",
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[16/28]⎯
+
+ FAIL  |unit| tests/unit/src/diagram/layout.test.ts > test_layout_flowchart_when_long_name
+Error: Cannot find module '/src/diagram/layout.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-notation-flow-layout-lint-wrap-link/tests/unit/src/diagram/layout.test.ts
+ ❯ tests/unit/src/diagram/layout.test.ts:113:31
+    111| test("test_layout_flowchart_when_long_name", async () => {
+    112|   // 準備
+    113|   const { layoutFlowchart } = await loadLayout();
+       |                               ^
+    114|   const { checkFlowLayout } = await loadCheck();
+    115|   const definition = parsed<MdmarkFlowDefinition>(JUDGEMENT_AUTO_TEXT);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[17/28]⎯
+
+ FAIL  |unit| tests/unit/src/diagram/layout.test.ts > test_layout_flowchart_when_unreachable
+Error: Cannot find module '/src/diagram/layout.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-notation-flow-layout-lint-wrap-link/tests/unit/src/diagram/layout.test.ts
+ ❯ tests/unit/src/diagram/layout.test.ts:127:31
+    125| test("test_layout_flowchart_when_unreachable", async () => {
+    126|   // 準備
+    127|   const { layoutFlowchart } = await loadLayout();
+       |                               ^
+    128|   const { checkFlowLayout } = await loadCheck();
+    129|   const definition = parsed<MdmarkFlowDefinition>(JUDGEMENT_AUTO_TEXT);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[18/28]⎯
+
+ FAIL  |unit| tests/unit/src/parts/code-block.test.ts > test_render_code_block_when_wrap
+AssertionError: expected [ 'mdmark-code-lines', …(1) ] to deeply equal ArrayContaining{…}
+
+- Expected
++ Received
+
+- ArrayContaining [
++ [
+    "mdmark-code-lines",
+    "mdmark-code-numbered",
+-   "mdmark-code-wrap",
+  ]
+
+ ❯ tests/unit/src/parts/code-block.test.ts:417:29
+    415|   const classOf = (html: string) =>
+    416|     /<pre class="([^"]*)"/.exec(html)?.[1]?.split(" ") ?? [];
+    417|   expect(classOf(numbered)).toEqual(
+       |                             ^
+    418|     expect.arrayContaining([
+    419|       "mdmark-code-lines",
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[19/28]⎯
+
+ FAIL  |unit| tests/unit/src/parts/diagram.test.ts > test_render_flow_when_node_link
+AssertionError: expected [] to deeply equal [ …(2) ]
+
+- Expected
++ Received
+
+- [
+-   "<a class=\"mdmark-diagram-node-link\" href=\"https://example.com/spec\" aria-label=\"問い合わせを受け取る\"></a>",
+-   "<a class=\"mdmark-diagram-node-link\" href=\"./other.md\" aria-label=\"分類する\"></a>",
+- ]
++ []
+
+ ❯ tests/unit/src/parts/diagram.test.ts:689:17
+    687|     /<a class="mdmark-diagram-node-link" href="([^"]*)" aria-label="([…
+    688|   );
+    689|   expect(links).toEqual([
+       |                 ^
+    690|     '<a class="mdmark-diagram-node-link" href="https://example.com/spe…
+    691|     '<a class="mdmark-diagram-node-link" href="./other.md" aria-label=…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[20/28]⎯
+
+ FAIL  |unit| tests/unit/src/parts/tree.test.ts > test_render_tree_when_wrap
+AssertionError: expected '<div class="mdmark-tree" data-open="a…' to contain 'mdmark-tree-wrap'
+
+- Expected
++ Received
+
+- mdmark-tree-wrap
++ <div class="mdmark-tree" data-open="all" data-source="very-long-folder-name-for-the-generated-design-documents/
++ └── a-file-name-that-is-much-longer-than-the-box-width-on-phones.config.ts # 狭い幅では注釈も項目の中で折り返す">
+
+ ❯ tests/unit/src/parts/tree.test.ts:271:27
+    269|   // 検証
+    270|   const holder = (html: string) => /<div class="([^"]*)"[^>]*>/.exec(h…
+    271|   expect(holder(wrapped)).toContain("mdmark-tree-wrap");
+       |                           ^
+    272|   expect(holder(wrapped)).toContain('data-open="all"');
+    273|   expect(holder(unwrapped)).not.toContain("mdmark-tree-wrap");
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[21/28]⎯
+
+ FAIL  |unit| tests/unit/src/render/index.test.ts > test_collect_warnings
+TypeError: collectWarnings is not a function
+ ❯ tests/unit/src/render/index.test.ts:156:20
+    154|   expect(lines[21]).toBe("<!-- code: highlight=9 -->");
+    155|   // 実行
+    156|   const warnings = collectWarnings(WARNINGS_MARKDOWN);
+       |                    ^
+    157|   // 検証
+    158|   expect(warnings.map(({ line, kind }) => ({ line, kind }))).toEqual([
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[22/28]⎯
+
+ FAIL  |unit| tests/unit/src/render/index.test.ts > test_collect_warnings_when_clean
+TypeError: collectWarnings is not a function
+ ❯ tests/unit/src/render/index.test.ts:183:20
+    181|   ].join("\n");
+    182|   // 実行
+    183|   const warnings = collectWarnings(markdown);
+       |                    ^
+    184|   // 検証
+    185|   expect(warnings).toEqual([]);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[23/28]⎯
+
+ FAIL  |unit| tests/unit/src/render/sanitize.test.ts > test_is_allowed_url
+TypeError: isAllowedUrl is not a function
+ ❯ tests/unit/src/render/sanitize.test.ts:449:37
+    447|   ];
+    448|   // 実行
+    449|   const results = urls.map((url) => isAllowedUrl(url));
+       |                                     ^
+    450|   // 検証
+    451|   expect(results).toEqual([true, true, true, true, false, false, false…
+ ❯ tests/unit/src/render/sanitize.test.ts:449:24
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[24/28]⎯
+
+ FAIL  |unit| tests/unit/src/plugin/tools.test.ts > test_run_check_tool_when_text_and_key
+AssertionError: expected [ { file: 'index.yaml', …(2) } ] to deeply equal [ { file: '-', where: '3', …(1) } ]
+
+- Expected
++ Received
+
+  [
+    {
+-     "file": "-",
+-     "kind": "unknown_mark",
+-     "where": "3",
++     "file": "index.yaml",
++     "kind": "schema",
++     "where": "",
+    },
+  ]
+
+ ❯ tests/unit/src/plugin/tools.test.ts:415:24
+    413|       ({ file, where, kind }) => ({ file, where, kind }),
+    414|     );
+    415|   expect(pick(byText)).toEqual([{ file: "-", where: "3", kind: "unknow…
+       |                        ^
+    416|   expect(pick(byKey)).toEqual([
+    417|     { file: "records.yaml", where: "8", kind: "unknown_mark" },
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[25/28]⎯
+
+ FAIL  |unit| tests/unit/src/render/syntax/code-blocks.test.ts > test_read_code_spec_when_wrap
+AssertionError: expected undefined to be true // Object.is equality
+
+- Expected:
+true
+
++ Received:
+undefined
+
+ ❯ tests/unit/src/render/syntax/code-blocks.test.ts:645:24
+    643|   const valued = readCodeSpec({ args: parseMarkArgs("wrap=yes"), lineC…
+    644|   // 検証
+    645|   expect(wrapped.wrap).toBe(true);
+       |                        ^
+    646|   expect(wrapped.lineNumbers).toBe(true);
+    647|   expect(wrapped.warnings).toEqual([]);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[26/28]⎯
+
+ FAIL  |unit| tests/unit/src/render/syntax/tree.test.ts > test_read_tree_options_when_wrap
+AssertionError: expected undefined to be true // Object.is equality
+
+- Expected:
+true
+
++ Received:
+undefined
+
+ ❯ tests/unit/src/render/syntax/tree.test.ts:236:24
+    234|   // 検証
+    235|   expect(wrapped.open).toBe("all");
+    236|   expect(wrapped.wrap).toBe(true);
+       |                        ^
+    237|   expect(wrapped.warning).toBeUndefined();
+    238|   expect(valued.wrap).toBe(false);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[27/28]⎯
+
+ FAIL  |unit| tests/unit/src/render/syntax/warnings.test.ts > test_collect_warnings_rule
+TypeError: Cannot read properties of undefined (reading 'map')
+ ❯ tests/unit/src/render/syntax/warnings.test.ts:29:19
+     27|   const { warnings } = renderDoc(markdown);
+     28|   // 検証
+     29|   expect(warnings.map(({ line, kind }) => ({ line, kind }))).toEqual([
+       |                   ^
+     30|     { line: 3, kind: "syntax_warning" },
+     31|     { line: 10, kind: "diagram_invalid" },
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[28/28]⎯
+
+
+ Test Files  14 failed | 182 passed (196)
+      Tests  28 failed | 1428 passed (1456)
+   Start at  11:36:13
+   Duration  96.88s (worker 74%, tests 15%, import 7%, transform 3%)
+
+exit 1

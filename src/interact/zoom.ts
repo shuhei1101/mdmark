@@ -6,6 +6,12 @@ const ZOOM_EPSILON = 0.001;
 // ドラッグを始めない、押せる所
 const CONTROL_SELECTOR = "button, a, input";
 
+// 押せる所のうち、上からもドラッグを始めるリンク先を持つノードのリンク
+const NODE_LINK_SELECTOR = ".mdmark-diagram-node-link";
+
+/** 押した位置からこの px を超えて動いたときだけ図を動かしたことにし、リンク先を開かない */
+export const DRAG_THRESHOLD = 4;
+
 /** 表示の操作の名前（ボタンの `data-tool` と同じ） */
 type ZoomAction = "in" | "out" | "fit" | "left" | "right" | "up" | "down";
 
@@ -197,17 +203,46 @@ export function attachZoom(options: {
     target.addEventListener("keydown", onKey, { signal });
   }
 
-  // ドラッグ: 押せる所（と `dragIgnore`）の外でつかんで動かす。ドラッグ中は文字を選ばせない
+  // ドラッグ: 押せる所（と `dragIgnore`）の外と、ノードのリンクの上でつかんで動かす。`DRAG_THRESHOLD` を超えて動いたときだけ動かしたことにし、ドラッグ中は文字を選ばせない
   const ignore = dragIgnore
     ? `${dragIgnore}, ${CONTROL_SELECTOR}`
     : CONTROL_SELECTOR;
   let drag:
-    | { x: number; y: number; left: number; top: number; id: number }
+    | {
+        x: number;
+        y: number;
+        left: number;
+        top: number;
+        id: number;
+        moved: boolean;
+      }
     | undefined;
+  // 動かした後の次の 1 回の `click` を止める受け取り（リンク先を開かない）
+  let releaseClick: (() => void) | undefined;
+  const suppressNextClick = (): void => {
+    releaseClick?.();
+    const onClick = (event: MouseEvent): void => {
+      event.preventDefault();
+      event.stopPropagation();
+      release();
+    };
+    const timer = setTimeout(() => release(), 0);
+    const release = (): void => {
+      window.removeEventListener("click", onClick, true);
+      clearTimeout(timer);
+      releaseClick = undefined;
+    };
+    window.addEventListener("click", onClick, true);
+    releaseClick = release;
+  };
   viewport.addEventListener(
     "pointerdown",
     (event) => {
-      if (event.button !== 0 || (event.target as Element).closest(ignore)) {
+      const target = event.target as Element;
+      if (
+        event.button !== 0 ||
+        (!target.closest(NODE_LINK_SELECTOR) && target.closest(ignore))
+      ) {
         return;
       }
       drag = {
@@ -216,9 +251,8 @@ export function attachZoom(options: {
         left: viewport.scrollLeft,
         top: viewport.scrollTop,
         id: event.pointerId,
+        moved: false,
       };
-      viewport.setPointerCapture(event.pointerId);
-      viewport.classList.add("is-dragging");
     },
     { signal },
   );
@@ -228,15 +262,28 @@ export function attachZoom(options: {
       if (!drag || event.pointerId !== drag.id) {
         return;
       }
-      viewport.scrollLeft = drag.left - (event.clientX - drag.x);
-      viewport.scrollTop = drag.top - (event.clientY - drag.y);
-      if (event.clientX !== drag.x || event.clientY !== drag.y) {
+      if (!drag.moved) {
+        const distance = Math.hypot(
+          event.clientX - drag.x,
+          event.clientY - drag.y,
+        );
+        if (distance <= DRAG_THRESHOLD) {
+          return;
+        }
+        drag.moved = true;
+        viewport.setPointerCapture(event.pointerId);
+        viewport.classList.add("is-dragging");
         state.atFit = false;
       }
+      viewport.scrollLeft = drag.left - (event.clientX - drag.x);
+      viewport.scrollTop = drag.top - (event.clientY - drag.y);
     },
     { signal },
   );
-  const endDrag = (): void => {
+  const endDrag = (event: PointerEvent): void => {
+    if (event.type === "pointerup" && drag?.moved) {
+      suppressNextClick();
+    }
     drag = undefined;
     viewport.classList.remove("is-dragging");
   };
@@ -279,6 +326,7 @@ export function attachZoom(options: {
     reset,
     fit: () => state.fit,
     detach: () => {
+      releaseClick?.();
       observer.disconnect();
       controller.abort();
     },

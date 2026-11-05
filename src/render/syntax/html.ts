@@ -15,7 +15,6 @@ import { escapeHtml } from "../../parts/escape.ts";
 import { renderHintMarkup } from "../../parts/hint.ts";
 import { markOwn, SLOT_MARKER, splitSlots } from "../../parts/own.ts";
 import { renderParam } from "../../parts/param.ts";
-import { renderSyntaxWarning } from "../../parts/syntax-warning.ts";
 import type { RenderEnv } from "../parser.ts";
 import {
   EMBED_PART_ATTRIBUTE,
@@ -25,7 +24,7 @@ import {
 import { PARAM_COUNT_META } from "./diagrams.ts";
 import { type SeenTerms, termSegments } from "./terms.ts";
 import { envOf, featureOn, findClose, markOf } from "./tokens.ts";
-import { unclosedWarning, warningBlock } from "./warnings.ts";
+import { unclosedWarning, type WarningMeta, warningBlock } from "./warnings.ts";
 
 /** 埋め込んだ HTML の中の図の部品の `id` の頭（範囲の印の図と通し番号を共有する） */
 const DIAGRAM_ID_PREFIX = "mdmark-diagram";
@@ -72,12 +71,18 @@ function takeParts(options: {
   /** この範囲の前にある操作できる部品の数（文書の中の並びで定義を差し込む位置） */
   paramsBefore: number;
   lookup: TermLookup;
-}): { html: string; parts: string[]; params: number } {
+}): {
+  html: string;
+  parts: string[];
+  params: number;
+  warnings: WarningMeta[];
+} {
   const { source, state, paramsBefore, lookup } = options;
   const env = envOf(state);
   const diagrams = featureOn(state, "diagrams");
   const hints = featureOn(state, "hints");
   const parts: string[] = [];
+  const warnings: WarningMeta[] = [];
   const definitions: MdmarkParamDefinition[] = [];
   const html = source.replace(
     PART_PATTERN,
@@ -91,10 +96,12 @@ function takeParts(options: {
       const definition = result.definition;
       let part: string;
       if (!result.ok || definition === undefined) {
-        part = markOwn(
-          renderSyntaxWarning(definitionWarning(directive, result.problems)),
-          env.nonce,
-        );
+        const warning = warningBlock(state, {
+          ...definitionWarning(directive, result.problems),
+          kind: "diagram_invalid",
+        });
+        warnings.push(warning.meta?.warning as WarningMeta);
+        part = warning.content;
       } else {
         env.diagramCount = (env.diagramCount ?? 0) + 1;
         const count = env.diagramCount;
@@ -126,7 +133,7 @@ function takeParts(options: {
   // 操作できる部品の定義は、文書の中の並びの位置へ差し込む（`attachParams` が並びで引く）
   env.paramDefinitions ??= [];
   env.paramDefinitions.splice(paramsBefore, 0, ...definitions);
-  return { html, parts, params: definitions.length };
+  return { html, parts, params: definitions.length, warnings };
 }
 
 /** 預けた印の要素を、図の部品の HTML に戻す。戻せなかった印の要素（書いた人が似せて書いたもの）は取り除く */
@@ -250,7 +257,7 @@ function buildHtml(options: {
   state: StateCore;
   source: string;
   paramsBefore: number;
-}): { html: string; params: number } {
+}): { html: string; params: number; warnings: WarningMeta[] } {
   const { state, source, paramsBefore } = options;
   const env = envOf(state);
   // 箱の中の `{{語}}` の意味は、本文の用語と同じ辞書から引く
@@ -276,6 +283,7 @@ function buildHtml(options: {
   return {
     html: `${markOwn(open, env.nonce)}${body}${close}`,
     params: taken.params,
+    warnings: taken.warnings,
   };
 }
 
@@ -301,13 +309,13 @@ export function buildEmbeddedHtml(state: StateCore): void {
     const closeIndex = findClose(tokens, index, mark.name);
     const end = closeIndex < 0 ? tokens.length : closeIndex;
     if (closeIndex < 0) {
-      out.push(warningBlock(state, unclosedWarning(mark)));
+      out.push(warningBlock(state, unclosedWarning(mark), token));
     }
     const fences = tokens.slice(index + 1, end).filter(isHtmlFence);
     const [fence] = fences;
     if (fences.length !== 1 || fence === undefined) {
       // 書き方の警告を置き、範囲の中身はそのまま残す
-      out.push(warningBlock(state, blockCountWarning()), token);
+      out.push(warningBlock(state, blockCountWarning(), token), token);
       continue;
     }
     const built = buildHtml({
@@ -319,7 +327,14 @@ export function buildEmbeddedHtml(state: StateCore): void {
     const block = new state.Token("html_block", "", 0);
     block.block = true;
     block.content = built.html;
-    block.meta = { [PARAM_COUNT_META]: built.params };
+    // 埋め込んだ図の部品の警告は、範囲の開きのマーカーの行で集める
+    const line = token.map?.[0];
+    block.meta = {
+      [PARAM_COUNT_META]: built.params,
+      warnings: built.warnings.map((warning) =>
+        line === undefined ? warning : { ...warning, line },
+      ),
+    };
     out.push(block);
     index = end;
   }

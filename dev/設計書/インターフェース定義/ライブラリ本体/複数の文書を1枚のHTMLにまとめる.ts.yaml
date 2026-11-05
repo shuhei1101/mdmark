@@ -277,7 +277,7 @@ constraints:
     constraint: '`build.include` の glob に当たり `build.exclude` に当たらない `.md` のファイル。並びは glob の並び、同じ glob の中はパスの順で、重なりは最初の 1 つだけを残す。文書のパスは設定ファイルのあるフォルダからの相対パス（区切りは `/`）'
     decided_by: dev/設計書/設定/ライブラリ本体#settings[build.include]
   - item: 文書間のリンク
-    constraint: まとめる文書への相対リンクは、開いたとき 1 枚の中の文書へ移る。それ以外の文書への相対リンクは書いたままの `href` で残し、リンクを持つ文書とリンク先を警告に出す
+    constraint: まとめる文書への相対リンク（フロー図のノードのリンク先を含む）は、開いたとき 1 枚の中の文書へ移る。それ以外の文書への相対リンクは書いたままの `href` で残し、リンクを持つ文書とリンク先を警告に出す
     notes: 1 枚の中の文書を指す URL の書き方は画面設計で決める
   - item: 参照の表
     constraint: 設定に `index` があるとき、索引と索引の `docs` の文書を `collectReferences` に渡して作った参照の表を埋め、索引にある文書はその `id` を `mount` の `docId` に渡す

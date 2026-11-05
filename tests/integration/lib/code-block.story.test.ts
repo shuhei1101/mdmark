@@ -503,3 +503,26 @@ test("test_fold_no_line_numbers", async () => {
   expect(boxes.button.left).toBeGreaterThanOrEqual(boxes.pre.left);
   await expect(pageOverflows(page)).resolves.toBe(false);
 });
+
+// wrap の長い行を枠の幅で折り返し、行番号を折り返した行の 1 行目にだけ出し、横スクロールを出さない（Wrap）
+test("test_wrap", async () => {
+  // 準備・実行
+  const page = await holder.openStory("parts-codeblock--wrap", {
+    width: 390,
+    height: 844,
+  });
+  // 検証
+  const result = await page.locator("#storybook-root pre").evaluate((pre) => {
+    const lines = [...pre.querySelectorAll(".mdmark-code-line")];
+    return {
+      fits: pre.scrollWidth <= pre.clientWidth,
+      heights: lines.map((line) => line.getBoundingClientRect().height),
+      numberTop: getComputedStyle(lines[1] as Element, "::before").top,
+    };
+  });
+  expect(result.fits).toBe(true);
+  const [first = 0, second = 0] = result.heights;
+  expect(second).toBeGreaterThanOrEqual(first * 2);
+  expect(result.numberTop).toBe("0px");
+  await expect(pageOverflows(page)).resolves.toBe(false);
+});

@@ -11,7 +11,10 @@ import {
 } from "../chart.ts";
 import {
   flowMarkdown,
+  JUDGEMENT_AUTO_TEXT,
   judgementMarkdown,
+  linkedFlowText,
+  routeLinkTargets,
   sampleBlock,
   wrapDirective,
 } from "../diagram.ts";
@@ -19,6 +22,7 @@ import {
   buildDistRoot,
   mountDocument,
   openPage,
+  PAGE_URL,
   removeDistRoot,
   routeSyntax,
 } from "../dist-page.ts";
@@ -817,4 +821,171 @@ test("test_error_when_er_definition_invalid", async ({ page }) => {
     page.locator('#doc figure.mdmark-diagram[data-diagram="er"]'),
   ).toHaveCount(1);
   await expect(page.locator("#doc > p")).toHaveText("後ろの段落");
+});
+
+// 座標を省いた判定フローチャートを、開始から上から下へ質問を並べ、YES・NO の先へアクションと結果を配置して描く（正常シナリオ（座標を省いた判定フローチャート））
+test("test_normal_when_flowchart_auto_layout", async ({ page }) => {
+  // 準備
+  await openPage(page, builtRoot);
+  // 実行
+  await mountDocument(page, {
+    markdown: wrapDirective("flow", JUDGEMENT_AUTO_TEXT),
+  });
+  // 検証
+  await expect(page.locator("#doc .mdmark-syntax-warning")).toHaveCount(0);
+  const figure = page.locator(
+    '#doc figure.mdmark-diagram[data-diagram="flow"]',
+  );
+  await expect(figure.locator(".mdmark-diagram-node")).toHaveCount(6);
+  await expect(figure.locator("path.mdmark-diagram-wire")).toHaveCount(6);
+  // 定義の座標で比べる（倍率に左右されない）
+  const layout = await figure.evaluate((element) => {
+    const nodes = [
+      ...element.querySelectorAll<HTMLElement>(".mdmark-diagram-node"),
+    ].map((node) => ({
+      id: node.getAttribute("data-node") ?? "",
+      x: Number.parseFloat(node.style.left),
+      y: Number.parseFloat(node.style.top),
+      w: Number.parseFloat(node.style.width),
+      h: Number.parseFloat(node.style.height),
+    }));
+    const wires = [...element.querySelectorAll("path.mdmark-diagram-wire")].map(
+      (path) =>
+        [
+          ...(path.getAttribute("d") ?? "").matchAll(
+            /[ML]\s*(-?[\d.]+)[ ,](-?[\d.]+)/g,
+          ),
+        ].map(([, x = "0", y = "0"]) => [Number(x), Number(y)]),
+    );
+    const stage = element.querySelector<HTMLElement>(".mdmark-diagram-stage");
+    return {
+      nodes,
+      wires,
+      width: Number.parseFloat(stage?.style.width ?? "0"),
+      height: Number.parseFloat(stage?.style.height ?? "0"),
+    };
+  });
+  const box = (id: string) => {
+    const found = layout.nodes.find((node) => node.id === id);
+    if (found === undefined) {
+      throw new Error(`ノードが無い: ${id}`);
+    }
+    return found;
+  };
+  expect(Math.min(...layout.nodes.map((node) => node.y))).toBe(box("start").y);
+  expect(box("q1").y).toBeGreaterThan(box("start").y);
+  expect(box("q2").y).toBeGreaterThan(box("q1").y);
+  expect(box("a1").x).toBeGreaterThan(box("q1").x + box("q1").w);
+  expect(box("r1").x).toBeGreaterThan(box("q2").x + box("q2").w);
+  expect(box("r2").y).toBeGreaterThan(box("q2").y + box("q2").h);
+  for (const node of layout.nodes) {
+    expect(node.x + node.w, node.id).toBeLessThanOrEqual(layout.width);
+    expect(node.y + node.h, node.id).toBeLessThanOrEqual(layout.height);
+    for (const other of layout.nodes) {
+      if (other.id === node.id) {
+        continue;
+      }
+      const overlaps =
+        node.x < other.x + other.w &&
+        other.x < node.x + node.w &&
+        node.y < other.y + other.h &&
+        other.y < node.y + node.h;
+      expect(overlaps, `${node.id} と ${other.id}`).toBe(false);
+    }
+  }
+  for (const points of layout.wires) {
+    for (const [index, [x = 0, y = 0]] of points.slice(1).entries()) {
+      const [px = 0, py = 0] = points[index] ?? [];
+      expect(px === x || py === y).toBe(true);
+    }
+  }
+  const labels = await figure.locator(".mdmark-diagram-label").allInnerTexts();
+  expect(labels.map((text) => text.trim()).sort()).toEqual([
+    "NO",
+    "NO",
+    "YES",
+    "YES",
+  ]);
+});
+
+/** リンク先を持つノードの図を描いたページを開く */
+async function openLinkedFlow(page: Page): Promise<void> {
+  await openPage(page, builtRoot);
+  await mountDocument(page, {
+    markdown: wrapDirective(
+      "flow",
+      linkedFlowText({ hrefs: ["https://example.com/spec", "./other.md"] }),
+    ),
+  });
+  await expect(page.locator("#doc figure.mdmark-diagram")).toHaveCount(1);
+}
+
+// リンク先を持つノードをリンクにし、押すかフォーカスして Enter でリンク先を開く（正常シナリオ（リンク先を持つノード））
+test("test_normal_when_node_link", async ({ page }) => {
+  // 準備
+  const opened = await routeLinkTargets(page, [
+    "https://example.com/spec",
+    new URL("other.md", PAGE_URL).href,
+  ]);
+  await openLinkedFlow(page);
+  const linkOf = (id: string) =>
+    page.locator(`#doc [data-node="${id}"] a.mdmark-diagram-node-link`);
+  // 検証: 2 つのノードがリンクで、名前の上も押せる形のカーソル。リンク先を持たないノードはリンクでない
+  await expect(linkOf("a")).toHaveCount(1);
+  await expect(linkOf("b")).toHaveCount(1);
+  await expect(linkOf("c")).toHaveCount(0);
+  await expect(
+    page.locator('#doc [data-node="a"] .mdmark-diagram-node-name'),
+  ).toHaveCSS("cursor", "pointer");
+  // 実行・検証: https のノードを押すと、そのリンク先が開く
+  await linkOf("a").click();
+  await page.waitForURL("https://example.com/spec");
+  // 実行・検証: 相対パスのノードを押すと、ページの URL を基準にした other.md が開く
+  await openLinkedFlow(page);
+  await linkOf("b").click();
+  await page.waitForURL(new URL("other.md", PAGE_URL).href);
+  // 実行・検証: キーボードでフォーカスすると枠が見え、Enter で同じリンク先が開く
+  await openLinkedFlow(page);
+  await linkOf("a").focus();
+  await expect(linkOf("a")).toHaveCSS("outline-style", "solid");
+  await page.keyboard.press("Enter");
+  await page.waitForURL("https://example.com/spec");
+  expect(opened()).toEqual([
+    "https://example.com/spec",
+    new URL("other.md", PAGE_URL).href,
+    "https://example.com/spec",
+  ]);
+});
+
+// 許可しないリンク先のノードはリンクにせず、ノードの id とリンク先を書いた書き方の警告を置く（異常シナリオ（ノードのリンク先を許可しない））
+test("test_error_when_node_link_not_allowed", async ({ page }) => {
+  // 準備
+  await openPage(page, builtRoot);
+  const dialogs: string[] = [];
+  page.on("dialog", async (dialog) => {
+    dialogs.push(dialog.message());
+    await dialog.dismiss();
+  });
+  // 実行
+  await mountDocument(page, {
+    markdown: `${wrapDirective(
+      "flow",
+      linkedFlowText({ hrefs: ["javascript:alert(1)", "id:spec#items"] }),
+    )}\n後の段落\n`,
+  });
+  // 検証
+  await expect(page.locator("#doc a.mdmark-diagram-node-link")).toHaveCount(0);
+  await expect(
+    page.locator('#doc [data-node="a"] .mdmark-diagram-node-name'),
+  ).toHaveText("ノード a");
+  const warning = page.locator("#doc .mdmark-syntax-warning");
+  await expect(warning).toHaveCount(1);
+  for (const word of ["a", "javascript:alert(1)", "b", "id:spec#items"]) {
+    await expect(warning).toContainText(word);
+  }
+  await page.locator('#doc [data-node="a"]').click();
+  await page.waitForTimeout(SETTLE_MS);
+  expect(dialogs).toEqual([]);
+  expect(page.url()).toBe(PAGE_URL);
+  await expect(page.locator("#doc p", { hasText: "後の段落" })).toHaveCount(1);
 });

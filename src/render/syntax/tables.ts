@@ -1155,7 +1155,7 @@ export function decorateTables(state: StateCore): void {
     // 色の指定の警告と集計できない列の警告は、表の囲みの直前に置く
     if (range) {
       for (const warning of warningsOf(range.mark.raw, colors.warnings)) {
-        out.push(warningBlock(state, warning));
+        out.push(warningBlock(state, warning, tokens[range.open]));
       }
     }
     if (spec.features.includes("total")) {
@@ -1164,7 +1164,9 @@ export function decorateTables(state: StateCore): void {
         tableOpen: index,
         totals: spec.totals,
       })) {
-        out.push(warningBlock(state, warning));
+        out.push(
+          warningBlock(state, warning, range ? tokens[range.open] : undefined),
+        );
       }
     }
     const open = ownBlock(
@@ -1175,7 +1177,9 @@ export function decorateTables(state: StateCore): void {
     open.meta = { role: "table-open" };
     out.push(open);
     for (const warning of warnings) {
-      out.push(warningBlock(state, warning));
+      out.push(
+        warningBlock(state, warning, range ? tokens[range.open] : undefined),
+      );
     }
     out.push(ownBlock(state, head.slice(divEnd)));
     // 中のトークンは、対応する `table_close` までこの繰り返しで移す（中の表も囲みに入れる）
