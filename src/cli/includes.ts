@@ -1,5 +1,12 @@
 import { readFile } from "node:fs/promises";
-import { dirname, isAbsolute, relative, resolve, sep } from "node:path";
+import {
+  basename,
+  dirname,
+  isAbsolute,
+  relative,
+  resolve,
+  sep,
+} from "node:path";
 import type { Token } from "markdown-it";
 import MarkdownIt from "markdown-it";
 import { MARK_PATTERN, parseMarkArgs } from "../render/marks.ts";
@@ -147,7 +154,12 @@ export const collectIncludes = async (options: {
         continue;
       }
       if (chain.includes(key)) {
-        add({ ...at, kind: "circular", chain: [...chain, key] });
+        // 循環の順は、同じキーが最初に現れたところから示す
+        add({
+          ...at,
+          kind: "circular",
+          chain: [...chain.slice(chain.indexOf(key)), key],
+        });
         continue;
       }
       const content = await read(file);
@@ -179,7 +191,8 @@ export const collectIncludes = async (options: {
       await visit(section, key, start, [...chain, key]);
     }
   };
-  await visit(markdown, "", 0, []);
+  // 点検する文書そのものも取り込みの順に入れ、文書へ戻る取り込みを循環として見つける
+  await visit(markdown, "", 0, [basename(docPath)]);
   return { includes, problems };
 };
 
