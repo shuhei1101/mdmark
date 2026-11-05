@@ -408,7 +408,7 @@ flows:
         M-->>C: ツールチップの無い HTML 文字列
     expected:
       - '`-html` の文書で、範囲のコードブロックが `<pre><code class="language-html">` で出て、文字列に `mdmark-html` と `<!--` が無い'
-      - '`-hints` の文書で、埋め込んだ HTML が描かれ、文字列に `data-hint`・`mdmark-hint-`・`role="tooltip"` が無い'
+      - '`-hints` の文書で、埋め込んだ HTML が描かれ、文字列に `data-hint`・`mdmark-hint-` が無く、`role="tooltip"` はグラフの項目のツールチップ（`data-tip-for="item:{n}"`。設定の `features.hints` が受け持たない）だけ'
       - '`-hints` の文書で、フロー図の線のラベルと箱の名前は出て、箱とシステムの枠のタイトルに印が無い'
     test: test_normal_when_html_and_hints_disabled
   - name: 正常系（埋め込んだ HTML の書き方の誤り）

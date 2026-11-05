@@ -285,7 +285,7 @@ scenarios:
         C->>C: 文書の図の部品の定義を読み、定義を点検する
         C-->>W: 定義の誤りの行・終了コード 0 以外
     expected:
-      - その図の定義の場所を指す定義の誤りの行が 2 つあり、内容に `frame.hint` は文字、`stickyTitles` は真偽値で書くことが記載されている
+      - その図の定義の場所を指す定義の誤りの行が 1 つだけあり、内容に `frame.hint` は文字、`stickyTitles` は真偽値で書くことが記載されている
       - 終了コードが 0 以外
       - 設定・索引・文書が変わっていない
     test: test_normal_when_group_options_invalid

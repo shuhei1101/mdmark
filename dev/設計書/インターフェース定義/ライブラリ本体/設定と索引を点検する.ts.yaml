@@ -485,7 +485,7 @@ flows:
     refs:
       - dev/設計書/シナリオ/単一ユースケース/設定と索引を点検する#scenarios[正常シナリオ（図のツールチップの位置に誤った値がある）]
   - name: 正常系（グループの項目に誤った値がある）
-    summary: フロー図の定義の `frame.hint` が文字でないことと `stickyTitles` が真偽値でないことを、それぞれ `diagram_invalid` のずれにする
+    summary: フロー図の定義の `frame.hint` が文字でないことと `stickyTitles` が真偽値でないことを、1 件の `diagram_invalid` のずれにまとめる
     setup:
       - name: 誤った値を持つ図の文書のフォルダ
         description: '`build.include` が当たる `docs/a.md` だけを持ち、3 行目の `<!-- flow -->` の範囲に、`frame.hint` が数 `1` で `stickyTitles` が文字 `no` のフロー図の定義を持つフォルダ'
@@ -497,10 +497,10 @@ flows:
         participant C as mdmark CLI
         W->>C: mdmark check
         C->>C: 点検する文書の図の部品の定義を読み、定義を確かめる
-        C-->>W: 定義の誤りの 2 行・終了コード 1
+        C-->>W: 定義の誤りの 1 行・終了コード 1
     expected:
       - 終了コードが 1
-      - '`docs/a.md:3: diagram_invalid:` で始まる行が 2 つあり、内容にそれぞれ `frame.hint` を文字で、`stickyTitles` を真偽値で書く直し方がある'
+      - '`docs/a.md:3: diagram_invalid:` で始まる行が 1 つだけあり（1 つの定義につき 1 件）、内容に `frame.hint` を文字で、`stickyTitles` を真偽値で書く直し方がある'
       - 設定・索引・文書が変わっていない
     test: test_normal_when_group_options_invalid
     refs:
