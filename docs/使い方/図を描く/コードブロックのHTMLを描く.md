@@ -8,6 +8,7 @@
 
 - [文書を描く](../導入/文書を描く.md)
 - 設定の `features.html` がオン（既定）。ヒントを出すには `features.hints` もオン（既定）。オフにする手順は [機能をオン・オフする](../カスタマイズ/機能をオン・オフする.md)
+- 範囲の `css`・`ts`・`js` を当てるときだけ、`features.html-scripts` をオン（既定はオフ）
 
 ## 手順
 
@@ -40,9 +41,69 @@ GitHub のようにマーカーに対応しない表示では、マーカーが�
 `button` は残るが、押しても何も起きない。
 `style` は、レイアウト・余白・枠・色・文字の宣言だけが残る。
 残るものと落ちるものの一覧は [HTML の書き方](../../リファレンス/HTMLの書き方.md#埋め込んだ-html-で残るもの)。
-動きは mdmark の部品だけが持つ。
+動きは mdmark の部品と、`html-scripts` をオンにした範囲の `ts`・`js` だけが持つ。
 
 幅が本文の列より広い HTML は、描いた枠の中で横にスクロールする。
+
+### 範囲の CSS と TypeScript で見た目と動きを追加する
+
+#### `html-scripts` をオンにする
+
+```yaml
+features:
+  html-scripts: true
+```
+
+`mdmark.config.yaml` の `features` に `html-scripts: true` を書く。
+1 つの文書だけでオンにするときは、文書に `<!-- features: +html-scripts -->` を書く。
+範囲ごとには許せない。オンにした文書の全ての範囲の `css`・`ts`・`js` が当たる。
+
+#### 範囲に `css` と `ts` のコードブロックを置く
+
+````markdown
+<!-- html -->
+
+```html
+<button class="toggle" type="button">詳細を開く</button>
+<div class="detail">受け取った問い合わせを分類してから返す。</div>
+```
+
+```css
+.detail { display: none; margin-top: 8px; padding: 8px; border-left: 3px solid var(--mdmark-color-accent-blue-text) }
+:scope.is-open .detail { display: block }
+```
+
+```ts
+export default function (root: HTMLElement) {
+  const button = root.querySelector<HTMLButtonElement>(".toggle")!;
+  const onClick = () => {
+    const open = root.classList.toggle("is-open");
+    button.textContent = open ? "詳細を閉じる" : "詳細を開く";
+  };
+  button.addEventListener("click", onClick);
+  return () => button.removeEventListener("click", onClick);
+}
+```
+
+<!-- /html -->
+````
+
+範囲には `html` のコードブロックを 1 つと、`css`・`ts`・`js` を 1 つずつまで置ける。`ts` と `js` はどちらか 1 つ。
+`css` は、その範囲の HTML にだけ当たる。`:scope`・`html`・`body`・`:root` のセレクタは範囲の根の要素を指す。
+`@import`・`@scope`・`@starting-style` など、`@media`・`@supports`・`@container`・`@layer`・`@keyframes`・`@font-face` 以外の `@` の規則は落ちる。
+
+`ts`・`js` は、範囲の根の要素を受け取る関数を `export default` で書く。
+描いた後に 1 回呼ばれる。返した関数は、描き直す前と片付けのときに 1 回呼ばれるため、付けたイベントをそこで外す。
+`import` は使えない。必要な処理は範囲の中に書く。
+範囲の `html` の `<script>` 要素・`on` で始まる属性は、オンにしても落ちる。動きは `ts`・`js` から付ける。
+
+`ts` の型を外す変換のライブラリは、範囲に `ts`・`js` がある文書でだけ jsDelivr から読む。
+読み込み先は設定の `html-scripts.url` で替えられる（[設定](../../リファレンス/設定.md)）。
+`mdmark export`・`mdmark build` で書き出した HTML は、CLI が変換したコードを埋め込むため、外へ要求せずに動く。
+
+構文の誤り・既定のエクスポートが関数でない・例外を投げた範囲は、動きを付けずに描き、範囲の前に書き方の警告が出る。例外の内容はブラウザのコンソールに出る。
+変換のライブラリを読めないときは、範囲の前に `スクリプトを動かせません` の枠が出て、範囲の `html`・`css` は描かれる。
+`html-scripts` がオフの文書では、範囲の `html` だけが描かれ、`css`・`ts`・`js` はコードのまま出る。
 
 ### チャートを置く
 
@@ -150,6 +211,17 @@ document.querySelector(".mdmark .mdmark-html script") === null
 
 `true` が出る。
 書いた `<script>` の処理は実行されず、`button` を押しても何も起きない。
+
+#### 範囲の CSS と TypeScript が当たっている
+
+`html-scripts` をオンにした文書で、`詳細を開く` のボタンを押すと詳細が開き、ボタンの文字が `詳細を閉じる` に変わる。
+詳細の左に線が引かれ、範囲の外の同じ class の要素には `css` の規則が当たっていない。
+
+```js
+document.querySelector(".mdmark .mdmark-html style.mdmark-html-style") !== null && document.querySelector(".mdmark pre code.language-ts") === null
+```
+
+`true` が出る。
 
 #### チャートが描かれている
 
