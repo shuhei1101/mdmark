@@ -13,11 +13,11 @@ import {
   REPLY_KIND_TEXT,
 } from "../../helpers/charts.ts";
 import {
+  INQUIRY_GROUPS_TEXT,
   INQUIRY_SEQ_TEXT,
   INQUIRY_TEXT,
   JUDGEMENT_TEXT,
   parsed,
-  INQUIRY_GROUPS_TEXT,
   REPLY_TIME_TEXT,
   SINGLE_KINDS_TEXT,
 } from "../../helpers/diagrams.ts";
@@ -769,9 +769,9 @@ test("test_legend_for_when_single_kinds", async () => {
   expect(none).toEqual([]);
   const labels = items.map((item) => item.label);
   expect(labels).toHaveLength(2);
-  expect(labels.some((label) => /処理の流れ|枠|層|交差|出る|下線/.test(label))).toBe(
-    false,
-  );
+  expect(
+    labels.some((label) => /処理の流れ|枠|層|交差|出る|下線/.test(label)),
+  ).toBe(false);
 });
 
 // グラフの項目の名前と値を出す（正常系）

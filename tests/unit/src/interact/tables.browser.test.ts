@@ -1822,9 +1822,8 @@ function badgeText(root: HTMLElement): string | null {
 /** 列設定のボタンの読み上げの名前（mdmark-visually-hidden の文字） */
 function toggleName(root: HTMLElement): string {
   return (
-    root.querySelector(
-      "button.mdmark-columns-toggle .mdmark-visually-hidden",
-    )?.textContent ?? ""
+    root.querySelector("button.mdmark-columns-toggle .mdmark-visually-hidden")
+      ?.textContent ?? ""
   );
 }
 
@@ -1903,8 +1902,12 @@ test("test_attach_tables_when_scroll_wrapper", async () => {
   // 実行
   detachers.push(attachTables(root));
   // 検証
-  const [narrow, many] = [...root.querySelectorAll<HTMLElement>(".mdmark-table")];
-  const narrowScroll = narrow?.querySelector<HTMLElement>(".mdmark-table-scroll");
+  const [narrow, many] = [
+    ...root.querySelectorAll<HTMLElement>(".mdmark-table"),
+  ];
+  const narrowScroll = narrow?.querySelector<HTMLElement>(
+    ".mdmark-table-scroll",
+  );
   const manyScroll = many?.querySelector<HTMLElement>(".mdmark-table-scroll");
   if (!narrow || !many || !narrowScroll || !manyScroll) {
     throw new Error("表か包む要素が無い");

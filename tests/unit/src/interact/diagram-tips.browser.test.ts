@@ -426,7 +426,9 @@ test("test_attach_diagram_tips_when_chart_item", async () => {
   const { root } = createRoot(
     `${wrapDirective("chart", REPLY_TIME_TEXT)}\n\n${wrapDirective("flow", INQUIRY_GROUPS_TEXT)}`,
   );
-  const [chart, flow] = [...root.querySelectorAll<HTMLElement>("figure.mdmark-diagram")];
+  const [chart, flow] = [
+    ...root.querySelectorAll<HTMLElement>("figure.mdmark-diagram"),
+  ];
   if (!chart || !flow) {
     throw new Error("図が描かれていない");
   }
@@ -435,7 +437,9 @@ test("test_attach_diagram_tips_when_chart_item", async () => {
     detachers.push(detach);
   }
   const item = chart.querySelector<HTMLElement>(".mdmark-diagram-item-hit");
-  const groupMark = flow.querySelector<HTMLElement>(".mdmark-diagram-group-info");
+  const groupMark = flow.querySelector<HTMLElement>(
+    ".mdmark-diagram-group-info",
+  );
   if (!item || !groupMark) {
     throw new Error("グラフの項目かグループのタイトルの印が無い");
   }
@@ -457,8 +461,8 @@ test("test_attach_diagram_tips_when_chart_item", async () => {
   expect(groupTip.getBoundingClientRect().top).toBeGreaterThanOrEqual(
     groupMark.getBoundingClientRect().bottom,
   );
-  const open = [...flow.querySelectorAll<HTMLElement>('[role="tooltip"]')].filter(
-    (tip) => !tip.hidden,
-  );
+  const open = [
+    ...flow.querySelectorAll<HTMLElement>('[role="tooltip"]'),
+  ].filter((tip) => !tip.hidden);
   expect(open).toHaveLength(1);
 });

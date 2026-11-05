@@ -404,7 +404,9 @@ test("test_read_definition_when_group_options_invalid", async () => {
   const wrong = parsed<Record<string, unknown>>(INQUIRY_TEXT);
   wrong.frame = { ...(wrong.frame as Record<string, unknown>), hint: 1 };
   wrong.stickyTitles = "no";
-  const right = parsed<{ lanes: Array<Record<string, unknown>> } & Record<string, unknown>>(INQUIRY_TEXT);
+  const right = parsed<
+    { lanes: Array<Record<string, unknown>> } & Record<string, unknown>
+  >(INQUIRY_TEXT);
   right.lanes = right.lanes.map((lane, i) =>
     i === 0 ? { ...lane, hint: "LLM の層" } : lane,
   );
@@ -416,7 +418,9 @@ test("test_read_definition_when_group_options_invalid", async () => {
   expect(wrongResult.ok).toBe(false);
   expect(wrongResult.problems).toHaveLength(2);
   expect(wrongResult.problems.some((p) => p.includes("frame.hint"))).toBe(true);
-  expect(wrongResult.problems.some((p) => p.includes("stickyTitles"))).toBe(true);
+  expect(wrongResult.problems.some((p) => p.includes("stickyTitles"))).toBe(
+    true,
+  );
   expect(rightResult.problems).toEqual([]);
   expect(rightResult.ok).toBe(true);
 });

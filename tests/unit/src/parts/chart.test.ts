@@ -395,7 +395,10 @@ test("test_chart_item_text", async () => {
     y: { label: "分" },
     size: { label: "件数" },
   } as Partial<MdmarkChartDefinition>);
-  const pie = chartOf({ type: "pie", unit: " 件" } as Partial<MdmarkChartDefinition>);
+  const pie = chartOf({
+    type: "pie",
+    unit: " 件",
+  } as Partial<MdmarkChartDefinition>);
   const line = chartOf({ type: "line" } as Partial<MdmarkChartDefinition>);
   // 実行
   const texts = [

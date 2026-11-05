@@ -52,11 +52,15 @@ async function setUp(storage: Storage | null) {
 /** リサイズハンドルを `dy` px だけ縦にドラッグする */
 function drag(handle: HTMLElement, dy: number): void {
   const point = { bubbles: true, pointerId: 1, button: 0, clientX: 10 };
-  handle.dispatchEvent(new PointerEvent("pointerdown", { ...point, clientY: 100 }));
+  handle.dispatchEvent(
+    new PointerEvent("pointerdown", { ...point, clientY: 100 }),
+  );
   handle.dispatchEvent(
     new PointerEvent("pointermove", { ...point, clientY: 100 + dy }),
   );
-  handle.dispatchEvent(new PointerEvent("pointerup", { ...point, clientY: 100 + dy }));
+  handle.dispatchEvent(
+    new PointerEvent("pointerup", { ...point, clientY: 100 + dy }),
+  );
 }
 
 // ドラッグと上下キーで高さを変えて保つ（正常系）

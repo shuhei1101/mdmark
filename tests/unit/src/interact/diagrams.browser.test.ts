@@ -328,9 +328,15 @@ test("test_attach_diagrams_when_handle_resized", async () => {
   const handle = handleOf(root);
   const point = { bubbles: true, pointerId: 1, button: 0, clientX: 10 };
   // 実行: 200px 下へドラッグする
-  handle.dispatchEvent(new PointerEvent("pointerdown", { ...point, clientY: 100 }));
-  handle.dispatchEvent(new PointerEvent("pointermove", { ...point, clientY: 300 }));
-  handle.dispatchEvent(new PointerEvent("pointerup", { ...point, clientY: 300 }));
+  handle.dispatchEvent(
+    new PointerEvent("pointerdown", { ...point, clientY: 100 }),
+  );
+  handle.dispatchEvent(
+    new PointerEvent("pointermove", { ...point, clientY: 300 }),
+  );
+  handle.dispatchEvent(
+    new PointerEvent("pointerup", { ...point, clientY: 300 }),
+  );
   // 検証: 高さが 576 + 200 になり、倍率は変わらない（全体が収まる倍率が下がった分、倍率の文字は 100% より大きい）
   expect(viewport.clientHeight).toBe(776);
   expect(zoomText(root)).not.toBe("100%");
@@ -351,14 +357,19 @@ test("test_attach_diagrams_when_handle_resized", async () => {
 test("test_attach_diagrams_when_titles_stuck", async () => {
   // 準備
   const { attachDiagrams } = await loadDiagrams();
-  const off = JSON.stringify({ ...JSON.parse(INQUIRY_GROUPS_TEXT), stickyTitles: false });
+  const off = JSON.stringify({
+    ...JSON.parse(INQUIRY_GROUPS_TEXT),
+    stickyTitles: false,
+  });
   const { root } = createRoot(
     `${wrapDirective("flow", INQUIRY_GROUPS_TEXT)}\n\n${wrapDirective("flow", off)}`,
   );
   root.style.width = "600px";
   root.style.setProperty("--mdmark-padding", "0");
   detachers.push(attachDiagrams({ root, placement: "bottom" }));
-  const figures = [...root.querySelectorAll<HTMLElement>("figure.mdmark-diagram")];
+  const figures = [
+    ...root.querySelectorAll<HTMLElement>("figure.mdmark-diagram"),
+  ];
   // 実行
   for (const figure of figures) {
     button(figure, "拡大").click();
@@ -369,11 +380,17 @@ test("test_attach_diagrams_when_titles_stuck", async () => {
   }
   // 検証
   const [on, stopped] = figures;
-  const frameTitle = on?.querySelector<HTMLElement>(".mdmark-diagram-frame-title");
+  const frameTitle = on?.querySelector<HTMLElement>(
+    ".mdmark-diagram-frame-title",
+  );
   expect(frameTitle?.classList.contains("is-stuck")).toBe(true);
   expect(frameTitle?.style.transform).toContain("translateY");
-  expect(on?.querySelectorAll(".mdmark-diagram-lane-label.is-stuck").length).toBe(1);
-  for (const title of stopped?.querySelectorAll<HTMLElement>("[data-sticky-top]") ?? []) {
+  expect(
+    on?.querySelectorAll(".mdmark-diagram-lane-label.is-stuck").length,
+  ).toBe(1);
+  for (const title of stopped?.querySelectorAll<HTMLElement>(
+    "[data-sticky-top]",
+  ) ?? []) {
     expect(title.style.transform).toBe("");
   }
 });

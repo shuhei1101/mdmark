@@ -185,16 +185,28 @@ test("test_attach_zoom_when_drag_threshold", async () => {
   const before = viewport.scrollLeft;
   const point = { bubbles: true, pointerId: 1, button: 0, clientY: 100 };
   // 実行: 2px だけ動かして離す
-  content.dispatchEvent(new PointerEvent("pointerdown", { ...point, clientX: 300 }));
-  content.dispatchEvent(new PointerEvent("pointermove", { ...point, clientX: 298 }));
-  content.dispatchEvent(new PointerEvent("pointerup", { ...point, clientX: 298 }));
+  content.dispatchEvent(
+    new PointerEvent("pointerdown", { ...point, clientX: 300 }),
+  );
+  content.dispatchEvent(
+    new PointerEvent("pointermove", { ...point, clientX: 298 }),
+  );
+  content.dispatchEvent(
+    new PointerEvent("pointerup", { ...point, clientX: 298 }),
+  );
   // 検証
   expect(viewport.scrollLeft).toBe(before);
   expect(panStarts).toBe(0);
   // 実行: 40px 左へ動かして離す
-  content.dispatchEvent(new PointerEvent("pointerdown", { ...point, clientX: 300 }));
-  content.dispatchEvent(new PointerEvent("pointermove", { ...point, clientX: 260 }));
-  content.dispatchEvent(new PointerEvent("pointerup", { ...point, clientX: 260 }));
+  content.dispatchEvent(
+    new PointerEvent("pointerdown", { ...point, clientX: 300 }),
+  );
+  content.dispatchEvent(
+    new PointerEvent("pointermove", { ...point, clientX: 260 }),
+  );
+  content.dispatchEvent(
+    new PointerEvent("pointerup", { ...point, clientX: 260 }),
+  );
   // 検証
   expect(viewport.scrollLeft).toBeGreaterThan(before);
   expect(panStarts).toBe(1);
