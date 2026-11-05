@@ -551,11 +551,13 @@ test("test_attach_side_toc_when_hover_panel_placed", async () => {
   const { attachSideToc } = await loadSideToc();
   const box = document.createElement("div");
   box.style.cssText =
-    "position: fixed; top: 100px; left: 0; width: 1000px; height: 400px; overflow-y: auto;";
+    "position: fixed; top: 100px; left: 0; width: calc(100% - 40px); height: 400px; overflow-y: auto;";
   document.body.append(box);
   track(() => box.remove());
   const { root } = createRoot(longDocument());
   box.append(root);
+  // aside の右端に依らないことを確かめるため、描く先の要素をスクロールする要素より狭くして左に寄せる
+  root.style.width = "50%";
   root.style.setProperty("--mdmark-sticky-top", "8px");
   const result = attachSideToc({
     el: root,
@@ -569,8 +571,14 @@ test("test_attach_side_toc_when_hover_panel_placed", async () => {
       getComputedStyle(root).getPropertyValue("--mdmark-space"),
     ) * rootFontSize();
   const expectedTop = `${100 + 8 + space}px`;
-  const expectedEnd = () =>
-    `${document.documentElement.clientWidth - aside.getBoundingClientRect().right}px`;
+  // スクロールする要素の右端（スクロールバーを除き、画面からはみ出す分は画面の端）から 1rem
+  const { clientWidth } = document.documentElement;
+  const boxRect = box.getBoundingClientRect();
+  const boxRight = Math.min(
+    boxRect.left + box.clientLeft + box.clientWidth,
+    clientWidth,
+  );
+  const expectedEnd = () => `${clientWidth - boxRight + rootFontSize()}px`;
   // 実行・検証: 付けた直後
   expect(panelVariable(aside, "--mdmark-side-toc-panel-top")).toBe(expectedTop);
   expect(panelVariable(aside, "--mdmark-side-toc-panel-end")).toBe(
@@ -699,4 +707,84 @@ test("test_attach_side_toc_when_hover_rail_placed", async () => {
   });
   expect(aside.hasAttribute("data-rail-outside")).toBe(true);
   expect(getComputedStyle(rail).display).toBe("none");
+});
+
+// 差分のミニマップの帯が出たときと消えたときに、スクロールせずに右端の位置を決め直す（正常系）
+test("test_attach_side_toc_when_hover_edge_avoids_minimap", async () => {
+  // 準備
+  addStyles();
+  const { attachSideToc } = await loadSideToc();
+  const { root } = createRoot(longDocument());
+  root.style.width = "600px";
+  const result = attachSideToc({
+    el: root,
+    mode: "hover",
+    sections: true,
+    state: createState(),
+  });
+  const aside = result.aside as HTMLElement;
+  const minimap = document.createElement("div");
+  minimap.className = "mdmark-diff-minimap";
+  minimap.style.cssText =
+    "position: fixed; top: 0; right: 0; bottom: 0; width: 14px;";
+  // 描いた直後のレイアウトで出る scroll を数えないよう、次の描画を待ってから受け取る
+  await new Promise((resolve) => requestAnimationFrame(resolve));
+  const scroll = vi.fn();
+  const resize = vi.fn();
+  window.addEventListener("scroll", scroll);
+  window.addEventListener("resize", resize);
+  track(() => {
+    window.removeEventListener("scroll", scroll);
+    window.removeEventListener("resize", resize);
+  });
+  // 実行・検証: 帯を追加した後は、帯の左端から 8px 左（画面の幅が小数のとき、`clientWidth` の丸めの差が出ないよう帯の左端から決める）
+  document.body.append(minimap);
+  track(() => minimap.remove());
+  await vi.waitFor(() => {
+    const { left } = minimap.getBoundingClientRect();
+    expect(panelVariable(aside, "--mdmark-side-toc-panel-end")).toBe(
+      `${document.documentElement.clientWidth - (left - 8)}px`,
+    );
+  });
+  // 実行・検証: 帯を削除した後は、画面の右端（スクロールバーを除く）から 1rem
+  minimap.remove();
+  await vi.waitFor(() => {
+    expect(panelVariable(aside, "--mdmark-side-toc-panel-end")).toBe(
+      `${rootFontSize()}px`,
+    );
+  });
+  expect(scroll).not.toHaveBeenCalled();
+  expect(resize).not.toHaveBeenCalled();
+  // 実行・検証: 外した後は、帯を追加しても値を決め直さない
+  const before = panelVariable(aside, "--mdmark-side-toc-panel-end");
+  result.detach();
+  document.body.append(minimap);
+  await new Promise((resolve) => requestAnimationFrame(resolve));
+  expect(panelVariable(aside, "--mdmark-side-toc-panel-end")).toBe(before);
+});
+
+// 画面の右端より右へはみ出すスクロールする要素では、画面の端から右端の位置を決める（正常系）
+test("test_attach_side_toc_when_hover_edge_clamped", async () => {
+  // 準備
+  addStyles();
+  const { attachSideToc } = await loadSideToc();
+  const box = document.createElement("div");
+  box.style.cssText =
+    "position: fixed; top: 0; left: 0; width: calc(100% + 100px); height: 400px; overflow-y: auto;";
+  document.body.append(box);
+  track(() => box.remove());
+  const { root } = createRoot(longDocument());
+  box.append(root);
+  // 実行
+  const result = attachSideToc({
+    el: root,
+    mode: "hover",
+    sections: true,
+    state: createState(),
+  });
+  // 検証
+  const aside = result.aside as HTMLElement;
+  expect(panelVariable(aside, "--mdmark-side-toc-panel-end")).toBe(
+    `${rootFontSize()}px`,
+  );
 });
