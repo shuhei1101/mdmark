@@ -261,3 +261,38 @@ test("test_copy_failed", async () => {
   });
   expect(order).toBe("mdmark-copy-panel");
 });
+
+// wrap の長い名前を名前の列の中で折り返し、注釈を名前の下の行に名前の頭から出し、横スクロールを出さない（Wrap）
+test("test_wrap", async () => {
+  // 準備・実行
+  const page = await holder.openStory("parts-filetree--wrap", {
+    width: 390,
+    height: 844,
+  });
+  // 検証
+  const result = await page.locator("ul.mdmark-tree-list").evaluate((list) => {
+    const rectsOf = (element: Element | null) => {
+      const text = element
+        ? document.createTreeWalker(element, NodeFilter.SHOW_TEXT).nextNode()
+        : null;
+      if (!text) {
+        return [];
+      }
+      const range = document.createRange();
+      range.selectNodeContents(text);
+      return [...range.getClientRects()].map((rect) => rect.left);
+    };
+    const name = rectsOf(
+      list.querySelector(".mdmark-tree-file .mdmark-tree-name"),
+    );
+    const note = rectsOf(
+      list.querySelector(".mdmark-tree-file .mdmark-tree-note"),
+    );
+    return { fits: list.scrollWidth <= list.clientWidth, name, note };
+  });
+  expect(result.fits).toBe(true);
+  expect(result.name.length).toBeGreaterThanOrEqual(2);
+  expect(result.name[1]).toBeCloseTo(result.name[0] ?? 0, 0);
+  expect(result.note[0]).toBeCloseTo(result.name[0] ?? 0, 0);
+  await expect(pageOverflows(page)).resolves.toBe(false);
+});

@@ -4,6 +4,7 @@ import * as vscode from "vscode";
 import {
   clickInPreview,
   deliver,
+  dragInPreview,
   inspect,
   installMessages,
   installOpenExternal,
@@ -217,5 +218,82 @@ suite("プレビューのリンクを開く", () => {
       tabs,
     );
     assert.deepStrictEqual(opened, []);
+  });
+
+  // フロー図のノードのリンクを、本文のリンクと同じ種類ごとの先で開き、ノードの上のドラッグでは開かない
+  test("test_normal_when_flow_node_link", async () => {
+    // 準備
+    const node = (id: string, x: number, href: string) => ({
+      id,
+      kind: "script",
+      x,
+      y: 40,
+      w: 200,
+      h: 72,
+      name: `ノード ${id}`,
+      href,
+    });
+    const definition = {
+      title: "リンク",
+      scope: "点検",
+      updated: "2026-11-05",
+      width: 520,
+      height: 152,
+      nodes: [
+        node("doc", 20, "./other.md"),
+        node("web", 300, "https://aka.ms/mdmark"),
+      ],
+      wires: [],
+    };
+    await writeFixture(
+      "flow.md",
+      [
+        "# 図",
+        "",
+        "<!-- flow -->",
+        "",
+        "```json",
+        JSON.stringify(definition),
+        "```",
+        "",
+        "<!-- /flow -->",
+        "",
+      ].join("\n"),
+    );
+    await writeFixture("other.md", "# 別の文書\n");
+    await openMarkdown("flow.md");
+    await vscode.commands.executeCommand("mdmark.openPreviewToSide");
+    const record = lastPanel();
+    await waitForRendered(record);
+    const sentBefore = record.sent.length;
+    const linkOf = (id: string) =>
+      `[data-node="${id}"] a.mdmark-diagram-node-link`;
+    // 実行・検証: 外部の URL のノードの上でドラッグしても開かない
+    dragInPreview(record, linkOf("web"), -100);
+    await sleep(500);
+    assert.strictEqual(
+      record.received.filter((message) => message.type === "openLink").length,
+      0,
+    );
+    assert.deepStrictEqual(opened, []);
+    // 実行・検証: 外部の URL のノードを押すと、既定のブラウザで 1 回だけ開く
+    clickInPreview(record, linkOf("web"));
+    await waitFor(() => opened.length === 1);
+    await sleep(300);
+    assert.deepStrictEqual(opened, ["https://aka.ms/mdmark"]);
+    // 実行・検証: Markdown のノードを押すと、エディタで開く
+    clickInPreview(record, linkOf("doc"));
+    await waitFor(
+      () =>
+        vscode.window.activeTextEditor?.document.uri.fsPath ===
+        join(workspaceDir(), "other.md"),
+      { message: "other.md が開かない" },
+    );
+    assert.strictEqual(
+      record.sent.filter((message) => message.type === "render").length,
+      record.sent
+        .slice(0, sentBefore)
+        .filter((message) => message.type === "render").length,
+    );
   });
 });
