@@ -575,7 +575,7 @@ flows:
       - コピーのボタンのタップの後も、語の枠が `is-open` を持つ
       - '`pointerType` が `mouse` の `pointerdown` を開いている語に発火しても、語の枠が `is-open` を持つ'
       - フォーカスがコピーのボタンにある状態で開いている語をタップした後（語の `focusin` が `pointerdown` の後に発火する）、語の枠が `is-open` を持たない
-      - 2 つ目の段落の `pointerdown` の後、語の枠が `is-open` を持たない
+      - 2 つ目の段落の `pointerdown` の後、語の枠が `is-open` を持たず、語にフォーカスが残ったままでもツールチップが表示されない（`display` が `none`）
     test: test_normal_when_glossary_touch
   - name: 正常系（被参照の一覧）
     summary: 参照の表から、文書の末尾に「関連文書」の一覧を置き、`update` の後も置き直す
