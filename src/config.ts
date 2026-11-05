@@ -16,6 +16,8 @@ export type MdmarkConfig = {
   colorTheme?: string;
   /** 部品の文言の設定。`paramCopy` は操作できる部品の今の値をコピーするボタンの文言。空文字も受けて `resolveConfig` が `DEFAULT_LABELS.paramCopy` にする */
   labels?: { paramCopy?: string };
+  /** 範囲のスクリプトの設定。`url` は範囲の `ts`・`js` を変換する @babel/standalone の ES モジュールの URL */
+  "html-scripts"?: { url?: string };
 };
 
 /** ツールチップを持ち主の上と下のどちらに先に出すか。`top` は上に出し、上に収まらないときだけ下に出す。`bottom` は下に出し、下に収まらず上に収まるときだけ上に出す */
@@ -55,6 +57,8 @@ export type ResolvedConfig = {
   colorTheme: ColorTheme;
   /** 設定の `labels.paramCopy` が空でない文字列ならその値、それ以外は `DEFAULT_LABELS.paramCopy` */
   labels: { paramCopy: string };
+  /** 範囲のスクリプトの変換のライブラリの URL（既定 `DEFAULT_HTML_SCRIPTS_URL`） */
+  htmlScripts: { url: string };
 };
 
 /** mdmark に入れた配色のテーマの名前の並び。`resolveConfig`・CLI の点検と書き出しの警告が照らす */
@@ -97,6 +101,7 @@ export const DEFAULT_FEATURES: Record<string, boolean> = {
   hints: true,
   views: true,
   comments: false,
+  "html-scripts": false,
   "side-toc": true,
   "back-to-top": true,
   "text-color": true,
@@ -111,6 +116,10 @@ export const DEFAULT_FEATURES: Record<string, boolean> = {
 /** 設定の `syntax.url` が無いときに読む highlight.js の `es/` フォルダの URL。バージョンを固定する */
 export const DEFAULT_SYNTAX_URL =
   "https://cdn.jsdelivr.net/npm/@highlightjs/cdn-assets@11.12.0/es/";
+
+/** 設定の `html-scripts.url` が無いときに読む @babel/standalone の ES モジュールの URL。バージョンを固定する */
+export const DEFAULT_HTML_SCRIPTS_URL =
+  "https://cdn.jsdelivr.net/npm/@babel/standalone@8.1.1/+esm";
 
 /** 印の名前から `LibraryEntry` を引く既定の対応表 */
 export const DEFAULT_LIBRARIES: Record<string, LibraryEntry> = {};
@@ -155,6 +164,14 @@ export function resolveConfig(options: {
   // 色分けのライブラリの読み込み先は、文字列のときだけ受け、他の値は既定にする
   const url = config?.syntax?.url;
   const syntax = { url: typeof url === "string" ? url : DEFAULT_SYNTAX_URL };
+  // 範囲のスクリプトの変換のライブラリの読み込み先は、文字列のときだけ受け、他の値は既定にする
+  const htmlScriptsUrl = config?.["html-scripts"]?.url;
+  const htmlScripts = {
+    url:
+      typeof htmlScriptsUrl === "string"
+        ? htmlScriptsUrl
+        : DEFAULT_HTML_SCRIPTS_URL,
+  };
   // 右側の目次の出し方は、fixed だけを受け、他の値は hover にする
   const mode: SideTocMode =
     config?.["side-toc"]?.mode === "fixed" ? "fixed" : "hover";
@@ -175,6 +192,7 @@ export function resolveConfig(options: {
     libraries,
     tooltips: { placement },
     syntax,
+    htmlScripts,
     sideToc: { mode },
     colorTheme,
     labels,
