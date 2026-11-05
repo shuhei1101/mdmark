@@ -989,6 +989,10 @@ functions:
         type: '{ mark?: string; message: string; items?: WarningItem[]; kind?: "diagram_invalid" | "syntax_warning"; line?: number }'
         required: true
         description: 部品へ渡す値（文言は画面設計『文書』の書き方の警告）。`kind` は省くと `syntax_warning`、`line` は警告の元のマーカーのトークンの `map[0]`（マーカーのトークンを持たない警告は省く）
+      - name: source
+        type: Token | undefined
+        required: false
+        description: 警告の元になったマーカーのトークン（範囲なら開きのマーカー）。`warning.line` が無ければ、その `map[0]` を警告の行にする。マーカーを持つ警告は全て渡す（`warningBlock` も同じ）
     side_effects: '`state.tokens` に足す'
     callees:
       - dev/設計書/モジュール構成/ライブラリ本体/部品.ts#functions[renderSyntaxWarning]
@@ -2465,6 +2469,12 @@ functions:
         condition: '3 行目の `<!-- code: color=red -->` と直後のコードブロック、10 行目の開きのマーカーから続く読めない `<!-- flow -->` の範囲、20 行目の、上の行より 2 段深い行を持つ `tree` のコードブロック（マーカーを持たない警告）'
         mock: なし
         expected: '`env.warnings` が 3 件で、`line` が `3`・`10`・`20`、`kind` が `syntax_warning`・`diagram_invalid`・`syntax_warning`'
+      - name: test_collect_warnings_rule_when_marks
+        case: 正常
+        summary: 表・ファイルツリー・タブのマーカーの警告を、マーカーの行にする
+        condition: '3 行目 `<!-- table: foo -->` と表と閉じのマーカー、11 行目 `<!-- tree: wrap=1 -->` と `tree` のコードブロック、20 行目 `<!-- tabs: x=1 -->` の範囲'
+        mock: なし
+        expected: '`env.warnings` の `line` が `3`・`11`・`20`'
     status: planned
     introduced:
       pr: 328

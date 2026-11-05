@@ -1737,7 +1737,7 @@ functions:
     kind: 関数
     scope: internal
     summary: 座標を省いた判定フローチャートの定義に、インターフェース定義『文書をHTML文字列にする』の制約「自動の配置」の決まりでノードの `x`・`y`・`w`・`h`、線の `points`、図の `width`・`height` を入れた定義を返す
-    description: ノードを左と右の 2 つの列と行の格子に割り当てる。`start` を 0 行目の左の列に置き、`start` から線をたどる。`question` から右へ出る線の先を先に割り当て（複数の線が入るノードの位置をこの線で決める）、次に下へ出る線と `action` の先を割り当てる。列の幅はその列のノードの最大の `w`、行の高さはその行のノードの最大の `h` にし、ノードは列の中央・行の中央に置く。ノードの大きさは `FLOWCHART_LAYOUT` の `sizes` から始め、`labelLineCount` で名前が収まらないときは `lineStep` ずつ高さを足す。下へ出る線は出るノードの下辺の中央から、右へ出る線は右辺の中央から引き、縦と横の線分で先のノードの入り口（同じ列なら上辺、右の列なら左辺）へつなぐ。線の `labelAt` は最初の線分の中点にする。`start` から届かないノードは最後の行の下に定義の順に左の列へ並べる。`width`・`height` は全てのノードと線を囲む矩形に `margin` を足す
+    description: ノードを左と右の 2 つの列と行の格子に割り当てる。`start` を 0 行目の左の列に置き、`start` から線をたどる。`question` から右へ出る線の先を先に割り当て（複数の線が入るノードの位置をこの線で決める）、次に下へ出る線と `action` の先を割り当てる。列の幅はその列のノードの最大の `w`、行の高さはその行のノードの最大の `h` にし、ノードは列の中央・行の中央に置く。ノードの大きさは `FLOWCHART_LAYOUT` の `sizes` から始め、`labelLineCount` で名前が収まらないときは `lineStep` ずつ高さを足す。下へ出る線は出るノードの下辺の中央から、右へ出る線は右辺の中央から引き、縦と横の線分で先のノードの入り口（同じ列なら上辺。右の列は、同じ行なら左辺、下の行なら上辺、上の行なら下辺）へつなぐ。線の `labelAt` は最初の線分の中点にする。`start` から届かないノードは最後の行の下に定義の順に左の列へ並べる。`width`・`height` は全てのノードと線を囲む矩形に `margin` を足す
     args:
       - name: definition
         type: MdmarkFlowDefinition
@@ -1775,6 +1775,12 @@ functions:
         condition: どの線にもつながらない結果を 1 つ持つ `judgement-auto`
         mock: なし
         expected: その結果の `y` がほかの全てのノードの下端より下で、`checkFlowLayout` が空の配列
+      - name: test_layout_flowchart_when_shared_result
+        case: 正常
+        summary: 下の質問から上の行の結果へ入る線を、結果の下辺で止める
+        condition: 開始 → `q1`、`q1` YES → `ok`、`q1` NO → `q2`、`q2` YES → `ok`、`q2` NO → `ng` の座標を省いた判定フローチャート
+        mock: なし
+        expected: '`ok` が `q1` の行にあり、`q2` → `ok` の線の最後の点が `ok` の下辺の中央で、全ての線が縦と横だけ'
     status: planned
     introduced:
       pr: 328
