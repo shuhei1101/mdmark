@@ -2647,7 +2647,7 @@ functions:
     container: src/render/syntax/includes.ts
     kind: 関数
     scope: internal
-    summary: マーカーを書いた文書のパスのフォルダを基準に、書いたパスの `./`・`../` を解いて、描く文書のフォルダからのパスにする。`#` の後ろを見出しの ID か行の範囲として分ける（行の範囲は Markdown 以外のファイルだけ）。CLI・VS Code 拡張機能も同じ関数でパスを解く
+    summary: マーカーを書いた文書のパスのフォルダを基準に、書いたパスの `./`・`../` を解いて、描く文書のフォルダからのパスにする。`#` の後ろを見出しの ID か行の範囲として分ける（行の範囲は Markdown 以外のファイルだけ）。CLI は同じ関数でパスを解き、単独で束ねる VS Code 拡張機能は同じ解き方を `readIncludes` に持つ
     args:
     - name: fromPath
       type: string
