@@ -22,8 +22,16 @@ const availableEdges = (root: HTMLElement): { left: number; right: number } => {
   const sideToc = host.querySelector<HTMLElement>(":scope > .mdmark-side-toc");
   const container = sideToc || !host.parentElement ? host : host.parentElement;
   const edges = contentEdges(container);
-  if (sideToc && sideToc.offsetParent !== null) {
-    const tocLeft = sideToc.getBoundingClientRect().left;
+  // 右側の目次の列は、出ているパネルか右端の線（目次の要素そのものは列の幅を持たない）
+  const columns = sideToc
+    ? [
+        ...sideToc.querySelectorAll<HTMLElement>(
+          ".mdmark-side-toc-panel, .mdmark-side-toc-rail",
+        ),
+      ].filter((column) => column.getClientRects().length > 0)
+    : [];
+  for (const column of columns) {
+    const tocLeft = column.getBoundingClientRect().left;
     if (tocLeft > edges.left) {
       edges.right = Math.min(edges.right, tocLeft);
     }
@@ -94,14 +102,28 @@ export const attachWideToggles = (root: HTMLElement): (() => void) => {
     button.setAttribute("aria-pressed", String(wide));
   };
   root.addEventListener("click", onClick);
-  const observer = new ResizeObserver(sync);
+  // 幅を書き換えると監視の通知が増えるため、次の描画の前に 1 回だけ合わせる
+  let frame = 0;
+  const schedule = (): void => {
+    cancelAnimationFrame(frame);
+    frame = requestAnimationFrame(sync);
+  };
+  const observer = new ResizeObserver(schedule);
   observer.observe(root);
   const host = root.closest<HTMLElement>(".mdmark") ?? root;
   if (host.parentElement) {
     observer.observe(host.parentElement);
   }
+  // 右側の目次を開閉すると、描く先の要素の大きさを変えずに広げられる幅が変わる
+  const sideToc = host.querySelector<HTMLElement>(":scope > .mdmark-side-toc");
+  for (const column of sideToc?.querySelectorAll<HTMLElement>(
+    ":scope, .mdmark-side-toc-panel, .mdmark-side-toc-rail",
+  ) ?? []) {
+    observer.observe(column);
+  }
   sync();
   return () => {
+    cancelAnimationFrame(frame);
     observer.disconnect();
     root.removeEventListener("click", onClick);
     for (const bar of bars) {
