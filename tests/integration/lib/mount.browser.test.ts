@@ -10657,14 +10657,16 @@ test("test_normal_when_wide_with_side_toc", async () => {
       markdown: WIDE_TOC_MARKDOWN,
       config: { "side-toc": { mode: "hover" } },
     });
-    const { rail } = sideTocOf(el);
+    const { rail, panel } = sideTocOf(el);
     const range = find<HTMLElement>(el, ".mdmark-wide-range");
-    // 検証
-    await vi.waitFor(() =>
+    // 検証: ピン止めしていない間に出ている右端の線（この幅では線の代わりに出るパネル）の左に収まる
+    await vi.waitFor(() => {
+      const column = rail.getClientRects().length > 0 ? rail : panel;
+      expect(column.getClientRects().length).toBeGreaterThan(0);
       expect(range.getBoundingClientRect().right).toBeLessThanOrEqual(
-        rail.getBoundingClientRect().left + 1,
-      ),
-    );
+        column.getBoundingClientRect().left + 1,
+      );
+    });
   });
 });
 
