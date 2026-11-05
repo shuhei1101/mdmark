@@ -886,8 +886,14 @@ export function renderTable(options: TableOptions): string {
   const bar = options.body === undefined ? renderRawBar(shown) : "";
   const raw = `<pre class="mdmark-raw"${shown ? "" : " hidden"} tabindex="0" aria-label="元の CSV"><code class="language-csv">${escapeHtml(options.rawCsv)}</code></pre>`;
   const viewAttribute = shown ? ' data-view="raw"' : "";
+  // 元の CSV を出しているときは、表を包む要素（無ければ表）を隠す
   const shownInner = shown
-    ? inner.replace(/^<table(?=[\s>])/, "<table hidden")
+    ? inner.includes('<div class="mdmark-table-scroll">')
+      ? inner.replace(
+          '<div class="mdmark-table-scroll">',
+          '<div class="mdmark-table-scroll" hidden>',
+        )
+      : inner.replace(/^<table(?=[\s>])/, "<table hidden")
     : inner;
   return `<div class="mdmark-table${foldedClass}" data-kind="${kind}" data-features="${options.features.join(" ")}" data-source="csv"${viewAttribute}${filterAttribute}${hideAttribute}${totalAttribute}${pinAttribute}${checkAttribute}${mergeAttribute}>${bar}${shownInner}${raw}</div>`;
 }

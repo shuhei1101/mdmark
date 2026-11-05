@@ -3618,9 +3618,9 @@
 
     /* ---------- CSV の表 ---------- */
 
-    /* CSV の表: 枠を表の幅に合わせ、RAW のボタンの帯を表の右端の真上に置く。表と元の CSV は同じ場所に重ね、見せない側は visibility で隠して幅と高さを保つ */
+    /* CSV の表: 記法の表と同じく本文の幅に広げ、RAW のボタンの帯を表の右端の真上に置く。表（包む要素）と元の CSV は同じ場所に重ね、見せない側は visibility で隠して幅と高さを保つ */
     .mdmark-table[data-source="csv"] {
-      width: fit-content;
+      width: 100%;
       max-width: 100%;
       justify-items: stretch;
 
@@ -3629,12 +3629,12 @@
         justify-content: flex-end;
       }
 
-      > :is(table, .mdmark-raw) {
+      > :is(.mdmark-table-scroll, table, .mdmark-raw) {
         grid-area: 2 / 1;
         margin: 0;
       }
 
-      > :is(table, .mdmark-raw)[hidden] {
+      > :is(.mdmark-table-scroll, table, .mdmark-raw)[hidden] {
         display: block;
         visibility: hidden;
       }

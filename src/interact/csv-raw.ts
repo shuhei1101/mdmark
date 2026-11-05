@@ -1,5 +1,17 @@
 import { renderRawBar } from "../parts/table.ts";
 
+// 表と、表を包む横のスクロールの要素
+const TABLE_SELECTOR =
+  ":scope > table, :scope > .mdmark-table-scroll > table, :scope > details > table, :scope > details > .mdmark-table-scroll > table";
+
+/** 表と元の CSV を入れ替えるときに隠す・出す要素（表を包む要素があればそれ、無ければ表） */
+const tableBlockOf = (table: Element): HTMLElement => {
+  const parent = table.parentElement;
+  return parent?.classList.contains("mdmark-table-scroll") === true
+    ? parent
+    : (table as HTMLElement);
+};
+
 /** CSV の表の囲みの帯に RAW のボタンを置き、押すたびに表と元の CSV を入れ替える。並べ替え・絞り込み・ピン止めの状態は触らない */
 export const attachCsvRaw = (root: HTMLElement): (() => void) => {
   const wrappers = [
@@ -9,9 +21,7 @@ export const attachCsvRaw = (root: HTMLElement): (() => void) => {
   ];
   const added: Element[] = [];
   for (const wrapper of wrappers) {
-    const table = wrapper.querySelector(
-      ":scope > table, :scope > details > table",
-    );
+    const table = wrapper.querySelector(TABLE_SELECTOR);
     if (!table || wrapper.querySelector(".mdmark-raw-toggle")) {
       continue;
     }
@@ -27,9 +37,10 @@ export const attachCsvRaw = (root: HTMLElement): (() => void) => {
         added.push(tools);
       }
     } else {
-      table.insertAdjacentHTML("beforebegin", renderRawBar(pressed));
-      if (table.previousElementSibling) {
-        added.push(table.previousElementSibling);
+      const block = tableBlockOf(table);
+      block.insertAdjacentHTML("beforebegin", renderRawBar(pressed));
+      if (block.previousElementSibling) {
+        added.push(block.previousElementSibling);
       }
     }
   }
@@ -44,9 +55,7 @@ export const attachCsvRaw = (root: HTMLElement): (() => void) => {
       return;
     }
     const raw = wrapper.querySelector<HTMLElement>(":scope > pre.mdmark-raw");
-    const table = wrapper.querySelector<HTMLElement>(
-      ":scope > table, :scope > details > table",
-    );
+    const table = wrapper.querySelector(TABLE_SELECTOR);
     const showRaw = wrapper.dataset.view !== "raw";
     if (showRaw) {
       wrapper.dataset.view = "raw";
@@ -55,7 +64,7 @@ export const attachCsvRaw = (root: HTMLElement): (() => void) => {
     }
     button.setAttribute("aria-pressed", String(showRaw));
     if (table) {
-      table.hidden = showRaw;
+      tableBlockOf(table).hidden = showRaw;
     }
     if (raw) {
       raw.hidden = !showRaw;
