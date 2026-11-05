@@ -224,3 +224,115 @@ test("test_build_embedded_html_when_param_copy_label", async () => {
   const embedded = innerHtml(html, 'class="mdmark-html"');
   expect(plainText(innerHtml(embedded, "mdmark-param-copy"))).toBe("コピー");
 });
+
+/** 範囲に `html`・`css`・`ts` のコードブロックを 1 つずつ置いた文書 */
+const RANGE_SCRIPTS = [
+  "<!-- html -->",
+  "",
+  "```html",
+  '<div class="box">箱</div>',
+  "```",
+  "",
+  "```css",
+  ".box { color: red }",
+  "```",
+  "",
+  "```ts",
+  "export default (root: HTMLElement) => root.classList.add(\"is-open\");",
+  "```",
+  "",
+  "<!-- /html -->",
+  "",
+].join("\n");
+
+/** 範囲の css を根の要素の中に限る処理を読み込む */
+const loadScopeCss = () => import("../../../../../src/render/scope-css.ts");
+
+/** 埋め込んだ HTML の処理を読み込む */
+const loadHtml = () => import("../../../../../src/render/syntax/html.ts");
+
+/** コードブロックを並べた Markdown を解析し、`fence` のトークンを返す */
+async function fenceTokens(languages: string[]) {
+  const { createParser } = await loadParser();
+  const markdown = languages
+    .map((lang) => ["```" + lang, `${lang} の中身`, "```", ""].join("\n"))
+    .join("\n");
+  return createParser()
+    .parse(markdown, createEnv())
+    .filter((token) => token.type === "fence");
+}
+
+// `html-scripts` がオンのとき、`css` を根の要素に限った `style` にし、`ts` を `template` に入れる（正常系）
+test("test_build_embedded_html_when_range_scripts", async () => {
+  // 準備
+  const { scopeCss } = await loadScopeCss();
+  // 実行
+  const { html } = renderDoc(RANGE_SCRIPTS, { "html-scripts": true });
+  // 検証
+  const root = findTag(html, 'class="mdmark-html"');
+  expect(root).toContain('data-html-scope="0"');
+  const embedded = innerHtml(html, 'class="mdmark-html"');
+  expect(embedded.trimStart().startsWith('<style class="mdmark-html-style"')).toBe(
+    true,
+  );
+  expect(innerHtml(embedded, "mdmark-html-style")).toBe(
+    scopeCss({ css: ".box { color: red }\n", scope: 0 }),
+  );
+  const template = findTag(embedded, "mdmark-html-script");
+  expect(template.startsWith("<template")).toBe(true);
+  expect(template).toContain('data-lang="ts"');
+  expect(embedded.trimEnd().endsWith("</template>")).toBe(true);
+  expect(html).not.toContain("<pre");
+});
+
+// `html-scripts` がオフのとき、`css`・`ts` をコードのまま残す（正常系）
+test("test_build_embedded_html_when_range_scripts_off", () => {
+  // 準備
+  const markdown = RANGE_SCRIPTS;
+  // 実行
+  const { html } = renderDoc(markdown);
+  // 検証
+  const embedded = innerHtml(html, 'class="mdmark-html"');
+  expect(embedded).not.toContain("<style");
+  expect(embedded).not.toContain("<template");
+  const after = html.slice(html.indexOf(embedded) + embedded.length);
+  expect(after).toMatch(/<pre[^>]*><code class="language-css"/);
+  expect(after).toMatch(/<pre[^>]*><code class="language-ts"/);
+});
+
+// `html`・`css`・`ts` を 1 つずつ読む（正常系）
+test("test_read_range_scripts", async () => {
+  // 準備
+  const { readRangeScripts } = await loadHtml();
+  const tokens = await fenceTokens(["html", "css", "ts"]);
+  // 実行
+  const read = readRangeScripts(tokens);
+  // 検証
+  expect(read.html).toBe(tokens[0]);
+  expect(read.css).toBe("css の中身\n");
+  expect(read.script).toEqual({ lang: "ts", code: "ts の中身\n" });
+  expect(read.warnings).toEqual([]);
+});
+
+// `ts` と `js` を両方持つ範囲は警告を返し `script` を返さない（異常系）
+test("test_read_range_scripts_when_both_languages", async () => {
+  // 準備
+  const { readRangeScripts } = await loadHtml();
+  const tokens = await fenceTokens(["html", "ts", "js"]);
+  // 実行
+  const read = readRangeScripts(tokens);
+  // 検証
+  expect(read.script).toBeUndefined();
+  expect(read.warnings).toHaveLength(1);
+});
+
+// 同じ言語を 2 つ持つ範囲は警告を返す（異常系）
+test("test_read_range_scripts_when_duplicate", async () => {
+  // 準備
+  const { readRangeScripts } = await loadHtml();
+  const tokens = await fenceTokens(["html", "css", "css"]);
+  // 実行
+  const read = readRangeScripts(tokens);
+  // 検証
+  expect(read.warnings).toHaveLength(1);
+});
