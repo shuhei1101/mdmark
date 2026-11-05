@@ -16,6 +16,7 @@ import {
   INQUIRY_SEQ_TEXT,
   INQUIRY_TEXT,
   JUDGEMENT_TEXT,
+  LINKED_TEXT,
   parsed,
   REPLY_TIME_TEXT,
 } from "../../helpers/diagrams.ts";
@@ -671,4 +672,35 @@ test("test_render_er_when_terms", async () => {
   expect(terms).toBe(true);
   expect(html).toContain('aria-label="「顧客」の説明"');
   expect(html).toContain('aria-label="「顧客」の主キーと外部キー以外の列"');
+});
+
+// href を持つノードをリンクにし、印をリンクの外に置く（正常系）
+test("test_render_flow_when_node_link", async () => {
+  // 準備
+  const { renderFlow } = await loadDiagram();
+  const definition = parsed<MdmarkFlowDefinition>(LINKED_TEXT);
+  // 実行
+  const { html } = renderFlow(definition, "d1", true);
+  // 検証
+  const links = matches(
+    html,
+    /<a class="mdmark-diagram-node-link" href="([^"]*)" aria-label="([^"]*)"><\/a>/g,
+  );
+  expect(links).toEqual([
+    '<a class="mdmark-diagram-node-link" href="https://example.com/spec" aria-label="問い合わせを受け取る"></a>',
+    '<a class="mdmark-diagram-node-link" href="./other.md" aria-label="分類する"></a>',
+  ]);
+  expect(
+    matches(html, /class="mdmark-diagram-node[^"]*\bhas-link\b[^"]*"/g),
+  ).toHaveLength(2);
+  const classify = html.slice(html.indexOf('data-node="classify"'));
+  const linkAt = classify.indexOf("mdmark-diagram-node-link");
+  const tipAt = classify.indexOf("aria-describedby");
+  expect(linkAt).toBeGreaterThan(-1);
+  expect(tipAt).toBeGreaterThan(linkAt);
+  const store = html.slice(
+    html.indexOf('data-node="store"'),
+    html.indexOf("</div>", html.indexOf('data-node="store"')),
+  );
+  expect(store).not.toContain("<a ");
 });

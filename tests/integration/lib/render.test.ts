@@ -19,6 +19,7 @@ import {
 import {
   INQUIRY_SEQ_TEXT,
   INQUIRY_TEXT,
+  JUDGEMENT_AUTO_TEXT,
   parsed,
   REPLY_TIME_TEXT,
   STRENGTH_TEXT,
@@ -3104,4 +3105,292 @@ test("test_normal_when_footnotes_disabled", async () => {
   expect(definitionAt).toBeLessThan(html.indexOf("<p>終わり</p>"));
   expect(html).not.toMatch(/class="mdmark-fn-/);
   expect(html).not.toContain("mdmark-footnotes");
+});
+
+/** ノードの `data-node` ごとの位置と大きさ（`style` の `left`・`top`・`width`・`height`） */
+function nodeBoxes(
+  html: string,
+): Map<string, { x: number; y: number; w: number; h: number }> {
+  const boxes = new Map<
+    string,
+    { x: number; y: number; w: number; h: number }
+  >();
+  for (const tag of startTags(html, "div")) {
+    const id = /data-node="([^"]+)"/.exec(tag)?.[1];
+    const style =
+      /left:(-?[\d.]+)px;top:(-?[\d.]+)px;width:([\d.]+)px;height:([\d.]+)px/.exec(
+        tag,
+      );
+    if (id !== undefined && style) {
+      boxes.set(id, {
+        x: Number(style[1]),
+        y: Number(style[2]),
+        w: Number(style[3]),
+        h: Number(style[4]),
+      });
+    }
+  }
+  return boxes;
+}
+
+/** 線の `data-wire` ごとの、パスの `M`・`L` の点 */
+function wirePoints(html: string): Map<string, Array<[number, number]>> {
+  const points = new Map<string, Array<[number, number]>>();
+  for (const tag of startTags(html, "path")) {
+    const id = /data-wire="([^"]+)"/.exec(tag)?.[1];
+    const d = / d="([^"]*)"/.exec(tag)?.[1];
+    if (id === undefined || d === undefined) {
+      continue;
+    }
+    points.set(
+      id,
+      [...d.matchAll(/[ML]\s*(-?[\d.]+)[ ,](-?[\d.]+)/g)].map(
+        ([, x = "0", y = "0"]): [number, number] => [Number(x), Number(y)],
+      ),
+    );
+  }
+  return points;
+}
+
+// 座標を省いた判定フローチャートを配置して描き、座標を省けない定義を書き方の警告にする（正常系）
+test("test_normal_when_flowchart_auto_layout", async () => {
+  // 準備
+  const render = await loadRender();
+  const auto = JSON.parse(JUDGEMENT_AUTO_TEXT) as {
+    nodes: Array<Record<string, unknown>>;
+    wires: Array<{ id: string; from: string; to: string }>;
+  };
+  const mixed = structuredClone(auto);
+  Object.assign(mixed.nodes[1] ?? {}, { x: 60, y: 156, w: 280, h: 136 });
+  const notJudgement = structuredClone(auto);
+  Object.assign(notJudgement.nodes[2] ?? {}, { kind: "llm" });
+  const markdown = [
+    wrapDirective("flow", JUDGEMENT_AUTO_TEXT),
+    wrapDirective("flow", JSON.stringify(mixed)),
+    wrapDirective("flow", JSON.stringify(notJudgement)),
+    "後の段落",
+    "",
+  ].join("\n");
+  // 実行
+  const html = render(markdown);
+  // 検証
+  const figures = diagramFigures(html);
+  expect(figures).toHaveLength(1);
+  const boxes = nodeBoxes(html);
+  const lines = wirePoints(html);
+  expect(boxes.size).toBe(6);
+  expect(lines.size).toBe(6);
+  const box = (id: string) => {
+    const found = boxes.get(id);
+    if (found === undefined) {
+      throw new Error(`ノードが無い: ${id}`);
+    }
+    return found;
+  };
+  expect(Math.min(...[...boxes.values()].map((item) => item.y))).toBe(
+    box("start").y,
+  );
+  expect(box("q1").x).toBe(box("q2").x);
+  expect(box("q1").y).toBeLessThan(box("q2").y);
+  expect(box("a1").x).toBeGreaterThan(box("q1").x + box("q1").w);
+  expect(box("r1").x).toBeGreaterThan(box("q2").x + box("q2").w);
+  expect(box("r2").y).toBeGreaterThan(box("q2").y + box("q2").h);
+  // 重ならず、図の中にある
+  const stage =
+    /class="mdmark-diagram-stage" style="width:([\d.]+)px;height:([\d.]+)px/.exec(
+      html,
+    );
+  const width = Number(stage?.[1]);
+  const height = Number(stage?.[2]);
+  const all = [...boxes.entries()];
+  for (const [id, item] of all) {
+    expect(item.x + item.w, id).toBeLessThanOrEqual(width);
+    expect(item.y + item.h, id).toBeLessThanOrEqual(height);
+    for (const [other, next] of all) {
+      if (other === id) {
+        continue;
+      }
+      const overlaps =
+        item.x < next.x + next.w &&
+        next.x < item.x + item.w &&
+        item.y < next.y + next.h &&
+        next.y < item.y + item.h;
+      expect(overlaps, `${id} と ${other}`).toBe(false);
+    }
+  }
+  // 線は縦と横だけで、端でないノードの中を通らない
+  for (const wire of auto.wires) {
+    const path = lines.get(wire.id) ?? [];
+    expect(path.length, wire.id).toBeGreaterThanOrEqual(2);
+    for (const [index, [x, y]] of path.slice(1).entries()) {
+      const [px, py] = path[index] ?? [x, y];
+      expect(px === x || py === y, wire.id).toBe(true);
+      for (const [id, item] of all) {
+        if (id === wire.from || id === wire.to) {
+          continue;
+        }
+        const crosses =
+          Math.max(px, x) > item.x &&
+          Math.min(px, x) < item.x + item.w &&
+          Math.max(py, y) > item.y &&
+          Math.min(py, y) < item.y + item.h;
+        expect(crosses, `${wire.id} と ${id}`).toBe(false);
+      }
+    }
+  }
+  const [mixedWarning = "", kindWarning = ""] = warnings(html).map(plainText);
+  expect(mixedWarning).toContain("全て書くか、全て省いて");
+  expect(kindWarning).toContain("llm");
+  expect(kindWarning).toContain("判定フローチャート");
+  expect(html).toContain("<p>後の段落</p>");
+  expect(render(markdown)).toBe(html);
+});
+
+// リンク先を持つノードをリンクにし、許さないリンク先のノードをリンクにせず書き方の警告にする（正常系）
+test("test_normal_when_node_link", async () => {
+  // 準備
+  const render = await loadRender();
+  const node = (id: string, x: number, extra: Record<string, unknown>) => ({
+    id,
+    kind: "script",
+    x,
+    y: 40,
+    w: 140,
+    h: 72,
+    name: `ノード${id}`,
+    ...extra,
+  });
+  const definition = {
+    title: "リンク",
+    scope: "点検",
+    updated: "2026-11-05",
+    width: 900,
+    height: 152,
+    nodes: [
+      node("a", 20, {
+        href: "https://example.com/spec",
+        io: { in: "本文", do: "分ける", out: "種類" },
+      }),
+      node("b", 200, { href: "./other.md" }),
+      node("c", 380, { href: "javascript:alert(1)" }),
+      node("d", 560, { href: "id:spec#items" }),
+      node("e", 740, {}),
+    ],
+    wires: [],
+  };
+  // 実行
+  const html = render(wrapDirective("flow", JSON.stringify(definition)));
+  // 検証
+  const nodeHtml = (id: string) => outerHtmlOf(html, `data-node="${id}"`);
+  for (const [id, href] of [
+    ["a", "https://example.com/spec"],
+    ["b", "./other.md"],
+  ] as const) {
+    const tag = startTags(html, "div").find((item) =>
+      item.includes(`data-node="${id}"`),
+    );
+    expect(tag).toContain("has-link");
+    expect(nodeHtml(id)).toContain(
+      `<a class="mdmark-diagram-node-link" href="${href}" aria-label="ノード${id}"></a>`,
+    );
+  }
+  expect(nodeHtml("a")).toMatch(
+    /<a class="mdmark-diagram-node-link"[^>]*><\/a><button[^>]*mdmark-diagram-info/,
+  );
+  for (const id of ["c", "d", "e"]) {
+    const tag = startTags(html, "div").find((item) =>
+      item.includes(`data-node="${id}"`),
+    );
+    expect(tag, id).not.toContain("has-link");
+    expect(nodeHtml(id), id).not.toContain("<a ");
+    expect(nodeHtml(id), id).toContain(`ノード${id}`);
+  }
+  const found = warnings(html);
+  expect(found).toHaveLength(1);
+  const text = plainText(found[0] ?? "");
+  for (const word of [
+    "c",
+    "d",
+    "javascript:alert(1)",
+    "id:spec#items",
+    "mailto",
+  ]) {
+    expect(text).toContain(word);
+  }
+  expect(html.indexOf("mdmark-syntax-warning")).toBeLessThan(
+    html.indexOf("mdmark-diagram"),
+  );
+  expect(html.replace("javascript:alert(1)", "")).not.toContain("javascript:");
+});
+
+// wrap を持つコードブロックとファイルツリーに折り返す class を付け、値を持つ wrap= を書き方の警告にする（正常系）
+test("test_normal_when_wrap", async () => {
+  // 準備
+  const render = await loadRender();
+  const markdown = [
+    "<!-- code: lines wrap -->",
+    "",
+    "```ts",
+    "const a = 1;",
+    "const b = 2;",
+    "const c = 3;",
+    "```",
+    "",
+    "<!-- code: wrap -->",
+    "",
+    "```ts",
+    "const a = 1;",
+    "```",
+    "",
+    "```ts",
+    "const plain = 1;",
+    "```",
+    "",
+    "<!-- tree: open=all wrap -->",
+    "",
+    "```tree",
+    "src/",
+    "└── a.ts",
+    "```",
+    "",
+    "<!-- code: wrap=yes -->",
+    "",
+    "```ts",
+    "const valued = 1;",
+    "```",
+    "",
+  ].join("\n");
+  // 実行
+  const html = render(markdown);
+  // 検証
+  const pres = startTags(html, "pre");
+  const classOf = (tag: string) =>
+    /class="([^"]*)"/.exec(tag)?.[1]?.split(" ") ?? [];
+  expect(classOf(pres[0] ?? "")).toEqual(
+    expect.arrayContaining([
+      "mdmark-code-lines",
+      "mdmark-code-numbered",
+      "mdmark-code-wrap",
+    ]),
+  );
+  expect(
+    codeLineTags(codeBlocks(html)[0] ?? "").map(
+      (tag) => /data-line="(\d+)"/.exec(tag)?.[1],
+    ),
+  ).toEqual(["1", "2", "3"]);
+  expect(classOf(pres[1] ?? "")).toEqual(
+    expect.arrayContaining(["mdmark-code-lines", "mdmark-code-wrap"]),
+  );
+  expect(classOf(pres[1] ?? "")).not.toContain("mdmark-code-numbered");
+  expect(classOf(pres[2] ?? "")).not.toContain("mdmark-code-wrap");
+  const tree = startTags(html, "div").find((tag) =>
+    tag.includes("mdmark-tree"),
+  );
+  expect(tree).toContain("mdmark-tree-wrap");
+  expect(tree).toContain('data-open="all"');
+  const [warning = ""] = warnings(html);
+  expect(plainText(warning)).toContain("wrap=yes");
+  expect(plainText(warning)).toContain("wrap と書いて");
+  expect(html.indexOf(warning)).toBeLessThan(html.indexOf("const valued"));
+  expect(classOf(pres[3] ?? "")).not.toContain("mdmark-code-wrap");
 });

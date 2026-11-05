@@ -181,3 +181,144 @@ test("test_invalid", async () => {
   ).resolves.toContain("フロー図の部品の定義を JSON として読めません");
   await expect(page.locator("figure.mdmark-diagram").count()).resolves.toBe(0);
 });
+
+// 座標を省いた判定フローチャートを、質問を左の列に、右へ出す線の先を同じ行の右の列に置いて描く（JudgementAuto）
+test("test_judgement_auto", async () => {
+  // 準備・実行
+  const page = await openFlow("judgement-auto");
+  // 検証
+  const nodes = await nodeBoxes(page);
+  const box = (id: string) => {
+    const found = nodes.find((node) => node.id === id);
+    if (found === undefined) {
+      throw new Error(`ノードが無い: ${id}`);
+    }
+    return found.box;
+  };
+  expect(nodes).toHaveLength(6);
+  const centerX = (id: string) => (box(id).left + box(id).right) / 2;
+  const centerY = (id: string) => (box(id).top + box(id).bottom) / 2;
+  for (const id of ["q1", "q2", "r2"]) {
+    expect(centerX(id)).toBeCloseTo(centerX("start"), 0);
+  }
+  expect(box("start").bottom).toBeLessThan(box("q1").top);
+  expect(box("q1").bottom).toBeLessThan(box("q2").top);
+  expect(box("a1").left).toBeGreaterThan(box("q1").right);
+  expect(centerY("a1")).toBeCloseTo(centerY("q1"), 0);
+  expect(box("r1").left).toBeGreaterThan(box("q2").right);
+  expect(centerY("r1")).toBeCloseTo(centerY("q2"), 0);
+  const labels = await page.locator(".mdmark-diagram-label").allInnerTexts();
+  expect(labels.filter((text) => text.trim() === "YES")).toHaveLength(2);
+  expect(labels.filter((text) => text.trim() === "NO")).toHaveLength(2);
+  await expect(pageOverflows(page)).resolves.toBe(false);
+});
+
+/** リンク先を持つノードの、リンク・名前の色と下線・`has-link` を `data-node` ごとに返す */
+function linkStates(page: Page) {
+  return page.locator(".mdmark-diagram-node").evaluateAll((nodes) =>
+    Object.fromEntries(
+      nodes.map((node) => {
+        const link = node.querySelector<HTMLAnchorElement>(
+          "a.mdmark-diagram-node-link",
+        );
+        const name = node.querySelector(".mdmark-diagram-node-name");
+        const style = name ? getComputedStyle(name) : undefined;
+        return [
+          node.getAttribute("data-node") ?? "",
+          {
+            hasLink: node.classList.contains("has-link"),
+            href: link?.getAttribute("href") ?? null,
+            label: link?.getAttribute("aria-label") ?? null,
+            underline: style?.textDecorationLine ?? "",
+            color: style?.color ?? "",
+            background: getComputedStyle(node).backgroundColor,
+            outline: link ? getComputedStyle(link).outlineStyle : "",
+          },
+        ];
+      }),
+    ),
+  );
+}
+
+// リンク先を持つノードの名前を本文のリンクと同じ色と下線にし、io の印をリンクの上に重ねる（LinkedNodes）
+test("test_linked_nodes", async () => {
+  // 準備・実行
+  const page = await openFlow("linked-nodes");
+  // 検証
+  const states = await linkStates(page);
+  expect(states.recv).toMatchObject({
+    hasLink: true,
+    href: "https://example.com/spec",
+    label: "問い合わせを受け取る",
+    underline: "underline",
+  });
+  expect(states.classify).toMatchObject({
+    hasLink: true,
+    href: "./other.md",
+    label: "分類する",
+    underline: "underline",
+  });
+  expect(states.store).toMatchObject({ hasLink: false, href: null });
+  expect(states.store?.underline).toBe("none");
+  expect(states.recv?.color).not.toBe(states.store?.color);
+  const stacked = await page
+    .locator('[data-node="classify"]')
+    .evaluate((node) => {
+      const info = node.querySelector(".mdmark-diagram-info");
+      const link = node.querySelector(".mdmark-diagram-node-link");
+      if (!info || !link) {
+        return false;
+      }
+      const rect = info.getBoundingClientRect();
+      const top = document.elementFromPoint(
+        rect.left + rect.width / 2,
+        rect.top + rect.height / 2,
+      );
+      return info.contains(top);
+    });
+  expect(stacked).toBe(true);
+  await expect(pageOverflows(page)).resolves.toBe(false);
+});
+
+// リンク先を持つノードのホバーでノードの地に種類の色を敷き、フォーカスでノードの外側に枠を出す（LinkedNodeHoverFocus）
+test("test_linked_node_hover_focus", async () => {
+  // 準備・実行
+  const page = await openFlow("linked-node-hover-focus");
+  // 検証
+  const states = await linkStates(page);
+  expect(states.recv?.background).not.toBe(states.store?.background);
+  expect(states.classify?.outline).toBe("solid");
+  expect(states.recv?.outline).not.toBe("solid");
+  await expect(pageOverflows(page)).resolves.toBe(false);
+});
+
+// 許さないリンク先を持つノードはリンクにせず、図の前に書き方の警告を置く（LinkNotAllowed）
+test("test_link_not_allowed", async () => {
+  // 準備・実行
+  const page = await openFlow("link-not-allowed");
+  // 検証
+  const warning = await page.locator(".mdmark-syntax-warning").innerText();
+  for (const word of [
+    "recv",
+    "javascript:alert(1)",
+    "classify",
+    "id:spec#items",
+  ]) {
+    expect(warning).toContain(word);
+  }
+  await expect(
+    page.locator("a.mdmark-diagram-node-link").count(),
+  ).resolves.toBe(0);
+  const order = await page
+    .locator("#storybook-root .mdmark")
+    .evaluate((root) => {
+      const warningAt = root.querySelector(".mdmark-syntax-warning");
+      const figure = root.querySelector("figure.mdmark-diagram");
+      return warningAt && figure
+        ? warningAt.compareDocumentPosition(figure) &
+            Node.DOCUMENT_POSITION_FOLLOWING
+        : 0;
+    });
+  expect(order).not.toBe(0);
+  await expect(pageOverflows(page)).resolves.toBe(false);
+});

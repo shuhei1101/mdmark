@@ -131,6 +131,8 @@ export function renderCodeBlock(options: {
   title: string;
   /** 行番号を出すか */
   lineNumbers: boolean;
+  /** 長い行を折り返すか（既定 `false`。折り返すときは行に分ける） */
+  wrap?: boolean | undefined;
   /** コードの行 */
   lines: CodeLine[];
   /** 色分けする言語のモジュール名。渡すと `code` に `SYNTAX_ATTRIBUTE` を付ける */
@@ -144,8 +146,10 @@ export function renderCodeBlock(options: {
 }): string {
   const { language, title, lineNumbers, lines, syntax } = options;
   const { fileName = "", bar = true, copyState, foldButtons } = options;
+  const wrap = options.wrap === true;
   const split =
     lineNumbers ||
+    wrap ||
     lines.some(
       (line) =>
         line.kind !== undefined ||
@@ -166,6 +170,7 @@ export function renderCodeBlock(options: {
         ...(foldButtons && lines.some((line) => line.foldLines !== undefined)
           ? ["mdmark-code-foldable"]
           : []),
+        ...(wrap ? ["mdmark-code-wrap"] : []),
       ]
     : [];
   const preClass = classes.length ? ` class="${classes.join(" ")}"` : "";

@@ -119,7 +119,7 @@ function drawnText(text: string): string {
 }
 
 /** ノードの種類・名前・補足を折り返した行の高さの合計が、ノードの高さに収まらないか（上下の余白には文字がはみ出してよい） */
-function labelTooLong(node: MdmarkDiagramNode): boolean {
+export function labelTooLong(node: MdmarkDiagramNode): boolean {
   const { kindSize, nameSize, subSize, lineHeight, padX } = LABEL_METRICS;
   const width = node.w - padX * 2;
   const nameLines = labelLineCount({

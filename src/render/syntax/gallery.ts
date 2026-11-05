@@ -122,7 +122,7 @@ export function buildGallery(state: StateCore): void {
       count: images.length,
       closed: close >= 0,
     })) {
-      out.push(warningBlock(state, warning));
+      out.push(warningBlock(state, warning, token));
     }
     const [figureHead = "", figureTail = ""] = figure
       ? splitSlots(

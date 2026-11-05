@@ -151,3 +151,68 @@ test("test_error_when_project_dir_missing", async () => {
   expect(result.texts[0]).toContain("project_dir");
   expect(result.texts[0]).toContain("プラグインを入れた");
 });
+
+// text と file・key を渡すと、mdmark check --text・--file --key と同じずれを返す（正常系（文字列と YAML のキーを渡す））
+test("test_normal_when_text_and_key", async () => {
+  // 準備
+  const dir = await createTempDir();
+  const body = "# 見出し\n本文\n<!-- tabz -->\n";
+  const files = {
+    "mdmark.config.yaml": [
+      "index: index.yaml",
+      "build:",
+      '  include: ["*.md"]',
+      "  out: dist/docs.html",
+      "",
+    ].join("\n"),
+    "index.yaml": [
+      "schema: 1",
+      "docs:",
+      "  - id: a",
+      "    path: a.md",
+      "    title: A",
+      "",
+    ].join("\n"),
+    "a.md": "# A\n",
+    "records.yaml": [
+      "title: 記録",
+      "items:",
+      "  - id: a",
+      "    name: 1 つ目",
+      "    body: |",
+      ...body
+        .trimEnd()
+        .split("\n")
+        .map((line) => `      ${line}`),
+      "",
+    ].join("\n"),
+  };
+  await writeFiles(dir, files);
+  const before = await snapshot(dir, Object.keys(files));
+  const client = await connectHttp({ projectDir: dir });
+  // 実行
+  const byText = await callTool(client, "check", { text: body });
+  const byKey = await callTool(client, "check", {
+    file: "records.yaml",
+    key: "items[0].body",
+  });
+  // 検証
+  expect(byText.isError).toBe(false);
+  expect(byKey.isError).toBe(false);
+  const textIssues = JSON.parse(byText.texts[0] ?? "").issues as Issue[];
+  const keyIssues = JSON.parse(byKey.texts[0] ?? "").issues as Issue[];
+  expect(
+    textIssues.map(({ file, where, kind }) => ({ file, where, kind })),
+  ).toEqual([{ file: "-", where: "3", kind: "unknown_mark" }]);
+  expect(
+    keyIssues.map(({ file, where, kind }) => ({ file, where, kind })),
+  ).toEqual([{ file: "records.yaml", where: "8", kind: "unknown_mark" }]);
+  const cliText = await runCli(["check", "--text", body], dir);
+  const cliKey = await runCli(
+    ["check", "--file", "records.yaml", "--key", "items[0].body"],
+    dir,
+  );
+  expect(linesOf(cliText.stdout).slice(0, -1)).toEqual(textIssues.map(toLine));
+  expect(linesOf(cliKey.stdout).slice(0, -1)).toEqual(keyIssues.map(toLine));
+  expect(await snapshot(dir, Object.keys(files))).toEqual(before);
+});

@@ -48,6 +48,10 @@ import { buildTextColors } from "./syntax/text-color.ts";
 import { buildToc } from "./syntax/toc.ts";
 import { buildFileTrees } from "./syntax/tree.ts";
 import { buildViews } from "./syntax/views.ts";
+import {
+  type CollectedWarning,
+  collectWarningsRule,
+} from "./syntax/warnings.ts";
 
 /** markdown-it の `env` としてコアルールに渡す値と、コアルールが拾った印 */
 export type RenderEnv = {
@@ -91,6 +95,8 @@ export type RenderEnv = {
   hintCount?: number;
   /** ビューの書き方の警告の数（`id` の通し番号） */
   viewCount?: number;
+  /** 描いた書き方の警告（最後のコアルール `collectWarningsRule` が入れる） */
+  warnings?: CollectedWarning[];
 };
 
 /** スキームも `www.` もメールの `@` も持たない自動リンクの文字を見分ける正規表現 */
@@ -289,6 +295,7 @@ export function createParser(): MarkdownItParser {
     ["mdmark_drop_marks", dropMarks],
     ["mdmark_mark_source_lines", markSourceLines],
     ["mdmark_take_footnote_definitions", takeFootnoteDefinitions],
+    ["mdmark_collect_warnings", collectWarningsRule],
   ];
   for (const [name, rule] of rules) {
     parser.core.ruler.push(name, rule);

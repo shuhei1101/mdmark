@@ -116,11 +116,11 @@ function buildTabsIn(state: StateCore, tokens: Token[]): Token[] {
     }
     const { group, collapse, title, warning } = readTabsOptions(mark);
     if (warning) {
-      out.push(warningBlock(state, warning));
+      out.push(warningBlock(state, warning, token));
     }
     const { close: closeIndex, nested } = findTabsClose(tokens, index);
     if (closeIndex < 0) {
-      out.push(warningBlock(state, unclosedWarning(mark)));
+      out.push(warningBlock(state, unclosedWarning(mark), token));
       if (nested) {
         // 閉じの足りない入れ子は、終わりまでのタブのマーカーをどれもタブにせず、見出しと中身をそのまま残す
         out.push(
@@ -139,10 +139,14 @@ function buildTabsIn(state: StateCore, tokens: Token[]): Token[] {
     );
     if (!first) {
       out.push(
-        warningBlock(state, {
-          message:
-            "`<!-- tabs -->` の範囲に、タブ名にする見出しがありません。タブにしたい中身ごとに見出し（`### macOS` など）を書いてください。範囲の中身はそのまま描いています。",
-        }),
+        warningBlock(
+          state,
+          {
+            message:
+              "`<!-- tabs -->` の範囲に、タブ名にする見出しがありません。タブにしたい中身ごとに見出し（`### macOS` など）を書いてください。範囲の中身はそのまま描いています。",
+          },
+          token,
+        ),
         ...content,
       );
       index = end;

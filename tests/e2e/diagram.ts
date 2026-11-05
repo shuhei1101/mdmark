@@ -259,3 +259,80 @@ export async function zoomPercent(page: Page): Promise<number> {
     .innerText();
   return Number.parseInt(text, 10);
 }
+
+/** 座標を省いた判定フローチャートの定義（開始 1・質問 2・アクション 1・結果 2 のノードと 6 本の線。ノードの座標・線の `points`・図の `width`・`height` を書かない） */
+export const JUDGEMENT_AUTO_TEXT: string = JSON.stringify({
+  title: "問い合わせの返信の判定",
+  scope: "問い合わせを受け取ったとき",
+  updated: "2026-11-04",
+  nodes: [
+    { id: "start", kind: "start", name: "問い合わせを受け取る" },
+    { id: "q1", kind: "question", name: "よくある質問で答えられるか" },
+    { id: "a1", kind: "action", name: "よくある質問のリンクを添える" },
+    { id: "q2", kind: "question", name: "担当者が答えられるか" },
+    { id: "r1", kind: "result", name: "返信を送信する" },
+    { id: "r2", kind: "result", name: "開発に起票する" },
+  ],
+  wires: [
+    { id: "j-start", from: "start", to: "q1", line: "flow" },
+    { id: "j-q1-yes", from: "q1", to: "a1", line: "flow", label: "YES" },
+    { id: "j-q1-no", from: "q1", to: "q2", line: "flow", label: "NO" },
+    { id: "j-a1", from: "a1", to: "r1", line: "flow" },
+    { id: "j-q2-yes", from: "q2", to: "r1", line: "flow", label: "YES" },
+    { id: "j-q2-no", from: "q2", to: "r2", line: "flow", label: "NO" },
+  ],
+});
+
+/** リンク先を持つノードのフロー図の定義。`hrefs` はノード `a`・`b` のリンク先で、ノード `c` はリンク先を持たない。`io` を渡すとノード `a` に入力・処理・出力を持たせる */
+export function linkedFlowText(options: {
+  hrefs: [string, string];
+  io?: boolean;
+}): string {
+  const node = (id: string, x: number, href?: string) => ({
+    id,
+    kind: "script",
+    x,
+    y: 40,
+    w: 200,
+    h: 72,
+    name: `ノード ${id}`,
+    ...(href === undefined ? {} : { href }),
+  });
+  const [first, second] = options.hrefs;
+  return JSON.stringify({
+    title: "リンク",
+    scope: "点検",
+    updated: "2026-11-05",
+    width: 760,
+    height: 152,
+    nodes: [
+      {
+        ...node("a", 20, first),
+        ...(options.io
+          ? { io: { in: "本文", do: "種類を 1 つ選ぶ", out: "種類" } }
+          : {}),
+      },
+      node("b", 280, second),
+      node("c", 540),
+    ],
+    wires: [],
+  });
+}
+
+/** ページの中のリンク先への遷移を手元の応答で受け、開いた URL を返す関数を返す（`urls` に当たる要求だけを受ける） */
+export async function routeLinkTargets(
+  page: Page,
+  urls: string[],
+): Promise<() => string[]> {
+  const opened: string[] = [];
+  for (const url of urls) {
+    await page.route(url, (route) => {
+      opened.push(route.request().url());
+      return route.fulfill({
+        contentType: "text/html",
+        body: "<!doctype html><title>開いた</title>",
+      });
+    });
+  }
+  return () => [...opened];
+}

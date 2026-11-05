@@ -10074,3 +10074,254 @@ test("test_normal_when_side_toc_at_scroll_edge", async () => {
     }
   });
 });
+
+/** リンク先を持つノード `a`（`io` を持つ）とリンク先を持たないノード `e` のフロー図の定義 */
+const LINKED_FLOW_TEXT = JSON.stringify({
+  title: "リンク",
+  scope: "点検",
+  updated: "2026-11-05",
+  width: 760,
+  height: 152,
+  nodes: [
+    {
+      id: "a",
+      kind: "script",
+      x: 20,
+      y: 40,
+      w: 200,
+      h: 72,
+      name: "仕様を開く",
+      href: "https://example.com/spec",
+      io: { in: "本文", do: "分ける", out: "種類" },
+    },
+    { id: "e", kind: "script", x: 520, y: 40, w: 200, h: 72, name: "記録する" },
+  ],
+  wires: [],
+});
+
+// リンク先を持つノードをクリックと Enter で開き、ノードの上から始めたドラッグでは図を動かすだけにする（正常系）
+test("test_normal_when_node_link_opened", async () => {
+  // 準備
+  const el = createElement();
+  el.style.width = "600px";
+  el.style.setProperty("--mdmark-padding", "0");
+  await mountTracked(el, { markdown: wrapDirective("flow", LINKED_FLOW_TEXT) });
+  const figure = find<HTMLElement>(el, "figure.mdmark-diagram");
+  const viewport = find<HTMLElement>(figure, ".mdmark-diagram-viewport");
+  buttonOf(figure, "拡大").click();
+  buttonOf(figure, "拡大").click();
+  const link = find<HTMLAnchorElement>(
+    figure,
+    '[data-node="a"] a.mdmark-diagram-node-link',
+  );
+  const info = find<HTMLButtonElement>(
+    figure,
+    '[data-node="a"] .mdmark-diagram-info',
+  );
+  // 開いた URL を記録し、ページを移らせない（リンク先への遷移の代役）
+  const opened: string[] = [];
+  const record = (event: MouseEvent) => {
+    const anchor = (event.target as Element).closest("a");
+    if (anchor && !event.defaultPrevented) {
+      opened.push(anchor.href);
+    }
+    event.preventDefault();
+  };
+  window.addEventListener("click", record);
+  try {
+    // 検証: ノードの名前の上の形
+    expect(
+      getComputedStyle(
+        find(figure, '[data-node="a"] .mdmark-diagram-node-name'),
+      ).cursor,
+    ).toBe("pointer");
+    expect(
+      getComputedStyle(
+        find(figure, '[data-node="e"] .mdmark-diagram-node-name'),
+      ).cursor,
+    ).toBe("text");
+    // 実行: リンクの上で押したまま 100px 動かして離す
+    viewport.scrollLeft = 0;
+    const start = viewport.scrollLeft;
+    await userEvent.dragAndDrop(link, link, {
+      sourcePosition: { x: 150, y: 30 },
+      targetPosition: { x: 50, y: 30 },
+    });
+    // 検証: 図だけが動き、リンク先を開かない
+    expect(viewport.scrollLeft - start).toBe(100);
+    expect(getSelection()?.toString()).toBe("");
+    expect(opened).toEqual([]);
+    // 実行・検証: 印を押すとツールチップを出し、リンク先を開かない
+    await userEvent.click(info);
+    expect(tipOf(info).hidden).toBe(false);
+    expect(opened).toEqual([]);
+    await userEvent.keyboard("{Escape}");
+    // 実行・検証: Tab の順はリンク、印
+    link.focus();
+    await userEvent.tab();
+    expect(document.activeElement).toBe(info);
+    // 実行・検証: 動かさずに押すとリンク先へ移る
+    await userEvent.click(link);
+    expect(opened).toEqual(["https://example.com/spec"]);
+    // 実行・検証: フォーカスして Enter でも同じリンク先へ移る
+    link.focus();
+    await userEvent.keyboard("{Enter}");
+    expect(opened).toEqual([
+      "https://example.com/spec",
+      "https://example.com/spec",
+    ]);
+  } finally {
+    window.removeEventListener("click", record);
+  }
+});
+
+/** 折り返しの結合テストの長い行 */
+const WRAP_LONG_LINE =
+  'const url = "https://cdn.jsdelivr.net/gh/shuhei1101/mdmark@v0.10.0/dist/index.js"; // バージョンを固定した URL から配布物を読む';
+
+/** 折り返しの結合テストのコードブロック */
+const WRAP_CODE = [
+  "```ts",
+  "const a = 1;",
+  WRAP_LONG_LINE,
+  "const c = 3;",
+  "```",
+];
+
+/** 折り返しの結合テストのファイルツリー */
+const WRAP_TREE = [
+  "```tree",
+  "very-long-folder-name-for-the-generated-design-documents/",
+  "└── a-file-name-that-is-much-longer-than-the-box-width-on-phones.config.ts # 狭い幅では注釈も項目の中で折り返す",
+  "```",
+];
+
+/** 要素の中の最初の文字のノードの、行ごとの矩形 */
+function textLineRects(element: Element): DOMRect[] {
+  const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT);
+  const node = walker.nextNode();
+  if (node === null) {
+    throw new Error("文字が無い");
+  }
+  const range = document.createRange();
+  range.selectNodeContents(node);
+  return [...range.getClientRects()];
+}
+
+// wrap のコードブロックとファイルツリーだけを折り返し、使う側の pre への汎用の CSS では既定を変えない（正常系）
+test("test_normal_when_wrap", async () => {
+  // 準備
+  const writeText = vi.fn<(text: string) => Promise<void>>(() =>
+    Promise.resolve(),
+  );
+  stubClipboard(writeText);
+  const original = { width: window.innerWidth, height: window.innerHeight };
+  await page.viewport(390, 800);
+  const host = document.createElement("style");
+  host.textContent = "pre { white-space: pre-wrap; overflow-wrap: anywhere; }";
+  try {
+    await loadBuilt();
+    document.head.append(host);
+    const el = createElement();
+    await mountTracked(el, {
+      markdown: [
+        "<!-- code: lines wrap -->",
+        "",
+        ...WRAP_CODE,
+        "",
+        "<!-- code: lines -->",
+        "",
+        ...WRAP_CODE,
+        "",
+        "```json",
+        "{",
+        '  "nodes": [{ "id": "a-very-long-identifier-for-the-node", "name": "とても長い名前の項目" }]',
+        "}",
+        "```",
+        "",
+        "<!-- tree: open=all wrap -->",
+        "",
+        ...WRAP_TREE,
+        "",
+        "<!-- tree: open=all -->",
+        "",
+        ...WRAP_TREE,
+        "",
+      ].join("\n"),
+      config: { features: { syntax: false } },
+    });
+    const pres = [...el.querySelectorAll<HTMLElement>(".mdmark-code pre")];
+    const [wrapped, unwrapped, json] = pres as [
+      HTMLElement,
+      HTMLElement,
+      HTMLElement,
+    ];
+    // 検証: wrap のコードブロックは枠の中で折り返し、行番号は各行の頭に出る
+    expect(wrapped.scrollWidth).toBeLessThanOrEqual(wrapped.clientWidth);
+    const lines = [
+      ...wrapped.querySelectorAll<HTMLElement>(".mdmark-code-line"),
+    ];
+    const [first, second, third] = lines.map(
+      (line) => line.getBoundingClientRect().height,
+    ) as [number, number, number];
+    expect(second).toBeGreaterThanOrEqual(first * 2);
+    expect(third).toBeLessThan(first * 2);
+    expect(getComputedStyle(lines[2] as HTMLElement, "::before").top).toBe(
+      "0px",
+    );
+    // 検証: wrap の無いブロックは使う側の CSS があっても折り返さない
+    for (const pre of [unwrapped, json]) {
+      expect(getComputedStyle(pre).whiteSpace).toBe("pre");
+      expect(pre.scrollWidth).toBeGreaterThan(pre.clientWidth);
+    }
+    const jsonLefts = () =>
+      [...json.querySelectorAll<HTMLElement>(".mdmark-code-text")].map(
+        (text) => textLineRects(text)[0]?.left,
+      );
+    const withHost = jsonLefts();
+    host.disabled = true;
+    expect(jsonLefts()).toEqual(withHost);
+    host.disabled = false;
+    // 検証: wrap のツリーは名前と注釈を名前の頭に揃えて折り返す
+    const [wrapTree, plainTree] = [
+      ...el.querySelectorAll<HTMLElement>(".mdmark-tree"),
+    ] as [HTMLElement, HTMLElement];
+    const wrapList = find<HTMLElement>(wrapTree, ".mdmark-tree-list");
+    const plainList = find<HTMLElement>(plainTree, ".mdmark-tree-list");
+    expect(wrapList.scrollWidth).toBeLessThanOrEqual(wrapList.clientWidth);
+    const fileName = find<HTMLElement>(
+      wrapTree,
+      ".mdmark-tree-file .mdmark-tree-name",
+    );
+    const nameRects = textLineRects(fileName);
+    expect(nameRects.length).toBeGreaterThanOrEqual(2);
+    expect(nameRects[1]?.left).toBeCloseTo(nameRects[0]?.left ?? 0, 0);
+    const note = find<HTMLElement>(
+      wrapTree,
+      ".mdmark-tree-file .mdmark-tree-note",
+    );
+    expect(textLineRects(note)[0]?.left).toBeCloseTo(
+      nameRects[0]?.left ?? 0,
+      0,
+    );
+    expect(plainList.scrollWidth).toBeGreaterThan(plainList.clientWidth);
+    const nestedLeft = (list: HTMLElement) =>
+      find<HTMLElement>(list, "ul ul").getBoundingClientRect().left -
+      list.getBoundingClientRect().left;
+    expect(nestedLeft(wrapList)).toBeCloseTo(nestedLeft(plainList), 0);
+    // 実行・検証: コピーした文字は折り返しの改行を含まない
+    find<HTMLButtonElement>(
+      wrapped.closest(".mdmark-code") as Element,
+      "button.mdmark-code-copy",
+    ).click();
+    await vi.waitFor(() => {
+      expect(writeText).toHaveBeenCalledTimes(1);
+    });
+    expect(writeText).toHaveBeenCalledWith(
+      ["const a = 1;", WRAP_LONG_LINE, "const c = 3;"].join("\n"),
+    );
+  } finally {
+    host.remove();
+    await page.viewport(original.width, original.height);
+  }
+});

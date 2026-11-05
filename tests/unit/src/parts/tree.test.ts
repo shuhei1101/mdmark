@@ -241,3 +241,35 @@ test("test_folder_open_by_default", async () => {
   expect(all).toEqual([true, true, true]);
   expect(two).toEqual([true, true, false]);
 });
+
+// wrap のツリーに折り返す class を付ける（正常系）
+test("test_render_tree_when_wrap", async () => {
+  // 準備
+  const { renderTree } = await loadTree();
+  const options = {
+    nodes: [
+      {
+        name: "very-long-folder-name-for-the-generated-design-documents/",
+        children: [
+          {
+            name: "a-file-name-that-is-much-longer-than-the-box-width-on-phones.config.ts",
+            note: "狭い幅では注釈も項目の中で折り返す",
+          },
+        ],
+      },
+    ],
+    source:
+      "very-long-folder-name-for-the-generated-design-documents/\n└── a-file-name-that-is-much-longer-than-the-box-width-on-phones.config.ts # 狭い幅では注釈も項目の中で折り返す",
+    open: "all",
+    interactive: true,
+  };
+  // 実行
+  const wrapped = renderTree({ ...options, wrap: true });
+  const unwrapped = renderTree(options);
+  // 検証
+  const holder = (html: string) =>
+    /<div class="([^"]*)"[^>]*>/.exec(html)?.[0] ?? "";
+  expect(holder(wrapped)).toContain("mdmark-tree-wrap");
+  expect(holder(wrapped)).toContain('data-open="all"');
+  expect(holder(unwrapped)).not.toContain("mdmark-tree-wrap");
+});

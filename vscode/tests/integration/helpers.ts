@@ -123,6 +123,27 @@ export function installRecorder(): void {
   };
 }
 
+/** Webview に足す、テストの操作の中継のスクリプト。`testClick` はセレクタに当たる最初の要素を押し、`testDrag` はその要素の中央で押して横に `dx` 動かして離し、続く `click` を送る（合成のポインターは捕捉できないため、`setPointerCapture` を何もしない関数にする） */
+const RELAY_SCRIPT = [
+  'window.addEventListener("message", (event) => {',
+  "  const data = event.data;",
+  '  if (data?.type === "testClick") { document.querySelector(data.selector)?.click(); }',
+  '  if (data?.type === "testDrag") {',
+  "    const element = document.querySelector(data.selector);",
+  "    if (!element) { return; }",
+  "    Element.prototype.setPointerCapture = () => {};",
+  "    const rect = element.getBoundingClientRect();",
+  "    const x = rect.left + rect.width / 2;",
+  "    const y = rect.top + rect.height / 2;",
+  "    const point = { bubbles: true, cancelable: true, pointerId: 1, button: 0, clientY: y };",
+  '    element.dispatchEvent(new PointerEvent("pointerdown", { ...point, clientX: x }));',
+  '    element.dispatchEvent(new PointerEvent("pointermove", { ...point, clientX: x + data.dx }));',
+  '    element.dispatchEvent(new PointerEvent("pointerup", { ...point, clientX: x + data.dx }));',
+  '    element.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true }));',
+  "  }",
+  "});",
+].join("");
+
 /** `testClick` のメッセージを受けたら、セレクタに当たる最初の要素を押す（クリックの代わり）スクリプトを、Webview の HTML に足す。HTML を入れるたびに、その HTML の nonce を付けて足す */
 function injectClickRelay(webview: vscode.Webview): void {
   let descriptor: PropertyDescriptor | undefined;
@@ -144,7 +165,7 @@ function injectClickRelay(webview: vscode.Webview): void {
     set: (value: string) => {
       const nonce = /<script[^>]*nonce="([^"]*)"/.exec(value)?.[1];
       const relay = nonce
-        ? `<script nonce="${nonce}">window.addEventListener("message", (event) => { if (event.data?.type === "testClick") { document.querySelector(event.data.selector)?.click(); } });</script>`
+        ? `<script nonce="${nonce}">${RELAY_SCRIPT}</script>`
         : "";
       set.call(
         webview,
@@ -159,6 +180,15 @@ function injectClickRelay(webview: vscode.Webview): void {
 /** Webview の要素を押す（`injectClickRelay` が足したスクリプトが受ける） */
 export function clickInPreview(record: RecordedPanel, selector: string): void {
   void record.postRaw({ type: "testClick", selector });
+}
+
+/** Webview の要素の中央で押したまま横に `dx` 動かして離す（`injectClickRelay` が足したスクリプトが受ける） */
+export function dragInPreview(
+  record: RecordedPanel,
+  selector: string,
+  dx: number,
+): void {
+  void record.postRaw({ type: "testDrag", selector, dx });
 }
 
 /** Webview から `message` が届いたことにして、拡張機能の受け取りを呼ぶ */

@@ -69,12 +69,12 @@ data_models:
     properties:
       - name: file
         type: string
-        description: ずれのあるファイル（設定ファイルのフォルダからの相対パス）
+        description: ずれのあるファイル（設定ファイルのフォルダからの相対パス。文字列を点検したときは `-`、設定ファイルが無いときは今のフォルダからの相対パス）
       - name: where
         type: string
         description: キーのパスか行。ファイル全体は空文字
       - name: kind
-        type: "'schema' | 'unknown_color_theme' | 'no_documents' | MdmarkIndexIssue['kind'] | 'alias_no_files' | 'alias_unreadable' | MdmarkAliasProblem['kind'] | 'missing_file' | 'unknown_mark' | 'diagram_invalid' | 'diagram_node_overlap' | 'diagram_node_overflow' | 'diagram_wire_crosses_node' | 'diagram_label_too_long'"
+        type: "'schema' | 'unknown_color_theme' | 'no_documents' | MdmarkIndexIssue['kind'] | 'alias_no_files' | 'alias_unreadable' | MdmarkAliasProblem['kind'] | 'missing_file' | 'unknown_mark' | 'diagram_invalid' | 'diagram_node_overlap' | 'diagram_node_overflow' | 'diagram_wire_crosses_node' | 'diagram_label_too_long' | 'syntax_warning'"
         description: ずれの種類
       - name: message
         type: string
@@ -159,7 +159,7 @@ functions:
     container: src/cli/main.ts
     usecase: 共通
     summary: 最初の引数のコマンド名で `init`・`check`・`export`・`build`・`upgrade`・`serve` を呼び分け、終了コードを返す
-    description: '引数は `node:util` の `parseArgs`（`--out`・`--config`・`--base` は文字列、`--js`・`--plan`・`--yes` は真偽値、位置引数を許す）で読む。`upgrade` はパッケージの直下・`cliVersion()`・今の時刻・`ask` を `runUpgrade` に渡す。`init` は `cliVersion()` を `runInit` に渡す。`serve` は `process.env`・パッケージの直下・`cliVersion()`・`SIGINT` か `SIGTERM` で止める合図になる `AbortSignal` を `runServe` に渡す。コマンドが投げた `CliError` はその文を標準エラーに出して 1 を返す。知らないコマンド・知らない引数・引数が無いときは、使えるコマンドの一覧を標準エラーに出して 1 を返す。`src/cli/main.ts` の末尾で、入口として実行されたときだけ `main(process.argv.slice(2), 標準の入出力, createLinePrompter({ input: process.stdin, write: 標準エラー }))` を呼び、戻り値を `process.exitCode` に入れる'
+    description: '引数は `node:util` の `parseArgs`（`--out`・`--config`・`--base`・`--text`・`--file`・`--key` は文字列、`--js`・`--plan`・`--yes` は真偽値、位置引数を許す）で読む。`upgrade` はパッケージの直下・`cliVersion()`・今の時刻・`ask` を `runUpgrade` に渡す。`init` は `cliVersion()` を `runInit` に渡す。`serve` は `process.env`・パッケージの直下・`cliVersion()`・`SIGINT` か `SIGTERM` で止める合図になる `AbortSignal` を `runServe` に渡す。コマンドが投げた `CliError` はその文を標準エラーに出して 1 を返す。知らないコマンド・知らない引数・引数が無いときは、使えるコマンドの一覧を標準エラーに出して 1 を返す。`check` の `--text -` は標準入力を終わりまで読んだ文字を `text` にして `runCheck` に渡す。`src/cli/main.ts` の末尾で、入口として実行されたときだけ `main(process.argv.slice(2), 標準の入出力, createLinePrompter({ input: process.stdin, write: 標準エラー }))` を呼び、戻り値を `process.exitCode` に入れる'
     kind: 関数
     scope: public
     is_async: true
@@ -957,15 +957,15 @@ functions:
     container: src/cli/check.ts
     usecase: 設定と索引を点検する
     summary: '設定の形・設定が指すファイル・`build` の対象・`checkIndex` のずれと文書の本文の知らない印を集め、`{ファイル}:{場所}: {種類}: {内容}` の行と `ずれ {件数} 件` を出す'
-    description: 設定ファイルを `findConfigFile` で探し、`collectCheckIssues`（`base` を渡す）のずれを 1 件 1 行で出す
+    description: '`text` か `file` を渡したときは、引数の組（`text` と `file`・`base` を一緒に渡せない、`file` と `key` は一緒に渡す、`file` と `base` を一緒に渡せない）を確かめ、`checkMarkdownSource` のずれを同じ行の形で出す（設定と索引は点検しない）。それ以外は設定ファイルを `findConfigFile` で探し、`collectCheckIssues`（`base` を渡す）のずれを 1 件 1 行で出す'
     kind: 関数
     scope: public
     is_async: true
     args:
       - name: options
-        type: '{ config?: string; base?: string }'
+        type: '{ config?: string; base?: string; text?: string; file?: string; key?: string }'
         required: true
-        description: '`--config`・`--base` の値'
+        description: '`--config`・`--base`・`--text`（`-` のときは読んだ標準入力）・`--file`・`--key` の値'
       - name: io
         type: CliIo
         required: true
@@ -975,7 +975,7 @@ functions:
       description: ずれが 0 件なら 0、あれば 1
     exceptions:
       - name: CliError
-        condition: 設定ファイルが無い・YAML として読めない・`--base` を渡し、比べる基準を引けない
+        condition: 引数の組が誤り・設定ファイルが無い（`text`・`file` で `config` を渡さないときを除く）・`checkMarkdownSource` が投げた・YAML として読めない・`--base` を渡し、比べる基準を引けない
         message: '`findConfigFile`・`loadConfig`・`changedPathsSince` のメッセージ'
     unit_tests:
       - name: test_run_check
@@ -1021,6 +1021,18 @@ functions:
         mock: 一時フォルダの git のリポジトリ、出力を配列に貯める `CliIo`
         expected: '`CliError` を投げ、メッセージに `no-such-ref` が入り、標準出力に `ずれ` の行が無い'
         exception: 比べる基準を引けない
+      - name: test_run_check_when_text
+        case: 正常
+        summary: 文字列の書き方の警告を - の行にして出す
+        condition: '`mdmark init` の後のフォルダで、インターフェース定義『設定と索引を点検する』の「正常系（文字列に書き方の警告がある）」の文字列を `{ text }` で渡す'
+        mock: 一時フォルダ、出力を配列に貯める `CliIo`
+        expected: '1 を返し、`-:1: diagram_invalid:`・`-:20: unknown_mark:`・`-:22: syntax_warning:` の行と `ずれ 3 件` を出す'
+      - name: test_run_check_when_arguments_conflict
+        case: 異常
+        summary: 一緒に渡せない引数を点検せずに止める
+        condition: '`{ text: "a", base: "main" }` と `{ file: "records.yaml" }`'
+        mock: 一時フォルダ、出力を配列に貯める `CliIo`
+        expected: どちらも `CliError` で、1 つ目の文に `--text` と `--base`、2 つ目の文に `--key` がある
     callees:
       - '#functions[requireConfig]'
       - '#functions[collectBuildDocuments]'
@@ -2126,6 +2138,108 @@ functions:
     status: planned
     introduced:
       pr: 303
+  - name: checkMarkdownSource
+    title: 渡した Markdown の記法を点検する
+    container: src/cli/markdown-check.ts
+    usecase: 文字列とYAMLのキーの記法を点検する
+    kind: 関数
+    scope: public
+    is_async: true
+    summary: Markdown の文字列か、YAML のファイルのキーの値を、描いたときの書き方の警告・知らない印・図の配置のずれにして返す。`runCheck` と MCP の `runCheckTool` が呼ぶ
+    description: 設定ファイルは `config` か、`cwd` から上へ `CONFIG_FILE` を探して見つかったものを使い、見つからなければ既定の設定で点検する（`config` を渡して無いときだけ `CliError`）。`file` のときは `readYamlKey` で値と行の置き換えを得る。ずれは `collectWarnings` の警告（設定の `features`・`libraries` を当てる）、`checkUnknownMarks`（`loadExtensionDirectives` の `directive` と `check.ignore` を知っている印に入れる）、`checkDiagrams` のうち `diagram_invalid` でないずれ（定義の誤りは `collectWarnings` が返すため）を合わせ、行の順（同じ行は警告・知らない印・配置のずれの順）に並べる。`file` は `text` のとき `-`、`file` のとき設定ファイルのフォルダ（無ければ `cwd`）からの相対パス。`where` は文字列の行を `file` のとき `readYamlKey` の `lineOf` で YAML のファイルの行に置き換えた番号の文字
+    args:
+      - name: options
+        type: '{ cwd: string; config?: string; text?: string; file?: string; key?: string; importCode: (code: string) => Promise<unknown> }'
+        required: true
+        description: 今のフォルダ・`--config`・点検する文字列か YAML のファイルとキー・拡張を読み込む関数（`loadExtensionDirectives` と同じ）
+    returns:
+      type: Promise<CheckIssue[]>
+      description: ずれの並び（無ければ空）
+    exceptions:
+      - name: CliError
+        condition: '`config` のファイルが無いか読めない、`readYamlKey` が投げた'
+        message: '`findConfigFile`・`loadConfig`・`readYamlKey` のメッセージ'
+    callees:
+      - '#functions[readYamlKey]'
+      - '#functions[loadExtensionDirectives]'
+      - '#functions[checkUnknownMarks]'
+      - '#functions[checkDiagrams]'
+      - dev/設計書/モジュール構成/ライブラリ本体/描画.ts#functions[collectWarnings]
+    refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/設定と索引を点検する.ts#constraints[記法の点検]
+    unit_tests:
+      - name: test_check_markdown_source
+        case: 正常
+        summary: 警告・知らない印を行の順に返し、図の定義の誤りを 1 件にする
+        condition: 「正常系（文字列に書き方の警告がある）」の文字列を `text` で渡す
+        mock: 一時フォルダ
+        expected: '`kind` が `diagram_invalid`・`unknown_mark`・`syntax_warning` の 3 件で、`where` が `1`・`20`・`22`、`file` がどれも `-`'
+      - name: test_check_markdown_source_when_yaml_key
+        case: 正常
+        summary: YAML のキーの値のずれを YAML のファイルの行で返す
+        condition: 「正常系（ファイルと YAML のキー）」の `records.yaml` と `items[0].body`
+        mock: 一時フォルダ
+        expected: '`{ file: "records.yaml", where: "8", kind: "unknown_mark" }` の 1 件'
+      - name: test_check_markdown_source_when_extension
+        case: 正常
+        summary: 設定の拡張の印を知っている印にする
+        condition: 設定の `extensions` に `directive` が `note-card` の拡張。文字列は 1 行目に `<!-- note-card -->`、3 行目に `<!-- tabz -->`
+        mock: 一時フォルダ
+        expected: '`unknown_mark`（`where` が `3`）の 1 件だけ'
+      - name: test_check_markdown_source_when_no_config
+        case: 正常
+        summary: 設定ファイルが無くても既定の設定で点検する
+        condition: 設定ファイルの無い一時フォルダで、`<!-- tabz -->` を持つ文字列
+        mock: 一時フォルダ
+        expected: 例外を投げず、`unknown_mark` の 1 件
+    status: planned
+    introduced:
+      pr: 328
+  - name: readYamlKey
+    title: YAML のキーの値を読む
+    container: src/cli/markdown-check.ts
+    usecase: 文字列とYAMLのキーの記法を点検する
+    kind: 関数
+    scope: internal
+    is_async: true
+    summary: YAML のファイルを `yaml` の `parseDocument`（`LineCounter` つき）で読み、キーのパスをたどって文字列の値と、値の中の行（1 から）をファイルの行（1 から）に置き換える関数を返す
+    description: キーのパスは `.` でマップのキーを、`[位置]` で配列の要素をたどる（`items[0].body`）。値がブロックスカラー（`BLOCK_LITERAL`・`BLOCK_FOLDED`）なら、値の 1 行目はインジケータ（`|`・`>`）の次の行で、`lineOf(n)` はその行に `n - 1` を足した行。それ以外の書き方の値は、`lineOf` がどの `n` にもキーの行を返す
+    args:
+      - name: options
+        type: '{ path: string; key: string }'
+        required: true
+        description: YAML のファイルの絶対パスとキーのパス
+    returns:
+      type: 'Promise<{ value: string; lineOf: (line: number) => number }>'
+      description: キーの値と行の置き換え
+    exceptions:
+      - name: CliError
+        condition: ファイルが無い・YAML として読めない・キーのパスを読めない・キーが無い・値が文字列でない
+        message: ファイルと、無いことか読めない行か、渡したキーとたどれたところまでのキー（配列なら要素の数）か値の型と、直し方の 1 文
+    refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/設定と索引を点検する.ts#constraints[記法の点検の場所]
+    unit_tests:
+      - name: test_read_yaml_key
+        case: 正常
+        summary: ブロックスカラーの値と行を返す
+        condition: '5 行目が `    body: |` の `records.yaml` と `items[0].body`'
+        mock: 一時フォルダ
+        expected: '`value` が値の文字で、`lineOf(3)` が 8'
+      - name: test_read_yaml_key_when_plain
+        case: 正常
+        summary: ブロックスカラーでない値はキーの行を返す
+        condition: '2 行目が `title: "<!-- tabz -->"` の YAML と `title`'
+        mock: 一時フォルダ
+        expected: '`lineOf(1)` も `lineOf(5)` も 2'
+      - name: test_read_yaml_key_when_missing
+        case: 異常
+        summary: 無いキーと文字列でない値を CliError にする
+        condition: '`items` が 2 要素の `records.yaml` と `items[5].body`、`items[0]`'
+        mock: 一時フォルダ
+        expected: 1 つ目の文に `items[5].body` と要素が 2 つであること、2 つ目の文に値が文字列でないことがある
+    status: planned
+    introduced:
+      pr: 328
 constants:
   - name: TEMPLATE_FILES
     title: 雛形の一覧
@@ -2153,3 +2267,4 @@ test_files:
   - tests/unit/src/cli/alias-schema.test.ts
   - tests/unit/src/cli/aliases.test.ts
   - tests/unit/src/cli/assets.test.ts
+  - tests/unit/src/cli/markdown-check.test.ts

@@ -19,6 +19,8 @@
   <!-- ファイルツリーの規則（#225 で共有するアセット） -->
   <link rel="stylesheet" href="../../refs/225/assets/tree.css">
   <!-- 配色の切り替え -->
+  <!-- 折り返しの規則（#328 で共有するアセット） -->
+  <link rel="stylesheet" href="../../refs/328/assets/wrap.css">
   <script src="../../refs/16/assets/sample.js" defer></script>
   <!-- 案の切り替え（モックだけの仕組み。ツリーを組み立てる前に html の data-* を当てる） -->
   <script src="../../refs/225/assets/scene.js" defer></script>
@@ -163,6 +165,15 @@
         <article class="mdmark">
 <pre data-mock-tree data-open="all">very-long-folder-name-for-the-generated-design-documents/
 └── a-file-name-that-is-much-longer-than-the-box-width-on-phones.config.ts # 狭い幅でも注釈は折り返さずに横へスクロールする</pre>
+        </article>
+      </section>
+
+      <!-- 折り返す（#294）: tree の印の wrap。長い名前と注釈を項目の中で折り返し、続きは名前の頭に揃える。罫線と入れ子の位置は変えない -->
+      <section aria-labelledby="state-wrap">
+        <h2 class="catalog-label" id="state-wrap">折り返す（tree: open=all wrap）</h2>
+        <article class="mdmark">
+<pre data-mock-tree data-open="all" data-wrap>very-long-folder-name-for-the-generated-design-documents/
+└── a-file-name-that-is-much-longer-than-the-box-width-on-phones.config.ts # 狭い幅では注釈も項目の中で折り返す</pre>
         </article>
       </section>
 

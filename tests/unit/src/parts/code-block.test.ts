@@ -384,3 +384,48 @@ test("test_render_code_fold_more", async () => {
   expect(button).toContain('aria-label="4 行目から 7 行目を展開"');
   expect(html).toContain("⋯");
 });
+
+// wrap のコードブロックを行に分け、折り返す class を付ける（正常系）
+test("test_render_code_block_when_wrap", async () => {
+  // 準備
+  const { renderCodeBlock } = await loadCodeBlock();
+  const lines = [
+    { text: 'import { mount } from "mdmark";' },
+    {
+      text: 'const url = "https://cdn.jsdelivr.net/gh/shuhei1101/mdmark@v0.10.0/dist/index.js"; // バージョンを固定した URL から配布物を読み、描く先の要素に文書を描く',
+    },
+    { text: 'mount(document.querySelector("#doc"), markdown);' },
+  ];
+  // 実行
+  const numbered = renderCodeBlock({
+    language: "ts",
+    title: "app.ts",
+    lineNumbers: true,
+    wrap: true,
+    lines,
+  });
+  const plain = renderCodeBlock({
+    language: "ts",
+    title: "app.ts",
+    lineNumbers: false,
+    wrap: true,
+    lines,
+  });
+  // 検証
+  const classOf = (html: string) =>
+    /<pre class="([^"]*)"/.exec(html)?.[1]?.split(" ") ?? [];
+  expect(classOf(numbered)).toEqual(
+    expect.arrayContaining([
+      "mdmark-code-lines",
+      "mdmark-code-numbered",
+      "mdmark-code-wrap",
+    ]),
+  );
+  expect(classOf(plain)).toEqual(
+    expect.arrayContaining(["mdmark-code-lines", "mdmark-code-wrap"]),
+  );
+  expect(classOf(plain)).not.toContain("mdmark-code-numbered");
+  for (const html of [numbered, plain]) {
+    expect(findTags(html, 'class="mdmark-code-line"')).toHaveLength(3);
+  }
+});
