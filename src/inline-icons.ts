@@ -61,6 +61,8 @@ export const loadInlineIcons = async (options: {
   root: HTMLElement;
   /** `opts.icons` */
   icons: Record<string, MdmarkIconNode>;
+  /** 描いた文書がまだ今のものか。`import()`・`HEAD` の後に偽なら DOM に触れずに戻る */
+  isCurrent: () => boolean;
   /** モジュールを読む関数（既定 `(url) => import(url)`） */
   importModule?: ImportIconModule;
   /** `HEAD` を送る関数（既定 `(url) => fetch(url, { method: "HEAD" })`） */
@@ -69,6 +71,7 @@ export const loadInlineIcons = async (options: {
   const {
     root,
     icons,
+    isCurrent,
     importModule = importByUrl,
     fetchHead = fetchHeadByUrl,
   } = options;
@@ -93,6 +96,9 @@ export const loadInlineIcons = async (options: {
           node = undefined;
         }
       }
+      if (!isCurrent()) {
+        return;
+      }
       if (node !== undefined) {
         const svg = iconNodeSvg(node);
         for (const element of elements) {
@@ -105,6 +111,9 @@ export const loadInlineIcons = async (options: {
         notFound = (await fetchHead(lucideIconUrl(name))).status === 404;
       } catch {
         notFound = false;
+      }
+      if (!isCurrent()) {
+        return;
       }
       for (const element of elements) {
         const code = revertToCode(element, name);
@@ -123,7 +132,7 @@ export const loadInlineIcons = async (options: {
       }
     }),
   );
-  if (offline) {
+  if (offline && isCurrent()) {
     root.insertAdjacentHTML(
       "afterbegin",
       renderNotice({ name: "lucide", source: "icons" }),

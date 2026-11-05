@@ -326,6 +326,7 @@ export function mount(el: HTMLElement, opts: MountOptions): MountHandle {
       void loadInlineIcons({
         root: body,
         icons: opts.icons ?? {},
+        isCurrent: () => !destroyed && generation === current,
         // 書き出した HTML（外部ライブラリを埋めたとき）は外へ要求せず、表に無い名前を Lucide に無い名前として扱う
         ...(embeddedLibraries === undefined
           ? {}
