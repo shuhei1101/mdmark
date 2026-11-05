@@ -303,8 +303,12 @@ test("test_attach_term_tips_when_touch_outside", async () => {
   // 実行: root の外（pointerleave・focusout は送らない）
   outside.dispatchEvent(pointer("pointerdown", "touch"));
   vi.advanceTimersByTime(1000);
-  // 検証
+  // 検証: 語にフォーカスが残ったままでも、ツールチップを出さない
   expect(wrap.classList.contains("is-open")).toBe(false);
+  expect(wrap.classList.contains("is-dismissed")).toBe(true);
+  expect(document.activeElement).toBe(term);
+  const tip = wrap.querySelector<HTMLElement>(".mdmark-term-tip");
+  expect(tip && getComputedStyle(tip).display).toBe("none");
 });
 
 // ツールチップの中のボタンにフォーカスがある状態で語をタップすると、閉じたままになる（正常系）

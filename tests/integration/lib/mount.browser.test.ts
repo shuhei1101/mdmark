@@ -10373,4 +10373,7 @@ test("test_normal_when_glossary_touch", async () => {
   expect(wrap.classList.contains("is-open")).toBe(true);
   firePointer(outside, "pointerdown", "touch");
   expect(wrap.classList.contains("is-open")).toBe(false);
+  // 語にフォーカスが残ったままでも、ツールチップを出さない
+  expect(document.activeElement).toBe(term);
+  expect(getComputedStyle(find(wrap, ".mdmark-term-tip")).display).toBe("none");
 });
