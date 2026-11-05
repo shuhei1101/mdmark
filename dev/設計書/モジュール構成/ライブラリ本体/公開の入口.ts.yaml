@@ -185,7 +185,7 @@ styles:
         value: '画面では `display: block; height: 0`。`@media print` で `break-before: page`'
       - class_name: .mdmark .mdmark-wide-range と .mdmark-wide-bar
         target: wide の範囲
-        value: '`data-state="wide"` の範囲は描く先の要素の幅まで広げて本文の列の中央にそろえ（右側の目次と文書の一覧の列・右端の線の内側）、`narrow` は本文の幅。帯は本文の幅で、ボタンを右端に置き、`aria-pressed` で 2 つのアイコンの片方だけを出す。印刷では帯を出さず、範囲を紙の幅に収める。値は `dev/mock/refs/307/assets/notations.css`'
+        value: '`data-state="wide"` の範囲は `attachWideToggles` が入れた広げられる幅（`--mdmark-wide-width`・`--mdmark-wide-shift`）まで広げて本文の列の中央にそろえ（右側の目次と文書の一覧の列・右端の線の内側）、`narrow` は本文の幅。帯は本文の幅で、ボタンを右端に置き、`aria-pressed` で 2 つのアイコンの片方だけを出す。印刷では帯を出さず、範囲を紙の幅に収める。値は `dev/mock/refs/307/assets/notations.css`'
       - class_name: .mdmark .mdmark-table[data-source="csv"]
         target: CSV の表と RAW のボタン
         value: '囲みを `width: fit-content` にして表と `pre.mdmark-raw` を同じ格子の場所に重ね、`data-view="raw"` で表を隠して `pre.mdmark-raw` を出す。RAW のボタンは押していないとき `--mdmark-color-muted`、押したとき `--mdmark-color-accent-blue-text` のアイコンと `--mdmark-color-accent-blue-bg` の面（確認ログの案 C）。値は `dev/mock/refs/307/assets/notations.css`'

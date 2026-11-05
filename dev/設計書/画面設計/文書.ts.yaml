@@ -1392,7 +1392,7 @@ elements:
       - name: toggle
         value: '`mount` は `true`、`render` は `false`'
     action: 切り替えのボタンを押すと、広げた幅と本文の幅を切り替える。印刷では用紙の幅に収め、ボタンを出さない
-    visible_when: '`wide` がオンのとき。ボタンは描く先の要素の幅が本文の幅より広いときだけ'
+    visible_when: '`wide` がオンのとき。ボタンは広げられる幅（右側の目次を付けたときは描く先の要素、付けないときは描く先の要素の親の幅）が本文の幅より広いときだけ'
     refs:
       - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[wide の幅の切り替え]
     status: planned
