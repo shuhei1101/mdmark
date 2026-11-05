@@ -415,7 +415,7 @@ constants:
   - name: FLOWCHART_LAYOUT
     title: 自動の配置の大きさと間隔
     container: src/diagram/layout.ts
-    summary: 座標を省いた判定フローチャートのノードの既定の大きさと配置の間隔（px）。モックの `judgement-auto` と同じ値
+    summary: 座標を省いた判定フローチャートのノードの既定の大きさと配置の間隔（px）。ノードの大きさと間隔はモックの `judgement-auto` と同じ値（図の余白は上下左右とも `margin`）
     entries:
       - key: sizes.start
         value: 100×100
@@ -577,7 +577,7 @@ functions:
         summary: 座標を全て省いた判定フローチャートを配置した定義で返す
         condition: モックの `judgement-auto` から座標・`points`・`width`・`height` を除き、線に `from`・`to` を足した定義
         mock: なし
-        expected: '`ok` が `true` で、定義の `width` が 684・`height` が 584'
+        expected: '`ok` が `true` で、定義の `height` が 584 で、全てのノードが `x`・`y`・`w`・`h` を、全ての線が `points` を持つ'
       - name: test_read_definition_when_coordinates_mixed
         case: 異常
         summary: 座標を書いたものと省いたものが混ざる
@@ -1753,10 +1753,10 @@ functions:
     unit_tests:
       - name: test_layout_flowchart
         case: 正常
-        summary: モックの judgement-auto と同じ配置にする
+        summary: モックの judgement-auto と同じ列と行の関係に配置する
         condition: モックの `judgement-auto` の定義から座標・`points`・`width`・`height` を除き、線に `from`・`to` を足したもの
         mock: なし
-        expected: ノードの `x`・`y`・`w`・`h`、線の `points`、`width`・`height` が `judgement-auto` と等しい
+        expected: ノードの `y`・`w`・`h` と `height` が `judgement-auto` と等しい。`start`・`q1`・`q2`・`r2` の中央の `x` が等しく、`q1` の `x` が `margin`（16）。`a1` と `r1` の `x` が等しく `q1` の右端 + `gapX`（120）で、`width` がその右端 + `margin`。線の `points` が縦と横の線分だけで、配置した定義を `checkFlowLayout` に渡すと空の配列
       - name: test_layout_flowchart_when_both_results
         case: 正常
         summary: 両方の先が結果なら NO を下、YES を右に置く
