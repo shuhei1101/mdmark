@@ -686,3 +686,41 @@ test("test_check_diagrams_when_clean", async () => {
   // 検証
   expect(issues).toEqual([]);
 });
+
+// 問題を種類ごとのずれにする（正常系）
+test("test_check_includes", async () => {
+  // 準備
+  const { checkIncludes } = await loadCheck();
+  const dir = await createTempDir();
+  await writeFiles(dir, {
+    "mdmark.config.yaml": "",
+    "共通/手順.md": "## 実行\n\nB\n",
+    "app.ts": "1\n2\n3\n",
+    "a.md": "<!-- include: b.md -->\n",
+    "b.md": "<!-- include: a.md -->\n",
+  });
+  const markdown = [
+    "<!-- include: missing.md -->",
+    "",
+    "<!-- include: 共通/手順.md#無い見出し -->",
+    "",
+    "<!-- include: app.ts#L8-L10 -->",
+    "",
+    "<!-- include: a.md -->",
+    "",
+    "<!-- include: 共通/手順.md#実行 -->",
+    "",
+  ].join("\n");
+  // 実行
+  const issues = await checkIncludes({
+    documents: [{ path: "guide.md", markdown }],
+    root: dir,
+  });
+  // 検証
+  expect(issues.map((issue) => [issue.kind, issue.where])).toEqual([
+    ["include_target_missing", "1"],
+    ["include_target_missing", "3"],
+    ["include_target_missing", "5"],
+    ["include_circular", "7"],
+  ]);
+});

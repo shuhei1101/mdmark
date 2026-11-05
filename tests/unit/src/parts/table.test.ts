@@ -903,3 +903,19 @@ test("test_render_check_cell", async () => {
   expect(findTag(no, "<span")).toContain('class="mdmark-visually-hidden"');
   expect(plainText(no)).toBe("いいえ");
 });
+
+// 押した状態を `aria-pressed` に入れる（正常系）
+test("test_render_raw_toggle", async () => {
+  // 準備
+  const { renderRawToggle } = await loadTable();
+  // 実行
+  const off = renderRawToggle(false);
+  const on = renderRawToggle(true);
+  // 検証
+  expect(off).toContain(
+    '<button class="mdmark-raw-toggle" type="button" aria-label="元の CSV を表示" aria-pressed="false">',
+  );
+  expect(on).toContain('aria-pressed="true"');
+  expect(off).toContain("<svg");
+  expect(off).toContain("</button>");
+});

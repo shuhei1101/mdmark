@@ -11,6 +11,10 @@ export type IndexOptions = {
   docId?: string;
   references?: MdmarkReferences;
   aliases?: MdmarkAlias[];
+  /** 取り込む文書の表（`render` の `opts.includes`） */
+  includes?: Record<string, string>;
+  /** 束ねていない名前のアイコンの形の表（`render` の `opts.icons`） */
+  icons?: Record<string, Array<[string, Record<string, string>]>>;
 };
 
 /** 機能のオン・オフを重ねた設定で Markdown を描き、元の行番号の属性を除いた HTML と機能を返す */
