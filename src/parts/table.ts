@@ -11,9 +11,11 @@ import {
   TOTAL_LABELS,
   type TotalCalc,
 } from "../table-logic.ts";
+import { planTreeRows, splitKeyPath } from "../tree-logic.ts";
 import type { ColorName } from "./colors.ts";
 import { escapeHtml } from "./escape.ts";
 import { iconSvg } from "./icons.ts";
+import { renderTabs } from "./tabs.ts";
 
 /** 表の種類 */
 export type TableKind = "default" | "data" | "plain";
@@ -124,6 +126,32 @@ export type TableOptions = {
   check?: number[];
   /** 階層にするキーの列の位置（`data-tree`） */
   tree?: number | undefined;
+  /** 今の列の順（元の列の位置の並び。ストーリーで使う） */
+  order?: number[];
+  /** ドラッグしている列と、落とす先の列と向き（ストーリーで使う） */
+  dragging?: { column: number; target: number; side: "before" | "after" };
+  /** 階層の表の型の列の位置 */
+  treeType?: number;
+  /** 階層の表の必須の列の位置 */
+  treeRequired?: number;
+  /** 階層の表の既定の列の位置 */
+  treeDefault?: number;
+  /** 畳んだ行のパス（ストーリーで使う） */
+  collapsedPaths?: string[];
+  /** キーの列の絞り込みの単語（ストーリーで使う） */
+  treeFilter?: string;
+  /** 選んだ行のパス（ストーリーで使う） */
+  selectedPath?: string;
+  /** 表の下に置く YAML の見本（ストーリーで使う） */
+  example?: {
+    heading: string;
+    tabs: Array<{
+      name: string;
+      lines?: Array<{ text: string; path?: string }>;
+    }>;
+    active?: number;
+    hidden?: boolean;
+  };
   /** 見出しの段ごとのセル。渡すと `columns` の代わりに見出しの行をこの段で描く */
   headRows?: TableHeadCell[][];
   /** 本文の各行で `<th scope="row">` にする先頭の列の数（既定 0） */
@@ -331,6 +359,8 @@ export function renderTableBar(options: {
   groupLabels?: Record<string, string>;
   /** 留めている列の数（既定 0） */
   pinned?: number;
+  /** ドラッグしている列と、落とす先の列と向き */
+  dragging?: { column: number; target: number; side: "before" | "after" };
   /** コピーのボタンの状態（既定 `idle`） */
   copyState?: CopyState;
   /** 集計する計算 */
@@ -387,6 +417,7 @@ export function renderTableBar(options: {
         groups: options.groups ?? labels.map(() => undefined),
         groupLabels: options.groupLabels,
         pinned: options.pinned ?? 0,
+        dragging: options.dragging,
       }).replace(/^<div /, `<div${open ? "" : " hidden"} `)
     : "";
   const totalItems = calcs
@@ -914,11 +945,220 @@ function renderTableBody(options: TableOptions, id: string): string {
     shownTotals: options.shownTotals,
     openTotals: options.openTotals ?? false,
     openCopy: options.openCopy ?? false,
+    order: options.order,
+    groups: options.headRows ? headGroupsOf(options.headRows) : undefined,
+    groupLabels: options.headRows
+      ? headGroupLabelsOf(options.headRows)
+      : undefined,
+    pinned: options.pin !== undefined ? options.pin + 1 : 0,
+    dragging: options.dragging,
   });
   const panel = options.copyFallback
     ? renderCopyPanel({ id: `${id}-panel`, ...options.copyFallback })
     : "";
-  return `${bar}${panel}<table tabindex="0" aria-label="表"><thead>${head}</thead><tbody>${body}${empty}</tbody>${footer}</table>${menus}${drawers.join("")}`;
+  const tableHtml = `<table tabindex="0" aria-label="表"><thead>${head}</thead><tbody>${body}${empty}</tbody>${footer}</table>`;
+  return `${bar}${panel}${options.order ? reorderCellsHtml(tableHtml, options.order) : tableHtml}${menus}${drawers.join("")}`;
+}
+
+/** 表の HTML の各行のセルを、列の順 `order` に並べ直す（セルの数が列の数と同じ行だけ） */
+function reorderCellsHtml(html: string, order: number[]): string {
+  return html.replace(
+    /(<tr\b[^>]*>)([\s\S]*?)(<\/tr>)/g,
+    (whole, open: string, inner: string, close: string) => {
+      const cells = inner.match(/<t([hd])\b[\s\S]*?<\/t\1>/g) ?? [];
+      if (cells.length !== order.length) {
+        return whole;
+      }
+      return `${open}${order.map((column) => cells[column] ?? "").join("")}${close}`;
+    },
+  );
+}
+
+/** 多段の見出しから、最下段の列ごとに、その列を覆う上の段の結合した見出しの `{段}:{位置}` を返す */
+function headGroupsOf(headRows: TableHeadCell[][]): Array<string | undefined> {
+  const bottom = headRows.length - 1;
+  const columns = Math.max(
+    ...headRows.flatMap((row) =>
+      row.map((cell) => cell.column + (cell.colspan ?? 1)),
+    ),
+  );
+  return Array.from({ length: columns }, (_, column) => {
+    for (let row = bottom - 1; row >= 0; row -= 1) {
+      const cell = headRows[row]?.find(
+        (candidate) =>
+          (candidate.colspan ?? 1) > 1 &&
+          candidate.column <= column &&
+          column < candidate.column + (candidate.colspan ?? 1) &&
+          row + (candidate.rowspan ?? 1) - 1 < bottom,
+      );
+      if (cell) {
+        return `${row}:${cell.column}`;
+      }
+    }
+    return undefined;
+  });
+}
+
+/** 多段の見出しの結合した見出しの `{段}:{位置}` から、見出しの文字を引く表を返す */
+function headGroupLabelsOf(
+  headRows: TableHeadCell[][],
+): Record<string, string> {
+  const labels: Record<string, string> = {};
+  headRows.forEach((row, index) => {
+    for (const cell of row) {
+      if ((cell.colspan ?? 1) > 1) {
+        labels[`${index}:${cell.column}`] = plainText(cell.html);
+      }
+    }
+  });
+  return labels;
+}
+
+/** 階層の表のストーリーの HTML（表・見本の表示を切り替えるボタン・見本）を返す */
+function renderTreeTable(options: TableOptions, id: string): string {
+  const columns = options.columns ?? [];
+  const rows = options.rows ?? [];
+  const tree = options.tree ?? 0;
+  const required = options.treeRequired;
+  const keys = rows.map((row) => plainText(row[tree] ?? ""));
+  const plans = planTreeRows(keys);
+  const collapsed = new Set(options.collapsedPaths ?? []);
+  const word = (options.treeFilter ?? "").trim().toLowerCase();
+  const selected = options.selectedPath;
+  const selectedPlan = plans.find((plan) => plan.path === selected);
+  const ancestorsOf = (path: string): string[] => splitKeyPath(path).parents;
+  const hits = new Set(
+    word === ""
+      ? []
+      : plans
+          .filter((plan) => plan.name.toLowerCase().includes(word))
+          .map((plan) => plan.path),
+  );
+  const keep = new Set(
+    [...hits].flatMap((path) => [path, ...ancestorsOf(path)]),
+  );
+  const inScope = (path: string): boolean => {
+    if (!selectedPlan) {
+      return false;
+    }
+    return plans.some(
+      (plan) =>
+        plan.parent === selectedPlan.parent &&
+        (plan.path === path || path.startsWith(`${plan.path}.`)),
+    );
+  };
+  const shownColumns = columns.flatMap((_, column) =>
+    column === required ? [] : [column],
+  );
+  const head = shownColumns
+    .map((column) => `<th>${columns[column] ?? ""}</th>`)
+    .join("");
+  let shown = 0;
+  const body = plans
+    .map((plan) => {
+      const row = plan.source === undefined ? undefined : rows[plan.source];
+      const folded = ancestorsOf(plan.path).some((path) => collapsed.has(path));
+      const hidden = word === "" ? folded : !keep.has(plan.path);
+      if (!hidden && !plan.virtual) {
+        shown += 1;
+      }
+      const isRequired =
+        row !== undefined &&
+        required !== undefined &&
+        ["✓", "true"].includes(plainText(row[required] ?? "").trim());
+      let key = renderTreeKeyCell({
+        name: plan.name,
+        depth: plan.depth,
+        required: isRequired,
+      });
+      if (selectedPlan && inScope(plan.path)) {
+        let count = 0;
+        key = key.replace(/class="mdmark-tree-guide"/g, (match) => {
+          count += 1;
+          return count === selectedPlan.depth
+            ? 'class="mdmark-tree-guide is-active"'
+            : match;
+        });
+      }
+      const tool = plan.hasChildren
+        ? renderTreeTools({
+            kind: "toggle",
+            path: plan.path,
+            expanded: !collapsed.has(plan.path),
+          })
+        : '<span class="mdmark-tree-spacer" aria-hidden="true"></span>';
+      key = key.replace(
+        '<span class="mdmark-tree-name"',
+        `${tool}<span class="mdmark-tree-name"`,
+      );
+      if (hits.has(plan.path)) {
+        key = key.replace(
+          /(<span class="mdmark-tree-name" tabindex="0">)([^<]*)(<\/span>)/,
+          (_whole, open: string, text: string, close: string) => {
+            const at = text.toLowerCase().indexOf(word);
+            return at < 0
+              ? `${open}${text}${close}`
+              : `${open}${text.slice(0, at)}<mark class="mdmark-tree-hit">${text.slice(at, at + word.length)}</mark>${text.slice(at + word.length)}${close}`;
+          },
+        );
+      }
+      key = key.replace(
+        /<\/span>$/,
+        `${renderTreeTools({ kind: "copy" })}</span>`,
+      );
+      const cells = shownColumns
+        .map((column) => {
+          if (column === tree) {
+            return `<td class="mdmark-tree-key">${key}</td>`;
+          }
+          const text = row?.[column] ?? "";
+          if (column === options.treeType && text !== "") {
+            return `<td>${renderTypeCell(plainText(text))}</td>`;
+          }
+          if (column === options.treeDefault && text !== "") {
+            return `<td><span class="mdmark-tree-default">${text}</span></td>`;
+          }
+          return `<td>${row ? text : ""}</td>`;
+        })
+        .join("");
+      const classes = [
+        "mdmark-tree-row",
+        ...(plan.virtual ? ["is-virtual"] : []),
+        ...(plan.hasChildren ? ["has-children"] : []),
+      ].join(" ");
+      return `<tr class="${classes}" data-path="${escapeHtml(plan.path)}" data-parent="${escapeHtml(plan.parent)}" data-depth="${plan.depth}" aria-selected="${plan.path === selected}"${hidden ? " hidden" : ""}>${cells}</tr>`;
+    })
+    .join("");
+  const counted = plans.filter((plan) => !plan.virtual).length;
+  const count = options.features.includes("count")
+    ? `<div class="mdmark-table-bar"><p class="mdmark-table-count" aria-live="polite"><span aria-hidden="true">${shown} / ${counted} 件</span><span class="mdmark-visually-hidden">${counted} 件中 ${shown} 件を表示</span></p></div>`
+    : "";
+  const table = `<div class="mdmark-table" data-kind="${options.kind ?? "default"}" data-features="${options.features.join(" ")}" data-tree="${tree}">${count}<table tabindex="0" aria-label="表"><thead><tr>${head}</tr></thead><tbody>${body}</tbody></table></div>`;
+  const example = options.example;
+  if (!example) {
+    return table;
+  }
+  const exampleId = `${id}-example`;
+  const active = example.active ?? 0;
+  const panels = example.tabs.map((tab, index) => {
+    const lines = (tab.lines ?? [])
+      .map((line) => {
+        const linked =
+          index === active && line.path !== undefined && line.path === selected;
+        const path = line.path ? ` data-path="${escapeHtml(line.path)}"` : "";
+        return `<span class="mdmark-code-line mdmark-yaml-line${linked ? " is-linked" : ""}"${path}><span class="mdmark-code-text">${escapeHtml(line.text)}</span></span>`;
+      })
+      .join("\n");
+    return `<div class="mdmark-code"><pre class="mdmark-code-lines"><code class="language-yaml">${lines}</code></pre></div>`;
+  });
+  const tabs = renderTabs({
+    id: `${id}-tabs`,
+    titles: example.tabs.map((tab) => escapeHtml(tab.name)),
+    panels,
+    selected: active,
+  });
+  const hidden = example.hidden === true;
+  return `<div class="mdmark-tree-layout${hidden ? " is-example-hidden" : ""}"><div class="mdmark-tree-bar">${renderTreeTools({ kind: "example", expanded: !hidden, controls: exampleId })}</div>${table}<aside class="mdmark-tree-example" id="${exampleId}" aria-label="見本: ${escapeHtml(example.heading)}"${hidden ? " hidden" : ""}>${tabs}</aside></div>`;
 }
 
 /** 多段の見出しの行を描く。`bottomHeadCells` で決めた列ごとの最下段のセルは `headCell` で、ほかのセルは文字だけで描く */
@@ -969,6 +1209,9 @@ function isFolded(options: TableOptions, hidden: Set<number>): boolean {
 
 /** 表を囲む HTML を返す。`body` を渡すと囲みだけを作り、渡さなければ `columns`・`rows` から表を作る */
 export function renderTable(options: TableOptions): string {
+  if (options.tree !== undefined && options.rows !== undefined) {
+    return renderTreeTable(options, options.id ?? "mdmark-table");
+  }
   const kind = options.kind ?? "default";
   const filters = options.features.includes("filter")
     ? (options.filters ?? [])
