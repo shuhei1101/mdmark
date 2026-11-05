@@ -2,13 +2,8 @@ import { afterEach, expect, test, vi } from "vitest";
 import { createRootFromHtml, removeRoots } from "../helpers/dom.ts";
 import { renderDoc } from "../helpers/render.ts";
 
-/** 範囲のスクリプトの処理の場所（変数にして、実装が無い間もファイルの読み込みを止めない） */
-const HTML_SCRIPTS_MODULE = "../../../src/html-scripts.ts";
-
 /** 範囲のスクリプトの処理を読み込む（実装が無い間は各テストが個別に失敗する） */
-const loadHtmlScripts = (): Promise<
-  typeof import("../../../src/html-scripts.ts")
-> => import(/* @vite-ignore */ HTML_SCRIPTS_MODULE);
+const loadHtmlScripts = () => import("../../../src/html-scripts.ts");
 
 /** 手元の @babel/standalone を読む `importModule` */
 const importBabel = () => import("@babel/standalone");

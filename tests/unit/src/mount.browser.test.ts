@@ -1021,9 +1021,6 @@ test("test_check_base_markdown_when_invalid", async () => {
   }
 });
 
-/** 範囲のスクリプトの処理の場所（変数にして、実装が無い間もファイルの読み込みを止めない） */
-const HTML_SCRIPTS_MODULE = "../../../src/html-scripts.ts";
-
 /** 根の要素に `data-ran` を付ける `js` の範囲のコード */
 const RANGE_SCRIPT_CODE =
   'export default (root) => { root.dataset.ran = "1"; };';
@@ -1031,10 +1028,8 @@ const RANGE_SCRIPT_CODE =
 // 描くたびに範囲のスクリプトを動かし、描き直す前と `destroy` で範囲の `destroy` を呼ぶ（正常系）
 test("test_mount_when_range_scripts", async () => {
   // 準備
-  const {
-    setEmbeddedHtmlScripts,
-  }: typeof import("../../../src/html-scripts.ts") = await import(
-    /* @vite-ignore */ HTML_SCRIPTS_MODULE
+  const { setEmbeddedHtmlScripts } = await import(
+    "../../../src/html-scripts.ts"
   );
   let destroyed = 0;
   setEmbeddedHtmlScripts(
