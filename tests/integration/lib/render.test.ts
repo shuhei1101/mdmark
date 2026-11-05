@@ -58,6 +58,8 @@ type Built = {
       docId?: string;
       references?: MdmarkReferences;
       aliases?: MdmarkAlias[];
+      includes?: Record<string, string>;
+      icons?: Record<string, Array<[string, Record<string, string>]>>;
     },
   ) => string;
   registerExtension: (extension: MdmarkExtension) => void;
@@ -3393,4 +3395,482 @@ test("test_normal_when_wrap", async () => {
   expect(plainText(warning)).toContain("wrap と書いて");
   expect(html.indexOf(warning)).toBeLessThan(html.indexOf("const valued"));
   expect(classOf(pres[3] ?? "")).not.toContain("mdmark-code-wrap");
+});
+
+/** 1〜12 行目に `const v{行} = {行};` を持つ `src/app.ts` の本文 */
+const APP_TS = Array.from(
+  { length: 12 },
+  (_, index) => `const v${index + 1} = ${index + 1};`,
+).join("\n");
+
+/** `共通/手順.md`（準備・実行・片付け。実行の下に表と `../src/app.ts#L1` の取り込み） */
+const PROCEDURE_MD = [
+  "## 準備",
+  "",
+  "準備の段落",
+  "",
+  "## 実行",
+  "",
+  "実行の段落",
+  "",
+  "<!-- table: data -->",
+  "",
+  "| 手順 | 担当 |",
+  "| --- | --- |",
+  "| ビルド | 開発者 |",
+  "",
+  "<!-- /table -->",
+  "",
+  "<!-- include: ../src/app.ts#L1 -->",
+  "",
+  "## 片付け",
+  "",
+  "片付けの段落",
+  "",
+].join("\n");
+
+// 行内の新しい記法を、スクリプト無しで読める HTML にする（正常系）
+test("test_normal_when_inline_notations", async () => {
+  // 準備
+  const render = await loadRender();
+  const markdown = [
+    "## `icon:flag` はじめに",
+    "",
+    "`icon:sailboat` と `icon\\:check` と `kbd:Ctrl+C` と `kbd:Ctrl++` と ==決め手== と ==例外=={color=green} と <ruby>漢字<rt>かんじ</rt></ruby>",
+    "",
+  ].join("\n");
+  // 実行
+  const html = render(markdown);
+  // 検証
+  expect(innerHtml(innerHtml(html, "<h2"), 'data-icon="flag"')).toContain(
+    "<svg",
+  );
+  expect(findTag(html, 'data-icon="flag"')).toBe(
+    '<span class="mdmark-inline-icon" data-icon="flag" aria-hidden="true">',
+  );
+  expect(html).toContain(
+    '<span class="mdmark-inline-icon" data-icon="sailboat" aria-hidden="true"></span>',
+  );
+  expect(html).toContain("<code>icon:check</code>");
+  expect(html).toContain(
+    '<span class="mdmark-kbd-group"><kbd class="mdmark-kbd">Ctrl</kbd><span class="mdmark-kbd-join">+</span><kbd class="mdmark-kbd">C</kbd></span>',
+  );
+  expect(html).toContain(
+    '<span class="mdmark-kbd-group"><kbd class="mdmark-kbd">Ctrl</kbd><span class="mdmark-kbd-join">+</span><kbd class="mdmark-kbd">+</kbd></span>',
+  );
+  expect(html).toContain('<mark class="mdmark-highlight">決め手</mark>');
+  expect(html).toContain(
+    '<mark class="mdmark-highlight" data-color="green">例外</mark>',
+  );
+  expect(html).not.toContain("==");
+  expect(html).not.toContain("{color=");
+  expect(html).toContain("<ruby>漢字<rt>かんじ</rt></ruby>");
+  expect(html).not.toContain("icon:flag");
+  expect(html).not.toContain("kbd:");
+});
+
+// opts.icons にある束ねていない名前を、その形の svg で描く（正常系）
+test("test_normal_when_icon_nodes", async () => {
+  // 準備
+  const render = await loadRender();
+  const icons = {
+    sailboat: [
+      ["path", { d: "M22 18H2a4 4 0 0 0 4 4h12a4 4 0 0 0 4-4Z" }],
+      ["path", { d: "M21 14 10 2 3 14h18Z", onclick: "x" }],
+    ],
+  } as Record<string, Array<[string, Record<string, string>]>>;
+  // 実行
+  const html = render("`icon:sailboat`\n", { icons });
+  // 検証
+  const icon = innerHtml(html, 'data-icon="sailboat"');
+  expect(icon).toContain("<svg");
+  expect(findTags(icon, "<path")).toHaveLength(2);
+  expect(html).not.toContain("onclick");
+});
+
+// 範囲を持つ新しい記法を、中身を隠さない HTML にする（正常系）
+test("test_normal_when_block_notations", async () => {
+  // 準備
+  const render = await loadRender();
+  const table = [
+    "| 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 |",
+    "| --- | --- | --- | --- | --- | --- | --- | --- |",
+    "| a | b | c | d | e | f | g | h |",
+  ].join("\n");
+  const markdown = [
+    "<!-- columns -->",
+    "",
+    "左の列",
+    "",
+    "<!-- column -->",
+    "",
+    "右の列",
+    "",
+    "<!-- /columns -->",
+    "",
+    "<!-- details: 補足の手順 -->",
+    "",
+    "補足の中身",
+    "",
+    "<!-- /details -->",
+    "",
+    "<!-- details: 実行の例 open -->",
+    "",
+    "例の中身",
+    "",
+    "<!-- /details -->",
+    "",
+    "<!-- pagebreak -->",
+    "",
+    "<!-- wide -->",
+    "",
+    table,
+    "",
+    "<!-- /wide -->",
+    "",
+    "<!-- wide: closed -->",
+    "",
+    table,
+    "",
+    "<!-- /wide -->",
+    "",
+  ].join("\n");
+  // 実行
+  const html = render(markdown);
+  // 検証
+  expect(findTag(html, "mdmark-layout-columns")).toBe(
+    '<div class="mdmark-layout-columns" data-count="2">',
+  );
+  expect(findTags(html, '"mdmark-layout-column"')).toHaveLength(2);
+  expect(html).toContain(
+    '<details class="mdmark-collapsible"><summary>補足の手順</summary>',
+  );
+  expect(html).toContain(
+    '<details class="mdmark-collapsible" open><summary>実行の例</summary>',
+  );
+  expect(html).not.toMatch(/<summary>[^<]*open/);
+  expect(html).not.toMatch(/<h[1-6][^>]*>補足の手順/);
+  expect(html).toContain(
+    '<div class="mdmark-pagebreak" aria-hidden="true"></div>',
+  );
+  const ranges = html.split('<div class="mdmark-wide-range"').slice(1);
+  expect(ranges).toHaveLength(2);
+  expect(ranges[0]).toMatch(/^ data-state="wide">/);
+  expect(ranges[1]).toMatch(/^ data-state="narrow">/);
+  for (const range of ranges) {
+    expect(range).toContain("<table");
+  }
+  expect(html).not.toContain("<!--");
+  expect(html).not.toContain("<button");
+});
+
+// include のマーカーの場所に、取り込む文書の表から引いた全体・見出しの中・行の範囲を描く（正常系）
+test("test_normal_when_includes", async () => {
+  // 準備
+  const render = await loadRender();
+  const includes = { "共通/手順.md": PROCEDURE_MD, "src/app.ts": APP_TS };
+  const markdown = [
+    "前の段落",
+    "",
+    "<!-- include: 共通/手順.md -->",
+    "",
+    "間の段落",
+    "",
+    "<!-- include: ./共通/手順.md#実行 -->",
+    "",
+    "<!-- include: src/app.ts#L3-L5 -->",
+    "",
+  ].join("\n");
+  // 実行
+  const html = render(markdown, { includes });
+  // 検証
+  expect(findTag(html, "mdmark-include")).toBe(
+    '<div class="mdmark-include" data-include="共通/手順.md">',
+  );
+  const whole = innerHtml(html, 'data-include="共通/手順.md"');
+  const section = innerHtml(html, 'data-include="./共通/手順.md#実行"');
+  const lines = innerHtml(html, 'data-include="src/app.ts#L3-L5"');
+  for (const text of ["準備の段落", "実行の段落", "片付けの段落"]) {
+    expect(whole).toContain(text);
+  }
+  expect(section).toContain("実行の段落");
+  expect(section).not.toContain("準備の段落");
+  expect(section).not.toContain("片付けの段落");
+  expect(findTag(section, "mdmark-table")).toContain('data-kind="data"');
+  expect(section).toContain("const v1 = 1;");
+  expect(lines).toContain('<code class="language-ts"');
+  expect(lines).toContain("const v3 = 3;");
+  expect(lines).toContain("const v5 = 5;");
+  expect(lines).not.toContain("const v6 = 6;");
+  expect(lines).not.toContain("const v2 = 2;");
+  const ids = [...html.matchAll(/<h2[^>]* id="([^"]+)"/g)].map((m) => m[1]);
+  expect(ids).toContain("実行-1");
+  expect(new Set(ids).size).toBe(ids.length);
+  expect(html).not.toContain("<!--");
+  expect(html).not.toContain("mdmark-syntax-warning");
+});
+
+// 取り込めないマーカーの場所に書き方の警告を置き、循環する取り込みを止める（正常系）
+test("test_normal_when_include_errors", async () => {
+  // 準備
+  const render = await loadRender();
+  const includes = {
+    "共通/手順.md": PROCEDURE_MD,
+    "src/app.ts": APP_TS,
+    "a.md": "A\n\n<!-- include: b.md -->\n",
+    "b.md": "B\n\n<!-- include: a.md -->\n",
+  };
+  const markdown = [
+    "前の段落",
+    "",
+    "<!-- include: missing.md -->",
+    "",
+    "<!-- include: 共通/手順.md#無い見出し -->",
+    "",
+    "<!-- include: src/app.ts#L20-L22 -->",
+    "",
+    "<!-- include: a.md -->",
+    "",
+    "後ろの段落",
+    "",
+  ].join("\n");
+  // 実行
+  const html = render(markdown, { includes });
+  const without = render(markdown);
+  // 検証
+  const warnings = html
+    .split('<div class="mdmark-syntax-warning" role="note">')
+    .slice(1);
+  expect(warnings).toHaveLength(4);
+  expect(warnings[0]).toContain("missing.md");
+  expect(warnings[1]).toContain("無い見出し");
+  expect(warnings[2]).toContain("L20-L22");
+  expect(warnings[2]).toContain("12 行");
+  expect(warnings[3]).toContain("a.md → b.md → a.md");
+  expect(html.split("<p>A</p>")).toHaveLength(2);
+  expect(html.split("<p>B</p>")).toHaveLength(2);
+  expect(findTags(without, 'class="mdmark-syntax-warning"')).toHaveLength(4);
+  expect(html).toContain("前の段落");
+  expect(html).toContain("後ろの段落");
+});
+
+// 言語 csv のコードブロックを表にし、元の CSV を隠して添える（正常系）
+test("test_normal_when_csv", async () => {
+  // 準備
+  const render = await loadRender();
+  const csv = [
+    "名前,拠点,金額",
+    '北山,"東京, 本社",1200',
+    '南田,"大阪\r\n（支店）",800',
+    '西川,"名古屋 ""中央""",950',
+  ].join("\r\n");
+  const markdown = [
+    "<!-- table: data -->",
+    "",
+    "```csv",
+    csv,
+    "```",
+    "",
+    "<!-- /table -->",
+    "",
+    "```csv",
+    csv,
+    "```",
+    "",
+    "```text",
+    csv,
+    "```",
+    "",
+    "```csv",
+    "a,b,c",
+    "1,2",
+    "1,2,3,4",
+    "```",
+    "",
+  ].join("\n");
+  // 実行
+  const html = render(markdown);
+  // 検証
+  const wrappers = findTags(html, 'class="mdmark-table"');
+  expect(wrappers[0]).toBe(
+    '<div class="mdmark-table" data-kind="data" data-features="sort pin filter" data-source="csv">',
+  );
+  const first = innerHtml(html, 'class="mdmark-table"');
+  expect(plainText(first)).toContain("名前");
+  expect(first.match(/<th[ >]/g)).toHaveLength(3);
+  expect(findTags(innerHtml(first, "<tbody"), "<tr")).toHaveLength(3);
+  expect(first).toMatch(/<td[^>]*>東京, 本社<\/td>/);
+  expect(first).toMatch(/<td[^>]*>大阪<br \/>\s*（支店）<\/td>/);
+  expect(first).toMatch(/<td[^>]*>名古屋 "中央"<\/td>/);
+  expect(first).toContain('<pre class="mdmark-raw" hidden');
+  expect(innerHtml(first, 'class="language-csv"')).toBe(
+    `${csv.replaceAll("\r\n", "\n")}\n`,
+  );
+  expect(wrappers[1]).toContain('data-kind="default"');
+  expect(wrappers[1]).toContain('data-source="csv"');
+  expect(html).toContain('<code class="language-text"');
+  const warning = innerHtml(html, 'class="mdmark-syntax-warning"');
+  expect(warning).toContain("2 行目");
+  expect(warning).toContain("3 行目");
+  const lastTable = html.slice(html.lastIndexOf('data-source="csv"'));
+  const rows = innerHtml(lastTable, "<tbody").split("<tr").slice(1);
+  expect(rows[0]?.split("<td")).toHaveLength(4);
+  expect(rows[0]).toMatch(/<td[^>]*><\/td>/);
+});
+
+// 新しい記法の読めない書き方の箇所に書き方の警告を置き、読めた分で描く（正常系）
+test("test_normal_when_new_syntax_errors", async () => {
+  // 準備
+  const render = await loadRender();
+  const markdown = [
+    "前の段落 `icon:Rocket!` と `icon:`",
+    "",
+    "==決め手=={color=pink}",
+    "",
+    "<!-- columns -->",
+    "",
+    "1 列だけ",
+    "",
+    "<!-- /columns -->",
+    "",
+    "<!-- columns -->",
+    "",
+    "c1",
+    "",
+    "<!-- column -->",
+    "",
+    "c2",
+    "",
+    "<!-- column -->",
+    "",
+    "c3",
+    "",
+    "<!-- column -->",
+    "",
+    "c4",
+    "",
+    "<!-- /columns -->",
+    "",
+    "<!-- columns -->",
+    "",
+    "<!-- columns -->",
+    "",
+    "内1",
+    "",
+    "<!-- column -->",
+    "",
+    "内2",
+    "",
+    "<!-- /columns -->",
+    "",
+    "<!-- column -->",
+    "",
+    "外2",
+    "",
+    "<!-- /columns -->",
+    "",
+    "<!-- details: 補足 -->",
+    "",
+    "補足の段落",
+    "",
+    "<!-- wide -->",
+    "",
+    "| a | b |",
+    "| --- | --- |",
+    "| 1 | 2 |",
+    "",
+  ].join("\n");
+  // 実行
+  const html = render(markdown);
+  // 検証
+  const warnings = html
+    .split('<div class="mdmark-syntax-warning" role="note">')
+    .slice(1)
+    .map((part) => plainText(part.slice(0, part.indexOf("</div>"))));
+  expect(html).toContain("<code>icon:Rocket!</code>");
+  expect(html).toContain("<code>icon:</code>");
+  expect(warnings.filter((w) => w.includes("Rocket!"))).toHaveLength(1);
+  expect(html).toContain('<mark class="mdmark-highlight">決め手</mark>');
+  const pink = warnings.find((w) => w.includes("pink"));
+  expect(pink).toContain("blue");
+  expect(warnings.some((w) => w.includes("1 列") && w.includes("2〜3"))).toBe(
+    true,
+  );
+  expect(warnings.some((w) => w.includes("4 列") && w.includes("2〜3"))).toBe(
+    true,
+  );
+  expect(warnings.some((w) => w.includes("入れ子"))).toBe(true);
+  expect(findTags(html, "mdmark-layout-columns")).toHaveLength(1);
+  expect(findTag(html, "mdmark-layout-columns")).toContain('data-count="2"');
+  expect(html).not.toContain("<details");
+  expect(warnings.some((w) => w.includes("<!-- /details -->"))).toBe(true);
+  expect(html).not.toContain("mdmark-wide-range");
+  expect(warnings.some((w) => w.includes("<!-- /wide -->"))).toBe(true);
+  expect(html).toContain("補足の段落");
+});
+
+// オフの新しい記法を、書いた文字か普通の Markdown として描く（正常系）
+test("test_normal_when_new_syntax_disabled", async () => {
+  // 準備
+  const render = await loadRender();
+  const markdown = [
+    "<!-- features: -icon -columns -highlight -kbd -details -pagebreak -include -wide -csv -->",
+    "",
+    "`icon:check` と `kbd:Ctrl+C` と ==決め手==",
+    "",
+    "<!-- columns -->",
+    "",
+    "左",
+    "",
+    "<!-- column -->",
+    "",
+    "右",
+    "",
+    "<!-- /columns -->",
+    "",
+    "<!-- details: 補足 -->",
+    "",
+    "補足の中身",
+    "",
+    "<!-- /details -->",
+    "",
+    "<!-- pagebreak -->",
+    "",
+    "<!-- include: part.md -->",
+    "",
+    "<!-- wide -->",
+    "",
+    "広げる中身",
+    "",
+    "<!-- /wide -->",
+    "",
+    "```csv",
+    "a,b",
+    "```",
+    "",
+  ].join("\n");
+  // 実行
+  const html = render(markdown, { includes: { "part.md": "取り込んだ段落" } });
+  // 検証
+  expect(html).toContain("<code>icon:check</code>");
+  expect(html).toContain("<code>kbd:Ctrl+C</code>");
+  expect(html).toContain("==決め手==");
+  expect(html).not.toContain("<mark");
+  for (const name of [
+    "mdmark-layout-columns",
+    "mdmark-collapsible",
+    "mdmark-pagebreak",
+    "mdmark-include",
+    "mdmark-wide-range",
+    "mdmark-syntax-warning",
+    "data-source",
+  ]) {
+    expect(html).not.toContain(name);
+  }
+  for (const text of ["左", "右", "補足の中身", "広げる中身"]) {
+    expect(html).toContain(text);
+  }
+  expect(html).not.toContain("取り込んだ段落");
+  expect(html).toContain('<code class="language-csv"');
+  expect(html).not.toContain("<!--");
 });
