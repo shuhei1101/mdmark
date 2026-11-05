@@ -57,7 +57,7 @@ data_models:
         description: 枠の中の層。層の箱の色をうっすら敷く
       - name: nodes
         type: MdmarkDiagramNode[]
-        description: 箱（`id`・`kind`・`x`・`y`・`w`・`h`・`name`・`tag?`・`sub?`・`io?`・`hint?`・`href?`）。`href` はノードのリンク先。`hint` は箱の右上の印に出す文。`kind` は `llm`・`dm`・`script`・`mcp`・`data`・`external` と、判定フローチャートの `start`・`question`・`action`・`result`。判定フローチャートは `frame`・`lanes` を持たず、ノードの座標と線の `points` を他のフロー図と同じく書くか、図の `width`・`height` と合わせて全て省く（型では `x`・`y`・`w`・`h` と `points` を省ける項目にし、`readDefinition` が全て書くか全て省くかを確かめる）。`tag`・`name`・`sub` の `{{語}}` は用語の照合に回す
+        description: 箱（`id`・`kind`・`x`・`y`・`w`・`h`・`name`・`tag?`・`sub?`・`io?`・`hint?`・`href?`）。`href` はノードのリンク先。`hint` は箱の右上の印に出す文。`kind` は `llm`・`dm`・`script`・`mcp`・`data`・`external` と、判定フローチャートの `start`・`question`・`action`・`result`。判定フローチャートは `frame`・`lanes` を持たず、ノードの座標と線の `points` を他のフロー図と同じく書くか、図の `width`・`height` と合わせて全て省く（`readDefinition` が全て書くか全て省くかを確かめ、省いた定義は `layoutFlowchart` が入れた座標で返す。型は読んだ後の定義で、`x`・`y`・`w`・`h`・`points`・`width`・`height` を必ず持つ）。`tag`・`name`・`sub` の `{{語}}` は用語の照合に回す
       - name: wires
         type: MdmarkDiagramWire[]
         description: 線（`id`・`from`・`to`・`line`・`points`・`label?`・`labelAt?`・`tip?`）。`from`・`to` は端の箱の `id`、`line` は `flow`・`read`・`write`・`reply`・`loop`、`points` は縦横だけの折れ線

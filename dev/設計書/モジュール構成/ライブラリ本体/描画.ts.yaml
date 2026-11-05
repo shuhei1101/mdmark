@@ -94,7 +94,7 @@ data_models:
         description: 本文に置いた書き方の警告を、警告を置いた順に並べたもの。`collectWarnings` が返す
   - name: CollectedWarning
     title: 集めた書き方の警告
-    container: src/render/index.ts
+    container: src/render/syntax/warnings.ts
     summary: 書き方の警告 1 つの場所・種類・文
     properties:
       - name: line

@@ -167,7 +167,7 @@ styles:
         value: '`dev/mock/refs/311/assets/footnote.css` の `@layer mdmark` の中身と、印刷の `footnote-print.css`（ツールチップと戻るリンクを隠す）。番号の色は `--mdmark-color-footnote-ref`（既定 `var(--mdmark-color-link)`）'
       - class_name: .mdmark .mdmark-code pre・.mdmark .mdmark-tree .mdmark-tree-list・.mdmark-code-wrap・.mdmark-tree-wrap
         target: コードブロックとファイルツリーの折り返し
-        value: '折り返さない既定（`white-space: pre`・`nowrap` と `overflow-wrap: normal`）は `@layer mdmark` の外に `.mdmark .mdmark-code pre`・`.mdmark .mdmark-code pre code`・`.mdmark .mdmark-tree .mdmark-tree-list` で置く（使う側の要素名だけ・クラス 1 つの `pre` への CSS より詳細度が高く、使う側が mdmark のクラスを指定すれば上書きできる）。`mdmark-code-wrap` と `mdmark-tree-wrap` の規則も同じく層の外に置き、値はモック `dev/mock/refs/328/assets/wrap.css` から取る（ツリーの注釈の字下げは開閉の印の幅とアイコンの幅と間隔の和）'
+        value: '折り返さない既定（`white-space: pre`・`nowrap` と `overflow-wrap: normal`）は `@layer mdmark` の外に `.mdmark .mdmark-code pre`・`.mdmark .mdmark-code pre code`・`.mdmark .mdmark-tree .mdmark-tree-list` で、印刷以外（`@media not print`。印刷は層の中の印刷の規則でコードを紙の幅に折り返す）に置く（使う側の要素名だけ・クラス 1 つの `pre` への CSS より詳細度が高く、使う側が mdmark のクラスを指定すれば上書きできる）。`mdmark-code-wrap` と `mdmark-tree-wrap` の規則も同じく層の外に置き、値はモック `dev/mock/refs/328/assets/wrap.css` から取る（ツリーの注釈の字下げは開閉の印の幅とアイコンの幅と間隔の和）'
       - class_name: .mdmark .mdmark-diagram-node.has-link・.mdmark-diagram-node-link
         target: リンク先を持つフロー図のノード
         value: 'リンクはノードの全体を覆い（`position: absolute; inset: 0`）、名前を本文のリンクと同じ色と下線にし、ノードの上は文字の上も `cursor: pointer`・`user-select: none` にする。ホバーはノードの地に種類の色をうっすら敷き、フォーカスはノードの外側に枠を出す。右上の印はリンクの上に重ねる。値はモック `dev/mock/refs/42/assets/diagram.css` の `.mdmark-diagram-node.has-link` の規則'

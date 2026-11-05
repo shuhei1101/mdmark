@@ -975,7 +975,7 @@ functions:
     container: src/render/syntax/warnings.ts
     kind: 関数
     scope: internal
-    summary: 部品『書き方の警告』の HTML に `markOwn` を掛けて `html_block` のトークンにし、トークンの `meta.warning` に警告の種類（図の部品の定義は `diagram_invalid`、ほかは `syntax_warning`）・文・警告の元になったマーカーのトークン（範囲なら開きのマーカー）の `map` の開始の行を入れて、指定の位置に差し込む。書き方の警告を置く処理は全て `pushWarning` か `warningBlock` を通す（今 `renderSyntaxWarning` を直に呼ぶ `src/render/marks.ts`・`src/render/syntax/html.ts` も置き換える。`mount` が拡張を読んだ後にブラウザで置く `src/libraries.ts` の警告はトークンを作らないため対象外）
+    summary: 部品『書き方の警告』の HTML に `markOwn` を掛けて `html_block` のトークンにし、トークンの `meta.warning` に警告の種類（図の部品の定義は `diagram_invalid`、ほかは `syntax_warning`）・文・警告の元になったマーカーのトークン（範囲なら開きのマーカー）の `map` の開始の行を入れて、指定の位置に差し込む。書き方の警告を置く処理は全て `pushWarning` か `warningBlock` を通す（今 `renderSyntaxWarning` を直に呼ぶ `src/render/marks.ts`・`src/render/syntax/html.ts` も置き換える。埋め込んだ HTML の中の図の部品の警告は、`warningBlock` が作ったトークンの HTML を範囲の HTML に入れ、その `meta.warning` を範囲の `html_block` の `meta.warnings` に範囲の開きのマーカーの行で並べる。`mount` が拡張を読んだ後にブラウザで置く `src/libraries.ts` の警告はトークンを作らないため対象外）
     args:
       - name: state
         type: StateCore
@@ -2447,7 +2447,7 @@ functions:
     container: src/render/syntax/warnings.ts
     kind: 関数
     scope: internal
-    summary: markdown-it のコアルール（最後に走る）。`meta.warning` を持つトークンごとに、`meta.warning.line`（マーカーの行）を、無ければ後ろで最初に `map` を持つトークンの開始の行（それも無ければ前で最後に `map` を持つトークンの終わりの行）を 1 からの行番号にし、`env.warnings` に `CollectedWarning` を足す
+    summary: markdown-it のコアルール（最後に走る）。`meta.warning` を持つトークン（埋め込んだ HTML の範囲の `html_block` は `meta.warnings` の並び）ごとに、`meta.warning.line`（マーカーの行）を、無ければ後ろで最初に `map` を持つトークンの開始の行（それも無ければ前で最後に `map` を持つトークンの終わりの行）を 1 からの行番号にし、`env.warnings` に `CollectedWarning` を足す
     args:
       - name: state
         type: StateCore
