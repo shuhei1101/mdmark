@@ -586,7 +586,7 @@ functions:
       - name: keepClasses
         type: boolean
         required: false
-        description: '真なら、書いた人の class を記法の class（`SYNTAX_CLASS_PATTERN` に合うもの）を除いて残す。`html-scripts` がオンの範囲の `html` で真にする。既定は偽'
+        description: '真なら、書いた人の class を記法の class（`SYNTAX_CLASS_PATTERN` に合うもの）を除いて残し、class を残した要素に `data-mdmark-keep-class` を付ける（`sanitize` は、mdmark が出した要素のうちこの属性を持つものの class を絞らず、属性を削除する）。書いた人の `data-mdmark-keep-class` は削除する。`html-scripts` がオンの範囲の `html` で真にする。既定は偽'
     returns:
       type: string
       description: 落とした後の HTML
@@ -612,9 +612,9 @@ functions:
       - name: test_sanitize_embedded_when_keep_classes
         case: 正常
         summary: keepClasses が真なら、記法の class を除いて書いた人の class を残す
-        condition: '`<div class="box mdmark-table has-tip">`、`keepClasses` が `true` と省いたとき'
+        condition: '`<div class="box mdmark-table has-tip" data-mdmark-keep-class="x">`、`keepClasses` が `true` と省いたとき'
         mock: なし
-        expected: '`true` は `class="box"` だけが残り、省いたときは `class` が無い'
+        expected: '`true` は `<div class="box" data-mdmark-keep-class>`、省いたときは `class` と `data-mdmark-keep-class` が無い'
     refs:
       - '#constants[EMBED_STYLES]'
       - '#constants[SANITIZE_OPTIONS]'
