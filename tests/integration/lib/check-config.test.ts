@@ -5,6 +5,7 @@ import { join } from "node:path";
 import { pathToFileURL } from "node:url";
 import { expect, inject, test } from "vitest";
 import {
+  INQUIRY_TEXT,
   JUDGEMENT_AUTO_TEXT,
   WARNINGS_MARKDOWN,
 } from "../../unit/helpers/diagrams.ts";
@@ -808,4 +809,79 @@ test("test_normal_when_diagram_auto_layout", async () => {
   expect(invalid[0]).toContain("座標を書くか");
   expect(lines.at(-1)).toBe("ずれ 1 件");
   expect(await snapshot(dir)).toEqual(before);
+});
+
+// 設定の tooltips.diagramPlacement が top・bottom でないとき、schema のずれにする（正常系（図のツールチップの位置に誤った値がある））
+test("test_normal_when_diagram_placement_invalid", async () => {
+  // 準備
+  const invalidDir = await createCleanDir();
+  const topDir = await createCleanDir();
+  const bottomDir = await createCleanDir();
+  const omittedDir = await createCleanDir();
+  for (const [dir, value] of [
+    [invalidDir, "left"],
+    [topDir, "top"],
+    [bottomDir, "bottom"],
+  ] as const) {
+    await appendConfig(dir, ["tooltips:", `  diagramPlacement: ${value}`]);
+  }
+  const before = await snapshot(invalidDir);
+  // 実行
+  const invalid = await runCli(["check"], invalidDir);
+  const valid = await Promise.all(
+    [topDir, bottomDir, omittedDir].map((dir) => runCli(["check"], dir)),
+  );
+  // 検証
+  expect(invalid.code).toBe(1);
+  const lines = linesOf(invalid.stdout).filter((line) =>
+    line.startsWith("mdmark.config.yaml:tooltips.diagramPlacement: schema:"),
+  );
+  expect(lines).toHaveLength(1);
+  expect(lines[0]).toContain("top");
+  expect(lines[0]).toContain("bottom");
+  for (const result of valid) {
+    expect(result.code).toBe(0);
+    expect(result.stdout).not.toContain("diagramPlacement");
+  }
+  expect(await snapshot(invalidDir)).toEqual(before);
+});
+
+// フロー図の frame.hint が文字でないことと stickyTitles が真偽値でないことを、1 件の diagram_invalid にまとめる（正常系（グループの項目に誤った値がある））
+test("test_normal_when_group_options_invalid", async () => {
+  // 準備
+  const dir = await createTempDir();
+  await runCli(["init", dir], dir);
+  const definition = JSON.parse(INQUIRY_TEXT) as Record<string, unknown> & {
+    frame: Record<string, unknown>;
+  };
+  definition.frame = { ...definition.frame, hint: 1 };
+  definition.stickyTitles = "no";
+  const a = ["# A", "", ...flowLines(definition), ""];
+  await writeFiles(dir, {
+    "docs/a.md": a.join("\n"),
+    "index.yaml": [
+      "schema: 1",
+      "docs:",
+      "  - id: a",
+      "    path: docs/a.md",
+      "    title: A",
+      "",
+    ].join("\n"),
+  });
+  const files = ["mdmark.config.yaml", "index.yaml", "docs/a.md"];
+  const read = () =>
+    Promise.all(files.map((path) => readFile(join(dir, path), "utf8")));
+  const before = await read();
+  // 実行
+  const result = await runCli(["check"], dir);
+  // 検証
+  expect(a.indexOf("<!-- flow -->") + 1).toBe(3);
+  expect(result.code).toBe(1);
+  const invalid = linesOf(result.stdout).filter((line) =>
+    line.startsWith("docs/a.md:3: diagram_invalid:"),
+  );
+  expect(invalid).toHaveLength(1);
+  expect(invalid[0]).toContain("frame.hint");
+  expect(invalid[0]).toContain("stickyTitles");
+  expect(await read()).toEqual(before);
 });
