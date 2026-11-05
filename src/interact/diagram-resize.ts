@@ -153,7 +153,9 @@ export const attachDiagramResize = (options: {
     { signal },
   );
 
-  const restored = readHeight(storage, key);
+  // 保った高さは、操作で変えるときと同じく範囲に収めて当てる
+  const kept = readHeight(storage, key);
+  const restored = kept === null ? null : clampDiagramHeight(kept, max());
   if (restored === null) {
     updateValues(viewport.getBoundingClientRect().height);
   } else {
