@@ -1105,6 +1105,18 @@ files:
     related:
       - to: src/cli/html
         type: tests
+  - path: unit/src/cli/icons.test.ts
+    description: src/cli/icons.ts（「束ねていない名前のアイコンの形の取り出し」）を確かめる単体テスト。icons.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, topic:cli, topic:アイコン]
+    related:
+      - to: src/cli/icons
+        type: tests
+  - path: unit/src/cli/includes.test.ts
+    description: src/cli/includes.ts（「取り込む文書の表の組み立てと、取り込めない問題の拾い出し」）を確かめる単体テスト。includes.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, topic:cli, topic:ファイル]
+    related:
+      - to: src/cli/includes
+        type: tests
   - path: unit/src/cli/init.test.ts
     description: src/cli/init.ts（「mdmark init」）を確かめる単体テスト。init.ts を変えたときに、合わせて見修正するケースを探すときに読む。
     tags: [topic:単体テスト, tool:vitest, topic:cli]
@@ -1255,6 +1267,12 @@ files:
     related:
       - to: src/index
         type: tests
+  - path: unit/src/inline-icons.browser.test.ts
+    description: src/inline-icons.ts（「束ねていない名前のアイコンを jsDelivr から読む loadInlineIcons」）を確かめるブラウザで流す単体テスト。inline-icons.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, topic:dom, topic:アイコン]
+    related:
+      - to: src/inline-icons
+        type: tests
   - path: unit/src/interact/clipboard.browser.test.ts
     description: src/interact/clipboard.ts（「クリップボードへ書く（表・行の URL・コードブロック・ファイルツリーが使う）」）を確かめるブラウザで流す単体テスト。clipboard.ts を変えたときに、合わせて見修正するケースを探すときに読む。
     tags: [topic:単体テスト, tool:vitest, topic:dom, topic:イベント, topic:クリップボード]
@@ -1266,6 +1284,12 @@ files:
     tags: [topic:単体テスト, tool:vitest, topic:dom, topic:イベント]
     related:
       - to: src/interact/code-blocks
+        type: tests
+  - path: unit/src/interact/csv-raw.browser.test.ts
+    description: src/interact/csv-raw.ts（「CSV の表と元の CSV の切り替え」）を確かめるブラウザで流す単体テスト。csv-raw.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, topic:dom, topic:イベント, topic:表]
+    related:
+      - to: src/interact/csv-raw
         type: tests
   - path: unit/src/interact/diagram-tips.browser.test.ts
     description: src/interact/diagram-tips.ts（「図のツールチップ」）を確かめるブラウザで流す単体テスト。diagram-tips.ts を変えたときに、合わせて見修正するケースを探すときに読む。
@@ -1374,6 +1398,12 @@ files:
     tags: [topic:単体テスト, tool:vitest, topic:dom, topic:イベント, topic:ツリー]
     related:
       - to: src/interact/trees
+        type: tests
+  - path: unit/src/interact/wide.browser.test.ts
+    description: src/interact/wide.ts（「wide の範囲の幅の切り替えのボタン」）を確かめるブラウザで流す単体テスト。wide.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, topic:dom, topic:イベント]
+    related:
+      - to: src/interact/wide
         type: tests
   - path: unit/src/interact/zoom.browser.test.ts
     description: src/interact/zoom.ts（「図とライトボックスが共有する拡大・縮小・移動」）を確かめるブラウザで流す単体テスト。zoom.ts を変えたときに、合わせて見修正するケースを探すときに読む。
@@ -1611,6 +1641,12 @@ files:
     related:
       - to: src/parts/gif
         type: tests
+  - path: unit/src/parts/highlight.test.ts
+    description: src/parts/highlight.ts（「蛍光ペンの renderHighlight」）を確かめる単体テスト。highlight.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, topic:部品, tool:html]
+    related:
+      - to: src/parts/highlight
+        type: tests
   - path: unit/src/parts/hint.test.ts
     description: src/parts/hint.ts（「埋め込んだ HTML のヒントのマーカーと中身」）を確かめる単体テスト。hint.ts を変えたときに、合わせて見修正するケースを探すときに読む。
     tags: [topic:単体テスト, tool:vitest, topic:図, tool:svg]
@@ -1628,6 +1664,24 @@ files:
     tags: [topic:単体テスト, tool:vitest, topic:部品, tool:html, topic:画像]
     related:
       - to: src/parts/image
+        type: tests
+  - path: unit/src/parts/inline-icon.test.ts
+    description: src/parts/inline-icon.ts（「行内のアイコンの renderInlineIcon と iconNodeSvg」）を確かめる単体テスト。inline-icon.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, topic:部品, tool:html]
+    related:
+      - to: src/parts/inline-icon
+        type: tests
+  - path: unit/src/parts/kbd.test.ts
+    description: src/parts/kbd.ts（「キーの renderKbd」）を確かめる単体テスト。kbd.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, topic:部品, tool:html]
+    related:
+      - to: src/parts/kbd
+        type: tests
+  - path: unit/src/parts/layout-columns.test.ts
+    description: src/parts/layout-columns.ts（「段組みの renderLayoutColumns」）を確かめる単体テスト。layout-columns.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, topic:部品, tool:html]
+    related:
+      - to: src/parts/layout-columns
         type: tests
   - path: unit/src/parts/lightbox.test.ts
     description: src/parts/lightbox.ts（「ライトボックスの renderLightbox」）を確かめる単体テスト。lightbox.ts を変えたときに、合わせて見修正するケースを探すときに読む。
@@ -1737,6 +1791,12 @@ files:
     related:
       - to: src/parts/view
         type: tests
+  - path: unit/src/parts/wide.test.ts
+    description: src/parts/wide.ts（「wide の範囲の renderWide」）を確かめる単体テスト。wide.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, topic:部品, tool:html]
+    related:
+      - to: src/parts/wide
+        type: tests
   - path: unit/src/plugin/arguments.test.ts
     description: src/plugin/arguments.ts（「ツールの引数の検査・SDK に渡す素通しの検証器」）を確かめる単体テスト。arguments.ts を変えたときに、合わせて見修正するケースを探すときに読む。
     tags: [topic:単体テスト, tool:vitest, tool:mcp, tool:claude-code]
@@ -1839,6 +1899,18 @@ files:
     related:
       - to: src/render/syntax/collapse
         type: tests
+  - path: unit/src/render/syntax/csv.test.ts
+    description: src/render/syntax/csv.ts（「CSV の表」）を確かめる単体テスト。csv.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, topic:markdown, topic:構文, tool:markdown-it]
+    related:
+      - to: src/render/syntax/csv
+        type: tests
+  - path: unit/src/render/syntax/details.test.ts
+    description: src/render/syntax/details.ts（「details の範囲」）を確かめる単体テスト。details.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, topic:markdown, topic:構文, tool:markdown-it]
+    related:
+      - to: src/render/syntax/details
+        type: tests
   - path: unit/src/render/syntax/diagrams.test.ts
     description: src/render/syntax/diagrams.ts（「図の部品のマーカーの範囲を部品の HTML にするコアルール」）を確かめる単体テスト。diagrams.ts を変えたときに、合わせて見修正するケースを探すときに読む。
     tags: [topic:単体テスト, tool:vitest, topic:図, tool:svg]
@@ -1875,6 +1947,12 @@ files:
     related:
       - to: src/render/syntax/headings
         type: tests
+  - path: unit/src/render/syntax/highlight.test.ts
+    description: src/render/syntax/highlight.ts（「蛍光ペン」）を確かめる単体テスト。highlight.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, topic:markdown, topic:構文, tool:markdown-it]
+    related:
+      - to: src/render/syntax/highlight
+        type: tests
   - path: unit/src/render/syntax/html.test.ts
     description: src/render/syntax/html.ts（「埋め込んだ HTML」）を確かめる単体テスト。html.ts を変えたときに、合わせて見修正するケースを探すときに読む。
     tags: [topic:単体テスト, tool:vitest, topic:markdown, topic:構文, tool:markdown-it, tool:html]
@@ -1886,6 +1964,36 @@ files:
     tags: [topic:単体テスト, tool:vitest, topic:記法, tool:markdown-it, topic:画像, topic:動画]
     related:
       - to: src/render/syntax/images
+        type: tests
+  - path: unit/src/render/syntax/includes.test.ts
+    description: src/render/syntax/includes.ts（「取り込み」）を確かめる単体テスト。includes.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, topic:markdown, topic:構文, tool:markdown-it]
+    related:
+      - to: src/render/syntax/includes
+        type: tests
+  - path: unit/src/render/syntax/inline-icons.test.ts
+    description: src/render/syntax/inline-icons.ts（「行内のアイコン」）を確かめる単体テスト。inline-icons.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, topic:markdown, topic:構文, tool:markdown-it]
+    related:
+      - to: src/render/syntax/inline-icons
+        type: tests
+  - path: unit/src/render/syntax/kbd.test.ts
+    description: src/render/syntax/kbd.ts（「キー」）を確かめる単体テスト。kbd.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, topic:markdown, topic:構文, tool:markdown-it]
+    related:
+      - to: src/render/syntax/kbd
+        type: tests
+  - path: unit/src/render/syntax/layout-columns.test.ts
+    description: src/render/syntax/layout-columns.ts（「段組み」）を確かめる単体テスト。layout-columns.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, topic:markdown, topic:構文, tool:markdown-it]
+    related:
+      - to: src/render/syntax/layout-columns
+        type: tests
+  - path: unit/src/render/syntax/pagebreak.test.ts
+    description: src/render/syntax/pagebreak.ts（「改ページ」）を確かめる単体テスト。pagebreak.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, topic:markdown, topic:構文, tool:markdown-it]
+    related:
+      - to: src/render/syntax/pagebreak
         type: tests
   - path: unit/src/render/syntax/row-details.test.ts
     description: src/render/syntax/row-details.ts（「行の詳細」）を確かめる単体テスト。row-details.ts を変えたときに、合わせて見修正するケースを探すときに読む。
@@ -1946,6 +2054,12 @@ files:
     tags: [topic:単体テスト, tool:vitest, topic:markdown, topic:構文, tool:markdown-it, topic:ビュー]
     related:
       - to: src/render/syntax/views
+        type: tests
+  - path: unit/src/render/syntax/wide.test.ts
+    description: src/render/syntax/wide.ts（「wide の範囲」）を確かめる単体テスト。wide.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, topic:markdown, topic:構文, tool:markdown-it]
+    related:
+      - to: src/render/syntax/wide
         type: tests
   - path: unit/src/viewer/bundle.browser.test.ts
     description: src/viewer/bundle.ts（「まとめた HTML の文書の行き来と一覧のパネル」）を確かめるブラウザで流す単体テスト。bundle.ts を変えたときに、合わせて見修正するケースを探すときに読む。
@@ -2036,6 +2150,12 @@ files:
     tags: [topic:単体テスト, tool:vitest, tool:vscode, topic:プレビュー, tool:html]
     related:
       - to: vscode/src/preview/html
+        type: tests
+  - path: unit/vscode/src/preview/includes.test.ts
+    description: vscode/src/preview/includes.ts（「取り込む文書の読み取り」）を確かめる単体テスト。includes.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, tool:vscode, topic:プレビュー]
+    related:
+      - to: vscode/src/preview/includes
         type: tests
   - path: unit/vscode/src/preview/links.test.ts
     description: vscode/src/preview/links.ts（「押したリンクの開き先の見分け（vscode を import しない）」）を確かめる単体テスト。links.ts を変えたときに、合わせて見修正するケースを探すときに読む。

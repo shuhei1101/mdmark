@@ -1,0 +1,27 @@
+title: Parts/Kbd
+stories:
+  - name: Single
+    parameters:
+      server:
+        id: kbd
+    args:
+      keys: '["Enter"]'
+  - name: Combo
+    parameters:
+      server:
+        id: kbd
+    args:
+      keys: '["Ctrl","Shift","P"]'
+  - name: PlusKey
+    parameters:
+      server:
+        id: kbd
+    args:
+      keys: '["Ctrl","+"]'
+  - name: Dark
+    parameters:
+      server:
+        id: kbd
+    args:
+      keys: '["Ctrl","C"]'
+      scheme: dark
