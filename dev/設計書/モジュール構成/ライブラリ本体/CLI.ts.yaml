@@ -293,7 +293,7 @@ functions:
     container: src/cli/config.ts
     usecase: 共通
     summary: 読んだ値を `schemas/mdmark.config.schema.json` と同じ形で検め、合わないところを `schema` のずれで返す
-    description: 検めるのは、最上位がオブジェクトであること・`version` が `VERSION_PATTERN` に合う文字列・`features` の値が真偽値・`libraries` の値が文字列でキーが印の名前・`index`・`theme`・`colorTheme` が文字列（`colorTheme` の知らない名前はここでは拒まず、設定に残す）・`extensions` が文字列の配列・`build` があれば `include`（1 つ以上の文字列）と `out`（`.html` の文字列）を持ち `exclude`・`glossary` が文字列の配列で `entry` が文字列であること・`check` があれば `ignore` が印の名前（`MARK_NAME_PATTERN`）の文字列の配列であること・`tooltips` があれば `placement` が `top` か `bottom` であること・`labels` があればオブジェクトで `paramCopy` があれば空でない文字列であること（合わなければ `labels` を設定から落とす。知らないキーは拒まない）・`side-toc` があればオブジェクトで `mode` が `hover` か `fixed` であること・`syntax` があればオブジェクトで `url` が文字列であること・`assets` があればオブジェクトで `root` が文字列であること。`aliases` があれば配列であることを確かめ、行は `validateAliasRows` で検める（ずれをそのまま `schema` のずれに加え、返った行を `config.aliases` に入れる）。知らない最上位のキーは拒まない。`aliases` の行のほかの形の検査は手書きで、ライブラリを足さない（索引の `normalizeIndex` と同じやり方）。検める形は `schemas/mdmark.config.schema.json` と揃える
+    description: 検めるのは、最上位がオブジェクトであること・`version` が `VERSION_PATTERN` に合う文字列・`features` の値が真偽値・`libraries` の値が文字列でキーが印の名前・`index`・`theme`・`colorTheme` が文字列（`colorTheme` の知らない名前はここでは拒まず、設定に残す）・`extensions` が文字列の配列・`build` があれば `include`（1 つ以上の文字列）と `out`（`.html` の文字列）を持ち `exclude`・`glossary` が文字列の配列で `entry` が文字列であること・`check` があれば `ignore` が印の名前（`MARK_NAME_PATTERN`）の文字列の配列であること・`tooltips` があれば `placement` と `diagramPlacement` がどちらも（あれば）`top` か `bottom` であること・`labels` があればオブジェクトで `paramCopy` があれば空でない文字列であること（合わなければ `labels` を設定から落とす。知らないキーは拒まない）・`side-toc` があればオブジェクトで `mode` が `hover` か `fixed` であること・`syntax` があればオブジェクトで `url` が文字列であること・`assets` があればオブジェクトで `root` が文字列であること。`aliases` があれば配列であることを確かめ、行は `validateAliasRows` で検める（ずれをそのまま `schema` のずれに加え、返った行を `config.aliases` に入れる）。知らない最上位のキーは拒まない。`aliases` の行のほかの形の検査は手書きで、ライブラリを足さない（索引の `normalizeIndex` と同じやり方）。検める形は `schemas/mdmark.config.schema.json` と揃える
     kind: 関数
     scope: public
     args:
@@ -387,6 +387,12 @@ functions:
         condition: '`assets: { root: 1 }`'
         mock: なし
         expected: '`{ where: "assets.root", kind: "schema" }` の 1 件'
+      - name: test_validate_config_when_diagram_placement_invalid
+        case: 異常
+        summary: '`top`・`bottom` 以外の `tooltips.diagramPlacement` を schema のずれにし、設定から落とす'
+        condition: '`tooltips.diagramPlacement` が `left` の値と、`top` の値'
+        mock: なし
+        expected: '`left` は `where` が `tooltips.diagramPlacement` の `schema` のずれが 1 件で、内容に `top`・`bottom` があり、`config.tooltips` が無い。`top` は `issues` が空で `config.tooltips.diagramPlacement` が `top`'
     status: planned
     introduced:
       pr: 32
@@ -1125,6 +1131,12 @@ functions:
         condition: '`assets.root: assets` の設定、文書に `![操作](demo.mp4){poster=demo.png}` と `![図](a.png)`、`assets/` に 3 つのファイル、`out` が `guide.html`'
         mock: 一時フォルダ
         expected: '`guide_files/` に `demo.mp4` があり、`payload.docs[0].markdown` の `src` がコピーへの相対パスで、`poster` と画像が `data:` URL'
+      - name: test_prepare_embeds_when_diagram_placement
+        case: 正常
+        summary: 設定の `tooltips.diagramPlacement` を埋める設定に写す
+        condition: '`tooltips: { placement: bottom, diagramPlacement: top }` を持つ設定'
+        mock: なし
+        expected: '`payload.config.tooltips` が `{ placement: "bottom", diagramPlacement: "top" }`'
     callees:
       - '#functions[usedLibraryMarks]'
       - '#functions[usedParts]'
@@ -2055,32 +2067,32 @@ functions:
     summary: 文書ごとに `findDiagramBlocks` で図の部品の範囲を読み、`readDefinition` で読めない定義を 1 件の `diagram_invalid`、読めたフロー図の定義を `checkFlowLayout` のずれにする
     description: ずれの `file` は文書のパス、`where` は開きの印の行の番号の文字、`message` は `diagram_invalid` なら書き方の警告と同じ文、ほかは図の題（無ければ印の名前）・対象のノードか線の `id`・直し方の 1 文。並びは文書の順、同じ文書の中は行の順
     args:
-    - name: documents
-      type: '{ path: string; markdown: string }[]'
-      required: true
-      description: '`collectCheckDocuments` の文書'
+      - name: documents
+        type: '{ path: string; markdown: string }[]'
+        required: true
+        description: '`collectCheckDocuments` の文書'
     returns:
       type: CheckIssue[]
       description: '`diagram_*` のずれ（無ければ空）'
     callees:
-    - dev/設計書/モジュール構成/ライブラリ本体/図.ts#functions[findDiagramBlocks]
-    - dev/設計書/モジュール構成/ライブラリ本体/図.ts#functions[readDefinition]
-    - dev/設計書/モジュール構成/ライブラリ本体/図.ts#functions[checkFlowLayout]
+      - dev/設計書/モジュール構成/ライブラリ本体/図.ts#functions[findDiagramBlocks]
+      - dev/設計書/モジュール構成/ライブラリ本体/図.ts#functions[readDefinition]
+      - dev/設計書/モジュール構成/ライブラリ本体/図.ts#functions[checkFlowLayout]
     unit_tests:
-    - name: test_check_diagrams
-      case: 正常
-      summary: 読めない定義と配置のずれを返す
-      condition: '`a.md` の 3 行目に読めない `<!-- chart -->` の定義、10 行目に 2 つのノードが重なる `<!-- flow -->` の定義（題 `受付`）'
-      mock: なし
-      expected: '`{ file: "a.md", where: "3", kind: "diagram_invalid" }` と `{ file: "a.md", where: "10", kind: "diagram_node_overlap" }` の 2 件で、2 件目の `message` に `受付` と 2 つのノードの `id` が入る'
-    - name: test_check_diagrams_when_clean
-      case: 正常
-      summary: 整った図と図の無い文書はずれを返さない
-      condition: モックの `inquiry` の定義を持つ文書と、図の無い文書
-      mock: なし
-      expected: 空の配列
+      - name: test_check_diagrams
+        case: 正常
+        summary: 読めない定義と配置のずれを返す
+        condition: '`a.md` の 3 行目に読めない `<!-- chart -->` の定義、10 行目に 2 つのノードが重なる `<!-- flow -->` の定義（題 `受付`）'
+        mock: なし
+        expected: '`{ file: "a.md", where: "3", kind: "diagram_invalid" }` と `{ file: "a.md", where: "10", kind: "diagram_node_overlap" }` の 2 件で、2 件目の `message` に `受付` と 2 つのノードの `id` が入る'
+      - name: test_check_diagrams_when_clean
+        case: 正常
+        summary: 整った図と図の無い文書はずれを返さない
+        condition: モックの `inquiry` の定義を持つ文書と、図の無い文書
+        mock: なし
+        expected: 空の配列
     refs:
-    - dev/設計書/インターフェース定義/ライブラリ本体/設定と索引を点検する.ts#constraints[図の定義の点検]
+      - dev/設計書/インターフェース定義/ライブラリ本体/設定と索引を点検する.ts#constraints[図の定義の点検]
     status: planned
     introduced:
       pr: 275

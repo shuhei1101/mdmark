@@ -21,6 +21,7 @@ directory: |-
       ├── diagrams.ts     # 拡大・縮小・移動・全画面
       ├── zoom.ts         # 図とライトボックスが共有する拡大・縮小・移動
       ├── diagram-tips.ts # 図のツールチップ
+        ├── diagram-resize.ts # 表示する枠の高さを変えるリサイズハンドルと高さの保持
       ├── er-folds.ts     # ER 図の列の開閉
       └── params.ts       # 操作できる部品の値と写す
   ```
@@ -49,17 +50,20 @@ data_models:
         type: number
         description: 図の高さ（px）
       - name: frame
-        type: '{ title: string; x: number; y: number; w: number; h: number } | undefined'
-        description: システムの枠
+        type: '{ title: string; x: number; y: number; w: number; h: number; hint?: string } | undefined'
+        description: システムの枠。`hint` はタイトルの右の印に出す文
       - name: lanes
-        type: '{ label: string; kind: "llm" | "mcp" | "data"; y: number; h: number }[] | undefined'
-        description: 枠の中の層。層の箱の色をうっすら敷く
+        type: '{ label: string; kind: "llm" | "mcp" | "data"; y: number; h: number; hint?: string }[] | undefined'
+        description: 枠の中の層。層の箱の色をうっすら敷く。`hint` はタイトルの右の印に出す文
       - name: nodes
         type: MdmarkDiagramNode[]
         description: 箱（`id`・`kind`・`x`・`y`・`w`・`h`・`name`・`tag?`・`sub?`・`io?`・`hint?`）。`hint` は箱の右上の印に出す文。`kind` は `llm`・`dm`・`script`・`mcp`・`data`・`external` と、判定フローチャートの `start`・`question`・`action`・`result`。判定フローチャートは `frame`・`lanes` を持たず、ノードの座標と線の `points` を他のフロー図と同じく定義に書く。`tag`・`name`・`sub` の `{{語}}` は用語の照合に回す
       - name: wires
         type: MdmarkDiagramWire[]
         description: 線（`id`・`from`・`to`・`line`・`points`・`label?`・`labelAt?`・`tip?`）。`from`・`to` は端の箱の `id`、`line` は `flow`・`read`・`write`・`reply`・`loop`、`points` は縦横だけの折れ線
+      - name: stickyTitles
+        type: boolean | undefined
+        description: 拡大して動かしたときに、見えている枠と層のタイトルを表示する枠の上端に留めるか。省いたとき `true`
   - name: MdmarkSequenceDefinition
     title: シーケンス図の定義
     container: src/diagram/definition.ts
@@ -404,6 +408,42 @@ constants:
     status: planned
     introduced:
       pr: 298
+  - name: RESIZE
+    title: リサイズハンドルの量
+    container: src/diagram/geometry.ts
+    summary: キー 1 回で変える高さと、表示する枠の高さの下限（px）
+    entries:
+      - key: step
+        value: '32'
+      - key: min
+        value: '120'
+    status: planned
+    introduced:
+      pr: 308
+  - name: DRAG_THRESHOLD_PX
+    title: ドラッグを始める距離
+    container: src/interact/zoom.ts
+    summary: 押してからこの距離（px）を超えて動いたら図を動かし始める。超えないうちはグラフの項目のツールチップを優先する
+    value: '4'
+    status: planned
+    introduced:
+      pr: 308
+  - name: ITEM_HIT_RADIUS
+    title: グラフの点の当たりの半径
+    container: src/parts/chart.ts
+    summary: 点の形より広い、ツールチップを拾う透明の円の半径（px）
+    value: '12'
+    status: planned
+    introduced:
+      pr: 308
+  - name: DIAGRAM_HEIGHT_KEY_PREFIX
+    title: 図の高さのキーの頭
+    container: src/interact/diagram-resize.ts
+    summary: リサイズハンドルで変えた高さを sessionStorage に書くキーの頭
+    value: '"mdmark-diagram-height:"'
+    status: planned
+    introduced:
+      pr: 308
 functions:
   - name: parseDefinitionJson
     title: 定義の JSON を読む
@@ -437,7 +477,7 @@ functions:
     container: src/diagram/definition.ts
     kind: 関数
     scope: internal
-    summary: 印の範囲の `json` のコードブロックの数を確かめ、`parseDefinitionJson` で読み、種類ごとの形（必須の項目・型・列挙の値・線の端の箱の `id`・`id` の重なり・系列の点の数・系列と項目の数の上限 6 つ・`table` の値の漏れ・ER 図の関係の端のテーブルと列・テーブルの `id` と同じテーブルの列の名前の重なり・`kind`・`color`（`isColorName`。書き方の警告に並べる色の名前は `COLOR_NAMES` から出す）・多重度の値）を確かめる。読めない箇所は、書き方の警告の文言の文にして返す。文の中でノードは `ノード「{name}」`・`ノードの id`・`端のノード` と呼ぶ
+    summary: 印の範囲の `json` のコードブロックの数を確かめ、`parseDefinitionJson` で読み、種類ごとの形（必須の項目・型・列挙の値・線の端の箱の `id`・`id` の重なり・系列の点の数・系列と項目の数の上限 6 つ・`table` の値の漏れ・ER 図の関係の端のテーブルと列・テーブルの `id` と同じテーブルの列の名前の重なり・`kind`・`color`（`isColorName`。書き方の警告に並べる色の名前は `COLOR_NAMES` から出す）・多重度の値・フロー図の `frame.hint` と `lanes[].hint` が文字で `stickyTitles` が真偽値か）を確かめる。読めない箇所は、書き方の警告の文言の文にして返す。文の中でノードは `ノード「{name}」`・`ノードの id`・`端のノード` と呼ぶ
     args:
       - name: directive
         type: '"flow" | "sequence" | "chart" | "param" | "er"'
@@ -543,6 +583,12 @@ functions:
         condition: テーブルの `id` が重なる定義、同じテーブルに同じ列の名前がある定義、`kind` が `view`・`color` が `pink`・`toCard` が `many` の定義
         mock: なし
         expected: どれも `ok` が `false` で、`problems[0]` が重なった `id`・列の名前、使える種類 `master・transaction`・色の名前・多重度 `1・0..1・1..n・0..n` をそれぞれ含む
+      - name: test_read_definition_when_group_options_invalid
+        case: 異常
+        summary: グループの `hint` と `stickyTitles` の型を確かめる
+        condition: '`frame.hint` が数 `1`、`stickyTitles` が文字 `no` のフロー図の定義と、`lanes[0].hint` が文字で `stickyTitles` が `false` の定義'
+        mock: なし
+        expected: 前者は `ok` が `false` で、`problems` が `frame.hint` を文字で、`stickyTitles` を真偽値で書くことをそれぞれ含む 2 つ。後者は `ok` が `true`
   - name: fitScale
     title: 全体が収まる倍率
     container: src/diagram/geometry.ts
@@ -627,10 +673,10 @@ functions:
     container: src/parts/diagram.ts
     kind: 関数
     scope: internal
-    summary: 部品設計『図の枠』の HTML。題・ボタンの帯（縮小・倍率・拡大・全画面。倍率のボタンは全体が収まる倍率を 100% とした等幅の数字の `{倍率}%` と読み上げの名前 `倍率 {倍率}%。全体が収まる倍率に戻す`。`zoom` は定義の大きさを 1 とする倍率で、大きさの箱と中身の `scale()` に使う。倍率のボタンの文字は `zoom / fit`、縮小の `disabled` と移動のボタンの有無は `zoom <= fit`、拡大の `disabled` は `zoom >= ZOOM.max` で決める。`fit` は省くと 1）・表示する枠・ツールチップの中身・凡例を並べ、表示する枠に `body` を差す。`id` は `render` の中の通し番号で文書の中で一意にする
+    summary: 部品設計『図の枠』の HTML。題・ボタンの帯（縮小・倍率・拡大・全画面。倍率のボタンは全体が収まる倍率を 100% とした等幅の数字の `{倍率}%` と読み上げの名前 `倍率 {倍率}%。全体が収まる倍率に戻す`。`zoom` は定義の大きさを 1 とする倍率で、大きさの箱と中身の `scale()` に使う。倍率のボタンの文字は `zoom / fit`、縮小の `disabled` と移動のボタンの有無は `zoom <= fit`、拡大の `disabled` は `zoom >= ZOOM.max` で決める。`fit` は省くと 1）・表示する枠・ツールチップの中身・凡例を並べ、表示する枠に `body` を差す。`resizable` が `true`（既定。`modal` のときは置かない）なら表示する箱の右下に部品設計『図の枠』のリサイズハンドル（`div.mdmark-diagram-resize`。`aria-valuenow` などは `mount` が付ける）を置き、`legend` が空なら凡例の `ul` に `hidden` を付ける。`stickyTitles` が `false` のときは `figure` に `data-sticky-titles="off"` を付ける。`id` は `render` の中の通し番号で文書の中で一意にする
     args:
       - name: frame
-        type: '{ kind; title; scope; updated; legend; zoom?; fit?; modal?; id: string }'
+        type: '{ kind; title; scope; updated; legend; zoom?; fit?; modal?; resizable?: boolean; stickyTitles?: boolean; id: string }'
         required: true
         description: 部品設計の引数と、題・ツールチップに使う `id` の頭
       - name: body
@@ -659,12 +705,24 @@ functions:
         condition: '`zoom` が `0.6875`、`fit` が `0.55`'
         mock: なし
         expected: 帯のボタンが `縮小`・`倍率 125%。全体が収まる倍率に戻す`・`拡大`・`全画面で開く` の順で、倍率のボタンの文字が `125%`、`rotate-ccw` のアイコンが無い
+      - name: test_render_diagram_frame_when_resizable
+        case: 正常
+        summary: 'リサイズハンドルを置き、モーダルと `resizable: false` では置かない'
+        condition: '`resizable` を省いた枚、`resizable: false` の枚、`modal: true` の枚'
+        mock: なし
+        expected: 省いた枚だけ `div.mdmark-diagram-resize` があり、`role="separator"`・`aria-orientation="horizontal"`・`tabindex="0"`・`aria-label="「{題名}」の表示の高さ"`・`grip-horizontal` のアイコンを持つ
+      - name: test_render_diagram_frame_when_no_legend
+        case: 正常
+        summary: 凡例の項目が空なら凡例を隠し、タイトルを留めない図に印を付ける
+        condition: '`legend: []`、`stickyTitles: false`'
+        mock: なし
+        expected: '`aria-label="凡例"` の `ul` が `hidden` を持ち、`figure` が `data-sticky-titles="off"` を持つ'
   - name: renderFlow
     title: フロー図を描く
     container: src/parts/diagram.ts
     kind: 関数
     scope: internal
-    summary: 定義の座標に枠・層・ノードを置き、`jumpPaths` のパスで線を svg に描く。判定フローチャートのノードは `data-kind` で CSS が形（開始は円・アクションは角の丸くない四角・結果は両端の丸い形）を当て、質問のノードにはノードの幅と高さを `viewBox` にした菱形の `polygon` の svg（`aria-hidden`）を置く。名前は形に内接する四角に置き、質問は上下に高さの 1/4・左右に幅の 1/4、開始は幅 × `CIRCLE_INSET` の余白を `style` に当てる。箱の種類のアイコン・`io` か `hint` を持つ箱の右上の印・線のラベルを置き（`hints` がオフなら印とツールチップの中身を置かない）、`{{語}}` は用語の照合に回す
+    summary: 定義の座標に枠・層・ノードを置き、`jumpPaths` のパスで線を svg に描く。判定フローチャートのノードは `data-kind` で CSS が形（開始は円・アクションは角の丸くない四角・結果は両端の丸い形）を当て、質問のノードにはノードの幅と高さを `viewBox` にした菱形の `polygon` の svg（`aria-hidden`）を置く。名前は形に内接する四角に置き、質問は上下に高さの 1/4・左右に幅の 1/4、開始は幅 × `CIRCLE_INSET` の余白を `style` に当てる。箱の種類のアイコン・`io` か `hint` を持つ箱の右上の印・`hint` を持つ枠と層のタイトルの右の印（`button.mdmark-diagram-info.mdmark-diagram-group-info`。`aria-label` は `「{タイトル}」の説明`）・線のラベルを置き、枠と層のタイトルにはグループの上端と下端の `data-sticky-top`・`data-sticky-bottom` を付け（`hints` がオフなら印とツールチップの中身を置かない）、`{{語}}` は用語の照合に回す
     args:
       - name: definition
         type: MdmarkFlowDefinition
@@ -710,6 +768,12 @@ functions:
         condition: モックの `judgement` の定義
         mock: なし
         expected: '`data-kind` が `start`・`question`・`action`・`result` のノードが 1・2・1・2 つあり、質問のノードだけが `viewBox="0 0 280 136"` と `points="140,0 280,68 140,136 0,68"` の `aria-hidden="true"` の svg を持ち、質問のノードの `style` が `padding:34px 70px`、開始のノードの `style` が `padding:14.6px`、線のラベルに `YES`・`NO` がある'
+      - name: test_render_flow_when_group_hint
+        case: 正常
+        summary: 枠と層の `hint` の印と留める範囲を置く
+        condition: モックの `inquiry-groups` の定義を `hints` が `true` と `false` で描く
+        mock: なし
+        expected: '`true` で枠と LLM の層のタイトルに `aria-label="「{タイトル}」の説明"` の印があり、`hint` を持たない層には無い。枠のタイトルが `data-sticky-top` と `data-sticky-bottom`（枠の `y` と `y + h`）を持つ。`false` でタイトルの印が無い'
   - name: renderSequence
     title: シーケンス図を描く
     container: src/parts/diagram.ts
@@ -740,7 +804,7 @@ functions:
     container: src/parts/chart.ts
     kind: 関数
     scope: internal
-    summary: '`type` ごとに svg に描く。`line` は軸・目盛り・系列の折れ線と点、`bar` は目盛りごとに系列の棒を並べ、`scatter` は横と縦の数値の軸に点を置き、`pie` は 12 時から時計回りに扇形を並べて扇形の外に整数の割合（合計が 100 になるよう最大剰余法で丸める）を置く。`area` は折れ線の下を系列の塗りで塗り、`stacked-bar`・`stacked-area` は `stackSeries` で積み上げ（負の値は 0 から下へ積み、`stacked-bar` は棒の上に合計を置く）、`horizontal-bar` は項目を縦に並べて値を横の長さにし、`donut` は `pie` の中を空けて中央に合計と `合計{unit}` を置き、`radar` は `x.ticks` の軸を放射状に並べて系列を多角形にし、`bubble` は `size` の値を円の面積にし、`combo` は系列ごとに `as` の描き方で重ね、`axis` が `y2` の系列を右の軸で描く。系列と円の項目は位置で `SERIES_STYLES` の色（`--mdmark-color-series-{n}`）と、線の模様・塗りの模様（svg の `pattern`）・点の形の組を決める。縦の軸の範囲を省いた定義は `niceTicks` で切る'
+    summary: '`type` ごとに svg に描く。`line` は軸・目盛り・系列の折れ線と点、`bar` は目盛りごとに系列の棒を並べ、`scatter` は横と縦の数値の軸に点を置き、`pie` は 12 時から時計回りに扇形を並べて扇形の外に整数の割合（合計が 100 になるよう最大剰余法で丸める）を置く。`area` は折れ線の下を系列の塗りで塗り、`stacked-bar`・`stacked-area` は `stackSeries` で積み上げ（負の値は 0 から下へ積み、`stacked-bar` は棒の上に合計を置く）、`horizontal-bar` は項目を縦に並べて値を横の長さにし、`donut` は `pie` の中を空けて中央に合計と `合計{unit}` を置き、`radar` は `x.ticks` の軸を放射状に並べて系列を多角形にし、`bubble` は `size` の値を円の面積にし、`combo` は系列ごとに `as` の描き方で重ね、`axis` が `y2` の系列を右の軸で描く。系列と円の項目は位置で `SERIES_STYLES` の色（`--mdmark-color-series-{n}`）と、線の模様・塗りの模様（svg の `pattern`）・点の形の組を決める。縦の軸の範囲を省いた定義は `niceTicks` で切る。点・棒・扇形・バブルの項目ごとに、`chartItemText` の文で `renderDiagramTip`（`kind: item`）の中身を `tips` に積み、項目に `tabindex="0"`・`aria-describedby`・`data-tip-owner` を付ける。点は点の形の上に半径 `ITEM_HIT_RADIUS` の透明の `circle.mdmark-diagram-item-hit` を重ね、そちらに属性を付ける。項目はどれも Tab で止まる（矢印キーは図の移動に使うため、ロービング tabindex にしない）'
     args:
       - name: definition
         type: MdmarkChartDefinition
@@ -752,7 +816,7 @@ functions:
         description: 塗りの模様の `pattern` の `id` の頭
     returns:
       type: '{ html: string; width: number; height: number; tips: string }'
-      description: 図の中身。`tips` は空
+      description: 図の中身。`tips` は項目のツールチップの中身
     unit_tests:
       - name: test_render_chart
         case: 正常
@@ -832,6 +896,12 @@ functions:
         condition: 系列 6 つの `line`
         mock: なし
         expected: '`data-series` が `1`〜`6` の線があり、系列 5 の線の `stroke-dasharray` が `9 3 1 3 1 3`、系列 6 が `3 2`、系列 5 の点が逆三角形、系列 6 の点が十字'
+      - name: test_render_chart_when_item_tips
+        case: 正常
+        summary: 項目ごとにツールチップの中身と当たりの円を置く
+        condition: '`reply-time`（折れ線・系列 2 つ・点 5 つずつ）と `reply-kind`（円・項目 3 つ）の定義'
+        mock: なし
+        expected: 折れ線は `circle.mdmark-diagram-item-hit` が 10 つで `r="12"`・`tabindex="0"`・`aria-describedby` を持ち、`tips` に `role="tooltip"` が 10 つ。円は扇形の `path` が `tabindex="0"` を持ち、ツールチップの本文が `186 件（62%）` の形
     callees:
       - '#functions[stackSeries]'
       - '#constants[SERIES_STYLES]'
@@ -840,16 +910,12 @@ functions:
     container: src/parts/diagram.ts
     kind: 関数
     scope: internal
-    summary: '定義に出るノードの種類（名前は `KIND_STYLES` の `legend`）・線の種類・系列だけを並べ、図にあるときだけ枠・層・交差・印・下線を加える。外部のシステムに `（枠の外）` を添えるのは枠を持つ図だけ。`combo` で `y2` を持つ図は系列の名前に `（左の軸）`・`（右の軸）` を添え、`bubble` は `円の面積: {size.label}` の項目を加え、`donut` は `pie` と同じく項目の名前と値を並べる。ER 図は図にあるテーブルの種類の札（名前は `{札}のテーブル`）・列のマーカー（`ER_COLUMN_KEYS` の `title`）・多重度の記号（`ER_CARDINALITIES` の名前）だけを並べる。層と印の項目の名前は `層の背景（層のノードの色）`・`説明や入力・処理・出力が出るノード`・`入力・処理・出力が出るノード`・`説明が出るノード`'
+    summary: 'フロー図とシーケンス図は、定義に 2 種類以上あるノード（シーケンス図は相手）の種類（名前は `KIND_STYLES` の `legend`）と線の種類だけを並べ、枠・層・交差・印・下線は載せない（1 種類だけのものは載せず、どちらも 1 種類なら空を返す）。グラフは系列（円とドーナツは項目）を並べる。外部のシステムに `（枠の外）` を添えるのは枠を持つ図だけ。`combo` で `y2` を持つ図は系列の名前に `（左の軸）`・`（右の軸）` を添え、`bubble` は `円の面積: {size.label}` の項目を加え、`donut` は `pie` と同じく項目の名前と値を並べる。ER 図は図にあるテーブルの種類の札（名前は `{札}のテーブル`）・列のマーカー（`ER_COLUMN_KEYS` の `title`）・多重度の記号（`ER_CARDINALITIES` の名前）だけを並べる'
     args:
       - name: definition
         type: MdmarkFlowDefinition | MdmarkSequenceDefinition | MdmarkChartDefinition | MdmarkErDefinition
         required: true
         description: 読めた定義
-      - name: drawn
-        type: '{ jumps: boolean; terms: boolean }'
-        required: true
-        description: 描いた図に交差と用語があるか
     returns:
       type: '{ sample: string; label: string }[]'
       description: 凡例の項目
@@ -878,6 +944,12 @@ functions:
         condition: マスターのテーブルだけを持ち、列が `pk`・`nn` だけで、多重度が `1` と `0..n` だけの定義
         mock: なし
         expected: 項目が `マスターのテーブル`・`主キー`・`NOT NULL`・`1 つ`・`0 以上` の 5 つで、説明のボタンと用語の下線の項目が無い
+      - name: test_legend_for_when_single_kinds
+        case: 正常
+        summary: 1 種類だけのノードと線を載せない
+        condition: モックの `single-kinds`（同じ種類のノード 3 つと同じ種類の線 2 本）と、ノードは 2 種類で線は `flow` だけの定義
+        mock: なし
+        expected: 前者は空の配列。後者はノードの種類の 2 項目だけで、線・枠・層・交差・印・下線の項目が無い
   - name: renderDiagramTip
     title: 図のツールチップを描く
     container: src/parts/diagram.ts
@@ -886,9 +958,9 @@ functions:
     summary: 部品設計『図のツールチップ』の中身。`role="tooltip"` と `hidden` を持つ
     args:
       - name: tip
-        type: '{ id: string; kind: "wire" | "io" | "hint" | "table"; label: string; tip?: string; io?: { in: string; do: string; out: string }; hint?: string; table?: MdmarkErTable }'
+        type: '{ id: string; kind: "wire" | "io" | "hint" | "table" | "item"; label: string; value?: string; tip?: string; io?: { in: string; do: string; out: string }; hint?: string; table?: MdmarkErTable }'
         required: true
-        description: 部品設計の引数。`io` と `hint` を両方持つときは入力・処理・出力の後に `hint` を出す。`table` は題を `{論理名}（{物理名}）`（どちらも `{{`・`}}` を除いた文字）にし、概要と、`desc` を持つ列の名前と説明を並べる
+        description: 部品設計の引数。`item` は見出しに `label`、本文に `value` を出す。`io` と `hint` を両方持つときは入力・処理・出力の後に `hint` を出す。`table` は題を `{論理名}（{物理名}）`（どちらも `{{`・`}}` を除いた文字）にし、概要と、`desc` を持つ列の名前と説明を並べる
     returns:
       type: string
       description: ツールチップの HTML
@@ -911,6 +983,12 @@ functions:
         condition: '`kind` が `table`、`desc` を持つ列が 2 つと持たない列が 1 つのテーブル'
         mock: なし
         expected: 題が `{論理名}（{物理名}）`、概要の後に `desc` を持つ 2 つの列の名前と説明だけが並び、`hidden` を持つ
+      - name: test_render_diagram_tip_when_item
+        case: 正常
+        summary: グラフの項目の名前と値を出す
+        condition: '`kind` が `item`、`label` が `担当者`、`value` が `2月: 38`'
+        mock: なし
+        expected: '見出しが `担当者`、本文が `2月: 38` で `hidden` を持つ'
   - name: renderParam
     title: 操作できる部品を描く
     container: src/parts/param.ts
@@ -972,7 +1050,7 @@ functions:
     container: src/render/syntax/diagrams.ts
     kind: 関数
     scope: internal
-    summary: markdown-it のコアルール。`diagrams` がオンのとき、登録した拡張に無い図の部品の印の範囲ごとに `json` のコードブロックを集めて `readDefinition` を呼び、読めたら部品の HTML（`renderFlow`・`renderEr` に `hints` のオン・オフと用語の `lookup` を、`renderParam` に `env.labels?.paramCopy` を渡す）（`markOwn` を掛けた `html_block`）、読めなければ書き方の警告に範囲のトークンを置き換える。オフのときは印だけを取り除く
+    summary: markdown-it のコアルール。`diagrams` がオンのとき、登録した拡張に無い図の部品の印の範囲ごとに `json` のコードブロックを集めて `readDefinition` を呼び、読めたら部品の HTML（`renderDiagramFrame` に機能 `diagram-resize` のオン・オフを `resizable`、定義の `stickyTitles` を渡し、`renderFlow`・`renderEr` に `hints` のオン・オフと用語の `lookup` を、`renderParam` に `env.labels?.paramCopy` を渡す）（`markOwn` を掛けた `html_block`）、読めなければ書き方の警告に範囲のトークンを置き換える。オフのときは印だけを取り除く
     args:
       - name: state
         type: StateCore
@@ -1022,12 +1100,12 @@ functions:
     container: src/interact/diagrams.ts
     kind: 関数
     scope: internal
-    summary: '`root` の中の `figure.mdmark-diagram` ごとに、`fitScale` で開いたときの倍率を当て、縮小・拡大・倍率のボタン（倍率のボタンは `0` と同じく開いたときの倍率と位置に戻し、倍率が変わるたびに文字と読み上げの名前を書き換える）・`+`・`-`・`0`・矢印キー・余白のドラッグ・全画面のボタンを付ける。倍率は図の中身に `transform: scale()` を掛け、大きさの箱を倍率を掛けた大きさにしてスクロールさせる。文書の中の表示する枠は、開いたときと開いたときの倍率に戻したときに `style.height` を定義の高さ × 全体が収まる倍率と `--mdmark-diagram-max-height` の計算値（`style.maxHeight` を外して読む `getComputedStyle` の `maxHeight`）の小さいほうにし、倍率を当てるたびに `style.maxHeight` を定義の高さ × 今の倍率にする（使う側が高さを変えたとき、36rem で止めず図の全体が収まる高さまで広げられる）。全画面に写す枠は `style.height` と `style.maxHeight` を外す。印刷では CSS（`@media print .mdmark`）がインラインの高さと上限を外す。表示する枠の大きさを `ResizeObserver` で見て、開いたときの倍率のままなら求め直す。ER 図の図には `attachErFolds` を付ける。ホイールは受け取らない。倍率と移動の操作（ボタン・`+`・`-`・`0`・矢印キー・ドラッグ）は `attachZoom` に `percentBase: "fit"` で任せ、表示する枠の高さの付け替えだけをこの関数が持つ'
+    summary: '`root` の中の `figure.mdmark-diagram` ごとに、`fitScale` で開いたときの倍率を当て、縮小・拡大・倍率のボタン（倍率のボタンは `0` と同じく開いたときの倍率と位置に戻し、倍率が変わるたびに文字と読み上げの名前を書き換える）・`+`・`-`・`0`・矢印キー・余白のドラッグ・全画面のボタンを付ける。倍率は図の中身に `transform: scale()` を掛け、大きさの箱を倍率を掛けた大きさにしてスクロールさせる。文書の中の表示する枠は、開いたときと開いたときの倍率に戻したときに `style.height` を定義の高さ × 全体が収まる倍率と `--mdmark-diagram-max-height` の計算値（`style.maxHeight` を外して読む `getComputedStyle` の `maxHeight`）の小さいほうにし、倍率を当てるたびに `style.maxHeight` を定義の高さ × 今の倍率にする（使う側が高さを変えたとき、36rem で止めず図の全体が収まる高さまで広げられる）。全画面に写す枠は `style.height` と `style.maxHeight` を外す。印刷では CSS（`@media print .mdmark`）がインラインの高さと上限を外す。表示する枠の大きさを `ResizeObserver` で見て、開いたときの倍率のままなら求め直す。ER 図の図には `attachErFolds` を付ける。ホイールは受け取らない。倍率と移動の操作（ボタン・`+`・`-`・`0`・矢印キー・ドラッグ）は `attachZoom` に `percentBase: "fit"` で任せ、表示する枠の高さの付け替えだけをこの関数が持つ。`fitHeight` は関数で渡し、リサイズハンドルで高さを変えた後だけ `true` を返す。図ごとに `attachDiagramTips` を付け、`attachZoom` の `onPanStart` でその `closeOpen` を呼ぶ。`div.mdmark-diagram-resize` を持つ図には `attachDiagramResize` を付け（キーは `diagramHeightKey` に `location.pathname`・`root` の中の `figure.mdmark-diagram` の順・題名を渡す。保った高さがあればその高さで開く）、高さを変えたら `attachZoom` の `refit()` を呼ぶ。`data-sticky-titles` が `off` でないフロー図は、表示する枠の `scroll` ごとに `data-sticky-top` を持つタイトルを `stickyTitleShifts` の量で `transform: translateY()` し、留めたものに class `is-stuck` を付ける'
     args:
       - name: options
-        type: '{ root: HTMLElement; placement: TooltipPlacement }'
+        type: '{ root: HTMLElement; placement: TooltipPlacement; storage?: Storage | null }'
         required: true
-        description: 描いた要素と、図のツールチップを先に出す側（`attachDiagramTips` と `openDiagramDialog` へ渡す）
+        description: 描いた要素と、図のツールチップを先に出す側（設定の `tooltips.diagramPlacement`。`attachDiagramTips` と `openDiagramDialog` へ渡す）と、高さを保つ先（既定は `sessionStorage`。読めないときは `null`。単体テストで差し替える）
     returns:
       type: () => void
       description: 付けた操作と監視を外し、開いている全画面を閉じる関数
@@ -1085,6 +1163,18 @@ functions:
         condition: 幅 600px の要素に幅 600・高さ 1200 のフロー図。表示する枠の `style.height` を `1000px`、`1500px` の順にし、拡大を 1 回押し、`0` を押す
         mock: なし
         expected: '`clientHeight` が 1000、1200（上限で止まる）の順になり、拡大の後に `style.maxHeight` が `1500px`、`0` の後に `clientHeight` が 576 で `style.maxHeight` が `1200px`'
+      - name: test_attach_diagrams_when_handle_resized
+        case: 正常
+        summary: リサイズハンドルで高さを変えると、全体が収まる倍率を幅と高さで求め直し、付け直しても保つ
+        condition: 幅 600px の要素に幅 500・高さ 1600 のフロー図。リサイズハンドルを 200px 下へドラッグし、`0` を押し、外して同じ要素に付け直す
+        mock: '`storage` に `Map` で包んだ `Storage` の形のオブジェクトを渡す'
+        expected: ドラッグの後に `clientHeight` が 776 で倍率が変わらず、`0` の後の倍率が `776 / 1600` で、付け直した後の `clientHeight` が 776
+      - name: test_attach_diagrams_when_titles_stuck
+        case: 正常
+        summary: 動かした間、グループのタイトルを上端に留め、`off` の図では留めない
+        condition: モックの `inquiry-groups` の図と、`data-sticky-titles="off"` の同じ図。どちらも拡大を 2 回押し、表示する枠の `scrollTop` を処理の層の途中まで増やす
+        mock: なし
+        expected: 1 つ目の図の枠と処理の層のタイトルが `is-stuck` と `translateY` を持ち、2 つ目の図のタイトルは `transform` を持たない
   - name: openDiagramDialog
     title: 図を全画面で開く
     container: src/interact/diagrams.ts
@@ -1119,7 +1209,7 @@ functions:
     container: src/interact/diagram-tips.ts
     kind: 関数
     scope: internal
-    summary: ツールチップの持ち主（線のラベルと箱の右上の印。箱そのものは持ち主にしない）に `pointerenter`・`focus` で開き、持ち主とツールチップの両方から外れたら閉じ、開いている間だけ `document` の `keydown`（Esc）・`pointerdown` と `window` の `scroll`・`resize` を受け取って持ち主に付いて動かす。`pointerType` が `touch` のときは `pointerenter` で開かず、持ち主の `pointerdown` で開閉を切り替え、タッチで開いている間は `pointerleave`・`blur` では閉じず、`document` の `pointerdown` の対象が開いている持ち主とツールチップの外なら閉じる（iOS の Safari はタップした持ち主に `:hover` を残すため、`pointerleave`・`blur` だけでは閉じない）。同時に開くのは 1 つ。置く側は `chooseTipSide`（持ち主の上端・下端、箱の印は箱の上端・下端。`gap` は `TIP_GAP_PX`）で決め、横は持ち主の左端に揃えて画面の端から `VIEWPORT_MARGIN_PX` の内に収める。`beforeprint` で閉じる。埋め込んだ HTML のヒント（`mdmark-hint-mark` と `mdmark-hint-inline`）にも同じ操作を付けるため、引数に `div.mdmark-html` も受ける。`div.mdmark-html` を受けたときは、`render` が振った `mdmark-hint-{n}` とそれを指す `aria-describedby` を、モジュールの通し番号でページの中で一意な値に振り直す（用語と図の `renumberIds` と同じ作り）
+    summary: ツールチップの持ち主（線のラベル・箱の右上の印・グループのタイトルの印・`data-tip-owner` を持つグラフの項目。箱そのものは持ち主にしない）に `pointerenter`・`focus` で開き、持ち主とツールチップの両方から外れたら閉じ、開いている間だけ `document` の `keydown`（Esc）・`pointerdown` と `window` の `scroll`・`resize` を受け取って持ち主に付いて動かす。`pointerType` が `touch` のときは `pointerenter` で開かず、持ち主の `pointerdown` で開閉を切り替え、タッチで開いている間は `pointerleave`・`blur` では閉じず、`document` の `pointerdown` の対象が開いている持ち主とツールチップの外なら閉じる（iOS の Safari はタップした持ち主に `:hover` を残すため、`pointerleave`・`blur` だけでは閉じない）。同時に開くのは 1 つ。置く側は `chooseTipSide`（持ち主の上端・下端、箱の印は箱の上端・下端。`gap` は `TIP_GAP_PX`）で決め、横は持ち主の左端に揃えて画面の端から `VIEWPORT_MARGIN_PX` の内に収める。`beforeprint` で閉じる。埋め込んだ HTML のヒント（`mdmark-hint-mark` と `mdmark-hint-inline`）にも同じ操作を付けるため、引数に `div.mdmark-html` も受ける。`div.mdmark-html` を受けたときは、`render` が振った `mdmark-hint-{n}` とそれを指す `aria-describedby` を、モジュールの通し番号でページの中で一意な値に振り直す（用語と図の `renumberIds` と同じ作り）
     args:
       - name: options
         type: '{ figure: HTMLElement; placement: TooltipPlacement }'
@@ -1195,6 +1285,12 @@ functions:
         condition: 箱の印に `pointerType` が `mouse` の `pointerenter` で開き、同じ印に `pointerType` が `mouse` の `pointerdown` を送る
         mock: なし
         expected: ツールチップが `hidden` を持たない
+      - name: test_attach_diagram_tips_when_chart_item
+        case: 正常
+        summary: グラフの項目とグループのタイトルの印で開き、`bottom` で下に置く
+        condition: 折れ線のグラフの当たりの円にフォーカスし、次にフロー図の枠のタイトルの印に `pointerenter`。`placement` は `bottom`
+        mock: なし（Chromium）
+        expected: それぞれの `aria-describedby` が指すツールチップが `hidden` を持たず、`top` が持ち主の `bottom` 以上。同時に開いているのは 1 つ
   - name: attachParams
     title: 操作できる部品の操作を付ける
     container: src/interact/params.ts
@@ -1295,14 +1391,14 @@ functions:
     container: src/interact/zoom.ts
     kind: 関数
     scope: internal
-    summary: '表示する枠と中身に、`fitScale` の倍率から `ZOOM.max` までの拡大・縮小（縮小・拡大・倍率のボタンと `+`・`-`・`0`）と、拡大中の移動（移動のボタン・矢印キー・ドラッグ）を付ける。倍率は中身に `transform: scale()` を掛け、大きさの箱を倍率を掛けた大きさにしてスクロールさせる。端のボタンの `disabled`、倍率の文字と読み上げの名前（`percentBase` が `fit` なら全体が収まる倍率を 100%、`content` なら中身の大きさを 100% とする）、移動のボタンのまとまりの `hidden` を倍率が変わるたびに書き換え、`onChange` に倍率を知らせる。図（`attachDiagrams`）とライトボックス（`attachLightbox`）が使う'
+    summary: '表示する枠と中身に、`fitScale` の倍率から `ZOOM.max` までの拡大・縮小（縮小・拡大・倍率のボタンと `+`・`-`・`0`）と、拡大中の移動（移動のボタン・矢印キー・ドラッグ）を付ける。倍率は中身に `transform: scale()` を掛け、大きさの箱を倍率を掛けた大きさにしてスクロールさせる。端のボタンの `disabled`、倍率の文字と読み上げの名前（`percentBase` が `fit` なら全体が収まる倍率を 100%、`content` なら中身の大きさを 100% とする）、移動のボタンのまとまりの `hidden` を倍率が変わるたびに書き換え、`onChange` に倍率を知らせる。ドラッグは、押してから動いた距離が `DRAG_THRESHOLD_PX` を超えたときに始め、始めたときに `onPanStart` を 1 回呼ぶ（超えないまま離したら動かさない）。`fitHeight` は真偽値か、全体が収まる倍率を求めるたびに呼ぶ関数で受ける。`refit()` は今の倍率と位置を保ったまま、全体が収まる倍率（下限）とボタンの状態を求め直す。図（`attachDiagrams`）とライトボックス（`attachLightbox`）が使う'
     args:
       - name: options
-        type: '{ viewport: HTMLElement; content: HTMLElement; size: { width: number; height: number }; tools: HTMLElement; onChange?: (zoom: number, fit: number) => void; fitHeight?: boolean; dragIgnore?: string; keyTargets?: HTMLElement[]; percentBase?: "fit" | "content" }'
+        type: '{ viewport: HTMLElement; content: HTMLElement; size: { width: number; height: number }; tools: HTMLElement; onChange?: (zoom: number, fit: number) => void; onPanStart?: () => void; fitHeight?: boolean | (() => boolean); dragIgnore?: string; keyTargets?: HTMLElement[]; percentBase?: "fit" | "content" }'
         required: true
         description: 表示する枠・倍率を掛ける中身・中身の大きさ・ボタンを持つ要素（`data-tool` で見分ける）・倍率が変わったときに呼ぶ関数・全体が収まる倍率を高さでも決めるか（既定 `true`。文書の中の図は `false` で幅だけで決める）・ドラッグを始めない要素のセレクタ（押せる要素に加える）・キーを受ける要素（既定は表示する枠とボタンを持つ要素）・倍率の文字の基準（既定 `content`。ライトボックスは画像の大きさを 100% にする）
     returns:
-      type: '{ reset(): void; fit(): number; detach(): void }'
+      type: '{ reset(): void; fit(): number; refit(): void; detach(): void }'
       description: 全体が収まる倍率に戻す関数・今の全体が収まる倍率を返す関数・付けた操作を外す関数
     callees:
       - '#functions[fitScale]'
@@ -1331,6 +1427,18 @@ functions:
         condition: 幅 600px の枠に幅 1100 の中身、`percentBase` が `fit`。拡大を 1 回押す
         mock: なし
         expected: 倍率の文字が `100%` で始まり、拡大の後に `125%` で読み上げの名前が `倍率 125%。全体が収まる倍率に戻す`
+      - name: test_attach_zoom_when_drag_threshold
+        case: 正常
+        summary: しきい値までのドラッグでは動かさず、超えたら動かして `onPanStart` を呼ぶ
+        condition: 拡大を 2 回押し、中身の上で押して 2px 動かして離し、次に 40px 左へ動かして離す
+        mock: '`onPanStart` に呼ばれた回数を数える関数'
+        expected: 2px の後は `scrollLeft` が変わらず `onPanStart` が 0 回、40px の後は `scrollLeft` が増え `onPanStart` が 1 回
+      - name: test_attach_zoom_when_refit
+        case: 正常
+        summary: '`fitHeight` の関数が `true` を返すようになった後の `refit()` で、倍率を保ち下限を高さで求め直す'
+        condition: 幅 600px・高さ 400px の枠に幅 500・高さ 1600 の中身。始めは `fitHeight` が `false` を返し、`true` を返すようにして `refit()` を呼ぶ
+        mock: なし
+        expected: '`refit()` の前後で倍率が `1` のままで、`fit()` が `1` から `0.25` になり、縮小のボタンが `disabled` でなくなる'
     status: planned
     introduced:
       pr: 263
@@ -1341,20 +1449,20 @@ functions:
     scope: internal
     summary: 目盛りごとに、0 以上の値は 0 から上へ、負の値は 0 から下へ、系列の順に積み上げた下端と上端を返す
     args:
-    - name: series
-      type: number[][]
-      required: true
-      description: 系列ごとの目盛りごとの値
+      - name: series
+        type: number[][]
+        required: true
+        description: 系列ごとの目盛りごとの値
     returns:
       type: 'Array<Array<{ from: number; to: number }>>'
       description: 系列と目盛りごとの下端と上端の値
     unit_tests:
-    - name: test_stack_series
-      case: 正常
-      summary: 正の値を上へ、負の値を下へ積む
-      condition: '`[[3, 1], [4, -2], [-1, 2]]`'
-      mock: なし
-      expected: '`[[{0, 3}, {0, 1}], [{3, 7}, {0, -2}], [{0, -1}, {1, 3}]]`'
+      - name: test_stack_series
+        case: 正常
+        summary: 正の値を上へ、負の値を下へ積む
+        condition: '`[[3, 1], [4, -2], [-1, 2]]`'
+        mock: なし
+        expected: '`[[{0, 3}, {0, 1}], [{3, 7}, {0, -2}], [{0, -1}, {1, 3}]]`'
     status: planned
     introduced:
       pr: 275
@@ -1365,20 +1473,20 @@ functions:
     scope: internal
     summary: Markdown を markdown-it で解析し、`flow`・`sequence`・`chart`・`param`・`er` の印の範囲ごとに、印の名前・開きの印の行の番号・範囲の `json` のコードブロックの中身を返す（`buildDiagrams` と同じ範囲の読み方。埋め込んだ HTML の中の custom element は返さない）
     args:
-    - name: markdown
-      type: string
-      required: true
-      description: 文書の本文
+      - name: markdown
+        type: string
+        required: true
+        description: 文書の本文
     returns:
       type: 'Array<{ directive: "flow" | "sequence" | "chart" | "param" | "er"; line: number; blocks: string[] }>'
       description: 範囲ごとの印の名前・行の番号（1 から）・`json` のコードブロック
     unit_tests:
-    - name: test_find_diagram_blocks
-      case: 正常
-      summary: 図の部品の範囲だけを返す
-      condition: '`<!-- flow -->` の範囲（3 行目）と `<!-- chart -->` の範囲と、`<!-- html -->` の中の `<mdmark-chart>`'
-      mock: なし
-      expected: 2 つの範囲を返し、1 つ目が `flow`・行 3・`json` 1 つ
+      - name: test_find_diagram_blocks
+        case: 正常
+        summary: 図の部品の範囲だけを返す
+        condition: '`<!-- flow -->` の範囲（3 行目）と `<!-- chart -->` の範囲と、`<!-- html -->` の中の `<mdmark-chart>`'
+        mock: なし
+        expected: 2 つの範囲を返し、1 つ目が `flow`・行 3・`json` 1 つ
     status: planned
     introduced:
       pr: 275
@@ -1389,28 +1497,28 @@ functions:
     scope: internal
     summary: 読めたフロー図の定義の、ノードの矩形の重なり（辺が接するだけは除く）・`width`・`height` の外へのはみ出しと `frame` の縁をまたぐノード・線の各線分（`points` を含む）と `from`・`to` でないノードの矩形の交わり・`labelLineCount` で折り返した高さが収まらないラベルを、ずれ 1 つにつき 1 件にして返す（同じノードの組・ノードと線の組は 1 件）
     args:
-    - name: definition
-      type: MdmarkFlowDefinition
-      required: true
-      description: 読めたフロー図の定義
+      - name: definition
+        type: MdmarkFlowDefinition
+        required: true
+        description: 読めたフロー図の定義
     returns:
       type: 'Array<{ kind: "diagram_node_overlap" | "diagram_node_overflow" | "diagram_wire_crosses_node" | "diagram_label_too_long"; ids: string[] }>'
       description: ずれの種類と、対象のノードか線の `id`
     callees:
-    - '#functions[labelLineCount]'
+      - '#functions[labelLineCount]'
     unit_tests:
-    - name: test_check_flow_layout
-      case: 正常
-      summary: 整った配置はずれを返さない
-      condition: モックの `inquiry` の定義と、辺が接するだけの 2 つのノード
-      mock: なし
-      expected: 空の配列
-    - name: test_check_flow_layout_when_broken
-      case: 異常
-      summary: 重なり・はみ出し・横切り・ラベルの長さを返す
-      condition: インターフェース定義『設定と索引を点検する』の「正常系（図の定義のずれ）」のフロー図の定義
-      mock: なし
-      expected: '`diagram_node_overlap`（2 つのノードの `id`）・`diagram_node_overflow`・`diagram_wire_crosses_node`（線とノードの `id`）・`diagram_label_too_long` を 1 件ずつ返す'
+      - name: test_check_flow_layout
+        case: 正常
+        summary: 整った配置はずれを返さない
+        condition: モックの `inquiry` の定義と、辺が接するだけの 2 つのノード
+        mock: なし
+        expected: 空の配列
+      - name: test_check_flow_layout_when_broken
+        case: 異常
+        summary: 重なり・はみ出し・横切り・ラベルの長さを返す
+        condition: インターフェース定義『設定と索引を点検する』の「正常系（図の定義のずれ）」のフロー図の定義
+        mock: なし
+        expected: '`diagram_node_overlap`（2 つのノードの `id`）・`diagram_node_overflow`・`diagram_wire_crosses_node`（線とノードの `id`）・`diagram_label_too_long` を 1 件ずつ返す'
     status: planned
     introduced:
       pr: 275
@@ -1421,20 +1529,20 @@ functions:
     scope: internal
     summary: '`LABEL_METRICS` の文字の大きさで、全角の文字を文字の大きさ、半角の文字を 0.6 倍の幅とみなし、幅で折り返した行の数を返す'
     args:
-    - name: options
-      type: '{ text: string; fontSize: number; width: number }'
-      required: true
-      description: ラベルの文字・文字の大きさ・折り返す幅
+      - name: options
+        type: '{ text: string; fontSize: number; width: number }'
+        required: true
+        description: ラベルの文字・文字の大きさ・折り返す幅
     returns:
       type: number
       description: 行の数（空の文字は 0）
     unit_tests:
-    - name: test_label_line_count
-      case: 正常
-      summary: 全角と半角の幅で折り返す
-      condition: '`fontSize` 14・`width` 70 で、`あいうえおか` と `abcdefgh`'
-      mock: なし
-      expected: '`2` と `1`'
+      - name: test_label_line_count
+        case: 正常
+        summary: 全角と半角の幅で折り返す
+        condition: '`fontSize` 14・`width` 70 で、`あいうえおか` と `abcdefgh`'
+        mock: なし
+        expected: '`2` と `1`'
     status: planned
     introduced:
       pr: 275
@@ -1666,6 +1774,150 @@ functions:
     status: planned
     introduced:
       pr: 298
+  - name: clampDiagramHeight
+    title: 表示する枠の高さを範囲に収める
+    container: src/diagram/geometry.ts
+    kind: 関数
+    scope: internal
+    summary: 高さを `RESIZE.min` 以上、`max`（図の全体が今の倍率で収まる高さ。`RESIZE.min` より小さいときは `RESIZE.min`）以下に収め、整数に丸める
+    args:
+      - name: height
+        type: number
+        required: true
+        description: 求めた高さ（px）
+      - name: max
+        type: number
+        required: true
+        description: 定義の高さ × 今の倍率
+    returns:
+      type: number
+      description: 収めた高さ
+    unit_tests:
+      - name: test_clamp_diagram_height
+        case: 正常
+        summary: 下限と上限の間に収める
+        condition: '`max: 800` で `height` が `50`・`400.6`・`1000`。`max: 80` で `height` が `200`'
+        mock: なし
+        expected: '`120`・`401`・`800`。`max: 80` のときは `120`'
+    status: planned
+    introduced:
+      pr: 308
+  - name: stickyTitleShifts
+    title: グループのタイトルをずらす量
+    container: src/diagram/geometry.ts
+    kind: 関数
+    scope: internal
+    summary: 表示する枠の上端（定義の座標）から、タイトルごとの下へずらす量と留めているかを求める。`top + gap` から始め、タイトルごとに `limit = bottom - height - gap`、`shift = max(0, min(今の上端, limit) - base)`、留めているのは `shift > 0` かつ `今の上端 <= limit`。枠のタイトルを留めている間は、後の層の今の上端を枠のタイトルの高さと `gap` だけ下げる（`dev/mock/refs/42/assets/diagram.js` の `stickTitles`）
+    args:
+      - name: options
+        type: '{ top: number; gap: number; titles: { base: number; bottom: number; height: number; frame: boolean }[] }'
+        required: true
+        description: 表示する枠の上端の定義の座標（`scrollTop / 倍率`）、タイトルの間の余白、タイトルごとの元の位置・グループの下端・タイトルの高さ・枠のタイトルか（枠、層の順）
+    returns:
+      type: '{ shift: number; stuck: boolean }[]'
+      description: タイトルごとのずらす量と留めているか
+    unit_tests:
+      - name: test_sticky_title_shifts
+        case: 正常
+        summary: 見えているグループのタイトルを留め、層は枠のタイトルの下に留める
+        condition: '`gap: 4`。枠 `{ base: 8, bottom: 600, height: 20, frame: true }`、層 A `{ base: 40, bottom: 200 }`、層 B `{ base: 206, bottom: 400 }`（どちらも `height: 18`）。`top` が `0`・`100`・`250`'
+        mock: なし
+        expected: '`0` では全て `shift: 0` で留めない。`100` では枠と層 A を留め、層 A の `shift` が `100 + 4 + 20 + 4 - 40`。`250` では層 A は `stuck: false`（下端で止める）、層 B を留める'
+    status: planned
+    introduced:
+      pr: 308
+  - name: chartItemText
+    title: グラフの項目の値の文
+    container: src/parts/chart.ts
+    kind: 関数
+    scope: internal
+    summary: '部品設計『図のツールチップ』の `value` の文を返す。折れ線・面・棒・積み上げ・横棒・レーダー・組み合わせは `{横の目盛り}: {値}`、散布図は `{x のラベル} {x}・{y のラベル} {y}`、バブルはその後ろに `・{size.label（無ければ「大きさ」）} {値}`、円とドーナツは `{値}{unit}（{割合}）`（割合は扇形の外と同じ整数の %）'
+    args:
+      - name: item
+        type: '{ type: MdmarkChartType; tick?: string; value?: number; point?: number[]; percent?: number; definition: MdmarkChartDefinition }'
+        required: true
+        description: グラフの種類と、項目の目盛り・値・点・割合と定義
+    returns:
+      type: string
+      description: 値の文
+    unit_tests:
+      - name: test_chart_item_text
+        case: 正常
+        summary: 種類ごとの値の文を返す
+        condition: '`line` の `2月`・`38`、`scatter` の点 `[3, 40]`（`x.label` が `文字数`、`y.label` が `分`）、`bubble` の点 `[3, 40, 16]`（`size.label` が `件数`）、`pie` の値 `50`・割合 `50`（`unit` が ` 件`）'
+        mock: なし
+        expected: '`2月: 38`・`文字数 3・分 40`・`文字数 3・分 40・件数 16`・`50 件（50%）`'
+    status: planned
+    introduced:
+      pr: 308
+  - name: attachDiagramResize
+    title: リサイズハンドルを付ける
+    container: src/interact/diagram-resize.ts
+    kind: 関数
+    scope: internal
+    summary: リサイズハンドルの `pointerdown`（`setPointerCapture`）から `pointerup` までの縦の移動だけ表示する枠の `style.height` を変え、フォーカスの間の `ArrowUp`・`ArrowDown` で `RESIZE.step` ずつ変え、`dblclick` で `reset` に戻す。高さは `clampDiagramHeight` で収め、変えるたびに `aria-valuenow`・`aria-valuemin`・`aria-valuemax` を書き換え、`onResize` を呼ぶ。変えた高さを `storage` の `key` に整数の文字で書き、戻したらキーを削除する。`storage` の読み書きの例外は捕まえて保たない。読んだ値が正の整数でなければ使わない。ドラッグの間はリサイズハンドルに class `is-resizing` を付ける
+    args:
+      - name: options
+        type: '{ viewport: HTMLElement; handle: HTMLElement; key: string; storage: Storage | null; max: () => number; reset: () => number; onResize: (height: number | null) => void }'
+        required: true
+        description: 表示する枠・リサイズハンドル・高さを保つキー（`diagramHeightKey`）・保つ先・今の上限を返す関数・定義から決まる高さを当ててその高さを返す関数・高さを変えたとき（戻したときは `null`）に呼ぶ関数
+    returns:
+      type: '{ restored: number | null; detach: () => void }'
+      description: 付けたときに `storage` から読んで当てた高さ（無ければ `null`）と、操作を外す関数
+    callees:
+      - '#functions[clampDiagramHeight]'
+    status: planned
+    introduced:
+      pr: 308
+    unit_tests:
+      - name: test_attach_diagram_resize
+        case: 正常
+        summary: ドラッグと上下キーで高さを変えて保つ
+        condition: 高さ 300px の表示する枠、`max` が `1000`。リサイズハンドルを 200px 下へドラッグし、`ArrowUp` を押す
+        mock: '`storage` に `Map` で包んだ `Storage` の形のオブジェクトを渡す'
+        expected: 高さが `500px`、`468px` の順になり、`aria-valuenow` も同じ。`storage` の `key` が `468`。`onResize` が `500`・`468` で呼ばれる
+      - name: test_attach_diagram_resize_when_reset
+        case: 正常
+        summary: ダブルクリックで戻し、キーを削除する
+        condition: 高さを変えた後に `dblclick`
+        mock: 同上
+        expected: 高さが `reset` の返した高さで、`storage` に `key` が無く、`onResize` が `null` で呼ばれる
+      - name: test_attach_diagram_resize_when_restored
+        case: 正常
+        summary: 保った高さで開き、読めない値は使わない
+        condition: '`storage` の `key` が `420` のときと `abc` のとき'
+        mock: 同上
+        expected: '`420` では `restored` が `420` で高さが `420px`。`abc` では `restored` が `null` で高さを変えない'
+      - name: test_attach_diagram_resize_when_storage_throws
+        case: 異常
+        summary: 保つ先が例外を投げても高さを変える
+        condition: '`getItem`・`setItem` が例外を投げる `storage`。`ArrowDown` を押す'
+        mock: 例外を投げる `Storage` の形のオブジェクト
+        expected: 例外を外へ出さず、高さが 32px 増える
+  - name: diagramHeightKey
+    title: 図の高さのキー
+    container: src/interact/diagram-resize.ts
+    kind: 関数
+    scope: internal
+    summary: '`{DIAGRAM_HEIGHT_KEY_PREFIX}{pathname}#{index}:{title}` を返す。同じページの同じ順の同じ題名の図だけが同じ高さを読む'
+    args:
+      - name: options
+        type: '{ pathname: string; index: number; title: string }'
+        required: true
+        description: ページの `location.pathname`、`root` の中の図の通し番号（0 から）、図の題名
+    returns:
+      type: string
+      description: sessionStorage のキー
+    unit_tests:
+      - name: test_diagram_height_key
+        case: 正常
+        summary: ページ・順・題名でキーを作る
+        condition: '`{ pathname: "/docs/a.html", index: 1, title: "問い合わせの流れ" }`'
+        mock: なし
+        expected: '`mdmark-diagram-height:/docs/a.html#1:問い合わせの流れ`'
+    status: planned
+    introduced:
+      pr: 308
 test_files:
   - tests/unit/src/diagram/definition.test.ts
   - tests/unit/src/diagram/geometry.test.ts

@@ -165,6 +165,12 @@ styles:
       - class_name: .mdmark :is(.mdmark-fn-ref, .mdmark-footnotes)
         target: 脚注の番号・ツールチップ・末尾の一覧
         value: '`dev/mock/refs/311/assets/footnote.css` の `@layer mdmark` の中身と、印刷の `footnote-print.css`（ツールチップと戻るリンクを隠す）。番号の色は `--mdmark-color-footnote-ref`（既定 `var(--mdmark-color-link)`）'
+      - class_name: .mdmark .mdmark-table-scroll と .mdmark-table-tool.is-icon-only・.mdmark-columns-badge
+        target: 表を本文の幅に広げる包みと、アイコンだけの帯のボタン
+        value: '包みは本文の幅いっぱい（`width: 100%`）で横にスクロールし、外側の角丸の枠と続きがある側の端の影を持つ。中の `table` は `display: table`・`width: 100%` で列を本文の幅まで広げ、列の最小幅と見出しを折り返さない指定は今のままにする。アイコンだけのボタンは帯のほかのボタンと同じ高さの正方形で、バッジはアイコンの右上に重ねる。印刷では包みのスクロールを外す。値は `dev/mock/refs/308/assets/table.css`'
+      - class_name: .mdmark .mdmark-diagram-resize・.mdmark-diagram-item-hit・.mdmark-diagram-group-info・グループのタイトルの .is-stuck
+        target: 図のリサイズハンドル・グラフの項目の当たり・グループのタイトルの印と留めたタイトル
+        value: 'リサイズハンドルは表示する箱の右下の角に `position: absolute` で置き、`cursor: ns-resize`・`touch-action: none`、ホバーと `.is-resizing` で面の色、フォーカスの枠を持つ。当たりの円は透明で `pointer-events: all`、フォーカスしたときにリンクの色の輪。グループのタイトルの印は箱の印と同じ見た目をタイトルの行の中に置き（`position: static`）、`.is-stuck` のタイトルは地の色と線の札でノードと線より手前（`z-index: 2`）に描く。印刷ではリサイズハンドルを隠す。値は `dev/mock/refs/42/assets/diagram.css`'
     refs:
       - dev/設計書/画面設計/文書.ts#
       - dev/設計書/部品設計/知らせの枠.ts#
