@@ -114,7 +114,7 @@ items:
   - page: キー.ts.yaml
     summary: '`+` で区切ったキーの見た目の並び'
   - page: 蛍光ペン.ts.yaml
-    summary: 文字の下半分に色の面を引くマーカー
+    summary: 文字に色の面を引くマーカー
   - page: 段組み.ts.yaml
     summary: 本文を 2〜3 列に横に並べる範囲
   - page: detailsの範囲.ts.yaml
