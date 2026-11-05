@@ -1275,7 +1275,7 @@ elements:
     id: table-settings-toggle
     kind: button
     position: 描く先の要素 > 表 > 帯
-    description: 表の上の帯に置くアイコンだけのボタン（lucide の `settings-2`）。名前はツールチップと `aria-label` に持ち、`aria-expanded`・`aria-controls` でパネルの開閉を示す。列を隠しているときは、隠した列の数のバッジを出す
+    description: 表の上の帯に置くアイコンだけのボタン（lucide の `settings-2`）。名前はツールチップと `aria-label` に持ち、`aria-expanded`・`aria-controls` でパネルの開閉を示す。列を隠しているときは、隠した列の数のバッジを出し、読み上げの名前を `テーブル設定（{隠した列の数} 列を非表示）` にする
     label: テーブル設定（ツールチップと読み上げ）
     visible_when: '`+columns`・`+reorder` のどちらかの表で、印刷していないとき'
     initial_state: 活性
