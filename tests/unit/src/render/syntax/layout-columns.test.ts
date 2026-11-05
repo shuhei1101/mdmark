@@ -90,7 +90,7 @@ test("test_build_layout_columns_when_invalid", () => {
   // 実行
   const { html } = renderDoc([...one, ...four, ...nested].join("\n"));
   // 検証
-  expect(findTags(html, "mdmark-syntax-warning")).toHaveLength(3);
+  expect(findTags(html, 'class="mdmark-syntax-warning"')).toHaveLength(3);
   expect(findTags(html, "mdmark-layout-columns")).toHaveLength(1);
   expect(html).toContain('data-count="2"');
   expect(html).toContain("単独");

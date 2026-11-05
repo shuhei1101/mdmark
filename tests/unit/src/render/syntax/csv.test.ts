@@ -64,10 +64,10 @@ test("test_build_csv_tables", () => {
   expect(tables).toHaveLength(2);
   expect(tables[0]).toContain('data-kind="data"');
   expect(tables[1]).toContain('data-kind="default"');
-  const raws = findTags(html, "mdmark-raw");
+  const raws = findTags(html, 'class="mdmark-raw"');
   expect(raws).toHaveLength(2);
   expect(raws[0]).toContain("hidden");
-  expect(innerHtml(html, "mdmark-raw")).toContain("名前,値");
+  expect(innerHtml(html, 'class="mdmark-raw"')).toContain("名前,値");
   expect(html).toContain("language-text");
   expect(findTags(html, "<pre")).toHaveLength(4);
 });

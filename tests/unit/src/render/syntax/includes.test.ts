@@ -81,7 +81,7 @@ test("test_expand_includes_when_missing", () => {
   // 実行
   const { html } = renderDoc(markdown, {}, { includes });
   // 検証
-  const warnings = html.split("mdmark-syntax-warning").slice(1);
+  const warnings = findTags(html, 'class="mdmark-syntax-warning"');
   expect(warnings).toHaveLength(3);
   expect(html).toContain("missing.md");
   expect(html).toContain("無い見出し");
@@ -101,7 +101,7 @@ test("test_expand_includes_when_circular", () => {
   // 検証
   expect(html.split("a の段落")).toHaveLength(2);
   expect(html.split("b の段落")).toHaveLength(2);
-  expect(findTags(html, "mdmark-syntax-warning")).toHaveLength(1);
+  expect(findTags(html, 'class="mdmark-syntax-warning"')).toHaveLength(1);
   expect(innerHtml(html, "mdmark-syntax-warning")).toContain(
     "a.md → b.md → a.md",
   );
