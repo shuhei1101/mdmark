@@ -48,6 +48,30 @@ data_models:
       - name: message
         type: string
         description: 原因と直し方の日本語の 1 文
+  - name: IncludeProblem
+    title: 取り込みの問題
+    container: src/cli/includes.ts
+    usecase: 共通
+    summary: '`collectIncludes` が返す、取り込めない include のマーカー 1 つ'
+    properties:
+      - name: kind
+        type: '"missing" | "heading" | "lines" | "outside" | "circular"'
+        description: 無いファイル・無い見出し・行の数を越える範囲・根の外・循環
+      - name: file
+        type: string
+        description: マーカーを書いた文書の、文書のフォルダからのパス（文書そのものは空文字）
+      - name: line
+        type: number
+        description: マーカーの行（1 から）
+      - name: target
+        type: string
+        description: マーカーに書いた取り込み先
+      - name: lineCount
+        type: number
+        description: '`lines` のときのファイルの行の数'
+      - name: chain
+        type: string[]
+        description: '`circular` のときの取り込みの順（最初と最後が同じキー）'
   - name: LoadedConfig
     title: 読んだ設定
     container: src/cli/config.ts
@@ -2093,18 +2117,10 @@ functions:
     kind: 関数
     scope: internal
     args:
-    - name: docPath
-      type: string
+    - name: options
+      type: '{ docPath: string; markdown: string; root: string }'
       required: true
-      description: 文書の絶対パス
-    - name: markdown
-      type: string
-      required: true
-      description: 文書の本文
-    - name: root
-      type: string
-      required: true
-      description: 根のフォルダの絶対パス
+      description: '`docPath` は文書の絶対パス、`markdown` は文書の本文、`root` は根のフォルダの絶対パス'
     returns:
       type: '{ includes: Record<string, string>; problems: IncludeProblem[] }'
       description: 取り込む文書の表と問題
@@ -2152,14 +2168,10 @@ functions:
     kind: 関数
     scope: internal
     args:
-    - name: documents
-      type: CheckDocument[]
+    - name: options
+      type: '{ documents: Array<{ path: string; markdown: string }>; root: string }'
       required: true
-      description: 点検する文書
-    - name: root
-      type: string
-      required: true
-      description: 設定ファイルのフォルダ
+      description: '`documents` は `collectCheckDocuments` の文書、`root` は設定ファイルのフォルダ'
     returns:
       type: CheckIssue[]
       description: ずれ

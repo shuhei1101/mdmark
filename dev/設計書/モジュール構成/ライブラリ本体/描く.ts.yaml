@@ -200,7 +200,7 @@ constants:
   - name: LUCIDE_VERSION
     title: 束ねた lucide のバージョン
     container: src/inline-icons.ts
-    value: ビルドのときに `package.json` の `lucide` のバージョンを埋める
+    value: ビルドと単体テストの `define` で `package.json` の `lucide` のバージョンを埋める
     summary: 束ねていないアイコンを読む URL のバージョン
 functions:
   - name: mount
@@ -888,14 +888,10 @@ functions:
     kind: 関数
     scope: internal
     args:
-    - name: root
-      type: HTMLElement
+    - name: options
+      type: '{ root: HTMLElement; icons: Record<string, MdmarkIconNode>; importModule?: ImportModule; fetchHead?: (url: string) => Promise<Response> }'
       required: true
-      description: 描く先の要素
-    - name: icons
-      type: Record<string, MdmarkIconNode>
-      required: true
-      description: '`opts.icons`'
+      description: '`root` は描く先の要素、`icons` は `opts.icons`、`importModule` はモジュールを読む関数（既定 `(url) => import(url)`）、`fetchHead` は `HEAD` を送る関数（既定 `(url) => fetch(url, { method: "HEAD" })`）'
     returns:
       type: Promise<void>
       description: 全て入れ終えたら解決する
@@ -908,19 +904,19 @@ functions:
       case: 正常
       condition: '`sailboat` 2 か所と `anchor` 1 か所の空の要素'
       expected: '`import` が `sailboat.mjs` と `anchor.mjs` の 1 回ずつで、3 か所に svg が入る'
-      mock: '`import` と `fetch` を差し替える'
+      mock: '`importModule` と `fetchHead` を渡す'
       summary: 名前ごとに 1 回だけ読む
     - name: test_load_inline_icons_when_not_found
       case: 異常
       condition: '`no-such-icon` の `import` が失敗し、`HEAD` が 404'
       expected: その場所が `<code>icon:no-such-icon</code>` になり、段落の前に書き方の警告があり、知らせの枠が無い
-      mock: '`import` と `fetch` を差し替える'
+      mock: '`importModule` と `fetchHead` を渡す'
       summary: 404 は書き方の警告にする
     - name: test_load_inline_icons_when_offline
       case: 異常
       condition: 全ての `import` と `HEAD` が失敗する
       expected: 全ての場所が行内のコードになり、知らせの枠が 1 つだけある
-      mock: '`import` と `fetch` を差し替える'
+      mock: '`importModule` と `fetchHead` を渡す'
       summary: 読めないときは知らせの枠を 1 つ置く
   - name: lucideIconUrl
     title: アイコンの URL を作る
