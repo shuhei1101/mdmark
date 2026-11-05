@@ -805,6 +805,8 @@ states:
         value: '0'
       - name: overflow
         value: 'true'
+      - name: pinned
+        value: '1'
       - name: openColumns
         value: 'true'
   - name: Tree
