@@ -199,6 +199,9 @@ const DIAGRAM_ATTRIBUTES = [
   "text-anchor",
 ];
 
+/** 範囲のスクリプトの機能で mdmark だけが出す要素 */
+const RANGE_SCRIPT_TAGS = new Set(["style", "template"]);
+
 /** `DIAGRAM_ATTRIBUTES` の集合 */
 const DIAGRAM_ATTRIBUTE_SET = new Set(DIAGRAM_ATTRIBUTES);
 
@@ -214,6 +217,8 @@ const SANITIZE_OPTIONS: sanitizeHtml.IOptions = {
     "nav",
     "figure",
     "figcaption",
+    "style",
+    "template",
     ...MEDIA_TAGS,
     ...DIAGRAM_ONLY_TAGS,
   ],
@@ -274,6 +279,8 @@ const SANITIZE_OPTIONS: sanitizeHtml.IOptions = {
   },
   // postcss を呼ばない。`style` 属性は許可せず、列の揃えだけを class に移す
   parseStyleAttributes: false,
+  // 範囲の `style` は mdmark が根の要素の中に限って出したものだけを残す（文書に書いたものは `transformTags` が落とす）
+  allowVulnerableTags: true,
 };
 
 /** スキームを見分ける前に除く、制御文字と空白の文字コードの上限（U+0000〜U+0020） */
@@ -517,10 +524,12 @@ export function sanitize(html: string, nonce: string): string {
         } else {
           next.style = kept;
         }
-        // 図の部品と動画・音声の要素は、文書に書いたものを中身ごと取り除く
+        // 図の部品・動画と音声・範囲の `style` と `template` の要素は、文書に書いたものを中身ごと取り除く
         if (
           !own &&
-          (DIAGRAM_ONLY_TAGS.has(tagName) || MEDIA_TAGS.has(tagName))
+          (DIAGRAM_ONLY_TAGS.has(tagName) ||
+            MEDIA_TAGS.has(tagName) ||
+            RANGE_SCRIPT_TAGS.has(tagName))
         ) {
           next[DROP_ATTRIBUTE] = "1";
         }
