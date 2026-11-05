@@ -1,6 +1,7 @@
 import type { ExportPayload } from "../cli/html.ts";
 import { mount } from "../mount.ts";
 import { startBundle } from "./bundle.ts";
+import { includesOf } from "./includes.ts";
 import { type EmbeddedModules, prepareModules } from "./modules.ts";
 
 /** 書き出しの中身を埋めた `script` 要素の `id` */
@@ -34,5 +35,7 @@ export async function startViewer(
     ...(entry.docId ? { docId: entry.docId } : {}),
     ...(payload.references ? { references: payload.references } : {}),
     ...(payload.aliases ? { aliases: payload.aliases } : {}),
+    includes: includesOf(payload, entry),
+    ...(payload.icons ? { icons: payload.icons } : {}),
   });
 }

@@ -692,3 +692,58 @@ test("test_normal_when_footnotes_printed", async ({ page }) => {
   // 検証
   await expect(list).not.toHaveAttribute("open", "");
 });
+
+// 印刷で、改ページの場所で用紙を分け、details の範囲を開き、wide の範囲を用紙の幅に収める（正常シナリオ（改ページと details の範囲と wide の範囲））
+test("test_normal_when_pagebreak_details_wide", async ({ page }) => {
+  // 準備
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await openPage(page, builtRoot, {
+    hostCss: "#doc { --mdmark-content-width: 640px; margin-inline: auto; }",
+  });
+  await mountDocument(page, {
+    markdown: [
+      "前の段落",
+      "",
+      "<!-- pagebreak -->",
+      "",
+      "<!-- details: 補足 -->",
+      "",
+      "補足の段落",
+      "",
+      "<!-- /details -->",
+      "",
+      "<!-- wide -->",
+      "",
+      "| 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 |",
+      "| --- | --- | --- | --- | --- | --- | --- | --- |",
+      "| 項目の長い名前 | 1,200,000 | 1,350,000 | 1,410,000 | 1,280,000 | 1,520,000 | 1,610,000 | 前年比で増加した |",
+      "",
+      "<!-- /wide -->",
+      "",
+    ].join("\n"),
+  });
+  const pagebreak = page.locator("#doc .mdmark-pagebreak");
+  // 検証: 画面
+  await expect(pagebreak).toHaveText("");
+  expect((await pagebreak.boundingBox())?.height ?? 0).toBe(0);
+  // 実行
+  await page.emulateMedia({ media: "print" });
+  await sendPrintEvent(page, "beforeprint");
+  // 検証
+  expect(
+    await pagebreak.evaluate((el) => getComputedStyle(el).breakBefore),
+  ).toBe("page");
+  await expect(page.getByText("補足の段落")).toBeVisible();
+  const widths = await page.evaluate(() => ({
+    range:
+      document.querySelector("#doc .mdmark-wide-range")?.getBoundingClientRect()
+        .width ?? 0,
+    paper: document.documentElement.clientWidth,
+  }));
+  expect(widths.range).toBeLessThanOrEqual(widths.paper);
+  // 実行
+  await page.emulateMedia({ media: "screen" });
+  await sendPrintEvent(page, "afterprint");
+  // 検証
+  await expect(page.getByText("補足の段落")).toBeHidden();
+});

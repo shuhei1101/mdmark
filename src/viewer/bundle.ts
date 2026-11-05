@@ -2,6 +2,7 @@ import { ASSET_SCHEME, type ExportPayload } from "../cli/html.ts";
 import type { MdmarkConfig } from "../config.ts";
 import { type MountHandle, mount } from "../mount.ts";
 import { renderDocList } from "../parts/doc-list.ts";
+import { includesOf } from "./includes.ts";
 import { DOC_HASH_PREFIX, resolveRoute, rewriteLinks } from "./route.ts";
 
 /** 横の文書の一覧を出し、パネルを閉じる幅のメディアクエリ（CSS の境と同じ値） */
@@ -84,6 +85,8 @@ export function startBundle(
       ...(item.docId ? { docId: item.docId } : {}),
       ...(payload.references ? { references: payload.references } : {}),
       ...(payload.aliases ? { aliases: payload.aliases } : {}),
+      includes: includesOf(payload, item),
+      ...(payload.icons ? { icons: payload.icons } : {}),
     });
     rewriteLinks(view, path, paths);
     currentPath = path;

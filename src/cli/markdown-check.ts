@@ -218,12 +218,15 @@ export async function checkMarkdownSource(options: {
       ...(config.features ? { features: config.features } : {}),
       ...(config.libraries ? { libraries: config.libraries } : {}),
     },
-  }).map((warning) => ({
-    file,
-    where: String(warning.line),
-    kind: warning.kind,
-    message: warning.message,
-  }));
+  })
+    // 取り込み先を読まないため、include の取り込み先が無い警告は出さない
+    .filter((warning) => !warning.includeTarget)
+    .map((warning) => ({
+      file,
+      where: String(warning.line),
+      kind: warning.kind,
+      message: warning.message,
+    }));
   const unknownMarks = checkUnknownMarks(document, config, directives);
   const layout = checkDiagrams(document).filter(
     (issue) => issue.kind !== "diagram_invalid",

@@ -1,0 +1,86 @@
+$ npx vitest run --project 'unit*' tests/unit/src/interact/terms.browser.test.ts
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/fix-terms-touch-close-term-tooltip
+
+ ❯ |unit-browser (chromium)| tests/unit/src/interact/terms.browser.test.ts (9 tests | 3 failed) 555ms
+   × test_attach_term_tips_when_touch_tapped 132ms
+   × test_attach_term_tips_when_touch_outside 89ms
+   × test_attach_term_tips_when_touch_tapped_after_button_focus 96ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/terms.browser.test.ts > test_attach_term_tips_when_touch_tapped
+AssertionError: expected true to be false // Object.is equality
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/terms.browser.test.ts/test_attach_term_tips_when_touch_tapped.png
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ tests/unit/src/interact/terms.browser.test.ts:282:46
+    280|   vi.advanceTimersByTime(1000);
+    281|   // 検証
+    282|   expect(wrap.classList.contains("is-open")).toBe(false);
+       |                                              ^
+    283| });
+    284|
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=61b3a599:5235:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/terms.browser.test.ts > test_attach_term_tips_when_touch_outside
+AssertionError: expected true to be false // Object.is equality
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/terms.browser.test.ts/test_attach_term_tips_when_touch_outside.png
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ tests/unit/src/interact/terms.browser.test.ts:307:46
+    305|   vi.advanceTimersByTime(1000);
+    306|   // 検証
+    307|   expect(wrap.classList.contains("is-open")).toBe(false);
+       |                                              ^
+    308| });
+    309|
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=61b3a599:5235:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/terms.browser.test.ts > test_attach_term_tips_when_touch_tapped_after_button_focus
+AssertionError: expected true to be false // Object.is equality
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/terms.browser.test.ts/test_attach_term_tips_when_touch_tapped_after_button_focus.png
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ tests/unit/src/interact/terms.browser.test.ts:327:46
+    325|   // 検証
+    326|   expect(document.activeElement).toBe(term);
+    327|   expect(wrap.classList.contains("is-open")).toBe(false);
+       |                                              ^
+    328|   // 実行
+    329|   tap(wrap, term);
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=61b3a599:5235:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/3]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  3 failed | 6 passed (9)
+   Start at  15:21:27
+   Duration  3.40s (import 75%, tests 20%, worker 5%)
+

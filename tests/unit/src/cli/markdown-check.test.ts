@@ -119,6 +119,24 @@ test("test_check_markdown_source_when_no_config", async () => {
   expect(issues.map(({ kind }) => kind)).toEqual(["unknown_mark"]);
 });
 
+// 取り込み先が無い警告を出さない（正常系）
+test("test_check_markdown_source_when_include", async () => {
+  // 準備
+  const { checkMarkdownSource } = await loadMarkdownCheck();
+  const cwd = await createTempDir();
+  // 実行
+  const issues = await checkMarkdownSource({
+    cwd,
+    text: "<!-- include: missing.md -->\n\n本文\n\n<!-- tabz -->\n",
+    importCode,
+  });
+  // 検証
+  expect(issues.map(({ kind }) => kind)).toEqual(["unknown_mark"]);
+  expect(issues.some(({ message }) => message.includes("missing.md"))).toBe(
+    false,
+  );
+});
+
 // ブロックスカラーの値と行を返す（正常系）
 test("test_read_yaml_key", async () => {
   // 準備

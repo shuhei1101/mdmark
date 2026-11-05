@@ -362,3 +362,77 @@ test("test_normal_when_footnotes_disabled", async ({ page }) => {
   await expect(doc.locator("p").first()).toHaveText("出典がある[^src]。");
   expect(await doc.innerHTML()).not.toContain("features:");
 });
+
+// 新しい記法の機能を文書で外すと、書いた文字か普通の Markdown として描く（正常シナリオ（新しい記法の機能を外す））
+test("test_normal_when_new_syntax_disabled", async ({ page }) => {
+  // 準備
+  await openPage(page, builtRoot);
+  // 実行
+  await mountDocument(page, {
+    markdown: [
+      "<!-- features: -icon -columns -highlight -kbd -details -pagebreak -include -wide -csv -->",
+      "",
+      "`icon:check` と `kbd:Ctrl+C` と ==決め手==",
+      "",
+      "<!-- columns -->",
+      "",
+      "左の列",
+      "",
+      "<!-- column -->",
+      "",
+      "右の列",
+      "",
+      "<!-- /columns -->",
+      "",
+      "<!-- details: 補足 -->",
+      "",
+      "補足の中身",
+      "",
+      "<!-- /details -->",
+      "",
+      "<!-- pagebreak -->",
+      "",
+      "<!-- include: part.md -->",
+      "",
+      "<!-- wide -->",
+      "",
+      "広げる中身",
+      "",
+      "<!-- /wide -->",
+      "",
+      "```csv",
+      "a,b",
+      "1,2",
+      "```",
+      "",
+    ].join("\n"),
+    includes: { "part.md": "取り込んだ段落" },
+  });
+  // 検証
+  const doc = page.locator("#doc");
+  await expect(doc.locator("code", { hasText: "icon:check" })).toHaveCount(1);
+  await expect(doc.locator("code", { hasText: "kbd:Ctrl+C" })).toHaveCount(1);
+  await expect(doc).toContainText("==決め手==");
+  for (const text of ["左の列", "右の列", "補足の中身", "広げる中身"]) {
+    await expect(doc.getByText(text)).toBeVisible();
+  }
+  await expect(
+    doc.locator(
+      ".mdmark-layout-columns, details.mdmark-collapsible, .mdmark-wide-range, .mdmark-pagebreak",
+    ),
+  ).toHaveCount(0);
+  await expect(doc).not.toContainText("取り込んだ段落");
+  await expect(doc.locator("code.language-csv")).toHaveCount(1);
+  await expect(doc.locator("table")).toHaveCount(0);
+  expect(await doc.innerHTML()).not.toContain("<!--");
+  await expect(doc.locator(".mdmark-syntax-warning")).toHaveCount(0);
+  await page.emulateMedia({ media: "print" });
+  await sendPrintEvent(page, "beforeprint");
+  const breaks = await page.evaluate(
+    () =>
+      [...document.querySelectorAll("#doc *")].filter(
+        (el) => getComputedStyle(el).breakBefore === "page",
+      ).length,
+  );
+  expect(breaks).toBe(0);
+});

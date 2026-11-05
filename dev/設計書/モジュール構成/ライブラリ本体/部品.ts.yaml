@@ -17,6 +17,11 @@ directory: |-
   ├── collapsible.ts               # タブとステップの折り畳みの renderCollapsible
   ├── tree.ts                      # ファイルツリーの renderTree・renderTreeBar・fileIconOf・folderOpenByDefault
   ├── badge.ts                     # バッジの renderBadge（色を含む）
+  ├── inline-icon.ts               # 行内のアイコンの renderInlineIcon と IconNode の svg の iconNodeSvg
+  ├── kbd.ts                       # キーの renderKbd
+  ├── highlight.ts                 # 蛍光ペンの renderHighlight
+  ├── layout-columns.ts            # 段組みの renderLayoutColumns
+  ├── wide.ts                      # wide の範囲の renderWide
   ├── footnote.ts                  # 脚注の番号の renderFootnoteRef と脚注の一覧の renderFootnotes
   ├── code-block.ts                # コードブロックの renderCodeBlock と renderCodeCopy と、行の開閉のボタンの renderCodeFoldToggle・renderCodeFoldMore
   ├── toc.ts                       # 目次の renderToc
@@ -46,7 +51,7 @@ constants:
     title: 知らせの枠の題
     container: src/parts/notice.ts
     summary: 図の印かどうかで分ける題
-    value: '{ figure: "この図を表示できません", block: "この箇所を表示できません" }'
+    value: '{ figure: "この図を表示できません", block: "この箇所を表示できません", icons: "アイコンを表示できません" }'
   - name: SLOT_MARKER
     title: 中身の差し込み口
     container: src/parts/own.ts
@@ -1665,6 +1670,153 @@ functions:
         condition: '`items: []`'
         mock: なし
         expected: 空文字
+  - name: renderInlineIcon
+    title: 行内のアイコンを描く
+    container: src/parts/inline-icon.ts
+    summary: 部品設計『アイコン』の HTML を返す。`node` があれば `iconNodeSvg` の svg を中に入れ、無ければ中を空にする
+    kind: 関数
+    scope: internal
+    args:
+    - name: options
+      type: '{ name: string; node?: MdmarkIconNode }'
+      required: true
+      description: アイコンの名前と形
+    returns:
+      type: string
+      description: 部品の HTML
+    unit_tests:
+    - name: test_render_inline_icon
+      case: 正常
+      condition: '`{ name: "check", node: [["path",{d:"M20 6 9 17l-5-5"}]] }` と `{ name: "sailboat" }`'
+      expected: '`<span class="mdmark-inline-icon" data-icon="check" aria-hidden="true"><svg class="mdmark-icon" viewBox="0 0 24 24">…</svg></span>` と中が空の `span`'
+      mock: なし
+      summary: 形があれば svg を入れる
+  - name: iconNodeSvg
+    title: IconNode を svg にする
+    container: src/parts/inline-icon.ts
+    summary: Lucide の IconNode を、`path`・`circle`・`rect`・`line`・`polyline`・`polygon`・`ellipse` の要素と描画の属性（`d`・`cx`・`cy`・`r`・`rx`・`ry`・`x`・`y`・`x1`・`y1`・`x2`・`y2`・`width`・`height`・`points`）だけを残した `svg.mdmark-icon` の文字にする。値はエスケープする
+    kind: 関数
+    scope: internal
+    args:
+    - name: node
+      type: MdmarkIconNode
+      required: true
+      description: Lucide の IconNode
+    returns:
+      type: string
+      description: '`<svg class="mdmark-icon"` で始まる HTML'
+    unit_tests:
+    - name: test_icon_node_svg
+      case: 正常
+      condition: '`[["path",{d:"M1 1"}],["script",{}],["circle",{cx:"1",onclick:"x"}]]`'
+      expected: '`path` と `cx` だけを持つ `circle` を持つ svg で、`script`・`onclick` が無い'
+      mock: なし
+      summary: 許す要素と属性だけを残す
+  - name: renderKbd
+    title: キーを描く
+    container: src/parts/kbd.ts
+    summary: 部品設計『キー』の HTML を返す。キーごとの `kbd.mdmark-kbd` を `span.mdmark-kbd-join` の `+` でつなぐ
+    kind: 関数
+    scope: internal
+    args:
+    - name: options
+      type: '{ keys: string[] }'
+      required: true
+      description: キーの並び
+    returns:
+      type: string
+      description: 部品の HTML
+    unit_tests:
+    - name: test_render_kbd
+      case: 正常
+      condition: '`{ keys: ["Ctrl","+"] }`'
+      expected: '`<span class="mdmark-kbd-group"><kbd class="mdmark-kbd">Ctrl</kbd><span class="mdmark-kbd-join">+</span><kbd class="mdmark-kbd">+</kbd></span>`'
+      mock: なし
+      summary: キーを `+` でつなぐ
+  - name: renderHighlight
+    title: 蛍光ペンを描く
+    container: src/parts/highlight.ts
+    summary: 部品設計『蛍光ペン』の HTML を返す。ストーリーの描画で使い、`render` は `useHighlight` のトークンから同じ HTML を出す
+    kind: 関数
+    scope: internal
+    args:
+    - name: options
+      type: '{ html: string; color?: ColorName }'
+      required: true
+      description: 中身の HTML と色の名前
+    returns:
+      type: string
+      description: 部品の HTML
+    unit_tests:
+    - name: test_render_highlight
+      case: 正常
+      condition: '`{ html: "決め手" }` と `{ html: "例外", color: "green" }`'
+      expected: '`<mark class="mdmark-highlight">決め手</mark>` と `<mark class="mdmark-highlight" data-color="green">例外</mark>`'
+      mock: なし
+      summary: 色があれば `data-color` を付ける
+  - name: renderLayoutColumns
+    title: 段組みを描く
+    container: src/parts/layout-columns.ts
+    summary: 部品設計『段組み』の HTML を返す
+    kind: 関数
+    scope: internal
+    args:
+    - name: options
+      type: '{ columns: string[] }'
+      required: true
+      description: 列ごとの中身の HTML（`SLOT_MARKER` を渡せる）
+    returns:
+      type: string
+      description: 部品の HTML
+    unit_tests:
+    - name: test_render_layout_columns
+      case: 正常
+      condition: 2 列の中身
+      expected: '`<div class="mdmark-layout-columns" data-count="2">` の中に `div.mdmark-layout-column` が 2 つ'
+      mock: なし
+      summary: 列の数を `data-count` に入れる
+  - name: renderWide
+    title: wide の範囲を描く
+    container: src/parts/wide.ts
+    summary: 部品設計『wide の範囲』の HTML を返す。`toggle` のときは直前に帯と切り替えのボタンを置く。2 つのアイコンは `src/parts/icons.ts` の `ICONS` に Lucide と同じ IconNode の形で追加する `WideExpand`（`|←→|`）・`WideShrink`（`→|←`）
+    kind: 関数
+    scope: internal
+    args:
+    - name: options
+      type: '{ body: string; state: "wide" | "narrow"; toggle: boolean }'
+      required: true
+      description: 中身・状態・ボタンを置くか
+    returns:
+      type: string
+      description: 部品の HTML
+    unit_tests:
+    - name: test_render_wide
+      case: 正常
+      condition: '`{ state: "wide", toggle: true }` と `{ state: "narrow", toggle: false }`'
+      expected: 1 つ目は `div.mdmark-wide-bar` の `button.mdmark-wide-toggle[aria-pressed="true"][aria-label="広げて表示"]` と `<div class="mdmark-wide-range" data-state="wide">`、2 つ目は帯が無い `data-state="narrow"` の範囲
+      mock: なし
+      summary: ボタンの有無と状態を描く
+  - name: renderRawToggle
+    title: RAW のボタンを描く
+    container: src/parts/table.ts
+    summary: 部品設計『表』の RAW のボタンの HTML を返す。`renderTable` は `rawCsv` を受けると `data-source="csv"` と `pre.mdmark-raw` を出し、帯の右端にこのボタンを置く
+    kind: 関数
+    scope: internal
+    args:
+    - name: pressed
+      type: boolean
+      required: true
+      description: 押した状態か
+    returns:
+      type: string
+      description: 部品の HTML
+    unit_tests:
+    - name: test_render_raw_toggle
+      case: 正常
+      condition: '`false` と `true`'
+      expected: '`<button class="mdmark-raw-toggle" type="button" aria-label="元の CSV を表示" aria-pressed="false">` と `aria-pressed="true"` の `code-xml` のアイコンのボタン'
+      mock: なし
+      summary: 押した状態を `aria-pressed` に入れる
 notes:
   ストーリー: '`*.stories.yaml` は `title`（部品設計の `story`）と、部品設計の `states` ごとの `stories[].name`・`stories[].parameters.server.id`（部品の id。ファイル名の頭）・`stories[].args` を持つ。`embed` の配列の引数は `a,b` の 1 つの文字列で書く。この PR で足す部品の配列・オブジェクトの引数は JSON の文字列で書く（戻し方は『部品の描画』）。中身を持つ部品のストーリーは、中身に部品ごとの見本の HTML を渡す'
   印の付け方: 部品の関数は `markOwn` を掛けない。記法のコアルールと `mount` の操作が、差し込む前に掛ける
@@ -1698,6 +1850,11 @@ test_files:
   - tests/unit/src/parts/gif.test.ts
   - tests/unit/src/parts/card.test.ts
   - tests/unit/src/parts/footnote.test.ts
+  - tests/unit/src/parts/inline-icon.test.ts
+  - tests/unit/src/parts/kbd.test.ts
+  - tests/unit/src/parts/highlight.test.ts
+  - tests/unit/src/parts/layout-columns.test.ts
+  - tests/unit/src/parts/wide.test.ts
 data_models:
   - name: CodeLine
     title: コードの行

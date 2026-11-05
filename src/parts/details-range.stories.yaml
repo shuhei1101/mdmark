@@ -1,0 +1,17 @@
+title: Parts/DetailsRange
+stories:
+  - name: Closed
+    parameters:
+      server:
+        id: details-range
+    args:
+      title: 補足の手順
+      html: <p>中身の段落</p>
+  - name: Open
+    parameters:
+      server:
+        id: details-range
+    args:
+      title: 実行の例
+      html: <p>中身の段落</p>
+      open: true

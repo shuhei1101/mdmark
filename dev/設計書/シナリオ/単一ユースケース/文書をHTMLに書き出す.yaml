@@ -226,6 +226,31 @@ scenarios:
     test: test_normal_when_footnotes
     refs:
       - dev/設計書/シナリオ/単一ユースケース/脚注を見る#scenarios[正常シナリオ]
+  - name: 正常シナリオ（取り込みとアイコンを埋める）
+    setup:
+      - name: 取り込みとアイコンを持つ文書
+        description: '`<!-- include: 共通/手順.md#実行 -->` と、作業のフォルダの `src/app.ts` の 3〜5 行目を指す include のマーカーと、配布物に束ねていない名前の `icon:` を持つ文書 1 つ'
+        notes: '`共通/手順.md` と `src/app.ts` は作業のフォルダにある'
+      - name: Mock
+        description: 正常シナリオと同じく、書き出しがネットワークを読まない
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant C as mdmark CLI
+        participant F as 出力の HTML
+        actor R as 読む人
+        W->>C: mdmark export 文書のパス（出力を指定）
+        C->>C: 取り込むファイルと、文書が使う Lucide のアイコンを読む
+        C->>F: 取り込んだ中身とアイコンを埋めた HTML を書く
+        C-->>W: 出力のパス・終了コード 0
+        R->>F: HTML だけを空のフォルダへ写して file:// で開く
+        F-->>R: 取り込んだ中身とアイコンを持つ文書
+    expected:
+      - 終了コードが 0 で、指定した出力に HTML が 1 つある
+      - 開いた文書のマーカーの場所に、`実行` の見出しの下の中身と、`src/app.ts` の 3〜5 行目の言語 `ts` のコードブロックが描かれている
+      - 束ねていない名前のアイコンが描かれている
+      - 描き終えるまでに、ページ自身と画像の `data:` のほかの要求が 0 件
+    test: test_normal_when_includes_and_icons_embedded
 lead: 文書を書く人が `mdmark export` で Markdown を 1 つ、配布物・使う側の CSS・外部ライブラリのモジュール・画像を埋めた 1 枚の HTML に書き出し、読む人は file:// で開いて外を読まずに読む。
 issue: 9
 primary_actor: 文書を書く人

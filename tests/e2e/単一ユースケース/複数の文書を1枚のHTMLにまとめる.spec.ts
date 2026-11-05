@@ -406,3 +406,43 @@ test("test_normal_when_footnotes", async ({ builtRoot, tempDir, page }) => {
   await expect(link).toBeInViewport();
   expect(opened.externalRequests()).toEqual([]);
 });
+
+// まとめる文書の取り込み先と束ねていない名前のアイコンを埋め、外へ要求せずに描く（正常シナリオ（取り込みとアイコンを埋める））
+test("test_normal_when_includes_and_icons_embedded", async ({
+  builtRoot,
+  tempDir,
+  page,
+}) => {
+  // 準備
+  const dir = await tempDir();
+  await writeFiles(dir, {
+    "mdmark.config.yaml": [
+      "build:",
+      '  include: ["docs/*.md"]',
+      "  out: dist/docs.html",
+      "",
+    ].join("\n"),
+    "docs/a.md":
+      "# A\n\n<!-- include: b.md#使い方 -->\n\n<!-- include: ../共通/手順.md -->\n\n`icon:sailboat` の段落\n",
+    "docs/b.md": "# B\n\n## 使い方\n\n使い方の段落\n",
+    "共通/手順.md": "手順の段落\n",
+  });
+  // 実行
+  const result = await runCli(builtRoot, ["build"], dir);
+  // 検証
+  expect(result.code).toBe(0);
+  const opened = await openStandalone(page, {
+    tempDir,
+    htmlFile: join(dir, "dist", "docs.html"),
+  });
+  await expect(
+    page.locator('article .mdmark-inline-icon[data-icon="sailboat"] svg'),
+  ).toHaveCount(1);
+  const includes = page.locator("article .mdmark-include");
+  await expect(includes.nth(0)).toContainText("使い方の段落");
+  await expect(includes.nth(1)).toContainText("手順の段落");
+  await expect(
+    page.locator(".mdmark-bundle-side .mdmark-doc-list a", { hasText: "手順" }),
+  ).toHaveCount(0);
+  expect(opened.externalRequests()).toEqual([]);
+});

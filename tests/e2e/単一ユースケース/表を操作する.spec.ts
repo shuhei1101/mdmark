@@ -1613,3 +1613,129 @@ test("test_normal_when_row_header_pinned", async ({ page }) => {
   await expect(cells.nth(0)).toBeInViewport();
   await expect(cells.nth(1)).toBeInViewport();
 });
+
+/** 見出しの行と 3 行の CSV（引用符で囲んだ区切りと改行を含む） */
+const CSV = [
+  "名前,拠点,金額",
+  '北山,"東京, 本社",1200',
+  '南田,"大阪',
+  '（支店）",800',
+  "西川,名古屋,950",
+].join("\n");
+
+// 言語 csv のコードブロックを表にし、表の機能を付ける（正常シナリオ（CSV の表））
+test("test_normal_when_csv", async ({ page }) => {
+  // 準備
+  await openPage(page, builtRoot);
+  // 実行
+  await mountDocument(page, {
+    markdown: [
+      "<!-- table: data -->",
+      "",
+      "```csv",
+      CSV,
+      "```",
+      "",
+      "<!-- /table -->",
+      "",
+      "```csv",
+      CSV,
+      "```",
+      "",
+      "```text",
+      CSV,
+      "```",
+      "",
+    ].join("\n"),
+  });
+  // 検証
+  const tables = page.locator('#doc .mdmark-table[data-source="csv"]');
+  await expect(tables).toHaveCount(2);
+  const first = tables.nth(0);
+  await expect(first.locator("thead th")).toHaveText([/名前/, /拠点/, /金額/]);
+  await expect(first.locator("tbody tr")).toHaveCount(3);
+  await expect(first.locator(".mdmark-sort").first()).toBeVisible();
+  await expect(first.locator(".mdmark-pin").first()).toBeAttached();
+  await expect(first.locator("td", { hasText: "東京, 本社" })).toHaveText(
+    "東京, 本社",
+  );
+  await expect(first.locator("td", { hasText: "大阪" })).toContainText(
+    "（支店）",
+  );
+  await first.locator("thead th").nth(2).locator(".mdmark-sort").click();
+  await expect(first.locator("tbody tr td:nth-child(3)")).toHaveText([
+    "800",
+    "950",
+    "1200",
+  ]);
+  await expect(tables.nth(1)).toHaveAttribute("data-kind", "default");
+  await expect(tables.nth(1).locator(".mdmark-sort")).toHaveCount(0);
+  await expect(page.locator("#doc .mdmark-syntax-warning")).toHaveCount(0);
+  await expect(page.locator("#doc code.language-text")).toContainText(
+    "名前,拠点,金額",
+  );
+});
+
+// 列の数がそろわない行は見出しにそろえ、警告に行番号を書く（異常シナリオ（CSV の列の数がそろわない））
+test("test_error_when_csv_columns_mismatch", async ({ page }) => {
+  // 準備
+  await openPage(page, builtRoot);
+  // 実行
+  await mountDocument(page, {
+    markdown: ["```csv", "a,b,c", "1,2", "1,2,3,4", "```", ""].join("\n"),
+  });
+  // 検証
+  const warning = page.locator("#doc .mdmark-syntax-warning");
+  await expect(warning).toContainText("2 行目");
+  await expect(warning).toContainText("3 行目");
+  const rows = page.locator("#doc table tbody tr");
+  await expect(rows.nth(0).locator("td")).toHaveText(["1", "2", ""]);
+  await expect(rows.nth(1).locator("td")).toHaveText(["1", "2", "3"]);
+});
+
+// RAW のボタンで、表と書いたとおりの CSV を切り替える（正常シナリオ（CSV の表と元の CSV を切り替える））
+test("test_normal_when_csv_raw_toggled", async ({ page }) => {
+  // 準備
+  await openPage(page, builtRoot);
+  await mountDocument(page, {
+    markdown: [
+      "<!-- table: data filter=拠点 -->",
+      "",
+      "```csv",
+      CSV,
+      "```",
+      "",
+      "<!-- /table -->",
+      "",
+    ].join("\n"),
+  });
+  const wrapper = page.locator('#doc .mdmark-table[data-source="csv"]');
+  const button = wrapper.locator(".mdmark-raw-toggle");
+  // 検証: 描いた直後
+  await expect(button).toHaveAttribute("aria-pressed", "false");
+  const table = await wrapper.locator("table").boundingBox();
+  const box = await button.boundingBox();
+  expect(
+    Math.abs(
+      (box?.x ?? 0) +
+        (box?.width ?? 0) -
+        ((table?.x ?? 0) + (table?.width ?? 0)),
+    ),
+  ).toBeLessThanOrEqual(2);
+  // 実行
+  await button.click();
+  // 検証
+  await expect(button).toHaveAttribute("aria-pressed", "true");
+  await expect(wrapper.locator("pre.mdmark-raw")).toBeVisible();
+  await expect(wrapper.locator("pre.mdmark-raw")).toContainText(
+    '北山,"東京, 本社",1200',
+  );
+  // 実行: Enter で押す
+  await button.focus();
+  await page.keyboard.press("Enter");
+  // 検証
+  await expect(button).toHaveAttribute("aria-pressed", "false");
+  await expect(wrapper.locator("table")).toBeVisible();
+  await expect(wrapper.locator(".mdmark-sort").first()).toBeVisible();
+  await expect(wrapper.locator(".mdmark-filter").first()).toBeVisible();
+});

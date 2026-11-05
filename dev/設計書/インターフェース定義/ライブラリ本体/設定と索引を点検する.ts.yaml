@@ -330,6 +330,52 @@ flows:
     test: test_normal_when_diagram_drift
     refs:
       - dev/設計書/シナリオ/単一ユースケース/設定と索引を点検する#scenarios[正常シナリオ（図の定義にずれがある）]
+  - name: 正常系（取り込み先が無い）
+    summary: include のマーカーが指すファイル・見出し・行の範囲が無いものを `include_target_missing` のずれにする
+    setup:
+      - name: 取り込み先の無いマーカーを持つフォルダ
+        description: '`build.include` が当たる `docs/a.md` と `docs/b.md` と、5 行の `src/app.ts`、`## 実行` を持つ `docs/共通/手順.md`。`a.md` は 3 行目に `<!-- include: missing.md -->`、5 行目に `<!-- include: 共通/手順.md#実行 -->` を持つ。`b.md` は 2 行目に `<!-- include: 共通/手順.md#無い見出し -->`、4 行目に `<!-- include: ../src/app.ts#L8-L10 -->` を持つ'
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant C as mdmark CLI
+        W->>C: mdmark check
+        C->>C: include のマーカーの取り込み先をファイルから読んで確かめる
+        C-->>W: include_target_missing の 3 行・終了コード 1
+    expected:
+      - 終了コードが 1
+      - '`docs/a.md:3: include_target_missing:`・`docs/b.md:2: include_target_missing:`・`docs/b.md:4: include_target_missing:` で始まる行があり、内容にそれぞれ `missing.md`、`無い見出し`、`L8-L10` と `5 行` と、直し方を含む'
+      - '`docs/a.md:5` を指す行が無い'
+      - 最後の行が `ずれ 3 件`
+      - 設定・索引・文書が変わらない
+    test: test_normal_when_include_targets_missing
+    refs:
+      - dev/設計書/シナリオ/単一ユースケース/設定と索引を点検する#scenarios[正常シナリオ（取り込み先が無い）]
+  - name: 正常系（取り込みが循環する・フォルダの外を指す）
+    summary: 循環する取り込みを `include_circular`、設定ファイルのフォルダの外を指す取り込みを `include_target_missing` のずれにする
+    setup:
+      - name: 循環とフォルダの外を指すマーカーを持つフォルダ
+        description: '`build.include` が当たる `docs/a.md`（3 行目に `<!-- include: b.md -->`、5 行目に `<!-- include: ../../outside.md -->`）と、`build.include` に当たらない `docs/b.md`（2 行目に `<!-- include: a.md -->`）。`outside.md` は設定ファイルのフォルダの 1 つ上にある'
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant C as mdmark CLI
+        W->>C: mdmark check
+        C->>C: 取り込みをたどり、循環とフォルダの外を見つける
+        C-->>W: include_circular と include_target_missing の行・終了コード 1
+    expected:
+      - 終了コードが 1
+      - '`docs/b.md:2: include_circular:` で始まる行があり、内容に `a.md → b.md → a.md` と直し方を含む'
+      - '`docs/a.md:5: include_target_missing:` で始まる行があり、内容に `../../outside.md` と設定ファイルのフォルダの外であることを含む'
+      - '`outside.md` の中身を読んでいない（ファイルのアクセスの時刻ではなく、`outside.md` に置いた include のマーカーのずれが出ないことで確かめる）'
+      - 設定・索引・文書が変わらない
+    test: test_normal_when_include_circular_or_outside
+    refs:
+      - dev/設計書/シナリオ/単一ユースケース/設定と索引を点検する#scenarios[正常シナリオ（取り込み先が無い）]
   - name: 正常系（文字列の記法を点検する）
     summary: 書き方の警告を持たない Markdown の文字列で 0 件を返す
     setup:
@@ -553,10 +599,10 @@ response:
   - name: 標準出力
     type: string
     description: 'ずれ 1 つを 1 行（`{ファイル}:{場所}: {種類}: {内容}`。場所が空のときは `{ファイル}: {種類}: {内容}`）で並べ、最後に `ずれ {件数} 件` の行を出す'
-    notes: ファイルは設定ファイルのあるフォルダからの相対パス（`--text` のときは `-`、設定ファイルが無いときは今のフォルダからの相対パス）。`--text`・`--file` のときの並びは、場所の行の順（同じ行は描いたときの警告の順、図の配置のずれはその後ろ）。並びは設定の `schema` → `unknown_color_theme` → `no_documents` → `checkIndex` が返した並び → エイリアスのずれ（`buildAliases` が返した並び。`alias_no_files`・`alias_unreadable` は読んだ行の順にその場所へ置く） → `unknown_mark` → `missing_file` → 図の点検のずれ（どれも文書のパスの順、同じ文書の中は行の順）
+    notes: ファイルは設定ファイルのあるフォルダからの相対パス（`--text` のときは `-`、設定ファイルが無いときは今のフォルダからの相対パス）。`--text`・`--file` のときの並びは、場所の行の順（同じ行は描いたときの警告の順、図の配置のずれはその後ろ）。並びは設定の `schema` → `unknown_color_theme` → `no_documents` → `checkIndex` が返した並び → エイリアスのずれ（`buildAliases` が返した並び。`alias_no_files`・`alias_unreadable` は読んだ行の順にその場所へ置く） → `unknown_mark` → `missing_file` → `include_target_missing`・`include_circular`（どちらも文書のパスと行の順） → 図の点検のずれ（どれも文書のパスの順、同じ文書の中は行の順）
   - name: 種類
-    type: "'schema' | 'unknown_color_theme' | 'no_documents' | 'missing_doc' | 'orphan_doc' | 'broken_ref' | 'untyped_related' | 'one_sided_change_together' | 'related_link_overlap' | 'missed_change_together' | 'duplicate_term' | 'avoided_term' | 'duplicate_tag' | 'tag_alias_conflict' | 'broken_tag_replacement' | 'unregistered_tag' | 'deprecated_tag' | 'alias_no_files' | 'alias_unreadable' | 'duplicate_alias_row_id' | 'alias_records_missing' | 'alias_field_missing' | 'alias_unknown_type' | 'alias_required_empty' | 'duplicate_alias_id' | 'unknown_mark' | 'missing_file' | 'diagram_invalid' | 'diagram_node_overlap' | 'diagram_node_overflow' | 'diagram_wire_crosses_node' | 'diagram_label_too_long' | 'syntax_warning'"
-    description: '`schema` は設定か索引が Schema に合わない（`build.glossary`・`build.entry` が `include` に当たらないもの・`aliases` の行の Schema のずれを含む）、`unknown_color_theme` は設定の `colorTheme` が mdmark に入っているテーマの名前のどれでもない、`no_documents` は `build.include` に当たる文書が 0 件、`alias_no_files` は `aliases` の行の `paths` に当たるファイルが 0 件、`alias_unreadable` は `paths` に当たったファイルを YAML として読めない、`unknown_mark` は文書の本文に知っている印のどれにも当たらない印がある、`missing_file` は文書が指す画像・動画・音声・添付のファイルが文書からの相対パスにもアセットのルートにも無い、`diagram_invalid` は図の部品の定義を読めないか形が合わない、`diagram_node_overlap` はフロー図の 2 つのノードの矩形が重なる、`diagram_node_overflow` はフロー図のノードが図の `width`・`height` の外に出るか `frame` の縁をまたぐ、`diagram_wire_crosses_node` はフロー図の線が `from`・`to` でないノードの中を通る、`diagram_label_too_long` はフロー図のノードの種類・名前・補足の文字が、折り返してもノードの中に収まらない、`syntax_warning` は `--text`・`--file` で渡した Markdown を描いたときに出る書き方の警告のうち `unknown_mark`・`diagram_invalid` に当たらないもの。`duplicate_alias_row_id`〜`duplicate_alias_id` はインターフェース定義『エイリアスを作る』の `kind`、ほかはインターフェース定義『索引を点検する』の `kind`'
+    type: '''schema'' | ''unknown_color_theme'' | ''no_documents'' | ''missing_doc'' | ''orphan_doc'' | ''broken_ref'' | ''untyped_related'' | ''one_sided_change_together'' | ''related_link_overlap'' | ''missed_change_together'' | ''duplicate_term'' | ''avoided_term'' | ''duplicate_tag'' | ''tag_alias_conflict'' | ''broken_tag_replacement'' | ''unregistered_tag'' | ''deprecated_tag'' | ''alias_no_files'' | ''alias_unreadable'' | ''duplicate_alias_row_id'' | ''alias_records_missing'' | ''alias_field_missing'' | ''alias_unknown_type'' | ''alias_required_empty'' | ''duplicate_alias_id'' | ''unknown_mark'' | ''missing_file'' | ''include_target_missing'' | ''include_circular'' | ''diagram_invalid'' | ''diagram_node_overlap'' | ''diagram_node_overflow'' | ''diagram_wire_crosses_node'' | ''diagram_label_too_long'' | ''syntax_warning'''
+    description: '`schema` は設定か索引が Schema に合わない（`build.glossary`・`build.entry` が `include` に当たらないもの・`aliases` の行の Schema のずれを含む）、`unknown_color_theme` は設定の `colorTheme` が mdmark に入っているテーマの名前のどれでもない、`no_documents` は `build.include` に当たる文書が 0 件、`alias_no_files` は `aliases` の行の `paths` に当たるファイルが 0 件、`alias_unreadable` は `paths` に当たったファイルを YAML として読めない、`unknown_mark` は文書の本文に知っている印のどれにも当たらない印がある、`missing_file` は文書が指す画像・動画・音声・添付のファイルが文書からの相対パスにもアセットのルートにも無い、`include_target_missing` は include のマーカーが指すファイル・見出し・行の範囲が無いか、設定ファイルのフォルダの外を指す、`include_circular` は include の取り込みが循環する、`diagram_invalid` は図の部品の定義を読めないか形が合わない、`diagram_node_overlap` はフロー図の 2 つのノードの矩形が重なる、`diagram_node_overflow` はフロー図のノードが図の `width`・`height` の外に出るか `frame` の縁をまたぐ、`diagram_wire_crosses_node` はフロー図の線が `from`・`to` でないノードの中を通る、`diagram_label_too_long` はフロー図のノードの種類・名前・補足の文字が、折り返してもノードの中に収まらない、`syntax_warning` は `--text`・`--file` で渡した Markdown を描いたときに出る書き方の警告のうち `unknown_mark`・`diagram_invalid` に当たらないもの（include の取り込み先が無い警告を除く）。`duplicate_alias_row_id`〜`duplicate_alias_id` はインターフェース定義『エイリアスを作る』の `kind`、ほかはインターフェース定義『索引を点検する』の `kind`'
   - name: 終了コード
     type: 0 | 1
     description: ずれが 0 件なら 0、ずれがあるか点検できないときは 1
@@ -626,8 +672,11 @@ constraints:
   - item: ラベルの長さの目安
     constraint: ノードの種類・名前・補足の文字を、全角の文字は文字の大きさ、半角の文字は文字の大きさの 0.6 倍の幅とみなし、ノードの `w` から左右の余白を除いた幅で折り返した行の数を数える。文字の大きさと余白は描いた文書の CSS の値（種類 11px・名前 14px・補足 12px・行の高さ 1.4 倍・余白 上下 6px 左右 10px）とし、折り返した行の高さの合計がノードの `h` から上下の余白を除いた高さを超えるものをずれにする
     notes: ブラウザの実際の文字幅は使わない（D-12）。目安の値は CSS を変えたときに合わせて直す
+  - item: 取り込み先の点検
+    constraint: '制約「点検する文書」の文書ごとに、include のマーカー（コードブロックとインラインコードの中を除く）の取り込み先を、インターフェース定義『文書をHTML文字列にする』の制約「取り込み」と同じパスの解き方でファイルから読み、無いファイル・設定ファイルのフォルダの外を指すパス・無い見出しの ID・ファイルの行の数を越える行の範囲を 1 つにつき 1 件の `include_target_missing`、循環する取り込みを 1 つにつき 1 件の `include_circular` のずれにする（取り込んだ文書の中のマーカーもたどる）。ファイルはマーカーを書いた文書の相対パス、場所はマーカーの行の番号（1 から）、内容は、`include_target_missing` は書いた取り込み先と、無いもの（ファイル・フォルダの外・見出し・行。行はファイルの行の数も）と、パス・見出し・行の範囲を修正するかファイルを置く直し方の 1 文、`include_circular` は循環の順（`a.md → b.md → a.md`）と、循環するマーカーのどれかを取り除く直し方の 1 文。文書の `<!-- features: -include -->` の文書は点検しない'
+    notes: 種類の名前は単一ユースケース『設定と索引を点検する』でインターフェース定義に任せたもの
   - item: 記法の点検
-    constraint: '`--text` か `--file` と `--key` を渡したときは、設定・索引・`build` の対象・エイリアス・テーマの名前・見つからないファイルの点検をしない。渡した Markdown を `render` と同じ読み取りで読み、描いたときに出る書き方の警告を 1 つにつき 1 件のずれにする。内容は警告の本文と同じ文。知らない印の警告は `unknown_mark`、図の部品の定義の警告は `diagram_invalid`、そのほかは `syntax_warning` にする。読めたフロー図の定義は制約「図の定義の点検」と同じ配置の点検もする。設定ファイルが見つかれば、`features`・`libraries`・`extensions`（制約「知っている印」と同じ読み方）・`check.ignore` を当てて描くときと同じ警告にし、見つからなければ既定の設定で点検する（設定ファイルが無いことをエラーにしない）。点検はブラウザを使わない'
+    constraint: '`--text` か `--file` と `--key` を渡したときは、設定・索引・`build` の対象・エイリアス・テーマの名前・見つからないファイルの点検をしない。渡した Markdown を `render` と同じ読み取りで読み、描いたときに出る書き方の警告を 1 つにつき 1 件のずれにする。内容は警告の本文と同じ文。知らない印の警告は `unknown_mark`、図の部品の定義の警告は `diagram_invalid`、そのほかは `syntax_warning` にする。include のマーカーの取り込み先が無い警告（ファイル・見出し・行の範囲）は、取り込み先を読まないため出さない（取り込み先は設定の文書の点検の `include_target_missing`・`include_circular` が確かめる）。読めたフロー図の定義は制約「図の定義の点検」と同じ配置の点検もする。設定ファイルが見つかれば、`features`・`libraries`・`extensions`（制約「知っている印」と同じ読み方）・`check.ignore` を当てて描くときと同じ警告にし、見つからなければ既定の設定で点検する（設定ファイルが無いことをエラーにしない）。点検はブラウザを使わない'
     notes: 入口を `mdmark check` の引数にするのは要件.md の未確定（記法の点検の入口、推奨 A）
   - item: 記法の点検の場所
     constraint: '`--text` のずれの場所は、文字列の中の行の番号（1 から）。`--file` のずれのファイルは YAML のファイル、場所は YAML のファイルの行の番号（1 から）。キーの値がブロックスカラー（`|`・`>`）なら、値の中の行を YAML のファイルの行へ置き換え、それ以外の書き方の値はキーの行にする。警告の場所は、警告の元になったマーカー（範囲なら開きのマーカー）の行。マーカーを持たない警告（読めないファイルツリーなど）は、警告を置いた場所の後ろのブロックの開始の行'

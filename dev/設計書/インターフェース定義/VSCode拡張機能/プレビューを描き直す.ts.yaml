@@ -261,6 +261,29 @@ flows:
       - 表に戻した後の `ready` を受けて送った `render` が `previous` を持つ
       - 表に戻した後の Webview で、見出し A の見えている範囲の先頭からの位置が、背面に回す前に控えた値と 1 px 以内で同じ
     test: test_normal_when_diff_revealed
+  - name: 正常系（取り込み先を保存する）
+    summary: 取り込んでいるファイルを保存すると、読み直した取り込む文書で描き直す
+    setup:
+      - name: 取り込みを持つプレビュー
+        description: プレビューを開く.ts の正常系（取り込む文書を描く）の後
+      - name: Mock
+        description: プレビューを開く.ts の正常系と同じ。Webview へ送ったメッセージを記録する
+    flow: |-
+      sequenceDiagram
+        participant U as 文書を書く人
+        participant EX as 拡張機能
+        participant PV as Webview
+        U->>EX: 共通/手順.md の実行の段落を書き換えて保存する
+        EX->>EX: includes を読み直す
+        EX->>PV: render（guide.md の全文・includes）
+        PV->>EX: rendered
+    expected:
+      - 保存の後に送った `render` が 1 回で、`includes` の `共通/手順.md` が書き換えた後の中身
+      - Webview の取り込んだ段落が書き換えた後の文
+      - 取り込んでいないワークスペースのファイルを保存しても `render` を送らない
+    test: test_normal_when_include_target_saved
+    refs:
+      - dev/設計書/シナリオ/単一ユースケース/VSCodeでプレビューを開く#scenarios[正常シナリオ（取り込む文書を描く）]
 lead: 開いているプレビューを、Markdown と設定ファイルの最後の内容で描き直す。
 idempotent: true
 side_effects: Webview へ `render`・`configError`・`configOk` を送る。Markdown と設定ファイルは書き換えない
@@ -275,12 +298,12 @@ exceptions:
     notes: 例外を投げず、前に読めた設定（無ければ設定なし）で描いたまま、`configError` で読めない行を知らせる
 constraints:
   - item: 描き直すきっかけ
-    constraint: '`mdmark.preview.liveUpdate` が `true` のときは Markdown の変更から、`false` のときは Markdown の保存から描き直す。設定ファイルの作成・変更・削除、`mdmark.configPath`・`mdmark.preview.theme`・`mdmark.colorTheme` の変更でも描き直す。保存と設定ファイルは待たずに送る'
+    constraint: '`mdmark.preview.liveUpdate` が `true` のときは Markdown の変更から、`false` のときは Markdown の保存から描き直す。設定ファイルの作成・変更・削除、前回送った `includes` のファイルの保存・削除、`mdmark.configPath`・`mdmark.preview.theme`・`mdmark.colorTheme` の変更でも描き直す。保存と設定ファイルは待たずに送る'
   - item: 描き直すまでの待ち
     constraint: Markdown の最後の変更から `mdmark.preview.updateDelayMs` 待って送る。範囲の外の値は既定の値として扱う
     decided_by: dev/設計書/非機能要件/非機能要件#requirements[描き直すまでの待ち]
   - item: 送る中身
-    constraint: '`TextDocument.getText()` の全文（保存していない書き換えを含む）と、設定ファイルから取り出した `features`・`libraries`・`side-toc`・`colorTheme`（`mdmark.colorTheme` が空でないときはその値で上書きする）、`mdmark.preview.theme`。差分のパネルは、変更後の文書の全文を `markdown`、その時点の変更前の文書の全文を `previous` に入れる。それ以外のパネルは `previous` を送らない'
+    constraint: '`TextDocument.getText()` の全文（保存していない書き換えを含む）と、設定ファイルから取り出した `features`・`libraries`・`side-toc`・`colorTheme`（`mdmark.colorTheme` が空でないときはその値で上書きする）、`mdmark.preview.theme`、インターフェース定義『プレビューを開く』の制約「取り込む文書」のとおり描き直すたびに読み直した `includes`。差分のパネルは、変更後の文書の全文を `markdown`、その時点の変更前の文書の全文を `previous` に入れる。それ以外のパネルは `previous` を送らない'
   - item: 背面のパネル
     constraint: パネルが見えていない間は送らず、最後の全文だけを持つ。Webview の `ready` を受けたら、その時点の全文と設定で `render` を送る。Webview は見えている先頭の元の行番号（スクロールを合わせる.ts の制約「プレビューから合わせる」と同じ内分で求め、整数に切り捨てない）を、スクロールの知らせと `render` を描いた後に Webview の状態（`setState`）へ保存する。作り直した Webview（HTML を入れ直したときを含む）は、起動したときに `getState` の行を読んでおき、最初の `render` を描いた後にその行を `scrollToLine` と同じ位置に置いてから保存する。その行へ戻すまでは、スクロールの知らせでも `render` を描いた後でも保存しない。戻したスクロールでは `revealLine` を送らない。保存した行が無いとき（開いた直後）は先頭から描く
     notes: '背面の間の `postMessage` は届かない（PoC #70）。`retainContextWhenHidden` は `false` のままで、背面に回ると Webview が作り直される。位置を元の行番号で持つのは、背面の間の書き換えで文書の高さが変わっても同じ箇所へ戻すため'

@@ -293,6 +293,74 @@ scenarios:
       - ツリーの上に、`open=` の値には `all` か階層の数を書くことを書いた書き方の警告がある
       - ツリーは既定のとおり `app/` だけを開いて描かれている
     test: test_error_when_tree_open_invalid
+  - name: 正常シナリオ（アイコン・キー・ルビ）
+    setup:
+      - name: mdmark を読むページ
+        description: 正常シナリオと同じ
+      - name: アイコン・キー・ルビを持つ Markdown
+        description: 見出し ``## `icon:flag` はじめに``、段落の行内のコード `` `icon:check` ``・`` `kbd:Ctrl+C` ``、文書の HTML の `<ruby>漢字<rt>かんじ</rt></ruby>` を持つ文書
+        notes: '`flag`・`check` は配布物に束ねたアイコンの名前。`kbd:` の `+` の区切り方はインターフェース定義で決める'
+      - name: Mock
+        description: 正常シナリオと同じ。Lucide のアイコンへの要求を数える
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を渡して描かせる
+        M-->>P: アイコン・キー・ルビを描く
+        P-->>U: 文書を表示
+    expected:
+      - 見出しの `はじめに` の前と段落に、`flag`・`check` のアイコンが描かれ、`icon:` の文字は出ていない
+      - アイコンは読み上げの対象から外れ、見出しの読み上げ名が `はじめに` になっている
+      - '`Ctrl+C` が `Ctrl` と `C` のキーの見た目で描かれ、`kbd:` の文字は出ていない'
+      - '`漢字` の上に `かんじ` のルビが描かれている'
+      - Lucide のアイコンへの要求が 0 件
+      - 書き方の警告が出ていない
+    test: test_normal_when_icon_kbd_ruby
+  - name: 正常シナリオ（アイコンとキーの書き方を見せる）
+    setup:
+      - name: mdmark を読むページ
+        description: 正常シナリオと同じ
+      - name: 打ち消したアイコンとキーを持つ Markdown
+        description: 行内のコード `` `icon\:check` `` と `` `kbd\:Ctrl+C` `` を持つ文書
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を渡して描かせる
+        M-->>P: 打ち消しの \ を外した行内のコードを描く
+        P-->>U: 文書を表示
+    expected:
+      - 行内のコードが `icon:check`・`kbd:Ctrl+C` の文字のまま出ていて、アイコンとキーの見た目になっていない
+    test: test_normal_when_icon_kbd_escaped
+  - name: 異常シナリオ（アイコンの名前の書き方が誤っている）
+    setup:
+      - name: mdmark を読むページ
+        description: 正常シナリオと同じ
+      - name: 誤った名前のアイコンを持つ Markdown
+        description: 行内のコード `` `icon:Rocket!` `` と `` `icon:` `` を持つ文書
+        notes: Lucide の名前は英小文字・数字・`-` だけ
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を渡して描かせる
+        M->>M: icon: の後ろが Lucide の名前の書き方に合わない
+        M-->>P: 書き方の警告と、元の行内のコードを描く
+        P-->>U: 書き方の警告と行内のコードを表示
+    expected:
+      - '`icon:Rocket!` の段落の上に、名前が Lucide の名前の書き方に合わないことを書いた書き方の警告がある'
+      - '`icon:Rocket!` が書いたとおりの文字の行内のコードで出ている'
+      - 中身の無い `icon:` は `badge:` と同じく書いたとおりの行内のコードで出て、書き方の警告は出ていない
+      - Lucide のアイコンへの要求が 0 件
+    test: test_error_when_icon_name_invalid
   - name: 正常シナリオ（ファイルツリーを折り返す）
     setup:
       - name: mdmark を読むページ

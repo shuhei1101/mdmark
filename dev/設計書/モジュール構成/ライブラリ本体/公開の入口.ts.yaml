@@ -165,6 +165,30 @@ styles:
       - class_name: .mdmark :is(.mdmark-fn-ref, .mdmark-footnotes)
         target: 脚注の番号・ツールチップ・末尾の一覧
         value: '`dev/mock/refs/311/assets/footnote.css` の `@layer mdmark` の中身と、印刷の `footnote-print.css`（ツールチップと戻るリンクを隠す）。番号の色は `--mdmark-color-footnote-ref`（既定 `var(--mdmark-color-link)`）'
+      - class_name: .mdmark .mdmark-inline-icon
+        target: 行内のアイコン
+        value: '`inline-flex` で文字の高さの中央にそろえ、中の `.mdmark-icon` を `--mdmark-icon-inline-size`（既定 `1em`）角にする。値は `dev/mock/refs/307/assets/notations.css`'
+      - class_name: .mdmark .mdmark-kbd-group と .mdmark-kbd
+        target: キー
+        value: キーは `--mdmark-color-surface` の地・`--mdmark-color-border` の線と下の影・等幅の書体。間の `+` は `--mdmark-color-muted`。値は `dev/mock/refs/307/assets/notations.css`
+      - class_name: .mdmark mark.mdmark-highlight
+        target: 蛍光ペン
+        value: '文字の高さ全体に `--mdmark-highlight-bg`（`data-color` を持てば `--mdmark-color-accent-{色}-bg`）の面を引き、`padding: 0.05em 0.15em`・`border-radius: 2px`。行をまたぐときは `box-decoration-break: clone`。値は `dev/mock/refs/307/assets/notations.css`'
+      - class_name: .mdmark ruby rt
+        target: ルビ
+        value: '`font-size: max(0.6em, 11px)`（確認ログのモックの決定）'
+      - class_name: .mdmark .mdmark-layout-columns
+        target: 段組み
+        value: '`container-type: inline-size` の囲みの中で、`data-count` の数の等しい幅の列を `--mdmark-space` の間隔で並べ、囲みの幅が `40rem` 未満のときは縦に積む。値は `dev/mock/refs/307/assets/notations.css`'
+      - class_name: .mdmark .mdmark-pagebreak
+        target: 改ページ
+        value: '画面では `display: block; height: 0`。`@media print` で `break-before: page`'
+      - class_name: .mdmark .mdmark-wide-range と .mdmark-wide-bar
+        target: wide の範囲
+        value: '`data-state="wide"` の範囲は `attachWideToggles` が入れた広げられる幅（`--mdmark-wide-width`・`--mdmark-wide-shift`）まで広げて本文の列の中央にそろえ（右側の目次と文書の一覧の列・右端の線の内側）、`narrow` は本文の幅。帯は本文の幅で、ボタンを右端に置き、`aria-pressed` で 2 つのアイコンの片方だけを出す。印刷では帯を出さず、範囲を紙の幅に収める。値は `dev/mock/refs/307/assets/notations.css`'
+      - class_name: .mdmark .mdmark-table[data-source="csv"]
+        target: CSV の表と RAW のボタン
+        value: '囲みを `width: fit-content` にして表と `pre.mdmark-raw` を同じ格子の場所に重ね、`data-view="raw"` で表を隠して `pre.mdmark-raw` を出す。RAW のボタンは押していないとき `--mdmark-color-muted`、押したとき `--mdmark-color-accent-blue-text` のアイコンと `--mdmark-color-accent-blue-bg` の面（確認ログの案 C）。値は `dev/mock/refs/307/assets/notations.css`'
       - class_name: .mdmark .mdmark-code pre・.mdmark .mdmark-tree .mdmark-tree-list・.mdmark-code-wrap・.mdmark-tree-wrap
         target: コードブロックとファイルツリーの折り返し
         value: '折り返さない既定（`white-space: pre`・`nowrap` と `overflow-wrap: normal`）は `@layer mdmark` の外に `.mdmark .mdmark-code pre`・`.mdmark .mdmark-code pre code`・`.mdmark .mdmark-tree .mdmark-tree-list` で、印刷以外（`@media not print`。印刷は層の中の印刷の規則でコードを紙の幅に折り返す）に置く（使う側の要素名だけ・クラス 1 つの `pre` への CSS より詳細度が高く、使う側が mdmark のクラスを指定すれば上書きできる）。`mdmark-code-wrap` と `mdmark-tree-wrap` の規則も同じく層の外に置き、値はモック `dev/mock/refs/328/assets/wrap.css` から取る（ツリーの注釈の字下げは開閉の印の幅とアイコンの幅と間隔の和）'

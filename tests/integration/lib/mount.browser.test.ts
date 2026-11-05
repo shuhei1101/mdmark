@@ -10339,6 +10339,615 @@ test("test_normal_when_wrap", async () => {
   }
 });
 
+/** CDP の Fetch で差し替える要求 1 件 */
+type PausedRequest = {
+  requestId: string;
+  request: { url: string; method: string };
+};
+
+/** CDP の送信と受信（`vitest/browser` の `cdp()` を使う型） */
+type CdpSession = {
+  send: (method: string, params?: unknown) => Promise<unknown>;
+  on: (event: string, handler: (params: unknown) => void) => void;
+};
+
+/** jsDelivr の Lucide のアイコンへの要求に答える関数（`stubLucide` が差し替える） */
+let lucideResponder:
+  | ((
+      request: PausedRequest["request"],
+    ) => { status: number; body?: string } | "fail")
+  | undefined;
+/** 受けた要求（`stubLucide` ごとに空にする） */
+const lucideRequests: string[] = [];
+/** CDP の受信を登録したか（受信は外せないため、ページで 1 回だけ登録する） */
+let lucideListening = false;
+
+/** jsDelivr の Lucide のアイコンへの要求を差し替え、受けた要求を記録する。返す関数で差し替えを外す */
+async function stubLucide(
+  respond: NonNullable<typeof lucideResponder>,
+): Promise<{ requests: string[]; restore: () => Promise<void> }> {
+  const session = cdp() as unknown as CdpSession;
+  lucideResponder = respond;
+  lucideRequests.length = 0;
+  if (!lucideListening) {
+    lucideListening = true;
+    session.on("Fetch.requestPaused", (params: unknown) => {
+      const { requestId, request } = params as PausedRequest;
+      lucideRequests.push(`${request.method} ${request.url}`);
+      const answer = lucideResponder?.(request) ?? "fail";
+      if (answer === "fail") {
+        void session.send("Fetch.failRequest", {
+          requestId,
+          errorReason: "Failed",
+        });
+        return;
+      }
+      void session.send("Fetch.fulfillRequest", {
+        requestId,
+        responseCode: answer.status,
+        responseHeaders: [
+          { name: "Content-Type", value: "text/javascript" },
+          { name: "Access-Control-Allow-Origin", value: "*" },
+        ],
+        body: btoa(answer.body ?? ""),
+      });
+    });
+  }
+  await session.send("Fetch.enable", {
+    patterns: [{ urlPattern: "https://cdn.jsdelivr.net/npm/lucide@*" }],
+  });
+  return {
+    requests: lucideRequests,
+    restore: async () => {
+      lucideResponder = undefined;
+      await session.send("Fetch.disable");
+    },
+  };
+}
+
+/** Lucide のアイコンのモジュールの代役（形を 1 つ持つ） */
+const LUCIDE_MODULE = 'export default [["path",{"d":"M3 12h18"}]];';
+
+/** 束ねていない名前のアイコンを持つ文書 */
+const UNBUNDLED_ICONS_MARKDOWN = [
+  "## `icon:sailboat` 航海",
+  "",
+  "`icon:anchor` と `icon:anchor` と `icon:flag` の段落",
+  "",
+].join("\n");
+
+// 束ねていない名前のアイコンを、名前ごとに 1 回だけ読んで描く（正常系（束ねていない名前のアイコンを読む））
+test("test_normal_when_unbundled_icons", async () => {
+  // 準備
+  const stub = await stubLucide(() => ({ status: 200, body: LUCIDE_MODULE }));
+  try {
+    const el = createElement();
+    // 実行
+    await mountTracked(el, { markdown: UNBUNDLED_ICONS_MARKDOWN });
+    // 検証
+    await vi.waitFor(() =>
+      expect(
+        el.querySelectorAll(
+          '.mdmark-inline-icon[data-icon="sailboat"] svg, .mdmark-inline-icon[data-icon="anchor"] svg',
+        ),
+      ).toHaveLength(3),
+    );
+    const names = stub.requests.map((line) => line.replace(/^.*\//, ""));
+    expect(names.sort()).toEqual(["anchor.mjs", "sailboat.mjs"]);
+    expect(stub.requests.every((line) => line.startsWith("GET "))).toBe(true);
+    const anchor = find(el, "h2 .mdmark-anchor");
+    expect(anchor.getAttribute("aria-label")).not.toContain("sailboat");
+    // 実行: 束ねていない名前を持たない文書
+    stub.requests.length = 0;
+    const other = createElement();
+    await mountTracked(other, { markdown: "`icon:flag` だけの段落\n" });
+    await new Promise((resolve) => setTimeout(resolve, 200));
+    // 検証
+    expect(stub.requests).toHaveLength(0);
+  } finally {
+    await stub.restore();
+  }
+});
+
+// Lucide に無い名前を行内のコードに戻し、段落の前に書き方の警告を置く（異常系（Lucide に無いアイコンの名前））
+test("test_error_when_icon_not_in_lucide", async () => {
+  // 準備
+  const stub = await stubLucide((request) =>
+    request.url.endsWith("/no-such-icon.mjs")
+      ? { status: 404 }
+      : { status: 200, body: LUCIDE_MODULE },
+  );
+  vi.spyOn(console, "error").mockImplementation(() => {});
+  try {
+    const el = createElement();
+    // 実行
+    await mountTracked(el, {
+      markdown: "`icon:no-such-icon` と `icon:anchor` の段落\n",
+    });
+    // 検証
+    await vi.waitFor(() =>
+      expect(el.innerHTML).toContain("<code>icon:no-such-icon</code>"),
+    );
+    const warning = find(el, ".mdmark-syntax-warning");
+    expect(warning.textContent).toContain("no-such-icon");
+    expect(warning.nextElementSibling?.tagName).toBe("P");
+    await vi.waitFor(() =>
+      expect(
+        el.querySelector('.mdmark-inline-icon[data-icon="anchor"] svg'),
+      ).not.toBeNull(),
+    );
+    expect(el.querySelector(".mdmark-notice")).toBeNull();
+  } finally {
+    await stub.restore();
+  }
+});
+
+// Lucide を読めないときは、行内のコードに戻して知らせの枠を 1 つだけ置く（異常系（Lucide のアイコンを読めない・知らせの枠））
+test("test_error_when_icons_unreachable", async () => {
+  // 準備
+  const stub = await stubLucide(() => "fail");
+  const spy = vi.spyOn(console, "error").mockImplementation(() => {});
+  try {
+    const el = createElement();
+    // 実行（前のテストで読んだモジュールはページに残るため、まだ読んでいない名前で確かめる）
+    await mountTracked(el, {
+      markdown: UNBUNDLED_ICONS_MARKDOWN.replaceAll(
+        "sailboat",
+        "ship",
+      ).replaceAll("anchor", "compass"),
+    });
+    // 検証
+    await vi.waitFor(() =>
+      expect(el.querySelectorAll(".mdmark-notice")).toHaveLength(1),
+    );
+    expect(el.innerHTML).toContain("<code>icon:ship</code>");
+    expect(el.innerHTML).toContain("<code>icon:compass</code>");
+    expect(find(el, ".mdmark-notice").textContent).toContain("Lucide");
+    expect(el.textContent).toContain("航海");
+    expect(el.textContent).toContain("の段落");
+    expect(loggedText(spy)).toContain("https://cdn.jsdelivr.net/npm/lucide@");
+  } finally {
+    await stub.restore();
+  }
+});
+
+/** 8 列の表 */
+const WIDE_TABLE = [
+  "| 項目 | 1 月 | 2 月 | 3 月 | 4 月 | 5 月 | 6 月 | 備考 |",
+  "| --- | --- | --- | --- | --- | --- | --- | --- |",
+  "| 売上 | 1,200,000 | 1,350,000 | 1,410,000 | 1,280,000 | 1,520,000 | 1,610,000 | 前年比で増加した |",
+].join("\n");
+
+/** 2 つの wide の範囲を持つ文書 */
+const WIDE_MARKDOWN = [
+  "前の段落",
+  "",
+  "<!-- wide -->",
+  "",
+  WIDE_TABLE,
+  "",
+  "<!-- /wide -->",
+  "",
+  "<!-- wide: closed -->",
+  "",
+  WIDE_TABLE,
+  "",
+  "<!-- /wide -->",
+  "",
+  "後ろの段落",
+  "",
+].join("\n");
+
+/** 本文の幅を 640px にした描く先の要素を作る */
+function createContentElement(): HTMLElement {
+  const el = createElement();
+  el.style.setProperty("--mdmark-content-width", "640px");
+  return el;
+}
+
+/** 要素の幅（px） */
+function widthOf(element: Element): number {
+  return element.getBoundingClientRect().width;
+}
+
+// wide の範囲の幅を、本文の幅と広げた幅で切り替える（正常系（wide の範囲の幅を切り替える））
+test("test_normal_when_wide_toggled", async () => {
+  await withViewport(1280, async () => {
+    // 準備
+    const el = createContentElement();
+    await mountTracked(el, { markdown: WIDE_MARKDOWN });
+    const ranges = [...el.querySelectorAll<HTMLElement>(".mdmark-wide-range")];
+    const buttons = ranges.map((range) =>
+      find<HTMLButtonElement>(
+        range.previousElementSibling as Element,
+        ".mdmark-wide-toggle",
+      ),
+    );
+    const paragraph = find(el, "p");
+    await vi.waitFor(() =>
+      expect(widthOf(ranges[0] as Element)).toBeGreaterThan(640),
+    );
+    // 検証: 描いた直後
+    expect(widthOf(ranges[0] as Element)).toBeLessThanOrEqual(1280);
+    expect(buttons[0]?.getAttribute("aria-label")).toBe("広げて表示");
+    expect(buttons[0]?.getAttribute("aria-pressed")).toBe("true");
+    expect(buttons[0]?.textContent).toBe("");
+    expect(widthOf(ranges[1] as Element)).toBeCloseTo(widthOf(paragraph), 0);
+    expect(buttons[1]?.getAttribute("aria-pressed")).toBe("false");
+    // 実行: 1 つ目を押す
+    const before = buttons[0]?.getBoundingClientRect();
+    await userEvent.click(buttons[0] as HTMLButtonElement);
+    // 検証
+    expect(widthOf(ranges[0] as Element)).toBeCloseTo(widthOf(paragraph), 0);
+    expect(buttons[0]?.getAttribute("aria-pressed")).toBe("false");
+    expect(buttons[0]?.getBoundingClientRect().left).toBeCloseTo(
+      before?.left ?? 0,
+      0,
+    );
+    expect(buttons[0]?.getAttribute("aria-label")).toBe("広げて表示");
+    // 実行: 2 つ目で Enter を押す
+    buttons[1]?.focus();
+    await userEvent.keyboard("{Enter}");
+    // 検証
+    expect(widthOf(ranges[1] as Element)).toBeGreaterThan(widthOf(paragraph));
+    // 次の画面幅の確かめで横のスクロールを作らないよう片付ける
+    el.remove();
+  });
+  await withViewport(390, async () => {
+    // 準備
+    const el = createContentElement();
+    await mountTracked(el, { markdown: WIDE_MARKDOWN });
+    const range = find<HTMLElement>(el, ".mdmark-wide-range");
+    // 検証
+    await vi.waitFor(() =>
+      expect((range.previousElementSibling as HTMLElement | null)?.hidden).toBe(
+        true,
+      ),
+    );
+    expect(widthOf(range)).toBeCloseTo(widthOf(find(el, "p")), 0);
+    expect(document.documentElement.scrollWidth).toBeLessThanOrEqual(
+      document.documentElement.clientWidth,
+    );
+  });
+});
+
+/** 見出しと wide の範囲を持つ文書 */
+const WIDE_TOC_MARKDOWN = [
+  "## 概要",
+  "",
+  "概要の段落",
+  "",
+  "<!-- wide -->",
+  "",
+  WIDE_TABLE,
+  "",
+  "<!-- /wide -->",
+  "",
+  ...Array.from({ length: 30 }, (_, i) => `間の段落 ${i + 1}\n`),
+  "## 詳細",
+  "",
+  "詳細の段落",
+  "",
+].join("\n");
+
+// wide の範囲を、右側の目次の列に重ねずに広げる（正常系（wide の範囲と右側の目次））
+test("test_normal_when_wide_with_side_toc", async () => {
+  await withViewport(1280, async () => {
+    // 準備
+    const el = createContentElement();
+    await mountTracked(el, {
+      markdown: WIDE_TOC_MARKDOWN,
+      config: { "side-toc": { mode: "fixed" } },
+    });
+    const { panel, toggle, linkOf } = sideTocOf(el);
+    await userEvent.click(toggle);
+    const range = find<HTMLElement>(el, ".mdmark-wide-range");
+    const paragraph = find(el, ".mdmark-content p");
+    // 検証
+    await vi.waitFor(() =>
+      expect(widthOf(range)).toBeGreaterThan(widthOf(paragraph)),
+    );
+    await vi.waitFor(() =>
+      expect(range.getBoundingClientRect().right).toBeLessThanOrEqual(
+        panel.getBoundingClientRect().left + 1,
+      ),
+    );
+    // 実行
+    await userEvent.click(linkOf("詳細"));
+    // 検証
+    const heading = find(el, "#詳細");
+    await vi.waitFor(() => {
+      const rect = heading.getBoundingClientRect();
+      expect(rect.top).toBeGreaterThanOrEqual(0);
+      expect(rect.top).toBeLessThan(window.innerHeight);
+    });
+  });
+  await withViewport(1280, async () => {
+    // 準備
+    const el = createContentElement();
+    el.style.maxWidth = "none";
+    await mountTracked(el, {
+      markdown: WIDE_TOC_MARKDOWN,
+      config: { "side-toc": { mode: "hover" } },
+    });
+    const { rail, panel } = sideTocOf(el);
+    const range = find<HTMLElement>(el, ".mdmark-wide-range");
+    // 検証: ピン止めしていない間に出ている右端の線（この幅では線の代わりに出るパネル）の左に収まる
+    await vi.waitFor(() => {
+      const column = rail.getClientRects().length > 0 ? rail : panel;
+      expect(column.getClientRects().length).toBeGreaterThan(0);
+      expect(range.getBoundingClientRect().right).toBeLessThanOrEqual(
+        column.getBoundingClientRect().left + 1,
+      );
+    });
+  });
+});
+
+/** CSV の表と、言語 csv でない表を持つ文書 */
+const CSV_MARKDOWN = [
+  "<!-- table: data filter=拠点 -->",
+  "",
+  "```csv",
+  "名前,拠点,金額",
+  '北山,"東京, 本社",800',
+  "南田,大阪,950",
+  "西川,名古屋,1200",
+  "```",
+  "",
+  "<!-- /table -->",
+  "",
+  "| 列 | 値 |",
+  "| --- | --- |",
+  "| a | 1 |",
+  "",
+].join("\n");
+
+/** 要素が描かれているか（表と元の CSV は、隠した側も場所を保つため `visibility` で隠す） */
+function isPainted(element: Element): boolean {
+  return element.checkVisibility({ visibilityProperty: true });
+}
+
+// CSV の表と書いたとおりの CSV を、RAW のボタンで切り替える（正常系（CSV の表と元の CSV を切り替える））
+test("test_normal_when_csv_raw_toggled", async () => {
+  // 準備
+  const el = createElement();
+  await mountTracked(el, { markdown: CSV_MARKDOWN });
+  const wrapper = find<HTMLElement>(el, '.mdmark-table[data-source="csv"]');
+  const button = find<HTMLButtonElement>(wrapper, ".mdmark-raw-toggle");
+  const table = find<HTMLElement>(wrapper, "table");
+  const raw = find<HTMLElement>(wrapper, "pre.mdmark-raw");
+  // 検証: 描いた直後
+  expect(button.closest(".mdmark-table-bar")).not.toBeNull();
+  expect(button.getAttribute("aria-label")).toBe("元の CSV を表示");
+  expect(button.getAttribute("aria-pressed")).toBe("false");
+  expect(isPainted(raw)).toBe(false);
+  // 実行
+  await userEvent.click(button);
+  // 検証
+  expect(isPainted(table)).toBe(false);
+  expect(raw.textContent).toBe(
+    '名前,拠点,金額\n北山,"東京, 本社",800\n南田,大阪,950\n西川,名古屋,1200\n',
+  );
+  expect(button.getAttribute("aria-pressed")).toBe("true");
+  // 実行
+  button.focus();
+  await userEvent.keyboard("{Enter}");
+  // 検証
+  expect(isPainted(table)).toBe(true);
+  expect(columnTexts(wrapper, 2)).toEqual(["800", "950", "1200"]);
+  expect(wrapper.querySelector(".mdmark-sort")).not.toBeNull();
+  expect(wrapper.querySelector(".mdmark-filter")).not.toBeNull();
+  const other = [...el.querySelectorAll(".mdmark-table")].find(
+    (candidate) => !candidate.hasAttribute("data-source"),
+  );
+  expect(other?.querySelector(".mdmark-raw-toggle")).toBeNull();
+});
+
+// 印刷の前に details の範囲を開き、改ページの場所で用紙を分ける（正常系（改ページと details の範囲を印刷する））
+test("test_normal_when_pagebreak_and_details_printed", async () => {
+  // 準備
+  const el = createContentElement();
+  await mountTracked(el, {
+    markdown: [
+      "前の段落",
+      "",
+      "<!-- pagebreak -->",
+      "",
+      "<!-- details: 補足 -->",
+      "",
+      "補足の段落",
+      "",
+      "<!-- /details -->",
+      "",
+      "<!-- wide -->",
+      "",
+      WIDE_TABLE,
+      "",
+      "<!-- /wide -->",
+      "",
+    ].join("\n"),
+  });
+  const pagebreak = find<HTMLElement>(el, ".mdmark-pagebreak");
+  const details = find<HTMLDetailsElement>(el, "details.mdmark-collapsible");
+  const range = find<HTMLElement>(el, ".mdmark-wide-range");
+  // 検証: 画面
+  expect(pagebreak.getBoundingClientRect().height).toBe(0);
+  expect(pagebreak.textContent).toBe("");
+  // 実行
+  await cdp().send("Emulation.setEmulatedMedia", { media: "print" });
+  try {
+    sendPrintEvent("beforeprint");
+    // 検証
+    expect(getComputedStyle(pagebreak).breakBefore).toBe("page");
+    expect(details.open).toBe(true);
+    expect(widthOf(range)).toBeLessThanOrEqual(widthOf(find(el, "p")) + 1);
+  } finally {
+    await cdp().send("Emulation.setEmulatedMedia", { media: "", features: [] });
+    sendPrintEvent("afterprint");
+  }
+  // 検証
+  expect(details.open).toBe(false);
+});
+
+/** `共通/手順.md#実行` を取り込む文書と、取り込む文書の表を返す */
+function includeFixture(rowText: string): {
+  markdown: string;
+  includes: Record<string, string>;
+} {
+  return {
+    markdown: "# 案内\n\n<!-- include: 共通/手順.md#実行 -->\n\n後ろの段落\n",
+    includes: {
+      "共通/手順.md": [
+        "## 準備",
+        "",
+        "準備の段落",
+        "",
+        "## 実行",
+        "",
+        "<!-- table: data -->",
+        "",
+        "| 手順 | 担当 |",
+        "| --- | --- |",
+        `| ${rowText} | 開発者 |`,
+        "| 確認 | 利用者 |",
+        "",
+        "<!-- /table -->",
+        "",
+      ].join("\n"),
+    },
+  };
+}
+
+// update の options.includes で取り込む文書の表を差し替えて描き直す（正常系（取り込む文書を差し替える））
+test("test_normal_when_includes_updated", async () => {
+  // 準備
+  const el = createElement();
+  const first = includeFixture("ビルド");
+  const handle = await mountTracked(el, first);
+  // 検証
+  const include = find(el, ".mdmark-include");
+  expect(find(include, ".mdmark-table").getAttribute("data-kind")).toBe("data");
+  expect(include.querySelector(".mdmark-sort")).not.toBeNull();
+  expect(find(include, "h2 .mdmark-anchor")).toBeDefined();
+  expect(
+    [...el.querySelectorAll(".mdmark-side-toc-list a")].map(
+      (link) => link.textContent,
+    ),
+  ).toContain("実行");
+  // 実行
+  const second = includeFixture("配布");
+  handle.update(second.markdown, { includes: second.includes });
+  // 検証
+  expect(find(el, ".mdmark-include").textContent).toContain("配布");
+  expect(find(el, ".mdmark-include").textContent).not.toContain("ビルド");
+  // 実行
+  handle.update(`${second.markdown}\n追加の段落\n`);
+  // 検証
+  expect(find(el, ".mdmark-include").textContent).toContain("配布");
+  expect(el.textContent).toContain("追加の段落");
+});
+
+// 蛍光ペンの mark を、コメントの印と分けて扱う（正常系（蛍光ペンとコメント））
+test("test_normal_when_highlight_with_comments", async () => {
+  // 準備
+  const el = createElement();
+  const store = createCommentStore([
+    {
+      id: "c1",
+      quote: "テーマの変数",
+      prefix: "見た目は",
+      suffix: "で変える",
+      body: "読み込んだコメント",
+    },
+  ]);
+  await mountTracked(el, {
+    markdown:
+      "==決め手== と ==例外=={color=green} がある。見た目はテーマの変数で変える。\n",
+    config: { features: { comments: true } },
+    docId: "guide",
+    commentStore: store,
+  });
+  await vi.waitFor(() =>
+    expect(el.querySelector("mark.mdmark-comment-mark")).not.toBeNull(),
+  );
+  const highlights = [
+    ...el.querySelectorAll<HTMLElement>("mark.mdmark-highlight"),
+  ];
+  // 検証
+  expect(highlights).toHaveLength(2);
+  for (const mark of highlights) {
+    expect(mark.classList.contains("mdmark-comment-mark")).toBe(false);
+  }
+  // 実行
+  await userEvent.click(highlights[0] as HTMLElement);
+  // 検証
+  expect(document.querySelector(".mdmark-comment-bubble")).toBeNull();
+  // 実行
+  await userEvent.click(commentMarkOf(el, "テーマの変数"));
+  // 検証
+  await vi.waitFor(() =>
+    expect(document.querySelector(".mdmark-comment-bubble")).not.toBeNull(),
+  );
+  for (const mark of highlights) {
+    const style = getComputedStyle(mark);
+    expect(
+      contrastRatio(style.color, style.backgroundColor),
+    ).toBeGreaterThanOrEqual(4.5);
+  }
+});
+
+/** 語をタッチでタップする。`pointerenter`・`pointerleave` は泡立たないため、ブラウザと同じく語の枠と語の両方に送る（既にフォーカスを持つ語では `focus` は発火しない） */
+function tapTerm(term: HTMLElement): void {
+  const wrap = term.closest<HTMLElement>(".mdmark-term-wrap");
+  if (!wrap) {
+    throw new Error("語の枠が無い");
+  }
+  firePointer(wrap, "pointerenter", "touch");
+  firePointer(term, "pointerenter", "touch");
+  firePointer(term, "pointerdown", "touch");
+  firePointer(term, "pointerup", "touch");
+  firePointer(term, "pointerleave", "touch");
+  firePointer(wrap, "pointerleave", "touch");
+  term.focus();
+}
+
+// タッチのタップで用語のツールチップを開閉し、ツールチップと語の外の pointerdown で閉じる（正常系）
+test("test_normal_when_glossary_touch", async () => {
+  // 準備
+  await userEvent.unhover(document.body);
+  const el = createElement();
+  await mountTracked(el, {
+    markdown: "手元で単体テストを流す。\n\n用語を含まない段落。\n",
+    aliases: [UNIT_TEST_ALIAS],
+  });
+  const term = find<HTMLElement>(el, ".mdmark-term");
+  const wrap = find<HTMLElement>(el, ".mdmark-term-wrap");
+  const button = find<HTMLButtonElement>(wrap, "button.mdmark-term-tip-copy");
+  const outside = find<HTMLElement>(el, "p:last-of-type");
+  // 実行・検証: 閉じた語への 1 回のタップで開く
+  tapTerm(term);
+  expect(wrap.classList.contains("is-open")).toBe(true);
+  // コピーのボタンのタップ（フォーカスがボタンへ移る）では閉じない
+  firePointer(button, "pointerdown", "touch");
+  button.focus();
+  expect(wrap.classList.contains("is-open")).toBe(true);
+  // mouse の pointerdown では切り替えない
+  firePointer(term, "pointerdown", "mouse");
+  expect(wrap.classList.contains("is-open")).toBe(true);
+  // フォーカスがボタンにある状態で開いている語をタップすると閉じる（語の focusin が pointerdown の後に発火する）
+  tapTerm(term);
+  await new Promise((resolve) => setTimeout(resolve, 400));
+  expect(wrap.classList.contains("is-open")).toBe(false);
+  // 語のタップで開き直し、2 つ目の段落の pointerdown だけで閉じる
+  tapTerm(term);
+  expect(wrap.classList.contains("is-open")).toBe(true);
+  firePointer(outside, "pointerdown", "touch");
+  expect(wrap.classList.contains("is-open")).toBe(false);
+  // 語にフォーカスが残ったままでも、ツールチップを出さない
+  expect(document.activeElement).toBe(term);
+  expect(getComputedStyle(find(wrap, ".mdmark-term-tip")).display).toBe("none");
+});
+
 /** 横の目盛り `1月`〜`4月`・系列 2 つの、折れ線か棒のグラフの定義の JSON */
 function monthlyChartText(type: "line" | "bar"): string {
   return JSON.stringify({

@@ -19,6 +19,7 @@ import {
   openMarkdown,
   REPO_ROOT,
   recordedPanels,
+  renders,
   resetEnvironment,
   STUB_ORIGIN,
   setSetting,
@@ -103,12 +104,12 @@ suite("プレビューを開く", () => {
       csp,
       [
         "default-src 'none'",
-        `script-src 'nonce-${nonce}' ${STUB_ORIGIN} ${cspSource}`,
+        `script-src 'nonce-${nonce}' ${STUB_ORIGIN} https://cdn.jsdelivr.net ${cspSource}`,
         `style-src ${STUB_ORIGIN} ${cspSource} 'unsafe-inline'`,
         `img-src ${cspSource} https: data:`,
         `media-src ${cspSource} https: data:`,
         `font-src ${STUB_ORIGIN} ${cspSource}`,
-        `connect-src ${STUB_ORIGIN}`,
+        `connect-src ${STUB_ORIGIN} https://cdn.jsdelivr.net`,
       ].join("; "),
     );
     const scripts = html.match(/<script\b[^>]*>/g) ?? [];
@@ -116,6 +117,37 @@ suite("プレビューを開く", () => {
     for (const tag of scripts) {
       assert.ok(tag.includes(`nonce="${nonce}"`), tag);
     }
+  });
+
+  // include のマーカーの取り込み先をワークスペースから読んで渡し、プレビューに描かせる
+  test("test_normal_when_includes", async () => {
+    // 準備
+    await writeFixture(
+      "docs/guide.md",
+      [
+        "# 案内",
+        "",
+        "<!-- include: 共通/手順.md#実行 -->",
+        "",
+        "<!-- include: missing.md -->",
+        "",
+      ].join("\n"),
+    );
+    const procedure = "## 準備\n\n準備の段落\n\n## 実行\n\n実行の段落\n";
+    await writeFixture("docs/共通/手順.md", procedure);
+    await openMarkdown("docs/guide.md");
+    // 実行
+    await vscode.commands.executeCommand("mdmark.openPreviewToSide");
+    const record = lastPanel();
+    await waitForRendered(record);
+    // 検証
+    assert.deepStrictEqual(renders(record).at(-1)?.includes, {
+      "共通/手順.md": procedure,
+    });
+    const include = await inspect(".mdmark-include");
+    assert.ok(include.some((item) => item.text.includes("実行の段落")));
+    assert.ok(!include.some((item) => item.text.includes("準備の段落")));
+    assert.ok((await inspect(".mdmark-syntax-warning")).length > 0);
   });
 
   // mdmark.openPreview は同じ列のタブに開く

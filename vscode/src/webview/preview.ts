@@ -53,7 +53,10 @@ function savedLineFrom(state: unknown): number | undefined {
 
 /** `mount` の戻り値 */
 type MountHandle = {
-  update: (markdown: string) => void;
+  update: (
+    markdown: string,
+    options?: { includes?: Record<string, string> },
+  ) => void;
   destroy: () => void;
 };
 
@@ -73,6 +76,8 @@ export type Mdmark = {
       diffSource?: DiffSourceLike;
       docId?: string;
       diffMode?: "blocks";
+      /** 取り込む文書の表（前のバージョンは読まない） */
+      includes?: Record<string, string>;
     },
   ) => MountHandle;
   diffModes?: unknown;
@@ -205,12 +210,20 @@ export class PreviewView {
       this.diffTexts.original = message.previous;
     }
     if (this.handle !== undefined && configKey === this.configKey) {
-      this.handle.update(message.markdown);
+      // 取り込む文書の表を持たないメッセージ（前のバージョンの拡張機能）は、前の表のまま描き直す
+      if (message.includes === undefined) {
+        this.handle.update(message.markdown);
+      } else {
+        this.handle.update(message.markdown, { includes: message.includes });
+      }
     } else {
       this.handle?.destroy();
       this.handle = mdmark.mount(this.documentElement, {
         markdown: message.markdown,
         config: message.config,
+        ...(message.includes === undefined
+          ? {}
+          : { includes: message.includes }),
         ...(this.diffTexts === undefined
           ? {}
           : {

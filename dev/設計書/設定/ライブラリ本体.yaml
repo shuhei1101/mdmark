@@ -606,6 +606,123 @@ settings:
     status: planned
     introduced:
       pr: 311
+  - key: features.icon
+    title: アイコンの機能
+    type: boolean
+    default: 'true'
+    required: false
+    file: mdmark.config.yaml
+    reload: reload
+    status: planned
+    introduced:
+      pr: 307
+    description: 頭に `icon:` を付けた行内のコードを Lucide のアイコンにし、配布物に束ねていない名前は使う文書でだけ jsDelivr から読む。オフのときは行内のコードのまま描く
+    refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/文書をHTML文字列にする.ts#constraints[アイコン]
+  - key: features.columns
+    title: 段組みの機能
+    type: boolean
+    default: 'true'
+    required: false
+    file: mdmark.config.yaml
+    reload: reload
+    status: planned
+    introduced:
+      pr: 307
+    description: '`<!-- columns -->` の範囲を `<!-- column -->` で区切った中身を 2〜3 列に横に並べる。オフのときは印を取り除き、中身を順に描く'
+    refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/文書をHTML文字列にする.ts#constraints[段組み]
+  - key: features.highlight
+    title: 蛍光ペンの機能
+    type: boolean
+    default: 'true'
+    required: false
+    file: mdmark.config.yaml
+    reload: reload
+    status: planned
+    introduced:
+      pr: 307
+    description: '`==文字==` を蛍光ペンのマーカーにし、直後の `{color=色}` でその色にする。オフのときは書いた文字のまま描く'
+    refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/文書をHTML文字列にする.ts#constraints[蛍光ペン]
+  - key: features.kbd
+    title: キーの機能
+    type: boolean
+    default: 'true'
+    required: false
+    file: mdmark.config.yaml
+    reload: reload
+    status: planned
+    introduced:
+      pr: 307
+    description: 頭に `kbd:` を付けた行内のコードを、`+` で区切ったキーの見た目にする。オフのときは行内のコードのまま描く
+    refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/文書をHTML文字列にする.ts#constraints[キー]
+  - key: features.details
+    title: details の範囲の機能
+    type: boolean
+    default: 'true'
+    required: false
+    file: mdmark.config.yaml
+    reload: reload
+    status: planned
+    introduced:
+      pr: 307
+    description: '`<!-- details: タイトル -->` の範囲を、タイトルから開閉する折りたたみにする。オフのときは印を取り除き、中身を順に描く'
+    refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/文書をHTML文字列にする.ts#constraints[details の範囲]
+  - key: features.pagebreak
+    title: 改ページの機能
+    type: boolean
+    default: 'true'
+    required: false
+    file: mdmark.config.yaml
+    reload: reload
+    status: planned
+    introduced:
+      pr: 307
+    description: '`<!-- pagebreak -->` の場所で、印刷のときに改ページする。オフのときは印を取り除く'
+    refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/文書をHTML文字列にする.ts#constraints[改ページ]
+  - key: features.include
+    title: 取り込みの機能
+    type: boolean
+    default: 'true'
+    required: false
+    file: mdmark.config.yaml
+    reload: reload
+    status: planned
+    introduced:
+      pr: 307
+    description: '`<!-- include: パス -->` の場所に、使う側が渡した取り込む文書の全体・見出しの中・行の範囲を描く。オフのときは印を取り除き、取り込まない'
+    refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/文書をHTML文字列にする.ts#constraints[取り込み]
+  - key: features.wide
+    title: wide の範囲の機能
+    type: boolean
+    default: 'true'
+    required: false
+    file: mdmark.config.yaml
+    reload: reload
+    status: planned
+    introduced:
+      pr: 307
+    description: '`<!-- wide -->` の範囲を本文の幅を越えて広げ、範囲の上のボタンで本文の幅と切り替える。オフのときは印を取り除き、本文の幅で描く'
+    refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/文書をHTML文字列にする.ts#constraints[wide の範囲]
+  - key: features.csv
+    title: CSV の表の機能
+    type: boolean
+    default: 'true'
+    required: false
+    file: mdmark.config.yaml
+    reload: reload
+    status: planned
+    introduced:
+      pr: 307
+    description: 言語 `csv` のコードブロックを表にし、表の右端のボタンで元の CSV と切り替える。オフのときはコードブロックのまま描く
+    refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/文書をHTML文字列にする.ts#constraints[CSV の表]
   - key: features.diagram-resize
     title: 図のリサイズハンドルの機能
     file: mdmark.config.yaml

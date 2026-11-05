@@ -11,6 +11,8 @@ directory: |-
   ├── documents.ts  # build の対象の文書・索引と索引の文書の読み取り・文書の題
   ├── embed.ts      # 外部ライブラリと拡張の束ね・起動の処理と埋めるモジュールの 1 つのスクリプトへの束ね・色分けの言語の拾い出し・画像の埋め込み・1 枚に含まれない文書へのリンク
   ├── assets.ts     # 画像・動画・音声・添付の参照の拾い出し・アセットのルートでの探索・動画と音声のコピー・見つからないファイルの点検
+  ├── includes.ts   # 取り込む文書の表の組み立てと、取り込めない問題の拾い出し
+  ├── icons.ts      # 束ねていない名前のアイコンの形の取り出し
   ├── html.ts       # 書き出す HTML の組み立て
   ├── init.ts       # mdmark init
   ├── check.ts      # mdmark check
@@ -46,6 +48,30 @@ data_models:
       - name: message
         type: string
         description: 原因と直し方の日本語の 1 文
+  - name: IncludeProblem
+    title: 取り込みの問題
+    container: src/cli/includes.ts
+    usecase: 共通
+    summary: '`collectIncludes` が返す、取り込めない include のマーカー 1 つ'
+    properties:
+      - name: kind
+        type: '"missing" | "heading" | "lines" | "outside" | "circular"'
+        description: 無いファイル・無い見出し・行の数を越える範囲・根の外・循環
+      - name: file
+        type: string
+        description: マーカーを書いた文書の、文書のフォルダからのパス（文書そのものは空文字）
+      - name: line
+        type: number
+        description: マーカーの行（1 から）
+      - name: target
+        type: string
+        description: マーカーに書いた取り込み先
+      - name: lineCount
+        type: number
+        description: '`lines` のときのファイルの行の数'
+      - name: chain
+        type: string[]
+        description: '`circular` のときの取り込みの順（最初と最後が同じキー）'
   - name: LoadedConfig
     title: 読んだ設定
     container: src/cli/config.ts
@@ -2108,6 +2134,80 @@ functions:
     status: planned
     introduced:
       pr: 275
+  - name: collectIncludes
+    title: 取り込む文書を集める
+    container: src/cli/includes.ts
+    summary: '文書の include のマーカー（コードブロックとインラインコードの中を除く）を `resolveIncludePath` で解き、根のフォルダ（設定ファイルのフォルダ。無ければ文書のフォルダ）の中のファイルだけを読んで、キーを文書のフォルダからのパスにした取り込む文書の表を作る。取り込んだ Markdown の中のマーカーもたどり、同じファイルは 1 回だけ読む。根の外を指すパス・無いファイル・無い見出し・行の数を越える範囲・循環を、マーカーの文書と行を持つ問題として返す。`<!-- features: -include -->` の文書は読まない'
+    kind: 関数
+    scope: internal
+    args:
+      - name: options
+        type: '{ docPath: string; markdown: string; root: string }'
+        required: true
+        description: '`docPath` は文書の絶対パス、`markdown` は文書の本文、`root` は根のフォルダの絶対パス'
+    returns:
+      type: '{ includes: Record<string, string>; problems: IncludeProblem[] }'
+      description: 取り込む文書の表と問題
+    side_effects: ファイルを読む
+    callees:
+      - dev/設計書/モジュール構成/ライブラリ本体/記法.ts#functions[resolveIncludePath]
+    unit_tests:
+      - name: test_collect_includes
+        case: 正常
+        condition: '`guide.md` が `共通/手順.md#実行` を、`共通/手順.md` が `../../src/app.ts#L1` を取り込む'
+        expected: 表のキーが `共通/手順.md` と `../src/app.ts` で、問題が 0 件
+        mock: 一時フォルダに文書を置く
+        summary: 入れ子の取り込みもたどって表を作る
+      - name: test_collect_includes_when_problems
+        case: 異常
+        condition: '`missing.md`・`共通/手順.md#無い見出し`・5 行の `src/app.ts#L8-L10`・根の外の `../../outside.md`・`a.md` と `b.md` の循環'
+        expected: '`missing`・`heading`・`lines`（行の数 5）・`outside`・`circular`（順 `a.md → b.md → a.md`）の問題が 1 件ずつで、`outside.md` を読んでいない'
+        mock: 一時フォルダに文書を置く
+        summary: 取り込めないものを種類ごとの問題にする
+  - name: collectIconNodes
+    title: 埋めるアイコンの形を集める
+    container: src/cli/icons.ts
+    summary: 文書と取り込む文書の `icon:` のうち配布物に束ねていない名前の IconNode を、依存の lucide の `icons` から取り出す。lucide に無い名前は別に返す
+    kind: 関数
+    scope: internal
+    args:
+      - name: markdowns
+        type: string[]
+        required: true
+        description: 文書と取り込む文書の本文
+    returns:
+      type: '{ icons: Record<string, MdmarkIconNode>; missing: string[] }'
+      description: アイコンの形の表と lucide に無い名前
+    unit_tests:
+      - name: test_collect_icon_nodes
+        case: 正常
+        condition: '`` `icon:sailboat` ``・`` `icon:flag` ``（束ねた名前）・`` `icon:no-such-icon` `` を持つ本文'
+        expected: '`icons` が `sailboat` だけを持ち、`missing` が `["no-such-icon"]`'
+        mock: なし
+        summary: 束ねていない名前の形だけを取り出す
+  - name: checkIncludes
+    title: 取り込み先を点検する
+    container: src/cli/check.ts
+    summary: 点検する文書ごとに `collectIncludes` を呼び、`circular` の問題を `include_circular`、それ以外を `include_target_missing` のずれにする。内容の文は問題の種類ごとの直し方を含む
+    kind: 関数
+    scope: internal
+    args:
+      - name: options
+        type: '{ documents: Array<{ path: string; markdown: string }>; root: string }'
+        required: true
+        description: '`documents` は `collectCheckDocuments` の文書、`root` は設定ファイルのフォルダ'
+    returns:
+      type: CheckIssue[]
+      description: ずれ
+    callees:
+      - '#functions[collectIncludes]'
+    unit_tests:
+      - name: test_check_includes
+        case: 正常
+        condition: 無いファイル・無い見出し・無い行の範囲・循環・正しい取り込みを持つ文書
+        expected: '`include_target_missing` が 3 件と `include_circular` が 1 件で、正しい取り込みのずれが無い'
+        mock: 一時フォルダに文書を置く
+        summary: 問題を種類ごとのずれにする
   - name: checkMarkdownSource
     title: 渡した Markdown の記法を点検する
     container: src/cli/markdown-check.ts
@@ -2116,7 +2216,7 @@ functions:
     scope: public
     is_async: true
     summary: Markdown の文字列か、YAML のファイルのキーの値を、描いたときの書き方の警告・知らない印・図の配置のずれにして返す。`runCheck` と MCP の `runCheckTool` が呼ぶ
-    description: 設定ファイルは `config` か、`cwd` から上へ `CONFIG_FILE` を探して見つかったものを使い、見つからなければ既定の設定で点検する（`config` を渡して無いときだけ `CliError`）。`file` のときは `readYamlKey` で値と行の置き換えを得る。ずれは `collectWarnings` の警告（設定の `features`・`libraries` を当てる）、`checkUnknownMarks`（`loadExtensionDirectives` の `directive` と `check.ignore` を知っている印に入れる）、`checkDiagrams` のうち `diagram_invalid` でないずれ（定義の誤りは `collectWarnings` が返すため）を合わせ、行の順（同じ行は警告・知らない印・配置のずれの順）に並べる。`file` は `text` のとき `-`、`file` のとき設定ファイルのフォルダ（無ければ `cwd`）からの相対パス。`where` は文字列の行を `file` のとき `readYamlKey` の `lineOf` で YAML のファイルの行に置き換えた番号の文字
+    description: 設定ファイルは `config` か、`cwd` から上へ `CONFIG_FILE` を探して見つかったものを使い、見つからなければ既定の設定で点検する（`config` を渡して無いときだけ `CliError`）。`file` のときは `readYamlKey` で値と行の置き換えを得る。ずれは `collectWarnings` の警告（設定の `features`・`libraries` を当てる。include の取り込み先が無い警告（`includeTarget` を持つもの）は除く）、`checkUnknownMarks`（`loadExtensionDirectives` の `directive` と `check.ignore` を知っている印に入れる）、`checkDiagrams` のうち `diagram_invalid` でないずれ（定義の誤りは `collectWarnings` が返すため）を合わせ、行の順（同じ行は警告・知らない印・配置のずれの順）に並べる。`file` は `text` のとき `-`、`file` のとき設定ファイルのフォルダ（無ければ `cwd`）からの相対パス。`where` は文字列の行を `file` のとき `readYamlKey` の `lineOf` で YAML のファイルの行に置き換えた番号の文字
     args:
       - name: options
         type: '{ cwd: string; config?: string; text?: string; file?: string; key?: string; importCode: (code: string) => Promise<unknown> }'
@@ -2162,6 +2262,12 @@ functions:
         condition: 設定ファイルの無い一時フォルダで、`<!-- tabz -->` を持つ文字列
         mock: 一時フォルダ
         expected: 例外を投げず、`unknown_mark` の 1 件
+      - name: test_check_markdown_source_when_include
+        case: 正常
+        condition: '`text` に `<!-- include: missing.md -->` と `<!-- tabz -->` を持つ Markdown'
+        expected: ずれが `unknown_mark` の 1 件だけで、`missing.md` の `syntax_warning` が無い
+        mock: なし
+        summary: 取り込み先が無い警告を出さない
     status: planned
     introduced:
       pr: 328
@@ -2238,3 +2344,5 @@ test_files:
   - tests/unit/src/cli/aliases.test.ts
   - tests/unit/src/cli/assets.test.ts
   - tests/unit/src/cli/markdown-check.test.ts
+  - tests/unit/src/cli/includes.test.ts
+  - tests/unit/src/cli/icons.test.ts

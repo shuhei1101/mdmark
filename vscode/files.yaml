@@ -110,6 +110,12 @@ files:
     related:
       - to: dev/設計書/モジュール構成/VSCode拡張機能/プレビュー.ts
         type: implements
+  - path: src/preview/includes.ts
+    description: モジュール構成『VS Code 拡張機能 / プレビュー』のうち「取り込む文書の読み取り（vscode を import しない）」を受け持つ。プレビューのパネルの振る舞いを変えるときに読む。
+    tags: [tool:vscode, topic:プレビュー, topic:ファイル]
+    related:
+      - to: dev/設計書/モジュール構成/VSCode拡張機能/プレビュー.ts
+        type: implements
   - path: src/preview/links.ts
     description: モジュール構成『VS Code 拡張機能 / プレビュー』のうち「押したリンクの開き先の見分け（vscode を import しない）」を受け持つ。プレビューのパネルの振る舞いを変えるときに読む。
     tags: [tool:vscode, topic:プレビュー]

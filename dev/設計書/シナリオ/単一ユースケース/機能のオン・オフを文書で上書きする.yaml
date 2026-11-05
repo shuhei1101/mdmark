@@ -291,6 +291,34 @@ scenarios:
     test: test_normal_when_footnotes_disabled
     refs:
       - dev/設計書/シナリオ/単一ユースケース/脚注を見る#scenarios[正常シナリオ]
+  - name: 正常シナリオ（新しい記法の機能を外す）
+    setup:
+      - name: mdmark を読むページ
+        description: 正常シナリオと同じ。取り込む文書の表に `part.md` を渡す
+        notes: 設定の `features` はこれらの機能を書かない（既定のオン）
+      - name: 新しい記法の機能を外す Markdown
+        description: '先頭に、アイコン・段組み・蛍光ペン・キー・details・改ページ・取り込み・wide・CSV の表の機能を外す `<!-- features: ... -->` を持ち、それぞれの記法を 1 つずつ持つ文書'
+        notes: 機能名はインターフェース定義で決める
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を渡して描かせる
+        M->>M: 設定の features に文書のマーカーを重ねる
+        M-->>P: 外した記法を普通の Markdown として描く
+        P-->>U: 文書を表示
+    expected:
+      - '`icon:`・`kbd:` が書いたとおりの行内のコードで出ている'
+      - '`==` で囲んだ文字が `==` を含む書いたとおりの文字で出ている'
+      - columns・details・wide の範囲の中身が、横に並ばず、折りたたまれず、本文の幅で順に出ている
+      - include のマーカーの場所に、取り込む文書の中身が出ていない
+      - 言語 `csv` のコードブロックが、表にならずコードブロックで出ている
+      - マーカーの文字と書き方の警告が出ていない
+      - '`pagebreak` の場所に改ページの要素が無く、印刷の前のイベントの後も改ページの指定（`break-before: page`）が当たった要素が無い'
+    test: test_normal_when_new_syntax_disabled
   - name: 正常シナリオ（図のリサイズハンドルの機能を外す）
     setup:
       - name: mdmark を読むページ

@@ -173,10 +173,44 @@ export function attachTermTips(options: {
     );
   };
 
+  /** 語のタッチの `pointerdown`: 開閉を切り替える。閉じたときは `is-dismissed` を付け、続く `focusin` と、iOS の Safari が残す `:hover` の間の `pointerenter` で開き直さない */
+  const toggleByTouch = (wrap: HTMLElement, event: PointerEvent): void => {
+    if (
+      event.pointerType !== "touch" ||
+      !(event.target instanceof Element) ||
+      !event.target.closest(".mdmark-term")
+    ) {
+      return;
+    }
+    if (wrap.classList.contains(OPEN_CLASS)) {
+      close(wrap);
+      wrap.classList.add(DISMISSED_CLASS);
+    } else {
+      wrap.classList.remove(DISMISSED_CLASS);
+      open(wrap);
+    }
+  };
+
   const listeners = wraps.map((wrap) => {
-    const handlers: Array<[string, () => void]> = [
-      ["pointerenter", () => open(wrap)],
-      ["pointerleave", () => closeLater(wrap)],
+    // タッチは `pointerenter`・`pointerleave` で開閉せず、語の `pointerdown` で切り替える
+    const handlers: Array<[string, (event: Event) => void]> = [
+      [
+        "pointerenter",
+        (event) => {
+          if ((event as PointerEvent).pointerType !== "touch") {
+            open(wrap);
+          }
+        },
+      ],
+      [
+        "pointerleave",
+        (event) => {
+          if ((event as PointerEvent).pointerType !== "touch") {
+            closeLater(wrap);
+          }
+        },
+      ],
+      ["pointerdown", (event) => toggleByTouch(wrap, event as PointerEvent)],
       ["focusin", () => open(wrap)],
       ["focusout", () => closeLater(wrap)],
     ];
@@ -201,6 +235,18 @@ export function attachTermTips(options: {
       }
       close(wrap);
       wrap.classList.add(DISMISSED_CLASS);
+    }
+  };
+  /** 開いている語の枠（語とツールチップ）の外の `pointerdown`: 閉じて `is-dismissed` を付ける。iOS の Safari はタップした語に `:hover` を残し、`pointerleave`・`focusout` だけでは閉じず、語に残る `:hover`・`:focus-within` では CSS がツールチップを出し続けるため。語の `pointerdown` より先に受けるため、捕捉の段で受ける */
+  const onPointerdown = (event: PointerEvent): void => {
+    if (!(event.target instanceof Node)) {
+      return;
+    }
+    for (const wrap of wraps) {
+      if (wrap.classList.contains(OPEN_CLASS) && !wrap.contains(event.target)) {
+        close(wrap);
+        wrap.classList.add(DISMISSED_CLASS);
+      }
     }
   };
   /** 画面のスクロールと幅の変化: 開いているツールチップを語に付いて動かす */
@@ -243,6 +289,7 @@ export function attachTermTips(options: {
   };
   root.addEventListener("click", onCopyClick);
   document.addEventListener("keydown", onKeydown);
+  document.addEventListener("pointerdown", onPointerdown, { capture: true });
   window.addEventListener("scroll", placeOpen, {
     capture: true,
     passive: true,
@@ -256,6 +303,9 @@ export function attachTermTips(options: {
       clearTimeout(timer);
     }
     document.removeEventListener("keydown", onKeydown);
+    document.removeEventListener("pointerdown", onPointerdown, {
+      capture: true,
+    });
     window.removeEventListener("scroll", placeOpen, { capture: true });
     window.removeEventListener("resize", placeOpen);
     window.removeEventListener("beforeprint", closeAll);

@@ -34,6 +34,8 @@ import {
 } from "./embed.ts";
 import { CliError, type CliIo } from "./errors.ts";
 import { assembleHtml, type ExportPayload } from "./html.ts";
+import { collectIconNodes } from "./icons.ts";
+import { collectIncludes, includeProblemMessage } from "./includes.ts";
 
 /** 索引に足す、用語集の文書の `id` の頭 */
 const GLOSSARY_ID_PREFIX = "mdmark-glossary-";
@@ -238,6 +240,47 @@ export async function prepareEmbeds(options: EmbedOptions): Promise<{
     );
   }
 
+  // 文書の include のマーカーの取り込み先を読む（設定ファイルのフォルダの中だけ。同じファイルの本文は 1 回だけ埋める）
+  const includeTexts: Record<string, string> = {};
+  const includeKeys = new Map<string, Record<string, string>>();
+  for (const doc of docs) {
+    const result = await collectIncludes({
+      docPath: doc.file,
+      markdown: originals.get(doc.path) ?? "",
+      root: loaded.dir,
+    });
+    const keys: Record<string, string> = {};
+    for (const [key, text] of Object.entries(result.includes)) {
+      const path = toPosix(
+        relative(loaded.dir, resolve(dirname(doc.file), key)),
+      );
+      keys[key] = path;
+      includeTexts[path] = text;
+    }
+    includeKeys.set(doc.path, keys);
+    for (const problem of result.problems) {
+      const file =
+        problem.file === ""
+          ? doc.path
+          : toPosix(
+              relative(loaded.dir, resolve(dirname(doc.file), problem.file)),
+            );
+      warnings.push(
+        `${file}:${problem.line}: ${includeProblemMessage(problem)}`,
+      );
+    }
+  }
+  // 文書と取り込む文書の束ねていない名前のアイコンの形を、依存の lucide から取り出す
+  const iconResult = collectIconNodes([
+    ...originals.values(),
+    ...Object.values(includeTexts),
+  ]);
+  for (const name of iconResult.missing) {
+    warnings.push(
+      `\`icon:${name}\` の \`${name}\` は Lucide に無いアイコンの名前です。https://lucide.dev/icons/ で名前を確かめてください。`,
+    );
+  }
+
   // 文書に印のある外部ライブラリを、URL ごとに 1 回だけ束ねてみる
   const libraries = resolveConfig({ config: loaded.config }).libraries;
   const urls = Object.fromEntries(
@@ -297,10 +340,20 @@ export async function prepareEmbeds(options: EmbedOptions): Promise<{
     }
   }
 
+  /** 文書のフォルダからのパスをキーにした、文書の取り込む文書の表 */
+  const includesOf = (path: string): Record<string, string> =>
+    Object.fromEntries(
+      Object.entries(includeKeys.get(path) ?? {}).map(([key, file]) => [
+        key,
+        includeTexts[file] ?? "",
+      ]),
+    );
+
   // 文書に色分けの対象があれば、色分けの本体と使う言語のモジュールを束ねてみる
   const syntax = await bundleSyntax({
     languages: usedSyntaxLanguages({
       markdowns: [...originals.values()],
+      includes: docs.map((doc) => includesOf(doc.path)),
       config: loaded.config,
     }),
     url: resolveConfig({ config: loaded.config }).syntax.url,
@@ -353,8 +406,15 @@ export async function prepareEmbeds(options: EmbedOptions): Promise<{
         }),
         markdown,
         docId: refs.docIdOf(doc.path),
+        ...(Object.keys(includeKeys.get(doc.path) ?? {}).length > 0
+          ? { includes: includeKeys.get(doc.path) }
+          : {}),
       };
     }),
+    ...(Object.keys(includeTexts).length > 0 ? { includes: includeTexts } : {}),
+    ...(Object.keys(iconResult.icons).length > 0
+      ? { icons: iconResult.icons }
+      : {}),
     entry,
     ...(aliasResult.aliases ? { aliases: aliasResult.aliases } : {}),
     ...(assets

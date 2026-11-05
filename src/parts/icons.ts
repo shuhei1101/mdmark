@@ -54,6 +54,24 @@ import {
   X,
 } from "lucide";
 
+/** wide の範囲を広げるアイコン（`|←→|`）。Lucide に無い形を Lucide と同じ IconNode の形で持つ */
+export const WideExpand: IconNode = [
+  ["path", { d: "M3 5v14" }],
+  ["path", { d: "M21 5v14" }],
+  ["path", { d: "M7 12h10" }],
+  ["path", { d: "m10 9-3 3 3 3" }],
+  ["path", { d: "m14 9 3 3-3 3" }],
+];
+
+/** wide の範囲を縮めるアイコン（`→|←`）。Lucide に無い形を Lucide と同じ IconNode の形で持つ */
+export const WideShrink: IconNode = [
+  ["path", { d: "M12 5v14" }],
+  ["path", { d: "M2 12h7" }],
+  ["path", { d: "m6 9 3 3-3 3" }],
+  ["path", { d: "M22 12h-7" }],
+  ["path", { d: "m18 9-3 3 3 3" }],
+];
+
 /** 図と記法で使う lucide のアイコン */
 const ICONS = {
   plus: Plus,
@@ -108,10 +126,21 @@ const ICONS = {
   pause: Pause,
   play: Play,
   table: Table,
+  "wide-expand": WideExpand,
+  "wide-shrink": WideShrink,
 } satisfies Record<string, IconNode>;
 
 /** 図と記法で使う lucide のアイコンの名前 */
 export type IconName = keyof typeof ICONS;
+
+/** Lucide に無い形のアイコンの名前（行内のアイコンの束ねた名前に含めない） */
+const OWN_ICON_NAMES = new Set(["wide-expand", "wide-shrink"]);
+
+/** 配布物に束ねた Lucide のアイコンの形を名前で引く。束ねていない名前は `undefined` */
+export const bundledIconNode = (name: string): IconNode | undefined =>
+  Object.hasOwn(ICONS, name) && !OWN_ICON_NAMES.has(name)
+    ? ICONS[name as IconName]
+    : undefined;
 
 /** 要素 1 つを属性つきの開始タグと閉じタグの文字にする */
 function renderNode([tag, attributes]: IconNode[number]): string {

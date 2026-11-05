@@ -42,6 +42,15 @@ const DEFAULT_FEATURES = {
   media: true,
   gif: true,
   cards: true,
+  icon: true,
+  columns: true,
+  highlight: true,
+  kbd: true,
+  details: true,
+  pagebreak: true,
+  include: true,
+  wide: true,
+  csv: true,
 };
 
 // 設定が無ければ既定を返す（正常系）

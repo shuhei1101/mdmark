@@ -27,6 +27,7 @@ import { renderBadge } from "../src/parts/badge.ts";
 import { type CalloutKind, renderCallout } from "../src/parts/callout.ts";
 import { type AttachmentKind, renderCard } from "../src/parts/card.ts";
 import { type CodeLine, renderCodeBlock } from "../src/parts/code-block.ts";
+import { renderCollapsible } from "../src/parts/collapsible.ts";
 import type { ColorName } from "../src/parts/colors.ts";
 import {
   type CommentClosedKind,
@@ -56,8 +57,15 @@ import { renderFigure } from "../src/parts/figure.ts";
 import { renderFootnoteRef, renderFootnotes } from "../src/parts/footnote.ts";
 import { renderGallery } from "../src/parts/gallery.ts";
 import { renderGif } from "../src/parts/gif.ts";
+import { renderHighlight } from "../src/parts/highlight.ts";
 import { type HintPlacement, renderHint } from "../src/parts/hint.ts";
 import { renderImageFigure } from "../src/parts/image.ts";
+import {
+  type MdmarkIconNode,
+  renderInlineIcon,
+} from "../src/parts/inline-icon.ts";
+import { renderKbd } from "../src/parts/kbd.ts";
+import { renderLayoutColumns } from "../src/parts/layout-columns.ts";
 import { renderLightbox } from "../src/parts/lightbox.ts";
 import { renderMedia } from "../src/parts/media.ts";
 import { renderNotice } from "../src/parts/notice.ts";
@@ -79,6 +87,7 @@ import { renderTextColor } from "../src/parts/text-color.ts";
 import { renderToc, type TocHeading } from "../src/parts/toc.ts";
 import { renderTree, type TreeNode } from "../src/parts/tree.ts";
 import { renderView } from "../src/parts/view.ts";
+import { renderWide } from "../src/parts/wide.ts";
 import { sanitizeEmbedded } from "../src/render/sanitize.ts";
 import { syntaxLanguageOf } from "../src/render/syntax/code-blocks.ts";
 import { planCellMerges } from "../src/render/syntax/table-cells.ts";
@@ -1125,6 +1134,36 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
       open: args.open === true,
     }),
   "text-color": storyTextColor,
+  "inline-icon": (args) => {
+    const icon = renderInlineIcon({
+      name: String(args.name ?? ""),
+      node: args.node as MdmarkIconNode | undefined,
+    });
+    return args.heading === true
+      ? `<h2>${icon}はじめに</h2>`
+      : `<p>保存した${icon}内容を確かめる。</p>`;
+  },
+  kbd: (args) =>
+    `<p>${renderKbd({ keys: args.keys as string[] })} を押す。</p>`,
+  highlight: (args) =>
+    `<p>本文の中の${renderHighlight({
+      html: String(args.html ?? ""),
+      ...(args.color === undefined ? {} : { color: args.color as ColorName }),
+    })}を目立たせる。</p>`,
+  "layout-columns": (args) =>
+    renderLayoutColumns({ columns: args.columns as string[] }),
+  "details-range": (args) =>
+    renderCollapsible({
+      title: String(args.title ?? ""),
+      open: args.open === true,
+      body: String(args.html ?? ""),
+    }),
+  wide: (args) =>
+    `<p>範囲の前の段落</p>${renderWide({
+      body: String(args.html ?? ""),
+      state: args.state === "narrow" ? "narrow" : "wide",
+      toggle: args.toggle === true,
+    })}`,
   "image-figure": storyImageFigure,
   gallery: (args) => {
     const cols = Number(args.cols ?? GALLERY_DEFAULT_COLS);
@@ -1638,7 +1677,8 @@ export function renderPart(options: {
       requested === "extension" ||
       requested === "diff-revisions" ||
       requested === "diff-content" ||
-      requested === "diff-blocks"
+      requested === "diff-blocks" ||
+      requested === "icons"
         ? requested
         : "library";
     return `<div class="mdmark">${renderNotice({ name, figure, source })}</div>`;

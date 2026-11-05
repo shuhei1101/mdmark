@@ -912,6 +912,22 @@ test("test_render_check_cell", async () => {
   expect(plainText(no)).toBe("いいえ");
 });
 
+// 押した状態を `aria-pressed` に入れる（正常系）
+test("test_render_raw_toggle", async () => {
+  // 準備
+  const { renderRawToggle } = await loadTable();
+  // 実行
+  const off = renderRawToggle(false);
+  const on = renderRawToggle(true);
+  // 検証
+  expect(off).toContain(
+    '<button class="mdmark-raw-toggle" type="button" aria-label="元の CSV を表示" aria-pressed="false">',
+  );
+  expect(on).toContain('aria-pressed="true"');
+  expect(off).toContain("<svg");
+  expect(off).toContain("</button>");
+});
+
 // 見比べるための帯の見せ方を返す（正常系）
 test("test_render_table_bar_when_bar_style", async () => {
   // 準備

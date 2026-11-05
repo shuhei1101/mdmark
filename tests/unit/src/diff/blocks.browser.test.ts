@@ -397,6 +397,34 @@ test("test_color_diff_blocks_when_table_header_changed", async () => {
   expect(rows[1]?.textContent).toContain("b");
 });
 
+// 1 行の段落だけの文書で、空行の一致に引かれず変えていない段落に色を当てない（正常系）
+test("test_color_diff_blocks_when_one_line_paragraphs", async () => {
+  // 準備: 空行どうしが一致する並びと段落 C が一致する並びが同じ長さになる組
+  const paragraphs = (texts: string[]) =>
+    texts.map((text) => `${text}\n`).join("\n");
+  const before = paragraphs(["段落 A", "段落 C", "段落 D"]);
+  const after = paragraphs(["段落 A", "段落 B", "段落 C"]);
+  // 実行
+  const colored = await colorBlocks({ before, after });
+  // 検証: 段落 B だけが追加の色に包まれる
+  const adds = [
+    ...colored.querySelectorAll('div.mdmark-diff-block[data-kind="add"]'),
+  ];
+  expect(adds.map(paragraphText)).toEqual(["段落 B"]);
+  // 検証: 段落 C の後ろに段落 D が削除のブロックで入る
+  const dels = [...colored.querySelectorAll('[data-kind="del"]')];
+  expect(dels.map(paragraphText)).toEqual(["段落 D"]);
+  const paragraphOf = (text: string) =>
+    [...colored.querySelectorAll("p")].find(
+      (p) => p.textContent === text && p.closest('[data-kind="del"]') === null,
+    );
+  expect(paragraphOf("段落 C")?.nextElementSibling).toBe(dels[0]);
+  // 検証: 段落 A と C は包まれない
+  for (const text of ["段落 A", "段落 C"]) {
+    expect(paragraphOf(text)?.closest(".mdmark-diff-block")).toBeNull();
+  }
+});
+
 // 同じ本文なら何も変えない（正常系）
 test("test_color_diff_blocks_when_same", async () => {
   // 準備

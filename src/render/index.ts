@@ -8,6 +8,7 @@ import type { MdmarkParamDefinition } from "../diagram/definition.ts";
 import type { MdmarkAlias } from "../knowledge/aliases.ts";
 import { type MdmarkIndex, normalizeIndex } from "../knowledge/index-shape.ts";
 import type { MdmarkReferences } from "../knowledge/references.ts";
+import type { MdmarkIconNode } from "../parts/inline-icon.ts";
 import { createParser, type RenderEnv } from "./parser.ts";
 import { sanitize } from "./sanitize.ts";
 import type { CollectedWarning } from "./syntax/warnings.ts";
@@ -53,6 +54,10 @@ export function renderDocument(options: {
   references?: MdmarkReferences | undefined;
   /** エイリアス。そのまま入れ、使えるものへの絞り込みは `buildDictionary` が行う */
   aliases?: MdmarkAlias[] | undefined;
+  /** 取り込む文書の表。キーは描く文書のフォルダからのパス */
+  includes?: Record<string, string> | undefined;
+  /** 束ねていない名前のアイコンの形の表 */
+  icons?: Record<string, MdmarkIconNode> | undefined;
 }): RenderedDocument {
   parser ??= createParser();
   const index =
@@ -74,6 +79,8 @@ export function renderDocument(options: {
       : undefined,
     mdmarkReferences: options.references,
     aliases: options.aliases,
+    includes: options.includes,
+    icons: options.icons,
     ownGlossary: [],
     extensionDefinitions: [],
     paramDefinitions: [],
@@ -108,6 +115,10 @@ export function render(
     references?: MdmarkReferences;
     /** `buildAliases` が作ったエイリアス。省くと、エイリアスを照合しない */
     aliases?: MdmarkAlias[];
+    /** 取り込む文書の表。省くと、include のマーカーを取り込み先が無い警告にする */
+    includes?: Record<string, string>;
+    /** 束ねていない名前のアイコンの形の表。省くと、そのアイコンは中が空の要素にする */
+    icons?: Record<string, MdmarkIconNode>;
   } = {},
 ): string {
   const config = resolveConfig({ config: opts.config });
@@ -118,5 +129,7 @@ export function render(
     docId: opts.docId,
     references: opts.references,
     aliases: opts.aliases,
+    includes: opts.includes,
+    icons: opts.icons,
   }).html;
 }

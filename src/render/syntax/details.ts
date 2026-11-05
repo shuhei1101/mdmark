@@ -1,0 +1,67 @@
+import type { StateCore, Token } from "markdown-it";
+import MarkdownIt from "markdown-it";
+import { pairRanges } from "./blocks.ts";
+import { featureOn, markOf, tabBoundaryBlock } from "./tokens.ts";
+import { unclosedWarning, warningBlock } from "./warnings.ts";
+
+/** タイトルを行内の Markdown として描く解析器（記法のコアルールを持たない） */
+const titleParser = new MarkdownIt();
+
+/** タイトルが空のときのタイトル */
+const DEFAULT_TITLE = "詳細";
+
+/** 印の引数の最後の語が `open` なら開いた状態にしてタイトルから外し、空のタイトルは `詳細` にする */
+export const readDetailsOptions = (
+  args: string,
+): { title: string; open: boolean } => {
+  const words = args.trim().split(/\s+/).filter(Boolean);
+  const open = words.at(-1) === "open";
+  const title = (open ? words.slice(0, -1) : words).join(" ");
+  return { title: title || DEFAULT_TITLE, open };
+};
+
+/** `details` がオンなら、`<!-- details: … -->` 〜 `<!-- /details -->` を開閉する `details` にする。閉じの印が無いときは警告を差し込んで囲まない */
+export const buildDetailsRanges = (state: StateCore): void => {
+  if (!featureOn(state, "details")) {
+    return;
+  }
+  const tokens = state.tokens;
+  const pairs = pairRanges(tokens, "details");
+  const closes = new Set([...pairs.values()]);
+  const out: Token[] = [];
+  for (const [index, token] of tokens.entries()) {
+    const mark = markOf(token);
+    if (mark?.name !== "details") {
+      out.push(token);
+      continue;
+    }
+    if (mark.closing) {
+      if (closes.has(index)) {
+        out.push(
+          tabBoundaryBlock({
+            state,
+            html: "</details>",
+            boundary: "end",
+            source: token,
+          }),
+        );
+      }
+      continue;
+    }
+    if (pairs.get(index) === -1) {
+      out.push(warningBlock(state, unclosedWarning(mark)));
+      continue;
+    }
+    const { title, open } = readDetailsOptions(mark.rest ?? "");
+    const summary = titleParser.renderInline(title);
+    out.push(
+      tabBoundaryBlock({
+        state,
+        html: `<details class="mdmark-collapsible"${open ? " open" : ""}><summary>${summary}</summary>`,
+        boundary: "start",
+        source: token,
+      }),
+    );
+  }
+  state.tokens = out;
+};

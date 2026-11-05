@@ -1,0 +1,51 @@
+$ npx vitest run --project 'unit*' tests/unit/src/inline-icons.browser.test.ts  # 4994eb3d の時点（実装の修正の前）
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-syntax-icon-columns-highlight-kbd-details-include-wide-csv
+
+ ❯ |unit-browser (chromium)| tests/unit/src/inline-icons.browser.test.ts (5 tests | 1 failed) 204ms
+   × test_load_inline_icons_when_stale 130ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/inline-icons.browser.test.ts > test_load_inline_icons_when_stale
+AssertionError: expected <div class="mdmark-notice" …(1)>…(2)</div> to be null
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/inline-icons.browser.test.ts/test_load_inline_icons_when_stale.png
+
+- Expected:
+null
+
++ Received:
+<div
+  class="mdmark-notice"
+  role="status"
+>
+  <strong
+    class="mdmark-notice-title"
+  >
+    アイコンを表示できません
+  </strong>
+  <p>
+    Lucide のアイコンを読み込めませんでした。アイコンの場所は書いた文字で表示しています。通信を確かめて開き直してください。
+  </p>
+</div>
+
+ ❯ tests/unit/src/inline-icons.browser.test.ts:131:48
+    129|   });
+    130|   // 検証
+    131|   expect(root.querySelector(".mdmark-notice")).toBeNull();
+       |                                                ^
+    132|   expect(root.querySelector(".mdmark-syntax-warning")).toBeNull();
+    133|   expect(root.querySelectorAll(".mdmark-inline-icon")).toHaveLength(2);
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=90853ffe:5235:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 4 passed (5)
+   Start at  13:45:24
+   Duration  3.21s (import 87%, tests 7%, worker 5%)
+
+exit=1

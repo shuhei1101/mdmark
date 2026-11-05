@@ -21,7 +21,9 @@ directory: |-
       ├── back-to-top.ts # 先頭へ戻るボタンを置き、出し分け・置く位置・押したときの移動を付ける
       ├── scroller.ts    # 要素をスクロールする一番近い祖先の要素を見つける（先頭へ戻るボタンと差分のミニマップが使う）
       ├── lightbox.ts    # 画像を拡大のボタンで包み、ライトボックスで開いて送り・拡大・縮小・移動を付ける
-      └── gif.ts         # GIF を止める・再生するボタンを付ける
+      ├── gif.ts         # GIF を止める・再生するボタンを付ける
+      ├── wide.ts        # wide の範囲の幅の切り替えのボタン
+      └── csv-raw.ts     # CSV の表と元の CSV の切り替え
   ```
 data_models:
   - name: FilterValue
@@ -2027,6 +2029,58 @@ functions:
         condition: '`<!-- section: closed -->` の節の中に `[^a]` を持つ文書を描き、`attachSections` と一緒に付け、一覧を開いて戻るリンクを押す'
         mock: なし（Chromium）
         expected: 節の中身が `hidden` を持たず、番号のリンクがフォーカスを持つ
+  - name: attachWideToggles
+    title: wide の範囲の切り替えを付ける
+    container: src/interact/wide.ts
+    summary: '`div.mdmark-wide-range` の直前に部品『wide の範囲』の帯とボタンを置き、押すたびに `data-state` と `aria-pressed` を入れ替える。広げられる幅（右側の目次が本文の右に並ぶときは描く先の要素の内側から目次を除いた幅、それ以外は描く先の要素の親の内側の幅。どちらも画面の幅まで）を描く先の要素と親の `ResizeObserver` で見て、本文の幅以下なら帯を隠す。広い幅の `hover` でピン止めしていない右側の目次があるときは、範囲の右端を右端の線の左までに収める CSS 変数を範囲に入れる'
+    kind: 関数
+    scope: internal
+    args:
+    - name: root
+      type: HTMLElement
+      required: true
+      description: 描く先の要素
+    returns:
+      type: () => void
+      description: 外す関数
+    side_effects: 描く先の要素の子を足し、`click` と `ResizeObserver` を付ける
+    callees:
+    - dev/設計書/モジュール構成/ライブラリ本体/部品.ts#functions[renderWide]
+    unit_tests:
+    - name: test_attach_wide_toggles
+      case: 正常
+      condition: '`data-state="wide"` と `narrow` の範囲を持つ要素'
+      expected: それぞれの直前に `aria-pressed` が `true`・`false` のボタンがあり、1 つ目を押すと `data-state="narrow"`・`aria-pressed="false"` になる
+      mock: なし（ブラウザ）
+      summary: ボタンを置いて状態を入れ替える
+    - name: test_attach_wide_toggles_when_narrow_host
+      case: 正常
+      condition: 描く先の要素の親の幅を本文の幅以下にする
+      expected: 帯が `hidden` を持つ
+      mock: なし（ブラウザ）
+      summary: 狭い幅では帯を隠す
+  - name: attachCsvRaw
+    title: CSV の表と元の CSV の切り替えを付ける
+    container: src/interact/csv-raw.ts
+    summary: '`data-source="csv"` の表の RAW のボタンを押すたびに、`aria-pressed` と囲みの `data-view="raw"` を入れ替え、表と `pre.mdmark-raw` の `hidden` を入れ替える。並べ替え・絞り込み・ピン止めの状態は触らない'
+    kind: 関数
+    scope: internal
+    args:
+    - name: root
+      type: HTMLElement
+      required: true
+      description: 描く先の要素
+    returns:
+      type: () => void
+      description: 外す関数
+    side_effects: '`click` を付ける'
+    unit_tests:
+    - name: test_attach_csv_raw
+      case: 正常
+      condition: CSV の表を持つ要素で RAW のボタンを 2 回押す
+      expected: 1 回目の後は `table` が隠れ `pre.mdmark-raw` が出て `aria-pressed="true"`、2 回目の後は元に戻る
+      mock: なし（ブラウザ）
+      summary: 押すたびに表と元の CSV を入れ替える
 test_files:
   - tests/unit/src/interact/index.browser.test.ts
   - tests/unit/src/interact/tables.browser.test.ts
@@ -2047,6 +2101,8 @@ test_files:
   - tests/unit/src/interact/code-folds.browser.test.ts
   - tests/unit/src/code-fold-logic.test.ts
   - tests/unit/src/interact/footnotes.browser.test.ts
+  - tests/unit/src/interact/wide.browser.test.ts
+  - tests/unit/src/interact/csv-raw.browser.test.ts
 constants:
   - name: TAB_CHOICE_KEY_PREFIX
     title: 残したタブ名のキーの頭

@@ -302,6 +302,33 @@ flows:
     test: test_normal_when_blob_and_dynamic_import_blocked
     refs:
       - 'dev/設計書/シナリオ/単一ユースケース/文書をHTMLに書き出す#scenarios[正常シナリオ（blob: と動的 import を許さない環境で開く）]'
+  - name: 正常系（取り込みとアイコンを埋める）
+    summary: 取り込む文書と束ねていない名前のアイコンの形を埋め、開いたときに外へ要求せずに描く
+    setup:
+      - name: 取り込みとアイコンを持つフォルダ
+        description: '`guide.md` が `<!-- include: 共通/手順.md#実行 -->`・`<!-- include: ../src/app.ts#L3-L5 -->`・`<!-- include: missing.md -->`・見出しの `` `icon:sailboat` `` と `` `icon:no-such-icon` `` を持つ。`共通/手順.md` は `## 実行` の下に `<!-- include: ../../src/app.ts#L1 -->` を持ち、`src/app.ts` は 12 行'
+        notes: '`sailboat` は配布物に束ねていない Lucide の名前'
+      - name: Mock
+        description: 差し替える依存は無い。書き出した HTML は Playwright の Chromium で file:// で開き、要求を記録する
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant C as mdmark CLI
+        participant H as 出力の HTML
+        W->>C: mdmark export guide.md
+        C->>C: include の取り込み先を読み、使う名前のアイコンの形を lucide から取り出す
+        C->>H: includes と icons を埋めて書く
+        C-->>W: 書き出した: guide.html・警告 2 行・終了コード 0
+    expected:
+      - 終了コードが 0 で、標準エラーに `missing.md` と `no-such-icon` の警告の行が出る
+      - '`guide.html` だけを空のフォルダへ写して file:// で開くと、描き終えるまでにページ自身と画像の `data:` のほかの要求が 0 件'
+      - '`実行` の見出しの下の中身と、`src/app.ts` の 1 行目と 3〜5 行目の言語 `ts` のコードブロックが描かれている'
+      - '`missing.md` のマーカーの場所に書き方の警告がある'
+      - '`sailboat` の場所に `svg` があり、`no-such-icon` の場所が `<code>icon:no-such-icon</code>`'
+      - '`guide.html` のソースに、文書が使わない Lucide のアイコンの形が入っていない'
+    test: test_normal_when_includes_and_icons
+    refs:
+      - dev/設計書/シナリオ/単一ユースケース/文書をHTMLに書き出す#scenarios[正常シナリオ（取り込みとアイコンを埋める）]
 lead: 文書を書く人が Markdown を 1 つ、配布物・使う側の CSS・外部ライブラリのモジュール・拡張・画像を埋めた 1 枚の HTML に書き出す。開いた HTML は `mount` で文書を描き、外へ要求しない。
 idempotent: true
 side_effects: 出力のパスに HTML を書く（既にあれば上書きする）。文書が指す動画・音声を、出力の隣の `_files/` のフォルダへコピーする（同じ名前のファイルは上書きする）。文書が使う外部ライブラリの設定の `libraries` の URL の先と、そのモジュールが import する先を読む。色分けの対象のコードブロックがあるとき、`syntax.url` の先の core と、使う言語のモジュールを読む
@@ -417,4 +444,9 @@ constraints:
     constraint: '文書が相対パスで指す動画・音声（拡張子の一覧はインターフェース定義『文書をHTML文字列にする』の制約「動画と音声」）を、出力の HTML と同じフォルダの `{出力のファイル名から拡張子を除いた名前}_files/` へコピーし、文書の Markdown の `src` をそのコピーへの HTML からの相対パスに替える。コピー先の中のパスは、設定ファイルのフォルダ（設定ファイルが無ければ文書のフォルダ）からの相対パスにする。そのフォルダの外にあるファイルは `_files/external/{ファイル名}` にし、名前が重なれば `-1`・`-2` を付ける。同じファイルは 1 回だけコピーする。コピーは HTML を書く前に行い、`_files/` を作れない・書けないときは「出力先へ書けない」で終え、HTML を書かない。前の書き出しが残した `_files/` の中の、今回コピーしないファイルは消さない。読めない動画・音声は書いたまま残して警告に出す。添付のファイルはコピーせず、書いたままのリンクで残す'
   - item: 書き出しの機能のオン・オフ
     constraint: 設定の `features` で `images` か `media` をオフにした文書も、画像の埋め込みと動画・音声のコピーは同じく行う
+  - item: 埋める取り込み
+    constraint: '文書の include のマーカーの取り込み先を、インターフェース定義『文書をHTML文字列にする』の制約「取り込み」と同じパスの解き方でファイルから読み（取り込んだ文書の中のマーカーもたどり、同じファイルは 1 回だけ読む）、キーを書き出す文書のフォルダからのパスにした取り込む文書の表を `opts.includes` として埋める。読むのは設定ファイルのフォルダ（設定ファイルが無ければ文書のフォルダ）の中のファイルだけで、その外を指すパスと読めないファイルは表に入れず、警告に出す（書き出しは止めない。開いたときはそのマーカーの場所に書き方の警告が出る）。文書の `<!-- features: -include -->` の文書は読まない'
+  - item: 埋めるアイコン
+    constraint: 文書（取り込む文書を含む）の `icon:` のうち配布物に束ねていない名前の IconNode を、依存の lucide から取り出して `opts.icons` として埋め、開いたとき jsDelivr を読まない。lucide に無い名前は埋めず警告に出し（書き出しは止めない）、開いたときはその場所を行内のコードのままにして書き方の警告を置く。`opts.icons` を埋める `script` の直前に、注釈 `<!-- lucide {バージョン} - ISC License (c) Lucide Contributors / MIT License (c) 2013-present Cole Bemis -->` を 1 行置く（埋める名前が無いときは置かない）
+    notes: ライセンスの表示を残すことは外部ライブラリ『lucide』の `license`
 test_file: tests/integration/lib/export.test.ts

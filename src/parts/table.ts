@@ -1,3 +1,4 @@
+import { CodeXml } from "lucide";
 import {
   bottomHeadCells,
   compareCells,
@@ -13,6 +14,7 @@ import {
 } from "../table-logic.ts";
 import type { ColorName } from "./colors.ts";
 import { escapeHtml } from "./escape.ts";
+import { iconNodeBody, iconSvgOf } from "./icon-node.ts";
 import { iconSvg } from "./icons.ts";
 
 /** 表の種類 */
@@ -129,7 +131,19 @@ export type TableOptions = {
   rowHeader?: number;
   /** 表示している行の隣り合う同じ値を結合する列の位置（小さい順） */
   mergeColumns?: number[];
+  /** 言語 `csv` のコードブロックから作った表の、書いたとおりの CSV */
+  rawCsv?: string | undefined;
+  /** 元の CSV を出しているか（既定 `false`） */
+  rawShown?: boolean;
 };
+
+/** CSV の表の RAW のボタンを右端に置く帯の HTML を返す */
+export const renderRawBar = (pressed: boolean): string =>
+  `<div class="mdmark-table-bar mdmark-raw-bar"><div class="mdmark-table-tools">${renderRawToggle(pressed)}</div></div>`;
+
+/** CSV の表の RAW のボタンの HTML を返す */
+export const renderRawToggle = (pressed: boolean): string =>
+  `<button class="mdmark-raw-toggle" type="button" aria-label="元の CSV を表示" aria-pressed="${pressed}">${iconSvgOf(iconNodeBody(CodeXml))}</button>`;
 
 /** 多段の見出しのセル */
 export type TableHeadCell = {
@@ -864,5 +878,16 @@ export function renderTable(options: TableOptions): string {
   const mergeAttribute = mergeColumns.length
     ? ` data-merge-columns="${mergeColumns.join(" ")}"`
     : "";
-  return `<div class="mdmark-table${foldedClass}" data-kind="${kind}" data-features="${options.features.join(" ")}"${filterAttribute}${hideAttribute}${totalAttribute}${pinAttribute}${checkAttribute}${mergeAttribute}>${inner}</div>`;
+  if (options.rawCsv === undefined) {
+    return `<div class="mdmark-table${foldedClass}" data-kind="${kind}" data-features="${options.features.join(" ")}"${filterAttribute}${hideAttribute}${totalAttribute}${pinAttribute}${checkAttribute}${mergeAttribute}>${inner}</div>`;
+  }
+  // CSV の表: 表の後ろに元の CSV を置く。帯の右端の RAW のボタンは、表を描いたとき（`body` を渡さないとき）だけ置き、記法の表には `mount` が付ける
+  const shown = options.rawShown ?? false;
+  const bar = options.body === undefined ? renderRawBar(shown) : "";
+  const raw = `<pre class="mdmark-raw"${shown ? "" : " hidden"} tabindex="0" aria-label="元の CSV"><code class="language-csv">${escapeHtml(options.rawCsv)}</code></pre>`;
+  const viewAttribute = shown ? ' data-view="raw"' : "";
+  const shownInner = shown
+    ? inner.replace(/^<table(?=[\s>])/, "<table hidden")
+    : inner;
+  return `<div class="mdmark-table${foldedClass}" data-kind="${kind}" data-features="${options.features.join(" ")}" data-source="csv"${viewAttribute}${filterAttribute}${hideAttribute}${totalAttribute}${pinAttribute}${checkAttribute}${mergeAttribute}>${bar}${shownInner}${raw}</div>`;
 }
