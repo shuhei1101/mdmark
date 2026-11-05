@@ -1665,12 +1665,12 @@ functions:
     kind: 関数
     scope: internal
     summary: 部品設計『表』のテーブル設定のパネル（題・列名の一覧・案内）の HTML を返す
-    description: 題は `columns` があれば `表示と並び順`、`reorder` だけなら `並び順`。一覧は `order` の順に並べ、ピン止めの列・結合した見出しの範囲ごと・範囲の外の列に分け、分けたまとまりが 2 つ以上あるときだけまとまりの見出しを置く。各行は `reorder` のときつまみ（どちらの向きにも動かせないとき `disabled`）、`columns` のとき目のアイコン（Markdown に記載した先頭の列は `disabled`）を持つ。ストーリーと `mount` が同じ HTML を使う
+    description: 題は `columns` があれば `表示と並び順`、`reorder` だけなら `並び順`。一覧は `order` の順に並べ、`pin=` で留めた列・結合した見出しの範囲ごと・範囲の外の列に分け、分けたまとまりが 2 つ以上あるときだけまとまりの見出しを置く。各行は `reorder` のときつまみ（どちらの向きにも動かせないとき `disabled`）、`columns` のとき目のアイコン（Markdown に記載した先頭の列は `disabled`）を持つ。ストーリーと `mount` が同じ HTML を使う
     args:
       - name: options
         type: '{ id: string; columns: string[]; order: number[]; hidden: number[]; features: TableFeature[]; groups: Array<string | undefined>; pinned: number; dragging?: { column: number; target: number; side: "before" | "after" } }'
         required: true
-        description: '`columns` は元の列の順の列名、`order` は今の列の順、`groups` は列ごとの結合した見出しの範囲、`pinned` は留めている列の数'
+        description: '`columns` は元の列の順の列名、`order` は今の列の順、`groups` は列ごとの結合した見出しの範囲、`pinned` は `pin=` で留めた列の数（`pin=` が無い表は 0）'
     returns:
       type: string
       description: '`div.mdmark-table-settings` の HTML（`hidden` は付けない。開閉は呼ぶ側が決める）'
