@@ -540,3 +540,45 @@ stories:
       features: '["sort","pin","filter"]'
       columns: '["地域","支店","売上（万円）"]'
       rows: '[["^^","札幌","120"],["<<","仙台","98"],["東日本","東京","310"]]'
+  - name: ColumnsButtonA
+    parameters:
+      server:
+        id: table
+    args:
+      kind: data
+      features: '["count","columns","copy"]'
+      columns: '["名前","説明","更新日"]'
+      rows: '[["りんご","描画を速くする","2026-10-01"],["みかん","印刷を直す","2026-10-10"],["りんご飴","描画の崩れを直す","2026-10-20"]]'
+      hide: '[1]'
+      barStyle: icon
+  - name: ColumnsButtonB
+    parameters:
+      server:
+        id: table
+    args:
+      kind: data
+      features: '["count","columns","copy"]'
+      columns: '["名前","説明","更新日"]'
+      rows: '[["りんご","描画を速くする","2026-10-01"],["みかん","印刷を直す","2026-10-10"],["りんご飴","描画の崩れを直す","2026-10-20"]]'
+      hide: '[1]'
+      barStyle: label
+  - name: ColumnsButtonC
+    parameters:
+      server:
+        id: table
+    args:
+      kind: data
+      features: '["count","columns","copy"]'
+      columns: '["名前","説明","更新日"]'
+      rows: '[["りんご","描画を速くする","2026-10-01"],["みかん","印刷を直す","2026-10-10"],["りんご飴","描画の崩れを直す","2026-10-20"]]'
+      hide: '[1]'
+      barStyle: menu
+  - name: FillsWidth
+    parameters:
+      server:
+        id: table
+    args:
+      kind: data
+      features: '["sort","pin","filter"]'
+      columns: '["名前","数量"]'
+      rows: '[["りんご","3"],["みかん","5"],["ぶどう","2"]]'

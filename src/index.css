@@ -5003,9 +5003,12 @@
       );
     }
 
-    /* 層の見出し: 層の左上に控えめな文字で */
+    /* 層の見出し: 層の左上に控えめな文字で。hint を持つ層は名前の右に説明のボタンを並べる */
     .mdmark-diagram-lane-label {
       position: absolute;
+      display: flex;
+      gap: 0.25rem;
+      align-items: center;
       color: var(--mdmark-color-muted);
       font-size: 12px;
       font-weight: 600;

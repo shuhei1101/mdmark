@@ -24,10 +24,22 @@ new MutationObserver(async () => {
       continue;
     }
     fitted.add(root);
+    // 保った高さのストーリーは、付ける前に図の高さを sessionStorage に入れる（無いストーリーは前の高さを残さない）
+    const title =
+      root.querySelector(".mdmark-diagram-title")?.textContent ?? "";
+    const key = `mdmark-diagram-height:${window.location.pathname}#0:${title}`;
+    if (marker.dataset.storyHeight) {
+      sessionStorage.setItem(key, marker.dataset.storyHeight);
+    } else {
+      sessionStorage.removeItem(key);
+    }
     const { attachDiagrams } = await import(
       /* webpackIgnore: true */ `${window.location.origin}/render/diagram.js`
     );
     attachDiagrams({ root, placement: "top" });
+    if (marker.dataset.storyFocus) {
+      root.querySelector(marker.dataset.storyFocus)?.focus();
+    }
   }
 }).observe(document.documentElement, { childList: true, subtree: true });
 

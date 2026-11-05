@@ -34,3 +34,17 @@ stories:
         id: flow-diagram
     args:
       invalid: true
+  - name: GroupHints
+    parameters:
+      server:
+        id: flow-diagram
+    args:
+      groups: true
+  - name: TitlesStuck
+    parameters:
+      server:
+        id: flow-diagram
+    args:
+      groups: true
+      stuck: true
+      zoom: 1.5

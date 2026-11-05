@@ -388,6 +388,40 @@ function mockEr(name: string): MdmarkErDefinition {
   return JSON.parse(JSON.stringify(definition)) as MdmarkErDefinition;
 }
 
+// #308 の図の見本（refs/42 の見本の後に読む、モックと同じ定義）
+const GROUP_SAMPLES_FILES = [
+  join(REPO_ROOT, "dev", "mock", "refs", "42", "assets", "samples.js"),
+  join(REPO_ROOT, "dev", "mock", "refs", "308", "assets", "samples.js"),
+];
+
+/** モックの #308 の見本のスクリプトから、名前 `name` の構成図の定義を取り出す（モックの表の `kind` は定義に含めない） */
+function mockFlow(name: string): MdmarkFlowDefinition {
+  const window: { mdmarkMockDiagrams: Record<string, unknown> } = {
+    mdmarkMockDiagrams: {},
+  };
+  for (const file of GROUP_SAMPLES_FILES) {
+    runInNewContext(readFileSync(file, "utf8"), { window });
+  }
+  const found = window.mdmarkMockDiagrams[name] as
+    | (MdmarkFlowDefinition & { kind?: string })
+    | undefined;
+  if (found === undefined) {
+    throw new Error(`モックの見本の定義が無い: ${name}`);
+  }
+  const { kind: _kind, ...definition } = found;
+  return JSON.parse(JSON.stringify(definition)) as MdmarkFlowDefinition;
+}
+
+/** 図のストーリーの操作の指定: 保った高さ（`height`）と、付けた後にフォーカスする要素（`focus`）を印に持たせる */
+function storyMarker(args: PartArgs, focus?: string): string {
+  const height =
+    typeof args.height === "number"
+      ? ` data-story-height="${args.height}"`
+      : "";
+  const target = focus === undefined ? "" : ` data-story-focus="${focus}"`;
+  return `<span hidden data-story-fit${height}${target}></span>`;
+}
+
 /** 関係が無い列を指す ER 図の書き方の警告 */
 function invalidErDefinition(): string {
   const definition = mockEr("shop-er");
@@ -470,8 +504,10 @@ function diagramArgs(args: PartArgs): {
   zoom?: number;
   fit?: number;
   modal?: boolean;
+  resizable?: boolean;
 } {
   return {
+    ...(args.resizable === false ? { resizable: false } : {}),
     ...(typeof args.zoom === "number" ? { zoom: args.zoom } : {}),
     ...(typeof args.fit === "number" ? { fit: args.fit } : {}),
     ...(args.modal === true ? { modal: true } : {}),
@@ -1114,16 +1150,23 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
       current: args.current as string | undefined,
     }),
   "diagram-frame": (args) => {
-    const frame = fitted(
-      renderDiagram({
-        kind: "flow",
-        definition: sampleDefinition<MdmarkFlowDefinition>("inquiry"),
-        id: "story-frame",
-        lookup: (word) => SAMPLE_TERMS[word],
-        ...diagramArgs(args),
-      }),
-      args,
-    );
+    const html = renderDiagram({
+      kind: "flow",
+      definition: Array.isArray(args.legend)
+        ? mockFlow("single-kinds")
+        : sampleDefinition<MdmarkFlowDefinition>("inquiry"),
+      id: "story-frame",
+      lookup: (word) => SAMPLE_TERMS[word],
+      ...diagramArgs(args),
+    });
+    const frame =
+      typeof args.height === "number" || args.focusResize === true
+        ? html +
+          storyMarker(
+            args,
+            args.focusResize === true ? ".mdmark-diagram-resize" : undefined,
+          )
+        : fitted(html, args);
     if (args.surface !== true) {
       return frame;
     }
@@ -1140,6 +1183,22 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
     }
     if (args.unknownKind === true) {
       return unknownKindDefinition();
+    }
+    if (args.groups === true) {
+      const html = renderDiagram({
+        kind: "flow",
+        definition: mockFlow("inquiry-groups"),
+        id: "story-flow",
+        lookup: (word) => SAMPLE_TERMS[word],
+        ...diagramArgs(args),
+      });
+      // 留めたタイトル: 拡大して処理の層の途中を見せた状態を、留めた札の見た目で描く
+      return args.stuck === true
+        ? html.replace(
+            /class="(mdmark-diagram-(?:frame-title|lane-label))"/g,
+            'class="$1 is-stuck"',
+          )
+        : fitted(html, args);
     }
     const definition =
       args.judgement === "long"
@@ -1217,10 +1276,14 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
         );
       }
     }
-    return fitted(
-      renderDiagram({ kind: "chart", definition, id: "story-chart" }),
-      args,
-    );
+    const chart = renderDiagram({
+      kind: "chart",
+      definition,
+      id: "story-chart",
+    });
+    return args.focusItem === true
+      ? chart + storyMarker(args, ".mdmark-diagram-item-hit")
+      : fitted(chart, args);
   },
   "diagram-tooltip": (args) => {
     const open = args.open === true;
@@ -1238,6 +1301,34 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
         'role="tooltip" style="position:absolute;inset-block:auto 100%;inset-inline-start:0.5rem"',
       );
       return `<div style="padding-block-start:16rem"><div class="mdmark-diagram-box" style="min-height:11rem;padding:1rem"><button class="mdmark-diagram-info" type="button" aria-label="「注文」の説明" aria-describedby="story-tip">i</button>${table}</div></div>`;
+    }
+    if (args.kind === "item" || args.group === true) {
+      // 折れ線の点・システムの枠のタイトルの印で開いた状態: 持ち主の下に出す
+      const tip = (
+        args.kind === "item"
+          ? renderDiagramTip({
+              id: "story-tip",
+              kind: "item",
+              label: "一次回答",
+              value: "水: 18 分",
+              open,
+            })
+          : renderDiagramTip({
+              id: "story-tip",
+              kind: "hint",
+              label: "問い合わせの窓口",
+              hint: "メールの受け取りから返信までを受け持つ範囲。担当者のチャットとメールサーバーは窓口の外にある",
+              open,
+            })
+      ).replace(
+        'role="tooltip"',
+        'role="tooltip" style="position:absolute;inset-block-start:3rem;inset-inline-start:0.5rem"',
+      );
+      const owner =
+        args.kind === "item"
+          ? '<svg width="40" height="40" aria-hidden="true"><circle class="mdmark-diagram-item-hit" cx="20" cy="20" r="12" tabindex="0" aria-describedby="story-tip"></circle></svg>'
+          : '<span class="mdmark-diagram-frame-title" style="position:static">問い合わせの窓口<button class="mdmark-diagram-info mdmark-diagram-group-info" type="button" aria-label="「問い合わせの窓口」の説明" aria-describedby="story-tip">i</button></span>';
+      return `<div style="padding-block-end:${open ? "8rem" : "0"}"><div class="mdmark-diagram-box" style="min-height:11rem;padding:1rem">${owner}${tip}</div></div>`;
     }
     const kind =
       args.kind === "io" ? "io" : args.kind === "hint" ? "hint" : "wire";
