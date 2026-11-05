@@ -149,3 +149,33 @@ function planLeft(options: {
   }
   return undefined;
 }
+
+/** 見出しの結合の計画から、最下段の列ごとに、その列を覆う上の段の `colspan` を持つ見出しの `{段}:{位置}` を返す（無ければ `undefined`） */
+export function headerGroupsOf(options: {
+  /** 見出しの行のセルの文字 */
+  head: string[][];
+  /** `planCellMerges` の結果 */
+  plan: CellMergePlan;
+}): Array<string | undefined> {
+  const { head, plan } = options;
+  const bottom = head.length - 1;
+  const columns = head[bottom]?.length ?? 0;
+  return Array.from({ length: columns }, (_, column) => {
+    // 複数の段が覆うときは最も下の段を選ぶ
+    for (let row = bottom - 1; row >= 0; row -= 1) {
+      const cells = plan.cells[row] ?? [];
+      for (const [start, cell] of cells.entries()) {
+        const covers =
+          cell.merged === undefined &&
+          cell.colspan > 1 &&
+          start <= column &&
+          column < start + cell.colspan &&
+          row + cell.rowspan - 1 < bottom;
+        if (covers) {
+          return `${row}:${start}`;
+        }
+      }
+    }
+    return undefined;
+  });
+}
