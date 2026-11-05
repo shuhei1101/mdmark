@@ -227,6 +227,30 @@ test("test_validate_config_when_labels_invalid", async () => {
   expect(valid.config.labels?.paramCopy).toBe("コピー");
 });
 
+// 文字列でない html-scripts.url を schema のずれにし、設定から落とす（正常系）
+test("test_validate_config_when_html_scripts_url_invalid", async () => {
+  // 準備
+  const { validateConfig } = await loadModule();
+  // 実行
+  const invalid = validateConfig(
+    { "html-scripts": { url: 1 } },
+    "mdmark.config.yaml",
+  );
+  const valid = validateConfig(
+    { "html-scripts": { url: "/vendor/babel.mjs" } },
+    "mdmark.config.yaml",
+  );
+  // 検証
+  expect(invalid.issues).toHaveLength(1);
+  expect(invalid.issues[0]).toMatchObject({
+    where: "html-scripts.url",
+    kind: "schema",
+  });
+  expect(invalid.config["html-scripts"]).toBeUndefined();
+  expect(valid.issues).toEqual([]);
+  expect(valid.config["html-scripts"]?.url).toBe("/vendor/babel.mjs");
+});
+
 // 文字列でない syntax.url を schema のずれにし、設定から落とす（正常系）
 test("test_validate_config_when_syntax_url_invalid", async () => {
   // 準備
