@@ -1176,7 +1176,7 @@ flows:
       - '`revisions` が呼ばれない'
     test: test_error_when_doc_id_missing
   - name: 正常系（表の件数と列の表示）
-    summary: 絞り込みに合わせて件数を書き換え、列設定のメニューで列を隠してリセットする
+    summary: 絞り込みに合わせて件数を書き換え、テーブル設定のパネルの目のアイコンで列を出し入れする
     setup:
       - name: 配布物を読んだページ
         description: 正常系と同じ
@@ -1189,20 +1189,20 @@ flows:
         participant P as 使う側のページ
         participant M as mdmark
         P->>M: mount(el, { markdown })
-        M->>P: 件数と列設定の帯を置き、説明の列を隠す
+        M->>P: 件数とテーブル設定のボタンの帯を置き、説明の列を隠す
         P->>M: 名前の列を「りんご」で絞り込む
         M->>P: 件数を書き換える
-        P->>M: 列設定を押し、説明にチェックを入れて更新日を外す
+        P->>M: テーブル設定を押し、説明の目のアイコンで表示して更新日の目のアイコンで隠す
         M->>P: 列の表示を切り替える
-        P->>M: リセットを押す
-        M->>P: data-hide の状態に戻す
+        P->>M: Esc を押す
+        M->>P: パネルを閉じる
     expected:
-      - 描いた直後、件数の要素が `aria-live="polite"` を持ち、文字が `3 / 3 件`、説明の列の `th` と `td` が `hidden` を持つ
+      - 描いた直後、件数の要素が `aria-live="polite"` を持ち、文字が `3 / 3 件`、説明の列の `th` と `td` が `hidden` を持ち、テーブル設定のボタンが隠した列の数 `1` のバッジと `aria-label` の `テーブル設定（1 列を非表示）` を持つ
       - 「りんご」で絞り込んだ後、件数の文字が `2 / 3 件` で、読み上げの文字が `3 件中 2 件を表示`
-      - メニューを開いた後、ボタンの `aria-expanded` が `true` で、名前のチェックボックスが `disabled`、メニューに `先頭の列は隠せません` がある
-      - 説明にチェックを入れて更新日を外した後、説明の列が `hidden` を持たず、更新日の列の `th` と `td` が `hidden` を持つ
-      - 「リセット」を押した後、説明の列だけが `hidden` を持ち、更新日の列は `hidden` を持たない
-      - Esc でメニューが `hidden` を持ち、列設定のボタンにフォーカスがある
+      - パネルを開いた後、ボタンの `aria-expanded` が `true` で、パネルの題が `表示と並び順`、名前の目のアイコンが `disabled`、案内に `先頭の列は隠せません` がある
+      - 説明を表示して更新日を隠した後、説明の列が `hidden` を持たず、更新日の列の `th` と `td` が `hidden` を持つ
+      - 説明を表示して更新日を隠した後、更新日の目のアイコンの `aria-label` が `「更新日」を表示`、ボタンのバッジが `1` のまま
+      - Esc でパネルが `hidden` を持ち、テーブル設定のボタンにフォーカスがある
     test: test_normal_when_table_counted_and_columns_toggled
   - name: 正常系（表の集計の行）
     summary: 表示している行で集計した tfoot の行を計算ごとに置き、絞り込みで計算し直し、並べ替えでは動かさない
@@ -1224,7 +1224,7 @@ flows:
         M->>P: 集計を計算し直す
         P->>M: 数量の列の見出しを押す
         M->>P: 本文の行だけを並べ替える
-        P->>M: 列設定で単価を外す
+        P->>M: テーブル設定の単価の目のアイコンで単価を隠す
         M->>P: 単価の列と集計のセルを隠す
     expected:
       - 描いた直後、`tfoot` に `data-total-kind` が上から `sum`・`avg`・`count` の 3 行があり、先頭のセルの計算の名前が `合計`・`平均`・`件数`
@@ -1232,7 +1232,7 @@ flows:
       - 「りんご」で絞り込んだ後、合計が `43`、平均が `200`、件数が `2`
       - 一致する行が無い絞り込みでは、合計が `0`、平均が `—`、件数が `0`
       - 並べ替えた後も、集計の 3 行は `tfoot` にあり、`tbody` の行に入っていない
-      - 単価を外した後、単価の列の `th`・`td` と 3 行の `tfoot` の単価のセルが `hidden` を持つ
+      - 単価を隠した後、単価の列の `th`・`td` と 3 行の `tfoot` の単価のセルが `hidden` を持つ
       - 書き方の警告が無い（空のセルは数として読めないセルに数えない）
     test: test_normal_when_table_totals
   - name: 正常系（表をコピーする）
@@ -2094,7 +2094,7 @@ flows:
         participant P as 使う側のページ
         participant M as mdmark
         P->>M: mount(el, { markdown })
-        P->>M: 列設定で説明を出して更新日を隠し、名前の列を「りんご」で絞り込む
+        P->>M: テーブル設定で説明を表示して更新日を隠し、名前の列を「りんご」で絞り込む
         P->>M: 表をコピーを押し、Markdown の表を押す
         M->>P: 見えている行と列を Markdown の表で書き、ボタンで知らせる
     expected:
@@ -4064,17 +4064,17 @@ flows:
         participant M as mdmark
         P->>M: mount(el, { markdown, onColumnsChange })
         M->>P: 2 つ目の +columns の表の備考を隠して描く
-        P->>M: 1 つ目の表で更新日、説明の順にチェックを外す
+        P->>M: 1 つ目の表で更新日、説明の順に目のアイコンで隠す
         M->>P: onColumnsChange({ tableIndex: 0, hidden: [説明, 更新日] })
-        P->>M: 2 つ目の表で備考にチェックを入れ、「リセット」を押す
+        P->>M: 2 つ目の表で備考の目のアイコンを押して表示し、もう一度押して隠す
         M->>P: onColumnsChange({ tableIndex: 1, hidden: [] })
         M->>P: onColumnsChange({ tableIndex: 1, hidden: [備考] })
         P->>M: update(markdown)
         M->>P: 描き直す
     expected:
       - 描いた直後と `update` の後には `onColumnsChange` が呼ばれていない
-      - '更新日のチェックを外すと `{ tableIndex: 0, hidden: ["更新日"] }`、続けて説明を外すと `{ tableIndex: 0, hidden: ["説明", "更新日"] }`（表の列の並びの順）で呼ばれる'
-      - '備考にチェックを入れると `{ tableIndex: 1, hidden: [] }`、「リセット」を押すと `{ tableIndex: 1, hidden: ["備考"] }` で呼ばれる'
+      - '更新日の目のアイコンで隠すと `{ tableIndex: 0, hidden: ["更新日"] }`、続けて説明を隠すと `{ tableIndex: 0, hidden: ["説明", "更新日"] }`（表の列の並びの順）で呼ばれる'
+      - '備考の目のアイコンで表示すると `{ tableIndex: 1, hidden: [] }`、もう一度押して隠すと `{ tableIndex: 1, hidden: ["備考"] }` で呼ばれる'
       - 呼ばれた回数は操作の回数（4 回）と同じ
     test: test_normal_when_columns_changed
   - name: 異常系（列の表示の知らせが例外を投げる）

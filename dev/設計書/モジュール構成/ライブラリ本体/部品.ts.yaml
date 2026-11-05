@@ -287,7 +287,7 @@ functions:
         summary: 5 つの機能の状態を描く
         condition: '部品設計の `AllFeatures`（`hide: [1]`、`totals: [{2, sum}]`、`rowIds`）に `targetRow: 1`'
         mock: なし
-        expected: 帯に `3 / 3 件`・`列設定`・`表をコピー`、説明の列の見出し・セル・集計のセルが `hidden`、`tfoot` に `合計 25`、各行に `id` と `mdmark-row-anchor`、2 行目だけ `data-target`
+        expected: 帯に `3 / 3 件`・テーブル設定のボタン・`表をコピー`、説明の列の見出し・セル・集計のセルが `hidden`、`tfoot` に `合計 25`、各行に `id` と `mdmark-row-anchor`、2 行目だけ `data-target`
       - name: test_render_table_when_totals_unreadable
         case: 正常
         summary: 数として読めないセルを持つ列の合計と平均を空にし、計算ごとの行を出す
@@ -735,7 +735,7 @@ functions:
     introduced:
       pr: 32
   - name: renderTableBar
-    title: 表の上の帯と列設定のメニューを描く
+    title: 表の上の帯とテーブル設定のパネルを描く
     container: src/parts/table.ts
     kind: 関数
     scope: internal
@@ -744,23 +744,23 @@ functions:
       - name: options
         type: '{ id: string; features: string[]; labels: string[]; shown: number; total: number; hiddenColumns: number[]; openColumns?: boolean; copyState?: "idle" | "copied" | "failed"; totals?: TotalCalc[]; shownTotals?: TotalCalc[]; openTotals?: boolean; openCopy?: boolean }'
         required: true
-        description: メニューの id の頭、機能、列名、表示している行の数、全ての行の数、隠している列、列設定のメニューを開いているか、コピーのボタンの状態、表が持つ集計の計算、出している計算（既定は `totals` の全て）、集計のメニューを開いているか、コピーの形式のメニューを開いているか
+        description: メニューの id の頭、機能、列名、表示している行の数、全ての行の数、隠している列、テーブル設定のパネルを開いているか、コピーのボタンの状態、表が持つ集計の計算、出している計算（既定は `totals` の全て）、集計のメニューを開いているか、コピーの形式のメニューを開いているか
     returns:
       type: '{ bar: string; menus: string }'
-      description: 帯と、列設定・集計・コピーの形式のうち付けた機能のメニューをつないだもの（該当する機能が無ければ空）
+      description: 帯と、テーブル設定のパネル・集計・コピーの形式のうち付けた機能のメニューをつないだもの（該当する機能が無ければ空）
     unit_tests:
       - name: test_render_table_bar
         case: 正常
-        summary: 件数と列設定とコピーの帯を返す
+        summary: 件数とテーブル設定とコピーの帯を返す
         condition: '`features: [count, columns, copy]`、列名 `名前`・`説明`・`更新日`、`shown: 2`、`total: 3`、`hiddenColumns: [1]`'
         mock: なし
-        expected: '`bar` に `aria-live="polite"` の `2 / 3 件` と読み上げ `3 件中 2 件を表示`、`aria-expanded="false"` の `列設定`、`data-state="idle"` で `chevron-down` を持つ `表をコピー`、`role="status"` の `mdmark-table-status`。`menus` の列設定のメニューが `hidden` で、名前のチェックボックスが `checked disabled`、説明のチェックが外れ、`先頭の列は隠せません` と `リセット` があり、コピーの形式のメニューが `hidden` で `data-format` が `markdown`・`tsv` のボタンを持つ'
+        expected: '`bar` に `aria-live="polite"` の `2 / 3 件` と読み上げ `3 件中 2 件を表示`、`aria-expanded="false"` で `aria-label` が `テーブル設定（1 列を非表示）` のテーブル設定のボタン（バッジ `1`）、`data-state="idle"` で `chevron-down` を持つ `表をコピー`、`role="status"` の `mdmark-table-status`。`menus` のテーブル設定のパネルが `hidden` で、名前の目のアイコンが `disabled`、案内に `先頭の列は隠せません` があり、コピーの形式のメニューが `hidden` で `data-format` が `markdown`・`tsv` のボタンを持つ'
       - name: test_render_table_bar_when_copy_failed
         case: 正常
         summary: コピーできなかったボタンを返す
         condition: '`features: [copy]`、`copyState: failed`'
         mock: なし
-        expected: '`bar` のボタンが `data-state="failed"` と `コピーできませんでした` を持ち、件数と `列設定` が無く、`menus` に列設定のメニューが無い'
+        expected: '`bar` のボタンが `data-state="failed"` と `コピーできませんでした` を持ち、件数とテーブル設定のボタンが無く、`menus` にテーブル設定のパネルが無い'
       - name: test_render_table_bar_when_totals
         case: 正常
         summary: 集計のボタンとメニューを返し、隠している計算の数を読み上げの名前に加える

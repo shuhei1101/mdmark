@@ -291,10 +291,10 @@ functions:
         expected: 絞り込む前は `4 / 4 件` と、`合計 45`・`平均 250`・`件数 4` の 3 行がこの順、後は `2 / 4 件` と `合計 43`・`平均 200`・`件数 2`、絞り込みを `存在しない` にした後は `0 / 4 件` と `合計 0`・`平均 —`・`件数 0`（`一致する行がありません` の行を数えない）
       - name: test_attach_tables_when_columns_toggled
         case: 正常
-        summary: 列を隠して既定に戻し、Esc でメニューを閉じる
-        condition: '`data-features="sort pin filter columns total"`・`data-hide="1"`・`data-total="2:sum"` の 3 列の表で、メニューを開き、2 列目を入れて 3 列目を外し、「リセット」を押し、Esc'
+        summary: テーブル設定のパネルの目のアイコンで列を出し入れし、Esc でパネルを閉じる
+        condition: '`data-features="sort pin filter columns total"`・`data-hide="1"`・`data-total="2:sum"` の 3 列の表で、テーブル設定のパネルを開き、目のアイコンで 2 列目を表示して 3 列目を隠し、Esc'
         mock: なし
-        expected: 付けた直後は 2 列目の `th`・`td` が `hidden`、開いた後は 1 列目のチェックボックスが `disabled` で 2 つ目のチェックボックスにフォーカス、切り替えた後は 3 列目の `th`・`td`・集計のセルが `hidden`、戻した後は 2 列目だけが `hidden`、Esc の後はメニューが `hidden` で `列設定` にフォーカス
+        expected: 付けた直後は 2 列目の `th`・`td` が `hidden`、開いた後は 1 列目の目のアイコンが `disabled` で 2 つ目の目のアイコンにフォーカス、切り替えた後は 3 列目の `th`・`td`・集計のセルが `hidden` で 2 列目は `hidden` を持たない、Esc の後はパネルが `hidden` でテーブル設定のボタンにフォーカス
       - name: test_attach_tables_when_copied
         case: 正常
         summary: 形式のメニューで TSV を選び、表示している行と列を写して 2 秒でボタンを戻す
