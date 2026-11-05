@@ -889,9 +889,9 @@ functions:
     scope: internal
     args:
     - name: options
-      type: '{ root: HTMLElement; icons: Record<string, MdmarkIconNode>; importModule?: ImportModule; fetchHead?: (url: string) => Promise<Response> }'
+      type: '{ root: HTMLElement; icons: Record<string, MdmarkIconNode>; isCurrent: () => boolean; importModule?: ImportModule; fetchHead?: (url: string) => Promise<Response> }'
       required: true
-      description: '`root` は描く先の要素、`icons` は `opts.icons`、`importModule` はモジュールを読む関数（既定 `(url) => import(url)`）、`fetchHead` は `HEAD` を送る関数（既定 `(url) => fetch(url, { method: "HEAD" })`）'
+      description: '`root` は描く先の要素、`icons` は `opts.icons`、`isCurrent` は描いた文書がまだ今のものか（`import()`・`HEAD` の後に偽なら DOM に触れずに戻る）、`importModule` はモジュールを読む関数（既定 `(url) => import(url)`）、`fetchHead` は `HEAD` を送る関数（既定 `(url) => fetch(url, { method: "HEAD" })`）'
     returns:
       type: Promise<void>
       description: 全て入れ終えたら解決する
@@ -918,6 +918,12 @@ functions:
       expected: 全ての場所が行内のコードになり、知らせの枠が 1 つだけある
       mock: '`importModule` と `fetchHead` を渡す'
       summary: 読めないときは知らせの枠を 1 つ置く
+    - name: test_load_inline_icons_when_stale
+      case: 正常
+      condition: '`import` と `HEAD` が失敗し、読み込みの間に `isCurrent` が偽になる'
+      expected: 知らせの枠と書き方の警告が無く、空の要素がそのまま残る
+      mock: '`importModule` と `fetchHead` を渡す'
+      summary: 古い描画の結果を書き込まない
   - name: lucideIconUrl
     title: アイコンの URL を作る
     container: src/inline-icons.ts
