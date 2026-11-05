@@ -37,6 +37,9 @@ data_models:
       - name: labels
         type: '{ paramCopy?: string } | undefined'
         description: 部品の文言の設定。`paramCopy` は操作できる部品の今の値をコピーするボタンの文言。空文字も受けて `resolveConfig` が `DEFAULT_LABELS.paramCopy` にする
+      - name: '"html-scripts"'
+        type: '{ url?: string } | undefined'
+        description: 範囲のスクリプトの設定。`url` は範囲の `ts`・`js` を変換する @babel/standalone の ES モジュールの URL
   - name: LibraryEntry
     title: 対応表の行
     container: src/config.ts
@@ -76,6 +79,9 @@ data_models:
       - name: labels
         type: '{ paramCopy: string }'
         description: 設定の `labels.paramCopy` が空でない文字列ならその値、それ以外は `DEFAULT_LABELS.paramCopy`
+      - name: htmlScripts
+        type: '{ url: string }'
+        description: 範囲のスクリプトの変換のライブラリの URL（既定 `DEFAULT_HTML_SCRIPTS_URL`）
   - name: TooltipPlacement
     title: ツールチップを出す場所
     container: src/config.ts
@@ -104,7 +110,7 @@ constants:
     title: 機能の既定
     container: src/config.ts
     summary: この版が知っている機能とその既定。機能を作る Issue が行を足す
-    value: '{ print: true, table: true, callout: true, tabs: true, steps: true, tree: true, badge: true, footnotes: true, code: true, syntax: true, toc: true, anchors: true, sections: true, "row-details": true, figures: true, diagrams: true, glossary: true, backlinks: true, html: true, hints: true, views: true, comments: false, "side-toc": true, "back-to-top": true, "text-color": true, images: true, gallery: true, lightbox: true, media: true, gif: true, cards: true }'
+    value: '{ print: true, table: true, callout: true, tabs: true, steps: true, tree: true, badge: true, footnotes: true, code: true, syntax: true, toc: true, anchors: true, sections: true, "row-details": true, figures: true, diagrams: true, glossary: true, backlinks: true, html: true, hints: true, views: true, comments: false, "html-scripts": false, "side-toc": true, "back-to-top": true, "text-color": true, images: true, gallery: true, lightbox: true, media: true, gif: true, cards: true }'
     refs:
       - dev/設計書/設定/ライブラリ本体#settings[features.print]
   - name: DEFAULT_LIBRARIES
@@ -155,6 +161,17 @@ constants:
     status: implemented
     introduced:
       pr: 258
+  - name: DEFAULT_HTML_SCRIPTS_URL
+    title: 範囲のスクリプトの変換のライブラリの既定の読み込み先
+    container: src/config.ts
+    summary: 設定の `html-scripts.url` が無いときに読む @babel/standalone の ES モジュールの URL。版を固定する
+    value: '"https://cdn.jsdelivr.net/npm/@babel/standalone@8.1.1/+esm"'
+    refs:
+      - dev/設計書/設定/ライブラリ本体#settings[html-scripts.url]
+      - dev/設計書/外部ライブラリ/babel-standalone#
+    status: planned
+    introduced:
+      pr: 303
 functions:
   - name: resolveConfig
     title: 設定に既定を当てる
@@ -162,7 +179,7 @@ functions:
     kind: 関数
     scope: public
     summary: 使う側の設定に既定を当て、型の合わない値を落とした `ResolvedConfig` を返す
-    description: '`features` は `DEFAULT_FEATURES` のキーのうち、設定に真偽値があるものだけを置き換える。`libraries` は `MARK_NAME_PATTERN` に合うキーと文字列の値だけを取り、既定にある名前は `url` だけを置き換え、無い名前は `figure: true` で足す。`tooltips.placement` は `bottom` のときだけ `bottom` にし、無い値・他の値は `top` にする。`syntax.url` は文字列のときだけ取り、無い値・他の型は `DEFAULT_SYNTAX_URL` にする。`side-toc.mode` は `fixed` のときだけ `fixed` にし、無い値・他の値は `hover` にする。`colorTheme` は `COLOR_THEMES` にあるときだけ取り、無い値・他の値・文字列でない値は `DEFAULT_COLOR_THEME` にする（例外を投げない）。`labels.paramCopy` は空でない文字列のときだけ取り、無い値・空文字・他の型は `DEFAULT_LABELS.paramCopy` にする。渡されたオブジェクトは書き換えない'
+    description: '`features` は `DEFAULT_FEATURES` のキーのうち、設定に真偽値があるものだけを置き換える。`libraries` は `MARK_NAME_PATTERN` に合うキーと文字列の値だけを取り、既定にある名前は `url` だけを置き換え、無い名前は `figure: true` で足す。`tooltips.placement` は `bottom` のときだけ `bottom` にし、無い値・他の値は `top` にする。`syntax.url` は文字列のときだけ取り、無い値・他の型は `DEFAULT_SYNTAX_URL` にする。`html-scripts.url` は文字列のときだけ取って `htmlScripts.url` に入れ、無い値・他の型は `DEFAULT_HTML_SCRIPTS_URL` にする。`side-toc.mode` は `fixed` のときだけ `fixed` にし、無い値・他の値は `hover` にする。`colorTheme` は `COLOR_THEMES` にあるときだけ取り、無い値・他の値・文字列でない値は `DEFAULT_COLOR_THEME` にする（例外を投げない）。`labels.paramCopy` は空でない文字列のときだけ取り、無い値・空文字・他の型は `DEFAULT_LABELS.paramCopy` にする。渡されたオブジェクトは書き換えない'
     args:
       - name: options
         type: '{ config?: MdmarkConfig; defaultLibraries?: Record<string, LibraryEntry> }'
@@ -177,7 +194,7 @@ functions:
         summary: 設定が無ければ既定を返す
         condition: '`config` が `undefined`'
         mock: なし
-        expected: '`{ features: DEFAULT_FEATURES, libraries: {}, tooltips: { placement: "top" }, syntax: { url: DEFAULT_SYNTAX_URL }, sideToc: { mode: "hover" }, colorTheme: "dev-swiss", labels: { paramCopy: "今の値を写す" } }`（`comments` を除く全ての機能が `true`）'
+        expected: '`{ features: DEFAULT_FEATURES, libraries: {}, tooltips: { placement: "top" }, syntax: { url: DEFAULT_SYNTAX_URL }, htmlScripts: { url: DEFAULT_HTML_SCRIPTS_URL }, sideToc: { mode: "hover" }, colorTheme: "dev-swiss", labels: { paramCopy: "今の値を写す" } }`（`comments`・`html-scripts` を除く全ての機能が `true`）'
       - name: test_resolve_config_when_features_given
         case: 正常
         summary: 知っている機能の真偽値だけを置き換える
@@ -226,6 +243,12 @@ functions:
         condition: '`{ labels: { paramCopy: "コピー" } }`、`{ labels: { paramCopy: "" } }`、`{ labels: { paramCopy: 1 } }`、`{ labels: { other: "x" } }`'
         mock: なし
         expected: '1 つ目の `labels` が `{ paramCopy: "コピー" }`、残りは `{ paramCopy: "今の値を写す" }`（知らないキー `other` を持たない）。例外を投げない'
+      - name: test_resolve_config_when_html_scripts_url_given
+        case: 正常
+        summary: 文字列の `html-scripts.url` だけを受け、他の型と無いときは既定にする
+        condition: '`{ "html-scripts": { url: "/vendor/babel.mjs" } }`・`{ "html-scripts": { url: 1 } }`・`{}`'
+        mock: なし
+        expected: 1 つ目の `htmlScripts.url` が `/vendor/babel.mjs`、残りは `DEFAULT_HTML_SCRIPTS_URL`。`{}` の `features["html-scripts"]` が `false`
   - name: resolveFeatures
     title: 文書の印で機能のオン・オフを決める
     container: src/features.ts

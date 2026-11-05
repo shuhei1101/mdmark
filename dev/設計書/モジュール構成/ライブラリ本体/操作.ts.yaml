@@ -4,11 +4,14 @@ directory: |-
   ```tree
   src/
   ├── code-fold-logic.ts # コードの行のインデントのレベル・畳む行の数・隠す行・縦線を濃くする範囲（render と部品と操作が使う）
-  ├── table-logic.ts  # 表の並べ替えの比べ方・最下段の見出しのセル・隣り合う同じ値の結合・絞り込みの当てはめ・数の読み方・集計と読めないセル・TSV と Markdown の表・最終列を畳むか・行を留める量・URL の #ID の読み方（部品の表と操作が使う）
+  ├── tree-logic.ts   # キーのパスの分け方・階層の行の計画・YAML の見本の行のパス・階層の絞り込み（render と操作が使う。DOM もトークンも使わない）
+  ├── table-logic.ts  # 列を動かせるかの判定と列の順の入れ替え・表の並べ替えの比べ方・最下段の見出しのセル・隣り合う同じ値の結合・絞り込みの当てはめ・数の読み方・集計と読めないセル・TSV と Markdown の表・最終列を畳むか・行を留める量・URL の #ID の読み方（部品の表と操作が使う）
   └── interact/
       ├── index.ts       # attachInteractions
       ├── placement.ts   # ツールチップを持ち主の上と下のどちらに置くかを決める
-      ├── tables.ts      # 表の並べ替え・ピン止め・絞り込み・件数・列設定・集計・コピー・行へ移る・行の URL のコピー・最終列を畳む
+      ├── tables.ts      # 表の並べ替え・ピン止め・絞り込み・件数・集計・コピー・行へ移る・行の URL のコピー・最終列を畳む
+      ├── table-settings.ts # テーブル設定のパネルの開閉・列の表示の切り替え・列の並べ替え（ドラッグと ↑・↓ キー）
+      ├── table-tree.ts  # 階層の表の開閉・パスのツールチップとコピー・行の選択・絞り込み・見本との連動
       ├── sticky.ts      # 表の見出し行と集計の行を画面の端に留める
       ├── clipboard.ts   # クリップボードへ書く（表・行の URL・コードブロック・ファイルツリーが使う）
       ├── code-blocks.ts # コードブロックのコピー
@@ -193,7 +196,7 @@ functions:
     container: src/interact/tables.ts
     kind: 関数
     scope: internal
-    summary: 各 `mdmark-table` の `data-features`・`data-filter`・`data-hide`・`data-total`・`data-pin` を読み、見出しに `renderTableTools` のボタンとドロワーを置いて、並べ替え・ピン止め・絞り込みを付ける。`count`・`columns`・`total`・`copy` の表は `renderTableBar` の帯とメニューを、`total` の表は `renderTotalRows` の集計の行を置き、`rowlink` の表は行へ移る処理と行の URL のコピーを付ける。全ての表に、描く先の要素の幅で最終列を畳む処理を付ける。`thead` が複数の行を持つ表は `bottomHeadCells` で列ごとの最下段の見出しのセルを決め、ボタンをそのセルにだけ置き、列の位置はそのセルの列で数える（`cellIndex` を使わない）。`data-merge-columns` の表は、並べ替え・絞り込みのたびに、表示している本文の行のその列の値から `mergeSpans` で結合を決め、始まりのセルに `rowspan` と `is-merged`、続くセルに `hidden` を付け直す。結合で隠したセルも値を持つセルとして並べ替え・絞り込み・コピー・集計に使う。囲み・表から探す部品の要素（ピン止めのボタン・ドロワー・畳んだ列のセル・行の詳細の行など）は、`closest(".mdmark-table")` がその囲みのものだけにし、行の詳細の中の表の要素を拾わない。受け取り（`click`・`change`・`input`・`keydown`）は、対象の `closest(".mdmark-table")` がその囲みのときだけ処理する
+    summary: 各 `mdmark-table` の `data-features`・`data-filter`・`data-hide`・`data-total`・`data-pin` を読み、見出しに `renderTableTools` のボタンとドロワーを置いて、並べ替え・ピン止め・絞り込みを付ける。`count`・`columns`・`reorder`・`total`・`copy` の表は `renderTableBar` の帯とメニューを、`columns`・`reorder` の表は `attachTableSettings` でテーブル設定を、`data-tree` の表は `attachTableTree` で階層の操作を、`total` の表は `renderTotalRows` の集計の行を置き、`rowlink` の表は行へ移る処理と行の URL のコピーを付ける。全ての表に、描く先の要素の幅で最終列を畳む処理を付ける。`thead` が複数の行を持つ表は `bottomHeadCells` で列ごとの最下段の見出しのセルを決め、ボタンをそのセルにだけ置き、列の位置はそのセルの列で数える（`cellIndex` を使わない）。`data-merge-columns` の表は、並べ替え・絞り込みのたびに、表示している本文の行のその列の値から `mergeSpans` で結合を決め、始まりのセルに `rowspan` と `is-merged`、続くセルに `hidden` を付け直す。結合で隠したセルも値を持つセルとして並べ替え・絞り込み・コピー・集計に使う。囲み・表から探す部品の要素（ピン止めのボタン・ドロワー・畳んだ列のセル・行の詳細の行など）は、`closest(".mdmark-table")` がその囲みのものだけにし、行の詳細の中の表の要素を拾わない。受け取り（`click`・`change`・`input`・`keydown`）は、対象の `closest(".mdmark-table")` がその囲みのときだけ処理する
     description: |-
       並べ替えは降順 → 昇順 → 元の並び（描いたときの順を行に控える）を繰り返し、`th` の `aria-sort` を付け外しする。行の詳細の行と畳んだ最終列の開閉の行はその行に付いて動かす。ピン止めのボタンは `ResizeObserver` で表がはみ出すときだけ出し、留める列の数（付けたときは `data-pin` の位置 + 1、無ければ `th scope="row"` の行見出しの列の数、行見出しも無ければ 1。ボタンを押すとその列まで、押し直すと 0）までのセルに、表がはみ出す間だけ `position: sticky` と左端からの位置を当てる（はみ出さない間は留めず、留める列の数は控えたまま）。`thead` が複数の行を持つ表の見出しのセルは、またぐ列が全て留める範囲のときだけ留める。セルの値は `cellValue` で読む（`data-check` の列は `data-value`）。絞り込みのドロワーは `hidden` と `aria-expanded` で開閉し、同時に 1 つだけ開く。開いたら最初の入力欄へフォーカスを移し（スマホでもボタンの押下の処理の中で移す）、開いている間だけ `document` の `pointerdown`（外を押す）と `keydown`（Esc）を受け取る。「絞り込みを解除」はその列の入力を空にして絞り込みを当て直す（ドロワーの中の押下を外の押下として扱わない）。列ごとの絞り込みは `matchesFilter` で重ねて当て、合わない行に `hidden` を付ける。
 
@@ -2015,6 +2018,266 @@ functions:
         condition: '`<!-- section: closed -->` の節の中に `[^a]` を持つ文書を描き、`attachSections` と一緒に付け、一覧を開いて戻るリンクを押す'
         mock: なし（Chromium）
         expected: 節の中身が `hidden` を持たず、番号のリンクがフォーカスを持つ
+  - name: splitKeyPath
+    title: キーのパスを分ける
+    container: src/tree-logic.ts
+    kind: 関数
+    scope: internal
+    summary: '`aliases[].metadata.type` の形のパスを `.` で分け、`[]` を前の名前に付けたままの名前の並びと、親のパスの並びを返す'
+    args:
+      - name: path
+        type: string
+        required: true
+        description: キーの列の文字（前後の空白と行内のコードの `` ` `` は除いたもの）
+    returns:
+      type: '{ names: string[]; parents: string[] }'
+      description: '`names` は末尾までの名前（`aliases[]` の形を含む）、`parents` は根からの親の全体のパス'
+    unit_tests:
+      - name: test_split_key_path
+        case: 正常
+        summary: '`.` で分け、`[]` を名前に残す'
+        condition: '`aliases[].metadata.alias_type.type`'
+        mock: なし
+        expected: '`names` が `["aliases[]","metadata","alias_type","type"]`、`parents` が `["aliases[]","aliases[].metadata","aliases[].metadata.alias_type"]`'
+    status: planned
+    introduced:
+      pr: 303
+  - name: planTreeRows
+    title: 階層の行を計画する
+    container: src/tree-logic.ts
+    kind: 関数
+    scope: internal
+    summary: 表の行のキーの並びから、表に無い親を子の最初の行の前に補った行の並び（`{ path, parent, depth, name, virtual, hasChildren, source }`）を返す
+    description: '`source` は元の行の位置（補った行は `undefined`）。同じパスの行が後ろにあるときは補わず、その行の場所で親にする。空のキーの行は深さ 0 の行としてそのまま残す'
+    args:
+      - name: keys
+        type: string[]
+        required: true
+        description: 本文の行ごとのキーの列の文字
+    returns:
+      type: TreeRowPlan[]
+      description: 描く順の行
+    unit_tests:
+      - name: test_plan_tree_rows
+        case: 正常
+        summary: 表に無い親を補い、深さと子の有無を付ける
+        condition: '`["features.table","features.html","aliases[].id","aliases[].metadata.alias_type.type"]`'
+        mock: なし
+        expected: パスが `features`（virtual）・`features.table`・`features.html`・`aliases[]`（virtual）・`aliases[].id`・`aliases[].metadata`（virtual）・`aliases[].metadata.alias_type`（virtual）・`aliases[].metadata.alias_type.type` の順で、最後の `depth` が 3
+      - name: test_plan_tree_rows_when_parent_written_later
+        case: 正常
+        summary: 後ろに書いた親の行は補わず、その行を親にする
+        condition: '`["a.b","a"]`'
+        mock: なし
+        expected: パスが `a`（`source` 1、virtual でない）・`a.b`（`source` 0）の順
+    status: planned
+    introduced:
+      pr: 303
+  - name: yamlLinePaths
+    title: YAML の行のパスを求める
+    container: src/tree-logic.ts
+    kind: 関数
+    scope: internal
+    summary: YAML の行ごとに、インデントと `- ` から求めたキーのパス（表の `data-path` と同じ書き方。キーを持たない行は `undefined`）を返す
+    description: YAML を解析せず、行の先頭の空白と `- `・`キー:` だけを見る。配列の要素のキーは親のキーに `[]` を付けたパスの下にする。コメントと空の行、複数行の文字列の中はキーを持たない行にする
+    args:
+      - name: lines
+        type: string[]
+        required: true
+        description: 見本のコードブロックの行
+    returns:
+      type: Array<string | undefined>
+      description: 行ごとのパス
+    unit_tests:
+      - name: test_yaml_line_paths
+        case: 正常
+        summary: 入れ子のキーと配列の要素のキーにパスを付ける
+        condition: '`aliases:`・`  - id: terms`・`    paths:`・`      - dev/*.yaml`・`    metadata:`・`      alias_type:`・`        type: custom`'
+        mock: なし
+        expected: '`aliases[]`・`aliases[].id`・`aliases[].paths`・`undefined`・`aliases[].metadata`・`aliases[].metadata.alias_type`・`aliases[].metadata.alias_type.type`'
+      - name: test_yaml_line_paths_when_comments
+        case: 正常
+        summary: コメント・空の行・複数行の文字列の中はパスを持たない
+        condition: '`# 説明`・``・`note: |`・`  a: b`・`next: 1`'
+        mock: なし
+        expected: '`undefined`・`undefined`・`note`・`undefined`・`next`'
+    status: planned
+    introduced:
+      pr: 303
+  - name: filterTreeRows
+    title: 階層の行を絞り込む
+    container: src/tree-logic.ts
+    kind: 関数
+    scope: internal
+    summary: 末尾の名前に単語を含む行とその祖先の行のパスの集まりと、当たった行のうち補った行でないものの数を返す
+    description: 照合は大文字小文字を区別しない。単語が空なら全ての行を残し、数は補った行でない行の数
+    args:
+      - name: options
+        type: '{ rows: TreeRowPlan[]; word: string }'
+        required: true
+        description: '`rows` は `planTreeRows` の行、`word` は絞り込みの単語'
+    returns:
+      type: '{ keep: Set<string>; hits: Set<string>; count: number }'
+      description: '`keep` は残す行、`hits` は当たった行のパス、`count` は件数'
+    unit_tests:
+      - name: test_filter_tree_rows
+        case: 正常
+        summary: 当たった行の祖先を残し、補った行を数えない
+        condition: test_plan_tree_rows の行で `id` と `metadata`
+        mock: なし
+        expected: '`id` は `keep` が `aliases[]`・`aliases[].id`、`count` が 1。`metadata` は `keep` が `aliases[]`・`aliases[].metadata`、`count` が 0'
+    status: planned
+    introduced:
+      pr: 303
+  - name: canMoveColumn
+    title: 列を動かせるかを決める
+    container: src/table-logic.ts
+    kind: 関数
+    scope: internal
+    summary: 動かす列と動かす先の列が同じ結合した見出しの範囲で、ピン止めの同じ側にあるとき `true` を返す
+    args:
+      - name: options
+        type: '{ from: ColumnPlace; to: ColumnPlace }'
+        required: true
+        description: '`ColumnPlace` は `{ group: string | undefined; pinned: boolean }`'
+    returns:
+      type: boolean
+      description: 動かせるか
+    unit_tests:
+      - name: test_can_move_column
+        case: 正常
+        summary: 同じ範囲と同じピン止めの側だけを許す
+        condition: '`{ group: "0:1", pinned: false }` 同士、`"0:1"` と `undefined`、`pinned` が `true` と `false`'
+        mock: なし
+        expected: '`true`・`false`・`false`'
+    status: planned
+    introduced:
+      pr: 303
+  - name: moveColumn
+    title: 列の順を入れ替える
+    container: src/table-logic.ts
+    kind: 関数
+    scope: internal
+    summary: 列の順（元の列の位置の並び）の `column` を `target` の前か後ろへ動かした新しい並びを返す
+    args:
+      - name: options
+        type: '{ order: number[]; column: number; target: number; side: "before" | "after" }'
+        required: true
+        description: '`column`・`target` は元の列の位置'
+    returns:
+      type: number[]
+      description: 新しい列の順（渡した配列は書き換えない）
+    unit_tests:
+      - name: test_move_column
+        case: 正常
+        summary: 列を前と後ろへ動かす
+        condition: '`order` が `[0,1,2,3]`。`column: 3, target: 0, side: "before"` と `column: 1, target: 2, side: "after"`'
+        mock: なし
+        expected: '`[3,0,1,2]` と `[0,2,1,3]`'
+    status: planned
+    introduced:
+      pr: 303
+  - name: attachTableSettings
+    title: テーブル設定を付ける
+    container: src/interact/table-settings.ts
+    kind: 関数
+    scope: internal
+    summary: 表の帯のテーブル設定のボタンでパネルを開閉し、目のアイコンで列を隠し、つまみのドラッグ＆ドロップと ↑・↓ キーで列を動かす。列を動かしたら見出し・本文の行・集計の行のセルと一覧を並べ直し、隠したらバッジと `aria-label` を書き換えて `onColumnsChange` を呼ぶ
+    description: 並べ替えはセルの並びを DOM の上で入れ替え、列の位置は各セルに描いたときの `data-col` を持たせて数える（並べ替え・絞り込み・コピー・集計は `data-col` で列を引く）。動かせるかは `canMoveColumn`、新しい順は `moveColumn` で決める。`dragover` で動かせない行には `preventDefault` せず線も出さない。列の順は覚えない。受け取りはその表の囲みの中だけで処理する
+    side_effects: 表のセルと一覧の並び・`hidden`・ボタンの属性を書き換える。パネルを開いている間だけ `document` の `pointerdown`・`keydown` を受け取る
+    args:
+      - name: options
+        type: '{ wrapper: HTMLElement; onColumnsChange?: (change: { hidden: string[] }) => void }'
+        required: true
+        description: '`wrapper` は `div.mdmark-table`、`onColumnsChange` は `attachTables` が `tableIndex` を付けて渡す知らせ'
+    returns:
+      type: () => void
+      description: 受け取りを外す関数
+    callees:
+      - '#functions[canMoveColumn]'
+      - '#functions[moveColumn]'
+      - dev/設計書/モジュール構成/ライブラリ本体/部品.ts#functions[renderTableSettings]
+    unit_tests:
+      - name: test_attach_table_settings_when_dragged
+        case: 正常
+        summary: ドラッグ＆ドロップで列を動かし、全ての行のセルを並べ直す
+        condition: '`+reorder +columns` の 4 列 3 行の表。説明のつまみを名前の上へ `dragstart`・`dragover`・`drop`'
+        mock: '`DataTransfer` を作って渡す'
+        expected: 見出しと 3 行のセルの `data-col` が `3,0,1,2` の順で、一覧も同じ順
+      - name: test_attach_table_settings_when_arrow_key
+        case: 正常
+        summary: つまみの ↓ キーで 1 つ動かし、フォーカスを残す
+        condition: 同じ表で型のつまみにフォーカスして `ArrowDown`
+        mock: なし
+        expected: 列が `0,2,1,3` の順で、`document.activeElement` が型のつまみ
+      - name: test_attach_table_settings_when_group_boundary
+        case: 正常
+        summary: 結合した見出しの範囲の外とピン止めの境には動かさず、動かせないつまみを `disabled` にする
+        condition: '`header-rows=2 pin=名前` の表で、型を備考の下へ `drop`'
+        mock: なし
+        expected: 列の順が変わらず、名前と備考のつまみが `disabled`
+      - name: test_attach_table_settings_when_hidden
+        case: 正常
+        summary: 目のアイコンで列を隠し、バッジと読み上げの名前を書き換えて知らせる
+        condition: 説明の目のアイコンを押す
+        mock: '`onColumnsChange` を見張る'
+        expected: '説明のセルが `hidden`、ボタンのバッジが `1`・`aria-label` が `テーブル設定（1 列を非表示）`、`onColumnsChange` が `{ hidden: ["説明"] }` で 1 回'
+    status: planned
+    introduced:
+      pr: 303
+  - name: attachTableTree
+    title: 階層の表の操作を付ける
+    container: src/interact/table-tree.ts
+    kind: 関数
+    scope: internal
+    summary: '`data-tree` の表の子を持つ行に開閉のボタン、各行にパスのコピーのボタンと全体のパスのツールチップを置き、開閉・行の選択・キーの列の絞り込み・見本との連動と見本の表示の切り替えを付ける'
+    description: 開閉の作法はコードの折りたたみと同じ（Shift で子孫をまとめて開閉する）。ツールチップは用語のツールチップと同じ開閉の処理を使う。絞り込みは `attachTables` のキーの列の `text` の絞り込みの代わりに `filterTreeRows` で当て、件数を書き換える。絞り込む前の開閉を控え、解くと戻す。コピーは `writeClipboard` を使い、結果を 2 秒出す。印刷の前後の開閉は `attachPrint` が扱う
+    side_effects: 表の行の `hidden`・`aria-selected`・縦線の class・見本の行の class を書き換える。クリップボードに書く
+    args:
+      - name: options
+        type: '{ wrapper: HTMLElement; placement: TooltipPlacement }'
+        required: true
+        description: '`wrapper` は `div.mdmark-table[data-tree]`、`placement` はツールチップを出す場所'
+    returns:
+      type: () => void
+      description: 受け取りを外す関数
+    callees:
+      - '#functions[filterTreeRows]'
+      - dev/設計書/モジュール構成/ライブラリ本体/部品.ts#functions[renderTreeTools]
+    unit_tests:
+      - name: test_attach_table_tree_when_folded
+        case: 正常
+        summary: 開閉のボタンで子孫を畳み、Shift で入れ子もまとめて開閉する
+        condition: 階層の表で `aliases[]` のボタンを押し、次に Shift を押しながら押す
+        mock: なし
+        expected: 1 回目で子孫 4 行が `hidden`、2 回目で全ての行が出て入れ子のボタンも `aria-expanded="true"`
+      - name: test_attach_table_tree_when_selected
+        case: 正常
+        summary: 行を選ぶと同じ親の範囲の縦線を濃くし、見本の同じパスの行に色を付ける
+        condition: 見本を結んだ階層の表で `features.table` の行を押す
+        mock: なし
+        expected: 行が `aria-selected="true"`、`features.table`・`features.html` の 1 つ目の縦線が `is-active`、開いているタブの `data-path="features.table"` の行が `is-linked`
+      - name: test_attach_table_tree_when_filtered
+        case: 正常
+        summary: 末尾の名前で絞り込み、祖先を残して件数を書き換える
+        condition: '`+count filter=キー:text` の階層の表で、絞り込みの欄に `id`'
+        mock: なし
+        expected: '`aliases[]`・`aliases[].id` だけが出て、`mark.mdmark-tree-hit` が 1 つ、件数が `1 / 4 件`'
+      - name: test_attach_table_tree_when_copied
+        case: 正常
+        summary: コピーのボタンで全体のパスを書き、行の選択を変えない
+        condition: '`aliases[].id` の行のコピーのボタンを押す'
+        mock: '`navigator.clipboard.writeText` を見張る'
+        expected: '`writeText` が `aliases[].id` で 1 回、どの行も `aria-selected="true"` でない'
+      - name: test_attach_table_tree_when_example_hidden
+        case: 正常
+        summary: 見本の表示を切り替える
+        condition: '`見本を隠す` を押す'
+        mock: なし
+        expected: '`mdmark-tree-layout` が `is-example-hidden` を持ち、ボタンが `aria-expanded="false"`・文字 `見本を表示`'
+    status: planned
+    introduced:
+      pr: 303
 test_files:
   - tests/unit/src/interact/index.browser.test.ts
   - tests/unit/src/interact/tables.browser.test.ts
@@ -2035,6 +2298,9 @@ test_files:
   - tests/unit/src/interact/code-folds.browser.test.ts
   - tests/unit/src/code-fold-logic.test.ts
   - tests/unit/src/interact/footnotes.browser.test.ts
+  - tests/unit/src/tree-logic.test.ts
+  - tests/unit/src/interact/table-settings.browser.test.ts
+  - tests/unit/src/interact/table-tree.browser.test.ts
 constants:
   - name: TAB_CHOICE_KEY_PREFIX
     title: 残したタブ名のキーの頭

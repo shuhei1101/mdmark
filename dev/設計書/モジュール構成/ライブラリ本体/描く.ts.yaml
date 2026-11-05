@@ -7,6 +7,7 @@ directory: |-
   ├── libraries.ts        # 印の場所に外部ライブラリのモジュールを描かせる loadLibraries と、埋めたモジュールの控え
   ├── highlight.ts        # 色分けのライブラリを読んでコードブロックを色分けする highlightCodeBlocks と、埋めたモジュールの控え
   ├── highlight-lines.ts  # 色分けした HTML を行に分ける splitHighlightedLines・highlightLines（DOM を使わない）
+  ├── html-scripts.ts     # 埋め込んだ HTML の範囲の ts・js を変換して動かす runHtmlScripts と、変換のライブラリの読み込み・埋めた関数の控え
   └── print.ts            # 印刷の前後で折り畳みを開いて戻す attachPrint
   ```
 diagrams:
@@ -196,6 +197,32 @@ constants:
     status: planned
     introduced:
       pr: 181
+  - name: embeddedHtmlScripts
+    title: 埋めた範囲の関数
+    container: src/html-scripts.ts
+    summary: 書き出した HTML の起動の処理が入れる、範囲のコードの文字から既定のエクスポートを返す関数を引く表。既定は `undefined`
+    value: undefined
+    status: planned
+    introduced:
+      pr: 303
+  - name: HTML_SCRIPTS_REGISTRY
+    title: 範囲の関数の受け取りの鍵
+    container: src/html-scripts.ts
+    summary: '`script` 要素が包んだ関数を渡す、`window` の鍵の名前。動かす間だけ置き、終えたら削除する'
+    value: '"__mdmarkHtmlScript"'
+    status: planned
+    introduced:
+      pr: 303
+  - name: TRANSPILE_OPTIONS
+    title: 範囲のコードの変換の設定
+    container: src/html-scripts.ts
+    summary: '言語ごとの `transform` の設定。どちらも `sourceType: "module"`・`babelrc: false`・`configFile: false`'
+    value: '{ ts: { filename: "range.ts", presets: ["typescript"], plugins: ["transform-modules-commonjs"] }, js: { filename: "range.js", plugins: ["transform-modules-commonjs"] } }'
+    refs:
+      - dev/設計書/外部ライブラリ/babel-standalone#catalogs[API].entries[transform]
+    status: planned
+    introduced:
+      pr: 303
 functions:
   - name: mount
     title: 文書を要素に描く
@@ -475,6 +502,12 @@ functions:
         condition: '`comments` をオンにし、`commentStore` と `docId` を渡して描き、`reloadComments()` と `focusComment("c1")` を呼び、`destroy` の後にもう一度ずつ呼ぶ'
         mock: '`setPartModuleUrl` で `comments` を、`reload`・`focus` の呼び出しを控える `CommentsController` を返すモジュールの URL に差し替える'
         expected: '`destroy` の前は `reload` が 1 回、`focus` が `c1` で 1 回呼ばれる。`destroy` の後の `reloadComments()` は解決し、どちらも呼ばれない'
+      - name: test_mount_when_range_scripts
+        case: 正常
+        summary: 描くたびに範囲のスクリプトを動かし、描き直す前と `destroy` で範囲の `destroy` を呼ぶ
+        condition: '`features` に `{ "html-scripts": true }`。`js` の範囲（根の要素に `data-ran` を付け、`destroy` で数を増やす）を持つ文書を描き、`update`・`destroy` を呼ぶ'
+        mock: '`setEmbeddedHtmlScripts` で範囲のコードの文字から関数を引く表を入れる（終えたら `undefined`）'
+        expected: 描いた後に根の要素が `data-ran` を持ち、`update` の後に `destroy` の数が 1、`destroy` の後に 2
   - name: checkBaseMarkdown
     title: 比較元を検める
     container: src/mount.ts
@@ -619,7 +652,7 @@ functions:
     container: src/print.ts
     kind: 関数
     scope: internal
-    summary: '`beforeprint` で要素の中の閉じた `details`・閉じた節・行の詳細・ファイルツリーの閉じたフォルダ・コードブロックの畳んだ行・列を畳んだ ER 図のテーブルを開き、タブの全ての中身を出し、`afterprint` で開いたものだけを戻す受け取りを `window` に付け、外す関数を返す'
+    summary: '`beforeprint` で要素の中の閉じた `details`・閉じた節・行の詳細・ファイルツリーの閉じたフォルダ・コードブロックの畳んだ行・列を畳んだ ER 図のテーブル・畳んだ階層の表の行・隠した YAML の見本を開き、タブの全ての中身を出し、`afterprint` で開いたものだけを戻す受け取りを `window` に付け、外す関数を返す'
     side_effects: '`window` に受け取りを付ける。`details` の `open` を書き換える'
     args:
       - name: options
@@ -875,6 +908,154 @@ functions:
     status: planned
     introduced:
       pr: 97
+  - name: runHtmlScripts
+    title: 範囲のスクリプトを動かす
+    container: src/html-scripts.ts
+    kind: 関数
+    scope: internal
+    is_async: true
+    summary: 描いた要素の中の `template.mdmark-html-script` を文書の順に変換して動かし、既定のエクスポートの関数を範囲の根の要素で呼ぶ。範囲が返した `destroy` をまとめて呼ぶ関数を返す
+    description: '`embeddedHtmlScripts` があるときは、範囲のコードの文字で関数を引き、変換も `script` 要素も使わない（表に無い範囲は構文エラーと同じ書き方の警告にする）。無いときは `loadTranspiler` で変換のライブラリを 1 回読み、`TRANSPILE_OPTIONS` で CommonJS に変えて `wrapRangeScript` で包む。`script` 要素は `document.head` に置いてすぐ外し、置いている間だけ `window` の `error` を受け取る。`nonce` は `document.querySelector("script[nonce]")` の `nonce` プロパティ（属性ではなく）を使う。変換・評価・呼び出しの失敗は範囲ごとに書き方の警告（`renderSyntaxWarning`）を範囲の前に置き、範囲の通し番号と元のエラーを `console.error` に出して次の範囲へ進む。変換のライブラリを読めないときは全ての範囲の前に知らせの枠（`renderNotice`、名前 `html-scripts`）を置く。待った後に `isCurrent()` が `false` なら何もしない。`template` は動かした後も残す'
+    side_effects: '`document.head` に `script` 要素を一時的に置き、`window` の `HTML_SCRIPTS_REGISTRY` の鍵に受け取りの関数を置く（終えたら削除する）。変換のライブラリを読む。失敗した範囲の前に警告か知らせの枠を置き、`console.error` に出す'
+    args:
+      - name: options
+        type: '{ root: HTMLElement; url: string; isCurrent: () => boolean; cache: Map<string, Promise<Transpiler>>; importModule?: ImportModule }'
+        required: true
+        description: '`root` は描いた要素、`url` は既定を当てた `htmlScripts.url`、`cache` は `mount` ごとに 1 つ作る読み込みの控え、`importModule` はモジュールを読む関数（既定 `(url) => import(url)`）'
+    returns:
+      type: Promise<() => void>
+      description: 範囲の `destroy` を文書の順に 1 回ずつ呼ぶ関数（例外は `console.error` に出して続ける。2 回目からは何もしない）。範囲が無ければ何もしない関数。拒否しない
+    process: |-
+      1. `root` の中の `div.mdmark-html > template.mdmark-html-script` を拾う。無ければ何もしない関数を返す
+      2. `embeddedHtmlScripts` が無ければ、`loadTranspiler` で変換のライブラリを待つ。読めなければ範囲ごとに知らせの枠を置き、何もしない関数を返す
+         - `[error]` 変換のライブラリを読み込めない（URL と元のエラーを `console.error` に出す）
+      3. 待った後に `isCurrent()` が `false` なら何もしない関数を返す
+      4. 範囲ごとに順に次を行う
+         - 既定のエクスポートを得る。`embeddedHtmlScripts` があればコードの文字で引く。無ければ `transform` で変え、`wrapRangeScript` のコードを `script` 要素で動かし、登録された関数を `module`・`exports`・例外を投げる `require` で呼ぶ
+           - `[error]` 変換が例外を投げるか登録が無い→構文エラーの書き方の警告
+         - 既定のエクスポートが関数でなければ書き方の警告を置く
+         - 関数を根の要素で呼び、関数を返したら `destroy` として控える
+           - `[error]` 評価か呼び出しが例外を投げる→例外を投げた旨の書き方の警告
+      5. 控えた `destroy` を呼ぶ関数を返す
+    callees:
+      - '#functions[loadTranspiler]'
+      - '#functions[wrapRangeScript]'
+      - dev/設計書/モジュール構成/ライブラリ本体/部品.ts#functions[renderNotice]
+      - dev/設計書/モジュール構成/ライブラリ本体/部品.ts#functions[renderSyntaxWarning]
+    unit_tests:
+      - name: test_run_html_scripts
+        case: 正常
+        summary: '`ts` を変換して根の要素で呼び、`destroy` を返す'
+        condition: '`ts` の範囲 1 つ（型の注釈と enum を持ち、根の要素に `data-ran` を付け、`destroy` で `data-destroyed` を付ける）'
+        mock: '`importModule` が手元の @babel/standalone 8.1.1 を返す'
+        expected: 根の要素が `data-ran` を持ち、戻りの関数を呼ぶと `data-destroyed` を持つ。`document.head` に `script` が残らず、`window` に受け取りの鍵が残らない
+      - name: test_run_html_scripts_when_js
+        case: 正常
+        summary: '`js` も `export` の文を変えて動かす'
+        condition: '`export const x = 1; export default (root) => { root.dataset.x = String(x) }` の `js` の範囲'
+        mock: 同上
+        expected: 根の要素の `data-x` が `1`
+      - name: test_run_html_scripts_when_invalid
+        case: 異常
+        summary: 関数でない既定のエクスポート・例外・構文エラーの範囲の前に書き方の警告を置き、次の範囲を動かす
+        condition: 既定のエクスポートが数の範囲・呼ぶと例外を投げる範囲・閉じ括弧の足りない範囲・正しい範囲
+        mock: 同上。`console.error` を見張る
+        expected: 先の 3 つの範囲の前に `mdmark-syntax-warning` が 1 つずつ、最後の範囲の関数が呼ばれ、`console.error` が 3 回
+      - name: test_run_html_scripts_when_transpiler_unavailable
+        case: 異常
+        summary: 変換のライブラリを読めないとき、全ての範囲の前に知らせの枠を置く
+        condition: '`ts` と `js` の範囲 1 つずつ'
+        mock: '`importModule` が拒否する'
+        expected: 2 つの範囲の前に `mdmark-notice` が 1 つずつ、どの関数も呼ばれない。戻りの Promise は解決する
+      - name: test_run_html_scripts_when_embedded
+        case: 正常
+        summary: 埋めた関数の表があるときは、変換のライブラリも `script` 要素も使わない
+        condition: '`setEmbeddedHtmlScripts` で範囲のコードの文字から関数を引く表を入れる（終えたら `undefined`）'
+        mock: '`importModule` と `document.head.append` を見張る'
+        expected: 表の関数が根の要素で呼ばれ、`importModule` と `append` が呼ばれない
+      - name: test_run_html_scripts_when_stale
+        case: 正常
+        summary: 読み終える前に描き直したら動かさない
+        condition: '`isCurrent` が `false` を返す'
+        mock: 同上
+        expected: 関数が呼ばれない
+    status: planned
+    introduced:
+      pr: 303
+  - name: loadTranspiler
+    title: 変換のライブラリを読む
+    container: src/html-scripts.ts
+    kind: 関数
+    scope: internal
+    is_async: true
+    summary: '`url` を `document.baseURI` を基準に解決して `importModule` で読み、既定のエクスポート（無ければモジュール）の `disableScriptTags` を呼んで、`transform` を持つものを返す。同じ `cache` では同じ URL を 1 回だけ読む'
+    args:
+      - name: options
+        type: '{ url: string; cache: Map<string, Promise<Transpiler>>; importModule: ImportModule }'
+        required: true
+        description: '`Transpiler` は `{ transform: (code: string, options: object) => { code: string } }`'
+    returns:
+      type: Promise<Transpiler>
+      description: '`transform` を持たないときは `Error` で拒否する'
+    unit_tests:
+      - name: test_load_transpiler
+        case: 正常
+        summary: 1 回だけ読み、`disableScriptTags` を呼ぶ
+        condition: 同じ `cache` で 2 回呼ぶ
+        mock: '`importModule` が `{ default: { transform, disableScriptTags } }` を返す'
+        expected: '`importModule` と `disableScriptTags` が 1 回ずつ呼ばれ、2 つの戻りが同じ `transform` を持つ'
+      - name: test_load_transpiler_when_no_transform
+        case: 異常
+        summary: '`transform` を持たないモジュールは拒否する'
+        condition: 空のモジュール
+        mock: '`importModule` が `{}` を返す'
+        expected: '`Error` で拒否する'
+    status: planned
+    introduced:
+      pr: 303
+  - name: wrapRangeScript
+    title: 範囲のコードを包む
+    container: src/html-scripts.ts
+    kind: 関数
+    scope: internal
+    summary: CommonJS に変えたコードを `(module, exports, require) => { … }` の関数で包み、`window[HTML_SCRIPTS_REGISTRY](通し番号, 関数)` を呼ぶ `script` 要素の中身の文字を返す
+    description: コードの中の `</script` は `<\/script` に替える。包む関数の後ろに改行を置き、コードの最後の行のコメントで括弧が閉じないようにする
+    args:
+      - name: options
+        type: '{ code: string; index: number }'
+        required: true
+        description: '`code` は CommonJS のコード、`index` は範囲の通し番号'
+    returns:
+      type: string
+      description: '`script` 要素の中身'
+    unit_tests:
+      - name: test_wrap_range_script
+        case: 正常
+        summary: 登録の呼び出しで包み、行のコメントと `</script` で壊れない
+        condition: '`exports.default = () => "</script>" // 末尾`、`index` が 2'
+        mock: なし
+        expected: 戻りを `new Function` なしに評価できる形で、`HTML_SCRIPTS_REGISTRY` の鍵と `2` を含み、`</script` を含まない
+    status: planned
+    introduced:
+      pr: 303
+  - name: setEmbeddedHtmlScripts
+    title: 埋めた範囲の関数を入れる
+    container: src/html-scripts.ts
+    kind: 関数
+    scope: internal
+    summary: '`embeddedHtmlScripts` を置き換える。`undefined` で変換のライブラリを読む形に戻す'
+    side_effects: '`embeddedHtmlScripts` を書き換える'
+    args:
+      - name: scripts
+        type: Map<string, () => unknown> | undefined
+        required: true
+        description: 範囲のコードの文字から、既定のエクスポートを返す関数を引く表
+    returns:
+      type: void
+      description: なし
+    status: planned
+    introduced:
+      pr: 303
 notes:
   単体テストの実行場所: このページの関数は DOM を使うため、単体テストを `tests/unit/src/{mount,libraries,highlight,print}.browser.test.ts` に置き（DOM を使わない `highlight-lines.ts` は `tests/unit/src/highlight-lines.test.ts` で `unit` プロジェクト）、Vitest のプロジェクト `unit-browser`（Chromium、`tests/unit/**/*.browser.test.ts`）で流す。`unit` プロジェクトは `*.browser.test.ts` を除く
 test_files:
@@ -884,3 +1065,4 @@ test_files:
   - tests/unit/src/highlight.browser.test.ts
   - tests/unit/src/highlight-lines.test.ts
   - tests/unit/src/print.browser.test.ts
+  - tests/unit/src/html-scripts.browser.test.ts

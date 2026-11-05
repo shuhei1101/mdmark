@@ -7,6 +7,7 @@ directory: |-
   ├── sections.ts     # 節の囲み
   ├── tables.ts       # 表の種類・機能・絞り込みと、表の属性・列と行の色・多段の見出しと行見出しとセルの結合
   ├── table-cells.ts  # 表の `^^`・`<<` のセルの結合の計画（トークンを使わない）
+  ├── table-tree.ts   # `tree=` の表の階層の行・型・必須・既定のセルと、`example=` の見本を表の下へ移す処理
   ├── collapse.ts     # 表・タブ・ステップの折り畳みの指定（closed・open・title=）の読み取り
   ├── views.ts        # ビューの印の囲み
   ├── row-details.ts  # 行の詳細
@@ -22,7 +23,7 @@ directory: |-
   ├── cards.ts        # リンクと添付のカード
   ├── figures.ts      # 図表の番号と参照
   ├── toc.ts          # 目次
-  ├── html.ts         # 埋め込んだ HTML
+  ├── html.ts         # 埋め込んだ HTML と、範囲の css・ts・js
   ├── code-blocks.ts  # コードブロックの題・行番号・行の強調とコードの行の印・畳む行・色分けの対象の言語
   ├── warnings.ts     # 書き方の警告を差し込む助け
   └── tokens.ts       # 記法のコアルールが共有するトークンの助け（印の読み取り・閉じの印の探索・機能の判定）
@@ -72,6 +73,21 @@ data_models:
       - name: check
         type: number[]
         description: '`check=` で真偽値を ✓ と空欄で出す列の位置。表に無い列名は入れない'
+      - name: tree
+        type: number | undefined
+        description: '`tree=` で階層にするキーの列の位置。表に無い列名では入れない'
+      - name: treeType
+        type: number | undefined
+        description: '`type=` の列の位置。`tree` の無い表・表に無い列名では入れない'
+      - name: treeRequired
+        type: number | undefined
+        description: '`required=` の列の位置。`tree` の無い表・表に無い列名では入れない'
+      - name: treeDefault
+        type: number | undefined
+        description: '`default=` の列の位置。`tree` の無い表・表に無い列名では入れない'
+      - name: example
+        type: string | undefined
+        description: '`example=` の見出しの文字。`tree` の無い表では入れない（見出しがあるかは `linkTreeExamples` が確かめる）'
   - name: TreeNode
     title: ツリーの項目
     container: src/parts/tree.ts
@@ -446,7 +462,7 @@ functions:
     container: src/render/syntax/tables.ts
     kind: 関数
     scope: internal
-    summary: 表の印の引数と表の見出しから `TableSpec` を作る。印が無い表は `default`。`closed`・`open`・`title=` は `readCollapse` で読み、その項目を `warnings` に入れる。`hide=` は `columns`、`total=` は `total`、`pin=` は `pin` を付けた表でだけ読み、`wide=`・`check=` はどの表でも読む。機能の無い表のキー・先頭の列の `hide=`・表に無い列名・知らない計算は警告にする。`header-rows=`・`row-header=` は正の整数として読み取り、数でない値・`header-rows=` の表の行の数以上の値・`row-header=` の表の列の数以上の値は既定にして警告にする
+    summary: 表の印の引数と表の見出しから `TableSpec` を作る。`tree=` は見出しにある列名のときだけ読み（`tree` を持つ表は `features` から `sort` を除く）、`type=`・`required=`・`default=`・`example=` は `tree` を持つ表でだけ読む。`tree` が無い表のこれらのキーと表に無い列名は警告にする。印が無い表は `default`。`closed`・`open`・`title=` は `readCollapse` で読み、その項目を `warnings` に入れる。`hide=` は `columns`、`total=` は `total`、`pin=` は `pin` を付けた表でだけ読み、`wide=`・`check=` はどの表でも読む。機能の無い表のキー・先頭の列の `hide=`・表に無い列名・知らない計算は警告にする。`header-rows=`・`row-header=` は正の整数として読み取り、数でない値・`header-rows=` の表の行の数以上の値・`row-header=` の表の列の数以上の値は既定にして警告にする
     args:
       - name: args
         type: MdmarkMarkArgs | undefined
@@ -525,7 +541,7 @@ functions:
     container: src/render/syntax/tables.ts
     kind: 関数
     scope: internal
-    summary: コアルール。表に読み上げの名前と `tabindex`、セルに列名を付ける（今の処理）。`table` がオンなら、表の印の範囲の表と囲まない表を `readTableSpec` の指定で部品『表』の囲み（`data-kind`・`data-features`・`data-filter`・`data-hide`・`data-total`・折り畳み）に入れ（折り畳みの見出しは `title` か `表（{本文の行の数} 行）`）、`rowlink` の表は本文の各行に `rowIdOf` の `id`（`taken` は `env.headings` の ID と前の行の ID）を付けて先頭のセルに行へのリンクを置き、警告を囲みの頭に差し込む。`+total` の表は `findUnreadableTotals` で `sum`・`avg` の列の数として読めないセルを探し、列と計算ごとに 1 つずつの警告（値の並びは読めない値を `codes` で行内のコードにして `・` でつなぐ）を表の上に差し込む。閉じの印が無ければ文書の終わりまでを範囲にして警告を差し込む。表の範囲は `table_open` と `table_close` の入れ子の数で数え、自分の `table_open` に対応する `table_close` までにする。範囲の中の表（行の詳細の中の表）も部品『表』の囲みに入れ、当てる表の印の範囲は外の表の `table_open` より後ろで開くものに限る（無ければ `default`。外の表の印の指定は当てない）。表の範囲の中の表の印のトークンは、外の表と一緒に移さず使い切る。本文の行の数・`rowlink`・`total` は、入れ子の数が自分の表と同じ行だけを対象にする。セルの列名は、見出しを表ごとに積み、`table_close` で外の表の見出しに戻して付ける。`table` がオンなら、表のマーカーの範囲の表と囲まない表に `readTableColors` の色を当て、強調する列の `th`・`td` のトークンに class `mdmark-col-highlight` と `data-color`、色を付ける本文の行の `tr` のトークンに `data-color` を付け（どちらも `data-mdmark-own` を付ける）、読めない色の指定を表の囲みの頭の警告の項目に入れる。`pin` は囲みの `data-pin`、`check` は囲みの `data-check` に写す。`wide` の列の `th`・`td` のトークンに class `mdmark-wide`、`check` の列の `th`・`td` のトークンに class `mdmark-align-center` を付ける。`check` の列の本文のセルの中身が `true`・`false` のときは、`td` のトークンに `data-value` を付け、中身のトークンを `renderCheckCell` の HTML に `markOwn` を掛けた 1 つのトークンに替える（どれも `data-mdmark-own` を付ける）。表のマーカーの範囲の表は、`headRows` が 2 以上なら本文の先頭の `headRows - 1` 行を `thead` へ移し、`rowHeader` の列の本文のセルを `<th scope="row">` にし、セルの文字の格子を `planCellMerges` に渡して結合を当てる。見出しの行は始まりのセルに `rowspan`・`colspan`（`colspan` を持つセルは `scope="colgroup"`、ほかは `scope="col"`）を付けて結合したセルのトークンを削除し、本文の行は結合したセルの中身を始まりのセルの中身のトークンのコピーに替えて `data-merge` と `hidden` を付け、始まりのセルに `rowspan`・`colspan` を付ける。`mergeColumns` を `data-merge-columns` に写し、`warnings` を表の囲みの頭の警告の項目に入れる。追加した属性はどれも `data-mdmark-own` を持つトークンに付ける。表のマーカーの範囲の外の表は結合しない
+    summary: コアルール。表に読み上げの名前と `tabindex`、セルに列名を付ける（今の処理）。`table` がオンなら、表の印の範囲の表と囲まない表を `readTableSpec` の指定で部品『表』の囲み（`data-kind`・`data-features`・`data-filter`・`data-hide`・`data-total`・折り畳み）に入れ（折り畳みの見出しは `title` か `表（{本文の行の数} 行）`）、`rowlink` の表は本文の各行に `rowIdOf` の `id`（`taken` は `env.headings` の ID と前の行の ID）を付けて先頭のセルに行へのリンクを置き、警告を囲みの頭に差し込む。`+total` の表は `findUnreadableTotals` で `sum`・`avg` の列の数として読めないセルを探し、列と計算ごとに 1 つずつの警告（値の並びは読めない値を `codes` で行内のコードにして `・` でつなぐ）を表の上に差し込む。閉じの印が無ければ文書の終わりまでを範囲にして警告を差し込む。表の範囲は `table_open` と `table_close` の入れ子の数で数え、自分の `table_open` に対応する `table_close` までにする。範囲の中の表（行の詳細の中の表）も部品『表』の囲みに入れ、当てる表の印の範囲は外の表の `table_open` より後ろで開くものに限る（無ければ `default`。外の表の印の指定は当てない）。表の範囲の中の表の印のトークンは、外の表と一緒に移さず使い切る。本文の行の数・`rowlink`・`total` は、入れ子の数が自分の表と同じ行だけを対象にする。セルの列名は、見出しを表ごとに積み、`table_close` で外の表の見出しに戻して付ける。`table` がオンなら、表のマーカーの範囲の表と囲まない表に `readTableColors` の色を当て、強調する列の `th`・`td` のトークンに class `mdmark-col-highlight` と `data-color`、色を付ける本文の行の `tr` のトークンに `data-color` を付け（どちらも `data-mdmark-own` を付ける）、読めない色の指定を表の囲みの頭の警告の項目に入れる。`pin` は囲みの `data-pin`、`check` は囲みの `data-check` に写す。`reorder` の表で `headRows` が 2 以上なら、最下段の見出しのセルのトークンに `headerGroupsOf` の結合した見出しの位置を `data-group` で付ける。`tree` の表は囲みに `data-tree` を写し、表の範囲のトークンを `decorateTreeTable` に渡す。`wide` の列の `th`・`td` のトークンに class `mdmark-wide`、`check` の列の `th`・`td` のトークンに class `mdmark-align-center` を付ける。`check` の列の本文のセルの中身が `true`・`false` のときは、`td` のトークンに `data-value` を付け、中身のトークンを `renderCheckCell` の HTML に `markOwn` を掛けた 1 つのトークンに替える（どれも `data-mdmark-own` を付ける）。表のマーカーの範囲の表は、`headRows` が 2 以上なら本文の先頭の `headRows - 1` 行を `thead` へ移し、`rowHeader` の列の本文のセルを `<th scope="row">` にし、セルの文字の格子を `planCellMerges` に渡して結合を当てる。見出しの行は始まりのセルに `rowspan`・`colspan`（`colspan` を持つセルは `scope="colgroup"`、ほかは `scope="col"`）を付けて結合したセルのトークンを削除し、本文の行は結合したセルの中身を始まりのセルの中身のトークンのコピーに替えて `data-merge` と `hidden` を付け、始まりのセルに `rowspan`・`colspan` を付ける。`mergeColumns` を `data-merge-columns` に写し、`warnings` を表の囲みの頭の警告の項目に入れる。追加した属性はどれも `data-mdmark-own` を持つトークンに付ける。表のマーカーの範囲の外の表は結合しない
     description: 今の `src/render/parser.ts` の `decorateTables` をここへ移す。並べ替え・ピン止め・絞り込みのボタンは `mount` が付ける
     args:
       - name: state
@@ -996,7 +1012,7 @@ functions:
   - name: buildEmbeddedHtml
     title: 埋め込んだ HTML を描く
     container: src/render/syntax/html.ts
-    summary: コアルール。`html` がオンのとき、`<!-- html -->` の範囲ごとに言語 `html` の `fence` を数え、1 つなら範囲のトークンを `html_block` 1 つに置き換える。0 ・ 2 つ以上なら `pushWarning` で書き方の警告を差し込み、範囲の中身はそのまま残す。オフのときは何もしない（印は `dropMarks` が取り除く）
+    summary: コアルール。`html` がオンのとき、`<!-- html -->` の範囲ごとに言語 `html` の `fence` を数え、1 つなら範囲のトークンを `html_block` 1 つに置き換える。`html-scripts` がオンのときは、範囲の言語 `css`・`ts`・`js` の `fence` も読み（`readRangeScripts`）、`css` を `scopeCss` で根の要素に限った `style.mdmark-html-style` を根の要素の先頭に、`ts`・`js` をエスケープした文字の `template.mdmark-html-script`（`data-lang`）を末尾に置き、根の要素に文書の中の範囲の通し番号を `data-html-scope` で付ける（どれも `markOwn`）。オフのときは `css`・`ts`・`js` の `fence` を範囲の `html_block` の後ろにそのまま残す。`ts` と `js` を両方持つ範囲と同じ言語を 2 つ持つ範囲は書き方の警告を差し込み、`template` を置かない。0 ・ 2 つ以上なら `pushWarning` で書き方の警告を差し込み、範囲の中身はそのまま残す。オフのときは何もしない（印は `dropMarks` が取り除く）
     description: |-
       置き換える HTML は次の順で作る。
 
@@ -1068,6 +1084,18 @@ functions:
         condition: '範囲の HTML に `<mdmark-param>` と `strength` の定義、`env.labels` が `{ paramCopy: "コピー" }`'
         mock: なし
         expected: '`div.mdmark-html button.mdmark-param-copy` の文字が `コピー`'
+      - name: test_build_embedded_html_when_range_scripts
+        case: 正常
+        summary: '`html-scripts` がオンのとき、`css` を根の要素に限った `style` にし、`ts` を `template` に入れる'
+        condition: '`features` に `{ "html-scripts": true }`。範囲に `html`・`css`（`.box { color: red }`）・`ts` の `fence`'
+        mock: なし
+        expected: '`div.mdmark-html[data-html-scope="0"]` の先頭に `style.mdmark-html-style`（中身が `scopeCss` の戻り）、末尾に `template.mdmark-html-script[data-lang="ts"]` があり、`<pre>` が無い'
+      - name: test_build_embedded_html_when_range_scripts_off
+        case: 正常
+        summary: '`html-scripts` がオフのとき、`css`・`ts` をコードのまま残す'
+        condition: '`features` を渡さない。範囲は上と同じ'
+        mock: なし
+        expected: '`div.mdmark-html` に `style`・`template` が無く、範囲の後ろに `<pre><code class="language-css">` と `<pre><code class="language-ts">`'
     refs:
       - dev/設計書/モジュール構成/ライブラリ本体/描画.ts#functions[sanitizeEmbedded]
       - dev/設計書/モジュール構成/ライブラリ本体/図.ts#functions[readDefinition]
@@ -2430,6 +2458,139 @@ functions:
     returns:
       type: Token[]
       description: 定義の囲みの外のトークン（同じトークンを指す）
+  - name: decorateTreeTable
+    title: 階層の表の行を作る
+    container: src/render/syntax/table-tree.ts
+    kind: 関数
+    scope: internal
+    summary: '`tree` の表の範囲のトークンの、本文の各行の `tr` に `data-path`・`data-parent`・`data-depth`・ class を付け、表に無い親の行のトークンを差し込む。キー・型・必須・既定の列のセルを替える'
+    description: 行の計画は DOM もトークンも使わない `planTreeRows` で決める。キーのセルの中身は `renderTreeKeyCell` の HTML、型のセルは `renderTypeCell` の HTML に替える。必須の列の `th`・`td` のトークンは削除し、その列の文字が `✓`・`true` の行を必須として `renderTreeKeyCell` に渡す。既定の列の空でないセルの中身を `<span class="mdmark-tree-default">` で囲む。補った行は列の数の空の `td`（キーのセルだけ中身を持つ）。追加した属性とトークンはどれも `data-mdmark-own` を持つ
+    side_effects: '`state.tokens` の表の範囲を書き換える'
+    args:
+      - name: options
+        type: '{ state: StateCore; start: number; end: number; spec: TableSpec }'
+        required: true
+        description: '`start`・`end` は表の `table_open`・`table_close` のトークンの位置、`spec` は `readTableSpec` の結果（`tree` を持つ）'
+    returns:
+      type: void
+      description: なし
+    callees:
+      - dev/設計書/モジュール構成/ライブラリ本体/操作.ts#functions[planTreeRows]
+      - dev/設計書/モジュール構成/ライブラリ本体/部品.ts#functions[renderTreeKeyCell]
+      - dev/設計書/モジュール構成/ライブラリ本体/部品.ts#functions[renderTypeCell]
+    unit_tests:
+      - name: test_decorate_tree_table
+        case: 正常
+        summary: 表に無い親の行を補い、行にパスと深さを付ける
+        condition: '`<!-- table: data tree=キー -->` の表。キーは `features.table`・`features.html`・`aliases[].id`'
+        mock: なし
+        expected: '`render` の HTML の `tr.mdmark-tree-row` の `data-path` が `features`・`features.table`・`features.html`・`aliases[]`・`aliases[].id` の順で、`features`・`aliases[]` が `is-virtual has-children`、`aliases[].id` が `data-depth="1"`・`data-parent="aliases[]"`'
+      - name: test_decorate_tree_table_when_columns
+        case: 正常
+        summary: 型をバッジとチップにし、必須の列を出さず * にし、既定を囲む
+        condition: '`tree=キー type=型 required=必須 default=既定` の表。`features.table` は `bool`・`✓`・`true`、`aliases[].type` は `ref \| custom`'
+        mock: なし
+        expected: '`mdmark-type-badge` の `data-type="bool"`、`ref`・`custom` の `mdmark-type-chip` があり、`必須` の `th` が無く、`features.table` の行だけに `mdmark-tree-required`、`<span class="mdmark-tree-default">true</span>` がある'
+    status: planned
+    introduced:
+      pr: 303
+  - name: linkTreeExamples
+    title: 見本を表の下へ移す
+    container: src/render/syntax/table-tree.ts
+    kind: 関数
+    scope: internal
+    summary: コアルール。`example` を持つ階層の表ごとに、文字が一致する見出しの直下のタブの範囲のトークンを表の直後の `aside.mdmark-tree-example` に移し、表と見本を `div.mdmark-tree-layout` で囲む。見本の `yaml` のコードブロックの行に `yamlLinePaths` のパスを付ける
+    description: '`decorateTables`・`buildTabs` の後に置く。見出しが無いか、直下にタブの範囲を持たないときは `pushWarning` で表の前に書き方の警告を差し込み、見本を置かない。見出しは元の場所に残す。コードブロックの行は、コードブロックの行と同じ分け方の `span.mdmark-yaml-line` にし、キーを持つ行に `data-path` を付ける'
+    side_effects: '`state.tokens` を書き換える'
+    args:
+      - name: state
+        type: StateCore
+        required: true
+        description: markdown-it の状態
+    returns:
+      type: void
+      description: なし
+    callees:
+      - dev/設計書/モジュール構成/ライブラリ本体/操作.ts#functions[yamlLinePaths]
+      - '#functions[pushWarning]'
+    unit_tests:
+      - name: test_link_tree_examples
+        case: 正常
+        summary: 見出しの下のタブを表の下へ移し、見本の行にパスを付ける
+        condition: '`tree=キー example=設定の見本` の表と、見出し `設定の見本` の下の `最小`・`エイリアス` のタブ'
+        mock: なし
+        expected: '表の直後に `aside.mdmark-tree-example` があり 2 つのタブを持ち、見出しが元の場所にある。`  - id: terms` の行が `data-path="aliases[].id"` を持つ'
+      - name: test_link_tree_examples_when_heading_missing
+        case: 異常
+        summary: 見出しが無い `example=` は書き方の警告にし、見本を置かない
+        condition: '`tree=キー example=見本` の表だけの文書'
+        mock: なし
+        expected: 表の前に `mdmark-syntax-warning` があり、`mdmark-tree-example` が無い
+    status: planned
+    introduced:
+      pr: 303
+  - name: readRangeScripts
+    title: 範囲の css・ts・js を読む
+    container: src/render/syntax/html.ts
+    kind: 関数
+    scope: internal
+    summary: '`<!-- html -->` の範囲の `fence` を言語ごとに数え、`{ html, css, script, warnings }` を返す'
+    description: '`html` は 1 つだけ許す。`css`・`ts`・`js` はそれぞれ 1 つまでで、`ts` と `js` はどちらか 1 つ。取れない組み合わせは `warnings` に入れ、`script` を返さない。これら以外の言語の `fence` は今までどおり範囲の中の Markdown として扱う'
+    args:
+      - name: tokens
+        type: Token[]
+        required: true
+        description: 範囲の中のトークン
+    returns:
+      type: '{ html: Token | undefined; css: string | undefined; script: { lang: "ts" | "js"; code: string } | undefined; warnings: WarningItem[] }'
+      description: 読んだ言語ごとの中身と警告
+    unit_tests:
+      - name: test_read_range_scripts
+        case: 正常
+        summary: '`html`・`css`・`ts` を 1 つずつ読む'
+        condition: '`html`・`css`・`ts` の `fence` を 1 つずつ持つ範囲'
+        mock: なし
+        expected: '`html` が `fence` のトークン、`css` が中身、`script` が `{ lang: "ts", code }`、`warnings` が空'
+      - name: test_read_range_scripts_when_both_languages
+        case: 異常
+        summary: '`ts` と `js` を両方持つ範囲は警告を返し `script` を返さない'
+        condition: '`html`・`ts`・`js` の `fence` を持つ範囲'
+        mock: なし
+        expected: '`script` が `undefined` で、`warnings` に 1 件'
+      - name: test_read_range_scripts_when_duplicate
+        case: 異常
+        summary: 同じ言語を 2 つ持つ範囲は警告を返す
+        condition: '`html`・`css`・`css` の `fence` を持つ範囲'
+        mock: なし
+        expected: '`warnings` に 1 件'
+    status: planned
+    introduced:
+      pr: 303
+  - name: headerGroupsOf
+    title: 結合した見出しの範囲を求める
+    container: src/render/syntax/table-cells.ts
+    kind: 関数
+    scope: internal
+    summary: '`planCellMerges` の見出しの結合の計画から、最下段の列ごとに、その列を覆う上の段の `colspan` を持つ見出しの `{段}:{位置}` を返す（無ければ `undefined`）'
+    description: 複数の段が覆うときは最も下の段を選ぶ。トークンを使わない
+    args:
+      - name: options
+        type: '{ head: string[][]; plan: CellMergePlan }'
+        required: true
+        description: '`head` は見出しの行のセルの文字、`plan` は `planCellMerges` の結果'
+    returns:
+      type: Array<string | undefined>
+      description: 最下段の列ごとの範囲
+    unit_tests:
+      - name: test_header_groups_of
+        case: 正常
+        summary: 上の段の結合した見出しが覆う列だけに範囲を返す
+        condition: 1 段目 `名前`・`設定`・`<<`・`<<`・`備考`、2 段目 `^^`・`型`・`既定`・`必須`・`^^`
+        mock: なし
+        expected: '`[undefined, "0:1", "0:1", "0:1", undefined]`'
+    status: planned
+    introduced:
+      pr: 303
 notes:
   コアルールの順: 描画の `createParser` が登録する。印 → 機能の重ね合わせ → 見出し → 用語集の表 → 行の詳細 → ビュー → 表 → タブ → ステップ → 注意書き → ファイルツリー → バッジ → 本文の文字の色 → 図の部品 → 埋め込んだ HTML → コードブロック → 画像の属性と種類 → 図表の番号 → ギャラリー → 画像と動画と音声の図 → カード → 用語の下線 → 節 → 目次 → 関連文書の一覧 → タスクリスト → www の自動リンク → 残った印を取り除く。行の詳細は表の囲みより前、節は記法の警告を差し込んだ後、目次は見出しの ID を付けた後。埋め込んだ HTML は用語の下線より前に置き、`html_block` にした中身を用語の下線が重ねて照合しないようにする。画像の属性は図表の番号より前に読み、図表の番号がギャラリーに番号を渡してからギャラリーを囲む。残った画像だけの段落は、その後に図にする
   部品の差し込み方: 中身を持つ部品（節・タブ・注意書き・行の詳細・図表の番号・表）は、中身の代わりに `SLOT_MARKER` を渡して HTML を作り、`markOwn` を掛けてから `SLOT_MARKER` の前後で分け、開きと閉じの `html_block` のトークンで中身のトークンを挟む。中身の HTML には `markOwn` を掛けない。見出し・表など Markdown から作ったトークンに付ける記法の属性は、同じトークンに `data-mdmark-own` も付ける。埋め込んだ HTML は例外で、`sanitizeEmbedded` で先に落とした中身にも `markOwn` を掛ける
@@ -2455,3 +2616,4 @@ test_files:
   - tests/unit/src/render/syntax/cards.test.ts
   - tests/unit/src/render/syntax/table-cells.test.ts
   - tests/unit/src/render/syntax/footnotes.test.ts
+  - tests/unit/src/render/syntax/table-tree.test.ts

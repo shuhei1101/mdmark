@@ -7,6 +7,7 @@ directory: |-
   ├── parser.ts    # markdown-it の解析器と、足すコアルール
   ├── marks.ts     # 印を読み、置き換えるコアルール
   ├── sanitize.ts  # sanitize-html の設定と sanitize
+  ├── scope-css.ts # 埋め込んだ HTML の範囲の css を範囲の根の要素の中だけに当てる scopeCss（DOM を使わない）
   └── syntax/      # 記法ごとのコアルール（『記法』）
   ```
 data_models:
@@ -105,7 +106,7 @@ constants:
   - name: SANITIZE_OPTIONS
     title: 落とす設定
     container: src/render/sanitize.ts
-    summary: sanitize-html に渡す設定。記法の要素と属性を許し、誰が出したかは `sanitize` の `transformTags` が見分ける。`allowedTags` に `nav`・`figure`・`figcaption` を足し、`allowedAttributes`・`allowedClasses` に記法が出す class（部品設計の HTML）・`data-kind`・`data-features`・`data-filter`・`data-section`・`data-row`・`data-mdmark-own`・見出しと `figure`・`div` の `id`・`colspan`・`rowspan`・`scope`・`aria-label`・`role`（`note`・`status`）を足す。今の値は下の entries。記法が出す `video`・`audio` と、`controls`・`autoplay`・`muted`・`loop`・`playsinline`・`preload`・`poster`・`data-color`・`data-align`・`data-nolightbox`・`data-gif`・`data-card`・`data-file-kind` も許す（文書に書いた `video`・`audio`・`source` は `sanitize` が落とす）
+    summary: sanitize-html に渡す設定。記法の要素と属性を許し（mdmark が出した `style.mdmark-html-style` と `template.mdmark-html-script`・`data-html-scope`・`data-lang` を含む。文書に書いた `style`・`template` は落とす）、誰が出したかは `sanitize` の `transformTags` が見分ける。`allowedTags` に `nav`・`figure`・`figcaption` を足し、`allowedAttributes`・`allowedClasses` に記法が出す class（部品設計の HTML）・`data-kind`・`data-features`・`data-filter`・`data-section`・`data-row`・`data-mdmark-own`・見出しと `figure`・`div` の `id`・`colspan`・`rowspan`・`scope`・`aria-label`・`role`（`note`・`status`）を足す。今の値は下の entries。記法が出す `video`・`audio` と、`controls`・`autoplay`・`muted`・`loop`・`playsinline`・`preload`・`poster`・`data-color`・`data-align`・`data-nolightbox`・`data-gif`・`data-card`・`data-file-kind` も許す（文書に書いた `video`・`audio`・`source` は `sanitize` が落とす）
     value: 下の entries
     entries:
       - key: allowedTags
@@ -709,8 +710,66 @@ functions:
     status: planned
     introduced:
       pr: 69
+  - name: scopeCss
+    title: 範囲の css を根の要素の中に限る
+    container: src/render/scope-css.ts
+    kind: 関数
+    scope: internal
+    summary: 範囲の `css` の各規則のセレクタの前に `.mdmark-html[data-html-scope="{scope}"]` を付け、`:scope` をその根の要素のセレクタに置き換えた CSS を返す
+    description: 要件の `未確定`（範囲の `css` を範囲の HTML にだけ当てる手段）の案 A。対応ブラウザの下限（Chrome 99・Firefox 98・Safari 16.4）で効き、範囲の中の mdmark の部品に `dist/index.css` が当たるため、`@scope` と Shadow DOM は使わない。文字列・コメント・括弧の中の `,`・`{`・`}` を区切りとして扱わない。`@media`・`@supports`・`@container`・`@layer` の中の規則も同じく書き換え、`@keyframes`・`@font-face` の中は書き換えない。`@import` は落とす（外へ要求させない）。`html`・`body`・`:root` で始まるセレクタはその部分を根の要素に置き換える。DOM を使わず、`render` と同じく Node でも動く
+    args:
+      - name: options
+        type: '{ css: string; scope: number }'
+        required: true
+        description: '`css` は範囲の `css` のコードブロックの中身、`scope` は範囲の通し番号'
+    returns:
+      type: string
+      description: 書き換えた CSS。`</style` の並びは `<\/style` に替える
+    process: |-
+      1. 文字列とコメントを飛ばしながら、最上位の規則を `{` と対応する `}` で切り出す
+      2. 規則ごとに次を行う
+         - `@import` は落とす
+         - `@media`・`@supports`・`@container`・`@layer` は中身に 1 からを当て直す
+         - `@keyframes`・`@font-face` と他の `@` の規則はそのまま残す
+         - それ以外はセレクタを最上位の `,` で分け、各セレクタの `:scope`・先頭の `html`・`body`・`:root` を根の要素のセレクタに置き換え、置き換えなかったセレクタの前に根の要素のセレクタと空白を付ける
+      3. 書き換えた規則をつなげ、`</style` を `<\/style` に替えて返す
+    unit_tests:
+      - name: test_scope_css
+        case: 正常
+        summary: セレクタの前に根の要素を付け、`,` で分けたそれぞれに付ける
+        condition: '`css` が `.box, p > a { color: red }`、`scope` が `0`'
+        mock: なし
+        expected: '`.mdmark-html[data-html-scope="0"] .box, .mdmark-html[data-html-scope="0"] p > a { color: red }`'
+      - name: test_scope_css_when_scope_selector
+        case: 正常
+        summary: '`:scope`・`:root`・`body` を根の要素に置き換える'
+        condition: '`:scope.is-open .box { display: block } :root { --x: 1 } body p { margin: 0 }`、`scope` が `2`'
+        mock: なし
+        expected: '`.mdmark-html[data-html-scope="2"].is-open .box`・`.mdmark-html[data-html-scope="2"] { --x: 1 }`・`.mdmark-html[data-html-scope="2"] p` の規則になる'
+      - name: test_scope_css_when_at_rules
+        case: 正常
+        summary: '`@media` の中は書き換え、`@keyframes` はそのまま、`@import` は落とす'
+        condition: '`@import url(x.css); @media (max-width: 600px) { .a { color: red } } @keyframes k { from { opacity: 0 } to { opacity: 1 } }`'
+        mock: なし
+        expected: '`@import` が無く、`@media` の中が `.mdmark-html[data-html-scope="0"] .a`、`@keyframes k` の `from`・`to` がそのまま'
+      - name: test_scope_css_when_strings_and_comments
+        case: 正常
+        summary: 文字列・コメント・括弧の中の `,`・`{`・`}` で区切らない
+        condition: '`/* a, b { } */ .a[data-x="1,2"], :is(.b, .c) { content: "}" }`'
+        mock: なし
+        expected: 'セレクタが `.a[data-x="1,2"]` と `:is(.b, .c)` の 2 つに分かれ、宣言の `content: "}"` がそのまま残る'
+      - name: test_scope_css_when_style_end_tag
+        case: 正常
+        summary: '`</style` の並びで `style` 要素が閉じないように替える'
+        condition: '`.a { content: "</style>" }`'
+        mock: なし
+        expected: 戻りに `</style` が無く、`<\/style` がある
+    status: planned
+    introduced:
+      pr: 303
 test_files:
   - tests/unit/src/render/index.test.ts
   - tests/unit/src/render/parser.test.ts
   - tests/unit/src/render/marks.test.ts
   - tests/unit/src/render/sanitize.test.ts
+  - tests/unit/src/render/scope-css.test.ts

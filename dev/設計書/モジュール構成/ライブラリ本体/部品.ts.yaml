@@ -10,7 +10,7 @@ directory: |-
   ├── embed.ts                     # 読み込み中の枠の renderEmbed
   ├── embed.stories.yaml           # 読み込み中の枠のストーリー（Loading）
   ├── syntax-warning.ts            # 書き方の警告の renderSyntaxWarning
-  ├── table.ts                     # 表の renderTable・renderTableTools・renderTableBar・renderTotalRows・renderCopyPanel・renderFoldedColumn・renderCheckCell
+  ├── table.ts                     # 表の renderTable・renderTableTools・renderTableBar・renderTableSettings・renderTreeKeyCell・renderTypeCell・renderTreeTools・renderTotalRows・renderCopyPanel・renderFoldedColumn・renderCheckCell
   ├── callout.ts                   # 注意書きの renderCallout
   ├── tabs.ts                      # タブの renderTabs
   ├── steps.ts                     # ステップの renderSteps
@@ -733,7 +733,7 @@ functions:
     container: src/parts/table.ts
     kind: 関数
     scope: internal
-    summary: '`count`・`columns`・`total`・`copy` のうち付けた機能の帯（件数・`列設定`・`集計`・`表をコピー` と、読み上げに使う `role="status"` の `mdmark-table-status`）と、列設定のメニュー（列名のチェックボックス、先頭の列は `disabled`、`先頭の列は隠せません`、`リセット`）・集計のメニュー（題 `表示する集計` と、集計する計算の `value` を持つチェックボックス）・コピーの形式のメニュー（`Markdown の表`・`TSV` の形式の名前と使いどころ）の HTML を返す。`集計` のボタンは出さない計算があれば `is-active` にし、読み上げの名前に `（{隠している数} 件を非表示にしています）` を加える。`表をコピー` のボタンは文言の後ろに `chevron-down` を持つ。アイコンは lucide の `columns-3`・`sigma`・`copy`・`check`・`circle-alert`・`chevron-down`（`sigma` は `src/parts/icons.ts` に足す）。`mount` が描いた表に足すのにも使う'
+    summary: '`count`・`columns`・`reorder`・`total`・`copy` のうち付けた機能の帯（件数・テーブル設定のアイコンだけのボタン（`settings-2`。隠した列の数のバッジと、隠した列があるとき `テーブル設定（{数} 列を非表示）` の `aria-label`）・`集計`・`表をコピー` と、読み上げに使う `role="status"` の `mdmark-table-status`）と、テーブル設定のパネル（`renderTableSettings`）・集計のメニュー（題 `表示する集計` と、集計する計算の `value` を持つチェックボックス）・コピーの形式のメニュー（`Markdown の表`・`TSV` の形式の名前と使いどころ）の HTML を返す。`集計` のボタンは出さない計算があれば `is-active` にし、読み上げの名前に `（{隠している数} 件を非表示にしています）` を加える。`表をコピー` のボタンは文言の後ろに `chevron-down` を持つ。アイコンは lucide の `columns-3`・`sigma`・`copy`・`check`・`circle-alert`・`chevron-down`（`sigma` は `src/parts/icons.ts` に足す）。`mount` が描いた表に足すのにも使う'
     args:
       - name: options
         type: '{ id: string; features: string[]; labels: string[]; shown: number; total: number; hiddenColumns: number[]; openColumns?: boolean; copyState?: "idle" | "copied" | "failed"; totals?: TotalCalc[]; shownTotals?: TotalCalc[]; openTotals?: boolean; openCopy?: boolean }'
@@ -1647,6 +1647,116 @@ functions:
         condition: '`items: []`'
         mock: なし
         expected: 空文字
+  - name: renderTableSettings
+    title: テーブル設定のパネルを返す
+    container: src/parts/table.ts
+    kind: 関数
+    scope: internal
+    summary: 部品設計『表』のテーブル設定のパネル（題・列名の一覧・案内）の HTML を返す
+    description: 題は `columns` があれば `表示と並び順`、`reorder` だけなら `並び順`。一覧は `order` の順に並べ、ピン止めの列・結合した見出しの範囲ごと・範囲の外の列に分け、分けたまとまりが 2 つ以上あるときだけまとまりの見出しを置く。各行は `reorder` のときつまみ（どちらの向きにも動かせないとき `disabled`）、`columns` のとき目のアイコン（Markdown に記載した先頭の列は `disabled`）を持つ。ストーリーと `mount` が同じ HTML を使う
+    args:
+      - name: options
+        type: '{ id: string; columns: string[]; order: number[]; hidden: number[]; features: TableFeature[]; groups: Array<string | undefined>; pinned: number; dragging?: { column: number; target: number; side: "before" | "after" } }'
+        required: true
+        description: '`columns` は元の列の順の列名、`order` は今の列の順、`groups` は列ごとの結合した見出しの範囲、`pinned` は留めている列の数'
+    returns:
+      type: string
+      description: '`div.mdmark-table-settings` の HTML（`hidden` は付けない。開閉は呼ぶ側が決める）'
+    unit_tests:
+      - name: test_render_table_settings
+        case: 正常
+        summary: つまみと目のアイコンを持つ一覧を今の列の順で返す
+        condition: '`columns` が `["名前","型","既定","説明"]`、`order` が `[3,0,2,1]`、`hidden` が `[3]`、`features` に `columns`・`reorder`'
+        mock: なし
+        expected: 題が `表示と並び順`、行の `data-column` が `3,0,2,1` の順で、説明の目のアイコンが `aria-pressed="true"`・`aria-label="「説明」を表示"`、名前の目のアイコンが `disabled`
+      - name: test_render_table_settings_when_reorder_only
+        case: 正常
+        summary: '`reorder` だけのときは題が `並び順` で目のアイコンを置かない'
+        condition: '`features` に `reorder` だけ'
+        mock: なし
+        expected: 題が `並び順`、`mdmark-table-settings-eye` が無い
+      - name: test_render_table_settings_when_groups
+        case: 正常
+        summary: ピン止めと結合した見出しの範囲で一覧を分け、動かせないつまみを `disabled` にする
+        condition: '`groups` が `[undefined,"0:1","0:1","0:1",undefined]`、`pinned` が 1'
+        mock: なし
+        expected: '`mdmark-table-settings-group` が 3 つで、名前と備考のつまみが `disabled`'
+    status: planned
+    introduced:
+      pr: 303
+  - name: renderTreeKeyCell
+    title: 階層の表のキーのセルを返す
+    container: src/parts/table.ts
+    kind: 関数
+    scope: internal
+    summary: キーのセルの中身（深さの数の縦線・末尾の名前・配列の `[]`・必須の *）の HTML を返す
+    description: 開閉のボタンとコピーのボタンは含めない（`renderTreeTools` が `mount` で足す）。名前はエスケープする
+    args:
+      - name: options
+        type: '{ name: string; depth: number; required: boolean }'
+        required: true
+        description: '`name` は `splitKeyPath` の末尾の名前'
+    returns:
+      type: string
+      description: '`span.mdmark-tree-cell` の HTML'
+    unit_tests:
+      - name: test_render_tree_key_cell
+        case: 正常
+        summary: 深さの数の縦線と、配列の `[]`・必須の * を置く
+        condition: '`{ name: "aliases[]", depth: 1, required: true }`'
+        mock: なし
+        expected: '`mdmark-tree-guide` が 1 つ、`mdmark-tree-name` の文字が `aliases`、`mdmark-tree-array` が `[]`、`mdmark-tree-required` がある'
+    status: planned
+    introduced:
+      pr: 303
+  - name: renderTypeCell
+    title: 型のセルを返す
+    container: src/parts/table.ts
+    kind: 関数
+    scope: internal
+    summary: '`a \| b` の形なら値ごとの `span.mdmark-type-chip`、それ以外は `span.mdmark-type-badge`（`data-type`）の HTML を返す。空の文字は空を返す'
+    args:
+      - name: text
+        type: string
+        required: true
+        description: 型の列のセルの文字
+    returns:
+      type: string
+      description: HTML
+    unit_tests:
+      - name: test_render_type_cell
+        case: 正常
+        summary: 列挙はチップ、それ以外はバッジにする
+        condition: '`bool` と `ref | custom` と空の文字'
+        mock: なし
+        expected: '`<span class="mdmark-type-badge" data-type="bool">bool</span>`、`ref`・`custom` の `mdmark-type-chip` 2 つ、空の文字'
+    status: planned
+    introduced:
+      pr: 303
+  - name: renderTreeTools
+    title: 階層の表のボタンを返す
+    container: src/parts/table.ts
+    kind: 関数
+    scope: internal
+    summary: 階層の行の開閉のボタン（`chevron-down`。`aria-expanded`・`{パス} を畳む`）・パスのコピーのボタン（`全体のパスをコピー`）・見本の表示を切り替えるボタン（`見本を隠す` / `見本を表示`）の HTML を返す
+    args:
+      - name: options
+        type: '{ kind: "toggle" | "copy" | "example"; path?: string; expanded?: boolean; controls?: string }'
+        required: true
+        description: '`kind` で返すボタンを選ぶ。`path` は行のパス、`expanded` は開いているか、`controls` は見本の `id`'
+    returns:
+      type: string
+      description: '`button` の HTML'
+    unit_tests:
+      - name: test_render_tree_tools
+        case: 正常
+        summary: 開閉・コピー・見本のボタンを返す
+        condition: '`{ kind: "toggle", path: "aliases[]", expanded: false }`・`{ kind: "copy" }`・`{ kind: "example", expanded: true, controls: "t-example" }`'
+        mock: なし
+        expected: '`aria-expanded="false"`・`aria-label="aliases[] を開く"` のボタン、`aria-label="全体のパスをコピー"` のボタン、`aria-controls="t-example"` で文字が `見本を隠す` のボタン'
+    status: planned
+    introduced:
+      pr: 303
 notes:
   ストーリー: '`*.stories.yaml` は `title`（部品設計の `story`）と、部品設計の `states` ごとの `stories[].name`・`stories[].parameters.server.id`（部品の id。ファイル名の頭）・`stories[].args` を持つ。`embed` の配列の引数は `a,b` の 1 つの文字列で書く。この PR で足す部品の配列・オブジェクトの引数は JSON の文字列で書く（戻し方は『部品の描画』）。中身を持つ部品のストーリーは、中身に部品ごとの見本の HTML を渡す'
   印の付け方: 部品の関数は `markOwn` を掛けない。記法のコアルールと `mount` の操作が、差し込む前に掛ける
