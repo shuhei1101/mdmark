@@ -23,6 +23,7 @@ import {
   bundleModule,
   bundleViewer,
   cacheFetchText,
+  compileHtmlScripts,
   createViewerEntry,
   type FetchText,
   hasDynamicImport,
@@ -365,11 +366,21 @@ export async function prepareEmbeds(options: EmbedOptions): Promise<{
         }
       : {}),
   };
+  // `html-scripts` がオンの文書の範囲の `ts`・`js` を、開いたときに変換のライブラリを読まずに動かせるよう変えておく
+  const compiled = await compileHtmlScripts({
+    documents: [...originals.entries()].map(([path, markdown]) => ({
+      path,
+      markdown,
+    })),
+    config: loaded.config,
+  });
+  warnings.push(...compiled.warnings);
   const embeds: ViewerEmbeds = {
     libraries: modules,
     extensions,
     ...(syntax ? { syntax } : {}),
     view: usedParts({ markdowns: [...originals.values()] }),
+    ...(compiled.scripts.length > 0 ? { htmlScripts: compiled.scripts } : {}),
   };
   return { payload, embeds, themeCss, warnings };
 }

@@ -16,6 +16,7 @@ import {
   normalizeDiffMode,
 } from "./diff/source.ts";
 import { highlightCodeBlocks } from "./highlight.ts";
+import { runHtmlScripts, type Transpiler } from "./html-scripts.ts";
 import { attachBackToTop } from "./interact/back-to-top.ts";
 import { attachInteractions } from "./interact/index.ts";
 import { attachSideToc, type SideTocState } from "./interact/side-toc.ts";
@@ -221,6 +222,10 @@ export function mount(el: HTMLElement, opts: MountOptions): MountHandle {
   const sideTocState: SideTocState = { open: false, pinned: false };
   // 色分けのライブラリのモジュールの控え（`mount` ごとに 1 つ。描き直しでは読み直さない）
   const syntaxModules = new Map<string, Promise<{ default?: unknown }>>();
+  // 範囲のスクリプトの変換のライブラリの読み込みの控え（`mount` ごとに 1 つ）
+  const transpilers = new Map<string, Promise<Transpiler>>();
+  // 今の文書の範囲のスクリプトが返した `destroy` をまとめて呼ぶ関数
+  let destroyScripts: (() => void) | undefined;
   // コメントの機能に読み書きの関数が要ることを出したか（`mount` ごとに 1 回だけ出す）
   const warned = { missingStore: false };
 
@@ -228,6 +233,8 @@ export function mount(el: HTMLElement, opts: MountOptions): MountHandle {
   const draw = (markdown: string, coloredFrom?: string): void => {
     generation += 1;
     const current = generation;
+    destroyScripts?.();
+    destroyScripts = undefined;
     detachBackToTop?.();
     detachBackToTop = undefined;
     detachInteractions?.();
@@ -320,6 +327,21 @@ export function mount(el: HTMLElement, opts: MountOptions): MountHandle {
       isCurrent: () => !destroyed && generation === current,
       modules: syntaxModules,
     });
+    if (features["html-scripts"] === true) {
+      // 読み込みの完了は待たない。解決する前に描き直したときは、解決したときに片付ける
+      void runHtmlScripts({
+        root: body,
+        url: config.htmlScripts.url,
+        isCurrent: () => !destroyed && generation === current,
+        cache: transpilers,
+      }).then((destroy) => {
+        if (destroyed || generation !== current) {
+          destroy();
+        } else {
+          destroyScripts = destroy;
+        }
+      });
+    }
     parts = attachParts({
       root: body,
       features,
@@ -385,6 +407,8 @@ export function mount(el: HTMLElement, opts: MountOptions): MountHandle {
         return;
       }
       destroyed = true;
+      destroyScripts?.();
+      destroyScripts = undefined;
       detachBackToTop?.();
       detachInteractions?.();
       detachSideToc?.();
