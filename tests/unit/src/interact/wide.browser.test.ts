@@ -53,13 +53,17 @@ test("test_attach_wide_toggles", async () => {
   expect(buttons[0]?.getAttribute("aria-pressed")).toBe("false");
 });
 
-// 狭い幅では帯を隠す（正常系）
+// 親が狭い幅では帯を隠す（正常系）
 test("test_attach_wide_toggles_when_narrow_host", async () => {
   // 準備
   addStyles();
   const { attachWideToggles } = await loadWide();
   const root = createRootFromHtml(RANGES_HTML);
-  root.style.width = "320px";
+  // 描く先の要素の親を本文の幅にする
+  const parent = document.createElement("div");
+  parent.style.width = "320px";
+  root.before(parent);
+  parent.append(root);
   // 実行
   detachers.push(attachWideToggles(root));
   await nextFrame();
@@ -69,4 +73,6 @@ test("test_attach_wide_toggles_when_narrow_host", async () => {
   for (const bar of bars) {
     expect(bar.hidden).toBe(true);
   }
+  parent.replaceWith(root);
+  parent.remove();
 });
