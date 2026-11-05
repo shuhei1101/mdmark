@@ -1,7 +1,12 @@
 import { expect, test } from "vitest";
 import type { ResolvedConfig } from "../../../../src/config.ts";
 import type { MdmarkAlias } from "../../../../src/knowledge/aliases.ts";
-import { STRENGTH_TEXT, wrapDirective } from "../../helpers/diagrams.ts";
+import {
+  INQUIRY_TEXT,
+  STRENGTH_TEXT,
+  WARNINGS_MARKDOWN,
+  wrapDirective,
+} from "../../helpers/diagrams.ts";
 import { innerHtml, plainText } from "../../helpers/html.ts";
 
 /** 描画の処理を読み込む（実装が無い間は各テストが個別に失敗する） */
@@ -137,4 +142,45 @@ test("test_render_document_when_labels_given", async () => {
   // 検証
   expect(plainText(innerHtml(html, "mdmark-param-copy"))).toBe("コピー");
   expect(html).not.toContain("今の値を写す");
+});
+
+// 書き方の警告を場所と種類つきで返す（正常系）
+test("test_collect_warnings", async () => {
+  // 準備
+  const { collectWarnings, render } = await loadRender();
+  const lines = WARNINGS_MARKDOWN.split("\n");
+  expect(lines[0]).toBe("<!-- flow -->");
+  expect(lines[19]).toBe("<!-- tabz -->");
+  expect(lines[21]).toBe("<!-- code: highlight=9 -->");
+  // 実行
+  const warnings = collectWarnings(WARNINGS_MARKDOWN);
+  // 検証
+  expect(warnings.map(({ line, kind }) => ({ line, kind }))).toEqual([
+    { line: 1, kind: "diagram_invalid" },
+    { line: 22, kind: "syntax_warning" },
+  ]);
+  const text = plainText(render(WARNINGS_MARKDOWN)).replace(/\s+/g, " ");
+  for (const warning of warnings) {
+    expect(text).toContain(warning.message);
+  }
+});
+
+// 警告の無い Markdown は空の配列を返す（正常系）
+test("test_collect_warnings_when_clean", async () => {
+  // 準備
+  const { collectWarnings } = await loadRender();
+  const markdown = [
+    wrapDirective("flow", INQUIRY_TEXT),
+    "<!-- table: data -->",
+    "",
+    "| 列 | 値 |",
+    "| --- | --- |",
+    "| a | 1 |",
+    "",
+    "<!-- /table -->",
+  ].join("\n");
+  // 実行
+  const warnings = collectWarnings(markdown);
+  // 検証
+  expect(warnings).toEqual([]);
 });

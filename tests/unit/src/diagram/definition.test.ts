@@ -13,7 +13,9 @@ import {
 import {
   INQUIRY_SEQ_TEXT,
   INQUIRY_TEXT,
+  JUDGEMENT_AUTO_TEXT,
   JUDGEMENT_TEXT,
+  LINKED_TEXT,
   parsed,
   REPLY_TIME_TEXT,
   STRENGTH_TEXT,
@@ -395,4 +397,95 @@ test("test_read_definition_when_er_invalid_values", async () => {
       expect(result.problems[0], String(i)).toContain(word);
     }
   });
+});
+
+// 座標を全て省いた判定フローチャートを配置した定義で返す（正常系）
+test("test_read_definition_when_coordinates_omitted", async () => {
+  // 準備
+  const { readDefinition } = await loadDefinition();
+  // 実行
+  const result = readDefinition("flow", [JUDGEMENT_AUTO_TEXT]);
+  // 検証
+  expect(result.problems).toEqual([]);
+  expect(result.ok).toBe(true);
+  const definition = (result as { definition: MdmarkFlowDefinition })
+    .definition;
+  expect(definition.height).toBe(584);
+  for (const node of definition.nodes) {
+    expect(node).toEqual(
+      expect.objectContaining({
+        x: expect.any(Number),
+        y: expect.any(Number),
+        w: expect.any(Number),
+        h: expect.any(Number),
+      }),
+    );
+  }
+  for (const wire of definition.wires) {
+    expect(Array.isArray(wire.points)).toBe(true);
+  }
+});
+
+// 座標を書いたものと省いたものが混ざる（異常系）
+test("test_read_definition_when_coordinates_mixed", async () => {
+  // 準備
+  const { readDefinition } = await loadDefinition();
+  const definition = parsed<MdmarkFlowDefinition>(JUDGEMENT_AUTO_TEXT);
+  Object.assign(definition.nodes[1] as object, { x: 60, y: 156, w: 280, h: 136 });
+  // 実行
+  const result = readDefinition("flow", [JSON.stringify(definition)]);
+  // 検証
+  expect(result.ok).toBe(false);
+  expect(result.problems[0]).toBe(
+    "座標（x・y・w・h・points・width・height）を書いたものと省いたものが混ざっています。全て書くか、全て省いてください",
+  );
+});
+
+// 判定フローチャート以外の種類で座標を省く（異常系）
+test("test_read_definition_when_coordinates_omitted_not_judgement", async () => {
+  // 準備
+  const { readDefinition } = await loadDefinition();
+  const definition = {
+    title: "処理",
+    scope: "点検",
+    updated: "2026-11-05",
+    nodes: [
+      { id: "recv", kind: "script", name: "受け取る" },
+      { id: "classify", kind: "llm", name: "分類" },
+    ],
+    wires: [{ id: "w1", from: "recv", to: "classify", line: "flow" }],
+  };
+  // 実行
+  const result = readDefinition("flow", [JSON.stringify(definition)]);
+  // 検証
+  expect(result.ok).toBe(false);
+  expect(result.problems[0]).toMatch(
+    /^ノード「分類」の種類 llm では座標を省けません。/,
+  );
+});
+
+// 許さないリンク先だけを返す（正常系）
+test("test_node_link_problems", async () => {
+  // 準備
+  const { nodeLinkProblems } = await loadDefinition();
+  const definition = parsed<MdmarkFlowDefinition>(LINKED_TEXT);
+  const base = definition.nodes[2];
+  if (base === undefined) {
+    throw new Error("見本の 3 つ目のノードが無い");
+  }
+  const hrefs = [
+    "mailto:a@example.com",
+    "javascript:alert(1)",
+    "id:spec#items",
+  ];
+  definition.nodes.push(
+    ...hrefs.map((href, index) => ({ ...base, id: `n${index}`, href })),
+  );
+  // 実行
+  const problems = nodeLinkProblems(definition);
+  // 検証
+  expect(problems).toEqual([
+    { id: "n1", href: "javascript:alert(1)" },
+    { id: "n2", href: "id:spec#items" },
+  ]);
 });

@@ -380,3 +380,40 @@ test("test_run_check_tool_when_base_unknown", async () => {
   expect(error).toBeInstanceOf(CliError);
   expect((error as Error).message).toBe((cli as Error).message);
 });
+
+// text と file・key で mdmark check と同じずれを返す（正常系）
+test("test_run_check_tool_when_text_and_key", async () => {
+  // 準備
+  const { runCheckTool } = await loadTools();
+  const context = await createContext();
+  const markdown = "# 見出し\n\n<!-- tabz -->\n";
+  await writeFiles(context.projectDir, {
+    "mdmark.config.yaml": "index: index.yaml\n",
+    "records.yaml": [
+      "title: 記録",
+      "items:",
+      "  - id: a",
+      "    name: 1 つ目",
+      "    body: |",
+      "      # 見出し",
+      "      本文",
+      "      <!-- tabz -->",
+      "",
+    ].join("\n"),
+  });
+  // 実行
+  const byText = await runCheckTool({ text: markdown }, context);
+  const byKey = await runCheckTool(
+    { file: "records.yaml", key: "items[0].body" },
+    context,
+  );
+  // 検証
+  const pick = (result: typeof byText) =>
+    (result.json?.issues as { file: string; where: string; kind: string }[]).map(
+      ({ file, where, kind }) => ({ file, where, kind }),
+    );
+  expect(pick(byText)).toEqual([{ file: "-", where: "3", kind: "unknown_mark" }]);
+  expect(pick(byKey)).toEqual([
+    { file: "records.yaml", where: "8", kind: "unknown_mark" },
+  ]);
+});
