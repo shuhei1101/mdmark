@@ -361,6 +361,13 @@ export function validateConfig(
     delete config.syntax;
   }
 
+  if (
+    raw["html-scripts"] !== undefined &&
+    !isValidHtmlScripts(raw["html-scripts"], file, issues)
+  ) {
+    delete config["html-scripts"];
+  }
+
   if (raw.assets !== undefined && !isValidAssets(raw.assets, file, issues)) {
     delete config.assets;
   }
@@ -554,6 +561,35 @@ function isValidSyntax(
         file,
         "syntax.url",
         "`syntax.url` は色分けのライブラリの `es/` フォルダの URL かパスの文字列で書いてください。",
+      ),
+    );
+    return false;
+  }
+  return true;
+}
+
+/** 設定の `html-scripts` を検める。キーと値の形でなければ、`url` が文字列でなければ、`schema` のずれを積んで `false` を返す */
+function isValidHtmlScripts(
+  value: unknown,
+  file: string,
+  issues: CheckIssue[],
+): boolean {
+  if (!isRecord(value)) {
+    issues.push(
+      schemaIssue(
+        file,
+        "html-scripts",
+        "`html-scripts` は `url` を持つキーと値で書いてください。",
+      ),
+    );
+    return false;
+  }
+  if (value.url !== undefined && typeof value.url !== "string") {
+    issues.push(
+      schemaIssue(
+        file,
+        "html-scripts.url",
+        "`html-scripts.url` は変換のライブラリの ES モジュールの URL かパスの文字列で書いてください。",
       ),
     );
     return false;
