@@ -180,7 +180,7 @@ export function buildFileTrees(state: StateCore): void {
         ? readTreeOptions(mark)
         : { wrap: false };
     if (options.warning) {
-      out.push(warningBlock(state, options.warning));
+      out.push(warningBlock(state, options.warning, state.tokens[index - 1]));
     }
     out.push(
       ownBlock(

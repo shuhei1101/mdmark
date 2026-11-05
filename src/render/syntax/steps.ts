@@ -88,22 +88,26 @@ export function buildSteps(state: StateCore): void {
     }
     const { collapse, title, warning } = readStepsOptions(mark);
     if (warning) {
-      out.push(warningBlock(state, warning));
+      out.push(warningBlock(state, warning, token));
     }
     const closeIndex = findClose(tokens, index, "steps");
     const end = closeIndex < 0 ? tokens.length : closeIndex;
     if (closeIndex < 0) {
-      out.push(warningBlock(state, unclosedWarning(mark)));
+      out.push(warningBlock(state, unclosedWarning(mark), token));
     }
     const listIndex = tokens
       .slice(index + 1, end)
       .findIndex((candidate) => candidate.type === "ordered_list_open");
     if (listIndex < 0) {
       out.push(
-        warningBlock(state, {
-          message:
-            "`<!-- steps -->` の範囲に、手順にする番号付きリストがありません。手順を `1.` から始まる番号付きリストで書いてください。範囲の中身はそのまま描いています。",
-        }),
+        warningBlock(
+          state,
+          {
+            message:
+              "`<!-- steps -->` の範囲に、手順にする番号付きリストがありません。手順を `1.` から始まる番号付きリストで書いてください。範囲の中身はそのまま描いています。",
+          },
+          token,
+        ),
       );
       continue;
     }

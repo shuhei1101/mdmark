@@ -223,7 +223,7 @@ function route(
   const toCx = to.x + to.w / 2;
   const toCy = to.y + to.h / 2;
   if (b.col > a.col) {
-    // 右の列へ: 同じ行なら横へ、下の行なら右へ出てから下りる
+    // 右の列へ: 同じ行なら横へ、下の行なら右へ出てから下りて上辺へ、上の行なら右へ出てから上がって下辺へ
     if (b.row === a.row) {
       return [
         [from.x + from.w, fromCy],
@@ -233,7 +233,7 @@ function route(
     return [
       [from.x + from.w, fromCy],
       [toCx, fromCy],
-      [toCx, to.y],
+      [toCx, b.row > a.row ? to.y : to.y + to.h],
     ];
   }
   if (b.col === a.col && b.row > a.row) {

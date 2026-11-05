@@ -80,7 +80,7 @@ export function buildDiagrams(state: StateCore): void {
     const closeIndex = findClose(tokens, index, mark.name);
     const end = closeIndex < 0 ? tokens.length : closeIndex;
     if (closeIndex < 0) {
-      out.push(warningBlock(state, unclosedWarning(mark)));
+      out.push(warningBlock(state, unclosedWarning(mark), token));
     }
     const result = readDefinition(
       directive,

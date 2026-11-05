@@ -100,14 +100,20 @@ export function attachRowDetails(state: StateCore): void {
       }
       const warnings: Token[] = [];
       if (closeIndex < 0) {
-        warnings.push(warningBlock(state, unclosedWarning(mark)));
+        warnings.push(
+          warningBlock(state, unclosedWarning(mark), tokens[position]),
+        );
       }
       if (!target) {
         warnings.push(
-          warningBlock(state, {
-            mark: mark.raw,
-            message: `の ${mark.args.args[0] ?? ""} 行目がありません。表は ${table.rows.length} 行です。行の位置を 1〜${table.rows.length} で書いてください。詳細は表の後の本文として描いています。`,
-          }),
+          warningBlock(
+            state,
+            {
+              mark: mark.raw,
+              message: `の ${mark.args.args[0] ?? ""} 行目がありません。表は ${table.rows.length} 行です。行の位置を 1〜${table.rows.length} で書いてください。詳細は表の後の本文として描いています。`,
+            },
+            tokens[position],
+          ),
         );
       } else {
         counter += 1;

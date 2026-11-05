@@ -39,8 +39,14 @@ function plainMessage(warning: SyntaxWarning): string {
 }
 
 /** 警告の `html_block` を作り、`meta.warning` に集める警告を入れる */
-function makeWarningToken(state: StateCore, warning: SyntaxWarning) {
-  const { kind = "syntax_warning", line, ...view } = warning;
+function makeWarningToken(
+  state: StateCore,
+  warning: SyntaxWarning,
+  source: Token | undefined,
+) {
+  const { kind = "syntax_warning", ...view } = warning;
+  delete view.line;
+  const line = warning.line ?? source?.map?.[0];
   const token = ownBlock(state, renderSyntaxWarning(view));
   const meta: WarningMeta = {
     kind,
@@ -51,18 +57,23 @@ function makeWarningToken(state: StateCore, warning: SyntaxWarning) {
   return token;
 }
 
-/** 書き方の警告の HTML に印を掛けて `html_block` にし、`index` の位置に差し込む */
+/** 書き方の警告の HTML に印を掛けて `html_block` にし、`index` の位置に差し込む。`source` は警告の元になったマーカーのトークン（範囲なら開きのマーカー）で、その行を警告の場所にする */
 export function pushWarning(
   state: StateCore,
   index: number,
   warning: SyntaxWarning,
+  source?: Token,
 ): void {
-  state.tokens.splice(index, 0, makeWarningToken(state, warning));
+  state.tokens.splice(index, 0, makeWarningToken(state, warning, source));
 }
 
-/** 書き方の警告の `html_block` を作る（差し込む位置を呼ぶ側が決めるとき） */
-export function warningBlock(state: StateCore, warning: SyntaxWarning) {
-  return makeWarningToken(state, warning);
+/** 書き方の警告の `html_block` を作る（差し込む位置を呼ぶ側が決めるとき）。`source` は `pushWarning` と同じ */
+export function warningBlock(
+  state: StateCore,
+  warning: SyntaxWarning,
+  source?: Token,
+) {
+  return makeWarningToken(state, warning, source);
 }
 
 /** 集めた書き方の警告 1 つ（元の行番号は 1 から） */
