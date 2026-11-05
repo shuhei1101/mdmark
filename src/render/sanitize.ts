@@ -9,6 +9,9 @@ const TEXT_ALIGN_PATTERN = /(?:^|;)\s*text-align\s*:\s*([a-z]+)/;
 /** mdmark が出した要素に付ける印の属性 */
 const OWN_ATTRIBUTE = "data-mdmark-own";
 
+/** `sanitizeEmbedded` が書いた人の class を残した要素に付ける印。mdmark が出した要素のうち印を持つものは、`sanitize` が class を絞らない */
+const KEEP_CLASS_ATTRIBUTE = "data-mdmark-keep-class";
+
 /** 文書に書いた生の HTML が持ってよい記法の class: 列の揃えと、外部ライブラリの印の場所 */
 const RAW_CLASS_PATTERN = /^(?:mdmark-align-|mdmark-embed$)/;
 
@@ -450,13 +453,29 @@ const EMBEDDED_OPTIONS: sanitizeHtml.IOptions = {
   nonTextTags: EMBEDDED_NON_TEXT_TAGS,
 };
 
-/** 埋め込んだ HTML の中身を落とす: `script` 要素・`on` で始まる属性・`javascript:` の URL・許していない `style` の宣言を落とし、`button` は `type="button"` で残す。`onText` は本文の文字（エスケープ済み。`a`・`code`・`pre`・`button`・見出しの中を除く）を受け、置き換える HTML を返す */
+/** 埋め込んだ HTML の中身を落とす: `script` 要素・`on` で始まる属性・`javascript:` の URL・許していない `style` の宣言を落とし、`button` は `type="button"` で残す。`onText` は本文の文字（エスケープ済み。`a`・`code`・`pre`・`button`・見出しの中を除く）を受け、置き換える HTML を返す。`keepClasses` が真なら、書いた人の class を記法の class を除いて残す */
 export function sanitizeEmbedded(
   html: string,
   onText: (text: string) => string,
+  keepClasses = false,
 ): string {
   return sanitizeHtml(html, {
     ...EMBEDDED_OPTIONS,
+    ...(keepClasses
+      ? {
+          allowedAttributes: {
+            ...EMBEDDED_OPTIONS.allowedAttributes,
+            "*": [
+              ...((
+                EMBEDDED_OPTIONS.allowedAttributes as Record<string, string[]>
+              )["*"] ?? []),
+              "class",
+              KEEP_CLASS_ATTRIBUTE,
+            ],
+          },
+          allowedClasses: undefined,
+        }
+      : {}),
     textFilter: (text, tagName) =>
       TEXT_FILTER_SKIP_TAGS.has(tagName) ? text : onText(text),
     transformTags: {
@@ -482,6 +501,18 @@ export function sanitizeEmbedded(
         if (tagName === "button") {
           next.type = "button";
         }
+        delete next[KEEP_CLASS_ATTRIBUTE];
+        if (keepClasses && next.class !== undefined) {
+          const classes = next.class
+            .split(/\s+/)
+            .filter((name) => name !== "" && !SYNTAX_CLASS_PATTERN.test(name));
+          if (classes.length > 0) {
+            next.class = classes.join(" ");
+            next[KEEP_CLASS_ATTRIBUTE] = "";
+          } else {
+            delete next.class;
+          }
+        }
         dropDataUrls(tagName, next);
         // 図の部品の要素は、書いたものを中身ごと落とす（`button` だけは残す）
         if (DIAGRAM_ONLY_TAGS.has(tagName) && tagName !== "button") {
@@ -493,10 +524,23 @@ export function sanitizeEmbedded(
   });
 }
 
-/** 許可していないものを落とした HTML を返す。`nonce` と同じ印を持つ要素は mdmark が記法から出したものとして、記法の class・`data-*`・`id` などを残す */
+/** `SANITIZE_OPTIONS` の `allowedClasses` のとおり、要素 `tagName` が持ってよい class か */
+function isAllowedClass(tagName: string, name: string): boolean {
+  const allowed = SANITIZE_OPTIONS.allowedClasses as Record<string, string[]>;
+  return [...(allowed["*"] ?? []), ...(allowed[tagName] ?? [])].some(
+    (pattern) =>
+      pattern.endsWith("*")
+        ? name.startsWith(pattern.slice(0, -1))
+        : name === pattern,
+  );
+}
+
+/** 許可していないものを落とした HTML を返す。`nonce` と同じ印を持つ要素は mdmark が記法から出したものとして、記法の class・`data-*`・`id` などを残す。そのうち `sanitizeEmbedded` が書いた人の class を残した要素は、class を絞らない */
 export function sanitize(html: string, nonce: string): string {
   return sanitizeHtml(html, {
     ...SANITIZE_OPTIONS,
+    // class は `transformTags` で `SANITIZE_OPTIONS` の `allowedClasses` のとおりに絞る
+    allowedClasses: { "*": [/^\S+$/] },
     transformTags: {
       // 全ての要素: mdmark が出した要素以外から記法の属性を落とし、`text-align` の値を class に移し、`style` は常に消す
       "*": (tagName, attribs) => {
@@ -505,6 +549,18 @@ export function sanitize(html: string, nonce: string): string {
           ? { ...attribs }
           : dropSyntaxAttributes(tagName, attribs);
         delete next[OWN_ATTRIBUTE];
+        const keepClass = own && attribs[KEEP_CLASS_ATTRIBUTE] !== undefined;
+        delete next[KEEP_CLASS_ATTRIBUTE];
+        if (!keepClass && next.class !== undefined) {
+          const classes = next.class
+            .split(/\s+/)
+            .filter((name) => name !== "" && isAllowedClass(tagName, name));
+          if (classes.length > 0) {
+            next.class = classes.join(" ");
+          } else {
+            delete next.class;
+          }
+        }
         // 元の行番号は、誰が出した要素でも 0 以上の整数のときだけ残す
         if (
           next[SOURCE_LINE_ATTRIBUTE] !== undefined &&

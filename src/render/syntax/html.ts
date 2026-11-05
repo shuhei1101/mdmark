@@ -340,7 +340,11 @@ function buildHtml(options: {
   });
   const lookup: TermLookup = (word) => dictionary.term(word)?.meaning;
   const taken = takeParts({ source, state, paramsBefore, lookup });
-  const sanitized = sanitizeEmbedded(taken.html, termsFilter(state));
+  const sanitized = sanitizeEmbedded(
+    taken.html,
+    termsFilter(state),
+    scripts !== undefined,
+  );
   const hinted = applyHints({
     html: sanitized,
     env,

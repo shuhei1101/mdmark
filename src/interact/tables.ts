@@ -34,7 +34,7 @@ import {
 } from "../table-logic.ts";
 import { COPIED_NOTICE_MS, copyText } from "./clipboard.ts";
 import { attachTableSettings, reorderRowCells } from "./table-settings.ts";
-import { attachTableTree } from "./table-tree.ts";
+import { attachTableTree, TREE_FOLDED_ATTRIBUTE } from "./table-tree.ts";
 import { cellValue, visibleText } from "./text.ts";
 
 export { compareCells, type FilterValue, matchesFilter };
@@ -1052,11 +1052,19 @@ function attachTable(
     clearTimeout(copyTimer);
     closeCopyPanel(false);
     const columns = order.filter((column) => !hiddenColumns.has(column));
+    // 階層の表は、畳んで隠した行も含め、補った行を除き、キーの列を全体のパスで書く
+    const copied = (row: HTMLTableRowElement): boolean =>
+      treeColumn === undefined
+        ? !row.hidden
+        : !row.classList.contains("is-virtual") &&
+          (!row.hidden || row.hasAttribute(TREE_FOLDED_ATTRIBUTE));
+    const copiedText = (row: HTMLTableRowElement, column: number): string =>
+      column === treeColumn ? (row.dataset.path ?? "") : cellText(row, column);
     const rows = [
       columns.map((column) => labels[column] ?? ""),
       ...bodyRows(table)
-        .filter((row) => !row.hidden)
-        .map((row) => columns.map((column) => cellText(row, column))),
+        .filter(copied)
+        .map((row) => columns.map((column) => copiedText(row, column))),
     ];
     const text =
       format === "markdown" ? tableToMarkdown(rows) : tableToTsv(rows);

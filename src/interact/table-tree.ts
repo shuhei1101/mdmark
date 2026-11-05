@@ -247,14 +247,15 @@ export function attachTableTree(options: {
   const example = layout?.querySelector<HTMLElement>(
     ":scope > .mdmark-tree-example",
   );
-  /** 選んだ行と同じパスの見本の行に印を付ける（無ければどの行にも付けない） */
+  /** 選んだ行と同じパスの、開いているタブの見本の行に印を付ける（無ければどの行にも付けない） */
   const linkExample = (path: string | undefined): void => {
     for (const line of example?.querySelectorAll<HTMLElement>(
       ".mdmark-yaml-line",
     ) ?? []) {
+      const shown = line.closest('[role="tabpanel"]')?.hasAttribute("hidden");
       line.classList.toggle(
         "is-linked",
-        path !== undefined && line.dataset.path === path,
+        path !== undefined && line.dataset.path === path && shown !== true,
       );
     }
   };
@@ -351,6 +352,16 @@ export function attachTableTree(options: {
   };
   if (example && layout) {
     example.addEventListener("click", onExampleClick);
+    // タブを切り替えたら、開いたタブの見本に印を付け直す
+    const panels = new MutationObserver(() => {
+      linkExample(selected?.dataset.path);
+    });
+    panels.observe(example, {
+      subtree: true,
+      attributes: true,
+      attributeFilter: ["hidden"],
+    });
+    cleanups.push(() => panels.disconnect());
     const bar = document.createElement("div");
     bar.className = "mdmark-tree-bar";
     bar.innerHTML = renderTreeTools({
