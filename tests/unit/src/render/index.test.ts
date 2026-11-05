@@ -159,9 +159,10 @@ test("test_collect_warnings", async () => {
     { line: 1, kind: "diagram_invalid" },
     { line: 22, kind: "syntax_warning" },
   ]);
-  const text = plainText(render(WARNINGS_MARKDOWN)).replace(/\s+/g, " ");
+  // 本文と項目をつなぐ空白は画面の文字に無いため、空白を除いて比べる
+  const text = plainText(render(WARNINGS_MARKDOWN)).replace(/\s+/g, "");
   for (const warning of warnings) {
-    expect(text).toContain(warning.message);
+    expect(text).toContain(warning.message.replace(/\s+/g, ""));
   }
 });
 
