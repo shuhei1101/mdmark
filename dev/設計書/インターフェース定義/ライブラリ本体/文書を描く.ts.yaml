@@ -4457,9 +4457,250 @@ flows:
     test: test_normal_when_side_toc_at_scroll_edge
     refs:
       - dev/設計書/シナリオ/単一ユースケース/目次と見出しのアンカーで節へ移る#scenarios[正常シナリオ（描く先の要素が画面より狭いときも右側の目次を画面の右端に出す）]
+  - name: 正常系（束ねていない名前のアイコンを読む）
+    summary: 束ねていない名前のアイコンだけを、使う名前の分だけ jsDelivr から読んで描く
+    setup:
+      - name: 配布物を読んだページ
+        description: 正常系と同じ
+      - name: 束ねていない名前のアイコンを持つ Markdown
+        description: 見出しに `` `icon:sailboat` ``、段落に `` `icon:anchor` `` を 2 つと `` `icon:flag` `` を持つ文書
+        notes: '`flag` は束ねた名前'
+      - name: Mock
+        description: '`https://cdn.jsdelivr.net/npm/lucide@*/dist/esm/icons/*.mjs` を、依存の lucide の同じファイルを返す手元の応答に差し替え、要求を数える'
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        participant J as jsDelivr
+        P->>M: mount(el, { markdown })
+        M->>P: 束ねた名前のアイコンと空の場所を描く
+        M->>J: import(sailboat.mjs)・import(anchor.mjs)
+        J-->>M: IconNode
+        M->>P: 空の場所に svg を入れる
+    expected:
+      - '`sailboat` と 2 つの `anchor` の場所の `span.mdmark-inline-icon` の中に `svg` がある'
+      - Lucide への要求が `sailboat.mjs` と `anchor.mjs` の 1 件ずつで、`flag.mjs` への要求と `HEAD` が無い
+      - 見出しの読み上げ名にアイコンの名前が含まれない
+      - 束ねていない名前の `icon:` を持たない文書では、Lucide への要求が 0 件
+    test: test_normal_when_unbundled_icons
+    refs:
+      - dev/設計書/シナリオ/単一ユースケース/外部ライブラリを使うときだけ読み込む#scenarios[正常シナリオ（束ねていない名前のアイコン）]
+  - name: 異常系（Lucide に無いアイコンの名前）
+    summary: Lucide に無い名前の場所を行内のコードに戻し、書き方の警告を置く
+    setup:
+      - name: 配布物を読んだページ
+        description: 正常系と同じ
+      - name: Lucide に無い名前のアイコンを持つ Markdown
+        description: 段落に `` `icon:no-such-icon` `` と `` `icon:anchor` `` を持つ文書
+      - name: Mock
+        description: 正常系（束ねていない名前のアイコンを読む）と同じ。`no-such-icon.mjs` は `GET`・`HEAD` とも 404 を返す
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        participant J as jsDelivr
+        P->>M: mount(el, { markdown })
+        M->>J: import(no-such-icon.mjs)
+        J-->>M: 404
+        M->>J: HEAD no-such-icon.mjs
+        J-->>M: 404
+        M->>P: 行内のコードに戻し、書き方の警告を置く
+    expected:
+      - '`no-such-icon` の場所が `<code>icon:no-such-icon</code>` で、段落の前の `div.mdmark-syntax-warning` の本文に `no-such-icon` がある'
+      - '`anchor` の場所に `svg` がある'
+      - 知らせの枠が無い
+    test: test_error_when_icon_not_in_lucide
+    refs:
+      - dev/設計書/シナリオ/単一ユースケース/外部ライブラリを使うときだけ読み込む#scenarios[異常シナリオ（Lucide に無いアイコンの名前）]
+  - name: 異常系（Lucide のアイコンを読めない・知らせの枠）
+    summary: アイコンを読めないとき、場所を行内のコードに戻し、知らせの枠を 1 つだけ置く
+    setup:
+      - name: 配布物を読んだページ
+        description: 正常系と同じ
+      - name: 束ねていない名前のアイコンを持つ Markdown
+        description: 正常系（束ねていない名前のアイコンを読む）と同じ文書
+      - name: Mock
+        description: Lucide への `GET`・`HEAD` を全て通信の失敗にする
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        participant J as jsDelivr
+        P->>M: mount(el, { markdown })
+        M->>J: import(sailboat.mjs)・import(anchor.mjs)
+        J--xM: 失敗
+        M->>J: HEAD
+        J--xM: 失敗
+        M->>P: 行内のコードに戻し、知らせの枠を 1 つ置く
+    expected:
+      - '`sailboat`・`anchor` の場所が `<code>icon:sailboat</code>`・`<code>icon:anchor</code>`'
+      - 文書に `div.mdmark-notice` が 1 つだけあり、本文に Lucide のアイコンを読めないことがある
+      - 見出しと段落のほかの本文がある
+      - '`console.error` に URL が出る'
+    test: test_error_when_icons_unreachable
+    refs:
+      - dev/設計書/シナリオ/単一ユースケース/外部ライブラリを使うときだけ読み込む#scenarios[異常シナリオ（Lucide を読めない）]
+  - name: 正常系（wide の範囲の幅を切り替える）
+    summary: wide の範囲を広げて描き、範囲の上のボタンで本文の幅と切り替える
+    setup:
+      - name: 配布物を読んだページ
+        description: 正常系と同じ。画面と描く先の要素の幅は 1280px、`--mdmark-content-width` は `640px`
+      - name: wide の範囲を持つ Markdown
+        description: '段落、`<!-- wide -->` で 8 列の表を囲んだ範囲、`<!-- wide: closed -->` で 8 列の表を囲んだ範囲、段落を持つ文書'
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        actor U as 読む人
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: mount(el, { markdown })
+        M->>P: 範囲の上に幅の切り替えのボタンを置く
+        U->>P: 1 つ目のボタンを押す
+        M->>P: 範囲を本文の幅にする
+        U->>P: 2 つ目のボタンで Enter を押す
+        M->>P: 範囲を広げる
+    expected:
+      - 描いた直後、1 つ目の範囲の幅が 640px より広く 1280px 以下で、直前のボタンが `aria-label="広げて表示"`・`aria-pressed="true"` で文字を持たない
+      - 描いた直後、2 つ目の範囲の幅が段落の幅と等しく、ボタンが `aria-pressed="false"`
+      - 1 つ目のボタンを押した後、範囲の幅が段落の幅と等しく `aria-pressed="false"` で、ボタンの位置と読み上げ名が押す前と同じ
+      - 2 つ目のボタンで Enter を押した後、範囲の幅が段落より広い
+      - 画面と描く先の要素の幅を 390px にすると、ボタンが表示されず、範囲の幅が段落の幅と等しく、文書に横のスクロールが無い
+    test: test_normal_when_wide_toggled
+    refs:
+      - dev/設計書/シナリオ/単一ユースケース/図と表を本文の幅より広げる#scenarios[正常シナリオ（広げた幅と本文の幅を切り替える）]
+      - dev/設計書/シナリオ/単一ユースケース/図と表を本文の幅より広げる#scenarios[正常シナリオ（本文の幅から始める）]
+      - dev/設計書/シナリオ/単一ユースケース/図と表を本文の幅より広げる#scenarios[正常シナリオ（狭い画面）]
+  - name: 正常系（wide の範囲と右側の目次）
+    summary: 右側の目次を出し続けるとき、wide の範囲を目次の列の内側に収める
+    setup:
+      - name: 配布物を読んだページ
+        description: 正常系（wide の範囲の幅を切り替える）と同じ。`opts.config` の `side-toc.mode` は `fixed` で、右側の目次を出しておく
+      - name: wide の範囲と見出しを持つ Markdown
+        description: '`## 概要`・`## 詳細` の見出しと、`<!-- wide -->` で 8 列の表を囲んだ範囲を持つ文書'
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: mount(el, { markdown, config })
+        M->>P: 本文の列と右側の目次に分け、wide の範囲を本文の列の内側で広げる
+    expected:
+      - wide の範囲の幅が段落より広く、範囲の右端が右側の目次の左端以下
+      - 右側の目次の `詳細` を押すと、`詳細` の見出しが画面に入る
+    test: test_normal_when_wide_with_side_toc
+    refs:
+      - dev/設計書/シナリオ/単一ユースケース/図と表を本文の幅より広げる#scenarios[正常シナリオ（右側の目次と並ぶ）]
+  - name: 正常系（CSV の表と元の CSV を切り替える）
+    summary: CSV の表の右端のボタンで、書いたとおりの CSV と表を切り替える
+    setup:
+      - name: 配布物を読んだページ
+        description: 正常系と同じ
+      - name: CSV のコードブロックを持つ Markdown
+        description: '`<!-- table: data -->` 〜 `<!-- /table -->` で囲んだ言語 `csv` のコードブロック（見出しの行 `名前,拠点,金額` と 3 行）を持つ文書'
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        actor U as 読む人
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: mount(el, { markdown })
+        M->>P: 表の帯の右端に RAW のボタンを置く
+        U->>P: 金額の列で並べ替え、RAW のボタンを押す
+        M->>P: 表を隠し、元の CSV を出す
+        U->>P: もう一度 Enter で押す
+        M->>P: 表に戻す
+    expected:
+      - 描いた直後、表の帯に `button.mdmark-raw-toggle` があり、`aria-label="元の CSV を表示"`・`aria-pressed="false"` で、`pre.mdmark-raw` が表示されていない
+      - 押した後、`table` が表示されず、`pre.mdmark-raw` の文字が書いたとおりの CSV で、`aria-pressed="true"`
+      - もう一度 Enter で押した後、表が表示され、行が金額の順のままで、並べ替え・絞り込みのボタンがある
+      - 言語 `csv` でない表に RAW のボタンが無い
+    test: test_normal_when_csv_raw_toggled
+    refs:
+      - dev/設計書/シナリオ/単一ユースケース/表を操作する#scenarios[正常シナリオ（CSV の表と元の CSV を切り替える）]
+  - name: 正常系（改ページと details の範囲を印刷する）
+    summary: 印刷の前に details の範囲を開き、改ページの場所で用紙を分ける
+    setup:
+      - name: 配布物を読んだページ
+        description: 正常系と同じ。`--mdmark-content-width` は `640px`
+      - name: 改ページと範囲を持つ Markdown
+        description: '段落の間に `<!-- pagebreak -->`、閉じた `<!-- details: 補足 -->` 〜 `<!-- /details -->`、`<!-- wide -->` で 8 列の表を囲んだ範囲を持つ文書'
+        notes: '`opts.config` は渡さない（`print` は既定のオン）'
+      - name: Mock
+        description: 印刷は媒体を `print` にして `window` へ `beforeprint` を送り、印刷の終わりは媒体を `screen` に戻して `afterprint` を送ることで代える
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: mount(el, { markdown })
+        P->>M: beforeprint
+        M->>P: 閉じた details を開く
+        P->>M: afterprint
+        M->>P: 開いた details を閉じ直す
+    expected:
+      - 画面で `div.mdmark-pagebreak` の高さが 0 で、文字を持たない
+      - 印刷の媒体で `div.mdmark-pagebreak` の `break-before` の計算値が `page`
+      - '`beforeprint` の後、`補足` の `details` が `open` を持ち、wide の範囲の幅が本文の幅以下'
+      - '`afterprint` の後、`補足` の `details` が `open` を持たない'
+    test: test_normal_when_pagebreak_and_details_printed
+    refs:
+      - dev/設計書/シナリオ/単一ユースケース/文書を印刷する#scenarios[正常シナリオ（改ページと details の範囲と wide の範囲）]
+      - dev/設計書/シナリオ/単一ユースケース/節と行の詳細を開閉する#scenarios[正常シナリオ（details の範囲）]
+  - name: 正常系（取り込む文書を差し替える）
+    summary: '`update` の `options.includes` で取り込む文書の表を差し替えて描き直す'
+    setup:
+      - name: 配布物を読んだページ
+        description: 正常系と同じ
+      - name: include のマーカーを持つ Markdown
+        description: '`<!-- include: 共通/手順.md#実行 -->` を持ち、`共通/手順.md` の `## 実行` の下に `<!-- table: data -->` で囲んだ表を持つ取り込む文書の表を `opts.includes` に渡す'
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: mount(el, { markdown, includes })
+        M->>P: 取り込んだ中身を描き、記法の操作を付ける
+        P->>M: update(markdown, { includes: 書き換えた表 })
+        M->>P: 取り込んだ中身を描き直す
+    expected:
+      - 取り込んだ表に `data` の種類の並べ替え・絞り込みのボタンがあり、取り込んだ `実行` の見出しに見出しのアンカーがあって目次に出ている
+      - '`update` の後、取り込んだ中身が書き換えた表の文になる'
+      - '`options.includes` を省いた `update` の後も、前の表の中身で描かれる'
+    test: test_normal_when_includes_updated
+    refs:
+      - dev/設計書/シナリオ/単一ユースケース/ほかの文書を取り込む#scenarios[正常シナリオ]
+      - dev/設計書/シナリオ/単一ユースケース/VSCodeでプレビューを開く#scenarios[正常シナリオ（取り込む文書を描く）]
+  - name: 正常系（蛍光ペンとコメント）
+    summary: 蛍光ペンの `mark` を、コメントのマーカーと分けて描く
+    setup:
+      - name: 配布物を読んだページ
+        description: '正常系と同じ。`opts.config.features` に `{ comments: true }`、`opts.docId` と `opts.commentStore` を渡す'
+      - name: 蛍光ペンのマーカーを持つ Markdown
+        description: 段落に `==決め手==` と `==例外=={color=green}` を持つ文書
+      - name: Mock
+        description: '`commentStore.load` が、同じ段落の別の文字に付けたコメントを 1 件返す'
+    flow: |-
+      sequenceDiagram
+        actor U as 読む人
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: mount(el, { markdown, config, docId, commentStore })
+        M->>P: 蛍光ペンのマーカーとコメントのマーカーを描く
+        U->>P: 蛍光ペンのマーカーを押す
+        M-->>P: 何もしない
+    expected:
+      - '`mark.mdmark-highlight` が 2 つあり、どちらも class `mdmark-comment-mark` を持たない'
+      - 蛍光ペンのマーカーを押してもコメントの吹き出しが開かず、コメントのマーカーを押すと開く
+      - 蛍光ペンのマーカーの文字と面の色のコントラストが 4.5:1 以上
+    test: test_normal_when_highlight_with_comments
+    refs:
+      - dev/設計書/シナリオ/単一ユースケース/名前の色で表・バッジ・本文を強調する#scenarios[正常シナリオ（蛍光ペンのマーカー）]
 lead: 使う側のページが、要素と Markdown と設定を渡し、要素の中に文書を描く。戻り値で本文の差し替えと片付けができる。
 idempotent: false
-side_effects: '`el` の中身と class を書き換え、記法の操作のイベントを `el` の中に付ける。`side-toc` がオンで見出しがあるとき、`el` の中を本文の列と右側の目次に分け、見出しの位置を `IntersectionObserver` で見る。出し方が `hover` のときは、右端の線とパネルの位置を決めるため、`window` の `scroll`・`resize` と、`el` に最も近いスクロールする祖先の要素があればその `scroll` を受け取り、`document.body` の子の追加・削除を `MutationObserver` で見る。`back-to-top` がオンのとき、`el` の子に先頭へ戻るボタンを置き、スクロールする場所が画面全体なら `window` の `scroll`、`el` に最も近いスクロールする祖先の要素なら `document` の `scroll`（捕捉の段）と、`window` の `resize` を受け取り、`document.body` と `el` の子の追加・削除を `MutationObserver` で見る。`window` の `beforeprint`・`afterprint`・`hashchange` と、絞り込みのドロワーを開いている間だけ `document` の `pointerdown`・`keydown` を受け取る。図の部品か埋め込んだ HTML があるとき、図の表示する枠と埋め込んだ HTML の大きさを `ResizeObserver` で見、ツールチップを開いている間だけ `document` の `keydown`・`pointerdown` と `window` の `scroll`・`resize` を受け取り、全画面の間だけ `el` の中に `dialog` を置く。操作できる部品の写すボタン・表のコピー・行の URL のコピー・コードブロックのコピー・ファイルツリーのコピーでクリップボードに書く。表があるとき、表の大きさと描く先の要素の幅を `ResizeObserver` で見、`animation-timeline` を持たないブラウザでは `window` と文書の中の `scroll` と `window` の `resize` を受け取る。`data-group` を持つタブがあるとき、localStorage の `mdmark-tabs:{group}` を描くたびに読み、読む人がタブを選ぶと書く。そのとき、ページの中の `el` の外にある同じ `group` のタブ群の選択も書き換える。文書に外部ライブラリか拡張の印があるとき、そのモジュールを読む。色分けの対象のコードブロックがあるとき、`syntax.url` の先の core と、使う言語のモジュールを読む。`opts.diffSource` を渡したとき、読む人が差分を開くと（`opts.diffMode` が `open` なら描いた時点、`blocks` なら描くたびに）取り出し元の `revisions`・`content` を呼び、差分の行を出している間だけミニマップの帯を置き、送り先のスクロールの `scroll` と `window` の `resize` を受け取る。文書にビューの印があるとき、ビューの部品のモジュールを読む。`comments` がオンで `opts.commentStore` を渡したとき、コメントの部品のモジュールを読み、`load` を描くたびに 1 回呼び、保存で `save`、読み書きの関数が持つときは吹き出しの修正で `update`・削除で `remove`、`reloadComments` で `load` を呼ぶ。その間は `document` の `selectionchange` を受け取り、コメントのボタン・入力欄・吹き出しを `document.body` に置く。あわせて本文の列の右に余白の列を置き、描く先の要素の大きさを `ResizeObserver`、描く先の要素の中の開閉・切り替えを `MutationObserver` で見る'
+side_effects: '`el` の中身と class を書き換え、記法の操作のイベントを `el` の中に付ける。束ねていない名前の `icon:` があるとき、jsDelivr の Lucide のアイコンのモジュールを名前ごとに `import()` し、読めなかった名前だけ同じ URL へ `HEAD` の `fetch` を送る。`side-toc` がオンで見出しがあるとき、`el` の中を本文の列と右側の目次に分け、見出しの位置を `IntersectionObserver` で見る。出し方が `hover` のときは、右端の線とパネルの位置を決めるため、`window` の `scroll`・`resize` と、`el` に最も近いスクロールする祖先の要素があればその `scroll` を受け取り、`document.body` の子の追加・削除を `MutationObserver` で見る。`back-to-top` がオンのとき、`el` の子に先頭へ戻るボタンを置き、スクロールする場所が画面全体なら `window` の `scroll`、`el` に最も近いスクロールする祖先の要素なら `document` の `scroll`（捕捉の段）と、`window` の `resize` を受け取り、`document.body` と `el` の子の追加・削除を `MutationObserver` で見る。`window` の `beforeprint`・`afterprint`・`hashchange` と、絞り込みのドロワーを開いている間だけ `document` の `pointerdown`・`keydown` を受け取る。図の部品か埋め込んだ HTML があるとき、図の表示する枠と埋め込んだ HTML の大きさを `ResizeObserver` で見、ツールチップを開いている間だけ `document` の `keydown`・`pointerdown` と `window` の `scroll`・`resize` を受け取り、全画面の間だけ `el` の中に `dialog` を置く。操作できる部品の写すボタン・表のコピー・行の URL のコピー・コードブロックのコピー・ファイルツリーのコピーでクリップボードに書く。表があるとき、表の大きさと描く先の要素の幅を `ResizeObserver` で見、`animation-timeline` を持たないブラウザでは `window` と文書の中の `scroll` と `window` の `resize` を受け取る。`data-group` を持つタブがあるとき、localStorage の `mdmark-tabs:{group}` を描くたびに読み、読む人がタブを選ぶと書く。そのとき、ページの中の `el` の外にある同じ `group` のタブ群の選択も書き換える。文書に外部ライブラリか拡張の印があるとき、そのモジュールを読む。色分けの対象のコードブロックがあるとき、`syntax.url` の先の core と、使う言語のモジュールを読む。`opts.diffSource` を渡したとき、読む人が差分を開くと（`opts.diffMode` が `open` なら描いた時点、`blocks` なら描くたびに）取り出し元の `revisions`・`content` を呼び、差分の行を出している間だけミニマップの帯を置き、送り先のスクロールの `scroll` と `window` の `resize` を受け取る。文書にビューの印があるとき、ビューの部品のモジュールを読む。`comments` がオンで `opts.commentStore` を渡したとき、コメントの部品のモジュールを読み、`load` を描くたびに 1 回呼び、保存で `save`、読み書きの関数が持つときは吹き出しの修正で `update`・削除で `remove`、`reloadComments` で `load` を呼ぶ。その間は `document` の `selectionchange` を受け取り、コメントのボタン・入力欄・吹き出しを `document.body` に置く。あわせて本文の列の右に余白の列を置き、描く先の要素の大きさを `ResizeObserver`、描く先の要素の中の開閉・切り替えを `MutationObserver` で見る'
 callers:
   - dev/設計書/シナリオ/単一ユースケース/文書を描く#
   - dev/設計書/シナリオ/単一ユースケース/テーマを上書きする#
@@ -4511,7 +4752,7 @@ request:
     default: '`comments` を除く全ての機能が `true`'
     location: argument
     description: '機能のオン・オフの既定。文書の `<!-- features: +機能 -機能 -->` がその文書だけ上書きする'
-    notes: 知らない機能名は無視する。機能は `print`（印刷の前に折り畳みと記法を開く）と、記法ごとの `table`・`callout`・`tabs`・`steps`・`tree`・`badge`・`code`・`toc`・`side-toc`（右側の目次）・`anchors`・`sections`・`row-details`・`figures`、先頭へ戻るボタンの `back-to-top`、図の部品の `diagrams`、埋め込んだ HTML の `html`、図と埋め込んだ HTML のヒント（`data-hint`・`hint`・`io`・線の `tip`）のツールチップの `hints`、用語のツールチップの `glossary`、被参照の一覧と文書の別名の `backlinks`、ビューの印の `views`、脚注の `footnotes`、選んだ箇所へのコメントの `comments`（`comments` だけ既定は `false`）
+    notes: 知らない機能名は無視する。機能は `print`（印刷の前に折り畳みと記法を開く）と、記法ごとの `table`・`callout`・`tabs`・`steps`・`tree`・`badge`・`code`・`toc`・`side-toc`（右側の目次）・`anchors`・`sections`・`row-details`・`figures`、先頭へ戻るボタンの `back-to-top`、図の部品の `diagrams`、埋め込んだ HTML の `html`、図と埋め込んだ HTML のヒント（`data-hint`・`hint`・`io`・線の `tip`）のツールチップの `hints`、用語のツールチップの `glossary`、被参照の一覧と文書の別名の `backlinks`、ビューの印の `views`、脚注の `footnotes`、選んだ箇所へのコメントの `comments`（`comments` だけ既定は `false`）、アイコンの `icon`・段組みの `columns`・蛍光ペンの `highlight`・キーの `kbd`・details の範囲の `details`・改ページの `pagebreak`・取り込みの `include`・wide の範囲の `wide`・CSV の表の `csv`
   - name: opts.config.libraries
     type: Record<string, string>
     required: false
@@ -4631,6 +4872,20 @@ request:
     example: '"コピー"'
     notes: 空でない文字列だけを受け、省いたとき・空文字・文字列でない値は既定の文言で描く（例外を出さない）。`labels` の知らないキーは読まない。`update` で描き直したときも `mount` に渡した文言のまま描く
     status: implemented
+  - name: opts.includes
+    type: Record<string, string>
+    required: false
+    location: argument
+    default: なし（include のマーカーを全て取り込み先が無い書き方の警告にする）
+    description: '`render` の `opts.includes` と同じ。`update` の `options.includes` で差し替える'
+    notes: 形とパスの基準はインターフェース定義『文書をHTML文字列にする』の制約「取り込み」
+  - name: opts.icons
+    type: Record<string, MdmarkIconNode>
+    required: false
+    location: argument
+    default: なし（束ねていない名前は jsDelivr から読む）
+    description: '`render` の `opts.icons` と同じ。表にある名前は読まずにこの形で描く'
+    notes: 書き出した HTML は、使う名前の形を埋めて渡し、外へ要求しない
 request_example: |-
   ```json
   {
@@ -4643,9 +4898,9 @@ request_example: |-
   ```
 response:
   - name: update
-    type: '(markdown: string, options?: { baseMarkdown?: string | null }) => void'
+    type: '(markdown: string, options?: { baseMarkdown?: string | null; includes?: Record<string, string> }) => void'
     description: 本文だけを描き直し、記法の操作を付け直す。設定は `mount` に渡したものを使う
-    notes: '`destroy` の後は何もしない。`options.baseMarkdown` を渡すと比較元を差し替え、`null` で比較元を外す。`options` か `options.baseMarkdown` を省くと前の比較元のまま描く'
+    notes: '`destroy` の後は何もしない。`options.baseMarkdown` を渡すと比較元を差し替え、`null` で比較元を外す。`options` か `options.baseMarkdown` を省くと前の比較元のまま描く。`options.includes` を渡すと取り込む文書の表を差し替え、省くと前の表のまま描く'
   - name: reloadComments
     type: () => Promise<void>
     description: 本文を描き直さずに `opts.commentStore.load` を呼び直し、コメントの印を付け直す
@@ -4709,6 +4964,12 @@ exceptions:
   - name: なし（ブロックの色分けを出せない）
     condition: '`opts.diffMode` が `blocks` で、取り出し元の `revisions`・`content` が reject するか、返した値が制約「差分の取り出し元」の形に合わない'
     notes: 例外を投げず、`opts.markdown` を色を当てずに描いた本文を残し、本文の先頭に知らせの枠（題 `変更を表示できません`・本文 `比べるリビジョンの本文を取り出せませんでした。色分けせずに表示しています。`）を置く。`console.error` は差分の知らせの枠と同じ。文言は一覧と本文のどちらの失敗でも同じ（確認ログの決定）
+  - name: なし（Lucide に無いアイコンの名前）
+    condition: 束ねていない名前のアイコンのモジュールを読めず、同じ URL の `HEAD` が 404 を返す
+    notes: 例外を投げず、その名前の場所を書いたとおりの行内のコードに戻し、段落の前に書き方の警告（Lucide に無い名前であること）を置く
+  - name: なし（Lucide のアイコンを読めない）
+    condition: 束ねていない名前のアイコンのモジュールを読めず、同じ URL の `HEAD` も失敗する（404 以外の状態を含む）
+    notes: 例外を投げず、読めなかった名前の場所を書いたとおりの行内のコードに戻し、文書の先頭に知らせの枠を 1 つだけ置く。URL と元のエラーを `console.error` に出す
 constraints:
   - item: 描く本文
     constraint: '`render(markdown, { config })` が返す HTML 文字列と同じ'
@@ -4957,4 +5218,13 @@ constraints:
   - item: 右側の目次の重なりと留める位置
     constraint: 右側の目次（`aside`）は、出し方と幅によらず、本文の全ての要素（表の見出し行・集計の行・ピン止めした列のセルを含む）より手前に描く。広い幅の `hover` の右端の線は、本文の上端がその位置より上へスクロールした後、文書の末尾までのどこを読んでいても、スクロールする場所の上端から `--mdmark-sticky-top` と `--mdmark-space` を足した位置に留め、高さをスクロールする場所と描く先の要素の両方に収める（描く先の要素の下端で上端を押し上げず、線を短くする）。描く先の要素の下端がその位置より上へスクロールした後は、右端の線を出さない。hover で開くパネルの上端も同じ位置にする。広い幅の `hover` でピン止めしていない間は、右端の線と hover で開くパネルの右端を、描く先の要素の幅によらず、スクロールする場所の右端（スクロールバーを除き、画面からはみ出す分は画面の端）から 1rem の位置に置く。ページの差分のミニマップの帯（`document.body` の `.mdmark-diff-minimap`）と横の範囲が重なるときは、その左端から 8px 左へずらす。右端の線とパネルの位置は、スクロールする場所と画面の `scroll`・`window` の `resize` に加え、`document.body` の子の追加・削除（ミニマップの帯の追加と削除）でも決め直す。ピン止めしたときは、今までどおり描く先の要素の中の右の列に置く
     notes: '#285。スクロールする場所は、描く先の要素に最も近い縦にスクロールする祖先の要素か、無ければ画面。重なりの順を CSS 変数で持つかと、右端の線の留め方はモジュール構成設計。横の位置は #270。右端からの間隔とミニマップの避け方は先頭へ戻るボタンと同じで、モックへの合意（dev/pr/323/確認ログ.md）'
+  - item: 束ねていないアイコンの読み込み
+    constraint: '`render` が中を空にした `span.mdmark-inline-icon` の名前ごとに、`https://cdn.jsdelivr.net/npm/lucide@{束ねた lucide のバージョン}/dist/esm/icons/{名前}.mjs` を 1 回だけ `import()` し、`export default` の IconNode から `svg` を作って同じ名前の全ての場所に入れる（要素・属性は `render` の制約「アイコン」の許すものだけ）。`opts.icons` にある名前は読まない。`import()` が失敗した名前だけ同じ URL へ `fetch(url, { method: "HEAD" })` を送り、404 なら例外「なし（Lucide に無いアイコンの名前）」、それ以外は例外「なし（Lucide のアイコンを読めない）」にする。束ねていない名前の `icon:` を持たない文書では読まない。`update` は読んだ名前を読み直さない'
+    notes: URL と失敗の見分け方は確認ログとライブラリ選定の決定。動作は外部ライブラリ『lucide』の `verification` で確かめた
+  - item: wide の幅の切り替え
+    constraint: '`div.mdmark-wide` ごとに、直前に `<div class="mdmark-wide-bar">` を置き、本文の幅の右端に `<button class="mdmark-wide-toggle" type="button" aria-label="広げて表示" aria-pressed="{広げていれば true}">` を置く。ボタンはラベルを持たず、広げた状態では縮めるアイコン、本文の幅では広げるアイコンを出す（読み上げ名はどちらも `広げて表示`）。押すたびに範囲の `data-state` を `wide` と `narrow` で入れ替え、`aria-pressed` を合わせる。広げた幅と本文の幅が同じになる幅（描く先の要素の幅が本文の幅以下）では帯を出さない。広げた幅は描く先の要素の幅までで、右側の目次（`fixed`）とまとめた HTML の文書の一覧の列の内側に収め、本文の列の中央にそろえる。印刷の前は用紙の幅を越えない。切り替えた状態は `update` で描き直すと印の状態に戻る'
+    notes: アイコンは両端の縦線へ向かう横向きの矢印（広げるは `|←→|`、縮めるは `→|←`。確認ログ）で、Lucide に無い形のため部品設計とモジュール構成で置き場所を決める。#323 のピン止めしていない右側の目次（`hover`）の右端の線と枠は画面の右端に置き、wide の範囲をその幅だけ避けない（目次はポインターを置いた間だけ重ねて出す）
+  - item: CSV の表と元の CSV の切り替え
+    constraint: '`data-source="csv"` を持つ表の帯の右端に、`<button class="mdmark-raw-toggle" type="button" aria-label="元の CSV を表示" aria-pressed="false">`（コードのアイコン `code-xml`）を置く。押すと表を隠して `pre.mdmark-raw` を出し、`aria-pressed` を `true` にする。もう一度押すと表に戻す。並べ替え・絞り込み・ピン止めの状態は切り替えで変えない。元の CSV のコードブロックにはコピーのボタンを付けない。押していない状態は控えめな色、押した状態は色のプリセットの青のアイコンと薄い青の面で出す'
+    notes: 見た目は確認ログの案 C。モック `dev/mock/components/csv-table/`
 test_file: tests/integration/lib/mount.browser.test.ts
