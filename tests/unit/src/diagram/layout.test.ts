@@ -60,7 +60,9 @@ test("test_layout_flowchart", async () => {
   for (const [id, y] of Object.entries(expectedY)) {
     const box = node(laid, id);
     expect(box.y).toBe(y);
-    expect([box.w, box.h]).toEqual(expectedSize[id as keyof typeof expectedSize]);
+    expect([box.w, box.h]).toEqual(
+      expectedSize[id as keyof typeof expectedSize],
+    );
   }
   expect(laid.height).toBe(584);
   const center = (id: string) => node(laid, id).x + node(laid, id).w / 2;

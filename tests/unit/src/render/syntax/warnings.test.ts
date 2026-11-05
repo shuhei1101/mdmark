@@ -20,7 +20,15 @@ test("test_collect_warnings_rule", () => {
   // 準備
   const markdown = markdownAt({
     3: ["<!-- code: color=red -->", "```ts", "const a = 1;", "```"],
-    10: ["<!-- flow -->", "", "```json", "{ \"title\": ", "```", "", "<!-- /flow -->"],
+    10: [
+      "<!-- flow -->",
+      "",
+      "```json",
+      '{ "title": ',
+      "```",
+      "",
+      "<!-- /flow -->",
+    ],
     20: ["```tree", "src/", "│   │   └── deep.ts", "```"],
   });
   // 実行

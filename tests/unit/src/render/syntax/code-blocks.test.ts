@@ -639,8 +639,14 @@ test("test_read_code_spec_when_wrap", async () => {
   // 準備
   const { readCodeSpec } = await loadCodeBlocks();
   // 実行
-  const wrapped = readCodeSpec({ args: parseMarkArgs("lines wrap"), lineCount: 3 });
-  const valued = readCodeSpec({ args: parseMarkArgs("wrap=yes"), lineCount: 3 });
+  const wrapped = readCodeSpec({
+    args: parseMarkArgs("lines wrap"),
+    lineCount: 3,
+  });
+  const valued = readCodeSpec({
+    args: parseMarkArgs("wrap=yes"),
+    lineCount: 3,
+  });
   // 検証
   expect(wrapped.wrap).toBe(true);
   expect(wrapped.lineNumbers).toBe(true);

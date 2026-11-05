@@ -88,7 +88,16 @@ export const LINKED_TEXT: string = JSON.stringify({
   width: 708,
   height: 152,
   nodes: [
-    { id: "recv", kind: "script", x: 24, y: 40, w: 180, h: 72, name: "問い合わせを受け取る", href: "https://example.com/spec" },
+    {
+      id: "recv",
+      kind: "script",
+      x: 24,
+      y: 40,
+      w: 180,
+      h: 72,
+      name: "問い合わせを受け取る",
+      href: "https://example.com/spec",
+    },
     {
       id: "classify",
       kind: "llm",
@@ -100,11 +109,37 @@ export const LINKED_TEXT: string = JSON.stringify({
       href: "./other.md",
       io: { in: "問い合わせの本文", do: "種類を 1 つ選ぶ", out: "種類と確度" },
     },
-    { id: "store", kind: "data", x: 504, y: 40, w: 180, h: 72, name: "記録する" },
+    {
+      id: "store",
+      kind: "data",
+      x: 504,
+      y: 40,
+      w: 180,
+      h: 72,
+      name: "記録する",
+    },
   ],
   wires: [
-    { id: "w-recv", from: "recv", to: "classify", line: "flow", points: [[204, 76], [264, 76]] },
-    { id: "w-classify", from: "classify", to: "store", line: "write", points: [[444, 76], [504, 76]] },
+    {
+      id: "w-recv",
+      from: "recv",
+      to: "classify",
+      line: "flow",
+      points: [
+        [204, 76],
+        [264, 76],
+      ],
+    },
+    {
+      id: "w-classify",
+      from: "classify",
+      to: "store",
+      line: "write",
+      points: [
+        [444, 76],
+        [504, 76],
+      ],
+    },
   ],
 });
 
@@ -133,6 +168,13 @@ export const WARNINGS_MARKDOWN: string = (() => {
     lines.push("");
   }
   lines.push("本文", "<!-- tabz -->", "", "<!-- code: highlight=9 -->");
-  lines.push("```ts", "const a = 1;", "const b = 2;", "const c = 3;", "```", "");
+  lines.push(
+    "```ts",
+    "const a = 1;",
+    "const b = 2;",
+    "const c = 3;",
+    "```",
+    "",
+  );
   return lines.join("\n");
 })();

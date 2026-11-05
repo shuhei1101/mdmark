@@ -171,7 +171,9 @@ async function setUpWithLink() {
 /** リンクの上で押し、横へ dx 動かして離す */
 function dragOnLink(link: HTMLElement, dx: number): void {
   const point = { bubbles: true, pointerId: 1, button: 0, clientY: 100 };
-  link.dispatchEvent(new PointerEvent("pointerdown", { ...point, clientX: 300 }));
+  link.dispatchEvent(
+    new PointerEvent("pointerdown", { ...point, clientX: 300 }),
+  );
   link.dispatchEvent(
     new PointerEvent("pointermove", { ...point, clientX: 300 - dx }),
   );

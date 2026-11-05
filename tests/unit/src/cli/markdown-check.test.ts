@@ -3,8 +3,7 @@ import { useTempDirs, writeFiles } from "../../helpers/cli.ts";
 import { WARNINGS_MARKDOWN } from "../../helpers/diagrams.ts";
 
 /** 渡した Markdown の点検を読み込む（実装が無い間は各テストが個別に失敗する） */
-const loadMarkdownCheck = () =>
-  import("../../../../src/cli/markdown-check.ts");
+const loadMarkdownCheck = () => import("../../../../src/cli/markdown-check.ts");
 
 const createTempDir = useTempDirs();
 
@@ -50,13 +49,13 @@ test("test_check_markdown_source", async () => {
     importCode,
   });
   // 検証
-  expect(issues.map(({ file, where, kind }) => ({ file, where, kind }))).toEqual(
-    [
-      { file: "-", where: "1", kind: "diagram_invalid" },
-      { file: "-", where: "20", kind: "unknown_mark" },
-      { file: "-", where: "22", kind: "syntax_warning" },
-    ],
-  );
+  expect(
+    issues.map(({ file, where, kind }) => ({ file, where, kind })),
+  ).toEqual([
+    { file: "-", where: "1", kind: "diagram_invalid" },
+    { file: "-", where: "20", kind: "unknown_mark" },
+    { file: "-", where: "22", kind: "syntax_warning" },
+  ]);
 });
 
 // YAML のキーの値のずれを YAML のファイルの行で返す（正常系）
@@ -72,9 +71,9 @@ test("test_check_markdown_source_when_yaml_key", async () => {
     importCode,
   });
   // 検証
-  expect(issues.map(({ file, where, kind }) => ({ file, where, kind }))).toEqual(
-    [{ file: "records.yaml", where: "8", kind: "unknown_mark" }],
-  );
+  expect(
+    issues.map(({ file, where, kind }) => ({ file, where, kind })),
+  ).toEqual([{ file: "records.yaml", where: "8", kind: "unknown_mark" }]);
 });
 
 // 設定の拡張の印を知っている印にする（正常系）

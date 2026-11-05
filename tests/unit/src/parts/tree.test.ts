@@ -267,7 +267,8 @@ test("test_render_tree_when_wrap", async () => {
   const wrapped = renderTree({ ...options, wrap: true });
   const unwrapped = renderTree(options);
   // 検証
-  const holder = (html: string) => /<div class="([^"]*)"[^>]*>/.exec(html)?.[0] ?? "";
+  const holder = (html: string) =>
+    /<div class="([^"]*)"[^>]*>/.exec(html)?.[0] ?? "";
   expect(holder(wrapped)).toContain("mdmark-tree-wrap");
   expect(holder(wrapped)).toContain('data-open="all"');
   expect(holder(unwrapped)).not.toContain("mdmark-tree-wrap");

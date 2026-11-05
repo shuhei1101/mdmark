@@ -409,10 +409,16 @@ test("test_run_check_tool_when_text_and_key", async () => {
   );
   // 検証
   const pick = (result: typeof byText) =>
-    (result.json?.issues as { file: string; where: string; kind: string }[]).map(
-      ({ file, where, kind }) => ({ file, where, kind }),
-    );
-  expect(pick(byText)).toEqual([{ file: "-", where: "3", kind: "unknown_mark" }]);
+    (
+      (result.json?.issues ?? []) as {
+        file: string;
+        where: string;
+        kind: string;
+      }[]
+    ).map(({ file, where, kind }) => ({ file, where, kind }));
+  expect(pick(byText)).toEqual([
+    { file: "-", where: "3", kind: "unknown_mark" },
+  ]);
   expect(pick(byKey)).toEqual([
     { file: "records.yaml", where: "8", kind: "unknown_mark" },
   ]);

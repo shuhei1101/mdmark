@@ -431,7 +431,12 @@ test("test_read_definition_when_coordinates_mixed", async () => {
   // 準備
   const { readDefinition } = await loadDefinition();
   const definition = parsed<MdmarkFlowDefinition>(JUDGEMENT_AUTO_TEXT);
-  Object.assign(definition.nodes[1] as object, { x: 60, y: 156, w: 280, h: 136 });
+  Object.assign(definition.nodes[1] as object, {
+    x: 60,
+    y: 156,
+    w: 280,
+    h: 136,
+  });
   // 実行
   const result = readDefinition("flow", [JSON.stringify(definition)]);
   // 検証
