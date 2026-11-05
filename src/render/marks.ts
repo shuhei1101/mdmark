@@ -34,6 +34,12 @@ export const SYNTAX_MARKS: Readonly<Record<string, string>> = {
   html: "html",
   code: "code",
   gallery: "gallery",
+  columns: "columns",
+  column: "columns",
+  details: "details",
+  pagebreak: "pagebreak",
+  include: "include",
+  wide: "wide",
 };
 
 /** 図の部品の印の名前。同じ名前の拡張と対応表が先に使われる */

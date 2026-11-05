@@ -266,6 +266,10 @@ const SANITIZE_OPTIONS: sanitizeHtml.IOptions = {
   },
   // postcss を呼ばない。`style` 属性は許可せず、列の揃えだけを class に移す
   parseStyleAttributes: false,
+  // 値の無い `hidden`（CSV の表の元の CSV）を残す。文書に書いた `hidden` は `dropSyntaxAttributes` が先に落とす
+  nonBooleanAttributes: sanitizeHtml.defaults.nonBooleanAttributes.filter(
+    (name) => name !== "hidden",
+  ),
 };
 
 /** 埋め込んだ HTML の `style` に残す宣言: 名前と、値の許可の正規表現。値に `url(`・`expression(`・単位 `vw`・`vh` を含むものは、ここに当たっても落とす */
