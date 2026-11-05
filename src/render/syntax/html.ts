@@ -100,7 +100,7 @@ function takeParts(options: {
           ...definitionWarning(directive, result.problems),
           kind: "diagram_invalid",
         });
-        warnings.push(warning.meta.warning as WarningMeta);
+        warnings.push(warning.meta?.warning as WarningMeta);
         part = warning.content;
       } else {
         env.diagramCount = (env.diagramCount ?? 0) + 1;

@@ -268,10 +268,15 @@ const SANITIZE_OPTIONS: sanitizeHtml.IOptions = {
   parseStyleAttributes: false,
 };
 
+/** スキームを見分ける前に除く、制御文字と空白の文字コードの上限（U+0000〜U+0020） */
+const CONTROL_OR_SPACE_MAX = 0x20;
+
 /** 本文のリンクと同じ許可（`SANITIZE_OPTIONS` の `allowedSchemes` のスキームか、スキームを持たない相対 URL）に当たる URL か */
 export function isAllowedUrl(url: string): boolean {
   // sanitize-html と同じく、前後の空白と制御文字を除いてスキームを見分ける
-  const trimmed = url.replace(/[\u0000-\u0020]/g, "");
+  const trimmed = Array.from(url)
+    .filter((char) => char.charCodeAt(0) > CONTROL_OR_SPACE_MAX)
+    .join("");
   const scheme = /^([a-z][a-z0-9+.-]*):/i.exec(trimmed)?.[1];
   if (scheme === undefined) {
     return true;
