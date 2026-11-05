@@ -3433,6 +3433,256 @@
       overflow-wrap: anywhere;
     }
 
+    /* ---------- 行内のアイコン・キー・蛍光ペン・ルビ ---------- */
+
+    /* 行内のアイコン: 文字の高さの中央にそろえ、文字の色の線で描く */
+    .mdmark-inline-icon {
+      display: inline-flex;
+      vertical-align: -0.15em;
+
+      .mdmark-icon {
+        width: var(--mdmark-icon-inline-size, 1em);
+        height: var(--mdmark-icon-inline-size, 1em);
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 2;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
+    }
+
+    /* 見出しの前のアイコンと文字の間 */
+    :is(h1, h2, h3, h4) > .mdmark-inline-icon {
+      margin-inline-end: 0.3em;
+    }
+
+    /* キー: 下端を太くした枠で押せるキーに見せる */
+    .mdmark-kbd {
+      display: inline-block;
+      min-width: 1.6em;
+      padding: 0 0.4em;
+      border: 1px solid var(--mdmark-color-border);
+      border-bottom-width: 2px;
+      border-radius: 4px;
+      background: var(--mdmark-color-surface);
+      color: var(--mdmark-color-text);
+      font-family: var(--mdmark-font-mono);
+      font-size: 0.85em;
+      line-height: 1.6;
+      text-align: center;
+    }
+
+    /* キーの組み合わせの + */
+    .mdmark-kbd-join {
+      padding-inline: 0.2em;
+      color: var(--mdmark-color-muted);
+    }
+
+    /* 蛍光ペン: 文字の色は本文のまま、文字の高さ全体に面を引く。コメントの印とは class で分ける */
+    mark.mdmark-highlight {
+      padding: 0.05em 0.15em;
+      border-radius: 2px;
+      background: var(
+        --mdmark-highlight-bg,
+        var(--mdmark-color-accent-yellow-bg)
+      );
+      color: inherit;
+      box-decoration-break: clone;
+
+      &[data-color="blue"] {
+        background: var(--mdmark-color-accent-blue-bg);
+      }
+
+      &[data-color="red"] {
+        background: var(--mdmark-color-accent-red-bg);
+      }
+
+      &[data-color="green"] {
+        background: var(--mdmark-color-accent-green-bg);
+      }
+
+      &[data-color="yellow"] {
+        background: var(--mdmark-color-accent-yellow-bg);
+      }
+
+      &[data-color="orange"] {
+        background: var(--mdmark-color-accent-orange-bg);
+      }
+
+      &[data-color="purple"] {
+        background: var(--mdmark-color-accent-purple-bg);
+      }
+
+      &[data-color="gray"] {
+        background: var(--mdmark-color-accent-gray-bg);
+      }
+    }
+
+    /* ルビ: ブラウザの既定（親の 50%）では小さすぎるため、11px を下回らないようにする */
+    ruby rt {
+      font-size: max(0.6em, 11px);
+    }
+
+    /* ---------- 段組み・改ページ・wide の範囲 ---------- */
+
+    /* 段組み: 囲みの幅で、2〜3 列を等しい幅で並べる（40rem 未満では縦に積む。末尾の @container） */
+    .mdmark-layout-columns {
+      container-type: inline-size;
+      display: flex;
+      flex-wrap: wrap;
+      gap: calc(var(--mdmark-space) * 1.5);
+    }
+
+    .mdmark-layout-column {
+      flex: 1 1 0;
+      min-width: 0;
+
+      > :first-child {
+        margin-block-start: 0;
+      }
+
+      > :last-child {
+        margin-block-end: 0;
+      }
+    }
+
+    /* 改ページ: 画面では高さを持たない */
+    .mdmark-pagebreak {
+      display: block;
+      height: 0;
+    }
+
+    /* wide の範囲: 広げた状態は mount が入れた幅まで広げ、本文の列の左端から外へずらす。入らない分は中で横にスクロールする */
+    .mdmark-wide-range {
+      overflow-x: auto;
+
+      &[data-state="wide"] {
+        width: var(--mdmark-wide-width, auto);
+        max-width: none;
+        margin-inline-start: calc(var(--mdmark-wide-shift, 0px) * -1);
+      }
+    }
+
+    /* wide の切り替えの帯: 本文の幅で、ボタンを右端に置く */
+    .mdmark-wide-bar {
+      display: flex;
+      justify-content: flex-end;
+
+      &[hidden] {
+        display: none;
+      }
+    }
+
+    /* wide の切り替えのボタン: ラベルの無いアイコンだけ。押した状態（広げた状態）は aria-pressed で、アイコンだけを切り替える */
+    .mdmark-wide-toggle {
+      appearance: none;
+      display: inline-grid;
+      place-items: center;
+      width: 28px;
+      height: 28px;
+      padding: 0;
+      border: 0;
+      border-radius: 4px;
+      background: none;
+      color: var(--mdmark-color-muted);
+      cursor: pointer;
+
+      &:hover {
+        background: var(--mdmark-color-surface);
+        color: var(--mdmark-color-accent-blue-text);
+      }
+
+      &:focus-visible {
+        outline: 2px solid var(--mdmark-color-accent-blue-text);
+        outline-offset: 1px;
+      }
+
+      .mdmark-icon {
+        width: 20px;
+        height: 20px;
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 1.75;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
+
+      &[aria-pressed="true"] .mdmark-wide-icon-expand,
+      &[aria-pressed="false"] .mdmark-wide-icon-shrink {
+        display: none;
+      }
+    }
+
+    /* ---------- CSV の表 ---------- */
+
+    /* CSV の表: 枠を表の幅に合わせ、RAW のボタンの帯を表の右端の真上に置く。表と元の CSV は同じ場所に重ね、見せない側は visibility で隠して幅と高さを保つ */
+    .mdmark-table[data-source="csv"] {
+      display: grid;
+      width: fit-content;
+      max-width: 100%;
+
+      > .mdmark-table-bar {
+        display: flex;
+        justify-content: flex-end;
+      }
+
+      > :is(table, .mdmark-raw) {
+        grid-area: 2 / 1;
+        margin: 0;
+      }
+
+      > :is(table, .mdmark-raw)[hidden] {
+        display: block;
+        visibility: hidden;
+      }
+
+      > table[hidden] {
+        display: table;
+      }
+    }
+
+    /* RAW のボタン: コードのアイコン。押していないときは控えめな色、押したときは青のアイコンと薄い青の面 */
+    .mdmark-raw-toggle {
+      appearance: none;
+      display: inline-grid;
+      place-items: center;
+      width: 1.9em;
+      height: 1.9em;
+      min-width: 24px;
+      min-height: 24px;
+      padding: 0;
+      border: 0;
+      border-radius: 4px;
+      background: none;
+      color: var(--mdmark-color-muted);
+      font: inherit;
+      cursor: pointer;
+
+      .mdmark-icon {
+        width: 1.1em;
+        height: 1.1em;
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 2;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
+
+      &:hover,
+      &[aria-pressed="true"] {
+        color: var(--mdmark-color-accent-blue-text);
+      }
+
+      &[aria-pressed="true"] {
+        background: var(--mdmark-color-accent-blue-bg);
+      }
+
+      &:focus-visible {
+        outline: 2px solid var(--mdmark-color-accent-blue-text);
+        outline-offset: 1px;
+      }
+    }
+
     /* ---------- 目次 ---------- */
 
     /* 目次: 線で囲み、見出しの階層どおりに入れ子にする */
@@ -9324,6 +9574,34 @@
         &::after {
           grid-column: 1 / -1;
         }
+      }
+    }
+  }
+}
+
+@layer mdmark {
+  /* 段組み: 囲みの幅が 40rem 未満のときは縦に積む */
+  @container (max-width: 40rem) {
+    .mdmark .mdmark-layout-column {
+      flex-basis: 100%;
+    }
+  }
+
+  /* 印刷のとき（改ページ・wide の範囲）: 改ページの場所で用紙を分け、wide の切り替えの帯を出さず、範囲を紙の幅に収める */
+  @media print {
+    .mdmark {
+      .mdmark-pagebreak {
+        break-before: page;
+      }
+
+      .mdmark-wide-bar {
+        display: none;
+      }
+
+      .mdmark-wide-range[data-state] {
+        width: auto;
+        margin-inline-start: 0;
+        overflow-x: visible;
       }
     }
   }

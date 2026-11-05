@@ -18,6 +18,7 @@ import {
 } from "./build-plugin.ts";
 import {
   BROWSER_TARGETS,
+  bundleDefines,
   listBundledPackages,
   NODE_BANNER,
   NODE_TARGET,
@@ -123,7 +124,7 @@ async function buildParts(
     minify: true,
     target: BROWSER_TARGETS,
     plugins: [postcssStubPlugin],
-    define: { __MDMARK_VERSION__: JSON.stringify(version) },
+    define: bundleDefines(version, root),
     metafile: true,
     logLevel: "silent",
   });
@@ -156,7 +157,7 @@ async function buildViewer(
     minify: true,
     target: BROWSER_TARGETS,
     plugins: [postcssStubPlugin],
-    define: { __MDMARK_VERSION__: JSON.stringify(version) },
+    define: bundleDefines(version, root),
     metafile: true,
     logLevel: "silent",
   });
@@ -187,7 +188,7 @@ async function buildCli(
     banner: { js: NODE_BANNER },
     external: CLI_EXTERNALS,
     plugins: [postcssStubPlugin],
-    define: { __MDMARK_VERSION__: JSON.stringify(version) },
+    define: bundleDefines(version, root),
     metafile: true,
     logLevel: "silent",
   });
@@ -218,7 +219,7 @@ export async function buildDist(
     minify: true,
     target: BROWSER_TARGETS,
     plugins: [postcssStubPlugin],
-    define: { __MDMARK_VERSION__: JSON.stringify(version) },
+    define: bundleDefines(version, root),
     banner: { css: `:root{--mdmark-version:"${version}"}` },
     metafile: true,
     // 失敗の理由は例外として返り、`main` が標準エラーに 1 回だけ出す

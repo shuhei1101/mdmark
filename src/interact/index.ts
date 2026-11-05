@@ -3,6 +3,7 @@ import type { MdmarkParamDefinition } from "../diagram/definition.ts";
 import type { MdmarkColumnsChange } from "../mount.ts";
 import { attachCodeCopy } from "./code-blocks.ts";
 import { attachCodeFolds } from "./code-folds.ts";
+import { attachCsvRaw } from "./csv-raw.ts";
 import { attachDiagramTips } from "./diagram-tips.ts";
 import { attachDiagrams } from "./diagrams.ts";
 import { attachEmbeddedHtml } from "./embedded-html.ts";
@@ -16,8 +17,9 @@ import { attachTables } from "./tables.ts";
 import { attachTabs } from "./tabs.ts";
 import { attachTermTips } from "./terms.ts";
 import { attachFileTrees } from "./trees.ts";
+import { attachWideToggles } from "./wide.ts";
 
-/** 機能がオンの記法だけ（節と行の詳細・表・タブの順に）操作を付け、`table` がオンなら表の見出し行と集計の行を留める処理を、`code` がオンならコードブロックのコピーを付け、`tree` がオンならファイルツリーの開閉とコピーを付け、`footnotes` がオンなら脚注のツールチップと一覧への移動を付け、`diagrams` がオンなら図と操作できる部品の操作を付け、`glossary` か `backlinks` がオンなら用語のツールチップの操作を付け、`html` がオンなら埋め込んだ HTML の幅の操作を（`hints` もオンならヒントの操作も）付け、`lightbox` がオンなら画像の拡大を、`gif` がオンならその後に GIF の止める・再生するボタンを付け、まとめて外す関数を返す */
+/** 機能がオンの記法だけ（節と行の詳細・表・タブの順に）操作を付け、`table` がオンなら表の見出し行と集計の行を留める処理を、`code` がオンならコードブロックのコピーを付け、`tree` がオンならファイルツリーの開閉とコピーを付け、`footnotes` がオンなら脚注のツールチップと一覧への移動を付け、`diagrams` がオンなら図と操作できる部品の操作を付け、`glossary` か `backlinks` がオンなら用語のツールチップの操作を付け、`html` がオンなら埋め込んだ HTML の幅の操作を（`hints` もオンならヒントの操作も）付け、`lightbox` がオンなら画像の拡大を、`gif` がオンならその後に GIF の止める・再生するボタンを付け、`csv` がオンなら CSV の表と元の CSV の切り替えを、`wide` がオンなら wide の範囲の幅の切り替えを付け、まとめて外す関数を返す */
 export function attachInteractions(options: {
   /** 描いた要素 */
   root: HTMLElement;
@@ -47,6 +49,13 @@ export function attachInteractions(options: {
   if (features.table === true) {
     detachers.push(attachTables(root, { onColumnsChange }));
     detachers.push(attachStickyRows(root));
+  }
+  // RAW のボタンは、表の操作の帯ができてからその帯に足す
+  if (features.csv === true) {
+    detachers.push(attachCsvRaw(root));
+  }
+  if (features.wide === true) {
+    detachers.push(attachWideToggles(root));
   }
   if (features.tabs === true) {
     detachers.push(attachTabs(root));
