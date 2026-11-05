@@ -614,6 +614,7 @@ files:
     description: '#257 のモックが共通で読む素材: 案 B の図の枠の規則（線の box-shadow の値を CSS カスタムプロパティで持ち、操作できる部品の中では外す）。複数のモックに効く見た目や動きを変えるときに読む。'
     tags: [topic:モック, topic:図, tool:css]
   - path: refs/257/assets/scene.css
+    id: dev/mock/refs/257/assets/scene.css
     description: '#257 のモックが共通で読む素材: 使う側のページ（本文と枠を持つ詳細パネル）とモック専用の操作列の見た目。複数のモックに効く見た目や動きを変えるときに読む。'
     tags: [topic:モック, tool:css]
   - path: refs/257/assets/scene.js
@@ -708,12 +709,14 @@ files:
   - path: refs/275/index.md
     description: '#275（グラフの種類と 6 つの系列・表のセルの結合・タブの入れ子・注意書きのタイトル・コードの行のマーカーと折りたたみを追加する）の PR のモックへのリンク集。この PR で作ったモックを探すときに読む。'
   - path: refs/277/assets/margin.css
+    id: dev/mock/refs/277/assets/margin.css
     description: '#277 のモックが共通で読む素材: 余白の列と余白のマーカーの規則（置き場所の案・同じ行で横に並べる案・吹き出しを開いている箇所・閉じた中の箇所・印刷で出さない）。複数のモックに効く見た目や動きを変えるときに読む。'
     tags: [topic:モック, topic:コメント, tool:css]
   - path: refs/277/assets/margin.js
     description: '#277 のモックが共通で読む素材: コメントの箇所の行の高さに余白のマーカーを置き、描く先の要素の中の変化と大きさの変化で置き直し、押すと閉じた中を開いて箇所へ移り吹き出しを開く振る舞い。複数のモックに効く見た目や動きを変えるときに読む。'
     tags: [topic:モック, topic:コメント, tool:javascript]
   - path: refs/277/assets/scene.css
+    id: dev/mock/refs/277/assets/scene.css
     description: '#277 のモックが共通で読む素材: 使う側のページ・モック専用の操作列・部品のカタログの見た目。複数のモックに効く見た目や動きを変えるときに読む。'
     tags: [topic:モック, tool:css]
   - path: refs/277/assets/scene.js
@@ -723,6 +726,7 @@ files:
     description: '#277（本文の右の余白に、コメントのある箇所のマーカーを出す）の PR のモックへのリンク集。この PR で作ったモックを探すときに読む。'
     tags: [topic:モック]
   - path: refs/280/assets/comment-edit.css
+    id: dev/mock/refs/280/assets/comment-edit.css
     description: 'モック『comment』の見た目: 吹き出しのコメントの編集・削除のアイコンのボタン・削除の確認と、箇所へ移ったマーカーの強調。このモックの見た目を変えるときに読む。'
     tags: [topic:モック, tool:css]
   - path: refs/280/assets/comment-edit.js
@@ -753,6 +757,7 @@ files:
     description: '#303 のモックが共通で読む素材: 範囲の ts・js の既定のエクスポートの関数に当たる、範囲の根の要素を押すと class を付け外しする動き。複数のモックに効く見た目や動きを変えるときに読む。'
     tags: [topic:モック, tool:javascript]
   - path: refs/303/assets/table.css
+    id: dev/mock/refs/303/assets/table.css
     description: '#303 のモックが共通で読む素材: テーブル設定のボタンと列の一覧（つまみ・目のアイコン・ドラッグ中）と、キーの列の階層・型のバッジ・必須の *・行の選択の縦線・YAML の見本の規則。複数のモックに効く見た目や動きを変えるときに読む。'
     tags: [topic:モック, tool:css]
   - path: refs/303/assets/table.js
@@ -762,6 +767,7 @@ files:
     description: '#303（既存の記法への項目の追加 3 件。表の列の並べ替え・コードブロックの HTML の TypeScript と CSS・表のキーの階層）の PR のモックへのリンク集。この PR で作ったモックを探すときに読む。'
     tags: [topic:モック]
   - path: refs/307/assets/notations.css
+    id: dev/mock/refs/307/assets/notations.css
     description: '#307 のモックが共通で読む素材: アイコン・キー・蛍光ペン・段組み・取り込み・wide・CSV の表の RAW のボタンの規則。複数のモックに効く見た目を変えるときに読む。'
     tags: [topic:モック, topic:記法, tool:css]
   - path: refs/307/assets/notations.js
@@ -783,6 +789,7 @@ files:
     description: '#311 のモックが共通で読む素材: 脚注の印刷の規則（ツールチップと戻るリンクを出さず、末尾の一覧を開いて出す）。複数のモックに効く見た目や動きを変えるときに読む。'
     tags: [topic:モック, tool:css]
   - path: refs/311/assets/footnote.css
+    id: dev/mock/refs/311/assets/footnote.css
     description: '#311 のモックが共通で読む素材: 脚注の本文の番号・番号のツールチップ・末尾の脚注の一覧と戻るリンクの規則。複数のモックに効く見た目や動きを変えるときに読む。'
     tags: [topic:モック, tool:css]
   - path: refs/311/assets/footnote.js
@@ -798,12 +805,14 @@ files:
     description: '#32（サーバー無しで Markdown を 1 枚で完結する HTML に書き出し、複数の文書を 1 枚にまとめる CLI を作る）の PR のモックへのリンク集。この PR で作ったモックを探すときに読む。'
     tags: [topic:モック]
   - path: refs/320/assets/catalog.css
+    id: dev/mock/refs/320/assets/catalog.css
     description: '#320 のモックが共通で読む素材: 右側の目次の頭のカタログだけの規則（見本を並びの中に置き、ホバーとフォーカスの見た目を固定する）。複数のモックに効く見た目や動きを変えるときに読む。'
     tags: [topic:モック, tool:css]
   - path: refs/320/assets/catalog.js
     description: '#320 のモックが共通で読む素材: 右側の目次の頭のカタログを、ピン止めのアイコンの案ごとのボタンの状態と頭の並びで組み立てる。複数のモックに効く見た目や動きを変えるときに読む。'
     tags: [topic:モック, topic:目次]
   - path: refs/320/assets/proposal.css
+    id: dev/mock/refs/320/assets/proposal.css
     description: '#320 のモックが共通で読む素材: 見出し 1・見出し 2 の下の線の色の案・0.25em の区切り線・右側の目次の上端の並び・hover で開く位置の案・ダークの配色。複数のモックに効く見た目や動きを変えるときに読む。'
     tags: [topic:モック, topic:目次, tool:css]
   - path: refs/320/assets/proposal.js
