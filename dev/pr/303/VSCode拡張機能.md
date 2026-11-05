@@ -19,4 +19,14 @@
 
 ## テスト結果
 
-なし
+### 単体
+
+| ファイル | メソッド | 変更種別 | 結果 | 補足 |
+| --- | --- | --- | --- | --- |
+| `tests/unit/vscode/src/config.test.ts` | `test_parse_config_when_html_scripts`・`test_resolve_html_scripts`・`test_library_origins_when_html_scripts` | 新規 | ✅ | 全件（1517 テスト）pass<br>`テスト結果/20261105212521_5263a1a1_単体テスト.log` |
+| `tests/unit/vscode/src/config.test.ts` | `test_library_origins` | 変更 | ✅ | 同上 |
+
+直したテスト:
+- `test_library_origins`: `html-scripts.url` を省いたときはライブラリ本体の既定の URL の origin（`https://cdn.jsdelivr.net`）も CSP に含めるため、期待値に足した（`1febb090`）
+
+lint: `テスト結果/20261105212521_5263a1a1_lint.log`（違反なし）
