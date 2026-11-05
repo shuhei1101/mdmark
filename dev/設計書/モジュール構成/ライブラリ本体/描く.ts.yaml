@@ -895,7 +895,7 @@ functions:
     returns:
       type: Promise<void>
       description: 全て入れ終えたら解決する
-    side_effects: jsDelivr のモジュールを `import()` し、失敗した名前だけ `HEAD` を送る。描く先の要素の中を書き換える
+    side_effects: jsDelivr のモジュールを `import()` し、失敗した名前だけ `HEAD` を送る。描く先の要素の中を書き換える。404 でなく読めなかった名前の URL を `console.error` に出す
     callees:
     - '#functions[lucideIconUrl]'
     - dev/設計書/モジュール構成/ライブラリ本体/部品.ts#functions[iconNodeSvg]
