@@ -10502,14 +10502,15 @@ test("test_normal_when_chart_item_tooltip", async () => {
       expect(tip.textContent).toContain(word);
     }
   }
-  // 実行・検証: 追加した 8 つの種類のグラフの項目
+  // 実行・検証: 追加した 8 つの種類のグラフの項目（ドーナツの扇形は矩形の中心が穴のため、フォーカスで開く）
+  await userEvent.unhover(document.body);
   for (const [index, figure] of added.entries()) {
     const owner = itemOwners(figure)[0];
     if (!owner) {
       throw new Error(`項目の持ち主が無い: ${index}`);
     }
     owner.scrollIntoView({ block: "center" });
-    await userEvent.hover(owner);
+    owner.focus();
     const tip = tipOf(owner);
     expect(tip.hidden, String(index)).toBe(false);
     const definition = ADDED_CHART_DEFINITIONS[index] as {
@@ -10622,11 +10623,11 @@ function stuckBelow(top: number, title: Element, scale: number): boolean {
   return rect.top >= top - 1 && rect.top <= top + 8 * scale + 1;
 }
 
-/** タイトルの真ん中の位置で、最も手前の要素がタイトルかその子か */
+/** タイトルの高さの真ん中・左端から 24px 内側（拡大したタイトルは画面より長いため）の位置で、最も手前の要素がタイトルかその子か */
 function frontAtCenter(title: Element): boolean {
   const rect = title.getBoundingClientRect();
   const hit = document.elementFromPoint(
-    rect.left + rect.width / 2,
+    rect.left + Math.min(rect.width / 2, 24),
     rect.top + rect.height / 2,
   );
   return hit !== null && (hit === title || title.contains(hit));
@@ -10636,7 +10637,7 @@ function frontAtCenter(title: Element): boolean {
 test("test_normal_when_group_titles_stuck", async () => {
   // 準備
   const definition = JSON.parse(INQUIRY_GROUPS_TEXT) as {
-    frame: { title: string; hint: string };
+    frame: { title: string; hint: string; x: number };
     lanes: Array<{ label: string; kind: string; y: number; h: number }>;
   };
   const off = { ...definition, stickyTitles: false };
@@ -10668,8 +10669,9 @@ test("test_normal_when_group_titles_stuck", async () => {
   const scale = scaleOf(stuck);
   const frameTitle = find<HTMLElement>(stuck, ".mdmark-diagram-frame-title");
   const processLabel = labelOf(stuck, process.label);
-  // 実行: 処理の層の途中を見せる
+  // 実行: 処理の層の途中を見せる（狭い画面でもタイトルが画面に入るよう、枠の左端まで横にも動かす）
   const middle = Math.round((process.y + process.h / 2) * scale);
+  viewport.scrollLeft = Math.round(definition.frame.x * scale);
   viewport.scrollTop = middle;
   await nextFrames();
   // 検証
