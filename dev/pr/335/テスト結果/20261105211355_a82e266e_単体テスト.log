@@ -1,0 +1,14 @@
+$ npm run test:unit
+
+> test:unit
+> vitest run --project 'unit*'
+
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/fix-diff-block-coloring-blank-line-match
+
+
+ Test Files  196 passed (196)
+      Tests  1463 passed (1463)
+   Start at  21:10:10
+   Duration  111.99s (worker 45%, tests 32%, import 15%, transform 7%)
+
