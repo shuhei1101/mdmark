@@ -2688,7 +2688,7 @@ functions:
     container: src/render/syntax/includes.ts
     kind: 関数
     scope: internal
-    summary: コアルール（見出しの ID と図表の番号より前）。`include` がオンなら、include のマーカーを `resolveIncludePath` で解き、`opts.includes` の本文を、Markdown は同じパーサでトークンにして `selectHeadingSection` の範囲を、それ以外は `selectLines` の行を拡張子を言語にした `fence` として、`div.mdmark-include` の中に差し込む。差し込んだトークンの元の行番号はマーカーの行にする。取り込んだ Markdown の中のマーカーは取り込みの順を持ってたどり、途中に同じキーがあれば循環の警告を差し込む。表に無いキー・無い見出し・行の数を越える範囲は書き方の警告を差し込む。取り込んだ文書の `features` の印は取り除く
+    summary: コアルール（見出しの ID と図表の番号より前）。`include` がオンなら、include のマーカーを `resolveIncludePath` で解き、`opts.includes` の本文を、Markdown は同じパーサでトークンにして `selectHeadingSection` の範囲を、それ以外は `selectLines` の行を拡張子を言語にした `fence` として、`div.mdmark-include` の中に差し込む。差し込んだトークンの元の行番号はマーカーの行にする。取り込んだ Markdown の中のマーカーは取り込みの順を持ってたどり、途中に同じキーがあれば循環の警告を差し込む。表に無いキー・無い見出し・行の数を越える範囲は書き方の警告を差し込み、`collectWarnings` が集める警告に `includeTarget` を付ける（`mdmark check --text`・`--file` が除く）。取り込んだ文書の `features` の印は取り除く
     args:
       - name: state
         type: StateCore
