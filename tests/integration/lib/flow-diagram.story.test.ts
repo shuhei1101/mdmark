@@ -102,7 +102,7 @@ function nodeBoxes(page: Page) {
   );
 }
 
-// 判定フローチャートは種類ごとの形のノードで描き、凡例の種類は開始・質問・アクション・結果だけ（Judgement）
+// 判定フローチャートは種類ごとの形のノードで描き、凡例は 2 種類以上あるノードの種類だけで、1 種類の線を載せない（Judgement）
 test("test_judgement", async () => {
   // 準備・実行
   const page = await openFlow("judgement");
@@ -128,7 +128,6 @@ test("test_judgement", async () => {
     "質問",
     "アクション",
     "結果",
-    "処理の流れ",
   ]);
   const labels = await page.locator(".mdmark-diagram-label").allInnerTexts();
   expect([...new Set(labels)].sort()).toEqual(["NO", "YES"]);
@@ -321,4 +320,79 @@ test("test_link_not_allowed", async () => {
     });
   expect(order).not.toBe(0);
   await expect(pageOverflows(page)).resolves.toBe(false);
+});
+
+// システムの枠と LLM の層の hint は、タイトルの右に箱と同じ情報の印を置き、hint を持たない層には置かない。凡例は 2 種類以上ある箱と線の種類だけ（GroupHints）
+test("test_group_hints", async () => {
+  // 準備・実行
+  const page = await openFlow("group-hints");
+  // 検証
+  const marks = page.locator("button.mdmark-diagram-group-info");
+  await expect(marks.count()).resolves.toBe(2);
+  await expect(
+    page
+      .locator(".mdmark-diagram-frame-title button.mdmark-diagram-group-info")
+      .count(),
+  ).resolves.toBe(1);
+  const lanes = await page
+    .locator(".mdmark-diagram-lane-label")
+    .evaluateAll((labels) =>
+      labels.map(
+        (label) => label.querySelector(".mdmark-diagram-group-info") !== null,
+      ),
+    );
+  expect(lanes.filter(Boolean)).toHaveLength(1);
+  const markSize = await marks.first().boundingBox();
+  const nodeMark = await page
+    .locator(".mdmark-diagram-node .mdmark-diagram-info")
+    .first()
+    .boundingBox();
+  expect(
+    Math.abs((markSize?.width ?? 0) - (nodeMark?.width ?? 0)),
+  ).toBeLessThanOrEqual(6);
+  const legend = (
+    await page.locator(".mdmark-diagram-legend li").allInnerTexts()
+  ).map((text) => text.trim());
+  for (const word of ["システムの枠", "層", "交差", "出る", "下線"]) {
+    expect(
+      legend.some((text) => text.includes(word)),
+      word,
+    ).toBe(false);
+  }
+  await expect(pageOverflows(page)).resolves.toBe(false);
+});
+
+// 拡大して処理の層の途中を見せた状態は、システムの枠と層のタイトルを地の色と線の札で、ノードと線より手前に留める（TitlesStuck）
+test("test_titles_stuck", async () => {
+  // 準備・実行
+  const page = await openFlow("titles-stuck");
+  // 検証
+  const titles = await page
+    .locator(
+      ":is(.mdmark-diagram-frame-title, .mdmark-diagram-lane-label).is-stuck",
+    )
+    .evaluateAll((elements) =>
+      elements.map((element) => {
+        const style = getComputedStyle(element);
+        const rect = element.getBoundingClientRect();
+        const hit = document.elementFromPoint(
+          rect.left + rect.width / 2,
+          rect.top + rect.height / 2,
+        );
+        return {
+          background: style.backgroundColor,
+          border: style.borderTopStyle,
+          zIndex: style.zIndex,
+          front: hit !== null && (hit === element || element.contains(hit)),
+          visible: rect.width > 0 && rect.height > 0,
+        };
+      }),
+    );
+  expect(titles.length).toBeGreaterThanOrEqual(2);
+  for (const title of titles.filter((entry) => entry.visible)) {
+    expect(title.background).not.toBe("rgba(0, 0, 0, 0)");
+    expect(title.border).toBe("solid");
+    expect(Number(title.zIndex)).toBeGreaterThanOrEqual(2);
+  }
+  expect(titles.some((entry) => entry.visible && entry.front)).toBe(true);
 });

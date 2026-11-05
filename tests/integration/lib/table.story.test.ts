@@ -289,7 +289,7 @@ test("test_default_overflow", async () => {
     10,
   );
   const scrolls = await page
-    .locator(".mdmark-table table")
+    .locator(".mdmark-table .mdmark-table-scroll")
     .evaluate((el) => el.scrollWidth > el.clientWidth);
   expect(scrolls).toBe(true);
   // 先頭の列を既定で留める
@@ -308,7 +308,7 @@ test("test_no_pin", async () => {
   await expect(pinnedColumns(page)).resolves.toEqual([]);
   await expect(
     page
-      .locator(".mdmark-table table")
+      .locator(".mdmark-table .mdmark-table-scroll")
       .evaluate((el) => el.scrollWidth > el.clientWidth),
   ).resolves.toBe(true);
 });
@@ -1342,8 +1342,8 @@ test("test_row_header_pinned", async () => {
   // 表は枠より広い
   await expect(
     page
-      .locator("#storybook-root .mdmark-table table")
-      .evaluate((table) => table.scrollWidth > table.clientWidth),
+      .locator("#storybook-root .mdmark-table .mdmark-table-scroll")
+      .evaluate((scroller) => scroller.scrollWidth > scroller.clientWidth),
   ).resolves.toBe(true);
 });
 
@@ -1706,4 +1706,92 @@ test("test_tree_example_hidden", async () => {
   await expect(page.locator(".mdmark-tree-example").isVisible()).resolves.toBe(
     false,
   );
+});
+
+/** 帯のボタンの見えている文字（読み上げだけの文字を除く）と、幅・高さ */
+function toolBoxes(page: Page) {
+  return page
+    .locator("#storybook-root .mdmark-table-tools > button")
+    .evaluateAll((buttons) =>
+      buttons.map((button) => {
+        const copy = button.cloneNode(true) as HTMLElement;
+        for (const hidden of copy.querySelectorAll(
+          ".mdmark-visually-hidden, .mdmark-table-tool-badge",
+        )) {
+          hidden.remove();
+        }
+        const rect = button.getBoundingClientRect();
+        return {
+          text: (copy.textContent ?? "").trim(),
+          width: rect.width,
+          height: rect.height,
+          title: button.getAttribute("title"),
+          name: button.getAttribute("aria-label") ?? button.textContent ?? "",
+        };
+      }),
+    );
+}
+
+// 帯は、テーブル設定とコピーのボタンがアイコンだけで、テーブル設定に隠した列の数のバッジを持つ（ColumnsButtonA）
+test("test_columns_button_a", async () => {
+  // 準備・実行
+  const page = await open("columns-button-a");
+  // 検証
+  const tools = await toolBoxes(page);
+  expect(tools).toHaveLength(2);
+  for (const button of tools) {
+    expect(button.text).toBe("");
+    expect(Math.abs(button.width - button.height)).toBeLessThanOrEqual(1);
+  }
+  expect(tools[0]?.title).toBe("テーブル設定");
+  expect(tools[0]?.name).toBe("テーブル設定（1 列を非表示）");
+  await expect(
+    page
+      .locator(".mdmark-table-settings-toggle .mdmark-table-tool-badge")
+      .innerText(),
+  ).resolves.toBe("1");
+  await expect(pageOverflows(page)).resolves.toBe(false);
+});
+
+// 列の少ない表は本文の幅いっぱいに広げ、横にスクロールせず、端の影が無い（FillsWidth）
+test("test_fills_width", async () => {
+  // 準備・実行
+  const page = await open("fills-width");
+  // 検証
+  const sizes = await page
+    .locator("#storybook-root .mdmark-table")
+    .evaluate((wrapper) => {
+      const scroller = wrapper.querySelector<HTMLElement>(
+        ".mdmark-table-scroll",
+      );
+      const table = wrapper.querySelector("table");
+      const lastHead = table?.querySelector("thead th:last-child");
+      return {
+        outer: (() => {
+          const parent = wrapper.parentElement;
+          if (!parent) {
+            return 0;
+          }
+          const style = getComputedStyle(parent);
+          return (
+            parent.clientWidth -
+            Number.parseFloat(style.paddingLeft) -
+            Number.parseFloat(style.paddingRight)
+          );
+        })(),
+        wrapper: wrapper.getBoundingClientRect().width,
+        table: table?.getBoundingClientRect().width ?? 0,
+        tableRight: table?.getBoundingClientRect().right ?? 0,
+        headRight: lastHead?.getBoundingClientRect().right ?? 0,
+        overflow: scroller ? scroller.scrollWidth > scroller.clientWidth : true,
+      };
+    });
+  expect(Math.abs(sizes.wrapper - sizes.outer)).toBeLessThanOrEqual(1);
+  expect(Math.abs(sizes.table - sizes.wrapper)).toBeLessThanOrEqual(1);
+  expect(Math.abs(sizes.headRight - sizes.tableRight)).toBeLessThanOrEqual(1);
+  expect(sizes.overflow).toBe(false);
+  await expect(page.locator("button.mdmark-pin:visible").count()).resolves.toBe(
+    0,
+  );
+  await expect(pageOverflows(page)).resolves.toBe(false);
 });

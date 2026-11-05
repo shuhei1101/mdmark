@@ -213,3 +213,87 @@ test("test_fit_when_printed", async () => {
   const { client } = await viewportHeights(page);
   expect(Math.abs(client - content)).toBeLessThanOrEqual(1);
 });
+
+/** 表示する枠の高さと、全体が収まる倍率を確かめる値（表示する枠の幅と高さ・図の大きさ） */
+function frameSizes(page: Page) {
+  return page.locator(".mdmark-diagram-viewport").evaluate((viewport) => {
+    const sizer = viewport.querySelector<HTMLElement>(".mdmark-diagram-sizer");
+    const stage = viewport.querySelector<HTMLElement>(".mdmark-diagram-stage");
+    return {
+      height: viewport.getBoundingClientRect().height,
+      clientWidth: viewport.clientWidth,
+      clientHeight: viewport.clientHeight,
+      sizerWidth: Number.parseFloat(sizer?.style.width ?? ""),
+      sizerHeight: Number.parseFloat(sizer?.style.height ?? ""),
+      scale: stage
+        ? new DOMMatrixReadOnly(getComputedStyle(stage).transform).a
+        : 0,
+    };
+  });
+}
+
+// リサイズハンドルで表示する枠を低くした状態は、全体が収まる倍率を幅と高さで求め、倍率のボタンは 100%（Resized）
+test("test_resized", async () => {
+  // 準備・実行
+  const page = await openFrame("resized", true);
+  // 検証
+  // 保った高さ 240px は、図の全体が収まる高さ（狭い画面では幅で決まる高さ）を超えない
+  const sizes = await frameSizes(page);
+  expect(sizes.height).toBeLessThanOrEqual(241);
+  expect(sizes.height).toBeGreaterThan(0);
+  expect(sizes.sizerWidth).toBeLessThanOrEqual(sizes.clientWidth + 1);
+  expect(sizes.sizerHeight).toBeLessThanOrEqual(sizes.clientHeight + 1);
+  await expect(page.locator(".mdmark-diagram-zoom").innerText()).resolves.toBe(
+    "100%",
+  );
+  const handle = page.locator(".mdmark-diagram-resize");
+  await expect(handle.getAttribute("role")).resolves.toBe("separator");
+  await expect(handle.isVisible()).resolves.toBe(true);
+  await expect(pageOverflows(page)).resolves.toBe(false);
+});
+
+// リサイズハンドルにフォーカスした状態は、フォーカスの枠が見える（ResizeHandleFocused）
+test("test_resize_handle_focused", async () => {
+  // 準備・実行
+  const page = await openFrame("resize-handle-focused", false);
+  // 検証
+  const focus = await page
+    .locator(".mdmark-diagram-resize")
+    .evaluate((handle) => {
+      const style = getComputedStyle(handle);
+      return {
+        focused: document.activeElement === handle,
+        outline: style.outlineStyle,
+        width: Number.parseFloat(style.outlineWidth),
+      };
+    });
+  expect(focus.focused).toBe(true);
+  expect(focus.outline).not.toBe("none");
+  expect(focus.width).toBeGreaterThanOrEqual(2);
+});
+
+// 機能 diagram-resize がオフの図は、右下にリサイズハンドルが無い（ResizeOff）
+test("test_resize_off", async () => {
+  // 準備・実行
+  const page = await openFrame("resize-off", true);
+  // 検証
+  await expect(page.locator(".mdmark-diagram-resize").count()).resolves.toBe(0);
+  await expect(tool(page, "拡大").count()).resolves.toBe(1);
+});
+
+// ノードも線も 1 種類ずつのフロー図は、凡例の項目が無く、凡例の場所を取らない（NoLegendItems）
+test("test_no_legend_items", async () => {
+  // 準備・実行
+  const page = await openFrame("no-legend-items", true);
+  // 検証
+  const legend = page.locator('[aria-label="凡例"]');
+  await expect(legend.locator("li").count()).resolves.toBe(0);
+  await expect(legend.isVisible()).resolves.toBe(false);
+  const gap = await page.locator("figure.mdmark-diagram").evaluate((figure) => {
+    const box = figure
+      .querySelector(".mdmark-diagram-box")
+      ?.getBoundingClientRect();
+    return box ? figure.getBoundingClientRect().bottom - box.bottom : -1;
+  });
+  expect(gap).toBeLessThanOrEqual(16);
+});

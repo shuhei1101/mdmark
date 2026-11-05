@@ -1140,7 +1140,7 @@ functions:
       2. 引数を `parseMarkArgs` で読む。使えるキーは `group`・`default`・`filter`・`icons`。知らないキーは項目つきの警告にする
       3. 範囲に表が無ければ、範囲に表が無い警告を差し込み、中身はそのまま残す
       4. 最初の表の見出しの行の文字を列名にして、`group=`・`filter=` の列名を位置にし、`filter=` の種類を `FILTER_KINDS`、`icons=` の名前を `VIEW_ICON_NAMES` で確かめる。表に無い `group=` の列は `boardDisabled` に警告の `id` を入れ、表に無い `filter=` の列・知らない絞り込みの種類・使えないアイコンはその指定だけを当てずに警告にする（文言は画面設計『文書』の書き方の警告）
-      5. 表の `table_open` に、`data` の種類・`sort` と読めた `filter=` の列を持ち、`hide`・`totals` を空にした `TableSpec` を当てる（ビューの表に件数・列設定・集計は付けない）（`decorateTables` が表の部品にする）
+      5. 表の `table_open` に、`data` の種類・`sort` と読めた `filter=` の列を持ち、`hide`・`totals` を空にした `TableSpec` を当てる（ビューの表に件数・テーブル設定・集計は付けない）（`decorateTables` が表の部品にする）
       6. 範囲を `<div class="mdmark-view" data-view="{ViewSpec の JSON}">` の開きと閉じの `html_block`（`markOwn`）で挟む。`mode` は `default=`、無ければ `group=` が当たれば `board`、それ以外は `table`。`default=board` で `group=` が当たらないときは `table`
     unit_tests:
       - name: test_build_views

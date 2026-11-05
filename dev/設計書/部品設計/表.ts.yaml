@@ -338,7 +338,7 @@ states:
       - name: totals
         value: '[{"column":0,"calc":"count"},{"column":1,"calc":"sum"},{"column":2,"calc":"avg"}]'
   - name: Copied
-    description: コピーした（`コピーしました`、`check` のアイコン）
+    description: コピーした（アイコンを `check` に替え、ツールチップと読み上げの名前を `コピーしました` にする）
     args:
       - name: kind
         value: data
@@ -454,7 +454,7 @@ states:
       - name: openCopy
         value: 'true'
   - name: CopyFallback
-    description: クリップボードに書けず、手動でコピーするパネルを出した。`表をコピー` は `コピーできませんでした`
+    description: クリップボードに書けず、手動でコピーするパネルを出した。`表をコピー` のツールチップと読み上げの名前は `コピーできませんでした`
     args:
       - name: kind
         value: data
@@ -942,6 +942,22 @@ states:
         value: 名前,拠点,金額\n北山,"東京, 本社",1200\n南田,大阪,800
       - name: rawShown
         value: 'true'
+  - name: ColumnsButtonA
+    description: 帯のボタン。テーブル設定とコピーのボタンがアイコンだけで、テーブル設定に隠した列の数のバッジ
+    args:
+      - name: features
+        value: "'[\"count\",\"columns\",\"copy\"]'"
+      - name: hide
+        value: "'[1]'"
+  - name: FillsWidth
+    description: 列の少ない表を本文の幅いっぱいに広げた。横にスクロールせず、端の影が無い
+    args:
+      - name: kind
+        value: data
+      - name: columns
+        value: "'[\"名前\",\"数量\"]'"
+      - name: rows
+        value: "'[[\"りんご\",\"3\"],[\"みかん\",\"5\"],[\"ぶどう\",\"2\"]]'"
 lead: Markdown の表を囲み、多段の見出し・行見出し・縦に結合したセルを描き、種類と `+機能`・`-機能` で決まった並べ替え・ピン止め・絞り込みのボタンと、絞り込みのドロワーを付ける。見出し行は面の色で分け、表が画面に残っている間はページを縦にスクロールしても画面の上端に留め、集計の行を画面の下端に留める。描く先の要素の幅が狭く最終列が 1 行に収まらないときは、最終列を畳んで行ごとに開閉させる。
 args:
   - name: kind
@@ -1063,7 +1079,7 @@ args:
     default: idle
     choices: '`idle`（`表をコピー`）・`copied`（`コピーしました`）・`failed`（`コピーできませんでした`）'
     enabled_when: '`features` に `copy` を含むとき'
-    description: '`表をコピー` のボタンの状態。ボタンの `data-state` と文言・アイコン（`copy`・`check`・`circle-alert`）を切り替える。どの状態でもボタンは文言の後ろに、形式のメニューを開くことを示す `chevron-down` のアイコンを持つ'
+    description: '`表をコピー` のボタンの状態。ボタンの `data-state` と、ツールチップ（`title`）・読み上げの名前・アイコン（`copy`・`check`・`circle-alert`）を切り替える。ボタンは文字を持たずアイコンだけで、形式のメニューを開くことは `aria-expanded` で示す'
   - name: rowIds
     type: 配列
     required: false
@@ -1105,7 +1121,7 @@ args:
   - name: folded
     type: 真偽値
     default: 'false'
-    description: 最終列を畳んでいるか（`mount` が描く先の要素の幅と最終列のセルの折り返しを測って決める）。`true` のとき最終列の見出しとセルを隠し、本文の各行の先頭のセルに最終列を開閉するボタンを置く。列設定で最終列を隠しているときは畳まない
+    description: 最終列を畳んでいるか（`mount` が描く先の要素の幅と最終列のセルの折り返しを測って決める）。`true` のとき最終列の見出しとセルを隠し、本文の各行の先頭のセルに最終列を開閉するボタンを置く。テーブル設定で最終列を隠しているときは畳まない
   - name: unfoldedRows
     type: 配列
     default: '[]'
@@ -1303,6 +1319,7 @@ accessibility:
   - 表は `tabindex="0"` で、キーボードで横にスクロールできる。留めた見出し行と集計の行は元のセルをずらしたもので複製を作らず、読み上げとフォーカスの順は 1 組のまま
   - 件数は `aria-live="polite"` で書き換えを知らせ、読み上げには `{全ての行の数} 件中 {表示している行の数} 件を表示` を渡す
   - テーブル設定のパネルは絞り込みのドロワーと同じ開閉の作法（`aria-expanded`・`aria-controls`、開いたら最初の押せるつまみか目のアイコンへフォーカス、Esc で閉じてボタンへ戻す）。押せない先頭の列の目のアイコンは、理由をパネルの案内に出す
+  - 表をコピーのボタンは `copy` のアイコンだけで、`title` と読み上げの名前を `表をコピー` にする
   - 集計のメニュー（`role="dialog"`・`aria-label="表示する集計"`）とコピーの形式のメニュー（`aria-label="コピーの形式"`）もテーブル設定のパネルと同じ開閉の作法。集計の行を隠しているときは、`集計` のボタンの見た目に加えて読み上げの名前に `（{隠している数} 件を非表示にしています）` を含める
   - 集計の行の出し入れ、表のコピーの結果（コピーした形式・書けなかったことと手動でコピーできること）は、帯の `role="status"` の要素で読み上げる
   - コピーできないときのパネルは `role="group"` で題を名前に持ち、出したら `textarea` へフォーカスを移して中身を全て選択する。閉じるボタンは `閉じる` を読み上げの名前に持ち、閉じるとフォーカスを `表をコピー` に戻す

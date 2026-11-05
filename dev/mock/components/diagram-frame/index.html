@@ -24,6 +24,8 @@
   <script src="../../refs/16/assets/sample.js" defer></script>
   <!-- 図の定義の見本と、図を描いて操作を付けるスクリプト（#42 で共有するアセット） -->
   <script src="../../refs/42/assets/samples.js" defer></script>
+  <!-- #308 で追加するグループの hint・縦に長い図・種類が 1 つずつの図の定義の見本（diagram.js の前に読む） -->
+  <script src="../../refs/308/assets/samples.js" defer></script>
   <script src="../../refs/42/assets/diagram.js" defer></script>
 </head>
 <body>
@@ -71,6 +73,48 @@
         <h2 class="catalog-label" id="state-narrow">狭い枠（凡例を折り返し、ボタンの帯は 1 行に収める）</h2>
         <article class="mdmark catalog-narrow">
           <figure data-mock-diagram="inquiry" data-mock-zoom="0.6" data-mock-scroll="240,100"></figure>
+        </article>
+      </section>
+
+      <!-- 凡例: 図に 2 種類以上あるノードの種類と線の種類だけを載せる。枠・層・交差・ツールチップの印・下線は載せない -->
+      <section aria-labelledby="state-legend">
+        <h2 class="catalog-label" id="state-legend">凡例（2 種類以上あるノードの種類と線の種類だけ）</h2>
+        <article class="mdmark">
+          <figure data-mock-diagram="inquiry"></figure>
+        </article>
+      </section>
+
+      <!-- 凡例の項目が無い: ノードの種類も線の種類も 1 つずつの図は、凡例の行を出さない -->
+      <section aria-labelledby="state-legend-empty">
+        <h2 class="catalog-label" id="state-legend-empty">凡例の項目が無い（ノードと線の種類が 1 つずつ。凡例の行を出さない）</h2>
+        <article class="mdmark">
+          <figure data-mock-diagram="single-kinds"></figure>
+        </article>
+      </section>
+
+      <!-- リサイズハンドル: 表示枠の右下の角。ドラッグと上下キーで縦にだけ高さを変え、ダブルクリックで元の高さに戻す。開いたときの高さは 36rem で切られる -->
+      <section aria-labelledby="state-resize">
+        <h2 class="catalog-label" id="state-resize">リサイズハンドル（右下。ドラッグと ↑ ↓ で高さを変え、ダブルクリックで戻す。開いたときは 36rem で切る）</h2>
+        <article class="mdmark">
+          <figure data-mock-diagram="tall-flow"></figure>
+        </article>
+      </section>
+
+      <!-- 高さを変えた: 変えた高さで全体が収まる倍率を計算し直す。同じタブの中で読み直しても保つ -->
+      <section aria-labelledby="state-resized">
+        <h2 class="catalog-label" id="state-resized">高さを変えた（変えた高さで全体が収まる倍率に計算し直す）</h2>
+        <article class="mdmark">
+          <!-- [data-mock-height]: リサイズハンドルで変えた高さ（モックだけの指定） -->
+          <figure data-mock-diagram="tall-flow" data-mock-height="760"></figure>
+        </article>
+      </section>
+
+      <!-- リサイズハンドルの機能がオフ: 表示枠の右下にハンドルを置かない。全画面のモーダルの中にも置かない -->
+      <section aria-labelledby="state-resize-off">
+        <h2 class="catalog-label" id="state-resize-off">リサイズハンドルの機能がオフ（置かない。全画面のモーダルの中も置かない）</h2>
+        <!-- [data-mock-resize="off"]: diagram.js がこの中の図にリサイズハンドルを置かない（機能をオフにした文書に当たる） -->
+        <article class="mdmark" data-mock-resize="off">
+          <figure data-mock-diagram="tall-flow"></figure>
         </article>
       </section>
     </div>

@@ -130,3 +130,37 @@ test("test_stack_series", async () => {
     ],
   ]);
 });
+
+// 下限と上限の間に収める（正常系）
+test("test_clamp_diagram_height", async () => {
+  // 準備
+  const { clampDiagramHeight } = await loadGeometry();
+  // 実行
+  const heights = [50, 400.6, 1000].map((h) => clampDiagramHeight(h, 800));
+  const small = clampDiagramHeight(200, 80);
+  // 検証
+  expect(heights).toEqual([120, 401, 800]);
+  expect(small).toBe(120);
+});
+
+// 見えているグループのタイトルを留め、層は枠のタイトルの下に留める（正常系）
+test("test_sticky_title_shifts", async () => {
+  // 準備
+  const { stickyTitleShifts } = await loadGeometry();
+  const titles = [
+    { base: 8, bottom: 600, height: 20, frame: true },
+    { base: 40, bottom: 200, height: 18, frame: false },
+    { base: 206, bottom: 400, height: 18, frame: false },
+  ];
+  // 実行
+  const atTop = stickyTitleShifts({ top: 0, gap: 4, titles });
+  const middle = stickyTitleShifts({ top: 100, gap: 4, titles });
+  const lower = stickyTitleShifts({ top: 250, gap: 4, titles });
+  // 検証
+  expect(atTop.every((title) => title.shift === 0 && !title.stuck)).toBe(true);
+  expect(middle[0]?.stuck).toBe(true);
+  expect(middle[1]?.stuck).toBe(true);
+  expect(middle[1]?.shift).toBe(100 + 4 + 20 + 4 - 40);
+  expect(lower[1]?.stuck).toBe(false);
+  expect(lower[2]?.stuck).toBe(true);
+});

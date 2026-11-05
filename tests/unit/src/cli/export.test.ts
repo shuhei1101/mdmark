@@ -550,3 +550,28 @@ test("test_export_document_when_media_unwritable", async () => {
   await expect(result).rejects.toBeInstanceOf(CliError);
   expect(existsSync(join(dir, "guide.html"))).toBe(false);
 });
+
+// 設定の tooltips.diagramPlacement を埋める設定に写す（正常系）
+test("test_prepare_embeds_when_diagram_placement", async () => {
+  // 準備
+  const { prepareEmbeds } = await loadExport();
+  const dir = await createTempDir();
+  await writeFiles(dir, { "guide.md": "# Guide\n" });
+  const docs = [{ path: "guide.md", file: join(dir, "guide.md") }];
+  // 実行
+  const result = await prepareEmbeds({
+    fetchText: NO_FETCH,
+    loaded: createLoaded(dir, {
+      tooltips: { placement: "bottom", diagramPlacement: "top" },
+    }),
+    docs,
+    kind: "document",
+    entry: "guide.md",
+    out: join(dir, "guide.html"),
+  });
+  // 検証
+  expect(result.payload.config.tooltips).toEqual({
+    placement: "bottom",
+    diagramPlacement: "top",
+  });
+});

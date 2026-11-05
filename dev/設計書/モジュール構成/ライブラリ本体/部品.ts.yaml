@@ -243,7 +243,7 @@ functions:
     container: src/parts/table.ts
     kind: 関数
     scope: internal
-    summary: 部品設計『表』の HTML を返す。`render` は表を `SLOT_MARKER` にして囲みだけを使い、Storybook は `columns`・`rows` と状態の引数（`sort`・`overflow`・`pinned`・`openFilter`・`filterValues`・`hiddenColumns`・`openColumns`・`copyState`・`targetRow`・`shownTotals`・`openTotals`・`openCopy`・`copyFallback`・`rowLinkNotice`・`folded`・`unfoldedRows`）で操作を付けた後の見た目を作る。折り畳みの見出しは `title` か `表（{`rows` の数か `rowCount`} 行）`。囲みには `hide`・`totals` を `data-hide`・`data-total` で持たせ、`rows` を渡したときは `renderTableBar` の帯とメニュー、`copyFallback` のときは `renderCopyPanel` のパネル、`renderTotalRows` の集計の行、`rowIds` の行の `id` と行へのリンクと知らせの要素、`folded` のときは `renderFoldedColumn` の開閉のボタンと開閉の行（最終列のセルに `mdmark-fold-col`、囲みに `is-folded`）も描く。集計の値は `filterValues` に合う行から `computeTotal` で出し、全ての行で `findUnreadableTotals` が返した列と計算のセルは空にする。`highlight` の列の `th`・`td` に class `mdmark-col-highlight` と `data-color`、`rowColors` の行の `tr` に `data-color` を付ける（`render` はこれらを記法のコアルールがトークンに付けるため、Storybook の見た目にだけ使う）。`headRows` を渡すと `thead` を段ごとのセル（`rowspan`・`colspan`・`scope`）で描き、`bottomHeadCells` で決めた最下段のセルにだけ `renderTableTools` のボタンを置く。`rowHeader` の列のセルは `<th scope="row">`、`mergeColumns` の列は表示する行から `mergeSpans` で結合を決めて始まりのセルに `rowspan` と `is-merged`、続くセルに `hidden` を付ける。`pinned` を省いたときは `rowHeader` の数を留める。囲みには `pin`・`check` を `data-pin`・`data-check` で持たせる。`rows` を渡したときは、`wide` の列の `th`・`td` に class `mdmark-wide`、`check` の列の `th`・`td` に class `mdmark-align-center` を付け、`check` の列の `true`・`false` のセルを `data-value` と `renderCheckCell` の中身にする
+    summary: 部品設計『表』の HTML を返す。`render` は表を `SLOT_MARKER` にして囲みだけを使い、Storybook は `columns`・`rows` と状態の引数（`sort`・`overflow`・`pinned`・`openFilter`・`filterValues`・`hiddenColumns`・`openColumns`・`copyState`・`targetRow`・`shownTotals`・`openTotals`・`openCopy`・`copyFallback`・`rowLinkNotice`・`folded`・`unfoldedRows`）で操作を付けた後の見た目を作る。折り畳みの見出しは `title` か `表（{`rows` の数か `rowCount`} 行）`。表（と `SLOT_MARKER`）は横にスクロールさせる `div.mdmark-table-scroll` で包む（計画書の案 A。表の `tabindex="0"` と `aria-label` は `table` に残す）。囲みには `hide`・`totals` を `data-hide`・`data-total` で持たせ、`rows` を渡したときは `renderTableBar` の帯とメニュー、`copyFallback` のときは `renderCopyPanel` のパネル、`renderTotalRows` の集計の行、`rowIds` の行の `id` と行へのリンクと知らせの要素、`folded` のときは `renderFoldedColumn` の開閉のボタンと開閉の行（最終列のセルに `mdmark-fold-col`、囲みに `is-folded`）も描く。集計の値は `filterValues` に合う行から `computeTotal` で出し、全ての行で `findUnreadableTotals` が返した列と計算のセルは空にする。`highlight` の列の `th`・`td` に class `mdmark-col-highlight` と `data-color`、`rowColors` の行の `tr` に `data-color` を付ける（`render` はこれらを記法のコアルールがトークンに付けるため、Storybook の見た目にだけ使う）。`headRows` を渡すと `thead` を段ごとのセル（`rowspan`・`colspan`・`scope`）で描き、`bottomHeadCells` で決めた最下段のセルにだけ `renderTableTools` のボタンを置く。`rowHeader` の列のセルは `<th scope="row">`、`mergeColumns` の列は表示する行から `mergeSpans` で結合を決めて始まりのセルに `rowspan` と `is-merged`、続くセルに `hidden` を付ける。`pinned` を省いたときは `rowHeader` の数を留める。囲みには `pin`・`check` を `data-pin`・`data-check` で持たせる。`rows` を渡したときは、`wide` の列の `th`・`td` に class `mdmark-wide`、`check` の列の `th`・`td` に class `mdmark-align-center` を付け、`check` の列の `true`・`false` のセルを `data-value` と `renderCheckCell` の中身にする
     args:
       - name: options
         type: TableOptions
@@ -268,7 +268,7 @@ functions:
         summary: 囲みに種類・機能・絞り込みを属性で持たせる
         condition: '`kind: data`、`features: [sort, pin, filter]`、`filters: [{0, select}]`、`body: SLOT_MARKER`'
         mock: なし
-        expected: '`<div class="mdmark-table" data-kind="data" data-features="sort pin filter" data-filter="0:select">` の中に `SLOT_MARKER`'
+        expected: '`<div class="mdmark-table" data-kind="data" data-features="sort pin filter" data-filter="0:select">` の中の `div.mdmark-table-scroll` に `SLOT_MARKER`'
       - name: test_render_table_when_closed
         case: 正常
         summary: 閉じた表は折り畳みに入れる
@@ -744,7 +744,7 @@ functions:
     container: src/parts/table.ts
     kind: 関数
     scope: internal
-    summary: '`count`・`columns`・`reorder`・`total`・`copy` のうち付けた機能の帯（件数・テーブル設定のアイコンだけのボタン（`settings-2`。隠した列の数のバッジと、隠した列があるとき `テーブル設定（{数} 列を非表示）` の `aria-label`）・`集計`・`表をコピー` と、読み上げに使う `role="status"` の `mdmark-table-status`）と、テーブル設定のパネル（`renderTableSettings`）・集計のメニュー（題 `表示する集計` と、集計する計算の `value` を持つチェックボックス）・コピーの形式のメニュー（`Markdown の表`・`TSV` の形式の名前と使いどころ）の HTML を返す。`集計` のボタンは出さない計算があれば `is-active` にし、読み上げの名前に `（{隠している数} 件を非表示にしています）` を加える。`表をコピー` のボタンは文言の後ろに `chevron-down` を持つ。アイコンは lucide の `columns-3`・`sigma`・`copy`・`check`・`circle-alert`・`chevron-down`（`sigma` は `src/parts/icons.ts` に足す）。`mount` が描いた表に足すのにも使う'
+    summary: '`count`・`columns`・`reorder`・`total`・`copy` のうち付けた機能の帯（件数・テーブル設定のアイコンだけのボタン（`settings-2`。隠した列の数のバッジと、隠した列があるとき `テーブル設定（{数} 列を非表示）` の `aria-label`）・`集計`・`表をコピー` と、読み上げに使う `role="status"` の `mdmark-table-status`）と、テーブル設定のパネル（`renderTableSettings`）・集計のメニュー（題 `表示する集計` と、集計する計算の `value` を持つチェックボックス）・コピーの形式のメニュー（`Markdown の表`・`TSV` の形式の名前と使いどころ）の HTML を返す。`集計` のボタンは出さない計算があれば `is-active` にし、読み上げの名前に `（{隠している数} 件を非表示にしています）` を加える。テーブル設定と `表をコピー` のボタンは class `is-icon-only` でアイコンだけを見せ、`title` を持つ。`表をコピー` は `mdmark-visually-hidden` の読み上げの名前（`copyState` の文言）を持つ。列を隠しているときはテーブル設定のボタンに `is-active` を付ける。アイコンは lucide の `settings-2`・`sigma`・`copy`・`check`・`circle-alert`・`chevron-down`（`sigma` は `src/parts/icons.ts` に足す）。`mount` が描いた表に足すのにも使う'
     args:
       - name: options
         type: '{ id: string; features: string[]; labels: string[]; shown: number; total: number; hiddenColumns: number[]; openColumns?: boolean; copyState?: "idle" | "copied" | "failed"; totals?: TotalCalc[]; shownTotals?: TotalCalc[]; openTotals?: boolean; openCopy?: boolean }'
@@ -759,7 +759,7 @@ functions:
         summary: 件数とテーブル設定とコピーの帯を返す
         condition: '`features: [count, columns, copy]`、列名 `名前`・`説明`・`更新日`、`shown: 2`、`total: 3`、`hiddenColumns: [1]`'
         mock: なし
-        expected: '`bar` に `aria-live="polite"` の `2 / 3 件` と読み上げ `3 件中 2 件を表示`、`aria-expanded="false"` で `aria-label` が `テーブル設定（1 列を非表示）` のテーブル設定のボタン（バッジ `1`）、`data-state="idle"` で `chevron-down` を持つ `表をコピー`、`role="status"` の `mdmark-table-status`。`menus` のテーブル設定のパネルが `hidden` で、名前の目のアイコンが `disabled`、案内に `先頭の列は隠せません` があり、コピーの形式のメニューが `hidden` で `data-format` が `markdown`・`tsv` のボタンを持つ'
+        expected: '`bar` に `aria-live="polite"` の `2 / 3 件` と読み上げ `3 件中 2 件を表示`、`aria-expanded="false"`・`is-icon-only`・`is-active`・`title="テーブル設定"` で、見える文字を持たず、`aria-label` が `テーブル設定（1 列を非表示）` のテーブル設定のボタン（バッジ `1`）、`data-state="idle"`・`is-icon-only`・`title="表をコピー"` で `chevron-down` を持たないコピーのボタン、`role="status"` の `mdmark-table-status`。`menus` のテーブル設定のパネルが `hidden` で、名前の目のアイコンが `disabled`、案内に `先頭の列は隠せません` があり、コピーの形式のメニューが `hidden` で `data-format` が `markdown`・`tsv` のボタンを持つ'
       - name: test_render_table_bar_when_copy_failed
         case: 正常
         summary: コピーできなかったボタンを返す

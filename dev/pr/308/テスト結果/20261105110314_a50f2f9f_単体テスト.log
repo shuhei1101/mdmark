@@ -1,0 +1,583 @@
+$ npx vitest run --project 'unit*' {変更した単体テストの 13 ファイル}
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/design-display-chart-tips-table-width-diagram-resize-columns-button-architecture
+
+ ❯ |unit| tests/unit/src/config.test.ts (10 tests | 2 failed) 724ms
+   × test_resolve_config 720ms
+   × test_resolve_config_when_diagram_placement_given 1ms
+ ❯ |unit| tests/unit/src/parts/table.test.ts (29 tests | 3 failed) 3645ms
+   × test_render_table 3611ms
+   × test_render_table_bar 5ms
+   × test_render_table_bar_when_bar_style 2ms
+ ❯ |unit| tests/unit/src/parts/chart.test.ts (11 tests | 2 failed) 919ms
+   × test_render_chart_when_item_tips 10ms
+   × test_chart_item_text 1ms
+ ❯ |unit| tests/unit/src/diagram/definition.test.ts (18 tests | 1 failed) 911ms
+   × test_read_definition_when_group_options_invalid 10ms
+ ❯ |unit| tests/unit/src/diagram/geometry.test.ts (9 tests | 2 failed) 17ms
+   × test_clamp_diagram_height 3ms
+   × test_sticky_title_shifts 1ms
+ ❯ |unit| tests/unit/src/parts/diagram.test.ts (27 tests | 8 failed) 1266ms
+   × test_render_chart 10ms
+   × test_legend_for 2ms
+   × test_legend_for_when_judgement 1ms
+   × test_render_diagram_frame_when_resizable 1ms
+   × test_render_diagram_frame_when_no_legend 1ms
+   × test_render_flow_when_group_hint 11ms
+   × test_legend_for_when_single_kinds 1ms
+   × test_render_diagram_tip_when_item 1ms
+ ❯ |unit| tests/unit/src/cli/config.test.ts (20 tests | 1 failed) 20555ms
+   × test_validate_config_when_diagram_placement_invalid 6ms
+11:02:23 AM [vite] Internal server error: Failed to resolve import "../../../../src/interact/diagram-resize.ts" from "tests/unit/src/interact/diagram-resize.browser.test.ts". Does the file exist?
+  Plugin: vite:import-analysis
+  File: /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/design-display-chart-tips-table-width-diagram-resize-columns-button-architecture/tests/unit/src/interact/diagram-resize.browser.test.ts:7:32
+  4  |  import { memoryStorage, throwingStorage } from "../../helpers/storage.ts";
+  5  |  /** リサイズハンドルの処理を読み込む（実装が無い間は各テストが個別に失敗する） */
+  6  |  const loadResize = () => import("../../../../src/interact/diagram-resize.ts");
+     |                                  ^
+  7  |  const detachers = [];
+  8  |  afterEach(() => {
+      at TransformPluginContext._formatLog (file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/design-display-chart-tips-table-width-diagram-resize-columns-button-architecture/node_modules/vite/dist/node/chunks/node.js:8766:39)
+      at TransformPluginContext.error (file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/design-display-chart-tips-table-width-diagram-resize-columns-button-architecture/node_modules/vite/dist/node/chunks/node.js:8763:14)
+      at normalizeUrl (file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/design-display-chart-tips-table-width-diagram-resize-columns-button-architecture/node_modules/vite/dist/node/chunks/node.js:26632:18)
+      at async file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/design-display-chart-tips-table-width-diagram-resize-columns-button-architecture/node_modules/vite/dist/node/chunks/node.js:26702:30
+      at async Promise.all (index 4)
+      at async TransformPluginContext.transform (file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/design-display-chart-tips-table-width-diagram-resize-columns-button-architecture/node_modules/vite/dist/node/chunks/node.js:26668:4)
+      at async EnvironmentPluginContainer.transform (file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/design-display-chart-tips-table-width-diagram-resize-columns-button-architecture/node_modules/vite/dist/node/chunks/node.js:8545:14)
+      at async loadAndTransform (file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/design-display-chart-tips-table-width-diagram-resize-columns-button-architecture/node_modules/vite/dist/node/chunks/node.js:20184:26)
+      at async viteTransformMiddleware (file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/design-display-chart-tips-table-width-diagram-resize-columns-button-architecture/node_modules/vite/dist/node/chunks/node.js:20404:20)
+ ❯ |unit-browser (chromium)| tests/unit/src/interact/diagram-resize.browser.test.ts (0 test)
+ ❯ |unit-browser (chromium)| tests/unit/src/interact/zoom.browser.test.ts (6 tests | 2 failed) 534ms
+   × test_attach_zoom_when_drag_threshold 197ms
+   × test_attach_zoom_when_refit 204ms
+ ❯ |unit-browser (chromium)| tests/unit/src/interact/diagram-tips.browser.test.ts (12 tests | 1 failed) 550ms
+   × test_attach_diagram_tips_when_chart_item 221ms
+ ❯ |unit-browser (chromium)| tests/unit/src/interact/tables.browser.test.ts (52 tests | 2 failed) 2107ms
+   × test_attach_tables_when_columns_badge 157ms
+   × test_attach_tables_when_scroll_wrapper 117ms
+ ❯ |unit-browser (chromium)| tests/unit/src/interact/diagrams.browser.test.ts (12 tests | 3 failed) 15780ms
+   × test_open_diagram_dialog_when_tip_open 15043ms
+   × test_attach_diagrams_when_handle_resized 108ms
+   × test_attach_diagrams_when_titles_stuck 161ms
+
+⎯⎯⎯⎯⎯⎯ Failed Suites 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/diagram-resize.browser.test.ts [ tests/unit/src/interact/diagram-resize.browser.test.ts ]
+Error: Failed to import test file /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/design-display-chart-tips-table-width-diagram-resize-columns-button-architecture/tests/unit/src/interact/diagram-resize.browser.test.ts
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=6d20af1b:5848:5
+ ❯ collectTests node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=6d20af1b:5824:3
+ ❯ startTests node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=6d20af1b:6508:17
+
+Caused by: TypeError: Failed to fetch dynamically imported module: http://localhost:63317/mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/design-display-chart-tips-table-width-diagram-resize-columns-button-architecture/tests/unit/src/interact/diagram-resize.browser.test.ts?import&browserv=1793844143085
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/28]⎯
+
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 27 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit| tests/unit/src/config.test.ts > test_resolve_config
+AssertionError: expected { …(7) } to deeply equal { …(7) }
+
+- Expected
++ Received
+
+@@ -42,9 +42,8 @@
+    },
+    "syntax": {
+      "url": "https://cdn.jsdelivr.net/npm/@highlightjs/cdn-assets@11.12.0/es/",
+    },
+    "tooltips": {
+-     "diagramPlacement": "bottom",
+      "placement": "top",
+    },
+  }
+
+ ❯ tests/unit/src/config.test.ts:53:20
+     51|   const resolved = resolveConfig({});
+     52|   // 検証
+     53|   expect(resolved).toEqual({
+       |                    ^
+     54|     features: DEFAULT_FEATURES,
+     55|     libraries: {},
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/28]⎯
+
+ FAIL  |unit| tests/unit/src/config.test.ts > test_resolve_config_when_diagram_placement_given
+AssertionError: expected [ undefined, undefined, undefined ] to deeply equal [ 'top', 'bottom', 'bottom' ]
+
+- Expected
++ Received
+
+  [
+-   "top",
+-   "bottom",
+-   "bottom",
++   undefined,
++   undefined,
++   undefined,
+  ]
+
+ ❯ tests/unit/src/config.test.ts:214:70
+    212|   );
+    213|   // 検証
+    214|   expect(resolved.map((config) => config.tooltips.diagramPlacement)).t…
+       |                                                                      ^
+    215|     "top",
+    216|     "bottom",
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/28]⎯
+
+ FAIL  |unit| tests/unit/src/cli/config.test.ts > test_validate_config_when_diagram_placement_invalid
+AssertionError: expected [] to have a length of 1 but got +0
+
+- Expected
++ Received
+
+- 1
++ 0
+
+ ❯ tests/unit/src/cli/config.test.ts:349:26
+    347|   );
+    348|   // 検証
+    349|   expect(invalid.issues).toHaveLength(1);
+       |                          ^
+    350|   expect(invalid.issues[0]).toMatchObject({
+    351|     where: "tooltips.diagramPlacement",
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/28]⎯
+
+ FAIL  |unit| tests/unit/src/diagram/definition.test.ts > test_read_definition_when_group_options_invalid
+AssertionError: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ tests/unit/src/diagram/definition.test.ts:416:26
+    414|   const rightResult = readDefinition("flow", [JSON.stringify(right)]);
+    415|   // 検証
+    416|   expect(wrongResult.ok).toBe(false);
+       |                          ^
+    417|   expect(wrongResult.problems).toHaveLength(2);
+    418|   expect(wrongResult.problems.some((p) => p.includes("frame.hint"))).t…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/28]⎯
+
+ FAIL  |unit| tests/unit/src/diagram/geometry.test.ts > test_clamp_diagram_height
+TypeError: clampDiagramHeight is not a function
+ ❯ tests/unit/src/diagram/geometry.test.ts:139:48
+    137|   const { clampDiagramHeight } = await loadGeometry();
+    138|   // 実行
+    139|   const heights = [50, 400.6, 1000].map((h) => clampDiagramHeight(h, 8…
+       |                                                ^
+    140|   const small = clampDiagramHeight(200, 80);
+    141|   // 検証
+ ❯ tests/unit/src/diagram/geometry.test.ts:139:37
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/28]⎯
+
+ FAIL  |unit| tests/unit/src/diagram/geometry.test.ts > test_sticky_title_shifts
+TypeError: stickyTitleShifts is not a function
+ ❯ tests/unit/src/diagram/geometry.test.ts:156:17
+    154|   ];
+    155|   // 実行
+    156|   const atTop = stickyTitleShifts({ top: 0, gap: 4, titles });
+       |                 ^
+    157|   const middle = stickyTitleShifts({ top: 100, gap: 4, titles });
+    158|   const lower = stickyTitleShifts({ top: 250, gap: 4, titles });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/28]⎯
+
+ FAIL  |unit| tests/unit/src/parts/chart.test.ts > test_render_chart_when_item_tips
+AssertionError: expected [] to have a length of 10 but got +0
+
+- Expected
++ Received
+
+- 10
++ 0
+
+ ❯ tests/unit/src/parts/chart.test.ts:371:16
+    369|     /<circle\b[^>]*class="mdmark-diagram-item-hit"[^>]*>/g,
+    370|   );
+    371|   expect(hits).toHaveLength(10);
+       |                ^
+    372|   for (const hit of hits) {
+    373|     expect(hit).toContain('r="12"');
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/28]⎯
+
+ FAIL  |unit| tests/unit/src/parts/chart.test.ts > test_chart_item_text
+TypeError: chartItemText is not a function
+ ❯ tests/unit/src/parts/chart.test.ts:402:5
+    400|   // 実行
+    401|   const texts = [
+    402|     chartItemText({ type: "line", tick: "2月", value: 38, definition: l…
+       |     ^
+    403|     chartItemText({ type: "scatter", point: [3, 40], definition: scatt…
+    404|     chartItemText({ type: "bubble", point: [3, 40, 16], definition: bu…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/28]⎯
+
+ FAIL  |unit| tests/unit/src/parts/diagram.test.ts > test_render_chart
+AssertionError: expected [] to have a length of 10 but got +0
+
+- Expected
++ Received
+
+- 10
++ 0
+
+ ❯ tests/unit/src/parts/diagram.test.ts:247:44
+    245|     'aria-label="返信までの時間。自動返信: 12・9・14・8・10。担当者: 42・38・51・35・44"',
+    246|   );
+    247|   expect(matches(tips, /role="tooltip"/g)).toHaveLength(10);
+       |                                            ^
+    248| });
+    249|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/28]⎯
+
+ FAIL  |unit| tests/unit/src/parts/diagram.test.ts > test_legend_for
+TypeError: Cannot read properties of undefined (reading 'hints')
+ ❯ legendFor src/parts/diagram.ts:810:23
+    808|     return chartLegend(definition);
+    809|   }
+    810|   const hints = drawn.hints !== false;
+       |                       ^
+    811|   const isFlow = "wires" in definition;
+    812|   const nodes: Array<Pick<MdmarkDiagramNode, "kind" | "io" | "hint">> …
+ ❯ tests/unit/src/parts/diagram.test.ts:288:17
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/28]⎯
+
+ FAIL  |unit| tests/unit/src/parts/diagram.test.ts > test_legend_for_when_judgement
+TypeError: Cannot read properties of undefined (reading 'hints')
+ ❯ legendFor src/parts/diagram.ts:810:23
+    808|     return chartLegend(definition);
+    809|   }
+    810|   const hints = drawn.hints !== false;
+       |                       ^
+    811|   const isFlow = "wires" in definition;
+    812|   const nodes: Array<Pick<MdmarkDiagramNode, "kind" | "io" | "hint">> …
+ ❯ tests/unit/src/parts/diagram.test.ts:307:17
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[12/28]⎯
+
+ FAIL  |unit| tests/unit/src/parts/diagram.test.ts > test_render_diagram_frame_when_resizable
+Error: 開始タグが無い: class="mdmark-diagram-resize"
+ ❯ findTag tests/unit/helpers/html.ts:10:11
+      8|   const tag = startTags(html).find((candidate) => candidate.includes(n…
+      9|   if (tag === undefined) {
+     10|     throw new Error(`開始タグが無い: ${needle}`);
+       |           ^
+     11|   }
+     12|   return tag;
+ ❯ tests/unit/src/parts/diagram.test.ts:694:18
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[13/28]⎯
+
+ FAIL  |unit| tests/unit/src/parts/diagram.test.ts > test_render_diagram_frame_when_no_legend
+AssertionError: expected '<ul class="mdmark-diagram-legend" ari…' to match /\bhidden\b/
+
+- Expected:
+/\bhidden\b/
+
++ Received:
+"<ul class=\"mdmark-diagram-legend\" aria-label=\"凡例\">"
+
+ ❯ tests/unit/src/parts/diagram.test.ts:722:44
+    720|   const html = renderDiagramFrame(frame, BODY);
+    721|   // 検証
+    722|   expect(findTag(html, 'aria-label="凡例"')).toMatch(/\bhidden\b/);
+       |                                            ^
+    723|   expect(findTag(html, "<figure")).toContain('data-sticky-titles="off"…
+    724| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[14/28]⎯
+
+ FAIL  |unit| tests/unit/src/parts/diagram.test.ts > test_render_flow_when_group_hint
+AssertionError: expected '<div class="mdmark-diagram-frame" sty…' to contain 'aria-label="「問い合わせ窓口（自動返信のシステム）」の説明"'
+
+Expected: "aria-label="「問い合わせ窓口（自動返信のシステム）」の説明""
+Received: "<div class="mdmark-diagram-frame" style="left:140px;top:20px;width:810px;height:520px"></div><div class="mdmark-diagram-lane" data-kind="llm" style="left:141.5px;top:56px;width:807px;height:124px"></div><span class="mdmark-diagram-lane-label" style="left:152px;top:62px">LLM・意思決定モデル</span><div class="mdmark-diagram-lane" data-kind="mcp" style="left:141.5px;top:180px;width:807px;height:140px"></div><span class="mdmark-diagram-lane-label" style="left:152px;top:186px">処理（MCP・スクリプト）</span><div class="mdmark-diagram-lane" data-kind="data" style="left:141.5px;top:320px;width:807px;height:136px"></div><span class="mdmark-diagram-lane-label" style="left:152px;top:326px">データ</span><span class="mdmark-diagram-frame-title" style="left:152px;top:28px"><svg class="mdmark-diagram-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="20" height="8" x="2" y="2" rx="2" ry="2"></rect><rect width="20" height="8" x="2" y="14" rx="2" ry="2"></rect><line x1="6" x2="6.01" y1="6" y2="6"></line><line x1="6" x2="6.01" y1="18" y2="18"></line></svg>問い合わせ窓口（自動返信のシステム）</span><svg class="mdmark-diagram-wires" width="1100" height="560" aria-hidden="true"><path class="mdmark-diagram-wire" data-line="flow" data-wire="w-mail" d="M128,250 L250,250" stroke-width="1.5" marker-end="url(#d1-head-flow)"></path><path class="mdmark-diagram-wire-hit" data-tip-owner="w-mail" d="M128,250 L250,250"></path><path class="mdmark-diagram-wire" data-line="flow" data-wire="w-body" d="M320,218 L320,120 L410,120" stroke-width="1.5" marker-end="url(#d1-head-flow)"></path><path class="mdmark-diagram-wire-hit" data-tip-owner="w-body" d="M320,218 L320,120 L410,120"></path><path class="mdmark-diagram-wire" data-line="write" data-wire="w-save" d="M370,282 L370,358" stroke-width="2.5" marker-end="url(#d1-head-write)"></path><path class="mdmark-diagram-wire" data-line="flow" data-wire="w-kind" d="M550,120 L630,120" stroke-width="1.5" marker-end="url(#d1-head-flow)"></path><path class="mdmark-diagram-wire" data-line="flow" data-wire="w-tool" d="M660,152 L660,190 L500,190 L500,218" stroke-width="1.5" marker-end="url(#d1-head-flow)"></path><path class="mdmark-diagram-wire-hit" data-tip-owner="w-tool" d="M660,152 L660,190 L500,190 L500,218"></path><path class="mdmark-diagram-wire" data-line="read" data-wire="w-faq" d="M720,358 L720,152" stroke-dasharray="6 4" stroke-width="1.5" marker-end="url(#d1-head-read)"></path><path class="mdmark-diagram-wire-hit" data-tip-owner="w-faq" d="M720,358 L720,152"></path><path class="mdmark-diagram-wire" data-line="flow" data-wire="w-send" d="M550,250 L714,250 A6,6 0 0 1 726,250 L780,250" stroke-width="1.5" marker-end="url(#d1-head-flow)"></path><path class="mdmark-diagram-wire" data-line="write" data-wire="w-done" d="M480,282 L480,390 L440,390" stroke-width="2.5" marker-end="url(#d1-head-write)"></path><path class="mdmark-diagram-wire" data-line="flow" data-wire="w-chat" d="M920,250 L976,250" stroke-width="1.5" marker-end="url(#d1-head-flow)"></path><path class="mdmark-diagram-wire-hit" data-tip-owner="w-chat" d="M920,250 L976,250"></path><path class="mdmark-diagram-wire" data-line="loop" data-wire="w-loop" d="M850,282 L850,497 L270,497 L270,282" stroke-dasharray="8 4" stroke-width="1.5" marker-end="url(#d1-head-loop)"></path></svg><div class="mdmark-diagram-node" data-kind="external" data-node="mail" style="left:12px;top:218px;width:116px;height:64px"><span class="mdmark-diagram-node-kind"><svg class="mdmark-diagram-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"></path><path d="M2 12h20"></path></svg><span>外部</span></span><span class="mdmark-diagram-node-name">メールサーバー</span></div><div class="mdmark-diagram-node has-tip" data-kind="script" data-node="recv" style="left:250px;top:218px;width:140px;height:64px"><span class="mdmark-diagram-node-kind"><svg class="mdmark-diagram-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m18 16 4-4-4-4"></path><path d="m6 8-4 4 4 4"></path><path d="m14.5 4-5 16"></path></svg><span>スクリプト</span></span><span class="mdmark-diagram-node-name">受け取り</span><span class="mdmark-diagram-node-sub">1 通ずつ読む</span><button class="mdmark-diagram-info" type="button" aria-label="「受け取り」の入力・処理・出力" aria-describedby="d1-tip-1" data-tip-owner="node:recv"><svg class="mdmark-diagram-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><path d="M12 16v-4"></path><path d="M12 8h.01"></path></svg></button></div><div class="mdmark-diagram-node has-tip" data-kind="dm" data-node="classify" style="left:410px;top:88px;width:140px;height:64px"><span class="mdmark-diagram-node-kind"><svg class="mdmark-diagram-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 3h5v5"></path><path d="M8 3H3v5"></path><path d="M12 22v-8.3a4 4 0 0 0-1.172-2.872L3 3"></path><path d="m15 9 6-6"></path></svg><span>意思決定モデル</span></span><span class="mdmark-diagram-node-name">分類</span><span class="mdmark-diagram-node-sub">返信の種類を選ぶ</span><button class="mdmark-diagram-info" type="button" aria-label="「分類」の入力・処理・出力" aria-describedby="d1-tip-2" data-tip-owner="node:classify"><svg class="mdmark-diagram-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><path d="M12 16v-4"></path><path d="M12 8h.01"></path></svg></button></div><div class="mdmark-diagram-node has-tip" data-kind="llm" data-node="draft" style="left:630px;top:88px;width:140px;height:64px"><span class="mdmark-diagram-node-kind"><svg class="mdmark-diagram-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 8V4H8"></path><rect width="16" height="12" x="4" y="8" rx="2"></rect><path d="M2 14h2"></path><path d="M20 14h2"></path><path d="M15 13v2"></path><path d="M9 13v2"></path></svg><span>LLM</span></span><span class="mdmark-diagram-node-name">返信の下書き</span><span class="mdmark-diagram-node-sub">よくある質問から書く</span><button class="mdmark-diagram-info" type="button" aria-label="「返信の下書き」の入力・処理・出力" aria-describedby="d1-tip-3" data-tip-owner="node:draft"><svg class="mdmark-diagram-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><path d="M12 16v-4"></path><path d="M12 8h.01"></path></svg></button></div><div class="mdmark-diagram-node" data-kind="mcp" data-node="mcp" style="left:410px;top:218px;width:140px;height:64px"><span class="mdmark-diagram-node-kind"><svg class="mdmark-diagram-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22v-5"></path><path d="M15 8V2"></path><path d="M17 8a1 1 0 0 1 1 1v4a4 4 0 0 1-4 4h-4a4 4 0 0 1-4-4V9a1 1 0 0 1 1-1z"></path><path d="M9 8V2"></path></svg><span>MCP</span></span><span class="mdmark-diagram-node-name">窓口の MCP</span><span class="mdmark-diagram-node-sub">保存・送信を頼む</span></div><div class="mdmark-diagram-node has-tip" data-kind="script" data-node="send" style="left:780px;top:218px;width:140px;height:64px"><span class="mdmark-diagram-node-kind"><svg class="mdmark-diagram-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m18 16 4-4-4-4"></path><path d="m6 8-4 4 4 4"></path><path d="m14.5 4-5 16"></path></svg><span>スクリプト</span></span><span class="mdmark-diagram-node-name">送信</span><span class="mdmark-diagram-node-sub">宛先へ返す</span><button class="mdmark-diagram-info" type="button" aria-label="「送信」の入力・処理・出力" aria-describedby="d1-tip-4" data-tip-owner="node:send"><svg class="mdmark-diagram-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><path d="M12 16v-4"></path><path d="M12 8h.01"></path></svg></button></div><div class="mdmark-diagram-node" data-kind="data" data-node="table" style="left:300px;top:358px;width:140px;height:64px"><span class="mdmark-diagram-node-kind"><svg class="mdmark-diagram-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><ellipse cx="12" cy="5" rx="9" ry="3"></ellipse><path d="M3 5V19A9 3 0 0 0 21 19V5"></path><path d="M3 12A9 3 0 0 0 21 12"></path></svg><span>データ</span></span><span class="mdmark-diagram-node-name">問い合わせの表</span><span class="mdmark-diagram-node-sub">状態つき</span></div><div class="mdmark-diagram-node" data-kind="data" data-node="faq" style="left:630px;top:358px;width:140px;height:64px"><span class="mdmark-diagram-node-kind"><svg class="mdmark-diagram-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><ellipse cx="12" cy="5" rx="9" ry="3"></ellipse><path d="M3 5V19A9 3 0 0 0 21 19V5"></path><path d="M3 12A9 3 0 0 0 21 12"></path></svg><span>データ</span></span><span class="mdmark-diagram-node-name">よくある質問</span><span class="mdmark-diagram-node-sub">質問と答え</span></div><div class="mdmark-diagram-node" data-kind="external" data-node="chat" style="left:976px;top:218px;width:112px;height:64px"><span class="mdmark-diagram-node-kind"><svg class="mdmark-diagram-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"></path><path d="M2 12h20"></path></svg><span>外部</span></span><span class="mdmark-diagram-node-name">担当者のチャット</span></div><span class="mdmark-diagram-label has-tip" data-line="flow" tabindex="0" aria-describedby="d1-tip-5" data-tip-owner="w-mail" style="left:189px;top:250px">メール</span><span class="mdmark-diagram-label has-tip" data-line="flow" tabindex="0" aria-describedby="d1-tip-6" data-tip-owner="w-body" style="left:320px;top:168px">本文</span><span class="mdmark-diagram-label" data-line="write" style="left:370px;top:320px">保存</span><span class="mdmark-diagram-label" data-line="flow" style="left:590px;top:120px">種類</span><span class="mdmark-diagram-label has-tip" data-line="flow" tabindex="0" aria-describedby="d1-tip-7" data-tip-owner="w-tool" style="left:580px;top:190px">ツールを呼ぶ</span><span class="mdmark-diagram-label has-tip" data-line="read" tabindex="0" aria-describedby="d1-tip-8" data-tip-owner="w-faq" style="left:720px;top:322px">答えの候補</span><span class="mdmark-diagram-label" data-line="flow" style="left:620px;top:250px">送信の依頼</span><span class="mdmark-diagram-label" data-line="write" style="left:480px;top:330px">返信済みにする</span><span class="mdmark-diagram-label has-tip" data-line="flow" tabindex="0" aria-describedby="d1-tip-9" data-tip-owner="w-chat" style="left:948px;top:250px">控え</span><span class="mdmark-diagram-label" data-line="loop" style="left:560px;top:497px">次の問い合わせへ（受け取りへ戻る）</span>"
+
+ ❯ tests/unit/src/parts/diagram.test.ts:742:19
+    740|   const off = renderFlow(definition, "d1", false);
+    741|   // 検証
+    742|   expect(on.html).toContain(`aria-label="「${frame.title}」の説明"`);
+       |                   ^
+    743|   expect(on.html).toContain(`aria-label="「${llm?.label}」の説明"`);
+    744|   for (const lane of others) {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[15/28]⎯
+
+ FAIL  |unit| tests/unit/src/parts/diagram.test.ts > test_legend_for_when_single_kinds
+TypeError: Cannot read properties of undefined (reading 'hints')
+ ❯ legendFor src/parts/diagram.ts:810:23
+    808|     return chartLegend(definition);
+    809|   }
+    810|   const hints = drawn.hints !== false;
+       |                       ^
+    811|   const isFlow = "wires" in definition;
+    812|   const nodes: Array<Pick<MdmarkDiagramNode, "kind" | "io" | "hint">> …
+ ❯ tests/unit/src/parts/diagram.test.ts:766:16
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[16/28]⎯
+
+ FAIL  |unit| tests/unit/src/parts/diagram.test.ts > test_render_diagram_tip_when_item
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ tests/unit/src/parts/diagram.test.ts:789:44
+    787|   });
+    788|   // 検証
+    789|   expect(inOrder(html, ["担当者", "2月: 38"])).toBe(true);
+       |                                            ^
+    790|   expect(html).toContain('role="tooltip"');
+    791|   expect(html).toMatch(/\bhidden\b/);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[17/28]⎯
+
+ FAIL  |unit| tests/unit/src/parts/table.test.ts > test_render_table
+Error: 開始タグが無い: class="mdmark-table-scroll"
+ ❯ findTag tests/unit/helpers/html.ts:10:11
+      8|   const tag = startTags(html).find((candidate) => candidate.includes(n…
+      9|   if (tag === undefined) {
+     10|     throw new Error(`開始タグが無い: ${needle}`);
+       |           ^
+     11|   }
+     12|   return tag;
+ ❯ innerHtml tests/unit/helpers/html.ts:31:15
+ ❯ tests/unit/src/parts/table.test.ts:40:10
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[18/28]⎯
+
+ FAIL  |unit| tests/unit/src/parts/table.test.ts > test_render_table_bar
+AssertionError: expected '<button class="mdmark-table-tool mdma…' to contain 'is-icon-only'
+
+Expected: "is-icon-only"
+Received: "<button class="mdmark-table-tool mdmark-columns-toggle is-active" type="button" aria-expanded="false" aria-controls="t1-columns">"
+
+ ❯ tests/unit/src/parts/table.test.ts:194:18
+    192|   const toggle = findTag(bar, "mdmark-columns-toggle");
+    193|   expect(toggle).toContain('aria-expanded="false"');
+    194|   expect(toggle).toContain("is-icon-only");
+       |                  ^
+    195|   expect(toggle).toContain("is-active");
+    196|   expect(toggle).toContain('title="列設定"');
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[19/28]⎯
+
+ FAIL  |unit| tests/unit/src/parts/table.test.ts > test_render_table_bar_when_bar_style
+AssertionError: expected [ …(2) ] to have a length of 1 but got 2
+
+- Expected
++ Received
+
+- 1
++ 2
+
+ ❯ tests/unit/src/parts/table.test.ts:937:41
+    935|   );
+    936|   expect(label.bar).not.toContain("mdmark-columns-badge");
+    937|   expect(findTags(menu.bar, "<button")).toHaveLength(1);
+       |                                         ^
+    938|   expect(findTag(menu.bar, "<button")).toContain('title="表の設定"');
+    939|   expect(menu.menus).toContain("列設定");
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[20/28]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/diagram-tips.browser.test.ts > test_attach_diagram_tips_when_chart_item
+Error: グラフの項目かグループのタイトルの印が無い
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/diagram-tips.browser.test.ts/test_attach_diagram_tips_when_chart_item.png
+
+ ❯ tests/unit/src/interact/diagram-tips.browser.test.ts:440:11
+    438|   const groupMark = flow.querySelector<HTMLElement>(".mdmark-diagram-g…
+    439|   if (!item || !groupMark) {
+    440|     throw new Error("グラフの項目かグループのタイトルの印が無い");
+       |           ^
+    441|   }
+    442|   // 実行: グラフの項目にフォーカスする
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=6d20af1b:5235:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[21/28]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/diagrams.browser.test.ts > test_open_diagram_dialog_when_tip_open
+TimeoutError: locator.hover: Timeout 14862ms exceeded.
+Call log:
+[2m  - waiting for locator('[data-vitest="true"]').contentFrame().getByRole('dialog').getByLabel('問い合わせへの自動返信の構成範囲: メールを受け取ってから返信するまで・更新日: 2026-10-').getByText('メール', { exact: true })[22m
+[2m    - locator resolved to <span tabindex="0" data-line="flow" data-tip-owner="w-mail" class="mdmark-diagram-label has-tip" aria-describedby="mdmark-diagram-10-0-modal-tip-5">メール</span>[22m
+[2m  - attempting hover action[22m
+[2m    2 × waiting for element to be visible and stable[22m
+[2m      - element is visible and stable[22m
+[2m      - scrolling into view if needed[22m
+[2m      - done scrolling[22m
+[2m      - <vite-error-overlay></vite-error-overlay> intercepts pointer events[22m
+[2m    - retrying hover action[22m
+[2m    - waiting 20ms[22m
+[2m    2 × waiting for element to be visible and stable[22m
+[2m      - element is visible and stable[22m
+[2m      - scrolling into view if needed[22m
+[2m      - done scrolling[22m
+[2m      - <vite-error-overlay></vite-error-overlay> intercepts pointer events[22m
+[2m    - retrying hover action[22m
+[2m      - waiting 100ms[22m
+[2m    28 × waiting for element to be visible and stable[22m
+[2m       - element is visible and stable[22m
+[2m       - scrolling into view if needed[22m
+[2m       - done scrolling[22m
+[2m       - <vite-error-overlay></vite-error-overlay> intercepts pointer events[22m
+[2m     - retrying hover action[22m
+[2m       - waiting 500ms[22m
+
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/diagrams.browser.test.ts/test_open_diagram_dialog_when_tip_open.png
+
+ ❯ tests/unit/src/interact/diagrams.browser.test.ts:284:21
+    282|   // 実行・検証
+    283|   for (const owner of owners.slice(0, 2)) {
+    284|     await userEvent.hover(owner);
+       |                     ^
+    285|     const tip = document.getElementById(
+    286|       owner.getAttribute("aria-describedby") ?? "",
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=6d20af1b:5235:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[22/28]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/diagrams.browser.test.ts > test_attach_diagrams_when_handle_resized
+Error: リサイズハンドルが無い
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/diagrams.browser.test.ts/test_attach_diagrams_when_handle_resized.png
+
+ ❯ handleOf tests/unit/src/interact/diagrams.browser.test.ts:312:11
+    310|   const found = root.querySelector<HTMLElement>(".mdmark-diagram-resiz…
+    311|   if (!found) {
+    312|     throw new Error("リサイズハンドルが無い");
+       |           ^
+    313|   }
+    314|   return found;
+ ❯ tests/unit/src/interact/diagrams.browser.test.ts:328:18
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=6d20af1b:5235:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[23/28]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/diagrams.browser.test.ts > test_attach_diagrams_when_titles_stuck
+AssertionError: expected false to be true // Object.is equality
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/diagrams.browser.test.ts/test_attach_diagrams_when_titles_stuck.png
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- true[39m
+[31m+ false[39m
+
+ ❯ tests/unit/src/interact/diagrams.browser.test.ts:373:54
+    371|   const [on, stopped] = figures;
+    372|   const frameTitle = on?.querySelector<HTMLElement>(".mdmark-diagram-f…
+    373|   expect(frameTitle?.classList.contains("is-stuck")).toBe(true);
+       |                                                      ^
+    374|   expect(frameTitle?.style.transform).toContain("translateY");
+    375|   expect(on?.querySelectorAll(".mdmark-diagram-lane-label.is-stuck").l…
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=6d20af1b:5235:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[24/28]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/tables.browser.test.ts > test_attach_tables_when_columns_badge
+AssertionError: expected null to be '1' // Object.is equality
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/tables.browser.test.ts/test_attach_tables_when_columns_badge.png
+
+[32m- Expected:[39m
+"1"
+
+[31m+ Received:[39m
+null
+
+ ❯ tests/unit/src/interact/tables.browser.test.ts:1850:27
+    1848|   // 実行・検証: 付けた直後
+    1849|   detachers.push(attachTables(root));
+    1850|   expect(badgeText(root)).toBe("1");
+       |                           ^
+    1851|   expect(toggleName(root)).toBe("列設定（1 列を隠しています）");
+    1852|   const toggle = findButton(root, "button.mdmark-columns-toggle");
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=6d20af1b:5235:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[25/28]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/tables.browser.test.ts > test_attach_tables_when_scroll_wrapper
+Error: 表か包む要素が無い
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/tables.browser.test.ts/test_attach_tables_when_scroll_wrapper.png
+
+ ❯ tests/unit/src/interact/tables.browser.test.ts:1910:11
+    1908|   const manyScroll = many?.querySelector<HTMLElement>(".mdmark-table-s…
+    1909|   if (!narrow || !many || !narrowScroll || !manyScroll) {
+    1910|     throw new Error("表か包む要素が無い");
+       |           ^
+    1911|   }
+    1912|   expect(
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=6d20af1b:5235:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[26/28]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/zoom.browser.test.ts > test_attach_zoom_when_drag_threshold
+AssertionError: expected 202 to be 200 // Object.is equality
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/zoom.browser.test.ts/test_attach_zoom_when_drag_threshold.png
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- 200[39m
+[31m+ 202[39m
+
+ ❯ tests/unit/src/interact/zoom.browser.test.ts:192:31
+    190|   content.dispatchEvent(new PointerEvent("pointerup", { ...point, clie…
+    191|   // 検証
+    192|   expect(viewport.scrollLeft).toBe(before);
+       |                               ^
+    193|   expect(panStarts).toBe(0);
+    194|   // 実行: 40px 左へ動かして離す
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=6d20af1b:5235:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[27/28]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/zoom.browser.test.ts > test_attach_zoom_when_refit
+TypeError: zoom.refit is not a function
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/zoom.browser.test.ts/test_attach_zoom_when_refit.png
+
+ ❯ tests/unit/src/interact/zoom.browser.test.ts:233:8
+    231|   // 実行
+    232|   useHeight = true;
+    233|   zoom.refit();
+       |        ^
+    234|   // 検証
+    235|   expect(fitBefore).toBe(1);
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=6d20af1b:5235:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[28/28]⎯
+
+
+ Test Files  12 failed | 1 passed (13)
+      Tests  27 failed | 199 passed (226)
+   Start at  11:01:55
+   Duration  48.25s (worker 51%, tests 26%, transform 18%, import 5%)
+

@@ -69,12 +69,12 @@ functions:
     container: src/interact/index.ts
     kind: 関数
     scope: internal
-    summary: 機能がオンの記法だけ `attachSections`・`attachTables`・`attachTabs` の順に呼び（付けたときも `hashchange` も、`attachTables` が行へ送る前に `attachSections` が URL の `#ID` の指す閉じた節を開くため）、`table` がオンなら `attachTables` の後に `attachStickyRows` を、`code` がオンなら `attachCodeCopy` と `attachCodeFolds` を、`tree` がオンなら `attachFileTrees` を呼び、`footnotes` がオンなら `attachFootnotes` を呼び、`glossary` か `backlinks` がオンなら `attachTermTips` を呼ぶ。`html` がオンなら `attachEmbeddedHtml` を、さらに `hints` がオンなら `div.mdmark-html` ごとに `attachDiagramTips` を呼ぶ。`attachDiagrams`・`attachTermTips`・`attachFootnotes`・`attachDiagramTips` には `placement` を渡す。まとめて外す関数を返す。`lightbox` がオンなら `attachLightbox` を、`gif` がオンなら `attachLightbox` の後に `attachGifs` を呼ぶ（GIF の包みが拡大のボタンを含むため）
+    summary: 機能がオンの記法だけ `attachSections`・`attachTables`・`attachTabs` の順に呼び（付けたときも `hashchange` も、`attachTables` が行へ送る前に `attachSections` が URL の `#ID` の指す閉じた節を開くため）、`table` がオンなら `attachTables` の後に `attachStickyRows` を、`code` がオンなら `attachCodeCopy` と `attachCodeFolds` を、`tree` がオンなら `attachFileTrees` を呼び、`footnotes` がオンなら `attachFootnotes` を呼び、`glossary` か `backlinks` がオンなら `attachTermTips` を呼ぶ。`html` がオンなら `attachEmbeddedHtml` を、さらに `hints` がオンなら `div.mdmark-html` ごとに `attachDiagramTips` を呼ぶ。`attachTermTips`・`attachFootnotes` には `placement` を、`attachDiagrams` と `div.mdmark-html` の `attachDiagramTips` には `diagramPlacement` を渡す。まとめて外す関数を返す。`lightbox` がオンなら `attachLightbox` を、`gif` がオンなら `attachLightbox` の後に `attachGifs` を呼ぶ（GIF の包みが拡大のボタンを含むため）
     args:
       - name: options
-        type: '{ root: HTMLElement; features: Record<string, boolean>; placement: TooltipPlacement; onColumnsChange?: (event: MdmarkColumnsChange) => void }'
+        type: '{ root: HTMLElement; features: Record<string, boolean>; placement: TooltipPlacement; diagramPlacement: TooltipPlacement; onColumnsChange?: (event: MdmarkColumnsChange) => void }'
         required: true
-        description: 描いた要素と文書で決まった機能のオン・オフと、既定を当てた設定のツールチップを出す場所と、`attachTables` に渡す列の表示の知らせ（`mount` の `opts.onColumnsChange`。`MdmarkColumnsChange` は `src/mount.ts` から型だけを読む）
+        description: 描いた要素と文書で決まった機能のオン・オフと、既定を当てた設定のツールチップを出す場所（本文の `placement` と図の `diagramPlacement`）と、`attachTables` に渡す列の表示の知らせ（`mount` の `opts.onColumnsChange`。`MdmarkColumnsChange` は `src/mount.ts` から型だけを読む）
     returns:
       type: () => void
       description: 付けた操作を外す関数
@@ -198,17 +198,17 @@ functions:
     container: src/interact/tables.ts
     kind: 関数
     scope: internal
-    summary: 各 `mdmark-table` の `data-features`・`data-filter`・`data-hide`・`data-total`・`data-pin` を読み、見出しに `renderTableTools` のボタンとドロワーを置いて、並べ替え・ピン止め・絞り込みを付ける。`count`・`columns`・`reorder`・`total`・`copy` の表は `renderTableBar` の帯とメニュー（テーブル設定の一覧を分ける留めた列の数は `data-pin` がある表だけ数え、無い表は 0）を、`columns`・`reorder` の表は `attachTableSettings` でテーブル設定を、`data-tree` の表は `attachTableTree` で階層の操作を、`total` の表は `renderTotalRows` の集計の行を置き、`rowlink` の表は行へ移る処理と行の URL のコピーを付ける。全ての表に、描く先の要素の幅で最終列を畳む処理を付ける。`thead` が複数の行を持つ表は `bottomHeadCells` で列ごとの最下段の見出しのセルを決め、ボタンをそのセルにだけ置き、列の位置はそのセルの列で数える（`cellIndex` を使わない）。`data-merge-columns` の表は、並べ替え・絞り込みのたびに、表示している本文の行のその列の値から `mergeSpans` で結合を決め、始まりのセルに `rowspan` と `is-merged`、続くセルに `hidden` を付け直す。結合で隠したセルも値を持つセルとして並べ替え・絞り込み・コピー・集計に使う。囲み・表から探す部品の要素（ピン止めのボタン・ドロワー・畳んだ列のセル・行の詳細の行など）は、`closest(".mdmark-table")` がその囲みのものだけにし、行の詳細の中の表の要素を拾わない。受け取り（`click`・`change`・`input`・`keydown`）は、対象の `closest(".mdmark-table")` がその囲みのときだけ処理する
+    summary: 表を横にスクロールさせるのは表を包む `div.mdmark-table-scroll` で、ピン止めを当てるはみ出しはその要素の `scrollWidth` と `clientWidth` で決める。列の表示を切り替えるたびに、テーブル設定のボタンの隠した列の数のバッジ（`span.mdmark-table-tool-badge`。0 列なら `hidden` にする）・`is-active`・`aria-label` を書き換える。コピーの結果はボタンの `title` と読み上げの名前を書き換えて示す。各 `mdmark-table` の `data-features`・`data-filter`・`data-hide`・`data-total`・`data-pin` を読み、見出しに `renderTableTools` のボタンとドロワーを置いて、並べ替え・ピン止め・絞り込みを付ける。`count`・`columns`・`reorder`・`total`・`copy` の表は `renderTableBar` の帯とメニュー（テーブル設定の一覧を分ける留めた列の数は `data-pin` がある表だけ数え、無い表は 0）を、`columns`・`reorder` の表は `attachTableSettings` でテーブル設定を、`data-tree` の表は `attachTableTree` で階層の操作を、`total` の表は `renderTotalRows` の集計の行を置き、`rowlink` の表は行へ移る処理と行の URL のコピーを付ける。全ての表に、描く先の要素の幅で最終列を畳む処理を付ける。`thead` が複数の行を持つ表は `bottomHeadCells` で列ごとの最下段の見出しのセルを決め、ボタンをそのセルにだけ置き、列の位置はそのセルの列で数える（`cellIndex` を使わない）。`data-merge-columns` の表は、並べ替え・絞り込みのたびに、表示している本文の行のその列の値から `mergeSpans` で結合を決め、始まりのセルに `rowspan` と `is-merged`、続くセルに `hidden` を付け直す。結合で隠したセルも値を持つセルとして並べ替え・絞り込み・コピー・集計に使う。囲み・表から探す部品の要素（ピン止めのボタン・ドロワー・畳んだ列のセル・行の詳細の行など）は、`closest(".mdmark-table")` がその囲みのものだけにし、行の詳細の中の表の要素を拾わない。受け取り（`click`・`change`・`input`・`keydown`）は、対象の `closest(".mdmark-table")` がその囲みのときだけ処理する
     description: |-
       並べ替えは降順 → 昇順 → 元の並び（描いたときの順を行に控える）を繰り返し、`th` の `aria-sort` を付け外しする。行の詳細の行と畳んだ最終列の開閉の行はその行に付いて動かす。ピン止めのボタンは `ResizeObserver` で表がはみ出すときだけ出し、留める列の数（付けたときは `data-pin` の位置 + 1、無ければ `th scope="row"` の行見出しの列の数、行見出しも無ければ 1。ボタンを押すとその列まで、押し直すと 0）までのセルに、表がはみ出す間だけ `position: sticky` と左端からの位置を当てる（はみ出さない間は留めず、留める列の数は控えたまま）。`thead` が複数の行を持つ表の見出しのセルは、またぐ列が全て留める範囲のときだけ留める。セルの値は `cellValue` で読む（`data-check` の列は `data-value`）。絞り込みのドロワーは `hidden` と `aria-expanded` で開閉し、同時に 1 つだけ開く。開いたら最初の入力欄へフォーカスを移し（スマホでもボタンの押下の処理の中で移す）、開いている間だけ `document` の `pointerdown`（外を押す）と `keydown`（Esc）を受け取る。「絞り込みを解除」はその列の入力を空にして絞り込みを当て直す（ドロワーの中の押下を外の押下として扱わない）。列ごとの絞り込みは `matchesFilter` で重ねて当て、合わない行に `hidden` を付ける。
 
       件数と集計の行は、絞り込みを当てるたびに、行の詳細・開閉の行・`一致する行がありません` の行を除く本文の行のうち `hidden` を持たない行から作り直す（集計は `computeTotal`）。集計の行は計算ごとの 1 行で、付けたときに全ての本文の行から `findUnreadableTotals` で数として読めないセルを持つ列と計算を控え、そのセルは作り直しても空にする。`集計` のボタンのメニュー（`表示する集計`）のチェックボックスに合わせて計算の行の `hidden` を切り替え、ボタンの `is-active` と読み上げの名前を書き換え、`{計算の名前}の行を出しました`・`{計算の名前}の行を隠しました` を帯の `mdmark-table-status` に入れる（選択は覚えない）。テーブル設定のパネル・集計のメニュー・コピーの形式のメニューは絞り込みのドロワーと同じ開閉の受け取りを使う（同時に開くのはドロワーとパネル・メニューを合わせて 1 つ）。列の表示と順の切り替え（テーブル設定のパネルの目のアイコンとつまみ）は `attachTableSettings` に任せ、切り替えるたびに最終列を畳むかを決め直す。ピン止めの左端からの位置は隠した列を除いて測り直す。`onColumnsChange` を渡したときは、`attachTableSettings` が目のアイコンで列の表示を切り替えた後に、`{ tableIndex, hidden }` で 1 回呼ぶ。`tableIndex` は付けたときに `root` の中の `columns` の表（`.mdmark-diff-block[data-kind="del"]` の中の表を除く）を文書の順に並べた位置、`hidden` は隠している列の見出しのセルの `visibleText` を列の順に並べた新しい配列。例外を投げたら、`onColumnsChange` と元のエラーを `console.error` に出して続ける。
 
-      コピーは形式のボタンの `data-format` で、見出しの行と、行の詳細・開閉の行・`一致する行がありません` の行を除く本文の行のうち `hidden` を持たない行と階層の表の畳んで隠した行（補った行 `is-virtual` を除く）の、列設定で隠していない列（畳んだ最終列は含める）の `visibleText`（階層の表のキーの列は行の `data-path`）を `tableToMarkdown` か `tableToTsv` にして `copyText` で書く。書けたらボタンを `copied` にして 2 秒で `idle` に戻し、`{形式の名前}をコピーしました` を `mdmark-table-status` に入れる。書けなければボタンを `failed` にし、前のパネルを取り除いてから帯の直後に `renderCopyPanel` のパネルを置き、`textarea` へフォーカスを移して `select()` し、`クリップボードにコピーできませんでした。選択した{形式の名前}を手動でコピーできます` を入れる。パネルは閉じるボタンか、パネルの中の Esc で取り除き、フォーカスを `表をコピー` に戻す。
+      コピーは形式のボタンの `data-format` で、見出しの行と、行の詳細・開閉の行・`一致する行がありません` の行を除く本文の行のうち `hidden` を持たない行と階層の表の畳んで隠した行（補った行 `is-virtual` を除く）の、テーブル設定で隠していない列（畳んだ最終列は含める）の `visibleText`（階層の表のキーの列は行の `data-path`）を `tableToMarkdown` か `tableToTsv` にして `copyText` で書く。書けたらボタンを `copied` にして 2 秒で `idle` に戻し、`{形式の名前}をコピーしました` を `mdmark-table-status` に入れる。書けなければボタンを `failed` にし、前のパネルを取り除いてから帯の直後に `renderCopyPanel` のパネルを置き、`textarea` へフォーカスを移して `select()` し、`クリップボードにコピーできませんでした。選択した{形式の名前}を手動でコピーできます` を入れる。パネルは閉じるボタンか、パネルの中の Esc で取り除き、フォーカスを `表をコピー` に戻す。
 
       行へ移る処理は、付けたときと `hashchange` で `rowIdFromHash` の ID を持つ行を探し、囲む閉じた `details` を開き（閉じた節は、`attachInteractions` が先に付けた `attachSections` が同じきっかけで開いている）、行が `hidden` ならその表の絞り込みを全て外し、`scrollIntoView` してその行だけに `data-target` を付ける。行へのリンクの印を押すと、移る動きはそのままに印の `href` プロパティ（解決済みの絶対 URL）を `copyText` で書き、描いたときに印の横へ置いた `mdmark-row-link-notice` に `data-state` と文言（`リンクをコピーしました`・`リンクをコピーできませんでした`）を入れて 2 秒後に空に戻す。
 
-      最終列を畳む処理は、描いた要素 `root` を `ResizeObserver` で見、幅が変わるたびと列設定のたびに、一度畳みを外して測り、`shouldFold` で決める。測るのは `root` の中身の幅と、表示している最終列（先頭の列を除く）のセルの中身の高さが、計算した `line-height` の 1.5 倍を超えるものがあるか。畳むときは最終列のセルに `mdmark-fold-col`、囲みに `is-folded` を付け、行の詳細を持たない行には `renderFoldedColumn` の開閉のボタンを先頭のセルに、開閉の行を行の直後に置き、行の詳細を持つ行には詳細の中身の先頭に同じ `mdmark-fold-part` を置く。畳まないときはこれらを取り除く。開閉のボタンは `aria-expanded` と開閉の行の `hidden` を切り替え、開閉の行はその行が隠れると隠す
+      最終列を畳む処理は、描いた要素 `root` を `ResizeObserver` で見、幅が変わるたびと列の表示の切り替えのたびに、一度畳みを外して測り、`shouldFold` で決める。測るのは `root` の中身の幅と、表示している最終列（先頭の列を除く）のセルの中身の高さが、計算した `line-height` の 1.5 倍を超えるものがあるか。畳むときは最終列のセルに `mdmark-fold-col`、囲みに `is-folded` を付け、行の詳細を持たない行には `renderFoldedColumn` の開閉のボタンを先頭のセルに、開閉の行を行の直後に置き、行の詳細を持つ行には詳細の中身の先頭に同じ `mdmark-fold-part` を置く。畳まないときはこれらを取り除く。開閉のボタンは `aria-expanded` と開閉の行の `hidden` を切り替え、開閉の行はその行が隠れると隠す
     args:
       - name: root
         type: HTMLElement
@@ -353,8 +353,8 @@ functions:
         expected: 2 行目は `mdmark-fold-toggle` を持たず、詳細の行の中身の先頭に `mdmark-fold-part` があり、押した後に詳細の行が `hidden` を持たない。1・3 行目は `mdmark-fold-toggle` を持つ
       - name: test_attach_tables_when_fold_column_hidden
         case: 正常
-        summary: 列設定で最終列を隠すと畳みを外し、前の列を最終列として決め直す
-        condition: 幅 390px の要素に `data-features="columns"` の 3 列の表（状態は短く、説明は 1 行に収まらない）を付け、列設定で説明のチェックを外す
+        summary: テーブル設定で最終列を隠すと畳みを外し、前の列を最終列として決め直す
+        condition: 幅 390px の要素に `data-features="columns"` の 3 列の表（状態は短く、説明は 1 行に収まらない）を付け、テーブル設定の説明の目のアイコンで隠す
         mock: なし
         expected: 付けた後は `is-folded`、外した後は `is-folded`・開閉のボタン・開閉の行が無く、説明の列が `hidden`
       - name: test_attach_tables_when_nested_table
@@ -399,6 +399,18 @@ functions:
         condition: '`data-features="columns"` の表で 2 列目のチェックを外す'
         mock: '`onColumnsChange` は例外を投げる。`console.error` を控える'
         expected: 2 列目の `th`・`td` が `hidden` を持ち、`console.error` に `onColumnsChange` と投げたエラー
+      - name: test_attach_tables_when_columns_badge
+        case: 正常
+        summary: 列の表示を切り替えるたびにバッジと読み上げの名前を書き換える
+        condition: '`data-features="columns"`・`data-hide="1"` の 3 列の表で、2 列目を表示し、次に 2 列目と 3 列目を隠し、3 列目を表示する'
+        mock: なし
+        expected: 付けた直後はバッジ `1` と `aria-label` が `テーブル設定（1 列を非表示）`。表示した後はバッジが `hidden` で `is-active` を持たず、`aria-label` が `テーブル設定`。隠した後はバッジ `2`。3 列目を表示した後はバッジ `1`
+      - name: test_attach_tables_when_scroll_wrapper
+        case: 正常
+        summary: 包む要素がはみ出す間だけピン止めを当てる
+        condition: 幅 1000px の要素に、`div.mdmark-table-scroll` で包んだ 2 列の `data` の表と 12 列の `data` の表
+        mock: なし（Chromium）
+        expected: 2 列の表はピン止めのボタンが `hidden` で `table` の幅が包む要素の幅と同じ。12 列の表はピン止めのボタンが `hidden` を持たず、包む要素の `scrollWidth` が `clientWidth` より大きい
     refs:
       - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[列の表示の知らせ]
       - '#functions[computeTotal]'
@@ -2293,51 +2305,51 @@ functions:
     kind: 関数
     scope: internal
     args:
-    - name: root
-      type: HTMLElement
-      required: true
-      description: 描く先の要素
+      - name: root
+        type: HTMLElement
+        required: true
+        description: 描く先の要素
     returns:
       type: () => void
       description: 外す関数
     side_effects: 描く先の要素の子を足し、`click` と `ResizeObserver` を付ける
     callees:
-    - dev/設計書/モジュール構成/ライブラリ本体/部品.ts#functions[renderWide]
+      - dev/設計書/モジュール構成/ライブラリ本体/部品.ts#functions[renderWide]
     unit_tests:
-    - name: test_attach_wide_toggles
-      case: 正常
-      condition: '`data-state="wide"` と `narrow` の範囲を持つ要素'
-      expected: それぞれの直前に `aria-pressed` が `true`・`false` のボタンがあり、1 つ目を押すと `data-state="narrow"`・`aria-pressed="false"` になる
-      mock: なし（ブラウザ）
-      summary: ボタンを置いて状態を入れ替える
-    - name: test_attach_wide_toggles_when_narrow_host
-      case: 正常
-      condition: 描く先の要素の親の幅を本文の幅以下にする
-      expected: 帯が `hidden` を持つ
-      mock: なし（ブラウザ）
-      summary: 狭い幅では帯を隠す
+      - name: test_attach_wide_toggles
+        case: 正常
+        condition: '`data-state="wide"` と `narrow` の範囲を持つ要素'
+        expected: それぞれの直前に `aria-pressed` が `true`・`false` のボタンがあり、1 つ目を押すと `data-state="narrow"`・`aria-pressed="false"` になる
+        mock: なし（ブラウザ）
+        summary: ボタンを置いて状態を入れ替える
+      - name: test_attach_wide_toggles_when_narrow_host
+        case: 正常
+        condition: 描く先の要素の親の幅を本文の幅以下にする
+        expected: 帯が `hidden` を持つ
+        mock: なし（ブラウザ）
+        summary: 狭い幅では帯を隠す
   - name: attachCsvRaw
     title: CSV の表と元の CSV の切り替えを付ける
     container: src/interact/csv-raw.ts
-    summary: '`data-source="csv"` の表の RAW のボタンを押すたびに、`aria-pressed` と囲みの `data-view="raw"` を入れ替え、表と `pre.mdmark-raw` の `hidden` を入れ替える。並べ替え・絞り込み・ピン止めの状態は触らない'
+    summary: '`data-source="csv"` の表の RAW のボタンを押すたびに、`aria-pressed` と囲みの `data-view="raw"` を入れ替え、表を包む横のスクロールの要素（`.mdmark-table-scroll`。無ければ表）と `pre.mdmark-raw` の `hidden` を入れ替える。並べ替え・絞り込み・ピン止めの状態は触らない'
     kind: 関数
     scope: internal
     args:
-    - name: root
-      type: HTMLElement
-      required: true
-      description: 描く先の要素
+      - name: root
+        type: HTMLElement
+        required: true
+        description: 描く先の要素
     returns:
       type: () => void
       description: 外す関数
     side_effects: '`click` を付ける'
     unit_tests:
-    - name: test_attach_csv_raw
-      case: 正常
-      condition: CSV の表を持つ要素で RAW のボタンを 2 回押す
-      expected: 1 回目の後は `table` が隠れ `pre.mdmark-raw` が出て `aria-pressed="true"`、2 回目の後は元に戻る
-      mock: なし（ブラウザ）
-      summary: 押すたびに表と元の CSV を入れ替える
+      - name: test_attach_csv_raw
+        case: 正常
+        condition: CSV の表を持つ要素で RAW のボタンを 2 回押す
+        expected: 1 回目の後は表を包む要素（`.mdmark-table-scroll`）が隠れ `pre.mdmark-raw` が出て `aria-pressed="true"`、2 回目の後は元に戻る
+        mock: なし（ブラウザ）
+        summary: 押すたびに表と元の CSV を入れ替える
 test_files:
   - tests/unit/src/interact/index.browser.test.ts
   - tests/unit/src/interact/tables.browser.test.ts

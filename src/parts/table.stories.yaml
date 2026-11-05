@@ -717,3 +717,22 @@ stories:
       rows: '[["北山","東京, 本社","1200"],["南田","大阪","800"]]'
       rawCsv: "名前,拠点,金額\n北山,\"東京, 本社\",1200\n南田,大阪,800"
       rawShown: true
+  - name: ColumnsButtonA
+    parameters:
+      server:
+        id: table
+    args:
+      kind: data
+      features: '["count","columns","copy"]'
+      columns: '["名前","説明","更新日"]'
+      rows: '[["りんご","描画を速くする","2026-10-01"],["みかん","印刷を直す","2026-10-10"],["りんご飴","描画の崩れを直す","2026-10-20"]]'
+      hide: '[1]'
+  - name: FillsWidth
+    parameters:
+      server:
+        id: table
+    args:
+      kind: data
+      features: '["sort","pin","filter"]'
+      columns: '["名前","数量"]'
+      rows: '[["りんご","3"],["みかん","5"],["ぶどう","2"]]'

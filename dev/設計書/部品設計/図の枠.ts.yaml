@@ -39,8 +39,27 @@ states:
         value: 'true'
     notes:
       定義: '`InFramedSurface` と同じ面で包む'
+  - name: Resized
+    description: リサイズハンドルで表示する枠を低くした。全体が収まる倍率を幅と高さで求め、倍率のボタンは 100%
+    args:
+      - name: height
+        value: "'240'"
+  - name: ResizeHandleFocused
+    description: リサイズハンドルにフォーカスした。フォーカスの枠が見える
+  - name: ResizeOff
+    description: 機能 `diagram-resize` がオフ。右下にリサイズハンドルが無い
+    args:
+      - name: resizable
+        value: "'false'"
+  - name: NoLegendItems
+    description: ノードも線も 1 種類ずつのフロー図。凡例の項目が無く、凡例の場所を取らない
+    args:
+      - name: legend
+        value: "'[]'"
+    notes:
+      定義: モックの `single-kinds`（`dev/mock/refs/308/assets/samples.js`）
 lead: |-
-  図の部品（フロー図・シーケンス図・グラフ・ER 図）を囲む枠。題（題名・範囲・更新日）・右上のボタンの帯・図を出す表示する枠・凡例をこの順に置き、拡大・縮小・移動・全画面のモーダルを持つ。
+  図の部品（フロー図・シーケンス図・グラフ・ER 図）を囲む枠。題（題名・範囲・更新日）・右上のボタンの帯・図を出す表示する枠・凡例をこの順に置き、拡大・縮小・移動・全画面のモーダルと、表示する枠の高さを変える右下のリサイズハンドルを持つ。
   右上のボタンの帯と表示する枠は、表示する箱（`.mdmark-diagram-box`）にまとめる。ボタンは 1.75rem 四方、帯の余白は 0.25rem。
 args:
   - name: kind
@@ -63,7 +82,7 @@ args:
   - name: legend
     type: オブジェクトの配列
     required: true
-    description: 凡例の項目（`{ sample, label }`。`sample` は箱の種類・線の種類・系列・枠・層・交差・印・下線・テーブルの種類・列のマーカー・多重度のどれか）。図の下に並べる
+    description: 凡例の項目（`{ sample, label }`。`sample` は箱の種類・線の種類・系列・テーブルの種類・列のマーカー・多重度のどれか）。図の下に並べる。空のときは凡例の `ul` に `hidden` を付け、凡例の場所を取らない
   - name: zoom
     type: 数値
     default: 全体が収まる倍率
@@ -76,6 +95,15 @@ args:
     type: 真偽値
     default: 'false'
     description: 全画面のモーダルの中に描くか。`true` のときは全画面のボタンの位置に閉じるボタンを置き、表示する枠をモーダルの高さいっぱいにする
+  - name: resizable
+    type: 真偽値
+    default: "'true'"
+    description: 表示する枠の右下にリサイズハンドルを置くか。`modal` が `true` のときと、機能 `diagram-resize` がオフのときは `false`
+  - name: height
+    type: 数値
+    required: false
+    default: 定義と `--mdmark-diagram-max-height` から決まる高さ
+    description: リサイズハンドルで変えた表示する枠の高さ（px）。渡したときは全体が収まる倍率を幅とこの高さで求める
 slots:
   - name: default
     description: 表示する枠の中に置く図の本体
@@ -97,6 +125,10 @@ events:
     when: 全画面のボタンを押す。閉じるボタンか Esc を押す
     value: '`dialog` の `open`'
     description: '`mount` が `modal` を `true` にした枠を `dialog` に描いて開き、閉じたら消して全画面のボタンへフォーカスを戻す'
+  - name: 高さを変える・戻す
+    when: リサイズハンドルをドラッグする、フォーカスして `↑`・`↓` を押す。ダブルクリックする
+    value: 表示する枠の高さとリサイズハンドルの `aria-valuenow`
+    description: '`mount` が表示する枠の高さを変え（`↑`・`↓` は 32px ずつ。120px から定義の高さ × 今の倍率まで）、全体が収まる倍率を求め直す。ダブルクリックで定義から決まる高さに戻す'
 css_properties:
   - name: --mdmark-color-bg-opaque
     syntax: <color>
@@ -115,6 +147,7 @@ accessibility:
   - ボタンの帯は `role="toolbar"` と `aria-label="「{題名}」の表示"` を持つ。縮小・拡大・全画面・移動のボタンはアイコンだけで、読み上げの名前を `縮小`・`拡大`・`全画面で開く`・`全画面を閉じる`・`左へ動かす`・`上へ動かす`・`下へ動かす`・`右へ動かす` にする
   - 倍率は縮小と拡大の間のボタンに、全体が収まる倍率を 100% とした今の倍率を `125%` の形（等幅の数字）で出し、読み上げの名前を `倍率 {今の倍率}。全体が収まる倍率に戻す` にする（今の名前 `全体が収まる倍率に戻す` で探せる。#6 の確認ログ）
   - 凡例は `aria-label="凡例"` の `ul` で、色の見本に名前を並べ、色だけで意味を伝えない
+  - リサイズハンドルは lucide の `grip-horizontal` のアイコンを持つ `role="separator"`・`aria-orientation="horizontal"`・`tabindex="0"` の要素で、`aria-label="「{題名}」の表示の高さ"`・`aria-keyshortcuts="ArrowUp ArrowDown"`・`aria-valuenow`・`aria-valuemin`・`aria-valuemax`（px）と、操作を書いた `title` を持ち、フォーカスの枠を見せる。ポインターの形は `ns-resize`
 status: planned
 introduced:
   pr: 42

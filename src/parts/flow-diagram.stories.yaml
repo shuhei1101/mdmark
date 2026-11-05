@@ -58,3 +58,17 @@ stories:
         id: flow-diagram
     args:
       links: blocked
+  - name: GroupHints
+    parameters:
+      server:
+        id: flow-diagram
+    args:
+      groups: true
+  - name: TitlesStuck
+    parameters:
+      server:
+        id: flow-diagram
+    args:
+      groups: true
+      stuck: true
+      zoom: 1.5

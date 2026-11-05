@@ -13,14 +13,17 @@ afterEach(() => {
   removeRoots();
 });
 
-// 押すたびに表と元の CSV を入れ替える（正常系）
+// 押すたびに表（を包む要素）と元の CSV を入れ替える（正常系）
 test("test_attach_csv_raw", async () => {
   // 準備
   const { attachCsvRaw } = await loadCsvRaw();
   const { root } = createRoot("```csv\n名前,値\na,1\n```\n");
   detachers.push(attachCsvRaw(root));
   const button = root.querySelector<HTMLButtonElement>(".mdmark-raw-toggle");
-  const table = root.querySelector<HTMLTableElement>("table");
+  // 隠す・出すのは表を包む横のスクロールの要素（無ければ表）
+  const tableElement = root.querySelector<HTMLTableElement>("table");
+  const table =
+    tableElement?.closest<HTMLElement>(".mdmark-table-scroll") ?? tableElement;
   const raw = root.querySelector<HTMLElement>("pre.mdmark-raw");
   // 実行
   button?.click();

@@ -101,3 +101,9 @@ stories:
         id: chart
     args:
       tooMany: true
+  - name: ItemFocused
+    parameters:
+      server:
+        id: chart
+    args:
+      focusItem: true

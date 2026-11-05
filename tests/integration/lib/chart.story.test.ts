@@ -154,7 +154,11 @@ test("test_scatter", async () => {
   const page = await holder.openStory("parts-chart--scatter");
   // 検証
   await expect(
-    page.locator('svg[role=img] g[data-series="1"] circle').count(),
+    page
+      .locator(
+        'svg[role=img] g[data-series="1"] circle:not(.mdmark-diagram-item-hit)',
+      )
+      .count(),
   ).resolves.toBe(6);
   await expect(
     page.locator('svg[role=img] g[data-series="2"] rect').count(),
@@ -452,4 +456,37 @@ test("test_too_many_series", async () => {
   expect(warning).toContain("系列が 7 つです");
   expect(warning).toContain("1〜6 つ");
   await expect(page.locator("svg[role=img]").count()).resolves.toBe(0);
+});
+
+// 折れ線の点にフォーカスした状態は、点を輪で示し、点の下にその項目のツールチップを出す（ItemFocused）
+test("test_item_focused", async () => {
+  // 準備・実行
+  const page = await holder.openStory("parts-chart--item-focused");
+  await page.waitForFunction(() =>
+    document.activeElement?.classList.contains("mdmark-diagram-item-hit"),
+  );
+  // 検証
+  const focused = await page.evaluate(() => {
+    const active = document.activeElement as SVGElement | null;
+    if (!active?.classList.contains("mdmark-diagram-item-hit")) {
+      return undefined;
+    }
+    const tip = document.getElementById(
+      active.getAttribute("aria-describedby") ?? "",
+    );
+    const own = active.getBoundingClientRect();
+    return {
+      stroke: getComputedStyle(active).stroke,
+      strokeWidth: Number.parseFloat(getComputedStyle(active).strokeWidth),
+      tipShown: tip !== null && !tip.hidden,
+      below: tip ? tip.getBoundingClientRect().top >= own.bottom - 1 : false,
+      text: tip?.textContent ?? "",
+    };
+  });
+  expect(focused).toBeDefined();
+  expect(focused?.stroke).not.toBe("none");
+  expect(focused?.strokeWidth).toBeGreaterThanOrEqual(2);
+  expect(focused?.tipShown).toBe(true);
+  expect(focused?.below).toBe(true);
+  expect(focused?.text).toMatch(/: \d/);
 });

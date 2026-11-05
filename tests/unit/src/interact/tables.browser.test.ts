@@ -1351,7 +1351,7 @@ test("test_attach_tables_when_folded_with_row_detail", async () => {
   expect(detail?.hasAttribute("hidden")).toBe(false);
 });
 
-// 列設定で最終列を隠すと畳みを外し、前の列を最終列として決め直す（正常系）
+// テーブル設定で最終列を隠すと畳みを外し、前の列を最終列として決め直す（正常系）
 test("test_attach_tables_when_fold_column_hidden", async () => {
   // 準備
   addStyles();
@@ -1873,4 +1873,126 @@ test("test_attach_tables_when_columns_callback_throws", async () => {
     "onColumnsChange",
     error,
   );
+});
+
+/** テーブル設定のボタンのバッジの文字（隠していれば null） */
+function badgeText(root: HTMLElement): string | null {
+  const badge = root.querySelector<HTMLElement>(
+    "button.mdmark-table-settings-toggle .mdmark-table-tool-badge",
+  );
+  return badge && !badge.hidden ? (badge.textContent ?? "") : null;
+}
+
+/** テーブル設定のボタンの読み上げの名前 */
+function toggleName(root: HTMLElement): string {
+  return (
+    root
+      .querySelector("button.mdmark-table-settings-toggle")
+      ?.getAttribute("aria-label") ?? ""
+  );
+}
+
+/** テーブル設定のパネルの、元の位置 `column` の列の目のアイコンを押す */
+function clickEye(root: HTMLElement, column: number): void {
+  findButton(
+    root,
+    `.mdmark-table-settings-item[data-column="${column}"] button.mdmark-table-settings-eye`,
+  ).click();
+}
+
+// 列の表示を切り替えるたびにバッジと読み上げの名前を書き換える（正常系）
+test("test_attach_tables_when_columns_badge", async () => {
+  // 準備
+  const { attachTables } = await loadTables();
+  const { root } = createRoot(
+    [
+      "<!-- table: data +columns hide=説明 -->",
+      "",
+      "| 名前 | 説明 | 更新日 |",
+      "| --- | --- | --- |",
+      "| りんご | 描画を速くする | 2026-10-01 |",
+      "| みかん | 印刷を直す | 2026-10-10 |",
+      "",
+      "<!-- /table -->",
+      "",
+    ].join("\n"),
+  );
+  // 実行・検証: 付けた直後
+  detachers.push(attachTables(root));
+  expect(badgeText(root)).toBe("1");
+  expect(toggleName(root)).toBe("テーブル設定（1 列を非表示）");
+  const toggle = findButton(root, "button.mdmark-table-settings-toggle");
+  toggle.click();
+  // 実行・検証: 2 列目を表示する
+  clickEye(root, 1);
+  expect(badgeText(root)).toBeNull();
+  expect(toggle.classList.contains("is-active")).toBe(false);
+  expect(toggleName(root)).toBe("テーブル設定");
+  // 実行・検証: 2 列目と 3 列目を隠す
+  clickEye(root, 1);
+  clickEye(root, 2);
+  expect(badgeText(root)).toBe("2");
+  // 実行・検証: 3 列目を表示する
+  clickEye(root, 2);
+  expect(badgeText(root)).toBe("1");
+});
+
+// 包む要素がはみ出す間だけピン止めを当てる（正常系）
+test("test_attach_tables_when_scroll_wrapper", async () => {
+  // 準備
+  addStyles();
+  const { attachTables } = await loadTables();
+  const wide = Array.from({ length: 12 }, (_, i) => `列${i + 1}の見出し`);
+  const { root } = createRoot(
+    [
+      "<!-- table: data -->",
+      "",
+      "| 名前 | 数量 |",
+      "| --- | --- |",
+      "| りんご | 3 |",
+      "",
+      "<!-- /table -->",
+      "",
+      "<!-- table: data -->",
+      "",
+      `| ${wide.join(" | ")} |`,
+      `| ${wide.map(() => "---").join(" | ")} |`,
+      `| ${wide.map((_, i) => `値${i + 1}の長い文字`).join(" | ")} |`,
+      "",
+      "<!-- /table -->",
+      "",
+    ].join("\n"),
+  );
+  root.style.width = "1000px";
+  // 実行
+  detachers.push(attachTables(root));
+  // 検証
+  const [narrow, many] = [
+    ...root.querySelectorAll<HTMLElement>(".mdmark-table"),
+  ];
+  const narrowScroll = narrow?.querySelector<HTMLElement>(
+    ".mdmark-table-scroll",
+  );
+  const manyScroll = many?.querySelector<HTMLElement>(".mdmark-table-scroll");
+  if (!narrow || !many || !narrowScroll || !manyScroll) {
+    throw new Error("表か包む要素が無い");
+  }
+  expect(
+    [...narrow.querySelectorAll<HTMLElement>("button.mdmark-pin")].every(
+      (pin) => pin.hidden,
+    ),
+  ).toBe(true);
+  const table = narrow.querySelector("table");
+  expect(
+    Math.abs(
+      (table?.getBoundingClientRect().width ?? 0) -
+        narrowScroll.getBoundingClientRect().width,
+    ),
+  ).toBeLessThanOrEqual(1);
+  expect(
+    [...many.querySelectorAll<HTMLElement>("button.mdmark-pin")].some(
+      (pin) => !pin.hidden,
+    ),
+  ).toBe(true);
+  expect(manyScroll.scrollWidth).toBeGreaterThan(manyScroll.clientWidth);
 });

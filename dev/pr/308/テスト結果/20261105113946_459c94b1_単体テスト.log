@@ -1,0 +1,15 @@
+$ npm run test:unit
+
+> test:unit
+> vitest run --project 'unit*'
+
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/design-display-chart-tips-table-width-diagram-resize-columns-button-architecture
+
+
+ Test Files  194 passed (194)
+      Tests  1453 passed (1453)
+   Start at  11:38:11
+   Duration  89.33s (worker 52%, tests 30%, import 15%, transform 2%)
+
+exit=0

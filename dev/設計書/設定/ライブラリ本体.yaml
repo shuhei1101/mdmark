@@ -447,7 +447,7 @@ settings:
     type: '"top" | "bottom"'
     required: false
     default: '`top`'
-    description: 用語・図・ヒントのツールチップを、持ち主の上と下のどちらに先に出すか。`top` は上に出し、上に収まらないときだけ下に出す。`bottom` は下に出し、下に収まらず上に収まるときだけ上に出す
+    description: 本文の用語・文書の別名・脚注のツールチップを、持ち主の上と下のどちらに先に出すか。`top` は上に出し、上に収まらないときだけ下に出す。`bottom` は下に出し、下に収まらず上に収まるときだけ上に出す
     reload: reload
     allowed: '`top` / `bottom`。`mount` は他の値を無視して `top` にし、CLI は他の値を設定ファイルの誤りにする'
     refs:
@@ -753,5 +753,32 @@ settings:
     description: 言語 `csv` のコードブロックを表にし、表の右端のボタンで元の CSV と切り替える。オフのときはコードブロックのまま描く
     refs:
       - dev/設計書/インターフェース定義/ライブラリ本体/文書をHTML文字列にする.ts#constraints[CSV の表]
+  - key: features.diagram-resize
+    title: 図のリサイズハンドルの機能
+    file: mdmark.config.yaml
+    type: boolean
+    required: false
+    default: 'true'
+    description: 図の部品の表示する枠の右下に、高さを変えるリサイズハンドルを置く。オフのときは置かず、表示する枠は定義から決まる高さのままにする
+    reload: reload
+    refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[図の高さのリサイズハンドル]
+    status: planned
+    introduced:
+      pr: 308
+  - key: tooltips.diagramPlacement
+    title: 図のツールチップを出す場所
+    file: mdmark.config.yaml
+    type: '"top" | "bottom"'
+    required: false
+    default: '`bottom`'
+    description: 図の線・ノード・グループのタイトル・グラフの項目・ER 図のテーブルと、埋め込んだ HTML のヒントのツールチップを、持ち主の上と下のどちらに先に出すか。`bottom` は下に出し、下に収まらず上に収まるときだけ上に出す。`top` は上に出し、上に収まらないときだけ下に出す
+    reload: reload
+    allowed: '`top` / `bottom`。`mount` は他の値を無視して `bottom` にし、CLI は他の値を設定ファイルの誤りにする'
+    refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#request[opts.config.tooltips.diagramPlacement]
+    status: planned
+    introduced:
+      pr: 308
 refs:
   - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#

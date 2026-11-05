@@ -2,6 +2,7 @@ import type { MdmarkColumnsChange } from "../mount.ts";
 import { iconSvg } from "../parts/icons.ts";
 import {
   COPY_FORMATS,
+  COPY_STATES,
   type CopyFormat,
   type CopyState,
   renderCopyButtonContent,
@@ -38,6 +39,9 @@ import { attachTableTree, TREE_FOLDED_ATTRIBUTE } from "./table-tree.ts";
 import { cellValue, visibleText } from "./text.ts";
 
 export { compareCells, type FilterValue, matchesFilter };
+
+// 表を横にスクロールさせる、表を包む要素の class
+const SCROLL_CLASS = "mdmark-table-scroll";
 
 // 並べ替えの向きの順番（押すたびに次へ進み、最後の次は先頭へ戻る）
 const SORT_CYCLE = ["none", "descending", "ascending"] as const;
@@ -211,6 +215,11 @@ function attachTable(
 ): () => void {
   tableCounter += 1;
   const id = `mdmark-table-${tableCounter}`;
+  // 横にスクロールさせる、表を包む要素（包まれていない表はその表）
+  const scroller =
+    table.parentElement?.classList.contains(SCROLL_CLASS) === true
+      ? table.parentElement
+      : table;
   const features = (wrapper.dataset.features ?? "")
     .split(/\s+/)
     .filter(Boolean);
@@ -355,13 +364,16 @@ function attachTable(
       drawers.set(Number(drawer.dataset.column), drawer);
     }
   }
-  // 絞り込み・並べ替えで列の幅が変わらないよう、描いたときの幅を最小の幅にする
+  // 絞り込み・並べ替えで列の幅が変わらないよう、描いたときの幅を最小の幅にする（本文の幅に広げる前の幅で測る）
+  const width = table.style.width;
+  table.style.width = "auto";
   for (const cell of headCells) {
     cell.style.setProperty(
       "--mdmark-column-min-width",
       `${cell.offsetWidth}px`,
     );
   }
+  table.style.width = width;
   const empty = document.createElement("tr");
   empty.className = "mdmark-table-empty";
   empty.hidden = true;
@@ -401,15 +413,15 @@ function attachTable(
         : initialPinnedCount({ wrapper, features, originalRows }),
   });
   if (barParts.bar) {
-    table.insertAdjacentHTML("beforebegin", barParts.bar);
-    const bar = table.previousElementSibling;
+    scroller.insertAdjacentHTML("beforebegin", barParts.bar);
+    const bar = scroller.previousElementSibling;
     if (bar) {
       cleanups.push(() => bar.remove());
     }
   }
   if (barParts.menus) {
     const before = new Set(wrapper.children);
-    table.insertAdjacentHTML("afterend", barParts.menus);
+    scroller.insertAdjacentHTML("afterend", barParts.menus);
     const added = [...wrapper.children].filter((child) => !before.has(child));
     cleanups.push(() => {
       for (const menuElement of added) {
@@ -685,8 +697,8 @@ function attachTable(
   let pinned = initialPinnedCount({ wrapper, features, originalRows });
   /** 表が横にはみ出しているか */
   const isOverflowing = (): boolean =>
-    table.scrollWidth > table.clientWidth ||
-    table.scrollWidth > wrapper.clientWidth;
+    scroller.scrollWidth > scroller.clientWidth ||
+    (scroller === table && table.scrollWidth > wrapper.clientWidth);
   /** 先頭から `count` 列までを、表がはみ出す間だけ表の左端に留める（0 で外す） */
   const pinColumns = (count: number): void => {
     pinned = count;
@@ -1038,6 +1050,7 @@ function attachTable(
     if (copyButton) {
       copyButton.dataset.state = state;
       copyButton.innerHTML = renderCopyButtonContent(state);
+      copyButton.title = COPY_STATES[state].label;
     }
   };
   /** 手でコピーさせるパネルを取り除く。`returnFocus` が真なら `表をコピー` へフォーカスを戻す */

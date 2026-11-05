@@ -19,7 +19,7 @@ function resolvedConfig(
   return {
     features: { print: true },
     libraries,
-    tooltips: { placement: "top" },
+    tooltips: { placement: "top", diagramPlacement: "bottom" },
     syntax: { url: "https://example.test/hl/" },
     htmlScripts: { url: "https://example.test/babel.mjs" },
     sideToc: { mode: "hover" },

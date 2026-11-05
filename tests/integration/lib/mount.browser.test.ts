@@ -10,11 +10,13 @@ import type {
 } from "../../../src/index.ts";
 import { VIEW_ICON_PATHS } from "../../../src/parts/view.ts";
 import {
+  ADDED_CHART_DEFINITIONS,
   INQUIRY_COUNT_TEXT,
   INQUIRY_HINT_TEXT,
   wrapHtml,
 } from "../../unit/helpers/charts.ts";
 import {
+  INQUIRY_GROUPS_TEXT,
   INQUIRY_TEXT,
   STRENGTH_TEXT,
   wrapDirective,
@@ -1349,9 +1351,11 @@ test("test_normal_when_table_pin_and_wide", async () => {
   const pins = pinned.querySelectorAll<HTMLButtonElement>("button.mdmark-pin");
   expect(pins[1]?.getAttribute("aria-pressed")).toBe("true");
   // 実行・検証: 横に最後までスクロールしても、No と物理名の見出しが左端に並ぶ
-  table.scrollLeft = table.scrollWidth;
+  const scroller = find<HTMLElement>(pinned, ".mdmark-table-scroll");
+  scroller.scrollLeft = scroller.scrollWidth;
+  expect(scroller.scrollLeft).toBeGreaterThan(0);
   await vi.waitFor(() => {
-    const left = table.getBoundingClientRect().left;
+    const left = scroller.getBoundingClientRect().left - table.clientLeft;
     const [no, name] = [...(table.tHead?.rows[0]?.cells ?? [])];
     expect(Math.round((no as HTMLElement).getBoundingClientRect().left)).toBe(
       Math.round(left + table.clientLeft),
@@ -1371,7 +1375,7 @@ test("test_normal_when_table_pin_and_wide", async () => {
     }
   }
   // 検証: 表の中で横にスクロールし、ページははみ出さない
-  expect(table.scrollWidth).toBeGreaterThan(table.clientWidth);
+  expect(scroller.scrollWidth).toBeGreaterThan(scroller.clientWidth);
   expect(document.documentElement.scrollWidth).toBeLessThanOrEqual(
     document.documentElement.clientWidth,
   );
@@ -1546,7 +1550,7 @@ async function checkStickyRows(mode: "timeline" | "script"): Promise<void> {
       expect(pins[1]?.hasAttribute("hidden")).toBe(false);
     });
     pins[1]?.click();
-    table.scrollLeft = 200;
+    find<HTMLElement>(wrapper, ".mdmark-table-scroll").scrollLeft = 200;
     await nextFrames();
     const body = find<HTMLElement>(table, "tbody tr");
     await vi.waitFor(() => {
@@ -1561,7 +1565,10 @@ async function checkStickyRows(mode: "timeline" | "script"): Promise<void> {
       });
     });
     // 留めた 1・2 列目は表の左端に並ぶ
-    const tableLeft = table.getBoundingClientRect().left;
+    const tableLeft = find<HTMLElement>(
+      wrapper,
+      ".mdmark-table-scroll",
+    ).getBoundingClientRect().left;
     const first = cellBox(headCells[0] as Element);
     const second = cellBox(headCells[1] as Element);
     expect(Math.abs(first.left - tableLeft)).toBeLessThanOrEqual(2);
@@ -5128,7 +5135,7 @@ function placementOwners(el: HTMLElement): {
   };
 }
 
-// ツールチップを持ち主の上に出し、上に収まらない語だけ下に出す（正常系（ツールチップを上に出す））
+// 用語のツールチップを語の上に、線・ヒントのツールチップを持ち主の下に出し、上に収まらない語だけ下に出す（正常系（ツールチップを上に出す））
 test("test_normal_when_tooltip_above", async () => {
   // 準備
   const el = createElement();
@@ -5141,10 +5148,13 @@ test("test_normal_when_tooltip_above", async () => {
   });
   const { terms, label, mark } = placementOwners(el);
   const [firstTerm, sectionTerm] = terms as [HTMLElement, HTMLElement];
-  // 実行・検証: 2 つ目の節の用語・線のラベル・ヒントの印は、持ち主の上に出る
-  for (const owner of [sectionTerm, label, mark]) {
+  // 実行・検証: 2 つ目の節の用語は、語の上に出る
+  const section = await hoverAndMeasure(sectionTerm, "center");
+  expect(section.tip.bottom).toBeLessThanOrEqual(section.owner.top);
+  // 実行・検証: 線のラベル・ヒントの印は、tooltips.diagramPlacement の既定の bottom で持ち主の下に出る
+  for (const owner of [label, mark]) {
     const rects = await hoverAndMeasure(owner, "center");
-    expect(rects.tip.bottom).toBeLessThanOrEqual(rects.owner.top);
+    expect(rects.tip.top).toBeGreaterThanOrEqual(rects.owner.bottom);
   }
   // 実行・検証: 1 行目の用語は上に収まらないので、語の下に出る
   window.scrollTo(0, 0);
@@ -5504,7 +5514,10 @@ test("test_normal_when_bg_transparent_with_opaque", async () => {
     const row = find<HTMLElement>(table, "tbody tr").getBoundingClientRect();
     const middle = row.top - box.top + row.height / 2;
     expect(await pixelAt(table, 2, middle)).toBe(SURROUNDING_BG);
-    expect(await pixelAt(table, box.width - 3, middle)).toBe(SURROUNDING_BG);
+    // 本文の幅に広げた表の右端は画面の右端を越えうるため、画面の中の右端で見る
+    const right =
+      Math.min(box.right, document.documentElement.clientWidth) - box.left;
+    expect(await pixelAt(table, right - 3, middle)).toBe(SURROUNDING_BG);
     // 実行・検証: 図のツールチップ
     const tip = await openDiagramTip(figure);
     expect(getComputedStyle(tip).backgroundColor).toBe(SURROUNDING_BG);
@@ -9618,7 +9631,7 @@ test("test_normal_when_er_columns_folded", async () => {
   expect(button.getAttribute("aria-expanded")).toBe("true");
 });
 
-// ER 図のテーブルの説明のボタンで、概要と列の説明をテーブルの上に出す（正常系）
+// ER 図のテーブルの説明のボタンで、概要と列の説明をテーブルの下に出す（正常系）
 test("test_normal_when_er_table_tooltip", async () => {
   // 準備
   const definition = {
@@ -9666,8 +9679,8 @@ test("test_normal_when_er_table_tooltip", async () => {
   ]) {
     expect(text).toContain(word);
   }
-  expect(tip.getBoundingClientRect().bottom).toBeLessThanOrEqual(
-    customers.getBoundingClientRect().top,
+  expect(tip.getBoundingClientRect().top).toBeGreaterThanOrEqual(
+    customers.getBoundingClientRect().bottom,
   );
   // 実行
   await userEvent.hover(tip);
@@ -11146,7 +11159,7 @@ test("test_normal_when_reordered_within_groups", async () => {
     panel.querySelectorAll(".is-drop-before, .is-drop-after"),
   ).toHaveLength(0);
   // 検証: 横にスクロールしても名前の列が左端に留まる
-  const scroller = find<HTMLElement>(table, "table");
+  const scroller = find<HTMLElement>(table, ".mdmark-table-scroll");
   const nameCell = find<HTMLElement>(
     table,
     'tbody tr:first-child td[data-col="0"]',
@@ -11155,9 +11168,9 @@ test("test_normal_when_reordered_within_groups", async () => {
   scroller.scrollLeft = 200;
   await nextFrames();
   expect(scroller.scrollLeft).toBeGreaterThan(0);
-  expect(Math.round(nameCell.getBoundingClientRect().left)).toBe(
-    Math.round(before),
-  );
+  expect(
+    Math.abs(nameCell.getBoundingClientRect().left - before),
+  ).toBeLessThanOrEqual(1);
 });
 
 /** 階層の表の行（キー・型・必須・既定・説明） */
@@ -11176,6 +11189,566 @@ function treeMarkdown(extra = ""): string {
     `<!-- table: data tree=キー type=型 required=必須 default=既定${extra} -->`,
     "",
     ...TREE_TABLE_ROWS,
+    "",
+    "<!-- /table -->",
+    "",
+  ].join("\n");
+}
+
+/** 横の目盛り `1月`〜`4月`・系列 2 つの、折れ線か棒のグラフの定義の JSON */
+function monthlyChartText(type: "line" | "bar"): string {
+  return JSON.stringify({
+    type,
+    title: type === "line" ? "月ごとの返信の件数" : "月ごとの起票の件数",
+    scope: "1 月から 4 月",
+    updated: "2026-11-05",
+    x: { label: "月", ticks: ["1月", "2月", "3月", "4月"] },
+    y: { label: "件" },
+    series: [
+      { name: "自動返信", points: [12, 38, 25, 41] },
+      { name: "担当者", points: [8, 14, 19, 22] },
+    ],
+  });
+}
+
+/** 項目 `A`・`B`・`C`（値 50・30・20）の円のグラフの定義の JSON */
+const ABC_PIE_TEXT = JSON.stringify({
+  type: "pie",
+  title: "返信の種類の割合",
+  scope: "1 月から 4 月",
+  updated: "2026-11-05",
+  items: [
+    { name: "A", value: 50 },
+    { name: "B", value: 30 },
+    { name: "C", value: 20 },
+  ],
+});
+
+/** 系列 1 つ・点 6 つの散布図の定義の JSON */
+const SIX_POINTS_SCATTER_TEXT = JSON.stringify({
+  type: "scatter",
+  title: "本文の長さと返信までの時間",
+  scope: "1 月から 4 月",
+  updated: "2026-11-05",
+  x: { label: "字" },
+  y: { label: "分" },
+  series: [
+    {
+      name: "問い合わせ",
+      points: [
+        [120, 6],
+        [180, 9],
+        [240, 14],
+        [300, 20],
+        [360, 26],
+        [420, 31],
+      ],
+    },
+  ],
+});
+
+/** 図の `figure` を、文書の順に返す */
+function diagramFiguresOf(el: Element): HTMLElement[] {
+  return [...el.querySelectorAll<HTMLElement>("figure.mdmark-diagram")];
+}
+
+/** 図の中のツールチップの持ち主（グラフの項目と、点の当たりの円）を返す */
+function itemOwners(figure: Element): HTMLElement[] {
+  return [...figure.querySelectorAll<HTMLElement>("[data-tip-owner]")].filter(
+    (owner) => !owner.classList.contains("mdmark-diagram-info"),
+  );
+}
+
+// tooltips.diagramPlacement が top なら線・ヒント・グラフの項目のツールチップを持ち主の上に出し、本文の用語は placement のとおり。知らない値は bottom（正常系（図のツールチップを上に出す設定））
+test("test_normal_when_diagram_placement_top", async () => {
+  // 準備
+  const markdown = `${placementMarkdown({ tail: false })}\n${wrapDirective("chart", monthlyChartText("line"))}\n`;
+  const el = createElement();
+  await mountTracked(el, {
+    markdown,
+    index: PLACEMENT_INDEX,
+    docId: "arch",
+    config: {
+      tooltips: { diagramPlacement: "top", placement: "bottom" },
+      features: { "side-toc": false },
+    },
+  });
+  const { terms, label, mark } = placementOwners(el);
+  const sectionTerm = terms[1] as HTMLElement;
+  const chart = diagramFiguresOf(el).at(-1) as HTMLElement;
+  const point = itemOwners(chart)[1] as HTMLElement;
+  // 実行・検証: 線のラベル・div の印・グラフの点は、持ち主の上に出る
+  for (const owner of [label, mark, point]) {
+    const rects = await hoverAndMeasure(owner, "center");
+    expect(rects.tip.bottom).toBeLessThanOrEqual(rects.owner.top);
+  }
+  // 実行・検証: 2 つ目の節の用語は、placement の bottom のとおり語の下に出る
+  const term = await hoverAndMeasure(sectionTerm, "center");
+  expect(term.tip.top).toBeGreaterThanOrEqual(term.owner.bottom);
+  // 実行・検証: 知らない値は bottom として扱い、線のラベルの下に出る
+  const el2 = createElement();
+  await mountTracked(el2, {
+    markdown,
+    index: PLACEMENT_INDEX,
+    docId: "arch",
+    config: {
+      tooltips: { diagramPlacement: "left" },
+      features: { "side-toc": false },
+    },
+  });
+  const unknown = await hoverAndMeasure(placementOwners(el2).label, "center");
+  expect(unknown.tip.top).toBeGreaterThanOrEqual(unknown.owner.bottom);
+});
+
+// グラフの点・棒・扇形・散布図の点と追加した種類の項目に、名前と値のツールチップを出し、Esc で消す（正常系（グラフの項目のツールチップ））
+test("test_normal_when_chart_item_tooltip", async () => {
+  // 準備
+  const el = createElement();
+  el.style.width = "600px";
+  const markdown = [
+    wrapDirective("chart", monthlyChartText("line")),
+    wrapDirective("chart", monthlyChartText("bar")),
+    wrapDirective("chart", ABC_PIE_TEXT),
+    wrapDirective("chart", SIX_POINTS_SCATTER_TEXT),
+    ...ADDED_CHART_DEFINITIONS.slice(0, 8).map((definition) =>
+      wrapDirective("chart", JSON.stringify(definition)),
+    ),
+  ].join("\n");
+  await mountTracked(el, { markdown });
+  const [line, bar, pie, scatter, ...added] = diagramFiguresOf(el) as [
+    HTMLElement,
+    HTMLElement,
+    HTMLElement,
+    HTMLElement,
+    ...HTMLElement[],
+  ];
+  expect(added).toHaveLength(8);
+  // 実行・検証: 折れ線の 2 つ目の点の上で、系列の名前・横の目盛り・値を出し、項目の下に置く
+  const point = itemOwners(line)[1] as HTMLElement;
+  point.scrollIntoView({ block: "center" });
+  await userEvent.hover(point);
+  const pointTip = tipOf(point);
+  expect(pointTip.getAttribute("role")).toBe("tooltip");
+  expect(pointTip.hidden).toBe(false);
+  expect(pointTip.textContent).toContain("自動返信");
+  expect(pointTip.textContent).toContain("2月: 38");
+  expect(pointTip.getBoundingClientRect().top).toBeGreaterThanOrEqual(
+    point.getBoundingClientRect().bottom,
+  );
+  // 実行・検証: 見た目の点の外で、当たりの範囲の内側でも同じツールチップを出す
+  await userEvent.unhover(point);
+  await vi.waitFor(() => expect(pointTip.hidden).toBe(true));
+  const box = point.getBoundingClientRect();
+  await userEvent.hover(point, {
+    position: { x: box.width * 0.85, y: box.height / 2 },
+  });
+  await vi.waitFor(() => expect(pointTip.hidden).toBe(false));
+  // 実行・検証: 棒・円の A の扇形・散布図の点
+  const cases: Array<[HTMLElement, string[]]> = [
+    [itemOwners(bar)[0] as HTMLElement, ["自動返信", "1月: 12"]],
+    [itemOwners(pie)[0] as HTMLElement, ["A", "50", "50%"]],
+    [itemOwners(scatter)[0] as HTMLElement, ["問い合わせ", "120", "6"]],
+  ];
+  for (const [owner, words] of cases) {
+    owner.scrollIntoView({ block: "center" });
+    await userEvent.hover(owner);
+    const tip = tipOf(owner);
+    expect(tip.hidden).toBe(false);
+    for (const word of words) {
+      expect(tip.textContent).toContain(word);
+    }
+  }
+  // 実行・検証: 追加した 8 つの種類のグラフの項目（ドーナツの扇形は矩形の中心が穴のため、フォーカスで開く）
+  await userEvent.unhover(document.body);
+  for (const [index, figure] of added.entries()) {
+    const owner = itemOwners(figure)[0];
+    if (!owner) {
+      throw new Error(`項目の持ち主が無い: ${index}`);
+    }
+    owner.scrollIntoView({ block: "center" });
+    owner.focus();
+    const tip = tipOf(owner);
+    expect(tip.hidden, String(index)).toBe(false);
+    const definition = ADDED_CHART_DEFINITIONS[index] as {
+      series?: Array<{ name: string }>;
+      items?: Array<{ name: string }>;
+    };
+    const names = [
+      ...(definition.series ?? []),
+      ...(definition.items ?? []),
+    ].map((entry) => entry.name);
+    expect(
+      names.some((name) => tip.textContent?.includes(name)),
+      String(index),
+    ).toBe(true);
+    expect(tip.textContent, String(index)).toMatch(/\d/);
+  }
+  // 実行・検証: フォーカスした点の aria-describedby がツールチップを指し、Esc で消してフォーカスを残す
+  await userEvent.unhover(document.body);
+  point.focus();
+  expect(
+    document.getElementById(point.getAttribute("aria-describedby") ?? ""),
+  ).toBe(pointTip);
+  await vi.waitFor(() => expect(pointTip.hidden).toBe(false));
+  await userEvent.keyboard("{Escape}");
+  expect(pointTip.hidden).toBe(true);
+  expect(document.activeElement).toBe(point);
+});
+
+/** 図の表示する枠 */
+function viewportOf(figure: Element): HTMLElement {
+  return find<HTMLElement>(figure, '[role="group"][aria-roledescription="図"]');
+}
+
+/** 表示する枠の中の要素の位置（表示する枠の左上から、px）で、表示する枠の上を押して動かして離す */
+async function dragViewport(
+  viewport: HTMLElement,
+  from: { x: number; y: number },
+  to: { x: number; y: number },
+): Promise<void> {
+  await userEvent.dragAndDrop(viewport, viewport, {
+    sourcePosition: from,
+    targetPosition: to,
+  });
+}
+
+/** 要素の中心の、表示する枠の左上からの位置 */
+function centerIn(
+  viewport: Element,
+  element: Element,
+): { x: number; y: number } {
+  const outer = viewport.getBoundingClientRect();
+  const inner = element.getBoundingClientRect();
+  return {
+    x: inner.left + inner.width / 2 - outer.left,
+    y: inner.top + inner.height / 2 - outer.top,
+  };
+}
+
+// 拡大したグラフの点の上で、しきい値より小さく動かしても図を動かさずツールチップを残し、越えたら動かしてツールチップを閉じる（正常系（グラフの項目の上で動かす））
+test("test_normal_when_drag_on_chart_item", async () => {
+  // 準備
+  const el = createElement();
+  el.style.width = "600px";
+  await mountTracked(el, {
+    markdown: wrapDirective("chart", monthlyChartText("line")),
+  });
+  const figure = diagramFiguresOf(el)[0] as HTMLElement;
+  const viewport = viewportOf(figure);
+  buttonOf(figure, "拡大").click();
+  buttonOf(figure, "拡大").click();
+  const point = itemOwners(figure)[1] as HTMLElement;
+  point.scrollIntoView({ block: "nearest", inline: "nearest" });
+  viewport.scrollLeft = 0;
+  await userEvent.hover(point);
+  const tip = tipOf(point);
+  expect(tip.hidden).toBe(false);
+  const before = viewport.scrollLeft;
+  const start = centerIn(viewport, point);
+  // 実行・検証: 2px 動かして離す
+  await dragViewport(viewport, start, { x: start.x + 2, y: start.y });
+  expect(viewport.scrollLeft).toBe(before);
+  expect(tip.hidden).toBe(false);
+  // 実行・検証: 100px 左へ動かす（離す前に確かめる。離した後はポインターの下に点が戻り、ポインターを乗せたことになる）
+  vi.spyOn(Element.prototype, "setPointerCapture").mockImplementation(() => {});
+  const rect = point.getBoundingClientRect();
+  const pointer = {
+    bubbles: true,
+    pointerId: 1,
+    pointerType: "mouse",
+    button: 0,
+    clientY: rect.top + rect.height / 2,
+  };
+  const x = rect.left + rect.width / 2;
+  point.dispatchEvent(
+    new PointerEvent("pointerdown", { ...pointer, clientX: x }),
+  );
+  point.dispatchEvent(
+    new PointerEvent("pointermove", { ...pointer, clientX: x - 100 }),
+  );
+  expect(viewport.scrollLeft).toBeGreaterThan(before);
+  expect(tip.hidden).toBe(true);
+  point.dispatchEvent(
+    new PointerEvent("pointerup", { ...pointer, clientX: x - 100 }),
+  );
+});
+
+/** タイトルの上端が `top` から、図の座標で 8px（倍率を掛けた px）以内の下にあるか */
+function stuckBelow(top: number, title: Element, scale: number): boolean {
+  const rect = title.getBoundingClientRect();
+  return rect.top >= top - 1 && rect.top <= top + 8 * scale + 1;
+}
+
+/** タイトルの高さの真ん中・左端から 24px 内側（拡大したタイトルは画面より長いため）の位置で、最も手前の要素がタイトルかその子か */
+function frontAtCenter(title: Element): boolean {
+  const rect = title.getBoundingClientRect();
+  const hit = document.elementFromPoint(
+    rect.left + Math.min(rect.width / 2, 24),
+    rect.top + rect.height / 2,
+  );
+  return hit !== null && (hit === title || title.contains(hit));
+}
+
+// 拡大して動かした間、見えているシステムの枠と層のタイトルを上端に留め、stickyTitles: false の図では留めない（正常系（グループのタイトルを留める））
+test("test_normal_when_group_titles_stuck", async () => {
+  // 準備
+  const definition = JSON.parse(INQUIRY_GROUPS_TEXT) as {
+    frame: { title: string; hint: string; x: number };
+    lanes: Array<{ label: string; kind: string; y: number; h: number }>;
+  };
+  const off = { ...definition, stickyTitles: false };
+  const el = createElement();
+  el.style.width = "600px";
+  await mountTracked(el, {
+    markdown: [
+      wrapDirective("flow", INQUIRY_GROUPS_TEXT),
+      wrapDirective("flow", JSON.stringify(off)),
+    ].join("\n"),
+  });
+  const [stuck, plain] = diagramFiguresOf(el) as [HTMLElement, HTMLElement];
+  const process = definition.lanes.find((lane) => lane.kind === "mcp");
+  const data = definition.lanes.find((lane) => lane.kind === "data");
+  if (!process || !data) {
+    throw new Error("見本の定義に処理とデータの層が無い");
+  }
+  const labelOf = (figure: Element, label: string) =>
+    [
+      ...figure.querySelectorAll<HTMLElement>(".mdmark-diagram-lane-label"),
+    ].find((element) => element.textContent?.startsWith(label)) as HTMLElement;
+  // 処理の層が表示する枠の上へ出るまで縦に動かせるよう、拡大できるだけ拡大する
+  for (const figure of [stuck, plain]) {
+    for (let i = 0; i < 12 && !buttonOf(figure, "拡大").disabled; i += 1) {
+      buttonOf(figure, "拡大").click();
+    }
+  }
+  const viewport = viewportOf(stuck);
+  const scale = scaleOf(stuck);
+  const frameTitle = find<HTMLElement>(stuck, ".mdmark-diagram-frame-title");
+  const processLabel = labelOf(stuck, process.label);
+  // 実行: 処理の層の途中を見せる（狭い画面でもタイトルが画面に入るよう、枠の左端まで横にも動かす）
+  const middle = Math.round((process.y + process.h / 2) * scale);
+  viewport.scrollLeft = Math.round(definition.frame.x * scale);
+  viewport.scrollTop = middle;
+  await nextFrames();
+  // 検証
+  expect(viewport.scrollTop).toBeGreaterThan(process.y * scale);
+  const viewportTop = viewport.getBoundingClientRect().top;
+  expect(stuckBelow(viewportTop, frameTitle, scale)).toBe(true);
+  expect(
+    stuckBelow(frameTitle.getBoundingClientRect().bottom, processLabel, scale),
+  ).toBe(true);
+  expect(frontAtCenter(frameTitle)).toBe(true);
+  expect(frontAtCenter(processLabel)).toBe(true);
+  // 実行・検証: 留めた枠のタイトルの印で、枠の hint を出す
+  const info = buttonOf(stuck, `「${definition.frame.title}」の説明`);
+  await userEvent.hover(info);
+  const tip = tipOf(info);
+  expect(tip.hidden).toBe(false);
+  expect(tip.textContent).toContain(definition.frame.hint);
+  await userEvent.unhover(info);
+  // 実行: 処理の層が表示する枠の上へ出るまで動かす
+  viewport.scrollTop = Math.round((process.y + process.h) * scale) + 24;
+  await nextFrames();
+  // 検証
+  expect(processLabel.getBoundingClientRect().bottom).toBeLessThanOrEqual(
+    viewport.getBoundingClientRect().top,
+  );
+  expect(
+    stuckBelow(
+      frameTitle.getBoundingClientRect().bottom,
+      labelOf(stuck, data.label),
+      scale,
+    ),
+  ).toBe(true);
+  // 実行・検証: stickyTitles: false の図は、同じだけ動かしてもタイトルを留めない
+  const plainViewport = viewportOf(plain);
+  plainViewport.scrollIntoView({ block: "center" });
+  plainViewport.scrollTop = middle;
+  await nextFrames();
+  const plainTop = plainViewport.getBoundingClientRect().top;
+  expect(
+    find(plain, ".mdmark-diagram-frame-title").getBoundingClientRect().bottom,
+  ).toBeLessThanOrEqual(plainTop);
+  expect(
+    labelOf(plain, process.label).getBoundingClientRect().bottom,
+  ).toBeLessThanOrEqual(plainTop);
+});
+
+/** 幅 500・高さ 1600 のフロー図の定義の JSON */
+const TALL_FLOW_TEXT = JSON.stringify({
+  title: "縦に長い処理の流れ",
+  scope: "高さの確認",
+  updated: "2026-11-05",
+  width: 500,
+  height: 1600,
+  nodes: [
+    { id: "a", kind: "script", x: 40, y: 40, w: 180, h: 72, name: "受け取る" },
+    { id: "b", kind: "script", x: 40, y: 760, w: 180, h: 72, name: "分ける" },
+    { id: "c", kind: "data", x: 40, y: 1480, w: 180, h: 72, name: "残す" },
+  ],
+  wires: [
+    {
+      id: "w1",
+      from: "a",
+      to: "b",
+      line: "flow",
+      points: [
+        [130, 112],
+        [130, 760],
+      ],
+    },
+    {
+      id: "w2",
+      from: "b",
+      to: "c",
+      line: "write",
+      points: [
+        [130, 832],
+        [130, 1480],
+      ],
+    },
+  ],
+});
+
+/** 図の表示する枠の高さ（px） */
+function viewportHeight(figure: Element): number {
+  return viewportOf(figure).getBoundingClientRect().height;
+}
+
+// リサイズハンドルのドラッグと上下キーで表示する枠の高さを変え、倍率を求め直し、sessionStorage に保ち、ダブルクリックで戻す（正常系（図の高さを変える））
+test("test_normal_when_diagram_resized", async () => {
+  // 準備
+  sessionStorage.clear();
+  const el = createElement();
+  el.style.width = "600px";
+  el.style.setProperty("--mdmark-padding", "0");
+  const markdown = wrapDirective("flow", TALL_FLOW_TEXT);
+  const first = await mountTracked(el, { markdown });
+  let figure = diagramFiguresOf(el)[0] as HTMLElement;
+  let handle = find<HTMLElement>(figure, ".mdmark-diagram-resize");
+  // 検証: リサイズハンドルの属性
+  expect(handle.getAttribute("role")).toBe("separator");
+  expect(handle.getAttribute("aria-orientation")).toBe("horizontal");
+  expect(handle.getAttribute("tabindex")).toBe("0");
+  expect(handle.getAttribute("aria-label")).toBe(
+    "「縦に長い処理の流れ」の表示の高さ",
+  );
+  await vi.waitFor(() => expect(scaleOf(figure)).toBeGreaterThan(0));
+  const opened = viewportHeight(figure);
+  const openedScale = scaleOf(figure);
+  const openedWidth = viewportOf(figure).clientWidth;
+  expect(
+    Math.abs(Number(handle.getAttribute("aria-valuenow")) - opened),
+  ).toBeLessThanOrEqual(1);
+  // 実行・検証: 200px 下へドラッグする
+  vi.spyOn(Element.prototype, "setPointerCapture").mockImplementation(() => {});
+  const center = handle.getBoundingClientRect();
+  const pointer = {
+    bubbles: true,
+    pointerId: 1,
+    pointerType: "mouse",
+    button: 0,
+    clientX: center.left + center.width / 2,
+  };
+  const y = center.top + center.height / 2;
+  handle.dispatchEvent(
+    new PointerEvent("pointerdown", { ...pointer, clientY: y }),
+  );
+  handle.dispatchEvent(
+    new PointerEvent("pointermove", { ...pointer, clientY: y + 200 }),
+  );
+  handle.dispatchEvent(
+    new PointerEvent("pointerup", { ...pointer, clientY: y + 200 }),
+  );
+  const resized = viewportHeight(figure);
+  expect(Math.abs(resized - opened - 200)).toBeLessThanOrEqual(1);
+  expect(viewportOf(figure).clientWidth).toBe(openedWidth);
+  expect(scaleOf(figure)).toBeCloseTo(openedScale, 4);
+  expect(
+    Math.abs(Number(handle.getAttribute("aria-valuenow")) - resized),
+  ).toBeLessThanOrEqual(1);
+  // 実行・検証: 0 で、変えた高さで全体が収まる倍率に戻す
+  const viewport = viewportOf(figure);
+  viewport.focus();
+  await userEvent.keyboard("0");
+  const fit = Math.min(
+    viewport.clientWidth / 500,
+    viewport.clientHeight / 1600,
+    1,
+  );
+  expect(scaleOf(figure)).toBeCloseTo(fit, 2);
+  expect(1600 * scaleOf(figure)).toBeLessThanOrEqual(viewport.clientHeight + 1);
+  // 実行・検証: ↑ で 32px 低く、↓ で 32px 高く
+  handle.focus();
+  await userEvent.keyboard("{ArrowUp}");
+  expect(Math.abs(viewportHeight(figure) - (resized - 32))).toBeLessThanOrEqual(
+    1,
+  );
+  await userEvent.keyboard("{ArrowDown}");
+  const kept = viewportHeight(figure);
+  expect(Math.abs(kept - resized)).toBeLessThanOrEqual(1);
+  expect(viewport.clientHeight).toBeLessThanOrEqual(1600 * scaleOf(figure) + 2);
+  // 実行・検証: mount し直すと、変えた高さで描く
+  first.destroy();
+  const second = await mountTracked(el, { markdown });
+  figure = diagramFiguresOf(el)[0] as HTMLElement;
+  handle = find<HTMLElement>(figure, ".mdmark-diagram-resize");
+  expect(Math.abs(viewportHeight(figure) - kept)).toBeLessThanOrEqual(1);
+  // 実行・検証: ダブルクリックで定義から決まる高さに戻し、mount し直しても同じ
+  await userEvent.dblClick(handle);
+  expect(Math.abs(viewportHeight(figure) - opened)).toBeLessThanOrEqual(1);
+  second.destroy();
+  await mountTracked(el, { markdown });
+  figure = diagramFiguresOf(el)[0] as HTMLElement;
+  expect(Math.abs(viewportHeight(figure) - opened)).toBeLessThanOrEqual(1);
+  // 実行・検証: 全画面のモーダルの中にリサイズハンドルが無い
+  buttonOf(figure, "全画面で開く").click();
+  const dialog = find<HTMLDialogElement>(el, "dialog");
+  expect(dialog.open).toBe(true);
+  expect(dialog.querySelector(".mdmark-diagram-resize")).toBeNull();
+  await userEvent.keyboard("{Escape}");
+  sessionStorage.clear();
+});
+
+// diagram-resize がオフの文書と設定では、図にリサイズハンドルを置かない（正常系（図のリサイズハンドルの機能を外す））
+test("test_normal_when_diagram_resize_disabled", async () => {
+  // 準備
+  const flow = wrapDirective("flow", INQUIRY_TEXT);
+  const el = createElement();
+  const el2 = createElement();
+  const el3 = createElement();
+  // 実行
+  await mountTracked(el, {
+    markdown: `<!-- features: -diagram-resize -->\n\n${flow}`,
+  });
+  await mountTracked(el2, { markdown: flow });
+  await mountTracked(el3, {
+    markdown: flow,
+    config: { features: { "diagram-resize": false } },
+  });
+  // 検証
+  expect(
+    el.querySelector('[role="separator"].mdmark-diagram-resize'),
+  ).toBeNull();
+  expect(el.querySelector('button[aria-label="拡大"]')).not.toBeNull();
+  expect(el.textContent).not.toContain("features:");
+  expect(
+    el2.querySelector('[role="separator"].mdmark-diagram-resize'),
+  ).not.toBeNull();
+  expect(el3.querySelector(".mdmark-diagram-resize")).toBeNull();
+});
+
+/** 列名と 3 行の表を、`<!-- table: data -->` で囲んだ Markdown にする */
+function dataTableMarkdown(columns: string[]): string {
+  const rows = [1, 2, 3].map(
+    (row) => `| ${columns.map((_, i) => `値 ${row}-${i + 1}`).join(" | ")} |`,
+  );
+  return [
+    "<!-- table: data -->",
+    "",
+    `| ${columns.join(" | ")} |`,
+    `| ${columns.map(() => "---").join(" | ")} |`,
+    ...rows,
     "",
     "<!-- /table -->",
     "",
@@ -11755,3 +12328,92 @@ test("test_error_when_transpiler_unavailable", async () => {
     spy.mock.calls.some((call) => String(call[0]).includes(MISSING_LIB_PATH)),
   ).toBe(true);
 });
+
+/** 要素の見えている文字（読み上げだけの文字を除く）の行の数（行の矩形の上端の数） */
+function textLineCount(element: Element): number {
+  const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT);
+  const tops = new Set<number>();
+  for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+    if (
+      !node.textContent?.trim() ||
+      node.parentElement?.closest(".mdmark-visually-hidden")
+    ) {
+      continue;
+    }
+    const range = document.createRange();
+    range.selectNodeContents(node);
+    for (const rect of range.getClientRects()) {
+      tops.add(Math.round(rect.top));
+    }
+  }
+  return tops.size;
+}
+
+// 列の少ない表を本文の幅まで広げ、本文の幅に収まらない表だけ表の中で横にスクロールさせる（正常系（表を本文の幅に広げる））
+test("test_normal_when_table_fills_width", async () => {
+  // 準備: 描く先の要素の幅 1000px が収まる画面にする
+  const original = { width: window.innerWidth, height: window.innerHeight };
+  await page.viewport(1280, 800);
+  try {
+    await checkTableFillsWidth();
+  } finally {
+    await page.viewport(original.width, original.height);
+  }
+});
+
+/** 正常系（表を本文の幅に広げる）の確かめ */
+async function checkTableFillsWidth(): Promise<void> {
+  const el = createElement();
+  el.style.width = "1000px";
+  const wide = Array.from({ length: 12 }, (_, i) => `列の見出し ${i + 1}`);
+  // 実行
+  await mountTracked(el, {
+    markdown: [
+      "本文の段落。",
+      "",
+      dataTableMarkdown(["名前", "数量"]),
+      dataTableMarkdown(wide),
+    ].join("\n"),
+    config: { features: { "side-toc": false } },
+  });
+  // 検証
+  const body = find<HTMLElement>(el, "p").getBoundingClientRect().width;
+  const [narrow, many] = [
+    ...el.querySelectorAll<HTMLElement>(".mdmark-table"),
+  ] as [HTMLElement, HTMLElement];
+  const narrowTable = find<HTMLElement>(narrow, "table");
+  expect(
+    Math.abs(narrow.getBoundingClientRect().width - body),
+  ).toBeLessThanOrEqual(1);
+  expect(
+    Math.abs(narrowTable.getBoundingClientRect().width - body),
+  ).toBeLessThanOrEqual(1);
+  const heads = [...narrowTable.querySelectorAll<HTMLElement>("thead th")];
+  expect(
+    Math.abs(
+      (heads.at(-1)?.getBoundingClientRect().right ?? 0) -
+        narrowTable.getBoundingClientRect().right,
+    ),
+  ).toBeLessThanOrEqual(1);
+  const narrowScroll = find<HTMLElement>(narrow, ".mdmark-table-scroll");
+  expect(narrowScroll.scrollWidth).toBeLessThanOrEqual(
+    narrowScroll.clientWidth,
+  );
+  for (const head of heads) {
+    expect(textLineCount(head)).toBe(1);
+  }
+  expect(
+    Math.abs(many.getBoundingClientRect().width - body),
+  ).toBeLessThanOrEqual(1);
+  const manyScroll = find<HTMLElement>(many, ".mdmark-table-scroll");
+  expect(manyScroll.scrollWidth).toBeGreaterThan(manyScroll.clientWidth);
+  manyScroll.scrollLeft = 120;
+  expect(manyScroll.scrollLeft).toBeGreaterThan(0);
+  for (const head of many.querySelectorAll<HTMLElement>("thead th")) {
+    const min = Number.parseFloat(getComputedStyle(head).minWidth) || 0;
+    expect(head.getBoundingClientRect().width).toBeGreaterThanOrEqual(min - 1);
+  }
+  expect(document.documentElement.scrollWidth).toBeLessThanOrEqual(
+    document.documentElement.clientWidth,
+  );
+}

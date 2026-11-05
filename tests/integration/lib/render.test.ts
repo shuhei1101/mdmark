@@ -22,6 +22,7 @@ import {
   JUDGEMENT_AUTO_TEXT,
   parsed,
   REPLY_TIME_TEXT,
+  SINGLE_KINDS_TEXT,
   STRENGTH_TEXT,
   wrapDirective,
 } from "../../unit/helpers/diagrams.ts";
@@ -1101,7 +1102,7 @@ test("test_normal_when_embedded_html", async () => {
   expect(textById(html, inlineTip)).toBe("本文を読んで種類を決める");
 });
 
-// html がオフならコードブロックをコードのまま出し、hints がオフならツールチップの中身と印を出さない（正常系）
+// html がオフならコードブロックをコードのまま出し、hints がオフならグラフの項目以外のツールチップの中身と印を出さない（正常系）
 test("test_normal_when_html_and_hints_disabled", async () => {
   // 準備
   const render = await loadRender();
@@ -1118,7 +1119,12 @@ test("test_normal_when_html_and_hints_disabled", async () => {
   expect(offHints).toContain("mdmark-html");
   expect(offHints).not.toContain("data-hint");
   expect(offHints).not.toContain("mdmark-hint-");
-  expect(offHints).not.toContain('role="tooltip"');
+  // ツールチップはヒントの機能が受け持たないグラフの項目のものだけ
+  const tooltips = findTags(offHints, 'role="tooltip"');
+  expect(tooltips.length).toBeGreaterThan(0);
+  for (const tag of tooltips) {
+    expect(tag).toMatch(/data-tip-for="item:\d+"/);
+  }
   expect(offHints).toContain("窓口の MCP");
   expect(offHints).not.toContain("mdmark-diagram-info");
 });
@@ -4225,4 +4231,22 @@ test("test_normal_when_range_scripts_both_languages", async () => {
   expect(innerHtml(html, 'class="mdmark-html"')).toContain("<p>範囲</p>");
   expect(html).not.toContain("mdmark-html-script");
   expect(html).toContain("<p>後ろの段落</p>");
+});
+
+// ノードも線も 1 種類ずつのフロー図は、凡例の項目を持たずに描く（正常系（種類が 1 つずつの図））
+test("test_normal_when_single_kinds", async () => {
+  // 準備
+  const render = await loadRender();
+  const definition = parsed<MdmarkFlowDefinition>(SINGLE_KINDS_TEXT);
+  // 実行
+  const html = render(wrapDirective("flow", SINGLE_KINDS_TEXT));
+  // 検証
+  expect(diagramFigures(html)).toHaveLength(1);
+  expect(findTags(html, 'data-node="')).toHaveLength(3);
+  expect(
+    matches(html, /<path[^>]* class="mdmark-diagram-wire"[^>]*>/g),
+  ).toHaveLength(2);
+  expect(html).toContain(definition.title);
+  expect(html).not.toContain("mdmark-diagram-legend-item");
+  expect(html).not.toContain("mdmark-diagram-legend-sample");
 });

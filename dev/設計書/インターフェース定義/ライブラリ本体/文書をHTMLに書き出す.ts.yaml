@@ -132,10 +132,10 @@ flows:
       - ファイル `guide_files` が変わっておらず、`guide.html` が書かれていない
     test: test_error_when_media_copy_unwritable
   - name: 正常系（ツールチップを下に出す設定）
-    summary: 設定の `tooltips.placement` を埋める設定に写し、開いた HTML で用語のツールチップを下に出す
+    summary: 設定の `tooltips.placement` と `tooltips.diagramPlacement` を埋める設定に写し、開いた HTML で用語のツールチップを下に、図の線のツールチップを上に出す
     setup:
       - name: 下に出す設定
-        description: '`tooltips.placement: bottom` と、用語を 1 つ持つ `index` を持つ設定と、その用語が 2 つ目の節の段落に出る文書を持つフォルダ'
+        description: '`tooltips.placement: bottom`・`tooltips.diagramPlacement: top` と、用語を 1 つ持つ `index` を持つ設定と、その用語が 2 つ目の節の段落に出て、その後ろに `tip` を持つ線 1 本のフロー図を持つ文書を持つフォルダ'
       - name: Mock
         description: 差し替える依存は無い。書き出した HTML は Playwright で file:// として開く
     flow: |-
@@ -147,9 +147,12 @@ flows:
         C->>H: tooltips を写した設定を埋めて書く
         W->>H: 開いて用語にポインターを乗せる
         H-->>W: 語の下にツールチップを出す
+        W->>H: 線のラベルにポインターを乗せる
+        H-->>W: ラベルの上にツールチップを出す
     expected:
       - 終了コードが 0
       - 開いた HTML で、用語のツールチップの `top` が語の `bottom` 以上
+      - 開いた HTML で、線のラベルのツールチップの `bottom` がラベルの `top` 以下
     test: test_normal_when_tooltip_placement
   - name: 正常系（色分けするコードブロック）
     summary: 文書が使う言語の分だけ色分けのモジュールを埋め、開いたときに外へ要求せずに色分けする
@@ -443,7 +446,7 @@ constraints:
     constraint: Chrome 99・Firefox 98・Safari 16.4 以降
     decided_by: dev/設計書/非機能要件/非機能要件#requirements[対応ブラウザ]
   - item: ツールチップを出す場所
-    constraint: 設定の `tooltips.placement` を、`features` と同じく埋める設定に写して `mount` の `opts.config` に渡す。無いときは写さず、`mount` の既定（`top`）に任せる。`top`・`bottom` 以外の値は設定ファイルの誤り（終了コード 1）にする
+    constraint: 設定の `tooltips.placement` と `tooltips.diagramPlacement` を、`features` と同じく埋める設定に写して `mount` の `opts.config` に渡す。無いキーは写さず、`mount` の既定（`placement` は `top`、`diagramPlacement` は `bottom`）に任せる。`top`・`bottom` 以外の値は設定ファイルの誤り（終了コード 1）にする
     decided_by: dev/設計書/設定/ライブラリ本体#settings[tooltips.placement]
   - item: 埋める色分け
     constraint: '機能 `syntax` がオンのとき、文書のコードブロックの情報文字列から色分けの対象の言語を拾い（`mount` と同じ対応表で、`dockerfile`・`diff` とその別名を含む。言語は情報文字列の最初の `:` の前。文書の `<!-- features: -syntax -->` の文書は拾わない）、設定の `syntax.url`（無ければ既定の jsDelivr の URL）の本体と使う言語のモジュールだけを制約「束ねるスクリプト」の 1 つのスクリプトに束ねて埋める。開いたときは `mount` が埋めたモジュールから色分けし、埋めなかった言語は読みに行かず色分けせずに残す。相対パスの `syntax.url` は設定ファイルのあるフォルダを基準に読む。届かないモジュールは埋めず警告に出す（書き出しは止めない）'

@@ -1,7 +1,12 @@
 import { afterEach, beforeAll, expect, test, vi } from "vitest";
 import { userEvent } from "vitest/browser";
-import { INQUIRY_TEXT, wrapDirective } from "../../helpers/diagrams.ts";
+import {
+  INQUIRY_GROUPS_TEXT,
+  INQUIRY_TEXT,
+  wrapDirective,
+} from "../../helpers/diagrams.ts";
 import { addStyles, createRoot, removeRoots } from "../../helpers/dom.ts";
+import { memoryStorage } from "../../helpers/storage.ts";
 
 /** 図の操作を読み込む（実装が無い間は各テストが個別に失敗する） */
 const loadDiagrams = () => import("../../../../src/interact/diagrams.ts");
@@ -284,5 +289,108 @@ test("test_open_diagram_dialog_when_tip_open", async () => {
     await userEvent.keyboard("{Escape}");
     expect(tip?.hidden).toBe(true);
     expect(dialog.open).toBe(true);
+  }
+});
+
+/** 幅 500・高さ 1600 のフロー図の定義（全体が収まる倍率は幅で決まり 1 になる縦長の図） */
+const LONG_TEXT = JSON.stringify({
+  title: "縦に長い図",
+  scope: "リサイズハンドルを確かめる",
+  updated: "2026-11-05",
+  width: 500,
+  height: 1600,
+  nodes: [
+    { id: "top", kind: "script", x: 180, y: 20, w: 140, h: 64, name: "上" },
+  ],
+  wires: [],
+});
+
+/** 表示する枠の右下のリサイズハンドル */
+function handleOf(root: ParentNode): HTMLElement {
+  const found = root.querySelector<HTMLElement>(".mdmark-diagram-resize");
+  if (!found) {
+    throw new Error("リサイズハンドルが無い");
+  }
+  return found;
+}
+
+// リサイズハンドルで高さを変えると、全体が収まる倍率を幅と高さで求め直し、付け直しても保つ（正常系）
+test("test_attach_diagrams_when_handle_resized", async () => {
+  // 準備
+  vi.spyOn(Element.prototype, "setPointerCapture").mockImplementation(() => {});
+  const { attachDiagrams } = await loadDiagrams();
+  const { root } = createRoot(wrapDirective("flow", LONG_TEXT));
+  root.style.width = "600px";
+  root.style.setProperty("--mdmark-padding", "0");
+  const storage = memoryStorage();
+  const detach = attachDiagrams({ root, placement: "bottom", storage });
+  const viewport = viewportOf(root);
+  const handle = handleOf(root);
+  const point = { bubbles: true, pointerId: 1, button: 0, clientX: 10 };
+  // 実行: 200px 下へドラッグする
+  handle.dispatchEvent(
+    new PointerEvent("pointerdown", { ...point, clientY: 100 }),
+  );
+  handle.dispatchEvent(
+    new PointerEvent("pointermove", { ...point, clientY: 300 }),
+  );
+  handle.dispatchEvent(
+    new PointerEvent("pointerup", { ...point, clientY: 300 }),
+  );
+  // 検証: 高さが 576 + 200 になり、倍率は変わらない（全体が収まる倍率が下がった分、倍率の文字は 100% より大きい）
+  expect(viewport.clientHeight).toBe(776);
+  expect(zoomText(root)).not.toBe("100%");
+  // 実行: 全体が収まる倍率に戻す
+  viewport.focus();
+  await userEvent.keyboard("0");
+  // 検証
+  expect(zoomText(root)).toBe("100%");
+  expect(viewport.scrollHeight).toBeLessThanOrEqual(viewport.clientHeight + 1);
+  // 実行: 外して付け直す
+  detach();
+  detachers.push(attachDiagrams({ root, placement: "bottom", storage }));
+  // 検証
+  expect(viewportOf(root).clientHeight).toBe(776);
+});
+
+// 動かした間、グループのタイトルを上端に留め、off の図では留めない（正常系）
+test("test_attach_diagrams_when_titles_stuck", async () => {
+  // 準備
+  const { attachDiagrams } = await loadDiagrams();
+  const off = JSON.stringify({
+    ...JSON.parse(INQUIRY_GROUPS_TEXT),
+    stickyTitles: false,
+  });
+  const { root } = createRoot(
+    `${wrapDirective("flow", INQUIRY_GROUPS_TEXT)}\n\n${wrapDirective("flow", off)}`,
+  );
+  root.style.width = "600px";
+  root.style.setProperty("--mdmark-padding", "0");
+  detachers.push(attachDiagrams({ root, placement: "bottom" }));
+  const figures = [
+    ...root.querySelectorAll<HTMLElement>("figure.mdmark-diagram"),
+  ];
+  // 実行
+  for (const figure of figures) {
+    button(figure, "拡大").click();
+    button(figure, "拡大").click();
+    const viewport = viewportOf(figure);
+    viewport.scrollTop = viewport.scrollHeight * 0.4;
+    viewport.dispatchEvent(new Event("scroll"));
+  }
+  // 検証
+  const [on, stopped] = figures;
+  const frameTitle = on?.querySelector<HTMLElement>(
+    ".mdmark-diagram-frame-title",
+  );
+  expect(frameTitle?.classList.contains("is-stuck")).toBe(true);
+  expect(frameTitle?.style.transform).toContain("translateY");
+  expect(
+    on?.querySelectorAll(".mdmark-diagram-lane-label.is-stuck").length,
+  ).toBe(1);
+  for (const title of stopped?.querySelectorAll<HTMLElement>(
+    "[data-sticky-top]",
+  ) ?? []) {
+    expect(title.style.transform).toBe("");
   }
 });

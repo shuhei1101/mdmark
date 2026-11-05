@@ -4,8 +4,8 @@ export type MdmarkConfig = {
   features?: Record<string, boolean>;
   /** 印の名前からモジュールの URL を引く対応表 */
   libraries?: Record<string, string>;
-  /** ツールチップの設定。`placement` は持ち主の上と下のどちらに先に出すか（`top` / `bottom`）。知らない値も受けて `resolveConfig` が `top` にするため、型は `string` */
-  tooltips?: { placement?: string };
+  /** ツールチップの設定。`placement` は本文の用語などのツールチップ、`diagramPlacement` は図・ヒント・グラフの項目のツールチップを、持ち主の上と下のどちらに先に出すか（`top` / `bottom`）。知らない値も受けて `resolveConfig` が既定にするため、型は `string` */
+  tooltips?: { placement?: string; diagramPlacement?: string };
   /** 色分けのライブラリの設定。`url` は highlight.js の `es/` フォルダの URL（末尾 `/`） */
   syntax?: { url?: string };
   /** 文書が指すファイルの探し方（CLI と VS Code 拡張機能だけが読む） */
@@ -47,8 +47,8 @@ export type ResolvedConfig = {
   features: Record<string, boolean>;
   /** 既定の対応表に設定の `libraries` を重ねたもの */
   libraries: Record<string, LibraryEntry>;
-  /** 設定の `tooltips.placement` が `bottom` のときだけ `bottom`、それ以外は `top` */
-  tooltips: { placement: TooltipPlacement };
+  /** `placement` は設定の `tooltips.placement` が `bottom` のときだけ `bottom`、それ以外は `top`。`diagramPlacement` は設定の `tooltips.diagramPlacement` が `top` のときだけ `top`、それ以外は `bottom` */
+  tooltips: { placement: TooltipPlacement; diagramPlacement: TooltipPlacement };
   /** 設定の `syntax.url` が文字列ならその値、それ以外は `DEFAULT_SYNTAX_URL` */
   syntax: { url: string };
   /** 設定の `side-toc.mode` が `fixed` のときだけ `fixed`、それ以外は `hover` */
@@ -95,6 +95,7 @@ export const DEFAULT_FEATURES: Record<string, boolean> = {
   "row-details": true,
   figures: true,
   diagrams: true,
+  "diagram-resize": true,
   glossary: true,
   backlinks: true,
   html: true,
@@ -170,6 +171,8 @@ export function resolveConfig(options: {
   // 出す場所は、bottom だけを受け、他の値は top にする
   const placement: TooltipPlacement =
     config?.tooltips?.placement === "bottom" ? "bottom" : "top";
+  const diagramPlacement: TooltipPlacement =
+    config?.tooltips?.diagramPlacement === "top" ? "top" : "bottom";
   // 色分けのライブラリの読み込み先は、文字列のときだけ受け、他の値は既定にする
   const url = config?.syntax?.url;
   const syntax = { url: typeof url === "string" ? url : DEFAULT_SYNTAX_URL };
@@ -199,7 +202,7 @@ export function resolveConfig(options: {
   return {
     features,
     libraries,
-    tooltips: { placement },
+    tooltips: { placement, diagramPlacement },
     syntax,
     htmlScripts,
     sideToc: { mode },

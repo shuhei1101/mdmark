@@ -37,7 +37,7 @@ test("test_render_table", async () => {
       '<div class="mdmark-table" data-kind="data" data-features="sort pin filter" data-filter="0:select">',
     ),
   ).toBe(true);
-  expect(html).toContain(SLOT_MARKER);
+  expect(innerHtml(html, 'class="mdmark-table-scroll"')).toContain(SLOT_MARKER);
 });
 
 // 閉じた表は折り畳みに入れる（正常系）
@@ -191,12 +191,16 @@ test("test_render_table_bar", async () => {
   expect(bar).toContain("3 件中 2 件を表示");
   const toggle = findTag(bar, "mdmark-table-settings-toggle");
   expect(toggle).toContain('aria-expanded="false"');
+  expect(toggle).toContain("is-icon-only");
+  expect(toggle).toContain("is-active");
+  expect(toggle).toContain('title="テーブル設定"');
   expect(toggle).toContain('aria-label="テーブル設定（1 列を非表示）"');
   expect(plainText(outerHtml(bar, "mdmark-table-tool-badge"))).toBe("1");
   const copy = findTag(bar, "mdmark-copy");
   expect(copy).toContain('data-state="idle"');
-  expect(outerHtml(bar, "mdmark-copy")).toContain("表をコピー");
-  expect(outerHtml(bar, "mdmark-copy")).toContain("chevron-down");
+  expect(copy).toContain("is-icon-only");
+  expect(copy).toContain('title="表をコピー"');
+  expect(outerHtml(bar, "mdmark-copy")).not.toContain("chevron-down");
   expect(findTag(bar, "mdmark-table-status")).toContain('role="status"');
   // 検証: テーブル設定のパネル
   expect(findTag(menus, 'class="mdmark-table-settings"')).toMatch(/\shidden\b/);

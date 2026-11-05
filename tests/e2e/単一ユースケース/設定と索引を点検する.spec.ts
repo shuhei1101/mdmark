@@ -14,7 +14,7 @@ import {
   test,
   writeFiles,
 } from "../cli.ts";
-import { JUDGEMENT_AUTO_TEXT } from "../diagram.ts";
+import { groupFlowText, JUDGEMENT_AUTO_TEXT } from "../diagram.ts";
 
 // 雛形が置く設定の build.out の行
 const OUT_LINE = "  out: dist/docs.html\n";
@@ -508,4 +508,77 @@ test("test_normal_when_include_missing", async ({ builtRoot, tempDir }) => {
   expect(
     await Promise.all(paths.map((path) => readFile(join(dir, path), "utf8"))),
   ).toEqual(before);
+});
+
+/** 設定ファイルの末尾に行を書き足す */
+async function appendConfig(dir: string, lines: string[]): Promise<void> {
+  const config = await readFile(join(dir, "mdmark.config.yaml"), "utf8");
+  await writeFiles(dir, {
+    "mdmark.config.yaml": `${config}\n${lines.join("\n")}\n`,
+  });
+}
+
+// 設定の tooltips.diagramPlacement が top・bottom でないとき、その値を指す schema のずれを 1 行出す（正常シナリオ（図のツールチップの位置に誤った値がある））
+test("test_normal_when_diagram_placement_invalid", async ({
+  builtRoot,
+  tempDir,
+}) => {
+  // 準備
+  const invalidDir = await createCleanDir(builtRoot, tempDir);
+  await appendConfig(invalidDir, ["tooltips:", "  diagramPlacement: left"]);
+  const validDirs = [];
+  for (const value of ["top", "bottom", undefined]) {
+    const dir = await createCleanDir(builtRoot, tempDir);
+    if (value !== undefined) {
+      await appendConfig(dir, ["tooltips:", `  diagramPlacement: ${value}`]);
+    }
+    validDirs.push(dir);
+  }
+  const before = await snapshot(invalidDir);
+  // 実行
+  const result = await runCli(builtRoot, ["check"], invalidDir);
+  // 検証
+  expect(result.code).not.toBe(0);
+  const lines = linesOf(result.stdout).filter((line) =>
+    line.startsWith("mdmark.config.yaml:tooltips.diagramPlacement: schema:"),
+  );
+  expect(lines).toHaveLength(1);
+  expect(lines[0]).toContain("top");
+  expect(lines[0]).toContain("bottom");
+  expect(await snapshot(invalidDir)).toEqual(before);
+  // 実行・検証: top・bottom を書いた設定と、書かない設定では、このずれの行が出ない
+  for (const dir of validDirs) {
+    const valid = await runCli(builtRoot, ["check"], dir);
+    expect(valid.stdout).not.toContain("tooltips.diagramPlacement");
+  }
+});
+
+// フロー図の frame.hint が数で stickyTitles が文字のとき、その図を指す定義の誤りの行を 1 つだけ出す（正常シナリオ（グループの項目に誤った値がある））
+test("test_normal_when_group_options_invalid", async ({
+  builtRoot,
+  tempDir,
+}) => {
+  // 準備
+  const dir = await createCleanDir(builtRoot, tempDir);
+  const definition = JSON.parse(await groupFlowText()) as {
+    frame: Record<string, unknown>;
+    stickyTitles?: unknown;
+  };
+  definition.frame = { ...definition.frame, hint: 1 };
+  definition.stickyTitles = "no";
+  const a = ["# A", "", ...flowLines(definition), ""];
+  await writeFiles(dir, { "a.md": a.join("\n") });
+  const before = await snapshot(dir);
+  // 実行
+  const result = await runCli(builtRoot, ["check"], dir);
+  // 検証
+  expect(result.code).not.toBe(0);
+  const invalid = linesOf(result.stdout).filter((line) =>
+    line.startsWith("a.md:3: "),
+  );
+  expect(invalid).toHaveLength(1);
+  expect(invalid[0]).toMatch(/^a\.md:3: diagram_invalid: /);
+  expect(invalid[0]).toContain("frame.hint");
+  expect(invalid[0]).toContain("stickyTitles");
+  expect(await snapshot(dir)).toEqual(before);
 });

@@ -494,3 +494,31 @@ test("test_node_link_problems", async () => {
     { id: "n2", href: "id:spec#items" },
   ]);
 });
+
+// グループの hint と stickyTitles の型を確かめる（異常系）
+test("test_read_definition_when_group_options_invalid", async () => {
+  // 準備
+  const { readDefinition } = await loadDefinition();
+  const wrong = parsed<Record<string, unknown>>(INQUIRY_TEXT);
+  wrong.frame = { ...(wrong.frame as Record<string, unknown>), hint: 1 };
+  wrong.stickyTitles = "no";
+  const right = parsed<
+    { lanes: Array<Record<string, unknown>> } & Record<string, unknown>
+  >(INQUIRY_TEXT);
+  right.lanes = right.lanes.map((lane, i) =>
+    i === 0 ? { ...lane, hint: "LLM の層" } : lane,
+  );
+  right.stickyTitles = false;
+  // 実行
+  const wrongResult = readDefinition("flow", [JSON.stringify(wrong)]);
+  const rightResult = readDefinition("flow", [JSON.stringify(right)]);
+  // 検証
+  expect(wrongResult.ok).toBe(false);
+  expect(wrongResult.problems).toHaveLength(2);
+  expect(wrongResult.problems.some((p) => p.includes("frame.hint"))).toBe(true);
+  expect(wrongResult.problems.some((p) => p.includes("stickyTitles"))).toBe(
+    true,
+  );
+  expect(rightResult.problems).toEqual([]);
+  expect(rightResult.ok).toBe(true);
+});

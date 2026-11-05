@@ -12,6 +12,7 @@ import {
   rangeMarkdown,
   routeTranspiler,
 } from "../dist-page.ts";
+import { expectBelow } from "../tooltip.ts";
 
 // 範囲の外に置く `html` のコードブロック
 const OUTSIDE = ["```html", "<p>範囲の外</p>", "```", ""].join("\n");
@@ -102,6 +103,24 @@ async function zoomAndDragChart(page: Page): Promise<void> {
   expect(
     await viewport.evaluate((element) => element.scrollLeft),
   ).toBeGreaterThan(start);
+}
+
+/** チャートの棒にフォーカスすると、系列の名前と値のツールチップが棒の下に出て、Esc で消える */
+async function readChartItem(page: Page): Promise<void> {
+  const bar = chartOf(page).locator('[data-tip-owner^="item:"]').first();
+  await viewportOf(page).focus();
+  await page.keyboard.press("0");
+  await bar.focus();
+  const tip = page.locator(
+    `[id="${await bar.getAttribute("aria-describedby")}"]`,
+  );
+  await expect(tip).toBeVisible();
+  await expect(tip).toHaveAttribute("role", "tooltip");
+  await expect(tip).toContainText("自動返信");
+  await expect(tip).toContainText("メール: 124");
+  await expectBelow({ tip, owner: bar });
+  await page.keyboard.press("Escape");
+  await expect(tip).toBeHidden();
 }
 
 /** `data-hint` の箱の右上の印・図の箱の `hint` の印にツールチップが出て、HTML の中の用語にフォーカスすると意味のツールチップが出る */
@@ -200,6 +219,8 @@ test("test_normal", async ({ builtRoot, page }) => {
     .poll(() => page.evaluate(() => window.scrollY))
     .toBeGreaterThan(0);
   expect(await percentOf(page)).toBe(zoom);
+  // チャートの項目のツールチップ
+  await readChartItem(page);
   // ヒントと用語のツールチップ
   await page.evaluate(() => window.scrollTo(0, 0));
   await readHintsAndTerm(page);
@@ -236,6 +257,7 @@ test("test_normal_when_exported", async ({ builtRoot, tempDir, page }) => {
     chartOf(page).locator("svg[role=img] .mdmark-diagram-bar"),
   ).toHaveCount(8);
   await zoomAndDragChart(page);
+  await readChartItem(page);
   await readHintsAndTerm(page);
   expect(opened.externalRequests()).toEqual([]);
   expect(opened.pageErrors()).toEqual([]);
