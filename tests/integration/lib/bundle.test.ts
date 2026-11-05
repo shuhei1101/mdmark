@@ -536,3 +536,87 @@ test("test_normal_when_includes_and_icons", async () => {
   expect(listed.some((text) => text.includes("手順"))).toBe(false);
   expect(externalRequests()).toEqual([]);
 });
+
+// 範囲の ts を変換して束ね、文書を移るときに範囲の destroy を呼ぶ（正常系（範囲のスクリプトと CSS））
+test("test_normal_when_range_scripts", async () => {
+  // 準備
+  const dir = await createTempDir();
+  await writeFiles(dir, {
+    "mdmark.config.yaml": [
+      "features:",
+      "  html-scripts: true",
+      "build:",
+      '  include: ["*.md"]',
+      "  entry: README.md",
+      "  out: dist/docs.html",
+      "",
+    ].join("\n"),
+    "README.md": [
+      "# 入口",
+      "",
+      "[ガイド](guide.md) を読む。",
+      "",
+      "<!-- html -->",
+      "",
+      "```html",
+      '<div class="box">箱</div>',
+      "```",
+      "",
+      "```css",
+      ".box { background-color: rgb(255, 0, 0); }",
+      "```",
+      "",
+      "```ts",
+      "export default (root: HTMLElement): (() => void) => {",
+      '  const box = root.querySelector<HTMLElement>(".box");',
+      "  const onClick = (): void => {",
+      '    root.classList.toggle("is-open");',
+      "  };",
+      '  box?.addEventListener("click", onClick);',
+      "  return () => {",
+      "    const w = window as unknown as { __mdmarkDestroyed?: number };",
+      "    w.__mdmarkDestroyed = (w.__mdmarkDestroyed ?? 0) + 1;",
+      "  };",
+      "};",
+      "```",
+      "",
+      "<!-- /html -->",
+      "",
+    ].join("\n"),
+    "guide.md": ["# ガイド", "", "範囲を持たない文書。", ""].join("\n"),
+  });
+  // 実行
+  const result = await runCli(["build"], dir);
+  // 検証
+  expect(result.code).toBe(0);
+  const opened = await browser.openWithCsp(join(dir, "dist", "docs.html"));
+  const { page } = opened;
+  const box = page.locator("article div.mdmark-html .box");
+  await box.waitFor();
+  await expect(
+    box.evaluate((el) => getComputedStyle(el).backgroundColor),
+  ).resolves.toBe("rgb(255, 0, 0)");
+  await page.waitForFunction(() => {
+    document
+      .querySelector<HTMLElement>("article div.mdmark-html .box")
+      ?.click();
+    return (
+      document
+        .querySelector("article div.mdmark-html")
+        ?.classList.contains("is-open") === true
+    );
+  });
+  await page.locator('article p a[href="#/guide.md"]').click();
+  await page.waitForFunction(() =>
+    document.querySelector("article h1")?.textContent?.includes("ガイド"),
+  );
+  await expect(
+    page.evaluate(() => Reflect.get(window, "__mdmarkDestroyed")),
+  ).resolves.toBe(1);
+  await expect(
+    page.locator("article style.mdmark-html-style").count(),
+  ).resolves.toBe(0);
+  await expect(opened.violations()).resolves.toEqual([]);
+  expect(opened.inlineUrlScripts()).toEqual([]);
+  await opened.close();
+});

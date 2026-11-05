@@ -3874,3 +3874,355 @@ test("test_normal_when_new_syntax_disabled", async () => {
   expect(html).toContain('<code class="language-csv"');
   expect(html).not.toContain("<!--");
 });
+
+// `+reorder` を `data-features` に写し、結合した見出しの範囲を列ごとに写す（正常系）
+test("test_normal_when_table_reorder", async () => {
+  // 準備
+  const render = await loadRender();
+  const markdown = [
+    "<!-- table: data +reorder +columns header-rows=2 -->",
+    "",
+    "| 名前 | 設定 | << | << | 備考 |",
+    "| --- | --- | --- | --- | --- |",
+    "| ^^ | 型 | 既定 | 必須 | ^^ |",
+    "| features.table | bool | true | ✓ | 表の機能 |",
+    "",
+    "<!-- /table -->",
+    "",
+  ].join("\n");
+  // 実行
+  const html = render(markdown);
+  // 検証
+  const wrapper = findTag(html, 'class="mdmark-table"');
+  expect(wrapper).toMatch(/data-features="[^"]*\breorder\b[^"]*"/);
+  const second = innerHtml(html, "<thead").split("</tr>")[1] ?? "";
+  const secondHeads = startTags(second, "th");
+  const texts = second
+    .split("</th>")
+    .slice(0, -1)
+    .map((part) => plainText(part).trim());
+  expect(texts).toEqual(["型", "既定", "必須"]);
+  const groups = secondHeads.map(
+    (tag) => /data-group="([^"]*)"/.exec(tag)?.[1],
+  );
+  expect(groups[0]).toBeDefined();
+  expect(new Set(groups).size).toBe(1);
+  const first = innerHtml(html, "<thead").split("</tr>")[0] ?? "";
+  for (const tag of startTags(first, "th").filter((tag) =>
+    /rowspan="2"/.test(tag),
+  )) {
+    expect(tag).not.toContain("data-group");
+  }
+  expect(plainText(innerHtml(html, "<tbody")).replace(/\s+/g, " ").trim()).toBe(
+    "features.table bool true ✓ 表の機能",
+  );
+  expect(html).not.toContain("<button");
+});
+
+/** 階層の表の行（キー・型・必須・既定・説明） */
+const TREE_TABLE_ROWS = [
+  "| キー | 型 | 必須 | 既定 | 説明 |",
+  "| --- | --- | --- | --- | --- |",
+  "| features.table | bool | ✓ | true | 表の機能 |",
+  "| features.html | bool |  |  | 埋め込んだ HTML |",
+  "| aliases[].id | string |  |  | 別名の ID |",
+  "| aliases[].metadata.alias_type.type | ref \\| custom |  |  | 別名の種類 |",
+];
+
+/** 表の印に `extra` を加えた階層の表の文書 */
+function treeMarkdown(extra = ""): string {
+  return [
+    `<!-- table: data tree=キー type=型 required=必須 default=既定${extra} -->`,
+    "",
+    ...TREE_TABLE_ROWS,
+    "",
+    "<!-- /table -->",
+    "",
+  ].join("\n");
+}
+
+/** 階層の行の開始タグを、上から並べて返す */
+function treeRowTags(html: string): string[] {
+  return startTags(html, "tr").filter((tag) => tag.includes("mdmark-tree-row"));
+}
+
+/** パスの階層の行の HTML（開始タグから `</tr>` まで） */
+function treeRowHtml(html: string, path: string): string {
+  const at = html.indexOf(`data-path="${path}"`);
+  const start = html.lastIndexOf("<tr", at);
+  return html.slice(start, html.indexOf("</tr>", at) + "</tr>".length);
+}
+
+// tree= の列を階層の行にし、表に無い親の行を補い、型・必須・既定の列を替える（正常系）
+test("test_normal_when_table_tree", async () => {
+  // 準備
+  const render = await loadRender();
+  // 実行
+  const html = render(treeMarkdown());
+  // 検証
+  const rows = treeRowTags(html);
+  expect(rows.map((tag) => /data-path="([^"]*)"/.exec(tag)?.[1])).toEqual([
+    "features",
+    "features.table",
+    "features.html",
+    "aliases[]",
+    "aliases[].id",
+    "aliases[].metadata",
+    "aliases[].metadata.alias_type",
+    "aliases[].metadata.alias_type.type",
+  ]);
+  for (const path of [
+    "features",
+    "aliases[]",
+    "aliases[].metadata",
+    "aliases[].metadata.alias_type",
+  ]) {
+    const row = treeRowHtml(html, path);
+    const tag = startTags(row, "tr")[0] ?? "";
+    expect(tag).toContain("is-virtual");
+    expect(tag).toContain("has-children");
+    const cells = row.split("</td>").slice(1, -1);
+    for (const cell of cells) {
+      expect(plainText(cell).trim()).toBe("");
+    }
+  }
+  const leaf = treeRowHtml(html, "aliases[].metadata.alias_type.type");
+  expect(startTags(leaf, "tr")[0]).toContain('data-depth="3"');
+  expect(startTags(leaf, "tr")[0]).toContain(
+    'data-parent="aliases[].metadata.alias_type"',
+  );
+  expect(findTags(leaf, "mdmark-tree-guide")).toHaveLength(3);
+  expect(plainText(innerHtml(leaf, "mdmark-tree-name"))).toBe("type");
+  expect(html).toContain('<span class="mdmark-type-badge" data-type="bool">');
+  expect(findTags(leaf, "mdmark-type-chip")).toHaveLength(2);
+  expect(plainText(innerHtml(html, "<thead"))).not.toContain("必須");
+  expect(
+    findTags(treeRowHtml(html, "features.table"), "mdmark-tree-required"),
+  ).toHaveLength(1);
+  expect(html.match(/mdmark-tree-required/g)).toHaveLength(1);
+  expect(treeRowHtml(html, "features.table")).toContain(
+    '<span class="mdmark-tree-default">true</span>',
+  );
+  expect(findTag(html, 'class="mdmark-table"')).not.toMatch(
+    /data-features="[^"]*\bsort\b/,
+  );
+});
+
+// example= の見出しの下のタブを表の下へ移し、見本の行にキーのパスを持たせる（正常系）
+test("test_normal_when_table_tree_example", async () => {
+  // 準備
+  const render = await loadRender();
+  const markdown = [
+    treeMarkdown(" example=設定の見本"),
+    "## 設定の見本",
+    "",
+    "<!-- tabs -->",
+    "",
+    "### 最小",
+    "",
+    "```yaml",
+    "features:",
+    "  table: true",
+    "```",
+    "",
+    "### エイリアス",
+    "",
+    "```yaml",
+    "aliases:",
+    "  - id: terms",
+    "    metadata:",
+    "      alias_type:",
+    "        type: custom",
+    "```",
+    "",
+    "<!-- /tabs -->",
+    "",
+  ].join("\n");
+  // 実行
+  const html = render(markdown);
+  // 検証
+  const layout = innerHtml(html, 'class="mdmark-tree-layout"');
+  expect(layout).toContain('class="mdmark-table"');
+  const aside = findTag(layout, "<aside");
+  expect(aside).toContain("mdmark-tree-example");
+  expect(aside).toContain('aria-label="見本: 設定の見本"');
+  expect(html.indexOf("</table>")).toBeLessThan(html.indexOf("<aside"));
+  expect(
+    findTags(innerHtml(layout, "<aside"), "mdmark-tab-panel"),
+  ).toHaveLength(2);
+  const heading = /<h2[^>]*>[\s\S]*?<\/h2>/.exec(html)?.[0] ?? "";
+  expect(plainText(heading)).toContain("設定の見本");
+  expect(innerHtml(layout, "<aside")).not.toContain("<h2");
+  const lineOf = (path: string) =>
+    findTags(layout, `data-path="${path}"`).find((tag) =>
+      tag.includes("mdmark-yaml-line"),
+    );
+  expect(lineOf("aliases[].metadata.alias_type.type")).toBeDefined();
+  expect(lineOf("aliases[].id")).toBeDefined();
+  const typeLine = layout.slice(
+    layout.indexOf(lineOf("aliases[].metadata.alias_type.type") ?? "@"),
+  );
+  expect(plainText(typeLine.split("\n")[0] ?? "")).toContain("type: custom");
+});
+
+// 表に無い列名の tree=・tree= の無い type=・無い見出しの example= に書き方の警告を置く（正常系）
+test("test_normal_when_table_tree_invalid", async () => {
+  // 準備
+  const render = await loadRender();
+  const table = (mark: string) =>
+    [
+      `<!-- table: ${mark} -->`,
+      "",
+      ...TREE_TABLE_ROWS,
+      "",
+      "<!-- /table -->",
+      "",
+    ].join("\n");
+  const markdown = [
+    table("data tree=キー名"),
+    table("data type=型"),
+    table("data tree=キー example=見本"),
+  ].join("\n");
+  // 実行
+  const html = render(markdown);
+  // 検証
+  const parts = html.split('<div class="mdmark-syntax-warning" role="note">');
+  expect(parts).toHaveLength(4);
+  const warnings = parts
+    .slice(1)
+    .map((part) => plainText(part.split("</div>")[0] ?? ""));
+  expect(warnings[0]).toContain("tree=キー名");
+  expect(warnings[1]).toContain("type=型");
+  expect(warnings[2]).toContain("example=見本");
+  const tables = html.split('class="mdmark-table"').slice(1);
+  expect(tables[0]).not.toContain("mdmark-tree-row");
+  expect(tables[1]).not.toContain("mdmark-type-badge");
+  expect(tables[2]).toContain("mdmark-tree-row");
+  expect(html).not.toContain("mdmark-tree-example");
+});
+
+/** 範囲に html（class `box` の div と `<script>`）・css・ts を置いた文書 */
+const RANGE_MARKDOWN = [
+  "<!-- html -->",
+  "",
+  "```html",
+  '<div class="box">箱</div>',
+  "<script>window.__mdmarkScriptRan = true</script>",
+  "```",
+  "",
+  "```css",
+  ".box { background-color: red }",
+  "```",
+  "",
+  "```ts",
+  "export default (root: HTMLElement): void => {",
+  '  root.dataset.ran = "1";',
+  "};",
+  "```",
+  "",
+  "<!-- /html -->",
+  "",
+].join("\n");
+
+/** 範囲の ts のコード（`template` の中身と比べる） */
+const RANGE_TS = [
+  "export default (root: HTMLElement): void => {",
+  '  root.dataset.ran = "1";',
+  "};",
+].join("\n");
+
+// html-scripts がオンのとき、範囲の css を根の要素に限った style にし、ts を実行しない template に入れる（正常系）
+test("test_normal_when_range_scripts", async () => {
+  // 準備
+  const render = await loadRender();
+  // 実行
+  const html = render(RANGE_MARKDOWN, {
+    config: { features: { "html-scripts": true } },
+  });
+  // 検証
+  const scope = findTag(html, 'class="mdmark-html"');
+  expect(scope).toContain('data-html-scope="0"');
+  const inner = innerHtml(html, 'class="mdmark-html"');
+  expect(inner.startsWith('<style class="mdmark-html-style">')).toBe(true);
+  expect(inner.trimEnd()).toMatch(
+    /<template class="mdmark-html-script" data-lang="ts">[\s\S]*<\/template>$/,
+  );
+  const css = innerHtml(inner, 'class="mdmark-html-style"');
+  for (const rule of css.split("}").filter((part) => part.trim() !== "")) {
+    expect(rule.trim().startsWith('.mdmark-html[data-html-scope="0"]')).toBe(
+      true,
+    );
+  }
+  expect(css).not.toMatch(/(^|\})\s*\.box\s*\{/);
+  const template = innerHtml(inner, 'class="mdmark-html-script"');
+  expect(
+    template
+      .replaceAll("&quot;", '"')
+      .replaceAll("&lt;", "<")
+      .replaceAll("&gt;", ">")
+      .replaceAll("&amp;", "&")
+      .trim(),
+  ).toBe(RANGE_TS);
+  expect(html).not.toContain("<script");
+  expect(inner).toContain('<div class="box">箱</div>');
+  expect(html).not.toContain('class="language-css"');
+  expect(html).not.toContain('class="language-ts"');
+});
+
+// html-scripts がオフのとき、範囲の html だけを描き、css・ts をコードのまま出す（正常系）
+test("test_normal_when_range_scripts_off", async () => {
+  // 準備
+  const render = await loadRender();
+  // 実行
+  const html = render(RANGE_MARKDOWN);
+  // 検証
+  const inner = innerHtml(html, 'class="mdmark-html"');
+  expect(inner).not.toContain("<style");
+  expect(inner).not.toContain("<template");
+  const after = html.slice(html.indexOf('class="mdmark-html"'));
+  expect(after).toMatch(/<pre[^>]*><code class="language-css"/);
+  expect(after).toMatch(/<pre[^>]*><code class="language-ts"/);
+  expect(html).not.toContain("mdmark-syntax-warning");
+});
+
+// ts と js を両方置いた範囲に書き方の警告を置き、どちらのスクリプトも置かない（正常系）
+test("test_normal_when_range_scripts_both_languages", async () => {
+  // 準備
+  const render = await loadRender();
+  const markdown = [
+    "<!-- html -->",
+    "",
+    "```html",
+    "<p>範囲</p>",
+    "```",
+    "",
+    "```ts",
+    "export default () => {};",
+    "```",
+    "",
+    "```js",
+    "export default () => {};",
+    "```",
+    "",
+    "<!-- /html -->",
+    "",
+    "後ろの段落",
+    "",
+  ].join("\n");
+  // 実行
+  const html = render(markdown, {
+    config: { features: { "html-scripts": true } },
+  });
+  // 検証
+  const warnings = html.split('class="mdmark-syntax-warning"');
+  expect(warnings).toHaveLength(2);
+  expect(html.indexOf("mdmark-syntax-warning")).toBeLessThan(
+    html.indexOf('class="mdmark-html"'),
+  );
+  const warning = plainText(warnings[1]?.split("</div>")[0] ?? "");
+  expect(warning).toContain("ts");
+  expect(warning).toContain("js");
+  expect(innerHtml(html, 'class="mdmark-html"')).toContain("<p>範囲</p>");
+  expect(html).not.toContain("mdmark-html-script");
+  expect(html).toContain("<p>後ろの段落</p>");
+});

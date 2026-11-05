@@ -727,3 +727,69 @@ test("test_normal_when_includes_and_icons", async () => {
   expect(source).toContain("sailboat");
   expect(source).not.toContain('"anchor"');
 });
+
+/** 型の注釈を持ち、箱を押すと根の要素に class `is-open` を付け外しし、`destroy` で `window.__mdmarkDestroyed` を 1 増やす範囲の文書 */
+const RANGE_SCRIPT_DOC = [
+  "<!-- html -->",
+  "",
+  "```html",
+  '<div class="box">箱</div>',
+  "```",
+  "",
+  "```css",
+  ".box { background-color: rgb(255, 0, 0); }",
+  "```",
+  "",
+  "```ts",
+  "export default (root: HTMLElement): (() => void) => {",
+  '  const box = root.querySelector<HTMLElement>(".box");',
+  "  const onClick = (): void => {",
+  '    root.classList.toggle("is-open");',
+  "  };",
+  '  box?.addEventListener("click", onClick);',
+  "  return () => {",
+  "    const w = window as unknown as { __mdmarkDestroyed?: number };",
+  "    w.__mdmarkDestroyed = (w.__mdmarkDestroyed ?? 0) + 1;",
+  "  };",
+  "};",
+  "```",
+  "",
+  "<!-- /html -->",
+  "",
+].join("\n");
+
+// 範囲の ts を変換して束ねたスクリプトに加え、blob: と動的 import を許さない環境でも動かす（正常系（範囲のスクリプトと CSS））
+test("test_normal_when_range_scripts", async () => {
+  // 準備
+  const dir = await createTempDir();
+  await writeFiles(dir, {
+    "mdmark.config.yaml": ["features:", "  html-scripts: true", ""].join("\n"),
+    "guide.md": ["# ガイド", "", RANGE_SCRIPT_DOC].join("\n"),
+  });
+  // 実行
+  const result = await runCli(["export", "guide.md"], dir);
+  // 検証
+  expect(result.code).toBe(0);
+  const html = await readFile(join(dir, "guide.html"), "utf8");
+  expect(html).not.toMatch(/<script[^>]*\ssrc=/);
+  const opened = await browser.openWithCsp(join(dir, "guide.html"));
+  const { page } = opened;
+  const box = page.locator("article div.mdmark-html .box");
+  await box.waitFor();
+  await expect(
+    box.evaluate((el) => getComputedStyle(el).backgroundColor),
+  ).resolves.toBe("rgb(255, 0, 0)");
+  await page.waitForFunction(() => {
+    document
+      .querySelector<HTMLElement>("article div.mdmark-html .box")
+      ?.click();
+    return (
+      document
+        .querySelector("article div.mdmark-html")
+        ?.classList.contains("is-open") === true
+    );
+  });
+  await expect(opened.violations()).resolves.toEqual([]);
+  expect(opened.inlineUrlScripts()).toEqual([]);
+  await opened.close();
+});

@@ -1,5 +1,7 @@
 import * as assert from "node:assert";
 import { readFile } from "node:fs/promises";
+import { createServer } from "node:http";
+import type { AddressInfo } from "node:net";
 import { join } from "node:path";
 import * as vscode from "vscode";
 import {
@@ -46,6 +48,62 @@ async function closePreviews(): Promise<void> {
   await vscode.commands.executeCommand("workbench.action.closeAllEditors");
   // 閉じる前の読み込みの要求が、後の要求の記録に混ざらないよう待つ
   await sleep(500);
+}
+
+/** 範囲に html・css・ts を置き、ts が箱を押すと根の要素に class `is-open` を付け外しする文書 */
+const RANGE_SCRIPT_MARKDOWN = [
+  "# 見出し",
+  "",
+  "<!-- html -->",
+  "",
+  "```html",
+  '<div class="box">箱</div>',
+  "```",
+  "",
+  "```css",
+  ".box { background-color: rgb(255, 0, 0); }",
+  "```",
+  "",
+  "```ts",
+  "export default (root: HTMLElement): void => {",
+  '  root.querySelector(".box")?.addEventListener("click", () => {',
+  '    root.classList.toggle("is-open");',
+  "  });",
+  "};",
+  "```",
+  "",
+  "<!-- /html -->",
+  "",
+].join("\n");
+
+/** 範囲の `ts` の変換のライブラリ（`@babel/standalone` の UMD）を、既定のエクスポートを持つ ES モジュールに包んで配る手元の配信を立てる */
+async function startTranspilerServer(): Promise<{
+  url: string;
+  requests: () => number;
+  close: () => void;
+}> {
+  const body = await readFile(
+    join(REPO_ROOT, "node_modules", "@babel", "standalone", "babel.min.js"),
+    "utf8",
+  );
+  let count = 0;
+  const server = createServer((_request, response) => {
+    count += 1;
+    response.writeHead(200, {
+      "Content-Type": "text/javascript; charset=utf-8",
+      "Access-Control-Allow-Origin": "*",
+    });
+    response.end(
+      `const module = { exports: {} };\nconst exports = module.exports;\n${body}\nexport default module.exports;\n`,
+    );
+  });
+  await new Promise<void>((resolve) => server.listen(0, "127.0.0.1", resolve));
+  const { port } = server.address() as AddressInfo;
+  return {
+    url: `http://127.0.0.1:${port}/babel.mjs`,
+    requests: () => count,
+    close: () => server.close(),
+  };
 }
 
 suite("プレビューを開く", () => {
@@ -116,6 +174,66 @@ suite("プレビューを開く", () => {
     assert.ok(scripts.length > 0);
     for (const tag of scripts) {
       assert.ok(tag.includes(`nonce="${nonce}"`), tag);
+    }
+  });
+
+  // CSP を広げずに、範囲の ts をページの nonce を付けた script 要素で動かす（正常系（範囲のスクリプトと CSS））
+  test("test_normal_when_range_scripts", async () => {
+    // 準備
+    const transpiler = await startTranspilerServer();
+    try {
+      await stub.setTags(["v0.10.0"]);
+      await writeFixture("guide.md", RANGE_SCRIPT_MARKDOWN);
+      await writeFixture(
+        "mdmark.config.yaml",
+        [
+          "features:",
+          "  html-scripts: true",
+          "html-scripts:",
+          `  url: ${transpiler.url}`,
+          "",
+        ].join("\n"),
+      );
+      await openMarkdown("guide.md");
+      // 実行
+      await vscode.commands.executeCommand("mdmark.openPreviewToSide");
+      const record = lastPanel();
+      await waitForRendered(record);
+      // 検証: 範囲の css を根の要素に限って当て、ts を動かす
+      await waitFor(() => transpiler.requests() === 1, {
+        message: "変換のライブラリを読まない",
+      });
+      assert.strictEqual((await inspect(".mdmark-html-style")).length, 1);
+      assert.strictEqual(
+        (await inspect('.mdmark-html[data-html-scope="0"] .box')).length,
+        1,
+      );
+      await waitFor(
+        async () => {
+          clickInPreview(record, ".mdmark-html .box");
+          await sleep(200);
+          const root = (await inspect(".mdmark-html"))[0];
+          return root?.className.split(" ").includes("is-open") === true;
+        },
+        { message: "範囲の ts が動かない" },
+      );
+      // 検証: CSP
+      const html = record.panel.webview.html;
+      const csp = /<meta http-equiv="Content-Security-Policy" content="([^"]*)"/
+        .exec(html)?.[1]
+        ?.replaceAll("&#39;", "'");
+      const scriptSrc = csp
+        ?.split("; ")
+        .find((directive) => directive.startsWith("script-src "));
+      assert.ok(scriptSrc);
+      assert.ok(scriptSrc.includes(new URL(transpiler.url).origin), scriptSrc);
+      for (const word of ["blob:", "'unsafe-inline'", "'unsafe-eval'"]) {
+        assert.ok(!scriptSrc.includes(word), scriptSrc);
+      }
+      assert.strictEqual((await inspect(".mdmark-notice")).length, 0);
+      assert.strictEqual((await inspect(".mdmark-syntax-warning")).length, 0);
+    } finally {
+      transpiler.close();
     }
   });
 

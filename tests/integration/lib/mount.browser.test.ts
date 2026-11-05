@@ -599,6 +599,42 @@ function inputFilterText(table: Element, text: string): void {
   input.dispatchEvent(new Event("input", { bubbles: true }));
 }
 
+/** 表の帯のテーブル設定のボタンを押してパネルを開き、ボタン・パネルと、元の列の位置から一覧の目のアイコン・つまみを引く関数を返す */
+function openTableSettings(table: Element): {
+  toggle: HTMLButtonElement;
+  panel: HTMLElement;
+  eye: (column: number) => HTMLButtonElement;
+  grip: (column: number) => HTMLButtonElement;
+} {
+  const toggle = find<HTMLButtonElement>(
+    table,
+    "button.mdmark-table-settings-toggle",
+  );
+  toggle.click();
+  const panel = find<HTMLElement>(table, ".mdmark-table-settings");
+  const item = (column: number) =>
+    find<HTMLElement>(
+      panel,
+      `.mdmark-table-settings-item[data-column="${column}"]`,
+    );
+  return {
+    toggle,
+    panel,
+    eye: (column) =>
+      find<HTMLButtonElement>(item(column), ".mdmark-table-settings-eye"),
+    grip: (column) =>
+      find<HTMLButtonElement>(item(column), ".mdmark-table-settings-grip"),
+  };
+}
+
+/** テーブル設定のボタンのバッジの文字 */
+function settingsBadge(table: Element): string {
+  return (
+    find(table, ".mdmark-table-settings-toggle .mdmark-table-tool-badge")
+      .textContent ?? ""
+  );
+}
+
 /** `navigator.clipboard.writeText` を差し替える */
 function stubClipboard(writeText: (text: string) => Promise<void>): void {
   Object.defineProperty(navigator, "clipboard", {
@@ -607,7 +643,7 @@ function stubClipboard(writeText: (text: string) => Promise<void>): void {
   });
 }
 
-// 絞り込みに合わせて件数を書き換え、列設定のメニューで列を隠してリセットする（正常系）
+// 絞り込みに合わせて件数を書き換え、テーブル設定のパネルの目のアイコンで列を出し入れする（正常系）
 test("test_normal_when_table_counted_and_columns_toggled", async () => {
   // 準備
   const el = createElement();
@@ -633,34 +669,34 @@ test("test_normal_when_table_counted_and_columns_toggled", async () => {
   expect(count.getAttribute("aria-live")).toBe("polite");
   expect(count.textContent).toContain("3 / 3 件");
   expect(hiddenOf(1).every(Boolean)).toBe(true);
+  expect(settingsBadge(table)).toBe("1");
+  expect(
+    find(table, ".mdmark-table-settings-toggle").getAttribute("aria-label"),
+  ).toBe("テーブル設定（1 列を非表示）");
   // 実行・検証: 「りんご」で絞り込む
   inputFilterText(table, "りんご");
   expect(count.textContent).toContain("2 / 3 件");
   expect(count.textContent).toContain("3 件中 2 件を表示");
-  // 実行・検証: 列設定のメニューを開く
-  const toggle = find<HTMLButtonElement>(el, "button.mdmark-columns-toggle");
-  toggle.click();
-  const menu = find<HTMLElement>(el, ".mdmark-columns-menu");
-  const checkboxes = [
-    ...menu.querySelectorAll<HTMLInputElement>('input[type="checkbox"]'),
-  ];
+  // 実行・検証: テーブル設定のパネルを開く
+  const { toggle, panel, eye } = openTableSettings(table);
   expect(toggle.getAttribute("aria-expanded")).toBe("true");
-  expect(checkboxes[0]?.disabled).toBe(true);
-  expect(menu.textContent).toContain("先頭の列は隠せません");
-  // 実行・検証: 説明を入れて更新日を外す
-  checkboxes[1]?.click();
-  checkboxes[2]?.click();
+  expect(find(panel, ".mdmark-table-settings-title").textContent).toBe(
+    "表示と並び順",
+  );
+  expect(eye(0).disabled).toBe(true);
+  expect(panel.textContent).toContain("先頭の列は隠せません");
+  // 実行・検証: 説明を表示して更新日を隠す
+  eye(1).click();
+  eye(2).click();
   expect(hiddenOf(1).some(Boolean)).toBe(false);
   expect(hiddenOf(2).every(Boolean)).toBe(true);
-  // 実行・検証: リセット
-  find<HTMLButtonElement>(menu, "button.mdmark-columns-reset").click();
-  expect(hiddenOf(1).every(Boolean)).toBe(true);
-  expect(hiddenOf(2).some(Boolean)).toBe(false);
-  // 実行・検証: Esc でメニューを閉じてボタンへフォーカスを戻す
+  expect(eye(2).getAttribute("aria-label")).toBe("「更新日」を表示");
+  expect(settingsBadge(table)).toBe("1");
+  // 実行・検証: Esc でパネルを閉じてボタンへフォーカスを戻す
   document.activeElement?.dispatchEvent(
     new KeyboardEvent("keydown", { key: "Escape", bubbles: true }),
   );
-  expect(menu.hasAttribute("hidden")).toBe(true);
+  expect(panel.hasAttribute("hidden")).toBe(true);
   expect(document.activeElement).toBe(toggle);
 });
 
@@ -785,14 +821,8 @@ test("test_normal_when_table_totals", async () => {
     expect(row.parentElement?.tagName).toBe("TFOOT");
     expect(tbody.contains(row)).toBe(false);
   }
-  // 実行・検証: 単価を外す
-  find<HTMLButtonElement>(el, "button.mdmark-columns-toggle").click();
-  const checkboxes = [
-    ...el.querySelectorAll<HTMLInputElement>(
-      '.mdmark-columns-options input[type="checkbox"]',
-    ),
-  ];
-  checkboxes[2]?.click();
+  // 実行・検証: テーブル設定の単価の目のアイコンで単価を隠す
+  openTableSettings(table).eye(2).click();
   for (const cell of columnCells(el, 2)) {
     expect(cell.hasAttribute("hidden")).toBe(true);
   }
@@ -945,7 +975,7 @@ test("test_normal_when_table_copied", async () => {
   expect(button.textContent).toContain("表をコピー");
 });
 
-// 列設定と絞り込みの後に見えている行と列を、セルの `|` を戻して Markdown の表で書く（正常系）
+// 列の表示と絞り込みの後に見えている行と列を、セルの `|` を戻して Markdown の表で書く（正常系）
 test("test_normal_when_table_copied_as_markdown", async () => {
   // 準備
   const writeText = vi.fn<(text: string) => Promise<void>>(() =>
@@ -955,15 +985,10 @@ test("test_normal_when_table_copied_as_markdown", async () => {
   const el = createElement();
   await mountTracked(el, { markdown: COPY_MARKDOWN });
   const table = find<HTMLElement>(el, ".mdmark-table");
-  find<HTMLButtonElement>(el, "button.mdmark-columns-toggle").click();
-  const checkboxes = [
-    ...el.querySelectorAll<HTMLInputElement>(
-      '.mdmark-columns-options input[type="checkbox"]',
-    ),
-  ];
-  // 説明を出して更新日を隠し、「りんご」で絞り込む
-  checkboxes[1]?.click();
-  checkboxes[2]?.click();
+  // テーブル設定で説明を表示して更新日を隠し、「りんご」で絞り込む
+  const { eye } = openTableSettings(table);
+  eye(1).click();
+  eye(2).click();
   inputFilterText(table, "りんご");
   // 実行
   chooseCopyFormat(el, "markdown");
@@ -8510,28 +8535,16 @@ const COLUMNS_MARKDOWN = [
   "",
 ].join("\n");
 
-/** 指定した番号の表の列設定のメニューを開き、チェックボックスを返す */
-function openColumnsMenu(
-  el: Element,
-  index: number,
-): { menu: HTMLElement; checkboxes: HTMLInputElement[] } {
-  const toggle = [
-    ...el.querySelectorAll<HTMLButtonElement>("button.mdmark-columns-toggle"),
-  ][index];
-  if (!toggle) {
-    throw new Error(`列設定のボタンが無い: ${index}`);
+/** テーブル設定のボタンを持つ表のうち、指定した番号の表のパネルを開く */
+function openSettingsOf(el: Element, index: number) {
+  const table = [...el.querySelectorAll<HTMLElement>(".mdmark-table")].filter(
+    (candidate) =>
+      candidate.querySelector("button.mdmark-table-settings-toggle") !== null,
+  )[index];
+  if (!table) {
+    throw new Error(`テーブル設定のボタンが無い: ${index}`);
   }
-  toggle.click();
-  const menu = find<HTMLElement>(
-    toggle.closest(".mdmark-table") ?? el,
-    ".mdmark-columns-menu",
-  );
-  return {
-    menu,
-    checkboxes: [
-      ...menu.querySelectorAll<HTMLInputElement>('input[type="checkbox"]'),
-    ],
-  };
+  return openTableSettings(table);
 }
 
 // 列を出し入れするたびに、表の番号と隠している列の名前を onColumnsChange に渡す（正常系）
@@ -8547,19 +8560,19 @@ test("test_normal_when_columns_changed", async () => {
   });
   // 検証: 描いた直後は呼ばない
   expect(calls).toEqual([]);
-  // 実行: 1 つ目の表で更新日、説明の順にチェックを外す
-  const first = openColumnsMenu(el, 0);
-  first.checkboxes[2]?.click();
-  first.checkboxes[1]?.click();
+  // 実行: 1 つ目の表で更新日、説明の順に目のアイコンで隠す
+  const first = openSettingsOf(el, 0);
+  first.eye(2).click();
+  first.eye(1).click();
   // 検証
   expect(calls).toEqual([
     { tableIndex: 0, hidden: ["更新日"] },
     { tableIndex: 0, hidden: ["説明", "更新日"] },
   ]);
-  // 実行: 2 つ目の表で備考にチェックを入れ、リセットを押す
-  const second = openColumnsMenu(el, 1);
-  second.checkboxes[1]?.click();
-  find<HTMLButtonElement>(second.menu, "button.mdmark-columns-reset").click();
+  // 実行: 2 つ目の表で備考の目のアイコンを押して表示し、もう一度押して隠す
+  const second = openSettingsOf(el, 1);
+  second.eye(1).click();
+  second.eye(1).click();
   // 検証
   expect(calls.slice(2)).toEqual([
     { tableIndex: 1, hidden: [] },
@@ -8585,14 +8598,14 @@ test("test_error_when_columns_callback_throws", async () => {
   });
   const table = [...el.querySelectorAll<HTMLElement>(".mdmark-table")].find(
     (candidate) =>
-      candidate.querySelector("button.mdmark-columns-toggle") !== null,
+      candidate.querySelector("button.mdmark-table-settings-toggle") !== null,
   );
   if (!table) {
     throw new Error("列の表示の表が無い");
   }
   // 実行
-  const { checkboxes } = openColumnsMenu(el, 0);
-  expect(() => checkboxes[1]?.click()).not.toThrow();
+  const { eye } = openSettingsOf(el, 0);
+  expect(() => eye(1).click()).not.toThrow();
   // 検証
   expect(
     columnCells(table, 1).every((cell) => cell.hasAttribute("hidden")),
@@ -10933,4 +10946,812 @@ test("test_normal_when_glossary_touch", async () => {
   // 語にフォーカスが残ったままでも、ツールチップを出さない
   expect(document.activeElement).toBe(term);
   expect(getComputedStyle(find(wrap, ".mdmark-term-tip")).display).toBe("none");
+});
+
+/** 列の並べ替えを付けた表（`+reorder +columns`）と、`+reorder` だけの表と、`<!-- table: data -->` の表を持つ文書 */
+const REORDER_MARKDOWN = [
+  "<!-- table: data +reorder +columns -->",
+  "",
+  "| 名前 | 型 | 既定 | 説明 |",
+  "| --- | --- | --- | --- |",
+  "| features.table | bool | true | 表の機能 |",
+  "| features.html | bool | true | 埋め込んだ HTML |",
+  "| build.include | string[] |  | まとめる文書 |",
+  "",
+  "<!-- /table -->",
+  "",
+  "<!-- table: data +reorder -->",
+  "",
+  "| 名前 | 型 |",
+  "| --- | --- |",
+  "| a | b |",
+  "",
+  "<!-- /table -->",
+  "",
+  "<!-- table: data -->",
+  "",
+  "| 名前 | 型 |",
+  "| --- | --- |",
+  "| c | d |",
+  "",
+  "<!-- /table -->",
+  "",
+].join("\n");
+
+/** 表の見出しの最下段のセルと、本文の行ごとのセルの文字（並べ替えのボタンなどの文字を除いた列名）を、列の並んだ順に返す */
+function headAndRowTexts(table: Element): string[][] {
+  const lastHead = [...table.querySelectorAll("thead tr")].at(-1);
+  const headTexts = [...(lastHead?.children ?? [])].map(
+    (cell) =>
+      cell.querySelector(".mdmark-th-label")?.textContent?.trim() ??
+      cell.firstChild?.textContent?.trim() ??
+      "",
+  );
+  const rows = [...table.querySelectorAll("tbody tr")].map((row) =>
+    [...row.children].map((cell) => cell.textContent?.trim() ?? ""),
+  );
+  return [headTexts, ...rows];
+}
+
+/** 一覧の項目の列名を、並んだ順に返す */
+function settingsNames(panel: Element): string[] {
+  return [
+    ...panel.querySelectorAll<HTMLElement>(".mdmark-table-settings-item"),
+  ].map((item) => item.dataset.name ?? "");
+}
+
+// テーブル設定の一覧のつまみで列を動かし、目のアイコンで列を隠す（正常系）
+test("test_normal_when_columns_reordered", async () => {
+  // 準備
+  const el = createElement();
+  const handle = await mountTracked(el, { markdown: REORDER_MARKDOWN });
+  const [table, onlyReorder, plain] = [
+    ...el.querySelectorAll<HTMLElement>(".mdmark-table"),
+  ] as HTMLElement[];
+  if (!table || !onlyReorder || !plain) {
+    throw new Error("表が足りない");
+  }
+  const columnOrder = () =>
+    [...table.querySelectorAll<HTMLElement>("tbody tr:first-child td")].map(
+      (cell) => Number(cell.dataset.col),
+    );
+  // 実行・検証: テーブル設定を押す
+  const toggle = find<HTMLButtonElement>(
+    table,
+    "button.mdmark-table-settings-toggle",
+  );
+  expect(toggle.getAttribute("aria-label")).toBe("テーブル設定");
+  const { panel, eye, grip } = openTableSettings(table);
+  expect(toggle.getAttribute("aria-expanded")).toBe("true");
+  expect(find(panel, ".mdmark-table-settings-title").textContent).toBe(
+    "表示と並び順",
+  );
+  expect(table.querySelector("thead .mdmark-table-settings-grip")).toBeNull();
+  // 実行・検証: 説明のつまみを名前の上へドラッグする
+  await userEvent.dragAndDrop(grip(3), grip(0), {
+    targetPosition: { x: 4, y: 1 },
+  });
+  expect(columnOrder()).toEqual([3, 0, 1, 2]);
+  expect(
+    [...table.querySelectorAll<HTMLElement>("thead th")].map((th) =>
+      Number(th.dataset.col),
+    ),
+  ).toEqual([3, 0, 1, 2]);
+  expect(settingsNames(panel)).toEqual(["説明", "名前", "型", "既定"]);
+  // 実行・検証: 型のつまみで ↓ キーを押す
+  grip(1).focus();
+  await userEvent.keyboard("{ArrowDown}");
+  expect(columnOrder()).toEqual([3, 0, 2, 1]);
+  expect(settingsNames(panel)).toEqual(["説明", "名前", "既定", "型"]);
+  expect(document.activeElement).toBe(grip(1));
+  // 実行・検証: 説明の目のアイコンを押す
+  eye(3).click();
+  expect(
+    columnCells(table, 0).every((cell) => cell.hasAttribute("hidden")),
+  ).toBe(true);
+  expect(eye(3).getAttribute("aria-pressed")).toBe("true");
+  expect(eye(3).getAttribute("aria-label")).toBe("「説明」を表示");
+  expect(settingsBadge(table)).toBe("1");
+  expect(eye(0).disabled).toBe(true);
+  // 実行・検証: 名前の見出しの並べ替えを押す
+  const nameHead = find<HTMLElement>(table, 'thead th[data-col="0"]');
+  find<HTMLButtonElement>(nameHead, "button.mdmark-sort").click();
+  expect(columnOrder()).toEqual([3, 0, 2, 1]);
+  // 検証: ほかの表
+  const second = openTableSettings(onlyReorder);
+  expect(find(second.panel, ".mdmark-table-settings-title").textContent).toBe(
+    "並び順",
+  );
+  expect(second.panel.querySelector(".mdmark-table-settings-eye")).toBeNull();
+  expect(plain.querySelector(".mdmark-table-settings-toggle")).toBeNull();
+  // 実行・検証: 描き直すと Markdown の順に戻る
+  handle.update(REORDER_MARKDOWN);
+  const redrawn = find<HTMLElement>(el, ".mdmark-table");
+  expect(
+    [...redrawn.querySelectorAll<HTMLElement>("tbody tr:first-child td")].map(
+      (cell) => Number(cell.dataset.col),
+    ),
+  ).toEqual([0, 1, 2, 3]);
+  expect(headAndRowTexts(redrawn)[1]).toEqual([
+    "features.table",
+    "bool",
+    "true",
+    "表の機能",
+  ]);
+});
+
+/** 2 段の見出しで名前をピン止めし、設定の範囲を持つ表の文書 */
+const REORDER_GROUPS_MARKDOWN = [
+  "<!-- table: data +reorder +columns header-rows=2 pin=名前 -->",
+  "",
+  "| 名前 | 設定 | << | << | 備考 |",
+  "| --- | --- | --- | --- | --- |",
+  "| ^^ | 型 | 既定 | 必須 | ^^ |",
+  "| features.table | bool | true | ✓ | 表の機能のオン・オフを決める長い説明の文 |",
+  "| features.html | bool | true |  | 埋め込んだ HTML のオン・オフを決める長い説明の文 |",
+  "",
+  "<!-- /table -->",
+  "",
+].join("\n");
+
+// 結合した見出しの範囲の中だけで列を動かし、ピン止めの境をまたがせない（正常系）
+test("test_normal_when_reordered_within_groups", async () => {
+  // 準備
+  const el = createElement();
+  el.style.width = "320px";
+  await mountTracked(el, { markdown: REORDER_GROUPS_MARKDOWN });
+  const table = find<HTMLElement>(el, ".mdmark-table");
+  const secondHead = () =>
+    [...table.querySelectorAll<HTMLElement>("thead tr")]
+      .flatMap((row) => [...row.children] as HTMLElement[])
+      .filter((cell) => cell.dataset.col !== undefined)
+      .map((cell) => cell.textContent?.trim() ?? "");
+  const order = () =>
+    [...table.querySelectorAll<HTMLElement>("tbody tr:first-child td")].map(
+      (cell) => Number(cell.dataset.col),
+    );
+  const { panel, grip } = openTableSettings(table);
+  // 検証: 一覧の分け方
+  expect(
+    [...panel.querySelectorAll(".mdmark-table-settings-group")].map(
+      (group) => group.textContent,
+    ),
+  ).toEqual(["ピン止めの列", "設定", "範囲の外の列"]);
+  expect(grip(0).disabled).toBe(true);
+  expect(grip(4).disabled).toBe(true);
+  // 実行・検証: 既定を型の上へドラッグする
+  await userEvent.dragAndDrop(grip(2), grip(1), {
+    targetPosition: { x: 4, y: 1 },
+  });
+  expect(order()).toEqual([0, 2, 1, 3, 4]);
+  expect(secondHead().slice(-3)).toEqual(
+    expect.arrayContaining(["既定", "型", "必須"]),
+  );
+  const group = [...table.querySelectorAll<HTMLElement>("thead th")].find(
+    (th) => th.textContent?.trim().startsWith("設定"),
+  );
+  expect(group?.getAttribute("colspan")).toBe("3");
+  // 実行・検証: 型を備考の下へドラッグしても動かない
+  const item = (column: number) =>
+    find<HTMLElement>(
+      panel,
+      `.mdmark-table-settings-item[data-column="${column}"]`,
+    );
+  item(1).dispatchEvent(new DragEvent("dragstart", { bubbles: true }));
+  await userEvent.dragAndDrop(grip(1), item(4), {
+    targetPosition: { x: 4, y: 20 },
+  });
+  expect(order()).toEqual([0, 2, 1, 3, 4]);
+  expect(
+    panel.querySelectorAll(".is-drop-before, .is-drop-after"),
+  ).toHaveLength(0);
+  // 検証: 横にスクロールしても名前の列が左端に留まる
+  const scroller = find<HTMLElement>(table, "table");
+  const nameCell = find<HTMLElement>(
+    table,
+    'tbody tr:first-child td[data-col="0"]',
+  );
+  const before = nameCell.getBoundingClientRect().left;
+  scroller.scrollLeft = 200;
+  await nextFrames();
+  expect(scroller.scrollLeft).toBeGreaterThan(0);
+  expect(Math.round(nameCell.getBoundingClientRect().left)).toBe(
+    Math.round(before),
+  );
+});
+
+/** 階層の表の行（キー・型・必須・既定・説明） */
+const TREE_TABLE_ROWS = [
+  "| キー | 型 | 必須 | 既定 | 説明 |",
+  "| --- | --- | --- | --- | --- |",
+  "| features.table | bool | ✓ | true | 表の機能 |",
+  "| features.html | bool |  |  | 埋め込んだ HTML |",
+  "| aliases[].id | string |  |  | 別名の ID |",
+  "| aliases[].metadata.alias_type.type | ref \\| custom |  |  | 別名の種類 |",
+];
+
+/** 表の印に `extra` を加えた階層の表の文書 */
+function treeMarkdown(extra = ""): string {
+  return [
+    `<!-- table: data tree=キー type=型 required=必須 default=既定${extra} -->`,
+    "",
+    ...TREE_TABLE_ROWS,
+    "",
+    "<!-- /table -->",
+    "",
+  ].join("\n");
+}
+
+/** 見本を結んだ階層の表と、見出し `設定の見本` の下の `最小`・`エイリアス` のタブを持つ文書 */
+const TREE_EXAMPLE_MARKDOWN = [
+  treeMarkdown(" example=設定の見本"),
+  "## 設定の見本",
+  "",
+  "<!-- tabs -->",
+  "",
+  "### 最小",
+  "",
+  "```yaml",
+  "features:",
+  "  table: true",
+  "```",
+  "",
+  "### エイリアス",
+  "",
+  "```yaml",
+  "aliases:",
+  "  - id: terms",
+  "    metadata:",
+  "      alias_type:",
+  "        type: custom",
+  "```",
+  "",
+  "<!-- /tabs -->",
+  "",
+].join("\n");
+
+/** パスの階層の行（無ければ失敗する） */
+function treeRow(el: Element, path: string): HTMLTableRowElement {
+  const row = [
+    ...el.querySelectorAll<HTMLTableRowElement>("tr.mdmark-tree-row"),
+  ].find((candidate) => candidate.dataset.path === path);
+  if (!row) {
+    throw new Error(`行が無い: ${path}`);
+  }
+  return row;
+}
+
+/** 表示している階層の行のパスを、並んだ順に返す */
+function shownTreePaths(el: Element): string[] {
+  return [...el.querySelectorAll<HTMLTableRowElement>("tr.mdmark-tree-row")]
+    .filter((row) => !row.hidden)
+    .map((row) => row.dataset.path ?? "");
+}
+
+/** パスの行の開閉のボタン */
+function treeToggle(el: Element, path: string): HTMLButtonElement {
+  return find<HTMLButtonElement>(
+    treeRow(el, path),
+    "button.mdmark-tree-toggle",
+  );
+}
+
+// 階層の表のキーに全体のパスのツールチップとコピーのボタンを付ける（正常系）
+test("test_normal_when_tree", async () => {
+  // 準備
+  const writeText = vi.fn<(text: string) => Promise<void>>(() =>
+    Promise.resolve(),
+  );
+  stubClipboard(writeText);
+  const el = createElement();
+  await mountTracked(el, { markdown: treeMarkdown() });
+  const row = treeRow(el, "aliases[].metadata.alias_type.type");
+  // 実行・検証: type のキーにフォーカスする
+  find<HTMLElement>(row, ".mdmark-tree-name").focus();
+  const tip = find<HTMLElement>(row, '[role="tooltip"]');
+  expect(tip.hidden).toBe(false);
+  expect(tip.textContent).toBe("aliases[].metadata.alias_type.type");
+  // 実行・検証: コピーのボタンを押す
+  vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] });
+  const copy = find<HTMLButtonElement>(row, "button.mdmark-tree-copy");
+  copy.click();
+  await vi.waitFor(() => {
+    expect(writeText).toHaveBeenCalledWith(
+      "aliases[].metadata.alias_type.type",
+    );
+  });
+  await vi.advanceTimersByTimeAsync(0);
+  expect(copy.textContent).toContain("コピーしました");
+  await vi.advanceTimersByTimeAsync(2000);
+  expect(copy.textContent).not.toContain("コピーしました");
+  // 検証: 親の行だけに開閉のボタンがある
+  const toggles = [
+    ...el.querySelectorAll<HTMLButtonElement>("button.mdmark-tree-toggle"),
+  ];
+  expect(toggles.map((button) => button.closest("tr")?.dataset.path)).toEqual([
+    "features",
+    "aliases[]",
+    "aliases[].metadata",
+    "aliases[].metadata.alias_type",
+  ]);
+  for (const button of toggles) {
+    expect(button.getAttribute("aria-expanded")).toBe("true");
+  }
+  expect(el.querySelector("thead button.mdmark-sort")).toBeNull();
+});
+
+// 開閉のボタンで子孫を畳み、Shift で入れ子をまとめて開閉する（正常系）
+test("test_normal_when_tree_folded", async () => {
+  // 準備
+  const writeText = vi.fn<(text: string) => Promise<void>>(() =>
+    Promise.resolve(),
+  );
+  stubClipboard(writeText);
+  const el = createElement();
+  await mountTracked(el, { markdown: treeMarkdown(" +copy") });
+  const descendants = [
+    "aliases[].id",
+    "aliases[].metadata",
+    "aliases[].metadata.alias_type",
+    "aliases[].metadata.alias_type.type",
+  ];
+  // 実行・検証: aliases[] を畳む
+  treeToggle(el, "aliases[]").click();
+  for (const path of descendants) {
+    expect(treeRow(el, path).hidden).toBe(true);
+  }
+  expect(treeToggle(el, "aliases[]").getAttribute("aria-expanded")).toBe(
+    "false",
+  );
+  expect(treeToggle(el, "aliases[]").getAttribute("aria-label")).toBe(
+    "aliases[] を開く",
+  );
+  // 実行・検証: もう一度押して開く
+  treeToggle(el, "aliases[]").click();
+  expect(shownTreePaths(el)).toContain("aliases[].metadata.alias_type.type");
+  // 実行・検証: Shift を押しながら畳み、開く
+  treeToggle(el, "aliases[]").dispatchEvent(
+    new MouseEvent("click", { bubbles: true, shiftKey: true }),
+  );
+  expect(
+    treeToggle(el, "aliases[].metadata").getAttribute("aria-expanded"),
+  ).toBe("false");
+  expect(
+    treeToggle(el, "aliases[].metadata.alias_type").getAttribute(
+      "aria-expanded",
+    ),
+  ).toBe("false");
+  treeToggle(el, "aliases[]").dispatchEvent(
+    new MouseEvent("click", { bubbles: true, shiftKey: true }),
+  );
+  expect(shownTreePaths(el)).toHaveLength(8);
+  // 実行・検証: Enter・Space で開閉する
+  treeToggle(el, "aliases[]").focus();
+  await userEvent.keyboard("{Enter}");
+  expect(treeRow(el, "aliases[].id").hidden).toBe(true);
+  await userEvent.keyboard(" ");
+  expect(treeRow(el, "aliases[].id").hidden).toBe(false);
+  // 実行・検証: 畳んだままコピーする
+  treeToggle(el, "aliases[]").click();
+  chooseCopyFormat(el, "markdown");
+  await vi.waitFor(() => {
+    expect(writeText).toHaveBeenCalledTimes(1);
+  });
+  expect(writeText.mock.calls[0]?.[0]).toContain("aliases[].id");
+});
+
+// 末尾の名前で照合し、当たった行の祖先を残す（正常系）
+test("test_normal_when_tree_filtered", async () => {
+  // 準備
+  const el = createElement();
+  await mountTracked(el, {
+    markdown: treeMarkdown(" +count filter=キー:text"),
+  });
+  const table = find<HTMLElement>(el, ".mdmark-table");
+  const count = find<HTMLElement>(el, ".mdmark-table-count");
+  treeToggle(el, "features").click();
+  // 実行・検証: id で絞り込む
+  inputFilterText(table, "id");
+  expect(shownTreePaths(el)).toEqual(["aliases[]", "aliases[].id"]);
+  expect(
+    find(treeRow(el, "aliases[].id"), "mark.mdmark-tree-hit").textContent,
+  ).toBe("id");
+  expect(count.textContent).toContain("1 / 4 件");
+  // 実行・検証: metadata に変える
+  inputFilterText(table, "metadata");
+  expect(shownTreePaths(el)).toEqual(["aliases[]", "aliases[].metadata"]);
+  expect(count.textContent).toContain("0 / 4 件");
+  // 実行・検証: 絞り込みを解く
+  inputFilterText(table, "");
+  expect(treeRow(el, "features.table").hidden).toBe(true);
+  expect(treeToggle(el, "features").getAttribute("aria-expanded")).toBe(
+    "false",
+  );
+});
+
+// 行を押すと同じ親の範囲の縦線を濃くし、もう一度押すと解く（正常系）
+test("test_normal_when_tree_row_selected", async () => {
+  // 準備
+  const writeText = vi.fn<(text: string) => Promise<void>>(() =>
+    Promise.resolve(),
+  );
+  stubClipboard(writeText);
+  const el = createElement();
+  await mountTracked(el, { markdown: treeMarkdown() });
+  const activeRows = () =>
+    [...el.querySelectorAll("tr.mdmark-tree-row")]
+      .filter(
+        (row) =>
+          row
+            .querySelector(".mdmark-tree-guide")
+            ?.classList.contains("is-active") === true,
+      )
+      .map((row) => (row as HTMLElement).dataset.path);
+  // 実行・検証: features.html の行を押す
+  const row = treeRow(el, "features.html");
+  find<HTMLElement>(row, "td:last-child").click();
+  expect(row.getAttribute("aria-selected")).toBe("true");
+  expect(activeRows()).toEqual(["features.table", "features.html"]);
+  expect(el.querySelectorAll(".mdmark-tree-guide.is-active")).toHaveLength(2);
+  // 実行・検証: コピー・開閉のボタンを押しても選択が変わらない
+  find<HTMLButtonElement>(row, "button.mdmark-tree-copy").click();
+  treeToggle(el, "aliases[]").click();
+  expect(row.getAttribute("aria-selected")).toBe("true");
+  // 実行・検証: もう一度押す
+  find<HTMLElement>(row, "td:last-child").click();
+  expect(row.getAttribute("aria-selected")).toBe("false");
+  expect(el.querySelectorAll(".mdmark-tree-guide.is-active")).toHaveLength(0);
+});
+
+/** 見本の中の、表示しているタブのパスの行 */
+function shownExampleLine(el: Element, path: string): HTMLElement | null {
+  return el.querySelector<HTMLElement>(
+    `.mdmark-tree-example [role="tabpanel"]:not([hidden]) .mdmark-yaml-line[data-path="${path}"]`,
+  );
+}
+
+// 表の行と見本の行を互いに強調し、見本の表示を切り替える（正常系）
+test("test_normal_when_tree_linked_to_example", async () => {
+  // 準備
+  const el = createElement();
+  await mountTracked(el, { markdown: TREE_EXAMPLE_MARKDOWN });
+  const toggle = find<HTMLButtonElement>(
+    el,
+    "button.mdmark-tree-example-toggle",
+  );
+  const example = find<HTMLElement>(el, "aside.mdmark-tree-example");
+  // 検証: 描いた直後
+  expect(isShown(example)).toBe(true);
+  expect(toggle.getAttribute("aria-expanded")).toBe("true");
+  expect(toggle.textContent?.trim()).toBe("見本を隠す");
+  // 実行・検証: features.table の行を押す
+  find<HTMLElement>(treeRow(el, "features.table"), "td:last-child").click();
+  expect(
+    shownExampleLine(el, "features.table")?.classList.contains("is-linked"),
+  ).toBe(true);
+  // 実行・検証: エイリアスのタブに切り替える
+  tabNamed(el, 0, "エイリアス").click();
+  await vi.waitFor(() => {
+    expect(el.querySelectorAll(".mdmark-tree-example .is-linked")).toHaveLength(
+      0,
+    );
+  });
+  // 実行・検証: 見本の id の行を押す
+  const idLine = shownExampleLine(el, "aliases[].id");
+  if (!idLine) {
+    throw new Error("見本の id の行が無い");
+  }
+  idLine.click();
+  expect(treeRow(el, "aliases[].id").getAttribute("aria-selected")).toBe(
+    "true",
+  );
+  // 実行・検証: 見本を隠す
+  toggle.click();
+  expect(isShown(example)).toBe(false);
+  expect(toggle.getAttribute("aria-expanded")).toBe("false");
+  expect(toggle.textContent?.trim()).toBe("見本を表示");
+});
+
+// 印刷の前に畳んだ階層の行と隠した見本を開き、印刷の後に戻す（正常系）
+test("test_normal_when_printed_tree", async () => {
+  // 準備
+  const el = createElement();
+  await mountTracked(el, { markdown: TREE_EXAMPLE_MARKDOWN });
+  const example = find<HTMLElement>(el, "aside.mdmark-tree-example");
+  treeToggle(el, "aliases[]").click();
+  find<HTMLButtonElement>(el, "button.mdmark-tree-example-toggle").click();
+  // 実行・検証: 印刷の前
+  sendPrintEvent("beforeprint");
+  expect(shownTreePaths(el)).toHaveLength(8);
+  expect(isShown(example)).toBe(true);
+  // 実行・検証: 印刷の後
+  sendPrintEvent("afterprint");
+  expect(treeRow(el, "aliases[].id").hidden).toBe(true);
+  expect(treeRow(el, "aliases[].metadata.alias_type.type").hidden).toBe(true);
+  expect(isShown(example)).toBe(false);
+});
+
+/** 範囲の `ts` が根の要素を押すたびに class `is-open` を付け外しし、`destroy` で `window.__mdmarkDestroyed` を 1 増やす範囲の文書。範囲の外に同じ class の箱を持つ範囲を続ける */
+const RANGE_SCRIPT_MARKDOWN = [
+  "<!-- html -->",
+  "",
+  "```html",
+  '<div class="box">箱</div>',
+  "<script>window.__mdmarkScriptRan = true</script>",
+  "```",
+  "",
+  "```css",
+  ".box { background-color: rgb(255, 0, 0); }",
+  "```",
+  "",
+  "```ts",
+  "export default (root: HTMLElement): (() => void) => {",
+  '  const box = root.querySelector<HTMLElement>(".box");',
+  "  const onClick = (): void => {",
+  '    root.classList.toggle("is-open");',
+  "  };",
+  '  box?.addEventListener("click", onClick);',
+  "  return () => {",
+  '    box?.removeEventListener("click", onClick);',
+  "    const w = window as unknown as { __mdmarkDestroyed?: number };",
+  "    w.__mdmarkDestroyed = (w.__mdmarkDestroyed ?? 0) + 1;",
+  "  };",
+  "};",
+  "```",
+  "",
+  "<!-- /html -->",
+  "",
+  "<!-- html -->",
+  "",
+  "```html",
+  '<div class="box">外の箱</div>',
+  "```",
+  "",
+  "<!-- /html -->",
+  "",
+].join("\n");
+
+/** 範囲のスクリプトの記録を `window` から消す */
+function clearRangeMarks(): void {
+  for (const key of [
+    "__mdmarkDestroyed",
+    "__mdmarkScriptRan",
+    "__mdmarkCalls",
+  ]) {
+    Reflect.deleteProperty(window, key);
+  }
+}
+
+/** 範囲の根の要素の `index` 番目の箱 */
+function rangeBox(el: Element, index: number): HTMLElement {
+  const box = el.querySelectorAll<HTMLElement>("div.mdmark-html .box")[index];
+  if (!box) {
+    throw new Error(`範囲の箱が無い: ${index}`);
+  }
+  return box;
+}
+
+/** `html-scripts` をオンにし、変換のライブラリをテストごとに別の URL で読む設定 */
+function rangeScriptConfig(name: string) {
+  return {
+    features: { "html-scripts": true },
+    "html-scripts": { url: `/fixtures/babel.mjs?${name}` },
+  };
+}
+
+// html-scripts がオンのとき、範囲の ts を変換して根の要素で呼び、描き直す前に destroy を呼ぶ（正常系）
+test("test_normal_when_range_scripts", async () => {
+  // 準備
+  clearRangeMarks();
+  const el = createElement();
+  const handle = await mountTracked(el, {
+    markdown: RANGE_SCRIPT_MARKDOWN,
+    config: rangeScriptConfig("normal"),
+  });
+  const scope = find<HTMLElement>(el, "div.mdmark-html");
+  await vi.waitFor(() => {
+    expect(countRequests("/fixtures/babel.mjs?normal")).toBe(1);
+    rangeBox(el, 0).click();
+    expect(scope.classList.contains("is-open")).toBe(true);
+  });
+  // 検証
+  expect(getComputedStyle(rangeBox(el, 0)).backgroundColor).toBe(
+    "rgb(255, 0, 0)",
+  );
+  expect(getComputedStyle(rangeBox(el, 1)).backgroundColor).not.toBe(
+    "rgb(255, 0, 0)",
+  );
+  rangeBox(el, 0).click();
+  expect(scope.classList.contains("is-open")).toBe(false);
+  expect(Reflect.get(window, "__mdmarkScriptRan")).not.toBe(true);
+  expect(countRequests("/fixtures/babel.mjs?normal")).toBe(1);
+  expect(
+    [...document.head.querySelectorAll("script")].some((script) =>
+      script.textContent?.includes("__mdmarkHtmlScript"),
+    ),
+  ).toBe(false);
+  // 実行・検証: 描き直す
+  handle.update(RANGE_SCRIPT_MARKDOWN);
+  expect(Reflect.get(window, "__mdmarkDestroyed")).toBe(1);
+  clearRangeMarks();
+});
+
+// html-scripts がオフのとき、範囲のスクリプトを動かさず、変換のライブラリを読まない（正常系）
+test("test_normal_when_range_scripts_off", async () => {
+  // 準備
+  clearRangeMarks();
+  const el = createElement();
+  await mountTracked(el, {
+    markdown: RANGE_SCRIPT_MARKDOWN,
+    config: { "html-scripts": { url: "/fixtures/babel.mjs?off" } },
+  });
+  // 機能がオフの範囲は書いた人の class を残さないため、箱は範囲の中の要素で引く
+  const box = find<HTMLElement>(el, "div.mdmark-html > div");
+  // 実行
+  box.click();
+  await nextFrames();
+  // 検証
+  expect(box.classList.contains("box")).toBe(false);
+  expect(getComputedStyle(box).backgroundColor).not.toBe("rgb(255, 0, 0)");
+  expect(find(el, "div.mdmark-html").classList.contains("is-open")).toBe(false);
+  expect(el.querySelector("pre code.language-css")).not.toBeNull();
+  expect(el.querySelector("pre code.language-ts")).not.toBeNull();
+  expect(countRequests("/fixtures/babel.mjs?off")).toBe(0);
+});
+
+// 設定でオフの html-scripts を、文書の印でその文書だけオンにする（正常系）
+test("test_normal_when_range_scripts_enabled_by_mark", async () => {
+  // 準備
+  clearRangeMarks();
+  const el = createElement();
+  const markdown = [
+    "<!-- features: +html-scripts -->",
+    "",
+    "<!-- html -->",
+    "",
+    "```html",
+    '<div class="box">箱</div>',
+    "```",
+    "",
+    "```css",
+    ".box { background-color: rgb(255, 0, 0); }",
+    "```",
+    "",
+    "```js",
+    "export default (root) => {",
+    "  const w = window;",
+    "  w.__mdmarkCalls = [...(w.__mdmarkCalls ?? []), root];",
+    "};",
+    "```",
+    "",
+    "<!-- /html -->",
+    "",
+  ].join("\n");
+  // 実行
+  await mountTracked(el, {
+    markdown,
+    config: {
+      features: { "html-scripts": false },
+      "html-scripts": { url: "/fixtures/babel.mjs?mark" },
+    },
+  });
+  // 検証
+  const scope = find<HTMLElement>(el, "div.mdmark-html");
+  await vi.waitFor(() => {
+    expect(Reflect.get(window, "__mdmarkCalls")).toEqual([scope]);
+  });
+  expect(getComputedStyle(rangeBox(el, 0)).backgroundColor).toBe(
+    "rgb(255, 0, 0)",
+  );
+  expect(el.textContent).not.toContain("features:");
+  clearRangeMarks();
+});
+
+/** 範囲に `html` と、言語 `lang` のコードブロックを置いた Markdown */
+function scriptRange(lang: "ts" | "js", code: string, css = ""): string {
+  return [
+    "<!-- html -->",
+    "",
+    "```html",
+    '<div class="box">箱</div>',
+    "```",
+    "",
+    ...(css === "" ? [] : ["```css", css, "```", ""]),
+    `\`\`\`${lang}`,
+    code,
+    "```",
+    "",
+    "<!-- /html -->",
+    "",
+  ].join("\n");
+}
+
+// 既定のエクスポートが関数でない範囲と例外を投げる範囲と構文エラーの範囲の前に書き方の警告を置き、ほかは描く（異常系）
+test("test_error_when_range_script_invalid", async () => {
+  // 準備
+  const spy = vi.spyOn(console, "error").mockImplementation(() => {});
+  const el = createElement();
+  const error = new Error("範囲の失敗");
+  Reflect.set(window, "__mdmarkRangeError", error);
+  const markdown = [
+    scriptRange("ts", "export default 1 as number;"),
+    scriptRange(
+      "js",
+      "export default () => { throw window.__mdmarkRangeError; };",
+    ),
+    scriptRange("js", "export default (root) => {"),
+    "後ろの段落",
+    "",
+  ].join("\n");
+  // 実行
+  await mountTracked(el, { markdown, config: rangeScriptConfig("invalid") });
+  // 検証
+  const scopes = [...el.querySelectorAll<HTMLElement>("div.mdmark-html")];
+  await vi.waitFor(() => {
+    expect(el.querySelectorAll(".mdmark-syntax-warning")).toHaveLength(3);
+  });
+  const warningOf = (scope: HTMLElement | undefined) =>
+    scope?.previousElementSibling?.classList.contains("mdmark-syntax-warning")
+      ? (scope.previousElementSibling.textContent ?? "")
+      : "";
+  expect(warningOf(scopes[0])).toContain("export default");
+  expect(warningOf(scopes[1])).toContain("例外を投げた");
+  expect(warningOf(scopes[2])).toContain("構文エラー");
+  for (const scope of scopes) {
+    expect(scope.querySelector(".box")?.textContent).toBe("箱");
+  }
+  expect(paragraphTexts(el)).toContain("後ろの段落");
+  expect(
+    spy.mock.calls.some(
+      (call) =>
+        String(call[0]).includes("範囲のスクリプト 1") && call[1] === error,
+    ),
+  ).toBe(true);
+  Reflect.deleteProperty(window, "__mdmarkRangeError");
+});
+
+// 変換のライブラリを読めないとき、ts・js の範囲に知らせの枠を置き、範囲の html・css と本文は描く（異常系）
+test("test_error_when_transpiler_unavailable", async () => {
+  // 準備
+  clearRangeMarks();
+  const spy = vi.spyOn(console, "error").mockImplementation(() => {});
+  const el = createElement();
+  const markdown = [
+    scriptRange(
+      "ts",
+      'export default (root: HTMLElement) => { root.dataset.ran = "1"; };',
+      ".box { background-color: rgb(255, 0, 0); }",
+    ),
+    scriptRange("js", 'export default (root) => { root.dataset.ran = "1"; };'),
+    "後ろの段落",
+    "",
+  ].join("\n");
+  // 実行
+  await mountTracked(el, {
+    markdown,
+    config: {
+      features: { "html-scripts": true },
+      "html-scripts": { url: MISSING_LIB_PATH },
+    },
+  });
+  // 検証
+  const scopes = [...el.querySelectorAll<HTMLElement>("div.mdmark-html")];
+  await vi.waitFor(() => {
+    expect(el.querySelectorAll(".mdmark-notice")).toHaveLength(2);
+  });
+  for (const scope of scopes) {
+    expect(
+      scope.previousElementSibling?.classList.contains("mdmark-notice"),
+    ).toBe(true);
+    expect(scope.dataset.ran).toBeUndefined();
+    expect(scope.querySelector(".box")?.textContent).toBe("箱");
+  }
+  expect(el.querySelectorAll('.mdmark-notice[role="status"]')).toHaveLength(2);
+  expect(getComputedStyle(rangeBox(el, 0)).backgroundColor).toBe(
+    "rgb(255, 0, 0)",
+  );
+  expect(paragraphTexts(el)).toContain("後ろの段落");
+  expect(
+    spy.mock.calls.some((call) => String(call[0]).includes(MISSING_LIB_PATH)),
+  ).toBe(true);
 });

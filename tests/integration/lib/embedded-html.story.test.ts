@@ -63,3 +63,56 @@ test("test_wide", async () => {
   expect(metrics).toEqual({ overflowX: "auto", scrolls: true });
   await expect(pageOverflows(page)).resolves.toBe(false);
 });
+
+// 範囲の css で範囲の箱だけの背景を変え、ts を実行しない template に入れる（WithRangeCss）
+test("test_with_range_css", async () => {
+  // 準備・実行
+  const page = await holder.openStory("parts-embeddedhtml--with-range-css");
+  // 検証
+  const backgrounds = await page
+    .locator(".mdmark-html .box")
+    .evaluateAll((boxes) =>
+      boxes.map((box) => getComputedStyle(box).backgroundColor),
+    );
+  const accent = await page.evaluate(() => {
+    const probe = document.createElement("div");
+    probe.style.backgroundColor = "var(--mdmark-color-accent-blue-bg)";
+    document.querySelector(".mdmark")?.append(probe);
+    const value = getComputedStyle(probe).backgroundColor;
+    probe.remove();
+    return value;
+  });
+  expect(backgrounds).toHaveLength(2);
+  expect(backgrounds[0]).toBe(accent);
+  expect(backgrounds[1]).not.toBe(accent);
+  await expect(
+    page
+      .locator(
+        '.mdmark-html[data-html-scope="0"] > template.mdmark-html-script',
+      )
+      .getAttribute("data-lang"),
+  ).resolves.toBe("ts");
+  await expect(page.locator("#storybook-root script").count()).resolves.toBe(0);
+  await expect(pageOverflows(page)).resolves.toBe(false);
+});
+
+// 根の要素が class is-open を持つと、範囲の css が箱を出す（RangeScriptOpened）
+test("test_range_script_opened", async () => {
+  // 準備・実行
+  const page = await holder.openStory(
+    "parts-embeddedhtml--range-script-opened",
+  );
+  // 検証
+  await expect(
+    page.locator('.mdmark-html[data-html-scope="0"] .box').isVisible(),
+  ).resolves.toBe(true);
+  await expect(
+    page.locator(".mdmark-html:not([data-html-scope]) .box").isVisible(),
+  ).resolves.toBe(true);
+  await page
+    .locator('.mdmark-html[data-html-scope="0"]')
+    .evaluate((root) => root.classList.remove("is-open"));
+  await expect(
+    page.locator('.mdmark-html[data-html-scope="0"] .box').isVisible(),
+  ).resolves.toBe(false);
+});
