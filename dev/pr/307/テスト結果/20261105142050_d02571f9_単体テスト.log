@@ -1,0 +1,39 @@
+$ npm run test:unit
+
+> test:unit
+> vitest run --project 'unit*'
+
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-syntax-icon-columns-highlight-kbd-details-include-wide-csv
+
+(node:25094) PromiseRejectionHandledWarning: Promise rejection was handled asynchronously (rejection id: 7)
+(Use `node --trace-warnings ...` to show where the warning was created)
+⎯⎯⎯⎯⎯⎯ Unhandled Errors ⎯⎯⎯⎯⎯⎯
+
+Vitest caught 1 unhandled error during the test run.
+This might cause false positive tests. Resolve unhandled errors to make sure your tests are not affected.
+
+⎯⎯⎯⎯ Unhandled Rejection ⎯⎯⎯⎯⎯
+Error: records.yaml の items[0] の値は文字列ではありません（マップ）。Markdown の文字列を持つキーを渡してください。
+ ❯ readYamlKey src/cli/markdown-check.ts:149:11
+    147|   }
+    148|   if (!isScalar(node) || typeof node.value !== "string") {
+    149|     throw new CliError(
+       |           ^
+    150|       `${name} の ${key} の値は文字列ではありません（${nodeTypeName(node)}）。Markdown …
+    151|     );
+
+This error originated in "tests/unit/src/cli/markdown-check.test.ts" test file. It doesn't mean the error was thrown inside the file itself, but while it was running.
+The last test to run before this error was "test_read_yaml_key_when_missing". This means either:
+- the error was thrown while Vitest was running this test, or
+- the error was thrown after the test completed, and this was the most recent test at that point.
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+
+
+ Test Files  216 passed (216)
+      Tests  1504 passed (1504)
+     Errors  1 error
+   Start at  14:20:56
+   Duration  89.35s (worker 51%, tests 30%, import 17%, transform 2%)
+
+exit=1
