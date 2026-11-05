@@ -1,0 +1,14 @@
+$ npm run test:unit
+
+> test:unit
+> vitest run --project 'unit*'
+
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/fix-terms-touch-close-term-tooltip
+
+
+ Test Files  196 passed (196)
+      Tests  1462 passed (1462)
+   Start at  15:24:08
+   Duration  108.31s (tests 38%, worker 37%, import 18%, transform 8%)
+
