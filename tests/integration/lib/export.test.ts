@@ -650,3 +650,80 @@ test("test_normal_when_blob_and_dynamic_import_blocked", async () => {
   expect(opened.inlineUrlScripts()).toEqual([]);
   await opened.close();
 });
+
+/** 1〜12 行目に `const v{行} = {行};` を持つ `src/app.ts` の本文 */
+const APP_TS = Array.from(
+  { length: 12 },
+  (_, index) => `const v${index + 1} = ${index + 1};`,
+).join("\n");
+
+// 取り込む文書と束ねていない名前のアイコンの形を埋め、開いたときに外へ要求せずに描く（正常系（取り込みとアイコンを埋める））
+test("test_normal_when_includes_and_icons", async () => {
+  // 準備
+  const dir = await createTempDir();
+  await writeFiles(dir, {
+    "mdmark.config.yaml": "features: {}\n",
+    "docs/guide.md": [
+      "# 案内",
+      "",
+      "## `icon:sailboat` 航海 `icon:no-such-icon`",
+      "",
+      "<!-- include: 共通/手順.md#実行 -->",
+      "",
+      "<!-- include: ../src/app.ts#L3-L5 -->",
+      "",
+      "<!-- include: missing.md -->",
+      "",
+    ].join("\n"),
+    "docs/共通/手順.md": [
+      "## 準備",
+      "",
+      "準備の段落",
+      "",
+      "## 実行",
+      "",
+      "実行の段落",
+      "",
+      "<!-- include: ../../src/app.ts#L1 -->",
+      "",
+    ].join("\n"),
+    "src/app.ts": APP_TS,
+  });
+  // 実行
+  const result = await runCli(["export", "docs/guide.md"], dir);
+  // 検証
+  expect(result.code).toBe(0);
+  const stderr = linesOf(result.stderr);
+  expect(stderr.some((line) => line.includes("missing.md"))).toBe(true);
+  expect(stderr.some((line) => line.includes("no-such-icon"))).toBe(true);
+  const htmlFile = join(dir, "docs", "guide.html");
+  const { page, externalRequests } = await browser.openHtml(htmlFile);
+  await page.waitForSelector("article.mdmark h1");
+  await page.waitForSelector('.mdmark-inline-icon[data-icon="sailboat"] svg');
+  const article = page.locator("article.mdmark");
+  await expect(article.textContent()).resolves.toContain("実行の段落");
+  await expect(article.textContent()).resolves.not.toContain("準備の段落");
+  const codes = await page.locator("code.language-ts").allTextContents();
+  expect(codes.some((code) => code.includes("const v1 = 1;"))).toBe(true);
+  expect(
+    codes.some(
+      (code) =>
+        code.includes("const v3 = 3;") &&
+        code.includes("const v5 = 5;") &&
+        !code.includes("const v6 = 6;"),
+    ),
+  ).toBe(true);
+  await expect(
+    page.locator(".mdmark-syntax-warning", { hasText: "missing.md" }).count(),
+  ).resolves.toBe(1);
+  await page.waitForFunction(() =>
+    document
+      .querySelector("article")
+      ?.innerHTML.includes("<code>icon:no-such-icon</code>"),
+  );
+  expect(externalRequests()).toEqual([]);
+  const source = await readFile(htmlFile, "utf8");
+  expect(source).toContain("<!-- lucide ");
+  expect(source).toContain("sailboat");
+  expect(source).not.toContain('"anchor"');
+});
