@@ -455,7 +455,7 @@ test("test_read_definition_when_coordinates_omitted_not_judgement", async () => 
     scope: "点検",
     updated: "2026-11-05",
     nodes: [
-      { id: "recv", kind: "script", name: "受け取る" },
+      { id: "recv", kind: "start", name: "受け取る" },
       { id: "classify", kind: "llm", name: "分類" },
     ],
     wires: [{ id: "w1", from: "recv", to: "classify", line: "flow" }],
