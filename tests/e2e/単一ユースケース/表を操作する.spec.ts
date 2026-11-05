@@ -6,6 +6,9 @@ import {
   openPage,
   readColumnsCalls,
   removeDistRoot,
+  TREE_EXAMPLE_MARKDOWN,
+  treeMarkdown,
+  treeRow,
 } from "../dist-page.ts";
 
 // ビルドした配布物を置いた作業ツリー
@@ -76,7 +79,7 @@ test("test_normal", async ({ page }) => {
   // `+機能` を書いた表にだけ付くボタン・集計の行・行へのリンクが無い
   for (const selector of [
     ".mdmark-table-count",
-    ".mdmark-columns-toggle",
+    ".mdmark-table-settings-toggle",
     "button.mdmark-copy",
     "tfoot",
     ".mdmark-row-anchor",
@@ -380,6 +383,25 @@ async function filterByText(
   await drawer.locator('input[type="text"]').fill(text);
 }
 
+/** テーブル設定のパネル（`index` 番目の表のもの） */
+function settingsPanel(page: Page, index = 0) {
+  return page.locator("#doc .mdmark-table-settings").nth(index);
+}
+
+/** テーブル設定のパネルの、列名 `name` の行の目のアイコン */
+function eyeOf(panel: ReturnType<Page["locator"]>, name: string) {
+  return panel.locator(
+    `.mdmark-table-settings-item[data-name="${name}"] .mdmark-table-settings-eye`,
+  );
+}
+
+/** テーブル設定のパネルの、列名 `name` の行のつまみ */
+function gripOf(panel: ReturnType<Page["locator"]>, name: string) {
+  return panel.locator(
+    `.mdmark-table-settings-item[data-name="${name}"] .mdmark-table-settings-grip`,
+  );
+}
+
 /** 出ている集計の行ごとに、セルの文字を空白を除いて左から並べて返す */
 async function totalRows(page: Page): Promise<string[][]> {
   return await page
@@ -431,42 +453,41 @@ test("test_normal_when_counting_rows", async ({ page }) => {
   await expect(count).toContainText("3 / 3 件");
 });
 
-// 列設定のメニューで列を隠し・出し、リセットし、Esc で閉じる（正常シナリオ（列を隠す・出す））
+// テーブル設定のパネルの目のアイコンで列を隠し・出し、Esc で閉じる（正常シナリオ（列を隠す・出す））
 test("test_normal_when_columns_toggled", async ({ page }) => {
   // 準備
   await openPage(page, builtRoot);
   await mountDocument(page, {
     markdown: fruitTable("data +columns hide=説明"),
   });
-  const toggle = page.getByRole("button", { name: "列設定" });
-  const menu = page.locator("#doc .mdmark-columns-menu");
-  const boxes = menu.locator('input[type="checkbox"]');
+  const toggle = page.getByRole("button", { name: "テーブル設定" });
+  const panel = settingsPanel(page);
+  const badge = toggle.locator(".mdmark-table-tool-badge");
   // 検証: 描いた直後は説明の列だけが隠れている
   await expect(head(page, "説明")).toBeHidden();
   await expect(head(page, "名前")).toBeVisible();
   await expect(head(page, "更新日")).toBeVisible();
-  // 実行・検証: メニューを開く
+  await expect(badge).toHaveText("1");
+  // 実行・検証: パネルを開く
   await toggle.click();
-  await expect(menu).toBeVisible();
-  await expect(boxes).toHaveCount(3);
-  await expect(boxes.nth(1)).not.toBeChecked();
-  await expect(boxes.nth(0)).toBeDisabled();
-  await expect(menu).toContainText("先頭の列は隠せません");
-  // 実行・検証: 説明を入れ、更新日を外す
-  await boxes.nth(1).check();
-  await boxes.nth(2).uncheck();
+  await expect(panel).toBeVisible();
+  await expect(panel.locator(".mdmark-table-settings-eye")).toHaveCount(3);
+  await expect(eyeOf(panel, "説明")).toHaveAttribute("aria-pressed", "true");
+  await expect(eyeOf(panel, "更新日")).toHaveAttribute("aria-pressed", "false");
+  await expect(eyeOf(panel, "名前")).toBeDisabled();
+  await expect(panel).toContainText("先頭の列は隠せません");
+  // 実行・検証: 説明を表示し、更新日を隠す
+  await eyeOf(panel, "説明").click();
+  await eyeOf(panel, "更新日").click();
   await expect(head(page, "説明")).toBeVisible();
   await expect(head(page, "更新日")).toBeHidden();
   const order = await page.locator("#doc thead th").allTextContents();
   expect(order[0]).toContain("名前");
   expect(order[1]).toContain("説明");
-  // 実行・検証: リセットする
-  await menu.getByRole("button", { name: "リセット" }).click();
-  await expect(head(page, "説明")).toBeHidden();
-  await expect(head(page, "更新日")).toBeVisible();
+  await expect(badge).toHaveText("1");
   // 実行・検証: Esc で閉じてフォーカスが戻る
   await page.keyboard.press("Escape");
-  await expect(menu).toBeHidden();
+  await expect(panel).toBeHidden();
   await expect(toggle).toBeFocused();
 });
 
@@ -495,36 +516,35 @@ test("test_normal_when_columns_change_notified", async ({ page }) => {
     markdown: COLUMNS_NOTIFY_MARKDOWN,
     recordColumns: true,
   });
-  const toggles = page.getByRole("button", { name: "列設定" });
+  const toggles = page.getByRole("button", { name: "テーブル設定" });
   await expect(toggles).toHaveCount(2);
-  const menus = page.locator("#doc .mdmark-columns-menu");
-  const first = menus.nth(0).locator('input[type="checkbox"]');
-  const second = menus.nth(1).locator('input[type="checkbox"]');
+  const first = settingsPanel(page, 0);
+  const second = settingsPanel(page, 1);
   // 検証: 描いた直後は呼ばない
   expect(await readColumnsCalls(page)).toEqual([]);
-  // 実行・検証: 1 つ目の表で説明を外す
+  // 実行・検証: 1 つ目の表で説明を隠す
   await toggles.nth(0).click();
-  await first.nth(1).uncheck();
+  await eyeOf(first, "説明").click();
   expect(await readColumnsCalls(page)).toEqual([
     { tableIndex: 0, hidden: ["説明"] },
   ]);
-  // 実行・検証: 説明を入れ、更新日・説明の順に外す
-  await first.nth(1).check();
-  await first.nth(2).uncheck();
-  await first.nth(1).uncheck();
+  // 実行・検証: 説明を表示し、更新日・説明の順に隠す
+  await eyeOf(first, "説明").click();
+  await eyeOf(first, "更新日").click();
+  await eyeOf(first, "説明").click();
   expect((await readColumnsCalls(page)).at(-1)).toEqual({
     tableIndex: 0,
     hidden: ["説明", "更新日"],
   });
   await page.keyboard.press("Escape");
-  // 実行・検証: 2 つ目の表で備考を入れ、リセットする
+  // 実行・検証: 2 つ目の表で備考を表示し、もう一度隠す
   await toggles.nth(1).click();
-  await second.nth(1).check();
+  await eyeOf(second, "備考").click();
   expect((await readColumnsCalls(page)).at(-1)).toEqual({
     tableIndex: 1,
     hidden: [],
   });
-  await menus.nth(1).getByRole("button", { name: "リセット" }).click();
+  await eyeOf(second, "備考").click();
   expect((await readColumnsCalls(page)).at(-1)).toEqual({
     tableIndex: 1,
     hidden: ["備考"],
@@ -605,13 +625,9 @@ test("test_normal_when_table_copied_as_markdown", async ({ page }) => {
   await mountDocument(page, {
     markdown: fruitTable("data +copy +columns hide=説明 filter=名前:text"),
   });
-  const toggle = page.getByRole("button", { name: "列設定" });
-  const boxes = page.locator(
-    '#doc .mdmark-columns-menu input[type="checkbox"]',
-  );
-  await toggle.click();
-  await boxes.nth(1).check();
-  await boxes.nth(2).uncheck();
+  await page.getByRole("button", { name: "テーブル設定" }).click();
+  await eyeOf(settingsPanel(page), "説明").click();
+  await eyeOf(settingsPanel(page), "更新日").click();
   await page.keyboard.press("Escape");
   await filterByText(page, "名前", "りんご");
   const button = page.locator("#doc button.mdmark-copy");
@@ -1738,4 +1754,479 @@ test("test_normal_when_csv_raw_toggled", async ({ page }) => {
   await expect(wrapper.locator("table")).toBeVisible();
   await expect(wrapper.locator(".mdmark-sort").first()).toBeVisible();
   await expect(wrapper.locator(".mdmark-filter").first()).toBeVisible();
+});
+
+/** 列の並べ替えを付けた表（`+reorder +columns`）・`+reorder` だけの表・`+reorder` も `+columns` も付けない表の文書 */
+const REORDER_MARKDOWN = [
+  "<!-- table: data +reorder +columns -->",
+  "",
+  "| 名前 | 型 | 既定 | 説明 |",
+  "| --- | --- | --- | --- |",
+  "| features.table | bool | true | 表の機能 |",
+  "| features.html | bool | true | 埋め込んだ HTML |",
+  "| build.include | string[] |  | まとめる文書 |",
+  "",
+  "<!-- /table -->",
+  "",
+  "<!-- table: data +reorder -->",
+  "",
+  "| 名前 | 型 |",
+  "| --- | --- |",
+  "| a | b |",
+  "",
+  "<!-- /table -->",
+  "",
+  "<!-- table: data -->",
+  "",
+  "| 名前 | 型 |",
+  "| --- | --- |",
+  "| c | d |",
+  "",
+  "<!-- /table -->",
+  "",
+].join("\n");
+
+/** `index` 番目の表の、見出しの最下段のセルの列名を左から並べて返す */
+async function headNames(page: Page, index = 0): Promise<string[]> {
+  const table = page.locator("#doc .mdmark-table").nth(index);
+  const row = table.locator("thead tr").last();
+  return (await row.locator("th:visible").allInnerTexts()).map((text) =>
+    text.trim(),
+  );
+}
+
+/** パネルの一覧の項目の列名を並んだ順に返す */
+async function settingsNames(
+  panel: ReturnType<Page["locator"]>,
+): Promise<string[]> {
+  return panel
+    .locator(".mdmark-table-settings-item")
+    .evaluateAll((items) =>
+      items.map((item) => (item as HTMLElement).dataset.name ?? ""),
+    );
+}
+
+// テーブル設定の一覧のつまみのドラッグと ↑・↓ キーで列を並べ替え、目のアイコンで列を隠す（正常シナリオ（列を並べ替える））
+test("test_normal_when_columns_reordered", async ({ page }) => {
+  // 準備
+  await openPage(page, builtRoot);
+  await mountDocument(page, { markdown: REORDER_MARKDOWN });
+  const table = page.locator("#doc .mdmark-table").nth(0);
+  const toggle = table.getByRole("button", { name: "テーブル設定" });
+  const panel = settingsPanel(page, 0);
+  // 検証: 見出しには行の並べ替えのボタンだけがあり、つまみが無い
+  await expect(table.locator("thead .mdmark-table-settings-grip")).toHaveCount(
+    0,
+  );
+  await expect(table.locator("thead button.mdmark-sort").first()).toBeVisible();
+  await expect(toggle).toHaveAttribute("title", "テーブル設定");
+  // 実行・検証: テーブル設定を押す
+  await toggle.click();
+  await expect(toggle).toHaveAttribute("aria-expanded", "true");
+  await expect(panel).toBeVisible();
+  await expect(panel.locator(".mdmark-table-settings-grip")).toHaveCount(4);
+  await expect(panel.locator(".mdmark-table-settings-eye")).toHaveCount(4);
+  await expect(eyeOf(panel, "名前")).toBeDisabled();
+  await expect(panel).toContainText("先頭の列は隠せません");
+  // 実行・検証: 説明のつまみを名前の上へドラッグする
+  await gripOf(panel, "説明").dragTo(gripOf(panel, "名前"), {
+    targetPosition: { x: 4, y: 1 },
+  });
+  expect(await headNames(page)).toEqual(["説明", "名前", "型", "既定"]);
+  expect(
+    await table.locator("tbody tr").first().locator("td").allInnerTexts(),
+  ).toEqual(["表の機能", "features.table", "bool", "true"]);
+  expect(await settingsNames(panel)).toEqual(["説明", "名前", "型", "既定"]);
+  // 実行・検証: 型のつまみで ↓ キーを押す
+  await gripOf(panel, "型").focus();
+  await page.keyboard.press("ArrowDown");
+  expect(await headNames(page)).toEqual(["説明", "名前", "既定", "型"]);
+  await expect(gripOf(panel, "型")).toBeFocused();
+  // 実行・検証: 説明の目のアイコンを押す
+  await eyeOf(panel, "説明").click();
+  await expect(head(page, "説明")).toBeHidden();
+  await expect(eyeOf(panel, "説明")).toHaveAttribute("aria-pressed", "true");
+  await expect(eyeOf(panel, "説明")).toHaveAttribute(
+    "aria-label",
+    "「説明」を表示",
+  );
+  await expect(toggle.locator(".mdmark-table-tool-badge")).toHaveText("1");
+  await expect(eyeOf(panel, "名前")).toBeDisabled();
+  await page.keyboard.press("Escape");
+  // 実行・検証: 行を並べ替え、絞り込んでも列の順が変わらない
+  await head(page, "名前").locator("button.mdmark-sort").click();
+  expect(await headNames(page)).toEqual(["名前", "既定", "型"]);
+  await filterByText(page, "名前", "html");
+  expect(await headNames(page)).toEqual(["名前", "既定", "型"]);
+  // 検証: ほかの表
+  await page
+    .locator("#doc .mdmark-table")
+    .nth(1)
+    .getByRole("button", { name: "テーブル設定" })
+    .click();
+  await expect(
+    settingsPanel(page, 1).locator(".mdmark-table-settings-grip"),
+  ).toHaveCount(2);
+  await expect(
+    settingsPanel(page, 1).locator(".mdmark-table-settings-eye"),
+  ).toHaveCount(0);
+  await expect(
+    page
+      .locator("#doc .mdmark-table")
+      .nth(2)
+      .locator(".mdmark-table-settings-toggle"),
+  ).toHaveCount(0);
+  // 実行・検証: 開き直すと Markdown の順に戻る
+  await page.reload();
+  await page.waitForFunction(() => "mdmark" in window);
+  await mountDocument(page, { markdown: REORDER_MARKDOWN });
+  expect(await headNames(page)).toEqual(["名前", "型", "既定", "説明"]);
+});
+
+/** 2 段の見出しで名前をピン止めし、設定の範囲を持つ表の文書 */
+const REORDER_GROUPS_MARKDOWN = [
+  "<!-- table: data +reorder +columns header-rows=2 pin=名前 -->",
+  "",
+  "| 名前 | 設定 | << | << | 備考 |",
+  "| --- | --- | --- | --- | --- |",
+  "| ^^ | 型 | 既定 | 必須 | ^^ |",
+  "| features.table | bool | true | ✓ | 表の機能のオン・オフを決める、長い説明の文 |",
+  "| features.html | bool | true |  | 埋め込んだ HTML のオン・オフを決める、長い説明の文 |",
+  "",
+  "<!-- /table -->",
+  "",
+].join("\n");
+
+// 結合した見出しの範囲の中だけで列を動かし、範囲の外やピン止めの境をまたがせない（正常シナリオ（結合した見出しとピン止めの列を並べ替える））
+test("test_normal_when_reordered_within_groups", async ({ page }) => {
+  // 準備
+  await openPage(page, builtRoot, { hostCss: NARROW_HOST_CSS });
+  await mountDocument(page, { markdown: REORDER_GROUPS_MARKDOWN });
+  const table = page.locator("#doc .mdmark-table");
+  const panel = settingsPanel(page);
+  await table.getByRole("button", { name: "テーブル設定" }).click();
+  // 検証: 一覧の分け方
+  await expect(panel.locator(".mdmark-table-settings-group")).toHaveText([
+    "ピン止めの列",
+    "設定",
+    "範囲の外の列",
+  ]);
+  await expect(gripOf(panel, "名前")).toBeDisabled();
+  await expect(gripOf(panel, "備考")).toBeDisabled();
+  // 実行・検証: 既定を型の上へドラッグする
+  await gripOf(panel, "既定").dragTo(gripOf(panel, "型"), {
+    targetPosition: { x: 4, y: 1 },
+  });
+  expect(await headNames(page)).toEqual(["既定", "型", "必須"]);
+  await expect(table.locator("thead th", { hasText: "設定" })).toHaveAttribute(
+    "colspan",
+    "3",
+  );
+  // 実行・検証: 型を備考の下へドラッグしても動かず、線も出ない
+  await gripOf(panel, "型").hover();
+  await page.mouse.down();
+  const notes = await panel
+    .locator('.mdmark-table-settings-item[data-name="備考"]')
+    .boundingBox();
+  if (!notes) {
+    throw new Error("備考の行の範囲を取れない");
+  }
+  await page.mouse.move(notes.x + 4, notes.y + notes.height - 1, { steps: 5 });
+  await expect(panel.locator(".is-drop-before, .is-drop-after")).toHaveCount(0);
+  await page.mouse.up();
+  expect(await headNames(page)).toEqual(["既定", "型", "必須"]);
+  // 実行・検証: 範囲の端の列で範囲の外へ向かう ↑ キーを押しても動かない
+  await gripOf(panel, "既定").focus();
+  await page.keyboard.press("ArrowUp");
+  expect(await headNames(page)).toEqual(["既定", "型", "必須"]);
+  await page.keyboard.press("Escape");
+  // 検証: 横にスクロールしても名前の列が左端に留まる
+  const name = table.locator("tbody tr").first().locator("td").first();
+  const before = await name.boundingBox();
+  await table.locator("table").evaluate((el) => {
+    el.scrollLeft = 200;
+  });
+  const after = await name.boundingBox();
+  expect(Math.round(after?.x ?? 0)).toBe(Math.round(before?.x ?? -1));
+});
+
+// キーの列を階層で描き、表に無い親を補い、ツールチップとコピーを付ける（正常シナリオ（キーの列を階層で描く））
+test("test_normal_when_tree", async ({ page }) => {
+  // 準備
+  await stubClipboard(page, "allow");
+  await openPage(page, builtRoot);
+  // 実行
+  await mountDocument(page, { markdown: treeMarkdown() });
+  // 検証: 補った親の行
+  for (const path of [
+    "features",
+    "aliases[]",
+    "aliases[].metadata",
+    "aliases[].metadata.alias_type",
+  ]) {
+    const row = treeRow(page, path);
+    await expect(row).toHaveClass(/\bis-virtual\b/);
+    await expect(row.locator(".mdmark-tree-name")).toHaveCSS(
+      "font-style",
+      "italic",
+    );
+    for (const cell of await row.locator("td:not(.mdmark-tree-key)").all()) {
+      await expect(cell).toHaveText("");
+    }
+  }
+  // 検証: 末尾の名前・縦線・横線
+  const leaf = treeRow(page, "aliases[].metadata.alias_type.type");
+  await expect(leaf.locator(".mdmark-tree-name")).toHaveText("type");
+  await expect(leaf.locator(".mdmark-tree-guide")).toHaveCount(3);
+  await expect(leaf.locator("td.mdmark-tree-key")).toHaveCSS(
+    "border-top-width",
+    "0px",
+  );
+  // 実行・検証: ポインターを乗せるとツールチップ
+  await leaf.locator(".mdmark-tree-name").hover();
+  await expect(leaf.getByRole("tooltip")).toHaveText(
+    "aliases[].metadata.alias_type.type",
+  );
+  // 実行・検証: ⧉ でコピー
+  await leaf.locator("button.mdmark-tree-copy").click();
+  await expect(leaf.locator("button.mdmark-tree-copy")).toContainText(
+    "コピーしました",
+  );
+  expect(await writtenTexts(page)).toEqual([
+    "aliases[].metadata.alias_type.type",
+  ]);
+  // 検証: 型・必須・既定
+  await expect(
+    page.locator('#doc .mdmark-type-badge[data-type="bool"]'),
+  ).toHaveCount(2);
+  await expect(leaf.locator(".mdmark-type-chip")).toHaveText(["ref", "custom"]);
+  await expect(page.locator("#doc thead th", { hasText: "必須" })).toHaveCount(
+    0,
+  );
+  const required = treeRow(page, "features.table").locator(
+    ".mdmark-tree-required",
+  );
+  await expect(required).toHaveText("*");
+  await expect(page.locator("#doc .mdmark-tree-required")).toHaveCount(1);
+  await expect(
+    treeRow(page, "features.table").locator(".mdmark-tree-default"),
+  ).toHaveText("true");
+  await expect(page.locator("#doc thead button.mdmark-sort")).toHaveCount(0);
+});
+
+// ▾ で子孫を畳み、Shift で入れ子をまとめて開閉し、畳んだ行もコピーに含める（正常シナリオ（階層を畳む・開く））
+test("test_normal_when_tree_folded", async ({ page }) => {
+  // 準備
+  await stubClipboard(page, "allow");
+  await openPage(page, builtRoot);
+  await mountDocument(page, { markdown: treeMarkdown(" +copy") });
+  const toggle = (path: string) =>
+    treeRow(page, path).locator("button.mdmark-tree-toggle");
+  const descendants = [
+    "aliases[].id",
+    "aliases[].metadata",
+    "aliases[].metadata.alias_type",
+    "aliases[].metadata.alias_type.type",
+  ];
+  // 検証: 子を持つ行だけにボタンがあり、全ての行が見えている
+  await expect(page.locator("#doc button.mdmark-tree-toggle")).toHaveCount(4);
+  await expect(
+    treeRow(page, "features.table").locator("button.mdmark-tree-toggle"),
+  ).toHaveCount(0);
+  for (const row of await page.locator("#doc tr.mdmark-tree-row").all()) {
+    await expect(row).toBeVisible();
+  }
+  // 実行・検証: 畳む
+  await toggle("aliases[]").click();
+  for (const path of descendants) {
+    await expect(treeRow(page, path)).toBeHidden();
+  }
+  await expect(toggle("aliases[]")).toHaveAttribute("aria-expanded", "false");
+  // 実行・検証: 開くと子だけを出し、子の開閉を保つ
+  await toggle("aliases[]").click();
+  await expect(treeRow(page, "aliases[].id")).toBeVisible();
+  // 実行・検証: Shift で入れ子をまとめて畳み、開く
+  await toggle("aliases[]").click({ modifiers: ["Shift"] });
+  await expect(toggle("aliases[].metadata")).toHaveAttribute(
+    "aria-expanded",
+    "false",
+  );
+  await toggle("aliases[]").click({ modifiers: ["Shift"] });
+  for (const path of descendants) {
+    await expect(treeRow(page, path)).toBeVisible();
+  }
+  // 実行・検証: Enter・Space
+  await toggle("aliases[]").focus();
+  await page.keyboard.press("Enter");
+  await expect(treeRow(page, "aliases[].id")).toBeHidden();
+  await page.keyboard.press(" ");
+  await expect(treeRow(page, "aliases[].id")).toBeVisible();
+  // 実行・検証: 畳んだままコピーする
+  await toggle("aliases[]").click();
+  await page.locator("#doc button.mdmark-copy").click();
+  await page
+    .locator('#doc button.mdmark-copy-format[data-format="markdown"]')
+    .click();
+  await expect(page.locator("#doc button.mdmark-copy")).toContainText(
+    "コピーしました",
+  );
+  expect((await writtenTexts(page))[0]).toContain("| aliases[].id |");
+});
+
+// 末尾の名前で照合し、当たった行と親の行を残し、件数は補った行を数えない（正常シナリオ（階層の表を絞り込む））
+test("test_normal_when_tree_filtered", async ({ page }) => {
+  // 準備
+  await openPage(page, builtRoot);
+  await mountDocument(page, {
+    markdown: treeMarkdown(" +count filter=キー:text"),
+  });
+  const count = page.locator("#doc .mdmark-table-count");
+  await treeRow(page, "features").locator("button.mdmark-tree-toggle").click();
+  const shown = () =>
+    page
+      .locator("#doc tr.mdmark-tree-row:visible")
+      .evaluateAll((rows) =>
+        rows.map((row) => (row as HTMLElement).dataset.path),
+      );
+  // 実行・検証: id
+  await filterByText(page, "キー", "id");
+  await expect.poll(shown).toEqual(["aliases[]", "aliases[].id"]);
+  await expect(
+    treeRow(page, "aliases[].id").locator("mark.mdmark-tree-hit"),
+  ).toHaveText("id");
+  await expect(treeRow(page, "aliases[]").locator("mark")).toHaveCount(0);
+  await expect(count).toContainText("1 / 4 件");
+  // 実行・検証: metadata
+  await filterByText(page, "キー", "metadata");
+  await expect.poll(shown).toEqual(["aliases[]", "aliases[].metadata"]);
+  await expect(
+    treeRow(page, "aliases[].metadata").locator("mark.mdmark-tree-hit"),
+  ).toHaveText("metadata");
+  await expect(count).toContainText("0 / 4 件");
+  // 実行・検証: 解除すると絞り込む前の開閉に戻る
+  await filterByText(page, "キー", "");
+  await expect(treeRow(page, "features.table")).toBeHidden();
+  await expect(treeRow(page, "aliases[].id")).toBeVisible();
+});
+
+// 行を押すと同じ親の範囲の縦線を濃くし、別の行で付け替え、もう一度押すと解く（正常シナリオ（階層の行を選ぶ））
+test("test_normal_when_tree_row_selected", async ({ page }) => {
+  // 準備
+  await stubClipboard(page, "allow");
+  await openPage(page, builtRoot);
+  await mountDocument(page, { markdown: treeMarkdown() });
+  const activeRows = () =>
+    page
+      .locator("#doc tr.mdmark-tree-row")
+      .evaluateAll((rows) =>
+        rows
+          .filter((row) =>
+            row
+              .querySelector(".mdmark-tree-guide")
+              ?.classList.contains("is-active"),
+          )
+          .map((row) => (row as HTMLElement).dataset.path),
+      );
+  const html = treeRow(page, "features.html");
+  // 実行・検証: features.html の行を押す
+  await html.locator("td").last().click();
+  await expect(html).toHaveAttribute("aria-selected", "true");
+  expect(await activeRows()).toEqual(["features.table", "features.html"]);
+  const activeWidth = await page
+    .locator("#doc .mdmark-tree-guide.is-active")
+    .first()
+    .evaluate((el) => getComputedStyle(el).borderLeftWidth);
+  const width = await treeRow(page, "aliases[].id")
+    .locator(".mdmark-tree-guide")
+    .first()
+    .evaluate((el) => getComputedStyle(el).borderLeftWidth);
+  expect(activeWidth).not.toBe(width);
+  // 実行・検証: 別の行を押す
+  await treeRow(page, "aliases[].id").locator("td").last().click();
+  await expect(html).toHaveAttribute("aria-selected", "false");
+  expect(await activeRows()).toContain("aliases[].id");
+  // 実行・検証: 同じ行をもう一度押す
+  await treeRow(page, "aliases[].id").locator("td").last().click();
+  await expect(page.locator("#doc .mdmark-tree-guide.is-active")).toHaveCount(
+    0,
+  );
+  // 実行・検証: ⧉ と ▾ では選ばない
+  await html.locator("button.mdmark-tree-copy").click();
+  await treeRow(page, "aliases[]").locator("button.mdmark-tree-toggle").click();
+  await expect(page.locator('#doc tr[aria-selected="true"]')).toHaveCount(0);
+});
+
+// 表の行と見本の行を互いに強調し、見本の表示を切り替える（正常シナリオ（YAML の見本と連動する））
+test("test_normal_when_tree_linked_to_example", async ({ page }) => {
+  // 準備
+  await openPage(page, builtRoot);
+  await mountDocument(page, { markdown: TREE_EXAMPLE_MARKDOWN });
+  const example = page.locator("#doc aside.mdmark-tree-example");
+  const toggle = page.locator("#doc button.mdmark-tree-example-toggle");
+  const linked = example.locator(
+    '[role="tabpanel"]:not([hidden]) .mdmark-yaml-line.is-linked',
+  );
+  // 検証: 表の下に見本が既定で出る
+  await expect(example).toBeVisible();
+  await expect(example).toHaveAttribute("aria-label", "見本: 設定の見本");
+  await expect(example.getByRole("tab")).toHaveText(["最小", "エイリアス"]);
+  // 実行・検証: features.table の行を押す
+  await treeRow(page, "features.table").locator("td").last().click();
+  await expect(linked).toHaveCount(1);
+  await expect(linked).toContainText("table:");
+  // 実行・検証: 選んだキーが開いているタブに無いとき
+  await treeRow(page, "aliases[].metadata.alias_type.type")
+    .locator("td")
+    .last()
+    .click();
+  await expect(linked).toHaveCount(0);
+  // 実行・検証: エイリアスのタブで id の行を押す
+  await example.getByRole("tab", { name: "エイリアス" }).click();
+  await example.locator('.mdmark-yaml-line[data-path="aliases[].id"]').click();
+  await expect(treeRow(page, "aliases[].id")).toHaveAttribute(
+    "aria-selected",
+    "true",
+  );
+  // 実行・検証: 見本を隠す
+  await expect(toggle).toHaveText(/見本を隠す/);
+  await toggle.click();
+  await expect(example).toBeHidden();
+  await expect(toggle).toHaveText(/見本を表示/);
+  await expect(toggle).toHaveAttribute("aria-expanded", "false");
+});
+
+// 表に無い列名の tree=・tree= の無い type=・無い見出しの example= の表の上に書き方の警告を置き、読めた指定だけで描く（異常シナリオ（読めない階層の指定））
+test("test_error_when_tree_options_invalid", async ({ page }) => {
+  // 準備
+  await openPage(page, builtRoot);
+  const table = (mark: string) =>
+    treeMarkdown().replace(
+      "<!-- table: data tree=キー type=型 required=必須 default=既定 -->",
+      `<!-- table: ${mark} -->`,
+    );
+  // 実行
+  await mountDocument(page, {
+    markdown: [
+      table("data tree=キー名"),
+      table("data type=型"),
+      table("data tree=キー example=見本"),
+    ].join("\n"),
+  });
+  // 検証
+  const warnings = page.locator("#doc .mdmark-syntax-warning");
+  await expect(warnings).toHaveCount(3);
+  await expect(warnings.nth(0)).toContainText("tree=キー名");
+  await expect(warnings.nth(1)).toContainText("type=型");
+  await expect(warnings.nth(2)).toContainText("example=見本");
+  const tables = page.locator("#doc .mdmark-table");
+  await expect(tables.nth(0).locator("tr.mdmark-tree-row")).toHaveCount(0);
+  await expect(tables.nth(1).locator(".mdmark-type-badge")).toHaveCount(0);
+  await expect(tables.nth(1)).toContainText("bool");
+  await expect(
+    tables.nth(2).locator("tr.mdmark-tree-row").first(),
+  ).toBeVisible();
+  await expect(page.locator("#doc .mdmark-tree-example")).toHaveCount(0);
+  await expect(
+    page.locator("#doc button.mdmark-tree-example-toggle"),
+  ).toHaveCount(0);
 });

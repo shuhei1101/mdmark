@@ -3,7 +3,15 @@ import type { Page } from "@playwright/test";
 import { hintFlowMarkdown, NODE_HINT, sampleHtml, wrapHtml } from "../chart.ts";
 import { expect, openStandalone, runCli, test, writeFiles } from "../cli.ts";
 import { TERM_INDEX } from "../diagram.ts";
-import { mountDocument, openPage } from "../dist-page.ts";
+import {
+  mountDocument,
+  openPage,
+  RANGE_COLOR,
+  RANGE_CSS,
+  RANGE_TS,
+  rangeMarkdown,
+  routeTranspiler,
+} from "../dist-page.ts";
 
 // 範囲の外に置く `html` のコードブロック
 const OUTSIDE = ["```html", "<p>範囲の外</p>", "```", ""].join("\n");
@@ -229,6 +237,83 @@ test("test_normal_when_exported", async ({ builtRoot, tempDir, page }) => {
   ).toHaveCount(8);
   await zoomAndDragChart(page);
   await readHintsAndTerm(page);
+  expect(opened.externalRequests()).toEqual([]);
+  expect(opened.pageErrors()).toEqual([]);
+});
+
+/** 見本の HTML に class `box` の箱を足し、範囲の css と ts を加えた範囲と、範囲の外の同じ class の箱の範囲 */
+function rangeScriptsMarkdown(options: { script?: boolean } = {}): string {
+  return [
+    rangeMarkdown(
+      { css: RANGE_CSS, ts: RANGE_TS },
+      [sampleHtml(options), '<div class="box">範囲の箱</div>'].join("\n"),
+    ),
+    rangeMarkdown({}, '<div class="box">範囲の外の箱</div>'),
+  ].join("\n");
+}
+
+/** 範囲の箱の色と、押したときの根の要素の class の付け外しを確かめる */
+async function checkRangeBox(page: Page, root: string): Promise<void> {
+  const scope = page.locator(`${root} .mdmark-html[data-html-scope="0"]`);
+  const box = scope.locator(".box");
+  await expect(box).toHaveCSS("background-color", RANGE_COLOR);
+  await expect(
+    page.locator(`${root} .mdmark-html[data-html-scope="1"] .box`),
+  ).not.toHaveCSS("background-color", RANGE_COLOR);
+  await expect(async () => {
+    await box.click();
+    await expect(scope).toHaveClass(/\bis-open\b/, { timeout: 500 });
+  }).toPass();
+  await box.click();
+  await expect(scope).not.toHaveClass(/\bis-open\b/);
+}
+
+// 範囲の css と ts を当てた HTML の中でチャートとヒントと用語を読み、書き出した HTML でも同じように効く（正常シナリオ（範囲のスクリプトと CSS））
+test("test_normal_when_range_scripts", async ({ builtRoot, tempDir, page }) => {
+  // 準備
+  await routeTranspiler(page);
+  await openPage(page, builtRoot);
+  // 実行
+  await mountDocument(page, {
+    markdown: rangeScriptsMarkdown(),
+    index: TERM_INDEX,
+    config: { features: { "html-scripts": true } },
+  });
+  // 検証: 範囲の css と ts
+  await checkRangeBox(page, "#doc");
+  // 検証: script 要素は残らず、実行されない
+  await expect(page.locator("#doc script")).toHaveCount(0);
+  expect(await page.evaluate(() => "__mdmarkScriptRan" in window)).toBe(false);
+  // 検証: チャートの拡大・縮小とヒント・用語
+  await expect(chartOf(page)).toHaveCount(1);
+  await zoomAndDragChart(page);
+  await readHintsAndTerm(page);
+  // 実行: 書き出す
+  const dir = await tempDir();
+  await writeFiles(dir, {
+    "mdmark.config.yaml": [
+      "index: index.yaml",
+      "features:",
+      "  html-scripts: true",
+      "",
+    ].join("\n"),
+    "index.yaml": EXPORT_INDEX,
+    "guide.md": rangeScriptsMarkdown({ script: false }),
+  });
+  const exported = await runCli(
+    builtRoot,
+    ["export", "guide.md", "--out", "out/guide.html"],
+    dir,
+  );
+  // 検証: 外への要求を止めて開いても同じように効く
+  expect(exported.code).toBe(0);
+  await page.unrouteAll({ behavior: "ignoreErrors" });
+  await page.route(/^https?:\/\//, (route) => route.abort());
+  const opened = await openStandalone(page, {
+    tempDir,
+    htmlFile: join(dir, "out", "guide.html"),
+  });
+  await checkRangeBox(page, "article");
   expect(opened.externalRequests()).toEqual([]);
   expect(opened.pageErrors()).toEqual([]);
 });

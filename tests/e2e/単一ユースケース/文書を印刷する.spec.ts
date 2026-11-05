@@ -7,6 +7,8 @@ import {
   removeDistRoot,
   routeSyntax,
   sendPrintEvent,
+  TREE_EXAMPLE_MARKDOWN,
+  treeRow,
 } from "../dist-page.ts";
 import { colorSvg, readMediaSamples, routePageFiles } from "../media.ts";
 
@@ -276,7 +278,7 @@ test("test_normal_when_table_features_printed", async ({ page }) => {
   await sendPrintEvent(page, "beforeprint");
   // 検証
   const doc = page.locator("#doc");
-  await expect(doc.locator("button.mdmark-columns-toggle")).toBeHidden();
+  await expect(doc.locator("button.mdmark-table-settings-toggle")).toBeHidden();
   await expect(doc.locator("button.mdmark-copy")).toBeHidden();
   await expect(doc.locator("button.mdmark-totals-toggle")).toBeHidden();
   await expect(doc.locator(".mdmark-row-anchor").first()).toBeHidden();
@@ -746,4 +748,39 @@ test("test_normal_when_pagebreak_details_wide", async ({ page }) => {
   await sendPrintEvent(page, "afterprint");
   // 検証
   await expect(page.getByText("補足の段落")).toBeHidden();
+});
+
+// 畳んだ階層の行と隠した見本を、印刷の前に開いて出し、印刷の後に戻す（正常シナリオ（畳んだ階層の行と隠した見本を開いて出す））
+test("test_normal_when_tree_folded", async ({ page }) => {
+  // 準備
+  await openPage(page, builtRoot);
+  await mountDocument(page, { markdown: TREE_EXAMPLE_MARKDOWN });
+  const doc = page.locator("#doc");
+  const example = doc.locator("aside.mdmark-tree-example");
+  await treeRow(page, "aliases[]").locator("button.mdmark-tree-toggle").click();
+  await doc.locator("button.mdmark-tree-example-toggle").click();
+  await expect(treeRow(page, "aliases[].id")).toBeHidden();
+  await expect(example).toBeHidden();
+  // 実行: 印刷の前
+  await page.emulateMedia({ media: "print" });
+  await sendPrintEvent(page, "beforeprint");
+  // 検証: 全ての行と見本の全てのタブの中身が出て、ボタンは出ない
+  for (const row of await doc.locator("tr.mdmark-tree-row").all()) {
+    await expect(row).toBeVisible();
+  }
+  await expect(example).toBeVisible();
+  for (const line of ["table: true", "type: custom"]) {
+    await expect(example.getByText(line)).toBeVisible();
+  }
+  await expect(doc.locator("button.mdmark-tree-toggle").first()).toBeHidden();
+  await expect(doc.locator("button.mdmark-tree-copy").first()).toBeHidden();
+  await expect(doc.locator("button.mdmark-tree-example-toggle")).toBeHidden();
+  // 実行・検証: 印刷の後
+  await sendPrintEvent(page, "afterprint");
+  await page.emulateMedia({ media: "screen" });
+  await expect(treeRow(page, "aliases[].id")).toBeHidden();
+  await expect(
+    treeRow(page, "aliases[].metadata.alias_type.type"),
+  ).toBeHidden();
+  await expect(example).toBeHidden();
 });
