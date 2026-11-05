@@ -237,7 +237,7 @@ export function attachTermTips(options: {
       wrap.classList.add(DISMISSED_CLASS);
     }
   };
-  /** 開いている語の枠（語とツールチップ）の外の `pointerdown`: 閉じる。iOS の Safari はタップした語に `:hover` を残し、`pointerleave`・`focusout` だけでは閉じないため。語の `pointerdown` より先に受けるため、捕捉の段で受ける */
+  /** 開いている語の枠（語とツールチップ）の外の `pointerdown`: 閉じて `is-dismissed` を付ける。iOS の Safari はタップした語に `:hover` を残し、`pointerleave`・`focusout` だけでは閉じず、語に残る `:hover`・`:focus-within` では CSS がツールチップを出し続けるため。語の `pointerdown` より先に受けるため、捕捉の段で受ける */
   const onPointerdown = (event: PointerEvent): void => {
     if (!(event.target instanceof Node)) {
       return;
@@ -245,6 +245,7 @@ export function attachTermTips(options: {
     for (const wrap of wraps) {
       if (wrap.classList.contains(OPEN_CLASS) && !wrap.contains(event.target)) {
         close(wrap);
+        wrap.classList.add(DISMISSED_CLASS);
       }
     }
   };
