@@ -2493,3 +2493,4 @@ test_files:
   - tests/unit/src/render/syntax/cards.test.ts
   - tests/unit/src/render/syntax/table-cells.test.ts
   - tests/unit/src/render/syntax/footnotes.test.ts
+  - tests/unit/src/render/syntax/warnings.test.ts
