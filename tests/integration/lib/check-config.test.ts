@@ -809,3 +809,110 @@ test("test_normal_when_diagram_auto_layout", async () => {
   expect(lines.at(-1)).toBe("ずれ 1 件");
   expect(await snapshot(dir)).toEqual(before);
 });
+
+/** `docs/*.md` を build の対象にした設定 */
+const DOCS_CONFIG = [
+  "build:",
+  '  include: ["docs/*.md"]',
+  "  out: dist/docs.html",
+  "",
+].join("\n");
+
+/** フォルダの中のファイルの中身を、名前の順に返す（変わっていないことを確かめる） */
+async function snapshotFiles(dir: string, paths: string[]): Promise<string[]> {
+  return Promise.all(paths.map((path) => readFile(join(dir, path), "utf8")));
+}
+
+// include のマーカーが指すファイル・見出し・行の範囲が無いものを include_target_missing にする（正常系（取り込み先が無い））
+test("test_normal_when_include_targets_missing", async () => {
+  // 準備
+  const dir = await createTempDir();
+  const files = {
+    "mdmark.config.yaml": DOCS_CONFIG,
+    "docs/a.md": [
+      "# A",
+      "",
+      "<!-- include: missing.md -->",
+      "",
+      "<!-- include: 共通/手順.md#実行 -->",
+      "",
+    ].join("\n"),
+    "docs/b.md": [
+      "# B",
+      "<!-- include: 共通/手順.md#無い見出し -->",
+      "",
+      "<!-- include: ../src/app.ts#L8-L10 -->",
+      "",
+    ].join("\n"),
+    "docs/共通/手順.md": "## 実行\n\n実行の段落\n",
+    "src/app.ts": "1\n2\n3\n4\n5\n",
+  };
+  await writeFiles(dir, files);
+  const before = await snapshotFiles(dir, Object.keys(files));
+  // 実行
+  const result = await runCli(["check"], dir);
+  // 検証
+  expect(result.code).toBe(1);
+  const lines = linesOf(result.stdout);
+  const lineOf = (prefix: string) =>
+    lines.find((line) => line.startsWith(prefix)) ?? "";
+  expect(lineOf("docs/a.md:3: include_target_missing:")).toContain(
+    "missing.md",
+  );
+  expect(lineOf("docs/b.md:2: include_target_missing:")).toContain(
+    "無い見出し",
+  );
+  const range = lineOf("docs/b.md:4: include_target_missing:");
+  expect(range).toContain("L8-L10");
+  expect(range).toContain("5 行");
+  for (const line of [lineOf("docs/a.md:3:"), lineOf("docs/b.md:2:"), range]) {
+    expect(line).toContain("修正してください");
+  }
+  expect(lines.some((line) => line.startsWith("docs/a.md:5"))).toBe(false);
+  expect(lines.at(-1)).toBe("ずれ 3 件");
+  expect(await snapshotFiles(dir, Object.keys(files))).toEqual(before);
+});
+
+// 循環する取り込みを include_circular、設定ファイルのフォルダの外を指す取り込みを include_target_missing にする（正常系（取り込みが循環する・フォルダの外を指す））
+test("test_normal_when_include_circular_or_outside", async () => {
+  // 準備
+  const parent = await createTempDir();
+  const dir = join(parent, "root");
+  const files = {
+    "root/mdmark.config.yaml": [
+      "build:",
+      '  include: ["docs/a.md"]',
+      "  out: dist/docs.html",
+      "",
+    ].join("\n"),
+    "root/docs/a.md": [
+      "# A",
+      "",
+      "<!-- include: b.md -->",
+      "",
+      "<!-- include: ../../outside.md -->",
+      "",
+    ].join("\n"),
+    "root/docs/b.md": "# B\n<!-- include: a.md -->\n",
+    "outside.md": "<!-- include: nowhere.md -->\n",
+  };
+  await writeFiles(parent, files);
+  const before = await snapshotFiles(parent, Object.keys(files));
+  // 実行
+  const result = await runCli(["check"], dir);
+  // 検証
+  expect(result.code).toBe(1);
+  const lines = linesOf(result.stdout);
+  const circular = lines.find((line) =>
+    line.startsWith("docs/b.md:2: include_circular:"),
+  );
+  expect(circular).toContain("a.md → b.md → a.md");
+  expect(circular).toContain("修正してください");
+  const outside = lines.find((line) =>
+    line.startsWith("docs/a.md:5: include_target_missing:"),
+  );
+  expect(outside).toContain("../../outside.md");
+  expect(outside).toContain("設定ファイルのフォルダの外");
+  expect(lines.some((line) => line.includes("nowhere.md"))).toBe(false);
+  expect(await snapshotFiles(parent, Object.keys(files))).toEqual(before);
+});
