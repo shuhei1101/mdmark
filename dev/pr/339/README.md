@@ -1,0 +1,1 @@
+# dev/mock/files.yaml で拡張子違いの素材の ID を分ける
