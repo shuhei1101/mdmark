@@ -1127,7 +1127,7 @@ functions:
     kind: 関数
     scope: internal
     summary: mount が描いた用語の下線に、ツールチップを開閉する操作を付ける
-    description: '用語のツールチップと関連文書の一覧の題の `id` をページで一意に振り直し、`aria-describedby`・`aria-details`・`aria-labelledby` もそれに合わせる。開閉は `mdmark-term-wrap` の class で表す（モック `dev/mock/refs/27/assets/glossary.js` のとおり）: ポインターを載せたとき・フォーカスしたときにほかのツールチップを閉じて `is-open` を付け、画面に対して置く。置く側は `chooseTipSide`（語の最初の行の上端と最後の行の下端、`gap` は 0）で決め、上なら最初の行の上、下なら最後の行の下に置いて `is-below` も付ける。ポインターもフォーカスも離れたら 150 ミリ秒待って `is-open`・`is-below`・`is-dismissed` を外す。Esc では `is-open` を外して `is-dismissed` を付け、ツールチップの中にフォーカスがあれば語へ戻す。関連文書・エイリアスのリンク・コマンドのコピーのボタンのあるツールチップは語の次の Tab で中のリンクとボタンへ移れ、中にフォーカスがある間は出したままにする。コピーのボタン（`button.mdmark-term-tip-copy`）を押したら、同じ区分の `code` の文字を `copyText` で書き、書けたらボタンを `copied`（`data-state` と中身を `renderTermTipCopy` で替える）にして `COPIED_NOTICE_MS` 後に `idle` に戻し、書けなければ `failed` にして次に押すまで残す。`copied`・`failed` にしたときは同じ区分の `role="status"` の要素に `コマンドを{文言}` を入れ、`idle` に戻したときは空にする。押した後もツールチップを出したままにし、例外を外へ出さない。押し直したときは前の戻す待ちを止める。印刷の前は開いたツールチップを閉じる（下線とツールチップを外すのは印刷の CSS）。返す関数で付けた操作と戻す待ちを外し、付けた class を消す'
+    description: '用語のツールチップと関連文書の一覧の題の `id` をページで一意に振り直し、`aria-describedby`・`aria-details`・`aria-labelledby` もそれに合わせる。開閉は `mdmark-term-wrap` の class で表す（モック `dev/mock/refs/27/assets/glossary.js` のとおり）: ポインターを載せたとき・フォーカスしたときにほかのツールチップを閉じて `is-open` を付け、画面に対して置く。置く側は `chooseTipSide`（語の最初の行の上端と最後の行の下端、`gap` は 0）で決め、上なら最初の行の上、下なら最後の行の下に置いて `is-below` も付ける。ポインターもフォーカスも離れたら 150 ミリ秒待って `is-open`・`is-below`・`is-dismissed` を外す。Esc では `is-open` を外して `is-dismissed` を付け、ツールチップの中にフォーカスがあれば語へ戻す。`pointerType` が `touch` のときは `pointerenter`・`pointerleave` で開閉せず、語（`mdmark-term`）の `pointerdown` で開閉を切り替え（ツールチップの中の `pointerdown` では切り替えない）、開いている間は `document` の捕捉の段の `pointerdown` の対象が開いている `mdmark-term-wrap` の外なら閉じる（iOS の Safari はタップした語に `:hover` を残すため、`pointerleave`・`focusout` だけでは閉じない）。関連文書・エイリアスのリンク・コマンドのコピーのボタンのあるツールチップは語の次の Tab で中のリンクとボタンへ移れ、中にフォーカスがある間は出したままにする。コピーのボタン（`button.mdmark-term-tip-copy`）を押したら、同じ区分の `code` の文字を `copyText` で書き、書けたらボタンを `copied`（`data-state` と中身を `renderTermTipCopy` で替える）にして `COPIED_NOTICE_MS` 後に `idle` に戻し、書けなければ `failed` にして次に押すまで残す。`copied`・`failed` にしたときは同じ区分の `role="status"` の要素に `コマンドを{文言}` を入れ、`idle` に戻したときは空にする。押した後もツールチップを出したままにし、例外を外へ出さない。押し直したときは前の戻す待ちを止める。印刷の前は開いたツールチップを閉じる（下線とツールチップを外すのは印刷の CSS）。返す関数で付けた操作と戻す待ちを外し、付けた class を消す'
     args:
       - name: options
         type: '{ root: HTMLElement; placement: TooltipPlacement }'
@@ -1168,6 +1168,24 @@ functions:
         condition: '`test_attach_term_tips_copy_command` と同じ要素でボタンを押す'
         mock: '`navigator.clipboard.writeText` を reject する関数に差し替える。時計を偽のタイマーにする'
         expected: ボタンが `data-state="failed"` で文言 `コピーできませんでした`、`role="status"` が `コマンドをコピーできませんでした`。2000 ミリ秒進めても変わらず、未処理の例外が無い
+      - name: test_attach_term_tips_when_touch_tapped
+        case: 正常
+        summary: タッチの 1 回のタップで開き、もう一度のタップで閉じる
+        condition: 閉じた語に `pointerType` が `touch` の `pointerenter`・`pointerdown`・`pointerup`・`pointerleave` をこの順に送って語の `focus()` を呼び、続けて同じ 4 つをもう一度送る（既にフォーカスを持つ語では `focus` は発火しない）
+        mock: タイマーを `vi.useFakeTimers` で進める
+        expected: 1 回目の後に `mdmark-term-wrap` が `is-open` を持ち、2 回目の後に `is-open` を持たない
+      - name: test_attach_term_tips_when_touch_outside
+        case: 正常
+        summary: タッチで開いた後、外の `pointerdown` だけで閉じ、ツールチップの中では閉じない
+        condition: '`command` のエイリアスの語をタッチでタップして開き、ツールチップのコピーのボタンに `pointerType` が `touch` の `pointerdown` を送り、次に `root` の外の要素に `pointerType` が `touch` の `pointerdown` だけを送る（`pointerleave`・`focusout` は送らない）'
+        mock: タイマーを `vi.useFakeTimers` で進める
+        expected: コピーのボタンの後は `is-open` を持ち、外の後は `is-open` を持たない
+      - name: test_attach_term_tips_when_mouse_pressed
+        case: 正常
+        summary: マウスの `pointerdown` では開閉を切り替えない
+        condition: 語に `pointerType` が `mouse` の `pointerenter` を送って開き、同じ語に `pointerType` が `mouse` の `pointerdown` を送る
+        mock: なし（Chromium）
+        expected: '`pointerdown` の後も `is-open` を持つ'
     callees:
       - dev/設計書/モジュール構成/ライブラリ本体/操作.ts#functions[copyText]
       - '#functions[renderTermTipCopy]'
