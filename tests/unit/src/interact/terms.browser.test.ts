@@ -225,3 +225,123 @@ test("test_attach_term_tips_copy_command_denied", async () => {
   expect(status?.textContent).toBe("コマンドをコピーできませんでした");
   expect(rejections).toHaveLength(0);
 });
+
+/** ポインターの種類を指定したポインターのイベント */
+function pointer(type: string, pointerType: string): PointerEvent {
+  return new PointerEvent(type, {
+    pointerType,
+    bubbles: type === "pointerdown" || type === "pointerup",
+  });
+}
+
+/**
+ * 語へのタッチのタップを、実際の順序（`pointerenter`・`pointerdown`・`pointerup`・`pointerleave` の後にフォーカス）で起こす。
+ * `pointerenter`・`pointerleave` は泡立たないため、ブラウザと同じく語の枠と語の両方に送る。
+ * `focus()` は既にフォーカスを持つ語では `focus` を発火しない
+ */
+function tap(wrap: HTMLElement, term: HTMLElement): void {
+  wrap.dispatchEvent(pointer("pointerenter", "touch"));
+  term.dispatchEvent(pointer("pointerenter", "touch"));
+  term.dispatchEvent(pointer("pointerdown", "touch"));
+  term.dispatchEvent(pointer("pointerup", "touch"));
+  term.dispatchEvent(pointer("pointerleave", "touch"));
+  wrap.dispatchEvent(pointer("pointerleave", "touch"));
+  term.focus();
+}
+
+/** 語の枠と語を取り出す */
+function termParts(root: HTMLElement): {
+  wrap: HTMLElement;
+  term: HTMLElement;
+} {
+  const wrap = root.querySelector<HTMLElement>(".mdmark-term-wrap");
+  const term = root.querySelector<HTMLElement>(".mdmark-term");
+  if (!wrap || !term) {
+    throw new Error("用語の語が描かれていない");
+  }
+  return { wrap, term };
+}
+
+// タッチの 1 回のタップで開き、もう一度のタップで閉じる（正常系）
+test("test_attach_term_tips_when_touch_tapped", async () => {
+  // 準備
+  vi.useFakeTimers();
+  const { attachTermTips } = await loadTerms();
+  const root = createRootFromHtml(await termHtml());
+  detachers.push(attachTermTips({ root, placement: "top" }));
+  const { wrap, term } = termParts(root);
+  // 実行
+  tap(wrap, term);
+  vi.advanceTimersByTime(1000);
+  // 検証
+  expect(wrap.classList.contains("is-open")).toBe(true);
+  // 実行
+  tap(wrap, term);
+  vi.advanceTimersByTime(1000);
+  // 検証
+  expect(wrap.classList.contains("is-open")).toBe(false);
+});
+
+// タッチで開いた後、外の pointerdown だけで閉じ、ツールチップの中では閉じない（正常系）
+test("test_attach_term_tips_when_touch_outside", async () => {
+  // 準備
+  vi.useFakeTimers();
+  const { attachTermTips } = await loadTerms();
+  const root = createRootFromHtml(await commandHtml());
+  detachers.push(attachTermTips({ root, placement: "top" }));
+  const { wrap, term } = termParts(root);
+  const button = root.querySelector<HTMLElement>("button.mdmark-term-tip-copy");
+  const outside = document.createElement("p");
+  document.body.append(outside);
+  detachers.push(() => outside.remove());
+  tap(wrap, term);
+  // 実行: ツールチップの中のコピーのボタン
+  button?.dispatchEvent(pointer("pointerdown", "touch"));
+  vi.advanceTimersByTime(1000);
+  // 検証
+  expect(wrap.classList.contains("is-open")).toBe(true);
+  // 実行: root の外（pointerleave・focusout は送らない）
+  outside.dispatchEvent(pointer("pointerdown", "touch"));
+  vi.advanceTimersByTime(1000);
+  // 検証
+  expect(wrap.classList.contains("is-open")).toBe(false);
+});
+
+// ツールチップの中のボタンにフォーカスがある状態で語をタップすると、閉じたままになる（正常系）
+test("test_attach_term_tips_when_touch_tapped_after_button_focus", async () => {
+  // 準備
+  vi.useFakeTimers();
+  const { attachTermTips } = await loadTerms();
+  const root = createRootFromHtml(await commandHtml());
+  detachers.push(attachTermTips({ root, placement: "top" }));
+  const { wrap, term } = termParts(root);
+  const button = root.querySelector<HTMLElement>("button.mdmark-term-tip-copy");
+  tap(wrap, term);
+  button?.dispatchEvent(pointer("pointerdown", "touch"));
+  button?.focus();
+  // 実行: 語の focusin が pointerdown の後に発火する
+  tap(wrap, term);
+  vi.advanceTimersByTime(1000);
+  // 検証
+  expect(document.activeElement).toBe(term);
+  expect(wrap.classList.contains("is-open")).toBe(false);
+  // 実行
+  tap(wrap, term);
+  vi.advanceTimersByTime(1000);
+  // 検証
+  expect(wrap.classList.contains("is-open")).toBe(true);
+});
+
+// マウスの pointerdown では開閉を切り替えない（正常系）
+test("test_attach_term_tips_when_mouse_pressed", async () => {
+  // 準備
+  const { attachTermTips } = await loadTerms();
+  const root = createRootFromHtml(await termHtml());
+  detachers.push(attachTermTips({ root, placement: "top" }));
+  const { wrap, term } = termParts(root);
+  wrap.dispatchEvent(pointer("pointerenter", "mouse"));
+  // 実行
+  term.dispatchEvent(pointer("pointerdown", "mouse"));
+  // 検証
+  expect(wrap.classList.contains("is-open")).toBe(true);
+});
