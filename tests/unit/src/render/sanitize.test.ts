@@ -380,13 +380,14 @@ test("test_sanitize_embedded_when_text", async () => {
 test("test_sanitize_embedded_when_keep_classes", async () => {
   // 準備
   const { sanitizeEmbeddedWith } = await loadEmbedded();
-  const html = '<div class="box mdmark-table has-tip">箱</div>';
+  const html =
+    '<div class="box mdmark-table has-tip" data-mdmark-keep-class="x">箱</div>';
   const keepText = (text: string) => text;
   // 実行
   const kept = sanitizeEmbeddedWith(html, keepText, true);
   const dropped = sanitizeEmbeddedWith(html, keepText);
   // 検証
-  expect(kept).toBe('<div class="box">箱</div>');
+  expect(kept).toBe('<div class="box" data-mdmark-keep-class>箱</div>');
   expect(dropped).toBe("<div>箱</div>");
 });
 
