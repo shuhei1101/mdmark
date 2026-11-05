@@ -426,6 +426,6 @@ test("test_render_code_block_when_wrap", async () => {
   );
   expect(classOf(plain)).not.toContain("mdmark-code-numbered");
   for (const html of [numbered, plain]) {
-    expect(findTags(html, "mdmark-code-line")).toHaveLength(3);
+    expect(findTags(html, 'class="mdmark-code-line"')).toHaveLength(3);
   }
 });
