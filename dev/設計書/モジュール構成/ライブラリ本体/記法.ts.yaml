@@ -857,7 +857,7 @@ functions:
     container: src/render/syntax/tree.ts
     kind: 関数
     scope: internal
-    summary: コアルール。`tree` がオンなら、言語 `tree` のコードブロックを、注釈を `state.md.renderInline` で描く `parseTree` で読み、部品『ファイルツリー』（`source` は末尾の改行を除いたコードブロックの中身）にする。直前に `tree` の印があれば `readTreeOptions` で読み、読めた `open` を部品へ渡し、読めない指定の警告をツリーの前に差し込む。罫線を読めなければ警告を差し込み、コードブロックのままにする
+    summary: コアルール。`tree` がオンなら、言語 `tree` のコードブロックを、注釈を `state.md.renderInline` で描く `parseTree` で読み、部品『ファイルツリー』（`source` は末尾の改行を除いたコードブロックの中身）にする。直前に `tree` の印があれば `readTreeOptions` で読み、読めた `open` と `wrap` を部品へ渡し、読めない指定の警告をツリーの前に差し込む。罫線を読めなければ警告を差し込み、コードブロックのままにする
     args:
       - name: state
         type: StateCore
@@ -989,7 +989,7 @@ functions:
     container: src/render/syntax/warnings.ts
     kind: 関数
     scope: internal
-    summary: 部品『書き方の警告』の HTML に `markOwn` を掛けて `html_block` のトークンにし、指定の位置に差し込む
+    summary: 部品『書き方の警告』の HTML に `markOwn` を掛けて `html_block` のトークンにし、トークンの `meta.warning` に警告の種類（図の部品の定義は `diagram_invalid`、ほかは `syntax_warning`）・文・警告の元になったマーカーのトークン（範囲なら開きのマーカー）の `map` の開始の行を入れて、指定の位置に差し込む。書き方の警告を置く処理は全て `pushWarning` か `warningBlock` を通す（今 `renderSyntaxWarning` を直に呼ぶ `src/render/marks.ts`・`src/render/syntax/html.ts` も置き換える。埋め込んだ HTML の中の図の部品の警告は、`warningBlock` が作ったトークンの HTML を範囲の HTML に入れ、その `meta.warning` を範囲の `html_block` の `meta.warnings` に範囲の開きのマーカーの行で並べる。`mount` が拡張を読んだ後にブラウザで置く `src/libraries.ts` の警告はトークンを作らないため対象外）
     args:
       - name: state
         type: StateCore
@@ -1000,9 +1000,13 @@ functions:
         required: true
         description: 差し込むトークンの位置
       - name: warning
-        type: '{ mark?: string; message: string; items?: WarningItem[] }'
+        type: '{ mark?: string; message: string; items?: WarningItem[]; kind?: "diagram_invalid" | "syntax_warning"; line?: number }'
         required: true
-        description: 部品へ渡す値（文言は画面設計『文書』の書き方の警告）
+        description: 部品へ渡す値（文言は画面設計『文書』の書き方の警告）。`kind` は省くと `syntax_warning`、`line` は警告の元のマーカーのトークンの `map[0]`（マーカーのトークンを持たない警告は省く）
+      - name: source
+        type: Token | undefined
+        required: false
+        description: 警告の元になったマーカーのトークン（範囲なら開きのマーカー）。`warning.line` が無ければ、その `map[0]` を警告の行にする。マーカーを持つ警告は全て渡す（`warningBlock` も同じ）
     side_effects: '`state.tokens` に足す'
     callees:
       - dev/設計書/モジュール構成/ライブラリ本体/部品.ts#functions[renderSyntaxWarning]
@@ -1243,14 +1247,14 @@ functions:
     container: src/render/syntax/code-blocks.ts
     kind: 関数
     scope: internal
-    summary: '`code` の印の引数を、題・行番号の有無・強調する行・最初から畳む行に読む。知らないキー・指定、読めない `highlight=`・`fold=` の番号、コードブロックの行の数を超える行の番号は、当てずに警告にする。`fold=` は `highlight=` と同じ書き方で読み取る'
+    summary: '`code` の印の引数を、題・行番号の有無・強調する行・最初から畳む行・折り返すか（`wrap`。値を持つ `wrap=` は当てずに警告にする）に読む。知らないキー・指定、読めない `highlight=`・`fold=` の番号、コードブロックの行の数を超える行の番号は、当てずに警告にする。`fold=` は `highlight=` と同じ書き方で読み取る'
     args:
       - name: options
         type: '{ args: MdmarkMarkArgs; lineCount: number }'
         required: true
         description: '`args` は `parseMarkArgs` が読んだ印の引数、`lineCount` は印を外した後のコードブロックの行の数'
     returns:
-      type: '{ title: string; lineNumbers: boolean; highlights: Set<number>; folds: Set<number>; warnings: WarningItem[] }'
+      type: '{ title: string; lineNumbers: boolean; highlights: Set<number>; folds: Set<number>; wrap: boolean; warnings: WarningItem[] }'
       description: 題（無ければ空）・行番号を出すか・強調する行の番号（1 から）・最初から畳む行の番号（1 から）・読めなかった指定
     unit_tests:
       - name: test_read_code_spec
@@ -1277,6 +1281,12 @@ functions:
         condition: '`fold=2,4-5,99`、`lineCount` が 6'
         mock: なし
         expected: '`folds` が 2・4・5、`warnings` に `99` の項目がある'
+      - name: test_read_code_spec_when_wrap
+        case: 正常
+        summary: wrap を読み、値を持つ wrap= を警告にする
+        condition: '`lines wrap` と `wrap=yes`、`lineCount` が 3'
+        mock: なし
+        expected: 1 つ目は `wrap` が `true` で `warnings` が空。2 つ目は `wrap` が `false` で、`warnings` に `wrap=yes` と `wrap` と書く直し方の項目がある
   - name: readLineMarks
     title: コードの行の印を読む
     container: src/render/syntax/code-blocks.ts
@@ -1321,7 +1331,7 @@ functions:
     container: src/render/syntax/code-blocks.ts
     kind: 関数
     scope: internal
-    summary: 'コアルール。残っている `fence` のトークンごとに、情報文字列を `splitInfoString` で言語とファイル名に分けてから次を行う。`code` がオンのときは `readLineMarks` で行を読み、直前のトークンが `code` の印なら `readCodeSpec` で指定を読み、全てのコードブロックを部品『コードブロック』（言語・ファイル名・題・行番号・行と、`syntax` がオンなら言語を `syntaxLanguageOf` で引いた色分けの言語。`copyState` は渡さない）の `ownBlock` に置き換える。帯の右端のコピーのボタンは `mount` が付ける。`code` がオフのときは行の印を外さず中身の行をそのまま使い、`syntax` がオンで色分けの言語を持つコードブロックだけを帯を持たない部品（`bar: false`）に置き換え、それ以外は `fence` のまま情報文字列の最初の語を言語に書き換える（`ts:app.ts` の `code` の class を `language-ts` にし、`:` の前が空なら最初の語を外す）。`code` がオンのときは、`readFolds` で行にインデントのレベル・畳む行の数・`fold=` の畳んだ状態を付けてから部品へ渡す。`readCodeSpec` と `readLineMarks` と `readFolds` の読めない指定はコードブロックの前に警告を差し込む。後ろが `fence` でない `code` の印の場所にも警告を差し込む（`code` がオンのときだけ）。言語 `tree`・図の部品・埋め込んだ HTML のコードブロックは、先のコアルールが最初の語との一致で `fence` でなくしているため当たらず、`tree:src` のように `:ファイル名` を付けたものはここで普通のコードブロックとして描く'
+    summary: 'コアルール。残っている `fence` のトークンごとに、情報文字列を `splitInfoString` で言語とファイル名に分けてから次を行う。`code` がオンのときは `readLineMarks` で行を読み、直前のトークンが `code` の印なら `readCodeSpec` で指定を読み、全てのコードブロックを部品『コードブロック』（言語・ファイル名・題・行番号・`wrap`・行と、`syntax` がオンなら言語を `syntaxLanguageOf` で引いた色分けの言語。`copyState` は渡さない）の `ownBlock` に置き換える。帯の右端のコピーのボタンは `mount` が付ける。`code` がオフのときは行の印を外さず中身の行をそのまま使い、`syntax` がオンで色分けの言語を持つコードブロックだけを帯を持たない部品（`bar: false`）に置き換え、それ以外は `fence` のまま情報文字列の最初の語を言語に書き換える（`ts:app.ts` の `code` の class を `language-ts` にし、`:` の前が空なら最初の語を外す）。`code` がオンのときは、`readFolds` で行にインデントのレベル・畳む行の数・`fold=` の畳んだ状態を付けてから部品へ渡す。`readCodeSpec` と `readLineMarks` と `readFolds` の読めない指定はコードブロックの前に警告を差し込む。後ろが `fence` でない `code` の印の場所にも警告を差し込む（`code` がオンのときだけ）。言語 `tree`・図の部品・埋め込んだ HTML のコードブロックは、先のコアルールが最初の語との一致で `fence` でなくしているため当たらず、`tree:src` のように `:ファイル名` を付けたものはここで普通のコードブロックとして描く'
     args:
       - name: state
         type: StateCore
@@ -1574,7 +1584,7 @@ functions:
   - name: readTreeOptions
     title: ファイルツリーの印の指定を読む
     container: src/render/syntax/tree.ts
-    summary: ファイルツリーの印の引数から `open=` を読み、読めない指定を 1 つの警告にまとめる
+    summary: ファイルツリーの印の引数から `open=` と `wrap` を読み（値を持つ `wrap=` は当てずに警告にする）、読めない指定を 1 つの警告にまとめる
     description: '`open=` の値が `all` か 1 以上の整数ならその文字を `open` にする。それ以外の `open=` の値（項目の本文に書ける値 `all`・階層の数）・`open=` 以外のキー・`キー=値` の形でない指定を、画面設計『文書』の「ファイルツリーの印の読めない指定」の項目にして 1 つの警告にまとめる'
     kind: 関数
     scope: internal
@@ -1584,7 +1594,7 @@ functions:
         required: true
         description: ファイルツリーの印
     returns:
-      type: '{ open?: string; warning?: SyntaxWarning }'
+      type: '{ open?: string; wrap: boolean; warning?: SyntaxWarning }'
       description: 開く階層と、読めない指定があれば書き方の警告
     unit_tests:
       - name: test_read_tree_options
@@ -1599,6 +1609,12 @@ functions:
         condition: '`<!-- tree: open=deep depth=2 closed -->` と `<!-- tree: open=0 -->` をそれぞれ読む'
         mock: なし
         expected: どちらも `open` が無い。1 つ目の `warning.items` の `label` が `open=deep`・`depth=`・`closed` の 3 つで、`open=deep` の本文に `all` と階層の数がある。2 つ目の `label` が `open=0`
+      - name: test_read_tree_options_when_wrap
+        case: 正常
+        summary: open= と並べた wrap を読む
+        condition: '`<!-- tree: open=all wrap -->` と `<!-- tree: wrap=1 -->` をそれぞれ読む'
+        mock: なし
+        expected: 1 つ目は `open` が `all`・`wrap` が `true` で `warning` が無い。2 つ目は `wrap` が `false` で、`warning.items` の `label` が `wrap=1`
     status: planned
     introduced:
       pr: 225
@@ -2451,32 +2467,32 @@ functions:
     scope: internal
     summary: コアルール。`icon` がオンなら、頭が `icon:` の `code_inline` のうち名前が `ICON_NAME_PATTERN` に合うものを部品『アイコン』にし、束ねた名前と `opts.icons` の名前は IconNode を渡す。合わない名前はコードのまま残して段落の前に書き方の警告を差し込む。`icon\:` は `\` を外したコード、後ろが空か空白だけのものはコードのまま
     args:
-    - name: state
-      type: StateCore
-      required: true
-      description: markdown-it の状態
+      - name: state
+        type: StateCore
+        required: true
+        description: markdown-it の状態
     side_effects: '`state.tokens` を書き換える'
     callees:
-    - dev/設計書/モジュール構成/ライブラリ本体/部品.ts#functions[renderInlineIcon]
+      - dev/設計書/モジュール構成/ライブラリ本体/部品.ts#functions[renderInlineIcon]
     unit_tests:
-    - name: test_build_inline_icons
-      case: 正常
-      condition: '`` `icon:flag` ``（束ねた名前）・`` `icon:sailboat` ``（束ねていない名前）・`` `icon\:check` ``・`` `icon:` ``'
-      expected: '`flag` は中に `svg` を持つ `span.mdmark-inline-icon`、`sailboat` は中が空の `span.mdmark-inline-icon`、`<code>icon:check</code>`、`<code>icon:</code>`'
-      mock: なし
-      summary: 束ねた名前だけ形を入れ、打ち消しと空はコードに残す
-    - name: test_build_inline_icons_when_invalid_name
-      case: 異常
-      condition: '`` `icon:Rocket!` ``'
-      expected: '`<code>icon:Rocket!</code>` が残り、段落の前に `Rocket!` を含む書き方の警告が入る'
-      mock: なし
-      summary: 名前の書き方に合わないと警告する
-    - name: test_build_inline_icons_when_icon_nodes
-      case: 正常
-      condition: '`` `icon:sailboat` `` と、`opts.icons` に `sailboat` の IconNode'
-      expected: '`sailboat` の `span` の中にその形の `svg` がある'
-      mock: なし
-      summary: 渡した形の表を使う
+      - name: test_build_inline_icons
+        case: 正常
+        condition: '`` `icon:flag` ``（束ねた名前）・`` `icon:sailboat` ``（束ねていない名前）・`` `icon\:check` ``・`` `icon:` ``'
+        expected: '`flag` は中に `svg` を持つ `span.mdmark-inline-icon`、`sailboat` は中が空の `span.mdmark-inline-icon`、`<code>icon:check</code>`、`<code>icon:</code>`'
+        mock: なし
+        summary: 束ねた名前だけ形を入れ、打ち消しと空はコードに残す
+      - name: test_build_inline_icons_when_invalid_name
+        case: 異常
+        condition: '`` `icon:Rocket!` ``'
+        expected: '`<code>icon:Rocket!</code>` が残り、段落の前に `Rocket!` を含む書き方の警告が入る'
+        mock: なし
+        summary: 名前の書き方に合わないと警告する
+      - name: test_build_inline_icons_when_icon_nodes
+        case: 正常
+        condition: '`` `icon:sailboat` `` と、`opts.icons` に `sailboat` の IconNode'
+        expected: '`sailboat` の `span` の中にその形の `svg` がある'
+        mock: なし
+        summary: 渡した形の表を使う
   - name: buildKbds
     title: キーにする
     container: src/render/syntax/kbd.ts
@@ -2484,21 +2500,21 @@ functions:
     scope: internal
     summary: コアルール。`kbd` がオンなら、頭が `kbd:` で後ろに空白以外の文字を持つ `code_inline` を、`splitKeys` で区切った部品『キー』にする。`kbd\:` と空の扱いは `buildBadges` と同じ
     args:
-    - name: state
-      type: StateCore
-      required: true
-      description: markdown-it の状態
+      - name: state
+        type: StateCore
+        required: true
+        description: markdown-it の状態
     side_effects: '`state.tokens` を書き換える'
     callees:
-    - '#functions[splitKeys]'
-    - dev/設計書/モジュール構成/ライブラリ本体/部品.ts#functions[renderKbd]
+      - '#functions[splitKeys]'
+      - dev/設計書/モジュール構成/ライブラリ本体/部品.ts#functions[renderKbd]
     unit_tests:
-    - name: test_build_kbds
-      case: 正常
-      condition: '`` `kbd:Ctrl+C` ``・`` `kbd\:Ctrl+C` ``・`` `kbd:` ``'
-      expected: '`span.mdmark-kbd-group` の中に `Ctrl`・`C` の `kbd`、`<code>kbd:Ctrl+C</code>`、`<code>kbd:</code>`'
-      mock: なし
-      summary: キーにし、打ち消しと空はコードに残す
+      - name: test_build_kbds
+        case: 正常
+        condition: '`` `kbd:Ctrl+C` ``・`` `kbd\:Ctrl+C` ``・`` `kbd:` ``'
+        expected: '`span.mdmark-kbd-group` の中に `Ctrl`・`C` の `kbd`、`<code>kbd:Ctrl+C</code>`、`<code>kbd:</code>`'
+        mock: なし
+        summary: キーにし、打ち消しと空はコードに残す
   - name: splitKeys
     title: キーに区切る
     container: src/render/syntax/kbd.ts
@@ -2506,20 +2522,20 @@ functions:
     scope: internal
     summary: '`+` で区切り、`++` を `+` のキーとして読む。キーの前後の空白を外し、空のキーを捨てる'
     args:
-    - name: text
-      type: string
-      required: true
-      description: '`kbd:` の後ろの文字'
+      - name: text
+        type: string
+        required: true
+        description: '`kbd:` の後ろの文字'
     returns:
       type: string[]
       description: キーの並び
     unit_tests:
-    - name: test_split_keys
-      case: 正常
-      condition: '`Ctrl+Shift+P`・`Ctrl++`・` Ctrl + C `'
-      expected: '`["Ctrl","Shift","P"]`・`["Ctrl","+"]`・`["Ctrl","C"]`'
-      mock: なし
-      summary: '`+` で区切り、`++` を `+` のキーにする'
+      - name: test_split_keys
+        case: 正常
+        condition: '`Ctrl+Shift+P`・`Ctrl++`・` Ctrl + C `'
+        expected: '`["Ctrl","Shift","P"]`・`["Ctrl","+"]`・`["Ctrl","C"]`'
+        mock: なし
+        summary: '`+` で区切り、`++` を `+` のキーにする'
   - name: useHighlight
     title: 蛍光ペンのルールを足す
     container: src/render/syntax/highlight.ts
@@ -2527,26 +2543,26 @@ functions:
     scope: internal
     summary: markdown-it の行内のルールとして、`==` で囲んだ文字（開きの直後と閉じの直前が空白でない）を `mark_open`・`mark_close` にし、閉じの直後の `{color=色}` を色の名前として読んで `data-color` に写す。`highlight` がオフのときはルールを当てない。知らない色の名前は属性を外して既定の色にし、段落の前に書き方の警告を差し込む
     args:
-    - name: md
-      type: MarkdownIt
-      required: true
-      description: ルールを足すパーサ
+      - name: md
+        type: MarkdownIt
+        required: true
+        description: ルールを足すパーサ
     side_effects: '`md.inline.ruler` と `md.core.ruler` にルールを足す'
     callees:
-    - dev/設計書/モジュール構成/ライブラリ本体/部品.ts#functions[isColorName]
+      - dev/設計書/モジュール構成/ライブラリ本体/部品.ts#functions[isColorName]
     unit_tests:
-    - name: test_use_highlight
-      case: 正常
-      condition: '`==決め手==`・`==例外=={color=green}`・`== a ==`・`\=\=x\=\=`'
-      expected: '`<mark class="mdmark-highlight">決め手</mark>`・`<mark class="mdmark-highlight" data-color="green">例外</mark>`・`== a ==` の文字・`==x==` の文字'
-      mock: なし
-      summary: 空白で接する `==` と打ち消しは蛍光ペンにしない
-    - name: test_use_highlight_when_unknown_color
-      case: 異常
-      condition: '`==決め手=={color=pink}`'
-      expected: '`data-color` を持たない `mark.mdmark-highlight` と、段落の前の `pink` を含む書き方の警告'
-      mock: なし
-      summary: 知らない色は既定の色で警告する
+      - name: test_use_highlight
+        case: 正常
+        condition: '`==決め手==`・`==例外=={color=green}`・`== a ==`・`\=\=x\=\=`'
+        expected: '`<mark class="mdmark-highlight">決め手</mark>`・`<mark class="mdmark-highlight" data-color="green">例外</mark>`・`== a ==` の文字・`==x==` の文字'
+        mock: なし
+        summary: 空白で接する `==` と打ち消しは蛍光ペンにしない
+      - name: test_use_highlight_when_unknown_color
+        case: 異常
+        condition: '`==決め手=={color=pink}`'
+        expected: '`data-color` を持たない `mark.mdmark-highlight` と、段落の前の `pink` を含む書き方の警告'
+        mock: なし
+        summary: 知らない色は既定の色で警告する
   - name: buildLayoutColumns
     title: 段組みにする
     container: src/render/syntax/layout-columns.ts
@@ -2554,26 +2570,26 @@ functions:
     scope: internal
     summary: コアルール。`columns` がオンなら、`<!-- columns -->` 〜 `<!-- /columns -->` を `<!-- column -->` で区切り、2〜3 列なら部品『段組み』で囲む。列の数が 2〜3 でない範囲と入れ子の内側は、書き方の警告を差し込んで囲まない。範囲の外の `<!-- column -->` と、オフのときの印は取り除く
     args:
-    - name: state
-      type: StateCore
-      required: true
-      description: markdown-it の状態
+      - name: state
+        type: StateCore
+        required: true
+        description: markdown-it の状態
     side_effects: '`state.tokens` を書き換える'
     callees:
-    - dev/設計書/モジュール構成/ライブラリ本体/部品.ts#functions[renderLayoutColumns]
+      - dev/設計書/モジュール構成/ライブラリ本体/部品.ts#functions[renderLayoutColumns]
     unit_tests:
-    - name: test_build_layout_columns
-      case: 正常
-      condition: '`<!-- column -->` 1 つと 2 つの columns の範囲'
-      expected: '`data-count="2"` と `data-count="3"` の `div.mdmark-layout-columns` に、それぞれ 2・3 個の `div.mdmark-layout-column`'
-      mock: なし
-      summary: 区切りで列に分ける
-    - name: test_build_layout_columns_when_invalid
-      case: 異常
-      condition: '`<!-- column -->` を持たない範囲・4 列の範囲・入れ子の範囲'
-      expected: それぞれの範囲の前に書き方の警告があり、その中身が `mdmark-layout-columns` に入っていない。入れ子の外側は 2 列のまま
-      mock: なし
-      summary: 2〜3 列でない範囲と入れ子は囲まずに警告する
+      - name: test_build_layout_columns
+        case: 正常
+        condition: '`<!-- column -->` 1 つと 2 つの columns の範囲'
+        expected: '`data-count="2"` と `data-count="3"` の `div.mdmark-layout-columns` に、それぞれ 2・3 個の `div.mdmark-layout-column`'
+        mock: なし
+        summary: 区切りで列に分ける
+      - name: test_build_layout_columns_when_invalid
+        case: 異常
+        condition: '`<!-- column -->` を持たない範囲・4 列の範囲・入れ子の範囲'
+        expected: それぞれの範囲の前に書き方の警告があり、その中身が `mdmark-layout-columns` に入っていない。入れ子の外側は 2 列のまま
+        mock: なし
+        summary: 2〜3 列でない範囲と入れ子は囲まずに警告する
   - name: buildDetailsRanges
     title: details の範囲にする
     container: src/render/syntax/details.ts
@@ -2581,27 +2597,27 @@ functions:
     scope: internal
     summary: 'コアルール。`details` がオンなら、`<!-- details: … -->` 〜 `<!-- /details -->` を `readDetailsOptions` のタイトルと開閉で部品『details の範囲』にする。閉じの印が無いときは警告を差し込んで囲まない。`summary` は見出しのトークンにしない'
     args:
-    - name: state
-      type: StateCore
-      required: true
-      description: markdown-it の状態
+      - name: state
+        type: StateCore
+        required: true
+        description: markdown-it の状態
     side_effects: '`state.tokens` を書き換える'
     callees:
-    - '#functions[readDetailsOptions]'
-    - dev/設計書/モジュール構成/ライブラリ本体/部品.ts#functions[renderCollapsible]
+      - '#functions[readDetailsOptions]'
+      - dev/設計書/モジュール構成/ライブラリ本体/部品.ts#functions[renderCollapsible]
     unit_tests:
-    - name: test_build_details_ranges
-      case: 正常
-      condition: '`<!-- details: 補足 -->` と `<!-- details: 実行の例 open -->` の範囲'
-      expected: '`<details class="mdmark-collapsible"><summary>補足</summary>` と、`open` を持つ `実行の例` の `details`'
-      mock: なし
-      summary: タイトルと開閉を当てる
-    - name: test_build_details_ranges_when_unclosed
-      case: 異常
-      condition: '閉じの印の無い `<!-- details: 補足 -->`'
-      expected: '`details` が無く、`<!-- /details -->` を含む書き方の警告がある'
-      mock: なし
-      summary: 閉じの印が無いと囲まずに警告する
+      - name: test_build_details_ranges
+        case: 正常
+        condition: '`<!-- details: 補足 -->` と `<!-- details: 実行の例 open -->` の範囲'
+        expected: '`<details class="mdmark-collapsible"><summary>補足</summary>` と、`open` を持つ `実行の例` の `details`'
+        mock: なし
+        summary: タイトルと開閉を当てる
+      - name: test_build_details_ranges_when_unclosed
+        case: 異常
+        condition: '閉じの印の無い `<!-- details: 補足 -->`'
+        expected: '`details` が無く、`<!-- /details -->` を含む書き方の警告がある'
+        mock: なし
+        summary: 閉じの印が無いと囲まずに警告する
   - name: readDetailsOptions
     title: details の印を読む
     container: src/render/syntax/details.ts
@@ -2609,20 +2625,20 @@ functions:
     scope: internal
     summary: 印の引数の最後の語が `open` なら開いた状態にしてタイトルから外し、空のタイトルは `詳細` にする
     args:
-    - name: args
-      type: string
-      required: true
-      description: 印の `:` の後ろの文字
+      - name: args
+        type: string
+        required: true
+        description: 印の `:` の後ろの文字
     returns:
       type: '{ title: string; open: boolean }'
       description: タイトルと開閉
     unit_tests:
-    - name: test_read_details_options
-      case: 正常
-      condition: '`補足`・`実行の例 open`・空'
-      expected: '`{ title: "補足", open: false }`・`{ title: "実行の例", open: true }`・`{ title: "詳細", open: false }`'
-      mock: なし
-      summary: 最後の `open` を開閉として読む
+      - name: test_read_details_options
+        case: 正常
+        condition: '`補足`・`実行の例 open`・空'
+        expected: '`{ title: "補足", open: false }`・`{ title: "実行の例", open: true }`・`{ title: "詳細", open: false }`'
+        mock: なし
+        summary: 最後の `open` を開閉として読む
   - name: buildPagebreaks
     title: 改ページにする
     container: src/render/syntax/pagebreak.ts
@@ -2630,18 +2646,18 @@ functions:
     scope: internal
     summary: コアルール。`pagebreak` がオンなら `<!-- pagebreak -->` を `<div class="mdmark-pagebreak" aria-hidden="true"></div>` にし、オフなら取り除く
     args:
-    - name: state
-      type: StateCore
-      required: true
-      description: markdown-it の状態
+      - name: state
+        type: StateCore
+        required: true
+        description: markdown-it の状態
     side_effects: '`state.tokens` を書き換える'
     unit_tests:
-    - name: test_build_pagebreaks
-      case: 正常
-      condition: '`<!-- pagebreak -->` を持つ文書を、`pagebreak` のオンとオフで描く'
-      expected: オンは `div.mdmark-pagebreak` が 1 つ、オフは無く、どちらも `<!--` が無い
-      mock: なし
-      summary: オンなら要素、オフなら取り除く
+      - name: test_build_pagebreaks
+        case: 正常
+        condition: '`<!-- pagebreak -->` を持つ文書を、`pagebreak` のオンとオフで描く'
+        expected: オンは `div.mdmark-pagebreak` が 1 つ、オフは無く、どちらも `<!--` が無い
+        mock: なし
+        summary: オンなら要素、オフなら取り除く
   - name: resolveIncludePath
     title: 取り込みのパスを解く
     container: src/render/syntax/includes.ts
@@ -2649,24 +2665,24 @@ functions:
     scope: internal
     summary: マーカーを書いた文書のパスのフォルダを基準に、書いたパスの `./`・`../` を解いて、描く文書のフォルダからのパスにする。`#` の後ろを見出しの ID か行の範囲として分ける（行の範囲は Markdown 以外のファイルだけ）。CLI は同じ関数でパスを解き、単独で束ねる VS Code 拡張機能は同じ解き方を `readIncludes` に持つ
     args:
-    - name: fromPath
-      type: string
-      required: true
-      description: マーカーを書いた文書の、描く文書のフォルダからのパス（描く文書そのものは空文字）
-    - name: written
-      type: string
-      required: true
-      description: マーカーに書いた取り込み先（`#` を含む）
+      - name: fromPath
+        type: string
+        required: true
+        description: マーカーを書いた文書の、描く文書のフォルダからのパス（描く文書そのものは空文字）
+      - name: written
+        type: string
+        required: true
+        description: マーカーに書いた取り込み先（`#` を含む）
     returns:
       type: '{ key: string; target: { kind: "whole" } | { kind: "heading"; id: string } | { kind: "lines"; from: number; to: number } }'
       description: 取り込む文書の表のキーと、取り込む範囲
     unit_tests:
-    - name: test_resolve_include_path
-      case: 正常
-      condition: '`("", "./共通/手順.md#実行")`・`("共通/手順.md", "../src/app.ts#L3-L5")`・`("", "src/app.ts#L5")`・`("", "a.md#L3-L5")`'
-      expected: '`共通/手順.md` と見出し `実行`・`src/app.ts` と 3〜5 行・`src/app.ts` と 5〜5 行・`a.md` と見出し `L3-L5`'
-      mock: なし
-      summary: 取り込んだ文書のフォルダを基準に解き、Markdown の `#L` は見出しにする
+      - name: test_resolve_include_path
+        case: 正常
+        condition: '`("", "./共通/手順.md#実行")`・`("共通/手順.md", "../src/app.ts#L3-L5")`・`("", "src/app.ts#L5")`・`("", "a.md#L3-L5")`'
+        expected: '`共通/手順.md` と見出し `実行`・`src/app.ts` と 3〜5 行・`src/app.ts` と 5〜5 行・`a.md` と見出し `L3-L5`'
+        mock: なし
+        summary: 取り込んだ文書のフォルダを基準に解き、Markdown の `#L` は見出しにする
   - name: expandIncludes
     title: 取り込む
     container: src/render/syntax/includes.ts
@@ -2674,34 +2690,34 @@ functions:
     scope: internal
     summary: コアルール（見出しの ID と図表の番号より前）。`include` がオンなら、include のマーカーを `resolveIncludePath` で解き、`opts.includes` の本文を、Markdown は同じパーサでトークンにして `selectHeadingSection` の範囲を、それ以外は `selectLines` の行を拡張子を言語にした `fence` として、`div.mdmark-include` の中に差し込む。差し込んだトークンの元の行番号はマーカーの行にする。取り込んだ Markdown の中のマーカーは取り込みの順を持ってたどり、途中に同じキーがあれば循環の警告を差し込む。表に無いキー・無い見出し・行の数を越える範囲は書き方の警告を差し込む。取り込んだ文書の `features` の印は取り除く
     args:
-    - name: state
-      type: StateCore
-      required: true
-      description: markdown-it の状態。`state.env` から `opts.includes` を読む
+      - name: state
+        type: StateCore
+        required: true
+        description: markdown-it の状態。`state.env` から `opts.includes` を読む
     side_effects: '`state.tokens` を書き換える'
     callees:
-    - '#functions[resolveIncludePath]'
-    - '#functions[selectHeadingSection]'
-    - '#functions[selectLines]'
+      - '#functions[resolveIncludePath]'
+      - '#functions[selectHeadingSection]'
+      - '#functions[selectLines]'
     unit_tests:
-    - name: test_expand_includes
-      case: 正常
-      condition: '`opts.includes` に `共通/手順.md`（`## 準備`・`## 実行`）と 12 行の `src/app.ts`。文書は `共通/手順.md`・`共通/手順.md#実行`・`src/app.ts#L3-L5` を取り込む'
-      expected: 1 つ目に 2 つの見出し、2 つ目に `実行` の見出しだけ、3 つ目に 3〜5 行の `language-ts` のコードブロック。差し込んだ見出しの ID が重ならない
-      mock: なし
-      summary: 全体・見出しの中・行の範囲を差し込む
-    - name: test_expand_includes_when_missing
-      case: 異常
-      condition: 表に無い `missing.md`・無い見出し・12 行のファイルの `#L20-L22`
-      expected: 3 つの場所に書き方の警告があり、本文に `missing.md`・見出しの ID・`12 行` がある
-      mock: なし
-      summary: 取り込めないと警告する
-    - name: test_expand_includes_when_circular
-      case: 異常
-      condition: '`a.md` と `b.md` が互いを取り込み、文書が `a.md` を取り込む'
-      expected: '`a.md`・`b.md` の段落が 1 回ずつで、`a.md → b.md → a.md` を含む書き方の警告が 1 つある'
-      mock: なし
-      summary: 循環を止める
+      - name: test_expand_includes
+        case: 正常
+        condition: '`opts.includes` に `共通/手順.md`（`## 準備`・`## 実行`）と 12 行の `src/app.ts`。文書は `共通/手順.md`・`共通/手順.md#実行`・`src/app.ts#L3-L5` を取り込む'
+        expected: 1 つ目に 2 つの見出し、2 つ目に `実行` の見出しだけ、3 つ目に 3〜5 行の `language-ts` のコードブロック。差し込んだ見出しの ID が重ならない
+        mock: なし
+        summary: 全体・見出しの中・行の範囲を差し込む
+      - name: test_expand_includes_when_missing
+        case: 異常
+        condition: 表に無い `missing.md`・無い見出し・12 行のファイルの `#L20-L22`
+        expected: 3 つの場所に書き方の警告があり、本文に `missing.md`・見出しの ID・`12 行` がある
+        mock: なし
+        summary: 取り込めないと警告する
+      - name: test_expand_includes_when_circular
+        case: 異常
+        condition: '`a.md` と `b.md` が互いを取り込み、文書が `a.md` を取り込む'
+        expected: '`a.md`・`b.md` の段落が 1 回ずつで、`a.md → b.md → a.md` を含む書き方の警告が 1 つある'
+        mock: なし
+        summary: 循環を止める
   - name: selectHeadingSection
     title: 見出しの範囲を選ぶ
     container: src/render/syntax/includes.ts
@@ -2709,26 +2725,26 @@ functions:
     scope: internal
     summary: トークンの並びから、見出しの文字を `slugBase` で ID にしたものが `id` と一致する最初の見出しから、次の同じか上の階層の見出しの前まで（見出しを含む）を返す
     args:
-    - name: tokens
-      type: Token[]
-      required: true
-      description: 取り込む文書のブロックのトークン
-    - name: id
-      type: string
-      required: true
-      description: 見出しの ID
+      - name: tokens
+        type: Token[]
+        required: true
+        description: 取り込む文書のブロックのトークン
+      - name: id
+        type: string
+        required: true
+        description: 見出しの ID
     returns:
       type: Token[] | null
       description: 範囲のトークン。見出しが無いとき `null`
     callees:
-    - '#functions[slugBase]'
+      - '#functions[slugBase]'
     unit_tests:
-    - name: test_select_heading_section
-      case: 正常
-      condition: '`## 準備`・`## 実行`（下に `### 手順`）・`## 片付け` と `実行`、と `無い`'
-      expected: '`実行` の見出しから `手順` の中身までで `片付け` を含まない、と `null`'
-      mock: なし
-      summary: 同じか上の階層の見出しの前までを選ぶ
+      - name: test_select_heading_section
+        case: 正常
+        condition: '`## 準備`・`## 実行`（下に `### 手順`）・`## 片付け` と `実行`、と `無い`'
+        expected: '`実行` の見出しから `手順` の中身までで `片付け` を含まない、と `null`'
+        mock: なし
+        summary: 同じか上の階層の見出しの前までを選ぶ
   - name: selectLines
     title: 行の範囲を選ぶ
     container: src/render/syntax/includes.ts
@@ -2736,28 +2752,28 @@ functions:
     scope: internal
     summary: 本文を行（LF・CRLF）に分け、`from`〜`to` 行目（1 から）を返す。範囲が行の数を越えるときは行の数を返す
     args:
-    - name: text
-      type: string
-      required: true
-      description: ファイルの本文
-    - name: from
-      type: number
-      required: true
-      description: 始めの行
-    - name: to
-      type: number
-      required: true
-      description: 終わりの行
+      - name: text
+        type: string
+        required: true
+        description: ファイルの本文
+      - name: from
+        type: number
+        required: true
+        description: 始めの行
+      - name: to
+        type: number
+        required: true
+        description: 終わりの行
     returns:
       type: '{ text: string } | { lineCount: number }'
       description: 選んだ行か、範囲を越えたときの行の数
     unit_tests:
-    - name: test_select_lines
-      case: 正常
-      condition: 12 行の本文と 3〜5、20〜22
-      expected: '3〜5 行目の文字と `{ lineCount: 12 }`'
-      mock: なし
-      summary: 範囲の行を返し、越えたら行の数を返す
+      - name: test_select_lines
+        case: 正常
+        condition: 12 行の本文と 3〜5、20〜22
+        expected: '3〜5 行目の文字と `{ lineCount: 12 }`'
+        mock: なし
+        summary: 範囲の行を返し、越えたら行の数を返す
   - name: buildWideRanges
     title: wide の範囲にする
     container: src/render/syntax/wide.ts
@@ -2765,26 +2781,26 @@ functions:
     scope: internal
     summary: 'コアルール。`wide` がオンなら、`<!-- wide -->`（`closed` で `narrow`）〜 `<!-- /wide -->` を部品『wide の範囲』（`toggle: false`）で囲む。閉じの印が無いときと知らない引数は書き方の警告を差し込む。範囲の中の wide の印は取り除く'
     args:
-    - name: state
-      type: StateCore
-      required: true
-      description: markdown-it の状態
+      - name: state
+        type: StateCore
+        required: true
+        description: markdown-it の状態
     side_effects: '`state.tokens` を書き換える'
     callees:
-    - dev/設計書/モジュール構成/ライブラリ本体/部品.ts#functions[renderWide]
+      - dev/設計書/モジュール構成/ライブラリ本体/部品.ts#functions[renderWide]
     unit_tests:
-    - name: test_build_wide_ranges
-      case: 正常
-      condition: '`<!-- wide -->` と `<!-- wide: closed -->` で表を囲んだ範囲'
-      expected: '`data-state="wide"` と `data-state="narrow"` の `div.mdmark-wide-range` の中に表があり、`button` が無い'
-      mock: なし
-      summary: 範囲を囲み、`closed` を `narrow` にする
-    - name: test_build_wide_ranges_when_unclosed
-      case: 異常
-      condition: 閉じの印の無い `<!-- wide -->` とその後の表
-      expected: '`mdmark-wide-range` が無く、`<!-- /wide -->` を含む書き方の警告がある'
-      mock: なし
-      summary: 閉じの印が無いと囲まずに警告する
+      - name: test_build_wide_ranges
+        case: 正常
+        condition: '`<!-- wide -->` と `<!-- wide: closed -->` で表を囲んだ範囲'
+        expected: '`data-state="wide"` と `data-state="narrow"` の `div.mdmark-wide-range` の中に表があり、`button` が無い'
+        mock: なし
+        summary: 範囲を囲み、`closed` を `narrow` にする
+      - name: test_build_wide_ranges_when_unclosed
+        case: 異常
+        condition: 閉じの印の無い `<!-- wide -->` とその後の表
+        expected: '`mdmark-wide-range` が無く、`<!-- /wide -->` を含む書き方の警告がある'
+        mock: なし
+        summary: 閉じの印が無いと囲まずに警告する
   - name: parseCsv
     title: CSV を読む
     container: src/render/syntax/csv.ts
@@ -2792,26 +2808,26 @@ functions:
     scope: internal
     summary: RFC 4180 の決まり（区切り `,`、`"` で囲んだ値の中の `,` と改行、`""` は `"`、改行は LF か CRLF）で 1 回走査して行と値に分ける。末尾の改行は行にしない
     args:
-    - name: text
-      type: string
-      required: true
-      description: コードブロックの中身
+      - name: text
+        type: string
+        required: true
+        description: コードブロックの中身
     returns:
       type: string[][]
       description: 行ごとの値の並び
     unit_tests:
-    - name: test_parse_csv
-      case: 正常
-      condition: '`a,"b, c","d""e"` と CRLF と `x,"y\nz",1` と末尾の改行'
-      expected: '`[["a","b, c","d\"e"],["x","y\nz","1"]]`'
-      mock: なし
-      summary: 引用符の中の区切り・改行・`""` を読む
-    - name: test_parse_csv_when_empty_values
-      case: 正常
-      condition: '`a,,c` と `,` だけの行'
-      expected: '`[["a","","c"],["",""]]`'
-      mock: なし
-      summary: 空の値を残す
+      - name: test_parse_csv
+        case: 正常
+        condition: '`a,"b, c","d""e"` と CRLF と `x,"y\nz",1` と末尾の改行'
+        expected: '`[["a","b, c","d\"e"],["x","y\nz","1"]]`'
+        mock: なし
+        summary: 引用符の中の区切り・改行・`""` を読む
+      - name: test_parse_csv_when_empty_values
+        case: 正常
+        condition: '`a,,c` と `,` だけの行'
+        expected: '`[["a","","c"],["",""]]`'
+        mock: なし
+        summary: 空の値を残す
   - name: buildCsvTables
     title: CSV の表にする
     container: src/render/syntax/csv.ts
@@ -2819,27 +2835,59 @@ functions:
     scope: internal
     summary: コアルール（表の印のルールより前）。`csv` がオンなら、情報文字列の最初の語がちょうど `csv` で中身が空でない `fence` を `parseCsv` で読み、1 行目を見出しにした表のトークン（値は `text`）に置き換え、元の CSV を `rawCsv` として表の印の処理へ渡す。列の数が見出しと違う行はそろえて、その行番号の書き方の警告を表の前に差し込む
     args:
-    - name: state
-      type: StateCore
-      required: true
-      description: markdown-it の状態
+      - name: state
+        type: StateCore
+        required: true
+        description: markdown-it の状態
     side_effects: '`state.tokens` を書き換える'
     callees:
-    - '#functions[parseCsv]'
-    - '#functions[decorateTables]'
+      - '#functions[parseCsv]'
+      - '#functions[decorateTables]'
     unit_tests:
-    - name: test_build_csv_tables
-      case: 正常
-      condition: 表の印 `data` で囲んだ `csv` と、囲まない `csv` と、`text` と、空の `csv`
-      expected: '`data-kind="data"` と `data-kind="default"` の `data-source="csv"` の表とその後ろの `pre.mdmark-raw[hidden]`、`text` と空の `csv` はコードブロック'
-      mock: なし
-      summary: csv だけを表にし、元の CSV を添える
-    - name: test_build_csv_tables_when_columns_mismatch
-      case: 異常
-      condition: 見出しが 3 列、2 行目が 2 列、3 行目が 4 列
-      expected: 表の前に行番号 `2`・`3` の書き方の警告があり、表は 3 列で 2 行目の 3 列目が空
-      mock: なし
-      summary: 列の数を見出しにそろえて警告する
+      - name: test_build_csv_tables
+        case: 正常
+        condition: 表の印 `data` で囲んだ `csv` と、囲まない `csv` と、`text` と、空の `csv`
+        expected: '`data-kind="data"` と `data-kind="default"` の `data-source="csv"` の表とその後ろの `pre.mdmark-raw[hidden]`、`text` と空の `csv` はコードブロック'
+        mock: なし
+        summary: csv だけを表にし、元の CSV を添える
+      - name: test_build_csv_tables_when_columns_mismatch
+        case: 異常
+        condition: 見出しが 3 列、2 行目が 2 列、3 行目が 4 列
+        expected: 表の前に行番号 `2`・`3` の書き方の警告があり、表は 3 列で 2 行目の 3 列目が空
+        mock: なし
+        summary: 列の数を見出しにそろえて警告する
+  - name: collectWarningsRule
+    title: 書き方の警告を集める
+    container: src/render/syntax/warnings.ts
+    kind: 関数
+    scope: internal
+    summary: markdown-it のコアルール（最後に走る）。`meta.warning` を持つトークン（埋め込んだ HTML の範囲の `html_block` は `meta.warnings` の並び）ごとに、`meta.warning.line`（マーカーの行）を、無ければ後ろで最初に `map` を持つトークンの開始の行（それも無ければ前で最後に `map` を持つトークンの終わりの行）を 1 からの行番号にし、`env.warnings` に `CollectedWarning` を足す
+    args:
+      - name: state
+        type: StateCore
+        required: true
+        description: markdown-it のコアの状態
+    returns:
+      type: void
+      description: '`env.warnings` を書き換える'
+    refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/設定と索引を点検する.ts#constraints[記法の点検の場所]
+    unit_tests:
+      - name: test_collect_warnings_rule
+        case: 正常
+        summary: マーカーの行を場所にし、マーカーを持たない警告は後ろのブロックの行にする
+        condition: '3 行目の `<!-- code: color=red -->` と直後のコードブロック、10 行目の開きのマーカーから続く読めない `<!-- flow -->` の範囲、20 行目の、上の行より 2 段深い行を持つ `tree` のコードブロック（マーカーを持たない警告）'
+        mock: なし
+        expected: '`env.warnings` が 3 件で、`line` が `3`・`10`・`20`、`kind` が `syntax_warning`・`diagram_invalid`・`syntax_warning`'
+      - name: test_collect_warnings_rule_when_marks
+        case: 正常
+        summary: 表・ファイルツリー・タブのマーカーの警告を、マーカーの行にする
+        condition: '3 行目 `<!-- table: foo -->` と表と閉じのマーカー、11 行目 `<!-- tree: wrap=1 -->` と `tree` のコードブロック、20 行目 `<!-- tabs: x=1 -->` の範囲'
+        mock: なし
+        expected: '`env.warnings` の `line` が `3`・`11`・`20`'
+    status: planned
+    introduced:
+      pr: 328
 notes:
   コアルールの順: 描画の `createParser` が登録する。印 → 機能の重ね合わせ → 見出し → 用語集の表 → 行の詳細 → ビュー → 表 → タブ → ステップ → 注意書き → ファイルツリー → バッジ → 本文の文字の色 → 図の部品 → 埋め込んだ HTML → コードブロック → 画像の属性と種類 → 図表の番号 → ギャラリー → 画像と動画と音声の図 → カード → 用語の下線 → 節 → 目次 → 関連文書の一覧 → タスクリスト → www の自動リンク → 残った印を取り除く。行の詳細は表の囲みより前、節は記法の警告を差し込んだ後、目次は見出しの ID を付けた後。埋め込んだ HTML は用語の下線より前に置き、`html_block` にした中身を用語の下線が重ねて照合しないようにする。画像の属性は図表の番号より前に読み、図表の番号がギャラリーに番号を渡してからギャラリーを囲む。残った画像だけの段落は、その後に図にする
   部品の差し込み方: 中身を持つ部品（節・タブ・注意書き・行の詳細・図表の番号・表）は、中身の代わりに `SLOT_MARKER` を渡して HTML を作り、`markOwn` を掛けてから `SLOT_MARKER` の前後で分け、開きと閉じの `html_block` のトークンで中身のトークンを挟む。中身の HTML には `markOwn` を掛けない。見出し・表など Markdown から作ったトークンに付ける記法の属性は、同じトークンに `data-mdmark-own` も付ける。埋め込んだ HTML は例外で、`sanitizeEmbedded` で先に落とした中身にも `markOwn` を掛ける
@@ -2865,6 +2913,7 @@ test_files:
   - tests/unit/src/render/syntax/cards.test.ts
   - tests/unit/src/render/syntax/table-cells.test.ts
   - tests/unit/src/render/syntax/footnotes.test.ts
+  - tests/unit/src/render/syntax/warnings.test.ts
   - tests/unit/src/render/syntax/inline-icons.test.ts
   - tests/unit/src/render/syntax/kbd.test.ts
   - tests/unit/src/render/syntax/highlight.test.ts

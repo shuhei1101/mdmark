@@ -1,4 +1,4 @@
-title: "図を描く"
+title: 図を描く
 scenarios:
   - name: 正常シナリオ
     setup:
@@ -275,6 +275,83 @@ scenarios:
       - 正しい定義の ER 図が描かれている
       - 段落が描かれている
     test: test_error_when_er_definition_invalid
+  - name: 正常シナリオ（座標を省いた判定フローチャート）
+    setup:
+      - name: 図を描くページ
+        description: 正常シナリオと同じ
+      - name: 座標を省いた判定フローチャートの定義を持つ Markdown
+        description: フロー図の部品の定義に、開始のノード 1 つ・質問のノード 2 つ・アクションのノード 1 つ・結果のノード 2 つを、`x`・`y`・`w`・`h` を書かずに置き、線の `points` と図の `width`・`height` を書かない文書
+        notes: 線は開始 → 質問 1、質問 1 の YES → アクション、質問 1 の NO → 質問 2、アクション → 結果 1、質問 2 の YES → 結果 1、質問 2 の NO → 結果 2 の 6 本。質問から出る線に `YES`・`NO` のラベルを付ける
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 読む人
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を渡して描かせる
+        M->>M: 部品の定義を読んで構造を確認する
+        M->>M: 開始から線をたどり、質問を上から下へ並べ、YES / NO の先へアクションと結果を配置する
+        M->>M: 線の点を縦と横の折れ線で求める
+        M-->>P: 凡例つきの判定フローチャートと本文
+        P-->>U: 文書を表示
+    expected:
+      - 書き方の警告が出ず、6 つのノードと 6 本の線が描かれている
+      - 開始のノードが一番上にあり、質問 1・質問 2 のノードがその下に上から順に並ぶ
+      - 質問のノードから出る `YES`・`NO` の線の先に、アクションと結果のノードが配置され、ノードどうしが重ならない
+      - 線が縦と横だけの折れ線で、どのノードの中も通らない
+      - 図の全体が図の枠の中に収まっている
+      - 同じノードと線に座標を全て書いた定義は、書いた座標のとおりに描かれる（正常シナリオ（判定フローチャート）と同じ）
+    test: test_normal_when_flowchart_auto_layout
+  - name: 正常シナリオ（リンク先を持つノード）
+    setup:
+      - name: 図を描くページ
+        description: 正常シナリオと同じ
+      - name: リンク先を持つノードの定義を持つ Markdown
+        description: フロー図の部品の定義のノード 3 つのうち、1 つに `https://example.com/spec`、1 つに相対パス `./other.md` のリンク先を持たせ、1 つは持たせない文書
+      - name: Mock
+        description: 正常シナリオと同じ。リンク先への遷移を手元の応答で受け、開いた URL を記録する
+    flow: |-
+      sequenceDiagram
+        actor U as 読む人
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を渡して描かせる
+        M->>M: リンク先を持つノードをリンクにする
+        M-->>P: フロー図と本文
+        P-->>U: 文書を表示
+        U->>P: リンク先を持つノードを押す
+        P-->>U: ノードのリンク先を開く
+    expected:
+      - リンク先を持つ 2 つのノードがリンクになり、名前の文字の上を含めてポインターを乗せるとカーソルが押せる形になる
+      - リンク先を持たないノードはリンクにならない
+      - '`https://example.com/spec` のノードを押すと、そのリンク先が開く。`./other.md` のノードを押すと、本文の相対パスのリンクと同じく、ページの URL を基準にした `other.md` が開く'
+      - キーボードでリンク先を持つノードにフォーカスでき、フォーカスの枠が見え、Enter で同じリンク先が開く
+    test: test_normal_when_node_link
+  - name: 異常シナリオ（ノードのリンク先を許可しない）
+    setup:
+      - name: 図を描くページ
+        description: 正常シナリオと同じ
+      - name: 許可しないリンク先を持つ Markdown
+        description: フロー図の部品の定義のノード 2 つに、`javascript:alert(1)` と `id:spec#items` のリンク先を持たせ、図の後に段落を持つ文書
+        notes: 本文のリンクで許可しないスキームのリンク先を決定的に渡す
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 読む人
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を渡して描かせる
+        M->>M: ノードのリンク先を本文のリンクと同じ許可で確認する
+        M-->>P: 許可しないリンク先の書き方の警告と、リンクにしないノードのフロー図と本文
+        P-->>U: 警告と図と本文を表示
+    expected:
+      - 2 つのノードがリンクにならず、ノードの名前は描かれている
+      - 図の場所に、許可しないリンク先を書いたノードの id とリンク先を記載した書き方の警告がある
+      - ノードを押しても `javascript:` のリンク先が動かない
+      - 段落が描かれている
+    test: test_error_when_node_link_not_allowed
 lead: 文書を書く人が、文書に部品の定義（JSON）だけを書き、mdmark の共通の図の部品にフロー図・シーケンス図・グラフ・ER 図を描かせる。部品は図の見た目の決まり（枠と 3 層・時系列とループ・題と凡例・線の交差）のとおりに描く。
 issue: 21
 primary_actor: 文書を書く人（AI を含む）

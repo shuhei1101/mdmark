@@ -327,3 +327,71 @@ test("test_normal_when_media_in_asset_root", async () => {
   // 実行・検証: 再生ボタンを押すと再生位置が進む
   await expectPlayed(frame);
 });
+
+/** `other.md` を指すノードと外部の URL を指すノードのフロー図を持つ Markdown */
+const FLOW_LINK_GUIDE = [
+  "# 図のリンク",
+  "",
+  "<!-- flow -->",
+  "",
+  "```json",
+  JSON.stringify({
+    title: "リンク",
+    scope: "点検",
+    updated: "2026-11-05",
+    width: 520,
+    height: 152,
+    nodes: [
+      {
+        id: "doc",
+        kind: "script",
+        x: 20,
+        y: 40,
+        w: 200,
+        h: 72,
+        name: "別の文書を開く",
+        href: "./other.md",
+      },
+      {
+        id: "web",
+        kind: "script",
+        x: 300,
+        y: 40,
+        w: 200,
+        h: 72,
+        name: "サイトを開く",
+        href: EXTERNAL_URL,
+      },
+    ],
+    wires: [],
+  }),
+  "```",
+  "",
+  "<!-- /flow -->",
+  "",
+].join("\n");
+
+// フロー図のノードのリンクを、本文のリンクと同じ種類ごとの先で開き、プレビューの文書は変わらない（正常シナリオ（フロー図のノードのリンク））
+test("test_normal_when_flow_node_link", async () => {
+  // 準備
+  const session = await e2e.launch({
+    files: { "docs/flow.md": FLOW_LINK_GUIDE, "docs/other.md": "# 別の文書\n" },
+  });
+  await session.openFile("docs/flow.md");
+  await session.openPreviewWithShortcut();
+  const frame = await session.frameWith("figure.mdmark-diagram");
+  const linkOf = (id: string) =>
+    frame.locator(`[data-node="${id}"] a.mdmark-diagram-node-link`);
+  // 実行・検証: 外部の URL を指すノードを押すと、ブラウザで開く
+  await linkOf("web").click();
+  await expect.poll(() => session.openedUrls()).toEqual([EXTERNAL_URL]);
+  await expect(frame.locator("h1")).toContainText("図のリンク");
+  // 実行・検証: other.md を指すノードを押すと、エディタで開く
+  await linkOf("doc").click();
+  await expect(
+    session.win.getByRole("tab", { name: /^other\.md/ }),
+  ).toHaveCount(1);
+  await session.win.waitForTimeout(1000);
+  expect(await session.openedUrls()).toEqual([EXTERNAL_URL]);
+  await expect(frame.locator("h1")).toContainText("図のリンク");
+});

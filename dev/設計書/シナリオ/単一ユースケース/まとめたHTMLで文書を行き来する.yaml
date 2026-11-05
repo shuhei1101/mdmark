@@ -109,6 +109,27 @@ scenarios:
       - wide の範囲が本文の段落より広く描かれ、左の文書の一覧の列に重なっていない
       - 文書の一覧で B を選べ、B が出る
     test: test_normal_when_wide_range
+  - name: 正常シナリオ（フロー図のノードのリンク）
+    setup:
+      - name: まとめた HTML
+        description: 正常シナリオの B に、C を相対パスで指すリンク先を持つノード 1 つのフロー図を加えてまとめた HTML
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor R as 読む人
+        participant P as まとめた HTML
+        R->>P: 文書の一覧で B を選ぶ
+        P-->>R: B
+        R->>P: B のフロー図の C を指すノードを押す
+        P-->>R: C
+        R->>P: ブラウザの戻る
+        P-->>R: B
+    expected:
+      - ノードを押すと C が出て、URL が C を指す
+      - 戻るで B が出る
+      - 外への要求が 0 件
+    test: test_normal_when_flow_node_link
 lead: 読む人が `mdmark build` の 1 枚の HTML を file:// で開き、文書の一覧・文書間のリンク・ブラウザの戻ると進むで文書を行き来し、見出しのアンカーと目次で節へ移る。
 issue: 9
 primary_actor: 読む人

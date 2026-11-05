@@ -361,6 +361,28 @@ scenarios:
       - 中身の無い `icon:` は `badge:` と同じく書いたとおりの行内のコードで出て、書き方の警告は出ていない
       - Lucide のアイコンへの要求が 0 件
     test: test_error_when_icon_name_invalid
+  - name: 正常シナリオ（ファイルツリーを折り返す）
+    setup:
+      - name: mdmark を読むページ
+        description: 正常シナリオと同じ
+        notes: 画面の幅は 390px
+      - name: 折り返すマーカーを持つファイルツリーの Markdown
+        description: '`<!-- tree: open=all wrap -->` の直後に、表示の幅より長い名前のファイルを入れ子の中に持つ言語 `tree` のコードブロックと、`<!-- tree: open=all -->` の直後の同じコードブロックを置いた文書'
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を渡して描かせる
+        M-->>P: wrap を持つツリーだけを折り返して描く
+        P-->>U: 文書を表示
+    expected:
+      - '`wrap` のツリーの長い名前が項目の中で折り返され、ツリーに横スクロールが出ない'
+      - 折り返した名前の続きが、その項目のアイコンの右の名前の頭に揃い、罫線と入れ子の位置が `wrap` の無いツリーと同じ
+      - '`wrap` の無いツリーは折り返さず、横にスクロールできる'
+    test: test_normal_when_tree_wrap
 lead: 文書を書く人が、`<!-- steps -->` 〜 `<!-- /steps -->` で囲んだ番号付きリスト・言語 `tree` のコードブロック・頭に `badge:` を付けた行内のコードを書くと、mdmark がそれぞれ手順・ファイルツリー・バッジに描く。手順は `closed`・`open` で見出し付きの折りたたみに入れられ、ファイルツリーは `#` の後ろの注釈を列に揃え、読む人がフォルダを開閉して元の罫線のテキストをコピーできる。
 issue: 4
 primary_actor: 文書を書く人

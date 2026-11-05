@@ -25,8 +25,11 @@ files:
     description: '部品『chart』のモック: 系列を色と線の模様・点のマーカーの組で分けたグラフ（折れ線）と、色と塗りの模様の組で分けた棒・円、点のマーカーで分けた散布図、6 つの系列・面・積み上げの面と棒・横棒・ドーナツ・レーダー・バブル・折れ線と棒の組み合わせ。部品の見た目や状態を決めるときに読む。'
     tags: [topic:モック, topic:図]
   - path: components/code-block/index.html
-    description: '部品『code-block』のモック: コードブロックのタイトル・行番号・行の強調と、コードの行のマーカーで分けた追加した行・削除した行・強調の行、言語に応じた色分け、言語のラベルとコピーボタン、印刷の見え方、focus・error・warning の行・インデントによる畳む・開くと `fold=`・インデントの縦線。部品の見た目や状態を決めるときに読む。'
+    description: '部品『code-block』のモック: コードブロックのタイトル・行番号・行の強調と、コードの行のマーカーで分けた追加した行・削除した行・強調の行、言語に応じた色分け、言語のラベルとコピーボタン、印刷の見え方、focus・error・warning の行・インデントによる畳む・開くと `fold=`・インデントの縦線、`wrap` で折り返すブロックと使う側の pre への汎用の CSS で折り返さない既定。部品の見た目や状態を決めるときに読む。'
     tags: [topic:モック, topic:コードブロック]
+  - path: components/code-block/style.css
+    description: 'モック『code-block』の見た目: 使う側が層の外に書いた pre への汎用の CSS の見本の規則。このモックの見た目を変えるときに読む。'
+    tags: [topic:モック, topic:コードブロック, tool:css]
   - path: components/color-preset/index.html
     description: '部品『color-preset』のモック: 色の名前の一覧（7 色）のバッジ・本文の文字の色・面の薄い色と、本文の文字の色の色以外の見分けの案、知らない色の名前の書き方の警告。部品の見た目や状態を決めるときに読む。'
     tags: [topic:モック, topic:テーマ]
@@ -97,10 +100,10 @@ files:
     description: '部品『figure』のモック: 図と表に付ける通し番号と、番号にした参照のリンク、画像のキャプション・サイズと配置・ライトボックス・ギャラリー・テーマごとの切り替え。部品の見た目や状態を決めるときに読む。'
     tags: [topic:モック]
   - path: components/file-tree/index.html
-    description: '部品『file-tree』のモック: 罫線で書いたフォルダ構成を描いた入れ子のツリーと、注釈・拡張子ごとのアイコン・ほかにもある項目・フォルダの開閉と `open=`・ASCII の罫線・元の罫線のテキストのコピー。部品の見た目や状態を決めるときに読む。'
+    description: '部品『file-tree』のモック: 罫線で書いたフォルダ構成を描いた入れ子のツリーと、注釈・拡張子ごとのアイコン・ほかにもある項目・フォルダの開閉と `open=`・ASCII の罫線・元の罫線のテキストのコピー・`wrap` で折り返すツリー。部品の見た目や状態を決めるときに読む。'
     tags: [topic:モック, topic:ツリー]
   - path: components/flow-diagram/index.html
-    description: '部品『flow-diagram』のモック: システムの枠と 3 層・外部のシステム・線の種類・線の交差・ループの戻りを持つフロー図。部品の見た目や状態を決めるときに読む。'
+    description: '部品『flow-diagram』のモック: システムの枠と 3 層・外部のシステム・線の種類・線の交差・ループの戻りを持つフロー図と、座標を省いて自動で配置した判定フローチャート、リンク先を持つノードと許可しないリンク先の書き方の警告。部品の見た目や状態を決めるときに読む。'
     tags: [topic:モック, topic:図]
   - path: components/footnote/index.html
     description: '部品『footnote』のモック: 本文の参照の場所の上付きの番号と番号のツールチップ、文書の末尾の閉じた脚注の一覧と本文へ戻るリンク、同じ脚注の複数回の参照・定義の無い参照・機能のオフ・印刷の見え方。部品の見た目や状態を決めるときに読む。'
@@ -799,6 +802,12 @@ files:
     tags: [topic:モック, topic:目次]
   - path: refs/323/index.md
     description: '#323（右側の目次を、ピン止めしていないときも画面の右端に配置する）の PR のモックへのリンク集。この PR で作ったモックを探すときに読む。'
+    tags: [topic:モック]
+  - path: refs/328/assets/wrap.css
+    description: '#328 のモックが共通で読む素材: コードブロックとファイルツリーの折り返しの既定を使う側の pre への汎用の CSS で変えない規則と、code・tree のマーカーの wrap で折り返す規則。複数のモックに効く見た目や動きを変えるときに読む。'
+    tags: [topic:モック, topic:コードブロック, tool:css]
+  - path: refs/328/index.md
+    description: '#328（既存の記法・点検への項目の追加 4 件）の PR のモックへのリンク集。この PR で作ったモックを探すときに読む。'
     tags: [topic:モック]
   - path: refs/42/assets/diagram.css
     id: dev/mock/refs/42/assets/diagram.css

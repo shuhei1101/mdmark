@@ -94,3 +94,13 @@ stories:
       source: "src/\n└── index.ts"
       interactive: true
       copyFallback: true
+  - name: Wrap
+    parameters:
+      server:
+        id: tree
+    args:
+      nodes: "[{\"name\":\"very-long-folder-name-for-the-generated-design-documents/\",\"children\":[{\"name\":\"a-file-name-that-is-much-longer-than-the-box-width-on-phones.config.ts\",\"note\":\"狭い幅では注釈も項目の中で折り返す\"}]}]"
+      source: "very-long-folder-name-for-the-generated-design-documents/\n└── a-file-name-that-is-much-longer-than-the-box-width-on-phones.config.ts # 狭い幅では注釈も項目の中で折り返す"
+      open: "all"
+      interactive: true
+      wrap: true

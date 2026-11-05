@@ -4,8 +4,8 @@ import { extensionFor, type MdmarkMarkArgs } from "../extensions.ts";
 import { resolveFeatures } from "../features.ts";
 import { renderEmbed } from "../parts/embed.ts";
 import { markOwn } from "../parts/own.ts";
-import { renderSyntaxWarning } from "../parts/syntax-warning.ts";
 import type { RenderEnv } from "./parser.ts";
+import { warningBlock } from "./syntax/warnings.ts";
 
 /** 生の HTML の中の印（`<!-- 名前: 引数 -->`・`<!-- 名前 -->`・`<!-- /名前 -->`）を拾う正規表現 */
 export const MARK_PATTERN =
@@ -190,18 +190,18 @@ function extensionSlot(options: {
   mark: Mark;
   fences: Token[];
   extensionName: string;
+  /** 開きのマーカーのトークンの `map[0]` */
+  line?: number | undefined;
 }): Token {
-  const { state, mark, fences, extensionName } = options;
+  const { state, mark, fences, extensionName, line } = options;
   const env = state.env as RenderEnv;
   const [fence] = fences;
   if (!fence || fences.length > 1) {
-    return ownHtmlBlock(
-      state,
-      renderSyntaxWarning({
-        mark: mark.raw,
-        message: `の範囲に json のコードブロックが ${fences.length} つあります。部品の定義は 1 つだけ置いてください。拡張 \`${extensionName}\` の部品は描いていません。`,
-      }),
-    );
+    return warningBlock(state, {
+      mark: mark.raw,
+      ...(line === undefined ? {} : { line }),
+      message: `の範囲に json のコードブロックが ${fences.length} つあります。部品の定義は 1 つだけ置いてください。拡張 \`${extensionName}\` の部品は描いていません。`,
+    });
   }
   const parsed = parseDefinitionJson(fence.content);
   if (!parsed.ok) {
@@ -211,13 +211,11 @@ function extensionSlot(options: {
       parsed.missing === ""
         ? `${where}が読めません`
         : `${where}に ${parsed.missing} がありません`;
-    return ownHtmlBlock(
-      state,
-      renderSyntaxWarning({
-        mark: mark.raw,
-        message: `の部品の定義を JSON として読めません（${detail}）。拡張 \`${extensionName}\` の部品は描いていません。`,
-      }),
-    );
+    return warningBlock(state, {
+      mark: mark.raw,
+      ...(line === undefined ? {} : { line }),
+      message: `の部品の定義を JSON として読めません（${detail}）。拡張 \`${extensionName}\` の部品は描いていません。`,
+    });
   }
   env.extensionDefinitions ??= [];
   const definition = env.extensionDefinitions.push(parsed.value) - 1;
@@ -255,7 +253,13 @@ function takeDefinitionRanges(state: StateCore): void {
     const fences = inner.filter(isJsonFence);
     if (extension && fences.length > 0) {
       out.push(
-        extensionSlot({ state, mark, fences, extensionName: extension.name }),
+        extensionSlot({
+          state,
+          mark,
+          fences,
+          extensionName: extension.name,
+          line: token.map?.[0],
+        }),
       );
       index = closeIndex;
     } else if (

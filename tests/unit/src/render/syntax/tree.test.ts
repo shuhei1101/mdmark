@@ -223,3 +223,20 @@ test("test_read_tree_options_when_unreadable", async () => {
     "open=0",
   ]);
 });
+
+// open= と並べた wrap を読む（正常系）
+test("test_read_tree_options_when_wrap", async () => {
+  // 準備
+  const { readTreeOptions } = await loadTree();
+  // 実行
+  const wrapped = readTreeOptions(treeMark("open=all wrap"));
+  const valued = readTreeOptions(treeMark("wrap=1"));
+  // 検証
+  expect(wrapped.open).toBe("all");
+  expect(wrapped.wrap).toBe(true);
+  expect(wrapped.warning).toBeUndefined();
+  expect(valued.wrap).toBe(false);
+  expect((valued.warning?.items ?? []).map((item) => item.label)).toEqual([
+    "wrap=1",
+  ]);
+});

@@ -79,10 +79,14 @@ export function wrapSections(state: StateCore): void {
     out.push(ownBlock(state, head, token), inline, ownBlock(state, body));
     if (section && !known) {
       out.push(
-        warningBlock(state, {
-          mark: section.raw,
-          message: `の \`${value}\` は使えません。使える値は \`closed\`・\`open\` です。この節は開いた状態で描いています。`,
-        }),
+        warningBlock(
+          state,
+          {
+            mark: section.raw,
+            message: `の \`${value}\` は使えません。使える値は \`closed\`・\`open\` です。この節は開いた状態で描いています。`,
+          },
+          tokens[index + 3],
+        ),
       );
     }
     levels.push(level);

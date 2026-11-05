@@ -11,6 +11,9 @@ import type { MdmarkReferences } from "../knowledge/references.ts";
 import type { MdmarkIconNode } from "../parts/inline-icon.ts";
 import { createParser, type RenderEnv } from "./parser.ts";
 import { sanitize } from "./sanitize.ts";
+import type { CollectedWarning } from "./syntax/warnings.ts";
+
+export type { CollectedWarning } from "./syntax/warnings.ts";
 
 /** 本文の HTML と、文書の印で決まった機能のオン・オフ */
 export type RenderedDocument = {
@@ -22,6 +25,8 @@ export type RenderedDocument = {
   extensionDefinitions: unknown[];
   /** 描いた操作できる部品の定義。文書の中の並びの順。出力の HTML には残さない */
   paramDefinitions: MdmarkParamDefinition[];
+  /** 本文に置いた書き方の警告を、警告を置いた順に並べたもの */
+  warnings: CollectedWarning[];
 };
 
 /** 描くごとに作る、mdmark が出した要素の印の値（乱数 16 バイトの 16 進） */
@@ -86,7 +91,17 @@ export function renderDocument(options: {
     features: env.features,
     extensionDefinitions: env.extensionDefinitions ?? [],
     paramDefinitions: env.paramDefinitions ?? [],
+    warnings: env.warnings ?? [],
   };
+}
+
+/** `render` と同じ設定の当て方で描き、描いたときに置く書き方の警告を HTML にせずに返す */
+export function collectWarnings(
+  markdown: string,
+  opts: { config?: MdmarkConfig } = {},
+): CollectedWarning[] {
+  const config = resolveConfig({ config: opts.config });
+  return renderDocument({ markdown, config }).warnings;
 }
 
 /** 画面を持たずに Markdown を本文の HTML 文字列にする */

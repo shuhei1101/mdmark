@@ -1,0 +1,15 @@
+$ npm run test:unit
+
+> test:unit
+> vitest run --project 'unit*'
+
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-notation-flow-layout-lint-wrap-link
+
+
+ Test Files  196 passed (196)
+      Tests  1458 passed (1458)
+   Start at  12:33:55
+   Duration  70.55s (worker 49%, tests 31%, import 18%, transform 2%)
+
+exit=0

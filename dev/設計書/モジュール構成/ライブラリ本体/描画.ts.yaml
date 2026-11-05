@@ -75,6 +75,9 @@ data_models:
       - name: mdmarkFootnotes
         type: FootnoteState | undefined
         description: 読んだ脚注の定義と参照（`readFootnoteDefinition` が作り、機能がオフなら `collectFootnotes` が消す）
+      - name: warnings
+        type: CollectedWarning[]
+        description: 書き方の警告（`collectWarningsRule` が最後に集める）
   - name: RenderedDocument
     title: 描いた文書
     container: src/render/index.ts
@@ -86,6 +89,23 @@ data_models:
       - name: features
         type: Record<string, boolean>
         description: '`resolveFeatures` が返したオン・オフ。`mount` と、機能を作る Issue が読む'
+      - name: warnings
+        type: CollectedWarning[]
+        description: 本文に置いた書き方の警告を、警告を置いた順に並べたもの。`collectWarnings` が返す
+  - name: CollectedWarning
+    title: 集めた書き方の警告
+    container: src/render/syntax/warnings.ts
+    summary: 書き方の警告 1 つの場所・種類・文
+    properties:
+      - name: line
+        type: number
+        description: 警告の元になったマーカー（範囲なら開きのマーカー）の元の行番号（1 から）。マーカーを持たない警告は、警告のトークンの後ろで最初に `map` を持つトークンの開始の行（無ければ前で最後に `map` を持つトークンの終わりの行）
+      - name: kind
+        type: '"diagram_invalid" | "syntax_warning"'
+        description: 図の部品の定義の警告は `diagram_invalid`、ほかは `syntax_warning`（`render` は知らないマーカーに警告を置かない）
+      - name: message
+        type: string
+        description: 警告の本文と項目を、HTML のタグを除いた文字にして空白 1 つでつないだもの（画面で読む文と同じ順）
 constants:
   - name: MARK_PATTERN
     title: 印の書式
@@ -243,7 +263,7 @@ functions:
     container: src/render/index.ts
     kind: 関数
     scope: public
-    summary: 描くごとに `nonce` を作って `env` に入れ、解析器で Markdown を HTML にし、`sanitize` をかけ、コアルールが決めた `env.features` と一緒に返す
+    summary: 描くごとに `nonce` を作って `env` に入れ、解析器で Markdown を HTML にし、`sanitize` をかけ、コアルールが決めた `env.features` と、`env.warnings` に集めた書き方の警告と一緒に返す
     description: '`render` と `mount` が共通で使う。解析器はモジュールで 1 つだけ作り（`createParser` を初めて使うときに呼ぶ）、呼び出しごとの値は `env` で渡す。`nonce` は `crypto.getRandomValues` の 16 バイトを 16 進にしたもので、`sanitize` が出力から外すため、同じ入力には同じ文字列を返す'
     args:
       - name: options
@@ -721,6 +741,70 @@ functions:
     status: planned
     introduced:
       pr: 69
+  - name: collectWarnings
+    title: 書き方の警告を取り出す
+    container: src/render/index.ts
+    kind: 関数
+    scope: internal
+    summary: '`render` と同じ設定の当て方で `renderDocument` を呼び、描いたときに置く書き方の警告を HTML にせずに返す。`mdmark check --text`・`--file` が Node で呼ぶ（ブラウザを使わない）'
+    args:
+      - name: markdown
+        type: string
+        required: true
+        description: 点検する Markdown
+      - name: opts
+        type: '{ config?: MdmarkConfig }'
+        required: false
+        default: '{}'
+        description: 設定（`features`・`libraries` を当てる）
+    returns:
+      type: CollectedWarning[]
+      description: 警告を置いた順の警告（無ければ空）
+    callees:
+      - dev/設計書/モジュール構成/ライブラリ本体/設定と機能.ts#functions[resolveConfig]
+      - '#functions[renderDocument]'
+    refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/設定と索引を点検する.ts#constraints[記法の点検]
+    unit_tests:
+      - name: test_collect_warnings
+        case: 正常
+        summary: 書き方の警告を場所と種類つきで返す
+        condition: '1 行目の `<!-- flow -->` の範囲にノードの種類 `begin` の定義、22 行目に `<!-- code: highlight=9 -->` と 3 行のコードブロックを持つ Markdown'
+        mock: なし
+        expected: '`{ line: 1, kind: "diagram_invalid" }` と `{ line: 22, kind: "syntax_warning" }` の 2 件で、`message` が同じ Markdown を `render` で描いた警告の文字と同じ'
+      - name: test_collect_warnings_when_clean
+        case: 正常
+        summary: 警告の無い Markdown は空の配列を返す
+        condition: '正しいフロー図の定義と `<!-- table: data -->` で囲んだ表'
+        mock: なし
+        expected: 空の配列
+    status: planned
+    introduced:
+      pr: 328
+  - name: isAllowedUrl
+    title: 許す URL かを確かめる
+    container: src/render/sanitize.ts
+    kind: 関数
+    scope: internal
+    summary: '`SANITIZE_OPTIONS` の `allowedSchemes`（`http`・`https`・`mailto`）のスキームか、スキームを持たない相対 URL なら `true` を返す。スキームは前後の空白と制御文字を除き、小文字にして比べる（sanitize-html と同じ見分け）'
+    args:
+      - name: url
+        type: string
+        required: true
+        description: 確かめる URL
+    returns:
+      type: boolean
+      description: 本文のリンクで許すか
+    unit_tests:
+      - name: test_is_allowed_url
+        case: 正常
+        summary: 本文のリンクと同じスキームを許す
+        condition: '`https://example.com`・`mailto:a@example.com`・`./other.md`・`#top`・`javascript:alert(1)`・` JavaScript:alert(1)`・`id:spec#items`'
+        mock: なし
+        expected: 前の 4 つが `true`、後ろの 3 つが `false`
+    status: planned
+    introduced:
+      pr: 328
 test_files:
   - tests/unit/src/render/index.test.ts
   - tests/unit/src/render/parser.test.ts

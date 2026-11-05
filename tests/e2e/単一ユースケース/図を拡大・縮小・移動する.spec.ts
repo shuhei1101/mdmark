@@ -1,6 +1,13 @@
 import { expect, type Page, test } from "@playwright/test";
 import { BAR_TEXT, chartElement, wrapHtml } from "../chart.ts";
-import { flowMarkdown, tabToViewport, zoomPercent } from "../diagram.ts";
+import {
+  flowMarkdown,
+  linkedFlowText,
+  routeLinkTargets,
+  tabToViewport,
+  wrapDirective,
+  zoomPercent,
+} from "../diagram.ts";
 import {
   buildDistRoot,
   mountDocument,
@@ -408,4 +415,52 @@ test("test_normal_when_er_columns_folded", async ({ page }) => {
   await expect(rows).toHaveCount(12);
   await expect(button).toHaveAttribute("aria-expanded", "true");
   expect(await line.getAttribute("d")).toBe(before);
+});
+
+// リンク先を持つノードの名前の上から始めたドラッグで図を動かし、離してもリンク先を開かない。動かさずに押すと開く（正常シナリオ（リンク先を持つノードの上のドラッグ））
+test("test_normal_when_drag_on_linked_node", async ({ page }) => {
+  // 準備
+  const opened = await routeLinkTargets(page, ["https://example.com/spec"]);
+  await openPage(page, builtRoot);
+  await mountDocument(page, {
+    markdown: wrapDirective(
+      "flow",
+      linkedFlowText({ hrefs: ["https://example.com/spec", "./other.md"] }),
+    ),
+  });
+  await zoomIn(page);
+  const viewport = viewportOf(page);
+  await viewport.evaluate((element) => {
+    element.scrollLeft = 0;
+    element.scrollTop = 0;
+  });
+  const name = page.locator('#doc [data-node="a"] .mdmark-diagram-node-name');
+  // 検証: 名前の文字の上も押せる形のカーソル
+  await expect(name).toHaveCSS("cursor", "pointer");
+  const nameBox = await name.boundingBox();
+  if (!nameBox) {
+    throw new Error("ノードの名前の範囲を取れない");
+  }
+  // 実行: 名前の文字の上で押したまま 100px 左へ動かして離す
+  const start = await viewport.evaluate((element) => element.scrollLeft);
+  const y = nameBox.y + nameBox.height / 2;
+  const x = nameBox.x + nameBox.width - 4;
+  await page.mouse.move(x, y);
+  await page.mouse.down();
+  await page.mouse.move(x - 100, y, { steps: 5 });
+  expect(await page.evaluate(() => getSelection()?.toString())).toBe("");
+  await page.mouse.up();
+  // 検証: 動かした分だけ図が動き、リンク先は開かない
+  const moved = await viewport.evaluate((element) => element.scrollLeft);
+  expect(moved - start).toBeGreaterThan(95);
+  expect(moved - start).toBeLessThan(105);
+  await page.waitForTimeout(500);
+  expect(opened()).toEqual([]);
+  // 実行・検証: 動かさずに押して離すと、リンク先が開く
+  await viewport.evaluate((element) => {
+    element.scrollLeft = 0;
+  });
+  await name.click();
+  await page.waitForURL("https://example.com/spec");
+  expect(opened()).toEqual(["https://example.com/spec"]);
 });

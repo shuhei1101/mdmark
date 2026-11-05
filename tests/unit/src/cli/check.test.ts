@@ -725,3 +725,43 @@ test("test_check_includes", async () => {
     ["include_target_missing", "guide.md", "5"],
   ]);
 });
+
+// 文字列の書き方の警告を - の行にして出す（正常系）
+test("test_run_check_when_text", async () => {
+  // 準備
+  const { runCheck } = await loadCheck();
+  const { WARNINGS_MARKDOWN } = await import("../../helpers/diagrams.ts");
+  const dir = await createCleanDir();
+  const { io, stdout } = createIo(dir);
+  // 実行
+  const code = await runCheck({ text: WARNINGS_MARKDOWN }, io);
+  // 検証
+  expect(code).toBe(1);
+  expect(stdout.map((line) => line.split(": ")[0])).toEqual([
+    "-:1",
+    "-:20",
+    "-:22",
+    "ずれ 3 件",
+  ]);
+  expect(stdout[0]).toMatch(/^-:1: diagram_invalid: /);
+  expect(stdout[1]).toMatch(/^-:20: unknown_mark: /);
+  expect(stdout[2]).toMatch(/^-:22: syntax_warning: /);
+});
+
+// 一緒に渡せない引数を点検せずに止める（異常系）
+test("test_run_check_when_arguments_conflict", async () => {
+  // 準備
+  const { runCheck } = await loadCheck();
+  const { CliError } = await import("../../../../src/cli/errors.ts");
+  const dir = await createCleanDir();
+  const { io, stdout } = createIo(dir);
+  // 実行
+  const withBase = runCheck({ text: "a", base: "main" }, io);
+  const withoutKey = runCheck({ file: "records.yaml" }, io);
+  // 検証
+  await expect(withBase).rejects.toBeInstanceOf(CliError);
+  await expect(withBase).rejects.toThrow(/--text[\s\S]*--base/);
+  await expect(withoutKey).rejects.toBeInstanceOf(CliError);
+  await expect(withoutKey).rejects.toThrow(/--key/);
+  expect(stdout).toEqual([]);
+});

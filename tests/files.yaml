@@ -369,6 +369,12 @@ files:
     related:
       - to: dev/設計書/シナリオ/単一ユースケース/脚注を見る
         type: see_also
+  - path: e2e/単一ユースケース/文字列とYAMLのキーの記法を点検する.spec.ts
+    description: シナリオ『文字列とYAMLのキーの記法を点検する』に書いたシナリオを Playwright で流す E2E テスト。このユースケースの振る舞いを変えたときに読む。
+    tags: [topic:e2e, topic:シナリオ, tool:playwright]
+    related:
+      - to: dev/設計書/シナリオ/単一ユースケース/文字列とYAMLのキーの記法を点検する
+        type: see_also
   - path: e2e/単一ユースケース/設定と索引を点検する.spec.ts
     description: シナリオ『設定と索引を点検する』に書いたシナリオを Playwright で流す E2E テスト。このユースケースの振る舞いを変えたときに読む。
     tags: [topic:e2e, topic:シナリオ, tool:playwright]

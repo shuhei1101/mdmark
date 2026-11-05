@@ -31,6 +31,7 @@ import { bundleModule } from "./embed.ts";
 import { CliError, type CliIo } from "./errors.ts";
 import { changedPathsSince } from "./git.ts";
 import { collectIncludes, includeProblemMessage } from "./includes.ts";
+import { checkMarkdownSource } from "./markdown-check.ts";
 
 /** `mdmark check` が出すずれ 1 件 */
 export type CheckIssue = {
@@ -46,6 +47,7 @@ export type CheckIssue = {
     | "unknown_mark"
     | "missing_file"
     | "diagram_invalid"
+    | "syntax_warning"
     | FlowLayoutKind
     | "alias_no_files"
     | "alias_unreadable"
@@ -239,7 +241,7 @@ async function checkIndexFile(
 }
 
 /** 束ねたコードを `data:` の URL にして `import()` し、モジュールの名前空間を返す */
-async function importBundledCode(code: string): Promise<unknown> {
+export async function importBundledCode(code: string): Promise<unknown> {
   const url = `data:text/javascript;base64,${Buffer.from(code).toString("base64")}`;
   return import(url);
 }
@@ -513,16 +515,68 @@ export async function collectCheckIssues(
   ];
 }
 
-/** 設定の形・設定が指すファイル・`build` の対象・`checkIndex`・文書の本文の知らない印のずれを集め、`{ファイル}:{場所}: {種類}: {内容}` の行と `ずれ {件数} 件` を出す */
+/** `--text`・`--file`・`--key`・`--base` の組を確かめ、一緒に渡せない引数か足りない引数があれば `CliError` を投げる */
+export function validateSourceArgs(options: {
+  text?: string | undefined;
+  file?: string | undefined;
+  key?: string | undefined;
+  base?: string | undefined;
+}): void {
+  const { text, file, key, base } = options;
+  if (text !== undefined) {
+    const others = [
+      ...(base !== undefined ? ["--base"] : []),
+      ...(file !== undefined ? ["--file"] : []),
+      ...(key !== undefined ? ["--key"] : []),
+    ];
+    if (others.length > 0) {
+      throw new CliError(
+        `--text は ${others.join("・")} と一緒に渡せません。Markdown の文字列は --text だけで、YAML のキーの値は --file と --key で点検してください。`,
+      );
+    }
+    return;
+  }
+  if (file === undefined && key === undefined) {
+    return;
+  }
+  if (file === undefined || key === undefined) {
+    throw new CliError(
+      "--file と --key は一緒に渡してください（例 --file records.yaml --key items[0].body）。",
+    );
+  }
+  if (base !== undefined) {
+    throw new CliError(
+      "--file は --base と一緒に渡せません。--base は設定と索引の点検だけで使えます。",
+    );
+  }
+}
+
+/** 設定の形・設定が指すファイル・`build` の対象・`checkIndex`・文書の本文の知らない印のずれを集め、`{ファイル}:{場所}: {種類}: {内容}` の行と `ずれ {件数} 件` を出す。`text` か `file` を渡したときは、渡した Markdown の記法だけを点検する */
 export async function runCheck(
-  options: { config?: string | undefined; base?: string | undefined },
+  options: {
+    config?: string | undefined;
+    base?: string | undefined;
+    text?: string | undefined;
+    file?: string | undefined;
+    key?: string | undefined;
+  },
   io: CliIo,
 ): Promise<0 | 1> {
-  const path = await findConfigFile(io.cwd, options.config);
-  const issues = await collectCheckIssues(
-    path,
-    options.base === undefined ? {} : { base: options.base },
-  );
+  validateSourceArgs(options);
+  const fromSource = options.text !== undefined || options.file !== undefined;
+  const issues = fromSource
+    ? await checkMarkdownSource({
+        cwd: io.cwd,
+        config: options.config,
+        text: options.text,
+        file: options.file,
+        key: options.key,
+        importCode: importBundledCode,
+      })
+    : await collectCheckIssues(
+        await findConfigFile(io.cwd, options.config),
+        options.base === undefined ? {} : { base: options.base },
+      );
   for (const issue of issues) {
     const place =
       issue.where === "" ? issue.file : `${issue.file}:${issue.where}`;
