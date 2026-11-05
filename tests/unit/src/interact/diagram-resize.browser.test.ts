@@ -112,6 +112,13 @@ test("test_attach_diagram_resize_when_restored", async () => {
   // 検証
   expect(broken.result.restored).toBeNull();
   expect(broken.viewport.style.height).toBe("300px");
+  // 準備・実行: 保った高さが今の上限（1000px）を超える
+  removeRoots();
+  const tall = await setUp(memoryStorage({ [KEY]: "1500" }));
+  // 検証: 上限に収めて当て、読み上げの値も収めた高さにする
+  expect(tall.result.restored).toBe(1000);
+  expect(tall.viewport.style.height).toBe("1000px");
+  expect(tall.handle.getAttribute("aria-valuenow")).toBe("1000");
 });
 
 // 保つ先が例外を投げても高さを変える（異常系）
