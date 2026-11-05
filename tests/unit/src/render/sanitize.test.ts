@@ -376,6 +376,20 @@ test("test_sanitize_embedded_when_text", async () => {
   expect(sanitized).toContain("<code>索引</code>");
 });
 
+// keepClasses が真なら、記法の class を除いて書いた人の class を残す（正常系）
+test("test_sanitize_embedded_when_keep_classes", async () => {
+  // 準備
+  const { sanitizeEmbeddedWith } = await loadEmbedded();
+  const html = '<div class="box mdmark-table has-tip">箱</div>';
+  const keepText = (text: string) => text;
+  // 実行
+  const kept = sanitizeEmbeddedWith(html, keepText, true);
+  const dropped = sanitizeEmbeddedWith(html, keepText);
+  // 検証
+  expect(kept).toBe('<div class="box">箱</div>');
+  expect(dropped).toBe("<div>箱</div>");
+});
+
 // 許した宣言だけを残す（正常系）
 test("test_filter_embedded_style", async () => {
   // 準備

@@ -1776,6 +1776,43 @@ function columnEyes(wrapper: HTMLElement): HTMLButtonElement[] {
   ];
 }
 
+// 階層の表のコピーに畳んだ行を含め、キーを全体のパスで書き、補った行を含めない（正常系）
+test("test_attach_tables_when_tree_copied", async () => {
+  // 準備
+  const writeText = vi.fn<(text: string) => Promise<void>>(() =>
+    Promise.resolve(),
+  );
+  stubClipboard(writeText);
+  const { attachTables } = await loadTables();
+  const { root } = createRoot(
+    [
+      "<!-- table: data +copy tree=キー -->",
+      "",
+      "| キー | 説明 |",
+      "| --- | --- |",
+      "| features.table | 表の機能 |",
+      "| aliases[].id | 別名の ID |",
+      "",
+      "<!-- /table -->",
+      "",
+    ].join("\n"),
+  );
+  detachers.push(attachTables(root));
+  findButton(
+    root,
+    'tr[data-path="aliases[]"] button.mdmark-tree-toggle',
+  ).click();
+  // 実行
+  chooseCopyFormat(root, "markdown");
+  // 検証
+  await vi.waitFor(() => {
+    expect(writeText).toHaveBeenCalledTimes(1);
+  });
+  expect(writeText).toHaveBeenCalledWith(
+    "| キー | 説明 |\n| --- | --- |\n| features.table | 表の機能 |\n| aliases[].id | 別名の ID |",
+  );
+});
+
 // 列の表示を切り替えるたびに、表の番号と隠している列の見出しで知らせる（正常系）
 test("test_attach_tables_when_columns_notified", async () => {
   // 準備: 1 つ目は削除したブロックの中、2 つ目は 3 列目を隠した表、3 つ目は隠していない表
