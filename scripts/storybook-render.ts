@@ -904,7 +904,7 @@ const LINK_HOVER_FOCUS_STYLE =
   '<style>.mdmark-diagram-node.has-link[data-node="recv"]{background:color-mix(in oklab,var(--node-color) 8%,var(--mdmark-color-bg))}.mdmark-diagram-node.has-link[data-node="classify"] .mdmark-diagram-node-link{outline:2px solid var(--mdmark-color-link);outline-offset:2px}</style>';
 
 const STATIC_POPOVER_STYLE =
-  "<style>.mdmark-comment-add,.mdmark-comment-popover{position:static}</style>";
+  "<style>.mdmark-comment-add,.mdmark-comment-popover{position:static;max-width:100%}</style>";
 
 // 部品の id から、部品の関数を呼ぶ表
 /** 範囲のスクリプトと CSS のストーリー: 通し番号 `scope` の範囲に、根の要素の中に限った `css` の `style` と、実行しない `script` の `template` を置き、範囲の外に同じ class の箱を持つ範囲を続ける。`opened` のときは根の要素に class `is-open` を付ける */
