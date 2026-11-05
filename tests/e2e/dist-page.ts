@@ -291,6 +291,41 @@ export async function openPage(
   await page.waitForFunction(() => "mdmark" in window);
 }
 
+/** jsDelivr の Lucide のアイコンのモジュールの代役（形を 1 つ持つ） */
+export const LUCIDE_MODULE = 'export default [["path",{"d":"M3 12h18"}]];';
+
+/** jsDelivr の Lucide のアイコンへの要求を差し替え、受けた要求の「メソッド URL」を記録する配列を返す。`respond` は名前（`sailboat` など）から応答の状態か、通信の失敗（`"fail"`）を返す */
+export async function routeLucide(
+  page: Page,
+  respond: (name: string) => 200 | 404 | "fail" = () => 200,
+): Promise<string[]> {
+  const requests: string[] = [];
+  await page.route(
+    "https://cdn.jsdelivr.net/npm/lucide@*/**",
+    async (route) => {
+      const request = route.request();
+      requests.push(`${request.method()} ${request.url()}`);
+      const name =
+        new URL(request.url()).pathname
+          .split("/")
+          .pop()
+          ?.replace(/\.mjs$/, "") ?? "";
+      const answer = respond(name);
+      if (answer === "fail") {
+        await route.abort("failed");
+        return;
+      }
+      await route.fulfill({
+        status: answer,
+        body: answer === 200 ? LUCIDE_MODULE : "",
+        contentType: "text/javascript",
+        headers: { "access-control-allow-origin": "*" },
+      });
+    },
+  );
+  return requests;
+}
+
 /** 外部ライブラリの代役のモジュールを返す応答に差し替え、受けた要求の件数を返す関数を返す。status が 404 のときは中身を返さない */
 export async function routeLibrary(
   page: Page,
@@ -416,6 +451,10 @@ export async function mountDocument(
     baseMarkdown?: string | null;
     /** 受けた引数を `window.columnsCalls` に控える `onColumnsChange` を渡す */
     recordColumns?: boolean;
+    /** 取り込む文書の表（`opts.includes`） */
+    includes?: Record<string, string>;
+    /** 束ねていない名前のアイコンの形の表（`opts.icons`） */
+    icons?: Record<string, Array<[string, Record<string, string>]>>;
   } & IndexOptions,
 ): Promise<void> {
   await page.evaluate(
@@ -430,6 +469,8 @@ export async function mountDocument(
       useCommentStore,
       baseMarkdown,
       recordColumns,
+      includes,
+      icons,
     }) => {
       const w = window as MdmarkWindow;
       const el = document.querySelector<HTMLElement>("#doc");
@@ -451,6 +492,8 @@ export async function mountDocument(
         aliases,
         commentStore: useCommentStore ? w.commentStore : undefined,
         ...(baseMarkdown === undefined ? {} : { baseMarkdown }),
+        ...(includes === undefined ? {} : { includes }),
+        ...(icons === undefined ? {} : { icons }),
         ...(recordColumns
           ? {
               onColumnsChange: (event: unknown) => {
