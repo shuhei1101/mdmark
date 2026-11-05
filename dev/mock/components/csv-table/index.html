@@ -38,117 +38,9 @@
   <main class="host">
     <div class="catalog">
       <h1 class="catalog-title">CSV の表</h1>
-      <!-- 案 A: 青い文字（押すと太字と下線） / 押す前 -->
-      <section aria-labelledby="state-a-before">
-        <h2 class="catalog-label" id="state-a-before">案 A: 青い文字（押すと太字と下線） / 押す前</h2>
-        <article class="mdmark">
-<div class="mdmark-table" data-kind="data" data-raw-style="a">
-  <div class="mdmark-table-bar">
-    <div class="mdmark-table-tools">
-      <button class="mdmark-raw-toggle" type="button" data-raw-style="a" aria-pressed="false" title="元の CSV を表示">RAW</button>
-    </div>
-  </div>
-  <table tabindex="0" aria-label="表: CSV">
-    <thead><tr><th>名前</th><th>拠点</th><th class="mdmark-align-right">金額</th></tr></thead>
-    <tbody>
-      <tr><td data-label="名前">北山</td><td data-label="拠点">東京, 本社</td><td class="mdmark-align-right" data-label="金額">1200</td></tr>
-      <tr><td data-label="名前">南田</td><td data-label="拠点">大阪</td><td class="mdmark-align-right" data-label="金額">800</td></tr>
-      <tr><td data-label="名前">西川</td><td data-label="拠点">名古屋<br>（支店）</td><td class="mdmark-align-right" data-label="金額">950</td></tr>
-    </tbody>
-  </table>
-  <pre class="mdmark-code mdmark-raw" tabindex="0" aria-label="元の CSV"><code class="language-csv">名前,拠点,金額
-北山,"東京, 本社",1200
-南田,大阪,800
-西川,"名古屋
-（支店）",950</code></pre>
-</div>
-        </article>
-      </section>
-
-      <!-- 案 A: 青い文字（押すと太字と下線） / 押した後 -->
-      <section aria-labelledby="state-a-after">
-        <h2 class="catalog-label" id="state-a-after">案 A: 青い文字（押すと太字と下線） / 押した後</h2>
-        <article class="mdmark">
-<div class="mdmark-table" data-kind="data" data-raw-style="a" data-view="raw">
-  <div class="mdmark-table-bar">
-    <div class="mdmark-table-tools">
-      <button class="mdmark-raw-toggle" type="button" data-raw-style="a" aria-pressed="true" title="元の CSV を表示">RAW</button>
-    </div>
-  </div>
-  <table tabindex="0" aria-label="表: CSV">
-    <thead><tr><th>名前</th><th>拠点</th><th class="mdmark-align-right">金額</th></tr></thead>
-    <tbody>
-      <tr><td data-label="名前">北山</td><td data-label="拠点">東京, 本社</td><td class="mdmark-align-right" data-label="金額">1200</td></tr>
-      <tr><td data-label="名前">南田</td><td data-label="拠点">大阪</td><td class="mdmark-align-right" data-label="金額">800</td></tr>
-      <tr><td data-label="名前">西川</td><td data-label="拠点">名古屋<br>（支店）</td><td class="mdmark-align-right" data-label="金額">950</td></tr>
-    </tbody>
-  </table>
-  <pre class="mdmark-code mdmark-raw" tabindex="0" aria-label="元の CSV"><code class="language-csv">名前,拠点,金額
-北山,"東京, 本社",1200
-南田,大阪,800
-西川,"名古屋
-（支店）",950</code></pre>
-</div>
-        </article>
-      </section>
-
-      <!-- 案 B: 「表 | RAW」の切り替え（選んだ側に青い下線） / 押す前 -->
-      <section aria-labelledby="state-b-before">
-        <h2 class="catalog-label" id="state-b-before">案 B: 「表 | RAW」の切り替え（選んだ側に青い下線） / 押す前</h2>
-        <article class="mdmark">
-<div class="mdmark-table" data-kind="data" data-raw-style="b">
-  <div class="mdmark-table-bar">
-    <div class="mdmark-table-tools">
-      <div class="mdmark-raw-seg" role="group" aria-label="表示"><button class="mdmark-raw-seg-item" type="button" data-view-set="table" aria-pressed="true">表</button><button class="mdmark-raw-seg-item" type="button" data-view-set="raw" aria-pressed="false">RAW</button></div>
-    </div>
-  </div>
-  <table tabindex="0" aria-label="表: CSV">
-    <thead><tr><th>名前</th><th>拠点</th><th class="mdmark-align-right">金額</th></tr></thead>
-    <tbody>
-      <tr><td data-label="名前">北山</td><td data-label="拠点">東京, 本社</td><td class="mdmark-align-right" data-label="金額">1200</td></tr>
-      <tr><td data-label="名前">南田</td><td data-label="拠点">大阪</td><td class="mdmark-align-right" data-label="金額">800</td></tr>
-      <tr><td data-label="名前">西川</td><td data-label="拠点">名古屋<br>（支店）</td><td class="mdmark-align-right" data-label="金額">950</td></tr>
-    </tbody>
-  </table>
-  <pre class="mdmark-code mdmark-raw" tabindex="0" aria-label="元の CSV"><code class="language-csv">名前,拠点,金額
-北山,"東京, 本社",1200
-南田,大阪,800
-西川,"名古屋
-（支店）",950</code></pre>
-</div>
-        </article>
-      </section>
-
-      <!-- 案 B: 「表 | RAW」の切り替え（選んだ側に青い下線） / 押した後 -->
-      <section aria-labelledby="state-b-after">
-        <h2 class="catalog-label" id="state-b-after">案 B: 「表 | RAW」の切り替え（選んだ側に青い下線） / 押した後</h2>
-        <article class="mdmark">
-<div class="mdmark-table" data-kind="data" data-raw-style="b" data-view="raw">
-  <div class="mdmark-table-bar">
-    <div class="mdmark-table-tools">
-      <div class="mdmark-raw-seg" role="group" aria-label="表示"><button class="mdmark-raw-seg-item" type="button" data-view-set="table" aria-pressed="false">表</button><button class="mdmark-raw-seg-item" type="button" data-view-set="raw" aria-pressed="true">RAW</button></div>
-    </div>
-  </div>
-  <table tabindex="0" aria-label="表: CSV">
-    <thead><tr><th>名前</th><th>拠点</th><th class="mdmark-align-right">金額</th></tr></thead>
-    <tbody>
-      <tr><td data-label="名前">北山</td><td data-label="拠点">東京, 本社</td><td class="mdmark-align-right" data-label="金額">1200</td></tr>
-      <tr><td data-label="名前">南田</td><td data-label="拠点">大阪</td><td class="mdmark-align-right" data-label="金額">800</td></tr>
-      <tr><td data-label="名前">西川</td><td data-label="拠点">名古屋<br>（支店）</td><td class="mdmark-align-right" data-label="金額">950</td></tr>
-    </tbody>
-  </table>
-  <pre class="mdmark-code mdmark-raw" tabindex="0" aria-label="元の CSV"><code class="language-csv">名前,拠点,金額
-北山,"東京, 本社",1200
-南田,大阪,800
-西川,"名古屋
-（支店）",950</code></pre>
-</div>
-        </article>
-      </section>
-
-      <!-- 案 C: コードのアイコン（押すと青いアイコンと薄い青の面） / 押す前 -->
+      <!-- コードのアイコン（押すと青いアイコンと薄い青の面） / 押す前 -->
       <section aria-labelledby="state-c-before">
-        <h2 class="catalog-label" id="state-c-before">案 C: コードのアイコン（押すと青いアイコンと薄い青の面） / 押す前</h2>
+        <h2 class="catalog-label" id="state-c-before">コードのアイコン（押すと青いアイコンと薄い青の面） / 押す前</h2>
         <article class="mdmark">
 <div class="mdmark-table" data-kind="data" data-raw-style="c">
   <div class="mdmark-table-bar">
@@ -173,9 +65,9 @@
         </article>
       </section>
 
-      <!-- 案 C: コードのアイコン（押すと青いアイコンと薄い青の面） / 押した後 -->
+      <!-- コードのアイコン（押すと青いアイコンと薄い青の面） / 押した後 -->
       <section aria-labelledby="state-c-after">
-        <h2 class="catalog-label" id="state-c-after">案 C: コードのアイコン（押すと青いアイコンと薄い青の面） / 押した後</h2>
+        <h2 class="catalog-label" id="state-c-after">コードのアイコン（押すと青いアイコンと薄い青の面） / 押した後</h2>
         <article class="mdmark">
 <div class="mdmark-table" data-kind="data" data-raw-style="c" data-view="raw">
   <div class="mdmark-table-bar">
@@ -200,68 +92,14 @@
         </article>
       </section>
 
-      <!-- 案 D: 小さな札（押すと青い枠と薄い青の面） / 押す前 -->
-      <section aria-labelledby="state-d-before">
-        <h2 class="catalog-label" id="state-d-before">案 D: 小さな札（押すと青い枠と薄い青の面） / 押す前</h2>
-        <article class="mdmark">
-<div class="mdmark-table" data-kind="data" data-raw-style="d">
-  <div class="mdmark-table-bar">
-    <div class="mdmark-table-tools">
-      <button class="mdmark-raw-toggle" type="button" data-raw-style="d" aria-pressed="false" title="元の CSV を表示">RAW</button>
-    </div>
-  </div>
-  <table tabindex="0" aria-label="表: CSV">
-    <thead><tr><th>名前</th><th>拠点</th><th class="mdmark-align-right">金額</th></tr></thead>
-    <tbody>
-      <tr><td data-label="名前">北山</td><td data-label="拠点">東京, 本社</td><td class="mdmark-align-right" data-label="金額">1200</td></tr>
-      <tr><td data-label="名前">南田</td><td data-label="拠点">大阪</td><td class="mdmark-align-right" data-label="金額">800</td></tr>
-      <tr><td data-label="名前">西川</td><td data-label="拠点">名古屋<br>（支店）</td><td class="mdmark-align-right" data-label="金額">950</td></tr>
-    </tbody>
-  </table>
-  <pre class="mdmark-code mdmark-raw" tabindex="0" aria-label="元の CSV"><code class="language-csv">名前,拠点,金額
-北山,"東京, 本社",1200
-南田,大阪,800
-西川,"名古屋
-（支店）",950</code></pre>
-</div>
-        </article>
-      </section>
-
-      <!-- 案 D: 小さな札（押すと青い枠と薄い青の面） / 押した後 -->
-      <section aria-labelledby="state-d-after">
-        <h2 class="catalog-label" id="state-d-after">案 D: 小さな札（押すと青い枠と薄い青の面） / 押した後</h2>
-        <article class="mdmark">
-<div class="mdmark-table" data-kind="data" data-raw-style="d" data-view="raw">
-  <div class="mdmark-table-bar">
-    <div class="mdmark-table-tools">
-      <button class="mdmark-raw-toggle" type="button" data-raw-style="d" aria-pressed="true" title="元の CSV を表示">RAW</button>
-    </div>
-  </div>
-  <table tabindex="0" aria-label="表: CSV">
-    <thead><tr><th>名前</th><th>拠点</th><th class="mdmark-align-right">金額</th></tr></thead>
-    <tbody>
-      <tr><td data-label="名前">北山</td><td data-label="拠点">東京, 本社</td><td class="mdmark-align-right" data-label="金額">1200</td></tr>
-      <tr><td data-label="名前">南田</td><td data-label="拠点">大阪</td><td class="mdmark-align-right" data-label="金額">800</td></tr>
-      <tr><td data-label="名前">西川</td><td data-label="拠点">名古屋<br>（支店）</td><td class="mdmark-align-right" data-label="金額">950</td></tr>
-    </tbody>
-  </table>
-  <pre class="mdmark-code mdmark-raw" tabindex="0" aria-label="元の CSV"><code class="language-csv">名前,拠点,金額
-北山,"東京, 本社",1200
-南田,大阪,800
-西川,"名古屋
-（支店）",950</code></pre>
-</div>
-        </article>
-      </section>
-
-      <!-- マーカーの無い csv（既定の種類の表。案 A の見た目） -->
+      <!-- マーカーの無い csv（既定の種類の表） -->
       <section aria-labelledby="state-default-kind">
-        <h2 class="catalog-label" id="state-default-kind">マーカーの無い csv（既定の種類の表。案 A の見た目）</h2>
+        <h2 class="catalog-label" id="state-default-kind">マーカーの無い csv（既定の種類の表）</h2>
         <article class="mdmark">
-<div class="mdmark-table" data-kind="data" data-raw-style="a">
+<div class="mdmark-table" data-kind="data" data-raw-style="c">
   <div class="mdmark-table-bar">
     <div class="mdmark-table-tools">
-      <button class="mdmark-raw-toggle" type="button" data-raw-style="a" aria-pressed="false" title="元の CSV を表示">RAW</button>
+      <button class="mdmark-raw-toggle" type="button" data-raw-style="c" aria-pressed="false" title="元の CSV を表示" aria-label="元の CSV を表示"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m18 16 4-4-4-4"/><path d="m6 8-4 4 4 4"/><path d="m14.5 4-5 16"/></svg></button>
     </div>
   </div>
   <table tabindex="0" aria-label="表: CSV">
@@ -289,10 +127,10 @@
   <p class="mdmark-syntax-warning-title"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg>書き方の警告</p>
   <p>CSV の 3 行目・4 行目の列の数が、見出しの行の 3 列と違います。見出しの列の数にそろえて描いています。</p>
 </div>
-<div class="mdmark-table" data-kind="data" data-raw-style="a">
+<div class="mdmark-table" data-kind="data" data-raw-style="c">
   <div class="mdmark-table-bar">
     <div class="mdmark-table-tools">
-      <button class="mdmark-raw-toggle" type="button" data-raw-style="a" aria-pressed="false" title="元の CSV を表示">RAW</button>
+      <button class="mdmark-raw-toggle" type="button" data-raw-style="c" aria-pressed="false" title="元の CSV を表示" aria-label="元の CSV を表示"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m18 16 4-4-4-4"/><path d="m6 8-4 4 4 4"/><path d="m14.5 4-5 16"/></svg></button>
     </div>
   </div>
   <table tabindex="0" aria-label="表: CSV">
