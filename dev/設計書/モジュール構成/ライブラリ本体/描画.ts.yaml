@@ -716,7 +716,7 @@ functions:
     kind: 関数
     scope: internal
     summary: 範囲の `css` の各規則のセレクタの前に `.mdmark-html[data-html-scope="{scope}"]` を付け、`:scope` をその根の要素のセレクタに置き換えた CSS を返す
-    description: 要件の `未確定`（範囲の `css` を範囲の HTML にだけ当てる手段）の案 A。対応ブラウザの下限（Chrome 99・Firefox 98・Safari 16.4）で効き、範囲の中の mdmark の部品に `dist/index.css` が当たるため、`@scope` と Shadow DOM は使わない。文字列・コメント・括弧の中の `,`・`{`・`}` を区切りとして扱わない。`@media`・`@supports`・`@container`・`@layer` の中の規則も同じく書き換え、`@keyframes`・`@font-face` の中は書き換えない。`@import` は落とす（外へ要求させない）。`html`・`body`・`:root` で始まるセレクタはその部分を根の要素に置き換える。DOM を使わず、`render` と同じく Node でも動く
+    description: 要件の `未確定`（範囲の `css` を範囲の HTML にだけ当てる手段）の案 A。対応ブラウザの下限（Chrome 99・Firefox 98・Safari 16.4）で効き、範囲の中の mdmark の部品に `dist/index.css` が当たるため、`@scope` と Shadow DOM は使わない。文字列・コメント・括弧の中の `,`・`{`・`}` を区切りとして扱わない。`@media`・`@supports`・`@container`・`@layer` の中の規則も同じく書き換え、`@keyframes`・`@font-face` は中を書き換えずに残す。この 6 つ以外の `@` の規則（`@import`・`@scope`・`@starting-style` など）は、範囲の外へ当てない・外へ要求させないため落とし、書き方の警告は出さない。`html`・`body`・`:root` で始まるセレクタはその部分を根の要素に置き換える。DOM を使わず、`render` と同じく Node でも動く
     args:
       - name: options
         type: '{ css: string; scope: number }'
@@ -728,9 +728,9 @@ functions:
     process: |-
       1. 文字列とコメントを飛ばしながら、最上位の規則を `{` と対応する `}` で切り出す
       2. 規則ごとに次を行う
-         - `@import` は落とす
          - `@media`・`@supports`・`@container`・`@layer` は中身に 1 からを当て直す
-         - `@keyframes`・`@font-face` と他の `@` の規則はそのまま残す
+         - `@keyframes`・`@font-face` はそのまま残す
+         - 他の `@` の規則（`@import` を含む）は落とす
          - それ以外はセレクタを最上位の `,` で分け、各セレクタの `:scope`・先頭の `html`・`body`・`:root` を根の要素のセレクタに置き換え、置き換えなかったセレクタの前に根の要素のセレクタと空白を付ける
       3. 書き換えた規則をつなげ、`</style` を `<\/style` に替えて返す
     unit_tests:
@@ -748,10 +748,10 @@ functions:
         expected: '`.mdmark-html[data-html-scope="2"].is-open .box`・`.mdmark-html[data-html-scope="2"] { --x: 1 }`・`.mdmark-html[data-html-scope="2"] p` の規則になる'
       - name: test_scope_css_when_at_rules
         case: 正常
-        summary: '`@media` の中は書き換え、`@keyframes` はそのまま、`@import` は落とす'
-        condition: '`@import url(x.css); @media (max-width: 600px) { .a { color: red } } @keyframes k { from { opacity: 0 } to { opacity: 1 } }`'
+        summary: '`@media` の中は書き換え、`@keyframes` はそのまま、`@import`・`@scope`・`@starting-style` は落とす'
+        condition: '`@import url(x.css); @media (max-width: 600px) { .a { color: red } } @keyframes k { from { opacity: 0 } to { opacity: 1 } } @scope (html) { p { color: red } } @starting-style { .b { opacity: 0 } }`'
         mock: なし
-        expected: '`@import` が無く、`@media` の中が `.mdmark-html[data-html-scope="0"] .a`、`@keyframes k` の `from`・`to` がそのまま'
+        expected: '`@import`・`@scope`・`@starting-style` が無く、`@media` の中が `.mdmark-html[data-html-scope="0"] .a`、`@keyframes k` の `from`・`to` がそのまま'
       - name: test_scope_css_when_strings_and_comments
         case: 正常
         summary: 文字列・コメント・括弧の中の `,`・`{`・`}` で区切らない
