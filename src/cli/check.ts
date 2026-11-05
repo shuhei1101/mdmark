@@ -1,5 +1,5 @@
 import { readFile, stat } from "node:fs/promises";
-import { basename, join, relative, resolve, sep } from "node:path";
+import { basename, dirname, join, relative, resolve, sep } from "node:path";
 import { COLOR_THEMES, MARK_NAME_PATTERN, resolveConfig } from "../config.ts";
 import {
   checkFlowLayout,
@@ -30,6 +30,7 @@ import { collectBuildDocuments, readIndexWithDocuments } from "./documents.ts";
 import { bundleModule } from "./embed.ts";
 import { CliError, type CliIo } from "./errors.ts";
 import { changedPathsSince } from "./git.ts";
+import { collectIncludes, includeProblemMessage } from "./includes.ts";
 
 /** `mdmark check` が出すずれ 1 件 */
 export type CheckIssue = {
@@ -48,6 +49,8 @@ export type CheckIssue = {
     | FlowLayoutKind
     | "alias_no_files"
     | "alias_unreadable"
+    | "include_target_missing"
+    | "include_circular"
     | MdmarkAliasProblem["kind"]
     | MdmarkIndexIssue["kind"];
   /** 内容と直し方の 1 文 */
@@ -428,7 +431,49 @@ export function checkDiagrams(
   return issues;
 }
 
-/** 設定ファイルを読み、設定の形・設定が指すファイル・`build` の対象・`checkIndex`・文書の本文の知らない印・図の部品の定義のずれをこの並びで返す。`unknownMarks` が `false` なら、拡張を読み込まず、知らない印を点検しない。`base` があり設定に `index` があれば、`change_together` の直し忘れも確かめる */
+/** 点検する文書ごとに取り込み先を集め、循環を `include_circular`、それ以外を `include_target_missing` のずれにして、マーカーを書いたファイルと行の順に返す */
+export async function checkIncludes(options: {
+  /** `collectCheckDocuments` の文書 */
+  documents: Array<{ path: string; markdown: string }>;
+  /** 設定ファイルのフォルダ */
+  root: string;
+}): Promise<CheckIssue[]> {
+  const { documents, root } = options;
+  const issues = new Map<string, CheckIssue & { line: number }>();
+  for (const doc of documents) {
+    const docPath = resolve(root, doc.path);
+    const { problems } = await collectIncludes({
+      docPath,
+      markdown: doc.markdown,
+      root,
+    });
+    for (const problem of problems) {
+      const file =
+        problem.file === ""
+          ? doc.path
+          : toPosix(relative(root, resolve(dirname(docPath), problem.file)));
+      const kind =
+        problem.kind === "circular"
+          ? "include_circular"
+          : "include_target_missing";
+      // 同じマーカーを複数の文書からたどったときは 1 件にする
+      issues.set(`${file}\u0000${problem.line}\u0000${kind}`, {
+        file,
+        where: String(problem.line),
+        kind,
+        message: includeProblemMessage(problem),
+        line: problem.line,
+      });
+    }
+  }
+  return [...issues.values()]
+    .sort((a, b) =>
+      a.file === b.file ? a.line - b.line : a.file < b.file ? -1 : 1,
+    )
+    .map(({ line: _line, ...issue }) => issue);
+}
+
+/** 設定ファイルを読み、設定の形・設定が指すファイル・`build` の対象・`checkIndex`・文書の本文の知らない印・取り込み先・図の部品の定義のずれをこの並びで返す。`unknownMarks` が `false` なら、拡張を読み込まず、知らない印を点検しない。`base` があり設定に `index` があれば、`change_together` の直し忘れも確かめる */
 export async function collectCheckIssues(
   path: string,
   options: { unknownMarks?: boolean; base?: string } = {},
@@ -450,6 +495,7 @@ export async function collectCheckIssues(
   const unknownMarks = checkMarks
     ? checkUnknownMarks(documents, config, extensions.directives)
     : [];
+  const includes = await checkIncludes({ documents, root: loaded.dir });
   const diagrams = checkDiagrams(documents);
   return [
     ...shapeIssues,
@@ -462,6 +508,7 @@ export async function collectCheckIssues(
     ...aliasIssues,
     ...missingFiles,
     ...unknownMarks,
+    ...includes,
     ...diagrams,
   ];
 }

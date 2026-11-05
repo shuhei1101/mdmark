@@ -23,7 +23,7 @@ import { attachSideToc, type SideTocState } from "./interact/side-toc.ts";
 import type { MdmarkAlias } from "./knowledge/aliases.ts";
 import type { MdmarkIndex } from "./knowledge/index-shape.ts";
 import type { MdmarkReferences } from "./knowledge/references.ts";
-import { loadLibraries } from "./libraries.ts";
+import { embeddedLibraries, loadLibraries } from "./libraries.ts";
 import { attachParts, type PartsHandle } from "./mount-parts.ts";
 import type { MdmarkIconNode } from "./parts/inline-icon.ts";
 import { renderNotice } from "./parts/notice.ts";
@@ -323,7 +323,17 @@ export function mount(el: HTMLElement, opts: MountOptions): MountHandle {
     });
     // 束ねていない名前のアイコンを読む。読み込みの完了は待たない
     if (features.icon === true) {
-      void loadInlineIcons({ root: body, icons: opts.icons ?? {} });
+      void loadInlineIcons({
+        root: body,
+        icons: opts.icons ?? {},
+        // 書き出した HTML（外部ライブラリを埋めたとき）は外へ要求せず、表に無い名前を Lucide に無い名前として扱う
+        ...(embeddedLibraries === undefined
+          ? {}
+          : {
+              importModule: () => Promise.reject(new Error("embedded")),
+              fetchHead: async () => new Response(null, { status: 404 }),
+            }),
+      });
     }
     // 読み込みの完了は待たない
     void loadLibraries({
