@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <!-- viewport: スマホ幅で等倍に表示する -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- color-scheme: 明るい配色とダークの両方を持つことをブラウザへ伝える -->
+  <meta name="color-scheme" content="light dark">
+  <title>panel-alert | mdmark の部品のモック</title>
+  <!-- 本文の規則とモック専用の操作列（#16 で共有するアセット） -->
+  <link rel="stylesheet" href="../../refs/16/assets/sample.css">
+  <!-- 採用スタイル本体の変数の値 -->
+  <link rel="stylesheet" href="../../assets/style.css">
+  <!-- モックの VS Code の枠（#69 で共有するアセット） -->
+  <link rel="stylesheet" href="../../refs/69/assets/preview.css">
+  <!-- パネルの部品（番号で共有するアセット） -->
+  <link rel="stylesheet" href="../../refs/342/assets/panel.css">
+  <!-- カタログの並べ方（preview-status と同じ） -->
+  <link rel="stylesheet" href="../preview-status/style.css">
+  <link rel="stylesheet" href="./style.css">
+  <!-- VS Code のテーマの切り替え（モックだけの仕組み） -->
+  <script src="../../refs/69/assets/preview.js" defer></script>
+</head>
+<body>
+  <!-- モック専用の操作列: VS Code のテーマ -->
+  <div class="mock-bar">
+    <!-- [data-theme-value]: preview.js が行き先の URL（?theme=）と今のテーマの aria-current を当てる -->
+    <div class="mock-bar-group" role="group" aria-label="VS Code のテーマ">
+      <a class="mock-bar-item" data-theme-value="light">ライト</a>
+      <a class="mock-bar-item" data-theme-value="dark">ダーク</a>
+    </div>
+  </div>
+
+  <main class="host">
+    <div class="catalog">
+      <h1 class="catalog-title">パネルの部品（shadcn/ui の Alert・Button・Spinner）</h1>
+
+      <section aria-labelledby="state-loading">
+        <h2 class="catalog-label" id="state-loading">Spinner（読み込み中）</h2>
+        <div class="preview">
+          <div class="panel-part panel-state is-catalog">
+            <div class="panel-loading" role="status">
+              <svg class="spinner" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-label="読み込み中" role="img"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
+              <h1>mdmark を読み込んでいます</h1>
+            </div>
+          </div>
+        </div>
+      </section>
+      <section aria-labelledby="state-error">
+        <h2 class="catalog-label" id="state-error">Alert（warning）+ Button（default）: 描けない理由</h2>
+        <div class="preview">
+          <div class="panel-part panel-state is-catalog">
+            <div class="alert is-warning" role="status">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>
+              <h1 class="alert-title">プレビューを表示できません</h1>
+              <p class="alert-description">mdmark（<code>v0.7.0</code>）を jsDelivr から読み込めませんでした。ネットワークにつながっているかを確認してから、リロードしてください。</p>
+              <div class="alert-action"><button class="button" type="button">リロード</button></div>
+            </div>
+          </div>
+        </div>
+      </section>
+      <section aria-labelledby="state-error-hover">
+        <h2 class="catalog-label" id="state-error-hover">Button（default）のホバー</h2>
+        <div class="preview">
+          <div class="panel-part panel-state is-catalog">
+            <div class="alert is-warning" role="status">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>
+              <h1 class="alert-title">プレビューを表示できません</h1>
+              <p class="alert-description">mdmark（<code>v0.7.0</code>）を jsDelivr から読み込めませんでした。ネットワークにつながっているかを確認してから、リロードしてください。</p>
+              <div class="alert-action"><button class="button is-hover" type="button">リロード</button></div>
+            </div>
+          </div>
+        </div>
+      </section>
+      <section aria-labelledby="state-error-focus">
+        <h2 class="catalog-label" id="state-error-focus">Button（default）のフォーカス</h2>
+        <div class="preview">
+          <div class="panel-part panel-state is-catalog">
+            <div class="alert is-warning" role="status">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>
+              <h1 class="alert-title">プレビューを表示できません</h1>
+              <p class="alert-description">mdmark（<code>v0.7.0</code>）を jsDelivr から読み込めませんでした。ネットワークにつながっているかを確認してから、リロードしてください。</p>
+              <div class="alert-action"><button class="button is-focus" type="button">リロード</button></div>
+            </div>
+          </div>
+        </div>
+      </section>
+      <section aria-labelledby="state-error-long">
+        <h2 class="catalog-label" id="state-error-long">描けない理由（長いバージョンの指定）</h2>
+        <div class="preview">
+          <div class="panel-part panel-state is-catalog">
+            <div class="alert is-warning" role="status">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>
+              <h1 class="alert-title">プレビューを表示できません</h1>
+              <p class="alert-description">設定 <code>mdmark.version</code> に指定したバージョン <code>v0.7.0-rc.1+build.20261023.feature-vscode-preview-extension</code> の mdmark が見つかりません。存在するバージョンか <code>latest</code> に修正してから、リロードしてください。</p>
+              <div class="alert-action"><button class="button" type="button">リロード</button></div>
+            </div>
+          </div>
+        </div>
+      </section>
+      <section aria-labelledby="state-error-narrow">
+        <h2 class="catalog-label" id="state-error-narrow">描けない理由（狭い列）</h2>
+        <div class="preview is-narrow">
+          <div class="panel-part panel-state is-catalog">
+            <div class="alert is-warning" role="status">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>
+              <h1 class="alert-title">プレビューを表示できません</h1>
+              <p class="alert-description">mdmark（<code>v0.7.0</code>）を jsDelivr から読み込めませんでした。ネットワークにつながっているかを確認してから、リロードしてください。</p>
+              <div class="alert-action"><button class="button" type="button">リロード</button></div>
+            </div>
+          </div>
+        </div>
+      </section>
+      <section aria-labelledby="state-band">
+        <h2 class="catalog-label" id="state-band">Alert（warning）+ Button（outline）: 設定ファイルを読めない帯</h2>
+        <div class="preview">
+          <div class="panel-part panel-band">
+            <div class="alert is-warning" role="status">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>
+              <h2 class="alert-title">設定ファイルを読み込めません</h2>
+              <p class="alert-description"><code>mdmark.config.yaml</code> の 4 行目を YAML として読めないため、<code>features</code> と <code>libraries</code> を当てずに表示しています。</p>
+              <div class="alert-action"><button class="button is-outline" type="button">設定ファイルを開く</button></div>
+            </div>
+          </div>
+          <p class="catalog-body">（ここに文書が描かれる）</p>
+        </div>
+      </section>
+      <section aria-labelledby="state-band-hover">
+        <h2 class="catalog-label" id="state-band-hover">Button（outline）のホバー</h2>
+        <div class="preview">
+          <div class="panel-part panel-band">
+            <div class="alert is-warning" role="status">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>
+              <h2 class="alert-title">設定ファイルを読み込めません</h2>
+              <p class="alert-description"><code>mdmark.config.yaml</code> の 4 行目を YAML として読めないため、<code>features</code> と <code>libraries</code> を当てずに表示しています。</p>
+              <div class="alert-action"><button class="button is-outline is-hover" type="button">設定ファイルを開く</button></div>
+            </div>
+          </div>
+          <p class="catalog-body">（ここに文書が描かれる）</p>
+        </div>
+      </section>
+      <section aria-labelledby="state-band-narrow">
+        <h2 class="catalog-label" id="state-band-narrow">設定ファイルを読めない帯（狭い列・長いパス）: 操作を説明の下へ回す</h2>
+        <div class="preview is-narrow">
+          <div class="panel-part panel-band">
+            <div class="alert is-warning" role="status">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>
+              <h2 class="alert-title">設定ファイルを読み込めません</h2>
+              <p class="alert-description"><code>docs/settings/mdmark/mdmark.config.workspace-shared.yaml</code> の 12 行目を YAML として読めないため、<code>features</code> と <code>libraries</code> を当てずに表示しています。</p>
+              <div class="alert-action"><button class="button is-outline" type="button">設定ファイルを開く</button></div>
+            </div>
+          </div>
+          <p class="catalog-body">（ここに文書が描かれる）</p>
+        </div>
+      </section>
+    </div>
+  </main>
+</body>
+</html>

@@ -1,0 +1,202 @@
+/* VS Code のプレビューのパネルの部品（shadcn/ui の Alert・Button・Spinner）。実装の Tailwind のクラスが当てる見た目を、モックでは同じ値の CSS で表す */
+
+/* shadcn のセマンティックトークン: mdmark の採用スタイルの変数に割り当てる（明暗は採用スタイルの変数が切り替える） */
+:root {
+  --background: var(--mdmark-color-bg);
+  --foreground: var(--mdmark-color-text);
+  --card: var(--mdmark-color-surface);
+  --card-foreground: var(--mdmark-color-text);
+  --muted-foreground: var(--mdmark-color-muted);
+  --primary: var(--mdmark-color-link);
+  --primary-foreground: var(--mdmark-color-bg);
+  --accent: var(--mdmark-color-surface);
+  --border: var(--mdmark-color-border);
+  --ring: var(--mdmark-color-link);
+  --radius: var(--mdmark-radius);
+  /* Alert の warning の variant: 知らせの枠と同じ状態色 */
+  --warning: var(--mdmark-color-notice-bg);
+  --warning-border: var(--mdmark-color-notice-border);
+  --warning-foreground: var(--mdmark-color-notice-text);
+}
+
+/* パネルの部品の下地: 書体は文書の本文と同じ */
+.panel-part {
+  font-family: var(--mdmark-font-body);
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
+}
+
+/* 読み込み中・描けない理由: 文書の代わりに、パネルの上から 1/4 の高さに中央揃えで置く */
+.panel-state {
+  display: grid;
+  justify-items: center;
+  padding: 25dvh 1rem 1.5rem;
+}
+
+/* Alert: アイコン・タイトル・説明・操作を格子に並べる（shadcn/ui の Alert） */
+.alert {
+  display: grid;
+  grid-template-columns: 1rem 1fr;
+  column-gap: 0.75rem;
+  row-gap: 0.25rem;
+  width: 100%;
+  max-width: 32rem;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--border);
+  border-radius: calc(var(--radius) + 2px);
+  background: var(--card);
+  color: var(--card-foreground);
+  font-size: 0.875rem;
+
+  /* アイコン: タイトルの行の高さに揃える */
+  > svg {
+    width: 1rem;
+    height: 1rem;
+    margin-top: 0.2rem;
+    color: currentcolor;
+  }
+
+  /* アイコンの右の列に、タイトル・説明・操作を縦に並べる */
+  > :not(svg) {
+    grid-column: 2;
+  }
+
+  /* 説明と設定のキー */
+  code {
+    font-family: var(--mdmark-font-mono);
+    font-size: 0.9em;
+  }
+}
+
+/* Alert の warning: 描けない理由と設定ファイルを読めない帯 */
+.alert.is-warning {
+  border-color: var(--warning-border);
+  background: var(--warning);
+  color: var(--warning-foreground);
+}
+
+/* Alert のタイトル（文書の無い場面は見出し 1、帯は見出し 2） */
+.alert-title {
+  margin: 0;
+  font-size: 0.875rem;
+  font-weight: 600;
+  line-height: 1.5rem;
+}
+
+/* Alert の説明 */
+.alert-description {
+  margin: 0;
+}
+
+/* Alert の操作: 説明の下に置く */
+.alert-action {
+  margin-top: 0.5rem;
+}
+
+/* 帯: 文書の先頭に、固定せずに置く。広い列では操作を右に並べる */
+.panel-band {
+  container: panel-band / inline-size;
+  padding: 0.75rem 0.75rem 0;
+
+  .alert {
+    max-width: none;
+  }
+
+  @container panel-band (width >= 30rem) {
+    .alert {
+      grid-template-columns: 1rem 1fr auto;
+    }
+
+    .alert-action {
+      grid-column: 3;
+      grid-row: 1 / span 2;
+      align-self: center;
+      margin-top: 0;
+    }
+  }
+}
+
+/* Button: shadcn/ui の Button の default と outline */
+.button {
+  display: inline-flex;
+  gap: 0.5rem;
+  align-items: center;
+  justify-content: center;
+  min-width: 2.25rem;
+  height: 2.25rem;
+  padding: 0 1rem;
+  border: 1px solid transparent;
+  border-radius: var(--radius);
+  background: var(--primary);
+  color: var(--primary-foreground);
+  font: inherit;
+  font-size: 0.875rem;
+  font-weight: 500;
+  white-space: nowrap;
+  cursor: pointer;
+  touch-action: manipulation;
+
+  &:hover {
+    background: color-mix(in oklab, var(--primary) 90%, var(--background));
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+}
+
+/* Button の outline: 帯の操作。文書の上に置くため、塗りの強い主操作にしない */
+.button.is-outline {
+  border-color: var(--warning-border);
+  background: var(--background);
+  color: var(--foreground);
+
+  &:hover {
+    background: var(--accent);
+  }
+}
+
+/* 読み込み中: Spinner と文言を横に並べる */
+.panel-loading {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  color: var(--muted-foreground);
+  font-size: 0.875rem;
+
+  /* 文言: 文書の無い場面の見出し 1。見た目は周りの文字のまま */
+  h1 {
+    margin: 0;
+    color: inherit;
+    font-size: inherit;
+    font-weight: inherit;
+  }
+}
+
+/* Spinner: shadcn/ui の Spinner（lucide の loader-circle を回す） */
+.spinner {
+  width: 1rem;
+  height: 1rem;
+  animation: panel-spin 1s linear infinite;
+}
+
+/* Spinner の動き */
+@keyframes panel-spin {
+  to {
+    rotate: 1turn;
+  }
+}
+
+/* 動きを減らす設定: ゆっくり回す */
+@media (prefers-reduced-motion: reduce) {
+  .spinner {
+    animation-duration: 6s;
+  }
+}
