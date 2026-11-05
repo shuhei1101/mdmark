@@ -1,17 +1,29 @@
 import { expect, test } from "vitest";
-import { findTag, findTags, innerHtml, plainText } from "../../../helpers/html.ts";
+import {
+  findTag,
+  findTags,
+  innerHtml,
+  plainText,
+} from "../../../helpers/html.ts";
 import { renderDoc } from "../../../helpers/render.ts";
 
 /** 表の印と見出し・行から、印で囲んだ表の Markdown を作る */
 function treeTable(mark: string, rows: string[]): string {
-  return [`<!-- table: ${mark} -->`, "", ...rows, "", "<!-- /table -->", ""].join(
-    "\n",
-  );
+  return [
+    `<!-- table: ${mark} -->`,
+    "",
+    ...rows,
+    "",
+    "<!-- /table -->",
+    "",
+  ].join("\n");
 }
 
 /** 階層の表の行の開始タグを、並んだ順に返す */
 function treeRows(html: string): string[] {
-  return findTags(html, "mdmark-tree-row").filter((tag) => tag.startsWith("<tr"));
+  return findTags(html, "mdmark-tree-row").filter((tag) =>
+    tag.startsWith("<tr"),
+  );
 }
 
 /** 開始タグの属性の値を返す（無ければ `undefined`） */

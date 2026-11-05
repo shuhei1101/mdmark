@@ -199,9 +199,7 @@ test("test_render_table_bar", async () => {
   expect(outerHtml(bar, "mdmark-copy")).toContain("chevron-down");
   expect(findTag(bar, "mdmark-table-status")).toContain('role="status"');
   // 検証: テーブル設定のパネル
-  expect(findTag(menus, 'class="mdmark-table-settings"')).toMatch(
-    /\shidden\b/,
-  );
+  expect(findTag(menus, 'class="mdmark-table-settings"')).toMatch(/\shidden\b/);
   const eyes = findTags(menus, "mdmark-table-settings-eye");
   expect(eyes).toHaveLength(3);
   expect(eyes[0]).toMatch(/\sdisabled\b/);
@@ -994,7 +992,11 @@ test("test_render_tree_key_cell", async () => {
   // 準備
   const { renderTreeKeyCell } = await loadTable();
   // 実行
-  const html = renderTreeKeyCell({ name: "aliases[]", depth: 1, required: true });
+  const html = renderTreeKeyCell({
+    name: "aliases[]",
+    depth: 1,
+    required: true,
+  });
   // 検証
   expect(findTag(html, "<span")).toContain("mdmark-tree-cell");
   expect(findTags(html, "mdmark-tree-guide")).toHaveLength(1);
@@ -1014,7 +1016,9 @@ test("test_render_type_cell", async () => {
   const chips = renderTypeCell("ref | custom");
   const empty = renderTypeCell("");
   // 検証
-  expect(badge).toBe('<span class="mdmark-type-badge" data-type="bool">bool</span>');
+  expect(badge).toBe(
+    '<span class="mdmark-type-badge" data-type="bool">bool</span>',
+  );
   const chipTags = findTags(chips, "mdmark-type-chip");
   expect(chipTags).toHaveLength(2);
   expect(plainText(chips).replace(/\s+/g, "")).toBe("refcustom");

@@ -77,9 +77,7 @@ function rowOrders(root: HTMLElement): string[][] {
 
 /** パネルの一覧の項目を、並んだ順に返す */
 function items(root: HTMLElement): HTMLElement[] {
-  return [
-    ...root.querySelectorAll<HTMLElement>(".mdmark-table-settings-item"),
-  ];
+  return [...root.querySelectorAll<HTMLElement>(".mdmark-table-settings-item")];
 }
 
 /** 列名の項目のつまみを返す */
@@ -198,7 +196,9 @@ test("test_attach_table_settings_when_hidden", async () => {
   expect(toggle.querySelector(".mdmark-table-tool-badge")?.textContent).toBe(
     "1",
   );
-  expect(toggle.getAttribute("aria-label")).toBe("テーブル設定（1 列を非表示）");
+  expect(toggle.getAttribute("aria-label")).toBe(
+    "テーブル設定（1 列を非表示）",
+  );
   expect(onColumnsChange).toHaveBeenCalledTimes(1);
   expect(onColumnsChange).toHaveBeenCalledWith({
     tableIndex: 0,

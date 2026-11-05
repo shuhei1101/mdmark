@@ -899,10 +899,12 @@ test("test_mount_when_columns_changed", async () => {
   // 実行・検証: 描いたときと update では呼ばない
   handle.update(markdown);
   expect(onColumnsChange).not.toHaveBeenCalled();
-  // 実行: 列の表示で `状態` のチェックを外す
-  el.querySelector<HTMLButtonElement>("button.mdmark-columns-toggle")?.click();
-  el.querySelectorAll<HTMLInputElement>(
-    '.mdmark-columns-menu input[type="checkbox"]',
+  // 実行: テーブル設定で `状態` を目のアイコンで隠す
+  el.querySelector<HTMLButtonElement>(
+    "button.mdmark-table-settings-toggle",
+  )?.click();
+  el.querySelectorAll<HTMLButtonElement>(
+    ".mdmark-table-settings button.mdmark-table-settings-eye",
   )[1]?.click();
   // 検証
   expect(onColumnsChange).toHaveBeenCalledTimes(1);
@@ -1016,5 +1018,76 @@ test("test_check_base_markdown_when_invalid", async () => {
   for (const value of [1, {}]) {
     expect(() => checkBaseMarkdown(value)).toThrow(TypeError);
     expect(() => checkBaseMarkdown(value)).toThrow("baseMarkdown");
+  }
+});
+
+/** 範囲のスクリプトの処理の場所（変数にして、実装が無い間もファイルの読み込みを止めない） */
+const HTML_SCRIPTS_MODULE = "../../../src/html-scripts.ts";
+
+/** 根の要素に `data-ran` を付ける `js` の範囲のコード */
+const RANGE_SCRIPT_CODE =
+  'export default (root) => { root.dataset.ran = "1"; };';
+
+// 描くたびに範囲のスクリプトを動かし、描き直す前と `destroy` で範囲の `destroy` を呼ぶ（正常系）
+test("test_mount_when_range_scripts", async () => {
+  // 準備
+  const {
+    setEmbeddedHtmlScripts,
+  }: typeof import("../../../src/html-scripts.ts") = await import(
+    /* @vite-ignore */ HTML_SCRIPTS_MODULE
+  );
+  let destroyed = 0;
+  setEmbeddedHtmlScripts(
+    new Map([
+      [
+        `${RANGE_SCRIPT_CODE}\n`,
+        () => (root: HTMLElement) => {
+          root.dataset.ran = "1";
+          return () => {
+            destroyed += 1;
+          };
+        },
+      ],
+    ]),
+  );
+  const el = createElement();
+  const markdown = [
+    "<!-- html -->",
+    "",
+    "```html",
+    "<p>範囲</p>",
+    "```",
+    "",
+    "```js",
+    RANGE_SCRIPT_CODE,
+    "```",
+    "",
+    "<!-- /html -->",
+    "",
+  ].join("\n");
+  try {
+    // 実行・検証: 描いた後に動く
+    const handle = await mountTracked(el, {
+      markdown,
+      config: { features: { "html-scripts": true } },
+    });
+    await vi.waitFor(() => {
+      expect(
+        el.querySelector<HTMLElement>("div.mdmark-html")?.dataset.ran,
+      ).toBe("1");
+    });
+    // 実行・検証: 描き直す前に呼ぶ
+    handle.update(markdown);
+    expect(destroyed).toBe(1);
+    await vi.waitFor(() => {
+      expect(
+        el.querySelector<HTMLElement>("div.mdmark-html")?.dataset.ran,
+      ).toBe("1");
+    });
+    // 実行・検証: 片付けで呼ぶ
+    handle.destroy();
+    expect(destroyed).toBe(2);
+  } finally {
+    setEmbeddedHtmlScripts(undefined);
   }
 });

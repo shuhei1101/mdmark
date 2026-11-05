@@ -67,8 +67,7 @@ test("test_scope_css_when_at_rules", async () => {
 test("test_scope_css_when_strings_and_comments", async () => {
   // 準備
   const { scopeCss } = await loadScopeCss();
-  const css =
-    '/* a, b { } */ .a[data-x="1,2"], :is(.b, .c) { content: "}" }';
+  const css = '/* a, b { } */ .a[data-x="1,2"], :is(.b, .c) { content: "}" }';
   // 実行
   const scoped = squash(scopeCss({ css, scope: 0 }));
   // 検証

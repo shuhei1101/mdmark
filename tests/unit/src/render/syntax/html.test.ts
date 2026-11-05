@@ -238,7 +238,7 @@ const RANGE_SCRIPTS = [
   "```",
   "",
   "```ts",
-  "export default (root: HTMLElement) => root.classList.add(\"is-open\");",
+  'export default (root: HTMLElement) => root.classList.add("is-open");',
   "```",
   "",
   "<!-- /html -->",
@@ -272,9 +272,9 @@ test("test_build_embedded_html_when_range_scripts", async () => {
   const root = findTag(html, 'class="mdmark-html"');
   expect(root).toContain('data-html-scope="0"');
   const embedded = innerHtml(html, 'class="mdmark-html"');
-  expect(embedded.trimStart().startsWith('<style class="mdmark-html-style"')).toBe(
-    true,
-  );
+  expect(
+    embedded.trimStart().startsWith('<style class="mdmark-html-style"'),
+  ).toBe(true);
   expect(innerHtml(embedded, "mdmark-html-style")).toBe(
     scopeCss({ css: ".box { color: red }\n", scope: 0 }),
   );
