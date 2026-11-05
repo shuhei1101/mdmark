@@ -17,7 +17,8 @@ export const parameters = {
 
 // 図のストーリー（`data-story-fit` の印を持つもの）は、描いた直後に全体が収まる倍率にする操作を付ける
 const fitted = new WeakSet();
-new MutationObserver(async () => {
+/** 印を持つ図に操作を付ける。描いた後に DOM が変わらないストーリーもあるため、読み込んだ時点でも 1 度呼ぶ */
+async function attachStoryDiagrams() {
   for (const marker of document.querySelectorAll("[data-story-fit]")) {
     const root = marker.closest(".mdmark");
     if (!root || fitted.has(root)) {
@@ -36,16 +37,22 @@ new MutationObserver(async () => {
     const { attachDiagrams } = await import(
       /* webpackIgnore: true */ `${window.location.origin}/render/diagram.js`
     );
-    attachDiagrams({ root, placement: "top" });
+    attachDiagrams({ root, placement: "bottom" });
     if (marker.dataset.storyFocus) {
       root.querySelector(marker.dataset.storyFocus)?.focus();
     }
   }
-}).observe(document.documentElement, { childList: true, subtree: true });
+}
+new MutationObserver(attachStoryDiagrams).observe(document.documentElement, {
+  childList: true,
+  subtree: true,
+});
+attachStoryDiagrams();
 
 // 表のストーリー（`.mdmark-table` を持つもの）は、描いた直後に見出し行と集計の行を画面に留める操作を付ける（`mount` が全ての表に付けるのと同じ）
 const stuck = new WeakSet();
-new MutationObserver(async () => {
+/** 表に見出し行と集計の行を留める操作を付ける。読み込んだ時点でも 1 度呼ぶ */
+async function attachStoryTables() {
   for (const table of document.querySelectorAll(".mdmark-table")) {
     const root = table.closest(".mdmark");
     if (!root || stuck.has(root)) {
@@ -57,7 +64,12 @@ new MutationObserver(async () => {
     );
     attachStickyRows(root);
   }
-}).observe(document.documentElement, { childList: true, subtree: true });
+}
+new MutationObserver(attachStoryTables).observe(document.documentElement, {
+  childList: true,
+  subtree: true,
+});
+attachStoryTables();
 
 // ファイルツリーのストーリー（`.mdmark-tree` を持つもの）は、描いた直後に注釈の列の位置を測って入れる（`mount` が測るのと同じ）
 const aligned = new WeakSet();

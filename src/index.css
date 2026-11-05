@@ -2363,8 +2363,11 @@
 
     /* animation-timeline は animation-timeline と範囲の指定を持つブラウザだけに当てる（持たないブラウザで時間のアニメーションとして走らせない） */
     @supports (animation-timeline: view()) and (animation-range: 0% 100%) {
-      /* animation-timeline: 表が画面の上端を過ぎる間を、見出し行と集計の行を動かすタイムラインにする（上端から留める位置のずれだけ内側を測る） */
-      &[data-mdmark-sticky="timeline"] .mdmark-table table {
+      /* animation-timeline: 表が画面の上端を過ぎる間を、見出し行と集計の行を動かすタイムラインにする（上端から留める位置のずれだけ内側を測る）。
+         表を包む横のスクロールの要素があれば、ページのスクロールに従うよう包む要素に付ける */
+      &[data-mdmark-sticky="timeline"]
+        .mdmark-table
+        :is(.mdmark-table-scroll, :not(.mdmark-table-scroll) > table) {
         view-timeline: --mdmark-table block;
         view-timeline-inset: var(--mdmark-sticky-top, 0px) 0px;
       }
@@ -9593,12 +9596,14 @@
       }
     }
 
-    /* ツールチップを持つ棒・扇形・バブル */
+    /* ツールチップを持つ棒・扇形・バブル: グラフの svg（`mdmark-diagram-wires`）はポインターを拾わないため、塗った所でだけ拾い直す */
     :is(
         .mdmark-diagram-bar,
         .mdmark-diagram-slice,
         .mdmark-diagram-bubble
       )[data-tip-owner] {
+      pointer-events: visiblePainted;
+
       &:hover {
         filter: brightness(0.92);
       }
