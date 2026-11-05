@@ -275,12 +275,14 @@ export function createParser(): MarkdownItParser {
   const parser = new MarkdownIt(PARSER_OPTIONS);
   // スキームを持たないドメインも拾わせ、後で文字に戻すものを選ぶ
   parser.linkify.set({ fuzzyLink: true });
-  // 印 → 機能の重ね合わせ → 取り込み → 蛍光ペン（`useHighlight` が取り込みの後に足す）→ 脚注の機能のオン・オフ → 記法（見出し → 用語集の表 → 行の詳細 → ビュー → CSV の表 → 表 → タブ → ステップ → 注意書き → ファイルツリー → バッジ → アイコン → キー → 本文の文字の色 → 図の部品 → 埋め込んだ HTML → コードブロックの飾り → 画像の属性と種類 → 図表の番号 → ギャラリー → 画像と動画と音声の図 → カード → 段組み → details の範囲 → wide の範囲 → 改ページ → 用語の下線 → 節 → 目次 → 脚注の一覧 → 関連文書の一覧）→ タスクリスト → www の自動リンク → 残った印 → 元の行番号 → 脚注の定義の取り出し
+  // 印 → 機能の重ね合わせ → 取り込み → 蛍光ペン（`useHighlight` が取り込みの後に足す）→ 脚注の機能のオン・オフ → 記法（アイコン → 見出し → 用語集の表 → 行の詳細 → ビュー → CSV の表 → 表 → タブ → ステップ → 注意書き → ファイルツリー → バッジ → キー → 本文の文字の色 → 図の部品 → 埋め込んだ HTML → コードブロックの飾り → 画像の属性と種類 → 図表の番号 → ギャラリー → 画像と動画と音声の図 → カード → 段組み → details の範囲 → wide の範囲 → 改ページ → 用語の下線 → 節 → 目次 → 脚注の一覧 → 関連文書の一覧）→ タスクリスト → www の自動リンク → 残った印 → 元の行番号 → 脚注の定義の取り出し
   const rules: Array<[string, (state: StateCore) => void]> = [
     ["mdmark_take_marks", takeMarks],
     ["mdmark_resolve_features", resolveDocumentFeatures],
     ["mdmark_expand_includes", expandIncludes],
     ["mdmark_collect_footnotes", collectFootnotes],
+    // 見出しの ID と文字から、アイコンにした行内のコードを外すため、見出しの ID より前に置く
+    ["mdmark_build_inline_icons", buildInlineIcons],
     ["mdmark_assign_heading_ids", assignHeadingIds],
     ["mdmark_glossary", glossaryRule],
     ["mdmark_attach_row_details", attachRowDetails],
@@ -292,7 +294,6 @@ export function createParser(): MarkdownItParser {
     ["mdmark_build_callouts", buildCallouts],
     ["mdmark_build_file_trees", buildFileTrees],
     ["mdmark_build_badges", buildBadges],
-    ["mdmark_build_inline_icons", buildInlineIcons],
     ["mdmark_build_kbds", buildKbds],
     ["mdmark_build_text_colors", buildTextColors],
     ["mdmark_build_diagrams", buildDiagrams],
