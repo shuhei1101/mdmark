@@ -29,6 +29,7 @@
 | [eslint](./eslint.yaml) | 束ねた JS を構文木にして規則を当てる（対応ブラウザの下限の確かめに使う） |
 | [eslint-plugin-compat](./eslint-plugin-compat.yaml) | 対応ブラウザの下限の版に無い API の使用を報告する |
 | [highlight.js](./highlight.js.yaml) | コードブロックを言語に応じて色分けする（配布物に束ねず jsDelivr から読む） |
+| [@babel/standalone](./babel-standalone.yaml) | 範囲の TypeScript の型を外して JavaScript にする（配布物に束ねず jsDelivr から読む） |
 | [ajv](./ajv.yaml) | CLI が設定の aliases を取り込んだ JSON Schema で検証する（配布物に束ねない） |
 | [dev-docs](./dev-docs.yaml) | 配信元の文書を MCP で検索・参照する（Claude Code が使い方集を参照する先） |
 
