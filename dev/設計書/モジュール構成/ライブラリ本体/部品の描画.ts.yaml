@@ -33,7 +33,7 @@ functions:
     kind: 関数
     scope: internal
     summary: ストーリーの `server.id` の部品を、問い合わせの引数で描き、描く先の要素（class `mdmark`）で包んで返す
-    description: '部品の id から部品の関数を引く表（`notice`・`embed`・`syntax-warning`・`table`・`callout`・`tabs`・`steps`・`tree`・`badge`・`footnote-ref`・`footnotes`・`toc`・`section`・`row-detail`・`figure`・`doc-list`・`text-color`・`image-figure`・`gallery`・`lightbox`・`media`・`gif`・`card`と、VS Code 拡張機能の `preview-status`・`config-band`・`media-error`）で描く。ストーリーの引数は問い合わせの文字列で届くため戻す: `notice` の `figure` は `"false"` のときだけ `false`、`embed` の `args` はカンマで区切った配列（空の文字列は `[]`）。それ以外の部品は、JSON として読める値（配列・オブジェクト・数・真偽値）は JSON として読み、読めなければ文字列のまま渡す。`code-block` の `highlight` が `true` のときは、npm の `highlight.js/lib/core` に `language` の言語（`syntaxLanguageOf` で引いた `highlight.js/lib/languages/{モジュール名}`）を登録し、`highlightLines` の行ごとの HTML で、部品の HTML の `mdmark-code-text` の中身（行に分けないときは `code` の中身）を順に置き換える。中身を持つ部品には部品ごとの見本の HTML を中身として渡す（ストーリーの引数 `body` があれば、見本の代わりにそれを渡す）。ストーリーの引数 `scheme` が `dark` のときは描く先の要素に class `mdmark-theme-dark` を加え、`frameWidth` があるときは部品の HTML をその幅の `div` で包む。画像・動画・音声の部品の `src` と `poster` に書いた見本のファイル名は、`dev/mock/refs/263/assets/media/` のファイルを読んだ `data:` URL にする（見本に無い名前はそのまま渡す）'
+    description: '部品の id から部品の関数を引く表（`notice`・`embed`・`syntax-warning`・`table`・`callout`・`tabs`・`steps`・`tree`・`badge`・`footnote-ref`・`footnotes`・`toc`・`section`・`row-detail`・`figure`・`doc-list`・`text-color`・`image-figure`・`gallery`・`lightbox`・`media`・`gif`・`card`と、VS Code 拡張機能の `preview-status`・`config-band`・`media-error`）で描く。ストーリーの引数は問い合わせの文字列で届くため戻す: `notice` の `figure` は `"false"` のときだけ `false`、`embed` の `args` はカンマで区切った配列（空の文字列は `[]`）。それ以外の部品は、JSON として読める値（配列・オブジェクト・数・真偽値）は JSON として読み、読めなければ文字列のまま渡す。`code-block` の `highlight` が `true` のときは、npm の `highlight.js/lib/core` に `language` の言語（`syntaxLanguageOf` で引いた `highlight.js/lib/languages/{モジュール名}`）を登録し、`highlightLines` の行ごとの HTML で、部品の HTML の `mdmark-code-text` の中身（行に分けないときは `code` の中身）を順に置き換える。中身を持つ部品には部品ごとの見本の HTML を中身として渡す（ストーリーの引数 `body` があれば、見本の代わりにそれを渡す）。ストーリーの引数 `scheme` が `dark` のときは描く先の要素に class `mdmark-theme-dark` を加え、`frameWidth` があるときは部品の HTML をその幅の `div` で包む。`comment-button`・`comment-form`・`comment-bubble` は、`document.body` に `position: fixed` で配置する部品を描く先の要素の中に描くため、部品の HTML の前に `.mdmark-comment-add,.mdmark-comment-popover{position:static;max-width:100%}` の `style` を付ける（`max-width` は、描く先の要素の `padding` の内側に枠の幅を収める）。画像・動画・音声の部品の `src` と `poster` に書いた見本のファイル名は、`dev/mock/refs/263/assets/media/` のファイルを読んだ `data:` URL にする（見本に無い名前はそのまま渡す）'
     args:
       - name: options
         type: '{ component: string; params: URLSearchParams }'
@@ -111,6 +111,12 @@ functions:
         condition: '`component` が `code-block`、`params` が `language=ts&title=&lineNumbers=true&highlight=true&lines=[{"text":"const a = 1;"},{"text":"// b"}]`'
         mock: なし
         expected: 2 つの `mdmark-code-text` の中に `hljs-keyword` と `hljs-comment` の `span` があり、タグを外した文字が元の行と同じ
+      - name: test_render_part_when_comment_popover
+        case: 正常
+        summary: コメントの吹き出しを、描く先の要素の内側に収める `style` を付けて描く
+        condition: '`component` が `comment-bubble`、`params` が `quote=テーマの変数&bodies=["本文"]`'
+        mock: なし
+        expected: '`<div class="mdmark">` で包んだ、`<style>.mdmark-comment-add,.mdmark-comment-popover{position:static;max-width:100%}</style>` に続く `renderCommentBubble({ quote: "テーマの変数", bodies: ["本文"] })`'
   - name: createRenderServer
     title: 描画の口を作る
     container: scripts/storybook-render.ts
