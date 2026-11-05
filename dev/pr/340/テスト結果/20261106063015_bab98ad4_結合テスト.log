@@ -1,0 +1,10 @@
+$ npx vitest run --project 'integration*' tests/integration/lib/comment-bubble.story.test.ts tests/integration/lib/comment-form.story.test.ts tests/integration/lib/comment-button.story.test.ts
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/fix-storybook-comment-popover-overflow
+
+
+ Test Files  3 passed (3)
+      Tests  13 passed (13)
+   Start at  06:28:09
+   Duration  43.51s (tests 65%, import 29%, transform 5%, worker 2%)
+
