@@ -161,6 +161,18 @@ constants:
         value: code
       - key: gallery
         value: gallery
+      - key: columns
+        value: columns
+      - key: column
+        value: columns
+      - key: details
+        value: details
+      - key: pagebreak
+        value: pagebreak
+      - key: include
+        value: include
+      - key: wide
+        value: wide
   - name: EMBED_STYLES
     title: 埋め込んだ HTML の残す宣言
     container: src/render/sanitize.ts
@@ -201,7 +213,7 @@ functions:
         required: true
         description: HTML にする Markdown
       - name: opts
-        type: '{ config?: MdmarkConfig; index?: MdmarkIndex; docId?: string; references?: MdmarkReferences; aliases?: MdmarkAlias[] }'
+        type: '{ config?: MdmarkConfig; index?: MdmarkIndex; docId?: string; references?: MdmarkReferences; aliases?: MdmarkAlias[]; includes?: Record<string, string>; icons?: Record<string, MdmarkIconNode> }'
         required: false
         default: '{}'
         description: 設定・索引・描く文書の `id`・参照の表・エイリアス
@@ -235,7 +247,7 @@ functions:
     description: '`render` と `mount` が共通で使う。解析器はモジュールで 1 つだけ作り（`createParser` を初めて使うときに呼ぶ）、呼び出しごとの値は `env` で渡す。`nonce` は `crypto.getRandomValues` の 16 バイトを 16 進にしたもので、`sanitize` が出力から外すため、同じ入力には同じ文字列を返す'
     args:
       - name: options
-        type: '{ markdown: string; config: ResolvedConfig; index?: MdmarkIndex; docId?: string; references?: MdmarkReferences; aliases?: MdmarkAlias[] }'
+        type: '{ markdown: string; config: ResolvedConfig; index?: MdmarkIndex; docId?: string; references?: MdmarkReferences; aliases?: MdmarkAlias[]; includes?: Record<string, string>; icons?: Record<string, MdmarkIconNode> }'
         required: true
         description: '`markdown` は Markdown、`config` は既定を当てた設定、`index`・`docId`・`references`・`aliases` は `env` に入れる値（`index` は `normalizeIndex` にかけてから入れる。`aliases` はそのまま入れ、使えるものへの絞り込みは `buildDictionary` が行う）。`config` の `libraries`・`features`・`labels` は `env` の `libraries`・`defaults`・`labels` に入れる'
     returns:

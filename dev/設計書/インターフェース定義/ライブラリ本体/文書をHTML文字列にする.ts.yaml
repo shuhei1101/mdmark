@@ -1530,7 +1530,7 @@ flows:
       - '`<details class="mdmark-collapsible"><summary>補足の手順</summary>` があり `open` を持たず、`実行の例` の `details` が `open` を持つ。`summary` の文字に `open` が無い'
       - '`補足の手順` が `h1`〜`h6` と目次に無い'
       - '`<div class="mdmark-pagebreak" aria-hidden="true"></div>` がある'
-      - '`<div class="mdmark-wide" data-state="wide">` と `<div class="mdmark-wide" data-state="narrow">` の中に表がある'
+      - '`<div class="mdmark-wide-range" data-state="wide">` と `<div class="mdmark-wide-range" data-state="narrow">` の中に表がある'
       - 文字列に `<!--`・`<button` が無い
     test: test_normal_when_block_notations
     refs:
@@ -1646,7 +1646,7 @@ flows:
       - '`<!-- column -->` を持たない範囲と 4 列の範囲の前の警告の本文に、列の数（`1`・`4`）と `2〜3` がある。どちらの中身も `mdmark-layout-columns` に入っていない'
       - 外側の範囲が `data-count="2"` の `mdmark-layout-columns` で、内側の前の警告の本文に入れ子にできないことがある
       - '`補足` の段落が `details` に入らず、警告の本文に `<!-- /details -->` がある'
-      - 表が `mdmark-wide` に入らず、警告の本文に `<!-- /wide -->` がある
+      - 表が `mdmark-wide-range` に入らず、警告の本文に `<!-- /wide -->` がある
     test: test_normal_when_new_syntax_errors
     refs:
       - dev/設計書/シナリオ/単一ユースケース/ステップ・ファイルツリー・バッジで本文を組む#scenarios[異常シナリオ（アイコンの名前の書き方が誤っている）]
@@ -1677,7 +1677,7 @@ flows:
     expected:
       - '`<code>icon:check</code>`・`<code>kbd:Ctrl+C</code>` がある'
       - '`==決め手==` が書いた文字のまま出て、`<mark` が無い'
-      - 文字列に `mdmark-layout-columns`・`mdmark-collapsible`・`mdmark-pagebreak`・`mdmark-include`・`mdmark-wide`・`mdmark-syntax-warning` が無く、範囲の中身の段落がある
+      - 文字列に `mdmark-layout-columns`・`mdmark-collapsible`・`mdmark-pagebreak`・`mdmark-include`・`mdmark-wide-range`・`mdmark-syntax-warning` が無く、範囲の中身の段落がある
       - '`取り込んだ段落` が無い'
       - '`code.language-csv` のコードブロックがあり、`data-source` が無い'
       - 文字列に `<!--` が無い
@@ -1892,8 +1892,8 @@ constraints:
     constraint: '`include` がオンのとき、`<!-- include: パス -->`・`<!-- include: パス#見出しの ID -->`・`<!-- include: パス#L開始-L終了 -->`（`#L5` は 1 行）を、`opts.includes` から引いた中身に置き換え、`<div class="mdmark-include" data-include="{書いたパスと # の後ろ}">` で囲む。パスはマーカーを書いた文書のあるフォルダを基準に解き、表のキーと照合する（取り込んだ文書の中のマーカーは、取り込んだ文書のパスのフォルダを基準にする）。拡張子が `.md`・`.markdown` のファイルは Markdown として、本文と同じ設定と機能で描く（取り込んだ文書の `features` の印は使わない）。`#見出しの ID` は、取り込む文書の見出しから制約「見出しの ID とアンカー」と同じ規則で作った ID と一致する最初の見出しから、次の同じか上の階層の見出しの前までを取り込む（見出しを含む）。見出しの ID・図表の番号は、取り込んだ中身も含めて文書の通しで振る。Markdown 以外のファイルは、全体か `#L開始-L終了` の行（1 から数える）を、拡張子を言語にしたコードブロックとして描く（Markdown のファイルの `#L…` は見出しの ID として読む）。表に無いパス・無い見出しの ID・ファイルの行の数を越える行の範囲は、マーカーの場所に書き方の警告（取り込み先と、無いもの。行の範囲はファイルの行の数も）を置く。取り込みの途中で同じファイルをもう一度取り込むマーカーは、その場所に書き方の警告（循環することと、`a.md → b.md → a.md` の循環の順）を置いて取り込まない。`include` がオフのときは印を取り除き、中身を取り込まない'
     notes: 取り込む文書の渡し方は要件.md の未確定の推奨案 A。行の範囲の書き方と、Markdown 以外のファイルでだけ行の範囲として読むことは確認ログの決定
   - item: wide の範囲
-    constraint: '`wide` がオンのとき、`<!-- wide -->` 〜 `<!-- /wide -->` を `<div class="mdmark-wide" data-state="wide">` で囲み、`<!-- wide: closed -->` で始めた範囲は `data-state="narrow"` にする。幅の切り替えのボタンは `mount` が付ける。閉じの印の無い範囲は、印の場所に書き方の警告（閉じの印 `<!-- /wide -->` が無いこと）を置き、中身を囲まずに本文の幅で出す。知らない引数は書き方の警告を置いて `data-state="wide"` で描く。wide の範囲の中の wide の印は取り除く。`wide` がオフのときは印を取り除き、中身を順に出す'
-    notes: class は埋め込んだ HTML の `.is-wide` と分ける。`closed` は確認ログの決定。見た目はモック `dev/mock/components/wide/`
+    constraint: '`wide` がオンのとき、`<!-- wide -->` 〜 `<!-- /wide -->` を `<div class="mdmark-wide-range" data-state="wide">` で囲み、`<!-- wide: closed -->` で始めた範囲は `data-state="narrow"` にする。幅の切り替えのボタンは `mount` が付ける。閉じの印の無い範囲は、印の場所に書き方の警告（閉じの印 `<!-- /wide -->` が無いこと）を置き、中身を囲まずに本文の幅で出す。知らない引数は書き方の警告を置いて `data-state="wide"` で描く。wide の範囲の中の wide の印は取り除く。`wide` がオフのときは印を取り除き、中身を順に出す'
+    notes: class は埋め込んだ HTML の `.is-wide` と、表の `wide=` の列の `mdmark-wide` と分ける。`closed` は確認ログの決定。見た目はモック `dev/mock/components/wide/`
   - item: CSV の表
     constraint: '`csv` がオンのとき、情報文字列の最初の語がちょうど `csv` のコードブロックを、RFC 4180 の決まり（区切りは `,`、`"` で囲んだ値の中の `,` と改行は値、`""` は `"`、改行は LF か CRLF）で行と値に読み、1 行目を見出しの行とした表にして制約「表」のとおり描く（表の印で囲めばその種類と機能、囲まなければ `default`）。値は文字として描き、Markdown として読まない。列の数が見出しの行と違う行は、足りない列を空のセルにし、多い値を捨て、表の前に書き方の警告（その行の行番号）を置く。表の後ろに、書いたとおりの CSV を `<pre class="mdmark-raw" hidden><code class="language-csv">` で置き、`.mdmark-table` に `data-source="csv"` を付ける（元の CSV への切り替えは `mount` が付ける）。中身が空のコードブロックは表にせず、制約「コードブロック」のとおり描く。表にしたコードブロックには、直前の `<!-- code: … -->` の飾りを当てない。`csv` がオフのときは制約「コードブロック」のとおり描く'
     notes: 読み取りは自前の同期の処理（ライブラリ選定で決定）。見た目はモック `dev/mock/components/csv-table/`

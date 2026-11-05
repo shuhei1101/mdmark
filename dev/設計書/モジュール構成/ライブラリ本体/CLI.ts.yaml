@@ -11,6 +11,8 @@ directory: |-
   ├── documents.ts  # build の対象の文書・索引と索引の文書の読み取り・文書の題
   ├── embed.ts      # 外部ライブラリと拡張の束ね・起動の処理と埋めるモジュールの 1 つのスクリプトへの束ね・色分けの言語の拾い出し・画像の埋め込み・1 枚に含まれない文書へのリンク
   ├── assets.ts     # 画像・動画・音声・添付の参照の拾い出し・アセットのルートでの探索・動画と音声のコピー・見つからないファイルの点検
+  ├── includes.ts   # 取り込む文書の表の組み立てと、取り込めない問題の拾い出し
+  ├── icons.ts      # 束ねていない名前のアイコンの形の取り出し
   ├── html.ts       # 書き出す HTML の組み立て
   ├── init.ts       # mdmark init
   ├── check.ts      # mdmark check
@@ -2084,6 +2086,92 @@ functions:
     status: planned
     introduced:
       pr: 275
+  - name: collectIncludes
+    title: 取り込む文書を集める
+    container: src/cli/includes.ts
+    summary: '文書の include のマーカー（コードブロックとインラインコードの中を除く）を `resolveIncludePath` で解き、根のフォルダ（設定ファイルのフォルダ。無ければ文書のフォルダ）の中のファイルだけを読んで、キーを文書のフォルダからのパスにした取り込む文書の表を作る。取り込んだ Markdown の中のマーカーもたどり、同じファイルは 1 回だけ読む。根の外を指すパス・無いファイル・無い見出し・行の数を越える範囲・循環を、マーカーの文書と行を持つ問題として返す。`<!-- features: -include -->` の文書は読まない'
+    kind: 関数
+    scope: internal
+    args:
+    - name: docPath
+      type: string
+      required: true
+      description: 文書の絶対パス
+    - name: markdown
+      type: string
+      required: true
+      description: 文書の本文
+    - name: root
+      type: string
+      required: true
+      description: 根のフォルダの絶対パス
+    returns:
+      type: '{ includes: Record<string, string>; problems: IncludeProblem[] }'
+      description: 取り込む文書の表と問題
+    side_effects: ファイルを読む
+    callees:
+    - dev/設計書/モジュール構成/ライブラリ本体/記法.ts#functions[resolveIncludePath]
+    unit_tests:
+    - name: test_collect_includes
+      case: 正常
+      condition: '`guide.md` が `共通/手順.md#実行` を、`共通/手順.md` が `../../src/app.ts#L1` を取り込む'
+      expected: 表のキーが `共通/手順.md` と `../src/app.ts` で、問題が 0 件
+      mock: 一時フォルダに文書を置く
+      summary: 入れ子の取り込みもたどって表を作る
+    - name: test_collect_includes_when_problems
+      case: 異常
+      condition: '`missing.md`・`共通/手順.md#無い見出し`・5 行の `src/app.ts#L8-L10`・根の外の `../../outside.md`・`a.md` と `b.md` の循環'
+      expected: '`missing`・`heading`・`lines`（行の数 5）・`outside`・`circular`（順 `a.md → b.md → a.md`）の問題が 1 件ずつで、`outside.md` を読んでいない'
+      mock: 一時フォルダに文書を置く
+      summary: 取り込めないものを種類ごとの問題にする
+  - name: collectIconNodes
+    title: 埋めるアイコンの形を集める
+    container: src/cli/icons.ts
+    summary: 文書と取り込む文書の `icon:` のうち配布物に束ねていない名前の IconNode を、依存の lucide の `icons` から取り出す。lucide に無い名前は別に返す
+    kind: 関数
+    scope: internal
+    args:
+    - name: markdowns
+      type: string[]
+      required: true
+      description: 文書と取り込む文書の本文
+    returns:
+      type: '{ icons: Record<string, MdmarkIconNode>; missing: string[] }'
+      description: アイコンの形の表と lucide に無い名前
+    unit_tests:
+    - name: test_collect_icon_nodes
+      case: 正常
+      condition: '`` `icon:sailboat` ``・`` `icon:flag` ``（束ねた名前）・`` `icon:no-such-icon` `` を持つ本文'
+      expected: '`icons` が `sailboat` だけを持ち、`missing` が `["no-such-icon"]`'
+      mock: なし
+      summary: 束ねていない名前の形だけを取り出す
+  - name: checkIncludes
+    title: 取り込み先を点検する
+    container: src/cli/check.ts
+    summary: 点検する文書ごとに `collectIncludes` を呼び、`circular` の問題を `include_circular`、それ以外を `include_target_missing` のずれにする。内容の文は問題の種類ごとの直し方を含む
+    kind: 関数
+    scope: internal
+    args:
+    - name: documents
+      type: CheckDocument[]
+      required: true
+      description: 点検する文書
+    - name: root
+      type: string
+      required: true
+      description: 設定ファイルのフォルダ
+    returns:
+      type: CheckIssue[]
+      description: ずれ
+    callees:
+    - '#functions[collectIncludes]'
+    unit_tests:
+    - name: test_check_includes
+      case: 正常
+      condition: 無いファイル・無い見出し・無い行の範囲・循環・正しい取り込みを持つ文書
+      expected: '`include_target_missing` が 3 件と `include_circular` が 1 件で、正しい取り込みのずれが無い'
+      mock: 一時フォルダに文書を置く
+      summary: 問題を種類ごとのずれにする
 constants:
   - name: TEMPLATE_FILES
     title: 雛形の一覧
@@ -2111,3 +2199,5 @@ test_files:
   - tests/unit/src/cli/alias-schema.test.ts
   - tests/unit/src/cli/aliases.test.ts
   - tests/unit/src/cli/assets.test.ts
+  - tests/unit/src/cli/includes.test.ts
+  - tests/unit/src/cli/icons.test.ts
