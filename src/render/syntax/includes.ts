@@ -171,8 +171,13 @@ const expandMarker = (options: {
   const mark = markOf(marker);
   const written = (mark?.rest ?? "").trim();
   const { key, target } = resolveIncludePath(fromPath, written);
-  const warn = (message: string): Token[] => {
-    const warning: SyntaxWarning = { mark: mark?.raw ?? "", message };
+  /** 取り込み先が無い警告（循環を除く）は `includeTarget` を付け、記法の点検が除けるようにする */
+  const warn = (message: string, includeTarget = true): Token[] => {
+    const warning: SyntaxWarning = {
+      mark: mark?.raw ?? "",
+      message,
+      ...(includeTarget ? { includeTarget } : {}),
+    };
     const block = warningBlock(state, warning);
     block.map = marker.map ? [...marker.map] : null;
     return [block];
@@ -180,6 +185,7 @@ const expandMarker = (options: {
   if (chain.includes(key)) {
     return warn(
       problemMessage({ kind: "circular", key, chain: [...chain, key] }),
+      false,
     );
   }
   const includes = envOf(state).includes ?? {};
