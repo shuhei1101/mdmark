@@ -5070,6 +5070,57 @@
       }
     }
 
+    /* リンク先を持つノード: ノードの全体を押せる。名前は本文のリンクと同じ色と下線にし、文字の上も押せる形のカーソルにする */
+    .mdmark-diagram-node.has-link {
+      cursor: pointer;
+
+      &
+        :is(
+          .mdmark-diagram-node-kind,
+          .mdmark-diagram-node-name,
+          .mdmark-diagram-node-sub
+        ) {
+        cursor: pointer;
+        pointer-events: none;
+        user-select: none;
+      }
+
+      & .mdmark-diagram-node-name {
+        color: var(--mdmark-color-link);
+        text-decoration: underline;
+        text-underline-offset: 0.2em;
+      }
+
+      /* ホバー: ノードの地に種類の色をうっすら敷く */
+      &:hover {
+        background: color-mix(
+          in oklab,
+          var(--node-color) 8%,
+          var(--mdmark-color-bg)
+        );
+      }
+
+      /* 説明のマーカー: ノードを覆うリンクの上に重ね、押してもリンク先を開かない。隣り合うリンクと押し分けられるよう 24px を取る */
+      & .mdmark-diagram-info {
+        z-index: 1;
+        width: 24px;
+        height: 24px;
+      }
+    }
+
+    /* ノードを覆うリンク: ノードと同じ大きさ。フォーカスはノードの外側に枠を出す */
+    .mdmark-diagram-node-link {
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      -webkit-user-drag: none;
+
+      &:focus-visible {
+        outline: 2px solid var(--mdmark-color-link);
+        outline-offset: 2px;
+      }
+    }
+
     /* ノード: 種類の色の線で囲み、地は文書の地にして層の背景から浮かせる */
     .mdmark-diagram-node {
       position: absolute;
@@ -9329,6 +9380,84 @@
         }
       }
     }
+  }
+}
+
+/* コードブロックとファイルツリーの折り返し（`dev/mock/refs/328/assets/wrap.css` から取る）。
+   レイヤーの外に置き、使う側の要素名だけ・クラス 1 つの pre への汎用の CSS で既定の「折り返さない」を変えない */
+/* 印刷はレイヤーの中の印刷の規則でコードを紙の幅に折り返すため、既定は印刷以外に当てる */
+@media not print {
+  .mdmark .mdmark-code pre,
+  .mdmark .mdmark-code pre code {
+    white-space: pre;
+    overflow-wrap: normal;
+  }
+
+  .mdmark .mdmark-tree .mdmark-tree-list {
+    white-space: nowrap;
+    overflow-wrap: normal;
+  }
+}
+
+/* code のマーカーの wrap: 行を枠の幅で折り返す。行番号と行頭のマーカーは折り返した行の 1 行目にだけ出る */
+.mdmark pre.mdmark-code-lines.mdmark-code-wrap {
+  &,
+  & * {
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+  }
+
+  code {
+    width: auto;
+  }
+}
+
+/* tree のマーカーの wrap: 名前と注釈を項目の中で折り返す。続きの行は名前の頭に揃え、罫線と入れ子の位置は変えない */
+.mdmark .mdmark-tree.mdmark-tree-wrap .mdmark-tree-list {
+  white-space: normal;
+  overflow-x: visible;
+
+  /* 注釈は名前の下の行に置く */
+  .mdmark-tree-row {
+    flex-wrap: wrap;
+    align-items: flex-start;
+  }
+
+  /* 名前の塊: 長い名前はアイコンの右の列の中で折り返す */
+  .mdmark-tree-row > :is(.mdmark-tree-toggle, .mdmark-tree-name),
+  .mdmark-tree-toggle > .mdmark-tree-name {
+    flex: 0 1 auto;
+    align-items: flex-start;
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+
+  .mdmark-tree-toggle::before,
+  .mdmark-tree-name::before {
+    margin-block-start: 0.3em;
+  }
+
+  /* 注釈の列を揃えず、注釈までの点線は引かない */
+  .mdmark-tree-row:has(.mdmark-tree-note)
+    > :is(.mdmark-tree-toggle, .mdmark-tree-name) {
+    min-width: 0;
+
+    &::after {
+      display: none;
+    }
+  }
+
+  /* 注釈は名前の頭（開閉のマーカーとアイコンの右）から始める */
+  .mdmark-tree-note {
+    flex: 1 0 100%;
+    box-sizing: border-box;
+    min-width: 0;
+    padding-inline-start: calc(
+      var(--mdmark-tree-lead) +
+      1.1em +
+      var(--mdmark-tree-gap)
+    );
+    overflow-wrap: anywhere;
   }
 }
 

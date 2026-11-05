@@ -431,3 +431,22 @@ test("test_sanitize_when_cell_span", async () => {
   expect(written).not.toContain("rowspan");
   expect(written).not.toContain("scope");
 });
+
+// 本文のリンクと同じスキームを許す（正常系）
+test("test_is_allowed_url", async () => {
+  // 準備
+  const { isAllowedUrl } = await import("../../../../src/render/sanitize.ts");
+  const urls = [
+    "https://example.com",
+    "mailto:a@example.com",
+    "./other.md",
+    "#top",
+    "javascript:alert(1)",
+    " JavaScript:alert(1)",
+    "id:spec#items",
+  ];
+  // 実行
+  const results = urls.map((url) => isAllowedUrl(url));
+  // 検証
+  expect(results).toEqual([true, true, true, true, false, false, false]);
+});

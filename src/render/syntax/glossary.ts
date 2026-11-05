@@ -173,10 +173,12 @@ export function glossaryRule(state: StateCore): void {
         docId: env.docId ?? "",
       });
       if (close === -1) {
-        out.push(warningBlock(state, unclosedWarning(mark)));
+        out.push(warningBlock(state, unclosedWarning(mark), token));
       }
       if (warning !== undefined) {
-        out.push(warningBlock(state, { mark: mark.raw, message: warning }));
+        out.push(
+          warningBlock(state, { mark: mark.raw, message: warning }, token),
+        );
       }
       for (const row of rows) {
         env.ownGlossary.push(row.entry);

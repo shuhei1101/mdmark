@@ -154,6 +154,78 @@ test("test_attach_zoom_when_detached", async () => {
   expect(zoomText(root)).toBe(before);
 });
 
+/** 中身の中にリンク先を持つノードのリンクを置き、拡大を 2 回押した状態にする */
+async function setUpWithLink() {
+  vi.spyOn(Element.prototype, "setPointerCapture").mockImplementation(() => {});
+  const view = await setUp();
+  const link = document.createElement("a");
+  link.className = "mdmark-diagram-node-link";
+  link.href = "#node-link";
+  link.textContent = "ノード";
+  view.root.querySelector(".content")?.append(link);
+  button(view.root, "拡大").click();
+  button(view.root, "拡大").click();
+  return { ...view, link };
+}
+
+/** リンクの上で押し、横へ dx 動かして離す */
+function dragOnLink(link: HTMLElement, dx: number): void {
+  const point = { bubbles: true, pointerId: 1, button: 0, clientY: 100 };
+  link.dispatchEvent(
+    new PointerEvent("pointerdown", { ...point, clientX: 300 }),
+  );
+  link.dispatchEvent(
+    new PointerEvent("pointermove", { ...point, clientX: 300 - dx }),
+  );
+  link.dispatchEvent(
+    new PointerEvent("pointerup", { ...point, clientX: 300 - dx }),
+  );
+}
+
+// リンクの上から動かした後の click を window で止め、次のタスクで受け取りを外す（正常系）
+test("test_attach_zoom_when_dragged_on_link", async () => {
+  // 準備
+  const { viewport, link } = await setUpWithLink();
+  const reached: Event[] = [];
+  const count = (event: Event) => reached.push(event);
+  document.addEventListener("click", count, true);
+  try {
+    const before = viewport.scrollLeft;
+    // 実行: 動かした後の click
+    dragOnLink(link, 40);
+    const first = new MouseEvent("click", { bubbles: true, cancelable: true });
+    link.dispatchEvent(first);
+    // 検証
+    expect(viewport.scrollLeft - before).toBe(40);
+    expect(first.defaultPrevented).toBe(true);
+    expect(reached).toHaveLength(0);
+    // 実行: 動かした後に click が来ないまま、次のタスクで別の click
+    dragOnLink(link, 40);
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    const later = new MouseEvent("click", { bubbles: true, cancelable: true });
+    document.body.dispatchEvent(later);
+    // 検証
+    expect(later.defaultPrevented).toBe(false);
+    expect(reached).toHaveLength(1);
+  } finally {
+    document.removeEventListener("click", count, true);
+  }
+});
+
+// しきい値以下の動きはドラッグにしない（正常系）
+test("test_attach_zoom_when_link_pressed", async () => {
+  // 準備
+  const { viewport, link } = await setUpWithLink();
+  const before = viewport.scrollLeft;
+  // 実行
+  dragOnLink(link, 3);
+  const click = new MouseEvent("click", { bubbles: true, cancelable: true });
+  link.dispatchEvent(click);
+  // 検証
+  expect(click.defaultPrevented).toBe(false);
+  expect(viewport.scrollLeft).toBe(before);
+});
+
 // しきい値までのドラッグでは動かさず、超えたら動かして onPanStart を呼ぶ（正常系）
 test("test_attach_zoom_when_drag_threshold", async () => {
   // 準備

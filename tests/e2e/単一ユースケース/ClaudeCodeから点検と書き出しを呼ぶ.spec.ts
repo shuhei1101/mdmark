@@ -174,3 +174,68 @@ test("test_normal_when_base_given", async ({ builtRoot, tempDir }) => {
     await Promise.all(files.map((file) => readFile(join(dir, file), "utf8"))),
   ).toEqual(before);
 });
+
+// 文字列と YAML のキーを渡した check が、mdmark check --text・--file --key と同じ書き方の警告のずれを返す（正常シナリオ（文字列とYAMLのキーを渡す））
+test("test_normal_when_text_and_key", async ({ builtRoot, tempDir }) => {
+  // 準備
+  const dir = await tempDir();
+  await writeCleanProject(dir);
+  const body = "# 見出し\n本文\n<!-- tabz -->\n";
+  const records = [
+    "title: 記録",
+    "items:",
+    "  - id: a",
+    "    body: |",
+    ...body
+      .trimEnd()
+      .split("\n")
+      .map((line) => `      ${line}`),
+    "",
+  ].join("\n");
+  await writeFiles(dir, { "records.yaml": records });
+  const files = [
+    "mdmark.config.yaml",
+    "index.yaml",
+    "a.md",
+    "b.md",
+    "records.yaml",
+  ];
+  const before = await Promise.all(
+    files.map((file) => readFile(join(dir, file), "utf8")),
+  );
+  // 実行
+  const { byText, byKey } = await withMcpClient(
+    { builtRoot, projectDir: dir },
+    async (client) => ({
+      byText: await callTool(client, "check", { text: body }),
+      byKey: await callTool(client, "check", {
+        file: "records.yaml",
+        key: "items[0].body",
+      }),
+    }),
+  );
+  // 検証
+  expect(byText.isError).toBe(false);
+  expect(byKey.isError).toBe(false);
+  const textIssues = JSON.parse(byText.texts[0] ?? "").issues as Issue[];
+  const keyIssues = JSON.parse(byKey.texts[0] ?? "").issues as Issue[];
+  expect(textIssues.map((issue) => [issue.file, issue.kind])).toEqual([
+    ["-", "unknown_mark"],
+  ]);
+  expect(keyIssues.map((issue) => [issue.file, issue.kind])).toEqual([
+    ["records.yaml", "unknown_mark"],
+  ]);
+  const cliText = await runCli(builtRoot, ["check", "--text", body], dir);
+  const cliKey = await runCli(
+    builtRoot,
+    ["check", "--file", "records.yaml", "--key", "items[0].body"],
+    dir,
+  );
+  expect(linesOf(cliText.stdout).slice(0, -1)).toEqual(
+    textIssues.map(issueLine),
+  );
+  expect(linesOf(cliKey.stdout).slice(0, -1)).toEqual(keyIssues.map(issueLine));
+  expect(
+    await Promise.all(files.map((file) => readFile(join(dir, file), "utf8"))),
+  ).toEqual(before);
+});

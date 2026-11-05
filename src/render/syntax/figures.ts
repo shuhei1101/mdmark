@@ -184,10 +184,14 @@ export function numberFigures(state: StateCore): void {
     const duplicated = figures.has(id);
     if (duplicated) {
       out.push(
-        warningBlock(state, {
-          mark: mark.raw,
-          message: `の ID \`${id}\` は、前の図表と重なっています。別の ID にしてください。この図には番号だけを付け、ID を付けていません。`,
-        }),
+        warningBlock(
+          state,
+          {
+            mark: mark.raw,
+            message: `の ID \`${id}\` は、前の図表と重なっています。別の ID にしてください。この図には番号だけを付け、ID を付けていません。`,
+          },
+          token,
+        ),
       );
     } else {
       figures.set(id, { kind: target.kind, number });

@@ -378,7 +378,7 @@ function diamondSvg(box: { w: number; h: number }): string {
 function renderNode(options: {
   node: Pick<
     MdmarkDiagramNode,
-    "id" | "kind" | "name" | "tag" | "sub" | "io" | "hint"
+    "id" | "kind" | "name" | "tag" | "sub" | "io" | "hint" | "href"
   >;
   box: { x: number; y: number; w: number; h: number };
   tips: TipList;
@@ -408,7 +408,13 @@ function renderNode(options: {
     const what = node.io ? "入力・処理・出力" : "説明";
     info = `<button class="mdmark-diagram-info" type="button" aria-label="「${escapeHtml(node.name)}」の${what}" aria-describedby="${id}" data-tip-owner="${escapeHtml(owner)}">${iconSvg("info")}</button>`;
   }
-  return `<div class="mdmark-diagram-node${hasTip ? " has-tip" : ""}" data-kind="${node.kind}" data-node="${escapeHtml(node.id)}"${boxStyle({ ...box, inset: nodeInset(node.kind, box) })}>${node.kind === "question" ? diamondSvg(box) : ""}<span class="mdmark-diagram-node-kind">${iconSvg(kind.icon)}<span>${tag}</span></span><span class="mdmark-diagram-node-name">${name}</span>${sub}${info}</div>`;
+  // リンク先を持つノード: ノードの全体を覆うリンクを置き、右上の印はリンクの後ろ（リンクの外）に置く
+  const link =
+    node.href === undefined
+      ? ""
+      : `<a class="mdmark-diagram-node-link" href="${escapeHtml(node.href)}" aria-label="${escapeHtml(node.name)}"></a>`;
+  const classes = `mdmark-diagram-node${hasTip ? " has-tip" : ""}${node.href === undefined ? "" : " has-link"}`;
+  return `<div class="${classes}" data-kind="${node.kind}" data-node="${escapeHtml(node.id)}"${boxStyle({ ...box, inset: nodeInset(node.kind, box) })}>${node.kind === "question" ? diamondSvg(box) : ""}<span class="mdmark-diagram-node-kind">${iconSvg(kind.icon)}<span>${tag}</span></span><span class="mdmark-diagram-node-name">${name}</span>${sub}${link}${info}</div>`;
 }
 
 /** `hint` を持つシステムの枠・層のタイトルの右のマーカー（`hint` が無ければ空） */

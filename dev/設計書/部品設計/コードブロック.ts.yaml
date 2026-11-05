@@ -203,6 +203,19 @@ states:
         value: yaml
       - name: lines
         value: '[{"text":"version: \"0.9\""},{"text":"features:","foldLines":2},{"text":"  table: true","indent":1},{"text":"  diagram: true","indent":1},{"text":"libraries:","foldLines":3},{"text":"  highlight:","indent":1,"foldLines":2,"folded":true},{"text":"    url: https://cdn.jsdelivr.net/npm/highlight.js","indent":2},{"text":"    version: 11.11.1","indent":2},{"text":"build:","foldLines":1},{"text":"  - docs/使い方/導入/README.md","indent":1}]'
+  - name: Wrap
+    description: '`wrap` と行番号を持ち、2 行目が枠の幅より長い。長い行は枠の幅で折り返し、行番号は折り返した行の 1 行目にだけ出す。ブロックに横スクロールが出ない（合意したモック `dev/mock/refs/328/assets/wrap.css`）'
+    args:
+      - name: language
+        value: ts
+      - name: title
+        value: app.ts
+      - name: lineNumbers
+        value: 'true'
+      - name: wrap
+        value: 'true'
+      - name: lines
+        value: '[{"text":"import { mount } from \"mdmark\";"},{"text":"const url = \"https://cdn.jsdelivr.net/gh/shuhei1101/mdmark@v0.10.0/dist/index.js\"; // バージョンを固定した URL から配布物を読み、描く先の要素に文書を描く"},{"text":"mount(document.querySelector(\"#doc\"), markdown);"}]'
 lead: 左端に言語のラベルと題、右端にコピーのボタンを置いた帯と、行番号・行の強調・足した行と消した行・注目する行・エラーと警告の行と、インデントの縦線・行の開閉と、言語に応じた色分けを付けたコードブロック。
 args:
   - name: language
@@ -245,6 +258,11 @@ args:
     default: なし（コピーのボタンを付けない）
     choices: '`idle`（`コピー`、`copy` のアイコン）・`copied`（`コピーしました`、`check`）・`failed`（`コピーできませんでした`、`circle-alert`）'
     description: 帯の右端のコピーのボタンの状態（`mount` が付けた状態）。渡すとボタンと `role="status"` の要素を置き、ボタンの `data-state` と文言・アイコンを切り替える。`copied`・`failed` のときは `role="status"` の要素に `コードを{文言}` を入れる
+  - name: wrap
+    type: 真偽値
+    required: false
+    default: 'false'
+    description: '`<!-- code: wrap -->` を持つか。`true` のとき `pre` に class `mdmark-code-lines mdmark-code-wrap` を付け、長い行を枠の幅で折り返す。行番号と行頭の `+`・`-` は折り返した行の 1 行目にだけ出す。`false` のときは折り返さず、使う側の `pre` への汎用の CSS でも折り返さない'
 css_properties:
   - name: --mdmark-color-code-highlight-bg
     syntax: <color>

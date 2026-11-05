@@ -1,7 +1,13 @@
 import { expect, type Page, test } from "@playwright/test";
 import type { MdmarkIndex } from "../../../src/index.ts";
 import { hintFlowMarkdown, NODE_HINT, wrapHtml } from "../chart.ts";
-import { flowMarkdown, TERM_INDEX, wrapDirective } from "../diagram.ts";
+import {
+  flowMarkdown,
+  linkedFlowText,
+  routeLinkTargets,
+  TERM_INDEX,
+  wrapDirective,
+} from "../diagram.ts";
 import {
   buildDistRoot,
   mountDocument,
@@ -463,4 +469,50 @@ test("test_normal_when_er_table", async ({ page }) => {
   // 検証
   await expect(info).toBeFocused();
   await expect(tip).toBeVisible();
+});
+
+// 入力・処理・出力とリンク先を持つノードで、印はツールチップを出してリンク先を開かず、印の外を押すとリンク先を開く（正常シナリオ（リンク先を持つノードのツールチップ））
+test("test_normal_when_linked_node_has_tip", async ({ page }) => {
+  // 準備
+  const opened = await routeLinkTargets(page, ["https://example.com/spec"]);
+  await openPage(page, builtRoot, { hostCss: ROOM_CSS });
+  await mountDocument(page, {
+    markdown: wrapDirective(
+      "flow",
+      linkedFlowText({
+        hrefs: ["https://example.com/spec", "./other.md"],
+        io: true,
+      }),
+    ),
+  });
+  const node = page.locator('#doc [data-node="a"]');
+  const info = node.locator(".mdmark-diagram-info");
+  const link = node.locator("a.mdmark-diagram-node-link");
+  const tip = page.locator('[role="tooltip"]', { hasText: "種類を 1 つ選ぶ" });
+  // 実行・検証: 印の上で、入力・処理・出力のツールチップが出る
+  await info.hover();
+  await expect(tip).toBeVisible();
+  await expect(tip.locator("dt")).toHaveText(["入力", "処理", "出力"]);
+  // 実行・検証: 印を押してもリンク先は開かない
+  await info.click();
+  await page.waitForTimeout(CLOSE_WAIT_MS);
+  expect(opened()).toEqual([]);
+  expect(page.url()).not.toBe("https://example.com/spec");
+  await page.keyboard.press("Escape");
+  await page.mouse.move(0, 0);
+  // 実行・検証: Tab でリンクと印に別々にフォーカスし、印のときだけツールチップが出る
+  await link.focus();
+  await expect(link).toBeFocused();
+  await expect(tip).toBeHidden();
+  await page.keyboard.press("Tab");
+  await expect(info).toBeFocused();
+  await expect(tip).toBeVisible();
+  // 実行・検証: 印の外のノードを押すと、リンク先が開く
+  const box = await node.boundingBox();
+  if (!box) {
+    throw new Error("ノードの範囲を取れない");
+  }
+  await page.mouse.click(box.x + 20, box.y + box.height - 10);
+  await page.waitForURL("https://example.com/spec");
+  expect(opened()).toEqual(["https://example.com/spec"]);
 });

@@ -330,3 +330,69 @@ test("test_normal_when_bg_transparent_with_opaque_color", async ({ page }) => {
     surrounding,
   );
 });
+
+// 使う側の pre への汎用の CSS があっても、マーカーの無いコードブロックとファイルツリーは折り返さず、wrap のブロックだけを折り返す（正常シナリオ（使う側の pre への汎用の CSS））
+test("test_normal_when_host_pre_wraps", async ({ page }) => {
+  // 準備
+  await page.setViewportSize({ width: 390, height: 844 });
+  const markdown = [
+    "```json",
+    "{",
+    '  "nodes": [{ "id": "a-very-long-identifier-for-the-node", "name": "とても長い名前の項目" }]',
+    "}",
+    "```",
+    "",
+    "```tree",
+    "very-long-folder-name-for-the-generated-design-documents/",
+    "└── a-file-name-that-is-much-longer-than-the-box-width-on-phones.config.ts",
+    "```",
+    "",
+    "<!-- code: wrap -->",
+    "",
+    "```ts",
+    'const url = "https://cdn.jsdelivr.net/gh/shuhei1101/mdmark@v0.10.0/dist/index.js"; // 長い行',
+    "```",
+    "",
+  ].join("\n");
+  /** json の行の左端・ツリーの入れ子の線の左端と、はみ出しと white-space */
+  const measure = () =>
+    page.locator("#doc").evaluate((doc) => {
+      const [json, ts] = [
+        ...doc.querySelectorAll<HTMLElement>(".mdmark-code pre"),
+      ];
+      const list = doc.querySelector<HTMLElement>(".mdmark-tree-list");
+      const nested = list?.querySelector("ul ul");
+      return {
+        jsonWhiteSpace: json ? getComputedStyle(json).whiteSpace : "",
+        jsonOverflows: json ? json.scrollWidth > json.clientWidth : false,
+        jsonLefts: [...(json?.querySelectorAll(".mdmark-code-text") ?? [])].map(
+          (text) => Math.round(text.getBoundingClientRect().left),
+        ),
+        treeOverflows: list ? list.scrollWidth > list.clientWidth : false,
+        nestedLeft:
+          nested && list
+            ? Math.round(
+                nested.getBoundingClientRect().left -
+                  list.getBoundingClientRect().left,
+              )
+            : -1,
+        tsFits: ts ? ts.scrollWidth <= ts.clientWidth : false,
+      };
+    });
+  await openPage(page, builtRoot);
+  await mountDocument(page, { markdown });
+  const withoutHost = await measure();
+  // 実行
+  await openPage(page, builtRoot, {
+    hostCss: "pre { white-space: pre-wrap; overflow-wrap: anywhere; }",
+  });
+  await mountDocument(page, { markdown });
+  // 検証
+  const withHost = await measure();
+  expect(withHost.jsonWhiteSpace).toBe("pre");
+  expect(withHost.jsonOverflows).toBe(true);
+  expect(withHost.treeOverflows).toBe(true);
+  expect(withHost.jsonLefts).toEqual(withoutHost.jsonLefts);
+  expect(withHost.nestedLeft).toBe(withoutHost.nestedLeft);
+  expect(withHost.tsFits).toBe(true);
+});

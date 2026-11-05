@@ -1,4 +1,4 @@
-title: "テーマを上書きする"
+title: テーマを上書きする
 scenarios:
   - name: 正常シナリオ
     setup:
@@ -257,6 +257,30 @@ scenarios:
       - 図のツールチップの地の色の計算値が `rgb(240, 240, 240)`
       - 全画面の図の地の色の計算値が `rgb(240, 240, 240)`
     test: test_normal_when_bg_transparent_with_opaque_color
+  - name: 正常シナリオ（使う側の pre への汎用の CSS）
+    setup:
+      - name: 上書きの CSS を読むページ
+        description: mdmark の CSS の後に、使う側の CSS を読み、文書を描く HTML
+        notes: '使う側の CSS は層の外に `pre { white-space: pre-wrap; overflow-wrap: anywhere; }` を持つ。画面の幅は 390px'
+      - name: コードブロックとファイルツリーを持つ Markdown
+        description: '表示の幅より長い行とインデントを持つマーカーの無い言語 `json` のコードブロック、表示の幅より長い名前を持つマーカーの無い言語 `tree` のコードブロック、`<!-- code: wrap -->` の直後の長い行を持つ言語 `ts` のコードブロックの文書'
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 文書を描かせる
+        M-->>P: 折り返しを記法で決めたコードブロックとファイルツリー
+        P->>P: 層の外の使う側の CSS が当たる
+        P-->>U: マーカーの無いブロックは折り返さずに表示
+    expected:
+      - マーカーの無い `json` のコードブロックの `white-space` の計算値が `pre` で、枠の中で横にスクロールできる
+      - マーカーの無い `tree` のファイルツリーの項目が折り返さず、枠の中で横にスクロールできる
+      - '`json` のインデントとファイルツリーの罫線と入れ子の位置が、使う側の CSS を読まないときと同じ'
+      - '`wrap` の `ts` のコードブロックは折り返す'
+    test: test_normal_when_host_pre_wraps
 lead: 使う側が自分の CSS で `--mdmark-` の変数や本文の規則を書き、mdmark が描いた文書の見た目を変える。何も書かなければ既定の見た目（dev-swiss）で描かれる。
 issue: 3
 primary_actor: mdmark を使うアプリの開発者
@@ -266,6 +290,6 @@ stakeholders:
 trigger: 使う側のページが、mdmark の CSS と自分の CSS を読んで文書を描く
 preconditions:
   - ページが版を固定した URL で mdmark の JavaScript と CSS を読んでいる
-success_guarantee: 使う側が mdmark の層の外に書いた CSS は、詳細度によらず mdmark の CSS に勝つ。
+success_guarantee: 使う側が mdmark の層の外に書いた CSS は、詳細度によらず mdmark の CSS に勝つ。ただし、コードブロックとファイルツリーの折り返しは記法の `wrap` で決まり、使う側の要素名だけの `pre` への汎用の CSS で変わらない。
 minimal_guarantee: 使う側が CSS を書かなくても、既定の見た目で文書が描かれる。
 test_file: tests/e2e/単一ユースケース/テーマを上書きする.spec.ts

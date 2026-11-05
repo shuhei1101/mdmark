@@ -462,6 +462,46 @@
       }
     }
 
+    /* リンク先を持つ箱: 箱の全体を押せる。名前は本文のリンクと同じ色と下線にし、文字の上も押せる形のカーソルにする */
+    .mdmark-diagram-node.has-link {
+      cursor: pointer;
+
+      & :is(.mdmark-diagram-node-kind, .mdmark-diagram-node-name, .mdmark-diagram-node-sub) {
+        pointer-events: none;
+        user-select: none;
+      }
+
+      & .mdmark-diagram-node-name {
+        color: var(--mdmark-color-link);
+        text-decoration: underline;
+        text-underline-offset: 0.2em;
+      }
+
+      /* ホバー: 箱の地に種類の色をうっすら敷く */
+      &:hover {
+        background: color-mix(in oklab, var(--node-color) 8%, var(--mdmark-color-bg));
+      }
+
+      /* 説明の印: 箱を覆うリンクの上に重ね、押してもリンク先を開かない。隣り合うリンクと押し分けられるよう 24px を取る */
+      & .mdmark-diagram-info {
+        z-index: 1;
+        width: 24px;
+        height: 24px;
+      }
+    }
+
+    /* 箱を覆うリンク: 箱と同じ大きさ。フォーカスは箱の外側に枠を出す */
+    .mdmark-diagram-node-link {
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+
+      &:focus-visible {
+        outline: 2px solid var(--mdmark-color-link);
+        outline-offset: 2px;
+      }
+    }
+
     /* 箱の名前 */
     .mdmark-diagram-node-name {
       color: var(--mdmark-color-heading);

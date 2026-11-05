@@ -14,6 +14,7 @@ import {
   type MdmarkFlowDefinition,
   type MdmarkParamDefinition,
   type MdmarkSequenceDefinition,
+  nodeLinkProblems,
   readDefinition,
 } from "../src/diagram/definition.ts";
 import { computeDiff } from "../src/diff/compute.ts";
@@ -795,6 +796,102 @@ function storyDiffHtml(args: PartArgs): string {
 }
 
 // コメントのボタン・入力欄・吹き出しのストーリーに足す規則: 本物は `document.body` の直下で `position: fixed` だが、ストーリーではその場に置く
+/** 座標を省いた判定フローチャート（描く処理が配置してから部品に渡す） */
+const JUDGEMENT_AUTO_TEXT = JSON.stringify({
+  title: "問い合わせの返信の判定",
+  scope: "問い合わせを受け取ったとき",
+  updated: "2026-11-04",
+  nodes: [
+    { id: "start", kind: "start", name: "問い合わせを受け取る" },
+    { id: "q1", kind: "question", name: "よくある質問で答えられるか" },
+    { id: "a1", kind: "action", name: "よくある質問のリンクを添える" },
+    { id: "q2", kind: "question", name: "担当者が答えられるか" },
+    { id: "r1", kind: "result", name: "返信を送信する" },
+    { id: "r2", kind: "result", name: "開発に起票する" },
+  ],
+  wires: [
+    { id: "j-start", line: "flow", from: "start", to: "q1" },
+    { id: "j-q1-yes", line: "flow", from: "q1", to: "a1", label: "YES" },
+    { id: "j-q1-no", line: "flow", from: "q1", to: "q2", label: "NO" },
+    { id: "j-a1", line: "flow", from: "a1", to: "r1" },
+    { id: "j-q2-yes", line: "flow", from: "q2", to: "r1", label: "YES" },
+    { id: "j-q2-no", line: "flow", from: "q2", to: "r2", label: "NO" },
+  ],
+});
+
+/** リンク先を持つノードの見本。`hrefs` はノードの `recv`・`classify` のリンク先 */
+function linkedDefinition(hrefs: {
+  recv: string;
+  classify: string;
+}): MdmarkFlowDefinition {
+  return {
+    title: "問い合わせの処理",
+    scope: "受け取りから記録まで",
+    updated: "2026-11-04",
+    width: 708,
+    height: 152,
+    nodes: [
+      {
+        id: "recv",
+        kind: "script",
+        x: 24,
+        y: 40,
+        w: 180,
+        h: 72,
+        name: "問い合わせを受け取る",
+        href: hrefs.recv,
+      },
+      {
+        id: "classify",
+        kind: "llm",
+        x: 264,
+        y: 40,
+        w: 180,
+        h: 72,
+        name: "分類する",
+        href: hrefs.classify,
+        io: {
+          in: "問い合わせの本文",
+          do: "種類を 1 つ選ぶ",
+          out: "種類と確度",
+        },
+      },
+      {
+        id: "store",
+        kind: "data",
+        x: 504,
+        y: 40,
+        w: 180,
+        h: 72,
+        name: "記録する",
+        shape: "db",
+      },
+    ],
+    wires: [
+      {
+        id: "w-recv",
+        line: "flow",
+        points: [
+          [204, 76],
+          [264, 76],
+        ],
+      },
+      {
+        id: "w-classify",
+        line: "write",
+        points: [
+          [444, 76],
+          [504, 76],
+        ],
+      },
+    ],
+  } as MdmarkFlowDefinition;
+}
+
+/** リンク先を持つノードのホバーとフォーカスを、ポインターとキーを使わずに見せる（`recv` はホバー、`classify` はフォーカスの見た目） */
+const LINK_HOVER_FOCUS_STYLE =
+  '<style>.mdmark-diagram-node.has-link[data-node="recv"]{background:color-mix(in oklab,var(--node-color) 8%,var(--mdmark-color-bg))}.mdmark-diagram-node.has-link[data-node="classify"] .mdmark-diagram-node-link{outline:2px solid var(--mdmark-color-link);outline-offset:2px}</style>';
+
 const STATIC_POPOVER_STYLE =
   "<style>.mdmark-comment-add,.mdmark-comment-popover{position:static}</style>";
 
@@ -996,6 +1093,7 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
       interactive: args.interactive === true,
       copyState: args.copyState as "idle" | "copied" | undefined,
       copyFallback: args.copyFallback === true,
+      wrap: args.wrap === true,
     }),
   badge: (args) =>
     renderBadge({
@@ -1085,6 +1183,7 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
       language,
       title: String(args.title ?? ""),
       lineNumbers: args.lineNumbers === true,
+      wrap: args.wrap === true,
       lines,
       ...(typeof args.fileName === "string" ? { fileName: args.fileName } : {}),
       ...(typeof args.syntax === "string" ? { syntax: args.syntax } : {}),
@@ -1180,6 +1279,59 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
   "flow-diagram": (args) => {
     if (args.invalid === true) {
       return invalidDefinition("flow", "inquiry");
+    }
+    if (args.judgement === "auto") {
+      const read = readDefinition("flow", [JUDGEMENT_AUTO_TEXT]);
+      return fitted(
+        renderDiagram({
+          kind: "flow",
+          definition: read.definition as MdmarkFlowDefinition,
+          id: "story-flow",
+        }),
+        args,
+      );
+    }
+    if (args.links === "blocked") {
+      // 描く処理と同じく、許さないリンク先を外して図の前に書き方の警告を置く
+      const definition = linkedDefinition({
+        recv: "javascript:alert(1)",
+        classify: "id:spec#items",
+      });
+      const problems = nodeLinkProblems(definition);
+      const warning = renderSyntaxWarning({
+        message:
+          "フロー図のノードのリンク先に使えないものがあります。使えるリンク先は http・https・mailto と相対パスです。このノードはリンクにせずに描いています。",
+        items: problems.map(({ id, href }) => ({
+          label: id,
+          message: `\`${href}\``,
+        })),
+      });
+      for (const node of definition.nodes) {
+        delete node.href;
+      }
+      return (
+        warning +
+        fitted(
+          renderDiagram({ kind: "flow", definition, id: "story-flow" }),
+          args,
+        )
+      );
+    }
+    if (args.links === "allowed" || args.links === "hover-focus") {
+      const html = fitted(
+        renderDiagram({
+          kind: "flow",
+          definition: linkedDefinition({
+            recv: "https://example.com/spec",
+            classify: "./other.md",
+          }),
+          id: "story-flow",
+        }),
+        args,
+      );
+      return args.links === "hover-focus"
+        ? LINK_HOVER_FOCUS_STYLE + html
+        : html;
     }
     if (args.unknownKind === true) {
       return unknownKindDefinition();

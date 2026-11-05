@@ -1,7 +1,7 @@
 title: "設定と索引を点検する"
 entry:
   kind: operation
-  value: '`mdmark check [--config {設定ファイル}] [--base {git の ref}]`（CLI。`npx github:shuhei1101/mdmark#v{版} check` で呼ぶ）'
+  value: '`mdmark check [--config {設定ファイル}] [--base {git の ref} | --text {Markdown} | --file {ファイル} --key {YAML のキー}]`（CLI。`npx github:shuhei1101/mdmark#v{版} check` で呼ぶ）'
 flows:
   - name: 正常系
     summary: ずれの無いフォルダで 0 件を返す
@@ -330,6 +330,138 @@ flows:
     test: test_normal_when_diagram_drift
     refs:
       - dev/設計書/シナリオ/単一ユースケース/設定と索引を点検する#scenarios[正常シナリオ（図の定義にずれがある）]
+  - name: 正常系（文字列の記法を点検する）
+    summary: 書き方の警告を持たない Markdown の文字列で 0 件を返す
+    setup:
+      - name: 作業のフォルダ
+        description: '`mdmark init` の後のフォルダ'
+      - name: 点検する文字列
+        description: '正しいフロー図の部品の定義と、`<!-- table: data -->` で囲んだ表を持つ Markdown を標準入力で渡す'
+      - name: Mock
+        description: 差し替える依存は無い（CLI をそのフォルダで子プロセスとして流す）
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant C as mdmark CLI
+        W->>C: mdmark check --text -
+        C->>C: 描くときと同じ読み取りで書き方の警告を集める
+        C-->>W: ずれ 0 件・終了コード 0
+    expected:
+      - 終了コードが 0
+      - 標準出力が `ずれ 0 件` の 1 行
+      - 作業のフォルダのファイルが変わっていない
+    test: test_normal_when_text
+  - name: 正常系（文字列に書き方の警告がある）
+    summary: 文字列を描いたときの書き方の警告を、行を指すずれにして終了コード 1 で終わる
+    setup:
+      - name: 作業のフォルダ
+        description: 正常系（文字列の記法を点検する）と同じ
+      - name: 書き方の警告を持つ文字列
+        description: '1 行目の `<!-- flow -->` の範囲にノードの種類 `begin` を記載した定義、20 行目に `<!-- tabz -->`、22 行目に `<!-- code: highlight=9 -->` とその直後の 3 行のコードブロックを持つ Markdown'
+      - name: Mock
+        description: 正常系と同じ
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant C as mdmark CLI
+        W->>C: mdmark check --text {Markdown}
+        C->>C: 描くときと同じ読み取りで書き方の警告を集める
+        C-->>W: ずれ 3 行・終了コード 1
+    expected:
+      - 終了コードが 1
+      - '`-:1: diagram_invalid:`・`-:20: unknown_mark:`・`-:22: syntax_warning:` で始まる行が 1 つずつある'
+      - 各行の内容が、同じ文字列を `render` で描いたときの書き方の警告の本文と同じ
+      - 最後の行が `ずれ 3 件`
+    test: test_normal_when_text_warnings
+  - name: 正常系（ファイルと YAML のキー）
+    summary: YAML のキーの値の Markdown を点検し、YAML のファイルの行を指すずれにする
+    setup:
+      - name: 作業のフォルダ
+        description: 正常系（文字列の記法を点検する）と同じ
+      - name: Markdown をキーに持つ YAML のファイル
+        description: '`items[0].body` が 5 行目の `|` で始まるブロックスカラーで、値の 3 行目（ファイルの 8 行目）に `<!-- tabz -->` を持ち、`items[1].body` に正しい Markdown を持つ `records.yaml`'
+      - name: Mock
+        description: 正常系と同じ
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant C as mdmark CLI
+        participant F as ファイル
+        W->>C: mdmark check --file records.yaml --key items[0].body
+        C->>F: YAML を読み、キーの値と値の始まる行を取り出す
+        C->>C: 描くときと同じ読み取りで書き方の警告を集める
+        C-->>W: ずれ 1 行・終了コード 1
+    expected:
+      - 終了コードが 1
+      - '`records.yaml:8: unknown_mark:` で始まり `tabz` を含む行が 1 つだけある'
+      - '`--key items[1].body` で流すと、終了コード 0 で `ずれ 0 件`'
+      - '`records.yaml` が変わっていない'
+    test: test_normal_when_yaml_key
+  - name: 正常系（拡張のマーカーを持つ文字列）
+    summary: 設定の `extensions` が追加するマーカーを知っているマーカーとして点検する
+    setup:
+      - name: 拡張を登録した作業のフォルダ
+        description: 正常系（文字列の記法を点検する）のフォルダの設定の `extensions` に、`directive` が `note-card` の拡張を記載したもの
+      - name: 拡張のマーカーを持つ文字列
+        description: 1 行目に `<!-- note-card -->`、3 行目に `<!-- tabz -->` を持つ Markdown
+      - name: Mock
+        description: 正常系と同じ
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant C as mdmark CLI
+        W->>C: mdmark check --text {Markdown}
+        C->>C: 設定の extensions を束ねて読み込み directive を取る
+        C->>C: 書き方の警告を集める
+        C-->>W: ずれ 1 行・終了コード 1
+    expected:
+      - 終了コードが 1
+      - '`-:3: unknown_mark:` で始まる行が 1 つだけあり、`-:1:` で始まる行が無い'
+    test: test_normal_when_text_extension_mark
+  - name: 異常系（キーが無い・終了コード 1）
+    summary: YAML に無いキーは、キーが無いことと直し方を示して終わる
+    setup:
+      - name: 作業のフォルダ
+        description: 正常系（ファイルと YAML のキー）と同じ
+      - name: 無いキー
+        description: '`--key items[5].body` を渡す'
+      - name: Mock
+        description: 正常系と同じ
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant C as mdmark CLI
+        participant F as ファイル
+        W->>C: mdmark check --file records.yaml --key items[5].body
+        C->>F: YAML を読み、キーをたどる
+        C-->>W: キーが無いことと直し方・終了コード 1
+    expected:
+      - 終了コードが 1
+      - 標準エラーに `records.yaml` と `items[5].body` と、`items` の要素が 2 つしか無いことが出る
+      - '`records.yaml` が変わっていない'
+    test: test_error_when_key_missing
+  - name: 正常系（座標を省いた図の定義）
+    summary: 座標を省いた判定フローチャートを配置の後の座標で点検し、座標を省けない定義を `diagram_invalid` にする
+    setup:
+      - name: 座標を省いた図の定義を持つフォルダ
+        description: 正常系のフォルダの文書 `a.md` の 3 行目の `<!-- flow -->` の範囲に、『図を描く』の正常シナリオ（座標を省いた判定フローチャート）と同じ定義、30 行目の `<!-- flow -->` の範囲に座標を省いた `llm` のノードを持つ定義を記載したもの
+      - name: Mock
+        description: 差し替える依存は無い。点検はブラウザを使わない
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant C as mdmark CLI
+        W->>C: mdmark check
+        C->>C: 座標を省いた判定フローチャートに自動の配置を当てる
+        C->>C: 配置後の座標で重なり・はみ出し・線の横切り・ラベルの長さを点検する
+        C-->>W: ずれ 1 行・終了コード 1
+    expected:
+      - 終了コードが 1
+      - '`a.md:3:` で始まる行が無い'
+      - '`a.md:30: diagram_invalid:` で始まる行が 1 つだけあり、内容に `llm` と、座標を省けるのは判定フローチャートの 4 つの種類だけであることと直し方がある'
+      - 最後の行が `ずれ 1 件`
+      - 設定・索引・文書が変わっていない
+    test: test_normal_when_diagram_auto_layout
   - name: 正常系（図のツールチップの位置に誤った値がある）
     summary: 設定の `tooltips.diagramPlacement` が `top`・`bottom` でないとき、`schema` のずれにする
     setup:
@@ -373,7 +505,7 @@ flows:
     test: test_normal_when_group_options_invalid
     refs:
       - dev/設計書/シナリオ/単一ユースケース/設定と索引を点検する#scenarios[正常シナリオ（グループの項目に誤った値がある）]
-lead: 文書を書く人が、設定ファイルの形・索引と文書のずれ（`checkIndex`）・`build` の対象の有無・文書の本文にある知らない印・文書が指す見つからないファイル・文書の図の部品の定義を点検し、ファイル・場所・種類・内容の一覧を受け取る。点検は設定・索引・文書を書き換えない。
+lead: 文書を書く人が、設定ファイルの形・索引と文書のずれ（`checkIndex`）・`build` の対象の有無・文書の本文にある知らない印・文書が指す見つからないファイル・文書の図の部品の定義を点検し、ファイル・場所・種類・内容の一覧を受け取る。`--text` か `--file` と `--key` を渡したときは、設定と索引の点検の代わりに、渡した Markdown を描いたときの書き方の警告と図の定義のずれを同じ一覧で受け取る。点検は設定・索引・文書を書き換えない。
 idempotent: true
 side_effects: なし（設定・索引・文書を書き換えない）
 callers:
@@ -393,14 +525,38 @@ request:
     location: argument
     description: 直し忘れの検査に比べる基準の git の ref。渡したときだけ、基準から変わった文書を `checkIndex` の `changedPaths` に渡す
     example: origin/develop
+  - name: --text
+    type: string
+    required: false
+    default: なし（設定と索引を点検する）
+    location: argument
+    description: 点検する Markdown の文字列。`-` を渡すと標準入力から読む
+    constraints: '`--base`・`--file`・`--key` と一緒に渡せない'
+    example: '-'
+  - name: --file
+    type: string
+    required: false
+    default: なし（設定と索引を点検する）
+    location: argument
+    description: Markdown をキーの値に持つ YAML のファイルのパス（今のフォルダからの相対パスか絶対パス）
+    constraints: '`--key` と一緒に渡す。`--base`・`--text` と一緒に渡せない'
+    example: records.yaml
+  - name: --key
+    type: string
+    required: false
+    default: なし
+    location: argument
+    description: '`--file` の YAML の中で点検する文字列の値のキーのパス。書き方は索引のずれの場所と同じ（`.` でキーを、`[位置]` で配列の要素をたどる）'
+    constraints: '`--file` と一緒に渡す'
+    example: items[0].body
 response:
   - name: 標準出力
     type: string
     description: 'ずれ 1 つを 1 行（`{ファイル}:{場所}: {種類}: {内容}`。場所が空のときは `{ファイル}: {種類}: {内容}`）で並べ、最後に `ずれ {件数} 件` の行を出す'
-    notes: ファイルは設定ファイルのあるフォルダからの相対パス。並びは設定の `schema` → `unknown_color_theme` → `no_documents` → `checkIndex` が返した並び → エイリアスのずれ（`buildAliases` が返した並び。`alias_no_files`・`alias_unreadable` は読んだ行の順にその場所へ置く） → `unknown_mark` → `missing_file` → 図の点検のずれ（どれも文書のパスの順、同じ文書の中は行の順）
+    notes: ファイルは設定ファイルのあるフォルダからの相対パス（`--text` のときは `-`、設定ファイルが無いときは今のフォルダからの相対パス）。`--text`・`--file` のときの並びは、場所の行の順（同じ行は描いたときの警告の順、図の配置のずれはその後ろ）。並びは設定の `schema` → `unknown_color_theme` → `no_documents` → `checkIndex` が返した並び → エイリアスのずれ（`buildAliases` が返した並び。`alias_no_files`・`alias_unreadable` は読んだ行の順にその場所へ置く） → `unknown_mark` → `missing_file` → 図の点検のずれ（どれも文書のパスの順、同じ文書の中は行の順）
   - name: 種類
-    type: "'schema' | 'unknown_color_theme' | 'no_documents' | 'missing_doc' | 'orphan_doc' | 'broken_ref' | 'untyped_related' | 'one_sided_change_together' | 'related_link_overlap' | 'missed_change_together' | 'duplicate_term' | 'avoided_term' | 'duplicate_tag' | 'tag_alias_conflict' | 'broken_tag_replacement' | 'unregistered_tag' | 'deprecated_tag' | 'alias_no_files' | 'alias_unreadable' | 'duplicate_alias_row_id' | 'alias_records_missing' | 'alias_field_missing' | 'alias_unknown_type' | 'alias_required_empty' | 'duplicate_alias_id' | 'unknown_mark' | 'missing_file' | 'diagram_invalid' | 'diagram_node_overlap' | 'diagram_node_overflow' | 'diagram_wire_crosses_node' | 'diagram_label_too_long'"
-    description: '`schema` は設定か索引が Schema に合わない（`build.glossary`・`build.entry` が `include` に当たらないもの・`aliases` の行の Schema のずれを含む）、`unknown_color_theme` は設定の `colorTheme` が mdmark に入っているテーマの名前のどれでもない、`no_documents` は `build.include` に当たる文書が 0 件、`alias_no_files` は `aliases` の行の `paths` に当たるファイルが 0 件、`alias_unreadable` は `paths` に当たったファイルを YAML として読めない、`unknown_mark` は文書の本文に知っている印のどれにも当たらない印がある、`missing_file` は文書が指す画像・動画・音声・添付のファイルが文書からの相対パスにもアセットのルートにも無い、`diagram_invalid` は図の部品の定義を読めないか形が合わない、`diagram_node_overlap` はフロー図の 2 つのノードの矩形が重なる、`diagram_node_overflow` はフロー図のノードが図の `width`・`height` の外に出るか `frame` の縁をまたぐ、`diagram_wire_crosses_node` はフロー図の線が `from`・`to` でないノードの中を通る、`diagram_label_too_long` はフロー図のノードの種類・名前・補足の文字が、折り返してもノードの中に収まらない。`duplicate_alias_row_id`〜`duplicate_alias_id` はインターフェース定義『エイリアスを作る』の `kind`、ほかはインターフェース定義『索引を点検する』の `kind`'
+    type: "'schema' | 'unknown_color_theme' | 'no_documents' | 'missing_doc' | 'orphan_doc' | 'broken_ref' | 'untyped_related' | 'one_sided_change_together' | 'related_link_overlap' | 'missed_change_together' | 'duplicate_term' | 'avoided_term' | 'duplicate_tag' | 'tag_alias_conflict' | 'broken_tag_replacement' | 'unregistered_tag' | 'deprecated_tag' | 'alias_no_files' | 'alias_unreadable' | 'duplicate_alias_row_id' | 'alias_records_missing' | 'alias_field_missing' | 'alias_unknown_type' | 'alias_required_empty' | 'duplicate_alias_id' | 'unknown_mark' | 'missing_file' | 'diagram_invalid' | 'diagram_node_overlap' | 'diagram_node_overflow' | 'diagram_wire_crosses_node' | 'diagram_label_too_long' | 'syntax_warning'"
+    description: '`schema` は設定か索引が Schema に合わない（`build.glossary`・`build.entry` が `include` に当たらないもの・`aliases` の行の Schema のずれを含む）、`unknown_color_theme` は設定の `colorTheme` が mdmark に入っているテーマの名前のどれでもない、`no_documents` は `build.include` に当たる文書が 0 件、`alias_no_files` は `aliases` の行の `paths` に当たるファイルが 0 件、`alias_unreadable` は `paths` に当たったファイルを YAML として読めない、`unknown_mark` は文書の本文に知っている印のどれにも当たらない印がある、`missing_file` は文書が指す画像・動画・音声・添付のファイルが文書からの相対パスにもアセットのルートにも無い、`diagram_invalid` は図の部品の定義を読めないか形が合わない、`diagram_node_overlap` はフロー図の 2 つのノードの矩形が重なる、`diagram_node_overflow` はフロー図のノードが図の `width`・`height` の外に出るか `frame` の縁をまたぐ、`diagram_wire_crosses_node` はフロー図の線が `from`・`to` でないノードの中を通る、`diagram_label_too_long` はフロー図のノードの種類・名前・補足の文字が、折り返してもノードの中に収まらない、`syntax_warning` は `--text`・`--file` で渡した Markdown を描いたときに出る書き方の警告のうち `unknown_mark`・`diagram_invalid` に当たらないもの。`duplicate_alias_row_id`〜`duplicate_alias_id` はインターフェース定義『エイリアスを作る』の `kind`、ほかはインターフェース定義『索引を点検する』の `kind`'
   - name: 終了コード
     type: 0 | 1
     description: ずれが 0 件なら 0、ずれがあるか点検できないときは 1
@@ -417,7 +573,7 @@ exceptions:
     condition: ずれが 1 件以上ある
     notes: 全てのずれを出してから終わる
   - name: 設定ファイルが無い（終了コード 1）
-    condition: '`--config` のファイルが無い、または今のフォルダと上のフォルダに `mdmark.config.yaml` が無い'
+    condition: '`--config` のファイルが無い、または今のフォルダと上のフォルダに `mdmark.config.yaml` が無い（`--text`・`--file` を渡し、`--config` を渡さないときを除く）'
     notes: 標準エラーに、探した場所と `mdmark init` で置けることを出す
   - name: 設定ファイルを読めない（終了コード 1）
     condition: 設定ファイルを YAML として読めない
@@ -425,6 +581,15 @@ exceptions:
   - name: 比べる基準を引けない（終了コード 1）
     condition: '`--base` を渡し、git が無い・設定ファイルのフォルダが git のリポジトリの中に無い・その ref と HEAD の merge-base を引けない'
     notes: 標準エラーに、渡した ref と引けない理由と、ref を直すか履歴を取得する（CI の checkout の `fetch-depth`）直し方を出す。ずれの点検はしない
+  - name: 引数の組が誤り（終了コード 1）
+    condition: '`--text` と `--file`・`--base` を一緒に渡した、`--file` と `--key` の片方だけを渡した、または `--file` と `--base` を一緒に渡した'
+    notes: 標準エラーに、一緒に渡せない引数か足りない引数と、正しい渡し方を出す。点検はしない
+  - name: 点検するファイルを読めない（終了コード 1）
+    condition: '`--file` のファイルが無いか、YAML として読めない'
+    notes: 標準エラーに、ファイルと、無いことか読めない行と直し方を出す
+  - name: キーが無い（終了コード 1）
+    condition: '`--key` のキーが `--file` の YAML に無いか、その値が文字列でない'
+    notes: 標準エラーに、ファイルと渡したキーと、たどれたところまでのキーか値の型と、キーを直す直し方を出す
 constraints:
   - item: 設定の点検
     constraint: '`schemas/mdmark.config.schema.json` に合わないところごとに `schema` のずれにする。空の設定ファイル（読んだ値がオブジェクトでない）も `schema` のずれにする。`build.glossary`・`build.entry` がまとめる文書に当たらないものも `schema` のずれにする。`theme`・`extensions` のファイルが無いものも `schema` のずれにする'
@@ -457,8 +622,13 @@ constraints:
     constraint: '制約「点検する文書」の文書ごとに、相対パスで指す画像（動画の `poster` を含む）・動画・音声と、添付のカードにするリンク（インターフェース定義『文書をHTML文字列にする』の制約「リンクと添付のカード」の添付の拡張子）のファイルを、インターフェース定義『文書をHTMLに書き出す』の制約「アセットのルート」と同じ順に探し、どちらにも無いものを 1 つにつき 1 件の `missing_file` のずれにする。ファイルは文書の相対パス、場所は書いた行の番号（1 から）、内容は書いたパスと種類（画像・動画・音声・添付）と、パスを直すかファイルを置くか `assets.root` を確かめる直し方の 1 文。コードブロックとインラインコードの中、絶対 URL、`#` で始まるリンクは点検しない。設定の `assets.root` のフォルダが無いときは `assets.root` を指す `schema` のずれにする'
     decided_by: dev/設計書/設定/ライブラリ本体#settings[assets.root]
   - item: 図の定義の点検
-    constraint: '制約「点検する文書」の文書ごとに、`<!-- flow -->`・`<!-- sequence -->`・`<!-- chart -->`・`<!-- param -->`・`<!-- er -->` の範囲の `json` のコードブロック（インターフェース定義『文書をHTML文字列にする』の制約「図の部品」と同じ読み方。埋め込んだ HTML の中の custom element は点検しない）を読む。描く処理と同じ確かめで読めない定義は、1 つの定義につき 1 件の `diagram_invalid` のずれにし、内容は書き方の警告と同じ文にする。読めたフロー図の定義は、ノードの矩形の重なり（辺が接するだけは重ならない）・`width`・`height` の外へのはみ出しと `frame` の縁をまたぐノード・線の各線分（`points` を含む）と `from`・`to` でないノードの矩形の交わり・ラベルの長さを点検し、ずれ 1 つにつき 1 件にする（同じノードの組・ノードと線の組は 1 件）。シーケンス図・グラフ・操作できる部品・ER 図の配置は点検しない。ファイルは文書の相対パス、場所は図の部品の開きの印の行の番号（1 から）、内容は図の題（無ければ印の名前）・対象のノードか線の `id`・直し方の 1 文。点検はブラウザを使わない'
+    constraint: '制約「点検する文書」の文書ごとに、`<!-- flow -->`・`<!-- sequence -->`・`<!-- chart -->`・`<!-- param -->`・`<!-- er -->` の範囲の `json` のコードブロック（インターフェース定義『文書をHTML文字列にする』の制約「図の部品」と同じ読み方。埋め込んだ HTML の中の custom element は点検しない）を読む。描く処理と同じ確かめで読めない定義は、1 つの定義につき 1 件の `diagram_invalid` のずれにし、内容は書き方の警告と同じ文にする。読めたフロー図の定義は（座標を省いた判定フローチャートは、インターフェース定義『文書をHTML文字列にする』の制約「自動の配置」を当てた後の座標で）、ノードの矩形の重なり（辺が接するだけは重ならない）・`width`・`height` の外へのはみ出しと `frame` の縁をまたぐノード・線の各線分（`points` を含む）と `from`・`to` でないノードの矩形の交わり・ラベルの長さを点検し、ずれ 1 つにつき 1 件にする（同じノードの組・ノードと線の組は 1 件）。シーケンス図・グラフ・操作できる部品・ER 図の配置は点検しない。ファイルは文書の相対パス、場所は図の部品の開きの印の行の番号（1 から）、内容は図の題（無ければ印の名前）・対象のノードか線の `id`・直し方の 1 文。点検はブラウザを使わない'
   - item: ラベルの長さの目安
     constraint: ノードの種類・名前・補足の文字を、全角の文字は文字の大きさ、半角の文字は文字の大きさの 0.6 倍の幅とみなし、ノードの `w` から左右の余白を除いた幅で折り返した行の数を数える。文字の大きさと余白は描いた文書の CSS の値（種類 11px・名前 14px・補足 12px・行の高さ 1.4 倍・余白 上下 6px 左右 10px）とし、折り返した行の高さの合計がノードの `h` から上下の余白を除いた高さを超えるものをずれにする
     notes: ブラウザの実際の文字幅は使わない（D-12）。目安の値は CSS を変えたときに合わせて直す
+  - item: 記法の点検
+    constraint: '`--text` か `--file` と `--key` を渡したときは、設定・索引・`build` の対象・エイリアス・テーマの名前・見つからないファイルの点検をしない。渡した Markdown を `render` と同じ読み取りで読み、描いたときに出る書き方の警告を 1 つにつき 1 件のずれにする。内容は警告の本文と同じ文。知らない印の警告は `unknown_mark`、図の部品の定義の警告は `diagram_invalid`、そのほかは `syntax_warning` にする。読めたフロー図の定義は制約「図の定義の点検」と同じ配置の点検もする。設定ファイルが見つかれば、`features`・`libraries`・`extensions`（制約「知っている印」と同じ読み方）・`check.ignore` を当てて描くときと同じ警告にし、見つからなければ既定の設定で点検する（設定ファイルが無いことをエラーにしない）。点検はブラウザを使わない'
+    notes: 入口を `mdmark check` の引数にするのは要件.md の未確定（記法の点検の入口、推奨 A）
+  - item: 記法の点検の場所
+    constraint: '`--text` のずれの場所は、文字列の中の行の番号（1 から）。`--file` のずれのファイルは YAML のファイル、場所は YAML のファイルの行の番号（1 から）。キーの値がブロックスカラー（`|`・`>`）なら、値の中の行を YAML のファイルの行へ置き換え、それ以外の書き方の値はキーの行にする。警告の場所は、警告の元になったマーカー（範囲なら開きのマーカー）の行。マーカーを持たない警告（読めないファイルツリーなど）は、警告を置いた場所の後ろのブロックの開始の行'
 test_file: tests/integration/lib/check-config.test.ts

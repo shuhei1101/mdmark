@@ -1,8 +1,15 @@
+import { spawn } from "node:child_process";
 import { existsSync } from "node:fs";
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
-import { expect, test } from "vitest";
+import { pathToFileURL } from "node:url";
+import { expect, inject, test } from "vitest";
+import {
+  JUDGEMENT_AUTO_TEXT,
+  WARNINGS_MARKDOWN,
+} from "../../unit/helpers/diagrams.ts";
 import { shopEr } from "../../unit/helpers/er.ts";
+import { plainText } from "../../unit/helpers/html.ts";
 import {
   BASE_TAG,
   createChangeTogetherDir,
@@ -594,4 +601,211 @@ test("test_normal_when_diagram_drift", async () => {
   expect(lines.some((line) => line.includes("docs/b.md"))).toBe(false);
   expect(lines.at(-1)).toBe("ずれ 6 件");
   expect(await read()).toEqual(before);
+});
+
+/** ビルドした `dist/cli.js` を `cwd` で流し、`input` を標準入力に書く。終了コードと出力を返す */
+function runCliWithInput(
+  args: string[],
+  cwd: string,
+  input: string,
+): Promise<{ code: number; stdout: string; stderr: string }> {
+  const cli = join(inject("builtRoot"), "dist", "cli.js");
+  return new Promise((resolve, reject) => {
+    const child = spawn(process.execPath, [cli, ...args], { cwd });
+    let stdout = "";
+    let stderr = "";
+    child.stdout.on("data", (chunk) => {
+      stdout += String(chunk);
+    });
+    child.stderr.on("data", (chunk) => {
+      stderr += String(chunk);
+    });
+    child.on("error", reject);
+    child.on("close", (code) => resolve({ code: code ?? -1, stdout, stderr }));
+    child.stdin.end(input);
+  });
+}
+
+/** `items[0].body` が 5 行目の `|` で始まり、値の 3 行目（ファイルの 8 行目）に `<!-- tabz -->` を持ち、`items[1].body` に正しい Markdown を持つ YAML */
+const RECORDS_YAML = [
+  "title: 記録",
+  "items:",
+  "  - id: a",
+  "    name: 1 つ目",
+  "    body: |",
+  "      # 見出し",
+  "      本文",
+  "      <!-- tabz -->",
+  "  - id: b",
+  "    body: |",
+  "      正しい本文",
+  "",
+].join("\n");
+
+/** フォルダの中のファイルの一覧と中身（変わっていないことを確かめる） */
+async function folderSnapshot(dir: string, paths: string[]): Promise<string[]> {
+  return Promise.all(paths.map((path) => readFile(join(dir, path), "utf8")));
+}
+
+// 書き方の警告を持たない Markdown の文字列で 0 件を返す（正常系（文字列の記法を点検する））
+test("test_normal_when_text", async () => {
+  // 準備
+  const dir = await createTempDir();
+  await runCli(["init", dir], dir);
+  const paths = ["mdmark.config.yaml", "theme.css"];
+  const before = await folderSnapshot(dir, paths);
+  const markdown = [
+    ...flowLines(CLEAN_FLOW),
+    "",
+    "<!-- table: data -->",
+    "",
+    "| 列 | 値 |",
+    "| --- | --- |",
+    "| a | 1 |",
+    "",
+    "<!-- /table -->",
+    "",
+  ].join("\n");
+  // 実行
+  const result = await runCliWithInput(["check", "--text", "-"], dir, markdown);
+  // 検証
+  expect(result.code).toBe(0);
+  expect(linesOf(result.stdout)).toEqual(["ずれ 0 件"]);
+  expect(await folderSnapshot(dir, paths)).toEqual(before);
+});
+
+// 文字列を描いたときの書き方の警告を、行を指すずれにして終了コード 1 で終わる（正常系（文字列に書き方の警告がある））
+test("test_normal_when_text_warnings", async () => {
+  // 準備
+  const dir = await createTempDir();
+  await runCli(["init", dir], dir);
+  const { render } = (await import(
+    pathToFileURL(join(inject("builtRoot"), "dist", "index.js")).href
+  )) as { render: (markdown: string) => string };
+  // 実行
+  const result = await runCli(["check", "--text", WARNINGS_MARKDOWN], dir);
+  // 検証
+  expect(result.code).toBe(1);
+  const lines = linesOf(result.stdout);
+  expect(lines).toHaveLength(4);
+  expect(lines[0]).toMatch(/^-:1: diagram_invalid: /);
+  expect(lines[1]).toMatch(/^-:20: unknown_mark: /);
+  expect(lines[2]).toMatch(/^-:22: syntax_warning: /);
+  expect(lines.at(-1)).toBe("ずれ 3 件");
+  const rendered = plainText(render(WARNINGS_MARKDOWN)).replace(/\s+/g, "");
+  for (const line of [lines[0], lines[2]]) {
+    const message = (line ?? "").replace(/^-:\d+: \w+: /, "");
+    expect(rendered).toContain(message.replace(/\s+/g, ""));
+  }
+});
+
+// YAML のキーの値の Markdown を点検し、YAML のファイルの行を指すずれにする（正常系（ファイルと YAML のキー））
+test("test_normal_when_yaml_key", async () => {
+  // 準備
+  const dir = await createTempDir();
+  await runCli(["init", dir], dir);
+  await writeFiles(dir, { "records.yaml": RECORDS_YAML });
+  // 実行
+  const first = await runCli(
+    ["check", "--file", "records.yaml", "--key", "items[0].body"],
+    dir,
+  );
+  const second = await runCli(
+    ["check", "--file", "records.yaml", "--key", "items[1].body"],
+    dir,
+  );
+  // 検証
+  expect(first.code).toBe(1);
+  const marks = linesOf(first.stdout).filter((line) =>
+    line.startsWith("records.yaml:"),
+  );
+  expect(marks).toHaveLength(1);
+  expect(marks[0]).toMatch(/^records\.yaml:8: unknown_mark: .*tabz/);
+  expect(second.code).toBe(0);
+  expect(linesOf(second.stdout)).toEqual(["ずれ 0 件"]);
+  expect(await readFile(join(dir, "records.yaml"), "utf8")).toBe(RECORDS_YAML);
+});
+
+// 設定の extensions が追加するマーカーを知っているマーカーとして点検する（正常系（拡張のマーカーを持つ文字列））
+test("test_normal_when_text_extension_mark", async () => {
+  // 準備
+  const dir = await createTempDir();
+  await runCli(["init", dir], dir);
+  await appendConfig(dir, ["extensions: [extensions/note-card.js]"]);
+  await writeFiles(dir, {
+    "extensions/note-card.js": [
+      "export default {",
+      '  name: "note-card",',
+      '  directive: "note-card",',
+      "  load: async () => ({ draw() {} }),",
+      "};",
+      "",
+    ].join("\n"),
+  });
+  // 実行
+  const result = await runCli(
+    ["check", "--text", "<!-- note-card -->\n\n<!-- tabz -->\n"],
+    dir,
+  );
+  // 検証
+  expect(result.code).toBe(1);
+  const lines = linesOf(result.stdout);
+  expect(
+    lines.filter((line) => line.startsWith("-:3: unknown_mark:")),
+  ).toHaveLength(1);
+  expect(lines.some((line) => line.startsWith("-:1:"))).toBe(false);
+});
+
+// YAML に無いキーは、キーが無いことと直し方を示して終わる（異常系（キーが無い））
+test("test_error_when_key_missing", async () => {
+  // 準備
+  const dir = await createTempDir();
+  await runCli(["init", dir], dir);
+  await writeFiles(dir, { "records.yaml": RECORDS_YAML });
+  // 実行
+  const result = await runCli(
+    ["check", "--file", "records.yaml", "--key", "items[5].body"],
+    dir,
+  );
+  // 検証
+  expect(result.code).toBe(1);
+  expect(result.stderr).toContain("records.yaml");
+  expect(result.stderr).toContain("items[5].body");
+  expect(result.stderr).toContain("2 要素");
+  expect(await readFile(join(dir, "records.yaml"), "utf8")).toBe(RECORDS_YAML);
+});
+
+// 座標を省いた判定フローチャートを配置の後の座標で点検し、座標を省けない定義を diagram_invalid にする（正常系（座標を省いた図の定義））
+test("test_normal_when_diagram_auto_layout", async () => {
+  // 準備
+  const dir = await createCleanDir();
+  const auto = JSON.parse(JUDGEMENT_AUTO_TEXT) as {
+    nodes: Array<Record<string, unknown>>;
+  };
+  const notJudgement = structuredClone(auto);
+  Object.assign(notJudgement.nodes[2] ?? {}, { kind: "llm" });
+  const head = ["# A", "", ...flowLines(auto)];
+  const a = [
+    ...head,
+    ...Array.from({ length: 29 - head.length }, () => ""),
+    ...flowLines(notJudgement),
+    "",
+  ];
+  await writeFiles(dir, { "a.md": a.join("\n") });
+  const before = await snapshot(dir);
+  // 実行
+  const result = await runCli(["check"], dir);
+  // 検証
+  expect(result.code).toBe(1);
+  const lines = linesOf(result.stdout);
+  expect(lines.some((line) => line.startsWith("a.md:3:"))).toBe(false);
+  const invalid = lines.filter((line) =>
+    line.startsWith("a.md:30: diagram_invalid:"),
+  );
+  expect(invalid).toHaveLength(1);
+  expect(invalid[0]).toContain("llm");
+  expect(invalid[0]).toContain("判定フローチャート");
+  expect(invalid[0]).toContain("座標を書くか");
+  expect(lines.at(-1)).toBe("ずれ 1 件");
+  expect(await snapshot(dir)).toEqual(before);
 });

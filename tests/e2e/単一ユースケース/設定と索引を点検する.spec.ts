@@ -13,6 +13,7 @@ import {
   test,
   writeFiles,
 } from "../cli.ts";
+import { JUDGEMENT_AUTO_TEXT } from "../diagram.ts";
 
 // 雛形が置く設定の build.out の行
 const OUT_LINE = "  out: dist/docs.html\n";
@@ -438,5 +439,38 @@ test("test_normal_when_diagram_drift", async ({ builtRoot, tempDir }) => {
   }
   // ずれの無い図の文書を指す行が無い
   expect(lines.some((line) => line.startsWith("b.md"))).toBe(false);
+  expect(await snapshot(dir)).toEqual(before);
+});
+
+// 座標を省いた判定フローチャートを配置の後の座標で点検し、座標を省けない定義だけを定義の誤りにする（正常シナリオ（座標を省いた図の定義））
+test("test_normal_when_diagram_auto_layout", async ({ builtRoot, tempDir }) => {
+  // 準備
+  const dir = await createCleanDir(builtRoot, tempDir);
+  const auto = JSON.parse(JUDGEMENT_AUTO_TEXT) as {
+    nodes: Array<Record<string, unknown>>;
+  };
+  const notJudgement = structuredClone(auto);
+  Object.assign(notJudgement.nodes[2] ?? {}, { kind: "llm" });
+  const head = ["# A", "", ...flowLines(auto)];
+  const a = [
+    ...head,
+    ...Array.from({ length: 29 - head.length }, () => ""),
+    ...flowLines(notJudgement),
+    "",
+  ];
+  await writeFiles(dir, { "a.md": a.join("\n") });
+  const before = await snapshot(dir);
+  // 実行
+  const result = await runCli(builtRoot, ["check"], dir);
+  // 検証
+  expect(result.code).not.toBe(0);
+  const lines = linesOf(result.stdout);
+  expect(lines.some((line) => line.startsWith("a.md:3:"))).toBe(false);
+  const invalid = lines.filter((line) => line.startsWith("a.md:30: "));
+  expect(invalid).toHaveLength(1);
+  expect(invalid[0]).toMatch(/^a\.md:30: diagram_invalid: /);
+  expect(invalid[0]).toContain("llm");
+  expect(invalid[0]).toContain("判定フローチャート");
+  expect(invalid[0]).toContain("座標を書くか");
   expect(await snapshot(dir)).toEqual(before);
 });

@@ -1,4 +1,6 @@
 import { COLOR_NAMES, type ColorName, isColorName } from "../parts/colors.ts";
+import { isAllowedUrl } from "../render/sanitize.ts";
+import { layoutFlowchart } from "./layout.ts";
 
 /** ノードの種類（`start`・`question`・`action`・`result` は判定フローチャートの開始・質問・アクション・結果） */
 export type MdmarkDiagramKind =
@@ -50,6 +52,8 @@ export type MdmarkDiagramNode = {
   io?: MdmarkDiagramIo;
   /** ノードの右上の印に出す文。`io` と一緒に持つと、入力・処理・出力の後に出す */
   hint?: string;
+  /** リンク先。`http`・`https`・`mailto` の URL か相対パス */
+  href?: string;
 };
 
 /** フロー図の線 */
@@ -576,6 +580,7 @@ function checkNode(
   value: unknown,
   index: number,
   problems: Problems,
+  omitted = false,
 ): string | undefined {
   const node = asObject(value, `nodes[${index}]`, problems);
   if (!node) {
@@ -587,10 +592,13 @@ function checkNode(
   const id = typeof node.id === "string" ? node.id : undefined;
   problems.expect(node.id, "文字", `${label}の id`);
   checkKind(node.kind, label, problems);
-  for (const key of ["x", "y", "w", "h"]) {
-    problems.expect(node[key], "数", `${label}の ${key}`);
+  if (!omitted) {
+    for (const key of ["x", "y", "w", "h"]) {
+      problems.expect(node[key], "数", `${label}の ${key}`);
+    }
   }
   checkOptionalText(node.tag, `${label}の tag`, problems);
+  checkOptionalText(node.href, `${label}の href`, problems);
   checkOptionalText(node.sub, `${label}の sub`, problems);
   checkOptionalText(node.hint, `${label}の hint`, problems);
   if (node.io !== undefined) {
@@ -650,6 +658,7 @@ function checkWire(
   index: number,
   nodeIds: Set<string>,
   problems: Problems,
+  omitted = false,
 ): string | undefined {
   const wire = asObject(value, `wires[${index}]`, problems);
   if (!wire) {
@@ -678,7 +687,9 @@ function checkWire(
       );
     }
   }
-  checkPoints(wire.points, label, problems);
+  if (!omitted) {
+    checkPoints(wire.points, label, problems);
+  }
   checkOptionalText(wire.label, `${label}の label`, problems);
   checkOptionalText(wire.tip, `${label}の tip`, problems);
   if (wire.labelAt !== undefined) {
@@ -733,18 +744,87 @@ function checkFrame(source: Record<string, unknown>, problems: Problems): void {
   }
 }
 
+/** 座標を省けるノードの種類（判定フローチャート） */
+export const JUDGEMENT_KINDS: readonly MdmarkDiagramKind[] = [
+  "start",
+  "question",
+  "action",
+  "result",
+];
+
+/** フロー図の座標（図の `width`・`height`、ノードの `x`・`y`・`w`・`h`、線の `points`）を全て書いたか・全て省いたか・混ざるか */
+function coordinateMode(
+  source: Record<string, unknown>,
+): "written" | "omitted" | "mixed" {
+  const present: boolean[] = [
+    source.width !== undefined,
+    source.height !== undefined,
+  ];
+  for (const node of Array.isArray(source.nodes) ? source.nodes : []) {
+    if (node !== null && typeof node === "object") {
+      for (const key of ["x", "y", "w", "h"]) {
+        present.push((node as Record<string, unknown>)[key] !== undefined);
+      }
+    }
+  }
+  for (const wire of Array.isArray(source.wires) ? source.wires : []) {
+    if (wire !== null && typeof wire === "object") {
+      present.push((wire as Record<string, unknown>).points !== undefined);
+    }
+  }
+  if (present.every(Boolean)) {
+    return "written";
+  }
+  return present.some(Boolean) ? "mixed" : "omitted";
+}
+
+/** 座標を省いたフロー図の、判定フローチャートでない種類のノード（最初の 1 つ） */
+function nodeNotJudgement(
+  source: Record<string, unknown>,
+): { name: string; kind: string } | undefined {
+  for (const node of Array.isArray(source.nodes) ? source.nodes : []) {
+    if (node === null || typeof node !== "object") {
+      continue;
+    }
+    const { kind, name } = node as Record<string, unknown>;
+    if (
+      typeof kind === "string" &&
+      (NODE_KINDS as readonly string[]).includes(kind) &&
+      !(JUDGEMENT_KINDS as readonly string[]).includes(kind)
+    ) {
+      return { name: String(name), kind };
+    }
+  }
+  return undefined;
+}
+
 /** フロー図の定義を確かめる */
 function checkFlow(source: Record<string, unknown>, problems: Problems): void {
   checkHead(source, problems);
-  problems.expect(source.width, "数", "width");
-  problems.expect(source.height, "数", "height");
+  const mode = coordinateMode(source);
+  const omitted = mode === "omitted";
+  if (mode === "mixed") {
+    problems.add(
+      "座標（x・y・w・h・points・width・height）を書いたものと省いたものが混ざっています。全て書くか、全て省いてください",
+    );
+  } else if (omitted) {
+    const other = nodeNotJudgement(source);
+    if (other) {
+      problems.add(
+        `ノード「${other.name}」の種類 ${other.kind} では座標を省けません。座標を省けるのは、種類が ${JUDGEMENT_KINDS.join("・")} だけの判定フローチャートです。座標を書くか、種類を変えてください`,
+      );
+    }
+  } else {
+    problems.expect(source.width, "数", "width");
+    problems.expect(source.height, "数", "height");
+  }
   checkFrame(source, problems);
   if (source.stickyTitles !== undefined) {
     problems.expect(source.stickyTitles, "真偽値", "stickyTitles");
   }
   const nodes = asArray(source.nodes, "nodes", problems);
   const nodeIds = (nodes ?? []).map((value, index) =>
-    checkNode(value, index, problems),
+    checkNode(value, index, problems, mode !== "written"),
   );
   checkDuplicates(
     nodeIds.filter((id): id is string => id !== undefined),
@@ -754,7 +834,7 @@ function checkFlow(source: Record<string, unknown>, problems: Problems): void {
   const wires = asArray(source.wires, "wires", problems);
   const known = new Set(nodeIds.filter((id): id is string => id !== undefined));
   const wireIds = (wires ?? []).map((value, index) =>
-    checkWire(value, index, known, problems),
+    checkWire(value, index, known, problems, mode !== "written"),
   );
   checkDuplicates(
     wireIds.filter((id): id is string => id !== undefined),
@@ -1422,11 +1502,27 @@ export function readDefinition(
   if (problems.list.length > 0) {
     return { ok: false, problems: problems.list };
   }
+  const definition = parsed.value as MdmarkDefinition;
   return {
     ok: true,
-    definition: parsed.value as MdmarkDefinition,
+    definition:
+      directive === "flow" &&
+      coordinateMode(parsed.value as Record<string, unknown>) === "omitted"
+        ? layoutFlowchart(definition as MdmarkFlowDefinition)
+        : definition,
     problems: [],
   };
+}
+
+/** フロー図の定義の、本文のリンクと同じ許可に当たらないリンク先を持つノードを定義の順に返す */
+export function nodeLinkProblems(
+  definition: MdmarkFlowDefinition,
+): Array<{ id: string; href: string }> {
+  return definition.nodes.flatMap((node) =>
+    node.href !== undefined && !isAllowedUrl(node.href)
+      ? [{ id: node.id, href: node.href }]
+      : [],
+  );
 }
 
 /** 読めない定義の書き方の警告の本文と項目。読めない箇所が 2 つ以上あるときは、1 つ目を本文に書き、残りを項目に並べる */

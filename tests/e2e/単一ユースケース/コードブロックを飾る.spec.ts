@@ -1139,3 +1139,53 @@ test("test_error_when_fold_line_invalid", async ({ page }) => {
   }
   await expect(page.locator("#doc pre code")).toContainText("b: 1");
 });
+
+/** 画面の幅 390px で表示の幅より長い行 */
+const WRAP_LONG_LINE =
+  'const url = "https://cdn.jsdelivr.net/gh/shuhei1101/mdmark@v0.10.0/dist/index.js"; // バージョンを固定した URL から配布物を読む';
+
+// wrap のブロックだけを枠の幅で折り返し、行番号を各行の頭に出し、コピーに折り返しの改行を入れない（正常シナリオ（折り返す））
+test("test_normal_when_wrap", async ({ page }) => {
+  // 準備
+  await page.setViewportSize({ width: 390, height: 844 });
+  await stubClipboard(page, "allow");
+  await openPage(page, builtRoot);
+  const code = ["```ts", "const a = 1;", WRAP_LONG_LINE, "const c = 3;", "```"];
+  // 実行
+  await mountDocument(page, {
+    markdown: ["<!-- code: lines wrap -->", "", ...code, "", ...code, ""].join(
+      "\n",
+    ),
+  });
+  // 検証
+  const [wrapped, plain] = [
+    page.locator("#doc .mdmark-code pre").nth(0),
+    page.locator("#doc .mdmark-code pre").nth(1),
+  ];
+  const measured = await wrapped.evaluate((pre) => {
+    const lines = [...pre.querySelectorAll(".mdmark-code-line")];
+    return {
+      fits: pre.scrollWidth <= pre.clientWidth,
+      numbers: lines.map((line) => line.getAttribute("data-line")),
+      heights: lines.map((line) => line.getBoundingClientRect().height),
+      numberTop: getComputedStyle(lines[2] as Element, "::before").top,
+    };
+  });
+  expect(measured.fits).toBe(true);
+  expect(measured.numbers).toEqual(["1", "2", "3"]);
+  const [first = 0, second = 0] = measured.heights;
+  expect(second).toBeGreaterThanOrEqual(first * 2);
+  expect(measured.numberTop).toBe("0px");
+  expect(await plain.evaluate((pre) => pre.scrollWidth > pre.clientWidth)).toBe(
+    true,
+  );
+  // 実行・検証: wrap のブロックのコピーは折り返しの改行を含まない
+  await page
+    .locator("#doc .mdmark-code")
+    .nth(0)
+    .locator("button.mdmark-code-copy")
+    .click();
+  await expect
+    .poll(() => writtenTexts(page))
+    .toEqual([["const a = 1;", WRAP_LONG_LINE, "const c = 3;"].join("\n")]);
+});

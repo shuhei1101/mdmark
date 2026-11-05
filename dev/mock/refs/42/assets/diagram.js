@@ -74,8 +74,8 @@
   const RESIZE_MIN_PX = 120;
   const HEIGHT_KEY_PREFIX = "mdmark-mock-diagram-height";
 
-  // ドラッグを始めるまでのポインターの移動の距離（px）。これより小さい間はツールチップを優先する
-  const DRAG_THRESHOLD_PX = 4;
+  // ドラッグを始めるまでのポインターの移動の距離（px）。これを超えない間はツールチップを優先し、リンク先を持つ箱を開く
+  const DRAG_THRESHOLD = 4;
 
   // グラフの点のツールチップを拾う透明の円の半径（px）
   const ITEM_HIT_RADIUS = 12;
@@ -232,12 +232,14 @@
     };
     const inset = node.x !== undefined && insets[node.kind] ? insets[node.kind]() : "";
     const style = node.x === undefined ? "" : ` style="left:${node.x}px;top:${node.y}px;width:${node.w}px;height:${node.h}px${inset}"`;
-    return `<div class="mdmark-diagram-node${hasTip ? " has-tip" : ""}" data-kind="${node.kind}"${node.shape ? ` data-shape="${node.shape}"` : ""} data-node="${esc(node.id)}"${style}>
+    // リンク先を持つ箱: 箱の全体を覆うリンクを置き、印のボタンはリンクの上に重ねる（リンクの中にボタンを入れない）
+    const link = node.href ? `<a class="mdmark-diagram-node-link" href="${esc(node.href)}" aria-label="${esc(node.name)}"></a>` : "";
+    return `<div class="mdmark-diagram-node${hasTip ? " has-tip" : ""}${node.href ? " has-link" : ""}" data-kind="${node.kind}"${node.shape ? ` data-shape="${node.shape}"` : ""} data-node="${esc(node.id)}"${style}>
       ${node.kind === "question" ? DIAMOND_SVG : ""}
       <span class="mdmark-diagram-node-kind">${icon(node.kind)}<span>${withTerms(tag, tips)}</span></span>
       <span class="mdmark-diagram-node-name">${esc(node.name)}</span>
       ${node.sub ? `<span class="mdmark-diagram-node-sub">${withTerms(node.sub, tips)}</span>` : ""}
-      ${info}
+      ${link}${info}
     </div>`;
   };
 
@@ -1104,18 +1106,20 @@
       actions[name]();
     });
 
-    // ドラッグ: 文字と押せる所の外でつかんで動かす。ドラッグ中は文字を選ばせない
-    // 動かした距離が DRAG_THRESHOLD_PX より小さい間はドラッグにせず、グラフの項目などのツールチップを優先する
+    // ドラッグ: 文字と押せる所の外でつかんで動かす。リンク先を持つ箱の上からも動かせる。ドラッグ中は文字を選ばせない。
+    // 押した位置から DRAG_THRESHOLD を超えて動いたときだけドラッグにし（超えないうちはグラフの項目などのツールチップを優先する）、動かした後の離す操作ではリンク先を開かない
     let drag = null;
+    let suppressClick = false;
     viewport.addEventListener("pointerdown", (event) => {
-      if (event.button !== 0 || event.target.closest(`${TEXT_SELECTOR}, ${CONTROL_SELECTOR}`)) return;
-      drag = { x: event.clientX, y: event.clientY, left: viewport.scrollLeft, top: viewport.scrollTop, id: event.pointerId, started: false };
+      const onLink = event.target.closest(".mdmark-diagram-node-link");
+      if (event.button !== 0 || (!onLink && event.target.closest(`${TEXT_SELECTOR}, ${CONTROL_SELECTOR}`))) return;
+      drag = { x: event.clientX, y: event.clientY, left: viewport.scrollLeft, top: viewport.scrollTop, id: event.pointerId, moved: false };
     });
     viewport.addEventListener("pointermove", (event) => {
       if (!drag || event.pointerId !== drag.id) return;
-      if (!drag.started) {
-        if (Math.hypot(event.clientX - drag.x, event.clientY - drag.y) < DRAG_THRESHOLD_PX) return;
-        drag.started = true;
+      if (!drag.moved) {
+        if (Math.hypot(event.clientX - drag.x, event.clientY - drag.y) <= DRAG_THRESHOLD) return;
+        drag.moved = true;
         viewport.setPointerCapture(event.pointerId);
         viewport.classList.add("is-dragging");
         // ドラッグを始めたら、開いているツールチップを閉じる（attachTips が受ける）
@@ -1128,9 +1132,21 @@
       }
     });
     const endDrag = () => {
+      suppressClick = Boolean(drag?.moved);
       drag = null;
       viewport.classList.remove("is-dragging");
     };
+    // 動かした後の離す操作: リンク先を開かない
+    viewport.addEventListener(
+      "click",
+      (event) => {
+        if (!suppressClick) return;
+        suppressClick = false;
+        event.preventDefault();
+        event.stopPropagation();
+      },
+      true,
+    );
     viewport.addEventListener("pointerup", endDrag);
     viewport.addEventListener("pointercancel", endDrag);
 

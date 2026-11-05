@@ -521,7 +521,7 @@ functions:
     summary: 部品設計『ファイルツリー』の HTML を返す。`div.mdmark-tree` に `open` を `data-open`、`source` を `data-source` で持たせ、名前が `...` の項目を `mdmark-tree-more`、ファイルを `fileIconOf` の `data-file-icon` で描き、`note` を `mdmark-tree-note` に入れる。`interactive` のときは `renderTreeBar` の帯を置き、子を持つフォルダの名前を開閉のボタンにし、`folderOpenByDefault` で開かないフォルダの入れ子の `ul` を `hidden="until-found"` にし、`copyFallback` ならツリーの下に `renderCopyPanel` のパネルを置く
     args:
       - name: options
-        type: '{ nodes: TreeNode[]; source: string; open?: string; interactive?: boolean; copyState?: "idle" | "copied"; copyFallback?: boolean; id?: string }'
+        type: '{ nodes: TreeNode[]; source: string; open?: string; wrap?: boolean; interactive?: boolean; copyState?: "idle" | "copied"; copyFallback?: boolean; id?: string }'
         required: true
         description: 部品設計の引数と、`aria-controls` の id の頭（既定 `mdmark-tree`。`interactive` のときだけ使う）
     returns:
@@ -558,6 +558,12 @@ functions:
         condition: 部品設計の `CopyFailed`
         mock: なし
         expected: '`mdmark-tree-list` の後ろに `mdmark-copy-panel` があり、案内が `ツリーのテキストを選択しています。` で始まり、`textarea` の中身が `source`'
+      - name: test_render_tree_when_wrap
+        case: 正常
+        summary: wrap のツリーに折り返す class を付ける
+        condition: 部品設計『ファイルツリー』の状態 `Wrap` の引数
+        mock: なし
+        expected: '`div.mdmark-tree` が `mdmark-tree-wrap` と `data-open="all"` を持ち、`wrap` を渡さないと `mdmark-tree-wrap` を持たない'
   - name: renderBadge
     title: バッジを描く
     container: src/parts/badge.ts
@@ -812,7 +818,7 @@ functions:
     summary: '部品設計『コードブロック』の HTML を返す。行番号か行の種類かインデントのある行を持つときは行ごとの `mdmark-code-line` に分け、行に `data-indent`・`data-fold-lines`・`data-folded` を付け、`focus` の行を持てば `pre` に `mdmark-code-has-focus` を付ける。`foldButtons` が `true` なら、畳める行を持つとき `pre` に `mdmark-code-foldable` を付け、畳める行に `renderCodeFoldToggle` を置き、`folded` の行の後ろの行を `hidden` にして行の末尾に `renderCodeFoldMore` を置く（`mount` の操作の後の見た目。`hiddenLinesOf` で隠す行を決める）。`bar` が `true` なら、題を持てば `<figure class="mdmark-code">` と `<figcaption class="mdmark-code-title mdmark-code-bar">`、無ければ `<div class="mdmark-code">` と `<div class="mdmark-code-bar">` で包み、帯の左端に言語を持つとき `<span class="mdmark-code-lang"><span class="mdmark-code-lang-name" aria-hidden="true">{言語}</span><span class="mdmark-code-file">{ファイル名}</span></span>`（`mdmark-code-file` はファイル名を持つときだけ）、その後ろに題の文字、`copyState` を渡したときは右端に `renderCodeCopy` を置く。`bar` が `false` なら今の `pre` だけを返す。`pre` には `tabindex="0"` と読み上げの名前（`コード: {題}`、題が無ければ `コード: {ファイル名}`、ファイル名も無ければ `コード: {言語}`、言語も無ければ `コード`）を付ける'
     args:
       - name: options
-        type: '{ language: string; fileName?: string; title: string; lineNumbers: boolean; lines: CodeLine[]; syntax?: string; bar?: boolean; copyState?: "idle" | "copied" | "failed"; foldButtons?: boolean }'
+        type: '{ language: string; fileName?: string; title: string; lineNumbers: boolean; wrap?: boolean; lines: CodeLine[]; syntax?: string; bar?: boolean; copyState?: "idle" | "copied" | "failed"; foldButtons?: boolean }'
         required: true
         description: 部品設計の引数。`language`・`title`・`fileName` は無ければ空。`syntax` は色分けする言語のモジュール名（`SYNTAX_LANGUAGES` の値）で、渡すと `code` に `SYNTAX_ATTRIBUTE` を付ける。`bar` は帯で包むか（既定 `true`。`code` がオフの色分けだけのコードブロックは `false`）。`copyState` は省くとコピーのボタンを置かない（`render` は渡さず、Storybook が渡す）。`foldButtons` は行の開閉のボタンを置くか（既定 `false`。`render` は渡さず、Storybook が渡す）
     returns:
@@ -891,6 +897,12 @@ functions:
         condition: 部品設計『コードブロック』の `Folded` の引数と、`foldButtons` が `true`
         mock: なし
         expected: '`pre` が `mdmark-code-foldable` を持ち、3 行目の開閉のボタンが `aria-expanded="false"`、4〜7 行目が `hidden`、8 行目が `hidden` を持たず、3 行目の末尾に `mdmark-code-fold-more` がある。ほかの畳める行のボタンが `aria-expanded="true"`'
+      - name: test_render_code_block_when_wrap
+        case: 正常
+        summary: wrap のコードブロックを行に分け、折り返す class を付ける
+        condition: 部品設計『コードブロック』の状態 `Wrap` の引数と、そこから `lineNumbers` を外した引数
+        mock: なし
+        expected: 1 つ目の `pre` が `mdmark-code-lines mdmark-code-numbered mdmark-code-wrap` を持ち、2 つ目の `pre` が `mdmark-code-lines mdmark-code-wrap` を持って `mdmark-code-numbered` を持たず、どちらも `mdmark-code-line` が 3 つ
   - name: renderCopyPanel
     title: 表のコピーできないときのパネルを描く
     container: src/parts/table.ts

@@ -34,6 +34,30 @@ stories:
         id: flow-diagram
     args:
       invalid: true
+  - name: JudgementAuto
+    parameters:
+      server:
+        id: flow-diagram
+    args:
+      judgement: auto
+  - name: LinkedNodes
+    parameters:
+      server:
+        id: flow-diagram
+    args:
+      links: allowed
+  - name: LinkedNodeHoverFocus
+    parameters:
+      server:
+        id: flow-diagram
+    args:
+      links: hover-focus
+  - name: LinkNotAllowed
+    parameters:
+      server:
+        id: flow-diagram
+    args:
+      links: blocked
   - name: GroupHints
     parameters:
       server:

@@ -2,10 +2,15 @@ import { statSync } from "node:fs";
 import { isAbsolute } from "node:path";
 import type { CallToolResult } from "@modelcontextprotocol/server";
 import { buildSite } from "../cli/build.ts";
-import { collectCheckIssues } from "../cli/check.ts";
+import {
+  collectCheckIssues,
+  importBundledCode,
+  validateSourceArgs,
+} from "../cli/check.ts";
 import { findConfigFile } from "../cli/config.ts";
 import { CliError } from "../cli/errors.ts";
 import { exportDocument } from "../cli/export.ts";
+import { checkMarkdownSource } from "../cli/markdown-check.ts";
 import { checkArguments, type ToolInputSchema } from "./arguments.ts";
 
 /** `mdmark serve` を起動したパッケージの直下から決める、配布物のフォルダ */
@@ -81,11 +86,29 @@ export async function runBuildSite(
   return { json: { out, docs, warnings } };
 }
 
-/** 点検する: 作業のフォルダから設定ファイルを探し、`mdmark check` と同じずれの一覧を返す。`base` を渡すと `change_together` の直し忘れも返す */
+/** 点検する: 作業のフォルダから設定ファイルを探し、`mdmark check` と同じずれの一覧を返す。`base` を渡すと `change_together` の直し忘れも返す。`text` か `file` と `key` を渡すと、`mdmark check --text`・`--file --key` と同じく渡した Markdown の記法だけを点検する */
 export async function runCheckTool(
-  args: { config?: string; base?: string },
+  args: {
+    config?: string;
+    base?: string;
+    text?: string;
+    file?: string;
+    key?: string;
+  },
   context: ToolContext,
 ): Promise<ToolOutput> {
+  validateSourceArgs(args);
+  if (args.text !== undefined || args.file !== undefined) {
+    const issues = await checkMarkdownSource({
+      cwd: context.projectDir,
+      config: args.config,
+      text: args.text,
+      file: args.file,
+      key: args.key,
+      importCode: importBundledCode,
+    });
+    return { json: { issues } };
+  }
   const path = await findConfigFile(context.projectDir, args.config);
   const issues = await collectCheckIssues(
     path,
@@ -137,7 +160,7 @@ export const TOOLS: ToolDefinition[] = [
   {
     name: "check",
     description:
-      "設定の形・索引と文書のずれ・build の対象の有無・知らない印を点検する（mdmark check と同じ処理）。設定・索引・文書は書き換えない。ずれの一覧 issues（file・where・kind・message）を JSON で返し、ずれがあってもエラーにしない。base に比べる基準の git の ref（例 origin/develop）を渡すと、基準と HEAD の merge-base から変わった文書を比べ、change_together の組のうち片方だけが変わった直し忘れも返す。",
+      "設定の形・索引と文書のずれ・build の対象の有無・知らない印を点検する（mdmark check と同じ処理）。設定・索引・文書は書き換えない。ずれの一覧 issues（file・where・kind・message）を JSON で返し、ずれがあってもエラーにしない。base に比べる基準の git の ref（例 origin/develop）を渡すと、基準と HEAD の merge-base から変わった文書を比べ、change_together の組のうち片方だけが変わった直し忘れも返す。text に Markdown の文字列、または file に YAML のファイルと key にキーのパスを渡すと、設定と索引は点検せず、その Markdown を描いたときの書き方の警告・知らない印・図の配置のずれだけを返す（text は file が -、file は where が YAML のファイルの行）。",
     inputSchema: {
       type: "object",
       properties: {
@@ -147,12 +170,38 @@ export const TOOLS: ToolDefinition[] = [
           description:
             "直し忘れの検査に比べる基準の git の ref。省くと直し忘れを検査しない",
         },
+        text: {
+          type: "string",
+          description:
+            "点検する Markdown の文字列。base・file・key と一緒に渡せない",
+        },
+        file: {
+          type: "string",
+          minLength: 1,
+          description:
+            "Markdown をキーの値に持つ YAML のファイルのパス（project_dir からの相対パスか絶対パス）。key と一緒に渡す",
+        },
+        key: {
+          type: "string",
+          minLength: 1,
+          description:
+            "file の YAML の中で点検する文字列の値のキーのパス。. でキーを、[位置] で配列の要素をたどる（例 items[0].body）",
+        },
       },
       required: [],
       additionalProperties: false,
     },
     run: (args, context) =>
-      runCheckTool(args as { config?: string; base?: string }, context),
+      runCheckTool(
+        args as {
+          config?: string;
+          base?: string;
+          text?: string;
+          file?: string;
+          key?: string;
+        },
+        context,
+      ),
     annotations: { readOnlyHint: true },
   },
 ];

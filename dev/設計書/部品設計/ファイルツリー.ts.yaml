@@ -157,6 +157,21 @@ states:
         value: 'true'
       - name: copyFallback
         value: 'true'
+  - name: Wrap
+    description: '`wrap` を持ち、名前と注釈が長く幅を超える。名前は名前の列の中で折り返し、注釈は名前の下の行に名前の頭から出す。ツリーに横スクロールが出ない（合意したモック `dev/mock/refs/328/assets/wrap.css`）'
+    args:
+      - name: nodes
+        value: '[{"name":"very-long-folder-name-for-the-generated-design-documents/","children":[{"name":"a-file-name-that-is-much-longer-than-the-box-width-on-phones.config.ts","note":"狭い幅では注釈も項目の中で折り返す"}]}]'
+      - name: source
+        value: |-
+          very-long-folder-name-for-the-generated-design-documents/
+          └── a-file-name-that-is-much-longer-than-the-box-width-on-phones.config.ts # 狭い幅では注釈も項目の中で折り返す
+      - name: open
+        value: all
+      - name: interactive
+        value: 'true'
+      - name: wrap
+        value: 'true'
 lead: 言語 `tree` のコードブロックに罫線で書いたフォルダ構成を、フォルダとファイルの入れ子のツリーにする。`render` は全ての項目を開いて出し、`mount` が種類とコピーボタンの帯とフォルダの開閉を付ける。
 args:
   - name: nodes
@@ -196,6 +211,11 @@ args:
     enabled_when: '`interactive` が `true` のとき'
     description: クリップボードに書けなかったときのパネルを出すか。`true` のとき、ツリーの下に、題 `クリップボードにコピーできませんでした`・案内 `ツリーのテキストを選択しています。Ctrl+C（Mac は ⌘C）でコピーしてください。`・`source` を入れた読み取り専用の `textarea`・閉じるボタンを持つ表のコピーと同じパネルを出す
     status: planned
+  - name: wrap
+    type: 真偽値
+    required: false
+    default: 'false'
+    description: '`<!-- tree: wrap -->` を持つか。`true` のとき `div.mdmark-tree` に class `mdmark-tree-wrap` を付け、長い名前をアイコンの右の名前の列の中で折り返し、注釈を名前の下の行に名前の頭から出す。罫線と入れ子の位置は `false` と同じ'
 css_properties:
   - name: --mdmark-color-muted
     syntax: <color>

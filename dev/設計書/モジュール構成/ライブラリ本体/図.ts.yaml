@@ -6,6 +6,7 @@ directory: |-
   ├── diagram/
   │   ├── definition.ts   # 定義の型・JSON の読み取り・形の確かめ
   │   ├── check.ts        # フロー図の定義の配置の点検（重なり・はみ出し・線の横切り・ラベルの長さ）
+  │   ├── layout.ts       # 座標を省いた判定フローチャートの自動の配置
   │   ├── er.ts           # ER 図のテーブルの種類・多重度・寸法と、テーブルの高さ・関係の線の経路
   │   └── geometry.ts     # 収まる倍率・line jump・重なる線のずらし・軸の刻み・積み上げ
   ├── parts/
@@ -45,10 +46,10 @@ data_models:
         description: 更新日（`YYYY-MM-DD`）
       - name: width
         type: number
-        description: 図の幅（px）
+        description: 図の幅（px）。座標を省いた判定フローチャートでは書かず、`layoutFlowchart` が入れる
       - name: height
         type: number
-        description: 図の高さ（px）
+        description: 図の高さ（px）。座標を省いた判定フローチャートでは書かず、`layoutFlowchart` が入れる
       - name: frame
         type: '{ title: string; x: number; y: number; w: number; h: number; hint?: string } | undefined'
         description: システムの枠。`hint` はタイトルの右の印に出す文
@@ -57,7 +58,7 @@ data_models:
         description: 枠の中の層。層の箱の色をうっすら敷く。`hint` はタイトルの右の印に出す文
       - name: nodes
         type: MdmarkDiagramNode[]
-        description: 箱（`id`・`kind`・`x`・`y`・`w`・`h`・`name`・`tag?`・`sub?`・`io?`・`hint?`）。`hint` は箱の右上の印に出す文。`kind` は `llm`・`dm`・`script`・`mcp`・`data`・`external` と、判定フローチャートの `start`・`question`・`action`・`result`。判定フローチャートは `frame`・`lanes` を持たず、ノードの座標と線の `points` を他のフロー図と同じく定義に書く。`tag`・`name`・`sub` の `{{語}}` は用語の照合に回す
+        description: 箱（`id`・`kind`・`x`・`y`・`w`・`h`・`name`・`tag?`・`sub?`・`io?`・`hint?`・`href?`）。`href` はノードのリンク先。`hint` は箱の右上の印に出す文。`kind` は `llm`・`dm`・`script`・`mcp`・`data`・`external` と、判定フローチャートの `start`・`question`・`action`・`result`。判定フローチャートは `frame`・`lanes` を持たず、ノードの座標と線の `points` を他のフロー図と同じく書くか、図の `width`・`height` と合わせて全て省く（`readDefinition` が全て書くか全て省くかを確かめ、省いた定義は `layoutFlowchart` が入れた座標で返す。型は読んだ後の定義で、`x`・`y`・`w`・`h`・`points`・`width`・`height` を必ず持つ）。`tag`・`name`・`sub` の `{{語}}` は用語の照合に回す
       - name: wires
         type: MdmarkDiagramWire[]
         description: 線（`id`・`from`・`to`・`line`・`points`・`label?`・`labelAt?`・`tip?`）。`from`・`to` は端の箱の `id`、`line` は `flow`・`read`・`write`・`reply`・`loop`、`points` は縦横だけの折れ線
@@ -408,6 +409,34 @@ constants:
     status: planned
     introduced:
       pr: 298
+  - name: DRAG_THRESHOLD
+    title: ドラッグとみなす距離
+    container: src/interact/zoom.ts
+    summary: 押した位置からこの px を超えて動いたときだけ図を動かしたことにし、リンク先を開かない。超えないうちはグラフの項目のツールチップを優先する
+    entries:
+      - key: px
+        value: '4'
+  - name: FLOWCHART_LAYOUT
+    title: 自動の配置の大きさと間隔
+    container: src/diagram/layout.ts
+    summary: 座標を省いた判定フローチャートのノードの既定の大きさと配置の間隔（px）。ノードの大きさと間隔はモックの `judgement-auto` と同じ値（図の余白は上下左右とも `margin`）
+    entries:
+      - key: sizes.start
+        value: 100×100
+      - key: sizes.question
+        value: 280×136
+      - key: sizes.action
+        value: 200×72
+      - key: sizes.result
+        value: 200×60
+      - key: gapY
+        value: '40'
+      - key: gapX
+        value: '120'
+      - key: margin
+        value: '16'
+      - key: lineStep
+        value: 20（名前が収まらないときに高さを足す刻み）
   - name: RESIZE
     title: リサイズハンドルの量
     container: src/diagram/geometry.ts
@@ -417,14 +446,6 @@ constants:
         value: '32'
       - key: min
         value: '120'
-    status: planned
-    introduced:
-      pr: 308
-  - name: DRAG_THRESHOLD_PX
-    title: ドラッグを始める距離
-    container: src/interact/zoom.ts
-    summary: 押してからこの距離（px）を超えて動いたら図を動かし始める。超えないうちはグラフの項目のツールチップを優先する
-    value: '4'
     status: planned
     introduced:
       pr: 308
@@ -477,7 +498,7 @@ functions:
     container: src/diagram/definition.ts
     kind: 関数
     scope: internal
-    summary: 印の範囲の `json` のコードブロックの数を確かめ、`parseDefinitionJson` で読み、種類ごとの形（必須の項目・型・列挙の値・線の端の箱の `id`・`id` の重なり・系列の点の数・系列と項目の数の上限 6 つ・`table` の値の漏れ・ER 図の関係の端のテーブルと列・テーブルの `id` と同じテーブルの列の名前の重なり・`kind`・`color`（`isColorName`。書き方の警告に並べる色の名前は `COLOR_NAMES` から出す）・多重度の値・フロー図の `frame.hint` と `lanes[].hint` が文字で `stickyTitles` が真偽値か）を確かめる。読めない箇所は、書き方の警告の文言の文にして返す。文の中でノードは `ノード「{name}」`・`ノードの id`・`端のノード` と呼ぶ
+    summary: 印の範囲の `json` のコードブロックの数を確かめ、`parseDefinitionJson` で読み、種類ごとの形（必須の項目・型・列挙の値・線の端の箱の `id`・`id` の重なり・系列の点の数・系列と項目の数の上限 6 つ・`table` の値の漏れ・ER 図の関係の端のテーブルと列・テーブルの `id` と同じテーブルの列の名前の重なり・`kind`・`color`（`isColorName`。書き方の警告に並べる色の名前は `COLOR_NAMES` から出す）・多重度の値・フロー図の `frame.hint` と `lanes[].hint` が文字で `stickyTitles` が真偽値か）を確かめる。フロー図では、座標（ノードの `x`・`y`・`w`・`h`、線の `points`、図の `width`・`height`）を書いたものと省いたものの混在と、座標を省いた定義の `start`・`question`・`action`・`result` 以外の種類のノードも確かめ、全て省いた読める定義は `layoutFlowchart` で配置した定義を返す（描く処理と点検が同じ配置を使う）。読めない箇所は、書き方の警告の文言の文にして返す。文の中でノードは `ノード「{name}」`・`ノードの id`・`端のノード` と呼ぶ
     args:
       - name: directive
         type: '"flow" | "sequence" | "chart" | "param" | "er"'
@@ -583,6 +604,24 @@ functions:
         condition: テーブルの `id` が重なる定義、同じテーブルに同じ列の名前がある定義、`kind` が `view`・`color` が `pink`・`toCard` が `many` の定義
         mock: なし
         expected: どれも `ok` が `false` で、`problems[0]` が重なった `id`・列の名前、使える種類 `master・transaction`・色の名前・多重度 `1・0..1・1..n・0..n` をそれぞれ含む
+      - name: test_read_definition_when_coordinates_omitted
+        case: 正常
+        summary: 座標を全て省いた判定フローチャートを配置した定義で返す
+        condition: モックの `judgement-auto` から座標・`points`・`width`・`height` を除き、線に `from`・`to` を足した定義
+        mock: なし
+        expected: '`ok` が `true` で、定義の `height` が 584 で、全てのノードが `x`・`y`・`w`・`h` を、全ての線が `points` を持つ'
+      - name: test_read_definition_when_coordinates_mixed
+        case: 異常
+        summary: 座標を書いたものと省いたものが混ざる
+        condition: 座標を省いた `judgement-auto` の 1 つのノードだけに `x`・`y`・`w`・`h` を書いた定義
+        mock: なし
+        expected: '`problems[0]` が `座標（x・y・w・h・points・width・height）を書いたものと省いたものが混ざっています。全て書くか、全て省いてください`'
+      - name: test_read_definition_when_coordinates_omitted_not_judgement
+        case: 異常
+        summary: 判定フローチャート以外の種類で座標を省く
+        condition: 座標を全て省き、名前 `分類` の `llm` のノードを持つ定義
+        mock: なし
+        expected: '`problems[0]` が `ノード「分類」の種類 llm では座標を省けません。` で始まる'
       - name: test_read_definition_when_group_options_invalid
         case: 異常
         summary: グループの `hint` と `stickyTitles` の型を確かめる
@@ -722,7 +761,7 @@ functions:
     container: src/parts/diagram.ts
     kind: 関数
     scope: internal
-    summary: 定義の座標に枠・層・ノードを置き、`jumpPaths` のパスで線を svg に描く。判定フローチャートのノードは `data-kind` で CSS が形（開始は円・アクションは角の丸くない四角・結果は両端の丸い形）を当て、質問のノードにはノードの幅と高さを `viewBox` にした菱形の `polygon` の svg（`aria-hidden`）を置く。名前は形に内接する四角に置き、質問は上下に高さの 1/4・左右に幅の 1/4、開始は幅 × `CIRCLE_INSET` の余白を `style` に当てる。箱の種類のアイコン・`io` か `hint` を持つ箱の右上の印・`hint` を持つ枠と層のタイトルの右の印（`button.mdmark-diagram-info.mdmark-diagram-group-info`。`aria-label` は `「{タイトル}」の説明`）・線のラベルを置き、枠と層のタイトルにはグループの上端と下端の `data-sticky-top`・`data-sticky-bottom` を付け（`hints` がオフなら印とツールチップの中身を置かない）、`{{語}}` は用語の照合に回す
+    summary: 定義の座標に枠・層・ノードを置き、`jumpPaths` のパスで線を svg に描く。判定フローチャートのノードは `data-kind` で CSS が形（開始は円・アクションは角の丸くない四角・結果は両端の丸い形）を当て、質問のノードにはノードの幅と高さを `viewBox` にした菱形の `polygon` の svg（`aria-hidden`）を置く。名前は形に内接する四角に置き、質問は上下に高さの 1/4・左右に幅の 1/4、開始は幅 × `CIRCLE_INSET` の余白を `style` に当てる。箱の種類のアイコン・`io` か `hint` を持つ箱の右上の印・`hint` を持つ枠と層のタイトルの右の印（`button.mdmark-diagram-info.mdmark-diagram-group-info`。`aria-label` は `「{タイトル}」の説明`）・線のラベルを置き、`href` を持つノードには class `has-link` と、名前の後ろ・右上の印の前にノードの全体を覆う `<a class="mdmark-diagram-node-link" href="{href}" aria-label="{name}">` を置く、枠と層のタイトルにはグループの上端と下端の `data-sticky-top`・`data-sticky-bottom` を付け（`hints` がオフなら印とツールチップの中身を置かない）、`{{語}}` は用語の照合に回す
     args:
       - name: definition
         type: MdmarkFlowDefinition
@@ -768,6 +807,12 @@ functions:
         condition: モックの `judgement` の定義
         mock: なし
         expected: '`data-kind` が `start`・`question`・`action`・`result` のノードが 1・2・1・2 つあり、質問のノードだけが `viewBox="0 0 280 136"` と `points="140,0 280,68 140,136 0,68"` の `aria-hidden="true"` の svg を持ち、質問のノードの `style` が `padding:34px 70px`、開始のノードの `style` が `padding:14.6px`、線のラベルに `YES`・`NO` がある'
+      - name: test_render_flow_when_node_link
+        case: 正常
+        summary: href を持つノードをリンクにし、印をリンクの外に置く
+        condition: モックの `linked` の定義を `hints` が `true` で描く
+        mock: なし
+        expected: '`href` を持つ 2 つのノードが `has-link` と `a.mdmark-diagram-node-link`（`aria-label` がノードの名前）を持ち、`io` の印は `a` の後ろにあって `a` の中に無い。`href` を持たないノードは `a` を持たない'
       - name: test_render_flow_when_group_hint
         case: 正常
         summary: 枠と層の `hint` の印と留める範囲を置く
@@ -1050,7 +1095,7 @@ functions:
     container: src/render/syntax/diagrams.ts
     kind: 関数
     scope: internal
-    summary: markdown-it のコアルール。`diagrams` がオンのとき、登録した拡張に無い図の部品の印の範囲ごとに `json` のコードブロックを集めて `readDefinition` を呼び、読めたら部品の HTML（`renderDiagramFrame` に機能 `diagram-resize` のオン・オフを `resizable`、定義の `stickyTitles` を渡し、`renderFlow`・`renderEr` に `hints` のオン・オフと用語の `lookup` を、`renderParam` に `env.labels?.paramCopy` を渡す）（`markOwn` を掛けた `html_block`）、読めなければ書き方の警告に範囲のトークンを置き換える。オフのときは印だけを取り除く
+    summary: markdown-it のコアルール。`diagrams` がオンのとき、登録した拡張に無い図の部品の印の範囲ごとに `json` のコードブロックを集めて `readDefinition` を呼び、読めたら（フロー図は `nodeLinkProblems` が返した許さないリンク先のノードから `href` を外し、あれば書き方の警告を図の前に差し込んでから）部品の HTML（`renderDiagramFrame` に機能 `diagram-resize` のオン・オフを `resizable`、定義の `stickyTitles` を渡し、`renderFlow`・`renderEr` に `hints` のオン・オフと用語の `lookup` を、`renderParam` に `env.labels?.paramCopy` を渡す）（`markOwn` を掛けた `html_block`）、読めなければ書き方の警告に範囲のトークンを置き換える。オフのときは印だけを取り除く
     args:
       - name: state
         type: StateCore
@@ -1391,7 +1436,7 @@ functions:
     container: src/interact/zoom.ts
     kind: 関数
     scope: internal
-    summary: '表示する枠と中身に、`fitScale` の倍率から `ZOOM.max` までの拡大・縮小（縮小・拡大・倍率のボタンと `+`・`-`・`0`）と、拡大中の移動（移動のボタン・矢印キー・ドラッグ）を付ける。倍率は中身に `transform: scale()` を掛け、大きさの箱を倍率を掛けた大きさにしてスクロールさせる。端のボタンの `disabled`、倍率の文字と読み上げの名前（`percentBase` が `fit` なら全体が収まる倍率を 100%、`content` なら中身の大きさを 100% とする）、移動のボタンのまとまりの `hidden` を倍率が変わるたびに書き換え、`onChange` に倍率を知らせる。ドラッグは、押してから動いた距離が `DRAG_THRESHOLD_PX` を超えたときに始め、始めたときに `onPanStart` を 1 回呼ぶ（超えないまま離したら動かさない）。`fitHeight` は真偽値か、全体が収まる倍率を求めるたびに呼ぶ関数で受ける。`refit()` は今の倍率と位置を保ったまま、全体が収まる倍率（下限）とボタンの状態を求め直す。図（`attachDiagrams`）とライトボックス（`attachLightbox`）が使う'
+    summary: '表示する枠と中身に、`fitScale` の倍率から `ZOOM.max` までの拡大・縮小（縮小・拡大・倍率のボタンと `+`・`-`・`0`）と、拡大中の移動（移動のボタン・矢印キー・ドラッグ）を付ける。倍率は中身に `transform: scale()` を掛け、大きさの箱を倍率を掛けた大きさにしてスクロールさせる。端のボタンの `disabled`、倍率の文字と読み上げの名前（`percentBase` が `fit` なら全体が収まる倍率を 100%、`content` なら中身の大きさを 100% とする）、移動のボタンのまとまりの `hidden` を倍率が変わるたびに書き換え、`onChange` に倍率を知らせる。`.mdmark-diagram-node-link` の上からもドラッグを始め（文字を選ばせない）、`DRAG_THRESHOLD` を超えて動いたときだけ動かしたことにする。動かした後の `pointerup` で `window` にキャプチャの `click` の受け取り（次の 1 回を `preventDefault`・`stopPropagation` して外れる）を付け、`setTimeout(0)` でも外す（`click` が来ない終わり方で受け取りを残さない）。`pointercancel` では受け取りを付けず、`detach` でも外す。ドラッグを始めたとき（`DRAG_THRESHOLD` を超えたとき）に `onPanStart` を 1 回呼ぶ（超えないまま離したら動かさない）。`fitHeight` は真偽値か、全体が収まる倍率を求めるたびに呼ぶ関数で受ける。`refit()` は今の倍率と位置を保ったまま、全体が収まる倍率（下限）とボタンの状態を求め直す。図（`attachDiagrams`）とライトボックス（`attachLightbox`）が使う'
     args:
       - name: options
         type: '{ viewport: HTMLElement; content: HTMLElement; size: { width: number; height: number }; tools: HTMLElement; onChange?: (zoom: number, fit: number) => void; onPanStart?: () => void; fitHeight?: boolean | (() => boolean); dragIgnore?: string; keyTargets?: HTMLElement[]; percentBase?: "fit" | "content" }'
@@ -1427,6 +1472,18 @@ functions:
         condition: 幅 600px の枠に幅 1100 の中身、`percentBase` が `fit`。拡大を 1 回押す
         mock: なし
         expected: 倍率の文字が `100%` で始まり、拡大の後に `125%` で読み上げの名前が `倍率 125%。全体が収まる倍率に戻す`
+      - name: test_attach_zoom_when_dragged_on_link
+        case: 正常
+        summary: リンクの上から動かした後の click を window で止め、次のタスクで受け取りを外す
+        condition: 拡大を 2 回押し、中身の `a.mdmark-diagram-node-link` の上で `pointerdown` → 40px の `pointermove` → `pointerup` → `click`。もう 1 回、動かして離した後に `click` を出さず、次のタスクで `document` に `click` を出す
+        mock: '`document` のキャプチャの `click` を数える関数'
+        expected: 1 回目の `click` が `defaultPrevented` で `document` に届かず、`scrollLeft` が 40 変わる。2 回目の後の `document` の `click` は止められず届く
+      - name: test_attach_zoom_when_link_pressed
+        case: 正常
+        summary: しきい値以下の動きはドラッグにしない
+        condition: リンクの上で `pointerdown` → 3px の `pointermove` → `pointerup` → `click`
+        mock: なし
+        expected: '`click` が `defaultPrevented` でなく、`scrollLeft` が変わらない'
       - name: test_attach_zoom_when_drag_threshold
         case: 正常
         summary: しきい値までのドラッグでは動かさず、超えたら動かして `onPanStart` を呼ぶ
@@ -1774,6 +1831,87 @@ functions:
     status: planned
     introduced:
       pr: 298
+  - name: layoutFlowchart
+    title: 判定フローチャートを配置する
+    container: src/diagram/layout.ts
+    kind: 関数
+    scope: internal
+    summary: 座標を省いた判定フローチャートの定義に、インターフェース定義『文書をHTML文字列にする』の制約「自動の配置」の決まりでノードの `x`・`y`・`w`・`h`、線の `points`、図の `width`・`height` を入れた定義を返す
+    description: ノードを左と右の 2 つの列と行の格子に割り当てる。`start` を 0 行目の左の列に置き、`start` から線をたどる。`question` から右へ出る線の先を先に割り当て（複数の線が入るノードの位置をこの線で決める）、次に下へ出る線と `action` の先を割り当てる。列の幅はその列のノードの最大の `w`、行の高さはその行のノードの最大の `h` にし、ノードは列の中央・行の中央に置く。ノードの大きさは `FLOWCHART_LAYOUT` の `sizes` から始め、`labelLineCount` で名前が収まらないときは `lineStep` ずつ高さを足す。下へ出る線は出るノードの下辺の中央から、右へ出る線は右辺の中央から引き、縦と横の線分で先のノードの入り口（同じ列なら上辺。右の列は、同じ行なら左辺、下の行なら上辺、上の行なら下辺）へつなぐ。線の `labelAt` は最初の線分の中点にする。`start` から届かないノードは最後の行の下に定義の順に左の列へ並べる。`width`・`height` は全てのノードと線を囲む矩形に `margin` を足す
+    args:
+      - name: definition
+        type: MdmarkFlowDefinition
+        required: true
+        description: 座標を省いた判定フローチャートの定義（`readDefinition` が形を確かめたもの）
+    returns:
+      type: MdmarkFlowDefinition
+      description: 座標を入れた定義（渡した定義は書き換えない）
+    callees:
+      - '#functions[labelLineCount]'
+    refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/文書をHTML文字列にする.ts#constraints[自動の配置]
+    unit_tests:
+      - name: test_layout_flowchart
+        case: 正常
+        summary: モックの judgement-auto と同じ列と行の関係に配置する
+        condition: モックの `judgement-auto` の定義から座標・`points`・`width`・`height` を除き、線に `from`・`to` を足したもの
+        mock: なし
+        expected: ノードの `y`・`w`・`h` と `height` が `judgement-auto` と等しい。`start`・`q1`・`q2`・`r2` の中央の `x` が等しく、`q1` の `x` が `margin`（16）。`a1` と `r1` の `x` が等しく `q1` の右端 + `gapX`（120）で、`width` がその右端 + `margin`。線の `points` が縦と横の線分だけで、配置した定義を `checkFlowLayout` に渡すと空の配列
+      - name: test_layout_flowchart_when_both_results
+        case: 正常
+        summary: 両方の先が結果なら NO を下、YES を右に置く
+        condition: 開始・質問 1 つ・結果 2 つで、質問の `YES` と `NO` の先が結果
+        mock: なし
+        expected: '`YES` の先の中央の高さが質問と同じで `x` が質問より右、`NO` の先の `y` が質問の下端より下で中央の `x` が質問と同じ'
+      - name: test_layout_flowchart_when_long_name
+        case: 正常
+        summary: 名前が収まらないノードの高さを足し、配置のずれを出さない
+        condition: アクションの名前が全角 40 文字の `judgement-auto`
+        mock: なし
+        expected: そのアクションの `h` が 72 より大きく、配置した定義を `checkFlowLayout` に渡すと空の配列
+      - name: test_layout_flowchart_when_unreachable
+        case: 正常
+        summary: 開始から届かないノードを一番下に並べる
+        condition: どの線にもつながらない結果を 1 つ持つ `judgement-auto`
+        mock: なし
+        expected: その結果の `y` がほかの全てのノードの下端より下で、`checkFlowLayout` が空の配列
+      - name: test_layout_flowchart_when_shared_result
+        case: 正常
+        summary: 下の質問から上の行の結果へ入る線を、結果の下辺で止める
+        condition: 開始 → `q1`、`q1` YES → `ok`、`q1` NO → `q2`、`q2` YES → `ok`、`q2` NO → `ng` の座標を省いた判定フローチャート
+        mock: なし
+        expected: '`ok` が `q1` の行にあり、`q2` → `ok` の線の最後の点が `ok` の下辺の中央で、全ての線が縦と横だけ'
+    status: planned
+    introduced:
+      pr: 328
+  - name: nodeLinkProblems
+    title: ノードのリンク先を確かめる
+    container: src/diagram/definition.ts
+    kind: 関数
+    scope: internal
+    summary: フロー図の定義の `href` を `isAllowedUrl` で確かめ、許さないリンク先を持つノードの `id` とリンク先を定義の順に返す
+    args:
+      - name: definition
+        type: MdmarkFlowDefinition
+        required: true
+        description: 読めたフロー図の定義
+    returns:
+      type: 'Array<{ id: string; href: string }>'
+      description: 許さないリンク先のノード（無ければ空）
+    callees:
+      - dev/設計書/モジュール構成/ライブラリ本体/描画.ts#functions[isAllowedUrl]
+    refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/文書をHTML文字列にする.ts#constraints[ノードのリンク先]
+    unit_tests:
+      - name: test_node_link_problems
+        case: 正常
+        summary: 許さないリンク先だけを返す
+        condition: '`href` が `https://example.com/spec`・`./other.md`・`mailto:a@example.com`・`javascript:alert(1)`・`id:spec#items` のノードと、`href` の無いノード'
+        mock: なし
+        expected: '`javascript:alert(1)` と `id:spec#items` の 2 件を定義の順に返す'
+    status: planned
+    introduced:
+      pr: 328
   - name: clampDiagramHeight
     title: 表示する枠の高さを範囲に収める
     container: src/diagram/geometry.ts
@@ -1935,4 +2073,5 @@ test_files:
   - tests/unit/src/diagram/er.test.ts
   - tests/unit/src/parts/er.test.ts
   - tests/unit/src/interact/er-folds.browser.test.ts
+  - tests/unit/src/diagram/layout.test.ts
   - tests/unit/src/interact/diagram-resize.browser.test.ts
