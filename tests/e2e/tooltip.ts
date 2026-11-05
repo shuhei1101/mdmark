@@ -72,3 +72,13 @@ export async function scrollToTop(locator: Locator): Promise<void> {
     window.scrollBy(0, element.getBoundingClientRect().top);
   });
 }
+
+/** 要素の下端が画面の下端に揃うまでページをスクロールする */
+export async function scrollToBottom(locator: Locator): Promise<void> {
+  await locator.evaluate((element) => {
+    window.scrollBy(
+      0,
+      element.getBoundingClientRect().bottom - window.innerHeight,
+    );
+  });
+}

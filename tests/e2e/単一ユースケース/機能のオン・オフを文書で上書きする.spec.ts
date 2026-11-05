@@ -1,5 +1,6 @@
 import { expect, test } from "@playwright/test";
 import type { MdmarkIndex } from "../../../src/index.ts";
+import { flowMarkdown } from "../diagram.ts";
 import {
   buildDistRoot,
   mountDocument,
@@ -435,4 +436,27 @@ test("test_normal_when_new_syntax_disabled", async ({ page }) => {
       ).length,
   );
   expect(breaks).toBe(0);
+});
+
+// 文書の先頭のマーカーで図のリサイズハンドルの機能を外すと、リサイズハンドルを置かず、マーカーを持たない文書には置く（正常シナリオ（図のリサイズハンドルの機能を外す））
+test("test_normal_when_diagram_resize_disabled", async ({ page }) => {
+  // 準備
+  await openPage(page, builtRoot);
+  const flow = await flowMarkdown();
+  // 実行
+  await mountDocument(page, {
+    markdown: `<!-- features: -diagram-resize -->\n\n${flow}`,
+  });
+  // 検証: 右下にリサイズハンドルが無く、右上の拡大・縮小のボタンはある
+  await expect(page.locator("#doc figure.mdmark-diagram")).toHaveCount(1);
+  await expect(page.locator("#doc .mdmark-diagram-resize")).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "拡大" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "縮小" })).toBeVisible();
+  // 検証: 本文にマーカーの文字が出ていない
+  await expect(page.locator("#doc")).not.toContainText("features:");
+  // 実行・検証: マーカーを持たない文書を同じ設定で描くと、リサイズハンドルがある
+  await mountDocument(page, { markdown: flow });
+  await expect(
+    page.getByRole("separator", { name: /の表示の高さ$/ }),
+  ).toHaveCount(1);
 });
