@@ -96,6 +96,8 @@ export type IndexOptions = {
   references?: MdmarkReferences;
   /** 読み込んだエイリアス */
   aliases?: MdmarkAlias[];
+  /** 取り込む文書の表 */
+  includes?: Record<string, string>;
 };
 
 /** 使えないエイリアス（`env` を含む）を、型の検査を通さずに `aliases` へ渡せる形にする */

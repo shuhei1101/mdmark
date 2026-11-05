@@ -1,6 +1,7 @@
 import { expect, type Page, test } from "@playwright/test";
 import {
   buildDistRoot,
+  installCommentStore,
   mountDocument,
   openPage,
   removeDistRoot,
@@ -327,4 +328,72 @@ test("test_error_when_color_unknown", async ({ page }) => {
   expect(
     await paragraph.evaluate((element) => getComputedStyle(element).color),
   ).toBe(await resolveColor(page, "#doc", "var(--mdmark-color-text)"));
+});
+
+// ==文字== を蛍光ペンのマーカーにし、コメントのマーカーと分ける（正常シナリオ（蛍光ペンのマーカー））
+test("test_normal_when_highlighter", async ({ page }) => {
+  // 準備
+  await openPage(page, builtRoot);
+  await installCommentStore(page, {
+    loaded: [
+      {
+        id: "c1",
+        quote: "テーマの変数",
+        prefix: "見た目は",
+        suffix: "で変える",
+        body: "読み込んだコメント",
+      },
+    ],
+  });
+  // 実行
+  await mountDocument(page, {
+    markdown:
+      "==決め手== と ==例外=={color=green} がある。見た目はテーマの変数で変える。\n",
+    config: { features: { comments: true } },
+    docId: "guide",
+    useCommentStore: true,
+  });
+  // 検証
+  const marks = page.locator("#doc mark.mdmark-highlight");
+  await expect(marks).toHaveText(["決め手", "例外"]);
+  await expect(marks.nth(0)).not.toHaveAttribute("data-color", /.+/);
+  await expect(marks.nth(1)).toHaveAttribute("data-color", "green");
+  await expect(page.locator("#doc")).not.toContainText("==");
+  await expect(page.locator("#doc")).not.toContainText("{color=green}");
+  await expect(
+    page.locator("#doc mark.mdmark-highlight.mdmark-comment-mark"),
+  ).toHaveCount(0);
+  const comment = page.locator("#doc mark.mdmark-comment-mark");
+  await expect(comment).toHaveText("テーマの変数");
+  await marks.nth(0).click();
+  await expect(page.locator(".mdmark-comment-bubble")).toHaveCount(0);
+  await comment.click();
+  await expect(page.locator(".mdmark-comment-bubble")).toBeVisible();
+  for (const n of [0, 1]) {
+    const colors = await marks.nth(n).evaluate((mark) => ({
+      color: getComputedStyle(mark).color,
+      background: getComputedStyle(mark).backgroundColor,
+    }));
+    expect(
+      contrastRatio(colors.color, colors.background),
+    ).toBeGreaterThanOrEqual(4.5);
+  }
+});
+
+// 知らない色の名前は、警告を置いて既定の色の蛍光ペンにする（異常シナリオ（蛍光ペンの知らない色の名前））
+test("test_error_when_highlighter_color_unknown", async ({ page }) => {
+  // 準備
+  await openPage(page, builtRoot);
+  // 実行
+  await mountDocument(page, { markdown: "==決め手=={color=pink} の段落\n" });
+  // 検証
+  const warning = page.locator("#doc .mdmark-syntax-warning");
+  await expect(warning).toContainText("pink");
+  await expect(warning).toContainText("blue");
+  await expect(page.locator("#doc mark.mdmark-highlight")).toHaveText("決め手");
+  await expect(page.locator("#doc mark.mdmark-highlight")).not.toHaveAttribute(
+    "data-color",
+    /.+/,
+  );
+  await expect(page.locator("#doc")).not.toContainText("{color=pink}");
 });

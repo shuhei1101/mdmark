@@ -8,6 +8,7 @@ import {
   openPage,
   removeDistRoot,
   routeLibrary,
+  routeLucide,
   routeSyntax,
 } from "../dist-page.ts";
 
@@ -106,4 +107,78 @@ test("test_normal_when_code_highlighted", async ({ page }) => {
   const dist = await readFile(join(builtRoot, "dist", "index.js"), "utf8");
   expect(dist).not.toContain("highlightAuto");
   expect(dist).not.toContain("Highlight.js v");
+});
+
+/** 束ねていない名前のアイコンを見出しと段落に持つ文書 */
+const ICONS_MARKDOWN =
+  "## `icon:sailboat` 航海\n\n前の文 `icon:anchor` 後ろの文\n";
+
+// 束ねていない名前のアイコンを、使う名前の分だけ jsDelivr から読んで描く（正常シナリオ（束ねていない名前のアイコン））
+test("test_normal_when_unbundled_icon", async ({ page }) => {
+  // 準備
+  await openPage(page, builtRoot);
+  const requests = await routeLucide(page);
+  // 実行
+  await mountDocument(page, { markdown: ICONS_MARKDOWN });
+  // 検証
+  await expect(
+    page.locator('#doc .mdmark-inline-icon[data-icon="sailboat"] svg'),
+  ).toHaveCount(1);
+  await expect(
+    page.locator('#doc .mdmark-inline-icon[data-icon="anchor"] svg'),
+  ).toHaveCount(1);
+  expect(requests.map((line) => line.replace(/^.*\//, "")).sort()).toEqual([
+    "anchor.mjs",
+    "sailboat.mjs",
+  ]);
+  await expect(page.locator("#doc")).toContainText("前の文");
+  await expect(page.locator("#doc")).toContainText("後ろの文");
+  // 実行: 束ねていない名前を持たない文書
+  requests.length = 0;
+  await mountDocument(page, { markdown: "`icon:flag` だけの段落\n" });
+  await page.waitForTimeout(500);
+  // 検証
+  expect(requests).toEqual([]);
+});
+
+// Lucide に無い名前は、警告を置いて書いたとおりの行内のコードで出す（異常シナリオ（Lucide に無いアイコンの名前））
+test("test_error_when_icon_not_in_lucide", async ({ page }) => {
+  // 準備
+  await openPage(page, builtRoot);
+  await routeLucide(page, (name) => (name === "no-such-icon" ? 404 : 200));
+  // 実行
+  await mountDocument(page, {
+    markdown: "前の文 `icon:no-such-icon` と `icon:anchor` 後ろの文\n",
+  });
+  // 検証
+  await expect(
+    page.locator("#doc code", { hasText: "icon:no-such-icon" }),
+  ).toHaveCount(1);
+  await expect(page.locator("#doc .mdmark-syntax-warning")).toContainText(
+    "no-such-icon",
+  );
+  await expect(
+    page.locator('#doc .mdmark-inline-icon[data-icon="anchor"] svg'),
+  ).toHaveCount(1);
+  await expect(page.locator("#doc")).toContainText("後ろの文");
+});
+
+// Lucide を読めないときは、行内のコードに戻して知らせの枠を 1 つだけ置く（異常シナリオ（Lucide を読めない））
+test("test_error_when_lucide_unavailable", async ({ page }) => {
+  // 準備
+  await openPage(page, builtRoot);
+  await routeLucide(page, () => "fail");
+  // 実行
+  await mountDocument(page, { markdown: ICONS_MARKDOWN });
+  // 検証
+  await expect(page.locator("#doc .mdmark-notice")).toHaveCount(1);
+  await expect(page.locator("#doc .mdmark-notice")).toContainText("Lucide");
+  await expect(
+    page.locator("#doc code", { hasText: "icon:sailboat" }),
+  ).toHaveCount(1);
+  await expect(
+    page.locator("#doc code", { hasText: "icon:anchor" }),
+  ).toHaveCount(1);
+  await expect(page.locator("#doc")).toContainText("航海");
+  await expect(page.locator("#doc")).toContainText("後ろの文");
 });
