@@ -514,5 +514,5 @@ constraints:
     constraint: '`video`・`audio` が `error` になったとき、要素を mdmark の知らせの枠の見た目の枠に替え、プレビューで再生できないことと、`openAsset` を送る「既定のアプリで開く」のリンクを出す。拡張機能は受け取ったパスを制約「動画・音声とアセットのルートの解決」と同じく解決し、ワークスペースの中のファイルだけを `vscode.env.openExternal` で開く'
     notes: PoC 結果で、プレビューの Webview は AAC の音声と webm を再生できない。mp4・mov は映像だけが再生される
   - item: 取り込む文書
-    constraint: 開いている Markdown（差分のパネルは変更後の側）の include のマーカーの取り込み先を、インターフェース定義『文書をHTML文字列にする』の制約「取り込み」と同じパスの解き方で、Markdown のフォルダを基準に `workspace.fs` で読む（取り込んだ文書の中のマーカーもたどり、同じファイルは 1 回だけ読む）。開いているエディタの保存していない書き換えではなく、保存した中身を読む。ワークスペースのフォルダの外のパス（設定ファイルがあるときはそのフォルダの外。書き出しと同じ範囲）と読めないファイルは表に入れず、そのマーカーの場所には mdmark が書き方の警告を出す。読んだ表を `render` の `includes` に入れ、Webview は `mount` の `opts.includes`（`update` は `options.includes`）に渡す
+    constraint: 開いている Markdown（差分のパネルは変更後の側）の include のマーカーの取り込み先を、インターフェース定義『文書をHTML文字列にする』の制約「取り込み」と同じパスの解き方で、Markdown のフォルダを基準に `workspace.fs` で読む（取り込んだ文書の中のマーカーもたどり、同じファイルは 1 回だけ読む）。開いているエディタの保存していない書き換えではなく、保存した中身を読む。設定ファイルのフォルダ（無ければ Markdown のフォルダ）の外のパス（書き出しと同じ範囲）と読めないファイルは表に入れず、そのマーカーの場所には mdmark が書き方の警告を出す。読んだ表を `render` の `includes` に入れ、Webview は `mount` の `opts.includes`（`update` は `options.includes`）に渡す
     notes: プレビューでも取り込むことは確認ログの決定

@@ -718,7 +718,7 @@ functions:
   - name: readIncludes
     title: 取り込む文書を読む
     container: vscode/src/preview/includes.ts
-    summary: 開いている Markdown の include のマーカーを、ライブラリ本体の `resolveIncludePath` と同じ解き方で解き、根のフォルダ（設定ファイルのフォルダ。無ければワークスペースのフォルダ）の中のファイルだけを `workspace.fs` で読んで取り込む文書の表を作る。取り込んだ Markdown の中のマーカーもたどり、同じファイルは 1 回だけ読む。読んだファイルの URI の一覧も返し、保存で描き直すかの判定に使う
+    summary: 開いている Markdown の include のマーカーを、ライブラリ本体の `resolveIncludePath` と同じ解き方で解き、根のフォルダ（設定ファイルのフォルダ。無ければ Markdown のフォルダ）の中のファイルだけを `workspace.fs` で読んで取り込む文書の表を作る。取り込んだ Markdown の中のマーカーもたどり、同じファイルは 1 回だけ読む。読んだファイルの URI の一覧も返し、保存で描き直すかの判定に使う
     kind: 関数
     scope: internal
     args:
