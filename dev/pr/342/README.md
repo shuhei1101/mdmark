@@ -27,7 +27,7 @@ viewer（`src/viewer/`）は `mdmark build` が書き出す全ての HTML に埋
 - [x] ~~初期構築~~（既存リポジトリのため対象外）
 - [x] ~~リバースエンジニアリング~~（現状設計書が揃っている）
 - [x] ~~方針決め~~（方針決めを依頼する Issue ではない）
-- [ ] PoC 検証（React + Vite + Tailwind の Webview が今の CSP の下で動き、jsDelivr の配布物を `import()` で描けるか。`@storybook/react-vite` で server 形式の部品の HTML を描けるか。拡張機能ホストの Webview で axe を実行できるか）
+- [x] PoC 検証（React + Vite + Tailwind の Webview が今の CSP の下で動き、jsDelivr の配布物を `import()` で描けるか。`@storybook/react-vite` で server 形式の部品の HTML を描けるか。拡張機能ホストの Webview で axe を実行できるか）
 - [x] ~~複合ユースケース設計~~（影響なし: 業務の流れは変わらない）
 - [x] ~~デザインスタイル選定~~（デザイン方針があり、Webview の部品は shadcn/ui を VS Code の配色のトークンに割り当てるため、見た目の方向は変えない）
 - [x] ~~画面一覧・画面遷移~~（画面の追加・削除と画面遷移の変更を含まない）

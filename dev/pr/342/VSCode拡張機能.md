@@ -60,6 +60,68 @@
 
 規約の直下に配置する決まりはフロントエンドとバックエンドが 1 つのリポジトリに入る構成を前提にしており、mdmark の拡張機能は `vscode/` に独立した `package.json` と配布物を持つ。
 
+## PoC 結果
+
+<!-- table: data -->
+
+| 検証構成 | 成功条件 | 結果 | PoC PR | 補足 |
+| --- | --- | --- | --- | --- |
+| 1. Vite 8 + `@vitejs/plugin-react` 6 + React Compiler（`@rolldown/plugin-babel` + `reactCompilerPreset`）+ Tailwind v4 の Webview を、今の `buildCsp` の CSP で描く | VS Code 1.141.0・stable（1.145.1）で CSP 違反 0 件、代役の配布物の `mount` で描け `rendered` が届く | ✅ 両方で違反 0 件 | [#343](https://github.com/shuhei1101/mdmark/pull/343) | `securitypolicyviolation` を Webview で数えた。`buildCsp` は変えていない |
+| 1. 同上 | 出力が `media/preview.js`（ES モジュール 1 ファイル）と `media/preview.css` の 2 つで、inline の `<script>` を出さない | ✅ 2 ファイル（345 KB・13 KB） | 同上 | `build.lib` の `formats: ["es"]`・`codeSplitting: false` |
+| 1. 同上 | `logger` に `CompileSuccess`、`preview.js` に `react.memo_cache_sentinel`、`tsc --noEmit` が通る | ✅ 全コンポーネントで `CompileSuccess`・3 件・通る | 同上 | コンポーネントの中に `import()` を書くと `CompileError`（`Handle ImportExpression expressions`）になる |
+| 1b. Preflight を参照せず `tailwindcss/theme`・`tailwindcss/utilities` だけを層に入れる | 見出し・段落・リスト・画像の `getComputedStyle` が `develop` の Webview と一致する | ✅ 両方のバージョンで 10 要素 × 8 プロパティが一致 | 同上 | `font-size`・`list-style-type`・`margin`・`padding-left`・`display`・`border-top-width`・`box-sizing` |
+| 1b. 同上 | 描けない理由の部品（`Alert` + `Button`）が崩れずに出る | ✅ | 同上 | [1280px](https://github.com/shuhei1101/mdmark/blob/9ffbb715d8a9ac61e3400a0947e7ebafc10cb77c/poc-results/status-react-1280.png)・[390px](https://github.com/shuhei1101/mdmark/blob/9ffbb715d8a9ac61e3400a0947e7ebafc10cb77c/poc-results/status-react-390.png)（VS Code の Dark Modern の色を `--vscode-*` に与えた） |
+| 3. 結合テストのビルドだけ `media/test/axe.js` を複写し、`data-test` のときだけ `import()` する | 結合テストから `axe.run()` の違反の一覧を受け取れる | ✅ 両方のバージョンで受け取れた | 同上 | 描いた文書で `label-content-name-mismatch`、描けない理由で `color-contrast` を検出した |
+| 3. 同上 | 本番の `preview.js` に axe が入らない | ✅ `axe-core` の文字列 0 件 | 同上 | `--tests` を付けないビルドは `media/test/` を作らない構成にする |
+
+<!-- /table -->
+
+結論: 成立。React の Webview は今の CSP・配布物の参照のまま動き、Preflight を参照しない構成なら描いた文書の見た目は変わらない。
+
+実装へ持ち越す所見:
+
+| 所見 | 扱い |
+| --- | --- |
+| React Compiler は `import()` を中に持つコンポーネントを変換しない | 配布物の `import()` はコンポーネントの外の関数に配置する（モジュール構成設計） |
+| Preflight を参照しないと、パネルの部品の書体がブラウザの既定（明朝）になる | パネルの部品の下地に `font-family: var(--vscode-font-family)` を配置する |
+| Webview の `--vscode-*` を意味のトークンに割り当てる `:root` の変数は、`--vscode-*` と同じ要素で計算される | トークンの 3 ティアは `:root` に配置し、Storybook は `--vscode-*` を `:root` に与えるデコレーターで描く |
+| axe の `color-contrast`（描けない理由の文）と `label-content-name-mismatch`（描いた文書） | 実装で原因の要素を特定して修正する。描いた文書の側なら mdmark 本体の問題として切り出す |
+| `media/test/axe.js` が `.gitignore` に無い | 実装で `vscode/media/` を丸ごと管理の外にする |
+
+最小再現コードの要点（[#343 の diff](https://github.com/shuhei1101/mdmark/pull/343/files)）:
+
+```tsx
+// vscode/src/webview/react/main.tsx（要点）
+const loadMdmark = (url: string): Promise<Mdmark> =>
+  import(/* @vite-ignore */ url); // コンポーネントの外に配置する
+
+useEffect(() => {
+  if (mdmark === undefined) return;
+  const onMessage = (event: MessageEvent<HostMessage>) => {
+    const message = event.data;
+    const element = documentRef.current; // React の外の DOM に mount させる
+    if (message.type === "render" && element !== null) {
+      handleRef.current ??= mdmark.mount(element, { markdown: message.markdown, config: message.config });
+      setStatus(undefined);
+      api.postMessage({ type: "rendered" });
+    }
+  };
+  window.addEventListener("message", onMessage);
+  api.postMessage({ type: "ready" }); // 受ける用意ができてから ready を送信する
+  return () => { window.removeEventListener("message", onMessage); handleRef.current?.destroy(); };
+}, [mdmark]);
+```
+
+```css
+/* vscode/src/webview/react/preview.css（要点） */
+@layer theme, panel-base, utilities;
+@import "tailwindcss/theme.css" layer(theme) theme(static);
+@import "tailwindcss/utilities.css" layer(utilities);
+@theme inline { --color-*: initial; --color-card: var(--mdmark-panel-card); /* … */ }
+```
+
+diff の見どころ: `vscode/vite.config.ts`（ライブラリの出力と React Compiler の logger）、`vscode/tests/integration/poc-react.test.ts`（計算済みのスタイル・CSP・axe の記録）、`poc-results/`（`develop` と React の結果の JSON とログ）。
+
 ## テスト結果
 
 なし
