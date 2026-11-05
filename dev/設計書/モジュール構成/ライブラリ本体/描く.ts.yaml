@@ -263,6 +263,7 @@ functions:
          - 記法の操作を付け（記法の操作を付ける。ツールチップを出す場所は、既定を当てた設定の `tooltips.placement` を渡す。`onColumnsChange` を渡したときはそれも渡す）、外す関数を控える
          - 印の場所に外部ライブラリと拡張を描かせる（印の場所に外部ライブラリを描かせる）。今の世代と片付けた印を見る `isCurrent` を渡し、戻りの Promise は待たない
          - 色分けの対象を色分けする（色分けの対象を色分けする）。既定を当てた設定の `syntax.url`・同じ `isCurrent`・`mount` ごとに 1 つ作るモジュールの控え（`Map`）を渡し、戻りの Promise は待たない
+         - 機能の `html-scripts` がオンなら範囲のスクリプトを動かす（範囲のスクリプトを動かす。既定を当てた設定の `htmlScripts.url`・同じ `isCurrent`・`mount` ごとに 1 つ作る読み込みの控えを渡す）。戻りの Promise は待たず、解決した関数を範囲の `destroy` として控え、描き直す前・`destroy`・同じ要素への 2 回目の `mount` で呼ぶ（解決する前に描き直したときは、解決したときに呼ぶ）
          - ビューとコメントの部品を付け（描いた文書に部品を付ける。機能のオン・オフ・`commentStore`・`docId`・`isCurrent` と、`mount` ごとに 1 つ作る `warned` を渡す）、戻りの `PartsHandle` を控える。前の `PartsHandle` の `detach` は描き直す前に呼ぶ
          - `diffSource` を渡し、差分の出し方が `button` か `open` なら、前の差分を外す関数を呼んでから差分を付け（差分を付ける。`open` には差分の出し方が `open` かを渡す。右側の目次を付けたときは `hideWith` にその要素を渡す。`renderHtml` は、範囲の HTML を `html` のコードブロックに入れ `<!-- html -->` で囲んだ Markdown を、今の設定・`index`・`docId`・`references`・`aliases` で文書を描く処理に通し、得た埋め込んだ HTML の範囲の中身と、置いた要素にその描画の機能のオン・オフと操作できる部品の定義、今の設定の `tooltips.placement` で記法の操作を付ける `attach` を返す関数（`DiffHtmlRenderer`）。文書と同じく図の部品を図の HTML にし、許可の検査とヒントを当て、図の拡大・ツールチップ・操作できる部品も文書と同じく動かす。`html` の機能がオフのときは空の文字と何もしない `attach` を返す）、外す関数を控える
          - `diffSource` を渡し、差分の出し方が `blocks` で、比較元が無く、色分けせずに描いたときは、比べる 2 つの本文を取り出す（`loadDiffPair`。戻りの Promise は待たない）。解決したときに世代が変わっているか片付けていれば何もしない。`pair` で前と後が違えば、後の Markdown をこの手順 4 で描き直す。そのときは本文の HTML を `el` に置く前に、後と前の Markdown を同じ引数で描いた `template` の中身を `colorDiffBlocks` に通し（`segmenter` は `Intl.Segmenter` があれば `ja`・`word` で作る）、後の中身を `el` に置く。色分けして描いたときは取り出し元を呼び直さない。`single` と同じ本文のときは描いたまま残す。`failed` なら本文の列の先頭に `renderNotice({ name: docId, source: "diff-blocks" })` の知らせの枠を置く
@@ -289,6 +290,7 @@ functions:
       - '#functions[highlightCodeBlocks]'
       - dev/設計書/モジュール構成/ライブラリ本体/操作.ts#functions[attachSideToc]
       - dev/設計書/モジュール構成/ライブラリ本体/操作.ts#functions[attachBackToTop]
+      - dev/設計書/モジュール構成/ライブラリ本体/描く.ts#functions[runHtmlScripts]
     refs:
       - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#
     unit_tests:

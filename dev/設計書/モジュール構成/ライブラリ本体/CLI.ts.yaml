@@ -127,6 +127,9 @@ data_models:
       - name: view
         type: boolean
         description: ビューの部品を束ねるか。文書にビューの印があるときだけ `true`（書き出した HTML はコメントの読み書きの関数を持たないため、コメントの部品は束ねない）
+      - name: htmlScripts
+        type: 'Array<{ source: string; code: string }> | undefined'
+        description: '`compileHtmlScripts` の結果。`source` は範囲のコードの文字（開いたときに `mount` が引く鍵）、`code` は CommonJS のコード。範囲が無ければ入れない'
     refs:
       - dev/設計書/インターフェース定義/ライブラリ本体/文書をHTMLに書き出す.ts#constraints[束ねるスクリプト]
     status: planned
@@ -699,7 +702,8 @@ functions:
       1. `viewer` から `startViewer` を import する行を置く
       2. `embeds.view` が `true` なら `view` を名前空間で import する行を置く
       3. `embeds.syntax` があれば、本体と言語ごとに `default` を import する行を置く
-      4. `startViewer(document, { parts, syntax, libraries, extensions })` を呼ぶ行を置く。`libraries` は印の名前ごとの `() => import("{読み先}")`、`extensions` は `embeds.extensions` の順の `() => import("{読み先}")`
+      4. `embeds.htmlScripts` があれば、範囲ごとに `compileHtmlScripts` の CommonJS のコードを `(module, exports, require) => { … }` で包んだ関数を、範囲のコードの文字を鍵にした `htmlScripts` の表に置く行を置く
+      5. `startViewer(document, { parts, syntax, libraries, extensions, htmlScripts })` を呼ぶ行を置く。`libraries` は印の名前ごとの `() => import("{読み先}")`、`extensions` は `embeds.extensions` の順の `() => import("{読み先}")`
     unit_tests:
       - name: test_create_viewer_entry
         case: 正常
@@ -1032,7 +1036,7 @@ functions:
     title: 埋めるものを用意する
     container: src/cli/export.ts
     usecase: 共通
-    summary: 文書の画像を埋め、印のある外部ライブラリと設定の拡張と色分けのモジュールが束ねられることを確かめて読み先を集め、`theme` を読み、索引があれば参照の表を作って、書き出しの中身と警告を返す。設定に `assets.root` があれば設定ファイルのフォルダから解決し、文書ごとに `copyMedia`（書き出しの中で共有する `copied` を渡す）の後に `inlineImages` を呼ぶ。`bundle` では `inlineImages` に共有の表を渡し、埋めた画像を `payload.assets` に入れる。設定の `features` で `images`・`media` をオフにした文書も同じく扱う
+    summary: 文書の画像を埋め、印のある外部ライブラリと設定の拡張と色分けのモジュールが束ねられることを確かめて読み先を集め、`html-scripts` がオンの文書の範囲の `ts`・`js` を `compileHtmlScripts` で変えて `embeds.htmlScripts` に入れ、`theme` を読み、索引があれば参照の表を作って、書き出しの中身と警告を返す。設定に `assets.root` があれば設定ファイルのフォルダから解決し、文書ごとに `copyMedia`（書き出しの中で共有する `copied` を渡す）の後に `inlineImages` を呼ぶ。`bundle` では `inlineImages` に共有の表を渡し、埋めた画像を `payload.assets` に入れる。設定の `features` で `images`・`media` をオフにした文書も同じく扱う
     description: '`export` と `build` に共通の処理。埋める設定には、設定の `features`・`tooltips`・`side-toc`・`colorTheme`・`labels` をあるときだけ写す。`colorTheme` が `COLOR_THEMES` に無い名前のときも写したうえで、警告 `{設定ファイル}: 不明なテーマ名 {名前} です。既定の dev-swiss で描画します。` を 1 件出す。外部ライブラリ・拡張・色分けのモジュールは 1 つずつ `bundleModule` で束ねてみて、束ねられたものだけの読み先（URL はそのまま、パスは設定ファイルのあるフォルダを基準にした絶対パス）を `embeds` に入れる。同じ URL のモジュールは 1 回だけ束ねる。外部ライブラリと拡張で、束ねたコードに `hasDynamicImport` が当たるものは `embeds` に入れたうえで、警告 `{設定ファイル}: 拡張 \`{パス}\` は束ねた後も動的 import() が残り、blob: と動的 import を許さない環境では読み込めません。読む先をリテラルの文字列にしてください。`（外部ライブラリは `外部ライブラリ \`{印の名前}\``）を 1 件出す。文書の色分けの言語を `usedSyntaxLanguages` で拾い、1 つ以上あれば設定の `syntax.url`（無ければ `DEFAULT_SYNTAX_URL`）の `core.min.js` と言語ごとの `languages/{モジュール名}.min.js` を確かめて `embeds.syntax` に入れる（束ねたコードは esbuild の既定で頭の著作権表示を残す）。本体を束ねられなければ言語も確かめず `embeds.syntax` を持たない。言語のモジュールだけ束ねられなければ、その言語を `embeds.syntax.languages` に入れず、警告を 1 件出す（その言語のコードブロックは色分けせずに描く）。埋める設定には `syntax` を写さない（開いたときに外へ要求しない）。設定に `aliases` があれば `loadAliases` の `aliases` を `payload.aliases` に入れ、`issues` は 1 件ずつ警告 `{file}:{where}: {kind}: {message}`（`where` が空なら `{file}: {kind}: {message}`）にする（終了コードは変えない）。警告は `{ファイル}: {内容}` の文字列で、読めない画像・絶対 URL の画像・束ねられないモジュールと拡張・束ねられない色分けのライブラリ（`{設定ファイル}: 色分けのライブラリ \`{URL}\` を束ねられません（{理由}）。\`syntax.url\` を直してください。`）・読めない `theme`・読めない索引の文書を出す'
     kind: 関数
     scope: internal
@@ -2055,35 +2059,73 @@ functions:
     summary: 文書ごとに `findDiagramBlocks` で図の部品の範囲を読み、`readDefinition` で読めない定義を 1 件の `diagram_invalid`、読めたフロー図の定義を `checkFlowLayout` のずれにする
     description: ずれの `file` は文書のパス、`where` は開きの印の行の番号の文字、`message` は `diagram_invalid` なら書き方の警告と同じ文、ほかは図の題（無ければ印の名前）・対象のノードか線の `id`・直し方の 1 文。並びは文書の順、同じ文書の中は行の順
     args:
-    - name: documents
-      type: '{ path: string; markdown: string }[]'
-      required: true
-      description: '`collectCheckDocuments` の文書'
+      - name: documents
+        type: '{ path: string; markdown: string }[]'
+        required: true
+        description: '`collectCheckDocuments` の文書'
     returns:
       type: CheckIssue[]
       description: '`diagram_*` のずれ（無ければ空）'
     callees:
-    - dev/設計書/モジュール構成/ライブラリ本体/図.ts#functions[findDiagramBlocks]
-    - dev/設計書/モジュール構成/ライブラリ本体/図.ts#functions[readDefinition]
-    - dev/設計書/モジュール構成/ライブラリ本体/図.ts#functions[checkFlowLayout]
+      - dev/設計書/モジュール構成/ライブラリ本体/図.ts#functions[findDiagramBlocks]
+      - dev/設計書/モジュール構成/ライブラリ本体/図.ts#functions[readDefinition]
+      - dev/設計書/モジュール構成/ライブラリ本体/図.ts#functions[checkFlowLayout]
     unit_tests:
-    - name: test_check_diagrams
-      case: 正常
-      summary: 読めない定義と配置のずれを返す
-      condition: '`a.md` の 3 行目に読めない `<!-- chart -->` の定義、10 行目に 2 つのノードが重なる `<!-- flow -->` の定義（題 `受付`）'
-      mock: なし
-      expected: '`{ file: "a.md", where: "3", kind: "diagram_invalid" }` と `{ file: "a.md", where: "10", kind: "diagram_node_overlap" }` の 2 件で、2 件目の `message` に `受付` と 2 つのノードの `id` が入る'
-    - name: test_check_diagrams_when_clean
-      case: 正常
-      summary: 整った図と図の無い文書はずれを返さない
-      condition: モックの `inquiry` の定義を持つ文書と、図の無い文書
-      mock: なし
-      expected: 空の配列
+      - name: test_check_diagrams
+        case: 正常
+        summary: 読めない定義と配置のずれを返す
+        condition: '`a.md` の 3 行目に読めない `<!-- chart -->` の定義、10 行目に 2 つのノードが重なる `<!-- flow -->` の定義（題 `受付`）'
+        mock: なし
+        expected: '`{ file: "a.md", where: "3", kind: "diagram_invalid" }` と `{ file: "a.md", where: "10", kind: "diagram_node_overlap" }` の 2 件で、2 件目の `message` に `受付` と 2 つのノードの `id` が入る'
+      - name: test_check_diagrams_when_clean
+        case: 正常
+        summary: 整った図と図の無い文書はずれを返さない
+        condition: モックの `inquiry` の定義を持つ文書と、図の無い文書
+        mock: なし
+        expected: 空の配列
     refs:
-    - dev/設計書/インターフェース定義/ライブラリ本体/設定と索引を点検する.ts#constraints[図の定義の点検]
+      - dev/設計書/インターフェース定義/ライブラリ本体/設定と索引を点検する.ts#constraints[図の定義の点検]
     status: planned
     introduced:
       pr: 275
+  - name: compileHtmlScripts
+    title: 範囲のスクリプトを変える
+    container: src/cli/embed.ts
+    kind: 関数
+    scope: internal
+    is_async: true
+    summary: '文書ごとに `render` を設定と一緒に呼び、返った HTML の `template.mdmark-html-script` のコードを、`ts` は型を外して、esbuild の `transform`（`format: "cjs"`）で CommonJS に変える。同じコードは 1 回だけ変える'
+    description: '`render` は文書の `features` の印を重ねるので、`html-scripts` がオフの文書は `template` を出さず対象にならない。変えられない範囲は返さず、文書のパスと元のエラーの 1 行の警告にする（開いたときは `mount` が表に無い範囲として書き方の警告を出す）'
+    args:
+      - name: options
+        type: '{ documents: Array<{ path: string; markdown: string }>; config: MdmarkConfig }'
+        required: true
+        description: 書き出す文書と設定
+    returns:
+      type: 'Promise<{ scripts: Array<{ source: string; code: string }>; warnings: string[] }>'
+      description: 変えた範囲と警告
+    unit_tests:
+      - name: test_compile_html_scripts
+        case: 正常
+        summary: 範囲の `ts` の型を外して CommonJS にし、同じコードは 1 つにする
+        condition: '`features.html-scripts` が `true` の設定と、同じ `ts` の範囲を持つ 2 つの文書'
+        mock: なし
+        expected: '`scripts` が 1 件で、`code` が `exports.default` への代入を含み、型の注釈を含まない'
+      - name: test_compile_html_scripts_when_off
+        case: 正常
+        summary: '`html-scripts` がオフの文書は変えない'
+        condition: 設定に `html-scripts` を書かない
+        mock: なし
+        expected: '`scripts` が空'
+      - name: test_compile_html_scripts_when_syntax_error
+        case: 異常
+        summary: 変えられない範囲は警告にし、返さない
+        condition: 閉じ括弧の足りない `js` の範囲
+        mock: なし
+        expected: '`scripts` が空で、`warnings` に文書のパスを含む 1 行'
+    status: planned
+    introduced:
+      pr: 303
 constants:
   - name: TEMPLATE_FILES
     title: 雛形の一覧

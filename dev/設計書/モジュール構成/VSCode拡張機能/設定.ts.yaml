@@ -48,7 +48,7 @@ data_models:
     title: mount に渡す設定
     container: vscode/src/config.ts
     usecase: 共通
-    summary: 設定ファイルから取り出した `features`・`libraries`・`side-toc`・`colorTheme`。`render` の `config` と書き出す HTML の `config` になる
+    summary: 設定ファイルから取り出した `features`・`libraries`・`html-scripts`・`side-toc`・`colorTheme`。`render` の `config` と書き出す HTML の `config` になる
     properties:
       - name: features
         type: Record<string, unknown> | undefined
@@ -214,7 +214,7 @@ functions:
     kind: 関数
     container: vscode/src/config.ts
     usecase: 書いた内容をプレビューに映す
-    summary: YAML を `yaml` の `parse` で読み、最上位がマップのときだけ `features`・`libraries`・`side-toc`・`colorTheme` を取り出す。`assets` がマップで `root` が文字列なら `assetsRoot` に入れる
+    summary: YAML を `yaml` の `parse` で読み、最上位がマップのときだけ `features`・`libraries`・`html-scripts`・`side-toc`・`colorTheme` を取り出す。`assets` がマップで `root` が文字列なら `assetsRoot` に入れる
     scope: public
     args:
       - name: text
@@ -316,7 +316,7 @@ functions:
     kind: 関数
     container: vscode/src/config.ts
     usecase: 共通
-    summary: '`http:`・`https:` の URL はそのまま、それ以外の文字列は設定ファイルのフォルダから解決した絶対パスを `toUrl` で URL にして返す'
+    summary: '`libraries` の各値と `html-scripts.url` について、`http:`・`https:` の URL はそのまま、それ以外の文字列は設定ファイルのフォルダから解決した絶対パスを `toUrl` で URL にして返す'
     description: プレビューは `toUrl` に `asWebviewUri` を、書き出しは `pathToFileURL` を渡す。文字列でない値はそのまま渡し、mdmark が無視する
     scope: public
     args:
@@ -343,7 +343,7 @@ functions:
     kind: 関数
     container: vscode/src/config.ts
     usecase: VSCodeでプレビューを開く
-    summary: '`libraries` の値のうち `http:`・`https:` の URL の origin を、重なりを除いて返す（CSP の `script-src` に使う）'
+    summary: '`libraries` の値と `html-scripts.url`（無ければライブラリ本体の既定の URL）のうち `http:`・`https:` の URL の origin を、重なりを除いて返す（CSP の `script-src` に使う）'
     scope: public
     args:
       - name: libraries
