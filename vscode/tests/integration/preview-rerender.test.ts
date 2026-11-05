@@ -226,6 +226,55 @@ suite("プレビューを描き直す", () => {
     assert.ok((await inspect("blockquote")).length > 0);
   });
 
+  // 取り込んでいるファイルを保存すると、読み直した取り込む文書で描き直す
+  test("test_normal_when_include_target_saved", async () => {
+    // 準備
+    await writeFixture(
+      "docs/guide.md",
+      "# 案内\n\n<!-- include: 共通/手順.md#実行 -->\n",
+    );
+    await writeFixture("docs/共通/手順.md", "## 実行\n\n前の段落\n");
+    await writeFixture("docs/other.md", "# 別の文書\n");
+    await openMarkdown("docs/guide.md");
+    await vscode.commands.executeCommand("mdmark.openPreviewToSide");
+    const record = lastPanel();
+    await waitForRendered(record);
+    const before = renders(record).length;
+    // 実行: 取り込んでいないファイルを保存する
+    const other = await vscode.workspace.openTextDocument(
+      vscode.Uri.file(join(workspaceDir(), "docs/other.md")),
+    );
+    await other.save();
+    await sleep(700);
+    // 検証
+    assert.strictEqual(renders(record).length, before);
+    // 実行: 取り込んでいるファイルを書き換えて保存する
+    const procedure = await vscode.workspace.openTextDocument(
+      vscode.Uri.file(join(workspaceDir(), "docs/共通/手順.md")),
+    );
+    const edit = new vscode.WorkspaceEdit();
+    edit.replace(
+      procedure.uri,
+      new vscode.Range(2, 0, 2, "前の段落".length),
+      "書き換えた段落",
+    );
+    await vscode.workspace.applyEdit(edit);
+    await procedure.save();
+    // 検証
+    await waitFor(() => renders(record).length === before + 1, {
+      message: "取り込み先の保存で再描画されない",
+    });
+    assert.strictEqual(
+      renders(record).at(-1)?.includes?.["共通/手順.md"],
+      "## 実行\n\n書き換えた段落\n",
+    );
+    await waitFor(async () =>
+      (await inspect(".mdmark-include")).some((item) =>
+        item.text.includes("書き換えた段落"),
+      ),
+    );
+  });
+
   // 設定ファイルが無ければ設定なしで描き、知らせを出さない
   test("test_normal_when_config_missing", async () => {
     // 準備・実行
