@@ -843,7 +843,7 @@ functions:
     container: src/render/syntax/tree.ts
     kind: 関数
     scope: internal
-    summary: コアルール。`tree` がオンなら、言語 `tree` のコードブロックを、注釈を `state.md.renderInline` で描く `parseTree` で読み、部品『ファイルツリー』（`source` は末尾の改行を除いたコードブロックの中身）にする。直前に `tree` の印があれば `readTreeOptions` で読み、読めた `open` を部品へ渡し、読めない指定の警告をツリーの前に差し込む。罫線を読めなければ警告を差し込み、コードブロックのままにする
+    summary: コアルール。`tree` がオンなら、言語 `tree` のコードブロックを、注釈を `state.md.renderInline` で描く `parseTree` で読み、部品『ファイルツリー』（`source` は末尾の改行を除いたコードブロックの中身）にする。直前に `tree` の印があれば `readTreeOptions` で読み、読めた `open` と `wrap` を部品へ渡し、読めない指定の警告をツリーの前に差し込む。罫線を読めなければ警告を差し込み、コードブロックのままにする
     args:
       - name: state
         type: StateCore
@@ -975,7 +975,7 @@ functions:
     container: src/render/syntax/warnings.ts
     kind: 関数
     scope: internal
-    summary: 部品『書き方の警告』の HTML に `markOwn` を掛けて `html_block` のトークンにし、指定の位置に差し込む
+    summary: 部品『書き方の警告』の HTML に `markOwn` を掛けて `html_block` のトークンにし、トークンの `meta.warning` に警告の種類（図の部品の定義は `diagram_invalid`、ほかは `syntax_warning`）と文を入れて、指定の位置に差し込む。書き方の警告を置く処理は全て `pushWarning` か `warningBlock` を通す（今 `renderSyntaxWarning` を直に呼ぶ `src/libraries.ts`・`src/render/marks.ts`・`src/render/syntax/html.ts` も置き換える）
     args:
       - name: state
         type: StateCore
@@ -1229,14 +1229,14 @@ functions:
     container: src/render/syntax/code-blocks.ts
     kind: 関数
     scope: internal
-    summary: '`code` の印の引数を、題・行番号の有無・強調する行・最初から畳む行に読む。知らないキー・指定、読めない `highlight=`・`fold=` の番号、コードブロックの行の数を超える行の番号は、当てずに警告にする。`fold=` は `highlight=` と同じ書き方で読み取る'
+    summary: '`code` の印の引数を、題・行番号の有無・強調する行・最初から畳む行・折り返すか（`wrap`。値を持つ `wrap=` は当てずに警告にする）に読む。知らないキー・指定、読めない `highlight=`・`fold=` の番号、コードブロックの行の数を超える行の番号は、当てずに警告にする。`fold=` は `highlight=` と同じ書き方で読み取る'
     args:
       - name: options
         type: '{ args: MdmarkMarkArgs; lineCount: number }'
         required: true
         description: '`args` は `parseMarkArgs` が読んだ印の引数、`lineCount` は印を外した後のコードブロックの行の数'
     returns:
-      type: '{ title: string; lineNumbers: boolean; highlights: Set<number>; folds: Set<number>; warnings: WarningItem[] }'
+      type: '{ title: string; lineNumbers: boolean; highlights: Set<number>; folds: Set<number>; wrap: boolean; warnings: WarningItem[] }'
       description: 題（無ければ空）・行番号を出すか・強調する行の番号（1 から）・最初から畳む行の番号（1 から）・読めなかった指定
     unit_tests:
       - name: test_read_code_spec
@@ -1263,6 +1263,12 @@ functions:
         condition: '`fold=2,4-5,99`、`lineCount` が 6'
         mock: なし
         expected: '`folds` が 2・4・5、`warnings` に `99` の項目がある'
+      - name: test_read_code_spec_when_wrap
+        case: 正常
+        summary: wrap を読み、値を持つ wrap= を警告にする
+        condition: '`lines wrap` と `wrap=yes`、`lineCount` が 3'
+        mock: なし
+        expected: 1 つ目は `wrap` が `true` で `warnings` が空。2 つ目は `wrap` が `false` で、`warnings` に `wrap=yes` と `wrap` と書く直し方の項目がある
   - name: readLineMarks
     title: コードの行の印を読む
     container: src/render/syntax/code-blocks.ts
@@ -1307,7 +1313,7 @@ functions:
     container: src/render/syntax/code-blocks.ts
     kind: 関数
     scope: internal
-    summary: 'コアルール。残っている `fence` のトークンごとに、情報文字列を `splitInfoString` で言語とファイル名に分けてから次を行う。`code` がオンのときは `readLineMarks` で行を読み、直前のトークンが `code` の印なら `readCodeSpec` で指定を読み、全てのコードブロックを部品『コードブロック』（言語・ファイル名・題・行番号・行と、`syntax` がオンなら言語を `syntaxLanguageOf` で引いた色分けの言語。`copyState` は渡さない）の `ownBlock` に置き換える。帯の右端のコピーのボタンは `mount` が付ける。`code` がオフのときは行の印を外さず中身の行をそのまま使い、`syntax` がオンで色分けの言語を持つコードブロックだけを帯を持たない部品（`bar: false`）に置き換え、それ以外は `fence` のまま情報文字列の最初の語を言語に書き換える（`ts:app.ts` の `code` の class を `language-ts` にし、`:` の前が空なら最初の語を外す）。`code` がオンのときは、`readFolds` で行にインデントのレベル・畳む行の数・`fold=` の畳んだ状態を付けてから部品へ渡す。`readCodeSpec` と `readLineMarks` と `readFolds` の読めない指定はコードブロックの前に警告を差し込む。後ろが `fence` でない `code` の印の場所にも警告を差し込む（`code` がオンのときだけ）。言語 `tree`・図の部品・埋め込んだ HTML のコードブロックは、先のコアルールが最初の語との一致で `fence` でなくしているため当たらず、`tree:src` のように `:ファイル名` を付けたものはここで普通のコードブロックとして描く'
+    summary: 'コアルール。残っている `fence` のトークンごとに、情報文字列を `splitInfoString` で言語とファイル名に分けてから次を行う。`code` がオンのときは `readLineMarks` で行を読み、直前のトークンが `code` の印なら `readCodeSpec` で指定を読み、全てのコードブロックを部品『コードブロック』（言語・ファイル名・題・行番号・`wrap`・行と、`syntax` がオンなら言語を `syntaxLanguageOf` で引いた色分けの言語。`copyState` は渡さない）の `ownBlock` に置き換える。帯の右端のコピーのボタンは `mount` が付ける。`code` がオフのときは行の印を外さず中身の行をそのまま使い、`syntax` がオンで色分けの言語を持つコードブロックだけを帯を持たない部品（`bar: false`）に置き換え、それ以外は `fence` のまま情報文字列の最初の語を言語に書き換える（`ts:app.ts` の `code` の class を `language-ts` にし、`:` の前が空なら最初の語を外す）。`code` がオンのときは、`readFolds` で行にインデントのレベル・畳む行の数・`fold=` の畳んだ状態を付けてから部品へ渡す。`readCodeSpec` と `readLineMarks` と `readFolds` の読めない指定はコードブロックの前に警告を差し込む。後ろが `fence` でない `code` の印の場所にも警告を差し込む（`code` がオンのときだけ）。言語 `tree`・図の部品・埋め込んだ HTML のコードブロックは、先のコアルールが最初の語との一致で `fence` でなくしているため当たらず、`tree:src` のように `:ファイル名` を付けたものはここで普通のコードブロックとして描く'
     args:
       - name: state
         type: StateCore
@@ -1560,7 +1566,7 @@ functions:
   - name: readTreeOptions
     title: ファイルツリーの印の指定を読む
     container: src/render/syntax/tree.ts
-    summary: ファイルツリーの印の引数から `open=` を読み、読めない指定を 1 つの警告にまとめる
+    summary: ファイルツリーの印の引数から `open=` と `wrap` を読み（値を持つ `wrap=` は当てずに警告にする）、読めない指定を 1 つの警告にまとめる
     description: '`open=` の値が `all` か 1 以上の整数ならその文字を `open` にする。それ以外の `open=` の値（項目の本文に書ける値 `all`・階層の数）・`open=` 以外のキー・`キー=値` の形でない指定を、画面設計『文書』の「ファイルツリーの印の読めない指定」の項目にして 1 つの警告にまとめる'
     kind: 関数
     scope: internal
@@ -1570,7 +1576,7 @@ functions:
         required: true
         description: ファイルツリーの印
     returns:
-      type: '{ open?: string; warning?: SyntaxWarning }'
+      type: '{ open?: string; wrap: boolean; warning?: SyntaxWarning }'
       description: 開く階層と、読めない指定があれば書き方の警告
     unit_tests:
       - name: test_read_tree_options
@@ -1585,6 +1591,12 @@ functions:
         condition: '`<!-- tree: open=deep depth=2 closed -->` と `<!-- tree: open=0 -->` をそれぞれ読む'
         mock: なし
         expected: どちらも `open` が無い。1 つ目の `warning.items` の `label` が `open=deep`・`depth=`・`closed` の 3 つで、`open=deep` の本文に `all` と階層の数がある。2 つ目の `label` が `open=0`
+      - name: test_read_tree_options_when_wrap
+        case: 正常
+        summary: open= と並べた wrap を読む
+        condition: '`<!-- tree: open=all wrap -->` と `<!-- tree: wrap=1 -->` をそれぞれ読む'
+        mock: なし
+        expected: 1 つ目は `open` が `all`・`wrap` が `true` で `warning` が無い。2 つ目は `wrap` が `false` で、`warning.items` の `label` が `wrap=1`
     status: planned
     introduced:
       pr: 225
@@ -2430,6 +2442,32 @@ functions:
     returns:
       type: Token[]
       description: 定義の囲みの外のトークン（同じトークンを指す）
+  - name: collectWarningsRule
+    title: 書き方の警告を集める
+    container: src/render/syntax/warnings.ts
+    kind: 関数
+    scope: internal
+    summary: markdown-it のコアルール（最後に走る）。`meta.warning` を持つトークンごとに、後ろで最初に `map` を持つトークンの開始の行（無ければ前で最後に `map` を持つトークンの終わりの行）を 1 からの行番号にし、`env.warnings` に `CollectedWarning` を足す
+    args:
+      - name: state
+        type: StateCore
+        required: true
+        description: markdown-it のコアの状態
+    returns:
+      type: void
+      description: '`env.warnings` を書き換える'
+    refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/設定と索引を点検する.ts#constraints[記法の点検の場所]
+    unit_tests:
+      - name: test_collect_warnings_rule
+        case: 正常
+        summary: 警告の後ろのブロックの行を場所にする
+        condition: '3 行目の `<!-- code: color=red -->` と直後のコードブロック、文書の末尾の、直後にコードブロックの無い `<!-- code: title=a -->`'
+        mock: なし
+        expected: '`env.warnings` が 2 件で、1 件目の `line` がコードブロックの開始の行、2 件目の `line` がその前のブロックの終わりの行'
+    status: planned
+    introduced:
+      pr: 328
 notes:
   コアルールの順: 描画の `createParser` が登録する。印 → 機能の重ね合わせ → 見出し → 用語集の表 → 行の詳細 → ビュー → 表 → タブ → ステップ → 注意書き → ファイルツリー → バッジ → 本文の文字の色 → 図の部品 → 埋め込んだ HTML → コードブロック → 画像の属性と種類 → 図表の番号 → ギャラリー → 画像と動画と音声の図 → カード → 用語の下線 → 節 → 目次 → 関連文書の一覧 → タスクリスト → www の自動リンク → 残った印を取り除く。行の詳細は表の囲みより前、節は記法の警告を差し込んだ後、目次は見出しの ID を付けた後。埋め込んだ HTML は用語の下線より前に置き、`html_block` にした中身を用語の下線が重ねて照合しないようにする。画像の属性は図表の番号より前に読み、図表の番号がギャラリーに番号を渡してからギャラリーを囲む。残った画像だけの段落は、その後に図にする
   部品の差し込み方: 中身を持つ部品（節・タブ・注意書き・行の詳細・図表の番号・表）は、中身の代わりに `SLOT_MARKER` を渡して HTML を作り、`markOwn` を掛けてから `SLOT_MARKER` の前後で分け、開きと閉じの `html_block` のトークンで中身のトークンを挟む。中身の HTML には `markOwn` を掛けない。見出し・表など Markdown から作ったトークンに付ける記法の属性は、同じトークンに `data-mdmark-own` も付ける。埋め込んだ HTML は例外で、`sanitizeEmbedded` で先に落とした中身にも `markOwn` を掛ける

@@ -166,8 +166,8 @@ constants:
         value: config（文字列）
         description: '`mdmark build` と同じ処理で設定の `build` の文書を 1 枚にまとめ、`out`・文書の数 `docs`・`warnings` を返す'
       - key: check
-        value: config・base（文字列）
-        description: '`mdmark check` と同じ点検をし、ずれの一覧 `issues`（file・where・kind・message）を返す。`base` を渡すと `mdmark check --base` と同じ `change_together` の直し忘れも返す。点検は書き換えない。`annotations` は `readOnlyHint: true`'
+        value: config・base・text・file・key（文字列）
+        description: '`mdmark check` と同じ点検をし、ずれの一覧 `issues`（file・where・kind・message）を返す。`base` を渡すと `mdmark check --base` と同じ `change_together` の直し忘れも返す。`text` か `file`・`key` を渡すと `mdmark check --text`・`--file --key` と同じく、渡した Markdown を描いたときの書き方の警告を返す（YAML のキーへ記法を書き込んだ後に呼ぶ）。点検は書き換えない。`annotations` は `readOnlyHint: true`'
     status: planned
     introduced:
       pr: 72
@@ -531,7 +531,7 @@ functions:
     is_async: true
     args:
       - name: args
-        type: '{ config?: string; base?: string }'
+        type: '{ config?: string; base?: string; text?: string; file?: string; key?: string }'
         required: true
         description: 検査を通った引数
       - name: context
@@ -542,8 +542,10 @@ functions:
       type: Promise<ToolOutput>
       description: '`json` が `{ issues }`（`CheckIssue` の並び。ずれがあっても誤りにしない）'
     process: |-
-      1. `projectDir` から設定ファイルを探す（設定ファイルを探す）
-      2. `base` を渡してずれを集め、`issues` で返す（ずれを集める）。比べる基準を引けない `CliError` は `callTool` がその文のツールのエラーにする
+      1. `text` か `file` を渡したときは、`runCheck` と同じ引数の組を確かめ、`checkMarkdownSource`（`cwd` は `projectDir`）のずれを `issues` で返す（記法を点検する）。以降の手順は行わない
+
+      2. `projectDir` から設定ファイルを探す（設定ファイルを探す）
+      3. `base` を渡してずれを集め、`issues` で返す（ずれを集める）。比べる基準を引けない `CliError` は `callTool` がその文のツールのエラーにする
     unit_tests:
       - name: test_run_check_tool
         case: 正常
@@ -563,9 +565,16 @@ functions:
         condition: '`test_run_check_tool_when_base_given` と同じリポジトリ、`{ base: "no-such-ref" }`'
         mock: なし（一時フォルダの git のリポジトリ）
         expected: '`CliError` を投げ、メッセージが `mdmark check --base no-such-ref` が標準エラーに出す文と等しい'
+      - case: 正常
+        condition: 'インターフェース定義『点検する』の「正常系（文字列と YAML のキーを渡す）」の `projectDir`。`{ text }` と `{ file: "records.yaml", key: "items[0].body" }` の 2 回'
+        expected: '1 回目の `json.issues` が `{ file: "-", where: "3", kind: "unknown_mark" }`、2 回目が `{ file: "records.yaml", where: "8", kind: "unknown_mark" }` の 1 件'
+        mock: なし（一時フォルダ）
+        name: test_run_check_tool_when_text_and_key
+        summary: text と file・key で mdmark check と同じずれを返す
     callees:
       - dev/設計書/モジュール構成/ライブラリ本体/CLI.ts#functions[findConfigFile]
       - dev/設計書/モジュール構成/ライブラリ本体/CLI.ts#functions[collectCheckIssues]
+      - dev/設計書/モジュール構成/ライブラリ本体/CLI.ts#functions[checkMarkdownSource]
     refs:
       - dev/設計書/インターフェース定義/ClaudeCodeプラグイン/点検する.ts#
     status: planned
