@@ -10325,3 +10325,52 @@ test("test_normal_when_wrap", async () => {
     await page.viewport(original.width, original.height);
   }
 });
+
+/** 語をタッチでタップする。`pointerenter`・`pointerleave` は泡立たないため、ブラウザと同じく語の枠と語の両方に送る（既にフォーカスを持つ語では `focus` は発火しない） */
+function tapTerm(term: HTMLElement): void {
+  const wrap = term.closest<HTMLElement>(".mdmark-term-wrap");
+  if (!wrap) {
+    throw new Error("語の枠が無い");
+  }
+  firePointer(wrap, "pointerenter", "touch");
+  firePointer(term, "pointerenter", "touch");
+  firePointer(term, "pointerdown", "touch");
+  firePointer(term, "pointerup", "touch");
+  firePointer(term, "pointerleave", "touch");
+  firePointer(wrap, "pointerleave", "touch");
+  term.focus();
+}
+
+// タッチのタップで用語のツールチップを開閉し、ツールチップと語の外の pointerdown で閉じる（正常系）
+test("test_normal_when_glossary_touch", async () => {
+  // 準備
+  await userEvent.unhover(document.body);
+  const el = createElement();
+  await mountTracked(el, {
+    markdown: "手元で単体テストを流す。\n\n用語を含まない段落。\n",
+    aliases: [UNIT_TEST_ALIAS],
+  });
+  const term = find<HTMLElement>(el, ".mdmark-term");
+  const wrap = find<HTMLElement>(el, ".mdmark-term-wrap");
+  const button = find<HTMLButtonElement>(wrap, "button.mdmark-term-tip-copy");
+  const outside = find<HTMLElement>(el, "p:last-of-type");
+  // 実行・検証: 閉じた語への 1 回のタップで開く
+  tapTerm(term);
+  expect(wrap.classList.contains("is-open")).toBe(true);
+  // コピーのボタンのタップ（フォーカスがボタンへ移る）では閉じない
+  firePointer(button, "pointerdown", "touch");
+  button.focus();
+  expect(wrap.classList.contains("is-open")).toBe(true);
+  // mouse の pointerdown では切り替えない
+  firePointer(term, "pointerdown", "mouse");
+  expect(wrap.classList.contains("is-open")).toBe(true);
+  // フォーカスがボタンにある状態で開いている語をタップすると閉じる（語の focusin が pointerdown の後に発火する）
+  tapTerm(term);
+  await new Promise((resolve) => setTimeout(resolve, 400));
+  expect(wrap.classList.contains("is-open")).toBe(false);
+  // 語のタップで開き直し、2 つ目の段落の pointerdown だけで閉じる
+  tapTerm(term);
+  expect(wrap.classList.contains("is-open")).toBe(true);
+  firePointer(outside, "pointerdown", "touch");
+  expect(wrap.classList.contains("is-open")).toBe(false);
+});
