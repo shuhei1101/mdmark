@@ -1046,8 +1046,17 @@ function mergeTableCells(options: {
   }
   const rows = rowCellsOf(tokens, tableOpen);
   if (spec.headRows > 1) {
-    // 本文のセルの列名を、見出しの最下段の文字に替える
-    const labels = headersOf(tokens, tableOpen);
+    // 本文のセルの列名を、見出しの最下段の文字（上と結合した `^^` は上のセルの文字）に替える
+    const labels = headLabelsOf(
+      rowCellsOf(tokens, tableOpen)
+        .filter((row) => row.head)
+        .map((row) =>
+          row.cells.map((cell) => {
+            const inline = tokens[cell.open + 1];
+            return inline?.type === "inline" ? textOf(inline) : "";
+          }),
+        ),
+    );
     for (const row of rows.filter((r) => !r.head)) {
       for (const [column, cell] of row.cells.entries()) {
         tokens[cell.open]?.attrSet("data-label", labels[column] ?? "");
@@ -1135,6 +1144,20 @@ function mergeTableCells(options: {
   return { mergeColumns: plan.mergeColumns, warnings: plan.warnings };
 }
 
+/** 見出しの行のセルの文字から、最下段の列ごとの列名を返す。上と結合した `^^` は上のセルの文字にする */
+function headLabelsOf(head: string[][]): string[] {
+  const bottom = head.length - 1;
+  return (head[bottom] ?? []).map((text, column) => {
+    let row = bottom;
+    let label = text.trim();
+    while (label === MERGE_UP && row > 0) {
+      row -= 1;
+      label = (head[row]?.[column] ?? "").trim();
+    }
+    return label;
+  });
+}
+
 /** 表の印の範囲を集める */
 function collectRanges(tokens: Token[]): TableRange[] {
   const ranges: TableRange[] = [];
@@ -1208,9 +1231,12 @@ export function decorateTables(state: StateCore): void {
     let mergeColumns: number[] = [];
     if (range && !viewSpec) {
       if (spec.headRows > 1) {
-        // 列名は見出しの最下段の行から読む
-        const bottom = bodyCellsOf(tokens, index)[spec.headRows - 2] ?? [];
-        spec = readTableSpec(range.mark.args, bottom, rowCount);
+        // 列名は見出しの最下段の行から読む（上と結合した `^^` は上のセルの文字）
+        const head = [
+          headersOf(tokens, index),
+          ...bodyCellsOf(tokens, index).slice(0, spec.headRows - 1),
+        ];
+        spec = readTableSpec(range.mark.args, headLabelsOf(head), rowCount);
       }
       const merged = mergeTableCells({
         state,

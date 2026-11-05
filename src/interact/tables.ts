@@ -11,6 +11,7 @@ import {
   renderTableTools,
   renderTotalRows,
   type TableTotal,
+  updateSettingsToggle,
 } from "../parts/table.ts";
 import {
   bottomHeadCells,
@@ -32,6 +33,7 @@ import {
   tableToTsv,
 } from "../table-logic.ts";
 import { COPIED_NOTICE_MS, copyText } from "./clipboard.ts";
+import { attachTableSettings, reorderRowCells } from "./table-settings.ts";
 import { cellValue, visibleText } from "./text.ts";
 
 export { compareCells, type FilterValue, matchesFilter };
@@ -182,6 +184,23 @@ function columnHeadsOf(table: HTMLTableElement): HTMLTableCellElement[] {
   );
 }
 
+/** 描いた直後に留める列の数: `data-pin` の位置 + 1、無ければ行見出しの列まで（行見出しが無ければ先頭の列）。`pin` の無い表は 0 */
+function initialPinnedCount(options: {
+  wrapper: HTMLElement;
+  features: string[];
+  originalRows: HTMLTableRowElement[];
+}): number {
+  const { wrapper, features, originalRows } = options;
+  if (!features.includes("pin")) {
+    return 0;
+  }
+  const pinAt = Number.parseInt(wrapper.dataset.pin ?? "", 10);
+  const rowHeadCount = [...(originalRows[0]?.cells ?? [])].findIndex(
+    (cell) => !(cell.tagName === "TH" && cell.scope === "row"),
+  );
+  return Number.isNaN(pinAt) ? Math.max(1, rowHeadCount) : pinAt + 1;
+}
+
 /** 表 1 つに、並べ替え・ピン止め・絞り込みを付け、外す関数を返す */
 function attachTable(
   wrapper: HTMLElement,
@@ -203,6 +222,25 @@ function attachTable(
   const mergeColumns = readColumnList(wrapper.dataset.mergeColumns);
   const tbody = table.tBodies[0];
   const originalRows = bodyRows(table);
+  // 列を並べ替えてもセルの元の列の位置で引けるよう、各セルに描いたときの列の位置を持たせる
+  for (const row of originalRows) {
+    [...row.cells].forEach((cell, column) => {
+      cell.dataset.col = String(column);
+    });
+  }
+  for (const [cell, column] of headColumns) {
+    cell.dataset.col = String(column);
+  }
+  /** 行の元の列の位置のセル（並べ替えた後もセルの `data-col` で引く） */
+  const cellAt = (
+    row: HTMLTableRowElement,
+    column: number,
+  ): HTMLTableCellElement | undefined =>
+    row.querySelector<HTMLTableCellElement>(
+      `:scope > [data-col="${column}"]`,
+    ) ??
+    row.cells[column] ??
+    undefined;
   const originalHeads = headCells.map((cell) => cell.innerHTML);
   // 見出しのボタンを置く前の列名（列の表示のメニューとコピーの見出しの行に使う）
   const labels = headCells.map((cell) => visibleText(cell));
@@ -216,13 +254,13 @@ function attachTable(
   const cleanups: Array<() => void> = [];
   /** 行の指定した列のセルの値（`data-value` があればその値） */
   const cellText = (row: HTMLTableRowElement, column: number): string => {
-    const cell = row.cells[column];
+    const cell = cellAt(row, column);
     return cell ? cellValue(cell) : "";
   };
   // 結合する列のセルの、描いたときの結合（外すときに戻す）
   const originalMerges = originalRows.flatMap((row) =>
     mergeColumns.flatMap((column) => {
-      const cell = row.cells[column];
+      const cell = cellAt(row, column);
       return cell
         ? [
             {
@@ -249,14 +287,14 @@ function attachTable(
     });
     for (const row of originalRows) {
       for (const column of mergeColumns) {
-        const cell = row.cells[column];
+        const cell = cellAt(row, column);
         cell?.removeAttribute("rowspan");
         cell?.classList.remove("is-merged");
       }
     }
     shownRows.forEach((row, position) => {
       mergeColumns.forEach((column, index) => {
-        const cell = row.cells[column];
+        const cell = cellAt(row, column);
         const span = spans[position]?.[index] ?? 1;
         if (!cell) {
           return;
@@ -318,7 +356,19 @@ function attachTable(
     tbody?.append(empty);
   }
 
-  // ─── 表の上の帯と列の表示のメニュー ───
+  // ─── 表の上の帯とテーブル設定のパネル ───
+  // 今の列の順（元の列の位置の並び）。覚えず、描き直すと Markdown に記載した順に戻る
+  let order = labels.map((_, column) => column);
+  const groups = headCells.map((cell) => cell.dataset.group);
+  const groupLabels: Record<string, string> = {};
+  for (const [cell, column] of headColumns) {
+    const row = (cell.parentElement as HTMLTableRowElement | null)
+      ?.sectionRowIndex;
+    const key = `${row}:${column}`;
+    if (groups.includes(key)) {
+      groupLabels[key] = visibleText(cell);
+    }
+  }
   const barParts = renderTableBar({
     id,
     features,
@@ -327,6 +377,14 @@ function attachTable(
     total: originalRows.length,
     hiddenColumns: [...hiddenColumns],
     totals: totalSpecs.map((total) => total.calc),
+    order,
+    groups,
+    groupLabels,
+    // 一覧を分けるのは `pin=` で留めた列だけ（既定の先頭の列の留めは、表がはみ出す間だけ当たる）
+    pinned:
+      wrapper.dataset.pin === undefined
+        ? 0
+        : initialPinnedCount({ wrapper, features, originalRows }),
   });
   if (barParts.bar) {
     table.insertAdjacentHTML("beforebegin", barParts.bar);
@@ -345,7 +403,7 @@ function attachTable(
       }
     });
   }
-  const menu = ownElement<HTMLElement>(wrapper, ".mdmark-columns-menu");
+  const menu = ownElement<HTMLElement>(wrapper, ".mdmark-table-settings");
   const totalsMenu = ownElement<HTMLElement>(wrapper, ".mdmark-totals-menu");
   const copyMenu = ownElement<HTMLElement>(wrapper, ".mdmark-copy-menu");
   /** 帯の読み上げの要素に知らせを入れる */
@@ -503,7 +561,7 @@ function attachTable(
     const rect = button.getBoundingClientRect();
     // 帯のメニューはボタンの左端に、絞り込みのドロワーはボタンの右端に揃える
     const start =
-      drawer.classList.contains("mdmark-columns-menu") ||
+      drawer.classList.contains("mdmark-table-settings") ||
       drawer.classList.contains("mdmark-table-menu")
         ? rect.left
         : rect.right - drawer.offsetWidth;
@@ -579,7 +637,9 @@ function attachTable(
     button.setAttribute("aria-expanded", "true");
     placeDrawer(drawer, button);
     drawer
-      .querySelector<HTMLElement>("input:not(:disabled), .mdmark-copy-format")
+      .querySelector<HTMLElement>(
+        ".mdmark-table-settings-grip:not(:disabled), .mdmark-table-settings-eye:not(:disabled), input:not(:disabled), .mdmark-copy-format",
+      )
       ?.focus({ preventScroll: true });
     openState = { drawer, button };
     document.addEventListener("pointerdown", onPointerDown);
@@ -590,15 +650,7 @@ function attachTable(
 
   // ─── ピン止め ───
   // 留める列の数: `data-pin` の位置 + 1、無ければ行見出しの列まで（行見出しが無ければ先頭の列）。表がはみ出す間だけ当てる
-  const pinAt = Number.parseInt(wrapper.dataset.pin ?? "", 10);
-  const rowHeadCount = [...(originalRows[0]?.cells ?? [])].findIndex(
-    (cell) => !(cell.tagName === "TH" && cell.scope === "row"),
-  );
-  let pinned = features.includes("pin")
-    ? Number.isNaN(pinAt)
-      ? Math.max(1, rowHeadCount)
-      : pinAt + 1
-    : 0;
+  let pinned = initialPinnedCount({ wrapper, features, originalRows });
   /** 表が横にはみ出しているか */
   const isOverflowing = (): boolean =>
     table.scrollWidth > table.clientWidth ||
@@ -706,12 +758,17 @@ function attachTable(
     // 列の揃えは、本文のセルから写す
     for (const footRow of table.tFoot?.rows ?? []) {
       [...footRow.cells].forEach((cell, index) => {
-        for (const name of originalRows[0]?.cells[index]?.classList ?? []) {
+        cell.dataset.col = String(index);
+        const source = originalRows[0]
+          ? cellAt(originalRows[0], index)
+          : undefined;
+        for (const name of source?.classList ?? []) {
           if (name.startsWith("mdmark-align-")) {
             cell.classList.add(name);
           }
         }
       });
+      reorderRowCells(footRow, order);
     }
     if (pinned > 0) {
       pinColumns(pinned);
@@ -756,7 +813,8 @@ function attachTable(
   let unfoldRows: Array<() => void> = [];
   /** 表示している最終列の位置 */
   const lastVisibleColumn = (): number => {
-    for (let column = headCells.length - 1; column > 0; column -= 1) {
+    for (let index = order.length - 1; index > 0; index -= 1) {
+      const column = order[index] ?? 0;
       if (!hiddenColumns.has(column)) {
         return column;
       }
@@ -766,7 +824,7 @@ function attachTable(
   /** 最終列のセルのどれかが 1 行に収まらないか */
   const lastColumnWraps = (column: number): boolean =>
     originalRows.some((row) => {
-      const cell = row.cells[column];
+      const cell = cellAt(row, column);
       if (!cell || cell.hidden) {
         return false;
       }
@@ -788,13 +846,13 @@ function attachTable(
     const name = labels[column] ?? "";
     for (const cell of [
       headCells[column],
-      ...originalRows.map((row) => row.cells[column]),
+      ...originalRows.map((row) => cellAt(row, column)),
     ]) {
       cell?.classList.add("mdmark-fold-col");
     }
     originalRows.forEach((row, index) => {
-      const lastCell = row.cells[column];
-      const firstCell = row.cells[0];
+      const lastCell = cellAt(row, column);
+      const firstCell = cellAt(row, 0);
       if (!lastCell || !firstCell) {
         return;
       }
@@ -888,26 +946,33 @@ function attachTable(
         continue;
       }
       [...row.cells].forEach((cell, index) => {
-        cell.hidden = hiddenColumns.has(index);
+        const column =
+          cell.dataset.col === undefined ? index : Number(cell.dataset.col);
+        cell.hidden = hiddenColumns.has(column);
       });
     }
     applyMerges();
-    for (const input of menu?.querySelectorAll<HTMLInputElement>(
-      ".mdmark-columns-options input",
+    for (const eye of menu?.querySelectorAll<HTMLButtonElement>(
+      ".mdmark-table-settings-eye",
     ) ?? []) {
-      const column = Number(input.value);
-      input.checked = !hiddenColumns.has(column);
-      // 先頭の列は隠せない
-      input.disabled = column === 0;
+      const item = eye.closest<HTMLElement>(".mdmark-table-settings-item");
+      const column = Number(item?.dataset.column);
+      const hidden = hiddenColumns.has(column);
+      eye.setAttribute("aria-pressed", String(hidden));
+      eye.setAttribute(
+        "aria-label",
+        `「${item?.dataset.name ?? ""}」を${hidden ? "表示" : "隠す"}`,
+      );
+      eye.innerHTML = iconSvg(hidden ? "eye-off" : "eye");
+      // Markdown に記載した先頭の列は隠せない
+      eye.disabled = column === 0;
     }
-    const toggle = ownElement<HTMLElement>(wrapper, ".mdmark-columns-toggle");
-    toggle?.classList.toggle("is-active", hiddenColumns.size > 0);
-    const status = toggle?.querySelector(".mdmark-visually-hidden");
-    if (status) {
-      status.textContent =
-        hiddenColumns.size > 0
-          ? `（${hiddenColumns.size} 列を隠しています）`
-          : "";
+    const toggle = ownElement<HTMLElement>(
+      wrapper,
+      ".mdmark-table-settings-toggle",
+    );
+    if (toggle) {
+      updateSettingsToggle(toggle, hiddenColumns.size);
     }
     renderTotals();
     if (pinned > 0) {
@@ -954,9 +1019,7 @@ function attachTable(
   const copyTable = async (format: CopyFormat): Promise<void> => {
     clearTimeout(copyTimer);
     closeCopyPanel(false);
-    const columns = labels.flatMap((_, column) =>
-      hiddenColumns.has(column) ? [] : [column],
-    );
+    const columns = order.filter((column) => !hiddenColumns.has(column));
     const rows = [
       columns.map((column) => labels[column] ?? ""),
       ...bodyRows(table)
@@ -1078,8 +1141,10 @@ function attachTable(
     const filter = target.closest<HTMLElement>(".mdmark-filter");
     const pin = target.closest<HTMLElement>(".mdmark-pin");
     const clear = target.closest<HTMLElement>(".mdmark-filter-clear");
-    const columnsToggle = target.closest<HTMLElement>(".mdmark-columns-toggle");
-    const columnsReset = target.closest<HTMLElement>(".mdmark-columns-reset");
+    const columnsToggle = target.closest<HTMLElement>(
+      ".mdmark-table-settings-toggle",
+    );
+    const eye = target.closest<HTMLButtonElement>(".mdmark-table-settings-eye");
     const copy = target.closest<HTMLElement>(".mdmark-copy");
     const copyFormat = target.closest<HTMLElement>(".mdmark-copy-format");
     const totalsToggle = target.closest<HTMLElement>(".mdmark-totals-toggle");
@@ -1114,13 +1179,18 @@ function attachTable(
       } else {
         closeDrawer(false);
       }
-    } else if (columnsReset) {
-      hiddenColumns.clear();
-      for (const column of readColumnList(wrapper.dataset.hide)) {
+    } else if (eye && !eye.disabled) {
+      const column = Number(
+        eye.closest<HTMLElement>(".mdmark-table-settings-item")?.dataset.column,
+      );
+      if (hiddenColumns.has(column)) {
+        hiddenColumns.delete(column);
+      } else {
         hiddenColumns.add(column);
       }
       applyColumns();
       notifyHidden();
+      eye.focus();
     } else if (totalsToggle && totalsMenu) {
       toggleMenu(totalsMenu, totalsToggle);
     } else if (copy && copyMenu) {
@@ -1171,7 +1241,7 @@ function attachTable(
         .map((column) => labels[column] ?? ""),
     );
   };
-  /** 列の表示のメニューのチェックボックスに合わせて列を隠す・出し、集計のメニューのチェックボックスに合わせて計算の行を出す・隠す */
+  /** 集計のメニューのチェックボックスに合わせて計算の行を出す・隠す */
   const onChange = (event: Event): void => {
     const input = event.target as HTMLInputElement;
     if (input.closest(".mdmark-table") !== wrapper) {
@@ -1179,19 +1249,7 @@ function attachTable(
     }
     if (input.closest(".mdmark-totals-options")) {
       toggleTotal(input.value as TotalCalc, input.checked);
-      return;
     }
-    if (!input.closest(".mdmark-columns-options")) {
-      return;
-    }
-    const column = Number(input.value);
-    if (input.checked) {
-      hiddenColumns.delete(column);
-    } else {
-      hiddenColumns.add(column);
-    }
-    applyColumns();
-    notifyHidden();
   };
   const onInput = (event: Event): void => {
     const input = event.target as HTMLInputElement;
@@ -1205,6 +1263,22 @@ function attachTable(
       applyFilters();
     }
   };
+  if (features.includes("reorder")) {
+    cleanups.push(
+      attachTableSettings({
+        wrapper,
+        table,
+        onReorder: (next) => {
+          order = next;
+          applyMerges();
+          if (pinned > 0) {
+            pinColumns(pinned);
+          }
+          updateFold();
+        },
+      }),
+    );
+  }
   wrapper.addEventListener("click", onClick);
   wrapper.addEventListener("keydown", onPanelKeyDown);
   wrapper.addEventListener("input", onInput);
