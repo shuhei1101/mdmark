@@ -15,18 +15,21 @@ const contentEdges = (
   };
 };
 
-/** 広げられる幅の左端と右端: 描く先の要素の内側。右側の目次が本文の右に並ぶときは、その左までにする */
+/** 広げられる幅の左端と右端: 右側の目次を付けたときは描く先の要素の内側から目次を除いた幅、付けないときは描く先の要素の親の内側（描く先の要素は本文の幅になる）。どちらも画面の幅まで */
 const availableEdges = (root: HTMLElement): { left: number; right: number } => {
   // 右側の目次を付けたときは、操作を付ける本文の列の外側が描く先の要素
   const host = root.closest<HTMLElement>(".mdmark") ?? root;
-  const edges = contentEdges(host);
   const sideToc = host.querySelector<HTMLElement>(":scope > .mdmark-side-toc");
+  const container = sideToc || !host.parentElement ? host : host.parentElement;
+  const edges = contentEdges(container);
   if (sideToc && sideToc.offsetParent !== null) {
     const tocLeft = sideToc.getBoundingClientRect().left;
     if (tocLeft > edges.left) {
       edges.right = Math.min(edges.right, tocLeft);
     }
   }
+  edges.left = Math.max(edges.left, 0);
+  edges.right = Math.min(edges.right, document.documentElement.clientWidth);
   return edges;
 };
 
@@ -58,7 +61,12 @@ export const attachWideToggles = (root: HTMLElement): (() => void) => {
       }
       const edges = contentEdges(column);
       const width = available.right - available.left;
-      const wider = width > edges.right - edges.left + WIDE_TOLERANCE_PX;
+      // 右側の目次が無いときは、描く先の要素（余白を含む）より親が広いときだけ広げる
+      const host = root.closest<HTMLElement>(".mdmark") ?? root;
+      const baseline = host.querySelector(":scope > .mdmark-side-toc")
+        ? edges.right - edges.left
+        : host.getBoundingClientRect().width;
+      const wider = width > baseline + WIDE_TOLERANCE_PX;
       bar.hidden = !wider;
       if (wider) {
         range.style.setProperty("--mdmark-wide-width", `${width}px`);
@@ -88,6 +96,10 @@ export const attachWideToggles = (root: HTMLElement): (() => void) => {
   root.addEventListener("click", onClick);
   const observer = new ResizeObserver(sync);
   observer.observe(root);
+  const host = root.closest<HTMLElement>(".mdmark") ?? root;
+  if (host.parentElement) {
+    observer.observe(host.parentElement);
+  }
   sync();
   return () => {
     observer.disconnect();
