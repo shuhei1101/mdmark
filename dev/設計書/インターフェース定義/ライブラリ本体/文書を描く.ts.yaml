@@ -4763,7 +4763,7 @@ flows:
       - name: 配布物を読んだページ
         description: 正常系（範囲のスクリプトと CSS）と同じ
       - name: 動かせないスクリプトの範囲を持つ Markdown
-        description: 既定のエクスポートが数の `ts` の範囲・呼ぶと例外を投げる `js` の範囲を 1 つずつ持ち、その後ろに段落を持つ文書
+        description: 既定のエクスポートが数の `ts` の範囲・呼ぶと例外を投げる `js` の範囲・閉じ括弧の足りない `js` の範囲を 1 つずつ持ち、その後ろに段落を持つ文書
       - name: Mock
         description: 正常系（範囲のスクリプトと CSS）と同じ
     flow: |-
@@ -4777,11 +4777,12 @@ flows:
       - '`ts` の範囲の前の書き方の警告に、関数を既定のエクスポートにすることが書かれている'
       - '`js` の範囲の前の書き方の警告に、スクリプトが例外を投げたことが書かれ、範囲の `html` が描かれている'
       - 段落があり、`console.error` に範囲の通し番号と元のエラーが出る
+      - 閉じ括弧の足りない `js` の範囲の前の書き方の警告に、スクリプトを読めない（構文エラー）ことが書かれ、範囲の `html` が描かれている
     test: test_error_when_range_script_invalid
     refs:
       - dev/設計書/シナリオ/単一ユースケース/コードブロックのHTMLを描く#scenarios[異常シナリオ（範囲のスクリプトを動かせない）]
   - name: 異常系（変換のライブラリを読めない・知らせの枠）
-    summary: 変換のライブラリを読めないとき、`ts` の範囲だけに知らせの枠を置き、`js` の範囲は動かす
+    summary: 変換のライブラリを読めないとき、`ts`・`js` の範囲に知らせの枠を置き、範囲の `html`・`css` と本文は描く
     setup:
       - name: 配布物を読んだページ
         description: 正常系（範囲のスクリプトと CSS）と同じ。`opts.config.html-scripts.url` に `/fixtures/missing.js`
@@ -4797,17 +4798,17 @@ flows:
         P->>M: mount(el, { markdown, config })
         M->>X: import(html-scripts.url)
         X-->>M: 失敗
-        M->>P: ts の範囲に知らせの枠を置き、js の範囲を動かす
+        M->>P: ts と js の範囲に知らせの枠を置く
     expected:
-      - '`ts` の範囲の前に `role="note"` の知らせの枠が 1 つあり、`ts` の範囲の `html` は `css` の色で描かれている'
-      - '`js` の範囲の関数が範囲の根の要素で 1 回呼ばれている'
+      - '`ts` の範囲と `js` の範囲の前に `role="note"` の知らせの枠が 1 つずつあり、`ts` の範囲の `html` は `css` の色で描かれている'
+      - '`js` の範囲の `html` は描かれ、範囲の関数は呼ばれていない'
       - 段落があり、`console.error` に URL が出る
     test: test_error_when_transpiler_unavailable
     refs:
       - dev/設計書/シナリオ/単一ユースケース/コードブロックのHTMLを描く#scenarios[異常シナリオ（変換のライブラリを読めない）]
 lead: 使う側のページが、要素と Markdown と設定を渡し、要素の中に文書を描く。戻り値で本文の差し替えと片付けができる。
 idempotent: false
-side_effects: '`el` の中身と class を書き換え、記法の操作のイベントを `el` の中に付ける。`side-toc` がオンで見出しがあるとき、`el` の中を本文の列と右側の目次に分け、見出しの位置を `IntersectionObserver` で見る。出し方が `hover` のときは、右端の線とパネルの位置を決めるため、`window` の `scroll`・`resize` と、`el` に最も近いスクロールする祖先の要素があればその `scroll` を受け取り、`document.body` の子の追加・削除を `MutationObserver` で見る。`back-to-top` がオンのとき、`el` の子に先頭へ戻るボタンを置き、スクロールする場所が画面全体なら `window` の `scroll`、`el` に最も近いスクロールする祖先の要素なら `document` の `scroll`（捕捉の段）と、`window` の `resize` を受け取り、`document.body` と `el` の子の追加・削除を `MutationObserver` で見る。`window` の `beforeprint`・`afterprint`・`hashchange` と、絞り込みのドロワーを開いている間だけ `document` の `pointerdown`・`keydown` を受け取る。図の部品か埋め込んだ HTML があるとき、図の表示する枠と埋め込んだ HTML の大きさを `ResizeObserver` で見、ツールチップを開いている間だけ `document` の `keydown`・`pointerdown` と `window` の `scroll`・`resize` を受け取り、全画面の間だけ `el` の中に `dialog` を置く。操作できる部品の写すボタン・表のコピー・行の URL のコピー・コードブロックのコピー・ファイルツリーのコピーでクリップボードに書く。表があるとき、表の大きさと描く先の要素の幅を `ResizeObserver` で見、`animation-timeline` を持たないブラウザでは `window` と文書の中の `scroll` と `window` の `resize` を受け取る。`data-group` を持つタブがあるとき、localStorage の `mdmark-tabs:{group}` を描くたびに読み、読む人がタブを選ぶと書く。そのとき、ページの中の `el` の外にある同じ `group` のタブ群の選択も書き換える。文書に外部ライブラリか拡張の印があるとき、そのモジュールを読む。色分けの対象のコードブロックがあるとき、`syntax.url` の先の core と、使う言語のモジュールを読む。`html-scripts` がオンの文書に範囲の `ts`・`js` があるとき、`ts` の範囲があれば `html-scripts.url` の先の変換のライブラリを読み、範囲ごとに `document.head` へ `script` 要素を 1 つ置いてすぐ外し、範囲の関数を呼ぶ。`opts.diffSource` を渡したとき、読む人が差分を開くと（`opts.diffMode` が `open` なら描いた時点、`blocks` なら描くたびに）取り出し元の `revisions`・`content` を呼び、差分の行を出している間だけミニマップの帯を置き、送り先のスクロールの `scroll` と `window` の `resize` を受け取る。文書にビューの印があるとき、ビューの部品のモジュールを読む。`comments` がオンで `opts.commentStore` を渡したとき、コメントの部品のモジュールを読み、`load` を描くたびに 1 回呼び、保存で `save`、読み書きの関数が持つときは吹き出しの修正で `update`・削除で `remove`、`reloadComments` で `load` を呼ぶ。その間は `document` の `selectionchange` を受け取り、コメントのボタン・入力欄・吹き出しを `document.body` に置く。あわせて本文の列の右に余白の列を置き、描く先の要素の大きさを `ResizeObserver`、描く先の要素の中の開閉・切り替えを `MutationObserver` で見る'
+side_effects: '`el` の中身と class を書き換え、記法の操作のイベントを `el` の中に付ける。`side-toc` がオンで見出しがあるとき、`el` の中を本文の列と右側の目次に分け、見出しの位置を `IntersectionObserver` で見る。出し方が `hover` のときは、右端の線とパネルの位置を決めるため、`window` の `scroll`・`resize` と、`el` に最も近いスクロールする祖先の要素があればその `scroll` を受け取り、`document.body` の子の追加・削除を `MutationObserver` で見る。`back-to-top` がオンのとき、`el` の子に先頭へ戻るボタンを置き、スクロールする場所が画面全体なら `window` の `scroll`、`el` に最も近いスクロールする祖先の要素なら `document` の `scroll`（捕捉の段）と、`window` の `resize` を受け取り、`document.body` と `el` の子の追加・削除を `MutationObserver` で見る。`window` の `beforeprint`・`afterprint`・`hashchange` と、絞り込みのドロワーを開いている間だけ `document` の `pointerdown`・`keydown` を受け取る。図の部品か埋め込んだ HTML があるとき、図の表示する枠と埋め込んだ HTML の大きさを `ResizeObserver` で見、ツールチップを開いている間だけ `document` の `keydown`・`pointerdown` と `window` の `scroll`・`resize` を受け取り、全画面の間だけ `el` の中に `dialog` を置く。操作できる部品の写すボタン・表のコピー・行の URL のコピー・コードブロックのコピー・ファイルツリーのコピーでクリップボードに書く。表があるとき、表の大きさと描く先の要素の幅を `ResizeObserver` で見、`animation-timeline` を持たないブラウザでは `window` と文書の中の `scroll` と `window` の `resize` を受け取る。`data-group` を持つタブがあるとき、localStorage の `mdmark-tabs:{group}` を描くたびに読み、読む人がタブを選ぶと書く。そのとき、ページの中の `el` の外にある同じ `group` のタブ群の選択も書き換える。文書に外部ライブラリか拡張の印があるとき、そのモジュールを読む。色分けの対象のコードブロックがあるとき、`syntax.url` の先の core と、使う言語のモジュールを読む。`html-scripts` がオンの文書に範囲の `ts`・`js` があるとき、`html-scripts.url` の先の変換のライブラリを読み、範囲ごとに `document.head` へ `script` 要素を 1 つ置いてすぐ外し、範囲の関数を呼ぶ。`opts.diffSource` を渡したとき、読む人が差分を開くと（`opts.diffMode` が `open` なら描いた時点、`blocks` なら描くたびに）取り出し元の `revisions`・`content` を呼び、差分の行を出している間だけミニマップの帯を置き、送り先のスクロールの `scroll` と `window` の `resize` を受け取る。文書にビューの印があるとき、ビューの部品のモジュールを読む。`comments` がオンで `opts.commentStore` を渡したとき、コメントの部品のモジュールを読み、`load` を描くたびに 1 回呼び、保存で `save`、読み書きの関数が持つときは吹き出しの修正で `update`・削除で `remove`、`reloadComments` で `load` を呼ぶ。その間は `document` の `selectionchange` を受け取り、コメントのボタン・入力欄・吹き出しを `document.body` に置く。あわせて本文の列の右に余白の列を置き、描く先の要素の大きさを `ResizeObserver`、描く先の要素の中の開閉・切り替えを `MutationObserver` で見る'
 callers:
   - dev/設計書/シナリオ/単一ユースケース/文書を描く#
   - dev/設計書/シナリオ/単一ユースケース/テーマを上書きする#
@@ -4985,10 +4986,10 @@ request:
     required: false
     default: '`https://cdn.jsdelivr.net/npm/@babel/standalone@8.1.1/+esm`'
     location: argument
-    description: 範囲の `ts` の型を外す変換のライブラリ（@babel/standalone）の ES モジュールの URL
+    description: 範囲の `ts`・`js` を CommonJS に変える変換のライブラリ（@babel/standalone）の ES モジュールの URL
     constraints: URL はページの `document.baseURI` を基準に解決する。文字列でない値は無視して既定を当てる
     example: '"/vendor/babel-standalone/standalone.mjs"'
-    notes: '`syntax.url` と同じく、印の名前の対応表 `libraries` とは分ける。`html-scripts` がオフのときと、範囲に `ts` が無いときは使わない'
+    notes: '`syntax.url` と同じく、印の名前の対応表 `libraries` とは分ける。`html-scripts` がオフのときと、範囲に `ts`・`js` が無いときは使わない'
 request_example: |-
   ```json
   {
@@ -5068,11 +5069,11 @@ exceptions:
     condition: '`opts.diffMode` が `blocks` で、取り出し元の `revisions`・`content` が reject するか、返した値が制約「差分の取り出し元」の形に合わない'
     notes: 例外を投げず、`opts.markdown` を色を当てずに描いた本文を残し、本文の先頭に知らせの枠（題 `変更を表示できません`・本文 `比べるリビジョンの本文を取り出せませんでした。色分けせずに表示しています。`）を置く。`console.error` は差分の知らせの枠と同じ。文言は一覧と本文のどちらの失敗でも同じ（確認ログの決定）
   - name: なし（範囲のスクリプトを動かせない）
-    condition: 範囲の `ts`・`js` の既定のエクスポートが関数でないか、評価か関数の呼び出しが例外を投げるか、`ts` の変換が例外を投げる
+    condition: 範囲の `ts`・`js` の既定のエクスポートが関数でないか、評価か関数の呼び出しが例外を投げるか、構文エラー（`transform` の例外か、`script` 要素からの登録が無い）
     notes: 例外を投げず、その範囲の前に書き方の警告を置き、範囲の `html`・`css` とほかの範囲・本文は描いたまま残す。範囲の通し番号と元のエラーを `console.error` に出す
   - name: なし（変換のライブラリを読めない）
     condition: '`html-scripts.url` のモジュールを読めないか、`transform` を持たない'
-    notes: 例外を投げず、`ts` の範囲だけに知らせの枠を置き、範囲の `html`・`css` と `js` の範囲は動かす。URL と元のエラーを `console.error` に出す
+    notes: 例外を投げず、`ts`・`js` の範囲の前に知らせの枠を置き、範囲の `html`・`css` は描いたまま残す。URL と元のエラーを `console.error` に出す
 constraints:
   - item: 描く本文
     constraint: '`render(markdown, { config })` が返す HTML 文字列と同じ'
@@ -5322,10 +5323,10 @@ constraints:
     constraint: 右側の目次（`aside`）は、出し方と幅によらず、本文の全ての要素（表の見出し行・集計の行・ピン止めした列のセルを含む）より手前に描く。広い幅の `hover` の右端の線は、本文の上端がその位置より上へスクロールした後、文書の末尾までのどこを読んでいても、スクロールする場所の上端から `--mdmark-sticky-top` と `--mdmark-space` を足した位置に留め、高さをスクロールする場所と描く先の要素の両方に収める（描く先の要素の下端で上端を押し上げず、線を短くする）。描く先の要素の下端がその位置より上へスクロールした後は、右端の線を出さない。hover で開くパネルの上端も同じ位置にする。広い幅の `hover` でピン止めしていない間は、右端の線と hover で開くパネルの右端を、描く先の要素の幅によらず、スクロールする場所の右端（スクロールバーを除き、画面からはみ出す分は画面の端）から 1rem の位置に置く。ページの差分のミニマップの帯（`document.body` の `.mdmark-diff-minimap`）と横の範囲が重なるときは、その左端から 8px 左へずらす。右端の線とパネルの位置は、スクロールする場所と画面の `scroll`・`window` の `resize` に加え、`document.body` の子の追加・削除（ミニマップの帯の追加と削除）でも決め直す。ピン止めしたときは、今までどおり描く先の要素の中の右の列に置く
     notes: '#285。スクロールする場所は、描く先の要素に最も近い縦にスクロールする祖先の要素か、無ければ画面。重なりの順を CSS 変数で持つかと、右端の線の留め方はモジュール構成設計。横の位置は #270。右端からの間隔とミニマップの避け方は先頭へ戻るボタンと同じで、モックへの合意（dev/pr/323/確認ログ.md）'
   - item: 範囲のスクリプト
-    constraint: '`html-scripts` がオンのとき、描いた後に `template.mdmark-html-script` を持つ範囲を文書の順に動かす。`ts` は変換のライブラリの `transform`（preset `typescript`・plugin `transform-modules-commonjs`・`filename` は `range.ts`）で型を外し、`js` は変換のライブラリを使わずに文の先頭の `export default` を既定のエクスポートの代入に置き換える。変えたコードを `module`・`exports` を受け取る関数で包み、ページの `script[nonce]` の `nonce`（無ければ付けない）を付けた `script` 要素で動かし、既定のエクスポートの関数を範囲の根の要素（`div.mdmark-html`）を引数に 1 回呼ぶ。`require` は呼ぶと例外を投げる関数にする。関数が関数を返したときはそれを範囲の `destroy` として持ち、`update`・`destroy`・同じ要素への 2 回目の `mount` で描き直す前に 1 回呼ぶ（例外は `console.error` に出して続ける）。書き出した HTML の起動の処理が、範囲のコードの文字ごとに関数を渡したときは、変換も `script` 要素も使わずにその関数を呼ぶ。差分の中の範囲は動かさない'
+    constraint: '`html-scripts` がオンのとき、描いた後に `template.mdmark-html-script` を持つ範囲を文書の順に動かす。変換のライブラリの `transform` で、`ts` は preset `typescript`・plugin `transform-modules-commonjs`・`filename` `range.ts`、`js` は plugin `transform-modules-commonjs`・`filename` `range.js` で CommonJS に変える（`export`・`build` の esbuild と同じく、`import` と全ての `export` の文を変える）。変えたコードを `module`・`exports`・`require` を受け取る関数で包み、その関数を mdmark の受け取りの関数へ範囲の通し番号で登録させるコードを、ページの `script[nonce]` の `nonce`（無ければ付けない）を付けた `script` 要素で動かす。`transform` が例外を投げたときと、要素を外した後に登録が無いときは構文エラーとして、その範囲の前に書き方の警告を置き、要素を置いている間に受けた `window` の `error` の内容か `transform` の例外を `console.error` に出す。登録された関数を呼んで得た既定のエクスポートの関数を、範囲の根の要素（`div.mdmark-html`）を引数に 1 回呼ぶ。`require` は呼ぶと例外を投げる関数にする。関数が関数を返したときはそれを範囲の `destroy` として持ち、`update`・`destroy`・同じ要素への 2 回目の `mount` で描き直す前に 1 回呼ぶ（例外は `console.error` に出して続ける）。書き出した HTML の起動の処理が、範囲のコードの文字ごとに関数を渡したときは、変換も `script` 要素も使わずにその関数を呼ぶ。差分の中の範囲は動かさない'
     notes: 実行の経路は PoC 検証（#306）で成立を確かめた。変換のライブラリは外部ライブラリ『@babel/standalone』
   - item: 変換のライブラリの読み込み
-    constraint: 描いた後に `ts` の範囲が 1 つ以上あるときだけ、`html-scripts.url` を `import()` で読み、既定のエクスポート（無ければモジュール）の `disableScriptTags` を呼んでから `transform` を使う。同じ `mount` の中では 1 回だけ読む。`js` だけの文書では読まない。読み終わる前に `update`・`destroy` したときは、前の描画の範囲を動かさない。読み込みの完了は待たずに `mount` を返す。読めないときは `ts` の範囲の前に知らせの枠（本文の文言は画面設計『文書』）を置く
+    constraint: 描いた後に `ts`・`js` の範囲が 1 つ以上あるときだけ、`html-scripts.url` を `import()` で読み、既定のエクスポート（無ければモジュール）の `disableScriptTags` を呼んでから `transform` を使う。同じ `mount` の中では 1 回だけ読む。読み終わる前に `update`・`destroy` したときは、前の描画の範囲を動かさない。読み込みの完了は待たずに `mount` を返す。読めないときは `ts`・`js` の範囲の前に知らせの枠（本文の文言は画面設計『文書』）を置く
     decided_by: dev/設計書/外部ライブラリ/babel-standalone#
   - item: 列の並べ替え
     constraint: '`reorder` の表は、テーブル設定の一覧のつまみのドラッグ＆ドロップと、つまみにフォーカスした↑・↓ キー（1 つずつ動かし、フォーカスをつまみに残す）で列を動かし、一覧の順に見出しと全ての本文の行・集計の行のセルを並べ直す。一覧はピン止めの列・結合した見出しの範囲（`data-group`）ごと・範囲の外の列に分け、同じ範囲と同じピン止めの側の中だけで動かす。範囲の外やピン止めの境をまたぐ位置にはドロップできる位置の線を出さず、どちらの向きにも動かせない列のつまみを `disabled` にする。見出しの並べ替え・ピン止め・絞り込みのボタンでは列を動かさない。行の並べ替え・絞り込み・結合のし直しの後も動かした列の順を保ち、コピーは今の列の順で書く。列の順は覚えず、描き直すと Markdown に記載した順に戻す'
