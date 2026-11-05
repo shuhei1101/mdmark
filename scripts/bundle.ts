@@ -12,13 +12,10 @@ export const NODE_BANNER = [
   'import { createRequire as __createRequire } from "node:module";',
   "const require = __createRequire(import.meta.url);",
 ].join("\n");
-/** 束ねるときに `define` で埋める値: mdmark の版と、束ねた lucide のバージョン（`package.json` の `dependencies`） */
-export function bundleDefines(
-  version: string,
-  root: string,
-): Record<string, string> {
+/** 束ねるときに `define` で埋める値: mdmark の版と、束ねる lucide のバージョン（mdmark の `package.json` の `dependencies`。束ねる場所 `root` によらない） */
+export function bundleDefines(version: string): Record<string, string> {
   const manifest = JSON.parse(
-    readFileSync(join(root, "package.json"), "utf8"),
+    readFileSync(join(import.meta.dirname, "..", "package.json"), "utf8"),
   ) as { dependencies?: Record<string, string> };
   return {
     __MDMARK_VERSION__: JSON.stringify(version),

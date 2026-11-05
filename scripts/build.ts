@@ -124,7 +124,7 @@ async function buildParts(
     minify: true,
     target: BROWSER_TARGETS,
     plugins: [postcssStubPlugin],
-    define: bundleDefines(version, root),
+    define: bundleDefines(version),
     metafile: true,
     logLevel: "silent",
   });
@@ -157,7 +157,7 @@ async function buildViewer(
     minify: true,
     target: BROWSER_TARGETS,
     plugins: [postcssStubPlugin],
-    define: bundleDefines(version, root),
+    define: bundleDefines(version),
     metafile: true,
     logLevel: "silent",
   });
@@ -188,7 +188,7 @@ async function buildCli(
     banner: { js: NODE_BANNER },
     external: CLI_EXTERNALS,
     plugins: [postcssStubPlugin],
-    define: bundleDefines(version, root),
+    define: bundleDefines(version),
     metafile: true,
     logLevel: "silent",
   });
@@ -219,7 +219,7 @@ export async function buildDist(
     minify: true,
     target: BROWSER_TARGETS,
     plugins: [postcssStubPlugin],
-    define: bundleDefines(version, root),
+    define: bundleDefines(version),
     banner: { css: `:root{--mdmark-version:"${version}"}` },
     metafile: true,
     // 失敗の理由は例外として返り、`main` が標準エラーに 1 回だけ出す

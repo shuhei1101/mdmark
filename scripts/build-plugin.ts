@@ -167,7 +167,7 @@ export async function buildPlugin(options: {
     platform: "node",
     target: NODE_TARGET,
     banner: { js: NODE_BANNER },
-    define: bundleDefines(version, root),
+    define: bundleDefines(version),
     metafile: true,
     logLevel: "silent",
   });

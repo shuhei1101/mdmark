@@ -198,7 +198,7 @@ export async function findBaselineViolations(options: {
     write: false,
     target: BROWSER_TARGETS,
     plugins: [postcssStubPlugin],
-    define: bundleDefines(version, root),
+    define: bundleDefines(version),
     logLevel: "silent",
   });
   return entries.flatMap((entry) => {
