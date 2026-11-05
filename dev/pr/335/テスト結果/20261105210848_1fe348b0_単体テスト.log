@@ -1,0 +1,40 @@
+$ npx vitest run --project 'unit*' tests/unit/src/diff/blocks.browser.test.ts
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/fix-diff-block-coloring-blank-line-match
+
+ ❯ |unit-browser (chromium)| tests/unit/src/diff/blocks.browser.test.ts (14 tests | 1 failed) 363ms
+   × test_color_diff_blocks_when_one_line_paragraphs 238ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/diff/blocks.browser.test.ts > test_color_diff_blocks_when_one_line_paragraphs
+AssertionError: expected [ '段落 B', '段落 C' ] to deeply equal [ '段落 B' ]
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/blocks.browser.test.ts/test_color_diff_blocks_when_one_line_paragraphs.png
+
+- Expected
++ Received
+
+  [
+    "段落 B",
++   "段落 C",
+  ]
+
+ ❯ tests/unit/src/diff/blocks.browser.test.ts:413:35
+    411|     ...colored.querySelectorAll('div.mdmark-diff-block[data-kind="add"…
+    412|   ];
+    413|   expect(adds.map(paragraphText)).toEqual(["段落 B"]);
+       |                                   ^
+    414|   // 検証: 段落 C の後ろに段落 D が削除のブロックで入る
+    415|   const dels = [...colored.querySelectorAll('[data-kind="del"]')];
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=c78f9236:5235:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 13 passed (14)
+   Start at  21:08:25
+   Duration  17.22s (worker 86%, import 12%, tests 2%)
+
