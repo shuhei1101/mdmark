@@ -144,8 +144,8 @@ mark.mdmark-highlight[data-color="gray"] { background: var(--mdmark-color-accent
   appearance: none;
   display: inline-grid;
   place-items: center;
-  width: 1.9em;
-  height: 1.9em;
+  width: 28px;
+  height: 28px;
   padding: 0;
   border: 0;
   border-radius: 4px;
@@ -155,7 +155,7 @@ mark.mdmark-highlight[data-color="gray"] { background: var(--mdmark-color-accent
 }
 .mdmark-wide-toggle:hover { color: var(--mdmark-color-accent-blue-text); background: var(--mdmark-color-surface); }
 .mdmark-wide-toggle:focus-visible { outline: 2px solid var(--mdmark-color-accent-blue-text); outline-offset: 1px; }
-.mdmark-wide-toggle .mdmark-icon { width: 1.1em; height: 1.1em; }
+.mdmark .mdmark-wide-toggle .mdmark-icon { width: 20px; height: 20px; stroke-width: 1.75; }
 /* 読み上げ名は「広げて表示」に固定し、押した状態（広げた状態）は aria-pressed で示す。アイコンだけを状態で切り替える */
 .mdmark-wide-toggle[aria-pressed="true"] .mdmark-wide-icon-expand,
 .mdmark-wide-toggle[aria-pressed="false"] .mdmark-wide-icon-shrink { display: none; }
