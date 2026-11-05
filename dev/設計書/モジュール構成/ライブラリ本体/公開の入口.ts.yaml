@@ -188,7 +188,7 @@ styles:
         value: '`data-state="wide"` の範囲は `attachWideToggles` が入れた広げられる幅（`--mdmark-wide-width`・`--mdmark-wide-shift`）まで広げて本文の列の中央にそろえ（右側の目次と文書の一覧の列・右端の線の内側）、`narrow` は本文の幅。帯は本文の幅で、ボタンを右端に置き、`aria-pressed` で 2 つのアイコンの片方だけを出す。印刷では帯を出さず、範囲を紙の幅に収める。値は `dev/mock/refs/307/assets/notations.css`'
       - class_name: .mdmark .mdmark-table[data-source="csv"]
         target: CSV の表と RAW のボタン
-        value: '囲みを `width: fit-content` にして表と `pre.mdmark-raw` を同じ格子の場所に重ね、`data-view="raw"` で表を隠して `pre.mdmark-raw` を出す。RAW のボタンは押していないとき `--mdmark-color-muted`、押したとき `--mdmark-color-accent-blue-text` のアイコンと `--mdmark-color-accent-blue-bg` の面（確認ログの案 C）。値は `dev/mock/refs/307/assets/notations.css`'
+        value: '囲みを記法の表と同じく本文の幅（`width: 100%`。確認ログの「CSV の表の幅」）にして、表を包む要素（`.mdmark-table-scroll`。無ければ表）と `pre.mdmark-raw` を同じ格子の場所に重ね、`data-view="raw"` で表を包む要素を隠して `pre.mdmark-raw` を出す。RAW のボタンは押していないとき `--mdmark-color-muted`、押したとき `--mdmark-color-accent-blue-text` のアイコンと `--mdmark-color-accent-blue-bg` の面（確認ログの案 C）。値は `dev/mock/refs/307/assets/notations.css`'
       - class_name: .mdmark .mdmark-code pre・.mdmark .mdmark-tree .mdmark-tree-list・.mdmark-code-wrap・.mdmark-tree-wrap
         target: コードブロックとファイルツリーの折り返し
         value: '折り返さない既定（`white-space: pre`・`nowrap` と `overflow-wrap: normal`）は `@layer mdmark` の外に `.mdmark .mdmark-code pre`・`.mdmark .mdmark-code pre code`・`.mdmark .mdmark-tree .mdmark-tree-list` で、印刷以外（`@media not print`。印刷は層の中の印刷の規則でコードを紙の幅に折り返す）に置く（使う側の要素名だけ・クラス 1 つの `pre` への CSS より詳細度が高く、使う側が mdmark のクラスを指定すれば上書きできる）。`mdmark-code-wrap` と `mdmark-tree-wrap` の規則も同じく層の外に置き、値はモック `dev/mock/refs/328/assets/wrap.css` から取る（ツリーの注釈の字下げは開閉の印の幅とアイコンの幅と間隔の和）'
