@@ -50,3 +50,10 @@ stories:
     args:
       name: guide
       source: diff-blocks
+  - name: Icons
+    parameters:
+      server:
+        id: notice
+    args:
+      name: lucide
+      source: icons

@@ -100,6 +100,27 @@ scenarios:
       - 同じフォルダで同じ基準を渡して `mdmark check` を流したときと同じずれが返る
       - 設定・索引・文書が変わっていない
     test: test_normal_when_base_given
+  - name: 正常シナリオ（取り込み先が無い）
+    setup:
+      - name: 取り込み先の無いマーカーを持つフォルダ
+        description: 『設定と索引を点検する』の正常シナリオ（取り込み先が無い）と同じフォルダ
+      - name: Mock
+        description: 差し替える依存は無い。MCP のテストのクライアントからツールを呼ぶ
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant CC as Claude Code
+        participant S as mdmark の MCP サーバー
+        W->>CC: 点検を頼む
+        CC->>S: check（作業のフォルダ）
+        S->>S: mdmark check と同じ処理でずれを集める
+        S-->>CC: ずれの一覧
+        CC-->>W: 取り込み先が無いずれを伝える
+    expected:
+      - check が返すずれの一覧に、`mdmark check` と同じ取り込み先が無いずれが同じ数だけある
+      - ツールの一覧で得た check の説明文に、取り込み先が無いことも点検すると記載されている
+      - 設定・索引・文書が変わっていない
+    test: test_normal_when_include_missing
   - name: 正常シナリオ（文字列とYAMLのキーを渡す）
     setup:
       - name: ずれの無い作業のフォルダ

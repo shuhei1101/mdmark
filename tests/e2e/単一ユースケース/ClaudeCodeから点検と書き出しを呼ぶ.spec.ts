@@ -4,6 +4,7 @@ import { join } from "node:path";
 import {
   createChangeTogetherDir,
   expect,
+  INCLUDE_MISSING_FILES,
   linesOf,
   runCli,
   test,
@@ -237,5 +238,48 @@ test("test_normal_when_text_and_key", async ({ builtRoot, tempDir }) => {
   expect(linesOf(cliKey.stdout).slice(0, -1)).toEqual(keyIssues.map(issueLine));
   expect(
     await Promise.all(files.map((file) => readFile(join(dir, file), "utf8"))),
+  ).toEqual(before);
+});
+
+// check が、mdmark check と同じ取り込み先が無いずれを返し、説明文で取り込み先も点検すると知らせる（正常シナリオ（取り込み先が無い））
+test("test_normal_when_include_missing", async ({ builtRoot, tempDir }) => {
+  // 準備
+  const dir = await tempDir();
+  await writeFiles(dir, INCLUDE_MISSING_FILES);
+  const paths = Object.keys(INCLUDE_MISSING_FILES);
+  const before = await Promise.all(
+    paths.map((path) => readFile(join(dir, path), "utf8")),
+  );
+  // 実行
+  const { description, checked } = await withMcpClient(
+    { builtRoot, projectDir: dir },
+    async (client) => ({
+      description:
+        (await client.listTools()).tools.find((tool) => tool.name === "check")
+          ?.description ?? "",
+      checked: await callTool(client, "check"),
+    }),
+  );
+  const cli = await runCli(builtRoot, ["check"], dir);
+  // 検証
+  const issues = JSON.parse(checked.texts[0] ?? "").issues as Parameters<
+    typeof issueLine
+  >[0][];
+  const missing = issues.filter(
+    (issue) => issue.kind === "include_target_missing",
+  );
+  expect(missing).toHaveLength(
+    linesOf(cli.stdout).filter((line) =>
+      line.includes(": include_target_missing: "),
+    ).length,
+  );
+  expect(missing.map(issueLine)).toEqual(
+    linesOf(cli.stdout).filter((line) =>
+      line.includes(": include_target_missing: "),
+    ),
+  );
+  expect(description).toContain("取り込み先");
+  expect(
+    await Promise.all(paths.map((path) => readFile(join(dir, path), "utf8"))),
   ).toEqual(before);
 });

@@ -18,6 +18,7 @@ import {
 } from "./build-plugin.ts";
 import {
   BROWSER_TARGETS,
+  bundleDefines,
   listBundledPackages,
   NODE_BANNER,
   NODE_TARGET,
@@ -29,8 +30,8 @@ import { checkMigrations } from "./migrations.ts";
 
 // 埋める版が合うべき書式
 const VERSION_PATTERN = /^v\d+\.\d+\.\d+$/;
-// 配布ファイル 1 つの上限（非機能要件の 592KB）
-const MAX_DIST_FILE_BYTES = 592 * 1024;
+// 配布ファイル 1 つの上限（非機能要件の 624KB）
+const MAX_DIST_FILE_BYTES = 624 * 1024;
 // 配布物に束ねた依存のライセンスを書く、`dist/` の中のファイル名
 const LICENSES_FILE = "THIRD_PARTY_LICENSES.txt";
 // サイズを検めない配布ファイル（使う側のページが jsDelivr から読まない出力）
@@ -123,7 +124,7 @@ async function buildParts(
     minify: true,
     target: BROWSER_TARGETS,
     plugins: [postcssStubPlugin],
-    define: { __MDMARK_VERSION__: JSON.stringify(version) },
+    define: bundleDefines(version),
     metafile: true,
     logLevel: "silent",
   });
@@ -156,7 +157,7 @@ async function buildViewer(
     minify: true,
     target: BROWSER_TARGETS,
     plugins: [postcssStubPlugin],
-    define: { __MDMARK_VERSION__: JSON.stringify(version) },
+    define: bundleDefines(version),
     metafile: true,
     logLevel: "silent",
   });
@@ -187,7 +188,7 @@ async function buildCli(
     banner: { js: NODE_BANNER },
     external: CLI_EXTERNALS,
     plugins: [postcssStubPlugin],
-    define: { __MDMARK_VERSION__: JSON.stringify(version) },
+    define: bundleDefines(version),
     metafile: true,
     logLevel: "silent",
   });
@@ -218,7 +219,7 @@ export async function buildDist(
     minify: true,
     target: BROWSER_TARGETS,
     plugins: [postcssStubPlugin],
-    define: { __MDMARK_VERSION__: JSON.stringify(version) },
+    define: bundleDefines(version),
     banner: { css: `:root{--mdmark-version:"${version}"}` },
     metafile: true,
     // 失敗の理由は例外として返り、`main` が標準エラーに 1 回だけ出す

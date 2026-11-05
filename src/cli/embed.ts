@@ -73,13 +73,19 @@ const SYNTAX_LANGUAGE_PATTERN = new RegExp(
 export function usedSyntaxLanguages(options: {
   /** 文書の Markdown */
   markdowns: string[];
+  /** 文書ごとの取り込む文書の表（`markdowns` と同じ順） */
+  includes?: Array<Record<string, string>>;
   /** 読んだ設定 */
   config: MdmarkConfig;
 }): string[] {
   const config = resolveConfig({ config: options.config });
   const languages = new Set<string>();
-  for (const markdown of options.markdowns) {
-    const { html } = renderDocument({ markdown, config });
+  for (const [position, markdown] of options.markdowns.entries()) {
+    const { html } = renderDocument({
+      markdown,
+      config,
+      includes: options.includes?.[position],
+    });
     for (const match of html.matchAll(SYNTAX_LANGUAGE_PATTERN)) {
       if (match[1]) {
         languages.add(match[1]);

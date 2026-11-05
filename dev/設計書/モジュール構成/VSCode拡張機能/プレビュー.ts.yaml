@@ -9,7 +9,8 @@ directory: |-
   ├── scroll-guard.ts  # エディタを動かした直後の知らせを捨てる判定（vscode を import しない）
   ├── links.ts         # 押したリンクの開き先の見分け（vscode を import しない）
   ├── diff-target.ts   # 差分ビューの対象とパネルのキー（vscode を import しない）
-  └── assets.ts        # 画像・動画・音声の探す場所の候補（vscode を import しない）
+  ├── assets.ts        # 画像・動画・音声の探す場所の候補（vscode を import しない）
+  └── includes.ts      # 取り込む文書の読み取り
   ```
 diagrams:
   - name: 全体
@@ -714,10 +715,33 @@ functions:
     status: planned
     introduced:
       pr: 263
+  - name: readIncludes
+    title: 取り込む文書を読む
+    container: vscode/src/preview/includes.ts
+    summary: 開いている Markdown の include のマーカーを、ライブラリ本体の `resolveIncludePath` と同じ解き方で解き、根のフォルダ（設定ファイルのフォルダ。無ければ Markdown のフォルダ）の中のファイルだけを `readFile` で読んで取り込む文書の表を作る。取り込んだ Markdown の中のマーカーもたどり、同じファイルは 1 回だけ読む。読んだファイルのパスの一覧も返し、保存で描き直すかの判定に使う。パネルは `workspace.fs` で読む `readFile` を渡す
+    kind: 関数
+    scope: internal
+    args:
+    - name: options
+      type: '{ markdownPath: string; markdown: string; root: string; readFile: (path: string) => Promise<string | undefined> }'
+      required: true
+      description: '`markdownPath` は開いている Markdown の絶対パス、`markdown` はその本文、`root` は根のフォルダの絶対パス、`readFile` はファイルを読む関数（読めないとき `undefined`）'
+    returns:
+      type: 'Promise<{ includes: Record<string, string>; paths: string[] }>'
+      description: 取り込む文書の表と読んだファイル
+    side_effects: ファイルを読む
+    unit_tests:
+    - name: test_read_includes
+      case: 正常
+      condition: '`docs/guide.md` が `共通/手順.md#実行` と `missing.md` と根の外の `../../outside.md` を取り込む'
+      expected: 表が `共通/手順.md` だけをキーに持ち、パスの一覧が `docs/共通/手順.md` だけで、根の外を読んでいない
+      mock: '`readFile` に本文の表を引く関数を渡す'
+      summary: 根の中の読めるファイルだけを読む
 test_files:
   - tests/unit/vscode/src/preview/html.test.ts
   - tests/unit/vscode/src/preview/links.test.ts
   - tests/unit/vscode/src/preview/scroll-guard.test.ts
   - tests/unit/vscode/src/preview/diff-target.test.ts
   - tests/unit/vscode/src/preview/assets.test.ts
+  - tests/unit/vscode/src/preview/includes.test.ts
 notes: {}

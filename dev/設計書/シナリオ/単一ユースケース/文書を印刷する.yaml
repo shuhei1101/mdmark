@@ -347,6 +347,34 @@ scenarios:
       - 印刷の前のイベントの後、▾・⧉・見本の表示を切り替えるボタンが印刷に出ていない
       - 印刷の後のイベントの後、`aliases[]` の子孫が畳まれ、見本が隠れている
     test: test_normal_when_tree_folded
+  - name: 正常シナリオ（改ページと details の範囲と wide の範囲）
+    setup:
+      - name: 文書を描いたページ
+        description: 版を固定した URL で mdmark を読み、文書を描いた HTML
+        notes: 使う側が `--mdmark-content-width` を `640px` にしている
+      - name: 改ページと範囲を持つ Markdown
+        description: '段落の間に `<!-- pagebreak -->`、`<!-- details: 補足 -->` 〜 `<!-- /details -->` で閉じた範囲、`<!-- wide -->` 〜 `<!-- /wide -->` で 8 列の表を囲んだ範囲を持つ文書'
+      - name: Mock
+        description: 正常シナリオと同じ。印刷の終わりは、媒体を `screen` に戻して印刷の後のイベントを送ることで代える
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant B as ブラウザ
+        participant M as mdmark
+        U->>B: 印刷を始める
+        B->>M: 印刷の前のイベント
+        M->>M: details の範囲を開く
+        B->>B: 印刷向けの CSS を当てる
+        B-->>U: 印刷の出力
+        B->>M: 印刷の後のイベント
+        B-->>U: 画面の表示に戻る
+    expected:
+      - 画面では `pagebreak` の場所に何も表示されず、高さも取っていない
+      - '印刷の前のイベントの後、`pagebreak` の場所の要素に改ページの指定（`break-before: page`）が当たっている'
+      - 印刷の前のイベントの後、`補足` の範囲の中身が表示されている
+      - 印刷の前のイベントの後、wide の範囲が印刷の用紙の幅を越えていない
+      - 印刷の後のイベントの後、`補足` の範囲が閉じている
+    test: test_normal_when_pagebreak_details_wide
 lead: 読む人が mdmark の描いた文書を印刷・PDF にすると、折り畳みを全て開き、図表を改ページで切らず、ダークの配色を解除し、リンクの URL を併記して出す。印刷を終えると画面の表示に戻る。
 issue: 3
 primary_actor: 文書を読む人

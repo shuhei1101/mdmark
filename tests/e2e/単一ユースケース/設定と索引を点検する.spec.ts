@@ -8,6 +8,7 @@ import {
   expect,
   flowLines,
   git,
+  INCLUDE_MISSING_FILES,
   linesOf,
   runCli,
   test,
@@ -473,4 +474,38 @@ test("test_normal_when_diagram_auto_layout", async ({ builtRoot, tempDir }) => {
   expect(invalid[0]).toContain("判定フローチャート");
   expect(invalid[0]).toContain("座標を書くか");
   expect(await snapshot(dir)).toEqual(before);
+});
+
+// include のマーカーの取り込み先が無いものを、文書とマーカーの行のずれにする（正常シナリオ（取り込み先が無い））
+test("test_normal_when_include_missing", async ({ builtRoot, tempDir }) => {
+  // 準備
+  const dir = await tempDir();
+  await writeFiles(dir, INCLUDE_MISSING_FILES);
+  const paths = Object.keys(INCLUDE_MISSING_FILES);
+  const before = await Promise.all(
+    paths.map((path) => readFile(join(dir, path), "utf8")),
+  );
+  // 実行
+  const result = await runCli(builtRoot, ["check"], dir);
+  // 検証
+  expect(result.code).not.toBe(0);
+  const lines = linesOf(result.stdout);
+  const issues = lines.filter((line) =>
+    line.includes(": include_target_missing: "),
+  );
+  expect(issues.map((line) => line.split(": ")[0])).toEqual([
+    "docs/a.md:3",
+    "docs/b.md:2",
+    "docs/b.md:4",
+  ]);
+  expect(issues[0]).toContain("missing.md");
+  expect(issues[1]).toContain("無い見出し");
+  expect(issues[2]).toContain("5 行");
+  for (const issue of issues) {
+    expect(issue).toContain("修正してください");
+  }
+  expect(lines.some((line) => line.startsWith("docs/a.md:5"))).toBe(false);
+  expect(
+    await Promise.all(paths.map((path) => readFile(join(dir, path), "utf8"))),
+  ).toEqual(before);
 });

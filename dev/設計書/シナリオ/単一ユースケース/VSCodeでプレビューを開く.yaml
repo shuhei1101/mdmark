@@ -183,6 +183,32 @@ scenarios:
       - 範囲の箱を押すと根の要素に class `is-open` が付く
       - パネルの CSP の値が正常シナリオと同じで、CSP の違反が 0 件
     test: test_normal_when_range_scripts
+  - name: 正常シナリオ（取り込む文書を描く）
+    setup:
+      - name: 取り込みを持つワークスペース
+        description: '`<!-- include: 共通/手順.md#実行 -->` を持つ Markdown と、その Markdown からの相対パスに `共通/手順.md` を置いたフォルダ'
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant ED as エディタ（VS Code）
+        participant EX as 拡張機能
+        participant PV as プレビュー（Webview）
+        W->>ED: Shift+Alt+D を押す
+        ED->>EX: mdmark.openPreviewToSide
+        EX->>EX: include のマーカーの取り込み先をワークスペースから読む
+        EX->>PV: Markdown の全文・設定・取り込む文書の表を送る
+        PV->>PV: mount で描く
+        PV-->>W: 取り込んだ中身を持つ文書を表示
+        W->>ED: 共通/手順.md を書き換えて保存する
+        EX->>PV: 取り込む文書の表を送り直す
+        PV-->>W: 描き直した文書を表示
+    expected:
+      - プレビューのマーカーの場所に、`実行` の見出しとその下の中身が描かれている
+      - '`共通/手順.md` を保存した後、プレビューの取り込んだ中身が書き換えた後の文になっている'
+      - 取り込み先がワークスペースに無いマーカーの場所には、書き方の警告が出ている
+    test: test_normal_when_includes
 lead: 文書を書く人が、VS Code で開いている Markdown の横に、mdmark で描いたプレビューを開く。拡張機能は読む mdmark の版を決め、jsDelivr の版付きの URL から配布物を読んで描く。
 issue: 22
 primary_actor: 文書を書く人

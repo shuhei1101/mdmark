@@ -1,7 +1,13 @@
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { expect, test } from "@playwright/test";
-import { expectGuideRendered, guideMarkdown, useVscodeE2E } from "../vscode.ts";
+import {
+  expectGuideRendered,
+  guideMarkdown,
+  replaceAllText,
+  saveEditor,
+  useVscodeE2E,
+} from "../vscode.ts";
 
 const e2e = useVscodeE2E();
 
@@ -191,4 +197,53 @@ test("test_error_when_version_undecidable", async () => {
   await expect(notice(frame)).toContainText("バージョンを決められませんでした");
   await expect(frame.getByRole("button", { name: "リロード" })).toBeVisible();
   expect(distRequests()).toEqual([]);
+});
+
+// マーカーの場所に取り込み先の見出しの中を描き、取り込み先の保存で描き直し、無い取り込み先には書き方の警告を出す（正常シナリオ（取り込む文書を描く））
+test("test_normal_when_includes", async () => {
+  // 準備
+  const session = await e2e.launch({
+    files: {
+      "guide.md": [
+        "# 案内",
+        "",
+        "<!-- include: 共通/手順.md#実行 -->",
+        "",
+        "<!-- include: 共通/無い.md -->",
+        "",
+      ].join("\n"),
+      "共通/手順.md": [
+        "# 手順",
+        "",
+        "## 実行",
+        "",
+        "取り込む前の文です。",
+        "",
+        "## 片付け",
+        "",
+        "取り込まない文です。",
+        "",
+      ].join("\n"),
+    },
+  });
+  await session.openFile("guide.md");
+  // 実行
+  await session.openPreviewWithShortcut();
+  // 検証
+  const frame = await session.frameWith("h2");
+  await expect(frame.locator("h2", { hasText: "実行" })).toBeVisible();
+  await expect(frame.getByText("取り込む前の文です。")).toBeVisible();
+  await expect(frame.getByText("取り込まない文です。")).toHaveCount(0);
+  await expect(frame.locator(".mdmark-syntax-warning")).toHaveCount(1);
+  await expect(frame.locator(".mdmark-syntax-warning")).toContainText(
+    "共通/無い.md",
+  );
+  // 実行: 取り込み先を書き換えて保存する
+  await session.openFile("共通/手順.md");
+  await replaceAllText(session, "## 実行\n\n書き換えた後の文です。\n");
+  await saveEditor(session);
+  // 検証
+  const rerendered = await session.frameWith("h2");
+  await expect(rerendered.getByText("書き換えた後の文です。")).toBeVisible();
+  await expect(rerendered.getByText("取り込む前の文です。")).toHaveCount(0);
 });

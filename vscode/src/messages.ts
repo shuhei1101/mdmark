@@ -12,6 +12,8 @@ export type HostMessage =
       previous?: string;
       config: PreviewConfig;
       theme: PreviewTheme;
+      /** 取り込む文書の表（キーは Markdown のフォルダからのパス） */
+      includes?: Record<string, string>;
     }
   | { type: "scrollToLine"; line: number }
   | { type: "configError"; line: number }

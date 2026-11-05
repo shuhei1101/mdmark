@@ -26,6 +26,7 @@ import {
 } from "../../table-logic.ts";
 import type { Mark } from "../marks.ts";
 import { readCollapse } from "./collapse.ts";
+import type { CsvTableMeta } from "./csv.ts";
 import { slugBase } from "./headings.ts";
 import {
   headerGroupsOf,
@@ -1262,6 +1263,7 @@ export function decorateTables(state: StateCore): void {
       check: spec.check,
       tree: spec.tree,
       body: SLOT_MARKER,
+      rawCsv: (token.meta as Partial<CsvTableMeta> | null)?.rawCsv,
     });
     if (spec.features.includes("rowlink")) {
       linkRows(state, tokens, index, taken);

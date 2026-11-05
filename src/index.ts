@@ -52,6 +52,7 @@ export type {
 } from "./mount.ts";
 export { mount } from "./mount.ts";
 export { mountComments, mountView } from "./mount-parts.ts";
+export type { MdmarkIconNode } from "./parts/inline-icon.ts";
 export { render } from "./render/index.ts";
 export type { StandardSchemaV1 } from "./standard-schema.ts";
 export type { MdmarkViewHandle, MdmarkViewOptions } from "./views/spec.ts";

@@ -117,6 +117,8 @@ handle.destroy();
 | `opts.docId` | 任意 | 描く文書の索引の `id`。被参照の一覧を引き、関連文書から自分を除き、リンクの相対パスを求めるのに使う。省くと、被参照の一覧を出さず、関連文書のリンクは索引の `path` のままにする。索引に無い `id` は、省いたときと同じに扱う。`opts.commentStore` を渡すときは必須で、コメントの読み書きの関数に渡す対象の ID にもなる |
 | `opts.references` | 任意 | [`collectReferences`](#参照の表を作る) が返した参照の表。被参照の一覧と、ほかの文書の用語集の表の用語とそのやめた言い方に使う。用語の `avoid` は任意で、無い用語はやめた言い方を持たないものとして扱う。省くと、被参照は索引の `related` だけから出し、ほかの文書の用語集の表の用語を照合しない |
 | `opts.aliases` | 任意 | [`buildAliases`](#エイリアスを作る) が作ったエイリアスの並び（`MdmarkAlias[]`）。使えないエイリアス（必須のキーが空・知らない種類・重なった `id`）は除いて使い、`env` の種類は直接渡されても照合しない。`update` は描いたときのエイリアスを使う。省くと、エイリアスを照合しない |
+| `opts.includes` | 任意 | 取り込む文書の表（`Record<string, string>`）。キーは描く文書のフォルダからのパス（区切りは `/`。`./`・`../` を解いた形）、値はそのファイルの本文。[取り込み](./記法.md#取り込み) のマーカーはこの表から引く。mdmark はファイルを読まない。省くと、取り込みのマーカーの場所に書き方の警告を出す |
+| `opts.icons` | 任意 | 配布物に入っていない名前の Lucide のアイコンの形の表（`Record<string, IconNode>`）。表にある名前は jsDelivr から読まずにこの形で描く。省くと、使う名前だけを jsDelivr から読む |
 | `opts.diffSource` | 任意 | 文書のリビジョンの一覧と、リビジョンごとの本文を返す取り出し元（`DiffSource`）。渡すと、描いた文書に差分を開く UI が付く。`opts.docId` と一緒に渡す。省くと、差分の UI を付けない |
 | `opts.diffMode` | 任意 | 差分の出し方。`button`・`open`・`blocks` のどれか。省くと `button`。`opts.diffSource` を渡さないときは使わない。知らない値は `button` として扱う |
 | `opts.commentStore` | 任意 | コメントを読み込み、保存する関数（`MdmarkCommentStore`）。機能 `comments` がオンのときだけ使う。`opts.docId` と一緒に渡す。省くと、コメントを付けられない |
@@ -182,7 +184,7 @@ mdmark はコメントを保存せず、保存先は使う側の関数に任せ�
 
 | フィールド | 型 | 説明 |
 | --- | --- | --- |
-| `update` | `(markdown: string, options?: { baseMarkdown?: string \| null }) => void` | 本文だけを描き直し、記法の操作を付け直す。設定は `mount` に渡したものを使う。`options.baseMarkdown` を渡すと比較元を差し替え、`null` で比較元を外す。省くと前の比較元のまま描く。`destroy` の後は何もしない |
+| `update` | `(markdown: string, options?: { baseMarkdown?: string \| null; includes?: Record<string, string> }) => void` | 本文だけを描き直し、記法の操作を付け直す。設定は `mount` に渡したものを使う。`options.baseMarkdown` を渡すと比較元を差し替え、`null` で比較元を外す。省くと前の比較元のまま描く。`options.includes` を渡すと取り込む文書の表を差し替え、省くと前の表のまま描く。`destroy` の後は何もしない |
 | `reloadComments` | `() => Promise<void>` | 本文を描き直さずに `opts.commentStore.load` を呼び直し、コメントの印と「箇所が見つからないコメント」の一覧を付け直してから解決する。記法の操作の状態（並べ替え・絞り込み・開閉）は変えない。開いている吹き出しは閉じ、書いている入力欄は残す。コメントを付けていないとき（`comments` がオフ・`opts.commentStore` が無い・コメントの部品のモジュールを読めない）と `destroy` の後は、`load` を呼ばずに解決する |
 | `focusComment` | `(id: string) => void` | その `id` のコメントの印を、閉じた節・行の詳細の中なら開いてから画面に入れ、フォーカスを移して強調する（背景を濃くし、線で囲む）。強調は次の `focusComment` と、印を付け直す（描き直し・読み直し）まで残す。吹き出しは開かない。印が無い `id` と `destroy` の後は何もしない |
 | `destroy` | `() => void` | `el` の中を空にして class `mdmark` を外し、記法の操作と、印刷・`hashchange`・`document` の受け取りを外す。コメントのボタン・入力欄・吹き出しも外す。2 回目以降は何もしない |
@@ -265,6 +267,8 @@ const html = render("# 見出し\n\n本文");
 | `opts.docId` | 任意 | `mount` の `opts.docId` と同じ |
 | `opts.references` | 任意 | `mount` の `opts.references` と同じ |
 | `opts.aliases` | 任意 | `mount` の `opts.aliases` と同じ |
+| `opts.includes` | 任意 | `mount` の `opts.includes` と同じ |
+| `opts.icons` | 任意 | `mount` の `opts.icons` と同じ。表に無い束ねていない名前は中が空の要素にする |
 
 <!-- /table -->
 
@@ -829,6 +833,8 @@ handle.destroy();
 | `--mdmark-back-to-top-size` | `2.75rem` | 先頭へ戻るボタンの幅と高さ |
 | `--mdmark-back-to-top-gap` | `1rem` | 先頭へ戻るボタンと、スクロールする場所の右端・下端の間 |
 | `--mdmark-sticky-top` | `0px` | 表の見出し行と、右側の目次・狭い幅の帯を留める位置と、hover で開く右側の目次の枠の上端の、画面の上端からのずれ。ページの上端に固定したヘッダーを持つ使う側は、その高さを渡す |
+| `--mdmark-icon-inline-size` | `1em` | 行内のアイコン（`icon\:`）の幅と高さ |
+| `--mdmark-highlight-bg` | `var(--mdmark-color-accent-yellow-bg)` | 色を指定しない蛍光ペンの面の色 |
 | `--mdmark-color-footnote-ref` | `var(--mdmark-color-link)` | 本文の脚注の番号（`[1]`）の色 |
 | `--mdmark-color-term-underline` | `var(--mdmark-color-muted)` | 用語の語と文書の別名の、破線の下線の色 |
 | `--mdmark-color-avoided-underline` | `var(--mdmark-color-notice-border)` | やめた言い方の語の、波線の下線の色 |

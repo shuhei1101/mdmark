@@ -1361,3 +1361,51 @@ test("test_merge_invalid", async () => {
   });
   expect(order).toBeGreaterThan(0);
 });
+
+// CSV の表は、帯の右端に押していない RAW のボタンを置き、元の CSV を隠す（CsvTable）
+test("test_csv_table", async () => {
+  // 準備・実行
+  const page = await open("csv-table");
+  // 検証
+  const button = page.locator(".mdmark-raw-toggle");
+  await expect(button.getAttribute("aria-label")).resolves.toBe(
+    "元の CSV を表示",
+  );
+  await expect(button.getAttribute("aria-pressed")).resolves.toBe("false");
+  const box = await button.boundingBox();
+  const table = await page.locator(".mdmark-table table").boundingBox();
+  expect(box?.width).toBeGreaterThanOrEqual(24);
+  expect((box?.x ?? 0) + (box?.width ?? 0)).toBeCloseTo(
+    (table?.x ?? 0) + (table?.width ?? 0),
+    0,
+  );
+  await expect(
+    page
+      .locator("pre.mdmark-raw")
+      .evaluate((pre) => getComputedStyle(pre).visibility),
+  ).resolves.toBe("hidden");
+});
+
+// RAW のボタンを押した状態は、表を隠して書いたとおりの CSV を出し、ボタンを青の面にする（CsvRaw）
+test("test_csv_raw", async () => {
+  // 準備・実行
+  const page = await open("csv-raw");
+  const plain = await open("csv-table");
+  // 検証
+  const read = (target: Page) =>
+    target.locator(".mdmark-raw-toggle").evaluate((button) => ({
+      pressed: button.getAttribute("aria-pressed"),
+      background: getComputedStyle(button).backgroundColor,
+    }));
+  const pressed = await read(page);
+  expect(pressed.pressed).toBe("true");
+  expect(pressed.background).not.toBe((await read(plain)).background);
+  await expect(
+    page
+      .locator(".mdmark-table table")
+      .evaluate((t) => getComputedStyle(t).visibility),
+  ).resolves.toBe("hidden");
+  await expect(page.locator("pre.mdmark-raw").innerText()).resolves.toContain(
+    '北山,"東京, 本社",1200',
+  );
+});

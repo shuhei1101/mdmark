@@ -5,6 +5,7 @@ import {
   mountDocument,
   openPage,
   removeDistRoot,
+  routeLucide,
   routeSyntax,
 } from "../dist-page.ts";
 
@@ -627,4 +628,76 @@ test("test_normal_when_tree_wrap", async ({ page }) => {
   expect(wrapped.nestedLeft).toBe(plain.nestedLeft);
   expect(plain.overflows).toBe(true);
   expect(plain.name).toHaveLength(1);
+});
+
+// 見出しと段落のアイコン・キー・ルビを、スクリプト無しの見た目で描く（正常シナリオ（アイコン・キー・ルビ））
+test("test_normal_when_icon_kbd_ruby", async ({ page }) => {
+  // 準備
+  await openPage(page, builtRoot);
+  const requests = await routeLucide(page);
+  // 実行
+  await mountDocument(page, {
+    markdown:
+      "## `icon:flag` はじめに\n\n`icon:check` 保存したら `kbd:Ctrl+C` で写し、<ruby>漢字<rt>かんじ</rt></ruby>を読む。\n",
+  });
+  // 検証
+  const doc = page.locator("#doc");
+  await expect(
+    doc.locator('h2 .mdmark-inline-icon[data-icon="flag"] svg'),
+  ).toHaveCount(1);
+  await expect(
+    doc.locator('p .mdmark-inline-icon[data-icon="check"] svg'),
+  ).toHaveCount(1);
+  await expect(doc).not.toContainText("icon:");
+  await expect(doc.locator(".mdmark-inline-icon").first()).toHaveAttribute(
+    "aria-hidden",
+    "true",
+  );
+  await expect(doc.getByRole("heading", { level: 2 })).toHaveAccessibleName(
+    /^はじめに/,
+  );
+  await expect(doc.locator(".mdmark-kbd")).toHaveText(["Ctrl", "C"]);
+  await expect(doc).not.toContainText("kbd:");
+  await expect(doc.locator("ruby rt")).toHaveText("かんじ");
+  await page.waitForTimeout(SETTLE_MS);
+  expect(requests).toEqual([]);
+  await expect(doc.locator(".mdmark-syntax-warning")).toHaveCount(0);
+});
+
+// 頭の : の前に \ を書いた行内のコードは、書いたとおりの文字で出す（正常シナリオ（アイコンとキーの書き方を見せる））
+test("test_normal_when_icon_kbd_escaped", async ({ page }) => {
+  // 準備
+  await openPage(page, builtRoot);
+  // 実行
+  await mountDocument(page, { markdown: "`icon\\:check` と `kbd\\:Ctrl+C`\n" });
+  // 検証
+  await expect(page.locator("#doc code")).toHaveText([
+    "icon:check",
+    "kbd:Ctrl+C",
+  ]);
+  await expect(
+    page.locator("#doc .mdmark-inline-icon, #doc .mdmark-kbd"),
+  ).toHaveCount(0);
+});
+
+// 名前の書き方に合わないアイコンは、警告を置いて書いたとおりの文字で出す（異常シナリオ（アイコンの名前の書き方が誤っている））
+test("test_error_when_icon_name_invalid", async ({ page }) => {
+  // 準備
+  await openPage(page, builtRoot);
+  const requests = await routeLucide(page);
+  // 実行
+  await mountDocument(page, {
+    markdown: "`icon:Rocket!` の段落\n\n`icon:` の段落\n",
+  });
+  // 検証
+  const warning = page.locator("#doc .mdmark-syntax-warning");
+  await expect(warning).toHaveCount(1);
+  await expect(warning).toContainText("Rocket!");
+  const next = warning.locator("xpath=following-sibling::p[1]");
+  await expect(next.locator("code")).toHaveText("icon:Rocket!");
+  await expect(page.locator("#doc code", { hasText: /^icon:$/ })).toHaveCount(
+    1,
+  );
+  await page.waitForTimeout(SETTLE_MS);
+  expect(requests).toEqual([]);
 });

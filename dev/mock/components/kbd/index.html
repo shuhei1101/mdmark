@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <!-- viewport: スマホ幅で等倍に表示する -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- color-scheme: 明るい配色とダークの両方を持つことをブラウザへ伝える -->
+  <meta name="color-scheme" content="light dark">
+  <title>キー | mdmark の部品のモック</title>
+  <!-- 本文の規則とモック専用の操作列（#16 で共有するアセット） -->
+  <link rel="stylesheet" href="../../refs/16/assets/sample.css">
+  <!-- 採用スタイル本体の変数の値 -->
+  <link rel="stylesheet" href="../../assets/style.css">
+  <!-- 拡張記法の規則とカタログの並べ方（番号で共有するアセット） -->
+  <link rel="stylesheet" href="../../refs/19/assets/syntax.css">
+  <link rel="stylesheet" href="../../refs/19/assets/catalog.css">
+  <!-- 色のプリセット（#263 で共有するアセット） -->
+  <link rel="stylesheet" href="../../refs/263/assets/colors.css">
+  <!-- 新しい記法の規則（#307 で共有するアセット） -->
+  <link rel="stylesheet" href="../../refs/307/assets/notations.css">
+  <!-- 配色の切り替え -->
+  <script src="../../refs/16/assets/sample.js" defer></script>
+  <!-- 拡張記法の操作（並べ替え・開閉） -->
+  <script src="../../refs/19/assets/syntax.js" defer></script>
+  <!-- RAW のボタンの切り替え（#307 で共有するアセット） -->
+  <script src="../../refs/307/assets/notations.js" defer></script>
+</head>
+<body>
+  <!-- モック専用の操作列: 配色の切り替え -->
+  <div class="mock-bar">
+    <!-- [data-scheme-set]: sample.js が押されたボタンの値を html の data-scheme に当てる -->
+    <div class="mock-bar-group" role="group" aria-label="配色">
+      <button class="mock-bar-item" type="button" data-scheme-set="light" aria-pressed="false">明るい配色</button>
+      <button class="mock-bar-item" type="button" data-scheme-set="dark" aria-pressed="false">ダーク</button>
+    </div>
+  </div>
+
+  <main class="host">
+    <div class="catalog">
+      <h1 class="catalog-title">キー</h1>
+      <!-- 1 つのキー -->
+      <section aria-labelledby="state-single">
+        <h2 class="catalog-label" id="state-single">1 つのキー</h2>
+        <article class="mdmark">
+<p><span class="mdmark-kbd-group"><kbd class="mdmark-kbd">Enter</kbd></span> を押して確定します。</p>
+        </article>
+      </section>
+
+      <!-- 組み合わせ（+ で区切る） -->
+      <section aria-labelledby="state-combo">
+        <h2 class="catalog-label" id="state-combo">組み合わせ（+ で区切る）</h2>
+        <article class="mdmark">
+<p><span class="mdmark-kbd-group"><kbd class="mdmark-kbd">Ctrl</kbd><span class="mdmark-kbd-join">+</span><kbd class="mdmark-kbd">C</kbd></span> でコピーし、<span class="mdmark-kbd-group"><kbd class="mdmark-kbd">Ctrl</kbd><span class="mdmark-kbd-join">+</span><kbd class="mdmark-kbd">Shift</kbd><span class="mdmark-kbd-join">+</span><kbd class="mdmark-kbd">V</kbd></span> で書式なしで貼ります。</p>
+        </article>
+      </section>
+
+      <!-- 表の中 -->
+      <section aria-labelledby="state-table">
+        <h2 class="catalog-label" id="state-table">表の中</h2>
+        <article class="mdmark">
+<div class="mdmark-table" data-kind="plain">
+  <table tabindex="0" aria-label="表: ショートカット">
+    <thead><tr><th>操作</th><th>キー</th></tr></thead>
+    <tbody>
+      <tr><td data-label="操作">プレビューを開く</td><td data-label="キー"><span class="mdmark-kbd-group"><kbd class="mdmark-kbd">Shift</kbd><span class="mdmark-kbd-join">+</span><kbd class="mdmark-kbd">Alt</kbd><span class="mdmark-kbd-join">+</span><kbd class="mdmark-kbd">D</kbd></span></td></tr>
+      <tr><td data-label="操作">保存</td><td data-label="キー"><span class="mdmark-kbd-group"><kbd class="mdmark-kbd">Ctrl</kbd><span class="mdmark-kbd-join">+</span><kbd class="mdmark-kbd">S</kbd></span></td></tr>
+    </tbody>
+  </table>
+</div>
+        </article>
+      </section>
+
+      <!-- ルビ（文書の HTML の ruby） -->
+      <section aria-labelledby="state-ruby">
+        <h2 class="catalog-label" id="state-ruby">ルビ（文書の HTML の ruby）</h2>
+        <article class="mdmark">
+<p><ruby>凡例<rt>はんれい</rt></ruby>は図の下に置きます。</p>
+        </article>
+      </section>
+
+      <!-- 書き方を見せる（打ち消し） -->
+      <section aria-labelledby="state-escaped">
+        <h2 class="catalog-label" id="state-escaped">書き方を見せる（打ち消し）</h2>
+        <article class="mdmark">
+<p>キーは <code>kbd:Ctrl+C</code> のように書きます。</p>
+        </article>
+      </section>
+
+    </div>
+  </main>
+</body>
+</html>

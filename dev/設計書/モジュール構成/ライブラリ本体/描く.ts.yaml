@@ -8,6 +8,7 @@ directory: |-
   ├── highlight.ts        # 色分けのライブラリを読んでコードブロックを色分けする highlightCodeBlocks と、埋めたモジュールの控え
   ├── highlight-lines.ts  # 色分けした HTML を行に分ける splitHighlightedLines・highlightLines（DOM を使わない）
   ├── html-scripts.ts     # 埋め込んだ HTML の範囲の ts・js を変換して動かす runHtmlScripts と、変換のライブラリの読み込み・埋めた関数の控え
+  ├── inline-icons.ts     # 束ねていない名前のアイコンを jsDelivr から読む loadInlineIcons
   └── print.ts            # 印刷の前後で折り畳みを開いて戻す attachPrint
   ```
 diagrams:
@@ -223,6 +224,11 @@ constants:
     status: planned
     introduced:
       pr: 303
+  - name: LUCIDE_VERSION
+    title: 束ねた lucide のバージョン
+    container: src/inline-icons.ts
+    value: ビルドと単体テストの `define` で `package.json` の `lucide` のバージョンを埋める
+    summary: 束ねていないアイコンを読む URL のバージョン
 functions:
   - name: mount
     title: 文書を要素に描く
@@ -1058,6 +1064,70 @@ functions:
     status: planned
     introduced:
       pr: 303
+  - name: loadInlineIcons
+    title: 束ねていないアイコンを読む
+    container: src/inline-icons.ts
+    summary: '中が空の `span.mdmark-inline-icon` の名前ごとに、`opts.icons` に無ければ `lucideIconUrl` の URL を 1 回だけ `import()` し、`iconNodeSvg` の svg を同じ名前の全ての場所に入れる。失敗した名前だけ `HEAD` の `fetch` で 404 かを確かめ、404 は行内のコードに戻して書き方の警告を置き、それ以外は行内のコードに戻して文書の先頭に知らせの枠（`source: "icons"`）を 1 つだけ置く'
+    kind: 関数
+    scope: internal
+    args:
+    - name: options
+      type: '{ root: HTMLElement; icons: Record<string, MdmarkIconNode>; isCurrent: () => boolean; importModule?: ImportModule; fetchHead?: (url: string) => Promise<Response> }'
+      required: true
+      description: '`root` は描く先の要素、`icons` は `opts.icons`、`isCurrent` は描いた文書がまだ今のものか（`import()`・`HEAD` の後に偽なら DOM に触れずに戻る）、`importModule` はモジュールを読む関数（既定 `(url) => import(url)`）、`fetchHead` は `HEAD` を送る関数（既定 `(url) => fetch(url, { method: "HEAD" })`）'
+    returns:
+      type: Promise<void>
+      description: 全て入れ終えたら解決する
+    side_effects: jsDelivr のモジュールを `import()` し、失敗した名前だけ `HEAD` を送る。描く先の要素の中を書き換える。404 でなく読めなかった名前の URL を `console.error` に出す
+    callees:
+    - '#functions[lucideIconUrl]'
+    - dev/設計書/モジュール構成/ライブラリ本体/部品.ts#functions[iconNodeSvg]
+    unit_tests:
+    - name: test_load_inline_icons
+      case: 正常
+      condition: '`sailboat` 2 か所と `anchor` 1 か所の空の要素'
+      expected: '`import` が `sailboat.mjs` と `anchor.mjs` の 1 回ずつで、3 か所に svg が入る'
+      mock: '`importModule` と `fetchHead` を渡す'
+      summary: 名前ごとに 1 回だけ読む
+    - name: test_load_inline_icons_when_not_found
+      case: 異常
+      condition: '`no-such-icon` の `import` が失敗し、`HEAD` が 404'
+      expected: その場所が `<code>icon:no-such-icon</code>` になり、段落の前に書き方の警告があり、知らせの枠が無い
+      mock: '`importModule` と `fetchHead` を渡す'
+      summary: 404 は書き方の警告にする
+    - name: test_load_inline_icons_when_offline
+      case: 異常
+      condition: 全ての `import` と `HEAD` が失敗する
+      expected: 全ての場所が行内のコードになり、知らせの枠が 1 つだけある
+      mock: '`importModule` と `fetchHead` を渡す'
+      summary: 読めないときは知らせの枠を 1 つ置く
+    - name: test_load_inline_icons_when_stale
+      case: 正常
+      condition: '`import` と `HEAD` が失敗し、読み込みの間に `isCurrent` が偽になる'
+      expected: 知らせの枠と書き方の警告が無く、空の要素がそのまま残る
+      mock: '`importModule` と `fetchHead` を渡す'
+      summary: 古い描画の結果を書き込まない
+  - name: lucideIconUrl
+    title: アイコンの URL を作る
+    container: src/inline-icons.ts
+    summary: '`https://cdn.jsdelivr.net/npm/lucide@{LUCIDE_VERSION}/dist/esm/icons/{名前}.mjs` を返す'
+    kind: 関数
+    scope: internal
+    args:
+    - name: name
+      type: string
+      required: true
+      description: アイコンの名前
+    returns:
+      type: string
+      description: URL
+    unit_tests:
+    - name: test_lucide_icon_url
+      case: 正常
+      condition: '`sailboat`'
+      expected: '`https://cdn.jsdelivr.net/npm/lucide@{LUCIDE_VERSION}/dist/esm/icons/sailboat.mjs`'
+      mock: なし
+      summary: 束ねたバージョンの URL にする
 notes:
   単体テストの実行場所: このページの関数は DOM を使うため、単体テストを `tests/unit/src/{mount,libraries,highlight,print}.browser.test.ts` に置き（DOM を使わない `highlight-lines.ts` は `tests/unit/src/highlight-lines.test.ts` で `unit` プロジェクト）、Vitest のプロジェクト `unit-browser`（Chromium、`tests/unit/**/*.browser.test.ts`）で流す。`unit` プロジェクトは `*.browser.test.ts` を除く
 test_files:
@@ -1068,3 +1138,4 @@ test_files:
   - tests/unit/src/highlight-lines.test.ts
   - tests/unit/src/print.browser.test.ts
   - tests/unit/src/html-scripts.browser.test.ts
+  - tests/unit/src/inline-icons.browser.test.ts

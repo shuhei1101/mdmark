@@ -1,0 +1,94 @@
+title: ほかの文書を取り込む
+scenarios:
+  - name: 正常シナリオ
+    setup:
+      - name: mdmark を読むページ
+        description: 版を固定した URL で `dist/index.js` と `dist/index.css` を読み、設定と取り込む文書の表を渡して文書を描く HTML
+        notes: 表の渡し方とパスの基準はインターフェース定義で決める
+      - name: 取り込む文書の表
+        description: '`共通/手順.md`（`## 準備`・`## 実行`・`## 片付け` の見出しと段落。`## 実行` の下に `<!-- table: data -->` で囲んだ表を持つ）と、`src/app.ts`（12 行）'
+      - name: include のマーカーを持つ Markdown
+        description: '段落の間に `<!-- include: 共通/手順.md -->`、`<!-- include: 共通/手順.md#実行 -->`、`src/app.ts` の 3〜5 行目を指す include のマーカーを持つ文書'
+        notes: 行の範囲の書き方は要件.md の推奨の `#L3-L5`
+      - name: Mock
+        description: jsDelivr を、ビルドした `dist/` を同じパスで返す手元の応答に差し替える
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 設定・Markdown・取り込む文書の表を渡して描かせる
+        M->>M: include のマーカーの取り込み先を表から引き、全体・見出しの中・行の範囲を取り出す
+        M-->>P: 取り込んだ中身を持つ文書を描く
+        P-->>U: 文書を表示
+    expected:
+      - 1 つ目のマーカーの場所に、`準備`・`実行`・`片付け` の見出しと段落が描かれている
+      - 2 つ目のマーカーの場所に、`実行` の見出しと、その下から次の同じ階層の見出しの前までが描かれ、`準備`・`片付け` の段落は出ていない
+      - 取り込んだ表に、`data` の種類の並べ替え・絞り込みのボタンがある
+      - 3 つ目のマーカーの場所に、`src/app.ts` の 3〜5 行目だけを持つ言語 `ts` のコードブロックが描かれている
+      - 取り込んだ見出しにも見出しのアンカーが付き、目次に出ている
+      - 本文にマーカーの文字と書き方の警告が出ていない
+    test: test_normal
+  - name: 異常シナリオ（取り込み先が無い）
+    setup:
+      - name: mdmark を読むページ
+        description: 正常シナリオと同じ
+      - name: 取り込む文書の表
+        description: 正常シナリオと同じ
+      - name: 取り込み先の無いマーカーを持つ Markdown
+        description: 表に無い `missing.md` を指すマーカー、`共通/手順.md` に無い見出しを指すマーカー、`src/app.ts` の 20〜22 行目を指すマーカーを、段落の間に持つ文書
+      - &id001
+        name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 設定・Markdown・取り込む文書の表を渡して描かせる
+        M->>M: 取り込み先が表に無い・見出しが無い・行が無い
+        M-->>P: マーカーの場所に書き方の警告、ほかは本文を描く
+        P-->>U: 書き方の警告と本文を表示
+    expected:
+      - 3 つのマーカーの場所にそれぞれ、取り込み先と、無いもの（ファイル・見出し・行）を書いた書き方の警告がある
+      - 行の範囲の警告に、`src/app.ts` が 12 行であることが書かれている
+      - マーカーの前後の段落が描かれている
+    test: test_error_when_target_missing
+  - name: 異常シナリオ（取り込みが循環する）
+    setup:
+      - name: mdmark を読むページ
+        description: 正常シナリオと同じ
+      - name: 循環する取り込む文書の表
+        description: '`a.md`（段落と `<!-- include: b.md -->`）と `b.md`（段落と `<!-- include: a.md -->`）'
+      - name: a.md を取り込む Markdown
+        description: '`<!-- include: a.md -->` だけを持つ文書'
+      - *id001
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 設定・Markdown・取り込む文書の表を渡して描かせる
+        M->>M: a.md → b.md → a.md と取り込みが循環する
+        M-->>P: 循環したマーカーの場所に書き方の警告、ほかは本文を描く
+        P-->>U: 書き方の警告と本文を表示
+    expected:
+      - '`a.md` と `b.md` の段落が 1 回ずつ描かれている'
+      - '`b.md` の中の `a.md` を指すマーカーの場所に、取り込みが循環することと循環の順（`a.md` → `b.md` → `a.md`）を書いた書き方の警告がある'
+      - 描き終えていて、ページが止まっていない
+    test: test_error_when_circular
+lead: '文書を書く人が `<!-- include: path#見出し -->` を書き、mdmark がその場所にほかの文書の全体・見出しの中・コードの行の範囲を取り込んで描く。'
+issue: 219
+primary_actor: 文書を書く人
+stakeholders:
+  - name: 文書を書く人
+    interest: 同じ説明を 1 か所にだけ書き、複数の文書でずれない
+  - name: 使う側のアプリの開発者
+    interest: 取り込む文書を自分の読み方で集めて渡せる
+trigger: 使う側のページが、include のマーカーを持つ文書と取り込む文書の表を渡して描かせる
+preconditions:
+  - ページが版を固定した URL で mdmark の JavaScript と CSS を読んでいる
+  - 取り込みの機能がオン（既定）
+success_guarantee: マーカーの場所に、取り込み先の文書の全体か見出しの下の中身が描いた文書の一部として描かれ、コードは指した行の範囲が拡張子の言語のコードブロックで描かれる。
+minimal_guarantee: 取り込み先が無いマーカーと循環するマーカーは、その場所に書き方の警告を出し、ほかの本文は描く。
+test_file: tests/e2e/単一ユースケース/ほかの文書を取り込む.spec.ts

@@ -1080,6 +1080,79 @@ scenarios:
       - '`tree=` の無い `type=` の表は、型の列をバッジにせず文字のまま出している'
       - 見出しが無い `example=` の表は、階層では描かれ、見本と表示を切り替えるボタンが無い
     test: test_error_when_tree_options_invalid
+  - name: 正常シナリオ（CSV の表）
+    setup:
+      - name: mdmark を読むページ
+        description: 版を固定した URL で `dist/index.js` と `dist/index.css` を読み、設定を渡して文書を描く HTML
+      - name: CSV のコードブロックを持つ Markdown
+        description: '`<!-- table: data -->` 〜 `<!-- /table -->` で、見出しの行 `名前,拠点,金額` と 3 行の値を書いた言語 `csv` のコードブロックを囲み、マーカーの無い言語 `csv` のコードブロックと、同じ中身の言語 `text` のコードブロックも 1 つずつ持つ文書'
+        notes: 値の 1 つは `"東京, 本社"` のように引用符で囲んだ区切りを含み、1 つは引用符の中に改行を含む
+      - name: Mock
+        description: jsDelivr を、ビルドした `dist/` を同じパスで返す手元の応答に差し替える
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を渡して描かせる
+        M->>M: CSV を表の行と列に読み、表のマーカーの機能を当てる
+        M-->>P: 並べ替え・絞り込みを付けた表を描く
+        U->>P: 金額の列の見出しで並べ替える
+        P-->>U: 並べ替えた表
+    expected:
+      - 1 つ目のコードブロックが、`名前`・`拠点`・`金額` の見出しと 3 行の表になり、`data` の種類の並べ替え・絞り込み・ピン止めのボタンがある
+      - 引用符で囲んだ値が 1 つのセルになり、区切りと改行を含んだ値がそのまま出ている（引用符は出ていない）
+      - 金額の列で並べ替えた後、行が金額の順に並んでいる
+      - 2 つ目のコードブロックが、既定の種類の表（ピン止めだけ）になっている
+      - 書き方の警告が出ていない
+      - 言語を `text` にした同じ中身のコードブロックは、表にならずコードブロックで出ている（CSV をコードとして見せる書き方）
+    test: test_normal_when_csv
+  - name: 異常シナリオ（CSV の列の数がそろわない）
+    setup:
+      - name: mdmark を読むページ
+        description: 正常シナリオ（CSV の表）と同じ
+      - name: 列の数がそろわない CSV を持つ Markdown
+        description: 見出しの行が 3 列で、2 行目が 2 列、3 行目が 4 列の言語 `csv` のコードブロックを持つ文書
+      - name: Mock
+        description: 正常シナリオ（CSV の表）と同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を渡して描かせる
+        M->>M: 見出しの行と列の数が違う行がある
+        M-->>P: 書き方の警告と、見出しの列の数にそろえた表を描く
+        P-->>U: 書き方の警告と表を表示
+    expected:
+      - 表の上に、列の数が見出しの行と違う行の行番号を書いた書き方の警告がある
+      - 表は 3 列で、2 行目の 3 列目が空のセル、3 行目は 3 列目までの値が出ている
+    test: test_error_when_csv_columns_mismatch
+  - name: 正常シナリオ（CSV の表と元の CSV を切り替える）
+    setup:
+      - name: mdmark を読むページ
+        description: 正常シナリオ（CSV の表）と同じ
+      - name: CSV のコードブロックを持つ Markdown
+        description: 正常シナリオ（CSV の表）の、表のマーカーで囲んだ言語 `csv` のコードブロックだけを持つ文書
+      - name: Mock
+        description: 正常シナリオ（CSV の表）と同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を渡して描かせる
+        M-->>P: 右端に RAW のボタンを持つ表を描く
+        U->>P: RAW のボタンを押す
+        P-->>U: 元の CSV のコードブロック
+        U->>P: もう一度 RAW のボタンを押す
+        P-->>U: 描いた表
+    expected:
+      - 描いた直後、表の右端に RAW のボタンがあり、押していない状態（`aria-pressed` が `false`）で薄く表示されている
+      - RAW のボタンを押した後、表の代わりに、書いたとおりの CSV のコードブロックが出ていて、ボタンの `aria-pressed` が `true`
+      - もう一度押した後、表に戻り、並べ替え・絞り込みのボタンがある
+      - RAW のボタンはフォーカスして Enter でも押せる
+    test: test_normal_when_csv_raw_toggled
 lead: '文書を書く人が `<!-- table: 種類 +機能 -機能 -->` 〜 `<!-- /table -->` で表を囲み、読む人が描かれた表を見出し行を見ながらページのスクロールで読み、列で並べ替え・絞り込み・ピン止めし、閉じた表を開き、表と行の URL をコピーする。'
 issue: 4
 primary_actor: 文書を読む人

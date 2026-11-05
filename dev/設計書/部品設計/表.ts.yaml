@@ -912,6 +912,34 @@ states:
         value: '0'
       - name: example
         value: '{"heading":"設定の見本","tabs":[{"name":"最小"},{"name":"エイリアス"}],"active":0,"hidden":true}'
+  - name: CsvTable
+    description: 言語 `csv` のコードブロックから作った表。帯の右端に押していない RAW のボタン（控えめな色のコードのアイコン）
+    args:
+      - name: kind
+        value: data
+      - name: features
+        value: '["sort","pin","filter"]'
+      - name: columns
+        value: '["名前","拠点","金額"]'
+      - name: rows
+        value: '[["北山","東京, 本社","1200"],["南田","大阪","800"]]'
+      - name: rawCsv
+        value: 名前,拠点,金額\n北山,"東京, 本社",1200\n南田,大阪,800
+  - name: CsvRaw
+    description: RAW のボタンを押した。表を隠して書いたとおりの CSV を出し、ボタンは青いアイコンと薄い青の面
+    args:
+      - name: kind
+        value: data
+      - name: features
+        value: '["sort","pin","filter"]'
+      - name: columns
+        value: '["名前","拠点","金額"]'
+      - name: rows
+        value: '[["北山","東京, 本社","1200"],["南田","大阪","800"]]'
+      - name: rawCsv
+        value: 名前,拠点,金額\n北山,"東京, 本社",1200\n南田,大阪,800
+      - name: rawShown
+        value: 'true'
 lead: Markdown の表を囲み、多段の見出し・行見出し・縦に結合したセルを描き、種類と `+機能`・`-機能` で決まった並べ替え・ピン止め・絞り込みのボタンと、絞り込みのドロワーを付ける。見出し行は面の色で分け、表が画面に残っている間はページを縦にスクロールしても画面の上端に留め、集計の行を画面の下端に留める。描く先の要素の幅が狭く最終列が 1 行に収まらないときは、最終列を畳んで行ごとに開閉させる。
 args:
   - name: kind
@@ -1157,6 +1185,17 @@ args:
     default: なし（見本を置かない）
     enabled_when: '`tree` を渡したとき'
     description: '表の下に置く YAML の見本（`{ heading, tabs: [{ name, lines: [{ text, path? }] }], active, hidden }`）。`active` は開いているタブの位置、`hidden` が `true` のとき見本を隠してボタンを `見本を表示` にする'
+  - name: rawCsv
+    type: 文字列
+    required: false
+    default: なし（CSV の表ではない）
+    description: 言語 `csv` のコードブロックから作った表の、書いたとおりの CSV。渡すと `data-source="csv"` を付け、表の後ろに `<pre class="mdmark-raw" hidden><code class="language-csv">` を置き、帯の右端に RAW のボタンを置く
+  - name: rawShown
+    type: 真偽値
+    required: false
+    default: 'false'
+    enabled_when: '`rawCsv` を渡したとき'
+    description: 元の CSV を出しているか。`true` なら RAW のボタンを `aria-pressed="true"` にし、表を隠して `pre.mdmark-raw` を出す
 events:
   - name: 並べ替える
     when: 列の見出しのボタンを押す
@@ -1270,6 +1309,7 @@ accessibility:
   - テーブル設定のボタンはアイコンだけで、`aria-label` とツールチップに `テーブル設定` を持つ。列を隠しているときは、バッジに加えて `aria-label` を `テーブル設定（{隠した列の数} 列を非表示）` にし、色と数だけに頼らない。パネルは絞り込みのドロワーと同じ開閉の作法。つまみはキーボードの ↑・↓ で動かせ、動かせないつまみは `disabled`。案内はつまみの `aria-describedby` で読み上げる
   - 階層の開閉のボタンは `aria-expanded` と `{パス} を畳む`・`{パス} を開く` の読み上げの名前を持つ。キーの名前は `tabindex="0"` で、フォーカスでも全体のパスのツールチップを出す。選んだ行は `aria-selected` で示し、縦線の濃さだけに頼らない
   - 見本の表示の切り替えのボタンは `aria-expanded`・`aria-controls` で見本の開閉を示す
+  - RAW のボタンは `aria-label="元の CSV を表示"` と `aria-pressed` を持ち、24px 四方以上。押した状態は青いアイコンと薄い青の面で示す。押すと表と元の CSV が入れ替わるため、状態は色のほかに出ている中身でも分かる
 refs:
   - dev/設計書/インターフェース定義/ライブラリ本体/文書をHTML文字列にする.ts#constraints[表]
   - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[表の操作]

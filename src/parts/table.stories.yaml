@@ -695,3 +695,24 @@ stories:
       treeRequired: 2
       treeDefault: 3
       example: '{"heading":"設定の見本","tabs":[{"name":"最小","lines":[{"text":"features:","path":"features"},{"text":"  table: true","path":"features.table"}]},{"name":"エイリアス","lines":[{"text":"aliases:","path":"aliases[]"},{"text":"  - id: terms","path":"aliases[].id"},{"text":"    metadata:","path":"aliases[].metadata"},{"text":"      alias_type:","path":"aliases[].metadata.alias_type"},{"text":"        type: custom","path":"aliases[].metadata.alias_type.type"}]}],"active":0,"hidden":true}'
+  - name: CsvTable
+    parameters:
+      server:
+        id: table
+    args:
+      kind: 'data'
+      features: '["sort","pin","filter"]'
+      columns: '["名前","拠点","金額"]'
+      rows: '[["北山","東京, 本社","1200"],["南田","大阪","800"]]'
+      rawCsv: "名前,拠点,金額\n北山,\"東京, 本社\",1200\n南田,大阪,800"
+  - name: CsvRaw
+    parameters:
+      server:
+        id: table
+    args:
+      kind: 'data'
+      features: '["sort","pin","filter"]'
+      columns: '["名前","拠点","金額"]'
+      rows: '[["北山","東京, 本社","1200"],["南田","大阪","800"]]'
+      rawCsv: "名前,拠点,金額\n北山,\"東京, 本社\",1200\n南田,大阪,800"
+      rawShown: true

@@ -281,6 +281,10 @@ const SANITIZE_OPTIONS: sanitizeHtml.IOptions = {
   parseStyleAttributes: false,
   // 範囲の `style` は mdmark が根の要素の中に限って出したものだけを残す（文書に書いたものは `transformTags` が落とす）
   allowVulnerableTags: true,
+  // 値の無い `hidden`（CSV の表の元の CSV）を残す。文書に書いた `hidden` は `dropSyntaxAttributes` が先に落とす
+  nonBooleanAttributes: sanitizeHtml.defaults.nonBooleanAttributes.filter(
+    (name) => name !== "hidden",
+  ),
 };
 
 /** スキームを見分ける前に除く、制御文字と空白の文字コードの上限（U+0000〜U+0020） */

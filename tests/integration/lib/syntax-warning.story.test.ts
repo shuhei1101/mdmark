@@ -161,3 +161,25 @@ test("test_view_unknown_icon", async () => {
   expect(text).toContain("既定のアイコンを付けています");
   await expect(pageOverflows(page)).resolves.toBe(false);
 });
+
+// 新しい記法の書き方の警告を、ほかの警告と同じ枠で出す（IconName・IconNotInLucide・ColumnsCount・IncludeMissing・IncludeCircular・CsvColumns）
+test("test_new_syntax_warnings", async () => {
+  for (const [id, words] of [
+    ["icon-name", ["icon:Rocket!", "Rocket!", "rocket"]],
+    ["icon-not-in-lucide", ["icon:no-such-icon", "https://lucide.dev/icons/"]],
+    ["columns-count", ["<!-- columns -->", "4 列", "2〜3"]],
+    ["include-missing", ["src/app.ts", "12 行", "20〜22"]],
+    ["include-circular", ["a.md → b.md → a.md"]],
+    ["csv-columns", ["2 行目", "3 行目", "3 列"]],
+  ] as const) {
+    // 準備・実行
+    const { page, warning } = await open(id);
+    // 検証
+    await expectFrame(warning);
+    const text = await warning.innerText();
+    for (const word of words) {
+      expect(text).toContain(word);
+    }
+    await expect(pageOverflows(page)).resolves.toBe(false);
+  }
+});

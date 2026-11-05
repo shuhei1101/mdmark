@@ -1,0 +1,36 @@
+$ npm run lint
+
+> lint
+> biome check .
+
+Checked 652 files in 3s. No fixes applied.
+
+$ npm run typecheck
+
+> typecheck
+> tsc --noEmit
+
+tests/unit/src/cli/check.test.ts(693,11): error TS2339: Property 'checkIncludes' does not exist on type 'typeof import("/mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-syntax-icon-columns-highlight-kbd-details-include-wide-csv/src/cli/check")'.
+tests/unit/src/cli/check.test.ts(720,22): error TS7006: Parameter 'issue' implicitly has an 'any' type.
+tests/unit/src/cli/icons.test.ts(4,32): error TS2307: Cannot find module '../../../../src/cli/icons.ts' or its corresponding type declarations.
+tests/unit/src/cli/includes.test.ts(6,35): error TS2307: Cannot find module '../../../../src/cli/includes.ts' or its corresponding type declarations.
+tests/unit/src/cli/includes.test.ts(70,38): error TS7006: Parameter 'problem' implicitly has an 'any' type.
+tests/unit/src/cli/includes.test.ts(74,39): error TS7006: Parameter 'problem' implicitly has an 'any' type.
+tests/unit/src/cli/includes.test.ts(77,6): error TS7006: Parameter 'problem' implicitly has an 'any' type.
+tests/unit/src/inline-icons.browser.test.ts(6,38): error TS2307: Cannot find module '../../../src/inline-icons.ts' or its corresponding type declarations.
+tests/unit/src/interact/csv-raw.browser.test.ts(5,33): error TS2307: Cannot find module '../../../../src/interact/csv-raw.ts' or its corresponding type declarations.
+tests/unit/src/interact/wide.browser.test.ts(9,31): error TS2307: Cannot find module '../../../../src/interact/wide.ts' or its corresponding type declarations.
+tests/unit/src/parts/highlight.test.ts(4,36): error TS2307: Cannot find module '../../../../src/parts/highlight.ts' or its corresponding type declarations.
+tests/unit/src/parts/inline-icon.test.ts(4,37): error TS2307: Cannot find module '../../../../src/parts/inline-icon.ts' or its corresponding type declarations.
+tests/unit/src/parts/kbd.test.ts(4,30): error TS2307: Cannot find module '../../../../src/parts/kbd.ts' or its corresponding type declarations.
+tests/unit/src/parts/layout-columns.test.ts(6,10): error TS2307: Cannot find module '../../../../src/parts/layout-columns.ts' or its corresponding type declarations.
+tests/unit/src/parts/table.test.ts(910,11): error TS2339: Property 'renderRawToggle' does not exist on type 'typeof import("/mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-syntax-icon-columns-highlight-kbd-details-include-wide-csv/src/parts/table")'.
+tests/unit/src/parts/wide.test.ts(5,31): error TS2307: Cannot find module '../../../../src/parts/wide.ts' or its corresponding type declarations.
+tests/unit/src/render/syntax/csv.test.ts(6,30): error TS2307: Cannot find module '../../../../../src/render/syntax/csv.ts' or its corresponding type declarations.
+tests/unit/src/render/syntax/details.test.ts(6,34): error TS2307: Cannot find module '../../../../../src/render/syntax/details.ts' or its corresponding type declarations.
+tests/unit/src/render/syntax/includes.test.ts(8,10): error TS2307: Cannot find module '../../../../../src/render/syntax/includes.ts' or its corresponding type declarations.
+tests/unit/src/render/syntax/includes.test.ts(122,39): error TS7006: Parameter 'token' implicitly has an 'any' type.
+tests/unit/src/render/syntax/kbd.test.ts(5,30): error TS2307: Cannot find module '../../../../../src/render/syntax/kbd.ts' or its corresponding type declarations.
+tests/unit/vscode/src/preview/includes.test.ts(5,10): error TS2307: Cannot find module '../../../../../vscode/src/preview/includes.ts' or its corresponding type declarations.
+
+（単体テスト作成の工程: 型検査の違反は全て実装が無いことによるもの）

@@ -1,8 +1,10 @@
 import type { MdmarkConfig } from "../config.ts";
+import { LUCIDE_VERSION } from "../inline-icons.ts";
 import type { MdmarkAlias } from "../knowledge/aliases.ts";
 import type { MdmarkIndex } from "../knowledge/index-shape.ts";
 import type { MdmarkReferences } from "../knowledge/references.ts";
 import { escapeHtml } from "../parts/escape.ts";
+import type { MdmarkIconNode } from "../parts/inline-icon.ts";
 
 /** `bundle` で埋めた画像を指す `src` の頭 */
 export const ASSET_SCHEME = "mdmark-asset:";
@@ -23,7 +25,13 @@ export type ExportPayload = {
     title: string;
     markdown: string;
     docId?: string | undefined;
+    /** 取り込む文書の表: 文書のフォルダからのパスから、`includes` のキー（設定ファイルのフォルダからのパス）を引く */
+    includes?: Record<string, string> | undefined;
   }>;
+  /** 取り込む文書の本文。キーは設定ファイルのフォルダからのパスで、同じファイルは 1 回だけ持つ */
+  includes?: Record<string, string> | undefined;
+  /** 束ねていない名前のアイコンの形の表 */
+  icons?: Record<string, MdmarkIconNode> | undefined;
   /** 最初に開く文書の `path` */
   entry: string;
   /** `loadAliases` が作ったエイリアス（`env` を含まない）。設定に `aliases` が無ければ持たない */
@@ -108,6 +116,9 @@ export function assembleHtml(parts: {
     "</head>",
     "<body>",
     body,
+    payload.icons && Object.keys(payload.icons).length > 0
+      ? `<!-- lucide ${LUCIDE_VERSION} - ISC License (c) Lucide Contributors / MIT License (c) 2013-present Cole Bemis -->`
+      : "",
     `<script type="application/json" id="${PAYLOAD_ID}">${encodePayload(payload)}</script>`,
     `<script type="module">${script}</script>`,
     "</body>",

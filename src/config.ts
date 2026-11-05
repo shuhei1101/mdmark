@@ -111,6 +111,15 @@ export const DEFAULT_FEATURES: Record<string, boolean> = {
   media: true,
   gif: true,
   cards: true,
+  icon: true,
+  columns: true,
+  highlight: true,
+  kbd: true,
+  details: true,
+  pagebreak: true,
+  include: true,
+  wide: true,
+  csv: true,
 };
 
 /** 設定の `syntax.url` が無いときに読む highlight.js の `es/` フォルダの URL。バージョンを固定する */
