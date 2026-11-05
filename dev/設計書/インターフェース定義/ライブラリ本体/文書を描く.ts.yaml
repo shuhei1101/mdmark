@@ -560,7 +560,7 @@ flows:
         P->>M: mount(el, { markdown, aliases })
         P->>M: 単体テストの語をタップする
         M->>P: コマンドとコピーのボタンのツールチップを出す
-        P->>M: ツールチップのコピーのボタンに pointerdown を発火する
+        P->>M: ツールチップのコピーのボタンをタップする（touch の pointerdown を発火し、ボタンの focus() を呼ぶ）
         M->>P: 出したままにする
         P->>M: 開いている語に mouse の pointerdown を発火する
         M->>P: 出したままにする
@@ -572,9 +572,9 @@ flows:
         M->>P: ツールチップを消す
     expected:
       - 閉じた語への 1 回のタップの後、語の枠 `mdmark-term-wrap` が `is-open` を持つ
-      - コピーのボタンの `pointerdown` の後も、語の枠が `is-open` を持つ
+      - コピーのボタンのタップの後も、語の枠が `is-open` を持つ
       - '`pointerType` が `mouse` の `pointerdown` を開いている語に発火しても、語の枠が `is-open` を持つ'
-      - 開いている語へのタップの後、語の枠が `is-open` を持たない
+      - フォーカスがコピーのボタンにある状態で開いている語をタップした後（語の `focusin` が `pointerdown` の後に発火する）、語の枠が `is-open` を持たない
       - 2 つ目の段落の `pointerdown` の後、語の枠が `is-open` を持たない
     test: test_normal_when_glossary_touch
   - name: 正常系（被参照の一覧）
