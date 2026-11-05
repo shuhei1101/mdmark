@@ -33,7 +33,13 @@ test("test_load_inline_icons", async () => {
   const importModule = vi.fn(async (_url: string) => ICON_MODULE);
   const fetchHead = vi.fn(async (_url: string) => new Response(null));
   // 実行
-  await load({ root, icons: {}, importModule, fetchHead });
+  await load({
+    root,
+    icons: {},
+    isCurrent: () => true,
+    importModule,
+    fetchHead,
+  });
   // 検証
   const urls = importModule.mock.calls.map(([url]) => url);
   expect(urls).toHaveLength(2);
@@ -55,7 +61,13 @@ test("test_load_inline_icons_when_not_found", async () => {
     async (_url: string) => new Response(null, { status: 404 }),
   );
   // 実行
-  await load({ root, icons: {}, importModule, fetchHead });
+  await load({
+    root,
+    icons: {},
+    isCurrent: () => true,
+    importModule,
+    fetchHead,
+  });
   // 検証
   expect(root.innerHTML).toContain("<code>icon:no-such-icon</code>");
   const warning = root.querySelector(".mdmark-syntax-warning");
@@ -76,7 +88,13 @@ test("test_load_inline_icons_when_offline", async () => {
     throw new TypeError("Failed to fetch");
   });
   // 実行
-  await load({ root, icons: {}, importModule, fetchHead });
+  await load({
+    root,
+    icons: {},
+    isCurrent: () => true,
+    importModule,
+    fetchHead,
+  });
   // 検証
   expect(root.querySelectorAll(".mdmark-inline-icon")).toHaveLength(0);
   expect(root.querySelectorAll("code")).toHaveLength(2);
@@ -84,6 +102,35 @@ test("test_load_inline_icons_when_offline", async () => {
   expect(root.firstElementChild?.classList.contains("mdmark-notice")).toBe(
     true,
   );
+});
+
+// 古い描画の結果を書き込まない（正常系）
+test("test_load_inline_icons_when_stale", async () => {
+  // 準備
+  const { loadInlineIcons: load } = await loadInlineIcons();
+  const root = createRootFromHtml(emptyIcons(["sailboat", "no-such-icon"]));
+  let current = true;
+  const importModule = vi.fn(async (_url: string) => {
+    current = false;
+    throw new TypeError("Failed to fetch dynamically imported module");
+  });
+  const fetchHead = vi.fn(async (url: string) =>
+    url.includes("no-such-icon")
+      ? new Response(null, { status: 404 })
+      : Promise.reject(new TypeError("Failed to fetch")),
+  );
+  // 実行
+  await load({
+    root,
+    icons: {},
+    isCurrent: () => current,
+    importModule,
+    fetchHead,
+  });
+  // 検証
+  expect(root.querySelector(".mdmark-notice")).toBeNull();
+  expect(root.querySelector(".mdmark-syntax-warning")).toBeNull();
+  expect(root.querySelectorAll(".mdmark-inline-icon")).toHaveLength(2);
 });
 
 // 束ねたバージョンの URL にする（正常系）
