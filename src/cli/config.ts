@@ -401,7 +401,7 @@ export function validateConfig(
   return { config: config as CliConfig, issues };
 }
 
-/** 設定の `tooltips` を検める。キーと値の形でなければ、`placement` が `top` と `bottom` のどちらでもなければ、`schema` のずれを積んで `false` を返す */
+/** 設定の `tooltips` を検める。キーと値の形でなければ、`placement`・`diagramPlacement` が `top` と `bottom` のどちらでもなければ、`schema` のずれを積んで `false` を返す */
 function isValidTooltips(
   value: unknown,
   file: string,
@@ -412,26 +412,30 @@ function isValidTooltips(
       schemaIssue(
         file,
         "tooltips",
-        "`tooltips` は `placement` を持つキーと値で書いてください。",
+        "`tooltips` は `placement`・`diagramPlacement` を持つキーと値で書いてください。",
       ),
     );
     return false;
   }
-  if (
-    value.placement !== undefined &&
-    value.placement !== "top" &&
-    value.placement !== "bottom"
-  ) {
-    issues.push(
-      schemaIssue(
-        file,
-        "tooltips.placement",
-        "`tooltips.placement` は `top` か `bottom` で書いてください。",
-      ),
-    );
-    return false;
+  let valid = true;
+  for (const key of ["placement", "diagramPlacement"] as const) {
+    const placement = value[key];
+    if (
+      placement !== undefined &&
+      placement !== "top" &&
+      placement !== "bottom"
+    ) {
+      issues.push(
+        schemaIssue(
+          file,
+          `tooltips.${key}`,
+          `\`tooltips.${key}\` は \`top\` か \`bottom\` で書いてください。`,
+        ),
+      );
+      valid = false;
+    }
   }
-  return true;
+  return valid;
 }
 
 /** 設定の `labels` を検める。キーと値の形でなければ、`paramCopy` が空でない文字列でなければ、`schema` のずれを積んで `false` を返す（知らないキーは拒まない） */

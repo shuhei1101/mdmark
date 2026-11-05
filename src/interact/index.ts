@@ -23,8 +23,10 @@ export function attachInteractions(options: {
   root: HTMLElement;
   /** 文書で決まった機能のオン・オフ */
   features: Record<string, boolean>;
-  /** 既定を当てた設定のツールチップを出す場所 */
+  /** 既定を当てた設定の、本文の用語・脚注のツールチップを出す場所 */
   placement: TooltipPlacement;
+  /** 既定を当てた設定の、図・ヒント・グラフの項目のツールチップを出す場所（既定 `bottom`） */
+  diagramPlacement?: TooltipPlacement;
   /** 描いた操作できる部品の定義。`div.mdmark-param` の並びと同じ順（既定 `[]`） */
   paramDefinitions?: MdmarkParamDefinition[];
   /** 列の表示を切り替えたときに知らせる */
@@ -34,6 +36,7 @@ export function attachInteractions(options: {
     root,
     features,
     placement,
+    diagramPlacement = "bottom",
     paramDefinitions = [],
     onColumnsChange,
   } = options;
@@ -59,7 +62,7 @@ export function attachInteractions(options: {
     detachers.push(attachFileTrees(root));
   }
   if (features.diagrams === true) {
-    detachers.push(attachDiagrams({ root, placement }));
+    detachers.push(attachDiagrams({ root, placement: diagramPlacement }));
     detachers.push(attachParams(root, paramDefinitions));
   }
   if (features.footnotes === true) {
@@ -76,7 +79,8 @@ export function attachInteractions(options: {
         "div.mdmark-html",
       )) {
         detachers.push(
-          attachDiagramTips({ figure: embedded, placement }).detach,
+          attachDiagramTips({ figure: embedded, placement: diagramPlacement })
+            .detach,
         );
       }
     }

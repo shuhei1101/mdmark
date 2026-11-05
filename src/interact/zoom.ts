@@ -6,6 +6,9 @@ const ZOOM_EPSILON = 0.001;
 // ドラッグを始めない、押せる所
 const CONTROL_SELECTOR = "button, a, input";
 
+/** 押してからこの距離（px）を超えて動いたら図を動かし始める。超えないうちはグラフの項目のツールチップを優先する */
+export const DRAG_THRESHOLD_PX = 4;
+
 /** 表示の操作の名前（ボタンの `data-tool` と同じ） */
 type ZoomAction = "in" | "out" | "fit" | "left" | "right" | "up" | "down";
 
@@ -33,6 +36,8 @@ export type ZoomControl = {
   reset(): void;
   /** 今の全体が収まる倍率を返す */
   fit(): number;
+  /** 今の倍率と位置を保ったまま、全体が収まる倍率とボタンの状態を求め直す */
+  refit(): void;
   /** 付けた操作と監視を外す */
   detach(): void;
 };
@@ -49,8 +54,10 @@ export function attachZoom(options: {
   tools: HTMLElement;
   /** 倍率が変わったときに呼ぶ関数（ボタンの状態を書き換える前に呼ぶ） */
   onChange?: ZoomChange;
-  /** 全体が収まる倍率を高さでも決めるか（既定 `true`。文書の中の図は幅だけで決める） */
-  fitHeight?: boolean;
+  /** ドラッグで動かし始めたときに呼ぶ関数 */
+  onPanStart?: () => void;
+  /** 全体が収まる倍率を高さでも決めるか（既定 `true`。文書の中の図は幅だけで決める）。関数のときは倍率を求めるたびに呼ぶ */
+  fitHeight?: boolean | (() => boolean);
   /** ドラッグを始めない要素のセレクタ（押せる所に加える） */
   dragIgnore?: string;
   /** キーを受ける要素（既定は表示する枠とボタンを持つ要素） */
@@ -64,6 +71,7 @@ export function attachZoom(options: {
     size,
     tools,
     onChange,
+    onPanStart,
     fitHeight = true,
     dragIgnore,
     keyTargets = [viewport, tools],
@@ -75,6 +83,9 @@ export function attachZoom(options: {
   const button = (name: ZoomAction): HTMLButtonElement | null =>
     tools.querySelector<HTMLButtonElement>(`[data-tool="${name}"]`);
   const state = { scale: 1, fit: 1, atFit: true };
+  /** 全体が収まる倍率を高さでも決めるか */
+  const useHeight = (): boolean =>
+    typeof fitHeight === "function" ? fitHeight() : fitHeight;
   const controller = new AbortController();
   const { signal } = controller;
 
@@ -85,7 +96,9 @@ export function attachZoom(options: {
       ? 1
       : fitScale(size, {
           width: viewport.clientWidth,
-          height: fitHeight ? viewport.clientHeight : Number.POSITIVE_INFINITY,
+          height: useHeight()
+            ? viewport.clientHeight
+            : Number.POSITIVE_INFINITY,
         });
 
   /** 中身が表示する枠からはみ出しているか */
@@ -202,7 +215,14 @@ export function attachZoom(options: {
     ? `${dragIgnore}, ${CONTROL_SELECTOR}`
     : CONTROL_SELECTOR;
   let drag:
-    | { x: number; y: number; left: number; top: number; id: number }
+    | {
+        x: number;
+        y: number;
+        left: number;
+        top: number;
+        id: number;
+        moving: boolean;
+      }
     | undefined;
   viewport.addEventListener(
     "pointerdown",
@@ -216,9 +236,8 @@ export function attachZoom(options: {
         left: viewport.scrollLeft,
         top: viewport.scrollTop,
         id: event.pointerId,
+        moving: false,
       };
-      viewport.setPointerCapture(event.pointerId);
-      viewport.classList.add("is-dragging");
     },
     { signal },
   );
@@ -227,6 +246,20 @@ export function attachZoom(options: {
     (event) => {
       if (!drag || event.pointerId !== drag.id) {
         return;
+      }
+      if (!drag.moving) {
+        // しきい値までは動かさない（グラフの項目の上で押したときのツールチップを優先する）
+        const distance = Math.hypot(
+          event.clientX - drag.x,
+          event.clientY - drag.y,
+        );
+        if (distance <= DRAG_THRESHOLD_PX) {
+          return;
+        }
+        drag.moving = true;
+        viewport.setPointerCapture(event.pointerId);
+        viewport.classList.add("is-dragging");
+        onPanStart?.();
       }
       viewport.scrollLeft = drag.left - (event.clientX - drag.x);
       viewport.scrollTop = drag.top - (event.clientY - drag.y);
@@ -256,7 +289,7 @@ export function attachZoom(options: {
 
   // 表示する枠の大きさが変わったとき: 全体が収まる倍率で見ていたなら、新しい大きさで収まる倍率に合わせ直す
   const sizeOf = (): string =>
-    `${viewport.clientWidth}x${fitHeight ? viewport.clientHeight : 0}`;
+    `${viewport.clientWidth}x${useHeight() ? viewport.clientHeight : 0}`;
   let lastSize = sizeOf();
   const observer = new ResizeObserver(() => {
     const current = sizeOf();
@@ -275,9 +308,18 @@ export function attachZoom(options: {
 
   reset();
 
+  /** 今の倍率と位置を保ったまま、全体が収まる倍率を求め直す（倍率が新しい下限より小さいときは下限にする） */
+  const refit = (): void => {
+    state.fit = computeFit();
+    const scale = Math.max(state.fit, state.scale);
+    state.atFit = Math.abs(scale - state.fit) < ZOOM_EPSILON;
+    apply(scale);
+  };
+
   return {
     reset,
     fit: () => state.fit,
+    refit,
     detach: () => {
       observer.disconnect();
       controller.abort();

@@ -84,15 +84,25 @@ export type MdmarkFlowDefinition = {
   width: number;
   /** 図の高さ（px） */
   height: number;
-  /** システムの枠 */
-  frame?: { title: string; x: number; y: number; w: number; h: number };
-  /** 枠の中の層。層のノードの色をうっすら敷く */
+  /** システムの枠。`hint` はタイトルの右のマーカーに出す文 */
+  frame?: {
+    title: string;
+    x: number;
+    y: number;
+    w: number;
+    h: number;
+    hint?: string;
+  };
+  /** 枠の中の層。層のノードの色をうっすら敷く。`hint` はタイトルの右のマーカーに出す文 */
   lanes?: Array<{
     label: string;
     kind: "llm" | "mcp" | "data";
     y: number;
     h: number;
+    hint?: string;
   }>;
+  /** 拡大して動かしたときに、見えている枠と層のタイトルを表示する枠の上端に留めるか（省いたとき `true`） */
+  stickyTitles?: boolean;
   /** ノード */
   nodes: MdmarkDiagramNode[];
   /** 線 */
@@ -696,6 +706,9 @@ function checkFrame(source: Record<string, unknown>, problems: Problems): void {
       for (const key of ["x", "y", "w", "h"]) {
         problems.expect(frame[key], "数", `frame.${key}`);
       }
+      if (frame.hint !== undefined) {
+        problems.expect(frame.hint, "文字", "frame.hint");
+      }
     }
   }
   if (source.lanes !== undefined) {
@@ -708,6 +721,9 @@ function checkFrame(source: Record<string, unknown>, problems: Problems): void {
       problems.expect(lane.label, "文字", `lanes[${index}].label`);
       problems.expect(lane.y, "数", `lanes[${index}].y`);
       problems.expect(lane.h, "数", `lanes[${index}].h`);
+      if (lane.hint !== undefined) {
+        problems.expect(lane.hint, "文字", `lanes[${index}].hint`);
+      }
       if (typeof lane.kind !== "string" || !LANE_KINDS.includes(lane.kind)) {
         problems.add(
           `層「${String(lane.label)}」の種類 ${String(lane.kind)} は使えません。使える種類は ${LANE_KINDS.join("・")} です`,
@@ -723,6 +739,9 @@ function checkFlow(source: Record<string, unknown>, problems: Problems): void {
   problems.expect(source.width, "数", "width");
   problems.expect(source.height, "数", "height");
   checkFrame(source, problems);
+  if (source.stickyTitles !== undefined) {
+    problems.expect(source.stickyTitles, "真偽値", "stickyTitles");
+  }
   const nodes = asArray(source.nodes, "nodes", problems);
   const nodeIds = (nodes ?? []).map((value, index) =>
     checkNode(value, index, problems),

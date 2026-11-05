@@ -77,6 +77,7 @@ function takeParts(options: {
   const env = envOf(state);
   const diagrams = featureOn(state, "diagrams");
   const hints = featureOn(state, "hints");
+  const resizable = featureOn(state, "diagram-resize");
   const parts: string[] = [];
   const definitions: MdmarkParamDefinition[] = [];
   const html = source.replace(
@@ -104,6 +105,7 @@ function takeParts(options: {
           part = renderParam(param, {
             id: `${PARAM_ID_PREFIX}-${count}`,
             copyLabel: env.labels?.paramCopy,
+            resizable,
           });
         } else {
           part = renderDiagram({
@@ -115,6 +117,7 @@ function takeParts(options: {
             id: `${DIAGRAM_ID_PREFIX}-${count}`,
             lookup,
             hints,
+            resizable,
           });
         }
         part = markOwn(part, env.nonce);
