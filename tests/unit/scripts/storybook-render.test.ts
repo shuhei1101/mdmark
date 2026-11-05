@@ -20,6 +20,9 @@ const loadTable = () => import("../../../src/parts/table.ts");
 /** 文書の一覧の処理を読み込む */
 const loadDocList = () => import("../../../src/parts/doc-list.ts");
 
+/** コメントの部品の処理を読み込む */
+const loadComment = () => import("../../../src/parts/comment.ts");
+
 /** VS Code 拡張機能のプレビューの状態の表示の処理を読み込む */
 const loadPreviewStatus = () =>
   import("../../../vscode/src/webview/parts/preview-status.ts");
@@ -187,6 +190,23 @@ test("test_render_part_when_code_block_highlighted", async () => {
   expect(texts[1]).toContain('<span class="hljs-comment">// b</span>');
   expect(texts.map((text) => text.replace(/<[^>]*>/g, "").trim())).toEqual(
     lines.map((line) => line.text),
+  );
+});
+
+// コメントの吹き出しを、描く先の要素の内側に収める style を付けて描く（正常系）
+test("test_render_part_when_comment_popover", async () => {
+  // 準備
+  const { renderPart } = await loadRender();
+  const { renderCommentBubble } = await loadComment();
+  const params = new URLSearchParams({
+    quote: "テーマの変数",
+    bodies: JSON.stringify(["本文"]),
+  });
+  // 実行
+  const html = renderPart({ component: "comment-bubble", params });
+  // 検証
+  expect(html).toBe(
+    `<div class="mdmark"><style>.mdmark-comment-add,.mdmark-comment-popover{position:static;max-width:100%}</style>${renderCommentBubble({ quote: "テーマの変数", bodies: ["本文"] })}</div>`,
   );
 });
 
