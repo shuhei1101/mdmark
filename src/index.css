@@ -2363,8 +2363,11 @@
 
     /* animation-timeline は animation-timeline と範囲の指定を持つブラウザだけに当てる（持たないブラウザで時間のアニメーションとして走らせない） */
     @supports (animation-timeline: view()) and (animation-range: 0% 100%) {
-      /* animation-timeline: 表が画面の上端を過ぎる間を、見出し行と集計の行を動かすタイムラインにする（上端から留める位置のずれだけ内側を測る） */
-      &[data-mdmark-sticky="timeline"] .mdmark-table table {
+      /* animation-timeline: 表が画面の上端を過ぎる間を、見出し行と集計の行を動かすタイムラインにする（上端から留める位置のずれだけ内側を測る）。
+         表を包む横のスクロールの要素があれば、ページのスクロールに従うよう包む要素に付ける */
+      &[data-mdmark-sticky="timeline"]
+        .mdmark-table
+        :is(.mdmark-table-scroll, :not(.mdmark-table-scroll) > table) {
         view-timeline: --mdmark-table block;
         view-timeline-inset: var(--mdmark-sticky-top, 0px) 0px;
       }
@@ -3615,9 +3618,9 @@
 
     /* ---------- CSV の表 ---------- */
 
-    /* CSV の表: 枠を表の幅に合わせ、RAW のボタンの帯を表の右端の真上に置く。表と元の CSV は同じ場所に重ね、見せない側は visibility で隠して幅と高さを保つ */
+    /* CSV の表: 記法の表と同じく本文の幅に広げ、RAW のボタンの帯を表の右端の真上に置く。表（包む要素）と元の CSV は同じ場所に重ね、見せない側は visibility で隠して幅と高さを保つ */
     .mdmark-table[data-source="csv"] {
-      width: fit-content;
+      width: 100%;
       max-width: 100%;
       justify-items: stretch;
 
@@ -3626,12 +3629,12 @@
         justify-content: flex-end;
       }
 
-      > :is(table, .mdmark-raw) {
+      > :is(.mdmark-table-scroll, table, .mdmark-raw) {
         grid-area: 2 / 1;
         margin: 0;
       }
 
-      > :is(table, .mdmark-raw)[hidden] {
+      > :is(.mdmark-table-scroll, table, .mdmark-raw)[hidden] {
         display: block;
         visibility: hidden;
       }
@@ -5253,9 +5256,12 @@
       );
     }
 
-    /* 層の見出し: 層の左上に控えめな文字で */
+    /* 層の見出し: 層の左上に控えめな文字で。hint を持つ層は名前の右に説明のボタンを並べる */
     .mdmark-diagram-lane-label {
       position: absolute;
+      display: flex;
+      gap: 0.25rem;
+      align-items: center;
       color: var(--mdmark-color-muted);
       font-size: 12px;
       font-weight: 600;
@@ -9733,5 +9739,182 @@
       var(--mdmark-tree-gap)
     );
     overflow-wrap: anywhere;
+  }
+}
+
+/* #308: 表を本文の幅に広げる包み・アイコンだけの帯のボタン・図のリサイズハンドル・グラフの項目のツールチップ・グループの説明・留めたタイトル */
+@layer mdmark {
+  .mdmark {
+    /* 表を包む要素: 本文の幅いっぱいに広げ、収まらないときだけこの中で横スクロールする */
+    .mdmark-table-scroll {
+      justify-self: stretch;
+      width: 100%;
+      max-width: 100%;
+      overflow-x: auto;
+      border-radius: calc(var(--mdmark-radius) * 2);
+
+      > table {
+        display: table;
+        box-sizing: border-box;
+        width: 100%;
+        max-width: none;
+        overflow: visible;
+      }
+    }
+
+    /* アイコンだけの帯のボタン: 帯のほかのボタンと高さを合わせた正方形 */
+    .mdmark-table-tool.is-icon-only {
+      position: relative;
+      justify-content: center;
+      width: 1.875rem;
+      padding: 0;
+    }
+
+    /* 隠した列の数のバッジ: アイコンの右上に重ねる */
+    .mdmark-columns-badge {
+      position: absolute;
+      inset-block-start: -0.4rem;
+      inset-inline-end: -0.4rem;
+      display: grid;
+      place-items: center;
+      min-width: 1.05rem;
+      height: 1.05rem;
+      padding: 0 0.25rem;
+      border: 1.5px solid var(--mdmark-color-bg-opaque);
+      border-radius: 999px;
+      background: var(--mdmark-color-link);
+      color: var(--mdmark-color-bg-opaque);
+      font-size: 0.6875rem;
+      font-weight: 700;
+      line-height: 1;
+
+      &:empty {
+        display: none;
+      }
+    }
+
+    /* 帯の設定のメニュー: 列設定・集計・コピーを 1 つのメニューに並べる */
+    .mdmark-table-settings-menu {
+      display: grid;
+      gap: 0.125rem;
+      width: max-content;
+      margin: 0;
+      padding: 0.25rem;
+      border: 1px solid var(--mdmark-color-border);
+      border-radius: var(--mdmark-radius);
+      background: var(--mdmark-color-bg-opaque);
+      list-style: none;
+
+      button {
+        display: flex;
+        gap: 0.5em;
+        align-items: center;
+        width: 100%;
+        padding: 0.35em 0.75em;
+        border: 0;
+        border-radius: calc(var(--mdmark-radius) - 2px);
+        background: transparent;
+        color: var(--mdmark-color-text);
+        font: inherit;
+        text-align: start;
+        cursor: pointer;
+
+        &:hover {
+          background: var(--mdmark-color-surface);
+        }
+      }
+    }
+
+    /* 表示枠の高さを変えるリサイズハンドル: 表示の箱の右下の角に置き、縦にだけ動かす */
+    .mdmark-diagram-resize {
+      position: absolute;
+      inset-block-end: 3px;
+      inset-inline-end: 3px;
+      z-index: 3;
+      display: grid;
+      place-items: center;
+      box-sizing: border-box;
+      width: 28px;
+      height: 16px;
+      padding: 0;
+      border: 1px solid var(--mdmark-color-border);
+      border-radius: 4px;
+      background: var(--mdmark-color-bg-opaque);
+      color: var(--mdmark-color-muted);
+      cursor: ns-resize;
+      touch-action: none;
+
+      &:hover,
+      &.is-resizing {
+        background: var(--mdmark-color-surface);
+        color: var(--mdmark-color-heading);
+      }
+
+      &:focus-visible {
+        outline: 2px solid var(--mdmark-color-link);
+        outline-offset: 1px;
+      }
+
+      .mdmark-diagram-icon {
+        width: 16px;
+        height: 16px;
+      }
+    }
+
+    /* グラフの点のツールチップを拾う透明の円。フォーカスした点は輪で示す */
+    .mdmark-diagram-item-hit {
+      fill: transparent;
+      stroke: none;
+      pointer-events: all;
+
+      &:focus-visible {
+        outline: none;
+        stroke: var(--mdmark-color-link);
+        stroke-width: 2;
+      }
+    }
+
+    /* ツールチップを持つ棒・扇形・バブル: グラフの svg（`mdmark-diagram-wires`）はポインターを拾わないため、塗った所でだけ拾い直す */
+    :is(
+        .mdmark-diagram-bar,
+        .mdmark-diagram-slice,
+        .mdmark-diagram-bubble
+      )[data-tip-owner] {
+      pointer-events: visiblePainted;
+
+      &:hover {
+        filter: brightness(0.92);
+      }
+
+      &:focus-visible {
+        outline: 2px solid var(--mdmark-color-link);
+        outline-offset: 1px;
+      }
+    }
+
+    /* グループ（システムの枠・層）の説明のボタン: タイトルの文字の右に並べる */
+    .mdmark-diagram-info.mdmark-diagram-group-info {
+      --node-color: var(--mdmark-color-muted);
+      position: static;
+      width: 18px;
+      height: 18px;
+    }
+
+    /* 上端に留めたグループのタイトル: ノードと線より前に出し、地の色の札で読めるようにする */
+    :is(.mdmark-diagram-frame-title, .mdmark-diagram-lane-label).is-stuck {
+      z-index: 2;
+      margin-inline-start: -0.375rem;
+      padding: 0 0.375rem;
+      border: 1px solid var(--mdmark-color-border);
+      border-radius: 4px;
+      background: var(--mdmark-color-bg-opaque);
+    }
+  }
+
+  /* 印刷のとき: リサイズハンドルを出さない */
+  @media print {
+    .mdmark .mdmark-diagram-resize {
+      display: none;
+    }
   }
 }

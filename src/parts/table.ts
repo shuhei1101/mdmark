@@ -101,6 +101,8 @@ export type TableOptions = {
   openTotals?: boolean;
   /** コピーの形式のメニューを開いているか */
   openCopy?: boolean;
+  /** 帯のボタンの見せ方（ストーリーで見比べるためだけ。既定 `icon`） */
+  barStyle?: TableBarStyle;
   /** クリップボードに書けなかったときに手でコピーさせるパネルの中身 */
   copyFallback?: { format: CopyFormat; text: string };
   /** `targetRow` の行の URL をコピーした結果 */
@@ -288,10 +290,33 @@ export const COPY_STATES = {
   failed: { label: "コピーできませんでした", icon: "circle-alert" },
 } as const;
 
-/** コピーのボタンの中身（状態のアイコン・文言・形式のメニューを開くことを示す下向きの矢印）の HTML */
-export function renderCopyButtonContent(state: CopyState): string {
+/** 表の上の帯のボタンの見せ方: アイコンだけ・アイコンと語・1 つの「表の設定」のメニュー（`label`・`menu` はストーリーで見比べるためだけに使う） */
+export type TableBarStyle = "icon" | "label" | "menu";
+
+/** 列設定のボタンの読み上げの名前 */
+export function columnsToggleName(hidden: number): string {
+  return hidden > 0 ? `列設定（${hidden} 列を隠しています）` : "列設定";
+}
+
+/** 列設定のボタンの中身（アイコン・隠した列の数のバッジ・読み上げの名前）の HTML */
+export function renderColumnsToggleContent(hidden: number): string {
+  const badge =
+    hidden > 0
+      ? `<span class="mdmark-columns-badge" aria-hidden="true">${hidden}</span>`
+      : "";
+  return `${iconSvg("columns-3")}${badge}<span class="mdmark-visually-hidden">${columnsToggleName(hidden)}</span>`;
+}
+
+/** コピーのボタンの中身の HTML。既定はアイコンと読み上げの名前だけ。`label` は文言と形式のメニューを開くことを示す下向きの矢印も見せる */
+export function renderCopyButtonContent(
+  state: CopyState,
+  barStyle: TableBarStyle = "icon",
+): string {
   const { icon, label } = COPY_STATES[state];
-  return `${iconSvg(icon)}<span class="mdmark-copy-label">${label}</span><span class="mdmark-copy-caret" data-icon="chevron-down">${iconSvg("chevron-down")}</span>`;
+  if (barStyle === "label") {
+    return `${iconSvg(icon)}<span class="mdmark-copy-label">${label}</span><span class="mdmark-copy-caret" data-icon="chevron-down">${iconSvg("chevron-down")}</span>`;
+  }
+  return `${iconSvg(icon)}<span class="mdmark-visually-hidden mdmark-copy-label">${label}</span>`;
 }
 
 /** コピーの形式の名前と使いどころ */
@@ -344,6 +369,8 @@ export function renderTableBar(options: {
   openTotals?: boolean;
   /** コピーの形式のメニューを開いているか（既定 `false`） */
   openCopy?: boolean;
+  /** 帯のボタンの見せ方（既定 `icon`） */
+  barStyle?: TableBarStyle;
 }): { bar: string; menus: string } {
   const { id, features, labels, shown, total, hiddenColumns } = options;
   const copyState = options.copyState ?? "idle";
@@ -356,21 +383,41 @@ export function renderTableBar(options: {
   const columns = features.includes("columns");
   const totaling = features.includes("total") && calcs.length > 0;
   const copying = features.includes("copy");
+  const barStyle = options.barStyle ?? "icon";
+  const iconOnly = barStyle === "label" ? "" : " is-icon-only";
   const count = counting
     ? `<p class="mdmark-table-count" aria-live="polite"><span aria-hidden="true">${shown} / ${total} 件</span><span class="mdmark-visually-hidden">${total} 件中 ${shown} 件を表示</span></p>`
     : "";
   const columnsToggle = columns
-    ? `<button class="mdmark-table-tool mdmark-columns-toggle${hidden.size > 0 ? " is-active" : ""}" type="button" aria-expanded="${open}" aria-controls="${escapeHtml(menuId(id))}">${iconSvg("columns-3")}列設定<span class="mdmark-visually-hidden">${hidden.size > 0 ? `（${hidden.size} 列を隠しています）` : ""}</span></button>`
+    ? `<button class="mdmark-table-tool mdmark-columns-toggle${iconOnly}${hidden.size > 0 ? " is-active" : ""}" type="button" title="列設定" aria-expanded="${open}" aria-controls="${escapeHtml(menuId(id))}">${barStyle === "label" ? `${iconSvg("columns-3")}列設定<span class="mdmark-visually-hidden">${hidden.size > 0 ? `（${hidden.size} 列を隠しています）` : ""}</span>` : renderColumnsToggleContent(hidden.size)}</button>`
     : "";
   const totalsToggle = totaling
     ? `<button class="mdmark-table-tool mdmark-totals-toggle${hiddenCalcs.length > 0 ? " is-active" : ""}" type="button" aria-expanded="${options.openTotals ?? false}" aria-controls="${escapeHtml(totalsMenuId(id))}">${iconSvg("sigma")}集計<span class="mdmark-visually-hidden">${hiddenCalcs.length > 0 ? `（${hiddenCalcs.length} 件を非表示にしています）` : ""}</span></button>`
     : "";
   const copy = copying
-    ? `<button class="mdmark-table-tool mdmark-copy" type="button" data-state="${copyState}" aria-expanded="${options.openCopy ?? false}" aria-controls="${escapeHtml(copyMenuId(id))}">${renderCopyButtonContent(copyState)}</button>`
+    ? `<button class="mdmark-table-tool mdmark-copy${iconOnly}" type="button" title="${COPY_STATES[copyState].label}" data-state="${copyState}" aria-expanded="${options.openCopy ?? false}" aria-controls="${escapeHtml(copyMenuId(id))}">${renderCopyButtonContent(copyState, barStyle)}</button>`
     : "";
+  const settingsId = `${id}-settings`;
   const tools =
     columnsToggle || totalsToggle || copy
-      ? `<div class="mdmark-table-tools">${columnsToggle}${totalsToggle}${copy}</div>`
+      ? barStyle === "menu"
+        ? `<div class="mdmark-table-tools"><button class="mdmark-table-tool mdmark-table-settings is-icon-only" type="button" title="表の設定" aria-expanded="true" aria-controls="${escapeHtml(settingsId)}">${iconSvg("ellipsis")}<span class="mdmark-visually-hidden">表の設定</span></button></div>`
+        : `<div class="mdmark-table-tools">${columnsToggle}${totalsToggle}${copy}</div>`
+      : "";
+  const settingsItems = [
+    columns
+      ? `<li><button type="button">${iconSvg("columns-3")}列設定</button></li>`
+      : "",
+    totaling
+      ? `<li><button type="button">${iconSvg("sigma")}集計</button></li>`
+      : "",
+    copying
+      ? `<li><button type="button">${iconSvg("copy")}表をコピー</button></li>`
+      : "",
+  ].join("");
+  const settingsMenu =
+    barStyle === "menu" && settingsItems
+      ? `<ul class="mdmark-table-settings-menu" id="${escapeHtml(settingsId)}" aria-label="表の設定">${settingsItems}</ul>`
       : "";
   const status =
     totaling || copying
@@ -383,7 +430,7 @@ export function renderTableBar(options: {
     )
     .join("");
   const columnsMenu = columns
-    ? `<div class="mdmark-columns-menu" id="${escapeHtml(menuId(id))}" role="dialog" aria-label="表示する列"${open ? "" : " hidden"}><p class="mdmark-columns-title">表示する列</p><ul class="mdmark-columns-options">${items}</ul><p class="mdmark-columns-note">先頭の列は隠せません</p><button class="mdmark-columns-reset" type="button">リセット</button></div>`
+    ? `<div class="mdmark-columns-menu" id="${escapeHtml(menuId(id))}" role="dialog" aria-label="列設定"${open ? "" : " hidden"}><p class="mdmark-columns-title">列設定</p><ul class="mdmark-columns-options">${items}</ul><p class="mdmark-columns-note">先頭の列は隠せません</p><button class="mdmark-columns-reset" type="button">リセット</button></div>`
     : "";
   const totalItems = calcs
     .map(
@@ -408,7 +455,7 @@ export function renderTableBar(options: {
       count || tools
         ? `<div class="mdmark-table-bar">${count}${tools}${status}</div>`
         : "",
-    menus: `${columnsMenu}${totalsMenu}${copyMenu}`,
+    menus: `${settingsMenu}${columnsMenu}${totalsMenu}${copyMenu}`,
   };
 }
 
@@ -729,11 +776,12 @@ function renderTableBody(options: TableOptions, id: string): string {
     shownTotals: options.shownTotals,
     openTotals: options.openTotals ?? false,
     openCopy: options.openCopy ?? false,
+    barStyle: options.barStyle ?? "icon",
   });
   const panel = options.copyFallback
     ? renderCopyPanel({ id: `${id}-panel`, ...options.copyFallback })
     : "";
-  return `${bar}${panel}<table tabindex="0" aria-label="表"><thead>${head}</thead><tbody>${body}${empty}</tbody>${footer}</table>${menus}${drawers.join("")}`;
+  return `${bar}${panel}<div class="mdmark-table-scroll"><table tabindex="0" aria-label="表"><thead>${head}</thead><tbody>${body}${empty}</tbody>${footer}</table></div>${menus}${drawers.join("")}`;
 }
 
 /** 多段の見出しの行を描く。`bottomHeadCells` で決めた列ごとの最下段のセルは `headCell` で、ほかのセルは文字だけで描く */
@@ -806,7 +854,9 @@ export function renderTable(options: TableOptions): string {
   const check = options.check ?? [];
   const checkAttribute = check.length ? ` data-check="${check.join(" ")}"` : "";
   const content =
-    options.body ?? renderTableBody(options, options.id ?? "mdmark-table");
+    options.body === undefined
+      ? renderTableBody(options, options.id ?? "mdmark-table")
+      : `<div class="mdmark-table-scroll">${options.body}</div>`;
   const collapse = options.collapse ?? "none";
   const title =
     options.title ??
@@ -836,8 +886,14 @@ export function renderTable(options: TableOptions): string {
   const bar = options.body === undefined ? renderRawBar(shown) : "";
   const raw = `<pre class="mdmark-raw"${shown ? "" : " hidden"} tabindex="0" aria-label="元の CSV"><code class="language-csv">${escapeHtml(options.rawCsv)}</code></pre>`;
   const viewAttribute = shown ? ' data-view="raw"' : "";
+  // 元の CSV を出しているときは、表を包む要素（無ければ表）を隠す
   const shownInner = shown
-    ? inner.replace(/^<table(?=[\s>])/, "<table hidden")
+    ? inner.includes('<div class="mdmark-table-scroll">')
+      ? inner.replace(
+          '<div class="mdmark-table-scroll">',
+          '<div class="mdmark-table-scroll" hidden>',
+        )
+      : inner.replace(/^<table(?=[\s>])/, "<table hidden")
     : inner;
   return `<div class="mdmark-table${foldedClass}" data-kind="${kind}" data-features="${options.features.join(" ")}" data-source="csv"${viewAttribute}${filterAttribute}${hideAttribute}${totalAttribute}${pinAttribute}${checkAttribute}${mergeAttribute}>${bar}${shownInner}${raw}</div>`;
 }

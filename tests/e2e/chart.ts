@@ -209,3 +209,44 @@ export function manySeriesChart(
     })),
   };
 }
+
+/** 横の目盛り `1月`〜`4月`・系列 2 つの、折れ線か棒のグラフの定義 */
+export function monthlyChart(type: "line" | "bar"): Record<string, unknown> {
+  return {
+    type,
+    title: type === "line" ? "月ごとの返信の件数" : "月ごとの起票の件数",
+    scope: "1 月から 4 月",
+    updated: "2026-11-05",
+    x: { label: "月", ticks: ["1月", "2月", "3月", "4月"] },
+    y: { label: "件" },
+    series: [
+      { name: "自動返信", points: [12, 38, 25, 41] },
+      { name: "担当者", points: [8, 14, 19, 22] },
+    ],
+  };
+}
+
+/** 項目 `A`・`B`・`C`（値 50・30・20）の円のグラフの定義 */
+export const ABC_PIE_CHART: Record<string, unknown> = {
+  type: "pie",
+  title: "返信の種類の割合",
+  scope: "1 月から 4 月",
+  updated: "2026-11-05",
+  items: [
+    { name: "A", value: 50 },
+    { name: "B", value: 30 },
+    { name: "C", value: 20 },
+  ],
+};
+
+/** 『図を描く』の正常シナリオ（追加したグラフの種類）の 8 つのグラフの定義 */
+export const ADDED_CHARTS: Array<Record<string, unknown>> = [
+  twoSeriesChart("area"),
+  twoSeriesChart("stacked-bar"),
+  twoSeriesChart("stacked-area"),
+  twoSeriesChart("horizontal-bar"),
+  DONUT_CHART,
+  twoSeriesChart("radar"),
+  BUBBLE_CHART,
+  COMBO_CHART,
+];

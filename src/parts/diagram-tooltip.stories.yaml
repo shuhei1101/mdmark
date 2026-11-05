@@ -39,3 +39,18 @@ stories:
     args:
       kind: table
       open: true
+  - name: Item
+    parameters:
+      server:
+        id: diagram-tooltip
+    args:
+      kind: item
+      open: true
+  - name: GroupHint
+    parameters:
+      server:
+        id: diagram-tooltip
+    args:
+      kind: hint
+      group: true
+      open: true

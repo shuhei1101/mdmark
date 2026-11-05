@@ -60,6 +60,7 @@ export function buildDiagrams(state: StateCore): void {
   const lookup: TermLookup = (word) => dictionary.term(word)?.meaning;
   env.paramDefinitions ??= [];
   const hints = featureOn(state, "hints");
+  const resizable = featureOn(state, "diagram-resize");
   const tokens = state.tokens;
   const out: Token[] = [];
   for (let index = 0; index < tokens.length; index++) {
@@ -133,6 +134,7 @@ export function buildDiagrams(state: StateCore): void {
         html = renderParam(param, {
           id: `${PARAM_ID_PREFIX}-${count}`,
           copyLabel: env.labels?.paramCopy,
+          resizable,
         });
       } else {
         html = renderDiagram({
@@ -145,6 +147,7 @@ export function buildDiagrams(state: StateCore): void {
           id: `${DIAGRAM_ID_PREFIX}-${count}`,
           lookup,
           hints,
+          resizable,
         });
       }
       const block = ownBlock(state, html, token);

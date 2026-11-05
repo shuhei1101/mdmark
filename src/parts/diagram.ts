@@ -123,6 +123,10 @@ export type DiagramFrame = {
   fit?: number;
   /** 全画面のモーダルの中に描くか */
   modal?: boolean;
+  /** 表示する枠の右下にリサイズハンドルを置くか（既定 `true`。モーダルの中には置かない） */
+  resizable?: boolean;
+  /** 拡大して動かしたときにグループのタイトルを上端に留めるか（既定 `true`） */
+  stickyTitles?: boolean;
   /** ツールチップと矢じりの `id` の頭 */
   id: string;
 };
@@ -155,9 +159,11 @@ export type DiagramTip = {
   /** ツールチップの `id` */
   id: string;
   /** 線の詳細か、ノードの入力・処理・出力か、文だけか（ノードの `hint`・埋め込んだ HTML の `data-hint`） */
-  kind: "wire" | "io" | "hint" | "table";
+  kind: "wire" | "io" | "hint" | "table" | "item";
   /** 持ち主の名前。ツールチップの題に出す */
   label: string;
+  /** グラフの項目の値の文（`item` のとき） */
+  value?: string;
   /** 線の詳細 */
   tip?: string;
   /** ノードの入力・処理・出力 */
@@ -204,7 +210,7 @@ export function renderDiagramTip(tip: DiagramTip): string {
   const body =
     tip.kind === "io" && tip.io
       ? `<dl class="mdmark-diagram-tip-io"><dt>入力</dt><dd>${escapeHtml(tip.io.in)}</dd><dt>処理</dt><dd>${escapeHtml(tip.io.do)}</dd><dt>出力</dt><dd>${escapeHtml(tip.io.out)}</dd></dl>${hint}`
-      : `<span class="mdmark-term-tip-meaning">${escapeHtml(tip.tip ?? "")}</span>`;
+      : `<span class="mdmark-term-tip-meaning">${escapeHtml((tip.kind === "item" ? tip.value : tip.tip) ?? "")}</span>`;
   return `<div class="mdmark-diagram-tip" id="${escapeHtml(tip.id)}" role="tooltip" data-tip-for="${owner}"${hidden}><span class="mdmark-term-tip-section"><span class="mdmark-term-tip-heading">${escapeHtml(tip.label)}</span>${body}</span></div>`;
 }
 
@@ -411,6 +417,21 @@ function renderNode(options: {
   return `<div class="${classes}" data-kind="${node.kind}" data-node="${escapeHtml(node.id)}"${boxStyle({ ...box, inset: nodeInset(node.kind, box) })}>${node.kind === "question" ? diamondSvg(box) : ""}<span class="mdmark-diagram-node-kind">${iconSvg(kind.icon)}<span>${tag}</span></span><span class="mdmark-diagram-node-name">${name}</span>${sub}${link}${info}</div>`;
 }
 
+/** `hint` を持つシステムの枠・層のタイトルの右のマーカー（`hint` が無ければ空） */
+function groupInfo(options: {
+  hint: string | undefined;
+  label: string;
+  owner: string;
+  tips: TipList;
+}): string {
+  const { hint, label, owner, tips } = options;
+  if (hint === undefined || hint === "") {
+    return "";
+  }
+  const id = tips.add({ kind: "hint", label, hint, owner });
+  return `<button class="mdmark-diagram-info mdmark-diagram-group-info" type="button" aria-label="「${escapeHtml(label)}」の説明" aria-describedby="${id}" data-tip-owner="${escapeHtml(owner)}">${iconSvg("info")}</button>`;
+}
+
 /** フロー図を描く */
 export function renderFlow(
   definition: MdmarkFlowDefinition,
@@ -427,11 +448,11 @@ export function renderFlow(
     for (const lane of definition.lanes ?? []) {
       parts.push(
         `<div class="mdmark-diagram-lane" data-kind="${lane.kind}"${boxStyle({ x: frame.x + 1.5, y: lane.y, w: frame.w - 3, h: lane.h })}></div>`,
-        `<span class="mdmark-diagram-lane-label"${boxStyle({ x: frame.x + 12, y: lane.y + 6 })}>${escapeHtml(lane.label)}</span>`,
+        `<span class="mdmark-diagram-lane-label" data-sticky-top="${num(lane.y)}" data-sticky-bottom="${num(lane.y + lane.h)}"${boxStyle({ x: frame.x + 12, y: lane.y + 6 })}>${escapeHtml(lane.label)}${groupInfo({ hint: hints ? lane.hint : undefined, label: lane.label, owner: `lane:${lane.label}`, tips })}</span>`,
       );
     }
     parts.push(
-      `<span class="mdmark-diagram-frame-title"${boxStyle({ x: frame.x + 12, y: frame.y + 8 })}>${iconSvg("server")}${escapeHtml(frame.title)}</span>`,
+      `<span class="mdmark-diagram-frame-title" data-sticky-top="${num(frame.y)}" data-sticky-bottom="${num(frame.y + frame.h)}"${boxStyle({ x: frame.x + 12, y: frame.y + 8 })}>${iconSvg("server")}${escapeHtml(frame.title)}${groupInfo({ hint: hints ? frame.hint : undefined, label: frame.title, owner: "frame", tips })}</span>`,
     );
   }
   const paths = jumpPaths(definition.wires);
@@ -802,26 +823,36 @@ function chartLegend(definition: MdmarkChartDefinition): DiagramLegendItem[] {
   return items;
 }
 
-/** 凡例の項目: 定義に出るノードの種類・線の種類・系列だけを並べ、図にあるときだけ枠・層・交差・印・下線を加える。`hints` がオフ（既定はオン）なら、ヒントの印と線の詳細の下線は図にない */
-export function legendFor(
-  definition: LegendDefinition,
-  drawn: { jumps: boolean; terms: boolean; hints?: boolean },
-): DiagramLegendItem[] {
+/** 凡例の項目: フロー図とシーケンス図は、図に 2 種類以上あるノード（相手）の種類と線の種類だけを並べ、枠・層・交差・印・下線は載せない。グラフは系列（円とドーナツは項目）、ER 図はテーブルの種類・列のマーカー・多重度を並べる */
+export function legendFor(definition: LegendDefinition): DiagramLegendItem[] {
   if (isErDefinition(definition)) {
     return erLegend(definition);
   }
   if (isChartDefinition(definition)) {
     return chartLegend(definition);
   }
-  const hints = drawn.hints !== false;
   const isFlow = "wires" in definition;
-  const nodes: Array<Pick<MdmarkDiagramNode, "kind" | "io" | "hint">> = isFlow
+  const nodes: Array<Pick<MdmarkDiagramNode, "kind">> = isFlow
     ? definition.nodes
     : definition.participants;
   const frame = isFlow ? definition.frame : undefined;
+  const kinds = (Object.keys(KIND_STYLES) as MdmarkDiagramKind[]).filter(
+    (kind) => nodes.some((node) => node.kind === kind),
+  );
+  const lines = new Set<MdmarkDiagramLine>(
+    isFlow
+      ? definition.wires.map((wire) => wire.line)
+      : definition.steps.map((step) => (step.reply ? "reply" : "flow")),
+  );
+  if (!isFlow && definition.loop) {
+    lines.add("loop");
+  }
+  const usedLines = (Object.keys(LINE_STYLES) as MdmarkDiagramLine[]).filter(
+    (line) => lines.has(line),
+  );
   const items: DiagramLegendItem[] = [];
-  for (const kind of Object.keys(KIND_STYLES) as MdmarkDiagramKind[]) {
-    if (nodes.some((node) => node.kind === kind)) {
+  if (kinds.length >= 2) {
+    for (const kind of kinds) {
       items.push({
         sample: kind,
         label:
@@ -831,55 +862,10 @@ export function legendFor(
       });
     }
   }
-  if (frame) {
-    items.push(
-      { sample: "frame", label: "システムの枠" },
-      { sample: "lane", label: "層の背景（層のノードの色）" },
-    );
-  }
-  const lines = new Set<MdmarkDiagramLine>(
-    isFlow
-      ? definition.wires.map((wire) => wire.line)
-      : definition.steps.map((step) => (step.reply ? "reply" : "flow")),
-  );
-  if (!isFlow && definition.loop) {
-    lines.add("loop");
-  }
-  for (const line of Object.keys(LINE_STYLES) as MdmarkDiagramLine[]) {
-    if (lines.has(line)) {
+  if (usedLines.length >= 2) {
+    for (const line of usedLines) {
       items.push({ sample: line, label: LINE_STYLES[line].label });
     }
-  }
-  if (drawn.jumps) {
-    items.push({ sample: "jump", label: "線の交差（横の線が飛び越える）" });
-  }
-  if (hints && nodes.some((node) => node.io || node.hint)) {
-    const io = nodes.some((node) => node.io);
-    const hint = nodes.some((node) => node.hint && !node.io);
-    items.push({
-      sample: "info",
-      label:
-        io && hint
-          ? "説明や入力・処理・出力が出るノード"
-          : io
-            ? "入力・処理・出力が出るノード"
-            : "説明が出るノード",
-    });
-  }
-  // 下線: ノードの中の用語（意味が出る）と、線のラベル（送るものの詳細が出る）を 1 項目にまとめる
-  const hasTip =
-    hints &&
-    (isFlow
-      ? definition.wires.some((wire) => wire.tip)
-      : definition.steps.some((step) => step.tip));
-  if (drawn.terms || hasTip) {
-    const what =
-      drawn.terms && hasTip
-        ? "用語の意味・送るものの詳細が出る"
-        : drawn.terms
-          ? "用語の意味が出る"
-          : "送るものの詳細が出る";
-    items.push({ sample: "underline", label: `下線（${what}）` });
   }
   return items;
 }
@@ -984,7 +970,13 @@ export function renderDiagramFrame(
   const sizer = `width:${num(body.width * zoom)}px;height:${num(body.height * zoom)}px`;
   const stage = `width:${num(body.width)}px;height:${num(body.height)}px${zoom === 1 ? "" : `;transform:scale(${num(zoom)})`}`;
   const legend = renderLegendItems(id, frame.legend);
-  return `<figure class="mdmark-diagram" data-diagram="${frame.kind}"><figcaption class="mdmark-diagram-head" id="${id}-title"><span class="mdmark-diagram-title">${escapeHtml(frame.title)}</span><span class="mdmark-diagram-meta">範囲: ${escapeHtml(frame.scope)}・更新日: <time datetime="${escapeHtml(frame.updated)}">${escapeHtml(frame.updated)}</time></span></figcaption><div class="mdmark-diagram-box">${renderTools(frame)}<div class="mdmark-diagram-viewport" tabindex="0" role="group" aria-roledescription="図" aria-labelledby="${id}-title" aria-keyshortcuts="${VIEWPORT_KEYS}"><div class="mdmark-diagram-sizer" style="${sizer}"><div class="mdmark-diagram-stage" style="${stage}">${body.html}</div></div></div>${body.tips}</div><ul class="mdmark-diagram-legend" aria-label="凡例">${legend}</ul><svg class="mdmark-diagram-defs" width="0" height="0" aria-hidden="true"><defs>${markerDefs(id)}</defs></svg></figure>`;
+  const resize =
+    frame.resizable !== false && frame.modal !== true
+      ? `<div class="mdmark-diagram-resize" role="separator" tabindex="0" aria-orientation="horizontal" aria-label="「${escapeHtml(frame.title)}」の表示の高さ" aria-keyshortcuts="ArrowUp ArrowDown" title="ドラッグか ↑ ↓ で高さを変える。ダブルクリックで元の高さに戻す">${iconSvg("grip-horizontal")}</div>`
+      : "";
+  const sticky =
+    frame.stickyTitles === false ? ' data-sticky-titles="off"' : "";
+  return `<figure class="mdmark-diagram" data-diagram="${frame.kind}"${sticky}><figcaption class="mdmark-diagram-head" id="${id}-title"><span class="mdmark-diagram-title">${escapeHtml(frame.title)}</span><span class="mdmark-diagram-meta">範囲: ${escapeHtml(frame.scope)}・更新日: <time datetime="${escapeHtml(frame.updated)}">${escapeHtml(frame.updated)}</time></span></figcaption><div class="mdmark-diagram-box">${renderTools(frame)}<div class="mdmark-diagram-viewport" tabindex="0" role="group" aria-roledescription="図" aria-labelledby="${id}-title" aria-keyshortcuts="${VIEWPORT_KEYS}"><div class="mdmark-diagram-sizer" style="${sizer}"><div class="mdmark-diagram-stage" style="${stage}">${body.html}</div></div></div>${resize}${body.tips}</div><ul class="mdmark-diagram-legend" aria-label="凡例"${frame.legend.length === 0 ? ' hidden="hidden"' : ""}>${legend}</ul><svg class="mdmark-diagram-defs" width="0" height="0" aria-hidden="true"><defs>${markerDefs(id)}</defs></svg></figure>`;
 }
 
 /** 図の種類 */
@@ -1000,6 +992,8 @@ export function renderDiagram(options: {
   lookup?: TermLookup;
   /** 機能 `hints` がオンか（既定 `true`） */
   hints?: boolean;
+  /** 機能 `diagram-resize` がオンか（既定 `true`） */
+  resizable?: boolean;
   zoom?: number;
   fit?: number;
   modal?: boolean;
@@ -1013,6 +1007,7 @@ export function renderDiagram(options: {
     fit,
     modal,
     hints = true,
+    resizable = true,
   } = options;
   let part: DiagramPart;
   if (kind === "flow") {
@@ -1035,7 +1030,11 @@ export function renderDiagram(options: {
       title: definition.title,
       scope: definition.scope,
       updated: definition.updated,
-      legend: legendFor(definition, { ...part, hints }),
+      legend: legendFor(definition),
+      resizable,
+      ...("stickyTitles" in definition && definition.stickyTitles === false
+        ? { stickyTitles: false }
+        : {}),
       id,
       ...(zoom === undefined ? {} : { zoom }),
       ...(fit === undefined ? {} : { fit }),

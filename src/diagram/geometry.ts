@@ -9,6 +9,9 @@ export const OVERLAP_OFFSET = 4;
 /** 拡大・縮小と移動の量: 1 回の倍率・上限・1 回の移動量（px） */
 export const ZOOM = { step: 1.25, max: 3, pan: 80 };
 
+/** リサイズハンドルの量: キー 1 回で変える高さと、表示する枠の高さの下限（px） */
+export const RESIZE = { step: 32, min: 120 };
+
 /** 折れ線の点 */
 type Point = [number, number];
 
@@ -210,4 +213,42 @@ export function stackSeries(
       return { from, to };
     }),
   );
+}
+
+/** 表示する枠の高さを `RESIZE.min` 以上・`max` 以下に収め、整数に丸める（`max` が下限より小さいときは下限） */
+export function clampDiagramHeight(height: number, max: number): number {
+  const upper = Math.max(RESIZE.min, max);
+  return Math.round(Math.min(upper, Math.max(RESIZE.min, height)));
+}
+
+/** グループのタイトル 1 つの位置（定義の座標） */
+export type StickyTitle = {
+  /** 元の上端 */
+  base: number;
+  /** グループの下端 */
+  bottom: number;
+  /** タイトルの高さ */
+  height: number;
+  /** システムの枠のタイトルか */
+  frame: boolean;
+};
+
+/** 表示する枠の上端（定義の座標）から、タイトルごとに下へずらす量と留めているかを求める（枠・層の順） */
+export function stickyTitleShifts(options: {
+  top: number;
+  gap: number;
+  titles: StickyTitle[];
+}): Array<{ shift: number; stuck: boolean }> {
+  const { gap, titles } = options;
+  let top = options.top + gap;
+  return titles.map((title) => {
+    const limit = title.bottom - title.height - gap;
+    const shift = Math.max(0, Math.min(top, limit) - title.base);
+    // 留めているのは、グループが表示する枠の上端にかかっている間（下端で止めた後は図と一緒に隠れる）
+    const stuck = shift > 0 && top <= limit;
+    if (stuck && title.frame) {
+      top += title.height + gap;
+    }
+    return { shift, stuck };
+  });
 }

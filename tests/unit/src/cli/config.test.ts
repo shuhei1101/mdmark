@@ -331,3 +331,29 @@ test("test_validate_config_when_assets_not_string", async () => {
     kind: "schema",
   });
 });
+
+// top・bottom 以外の tooltips.diagramPlacement を schema のずれにし、設定から落とす（異常系）
+test("test_validate_config_when_diagram_placement_invalid", async () => {
+  // 準備
+  const { validateConfig } = await loadModule();
+  // 実行
+  const invalid = validateConfig(
+    { tooltips: { diagramPlacement: "left" } },
+    "mdmark.config.yaml",
+  );
+  const valid = validateConfig(
+    { tooltips: { diagramPlacement: "top" } },
+    "mdmark.config.yaml",
+  );
+  // 検証
+  expect(invalid.issues).toHaveLength(1);
+  expect(invalid.issues[0]).toMatchObject({
+    where: "tooltips.diagramPlacement",
+    kind: "schema",
+  });
+  expect(invalid.issues[0]?.message).toContain("top");
+  expect(invalid.issues[0]?.message).toContain("bottom");
+  expect(invalid.config.tooltips).toBeUndefined();
+  expect(valid.issues).toEqual([]);
+  expect(valid.config.tooltips?.diagramPlacement).toBe("top");
+});

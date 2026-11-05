@@ -508,6 +508,49 @@ flows:
       - 最後の行が `ずれ 1 件`
       - 設定・索引・文書が変わっていない
     test: test_normal_when_diagram_auto_layout
+  - name: 正常系（図のツールチップの位置に誤った値がある）
+    summary: 設定の `tooltips.diagramPlacement` が `top`・`bottom` でないとき、`schema` のずれにする
+    setup:
+      - name: 誤った値を書いたフォルダ
+        description: 正常系と同じフォルダで、`mdmark.config.yaml` の `tooltips.diagramPlacement` に `left` を書いたもの
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant C as mdmark CLI
+        W->>C: mdmark check
+        C->>C: 設定を Schema で確かめる
+        C-->>W: schema の行・終了コード 1
+    expected:
+      - 終了コードが 1
+      - '`mdmark.config.yaml:tooltips.diagramPlacement: schema:` で始まる行が 1 つだけあり、内容に書ける値 `top`・`bottom` がある'
+      - '`tooltips.diagramPlacement` に `top` か `bottom` を書いた設定と、書かない設定では、この行が出ない'
+      - 設定・索引・文書が変わっていない
+    test: test_normal_when_diagram_placement_invalid
+    refs:
+      - dev/設計書/シナリオ/単一ユースケース/設定と索引を点検する#scenarios[正常シナリオ（図のツールチップの位置に誤った値がある）]
+  - name: 正常系（グループの項目に誤った値がある）
+    summary: フロー図の定義の `frame.hint` が文字でないことと `stickyTitles` が真偽値でないことを、1 件の `diagram_invalid` のずれにまとめる
+    setup:
+      - name: 誤った値を持つ図の文書のフォルダ
+        description: '`build.include` が当たる `docs/a.md` だけを持ち、3 行目の `<!-- flow -->` の範囲に、`frame.hint` が数 `1` で `stickyTitles` が文字 `no` のフロー図の定義を持つフォルダ'
+      - name: Mock
+        description: 差し替える依存は無い。点検はブラウザを使わない
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant C as mdmark CLI
+        W->>C: mdmark check
+        C->>C: 点検する文書の図の部品の定義を読み、定義を確かめる
+        C-->>W: 定義の誤りの 1 行・終了コード 1
+    expected:
+      - 終了コードが 1
+      - '`docs/a.md:3: diagram_invalid:` で始まる行が 1 つだけあり（1 つの定義につき 1 件）、内容に `frame.hint` を文字で、`stickyTitles` を真偽値で書く直し方がある'
+      - 設定・索引・文書が変わっていない
+    test: test_normal_when_group_options_invalid
+    refs:
+      - dev/設計書/シナリオ/単一ユースケース/設定と索引を点検する#scenarios[正常シナリオ（グループの項目に誤った値がある）]
 lead: 文書を書く人が、設定ファイルの形・索引と文書のずれ（`checkIndex`）・`build` の対象の有無・文書の本文にある知らない印・文書が指す見つからないファイル・文書の図の部品の定義を点検し、ファイル・場所・種類・内容の一覧を受け取る。`--text` か `--file` と `--key` を渡したときは、設定と索引の点検の代わりに、渡した Markdown を描いたときの書き方の警告と図の定義のずれを同じ一覧で受け取る。点検は設定・索引・文書を書き換えない。
 idempotent: true
 side_effects: なし（設定・索引・文書を書き換えない）

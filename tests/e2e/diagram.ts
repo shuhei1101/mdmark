@@ -336,3 +336,28 @@ export async function routeLinkTargets(
   }
   return () => [...opened];
 }
+
+/** 見本のフロー図のシステムの枠の `hint` */
+export const FRAME_HINT = "メールの受け取りから返信までを受け持つ範囲";
+
+/** 見本のフロー図の LLM の層の `hint` */
+export const LANE_HINT = "返信の種類を選び、下書きを書く";
+
+/** 見本のフロー図に、システムの枠と LLM の層の `hint` を足した定義の JSON。`stickyTitles` を渡すとその値も書く */
+export async function groupFlowText(
+  options: { stickyTitles?: boolean } = {},
+): Promise<string> {
+  const definition = JSON.parse(await sampleBlock("inquiry")) as {
+    frame: Record<string, unknown>;
+    lanes: Array<Record<string, unknown>>;
+    stickyTitles?: boolean;
+  };
+  definition.frame = { ...definition.frame, hint: FRAME_HINT };
+  definition.lanes = definition.lanes.map((lane) =>
+    lane.kind === "llm" ? { ...lane, hint: LANE_HINT } : lane,
+  );
+  if (options.stickyTitles !== undefined) {
+    definition.stickyTitles = options.stickyTitles;
+  }
+  return JSON.stringify(definition, null, 2);
+}

@@ -225,3 +225,100 @@ test("test_attach_zoom_when_link_pressed", async () => {
   expect(click.defaultPrevented).toBe(false);
   expect(viewport.scrollLeft).toBe(before);
 });
+
+// しきい値までのドラッグでは動かさず、超えたら動かして onPanStart を呼ぶ（正常系）
+test("test_attach_zoom_when_drag_threshold", async () => {
+  // 準備
+  vi.spyOn(Element.prototype, "setPointerCapture").mockImplementation(() => {});
+  const { attachZoom } = await loadZoom();
+  const root = createRootFromHtml(
+    `${TOOLS_HTML}<div class="viewport" tabindex="0" style="width: 600px; height: 400px; overflow: auto"><div class="sizer"><div class="content" style="width: 1100px; height: 300px"></div></div></div>`,
+  );
+  const tools = root.querySelector<HTMLElement>(".tools");
+  const viewport = root.querySelector<HTMLElement>(".viewport");
+  const content = root.querySelector<HTMLElement>(".content");
+  if (!tools || !viewport || !content) {
+    throw new Error("枠が無い");
+  }
+  let panStarts = 0;
+  const zoom = attachZoom({
+    viewport,
+    content,
+    size: { width: 1100, height: 300 },
+    tools,
+    onPanStart: () => {
+      panStarts += 1;
+    },
+  });
+  detachers.push(() => zoom.detach());
+  button(root, "拡大").click();
+  button(root, "拡大").click();
+  viewport.scrollLeft = 200;
+  const before = viewport.scrollLeft;
+  const point = { bubbles: true, pointerId: 1, button: 0, clientY: 100 };
+  // 実行: 2px だけ動かして離す
+  content.dispatchEvent(
+    new PointerEvent("pointerdown", { ...point, clientX: 300 }),
+  );
+  content.dispatchEvent(
+    new PointerEvent("pointermove", { ...point, clientX: 298 }),
+  );
+  content.dispatchEvent(
+    new PointerEvent("pointerup", { ...point, clientX: 298 }),
+  );
+  // 検証
+  expect(viewport.scrollLeft).toBe(before);
+  expect(panStarts).toBe(0);
+  // 実行: 40px 左へ動かして離す
+  content.dispatchEvent(
+    new PointerEvent("pointerdown", { ...point, clientX: 300 }),
+  );
+  content.dispatchEvent(
+    new PointerEvent("pointermove", { ...point, clientX: 260 }),
+  );
+  content.dispatchEvent(
+    new PointerEvent("pointerup", { ...point, clientX: 260 }),
+  );
+  // 検証
+  expect(viewport.scrollLeft).toBeGreaterThan(before);
+  expect(panStarts).toBe(1);
+});
+
+// fitHeight の関数が true を返すようになった後の refit() で、倍率を保ち下限を高さで求め直す（正常系）
+test("test_attach_zoom_when_refit", async () => {
+  // 準備
+  const { attachZoom } = await loadZoom();
+  const root = createRootFromHtml(
+    `${TOOLS_HTML}<div class="viewport" tabindex="0" style="width: 600px; height: 400px; overflow: auto"><div class="sizer"><div class="content" style="width: 500px; height: 1600px"></div></div></div>`,
+  );
+  const tools = root.querySelector<HTMLElement>(".tools");
+  const viewport = root.querySelector<HTMLElement>(".viewport");
+  const content = root.querySelector<HTMLElement>(".content");
+  if (!tools || !viewport || !content) {
+    throw new Error("枠が無い");
+  }
+  let useHeight = false;
+  const zooms: number[] = [];
+  const zoom = attachZoom({
+    viewport,
+    content,
+    size: { width: 500, height: 1600 },
+    tools,
+    fitHeight: () => useHeight,
+    onChange: (value) => {
+      zooms.push(value);
+    },
+  });
+  detachers.push(() => zoom.detach());
+  const fitBefore = zoom.fit();
+  const outBefore = button(root, "縮小").disabled;
+  // 実行
+  useHeight = true;
+  zoom.refit();
+  // 検証
+  expect(fitBefore).toBe(1);
+  expect(outBefore).toBe(true);
+  expect(zoom.fit()).toBeCloseTo(viewport.clientHeight / 1600, 5);
+  expect(zooms.at(-1) ?? 1).toBe(1);
+  expect(button(root, "縮小").disabled).toBe(false);
+});

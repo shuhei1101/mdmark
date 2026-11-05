@@ -42,3 +42,27 @@ stories:
     args:
       modal: true
       surface: true
+  - name: Resized
+    parameters:
+      server:
+        id: diagram-frame
+    args:
+      height: 240
+  - name: ResizeHandleFocused
+    parameters:
+      server:
+        id: diagram-frame
+    args:
+      focusResize: true
+  - name: ResizeOff
+    parameters:
+      server:
+        id: diagram-frame
+    args:
+      resizable: false
+  - name: NoLegendItems
+    parameters:
+      server:
+        id: diagram-frame
+    args:
+      legend: '[]'

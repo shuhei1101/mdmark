@@ -32,6 +32,8 @@
   <link rel="stylesheet" href="../../refs/283/assets/table.css">
   <!-- 多段の見出し・行見出し・セルの結合の規則（#275 の追加分） -->
   <link rel="stylesheet" href="../../refs/275/assets/table.css">
+  <!-- 本文の幅に広げる表と、列のボタンの案 A・B・C の規則（#308 の追加分） -->
+  <link rel="stylesheet" href="../../refs/308/assets/table.css">
   <!-- 印刷の規則: 紙に出すときだけ当てる。[data-print-styles]: モックの「印刷の見え方」で preview.js が media を all に切り替える -->
   <link rel="stylesheet" href="../../refs/19/assets/syntax-print.css" media="print" data-print-styles>
   <link rel="stylesheet" href="../../refs/57/assets/table-tools-print.css" media="print" data-print-styles>
@@ -1260,6 +1262,231 @@
         <article class="mdmark">
           <!-- [data-mock-table275]: table-merge.js が table-samples.js の同じ名前の定義から表を描く -->
           <div data-mock-table275="merge-warning"></div>
+        </article>
+      </section>
+
+      <!-- #308 本文の幅に広げる: 列の少ない表も本文の幅いっぱいに広げ、列が本文の幅を分け合う -->
+      <section aria-labelledby="state-308-fill">
+        <h2 class="catalog-label" id="state-308-fill">本文の幅に広げた表（列の少ない表。横にスクロールせず、端に影を出さない）</h2>
+        <article class="mdmark">
+<div class="mdmark-table" data-kind="data">
+  <div class="mdmark-table-scroll">
+  <table tabindex="0" aria-label="表: 本文の幅に広げた表">
+    <thead><tr><th>名前</th><th>数量</th></tr></thead>
+    <tbody>
+      <tr><td>りんご</td><td>10</td></tr>
+      <tr><td>みかん</td><td>2</td></tr>
+      <tr><td>ぶどう</td><td>33</td></tr>
+    </tbody>
+  </table>
+  </div>
+</div>
+        </article>
+      </section>
+
+      <!-- #308 収まらない表: 本文の幅の枠の中で横にスクロールし、続きがある側の端に影を出す（今の見え方のまま） -->
+      <section aria-labelledby="state-308-overflow">
+        <h2 class="catalog-label" id="state-308-overflow">本文の幅に収まらない表（枠は本文の幅で、中で横にスクロールする）</h2>
+        <article class="mdmark">
+<div class="mdmark-table" data-kind="data">
+  <div class="mdmark-table-scroll">
+  <table tabindex="0" aria-label="表: 本文の幅に収まらない表">
+    <thead><tr><th>列 1</th><th>列 2</th><th>列 3</th><th>列 4</th><th>列 5</th><th>列 6</th><th>列 7</th><th>列 8</th><th>列 9</th><th>列 10</th><th>列 11</th><th>列 12</th></tr></thead>
+    <tbody><tr><td>1-1</td><td>1-2</td><td>1-3</td><td>1-4</td><td>1-5</td><td>1-6</td><td>1-7</td><td>1-8</td><td>1-9</td><td>1-10</td><td>1-11</td><td>1-12</td></tr><tr><td>2-1</td><td>2-2</td><td>2-3</td><td>2-4</td><td>2-5</td><td>2-6</td><td>2-7</td><td>2-8</td><td>2-9</td><td>2-10</td><td>2-11</td><td>2-12</td></tr><tr><td>3-1</td><td>3-2</td><td>3-3</td><td>3-4</td><td>3-5</td><td>3-6</td><td>3-7</td><td>3-8</td><td>3-9</td><td>3-10</td><td>3-11</td><td>3-12</td></tr></tbody>
+  </table>
+  </div>
+</div>
+        </article>
+      </section>
+
+      <!-- #308 列のボタンの案 A: アイコンだけ。ツールチップと読み上げは「列設定」。隠した列の数をバッジで出し、読み上げに「（N 列を隠しています）」を残す。コピーのボタンは文字を持つ -->
+      <section aria-labelledby="state-308-a">
+        <h2 class="catalog-label" id="state-308-a">列のボタン 案 A（アイコンだけ・隠した列の数のバッジ。コピーは文字あり）</h2>
+        <article class="mdmark">
+<div class="mdmark-table" data-kind="data" data-hidden-columns="1">
+  <div class="mdmark-table-bar">
+    <div class="mdmark-table-tools">
+      <button class="mdmark-table-tool mdmark-columns-toggle is-icon-only is-active" type="button" aria-expanded="false" title="列設定"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M9 3v18"/><path d="M15 3v18"/></svg><span class="mdmark-columns-badge" aria-hidden="true">1</span><span class="mdmark-visually-hidden">列設定（1 列を隠しています）</span></button>
+      <button class="mdmark-table-tool mdmark-copy" type="button" data-state="idle"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>表をコピー</button>
+    </div>
+  </div>
+  <div class="mdmark-table-scroll">
+  <table tabindex="0" aria-label="表: 列のボタン 案 A">
+    <thead><tr><th>名前</th><th>説明</th><th>更新日</th></tr></thead>
+    <tbody>
+      <tr><td>りんご</td><td>描画を速くする</td><td>2026-10-01</td></tr>
+      <tr><td>みかん</td><td>印刷を直す</td><td>2026-10-10</td></tr>
+      <tr><td>りんご飴</td><td>描画の崩れを直す</td><td>2026-10-20</td></tr>
+    </tbody>
+  </table>
+  </div>
+</div>
+        </article>
+      </section>
+
+      <!-- #308 案 A で、コピーのボタンもアイコンだけにして帯の文字の有無を揃えた -->
+      <section aria-labelledby="state-308-a-icons">
+        <h2 class="catalog-label" id="state-308-a-icons">列のボタン 案 A（コピーもアイコンだけにして揃えた）</h2>
+        <article class="mdmark">
+<div class="mdmark-table" data-kind="data" data-hidden-columns="1">
+  <div class="mdmark-table-bar">
+    <div class="mdmark-table-tools">
+      <button class="mdmark-table-tool mdmark-columns-toggle is-icon-only is-active" type="button" aria-expanded="false" title="列設定"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M9 3v18"/><path d="M15 3v18"/></svg><span class="mdmark-columns-badge" aria-hidden="true">1</span><span class="mdmark-visually-hidden">列設定（1 列を隠しています）</span></button>
+      <button class="mdmark-table-tool is-icon-only" type="button" title="表をコピー"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg><span class="mdmark-visually-hidden">表をコピー</span></button>
+    </div>
+  </div>
+  <div class="mdmark-table-scroll">
+  <table tabindex="0" aria-label="表: 列のボタン 案 A（揃えた）">
+    <thead><tr><th>名前</th><th>説明</th><th>更新日</th></tr></thead>
+    <tbody>
+      <tr><td>りんご</td><td>描画を速くする</td><td>2026-10-01</td></tr>
+      <tr><td>みかん</td><td>印刷を直す</td><td>2026-10-10</td></tr>
+      <tr><td>りんご飴</td><td>描画の崩れを直す</td><td>2026-10-20</td></tr>
+    </tbody>
+  </table>
+  </div>
+</div>
+        </article>
+      </section>
+
+      <!-- #308 案 A で、全ての列を出しているとき: バッジを出さない -->
+      <section aria-labelledby="state-308-a-none">
+        <h2 class="catalog-label" id="state-308-a-none">列のボタン 案 A（全ての列を出しているとき。バッジを出さない）</h2>
+        <article class="mdmark">
+<div class="mdmark-table" data-kind="data">
+  <div class="mdmark-table-bar">
+    <div class="mdmark-table-tools">
+      <button class="mdmark-table-tool mdmark-columns-toggle is-icon-only" type="button" aria-expanded="false" title="列設定"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M9 3v18"/><path d="M15 3v18"/></svg><span class="mdmark-visually-hidden">列設定</span></button>
+      <button class="mdmark-table-tool mdmark-copy" type="button" data-state="idle"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>表をコピー</button>
+    </div>
+  </div>
+  <div class="mdmark-table-scroll">
+  <table tabindex="0" aria-label="表: 列のボタン 案 A（全ての列）">
+    <thead><tr><th>名前</th><th>説明</th><th>更新日</th></tr></thead>
+    <tbody>
+      <tr><td>りんご</td><td>描画を速くする</td><td>2026-10-01</td></tr>
+      <tr><td>みかん</td><td>印刷を直す</td><td>2026-10-10</td></tr>
+      <tr><td>りんご飴</td><td>描画の崩れを直す</td><td>2026-10-20</td></tr>
+    </tbody>
+  </table>
+  </div>
+</div>
+        </article>
+      </section>
+
+      <!-- #308 列のボタンの案 B: アイコンと「列」の 1 語 -->
+      <section aria-labelledby="state-308-b">
+        <h2 class="catalog-label" id="state-308-b">列のボタン 案 B（アイコンと「列」の 1 語）</h2>
+        <article class="mdmark">
+<div class="mdmark-table" data-kind="data" data-hidden-columns="1">
+  <div class="mdmark-table-bar">
+    <div class="mdmark-table-tools">
+      <button class="mdmark-table-tool mdmark-columns-toggle is-active" type="button" aria-expanded="false"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M9 3v18"/><path d="M15 3v18"/></svg>列<span class="mdmark-visually-hidden">（1 列を隠しています）</span></button>
+      <button class="mdmark-table-tool mdmark-copy" type="button" data-state="idle"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>表をコピー</button>
+    </div>
+  </div>
+  <div class="mdmark-table-scroll">
+  <table tabindex="0" aria-label="表: 列のボタン 案 B">
+    <thead><tr><th>名前</th><th>説明</th><th>更新日</th></tr></thead>
+    <tbody>
+      <tr><td>りんご</td><td>描画を速くする</td><td>2026-10-01</td></tr>
+      <tr><td>みかん</td><td>印刷を直す</td><td>2026-10-10</td></tr>
+      <tr><td>りんご飴</td><td>描画の崩れを直す</td><td>2026-10-20</td></tr>
+    </tbody>
+  </table>
+  </div>
+</div>
+        </article>
+      </section>
+
+      <!-- #308 案 A のメニューを開いた: メニューの見出しと aria-label をボタンのツールチップと同じ「列設定」にする -->
+      <section aria-labelledby="state-308-a-open">
+        <h2 class="catalog-label" id="state-308-a-open">列のボタン 案 A でメニューを開いた（見出しと読み上げはボタンと同じ「列設定」）</h2>
+        <article class="mdmark">
+<div class="mdmark-table" data-kind="data" data-hidden-columns="1" data-mock-open="columns">
+  <div class="mdmark-table-bar">
+    <div class="mdmark-table-tools">
+      <button class="mdmark-table-tool mdmark-columns-toggle is-icon-only is-active" type="button" aria-expanded="false" aria-controls="t-308-a-open-columns" title="列設定"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M9 3v18"/><path d="M15 3v18"/></svg><span class="mdmark-columns-badge" aria-hidden="true">1</span><span class="mdmark-visually-hidden">列設定（1 列を隠しています）</span></button>
+      <button class="mdmark-table-tool mdmark-copy" type="button" data-state="idle"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>表をコピー</button>
+    </div>
+  </div>
+  <div class="mdmark-table-scroll">
+  <table tabindex="0" aria-label="表: 列のボタン 案 A でメニューを開いた（見出しと読み上げはボタンと同じ「列設定」）">
+    <thead><tr><th>名前</th><th>説明</th><th>更新日</th></tr></thead>
+    <tbody>
+      <tr><td>りんご</td><td>描画を速くする</td><td>2026-10-01</td></tr>
+      <tr><td>みかん</td><td>印刷を直す</td><td>2026-10-10</td></tr>
+      <tr><td>りんご飴</td><td>描画の崩れを直す</td><td>2026-10-20</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <div class="mdmark-columns-menu" id="t-308-a-open-columns" role="dialog" hidden aria-label="列設定">
+    <p class="mdmark-columns-title">列設定</p>
+    <ul class="mdmark-columns-options"><li><label><input type="checkbox" value="0" checked disabled>名前</label></li><li><label><input type="checkbox" value="1">説明</label></li><li><label><input type="checkbox" value="2" checked>更新日</label></li></ul>
+    <p class="mdmark-columns-note">先頭の列は隠せません</p>
+    <button class="mdmark-columns-reset" type="button">リセット</button>
+  </div>
+</div>
+        </article>
+      </section>
+
+      <!-- #308 案 B のメニューを開いた: メニューの見出しと aria-label をボタンの語と同じ「列」にする -->
+      <section aria-labelledby="state-308-b-open">
+        <h2 class="catalog-label" id="state-308-b-open">列のボタン 案 B でメニューを開いた（見出しと読み上げはボタンと同じ「列」）</h2>
+        <article class="mdmark">
+<div class="mdmark-table" data-kind="data" data-hidden-columns="1" data-mock-open="columns">
+  <div class="mdmark-table-bar">
+    <div class="mdmark-table-tools">
+      <button class="mdmark-table-tool mdmark-columns-toggle is-active" type="button" aria-expanded="false" aria-controls="t-308-b-open-columns"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M9 3v18"/><path d="M15 3v18"/></svg>列<span class="mdmark-visually-hidden">（1 列を隠しています）</span></button>
+      <button class="mdmark-table-tool mdmark-copy" type="button" data-state="idle"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>表をコピー</button>
+    </div>
+  </div>
+  <div class="mdmark-table-scroll">
+  <table tabindex="0" aria-label="表: 列のボタン 案 B でメニューを開いた（見出しと読み上げはボタンと同じ「列」）">
+    <thead><tr><th>名前</th><th>説明</th><th>更新日</th></tr></thead>
+    <tbody>
+      <tr><td>りんご</td><td>描画を速くする</td><td>2026-10-01</td></tr>
+      <tr><td>みかん</td><td>印刷を直す</td><td>2026-10-10</td></tr>
+      <tr><td>りんご飴</td><td>描画の崩れを直す</td><td>2026-10-20</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <div class="mdmark-columns-menu" id="t-308-b-open-columns" role="dialog" hidden aria-label="列">
+    <p class="mdmark-columns-title">列</p>
+    <ul class="mdmark-columns-options"><li><label><input type="checkbox" value="0" checked disabled>名前</label></li><li><label><input type="checkbox" value="1">説明</label></li><li><label><input type="checkbox" value="2" checked>更新日</label></li></ul>
+    <p class="mdmark-columns-note">先頭の列は隠せません</p>
+    <button class="mdmark-columns-reset" type="button">リセット</button>
+  </div>
+</div>
+        </article>
+      </section>
+
+      <!-- #308 列のボタンの案 C: 帯のボタン（列・集計・コピー）を 1 つの設定のメニュー（…）にまとめる。メニューを開いた状態 -->
+      <section aria-labelledby="state-308-c">
+        <h2 class="catalog-label" id="state-308-c">列のボタン 案 C（帯のボタンを 1 つの設定のメニューにまとめる。開いた）</h2>
+        <article class="mdmark">
+<div class="mdmark-table" data-kind="data" data-hidden-columns="1">
+  <div class="mdmark-table-bar">
+    <div class="mdmark-table-tools">
+      <button class="mdmark-table-tool is-icon-only" type="button" aria-expanded="true" aria-controls="t-308-c-menu" title="表の設定"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg><span class="mdmark-visually-hidden">表の設定</span></button>
+    </div>
+  </div>
+  <div class="mdmark-table-scroll">
+  <table tabindex="0" aria-label="表: 列のボタン 案 C">
+    <thead><tr><th>名前</th><th>説明</th><th>更新日</th></tr></thead>
+    <tbody>
+      <tr><td>りんご</td><td>描画を速くする</td><td>2026-10-01</td></tr>
+      <tr><td>みかん</td><td>印刷を直す</td><td>2026-10-10</td></tr>
+      <tr><td>りんご飴</td><td>描画の崩れを直す</td><td>2026-10-20</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <ul class="mdmark-table-settings-menu" id="t-308-c-menu" aria-label="表の設定">
+    <li><button type="button"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M9 3v18"/><path d="M15 3v18"/></svg>列設定（1 列を隠しています）</button></li>
+    <li><button type="button"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 7V5a1 1 0 0 0-1-1H6.5a.5.5 0 0 0-.4.8l4.5 6a2 2 0 0 1 0 2.4l-4.5 6a.5.5 0 0 0 .4.8H17a1 1 0 0 0 1-1v-2"/></svg>集計</button></li>
+    <li><button type="button"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>表をコピー</button></li>
+  </ul>
+</div>
         </article>
       </section>
 

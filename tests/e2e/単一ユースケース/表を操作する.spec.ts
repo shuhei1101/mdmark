@@ -439,27 +439,50 @@ test("test_normal_when_columns_toggled", async ({ page }) => {
     markdown: fruitTable("data +columns hide=説明"),
   });
   const toggle = page.getByRole("button", { name: "列設定" });
+  const badge = toggle.locator(".mdmark-columns-badge");
   const menu = page.locator("#doc .mdmark-columns-menu");
   const boxes = menu.locator('input[type="checkbox"]');
-  // 検証: 描いた直後は説明の列だけが隠れている
+  // 検証: 列のボタンは文字を持たないアイコンだけのボタンで、ツールチップと読み上げが「列設定」
+  await expect(toggle).toHaveAttribute("title", "列設定");
+  const visibleText = await toggle.evaluate((button) => {
+    const copy = button.cloneNode(true) as HTMLElement;
+    for (const hidden of copy.querySelectorAll(
+      ".mdmark-visually-hidden, .mdmark-columns-badge",
+    )) {
+      hidden.remove();
+    }
+    return (copy.textContent ?? "").trim();
+  });
+  expect(visibleText).toBe("");
+  // 検証: 描いた直後は説明の列だけが隠れ、隠した列の数 1 のバッジと、読み上げの「（1 列を隠しています）」がある
   await expect(head(page, "説明")).toBeHidden();
   await expect(head(page, "名前")).toBeVisible();
   await expect(head(page, "更新日")).toBeVisible();
-  // 実行・検証: メニューを開く
+  await expect(badge).toHaveText("1");
+  await expect(
+    page.getByRole("button", { name: "列設定（1 列を隠しています）" }),
+  ).toHaveCount(1);
+  // 実行・検証: メニューを開く。見出しと読み上げは列のボタンと同じ「列設定」
   await toggle.click();
   await expect(menu).toBeVisible();
+  await expect(menu).toHaveAttribute("aria-label", "列設定");
+  await expect(menu.locator(".mdmark-columns-title")).toHaveText("列設定");
   await expect(boxes).toHaveCount(3);
   await expect(boxes.nth(1)).not.toBeChecked();
   await expect(boxes.nth(0)).toBeDisabled();
   await expect(menu).toContainText("先頭の列は隠せません");
-  // 実行・検証: 説明を入れ、更新日を外す
+  // 実行・検証: 説明を入れると、全ての列が出てバッジが無くなる
   await boxes.nth(1).check();
-  await boxes.nth(2).uncheck();
   await expect(head(page, "説明")).toBeVisible();
+  await expect(head(page, "更新日")).toBeVisible();
+  await expect(badge).toHaveCount(0);
+  // 実行・検証: 更新日を外すと、名前と説明が元の位置に並び、バッジが 1 になる
+  await boxes.nth(2).uncheck();
   await expect(head(page, "更新日")).toBeHidden();
   const order = await page.locator("#doc thead th").allTextContents();
   expect(order[0]).toContain("名前");
   expect(order[1]).toContain("説明");
+  await expect(badge).toHaveText("1");
   // 実行・検証: リセットする
   await menu.getByRole("button", { name: "リセット" }).click();
   await expect(head(page, "説明")).toBeHidden();
@@ -1738,4 +1761,113 @@ test("test_normal_when_csv_raw_toggled", async ({ page }) => {
   await expect(wrapper.locator("table")).toBeVisible();
   await expect(wrapper.locator(".mdmark-sort").first()).toBeVisible();
   await expect(wrapper.locator(".mdmark-filter").first()).toBeVisible();
+});
+
+/** 列名と 3 行の表を、`<!-- table: data -->` で囲んだ Markdown にする */
+function dataTable(columns: string[]): string {
+  const rows = [1, 2, 3].map(
+    (row) => `| ${columns.map((_, i) => `値 ${row}-${i + 1}`).join(" | ")} |`,
+  );
+  return [
+    "<!-- table: data -->",
+    "",
+    `| ${columns.join(" | ")} |`,
+    `| ${columns.map(() => "---").join(" | ")} |`,
+    ...rows,
+    "",
+    "<!-- /table -->",
+    "",
+  ].join("\n");
+}
+
+/** 表の外側の枠・包む横のスクロールの要素・表の範囲と、横のスクロールの状態 */
+function tableSizes(wrapper: ReturnType<Page["locator"]>) {
+  return wrapper.evaluate((element) => {
+    const scroller = element.querySelector<HTMLElement>(".mdmark-table-scroll");
+    const table = element.querySelector("table");
+    const heads = [...element.querySelectorAll<HTMLElement>("thead th")];
+    return {
+      wrapper: element.getBoundingClientRect().width,
+      scrollerRight: scroller?.getBoundingClientRect().right ?? 0,
+      tableRight: table?.getBoundingClientRect().right ?? 0,
+      lastHeadRight: heads.at(-1)?.getBoundingClientRect().right ?? 0,
+      overflows: scroller ? scroller.scrollWidth > scroller.clientWidth : false,
+      // 端の影: はみ出す表は既定で先頭の列を留め、留めた列の右端に影を出す
+      edgeShadows: element.querySelectorAll(".is-pinned-edge").length,
+      headLines: heads.map((head) => {
+        const label = head.querySelector(".mdmark-th") ?? head;
+        const range = document.createRange();
+        range.selectNodeContents(label);
+        return new Set(
+          [...range.getClientRects()]
+            .filter((rect) => rect.width > 0)
+            .map((rect) => Math.round(rect.top)),
+        ).size;
+      }),
+      widths: heads.map((head) => ({
+        width: head.getBoundingClientRect().width,
+        min: Number.parseFloat(getComputedStyle(head).minWidth) || 0,
+      })),
+    };
+  });
+}
+
+// 列の少ない表を本文の幅まで広げ、本文の幅に収まらない表だけ表の中で横にスクロールさせる（正常シナリオ（表を本文の幅に広げる））
+test("test_normal_when_table_fills_width", async ({ page }) => {
+  // 準備: 描く先の要素の幅は 1000px
+  await openPage(page, builtRoot, { hostCss: "#doc { width: 1000px; }" });
+  const wide = Array.from({ length: 12 }, (_, i) => `列の見出し ${i + 1}`);
+  // 実行
+  await mountDocument(page, {
+    markdown: [
+      "本文の段落。",
+      "",
+      dataTable(["名前", "数量"]),
+      dataTable(wide),
+    ].join("\n"),
+    config: { features: { "side-toc": false } },
+  });
+  const body = await page
+    .locator("#doc > p")
+    .first()
+    .evaluate((element) => element.getBoundingClientRect().width);
+  const tables = page.locator("#doc .mdmark-table");
+  await expect(tables).toHaveCount(2);
+  // 検証: 2 列の表の外側の枠が本文の幅で、右端の列の右端が枠の内側に揃い、横にスクロールせず、見出しが折り返さない
+  const narrow = await tableSizes(tables.nth(0));
+  expect(Math.abs(narrow.wrapper - body)).toBeLessThanOrEqual(1);
+  expect(
+    Math.abs(narrow.lastHeadRight - narrow.tableRight),
+  ).toBeLessThanOrEqual(1);
+  expect(
+    Math.abs(narrow.tableRight - narrow.scrollerRight),
+  ).toBeLessThanOrEqual(1);
+  expect(narrow.overflows).toBe(false);
+  expect(narrow.edgeShadows).toBe(0);
+  expect(narrow.headLines.every((lines) => lines === 1)).toBe(true);
+  // 検証: 12 列の表の外側の枠が本文の幅で、表の中で横にスクロールでき、各列が列の最小幅以上
+  const many = await tableSizes(tables.nth(1));
+  expect(Math.abs(many.wrapper - body)).toBeLessThanOrEqual(1);
+  expect(many.overflows).toBe(true);
+  await expect
+    .poll(async () => (await tableSizes(tables.nth(1))).edgeShadows)
+    .toBeGreaterThan(0);
+  for (const column of many.widths) {
+    expect(column.width).toBeGreaterThanOrEqual(column.min - 1);
+  }
+  const scroller = tables.nth(1).locator(".mdmark-table-scroll");
+  await scroller.evaluate((element) => {
+    element.scrollLeft = 200;
+  });
+  expect(
+    await scroller.evaluate((element) => element.scrollLeft),
+  ).toBeGreaterThan(0);
+  // 検証: ページに横スクロールが出ない
+  expect(
+    await page.evaluate(
+      () =>
+        document.documentElement.scrollWidth <=
+        document.documentElement.clientWidth,
+    ),
+  ).toBe(true);
 });

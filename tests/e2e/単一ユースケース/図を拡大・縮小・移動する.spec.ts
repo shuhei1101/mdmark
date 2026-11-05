@@ -1,7 +1,9 @@
-import { expect, type Page, test } from "@playwright/test";
-import { BAR_TEXT, chartElement, wrapHtml } from "../chart.ts";
+import { expect, type Locator, type Page, test } from "@playwright/test";
+import { BAR_TEXT, chartElement, monthlyChart, wrapHtml } from "../chart.ts";
 import {
+  FRAME_HINT,
   flowMarkdown,
+  groupFlowText,
   linkedFlowText,
   routeLinkTargets,
   tabToViewport,
@@ -463,4 +465,349 @@ test("test_normal_when_drag_on_linked_node", async ({ page }) => {
   await name.click();
   await page.waitForURL("https://example.com/spec");
   expect(opened()).toEqual(["https://example.com/spec"]);
+});
+
+/** 表示する枠の中で、文字・押せる所・グループのタイトルに当たらない位置（ドラッグを始められる所）を、画面の座標で返す */
+async function emptyPointIn(
+  viewport: Locator,
+): Promise<{ x: number; y: number }> {
+  const point = await viewport.evaluate((element) => {
+    const rect = element.getBoundingClientRect();
+    const avoid =
+      ".mdmark-diagram-node, .mdmark-diagram-label, button, a, .mdmark-diagram-frame-title, .mdmark-diagram-lane-label, .mdmark-term";
+    for (let y = rect.bottom - 8; y > rect.top + 8; y -= 12) {
+      for (let x = rect.left + 8; x < rect.right - 8; x += 12) {
+        const hit = document.elementFromPoint(x, y);
+        if (hit && element.contains(hit) && !hit.closest(avoid)) {
+          return { x, y };
+        }
+      }
+    }
+    return undefined;
+  });
+  if (!point) {
+    throw new Error("表示する枠にドラッグを始められる所が無い");
+  }
+  return point;
+}
+
+/** 表示する枠を、押したまま縦に `dy`（上へは負）動かして離す */
+async function dragVertically(
+  page: Page,
+  viewport: Locator,
+  dy: number,
+): Promise<void> {
+  const from = await emptyPointIn(viewport);
+  await page.mouse.move(from.x, from.y);
+  await page.mouse.down();
+  await page.mouse.move(from.x, from.y + dy, { steps: 8 });
+  await page.mouse.up();
+}
+
+/** 図の今の倍率（図の本体に掛けた `scale()`） */
+function scaleOf(page: Page): Promise<number> {
+  return page
+    .locator("#doc .mdmark-diagram-stage")
+    .evaluate(
+      (stage) => new DOMMatrixReadOnly(getComputedStyle(stage).transform).a,
+    );
+}
+
+/** 要素の画面に対する範囲（無ければ例外） */
+async function rectOf(locator: Locator) {
+  const box = await locator.boundingBox();
+  if (!box) {
+    throw new Error("要素の範囲を取れない");
+  }
+  return { ...box, bottom: box.y + box.height };
+}
+
+/** グループのタイトルの見る位置: 処理の層とデータの層のタイトルと、システムの枠のタイトル */
+function groupTitles(page: Page) {
+  return {
+    frame: page.locator("#doc .mdmark-diagram-frame-title"),
+    process: page.locator("#doc .mdmark-diagram-lane-label", {
+      hasText: "処理",
+    }),
+    data: page.locator("#doc .mdmark-diagram-lane-label", {
+      hasText: "データ",
+    }),
+  };
+}
+
+/** システムの枠と 3 層のフロー図を描き、処理の層を表示する枠の上へ出せるまで拡大する */
+async function openZoomedGroups(
+  page: Page,
+  stickyTitles?: boolean,
+): Promise<Locator> {
+  await openPage(page, builtRoot);
+  await mountDocument(page, {
+    markdown: wrapDirective(
+      "flow",
+      await groupFlowText(stickyTitles === undefined ? {} : { stickyTitles }),
+    ),
+  });
+  await zoomIn(page);
+  // 処理の層が表示する枠の上へ出るまで縦に動かせるよう、足りなければさらに拡大する
+  const viewport = viewportOf(page);
+  const lane = page.locator('#doc .mdmark-diagram-lane[data-kind="mcp"]');
+  for (let count = 0; count < ZOOM_MAX_CLICKS; count += 1) {
+    const room = await viewport.evaluate(
+      (element) => element.scrollHeight - element.clientHeight,
+    );
+    const laneBottom = (await rectOf(lane)).bottom - (await rectOf(viewport)).y;
+    const button = page.getByRole("button", { name: "拡大" });
+    if (room > laneBottom + 40 || (await button.isDisabled())) {
+      break;
+    }
+    await button.click();
+  }
+  return viewport;
+}
+
+// 拡大して動かした間、見えているシステムの枠と層のタイトルを表示する枠の上端に留め、層が上へ出たら次の層のタイトルを留める（正常シナリオ（グループのタイトルを留める））
+test("test_normal_when_group_titles_stuck", async ({ page }) => {
+  // 準備
+  const viewport = await openZoomedGroups(page);
+  const { frame, process, data } = groupTitles(page);
+  const lane = page.locator('#doc .mdmark-diagram-lane[data-kind="mcp"]');
+  const scale = await scaleOf(page);
+  // 実行: 図を上へドラッグして、処理の層の途中を見せる
+  const top = (await rectOf(viewport)).y;
+  const laneRect = await rectOf(lane);
+  await dragVertically(
+    page,
+    viewport,
+    -(laneRect.y + laneRect.height / 2 - top),
+  );
+  // 検証: システムの枠と処理の層のタイトルが、表示する枠の上端に見えている
+  const frameRect = await rectOf(frame);
+  expect(frameRect.y).toBeGreaterThanOrEqual(top - 1);
+  expect(frameRect.y).toBeLessThanOrEqual(top + 8 * scale + 1);
+  const processRect = await rectOf(process);
+  expect(processRect.y).toBeGreaterThanOrEqual(frameRect.bottom - 1);
+  expect(processRect.y).toBeLessThanOrEqual(frameRect.bottom + 8 * scale + 1);
+  // 検証: 留めたタイトルは不透明な背景を持ち、ノードと線より手前にある
+  for (const title of [frame, process]) {
+    await expect(title).not.toHaveCSS("background-color", "rgba(0, 0, 0, 0)");
+    const front = await title.evaluate((element) => {
+      const rect = element.getBoundingClientRect();
+      const hit = document.elementFromPoint(
+        rect.left + Math.min(rect.width / 2, 24),
+        rect.top + rect.height / 2,
+      );
+      return hit !== null && (hit === element || element.contains(hit));
+    });
+    expect(front).toBe(true);
+  }
+  // 実行・検証: 留めたタイトルの hint の印にポインターを乗せると、ツールチップが出る
+  await frame.locator(".mdmark-diagram-group-info").hover();
+  await expect(
+    page.locator('[role="tooltip"]', { hasText: FRAME_HINT }),
+  ).toBeVisible();
+  await page.mouse.move(0, 0);
+  // 実行: 処理の層が表示する枠の上へ出るまで動かす
+  const after = await rectOf(lane);
+  await dragVertically(page, viewport, -(after.bottom - top + 24));
+  // 検証: 処理の層のタイトルは留まらず、データの層のタイトルが上端に見えている
+  expect((await rectOf(process)).bottom).toBeLessThanOrEqual(top + 1);
+  const dataRect = await rectOf(data);
+  const frameAfter = await rectOf(frame);
+  expect(dataRect.y).toBeGreaterThanOrEqual(frameAfter.bottom - 1);
+  expect(dataRect.y).toBeLessThanOrEqual(frameAfter.bottom + 8 * scale + 1);
+});
+
+// stickyTitles: false の図では、タイトルも図と同じだけ動いて表示する枠の上へ隠れる（正常シナリオ（グループのタイトルを留めない））
+test("test_normal_when_sticky_titles_off", async ({ page }) => {
+  // 準備
+  const viewport = await openZoomedGroups(page, false);
+  const { frame, process } = groupTitles(page);
+  const lane = page.locator('#doc .mdmark-diagram-lane[data-kind="mcp"]');
+  // 実行: 図を上へドラッグして、処理の層の途中を見せる
+  const top = (await rectOf(viewport)).y;
+  const laneRect = await rectOf(lane);
+  await dragVertically(
+    page,
+    viewport,
+    -(laneRect.y + laneRect.height / 2 - top),
+  );
+  // 検証: システムの枠と処理の層のタイトルが、表示する枠の上へ隠れる
+  expect((await rectOf(frame)).bottom).toBeLessThanOrEqual(top + 1);
+  expect((await rectOf(process)).bottom).toBeLessThanOrEqual(top + 1);
+});
+
+/** 幅 500・高さ 1600 の縦に長いフロー図の定義 */
+const TALL_FLOW = JSON.stringify({
+  title: "縦に長い処理の流れ",
+  scope: "高さの確認",
+  updated: "2026-11-05",
+  width: 500,
+  height: 1600,
+  nodes: [
+    { id: "a", kind: "script", x: 40, y: 40, w: 180, h: 72, name: "受け取る" },
+    { id: "b", kind: "script", x: 40, y: 760, w: 180, h: 72, name: "分ける" },
+    { id: "c", kind: "data", x: 40, y: 1480, w: 180, h: 72, name: "残す" },
+  ],
+  wires: [
+    {
+      id: "w1",
+      from: "a",
+      to: "b",
+      line: "flow",
+      points: [
+        [130, 112],
+        [130, 760],
+      ],
+    },
+    {
+      id: "w2",
+      from: "b",
+      to: "c",
+      line: "write",
+      points: [
+        [130, 832],
+        [130, 1480],
+      ],
+    },
+  ],
+});
+
+/** 縦に長い図を描く（読み直した後も同じ文書を描き直す） */
+async function mountTall(page: Page): Promise<void> {
+  await mountDocument(page, { markdown: wrapDirective("flow", TALL_FLOW) });
+  await expect(page.locator("#doc figure.mdmark-diagram")).toHaveCount(1);
+}
+
+/** 表示する枠の高さ（px） */
+async function heightOf(page: Page): Promise<number> {
+  return (await rectOf(viewportOf(page))).height;
+}
+
+// 右下のリサイズハンドルのドラッグと上下キーで表示する枠の高さを変え、読み直しても保ち、ダブルクリックで戻し、全画面には置かない（正常シナリオ（リサイズハンドルで高さを変える））
+test("test_normal_when_resized", async ({ page }) => {
+  // 準備
+  await openPage(page, builtRoot);
+  await mountTall(page);
+  const handle = page.getByRole("separator", {
+    name: "「縦に長い処理の流れ」の表示の高さ",
+  });
+  // 検証: 右下にリサイズハンドルがあり、読み上げの名前を持ち、キーボードでフォーカスできる
+  await expect(handle).toBeVisible();
+  const frame = await rectOf(viewportOf(page));
+  const handleRect = await rectOf(handle);
+  expect(handleRect.x + handleRect.width).toBeGreaterThan(
+    frame.x + frame.width - 40,
+  );
+  expect(handleRect.bottom).toBeGreaterThan(frame.bottom - 40);
+  await handle.focus();
+  await expect(handle).toBeFocused();
+  const opened = await heightOf(page);
+  const width = frame.width;
+  // 実行: 下へ 200px ドラッグする
+  const center = {
+    x: handleRect.x + handleRect.width / 2,
+    y: handleRect.y + handleRect.height / 2,
+  };
+  await page.mouse.move(center.x, center.y);
+  await page.mouse.down();
+  await page.mouse.move(center.x, center.y + 200, { steps: 8 });
+  await page.mouse.up();
+  // 検証: ドラッグした分だけ高くなり、幅は変わらず、図の全体が収まる高さを超えない
+  const resized = await heightOf(page);
+  expect(Math.abs(resized - opened - 200)).toBeLessThanOrEqual(2);
+  expect(
+    Math.abs((await rectOf(viewportOf(page))).width - width),
+  ).toBeLessThanOrEqual(1);
+  expect(resized).toBeLessThanOrEqual(1600 * (await scaleOf(page)) + 2);
+  // 実行・検証: 0 で、変えた高さで図の全体が収まる倍率になる
+  await viewportOf(page).focus();
+  await page.keyboard.press("0");
+  const fits = await viewportOf(page).evaluate((element) => {
+    const sizer = element.querySelector<HTMLElement>(".mdmark-diagram-sizer");
+    const rect = sizer?.getBoundingClientRect();
+    return rect
+      ? rect.width <= element.clientWidth + 1 &&
+          rect.height <= element.clientHeight + 1
+      : false;
+  });
+  expect(fits).toBe(true);
+  // 実行・検証: ↑ で低く、↓ で高くなる
+  await handle.focus();
+  await page.keyboard.press("ArrowUp");
+  const lowered = await heightOf(page);
+  expect(lowered).toBeLessThan(resized);
+  await page.keyboard.press("ArrowDown");
+  const kept = await heightOf(page);
+  expect(kept).toBeGreaterThan(lowered);
+  // 実行・検証: 読み直した後も、変えた高さで描く
+  await page.reload();
+  await page.waitForFunction(() => "mdmark" in window);
+  await mountTall(page);
+  expect(Math.abs((await heightOf(page)) - kept)).toBeLessThanOrEqual(2);
+  // 実行・検証: ダブルクリックで定義から決まる高さに戻り、読み直しても戻した高さのまま
+  await handle.dblclick();
+  expect(Math.abs((await heightOf(page)) - opened)).toBeLessThanOrEqual(2);
+  await page.reload();
+  await page.waitForFunction(() => "mdmark" in window);
+  await mountTall(page);
+  expect(Math.abs((await heightOf(page)) - opened)).toBeLessThanOrEqual(2);
+  // 実行・検証: 全画面で開いた図にはリサイズハンドルが無い
+  await page.getByRole("button", { name: "全画面で開く" }).click();
+  const dialog = page.locator("#doc dialog.mdmark-diagram-dialog");
+  await expect(dialog).toBeVisible();
+  await expect(dialog.locator(".mdmark-diagram-resize")).toHaveCount(0);
+});
+
+// 拡大したグラフの点の上で、わずかに動かして離しても図は動かずツールチップが出たまま、大きく動かすと図が動きツールチップが消える（正常シナリオ（グラフの項目の上で動かす））
+test("test_normal_when_drag_on_chart_item", async ({ page }) => {
+  // 準備
+  await openPage(page, builtRoot);
+  await mountDocument(page, {
+    markdown: wrapDirective("chart", JSON.stringify(monthlyChart("line"))),
+  });
+  await zoomIn(page);
+  const viewport = viewportOf(page);
+  // 表示する枠の中に見えている点を選ぶ
+  const index = await viewport.evaluate((element) => {
+    const frame = element.getBoundingClientRect();
+    return [...element.querySelectorAll('[data-tip-owner^="item:"]')].findIndex(
+      (owner) => {
+        const rect = owner.getBoundingClientRect();
+        const x = rect.left + rect.width / 2;
+        const y = rect.top + rect.height / 2;
+        return (
+          x > frame.left + 160 &&
+          x < frame.right - 20 &&
+          y > frame.top &&
+          y < frame.bottom
+        );
+      },
+    );
+  });
+  expect(index).toBeGreaterThanOrEqual(0);
+  const point = viewport.locator('[data-tip-owner^="item:"]').nth(index);
+  const tip = page.locator(
+    `[id="${await point.getAttribute("aria-describedby")}"]`,
+  );
+  // 実行・検証: 点にポインターを乗せると、点のツールチップが出る
+  await point.hover();
+  await expect(tip).toBeVisible();
+  const before = await viewport.evaluate((element) => element.scrollLeft);
+  const rect = await rectOf(point);
+  const center = { x: rect.x + rect.width / 2, y: rect.y + rect.height / 2 };
+  // 実行・検証: 点の上で押し、わずかに動かして離すと、図は動かずツールチップが出たまま
+  await page.mouse.move(center.x, center.y);
+  await page.mouse.down();
+  await page.mouse.move(center.x + 2, center.y);
+  await page.mouse.up();
+  expect(await viewport.evaluate((element) => element.scrollLeft)).toBe(before);
+  await expect(tip).toBeVisible();
+  // 実行・検証: 点の上で押したまま大きく動かすと、動かした分だけ図が動き、ツールチップは消える
+  await page.mouse.move(center.x, center.y);
+  await page.mouse.down();
+  await page.mouse.move(center.x - 120, center.y, { steps: 8 });
+  const moved = await viewport.evaluate((element) => element.scrollLeft);
+  expect(moved - before).toBeGreaterThan(110);
+  await expect(tip).toBeHidden();
+  await page.mouse.up();
 });

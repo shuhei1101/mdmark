@@ -1,0 +1,90 @@
+/* #308 の表の追加分: 表を本文の幅に広げる（表を包む要素に横スクロールと端の影を移す）と、列のボタンの見せ方の案 A・B・C。
+   表の規則（refs/16・19・57・151・275 の table.css）の後に読む */
+
+@layer mdmark {
+  .mdmark {
+    /* 表を包む要素: 本文の幅いっぱいに広げ、中身が収まらないときだけこの中で横にスクロールし、続きがある側の端に影を出す */
+    .mdmark-table-scroll {
+      justify-self: stretch;
+      width: 100%;
+      max-width: 100%;
+      overflow-x: auto;
+      border-radius: calc(var(--mdmark-radius) * 2);
+      background:
+        linear-gradient(to right, var(--mdmark-color-bg) 30%, transparent) left / 2.5em 100% no-repeat local,
+        linear-gradient(to left, var(--mdmark-color-bg) 30%, transparent) right / 2.5em 100% no-repeat local,
+        radial-gradient(farthest-side at 0 50%, var(--mdmark-color-scroll-shadow), transparent) left / 0.9em 100% no-repeat scroll,
+        radial-gradient(farthest-side at 100% 50%, var(--mdmark-color-scroll-shadow), transparent) right / 0.9em 100% no-repeat scroll,
+        var(--mdmark-color-bg);
+
+      /* 包んだ表: 表のまま描いて列を本文の幅まで広げる。列の最小幅と見出しの折り返さない指定は今のまま */
+      > table {
+        display: table;
+        box-sizing: border-box;
+        width: 100%;
+        max-width: none;
+        overflow: visible;
+        background: transparent;
+      }
+    }
+
+    /* 列のボタン（案 A・C）: 文字を持たないアイコンだけのボタン。帯のほかのボタンと高さを合わせた正方形 */
+    .mdmark-table-tool.is-icon-only {
+      position: relative;
+      justify-content: center;
+      width: 1.875rem;
+      padding: 0;
+    }
+
+    /* 隠した列の数のバッジ: アイコンの右上に重ね、列を隠している間だけ出す */
+    .mdmark-columns-badge {
+      position: absolute;
+      inset-block-start: -0.4rem;
+      inset-inline-end: -0.4rem;
+      display: grid;
+      place-items: center;
+      min-width: 1.05rem;
+      height: 1.05rem;
+      padding: 0 0.25rem;
+      border: 1.5px solid var(--mdmark-color-bg);
+      border-radius: 999px;
+      background: var(--mdmark-color-link);
+      color: var(--mdmark-color-bg);
+      font-size: 0.6875rem;
+      font-weight: 700;
+      line-height: 1;
+    }
+
+    /* 帯の設定のメニュー（案 C）: 列設定・集計・コピーを 1 つのメニューに並べる */
+    .mdmark-table-settings-menu {
+      display: grid;
+      gap: 0.125rem;
+      width: max-content;
+      margin: 0;
+      padding: 0.25rem;
+      border: 1px solid var(--mdmark-color-border);
+      border-radius: var(--mdmark-radius);
+      background: var(--mdmark-color-bg);
+      list-style: none;
+
+      button {
+        display: flex;
+        gap: 0.5em;
+        align-items: center;
+        width: 100%;
+        padding: 0.35em 0.75em;
+        border: 0;
+        border-radius: calc(var(--mdmark-radius) - 2px);
+        background: transparent;
+        color: var(--mdmark-color-text);
+        font: inherit;
+        text-align: start;
+        cursor: pointer;
+
+        &:hover {
+          background: var(--mdmark-color-surface);
+        }
+      }
+    }
+  }
+}

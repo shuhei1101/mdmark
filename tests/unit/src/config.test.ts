@@ -26,6 +26,7 @@ const DEFAULT_FEATURES = {
   "row-details": true,
   figures: true,
   diagrams: true,
+  "diagram-resize": true,
   glossary: true,
   backlinks: true,
   html: true,
@@ -62,7 +63,7 @@ test("test_resolve_config", async () => {
   expect(resolved).toEqual({
     features: DEFAULT_FEATURES,
     libraries: {},
-    tooltips: { placement: "top" },
+    tooltips: { placement: "top", diagramPlacement: "bottom" },
     syntax: { url: DEFAULT_SYNTAX_URL },
     sideToc: { mode: "hover" },
     colorTheme: "dev-swiss",
@@ -204,4 +205,26 @@ test("test_resolve_config_when_labels_given", async () => {
     { paramCopy: "今の値を写す" },
     { paramCopy: "今の値を写す" },
   ]);
+});
+
+// top だけを受け、他の値と無いときは bottom にする（正常系）
+test("test_resolve_config_when_diagram_placement_given", async () => {
+  // 準備
+  const { resolveConfig } = await loadConfig();
+  const top = { tooltips: { diagramPlacement: "top" } } as MdmarkConfig;
+  const unknown = {
+    tooltips: { diagramPlacement: "left" },
+  } as unknown as MdmarkConfig;
+  const bodyOnly: MdmarkConfig = { tooltips: { placement: "bottom" } };
+  // 実行
+  const resolved = [top, unknown, bodyOnly].map((config) =>
+    resolveConfig({ config }),
+  );
+  // 検証
+  expect(resolved.map((config) => config.tooltips.diagramPlacement)).toEqual([
+    "top",
+    "bottom",
+    "bottom",
+  ]);
+  expect(resolved[2]?.tooltips.placement).toBe("bottom");
 });

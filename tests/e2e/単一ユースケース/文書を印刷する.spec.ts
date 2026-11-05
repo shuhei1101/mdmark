@@ -276,7 +276,9 @@ test("test_normal_when_table_features_printed", async ({ page }) => {
   await sendPrintEvent(page, "beforeprint");
   // 検証
   const doc = page.locator("#doc");
+  // 列のボタンは、隠した列の数のバッジを含めて出ていない
   await expect(doc.locator("button.mdmark-columns-toggle")).toBeHidden();
+  await expect(doc.locator(".mdmark-columns-badge")).toBeHidden();
   await expect(doc.locator("button.mdmark-copy")).toBeHidden();
   await expect(doc.locator("button.mdmark-totals-toggle")).toBeHidden();
   await expect(doc.locator(".mdmark-row-anchor").first()).toBeHidden();

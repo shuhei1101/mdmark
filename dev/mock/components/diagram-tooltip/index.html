@@ -24,6 +24,8 @@
   <script src="../../refs/42/assets/samples.js" defer></script>
   <!-- 箱の hint を持つ図の定義の見本（#45 で共有するアセット。diagram.js の前に読む） -->
   <script src="../../refs/45/assets/samples.js" defer></script>
+  <!-- #308 で追加するグループの hint・縦に長い図・種類が 1 つずつの図の定義の見本（diagram.js の前に読む） -->
+  <script src="../../refs/308/assets/samples.js" defer></script>
   <script src="../../refs/42/assets/diagram.js" defer></script>
 </head>
 <body>
@@ -88,6 +90,46 @@
         <!-- [data-mock-hints="off"]: diagram.js がこの中の図にヒントを付けない（設定の features.hints が false の文書に当たる） -->
         <article class="mdmark" data-mock-hints="off">
           <figure data-mock-diagram="inquiry-hint"></figure>
+        </article>
+      </section>
+
+      <!-- グループのタイトルのヒント: システムの枠と hint を持つ層のタイトルの右に箱と同じ印を置き、印から hint のツールチップを出す -->
+      <section aria-labelledby="state-group-hint">
+        <h2 class="catalog-label" id="state-group-hint">システムの枠と層のタイトルの hint（開いた。hint を持つ層にだけ印がある）</h2>
+        <article class="mdmark">
+          <figure data-mock-diagram="inquiry-groups" data-mock-open="frame"></figure>
+        </article>
+      </section>
+
+      <!-- グラフの項目: 折れ線の点は系列の名前と横の目盛りと値。点の周りの見えない範囲でも開く -->
+      <section aria-labelledby="state-chart-line">
+        <h2 class="catalog-label" id="state-chart-line">グラフの点（開いた。系列の名前・横の目盛り・値）</h2>
+        <article class="mdmark">
+          <figure data-mock-diagram="reply-time" data-mock-open="item:3"></figure>
+        </article>
+      </section>
+
+      <!-- グラフの項目: 棒は系列の名前と横の目盛りと値 -->
+      <section aria-labelledby="state-chart-bar">
+        <h2 class="catalog-label" id="state-chart-bar">グラフの棒（開いた）</h2>
+        <article class="mdmark">
+          <figure data-mock-diagram="inquiry-count" data-mock-open="item:2"></figure>
+        </article>
+      </section>
+
+      <!-- グラフの項目: 円の扇形は項目の名前と値と割合 -->
+      <section aria-labelledby="state-chart-pie">
+        <h2 class="catalog-label" id="state-chart-pie">円の扇形（開いた。項目の名前・値・割合）</h2>
+        <article class="mdmark">
+          <figure data-mock-diagram="reply-kind" data-mock-open="item:1"></figure>
+        </article>
+      </section>
+
+      <!-- グラフの項目: 散布図の点は系列の名前と x と y -->
+      <section aria-labelledby="state-chart-scatter">
+        <h2 class="catalog-label" id="state-chart-scatter">散布図の点（開いた。系列の名前と x と y）</h2>
+        <article class="mdmark">
+          <figure data-mock-diagram="length-time" data-mock-open="item:4"></figure>
         </article>
       </section>
     </div>

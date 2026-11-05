@@ -2,7 +2,7 @@ import type { MdmarkParamDefinition } from "../diagram/definition.ts";
 import { renderChart } from "../parts/chart.ts";
 import { legendFor, renderLegendItems } from "../parts/diagram.ts";
 import { paramChart, paramJson, renderCopyStatus } from "../parts/param.ts";
-import { renumberIds } from "./diagrams.ts";
+import { DIAGRAM_REDRAW_EVENT, renumberIds } from "./diagrams.ts";
 
 // 操作を付けた回数の通し番号。`id` を重ならせないために使う
 let attachCounter = 0;
@@ -37,15 +37,33 @@ function attachParam(
     fallback.hidden = true;
   };
 
-  /** グラフを今の値の系列で描き直す。題と倍率は保つ */
+  // 描き直すたびの通し番号。項目のツールチップの `id` を重ならせないために使う
+  let redraws = 0;
+  const figure = root.querySelector<HTMLElement>("figure.mdmark-diagram");
+
+  /** グラフを今の値の系列で描き直す。題と倍率は保ち、項目のツールチップを入れ替える */
   const redraw = (): void => {
     const chart = paramChart(definition, value);
-    const part = renderChart(chart, "");
+    redraws += 1;
+    const prefix =
+      root.querySelector(".mdmark-param-title")?.id.replace(/-title$/, "") ??
+      "mdmark-param";
+    const part = renderChart(chart, `${prefix}-redraw-${redraws}`);
     if (stage) {
       stage.innerHTML = part.html;
     }
+    const viewport = figure?.querySelector<HTMLElement>(
+      ".mdmark-diagram-viewport",
+    );
+    if (figure && viewport) {
+      for (const tip of figure.querySelectorAll(".mdmark-diagram-tip")) {
+        tip.remove();
+      }
+      viewport.insertAdjacentHTML("afterend", part.tips);
+      figure.dispatchEvent(new Event(DIAGRAM_REDRAW_EVENT));
+    }
     if (legend) {
-      legend.innerHTML = renderLegendItems("", legendFor(chart, part));
+      legend.innerHTML = renderLegendItems("", legendFor(chart));
     }
   };
 

@@ -1,6 +1,11 @@
 import type { TooltipPlacement } from "../config.ts";
-import { ZOOM } from "../diagram/geometry.ts";
+import {
+  type StickyTitle,
+  stickyTitleShifts,
+  ZOOM,
+} from "../diagram/geometry.ts";
 import { iconSvg } from "../parts/icons.ts";
+import { attachDiagramResize, diagramHeightKey } from "./diagram-resize.ts";
 import { attachDiagramTips } from "./diagram-tips.ts";
 import { attachErFolds } from "./er-folds.ts";
 import { attachZoom } from "./zoom.ts";
@@ -16,6 +21,24 @@ const TEXT_SELECTOR =
 
 // 操作を付けた回数の通し番号。`id` を重ならせないために使う
 let attachCounter = 0;
+
+// 上端に留めるグループのタイトルの間と、表示する枠の上端との余白（定義の座標の px）
+const STICKY_GAP_PX = 4;
+
+// 上端に留めているタイトルに付ける class
+const STUCK_CLASS = "is-stuck";
+
+/** 図の中身を描き直したときに `figure` へ送るイベント（ツールチップを付け直す） */
+export const DIAGRAM_REDRAW_EVENT = "mdmark-diagram-redraw";
+
+/** 高さを保つ先（sessionStorage）。使えない環境では `null` */
+const defaultStorage = (): Storage | null => {
+  try {
+    return window.sessionStorage;
+  } catch {
+    return null;
+  }
+};
 
 /** 図の `id` の頭 `from` を `to` に振り直し、それを指す属性も合わせて直す */
 export function renumberIds(
@@ -52,12 +75,18 @@ export function renumberIds(
   }
 }
 
-/** 図 1 つの倍率と位置の操作（右上のボタン・キー・ドラッグ）を付け、操作と監視を外す関数を返す */
+/** 図 1 つの倍率と位置の操作（右上のボタン・キー・ドラッグ・リサイズハンドル）と、グループのタイトルを上端に留める処理を付け、操作と監視を外す関数を返す */
 function attachView(
   figure: HTMLElement,
-  options: { modal: boolean },
+  options: {
+    modal: boolean;
+    /** ドラッグで動かし始めたときに呼ぶ（開いているツールチップを閉じる） */
+    onPanStart?: () => void;
+    /** リサイズハンドルで変えた高さを保つキーと保つ先 */
+    resize?: { key: string; storage: Storage | null };
+  },
 ): () => void {
-  const { modal } = options;
+  const { modal, onPanStart, resize } = options;
   const viewport = figure.querySelector<HTMLElement>(
     ".mdmark-diagram-viewport",
   );
@@ -72,6 +101,40 @@ function attachView(
     height: Number.parseFloat(stage.style.height),
   };
   let scale = 1;
+  // リサイズハンドルで変えた高さ（変えていなければ `null`）
+  let userHeight: number | null = null;
+  // 上端に留めるグループのタイトル（枠・層の順）
+  const titles =
+    figure.dataset.stickyTitles === "off"
+      ? []
+      : [...figure.querySelectorAll<HTMLElement>("[data-sticky-top]")].sort(
+          (a, b) =>
+            Number(b.classList.contains("mdmark-diagram-frame-title")) -
+            Number(a.classList.contains("mdmark-diagram-frame-title")),
+        );
+
+  /** 見えているシステムの枠と層のタイトルを、表示する枠の上端に留める */
+  const stickTitles = (): void => {
+    if (titles.length === 0) {
+      return;
+    }
+    const rows: StickyTitle[] = titles.map((title) => ({
+      base: Number.parseFloat(title.style.top),
+      bottom: Number(title.dataset.stickyBottom),
+      height: title.offsetHeight,
+      frame: title.classList.contains("mdmark-diagram-frame-title"),
+    }));
+    const shifts = stickyTitleShifts({
+      top: viewport.scrollTop / scale,
+      gap: STICKY_GAP_PX,
+      titles: rows,
+    });
+    titles.forEach((title, index) => {
+      const { shift = 0, stuck = false } = shifts[index] ?? {};
+      title.style.transform = shift ? `translateY(${shift}px)` : "";
+      title.classList.toggle(STUCK_CLASS, stuck);
+    });
+  };
 
   /** シーケンス図の相手の名前の行を、表示する枠の上端に留める（図の座標で縦に動いた分だけ下げる） */
   const stickHeads = (): void => {
@@ -87,7 +150,7 @@ function attachView(
     scale = zoom;
     if (!modal) {
       // 全体が収まる倍率では、高さを全体が収まる高さと `--mdmark-diagram-max-height` の小さいほうにする
-      if (Math.abs(zoom - fit) < ZOOM_EPSILON) {
+      if (Math.abs(zoom - fit) < ZOOM_EPSILON && userHeight === null) {
         viewport.style.maxHeight = "";
         const cap = Number.parseFloat(getComputedStyle(viewport).maxHeight);
         const height = content.height * fit;
@@ -97,10 +160,15 @@ function attachView(
       viewport.style.maxHeight = `${content.height * zoom}px`;
     }
     stickHeads();
+    stickTitles();
   };
 
   const controller = new AbortController();
   viewport.addEventListener("scroll", stickHeads, {
+    passive: true,
+    signal: controller.signal,
+  });
+  viewport.addEventListener("scroll", stickTitles, {
     passive: true,
     signal: controller.signal,
   });
@@ -110,13 +178,44 @@ function attachView(
     size: content,
     tools: figure,
     onChange,
-    fitHeight: modal,
+    ...(onPanStart ? { onPanStart } : {}),
+    // 文書の中は幅だけで決め、リサイズハンドルで高さを変えた後は高さでも決める
+    fitHeight: () => modal || userHeight !== null,
     dragIgnore: TEXT_SELECTOR,
     keyTargets: [box],
     percentBase: "fit",
   });
 
+  const handle = figure.querySelector<HTMLElement>(".mdmark-diagram-resize");
+  let detachResize = (): void => {};
+  if (!modal && handle && resize) {
+    const attached = attachDiagramResize({
+      viewport,
+      handle,
+      key: resize.key,
+      storage: resize.storage,
+      max: () => content.height * scale,
+      reset: () => {
+        userHeight = null;
+        zoom.refit();
+        zoom.reset();
+        return viewport.getBoundingClientRect().height;
+      },
+      onResize: (height) => {
+        userHeight = height;
+        zoom.refit();
+      },
+    });
+    detachResize = attached.detach;
+    if (attached.restored !== null) {
+      // 保った高さで開く: その高さで全体が収まる倍率にする
+      userHeight = attached.restored;
+      zoom.reset();
+    }
+  }
+
   return () => {
+    detachResize();
     zoom.detach();
     controller.abort();
   };
@@ -125,6 +224,8 @@ function attachView(
 /** 全画面の枠に写した図を、モーダルの図にする: 開いている状態を外し、`id` を写しと重ならない値にし、全画面のボタンを閉じるボタンにする */
 function prepareModalFigure(figure: HTMLElement): HTMLElement {
   const copy = figure.cloneNode(true) as HTMLElement;
+  // 全画面の中では高さを変えない
+  copy.querySelector(".mdmark-diagram-resize")?.remove();
   const title = copy.querySelector(".mdmark-diagram-head")?.id ?? "";
   const from = title.replace(/-title$/, "");
   renumberIds(copy, from, `${from}-modal`);
@@ -169,8 +270,11 @@ export function openDiagramDialog(options: {
   dialog.append(modalFigure);
   host.append(dialog);
   dialog.showModal();
-  const detachView = attachView(modalFigure, { modal: true });
   const tips = attachDiagramTips({ figure: modalFigure, placement });
+  const detachView = attachView(modalFigure, {
+    modal: true,
+    onPanStart: () => tips.closeOpen(),
+  });
   // 写した ER 図は、開いたときの列の開閉の状態のまま開閉できる
   const detachFolds = attachErFolds(modalFigure);
   const heading = modalFigure.querySelector(".mdmark-diagram-head");
@@ -212,8 +316,10 @@ export function attachDiagrams(options: {
   root: HTMLElement;
   /** 図のツールチップを先に出す側（`attachDiagramTips` と `openDiagramDialog` へ渡す） */
   placement: TooltipPlacement;
+  /** リサイズハンドルで変えた高さを保つ先（既定は sessionStorage） */
+  storage?: Storage | null;
 }): () => void {
-  const { root, placement } = options;
+  const { root, placement, storage = defaultStorage() } = options;
   attachCounter += 1;
   const detachers: Array<() => void> = [];
   const figures = [
@@ -227,9 +333,29 @@ export function attachDiagrams(options: {
       title.replace(/-title$/, ""),
       `mdmark-diagram-${attachCounter}-${index}`,
     );
-    detachers.push(attachView(figure, { modal: false }));
-    const tips = attachDiagramTips({ figure, placement });
-    detachers.push(tips.detach);
+    let tips = attachDiagramTips({ figure, placement });
+    // 中身を描き直したとき（操作できる部品のグラフ）は、ツールチップを付け直す
+    const onRedraw = (): void => {
+      tips.detach();
+      tips = attachDiagramTips({ figure, placement });
+    };
+    figure.addEventListener(DIAGRAM_REDRAW_EVENT, onRedraw);
+    const key = diagramHeightKey({
+      pathname: window.location.pathname,
+      index,
+      title: figure.querySelector(".mdmark-diagram-title")?.textContent ?? "",
+    });
+    detachers.push(
+      attachView(figure, {
+        modal: false,
+        onPanStart: () => tips.closeOpen(),
+        resize: { key, storage },
+      }),
+    );
+    detachers.push(() => {
+      figure.removeEventListener(DIAGRAM_REDRAW_EVENT, onRedraw);
+      tips.detach();
+    });
     if (figure.dataset.diagram === "er") {
       detachers.push(attachErFolds(figure));
     }

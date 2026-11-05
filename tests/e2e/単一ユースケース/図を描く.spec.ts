@@ -10,7 +10,7 @@ import {
   twoSeriesChart,
 } from "../chart.ts";
 import {
-  flowMarkdown,
+  groupFlowText,
   JUDGEMENT_AUTO_TEXT,
   judgementMarkdown,
   linkedFlowText,
@@ -104,12 +104,12 @@ async function wireStyles(figure: Locator): Promise<Record<string, string>> {
 
 // フロー図の部品の定義から、枠・3 層・題と凡例・線の種類・交差・ループの戻りを持つ図を描き、文書に書いたスクリプトは動かさない（正常シナリオ）
 test("test_normal", async ({ page }) => {
-  // 準備
+  // 準備: システムの枠と LLM の層に hint を持つ見本のフロー図
   const syntaxRequests = await routeSyntax(page);
   await openPage(page, builtRoot);
   // 実行
   await mountDocument(page, {
-    markdown: `${await flowMarkdown()}\n${SCRIPT}`,
+    markdown: `${wrapDirective("flow", await groupFlowText())}\n${SCRIPT}`,
   });
   // 検証
   const figure = page.locator(
@@ -139,7 +139,7 @@ test("test_normal", async ({ page }) => {
   // 外部のシステムの箱が枠の外にある
   const mail = await boxOf(figure.locator('[data-node="mail"]'));
   expect(mail.x + mail.width).toBeLessThanOrEqual(frame.x + 1);
-  // 題名・範囲・更新日と、定義に出る色・形・線・矢じりを全て載せた凡例がある
+  // 題名・範囲・更新日と凡例があり、凡例には図に 2 種類以上あるノードの種類と線の種類だけが載る
   const head = figure.locator(".mdmark-diagram-head");
   await expect(head).toContainText("問い合わせへの自動返信の構成");
   await expect(head).toContainText("範囲: メールを受け取ってから返信するまで");
@@ -147,26 +147,44 @@ test("test_normal", async ({ page }) => {
   const legend = await figure
     .locator('ul[aria-label="凡例"] li')
     .allInnerTexts();
-  for (const label of [
+  const kindsAndLines = [
     "LLM",
     "意思決定モデル",
     "スクリプト",
     "MCP",
     "データ",
     "外部のシステム（枠の外）",
-    "システムの枠",
     "処理の流れ",
     "読む",
     "書く",
     "戻る（ループ）",
-    "線の交差",
-    "入力・処理・出力が出るノード",
-  ]) {
+  ];
+  for (const label of kindsAndLines) {
     expect(
       legend.some((text) => text.includes(label)),
       label,
     ).toBe(true);
   }
+  expect(legend).toHaveLength(kindsAndLines.length);
+  // 凡例に、システムの枠・層の背景・線の交差・ツールチップの印・用語の下線の項目が無い
+  for (const word of ["システムの枠", "層", "交差", "出る", "下線"]) {
+    expect(
+      legend.some((text) => text.includes(word)),
+      word,
+    ).toBe(false);
+  }
+  // システムの枠と LLM の層のタイトルの右にツールチップの印があり、hint を持たない層のタイトルには無い
+  await expect(
+    figure.locator(".mdmark-diagram-frame-title .mdmark-diagram-group-info"),
+  ).toHaveCount(1);
+  const laneMarks = await figure
+    .locator(".mdmark-diagram-lane-label")
+    .evaluateAll((labels) =>
+      labels.map(
+        (label) => label.querySelector(".mdmark-diagram-group-info") !== null,
+      ),
+    );
+  expect(laneMarks).toEqual([true, false, false]);
   // 線の種類が、色と模様（破線の間隔・太さ）の組で分かれている
   const styles = await wireStyles(figure);
   expect(Object.keys(styles).sort()).toEqual(["flow", "loop", "read", "write"]);
@@ -318,16 +336,74 @@ test("test_normal_when_sequence", async ({ page }) => {
   await expect(
     figure.locator('.mdmark-diagram-label[data-line="loop"]'),
   ).toContainText("1 へ戻る");
-  // 題名・範囲・更新日と凡例がある
+  // 題名・範囲・更新日と凡例があり、凡例には図に 2 種類以上ある相手の種類（外部・スクリプト・MCP）と線の種類（処理の流れ・戻り・ループ）だけが載る
   await expect(figure.locator(".mdmark-diagram-head")).toContainText(
     "保存の呼び出し",
   );
   await expect(figure.locator(".mdmark-diagram-head time")).toHaveText(
     "2026-10-18",
   );
+  const legend = figure.locator('ul[aria-label="凡例"] li');
+  await expect(legend.first()).toBeVisible();
+  await expect(legend).toHaveCount(6);
+  const legendTexts = await legend.allInnerTexts();
+  for (const word of ["交差", "出る", "下線"]) {
+    expect(
+      legendTexts.some((text) => text.includes(word)),
+      word,
+    ).toBe(false);
+  }
+});
+
+// ノードも線も 1 種類ずつのフロー図は、凡例の項目を持たずに描く（正常シナリオ（種類が 1 つずつの図））
+test("test_normal_when_single_kinds", async ({ page }) => {
+  // 準備
+  await openPage(page, builtRoot);
+  const definition = {
+    title: "下書きを確認する順番",
+    scope: "送信の前",
+    updated: "2026-11-04",
+    width: 640,
+    height: 120,
+    nodes: ["宛先", "本文", "添付"].map((name, index) => ({
+      id: `s-${index + 1}`,
+      kind: "script",
+      x: 24 + index * 216,
+      y: 28,
+      w: 160,
+      h: 64,
+      name: `${name}を確認する`,
+    })),
+    wires: [1, 2].map((index) => ({
+      id: `s-w${index}`,
+      from: `s-${index}`,
+      to: `s-${index + 1}`,
+      line: "flow",
+      points: [
+        [24 + (index - 1) * 216 + 160, 60],
+        [24 + index * 216, 60],
+      ],
+    })),
+  };
+  // 実行
+  await mountDocument(page, {
+    markdown: wrapDirective("flow", JSON.stringify(definition)),
+  });
+  // 検証: ノード 3 つと線 2 本のフロー図と題名
+  const figure = page.locator(
+    '#doc figure.mdmark-diagram[data-diagram="flow"]',
+  );
+  await expect(figure).toHaveCount(1);
+  await expect(figure.locator(".mdmark-diagram-node")).toHaveCount(3);
   await expect(
-    figure.locator('ul[aria-label="凡例"] li').first(),
-  ).toBeVisible();
+    figure.locator(".mdmark-diagram-wires > path.mdmark-diagram-wire"),
+  ).toHaveCount(2);
+  await expect(figure.locator(".mdmark-diagram-head")).toContainText(
+    "下書きを確認する順番",
+  );
+  // 検証: 凡例にノードの種類と線の種類の項目が無い
+  await expect(figure.locator('ul[aria-label="凡例"] li')).toHaveCount(0);
+  await expect(figure.locator('ul[aria-label="凡例"]')).toBeHidden();
 });
 
 // グラフの 2 つの系列を、色と線の模様の組で分けて描き、題と系列の名前を載せた凡例を持つ（正常シナリオ（グラフ））

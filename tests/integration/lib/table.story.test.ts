@@ -289,7 +289,7 @@ test("test_default_overflow", async () => {
     10,
   );
   const scrolls = await page
-    .locator(".mdmark-table table")
+    .locator(".mdmark-table .mdmark-table-scroll")
     .evaluate((el) => el.scrollWidth > el.clientWidth);
   expect(scrolls).toBe(true);
   // 先頭の列を既定で留める
@@ -308,7 +308,7 @@ test("test_no_pin", async () => {
   await expect(pinnedColumns(page)).resolves.toEqual([]);
   await expect(
     page
-      .locator(".mdmark-table table")
+      .locator(".mdmark-table .mdmark-table-scroll")
       .evaluate((el) => el.scrollWidth > el.clientWidth),
   ).resolves.toBe(true);
 });
@@ -1333,8 +1333,8 @@ test("test_row_header_pinned", async () => {
   // 表は枠より広い
   await expect(
     page
-      .locator("#storybook-root .mdmark-table table")
-      .evaluate((table) => table.scrollWidth > table.clientWidth),
+      .locator("#storybook-root .mdmark-table .mdmark-table-scroll")
+      .evaluate((scroller) => scroller.scrollWidth > scroller.clientWidth),
   ).resolves.toBe(true);
 });
 
@@ -1408,4 +1408,122 @@ test("test_csv_raw", async () => {
   await expect(page.locator("pre.mdmark-raw").innerText()).resolves.toContain(
     '北山,"東京, 本社",1200',
   );
+});
+
+/** 帯のボタンの見えている文字（読み上げだけの文字を除く）と、幅・高さ */
+function toolBoxes(page: Page) {
+  return page
+    .locator("#storybook-root .mdmark-table-tools > button")
+    .evaluateAll((buttons) =>
+      buttons.map((button) => {
+        const copy = button.cloneNode(true) as HTMLElement;
+        for (const hidden of copy.querySelectorAll(
+          ".mdmark-visually-hidden, .mdmark-columns-badge",
+        )) {
+          hidden.remove();
+        }
+        const rect = button.getBoundingClientRect();
+        return {
+          text: (copy.textContent ?? "").trim(),
+          width: rect.width,
+          height: rect.height,
+          title: button.getAttribute("title"),
+          name: button.textContent ?? "",
+        };
+      }),
+    );
+}
+
+// 案 A は、列設定とコピーのボタンがアイコンだけで、列設定に隠した列の数のバッジを持つ（ColumnsButtonA）
+test("test_columns_button_a", async () => {
+  // 準備・実行
+  const page = await open("columns-button-a");
+  // 検証
+  const tools = await toolBoxes(page);
+  expect(tools).toHaveLength(2);
+  for (const button of tools) {
+    expect(button.text).toBe("");
+    expect(Math.abs(button.width - button.height)).toBeLessThanOrEqual(1);
+  }
+  expect(tools[0]?.title).toBe("列設定");
+  expect(tools[0]?.name).toContain("列設定（1 列を隠しています）");
+  await expect(
+    page.locator(".mdmark-columns-toggle .mdmark-columns-badge").innerText(),
+  ).resolves.toBe("1");
+  await expect(pageOverflows(page)).resolves.toBe(false);
+});
+
+// 案 B は、帯のボタンがアイコンと語を持つ（ColumnsButtonB）
+test("test_columns_button_b", async () => {
+  // 準備・実行
+  const page = await open("columns-button-b");
+  // 検証
+  const tools = await toolBoxes(page);
+  expect(tools).toHaveLength(2);
+  expect(tools[0]?.text).toContain("列設定");
+  expect(tools[1]?.text).not.toBe("");
+  await expect(page.locator(".mdmark-columns-badge").count()).resolves.toBe(0);
+  await expect(pageOverflows(page)).resolves.toBe(false);
+});
+
+// 案 C は、列設定・集計・コピーを 1 つの「表の設定」のメニューにまとめ、開いている（ColumnsButtonC）
+test("test_columns_button_c", async () => {
+  // 準備・実行
+  const page = await open("columns-button-c");
+  // 検証
+  const tools = await toolBoxes(page);
+  expect(tools).toHaveLength(1);
+  expect(tools[0]?.title).toBe("表の設定");
+  const menu = page.locator(
+    'ul.mdmark-table-settings-menu[aria-label="表の設定"]',
+  );
+  await expect(menu.isVisible()).resolves.toBe(true);
+  const items = (await menu.locator("li").allInnerTexts()).map((text) =>
+    text.trim(),
+  );
+  expect(items).toContain("列設定");
+  expect(items).toContain("表をコピー");
+});
+
+// 列の少ない表は本文の幅いっぱいに広げ、横にスクロールせず、端の影が無い（FillsWidth）
+test("test_fills_width", async () => {
+  // 準備・実行
+  const page = await open("fills-width");
+  // 検証
+  const sizes = await page
+    .locator("#storybook-root .mdmark-table")
+    .evaluate((wrapper) => {
+      const scroller = wrapper.querySelector<HTMLElement>(
+        ".mdmark-table-scroll",
+      );
+      const table = wrapper.querySelector("table");
+      const lastHead = table?.querySelector("thead th:last-child");
+      return {
+        outer: (() => {
+          const parent = wrapper.parentElement;
+          if (!parent) {
+            return 0;
+          }
+          const style = getComputedStyle(parent);
+          return (
+            parent.clientWidth -
+            Number.parseFloat(style.paddingLeft) -
+            Number.parseFloat(style.paddingRight)
+          );
+        })(),
+        wrapper: wrapper.getBoundingClientRect().width,
+        table: table?.getBoundingClientRect().width ?? 0,
+        tableRight: table?.getBoundingClientRect().right ?? 0,
+        headRight: lastHead?.getBoundingClientRect().right ?? 0,
+        overflow: scroller ? scroller.scrollWidth > scroller.clientWidth : true,
+      };
+    });
+  expect(Math.abs(sizes.wrapper - sizes.outer)).toBeLessThanOrEqual(1);
+  expect(Math.abs(sizes.table - sizes.wrapper)).toBeLessThanOrEqual(1);
+  expect(Math.abs(sizes.headRight - sizes.tableRight)).toBeLessThanOrEqual(1);
+  expect(sizes.overflow).toBe(false);
+  await expect(page.locator("button.mdmark-pin:visible").count()).resolves.toBe(
+    0,
+  );
+  await expect(pageOverflows(page)).resolves.toBe(false);
 });
