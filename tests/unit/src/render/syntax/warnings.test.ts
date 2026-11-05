@@ -40,3 +40,33 @@ test("test_collect_warnings_rule", () => {
     { line: 20, kind: "syntax_warning" },
   ]);
 });
+
+// 表とファイルツリーのマーカーの警告を、マーカーの行にする（正常系）
+test("test_collect_warnings_rule_when_marks", () => {
+  // 準備
+  const markdown = markdownAt({
+    3: [
+      "<!-- table: foo -->",
+      "",
+      "| 列 | 値 |",
+      "| --- | --- |",
+      "| a | 1 |",
+      "",
+      "<!-- /table -->",
+    ],
+    11: ["<!-- tree: wrap=1 -->", "", "```tree", "src/", "└── a.ts", "```"],
+    20: [
+      "<!-- tabs: x=1 -->",
+      "",
+      "### macOS",
+      "",
+      "本文",
+      "",
+      "<!-- /tabs -->",
+    ],
+  });
+  // 実行
+  const { warnings } = renderDoc(markdown);
+  // 検証
+  expect(warnings.map(({ line }) => line)).toEqual([3, 11, 20]);
+});

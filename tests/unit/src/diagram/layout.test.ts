@@ -144,3 +144,37 @@ test("test_layout_flowchart_when_unreachable", async () => {
   expect(others.every((item) => lost.y > item.y + item.h)).toBe(true);
   expect(checkFlowLayout(laid)).toEqual([]);
 });
+
+// 下の質問から上の行の結果へ入る線を、結果の下辺で止める（正常系）
+test("test_layout_flowchart_when_shared_result", async () => {
+  // 準備
+  const { layoutFlowchart } = await loadLayout();
+  const definition = {
+    title: "判定",
+    scope: "点検",
+    updated: "2026-11-05",
+    nodes: [
+      { id: "start", kind: "start", name: "始める" },
+      { id: "q1", kind: "question", name: "よくある質問か" },
+      { id: "q2", kind: "question", name: "担当者が答えられるか" },
+      { id: "ok", kind: "result", name: "返信する" },
+      { id: "ng", kind: "result", name: "起票する" },
+    ],
+    wires: [
+      { id: "w0", from: "start", to: "q1", line: "flow" },
+      { id: "w1", from: "q1", to: "ok", line: "flow", label: "YES" },
+      { id: "w2", from: "q1", to: "q2", line: "flow", label: "NO" },
+      { id: "w3", from: "q2", to: "ok", line: "flow", label: "YES" },
+      { id: "w4", from: "q2", to: "ng", line: "flow", label: "NO" },
+    ],
+  } as unknown as MdmarkFlowDefinition;
+  // 実行
+  const laid = layoutFlowchart(definition);
+  // 検証
+  const ok = node(laid, "ok");
+  const q2 = node(laid, "q2");
+  expect(ok.y + ok.h).toBeLessThan(q2.y + q2.h / 2);
+  const points = laid.wires.find((wire) => wire.id === "w3")?.points ?? [];
+  expect(points.at(-1)).toEqual([ok.x + ok.w / 2, ok.y + ok.h]);
+  expect(orthogonal(laid)).toBe(true);
+});
