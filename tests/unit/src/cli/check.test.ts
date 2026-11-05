@@ -717,10 +717,11 @@ test("test_check_includes", async () => {
     root: dir,
   });
   // 検証
-  expect(issues.map((issue) => [issue.kind, issue.where])).toEqual([
-    ["include_target_missing", "1"],
-    ["include_target_missing", "3"],
-    ["include_target_missing", "5"],
-    ["include_circular", "7"],
+  // 循環は、循環を閉じるマーカーを書いたファイル（`b.md` の 1 行目）で報告する
+  expect(issues.map((issue) => [issue.kind, issue.file, issue.where])).toEqual([
+    ["include_circular", "b.md", "1"],
+    ["include_target_missing", "guide.md", "1"],
+    ["include_target_missing", "guide.md", "3"],
+    ["include_target_missing", "guide.md", "5"],
   ]);
 });
