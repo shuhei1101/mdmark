@@ -287,3 +287,8 @@ notes:
   印刷: 印刷の CSS で破線・波線の下線とツールチップを外し、語を本文の文字として出す
   エイリアスの出力の形: 区分 `mdmark-term-tip-section` に見出し `mdmark-term-tip-heading`、名前 `mdmark-term-tip-name`、説明 `mdmark-term-tip-meaning`（`id` は `{id}-meaning`）を置く。`command` は `mdmark-term-tip-command` の中に `code` とコピーのボタン `button.mdmark-term-tip-copy`（`type="button"`・`data-state`）を並べ、`cwd` は `mdmark-term-tip-fields` にラベル `mdmark-term-tip-label`（「実行場所」）と値 `mdmark-term-tip-value` を置き、読み上げの `mdmark-visually-hidden mdmark-term-tip-status`（`role="status"`）を置く。`url` は http・https なら `a.mdmark-term-tip-link`、ほかは `span.mdmark-term-tip-link` で URL の文字を 1 行に収め、あふれる分を「...」で省略する。`skill`・`tool`・`path` は値を `code.mdmark-term-tip-code` の 1 行で出す
 test_file: tests/integration/lib/term-tip.story.test.ts
+events:
+  - name: 開く・閉じる
+    when: 語にポインターを乗せるかフォーカスする。外すか Esc を押す。タッチの端末では語をタップする。もう一度タップするか、ツールチップと語の外をタップする
+    value: '`mdmark-term-wrap` の `is-open`'
+    description: '`mount` が 1 つだけ開き、ツールチップの上と中にフォーカスがある間は閉じず、Esc で閉じてフォーカスを語に残す。ツールチップの中のリンクとボタンのタップでは閉じない'
