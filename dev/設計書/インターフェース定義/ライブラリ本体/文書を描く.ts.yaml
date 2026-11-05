@@ -541,6 +541,42 @@ flows:
       - '`公開関数` にフォーカスすると「関連文書」だけのツールチップが出て、Tab で `API` のリンク（`href` が `../api.md`）へフォーカスが移る'
       - Esc でツールチップが消え、フォーカスが `公開関数` に戻る
     test: test_normal_when_glossary
+  - name: 正常系（用語のツールチップのタッチ）
+    summary: タッチのタップで用語のツールチップを開閉し、ツールチップと語の外の `pointerdown` で閉じる
+    setup:
+      - name: 配布物を読んだページ
+        description: 正常系と同じ
+      - name: エイリアス
+        description: '`command` の `単体テスト`（説明 `ライブラリ本体の単体テストを流す`、コマンド `npm run test:unit`）を持つ `opts.aliases`'
+      - name: 用語が出る Markdown
+        description: 1 つ目の段落に `単体テスト` が出て、2 つ目の段落に用語を含まない文が続く文書
+      - name: Mock
+        description: 差し替える依存は無い。タップは、語に `pointerType` が `touch` の `pointerenter`・`pointerdown`・`pointerup`・`pointerleave` をこの順に発火し、語の `focus()` を呼んで起こす（既にフォーカスを持つ語へのタップでは `focus` は発火しない）
+        notes: iOS の Safari のタップの後に `:hover` が残る状態を、外のタップで `pointerleave`・`blur` を発火させず、`pointerdown` だけを発火して起こす
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: mount(el, { markdown, aliases })
+        P->>M: 単体テストの語をタップする
+        M->>P: コマンドとコピーのボタンのツールチップを出す
+        P->>M: ツールチップのコピーのボタンをタップする（touch の pointerdown を発火し、ボタンの focus() を呼ぶ）
+        M->>P: 出したままにする
+        P->>M: 開いている語に mouse の pointerdown を発火する
+        M->>P: 出したままにする
+        P->>M: 同じ語をタップする
+        M->>P: ツールチップを消す
+        P->>M: 語をタップする
+        M->>P: ツールチップを出す
+        P->>M: 2 つ目の段落に pointerdown だけを発火する
+        M->>P: ツールチップを消す
+    expected:
+      - 閉じた語への 1 回のタップの後、語の枠 `mdmark-term-wrap` が `is-open` を持つ
+      - コピーのボタンのタップの後も、語の枠が `is-open` を持つ
+      - '`pointerType` が `mouse` の `pointerdown` を開いている語に発火しても、語の枠が `is-open` を持つ'
+      - フォーカスがコピーのボタンにある状態で開いている語をタップした後（語の `focusin` が `pointerdown` の後に発火する）、語の枠が `is-open` を持たない
+      - 2 つ目の段落の `pointerdown` の後、語の枠が `is-open` を持たず、語にフォーカスが残ったままでもツールチップが表示されない（`display` が `none`）
+    test: test_normal_when_glossary_touch
   - name: 正常系（被参照の一覧）
     summary: 参照の表から、文書の末尾に「関連文書」の一覧を置き、`update` の後も置き直す
     setup:
@@ -5158,7 +5194,7 @@ constraints:
     constraint: 本文の文字を `Intl.Segmenter`（`ja`・`word`）で区切り（`Intl.Segmenter` を持たない環境では、英数字の連なりを 1 語とし、それ以外の文字を 1 文字ずつ区切る）、始まりと終わりが区切りに揃う用語の語・別名と文書の `aliases` を、長い語を先に照合する。照合の前に、語と本文の文字の両方を NFKC・英字の小文字化・前後の空白の除去で正規化し、下線は本文に記載したままの文字に引く。図の部品の `{{語}}` も同じ正規化で用語を引く。用語は用語の `id`、文書の別名は文書の `id` ごとに、節（h2〜h4）ごとに最初に出たところだけを class `mdmark-term` の要素にし、破線の下線を引く。コード・リンク・見出し・用語集の表の中は照合しない。正規化した後に同じになる語が複数の用語に当たるときは、索引の `terms`・`opts.aliases`（並びの順）・描く文書の表・ほかの文書の表（索引の `docs` の順）の順で 1 つを選ぶ
     notes: 下線の要素の形は部品設計で決める
   - item: ツールチップの操作
-    constraint: 下線の要素にポインターを乗せたときとフォーカスしたときにツールチップを出し（ポインターの形は変えない）、ツールチップの上へポインターを移しても出したままにし、Esc で消してフォーカスを語に残す（WCAG 1.4.13）。関連文書・エイリアスのリンク・コマンドのコピーのボタンを持つツールチップは、語から Tab で中のリンクとボタンへ移れ、中にフォーカスがある間は出したままにする。表やタブの枠で切れないよう画面に対して置き、`opts.config.tooltips.placement` が `top`（既定）なら語の上に開いて上に収まらなければ下に、`bottom` なら語の下に開いて下に収まらず上に収まれば上に開く。`update` で付け直し、`destroy` で外す
+    constraint: 下線の要素にポインターを乗せたときとフォーカスしたときにツールチップを出し（ポインターの形は変えない）、ツールチップの上へポインターを移しても出したままにし、Esc で消してフォーカスを語に残す（WCAG 1.4.13）。`pointerType` が `touch` のときは `pointerenter`・`pointerleave` で開閉せず、語の `pointerdown` で開閉を切り替え、開いている間はツールチップと語の外の `pointerdown` で閉じる（ツールチップの中のリンクとボタンの `pointerdown` では閉じない）。関連文書・エイリアスのリンク・コマンドのコピーのボタンを持つツールチップは、語から Tab で中のリンクとボタンへ移れ、中にフォーカスがある間は出したままにする。表やタブの枠で切れないよう画面に対して置き、`opts.config.tooltips.placement` が `top`（既定）なら語の上に開いて上に収まらなければ下に、`bottom` なら語の下に開いて下に収まらず上に収まれば上に開く。`update` で付け直し、`destroy` で外す
     notes: WAI-ARIA の役割とフォーカスの出入りは部品設計で決める
   - item: 関連文書と被参照の一覧
     constraint: ツールチップの「関連文書」には、語に `aliases` が一致した文書（描く文書自身を除く）の題・リンク・`description` を出す。文書の末尾には、`opts.references.backlinks[opts.docId]`（無ければ、索引の `related` の要素の相手（オブジェクトは `to`、文字列はその値）に描く文書を持つ文書）を「関連文書」の題の一覧にして置き、空なら置かない。リンクの `href` は描く文書の `path` から見た参照先の相対パスにする。`backlinks` がオフのときは、文書の別名の照合と末尾の一覧をしない

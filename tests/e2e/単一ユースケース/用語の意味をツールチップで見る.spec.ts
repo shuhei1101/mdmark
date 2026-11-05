@@ -740,3 +740,46 @@ test("test_error_when_invalid_alias", async ({ page }) => {
   expect(errors).toEqual([]);
   await expect(page.locator("#doc .mdmark-notice")).toHaveCount(0);
 });
+
+// タップで閉じたツールチップが、閉じる待ちの後も消えたままかを確かめるまでの時間（ミリ秒）
+const TOUCH_CLOSE_WAIT_MS = 500;
+
+test.describe("タッチの端末", () => {
+  test.use({ hasTouch: true });
+
+  // 語のタップで出し、中のコピーのボタンのタップでは消えず、同じ語のもう一度のタップと、ツールチップと語の外のタップで消える（正常シナリオ（タッチ））
+  test("test_normal_when_touch", async ({ page }) => {
+    // 準備
+    await stubClipboard(page, "allow");
+    await openPage(page, builtRoot);
+    await mountDocument(page, {
+      markdown: "手元で単体テストを流す。\n\n用語を含まない段落。\n",
+      aliases: rawAliases([UNIT_TEST_ALIAS]),
+    });
+    const term = page.locator("#doc .mdmark-term");
+    const tip = page.locator("#doc .mdmark-term-tip");
+    const button = tip.locator("button.mdmark-term-tip-copy");
+    const outside = page.locator("#doc p", { hasText: "用語を含まない段落" });
+    // 実行・検証: 語のタップで、コマンドとコピーのボタンのツールチップが出る
+    await term.tap();
+    await expect(tip).toBeVisible();
+    await expect(tip.locator("code")).toHaveText("npm run test:unit");
+    await expect(button).toBeVisible();
+    // 実行・検証: コピーのボタンのタップでコマンドを書き、ツールチップは消えない
+    await button.tap();
+    await expect(button).toHaveText("コピーしました");
+    expect(await writtenTexts(page)).toEqual(["npm run test:unit"]);
+    await page.waitForTimeout(TOUCH_CLOSE_WAIT_MS);
+    await expect(tip).toBeVisible();
+    // 実行・検証: 同じ語をもう一度タップすると消える
+    await term.tap();
+    await page.waitForTimeout(TOUCH_CLOSE_WAIT_MS);
+    await expect(tip).toBeHidden();
+    // 実行・検証: 同じ語をもう一度タップすると出る
+    await term.tap();
+    await expect(tip).toBeVisible();
+    // 実行・検証: 用語を含まない段落のタップで消える
+    await outside.tap();
+    await expect(tip).toBeHidden();
+  });
+});
