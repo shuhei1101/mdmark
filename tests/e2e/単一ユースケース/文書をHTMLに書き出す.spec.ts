@@ -2,6 +2,7 @@ import { existsSync } from "node:fs";
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import {
+  APP_TS,
   CHART_SOURCE,
   expect,
   GREET_TEXT_SOURCE,
@@ -535,5 +536,49 @@ test("test_normal_when_footnotes", async ({ builtRoot, tempDir, page }) => {
   const item = list.locator(".mdmark-fn-item");
   await expect(item).toBeVisible();
   await expect(item).toContainText("出典の説明");
+  expect(opened.externalRequests()).toEqual([]);
+});
+
+// 取り込む文書と束ねていない名前のアイコンを埋め、開いたときに外へ要求せずに描く（正常シナリオ（取り込みとアイコンを埋める））
+test("test_normal_when_includes_and_icons_embedded", async ({
+  builtRoot,
+  tempDir,
+  page,
+}) => {
+  // 準備
+  const dir = await tempDir();
+  await writeFiles(dir, {
+    "mdmark.config.yaml": "features: {}\n",
+    "docs/guide.md": [
+      "# 案内",
+      "",
+      "## `icon:sailboat` 航海",
+      "",
+      "<!-- include: 共通/手順.md#実行 -->",
+      "",
+      "<!-- include: ../src/app.ts#L3-L5 -->",
+      "",
+    ].join("\n"),
+    "docs/共通/手順.md": "## 準備\n\n準備の段落\n\n## 実行\n\n実行の段落\n",
+    "src/app.ts": APP_TS,
+  });
+  // 実行
+  const result = await runCli(builtRoot, ["export", "docs/guide.md"], dir);
+  // 検証
+  expect(result.code).toBe(0);
+  const htmlFile = join(dir, "docs", "guide.html");
+  expect(existsSync(htmlFile)).toBe(true);
+  const opened = await openStandalone(page, { tempDir, htmlFile });
+  await expect(
+    page.locator('article .mdmark-inline-icon[data-icon="sailboat"] svg'),
+  ).toHaveCount(1);
+  await expect(page.locator("article .mdmark-include").first()).toContainText(
+    "実行の段落",
+  );
+  await expect(page.locator("article")).not.toContainText("準備の段落");
+  const code = page.locator("article .mdmark-include code.language-ts");
+  await expect(code).toContainText("const v3 = 3;");
+  await expect(code).toContainText("const v5 = 5;");
+  await expect(code).not.toContainText("const v6 = 6;");
   expect(opened.externalRequests()).toEqual([]);
 });

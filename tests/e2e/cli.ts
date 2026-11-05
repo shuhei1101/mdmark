@@ -456,3 +456,36 @@ export function flowLines(definition: unknown): string[] {
     "<!-- /flow -->",
   ];
 }
+
+/** 取り込み先の無いマーカーを持つフォルダの文書（`docs/a.md`・`docs/b.md`）と取り込み先 */
+export const INCLUDE_MISSING_FILES: Record<string, string> = {
+  "mdmark.config.yaml": [
+    "build:",
+    '  include: ["docs/*.md"]',
+    "  out: dist/docs.html",
+    "",
+  ].join("\n"),
+  "docs/a.md": [
+    "# A",
+    "",
+    "<!-- include: missing.md -->",
+    "",
+    "<!-- include: 共通/手順.md#実行 -->",
+    "",
+  ].join("\n"),
+  "docs/b.md": [
+    "# B",
+    "<!-- include: 共通/手順.md#無い見出し -->",
+    "",
+    "<!-- include: ../src/app.ts#L8-L10 -->",
+    "",
+  ].join("\n"),
+  "docs/共通/手順.md": "## 実行\n\n実行の段落\n",
+  "src/app.ts": "1\n2\n3\n4\n5\n",
+};
+
+/** 1〜12 行目に `const v{行} = {行};` を持つ `src/app.ts` の本文 */
+export const APP_TS = Array.from(
+  { length: 12 },
+  (_, index) => `const v${index + 1} = ${index + 1};`,
+).join("\n");
