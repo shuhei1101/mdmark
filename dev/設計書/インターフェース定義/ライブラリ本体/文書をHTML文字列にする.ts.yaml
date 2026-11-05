@@ -1503,8 +1503,8 @@ flows:
         M->>M: ノードのリンク先を本文のリンクと同じ許可で確かめる
         M-->>C: HTML 文字列
     expected:
-      - '`a`・`b` のノードが class `has-link` と、書いた `href` を持つ `a.mdmark-node-link` を持ち、`a.mdmark-node-link` の読み上げの名前がノードの名前'
-      - '`a` のノードの `io` の印が `a.mdmark-node-link` の中に無く、その後ろにある'
+      - '`a`・`b` のノードが class `has-link` と、書いた `href` を持つ `a.mdmark-diagram-node-link` を持ち、`a.mdmark-diagram-node-link` の読み上げの名前がノードの名前'
+      - '`a` のノードの `io` の印が `a.mdmark-diagram-node-link` の中に無く、その後ろにある'
       - '`c`・`d`・`e` のノードが `a` 要素と `has-link` を持たず、名前が描かれている'
       - 図の前に書き方の警告が 1 つあり、`c`・`d` と `javascript:alert(1)`・`id:spec#items` と使えるリンク先が書かれている
       - 文字列に `javascript:` が無い
@@ -1609,7 +1609,7 @@ constraints:
   - item: タブ
     constraint: '`<!-- tabs -->` の範囲を `<div class="mdmark-tabs">` で囲み、範囲で最初に出る見出しの階層で区切った中身ごとに `<div class="mdmark-tab-panel">` に入れる。区切りの見出しは `<p class="mdmark-tab-title">{見出しの行内の HTML}</p>` に替え（`**` の強調は `strong` のまま残す）、本文の見出しとして残さない。全ての中身を隠さずに出す（タブの並びと切り替えは `mount` が付ける）。`<!-- tabs: group=名前 -->` の範囲は `<div class="mdmark-tabs" data-group="{名前}">` にし、組は写すだけで選択は持たない。範囲の中の `<!-- tabs -->` は入れ子として数え、開きと閉じを内側から対応させる。内側のタブは、内側の範囲で最初に出る見出しの階層で区切り、`mdmark-tab-panel` の中に `mdmark-tabs` を入れる。閉じの無い開きは、範囲の中に別のタブの開きを持たなければ文書の終わりまでを範囲にし、持てばその開きから文書の終わりまでのタブの印をどれもタブにせず、見出しと中身をそのまま出す'
   - item: ステップ・ファイルツリー・バッジ
-    constraint: '`<!-- steps -->` の範囲の番号付きリストの `ol` に class `mdmark-steps` を付ける。言語 `tree` のコードブロックを `<ul class="mdmark-tree" aria-label="ファイルツリー">` の入れ子にし、項目を `<li class="mdmark-tree-folder">`（名前が `/` で終わるか子を持つ）・`<li class="mdmark-tree-file">` と `<span class="mdmark-tree-name">` にする。直前の `<!-- tree: {引数} -->` の `wrap`（`open=` と空白で並べて書ける）は、そのツリーの `div.mdmark-tree` に class `mdmark-tree-wrap` を付ける。頭が `badge:` の行内のコードを `<span class="mdmark-badge">{頭を外した文言}</span>` にし、`badge\:` の行内のコードは `\` を外した `<code>` にする。`badge:` の後ろが空か空白だけの行内のコードはバッジにせず、`<code>` のまま出す'
+    constraint: '`<!-- steps -->` の範囲の番号付きリストの `ol` に class `mdmark-steps` を付ける。言語 `tree` のコードブロックを `<div class="mdmark-tree">` の中の `<ul class="mdmark-tree-list" aria-label="ファイルツリー">` の入れ子にし、項目を `<li class="mdmark-tree-folder">`（名前が `/` で終わるか子を持つ）・`<li class="mdmark-tree-file">` と `<span class="mdmark-tree-name">` にする。直前の `<!-- tree: {引数} -->` の `wrap`（`open=` と空白で並べて書ける）は、そのツリーの `div.mdmark-tree` に class `mdmark-tree-wrap` を付ける。頭が `badge:` の行内のコードを `<span class="mdmark-badge">{頭を外した文言}</span>` にし、`badge\:` の行内のコードは `\` を外した `<code>` にする。`badge:` の後ろが空か空白だけの行内のコードはバッジにせず、`<code>` のまま出す'
   - item: 見出しの ID とアンカー
     constraint: 全ての見出しに GitHub と同じ規則の `id` を付ける（小文字にし、英数字・`-`・`_`・空白と英字以外の文字のほかを落とし、空白を `-` にする。同じ ID の 2 つ目から `-1`・`-2` を付ける）。見出しの ID は機能に関わらず付ける。`anchors` がオンのとき、見出しの中に `<a class="mdmark-anchor" href="#{ID}" aria-label="「{見出しの文字}」へのリンク">` を足す
   - item: 目次
@@ -1701,11 +1701,11 @@ constraints:
     constraint: '`footnotes` がオンのとき、`[^ラベル]`（ラベルは空白を含まない）、行頭の `[^ラベル]: 中身`（4 文字の字下げで続く段落を含む）、行内の `^[中身]` を脚注として読む。ラベルは markdown-it の `normalizeReference`（大文字小文字と空白の正規化）で照合し、同じラベルの定義が複数あるときは最初の定義を採る。番号は本文で最初に参照した順に 1 から振り、同じ脚注の 2 回目以降の参照も同じ番号にする。定義の無い参照は書いた文字のまま出し、参照されない定義は出さない。`[^ラベル](URL)` はリンクを優先する。参照の場所には `sup.mdmark-fn-ref` を置き、その中に番号のリンク `a.mdmark-fn-link`（`id="mdmark-fnref-{番号}-{その脚注の参照の通し番号}"`・`href="#mdmark-fn-{番号}"`）とツールチップ `span.mdmark-fn-tip`（`id="mdmark-fn-tip-{番号}-{参照の通し番号}"`。タイトル `脚注 {番号}` と、定義の段落ごとの中身）を置く。ツールチップの中身がリンクを持つときは `role="group"`・`aria-label="脚注 {番号}"` と番号のリンクの `aria-details`、持たないときは `role="tooltip"` と `aria-describedby` にする。脚注が 1 つ以上ある文書は、本文の節の後ろ・関連文書の一覧の前に、閉じた `details.mdmark-footnotes`（`summary` は `脚注（{件数} 件）`）とその中の `ol.mdmark-footnotes-list` を置き、脚注ごとの項目 `li.mdmark-fn-item`（`id="mdmark-fn-{番号}"`）に、定義の中身と参照ごとの戻るリンク `a.mdmark-fn-back`（`href="#mdmark-fnref-{番号}-{参照の通し番号}"`。参照が 2 つ以上のときは a・b の文字を添える）を置く。ツールチップと一覧の中の脚注の中身には、用語の下線とやめた言い方のマーカーを付けない。`footnotes` がオフのとき（設定か文書の `features` の印）、参照・定義・行内の脚注は書いた文字のまま出し、定義は書いた位置に段落として残す'
     notes: 部品の要素の形とアイコンは部品設計で決める。読み取りは自前の block・inline・core のルール（ライブラリ選定で決定）
   - item: 自動の配置
-    constraint: フロー図の定義の全てのノードが `x`・`y`・`w`・`h` を、全ての線が `points` を持たず、図が `width`・`height` を持たず、ノードの種類が全て `start`・`question`・`action`・`result` のとき、mdmark が配置して描く。`start` を一番上に置き、`start` から線をたどって `question` を上から下へ 1 列に並べる。`question` から出る線は、先が `question` の線を下、先が `action`・`result` の線を右へ出し、両方の先が `action`・`result` ならラベル `NO` の線を下、`YES` の線を右へ出す。`action` の先は同じ向きへ続ける。複数の線が入るノードは、最初にたどった線の先の位置に 1 つだけ置く。線をたどって届かないノードは、届くノードの下に定義の順に並べる。ノードの大きさは種類と名前の文字から、インターフェース定義『設定と索引を点検する』の制約「ラベルの長さの目安」で収まる大きさにする。線は縦と横だけの折れ線で、`from`・`to` でないノードの中を通らない点を求める。図の `width`・`height` は、ノードと線を囲む大きさに余白を足した値にする。配置した結果は、同じ座標を書いた定義と同じ HTML に描く
+    constraint: フロー図の定義の全てのノードが `x`・`y`・`w`・`h` を、全ての線が `points` を持たず、図が `width`・`height` を持たず、ノードの種類が全て `start`・`question`・`action`・`result` のとき、mdmark が配置して描く。`start` を一番上に置き、`start` から線をたどって `question` を左の列に上から下へ並べる。`question` から出る線は、先が `question` の線を下、先が `action`・`result` の線を右へ出し、両方の先が `action`・`result` ならラベル `NO` の線を下、`YES` の線を右へ出す。右へ出した線の先のノードはその `question` と同じ行の右の列に、下へ出した線の先の `action`・`result` はその `question` の下の左の列に置き、`action` の先は同じ列の下へ続ける。複数の線が入るノードは、`question` から右へ出る線の先の位置（その `question` と同じ行）を優先して 1 つだけ置き、その線が無ければ最初にたどった線の先の位置に置く。線をたどって届かないノードは、届くノードの下に定義の順に並べる。ノードの大きさは種類と名前の文字から、インターフェース定義『設定と索引を点検する』の制約「ラベルの長さの目安」で収まる大きさにする。線は縦と横だけの折れ線で、`from`・`to` でないノードの中を通らない点を求める。図の `width`・`height` は、ノードと線を囲む大きさに余白を足した値にする。配置した結果は、同じ座標を書いた定義と同じ HTML に描く
     decided_by: dev/設計書/シナリオ/単一ユースケース/図を描く#scenarios[正常シナリオ（座標を省いた判定フローチャート）]
-    notes: 配置の決まりはリファレンス『フローチャートの決まり』。向きは確認ログの決定（自動の配置の向き、推奨案 A）。間隔・余白・大きさの値はモジュール構成設計
+    notes: 配置の決まりはリファレンス『フローチャートの決まり』。配置の結果はモックの素材 `dev/mock/refs/42/assets/samples.js` の `judgement-auto` と同じ。向きは確認ログの決定（自動の配置の向き、推奨案 A）。間隔・余白・大きさの値はモジュール構成設計
   - item: ノードのリンク先
-    constraint: フロー図のノードはリンク先 `href`（文字列）を持てる。`href` を制約「URL のスキーム」と同じ許可（`http`・`https`・`mailto` と相対 URL）で確かめ、許すノードはノードの全体を覆う `<a class="mdmark-node-link" href="{href}">`（読み上げの名前はノードの名前。開く先は本文のリンクと同じく同じタブ）にし、ノードの要素に class `has-link` を付ける。`io`・`hint` の印はリンクの中に入れず、リンクの後ろに置く。許さないリンク先（`javascript:`・`id:` など）のノードはリンクにせず名前を描き、図の前に、ノードの `id` と書いたリンク先と使えるリンク先を書いた書き方の警告を置く（許さないノードが複数なら 1 つの警告に並べる）。図は描く
+    constraint: フロー図のノードはリンク先 `href`（文字列）を持てる。`href` を制約「URL のスキーム」と同じ許可（`http`・`https`・`mailto` と相対 URL）で確かめ、許すノードはノードの全体を覆う `<a class="mdmark-diagram-node-link" href="{href}">`（読み上げの名前はノードの名前。開く先は本文のリンクと同じく同じタブ）にし、ノードの要素（`div.mdmark-diagram-node`）に class `has-link` を付ける。`io`・`hint` の印はリンクの中に入れず、リンクの後ろに置く。許さないリンク先（`javascript:`・`id:` など）のノードはリンクにせず名前を描き、図の前に、ノードの `id` と書いたリンク先と使えるリンク先を書いた書き方の警告を置く（許さないノードが複数なら 1 つの警告に並べる）。図は描く
     decided_by: dev/設計書/シナリオ/単一ユースケース/図を描く#scenarios[異常シナリオ（ノードのリンク先を許可しない）]
     notes: '`id:` などの参照は使う側が URL に変えてから定義に書く（要件.md の未確定、推奨 A）。リンクの見た目は確認ログの決定（名前を本文のリンクと同じ色と下線、推奨案 A）'
 test_file: tests/integration/lib/render.test.ts
