@@ -26,6 +26,7 @@ const DEFAULT_FEATURES = {
   "row-details": true,
   figures: true,
   diagrams: true,
+  "diagram-resize": true,
   glossary: true,
   backlinks: true,
   html: true,

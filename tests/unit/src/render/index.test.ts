@@ -14,7 +14,7 @@ function resolvedConfig(
   return {
     features: { print: true },
     libraries,
-    tooltips: { placement: "top" },
+    tooltips: { placement: "top", diagramPlacement: "bottom" },
     syntax: { url: "https://example.test/hl/" },
     sideToc: { mode: "hover" },
     colorTheme: "dev-swiss",
