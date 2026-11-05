@@ -540,6 +540,162 @@ stories:
       features: '["sort","pin","filter"]'
       columns: '["地域","支店","売上（万円）"]'
       rows: '[["^^","札幌","120"],["<<","仙台","98"],["東日本","東京","310"]]'
+  - name: SettingsOpenReorder
+    parameters:
+      server:
+        id: table
+    args:
+      kind: data
+      features: '["sort","pin","filter","columns","reorder"]'
+      columns: '["名前","型","既定","説明"]'
+      rows: '[["features.table","bool","true","表の機能のオン・オフ"],["features.html","bool","true","埋め込んだ HTML のオン・オフ"],["build.include","string[]","","まとめる Markdown の glob"]]'
+      openColumns: true
+  - name: SettingsReorderOnly
+    parameters:
+      server:
+        id: table
+    args:
+      kind: data
+      features: '["sort","pin","filter","reorder"]'
+      columns: '["名前","型","既定","説明"]'
+      rows: '[["features.table","bool","true","表の機能のオン・オフ"]]'
+      openColumns: true
+  - name: ReorderDragging
+    parameters:
+      server:
+        id: table
+    args:
+      kind: data
+      features: '["sort","pin","filter","columns","reorder"]'
+      columns: '["名前","型","既定","説明"]'
+      rows: '[["features.table","bool","true","表の機能のオン・オフ"]]'
+      openColumns: true
+      dragging: '{"column":3,"target":0,"side":"before"}'
+  - name: Reordered
+    parameters:
+      server:
+        id: table
+    args:
+      kind: data
+      features: '["sort","pin","filter","columns","reorder"]'
+      columns: '["名前","型","既定","説明"]'
+      rows: '[["features.table","bool","true","表の機能のオン・オフ"],["build.include","string[]","","まとめる Markdown の glob"]]'
+      order: '[3,0,2,1]'
+      hiddenColumns: '[3]'
+  - name: ReorderGroups
+    parameters:
+      server:
+        id: table
+    args:
+      kind: data
+      features: '["sort","pin","filter","columns","reorder"]'
+      columns: '["名前","型","既定","必須","備考"]'
+      headRows: '[[{"html":"名前","column":0,"rowspan":2},{"html":"設定","column":1,"colspan":3},{"html":"備考","column":4,"rowspan":2}],[{"html":"型","column":1},{"html":"既定","column":2},{"html":"必須","column":3}]]'
+      rows: '[["features.table","bool","true","✓",""]]'
+      pin: 0
+      overflow: true
+      pinned: 1
+      openColumns: true
+  - name: Tree
+    parameters:
+      server:
+        id: table
+    args:
+      kind: data
+      features: '["pin","filter"]'
+      columns: '["キー","型","必須","既定","説明"]'
+      rows: '[["features.table","bool","✓","true","表の機能のオン・オフ"],["features.html","bool","","","埋め込んだ HTML のオン・オフ"],["aliases[].id","string","","","行の ID"],["aliases[].metadata.alias_type.type","ref | custom","","","値の取り方"]]'
+      tree: 0
+      treeType: 1
+      treeRequired: 2
+      treeDefault: 3
+  - name: TreeFolded
+    parameters:
+      server:
+        id: table
+    args:
+      kind: data
+      features: '[]'
+      columns: '["キー","型","必須","既定","説明"]'
+      rows: '[["features.table","bool","✓","true","表の機能のオン・オフ"],["features.html","bool","","","埋め込んだ HTML のオン・オフ"],["aliases[].id","string","","","行の ID"],["aliases[].metadata.alias_type.type","ref | custom","","","値の取り方"]]'
+      tree: 0
+      treeType: 1
+      treeRequired: 2
+      treeDefault: 3
+      collapsedPaths: '["aliases[]"]'
+  - name: TreeFiltered
+    parameters:
+      server:
+        id: table
+    args:
+      kind: data
+      features: '["pin","filter","count"]'
+      columns: '["キー","型","必須","既定","説明"]'
+      rows: '[["features.table","bool","✓","true","表の機能のオン・オフ"],["features.html","bool","","","埋め込んだ HTML のオン・オフ"],["aliases[].id","string","","","行の ID"],["aliases[].metadata.alias_type.type","ref | custom","","","値の取り方"]]'
+      tree: 0
+      treeType: 1
+      treeRequired: 2
+      treeDefault: 3
+      filters: '[{"column":0,"kind":"text"}]'
+      treeFilter: 'id'
+  - name: TreeSelected
+    parameters:
+      server:
+        id: table
+    args:
+      kind: data
+      features: '[]'
+      columns: '["キー","型","必須","既定","説明"]'
+      rows: '[["features.table","bool","✓","true","表の機能のオン・オフ"],["features.html","bool","","","埋め込んだ HTML のオン・オフ"],["aliases[].id","string","","","行の ID"],["aliases[].metadata.alias_type.type","ref | custom","","","値の取り方"]]'
+      tree: 0
+      treeType: 1
+      treeRequired: 2
+      treeDefault: 3
+      selectedPath: 'features.html'
+  - name: TreeExample
+    parameters:
+      server:
+        id: table
+    args:
+      kind: data
+      features: '[]'
+      columns: '["キー","型","必須","既定","説明"]'
+      rows: '[["features.table","bool","✓","true","表の機能のオン・オフ"],["features.html","bool","","","埋め込んだ HTML のオン・オフ"],["aliases[].id","string","","","行の ID"],["aliases[].metadata.alias_type.type","ref | custom","","","値の取り方"]]'
+      tree: 0
+      treeType: 1
+      treeRequired: 2
+      treeDefault: 3
+      selectedPath: 'aliases[].metadata.alias_type.type'
+      example: '{"heading":"設定の見本","tabs":[{"name":"最小","lines":[{"text":"features:","path":"features"},{"text":"  table: true","path":"features.table"}]},{"name":"エイリアス","lines":[{"text":"aliases:","path":"aliases[]"},{"text":"  - id: terms","path":"aliases[].id"},{"text":"    metadata:","path":"aliases[].metadata"},{"text":"      alias_type:","path":"aliases[].metadata.alias_type"},{"text":"        type: custom","path":"aliases[].metadata.alias_type.type"}]}],"active":1,"hidden":false}'
+  - name: TreeExampleMissing
+    parameters:
+      server:
+        id: table
+    args:
+      kind: data
+      features: '[]'
+      columns: '["キー","型","必須","既定","説明"]'
+      rows: '[["features.table","bool","✓","true","表の機能のオン・オフ"],["features.html","bool","","","埋め込んだ HTML のオン・オフ"],["aliases[].id","string","","","行の ID"],["aliases[].metadata.alias_type.type","ref | custom","","","値の取り方"]]'
+      tree: 0
+      treeType: 1
+      treeRequired: 2
+      treeDefault: 3
+      selectedPath: 'aliases[].metadata.alias_type.type'
+      example: '{"heading":"設定の見本","tabs":[{"name":"最小","lines":[{"text":"features:","path":"features"},{"text":"  table: true","path":"features.table"}]},{"name":"エイリアス","lines":[{"text":"aliases:","path":"aliases[]"},{"text":"  - id: terms","path":"aliases[].id"},{"text":"    metadata:","path":"aliases[].metadata"},{"text":"      alias_type:","path":"aliases[].metadata.alias_type"},{"text":"        type: custom","path":"aliases[].metadata.alias_type.type"}]}],"active":0,"hidden":false}'
+  - name: TreeExampleHidden
+    parameters:
+      server:
+        id: table
+    args:
+      kind: data
+      features: '[]'
+      columns: '["キー","型","必須","既定","説明"]'
+      rows: '[["features.table","bool","✓","true","表の機能のオン・オフ"],["features.html","bool","","","埋め込んだ HTML のオン・オフ"],["aliases[].id","string","","","行の ID"],["aliases[].metadata.alias_type.type","ref | custom","","","値の取り方"]]'
+      tree: 0
+      treeType: 1
+      treeRequired: 2
+      treeDefault: 3
+      example: '{"heading":"設定の見本","tabs":[{"name":"最小","lines":[{"text":"features:","path":"features"},{"text":"  table: true","path":"features.table"}]},{"name":"エイリアス","lines":[{"text":"aliases:","path":"aliases[]"},{"text":"  - id: terms","path":"aliases[].id"},{"text":"    metadata:","path":"aliases[].metadata"},{"text":"      alias_type:","path":"aliases[].metadata.alias_type"},{"text":"        type: custom","path":"aliases[].metadata.alias_type.type"}]}],"active":0,"hidden":true}'
   - name: CsvTable
     parameters:
       server:
@@ -571,29 +727,6 @@ stories:
       columns: '["名前","説明","更新日"]'
       rows: '[["りんご","描画を速くする","2026-10-01"],["みかん","印刷を直す","2026-10-10"],["りんご飴","描画の崩れを直す","2026-10-20"]]'
       hide: '[1]'
-      barStyle: icon
-  - name: ColumnsButtonB
-    parameters:
-      server:
-        id: table
-    args:
-      kind: data
-      features: '["count","columns","copy"]'
-      columns: '["名前","説明","更新日"]'
-      rows: '[["りんご","描画を速くする","2026-10-01"],["みかん","印刷を直す","2026-10-10"],["りんご飴","描画の崩れを直す","2026-10-20"]]'
-      hide: '[1]'
-      barStyle: label
-  - name: ColumnsButtonC
-    parameters:
-      server:
-        id: table
-    args:
-      kind: data
-      features: '["count","columns","copy"]'
-      columns: '["名前","説明","更新日"]'
-      rows: '[["りんご","描画を速くする","2026-10-01"],["みかん","印刷を直す","2026-10-10"],["りんご飴","描画の崩れを直す","2026-10-20"]]'
-      hide: '[1]'
-      barStyle: menu
   - name: FillsWidth
     parameters:
       server:

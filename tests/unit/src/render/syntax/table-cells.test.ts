@@ -77,3 +77,18 @@ test("test_plan_cell_merges_when_not_rectangle", async () => {
   expect(plan.cells[2]?.[0]?.merged).toBeUndefined();
   expect(plan.warnings.some((item) => item.label === "^^")).toBe(true);
 });
+
+// 上の段の結合した見出しが覆う列だけに範囲を返す（正常系）
+test("test_header_groups_of", async () => {
+  // 準備
+  const { planCellMerges, headerGroupsOf } = await loadTableCells();
+  const head = [
+    ["名前", "設定", "<<", "<<", "備考"],
+    ["^^", "型", "既定", "必須", "^^"],
+  ];
+  const plan = planCellMerges({ cells: head, headRows: 2 });
+  // 実行
+  const groups = headerGroupsOf({ head, plan });
+  // 検証
+  expect(groups).toEqual([undefined, "0:1", "0:1", "0:1", undefined]);
+});

@@ -1,0 +1,6 @@
+$ npm run build
+
+> build
+> node scripts/build.ts
+
+exit=0

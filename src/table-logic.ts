@@ -300,3 +300,44 @@ export function mergeSpans(options: {
   }
   return spans;
 }
+
+/** 列が属する結合した見出しの範囲とピン止めの側 */
+export type ColumnPlace = {
+  /** 結合した見出しの範囲（`{段}:{位置}`。範囲の外は `undefined`） */
+  group: string | undefined;
+  /** ピン止めした列か */
+  pinned: boolean;
+};
+
+/** 動かす列と動かす先の列が同じ結合した見出しの範囲で、ピン止めの同じ側にあるときだけ `true` を返す */
+export function canMoveColumn(options: {
+  from: ColumnPlace;
+  to: ColumnPlace;
+}): boolean {
+  const { from, to } = options;
+  return from.group === to.group && from.pinned === to.pinned;
+}
+
+/** 列の順（元の列の位置の並び）の `column` を `target` の前か後ろへ動かした新しい並びを返す */
+export function moveColumn(options: {
+  /** 今の列の順 */
+  order: number[];
+  /** 動かす列（元の列の位置） */
+  column: number;
+  /** 動かす先の列（元の列の位置） */
+  target: number;
+  /** `target` の前か後ろか */
+  side: "before" | "after";
+}): number[] {
+  const { order, column, target, side } = options;
+  if (column === target) {
+    return [...order];
+  }
+  const rest = order.filter((value) => value !== column);
+  const at = rest.indexOf(target);
+  if (at === -1) {
+    return [...order];
+  }
+  rest.splice(side === "before" ? at : at + 1, 0, column);
+  return rest;
+}

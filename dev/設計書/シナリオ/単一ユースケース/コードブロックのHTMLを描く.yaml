@@ -1,4 +1,4 @@
-title: "コードブロックのHTMLを描く"
+title: コードブロックのHTMLを描く
 scenarios:
   - name: 正常シナリオ
     setup:
@@ -71,6 +71,107 @@ scenarios:
       - 範囲の 2 つのコードブロックは、コードの `pre` のまま出る
       - 範囲の後ろの段落が描かれている
     test: test_error_when_block_count_invalid
+  - name: 正常シナリオ（範囲のスクリプトと CSS）
+    setup:
+      - name: 文書を描くページ
+        description: 正常シナリオと同じ。設定の `features.html-scripts` を `true` にして渡す
+      - name: 範囲に html・css・ts を持つ Markdown
+        description: '`<!-- html -->` の範囲に、`html`・`css`・`ts` のコードブロックを 1 つずつ置き、範囲の外にも範囲の HTML と同じ class の箱を 1 つ置く文書'
+        notes: '`html` は箱 1 つと、動くと `window.__mdmarkScriptRan` を `true` にする `<script>` 1 つを持つ。`css` は箱の背景の色を変える。`ts` は型の注釈を持つ既定のエクスポートの関数で、箱を押すと根の要素に class `is-open` を付け外しし、`destroy` で `window.__mdmarkDestroyed` を 1 増やす'
+      - name: Mock
+        description: 正常シナリオと同じ。加えて、範囲の `ts` の型を外す変換のライブラリを手元のモジュールに差し替え、要求を数える
+    flow: |-
+      sequenceDiagram
+        actor U as 読む人
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: html-scripts をオンにした設定と Markdown を渡して描かせる
+        M->>M: 範囲の html を HTML として読み、スクリプトとイベントの属性を落とす
+        M->>M: 範囲の css を範囲の根の要素にだけ当て、ts の型を外す
+        M->>M: 既定のエクスポートの関数を範囲の根の要素で呼ぶ
+        M-->>P: 見た目と動きを追加した HTML
+        P-->>U: 文書を表示
+        U->>P: 範囲の箱を押す
+        P-->>U: 根の要素に class が付いた表示
+        P->>M: 本文を差し替える
+        M->>M: 前の範囲の destroy を呼んでから描き直す
+    expected:
+      - 範囲の箱の背景が `css` の色で描かれ、範囲の外の同じ class の箱の背景は変わらない
+      - 範囲の箱を押すと根の要素に class `is-open` が付き、もう一度押すと外れる
+      - 範囲の `css`・`ts` のコードブロックは、コードの `pre` として出ない
+      - 範囲の `html` に記載した `script` 要素は描いた文書に無く、`window.__mdmarkScriptRan` が `true` になっていない
+      - 型を外す変換のライブラリへの要求が 1 件
+      - 本文を差し替えると、範囲の `destroy` が 1 回呼ばれる
+    test: test_normal_when_range_scripts
+  - name: 正常シナリオ（範囲のスクリプトの機能がオフ）
+    setup:
+      - name: 文書を描くページ
+        description: 正常シナリオと同じ。設定の `features.html-scripts` は書かない（既定のオフ）
+      - name: 範囲に html・css・ts を持つ Markdown
+        description: 正常シナリオ（範囲のスクリプトと CSS）と同じ
+      - name: Mock
+        description: 正常シナリオ（範囲のスクリプトと CSS）と同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 読む人
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を渡して描かせる
+        M->>M: 範囲の html だけを HTML として読む
+        M-->>P: 範囲の html と、css・ts のコードブロック
+        P-->>U: 文書を表示
+    expected:
+      - 範囲の `html` の箱が描かれ、背景は `css` の色になっていない
+      - 範囲の `css`・`ts` のコードブロックが、コードの `pre` のまま出る
+      - 範囲の箱を押しても根の要素に class が付かない
+      - 型を外す変換のライブラリへの要求が 0 件
+    test: test_normal_when_range_scripts_off
+  - name: 異常シナリオ（範囲のスクリプトを動かせない）
+    setup:
+      - name: 文書を描くページ
+        description: 正常シナリオ（範囲のスクリプトと CSS）と同じ
+      - name: 動かせないスクリプトの範囲を持つ Markdown
+        description: 既定のエクスポートが関数でない `ts` の範囲・呼ぶと例外を投げる `js` の範囲・`ts` と `js` を両方置いた範囲を 1 つずつ持ち、その後ろに段落を持つ文書
+      - name: Mock
+        description: 正常シナリオ（範囲のスクリプトと CSS）と同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 読む人
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: html-scripts をオンにした設定と Markdown を渡して描かせる
+        M->>M: 範囲ごとに既定のエクスポートを呼ぶ
+        M-->>P: 動かせない範囲の上に書き方の警告、範囲の HTML と本文を描く
+        P-->>U: 警告と本文を表示
+    expected:
+      - 既定のエクスポートが関数でない範囲の上に、関数を既定のエクスポートにするように促す書き方の警告がある
+      - 例外を投げる範囲の上に、スクリプトが例外を投げた旨の書き方の警告があり、範囲の `html` は描かれている
+      - '`ts` と `js` を両方置いた範囲の上に、どちらか 1 つにするように促す書き方の警告があり、どちらのスクリプトも動かない'
+      - 範囲の後ろの段落が描かれている
+    test: test_error_when_range_script_invalid
+  - name: 異常シナリオ（変換のライブラリを読めない）
+    setup:
+      - name: 文書を描くページ
+        description: 正常シナリオ（範囲のスクリプトと CSS）と同じ
+      - name: ts と js の範囲を持つ Markdown
+        description: '`html`・`css`・`ts` のコードブロックを置いた範囲 1 つと、`html`・`js` のコードブロックを置いた範囲 1 つを持ち、その後ろに段落を持つ文書'
+      - name: Mock
+        description: 正常シナリオと同じ。範囲の `ts` の型を外す変換のライブラリへの要求を 404 で失敗させる
+    flow: |-
+      sequenceDiagram
+        actor U as 読む人
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: html-scripts をオンにした設定と Markdown を渡して描かせる
+        M->>M: 変換のライブラリを読むが失敗する
+        M-->>P: ts と js の範囲に知らせの枠、範囲の html と css、本文を描く
+        P-->>U: 知らせの枠と本文を表示
+    expected:
+      - '`ts` と `js` の範囲に、変換のライブラリを読めずスクリプトを動かせない旨の知らせの枠が出る'
+      - '`ts` の範囲の `html` は描かれ、`css` の色が当たっている'
+      - '`js` の範囲の `html` は描かれ、既定のエクスポートの関数は呼ばれていない'
+      - 範囲の後ろの段落が描かれている
+    test: test_error_when_transpiler_unavailable
 lead: 文書を書く人が `<!-- html -->` で囲んだ `html` のコードブロックを、mdmark がコードではなくその場の HTML として描く。スクリプトとイベントの属性は落とし、動くのは mdmark の部品だけにする。
 issue: 6
 primary_actor: 文書を書く人（AI を含む）

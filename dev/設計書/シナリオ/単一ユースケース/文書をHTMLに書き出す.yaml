@@ -226,6 +226,33 @@ scenarios:
     test: test_normal_when_footnotes
     refs:
       - dev/設計書/シナリオ/単一ユースケース/脚注を見る#scenarios[正常シナリオ]
+  - name: 正常シナリオ（範囲のスクリプトと CSS）
+    setup:
+      - name: 範囲のスクリプトを持つ文書
+        description: '`<!-- html -->` の範囲に `html`・`css`・`ts` のコードブロックを 1 つずつ置いた文書 1 つと、`features.html-scripts` を `true` にした設定'
+        notes: '`ts` は型の注釈を持つ既定のエクスポートの関数で、箱を押すと根の要素に class `is-open` を付け外しする'
+      - name: Mock
+        description: "書き出した HTML を、`Content-Security-Policy: script-src 'unsafe-inline'` のヘッダーを付けて返す手元のサーバーから開き、外への要求を全て止める（`blob:` と `data:` のスクリプトと、動的 `import()` で読むスクリプトを許さない）"
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant C as mdmark CLI
+        participant F as 出力の HTML
+        actor R as 読む人
+        W->>C: mdmark export 文書のパス
+        C->>C: 範囲の ts の型を外し、既定のエクスポートを範囲ごとに登録する形にする
+        C->>F: 範囲の関数を束ねたスクリプトに加えた HTML を書く
+        C-->>W: 出力のパス・終了コード 0
+        R->>F: 外への要求を止めて開く
+        F-->>R: 範囲の css と ts を当てた文書
+        R->>F: 範囲の箱を押す
+        F-->>R: 根の要素に class が付いた表示
+    expected:
+      - 終了コードが 0 で、指定した出力に HTML が 1 つある
+      - 範囲の箱の背景が `css` の色で描かれる
+      - 範囲の箱を押すと根の要素に class `is-open` が付く
+      - 開いてから描き終えるまでに、CSP の違反（`securitypolicyviolation`）が 0 件で、`blob:` の URL への要求と外への要求が 0 件
+    test: test_normal_when_range_scripts
   - name: 正常シナリオ（取り込みとアイコンを埋める）
     setup:
       - name: 取り込みとアイコンを持つ文書

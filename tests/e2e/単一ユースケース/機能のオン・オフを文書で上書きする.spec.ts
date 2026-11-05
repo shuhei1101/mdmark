@@ -5,8 +5,12 @@ import {
   buildDistRoot,
   mountDocument,
   openPage,
+  RANGE_COLOR,
+  RANGE_CSS,
+  rangeMarkdown,
   rawAliases,
   removeDistRoot,
+  routeTranspiler,
   sendPrintEvent,
 } from "../dist-page.ts";
 import { colorSvg, routePageFiles } from "../media.ts";
@@ -436,6 +440,47 @@ test("test_normal_when_new_syntax_disabled", async ({ page }) => {
       ).length,
   );
   expect(breaks).toBe(0);
+});
+
+// 設定でオフの html-scripts を、文書のマーカーでその文書だけオンにし、範囲の css と ts を当てる（正常シナリオ（範囲のスクリプトを文書でオンにする））
+test("test_normal_when_range_scripts_enabled_by_document", async ({ page }) => {
+  // 準備
+  await routeTranspiler(page);
+  await openPage(page, builtRoot);
+  const markdown = [
+    "<!-- features: +html-scripts -->",
+    "",
+    rangeMarkdown({
+      css: RANGE_CSS,
+      ts: [
+        "export default (root: HTMLElement): void => {",
+        "  const w = window as unknown as { __mdmarkCalls?: HTMLElement[] };",
+        "  w.__mdmarkCalls = [...(w.__mdmarkCalls ?? []), root];",
+        "};",
+      ].join("\n"),
+    }),
+  ].join("\n");
+  // 実行
+  await mountDocument(page, { markdown });
+  // 検証
+  const scope = page.locator("#doc .mdmark-html");
+  await expect(scope.locator(".box")).toHaveCSS(
+    "background-color",
+    RANGE_COLOR,
+  );
+  await expect
+    .poll(() =>
+      page.evaluate(() => {
+        const calls = Reflect.get(window, "__mdmarkCalls") as
+          | HTMLElement[]
+          | undefined;
+        return (
+          calls?.map((root) => root.classList.contains("mdmark-html")) ?? []
+        );
+      }),
+    )
+    .toEqual([true]);
+  await expect(page.locator("#doc")).not.toContainText("features:");
 });
 
 // 文書の先頭のマーカーで図のリサイズハンドルの機能を外すと、リサイズハンドルを置かず、マーカーを持たない文書には置く（正常シナリオ（図のリサイズハンドルの機能を外す））

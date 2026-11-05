@@ -135,6 +135,12 @@
           "type": "boolean",
           "default": true
         },
+        "html-scripts": {
+          "title": "範囲のスクリプトの機能",
+          "description": "`<!-- html -->` の範囲の `css`・`ts`・`js` を描いた HTML に当てる。オフのときは範囲の `html` だけを描き、`css`・`ts`・`js` をコードのまま描く。文書の `<!-- features: +html-scripts -->` がその文書だけ上書きする。",
+          "type": "boolean",
+          "default": false
+        },
         "hints": {
           "title": "ヒントの機能",
           "description": "埋め込んだ HTML の `data-hint`、図の箱の `hint`・`io`、線の `tip` のツールチップを出す。オフのときは印とツールチップの中身を出さず、線のラベルと箱の名前は出す。",
@@ -325,6 +331,19 @@
           "description": "色分けのライブラリ（highlight.js）の `es/` フォルダの URL。本体を `{url}core.min.js`、言語を `{url}languages/{言語}.min.js` から読む。`mount` はページの `document.baseURI`、CLI は `mdmark.config.yaml` のあるフォルダを基準に解決する。`mount` は文字列でない値を無視して既定を当て、CLI は文字列でない値を設定ファイルの誤りにする。",
           "type": "string",
           "default": "https://cdn.jsdelivr.net/npm/@highlightjs/cdn-assets@11.12.0/es/"
+        }
+      }
+    },
+    "html-scripts": {
+      "title": "範囲のスクリプトの設定",
+      "description": "`<!-- html -->` の範囲の `ts`・`js` の変換に使うライブラリの設定。",
+      "type": "object",
+      "properties": {
+        "url": {
+          "title": "範囲のスクリプトの変換のライブラリの読み込み先",
+          "description": "範囲の `ts`・`js` を変換するライブラリ（@babel/standalone）の ES モジュールの URL。`mount` はページの `document.baseURI` を基準に解決する。文字列でない値は無視して既定を当てる。",
+          "type": "string",
+          "default": "https://cdn.jsdelivr.net/npm/@babel/standalone@8.1.1/+esm"
         }
       }
     },

@@ -48,7 +48,7 @@ data_models:
     title: mount に渡す設定
     container: vscode/src/config.ts
     usecase: 共通
-    summary: 設定ファイルから取り出した `features`・`libraries`・`side-toc`・`colorTheme`。`render` の `config` と書き出す HTML の `config` になる
+    summary: 設定ファイルから取り出した `features`・`libraries`・`html-scripts`・`side-toc`・`colorTheme`。`render` の `config` と書き出す HTML の `config` になる
     properties:
       - name: features
         type: Record<string, unknown> | undefined
@@ -214,7 +214,7 @@ functions:
     kind: 関数
     container: vscode/src/config.ts
     usecase: 書いた内容をプレビューに映す
-    summary: YAML を `yaml` の `parse` で読み、最上位がマップのときだけ `features`・`libraries`・`side-toc`・`colorTheme` を取り出す。`assets` がマップで `root` が文字列なら `assetsRoot` に入れる
+    summary: YAML を `yaml` の `parse` で読み、最上位がマップのときだけ `features`・`libraries`・`html-scripts`・`side-toc`・`colorTheme` を取り出す。`assets` がマップで `root` が文字列なら `assetsRoot` に入れる
     scope: public
     args:
       - name: text
@@ -228,7 +228,7 @@ functions:
       1. `parse(text)` を呼ぶ
          - `YAMLParseError` の場合、`{ kind: "error", line: error.linePos[0].line, message: error.message }` を返す
       2. 最上位がマップでなければ（空のファイルを含む）`{ kind: "ok", config: {} }` を返す
-      3. `features`・`libraries`・`side-toc` のうち値がマップのキーと、値が文字列の `colorTheme` だけを `config` に入れ、`assets.root` が文字列なら `assetsRoot` に入れて返す。他のキーは読まない
+      3. `features`・`libraries`・`html-scripts`・`side-toc` のうち値がマップのキーと、値が文字列の `colorTheme` だけを `config` に入れ、`assets.root` が文字列なら `assetsRoot` に入れて返す。他のキーは読まない
     unit_tests:
       - name: test_parse_config
         case: 正常
@@ -260,6 +260,12 @@ functions:
         condition: '`assets: { root: assets }` の YAML と `assets: { root: 1 }` の YAML'
         mock: なし
         expected: '前者は `{ kind: "ok", config: {}, assetsRoot: "assets" }`、後者は `{ kind: "ok", config: {} }`'
+      - name: test_parse_config_when_html_scripts
+        case: 正常
+        summary: マップの html-scripts だけを取り出す
+        condition: '`html-scripts: { url: ./babel.mjs }` の YAML と `html-scripts: x` の YAML'
+        mock: なし
+        expected: '前者は `{ kind: "ok", config: { "html-scripts": { url: "./babel.mjs" } } }`、後者は `{ kind: "ok", config: {} }`'
     refs:
       - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを描き直す.ts#constraints[設定の取り出し方]
       - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを描き直す.ts#constraints[設定ファイルを読めないとき]
@@ -316,7 +322,7 @@ functions:
     kind: 関数
     container: vscode/src/config.ts
     usecase: 共通
-    summary: '`http:`・`https:` の URL はそのまま、それ以外の文字列は設定ファイルのフォルダから解決した絶対パスを `toUrl` で URL にして返す'
+    summary: '`libraries` の各値について、`http:`・`https:` の URL はそのまま、それ以外の文字列は設定ファイルのフォルダから解決した絶対パスを `toUrl` で URL にして返す'
     description: プレビューは `toUrl` に `asWebviewUri` を、書き出しは `pathToFileURL` を渡す。文字列でない値はそのまま渡し、mdmark が無視する
     scope: public
     args:
@@ -338,18 +344,50 @@ functions:
       - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを描き直す.ts#constraints[libraries の URL]
       - dev/設計書/インターフェース定義/VSCode拡張機能/HTMLに書き出す.ts#constraints[設定と相対パス]
     status: planned
+  - name: resolveHtmlScripts
+    title: html-scripts の URL を直す
+    kind: 関数
+    container: vscode/src/config.ts
+    usecase: 共通
+    summary: '`html-scripts.url` が `http:`・`https:` でない文字列なら、設定ファイルのフォルダから解決した絶対パスを `toUrl` で URL にした `html-scripts` を返す。それ以外はそのまま返す'
+    scope: public
+    args:
+      - name: options
+        type: '{ htmlScripts: Record<string, unknown>; configDir: string; toUrl: (path: string) => string }'
+        required: true
+        description: 取り出した `html-scripts`、設定ファイルのあるフォルダ、絶対パスを読める URL にする関数
+    returns:
+      type: Record<string, unknown>
+      description: '`url` を直した `html-scripts`'
+    unit_tests:
+      - name: test_resolve_html_scripts
+        case: 正常
+        summary: 相対パスの url だけを設定ファイルのフォルダから直す
+        condition: '`{ url: "./libs/babel.mjs" }`・`{ url: "https://cdn.example.com/babel.mjs" }`・`{ url: 1 }`、`configDir` が `/ws/docs`、`toUrl` が頭に `web:` を付ける'
+        mock: なし
+        expected: '`{ url: "web:/ws/docs/libs/babel.mjs" }`・`{ url: "https://cdn.example.com/babel.mjs" }`・`{ url: 1 }`'
+    refs:
+      - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを描き直す.ts#constraints[libraries の URL]
+      - dev/設計書/インターフェース定義/VSCode拡張機能/HTMLに書き出す.ts#constraints[設定と相対パス]
+    status: planned
+    introduced:
+      pr: 303
   - name: libraryOrigins
     title: libraries の配信元を拾う
     kind: 関数
     container: vscode/src/config.ts
     usecase: VSCodeでプレビューを開く
-    summary: '`libraries` の値のうち `http:`・`https:` の URL の origin を、重なりを除いて返す（CSP の `script-src` に使う）'
+    summary: '`libraries` の値と `html-scripts.url`（無ければライブラリ本体の既定の URL）のうち `http:`・`https:` の URL の origin を、重なりを除いて返す（CSP の `script-src` に使う）'
     scope: public
     args:
       - name: libraries
         type: Record<string, unknown> | undefined
         required: true
         description: 取り出した `libraries`
+      - name: htmlScripts
+        type: Record<string, unknown> | undefined
+        required: false
+        description: 取り出した `html-scripts`
     returns:
       type: string[]
       description: origin の並び
@@ -357,9 +395,15 @@ functions:
       - name: test_library_origins
         case: 正常
         summary: http・https の origin だけを重なりなく拾う
-        condition: '`{ a: "https://cdn.example.com/a.js", b: "https://cdn.example.com/b.js", c: "./c.js", d: 1 }`'
+        condition: '`{ a: "https://cdn.example.com/a.js", b: "https://cdn.example.com/b.js", c: "./c.js", d: 1 }`、`htmlScripts` は省く'
         mock: なし
-        expected: '`["https://cdn.example.com"]`'
+        expected: '`["https://cdn.example.com", "https://cdn.jsdelivr.net"]`（後ろは `html-scripts.url` の既定の URL の origin）'
+      - name: test_library_origins_when_html_scripts
+        case: 正常
+        summary: html-scripts.url の http・https の origin を足し、それ以外の url では足さない
+        condition: '`libraries` が `{ a: "https://cdn.example.com/a.js" }` で、`htmlScripts` が `{ url: "https://babel.example.com/b.mjs" }` のときと `{ url: "./babel.mjs" }` のとき'
+        mock: なし
+        expected: '前者は `["https://cdn.example.com", "https://babel.example.com"]`、後者は `["https://cdn.example.com"]`'
     refs:
       - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを開く.ts#constraints[CSP]
     status: planned

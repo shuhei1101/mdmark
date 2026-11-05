@@ -473,3 +473,77 @@ test("test_bundle_viewer_when_html_comment_open", async () => {
   )) as { value: string };
   expect(evaluated.value).toBe("<!-- <script>");
 });
+
+/** 範囲に `html` と、言語 `lang` のコードブロックを置いた文書 */
+function rangeScriptDoc(lang: string, code: string): string {
+  return [
+    "<!-- html -->",
+    "",
+    "```html",
+    '<button class="toggle" type="button">開く</button>',
+    "```",
+    "",
+    `\`\`\`${lang}`,
+    code,
+    "```",
+    "",
+    "<!-- /html -->",
+    "",
+  ].join("\n");
+}
+
+/** 型の注釈を持つ既定のエクスポートの関数の `ts` */
+const TYPED_SCRIPT =
+  'export default (root: HTMLElement): void => { root.classList.add("is-open"); };';
+
+// 範囲の `ts` の型を外して CommonJS にし、同じコードは 1 つにする（正常系）
+test("test_compile_html_scripts", async () => {
+  // 準備
+  const { compileHtmlScripts } = await loadEmbed();
+  const markdown = rangeScriptDoc("ts", TYPED_SCRIPT);
+  // 実行
+  const { scripts, warnings } = await compileHtmlScripts({
+    documents: [
+      { path: "a.md", markdown },
+      { path: "b.md", markdown },
+    ],
+    config: { features: { "html-scripts": true } },
+  });
+  // 検証
+  expect(scripts).toHaveLength(1);
+  expect(scripts[0]?.source).toContain("root: HTMLElement");
+  expect(scripts[0]?.code).toMatch(/exports\.default\s*=|default:\s*\(\)\s*=>/);
+  expect(scripts[0]?.code).not.toContain(": HTMLElement");
+  expect(scripts[0]?.code).not.toContain("): void");
+  expect(warnings).toEqual([]);
+});
+
+// `html-scripts` がオフの文書は変えない（正常系）
+test("test_compile_html_scripts_when_off", async () => {
+  // 準備
+  const { compileHtmlScripts } = await loadEmbed();
+  // 実行
+  const { scripts } = await compileHtmlScripts({
+    documents: [{ path: "a.md", markdown: rangeScriptDoc("ts", TYPED_SCRIPT) }],
+    config: {},
+  });
+  // 検証
+  expect(scripts).toEqual([]);
+});
+
+// 変えられない範囲は警告にし、返さない（異常系）
+test("test_compile_html_scripts_when_syntax_error", async () => {
+  // 準備
+  const { compileHtmlScripts } = await loadEmbed();
+  const markdown = rangeScriptDoc("js", "export default (root) => {");
+  // 実行
+  const { scripts, warnings } = await compileHtmlScripts({
+    documents: [{ path: "docs/broken.md", markdown }],
+    config: { features: { "html-scripts": true } },
+  });
+  // 検証
+  expect(scripts).toEqual([]);
+  expect(warnings).toHaveLength(1);
+  expect(warnings[0]).toContain("docs/broken.md");
+  expect(warnings[0]).not.toContain("\n");
+});

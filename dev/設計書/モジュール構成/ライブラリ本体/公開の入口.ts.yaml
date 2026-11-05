@@ -195,7 +195,7 @@ styles:
       - class_name: .mdmark .mdmark-diagram-node.has-link・.mdmark-diagram-node-link
         target: リンク先を持つフロー図のノード
         value: 'リンクはノードの全体を覆い（`position: absolute; inset: 0`）、名前を本文のリンクと同じ色と下線にし、ノードの上は文字の上も `cursor: pointer`・`user-select: none` にする。ホバーはノードの地に種類の色をうっすら敷き、フォーカスはノードの外側に枠を出す。右上の印はリンクの上に重ねる。値はモック `dev/mock/refs/42/assets/diagram.css` の `.mdmark-diagram-node.has-link` の規則'
-      - class_name: .mdmark .mdmark-table-scroll と .mdmark-table-tool.is-icon-only・.mdmark-columns-badge
+      - class_name: .mdmark .mdmark-table-scroll と .mdmark-table-tool.is-icon-only・.mdmark-table-tool-badge
         target: 表を本文の幅に広げる包みと、アイコンだけの帯のボタン
         value: '包みは本文の幅いっぱい（`width: 100%`）で横にスクロールし、外側の角丸の枠と続きがある側の端の影を持つ。中の `table` は `display: table`・`width: 100%` で列を本文の幅まで広げ、列の最小幅と見出しを折り返さない指定は今のままにする。アイコンだけのボタンは帯のほかのボタンと同じ高さの正方形で、バッジはアイコンの右上に重ねる。印刷では包みのスクロールを外す。値は `dev/mock/refs/308/assets/table.css`'
       - class_name: .mdmark .mdmark-diagram-resize・.mdmark-diagram-item-hit・.mdmark-diagram-group-info・グループのタイトルの .is-stuck

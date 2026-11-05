@@ -171,7 +171,10 @@ test("test_library_origins", async () => {
   // 実行
   const origins = libraryOrigins(libraries);
   // 検証
-  expect(origins).toEqual(["https://cdn.example.com"]);
+  expect(origins).toEqual([
+    "https://cdn.example.com",
+    "https://cdn.jsdelivr.net",
+  ]);
 });
 
 // 文字列の assets.root を config に入れずに返す（正常系）
@@ -195,4 +198,57 @@ test("test_load_config_when_assets_root", async () => {
   const result = await load({ path: "/w/mdmark.config.yaml", readFile });
   // 検証
   expect(result).toMatchObject({ kind: "ok", assetsRoot: "/w/assets" });
+});
+
+// マップの html-scripts だけを取り出す（正常系）
+test("test_parse_config_when_html_scripts", async () => {
+  // 準備
+  const { parseConfig } = await loadModule();
+  // 実行
+  const map = parseConfig("html-scripts: { url: ./babel.mjs }");
+  const text = parseConfig("html-scripts: x");
+  // 検証
+  expect(map).toEqual({
+    kind: "ok",
+    config: { "html-scripts": { url: "./babel.mjs" } },
+  });
+  expect(text).toEqual({ kind: "ok", config: {} });
+});
+
+// 相対パスの url だけを設定ファイルのフォルダから直す（正常系）
+test("test_resolve_html_scripts", async () => {
+  // 準備
+  const { resolveHtmlScripts } = await loadModule();
+  const resolve = (htmlScripts: Record<string, unknown>) =>
+    resolveHtmlScripts({
+      htmlScripts,
+      configDir: "/ws/docs",
+      toUrl: (path: string) => `web:${path}`,
+    });
+  // 実行
+  const relative = resolve({ url: "./libs/babel.mjs" });
+  const absolute = resolve({ url: "https://cdn.example.com/babel.mjs" });
+  const number = resolve({ url: 1 });
+  // 検証
+  expect(relative).toEqual({ url: "web:/ws/docs/libs/babel.mjs" });
+  expect(absolute).toEqual({ url: "https://cdn.example.com/babel.mjs" });
+  expect(number).toEqual({ url: 1 });
+});
+
+// html-scripts.url の http・https の origin を足し、それ以外の url では足さない（正常系）
+test("test_library_origins_when_html_scripts", async () => {
+  // 準備
+  const { libraryOrigins } = await loadModule();
+  const libraries = { a: "https://cdn.example.com/a.js" };
+  // 実行
+  const remote = libraryOrigins(libraries, {
+    url: "https://babel.example.com/b.mjs",
+  });
+  const local = libraryOrigins(libraries, { url: "./babel.mjs" });
+  // 検証
+  expect(remote).toEqual([
+    "https://cdn.example.com",
+    "https://babel.example.com",
+  ]);
+  expect(local).toEqual(["https://cdn.example.com"]);
 });

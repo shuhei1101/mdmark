@@ -50,6 +50,7 @@ import { buildPagebreaks } from "./syntax/pagebreak.ts";
 import { attachRowDetails } from "./syntax/row-details.ts";
 import { wrapSections } from "./syntax/sections.ts";
 import { buildSteps } from "./syntax/steps.ts";
+import { linkTreeExamples } from "./syntax/table-tree.ts";
 import { decorateTables } from "./syntax/tables.ts";
 import { buildTabs } from "./syntax/tabs.ts";
 import { termsRule } from "./syntax/terms.ts";
@@ -299,6 +300,7 @@ export function createParser(): MarkdownItParser {
     ["mdmark_build_diagrams", buildDiagrams],
     ["mdmark_build_embedded_html", buildEmbeddedHtml],
     ["mdmark_build_code_blocks", buildCodeBlocks],
+    ["mdmark_link_tree_examples", linkTreeExamples],
     ["mdmark_read_images", readImages],
     ["mdmark_number_figures", numberFigures],
     ["mdmark_build_gallery", buildGallery],

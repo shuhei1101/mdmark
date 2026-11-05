@@ -28,11 +28,18 @@ import type { Mark } from "../marks.ts";
 import { readCollapse } from "./collapse.ts";
 import type { CsvTableMeta } from "./csv.ts";
 import { slugBase } from "./headings.ts";
-import { MERGE_LEFT, MERGE_UP, planCellMerges } from "./table-cells.ts";
+import {
+  headerGroupsOf,
+  MERGE_LEFT,
+  MERGE_UP,
+  planCellMerges,
+} from "./table-cells.ts";
+import { decorateTreeTable } from "./table-tree.ts";
 import {
   envOf,
   featureOn,
   findClose,
+  findNestedClose,
   markOf,
   ownBlock,
   textOf,
@@ -53,13 +60,14 @@ export const TABLE_KINDS: Readonly<Record<TableKind, readonly TableFeature[]>> =
     plain: [],
   };
 
-/** 表の機能の名前。後ろの 5 つはどの種類の既定にも入らず、`+機能` を書いた表にだけ付く */
+/** 表の機能の名前。後ろの 6 つはどの種類の既定にも入らず、`+機能` を書いた表にだけ付く */
 export const TABLE_FEATURES: readonly TableFeature[] = [
   "sort",
   "pin",
   "filter",
   "count",
   "columns",
+  "reorder",
   "total",
   "copy",
   "rowlink",
@@ -96,7 +104,20 @@ export type TableSpec = {
   wide: number[];
   /** `check=` で真偽値を ✓ と空欄で出す列の位置。表に無い列名は入れない */
   check: number[];
+  /** `tree=` で階層にするキーの列の位置。表に無い列名では入れない */
+  tree?: number | undefined;
+  /** `type=` の列の位置。`tree` の無い表・表に無い列名では入れない */
+  treeType?: number | undefined;
+  /** `required=` の列の位置。`tree` の無い表・表に無い列名では入れない */
+  treeRequired?: number | undefined;
+  /** `default=` の列の位置。`tree` の無い表・表に無い列名では入れない */
+  treeDefault?: number | undefined;
+  /** `example=` の見出しの文字。`tree` の無い表では入れない */
+  example?: string | undefined;
 };
+
+/** `tree=` と一緒に書くキー */
+const TREE_KEYS = ["type", "required", "default", "example"];
 
 /** 表の色の指定を読んだ結果 */
 export type TableColors = {
@@ -325,6 +346,7 @@ export function readTableSpec(
   let pin: number | undefined;
   let wide: number[] = [];
   let check: number[] = [];
+  const treeValues: Record<string, string> = {};
   // `hide=` は `columns`、`total=` は `total`、`pin=` は `pin` を付けた表でだけ読む
   const keyFeatures: Record<string, TableFeature> = {
     hide: "columns",
@@ -375,15 +397,26 @@ export function readTableSpec(
       check = readColumns(value, headers, warnings);
     } else if (COLOR_KEYS.includes(key)) {
       // 色の指定は `readTableColors` が読む
+    } else if (key === "tree" || TREE_KEYS.includes(key)) {
+      treeValues[key] = value.trim();
     } else {
       warnings.push({
         label: `${key}=`,
-        message: `使えないキーです。使えるキーは ${codes(["filter=", "hide=", "total=", "pin=", "wide=", "check=", "header-rows=", "row-header=", ...COLOR_KEYS.map((name) => `${name}=`)])} です`,
+        message: `使えないキーです。使えるキーは ${codes(["filter=", "hide=", "total=", "pin=", "wide=", "check=", "header-rows=", "row-header=", "tree=", ...TREE_KEYS.map((name) => `${name}=`), ...COLOR_KEYS.map((name) => `${name}=`)])} です`,
       });
+    }
+  }
+  const tree = readTree({ values: treeValues, headers, warnings });
+  if (tree.tree !== undefined) {
+    // 階層の表は行の順を Markdown に記載した順のまま保つため、並べ替えを付けない
+    const sort = features.indexOf("sort");
+    if (sort >= 0) {
+      features.splice(sort, 1);
     }
   }
   warnings.push(...items);
   return {
+    ...tree,
     kind,
     features,
     filters,
@@ -397,6 +430,60 @@ export function readTableSpec(
     pin,
     wide,
     check,
+  };
+}
+
+/** `tree=`・`type=`・`required=`・`default=`・`example=` を、表の見出しの文字と照らして読む */
+function readTree(options: {
+  values: Record<string, string>;
+  headers: string[];
+  warnings: WarningItem[];
+}): Pick<
+  TableSpec,
+  "tree" | "treeType" | "treeRequired" | "treeDefault" | "example"
+> {
+  const { values, headers, warnings } = options;
+  let tree: number | undefined;
+  if (values.tree !== undefined) {
+    const column = headers.indexOf(values.tree);
+    if (column < 0) {
+      warnings.push({
+        label: "tree=",
+        message: `の列 \`${values.tree}\` が表にありません。表の列は ${codes(headers)} です。階層にせずに描いています。`,
+      });
+    } else {
+      tree = column;
+    }
+  }
+  const columnOf = (key: string): number | undefined => {
+    const name = values[key];
+    if (name === undefined || tree === undefined) {
+      return undefined;
+    }
+    const column = headers.indexOf(name);
+    if (column < 0) {
+      warnings.push(unknownColumn(name));
+      return undefined;
+    }
+    return column;
+  };
+  for (const key of TREE_KEYS) {
+    if (values[key] !== undefined && tree === undefined) {
+      warnings.push({
+        label: `${key}=`,
+        message: "は tree= と一緒に書いてください。当てずに描いています。",
+      });
+    }
+  }
+  return {
+    tree,
+    treeType: columnOf("type"),
+    treeRequired: columnOf("required"),
+    treeDefault: columnOf("default"),
+    example:
+      tree !== undefined && values.example !== undefined
+        ? values.example
+        : undefined,
   };
 }
 
@@ -960,8 +1047,17 @@ function mergeTableCells(options: {
   }
   const rows = rowCellsOf(tokens, tableOpen);
   if (spec.headRows > 1) {
-    // 本文のセルの列名を、見出しの最下段の文字に替える
-    const labels = headersOf(tokens, tableOpen);
+    // 本文のセルの列名を、見出しの最下段の文字（上と結合した `^^` は上のセルの文字）に替える
+    const labels = headLabelsOf(
+      rowCellsOf(tokens, tableOpen)
+        .filter((row) => row.head)
+        .map((row) =>
+          row.cells.map((cell) => {
+            const inline = tokens[cell.open + 1];
+            return inline?.type === "inline" ? textOf(inline) : "";
+          }),
+        ),
+    );
     for (const row of rows.filter((r) => !r.head)) {
       for (const [column, cell] of row.cells.entries()) {
         tokens[cell.open]?.attrSet("data-label", labels[column] ?? "");
@@ -975,6 +1071,22 @@ function mergeTableCells(options: {
     }),
   );
   const plan = planCellMerges({ cells: texts, headRows: spec.headRows });
+  if (spec.features.includes("reorder") && spec.headRows > 1) {
+    // 最下段の見出しのセルに、その列を覆う結合した見出しの位置を写す
+    const groups = headerGroupsOf({
+      head: texts.slice(0, spec.headRows),
+      plan,
+    });
+    const bottom = rows[spec.headRows - 1];
+    for (const [column, group] of groups.entries()) {
+      const cell = bottom?.cells[column];
+      const open = cell ? tokens[cell.open] : undefined;
+      if (open && group !== undefined) {
+        open.attrSet("data-group", group);
+        open.attrSet("data-mdmark-own", nonce);
+      }
+    }
+  }
   /** 開きのトークンに、mdmark が付けた属性として値を付ける */
   const setOwn = (token: Token, name: string, value: string): void => {
     token.attrSet(name, value);
@@ -1031,6 +1143,20 @@ function mergeTableCells(options: {
     }
   }
   return { mergeColumns: plan.mergeColumns, warnings: plan.warnings };
+}
+
+/** 見出しの行のセルの文字から、最下段の列ごとの列名を返す。上と結合した `^^` は上のセルの文字にする */
+function headLabelsOf(head: string[][]): string[] {
+  const bottom = head.length - 1;
+  return (head[bottom] ?? []).map((text, column) => {
+    let row = bottom;
+    let label = text.trim();
+    while (label === MERGE_UP && row > 0) {
+      row -= 1;
+      label = (head[row]?.[column] ?? "").trim();
+    }
+    return label;
+  });
 }
 
 /** 表の印の範囲を集める */
@@ -1106,9 +1232,12 @@ export function decorateTables(state: StateCore): void {
     let mergeColumns: number[] = [];
     if (range && !viewSpec) {
       if (spec.headRows > 1) {
-        // 列名は見出しの最下段の行から読む
-        const bottom = bodyCellsOf(tokens, index)[spec.headRows - 2] ?? [];
-        spec = readTableSpec(range.mark.args, bottom, rowCount);
+        // 列名は見出しの最下段の行から読む（上と結合した `^^` は上のセルの文字）
+        const head = [
+          headersOf(tokens, index),
+          ...bodyCellsOf(tokens, index).slice(0, spec.headRows - 1),
+        ];
+        spec = readTableSpec(range.mark.args, headLabelsOf(head), rowCount);
       }
       const merged = mergeTableCells({
         state,
@@ -1132,6 +1261,7 @@ export function decorateTables(state: StateCore): void {
       mergeColumns,
       pin: spec.pin,
       check: spec.check,
+      tree: spec.tree,
       body: SLOT_MARKER,
       rawCsv: (token.meta as Partial<CsvTableMeta> | null)?.rawCsv,
     });
@@ -1184,9 +1314,30 @@ export function decorateTables(state: StateCore): void {
       );
     }
     out.push(ownBlock(state, head.slice(divEnd)));
+    if (spec.tree !== undefined) {
+      // 階層の行は、囲みに移した後に `decorateTreeTable` が作る
+      token.meta = {
+        ...(token.meta ?? {}),
+        treeSpec: spec,
+        treeMark: range?.mark.raw,
+      };
+    }
     // 中のトークンは、対応する `table_close` までこの繰り返しで移す（中の表も囲みに入れる）
     out.push(token);
     openTables.push({ open: index, tail });
   }
   state.tokens = out;
+  // 行を差し込むと後ろの位置がずれるため、後ろの表から作る
+  for (let index = out.length - 1; index >= 0; index--) {
+    const token = out[index];
+    const treeSpec = (token?.meta as { treeSpec?: TableSpec } | null)?.treeSpec;
+    if (token?.type === "table_open" && treeSpec) {
+      decorateTreeTable({
+        state,
+        start: index,
+        end: findNestedClose(out, index),
+        spec: treeSpec,
+      });
+    }
+  }
 }

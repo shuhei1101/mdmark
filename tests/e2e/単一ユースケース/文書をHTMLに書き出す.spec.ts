@@ -17,7 +17,13 @@ import {
   VIEW_SOURCE,
   writeFiles,
 } from "../cli.ts";
-import { SYNTAX_ES_ROOT } from "../dist-page.ts";
+import {
+  RANGE_COLOR,
+  RANGE_CSS,
+  RANGE_TS,
+  rangeMarkdown,
+  SYNTAX_ES_ROOT,
+} from "../dist-page.ts";
 import { openStandaloneWithFiles, readMediaSamples } from "../media.ts";
 
 // 色分けのライブラリの本体と、手元に置く言語のモジュール（文書が使うのは `typescript` と `python`、`yaml` は使わない）
@@ -581,4 +587,45 @@ test("test_normal_when_includes_and_icons_embedded", async ({
   await expect(code).toContainText("const v5 = 5;");
   await expect(code).not.toContainText("const v6 = 6;");
   expect(opened.externalRequests()).toEqual([]);
+});
+
+// 範囲の ts の型を外して束ねたスクリプトに加え、blob: と動的 import を許さない環境で開いても、範囲の css と ts が効く（正常シナリオ（範囲のスクリプトと CSS））
+test("test_normal_when_range_scripts", async ({ builtRoot, tempDir, page }) => {
+  // 準備
+  const dir = await tempDir();
+  await writeFiles(dir, {
+    "mdmark.config.yaml": ["features:", "  html-scripts: true", ""].join("\n"),
+    "guide.md": [
+      "# ガイド",
+      "",
+      rangeMarkdown({ css: RANGE_CSS, ts: RANGE_TS }),
+    ].join("\n"),
+  });
+  // 実行
+  const result = await runCli(
+    builtRoot,
+    ["export", "guide.md", "--out", "out/guide.html"],
+    dir,
+  );
+  // 検証
+  expect(result.code).toBe(0);
+  expect(existsSync(join(dir, "out", "guide.html"))).toBe(true);
+  const external: string[] = [];
+  page.on("request", (request) => {
+    if (!/^(?:https?:\/\/127\.0\.0\.1|blob:|data:)/.test(request.url())) {
+      external.push(request.url());
+    }
+  });
+  const opened = await openWithCsp(page, join(dir, "out", "guide.html"));
+  const scope = page.locator('article .mdmark-html[data-html-scope="0"]');
+  const box = scope.locator(".box");
+  await expect(box).toHaveCSS("background-color", RANGE_COLOR);
+  await expect(async () => {
+    await box.click();
+    await expect(scope).toHaveClass(/\bis-open\b/, { timeout: 500 });
+  }).toPass();
+  expect(await opened.violations()).toEqual([]);
+  expect(opened.blobRequests()).toEqual([]);
+  expect(external).toEqual([]);
+  await opened.close();
 });

@@ -749,6 +749,18 @@ files:
   - path: refs/298/index.md
     description: '#298（ER 図の部品を追加する）の PR のモックへのリンク集。この PR で作ったモックを探すときに読む。'
     tags: [topic:モック]
+  - path: refs/303/assets/embedded.js
+    description: '#303 のモックが共通で読む素材: 範囲の ts・js の既定のエクスポートの関数に当たる、範囲の根の要素を押すと class を付け外しする動き。複数のモックに効く見た目や動きを変えるときに読む。'
+    tags: [topic:モック, tool:javascript]
+  - path: refs/303/assets/table.css
+    description: '#303 のモックが共通で読む素材: テーブル設定のボタンと列の一覧（つまみ・目のアイコン・ドラッグ中）と、キーの列の階層・型のバッジ・必須の *・行の選択の縦線・YAML の見本の規則。複数のモックに効く見た目や動きを変えるときに読む。'
+    tags: [topic:モック, tool:css]
+  - path: refs/303/assets/table.js
+    description: '#303 のモックが共通で読む素材: テーブル設定の開閉と、列の一覧のドラッグ＆ドロップ・↑↓ キーの並べ替え・目のアイコンの表示の切り替え、階層の開閉・選択・絞り込み・コピーと YAML の見本との連動の操作。複数のモックに効く見た目や動きを変えるときに読む。'
+    tags: [topic:モック, tool:javascript]
+  - path: refs/303/index.md
+    description: '#303（既存の記法への項目の追加 3 件。表の列の並べ替え・コードブロックの HTML の TypeScript と CSS・表のキーの階層）の PR のモックへのリンク集。この PR で作ったモックを探すときに読む。'
+    tags: [topic:モック]
   - path: refs/307/assets/notations.css
     description: '#307 のモックが共通で読む素材: アイコン・キー・蛍光ペン・段組み・取り込み・wide・CSV の表の RAW のボタンの規則。複数のモックに効く見た目を変えるときに読む。'
     tags: [topic:モック, topic:記法, tool:css]

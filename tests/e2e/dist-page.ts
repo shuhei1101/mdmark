@@ -882,3 +882,134 @@ export async function releaseRevisions(page: Page): Promise<void> {
     (window as MdmarkWindow).releaseRevisions?.();
   });
 }
+
+/** 範囲の `ts`・`js` の変換のライブラリを読む URL（`html-scripts.url` の既定） */
+export const TRANSPILER_URL =
+  "https://cdn.jsdelivr.net/npm/@babel/standalone@8.1.1/+esm";
+
+/** 変換のライブラリ（開発の依存 `@babel/standalone` の UMD）の場所 */
+const TRANSPILER_UMD_PATH = resolve(
+  import.meta.dirname,
+  "../../node_modules/@babel/standalone/babel.min.js",
+);
+
+/** 変換のライブラリへの要求を、`@babel/standalone` を既定のエクスポートを持つ ES モジュールに包んだ手元の応答に差し替え、受けた要求の件数を返す関数を返す。`status` が 404 のときは中身を返さない */
+export async function routeTranspiler(
+  page: Page,
+  status: 200 | 404 = 200,
+): Promise<() => number> {
+  let requests = 0;
+  const body =
+    status === 200
+      ? `const module = { exports: {} };\nconst exports = module.exports;\n${await readFile(TRANSPILER_UMD_PATH, "utf8")}\nexport default module.exports;\n`
+      : "";
+  await page.route(TRANSPILER_URL, (route) => {
+    requests += 1;
+    return route.fulfill({
+      status,
+      body,
+      contentType: "text/javascript",
+      headers: { "access-control-allow-origin": "*" },
+    });
+  });
+  return () => requests;
+}
+
+/** 範囲の `ts`: 型の注釈を持ち、箱を押すと根の要素に class `is-open` を付け外しし、`destroy` で `window.__mdmarkDestroyed` を 1 増やす */
+export const RANGE_TS = [
+  "export default (root: HTMLElement): (() => void) => {",
+  '  const box = root.querySelector<HTMLElement>(".box");',
+  "  const onClick = (): void => {",
+  '    root.classList.toggle("is-open");',
+  "  };",
+  '  box?.addEventListener("click", onClick);',
+  "  return () => {",
+  '    box?.removeEventListener("click", onClick);',
+  "    const w = window as unknown as { __mdmarkDestroyed?: number };",
+  "    w.__mdmarkDestroyed = (w.__mdmarkDestroyed ?? 0) + 1;",
+  "  };",
+  "};",
+].join("\n");
+
+/** 範囲の `css` が箱に付ける背景の色 */
+export const RANGE_COLOR = "rgb(255, 0, 0)";
+
+/** `<!-- html -->` の範囲に、`html`（`html` を省くと class `box` の箱 1 つ）と、`blocks` の言語ごとのコードブロックを置いた Markdown */
+export function rangeMarkdown(
+  blocks: Partial<Record<"css" | "ts" | "js", string>>,
+  html = '<div class="box">箱</div>',
+): string {
+  return [
+    "<!-- html -->",
+    "",
+    "```html",
+    html,
+    "```",
+    "",
+    ...(["css", "ts", "js"] as const).flatMap((lang) =>
+      blocks[lang] === undefined
+        ? []
+        : [`\`\`\`${lang}`, blocks[lang], "```", ""],
+    ),
+    "<!-- /html -->",
+    "",
+  ].join("\n");
+}
+
+/** 箱の背景を `RANGE_COLOR` にする範囲の `css` */
+export const RANGE_CSS = `.box { background-color: ${RANGE_COLOR}; }`;
+
+/** 階層の表の行（キー・型・必須・既定・説明。親の `features`・`aliases[]`・`aliases[].metadata`・`aliases[].metadata.alias_type` の行を持たない） */
+const TREE_ROWS = [
+  "| キー | 型 | 必須 | 既定 | 説明 |",
+  "| --- | --- | --- | --- | --- |",
+  "| features.table | bool | ✓ | true | 表の機能 |",
+  "| features.html | bool |  |  | 埋め込んだ HTML |",
+  "| aliases[].id | string |  |  | 別名の ID |",
+  "| aliases[].metadata.alias_type.type | ref \\| custom |  |  | 別名の種類 |",
+];
+
+/** 表のマーカーに `extra` を加えた、キーの列を階層で描く表の Markdown */
+export function treeMarkdown(extra = ""): string {
+  return [
+    `<!-- table: data tree=キー type=型 required=必須 default=既定${extra} -->`,
+    "",
+    ...TREE_ROWS,
+    "",
+    "<!-- /table -->",
+    "",
+  ].join("\n");
+}
+
+/** 見本を結んだ階層の表と、見出し `設定の見本` の下の `最小`・`エイリアス` のタブを持つ Markdown */
+export const TREE_EXAMPLE_MARKDOWN = [
+  treeMarkdown(" example=設定の見本"),
+  "## 設定の見本",
+  "",
+  "<!-- tabs -->",
+  "",
+  "### 最小",
+  "",
+  "```yaml",
+  "features:",
+  "  table: true",
+  "```",
+  "",
+  "### エイリアス",
+  "",
+  "```yaml",
+  "aliases:",
+  "  - id: terms",
+  "    metadata:",
+  "      alias_type:",
+  "        type: custom",
+  "```",
+  "",
+  "<!-- /tabs -->",
+  "",
+].join("\n");
+
+/** パスの階層の行 */
+export function treeRow(page: Page, path: string) {
+  return page.locator(`#doc tr.mdmark-tree-row[data-path="${path}"]`);
+}

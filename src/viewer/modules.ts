@@ -1,5 +1,6 @@
 import { type MdmarkExtension, registerExtension } from "../extensions.ts";
 import { type EmbeddedSyntax, setEmbeddedSyntax } from "../highlight.ts";
+import { setEmbeddedHtmlScripts } from "../html-scripts.ts";
 import { type LibraryModule, setEmbeddedLibraries } from "../libraries.ts";
 import { type PartName, setPartModuleLoader } from "../part-modules.ts";
 
@@ -13,6 +14,8 @@ export type EmbeddedModules = {
   libraries: Record<string, () => Promise<LibraryModule>>;
   /** 拡張のモジュールをリテラルの動的 `import()` で読む関数。設定の `extensions` の順 */
   extensions: Array<() => Promise<{ default?: unknown }>>;
+  /** 範囲のコードの文字から、既定のエクスポートを返す関数を引く表（CLI が esbuild で変えて束ねたもの） */
+  htmlScripts?: Map<string, () => unknown> | undefined;
 };
 
 /** 差し替えられる依存（単体テスト用） */
@@ -43,6 +46,8 @@ export async function prepareModules(
   // 色分けを埋めていないときは本体を持たない値を入れ、jsDelivr へ要求しない（色分けせずに描く）
   setEmbeddedSyntax(embedded.syntax ?? { languages: {} });
   setEmbeddedLibraries(embedded.libraries);
+  // 範囲のスクリプトは束ねた関数だけを使い、変換のライブラリを外へ要求しない（表に無い範囲は書き方の警告になる）
+  setEmbeddedHtmlScripts(embedded.htmlScripts ?? new Map());
   for (const load of embedded.extensions) {
     // 評価で例外を投げる・登録できない拡張は飛ばし、ほかの拡張と描画は続ける（印は知らない印として取り除かれる）
     try {

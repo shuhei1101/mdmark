@@ -12,10 +12,12 @@ import {
   TOTAL_LABELS,
   type TotalCalc,
 } from "../table-logic.ts";
+import { planTreeRows, splitKeyPath } from "../tree-logic.ts";
 import type { ColorName } from "./colors.ts";
 import { escapeHtml } from "./escape.ts";
 import { iconNodeBody, iconSvgOf } from "./icon-node.ts";
 import { iconSvg } from "./icons.ts";
+import { renderTabs } from "./tabs.ts";
 
 /** 表の種類 */
 export type TableKind = "default" | "data" | "plain";
@@ -27,6 +29,7 @@ export type TableFeature =
   | "filter"
   | "count"
   | "columns"
+  | "reorder"
   | "total"
   | "copy"
   | "rowlink";
@@ -101,8 +104,6 @@ export type TableOptions = {
   openTotals?: boolean;
   /** コピーの形式のメニューを開いているか */
   openCopy?: boolean;
-  /** 帯のボタンの見せ方（ストーリーで見比べるためだけ。既定 `icon`） */
-  barStyle?: TableBarStyle;
   /** クリップボードに書けなかったときに手でコピーさせるパネルの中身 */
   copyFallback?: { format: CopyFormat; text: string };
   /** `targetRow` の行の URL をコピーした結果 */
@@ -125,6 +126,34 @@ export type TableOptions = {
   wide?: number[];
   /** 真偽値を ✓ と空欄で出す列の位置（`data-check`） */
   check?: number[];
+  /** 階層にするキーの列の位置（`data-tree`） */
+  tree?: number | undefined;
+  /** 今の列の順（元の列の位置の並び。ストーリーで使う） */
+  order?: number[];
+  /** ドラッグしている列と、落とす先の列と向き（ストーリーで使う） */
+  dragging?: { column: number; target: number; side: "before" | "after" };
+  /** 階層の表の型の列の位置 */
+  treeType?: number;
+  /** 階層の表の必須の列の位置 */
+  treeRequired?: number;
+  /** 階層の表の既定の列の位置 */
+  treeDefault?: number;
+  /** 畳んだ行のパス（ストーリーで使う） */
+  collapsedPaths?: string[];
+  /** キーの列の絞り込みの単語（ストーリーで使う） */
+  treeFilter?: string;
+  /** 選んだ行のパス（ストーリーで使う） */
+  selectedPath?: string;
+  /** 表の下に置く YAML の見本（ストーリーで使う） */
+  example?: {
+    heading: string;
+    tabs: Array<{
+      name: string;
+      lines?: Array<{ text: string; path?: string }>;
+    }>;
+    active?: number;
+    hidden?: boolean;
+  };
   /** 見出しの段ごとのセル。渡すと `columns` の代わりに見出しの行をこの段で描く */
   headRows?: TableHeadCell[][];
   /** 本文の各行で `<th scope="row">` にする先頭の列の数（既定 0） */
@@ -290,32 +319,9 @@ export const COPY_STATES = {
   failed: { label: "コピーできませんでした", icon: "circle-alert" },
 } as const;
 
-/** 表の上の帯のボタンの見せ方: アイコンだけ・アイコンと語・1 つの「表の設定」のメニュー（`label`・`menu` はストーリーで見比べるためだけに使う） */
-export type TableBarStyle = "icon" | "label" | "menu";
-
-/** 列設定のボタンの読み上げの名前 */
-export function columnsToggleName(hidden: number): string {
-  return hidden > 0 ? `列設定（${hidden} 列を隠しています）` : "列設定";
-}
-
-/** 列設定のボタンの中身（アイコン・隠した列の数のバッジ・読み上げの名前）の HTML */
-export function renderColumnsToggleContent(hidden: number): string {
-  const badge =
-    hidden > 0
-      ? `<span class="mdmark-columns-badge" aria-hidden="true">${hidden}</span>`
-      : "";
-  return `${iconSvg("columns-3")}${badge}<span class="mdmark-visually-hidden">${columnsToggleName(hidden)}</span>`;
-}
-
-/** コピーのボタンの中身の HTML。既定はアイコンと読み上げの名前だけ。`label` は文言と形式のメニューを開くことを示す下向きの矢印も見せる */
-export function renderCopyButtonContent(
-  state: CopyState,
-  barStyle: TableBarStyle = "icon",
-): string {
+/** コピーのボタンの中身（アイコンと読み上げの名前）の HTML */
+export function renderCopyButtonContent(state: CopyState): string {
   const { icon, label } = COPY_STATES[state];
-  if (barStyle === "label") {
-    return `${iconSvg(icon)}<span class="mdmark-copy-label">${label}</span><span class="mdmark-copy-caret" data-icon="chevron-down">${iconSvg("chevron-down")}</span>`;
-  }
   return `${iconSvg(icon)}<span class="mdmark-visually-hidden mdmark-copy-label">${label}</span>`;
 }
 
@@ -328,9 +334,9 @@ export const COPY_FORMATS = {
   tsv: { name: "TSV", note: "表計算ソフトに貼るとセルに分かれる" },
 } as const;
 
-/** 列の表示のメニューの id */
+/** テーブル設定のパネルの id */
 function menuId(id: string): string {
-  return `${id}-columns`;
+  return `${id}-settings`;
 }
 
 /** 集計のメニューの id */
@@ -343,7 +349,7 @@ function copyMenuId(id: string): string {
   return `${id}-copy`;
 }
 
-/** 表の上の帯（件数・列の表示・集計・コピーのボタン）と、列の表示・集計・コピーの形式のメニューの HTML を返す。付けた機能が無ければ空 */
+/** 表の上の帯（件数・テーブル設定・集計・コピーのボタン）と、テーブル設定のパネル・集計・コピーの形式のメニューの HTML を返す。付けた機能が無ければ空 */
 export function renderTableBar(options: {
   /** メニューの id の頭 */
   id: string;
@@ -357,8 +363,18 @@ export function renderTableBar(options: {
   total: number;
   /** 隠している列の位置 */
   hiddenColumns: number[];
-  /** 列の表示のメニューを開いているか（既定 `false`） */
+  /** テーブル設定のパネルを開いているか（既定 `false`） */
   openColumns?: boolean;
+  /** 今の列の順（既定は元の列の順） */
+  order?: number[];
+  /** 列ごとの結合した見出しの範囲（既定は全て範囲の外） */
+  groups?: Array<string | undefined>;
+  /** 結合した見出しの範囲ごとの見出しの文字 */
+  groupLabels?: Record<string, string>;
+  /** 留めている列の数（既定 0） */
+  pinned?: number;
+  /** ドラッグしている列と、落とす先の列と向き */
+  dragging?: { column: number; target: number; side: "before" | "after" };
   /** コピーのボタンの状態（既定 `idle`） */
   copyState?: CopyState;
   /** 集計する計算 */
@@ -369,8 +385,6 @@ export function renderTableBar(options: {
   openTotals?: boolean;
   /** コピーの形式のメニューを開いているか（既定 `false`） */
   openCopy?: boolean;
-  /** 帯のボタンの見せ方（既定 `icon`） */
-  barStyle?: TableBarStyle;
 }): { bar: string; menus: string } {
   const { id, features, labels, shown, total, hiddenColumns } = options;
   const copyState = options.copyState ?? "idle";
@@ -381,56 +395,44 @@ export function renderTableBar(options: {
   const hiddenCalcs = calcs.filter((calc) => !shownCalcs.has(calc));
   const counting = features.includes("count");
   const columns = features.includes("columns");
+  const settings = columns || features.includes("reorder");
   const totaling = features.includes("total") && calcs.length > 0;
   const copying = features.includes("copy");
-  const barStyle = options.barStyle ?? "icon";
-  const iconOnly = barStyle === "label" ? "" : " is-icon-only";
   const count = counting
     ? `<p class="mdmark-table-count" aria-live="polite"><span aria-hidden="true">${shown} / ${total} 件</span><span class="mdmark-visually-hidden">${total} 件中 ${shown} 件を表示</span></p>`
     : "";
-  const columnsToggle = columns
-    ? `<button class="mdmark-table-tool mdmark-columns-toggle${iconOnly}${hidden.size > 0 ? " is-active" : ""}" type="button" title="列設定" aria-expanded="${open}" aria-controls="${escapeHtml(menuId(id))}">${barStyle === "label" ? `${iconSvg("columns-3")}列設定<span class="mdmark-visually-hidden">${hidden.size > 0 ? `（${hidden.size} 列を隠しています）` : ""}</span>` : renderColumnsToggleContent(hidden.size)}</button>`
+  const settingsToggle = settings
+    ? renderSettingsToggle({ id, hidden: hidden.size, open })
     : "";
   const totalsToggle = totaling
     ? `<button class="mdmark-table-tool mdmark-totals-toggle${hiddenCalcs.length > 0 ? " is-active" : ""}" type="button" aria-expanded="${options.openTotals ?? false}" aria-controls="${escapeHtml(totalsMenuId(id))}">${iconSvg("sigma")}集計<span class="mdmark-visually-hidden">${hiddenCalcs.length > 0 ? `（${hiddenCalcs.length} 件を非表示にしています）` : ""}</span></button>`
     : "";
   const copy = copying
-    ? `<button class="mdmark-table-tool mdmark-copy${iconOnly}" type="button" title="${COPY_STATES[copyState].label}" data-state="${copyState}" aria-expanded="${options.openCopy ?? false}" aria-controls="${escapeHtml(copyMenuId(id))}">${renderCopyButtonContent(copyState, barStyle)}</button>`
+    ? `<button class="mdmark-table-tool mdmark-copy is-icon-only" type="button" title="${COPY_STATES[copyState].label}" data-state="${copyState}" aria-expanded="${options.openCopy ?? false}" aria-controls="${escapeHtml(copyMenuId(id))}">${renderCopyButtonContent(copyState)}</button>`
     : "";
-  const settingsId = `${id}-settings`;
   const tools =
-    columnsToggle || totalsToggle || copy
-      ? barStyle === "menu"
-        ? `<div class="mdmark-table-tools"><button class="mdmark-table-tool mdmark-table-settings is-icon-only" type="button" title="表の設定" aria-expanded="true" aria-controls="${escapeHtml(settingsId)}">${iconSvg("ellipsis")}<span class="mdmark-visually-hidden">表の設定</span></button></div>`
-        : `<div class="mdmark-table-tools">${columnsToggle}${totalsToggle}${copy}</div>`
-      : "";
-  const settingsItems = [
-    columns
-      ? `<li><button type="button">${iconSvg("columns-3")}列設定</button></li>`
-      : "",
-    totaling
-      ? `<li><button type="button">${iconSvg("sigma")}集計</button></li>`
-      : "",
-    copying
-      ? `<li><button type="button">${iconSvg("copy")}表をコピー</button></li>`
-      : "",
-  ].join("");
-  const settingsMenu =
-    barStyle === "menu" && settingsItems
-      ? `<ul class="mdmark-table-settings-menu" id="${escapeHtml(settingsId)}" aria-label="表の設定">${settingsItems}</ul>`
+    settingsToggle || totalsToggle || copy
+      ? `<div class="mdmark-table-tools">${settingsToggle}${totalsToggle}${copy}</div>`
       : "";
   const status =
     totaling || copying
       ? `<span class="mdmark-visually-hidden mdmark-table-status" role="status">${copying && copyState !== "idle" ? COPY_STATES[copyState].label : ""}</span>`
       : "";
-  const items = labels
-    .map(
-      (label, index) =>
-        `<li><label><input type="checkbox" value="${index}"${hidden.has(index) ? "" : " checked"}${index === 0 ? " disabled" : ""}>${escapeHtml(label)}</label></li>`,
-    )
-    .join("");
-  const columnsMenu = columns
-    ? `<div class="mdmark-columns-menu" id="${escapeHtml(menuId(id))}" role="dialog" aria-label="列設定"${open ? "" : " hidden"}><p class="mdmark-columns-title">列設定</p><ul class="mdmark-columns-options">${items}</ul><p class="mdmark-columns-note">先頭の列は隠せません</p><button class="mdmark-columns-reset" type="button">リセット</button></div>`
+  const settingsPanel = settings
+    ? renderTableSettings({
+        id,
+        columns: labels,
+        order: options.order ?? labels.map((_, index) => index),
+        hidden: [...hidden],
+        features: features.filter(
+          (feature): feature is TableFeature =>
+            feature === "columns" || feature === "reorder",
+        ),
+        groups: options.groups ?? labels.map(() => undefined),
+        groupLabels: options.groupLabels,
+        pinned: options.pinned ?? 0,
+        dragging: options.dragging,
+      }).replace(/^<div /, `<div${open ? "" : " hidden"} `)
     : "";
   const totalItems = calcs
     .map(
@@ -455,8 +457,189 @@ export function renderTableBar(options: {
       count || tools
         ? `<div class="mdmark-table-bar">${count}${tools}${status}</div>`
         : "",
-    menus: `${settingsMenu}${columnsMenu}${totalsMenu}${copyMenu}`,
+    menus: `${settingsPanel}${totalsMenu}${copyMenu}`,
   };
+}
+
+/** テーブル設定のボタンの読み上げの名前 */
+function settingsLabel(hidden: number): string {
+  return hidden > 0 ? `テーブル設定（${hidden} 列を非表示）` : "テーブル設定";
+}
+
+/** 表の帯に置く、テーブル設定のアイコンだけのボタンの HTML を返す */
+export function renderSettingsToggle(options: {
+  /** パネルの id の頭 */
+  id: string;
+  /** 隠している列の数 */
+  hidden: number;
+  /** パネルを開いているか */
+  open: boolean;
+}): string {
+  const { id, hidden, open } = options;
+  return `<button class="mdmark-table-tool mdmark-table-settings-toggle is-icon-only${hidden > 0 ? " is-active" : ""}" type="button" aria-expanded="${open}" aria-controls="${escapeHtml(menuId(id))}" aria-label="${settingsLabel(hidden)}" title="テーブル設定">${iconSvg("settings-2")}<span class="mdmark-table-tool-badge" aria-hidden="true"${hidden > 0 ? "" : " hidden"}>${hidden}</span></button>`;
+}
+
+/** テーブル設定のボタンの隠した列の数と読み上げの名前を書き換える */
+export function updateSettingsToggle(
+  toggle: HTMLElement,
+  hidden: number,
+): void {
+  toggle.setAttribute("aria-label", settingsLabel(hidden));
+  toggle.classList.toggle("is-active", hidden > 0);
+  const badge = toggle.querySelector<HTMLElement>(".mdmark-table-tool-badge");
+  if (badge) {
+    badge.textContent = String(hidden);
+    badge.hidden = hidden === 0;
+  }
+}
+
+/** 一覧の項目が属するまとまりの鍵（ピン止めの列は `pinned`、範囲の外は空） */
+function placeKey(options: {
+  column: number;
+  groups: Array<string | undefined>;
+  pinned: number;
+}): string {
+  const { column, groups, pinned } = options;
+  return column < pinned ? "pinned" : (groups[column] ?? "");
+}
+
+/** テーブル設定のパネル（題・列名の一覧・案内）の HTML を返す。`hidden` は付けない */
+export function renderTableSettings(options: {
+  /** パネルの id の頭 */
+  id: string;
+  /** 元の列の順の列名 */
+  columns: string[];
+  /** 今の列の順（元の列の位置の並び） */
+  order: number[];
+  /** 隠している列の位置 */
+  hidden: number[];
+  /** `columns`・`reorder` のうち付けた機能 */
+  features: TableFeature[];
+  /** 列ごとの結合した見出しの範囲 */
+  groups: Array<string | undefined>;
+  /** 結合した見出しの範囲ごとの見出しの文字 */
+  groupLabels?: Record<string, string>;
+  /** 留めている列の数 */
+  pinned: number;
+  /** ドラッグしている列と、落とす先の列と向き */
+  dragging?: { column: number; target: number; side: "before" | "after" };
+}): string {
+  const { id, columns, order, groups, pinned, dragging } = options;
+  const hidden = new Set(options.hidden);
+  const showing = options.features.includes("columns");
+  const reordering = options.features.includes("reorder");
+  const noteId = `${id}-settings-note`;
+  const keys = order.map((column) => placeKey({ column, groups, pinned }));
+  const counts = new Map<string, number>();
+  for (const key of keys) {
+    counts.set(key, (counts.get(key) ?? 0) + 1);
+  }
+  const split = counts.size > 1;
+  const items: string[] = [];
+  let previous: string | undefined;
+  for (const [index, column] of order.entries()) {
+    const key = keys[index] ?? "";
+    if (split && key !== previous) {
+      const heading =
+        key === "pinned"
+          ? "ピン止めの列"
+          : key === ""
+            ? "範囲の外の列"
+            : (options.groupLabels?.[key] ?? "結合した見出しの範囲");
+      items.push(
+        `<li class="mdmark-table-settings-group" aria-hidden="true">${escapeHtml(heading)}</li>`,
+      );
+    }
+    previous = key;
+    const name = columns[column] ?? "";
+    const movable = (counts.get(key) ?? 0) > 1;
+    const draggingClass =
+      dragging?.column === column
+        ? " is-dragging"
+        : dragging?.target === column
+          ? ` is-drop-${dragging.side}`
+          : "";
+    const grip = reordering
+      ? `<button class="mdmark-table-settings-grip" type="button" aria-label="「${escapeHtml(name)}」の列を並べ替える" aria-describedby="${escapeHtml(noteId)}"${movable ? ' draggable="true"' : " disabled"}>${iconSvg("grip-vertical")}</button>`
+      : "";
+    const isHidden = hidden.has(column);
+    const eye = showing
+      ? `<button class="mdmark-table-settings-eye" type="button" aria-pressed="${isHidden}" aria-label="「${escapeHtml(name)}」を${isHidden ? "表示" : "隠す"}"${column === 0 ? " disabled" : ""}>${iconSvg(isHidden ? "eye-off" : "eye")}</button>`
+      : "";
+    items.push(
+      `<li class="mdmark-table-settings-item${draggingClass}" data-column="${column}" data-name="${escapeHtml(name)}" data-place="${escapeHtml(key)}">${grip}<span class="mdmark-table-settings-name">${escapeHtml(name)}</span>${eye}</li>`,
+    );
+  }
+  const note = [
+    reordering
+      ? "つまみをドラッグするか、つまみにフォーカスして ↑・↓ キーで並べ替えます。"
+      : "",
+    showing ? "先頭の列は隠せません" : "",
+  ].join("");
+  return `<div class="mdmark-table-settings" id="${escapeHtml(menuId(id))}" role="dialog" aria-label="テーブル設定"><p class="mdmark-table-settings-title">${showing ? "表示と並び順" : "並び順"}</p><ul class="mdmark-table-settings-list">${items.join("")}</ul><p class="mdmark-table-settings-note" id="${escapeHtml(noteId)}">${note}</p></div>`;
+}
+
+/** 階層の表のキーのセルの中身（深さの数の縦線・末尾の名前・配列の `[]`・必須の *）の HTML を返す */
+export function renderTreeKeyCell(options: {
+  /** `splitKeyPath` の末尾の名前 */
+  name: string;
+  /** 深さ */
+  depth: number;
+  /** 必須か */
+  required: boolean;
+}): string {
+  const { name, depth, required } = options;
+  const array = name.endsWith("[]");
+  const base = array ? name.slice(0, -2) : name;
+  const guides =
+    '<span class="mdmark-tree-guide" aria-hidden="true"></span>'.repeat(depth);
+  return `<span class="mdmark-tree-cell">${guides}<span class="mdmark-tree-name" tabindex="0">${escapeHtml(base)}</span>${array ? '<span class="mdmark-tree-array">[]</span>' : ""}${required ? '<span class="mdmark-tree-required" aria-label="必須">*</span>' : ""}</span>`;
+}
+
+/** 型のセルの文字を、`a | b` の形なら値ごとのチップ、それ以外はバッジにした HTML を返す */
+export function renderTypeCell(text: string): string {
+  const value = text.trim();
+  if (value === "") {
+    return "";
+  }
+  const parts = value
+    .split("|")
+    .map((part) => part.trim())
+    .filter(Boolean);
+  if (parts.length > 1) {
+    return parts
+      .map(
+        (part) => `<span class="mdmark-type-chip">${escapeHtml(part)}</span>`,
+      )
+      .join(" ");
+  }
+  return `<span class="mdmark-type-badge" data-type="${escapeHtml(value)}">${escapeHtml(value)}</span>`;
+}
+
+/** 階層の行の開閉・パスのコピー・見本の表示を切り替えるボタンの HTML を返す */
+export function renderTreeTools(options: {
+  /** 返すボタン */
+  kind: "toggle" | "copy" | "example";
+  /** 行のパス */
+  path?: string;
+  /** 開いているか */
+  expanded?: boolean;
+  /** 見本の `id` */
+  controls?: string;
+}): string {
+  const { kind, path = "", expanded = true, controls = "" } = options;
+  switch (kind) {
+    case "toggle":
+      return `<button class="mdmark-tree-toggle mdmark-table-tree-toggle" type="button" aria-expanded="${expanded}" aria-label="${escapeHtml(path)} を${expanded ? "畳む" : "開く"}">${iconSvg("chevron-down")}</button>`;
+    case "copy":
+      return `<button class="mdmark-tree-copy" type="button" aria-label="全体のパスをコピー">${iconSvg("copy")}<span class="mdmark-tree-copy-status" role="status"></span></button>`;
+    case "example":
+      return `<button class="mdmark-tree-example-toggle" type="button" aria-expanded="${expanded}" aria-controls="${escapeHtml(controls)}">${expanded ? "見本を隠す" : "見本を表示"}</button>`;
+    default: {
+      const unknown: never = kind;
+      throw new Error(`知らないボタン: ${String(unknown)}`);
+    }
+  }
 }
 
 /** 集計の行（`<tfoot>`）の HTML を返す。計算ごとに 1 行（`sum`・`avg`・`count` の順）で、列の数だけセルを持つ。先頭のセルに計算の名前、集計する列のセルに値を出し、隠している列のセルと出さない計算の行は隠す */
@@ -776,12 +959,220 @@ function renderTableBody(options: TableOptions, id: string): string {
     shownTotals: options.shownTotals,
     openTotals: options.openTotals ?? false,
     openCopy: options.openCopy ?? false,
-    barStyle: options.barStyle ?? "icon",
+    order: options.order,
+    groups: options.headRows ? headGroupsOf(options.headRows) : undefined,
+    groupLabels: options.headRows
+      ? headGroupLabelsOf(options.headRows)
+      : undefined,
+    pinned: options.pin !== undefined ? options.pin + 1 : 0,
+    dragging: options.dragging,
   });
   const panel = options.copyFallback
     ? renderCopyPanel({ id: `${id}-panel`, ...options.copyFallback })
     : "";
-  return `${bar}${panel}<div class="mdmark-table-scroll"><table tabindex="0" aria-label="表"><thead>${head}</thead><tbody>${body}${empty}</tbody>${footer}</table></div>${menus}${drawers.join("")}`;
+  const tableHtml = `<table tabindex="0" aria-label="表"><thead>${head}</thead><tbody>${body}${empty}</tbody>${footer}</table>`;
+  return `${bar}${panel}<div class="mdmark-table-scroll">${options.order ? reorderCellsHtml(tableHtml, options.order) : tableHtml}</div>${menus}${drawers.join("")}`;
+}
+
+/** 表の HTML の各行のセルを、列の順 `order` に並べ直す（セルの数が列の数と同じ行だけ） */
+function reorderCellsHtml(html: string, order: number[]): string {
+  return html.replace(
+    /(<tr\b[^>]*>)([\s\S]*?)(<\/tr>)/g,
+    (whole, open: string, inner: string, close: string) => {
+      const cells = inner.match(/<t([hd])\b[\s\S]*?<\/t\1>/g) ?? [];
+      if (cells.length !== order.length) {
+        return whole;
+      }
+      return `${open}${order.map((column) => cells[column] ?? "").join("")}${close}`;
+    },
+  );
+}
+
+/** 多段の見出しから、最下段の列ごとに、その列を覆う上の段の結合した見出しの `{段}:{位置}` を返す */
+function headGroupsOf(headRows: TableHeadCell[][]): Array<string | undefined> {
+  const bottom = headRows.length - 1;
+  const columns = Math.max(
+    ...headRows.flatMap((row) =>
+      row.map((cell) => cell.column + (cell.colspan ?? 1)),
+    ),
+  );
+  return Array.from({ length: columns }, (_, column) => {
+    for (let row = bottom - 1; row >= 0; row -= 1) {
+      const cell = headRows[row]?.find(
+        (candidate) =>
+          (candidate.colspan ?? 1) > 1 &&
+          candidate.column <= column &&
+          column < candidate.column + (candidate.colspan ?? 1) &&
+          row + (candidate.rowspan ?? 1) - 1 < bottom,
+      );
+      if (cell) {
+        return `${row}:${cell.column}`;
+      }
+    }
+    return undefined;
+  });
+}
+
+/** 多段の見出しの結合した見出しの `{段}:{位置}` から、見出しの文字を引く表を返す */
+function headGroupLabelsOf(
+  headRows: TableHeadCell[][],
+): Record<string, string> {
+  const labels: Record<string, string> = {};
+  headRows.forEach((row, index) => {
+    for (const cell of row) {
+      if ((cell.colspan ?? 1) > 1) {
+        labels[`${index}:${cell.column}`] = plainText(cell.html);
+      }
+    }
+  });
+  return labels;
+}
+
+/** 階層の表のストーリーの HTML（表・見本の表示を切り替えるボタン・見本）を返す */
+function renderTreeTable(options: TableOptions, id: string): string {
+  const columns = options.columns ?? [];
+  const rows = options.rows ?? [];
+  const tree = options.tree ?? 0;
+  const required = options.treeRequired;
+  const keys = rows.map((row) => plainText(row[tree] ?? ""));
+  const plans = planTreeRows(keys);
+  const collapsed = new Set(options.collapsedPaths ?? []);
+  const word = (options.treeFilter ?? "").trim().toLowerCase();
+  const selected = options.selectedPath;
+  const selectedPlan = plans.find((plan) => plan.path === selected);
+  const ancestorsOf = (path: string): string[] => splitKeyPath(path).parents;
+  const hits = new Set(
+    word === ""
+      ? []
+      : plans
+          .filter((plan) => plan.name.toLowerCase().includes(word))
+          .map((plan) => plan.path),
+  );
+  const keep = new Set(
+    [...hits].flatMap((path) => [path, ...ancestorsOf(path)]),
+  );
+  const inScope = (path: string): boolean => {
+    if (!selectedPlan) {
+      return false;
+    }
+    return plans.some(
+      (plan) =>
+        plan.parent === selectedPlan.parent &&
+        (plan.path === path || path.startsWith(`${plan.path}.`)),
+    );
+  };
+  const shownColumns = columns.flatMap((_, column) =>
+    column === required ? [] : [column],
+  );
+  const head = shownColumns
+    .map((column) => `<th>${columns[column] ?? ""}</th>`)
+    .join("");
+  let shown = 0;
+  const body = plans
+    .map((plan) => {
+      const row = plan.source === undefined ? undefined : rows[plan.source];
+      const folded = ancestorsOf(plan.path).some((path) => collapsed.has(path));
+      const hidden = word === "" ? folded : !keep.has(plan.path);
+      if (!hidden && !plan.virtual) {
+        shown += 1;
+      }
+      const isRequired =
+        row !== undefined &&
+        required !== undefined &&
+        ["✓", "true"].includes(plainText(row[required] ?? "").trim());
+      let key = renderTreeKeyCell({
+        name: plan.name,
+        depth: plan.depth,
+        required: isRequired,
+      });
+      if (selectedPlan && inScope(plan.path)) {
+        let count = 0;
+        key = key.replace(/class="mdmark-tree-guide"/g, (match) => {
+          count += 1;
+          return count === selectedPlan.depth
+            ? 'class="mdmark-tree-guide is-active"'
+            : match;
+        });
+      }
+      const tool = plan.hasChildren
+        ? renderTreeTools({
+            kind: "toggle",
+            path: plan.path,
+            expanded: !collapsed.has(plan.path),
+          })
+        : '<span class="mdmark-tree-spacer" aria-hidden="true"></span>';
+      key = key.replace(
+        '<span class="mdmark-tree-name"',
+        `${tool}<span class="mdmark-tree-name"`,
+      );
+      if (hits.has(plan.path)) {
+        key = key.replace(
+          /(<span class="mdmark-tree-name" tabindex="0">)([^<]*)(<\/span>)/,
+          (_whole, open: string, text: string, close: string) => {
+            const at = text.toLowerCase().indexOf(word);
+            return at < 0
+              ? `${open}${text}${close}`
+              : `${open}${text.slice(0, at)}<mark class="mdmark-tree-hit">${text.slice(at, at + word.length)}</mark>${text.slice(at + word.length)}${close}`;
+          },
+        );
+      }
+      key = key.replace(
+        /<\/span>$/,
+        `${renderTreeTools({ kind: "copy" })}</span>`,
+      );
+      const cells = shownColumns
+        .map((column) => {
+          if (column === tree) {
+            return `<td class="mdmark-tree-key">${key}</td>`;
+          }
+          const text = row?.[column] ?? "";
+          if (column === options.treeType && text !== "") {
+            return `<td>${renderTypeCell(plainText(text))}</td>`;
+          }
+          if (column === options.treeDefault && text !== "") {
+            return `<td><span class="mdmark-tree-default">${text}</span></td>`;
+          }
+          return `<td>${row ? text : ""}</td>`;
+        })
+        .join("");
+      const classes = [
+        "mdmark-tree-row",
+        ...(plan.virtual ? ["is-virtual"] : []),
+        ...(plan.hasChildren ? ["has-children"] : []),
+      ].join(" ");
+      return `<tr class="${classes}" data-path="${escapeHtml(plan.path)}" data-parent="${escapeHtml(plan.parent)}" data-depth="${plan.depth}" aria-selected="${plan.path === selected}"${hidden ? " hidden" : ""}>${cells}</tr>`;
+    })
+    .join("");
+  const counted = plans.filter((plan) => !plan.virtual).length;
+  const count = options.features.includes("count")
+    ? `<div class="mdmark-table-bar"><p class="mdmark-table-count" aria-live="polite"><span aria-hidden="true">${shown} / ${counted} 件</span><span class="mdmark-visually-hidden">${counted} 件中 ${shown} 件を表示</span></p></div>`
+    : "";
+  const table = `<div class="mdmark-table" data-kind="${options.kind ?? "default"}" data-features="${options.features.join(" ")}" data-tree="${tree}">${count}<div class="mdmark-table-scroll"><table tabindex="0" aria-label="表"><thead><tr>${head}</tr></thead><tbody>${body}</tbody></table></div></div>`;
+  const example = options.example;
+  if (!example) {
+    return table;
+  }
+  const exampleId = `${id}-example`;
+  const active = example.active ?? 0;
+  const panels = example.tabs.map((tab, index) => {
+    const lines = (tab.lines ?? [])
+      .map((line) => {
+        const linked =
+          index === active && line.path !== undefined && line.path === selected;
+        const path = line.path ? ` data-path="${escapeHtml(line.path)}"` : "";
+        return `<span class="mdmark-code-line mdmark-yaml-line${linked ? " is-linked" : ""}"${path}><span class="mdmark-code-text">${escapeHtml(line.text)}</span></span>`;
+      })
+      .join("\n");
+    return `<div class="mdmark-code"><pre class="mdmark-code-lines"><code class="language-yaml">${lines}</code></pre></div>`;
+  });
+  const tabs = renderTabs({
+    id: `${id}-tabs`,
+    titles: example.tabs.map((tab) => escapeHtml(tab.name)),
+    panels,
+    selected: active,
+  });
+  const hidden = example.hidden === true;
+  return `<div class="mdmark-tree-layout${hidden ? " is-example-hidden" : ""}"><div class="mdmark-tree-bar">${renderTreeTools({ kind: "example", expanded: !hidden, controls: exampleId })}</div>${table}<aside class="mdmark-tree-example" id="${exampleId}" aria-label="見本: ${escapeHtml(example.heading)}"${hidden ? " hidden" : ""}>${tabs}</aside></div>`;
 }
 
 /** 多段の見出しの行を描く。`bottomHeadCells` で決めた列ごとの最下段のセルは `headCell` で、ほかのセルは文字だけで描く */
@@ -832,6 +1223,9 @@ function isFolded(options: TableOptions, hidden: Set<number>): boolean {
 
 /** 表を囲む HTML を返す。`body` を渡すと囲みだけを作り、渡さなければ `columns`・`rows` から表を作る */
 export function renderTable(options: TableOptions): string {
+  if (options.tree !== undefined && options.rows !== undefined) {
+    return renderTreeTable(options, options.id ?? "mdmark-table");
+  }
   const kind = options.kind ?? "default";
   const filters = options.features.includes("filter")
     ? (options.filters ?? [])
@@ -853,6 +1247,8 @@ export function renderTable(options: TableOptions): string {
       : "";
   const check = options.check ?? [];
   const checkAttribute = check.length ? ` data-check="${check.join(" ")}"` : "";
+  const treeAttribute =
+    options.tree !== undefined ? ` data-tree="${options.tree}"` : "";
   const content =
     options.body === undefined
       ? renderTableBody(options, options.id ?? "mdmark-table")
@@ -879,7 +1275,7 @@ export function renderTable(options: TableOptions): string {
     ? ` data-merge-columns="${mergeColumns.join(" ")}"`
     : "";
   if (options.rawCsv === undefined) {
-    return `<div class="mdmark-table${foldedClass}" data-kind="${kind}" data-features="${options.features.join(" ")}"${filterAttribute}${hideAttribute}${totalAttribute}${pinAttribute}${checkAttribute}${mergeAttribute}>${inner}</div>`;
+    return `<div class="mdmark-table${foldedClass}" data-kind="${kind}" data-features="${options.features.join(" ")}"${filterAttribute}${hideAttribute}${totalAttribute}${pinAttribute}${checkAttribute}${treeAttribute}${mergeAttribute}>${inner}</div>`;
   }
   // CSV の表: 表の後ろに元の CSV を置く。帯の右端の RAW のボタンは、表を描いたとき（`body` を渡さないとき）だけ置き、記法の表には `mount` が付ける
   const shown = options.rawShown ?? false;
@@ -895,5 +1291,5 @@ export function renderTable(options: TableOptions): string {
         )
       : inner.replace(/^<table(?=[\s>])/, "<table hidden")
     : inner;
-  return `<div class="mdmark-table${foldedClass}" data-kind="${kind}" data-features="${options.features.join(" ")}" data-source="csv"${viewAttribute}${filterAttribute}${hideAttribute}${totalAttribute}${pinAttribute}${checkAttribute}${mergeAttribute}>${bar}${shownInner}${raw}</div>`;
+  return `<div class="mdmark-table${foldedClass}" data-kind="${kind}" data-features="${options.features.join(" ")}" data-source="csv"${viewAttribute}${filterAttribute}${hideAttribute}${totalAttribute}${pinAttribute}${checkAttribute}${treeAttribute}${mergeAttribute}>${bar}${shownInner}${raw}</div>`;
 }

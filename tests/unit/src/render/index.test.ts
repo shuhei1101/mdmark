@@ -21,6 +21,7 @@ function resolvedConfig(
     libraries,
     tooltips: { placement: "top", diagramPlacement: "bottom" },
     syntax: { url: "https://example.test/hl/" },
+    htmlScripts: { url: "https://example.test/babel.mjs" },
     sideToc: { mode: "hover" },
     colorTheme: "dev-swiss",
     labels: { paramCopy: "今の値を写す" },

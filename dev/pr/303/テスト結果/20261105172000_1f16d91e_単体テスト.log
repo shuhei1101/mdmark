@@ -1,0 +1,936 @@
+$ npm run test:unit
+
+> test:unit
+> vitest run --project 'unit*'
+
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-syntax-table-reorder-key-tree-html-scripts
+
+ ❯ |unit| tests/unit/src/config.test.ts (10 tests | 3 failed) 389ms
+   × test_resolve_config 382ms
+   × test_resolve_config_when_features_given 1ms
+   × test_resolve_config_when_html_scripts_url_given 1ms
+ ❯ |unit| tests/unit/src/tree-logic.test.ts (6 tests | 6 failed) 2672ms
+   × test_split_key_path 420ms
+   × test_plan_tree_rows 135ms
+   × test_plan_tree_rows_when_parent_written_later 242ms
+   × test_yaml_line_paths 341ms
+   × test_yaml_line_paths_when_comments 1278ms
+   × test_filter_tree_rows 255ms
+ ❯ |unit| tests/unit/src/render/syntax/table-cells.test.ts (5 tests | 1 failed) 47ms
+   × test_header_groups_of 2ms
+ ❯ |unit| tests/unit/src/parts/table.test.ts (34 tests | 8 failed) 2771ms
+   × test_render_table_when_all_features 10ms
+   × test_render_table_bar 1ms
+   × test_render_table_settings 1ms
+   × test_render_table_settings_when_reorder_only 1ms
+   × test_render_table_settings_when_groups 0ms
+   × test_render_tree_key_cell 0ms
+   × test_render_type_cell 0ms
+   × test_render_tree_tools 0ms
+ ❯ |unit| tests/unit/src/render/scope-css.test.ts (5 tests | 5 failed) 3300ms
+   × test_scope_css 583ms
+   × test_scope_css_when_scope_selector 1744ms
+   × test_scope_css_when_at_rules 64ms
+   × test_scope_css_when_strings_and_comments 304ms
+   × test_scope_css_when_style_end_tag 603ms
+ ❯ |unit-browser (chromium)| tests/unit/src/interact/table-settings.browser.test.ts (4 tests | 4 failed) 1535ms
+   × test_attach_table_settings_when_dragged 1013ms
+   × test_attach_table_settings_when_arrow_key 158ms
+   × test_attach_table_settings_when_group_boundary 197ms
+   × test_attach_table_settings_when_hidden 165ms
+stderr | tests/unit/src/interact/table-tree.browser.test.ts > test_attach_table_tree_when_filtered
+[Error: ResizeObserver loop completed with undelivered notifications.]
+ ❯ |unit-browser (chromium)| tests/unit/src/interact/table-tree.browser.test.ts (5 tests | 5 failed) 3926ms
+   × test_attach_table_tree_when_folded 2702ms
+   × test_attach_table_tree_when_selected 230ms
+   × test_attach_table_tree_when_filtered 378ms
+   × test_attach_table_tree_when_copied 449ms
+   × test_attach_table_tree_when_example_hidden 167ms
+ ❯ |unit-browser (chromium)| tests/unit/src/mount.browser.test.ts (38 tests | 2 failed) 4166ms
+   × test_mount_when_columns_changed 569ms
+   × test_mount_when_range_scripts 460ms
+ ❯ |unit-browser (chromium)| tests/unit/src/interact/tables.browser.test.ts (52 tests | 6 failed) 4647ms
+   × test_attach_tables_when_columns_toggled 360ms
+   × test_attach_tables_when_fold_column_hidden 382ms
+   × test_can_move_column 212ms
+   × test_move_column 244ms
+   × test_attach_tables_when_columns_notified 215ms
+   × test_attach_tables_when_columns_callback_throws 249ms
+ ❯ |unit| tests/unit/src/render/syntax/table-tree.test.ts (4 tests | 3 failed) 81ms
+   × test_decorate_tree_table 62ms
+   × test_decorate_tree_table_when_columns 10ms
+   × test_link_tree_examples 7ms
+ ❯ |unit| tests/unit/src/render/syntax/html.test.ts (14 tests | 5 failed) 959ms
+   × test_build_embedded_html_when_range_scripts 833ms
+   × test_build_embedded_html_when_range_scripts_off 14ms
+   × test_read_range_scripts 1ms
+   × test_read_range_scripts_when_both_languages 1ms
+   × test_read_range_scripts_when_duplicate 2ms
+ ❯ |unit| tests/unit/src/cli/embed.test.ts (24 tests | 3 failed) 14670ms
+   × test_compile_html_scripts 12ms
+   × test_compile_html_scripts_when_off 0ms
+   × test_compile_html_scripts_when_syntax_error 0ms
+ ❯ |unit-browser (chromium)| tests/unit/src/html-scripts.browser.test.ts (9 tests | 9 failed) 10779ms
+   × test_run_html_scripts 1797ms
+   × test_run_html_scripts_when_js 991ms
+   × test_run_html_scripts_when_invalid 390ms
+   × test_run_html_scripts_when_transpiler_unavailable 727ms
+   × test_run_html_scripts_when_embedded 1050ms
+   × test_run_html_scripts_when_stale 1256ms
+   × test_load_transpiler 2299ms
+   × test_load_transpiler_when_no_transform 938ms
+   × test_wrap_range_script 1331ms
+ ❯ |unit| tests/unit/scripts/baseline.test.ts (19 tests | 1 failed) 43015ms
+   × test_to_browserslist 38244ms
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 61 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/html-scripts.browser.test.ts > test_run_html_scripts
+ FAIL  |unit-browser (chromium)| tests/unit/src/html-scripts.browser.test.ts > test_run_html_scripts
+ FAIL  |unit-browser (chromium)| tests/unit/src/html-scripts.browser.test.ts > test_run_html_scripts_when_js
+ FAIL  |unit-browser (chromium)| tests/unit/src/html-scripts.browser.test.ts > test_run_html_scripts_when_js
+ FAIL  |unit-browser (chromium)| tests/unit/src/html-scripts.browser.test.ts > test_run_html_scripts_when_invalid
+ FAIL  |unit-browser (chromium)| tests/unit/src/html-scripts.browser.test.ts > test_run_html_scripts_when_invalid
+ FAIL  |unit-browser (chromium)| tests/unit/src/html-scripts.browser.test.ts > test_run_html_scripts_when_transpiler_unavailable
+ FAIL  |unit-browser (chromium)| tests/unit/src/html-scripts.browser.test.ts > test_run_html_scripts_when_transpiler_unavailable
+ FAIL  |unit-browser (chromium)| tests/unit/src/html-scripts.browser.test.ts > test_run_html_scripts_when_embedded
+ FAIL  |unit-browser (chromium)| tests/unit/src/html-scripts.browser.test.ts > test_run_html_scripts_when_embedded
+ FAIL  |unit-browser (chromium)| tests/unit/src/html-scripts.browser.test.ts > test_run_html_scripts_when_stale
+ FAIL  |unit-browser (chromium)| tests/unit/src/html-scripts.browser.test.ts > test_run_html_scripts_when_stale
+ FAIL  |unit-browser (chromium)| tests/unit/src/html-scripts.browser.test.ts > test_load_transpiler
+ FAIL  |unit-browser (chromium)| tests/unit/src/html-scripts.browser.test.ts > test_load_transpiler
+ FAIL  |unit-browser (chromium)| tests/unit/src/html-scripts.browser.test.ts > test_load_transpiler_when_no_transform
+ FAIL  |unit-browser (chromium)| tests/unit/src/html-scripts.browser.test.ts > test_load_transpiler_when_no_transform
+ FAIL  |unit-browser (chromium)| tests/unit/src/html-scripts.browser.test.ts > test_wrap_range_script
+ FAIL  |unit-browser (chromium)| tests/unit/src/html-scripts.browser.test.ts > test_wrap_range_script
+ FAIL  |unit-browser (chromium)| tests/unit/src/mount.browser.test.ts > test_mount_when_range_scripts
+TypeError: Failed to fetch dynamically imported module: http://localhost:63316/mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-syntax-table-reorder-key-tree-html-scripts/src/html-scripts.ts?import
+
+Failure screenshots:
+  - .vitest/attachments/failure-screenshots/html-scripts.browser.test.ts/test_run_html_scripts.png
+  - .vitest/attachments/failure-screenshots/html-scripts.browser.test.ts/test_run_html_scripts_when_js.png
+  - .vitest/attachments/failure-screenshots/html-scripts.browser.test.ts/test_run_html_scripts_when_invalid.png
+  - .vitest/attachments/failure-screenshots/html-scripts.browser.test.ts/test_run_html_scripts_when_transpiler_unavailable.png
+  - .vitest/attachments/failure-screenshots/html-scripts.browser.test.ts/test_run_html_scripts_when_embedded.png
+  - .vitest/attachments/failure-screenshots/html-scripts.browser.test.ts/test_run_html_scripts_when_stale.png
+  - .vitest/attachments/failure-screenshots/html-scripts.browser.test.ts/test_load_transpiler.png
+  - .vitest/attachments/failure-screenshots/html-scripts.browser.test.ts/test_load_transpiler_when_no_transform.png
+  - .vitest/attachments/failure-screenshots/html-scripts.browser.test.ts/test_wrap_range_script.png
+  - .vitest/attachments/failure-screenshots/mount.browser.test.ts/test_mount_when_range_scripts.png
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/70]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/mount.browser.test.ts > test_mount_when_columns_changed
+AssertionError: expected "vi.fn()" to be called 1 times, but got 0 times
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/mount.browser.test.ts/test_mount_when_columns_changed.png
+
+ ❯ tests/unit/src/mount.browser.test.ts:910:27
+    908|   )[1]?.click();
+    909|   // 検証
+    910|   expect(onColumnsChange).toHaveBeenCalledTimes(1);
+       |                           ^
+    911|   expect(onColumnsChange).toHaveBeenCalledWith({
+    912|     tableIndex: 0,
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=7098d5b3:5235:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/70]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/table-settings.browser.test.ts > test_attach_table_settings_when_dragged
+Error: テーブル設定のボタンが無い
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/table-settings.browser.test.ts/test_attach_table_settings_when_dragged.png
+
+ ❯ openSettings tests/unit/src/interact/table-settings.browser.test.ts:57:11
+     55|   );
+     56|   if (!toggle) {
+     57|     throw new Error("テーブル設定のボタンが無い");
+       |           ^
+     58|   }
+     59|   toggle.click();
+ ❯ tests/unit/src/interact/table-settings.browser.test.ts:132:20
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=7098d5b3:5235:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/70]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/table-settings.browser.test.ts > test_attach_table_settings_when_arrow_key
+Error: テーブル設定のボタンが無い
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/table-settings.browser.test.ts/test_attach_table_settings_when_arrow_key.png
+
+ ❯ openSettings tests/unit/src/interact/table-settings.browser.test.ts:57:11
+     55|   );
+     56|   if (!toggle) {
+     57|     throw new Error("テーブル設定のボタンが無い");
+       |           ^
+     58|   }
+     59|   toggle.click();
+ ❯ tests/unit/src/interact/table-settings.browser.test.ts:150:20
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=7098d5b3:5235:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/70]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/table-settings.browser.test.ts > test_attach_table_settings_when_group_boundary
+Error: テーブル設定のボタンが無い
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/table-settings.browser.test.ts/test_attach_table_settings_when_group_boundary.png
+
+ ❯ openSettings tests/unit/src/interact/table-settings.browser.test.ts:57:11
+     55|   );
+     56|   if (!toggle) {
+     57|     throw new Error("テーブル設定のボタンが無い");
+       |           ^
+     58|   }
+     59|   toggle.click();
+ ❯ tests/unit/src/interact/table-settings.browser.test.ts:167:20
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=7098d5b3:5235:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/70]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/table-settings.browser.test.ts > test_attach_table_settings_when_hidden
+Error: テーブル設定のボタンが無い
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/table-settings.browser.test.ts/test_attach_table_settings_when_hidden.png
+
+ ❯ openSettings tests/unit/src/interact/table-settings.browser.test.ts:57:11
+     55|   );
+     56|   if (!toggle) {
+     57|     throw new Error("テーブル設定のボタンが無い");
+       |           ^
+     58|   }
+     59|   toggle.click();
+ ❯ tests/unit/src/interact/table-settings.browser.test.ts:182:28
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=7098d5b3:5235:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/70]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/table-tree.browser.test.ts > test_attach_table_tree_when_folded
+Error: 行が無い: aliases[]
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/table-tree.browser.test.ts/test_attach_table_tree_when_folded.png
+
+ ❯ rowOf tests/unit/src/interact/table-tree.browser.test.ts:82:11
+     80|   ].find((candidate) => candidate.dataset.path === path);
+     81|   if (!row) {
+     82|     throw new Error(`行が無い: ${path}`);
+       |           ^
+     83|   }
+     84|   return row;
+ ❯ tests/unit/src/interact/table-tree.browser.test.ts:98:18
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=7098d5b3:5235:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/70]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/table-tree.browser.test.ts > test_attach_table_tree_when_selected
+Error: 行が無い: features.table
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/table-tree.browser.test.ts/test_attach_table_tree_when_selected.png
+
+ ❯ rowOf tests/unit/src/interact/table-tree.browser.test.ts:82:11
+     80|   ].find((candidate) => candidate.dataset.path === path);
+     81|   if (!row) {
+     82|     throw new Error(`行が無い: ${path}`);
+       |           ^
+     83|   }
+     84|   return row;
+ ❯ tests/unit/src/interact/table-tree.browser.test.ts:133:15
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=7098d5b3:5235:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/70]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/table-tree.browser.test.ts > test_attach_table_tree_when_filtered
+AssertionError: expected [] to deeply equal [ 'aliases[]', 'aliases[].id' ]
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/table-tree.browser.test.ts/test_attach_table_tree_when_filtered.png
+
+- Expected
++ Received
+
+- [
+-   "aliases[]",
+-   "aliases[].id",
+- ]
++ []
+
+ ❯ tests/unit/src/interact/table-tree.browser.test.ts:165:28
+    163|   input.dispatchEvent(new Event("input", { bubbles: true }));
+    164|   // 検証
+    165|   expect(shownPaths(root)).toEqual(["aliases[]", "aliases[].id"]);
+       |                            ^
+    166|   expect(root.querySelectorAll("mark.mdmark-tree-hit")).toHaveLength(1…
+    167|   expect(root.querySelector(".mdmark-table-count")?.textContent).toCon…
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=7098d5b3:5235:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/70]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/table-tree.browser.test.ts > test_attach_table_tree_when_copied
+Error: 行が無い: aliases[].id
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/table-tree.browser.test.ts/test_attach_table_tree_when_copied.png
+
+ ❯ rowOf tests/unit/src/interact/table-tree.browser.test.ts:82:11
+     80|   ].find((candidate) => candidate.dataset.path === path);
+     81|   if (!row) {
+     82|     throw new Error(`行が無い: ${path}`);
+       |           ^
+     83|   }
+     84|   return row;
+ ❯ tests/unit/src/interact/table-tree.browser.test.ts:178:16
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=7098d5b3:5235:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/70]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/table-tree.browser.test.ts > test_attach_table_tree_when_example_hidden
+Error: 見本の表示を切り替えるボタンが無い
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/table-tree.browser.test.ts/test_attach_table_tree_when_example_hidden.png
+
+ ❯ tests/unit/src/interact/table-tree.browser.test.ts:199:11
+    197|   );
+    198|   if (!toggle) {
+    199|     throw new Error("見本の表示を切り替えるボタンが無い");
+       |           ^
+    200|   }
+    201|   expect(toggle.textContent?.trim()).toBe("見本を隠す");
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=7098d5b3:5235:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/70]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/tables.browser.test.ts > test_attach_tables_when_columns_toggled
+Error: ボタンが無い: button.mdmark-table-settings-toggle
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/tables.browser.test.ts/test_attach_tables_when_columns_toggled.png
+
+ ❯ findButton tests/unit/src/interact/tables.browser.test.ts:131:11
+    129|   const button = root.querySelector<HTMLButtonElement>(selector);
+    130|   if (!button) {
+    131|     throw new Error(`ボタンが無い: ${selector}`);
+       |           ^
+    132|   }
+    133|   return button;
+ ❯ tests/unit/src/interact/tables.browser.test.ts:815:18
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=7098d5b3:5235:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[12/70]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/tables.browser.test.ts > test_attach_tables_when_fold_column_hidden
+Error: ボタンが無い: button.mdmark-table-settings-toggle
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/tables.browser.test.ts/test_attach_tables_when_fold_column_hidden.png
+
+ ❯ findButton tests/unit/src/interact/tables.browser.test.ts:131:11
+    129|   const button = root.querySelector<HTMLButtonElement>(selector);
+    130|   if (!button) {
+    131|     throw new Error(`ボタンが無い: ${selector}`);
+       |           ^
+    132|   }
+    133|   return button;
+ ❯ columnEyes tests/unit/src/interact/tables.browser.test.ts:1771:3
+ ❯ tests/unit/src/interact/tables.browser.test.ts:1369:3
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=7098d5b3:5235:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[13/70]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/tables.browser.test.ts > test_can_move_column
+TypeError: canMoveColumn is not a function
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/tables.browser.test.ts/test_can_move_column.png
+
+ ❯ tests/unit/src/interact/tables.browser.test.ts:1645:5
+    1643|   // 実行・検証
+    1644|   expect(
+    1645|     canMoveColumn({
+       |     ^
+    1646|       from: { group: "0:1", pinned: false },
+    1647|       to: { group: "0:1", pinned: false },
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=7098d5b3:5235:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[14/70]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/tables.browser.test.ts > test_move_column
+TypeError: moveColumn is not a function
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/tables.browser.test.ts/test_move_column.png
+
+ ❯ tests/unit/src/interact/tables.browser.test.ts:1670:18
+    1668|   const order = [0, 1, 2, 3];
+    1669|   // 実行
+    1670|   const before = moveColumn({ order, column: 3, target: 0, side: "befo…
+       |                  ^
+    1671|   const after = moveColumn({ order, column: 1, target: 2, side: "after…
+    1672|   // 検証
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=7098d5b3:5235:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[15/70]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/tables.browser.test.ts > test_attach_tables_when_columns_notified
+Error: ボタンが無い: button.mdmark-table-settings-toggle
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/tables.browser.test.ts/test_attach_tables_when_columns_notified.png
+
+ ❯ findButton tests/unit/src/interact/tables.browser.test.ts:131:11
+    129|   const button = root.querySelector<HTMLButtonElement>(selector);
+    130|   if (!button) {
+    131|     throw new Error(`ボタンが無い: ${selector}`);
+       |           ^
+    132|   }
+    133|   return button;
+ ❯ columnEyes tests/unit/src/interact/tables.browser.test.ts:1771:3
+ ❯ tests/unit/src/interact/tables.browser.test.ts:1801:21
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=7098d5b3:5235:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[16/70]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/tables.browser.test.ts > test_attach_tables_when_columns_callback_throws
+Error: ボタンが無い: button.mdmark-table-settings-toggle
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/tables.browser.test.ts/test_attach_tables_when_columns_callback_throws.png
+
+ ❯ findButton tests/unit/src/interact/tables.browser.test.ts:131:11
+    129|   const button = root.querySelector<HTMLButtonElement>(selector);
+    130|   if (!button) {
+    131|     throw new Error(`ボタンが無い: ${selector}`);
+       |           ^
+    132|   }
+    133|   return button;
+ ❯ columnEyes tests/unit/src/interact/tables.browser.test.ts:1771:3
+ ❯ tests/unit/src/interact/tables.browser.test.ts:1828:3
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=7098d5b3:5235:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[17/70]⎯
+
+ FAIL  |unit| tests/unit/scripts/baseline.test.ts > test_to_browserslist
+Error: Test timed out in 30000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/unit/scripts/baseline.test.ts:65:1
+     63|
+     64| // 名前と版の間に空白を入れる（正常系）
+     65| test("test_to_browserslist", async () => {
+       | ^
+     66|   // 準備
+     67|   const { toBrowserslist } = await loadBaseline();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[18/70]⎯
+
+ FAIL  |unit| tests/unit/src/config.test.ts > test_resolve_config
+AssertionError: expected { …(7) } to deeply equal { …(8) }
+
+- Expected
++ Received
+
+@@ -15,11 +15,10 @@
+      "gallery": true,
+      "gif": true,
+      "glossary": true,
+      "hints": true,
+      "html": true,
+-     "html-scripts": false,
+      "images": true,
+      "lightbox": true,
+      "media": true,
+      "print": true,
+      "row-details": true,
+@@ -31,13 +30,10 @@
+      "tabs": true,
+      "text-color": true,
+      "toc": true,
+      "tree": true,
+      "views": true,
+-   },
+-   "htmlScripts": {
+-     "url": "https://cdn.jsdelivr.net/npm/@babel/standalone@8.1.1/+esm",
+    },
+    "labels": {
+      "paramCopy": "今の値を写す",
+    },
+    "libraries": {},
+
+ ❯ tests/unit/src/config.test.ts:58:20
+     56|   const resolved = resolveConfig({});
+     57|   // 検証
+     58|   expect(resolved).toEqual({
+       |                    ^
+     59|     features: DEFAULT_FEATURES,
+     60|     libraries: {},
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[19/70]⎯
+
+ FAIL  |unit| tests/unit/src/config.test.ts > test_resolve_config_when_features_given
+AssertionError: expected { print: false, table: true, …(29) } to deeply equal { print: false, table: true, …(30) }
+
+- Expected
++ Received
+
+@@ -13,11 +13,10 @@
+    "gallery": true,
+    "gif": true,
+    "glossary": true,
+    "hints": true,
+    "html": true,
+-   "html-scripts": false,
+    "images": true,
+    "lightbox": true,
+    "media": true,
+    "print": false,
+    "row-details": true,
+
+ ❯ tests/unit/src/config.test.ts:80:29
+     78|   const resolved = resolveConfig({ config });
+     79|   // 検証
+     80|   expect(resolved.features).toEqual({ ...DEFAULT_FEATURES, print: fals…
+       |                             ^
+     81| });
+     82|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[20/70]⎯
+
+ FAIL  |unit| tests/unit/src/config.test.ts > test_resolve_config_when_html_scripts_url_given
+TypeError: Cannot read properties of undefined (reading 'url')
+ ❯ tests/unit/src/config.test.ts:218:54
+    216|   const resolved = configs.map((config) => resolveConfig({ config }));
+    217|   // 検証
+    218|   expect(resolved.map((config) => config.htmlScripts.url)).toEqual([
+       |                                                      ^
+    219|     "/vendor/babel.mjs",
+    220|     DEFAULT_HTML_SCRIPTS_URL,
+ ❯ tests/unit/src/config.test.ts:218:19
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[21/70]⎯
+
+ FAIL  |unit| tests/unit/src/tree-logic.test.ts > test_split_key_path
+Error: Cannot find module '/src/tree-logic.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-syntax-table-reorder-key-tree-html-scripts/tests/unit/src/tree-logic.test.ts
+ ❯ tests/unit/src/tree-logic.test.ts:17:28
+     15| test("test_split_key_path", async () => {
+     16|   // 準備
+     17|   const { splitKeyPath } = await loadTreeLogic();
+       |                            ^
+     18|   // 実行
+     19|   const split = splitKeyPath("aliases[].metadata.alias_type.type");
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[22/70]⎯
+
+ FAIL  |unit| tests/unit/src/tree-logic.test.ts > test_plan_tree_rows
+Error: Cannot find module '/src/tree-logic.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-syntax-table-reorder-key-tree-html-scripts/tests/unit/src/tree-logic.test.ts
+ ❯ tests/unit/src/tree-logic.test.ts:32:28
+     30| test("test_plan_tree_rows", async () => {
+     31|   // 準備
+     32|   const { planTreeRows } = await loadTreeLogic();
+       |                            ^
+     33|   // 実行
+     34|   const rows = planTreeRows(TREE_KEYS);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[23/70]⎯
+
+ FAIL  |unit| tests/unit/src/tree-logic.test.ts > test_plan_tree_rows_when_parent_written_later
+Error: Cannot find module '/src/tree-logic.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-syntax-table-reorder-key-tree-html-scripts/tests/unit/src/tree-logic.test.ts
+ ❯ tests/unit/src/tree-logic.test.ts:58:28
+     56| test("test_plan_tree_rows_when_parent_written_later", async () => {
+     57|   // 準備
+     58|   const { planTreeRows } = await loadTreeLogic();
+       |                            ^
+     59|   // 実行
+     60|   const rows = planTreeRows(["a.b", "a"]);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[24/70]⎯
+
+ FAIL  |unit| tests/unit/src/tree-logic.test.ts > test_yaml_line_paths
+Error: Cannot find module '/src/tree-logic.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-syntax-table-reorder-key-tree-html-scripts/tests/unit/src/tree-logic.test.ts
+ ❯ tests/unit/src/tree-logic.test.ts:71:29
+     69| test("test_yaml_line_paths", async () => {
+     70|   // 準備
+     71|   const { yamlLinePaths } = await loadTreeLogic();
+       |                             ^
+     72|   const lines = [
+     73|     "aliases:",
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[25/70]⎯
+
+ FAIL  |unit| tests/unit/src/tree-logic.test.ts > test_yaml_line_paths_when_comments
+Error: Cannot find module '/src/tree-logic.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-syntax-table-reorder-key-tree-html-scripts/tests/unit/src/tree-logic.test.ts
+ ❯ tests/unit/src/tree-logic.test.ts:98:29
+     96| test("test_yaml_line_paths_when_comments", async () => {
+     97|   // 準備
+     98|   const { yamlLinePaths } = await loadTreeLogic();
+       |                             ^
+     99|   const lines = ["# 説明", "", "note: |", "  a: b", "next: 1"];
+    100|   // 実行
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[26/70]⎯
+
+ FAIL  |unit| tests/unit/src/tree-logic.test.ts > test_filter_tree_rows
+Error: Cannot find module '/src/tree-logic.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-syntax-table-reorder-key-tree-html-scripts/tests/unit/src/tree-logic.test.ts
+ ❯ tests/unit/src/tree-logic.test.ts:109:44
+    107| test("test_filter_tree_rows", async () => {
+    108|   // 準備
+    109|   const { planTreeRows, filterTreeRows } = await loadTreeLogic();
+       |                                            ^
+    110|   const rows = planTreeRows(TREE_KEYS);
+    111|   // 実行
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[27/70]⎯
+
+ FAIL  |unit| tests/unit/src/cli/embed.test.ts > test_compile_html_scripts
+TypeError: compileHtmlScripts is not a function
+ ❯ tests/unit/src/cli/embed.test.ts:505:39
+    503|   const markdown = rangeScriptDoc("ts", TYPED_SCRIPT);
+    504|   // 実行
+    505|   const { scripts, warnings } = await compileHtmlScripts({
+       |                                       ^
+    506|     documents: [
+    507|       { path: "a.md", markdown },
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[28/70]⎯
+
+ FAIL  |unit| tests/unit/src/cli/embed.test.ts > test_compile_html_scripts_when_off
+TypeError: compileHtmlScripts is not a function
+ ❯ tests/unit/src/cli/embed.test.ts:526:29
+    524|   const { compileHtmlScripts } = await loadEmbed();
+    525|   // 実行
+    526|   const { scripts } = await compileHtmlScripts({
+       |                             ^
+    527|     documents: [{ path: "a.md", markdown: rangeScriptDoc("ts", TYPED_S…
+    528|     config: {},
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[29/70]⎯
+
+ FAIL  |unit| tests/unit/src/cli/embed.test.ts > test_compile_html_scripts_when_syntax_error
+TypeError: compileHtmlScripts is not a function
+ ❯ tests/unit/src/cli/embed.test.ts:540:39
+    538|   const markdown = rangeScriptDoc("js", "export default (root) => {");
+    539|   // 実行
+    540|   const { scripts, warnings } = await compileHtmlScripts({
+       |                                       ^
+    541|     documents: [{ path: "docs/broken.md", markdown }],
+    542|     config: { features: { "html-scripts": true } },
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[30/70]⎯
+
+ FAIL  |unit| tests/unit/src/parts/table.test.ts > test_render_table_when_all_features
+AssertionError: expected '<p class="mdmark-table-count" aria-li…' to contain 'mdmark-table-settings-toggle'
+
+Expected: "mdmark-table-settings-toggle"
+Received: "<p class="mdmark-table-count" aria-live="polite"><span aria-hidden="true">3 / 3 件</span><span class="mdmark-visually-hidden">3 件中 3 件を表示</span></p><div class="mdmark-table-tools"><button class="mdmark-table-tool mdmark-columns-toggle is-active" type="button" aria-expanded="false" aria-controls="mdmark-table-columns"><svg class="mdmark-diagram-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="18" height="18" x="3" y="3" rx="2"></rect><path d="M9 3v18"></path><path d="M15 3v18"></path></svg>列設定<span class="mdmark-visually-hidden">（1 列を隠しています）</span></button><button class="mdmark-table-tool mdmark-totals-toggle" type="button" aria-expanded="false" aria-controls="mdmark-table-totals"><svg class="mdmark-diagram-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 7V5a1 1 0 0 0-1-1H6.5a.5.5 0 0 0-.4.8l4.5 6a2 2 0 0 1 0 2.4l-4.5 6a.5.5 0 0 0 .4.8H17a1 1 0 0 0 1-1v-2"></path></svg>集計<span class="mdmark-visually-hidden"></span></button><button class="mdmark-table-tool mdmark-copy" type="button" data-state="idle" aria-expanded="false" aria-controls="mdmark-table-copy"><svg class="mdmark-diagram-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"></rect><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"></path></svg><span class="mdmark-copy-label">表をコピー</span><span class="mdmark-copy-caret" data-icon="chevron-down"><svg class="mdmark-diagram-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg></span></button></div><span class="mdmark-visually-hidden mdmark-table-status" role="status"></span>"
+
+ ❯ tests/unit/src/parts/table.test.ts:144:15
+    142|   const bar = innerHtml(html, 'class="mdmark-table-bar"');
+    143|   expect(bar).toContain("3 / 3 件");
+    144|   expect(bar).toContain("mdmark-table-settings-toggle");
+       |               ^
+    145|   expect(bar).toContain("表をコピー");
+    146|   // 検証: 隠した説明の列の見出し・セル・集計のセル
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[31/70]⎯
+
+ FAIL  |unit| tests/unit/src/parts/table.test.ts > test_render_table_bar
+Error: 開始タグが無い: mdmark-table-settings-toggle
+ ❯ findTag tests/unit/helpers/html.ts:10:11
+      8|   const tag = startTags(html).find((candidate) => candidate.includes(n…
+      9|   if (tag === undefined) {
+     10|     throw new Error(`開始タグが無い: ${needle}`);
+       |           ^
+     11|   }
+     12|   return tag;
+ ❯ tests/unit/src/parts/table.test.ts:192:18
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[32/70]⎯
+
+ FAIL  |unit| tests/unit/src/parts/table.test.ts > test_render_table_settings
+TypeError: renderTableSettings is not a function
+ ❯ tests/unit/src/parts/table.test.ts:911:16
+    909|   const { renderTableSettings } = await loadTable();
+    910|   // 実行
+    911|   const html = renderTableSettings({
+       |                ^
+    912|     id: "t1",
+    913|     columns: ["名前", "型", "既定", "説明"],
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[33/70]⎯
+
+ FAIL  |unit| tests/unit/src/parts/table.test.ts > test_render_table_settings_when_reorder_only
+TypeError: renderTableSettings is not a function
+ ❯ tests/unit/src/parts/table.test.ts:946:16
+    944|   const { renderTableSettings } = await loadTable();
+    945|   // 実行
+    946|   const html = renderTableSettings({
+       |                ^
+    947|     id: "t1",
+    948|     columns: ["名前", "型", "既定", "説明"],
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[34/70]⎯
+
+ FAIL  |unit| tests/unit/src/parts/table.test.ts > test_render_table_settings_when_groups
+TypeError: renderTableSettings is not a function
+ ❯ tests/unit/src/parts/table.test.ts:968:16
+    966|   const { renderTableSettings } = await loadTable();
+    967|   // 実行
+    968|   const html = renderTableSettings({
+       |                ^
+    969|     id: "t1",
+    970|     columns: ["名前", "型", "既定", "必須", "備考"],
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[35/70]⎯
+
+ FAIL  |unit| tests/unit/src/parts/table.test.ts > test_render_tree_key_cell
+TypeError: renderTreeKeyCell is not a function
+ ❯ tests/unit/src/parts/table.test.ts:995:16
+    993|   const { renderTreeKeyCell } = await loadTable();
+    994|   // 実行
+    995|   const html = renderTreeKeyCell({
+       |                ^
+    996|     name: "aliases[]",
+    997|     depth: 1,
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[36/70]⎯
+
+ FAIL  |unit| tests/unit/src/parts/table.test.ts > test_render_type_cell
+TypeError: renderTypeCell is not a function
+ ❯ tests/unit/src/parts/table.test.ts:1015:17
+    1013|   const { renderTypeCell } = await loadTable();
+    1014|   // 実行
+    1015|   const badge = renderTypeCell("bool");
+       |                 ^
+    1016|   const chips = renderTypeCell("ref | custom");
+    1017|   const empty = renderTypeCell("");
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[37/70]⎯
+
+ FAIL  |unit| tests/unit/src/parts/table.test.ts > test_render_tree_tools
+TypeError: renderTreeTools is not a function
+ ❯ tests/unit/src/parts/table.test.ts:1033:18
+    1031|   const { renderTreeTools } = await loadTable();
+    1032|   // 実行
+    1033|   const toggle = renderTreeTools({
+       |                  ^
+    1034|     kind: "toggle",
+    1035|     path: "aliases[]",
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[38/70]⎯
+
+ FAIL  |unit| tests/unit/src/render/scope-css.test.ts > test_scope_css
+Error: Cannot find module '/src/render/scope-css.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-syntax-table-reorder-key-tree-html-scripts/tests/unit/src/render/scope-css.test.ts
+ ❯ tests/unit/src/render/scope-css.test.ts:15:24
+     13| test("test_scope_css", async () => {
+     14|   // 準備
+     15|   const { scopeCss } = await loadScopeCss();
+       |                        ^
+     16|   // 実行
+     17|   const scoped = scopeCss({ css: ".box, p > a { color: red }", scope: …
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[39/70]⎯
+
+ FAIL  |unit| tests/unit/src/render/scope-css.test.ts > test_scope_css_when_scope_selector
+Error: Cannot find module '/src/render/scope-css.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-syntax-table-reorder-key-tree-html-scripts/tests/unit/src/render/scope-css.test.ts
+ ❯ tests/unit/src/render/scope-css.test.ts:27:24
+     25| test("test_scope_css_when_scope_selector", async () => {
+     26|   // 準備
+     27|   const { scopeCss } = await loadScopeCss();
+       |                        ^
+     28|   const css =
+     29|     ":scope.is-open .box { display: block } :root { --x: 1 } body p { …
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[40/70]⎯
+
+ FAIL  |unit| tests/unit/src/render/scope-css.test.ts > test_scope_css_when_at_rules
+Error: Cannot find module '/src/render/scope-css.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-syntax-table-reorder-key-tree-html-scripts/tests/unit/src/render/scope-css.test.ts
+ ❯ tests/unit/src/render/scope-css.test.ts:44:24
+     42| test("test_scope_css_when_at_rules", async () => {
+     43|   // 準備
+     44|   const { scopeCss } = await loadScopeCss();
+       |                        ^
+     45|   const css = [
+     46|     "@import url(x.css);",
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[41/70]⎯
+
+ FAIL  |unit| tests/unit/src/render/scope-css.test.ts > test_scope_css_when_strings_and_comments
+Error: Cannot find module '/src/render/scope-css.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-syntax-table-reorder-key-tree-html-scripts/tests/unit/src/render/scope-css.test.ts
+ ❯ tests/unit/src/render/scope-css.test.ts:69:24
+     67| test("test_scope_css_when_strings_and_comments", async () => {
+     68|   // 準備
+     69|   const { scopeCss } = await loadScopeCss();
+       |                        ^
+     70|   const css = '/* a, b { } */ .a[data-x="1,2"], :is(.b, .c) { content:…
+     71|   // 実行
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[42/70]⎯
+
+ FAIL  |unit| tests/unit/src/render/scope-css.test.ts > test_scope_css_when_style_end_tag
+Error: Cannot find module '/src/render/scope-css.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-syntax-table-reorder-key-tree-html-scripts/tests/unit/src/render/scope-css.test.ts
+ ❯ tests/unit/src/render/scope-css.test.ts:82:24
+     80| test("test_scope_css_when_style_end_tag", async () => {
+     81|   // 準備
+     82|   const { scopeCss } = await loadScopeCss();
+       |                        ^
+     83|   // 実行
+     84|   const scoped = scopeCss({ css: '.a { content: "</style>" }', scope: …
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[43/70]⎯
+
+ FAIL  |unit| tests/unit/src/render/syntax/html.test.ts > test_build_embedded_html_when_range_scripts
+Error: Cannot find module '/src/render/scope-css.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-syntax-table-reorder-key-tree-html-scripts/tests/unit/src/render/syntax/html.test.ts
+ ❯ tests/unit/src/render/syntax/html.test.ts:268:24
+    266| test("test_build_embedded_html_when_range_scripts", async () => {
+    267|   // 準備
+    268|   const { scopeCss } = await loadScopeCss();
+       |                        ^
+    269|   // 実行
+    270|   const { html } = renderDoc(RANGE_SCRIPTS, { "html-scripts": true });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[44/70]⎯
+
+ FAIL  |unit| tests/unit/src/render/syntax/html.test.ts > test_build_embedded_html_when_range_scripts_off
+AssertionError: expected '</div>' to match /<pre[^>]*><code class="language-css"/
+
+- Expected:
+/<pre[^>]*><code class="language-css"/
+
++ Received:
+"</div>"
+
+ ❯ tests/unit/src/render/syntax/html.test.ts:299:17
+    297|   expect(embedded).not.toContain("<template");
+    298|   const after = html.slice(html.indexOf(embedded) + embedded.length);
+    299|   expect(after).toMatch(/<pre[^>]*><code class="language-css"/);
+       |                 ^
+    300|   expect(after).toMatch(/<pre[^>]*><code class="language-ts"/);
+    301| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[45/70]⎯
+
+ FAIL  |unit| tests/unit/src/render/syntax/html.test.ts > test_read_range_scripts
+TypeError: readRangeScripts is not a function
+ ❯ tests/unit/src/render/syntax/html.test.ts:309:16
+    307|   const tokens = await fenceTokens(["html", "css", "ts"]);
+    308|   // 実行
+    309|   const read = readRangeScripts(tokens);
+       |                ^
+    310|   // 検証
+    311|   expect(read.html).toBe(tokens[0]);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[46/70]⎯
+
+ FAIL  |unit| tests/unit/src/render/syntax/html.test.ts > test_read_range_scripts_when_both_languages
+TypeError: readRangeScripts is not a function
+ ❯ tests/unit/src/render/syntax/html.test.ts:323:16
+    321|   const tokens = await fenceTokens(["html", "ts", "js"]);
+    322|   // 実行
+    323|   const read = readRangeScripts(tokens);
+       |                ^
+    324|   // 検証
+    325|   expect(read.script).toBeUndefined();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[47/70]⎯
+
+ FAIL  |unit| tests/unit/src/render/syntax/html.test.ts > test_read_range_scripts_when_duplicate
+TypeError: readRangeScripts is not a function
+ ❯ tests/unit/src/render/syntax/html.test.ts:335:16
+    333|   const tokens = await fenceTokens(["html", "css", "css"]);
+    334|   // 実行
+    335|   const read = readRangeScripts(tokens);
+       |                ^
+    336|   // 検証
+    337|   expect(read.warnings).toHaveLength(1);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[48/70]⎯
+
+ FAIL  |unit| tests/unit/src/render/syntax/table-cells.test.ts > test_header_groups_of
+TypeError: headerGroupsOf is not a function
+ ❯ tests/unit/src/render/syntax/table-cells.test.ts:91:18
+     89|   const plan = planCellMerges({ cells: head, headRows: 2 });
+     90|   // 実行
+     91|   const groups = headerGroupsOf({ head, plan });
+       |                  ^
+     92|   // 検証
+     93|   expect(groups).toEqual([undefined, "0:1", "0:1", "0:1", undefined]);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[49/70]⎯
+
+ FAIL  |unit| tests/unit/src/render/syntax/table-tree.test.ts > test_decorate_tree_table
+AssertionError: expected [] to deeply equal [ 'features', 'features.table', …(3) ]
+
+- Expected
++ Received
+
+- [
+-   "features",
+-   "features.table",
+-   "features.html",
+-   "aliases[]",
+-   "aliases[].id",
+- ]
++ []
+
+ ❯ tests/unit/src/render/syntax/table-tree.test.ts:48:53
+     46|   // 検証
+     47|   const rows = treeRows(html);
+     48|   expect(rows.map((tag) => attr(tag, "data-path"))).toEqual([
+       |                                                     ^
+     49|     "features",
+     50|     "features.table",
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[50/70]⎯
+
+ FAIL  |unit| tests/unit/src/render/syntax/table-tree.test.ts > test_decorate_tree_table_when_columns
+Error: 開始タグが無い: mdmark-type-badge
+ ❯ findTag tests/unit/helpers/html.ts:10:11
+      8|   const tag = startTags(html).find((candidate) => candidate.includes(n…
+      9|   if (tag === undefined) {
+     10|     throw new Error(`開始タグが無い: ${needle}`);
+       |           ^
+     11|   }
+     12|   return tag;
+ ❯ tests/unit/src/render/syntax/table-tree.test.ts:81:10
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[51/70]⎯
+
+ FAIL  |unit| tests/unit/src/render/syntax/table-tree.test.ts > test_link_tree_examples
+Error: 開始タグが無い: class="mdmark-tree-layout"
+ ❯ findTag tests/unit/helpers/html.ts:10:11
+      8|   const tag = startTags(html).find((candidate) => candidate.includes(n…
+      9|   if (tag === undefined) {
+     10|     throw new Error(`開始タグが無い: ${needle}`);
+       |           ^
+     11|   }
+     12|   return tag;
+ ❯ innerHtml tests/unit/helpers/html.ts:31:15
+ ❯ tests/unit/src/render/syntax/table-tree.test.ts:130:18
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[52/70]⎯
+
+
+ Test Files  14 failed | 188 passed (202)
+      Tests  61 failed | 1449 passed (1510)
+   Start at  17:16:31
+   Duration  137.45s (worker 48%, tests 32%, import 17%, transform 4%)
+
+exit=1
+
+# 全件で 30 秒を超えた baseline.test.ts を単独で回した結果（初回の import の時間切れで、この PR の変更と関係しない fail）
+$ npx vitest run --project unit tests/unit/scripts/baseline.test.ts
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-syntax-table-reorder-key-tree-html-scripts
+
+
+ Test Files  1 passed (1)
+      Tests  19 passed (19)
+   Start at  17:20:30
+   Duration  38.66s (tests 73%, import 26%)
+
+exit=0

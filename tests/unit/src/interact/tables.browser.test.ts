@@ -785,7 +785,7 @@ test("test_attach_tables_when_counted", async () => {
   expect(totalRowTexts(root)).toEqual(["合計0", "平均—", "件数0"]);
 });
 
-// 列を隠して既定に戻し、Esc でメニューを閉じる（正常系）
+// テーブル設定のパネルの目のアイコンで列を出し入れし、Esc でパネルを閉じる（正常系）
 test("test_attach_tables_when_columns_toggled", async () => {
   // 準備
   const { attachTables } = await loadTables();
@@ -811,40 +811,33 @@ test("test_attach_tables_when_columns_toggled", async () => {
   for (const cell of [...columnCells(root, 0), ...columnCells(root, 2)]) {
     expect(cell.hasAttribute("hidden")).toBe(false);
   }
-  // 実行・検証: メニューを開く
-  const toggle = findButton(root, "button.mdmark-columns-toggle");
+  // 実行・検証: テーブル設定のパネルを開く
+  const toggle = findButton(root, "button.mdmark-table-settings-toggle");
   toggle.click();
-  const menu = root.querySelector<HTMLElement>(".mdmark-columns-menu");
-  const checkboxes = [
-    ...(menu?.querySelectorAll<HTMLInputElement>('input[type="checkbox"]') ??
-      []),
+  const panel = root.querySelector<HTMLElement>(".mdmark-table-settings");
+  const eyes = [
+    ...(panel?.querySelectorAll<HTMLButtonElement>(
+      "button.mdmark-table-settings-eye",
+    ) ?? []),
   ];
-  expect(menu?.hasAttribute("hidden")).toBe(false);
-  expect(checkboxes).toHaveLength(3);
-  expect(checkboxes[0].disabled).toBe(true);
-  expect(document.activeElement).toBe(checkboxes[1]);
-  // 実行・検証: 2 列目を入れて 3 列目を外す
-  checkboxes[1].click();
-  checkboxes[2].click();
+  expect(panel?.hasAttribute("hidden")).toBe(false);
+  expect(eyes).toHaveLength(3);
+  expect(eyes[0].disabled).toBe(true);
+  expect(document.activeElement).toBe(eyes[1]);
+  // 実行・検証: 目のアイコンで 2 列目を表示して 3 列目を隠す
+  eyes[1].click();
+  eyes[2].click();
   for (const cell of [...columnCells(root, 0), ...columnCells(root, 1)]) {
     expect(cell.hasAttribute("hidden")).toBe(false);
   }
   for (const cell of columnCells(root, 2)) {
     expect(cell.hasAttribute("hidden")).toBe(true);
   }
-  // 実行・検証: リセット
-  findButton(root, "button.mdmark-columns-reset").click();
-  for (const cell of columnCells(root, 1)) {
-    expect(cell.hasAttribute("hidden")).toBe(true);
-  }
-  for (const cell of [...columnCells(root, 0), ...columnCells(root, 2)]) {
-    expect(cell.hasAttribute("hidden")).toBe(false);
-  }
-  // 実行・検証: Esc でメニューを閉じてボタンへフォーカスを戻す
+  // 実行・検証: Esc でパネルを閉じてボタンへフォーカスを戻す
   document.activeElement?.dispatchEvent(
     new KeyboardEvent("keydown", { key: "Escape", bubbles: true }),
   );
-  expect(menu?.hasAttribute("hidden")).toBe(true);
+  expect(panel?.hasAttribute("hidden")).toBe(true);
   expect(document.activeElement).toBe(toggle);
 });
 
@@ -1358,7 +1351,7 @@ test("test_attach_tables_when_folded_with_row_detail", async () => {
   expect(detail?.hasAttribute("hidden")).toBe(false);
 });
 
-// 列設定で最終列を隠すと畳みを外し、前の列を最終列として決め直す（正常系）
+// テーブル設定で最終列を隠すと畳みを外し、前の列を最終列として決め直す（正常系）
 test("test_attach_tables_when_fold_column_hidden", async () => {
   // 準備
   addStyles();
@@ -1372,14 +1365,8 @@ test("test_attach_tables_when_fold_column_hidden", async () => {
   await vi.waitFor(() => {
     expect(table?.classList.contains("is-folded")).toBe(true);
   });
-  // 実行: 列設定で説明のチェックを外す
-  findButton(root, "button.mdmark-columns-toggle").click();
-  const checkboxes = [
-    ...root.querySelectorAll<HTMLInputElement>(
-      '.mdmark-columns-menu input[type="checkbox"]',
-    ),
-  ];
-  checkboxes[2].click();
+  // 実行: テーブル設定で説明を目のアイコンで隠す
+  columnEyes(root)[2]?.click();
   // 検証: 畳みを外し、説明の列を隠す
   await vi.waitFor(() => {
     expect(table?.classList.contains("is-folded")).toBe(false);
@@ -1649,6 +1636,45 @@ test("test_attach_tables_when_row_header_pinned", async () => {
   expect(getComputedStyle(cells[2]).position).not.toBe("sticky");
 });
 
+// 同じ範囲と同じピン止めの側だけを許す（正常系）
+test("test_can_move_column", async () => {
+  // 準備
+  const { canMoveColumn } = await loadLogic();
+  // 実行・検証
+  expect(
+    canMoveColumn({
+      from: { group: "0:1", pinned: false },
+      to: { group: "0:1", pinned: false },
+    }),
+  ).toBe(true);
+  expect(
+    canMoveColumn({
+      from: { group: "0:1", pinned: false },
+      to: { group: undefined, pinned: false },
+    }),
+  ).toBe(false);
+  expect(
+    canMoveColumn({
+      from: { group: undefined, pinned: true },
+      to: { group: undefined, pinned: false },
+    }),
+  ).toBe(false);
+});
+
+// 列を前と後ろへ動かす（正常系）
+test("test_move_column", async () => {
+  // 準備
+  const { moveColumn } = await loadLogic();
+  const order = [0, 1, 2, 3];
+  // 実行
+  const before = moveColumn({ order, column: 3, target: 0, side: "before" });
+  const after = moveColumn({ order, column: 1, target: 2, side: "after" });
+  // 検証
+  expect(before).toEqual([3, 0, 1, 2]);
+  expect(after).toEqual([0, 2, 1, 3]);
+  expect(order).toEqual([0, 1, 2, 3]);
+});
+
 // 縦に結合したセルと 2 段目のセルを選ぶ（正常系）
 test("test_bottom_head_cells", async () => {
   // 準備
@@ -1740,15 +1766,52 @@ function columnsTable(hide?: string): string {
   ].join("\n");
 }
 
-/** 列の表示のメニューを開き、列名のチェックボックスを返す */
-function columnCheckboxes(wrapper: HTMLElement): HTMLInputElement[] {
-  findButton(wrapper, "button.mdmark-columns-toggle").click();
+/** テーブル設定のパネルを開き、列ごとの目のアイコンを返す */
+function columnEyes(wrapper: HTMLElement): HTMLButtonElement[] {
+  findButton(wrapper, "button.mdmark-table-settings-toggle").click();
   return [
-    ...wrapper.querySelectorAll<HTMLInputElement>(
-      '.mdmark-columns-menu input[type="checkbox"]',
+    ...wrapper.querySelectorAll<HTMLButtonElement>(
+      ".mdmark-table-settings button.mdmark-table-settings-eye",
     ),
   ];
 }
+
+// 階層の表のコピーに畳んだ行を含め、キーを全体のパスで書き、補った行を含めない（正常系）
+test("test_attach_tables_when_tree_copied", async () => {
+  // 準備
+  const writeText = vi.fn<(text: string) => Promise<void>>(() =>
+    Promise.resolve(),
+  );
+  stubClipboard(writeText);
+  const { attachTables } = await loadTables();
+  const { root } = createRoot(
+    [
+      "<!-- table: data +copy tree=キー -->",
+      "",
+      "| キー | 説明 |",
+      "| --- | --- |",
+      "| features.table | 表の機能 |",
+      "| aliases[].id | 別名の ID |",
+      "",
+      "<!-- /table -->",
+      "",
+    ].join("\n"),
+  );
+  detachers.push(attachTables(root));
+  findButton(
+    root,
+    'tr[data-path="aliases[]"] button.mdmark-tree-toggle',
+  ).click();
+  // 実行
+  chooseCopyFormat(root, "markdown");
+  // 検証
+  await vi.waitFor(() => {
+    expect(writeText).toHaveBeenCalledTimes(1);
+  });
+  expect(writeText).toHaveBeenCalledWith(
+    "| キー | 説明 |\n| --- | --- |\n| features.table | 表の機能 |\n| aliases[].id | 別名の ID |",
+  );
+});
 
 // 列の表示を切り替えるたびに、表の番号と隠している列の見出しで知らせる（正常系）
 test("test_attach_tables_when_columns_notified", async () => {
@@ -1771,14 +1834,15 @@ test("test_attach_tables_when_columns_notified", async () => {
   // 実行・検証: 付けた時点では知らせない
   detachers.push(attachTables(root, { onColumnsChange }));
   expect(onColumnsChange).not.toHaveBeenCalled();
-  // 実行・検証: 3 つ目の表で `状態` のチェックを外す
-  columnCheckboxes(third)[1]?.click();
+  // 実行・検証: 3 つ目の表のテーブル設定で `状態` を目のアイコンで隠す
+  const thirdEyes = columnEyes(third);
+  thirdEyes[1]?.click();
   expect(onColumnsChange).toHaveBeenLastCalledWith({
     tableIndex: 1,
     hidden: ["状態"],
   });
-  // 実行・検証: リセット
-  findButton(third, "button.mdmark-columns-reset").click();
+  // 実行・検証: もう一度押して表示する
+  thirdEyes[1]?.click();
   expect(onColumnsChange).toHaveBeenLastCalledWith({
     tableIndex: 1,
     hidden: [],
@@ -1797,8 +1861,8 @@ test("test_attach_tables_when_columns_callback_throws", async () => {
   });
   const consoleError = vi.spyOn(console, "error").mockImplementation(() => {});
   detachers.push(attachTables(root, { onColumnsChange }));
-  // 実行: 2 列目のチェックを外す
-  columnCheckboxes(root)[1]?.click();
+  // 実行: 2 列目を目のアイコンで隠す
+  columnEyes(root)[1]?.click();
   // 検証
   for (const cell of columnCells(root, 1)) {
     expect(cell.hasAttribute("hidden")).toBe(true);
@@ -1811,20 +1875,29 @@ test("test_attach_tables_when_columns_callback_throws", async () => {
   );
 });
 
-/** 列設定のボタンのバッジの文字（無ければ null） */
+/** テーブル設定のボタンのバッジの文字（隠していれば null） */
 function badgeText(root: HTMLElement): string | null {
-  const badge = root.querySelector(
-    "button.mdmark-columns-toggle .mdmark-columns-badge",
+  const badge = root.querySelector<HTMLElement>(
+    "button.mdmark-table-settings-toggle .mdmark-table-tool-badge",
   );
-  return badge ? (badge.textContent ?? "") : null;
+  return badge && !badge.hidden ? (badge.textContent ?? "") : null;
 }
 
-/** 列設定のボタンの読み上げの名前（mdmark-visually-hidden の文字） */
+/** テーブル設定のボタンの読み上げの名前 */
 function toggleName(root: HTMLElement): string {
   return (
-    root.querySelector("button.mdmark-columns-toggle .mdmark-visually-hidden")
-      ?.textContent ?? ""
+    root
+      .querySelector("button.mdmark-table-settings-toggle")
+      ?.getAttribute("aria-label") ?? ""
   );
+}
+
+/** テーブル設定のパネルの、元の位置 `column` の列の目のアイコンを押す */
+function clickEye(root: HTMLElement, column: number): void {
+  findButton(
+    root,
+    `.mdmark-table-settings-item[data-column="${column}"] button.mdmark-table-settings-eye`,
+  ).click();
 }
 
 // 列の表示を切り替えるたびにバッジと読み上げの名前を書き換える（正常系）
@@ -1847,28 +1920,20 @@ test("test_attach_tables_when_columns_badge", async () => {
   // 実行・検証: 付けた直後
   detachers.push(attachTables(root));
   expect(badgeText(root)).toBe("1");
-  expect(toggleName(root)).toBe("列設定（1 列を隠しています）");
-  const toggle = findButton(root, "button.mdmark-columns-toggle");
+  expect(toggleName(root)).toBe("テーブル設定（1 列を非表示）");
+  const toggle = findButton(root, "button.mdmark-table-settings-toggle");
   toggle.click();
-  const checkboxes = [
-    ...(root.querySelectorAll<HTMLInputElement>(
-      '.mdmark-columns-menu input[type="checkbox"]',
-    ) ?? []),
-  ];
-  // 実行・検証: 2 列目を入れる
-  checkboxes[1]?.click();
+  // 実行・検証: 2 列目を表示する
+  clickEye(root, 1);
   expect(badgeText(root)).toBeNull();
   expect(toggle.classList.contains("is-active")).toBe(false);
-  expect(toggleName(root)).toBe("列設定");
-  // 実行・検証: 2 列目と 3 列目を外す
-  checkboxes[1]?.click();
-  checkboxes[2]?.click();
+  expect(toggleName(root)).toBe("テーブル設定");
+  // 実行・検証: 2 列目と 3 列目を隠す
+  clickEye(root, 1);
+  clickEye(root, 2);
   expect(badgeText(root)).toBe("2");
-  // 実行・検証: リセット
-  const reset = [
-    ...root.querySelectorAll<HTMLButtonElement>(".mdmark-columns-menu button"),
-  ].find((button) => button.textContent?.includes("リセット"));
-  reset?.click();
+  // 実行・検証: 3 列目を表示する
+  clickEye(root, 2);
   expect(badgeText(root)).toBe("1");
 });
 

@@ -225,6 +225,31 @@ flows:
     test: test_normal_when_blob_and_dynamic_import_blocked
     refs:
       - 'dev/設計書/シナリオ/単一ユースケース/複数の文書を1枚のHTMLにまとめる#scenarios[正常シナリオ（blob: と動的 import を許さない環境で開く）]'
+  - name: 正常系（範囲のスクリプトと CSS）
+    summary: 範囲の `ts` を変換して束ね、文書を移るときに範囲の `destroy` を呼ぶ
+    setup:
+      - name: 範囲のスクリプトを持つフォルダ
+        description: '`features.html-scripts` を `true` にし、`build` に、`<!-- html -->` の範囲に `html`・`css`・`ts` を置いた文書と、範囲を持たない文書の 2 つを指定した設定'
+        notes: '`ts` は箱を押すと根の要素に class `is-open` を付け外しし、`destroy` で `window.__mdmarkDestroyed` を 1 増やす'
+      - name: Mock
+        description: '正常系（blob: と動的 import を許さない環境で開く）と同じ'
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant C as mdmark CLI
+        participant H as 出力の HTML
+        W->>C: mdmark build
+        C->>C: 範囲の ts を esbuild で変え、束ねるスクリプトに加える
+        C->>H: 1 枚の HTML を書く
+        W->>H: 範囲を持つ文書を開き、範囲を持たない文書へ移る
+        H-->>W: 範囲の destroy を呼んでから移った文書を描く
+    expected:
+      - 終了コードが 0 で、範囲を持つ文書の範囲の箱の背景が `css` の色で、押すと根の要素が class `is-open` を持つ
+      - 範囲を持たない文書へ移ると `window.__mdmarkDestroyed` が 1 で、移った先に `style.mdmark-html-style` が無い
+      - 開いてから文書を移り終えるまでに、CSP の違反が 0 件で、`blob:` の URL への要求が 0 件
+    test: test_normal_when_range_scripts
+    refs:
+      - dev/設計書/シナリオ/単一ユースケース/複数の文書を1枚のHTMLにまとめる#scenarios[正常シナリオ（範囲のスクリプトと CSS）]
   - name: 正常系（取り込みとアイコンを埋める）
     summary: まとめる文書の取り込み先と束ねていない名前のアイコンの形を埋め、外へ要求せずに描く
     setup:

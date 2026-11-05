@@ -16,3 +16,19 @@ stories:
         id: embedded-html
     args:
       wide: true
+  - name: WithRangeCss
+    parameters:
+      server:
+        id: embedded-html
+    args:
+      scope: 0
+      css: ".box { background-color: var(--mdmark-color-accent-blue-bg) }"
+      script: '{"lang":"ts","code":"export default (root: HTMLElement) => {}"}'
+  - name: RangeScriptOpened
+    parameters:
+      server:
+        id: embedded-html
+    args:
+      scope: 0
+      css: ".box { display: none } :scope.is-open .box { display: block }"
+      opened: true

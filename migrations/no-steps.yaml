@@ -33,8 +33,8 @@ entries:
     reason: features に省いてよい side-toc と、省いてよい side-toc と、省いてよい aliases と、省いてよい colorTheme を足しただけで、古い設定もそのまま新しい Schema に合う
   - version: next
     schema: mdmark.config.schema.json
-    sha256: e3ee9142ac37db38b732f27cb1fd74092f6b3f9d18dab6bf61aeddc307e65328
-    reason: 省いてよい labels と、features に省いてよい back-to-top・text-color・images・gallery・lightbox・media・gif・cards・footnotes・diagram-resize と、省いてよい assets と、tooltips に省いてよい diagramPlacement を足しただけで、古い設定もそのまま新しい Schema に合う
+    sha256: cf8fb4a2c0e80cbd635b815c2e8769f5c99870d3c085349d4750d2feb14a7d15
+    reason: 省いてよい labels と、features に省いてよい back-to-top・text-color・images・gallery・lightbox・media・gif・cards・footnotes・diagram-resize・html-scripts と、省いてよい html-scripts.url・assets と、tooltips に省いてよい diagramPlacement を足しただけで、古い設定もそのまま新しい Schema に合う
   - version: next
     schema: mdmark.index.schema.json
     sha256: 1cf45f581478557deb004716f1465256615411b9cb89f16f4a2819ec776cf700

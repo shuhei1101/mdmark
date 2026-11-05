@@ -6,6 +6,7 @@ import {
   guideMarkdown,
   replaceAllText,
   saveEditor,
+  TRANSPILER_PATH,
   useVscodeE2E,
 } from "../vscode.ts";
 
@@ -246,4 +247,81 @@ test("test_normal_when_includes", async () => {
   const rerendered = await session.frameWith("h2");
   await expect(rerendered.getByText("書き換えた後の文です。")).toBeVisible();
   await expect(rerendered.getByText("取り込む前の文です。")).toHaveCount(0);
+});
+
+/** 範囲に html・css・ts を置き、ts が箱を押すと根の要素に class `is-open` を付け外しする文書 */
+const RANGE_SCRIPT_MARKDOWN = [
+  "# 範囲のスクリプト",
+  "",
+  "<!-- html -->",
+  "",
+  "```html",
+  '<div class="box">箱</div>',
+  "```",
+  "",
+  "```css",
+  ".box { background-color: rgb(255, 0, 0); }",
+  "```",
+  "",
+  "```ts",
+  "export default (root: HTMLElement): void => {",
+  '  root.querySelector(".box")?.addEventListener("click", () => {',
+  '    root.classList.toggle("is-open");',
+  "  });",
+  "};",
+  "```",
+  "",
+  "<!-- /html -->",
+  "",
+].join("\n");
+
+// 範囲の ts をページの nonce を付けた script 要素で動かし、CSP を広げずに範囲の css と ts を当てる（正常シナリオ（範囲のスクリプトと CSS））
+test("test_normal_when_range_scripts", async () => {
+  // 準備
+  const stub = e2e.stub();
+  const session = await e2e.launch({
+    files: {
+      "guide.md": RANGE_SCRIPT_MARKDOWN,
+      "mdmark.config.yaml": [
+        "features:",
+        "  html-scripts: true",
+        "html-scripts:",
+        `  url: ${stub.origin}${TRANSPILER_PATH}`,
+        "",
+      ].join("\n"),
+    },
+  });
+  await session.openFile("guide.md");
+  // 実行
+  await session.openPreviewWithShortcut();
+  // 検証: 範囲の css と ts
+  const frame = await session.frameWith('.mdmark-html[data-html-scope="0"]');
+  const scope = frame.locator('.mdmark-html[data-html-scope="0"]');
+  const box = scope.locator(".box");
+  await expect(box).toHaveCSS("background-color", "rgb(255, 0, 0)");
+  await expect.poll(() => stub.requests()).toContain(TRANSPILER_PATH);
+  await expect(async () => {
+    await box.click();
+    await expect(scope).toHaveClass(/\bis-open\b/, { timeout: 500 });
+  }).toPass();
+  await expect(frame.locator(".mdmark-notice")).toHaveCount(0);
+  await expect(frame.locator(".mdmark-syntax-warning")).toHaveCount(0);
+  // 検証: CSP は正常シナリオと同じで、blob:・'unsafe-inline'・'unsafe-eval' を足さない
+  const csp =
+    (await frame
+      .locator('meta[http-equiv="Content-Security-Policy"]')
+      .getAttribute("content")) ?? "";
+  const scriptSrc =
+    csp
+      .split("; ")
+      .find((directive) => directive.startsWith("script-src "))
+      ?.split(" ")
+      .slice(1) ?? [];
+  expect(scriptSrc[0]).toMatch(/^'nonce-[^']+'$/);
+  expect(scriptSrc).toContain(stub.origin);
+  expect(scriptSrc).toContain("https://cdn.jsdelivr.net");
+  for (const word of ["blob:", "'unsafe-inline'", "'unsafe-eval'"]) {
+    expect(scriptSrc).not.toContain(word);
+  }
+  expect(scriptSrc).toHaveLength(4);
 });

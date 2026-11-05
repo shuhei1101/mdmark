@@ -302,6 +302,32 @@ flows:
     test: test_normal_when_blob_and_dynamic_import_blocked
     refs:
       - 'dev/設計書/シナリオ/単一ユースケース/文書をHTMLに書き出す#scenarios[正常シナリオ（blob: と動的 import を許さない環境で開く）]'
+  - name: 正常系（範囲のスクリプトと CSS）
+    summary: '範囲の `ts` を変換して束ねたスクリプトに加え、blob: と動的 import を許さない環境でも動かす'
+    setup:
+      - name: 範囲のスクリプトを持つフォルダ
+        description: '`features.html-scripts` を `true` にした設定と、`<!-- html -->` の範囲に `html`・`css`・`ts` のコードブロックを 1 つずつ置いた文書'
+        notes: '`ts` は型の注釈を持つ既定のエクスポートの関数で、箱を押すと根の要素に class `is-open` を付け外しする'
+      - name: Mock
+        description: '正常系（blob: と動的 import を許さない環境で開く）と同じ。外への要求を全て止める'
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant C as mdmark CLI
+        participant H as 出力の HTML
+        W->>C: mdmark export {文書}
+        C->>C: 範囲の ts を esbuild で変え、束ねるスクリプトに加える
+        C->>H: 束ねたスクリプトを script 要素に入れて書く
+        C-->>W: 終了コード 0
+        W->>H: blob: と動的 import を許さない環境で開く
+        H-->>W: 範囲の css と ts を当てた文書
+    expected:
+      - 終了コードが 0 で、HTML の中の `script` 要素が `src` を持たない
+      - 範囲の箱の背景が `css` の色で、押すと根の要素が class `is-open` を持つ
+      - 描き終えるまでに、CSP の違反が 0 件で、`blob:` の URL への要求と外への要求（変換のライブラリを含む）が 0 件
+    test: test_normal_when_range_scripts
+    refs:
+      - dev/設計書/シナリオ/単一ユースケース/文書をHTMLに書き出す#scenarios[正常シナリオ（範囲のスクリプトと CSS）]
   - name: 正常系（取り込みとアイコンを埋める）
     summary: 取り込む文書と束ねていない名前のアイコンの形を埋め、開いたときに外へ要求せずに描く
     setup:
@@ -409,7 +435,7 @@ constraints:
   - item: 文書間のリンク
     constraint: 書いたままの `href` で残す。警告には出さない
   - item: スクリプト
-    constraint: 文書に書いたスクリプトは `mount` のサニタイズで落とし、実行しない。埋める文字列は `</script>` を含んでも HTML の `script` 要素を閉じないように書く
+    constraint: 文書に書いたスクリプトは `mount` のサニタイズで落とし、実行しない（`html-scripts` がオンの文書の範囲の `ts`・`js` は制約「範囲のスクリプト」のとおり動かす）。埋める文字列は `</script>` を含んでも HTML の `script` 要素を閉じないように書く
   - item: 書き出した HTML のサイズ
     constraint: 制限なし
     notes: 'PoC #35 の見本（Chart.js を 1 つ埋めた文書）で 548,910 バイト。配布ファイル 1 つのサイズの上限は jsDelivr が配る `dist/` が対象で、書き出した HTML には当てない'
@@ -444,6 +470,9 @@ constraints:
     constraint: '文書が相対パスで指す動画・音声（拡張子の一覧はインターフェース定義『文書をHTML文字列にする』の制約「動画と音声」）を、出力の HTML と同じフォルダの `{出力のファイル名から拡張子を除いた名前}_files/` へコピーし、文書の Markdown の `src` をそのコピーへの HTML からの相対パスに替える。コピー先の中のパスは、設定ファイルのフォルダ（設定ファイルが無ければ文書のフォルダ）からの相対パスにする。そのフォルダの外にあるファイルは `_files/external/{ファイル名}` にし、名前が重なれば `-1`・`-2` を付ける。同じファイルは 1 回だけコピーする。コピーは HTML を書く前に行い、`_files/` を作れない・書けないときは「出力先へ書けない」で終え、HTML を書かない。前の書き出しが残した `_files/` の中の、今回コピーしないファイルは消さない。読めない動画・音声は書いたまま残して警告に出す。添付のファイルはコピーせず、書いたままのリンクで残す'
   - item: 書き出しの機能のオン・オフ
     constraint: 設定の `features` で `images` か `media` をオフにした文書も、画像の埋め込みと動画・音声のコピーは同じく行う
+  - item: 範囲のスクリプト
+    constraint: 設定と文書の印で `html-scripts` がオンの文書の、`<!-- html -->` の範囲の `ts`・`js` を esbuild で CommonJS に変え（`ts` は型を外す）、範囲のコードの文字から既定のエクスポートの関数を引く表として制約「束ねるスクリプト」の 1 つのスクリプトに加える。開くと起動の処理がその表を `mount` の範囲のスクリプトの処理に渡し、変換のライブラリ（`html-scripts.url`）を読まずに動かす。esbuild が変換できない範囲は束ねずに警告に出し、開いたときその範囲の前に書き方の警告を出す。`blob:` URL と動的 `import()` は使わない
+    notes: 変換は CLI の今の依存の esbuild。PoC 検証（#306）で束ねた 1 つのスクリプトから呼ぶ経路を確かめた
   - item: 埋める取り込み
     constraint: '文書の include のマーカーの取り込み先を、インターフェース定義『文書をHTML文字列にする』の制約「取り込み」と同じパスの解き方でファイルから読み（取り込んだ文書の中のマーカーもたどり、同じファイルは 1 回だけ読む）、キーを書き出す文書のフォルダからのパスにした取り込む文書の表を `opts.includes` として埋める。読むのは設定ファイルのフォルダ（設定ファイルが無ければ文書のフォルダ）の中のファイルだけで、その外を指すパスと読めないファイルは表に入れず、警告に出す（書き出しは止めない。開いたときはそのマーカーの場所に書き方の警告が出る）。文書の `<!-- features: -include -->` の文書は読まない'
   - item: 埋めるアイコン

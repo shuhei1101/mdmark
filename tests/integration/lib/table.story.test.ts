@@ -585,42 +585,49 @@ test("test_count_filtered", async () => {
   await expect(visibleRows(page)).resolves.toBe(2);
 });
 
-// hide= の列を隠し、帯に列設定のボタンを出す（ColumnsHidden）
+// hide= の列を隠し、帯にテーブル設定のアイコンだけのボタンと、隠した列の数のバッジを出す（ColumnsHidden）
 test("test_columns_hidden", async () => {
   // 準備・実行
   const page = await open("columns-hidden");
   // 検証
+  const toggle = page.locator(".mdmark-table-settings-toggle");
+  await expect(toggle.getAttribute("aria-label")).resolves.toBe(
+    "テーブル設定（1 列を非表示）",
+  );
   await expect(
-    page.locator(".mdmark-columns-toggle").innerText(),
-  ).resolves.toContain("列設定");
+    toggle.locator(".mdmark-table-tool-badge").innerText(),
+  ).resolves.toBe("1");
+  await expect(toggle.locator("svg").count()).resolves.toBe(1);
   await expect(
-    page.locator(".mdmark-columns-menu:not([hidden])").count(),
+    page.locator(".mdmark-table-settings:not([hidden])").count(),
   ).resolves.toBe(0);
   const hidden = await hiddenCells(page, 1);
   expect(hidden.every(Boolean)).toBe(true);
   expect((await hiddenCells(page, 0)).some(Boolean)).toBe(false);
 });
 
-// 列設定のメニューを開くと、先頭の列は外せず理由が出る（ColumnsMenuOpen）
+// テーブル設定のパネルを開くと、各行に目のアイコンがあり、先頭の列は隠せず理由が出る（ColumnsMenuOpen）
 test("test_columns_menu_open", async () => {
   // 準備・実行
   const page = await open("columns-menu-open");
   // 検証
-  const menu = page.locator(".mdmark-columns-menu:not([hidden])");
-  await expect(menu.count()).resolves.toBe(1);
-  const boxes = menu.locator("input[type='checkbox']");
-  await expect(boxes.count()).resolves.toBe(3);
-  await expect(boxes.nth(0).isDisabled()).resolves.toBe(true);
-  await expect(boxes.nth(1).isChecked()).resolves.toBe(true);
-  await expect(boxes.nth(2).isChecked()).resolves.toBe(false);
-  await expect(menu.innerText()).resolves.toContain("先頭の列は隠せません");
-  await expect(menu.innerText()).resolves.toContain("リセット");
+  const panel = page.locator(".mdmark-table-settings:not([hidden])");
+  await expect(panel.count()).resolves.toBe(1);
   await expect(
-    page.locator(".mdmark-columns-toggle").getAttribute("aria-expanded"),
+    panel.locator(".mdmark-table-settings-title").innerText(),
+  ).resolves.toBe("表示と並び順");
+  const eyes = panel.locator(".mdmark-table-settings-eye");
+  await expect(eyes.count()).resolves.toBe(3);
+  await expect(eyes.nth(0).isDisabled()).resolves.toBe(true);
+  await expect(eyes.nth(1).getAttribute("aria-pressed")).resolves.toBe("false");
+  await expect(eyes.nth(2).getAttribute("aria-pressed")).resolves.toBe("true");
+  await expect(panel.innerText()).resolves.toContain("先頭の列は隠せません");
+  await expect(
+    page.locator(".mdmark-table-settings-toggle").getAttribute("aria-expanded"),
   ).resolves.toBe("true");
-  // 最後の列を隠していても、表の右端は外側の枠の 1px だけ（表に重なるメニューは隠して測る）
+  // 最後の列を隠していても、表の右端は外側の枠の 1px だけ（表に重なるパネルは隠して測る）
   await page.addStyleTag({
-    content: ".mdmark-columns-menu { display: none; }",
+    content: ".mdmark-table-settings { display: none; }",
   });
   expect((await hiddenCells(page, 2)).every(Boolean)).toBe(true);
   await expect(
@@ -724,7 +731,9 @@ test("test_all_features", async () => {
   const page = await open("all-features");
   // 検証
   await expect(countText(page)).resolves.toBe("3 / 3 件");
-  await expect(page.locator(".mdmark-columns-toggle").count()).resolves.toBe(1);
+  await expect(
+    page.locator(".mdmark-table-settings-toggle").count(),
+  ).resolves.toBe(1);
   await expect(page.locator(".mdmark-copy").count()).resolves.toBe(1);
   await expect(totalRows(page)).resolves.toEqual([["合計", "", "25"]]);
   expect((await hiddenCells(page, 1)).every(Boolean)).toBe(true);
@@ -1410,6 +1419,295 @@ test("test_csv_raw", async () => {
   );
 });
 
+/** テーブル設定の一覧の項目の列名を、並んだ順に返す */
+function settingsNames(page: Page): Promise<string[]> {
+  return page
+    .locator(".mdmark-table-settings-item")
+    .evaluateAll((items) =>
+      items.map((item) => (item as HTMLElement).dataset.name ?? ""),
+    );
+}
+
+// `+reorder +columns` の表でパネルを開くと、各行につまみと目のアイコンがある（SettingsOpenReorder）
+test("test_settings_open_reorder", async () => {
+  // 準備・実行
+  const page = await open("settings-open-reorder");
+  // 検証
+  const panel = page.locator(".mdmark-table-settings:not([hidden])");
+  await expect(
+    panel.locator(".mdmark-table-settings-title").innerText(),
+  ).resolves.toBe("表示と並び順");
+  await expect(settingsNames(page)).resolves.toEqual([
+    "名前",
+    "型",
+    "既定",
+    "説明",
+  ]);
+  await expect(
+    panel.locator(".mdmark-table-settings-grip").count(),
+  ).resolves.toBe(4);
+  await expect(
+    panel.locator(".mdmark-table-settings-eye").count(),
+  ).resolves.toBe(4);
+  await expect(
+    panel
+      .locator(".mdmark-table-settings-grip")
+      .nth(0)
+      .getAttribute("draggable"),
+  ).resolves.toBe("true");
+  await expect(pageOverflows(page)).resolves.toBe(false);
+});
+
+// `+reorder` だけの表のパネルは題が `並び順` で、目のアイコンを出さない（SettingsReorderOnly）
+test("test_settings_reorder_only", async () => {
+  // 準備・実行
+  const page = await open("settings-reorder-only");
+  // 検証
+  const panel = page.locator(".mdmark-table-settings:not([hidden])");
+  await expect(
+    panel.locator(".mdmark-table-settings-title").innerText(),
+  ).resolves.toBe("並び順");
+  await expect(
+    panel.locator(".mdmark-table-settings-eye").count(),
+  ).resolves.toBe(0);
+  await expect(
+    panel.locator(".mdmark-table-settings-grip").count(),
+  ).resolves.toBe(4);
+});
+
+// 説明を名前の上へドラッグしている間、説明の行を薄くし、名前の上の境に線を出す（ReorderDragging）
+test("test_reorder_dragging", async () => {
+  // 準備・実行
+  const page = await open("reorder-dragging");
+  // 検証
+  const item = (column: number) =>
+    page.locator(`.mdmark-table-settings-item[data-column="${column}"]`);
+  await expect(
+    item(3).evaluate((el) => el.classList.contains("is-dragging")),
+  ).resolves.toBe(true);
+  await expect(
+    item(0).evaluate((el) => el.classList.contains("is-drop-before")),
+  ).resolves.toBe(true);
+  const opacity = await item(3).evaluate((el) =>
+    Number(getComputedStyle(el).opacity),
+  );
+  expect(opacity).toBeLessThan(1);
+  await expect(
+    item(0).evaluate((el) => getComputedStyle(el).boxShadow),
+  ).resolves.toContain("inset");
+  await expect(
+    item(1).evaluate((el) => getComputedStyle(el).boxShadow),
+  ).resolves.toBe("none");
+});
+
+// 説明・名前・既定・型の順に並べ、説明を隠し、ボタンにバッジ `1` を出す（Reordered）
+test("test_reordered", async () => {
+  // 準備・実行
+  const page = await open("reordered");
+  // 検証
+  const order = await page
+    .locator("#storybook-root tbody tr:first-child td")
+    .evaluateAll((cells) =>
+      cells.map((cell) => (cell as HTMLElement).dataset.label),
+    );
+  expect(order).toEqual(["説明", "名前", "既定", "型"]);
+  await expect(settingsNames(page)).resolves.toEqual([
+    "説明",
+    "名前",
+    "既定",
+    "型",
+  ]);
+  expect((await hiddenCells(page, 0)).every(Boolean)).toBe(true);
+  expect((await hiddenCells(page, 1)).some(Boolean)).toBe(false);
+  await expect(
+    page
+      .locator(".mdmark-table-settings-toggle .mdmark-table-tool-badge")
+      .innerText(),
+  ).resolves.toBe("1");
+});
+
+// 2 段の見出しで名前をピン止めした表のパネルを、ピン止めの列・設定の範囲・範囲の外の列に分ける（ReorderGroups）
+test("test_reorder_groups", async () => {
+  // 準備・実行
+  const page = await open("reorder-groups");
+  // 検証
+  await expect(
+    page.locator(".mdmark-table-settings-group").allInnerTexts(),
+  ).resolves.toEqual(["ピン止めの列", "設定", "範囲の外の列"]);
+  const grip = (column: number) =>
+    page.locator(
+      `.mdmark-table-settings-item[data-column="${column}"] .mdmark-table-settings-grip`,
+    );
+  await expect(grip(0).isDisabled()).resolves.toBe(true);
+  await expect(grip(4).isDisabled()).resolves.toBe(true);
+  await expect(grip(1).isDisabled()).resolves.toBe(false);
+  await expect(pinnedColumns(page)).resolves.toEqual([0]);
+});
+
+/** 階層の表の行の `data-path` を、表示しているものだけ上から並べて返す */
+function shownTreePaths(page: Page): Promise<string[]> {
+  return page
+    .locator("#storybook-root tr.mdmark-tree-row")
+    .evaluateAll((rows) =>
+      rows
+        .filter((row) => !(row as HTMLElement).hidden)
+        .map((row) => (row as HTMLElement).dataset.path ?? ""),
+    );
+}
+
+// 表に無い親を薄い斜体で補い、型のバッジとチップ・必須の *・既定を出す（Tree）
+test("test_tree", async () => {
+  // 準備・実行
+  const page = await open("tree");
+  // 検証
+  await expect(shownTreePaths(page)).resolves.toEqual([
+    "features",
+    "features.table",
+    "features.html",
+    "aliases[]",
+    "aliases[].id",
+    "aliases[].metadata",
+    "aliases[].metadata.alias_type",
+    "aliases[].metadata.alias_type.type",
+  ]);
+  const virtual = page.locator(
+    'tr.mdmark-tree-row.is-virtual[data-path="features"] .mdmark-tree-name',
+  );
+  await expect(
+    virtual.evaluate((el) => getComputedStyle(el).fontStyle),
+  ).resolves.toBe("italic");
+  const real = page.locator(
+    'tr.mdmark-tree-row[data-path="features.table"] .mdmark-tree-name',
+  );
+  await expect(
+    real.evaluate((el) => getComputedStyle(el).fontStyle),
+  ).resolves.toBe("normal");
+  await expect(
+    page.locator('.mdmark-type-badge[data-type="bool"]').count(),
+  ).resolves.toBe(2);
+  await expect(page.locator(".mdmark-type-chip").count()).resolves.toBe(2);
+  await expect(page.locator(".mdmark-tree-required").count()).resolves.toBe(1);
+  await expect(page.locator(".mdmark-tree-default").innerText()).resolves.toBe(
+    "true",
+  );
+  await expect(pageOverflows(page)).resolves.toBe(false);
+});
+
+// aliases[] を畳むと、ボタンが閉じた向きになり子孫を隠す（TreeFolded）
+test("test_tree_folded", async () => {
+  // 準備・実行
+  const page = await open("tree-folded");
+  // 検証
+  await expect(shownTreePaths(page)).resolves.toEqual([
+    "features",
+    "features.table",
+    "features.html",
+    "aliases[]",
+  ]);
+  await expect(
+    page
+      .locator('tr[data-path="aliases[]"] button.mdmark-tree-toggle')
+      .getAttribute("aria-expanded"),
+  ).resolves.toBe("false");
+});
+
+// キーの列を id で絞り込むと、aliases[] と aliases[].id だけを出し、id に色を付ける（TreeFiltered）
+test("test_tree_filtered", async () => {
+  // 準備・実行
+  const page = await open("tree-filtered");
+  // 検証
+  await expect(shownTreePaths(page)).resolves.toEqual([
+    "aliases[]",
+    "aliases[].id",
+  ]);
+  const hit = page.locator("mark.mdmark-tree-hit");
+  await expect(hit.innerText()).resolves.toBe("id");
+  const color = await hit.evaluate(
+    (el) => getComputedStyle(el).backgroundColor,
+  );
+  expect(color).not.toBe("rgba(0, 0, 0, 0)");
+});
+
+// features.html の行を選ぶと、同じ親の範囲の縦線を濃くする（TreeSelected）
+test("test_tree_selected", async () => {
+  // 準備・実行
+  const page = await open("tree-selected");
+  // 検証
+  await expect(
+    page.locator('tr[data-path="features.html"]').getAttribute("aria-selected"),
+  ).resolves.toBe("true");
+  const active = await page
+    .locator("tr.mdmark-tree-row")
+    .evaluateAll((rows) =>
+      rows
+        .filter((row) =>
+          row
+            .querySelector(".mdmark-tree-guide")
+            ?.classList.contains("is-active"),
+        )
+        .map((row) => (row as HTMLElement).dataset.path),
+    );
+  expect(active).toEqual(["features.table", "features.html"]);
+  const [activeColor, otherColor] = await page.evaluate(() =>
+    [
+      ".mdmark-tree-guide.is-active",
+      'tr[data-path="aliases[].id"] .mdmark-tree-guide',
+    ].map((selector) => {
+      const guide = document.querySelector(selector);
+      return guide ? getComputedStyle(guide).borderLeftColor : "";
+    }),
+  );
+  expect(activeColor).not.toBe("");
+  expect(activeColor).not.toBe(otherColor);
+});
+
+// 見本を結んだ表で選んだパスの行に、開いているタブの見本で色を付ける（TreeExample）
+test("test_tree_example", async () => {
+  // 準備・実行
+  const page = await open("tree-example");
+  // 検証
+  const linked = page.locator(
+    '.mdmark-tree-example [role="tabpanel"]:not([hidden]) .mdmark-yaml-line.is-linked',
+  );
+  await expect(linked.count()).resolves.toBe(1);
+  await expect(linked.getAttribute("data-path")).resolves.toBe(
+    "aliases[].metadata.alias_type.type",
+  );
+  await expect(
+    page
+      .locator('.mdmark-tree-example [role="tab"][aria-selected="true"]')
+      .innerText(),
+  ).resolves.toContain("エイリアス");
+});
+
+// 選んだキーが開いているタブの見本に無いときは、見本に色を付けない（TreeExampleMissing）
+test("test_tree_example_missing", async () => {
+  // 準備・実行
+  const page = await open("tree-example-missing");
+  // 検証
+  await expect(
+    page.locator(".mdmark-tree-example .mdmark-yaml-line.is-linked").count(),
+  ).resolves.toBe(0);
+  await expect(
+    page
+      .locator('.mdmark-tree-example [role="tab"][aria-selected="true"]')
+      .innerText(),
+  ).resolves.toContain("最小");
+});
+
+// 見本を隠すと、ボタンの文言が `見本を表示` で `aria-expanded="false"`（TreeExampleHidden）
+test("test_tree_example_hidden", async () => {
+  // 準備・実行
+  const page = await open("tree-example-hidden");
+  // 検証
+  const toggle = page.locator("button.mdmark-tree-example-toggle");
+  await expect(toggle.innerText()).resolves.toContain("見本を表示");
+  await expect(toggle.getAttribute("aria-expanded")).resolves.toBe("false");
+  await expect(page.locator(".mdmark-tree-example").isVisible()).resolves.toBe(
+    false,
+  );
+});
+
 /** 帯のボタンの見えている文字（読み上げだけの文字を除く）と、幅・高さ */
 function toolBoxes(page: Page) {
   return page
@@ -1418,7 +1716,7 @@ function toolBoxes(page: Page) {
       buttons.map((button) => {
         const copy = button.cloneNode(true) as HTMLElement;
         for (const hidden of copy.querySelectorAll(
-          ".mdmark-visually-hidden, .mdmark-columns-badge",
+          ".mdmark-visually-hidden, .mdmark-table-tool-badge",
         )) {
           hidden.remove();
         }
@@ -1428,13 +1726,13 @@ function toolBoxes(page: Page) {
           width: rect.width,
           height: rect.height,
           title: button.getAttribute("title"),
-          name: button.textContent ?? "",
+          name: button.getAttribute("aria-label") ?? button.textContent ?? "",
         };
       }),
     );
 }
 
-// 案 A は、列設定とコピーのボタンがアイコンだけで、列設定に隠した列の数のバッジを持つ（ColumnsButtonA）
+// 帯は、テーブル設定とコピーのボタンがアイコンだけで、テーブル設定に隠した列の数のバッジを持つ（ColumnsButtonA）
 test("test_columns_button_a", async () => {
   // 準備・実行
   const page = await open("columns-button-a");
@@ -1445,44 +1743,14 @@ test("test_columns_button_a", async () => {
     expect(button.text).toBe("");
     expect(Math.abs(button.width - button.height)).toBeLessThanOrEqual(1);
   }
-  expect(tools[0]?.title).toBe("列設定");
-  expect(tools[0]?.name).toContain("列設定（1 列を隠しています）");
+  expect(tools[0]?.title).toBe("テーブル設定");
+  expect(tools[0]?.name).toBe("テーブル設定（1 列を非表示）");
   await expect(
-    page.locator(".mdmark-columns-toggle .mdmark-columns-badge").innerText(),
+    page
+      .locator(".mdmark-table-settings-toggle .mdmark-table-tool-badge")
+      .innerText(),
   ).resolves.toBe("1");
   await expect(pageOverflows(page)).resolves.toBe(false);
-});
-
-// 案 B は、帯のボタンがアイコンと語を持つ（ColumnsButtonB）
-test("test_columns_button_b", async () => {
-  // 準備・実行
-  const page = await open("columns-button-b");
-  // 検証
-  const tools = await toolBoxes(page);
-  expect(tools).toHaveLength(2);
-  expect(tools[0]?.text).toContain("列設定");
-  expect(tools[1]?.text).not.toBe("");
-  await expect(page.locator(".mdmark-columns-badge").count()).resolves.toBe(0);
-  await expect(pageOverflows(page)).resolves.toBe(false);
-});
-
-// 案 C は、列設定・集計・コピーを 1 つの「表の設定」のメニューにまとめ、開いている（ColumnsButtonC）
-test("test_columns_button_c", async () => {
-  // 準備・実行
-  const page = await open("columns-button-c");
-  // 検証
-  const tools = await toolBoxes(page);
-  expect(tools).toHaveLength(1);
-  expect(tools[0]?.title).toBe("表の設定");
-  const menu = page.locator(
-    'ul.mdmark-table-settings-menu[aria-label="表の設定"]',
-  );
-  await expect(menu.isVisible()).resolves.toBe(true);
-  const items = (await menu.locator("li").allInnerTexts()).map((text) =>
-    text.trim(),
-  );
-  expect(items).toContain("列設定");
-  expect(items).toContain("表をコピー");
 });
 
 // 列の少ない表は本文の幅いっぱいに広げ、横にスクロールせず、端の影が無い（FillsWidth）

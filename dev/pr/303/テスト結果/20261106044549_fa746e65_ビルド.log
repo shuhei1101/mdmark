@@ -1,0 +1,6 @@
+$ npm run build
+
+> build
+> node scripts/build.ts
+
+-rwxrwxrwx 1 shuhei2441 shuhei2441 612356 Nov  6 04:48 dist/index.js

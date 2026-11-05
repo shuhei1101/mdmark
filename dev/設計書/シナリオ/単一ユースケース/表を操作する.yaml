@@ -27,7 +27,7 @@ scenarios:
       - 2 回押した後、数値の列が上から `2`・`10`・`33` の順で、見出しの `aria-sort` が `ascending`
       - 3 回押した後、数値の列が上から `10`・`2`・`33`（元の並び）で、見出しが `aria-sort` を持たない
       - 表の前後に印の文字が出ていない
-      - 件数・列設定・コピーのボタン、集計の行、行へのリンクが無い（この 5 つは `+機能` を書いた表にだけ付く）
+      - 件数・テーブル設定・コピーのボタン、集計の行、行へのリンクが無い（この 5 つは `+機能` を書いた表にだけ付く）
     test: test_normal
   - name: 正常シナリオ（列の値を選んで絞り込む）
     setup:
@@ -302,24 +302,21 @@ scenarios:
         participant M as mdmark
         P->>M: 設定と Markdown を渡して描かせる
         M-->>P: 説明の列を隠した表を描く
-        U->>P: 表の上の列のボタンを押す
-        P-->>U: 列名のチェックボックスを並べたメニュー
-        U->>P: 説明にチェックを入れる
-        P-->>U: 全ての列を出した表
-        U->>P: 更新日のチェックを外す
+        U->>P: 表の上のテーブル設定のボタンを押す
+        P-->>U: 列名と目のアイコンを並べたテーブル設定のパネル
+        U->>P: 説明の目のアイコンで表示し、更新日の目のアイコンで隠す
         P-->>U: 名前と説明の列を出した表
-        U->>P: 「リセット」を押す
-        P-->>U: 説明の列を隠した表
+        U->>P: Esc を押す
+        P-->>U: パネルを閉じた表
     expected:
       - 描いた直後、説明の列の見出しとセルが表示されておらず、名前と更新日の列が表示されている
-      - 列のボタンは文字を持たないアイコンだけのボタンで、ツールチップと `aria-label` が「列設定」
-      - 描いた直後、列のボタンのアイコンに隠した列の数 `1` のバッジがあり、ボタンの読み上げに「（1 列を隠しています）」が含まれる
-      - メニューの見出しと `aria-label` が列のボタンと同じ「列設定」で、名前・説明・更新日のチェックボックスが並び、説明だけチェックが外れている
-      - 先頭の列（名前）のチェックボックスは外せず（`disabled`）、メニューに `先頭の列は隠せません` が出ている
-      - 説明にチェックを入れた後、全ての列が表示され、列のボタンにバッジが無い
-      - 更新日のチェックを外した後、名前と説明の列が元の位置（1 列目・2 列目）に表示され、更新日の列が表示されていない。バッジが `1`
-      - 「リセット」を押した後、`hide=` のとおり説明の列だけが隠れ、名前と更新日の列が表示されている
-      - Esc でメニューが閉じ、フォーカスが列のボタンへ戻る
+      - テーブル設定のボタンは文字を持たないアイコンだけのボタンで、ツールチップが「テーブル設定」
+      - 描いた直後、ボタンのアイコンに隠した列の数 `1` のバッジがあり、ボタンの読み上げに「（1 列を非表示）」が含まれる
+      - テーブル設定のパネルに名前・説明・更新日の目のアイコンが並び、説明だけが隠した状態になっている
+      - 先頭の列（名前）の目のアイコンは押せず（`disabled`）、パネルの案内に `先頭の列は隠せません` が出ている
+      - 説明を表示し、更新日を隠した後、名前と説明の列が元の位置（1 列目・2 列目）に表示され、更新日の列が表示されていない
+      - 列を隠している間、テーブル設定のボタンに隠した列の数のバッジが出ている
+      - Esc でパネルが閉じ、フォーカスがテーブル設定のボタンへ戻る
     test: test_normal_when_columns_toggled
   - name: 正常シナリオ（列の表示の切り替えを受け取る）
     setup:
@@ -337,20 +334,20 @@ scenarios:
         participant M as mdmark
         P->>M: 設定・onColumnsChange・Markdown を渡して描かせる
         M-->>P: 2 つ目の表の備考の列を隠した文書
-        U->>P: 1 つ目の +columns の表のメニューで説明のチェックを外す
+        U->>P: 1 つ目の +columns の表のテーブル設定で説明を隠す
         M->>P: onColumnsChange({tableIndex: 0, hidden: [説明]})
-        U->>P: 1 つ目の表のメニューで説明にチェックを入れ、更新日・説明の順にチェックを外す
+        U->>P: 1 つ目の表のテーブル設定で説明を表示し、更新日・説明の順に隠す
         M->>P: onColumnsChange({tableIndex: 0, hidden: [説明, 更新日]})
-        U->>P: 2 つ目の +columns の表のメニューで備考にチェックを入れる
+        U->>P: 2 つ目の +columns の表のテーブル設定で備考を表示する
         M->>P: onColumnsChange({tableIndex: 1, hidden: []})
-        U->>P: 2 つ目の表の「リセット」を押す
+        U->>P: 2 つ目の表のテーブル設定で備考をもう一度隠す
         M->>P: onColumnsChange({tableIndex: 1, hidden: [備考]})
     expected:
       - 描いた直後には `onColumnsChange` が呼ばれていない
-      - '説明のチェックを外した後、`onColumnsChange` が `{tableIndex: 0, hidden: ["説明"]}` を受けて呼ばれる'
-      - '備考にチェックを入れた後、`onColumnsChange` が `{tableIndex: 1, hidden: []}` を受けて呼ばれる'
-      - '「リセット」を押した後、`onColumnsChange` が `{tableIndex: 1, hidden: ["備考"]}` を受けて呼ばれる'
-      - '更新日・説明の順にチェックを外した後の最後の通知が `{tableIndex: 0, hidden: ["説明", "更新日"]}`（操作の順ではなく表の列の並びの順）'
+      - '説明を目のアイコンで隠した後、`onColumnsChange` が `{tableIndex: 0, hidden: ["説明"]}` を受けて呼ばれる'
+      - '備考を目のアイコンで表示した後、`onColumnsChange` が `{tableIndex: 1, hidden: []}` を受けて呼ばれる'
+      - '備考をもう一度目のアイコンで隠した後、`onColumnsChange` が `{tableIndex: 1, hidden: ["備考"]}` を受けて呼ばれる'
+      - '更新日・説明の順に目のアイコンで隠した後の最後の通知が `{tableIndex: 0, hidden: ["説明", "更新日"]}`（操作の順ではなく表の列の並びの順）'
     test: test_normal_when_columns_change_notified
   - name: 正常シナリオ（集計の行を読む）
     setup:
@@ -850,6 +847,241 @@ scenarios:
     expected:
       - 行見出しの 1 列目と 2 列目が左端に見えていて、2 列目のピン止めのボタンの `aria-pressed` が `true`
     test: test_normal_when_row_header_pinned
+  - name: 正常シナリオ（列を並べ替える）
+    setup:
+      - name: mdmark を読むページ
+        description: 正常シナリオと同じ
+      - name: 列の並べ替えを付けた表を持つ Markdown
+        description: '`<!-- table: data +reorder +columns -->` 〜 `<!-- /table -->` で囲んだ 4 列 3 行の表と、`+reorder` だけを付けた表と、`+reorder` も `+columns` も付けない `<!-- table: data -->` の表を 1 つずつ持つ文書'
+        notes: 列は左から `名前`・`型`・`既定`・`説明`
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を渡して描かせる
+        M-->>P: 表の上の帯にテーブル設定のボタンを持つ表を描く
+        U->>P: テーブル設定を押す
+        P-->>U: 列の一覧（つまみと目のアイコン）
+        U->>P: 説明のつまみを名前の上へドラッグする
+        M->>M: 列の順を入れ替える
+        P-->>U: 説明の列が先頭の表
+        U->>P: 型のつまみにフォーカスして ↓ キーを押す
+        P-->>U: 型の列が 1 つ右へ動いた表
+        U->>P: 説明の目のアイコンを押す
+        P-->>U: 説明の列を隠した表
+        U->>P: 名前の列の見出しの並べ替えのボタンを押す
+        P-->>U: 行を並べ替えた表（列の順は変わらない）
+    expected:
+      - 見出しには行の並べ替えのボタンだけがあり、列を動かすつまみと列のメニューが無い
+      - 表の上の帯に、アイコンだけで `aria-label` とツールチップが「テーブル設定」のボタンがあり、押すと列の一覧が開き、`aria-expanded` が `true` になる
+      - 一覧の各行に、並べ替えのつまみと、表示・非表示の目のアイコンがある。Markdown に記載した先頭の列（`名前`）の目のアイコンは、並べ替えて先頭でなくなった後も `disabled` で、一覧の下の案内に「先頭の列は隠せません」の理由を出す
+      - ドラッグの後、表の列が `説明`・`名前`・`型`・`既定` の順で、全ての行のセルが見出しと同じ順に動き、一覧も同じ順になっている
+      - 型のつまみで ↓ キーを押した後、列が `説明`・`名前`・`既定`・`型` の順になり、フォーカスが型のつまみに残る
+      - 説明の目のアイコンを押すと、説明の列が隠れ、アイコンの `aria-pressed` が `true`、`aria-label` が「「説明」を表示」になる。テーブル設定のボタンに、隠した列の数 `1` のバッジが出る
+      - 見出しの並べ替えのボタンを押しても列は動かず、行だけが並べ替わる。行を並べ替えた後と絞り込んだ後も、動かした列の順が保たれている
+      - '`+reorder` だけの表の一覧にはつまみだけがあり、目のアイコンが無い。`+reorder` も `+columns` も付けない表にはテーブル設定のボタンが無い'
+      - ページを開き直すと、列は Markdown に記載した順に戻る
+    test: test_normal_when_columns_reordered
+  - name: 正常シナリオ（結合した見出しとピン止めの列を並べ替える）
+    setup:
+      - name: mdmark を読むページ
+        description: 正常シナリオと同じ
+        notes: 描く先の要素の幅は、表が横にスクロールする幅
+      - name: 結合した見出しとピン止めを持つ Markdown
+        description: '`<!-- table: data +reorder +columns header-rows=2 pin=名前 -->` で囲んだ表を持つ文書'
+        notes: 1 段目は `名前`・`設定`（`<<` で 3 列にまたがる）・`備考`。2 段目は `名前`・`型`・`既定`・`必須`・`備考`
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を渡して描かせる
+        M-->>P: 2 段の見出しで、名前の列までを留めた表を描く
+        U->>P: テーブル設定を開く
+        P-->>U: ピン止めの列・設定の範囲・範囲の外の列に分けた列の一覧
+        U->>P: 既定を型の上へドラッグする
+        P-->>U: 設定の見出しの下で列が入れ替わった表
+        U->>P: 型を備考の下へドラッグする
+        P-->>U: 列の順が変わらない表
+    expected:
+      - 列の一覧が、ピン止めの列（名前）・「設定」の範囲（型・既定・必須）・範囲の外の列（備考）に分かれて並んでいる
+      - 既定のドラッグの後、2 段目が `名前`・`既定`・`型`・`必須`・`備考` の順で、1 段目の `設定` は 3 列にまたがったまま
+      - 結合した見出しの範囲の外へのドラッグと、ピン止めした列とピン止めしていない列の境をまたぐドラッグでは、ドロップできる位置の線が出ず、列の順が変わらない
+      - 名前（ピン止めの側の唯一の列）と備考（左隣が範囲）のつまみが `disabled` で、範囲の端の列のつまみで範囲の外へ向かう ↑・↓ キーを押しても列は動かない
+      - 横にスクロールしても、名前の列が左端に留まっている
+    test: test_normal_when_reordered_within_groups
+  - name: 正常シナリオ（キーの列を階層で描く）
+    setup:
+      - name: mdmark を読むページ
+        description: 正常シナリオと同じ
+      - name: 階層の表を持つ Markdown
+        description: '`<!-- table: data tree=キー type=型 required=必須 default=既定 -->` で囲み、キー・型・必須・既定・説明の列を持つ表の文書'
+        notes: キーは `features.table`・`features.html`・`aliases[].id`・`aliases[].metadata.alias_type.type`。`features`・`aliases[]`・`aliases[].metadata`・`aliases[].metadata.alias_type` の行は無い。型は `bool`・`string`・`a \| b` の値、必須は `features.table` だけ `✓`、既定は `features.table` だけ `true`
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を渡して描かせる
+        M->>M: キーをドットと [] で分け、表に無い親の行を補う
+        M-->>P: キーの列を階層で描いた表
+        U->>P: aliases[].metadata.alias_type.type の行のキーにポインターを乗せる
+        P-->>U: 全体のパスのツールチップ
+        U->>P: ⧉ を押す
+        P-->>U: 全体のパスをコピーした知らせ
+    expected:
+      - キーの列に、表に無い親（`features`・`aliases[]`・`aliases[].metadata`・`aliases[].metadata.alias_type`）の行が薄い斜体のキーだけで補われ、補った行の他の列は空
+      - 各行のキーの列は末尾の名前（`table`・`type` など）だけを出し、階層の深さのインデントと縦線で親子を示す
+      - キーの列には行ごとの横線が無く、縦線が行をまたいでつながっている
+      - キーにポインターを乗せたとき、またはキーにフォーカスしたときに、全体のパス `aliases[].metadata.alias_type.type` のツールチップが出る
+      - ⧉ を押すと全体のパスがクリップボードに入り、知らせが出る
+      - 型の列は値ごとに色の違うバッジで、`a \| b` は値ごとのチップで出る
+      - 必須の列は出ず、`features.table` のキーの後ろに赤い * がある
+      - 既定の列は薄い等幅で出て、空のセルに文字が無い
+      - 見出しに行の並べ替えのボタンが無い
+      - マーカーに対応しない表示では、キーの列は記載したとおりの全体のパスで読める
+    test: test_normal_when_tree
+  - name: 正常シナリオ（階層を畳む・開く）
+    setup:
+      - name: mdmark を読むページ
+        description: 正常シナリオと同じ
+      - name: 階層の表を持つ Markdown
+        description: 正常シナリオ（キーの列を階層で描く）と同じ
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を渡して描かせる
+        M-->>P: 子を持つ行に ▾ を出した表（既定は開く）
+        U->>P: aliases[] の行の ▾ を押す
+        P-->>U: aliases[] の子孫を畳んだ表
+        U->>P: aliases[] の行の ▸ を押す
+        P-->>U: 子だけを開き、子の開閉の状態を保った表
+        U->>P: Shift を押しながら aliases[] の ▾ を押す
+        P-->>U: aliases[] と入れ子を全て畳んだ表
+        U->>P: Shift を押しながら aliases[] の ▸ を押す
+        P-->>U: aliases[] と入れ子を全て開いた表
+    expected:
+      - 子を持つ行だけに、縦線の後ろ・キーのすぐ左に ▾ があり、描いた直後は全ての行が見えている
+      - ▾ を押すと子孫の行が隠れ、ボタンが ▸ になり `aria-expanded` が `false`
+      - Shift を押しながら押すと、入れ子の行の開閉もまとめて変わる
+      - ボタンにフォーカスして Enter・Space でも同じように畳む・開く
+      - 畳んだ行も表のコピーと集計には含まれる
+    test: test_normal_when_tree_folded
+  - name: 正常シナリオ（階層の表を絞り込む）
+    setup:
+      - name: mdmark を読むページ
+        description: 正常シナリオと同じ
+      - name: 階層の表を持つ Markdown
+        description: 正常シナリオ（キーの列を階層で描く）の表のマーカーに `filter=キー:text` を加えた文書
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を渡して描かせる
+        U->>P: キーの列の絞り込みに id と入れる
+        M->>M: 末尾の名前が当たった行と、その親の行を残す
+        P-->>U: 絞り込んだ表
+        U->>P: 絞り込みを metadata に変える
+        M->>M: 補った親の行の末尾の名前に当たる
+        P-->>U: 絞り込んだ表
+    expected:
+      - 絞り込みは各行のキーの末尾の名前で照合し、`id` では `aliases[].id` の行と、その親の `aliases[]` の行だけが出ている
+      - 当たった単語 `id` の部分に色が付き、残した親の行 `aliases[]` の文字には付かない
+      - 件数の表示は 1 件で、残した親の行を数えない
+      - '`metadata` では、補った親の行 `aliases[].metadata` が当たった行として色が付いて残り、その親の `aliases[]` も残る。当たった行の子は残らず、件数の表示は補った行を数えないため 0 件'
+      - 絞り込みを解除すると、絞り込む前の開閉の状態に戻る
+    test: test_normal_when_tree_filtered
+  - name: 正常シナリオ（階層の行を選ぶ）
+    setup:
+      - name: mdmark を読むページ
+        description: 正常シナリオと同じ
+      - name: 階層の表を持つ Markdown
+        description: 正常シナリオ（キーの列を階層で描く）と同じ
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を渡して描かせる
+        U->>P: features.html の行を押す
+        P-->>U: 同じ親の範囲の縦線を濃くした表
+        U->>P: features.html の行をもう一度押す
+        P-->>U: 選ぶ前の表
+    expected:
+      - 行を押すと、その行が `aria-selected="true"` になり、同じ親（`features`）を持つ行の範囲のその階層の縦線が濃く引かれる
+      - 別の行を押すと、前の行の選択が解除され、新しい行の範囲の縦線が濃くなる
+      - 同じ行をもう一度押すと選択が解除され、縦線が元の濃さに戻る
+      - 行のキーの ⧉ と ▾ を押しても、行の選択は変わらない
+    test: test_normal_when_tree_row_selected
+  - name: 正常シナリオ（YAML の見本と連動する）
+    setup:
+      - name: mdmark を読むページ
+        description: 正常シナリオと同じ
+      - name: 見本を結んだ階層の表を持つ Markdown
+        description: 正常シナリオ（キーの列を階層で描く）の表のマーカーに `example=設定の見本` を加え、見出し `設定の見本` の下に `<!-- tabs -->` で囲んだ `最小`・`エイリアス` の 2 つのタブを置き、それぞれに `yaml` のコードブロックを 1 つ持つ文書
+        notes: '`最小` の見本は `features.table` だけ、`エイリアス` の見本は `aliases[].id` と `aliases[].metadata.alias_type.type` を持つ'
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を渡して描かせる
+        M-->>P: 表の下に見本のタブを置いた表
+        U->>P: features.table の行を押す
+        P-->>U: 最小の見本の features.table の行に色を付けた表
+        U->>P: エイリアスのタブを選び、見本の aliases の id の行を押す
+        P-->>U: aliases[].id の行を選んだ表
+        U->>P: 見本を隠すのボタンを押す
+        P-->>U: 見本を隠した表
+    expected:
+      - 表の下に、見出し `設定の見本` の下のタブが見本として出ており、既定で表示されている
+      - 表の `features.table` の行を押すと、`最小` の見本の `table:` の行に色が付く
+      - 見本の `id:` の行を押すと、表の `aliases[].id` の行が選ばれる
+      - 選んだキーが開いているタブの見本に無いとき、見本のどの行にも色が付かない
+      - 「見本を隠す」のボタンを押すと見本が隠れ、ボタンの文言が「見本を表示」に、`aria-expanded` が `false` に変わる
+      - マーカーに対応しない表示では、見出し `設定の見本` の下にコードブロックが記載したとおりに出る
+    test: test_normal_when_tree_linked_to_example
+  - name: 異常シナリオ（読めない階層の指定）
+    setup:
+      - name: mdmark を読むページ
+        description: 正常シナリオと同じ
+      - name: 読めない指定の階層の表を持つ Markdown
+        description: 表に無い列名の `tree=キー名`・`tree=` の無い `type=型`・文書に無い見出しの `example=見本` を、表のマーカーごとに 1 つずつ持つ 3 つの表の文書
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を渡して描かせる
+        M->>M: 表に無い列名・tree= の無い引数・無い見出しを見つける
+        M-->>P: 表の上に書き方の警告、表は読めた指定だけで描く
+        P-->>U: 警告と表を表示
+    expected:
+      - 3 つの表の上に、それぞれ読めなかった指定を挙げた書き方の警告がある
+      - '`tree=` に表に無い列名を指定した表は、階層にせず普通の表で描かれている'
+      - '`tree=` の無い `type=` の表は、型の列をバッジにせず文字のまま出している'
+      - 見出しが無い `example=` の表は、階層では描かれ、見本と表示を切り替えるボタンが無い
+    test: test_error_when_tree_options_invalid
   - name: 正常シナリオ（CSV の表）
     setup:
       - name: mdmark を読むページ

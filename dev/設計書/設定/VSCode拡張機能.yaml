@@ -32,7 +32,7 @@ settings:
     type: string
     required: false
     default: mdmark.config.yaml
-    description: 拡張機能が `features`・`libraries`・`side-toc`・`colorTheme` を読む YAML のパス。相対パスは Markdown を含むワークスペースのフォルダから（ワークスペースの外の Markdown は Markdown のフォルダから）解決する
+    description: 拡張機能が `features`・`libraries`・`html-scripts`・`side-toc`・`colorTheme` を読む YAML のパス。相対パスは Markdown を含むワークスペースのフォルダから（ワークスペースの外の Markdown は Markdown のフォルダから）解決する
     reload: immediate
     allowed: 相対パスか絶対パス
     status: planned
@@ -234,3 +234,18 @@ settings:
       - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを開く.ts#constraints[動画・音声とアセットのルートの解決]
     status: planned
     visibility: user
+  - key: html-scripts.url
+    title: 範囲の TypeScript の変換のライブラリの読み込み先（拡張機能が渡す）
+    file: mdmark.config.yaml
+    type: string
+    required: false
+    default: なし（`mount` に渡さず、ライブラリ本体の既定を当てる）
+    description: '`libraries` と同じく、相対 URL は設定ファイルのあるフォルダを基準に解決し、プレビューでは Webview で読める URL、書き出した HTML では `file:` の URL に直してから `mount` の `opts.config.html-scripts.url` に渡す。`http:`・`https:` の URL はそのまま渡し、その origin を CSP の `script-src` に含める'
+    reload: immediate
+    refs:
+      - dev/設計書/設定/ライブラリ本体#settings[html-scripts.url]
+      - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを開く.ts#constraints[CSP]
+    status: planned
+    visibility: user
+    introduced:
+      pr: 303

@@ -1,12 +1,13 @@
 import { readFile } from "node:fs/promises";
 import { dirname, extname, resolve } from "node:path";
-import { build, type Plugin } from "esbuild";
+import { build, type Plugin, transform } from "esbuild";
 import MarkdownIt from "markdown-it";
 import { type MdmarkConfig, resolveConfig } from "../config.ts";
 import { resolveLink } from "../knowledge/paths.ts";
 import { SYNTAX_ATTRIBUTE } from "../parts/code-block.ts";
 import { renderDocument } from "../render/index.ts";
 import { MARK_PATTERN } from "../render/marks.ts";
+import { unescapeHtml } from "../render/syntax/html.ts";
 import { mediaKindOf } from "../render/syntax/images.ts";
 import { findAssetRefs, resolveAssetFile } from "./assets.ts";
 import { ASSET_SCHEME } from "./html.ts";
@@ -196,7 +197,56 @@ export type ViewerEmbeds = {
   syntax?: { core: string; languages: Record<string, string> } | undefined;
   /** ビューの部品を束ねるか */
   view: boolean;
+  /** `compileHtmlScripts` の結果。`source` は範囲のコードの文字、`code` は CommonJS のコード。範囲が無ければ入れない */
+  htmlScripts?: Array<{ source: string; code: string }> | undefined;
 };
+
+/** 描いた HTML の範囲のスクリプトの `template` と、その言語と中身 */
+const RANGE_SCRIPT_TEMPLATE =
+  /<template class="mdmark-html-script" data-lang="(ts|js)">([\s\S]*?)<\/template>/g;
+
+/** 文書ごとに設定と一緒に描き、範囲の `ts`・`js` を esbuild の `transform` で CommonJS に変える。同じコードは 1 回だけ変え、変えられない範囲は警告にする */
+export async function compileHtmlScripts(options: {
+  /** 書き出す文書 */
+  documents: Array<{ path: string; markdown: string }>;
+  /** 設定 */
+  config: MdmarkConfig;
+}): Promise<{
+  scripts: Array<{ source: string; code: string }>;
+  warnings: string[];
+}> {
+  const config = resolveConfig({ config: options.config });
+  const scripts: Array<{ source: string; code: string }> = [];
+  const warnings: string[] = [];
+  const seen = new Set<string>();
+  for (const { path, markdown } of options.documents) {
+    // `html-scripts` がオフの文書は `template` を出さないため、対象にならない
+    const { html } = renderDocument({ markdown, config });
+    for (const match of html.matchAll(RANGE_SCRIPT_TEMPLATE)) {
+      const lang = match[1] === "js" ? "js" : "ts";
+      const source = unescapeHtml((match[2] ?? "").replaceAll("&#39;", "'"));
+      if (seen.has(source)) {
+        continue;
+      }
+      seen.add(source);
+      try {
+        const { code } = await transform(source, {
+          loader: lang,
+          format: "cjs",
+        });
+        scripts.push({ source, code });
+      } catch (error) {
+        const reason = String(
+          error instanceof Error ? error.message : error,
+        ).split("\n")[0];
+        warnings.push(
+          `${path}: 範囲の ${lang} を変換できません（${reason}）。開いたときは書き方の警告になります。`,
+        );
+      }
+    }
+  }
+  return { scripts, warnings };
+}
 
 /** 起動の処理・部品・色分けを静的な `import`、外部ライブラリと拡張をリテラルの動的 `import()` を返す関数で取り込み、`startViewer(document, 埋めたモジュール)` を呼ぶ入口のモジュールのソースを返す */
 export function createViewerEntry(options: {
@@ -233,8 +283,17 @@ export function createViewerEntry(options: {
         )
         .join(", ")} } }`
     : "";
+  // 範囲のスクリプトは、範囲のコードの文字を鍵に、CommonJS のコードを包んだ関数で既定のエクスポートを返す
+  const htmlScripts = embeds.htmlScripts?.length
+    ? `, htmlScripts: new Map([${embeds.htmlScripts
+        .map(
+          ({ source, code }) =>
+            `[${literal(source)}, () => { const module = { exports: {} }; (function (module, exports, require) {\n${code}\n})(module, module.exports, (name) => { throw new Error("範囲のスクリプトでは require を使えません: " + name); }); return module.exports.default; }]`,
+        )
+        .join(", ")}])`
+    : "";
   lines.push(
-    `startViewer(document, { parts: ${embeds.view ? "{ view: viewPart }" : "{}"}${syntax}, libraries: { ${libraries} }, extensions: [${extensions}] });`,
+    `startViewer(document, { parts: ${embeds.view ? "{ view: viewPart }" : "{}"}${syntax}, libraries: { ${libraries} }, extensions: [${extensions}]${htmlScripts} });`,
   );
   return `${lines.join("\n")}\n`;
 }

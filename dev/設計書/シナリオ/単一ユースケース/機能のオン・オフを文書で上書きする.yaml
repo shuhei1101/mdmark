@@ -291,6 +291,29 @@ scenarios:
     test: test_normal_when_footnotes_disabled
     refs:
       - dev/設計書/シナリオ/単一ユースケース/脚注を見る#scenarios[正常シナリオ]
+  - name: 正常シナリオ（範囲のスクリプトを文書でオンにする）
+    setup:
+      - name: mdmark を読むページ
+        description: 正常シナリオと同じ
+        notes: 設定の `features` は `html-scripts` を書かない（既定のオフ）
+      - name: 範囲のスクリプトをオンにする Markdown
+        description: '先頭に `<!-- features: +html-scripts -->` を持ち、`<!-- html -->` の範囲に `html`・`css`・`ts` のコードブロックを 1 つずつ置いた文書'
+      - name: Mock
+        description: 正常シナリオと同じ。加えて、範囲の `ts` の型を外す変換のライブラリを手元のモジュールに差し替える
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を渡して描かせる
+        M->>M: 設定の features に文書のマーカーを重ねる
+        M-->>P: 範囲の css と ts を当てた HTML
+        P-->>U: 文書を表示
+    expected:
+      - 範囲の箱の背景が `css` の色で描かれている
+      - 範囲の `ts` の既定のエクスポートの関数が、範囲の根の要素で 1 回呼ばれている
+      - 本文にマーカーの文字が出ていない
+    test: test_normal_when_range_scripts_enabled_by_document
   - name: 正常シナリオ（新しい記法の機能を外す）
     setup:
       - name: mdmark を読むページ

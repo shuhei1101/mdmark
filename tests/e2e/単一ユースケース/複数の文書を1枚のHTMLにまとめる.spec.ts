@@ -16,7 +16,13 @@ import {
   writeFiles,
   writeSampleDocs,
 } from "../cli.ts";
-import { SYNTAX_ES_ROOT } from "../dist-page.ts";
+import {
+  RANGE_COLOR,
+  RANGE_CSS,
+  RANGE_TS,
+  rangeMarkdown,
+  SYNTAX_ES_ROOT,
+} from "../dist-page.ts";
 import { openStandaloneWithFiles, readMediaSamples } from "../media.ts";
 
 // 3 つの文書を、文書をまたぐ用語と被参照が効く 1 枚にまとめる（正常シナリオ）
@@ -445,4 +451,61 @@ test("test_normal_when_includes_and_icons_embedded", async ({
     page.locator(".mdmark-bundle-side .mdmark-doc-list a", { hasText: "手順" }),
   ).toHaveCount(0);
   expect(opened.externalRequests()).toEqual([]);
+});
+
+// 範囲の ts の型を外して束ね、範囲を持たない文書へ移ると範囲の destroy を呼び、移った先に範囲の css を当てない（正常シナリオ（範囲のスクリプトと CSS））
+test("test_normal_when_range_scripts", async ({ builtRoot, tempDir, page }) => {
+  // 準備
+  const dir = await tempDir();
+  await writeFiles(dir, {
+    "mdmark.config.yaml": [
+      "features:",
+      "  html-scripts: true",
+      "build:",
+      '  include: ["*.md"]',
+      "  entry: README.md",
+      "  out: dist/docs.html",
+      "",
+    ].join("\n"),
+    "README.md": [
+      "# 入口",
+      "",
+      rangeMarkdown({ css: RANGE_CSS, ts: RANGE_TS }),
+    ].join("\n"),
+    "guide.md": [
+      "# ガイド",
+      "",
+      rangeMarkdown({}, '<div class="box">範囲を持たない文書の箱</div>'),
+    ].join("\n"),
+  });
+  // 実行
+  const result = await runCli(builtRoot, ["build"], dir);
+  // 検証
+  expect(result.code).toBe(0);
+  expect(existsSync(join(dir, "dist", "docs.html"))).toBe(true);
+  const opened = await openWithCsp(page, join(dir, "dist", "docs.html"));
+  const article = page.locator("article.mdmark");
+  const scope = article.locator('.mdmark-html[data-html-scope="0"]');
+  const box = scope.locator(".box");
+  await expect(box).toHaveCSS("background-color", RANGE_COLOR);
+  await expect(async () => {
+    await box.click();
+    await expect(scope).toHaveClass(/\bis-open\b/, { timeout: 500 });
+  }).toPass();
+  // 実行・検証: 文書の一覧で範囲を持たない文書へ移る
+  await page
+    .locator('.mdmark-bundle-side .mdmark-doc-list a[href="#/guide.md"]')
+    .click();
+  await expect(article.locator("h1")).toContainText("ガイド");
+  expect(
+    await page.evaluate(() => Reflect.get(window, "__mdmarkDestroyed")),
+  ).toBe(1);
+  await expect(article.locator("style.mdmark-html-style")).toHaveCount(0);
+  await expect(article.locator(".mdmark-html div")).not.toHaveCSS(
+    "background-color",
+    RANGE_COLOR,
+  );
+  expect(await opened.violations()).toEqual([]);
+  expect(opened.blobRequests()).toEqual([]);
+  await opened.close();
 });

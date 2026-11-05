@@ -8,7 +8,11 @@ const loadConfig = () => import("../../../src/config.ts");
 const DEFAULT_SYNTAX_URL =
   "https://cdn.jsdelivr.net/npm/@highlightjs/cdn-assets@11.12.0/es/";
 
-/** この版が知っている機能の既定（`comments` を除いて全てオン） */
+/** 範囲のスクリプトの変換のライブラリの既定の読み込み先 */
+const DEFAULT_HTML_SCRIPTS_URL =
+  "https://cdn.jsdelivr.net/npm/@babel/standalone@8.1.1/+esm";
+
+/** この版が知っている機能の既定（`comments`・`html-scripts` を除いて全てオン） */
 const DEFAULT_FEATURES = {
   print: true,
   table: true,
@@ -33,6 +37,7 @@ const DEFAULT_FEATURES = {
   hints: true,
   views: true,
   comments: false,
+  "html-scripts": false,
   "side-toc": true,
   "back-to-top": true,
   "text-color": true,
@@ -65,6 +70,7 @@ test("test_resolve_config", async () => {
     libraries: {},
     tooltips: { placement: "top", diagramPlacement: "bottom" },
     syntax: { url: DEFAULT_SYNTAX_URL },
+    htmlScripts: { url: DEFAULT_HTML_SCRIPTS_URL },
     sideToc: { mode: "hover" },
     colorTheme: "dev-swiss",
     labels: { paramCopy: "今の値を写す" },
@@ -205,6 +211,26 @@ test("test_resolve_config_when_labels_given", async () => {
     { paramCopy: "今の値を写す" },
     { paramCopy: "今の値を写す" },
   ]);
+});
+
+// 文字列の `html-scripts.url` だけを受け、他の型と無いときは既定にする（正常系）
+test("test_resolve_config_when_html_scripts_url_given", async () => {
+  // 準備
+  const { resolveConfig } = await loadConfig();
+  const configs = [
+    { "html-scripts": { url: "/vendor/babel.mjs" } },
+    { "html-scripts": { url: 1 } },
+    {},
+  ] as unknown as MdmarkConfig[];
+  // 実行
+  const resolved = configs.map((config) => resolveConfig({ config }));
+  // 検証
+  expect(resolved.map((config) => config.htmlScripts.url)).toEqual([
+    "/vendor/babel.mjs",
+    DEFAULT_HTML_SCRIPTS_URL,
+    DEFAULT_HTML_SCRIPTS_URL,
+  ]);
+  expect(resolved[2]?.features["html-scripts"]).toBe(false);
 });
 
 // top だけを受け、他の値と無いときは bottom にする（正常系）

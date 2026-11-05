@@ -110,7 +110,19 @@ export type Stub = {
   close: () => Promise<void>;
 };
 
-/** 配布物とタグ一覧の代役の配信を立てる */
+/** 代役の配信が範囲の `ts`・`js` の変換のライブラリを返す経路。`html-scripts.url` に `{origin}{TRANSPILER_PATH}` を書くと、配布物と同じ origin から読む */
+export const TRANSPILER_PATH = "/babel.mjs";
+
+/** 変換のライブラリ（開発の依存 `@babel/standalone` の UMD）の場所 */
+const TRANSPILER_UMD_PATH = join(
+  REPO_ROOT,
+  "node_modules",
+  "@babel",
+  "standalone",
+  "babel.min.js",
+);
+
+/** 配布物とタグ一覧の代役の配信を立てる。`TRANSPILER_PATH` には、変換のライブラリを既定のエクスポートを持つ ES モジュールに包んで返す */
 export async function startStub(distRoot: string): Promise<Stub> {
   const state: StubState = {
     tags: ["v0.7.0", "v0.6.0", "vscode-v0.1.0"],
@@ -118,7 +130,29 @@ export async function startStub(distRoot: string): Promise<Stub> {
     requests: [],
     tagRequests: [],
   };
-  const server: Server = createStubServer(state, join(distRoot, "dist"));
+  const inner: Server = createStubServer(state, join(distRoot, "dist"));
+  const server: Server = createServer((request, response) => {
+    if (request.url?.split("?")[0] !== TRANSPILER_PATH) {
+      inner.emit("request", request, response);
+      return;
+    }
+    state.requests.push(TRANSPILER_PATH);
+    readFile(TRANSPILER_UMD_PATH, "utf8").then(
+      (body) => {
+        response.writeHead(200, {
+          "Content-Type": "text/javascript; charset=utf-8",
+          "Access-Control-Allow-Origin": "*",
+        });
+        response.end(
+          `const module = { exports: {} };\nconst exports = module.exports;\n${body}\nexport default module.exports;\n`,
+        );
+      },
+      () => {
+        response.writeHead(404);
+        response.end();
+      },
+    );
+  });
   await new Promise<void>((done) => server.listen(0, "127.0.0.1", done));
   const sockets = new Set<import("node:net").Socket>();
   server.on("connection", (socket) => {

@@ -28,6 +28,9 @@ data_models:
       - name: extensions
         type: 'Array<() => Promise<{ default?: unknown }>>'
         description: 拡張のモジュールをリテラルの動的 `import()` で読む関数。設定の `extensions` の順
+      - name: htmlScripts
+        type: Map<string, () => unknown> | undefined
+        description: 範囲のコードの文字から、既定のエクスポートを返す関数を引く表（CLI が esbuild で変えて束ねたもの）
     refs:
       - dev/設計書/インターフェース定義/ライブラリ本体/文書をHTMLに書き出す.ts#constraints[束ねるスクリプト]
     status: planned
@@ -92,7 +95,7 @@ functions:
     title: 埋めたモジュールを用意する
     container: src/viewer/modules.ts
     usecase: 共通
-    summary: 埋めた部品を `setPartModuleLoader`、埋めた色分けの本体と言語を `setEmbeddedSyntax`、埋めた外部ライブラリを `setEmbeddedLibraries` で読み込みに渡し、拡張を 1 つずつ読んで既定の export を `registerExtension` で登録する
+    summary: 埋めた部品を `setPartModuleLoader`、埋めた色分けの本体と言語を `setEmbeddedSyntax`、埋めた外部ライブラリを `setEmbeddedLibraries`、埋めた範囲のスクリプトを `setEmbeddedHtmlScripts` で読み込みに渡し、拡張を 1 つずつ読んで既定の export を `registerExtension` で登録する
     description: '`URL.createObjectURL` と URL を読む動的 `import()` を使わない。`parts` に無い部品（`view`・`comments`）は、呼ぶと拒否する関数を `setPartModuleLoader` で入れ、ページの隣の `view.js`・`comments.js` へ要求しない。`syntax` が無いときは本体を持たない `setEmbeddedSyntax({ languages: {} })` を入れ、色分けのために jsDelivr へ要求しない（色分けせずに描く）。`setEmbeddedLibraries` には `libraries` をそのまま入れ、表に無い外部ライブラリの印は知らせの枠になる。拡張は 1 つずつ `try` で囲んで読み込み（モジュールの評価）と登録をし、例外を投げたものは `console.error` に出して飛ばし（印は知らない印として取り除かれる）、ほかの拡張と描画は続ける'
     kind: 関数
     scope: public

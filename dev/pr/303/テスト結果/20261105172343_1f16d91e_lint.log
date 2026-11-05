@@ -1,0 +1,60 @@
+$ (rc=0; npm run lint || rc=1; npm run typecheck || rc=1; npm --prefix vscode run typecheck || rc=1; exit $rc)
+
+> lint
+> biome check .
+
+tests/unit/src/render/syntax/html.test.ts:258:21 lint/style/useTemplate  FIXABLE  ━━━━━━━━━━━━━━━━━━
+
+  i Template literals are preferred over string concatenation.
+  
+    256 │   const { createParser } = await loadParser();
+    257 │   const markdown = languages
+  > 258 │     .map((lang) => ["```" + lang, `${lang} の中身`, "```", ""].join("\n"))
+        │                     ^^^^^^^^^^^^
+    259 │     .join("\n");
+    260 │   return createParser()
+  
+  i Unsafe fix: Use a template literal.
+  
+    256 256 │     const { createParser } = await loadParser();
+    257 257 │     const markdown = languages
+    258     │ - ····.map((lang)·=>·["```"·+·lang,·`${lang}·の中身`,·"```",·""].join("\n"))
+        258 │ + ····.map((lang)·=>·[`\`\`\`${lang}`,·`${lang}·の中身`,·"```",·""].join("\n"))
+    259 259 │       .join("\n");
+    260 260 │     return createParser()
+  
+
+Checked 644 files in 6s. No fixes applied.
+Found 1 info.
+
+> typecheck
+> tsc --noEmit
+
+tests/unit/src/cli/embed.test.ts(502,11): error TS2339: Property 'compileHtmlScripts' does not exist on type 'typeof import("/mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-syntax-table-reorder-key-tree-html-scripts/src/cli/embed")'.
+tests/unit/src/cli/embed.test.ts(524,11): error TS2339: Property 'compileHtmlScripts' does not exist on type 'typeof import("/mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-syntax-table-reorder-key-tree-html-scripts/src/cli/embed")'.
+tests/unit/src/cli/embed.test.ts(537,11): error TS2339: Property 'compileHtmlScripts' does not exist on type 'typeof import("/mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-syntax-table-reorder-key-tree-html-scripts/src/cli/embed")'.
+tests/unit/src/config.test.ts(218,42): error TS2339: Property 'htmlScripts' does not exist on type 'ResolvedConfig'.
+tests/unit/src/html-scripts.browser.test.ts(10,17): error TS2307: Cannot find module '../../../src/html-scripts.ts' or its corresponding type declarations.
+tests/unit/src/interact/tables.browser.test.ts(1642,11): error TS2339: Property 'canMoveColumn' does not exist on type 'typeof import("/mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-syntax-table-reorder-key-tree-html-scripts/src/table-logic")'.
+tests/unit/src/interact/tables.browser.test.ts(1667,11): error TS2339: Property 'moveColumn' does not exist on type 'typeof import("/mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-syntax-table-reorder-key-tree-html-scripts/src/table-logic")'.
+tests/unit/src/mount.browser.test.ts(1036,20): error TS2307: Cannot find module '../../../src/html-scripts.ts' or its corresponding type declarations.
+tests/unit/src/parts/table.test.ts(909,11): error TS2339: Property 'renderTableSettings' does not exist on type 'typeof import("/mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-syntax-table-reorder-key-tree-html-scripts/src/parts/table")'.
+tests/unit/src/parts/table.test.ts(944,11): error TS2339: Property 'renderTableSettings' does not exist on type 'typeof import("/mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-syntax-table-reorder-key-tree-html-scripts/src/parts/table")'.
+tests/unit/src/parts/table.test.ts(966,11): error TS2339: Property 'renderTableSettings' does not exist on type 'typeof import("/mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-syntax-table-reorder-key-tree-html-scripts/src/parts/table")'.
+tests/unit/src/parts/table.test.ts(993,11): error TS2339: Property 'renderTreeKeyCell' does not exist on type 'typeof import("/mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-syntax-table-reorder-key-tree-html-scripts/src/parts/table")'.
+tests/unit/src/parts/table.test.ts(1013,11): error TS2339: Property 'renderTypeCell' does not exist on type 'typeof import("/mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-syntax-table-reorder-key-tree-html-scripts/src/parts/table")'.
+tests/unit/src/parts/table.test.ts(1031,11): error TS2339: Property 'renderTreeTools' does not exist on type 'typeof import("/mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-syntax-table-reorder-key-tree-html-scripts/src/parts/table")'.
+tests/unit/src/render/scope-css.test.ts(4,35): error TS2307: Cannot find module '../../../../src/render/scope-css.ts' or its corresponding type declarations.
+tests/unit/src/render/syntax/html.test.ts(249,35): error TS2307: Cannot find module '../../../../../src/render/scope-css.ts' or its corresponding type declarations.
+tests/unit/src/render/syntax/html.test.ts(306,11): error TS2339: Property 'readRangeScripts' does not exist on type 'typeof import("/mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-syntax-table-reorder-key-tree-html-scripts/src/render/syntax/html")'.
+tests/unit/src/render/syntax/html.test.ts(320,11): error TS2339: Property 'readRangeScripts' does not exist on type 'typeof import("/mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-syntax-table-reorder-key-tree-html-scripts/src/render/syntax/html")'.
+tests/unit/src/render/syntax/html.test.ts(332,11): error TS2339: Property 'readRangeScripts' does not exist on type 'typeof import("/mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-syntax-table-reorder-key-tree-html-scripts/src/render/syntax/html")'.
+tests/unit/src/render/syntax/table-cells.test.ts(84,27): error TS2339: Property 'headerGroupsOf' does not exist on type 'typeof import("/mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-syntax-table-reorder-key-tree-html-scripts/src/render/syntax/table-cells")'.
+tests/unit/src/tree-logic.test.ts(4,36): error TS2307: Cannot find module '../../../src/tree-logic.ts' or its corresponding type declarations.
+tests/unit/src/tree-logic.test.ts(36,20): error TS7006: Parameter 'row' implicitly has an 'any' type.
+tests/unit/src/tree-logic.test.ts(62,20): error TS7006: Parameter 'row' implicitly has an 'any' type.
+
+> mdmark-vscode@0.1.0 typecheck
+> tsc --noEmit
+
+exit=1

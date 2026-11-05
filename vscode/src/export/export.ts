@@ -7,6 +7,7 @@ import {
   applyColorTheme,
   loadConfig,
   resolveConfigPath,
+  resolveHtmlScripts,
   resolveLibraries,
 } from "../config.ts";
 import { type ExtensionDeps, LAST_VERSION_KEY } from "../deps.ts";
@@ -65,17 +66,19 @@ async function readExportConfig(options: {
   if (load.kind === "missing") {
     return {};
   }
-  const { libraries, ...rest } = load.config;
-  if (libraries === undefined) {
-    return rest;
-  }
+  const { libraries, "html-scripts": htmlScripts, ...rest } = load.config;
+  const configDir = dirname(path);
+  const toUrl = (target: string) => pathToFileURL(target).href;
   return {
     ...rest,
-    libraries: resolveLibraries({
-      libraries,
-      configDir: dirname(path),
-      toUrl: (target) => pathToFileURL(target).href,
-    }),
+    ...(libraries === undefined
+      ? {}
+      : { libraries: resolveLibraries({ libraries, configDir, toUrl }) }),
+    ...(htmlScripts === undefined
+      ? {}
+      : {
+          "html-scripts": resolveHtmlScripts({ htmlScripts, configDir, toUrl }),
+        }),
   };
 }
 

@@ -37,6 +37,9 @@ export function attachPrint(options: {
 }): () => void {
   const { root, isEnabled } = options;
   let expanded = nothingExpanded();
+  // 畳んだ階層の表の行と、隠した YAML の見本
+  let treeRows: HTMLElement[] = [];
+  let examples: HTMLElement[] = [];
   /** 印刷の前: 閉じたものを全て開き、開いた分を控える */
   const onBeforePrint = (): void => {
     if (!isEnabled()) {
@@ -57,7 +60,9 @@ export function attachPrint(options: {
       ],
       tabs: [...root.querySelectorAll<HTMLElement>(".mdmark-tabs")],
       folders: [
-        ...root.querySelectorAll('.mdmark-tree-toggle[aria-expanded="false"]'),
+        ...root.querySelectorAll(
+          'div.mdmark-tree .mdmark-tree-toggle[aria-expanded="false"]',
+        ),
       ],
       codeFolds: [
         ...root.querySelectorAll('.mdmark-code-fold[aria-expanded="false"]'),
@@ -91,6 +96,26 @@ export function attachPrint(options: {
     ]) {
       element.removeAttribute("hidden");
     }
+    treeRows = [
+      ...root.querySelectorAll<HTMLElement>(
+        "tr.mdmark-tree-row[data-tree-folded]",
+      ),
+    ];
+    examples = [
+      ...root.querySelectorAll<HTMLElement>(
+        ".mdmark-tree-layout.is-example-hidden",
+      ),
+    ];
+    for (const row of treeRows) {
+      row.hidden = false;
+    }
+    for (const layout of examples) {
+      layout.classList.remove("is-example-hidden");
+      const aside = layout.querySelector<HTMLElement>(".mdmark-tree-example");
+      if (aside) {
+        aside.hidden = false;
+      }
+    }
     // 印刷の CSS がタブの並びを隠し、タブ名を題にして中身を縦に並べる
     for (const tabs of expanded.tabs) {
       tabs.setAttribute("data-printing", "");
@@ -119,6 +144,18 @@ export function attachPrint(options: {
     for (const table of expanded.erTables) {
       setErTableFolded({ table, folded: true });
     }
+    for (const row of treeRows) {
+      row.hidden = true;
+    }
+    for (const layout of examples) {
+      layout.classList.add("is-example-hidden");
+      const aside = layout.querySelector<HTMLElement>(".mdmark-tree-example");
+      if (aside) {
+        aside.hidden = true;
+      }
+    }
+    treeRows = [];
+    examples = [];
     expanded = nothingExpanded();
   };
   window.addEventListener("beforeprint", onBeforePrint);
