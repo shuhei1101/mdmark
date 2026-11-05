@@ -3,6 +3,7 @@ import type { WarningItem } from "../../extensions.ts";
 import { escapeHtml } from "../../parts/escape.ts";
 import { renderTree, type TreeNode } from "../../parts/tree.ts";
 import type { Mark } from "../marks.ts";
+import { WRAP_VALUE_MESSAGE } from "./code-blocks.ts";
 import { envOf, featureOn, markOf, ownBlock } from "./tokens.ts";
 import { type SyntaxWarning, warningBlock } from "./warnings.ts";
 
@@ -22,6 +23,9 @@ const NOTE_SEPARATOR = /\s#/;
 
 /** ファイルツリーの印で読めるキー */
 const OPEN_KEY = "open";
+
+/** 項目を折り返すフラグ */
+const WRAP_FLAG = "wrap";
 
 /** `open=` に書ける、階層の数（1 以上の整数） */
 const LEVELS_PATTERN = /^[1-9]\d*$/;
@@ -87,12 +91,15 @@ export function parseTree(
 /** ファイルツリーの印の引数から `open=` を読み、読めない指定を 1 つの書き方の警告にまとめる */
 export function readTreeOptions(mark: Mark): {
   open?: string;
+  wrap: boolean;
   warning?: SyntaxWarning;
 } {
   const items: WarningItem[] = [];
   let open: string | undefined;
   for (const [key, value] of Object.entries(mark.args.keys)) {
-    if (key !== OPEN_KEY) {
+    if (key === WRAP_FLAG) {
+      items.push({ label: `${key}=${value}`, message: WRAP_VALUE_MESSAGE });
+    } else if (key !== OPEN_KEY) {
       items.push({
         label: `${key}=`,
         message: `使えないキーです。使えるキーは \`${OPEN_KEY}=\` です`,
@@ -107,17 +114,19 @@ export function readTreeOptions(mark: Mark): {
     }
   }
   // `キー=値` の形でない指定
-  for (const arg of mark.args.args) {
+  const wrap = mark.args.args.includes(WRAP_FLAG);
+  for (const arg of mark.args.args.filter((arg) => arg !== WRAP_FLAG)) {
     items.push({
       label: arg,
       message: `使えない指定です。使える指定は \`${OPEN_KEY}=all\` と \`${OPEN_KEY}=階層の数\` です`,
     });
   }
   if (items.length === 0) {
-    return open === undefined ? {} : { open };
+    return open === undefined ? { wrap } : { open, wrap };
   }
   return {
     ...(open === undefined ? {} : { open }),
+    wrap,
     warning: {
       mark: mark.raw,
       message: "の読めない指定を当てずに描いています。",
@@ -167,7 +176,9 @@ export function buildFileTrees(state: StateCore): void {
     }
     const mark = markOf(state.tokens[index - 1]);
     const options =
-      mark?.name === "tree" && !mark.closing ? readTreeOptions(mark) : {};
+      mark?.name === "tree" && !mark.closing
+        ? readTreeOptions(mark)
+        : { wrap: false };
     if (options.warning) {
       out.push(warningBlock(state, options.warning));
     }
@@ -178,6 +189,7 @@ export function buildFileTrees(state: StateCore): void {
           nodes: result.nodes,
           source: token.content.replace(/\n+$/, ""),
           open: options.open,
+          wrap: options.wrap,
         }),
       ),
     );

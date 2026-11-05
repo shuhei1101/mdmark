@@ -36,17 +36,21 @@ export const LINE_COMMENT_HEADS: readonly string[] = [
 const ANYWHERE_COMMENT_HEADS: readonly string[] = ["<!--", "//", "/*"];
 
 /** コードブロックの印に書ける指定の並び（警告に書く） */
-const CODE_SPEC_LIST = "`title=`・`lines`・`highlight=`・`fold=`";
+const CODE_SPEC_LIST = "`title=`・`lines`・`highlight=`・`fold=`・`wrap`";
 
 /** 使えるコードの行の印の並び（警告に書く） */
 const LINE_MARK_LIST =
   "`[!code ++]`・`[!code --]`・`[!code highlight]`・`[!code focus]`・`[!code error]`・`[!code warning]`";
 
+/** 値を持つ `wrap=` の警告の項目の本文 */
+export const WRAP_VALUE_MESSAGE =
+  "wrap は値を持ちません。wrap=… ではなく wrap と書いてください。折り返さずに描いています";
+
 /** コードブロックの印に書けるキー */
 const CODE_KEYS = ["title", "highlight", "fold"];
 
 /** コードブロックの印に書ける、キーの無い指定 */
-const CODE_FLAGS = ["lines"];
+const CODE_FLAGS = ["lines", "wrap"];
 
 /** `highlight=` の 1 つ分（`2` か `4-6`）を行の範囲に読む。読めなければ `undefined` */
 function readRange(part: string): [number, number] | undefined {
@@ -110,14 +114,17 @@ export function readCodeSpec(options: {
 }): {
   title: string;
   lineNumbers: boolean;
+  wrap: boolean;
   highlights: Set<number>;
   folds: Set<number>;
   warnings: WarningItem[];
 } {
   const { args, lineCount } = options;
   const warnings: WarningItem[] = [];
-  for (const key of Object.keys(args.keys)) {
-    if (!CODE_KEYS.includes(key)) {
+  for (const [key, value] of Object.entries(args.keys)) {
+    if (key === "wrap") {
+      warnings.push({ label: `wrap=${value}`, message: WRAP_VALUE_MESSAGE });
+    } else if (!CODE_KEYS.includes(key)) {
       warnings.push({
         label: `${key}=`,
         message: `使えないキーです。使える指定は ${CODE_SPEC_LIST} です。`,
@@ -154,6 +161,7 @@ export function readCodeSpec(options: {
   return {
     title,
     lineNumbers: args.args.includes("lines"),
+    wrap: args.args.includes("wrap"),
     highlights,
     folds,
     warnings,
@@ -421,6 +429,7 @@ export function buildCodeBlocks(state: StateCore): void {
             fileName,
             title,
             lineNumbers,
+            wrap: options?.wrap ?? false,
             lines,
             syntax,
             bar: codeOn,

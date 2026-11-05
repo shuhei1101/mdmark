@@ -24,11 +24,7 @@ import {
 import { PARAM_COUNT_META } from "./diagrams.ts";
 import { type SeenTerms, termSegments } from "./terms.ts";
 import { envOf, featureOn, findClose, markOf } from "./tokens.ts";
-import {
-  unclosedWarning,
-  type WarningMeta,
-  warningBlock,
-} from "./warnings.ts";
+import { unclosedWarning, type WarningMeta, warningBlock } from "./warnings.ts";
 
 /** 埋め込んだ HTML の中の図の部品の `id` の頭（範囲の印の図と通し番号を共有する） */
 const DIAGRAM_ID_PREFIX = "mdmark-diagram";

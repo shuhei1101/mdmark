@@ -73,7 +73,11 @@ export type CollectedWarning = {
 };
 
 /** 警告の元の行（0 から）: マーカーの行、無ければ後ろで最初に `map` を持つトークンの開始の行、それも無ければ前で最後に `map` を持つトークンの終わりの行 */
-function warningLine(tokens: Token[], index: number, meta: WarningMeta): number {
+function warningLine(
+  tokens: Token[],
+  index: number,
+  meta: WarningMeta,
+): number {
   if (meta.line !== undefined) {
     return meta.line;
   }
