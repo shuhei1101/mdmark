@@ -1,7 +1,7 @@
 /* VS Code のプレビューのパネルの部品（shadcn/ui の Alert・Button・Spinner）。実装の Tailwind のクラスが当てる見た目を、モックでは同じ値の CSS で表す */
 
-/* VS Code が Webview に渡す色の仮の値（モックだけ。実装では VS Code が --vscode-* を渡す。値は Light Modern と Dark Modern） */
-body.vscode-light {
+/* VS Code が Webview の html に渡す色の仮の値（モックだけ。実装では VS Code が --vscode-* を渡す。値は Light Modern と Dark Modern。preview.js が html の data-scheme を当てる） */
+:root[data-scheme="light"] {
   --vscode-font-family: system-ui, sans-serif;
   --vscode-editor-background: #ffffff;
   --vscode-editor-foreground: #3b3b3b;
@@ -18,7 +18,7 @@ body.vscode-light {
   --vscode-focusBorder: #005fb8;
 }
 
-body.vscode-dark {
+:root[data-scheme="dark"] {
   --vscode-font-family: system-ui, sans-serif;
   --vscode-editor-background: #1f1f1f;
   --vscode-editor-foreground: #cccccc;
@@ -53,7 +53,8 @@ body.vscode-dark {
   /* Alert の warning の variant */
   --warning: var(--vscode-inputValidation-warningBackground);
   --warning-border: var(--vscode-inputValidation-warningBorder);
-  --warning-foreground: var(--vscode-editor-foreground);
+  /* 文字は本文の色を警告の色へ寄せる（色の上に無彩色の文字を置かない） */
+  --warning-foreground: color-mix(in oklab, var(--vscode-editor-foreground) 60%, var(--vscode-inputValidation-warningBorder));
 }
 
 /* パネルの部品の下地: 書体は VS Code の UI と同じ */
