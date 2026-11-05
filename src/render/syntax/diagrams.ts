@@ -8,6 +8,7 @@ import {
   type MdmarkFlowDefinition,
   type MdmarkParamDefinition,
   type MdmarkSequenceDefinition,
+  nodeLinkProblems,
   readDefinition,
 } from "../../diagram/definition.ts";
 import { buildDictionary } from "../../knowledge/dictionary.ts";
@@ -85,12 +86,44 @@ export function buildDiagrams(state: StateCore): void {
       directive,
       jsonBlocks(tokens.slice(index + 1, end)),
     );
-    const definition = result.definition;
+    let definition = result.definition;
     if (!result.ok || definition === undefined) {
       out.push(
-        warningBlock(state, definitionWarning(directive, result.problems)),
+        warningBlock(state, {
+          ...definitionWarning(directive, result.problems),
+          kind: "diagram_invalid",
+          ...(token.map ? { line: token.map[0] } : {}),
+        }),
       );
     } else {
+      if (directive === "flow") {
+        const flow = definition as MdmarkFlowDefinition;
+        const problems = nodeLinkProblems(flow);
+        if (problems.length > 0) {
+          out.push(
+            warningBlock(state, {
+              message:
+                "フロー図のノードのリンク先に使えないものがあります。使えるリンク先は http・https・mailto と相対パスです。このノードはリンクにせずに描いています。",
+              items: problems.map(({ id, href }) => ({
+                label: id,
+                message: `\`${href.replaceAll("`", "'")}\``,
+              })),
+              ...(token.map ? { line: token.map[0] } : {}),
+            }),
+          );
+          const blocked = new Set(problems.map(({ id }) => id));
+          definition = {
+            ...flow,
+            nodes: flow.nodes.map((node) => {
+              if (!blocked.has(node.id)) {
+                return node;
+              }
+              const { href: _href, ...rest } = node;
+              return rest;
+            }),
+          };
+        }
+      }
       env.diagramCount = (env.diagramCount ?? 0) + 1;
       const count = env.diagramCount;
       let html: string;

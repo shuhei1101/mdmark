@@ -253,7 +253,12 @@ export function readLineMarks(source: string): {
 function pushWarnings(
   out: Token[],
   state: StateCore,
-  options: { mark?: string; message: string; items: WarningItem[] },
+  options: {
+    mark?: string;
+    line?: number | undefined;
+    message: string;
+    items: WarningItem[];
+  },
 ): void {
   if (options.items.length === 0) {
     return;
@@ -261,6 +266,7 @@ function pushWarnings(
   out.push(
     warningBlock(state, {
       ...(options.mark === undefined ? {} : { mark: options.mark }),
+      ...(options.line === undefined ? {} : { line: options.line }),
       message: options.message,
       items: options.items,
     }),
@@ -359,6 +365,7 @@ export function buildCodeBlocks(state: StateCore): void {
       out.push(
         warningBlock(state, {
           mark: mark.raw,
+          ...(token.map ? { line: token.map[0] } : {}),
           message:
             "の直後にコードブロックがありません。印の次の行にコードブロックを書いてください。",
         }),
@@ -393,6 +400,7 @@ export function buildCodeBlocks(state: StateCore): void {
       : { lines: marked, warnings: [] };
     pushWarnings(out, state, {
       mark: code?.raw,
+      line: code ? tokens[index - 1]?.map?.[0] : undefined,
       message: "の読めない指定を当てずに描いています。",
       items: [...(options?.warnings ?? []), ...foldWarnings],
     });

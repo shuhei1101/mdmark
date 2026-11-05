@@ -12,8 +12,8 @@ const OWN_ATTRIBUTE = "data-mdmark-own";
 /** 文書に書いた生の HTML が持ってよい記法の class: 列の揃えと、外部ライブラリの印の場所 */
 const RAW_CLASS_PATTERN = /^(?:mdmark-align-|mdmark-embed$)/;
 
-/** 記法の class（`mdmark-` で始まるものと `markdown-alert*`、図のツールチップを持つ要素の `has-tip`） */
-const SYNTAX_CLASS_PATTERN = /^(?:mdmark-|markdown-alert|has-tip$)/;
+/** 記法の class（`mdmark-` で始まるものと `markdown-alert*`、図のツールチップを持つ要素の `has-tip`、リンク先を持つノードの `has-link`） */
+const SYNTAX_CLASS_PATTERN = /^(?:mdmark-|markdown-alert|has-tip$|has-link$)/;
 
 /** 図の部品が定義から出した要素だけが持てる要素。文書に書いたものは取り除く */
 export const DIAGRAM_ONLY_TAGS = new Set([
@@ -253,7 +253,7 @@ const SANITIZE_OPTIONS: sanitizeHtml.IOptions = {
   exclusiveFilter: (frame) => frame.attribs[DROP_ATTRIBUTE] !== undefined,
   // 記法の class は、mdmark が出した要素だけが持つ（生の HTML のものは `transformTags` が先に落とす）
   allowedClasses: {
-    "*": ["mdmark-*", "markdown-alert*", "has-tip"],
+    "*": ["mdmark-*", "markdown-alert*", "has-tip", "has-link"],
     code: ["language-*"],
     li: ["task-list-item"],
   },
@@ -267,6 +267,18 @@ const SANITIZE_OPTIONS: sanitizeHtml.IOptions = {
   // postcss を呼ばない。`style` 属性は許可せず、列の揃えだけを class に移す
   parseStyleAttributes: false,
 };
+
+/** 本文のリンクと同じ許可（`SANITIZE_OPTIONS` の `allowedSchemes` のスキームか、スキームを持たない相対 URL）に当たる URL か */
+export function isAllowedUrl(url: string): boolean {
+  // sanitize-html と同じく、前後の空白と制御文字を除いてスキームを見分ける
+  const trimmed = url.replace(/[\u0000-\u0020]/g, "");
+  const scheme = /^([a-z][a-z0-9+.-]*):/i.exec(trimmed)?.[1];
+  if (scheme === undefined) {
+    return true;
+  }
+  const allowed = SANITIZE_OPTIONS.allowedSchemes;
+  return Array.isArray(allowed) && allowed.includes(scheme.toLowerCase());
+}
 
 /** 埋め込んだ HTML の `style` に残す宣言: 名前と、値の許可の正規表現。値に `url(`・`expression(`・単位 `vw`・`vh` を含むものは、ここに当たっても落とす */
 export const EMBED_STYLES: ReadonlyArray<{ name: RegExp; value: RegExp }> =
