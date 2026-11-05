@@ -1,7 +1,9 @@
 import { readFile } from "node:fs/promises";
 import { expect, test } from "vitest";
 import type { MdmarkChartDefinition } from "../../../../src/diagram/definition.ts";
-import { matches, plainText } from "../../helpers/html.ts";
+import { REPLY_KIND_TEXT } from "../../helpers/charts.ts";
+import { parsed, REPLY_TIME_TEXT } from "../../helpers/diagrams.ts";
+import { findTag, matches, plainText } from "../../helpers/html.ts";
 
 /** グラフの部品を読み込む（実装が無い間は各テストが個別に失敗する） */
 const loadChart = () => import("../../../../src/parts/chart.ts");
@@ -350,4 +352,63 @@ test("test_render_chart_when_six_series", async () => {
   expect(
     matches(cross, /M/g).length >= 2 || pathPoints(cross).length === 12,
   ).toBe(true);
+});
+
+// 項目ごとにツールチップの中身と当たりの円を置く（正常系）
+test("test_render_chart_when_item_tips", async () => {
+  // 準備
+  const { renderChart } = await loadChart();
+  const line = parsed<MdmarkChartDefinition>(REPLY_TIME_TEXT);
+  const pie = parsed<MdmarkChartDefinition>(REPLY_KIND_TEXT);
+  // 実行
+  const lineChart = renderChart(line, "d1");
+  const pieChart = renderChart(pie, "d2");
+  // 検証
+  const hits = matches(
+    lineChart.html,
+    /<circle\b[^>]*class="mdmark-diagram-item-hit"[^>]*>/g,
+  );
+  expect(hits).toHaveLength(10);
+  for (const hit of hits) {
+    expect(hit).toContain('r="12"');
+    expect(hit).toContain('tabindex="0"');
+    expect(hit).toContain("aria-describedby=");
+  }
+  expect(matches(lineChart.tips, /role="tooltip"/g)).toHaveLength(10);
+  const slice = findTag(pieChart.html, 'class="mdmark-diagram-slice"');
+  expect(slice).toContain('tabindex="0"');
+  expect(plainText(pieChart.tips)).toContain("186 件（62%）");
+});
+
+// 種類ごとの値の文を返す（正常系）
+test("test_chart_item_text", async () => {
+  // 準備
+  const { chartItemText } = await loadChart();
+  const scatter = chartOf({
+    type: "scatter",
+    x: { label: "文字数" },
+    y: { label: "分" },
+  } as Partial<MdmarkChartDefinition>);
+  const bubble = chartOf({
+    type: "bubble",
+    x: { label: "文字数" },
+    y: { label: "分" },
+    size: { label: "件数" },
+  } as Partial<MdmarkChartDefinition>);
+  const pie = chartOf({ type: "pie", unit: " 件" } as Partial<MdmarkChartDefinition>);
+  const line = chartOf({ type: "line" } as Partial<MdmarkChartDefinition>);
+  // 実行
+  const texts = [
+    chartItemText({ type: "line", tick: "2月", value: 38, definition: line }),
+    chartItemText({ type: "scatter", point: [3, 40], definition: scatter }),
+    chartItemText({ type: "bubble", point: [3, 40, 16], definition: bubble }),
+    chartItemText({ type: "pie", value: 50, percent: 50, definition: pie }),
+  ];
+  // 検証
+  expect(texts).toEqual([
+    "2月: 38",
+    "文字数 3・分 40",
+    "文字数 3・分 40・件数 16",
+    "50 件（50%）",
+  ]);
 });

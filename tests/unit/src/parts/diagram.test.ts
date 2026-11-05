@@ -17,7 +17,9 @@ import {
   INQUIRY_TEXT,
   JUDGEMENT_TEXT,
   parsed,
+  INQUIRY_GROUPS_TEXT,
   REPLY_TIME_TEXT,
+  SINGLE_KINDS_TEXT,
 } from "../../helpers/diagrams.ts";
 import { shopEr } from "../../helpers/er.ts";
 import { findTag, matches, outerHtml, plainText } from "../../helpers/html.ts";
@@ -242,7 +244,7 @@ test("test_render_chart", async () => {
   expect(html).toContain(
     'aria-label="返信までの時間。自動返信: 12・9・14・8・10。担当者: 42・38・51・35・44"',
   );
-  expect(tips).toBe("");
+  expect(matches(tips, /role="tooltip"/g)).toHaveLength(10);
 });
 
 // 出るものだけを載せる（正常系）
@@ -283,7 +285,7 @@ test("test_legend_for", async () => {
     ],
   };
   // 実行
-  const items = legendFor(definition, { jumps: false, terms: false });
+  const items = legendFor(definition);
   // 検証
   const labels = items.map((item) => item.label);
   expect(labels).toContain("処理の流れ");
@@ -302,7 +304,7 @@ test("test_legend_for_when_judgement", async () => {
   const { legendFor } = await loadDiagram();
   const definition = parsed<MdmarkFlowDefinition>(JUDGEMENT_TEXT);
   // 実行
-  const items = legendFor(definition, { jumps: false, terms: false });
+  const items = legendFor(definition);
   // 検証
   const labels = items.map((item) => item.label);
   const kinds = ["開始", "質問", "アクション", "結果"];
@@ -496,11 +498,10 @@ test("test_legend_for_when_chart_types_added", async () => {
       { name: "回した", value: 92 },
     ],
   } as MdmarkChartDefinition;
-  const drawn = { jumps: false, terms: false };
   // 実行
-  const comboLabels = legendFor(combo, drawn).map((item) => item.label);
-  const bubbleLabels = legendFor(bubble, drawn).map((item) => item.label);
-  const donutLabels = legendFor(donut, drawn).map((item) => item.label);
+  const comboLabels = legendFor(combo).map((item) => item.label);
+  const bubbleLabels = legendFor(bubble).map((item) => item.label);
+  const donutLabels = legendFor(donut).map((item) => item.label);
   // 検証
   expect(comboLabels).toContain("件数（左の軸）");
   expect(comboLabels).toContain("割合（右の軸）");
@@ -592,7 +593,7 @@ test("test_legend_for_when_er", async () => {
     ],
   };
   // 実行
-  const items = legendFor(definition, { jumps: false, terms: false });
+  const items = legendFor(definition);
   // 検証
   expect(items.map((item) => item.label)).toEqual([
     "マスターのテーブル",
@@ -671,4 +672,121 @@ test("test_render_er_when_terms", async () => {
   expect(terms).toBe(true);
   expect(html).toContain('aria-label="「顧客」の説明"');
   expect(html).toContain('aria-label="「顧客」の主キーと外部キー以外の列"');
+});
+
+// リサイズハンドルを置き、モーダルと `resizable: false` では置かない（正常系）
+test("test_render_diagram_frame_when_resizable", async () => {
+  // 準備
+  const { renderDiagramFrame } = await loadDiagram();
+  const base = {
+    kind: "flow" as const,
+    title: "問い合わせの流れ",
+    scope: "範囲",
+    updated: "2026-11-05",
+    legend: [],
+    id: "d1",
+  };
+  // 実行
+  const omitted = renderDiagramFrame(base, BODY);
+  const off = renderDiagramFrame({ ...base, resizable: false }, BODY);
+  const modal = renderDiagramFrame({ ...base, modal: true }, BODY);
+  // 検証
+  const handle = findTag(omitted, 'class="mdmark-diagram-resize"');
+  expect(handle).toContain('role="separator"');
+  expect(handle).toContain('aria-orientation="horizontal"');
+  expect(handle).toContain('tabindex="0"');
+  expect(handle).toContain('aria-label="「問い合わせの流れ」の表示の高さ"');
+  expect(outerHtml(omitted, 'class="mdmark-diagram-resize"')).toContain(
+    iconSvg("grip-horizontal"),
+  );
+  expect(off).not.toContain("mdmark-diagram-resize");
+  expect(modal).not.toContain("mdmark-diagram-resize");
+});
+
+// 凡例の項目が空なら凡例を隠し、タイトルを留めない図に印を付ける（正常系）
+test("test_render_diagram_frame_when_no_legend", async () => {
+  // 準備
+  const { renderDiagramFrame } = await loadDiagram();
+  const frame = {
+    kind: "flow" as const,
+    title: "題",
+    scope: "範囲",
+    updated: "2026-11-05",
+    legend: [],
+    stickyTitles: false,
+    id: "d1",
+  };
+  // 実行
+  const html = renderDiagramFrame(frame, BODY);
+  // 検証
+  expect(findTag(html, 'aria-label="凡例"')).toMatch(/\bhidden\b/);
+  expect(findTag(html, "<figure")).toContain('data-sticky-titles="off"');
+});
+
+// 枠と層の hint の印と留める範囲を置く（正常系）
+test("test_render_flow_when_group_hint", async () => {
+  // 準備
+  const { renderFlow } = await loadDiagram();
+  const definition = parsed<MdmarkFlowDefinition>(INQUIRY_GROUPS_TEXT);
+  const frame = definition.frame;
+  const lanes = definition.lanes ?? [];
+  if (frame === undefined) {
+    throw new Error("見本の定義に枠が無い");
+  }
+  const llm = lanes.find((lane) => lane.kind === "llm");
+  const others = lanes.filter((lane) => lane.kind !== "llm");
+  // 実行
+  const on = renderFlow(definition, "d1", true);
+  const off = renderFlow(definition, "d1", false);
+  // 検証
+  expect(on.html).toContain(`aria-label="「${frame.title}」の説明"`);
+  expect(on.html).toContain(`aria-label="「${llm?.label}」の説明"`);
+  for (const lane of others) {
+    expect(on.html).not.toContain(`aria-label="「${lane.label}」の説明"`);
+  }
+  const title = findTag(on.html, "mdmark-diagram-frame-title");
+  expect(title).toContain(`data-sticky-top="${frame.y}"`);
+  expect(title).toContain(`data-sticky-bottom="${frame.y + frame.h}"`);
+  expect(on.tips).toContain("メールの受け取りから返信までを受け持つ範囲");
+  expect(off.html).not.toContain("mdmark-diagram-group-info");
+});
+
+// 1 種類だけのノードと線を載せない（正常系）
+test("test_legend_for_when_single_kinds", async () => {
+  // 準備
+  const { legendFor } = await loadDiagram();
+  const single = parsed<MdmarkFlowDefinition>(SINGLE_KINDS_TEXT);
+  const twoKinds = parsed<MdmarkFlowDefinition>(SINGLE_KINDS_TEXT);
+  const last = twoKinds.nodes[2];
+  if (last === undefined) {
+    throw new Error("見本の 3 つ目のノードが無い");
+  }
+  Object.assign(last, { kind: "data" });
+  // 実行
+  const none = legendFor(single);
+  const items = legendFor(twoKinds);
+  // 検証
+  expect(none).toEqual([]);
+  const labels = items.map((item) => item.label);
+  expect(labels).toHaveLength(2);
+  expect(labels.some((label) => /処理の流れ|枠|層|交差|出る|下線/.test(label))).toBe(
+    false,
+  );
+});
+
+// グラフの項目の名前と値を出す（正常系）
+test("test_render_diagram_tip_when_item", async () => {
+  // 準備
+  const { renderDiagramTip } = await loadDiagram();
+  // 実行
+  const html = renderDiagramTip({
+    id: "t1",
+    kind: "item",
+    label: "担当者",
+    value: "2月: 38",
+  });
+  // 検証
+  expect(inOrder(html, ["担当者", "2月: 38"])).toBe(true);
+  expect(html).toContain('role="tooltip"');
+  expect(html).toMatch(/\bhidden\b/);
 });

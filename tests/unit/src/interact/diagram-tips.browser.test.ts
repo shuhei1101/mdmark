@@ -1,7 +1,12 @@
 import { afterEach, beforeAll, expect, test, vi } from "vitest";
 import { userEvent } from "vitest/browser";
 import { wrapHtml } from "../../helpers/charts.ts";
-import { INQUIRY_TEXT, wrapDirective } from "../../helpers/diagrams.ts";
+import {
+  INQUIRY_GROUPS_TEXT,
+  INQUIRY_TEXT,
+  REPLY_TIME_TEXT,
+  wrapDirective,
+} from "../../helpers/diagrams.ts";
 import {
   addStyles,
   createRoot,
@@ -412,4 +417,48 @@ test("test_attach_diagram_tips_when_touch_tip_tapped", async () => {
   vi.advanceTimersByTime(1000);
   // 検証
   expect(tip.hidden).toBe(false);
+});
+
+// グラフの項目とグループのタイトルの印で開き、bottom で下に置く（正常系）
+test("test_attach_diagram_tips_when_chart_item", async () => {
+  // 準備
+  const { attachDiagramTips } = await loadTips();
+  const { root } = createRoot(
+    `${wrapDirective("chart", REPLY_TIME_TEXT)}\n\n${wrapDirective("flow", INQUIRY_GROUPS_TEXT)}`,
+  );
+  const [chart, flow] = [...root.querySelectorAll<HTMLElement>("figure.mdmark-diagram")];
+  if (!chart || !flow) {
+    throw new Error("図が描かれていない");
+  }
+  for (const figure of [chart, flow]) {
+    const { detach } = attachDiagramTips({ figure, placement: "bottom" });
+    detachers.push(detach);
+  }
+  const item = chart.querySelector<HTMLElement>(".mdmark-diagram-item-hit");
+  const groupMark = flow.querySelector<HTMLElement>(".mdmark-diagram-group-info");
+  if (!item || !groupMark) {
+    throw new Error("グラフの項目かグループのタイトルの印が無い");
+  }
+  // 実行: グラフの項目にフォーカスする
+  item.focus();
+  // 検証
+  const itemTip = tipOf(item);
+  expect(itemTip.hidden).toBe(false);
+  expect(itemTip.getBoundingClientRect().top).toBeGreaterThanOrEqual(
+    item.getBoundingClientRect().bottom,
+  );
+  // 実行: グループのタイトルの印にポインターを乗せる
+  groupMark.dispatchEvent(
+    new PointerEvent("pointerenter", { pointerType: "mouse" }),
+  );
+  // 検証
+  const groupTip = tipOf(groupMark);
+  expect(groupTip.hidden).toBe(false);
+  expect(groupTip.getBoundingClientRect().top).toBeGreaterThanOrEqual(
+    groupMark.getBoundingClientRect().bottom,
+  );
+  const open = [...flow.querySelectorAll<HTMLElement>('[role="tooltip"]')].filter(
+    (tip) => !tip.hidden,
+  );
+  expect(open).toHaveLength(1);
 });

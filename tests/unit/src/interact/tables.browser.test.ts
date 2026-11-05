@@ -1810,3 +1810,121 @@ test("test_attach_tables_when_columns_callback_throws", async () => {
     error,
   );
 });
+
+/** 列設定のボタンのバッジの文字（無ければ null） */
+function badgeText(root: HTMLElement): string | null {
+  const badge = root.querySelector(
+    "button.mdmark-columns-toggle .mdmark-columns-badge",
+  );
+  return badge ? (badge.textContent ?? "") : null;
+}
+
+/** 列設定のボタンの読み上げの名前（mdmark-visually-hidden の文字） */
+function toggleName(root: HTMLElement): string {
+  return (
+    root.querySelector(
+      "button.mdmark-columns-toggle .mdmark-visually-hidden",
+    )?.textContent ?? ""
+  );
+}
+
+// 列の表示を切り替えるたびにバッジと読み上げの名前を書き換える（正常系）
+test("test_attach_tables_when_columns_badge", async () => {
+  // 準備
+  const { attachTables } = await loadTables();
+  const { root } = createRoot(
+    [
+      "<!-- table: data +columns hide=説明 -->",
+      "",
+      "| 名前 | 説明 | 更新日 |",
+      "| --- | --- | --- |",
+      "| りんご | 描画を速くする | 2026-10-01 |",
+      "| みかん | 印刷を直す | 2026-10-10 |",
+      "",
+      "<!-- /table -->",
+      "",
+    ].join("\n"),
+  );
+  // 実行・検証: 付けた直後
+  detachers.push(attachTables(root));
+  expect(badgeText(root)).toBe("1");
+  expect(toggleName(root)).toBe("列設定（1 列を隠しています）");
+  const toggle = findButton(root, "button.mdmark-columns-toggle");
+  toggle.click();
+  const checkboxes = [
+    ...(root.querySelectorAll<HTMLInputElement>(
+      '.mdmark-columns-menu input[type="checkbox"]',
+    ) ?? []),
+  ];
+  // 実行・検証: 2 列目を入れる
+  checkboxes[1]?.click();
+  expect(badgeText(root)).toBeNull();
+  expect(toggle.classList.contains("is-active")).toBe(false);
+  expect(toggleName(root)).toBe("列設定");
+  // 実行・検証: 2 列目と 3 列目を外す
+  checkboxes[1]?.click();
+  checkboxes[2]?.click();
+  expect(badgeText(root)).toBe("2");
+  // 実行・検証: リセット
+  const reset = [
+    ...root.querySelectorAll<HTMLButtonElement>(".mdmark-columns-menu button"),
+  ].find((button) => button.textContent?.includes("リセット"));
+  reset?.click();
+  expect(badgeText(root)).toBe("1");
+});
+
+// 包む要素がはみ出す間だけピン止めを当てる（正常系）
+test("test_attach_tables_when_scroll_wrapper", async () => {
+  // 準備
+  addStyles();
+  const { attachTables } = await loadTables();
+  const wide = Array.from({ length: 12 }, (_, i) => `列${i + 1}の見出し`);
+  const { root } = createRoot(
+    [
+      "<!-- table: data -->",
+      "",
+      "| 名前 | 数量 |",
+      "| --- | --- |",
+      "| りんご | 3 |",
+      "",
+      "<!-- /table -->",
+      "",
+      "<!-- table: data -->",
+      "",
+      `| ${wide.join(" | ")} |`,
+      `| ${wide.map(() => "---").join(" | ")} |`,
+      `| ${wide.map((_, i) => `値${i + 1}の長い文字`).join(" | ")} |`,
+      "",
+      "<!-- /table -->",
+      "",
+    ].join("\n"),
+  );
+  root.style.width = "1000px";
+  // 実行
+  detachers.push(attachTables(root));
+  // 検証
+  const [narrow, many] = [...root.querySelectorAll<HTMLElement>(".mdmark-table")];
+  const narrowScroll = narrow?.querySelector<HTMLElement>(".mdmark-table-scroll");
+  const manyScroll = many?.querySelector<HTMLElement>(".mdmark-table-scroll");
+  if (!narrow || !many || !narrowScroll || !manyScroll) {
+    throw new Error("表か包む要素が無い");
+  }
+  expect(
+    [...narrow.querySelectorAll<HTMLElement>("button.mdmark-pin")].every(
+      (pin) => pin.hidden,
+    ),
+  ).toBe(true);
+  const table = narrow.querySelector("table");
+  expect(
+    Math.abs(
+      (table?.getBoundingClientRect().width ?? 0) -
+        narrowScroll.getBoundingClientRect().width,
+    ),
+  ).toBeLessThanOrEqual(1);
+  expect(
+    [...many.querySelectorAll<HTMLElement>("button.mdmark-pin")].some(
+      (pin) => !pin.hidden,
+    ),
+  ).toBe(true);
+  expect(manyScroll.scrollWidth).toBeGreaterThan(manyScroll.clientWidth);
+});

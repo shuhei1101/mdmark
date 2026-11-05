@@ -37,7 +37,7 @@ test("test_render_table", async () => {
       '<div class="mdmark-table" data-kind="data" data-features="sort pin filter" data-filter="0:select">',
     ),
   ).toBe(true);
-  expect(html).toContain(SLOT_MARKER);
+  expect(innerHtml(html, 'class="mdmark-table-scroll"')).toContain(SLOT_MARKER);
 });
 
 // 閉じた表は折り畳みに入れる（正常系）
@@ -191,11 +191,19 @@ test("test_render_table_bar", async () => {
   expect(bar).toContain("3 件中 2 件を表示");
   const toggle = findTag(bar, "mdmark-columns-toggle");
   expect(toggle).toContain('aria-expanded="false"');
-  expect(bar).toContain("列設定");
+  expect(toggle).toContain("is-icon-only");
+  expect(toggle).toContain("is-active");
+  expect(toggle).toContain('title="列設定"');
+  const toggleHtml = outerHtml(bar, "mdmark-columns-toggle");
+  expect(plainText(innerHtml(toggleHtml, "mdmark-columns-badge"))).toBe("1");
+  expect(plainText(innerHtml(toggleHtml, "mdmark-visually-hidden"))).toBe(
+    "列設定（1 列を隠しています）",
+  );
   const copy = findTag(bar, "mdmark-copy");
   expect(copy).toContain('data-state="idle"');
-  expect(outerHtml(bar, "mdmark-copy")).toContain("表をコピー");
-  expect(outerHtml(bar, "mdmark-copy")).toContain("chevron-down");
+  expect(copy).toContain("is-icon-only");
+  expect(copy).toContain('title="表をコピー"');
+  expect(outerHtml(bar, "mdmark-copy")).not.toContain("chevron-down");
   expect(findTag(bar, "mdmark-table-status")).toContain('role="status"');
   // 検証: 列設定のメニュー
   expect(findTag(menus, "mdmark-columns-menu")).toMatch(/\shidden\b/);
@@ -902,4 +910,32 @@ test("test_render_check_cell", async () => {
   expect(yes).toContain("<svg");
   expect(findTag(no, "<span")).toContain('class="mdmark-visually-hidden"');
   expect(plainText(no)).toBe("いいえ");
+});
+
+// 見比べるための帯の見せ方を返す（正常系）
+test("test_render_table_bar_when_bar_style", async () => {
+  // 準備
+  const { renderTableBar } = await loadTable();
+  const options = {
+    id: "t1",
+    features: ["count", "columns", "copy"],
+    labels: ["名前", "説明", "更新日"],
+    shown: 3,
+    total: 3,
+    hiddenColumns: [],
+  };
+  // 実行
+  const label = renderTableBar({ ...options, barStyle: "label" });
+  const menu = renderTableBar({ ...options, barStyle: "menu" });
+  // 検証
+  const toggle = findTag(label.bar, "mdmark-columns-toggle");
+  expect(toggle).not.toContain("is-icon-only");
+  expect(plainText(outerHtml(label.bar, "mdmark-columns-toggle"))).toContain(
+    "列設定",
+  );
+  expect(label.bar).not.toContain("mdmark-columns-badge");
+  expect(findTags(menu.bar, "<button")).toHaveLength(1);
+  expect(findTag(menu.bar, "<button")).toContain('title="表の設定"');
+  expect(menu.menus).toContain("列設定");
+  expect(menu.menus).toContain("表をコピー");
 });
