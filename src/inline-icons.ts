@@ -129,6 +129,9 @@ export const loadInlineIcons = async (options: {
       }
       if (!notFound) {
         offline = true;
+        console.error(
+          `mdmark: Lucide のアイコンを読み込めません: ${lucideIconUrl(name)}`,
+        );
       }
     }),
   );
