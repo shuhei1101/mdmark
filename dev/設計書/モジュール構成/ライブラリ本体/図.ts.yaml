@@ -2023,9 +2023,9 @@ functions:
       - name: test_attach_diagram_resize_when_restored
         case: 正常
         summary: 保った高さで開き、読めない値は使わない
-        condition: '`storage` の `key` が `420` のときと `abc` のとき'
+        condition: '`storage` の `key` が `420` のときと `abc` のときと、`max` の 1000 を超える `1500` のとき'
         mock: 同上
-        expected: '`420` では `restored` が `420` で高さが `420px`。`abc` では `restored` が `null` で高さを変えない'
+        expected: '`420` では `restored` が `420` で高さが `420px`。`abc` では `restored` が `null` で高さを変えない。`1500` では `restored` が `1000` で高さが `1000px`、`aria-valuenow` が `1000`'
       - name: test_attach_diagram_resize_when_storage_throws
         case: 異常
         summary: 保つ先が例外を投げても高さを変える
