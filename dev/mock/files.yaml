@@ -342,6 +342,12 @@ files:
   - path: pages/document/320/index.md
     description: '#320（描いた文書の表示の改善 2 件）の画面のモックの案の一覧。案ごとの違いを見比べるときに読む。'
     tags: [topic:モック]
+  - path: pages/document/323/index.md
+    description: '#323（右側の目次を、ピン止めしていないときも画面の右端に配置する）の画面のモックの案の一覧。案ごとの違いを見比べるときに読む。'
+    tags: [topic:モック]
+  - path: pages/document/323/viewport-edge/index.html
+    description: '#323 の画面のモックの案『viewport-edge』: 配布物の mount で描いた長い文書で、ピン止めしていない右側の目次の右端の線と目次の枠をスクロールする場所の右端に置く。右端の置き方の案と、差分のミニマップの有無・描く場所を操作列で切り替える。画面の見た目や振る舞いを決めるときに読む。'
+    tags: [topic:モック, topic:目次]
   - path: pages/document/42/diagram-doc/app.js
     description: 'モック『diagram-doc』の動き: 使う側の固有の部品のモックと、モックの「固有の定義を当てる場所」の切り替え。このモックの動きを変えるときに読む。'
     tags: [topic:モック, topic:図, tool:javascript]
@@ -760,6 +766,15 @@ files:
     tags: [topic:モック]
   - path: refs/320/index.md
     description: '#320（描いた文書の表示の改善 2 件）の PR のモックへのリンク集。この PR で作ったモックを探すときに読む。'
+    tags: [topic:モック]
+  - path: refs/323/assets/edge.css
+    description: '#323 のモックが共通で読む素材: ピン止めしていない右側の目次の右端の線と目次の枠を画面に固定する規則と、差分のミニマップの見立て。複数のモックに効く見た目や動きを変えるときに読む。'
+    tags: [topic:モック, topic:目次, tool:css]
+  - path: refs/323/assets/scene.js
+    description: '#323 のモックが共通で読む素材: 配布物の mount で長い文書を描き、右端の置き方の案ごとに右端の線と目次の枠の位置を決める。複数のモックに効く見た目や動きを変えるときに読む。'
+    tags: [topic:モック, topic:目次]
+  - path: refs/323/index.md
+    description: '#323（右側の目次を、ピン止めしていないときも画面の右端に配置する）の PR のモックへのリンク集。この PR で作ったモックを探すときに読む。'
     tags: [topic:モック]
   - path: refs/42/assets/diagram.css
     id: dev/mock/refs/42/assets/diagram.css

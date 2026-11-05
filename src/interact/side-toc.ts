@@ -1,6 +1,6 @@
 import type { SideTocMode } from "../config.ts";
 import { renderSideToc, type SideTocHeading } from "../parts/side-toc.ts";
-import { findScrollContainer } from "./scroller.ts";
+import { findScrollContainer, type ScrollContainer } from "./scroller.ts";
 import { foldAllSections, revealTarget } from "./sections.ts";
 import { visibleText } from "./text.ts";
 
@@ -26,6 +26,15 @@ const EMBEDDED_HTML_SELECTOR = ".mdmark-html";
 
 /** hover で開く目次の枠が、右端の線の上端から届かせる高さ（rem）。線 3 本分で、線から枠へポインターを動かしても hover が切れない */
 const SIDE_TOC_RAIL_COVER_REM = 2;
+
+/** hover でピン止めしていない右端の線と目次の枠の右端の、スクロールする場所の右端からの間（rem）。先頭へ戻るボタンの `--mdmark-back-to-top-gap` の既定と同じ */
+const SIDE_TOC_EDGE_GAP_REM = 1;
+
+/** 差分のミニマップの帯と横の範囲が重なるとき、帯の左端から右端の線と目次の枠の右端までに空ける幅（px）。`BACK_TO_TOP_AVOID_GAP_PX` と同じ値 */
+const SIDE_TOC_AVOID_GAP_PX = 8;
+
+/** 右側の目次が避ける、ページに置く差分のミニマップの帯 */
+const MINIMAP_SELECTOR = "body > .mdmark-diff-minimap";
 
 /** hover で開く目次の枠の上端の、見えている枠の上端からのずれ（CSS の長さ） */
 const PANEL_OFFSET =
@@ -73,9 +82,49 @@ export function pickCurrentHeading(options: {
   return picked?.id;
 }
 
-/** hover で開く目次の枠と右端の線の位置を、スクロールする場所の上端と下端・aside・描く先の要素から決めて aside の CSS 変数に入れる。外す関数は受け取りを外す */
+/** 右端の線と目次の枠の右端の、画面の右端（スクロールバーを除く）からの距離（px）を返す。スクロールする場所の右端から 1rem 離し、横の範囲が重なる差分のミニマップの帯があればその左へずらす */
+function edgeEnd(options: {
+  /** スクロールする場所 */
+  scroll: ScrollContainer;
+  /** 目次の枠の幅（px） */
+  panelWidth: number;
+  /** ルートの文字の大きさ（px） */
+  rem: number;
+}): number {
+  const { scroll, panelWidth, rem } = options;
+  const { clientWidth } = document.documentElement;
+  const { target } = scroll;
+  // スクロールする場所の右端: スクロールバーを除き、画面からはみ出す分は画面の端
+  const areaRight = scroll.page
+    ? clientWidth
+    : Math.min(
+        target.getBoundingClientRect().left +
+          target.clientLeft +
+          target.clientWidth,
+        clientWidth,
+      );
+  let right = areaRight - SIDE_TOC_EDGE_GAP_REM * rem;
+  // 右端から左へ目次の枠の幅までの横の範囲と重なる帯の左へ、順にずらす
+  for (const minimap of document.querySelectorAll<HTMLElement>(
+    MINIMAP_SELECTOR,
+  )) {
+    const rect = minimap.getBoundingClientRect();
+    if (
+      rect.width === 0 ||
+      right - panelWidth >= rect.right ||
+      rect.left - SIDE_TOC_AVOID_GAP_PX >= right
+    ) {
+      continue;
+    }
+    right = rect.left - SIDE_TOC_AVOID_GAP_PX;
+  }
+  return clientWidth - right;
+}
+
+/** hover で開く目次の枠と右端の線の位置を、スクロールする場所の上端・下端・右端と、aside・描く先の要素・差分のミニマップの帯から決めて aside の CSS 変数に入れる。外す関数は受け取りを外す */
 function followPanelPosition(el: HTMLElement, aside: HTMLElement): () => void {
   const scroll = findScrollContainer(el);
+  const panel = aside.querySelector(".mdmark-side-toc-panel") as HTMLElement;
   // CSS の長さ（rem・px など）を px にするための、見えない要素
   const probe = document.createElement("span");
   probe.hidden = true;
@@ -105,7 +154,11 @@ function followPanelPosition(el: HTMLElement, aside: HTMLElement): () => void {
     const railBottom = Math.min(frameBottom, el.getBoundingClientRect().bottom);
     const railHeight = Math.max(railBottom - railTop - gap, 0);
     const reach = railTop + SIDE_TOC_RAIL_COVER_REM * rem - top;
-    const end = document.documentElement.clientWidth - asideRect.right;
+    const end = edgeEnd({
+      scroll,
+      panelWidth: panel.getBoundingClientRect().width,
+      rem,
+    });
     // 位置を全て読んでから書く（書いた後に読み直してレイアウトを計算し直さない）
     aside.style.setProperty("--mdmark-side-toc-panel-top", `${top}px`);
     aside.style.setProperty("--mdmark-side-toc-panel-end", `${end}px`);
@@ -125,12 +178,16 @@ function followPanelPosition(el: HTMLElement, aside: HTMLElement): () => void {
   }
   window.addEventListener("scroll", update, { passive: true });
   window.addEventListener("resize", update);
+  // 差分のミニマップの帯の出し入れ（document.body の子の追加・削除）でも、スクロールを待たずに決め直す
+  const bodyObserver = new MutationObserver(update);
+  bodyObserver.observe(document.body, { childList: true });
   return () => {
     if (!scroll.page) {
       scroll.target.removeEventListener("scroll", update);
     }
     window.removeEventListener("scroll", update);
     window.removeEventListener("resize", update);
+    bodyObserver.disconnect();
     probe.remove();
   };
 }
