@@ -122,6 +122,8 @@ export type TableOptions = {
   wide?: number[];
   /** 真偽値を ✓ と空欄で出す列の位置（`data-check`） */
   check?: number[];
+  /** 階層にするキーの列の位置（`data-tree`） */
+  tree?: number | undefined;
   /** 見出しの段ごとのセル。渡すと `columns` の代わりに見出しの行をこの段で描く */
   headRows?: TableHeadCell[][];
   /** 本文の各行で `<th scope="row">` にする先頭の列の数（既定 0） */
@@ -988,6 +990,8 @@ export function renderTable(options: TableOptions): string {
       : "";
   const check = options.check ?? [];
   const checkAttribute = check.length ? ` data-check="${check.join(" ")}"` : "";
+  const treeAttribute =
+    options.tree !== undefined ? ` data-tree="${options.tree}"` : "";
   const content =
     options.body ?? renderTableBody(options, options.id ?? "mdmark-table");
   const collapse = options.collapse ?? "none";
@@ -1011,5 +1015,5 @@ export function renderTable(options: TableOptions): string {
   const mergeAttribute = mergeColumns.length
     ? ` data-merge-columns="${mergeColumns.join(" ")}"`
     : "";
-  return `<div class="mdmark-table${foldedClass}" data-kind="${kind}" data-features="${options.features.join(" ")}"${filterAttribute}${hideAttribute}${totalAttribute}${pinAttribute}${checkAttribute}${mergeAttribute}>${inner}</div>`;
+  return `<div class="mdmark-table${foldedClass}" data-kind="${kind}" data-features="${options.features.join(" ")}"${filterAttribute}${hideAttribute}${totalAttribute}${pinAttribute}${checkAttribute}${treeAttribute}${mergeAttribute}>${inner}</div>`;
 }

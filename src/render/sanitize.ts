@@ -13,7 +13,8 @@ const OWN_ATTRIBUTE = "data-mdmark-own";
 const RAW_CLASS_PATTERN = /^(?:mdmark-align-|mdmark-embed$)/;
 
 /** 記法の class（`mdmark-` で始まるものと `markdown-alert*`、図のツールチップを持つ要素の `has-tip`、リンク先を持つノードの `has-link`） */
-const SYNTAX_CLASS_PATTERN = /^(?:mdmark-|markdown-alert|has-tip$|has-link$)/;
+const SYNTAX_CLASS_PATTERN =
+  /^(?:mdmark-|markdown-alert|has-tip$|has-link$|has-children$|is-virtual$)/;
 
 /** 図の部品が定義から出した要素だけが持てる要素。文書に書いたものは取り除く */
 export const DIAGRAM_ONLY_TAGS = new Set([
@@ -253,7 +254,14 @@ const SANITIZE_OPTIONS: sanitizeHtml.IOptions = {
   exclusiveFilter: (frame) => frame.attribs[DROP_ATTRIBUTE] !== undefined,
   // 記法の class は、mdmark が出した要素だけが持つ（生の HTML のものは `transformTags` が先に落とす）
   allowedClasses: {
-    "*": ["mdmark-*", "markdown-alert*", "has-tip", "has-link"],
+    "*": [
+      "mdmark-*",
+      "markdown-alert*",
+      "has-tip",
+      "has-link",
+      "has-children",
+      "is-virtual",
+    ],
     code: ["language-*"],
     li: ["task-list-item"],
   },
