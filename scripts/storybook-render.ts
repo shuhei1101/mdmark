@@ -53,6 +53,7 @@ import { renderDiffToggle } from "../src/parts/diff-toggle.ts";
 import { type DocListItem, renderDocList } from "../src/parts/doc-list.ts";
 import { renderEmbed } from "../src/parts/embed.ts";
 import { renderEmbeddedHtml } from "../src/parts/embedded-html.ts";
+import { escapeHtml } from "../src/parts/escape.ts";
 import { renderFigure } from "../src/parts/figure.ts";
 import { renderFootnoteRef, renderFootnotes } from "../src/parts/footnote.ts";
 import { renderGallery } from "../src/parts/gallery.ts";
@@ -89,6 +90,7 @@ import { renderTree, type TreeNode } from "../src/parts/tree.ts";
 import { renderView } from "../src/parts/view.ts";
 import { renderWide } from "../src/parts/wide.ts";
 import { sanitizeEmbedded } from "../src/render/sanitize.ts";
+import { scopeCss } from "../src/render/scope-css.ts";
 import { syntaxLanguageOf } from "../src/render/syntax/code-blocks.ts";
 import { planCellMerges } from "../src/render/syntax/table-cells.ts";
 import { warningsOf } from "../src/render/syntax/tables.ts";
@@ -869,6 +871,26 @@ const STATIC_POPOVER_STYLE =
   "<style>.mdmark-comment-add,.mdmark-comment-popover{position:static}</style>";
 
 // 部品の id から、部品の関数を呼ぶ表
+/** 範囲のスクリプトと CSS のストーリー: 通し番号 `scope` の範囲に、根の要素の中に限った `css` の `style` と、実行しない `script` の `template` を置き、範囲の外に同じ class の箱を持つ範囲を続ける。`opened` のときは根の要素に class `is-open` を付ける */
+function rangeScopeStory(args: PartArgs): string {
+  const scope = Number(args.scope);
+  const css = typeof args.css === "string" ? args.css : "";
+  // 問い合わせの値は JSON として読んだ後に届く
+  const script =
+    typeof args.script === "object" && args.script !== null
+      ? (args.script as { lang: string; code: string })
+      : undefined;
+  const opened = args.opened === true ? " is-open" : "";
+  const style =
+    css === ""
+      ? ""
+      : `<style class="mdmark-html-style">${scopeCss({ css, scope })}</style>`;
+  const template = script
+    ? `<template class="mdmark-html-script" data-lang="${escapeHtml(script.lang)}">${escapeHtml(script.code)}</template>`
+    : "";
+  return `<div class="mdmark-html${opened}" data-html-scope="${scope}">${style}<div class="box">範囲の箱</div>${template}</div>${renderEmbeddedHtml({ html: '<div class="box">範囲の外の箱</div>' })}`;
+}
+
 const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
   "diff-toggle": (args) =>
     renderDiffToggle({
@@ -1500,6 +1522,9 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
         : args.wide === true
           ? '<div style="width:900px;padding:12px;border:1px solid var(--mdmark-color-border)">列より広い HTML。中で横にスクロールする。</div>'
           : boxes;
+    if (args.scope !== undefined) {
+      return rangeScopeStory(args);
+    }
     const embedded = renderEmbeddedHtml({ html, wide: args.wide === true });
     return args.chart === true ? fitted(embedded, args) : embedded;
   },

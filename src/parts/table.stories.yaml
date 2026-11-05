@@ -594,6 +594,7 @@ stories:
       rows: '[["features.table","bool","true","✓",""]]'
       pin: 0
       overflow: true
+      pinned: 1
       openColumns: true
   - name: Tree
     parameters:
