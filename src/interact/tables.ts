@@ -34,6 +34,7 @@ import {
 } from "../table-logic.ts";
 import { COPIED_NOTICE_MS, copyText } from "./clipboard.ts";
 import { attachTableSettings, reorderRowCells } from "./table-settings.ts";
+import { attachTableTree } from "./table-tree.ts";
 import { cellValue, visibleText } from "./text.ts";
 
 export { compareCells, type FilterValue, matchesFilter };
@@ -242,6 +243,19 @@ function attachTable(
     row.cells[column] ??
     undefined;
   const originalHeads = headCells.map((cell) => cell.innerHTML);
+  // 階層の表は、キーの列の絞り込み・開閉・行の選択を階層の操作に任せる
+  const treeColumn =
+    wrapper.dataset.tree === undefined
+      ? undefined
+      : Number(wrapper.dataset.tree);
+  const tree =
+    treeColumn === undefined
+      ? undefined
+      : attachTableTree({ wrapper, placement: "top" });
+  /** 件数に数える本文の行（階層の表の補った行を除く） */
+  const countedRows = originalRows.filter(
+    (row) => !row.classList.contains("is-virtual"),
+  );
   // 見出しのボタンを置く前の列名（列の表示のメニューとコピーの見出しの行に使う）
   const labels = headCells.map((cell) => visibleText(cell));
   const hiddenColumns = new Set(
@@ -496,6 +510,24 @@ function attachTable(
       }
     }
     let shown = 0;
+    if (tree) {
+      // キーの列の文字の絞り込みは、末尾の名前で照合して祖先の行を残す
+      const keyFilter = values.find(
+        ({ value, kind }) => kind === "text" && value.column === treeColumn,
+      );
+      const others = values.filter((entry) => entry !== keyFilter);
+      shown = tree.refresh({
+        word: keyFilter?.value.text ?? "",
+        matches: (row) =>
+          others.every(({ value, kind }) =>
+            matchesFilter(cellText(row, value.column), kind, value),
+          ),
+      });
+      empty.hidden = shown > 0;
+      applyMerges();
+      updateSummary();
+      return;
+    }
     for (const row of originalRows) {
       const match = values.every(({ value, kind }) =>
         matchesFilter(cellText(row, value.column), kind, value),
@@ -724,9 +756,9 @@ function attachTable(
     if (!visible || !spoken) {
       return;
     }
-    const shown = originalRows.filter((row) => !row.hidden).length;
-    visible.textContent = `${shown} / ${originalRows.length} 件`;
-    spoken.textContent = `${originalRows.length} 件中 ${shown} 件を表示`;
+    const shown = countedRows.filter((row) => !row.hidden).length;
+    visible.textContent = `${shown} / ${countedRows.length} 件`;
+    spoken.textContent = `${countedRows.length} 件中 ${shown} 件を表示`;
   };
   /** 集計の行を、表示している行で計算し直して置き換える */
   const renderTotals = (): void => {
@@ -1305,6 +1337,7 @@ function attachTable(
     revealRow();
   }
   cleanups.push(() => {
+    tree?.detach();
     closeDrawer(false);
     observer.disconnect();
     foldObserver.disconnect();
