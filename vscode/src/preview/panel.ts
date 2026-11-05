@@ -36,6 +36,7 @@ import {
 import { baseDirOf } from "../workspace.ts";
 import { assetCandidates } from "./assets.ts";
 import { buildCsp, buildPreviewHtml, createNonce, distUrl } from "./html.ts";
+import { readIncludes } from "./includes.ts";
 import { resolveLink } from "./links.ts";
 import { EditorScrollGuard } from "./scroll-guard.ts";
 
@@ -56,6 +57,10 @@ export class PreviewPanel {
   private readonly deps: ExtensionDeps;
   /** 最後に読めた設定（`libraries` は Webview で読める URL に直した値。読めたことが無ければ `{}`） */
   private config: PreviewConfig = {};
+  /** 取り込みの根のフォルダ（設定ファイルのフォルダ。無ければ Markdown のフォルダ） */
+  private includeRoot: string | undefined;
+  /** 前回の `render` で読んだ取り込む文書のパス */
+  private includePaths: string[] = [];
   /** `config` の `libraries` の URL を直す前の値（CSP に入れる origin の元） */
   private rawLibraries: Record<string, unknown> | undefined;
   /** 今の HTML の CSP に入れた `libraries` の origin（`load` が書く）。設定ファイルを読み直した後の origin と比べ、違えば HTML を入れ直す */
@@ -233,6 +238,8 @@ export class PreviewPanel {
       );
       return false;
     }
+    this.includeRoot =
+      load.kind === "missing" ? dirname(this.fileUri.fsPath) : dirname(path);
     if (load.kind === "missing") {
       this.config = {};
       this.rawLibraries = undefined;
@@ -308,11 +315,38 @@ export class PreviewPanel {
     if (!this.visible || !this.ready) {
       return;
     }
+    void this.postRender();
+  }
+
+  /** 前回の `render` で読んだ取り込む文書に `path` が入っているか */
+  readsInclude(path: string): boolean {
+    return this.includePaths.includes(path);
+  }
+
+  /** 取り込む文書を読み直し、全文・設定・配色と一緒に `render` を送る */
+  private async postRender(): Promise<void> {
     const configuration = workspace.getConfiguration("mdmark", this.fileUri);
     const settings = readSettings((key) => configuration.get(key));
+    const markdown = this.document.getText();
+    const { includes, paths } = await readIncludes({
+      markdownPath: this.fileUri.fsPath,
+      markdown,
+      root: this.includeRoot ?? dirname(this.fileUri.fsPath),
+      readFile: async (target) => {
+        try {
+          return new TextDecoder().decode(
+            await workspace.fs.readFile(Uri.file(target)),
+          );
+        } catch {
+          return undefined;
+        }
+      },
+    });
+    this.includePaths = paths;
     void this.post({
       type: "render",
-      markdown: this.document.getText(),
+      markdown,
+      includes,
       ...(this.original === undefined
         ? {}
         : { previous: this.original.getText() }),

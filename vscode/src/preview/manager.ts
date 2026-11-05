@@ -161,6 +161,14 @@ export class PreviewManager {
     document: TextDocument;
     saved: boolean;
   }): void {
+    // 取り込んでいるファイルを保存したパネルは、読み直した取り込む文書で描き直す
+    if (event.saved) {
+      for (const panel of this.panels.values()) {
+        if (panel.readsInclude(event.document.uri.fsPath)) {
+          panel.renderNow();
+        }
+      }
+    }
     for (const panel of this.findPanels(event.document.uri)) {
       const configuration = workspace.getConfiguration("mdmark", panel.scope);
       const settings = readSettings((key) => configuration.get(key));
