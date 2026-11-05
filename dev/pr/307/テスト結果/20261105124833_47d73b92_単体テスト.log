@@ -1,0 +1,705 @@
+$ npx vitest run --project unit --project unit-browser tests/unit/src/render/syntax/{inline-icons,kbd,highlight,layout-columns,details,pagebreak,includes,wide,csv}.test.ts tests/unit/src/parts/{inline-icon,kbd,highlight,layout-columns,wide,table}.test.ts tests/unit/src/cli/{includes,icons,check}.test.ts tests/unit/vscode/src/preview/includes.test.ts tests/unit/src/interact/{wide,csv-raw}.browser.test.ts tests/unit/src/inline-icons.browser.test.ts
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-syntax-icon-columns-highlight-kbd-details-include-wide-csv
+
+12:48:40 PM [vite] Internal server error: Failed to resolve import "../../../src/inline-icons.ts" from "tests/unit/src/inline-icons.browser.test.ts". Does the file exist?
+  Plugin: vite:import-analysis
+  File: /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-syntax-icon-columns-highlight-kbd-details-include-wide-csv/tests/unit/src/inline-icons.browser.test.ts:6:37
+  3  |  import { createRootFromHtml, removeRoots } from "../helpers/dom.ts";
+  4  |  /** 束ねていないアイコンの読み込みを読み込む（実装が無い間は各テストが個別に失敗する） */
+  5  |  const loadInlineIcons = () => import("../../../src/inline-icons.ts");
+     |                                       ^
+  6  |  /** 中が空の行内のアイコンを段落に入れた HTML */
+  7  |  function emptyIcons(names) {
+      at TransformPluginContext._formatLog (file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-syntax-icon-columns-highlight-kbd-details-include-wide-csv/node_modules/vite/dist/node/chunks/node.js:8766:39)
+      at TransformPluginContext.error (file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-syntax-icon-columns-highlight-kbd-details-include-wide-csv/node_modules/vite/dist/node/chunks/node.js:8763:14)
+      at normalizeUrl (file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-syntax-icon-columns-highlight-kbd-details-include-wide-csv/node_modules/vite/dist/node/chunks/node.js:26632:18)
+      at async file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-syntax-icon-columns-highlight-kbd-details-include-wide-csv/node_modules/vite/dist/node/chunks/node.js:26702:30
+      at async Promise.all (index 3)
+      at async TransformPluginContext.transform (file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-syntax-icon-columns-highlight-kbd-details-include-wide-csv/node_modules/vite/dist/node/chunks/node.js:26668:4)
+      at async EnvironmentPluginContainer.transform (file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-syntax-icon-columns-highlight-kbd-details-include-wide-csv/node_modules/vite/dist/node/chunks/node.js:8545:14)
+      at async loadAndTransform (file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-syntax-icon-columns-highlight-kbd-details-include-wide-csv/node_modules/vite/dist/node/chunks/node.js:20184:26)
+      at async viteTransformMiddleware (file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-syntax-icon-columns-highlight-kbd-details-include-wide-csv/node_modules/vite/dist/node/chunks/node.js:20404:20)
+12:48:40 PM [vite] Internal server error: Failed to resolve import "../../../../src/interact/csv-raw.ts" from "tests/unit/src/interact/csv-raw.browser.test.ts". Does the file exist?
+  Plugin: vite:import-analysis
+  File: /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-syntax-icon-columns-highlight-kbd-details-include-wide-csv/tests/unit/src/interact/csv-raw.browser.test.ts:5:32
+  2  |  import { createRoot, removeRoots } from "../../helpers/dom.ts";
+  3  |  /** CSV の表の操作を読み込む（実装が無い間は各テストが個別に失敗する） */
+  4  |  const loadCsvRaw = () => import("../../../../src/interact/csv-raw.ts");
+     |                                  ^
+  5  |  const detachers = [];
+  6  |  afterEach(() => {
+      at TransformPluginContext._formatLog (file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-syntax-icon-columns-highlight-kbd-details-include-wide-csv/node_modules/vite/dist/node/chunks/node.js:8766:39)
+      at TransformPluginContext.error (file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-syntax-icon-columns-highlight-kbd-details-include-wide-csv/node_modules/vite/dist/node/chunks/node.js:8763:14)
+      at normalizeUrl (file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-syntax-icon-columns-highlight-kbd-details-include-wide-csv/node_modules/vite/dist/node/chunks/node.js:26632:18)
+      at async file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-syntax-icon-columns-highlight-kbd-details-include-wide-csv/node_modules/vite/dist/node/chunks/node.js:26702:30
+      at async Promise.all (index 2)
+      at async TransformPluginContext.transform (file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-syntax-icon-columns-highlight-kbd-details-include-wide-csv/node_modules/vite/dist/node/chunks/node.js:26668:4)
+      at async EnvironmentPluginContainer.transform (file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-syntax-icon-columns-highlight-kbd-details-include-wide-csv/node_modules/vite/dist/node/chunks/node.js:8545:14)
+      at async loadAndTransform (file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-syntax-icon-columns-highlight-kbd-details-include-wide-csv/node_modules/vite/dist/node/chunks/node.js:20184:26)
+      at async viteTransformMiddleware (file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-syntax-icon-columns-highlight-kbd-details-include-wide-csv/node_modules/vite/dist/node/chunks/node.js:20404:20)
+ ❯ |unit| tests/unit/vscode/src/preview/includes.test.ts (1 test | 1 failed) 170ms
+   × test_read_includes 168ms
+12:48:40 PM [vite] Internal server error: Failed to resolve import "../../../../src/interact/wide.ts" from "tests/unit/src/interact/wide.browser.test.ts". Does the file exist?
+  Plugin: vite:import-analysis
+  File: /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-syntax-icon-columns-highlight-kbd-details-include-wide-csv/tests/unit/src/interact/wide.browser.test.ts:9:30
+  2  |  import { addStyles, createRootFromHtml, removeRoots } from "../../helpers/dom.ts";
+  3  |  /** wide の範囲の操作を読み込む（実装が無い間は各テストが個別に失敗する） */
+  4  |  const loadWide = () => import("../../../../src/interact/wide.ts");
+     |                                ^
+  5  |  const detachers = [];
+  6  |  /** 本文の幅を越える表を中に持つ、2 つの wide の範囲の HTML */
+      at TransformPluginContext._formatLog (file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-syntax-icon-columns-highlight-kbd-details-include-wide-csv/node_modules/vite/dist/node/chunks/node.js:8766:39)
+      at TransformPluginContext.error (file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-syntax-icon-columns-highlight-kbd-details-include-wide-csv/node_modules/vite/dist/node/chunks/node.js:8763:14)
+      at normalizeUrl (file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-syntax-icon-columns-highlight-kbd-details-include-wide-csv/node_modules/vite/dist/node/chunks/node.js:26632:18)
+      at async file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-syntax-icon-columns-highlight-kbd-details-include-wide-csv/node_modules/vite/dist/node/chunks/node.js:26702:30
+      at async Promise.all (index 2)
+      at async TransformPluginContext.transform (file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-syntax-icon-columns-highlight-kbd-details-include-wide-csv/node_modules/vite/dist/node/chunks/node.js:26668:4)
+      at async EnvironmentPluginContainer.transform (file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-syntax-icon-columns-highlight-kbd-details-include-wide-csv/node_modules/vite/dist/node/chunks/node.js:8545:14)
+      at async loadAndTransform (file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-syntax-icon-columns-highlight-kbd-details-include-wide-csv/node_modules/vite/dist/node/chunks/node.js:20184:26)
+      at async viteTransformMiddleware (file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-syntax-icon-columns-highlight-kbd-details-include-wide-csv/node_modules/vite/dist/node/chunks/node.js:20404:20)
+ ❯ |unit| tests/unit/src/parts/wide.test.ts (1 test | 1 failed) 218ms
+   × test_render_wide 217ms
+ ❯ |unit-browser (chromium)| tests/unit/src/inline-icons.browser.test.ts (0 test)
+ ❯ |unit-browser (chromium)| tests/unit/src/interact/csv-raw.browser.test.ts (0 test)
+ ❯ |unit-browser (chromium)| tests/unit/src/interact/wide.browser.test.ts (0 test)
+ ❯ |unit| tests/unit/src/parts/table.test.ts (29 tests | 1 failed) 764ms
+   × test_render_raw_toggle 5ms
+ ❯ |unit| tests/unit/src/parts/inline-icon.test.ts (2 tests | 2 failed) 747ms
+   × test_render_inline_icon 402ms
+   × test_icon_node_svg 343ms
+ ❯ |unit| tests/unit/src/parts/highlight.test.ts (1 test | 1 failed) 166ms
+   × test_render_highlight 165ms
+ ❯ |unit| tests/unit/src/cli/includes.test.ts (2 tests | 2 failed) 274ms
+   × test_collect_includes 98ms
+   × test_collect_includes_when_problems 176ms
+ ❯ |unit| tests/unit/src/cli/icons.test.ts (1 test | 1 failed) 40ms
+   × test_collect_icon_nodes 39ms
+ ❯ |unit| tests/unit/src/parts/kbd.test.ts (1 test | 1 failed) 29ms
+   × test_render_kbd 28ms
+ ❯ |unit| tests/unit/src/parts/layout-columns.test.ts (1 test | 1 failed) 27ms
+   × test_render_layout_columns 26ms
+ ❯ |unit| tests/unit/src/render/syntax/kbd.test.ts (2 tests | 2 failed) 49ms
+   × test_build_kbds 17ms
+   × test_split_keys 32ms
+ ❯ |unit| tests/unit/src/render/syntax/details.test.ts (3 tests | 3 failed) 50ms
+   × test_build_details_ranges 23ms
+   × test_build_details_ranges_when_unclosed 2ms
+   × test_read_details_options 25ms
+ ❯ |unit| tests/unit/src/render/syntax/csv.test.ts (4 tests | 4 failed) 71ms
+   × test_parse_csv 39ms
+   × test_parse_csv_when_empty_values 9ms
+   × test_build_csv_tables 20ms
+   × test_build_csv_tables_when_columns_mismatch 2ms
+ ❯ |unit| tests/unit/src/render/syntax/includes.test.ts (6 tests | 6 failed) 94ms
+   × test_resolve_include_path 71ms
+   × test_expand_includes 15ms
+   × test_expand_includes_when_missing 1ms
+   × test_expand_includes_when_circular 2ms
+   × test_select_heading_section 2ms
+   × test_select_lines 2ms
+ ❯ |unit| tests/unit/src/render/syntax/wide.test.ts (2 tests | 2 failed) 32ms
+   × test_build_wide_ranges 28ms
+   × test_build_wide_ranges_when_unclosed 3ms
+ ❯ |unit| tests/unit/src/render/syntax/inline-icons.test.ts (3 tests | 3 failed) 23ms
+   × test_build_inline_icons 18ms
+   × test_build_inline_icons_when_invalid_name 2ms
+   × test_build_inline_icons_when_icon_nodes 2ms
+ ❯ |unit| tests/unit/src/render/syntax/highlight.test.ts (2 tests | 2 failed) 33ms
+   × test_use_highlight 28ms
+   × test_use_highlight_when_unknown_color 3ms
+ ❯ |unit| tests/unit/src/render/syntax/layout-columns.test.ts (2 tests | 2 failed) 32ms
+   × test_build_layout_columns 28ms
+   × test_build_layout_columns_when_invalid 3ms
+ ❯ |unit| tests/unit/src/render/syntax/pagebreak.test.ts (1 test | 1 failed) 19ms
+   × test_build_pagebreaks 18ms
+ ❯ |unit| tests/unit/src/cli/check.test.ts (26 tests | 1 failed) 8199ms
+   × test_check_includes 7ms
+
+⎯⎯⎯⎯⎯⎯ Failed Suites 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/inline-icons.browser.test.ts [ tests/unit/src/inline-icons.browser.test.ts ]
+Error: Failed to import test file /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-syntax-icon-columns-highlight-kbd-details-include-wide-csv/tests/unit/src/inline-icons.browser.test.ts
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=90853ffe:5848:5
+ ❯ collectTests node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=90853ffe:5824:3
+ ❯ startTests node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=90853ffe:6508:17
+
+Caused by: TypeError: Failed to fetch dynamically imported module: http://localhost:63317/mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-syntax-icon-columns-highlight-kbd-details-include-wide-csv/tests/unit/src/inline-icons.browser.test.ts?import&browserv=1793850520332
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/40]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/csv-raw.browser.test.ts [ tests/unit/src/interact/csv-raw.browser.test.ts ]
+Error: Failed to import test file /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-syntax-icon-columns-highlight-kbd-details-include-wide-csv/tests/unit/src/interact/csv-raw.browser.test.ts
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=90853ffe:5848:5
+ ❯ collectTests node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=90853ffe:5824:3
+ ❯ startTests node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=90853ffe:6508:17
+
+Caused by: TypeError: Failed to fetch dynamically imported module: http://localhost:63317/mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-syntax-icon-columns-highlight-kbd-details-include-wide-csv/tests/unit/src/interact/csv-raw.browser.test.ts?import&browserv=1793850520328
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/40]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/wide.browser.test.ts [ tests/unit/src/interact/wide.browser.test.ts ]
+Error: Failed to import test file /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-syntax-icon-columns-highlight-kbd-details-include-wide-csv/tests/unit/src/interact/wide.browser.test.ts
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=90853ffe:5848:5
+ ❯ collectTests node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=90853ffe:5824:3
+ ❯ startTests node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=90853ffe:6508:17
+
+Caused by: TypeError: Failed to fetch dynamically imported module: http://localhost:63317/mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-syntax-icon-columns-highlight-kbd-details-include-wide-csv/tests/unit/src/interact/wide.browser.test.ts?import&browserv=1793850520344
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/40]⎯
+
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 37 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit| tests/unit/src/cli/check.test.ts > test_check_includes
+TypeError: checkIncludes is not a function
+ ❯ tests/unit/src/cli/check.test.ts:715:24
+    713|   ].join("\n");
+    714|   // 実行
+    715|   const issues = await checkIncludes({
+       |                        ^
+    716|     documents: [{ path: "guide.md", markdown }],
+    717|     root: dir,
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/40]⎯
+
+ FAIL  |unit| tests/unit/src/cli/icons.test.ts > test_collect_icon_nodes
+Error: Cannot find module '/src/cli/icons.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-syntax-icon-columns-highlight-kbd-details-include-wide-csv/tests/unit/src/cli/icons.test.ts
+ ❯ tests/unit/src/cli/icons.test.ts:9:32
+      7| test("test_collect_icon_nodes", async () => {
+      8|   // 準備
+      9|   const { collectIconNodes } = await loadIcons();
+       |                                ^
+     10|   const markdowns = [
+     11|     "`icon:sailboat` と `icon:flag`",
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/40]⎯
+
+ FAIL  |unit| tests/unit/src/cli/includes.test.ts > test_collect_includes
+Error: Cannot find module '/src/cli/includes.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-syntax-icon-columns-highlight-kbd-details-include-wide-csv/tests/unit/src/cli/includes.test.ts
+ ❯ tests/unit/src/cli/includes.test.ts:13:31
+     11| test("test_collect_includes", async () => {
+     12|   // 準備
+     13|   const { collectIncludes } = await loadIncludes();
+       |                               ^
+     14|   const root = await createTempDir();
+     15|   const markdown = "# 案内\n\n<!-- include: 共通/手順.md#実行 -->\n";
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/40]⎯
+
+ FAIL  |unit| tests/unit/src/cli/includes.test.ts > test_collect_includes_when_problems
+Error: Cannot find module '/src/cli/includes.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-syntax-icon-columns-highlight-kbd-details-include-wide-csv/tests/unit/src/cli/includes.test.ts
+ ❯ tests/unit/src/cli/includes.test.ts:40:31
+     38| test("test_collect_includes_when_problems", async () => {
+     39|   // 準備
+     40|   const { collectIncludes } = await loadIncludes();
+       |                               ^
+     41|   const parent = await createTempDir();
+     42|   const root = join(parent, "root");
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/40]⎯
+
+ FAIL  |unit| tests/unit/src/parts/highlight.test.ts > test_render_highlight
+Error: Cannot find module '/src/parts/highlight.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-syntax-icon-columns-highlight-kbd-details-include-wide-csv/tests/unit/src/parts/highlight.test.ts
+ ❯ tests/unit/src/parts/highlight.test.ts:9:31
+      7| test("test_render_highlight", async () => {
+      8|   // 準備
+      9|   const { renderHighlight } = await loadHighlight();
+       |                               ^
+     10|   // 実行
+     11|   const plain = renderHighlight({ html: "決め手" });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/40]⎯
+
+ FAIL  |unit| tests/unit/src/parts/inline-icon.test.ts > test_render_inline_icon
+Error: Cannot find module '/src/parts/inline-icon.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-syntax-icon-columns-highlight-kbd-details-include-wide-csv/tests/unit/src/parts/inline-icon.test.ts
+ ❯ tests/unit/src/parts/inline-icon.test.ts:9:32
+      7| test("test_render_inline_icon", async () => {
+      8|   // 準備
+      9|   const { renderInlineIcon } = await loadInlineIcon();
+       |                                ^
+     10|   // 実行
+     11|   const withNode = renderInlineIcon({
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/40]⎯
+
+ FAIL  |unit| tests/unit/src/parts/inline-icon.test.ts > test_icon_node_svg
+Error: Cannot find module '/src/parts/inline-icon.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-syntax-icon-columns-highlight-kbd-details-include-wide-csv/tests/unit/src/parts/inline-icon.test.ts
+ ❯ tests/unit/src/parts/inline-icon.test.ts:28:27
+     26| test("test_icon_node_svg", async () => {
+     27|   // 準備
+     28|   const { iconNodeSvg } = await loadInlineIcon();
+       |                           ^
+     29|   // 実行
+     30|   const svg = iconNodeSvg([
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/40]⎯
+
+ FAIL  |unit| tests/unit/src/parts/kbd.test.ts > test_render_kbd
+Error: Cannot find module '/src/parts/kbd.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-syntax-icon-columns-highlight-kbd-details-include-wide-csv/tests/unit/src/parts/kbd.test.ts
+ ❯ tests/unit/src/parts/kbd.test.ts:9:25
+      7| test("test_render_kbd", async () => {
+      8|   // 準備
+      9|   const { renderKbd } = await loadKbd();
+       |                         ^
+     10|   // 実行
+     11|   const html = renderKbd({ keys: ["Ctrl", "+"] });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/40]⎯
+
+ FAIL  |unit| tests/unit/src/parts/layout-columns.test.ts > test_render_layout_columns
+Error: Cannot find module '/src/parts/layout-columns.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-syntax-icon-columns-highlight-kbd-details-include-wide-csv/tests/unit/src/parts/layout-columns.test.ts
+ ❯ tests/unit/src/parts/layout-columns.test.ts:11:35
+      9| test("test_render_layout_columns", async () => {
+     10|   // 準備
+     11|   const { renderLayoutColumns } = await loadLayoutColumns();
+       |                                   ^
+     12|   // 実行
+     13|   const html = renderLayoutColumns({ columns: ["<p>左</p>", "<p>右</p>"]…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[12/40]⎯
+
+ FAIL  |unit| tests/unit/src/parts/table.test.ts > test_render_raw_toggle
+TypeError: renderRawToggle is not a function
+ ❯ tests/unit/src/parts/table.test.ts:912:15
+    910|   const { renderRawToggle } = await loadTable();
+    911|   // 実行
+    912|   const off = renderRawToggle(false);
+       |               ^
+    913|   const on = renderRawToggle(true);
+    914|   // 検証
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[13/40]⎯
+
+ FAIL  |unit| tests/unit/src/parts/wide.test.ts > test_render_wide
+Error: Cannot find module '/src/parts/wide.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-syntax-icon-columns-highlight-kbd-details-include-wide-csv/tests/unit/src/parts/wide.test.ts
+ ❯ tests/unit/src/parts/wide.test.ts:10:26
+      8| test("test_render_wide", async () => {
+      9|   // 準備
+     10|   const { renderWide } = await loadWide();
+       |                          ^
+     11|   // 実行
+     12|   const withToggle = renderWide({
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[14/40]⎯
+
+ FAIL  |unit| tests/unit/src/render/syntax/csv.test.ts > test_parse_csv
+Error: Cannot find module '/src/render/syntax/csv.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-syntax-icon-columns-highlight-kbd-details-include-wide-csv/tests/unit/src/render/syntax/csv.test.ts
+ ❯ tests/unit/src/render/syntax/csv.test.ts:11:24
+      9| test("test_parse_csv", async () => {
+     10|   // 準備
+     11|   const { parseCsv } = await loadCsv();
+       |                        ^
+     12|   // 実行
+     13|   const rows = parseCsv('a,"b, c","d""e"\r\nx,"y\nz",1\n');
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[15/40]⎯
+
+ FAIL  |unit| tests/unit/src/render/syntax/csv.test.ts > test_parse_csv_when_empty_values
+Error: Cannot find module '/src/render/syntax/csv.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-syntax-icon-columns-highlight-kbd-details-include-wide-csv/tests/unit/src/render/syntax/csv.test.ts
+ ❯ tests/unit/src/render/syntax/csv.test.ts:24:24
+     22| test("test_parse_csv_when_empty_values", async () => {
+     23|   // 準備
+     24|   const { parseCsv } = await loadCsv();
+       |                        ^
+     25|   // 実行
+     26|   const rows = parseCsv("a,,c\n,\n");
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[16/40]⎯
+
+ FAIL  |unit| tests/unit/src/render/syntax/csv.test.ts > test_build_csv_tables
+AssertionError: expected [] to have a length of 2 but got +0
+
+- Expected
++ Received
+
+- 2
++ 0
+
+ ❯ tests/unit/src/render/syntax/csv.test.ts:64:18
+     62|   // 検証
+     63|   const tables = findTags(html, 'data-source="csv"');
+     64|   expect(tables).toHaveLength(2);
+       |                  ^
+     65|   expect(tables[0]).toContain('data-kind="data"');
+     66|   expect(tables[1]).toContain('data-kind="default"');
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[17/40]⎯
+
+ FAIL  |unit| tests/unit/src/render/syntax/csv.test.ts > test_build_csv_tables_when_columns_mismatch
+Error: 開始タグが無い: mdmark-syntax-warning
+ ❯ findTag tests/unit/helpers/html.ts:10:11
+      8|   const tag = startTags(html).find((candidate) => candidate.includes(n…
+      9|   if (tag === undefined) {
+     10|     throw new Error(`開始タグが無い: ${needle}`);
+       |           ^
+     11|   }
+     12|   return tag;
+ ❯ innerHtml tests/unit/helpers/html.ts:31:15
+ ❯ tests/unit/src/render/syntax/csv.test.ts:82:19
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[18/40]⎯
+
+ FAIL  |unit| tests/unit/src/render/syntax/details.test.ts > test_build_details_ranges
+AssertionError: expected '\n<p>中身 A</p>\n\n\n<p>中身 B</p>\n\n' to contain '<details class="mdmark-collapsible"><…'
+
+- Expected
++ Received
+
+- <details class="mdmark-collapsible"><summary>補足</summary>
++
++ <p>中身 A</p>
++
++
++ <p>中身 B</p>
++
++
+
+ ❯ tests/unit/src/render/syntax/details.test.ts:28:16
+     26|   const { html } = renderDoc(markdown);
+     27|   // 検証
+     28|   expect(html).toContain(
+       |                ^
+     29|     '<details class="mdmark-collapsible"><summary>補足</summary>',
+     30|   );
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[19/40]⎯
+
+ FAIL  |unit| tests/unit/src/render/syntax/details.test.ts > test_build_details_ranges_when_unclosed
+Error: 開始タグが無い: mdmark-syntax-warning
+ ❯ findTag tests/unit/helpers/html.ts:10:11
+      8|   const tag = startTags(html).find((candidate) => candidate.includes(n…
+      9|   if (tag === undefined) {
+     10|     throw new Error(`開始タグが無い: ${needle}`);
+       |           ^
+     11|   }
+     12|   return tag;
+ ❯ innerHtml tests/unit/helpers/html.ts:31:15
+ ❯ tests/unit/src/render/syntax/details.test.ts:44:10
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[20/40]⎯
+
+ FAIL  |unit| tests/unit/src/render/syntax/details.test.ts > test_read_details_options
+Error: Cannot find module '/src/render/syntax/details.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-syntax-icon-columns-highlight-kbd-details-include-wide-csv/tests/unit/src/render/syntax/details.test.ts
+ ❯ tests/unit/src/render/syntax/details.test.ts:53:34
+     51| test("test_read_details_options", async () => {
+     52|   // 準備
+     53|   const { readDetailsOptions } = await loadDetails();
+       |                                  ^
+     54|   // 実行
+     55|   const results = ["補足", "実行の例 open", ""].map((args) =>
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[21/40]⎯
+
+ FAIL  |unit| tests/unit/src/render/syntax/highlight.test.ts > test_use_highlight
+AssertionError: expected '<p>==決め手== と ==例外=={color=green} と ==…' to contain '<mark class="mdmark-highlight">決め手</m…'
+
+- Expected
++ Received
+
+- <mark class="mdmark-highlight">決め手</mark>
++ <p>==決め手== と ==例外=={color=green} と == a == と ==x==</p>
++
+
+ ❯ tests/unit/src/render/syntax/highlight.test.ts:13:16
+     11|   const { html } = renderDoc(markdown);
+     12|   // 検証
+     13|   expect(html).toContain('<mark class="mdmark-highlight">決め手</mark>');
+       |                ^
+     14|   expect(html).toContain(
+     15|     '<mark class="mdmark-highlight" data-color="green">例外</mark>',
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[22/40]⎯
+
+ FAIL  |unit| tests/unit/src/render/syntax/highlight.test.ts > test_use_highlight_when_unknown_color
+AssertionError: expected '<p>==決め手=={color=pink}</p>\n' to contain '<mark class="mdmark-highlight">決め手</m…'
+
+- Expected
++ Received
+
+- <mark class="mdmark-highlight">決め手</mark>
++ <p>==決め手=={color=pink}</p>
++
+
+ ❯ tests/unit/src/render/syntax/highlight.test.ts:29:16
+     27|   const { html } = renderDoc(markdown);
+     28|   // 検証
+     29|   expect(html).toContain('<mark class="mdmark-highlight">決め手</mark>');
+       |                ^
+     30|   expect(innerHtml(html, "mdmark-syntax-warning")).toContain("pink");
+     31| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[23/40]⎯
+
+ FAIL  |unit| tests/unit/src/render/syntax/includes.test.ts > test_resolve_include_path
+Error: Cannot find module '/src/render/syntax/includes.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-syntax-icon-columns-highlight-kbd-details-include-wide-csv/tests/unit/src/render/syntax/includes.test.ts
+ ❯ tests/unit/src/render/syntax/includes.test.ts:19:34
+     17| test("test_resolve_include_path", async () => {
+     18|   // 準備
+     19|   const { resolveIncludePath } = await loadIncludes();
+       |                                  ^
+     20|   // 実行
+     21|   const results = [
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[24/40]⎯
+
+ FAIL  |unit| tests/unit/src/render/syntax/includes.test.ts > test_expand_includes
+AssertionError: expected [] to have a length of 3 but got +0
+
+- Expected
++ Received
+
+- 3
++ 0
+
+ ❯ tests/unit/src/render/syntax/includes.test.ts:55:20
+     53|   // 検証
+     54|   const wrappers = findTags(html, 'class="mdmark-include"');
+     55|   expect(wrappers).toHaveLength(3);
+       |                    ^
+     56|   const parts = html.split('class="mdmark-include"').slice(1);
+     57|   expect(findTags(parts[0] ?? "", "<h2")).toHaveLength(2);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[25/40]⎯
+
+ FAIL  |unit| tests/unit/src/render/syntax/includes.test.ts > test_expand_includes_when_missing
+AssertionError: expected [] to have a length of 3 but got +0
+
+- Expected
++ Received
+
+- 3
++ 0
+
+ ❯ tests/unit/src/render/syntax/includes.test.ts:85:20
+     83|   // 検証
+     84|   const warnings = html.split("mdmark-syntax-warning").slice(1);
+     85|   expect(warnings).toHaveLength(3);
+       |                    ^
+     86|   expect(html).toContain("missing.md");
+     87|   expect(html).toContain("無い見出し");
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[26/40]⎯
+
+ FAIL  |unit| tests/unit/src/render/syntax/includes.test.ts > test_expand_includes_when_circular
+AssertionError: expected [ '\n' ] to have a length of 2 but got 1
+
+- Expected
++ Received
+
+- 2
++ 1
+
+ ❯ tests/unit/src/render/syntax/includes.test.ts:102:31
+    100|   const { html } = renderDoc(markdown, {}, { includes });
+    101|   // 検証
+    102|   expect(html.split("a の段落")).toHaveLength(2);
+       |                               ^
+    103|   expect(html.split("b の段落")).toHaveLength(2);
+    104|   expect(findTags(html, "mdmark-syntax-warning")).toHaveLength(1);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[27/40]⎯
+
+ FAIL  |unit| tests/unit/src/render/syntax/includes.test.ts > test_select_heading_section
+Error: Cannot find module '/src/render/syntax/includes.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-syntax-icon-columns-highlight-kbd-details-include-wide-csv/tests/unit/src/render/syntax/includes.test.ts
+ ❯ tests/unit/src/render/syntax/includes.test.ts:113:36
+    111| test("test_select_heading_section", async () => {
+    112|   // 準備
+    113|   const { selectHeadingSection } = await loadIncludes();
+       |                                    ^
+    114|   const tokens = new MarkdownIt().parse(
+    115|     "## 準備\n\nA\n\n## 実行\n\nB\n\n### 手順\n\nC\n\n## 片付け\n\nD\n",
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[28/40]⎯
+
+ FAIL  |unit| tests/unit/src/render/syntax/includes.test.ts > test_select_lines
+Error: Cannot find module '/src/render/syntax/includes.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-syntax-icon-columns-highlight-kbd-details-include-wide-csv/tests/unit/src/render/syntax/includes.test.ts
+ ❯ tests/unit/src/render/syntax/includes.test.ts:134:27
+    132| test("test_select_lines", async () => {
+    133|   // 準備
+    134|   const { selectLines } = await loadIncludes();
+       |                           ^
+    135|   // 実行
+    136|   const inside = selectLines(TWELVE_LINES.replaceAll("\n", "\r\n"), 3,…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[29/40]⎯
+
+ FAIL  |unit| tests/unit/src/render/syntax/inline-icons.test.ts > test_build_inline_icons
+Error: 開始タグが無い: data-icon="flag"
+ ❯ findTag tests/unit/helpers/html.ts:10:11
+      8|   const tag = startTags(html).find((candidate) => candidate.includes(n…
+      9|   if (tag === undefined) {
+     10|     throw new Error(`開始タグが無い: ${needle}`);
+       |           ^
+     11|   }
+     12|   return tag;
+ ❯ tests/unit/src/render/syntax/inline-icons.test.ts:13:10
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[30/40]⎯
+
+ FAIL  |unit| tests/unit/src/render/syntax/inline-icons.test.ts > test_build_inline_icons_when_invalid_name
+AssertionError: expected -1 to be greater than or equal to 0
+ ❯ tests/unit/src/render/syntax/inline-icons.test.ts:32:49
+     30|   // 検証
+     31|   expect(html).toContain("<code>icon:Rocket!</code>");
+     32|   expect(html.indexOf("mdmark-syntax-warning")).toBeGreaterThanOrEqual…
+       |                                                 ^
+     33|   expect(html.indexOf("mdmark-syntax-warning")).toBeLessThan(
+     34|     html.indexOf("<code>icon:Rocket!</code>"),
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[31/40]⎯
+
+ FAIL  |unit| tests/unit/src/render/syntax/inline-icons.test.ts > test_build_inline_icons_when_icon_nodes
+Error: 開始タグが無い: data-icon="sailboat"
+ ❯ findTag tests/unit/helpers/html.ts:10:11
+      8|   const tag = startTags(html).find((candidate) => candidate.includes(n…
+      9|   if (tag === undefined) {
+     10|     throw new Error(`開始タグが無い: ${needle}`);
+       |           ^
+     11|   }
+     12|   return tag;
+ ❯ innerHtml tests/unit/helpers/html.ts:31:15
+ ❯ tests/unit/src/render/syntax/inline-icons.test.ts:50:10
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[32/40]⎯
+
+ FAIL  |unit| tests/unit/src/render/syntax/kbd.test.ts > test_build_kbds
+AssertionError: expected '<p><code>kbd:Ctrl+C</code> と <code>kb…' to contain '<span class="mdmark-kbd-group"><kbd c…'
+
+- Expected
++ Received
+
+- <span class="mdmark-kbd-group"><kbd class="mdmark-kbd">Ctrl</kbd><span class="mdmark-kbd-join">+</span><kbd class="mdmark-kbd">C</kbd></span>
++ <p><code>kbd:Ctrl+C</code> と <code>kbd\:Ctrl+C</code> と <code>kbd:</code></p>
++
+
+ ❯ tests/unit/src/render/syntax/kbd.test.ts:14:16
+     12|   const { html } = renderDoc(markdown);
+     13|   // 検証
+     14|   expect(html).toContain(
+       |                ^
+     15|     '<span class="mdmark-kbd-group"><kbd class="mdmark-kbd">Ctrl</kbd>…
+     16|   );
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[33/40]⎯
+
+ FAIL  |unit| tests/unit/src/render/syntax/kbd.test.ts > test_split_keys
+Error: Cannot find module '/src/render/syntax/kbd.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-syntax-icon-columns-highlight-kbd-details-include-wide-csv/tests/unit/src/render/syntax/kbd.test.ts
+ ❯ tests/unit/src/render/syntax/kbd.test.ts:24:25
+     22| test("test_split_keys", async () => {
+     23|   // 準備
+     24|   const { splitKeys } = await loadKbd();
+       |                         ^
+     25|   // 実行
+     26|   const results = ["Ctrl+Shift+P", "Ctrl++", " Ctrl + C "].map((text) …
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[34/40]⎯
+
+ FAIL  |unit| tests/unit/src/render/syntax/layout-columns.test.ts > test_build_layout_columns
+AssertionError: expected [] to have a length of 2 but got +0
+
+- Expected
++ Received
+
+- 2
++ 0
+
+ ❯ tests/unit/src/render/syntax/layout-columns.test.ts:37:51
+     35|   const { html } = renderDoc(markdown);
+     36|   // 検証
+     37|   expect(findTags(html, "mdmark-layout-columns")).toHaveLength(2);
+       |                                                   ^
+     38|   expect(html).toContain('data-count="2"');
+     39|   expect(html).toContain('data-count="3"');
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[35/40]⎯
+
+ FAIL  |unit| tests/unit/src/render/syntax/layout-columns.test.ts > test_build_layout_columns_when_invalid
+AssertionError: expected [] to have a length of 3 but got +0
+
+- Expected
++ Received
+
+- 3
++ 0
+
+ ❯ tests/unit/src/render/syntax/layout-columns.test.ts:93:51
+     91|   const { html } = renderDoc([...one, ...four, ...nested].join("\n"));
+     92|   // 検証
+     93|   expect(findTags(html, "mdmark-syntax-warning")).toHaveLength(3);
+       |                                                   ^
+     94|   expect(findTags(html, "mdmark-layout-columns")).toHaveLength(1);
+     95|   expect(html).toContain('data-count="2"');
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[36/40]⎯
+
+ FAIL  |unit| tests/unit/src/render/syntax/pagebreak.test.ts > test_build_pagebreaks
+AssertionError: expected '<p>前</p>\n\n<p>後</p>\n' to contain '<div class="mdmark-pagebreak" aria-hi…'
+
+- Expected
++ Received
+
+- <div class="mdmark-pagebreak" aria-hidden="true"></div>
++ <p>前</p>
++
++ <p>後</p>
++
+
+ ❯ tests/unit/src/render/syntax/pagebreak.test.ts:12:14
+     10|   const off = renderDoc(markdown, { pagebreak: false }).html;
+     11|   // 検証
+     12|   expect(on).toContain(
+       |              ^
+     13|     '<div class="mdmark-pagebreak" aria-hidden="true"></div>',
+     14|   );
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[37/40]⎯
+
+ FAIL  |unit| tests/unit/src/render/syntax/wide.test.ts > test_build_wide_ranges
+AssertionError: expected [] to have a length of 2 but got +0
+
+- Expected
++ Received
+
+- 2
++ 0
+
+ ❯ tests/unit/src/render/syntax/wide.test.ts:27:18
+     25|   // 検証
+     26|   const ranges = findTags(html, "mdmark-wide-range");
+     27|   expect(ranges).toHaveLength(2);
+       |                  ^
+     28|   expect(ranges[0]).toContain('data-state="wide"');
+     29|   expect(ranges[1]).toContain('data-state="narrow"');
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[38/40]⎯
+
+ FAIL  |unit| tests/unit/src/render/syntax/wide.test.ts > test_build_wide_ranges_when_unclosed
+Error: 開始タグが無い: mdmark-syntax-warning
+ ❯ findTag tests/unit/helpers/html.ts:10:11
+      8|   const tag = startTags(html).find((candidate) => candidate.includes(n…
+      9|   if (tag === undefined) {
+     10|     throw new Error(`開始タグが無い: ${needle}`);
+       |           ^
+     11|   }
+     12|   return tag;
+ ❯ innerHtml tests/unit/helpers/html.ts:31:15
+ ❯ tests/unit/src/render/syntax/wide.test.ts:43:10
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[39/40]⎯
+
+ FAIL  |unit| tests/unit/vscode/src/preview/includes.test.ts > test_read_includes
+Error: Cannot find module '/vscode/src/preview/includes.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-syntax-icon-columns-highlight-kbd-details-include-wide-csv/tests/unit/vscode/src/preview/includes.test.ts
+ ❯ tests/unit/vscode/src/preview/includes.test.ts:10:28
+      8| test("test_read_includes", async () => {
+      9|   // 準備
+     10|   const { readIncludes } = await loadIncludes();
+       |                            ^
+     11|   const files: Record<string, string> = {
+     12|     "/ws/root/docs/共通/手順.md": "## 準備\n\nA\n\n## 実行\n\nB\n",
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[40/40]⎯
+
+
+ Test Files  22 failed (22)
+      Tests  37 failed | 53 passed (90)
+   Start at  12:48:38
+   Duration  10.61s (import 38%, transform 34%, tests 25%, worker 3%)
+

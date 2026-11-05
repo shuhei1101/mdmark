@@ -124,6 +124,26 @@ scenarios:
     test: test_normal_when_footnotes
     refs:
       - dev/設計書/シナリオ/単一ユースケース/脚注を見る#scenarios[正常シナリオ]
+  - name: 正常シナリオ（取り込む文書を渡す）
+    setup:
+      - name: 取り込む文書の表
+        description: '`共通/手順.md`（`## 準備` と `## 実行` の見出しと段落）を持つ、パスから本文を引く表'
+        notes: 表の渡し方はインターフェース定義で決める
+      - name: include のマーカーを持つ Markdown
+        description: '段落の間に `<!-- include: 共通/手順.md#実行 -->` を持つ文書'
+      - name: Mock
+        description: 差し替える依存は無い（画面を持たない）
+    flow: |-
+      sequenceDiagram
+        participant A as 使う側の処理
+        participant M as mdmark
+        A->>M: Markdown と取り込む文書の表を渡して HTML 文字列にさせる
+        M->>M: include のマーカーの場所に、取り込み先の見出しの中を入れる
+        M-->>A: HTML 文字列
+    expected:
+      - HTML 文字列のマーカーの場所に、`実行` の見出しとその下の段落があり、`準備` の段落が無い
+      - 表を渡さずに呼ぶと、マーカーの場所に取り込み先が無い書き方の警告が入る
+    test: test_normal_when_includes_given
 lead: 使う側（書き出し・ビルドの処理やサーバー）が、画面を持たずに Markdown を mdmark で HTML 文字列にする。ブラウザでも Node でも同じ文字列を返す。
 issue: 3
 primary_actor: mdmark で HTML を書き出す使う側の処理

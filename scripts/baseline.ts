@@ -3,7 +3,7 @@ import { join, posix, relative, sep } from "node:path";
 import { build } from "esbuild";
 import { Linter, type SourceCode } from "eslint";
 import compat from "eslint-plugin-compat";
-import { BROWSER_TARGETS, postcssStubPlugin } from "./bundle.ts";
+import { BROWSER_TARGETS, bundleDefines, postcssStubPlugin } from "./bundle.ts";
 
 /** 対応ブラウザの下限に無い API の使用 1 件 */
 export type BaselineViolation = {
@@ -198,7 +198,7 @@ export async function findBaselineViolations(options: {
     write: false,
     target: BROWSER_TARGETS,
     plugins: [postcssStubPlugin],
-    define: { __MDMARK_VERSION__: JSON.stringify(version) },
+    define: bundleDefines(version),
     logLevel: "silent",
   });
   return entries.flatMap((entry) => {

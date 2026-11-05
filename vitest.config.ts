@@ -1,9 +1,14 @@
 import { tmpdir } from "node:os";
 import { playwright } from "@vitest/browser-playwright";
 import { defineConfig } from "vitest/config";
+import manifest from "./package.json" with { type: "json" };
 import { fixturesPlugin } from "./tests/integration/fixtures-plugin.ts";
 
 export default defineConfig({
+  // 束ねていないアイコンを読む URL のバージョン（ビルドと同じく依存の lucide のバージョンを埋める）
+  define: {
+    __MDMARK_LUCIDE_VERSION__: JSON.stringify(manifest.dependencies.lucide),
+  },
   test: {
     projects: [
       {

@@ -17,6 +17,9 @@ export function distUrl(options: {
 }
 
 /** インターフェース定義の制約「CSP」のとおりの `Content-Security-Policy` の値を組む */
+/** 束ねていない名前のアイコンを読む jsDelivr の origin */
+const ICONS_ORIGIN = "https://cdn.jsdelivr.net";
+
 export function buildCsp(options: {
   /** この HTML の nonce */
   nonce: string;
@@ -30,12 +33,12 @@ export function buildCsp(options: {
   const { nonce, distOrigin, libraryOrigins, cspSource } = options;
   return [
     "default-src 'none'",
-    `script-src ${[`'nonce-${nonce}'`, distOrigin, ...libraryOrigins, cspSource].join(" ")}`,
+    `script-src ${[...new Set([`'nonce-${nonce}'`, distOrigin, ...libraryOrigins, ICONS_ORIGIN, cspSource])].join(" ")}`,
     `style-src ${distOrigin} ${cspSource} 'unsafe-inline'`,
     `img-src ${cspSource} https: data:`,
     `media-src ${cspSource} https: data:`,
     `font-src ${distOrigin} ${cspSource}`,
-    `connect-src ${distOrigin}`,
+    `connect-src ${[...new Set([distOrigin, ICONS_ORIGIN])].join(" ")}`,
   ].join("; ");
 }
 

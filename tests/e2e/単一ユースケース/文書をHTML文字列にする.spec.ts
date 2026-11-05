@@ -217,3 +217,22 @@ test("test_normal_when_footnotes", async () => {
 function matchAll(text: string, pattern: RegExp): string[] {
   return text.match(pattern) ?? [];
 }
+
+// 取り込む文書の表を渡すと、マーカーの場所に見出しの中を描く（正常シナリオ（取り込む文書を渡す））
+test("test_normal_when_includes_given", async () => {
+  // 準備
+  const markdown = "# 案内\n\n<!-- include: 共通/手順.md#実行 -->\n";
+  const includes = {
+    "共通/手順.md": "## 準備\n\n準備の段落\n\n## 実行\n\n実行の段落\n",
+  };
+  // 実行
+  const html = await renderInNode(builtRoot, markdown, { includes });
+  const without = await renderInNode(builtRoot, markdown);
+  // 検証
+  expect(html).toContain('<div class="mdmark-include"');
+  expect(html).toMatch(/<h2[^>]*>実行/);
+  expect(html).toContain("実行の段落");
+  expect(html).not.toContain("準備の段落");
+  expect(without).toContain("mdmark-syntax-warning");
+  expect(without).toContain("共通/手順.md");
+});

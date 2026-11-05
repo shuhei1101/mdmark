@@ -1256,5 +1256,166 @@ elements:
       - dev/設計書/インターフェース定義/ライブラリ本体/文書をHTML文字列にする.ts#constraints[脚注]
       - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[脚注の操作]
     status: planned
+  - id: inline-icon
+    name: アイコン
+    kind: label
+    label: なし（`aria-hidden`）
+    description: '`icon:名前` の場所に置く Lucide のアイコン'
+    position: 描く先の要素 > 本文の見出し・段落の中
+    component: dev/設計書/部品設計/アイコン.ts#
+    args:
+      - name: name
+        value: '`icon:` の後ろの名前'
+      - name: node
+        value: 束ねた名前と `opts.icons` の名前はその IconNode。束ねていない名前は `mount` が読んだ IconNode
+    visible_when: '`icon` がオンで、名前が Lucide の名前の書き方に合うとき'
+    refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/文書をHTML文字列にする.ts#constraints[アイコン]
+    status: planned
+    introduced:
+      pr: 307
+  - id: kbd
+    name: キー
+    kind: label
+    label: キーの文言
+    description: '`kbd:` の場所に置くキーの並び'
+    position: 描く先の要素 > 本文の段落・表のセルの中
+    component: dev/設計書/部品設計/キー.ts#
+    args:
+      - name: keys
+        value: '`kbd:` の後ろを `+` で区切ったキー'
+    visible_when: '`kbd` がオンのとき'
+    refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/文書をHTML文字列にする.ts#constraints[キー]
+    status: planned
+    introduced:
+      pr: 307
+  - id: highlight
+    name: 蛍光ペン
+    kind: label
+    label: マーカーの中身
+    description: '`==文字==` の場所に置く蛍光ペンのマーカー'
+    position: 描く先の要素 > 本文の段落の中
+    component: dev/設計書/部品設計/蛍光ペン.ts#
+    args:
+      - name: html
+        value: '`==` で囲んだ行内の Markdown を描いた HTML'
+      - name: color
+        value: 直後の `{color=色}` の色の名前
+    visible_when: '`highlight` がオンのとき'
+    refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/文書をHTML文字列にする.ts#constraints[蛍光ペン]
+    status: planned
+    introduced:
+      pr: 307
+  - id: ruby
+    name: ルビ
+    kind: label
+    label: 文書に書いたルビ
+    description: 文書の HTML の `ruby`。`rt` は親の文字の 0.6 倍と 11px の大きい方の大きさで出す
+    position: 描く先の要素 > 本文の段落の中
+    visible_when: 文書に `ruby` を書いたとき
+    refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/文書をHTML文字列にする.ts#constraints[ルビ]
+    status: planned
+    introduced:
+      pr: 307
+  - id: layout-columns
+    name: 段組み
+    kind: container
+    description: columns の範囲の中身を 2〜3 列に並べる。描く先の要素が狭いときは縦に積む
+    position: 描く先の要素 > 本文の列
+    component: dev/設計書/部品設計/段組み.ts#
+    args:
+      - name: columns
+        value: '`<!-- column -->` で区切った中身を描いた HTML'
+    visible_when: '`columns` がオンで、列の数が 2〜3 のとき'
+    refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/文書をHTML文字列にする.ts#constraints[段組み]
+    status: planned
+    introduced:
+      pr: 307
+  - id: details-range
+    name: details の範囲
+    kind: details
+    label: 印のタイトル（空のとき `詳細`）
+    description: details の範囲をタイトルから開閉する
+    position: 描く先の要素 > 本文の列
+    component: dev/設計書/部品設計/detailsの範囲.ts#
+    args:
+      - name: title
+        value: 印のタイトル
+      - name: html
+        value: 範囲の中身を描いた HTML
+      - name: open
+        value: 印の最後の語が `open`
+    action: タイトルを押すと開閉する。印刷では開いて出す
+    visible_when: '`details` がオンのとき'
+    refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/文書をHTML文字列にする.ts#constraints[details の範囲]
+    status: planned
+    introduced:
+      pr: 307
+  - id: include
+    name: 取り込んだ中身
+    kind: container
+    description: include のマーカーの場所に、取り込んだ文書の全体・見出しの中・行の範囲を本文と同じ見た目で描く。取り込んだことを示すラベルは出さない
+    position: 描く先の要素 > 本文の列
+    visible_when: '`include` がオンで、取り込み先があるとき'
+    refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/文書をHTML文字列にする.ts#constraints[取り込み]
+    status: planned
+    introduced:
+      pr: 307
+  - id: pagebreak
+    name: 改ページ
+    kind: container
+    description: 印刷のときだけこの場所で改ページする。画面では何も出さず高さを持たない
+    position: 描く先の要素 > 本文の列
+    visible_when: 印刷のとき（`pagebreak` がオン）
+    refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/文書をHTML文字列にする.ts#constraints[改ページ]
+    status: planned
+    introduced:
+      pr: 307
+  - id: wide
+    name: wide の範囲
+    kind: region
+    description: wide の範囲を本文の幅を越えて広げる。範囲の上の本文の幅の右端に切り替えのボタンを置く
+    position: 描く先の要素 > 本文の列（広げた幅は右側の目次・文書の一覧の列と右端の線の内側）
+    component: dev/設計書/部品設計/wideの範囲.ts#
+    args:
+      - name: html
+        value: 範囲の中身を描いた HTML
+      - name: state
+        value: '`<!-- wide: closed -->` なら `narrow`、それ以外は `wide`。読む人がボタンを押すたびに入れ替える'
+      - name: toggle
+        value: '`mount` は `true`、`render` は `false`'
+    action: 切り替えのボタンを押すと、広げた幅と本文の幅を切り替える。印刷では用紙の幅に収め、ボタンを出さない
+    visible_when: '`wide` がオンのとき。ボタンは広げられる幅（右側の目次を付けたときは描く先の要素、付けないときは描く先の要素の親の幅）が本文の幅より広いときだけ'
+    refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[wide の幅の切り替え]
+    status: planned
+    introduced:
+      pr: 307
+  - id: csv-raw-toggle
+    name: RAW のボタン
+    kind: button
+    label: なし（読み上げ名 `元の CSV を表示`）
+    description: CSV の表の帯の右端に置くコードのアイコンのボタン
+    position: 描く先の要素 > CSV の表 > 帯の右端
+    component: dev/設計書/部品設計/表.ts#
+    args:
+      - name: rawCsv
+        value: 言語 `csv` のコードブロックに書いたとおりの CSV
+      - name: rawShown
+        value: 読む人が押すたびに入れ替える
+    action: 押すと表を隠して元の CSV を出し、もう一度押すと表に戻す
+    visible_when: '`csv` がオンで、表が言語 `csv` のコードブロックから作られたとき'
+    refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[CSV の表と元の CSV の切り替え]
+    status: planned
+    introduced:
+      pr: 307
 mock: dev/mock/pages/ui-canvas/80/side-by-side/
 lead: mdmark が描く先の要素の中に描く文書。Markdown の本文に加え、mdmark が足す UI の項目（横スクロールする領域のキー操作・表の列名・タスクのチェックボックス・外部ライブラリと拡張の印の場所・拡張記法の部品・書き方の警告）を持つ。

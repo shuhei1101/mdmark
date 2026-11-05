@@ -203,3 +203,45 @@ test("test_normal_when_flow_node_link", async ({
   await expect(h1).toContainText("文書B");
   expect(opened.externalRequests()).toEqual([]);
 });
+
+// wide の範囲を、左の文書の一覧の列に重ねずに広げる（正常シナリオ（wide の範囲を持つ文書））
+test("test_normal_when_wide_range", async ({ builtRoot, tempDir, page }) => {
+  // 準備
+  const dir = await tempDir();
+  const table = [
+    "| 項目 | 1 月 | 2 月 | 3 月 | 4 月 | 5 月 | 6 月 | 備考 |",
+    "| --- | --- | --- | --- | --- | --- | --- | --- |",
+    "| 売上 | 1,200,000 | 1,350,000 | 1,410,000 | 1,280,000 | 1,520,000 | 1,610,000 | 前年比で増加した |",
+  ].join("\n");
+  await writeFiles(dir, {
+    "mdmark.config.yaml": [
+      "build:",
+      '  include: ["A.md", "B.md"]',
+      "  entry: A.md",
+      "  out: dist/docs.html",
+      "",
+    ].join("\n"),
+    "mdmark-theme.css": "",
+    "A.md": `# 文書A\n\n段落\n\n<!-- wide -->\n\n${table}\n\n<!-- /wide -->\n`,
+    "B.md": "# 文書B\n\nB の段落\n",
+  });
+  expect((await runCli(builtRoot, ["build"], dir)).code).toBe(0);
+  await page.setViewportSize({ width: 1440, height: 900 });
+  // 実行
+  await openStandalone(page, {
+    tempDir,
+    htmlFile: join(dir, "dist", "docs.html"),
+  });
+  // 検証
+  const range = page.locator("article .mdmark-wide-range");
+  const paragraph = page.locator("article p").first();
+  await expect
+    .poll(async () => (await range.boundingBox())?.width ?? 0)
+    .toBeGreaterThan((await paragraph.boundingBox())?.width ?? 0);
+  const side = await page.locator(".mdmark-bundle-side").boundingBox();
+  expect((await range.boundingBox())?.x ?? 0).toBeGreaterThanOrEqual(
+    (side?.x ?? 0) + (side?.width ?? 0) - 1,
+  );
+  await page.locator('.mdmark-bundle-side a[data-doc-path="B.md"]').click();
+  await expect(page.locator("article.mdmark h1")).toContainText("文書B");
+});

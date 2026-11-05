@@ -18,6 +18,8 @@ export type SyntaxWarning = {
   kind?: "diagram_invalid" | "syntax_warning";
   /** 警告の元のマーカーのトークンの `map[0]`（マーカーのトークンを持たない警告は省く） */
   line?: number;
+  /** include のマーカーの取り込み先が無い警告か（`mdmark check --text`・`--file` が除く） */
+  includeTarget?: boolean;
 };
 
 /** トークンの `meta.warning` に入れる、集める警告の種類・文・マーカーの行 */
@@ -25,6 +27,7 @@ export type WarningMeta = {
   kind: "diagram_invalid" | "syntax_warning";
   message: string;
   line?: number;
+  includeTarget?: boolean;
 };
 
 /** 警告の本文と項目を、HTML のタグを除いた文字にして空白 1 つでつなぐ */
@@ -44,7 +47,7 @@ function makeWarningToken(
   warning: SyntaxWarning,
   source: Token | undefined,
 ) {
-  const { kind = "syntax_warning", ...view } = warning;
+  const { kind = "syntax_warning", includeTarget, ...view } = warning;
   delete view.line;
   const line = warning.line ?? source?.map?.[0];
   const token = ownBlock(state, renderSyntaxWarning(view));
@@ -52,6 +55,7 @@ function makeWarningToken(
     kind,
     message: plainMessage(warning),
     ...(line === undefined ? {} : { line }),
+    ...(includeTarget ? { includeTarget } : {}),
   };
   token.meta = { ...(token.meta ?? {}), warning: meta };
   return token;
@@ -81,6 +85,8 @@ export type CollectedWarning = {
   line: number;
   kind: "diagram_invalid" | "syntax_warning";
   message: string;
+  /** include のマーカーの取り込み先が無い警告か */
+  includeTarget?: boolean;
 };
 
 /** 警告の元の行（0 から）: マーカーの行、無ければ後ろで最初に `map` を持つトークンの開始の行、それも無ければ前で最後に `map` を持つトークンの終わりの行 */
@@ -116,6 +122,7 @@ export function collectWarningsRule(state: StateCore): void {
         line: warningLine(state.tokens, index, meta) + 1,
         kind: meta.kind,
         message: meta.message,
+        ...(meta.includeTarget ? { includeTarget: true } : {}),
       });
     }
   });

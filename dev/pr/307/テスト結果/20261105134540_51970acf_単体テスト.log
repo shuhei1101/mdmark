@@ -1,0 +1,15 @@
+$ npm run test:unit
+
+> test:unit
+> vitest run --project 'unit*'
+
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-syntax-icon-columns-highlight-kbd-details-include-wide-csv
+
+
+ Test Files  213 passed (213)
+      Tests  1472 passed (1472)
+   Start at  13:45:44
+   Duration  62.40s (worker 48%, tests 32%, import 18%, transform 2%)
+
+exit=0

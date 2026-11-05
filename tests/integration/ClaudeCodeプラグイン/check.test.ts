@@ -216,3 +216,51 @@ test("test_normal_when_text_and_key", async () => {
   expect(linesOf(cliKey.stdout).slice(0, -1)).toEqual(keyIssues.map(toLine));
   expect(await snapshot(dir, Object.keys(files))).toEqual(before);
 });
+
+// CLI と同じ include_target_missing のずれを返し、説明文で取り込み先も点検すると知らせる（正常系（取り込み先が無い））
+test("test_normal_when_include_targets_missing", async () => {
+  // 準備
+  const dir = await createTempDir();
+  const files = {
+    "mdmark.config.yaml": [
+      "build:",
+      '  include: ["docs/*.md"]',
+      "  out: dist/docs.html",
+      "",
+    ].join("\n"),
+    "docs/a.md": [
+      "# A",
+      "",
+      "<!-- include: missing.md -->",
+      "",
+      "<!-- include: 共通/手順.md#実行 -->",
+      "",
+    ].join("\n"),
+    "docs/b.md": [
+      "# B",
+      "<!-- include: 共通/手順.md#無い見出し -->",
+      "",
+      "<!-- include: ../src/app.ts#L8-L10 -->",
+      "",
+    ].join("\n"),
+    "docs/共通/手順.md": "## 実行\n\n実行の段落\n",
+    "src/app.ts": "1\n2\n3\n4\n5\n",
+  };
+  await writeFiles(dir, files);
+  const before = await snapshot(dir, Object.keys(files));
+  const client = await connectHttp({ projectDir: dir });
+  // 実行
+  const { tools } = await client.listTools();
+  const result = await callTool(client, "check", {});
+  // 検証
+  const check = tools.find((tool) => tool.name === "check");
+  expect(check?.description).toContain("include のマーカーの取り込み先");
+  expect(result.isError).toBe(false);
+  const issues = JSON.parse(result.texts[0] ?? "").issues as Issue[];
+  expect(
+    issues.filter((issue) => issue.kind === "include_target_missing"),
+  ).toHaveLength(3);
+  const cli = await runCli(["check"], dir);
+  expect(linesOf(cli.stdout).slice(0, -1)).toEqual(issues.map(toLine));
+  expect(await snapshot(dir, Object.keys(files))).toEqual(before);
+});

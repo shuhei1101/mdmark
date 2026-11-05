@@ -160,7 +160,7 @@ export const TOOLS: ToolDefinition[] = [
   {
     name: "check",
     description:
-      "設定の形・索引と文書のずれ・build の対象の有無・知らない印を点検する（mdmark check と同じ処理）。設定・索引・文書は書き換えない。ずれの一覧 issues（file・where・kind・message）を JSON で返し、ずれがあってもエラーにしない。base に比べる基準の git の ref（例 origin/develop）を渡すと、基準と HEAD の merge-base から変わった文書を比べ、change_together の組のうち片方だけが変わった直し忘れも返す。text に Markdown の文字列、または file に YAML のファイルと key にキーのパスを渡すと、設定と索引は点検せず、その Markdown を描いたときの書き方の警告・知らない印・図の配置のずれだけを返す（text は file が -、file は where が YAML のファイルの行）。",
+      "設定の形・索引と文書のずれ・build の対象の有無・知らない印・include のマーカーの取り込み先を点検する（mdmark check と同じ処理）。設定・索引・文書は書き換えない。ずれの一覧 issues（file・where・kind・message）を JSON で返し、ずれがあってもエラーにしない。base に比べる基準の git の ref（例 origin/develop）を渡すと、基準と HEAD の merge-base から変わった文書を比べ、change_together の組のうち片方だけが変わった直し忘れも返す。text に Markdown の文字列、または file に YAML のファイルと key にキーのパスを渡すと、設定と索引は点検せず、その Markdown を描いたときの書き方の警告・知らない印・図の配置のずれだけを返す（text は file が -、file は where が YAML のファイルの行）。",
     inputSchema: {
       type: "object",
       properties: {

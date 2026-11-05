@@ -5,6 +5,7 @@ import { build, type Metafile } from "esbuild";
 import { parse } from "yaml";
 import { type GuideEntry, parseGuideIndex } from "../src/plugin/guide.ts";
 import {
+  bundleDefines,
   listBundledPackages,
   NODE_BANNER,
   NODE_MODULES_SEGMENT,
@@ -166,7 +167,7 @@ export async function buildPlugin(options: {
     platform: "node",
     target: NODE_TARGET,
     banner: { js: NODE_BANNER },
-    define: { __MDMARK_VERSION__: JSON.stringify(version) },
+    define: bundleDefines(version),
     metafile: true,
     logLevel: "silent",
   });

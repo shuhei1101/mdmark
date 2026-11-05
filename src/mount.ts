@@ -16,14 +16,16 @@ import {
   normalizeDiffMode,
 } from "./diff/source.ts";
 import { highlightCodeBlocks } from "./highlight.ts";
+import { loadInlineIcons } from "./inline-icons.ts";
 import { attachBackToTop } from "./interact/back-to-top.ts";
 import { attachInteractions } from "./interact/index.ts";
 import { attachSideToc, type SideTocState } from "./interact/side-toc.ts";
 import type { MdmarkAlias } from "./knowledge/aliases.ts";
 import type { MdmarkIndex } from "./knowledge/index-shape.ts";
 import type { MdmarkReferences } from "./knowledge/references.ts";
-import { loadLibraries } from "./libraries.ts";
+import { embeddedLibraries, loadLibraries } from "./libraries.ts";
 import { attachParts, type PartsHandle } from "./mount-parts.ts";
+import type { MdmarkIconNode } from "./parts/inline-icon.ts";
 import { renderNotice } from "./parts/notice.ts";
 import { attachPrint } from "./print.ts";
 import { renderDocument } from "./render/index.ts";
@@ -52,6 +54,10 @@ export type MountOptions = {
   baseMarkdown?: string | null;
   /** `+columns` の表で列の表示を切り替えるたびに呼ぶ */
   onColumnsChange?: (event: MdmarkColumnsChange) => void;
+  /** 取り込む文書の表。キーは描く文書のフォルダからのパス。省くと include のマーカーを取り込み先が無い警告にする */
+  includes?: Record<string, string>;
+  /** 束ねていない名前のアイコンの形の表。表に無い名前は jsDelivr から読む */
+  icons?: Record<string, MdmarkIconNode>;
 };
 
 /** `onColumnsChange` が受け取る列の表示 */
@@ -64,10 +70,13 @@ export type MdmarkColumnsChange = {
 
 /** `mount` の戻り値 */
 export type MountHandle = {
-  /** 本文だけを描き直す。設定は `mount` に渡したものを使う。`options.baseMarkdown` を渡すと比較元を差し替え、`null` で外す。`destroy` の後は何もしない */
+  /** 本文だけを描き直す。設定は `mount` に渡したものを使う。`options.baseMarkdown` を渡すと比較元を差し替え、`null` で外す。`options.includes` を渡すと取り込む文書の表を差し替える。`destroy` の後は何もしない */
   update: (
     markdown: string,
-    options?: { baseMarkdown?: string | null },
+    options?: {
+      baseMarkdown?: string | null;
+      includes?: Record<string, string>;
+    },
   ) => void;
   /** 要素の中を空にして class `mdmark` とテーマの属性を外し、印刷の受け取りを外す。2 回目以降は何もしない */
   destroy: () => void;
@@ -195,6 +204,8 @@ export function mount(el: HTMLElement, opts: MountOptions): MountHandle {
   }
   // 比較元の Markdown（無ければ色分けしない）
   let base = opts.baseMarkdown ?? undefined;
+  // 取り込む文書の表（`update` で差し替える）
+  let includes = opts.includes;
   // 同じ要素へ 2 回目の mount を呼ぶと、前の描画を先に片付ける
   mounted.get(el)?.destroy();
   const diffMode = normalizeDiffMode(opts.diffMode);
@@ -250,6 +261,8 @@ export function mount(el: HTMLElement, opts: MountOptions): MountHandle {
       docId: opts.docId,
       references: opts.references,
       aliases: opts.aliases,
+      includes,
+      icons: opts.icons,
     });
     if (from === undefined) {
       el.innerHTML = rendered.html;
@@ -267,6 +280,8 @@ export function mount(el: HTMLElement, opts: MountOptions): MountHandle {
               docId: opts.docId,
               references: opts.references,
               aliases: opts.aliases,
+              includes,
+              icons: opts.icons,
             }).html,
         }),
       );
@@ -306,6 +321,21 @@ export function mount(el: HTMLElement, opts: MountOptions): MountHandle {
       placement: config.tooltips.placement,
       onColumnsChange,
     });
+    // 束ねていない名前のアイコンを読む。読み込みの完了は待たない
+    if (features.icon === true) {
+      void loadInlineIcons({
+        root: body,
+        icons: opts.icons ?? {},
+        isCurrent: () => !destroyed && generation === current,
+        // 書き出した HTML（外部ライブラリを埋めたとき）は外へ要求せず、表に無い名前を Lucide に無い名前として扱う
+        ...(embeddedLibraries === undefined
+          ? {}
+          : {
+              importModule: () => Promise.reject(new Error("embedded")),
+              fetchHead: async () => new Response(null, { status: 404 }),
+            }),
+      });
+    }
     // 読み込みの完了は待たない
     void loadLibraries({
       root: body,
@@ -376,6 +406,9 @@ export function mount(el: HTMLElement, opts: MountOptions): MountHandle {
         checkBaseMarkdown(options.baseMarkdown);
         if (options.baseMarkdown !== undefined) {
           base = options.baseMarkdown ?? undefined;
+        }
+        if (options.includes !== undefined) {
+          includes = options.includes;
         }
       }
       draw(markdown);

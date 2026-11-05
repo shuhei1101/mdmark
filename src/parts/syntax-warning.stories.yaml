@@ -71,3 +71,44 @@ stories:
     args:
       mark: '<!-- view: group=状態 icons=完了:rocket -->'
       message: のアイコン `rocket` は使えません。使えるアイコンは `circle`・`circle-dashed`・`circle-dot`・`circle-pause`・`circle-check`・`circle-x`・`inbox`・`archive`・`clock`・`flag`・`star`・`bug`・`eye`・`lock`・`zap`・`ban` です。`完了` の列には既定のアイコンを付けています。
+  - name: IconName
+    parameters:
+      server:
+        id: syntax-warning
+    args:
+      mark: icon:Rocket!
+      message: 'の `Rocket!` は Lucide のアイコンの名前になりません。名前は英小文字・数字・`-` で書きます（例: `rocket`）。書いた文字のまま表示しています。'
+  - name: IconNotInLucide
+    parameters:
+      server:
+        id: syntax-warning
+    args:
+      mark: icon:no-such-icon
+      message: の `no-such-icon` は Lucide に無いアイコンの名前です。https://lucide.dev/icons/ で名前を確かめてください。書いた文字のまま表示しています。
+  - name: ColumnsCount
+    parameters:
+      server:
+        id: syntax-warning
+    args:
+      mark: <!-- columns -->
+      message: の範囲が 4 列です。横に並べられるのは 2〜3 列です。`<!-- column -->` を減らしてください。中身を書いた順に表示しています。
+  - name: IncludeMissing
+    parameters:
+      server:
+        id: syntax-warning
+    args:
+      mark: '<!-- include: src/app.ts#L20-L22 -->'
+      message: の `src/app.ts` は 12 行で、20〜22 行目がありません。行の範囲を修正してください。
+  - name: IncludeCircular
+    parameters:
+      server:
+        id: syntax-warning
+    args:
+      mark: '<!-- include: a.md -->'
+      message: の取り込みが循環しています（`a.md → b.md → a.md`）。この場所では取り込んでいません。
+  - name: CsvColumns
+    parameters:
+      server:
+        id: syntax-warning
+    args:
+      message: CSV の 2 行目・3 行目の列の数が、見出しの行の 3 列と違います。見出しの列の数にそろえて表示しています。

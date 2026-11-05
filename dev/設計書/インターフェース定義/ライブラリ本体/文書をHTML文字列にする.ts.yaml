@@ -1458,6 +1458,232 @@ flows:
     test: test_normal_when_footnotes_disabled
     refs:
       - dev/設計書/シナリオ/単一ユースケース/機能のオン・オフを文書で上書きする#scenarios[正常シナリオ（脚注の機能を外す）]
+  - name: 正常系（アイコン・キー・蛍光ペン・ルビ）
+    summary: 行内の新しい記法を、スクリプト無しで読める HTML にする
+    setup:
+      - name: 配布物を読んだ Node の処理
+        description: 正常系と同じ
+      - name: 行内の記法を持つ Markdown
+        description: 見出し ``## `icon:flag` はじめに``、段落の `` `icon:sailboat` ``・`` `icon\:check` ``・`` `kbd:Ctrl+C` ``・`` `kbd:Ctrl++` ``・`==決め手==`・`==例外=={color=green}`・`<ruby>漢字<rt>かんじ</rt></ruby>` を持つ文書
+        notes: '`flag` は配布物に束ねた名前、`sailboat` は束ねていない名前。`opts.icons` は渡さない'
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        participant C as 使う側の処理
+        participant M as mdmark
+        C->>M: render(markdown)
+        M->>M: icon:・kbd:・== を記法の要素にする
+        M-->>C: HTML 文字列
+    expected:
+      - 見出しの中に `<span class="mdmark-inline-icon" data-icon="flag" aria-hidden="true">` があり、中に `svg` がある
+      - '`<span class="mdmark-inline-icon" data-icon="sailboat" aria-hidden="true"></span>` があり、中が空'
+      - '`<code>icon:check</code>` がある'
+      - '`Ctrl+C` が `<span class="mdmark-kbd-group"><kbd class="mdmark-kbd">Ctrl</kbd><span class="mdmark-kbd-join">+</span><kbd class="mdmark-kbd">C</kbd></span>` になり、`Ctrl++` の 2 つ目の `kbd` が `+`'
+      - '`<mark class="mdmark-highlight">決め手</mark>` と `<mark class="mdmark-highlight" data-color="green">例外</mark>` があり、文字列に `==`・`{color=` が無い'
+      - '`<ruby>漢字<rt>かんじ</rt></ruby>` が残る'
+      - 文字列に `icon:flag`・`kbd:` が無い
+    test: test_normal_when_inline_notations
+    refs:
+      - dev/設計書/シナリオ/単一ユースケース/ステップ・ファイルツリー・バッジで本文を組む#scenarios[正常シナリオ（アイコン・キー・ルビ）]
+      - dev/設計書/シナリオ/単一ユースケース/名前の色で表・バッジ・本文を強調する#scenarios[正常シナリオ（蛍光ペンのマーカー）]
+  - name: 正常系（アイコンの形の表）
+    summary: '`opts.icons` にある束ねていない名前を、その形の svg で描く'
+    setup:
+      - name: 配布物を読んだ Node の処理
+        description: 正常系と同じ
+      - name: 束ねていない名前のアイコンを持つ Markdown
+        description: 段落に `` `icon:sailboat` `` を持つ文書
+      - name: アイコンの形の表
+        description: '`opts.icons` に `{ "sailboat": [["path", { "d": "M22 18H2a4 4 0 0 0 4 4h12a4 4 0 0 0 4-4Z" }], ["path", { "d": "M21 14 10 2 3 14h18Z", "onclick": "x" }]] }`'
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        participant C as 使う側の処理
+        participant M as mdmark
+        C->>M: render(markdown, { icons })
+        M->>M: 表の形で svg を作る
+        M-->>C: HTML 文字列
+    expected:
+      - '`data-icon="sailboat"` の要素の中に `svg` と 2 つの `path` がある'
+      - 文字列に `onclick` が無い
+    test: test_normal_when_icon_nodes
+  - name: 正常系（段組み・details・改ページ・wide の範囲）
+    summary: 範囲を持つ新しい記法を、中身を隠さない HTML にする
+    setup:
+      - name: 配布物を読んだ Node の処理
+        description: 正常系と同じ
+      - name: 範囲の記法を持つ Markdown
+        description: '`<!-- column -->` 1 つで 2 列に分けた columns の範囲、`<!-- details: 補足の手順 -->` 〜 `<!-- /details -->` と `<!-- details: 実行の例 open -->` 〜 `<!-- /details -->` の範囲、`<!-- pagebreak -->`、`<!-- wide -->` と `<!-- wide: closed -->` で 8 列の表を囲んだ範囲を 1 つずつ持つ文書'
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        participant C as 使う側の処理
+        participant M as mdmark
+        C->>M: render(markdown)
+        M->>M: 範囲の印を読み、記法ごとの要素で囲む
+        M-->>C: HTML 文字列
+    expected:
+      - '`<div class="mdmark-layout-columns" data-count="2">` の中に `<div class="mdmark-layout-column">` が 2 つある'
+      - '`<details class="mdmark-collapsible"><summary>補足の手順</summary>` があり `open` を持たず、`実行の例` の `details` が `open` を持つ。`summary` の文字に `open` が無い'
+      - '`補足の手順` が `h1`〜`h6` と目次に無い'
+      - '`<div class="mdmark-pagebreak" aria-hidden="true"></div>` がある'
+      - '`<div class="mdmark-wide-range" data-state="wide">` と `<div class="mdmark-wide-range" data-state="narrow">` の中に表がある'
+      - 文字列に `<!--`・`<button` が無い
+    test: test_normal_when_block_notations
+    refs:
+      - dev/設計書/シナリオ/単一ユースケース/本文を横に並べる#scenarios[正常シナリオ]
+      - dev/設計書/シナリオ/単一ユースケース/節と行の詳細を開閉する#scenarios[正常シナリオ（details の範囲）]
+      - dev/設計書/シナリオ/単一ユースケース/図と表を本文の幅より広げる#scenarios[正常シナリオ（本文の幅から始める）]
+  - name: 正常系（取り込む文書を渡す）
+    summary: include のマーカーの場所に、取り込む文書の表から引いた全体・見出しの中・行の範囲を描く
+    setup:
+      - name: 配布物を読んだ Node の処理
+        description: 正常系と同じ
+      - name: 取り込む文書の表
+        description: '`opts.includes` に、`共通/手順.md`（`## 準備`・`## 実行`・`## 片付け` の見出しと段落。`## 実行` の下に `<!-- table: data -->` で囲んだ表と `<!-- include: ../src/app.ts#L1 -->` を持つ）と `src/app.ts`（12 行）'
+      - name: include のマーカーを持つ Markdown
+        description: '段落の間に `<!-- include: 共通/手順.md -->`・`<!-- include: ./共通/手順.md#実行 -->`・`<!-- include: src/app.ts#L3-L5 -->` を持つ文書'
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        participant C as 使う側の処理
+        participant M as mdmark
+        C->>M: render(markdown, { includes })
+        M->>M: マーカーのパスを解き、表から本文を引く
+        M->>M: 全体・見出しの中・行の範囲を描く
+        M-->>C: HTML 文字列
+    expected:
+      - 1 つ目の `<div class="mdmark-include" data-include="共通/手順.md">` の中に `準備`・`実行`・`片付け` の見出しと段落がある
+      - 2 つ目の `mdmark-include` の中に `実行` の見出しと表があり、`準備`・`片付け` が無い。表が `data-kind="data"` を持つ
+      - '`共通/手順.md` の中の `../src/app.ts#L1` が `src/app.ts` の 1 行目のコードブロックになる'
+      - 3 つ目の `mdmark-include` の中に `<code class="language-ts">` があり、`src/app.ts` の 3〜5 行目だけを持つ
+      - 取り込んだ `実行` の見出しの ID が文書の通しで重ならない（2 つ目は `実行-1`）
+      - 文字列に `<!--` と `mdmark-syntax-warning` が無い
+    test: test_normal_when_includes
+    refs:
+      - dev/設計書/シナリオ/単一ユースケース/文書をHTML文字列にする#scenarios[正常シナリオ（取り込む文書を渡す）]
+      - dev/設計書/シナリオ/単一ユースケース/ほかの文書を取り込む#scenarios[正常シナリオ]
+  - name: 正常系（取り込み先が無い・循環する）
+    summary: 取り込めないマーカーの場所に書き方の警告を置き、循環する取り込みを止める
+    setup:
+      - name: 配布物を読んだ Node の処理
+        description: 正常系と同じ
+      - name: 取り込む文書の表
+        description: '`opts.includes` に `共通/手順.md`（正常系（取り込む文書を渡す）と同じ）・`src/app.ts`（12 行）・`a.md`（段落 `A` と `<!-- include: b.md -->`）・`b.md`（段落 `B` と `<!-- include: a.md -->`）'
+      - name: 取り込めないマーカーを持つ Markdown
+        description: '`<!-- include: missing.md -->`・`<!-- include: 共通/手順.md#無い見出し -->`・`<!-- include: src/app.ts#L20-L22 -->`・`<!-- include: a.md -->` を段落の間に持つ文書'
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        participant C as 使う側の処理
+        participant M as mdmark
+        C->>M: render(markdown, { includes })
+        M->>M: 取り込めないマーカーに書き方の警告を置く
+        M->>M: 取り込みの途中の同じファイルを取り込まない
+        M-->>C: HTML 文字列
+    expected:
+      - '`missing.md`・`無い見出し`・`src/app.ts` のマーカーの場所に `<div class="mdmark-syntax-warning" role="note">` があり、本文にそれぞれ `missing.md`、`無い見出し`、`L20-L22` と `12 行` がある'
+      - 段落 `A` と `B` が 1 回ずつあり、`b.md` の中の `a.md` のマーカーの場所の警告の本文に `a.md → b.md → a.md` がある
+      - '`opts.includes` を渡さずに呼ぶと、4 つのマーカーの場所に取り込み先が無い警告がある'
+      - マーカーの前後の段落がある
+    test: test_normal_when_include_errors
+    refs:
+      - dev/設計書/シナリオ/単一ユースケース/ほかの文書を取り込む#scenarios[異常シナリオ（取り込み先が無い）]
+      - dev/設計書/シナリオ/単一ユースケース/ほかの文書を取り込む#scenarios[異常シナリオ（取り込みが循環する）]
+  - name: 正常系（CSV の表）
+    summary: 言語 `csv` のコードブロックを表にし、元の CSV を隠して添える
+    setup:
+      - name: 配布物を読んだ Node の処理
+        description: 正常系と同じ
+      - name: CSV のコードブロックを持つ Markdown
+        description: '`<!-- table: data -->` 〜 `<!-- /table -->` で囲んだ言語 `csv` のコードブロック（見出しの行 `名前,拠点,金額` と 3 行。値の 1 つは `"東京, 本社"`、1 つは引用符の中に改行を持ち、1 つは `""` を含む。改行は CRLF）、マーカーの無い言語 `csv` のコードブロック、同じ中身の言語 `text` のコードブロック、見出しの行が 3 列で 2 行目が 2 列・3 行目が 4 列の言語 `csv` のコードブロックを持つ文書'
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        participant C as 使う側の処理
+        participant M as mdmark
+        C->>M: render(markdown)
+        M->>M: csv のコードブロックを行と値に読む
+        M->>M: 表にし、元の CSV を隠して添える
+        M-->>C: HTML 文字列
+    expected:
+      - 1 つ目が `<div class="mdmark-table" data-kind="data" data-features="sort pin filter" data-source="csv">` の中の `名前`・`拠点`・`金額` の `th` と 3 行の表になる
+      - '`東京, 本社` が 1 つの `td` で引用符を持たず、改行を持つ値が 1 つの `td` にあり、`""` が `"` になる'
+      - 表の後ろに `<pre class="mdmark-raw" hidden>` があり、中の `code.language-csv` が書いたとおりの CSV
+      - 2 つ目が `data-kind="default"` と `data-source="csv"` を持つ
+      - 言語 `text` のコードブロックが `<pre>` のコードブロックのまま
+      - 4 つ目の表の前に書き方の警告があり、本文に行番号 `2`・`3` がある。表は 3 列で、2 行目の 3 列目が空の `td`
+    test: test_normal_when_csv
+    refs:
+      - dev/設計書/シナリオ/単一ユースケース/表を操作する#scenarios[正常シナリオ（CSV の表）]
+      - dev/設計書/シナリオ/単一ユースケース/表を操作する#scenarios[異常シナリオ（CSV の列の数がそろわない）]
+  - name: 正常系（新しい記法の書き方の誤り）
+    summary: 新しい記法の読めない書き方の箇所に書き方の警告を置き、読めた分で描く
+    setup:
+      - name: 配布物を読んだ Node の処理
+        description: 正常系と同じ
+      - name: 書き方を誤った Markdown
+        description: '`` `icon:Rocket!` ``・中身の無い `` `icon:` ``・`==決め手=={color=pink}`・`<!-- column -->` を持たない columns の範囲・`<!-- column -->` 3 つで 4 列にした columns の範囲・2 列の columns の範囲の 1 列目の中の 2 列の columns の範囲・閉じの印の無い `<!-- details: 補足 -->`・閉じの印の無い `<!-- wide -->` とその後の表を持つ文書'
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        participant C as 使う側の処理
+        participant M as mdmark
+        C->>M: render(markdown)
+        M->>M: 読めた指定だけを当てる
+        M->>M: 読めない指定の箇所に書き方の警告を置く
+        M-->>C: HTML 文字列
+    expected:
+      - '`<code>icon:Rocket!</code>` と `<code>icon:</code>` があり、`Rocket!` の段落の前にだけ警告がある'
+      - '`決め手` が `data-color` を持たない `mark.mdmark-highlight` で、警告の本文に `pink` と色の名前の一覧がある'
+      - '`<!-- column -->` を持たない範囲と 4 列の範囲の前の警告の本文に、列の数（`1`・`4`）と `2〜3` がある。どちらの中身も `mdmark-layout-columns` に入っていない'
+      - 外側の範囲が `data-count="2"` の `mdmark-layout-columns` で、内側の前の警告の本文に入れ子にできないことがある
+      - '`補足` の段落が `details` に入らず、警告の本文に `<!-- /details -->` がある'
+      - 表が `mdmark-wide-range` に入らず、警告の本文に `<!-- /wide -->` がある
+    test: test_normal_when_new_syntax_errors
+    refs:
+      - dev/設計書/シナリオ/単一ユースケース/ステップ・ファイルツリー・バッジで本文を組む#scenarios[異常シナリオ（アイコンの名前の書き方が誤っている）]
+      - dev/設計書/シナリオ/単一ユースケース/名前の色で表・バッジ・本文を強調する#scenarios[異常シナリオ（蛍光ペンの知らない色の名前）]
+      - dev/設計書/シナリオ/単一ユースケース/本文を横に並べる#scenarios[異常シナリオ（列の数が 2〜3 でない）]
+      - dev/設計書/シナリオ/単一ユースケース/本文を横に並べる#scenarios[異常シナリオ（columns の入れ子）]
+      - dev/設計書/シナリオ/単一ユースケース/節と行の詳細を開閉する#scenarios[異常シナリオ（details の閉じのマーカーが無い）]
+      - dev/設計書/シナリオ/単一ユースケース/図と表を本文の幅より広げる#scenarios[異常シナリオ（wide の閉じのマーカーが無い）]
+  - name: 正常系（新しい記法の機能を外す）
+    summary: オフの新しい記法を、書いた文字か普通の Markdown として描く
+    setup:
+      - name: 配布物を読んだ Node の処理
+        description: 正常系と同じ
+      - name: 新しい記法の機能を外す Markdown
+        description: '先頭に `<!-- features: -icon -columns -highlight -kbd -details -pagebreak -include -wide -csv -->` を持ち、`` `icon:check` ``・`` `kbd:Ctrl+C` ``・`==決め手==`・2 列の columns の範囲・details の範囲・`<!-- pagebreak -->`・`<!-- include: part.md -->`・wide の範囲・言語 `csv` のコードブロックを 1 つずつ持つ文書'
+      - name: 取り込む文書の表
+        description: '`opts.includes` に `part.md`（段落 `取り込んだ段落`）'
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        participant C as 使う側の処理
+        participant M as mdmark
+        C->>M: render(markdown, { includes })
+        M->>M: 設定の features に文書の印を重ねる
+        M->>M: オフの記法の印を取り除き、普通の Markdown として描く
+        M-->>C: HTML 文字列
+    expected:
+      - '`<code>icon:check</code>`・`<code>kbd:Ctrl+C</code>` がある'
+      - '`==決め手==` が書いた文字のまま出て、`<mark` が無い'
+      - 文字列に `mdmark-layout-columns`・`mdmark-collapsible`・`mdmark-pagebreak`・`mdmark-include`・`mdmark-wide-range`・`mdmark-syntax-warning` が無く、範囲の中身の段落がある
+      - '`取り込んだ段落` が無い'
+      - '`code.language-csv` のコードブロックがあり、`data-source` が無い'
+      - 文字列に `<!--` が無い
+    test: test_normal_when_new_syntax_disabled
+    refs:
+      - dev/設計書/シナリオ/単一ユースケース/機能のオン・オフを文書で上書きする#scenarios[正常シナリオ（新しい記法の機能を外す）]
   - name: 正常系（座標を省いた判定フローチャート）
     summary: 座標を省いた判定フローチャートを配置して描き、座標を省けない定義を書き方の警告にする
     setup:
@@ -1575,6 +1801,22 @@ request:
     location: argument
     description: '`mount` の `opts.aliases` と同じ'
     status: planned
+  - name: opts.includes
+    type: Record<string, string>
+    required: false
+    location: argument
+    default: なし（include のマーカーを全て取り込み先が無い書き方の警告にする）
+    description: 取り込む文書の表。キーは描く文書のあるフォルダを基準にしたパス（区切りは `/`。`./`・`../` を解いた形）、値はそのファイルの本文
+    constraints: キーに `#` を含めない
+    notes: mdmark はファイルを読まない。読むファイルは使う側が include のマーカーから決める（制約「取り込み」）。要件.md の未確定（取り込む文書の渡し方）の推奨案 A
+    example: '{ "共通/手順.md": "## 準備\n…", "src/app.ts": "…" }'
+  - name: opts.icons
+    type: Record<string, MdmarkIconNode>
+    required: false
+    location: argument
+    default: なし（束ねていない名前のアイコンは中が空の要素にする）
+    description: 配布物に束ねていない名前のアイコンの形の表。キーは Lucide の名前、値は Lucide の IconNode（`[要素名, 属性][]`）
+    notes: 書き出し・まとめで CLI が依存の lucide から使う名前の分だけ作って渡す。属性は制約「アイコン」の許す要素・属性だけを使い、それ以外は落とす
 response:
   - name: '-'
     type: string
@@ -1587,7 +1829,7 @@ constraints:
   - item: 印の書式
     constraint: '1 か所に付ける印は `<!-- {名前}: {引数} -->`、範囲を持つ印は `<!-- {名前}: {引数} -->` 〜 `<!-- /{名前} -->`。引数の無い印は `<!-- {名前} -->` と書ける。名前は英小文字で始まり、英小文字・数字・`-` だけを持つ。引数は空白で区切り、種類・`+機能`・`-機能`・`キー=値`・`closed`・`open` に読み分ける。コードブロックと行内のコードの中は印として扱わない'
   - item: 印の扱い
-    constraint: '`features` の印は機能のオン・オフとして拾う。記法の印（`table`・`tabs`・`steps`・`section`・`row-detail`・`fig`・`toc`・`html`・`code`・`gallery`）と図の部品の印（`flow`・`sequence`・`chart`・`param`）は、その記法の機能がオンなら記法にし、オフなら印だけを取り除いて囲んだ Markdown を普通の Markdown として描く。対応表にある名前と、`registerExtension` で登録した拡張の `directive` の印は、印の場所の要素に置き換える。図の部品の印と同じ名前の拡張が登録されているときは、拡張を優先する（設定の `libraries` と同じ決まり）。それ以外は取り除く。どの印も出力にコメントとして残さない'
+    constraint: '`features` の印は機能のオン・オフとして拾う。記法の印（`table`・`tabs`・`steps`・`section`・`row-detail`・`fig`・`toc`・`html`・`code`・`gallery`・`columns`・`column`・`details`・`pagebreak`・`include`・`wide`）と図の部品の印（`flow`・`sequence`・`chart`・`param`）は、その記法の機能がオンなら記法にし、オフなら印だけを取り除いて囲んだ Markdown を普通の Markdown として描く。対応表にある名前と、`registerExtension` で登録した拡張の `directive` の印は、印の場所の要素に置き換える。図の部品の印と同じ名前の拡張が登録されているときは、拡張を優先する（設定の `libraries` と同じ決まり）。それ以外は取り除く。どの印も出力にコメントとして残さない'
   - item: 印の場所の要素
     constraint: '`<div class="mdmark-embed" data-mdmark-slot="{名前}" data-mdmark-args="{引数}" role="status">図を読み込んでいます</div>`。登録した拡張の印も同じ要素にする。`render` は拡張の `load` も `schema` の検査も呼ばない'
   - item: 残す要素・属性
@@ -1700,6 +1942,35 @@ constraints:
   - item: 脚注
     constraint: '`footnotes` がオンのとき、`[^ラベル]`（ラベルは空白を含まない）、行頭の `[^ラベル]: 中身`（4 文字の字下げで続く段落を含む）、行内の `^[中身]` を脚注として読む。ラベルは markdown-it の `normalizeReference`（大文字小文字と空白の正規化）で照合し、同じラベルの定義が複数あるときは最初の定義を採る。番号は本文で最初に参照した順に 1 から振り、同じ脚注の 2 回目以降の参照も同じ番号にする。定義の無い参照は書いた文字のまま出し、参照されない定義は出さない。`[^ラベル](URL)` はリンクを優先する。参照の場所には `sup.mdmark-fn-ref` を置き、その中に番号のリンク `a.mdmark-fn-link`（`id="mdmark-fnref-{番号}-{その脚注の参照の通し番号}"`・`href="#mdmark-fn-{番号}"`）とツールチップ `span.mdmark-fn-tip`（`id="mdmark-fn-tip-{番号}-{参照の通し番号}"`。タイトル `脚注 {番号}` と、定義の段落ごとの中身）を置く。ツールチップの中身がリンクを持つときは `role="group"`・`aria-label="脚注 {番号}"` と番号のリンクの `aria-details`、持たないときは `role="tooltip"` と `aria-describedby` にする。脚注が 1 つ以上ある文書は、本文の節の後ろ・関連文書の一覧の前に、閉じた `details.mdmark-footnotes`（`summary` は `脚注（{件数} 件）`）とその中の `ol.mdmark-footnotes-list` を置き、脚注ごとの項目 `li.mdmark-fn-item`（`id="mdmark-fn-{番号}"`）に、定義の中身と参照ごとの戻るリンク `a.mdmark-fn-back`（`href="#mdmark-fnref-{番号}-{参照の通し番号}"`。参照が 2 つ以上のときは a・b の文字を添える）を置く。ツールチップと一覧の中の脚注の中身には、用語の下線とやめた言い方のマーカーを付けない。`footnotes` がオフのとき（設定か文書の `features` の印）、参照・定義・行内の脚注は書いた文字のまま出し、定義は書いた位置に段落として残す'
     notes: 部品の要素の形とアイコンは部品設計で決める。読み取りは自前の block・inline・core のルール（ライブラリ選定で決定）
+  - item: アイコン
+    constraint: '`icon` がオンのとき、頭が `icon:` の行内のコードで、後ろが Lucide の名前の書き方（英小文字か数字で始まり、英小文字・数字・`-` だけ）のものを `<span class="mdmark-inline-icon" data-icon="{名前}" aria-hidden="true">` にする。配布物に束ねた名前と `opts.icons` にある名前は、中に `<svg class="mdmark-icon" viewBox="0 0 24 24">` とその形の要素を置き、それ以外の名前は中を空にする（`mount` が読んで入れる。`render` はアイコンを読まない）。制約「残す要素・属性」の図の部品と同じ見分けで、アイコンの `svg` と `path`・`circle`・`rect`・`line`・`polyline`・`polygon`・`ellipse` と描画の属性を許す。`icon\:` は `\` を外した `<code>` にし、後ろが空か空白だけのものは `<code>` のまま出す。名前の書き方に合わないものは `<code>` のまま出し、段落の前に制約「書き手の誤り」と同じ書き方の警告（書いた名前と名前の書き方）を置く。`icon` がオフのときは書いた文字のまま出す'
+    notes: 見た目はモック `dev/mock/components/icon/`。束ねる名前の一覧は外部ライブラリ『lucide』
+  - item: キー
+    constraint: '`kbd` がオンのとき、頭が `kbd:` の行内のコードを `+` で区切り、キーごとの `<kbd class="mdmark-kbd">{キー}</kbd>` を `<span class="mdmark-kbd-join">+</span>` でつないで `<span class="mdmark-kbd-group">` で囲む。キーの前後の空白は外す。`+` のキーは `++` と書く（`kbd:Ctrl++` は `Ctrl` と `+`）。`kbd\:` と、後ろが空か空白だけのものの扱いはバッジと同じ。`kbd` がオフのときは書いた文字のまま出す'
+    notes: 見た目はモック `dev/mock/components/kbd/`
+  - item: ルビ
+    constraint: 文書に書いた `ruby`・`rt`・`rp` を記法の機能によらず残す（sanitize-html の既定の要素）
+    notes: ルビは features のキーを持たない（確認ログ）
+  - item: 蛍光ペン
+    constraint: '`highlight` がオンのとき、`==文字==`（開きの `==` の直後と閉じの `==` の直前が空白でない）を `<mark class="mdmark-highlight">` にし、中を行内の Markdown として描く。閉じの `==` の直後の `{color=色}` は、色の名前（制約「色の名前」）を `data-color` に写して外す。知らない色の名前は属性を外して `data-color` を持たない既定の色で描き、段落の前に制約「本文の文字の色」と同じ書き方の警告を置く。`\=\=` は書いた文字のまま出す。コメントの `mark.mdmark-comment-mark` とは class で分け、蛍光ペンの `mark` はコメントの操作の対象にしない。`highlight` がオフのときは `==` を含む書いた文字のまま出す'
+    notes: 見た目はモック `dev/mock/components/highlighter/`
+  - item: 段組み
+    constraint: '`columns` がオンのとき、`<!-- columns -->` 〜 `<!-- /columns -->` を `<!-- column -->` で区切った中身を、`<div class="mdmark-layout-columns" data-count="{列の数}">` の中の `<div class="mdmark-layout-column">` に書いた順に入れる。列の数は 2〜3。`<!-- column -->` を持たない範囲と 4 列以上の範囲は、範囲の前に書き方の警告（列の数と、並べられるのは 2〜3 列であること）を置き、区切りの印を取り除いて中身を囲まずに順に出す。columns の範囲の中の columns の範囲は、内側の前に書き方の警告（入れ子にできないこと）を置き、内側を囲まずに中身を順に出す。範囲の外の `<!-- column -->` は取り除く。`columns` がオフのときは印を取り除き、中身を順に出す'
+    notes: class は表の列のメニューの `.mdmark-columns-*` と分ける。見た目はモック `dev/mock/components/columns/`
+  - item: details の範囲
+    constraint: '`details` がオンのとき、`<!-- details: タイトル -->` 〜 `<!-- /details -->` を `<details class="mdmark-collapsible">` と `<summary>{タイトル}</summary>` にし、中身を `summary` の後ろに置く。引数の最後の語が `open` のときは `details` に `open` を付け、その語をタイトルから外す（`<!-- details: 実行の例 open -->`）。タイトルは行内の Markdown として描き、空のときは `詳細` にする。`summary` は見出しにせず、制約「節」と「目次」の対象にしない。閉じの印の無い範囲は、印の場所に書き方の警告（閉じの印 `<!-- /details -->` が無いこと）を置き、中身を折りたたまずに出す。`details` がオフのときは印を取り除き、中身を順に出す'
+    notes: 印刷の前に開くのは `mount` の印刷の機能（`print`）。見た目はモック `dev/mock/components/details-range/`
+  - item: 改ページ
+    constraint: '`pagebreak` がオンのとき、`<!-- pagebreak -->` を `<div class="mdmark-pagebreak" aria-hidden="true"></div>` にする。画面では高さを持たず、印刷のときだけ `break-before: page` を当てる（CSS）。`pagebreak` がオフのときは印を取り除く'
+  - item: 取り込み
+    constraint: '`include` がオンのとき、`<!-- include: パス -->`・`<!-- include: パス#見出しの ID -->`・`<!-- include: パス#L開始-L終了 -->`（`#L5` は 1 行）を、`opts.includes` から引いた中身に置き換え、`<div class="mdmark-include" data-include="{書いたパスと # の後ろ}">` で囲む。パスはマーカーを書いた文書のあるフォルダを基準に解き、表のキーと照合する（取り込んだ文書の中のマーカーは、取り込んだ文書のパスのフォルダを基準にする）。拡張子が `.md`・`.markdown` のファイルは Markdown として、本文と同じ設定と機能で描く（取り込んだ文書の `features` の印は使わない）。`#見出しの ID` は、取り込む文書の見出しから制約「見出しの ID とアンカー」と同じ規則で作った ID と一致する最初の見出しから、次の同じか上の階層の見出しの前までを取り込む（見出しを含む）。見出しの ID・図表の番号は、取り込んだ中身も含めて文書の通しで振る。Markdown 以外のファイルは、全体か `#L開始-L終了` の行（1 から数える）を、拡張子を言語にしたコードブロックとして描く（Markdown のファイルの `#L…` は見出しの ID として読む）。表に無いパス・無い見出しの ID・ファイルの行の数を越える行の範囲は、マーカーの場所に書き方の警告（取り込み先と、無いもの。行の範囲はファイルの行の数も）を置く。取り込みの途中で同じファイルをもう一度取り込むマーカーは、その場所に書き方の警告（循環することと、`a.md → b.md → a.md` の循環の順）を置いて取り込まない。`include` がオフのときは印を取り除き、中身を取り込まない'
+    notes: 取り込む文書の渡し方は要件.md の未確定の推奨案 A。行の範囲の書き方と、Markdown 以外のファイルでだけ行の範囲として読むことは確認ログの決定
+  - item: wide の範囲
+    constraint: '`wide` がオンのとき、`<!-- wide -->` 〜 `<!-- /wide -->` を `<div class="mdmark-wide-range" data-state="wide">` で囲み、`<!-- wide: closed -->` で始めた範囲は `data-state="narrow"` にする。幅の切り替えのボタンは `mount` が付ける。閉じの印の無い範囲は、印の場所に書き方の警告（閉じの印 `<!-- /wide -->` が無いこと）を置き、中身を囲まずに本文の幅で出す。知らない引数は書き方の警告を置いて `data-state="wide"` で描く。wide の範囲の中の wide の印は取り除く。`wide` がオフのときは印を取り除き、中身を順に出す'
+    notes: class は埋め込んだ HTML の `.is-wide` と、表の `wide=` の列の `mdmark-wide` と分ける。`closed` は確認ログの決定。見た目はモック `dev/mock/components/wide/`
+  - item: CSV の表
+    constraint: '`csv` がオンのとき、情報文字列の最初の語がちょうど `csv` のコードブロックを、RFC 4180 の決まり（区切りは `,`、`"` で囲んだ値の中の `,` と改行は値、`""` は `"`、改行は LF か CRLF）で行と値に読み、1 行目を見出しの行とした表にして制約「表」のとおり描く（表の印で囲めばその種類と機能、囲まなければ `default`）。値は文字として描き、Markdown として読まない。列の数が見出しの行と違う行は、足りない列を空のセルにし、多い値を捨て、表の前に書き方の警告（その行の行番号）を置く。表の後ろに、書いたとおりの CSV を `<pre class="mdmark-raw" hidden><code class="language-csv">` で置き、`.mdmark-table` に `data-source="csv"` を付ける（元の CSV への切り替えは `mount` が付ける）。中身が空のコードブロックは表にせず、制約「コードブロック」のとおり描く。表にしたコードブロックには、直前の `<!-- code: … -->` の飾りを当てない。`csv` がオフのときは制約「コードブロック」のとおり描く'
+    notes: 読み取りは自前の同期の処理（ライブラリ選定で決定）。見た目はモック `dev/mock/components/csv-table/`
   - item: 自動の配置
     constraint: フロー図の定義の全てのノードが `x`・`y`・`w`・`h` を、全ての線が `points` を持たず、図が `width`・`height` を持たず、ノードの種類が全て `start`・`question`・`action`・`result` のとき、mdmark が配置して描く。`start` を一番上に置き、`start` から線をたどって `question` を左の列に上から下へ並べる。`question` から出る線は、先が `question` の線を下、先が `action`・`result` の線を右へ出し、両方の先が `action`・`result` ならラベル `NO` の線を下、`YES` の線を右へ出す。右へ出した線の先のノードはその `question` と同じ行の右の列に、下へ出した線の先の `action`・`result` はその `question` の下の左の列に置き、`action` の先は同じ列の下へ続ける。複数の線が入るノードは、`question` から右へ出る線の先の位置（その `question` と同じ行）を優先して 1 つだけ置き、その線が無ければ最初にたどった線の先の位置に置く。線をたどって届かないノードは、届くノードの下に定義の順に並べる。ノードの大きさは種類と名前の文字から、インターフェース定義『設定と索引を点検する』の制約「ラベルの長さの目安」で収まる大きさにする。線は縦と横だけの折れ線で、`from`・`to` でないノードの中を通らない点を求める。図の `width`・`height` は、ノードと線を囲む大きさに余白を足した値にする。配置した結果は、同じ座標を書いた定義と同じ HTML に描く
     decided_by: dev/設計書/シナリオ/単一ユースケース/図を描く#scenarios[正常シナリオ（座標を省いた判定フローチャート）]

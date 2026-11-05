@@ -540,3 +540,24 @@ stories:
       features: '["sort","pin","filter"]'
       columns: '["地域","支店","売上（万円）"]'
       rows: '[["^^","札幌","120"],["<<","仙台","98"],["東日本","東京","310"]]'
+  - name: CsvTable
+    parameters:
+      server:
+        id: table
+    args:
+      kind: 'data'
+      features: '["sort","pin","filter"]'
+      columns: '["名前","拠点","金額"]'
+      rows: '[["北山","東京, 本社","1200"],["南田","大阪","800"]]'
+      rawCsv: "名前,拠点,金額\n北山,\"東京, 本社\",1200\n南田,大阪,800"
+  - name: CsvRaw
+    parameters:
+      server:
+        id: table
+    args:
+      kind: 'data'
+      features: '["sort","pin","filter"]'
+      columns: '["名前","拠点","金額"]'
+      rows: '[["北山","東京, 本社","1200"],["南田","大阪","800"]]'
+      rawCsv: "名前,拠点,金額\n北山,\"東京, 本社\",1200\n南田,大阪,800"
+      rawShown: true

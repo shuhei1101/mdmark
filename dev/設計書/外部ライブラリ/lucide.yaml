@@ -183,8 +183,8 @@ official_url: https://lucide.dev/
 docs_url: https://lucide.dev/icons/
 verification:
   state: 済
-  date: '2026-11-02'
-  detail: lucide 1.59.0 の `maximize-2`・`pause`・`play`・`globe`・`file-text`・`file-spreadsheet`・`file-archive`・`file` を名前付きの import で取り出せることを確かめ、`src/parts/icons.ts` から import した部品の HTML（拡大のボタン・GIF のボタン）と、形を写した `src/index.css` のカードのアイコンを Storybook のストーリーで描いて確かめた。`circle-question-mark`・`wrench`・`flag` も lucide 1.59.0 の名前付きの import（`CircleQuestionMark`・`Wrench`・`Flag`）で取り出せることを確かめ、`src/parts/icons.ts` から描いた判定フローチャートのノードを Storybook のストーリー `parts-flowdiagram--judgement` で描いて確かめた
+  date: '2026-11-05'
+  detail: 'lucide 1.59.0 の `maximize-2`・`pause`・`play`・`globe`・`file-text`・`file-spreadsheet`・`file-archive`・`file` を名前付きの import で取り出せることを確かめ、`src/parts/icons.ts` から import した部品の HTML（拡大のボタン・GIF のボタン）と、形を写した `src/index.css` のカードのアイコンを Storybook のストーリーで描いて確かめた。`circle-question-mark`・`wrench`・`flag` も lucide 1.59.0 の名前付きの import（`CircleQuestionMark`・`Wrench`・`Flag`）で取り出せることを確かめ、`src/parts/icons.ts` から描いた判定フローチャートのノードを Storybook のストーリー `parts-flowdiagram--judgement` で描いて確かめた。2026-11-05: 束ねていない名前を読む `https://cdn.jsdelivr.net/npm/lucide@1.59.0/dist/esm/icons/{名前}.mjs` が、`rocket` で 200（646 バイト・`access-control-allow-origin: *`・IconNode を `export default` する ES モジュール）、無い名前（`no-such-icon-x`）で 404 を返すことを確かめた（#307 のライブラリ選定）'
 used_in:
   - src/parts/icons.ts
   - src/index.css

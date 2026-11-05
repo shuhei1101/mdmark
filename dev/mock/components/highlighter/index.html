@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <!-- viewport: スマホ幅で等倍に表示する -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- color-scheme: 明るい配色とダークの両方を持つことをブラウザへ伝える -->
+  <meta name="color-scheme" content="light dark">
+  <title>蛍光ペン | mdmark の部品のモック</title>
+  <!-- 本文の規則とモック専用の操作列（#16 で共有するアセット） -->
+  <link rel="stylesheet" href="../../refs/16/assets/sample.css">
+  <!-- 採用スタイル本体の変数の値 -->
+  <link rel="stylesheet" href="../../assets/style.css">
+  <!-- 拡張記法の規則とカタログの並べ方（番号で共有するアセット） -->
+  <link rel="stylesheet" href="../../refs/19/assets/syntax.css">
+  <link rel="stylesheet" href="../../refs/19/assets/catalog.css">
+  <!-- 色のプリセット（#263 で共有するアセット） -->
+  <link rel="stylesheet" href="../../refs/263/assets/colors.css">
+  <!-- 新しい記法の規則（#307 で共有するアセット） -->
+  <link rel="stylesheet" href="../../refs/307/assets/notations.css">
+  <!-- 配色の切り替え -->
+  <script src="../../refs/16/assets/sample.js" defer></script>
+  <!-- 拡張記法の操作（並べ替え・開閉） -->
+  <script src="../../refs/19/assets/syntax.js" defer></script>
+  <!-- RAW のボタンの切り替え（#307 で共有するアセット） -->
+  <script src="../../refs/307/assets/notations.js" defer></script>
+</head>
+<body>
+  <!-- モック専用の操作列: 配色の切り替え -->
+  <div class="mock-bar">
+    <!-- [data-scheme-set]: sample.js が押されたボタンの値を html の data-scheme に当てる -->
+    <div class="mock-bar-group" role="group" aria-label="配色">
+      <button class="mock-bar-item" type="button" data-scheme-set="light" aria-pressed="false">明るい配色</button>
+      <button class="mock-bar-item" type="button" data-scheme-set="dark" aria-pressed="false">ダーク</button>
+    </div>
+  </div>
+
+  <main class="host">
+    <div class="catalog">
+      <h1 class="catalog-title">蛍光ペン</h1>
+      <!-- 既定の色 -->
+      <section aria-labelledby="state-default">
+        <h2 class="catalog-label" id="state-default">既定の色</h2>
+        <article class="mdmark">
+<p>導入の<mark class="mdmark-highlight">決め手は 1 枚の HTML で配れること</mark>です。</p>
+        </article>
+      </section>
+
+      <!-- 色の名前ごと -->
+      <section aria-labelledby="state-colors">
+        <h2 class="catalog-label" id="state-colors">色の名前ごと</h2>
+        <article class="mdmark">
+<p><mark class="mdmark-highlight" data-color="blue">blue の蛍光ペン</mark> の後ろの本文。</p>
+<p><mark class="mdmark-highlight" data-color="red">red の蛍光ペン</mark> の後ろの本文。</p>
+<p><mark class="mdmark-highlight" data-color="green">green の蛍光ペン</mark> の後ろの本文。</p>
+<p><mark class="mdmark-highlight" data-color="yellow">yellow の蛍光ペン</mark> の後ろの本文。</p>
+<p><mark class="mdmark-highlight" data-color="orange">orange の蛍光ペン</mark> の後ろの本文。</p>
+<p><mark class="mdmark-highlight" data-color="purple">purple の蛍光ペン</mark> の後ろの本文。</p>
+<p><mark class="mdmark-highlight" data-color="gray">gray の蛍光ペン</mark> の後ろの本文。</p>
+        </article>
+      </section>
+
+      <!-- コメントのマーカーと並ぶ（class で区別する） -->
+      <section aria-labelledby="state-with-comment">
+        <h2 class="catalog-label" id="state-with-comment">コメントのマーカーと並ぶ（class で区別する）</h2>
+        <article class="mdmark">
+<p><mark class="mdmark-highlight">蛍光ペンの文字</mark>と、<mark class="mdmark-comment-mark">コメントを付けた文字</mark>が同じ段落にあります。</p>
+        </article>
+      </section>
+
+      <!-- 知らない色の名前 -->
+      <section aria-labelledby="state-unknown">
+        <h2 class="catalog-label" id="state-unknown">知らない色の名前</h2>
+        <article class="mdmark">
+<div class="mdmark-syntax-warning">
+  <p class="mdmark-syntax-warning-title"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg>書き方の警告</p>
+  <p><code>{color=pink}</code> の <code>pink</code> は使えない色の名前です。使える色の名前は <code>blue</code>・<code>red</code>・<code>green</code>・<code>yellow</code>・<code>orange</code>・<code>purple</code>・<code>gray</code> です。既定の色で描いています。</p>
+</div>
+<p><mark class="mdmark-highlight">決め手</mark>を強調します。</p>
+        </article>
+      </section>
+
+    </div>
+  </main>
+</body>
+</html>

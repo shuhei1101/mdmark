@@ -26,6 +26,7 @@ import {
 } from "../../table-logic.ts";
 import type { Mark } from "../marks.ts";
 import { readCollapse } from "./collapse.ts";
+import type { CsvTableMeta } from "./csv.ts";
 import { slugBase } from "./headings.ts";
 import { MERGE_LEFT, MERGE_UP, planCellMerges } from "./table-cells.ts";
 import {
@@ -1132,6 +1133,7 @@ export function decorateTables(state: StateCore): void {
       pin: spec.pin,
       check: spec.check,
       body: SLOT_MARKER,
+      rawCsv: (token.meta as Partial<CsvTableMeta> | null)?.rawCsv,
     });
     if (spec.features.includes("rowlink")) {
       linkRows(state, tokens, index, taken);
