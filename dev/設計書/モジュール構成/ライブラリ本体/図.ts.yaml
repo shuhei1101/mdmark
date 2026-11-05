@@ -1935,3 +1935,4 @@ test_files:
   - tests/unit/src/diagram/er.test.ts
   - tests/unit/src/parts/er.test.ts
   - tests/unit/src/interact/er-folds.browser.test.ts
+  - tests/unit/src/interact/diagram-resize.browser.test.ts
