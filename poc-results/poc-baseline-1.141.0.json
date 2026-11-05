@@ -1,0 +1,149 @@
+{
+  "vscode": "1.141.0",
+  "document": {
+    ".mdmark h1": [
+      {
+        "font-size": "26.6px",
+        "list-style-type": "disc",
+        "margin-top": "0px",
+        "margin-bottom": "0px",
+        "padding-left": "0px",
+        "display": "flex",
+        "border-top-width": "0px",
+        "box-sizing": "content-box"
+      }
+    ],
+    ".mdmark p": [
+      {
+        "font-size": "14px",
+        "list-style-type": "disc",
+        "margin-top": "0px",
+        "margin-bottom": "0px",
+        "padding-left": "0px",
+        "display": "block",
+        "border-top-width": "0px",
+        "box-sizing": "content-box"
+      }
+    ],
+    ".mdmark ul": [
+      {
+        "font-size": "14px",
+        "list-style-type": "disc",
+        "margin-top": "14px",
+        "margin-bottom": "0px",
+        "padding-left": "22.4px",
+        "display": "block",
+        "border-top-width": "0px",
+        "box-sizing": "content-box"
+      },
+      {
+        "font-size": "13px",
+        "list-style-type": "none",
+        "margin-top": "0px",
+        "margin-bottom": "0px",
+        "padding-left": "6px",
+        "display": "block",
+        "border-top-width": "0px",
+        "box-sizing": "content-box"
+      }
+    ],
+    ".mdmark ol": [
+      {
+        "font-size": "14px",
+        "list-style-type": "decimal",
+        "margin-top": "14px",
+        "margin-bottom": "0px",
+        "padding-left": "22.4px",
+        "display": "block",
+        "border-top-width": "0px",
+        "box-sizing": "content-box"
+      }
+    ],
+    ".mdmark li": [
+      {
+        "font-size": "14px",
+        "list-style-type": "disc",
+        "margin-top": "0px",
+        "margin-bottom": "0px",
+        "padding-left": "0px",
+        "display": "list-item",
+        "border-top-width": "0px",
+        "box-sizing": "content-box"
+      },
+      {
+        "font-size": "14px",
+        "list-style-type": "disc",
+        "margin-top": "3.5px",
+        "margin-bottom": "0px",
+        "padding-left": "0px",
+        "display": "list-item",
+        "border-top-width": "0px",
+        "box-sizing": "content-box"
+      },
+      {
+        "font-size": "14px",
+        "list-style-type": "decimal",
+        "margin-top": "0px",
+        "margin-bottom": "0px",
+        "padding-left": "0px",
+        "display": "list-item",
+        "border-top-width": "0px",
+        "box-sizing": "content-box"
+      },
+      {
+        "font-size": "13px",
+        "list-style-type": "none",
+        "margin-top": "0px",
+        "margin-bottom": "0px",
+        "padding-left": "0px",
+        "display": "list-item",
+        "border-top-width": "0px",
+        "box-sizing": "content-box"
+      }
+    ],
+    ".mdmark img": [
+      {
+        "font-size": "13.3333px",
+        "list-style-type": "disc",
+        "margin-top": "0px",
+        "margin-bottom": "0px",
+        "padding-left": "0px",
+        "display": "block",
+        "border-top-width": "1px",
+        "box-sizing": "border-box"
+      }
+    ]
+  },
+  "status": {
+    "alert": [
+      {
+        "text": "プレビューを表示できませんmdmark（v0.10.0）を jsDelivr から読み込めませんでした。ネットワークにつながっているかを確かめてから、リロードしてください。リロード",
+        "computed": {
+          "font-size": "13px",
+          "list-style-type": "disc",
+          "margin-top": "0px",
+          "margin-bottom": "0px",
+          "padding-left": "16px",
+          "display": "grid",
+          "border-top-width": "1px",
+          "box-sizing": "content-box"
+        }
+      }
+    ],
+    "button": [
+      {
+        "className": "mdmark-preview-button",
+        "computed": {
+          "font-size": "14.4px",
+          "list-style-type": "disc",
+          "margin-top": "0px",
+          "margin-bottom": "0px",
+          "padding-left": "14px",
+          "display": "block",
+          "border-top-width": "1px",
+          "box-sizing": "border-box"
+        }
+      }
+    ]
+  }
+}

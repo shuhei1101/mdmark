@@ -11,6 +11,7 @@ import {
   collectAssetPaths,
 } from "./assets.ts";
 import { renderConfigBand } from "./parts/config-band.ts";
+import { COMPUTED_PROPERTIES } from "./react/inspect.ts";
 import {
   type PreviewStatusState,
   renderPreviewStatus,
@@ -363,6 +364,12 @@ export class PreviewView {
         text: element.textContent ?? "",
         top: rect.top,
         height: rect.height,
+        computed: Object.fromEntries(
+          COMPUTED_PROPERTIES.map((name) => [
+            name,
+            getComputedStyle(element).getPropertyValue(name),
+          ]),
+        ),
       };
       if (element instanceof HTMLImageElement) {
         inspected.naturalWidth = element.naturalWidth;

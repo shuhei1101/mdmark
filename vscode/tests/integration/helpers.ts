@@ -56,6 +56,8 @@ export type InspectedElement = {
   height: number;
   currentTime?: number;
   readyState?: number;
+  /** PoC: 計算済みのスタイル */
+  computed?: Record<string, string>;
 };
 
 /** 開いたパネルと、拡張機能と Webview の間で行き来したメッセージ */

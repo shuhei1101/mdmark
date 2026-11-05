@@ -1,0 +1,48 @@
+/* PoC: Preflight を読まず、テーマとユーティリティだけを層に入れる */
+@layer theme, panel-base, utilities;
+@import "tailwindcss/theme.css" layer(theme) theme(static);
+@import "tailwindcss/utilities.css" layer(utilities);
+
+@source "./";
+
+/* 標準のパレットを消し、shadcn/ui の名前のトークンを VS Code の色に割り当てる */
+@theme inline {
+  --color-*: initial;
+  --color-background: var(--mdmark-panel-background);
+  --color-foreground: var(--mdmark-panel-foreground);
+  --color-card: var(--mdmark-panel-card);
+  --color-card-foreground: var(--mdmark-panel-foreground);
+  --color-muted-foreground: var(--mdmark-panel-muted);
+  --color-primary: var(--mdmark-panel-primary);
+  --color-primary-foreground: var(--mdmark-panel-primary-foreground);
+  --color-accent: var(--mdmark-panel-accent);
+  --color-border: var(--mdmark-panel-border);
+  --color-ring: var(--mdmark-panel-ring);
+}
+
+:root {
+  --mdmark-panel-background: var(--vscode-editor-background);
+  --mdmark-panel-foreground: var(--vscode-editor-foreground);
+  --mdmark-panel-card: var(--vscode-editorWidget-background);
+  --mdmark-panel-muted: var(--vscode-descriptionForeground);
+  --mdmark-panel-primary: var(--vscode-button-background);
+  --mdmark-panel-primary-foreground: var(--vscode-button-foreground);
+  --mdmark-panel-accent: var(--vscode-list-hoverBackground);
+  --mdmark-panel-border: var(--vscode-widget-border, var(--vscode-editorWidget-border));
+  --mdmark-panel-ring: var(--vscode-focusBorder);
+}
+
+/* shadcn/ui の部品に要る下地は、パネルの部品の中だけに置く */
+@layer panel-base {
+  .mdmark-panel-part,
+  .mdmark-panel-part * {
+    box-sizing: border-box;
+    border-width: 0;
+    border-style: solid;
+    margin: 0;
+  }
+  .mdmark-panel-part button {
+    font: inherit;
+    cursor: pointer;
+  }
+}

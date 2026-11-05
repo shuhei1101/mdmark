@@ -1,0 +1,161 @@
+{
+  "vscode": "1.145.1",
+  "document": {
+    ".mdmark h1": [
+      {
+        "font-size": "26.6px",
+        "list-style-type": "disc",
+        "margin-top": "0px",
+        "margin-bottom": "0px",
+        "padding-left": "0px",
+        "display": "flex",
+        "border-top-width": "0px",
+        "box-sizing": "content-box"
+      }
+    ],
+    ".mdmark p": [
+      {
+        "font-size": "14px",
+        "list-style-type": "disc",
+        "margin-top": "0px",
+        "margin-bottom": "0px",
+        "padding-left": "0px",
+        "display": "block",
+        "border-top-width": "0px",
+        "box-sizing": "content-box"
+      }
+    ],
+    ".mdmark ul": [
+      {
+        "font-size": "14px",
+        "list-style-type": "disc",
+        "margin-top": "14px",
+        "margin-bottom": "0px",
+        "padding-left": "22.4px",
+        "display": "block",
+        "border-top-width": "0px",
+        "box-sizing": "content-box"
+      },
+      {
+        "font-size": "13px",
+        "list-style-type": "none",
+        "margin-top": "0px",
+        "margin-bottom": "0px",
+        "padding-left": "6px",
+        "display": "block",
+        "border-top-width": "0px",
+        "box-sizing": "content-box"
+      }
+    ],
+    ".mdmark ol": [
+      {
+        "font-size": "14px",
+        "list-style-type": "decimal",
+        "margin-top": "14px",
+        "margin-bottom": "0px",
+        "padding-left": "22.4px",
+        "display": "block",
+        "border-top-width": "0px",
+        "box-sizing": "content-box"
+      }
+    ],
+    ".mdmark li": [
+      {
+        "font-size": "14px",
+        "list-style-type": "disc",
+        "margin-top": "0px",
+        "margin-bottom": "0px",
+        "padding-left": "0px",
+        "display": "list-item",
+        "border-top-width": "0px",
+        "box-sizing": "content-box"
+      },
+      {
+        "font-size": "14px",
+        "list-style-type": "disc",
+        "margin-top": "3.5px",
+        "margin-bottom": "0px",
+        "padding-left": "0px",
+        "display": "list-item",
+        "border-top-width": "0px",
+        "box-sizing": "content-box"
+      },
+      {
+        "font-size": "14px",
+        "list-style-type": "decimal",
+        "margin-top": "0px",
+        "margin-bottom": "0px",
+        "padding-left": "0px",
+        "display": "list-item",
+        "border-top-width": "0px",
+        "box-sizing": "content-box"
+      },
+      {
+        "font-size": "13px",
+        "list-style-type": "none",
+        "margin-top": "0px",
+        "margin-bottom": "0px",
+        "padding-left": "0px",
+        "display": "list-item",
+        "border-top-width": "0px",
+        "box-sizing": "content-box"
+      }
+    ],
+    ".mdmark img": [
+      {
+        "font-size": "13.3333px",
+        "list-style-type": "disc",
+        "margin-top": "0px",
+        "margin-bottom": "0px",
+        "padding-left": "0px",
+        "display": "block",
+        "border-top-width": "1px",
+        "box-sizing": "border-box"
+      }
+    ]
+  },
+  "documentAxe": {
+    "violations": [
+      "label-content-name-mismatch"
+    ],
+    "csp": []
+  },
+  "status": {
+    "alert": [
+      {
+        "text": "プレビューを表示できませんmdmark を jsDelivr から読み込めませんでした。ネットワークにつながっているかを確かめてから、リロードしてください。（v0.10.0）リロード",
+        "computed": {
+          "font-size": "14px",
+          "list-style-type": "disc",
+          "margin-top": "0px",
+          "margin-bottom": "0px",
+          "padding-left": "16px",
+          "display": "grid",
+          "border-top-width": "1px",
+          "box-sizing": "border-box"
+        }
+      }
+    ],
+    "button": [
+      {
+        "className": "inline-flex items-center justify-center gap-2 rounded-md text-sm font-medium transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-9 px-4 py-2",
+        "computed": {
+          "font-size": "14px",
+          "list-style-type": "disc",
+          "margin-top": "0px",
+          "margin-bottom": "0px",
+          "padding-left": "16px",
+          "display": "inline-flex",
+          "border-top-width": "0px",
+          "box-sizing": "border-box"
+        }
+      }
+    ]
+  },
+  "statusAxe": {
+    "violations": [
+      "color-contrast"
+    ],
+    "csp": []
+  }
+}
