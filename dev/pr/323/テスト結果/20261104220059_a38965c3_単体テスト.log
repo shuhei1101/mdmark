@@ -1,0 +1,14 @@
+$ npm run test:unit
+
+> test:unit
+> vitest run --project 'unit*'
+
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/design-document-side-toc-viewport-edge
+
+
+ Test Files  193 passed (193)
+      Tests  1427 passed (1427)
+   Start at  22:01:07
+   Duration  100.04s (worker 42%, tests 36%, import 20%, transform 3%)
+
