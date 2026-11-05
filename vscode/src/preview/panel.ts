@@ -18,6 +18,7 @@ import {
   libraryOrigins,
   loadConfig,
   resolveConfigPath,
+  resolveHtmlScripts,
   resolveLibraries,
 } from "../config.ts";
 import { openConfigFile } from "../config-file.ts";
@@ -58,6 +59,8 @@ export class PreviewPanel {
   private config: PreviewConfig = {};
   /** `config` の `libraries` の URL を直す前の値（CSP に入れる origin の元） */
   private rawLibraries: Record<string, unknown> | undefined;
+  /** 設定ファイルに書いたままの `html-scripts`（CSP の origin に使う） */
+  private rawHtmlScripts: Record<string, unknown> | undefined;
   /** 今の HTML の CSP に入れた `libraries` の origin（`load` が書く）。設定ファイルを読み直した後の origin と比べ、違えば HTML を入れ直す */
   private cspLibraryOrigins: string[] = [];
   /** 設定ファイルを読めていないときの読めない行 */
@@ -160,7 +163,10 @@ export class PreviewPanel {
       return;
     }
     this.ready = false;
-    this.cspLibraryOrigins = libraryOrigins(this.rawLibraries);
+    this.cspLibraryOrigins = libraryOrigins(
+      this.rawLibraries,
+      this.rawHtmlScripts,
+    );
     const webview = this.webviewPanel.webview;
     this.updateResourceRoots();
     const nonce = createNonce();
@@ -236,6 +242,7 @@ export class PreviewPanel {
     if (load.kind === "missing") {
       this.config = {};
       this.rawLibraries = undefined;
+      this.rawHtmlScripts = undefined;
       this.assetsRoot = undefined;
       this.markConfigOk();
       return true;
@@ -246,33 +253,38 @@ export class PreviewPanel {
       void this.post({ type: "configError", line: load.line });
       return false;
     }
-    const { libraries, ...rest } = load.config;
+    const { libraries, "html-scripts": htmlScripts, ...rest } = load.config;
     this.rawLibraries = libraries;
+    this.rawHtmlScripts = htmlScripts;
     this.assetsRoot = load.assetsRoot;
-    this.config =
-      libraries === undefined
-        ? rest
+    const configDir = dirname(path);
+    const toUrl = (target: string) =>
+      this.webviewPanel.webview.asWebviewUri(Uri.file(target)).toString();
+    this.config = {
+      ...rest,
+      ...(libraries === undefined
+        ? {}
+        : { libraries: resolveLibraries({ libraries, configDir, toUrl }) }),
+      ...(htmlScripts === undefined
+        ? {}
         : {
-            ...rest,
-            libraries: resolveLibraries({
-              libraries,
-              configDir: dirname(path),
-              toUrl: (target) =>
-                this.webviewPanel.webview
-                  .asWebviewUri(Uri.file(target))
-                  .toString(),
+            "html-scripts": resolveHtmlScripts({
+              htmlScripts,
+              configDir,
+              toUrl,
             }),
-          };
+          }),
+    };
     this.markConfigOk();
     return true;
   }
 
-  /** 設定ファイルを読み直し、読めないときは何も送らずに終える。読めたときは、`libraries` の origin の集まりが今の HTML の CSP に入れたものと違えば HTML を入れ直し（新しい配信元のモジュールを CSP が止めないため）、同じなら待たずに送る */
+  /** 設定ファイルを読み直し、読めないときは何も送らずに終える。読めたときは、`libraries` と `html-scripts.url` の origin の集まりが今の HTML の CSP に入れたものと違えば HTML を入れ直し（新しい配信元のモジュールを CSP が止めないため）、同じなら待たずに送る */
   async applyConfigChange(): Promise<void> {
     if (!(await this.reloadConfig())) {
       return;
     }
-    const next = libraryOrigins(this.rawLibraries);
+    const next = libraryOrigins(this.rawLibraries, this.rawHtmlScripts);
     const same =
       next.length === this.cspLibraryOrigins.length &&
       next.every((origin) => this.cspLibraryOrigins.includes(origin));

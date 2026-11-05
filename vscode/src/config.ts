@@ -2,12 +2,14 @@ import { dirname, isAbsolute, resolve } from "node:path";
 import { parse, YAMLParseError } from "yaml";
 import type { PreviewSettings } from "./settings.ts";
 
-/** `mount` に渡す設定。設定ファイルから取り出した `features`・`libraries`・`side-toc`・`colorTheme` */
+/** `mount` に渡す設定。設定ファイルから取り出した `features`・`libraries`・`html-scripts`・`side-toc`・`colorTheme` */
 export type PreviewConfig = {
   /** 記載した値のまま（中の知らない名前と型の違う値は mdmark が無視する） */
   features?: Record<string, unknown>;
   /** 記載した値のまま。URL は呼ぶ側が直す */
   libraries?: Record<string, unknown>;
+  /** 記載した値のまま。`url` は呼ぶ側が直す */
+  "html-scripts"?: Record<string, unknown>;
   /** 記載した値のまま（`mode` の知らない値は mdmark が `hover` で描く） */
   "side-toc"?: Record<string, unknown>;
   /** 書いた値のまま。`mdmark.colorTheme` が空でないときは `applyColorTheme` がその値に置き換える（知らない名前は mdmark が dev-swiss で描く） */
@@ -47,6 +49,9 @@ export const CONFIG_TEMPLATE = `# mdmark の設定。VS Code のプレビュー�
 # colorTheme: theme-paper
 `;
 
+/** ライブラリ本体が `html-scripts.url` を省いたときに読む URL の origin */
+const DEFAULT_HTML_SCRIPTS_ORIGIN = "https://cdn.jsdelivr.net";
+
 /** `http:`・`https:` の URL か */
 const HTTP_URL_PATTERN = /^https?:/i;
 
@@ -66,7 +71,7 @@ export function resolveConfigPath(options: {
   return isAbsolute(configPath) ? configPath : resolve(baseDir, configPath);
 }
 
-/** YAML を読み、最上位がマップのときだけ `features`・`libraries`・`side-toc`・文字列の `colorTheme` と、文字列の `assets.root` を取り出す */
+/** YAML を読み、最上位がマップのときだけ `features`・`libraries`・`html-scripts`・`side-toc`・文字列の `colorTheme` と、文字列の `assets.root` を取り出す */
 export function parseConfig(text: string): ConfigLoad {
   let parsed: unknown;
   try {
@@ -88,6 +93,9 @@ export function parseConfig(text: string): ConfigLoad {
     }
     if (isMap(parsed.libraries)) {
       config.libraries = parsed.libraries;
+    }
+    if (isMap(parsed["html-scripts"])) {
+      config["html-scripts"] = parsed["html-scripts"];
     }
     if (isMap(parsed["side-toc"])) {
       config["side-toc"] = parsed["side-toc"];
@@ -148,12 +156,34 @@ export function resolveLibraries(options: {
   );
 }
 
-/** `libraries` の値のうち `http:`・`https:` の URL の origin を、重なりを除いて返す */
+/** `html-scripts.url` が `http:`・`https:` でない文字列なら、設定ファイルのフォルダから解決した絶対パスを `toUrl` で URL にして返す */
+export function resolveHtmlScripts(options: {
+  /** 取り出した `html-scripts` */
+  htmlScripts: Record<string, unknown>;
+  /** 設定ファイルのあるフォルダ */
+  configDir: string;
+  /** 絶対パスを読める URL にする関数 */
+  toUrl: (path: string) => string;
+}): Record<string, unknown> {
+  const { htmlScripts, configDir, toUrl } = options;
+  const { url } = htmlScripts;
+  if (typeof url !== "string" || HTTP_URL_PATTERN.test(url)) {
+    return htmlScripts;
+  }
+  return { ...htmlScripts, url: toUrl(resolve(configDir, url)) };
+}
+
+/** `libraries` の値と `html-scripts.url`（文字列でなければライブラリ本体の既定の URL）のうち `http:`・`https:` の URL の origin を、重なりを除いて返す */
 export function libraryOrigins(
   libraries: Record<string, unknown> | undefined,
+  htmlScripts?: Record<string, unknown>,
 ): string[] {
   const origins = new Set<string>();
-  for (const value of Object.values(libraries ?? {})) {
+  const htmlScriptsUrl =
+    typeof htmlScripts?.url === "string"
+      ? htmlScripts.url
+      : DEFAULT_HTML_SCRIPTS_ORIGIN;
+  for (const value of [...Object.values(libraries ?? {}), htmlScriptsUrl]) {
     if (typeof value === "string" && HTTP_URL_PATTERN.test(value)) {
       // 読めない URL は CSP に足さない（読み込みは mdmark が知らせの枠にする）
       const origin = URL.canParse(value) ? new URL(value).origin : undefined;
