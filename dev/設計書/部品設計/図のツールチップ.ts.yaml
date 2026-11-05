@@ -23,14 +23,14 @@ states:
   - name: Term
     description: 箱の中の用語を開いた。本文の用語と同じ破線の下線と見た目
   - name: Hint
-    description: 箱の `hint` を開いた。箱の上に文だけを出す
+    description: 箱の `hint` を開いた。箱の下に文だけを出す
     args:
       - name: kind
         value: hint
       - name: open
         value: 'true'
   - name: Table
-    description: ER 図のテーブルの説明のボタンで開いた。テーブルの上に、論理名と物理名・概要・`desc` を持つ列の名前と説明を出す
+    description: ER 図のテーブルの説明のボタンで開いた。テーブルの下に、論理名と物理名・概要・`desc` を持つ列の名前と説明を出す
     args:
       - name: kind
         value: table
@@ -38,12 +38,30 @@ states:
         value: 'true'
     notes:
       定義: モックの `shop-er` の注文のテーブル（`dev/mock/components/er-diagram/` の「テーブルのツールチップ」）
-lead: 図の線のラベルと箱の印に付くツールチップ。線は入力の詳細を、LLM・スクリプトなどの箱は入力・処理・出力を、ER 図のテーブルの説明のボタンはテーブルの概要と列の説明を出す。箱の中の用語は用語のツールチップを使う。
+  - name: Item
+    description: '折れ線の点のツールチップを開いた。点の下に系列の名前と `{横の目盛り}: {値}` を出す'
+    args:
+      - name: kind
+        value: item
+      - name: open
+        value: "'true'"
+    notes:
+      定義: モックの `reply-time`
+  - name: GroupHint
+    description: システムの枠のタイトルの印で `hint` を開いた。印の下に文だけを出す
+    args:
+      - name: kind
+        value: hint
+      - name: open
+        value: "'true'"
+    notes:
+      定義: モックの `inquiry-groups`（`dev/mock/refs/308/assets/samples.js`）
+lead: 図の線のラベル・箱の印・グループのタイトルの印・グラフの項目に付くツールチップ。線は入力の詳細を、LLM・スクリプトなどの箱は入力・処理・出力を、ER 図のテーブルの説明のボタンはテーブルの概要と列の説明を出す。箱の中の用語は用語のツールチップを使う。
 args:
   - name: kind
     type: 列挙
     required: true
-    choices: '`wire`（線の入力の詳細）・`io`（箱の入力・処理・出力と `hint`）・`hint`（箱の `hint` か埋め込んだ HTML の `data-hint` の文だけ）・`table`（ER 図のテーブルの概要と列の説明）'
+    choices: '`wire`（線の入力の詳細）・`io`（箱の入力・処理・出力と `hint`）・`hint`（箱の `hint` か埋め込んだ HTML の `data-hint` の文だけ）・`table`（ER 図のテーブルの概要と列の説明）・`item`（グラフの項目の系列か項目の名前と値）。グループのタイトルの `hint` は `hint`'
     description: ツールチップの種類
   - name: label
     type: 文字列
@@ -71,6 +89,11 @@ args:
     required: false
     enabled_when: '`kind` が `table` のとき'
     description: ER 図のテーブルの `{ name, label, desc, columns }`。題を `{論理名}（{物理名}）` にし、概要と、`desc` を持つ列の名前と説明を並べる
+  - name: value
+    type: 文字列
+    required: false
+    enabled_when: '`kind` が `item` のとき'
+    description: '項目の値の文。`label` に系列の名前（円とドーナツは項目の名前）を置き、折れ線・面・棒・積み上げ・横棒・レーダー・組み合わせは `{横の目盛り}: {値}`、散布図は `{x のラベル} {x}・{y のラベル} {y}`、バブルはその後ろに `・{大きさのラベル} {値}`、円とドーナツは `{値}{unit}（{割合}）` にする'
 events:
   - name: 開く・閉じる
     when: 持ち主にポインターを乗せるかフォーカスする。外すか Esc を押す。タッチの端末では持ち主をタップする。もう一度タップするか、ツールチップと持ち主の外をタップする
@@ -80,11 +103,12 @@ uses:
   - component: dev/設計書/部品設計/用語のツールチップ.ts#
     how: 箱の中の用語の下線と意味はこの部品ではなく用語のツールチップで出す
 accessibility:
-  - ツールチップは `role="tooltip"` で、持ち主（線のラベルのボタン・箱の右上の印のボタン・ER 図のテーブルの説明のボタン）は `aria-describedby` でそれを指す。箱の印の外では開かない
+  - ツールチップは `role="tooltip"` で、持ち主（線のラベルのボタン・箱の右上の印のボタン・グループのタイトルの右の印のボタン・`tabindex="0"` を持つグラフの項目・ER 図のテーブルの説明のボタン）は `aria-describedby` でそれを指す。箱の印の外では開かない
   - 箱の印のボタンは、`io` を持つとき `aria-label="「{箱の名前}」の入力・処理・出力"`、`hint` だけを持つとき `aria-label="「{箱の名前}」の説明"` を持つ
-  - ER 図のテーブルの説明のボタンは `aria-label="「{論理名}」の説明"` を持ち、ツールチップをテーブルの上（上に収まらないときは下）に出す。`tooltips.placement` に従う
+  - ER 図のテーブルの説明のボタンは `aria-label="「{論理名}」の説明"` を持ち、ツールチップをテーブルの下（下に収まらないときは上）に出す。どの持ち主も `tooltips.diagramPlacement` に従う
   - ホバーとフォーカスの両方で出し、Esc で消え、上に乗っても消えない（WCAG 1.4.13）。タッチの端末では持ち主のタップで開閉を切り替え、ツールチップと持ち主の外のタップで閉じる。ポインターの形は変えない
   - 理解に必須のことは入れず、線と箱の要約だけで図を読めるようにする。印刷では出さない
+  - グループのタイトルの印のボタンは `aria-label="「{タイトル}」の説明"` を持つ。グラフの項目はフォーカスしたときに輪で示す
 status: planned
 introduced:
   pr: 42

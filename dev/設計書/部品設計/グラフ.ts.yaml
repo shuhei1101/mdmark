@@ -58,6 +58,10 @@ states:
       定義: モックの `inquiry-combo`
   - name: TooManySeries
     description: 系列 7 つの定義。図の代わりに、系列の数と上限の 6 つを書いた書き方の警告を出す
+  - name: ItemFocused
+    description: 折れ線の点にフォーカスした。点を輪で示し、点の下にその項目のツールチップを出す
+    notes:
+      定義: モックの `reply-time`
 lead: 折れ線・棒・円・散布図・面・積み上げの棒と面・横棒・ドーナツ・レーダー・バブル・折れ線と棒の組み合わせのグラフ。系列は色と、線の模様・塗りの模様・点の形の組で分ける。
 args:
   - name: definition
@@ -67,11 +71,14 @@ args:
 uses:
   - component: dev/設計書/部品設計/書き方の警告.ts#
     how: 定義を読めないときに図の代わりに置く
+  - component: dev/設計書/部品設計/図のツールチップ.ts#
+    how: '`kind` を `item` にして、項目の系列か項目の名前と値を出す'
 accessibility:
   - グラフの svg は `role="img"` と、題名と系列（円は項目）ごとの値を並べた `aria-label` を持つ
   - 系列は色だけでなく、折れ線は線の模様と点の形、棒と円は塗りの模様、散布図は点の形でも分ける
   - 面・レーダーは折れ線と同じ線の模様と点の形、積み上げの棒と面・横棒・ドーナツ・バブル・組み合わせの棒は塗りの模様でも分ける。6 つの系列の色は、どのテーマの明るい配色と暗い配色でも地に対して 3:1 以上
   - バブルの `aria-label` は点ごとに `({x}, {y}, {size.label} {値})` を並べ、組み合わせの凡例は系列の読む軸を文字でも示す
+  - 点・棒・扇形・バブルの項目は `tabindex="0"` と、その項目のツールチップを指す `aria-describedby` を持つ。点は半径 12px の透明の当たりの円（`.mdmark-diagram-item-hit`）にこれを持たせる
 status: planned
 introduced:
   pr: 42
