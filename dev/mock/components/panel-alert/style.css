@@ -7,11 +7,11 @@
 
 /* ホバーの見本: :hover と同じ見た目 */
 .button.is-hover {
-  background: color-mix(in oklab, var(--primary) 90%, var(--background));
+  background: var(--primary-hover);
 }
 
 .button.is-outline.is-hover {
-  background: var(--accent);
+  background: var(--secondary);
 }
 
 /* フォーカスの見本: :focus-visible と同じ見た目 */
