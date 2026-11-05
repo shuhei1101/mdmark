@@ -30,3 +30,11 @@
 - `test_library_origins`: `html-scripts.url` を省いたときはライブラリ本体の既定の URL の origin（`https://cdn.jsdelivr.net`）も CSP に含めるため、期待値に足した（`1febb090`）
 
 lint: `テスト結果/20261105212521_5263a1a1_lint.log`（違反なし）
+
+### 結合
+
+| ファイル | メソッド | 変更種別 | 結果 | 補足 |
+| --- | --- | --- | --- | --- |
+| `vscode/tests/integration/preview-open.test.ts` | `test_normal_when_range_scripts` | 新規 | ✅ | VS Code 1.141.0 と stable（1.145.0）の両方で 69 テスト pass<br>`テスト結果/20261105230946_5981f42a_結合テスト_VSCode拡張機能.log` |
+
+インターフェース定義の期待の「CSP の違反が 0 件」は、テストが Webview の DOM を `inspectPreview` でしか読めないため、`script-src` に `blob:`・`'unsafe-inline'`・`'unsafe-eval'` が無いことと、範囲の `ts` が動き、知らせの枠と書き方の警告が無いことで確かめた。
