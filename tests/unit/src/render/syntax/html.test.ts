@@ -1,3 +1,4 @@
+import MarkdownIt from "markdown-it";
 import { expect, test } from "vitest";
 import type { MdmarkAlias } from "../../../../../src/knowledge/aliases.ts";
 import type { MdmarkIndex } from "../../../../../src/knowledge/index-shape.ts";
@@ -251,14 +252,13 @@ const loadScopeCss = () => import("../../../../../src/render/scope-css.ts");
 /** 埋め込んだ HTML の処理を読み込む */
 const loadHtml = () => import("../../../../../src/render/syntax/html.ts");
 
-/** コードブロックを並べた Markdown を解析し、`fence` のトークンを返す */
-async function fenceTokens(languages: string[]) {
-  const { createParser } = await loadParser();
+/** コードブロックを並べた Markdown を記法のルールを通さずに解析し、`fence` のトークンを返す */
+function fenceTokens(languages: string[]) {
   const markdown = languages
-    .map((lang) => ["```" + lang, `${lang} の中身`, "```", ""].join("\n"))
+    .map((lang) => [`\`\`\`${lang}`, `${lang} の中身`, "```", ""].join("\n"))
     .join("\n");
-  return createParser()
-    .parse(markdown, createEnv())
+  return new MarkdownIt()
+    .parse(markdown, {})
     .filter((token) => token.type === "fence");
 }
 
@@ -304,7 +304,7 @@ test("test_build_embedded_html_when_range_scripts_off", () => {
 test("test_read_range_scripts", async () => {
   // 準備
   const { readRangeScripts } = await loadHtml();
-  const tokens = await fenceTokens(["html", "css", "ts"]);
+  const tokens = fenceTokens(["html", "css", "ts"]);
   // 実行
   const read = readRangeScripts(tokens);
   // 検証
@@ -318,7 +318,7 @@ test("test_read_range_scripts", async () => {
 test("test_read_range_scripts_when_both_languages", async () => {
   // 準備
   const { readRangeScripts } = await loadHtml();
-  const tokens = await fenceTokens(["html", "ts", "js"]);
+  const tokens = fenceTokens(["html", "ts", "js"]);
   // 実行
   const read = readRangeScripts(tokens);
   // 検証
@@ -330,7 +330,7 @@ test("test_read_range_scripts_when_both_languages", async () => {
 test("test_read_range_scripts_when_duplicate", async () => {
   // 準備
   const { readRangeScripts } = await loadHtml();
-  const tokens = await fenceTokens(["html", "css", "css"]);
+  const tokens = fenceTokens(["html", "css", "css"]);
   // 実行
   const read = readRangeScripts(tokens);
   // 検証
