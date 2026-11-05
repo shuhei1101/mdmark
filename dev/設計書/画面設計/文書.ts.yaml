@@ -834,7 +834,7 @@ elements:
     id: table-copy-menu
     kind: dialog
     position: 描く先の要素 > 表
-    description: '`表をコピー` のボタン（文言の後ろに `chevron-down` のアイコンを持ち、`aria-expanded`・`aria-controls` で開閉を示す）が開くメニュー。題 `コピーの形式` と、形式の名前と使いどころを 2 行で出すボタンを 2 つ並べる。`role="dialog"`・`aria-label="コピーの形式"`。開閉の作法は列設定のメニューと同じ'
+    description: '`表をコピー` のボタン（文言の後ろに `chevron-down` のアイコンを持ち、`aria-expanded`・`aria-controls` で開閉を示す）が開くメニュー。題 `コピーの形式` と、形式の名前と使いどころを 2 行で出すボタンを 2 つ並べる。`role="dialog"`・`aria-label="コピーの形式"`。開閉の作法はテーブル設定のパネルと同じ'
     label: コピーの形式
     visible_when: '`表をコピー` のボタンで開いたとき'
     options: '`Markdown の表`（文書に貼るとそのまま表になる）・`TSV`（表計算ソフトに貼るとセルに分かれる）の順'
