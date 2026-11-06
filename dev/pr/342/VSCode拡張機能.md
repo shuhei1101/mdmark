@@ -72,6 +72,7 @@
 | モジュール構成設計 | `4a6ecbf..ad3ed91` | レビューの任意の指摘の修正 |
 | モジュール構成設計 | `48aac41..7ec8e8d` | 単体テスト作成で見つけた構造問題の修正（`DocumentView` をクラスでなく `createDocumentView` が返す型にする。単体テストの HEAD を MSW でなく `window.fetch` の代役にする） |
 | モジュール構成設計 | `d9509a0..b15cf5c` | レビューの指摘の修正（単体テストもストーリーと同じ MSW のハンドラに戻し、`unit-browser` の `publicDir` で Service Worker を配信する） |
+| モジュール構成設計 | `24b4ad7f..d8cddd82` | 実装で見つけた構造問題の修正（ESLint を TypeScript 6.0 と組んだ `tools/eslint/` の package に分ける。`boundaries/dependencies` と Tailwind の規則の水準。`PreviewState` を `shared/adapters/vscode-api.ts` へ移す） |
 
 ## PoC 結果
 
