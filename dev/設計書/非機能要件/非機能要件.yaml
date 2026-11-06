@@ -82,8 +82,8 @@ requirements:
       pr: 69
     verification:
       device: WSL2 上の VS Code（xvfb-run）
-      version: VS Code 1.141.0・1.144.0（stable）
-      date: '2026-10-31'
+      version: VS Code 1.141.0・1.145.1（stable）。React（Vite でビルドした `media/preview.js`）にした Webview で、CSP・動的 `import()`・`ready` を受けた送り直しの結合テストが 69 件 pass した
+      date: '2026-11-06'
       result: 合格
   - name: タグ一覧を取る待ちの上限
     english_name: tag_list_timeout
