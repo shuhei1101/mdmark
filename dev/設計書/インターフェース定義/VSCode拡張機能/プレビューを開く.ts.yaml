@@ -32,6 +32,7 @@ flows:
       - '`mdmark.lastVersion` が `v0.10.0`'
       - '`rendered` を受けた後、Webview の本文に見出し・表・注意書き・フロー図の要素がある'
       - Webview の HTML の CSP が制約「CSP」のとおりで、`script` 要素が全て nonce を持つ
+      - '`auditPreview()` が返すパネルの部品の axe の違反が 0 件'
     test: test_normal
   - name: 正常系（同じ列に開く）
     summary: '`mdmark.openPreview` は同じ列のタブに開く'
@@ -203,6 +204,7 @@ flows:
       - '`loadFailed` の `reason` が `offline`'
       - パネルにオフラインの描けない理由と「リロード」のボタンがあり、本文は無い
       - Markdown と `mdmark.config.yaml` の中身が変わらない
+      - 描けない理由を出したパネルの `auditPreview()` の axe の違反が 0 件
     test: test_error_when_distribution_unreachable
   - name: 異常系（指定したバージョンが無い）
     summary: 配布物の URL が 404 のとき、指定したバージョンが無い理由と「リロード」を出す

@@ -64,18 +64,18 @@ events:
     value: props の `onReload()` を引数なしで呼ぶ
     description: '画面が `{ type: "reload" }` を拡張機能へ送る（プレビューをリロードする.ts）'
 css_properties:
-  - name: --warning
+  - name: --background
     syntax: <color>
-    default: var(--vscode-inputValidation-warningBackground)
+    default: var(--vscode-editor-background)
     description: 描けない理由の枠の地の色
+  - name: --foreground
+    syntax: <color>
+    default: var(--vscode-editor-foreground)
+    description: 描けない理由の枠の文字の色
   - name: --warning-border
     syntax: <color>
     default: var(--vscode-inputValidation-warningBorder)
-    description: 描けない理由の枠の線の色
-  - name: --warning-foreground
-    syntax: <color>
-    default: color-mix(in oklab, var(--vscode-editor-foreground) 60%, var(--vscode-inputValidation-warningBorder))
-    description: 描けない理由の枠の文字の色
+    description: 描けない理由の枠の線と警告のアイコンの色
   - name: --primary
     syntax: <color>
     default: var(--vscode-button-background)
@@ -101,7 +101,7 @@ accessibility:
   - 題は `h1`、理由は `p`。警告のアイコンは `aria-hidden="true"` で、色とアイコンに頼らず文言で伝える
   - 'Spinner は lucide の `loader-circle` の `svg`（`role="img"`・`aria-label="読み込み中"`）で、`prefers-reduced-motion: reduce` のときは 6 秒で 1 回転にゆっくり回す'
   - 「リロード」は `button` で、Tab で届き Enter・Space で押せる。フォーカスの輪郭を `--ring` の 2px で出す
-  - 描けない理由の文字と地、ボタンの文字と地（ホバーを含む）の対比を 4.5:1 以上にする
+  - 描けない理由の文字と地は、エディタの本文の文字と地の色にする（対比はテーマが本文に持たせる対比のまま）。警告の色（`inputValidation.warningBorder`）は線とアイコンだけに使い、文字の地にしない。ボタンの文字と地（ホバーを含む）はテーマのボタンの色にする
 refs:
   - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを開く.ts#constraints[描けない理由の見分け方]
 status: planned

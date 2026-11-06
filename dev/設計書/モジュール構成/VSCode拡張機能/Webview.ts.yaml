@@ -909,7 +909,7 @@ components:
         type: '"default" | "warning"'
         required: false
         default: '`default`'
-        description: 見た目。`warning` は `--warning`・`--warning-border`・`--warning-foreground`
+        description: 見た目。`warning` は線と警告のアイコンを `--warning-border`、地を `--background`、文字を `--foreground` にする（警告の色を文字の地にしない）
       - name: role
         type: string
         required: false
@@ -1679,7 +1679,7 @@ styles:
     title: パネルの CSS
     container: vscode/src/webview/shared/styles/panel.css
     summary: Tailwind の theme と utilities の層、トークンの 3 ティア、`@theme inline` の割り当てと、パネルの部品の下地
-    description: '冒頭で `@layer theme, base, components, utilities;` と Tailwind の既定の層の順を宣言し、`tailwindcss/theme.css`（`layer(theme)`）と `tailwindcss/utilities.css`（`layer(utilities)`）だけを読む。Preflight（`tailwindcss/preflight.css`）は読まない（描いた文書の要素の既定を mdmark の `@layer mdmark` から変えない）。独自の層は足さない。トークンは `:root` に置く: プリミティブは VS Code が `html` に渡す `--vscode-*`、セマンティックは shadcn/ui の名前（`--background`・`--foreground`・`--card`・`--card-foreground`・`--muted-foreground`・`--primary`・`--primary-foreground`・`--secondary`・`--border`・`--ring`・`--radius`）と警告の `--warning`・`--warning-border` を `--vscode-*` に割り当て、派生は `--primary-hover`・`--secondary-hover`・`--warning-foreground`（`color-mix(in oklab, …)`）。`@theme inline` で `--color-*: initial` の後にトークンを `--color-*`・`--radius-*` へ割り当てる'
+    description: '冒頭で `@layer theme, base, components, utilities;` と Tailwind の既定の層の順を宣言し、`tailwindcss/theme.css`（`layer(theme)`）と `tailwindcss/utilities.css`（`layer(utilities)`）だけを読む。Preflight（`tailwindcss/preflight.css`）は読まない（描いた文書の要素の既定を mdmark の `@layer mdmark` から変えない）。独自の層は足さない。トークンは `:root` に置く: プリミティブは VS Code が `html` に渡す `--vscode-*`、セマンティックは shadcn/ui の名前（`--background`・`--foreground`・`--card`・`--card-foreground`・`--muted-foreground`・`--primary`・`--primary-foreground`・`--secondary`・`--border`・`--ring`・`--radius`）と警告の `--warning-border` を `--vscode-*` に割り当て、派生は `--primary-hover`・`--secondary-hover`（`color-mix(in oklab, …)`）。`@theme inline` で `--color-*: initial` の後にトークンを `--color-*`・`--radius-*` へ割り当てる'
     values:
       - class_name: .mdmark-panel-part
         target: 状態の表示と帯の外側（`base` の層）

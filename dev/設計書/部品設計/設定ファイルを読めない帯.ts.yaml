@@ -34,18 +34,10 @@ events:
     value: props の `onOpenConfig()` を引数なしで呼ぶ
     description: '画面が `{ type: "openConfig" }` を拡張機能へ送る（設定ファイルを開く.ts）'
 css_properties:
-  - name: --warning
-    syntax: <color>
-    default: var(--vscode-inputValidation-warningBackground)
-    description: 帯の地の色
   - name: --warning-border
     syntax: <color>
     default: var(--vscode-inputValidation-warningBorder)
-    description: 帯と「設定ファイルを開く」の線の色
-  - name: --warning-foreground
-    syntax: <color>
-    default: color-mix(in oklab, var(--vscode-editor-foreground) 60%, var(--vscode-inputValidation-warningBorder))
-    description: 帯の文字の色
+    description: 帯と「設定ファイルを開く」の線と、警告のアイコンの色
   - name: --secondary
     syntax: <color>
     default: var(--vscode-button-secondaryBackground)
@@ -66,6 +58,7 @@ accessibility:
   - 帯は `role="status"` を持ち、出たときに読み上げが題と本文を読む
   - 題は `h2`（文書の `h1` より下の階層）、本文は `p`。警告のアイコンは `aria-hidden="true"`
   - 「設定ファイルを開く」は `button`（`outline` の variant）で、Tab で届き Enter・Space で押せる。フォーカスの輪郭を `--ring` の 2px で出す
+  - 帯の地と文字は、エディタの本文の地（`--background`）と文字（`--foreground`）の色にし、警告の色は線とアイコンだけに使う（対比はテーマが本文に持たせる対比のまま）
   - 帯は文書の先頭に置き、固定せずスクロールで流す。帯の幅が 30rem 以上ではボタンを文の右に、未満では文の下に置く
 refs:
   - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを描き直す.ts#constraints[設定ファイルを読めないとき]

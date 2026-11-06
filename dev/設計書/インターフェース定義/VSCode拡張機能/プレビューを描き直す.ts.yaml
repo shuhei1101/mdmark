@@ -166,6 +166,7 @@ flows:
     expected:
       - '`configError` の `line` が `4` で、`render` は送られない'
       - Webview の文書は描いたまま（注意書きは `blockquote` のまま）で、文書の先頭に設定ファイルを読めない帯と「設定ファイルを開く」がある
+      - 帯を出したパネルの `auditPreview()` の axe の違反が 0 件
     test: test_error_when_config_unreadable
   - name: 正常系（設定ファイルに新しい配信元の libraries を足す）
     summary: 開いたまま設定ファイルにまだ CSP に無い origin の `libraries` を足して保存すると、HTML を入れ直してそのモジュールを読む
