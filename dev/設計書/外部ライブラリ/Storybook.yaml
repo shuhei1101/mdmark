@@ -27,7 +27,7 @@ catalogs:
   - name: '*.stories.ts / *.stories.tsx'
     kind: ストーリー
     purpose: CSF（`export default meta` と名前付き export のストーリー）で書く
-    description: 部品の HTML のストーリーは `parameters.server.id` と `args` を持ち、デコレーターが描画の口の HTML を描く。id は `title` と export の名前を整えたもの（`Parts/Notice` と `Error` → `parts-notice--error`）
+    description: 部品の HTML のストーリーは `parameters.server.id` と `args` を持ち、デコレーターが描画の口の HTML を描く。id は `title` と export の名前を整えたもの（`Parts/Notice` と `Block` → `parts-notice--block`）
 - name: API
   version: '`@storybook/react-vite==10.6.2`'
   entries:
