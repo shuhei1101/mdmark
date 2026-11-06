@@ -9,7 +9,7 @@ import { Button } from "./ui/button.tsx";
 
 /** 設定ファイルを読めない帯の props */
 export type ConfigBandProps = {
-  /** 設定ファイルのパス（`mdmark.configPath` の書いたまま） */
+  /** 読めない設定ファイルのパス（ワークスペースの中はワークスペースのフォルダからの相対パス、外はホームを `~` にしたパス） */
   path: string;
   /** 読めない行（1 始まり） */
   line: number;
@@ -31,8 +31,7 @@ export const ConfigBand = ({ path, line, onOpenConfig }: ConfigBandProps) => (
       </AlertTitle>
       <AlertDescription>
         <code>{path}</code> の {line} 行目を YAML として読めないため、
-        <code>features</code> と <code>libraries</code>{" "}
-        を当てずに表示しています。
+        この設定ファイルを重ねずに表示しています。
       </AlertDescription>
       <div className="col-start-2 mt-2 @band:col-start-3 @band:row-span-2 @band:row-start-1 @band:mt-0 @band:self-center">
         <Button
