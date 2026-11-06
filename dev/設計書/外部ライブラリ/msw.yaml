@@ -23,9 +23,10 @@ catalogs:
     kind: 関数
     purpose: ブラウザの Service Worker でハンドラを動かす（`msw/browser`）
     description: 'Vitest のブラウザでは `test.extend` のフィクスチャで `start({ quiet: true, onUnhandledFrame: "bypass" })`・`resetHandlers()`・`stop()` する。3.0 で `onUnhandledRequest` は `onUnhandledFrame` になった'
-  - name: initialize・mswLoader
+  - name: mswLoader
     kind: 関数
-    purpose: Storybook でストーリーの `parameters.msw.handlers` を当てる（`msw-storybook-addon`）
+    purpose: Storybook でストーリーの `parameters.msw.handlers` を当てる（`msw-storybook-addon/csf3`）
+    description: 引数に Service Worker を始めて返す関数を渡す。3.0 で `initialize` は無くなり、`msw-storybook-addon` の既定の export は CSF Next の `addonMsw` になった
 lead: Service Worker で HTTP の要求を横取りし、ハンドラの応答を返すモックのライブラリ。
 purl: pkg:npm/msw@3.0.4
 dependency_scope: 開発のみ

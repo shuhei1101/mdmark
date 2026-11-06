@@ -28,7 +28,7 @@ categories:
       ```bash
       npm --prefix vscode ci
       ```
-    effects: '`node_modules/` を `package-lock.json` のとおりに作り直す'
+    effects: '`node_modules/` を `package-lock.json` のとおりに作り直す。続けて `prepare` が、`lefthook install` で全ての worktree が共有する `.git/hooks` に Git フックを入れ、`npm ci --prefix tools/eslint` で `tools/eslint/node_modules/` を作り直す（`LEFTHOOK=0` を付けるとフックを入れない）'
     verification:
       state: 済
       date: '2026-10-13'

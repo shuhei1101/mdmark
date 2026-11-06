@@ -48,7 +48,7 @@ constants:
       - key: decorators
         value: '`[withServerHtml, withVsCodeTheme]`'
       - key: loaders
-        value: '`[mswLoader]`（`msw-storybook-addon` の `initialize({ onUnhandledRequest: "bypass" })` を読み込み時に呼ぶ）'
+        value: '`[mswLoader(startWorker)]`（`msw-storybook-addon/csf3` の `mswLoader`。`startWorker` は `msw/browser` の `setupWorker()` を `start({ quiet: true, onUnhandledFrame: "bypass" })` で始めて返す）'
       - key: globalTypes.scheme
         value: '`light`・`dark`（既定 `light`。`VSCode/*` のストーリーの配色）'
       - key: parameters.a11y
