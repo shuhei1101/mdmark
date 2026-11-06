@@ -1,5 +1,5 @@
 title: "設定ファイルを読めない帯"
-implementation: "vscode/src/webview/parts/config-band.ts#renderConfigBand"
+implementation: "vscode/src/webview/shared/components/config-band.tsx#ConfigBand"
 story: "VSCode/ConfigBand"
 states:
   - name: Default
@@ -23,38 +23,45 @@ args:
   - name: path
     type: 文字列
     required: true
-    description: 設定ファイルのパス（`mdmark.configPath` の書いたまま）。本文の `code` に入れる（HTML として特別な文字はエスケープする）
+    description: 設定ファイルのパス（`mdmark.configPath` の書いたまま）。本文の `code` に入れる
   - name: line
     type: 整数
     required: true
     description: 読めない行（1 始まり）
-slots:
-  - name: default
-    description: 帯の後ろに続く、描いた文書の要素
 events:
   - name: 設定ファイルを開く
     when: 「設定ファイルを開く」のボタンを押したとき
-    value: ボタンの `data-action="openConfig"`
-    description: 'Webview のスクリプトが `{ type: "openConfig" }` を拡張機能へ送る（設定ファイルを開く.ts）'
+    value: props の `onOpenConfig()` を引数なしで呼ぶ
+    description: '画面が `{ type: "openConfig" }` を拡張機能へ送る（設定ファイルを開く.ts）'
 css_properties:
-  - name: --mdmark-color-notice-bg
+  - name: --warning
     syntax: <color>
-    default: 知らせの枠と同じ
+    default: var(--vscode-inputValidation-warningBackground)
     description: 帯の地の色
-  - name: --mdmark-color-notice-border
+  - name: --warning-border
     syntax: <color>
-    default: 知らせの枠と同じ
-    description: 帯とボタンの線の色
+    default: var(--vscode-inputValidation-warningBorder)
+    description: 帯と「設定ファイルを開く」の線の色
+  - name: --warning-foreground
+    syntax: <color>
+    default: color-mix(in oklab, var(--vscode-editor-foreground) 60%, var(--vscode-inputValidation-warningBorder))
+    description: 帯の文字の色
+  - name: --secondary
+    syntax: <color>
+    default: var(--vscode-button-secondaryBackground)
+    description: 「設定ファイルを開く」のホバーの地の色
 accessibility:
   - 帯は `role="status"` を持ち、出たときに読み上げが題と本文を読む
-  - 題は `h2`（文書の `h1` より下の階層）、本文は `p`
-  - 「設定ファイルを開く」は `button` で、Tab で届き Enter・Space で押せる
-  - 帯は文書の先頭に置き、固定せずスクロールで流す
+  - 題は `h2`（文書の `h1` より下の階層）、本文は `p`。警告のアイコンは `aria-hidden="true"`
+  - 「設定ファイルを開く」は `button`（`outline` の variant）で、Tab で届き Enter・Space で押せる。フォーカスの輪郭を `--ring` の 2px で出す
+  - 帯は文書の先頭に置き、固定せずスクロールで流す。帯の幅が 30rem 以上ではボタンを文の右に、未満では文の下に置く
 refs:
   - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを描き直す.ts#constraints[設定ファイルを読めないとき]
 status: planned
 introduced:
   pr: 69
 notes:
-  出典: 文言と帯の置き方（文書の先頭に置きスクロールで流す）は確認ログの決定。モックは `dev/mock/components/preview-status/` の帯の場面
+  出典: '文言と帯の置き方（文書の先頭に置きスクロールで流す）は確認ログの決定。見た目と配色は #342 の確認ログ（モックへの合意・描けない理由と帯の配色を VS Code のテーマの色にする）。モックは `dev/mock/pages/vscode-preview/342/shadcn/` の帯の場面と `dev/mock/components/panel-alert/`'
+  使う部品: shadcn/ui の `Alert`（`warning` の variant）・`Button`（`outline`）
+  置き場所: プレビューの状態の表示と同じく `shared/components/` に置き、ストーリーの `title` は `VSCode/ConfigBand` のまま。描いた文書の要素は React の外の DOM のため、帯は文書を子に持たず、画面が帯と文書の要素を並べる
 test_file: tests/integration/vscode/config-band.story.test.ts

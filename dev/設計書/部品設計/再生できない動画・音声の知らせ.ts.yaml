@@ -1,5 +1,5 @@
 title: 再生できない動画・音声の知らせ
-implementation: vscode/src/webview/parts/media-error.ts#renderMediaError
+implementation: vscode/src/webview/shared/lib/media-error.ts#renderMediaError
 story: VSCode/MediaError
 test_file: tests/integration/vscode/media-error.story.test.ts
 states:
@@ -70,3 +70,4 @@ refs:
 status: planned
 notes:
   HTML: '`<div class="mdmark-notice" role="status"><strong class="mdmark-notice-title">{タイトル}</strong><p>VS Code のプレビューは <code>{format}</code> の形式を再生できません。<a href="#">既定のアプリで開く</a>（<code>{path}</code>）</p></div>`。文言は確認ログのモックへの合意。モックは `dev/mock/components/notice/` の再生できない場面'
+  React にしない理由: 枠は mdmark が描いた文書の中の動画・音声の要素と差し替えて置き、描き直しで mdmark が中身を作り直すため、React の木に入れず HTML 文字列を返す関数のまま持つ。見た目は今のまま（#342 の確認ログのモックへの合意）。ストーリーは HTML 文字列を描く CSF（`media-error.stories.ts`）にする
