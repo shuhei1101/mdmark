@@ -119,14 +119,24 @@ export async function readHighlightVendor(): Promise<Record<string, string>> {
 /** 使う側の CSS の見本: 角丸の変数を上書きする */
 export const THEME_SOURCE = ".mdmark { --mdmark-radius: 0px; }\n";
 
-/** ビルドした `dist/cli.js` を、`cwd` で子プロセスとして流す。終了コードが 0 以外でも例外を投げず、結果を返す */
-export async function runCli(args: string[], cwd: string): Promise<CliResult> {
+/** 端末の設定を持たないことにする `MDMARK_CONFIG`（無いファイル）。開発者の端末の設定をテストに混ぜない */
+export const NO_SETTINGS = join(
+  tmpdir(),
+  "mdmark-integration-no-settings.yaml",
+);
+
+/** ビルドした `dist/cli.js` を、`cwd` で子プロセスとして流す。終了コードが 0 以外でも例外を投げず、結果を返す。`env` で環境変数を足す（`MDMARK_CONFIG` の既定は `NO_SETTINGS`） */
+export async function runCli(
+  args: string[],
+  cwd: string,
+  env: Record<string, string> = {},
+): Promise<CliResult> {
   const cli = join(inject("builtRoot"), "dist", "cli.js");
   try {
     const { stdout, stderr } = await execFileAsync(
       process.execPath,
       [cli, ...args],
-      { cwd },
+      { cwd, env: { ...process.env, MDMARK_CONFIG: NO_SETTINGS, ...env } },
     );
     return { code: 0, stdout, stderr };
   } catch (error) {

@@ -436,6 +436,10 @@ suite("プレビューを描き直す", () => {
     );
     const error = record.sent.find((message) => message.type === "configError");
     assert.strictEqual(error?.type === "configError" ? error.line : 0, 4);
+    assert.strictEqual(
+      error?.type === "configError" ? error.path : "",
+      "mdmark.config.yaml",
+    );
     await sleep(500);
     assert.strictEqual(renders(record).length, before);
     await waitFor(

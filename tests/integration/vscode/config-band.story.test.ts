@@ -45,12 +45,10 @@ test("test_default", async () => {
     "設定ファイルを読み込めません",
   );
   await expect(band.locator("p").innerText()).resolves.toBe(
-    "mdmark.config.yaml の 4 行目を YAML として読めないため、features と libraries を当てずに表示しています。",
+    "mdmark.config.yaml の 4 行目を YAML として読めないため、この設定ファイルを重ねずに表示しています。",
   );
   await expect(band.locator("p code").allInnerTexts()).resolves.toEqual([
     "mdmark.config.yaml",
-    "features",
-    "libraries",
   ]);
   await expect(
     band.locator('button[data-action="openConfig"]').innerText(),
@@ -96,12 +94,49 @@ test("test_narrow_long_path", async () => {
   // 検証
   const band = page.locator(".mdmark-config-band");
   await expect(band.locator("p").innerText()).resolves.toBe(
-    "docs/settings/mdmark/mdmark.config.workspace-shared.yaml の 12 行目を YAML として読めないため、features と libraries を当てずに表示しています。",
+    "docs/settings/mdmark/mdmark.config.workspace-shared.yaml の 12 行目を YAML として読めないため、この設定ファイルを重ねずに表示しています。",
   );
   const layout = await readLayout(page);
   expect(layout.buttonBelow).toBe(true);
   expect(layout.codeOutside).toBe(false);
   await expect(pageOverflows(page)).resolves.toBe(false);
+});
+
+// 端末の設定を読めない行を、ホームを ~ にしたパスで知らせる（SettingsUnreadable）
+test("test_settings_unreadable", async () => {
+  // 準備・実行
+  const page = await holder.openStory("vscode-configband--settings-unreadable");
+  // 検証
+  await expect(page.locator(".mdmark-config-band p").innerText()).resolves.toBe(
+    "~/.config/mdmark/settings.yaml の 3 行目を YAML として読めないため、この設定ファイルを重ねずに表示しています。",
+  );
+});
+
+// 近いフォルダの設定を読めない行を、ワークスペースからのパスで知らせる（NestedConfigUnreadable）
+test("test_nested_config_unreadable", async () => {
+  // 準備・実行
+  const page = await holder.openStory(
+    "vscode-configband--nested-config-unreadable",
+  );
+  // 検証
+  await expect(page.locator(".mdmark-config-band p").innerText()).resolves.toBe(
+    "docs/mdmark.config.yaml の 7 行目を YAML として読めないため、この設定ファイルを重ねずに表示しています。",
+  );
+});
+
+// 端末の設定が形に合わないキーを知らせ、行を出さない（SettingsInvalid）
+test("test_settings_invalid", async () => {
+  // 準備・実行
+  const page = await holder.openStory("vscode-configband--settings-invalid");
+  // 検証
+  const band = page.locator(".mdmark-config-band");
+  await expect(band.locator("p").innerText()).resolves.toBe(
+    "~/.config/mdmark/settings.yaml の features.callout が設定の形に合わないため、この設定ファイルを重ねずに表示しています。",
+  );
+  await expect(band.locator("p code").allInnerTexts()).resolves.toEqual([
+    "~/.config/mdmark/settings.yaml",
+    "features.callout",
+  ]);
 });
 
 // 帯の地と文字はエディタの地と文字、帯と「設定ファイルを開く」の線と警告のアイコンは警告の線の色のトークンで変えられる（Default）

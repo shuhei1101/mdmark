@@ -46,13 +46,13 @@ suite("設定ファイルを開く", () => {
     );
   });
 
-  // 設定ファイルが無いとき、作ると答えると雛形を書いて開く
+  // 設定ファイルが無いとき、作成と答えると雛形を書いて開く
   test("test_normal_when_template_created", async () => {
     // 準備
     await writeFixture("guide.md", "# 見出し\n");
     await openMarkdown("guide.md");
     trackFile("mdmark.config.yaml");
-    messages.answer = "作る";
+    messages.answer = "作成";
     // 実行
     await vscode.commands.executeCommand("mdmark.openConfig");
     // 検証
@@ -61,11 +61,11 @@ suite("設定ファイルを開く", () => {
       messages.info[0],
       "mdmark.config.yaml がありません。雛形を作りますか？",
     );
-    assert.deepStrictEqual(messages.infoItems[0], ["作る"]);
+    assert.deepStrictEqual(messages.infoItems[0], ["作成"]);
     assert.deepStrictEqual(messages.infoOptions[0], {
       modal: true,
       detail:
-        "features と libraries の書き方をコメントで添えたファイルを作ります。作った直後は、プレビューの見た目は変わりません。",
+        "features・libraries・theme・extensions の書き方をコメントで添えたファイルを作ります。作った直後は、プレビューの見た目は変わりません。",
     });
     const path = join(workspaceDir(), "mdmark.config.yaml");
     assert.ok(existsSync(path));
