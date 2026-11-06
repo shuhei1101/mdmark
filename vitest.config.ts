@@ -4,6 +4,19 @@ import { defineConfig } from "vitest/config";
 import manifest from "./package.json" with { type: "json" };
 import { fixturesPlugin } from "./tests/integration/fixtures-plugin.ts";
 
+/** Webview の部品（vscode/）とテストの道具（直下）が同じものを使う依存 */
+const WEBVIEW_DEPENDENCIES = [
+  "react",
+  "react-dom",
+  "msw",
+  "lucide-react",
+  "react-error-boundary",
+  "@radix-ui/react-slot",
+  "clsx",
+  "tailwind-merge",
+  "class-variance-authority",
+];
+
 export default defineConfig({
   // 束ねていないアイコンを読む URL のバージョン（ビルドと同じく依存の lucide のバージョンを埋める）
   define: {
@@ -25,7 +38,18 @@ export default defineConfig({
         // DOM を使う単体テストは Chromium の中で流す。MSW の Service Worker を Storybook と同じフォルダから配る
         publicDir: ".storybook/public",
         // Webview の部品（vscode/）とテストの道具（直下）が同じ React を使う
-        resolve: { dedupe: ["react", "react-dom", "msw"] },
+        resolve: { dedupe: WEBVIEW_DEPENDENCIES },
+        // テストの途中で依存を見つけて読み直さないよう、Webview の依存を先に束ねる
+        optimizeDeps: {
+          include: [
+            ...WEBVIEW_DEPENDENCIES,
+            "react/jsx-runtime",
+            "react/jsx-dev-runtime",
+            "react-dom/client",
+            "msw/browser",
+            "@testing-library/react",
+          ],
+        },
         test: {
           name: "unit-browser",
           include: ["tests/unit/**/*.browser.test.{ts,tsx}"],
