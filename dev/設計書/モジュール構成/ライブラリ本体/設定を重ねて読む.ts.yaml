@@ -217,7 +217,7 @@ functions:
     container: src/config-files.ts
     usecase: 共通
     summary: '`cwd` から上へ `mdmark.config.yaml` を探し、上 → 近いの順に返す'
-    scope: internal
+    scope: public
     is_async: true
     args:
       - name: options
@@ -253,6 +253,7 @@ functions:
     status: planned
     introduced:
       pr: 347
+    description: 'VS Code 拡張機能の「設定ファイルを開く」も、最も近い設定ファイルを引くために `cascade: false` で呼ぶ'
   - name: absolutizeConfigPaths
     title: 相対パスを絶対パスにする
     kind: 関数

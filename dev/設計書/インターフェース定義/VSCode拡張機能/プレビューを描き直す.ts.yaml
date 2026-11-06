@@ -162,9 +162,9 @@ flows:
         participant PV as Webview
         U->>EX: 壊れた mdmark.config.yaml を保存
         EX->>EX: YAMLParseError
-        EX->>PV: configError（line: 4）
+        EX->>PV: configError（path: mdmark.config.yaml, line: 4）
     expected:
-      - '`configError` の `line` が `4` で、`render` は送られない'
+      - '`configError` の `path` が `mdmark.config.yaml`・`line` が `4` で、`render` は送られない'
       - Webview の文書は描いたまま（注意書きは `blockquote` のまま）で、文書の先頭に設定ファイルを読めない帯と「設定ファイルを開く」がある
       - 帯を出したパネルの `auditPreview()` の axe の違反が 0 件
     test: test_error_when_config_unreadable
@@ -295,8 +295,8 @@ exceptions:
   - name: なし（正常終了）
     condition: 最後の全文と設定で描き直す
   - name: なし（設定ファイルを読めない）
-    condition: 設定ファイルが YAML として読めない
-    notes: 例外を投げず、前に読めた設定（無ければ設定なし）で描いたまま、`configError` で読めない行を知らせる
+    condition: 重ねた設定ファイルのどれかが YAML として読めない・設定の形に合わない
+    notes: 例外を投げず、前に使った設定（無ければそのファイルを除いた残りの設定）で描いたまま、`configError` で読めないファイルと行かキーを知らせる
 constraints:
   - item: 描き直すきっかけ
     constraint: '`mdmark.preview.liveUpdate` が `true` のときは Markdown の変更から、`false` のときは Markdown の保存から描き直す。重ねた設定ファイル（ワークスペースの外の端末の設定を含む）・`theme` の CSS・`extensions` のファイルの作成・変更・削除、前回送った `includes` のファイルの保存・削除、`mdmark.configPath`・`mdmark.preview.theme`・`mdmark.colorTheme` の変更でも描き直す。保存と設定ファイルは待たずに送る'
@@ -312,12 +312,12 @@ constraints:
     constraint: '`mdmark.configPath` が空（既定）のときは、Markdown のフォルダを起点にインターフェース定義『設定を重ねて読む』で探して重ねる。値を書いたときは Markdown を含むワークスペースのフォルダ（ワークスペースの外の Markdown は Markdown のフォルダ）から解決したそのファイルと端末の設定だけを重ねる。設定ファイルが 1 つも無ければ端末の設定だけで描き、知らせは出さない。重ねた設定ファイルのどれかを読めない・設定の形に合わないときは、端末の設定 → 上 → 近いの順で最初の 1 つを帯に出す'
     notes: dev/設計書/設定/VSCode拡張機能
   - item: 設定の取り出し方
-    constraint: YAML を `yaml` の `parse` で読み、最上位がマップのときだけ `features`・`libraries`・`html-scripts`・`side-toc`・`colorTheme` を取り出す（マップでない値のキーは渡さない）。他のキーは読まない。空のファイル・最上位がマップでないファイルは設定なしとして扱う。キーの中の知らない名前と型の違う値は mdmark が無視する
+    constraint: インターフェース定義『設定を重ねて読む』で重ねた設定から、値がマップの `features`・`libraries`・`html-scripts`・`side-toc` と値が文字列の `colorTheme` だけを `config` にする（マップでない値のキーは渡さない）。`theme` と `extensions` は制約「theme と extensions」のとおり当てる。他のキーは渡さない。キーの中の知らない名前と型の違う値は mdmark が無視する
     notes: dev/設計書/設定/ライブラリ本体
   - item: libraries の URL
     constraint: '`libraries` の各 URL と `html-scripts.url` に当てる。`http:`・`https:` の URL はそのまま渡す。それ以外は、その値を書いた設定ファイルのフォルダを基準に解決したファイルを `asWebviewUri` で Webview で読める URL にして渡す。`localResourceRoots` の外のファイルは Webview が読めず、mdmark がその印の場所に知らせの枠を出す。読み直した `libraries` と `html-scripts.url`（書かないときは既定の jsDelivr）の `http:`・`https:` の origin の集まりが今の HTML の CSP に入れた集まりと違うときは、`render` でなく Webview の HTML を入れ直す（`ready` を受けて全文を送る）'
   - item: 設定ファイルを読めないとき
-    constraint: '`yaml` の `YAMLParseError` の `linePos[0].line`（1 始まり）を `configError` の `line` に入れて送る。読めるようになったら、新しい設定の `render` と `configOk` を送る'
+    constraint: '重ねた設定ファイルのどれかを YAML として読めないときは `YAMLParseError` の `linePos[0].line`（1 始まり）を `line` に、設定の形に合わないときは最初のずれのキーを `settingKey` に入れ、そのファイルのパス（『設定を重ねて読む』の制約「パスの表示」）を `path` に入れて `configError` を送る。前に使った設定があれば残し、無ければそのファイルを除いた残りの設定で描く。読めるようになったら、新しい設定の `render` と `configOk` を送る'
   - item: 設定が変わったときの描き方
     constraint: Webview は `config` が前と同じときは `update`、違うときは `destroy` してから `mount` で描く。スクロールの位置は描き直す前の位置を保つ
     notes: '`update` は `mount` に渡した設定を使う（文書を描く.ts のレスポンス）'
@@ -325,4 +325,4 @@ constraints:
     constraint: 差分のパネルは、変更後の文書の変更・保存だけを制約「描き直すきっかけ」のとおり受け、変更前の文書の変更では描き直さない。設定ファイルと設定の変更は他のパネルと同じ
     notes: 変更前の側は `git:` の読み取り専用の文書か、要件のスコープ外（変更前の側の書き換え）
   - item: theme と extensions
-    constraint: 重ねた設定の `theme` の CSS を Webview の URI にした `link` で配布物の CSS の後に読み、`extensions` のモジュールを `mount` の前に `import()` して `registerExtension` で登録する（CLI の書き出しと同じ順）。`localResourceRoots` に `theme` と `extensions` のファイルのフォルダを足し、設定を読み直したときは前に足したフォルダを外して足し直す。`theme` の CSS だけが変わったときは HTML を入れ直さず、`link` を読み直させる
+    constraint: '重ねた設定の `theme` の CSS を Webview の URI にした `link` で配布物の CSS の後に読み、`extensions` のモジュールを `mount` の前に `import()` して `registerExtension` で登録する（CLI の書き出しと同じ順）。`localResourceRoots` に `theme` と `extensions` のファイルのフォルダを足し、設定を読み直したときは前に足したフォルダを外して足し直す。`theme` の CSS だけが変わったときは HTML を入れ直さず、`{ type: "theme", href }`（変えた回数の `?v={回数}` を付けた URL）を送って `link` の `href` を替えさせる。`extensions` の並びかそのファイル、`theme` のパスが変わったときは HTML を入れ直す。`extensions` は JavaScript の ES モジュールをそのまま読み、読めない・登録できない拡張は飛ばして描く'
