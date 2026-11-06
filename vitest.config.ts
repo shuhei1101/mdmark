@@ -2,6 +2,7 @@ import { tmpdir } from "node:os";
 import { playwright } from "@vitest/browser-playwright";
 import { defineConfig } from "vitest/config";
 import manifest from "./package.json" with { type: "json" };
+import { clearGitLocalEnv } from "./tests/git-env.ts";
 import { fixturesPlugin } from "./tests/integration/fixtures-plugin.ts";
 
 /** Webview の部品（vscode/）とテストの道具（直下）が同じものを使う依存 */
@@ -16,6 +17,9 @@ const WEBVIEW_DEPENDENCIES = [
   "tailwind-merge",
   "class-variance-authority",
 ];
+
+// Git のフックなど GIT_DIR を持つ環境から呼んでも、一時のフォルダで git を呼ぶテストが作業中のリポジトリへ書き込まないようにする
+clearGitLocalEnv();
 
 export default defineConfig({
   // 束ねていないアイコンを読む URL のバージョン（ビルドと同じく依存の lucide のバージョンを埋める）
