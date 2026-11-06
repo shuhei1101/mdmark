@@ -7,6 +7,7 @@ import {
   StreamableHTTPClientTransport,
 } from "@modelcontextprotocol/client";
 import { afterEach, inject } from "vitest";
+import { NO_SETTINGS } from "./cli.ts";
 
 /** ツールを呼んだ結果 */
 export type ToolResult = {
@@ -102,13 +103,13 @@ export async function copyBuiltPackage(destination: string): Promise<void> {
   await symlink(REPO_NODE_MODULES, join(destination, "node_modules"), "dir");
 }
 
-/** 環境変数に `overrides` を重ねた子プロセスの環境。実機の `CLAUDE_PROJECT_DIR`・`MDMARK_PORT` は引き継がない */
+/** 環境変数に `overrides` を重ねた子プロセスの環境。実機の `CLAUDE_PROJECT_DIR`・`MDMARK_PORT` は引き継がず、`MDMARK_CONFIG` は既定で `NO_SETTINGS`（開発者の端末の設定を混ぜない） */
 function childEnv(overrides: Record<string, string>): Record<string, string> {
   const env = { ...(process.env as Record<string, string>) };
   for (const name of LEAKING_ENV) {
     delete env[name];
   }
-  return { ...env, ...overrides };
+  return { ...env, MDMARK_CONFIG: NO_SETTINGS, ...overrides };
 }
 
 /** 空いているポートを 1 つ返す */
