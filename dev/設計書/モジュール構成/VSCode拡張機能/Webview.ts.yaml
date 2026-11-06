@@ -1167,7 +1167,7 @@ functions:
     kind: フック
     container: vscode/src/webview/features/preview/panel/hooks/use-host-messages.ts
     usecase: 共通
-    summary: '`window` の `message` を購読し、最新の処理（`useEffectEvent`）に `HostMessage` を渡す。後始末で購読を外す'
+    summary: '`window` の `message` を購読し、`data` が文字列の `type` を持つオブジェクトのときだけ、最新の処理（`useEffectEvent`）に `HostMessage` として渡す。後始末で購読を外す'
     scope: public
     args:
       - name: onMessage
@@ -1184,6 +1184,12 @@ functions:
         condition: 処理 A で描き、処理 B で描き直して `message` を送り、`unmount` してもう一度送る
         mock: なし
         expected: B だけが 1 回呼ばれる
+      - name: test_use_host_messages_when_not_object
+        case: 正常
+        summary: '`type` を持たない `data` は処理に渡さない'
+        condition: '`null`・文字列・`type` の無いオブジェクトを `data` にした `message` を送る'
+        mock: なし
+        expected: 処理が呼ばれない
     refs:
       - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを開く.ts#constraints[Webview とのメッセージ]
     status: planned
