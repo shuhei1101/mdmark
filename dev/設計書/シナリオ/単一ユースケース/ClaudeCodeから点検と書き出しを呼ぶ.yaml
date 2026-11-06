@@ -145,6 +145,27 @@ scenarios:
       - 同じ引数で `mdmark check` を流したときと同じずれが返る
       - 設定・索引・文書と `records.yaml` が変わっていない
     test: test_normal_when_text_and_key
+  - name: 正常シナリオ（設定を重ねる）
+    setup:
+      - name: 重ねる設定を持つ作業のフォルダ
+        description: 『文書をHTMLに書き出す』の正常シナリオ（設定を重ねる）と同じフォルダ。作業のフォルダは `docs/`
+      - name: 端末の設定
+        description: 同じシナリオと同じ `settings.yaml`。常駐サーバーを `MDMARK_CONFIG` でこのファイルを指して起動する
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        participant C as Claude Code
+        participant S as MCP サーバー
+        participant F as 作業のフォルダ
+        C->>S: export_html（文書のパス）
+        S->>F: 端末の設定と、作業のフォルダから上の mdmark.config.yaml を読んで重ねる
+        S->>F: 1 枚の HTML を書く
+        S-->>C: 書き出したパス
+    expected:
+      - '`export_html` が 1 枚の HTML を書き、書き出したパスを返す'
+      - 書き出した HTML が、同じ文書と同じ端末の設定で `mdmark export` を流して書いた HTML と同じ
+    test: test_normal_when_cascaded
 lead: Claude Code が MCP のツール `check`・`export_html`・`build_site` で、`mdmark check`・`export`・`build` と同じ点検・1 文書の書き出し・1 枚へのまとめを呼び、結果を受け取る。
 issue: 11
 primary_actor: Claude Code

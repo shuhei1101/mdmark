@@ -209,6 +209,83 @@ scenarios:
       - '`共通/手順.md` を保存した後、プレビューの取り込んだ中身が書き換えた後の文になっている'
       - 取り込み先がワークスペースに無いマーカーの場所には、書き方の警告が出ている
     test: test_normal_when_includes
+  - name: 正常シナリオ（設定を重ねる）
+    setup:
+      - name: 端末の設定
+        description: '`MDMARK_CONFIG` で指す一時フォルダの `settings.yaml`。`config.cascade: true` と `features.callout: false` を書く'
+      - name: 重ねる設定を持つワークスペース
+        description: 'ワークスペースのフォルダの `mdmark.config.yaml` に `theme: ./theme.css` と `extensions` の固有の部品 1 つを書き、その下の `docs/` の `mdmark.config.yaml` に `features.table: false` を書く。`docs/` に注意書き・表・固有の部品の印を持つ Markdown を 1 つ置く'
+        notes: '`mdmark.configPath` は既定の空'
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant EX as 拡張機能
+        participant FS as 設定ファイル
+        participant PV as プレビュー（Webview）
+        W->>EX: docs/ の Markdown でプレビューを横に開く
+        EX->>FS: 端末の設定と、docs/ から上の mdmark.config.yaml を読む
+        EX->>EX: 端末の設定 → 上 → 近いの順に重ね、theme と extensions のフォルダを読める場所に足す
+        EX->>PV: theme の CSS と extensions を読むパネルを開く
+        PV->>PV: extensions を登録してから mount で描く
+        PV-->>W: 描いた文書を表示
+    expected:
+      - 注意書きが注意書きの枠ではなく引用として、表が機能を付けない表として描かれる
+      - 固有の部品の印の場所に、固有の部品が描いた要素がある
+      - '`theme.css` の規則が描く先の要素の計算値に出ている'
+      - パネルの CSP の違反が 0 件
+    test: test_normal_when_cascaded
+  - name: 正常シナリオ（最初の 1 つだけを読む）
+    setup:
+      - name: 端末の設定
+        description: '正常シナリオ（設定を重ねる）の端末の設定のうち、`config.cascade: false` にしたもの'
+      - name: 重ねる設定を持つワークスペース
+        description: 正常シナリオ（設定を重ねる）と同じ
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant EX as 拡張機能
+        participant FS as 設定ファイル
+        participant PV as プレビュー（Webview）
+        W->>EX: docs/ の Markdown でプレビューを横に開く
+        EX->>FS: 端末の設定と、docs/ から上へ最初に見つかった mdmark.config.yaml を読む
+        EX->>EX: 端末の設定 → docs/ の設定の順に重ねる
+        EX->>PV: パネルを開いて描かせる
+        PV-->>W: 描いた文書を表示
+    expected:
+      - 注意書きと表の機能がオフで描かれる
+      - 固有の部品の印の場所には何も描かれず、`theme.css` の規則は当たらない
+    test: test_normal_when_first_only
+  - name: 異常シナリオ（設定ファイルを読めない）
+    setup:
+      - name: 端末の設定
+        description: 正常シナリオ（設定を重ねる）の端末の設定のうち、YAML として読めない行（閉じていない括弧）を 1 つ持つもの
+      - name: 重ねる設定を持つワークスペース
+        description: 正常シナリオ（設定を重ねる）と同じ
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant EX as 拡張機能
+        participant FS as 設定ファイル
+        participant PV as プレビュー（Webview）
+        W->>EX: docs/ の Markdown でプレビューを横に開く
+        EX->>FS: 端末の設定を読む
+        FS-->>EX: YAML として読めない
+        EX->>PV: 読めた設定で描かせ、読めないファイルを知らせる
+        PV-->>W: 文書と、上部に読めないファイルを示す帯と「設定ファイルを開く」
+        W->>PV: 「設定ファイルを開く」を押す
+        PV-->>EX: 設定ファイルを開く依頼
+        EX-->>W: 端末の設定をエディタで開く
+    expected:
+      - パネルに文書が描かれ、上部の帯に端末の設定を読めないことと、そのファイルのパスが出る
+      - 帯の「設定ファイルを開く」を押すと、端末の設定の `settings.yaml` がエディタで開く
+      - 端末の設定と 2 つの `mdmark.config.yaml` は書き換わらない
+    test: test_error_when_config_unreadable
 lead: 文書を書く人が、VS Code で開いている Markdown の横に、mdmark で描いたプレビューを開く。拡張機能は読む mdmark の版を決め、jsDelivr の版付きの URL から配布物を読んで描く。
 issue: 22
 primary_actor: 文書を書く人

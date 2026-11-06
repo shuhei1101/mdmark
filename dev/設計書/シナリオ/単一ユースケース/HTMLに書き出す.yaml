@@ -84,6 +84,25 @@ scenarios:
     test: test_normal_when_theme_selected
     refs:
       - dev/設計書/シナリオ/単一ユースケース/プレビューをVSCodeのテーマに合わせる#scenarios[正常シナリオ（VS Code の設定でテーマを選ぶ）]
+  - name: 正常シナリオ（theme と extensions を当てる）
+    setup:
+      - name: 固有の部品と CSS を指すワークスペース
+        description: 『固有の部品とCSSを当てる』の正常シナリオ（書き出す）と同じ `mdmark.config.yaml` と Markdown を置いたワークスペース
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant EX as 拡張機能
+        participant B as ブラウザ
+        W->>EX: mdmark: HTML に書き出す
+        EX->>EX: 重ねた設定の theme の CSS と extensions を入れた HTML を書く
+        W->>B: 書き出した HTML を開く
+        B-->>W: 固有の部品と固有の CSS を当てた文書
+    expected:
+      - 書き出した HTML をブラウザで開くと、固有の部品の場所に定義の題が描かれ、固有の CSS が変えた色が計算値に出ている
+      - プレビューの同じ要素の計算値と同じ
+    test: test_normal_when_theme_and_extensions
 lead: 文書を書く人が、開いている Markdown をコマンドパレットから HTML に書き出し、既定のブラウザで開く。
 issue: 22
 primary_actor: 文書を書く人

@@ -251,6 +251,28 @@ scenarios:
       - 出力に、その文書の図の定義を指すノードの重なりのずれの行が出る
       - 終了コードが 0 以外
     test: test_error_when_diagram_drift
+  - name: 正常シナリオ（上のフォルダにも設定ファイルがある）
+    setup:
+      - name: 端末の設定
+        description: '`MDMARK_CONFIG` で指す `settings.yaml`。`config.cascade: true` を書く'
+      - name: 重ねる設定を持つフォルダ
+        description: 上のフォルダの `mdmark.config.yaml` と、その下の `docs/` の `mdmark.config.yaml` が、どちらも手元の版に目標の版より古い版を書いている
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant C as mdmark CLI
+        participant F as 設定ファイル
+        W->>C: docs/ で mdmark upgrade --yes
+        C->>F: docs/ の mdmark.config.yaml の手元の版から手順を当てる
+        C->>F: docs/ の mdmark.config.yaml の版を書き換える
+        C-->>W: 当てた手順と変更履歴・終了コード 0
+    expected:
+      - 終了コードが 0
+      - '`docs/` の `mdmark.config.yaml` の `version` が目標の版になる'
+      - 上のフォルダの `mdmark.config.yaml` と端末の設定は書き換わらない
+    test: test_normal_when_parent_config_exists
 lead: 文書を書く人が `mdmark upgrade` を流し、設定の手元の版から目標の版までの移行の手順を版の順に当て、点検を通してから設定の版を書き換え、その範囲の変更履歴を受け取る。
 issue: 10
 primary_actor: 文書を書く人
