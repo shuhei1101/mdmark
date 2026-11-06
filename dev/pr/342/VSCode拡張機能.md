@@ -170,7 +170,13 @@ diff の見どころ: `vscode/vite.config.ts`（ライブラリの出力と Reac
 | コマンド | 結果 | 補足 |
 | --- | --- | --- |
 | `lint` 層の全件実行（Biome・ESLint・ルートと `vscode/` の型検査） | ✅ | `テスト結果/20261106150156_add497d4_lint.log` |
+| `lint` 層の全件実行（結合テスト作成の後） | ✅ | `テスト結果/20261106171248_2abe5af7_lint.log` |
 
 ### 結合
 
-なし（結合テスト作成の工程で記入する）
+| ファイル | メソッド | 変更種別 | 結果 | 補足 |
+| --- | --- | --- | --- | --- |
+| `tests/integration/`（`integration-node`・`integration-browser`・`integration-storybook`） | 全実行 | 実行のみ | ✅ | 79 ファイル・864 テスト pass<br>`テスト結果/20261106171248_2abe5af7_結合テスト.log` |
+| [tests/integration/vscode/preview-status.story.test.ts](https://github.com/shuhei1101/mdmark/blob/develop/tests/integration/vscode/preview-status.story.test.ts)・[config-band.story.test.ts](https://github.com/shuhei1101/mdmark/blob/develop/tests/integration/vscode/config-band.story.test.ts) | 全実行 | 変更 | ✅ | 上の全実行に含む。React の DOM（Spinner の `svg[role="img"]`・`data-slot` の要素）と、地と文字をエディタの色・線と警告のアイコンを `--warning-border` にした配色に合わせた |
+| [tests/integration/story.ts](https://github.com/shuhei1101/mdmark/blob/develop/tests/integration/story.ts)・[lib/diagram-frame.story.test.ts](https://github.com/shuhei1101/mdmark/blob/develop/tests/integration/lib/diagram-frame.story.test.ts) | `openStory`・`launch`・`test_resize_handle_focused` | 変更 | ✅ | 上の全実行に含む。react-vite の Storybook の最初の読み込み（起動の直後で 56 秒）を `launch` で待ち、ハンドルのフォーカスを図の操作を付けた後まで待つ |
+| `vscode/tests/integration/`（VS Code 1.141.0・1.145.1） | 全実行 | 変更 | ✅ | 2 つのバージョンで 69 テストずつ pass<br>`テスト結果/20261106171248_2abe5af7_結合テスト_VSCode拡張機能.log`。`test_normal`・`test_error_when_distribution_unreachable`・`test_error_when_config_unreadable` に `auditPreview()` の違反 0 件を加え、テーマを Dark 2026 に固定した |
