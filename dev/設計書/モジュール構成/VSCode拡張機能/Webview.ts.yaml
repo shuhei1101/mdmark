@@ -166,7 +166,7 @@ data_models:
     status: planned
   - name: PreviewState
     title: Webview の状態
-    container: vscode/src/webview/features/preview/panel/boot.ts
+    container: vscode/src/webview/shared/adapters/vscode-api.ts
     usecase: 共通
     role: DTO
     summary: '`acquireVsCodeApi().setState` で保存し、作り直した Webview が `getState` で読む値'

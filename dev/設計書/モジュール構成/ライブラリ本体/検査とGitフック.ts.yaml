@@ -1,20 +1,41 @@
 title: ライブラリ本体 / 検査とGitフック
-lead: リポジトリの直下に置く、ESLint の設定・Git フック（lefthook）・検査の npm scripts。配布物には入らない。
+lead: ESLint の道具と設定（`tools/eslint/`）・Git フック（lefthook）・検査の npm scripts。配布物には入らない。
 directory: |-
   ```tree
   {リポジトリの直下}/
-  ├── eslint.config.js   # VS Code 拡張機能の Webview（vscode/src/webview/）に当てる ESLint の Flat Config
-  ├── lefthook.yml       # pre-commit・pre-push で実行する検査
-  └── package.json       # 検査の npm scripts（lint:eslint・typecheck:vscode・check）と prepare
+  ├── tools/
+  │   └── eslint/
+  │       ├── package.json       # ESLint 9・TypeScript 6.0・typescript-eslint・plugin だけを持つ package
+  │       ├── package-lock.json
+  │       └── eslint.config.js   # VS Code 拡張機能の Webview（vscode/src/webview/）に当てる ESLint の Flat Config
+  ├── lefthook.yml               # pre-commit・pre-push で実行する検査
+  └── package.json               # 検査の npm scripts（lint:eslint・typecheck:vscode・check）と prepare
   ```
 
   整形とリポジトリ全体の lint は今と同じ Biome（`biome check .`）が受け持ち、ESLint は Biome に無い React・アクセシビリティ・import の向き・Tailwind・複雑さの規則だけを Webview に当てる。
   配布物の対応ブラウザの下限の確認（`eslint-plugin-compat`）は今と同じく `scripts/baseline.ts` が ESLint の `Linter` を直接呼ぶ（この設定を読まない）。
 constants:
+  - name: eslintPackage
+    title: ESLint の道具の package
+    container: tools/eslint/package.json
+    summary: 直下の `package.json` と分けて、ESLint の実行に要るものだけを版を固定して持つ `private` の package
+    entries:
+      - key: eslint
+        value: '`9.39.5`'
+      - key: typescript
+        value: '`6.0.3`（typescript-eslint が型の情報を取るのに使う。直下の型検査は今と同じ `typescript` 7.0 が受け持つ）'
+      - key: typescript-eslint
+        value: '`8.72.1`'
+      - key: plugin
+        value: '`eslint-plugin-react-hooks` 7.1.1・`eslint-plugin-jsx-a11y` 6.10.2・`eslint-plugin-boundaries` 7.4.2・`eslint-plugin-better-tailwindcss` 4.10.0・`eslint-plugin-sonarjs` 4.2.2・`eslint-plugin-import-x` 4.17.1'
+    refs:
+      - dev/設計書/外部ライブラリ/eslint#
+      - dev/設計書/外部ライブラリ/typescript#
+    status: planned
   - name: eslintConfig
     title: ESLint の設定
-    container: eslint.config.js
-    summary: '`export default` する Flat Config の配列。`files` は `vscode/src/webview/**/*.{ts,tsx}`（ストーリーと `testing/` を含む）'
+    container: tools/eslint/eslint.config.js
+    summary: '`export default` する Flat Config の配列。`basePath` をリポジトリの直下にし、`files` は `vscode/src/webview/**/*.{ts,tsx}`（ストーリーと `testing/` を含む）'
     entries:
       - key: 型の情報
         value: 'typescript-eslint の `recommendedTypeChecked`、`parserOptions.projectService: true`、`@typescript-eslint/no-deprecated`・`no-non-null-assertion`・`consistent-type-definitions: ["error", "type"]`'
@@ -23,15 +44,15 @@ constants:
       - key: アクセシビリティ
         value: '`eslint-plugin-jsx-a11y` の `recommended` と `tabindex-no-positive`・`no-noninteractive-tabindex`・`interactive-supports-focus`・`click-events-have-key-events`・`no-autofocus`'
       - key: import の向き
-        value: '`eslint-plugin-boundaries` の `boundaries/element-types`。要素は `app`（`app/**`・`main.tsx`）・`features`（`features/**`）・`shared`（`shared/**`）・`testing`（`testing/**`）で、`app → features → shared` の向きと、ストーリー・テストの道具から `testing` への import だけを許す'
+        value: '`eslint-plugin-boundaries` の `boundaries/dependencies`（`default: "disallow"`）。要素は `app`（`app/`）・`features`（`features/`）・`shared`（`shared/`）・`testing`（`testing/`）のフォルダで、`app → features → shared` の向きと、`testing` から `features`・`shared`、ストーリー（`boundaries/files` の `*.stories.{ts,tsx}`）から `testing` への import だけを許す。入口の `main.tsx` はどの要素にも入れない'
       - key: Tailwind
-        value: '`eslint-plugin-better-tailwindcss` の `recommended`（`entryPoint` は `vscode/src/webview/shared/styles/panel.css`）と、任意値の class（`[` を含む class）を禁じる `better-tailwindcss/no-restricted-classes`。登録の無い class の検査は、結合テストが探す `mdmark-` で始まる class を除く'
+        value: '`eslint-plugin-better-tailwindcss` の `recommended-error`（`entryPoint` は `vscode/src/webview/shared/styles/panel.css`）から、整形の規則 `enforce-consistent-line-wrapping` を外したものと、任意値の class（`[` を含む class）を禁じる `better-tailwindcss/no-restricted-classes`。登録の無い class の検査は、結合テストが探す `mdmark-` で始まる class を除く'
       - key: 複雑さ
         value: '`complexity: ["error", 10]`・`max-depth: ["error", 4]`・`max-params: ["error", 3]`・`sonarjs/cognitive-complexity: ["error", 15]`（`eslint-plugin-sonarjs`）'
       - key: 書き方
         value: '`func-style: ["error", "expression"]`・`no-restricted-syntax` で `TSEnumDeclaration` を禁じる・`import/no-default-export`（`*.stories.ts`・`*.stories.tsx` は除く）'
       - key: Biome との重なり
-        value: 整形は Biome が受け持つため、ESLint は整形の規則を持たない（Prettier は入れない）
+        value: 整形は Biome が受け持つため、ESLint は整形の規則を持たない（Prettier は入れない。class の並びの規則は整形ではないため残す）
     refs:
       - dev/設計書/外部ライブラリ/eslint#
       - dev/設計書/外部ライブラリ/biome#
@@ -60,14 +81,15 @@ constants:
     summary: 直下の `package.json` の `scripts` に追加する検査の入口（今の `lint`・`typecheck`・`test:unit` はそのまま）
     entries:
       - key: lint:eslint
-        value: '`eslint`（引数が無ければ `eslint.config.js` の `files` の全て）'
+        value: '`node tools/eslint/node_modules/eslint/bin/eslint.js -c tools/eslint/eslint.config.js --max-warnings 0`（`warn` の規則（`react-hooks/exhaustive-deps` など）も 1 件で失敗にする。直下の `eslint` 10 ではなく `tools/eslint/` の ESLint 9 を呼ぶ。引数が無ければ `files` の全て）'
       - key: typecheck:vscode
         value: '`tsc --noEmit -p vscode`'
       - key: check
         value: '`npm run lint && npm run lint:eslint && npm run typecheck && npm run typecheck:vscode`'
       - key: prepare
-        value: '`lefthook install`（`npm install` の後に Git フックを入れる）'
+        value: '`lefthook install && npm ci --prefix tools/eslint`（`npm install` の後に Git フックと `tools/eslint/` の依存を入れる）'
     status: planned
 notes:
+  道具を分ける理由: 直下の `typescript` 7.0 は JavaScript の API（`createProgram` など）を持たず、typescript-eslint 8 は TypeScript 6.1 未満だけに対応する。`eslint-plugin-jsx-a11y` 6.10 は ESLint 9 までに対応する。このため ESLint の実行に要るものを `tools/eslint/` に分け、直下の型検査・`scripts/baseline.ts` の ESLint 10 には手を入れない
   適用の範囲: 複雑さの規則を含む ESLint の規則は Webview（`vscode/src/webview/`）だけに当てる（要件.md の未確定「複雑さの lint を error にする範囲」の案 A）。リポジトリの他の TypeScript へ広げるのは別の Issue で扱う
   閾値: knowledge の規約『設計原則』が上限の値を持たないため、`sonarjs/cognitive-complexity` は規則の既定（15）、`max-depth` は ESLint の既定（4）、`max-params` は 3（オブジェクトの引数にまとめる今の書き方に合わせる）、`complexity` は 10 にする
