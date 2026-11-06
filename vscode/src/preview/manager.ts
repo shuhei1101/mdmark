@@ -221,10 +221,16 @@ export class PreviewManager {
     return !rel.startsWith("..");
   }
 
-  /** 各パネルの `watched` の和に合わせて、ファイルごとの `FileSystemWatcher` を張り替える */
+  /** 各パネルの `watched` の和に合わせて、ファイルごとの `FileSystemWatcher` を張り替える。ワークスペースの中の `mdmark.config.yaml` は拡張機能の入口の見張りに任せる（1 回の保存で 2 回当てない） */
   private syncWatchers(): void {
     const wanted = new Set(
-      [...this.panels.values()].flatMap((panel) => panel.watched),
+      [...this.panels.values()]
+        .flatMap((panel) => panel.watched)
+        .filter(
+          (path) =>
+            basename(path) !== CONFIG_FILE ||
+            workspace.getWorkspaceFolder(Uri.file(path)) === undefined,
+        ),
     );
     for (const [path, watcher] of this.watchers) {
       if (!wanted.has(path)) {
