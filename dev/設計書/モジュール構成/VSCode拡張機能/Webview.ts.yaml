@@ -634,7 +634,7 @@ classes:
           description: 違反の並び。無ければ空
         process: |-
           1. `document` の `script[src$='preview.js']` の `src` の `preview.js` を `test/axe.js` に替えた URL を `import()` で読む（UMD のため `window.axe` に入る）
-          2. `window.axe.run(root)` の `violations` を、`id`・`impact`・`nodes[].target` を連ねたセレクタの `targets` にして返す
+          2. `window.axe.run({ include: [root], exclude: [element] })` の `violations` を、`id`・`impact`・`nodes[].target` を連ねたセレクタの `targets` にして返す。描く先の要素（mdmark が描いた文書）は検査の範囲に入れず、パネルの部品（状態の表示・帯）だけを検査する（文書のアクセシビリティはライブラリ本体のテストが受け持ち、PoC で出た `label-content-name-mismatch` はライブラリ本体の問題として切り出す）
         exceptions:
           - name: Error
             condition: '`preview.js` の `script` が無い'
@@ -645,7 +645,7 @@ classes:
             summary: axe の違反を ID・影響度・セレクタにして返す
             condition: '`src` が `…/preview.js` の `script` を置き、`…/test/axe.js` を `window.axe.run` が違反 1 件（`color-contrast`・`serious`・`[["#a"]]`）を返す代役のモジュールにする'
             mock: '`axe.js` を代役のモジュールにする'
-            expected: '`[{ id: "color-contrast", impact: "serious", targets: ["#a"] }]`。`run` に `root` が渡る'
+            expected: '`[{ id: "color-contrast", impact: "serious", targets: ["#a"] }]`。`run` に `include: [root]`・`exclude: [描く先の要素]` が渡る'
         refs:
           - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを開く.ts#constraints[テストのときの差し替え]
           - dev/設計書/外部ライブラリ/axe-core#
@@ -694,6 +694,8 @@ components:
       - `scrollToLine`: `view.scrollToLine`
       - `configError`・`configOk`: `configErrorLine` を行にする・消す
       - `inspect`・`axe`: `boot.test` のときだけ `view.inspect`・`view.audit` の結果を `inspected`・`axed` で同じ `id` で送る
+
+      メッセージの処理と配布物の読み込みの結果の処理で投げた例外（`view.render` の例外など）は、`react-error-boundary` の `useErrorBoundary` の `showBoundary` で `App` の Error Boundary へ渡し、描画の失敗（`unexpected`）を出す
     kind: 画面
     props:
       - name: boot
@@ -785,6 +787,12 @@ components:
         condition: '`test` が `true` と `false` の `boot` で、それぞれ `inspect` を送る'
         mock: '`api` を代役にする'
         expected: '`true` のときだけ同じ `id` の `inspected` が送られる'
+      - name: test_panel_screen_when_handler_throws
+        case: 異常
+        summary: メッセージの処理で投げた例外を Error Boundary へ渡す
+        condition: '`App` で描き、`mount` が例外を投げる代役の配布物を読んだ後に `render` を送る'
+        mock: '`api` を代役にする。`load` を `mount` が例外を投げる代役を返す関数にする'
+        expected: 状態の表示に描画の失敗の文言と `data-action="reload"` のボタンがあり、`rendered` が送られない
     refs:
       - dev/設計書/画面設計/VSCodeのプレビュー.ts#
       - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを開く.ts#constraints[Webview とのメッセージ]
