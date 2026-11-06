@@ -353,8 +353,8 @@ classes:
     usecase: 共通
     role: 外部ライブラリとの同期
     summary: React の外の DOM として持つ描く先の要素に、mdmark の `mount`・`update` で文書を描き、スクロールの位置と配色の class を持つ
-    description: React の state を持たず、画面の hook とメッセージの処理から呼ばれる。描く先の要素の子は mdmark だけが書き換える
-    kind: クラス
+    description: '`type` で定義し、`createDocumentView` が作る。プロパティは関数の中に閉じた状態で、外から読まない。React の state を持たず、画面の hook とメッセージの処理から呼ばれる。描く先の要素の子は mdmark だけが書き換える'
+    kind: インタフェース
     properties:
       - name: root
         type: HTMLElement
@@ -650,6 +650,9 @@ classes:
           - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを開く.ts#constraints[テストのときの差し替え]
           - dev/設計書/外部ライブラリ/axe-core#
     status: planned
+    implementations:
+      - target: '#functions[createDocumentView]'
+        notes: クロージャに状態を持つオブジェクトを返す（knowledge の規約『TypeScript のスタイル』の関数ベースで書く決まりに合わせ、クラスにしない）
 components:
   - name: App
     title: Webview のアプリ
@@ -742,8 +745,8 @@ components:
       - name: test_panel_screen_when_load_failed
         case: 異常
         summary: 配布物を読めなければ理由と版を出し、loadFailed を送る
-        condition: '`data-version="v0.7.0"` の `boot` と reject する `load` を渡し、MSW で HEAD をネットワークのエラーにする'
-        mock: '`api` を代役にする。`load` を reject する代役にする。MSW の `offline` のハンドラ'
+        condition: '`data-version="v0.7.0"` の `boot` と reject する `load` を渡し、`window.fetch`（HEAD）をネットワークのエラーにする'
+        mock: '`api` を代役にする。`load` を reject する代役にする。`window.fetch` を `TypeError` で reject する代役にする'
         expected: '`loadFailed`（`offline`）が送られ、状態の表示に `v0.7.0` と `data-action="reload"` のボタンがある。読み込み中は出ない'
       - name: test_panel_screen_when_version_undecidable
         case: 正常
@@ -1132,7 +1135,7 @@ functions:
     kind: フック
     container: vscode/src/webview/features/preview/panel/hooks/use-document-view.ts
     usecase: 共通
-    summary: '`useState` の初期化で `DocumentView` を 1 つだけ作り、描く先の要素の ref のコールバックで `attach`・後始末で `detach` を呼ぶ'
+    summary: '`useState` の初期化で `createDocumentView` を 1 回だけ呼び、描く先の要素の ref のコールバックで `attach`・後始末で `detach` を呼ぶ'
     scope: public
     args:
       - name: options
@@ -1212,8 +1215,8 @@ functions:
       - name: test_use_load_mdmark_when_failed
         case: 異常
         summary: 読めなければ理由を見分けて onFailed を呼ぶ
-        condition: reject する `load`、MSW で HEAD を 404 にする
-        mock: '`load` を代役にする。MSW の `versionMissing` のハンドラ'
+        condition: reject する `load`、`window.fetch`（HEAD）を 404 にする
+        mock: '`load` を代役にする。`window.fetch` を 404 を返す代役にする'
         expected: '`onFailed` が `versionMissing` で 1 回'
       - name: test_use_load_mdmark_when_unmounted
         case: 正常
@@ -1628,7 +1631,7 @@ functions:
     container: vscode/src/webview/testing/msw/handlers.ts
     usecase: 共通
     role: テストの道具
-    summary: 読めなかった配布物の `HEAD` に答えるハンドラを、状態ごと（`ok`・`versionMissing`（404）・`offline`（ネットワークのエラー）・`slow`（遅延））に返す。ストーリーと単体テストが同じハンドラを使う
+    summary: 読めなかった配布物の `HEAD` に答えるハンドラを、状態ごと（`ok`・`versionMissing`（404）・`offline`（ネットワークのエラー）・`slow`（遅延））に返す。ストーリーが使う（単体テストは Vitest のブラウザで Service Worker を登録できる場所が無いため、`window.fetch` を代役にする）
     scope: public
     args:
       - name: kind
@@ -1641,6 +1644,22 @@ functions:
     refs:
       - dev/設計書/外部ライブラリ/msw#
       - dev/設計書/外部API/jsDelivr#
+    status: planned
+  - name: createDocumentView
+    title: 描いた文書を作る
+    kind: 関数
+    container: vscode/src/webview/features/preview/panel/document-view.ts
+    usecase: 共通
+    summary: 描く先を包む要素と保存した行を受け、`DocumentView` のメソッドを持つオブジェクトを返す。`DocumentView` のプロパティはこの関数の中の変数に持つ
+    scope: public
+    args:
+      - name: options
+        type: '{ root: HTMLElement; savedLine?: number; mdmark?: Mdmark }'
+        required: true
+        description: 描く先を包む要素・保存した行・（単体テストの）配布物
+    returns:
+      type: DocumentView
+      description: 描いた文書
     status: planned
 styles:
   - name: panel
