@@ -1,0 +1,15 @@
+$ npm run test:unit
+
+> test:unit
+> vitest run --project 'unit*'
+
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/refactor-vscode-webview-react
+
+
+ Test Files  236 passed (236)
+      Tests  1621 passed (1621)
+   Start at  14:35:36
+   Duration  107.96s (worker 64%, tests 21%, import 14%, transform 1%)
+
+exit=0

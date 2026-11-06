@@ -139,6 +139,35 @@ useEffect(() => {
 
 diff の見どころ: `vscode/vite.config.ts`（ライブラリの出力と React Compiler の logger）、`vscode/tests/integration/poc-react.test.ts`（計算済みのスタイル・CSP・axe の記録）、`poc-results/`（`develop` と React の結果の JSON とログ）。
 
+## 実装
+
+| 項目 | 内容 |
+| --- | --- |
+| Web の実装ガイド | `search_web_guidance` で状態の表示・読み込み中を引き、`spinner` を読んだ。ガイドは `<progress>` を推すが、Spinner は部品設計『プレビューの状態の表示』のとおり `role="img"` の SVG にし、動きを減らす設定ではガイドと同じく 6 秒で回す |
+| 足した・直したストーリー | `vscode-panelscreen--document`・`--loading`・`--offline`・`--version-missing`・`--version-undecidable`・`--diff-unsupported`・`--config-error`・`--media-error`、`vscode-configband--default`・`--narrow-long-path`、`vscode-previewstatus--loading`・`--offline`・`--version-missing`・`--version-missing-long`・`--version-undecidable`・`--diff-unsupported`・`--unexpected`、`vscode-mediaerror--audio`・`--video`・`--long-path`。部品の HTML のストーリー（`parts-*`）は YAML から CSF に書き換えた |
+| ストーリーの確認 | `start_storybook_serve` は `.venv` を求めて起動しない（[ai-monitor#2432](https://github.com/shuhei1101/ai-monitor/issues/2432)）ため、描画の口と `storybook dev` を手で起動した。446 個のストーリーを Playwright で開き、エラーの表示・`pageerror`・空の描画・描画の失敗の表示が無いことを確かめた（描画の失敗の表示は、それを見せる `vscode-previewstatus--unexpected` だけ） |
+| 開発コマンド | 『取り込み後の追従（pull 後）』の `effects`（`prepare` の Git フックと `tools/eslint/`）、『起動・停止』の Storybook の確認、『取り込み前の検査』（`npm run check`・lefthook） |
+| テスト実行方法 | `lint` 層に `npm run lint:eslint` を加えた |
+
 ## テスト結果
 
 ドキュメント修正（アーキテクチャ図・CLAUDE.md）は文書だけの変更で、関係する単体・結合テストは無い。
+
+### 単体
+
+| ファイル | メソッド | 変更種別 | 結果 | 補足 |
+| --- | --- | --- | --- | --- |
+| `tests/unit/`（全ファイル） | 全実行 | 実行のみ | ✅ | 236 ファイル・1621 テスト pass<br>`テスト結果/20261106144508_50598965_単体テスト.log` |
+| `tests/unit/vscode/src/webview/`（18 ファイル） | 全実行 | 新規 | ✅ | 上の全実行に含む |
+| `tests/unit/git-env.test.ts` | 全実行 | 新規 | ✅ | 上の全実行に含む |
+| [tests/unit/vscode/scripts/build.test.ts](https://github.com/shuhei1101/mdmark/blob/develop/tests/unit/vscode/scripts/build.test.ts) | 全実行 | 変更 | ✅ | 上の全実行に含む。`test_build_extension`・`test_build_extension_when_tests` の待ちを 120 秒にした（Vite と React Compiler のビルドが単独で 17〜30 秒かかり、全件の並列で既定の 30 秒を超えた。期待値は変えていない） |
+
+### lint
+
+| コマンド | 結果 | 補足 |
+| --- | --- | --- |
+| `lint` 層の全件実行（Biome・ESLint・ルートと `vscode/` の型検査） | ✅ | `テスト結果/20261106144508_a016bc69_lint.log` |
+
+### 結合
+
+なし（結合テスト作成の工程で記入する）
