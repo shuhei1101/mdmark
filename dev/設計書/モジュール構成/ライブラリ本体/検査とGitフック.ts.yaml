@@ -71,7 +71,7 @@ constants:
       - key: pre-commit.commands.typecheck
         value: '`glob: "*.{ts,tsx}"`、`run: npm run typecheck && npm run typecheck:vscode`'
       - key: pre-push.commands.unit
-        value: '`run: npm run test:unit`'
+        value: '`run: env -u GIT_DIR -u GIT_INDEX_FILE -u GIT_WORK_TREE npm run test:unit`（worktree のフックに Git が渡す `GIT_DIR` を外す。残すと、一時のリポジトリで `git` を呼ぶ単体テストが作業中のリポジトリへ commit・設定・タグを書く）'
     refs:
       - dev/設計書/外部ライブラリ/lefthook#
     status: planned
