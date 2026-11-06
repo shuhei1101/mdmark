@@ -1,0 +1,10 @@
+$ npx vitest run --project integration-node tests/integration/ClaudeCodeプラグイン
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-config-cascade-global-settings
+
+
+ Test Files  5 passed (5)
+      Tests  20 passed (20)
+   Start at  02:45:02
+   Duration  64.89s (tests 58%, import 33%, transform 8%)
+

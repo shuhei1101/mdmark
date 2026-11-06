@@ -43,5 +43,6 @@
 
 | ファイル | メソッド | 変更種別 | 結果 | 補足 |
 | --- | --- | --- | --- | --- |
+| `tests/integration/plugin.ts` | - | 変更 | ✅ | `childEnv` が `MDMARK_CONFIG` を既定で無いファイルに向け、常駐サーバーに開発者の端末の設定を混ぜない（期待値は変えていない）。直した後に `tests/integration/ClaudeCodeプラグイン` の 20 テストが pass<br>[テスト結果/20261107024646_4d9bada0_結合テスト.log](./テスト結果/20261107024646_4d9bada0_結合テスト.log) |
 | `tests/integration/ClaudeCodeプラグイン` | 全実行 | 実行のみ | ✅ | `npm run test:integration` を 1 回で流すとセッションの中で終わらないため、同じ projects を `--project` と Storybook の `--shard` に分けて全件流した（node 215・browser 230・Storybook 132+196+102、全 pass）<br>[テスト結果/20261107023918_966f7b64_結合テスト.log](./テスト結果/20261107023918_966f7b64_結合テスト.log) |
 
