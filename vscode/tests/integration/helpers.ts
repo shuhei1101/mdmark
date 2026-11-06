@@ -48,6 +48,9 @@ type TestApi = {
     play?: boolean,
   ) => Promise<InspectedElement[]>;
   auditPreview: () => Promise<AxeViolation[]>;
+  pocBundle: (entry: string) => Promise<string>;
+  pocStop: () => Promise<void>;
+  pocImport: (code: string) => Promise<string>;
 };
 
 /** Webview の要素 1 つの様子 */

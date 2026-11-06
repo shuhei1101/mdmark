@@ -8,7 +8,9 @@ import { createBuiltRoot } from "../../../tests/integration/built-root.ts";
 import { createStubServer } from "./stub-server.ts";
 
 /** 結合テストを流す VS Code: 対応する下限と、その時点の stable */
-export const TEST_VSCODE_VERSIONS = ["1.141.0", "stable"];
+export const TEST_VSCODE_VERSIONS = process.env.MDMARK_POC_ONLY
+  ? ["1.141.0"]
+  : ["1.141.0", "stable"];
 
 /** 結合テストの VS Code のテーマ（VS Code の既定のダークのテーマ） */
 const TEST_COLOR_THEME = "Dark 2026";
@@ -70,6 +72,7 @@ export async function runIntegrationTests(): Promise<void> {
           MDMARK_TEST_NODE_DIR: dirname(process.execPath),
           // 拡張機能のログ（出力チャネルが書くファイル）をテストが読めるようにする
           MDMARK_TEST_USER_DATA_DIR: userDataDir,
+          MDMARK_POC_ONLY: process.env.MDMARK_POC_ONLY ?? "",
         },
       });
       await rm(userDataDir, { recursive: true, force: true });

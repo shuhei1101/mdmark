@@ -1,8 +1,22 @@
-import { copyFile, mkdir, readdir } from "node:fs/promises";
+import { copyFile, mkdir, readdir, readFile } from "node:fs/promises";
 import { createRequire } from "node:module";
 import { join } from "node:path";
-import { build } from "esbuild";
+import { build, type Plugin } from "esbuild";
 import { build as buildWebview } from "vite";
+
+/** esbuild-wasm の browser.js が参照する `self` を、そのモジュールの中だけで globalThis にする */
+const wasmSelf: Plugin = {
+  name: "esbuild-wasm-self",
+  setup(pluginBuild) {
+    pluginBuild.onLoad(
+      { filter: /esbuild-wasm[\\/]lib[\\/]browser\.js$/ },
+      async (args) => ({
+        contents: `var self = globalThis;\n${await readFile(args.path, "utf8")}`,
+        loader: "js",
+      }),
+    );
+  },
+};
 
 /** 拡張機能と Webview のスクリプトを束ね、`tests` が `true` のときは結合テストも `out/test/` に束ねる */
 export const buildExtension = async (options: {
@@ -26,7 +40,13 @@ export const buildExtension = async (options: {
     platform: "node",
     target: "node22",
     external: ["vscode"],
+    plugins: [wasmSelf],
   });
+  const requireWasm = createRequire(join(root, "package.json"));
+  await copyFile(
+    requireWasm.resolve("esbuild-wasm/esbuild.wasm"),
+    join(root, "dist", "esbuild.wasm"),
+  );
   // Webview の中で動く React の画面と CSS: mdmark の配布物は束ねず、実行時に読む
   await buildWebview({ root, logLevel: "silent" });
   if (!tests) {

@@ -16,6 +16,8 @@ import type { ExtensionDeps } from "./deps.ts";
 import { type ExportMode, exportMarkdown } from "./export/export.ts";
 import type { Logger } from "./log.ts";
 import type { AxeViolation, InspectedElement } from "./messages.ts";
+import { bundleWithWasm, stopEsbuild } from "./poc/bundle.ts";
+import { importInWebview } from "./poc/webview.ts";
 import { DIST_BASE } from "./preview/html.ts";
 import { PreviewManager } from "./preview/manager.ts";
 import { readSettings } from "./settings.ts";
@@ -31,6 +33,12 @@ export type TestApi = {
   ) => Promise<InspectedElement[]>;
   /** 最後に表に出たパネルを axe で検査する */
   auditPreview: () => Promise<AxeViolation[]>;
+  /** PoC: esbuild-wasm で束ねる */
+  pocBundle: (entry: string) => Promise<string>;
+  /** PoC: esbuild-wasm の初期化を捨てる */
+  pocStop: () => Promise<void>;
+  /** PoC: 束ねたコードを Webview で import させる */
+  pocImport: (code: string) => Promise<string>;
 };
 
 /** パネルが 1 つ以上開いているかを書くコンテキストキー */
@@ -183,5 +191,9 @@ export function activate(context: ExtensionContext): TestApi | undefined {
   return {
     inspectPreview: (selector, play) => manager.inspectPreview(selector, play),
     auditPreview: () => manager.auditPreview(),
+    pocBundle: (entry) =>
+      bundleWithWasm({ extensionPath: context.extensionPath, entry }),
+    pocStop: () => stopEsbuild(),
+    pocImport: (code) => importInWebview({ context, code }),
   };
 }
