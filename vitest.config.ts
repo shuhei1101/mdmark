@@ -87,6 +87,8 @@ export default defineConfig({
           include: ["tests/integration/**/*.story.test.ts"],
           globalSetup: ["tests/integration/storybook-setup.ts"],
           testTimeout: 60_000,
+          // 各ファイルの beforeAll がストーリーを開いて Vite の依存の束ねを待つ（tests/integration/story.ts の WARM_UP_TIMEOUT_MS）
+          hookTimeout: 300_000,
         },
       },
       {

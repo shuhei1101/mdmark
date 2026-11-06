@@ -256,6 +256,10 @@ test("test_resized", async () => {
 test("test_resize_handle_focused", async () => {
   // 準備・実行
   const page = await openFrame("resize-handle-focused", false);
+  // 図の操作を付けた後にハンドルへフォーカスを当てるため、当たるまで待つ
+  await page.waitForFunction(
+    () => document.activeElement?.matches(".mdmark-diagram-resize") === true,
+  );
   // 検証
   const focus = await page
     .locator(".mdmark-diagram-resize")
