@@ -49,6 +49,7 @@
 | モジュール構成設計 | `65ead7b4..aca3eea0` | 確認ダイアログのボタンを「作成」にした修正（`73a94a2d`）を含む |
 | モジュール構成設計 | `98411289..f0a77052` | 単体テスト作成で見つけた VS Code 拡張機能の設定の読み取り結果・帯へのメッセージ・プレビューの `theme` と `extensions` の読み込みの抜けの修正 |
 | モジュール構成設計 | `a4cecca7..a4f4d589` | esbuild-wasm の採用（PoC #349）と、`extensions` を拡張機能の中で束ねる修正 |
+| モジュール構成設計 | `e37e675d..e67b7b91` | 実装で要ったシグネチャの追加（`keepInvalid`・`relativizeConfigPaths`・`buildExportHtml` の `themeCss`・`extensions`・見張るファイルの張り方・`mdmark.configPath` の既定） |
 
 ## テスト結果
 
