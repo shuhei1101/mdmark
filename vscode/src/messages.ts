@@ -16,8 +16,18 @@ export type HostMessage =
       includes?: Record<string, string>;
     }
   | { type: "scrollToLine"; line: number }
-  | { type: "configError"; line: number }
+  | {
+      type: "configError";
+      /** 読めない設定ファイルのパス（表示の形） */
+      path: string;
+      /** YAML として読めない行（1 始まり）。`settingKey` とどちらか一方 */
+      line?: number;
+      /** 設定の形に合わない最初のキー。`line` とどちらか一方 */
+      settingKey?: string;
+    }
   | { type: "configOk" }
+  /** `theme` の CSS の `link` の `href` を替える */
+  | { type: "theme"; href: string }
   | {
       type: "assetsResolved";
       id: number;

@@ -1,14 +1,24 @@
 import { mkdir, writeFile } from "node:fs/promises";
-import { dirname } from "node:path";
+import { homedir } from "node:os";
+import { dirname, join } from "node:path";
 import { Uri, window, workspace } from "vscode";
-import { CONFIG_TEMPLATE, resolveConfigPath } from "./config.ts";
+import {
+  CONFIG_FILE,
+  displayConfigPath,
+  findConfigChain,
+} from "../../src/config-files.ts";
+import { CONFIG_TEMPLATE, isFile, resolveConfigPath } from "./config.ts";
 import type { Logger } from "./log.ts";
 
 /** 雛形を作るかの確認のボタン */
-const CREATE_LABEL = "作る";
+const CREATE_LABEL = "作成";
 
-/** 設定ファイルをエディタで開く。無ければ雛形を作るかを尋ね、「作る」を選んだときだけ、フォルダを作って雛形を書いて開く */
+/** 開くファイル（無ければ最も近い設定ファイル）をエディタで開く。無ければ雛形を作るかを尋ね、「作成」を選んだときだけ、フォルダを作って雛形を書いて開く */
 export async function openConfigFile(options: {
+  /** 開くファイル（帯から呼んだときは帯に出したファイル） */
+  path?: string | undefined;
+  /** Markdown のフォルダ */
+  cwd: string;
   /** `mdmark.configPath` */
   configPath: string;
   /** 基準のフォルダ */
@@ -17,7 +27,18 @@ export async function openConfigFile(options: {
   log: Logger;
 }): Promise<void> {
   const { configPath, baseDir, log } = options;
-  const path = resolveConfigPath({ configPath, baseDir });
+  const path =
+    options.path ??
+    (configPath !== ""
+      ? resolveConfigPath({ configPath, baseDir })
+      : ((
+          await findConfigChain({
+            cwd: options.cwd,
+            cascade: false,
+            isFile,
+          })
+        )[0] ?? join(baseDir, CONFIG_FILE)));
+  const shown = displayConfigPath({ path, base: baseDir, home: homedir() });
   const uri = Uri.file(path);
   const exists = await workspace.fs.stat(uri).then(
     () => true,
@@ -28,11 +49,11 @@ export async function openConfigFile(options: {
     return;
   }
   const choice = await window.showInformationMessage(
-    `${configPath} がありません。雛形を作りますか？`,
+    `${shown} がありません。雛形を作りますか？`,
     {
       modal: true,
       detail:
-        "features と libraries の書き方をコメントで添えたファイルを作ります。作った直後は、プレビューの見た目は変わりません。",
+        "features・libraries・theme・extensions の書き方をコメントで添えたファイルを作ります。作った直後は、プレビューの見た目は変わりません。",
     },
     CREATE_LABEL,
   );

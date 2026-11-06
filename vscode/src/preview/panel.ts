@@ -1,5 +1,7 @@
-import { readFile, stat } from "node:fs/promises";
-import { dirname } from "node:path";
+import { createHash } from "node:crypto";
+import { mkdir, readFile, stat, writeFile } from "node:fs/promises";
+import { homedir } from "node:os";
+import { dirname, join } from "node:path";
 import {
   commands,
   env,
@@ -12,9 +14,11 @@ import {
   window,
   workspace,
 } from "vscode";
-import type { PreviewConfig } from "../config.ts";
+import { displayConfigPath } from "../../../src/config-files.ts";
+import type { ConfigProblem, PreviewConfig } from "../config.ts";
 import {
   applyColorTheme,
+  isFile,
   libraryOrigins,
   loadConfig,
   resolveConfigPath,
@@ -23,6 +27,7 @@ import {
 } from "../config.ts";
 import { openConfigFile } from "../config-file.ts";
 import { type ExtensionDeps, LAST_VERSION_KEY } from "../deps.ts";
+import { bundleExtensions } from "../extensions-bundle.ts";
 import type {
   AxeViolation,
   HostMessage,
@@ -70,7 +75,26 @@ export class PreviewPanel {
   /** 今の HTML の CSP に入れた `libraries` の origin（`load` が書く）。設定ファイルを読み直した後の origin と比べ、違えば HTML を入れ直す */
   private cspLibraryOrigins: string[] = [];
   /** 設定ファイルを読めていないときの読めない行 */
-  private configErrorLine: number | undefined;
+  private configProblem: ConfigProblem | undefined;
+  /** 前に使った設定があるか */
+  private configUsed = false;
+  /** 最も近い設定ファイル */
+  private nearest: string | undefined;
+  /** 見張るファイル（重ねた設定ファイル・`theme`・`extensions`・書いた `mdmark.configPath` のファイル・端末の設定） */
+  watched: string[] = [];
+  /** 読み直した `theme`・`extensions` の絶対パス */
+  private wanted: { theme?: string | undefined; extensions: string[] } = {
+    extensions: [],
+  };
+  /** 今の HTML に入れた `theme` と、`extensions` の絶対パス・中身の SHA-256・束ねて書いたファイル */
+  private embedded: {
+    theme?: string | undefined;
+    extensions: Array<{ path: string; hash: string; file?: string }>;
+  } = { extensions: [] };
+  /** `theme` の CSS を替えた回数（`link` の URL に付けて読み直させる） */
+  private themeVersion = 0;
+  /** 見張るファイルが変わったときに呼ぶ関数 */
+  private readonly onWatchedChange: () => void;
   /** 描き直すまでの待ち。待つ間に変更が来たら始め直す */
   private timer: NodeJS.Timeout | undefined;
   /** 今の HTML の Webview から `ready` を受けたか */
@@ -95,16 +119,18 @@ export class PreviewPanel {
   private nextInspectId = 1;
   /** 設定ファイルの `assets.root` の絶対パス（無ければ `undefined`） */
   private assetsRoot: string | undefined;
-  /** `localResourceRoots` に加えた `assets.root`（入れ直すときに外す） */
-  private addedResourceRoot: string | undefined;
+  /** `localResourceRoots` に加えたフォルダ（入れ直すときに外す） */
+  private addedResourceRoots: string[] = [];
 
   constructor(options: {
     webviewPanel: WebviewPanel;
     document: TextDocument;
     original?: TextDocument;
     deps: ExtensionDeps;
+    onWatchedChange?: () => void;
   }) {
     this.webviewPanel = options.webviewPanel;
+    this.onWatchedChange = options.onWatchedChange ?? (() => {});
     this.document = options.document;
     this.original = options.original;
     this.fileUri =
@@ -173,6 +199,10 @@ export class PreviewPanel {
     if (token !== this.loadToken) {
       return;
     }
+    const extensions = await this.prepareExtensions();
+    if (token !== this.loadToken) {
+      return;
+    }
     this.ready = false;
     this.cspLibraryOrigins = libraryOrigins(
       this.rawLibraries,
@@ -198,6 +228,13 @@ export class PreviewPanel {
       scriptUri: media("preview.js"),
       styleUri: media("preview.css"),
       configPath: settings.configPath,
+      themeHref:
+        this.wanted.theme === undefined
+          ? undefined
+          : webview.asWebviewUri(Uri.file(this.wanted.theme)).toString(),
+      extensions: extensions.map((file) =>
+        webview.asWebviewUri(Uri.file(file)).toString(),
+      ),
       test: deps.test,
     };
     const distJs =
@@ -227,50 +264,66 @@ export class PreviewPanel {
         : buildPreviewHtml(common);
   }
 
-  /** 設定ファイルを読み、読めたら `config` を替えて `configOk` を、読めなければ `config` を残して `configError` を送る。無ければ `config` を `{}` にする。読めなかったときは、前に読めた `libraries` を残す。読めた（無いときを含む）なら true、読めない・開けないなら false を返す */
+  /** 設定を重ねて読み、読めない設定ファイルが無ければ `config` を替えて（前に帯を出していたら）`configOk` を、あれば前に使った `config` を残して `configError` を送る。読めない設定ファイルが無いかを返す */
   async reloadConfig(): Promise<boolean> {
     const { log } = this.deps;
     const configuration = workspace.getConfiguration("mdmark", this.fileUri);
     const settings = readSettings((key) => configuration.get(key));
-    const path = resolveConfigPath({
-      configPath: settings.configPath,
-      baseDir: baseDirOf(this.fileUri),
-    });
+    const baseDir = baseDirOf(this.fileUri);
     let load: Awaited<ReturnType<typeof loadConfig>>;
     try {
       load = await loadConfig({
-        path,
+        cwd: dirname(this.fileUri.fsPath),
+        configPath: settings.configPath,
+        baseDir,
+        purpose: "preview",
+        env: process.env,
+        home: homedir(),
         readFile: (target) => readFile(target, "utf8"),
+        isFile,
       });
     } catch (error) {
       log.error(
         "設定ファイルを開けない",
-        path,
+        settings.configPath,
         error instanceof Error ? error : String(error),
       );
       return false;
     }
-    this.includeRoot =
-      load.kind === "missing" ? dirname(this.fileUri.fsPath) : dirname(path);
-    if (load.kind === "missing") {
-      this.config = {};
-      this.rawLibraries = undefined;
-      this.rawHtmlScripts = undefined;
-      this.assetsRoot = undefined;
-      this.markConfigOk();
-      return true;
+    const watched = [
+      ...load.files,
+      ...(load.theme === undefined ? [] : [load.theme]),
+      ...load.extensions,
+      ...(settings.configPath === ""
+        ? []
+        : [resolveConfigPath({ configPath: settings.configPath, baseDir })]),
+    ];
+    if (load.problem) {
+      watched.push(load.problem.path);
     }
-    if (load.kind === "error") {
-      log.warn("設定ファイルを読めない", path, load.line, load.message);
-      this.configErrorLine = load.line;
-      void this.post({ type: "configError", line: load.line });
+    const changed =
+      watched.length !== this.watched.length ||
+      watched.some((path, index) => path !== this.watched[index]);
+    this.watched = watched;
+    if (changed) {
+      this.onWatchedChange();
+    }
+    this.nearest = load.nearest;
+    this.includeRoot =
+      load.nearest === undefined
+        ? dirname(this.fileUri.fsPath)
+        : dirname(load.nearest);
+    if (load.problem && this.configUsed) {
+      this.reportProblem(load.problem);
       return false;
     }
     const { libraries, "html-scripts": htmlScripts, ...rest } = load.config;
     this.rawLibraries = libraries;
     this.rawHtmlScripts = htmlScripts;
     this.assetsRoot = load.assetsRoot;
-    const configDir = dirname(path);
+    this.wanted = { theme: load.theme, extensions: load.extensions };
+    // 相対パスは重ねる前に絶対パスにしてある
+    const configDir = dirname(this.fileUri.fsPath);
     const toUrl = (target: string) =>
       this.webviewPanel.webview.asWebviewUri(Uri.file(target)).toString();
     this.config = {
@@ -288,30 +341,126 @@ export class PreviewPanel {
             }),
           }),
     };
+    this.configUsed = true;
+    if (load.problem) {
+      this.reportProblem(load.problem);
+      return false;
+    }
     this.markConfigOk();
     return true;
   }
 
-  /** 設定ファイルを読み直し、読めないときは何も送らずに終える。読めたときは、`libraries` と `html-scripts.url` の origin の集まりが今の HTML の CSP に入れたものと違えば HTML を入れ直し（新しい配信元のモジュールを CSP が止めないため）、同じなら待たずに送る */
-  async applyConfigChange(): Promise<void> {
+  /** 読めない設定ファイルを帯に出す */
+  private reportProblem(problem: ConfigProblem): void {
+    this.deps.log.warn(
+      "設定ファイルを読めない",
+      problem.path,
+      problem.line ?? problem.settingKey ?? "",
+      problem.message,
+    );
+    this.configProblem = problem;
+    void this.post(this.configErrorMessage(problem));
+  }
+
+  /** 帯に出す `configError` */
+  private configErrorMessage(problem: ConfigProblem): HostMessage {
+    const path = displayConfigPath({
+      path: problem.path,
+      base: baseDirOf(this.fileUri),
+      home: homedir(),
+    });
+    return problem.line === undefined
+      ? {
+          type: "configError",
+          path,
+          settingKey: problem.settingKey ?? "",
+        }
+      : { type: "configError", path, line: problem.line };
+  }
+
+  /** `extensions` のパスの並びかその中身が今の HTML と違えば束ね直し、束ねたファイルの並びを返す（束ねられない拡張は飛ばす） */
+  private async prepareExtensions(): Promise<string[]> {
+    const { log, context } = this.deps;
+    const hashed = await Promise.all(
+      this.wanted.extensions.map(async (path) => ({
+        path,
+        hash: await readFile(path).then(
+          (bytes) => createHash("sha256").update(bytes).digest("hex"),
+          () => "",
+        ),
+      })),
+    );
+    const same =
+      hashed.length === this.embedded.extensions.length &&
+      hashed.every(
+        (entry, index) =>
+          entry.path === this.embedded.extensions[index]?.path &&
+          entry.hash === this.embedded.extensions[index]?.hash,
+      );
+    if (!same) {
+      const directory = join(context.globalStorageUri.fsPath, "extensions");
+      const results = await bundleExtensions({
+        paths: hashed.map((entry) => entry.path),
+        extensionPath: context.extensionPath,
+      });
+      const extensions: Array<{ path: string; hash: string; file?: string }> =
+        [];
+      for (const [index, result] of results.entries()) {
+        const hash = hashed[index]?.hash ?? "";
+        if ("error" in result) {
+          log.warn("拡張を束ねられない", result.path, result.error);
+          extensions.push({ path: result.path, hash });
+          continue;
+        }
+        const name = createHash("sha256").update(result.code).digest("hex");
+        const file = join(directory, `${name}.mjs`);
+        await mkdir(directory, { recursive: true });
+        await writeFile(file, result.code);
+        extensions.push({ path: result.path, hash, file });
+      }
+      this.embedded = { ...this.embedded, extensions };
+    }
+    this.embedded = { ...this.embedded, theme: this.wanted.theme };
+    return this.embedded.extensions.flatMap((entry) =>
+      entry.file === undefined ? [] : [entry.file],
+    );
+  }
+
+  /** 設定を読み直して変更を当てる。`libraries` の origin の集まり・`extensions`・`theme` のパスが変われば HTML を入れ直し、`theme` のファイルだけが変われば `theme` を送り、それ以外は待たずに送る。読めない設定ファイルがあれば送らない */
+  async applyConfigChange(path?: string): Promise<void> {
     if (!(await this.reloadConfig())) {
       return;
     }
     const next = libraryOrigins(this.rawLibraries, this.rawHtmlScripts);
-    const same =
+    const sameOrigins =
       next.length === this.cspLibraryOrigins.length &&
       next.every((origin) => this.cspLibraryOrigins.includes(origin));
-    if (same) {
-      this.renderNow();
+    const sameExtensions =
+      this.wanted.extensions.length === this.embedded.extensions.length &&
+      this.wanted.extensions.every(
+        (entry, index) => entry === this.embedded.extensions[index]?.path,
+      ) &&
+      (path === undefined || !this.wanted.extensions.includes(path));
+    const sameTheme = this.wanted.theme === this.embedded.theme;
+    if (!sameOrigins || !sameExtensions || !sameTheme) {
+      await this.load();
       return;
     }
-    await this.load();
+    if (path !== undefined && path === this.wanted.theme) {
+      this.themeVersion += 1;
+      const href = this.webviewPanel.webview
+        .asWebviewUri(Uri.file(path))
+        .toString();
+      void this.post({ type: "theme", href: `${href}?v=${this.themeVersion}` });
+      return;
+    }
+    this.renderNow();
   }
 
-  /** 前が読めなかったときだけ `configOk` を送る */
+  /** 前に帯を出していたときだけ `configOk` を送る */
   private markConfigOk(): void {
-    if (this.configErrorLine !== undefined) {
-      this.configErrorLine = undefined;
+    if (this.configProblem !== undefined) {
+      this.configProblem = undefined;
       void this.post({ type: "configOk" });
     }
   }
@@ -383,8 +532,8 @@ export class PreviewPanel {
       case "ready":
         this.ready = true;
         this.renderNow();
-        if (this.configErrorLine !== undefined) {
-          void this.post({ type: "configError", line: this.configErrorLine });
+        if (this.configProblem !== undefined) {
+          void this.post(this.configErrorMessage(this.configProblem));
         }
         return;
       case "revealLine":
@@ -403,6 +552,8 @@ export class PreviewPanel {
         );
         const settings = readSettings((key) => configuration.get(key));
         await openConfigFile({
+          path: this.configProblem?.path ?? this.nearest,
+          cwd: dirname(this.fileUri.fsPath),
           configPath: settings.configPath,
           baseDir: baseDirOf(this.fileUri),
           log,
@@ -455,22 +606,24 @@ export class PreviewPanel {
     }
   }
 
-  /** `localResourceRoots` に `assets.root` のフォルダを加えて入れ直す（前に加えたものは外す） */
+  /** `localResourceRoots` に `assets.root` のフォルダ・`theme` のファイルのフォルダ・束ねた拡張のフォルダを加えて入れ直す（前に加えたものは外す） */
   private updateResourceRoots(): void {
     const webview = this.webviewPanel.webview;
     const base = (webview.options.localResourceRoots ?? []).filter(
-      (root) => root.fsPath !== this.addedResourceRoot,
+      (root) => !this.addedResourceRoots.includes(root.fsPath),
     );
-    const added =
-      this.assetsRoot !== undefined &&
-      !base.some((root) => root.fsPath === this.assetsRoot)
-        ? this.assetsRoot
-        : undefined;
-    this.addedResourceRoot = added;
+    const wanted = [
+      ...(this.assetsRoot === undefined ? [] : [this.assetsRoot]),
+      ...(this.wanted.theme === undefined ? [] : [dirname(this.wanted.theme)]),
+      join(this.deps.context.globalStorageUri.fsPath, "extensions"),
+    ];
+    const added = [...new Set(wanted)].filter(
+      (path) => !base.some((root) => root.fsPath === path),
+    );
+    this.addedResourceRoots = added;
     webview.options = {
       ...webview.options,
-      localResourceRoots:
-        added === undefined ? base : [...base, Uri.file(added)],
+      localResourceRoots: [...base, ...added.map((path) => Uri.file(path))],
     };
   }
 
