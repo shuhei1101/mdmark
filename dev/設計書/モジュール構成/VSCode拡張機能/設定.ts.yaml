@@ -569,3 +569,4 @@ functions:
 test_files:
   - tests/unit/vscode/src/settings.test.ts
   - tests/unit/vscode/src/config.test.ts
+  - tests/unit/vscode/src/extensions-bundle.test.ts

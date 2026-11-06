@@ -726,6 +726,11 @@ components:
         required: false
         default: '`loadMdmark`'
         description: 配布物を読む関数。ストーリーと単体テストが代役を渡す
+      - name: importModule
+        type: '(url: string) => Promise<{ default?: unknown }>'
+        required: false
+        default: '`import(/* @vite-ignore */ url)`'
+        description: 拡張を読む関数（拡張を登録するに渡す）。単体テストが代役を渡す
     state:
       - name: status
         type: '{ state: PreviewStatusState; version?: string } | undefined'
