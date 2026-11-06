@@ -435,7 +435,7 @@ functions:
     title: 書き出しに使う設定を読む
     container: src/cli/config.ts
     usecase: 共通
-    summary: 設定ファイルを探して読み、形が合わなければ `mdmark check` で確かめられることを添えた CliError を投げる
+    summary: 端末の設定と上のフォルダの設定ファイルを重ねて読み、読めない・形が合わなければ `mdmark check` で確かめられることを添えた CliError を投げる
     kind: 関数
     scope: public
     is_async: true
@@ -464,12 +464,18 @@ functions:
         expected: '`CliError` を投げ、メッセージに `libraries` と `mdmark check` が入る'
         exception: CliError
     callees:
-      - '#functions[findConfigFile]'
-      - '#functions[loadConfig]'
-      - '#functions[validateConfig]'
+      - dev/設計書/モジュール構成/ライブラリ本体/設定を重ねて読む.ts#functions[loadLayeredConfig]
+      - dev/設計書/モジュール構成/ライブラリ本体/設定を重ねて読む.ts#functions[displayConfigPath]
     status: planned
     introduced:
       pr: 32
+    process: |-
+      1. 設定を重ねて読む（設定を重ねて読む。`purpose: export`、`env` は `process.env`、`home` は `os.homedir()`）
+         - `ConfigNotFoundError` の場合、その文で `CliError` を投げる
+      2. `nearest` が無い場合、今の「`mdmark.config.yaml` が見つかりません」の `CliError` を投げる
+      3. `unreadable` がある場合、そのファイルのパス（設定ファイルのパスを表示の形にする。`base` は `cwd`）と行で、今の「YAML として読めません」の `CliError` を投げる
+      4. `issues` が 1 件以上の場合、最初のずれのファイルを表示の形にして、今の「設定の形に合いません」の `CliError` を投げる
+      5. `{ path: nearest, dir: nearest のフォルダ, config }` を返す（重ねた設定の相対パスは既に絶対パス）
   - name: collectBuildDocuments
     title: まとめる文書を集める
     container: src/cli/documents.ts
@@ -1371,7 +1377,7 @@ functions:
     title: 点検のずれを集める
     container: src/cli/check.ts
     usecase: 共通
-    summary: 設定ファイルを読み、`mdmark check` と同じ並びのずれを返す
+    summary: '設定を重ねて読み（`purpose: export`）、重ねた設定ファイルのそれぞれと端末の設定（`config.applyToExport` によらず）の形のずれを先に、続けて `mdmark check` と同じ並びのずれを返す。ずれの `file` は設定ファイルのパスを表示の形にしたパス（`base` は今のフォルダ）'
     description: '並びは設定の `schema`（`validateConfig` のずれ、`theme`・`extensions` の無いファイル、`build.glossary`・`build.entry` がまとめる文書に当たらないもの）→ `unknown_color_theme`（設定の `colorTheme` が `COLOR_THEMES` に無いとき 1 件。`where` は `colorTheme`、`message` は `不明なテーマ名 {名前} です。{COLOR_THEMES を「・」で結んだもの} のいずれかに修正してください。`）→ `no_documents` → `checkIndex` の並び → エイリアスのずれ（`loadAliases` の `issues`。設定に `aliases` があるときだけ）→ `missing_file`（`collectCheckDocuments` の文書ごとの `checkMissingFiles`）→ `unknown_mark`（`checkUnknownMarks`）→ 図の点検のずれ（`checkDiagrams`。`unknownMarks` によらず点検する）。知らない印の点検では、`collectCheckDocuments` の文書を、`loadExtensionDirectives` の `directive` を知っている印に入れて点検し、`loadExtensionDirectives` の `schema` のずれは設定の `schema` の並びの最後に置く。索引のずれの `file` は設定ファイルのフォルダからの相対パスに直す。索引を読めないときは索引を指す `schema` のずれにする。`base` があり設定に `index` があるときだけ、ずれを集める前に `changedPathsSince`（`cwd` は設定ファイルのフォルダ、`indexDir` は索引のファイルのフォルダ）で変わったファイルを引き、`checkIndex` の `changedPaths` に渡す。`runCheck` と `runUpgrade` が呼び、`runUpgrade` は `unknownMarks: false` で呼ぶ（拡張を読み込まず、知らない印を点検しない）。設定の `assets.root` のフォルダが無いときは `assets.root` を指す `schema` のずれを設定の `schema` の並びに置き、`missing_file` は文書のフォルダだけで探す'
     kind: 関数
     scope: public

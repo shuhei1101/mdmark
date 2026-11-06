@@ -270,13 +270,13 @@ functions:
       - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを描き直す.ts#constraints[設定の取り出し方]
       - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを描き直す.ts#constraints[設定ファイルを読めないとき]
       - dev/設計書/外部ライブラリ/yaml#
-    status: planned
+    status: removed
   - name: loadConfig
     title: 設定ファイルを読む
     kind: 関数
     container: vscode/src/config.ts
     usecase: 書いた内容をプレビューに映す
-    summary: 設定ファイルを読んで設定を取り出す。ファイルが無ければ `missing`
+    summary: 設定を重ねて読む（ライブラリ本体の `loadLayeredConfig` を呼ぶ）。設定ファイルが 1 つも無ければ端末の設定だけで返す
     scope: public
     is_async: true
     args:
@@ -288,10 +288,11 @@ functions:
       type: Promise<ConfigLoad>
       description: 読み取りの結果
     process: |-
-      1. `readFile(path)` で読む
-         - 例外の `code` が `ENOENT` の場合、`{ kind: "missing" }` を返す。他の例外は投げ直す
-      2. 読んだ中身から設定を取り出す（設定を取り出す）
-      3. `assetsRoot` があれば `path` のフォルダを基準にした絶対パスにして返す
+      1. ライブラリ本体の設定を重ねて読むを呼ぶ（設定を重ねて読む。`readFile` は渡された関数、`env` は `process.env`、`home` は `os.homedir()`）
+      2. 結果を `ConfigLoad` にする
+         - `unreadable` がある場合、`{ kind: "error", path, line, message }`
+         - 無く `issues` がある場合、`{ kind: "error", path: issues[0].file, settingKey: issues[0].where, message }`
+         - どちらも無い場合、`{ kind: "ok", config, files, assetsRoot: config.assets?.root }`（`config` は重ねた設定のまま。`files` は見張るファイルに使う）
     exceptions:
       - name: Error
         condition: '`readFile` が `ENOENT` 以外で失敗した（投げ直す）'

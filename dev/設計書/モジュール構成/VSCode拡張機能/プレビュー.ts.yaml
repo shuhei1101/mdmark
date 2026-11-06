@@ -313,7 +313,7 @@ classes:
         refs:
           - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを描き直す.ts#constraints[設定ファイルを読めないとき]
         process: |-
-          1. 設定ファイルの場所を決め（設定ファイルの場所を決める）、読む（設定ファイルを読む）
+          1. 設定を重ねて読む（設定を重ねて読む。`purpose: preview`、`cwd` は Markdown のフォルダ、`explicit` は空でない `mdmark.configPath`）。重ねた設定ファイル・`theme`・`extensions` のパスを見張るファイルにし、`theme`・`extensions` のフォルダを `localResourceRoots` に足し直す。`unreadable` があればそのパスと行、無く `issues` があれば最初のファイルとキーで `configError` を送る（パスは設定ファイルのパスを表示の形にする。`base` はワークスペースのフォルダ）
              - `ok` の場合、`libraries` を `asWebviewUri` で直して（libraries の URL を直す）`config` を替え、前が読めなかったときだけ `configOk` を送る
              - `missing` の場合、`config` を `{}` にする
              - `error` の場合、`config` を残して `configError` を送る

@@ -26,5 +26,6 @@
 | [差分.ts](./差分.ts.yaml) | 差分の取り出し元の型と検査・行と語の比較・差分を開く UI とミニマップ・差分の部品の HTML |
 | [ビューとコメント.ts](./ビューとコメント.ts.yaml) | ビューとコメントの部品を別の配布ファイルに分け、使うときだけ読む処理と、mountView・mountComments・部品の HTML |
 | [検査とGitフック.ts](./検査とGitフック.ts.yaml) | Webview に当てる ESLint の設定・lefthook の Git フック・検査の npm scripts |
+| [設定を重ねて読む.ts](./設定を重ねて読む.ts.yaml) | 端末の設定と上のフォルダの mdmark.config.yaml を探して重ね、CLI・MCP・VS Code 拡張機能が共に呼ぶ処理 |
 
 <!-- /table -->
