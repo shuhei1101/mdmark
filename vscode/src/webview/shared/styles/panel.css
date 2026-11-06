@@ -18,14 +18,8 @@
   --border: var(--vscode-widget-border);
   --ring: var(--vscode-focusBorder);
   --radius: 0.375rem;
-  --warning: var(--vscode-inputValidation-warningBackground);
+  /* 警告の色は線とアイコンだけに使い、文字の地にしない（地と文字はエディタの色） */
   --warning-border: var(--vscode-inputValidation-warningBorder);
-  /* 警告の文字は本文の色を警告の色へ寄せる（色の上に無彩色の文字を置かない） */
-  --warning-foreground: color-mix(
-    in oklab,
-    var(--vscode-editor-foreground) 60%,
-    var(--vscode-inputValidation-warningBorder)
-  );
 }
 
 /* Tailwind に自前のトークンだけを割り当て、標準のパレットを外す */
@@ -43,9 +37,7 @@
   --color-secondary-hover: var(--secondary-hover);
   --color-border: var(--border);
   --color-ring: var(--ring);
-  --color-warning: var(--warning);
   --color-warning-border: var(--warning-border);
-  --color-warning-foreground: var(--warning-foreground);
   --radius-md: var(--radius);
   --radius-lg: calc(var(--radius) + 2px);
   /* 文書の代わりに出す表示の上の余白（パネルの上から 1/4 の高さ） */

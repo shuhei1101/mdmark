@@ -10,7 +10,7 @@ const alertVariants = cva(
     variants: {
       variant: {
         default: "border-border bg-card text-card-foreground",
-        warning: "border-warning-border bg-warning text-warning-foreground",
+        warning: "border-warning-border bg-background text-foreground",
       },
     },
     defaultVariants: { variant: "default" },
@@ -32,8 +32,8 @@ export const Alert = ({
   />
 );
 
-/** Alert の 1 列目のアイコンの大きさと位置（タイトルの行の高さに揃える） */
-export const ALERT_ICON_CLASS = "mt-1.5 size-4 text-current";
+/** Alert の 1 列目の警告のアイコンの大きさと位置（タイトルの行の高さに揃える）と、線と同じ警告の色 */
+export const ALERT_ICON_CLASS = "mt-1.5 size-4 text-warning-border";
 
 /** Alert のタイトル。`asChild` で `h1`・`h2` を受ける */
 export const AlertTitle = ({
