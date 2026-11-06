@@ -1,6 +1,5 @@
 import type { WebviewMessage } from "../../messages.ts";
-import type { PreviewState } from "../features/preview/panel/boot.ts";
-import type { VsCodeApi } from "../shared/adapters/vscode-api.ts";
+import type { PreviewState, VsCodeApi } from "../shared/adapters/vscode-api.ts";
 
 /** 送ったメッセージと保存した状態を記録する VS Code の API の代役 */
 export type FakeVsCodeApi = VsCodeApi & {

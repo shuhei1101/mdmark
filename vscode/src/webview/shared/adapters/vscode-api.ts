@@ -1,5 +1,10 @@
 import type { WebviewMessage } from "../../../messages.ts";
-import type { PreviewState } from "../../features/preview/panel/boot.ts";
+
+/** `setState` で保存し、作り直した Webview が `getState` で読む値 */
+export type PreviewState = {
+  /** 見えている先頭の元の行番号（0 始まり）。整数に切り捨てず、小数部で行の途中の割合を持つ */
+  line: number;
+};
 
 /** `acquireVsCodeApi()` が返す API のうち、Webview が使うもの */
 export type VsCodeApi = {

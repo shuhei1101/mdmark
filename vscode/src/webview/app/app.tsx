@@ -1,6 +1,6 @@
 import { ErrorBoundary } from "react-error-boundary";
-import { PanelScreen } from "../features/preview/panel/panel-screen.tsx";
 import type { PreviewBoot } from "../features/preview/panel/boot.ts";
+import { PanelScreen } from "../features/preview/panel/panel-screen.tsx";
 import type { VsCodeApi } from "../shared/adapters/vscode-api.ts";
 import { PreviewStatus } from "../shared/components/preview-status.tsx";
 

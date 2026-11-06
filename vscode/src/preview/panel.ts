@@ -24,8 +24,8 @@ import {
 import { openConfigFile } from "../config-file.ts";
 import { type ExtensionDeps, LAST_VERSION_KEY } from "../deps.ts";
 import type {
-  HostMessage,
   AxeViolation,
+  HostMessage,
   InspectedElement,
   WebviewMessage,
 } from "../messages.ts";

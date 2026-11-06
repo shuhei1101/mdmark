@@ -4,7 +4,11 @@ import type {
   InspectedElement,
   PreviewTheme,
 } from "../../../../messages.ts";
-import { createDiffSource, DIFF_DOC_ID, type DiffTexts } from "./diff-source.ts";
+import {
+  createDiffSource,
+  DIFF_DOC_ID,
+  type DiffTexts,
+} from "./diff-source.ts";
 import {
   type Mdmark,
   type MountHandle,

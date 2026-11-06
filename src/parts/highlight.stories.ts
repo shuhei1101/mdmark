@@ -1,6 +1,8 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 
-const meta = { title: "Parts/Highlight" } satisfies Meta<Record<string, unknown>>;
+const meta = { title: "Parts/Highlight" } satisfies Meta<
+  Record<string, unknown>
+>;
 export default meta;
 
 /** ストーリー: 描画の口（`parameters.server.id`）の部品を `args` で描く */

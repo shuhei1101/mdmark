@@ -17,17 +17,15 @@ export type DiffSource = {
 
 /** `revisions` が `modified`・`original` の 2 つをこの順に返し、`content` が呼ばれた時点の全文を返す取り出し元を作る。`content` は知らない `revisionId` で reject する */
 export const createDiffSource = (texts: DiffTexts): DiffSource => ({
-  revisions: async () => {
+  revisions: () => {
     const at = new Date().toISOString();
-    return [
+    return Promise.resolve([
       { id: "modified", at },
       { id: "original", at },
-    ];
+    ]);
   },
-  content: async ({ revisionId }) => {
-    if (revisionId === "modified" || revisionId === "original") {
-      return texts[revisionId];
-    }
-    throw new Error(`知らないリビジョン: ${revisionId}`);
-  },
+  content: ({ revisionId }) =>
+    revisionId === "modified" || revisionId === "original"
+      ? Promise.resolve(texts[revisionId])
+      : Promise.reject(new Error(`知らないリビジョン: ${revisionId}`)),
 });

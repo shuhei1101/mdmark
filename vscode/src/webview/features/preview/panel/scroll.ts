@@ -45,7 +45,7 @@ const lastIndexOf = (
   matches: (anchor: Anchor) => boolean,
 ): number => {
   for (let index = anchors.length - 1; index >= 0; index -= 1) {
-    if (matches(anchors[index] as Anchor)) {
+    if (matches(anchors[index])) {
       return index;
     }
   }
@@ -59,7 +59,7 @@ export const topForLine = (anchors: Anchor[], line: number): number => {
     return 0;
   }
   const index = lastIndexOf(anchors, (anchor) => anchor.line <= line);
-  const before = anchors[index] as Anchor;
+  const before = anchors[index];
   const after = anchors[index + 1];
   if (after === undefined) {
     return before.top;
@@ -78,7 +78,7 @@ export const fractionalLineForTop = (
     return 0;
   }
   const index = lastIndexOf(anchors, (anchor) => anchor.top <= top);
-  const before = anchors[index] as Anchor;
+  const before = anchors[index];
   const after = anchors[index + 1];
   if (after === undefined) {
     return before.line;

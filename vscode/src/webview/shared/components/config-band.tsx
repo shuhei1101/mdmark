@@ -26,7 +26,7 @@ export const ConfigBand = ({ path, line, onOpenConfig }: ConfigBandProps) => (
       className="mdmark-config-band @band:grid-cols-alert-action"
     >
       <TriangleAlert aria-hidden="true" className={ALERT_ICON_CLASS} />
-      <AlertTitle asChild className="text-base leading-6">
+      <AlertTitle asChild className="text-base/6">
         <h2>設定ファイルを読み込めません</h2>
       </AlertTitle>
       <AlertDescription>
@@ -35,7 +35,11 @@ export const ConfigBand = ({ path, line, onOpenConfig }: ConfigBandProps) => (
         を当てずに表示しています。
       </AlertDescription>
       <div className="col-start-2 mt-2 @band:col-start-3 @band:row-span-2 @band:row-start-1 @band:mt-0 @band:self-center">
-        <Button variant="outline" data-action="openConfig" onClick={onOpenConfig}>
+        <Button
+          variant="outline"
+          data-action="openConfig"
+          onClick={onOpenConfig}
+        >
           設定ファイルを開く
         </Button>
       </div>

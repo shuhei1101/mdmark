@@ -1,6 +1,8 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 
-const meta = { title: "Parts/CodeBlock" } satisfies Meta<Record<string, unknown>>;
+const meta = { title: "Parts/CodeBlock" } satisfies Meta<
+  Record<string, unknown>
+>;
 export default meta;
 
 /** ストーリー: 描画の口（`parameters.server.id`）の部品を `args` で描く */
@@ -70,6 +72,7 @@ export const SyntaxPlain: Story = {
     language: "ts",
     highlight: "true",
     lines:
+      // biome-ignore lint/suspicious/noTemplateCurlyInString: 部品が描くコードの見本の文字列で、`${…}` は見本の中の文字
       '[{"text":"import { mount } from \\"mdmark\\";"},{"text":""},{"text":"// 文書を描く"},{"text":"const element: HTMLElement | null = document.querySelector(\\"#doc\\");"},{"text":"mount(element, `# 見出し ${300}`, { features: { syntax: true } });"}]',
   },
 };
@@ -95,6 +98,7 @@ export const SyntaxMultilineToken: Story = {
     lineNumbers: "true",
     highlight: "true",
     lines:
+      // biome-ignore lint/suspicious/noTemplateCurlyInString: 部品が描くコードの見本の文字列で、`${…}` は見本の中の文字
       '[{"text":"/*"},{"text":" * 文書を描く"},{"text":" */"},{"text":"const markdown = `# 見出し"},{"text":"本文 ${count}"},{"text":"`;","kind":"highlight"}]',
   },
 };

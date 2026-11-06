@@ -140,9 +140,10 @@ export const DiffUnsupported: Story = {
   name: "DiffUnsupported",
   args: {
     version: "v0.8.0",
-    load: async () => ({
-      mount: () => ({ update: () => undefined, destroy: () => undefined }),
-    }),
+    load: () =>
+      Promise.resolve({
+        mount: () => ({ update: () => undefined, destroy: () => undefined }),
+      }),
     messages: [renderOf("A2", "A1")],
   },
 };

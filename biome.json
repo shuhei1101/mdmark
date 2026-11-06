@@ -32,7 +32,7 @@
   },
   "overrides": [
     {
-      "includes": ["src/index.css", "vscode/src/webview/preview.css"],
+      "includes": ["src/index.css"],
       "linter": {
         "rules": {
           "style": {
@@ -41,5 +41,10 @@
         }
       }
     }
-  ]
+  ],
+  "css": {
+    "parser": {
+      "tailwindDirectives": true
+    }
+  }
 }

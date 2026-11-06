@@ -25,7 +25,9 @@ export default preview;
 const fitted = new WeakSet<Element>();
 /** 印を持つ図に操作を付ける。描いた後に DOM が変わらないストーリーもあるため、読み込んだ時点でも 1 度呼ぶ */
 const attachStoryDiagrams = async (): Promise<void> => {
-  for (const marker of document.querySelectorAll<HTMLElement>("[data-story-fit]")) {
+  for (const marker of document.querySelectorAll<HTMLElement>(
+    "[data-story-fit]",
+  )) {
     const root = marker.closest(".mdmark");
     if (!root || fitted.has(root)) {
       continue;

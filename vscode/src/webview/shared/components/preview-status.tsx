@@ -54,8 +54,9 @@ const reasonOf = (
       return (
         <>
           設定 <code>mdmark.version</code> に指定したバージョン{" "}
-          <code>{version}</code> の mdmark が見つかりませんでした。存在するバージョンか{" "}
-          <code>latest</code> に直してから、リロードしてください。
+          <code>{version}</code> の mdmark
+          が見つかりませんでした。存在するバージョンか <code>latest</code>{" "}
+          に直してから、リロードしてください。
         </>
       );
     case "versionUndecidable":
@@ -78,11 +79,11 @@ export const PreviewStatus = ({
   <div className="mdmark-panel-part mdmark-preview-status grid justify-items-center px-4 pt-panel-state pb-6">
     {state === "loading" ? (
       <div
-        className="mdmark-preview-loading flex items-center gap-3 text-muted-foreground text-sm"
+        className="mdmark-preview-loading flex items-center gap-3 text-sm text-muted-foreground"
         role="status"
       >
         <Spinner />
-        <h1 className="m-0 font-normal text-sm">mdmark を読み込んでいます</h1>
+        <h1 className="m-0 text-sm font-normal">mdmark を読み込んでいます</h1>
       </div>
     ) : (
       <Alert
@@ -91,7 +92,7 @@ export const PreviewStatus = ({
         className="mdmark-preview-notice max-w-lg"
       >
         <TriangleAlert aria-hidden="true" className={ALERT_ICON_CLASS} />
-        <AlertTitle asChild className="text-xl leading-7">
+        <AlertTitle asChild className="text-xl/7">
           <h1>プレビューを表示できません</h1>
         </AlertTitle>
         <AlertDescription>{reasonOf(state, version ?? "")}</AlertDescription>

@@ -10,7 +10,9 @@ export default defineConfig({
     babel({ presets: [reactCompilerPreset()] }),
     tailwindcss(),
   ],
-  resolve: { alias: { "@": new URL("./src/webview", import.meta.url).pathname } },
+  resolve: {
+    alias: { "@": new URL("./src/webview", import.meta.url).pathname },
+  },
   build: {
     lib: {
       entry: "src/webview/main.tsx",

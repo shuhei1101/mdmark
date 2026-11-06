@@ -86,23 +86,23 @@ export const PanelScreen = ({
     throw failure.error;
   }
   const { view, documentRef } = useDocumentView(
-    savedLine === undefined ? { root: boot.root } : { root: boot.root, savedLine },
+    savedLine === undefined
+      ? { root: boot.root }
+      : { root: boot.root, savedLine },
   );
   // 最初の `rendered` を送ったか、描けない理由を出したか
   const settled = useRef(isUndecidable(boot));
   // 最後に送った `resolveAssets` の番号
   const assetsId = useRef(0);
 
-  /** 例外を Error Boundary へ渡して処理する */
-  const guard =
-    <Args extends unknown[]>(handler: (...args: Args) => void) =>
-    (...args: Args): void => {
-      try {
-        handler(...args);
-      } catch (error) {
-        setFailure({ error });
-      }
-    };
+  /** 処理を呼び、投げた例外を Error Boundary へ渡す */
+  const run = (handle: () => void): void => {
+    try {
+      handle();
+    } catch (error) {
+      setFailure({ error });
+    }
+  };
 
   /** 描く。差分のパネルで配布物が差分の色分けに対応しないときは、描かずに理由を出す */
   const render = (message: Extract<HostMessage, { type: "render" }>): void => {
@@ -156,19 +156,21 @@ export const PanelScreen = ({
   useLinkClicks(api);
   useScrollSync({ view, api });
   useMediaErrors(boot.root);
-  useHostMessages(guard(onMessage));
+  useHostMessages((message) => run(() => onMessage(message)));
   useLoadMdmark({
     distJs: isUndecidable(boot) ? undefined : boot.distJs,
     load,
-    onLoaded: guard((mdmark: Mdmark) => {
-      view.useMdmark(mdmark);
-      api.postMessage({ type: "ready" });
-    }),
-    onFailed: guard((reason: "offline" | "versionMissing") => {
-      settled.current = true;
-      setStatus(statusWithVersion(reason, boot.version));
-      api.postMessage({ type: "loadFailed", reason });
-    }),
+    onLoaded: (mdmark) =>
+      run(() => {
+        view.useMdmark(mdmark);
+        api.postMessage({ type: "ready" });
+      }),
+    onFailed: (reason) =>
+      run(() => {
+        settled.current = true;
+        setStatus(statusWithVersion(reason, boot.version));
+        api.postMessage({ type: "loadFailed", reason });
+      }),
     onSlow: () => {
       // 1 秒未満で描き終えるときに読み込み中が一瞬だけ出ないよう、待ってから出す
       if (!settled.current) {
