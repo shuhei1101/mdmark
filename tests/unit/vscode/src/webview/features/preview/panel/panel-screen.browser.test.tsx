@@ -7,6 +7,7 @@ import { handlers } from "../../../../../../../../vscode/src/webview/testing/msw
 import { test } from "../../../msw-test.ts";
 import {
   createMdmark,
+  createMdmarkModuleUrl,
   createRoot,
   nextFrames,
   renderMessage,
@@ -387,6 +388,35 @@ test("test_panel_screen_when_inspect", async () => {
   expect(results.true).toHaveLength(1);
   expect(results.true?.[0]).toMatchObject({ type: "inspected", id: 7 });
   expect(results.false).toEqual([]);
+});
+
+// 拡張機能のメッセージでない message を処理しない（正常系）
+test("test_panel_screen_when_unknown_message", async () => {
+  // 準備
+  const { App } = await loadApp();
+  const api = createFakeVsCodeApi();
+  const boot = createBoot();
+  // App は `load` を受けないため、画面が読む配布物の URL を代役のモジュールにする
+  const moduleUrl = createMdmarkModuleUrl();
+  try {
+    render(<App boot={{ ...boot, distJs: moduleUrl }} api={api} />, {
+      container: boot.root,
+    });
+    await waitReady(api.posted);
+    // 実行
+    act(() => {
+      sendHostMessage({ type: "msw/worker:stop" });
+      sendHostMessage({ line: 3 });
+      sendHostMessage(renderMessage("# 本文"));
+    });
+    // 検証
+    await vi.waitFor(() => {
+      expect(postedOf(api.posted, "rendered")).toHaveLength(1);
+    });
+    expect(boot.root.querySelector(".mdmark-preview-status")).toBeNull();
+  } finally {
+    URL.revokeObjectURL(moduleUrl);
+  }
 });
 
 // メッセージの処理で投げた例外を Error Boundary へ渡す（異常系）

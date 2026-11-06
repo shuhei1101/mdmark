@@ -32,3 +32,17 @@ test("test_use_host_messages", async () => {
   expect(second).toHaveBeenCalledTimes(1);
   expect(second).toHaveBeenCalledWith({ type: "configOk" });
 });
+
+// type を持たない data は処理に渡さない（正常系）
+test("test_use_host_messages_when_not_object", async () => {
+  // 準備
+  const { useHostMessages } = await loadHook();
+  const onMessage = vi.fn();
+  renderHook(() => useHostMessages(onMessage));
+  // 実行
+  sendHostMessage(null);
+  sendHostMessage("configOk");
+  sendHostMessage({ line: 3 });
+  // 検証
+  expect(onMessage).not.toHaveBeenCalled();
+});
