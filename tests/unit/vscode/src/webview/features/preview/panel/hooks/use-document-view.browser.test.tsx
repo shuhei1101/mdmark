@@ -4,7 +4,9 @@ import { createMdmark, renderMessage } from "../../../../webview-helpers.ts";
 
 /** 描いた文書の hook を読み込む（実装が無い間は各テストが個別に失敗する） */
 const loadHook = () =>
-  import("../../../../../../../../../vscode/src/webview/features/preview/panel/hooks/use-document-view.ts");
+  import(
+    "../../../../../../../../../vscode/src/webview/features/preview/panel/hooks/use-document-view.ts"
+  );
 
 afterEach(() => {
   cleanup();

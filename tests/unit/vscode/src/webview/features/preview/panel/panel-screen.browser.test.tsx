@@ -97,7 +97,9 @@ test("test_panel_screen_when_rendered", async () => {
   });
   const types = api.posted.map((message) => message.type);
   expect(types.indexOf("ready")).toBeLessThan(types.indexOf("rendered"));
-  expect(record.elements[0]?.querySelector("[data-source-line]")).not.toBeNull();
+  expect(
+    record.elements[0]?.querySelector("[data-source-line]"),
+  ).not.toBeNull();
   expect(boot.root.querySelector(".mdmark-preview-status")).toBeNull();
 });
 
@@ -319,7 +321,10 @@ test("test_panel_screen_when_assets", async () => {
     mount: (element: HTMLElement) => {
       element.innerHTML =
         '<figure class="mdmark-figure mdmark-media"><video src="m/demo.mp4" controls aria-label="操作"></video></figure>';
-      return { update: () => undefined, destroy: () => element.replaceChildren() };
+      return {
+        update: () => undefined,
+        destroy: () => element.replaceChildren(),
+      };
     },
   };
   const boot = createBoot();

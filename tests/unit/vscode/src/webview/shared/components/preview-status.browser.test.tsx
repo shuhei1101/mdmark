@@ -26,9 +26,9 @@ test("test_preview_status", async () => {
   );
   // 検証
   const status = screen.getByRole("status");
-  expect(
-    status.querySelector("h1")?.textContent,
-  ).toBe("プレビューを表示できません");
+  expect(status.querySelector("h1")?.textContent).toBe(
+    "プレビューを表示できません",
+  );
   const codes = [...status.querySelectorAll("code")].map(
     (code) => code.textContent,
   );
@@ -103,7 +103,9 @@ test("test_preview_status_when_reload_clicked", async () => {
   // 準備
   const { PreviewStatus } = await loadPart();
   const onReload = vi.fn();
-  render(<PreviewStatus state="offline" version="v0.7.0" onReload={onReload} />);
+  render(
+    <PreviewStatus state="offline" version="v0.7.0" onReload={onReload} />,
+  );
   // 実行
   await userEvent.click(screen.getByRole("button", { name: "リロード" }));
   // 検証

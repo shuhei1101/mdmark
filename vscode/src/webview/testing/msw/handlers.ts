@@ -1,4 +1,4 @@
-import { delay, HttpResponse, type HttpHandler, http } from "msw";
+import { delay, type HttpHandler, HttpResponse, http } from "msw";
 
 /** jsDelivr の mdmark の配布物の `index.js`（バージョンを問わない） */
 export const DIST_JS_PATTERN =

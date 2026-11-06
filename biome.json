@@ -8,6 +8,7 @@
       "!dist",
       "!vscode/dist",
       "!vscode/media",
+      "!.storybook/public",
       "!vscode/out",
       "!vscode/node_modules",
       "!vscode/.vscode-test",
@@ -19,6 +20,11 @@
       "!playwright-report",
       "!.vitest"
     ]
+  },
+  "linter": {
+    "domains": {
+      "react": "none"
+    }
   },
   "formatter": {
     "indentStyle": "space",

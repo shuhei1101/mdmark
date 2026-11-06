@@ -5,7 +5,9 @@ import { createFakeVsCodeApi } from "../../../../../../../../../vscode/src/webvi
 
 /** リンクの押下の hook を読み込む（実装が無い間は各テストが個別に失敗する） */
 const loadHook = () =>
-  import("../../../../../../../../../vscode/src/webview/features/preview/panel/hooks/use-link-clicks.ts");
+  import(
+    "../../../../../../../../../vscode/src/webview/features/preview/panel/hooks/use-link-clicks.ts"
+  );
 
 const placed: HTMLElement[] = [];
 

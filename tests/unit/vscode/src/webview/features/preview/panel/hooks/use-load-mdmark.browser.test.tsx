@@ -5,7 +5,9 @@ import { test } from "../../../../msw-test.ts";
 
 /** 配布物を読む hook を読み込む（実装が無い間は各テストが個別に失敗する） */
 const loadHook = () =>
-  import("../../../../../../../../../vscode/src/webview/features/preview/panel/hooks/use-load-mdmark.ts");
+  import(
+    "../../../../../../../../../vscode/src/webview/features/preview/panel/hooks/use-load-mdmark.ts"
+  );
 
 /** 配布物の URL（MSW の HEAD のハンドラが当たる） */
 const DIST_JS =

@@ -5,7 +5,11 @@ globalThis.axe = {
     globalThis.__mdmarkAxeRuns.push(context);
     return {
       violations: [
-        { id: "color-contrast", impact: "serious", nodes: [{ target: ["#a"] }] },
+        {
+          id: "color-contrast",
+          impact: "serious",
+          nodes: [{ target: ["#a"] }],
+        },
       ],
     };
   },

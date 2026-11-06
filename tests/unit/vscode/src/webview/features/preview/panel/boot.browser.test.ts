@@ -28,7 +28,8 @@ test("test_read_boot", async () => {
   // 準備
   const { readBoot } = await loadBoot();
   const full = element({
-    distJs: "https://cdn.jsdelivr.net/gh/shuhei1101/mdmark@v0.7.0/dist/index.js",
+    distJs:
+      "https://cdn.jsdelivr.net/gh/shuhei1101/mdmark@v0.7.0/dist/index.js",
     version: "v0.7.0",
     configPath: "docs/mdmark.config.yaml",
     test: "",
@@ -40,7 +41,8 @@ test("test_read_boot", async () => {
   // 検証
   expect(first).toEqual({
     root: full,
-    distJs: "https://cdn.jsdelivr.net/gh/shuhei1101/mdmark@v0.7.0/dist/index.js",
+    distJs:
+      "https://cdn.jsdelivr.net/gh/shuhei1101/mdmark@v0.7.0/dist/index.js",
     version: "v0.7.0",
     status: undefined,
     configPath: "docs/mdmark.config.yaml",

@@ -3,7 +3,10 @@ import { mount } from "../../../../../../../../src/mount.ts";
 import { addStyles } from "../../../../../../helpers/dom.ts";
 
 /** スクロールの処理を読み込む（実装が無い間は各テストが個別に失敗する） */
-const loadScroll = () => import("../../../../../../../../vscode/src/webview/features/preview/panel/scroll.ts");
+const loadScroll = () =>
+  import(
+    "../../../../../../../../vscode/src/webview/features/preview/panel/scroll.ts"
+  );
 
 /** 元の行番号と、スクロールする要素の先頭からの位置 */
 type Anchor = { line: number; top: number };

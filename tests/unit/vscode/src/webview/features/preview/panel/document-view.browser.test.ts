@@ -39,9 +39,8 @@ const createView = async (
     ...(mdmark === undefined
       ? {}
       : {
-          mdmark: mdmark as Parameters<
-            typeof createDocumentView
-          >[0]["mdmark"] & object,
+          mdmark: mdmark as Parameters<typeof createDocumentView>[0]["mdmark"] &
+            object,
         }),
     ...options,
   });

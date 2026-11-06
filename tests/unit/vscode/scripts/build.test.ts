@@ -10,13 +10,7 @@ const loadBuild = () => import("../../../../vscode/scripts/build.ts");
 const REPO_ROOT = resolve(import.meta.dirname, "../../../..");
 const roots: string[] = [];
 /** `vscode/` の複製から除外する、依存と生成物・取得物（`vscode/` からの相対パス） */
-const EXCLUDED = [
-  "node_modules",
-  ".vscode-test",
-  "out",
-  "dist",
-  "media",
-];
+const EXCLUDED = ["node_modules", ".vscode-test", "out", "dist", "media"];
 
 afterEach(async () => {
   await Promise.all(

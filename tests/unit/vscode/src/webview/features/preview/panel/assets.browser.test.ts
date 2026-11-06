@@ -1,7 +1,10 @@
 import { afterEach, expect, test } from "vitest";
 
 /** 相対パスの画像・動画・音声の処理を読み込む（実装が無い間は各テストが個別に失敗する） */
-const loadAssets = () => import("../../../../../../../../vscode/src/webview/features/preview/panel/assets.ts");
+const loadAssets = () =>
+  import(
+    "../../../../../../../../vscode/src/webview/features/preview/panel/assets.ts"
+  );
 
 const roots: HTMLElement[] = [];
 

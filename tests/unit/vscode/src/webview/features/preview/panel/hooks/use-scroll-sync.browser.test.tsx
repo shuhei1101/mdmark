@@ -11,10 +11,14 @@ import {
 
 /** スクロールの hook を読み込む（実装が無い間は各テストが個別に失敗する） */
 const loadHook = () =>
-  import("../../../../../../../../../vscode/src/webview/features/preview/panel/hooks/use-scroll-sync.ts");
+  import(
+    "../../../../../../../../../vscode/src/webview/features/preview/panel/hooks/use-scroll-sync.ts"
+  );
 /** 描いた文書を読み込む */
 const loadDocumentView = () =>
-  import("../../../../../../../../../vscode/src/webview/features/preview/panel/document-view.ts");
+  import(
+    "../../../../../../../../../vscode/src/webview/features/preview/panel/document-view.ts"
+  );
 
 const placed: HTMLElement[] = [];
 

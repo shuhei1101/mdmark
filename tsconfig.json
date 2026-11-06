@@ -11,6 +11,12 @@
     "verbatimModuleSyntax": true,
     "skipLibCheck": true,
     "jsx": "react-jsx",
+    "paths": {
+      "msw": ["./node_modules/msw"],
+      "msw/*": ["./node_modules/msw/*"],
+      "react": ["./node_modules/@types/react"],
+      "react/*": ["./node_modules/@types/react/*"]
+    },
     "types": ["node"]
   },
   "include": [
