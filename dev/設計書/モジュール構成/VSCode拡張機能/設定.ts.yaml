@@ -535,9 +535,9 @@ functions:
     side_effects: URL の先を読む。初めて呼んだときだけ esbuild-wasm を初期化する
     args:
       - name: options
-        type: '{ paths: string[]; extensionPath: string; readFile: (path: string) => Promise<Uint8Array>; fetchText?: (url: string) => Promise<string> }'
+        type: '{ paths: string[]; extensionPath: string; fetchText?: (url: string) => Promise<string> }'
         required: true
-        description: '`ConfigLoad` の `extensions`（絶対パス）・拡張機能のフォルダ（`dist/esbuild.wasm` を読む）・ファイルを読む関数・URL を読む関数'
+        description: '`ConfigLoad` の `extensions`（絶対パス）・拡張機能のフォルダ（`dist/esbuild.wasm` を `node:fs/promises` で読む）・URL を読む関数'
     returns:
       type: 'Promise<Array<{ path: string; code: string } | { path: string; error: string }>>'
       description: '`paths` の順の、束ねたコードか束ねられない理由'

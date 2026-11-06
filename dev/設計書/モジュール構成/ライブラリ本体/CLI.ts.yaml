@@ -629,7 +629,7 @@ functions:
     container: src/bundle-module.ts
     usecase: 共通
     summary: URL かファイルのモジュールを、import する先も含めて渡した esbuild の `build` で 1 つの ES モジュールのコードに束ねる
-    description: '`bundle: true`・`format: esm`・`write: false`・`minify: true`・`target` は対応ブラウザ。`http:`・`https:` の import は、esbuild のプラグインで `fetch` して読み、相対・ルート相対の import はその URL を基準に解く（PoC #35 で確かめた jsDelivr の `+esm` の形）。ファイルは名前空間 `local` のプラグインで `readFile` して読み（esbuild-wasm はファイルシステムを持たず、`file` の名前空間は Windows のパスを拒む）、拡張子が `.ts`・`.mts`・`.cts`・`.tsx` なら `ts`・`tsx` の loader で読む。届かない・束ねられないときは例外を投げずに理由を返す。esbuild を import しないファイルに置き、CLI はネイティブの esbuild の `build` を、VS Code 拡張機能は esbuild-wasm の `build` を渡す'
+    description: '`bundle: true`・`format: esm`・`write: false`・`minify: true`・`target` は対応ブラウザ。`http:`・`https:` の import は、esbuild のプラグインで `fetch` して読み、相対・ルート相対の import はその URL を基準に解く（PoC #35 で確かめた jsDelivr の `+esm` の形）。ファイルは名前空間 `local` のプラグインで `node:fs/promises` の `readFile` で読み（esbuild-wasm はファイルシステムを持たず、`file` の名前空間は Windows のパスを拒む）、拡張子が `.ts`・`.mts`・`.cts`・`.tsx` なら `ts`・`tsx` の loader で読む。届かない・束ねられないときは例外を投げずに理由を返す。esbuild を import しないファイルに置き、CLI はネイティブの esbuild の `build` を、VS Code 拡張機能は esbuild-wasm の `build` を渡す'
     kind: 関数
     scope: public
     is_async: true
@@ -651,10 +651,10 @@ functions:
         description: URL を読む関数（テストで差し替える）
       - name: build
         type: BuildFunction
-        required: false
+        required: true
         default: ネイティブの esbuild の `build`（`src/cli/embed.ts` が渡す）
         passing: injected
-        description: esbuild の `build`。`src/bundle-module.ts` は型だけを import し、実体は呼ぶ側が渡す
+        description: esbuild の `build`。`src/bundle-module.ts` は型だけを import し、CLI（`src/cli/embed.ts`）はネイティブの esbuild の、VS Code 拡張機能は esbuild-wasm の `build` を渡す
     returns:
       type: 'Promise<{ code: string } | { error: string }>'
       description: 束ねたコードか、読めなかった理由
