@@ -8,6 +8,8 @@ import {
   resolve,
   sep,
 } from "node:path";
+import { build } from "esbuild";
+import { bundleModule } from "../bundle-module.ts";
 import { COLOR_THEMES, DEFAULT_COLOR_THEME, resolveConfig } from "../config.ts";
 import { type MdmarkIndex, normalizeIndex } from "../knowledge/index-shape.ts";
 import { normalizePath } from "../knowledge/paths.ts";
@@ -20,7 +22,6 @@ import { copyMedia } from "./assets.ts";
 import { type LoadedConfig, requireConfig } from "./config.ts";
 import { documentTitle, readIndexWithDocuments } from "./documents.ts";
 import {
-  bundleModule,
   bundleViewer,
   cacheFetchText,
   compileHtmlScripts,
@@ -152,6 +153,7 @@ async function bundleSyntax(options: {
       `${folder}${path}`,
       loaded.dir,
       fetchText,
+      build,
     );
     if ("code" in result) {
       return moduleSource(`${folder}${path}`, loaded.dir);
@@ -294,7 +296,7 @@ export async function prepareEmbeds(options: EmbedOptions): Promise<{
     const url = urls[mark] ?? "";
     let pending = bundled.get(url);
     if (!pending) {
-      pending = bundleModule(url, loaded.dir, fetchText);
+      pending = bundleModule(url, loaded.dir, fetchText, build);
       bundled.set(url, pending);
     }
     const result = await pending;
@@ -315,7 +317,7 @@ export async function prepareEmbeds(options: EmbedOptions): Promise<{
   // 設定の拡張を 1 つずつ束ねてみる
   const extensions: string[] = [];
   for (const path of loaded.config.extensions ?? []) {
-    const result = await bundleModule(path, loaded.dir, fetchText);
+    const result = await bundleModule(path, loaded.dir, fetchText, build);
     if ("code" in result) {
       extensions.push(moduleSource(path, loaded.dir));
       if (hasDynamicImport(result.code)) {

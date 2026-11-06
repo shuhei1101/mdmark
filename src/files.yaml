@@ -1,5 +1,19 @@
 # yaml-language-server: $schema=../dev/テンプレート/files.schema.yaml
 files:
+  - path: bundle-module.ts
+    description: モジュール構成『ライブラリ本体 / CLI』のうち「渡した esbuild の build でモジュールを 1 つに束ねる処理と URL を読む関数の控え」を受け持ち、CLI と VS Code 拡張機能が同じ指定で束ねる。束ね方を変えるときに読む。
+    tags: [topic:cli, tool:esbuild]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/CLI.ts
+        type: implements
+  - path: config-files.ts
+    description: モジュール構成『ライブラリ本体 / 設定を重ねて読む』を受け持ち、端末の設定と上のフォルダの設定ファイルを探して重ね、設定の形を検める。設定の読み方を変えるときに読む。
+    tags: [topic:設定]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/設定を重ねて読む.ts
+        type: implements
+      - to: dev/設計書/モジュール構成/ライブラリ本体/CLI.ts
+        type: implements
   - path: cli/alias-schema.ts
     description: モジュール構成『ライブラリ本体 / CLI』のうち「設定の aliases の行の JSON Schema での検査」を受け持つ。CLI のコマンドの振る舞いを変えるときに読む。
     tags: [topic:cli, tool:ajv]
@@ -43,7 +57,7 @@ files:
       - to: dev/設計書/モジュール構成/ライブラリ本体/CLI.ts
         type: implements
   - path: cli/config.ts
-    description: モジュール構成『ライブラリ本体 / CLI』のうち「設定ファイルの探索・読み取り・形の検査」を受け持つ。CLI のコマンドの振る舞いを変えるときに読む。
+    description: モジュール構成『ライブラリ本体 / CLI』のうち「設定ファイルの探索・読み取りと、重ねて読んだ設定を書き出しに使う形にする処理」を受け持つ。CLI のコマンドの振る舞いを変えるときに読む。
     tags: [topic:cli, topic:設定]
     related:
       - to: dev/設計書/モジュール構成/ライブラリ本体/CLI.ts

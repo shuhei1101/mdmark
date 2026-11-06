@@ -1,6 +1,10 @@
 import { readFile, stat } from "node:fs/promises";
+import { homedir } from "node:os";
 import { basename, dirname, join, relative, resolve, sep } from "node:path";
+import { build } from "esbuild";
+import { bundleModule } from "../bundle-module.ts";
 import { COLOR_THEMES, MARK_NAME_PATTERN, resolveConfig } from "../config.ts";
+import { displayConfigPath, relativizeConfigPaths } from "../config-files.ts";
 import {
   checkFlowLayout,
   type FlowLayoutIssue,
@@ -23,11 +27,9 @@ import {
   type CliConfig,
   findConfigFile,
   type LoadedConfig,
-  loadConfig,
-  validateConfig,
+  readLayeredConfig,
 } from "./config.ts";
 import { collectBuildDocuments, readIndexWithDocuments } from "./documents.ts";
-import { bundleModule } from "./embed.ts";
 import { CliError, type CliIo } from "./errors.ts";
 import { changedPathsSince } from "./git.ts";
 import { collectIncludes, includeProblemMessage } from "./includes.ts";
@@ -260,7 +262,7 @@ export async function loadExtensionDirectives(
     if (!(await exists(resolve(loaded.dir, path)))) {
       continue;
     }
-    const bundled = await bundleModule(path, loaded.dir);
+    const bundled = await bundleModule(path, loaded.dir, undefined, build);
     if ("error" in bundled) {
       issues.push({
         file,
@@ -475,15 +477,38 @@ export async function checkIncludes(options: {
     .map(({ line: _line, ...issue }) => issue);
 }
 
-/** 設定ファイルを読み、設定の形・設定が指すファイル・`build` の対象・`checkIndex`・文書の本文の知らない印・取り込み先・図の部品の定義のずれをこの並びで返す。`unknownMarks` が `false` なら、拡張を読み込まず、知らない印を点検しない。`base` があり設定に `index` があれば、`change_together` の直し忘れも確かめる */
+/** 端末の設定と上のフォルダの設定ファイルを重ねて読み、重ねた設定ファイルのそれぞれと端末の設定の形・設定が指すファイル・`build` の対象・`checkIndex`・文書の本文の知らない印・取り込み先・図の部品の定義のずれをこの並びで返す。`unknownMarks` が `false` なら、拡張を読み込まず、知らない印を点検しない。`base` があり設定に `index` があれば、`change_together` の直し忘れも確かめる。`explicit` のときは `path` と端末の設定だけを重ねる */
 export async function collectCheckIssues(
   path: string,
-  options: { unknownMarks?: boolean; base?: string } = {},
+  options: {
+    unknownMarks?: boolean;
+    base?: string;
+    cwd?: string;
+    explicit?: boolean;
+  } = {},
 ): Promise<CheckIssue[]> {
-  const read = await loadConfig(path);
+  const cwd = options.cwd ?? dirname(path);
+  const layered = options.explicit
+    ? await readLayeredConfig(cwd, path, "export", true)
+    : await readLayeredConfig(dirname(path), undefined, "export", true);
+  const shown = (target: string) =>
+    displayConfigPath({ path: target, base: cwd, home: homedir() });
+  if (layered.unreadable) {
+    const { path: target, line, message } = layered.unreadable;
+    throw new CliError(
+      `${shown(target)} の ${line} 行目を YAML として読めません（${message}）。字下げと書き方を直してください。`,
+    );
+  }
+  const shapeIssues = layered.issues.map((issue) => ({
+    ...issue,
+    file: shown(issue.file),
+  }));
   const file = basename(path);
-  const { config, issues: shapeIssues } = validateConfig(read.raw, file);
-  const loaded: LoadedConfig = { path, dir: read.dir, config };
+  const config = relativizeConfigPaths({
+    config: layered.config,
+    dir: dirname(path),
+  });
+  const loaded: LoadedConfig = { path, dir: dirname(path), config };
   const referenced = await checkReferencedFiles(loaded, file);
   const build = await checkBuild(loaded, file);
   const indexIssues = await checkIndexFile(loaded, options.base);
@@ -573,10 +598,11 @@ export async function runCheck(
         key: options.key,
         importCode: importBundledCode,
       })
-    : await collectCheckIssues(
-        await findConfigFile(io.cwd, options.config),
-        options.base === undefined ? {} : { base: options.base },
-      );
+    : await collectCheckIssues(await findConfigFile(io.cwd, options.config), {
+        cwd: io.cwd,
+        explicit: options.config !== undefined,
+        ...(options.base === undefined ? {} : { base: options.base }),
+      });
   for (const issue of issues) {
     const place =
       issue.where === "" ? issue.file : `${issue.file}:${issue.where}`;
