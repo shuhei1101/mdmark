@@ -56,8 +56,9 @@ license: MIT（商用利用可）
 official_url: https://storybook.js.org/
 docs_url: https://storybook.js.org/docs
 verification:
-  state: 未確認
-  detail: react-vite での配信は、実装の「部品のストーリー」の確認で `start_storybook_serve` から開いて確かめる
+  state: 済
+  date: '2026-11-06'
+  detail: '`RENDER_PORT=6181 node scripts/storybook-render.ts` と `RENDER_ORIGIN=http://127.0.0.1:6181 npx storybook dev --ci --no-open --host 127.0.0.1 -p 6106` を立て、`/index.json` に 446 個のストーリーが載った。Playwright で開いた `iframe.html?id=` の 446 個が `#storybook-root` にエラーの表示・`pageerror`・空の描画なしで描かれ、Error Boundary の描画の失敗に落ちたのは、その状態を見せる `vscode-previewstatus--unexpected` だけだった。`vscode-panelscreen--offline`・`--version-missing` は MSW の `HEAD` のハンドラどおりの描けない理由を出した'
 selection:
   candidates: '`@storybook/server-webpack5`・`@storybook/html-vite`・`@storybook/web-components-vite`（いずれも 10.6.2）・`storybook-html-rsbuild` 3.6.1 を比べた。'
   decision: 判定フローチャート『Storybookの描画の方式』の R3（部品を Node で描く描画の口）に合い、AI Monitor の Storybook の配信と同じ形で立てられる。html-vite はフローチャートの結果から外れ、Vitest 5 への対応が途中で TypeScript 7 も未対応と表明されている。web-components-vite は lit が要り、rsbuild は非公式で 3 つ目のバンドラーになる。
