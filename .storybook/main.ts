@@ -10,6 +10,19 @@ if (renderOrigin === undefined) {
   throw new Error("RENDER_ORIGIN が無い（描画の口の origin を渡す）");
 }
 
+/** vscode/ の部品が vscode/node_modules を引かないよう、直下の 1 つにする依存 */
+const WEBVIEW_DEPENDENCIES = [
+  "react",
+  "react-dom",
+  "msw",
+  "lucide-react",
+  "react-error-boundary",
+  "@radix-ui/react-slot",
+  "clsx",
+  "tailwind-merge",
+  "class-variance-authority",
+];
+
 /** Storybook の設定: 部品の HTML のストーリーと、VS Code 拡張機能の React の部品のストーリーを 1 つに並べる */
 const config: StorybookConfig = {
   framework: { name: "@storybook/react-vite", options: {} },
@@ -36,17 +49,17 @@ const config: StorybookConfig = {
         alias: {
           "@": new URL("../vscode/src/webview", import.meta.url).pathname,
         },
-        // vscode/ の部品が vscode/node_modules の React を引かないよう、直下の 1 つにする
-        dedupe: [
-          "react",
-          "react-dom",
-          "msw",
-          "lucide-react",
-          "react-error-boundary",
-          "@radix-ui/react-slot",
-          "clsx",
-          "tailwind-merge",
-          "class-variance-authority",
+        dedupe: WEBVIEW_DEPENDENCIES,
+      },
+      // ストーリーを開く途中で依存を見つけて読み直さないよう、先に束ねる
+      optimizeDeps: {
+        include: [
+          ...WEBVIEW_DEPENDENCIES,
+          "react/jsx-runtime",
+          "react/jsx-dev-runtime",
+          "react-dom/client",
+          "msw/browser",
+          "msw-storybook-addon/csf3",
         ],
       },
     });
