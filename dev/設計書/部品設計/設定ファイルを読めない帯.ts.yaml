@@ -45,11 +45,11 @@ css_properties:
   - name: --background
     syntax: <color>
     default: var(--vscode-editor-background)
-    description: 「設定ファイルを開く」の地の色
+    description: 帯と「設定ファイルを開く」の地の色
   - name: --foreground
     syntax: <color>
     default: var(--vscode-editor-foreground)
-    description: 「設定ファイルを開く」の文字の色
+    description: 帯と「設定ファイルを開く」の文字の色
   - name: --ring
     syntax: <color>
     default: var(--vscode-focusBorder)
