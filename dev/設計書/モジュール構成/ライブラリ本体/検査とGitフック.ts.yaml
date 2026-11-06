@@ -1,0 +1,73 @@
+title: ライブラリ本体 / 検査とGitフック
+lead: リポジトリの直下に置く、ESLint の設定・Git フック（lefthook）・検査の npm scripts。配布物には入らない。
+directory: |-
+  ```tree
+  {リポジトリの直下}/
+  ├── eslint.config.js   # VS Code 拡張機能の Webview（vscode/src/webview/）に当てる ESLint の Flat Config
+  ├── lefthook.yml       # pre-commit・pre-push で実行する検査
+  └── package.json       # 検査の npm scripts（lint:eslint・typecheck:vscode・check）と prepare
+  ```
+
+  整形とリポジトリ全体の lint は今と同じ Biome（`biome check .`）が受け持ち、ESLint は Biome に無い React・アクセシビリティ・import の向き・Tailwind・複雑さの規則だけを Webview に当てる。
+  配布物の対応ブラウザの下限の確認（`eslint-plugin-compat`）は今と同じく `scripts/baseline.ts` が ESLint の `Linter` を直接呼ぶ（この設定を読まない）。
+constants:
+  - name: eslintConfig
+    title: ESLint の設定
+    container: eslint.config.js
+    summary: '`export default` する Flat Config の配列。`files` は `vscode/src/webview/**/*.{ts,tsx}`（ストーリーと `testing/` を含む）'
+    entries:
+      - key: 型の情報
+        value: 'typescript-eslint の `recommendedTypeChecked`、`parserOptions.projectService: true`、`@typescript-eslint/no-deprecated`・`no-non-null-assertion`・`consistent-type-definitions: ["error", "type"]`'
+      - key: React
+        value: '`eslint-plugin-react-hooks` の `recommended-latest`（React Compiler の規則を含む）'
+      - key: アクセシビリティ
+        value: '`eslint-plugin-jsx-a11y` の `recommended` と `tabindex-no-positive`・`no-noninteractive-tabindex`・`interactive-supports-focus`・`click-events-have-key-events`・`no-autofocus`'
+      - key: import の向き
+        value: '`eslint-plugin-boundaries` の `boundaries/element-types`。要素は `app`（`app/**`・`main.tsx`）・`features`（`features/**`）・`shared`（`shared/**`）・`testing`（`testing/**`）で、`app → features → shared` の向きと、ストーリー・テストの道具から `testing` への import だけを許す'
+      - key: Tailwind
+        value: '`eslint-plugin-better-tailwindcss` の `recommended`（`entryPoint` は `vscode/src/webview/shared/styles/panel.css`）と、任意値の class（`[` を含む class）を禁じる `better-tailwindcss/no-restricted-classes`。登録の無い class の検査は、結合テストが探す `mdmark-` で始まる class を除く'
+      - key: 複雑さ
+        value: '`complexity: ["error", 10]`・`max-depth: ["error", 4]`・`max-params: ["error", 3]`・`sonarjs/cognitive-complexity: ["error", 15]`（`eslint-plugin-sonarjs`）'
+      - key: 書き方
+        value: '`func-style: ["error", "expression"]`・`no-restricted-syntax` で `TSEnumDeclaration` を禁じる・`import/no-default-export`（`*.stories.ts`・`*.stories.tsx` は除く）'
+      - key: Biome との重なり
+        value: 整形は Biome が受け持つため、ESLint は整形の規則を持たない（Prettier は入れない）
+    refs:
+      - dev/設計書/外部ライブラリ/eslint#
+      - dev/設計書/外部ライブラリ/biome#
+    status: planned
+  - name: lefthookConfig
+    title: Git フックの設定
+    container: lefthook.yml
+    summary: pre-commit と pre-push で実行する検査。どれも直下の npm scripts か Biome を呼ぶ
+    entries:
+      - key: pre-commit.parallel
+        value: '`true`'
+      - key: pre-commit.commands.biome
+        value: '`glob: "*.{js,ts,tsx,json,css}"`、`run: npx biome check --no-errors-on-unmatched {staged_files}`'
+      - key: pre-commit.commands.eslint
+        value: '`glob: "vscode/src/webview/**/*.{ts,tsx}"`、`run: npm run lint:eslint -- {staged_files}`'
+      - key: pre-commit.commands.typecheck
+        value: '`glob: "*.{ts,tsx}"`、`run: npm run typecheck && npm run typecheck:vscode`'
+      - key: pre-push.commands.unit
+        value: '`run: npm run test:unit`'
+    refs:
+      - dev/設計書/外部ライブラリ/lefthook#
+    status: planned
+  - name: rootScripts
+    title: 検査の npm scripts
+    container: package.json
+    summary: 直下の `package.json` の `scripts` に追加する検査の入口（今の `lint`・`typecheck`・`test:unit` はそのまま）
+    entries:
+      - key: lint:eslint
+        value: '`eslint`（引数が無ければ `eslint.config.js` の `files` の全て）'
+      - key: typecheck:vscode
+        value: '`tsc --noEmit -p vscode`'
+      - key: check
+        value: '`npm run lint && npm run lint:eslint && npm run typecheck && npm run typecheck:vscode`'
+      - key: prepare
+        value: '`lefthook install`（`npm install` の後に Git フックを入れる）'
+    status: planned
+notes:
+  適用の範囲: 複雑さの規則を含む ESLint の規則は Webview（`vscode/src/webview/`）だけに当てる（要件.md の未確定「複雑さの lint を error にする範囲」の案 A）。リポジトリの他の TypeScript へ広げるのは別の Issue で扱う
+  閾値: knowledge の規約『設計原則』が上限の値を持たないため、`sonarjs/cognitive-complexity` は規則の既定（15）、`max-depth` は ESLint の既定（4）、`max-params` は 3（オブジェクトの引数にまとめる今の書き方に合わせる）、`complexity` は 10 にする

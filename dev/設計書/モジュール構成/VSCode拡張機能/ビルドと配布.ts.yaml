@@ -1,12 +1,12 @@
 title: "VS Code 拡張機能 / ビルドと配布"
-lead: 拡張機能と Webview のスクリプトを esbuild で束ね、タグとバージョンを照合して .vsix を GitHub Release に添える。拡張機能ホストで流す結合テストの起動も持つ。配布物には入らない。
+lead: 拡張機能を esbuild、Webview を Vite で書き出し、タグとバージョンを照合して .vsix を GitHub Release に添える。拡張機能ホストで流す結合テストの起動も持つ。配布物には入らない。
 directory: |-
   ```tree
   vscode/
-  ├── .vscodeignore              # .vsix に入れないもの（src/・tests/・scripts/・out/・node_modules/）
-  ├── tsconfig.json              # 型の検査（types: node・vscode・mocha）
+  ├── .vscodeignore              # .vsix に入れないもの（src/・tests/・scripts/・out/・node_modules/・media/test/）
+  ├── tsconfig.json              # 型の検査（types: node・vscode・mocha、jsx: react-jsx）
   ├── scripts/
-  │   ├── build.ts               # dist/extension.cjs・media/preview.js・media/preview.css と、--tests のとき out/test/ を書く
+  │   ├── build.ts               # dist/extension.cjs（esbuild）・media/preview.js・media/preview.css（Vite）と、--tests のとき out/test/ と media/test/axe.js を書く
   │   └── release-check.ts       # タグと package.json の version を照合する
   └── tests/integration/
       ├── run.ts                 # 代役の配信を立て、runTests を 1.141.0 と stable で呼ぶ
@@ -17,7 +17,7 @@ directory: |-
   └── vscode-release.yml         # vscode-v* のタグで .vsix を作り Release に添える
   ```
 
-  `dist/`・`media/preview.js`・`media/preview.css`・`out/`・`.vscode-test/` は git の管理の外（`.gitignore`）にする。
+  `dist/`・`media/`（丸ごと）・`out/`・`.vscode-test/` は git の管理の外（`.gitignore`）にする。Webview の Vite の設定（`vite.config.ts`）は設計書『VS Code 拡張機能 / Webview』にある。
 constants:
   - name: TEST_VSCODE_VERSIONS
     title: 結合テストを流す VS Code
@@ -76,8 +76,8 @@ functions:
     kind: 関数
     container: vscode/scripts/build.ts
     usecase: 拡張機能の配布物を作る
-    summary: 'esbuild で `src/extension.ts` を `dist/extension.cjs`（`format: "cjs"`・`platform: "node"`・`external: ["vscode"]`）、`src/webview/preview.ts` を `media/preview.js`（`format: "esm"`・`platform: "browser"`）、`src/webview/preview.css` を `media/preview.css` に書く'
-    description: '`tests` が `true` のときは、`tests/integration/index.ts` と `*.test.ts` も `out/test/*.mjs`（`format: "esm"`・`platform: "node"`・`external: ["vscode", "mocha"]`）に書く。ファイルの末尾で `import.meta.main` が `true` のときだけ、`process.argv` に `--tests` があるかを渡して呼ぶ'
+    summary: 'esbuild で `src/extension.ts` を `dist/extension.cjs`（`format: "cjs"`・`platform: "node"`・`external: ["vscode"]`）に書き、Vite の `build()` で `vite.config.ts` のとおり Webview を `media/preview.js`・`media/preview.css` に書く'
+    description: '`tests` が `true` のときは、`tests/integration/index.ts` と `*.test.ts` も `out/test/*.mjs`（`format: "esm"`・`platform: "node"`・`external: ["vscode", "mocha"]`）に書き、`axe-core` の `axe.min.js` を `media/test/axe.js` に複写する（Webview が `axe` を受けたときだけ読む。本番の `preview.js` には束ねない）。ファイルの末尾で `import.meta.main` が `true` のときだけ、`process.argv` に `--tests` があるかを渡して呼ぶ'
     scope: public
     is_async: true
     side_effects: '`dist/`・`media/`・`out/` に書く'
@@ -91,16 +91,25 @@ functions:
       description: 書き終えたら解決する
     exceptions:
       - name: Error
-        condition: esbuild が失敗した（投げ直す。`main` では終了コード 1）
+        condition: esbuild か Vite が失敗した（投げ直す。`main` では終了コード 1）
     unit_tests:
       - name: test_build_extension
         case: 正常
-        summary: 拡張機能と Webview のスクリプトを束ね、vscode を束ねない
-        condition: 作業ツリーの `vscode/` を、`node_modules/`・`.vscode-test/`・`out/`・`dist/`・`media/preview.js`・`media/preview.css` を除外して一時フォルダに複製し、`tests` が `false` で呼ぶ
+        summary: 拡張機能と Webview を書き出し、vscode と axe を束ねない
+        condition: 作業ツリーの `vscode/` を、`node_modules/`・`.vscode-test/`・`out/`・`dist/`・`media/` を除外して一時フォルダに複製し（`node_modules/` はシンボリックリンク）、`tests` が `false` で呼ぶ
         mock: なし（一時フォルダ）
-        expected: '`dist/extension.cjs` が `require("vscode")` を含み、`media/preview.js` と `media/preview.css` があり、`out/` が無い'
+        expected: '`dist/extension.cjs` が `require("vscode")` を含み、`media/` の JS が `preview.js` の 1 つだけで `axe-core` を含まず、`media/preview.css` があり、`out/` と `media/test/` が無い'
+      - name: test_build_extension_when_tests
+        case: 正常
+        summary: 結合テストのビルドでは axe を media/test に複写する
+        condition: 同じ複製で `tests` が `true` で呼ぶ
+        mock: なし（一時フォルダ）
+        expected: '`out/test/index.mjs` と `media/test/axe.js` があり、`media/preview.js` が `axe-core` を含まない'
     refs:
       - dev/設計書/外部ライブラリ/esbuild#
+      - dev/設計書/外部ライブラリ/vite#
+      - dev/設計書/外部ライブラリ/axe-core#
+      - dev/設計書/モジュール構成/VSCode拡張機能/Webview.ts#constants[viteConfig]
     status: planned
   - name: checkReleaseTag
     title: タグとバージョンを照合する

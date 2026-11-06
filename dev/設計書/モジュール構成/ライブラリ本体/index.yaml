@@ -34,3 +34,5 @@ items:
     summary: 差分の取り出し元の型と検査・行と語の比較・差分を開く UI とミニマップ・差分の部品の HTML
   - page: ビューとコメント.ts.yaml
     summary: ビューとコメントの部品を別の配布ファイルに分け、使うときだけ読む処理と、mountView・mountComments・部品の HTML
+  - page: 検査とGitフック.ts.yaml
+    summary: Webview に当てる ESLint の設定・lefthook の Git フック・検査の npm scripts
