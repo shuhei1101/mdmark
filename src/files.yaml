@@ -481,7 +481,7 @@ files:
     related:
       - to: dev/設計書/モジュール構成/ライブラリ本体/ビューとコメント.ts
         type: implements
-  - path: parts/backlinks.stories.yaml
+  - path: parts/backlinks.stories.ts
     description: 部品設計『関連文書の一覧』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに読む。
     tags: [topic:ストーリー, tool:storybook, topic:部品, topic:被参照]
     related:
@@ -495,7 +495,7 @@ files:
         type: implements
       - to: dev/設計書/部品設計/関連文書の一覧.ts
         type: implements
-  - path: parts/badge.stories.yaml
+  - path: parts/badge.stories.ts
     description: 部品設計『バッジ』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに読む。
     tags: [topic:ストーリー, tool:storybook, topic:部品, topic:バッジ]
     related:
@@ -509,7 +509,7 @@ files:
         type: implements
       - to: dev/設計書/部品設計/バッジ.ts
         type: implements
-  - path: parts/callout.stories.yaml
+  - path: parts/callout.stories.ts
     description: 部品設計『注意書き』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに読む。
     tags: [topic:ストーリー, tool:storybook, topic:部品, topic:注意書き]
     related:
@@ -523,7 +523,7 @@ files:
         type: implements
       - to: dev/設計書/部品設計/注意書き.ts
         type: implements
-  - path: parts/card.stories.yaml
+  - path: parts/card.stories.ts
     description: 部品設計『カード』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに読む。
     tags: [topic:ストーリー, tool:storybook, topic:部品, topic:カード]
     related:
@@ -537,13 +537,13 @@ files:
         type: implements
       - to: dev/設計書/部品設計/カード.ts
         type: implements
-  - path: parts/chart.stories.yaml
+  - path: parts/chart.stories.ts
     description: 部品設計『グラフ』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに読む。
     tags: [topic:ストーリー, tool:storybook, topic:部品, topic:図]
     related:
       - to: dev/設計書/部品設計/グラフ.ts
         type: implements
-  - path: parts/code-block.stories.yaml
+  - path: parts/code-block.stories.ts
     description: 部品設計『コードブロック』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに読む。
     tags: [topic:ストーリー, tool:storybook, topic:部品]
     related:
@@ -569,31 +569,31 @@ files:
     related:
       - to: dev/設計書/モジュール構成/ライブラリ本体/部品.ts
         type: implements
-  - path: parts/comment-bubble.stories.yaml
+  - path: parts/comment-bubble.stories.ts
     description: 部品設計『コメントの吹き出し』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに読む。
     tags: [topic:ストーリー, tool:storybook, topic:部品, topic:コメント]
     related:
       - to: dev/設計書/部品設計/コメントの吹き出し.ts
         type: implements
-  - path: parts/comment-button.stories.yaml
+  - path: parts/comment-button.stories.ts
     description: 部品設計『コメントのボタン』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに読む。
     tags: [topic:ストーリー, tool:storybook, topic:部品, topic:コメント]
     related:
       - to: dev/設計書/部品設計/コメントのボタン.ts
         type: implements
-  - path: parts/comment-form.stories.yaml
+  - path: parts/comment-form.stories.ts
     description: 部品設計『コメントの入力欄』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに読む。
     tags: [topic:ストーリー, tool:storybook, topic:部品, topic:コメント]
     related:
       - to: dev/設計書/部品設計/コメントの入力欄.ts
         type: implements
-  - path: parts/comment-mark.stories.yaml
+  - path: parts/comment-mark.stories.ts
     description: 部品設計『コメントの印』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに読む。
     tags: [topic:ストーリー, tool:storybook, topic:部品, topic:コメント]
     related:
       - to: dev/設計書/部品設計/コメントの印.ts
         type: implements
-  - path: parts/comment-orphans.stories.yaml
+  - path: parts/comment-orphans.stories.ts
     description: 部品設計『箇所が見つからないコメントの一覧』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに読む。
     tags: [topic:ストーリー, tool:storybook, topic:部品, topic:コメント]
     related:
@@ -615,19 +615,19 @@ files:
         type: implements
       - to: dev/設計書/部品設計/箇所が見つからないコメントの一覧.ts
         type: implements
-  - path: parts/details-range.stories.yaml
+  - path: parts/details-range.stories.ts
     description: 部品設計『detailsの範囲』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに読む。
     tags: [topic:ストーリー, tool:storybook, topic:部品]
     related:
       - to: dev/設計書/部品設計/detailsの範囲.ts
         type: implements
-  - path: parts/diagram-frame.stories.yaml
+  - path: parts/diagram-frame.stories.ts
     description: 部品設計『図の枠』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに読む。
     tags: [topic:ストーリー, tool:storybook, topic:部品, topic:図]
     related:
       - to: dev/設計書/部品設計/図の枠.ts
         type: implements
-  - path: parts/diagram-tooltip.stories.yaml
+  - path: parts/diagram-tooltip.stories.ts
     description: 部品設計『図のツールチップ』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに読む。
     tags: [topic:ストーリー, tool:storybook, topic:部品, topic:図]
     related:
@@ -651,7 +651,7 @@ files:
         type: implements
       - to: dev/設計書/部品設計/図の枠.ts
         type: implements
-  - path: parts/diff-blocks.stories.yaml
+  - path: parts/diff-blocks.stories.ts
     description: 部品設計『差分のブロック』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに読む。
     tags: [topic:ストーリー, tool:storybook, topic:部品, topic:差分]
     related:
@@ -665,7 +665,7 @@ files:
         type: implements
       - to: dev/設計書/部品設計/差分のブロック.ts
         type: implements
-  - path: parts/diff-html.stories.yaml
+  - path: parts/diff-html.stories.ts
     description: 部品設計『埋め込んだHTML の差分』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに読む。
     tags: [topic:ストーリー, tool:storybook, topic:部品, tool:html, topic:差分]
     related:
@@ -679,7 +679,7 @@ files:
         type: implements
       - to: dev/設計書/部品設計/埋め込んだHTMLの差分.ts
         type: implements
-  - path: parts/diff-lines.stories.yaml
+  - path: parts/diff-lines.stories.ts
     description: 部品設計『差分の行』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに読む。
     tags: [topic:ストーリー, tool:storybook, topic:部品, topic:差分]
     related:
@@ -693,7 +693,7 @@ files:
         type: implements
       - to: dev/設計書/部品設計/差分の行.ts
         type: implements
-  - path: parts/diff-message.stories.yaml
+  - path: parts/diff-message.stories.ts
     description: 部品設計『差分の状態の文』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに読む。
     tags: [topic:ストーリー, tool:storybook, topic:部品, topic:差分]
     related:
@@ -707,7 +707,7 @@ files:
         type: implements
       - to: dev/設計書/部品設計/差分の状態の文.ts
         type: implements
-  - path: parts/diff-minimap.stories.yaml
+  - path: parts/diff-minimap.stories.ts
     description: 部品設計『ミニマップ』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに読む。
     tags: [topic:ストーリー, tool:storybook, topic:部品, topic:差分]
     related:
@@ -721,7 +721,7 @@ files:
         type: implements
       - to: dev/設計書/部品設計/ミニマップ.ts
         type: implements
-  - path: parts/diff-toggle.stories.yaml
+  - path: parts/diff-toggle.stories.ts
     description: 部品設計『差分を開くボタン』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに読む。
     tags: [topic:ストーリー, tool:storybook, topic:部品, topic:差分]
     related:
@@ -735,7 +735,7 @@ files:
         type: implements
       - to: dev/設計書/部品設計/差分を開くボタン.ts
         type: implements
-  - path: parts/doc-list.stories.yaml
+  - path: parts/doc-list.stories.ts
     description: 部品設計『文書の一覧』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに読む。
     tags: [topic:ストーリー, tool:storybook, topic:部品]
     related:
@@ -749,7 +749,7 @@ files:
         type: implements
       - to: dev/設計書/部品設計/文書の一覧.ts
         type: implements
-  - path: parts/embed.stories.yaml
+  - path: parts/embed.stories.ts
     description: 部品設計『読み込み中の枠』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに読む。
     tags: [topic:ストーリー, tool:storybook, topic:部品, tool:html]
     related:
@@ -763,7 +763,7 @@ files:
         type: implements
       - to: dev/設計書/部品設計/読み込み中の枠.ts
         type: implements
-  - path: parts/embedded-html.stories.yaml
+  - path: parts/embedded-html.stories.ts
     description: 部品設計『埋め込んだHTML』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに読む。
     tags: [topic:ストーリー, tool:storybook, topic:部品, tool:html]
     related:
@@ -783,7 +783,7 @@ files:
     related:
       - to: dev/設計書/モジュール構成/ライブラリ本体/部品.ts
         type: implements
-  - path: parts/figure.stories.yaml
+  - path: parts/figure.stories.ts
     description: 部品設計『図表の番号』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに読む。
     tags: [topic:ストーリー, tool:storybook, topic:部品, topic:図表の番号]
     related:
@@ -797,7 +797,7 @@ files:
         type: implements
       - to: dev/設計書/部品設計/図表の番号.ts
         type: implements
-  - path: parts/er-diagram.stories.yaml
+  - path: parts/er-diagram.stories.ts
     description: 部品設計『ER 図』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに読む。
     tags: [topic:ストーリー, tool:storybook, topic:部品, topic:図]
     related:
@@ -811,13 +811,13 @@ files:
         type: implements
       - to: dev/設計書/部品設計/ER図.ts
         type: implements
-  - path: parts/flow-diagram.stories.yaml
+  - path: parts/flow-diagram.stories.ts
     description: 部品設計『フロー図』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに読む。
     tags: [topic:ストーリー, tool:storybook, topic:部品, topic:図]
     related:
       - to: dev/設計書/部品設計/フロー図.ts
         type: implements
-  - path: parts/footnote-ref.stories.yaml
+  - path: parts/footnote-ref.stories.ts
     description: 部品設計『脚注の番号』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに読む。
     tags: [topic:ストーリー, tool:storybook, topic:部品, topic:脚注]
     related:
@@ -833,13 +833,13 @@ files:
         type: implements
       - to: dev/設計書/部品設計/脚注の一覧.ts
         type: implements
-  - path: parts/footnotes.stories.yaml
+  - path: parts/footnotes.stories.ts
     description: 部品設計『脚注の一覧』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに読む。
     tags: [topic:ストーリー, tool:storybook, topic:部品, topic:脚注]
     related:
       - to: dev/設計書/部品設計/脚注の一覧.ts
         type: implements
-  - path: parts/gallery.stories.yaml
+  - path: parts/gallery.stories.ts
     description: 部品設計『ギャラリー』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに読む。
     tags: [topic:ストーリー, tool:storybook, topic:部品, topic:ギャラリー]
     related:
@@ -853,7 +853,7 @@ files:
         type: implements
       - to: dev/設計書/部品設計/ギャラリー.ts
         type: implements
-  - path: parts/gif.stories.yaml
+  - path: parts/gif.stories.ts
     description: 部品設計『GIF』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに読む。
     tags: [topic:ストーリー, tool:storybook, topic:部品, topic:gif]
     related:
@@ -867,7 +867,7 @@ files:
         type: implements
       - to: dev/設計書/部品設計/GIF.ts
         type: implements
-  - path: parts/highlight.stories.yaml
+  - path: parts/highlight.stories.ts
     description: 部品設計『蛍光ペン』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに読む。
     tags: [topic:ストーリー, tool:storybook, topic:部品]
     related:
@@ -881,7 +881,7 @@ files:
         type: implements
       - to: dev/設計書/部品設計/蛍光ペン.ts
         type: implements
-  - path: parts/hint.stories.yaml
+  - path: parts/hint.stories.ts
     description: 部品設計『ヒント』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに読む。
     tags: [topic:ストーリー, tool:storybook, topic:部品]
     related:
@@ -907,7 +907,7 @@ files:
     related:
       - to: dev/設計書/モジュール構成/ライブラリ本体/図.ts
         type: implements
-  - path: parts/image-figure.stories.yaml
+  - path: parts/image-figure.stories.ts
     description: 部品設計『画像の図』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに読む。
     tags: [topic:ストーリー, tool:storybook, topic:部品, topic:画像]
     related:
@@ -921,7 +921,7 @@ files:
         type: implements
       - to: dev/設計書/部品設計/画像の図.ts
         type: implements
-  - path: parts/inline-icon.stories.yaml
+  - path: parts/inline-icon.stories.ts
     description: 部品設計『アイコン』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに読む。
     tags: [topic:ストーリー, tool:storybook, topic:部品, topic:アイコン]
     related:
@@ -935,7 +935,7 @@ files:
         type: implements
       - to: dev/設計書/部品設計/アイコン.ts
         type: implements
-  - path: parts/kbd.stories.yaml
+  - path: parts/kbd.stories.ts
     description: 部品設計『キー』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに読む。
     tags: [topic:ストーリー, tool:storybook, topic:部品]
     related:
@@ -949,7 +949,7 @@ files:
         type: implements
       - to: dev/設計書/部品設計/キー.ts
         type: implements
-  - path: parts/layout-columns.stories.yaml
+  - path: parts/layout-columns.stories.ts
     description: 部品設計『段組み』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに読む。
     tags: [topic:ストーリー, tool:storybook, topic:部品]
     related:
@@ -963,7 +963,7 @@ files:
         type: implements
       - to: dev/設計書/部品設計/段組み.ts
         type: implements
-  - path: parts/lightbox.stories.yaml
+  - path: parts/lightbox.stories.ts
     description: 部品設計『ライトボックス』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに読む。
     tags: [topic:ストーリー, tool:storybook, topic:部品, topic:ライトボックス]
     related:
@@ -977,7 +977,7 @@ files:
         type: implements
       - to: dev/設計書/部品設計/ライトボックス.ts
         type: implements
-  - path: parts/media.stories.yaml
+  - path: parts/media.stories.ts
     description: 部品設計『動画と音声』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに読む。
     tags: [topic:ストーリー, tool:storybook, topic:部品, topic:動画]
     related:
@@ -991,7 +991,7 @@ files:
         type: implements
       - to: dev/設計書/部品設計/動画と音声.ts
         type: implements
-  - path: parts/notice.stories.yaml
+  - path: parts/notice.stories.ts
     description: 部品設計『知らせの枠』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに読む。
     tags: [topic:ストーリー, tool:storybook, topic:部品]
     related:
@@ -1011,7 +1011,7 @@ files:
     related:
       - to: dev/設計書/モジュール構成/ライブラリ本体/部品.ts
         type: implements
-  - path: parts/param.stories.yaml
+  - path: parts/param.stories.ts
     description: 部品設計『操作できる部品』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに読む。
     tags: [topic:ストーリー, tool:storybook, topic:部品, topic:図]
     related:
@@ -1025,7 +1025,7 @@ files:
         type: implements
       - to: dev/設計書/部品設計/操作できる部品.ts
         type: implements
-  - path: parts/revision-picker.stories.yaml
+  - path: parts/revision-picker.stories.ts
     description: 部品設計『リビジョンの選択』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに読む。
     tags: [topic:ストーリー, tool:storybook, topic:部品]
     related:
@@ -1039,7 +1039,7 @@ files:
         type: implements
       - to: dev/設計書/部品設計/リビジョンの選択.ts
         type: implements
-  - path: parts/row-detail.stories.yaml
+  - path: parts/row-detail.stories.ts
     description: 部品設計『行の詳細』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに読む。
     tags: [topic:ストーリー, tool:storybook, topic:部品]
     related:
@@ -1053,7 +1053,7 @@ files:
         type: implements
       - to: dev/設計書/部品設計/行の詳細.ts
         type: implements
-  - path: parts/section.stories.yaml
+  - path: parts/section.stories.ts
     description: 部品設計『節』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに読む。
     tags: [topic:ストーリー, tool:storybook, topic:部品, topic:セクション]
     related:
@@ -1067,13 +1067,13 @@ files:
         type: implements
       - to: dev/設計書/部品設計/節.ts
         type: implements
-  - path: parts/sequence-diagram.stories.yaml
+  - path: parts/sequence-diagram.stories.ts
     description: 部品設計『シーケンス図』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに読む。
     tags: [topic:ストーリー, tool:storybook, topic:部品, topic:図]
     related:
       - to: dev/設計書/部品設計/シーケンス図.ts
         type: implements
-  - path: parts/side-toc.stories.yaml
+  - path: parts/side-toc.stories.ts
     description: 部品設計『右側の目次』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに読む。
     tags: [topic:ストーリー, tool:storybook, topic:部品, topic:目次]
     related:
@@ -1087,7 +1087,7 @@ files:
         type: implements
       - to: dev/設計書/部品設計/右側の目次.ts
         type: implements
-  - path: parts/steps.stories.yaml
+  - path: parts/steps.stories.ts
     description: 部品設計『ステップ』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに読む。
     tags: [topic:ストーリー, tool:storybook, topic:部品, topic:ステップ]
     related:
@@ -1101,7 +1101,7 @@ files:
         type: implements
       - to: dev/設計書/部品設計/ステップ.ts
         type: implements
-  - path: parts/syntax-warning.stories.yaml
+  - path: parts/syntax-warning.stories.ts
     description: 部品設計『書き方の警告』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに読む。
     tags: [topic:ストーリー, tool:storybook, topic:部品]
     related:
@@ -1115,7 +1115,7 @@ files:
         type: implements
       - to: dev/設計書/部品設計/書き方の警告.ts
         type: implements
-  - path: parts/table.stories.yaml
+  - path: parts/table.stories.ts
     description: 部品設計『表』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに読む。
     tags: [topic:ストーリー, tool:storybook, topic:部品, topic:テーブル]
     related:
@@ -1129,7 +1129,7 @@ files:
         type: implements
       - to: dev/設計書/部品設計/表.ts
         type: implements
-  - path: parts/tabs.stories.yaml
+  - path: parts/tabs.stories.ts
     description: 部品設計『タブ』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに読む。
     tags: [topic:ストーリー, tool:storybook, topic:部品, topic:タブ]
     related:
@@ -1143,7 +1143,7 @@ files:
         type: implements
       - to: dev/設計書/部品設計/タブ.ts
         type: implements
-  - path: parts/term-tip.stories.yaml
+  - path: parts/term-tip.stories.ts
     description: 部品設計『用語のツールチップ』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに読む。
     tags: [topic:ストーリー, tool:storybook, topic:部品, topic:用語]
     related:
@@ -1157,7 +1157,7 @@ files:
         type: implements
       - to: dev/設計書/部品設計/用語のツールチップ.ts
         type: implements
-  - path: parts/text-color.stories.yaml
+  - path: parts/text-color.stories.ts
     description: 部品設計『文字の色』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに読む。
     tags: [topic:ストーリー, tool:storybook, topic:部品, topic:色]
     related:
@@ -1171,7 +1171,7 @@ files:
         type: implements
       - to: dev/設計書/部品設計/文字の色.ts
         type: implements
-  - path: parts/toc.stories.yaml
+  - path: parts/toc.stories.ts
     description: 部品設計『目次』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに読む。
     tags: [topic:ストーリー, tool:storybook, topic:部品, topic:目次]
     related:
@@ -1185,7 +1185,7 @@ files:
         type: implements
       - to: dev/設計書/部品設計/目次.ts
         type: implements
-  - path: parts/tree.stories.yaml
+  - path: parts/tree.stories.ts
     description: 部品設計『ファイルツリー』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに読む。
     tags: [topic:ストーリー, tool:storybook, topic:部品, topic:ツリー]
     related:
@@ -1199,7 +1199,7 @@ files:
         type: implements
       - to: dev/設計書/部品設計/ファイルツリー.ts
         type: implements
-  - path: parts/view.stories.yaml
+  - path: parts/view.stories.ts
     description: 部品設計『ビュー』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに読む。
     tags: [topic:ストーリー, tool:storybook, topic:部品, topic:ビュー]
     related:
@@ -1213,7 +1213,7 @@ files:
         type: implements
       - to: dev/設計書/部品設計/ビュー.ts
         type: implements
-  - path: parts/wide.stories.yaml
+  - path: parts/wide.stories.ts
     description: 部品設計『wideの範囲』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに読む。
     tags: [topic:ストーリー, tool:storybook, topic:部品]
     related:
@@ -1574,4 +1574,16 @@ files:
     tags: [topic:ビュー, topic:コメント]
     related:
       - to: dev/設計書/モジュール構成/ライブラリ本体/ビューとコメント.ts
+        type: implements
+  - path: parts/back-to-top.stories.ts
+    description: 部品設計『先頭へ戻るボタン』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに読む。
+    tags: [topic:ストーリー, tool:storybook, topic:部品]
+    related:
+      - to: dev/設計書/部品設計/先頭へ戻るボタン.ts
+        type: implements
+  - path: parts/comment-marker.stories.ts
+    description: 部品設計『余白のマーカー』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに読む。
+    tags: [topic:ストーリー, tool:storybook, topic:部品]
+    related:
+      - to: dev/設計書/部品設計/余白のマーカー.ts
         type: implements
