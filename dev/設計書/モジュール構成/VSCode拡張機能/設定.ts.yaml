@@ -123,7 +123,7 @@ constants:
   - name: CONFIG_TEMPLATE
     title: 設定ファイルの雛形
     container: vscode/src/config.ts
-    summary: '`mdmark.openConfig` が「作る」で書く YAML。キーを書かず、書き方をコメントで示す'
+    summary: '`mdmark.openConfig` が「作成」で書く YAML。キーを書かず、書き方をコメントで示す'
     description: 値は画面設計の「雛形の中身」の YAML をそのまま持つ
     refs:
       - dev/設計書/画面設計/VSCodeのコマンドと通知.ts#elements[雛形の中身]
@@ -415,7 +415,7 @@ functions:
     summary: '`mdmark.openConfig` の本体。設定ファイルをエディタで開き、無ければ雛形を作るか尋ねる'
     scope: public
     is_async: true
-    side_effects: 「作る」を選んだときだけ、フォルダを作って `CONFIG_TEMPLATE` を書く
+    side_effects: 「作成」を選んだときだけ、フォルダを作って `CONFIG_TEMPLATE` を書く
     args:
       - name: options
         type: '{ configPath: string; baseDir: string; log: Logger }'
@@ -427,8 +427,8 @@ functions:
     process: |-
       1. 設定ファイルの場所を決める（設定ファイルの場所を決める）
       2. ファイルがあれば `window.showTextDocument` で開いて終わる
-      3. 無ければ `window.showInformationMessage` を `{ modal: true, detail }` とボタン「作る」で出す（文言は画面設計の「雛形を作るかの確認」）
-         - 「作る」以外（閉じた・キャンセル）の場合、何も書かずに終わる
+      3. 無ければ `window.showInformationMessage` を `{ modal: true, detail }` とボタン「作成」で出す（文言は画面設計の「雛形を作るかの確認」）
+         - 「作成」以外（閉じた・キャンセル）の場合、何も書かずに終わる
       4. フォルダが無ければ作り、`CONFIG_TEMPLATE` を書いて `window.showTextDocument` で開く。書く前にファイルができていたら書き換えずに開く
          - フォルダを作れない・書けない場合、`window.showErrorMessage` で OS の誤りの文を出して終わる
            - `[error]` 設定ファイルの雛形を書けない（パス・誤り）

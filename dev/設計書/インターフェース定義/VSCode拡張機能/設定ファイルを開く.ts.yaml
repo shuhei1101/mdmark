@@ -26,7 +26,7 @@ flows:
       - name: 設定ファイルの無いワークスペース
         description: '`guide.md` だけを置いたフォルダ'
       - name: Mock
-        description: 確認のダイアログの代役が「作る」を返す
+        description: 確認のダイアログの代役が「作成」を返す
     flow: |-
       sequenceDiagram
         participant U as 文書を書く人
@@ -84,7 +84,7 @@ constraints:
   - item: 設定ファイルの場所
     constraint: プレビューを描き直す.ts の制約「設定ファイルの場所」で見つけた最も近い `mdmark.config.yaml` を開く。設定ファイルを読めない帯の「設定ファイルを開く」から呼んだときは、帯に出した読めないファイル（端末の設定を含む）を開く。最も近い `mdmark.config.yaml` が無ければ、`mdmark.configPath`（空のときは `mdmark.config.yaml`）を Markdown を含むワークスペースのフォルダから解決した場所に雛形を作るかを尋ねる
   - item: 雛形を作るかの確認
-    constraint: '`window.showInformationMessage` を `{ modal: true }` で出し、「作る」を選んだときだけ作る。文言は画面設計で決める'
+    constraint: '`window.showInformationMessage` を `{ modal: true }` で出し、「作成」を選んだときだけ作る。文言は画面設計で決める'
   - item: 雛形の中身
     constraint: '`features`・`libraries`・`theme`・`extensions` の書き方と、上のフォルダの設定・端末の設定と重ねて読むことをコメントで示し、キーは書かない YAML（中身は画面設計で決める）。フォルダが無ければ作る'
     notes: キーを書かないため、作った直後のプレビューは雛形を作る前と同じに描く
