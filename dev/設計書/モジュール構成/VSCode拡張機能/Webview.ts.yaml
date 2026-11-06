@@ -1683,3 +1683,22 @@ notes:
   ストーリー: '`panel-screen.stories.tsx` は画面の本体のストーリーで、モックの場面（`Document`・`Loading`・`Offline`・`VersionMissing`・`VersionUndecidable`・`DiffUnsupported`・`ConfigError`・`MediaError`）を持つ。`load` はストーリーの引数で代役（`Document` などはリポジトリの `dist/index.js` を読む関数）を渡し、読めなかった配布物の `HEAD` は MSW のハンドラで答える。拡張機能から受けるメッセージは `createFakeVsCodeApi` が `ready` の後に送る。`--vscode-*` の値はデコレーターが `:root` に与える（Light Modern・Dark Modern）'
   React の外の DOM: 描く先の要素の子は mdmark だけが書き換え、React は子を描かない。配色の class は描く先を包む要素（React の木を描く要素）に `DocumentView` が付ける
   テストの置き場所: '単体テストは今と同じく `tests/unit/vscode/src/webview/` の下に、`src/webview/` からの相対パスと同じ場所に置く（設計書の `test_files` が `tests/` から始まるため。knowledge の規約『フォルダ構成』の対象の横に置く決まりから外れる）。DOM と React を使うテストは `*.browser.test.ts(x)` にし、Vitest のブラウザ（Chromium）で Testing Library と userEvent を使う（スクロールの位置と要素の高さを測るため jsdom は使わない）。MSW は公式の Vitest Browser Mode の構成で、`msw/browser` の `setupWorker(...handlers)` を `test.extend` のフィクスチャで `worker.start()`・`worker.resetHandlers()`・`worker.stop()` し、直下の `vitest.config.ts` の `unit-browser` のプロジェクトに `publicDir: ".storybook/public"` を指定して Storybook と同じ `mockServiceWorker.js` を配信する'
+test_files:
+  - tests/unit/vscode/src/webview/main.browser.test.tsx
+  - tests/unit/vscode/src/webview/app/app.browser.test.tsx
+  - tests/unit/vscode/src/webview/features/preview/panel/panel-screen.browser.test.tsx
+  - tests/unit/vscode/src/webview/features/preview/panel/boot.browser.test.ts
+  - tests/unit/vscode/src/webview/features/preview/panel/document-view.browser.test.ts
+  - tests/unit/vscode/src/webview/features/preview/panel/load-mdmark.test.ts
+  - tests/unit/vscode/src/webview/features/preview/panel/diff-source.test.ts
+  - tests/unit/vscode/src/webview/features/preview/panel/scroll.browser.test.ts
+  - tests/unit/vscode/src/webview/features/preview/panel/assets.browser.test.ts
+  - tests/unit/vscode/src/webview/features/preview/panel/hooks/use-document-view.browser.test.tsx
+  - tests/unit/vscode/src/webview/features/preview/panel/hooks/use-host-messages.browser.test.tsx
+  - tests/unit/vscode/src/webview/features/preview/panel/hooks/use-load-mdmark.browser.test.tsx
+  - tests/unit/vscode/src/webview/features/preview/panel/hooks/use-scroll-sync.browser.test.tsx
+  - tests/unit/vscode/src/webview/features/preview/panel/hooks/use-link-clicks.browser.test.tsx
+  - tests/unit/vscode/src/webview/shared/adapters/vscode-api.test.ts
+  - tests/unit/vscode/src/webview/shared/components/preview-status.browser.test.tsx
+  - tests/unit/vscode/src/webview/shared/components/config-band.browser.test.tsx
+  - tests/unit/vscode/src/webview/shared/lib/media-error.test.ts
