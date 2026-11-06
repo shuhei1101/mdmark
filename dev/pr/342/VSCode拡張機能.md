@@ -41,7 +41,7 @@
 | スタイル | Tailwind v4 のトークンを `:root` の 3 ティアで持ち、`@theme inline` で割り当て、標準のパレットを削除する。VS Code の色（`--vscode-*`）を意味のトークンに割り当てる | 任意値は lint で禁止する |
 | 配色の固定 | `mdmark.preview.theme` の class（`mdmark-theme-light`・`mdmark-theme-dark`）を今と同じ要素に付ける | 描いた文書の配色は変えない |
 | CSP | `script-src` と `style-src` は今の nonce・Webview のリソースの範囲から広げない。Vite の出力に inline のスクリプト・スタイルを出さない | PoC 検証で確認する |
-| メッセージ | `HostMessage`・`WebviewMessage`・`InspectedElement` は変えない | `vscode/src/messages.ts` |
+| メッセージ | `HostMessage`・`WebviewMessage`・`InspectedElement` は変えない | `vscode/src/messages.ts`。結合テストの axe のため、テストのときだけの `axe`・`axed` を加える |
 | モック | Webview の部品と画面の状態を Storybook（`@storybook/react-vite`）のストーリーにし、拡張機能から受けるメッセージはデコレーターで、jsDelivr の配布物とタグ一覧は MSW で差し込む | `dev/mock/pages/vscode-preview/` の扱いはモック作成で決める |
 | lint | ESLint の Flat Config で、Webview の `.ts`・`.tsx` に typescript-eslint・react-hooks・jsx-a11y・boundaries・better-tailwindcss・複雑さの規則を error で適用する | Biome との受け持ちはモジュール構成設計で決める |
 | アクセシビリティ | Storybook の `addon-a11y` と、結合テストで Playwright の axe を実行し、違反を 0 件にする | VS Code の拡張機能ホストの中で axe を実行できるかは PoC 検証で確認する |
@@ -60,11 +60,15 @@
 
 規約の直下に配置する決まりはフロントエンドとバックエンドが 1 つのリポジトリに入る構成を前提にしており、mdmark の拡張機能は `vscode/` に独立した `package.json` と配布物を持つ。
 
+決定: A（モジュール構成設計で確定。Storybook は直下の設定のまま、`resolve.alias` の `@` を `vscode/src/webview` に向ける）
+
 ## 設計書の確定コミット
 
 | 工程 | 範囲 | 補足 |
 | --- | --- | --- |
 | 部品設計・画面設計 | `502d1f0..62d26c4` | - |
+| 部品設計 | `3bf5686..bf28b6b` | レビューの任意の指摘の修正 |
+| モジュール構成設計 | `bf28b6b..4a6ecbf` | 部品設計の状態 `Unexpected` の追加と、インターフェース定義のテストのときのメッセージの追加を含む |
 
 ## PoC 結果
 
