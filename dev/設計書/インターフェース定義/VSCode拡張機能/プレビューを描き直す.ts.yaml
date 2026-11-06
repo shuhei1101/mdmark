@@ -299,23 +299,23 @@ exceptions:
     notes: 例外を投げず、前に読めた設定（無ければ設定なし）で描いたまま、`configError` で読めない行を知らせる
 constraints:
   - item: 描き直すきっかけ
-    constraint: '`mdmark.preview.liveUpdate` が `true` のときは Markdown の変更から、`false` のときは Markdown の保存から描き直す。設定ファイルの作成・変更・削除、前回送った `includes` のファイルの保存・削除、`mdmark.configPath`・`mdmark.preview.theme`・`mdmark.colorTheme` の変更でも描き直す。保存と設定ファイルは待たずに送る'
+    constraint: '`mdmark.preview.liveUpdate` が `true` のときは Markdown の変更から、`false` のときは Markdown の保存から描き直す。重ねた設定ファイル（ワークスペースの外の端末の設定を含む）・`theme` の CSS・`extensions` のファイルの作成・変更・削除、前回送った `includes` のファイルの保存・削除、`mdmark.configPath`・`mdmark.preview.theme`・`mdmark.colorTheme` の変更でも描き直す。保存と設定ファイルは待たずに送る'
   - item: 描き直すまでの待ち
     constraint: Markdown の最後の変更から `mdmark.preview.updateDelayMs` 待って送る。範囲の外の値は既定の値として扱う
     decided_by: dev/設計書/非機能要件/非機能要件#requirements[描き直すまでの待ち]
   - item: 送る中身
-    constraint: '`TextDocument.getText()` の全文（保存していない書き換えを含む）と、設定ファイルから取り出した `features`・`libraries`・`html-scripts`・`side-toc`・`colorTheme`（`mdmark.colorTheme` が空でないときはその値で上書きする）、`mdmark.preview.theme`、インターフェース定義『プレビューを開く』の制約「取り込む文書」のとおり描き直すたびに読み直した `includes`。差分のパネルは、変更後の文書の全文を `markdown`、その時点の変更前の文書の全文を `previous` に入れる。それ以外のパネルは `previous` を送らない'
+    constraint: '`TextDocument.getText()` の全文（保存していない書き換えを含む）と、インターフェース定義『設定を重ねて読む』を `purpose: preview` で呼んで重ねた設定のうち `mount` の `opts.config` が読むキー（`mdmark.colorTheme` が空でないときは `colorTheme` をその値で上書きする）、`mdmark.preview.theme`、インターフェース定義『プレビューを開く』の制約「取り込む文書」のとおり描き直すたびに読み直した `includes`。差分のパネルは、変更後の文書の全文を `markdown`、その時点の変更前の文書の全文を `previous` に入れる。それ以外のパネルは `previous` を送らない'
   - item: 背面のパネル
     constraint: パネルが見えていない間は送らず、最後の全文だけを持つ。Webview の `ready` を受けたら、その時点の全文と設定で `render` を送る。Webview は見えている先頭の元の行番号（スクロールを合わせる.ts の制約「プレビューから合わせる」と同じ内分で求め、整数に切り捨てない）を、スクロールの知らせと `render` を描いた後に Webview の状態（`setState`）へ保存する。作り直した Webview（HTML を入れ直したときを含む）は、起動したときに `getState` の行を読んでおき、最初の `render` を描いた後にその行を `scrollToLine` と同じ位置に置いてから保存する。その行へ戻すまでは、スクロールの知らせでも `render` を描いた後でも保存しない。戻したスクロールでは `revealLine` を送らない。保存した行が無いとき（開いた直後）は先頭から描く
     notes: '背面の間の `postMessage` は届かない（PoC #70）。`retainContextWhenHidden` は `false` のままで、背面に回ると Webview が作り直される。位置を元の行番号で持つのは、背面の間の書き換えで文書の高さが変わっても同じ箇所へ戻すため'
   - item: 設定ファイルの場所
-    constraint: '`mdmark.configPath` を Markdown を含むワークスペースのフォルダ（ワークスペースの外の Markdown は Markdown のフォルダ）から解決する。無ければ設定なしで描き、知らせは出さない'
+    constraint: '`mdmark.configPath` が空（既定）のときは、Markdown のフォルダを起点にインターフェース定義『設定を重ねて読む』で探して重ねる。値を書いたときは Markdown を含むワークスペースのフォルダ（ワークスペースの外の Markdown は Markdown のフォルダ）から解決したそのファイルと端末の設定だけを重ねる。設定ファイルが 1 つも無ければ端末の設定だけで描き、知らせは出さない。重ねた設定ファイルのどれかを読めない・設定の形に合わないときは、端末の設定 → 上 → 近いの順で最初の 1 つを帯に出す'
     notes: dev/設計書/設定/VSCode拡張機能
   - item: 設定の取り出し方
     constraint: YAML を `yaml` の `parse` で読み、最上位がマップのときだけ `features`・`libraries`・`html-scripts`・`side-toc`・`colorTheme` を取り出す（マップでない値のキーは渡さない）。他のキーは読まない。空のファイル・最上位がマップでないファイルは設定なしとして扱う。キーの中の知らない名前と型の違う値は mdmark が無視する
     notes: dev/設計書/設定/ライブラリ本体
   - item: libraries の URL
-    constraint: '`libraries` の各 URL と `html-scripts.url` に当てる。`http:`・`https:` の URL はそのまま渡す。それ以外は設定ファイルのあるフォルダを基準に解決したファイルを `asWebviewUri` で Webview で読める URL にして渡す。`localResourceRoots` の外のファイルは Webview が読めず、mdmark がその印の場所に知らせの枠を出す。読み直した `libraries` と `html-scripts.url`（書かないときは既定の jsDelivr）の `http:`・`https:` の origin の集まりが今の HTML の CSP に入れた集まりと違うときは、`render` でなく Webview の HTML を入れ直す（`ready` を受けて全文を送る）'
+    constraint: '`libraries` の各 URL と `html-scripts.url` に当てる。`http:`・`https:` の URL はそのまま渡す。それ以外は、その値を書いた設定ファイルのフォルダを基準に解決したファイルを `asWebviewUri` で Webview で読める URL にして渡す。`localResourceRoots` の外のファイルは Webview が読めず、mdmark がその印の場所に知らせの枠を出す。読み直した `libraries` と `html-scripts.url`（書かないときは既定の jsDelivr）の `http:`・`https:` の origin の集まりが今の HTML の CSP に入れた集まりと違うときは、`render` でなく Webview の HTML を入れ直す（`ready` を受けて全文を送る）'
   - item: 設定ファイルを読めないとき
     constraint: '`yaml` の `YAMLParseError` の `linePos[0].line`（1 始まり）を `configError` の `line` に入れて送る。読めるようになったら、新しい設定の `render` と `configOk` を送る'
   - item: 設定が変わったときの描き方
@@ -324,3 +324,5 @@ constraints:
   - item: 差分のパネルを描き直すきっかけ
     constraint: 差分のパネルは、変更後の文書の変更・保存だけを制約「描き直すきっかけ」のとおり受け、変更前の文書の変更では描き直さない。設定ファイルと設定の変更は他のパネルと同じ
     notes: 変更前の側は `git:` の読み取り専用の文書か、要件のスコープ外（変更前の側の書き換え）
+  - item: theme と extensions
+    constraint: 重ねた設定の `theme` の CSS を Webview の URI にした `link` で配布物の CSS の後に読み、`extensions` のモジュールを `mount` の前に `import()` して `registerExtension` で登録する（CLI の書き出しと同じ順）。`localResourceRoots` に `theme` と `extensions` のファイルのフォルダを足し、設定を読み直したときは前に足したフォルダを外して足し直す。`theme` の CSS だけが変わったときは HTML を入れ直さず、`link` を読み直させる

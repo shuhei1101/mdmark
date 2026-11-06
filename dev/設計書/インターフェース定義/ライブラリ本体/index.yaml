@@ -32,3 +32,5 @@ items:
     summary: 使う側の処理が、索引と文書の本文から、本文に出た用語・文書の別名の一致と参照先を取り出す（collectMatches）
   - page: エイリアスを作る.ts.yaml
     summary: 設定の aliases の行と読んだ YAML の中身から、metadata を当てたエイリアスの配列を作る（buildAliases）
+  - page: 設定を重ねて読む.ts.yaml
+    summary: 端末の設定と上のフォルダの mdmark.config.yaml を探して重ね、重ねた設定と重ねた設定ファイルの一覧を返す（loadLayeredConfig）

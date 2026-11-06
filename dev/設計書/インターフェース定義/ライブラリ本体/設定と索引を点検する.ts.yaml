@@ -560,7 +560,7 @@ request:
   - name: --config
     type: string
     required: false
-    default: なし（今のフォルダから上のフォルダへ順に `mdmark.config.yaml` を探し、最初に見つかったものを使う）
+    default: 'なし（端末の設定と、今のフォルダから上のフォルダの `mdmark.config.yaml` を重ねる。インターフェース定義『設定を重ねて読む』を `purpose: export` で呼び、重ねた設定ファイルのそれぞれの形を検めて、ずれの `file` にそのファイルを出す）'
     location: argument
     description: 使う設定ファイルのパス
     example: docs/mdmark.config.yaml
@@ -622,7 +622,7 @@ exceptions:
     condition: '`--config` のファイルが無い、または今のフォルダと上のフォルダに `mdmark.config.yaml` が無い（`--text`・`--file` を渡し、`--config` を渡さないときを除く）'
     notes: 標準エラーに、探した場所と `mdmark init` で置けることを出す
   - name: 設定ファイルを読めない（終了コード 1）
-    condition: 設定ファイルを YAML として読めない
+    condition: 設定ファイル（重ねた設定ファイルのどれか。端末の設定を含む）を YAML として読めない
     notes: 標準エラーに、ファイルと読めない行と直し方を出す
   - name: 比べる基準を引けない（終了コード 1）
     condition: '`--base` を渡し、git が無い・設定ファイルのフォルダが git のリポジトリの中に無い・その ref と HEAD の merge-base を引けない'

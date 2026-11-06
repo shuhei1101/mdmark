@@ -7,6 +7,12 @@ files:
   - file: schemas/mdmark.config.schema.json
     manages: '`mdmark.config.yaml` のこの一覧の全てのキーの JSON Schema（draft 2020-12）。CLI の設定の検めと、配布物のビルドの移行の手順の点検がこの Schema を正にする'
     notes: 他の Issue が足すキーを拒まないよう、最上位の `additionalProperties` は許す。形を変えるときは `migrations/next/` に移行の手順か `migrations/no-steps.yaml` の行を置く
+  - file: ${XDG_CONFIG_HOME:-~/.config}/mdmark/settings.yaml
+    manages: 端末の設定。`mdmark.config.yaml` と同じキーと、重ね方の切り替えの `config.*` を持ち、重ねる最初の層になる
+    notes: 環境変数 `MDMARK_CONFIG` があればそのパスを読む。無ければ空の設定として扱う。重ね方はインターフェース定義『設定を重ねて読む』
+  - file: schemas/mdmark.settings.schema.json
+    manages: 端末の設定の JSON Schema。`mdmark.config.schema.json` のキーに `config.cascade`・`config.applyToExport` を足したもの
+    notes: 形を変えるときは `migrations/next/` に移行の手順か `migrations/no-steps.yaml` の行を置く
 settings:
   - key: features
     title: 機能のオン・オフ
@@ -780,5 +786,37 @@ settings:
     status: planned
     introduced:
       pr: 308
+  - key: MDMARK_CONFIG
+    title: 端末の設定の場所
+    file: 環境変数
+    type: string
+    required: false
+    default: '`${XDG_CONFIG_HOME:-~/.config}/mdmark/settings.yaml`'
+    description: 端末の設定のファイルのパス。CLI・`mdmark serve`・VS Code 拡張機能が、それぞれのプロセスの環境変数から読む
+    allowed: 絶対パス
+    reload: reload
+    implementation: src/config-files.ts#loadLayeredConfig
+    refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/設定を重ねて読む.ts#
+  - key: config.cascade
+    title: 上のフォルダの設定を重ねるか
+    file: settings.yaml
+    type: boolean
+    required: false
+    default: 'false'
+    description: '`true` のとき、起点のフォルダから上のフォルダの `mdmark.config.yaml` を全て重ねる。`false` のときは最初に見つかった 1 つだけを端末の設定に重ねる'
+    allowed: 真偽値。端末の設定だけが持ち、`mdmark.config.yaml` に書いても読まない
+    reload: reload
+    implementation: src/config-files.ts#loadLayeredConfig
+  - key: config.applyToExport
+    title: 書き出しに端末の設定を重ねるか
+    file: settings.yaml
+    type: boolean
+    required: false
+    default: 'true'
+    description: '`false` のとき、`mdmark export`・`mdmark build`・`mdmark check`（MCP のツールと VS Code 拡張機能の書き出しも同じ）で端末の設定を重ねない。プレビューは常に重ねる'
+    allowed: 真偽値。端末の設定だけが持ち、`mdmark.config.yaml` に書いても読まない
+    reload: reload
+    implementation: src/config-files.ts#loadLayeredConfig
 refs:
   - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#
