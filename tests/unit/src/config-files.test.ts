@@ -379,3 +379,25 @@ test("test_validate_settings_keys_when_not_map", async () => {
   expect(issues).toHaveLength(1);
   expect(issues[0]?.where).toBe("config");
 });
+
+// 下のパスだけを相対パスに戻し、外のパスと URL は替えない（正常系）
+test("test_relativize_config_paths", async () => {
+  // 準備
+  const { relativizeConfigPaths } = await loadModule();
+  // 実行
+  const result = relativizeConfigPaths({
+    config: {
+      theme: "/w/docs/theme.css",
+      index: "/w/index.yaml",
+      libraries: { b: "https://x/b.js" },
+      build: { include: ["/w/docs/*.md"], out: "/w/docs/site.html" },
+    },
+    dir: "/w/docs",
+  });
+  // 検証
+  expect(result.theme).toBe("theme.css");
+  expect(result.index).toBe("/w/index.yaml");
+  expect(result.libraries).toEqual({ b: "https://x/b.js" });
+  expect(result.build?.include[0]).toBe("*.md");
+  expect(result.build?.out).toBe("site.html");
+});
