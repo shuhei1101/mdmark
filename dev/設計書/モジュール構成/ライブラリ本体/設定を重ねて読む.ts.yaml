@@ -85,9 +85,9 @@ functions:
     is_async: true
     args:
       - name: options
-        type: '{ cwd: string; explicit?: string; purpose: "preview" | "export"; env: Record<string, string | undefined>; home: string; readFile: (path: string) => Promise<string>; isFile: (path: string) => Promise<boolean>; explicitName: string }'
+        type: '{ cwd: string; explicit?: string; purpose: "preview" | "export"; env: Record<string, string | undefined>; home: string; readFile: (path: string) => Promise<string>; isFile: (path: string) => Promise<boolean>; explicitName: string; keepInvalid?: boolean }'
         required: true
-        description: インターフェース定義『設定を重ねて読む』のリクエストと、ファイルを読む関数（`ENOENT` の例外を投げる）・ファイルがあるかを確かめる関数・誤りの文に入れる `explicit` の呼び名（CLI は `--config のパス`、MCP は `config のパス`、VS Code 拡張機能は `mdmark.configPath`）
+        description: インターフェース定義『設定を重ねて読む』のリクエストと、ファイルを読む関数（`ENOENT` の例外を投げる）・ファイルがあるかを確かめる関数・誤りの文に入れる `explicit` の呼び名（CLI は `--config のパス`、MCP は `config のパス`、VS Code 拡張機能は `mdmark.configPath`）・形の合わない設定ファイルも合うところだけを重ねるか（`mdmark check` が残りを点検するために `true` で呼ぶ。既定 `false`）
     returns:
       type: Promise<LayeredConfig>
       description: 重ねた設定・重ねた設定ファイル・最も近い設定ファイル・読めないファイル・ずれ
@@ -96,7 +96,7 @@ functions:
       2. 端末の設定を `readFile` で読み、YAML として読む
          - `ENOENT` の場合、端末の設定を空の設定として扱い、層に含めない
          - YAML として読めない場合、`unreadable` に入れ、端末の設定を重ねない
-      3. 端末の設定の形を検める（設定の形を検める、端末の設定だけのキーを検める）。ずれは `issues` に入れ、ずれがあれば端末の設定を重ねない
+      3. 端末の設定の形を検める（設定の形を検める、端末の設定だけのキーを検める）。ずれは `issues` に入れ、ずれがあれば端末の設定を重ねない（`keepInvalid` が `true` のときは、形の合うところだけを重ねる）
       4. 端末の設定の `config.cascade`（既定 `false`）を読む
       5. `explicit` があれば `cwd` から解決したそのファイルだけを、無ければ上のフォルダの設定ファイルを集める（上のフォルダの設定ファイルを探す。`isFile` は引数のものを渡す）
          - `explicit` のファイルが無い（`isFile` が `false`）場合、`ConfigNotFoundError` を投げる
@@ -394,6 +394,32 @@ functions:
         condition: '`config: true`'
         mock: なし
         expected: '`where` が `config` の `schema` のずれ 1 件'
+    status: planned
+    introduced:
+      pr: 347
+  - name: relativizeConfigPaths
+    title: パスを相対パスに戻す
+    kind: 関数
+    container: src/config-files.ts
+    usecase: 共通
+    summary: 重ねた設定のパスの値のうち `dir` の下のものを `dir` からの相対パス（区切りは `/`）に戻す
+    description: CLI（`requireConfig`・`collectCheckIssues`）は最も近い設定ファイルのフォルダを基準に設定のパスを読み、書き出しの知らせや「`build.entry` がまとめる文書に当たるか」の照合もそのフォルダからの相対パスで行うため、重ねた後に戻す。外のパスと URL は替えない。対象のキーは相対パスを絶対パスにすると同じ
+    scope: public
+    args:
+      - name: options
+        type: '{ config: CliConfig; dir: string }'
+        required: true
+        description: 重ねた設定と、最も近い設定ファイルのフォルダ
+    returns:
+      type: CliConfig
+      description: '`dir` の下のパスを相対パスにした設定（渡した設定は書き換えない）'
+    unit_tests:
+      - name: test_relativize_config_paths
+        case: 正常
+        summary: 下のパスだけを相対パスに戻し、外のパスと URL は替えない
+        condition: '`dir` が `/w/docs`、`theme: /w/docs/theme.css`・`index: /w/index.yaml`・`libraries: { b: https://x/b.js }`・`build: { include: [/w/docs/*.md], out: /w/docs/site.html }`'
+        mock: なし
+        expected: '`theme` が `theme.css`、`index` が `/w/index.yaml`、`libraries.b` がそのまま、`build.include[0]` が `*.md`、`build.out` が `site.html`'
     status: planned
     introduced:
       pr: 347

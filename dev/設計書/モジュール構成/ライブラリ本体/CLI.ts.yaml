@@ -477,7 +477,7 @@ functions:
       2. `nearest` が無い場合、今の「`mdmark.config.yaml` が見つかりません」の `CliError` を投げる
       3. `unreadable` がある場合、そのファイルのパス（設定ファイルのパスを表示の形にする。`base` は `cwd`）と行で、今の「YAML として読めません」の `CliError` を投げる
       4. `issues` が 1 件以上の場合、最初のずれのファイルを表示の形にして、今の「設定の形に合いません」の `CliError` を投げる
-      5. `{ path: nearest, dir: nearest のフォルダ, config }` を返す（重ねた設定の相対パスは既に絶対パス）
+      5. `{ path: nearest, dir: nearest のフォルダ, config }` を返す。`config` は重ねた設定のパスを相対パスに戻したもの（パスを相対パスに戻す。`dir` は nearest のフォルダ）
   - name: collectBuildDocuments
     title: まとめる文書を集める
     container: src/cli/documents.ts
@@ -1396,10 +1396,10 @@ functions:
         required: true
         description: 設定ファイルの絶対パス
       - name: options
-        type: '{ unknownMarks?: boolean; base?: string }'
+        type: '{ unknownMarks?: boolean; base?: string; cwd?: string; explicit?: boolean }'
         required: false
         default: '`{ unknownMarks: true }`'
-        description: '`unknownMarks` が `false` なら、拡張を読み込まず、知らない印を点検しない。`base` があれば、`change_together` の直し忘れを確かめる'
+        description: '`unknownMarks` が `false` なら、拡張を読み込まず、知らない印を点検しない。`base` があれば、`change_together` の直し忘れを確かめる。`cwd` はずれの `file` の表示の基準（既定は `path` のフォルダ）。`explicit` が `true` のときは上へ探さず、`path` と端末の設定だけを重ねる（`--config`・MCP の `config` を渡したとき）'
     returns:
       type: Promise<CheckIssue[]>
       description: ずれの並び（無ければ空）
@@ -1467,6 +1467,11 @@ functions:
     callees:
       - '#functions[checkMissingFiles]'
       - '#functions[checkDiagrams]'
+    process: |-
+      1. 設定を重ねて読む（設定を重ねて読む。`purpose: export`、`keepInvalid: true`、`explicit` のときは `explicit` に `path`、それ以外は `cwd` に `path` のフォルダ）
+         - `unreadable` がある場合、そのファイルのパス（設定ファイルのパスを表示の形にする）と行で「YAML として読めません」の `CliError` を投げる
+      2. `issues` の `file` を表示の形にして、設定の形のずれにする
+      3. 重ねた設定のパスを `path` のフォルダからの相対パスに戻し（パスを相対パスに戻す）、`{ path, dir: path のフォルダ, config }` で、設定が指すファイル以降のずれを `description` の並びで集めて、形のずれの後ろに続けて返す
   - name: loadExtensionDirectives
     title: 拡張の印の名前を読む
     container: src/cli/check.ts

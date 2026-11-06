@@ -122,7 +122,7 @@ constants:
       - key: version
         value: '"latest"'
       - key: configPath
-        value: '"mdmark.config.yaml"'
+        value: '""'
       - key: liveUpdate
         value: 'true'
       - key: updateDelayMs

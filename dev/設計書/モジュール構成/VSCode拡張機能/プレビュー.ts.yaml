@@ -144,7 +144,7 @@ classes:
       - name: handleConfigChange
         title: 設定の変更を振り分ける
         kind: メソッド
-        summary: 見張るファイルの作成・変更・削除（`createFileSystemWatcher`）と、`mdmark.configPath`・`mdmark.preview.theme`・`mdmark.colorTheme` の変更（`onDidChangeConfiguration`）を受け、影響するパネルに設定の変更を当てさせる（`PreviewPanel.applyConfigChange`）。見張るファイルは各パネルの `watched` の和で、パネルが設定を読み直すたびと `mdmark.configPath` が変わったときに張り替える（ワークスペースの外の端末の設定は、そのフォルダの `RelativePattern` で見張る）
+        summary: 見張るファイルの作成・変更・削除（`createFileSystemWatcher`）と、`mdmark.configPath`・`mdmark.preview.theme`・`mdmark.colorTheme` の変更（`onDidChangeConfiguration`）を受け、影響するパネルに設定の変更を当てさせる（`PreviewPanel.applyConfigChange` に変わったファイルを渡す）。影響するのは、パネルの `watched` に入っているファイルか、パネルの Markdown のフォルダから上の `mdmark.config.yaml` が変わったとき。見張るのは、ワークスペースの `**/mdmark.config.yaml`（拡張機能の入口が張る）と、各パネルの `watched` の和（パネルが設定を読み直して `watched` が変わるたびに、ファイルごとの `RelativePattern` で張り替える。ワークスペースの外の端末の設定も含む）
         args:
           - name: event
             type: '{ kind: "file"; path: string } | { kind: "setting"; affects: (section: string, scope: Uri) => boolean }'
