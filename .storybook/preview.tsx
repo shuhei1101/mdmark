@@ -1,15 +1,20 @@
 import type { Preview } from "@storybook/react-vite";
-import { initialize, mswLoader } from "msw-storybook-addon";
+import { setupWorker } from "msw/browser";
+import { mswLoader } from "msw-storybook-addon/csf3";
 import { withServerHtml } from "./server-html.tsx";
 import { withVsCodeTheme } from "./vscode-theme.tsx";
 
-// 描画の口の配信や配布物は Service Worker に通さない
-initialize({ onUnhandledRequest: "bypass", quiet: true });
+/** ハンドラの無い要求（描画の口の配信や配布物）は Service Worker に通さずに MSW を始める */
+const startWorker = async () => {
+  const worker = setupWorker();
+  await worker.start({ quiet: true, onUnhandledFrame: "bypass" });
+  return worker;
+};
 
 /** ストーリーの既定 */
 const preview: Preview = {
   decorators: [withServerHtml, withVsCodeTheme],
-  loaders: [mswLoader],
+  loaders: [mswLoader(startWorker)],
   globalTypes: {
     scheme: {
       description: "VSCode/* のストーリーの配色",
