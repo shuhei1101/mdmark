@@ -537,7 +537,7 @@ suite("プレビューを開く", () => {
     assert.strictEqual(loading?.attributes.role, "status");
     assert.ok(loading?.text.includes("mdmark を読み込んでいます"));
     assert.strictEqual(
-      (await inspect(".mdmark-preview-loading progress")).length,
+      (await inspect('.mdmark-preview-loading svg[role="img"]')).length,
       1,
     );
     // 描き終えたら消え、文書が出る
