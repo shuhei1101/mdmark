@@ -160,7 +160,7 @@ npx github:shuhei1101/mdmark#v{版} build [--config {設定ファイル}]
 
 | 引数 | 必須 / 任意 | 説明 | 例 |
 | --- | --- | --- | --- |
-| `--config` | 任意 | 使う設定ファイルのパス。省くと今のフォルダから上のフォルダへ順に `mdmark.config.yaml` を探す。まとめる文書と書き出す先は、設定の `build` が持つ | `--config docs/mdmark.config.yaml` |
+| `--config` | 任意 | 使う設定ファイルのパス。渡すとこのファイルと端末の設定だけを重ねる。省くと今のフォルダから上のフォルダへ `mdmark.config.yaml` を探して重ねる。まとめる文書と書き出す先は、重ねた設定の `build` が持つ | `--config docs/mdmark.config.yaml` |
 
 ### 終了コード
 
@@ -250,7 +250,7 @@ npx github:shuhei1101/mdmark#v{版} check [--config {設定ファイル}] [--bas
 
 | 引数 | 必須 / 任意 | 説明 | 例 |
 | --- | --- | --- | --- |
-| `--config` | 任意 | 使う設定ファイルのパス。省くと今のフォルダから上のフォルダへ順に `mdmark.config.yaml` を探し、最初に見つかったものを使う | `--config docs/mdmark.config.yaml` |
+| `--config` | 任意 | 使う設定ファイルのパス。渡すとこのファイルと端末の設定だけを重ねる。省くと今のフォルダから上のフォルダへ `mdmark.config.yaml` を探して重ね、重ねた設定ファイルと端末の設定のそれぞれの形を点検する | `--config docs/mdmark.config.yaml` |
 | `--base` | 任意 | 直し忘れの検査に比べる基準の git の ref。渡すと、基準と HEAD の merge-base から作業ツリーまでに変わった文書を比べ、`change_together` の組のうち片方だけが変わった組を `missed_change_together` で出す。省くと直し忘れを検査しない。設定に `index` が無いときは使わない | `--base origin/develop` |
 | `--text` | 任意 | 点検する Markdown の文字列。`-` を渡すと標準入力から読む。渡すと設定と索引を点検せず、描いたときの書き方の警告・知らない印・図の配置のずれだけを、ファイル `-`・文字列の行で出す。設定ファイルが無ければ既定の設定で点検する。`--base`・`--file`・`--key` と一緒に渡せない | `--text -` |
 | `--file` | 任意 | Markdown をキーの値に持つ YAML のファイル。`--key` と一緒に渡し、そのキーの値を `--text` と同じく点検する。場所は YAML のファイルの行（ブロックスカラーは値の中の行をファイルの行に置き換え、それ以外の値はキーの行） | `--file records.yaml` |
@@ -309,7 +309,7 @@ npx github:shuhei1101/mdmark#v{目標の版} upgrade [--plan] [--yes] [--config 
 | --- | --- | --- | --- |
 | `--plan` | 任意 | 何も書き換えず、当てる版ごとの手順・変更履歴の行・壊す手順の有無を出す。写しは取らない | `--plan` |
 | `--yes` | 任意 | 壊す手順を、確かめずに当てる。手元の版と、値を聞く手順の問いは飛ばさない | `--yes` |
-| `--config` | 任意 | 使う設定ファイルのパス。省くと今のフォルダから上のフォルダへ順に `mdmark.config.yaml` を探し、最初に見つかったものを使う | `--config docs/mdmark.config.yaml` |
+| `--config` | 任意 | 書き換える設定ファイルのパス。省くと今のフォルダから上のフォルダへ順に `mdmark.config.yaml` を探し、最初に見つかったものを使う。上のフォルダの設定と端末の設定は書き換えない | `--config docs/mdmark.config.yaml` |
 
 目標の版は引数で受けず、呼んだ CLI の版にする。
 手元の版は設定の `version` で、無ければ標準エラーに `手元の版（v{MAJOR}.{MINOR}.{PATCH}）を入れてください:` を出して聞く（`--plan` のときも聞く）。
