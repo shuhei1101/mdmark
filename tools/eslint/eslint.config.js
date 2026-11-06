@@ -14,6 +14,11 @@ const REPO_ROOT = fileURLToPath(new URL("../..", import.meta.url));
 const WEBVIEW = "vscode/src/webview";
 
 export default defineConfig([
+  // 引数が無いときも Webview の外（dist/ の JS など）を検査しない
+  {
+    basePath: REPO_ROOT,
+    ignores: ["**", "!vscode/", "!vscode/src/", `!${WEBVIEW}/**`],
+  },
   {
     basePath: REPO_ROOT,
     files: [`${WEBVIEW}/**/*.{ts,tsx}`],

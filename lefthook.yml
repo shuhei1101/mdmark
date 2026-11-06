@@ -1,0 +1,17 @@
+pre-commit:
+  parallel: true
+  commands:
+    biome:
+      glob: "*.{js,ts,tsx,json,css}"
+      run: npx biome check --no-errors-on-unmatched {staged_files}
+    eslint:
+      glob: "vscode/src/webview/**/*.{ts,tsx}"
+      run: npm run lint:eslint -- {staged_files}
+    typecheck:
+      glob: "*.{ts,tsx}"
+      run: npm run typecheck && npm run typecheck:vscode
+
+pre-push:
+  commands:
+    unit:
+      run: npm run test:unit

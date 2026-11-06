@@ -9,13 +9,17 @@
   "scripts": {
     "test:unit": "vitest run --project 'unit*'",
     "typecheck": "tsc --noEmit",
+    "typecheck:vscode": "tsc --noEmit -p vscode",
     "lint": "biome check .",
+    "lint:eslint": "node tools/eslint/node_modules/eslint/bin/eslint.js -c tools/eslint/eslint.config.js --max-warnings 0",
+    "check": "npm run lint && npm run lint:eslint && npm run typecheck && npm run typecheck:vscode",
     "build": "node scripts/build.ts",
     "test:integration": "vitest run --project 'integration*'",
     "test:e2e": "playwright test",
     "test": "npm run test:unit && npm run test:integration",
     "storybook:render": "node scripts/storybook-render.ts",
-    "storybook": "storybook dev --ci --no-open"
+    "storybook": "storybook dev --ci --no-open",
+    "prepare": "lefthook install && npm ci --prefix tools/eslint"
   },
   "devDependencies": {
     "@babel/standalone": "8.1.1",
@@ -41,6 +45,7 @@
     "eslint": "10.13.0",
     "eslint-plugin-compat": "7.0.2",
     "highlight.js": "11.12.0",
+    "lefthook": "2.2.2",
     "lucide-react": "1.69.0",
     "msw": "3.0.4",
     "msw-storybook-addon": "3.0.3",
