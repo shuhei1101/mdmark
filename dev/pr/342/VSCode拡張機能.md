@@ -77,6 +77,7 @@
 | モジュール構成設計 | `629f1a9a..75b7939b` | レビューの指摘の修正（`GIT_DIR` などはフックでなく `vitest.config.ts` の `clearGitLocalEnv` で、`git rev-parse --local-env-vars` の一覧で外す） |
 | モジュール構成設計 | `150bb0ea..41017b9c` | 実装で見つけた構造問題の修正（拡張機能のメッセージでない `message` を処理しない。画面の処理の例外を state から次の描画で投げる。Storybook の `mswLoader` を msw-storybook-addon 3 の `csf3` にする。vscode の tsconfig の `paths`） |
 | モジュール構成設計 | `d870efc0..ca143a6f` | レビューの指摘の修正（`useDocumentView` の ref のコールバックを 1 回だけ作る。単体テストの記述） |
+| 部品設計・モジュール構成設計 | `85135fd8..d48a83a8` | 結合テスト作成で見つけた構造問題の修正（描けない理由と帯の地と文字をエディタの色にし、警告の色を線とアイコンだけに使う案。結合テストの VS Code のテーマの固定。axe の `expected`） |
 
 ## PoC 結果
 
