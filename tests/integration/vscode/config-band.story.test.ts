@@ -104,13 +104,13 @@ test("test_narrow_long_path", async () => {
   await expect(pageOverflows(page)).resolves.toBe(false);
 });
 
-// 警告の色のトークンで、帯の地・線・文字と「設定ファイルを開く」の線を変えられる（Default）
+// 帯の地と文字はエディタの地と文字、帯と「設定ファイルを開く」の線と警告のアイコンは警告の線の色のトークンで変えられる（Default）
 test("test_default_when_color_overridden", async () => {
   // 準備
   const page = await holder.openStory("vscode-configband--default");
   await page.addStyleTag({
     content:
-      ":root { --warning: rgb(1, 2, 3); --warning-border: rgb(4, 5, 6); --warning-foreground: rgb(7, 8, 9); }",
+      ":root { --background: rgb(1, 2, 3); --warning-border: rgb(4, 5, 6); --foreground: rgb(7, 8, 9); }",
   });
   // 実行
   const colors = await page.evaluate(() => {
@@ -120,7 +120,11 @@ test("test_default_when_color_overridden", async () => {
     const button = getComputedStyle(
       document.querySelector('[data-action="openConfig"]') as Element,
     );
+    const icon = getComputedStyle(
+      document.querySelector(".mdmark-config-band svg") as Element,
+    );
     return {
+      icon: icon.color,
       background: band.backgroundColor,
       text: band.color,
       bandBorder: band.borderTopColor,
@@ -129,6 +133,7 @@ test("test_default_when_color_overridden", async () => {
   });
   // 検証
   expect(colors).toEqual({
+    icon: "rgb(4, 5, 6)",
     background: "rgb(1, 2, 3)",
     text: "rgb(7, 8, 9)",
     bandBorder: "rgb(4, 5, 6)",

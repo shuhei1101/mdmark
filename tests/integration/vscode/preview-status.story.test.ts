@@ -77,13 +77,13 @@ test("test_offline_when_keyboard_focus", async () => {
   expect(focused.outlineWidth).not.toBe("0px");
 });
 
-// 警告の色のトークンで、枠の地・線・文字とボタンの地を変えられる（Offline）
+// 枠の地と文字はエディタの地と文字、線と警告のアイコンは警告の線の色のトークンで変えられる（Offline）
 test("test_offline_when_color_overridden", async () => {
   // 準備
   const page = await holder.openStory("vscode-previewstatus--offline");
   await page.addStyleTag({
     content:
-      ":root { --warning: rgb(1, 2, 3); --warning-border: rgb(4, 5, 6); --warning-foreground: rgb(7, 8, 9); --primary: rgb(10, 11, 12); }",
+      ":root { --background: rgb(1, 2, 3); --warning-border: rgb(4, 5, 6); --foreground: rgb(7, 8, 9); --primary: rgb(10, 11, 12); }",
   });
   // 実行
   const colors = await page.evaluate(() => {
@@ -93,7 +93,11 @@ test("test_offline_when_color_overridden", async () => {
     const button = getComputedStyle(
       document.querySelector('[data-action="reload"]') as Element,
     );
+    const icon = getComputedStyle(
+      document.querySelector(".mdmark-preview-notice svg") as Element,
+    );
     return {
+      icon: icon.color,
       background: notice.backgroundColor,
       text: notice.color,
       noticeBorder: notice.borderTopColor,
@@ -102,6 +106,7 @@ test("test_offline_when_color_overridden", async () => {
   });
   // 検証
   expect(colors).toEqual({
+    icon: "rgb(4, 5, 6)",
     background: "rgb(1, 2, 3)",
     text: "rgb(7, 8, 9)",
     noticeBorder: "rgb(4, 5, 6)",
