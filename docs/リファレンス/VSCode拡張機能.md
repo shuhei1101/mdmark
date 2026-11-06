@@ -99,7 +99,7 @@ Markdown のエディタと同じ列のタブに、プレビューを開く。
 
 ## 設定ファイルを開く
 
-`mdmark.configPath` の設定ファイルをエディタで開く。
+最も近い `mdmark.config.yaml` をエディタで開く。設定ファイルを読めない帯から開いたときは、帯に出した読めないファイル（端末の設定を含む）を開く。
 無いときは、雛形を作るかをダイアログで尋ね、`作る` を選んだときだけ作って開く。
 
 ### 使い方
@@ -201,7 +201,7 @@ PDF は、そのダイアログの送信先で「PDF に保存」を選んで作
 ```json
 {
   "mdmark.version": "latest",
-  "mdmark.configPath": "mdmark.config.yaml",
+  "mdmark.configPath": "",
   "mdmark.preview.liveUpdate": true,
   "mdmark.preview.updateDelayMs": 300,
   "mdmark.preview.scrollPreviewWithEditor": true,
