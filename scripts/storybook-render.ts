@@ -94,12 +94,7 @@ import { scopeCss } from "../src/render/scope-css.ts";
 import { syntaxLanguageOf } from "../src/render/syntax/code-blocks.ts";
 import { planCellMerges } from "../src/render/syntax/table-cells.ts";
 import { warningsOf } from "../src/render/syntax/tables.ts";
-import { renderConfigBand } from "../vscode/src/webview/parts/config-band.ts";
-import { renderMediaError } from "../vscode/src/webview/parts/media-error.ts";
-import {
-  type PreviewStatusState,
-  renderPreviewStatus,
-} from "../vscode/src/webview/parts/preview-status.ts";
+import { renderMediaError } from "../vscode/src/webview/shared/lib/media-error.ts";
 
 // 描画の口を外へ出さないための待受アドレス
 const RENDER_HOST = "127.0.0.1";
@@ -110,9 +105,6 @@ const MAX_PORT = 65535;
 const REPO_ROOT = resolve(import.meta.dirname, "..");
 // 描画の口の経路: 本文の CSS と、部品の HTML の前置き
 const CSS_PATH = "/render/index.css";
-// VS Code 拡張機能のパネルの CSS（状態の表示と帯のストーリーが読む）の経路と、その元のソース
-const VSCODE_CSS_PATH = "/render/vscode.css";
-const VSCODE_CSS_SOURCE = join("vscode", "src", "webview", "preview.css");
 const PART_PATH_PATTERN = /^\/render\/([^/]+)$/;
 // ストーリーが読む、操作を付ける処理の経路と、その元のソース（図の拡大・縮小、表の見出し行と集計の行を留める処理、ファイルツリーの注釈の列を揃える処理）
 const SCRIPT_SOURCES: Record<string, string> = {
@@ -1297,13 +1289,6 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
     const cells = Array.from({ length: columns - 1 }, () => "<td>値</td>");
     return `<table><tbody><tr>${head}${cells.join("")}</tr>${row}</tbody></table>`;
   },
-  "preview-status": (args) =>
-    renderPreviewStatus({
-      state: args.state as PreviewStatusState,
-      ...(args.version === undefined ? {} : { version: String(args.version) }),
-    }),
-  "config-band": (args) =>
-    renderConfigBand({ path: String(args.path), line: Number(args.line) }),
   "doc-list": (args) =>
     renderDocList({
       docs: args.docs as DocListItem[],
@@ -1758,7 +1743,7 @@ function bundledScript(options: {
   return code;
 }
 
-/** `GET /render/index.css` に `src/index.css` を、`GET /render/vscode.css` に `vscode/src/webview/preview.css` を、`GET /render/diagram.js`・`GET /render/sticky.js`・`GET /render/trees.js` に操作の処理を束ねたものを、`GET /render/{部品の id}` に部品の HTML を返す HTTP サーバーを作る（待ち受けは呼び出し側） */
+/** `GET /render/index.css` に `src/index.css` を、`GET /render/diagram.js`・`GET /render/sticky.js`・`GET /render/trees.js` に操作の処理を束ねたものを、`GET /render/{部品の id}` に部品の HTML を返す HTTP サーバーを作る（待ち受けは呼び出し側） */
 export function createRenderServer(options: {
   /** 作業ツリーの場所（`src/index.css` を読む） */
   root: string;
@@ -1767,12 +1752,6 @@ export function createRenderServer(options: {
     const url = new URL(request.url ?? "/", `http://${RENDER_HOST}`);
     if (url.pathname === CSS_PATH) {
       const css = readFileSync(join(options.root, "src", "index.css"), "utf8");
-      response.writeHead(200, { "Content-Type": "text/css; charset=utf-8" });
-      response.end(css);
-      return;
-    }
-    if (url.pathname === VSCODE_CSS_PATH) {
-      const css = readFileSync(join(options.root, VSCODE_CSS_SOURCE), "utf8");
       response.writeHead(200, { "Content-Type": "text/css; charset=utf-8" });
       response.end(css);
       return;
