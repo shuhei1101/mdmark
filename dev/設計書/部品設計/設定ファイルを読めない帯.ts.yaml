@@ -3,7 +3,7 @@ implementation: "vscode/src/webview/shared/components/config-band.tsx#ConfigBand
 story: "VSCode/ConfigBand"
 states:
   - name: Default
-    description: 題「設定ファイルを読み込めません」、本文「mdmark.config.yaml の 4 行目を YAML として読めないため、features と libraries を当てずに表示しています。」と「設定ファイルを開く」が横に並ぶ
+    description: 題「設定ファイルを読み込めません」、本文「mdmark.config.yaml の 4 行目を YAML として読めないため、この設定ファイルを重ねずに表示しています。」と「設定ファイルを開く」が横に並ぶ
     args:
       - name: path
         value: mdmark.config.yaml
@@ -18,16 +18,43 @@ states:
         value: '12'
     notes:
       幅: ストーリーは幅 390px の画面で撃つ
-lead: VS Code 拡張機能のプレビューで、設定ファイルを YAML として読めないときに文書の先頭に置く帯と「設定ファイルを開く」。文書は描いたまま残す。
+  - name: SettingsUnreadable
+    description: 端末の設定を読めない。本文「~/.config/mdmark/settings.yaml の 3 行目を YAML として読めないため、この設定ファイルを重ねずに表示しています。」
+    args:
+      - name: path
+        value: ~/.config/mdmark/settings.yaml
+      - name: line
+        value: '3'
+  - name: NestedConfigUnreadable
+    description: 近いフォルダの設定を読めない。本文「docs/mdmark.config.yaml の 7 行目を YAML として読めないため、この設定ファイルを重ねずに表示しています。」
+    args:
+      - name: path
+        value: docs/mdmark.config.yaml
+      - name: line
+        value: '7'
+  - name: SettingsInvalid
+    description: 端末の設定が設定の形に合わない。本文「~/.config/mdmark/settings.yaml の features.callout が設定の形に合わないため、この設定ファイルを重ねずに表示しています。」
+    args:
+      - name: path
+        value: ~/.config/mdmark/settings.yaml
+      - name: settingKey
+        value: features.callout
+    notes:
+      2 つ以上読めないとき: 画面は端末の設定 → 上 → 近いの順で最初に読めなかった 1 つだけを帯に渡し、修正して保存すると次を渡す
+lead: VS Code 拡張機能のプレビューで、重ねた設定ファイルを YAML として読めないとき・設定の形に合わないときに文書の先頭に置く帯と「設定ファイルを開く」。文書は描いたまま残す。
 args:
   - name: path
     type: 文字列
     required: true
-    description: 設定ファイルのパス（`mdmark.configPath` の書いたまま）。本文の `code` に入れる
+    description: 読めない設定ファイルのパス（インターフェース定義『設定を重ねて読む』の制約「パスの表示」で書き換えた、ワークスペースからの相対パスか `~` のパス）。本文の `code` に入れる
   - name: line
     type: 整数
-    required: true
-    description: 読めない行（1 始まり）
+    required: false
+    description: YAML として読めない行（1 始まり）。`settingKey` とどちらか一方だけを渡す
+  - name: settingKey
+    type: 文字列
+    required: false
+    description: 設定の形に合わない最初のキー（`features.callout` のように `.` でつなぐ）。`line` とどちらか一方だけを渡す。React の予約の名前 `key` を避けた名前
 events:
   - name: 設定ファイルを開く
     when: 「設定ファイルを開く」のボタンを押したとき
