@@ -1,5 +1,5 @@
 import { existsSync } from "node:fs";
-import { cp, mkdtemp, readFile, rm, symlink } from "node:fs/promises";
+import { cp, mkdtemp, readdir, readFile, rm, symlink } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join, relative, resolve, sep } from "node:path";
 import { afterEach, expect, test } from "vitest";
@@ -15,8 +15,7 @@ const EXCLUDED = [
   ".vscode-test",
   "out",
   "dist",
-  "media/preview.js",
-  "media/preview.css",
+  "media",
 ];
 
 afterEach(async () => {
@@ -25,14 +24,11 @@ afterEach(async () => {
   );
 });
 
-// 拡張機能と Webview のスクリプトを束ね、vscode を束ねない（正常系）
-test("test_build_extension", async () => {
-  // 準備
-  const { buildExtension } = await loadBuild();
+/** 作業ツリーの `vscode/` を、依存と生成物・取得物を除外して一時フォルダに複製し、依存は作業ツリーのものを読む */
+const copyExtension = async (): Promise<string> => {
   const temp = await mkdtemp(join(tmpdir(), "mdmark-vscode-build-"));
   roots.push(temp);
   const root = join(temp, "vscode");
-  // 作業ツリーの `vscode/` を、依存と生成物・取得物を除外して複製し、依存は作業ツリーのものを読む
   const source = join(REPO_ROOT, "vscode");
   await cp(source, root, {
     recursive: true,
@@ -47,12 +43,40 @@ test("test_build_extension", async () => {
     ? join(REPO_ROOT, "vscode", "node_modules")
     : join(REPO_ROOT, "node_modules");
   await symlink(dependencies, join(root, "node_modules"), "dir");
+  return root;
+};
+
+// 拡張機能と Webview を書き出し、vscode と axe を束ねない（正常系）
+test("test_build_extension", async () => {
+  // 準備
+  const { buildExtension } = await loadBuild();
+  const root = await copyExtension();
   // 実行
   await buildExtension({ root, tests: false });
   // 検証
   const extension = await readFile(join(root, "dist", "extension.cjs"), "utf8");
   expect(extension).toContain('require("vscode")');
-  expect(existsSync(join(root, "media", "preview.js"))).toBe(true);
+  const scripts = (await readdir(join(root, "media"))).filter((name) =>
+    name.endsWith(".js"),
+  );
+  expect(scripts).toEqual(["preview.js"]);
+  const preview = await readFile(join(root, "media", "preview.js"), "utf8");
+  expect(preview).not.toContain("axe-core");
   expect(existsSync(join(root, "media", "preview.css"))).toBe(true);
   expect(existsSync(join(root, "out"))).toBe(false);
+  expect(existsSync(join(root, "media", "test"))).toBe(false);
+});
+
+// 結合テストのビルドでは axe を media/test に複写する（正常系）
+test("test_build_extension_when_tests", async () => {
+  // 準備
+  const { buildExtension } = await loadBuild();
+  const root = await copyExtension();
+  // 実行
+  await buildExtension({ root, tests: true });
+  // 検証
+  expect(existsSync(join(root, "out", "test", "index.mjs"))).toBe(true);
+  expect(existsSync(join(root, "media", "test", "axe.js"))).toBe(true);
+  const preview = await readFile(join(root, "media", "preview.js"), "utf8");
+  expect(preview).not.toContain("axe-core");
 });

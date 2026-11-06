@@ -22,10 +22,13 @@ export default defineConfig({
         },
       },
       {
-        // DOM を使う単体テストは Chromium の中で流す
+        // DOM を使う単体テストは Chromium の中で流す。MSW の Service Worker を Storybook と同じフォルダから配る
+        publicDir: ".storybook/public",
+        // Webview の部品（vscode/）とテストの道具（直下）が同じ React を使う
+        resolve: { dedupe: ["react", "react-dom", "msw"] },
         test: {
           name: "unit-browser",
-          include: ["tests/unit/**/*.browser.test.ts"],
+          include: ["tests/unit/**/*.browser.test.{ts,tsx}"],
           browser: {
             enabled: true,
             headless: true,
