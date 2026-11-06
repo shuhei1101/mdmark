@@ -23,7 +23,7 @@ const element = (dataset: Record<string, string>): HTMLElement => {
   return root;
 };
 
-// data-* を読み、知らない status は持たない（正常系）
+// data-* を読み、知らない status と配列でない data-extensions は持たない（正常系）
 test("test_read_boot", async () => {
   // 準備
   const { readBoot } = await loadBoot();
@@ -32,9 +32,10 @@ test("test_read_boot", async () => {
       "https://cdn.jsdelivr.net/gh/shuhei1101/mdmark@v0.7.0/dist/index.js",
     version: "v0.7.0",
     configPath: "docs/mdmark.config.yaml",
+    extensions: '["web:/w/e.js"]',
     test: "",
   });
-  const other = element({ status: "other" });
+  const other = element({ status: "other", extensions: "x" });
   // 実行
   const first = readBoot(full);
   const second = readBoot(other);
@@ -46,10 +47,12 @@ test("test_read_boot", async () => {
     version: "v0.7.0",
     status: undefined,
     configPath: "docs/mdmark.config.yaml",
+    extensions: ["web:/w/e.js"],
     test: true,
   });
   expect(second.status).toBeUndefined();
   expect(second.configPath).toBe("");
+  expect(second.extensions).toEqual([]);
   expect(second.test).toBe(false);
 });
 

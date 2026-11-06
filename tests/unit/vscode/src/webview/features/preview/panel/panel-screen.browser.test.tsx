@@ -38,6 +38,7 @@ const createBoot = (
     distJs: string | undefined;
     version: string | undefined;
     status: "versionUndecidable" | undefined;
+    extensions: string[];
     test: boolean;
   }> = {},
 ) => {
@@ -48,6 +49,7 @@ const createBoot = (
     version: "v0.7.0",
     status: undefined,
     configPath: "mdmark.config.yaml",
+    extensions: [] as string[],
     test: false,
     ...overrides,
   };
@@ -256,8 +258,22 @@ test("test_panel_screen_when_config_error", async () => {
     expect(postedOf(api.posted, "rendered")).toHaveLength(1);
   });
   // 実行
-  act(() => sendHostMessage({ type: "configError", line: 4 }));
-  act(() => sendHostMessage({ type: "configError", line: 5 }));
+  act(() =>
+    sendHostMessage({
+      type: "configError",
+      path: "mdmark.config.yaml",
+      line: 4,
+    }),
+  );
+  const afterOne =
+    boot.root.querySelector(".mdmark-config-band")?.textContent ?? "";
+  act(() =>
+    sendHostMessage({
+      type: "configError",
+      path: "~/.config/mdmark/settings.yaml",
+      settingKey: "features.callout",
+    }),
+  );
   const bands = boot.root.querySelectorAll(".mdmark-config-band");
   const documentElement = record.elements[0] as HTMLElement;
   const afterTwo = {
@@ -273,11 +289,86 @@ test("test_panel_screen_when_config_error", async () => {
   );
   act(() => sendHostMessage({ type: "configOk" }));
   // 検証
+  expect(afterOne).toContain("mdmark.config.yaml");
+  expect(afterOne).toContain("4 行目");
   expect(afterTwo.count).toBe(1);
-  expect(afterTwo.text).toContain("5 行目");
+  expect(afterTwo.text).toContain("~/.config/mdmark/settings.yaml");
+  expect(afterTwo.text).toContain("features.callout");
   expect(afterTwo.before).toBe(true);
   expect(postedOf(api.posted, "openConfig")).toEqual([{ type: "openConfig" }]);
   expect(boot.root.querySelectorAll(".mdmark-config-band")).toHaveLength(0);
+});
+
+// 配布物を読んだ後、extensions を登録してから ready を送る（正常系）
+test("test_panel_screen_when_extensions", async () => {
+  // 準備
+  const { PanelScreen } = await loadScreen();
+  const api = createFakeVsCodeApi();
+  const { mdmark } = createMdmark();
+  const order: string[] = [];
+  const registerExtension = vi.fn((extension: unknown) => {
+    order.push(`register:${(extension as { name: string }).name}`);
+  });
+  const originalPost = api.postMessage.bind(api);
+  vi.spyOn(api, "postMessage").mockImplementation((message) => {
+    order.push(`post:${message.type}`);
+    originalPost(message);
+  });
+  const importModule = vi.fn(async (url: string) => {
+    if (url === "a.js") {
+      throw new Error("読めない");
+    }
+    return { default: { name: url } };
+  });
+  vi.spyOn(console, "error").mockImplementation(() => undefined);
+  const boot = createBoot({ extensions: ["a.js", "b.js"] });
+  // 実行
+  render(
+    <PanelScreen
+      boot={boot}
+      api={api}
+      load={async () => ({ ...mdmark, registerExtension }) as never}
+      importModule={importModule}
+    />,
+    { container: boot.root },
+  );
+  await waitReady(api.posted);
+  // 検証
+  expect(registerExtension.mock.calls).toEqual([[{ name: "b.js" }]]);
+  expect(order.indexOf("register:b.js")).toBeLessThan(
+    order.indexOf("post:ready"),
+  );
+});
+
+// theme で theme の CSS の link の href を替える（正常系）
+test("test_panel_screen_when_theme", async () => {
+  // 準備
+  const { PanelScreen } = await loadScreen();
+  const api = createFakeVsCodeApi();
+  const { mdmark, record } = createMdmark();
+  const link = document.createElement("link");
+  link.id = "mdmark-theme";
+  link.rel = "stylesheet";
+  link.href = "t.css";
+  document.head.append(link);
+  const boot = createBoot();
+  render(
+    <PanelScreen boot={boot} api={api} load={async () => mdmark as never} />,
+    { container: boot.root },
+  );
+  await waitReady(api.posted);
+  act(() => sendHostMessage(renderMessage("# 本文")));
+  await vi.waitFor(() => {
+    expect(postedOf(api.posted, "rendered")).toHaveLength(1);
+  });
+  const rendered = record.elements.length;
+  // 実行
+  act(() => sendHostMessage({ type: "theme", href: "t.css?v=1" }));
+  // 検証
+  expect(link.getAttribute("href")).toBe("t.css?v=1");
+  expect(record.elements.length).toBe(rendered);
+  expect(postedOf(api.posted, "rendered")).toHaveLength(1);
+  link.remove();
 });
 
 // 保存した行の途中の位置を持つ状態で始めると、最初の render の後にその位置へ戻してから保存し、revealLine を送らない（正常系）

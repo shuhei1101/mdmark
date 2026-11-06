@@ -67,3 +67,33 @@ test("test_supports_diff_blocks_when_missing", async () => {
   expect(supportsDiffBlocks({ diffModes: ["button"] })).toBe(false);
   expect(supportsDiffBlocks({ diffModes: "blocks" })).toBe(false);
 });
+
+// 順に登録し、読めない拡張を飛ばす（正常系）
+test("test_register_extensions", async () => {
+  // 準備
+  const { registerExtensions } = await loadLoadMdmark();
+  const registerExtension = vi.fn();
+  const mdmark = { mount: vi.fn(), registerExtension };
+  const importModule = vi.fn(async (url: string) => {
+    if (url === "b.js") {
+      throw new Error("読めない");
+    }
+    return { default: { name: url } };
+  });
+  const consoleError = vi
+    .spyOn(console, "error")
+    .mockImplementation(() => undefined);
+  // 実行
+  await registerExtensions({
+    mdmark,
+    urls: ["a.js", "b.js", "c.js"],
+    importModule,
+  });
+  // 検証
+  expect(registerExtension.mock.calls).toEqual([
+    [{ name: "a.js" }],
+    [{ name: "c.js" }],
+  ]);
+  expect(consoleError).toHaveBeenCalledTimes(1);
+  consoleError.mockRestore();
+});

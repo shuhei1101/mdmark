@@ -3,6 +3,30 @@ import { expect, test, vi } from "vitest";
 /** 設定ファイルの処理を読み込む（実装が無い間は各テストが個別に失敗する） */
 const loadModule = () => import("../../../../vscode/src/config.ts");
 
+/** 端末の設定の場所 */
+const SETTINGS = "/s/settings.yaml";
+
+/** メモリのファイルの表から作った `loadConfig` の引数 */
+const loadOptions = (
+  files: Record<string, string>,
+  overrides: { cwd?: string; configPath?: string } = {},
+) => ({
+  cwd: overrides.cwd ?? "/w",
+  configPath: overrides.configPath ?? "",
+  baseDir: "/w",
+  purpose: "preview" as const,
+  env: { MDMARK_CONFIG: SETTINGS },
+  home: "/h",
+  readFile: vi.fn(async (path: string) => {
+    const text = files[path];
+    if (text === undefined) {
+      throw Object.assign(new Error("no such file"), { code: "ENOENT" });
+    }
+    return text;
+  }),
+  isFile: vi.fn(async (path: string) => path in files),
+});
+
 // 相対パスは基準のフォルダから、絶対パスはそのまま（正常系）
 test("test_resolve_config_path", async () => {
   // 準備
@@ -21,40 +45,98 @@ test("test_resolve_config_path", async () => {
   expect(absolute).toBe("/etc/mdmark.yaml");
 });
 
-// features・libraries・side-toc だけを取り出す（正常系）
-test("test_parse_config", async () => {
+// 重ねた設定から mount のキー・theme・extensions を取り出す（正常系）
+test("test_load_config", async () => {
   // 準備
-  const { parseConfig } = await loadModule();
-  const text = [
-    "features: { callout: false }",
-    "libraries: { chart: ./chart.js }",
-    "side-toc: { mode: fixed }",
-    "theme: x",
-    "build: {}",
-  ].join("\n");
+  const { loadConfig: load } = await loadModule();
+  const files = {
+    [SETTINGS]: "features:\n  callout: false\n",
+    "/w/docs/mdmark.config.yaml":
+      "theme: ./t.css\nextensions: [./e.js]\nbuild: { include: ['*.md'], out: a.html }\n",
+  };
   // 実行
-  const result = parseConfig(text);
+  const result = await load(loadOptions(files, { cwd: "/w/docs" }));
   // 検証
-  expect(result).toEqual({
-    kind: "ok",
-    config: {
-      features: { callout: false },
-      libraries: { chart: "./chart.js" },
-      "side-toc": { mode: "fixed" },
-    },
-  });
+  expect(result.config).toEqual({ features: { callout: false } });
+  expect(result.theme).toBe("/w/docs/t.css");
+  expect(result.extensions).toEqual(["/w/docs/e.js"]);
+  expect(result.files).toEqual([SETTINGS, "/w/docs/mdmark.config.yaml"]);
+  expect(result.nearest).toBe("/w/docs/mdmark.config.yaml");
+  expect(result.problem).toBeUndefined();
 });
 
-// 文字列の colorTheme だけを取り出す（正常系）
-test("test_parse_config_when_color_theme", async () => {
+// 設定ファイルが 1 つも無ければ空の設定（正常系）
+test("test_load_config_when_missing", async () => {
   // 準備
-  const { parseConfig } = await loadModule();
+  const { loadConfig: load } = await loadModule();
   // 実行
-  const valid = parseConfig("colorTheme: theme-paper\n");
-  const invalid = parseConfig("colorTheme: [a]\n");
+  const result = await load(loadOptions({}));
   // 検証
-  expect(valid).toEqual({ kind: "ok", config: { colorTheme: "theme-paper" } });
-  expect(invalid).toEqual({ kind: "ok", config: {} });
+  expect(result.config).toEqual({});
+  expect(result.extensions).toEqual([]);
+  expect(result.files).toEqual([]);
+  expect(result.nearest).toBeUndefined();
+  expect(result.problem).toBeUndefined();
+});
+
+// assets.root を書いた設定ファイルのフォルダから解決する（正常系）
+test("test_load_config_when_assets_root", async () => {
+  // 準備
+  const { loadConfig: load } = await loadModule();
+  const files = { "/w/mdmark.config.yaml": "assets: { root: ./assets }\n" };
+  // 実行
+  const result = await load(loadOptions(files, { cwd: "/w" }));
+  // 検証
+  expect(result.assetsRoot).toBe("/w/assets");
+  expect("assets" in result.config).toBe(false);
+});
+
+// YAML として読めないファイルを problem にし、残りを重ねる（正常系）
+test("test_load_config_when_unreadable", async () => {
+  // 準備
+  const { loadConfig: load } = await loadModule();
+  const files = {
+    [SETTINGS]: "features:\n  callout: false\n",
+    "/w/mdmark.config.yaml":
+      "features:\n  table: false\nx: 1\nlibraries: [a, b}\n",
+  };
+  // 実行
+  const result = await load(loadOptions(files, { cwd: "/w" }));
+  // 検証
+  expect(result.problem?.path).toBe("/w/mdmark.config.yaml");
+  expect(result.problem?.line).toBe(4);
+  expect(result.config).toEqual({ features: { callout: false } });
+});
+
+// 形の合わないファイルを problem にしてキーを返す（正常系）
+test("test_load_config_when_invalid", async () => {
+  // 準備
+  const { loadConfig: load } = await loadModule();
+  const files = { [SETTINGS]: "features:\n  callout: maybe\n" };
+  // 実行
+  const result = await load(loadOptions(files));
+  // 検証
+  expect(result.problem?.path).toBe(SETTINGS);
+  expect(result.problem?.settingKey).toBe("features.callout");
+  expect(result.problem?.line).toBeUndefined();
+});
+
+// mdmark.configPath のファイルが無ければ上へ探さず端末の設定だけを重ねる（正常系）
+test("test_load_config_when_config_path_missing", async () => {
+  // 準備
+  const { loadConfig: load } = await loadModule();
+  const files = {
+    [SETTINGS]: "features:\n  callout: false\n",
+    "/w/mdmark.config.yaml": "features:\n  table: false\n",
+  };
+  // 実行
+  const result = await load(
+    loadOptions(files, { cwd: "/w", configPath: "missing.yaml" }),
+  );
+  // 検証
+  expect(result.config).toEqual({ features: { callout: false } });
+  expect(result.files).toEqual([SETTINGS]);
+  expect(result.nearest).toBeUndefined();
 });
 
 // 空でない mdmark.colorTheme が設定ファイルに勝ち、空なら設定ファイルのまま（正常系）
@@ -78,61 +160,6 @@ test("test_apply_color_theme", async () => {
   });
   expect(empty).toEqual({});
   expect(config).toEqual(snapshot);
-});
-
-// 最上位がマップでない・空・キーの値がマップでないときは渡さない（正常系）
-test("test_parse_config_when_not_map", async () => {
-  // 準備
-  const { parseConfig } = await loadModule();
-  const texts = ["", "- a", "features: [a]"];
-  // 実行
-  const results = texts.map((text) => parseConfig(text));
-  // 検証
-  for (const result of results) {
-    expect(result).toEqual({ kind: "ok", config: {} });
-  }
-});
-
-// YAML として読めなければ読めない行を返す（正常系）
-test("test_parse_config_when_invalid_yaml", async () => {
-  // 準備
-  const { parseConfig } = await loadModule();
-  const text = ["a: 1", "b: 2", "c: 3", "features: {callout: false"].join("\n");
-  // 実行
-  const result = parseConfig(text);
-  // 検証
-  expect(result.kind).toBe("error");
-  if (result.kind === "error") {
-    expect(result.line).toBe(4);
-    expect(result.message).not.toBe("");
-  }
-});
-
-// ファイルが無ければ missing（正常系）
-test("test_load_config_when_missing", async () => {
-  // 準備
-  const { loadConfig: load } = await loadModule();
-  const readFile = vi.fn(async () => {
-    throw Object.assign(new Error("no such file"), { code: "ENOENT" });
-  });
-  // 実行
-  const result = await load({ path: "/ws/mdmark.config.yaml", readFile });
-  // 検証
-  expect(result).toEqual({ kind: "missing" });
-});
-
-// 読んだ中身から取り出す（正常系）
-test("test_load_config", async () => {
-  // 準備
-  const { loadConfig: load } = await loadModule();
-  const readFile = vi.fn(async () => "features: { callout: false }");
-  // 実行
-  const result = await load({ path: "/ws/mdmark.config.yaml", readFile });
-  // 検証
-  expect(result).toEqual({
-    kind: "ok",
-    config: { features: { callout: false } },
-  });
 });
 
 // 相対パスだけを設定ファイルのフォルダから直す（正常系）
@@ -175,44 +202,6 @@ test("test_library_origins", async () => {
     "https://cdn.example.com",
     "https://cdn.jsdelivr.net",
   ]);
-});
-
-// 文字列の assets.root を config に入れずに返す（正常系）
-test("test_parse_config_when_assets_root", async () => {
-  // 準備
-  const { parseConfig } = await loadModule();
-  // 実行
-  const text = parseConfig("assets: { root: assets }");
-  const number = parseConfig("assets: { root: 1 }");
-  // 検証
-  expect(text).toEqual({ kind: "ok", config: {}, assetsRoot: "assets" });
-  expect(number).toEqual({ kind: "ok", config: {} });
-});
-
-// assets.root を設定ファイルのフォルダから解決する（正常系）
-test("test_load_config_when_assets_root", async () => {
-  // 準備
-  const { loadConfig: load } = await loadModule();
-  const readFile = vi.fn(async () => "assets: { root: ./assets }");
-  // 実行
-  const result = await load({ path: "/w/mdmark.config.yaml", readFile });
-  // 検証
-  expect(result).toMatchObject({ kind: "ok", assetsRoot: "/w/assets" });
-});
-
-// マップの html-scripts だけを取り出す（正常系）
-test("test_parse_config_when_html_scripts", async () => {
-  // 準備
-  const { parseConfig } = await loadModule();
-  // 実行
-  const map = parseConfig("html-scripts: { url: ./babel.mjs }");
-  const text = parseConfig("html-scripts: x");
-  // 検証
-  expect(map).toEqual({
-    kind: "ok",
-    config: { "html-scripts": { url: "./babel.mjs" } },
-  });
-  expect(text).toEqual({ kind: "ok", config: {} });
 });
 
 // 相対パスの url だけを設定ファイルのフォルダから直す（正常系）
