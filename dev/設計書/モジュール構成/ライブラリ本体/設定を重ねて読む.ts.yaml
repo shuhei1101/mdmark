@@ -85,9 +85,9 @@ functions:
     is_async: true
     args:
       - name: options
-        type: '{ cwd: string; explicit?: string; purpose: "preview" | "export"; env: Record<string, string | undefined>; home: string; readFile: (path: string) => Promise<string> }'
+        type: '{ cwd: string; explicit?: string; purpose: "preview" | "export"; env: Record<string, string | undefined>; home: string; readFile: (path: string) => Promise<string>; isFile: (path: string) => Promise<boolean>; explicitName: string }'
         required: true
-        description: インターフェース定義『設定を重ねて読む』のリクエストと、ファイルを読む関数（`ENOENT` の例外を投げる）
+        description: インターフェース定義『設定を重ねて読む』のリクエストと、ファイルを読む関数（`ENOENT` の例外を投げる）・ファイルがあるかを確かめる関数・誤りの文に入れる `explicit` の呼び名（CLI は `--config のパス`、MCP は `config のパス`、VS Code 拡張機能は `mdmark.configPath`）
     returns:
       type: Promise<LayeredConfig>
       description: 重ねた設定・重ねた設定ファイル・最も近い設定ファイル・読めないファイル・ずれ
@@ -96,11 +96,11 @@ functions:
       2. 端末の設定を `readFile` で読み、YAML として読む
          - `ENOENT` の場合、端末の設定を空の設定として扱い、層に含めない
          - YAML として読めない場合、`unreadable` に入れ、端末の設定を重ねない
-      3. 端末の設定の形を検める（`validateConfig`）。ずれは `issues` に入れ、ずれがあれば端末の設定を重ねない
+      3. 端末の設定の形を検める（設定の形を検める、端末の設定だけのキーを検める）。ずれは `issues` に入れ、ずれがあれば端末の設定を重ねない
       4. 端末の設定の `config.cascade`（既定 `false`）を読む
-      5. `explicit` があれば `cwd` から解決したそのファイルだけを、無ければ上のフォルダの設定ファイルを集める（上のフォルダの設定ファイルを探す）
-         - `explicit` のファイルが無い場合、`ConfigNotFoundError` を投げる
-      6. 集めたファイルを上 → 近いの順に読み、2・3 と同じく `unreadable`・`issues` に入れ、読めて形が合うものだけを残す。`config` のキーはフォルダの設定では捨てる
+      5. `explicit` があれば `cwd` から解決したそのファイルだけを、無ければ上のフォルダの設定ファイルを集める（上のフォルダの設定ファイルを探す。`isFile` は引数のものを渡す）
+         - `explicit` のファイルが無い（`isFile` が `false`）場合、`ConfigNotFoundError` を投げる
+      6. 集めたファイルを上 → 近いの順に読み、2・3 と同じく `unreadable`・`issues` に入れ、読めて形が合うものだけを残す（形は設定の形を検めるだけで検める）。`config` のキーはフォルダの設定では捨てる
       7. 残した各層の相対パスを、その層のファイルのフォルダから絶対パスにする（相対パスを絶対パスにする）
       8. `purpose` が `export` で端末の設定の `config.applyToExport` が `false` の場合、端末の設定の層を外す
       9. 端末の設定 → 上 → 近いの順に重ねる（設定を重ねる）
@@ -108,10 +108,11 @@ functions:
     exceptions:
       - name: ConfigNotFoundError
         condition: '`explicit` のファイルが無い'
-        message: '{explicit} が見つかりません（--config のパス）。パスを直すか、mdmark init で置いてください。'
+        message: '{explicit} が見つかりません（{explicitName}）。パスを直すか、mdmark init で置いてください。'
     callees:
       - '#functions[resolveSettingsPath]'
       - '#functions[findConfigChain]'
+      - '#functions[validateSettingsKeys]'
       - '#functions[absolutizeConfigPaths]'
       - '#functions[mergeConfigs]'
       - dev/設計書/モジュール構成/ライブラリ本体/CLI.ts#functions[validateConfig]
@@ -350,5 +351,50 @@ functions:
     status: planned
     introduced:
       pr: 347
+  - name: validateSettingsKeys
+    title: 端末の設定だけのキーを検める
+    kind: 関数
+    container: src/config-files.ts
+    usecase: 共通
+    summary: 端末の設定の `config` がマップで、`config.cascade`・`config.applyToExport` が真偽値かを検め、合わないところを `schema` のずれで返す
+    scope: internal
+    args:
+      - name: raw
+        type: unknown
+        required: true
+        description: 端末の設定を YAML として読んだ値
+      - name: file
+        type: string
+        required: true
+        description: ずれの `file` に入れる端末の設定の絶対パス
+    returns:
+      type: CheckIssue[]
+      description: '`config`・`config.cascade`・`config.applyToExport` のずれ。合うときは空'
+    process: |-
+      1. `raw.config` が無ければ空を返す
+      2. `raw.config` がマップでなければ、`config` の `schema` のずれを返す
+      3. `cascade`・`applyToExport` のうち、あって真偽値でないものごとに `config.{キー}` の `schema` のずれを返す（知らないキーは拒まない）
+    unit_tests:
+      - name: test_validate_settings_keys
+        case: 正常
+        summary: 真偽値ならずれが無い
+        condition: '`config: { cascade: true, applyToExport: false }`'
+        mock: なし
+        expected: 空の配列
+      - name: test_validate_settings_keys_when_not_boolean
+        case: 正常
+        summary: 真偽値でない値をずれにする
+        condition: '`config: { cascade: maybe }`'
+        mock: なし
+        expected: '`where` が `config.cascade` の `schema` のずれ 1 件'
+      - name: test_validate_settings_keys_when_not_map
+        case: 正常
+        summary: '`config` がマップでない'
+        condition: '`config: true`'
+        mock: なし
+        expected: '`where` が `config` の `schema` のずれ 1 件'
+    status: planned
+    introduced:
+      pr: 347
 notes:
-  置き場所: '`src/config-files.ts` は Node の API（`node:path`）だけを使い、ファイルの読み取りは引数で受ける。CLI（`src/cli/`）・MCP（`src/plugin/`）と、esbuild で束ねる VS Code 拡張機能（`vscode/src/`）の両方から import する。配布物（ブラウザ）の入口からは import しない'
+  置き場所: '`src/config-files.ts` は `node:path`・`yaml`（YAML として読む）・`src/cli/alias-schema.ts`（`aliases` の行の検め。ajv の Schema を束ねる）だけを import し、`CliError` など CLI だけの型には依存しない。ファイルの読み取りと有無の確かめは引数で受ける。設定の形を検める `validateConfig` とそれが使う `schemaIssue`・`validateBuild`・`validateCheck`・`isValid*` は `src/cli/config.ts` からこのファイルへ移し、`src/cli/config.ts` はこのファイルから import する。CLI（`src/cli/`）・MCP（`src/plugin/`）と、esbuild で束ねる VS Code 拡張機能（`vscode/src/`）の両方から import する。配布物（ブラウザ）の入口からは import しない'

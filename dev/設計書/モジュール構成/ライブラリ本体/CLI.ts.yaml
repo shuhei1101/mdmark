@@ -319,7 +319,7 @@ functions:
       pr: 32
   - name: validateConfig
     title: 設定の形を検める
-    container: src/cli/config.ts
+    container: src/config-files.ts
     usecase: 共通
     summary: 読んだ値を `schemas/mdmark.config.schema.json` と同じ形で検め、合わないところを `schema` のずれで返す
     description: 検めるのは、最上位がオブジェクトであること・`version` が `VERSION_PATTERN` に合う文字列・`features` の値が真偽値・`libraries` の値が文字列でキーが印の名前・`index`・`theme`・`colorTheme` が文字列（`colorTheme` の知らない名前はここでは拒まず、設定に残す）・`extensions` が文字列の配列・`build` があれば `include`（1 つ以上の文字列）と `out`（`.html` の文字列）を持ち `exclude`・`glossary` が文字列の配列で `entry` が文字列であること・`check` があれば `ignore` が印の名前（`MARK_NAME_PATTERN`）の文字列の配列であること・`tooltips` があれば `placement` と `diagramPlacement` がどちらも（あれば）`top` か `bottom` であること・`labels` があればオブジェクトで `paramCopy` があれば空でない文字列であること（合わなければ `labels` を設定から落とす。知らないキーは拒まない）・`side-toc` があればオブジェクトで `mode` が `hover` か `fixed` であること・`syntax` があればオブジェクトで `url` が文字列であること・`html-scripts` があればオブジェクトで `url` が文字列であること（合わなければ `html-scripts` を設定から落とす）・`assets` があればオブジェクトで `root` が文字列であること。`aliases` があれば配列であることを確かめ、行は `validateAliasRows` で検める（ずれをそのまま `schema` のずれに加え、返った行を `config.aliases` に入れる）。知らない最上位のキーは拒まない。`aliases` の行のほかの形の検査は手書きで、ライブラリを足さない（索引の `normalizeIndex` と同じやり方）。検める形は `schemas/mdmark.config.schema.json` と揃える
@@ -431,6 +431,8 @@ functions:
     status: planned
     introduced:
       pr: 32
+    notes:
+      置き場所: 設定を重ねて読む処理と VS Code 拡張機能からも呼ぶため、`src/config-files.ts` に置き、`src/cli/config.ts` は import して使う。使う `schemaIssue`・`validateBuild`・`validateCheck`・`isValid*` も同じファイルへ移す。`CliError` には依存しない
   - name: requireConfig
     title: 書き出しに使う設定を読む
     container: src/cli/config.ts
