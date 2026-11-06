@@ -1,0 +1,252 @@
+/* VS Code のプレビューのパネルの部品（shadcn/ui の Alert・Button・Spinner）。実装の Tailwind のクラスが当てる見た目を、モックでは同じ値の CSS で表す */
+
+/* VS Code が Webview の html に渡す色の仮の値（モックだけ。実装では VS Code が --vscode-* を渡す。値は Light Modern と Dark Modern。preview.js が html の data-scheme を当てる） */
+:root[data-scheme="light"] {
+  --vscode-font-family: system-ui, sans-serif;
+  --vscode-editor-background: #ffffff;
+  --vscode-editor-foreground: #3b3b3b;
+  --vscode-editorWidget-background: #f8f8f8;
+  --vscode-descriptionForeground: #3b3b3b;
+  --vscode-button-background: #005fb8;
+  --vscode-button-foreground: #ffffff;
+  --vscode-button-hoverBackground: #0258a8;
+  --vscode-button-secondaryBackground: #e5e5e5;
+  --vscode-button-secondaryHoverBackground: #cccccc;
+  --vscode-inputValidation-warningBackground: #f6f5d2;
+  --vscode-inputValidation-warningBorder: #b89500;
+  --vscode-widget-border: #e5e5e5;
+  --vscode-focusBorder: #005fb8;
+}
+
+:root[data-scheme="dark"] {
+  --vscode-font-family: system-ui, sans-serif;
+  --vscode-editor-background: #1f1f1f;
+  --vscode-editor-foreground: #cccccc;
+  --vscode-editorWidget-background: #202020;
+  --vscode-descriptionForeground: #9d9d9d;
+  --vscode-button-background: #0078d4;
+  --vscode-button-foreground: #ffffff;
+  --vscode-button-hoverBackground: #026ec1;
+  --vscode-button-secondaryBackground: #313131;
+  --vscode-button-secondaryHoverBackground: #3c3c3c;
+  --vscode-inputValidation-warningBackground: #352a05;
+  --vscode-inputValidation-warningBorder: #b89500;
+  --vscode-widget-border: #313131;
+  --vscode-focusBorder: #0078d4;
+}
+
+/* shadcn のセマンティックトークン: VS Code が渡す色に割り当てる（配布物の CSS を読めない場面でも決まる） */
+:root {
+  --background: var(--vscode-editor-background);
+  --foreground: var(--vscode-editor-foreground);
+  --card: var(--vscode-editorWidget-background);
+  --card-foreground: var(--vscode-editor-foreground);
+  --muted-foreground: var(--vscode-descriptionForeground);
+  --primary: var(--vscode-button-background);
+  --primary-foreground: var(--vscode-button-foreground);
+  --primary-hover: var(--vscode-button-hoverBackground);
+  --secondary: var(--vscode-button-secondaryBackground);
+  --secondary-hover: var(--vscode-button-secondaryHoverBackground);
+  --border: var(--vscode-widget-border);
+  --ring: var(--vscode-focusBorder);
+  --radius: 0.375rem;
+  /* Alert の warning の variant */
+  --warning: var(--vscode-inputValidation-warningBackground);
+  --warning-border: var(--vscode-inputValidation-warningBorder);
+  /* 文字は本文の色を警告の色へ寄せる（色の上に無彩色の文字を置かない） */
+  --warning-foreground: color-mix(in oklab, var(--vscode-editor-foreground) 60%, var(--vscode-inputValidation-warningBorder));
+}
+
+/* パネルの部品の下地: 書体は VS Code の UI と同じ */
+.panel-part {
+  font-family: var(--vscode-font-family);
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
+}
+
+/* 読み込み中・描けない理由: 文書の代わりに、パネルの上から 1/4 の高さに中央揃えで置く */
+.panel-state {
+  display: grid;
+  justify-items: center;
+  padding: 25dvh 1rem 1.5rem;
+}
+
+/* Alert: アイコン・タイトル・説明・操作を格子に並べる（shadcn/ui の Alert） */
+.alert {
+  display: grid;
+  grid-template-columns: 1rem 1fr;
+  column-gap: 0.75rem;
+  row-gap: 0.25rem;
+  width: 100%;
+  max-width: 32rem;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--border);
+  border-radius: calc(var(--radius) + 2px);
+  background: var(--card);
+  color: var(--card-foreground);
+  font-size: 0.875rem;
+
+  /* アイコン: タイトルの行の高さに揃える */
+  > svg {
+    width: 1rem;
+    height: 1rem;
+    margin-top: 0.375rem;
+    color: currentcolor;
+  }
+
+  /* アイコンの右の列に、タイトル・説明・操作を縦に並べる */
+  > :not(svg) {
+    grid-column: 2;
+  }
+
+  /* 説明と設定のキー */
+  code {
+    font-family: ui-monospace, monospace;
+    font-size: 0.9em;
+  }
+}
+
+/* Alert の warning: 描けない理由と設定ファイルを読めない帯 */
+.alert.is-warning {
+  border-color: var(--warning-border);
+  background: var(--warning);
+  color: var(--warning-foreground);
+}
+
+/* Alert のタイトル: 文書の無い場面の見出し 1。説明より 1 段大きくする */
+.alert-title {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 700;
+  line-height: 1.75rem;
+}
+
+/* 帯のタイトル: 文書の見出し 1 より下の階層の見出し 2 */
+h2.alert-title {
+  font-size: 1rem;
+  line-height: 1.5rem;
+}
+
+/* Alert の説明 */
+.alert-description {
+  margin: 0;
+}
+
+/* Alert の操作: 説明の下に置く */
+.alert-action {
+  margin-top: 0.5rem;
+}
+
+/* 帯: 文書の先頭に、固定せずに置く。広い列では操作を右に並べる */
+.panel-band {
+  container: panel-band / inline-size;
+  padding: 0.75rem 0.75rem 0;
+
+  .alert {
+    max-width: none;
+  }
+
+  @container panel-band (width >= 30rem) {
+    .alert {
+      grid-template-columns: 1rem 1fr auto;
+    }
+
+    .alert-action {
+      grid-column: 3;
+      grid-row: 1 / span 2;
+      align-self: center;
+      margin-top: 0;
+    }
+  }
+}
+
+/* Button: shadcn/ui の Button の default と outline */
+.button {
+  display: inline-flex;
+  gap: 0.5rem;
+  align-items: center;
+  justify-content: center;
+  min-width: 2.25rem;
+  height: 2.25rem;
+  padding: 0 1rem;
+  border: 1px solid transparent;
+  border-radius: var(--radius);
+  background: var(--primary);
+  color: var(--primary-foreground);
+  font: inherit;
+  font-size: 0.875rem;
+  font-weight: 500;
+  white-space: nowrap;
+  cursor: pointer;
+  touch-action: manipulation;
+
+  &:hover {
+    background: var(--primary-hover);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+}
+
+/* Button の outline: 帯の操作。文書の上に置くため、塗りの強い主操作にしない */
+.button.is-outline {
+  border-color: var(--warning-border);
+  background: var(--background);
+  color: var(--foreground);
+
+  &:hover {
+    background: var(--secondary);
+  }
+}
+
+/* 読み込み中: Spinner と文言を横に並べる */
+.panel-loading {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  color: var(--muted-foreground);
+  font-size: 0.875rem;
+
+  /* 文言: 文書の無い場面の見出し 1。見た目は周りの文字のまま */
+  h1 {
+    margin: 0;
+    color: inherit;
+    font-size: inherit;
+    font-weight: inherit;
+  }
+}
+
+/* Spinner: shadcn/ui の Spinner（lucide の loader-circle を回す） */
+.spinner {
+  width: 1rem;
+  height: 1rem;
+  animation: panel-spin 1s linear infinite;
+}
+
+/* Spinner の動き */
+@keyframes panel-spin {
+  to {
+    rotate: 1turn;
+  }
+}
+
+/* 動きを減らす設定: ゆっくり回す */
+@media (prefers-reduced-motion: reduce) {
+  .spinner {
+    animation-duration: 6s;
+  }
+}
+
+/* 文書の無い場面: 配布物の CSS が無いため、Webview の地は VS Code の色になる */
+.preview:has(> .panel-state:not([hidden])) {
+  background: var(--background);
+  color: var(--foreground);
+}

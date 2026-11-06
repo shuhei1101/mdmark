@@ -201,6 +201,16 @@ classes:
           description: 当たったパネル
         refs:
           - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを描き直す.ts#constraints[差分のパネルを描き直すきっかけ]
+      - name: auditPreview
+        title: パネルを axe で検査する
+        kind: メソッド
+        summary: テストのときだけ `activate` が戻り値で返す。最後に表に出たパネルの `audit` を呼び、`axed` の `violations` を返す
+        is_async: true
+        returns:
+          type: Promise<AxeViolation[]>
+          description: 違反の並び
+        refs:
+          - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを開く.ts#constraints[テストのときの差し替え]
     status: planned
   - name: PreviewPanel
     title: プレビューのパネル
@@ -257,6 +267,10 @@ classes:
         type: Uri
         access: private
         description: '`Uri.file(document.uri.fsPath)`。設定のスコープ・設定ファイルと `<base>` の基準のフォルダ・リンクを解決するフォルダ・`localResourceRoots` に使う（差分の変更後が `git:` などの URI でもファイルの場所で決める）'
+      - name: pendingAudits
+        type: 'Map<number, (violations: AxeViolation[]) => void>'
+        access: private
+        description: '`axe` の `id` → 結果を渡す関数（テストのときだけ使う）'
     methods:
       - name: load
         title: 読み込む
@@ -351,6 +365,7 @@ classes:
              - `openAsset` の場合、同じく探し、あったファイルだけを `env.openExternal(Uri.file(…))` で開く
                - `[warn]` 開けないファイル（パス）
              - `inspected` の場合、`pendingInspects` の同じ `id` に渡して消す
+                       - `axed` の場合、`pendingAudits` の同じ `id` に渡して消す
              - `loadFailed` の場合、描けない理由は Webview が出す
                - `[warn]` 配布物を読めない（`reason`・バージョン・`index.js` の URL）。`reason` が `diffUnsupported` のときは `[warn]` 差分の色分けに対応しないバージョン（バージョン）
              - `rendered` は何もしない（結合テストが受けたことを `onDidReceiveMessage` で確かめる）
@@ -411,6 +426,17 @@ classes:
           description: '-'
         refs:
           - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを描き直す.ts#constraints[libraries の URL]
+      - name: audit
+        title: axe で検査させる
+        kind: メソッド
+        summary: '`inspect` と同じ番号の列の新しい `id` で `axe` を送り、`axed` を受けたら解決する（テストのときだけ呼ばれる。待ちの上限は `inspect` と同じ）'
+        is_async: true
+        returns:
+          type: Promise<AxeViolation[]>
+          description: 違反の並び
+        refs:
+          - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを開く.ts#constraints[テストのときの差し替え]
+          - dev/設計書/モジュール構成/VSCode拡張機能/Webview.ts#data_models[AxeViolation]
     status: planned
   - name: EditorScrollGuard
     title: エディタのスクロールの見張り
@@ -722,21 +748,21 @@ functions:
     kind: 関数
     scope: internal
     args:
-    - name: options
-      type: '{ markdownPath: string; markdown: string; root: string; readFile: (path: string) => Promise<string | undefined> }'
-      required: true
-      description: '`markdownPath` は開いている Markdown の絶対パス、`markdown` はその本文、`root` は根のフォルダの絶対パス、`readFile` はファイルを読む関数（読めないとき `undefined`）'
+      - name: options
+        type: '{ markdownPath: string; markdown: string; root: string; readFile: (path: string) => Promise<string | undefined> }'
+        required: true
+        description: '`markdownPath` は開いている Markdown の絶対パス、`markdown` はその本文、`root` は根のフォルダの絶対パス、`readFile` はファイルを読む関数（読めないとき `undefined`）'
     returns:
       type: 'Promise<{ includes: Record<string, string>; paths: string[] }>'
       description: 取り込む文書の表と読んだファイル
     side_effects: ファイルを読む
     unit_tests:
-    - name: test_read_includes
-      case: 正常
-      condition: '`docs/guide.md` が `共通/手順.md#実行` と `missing.md` と根の外の `../../outside.md` を取り込む'
-      expected: 表が `共通/手順.md` だけをキーに持ち、パスの一覧が `docs/共通/手順.md` だけで、根の外を読んでいない
-      mock: '`readFile` に本文の表を引く関数を渡す'
-      summary: 根の中の読めるファイルだけを読む
+      - name: test_read_includes
+        case: 正常
+        condition: '`docs/guide.md` が `共通/手順.md#実行` と `missing.md` と根の外の `../../outside.md` を取り込む'
+        expected: 表が `共通/手順.md` だけをキーに持ち、パスの一覧が `docs/共通/手順.md` だけで、根の外を読んでいない
+        mock: '`readFile` に本文の表を引く関数を渡す'
+        summary: 根の中の読めるファイルだけを読む
 test_files:
   - tests/unit/vscode/src/preview/html.test.ts
   - tests/unit/vscode/src/preview/links.test.ts

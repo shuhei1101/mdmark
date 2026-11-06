@@ -15,7 +15,7 @@ items:
   - page: sanitize-html.yaml
     summary: 描く前の HTML からスクリプトと許可していない要素・属性を落とす
   - page: Storybook.yaml
-    summary: UI の部品を状態ごとのストーリーとして並べる（サーバー描画）
+    summary: UI の部品を状態ごとのストーリーとして並べる（react-vite）
   - page: valibot.yaml
     summary: テストで拡張の引数の Standard Schema を作る（配布物に束ねない）
   - page: yaml.yaml
@@ -37,7 +37,7 @@ items:
   - page: ClaudeCode.yaml
     summary: プラグインの導入・PreToolUse のフック・プラグインの MCP サーバーの起動
   - page: eslint.yaml
-    summary: 束ねた JS を構文木にして規則を当てる（対応ブラウザの下限の確かめに使う）
+    summary: 束ねた JS を構文木にして規則を当てる（対応ブラウザの下限の確かめと、Webview の React の規則）
   - page: eslint-plugin-compat.yaml
     summary: 対応ブラウザの下限の版に無い API の使用を報告する
   - page: highlight.js.yaml
@@ -48,3 +48,21 @@ items:
     summary: CLI が設定の aliases を取り込んだ JSON Schema で検証する（配布物に束ねない）
   - page: dev-docs.yaml
     summary: 配信元の文書を MCP で検索・参照する（Claude Code が使い方集を参照する先）
+  - page: react.yaml
+    summary: VS Code の Webview の画面と hook（React Compiler を含む）
+  - page: vite.yaml
+    summary: VS Code の Webview を 1 つの JS と CSS に束ねる
+  - page: tailwindcss.yaml
+    summary: Webview の部品の class とトークン（Preflight を読まない）
+  - page: shadcn-ui.yaml
+    summary: Webview の部品のソース（Button・Alert・Spinner）
+  - page: msw.yaml
+    summary: ストーリーと単体テストの配布物の HEAD のモック
+  - page: lefthook.yaml
+    summary: pre-commit・pre-push の検査
+  - page: axe-core.yaml
+    summary: テストのときだけパネルをアクセシビリティの規則で検査する
+  - page: react-error-boundary.yaml
+    summary: Webview の画面の最上位の Error Boundary
+  - page: testing-library.yaml
+    summary: Webview のコンポーネントと hook の単体テスト

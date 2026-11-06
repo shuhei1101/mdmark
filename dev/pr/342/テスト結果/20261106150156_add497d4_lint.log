@@ -1,0 +1,19 @@
+$ (rc=0; npm run lint || rc=1; npm run lint:eslint || rc=1; npm run typecheck || rc=1; npm --prefix vscode run typecheck || rc=1; exit $rc)
+
+> lint
+> biome check .
+
+Checked 808 files in 4s. No fixes applied.
+
+> lint:eslint
+> node tools/eslint/node_modules/eslint/bin/eslint.js -c tools/eslint/eslint.config.js --max-warnings 0
+
+
+> typecheck
+> tsc --noEmit
+
+
+> mdmark-vscode@0.1.0 typecheck
+> tsc --noEmit
+
+exit=0

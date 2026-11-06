@@ -28,7 +28,7 @@ categories:
       ```bash
       npm --prefix vscode ci
       ```
-    effects: '`node_modules/` を `package-lock.json` のとおりに作り直す'
+    effects: '`node_modules/` を `package-lock.json` のとおりに作り直す。続けて `prepare` が、`lefthook install` で全ての worktree が共有する `.git/hooks` に Git フックを入れ、`npm ci --prefix tools/eslint` で `tools/eslint/node_modules/` を作り直す（`LEFTHOOK=0` を付けるとフックを入れない）'
     verification:
       state: 済
       date: '2026-10-13'
@@ -99,7 +99,7 @@ categories:
     verification:
       state: 済
       date: '2026-10-26'
-      detail: 'Storybook の分は 2026-10-16 に確かめた（`RENDER_PORT=46601 npm run storybook:render` と `RENDER_ORIGIN=http://127.0.0.1:46601 npm run storybook -- --host 127.0.0.1 --exact-port -p 46602` を立て、`/index.json` に 57 個のストーリー（13 個の部品）が載ることを確かめた。Playwright で開いた `iframe.html?id=` の 57 個のストーリーが、`#storybook-root` にエラー無く描かれた。`kill` で止めると待受が閉じた）。プラグインの分は 2026-10-26 に確かめた（`npm run build` が終了コード 0 で `dist/cli.js` と `plugin/scripts/`・`plugin/guide/` を書き、`MDMARK_PORT=18801 node dist/cli.js serve` が `MCP サーバーを起動しました: http://127.0.0.1:18801/mcp` を出した。空の `CLAUDE_CONFIG_DIR` で `claude plugin marketplace add {作業ツリーの絶対パス}` と `claude plugin install mdmark@mdmark` が成功し、`MDMARK_PORT=18801` を渡した `claude mcp list` が `plugin:mdmark:mdmark: http://127.0.0.1:18801/mcp (HTTP) - ✔ Connected` を出した。`kill -TERM` で止めるとプロセスが終わり、`claude plugin uninstall mdmark@mdmark` と `claude plugin marketplace remove mdmark` で外れた）'
+      detail: 'Storybook の分は 2026-11-06 に react-vite で確かめ直した（描画の口と `RENDER_ORIGIN` を渡した `storybook dev` を立て、`/index.json` の 446 個のストーリーが Playwright でエラー無く描かれた。`kill` で止めると待受が閉じた）。2026-10-16 にも確かめた（`RENDER_PORT=46601 npm run storybook:render` と `RENDER_ORIGIN=http://127.0.0.1:46601 npm run storybook -- --host 127.0.0.1 --exact-port -p 46602` を立て、`/index.json` に 57 個のストーリー（13 個の部品）が載ることを確かめた。Playwright で開いた `iframe.html?id=` の 57 個のストーリーが、`#storybook-root` にエラー無く描かれた。`kill` で止めると待受が閉じた）。プラグインの分は 2026-10-26 に確かめた（`npm run build` が終了コード 0 で `dist/cli.js` と `plugin/scripts/`・`plugin/guide/` を書き、`MDMARK_PORT=18801 node dist/cli.js serve` が `MCP サーバーを起動しました: http://127.0.0.1:18801/mcp` を出した。空の `CLAUDE_CONFIG_DIR` で `claude plugin marketplace add {作業ツリーの絶対パス}` と `claude plugin install mdmark@mdmark` が成功し、`MDMARK_PORT=18801` を渡した `claude mcp list` が `plugin:mdmark:mdmark: http://127.0.0.1:18801/mcp (HTTP) - ✔ Connected` を出した。`kill -TERM` で止めるとプロセスが終わり、`claude plugin uninstall mdmark@mdmark` と `claude plugin marketplace remove mdmark` で外れた）'
     effects: プラグインの確かめは、手元の Claude Code の設定にマーケットプレイスとプラグインを書き、常駐サーバーは `127.0.0.1` の `MDMARK_PORT`（既定 8782）を待ち受ける。外すコマンドで戻す。設定を書き換えたくないときは、`CLAUDE_CONFIG_DIR` に空のフォルダを指して流す
   - name: テスト
     refs:
@@ -142,7 +142,27 @@ categories:
       date: '2026-10-24'
       detail: '`npm run build` が終了コード 0 で終わり、`dist/` に `index.js`・`index.css`・`THIRD_PARTY_LICENSES.txt`・`cli.js` と型定義が書かれることを確かめた。スキーマをタグ v0.3.0 から変えたのに `migrations/no-steps.yaml` の合う行が無いと終了コード 1 で `dist/` が残らず、行を置くと通ること、`--version v0.4.0` のビルドで `migrations/next/` が残ると終了コード 1 で終わることを確かめた。`--version` の指定と、版の書式の誤り・`version.ini` の欠け・esbuild の失敗・上限超過のとき `dist/` が残らないこと、型定義が `--moduleResolution bundler` と `nodenext` の使う側で型検査を通ること、移行の手順の点検の分岐は、単体テストで確かめた。2026-10-23 に、`npm run build` が終了コード 0 で `plugin/` の生成物を書くことを確かめた。`plugin/` の失敗の分岐は単体テストで確かめた。VS Code 拡張機能のコマンドは `vscode/` を実装して走らせた（2026-10-23）。`npm --prefix vscode run build` が終了コード 0 で終わり、`vscode/dist/extension.cjs`（`require("vscode")` を持つ）・`vscode/media/preview.js`・`vscode/media/preview.css` が書かれ、`npm --prefix vscode run typecheck` が終了コード 0 で通る。`npm --prefix vscode run package` が `vscode:prepublish` のビルドも流して `vscode/mdmark-0.1.0.vsix`（`package.json`・`readme.md`・`dist/extension.cjs`・`media/preview.css`・`media/preview.js` の 7 ファイル、73KB。`src/`・`node_modules/` を含まない）を書く。LICENSE が無いと `vsce` が警告を出すが、終了コードは 0。2026-10-24 に、対応ブラウザの下限の確かめを足した `npm run build` が終了コード 0 で通ること、下限に無い API を確かめずに使うと終了コード 1 で `dist/` が残らず標準エラーに配布ファイル・行・列・報告の文が出ることを、単体テストで確かめた'
   - name: 取り込み前の検査
-    commands: 未確定
+    commands: |-
+      commit で pre-commit（commit に入るファイルに Biome・Webview の ESLint・型検査）、push で pre-push（`npm run test:unit`）が lefthook から実行される。
+
+      手で全件を検査する（Biome・Webview の ESLint・ルートと `vscode/` の型検査を順に実行し、最初の失敗で止まる）。
+
+      ```bash
+      npm run check
+      ```
+
+      フックを入れずに、pre-commit の検査だけを実行する。
+
+      ```bash
+      npx lefthook run pre-commit
+      ```
+    prerequisites:
+      - '`npm ci` で依存を入れてある（Git フックと `tools/eslint/` の依存も入る）'
+    effects: 検査だけで、ファイルを書き換えない
+    verification:
+      state: 済
+      date: '2026-11-06'
+      detail: '`npm run check` が終了コード 0 で終わった（ESLint は Webview の 30 ファイルだけを検査した）。`npx lefthook validate` が `All good` を返した。commit で pre-commit の 3 つの検査が当たらないファイルを飛ばし、push で pre-push の `npm run test:unit` が実行されることを確かめた'
   - name: 管理作業
     prerequisites:
       - タグを打つ担当（tester）が、master へマージする前に対象のブランチの worktree で流す

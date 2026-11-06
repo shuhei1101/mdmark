@@ -5,6 +5,7 @@ import type { AddressInfo } from "node:net";
 import { join } from "node:path";
 import * as vscode from "vscode";
 import {
+  audit,
   clickInPreview,
   distPath,
   distRequests,
@@ -150,6 +151,8 @@ suite("プレビューを開く", () => {
         `${selector} が描かれていない`,
       );
     }
+    // パネルの部品にアクセシビリティの違反が無い
+    assert.deepStrictEqual(await audit(), []);
     // CSP と nonce
     const html = record.panel.webview.html;
     const csp = /<meta http-equiv="Content-Security-Policy" content="([^"]*)"/
@@ -494,6 +497,7 @@ suite("プレビューを開く", () => {
     assert.ok(notice?.text.includes("jsDelivr から読み込めませんでした"));
     assert.strictEqual((await inspect('[data-action="reload"]')).length, 1);
     assert.strictEqual((await inspect(".mdmark-table")).length, 0);
+    assert.deepStrictEqual(await audit(), []);
     assert.strictEqual(
       await (async () =>
         (
@@ -533,7 +537,7 @@ suite("プレビューを開く", () => {
     assert.strictEqual(loading?.attributes.role, "status");
     assert.ok(loading?.text.includes("mdmark を読み込んでいます"));
     assert.strictEqual(
-      (await inspect(".mdmark-preview-loading progress")).length,
+      (await inspect('.mdmark-preview-loading svg[role="img"]')).length,
       1,
     );
     // 描き終えたら消え、文書が出る

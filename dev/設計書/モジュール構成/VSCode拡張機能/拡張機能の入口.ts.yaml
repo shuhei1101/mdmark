@@ -56,6 +56,9 @@ data_models:
       - name: inspectPreview
         type: '(selector: string) => Promise<InspectedElement[]>'
         description: 最後に表に出たパネルの要素を調べる
+      - name: auditPreview
+        type: () => Promise<AxeViolation[]>
+        description: 最後に表に出たパネルを axe で検査する
     refs:
       - dev/設計書/モジュール構成/VSCode拡張機能/プレビュー.ts#classes[PreviewManager]
     status: planned
@@ -127,7 +130,7 @@ functions:
          - `mdmark.openSettings` は `commands.executeCommand("workbench.action.openSettings", "@ext:" + context.extension.id)`（`context.extension.id` は `package.json` の `publisher`.`name`）
          - `mdmark.exportHtml`・`mdmark.openInBrowser`・`mdmark.printToPdf` は `exportMarkdown`（`export`・`browser`・`print`）
       4. `workspace.onDidChangeTextDocument`・`onDidSaveTextDocument`・`onDidChangeConfiguration`・`window.onDidChangeTextEditorVisibleRanges` を `PreviewManager` へ、設定ファイルの `createFileSystemWatcher` の作成・変更・削除を `PreviewManager.handleConfigChange` へつなぐ
-      5. テストのときだけ `{ inspectPreview }` を返す
+      5. テストのときだけ `{ inspectPreview, auditPreview }` を返す
     callees:
       - dev/設計書/モジュール構成/VSCode拡張機能/プレビュー.ts#classes[PreviewManager]
       - dev/設計書/モジュール構成/VSCode拡張機能/設定.ts#functions[openConfigFile]

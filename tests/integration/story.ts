@@ -4,6 +4,14 @@ import { inject } from "vitest";
 // ストーリーを開く画面の大きさ（狭い幅で折り返しを見る）
 const VIEWPORT = { width: 420, height: 360 };
 
+/** 最初のストーリーを開いて、Vite が依存を束ね終えるまで待つ上限（ミリ秒。測った起動の直後の読み込み 56 秒の約 5 倍） */
+export const WARM_UP_TIMEOUT_MS = 300_000;
+// 温めに開くストーリー（React の部品と、部品の HTML の描画の口の両方を通す）
+const WARM_UP_STORIES = [
+  "vscode-previewstatus--offline",
+  "parts-notice--block",
+];
+
 /** ストーリーを開く画面の大きさ */
 export type Viewport = { width: number; height: number };
 
@@ -16,8 +24,22 @@ export function createBrowserHolder(): {
   let browser: Browser | undefined;
   const pages: Page[] = [];
   return {
+    // Chromium を起こし、ストーリーを開いて Vite が依存を束ね終えるまで待つ
     launch: async () => {
       browser = await chromium.launch();
+      const page = await browser.newPage();
+      for (const id of WARM_UP_STORIES) {
+        await page.goto(
+          `${inject("storybookUrl")}/iframe.html?id=${id}&viewMode=story`,
+          { timeout: WARM_UP_TIMEOUT_MS },
+        );
+        await page.waitForFunction(
+          () => document.body.classList.contains("sb-show-main"),
+          undefined,
+          { timeout: WARM_UP_TIMEOUT_MS },
+        );
+      }
+      await page.close();
     },
     close: async () => {
       await browser?.close();
@@ -32,7 +54,10 @@ export function createBrowserHolder(): {
       await page.goto(
         `${inject("storybookUrl")}/iframe.html?id=${id}&viewMode=story`,
       );
-      await page.waitForSelector("#storybook-root .mdmark");
+      // 部品の HTML のストーリーは `.mdmark`、VS Code の React の部品は `.mdmark-panel-part` を根に持つ
+      await page.waitForSelector(
+        "#storybook-root .mdmark, #storybook-root .mdmark-panel-part",
+      );
       return page;
     },
   };

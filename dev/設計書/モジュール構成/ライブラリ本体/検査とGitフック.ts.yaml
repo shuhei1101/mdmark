@@ -1,0 +1,120 @@
+title: ライブラリ本体 / 検査とGitフック
+lead: ESLint の道具と設定（`tools/eslint/`）・Git フック（lefthook）・検査の npm scripts と、テストの起動で Git のリポジトリの場所を指す環境変数を外す処理。配布物には入らない。
+directory: |-
+  ```tree
+  {リポジトリの直下}/
+  ├── tools/
+  │   └── eslint/
+  │       ├── package.json       # ESLint 9・TypeScript 6.0・typescript-eslint・plugin だけを持つ package
+  │       ├── package-lock.json
+  │       └── eslint.config.js   # VS Code 拡張機能の Webview（vscode/src/webview/）に当てる ESLint の Flat Config
+  ├── tests/
+  │   └── git-env.ts             # Git のリポジトリの場所を指す環境変数を外す
+  ├── lefthook.yml               # pre-commit・pre-push で実行する検査
+  ├── vitest.config.ts           # 読み込んだ時点で git-env.ts の処理を呼ぶ
+  └── package.json               # 検査の npm scripts（lint:eslint・typecheck:vscode・check）と prepare
+  ```
+
+  整形とリポジトリ全体の lint は今と同じ Biome（`biome check .`）が受け持ち、ESLint は Biome に無い React・アクセシビリティ・import の向き・Tailwind・複雑さの規則だけを Webview に当てる。
+  配布物の対応ブラウザの下限の確認（`eslint-plugin-compat`）は今と同じく `scripts/baseline.ts` が ESLint の `Linter` を直接呼ぶ（この設定を読まない）。
+constants:
+  - name: eslintPackage
+    title: ESLint の道具の package
+    container: tools/eslint/package.json
+    summary: 直下の `package.json` と分けて、ESLint の実行に要るものだけを版を固定して持つ `private` の package
+    entries:
+      - key: eslint
+        value: '`9.39.5`'
+      - key: typescript
+        value: '`6.0.3`（typescript-eslint が型の情報を取るのに使う。直下の型検査は今と同じ `typescript` 7.0 が受け持つ）'
+      - key: typescript-eslint
+        value: '`8.72.1`'
+      - key: plugin
+        value: '`eslint-plugin-react-hooks` 7.1.1・`eslint-plugin-jsx-a11y` 6.10.2・`eslint-plugin-boundaries` 7.4.2・`eslint-plugin-better-tailwindcss` 4.10.0・`eslint-plugin-sonarjs` 4.2.2・`eslint-plugin-import-x` 4.17.1'
+    refs:
+      - dev/設計書/外部ライブラリ/eslint#
+      - dev/設計書/外部ライブラリ/typescript#
+    status: planned
+  - name: eslintConfig
+    title: ESLint の設定
+    container: tools/eslint/eslint.config.js
+    summary: '`export default` する Flat Config の配列。`basePath` をリポジトリの直下にし、`files` は `vscode/src/webview/**/*.{ts,tsx}`（ストーリーと `testing/` を含む）'
+    entries:
+      - key: 型の情報
+        value: 'typescript-eslint の `recommendedTypeChecked`、`parserOptions.projectService: true`、`@typescript-eslint/no-deprecated`・`no-non-null-assertion`・`consistent-type-definitions: ["error", "type"]`'
+      - key: React
+        value: '`eslint-plugin-react-hooks` の `recommended-latest`（React Compiler の規則を含む）'
+      - key: アクセシビリティ
+        value: '`eslint-plugin-jsx-a11y` の `recommended` と `tabindex-no-positive`・`no-noninteractive-tabindex`・`interactive-supports-focus`・`click-events-have-key-events`・`no-autofocus`'
+      - key: import の向き
+        value: '`eslint-plugin-boundaries` の `boundaries/dependencies`（`default: "disallow"`）。要素は `app`（`app/`）・`features`（`features/`）・`shared`（`shared/`）・`testing`（`testing/`）のフォルダで、`app → features → shared` の向きと、`testing` から `features`・`shared`、ストーリー（`boundaries/files` の `*.stories.{ts,tsx}`）から `testing` への import だけを許す。入口の `main.tsx` はどの要素にも入れない'
+      - key: Tailwind
+        value: '`eslint-plugin-better-tailwindcss` の `recommended-error`（`entryPoint` は `vscode/src/webview/shared/styles/panel.css`）から、整形の規則 `enforce-consistent-line-wrapping` を外したものと、任意値の class（`[` を含む class）を禁じる `better-tailwindcss/no-restricted-classes`。登録の無い class の検査は、結合テストが探す `mdmark-` で始まる class を除く'
+      - key: 複雑さ
+        value: '`complexity: ["error", 10]`・`max-depth: ["error", 4]`・`max-params: ["error", 3]`・`sonarjs/cognitive-complexity: ["error", 15]`（`eslint-plugin-sonarjs`）'
+      - key: 書き方
+        value: '`func-style: ["error", "expression"]`・`no-restricted-syntax` で `TSEnumDeclaration` を禁じる・`import/no-default-export`（`*.stories.ts`・`*.stories.tsx` は除く）'
+      - key: Biome との重なり
+        value: 整形は Biome が受け持つため、ESLint は整形の規則を持たない（Prettier は入れない。class の並びの規則は整形ではないため残す）
+    refs:
+      - dev/設計書/外部ライブラリ/eslint#
+      - dev/設計書/外部ライブラリ/biome#
+    status: planned
+  - name: lefthookConfig
+    title: Git フックの設定
+    container: lefthook.yml
+    summary: pre-commit と pre-push で実行する検査。どれも直下の npm scripts か Biome を呼ぶ
+    entries:
+      - key: pre-commit.parallel
+        value: '`true`'
+      - key: pre-commit.commands.biome
+        value: '`glob: "*.{js,ts,tsx,json,css}"`、`run: npx biome check --no-errors-on-unmatched {staged_files}`'
+      - key: pre-commit.commands.eslint
+        value: '`glob: "vscode/src/webview/**/*.{ts,tsx}"`、`run: npm run lint:eslint -- {staged_files}`'
+      - key: pre-commit.commands.typecheck
+        value: '`glob: "*.{ts,tsx}"`、`run: npm run typecheck && npm run typecheck:vscode`'
+      - key: pre-push.commands.unit
+        value: '`run: npm run test:unit`（フックに Git が渡す `GIT_DIR` などは、`vitest.config.ts` が `clearGitLocalEnv` で外す）'
+    refs:
+      - dev/設計書/外部ライブラリ/lefthook#
+    status: planned
+  - name: rootScripts
+    title: 検査の npm scripts
+    container: package.json
+    summary: 直下の `package.json` の `scripts` に追加する検査の入口（今の `lint`・`typecheck`・`test:unit` はそのまま）
+    entries:
+      - key: lint:eslint
+        value: '`node tools/eslint/node_modules/eslint/bin/eslint.js -c tools/eslint/eslint.config.js --max-warnings 0`（`warn` の規則（`react-hooks/exhaustive-deps` など）も 1 件で失敗にする。直下の `eslint` 10 ではなく `tools/eslint/` の ESLint 9 を呼ぶ。引数が無ければ `files` の全て）'
+      - key: typecheck:vscode
+        value: '`tsc --noEmit -p vscode`'
+      - key: check
+        value: '`npm run lint && npm run lint:eslint && npm run typecheck && npm run typecheck:vscode`'
+      - key: prepare
+        value: '`lefthook install && npm ci --prefix tools/eslint`（`npm install` の後に Git フックと `tools/eslint/` の依存を入れる）'
+    status: planned
+functions:
+  - name: clearGitLocalEnv
+    title: Git のリポジトリの場所を指す環境変数を外す
+    kind: 関数
+    container: tests/git-env.ts
+    usecase: 配布物をビルドして検査する
+    summary: '`git rev-parse --local-env-vars` が返す環境変数（`GIT_DIR`・`GIT_COMMON_DIR`・`GIT_INDEX_FILE`・`GIT_OBJECT_DIRECTORY`・`GIT_CONFIG` など）を `process.env` から外す'
+    description: '`vitest.config.ts` が読み込んだ時点で呼ぶ。Vitest の本体・`globalSetup`・テストの worker と、テストと製品のコード（`src/cli/git.ts` など）が起動する子プロセスは、外した後の環境を引き継ぐ。Git のフック（worktree のフックは `GIT_DIR` を持つ）や、`GIT_DIR` を持つ環境から Vitest を呼んでも、一時のフォルダで `git` を呼ぶテストが作業中のリポジトリへ書かない'
+    scope: public
+    process: |-
+      1. `git rev-parse --local-env-vars` を `execFileSync` で呼び、出力を行に分ける
+      2. 行の名前ごとに `delete process.env[名前]`
+    unit_tests:
+      - name: test_clear_git_local_env
+        case: 正常
+        summary: リポジトリの場所を指す環境変数だけを外す
+        condition: '`process.env` に `GIT_DIR`・`GIT_COMMON_DIR`・`GIT_INDEX_FILE` と、場所を指さない `GIT_AUTHOR_NAME` を置いて呼ぶ'
+        expected: '`GIT_DIR`・`GIT_COMMON_DIR`・`GIT_INDEX_FILE` が無くなり、`GIT_AUTHOR_NAME` は残る'
+    status: planned
+notes:
+  道具を分ける理由: 直下の `typescript` 7.0 は JavaScript の API（`createProgram` など）を持たず、typescript-eslint 8 は TypeScript 6.1 未満だけに対応する。`eslint-plugin-jsx-a11y` 6.10 は ESLint 9 までに対応する。このため ESLint の実行に要るものを `tools/eslint/` に分け、直下の型検査・`scripts/baseline.ts` の ESLint 10 には手を入れない
+  適用の範囲: 複雑さの規則を含む ESLint の規則は Webview（`vscode/src/webview/`）だけに当てる（要件.md の未確定「複雑さの lint を error にする範囲」の案 A）。リポジトリの他の TypeScript へ広げるのは別の Issue で扱う
+  閾値: knowledge の規約『設計原則』が上限の値を持たないため、`sonarjs/cognitive-complexity` は規則の既定（15）、`max-depth` は ESLint の既定（4）、`max-params` は 3（オブジェクトの引数にまとめる今の書き方に合わせる）、`complexity` は 10 にする
+  テストの環境変数: 外す変数は Git が返す一覧に任せ、名前を書き並べない。外すのはテストの起動（`vitest.config.ts`）で、Git のフックの `run` では外さない（フックの外から呼んでも同じに守るため）
+test_files:
+  - tests/unit/git-env.test.ts

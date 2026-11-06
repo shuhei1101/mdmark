@@ -4,5 +4,8 @@ scripts/**
 out/**
 node_modules/**
 .vscode-test/**
+media/test/**
+vite.config.ts
+components.json
 tsconfig.json
 *.vsix

@@ -32,6 +32,7 @@ flows:
       - '`mdmark.lastVersion` が `v0.10.0`'
       - '`rendered` を受けた後、Webview の本文に見出し・表・注意書き・フロー図の要素がある'
       - Webview の HTML の CSP が制約「CSP」のとおりで、`script` 要素が全て nonce を持つ
+      - '`auditPreview()` が返すパネルの部品の axe の違反が 0 件'
     test: test_normal
   - name: 正常系（同じ列に開く）
     summary: '`mdmark.openPreview` は同じ列のタブに開く'
@@ -203,6 +204,7 @@ flows:
       - '`loadFailed` の `reason` が `offline`'
       - パネルにオフラインの描けない理由と「リロード」のボタンがあり、本文は無い
       - Markdown と `mdmark.config.yaml` の中身が変わらない
+      - 描けない理由を出したパネルの `auditPreview()` の axe の違反が 0 件
     test: test_error_when_distribution_unreachable
   - name: 異常系（指定したバージョンが無い）
     summary: 配布物の URL が 404 のとき、指定したバージョンが無い理由と「リロード」を出す
@@ -506,7 +508,7 @@ constraints:
   - item: 相対パスの基準
     constraint: Webview の HTML に `<base href="{Markdown のフォルダの asWebviewUri}/">` を置き、本文の相対パスの画像を Markdown のフォルダから読む。`localResourceRoots` の外の画像は Webview が読まず、`alt` が出る
   - item: Webview とのメッセージ
-    constraint: '拡張機能 → Webview: `{ type: "render", markdown, previous?, config, theme, includes }`（`includes` は制約「取り込む文書」の取り込む文書の表、`previous` は差分のパネルだけが持つ変更前の Markdown、`config` は `{ features?, libraries?, "html-scripts"?, colorTheme? }`、`theme` は `mdmark.preview.theme` の値）・`{ type: "scrollToLine", line }`・`{ type: "configError", line }`・`{ type: "configOk" }`・`{ type: "assetsResolved", id, urls }`（`urls` は `paths` の各パスから Webview の URL か `null` を引くオブジェクト）・`{ type: "inspect", id, selector }`（テストのときだけ）。Webview → 拡張機能: `{ type: "ready" }`（配布物を読み終えた）・`{ type: "rendered" }`（`mount` か `update` を呼び終えた）・`{ type: "loadFailed", reason }`（`reason` は `offline`・`versionMissing`・`diffUnsupported`）・`{ type: "openLink", href }`・`{ type: "revealLine", line }`・`{ type: "reload" }`・`{ type: "openConfig" }`・`{ type: "resolveAssets", id, paths }`（制約「動画・音声とアセットのルートの解決」）・`{ type: "openAsset", path }`（制約「再生できない動画・音声」）・`{ type: "inspected", id, elements }`（テストのときだけ。`elements` は `selector` に当たる要素ごとの `{ tagName, className, attributes, text, naturalWidth?, top, height }`。`top` は見えている範囲の先頭からの位置、`height` は高さで、単位は px）。`render` は初回と `config` が変わったときは `mount`（前の描画は `destroy`）、それ以外は戻り値の `update` で描く'
+    constraint: '拡張機能 → Webview: `{ type: "render", markdown, previous?, config, theme, includes }`（`includes` は制約「取り込む文書」の取り込む文書の表、`previous` は差分のパネルだけが持つ変更前の Markdown、`config` は `{ features?, libraries?, "html-scripts"?, colorTheme? }`、`theme` は `mdmark.preview.theme` の値）・`{ type: "scrollToLine", line }`・`{ type: "configError", line }`・`{ type: "configOk" }`・`{ type: "assetsResolved", id, urls }`（`urls` は `paths` の各パスから Webview の URL か `null` を引くオブジェクト）・`{ type: "inspect", id, selector }`・`{ type: "axe", id }`（どちらもテストのときだけ）。Webview → 拡張機能: `{ type: "ready" }`（配布物を読み終えた）・`{ type: "rendered" }`（`mount` か `update` を呼び終えた）・`{ type: "loadFailed", reason }`（`reason` は `offline`・`versionMissing`・`diffUnsupported`）・`{ type: "openLink", href }`・`{ type: "revealLine", line }`・`{ type: "reload" }`・`{ type: "openConfig" }`・`{ type: "resolveAssets", id, paths }`（制約「動画・音声とアセットのルートの解決」）・`{ type: "openAsset", path }`（制約「再生できない動画・音声」）・`{ type: "inspected", id, elements }`（テストのときだけ。`elements` は `selector` に当たる要素ごとの `{ tagName, className, attributes, text, naturalWidth?, top, height }`。`top` は見えている範囲の先頭からの位置、`height` は高さで、単位は px）・`{ type: "axed", id, violations }`（テストのときだけ。`violations` は axe-core の違反ごとの `{ id, impact, targets }`）。`render` は初回と `config` が変わったときは `mount`（前の描画は `destroy`）、それ以外は戻り値の `update` で描く'
     notes: '`line` は 0 始まりの元の行番号（文書をHTML文字列にする.ts の制約「元の行番号」）'
   - item: 描けない理由の見分け方
     constraint: Webview は `import()` が失敗したら、同じ `index.js` の URL を `fetch` の `HEAD` で確かめる。404 なら `versionMissing`、それ以外（ネットワークのエラーを含む）は `offline` を拡張機能へ知らせ、パネルに描けない理由を出す。バージョンを決められないときは、拡張機能が配布物を読まない HTML で理由を出す
@@ -514,7 +516,7 @@ constraints:
     constraint: '`mdmark.preview.theme` が `light`・`dark` のときは、Webview の描く先の要素を包む要素に `mdmark-theme-light`・`mdmark-theme-dark` を付ける。`auto` のときは付けず、VS Code が `body` に付ける class に任せる。設定を変えると開いているパネルへ `render` を送り直す'
     notes: dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts の制約「配色の切り替え」
   - item: テストのときの差し替え
-    constraint: '`ExtensionContext.extensionMode` が `ExtensionMode.Test` のときだけ、環境変数 `MDMARK_VSCODE_DIST_BASE`（配布物の配信元）と `MDMARK_VSCODE_TAGS_URL`（タグ一覧の取得先）を読む。CSP の配布物の origin も差し替えた配信元の origin にする。それ以外のモードでは読まない。`ExtensionMode.Test` のときだけ、Webview の HTML に `inspect` を受ける処理を入れ、`activate` は開いているパネルへ `inspect` を送って `inspected` の `elements` を返す `inspectPreview(selector)` を戻り値で返す。結合テストは Webview の DOM の期待値をこの戻り値で確かめる'
+    constraint: '`ExtensionContext.extensionMode` が `ExtensionMode.Test` のときだけ、環境変数 `MDMARK_VSCODE_DIST_BASE`（配布物の配信元）と `MDMARK_VSCODE_TAGS_URL`（タグ一覧の取得先）を読む。CSP の配布物の origin も差し替えた配信元の origin にする。それ以外のモードでは読まない。`ExtensionMode.Test` のときだけ、Webview の HTML に `inspect` を受ける処理を入れ、`activate` は開いているパネルへ `inspect` を送って `inspected` の `elements` を返す `inspectPreview(selector)` を戻り値で返す。同じく `axe` を送って `axed` の `violations` を返す `auditPreview()` も返す。Webview はテストのビルドが置いた axe-core を `axe` を受けたときだけ読む。結合テストは Webview の DOM の期待値とアクセシビリティの違反をこの戻り値で確かめる'
     notes: dev/設計書/設定/VSCode拡張機能
   - item: 対応する VS Code
     constraint: '`engines.vscode` の下限より古い VS Code には入らない'

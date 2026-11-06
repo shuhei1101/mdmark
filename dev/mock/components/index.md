@@ -38,6 +38,7 @@
 | [link-card](./link-card/index.html) | URL だけの行のリンクのカードと、ファイルへのリンクだけの行の添付のカード |
 | [media](./media/index.html) | 動画・音声の再生バーとキャプション・幅と autoplay・loop、GIF の止める・再生するボタン |
 | [notice](./notice/index.html) | 外部ライブラリを読めない箇所に出す知らせの枠と、読み込み中の印の場所、VS Code のプレビューで再生できない動画・音声の知らせの枠 |
+| [panel-alert](./panel-alert/index.html) | VS Code のプレビューのパネルに出す shadcn/ui の Alert（warning）・Button（default・outline）・Spinner と、その状態（通常・ホバー・フォーカス・狭い列・長いパス） |
 | [param-control](./param-control/index.html) | スライダー・グラフ・今の値を写すボタンを組み合わせた操作できる部品と、写した・写せなかったの知らせ |
 | [preview-status](./preview-status/index.html) | VS Code 拡張機能のプレビューのパネルに出す読み込み中・描けない理由（差分の表示に対応しないバージョンを含む）と「リロード」・設定ファイルを読めない帯と「設定ファイルを開く」 |
 | [revision-picker](./revision-picker/index.html) | 文書の右上の「変更を見る」と、前と後のリビジョンを日時・label・author で選ぶ欄と、本文を取り出せない場面 |

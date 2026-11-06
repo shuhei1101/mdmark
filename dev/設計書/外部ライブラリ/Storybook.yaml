@@ -1,73 +1,53 @@
-title: "Storybook"
-kind: "ライブラリ"
+title: Storybook
+kind: ライブラリ
 version:
-  current: '`storybook==10.6.2` / `@storybook/server-webpack5==10.6.2` / `@storybook/server==10.6.2`'
+  current: '`storybook==10.6.2` / `@storybook/react-vite==10.6.2` / `@storybook/addon-a11y==10.6.2`'
   latest: 10.6.2
-  checked_on: '2026-10-13'
+  checked_on: '2026-11-06'
   source: package.json
-  pinning: 3 パッケージを完全一致で固定する（10.6.2 より前は未公開の勧告 2 件の修正前）。`overrides` で `webpack-dev-middleware` を `^7.4.6` に引き上げる
+  pinning: 3 パッケージを完全一致で固定する（10.6.2 より前は未公開の勧告 2 件の修正前）
 catalogs:
-  - name: コマンド
-    version: '`storybook==10.6.2`'
-    entries:
-      - name: storybook dev
-        kind: コマンド
-        purpose: 開発サーバーを立ててストーリーを配信する
-        description: '`--ci --no-open --host 127.0.0.1 -p {ポート}` で起こす。`storybook build` の出力には中継が無いため、撮影と結合テストは `storybook dev` に向ける'
-  - name: ファイル
-    version: '`storybook==10.6.2`'
-    entries:
-      - name: .storybook/main.js
-        kind: 設定ファイル
-        purpose: framework（`@storybook/server-webpack5`）とストーリーの場所を決める
-        description: webpack に TS の loader が無いため `.js` で書く。`typescript.check` は有効にしない（TypeScript 7 に従来の JS API が無い）
-      - name: .storybook/preview.js
-        kind: 設定ファイル
-        purpose: 全ストーリーに共通の `parameters.server` を決める
-      - name: .storybook/middleware.cjs
-        kind: 設定ファイル
-        purpose: 開発サーバーに経路を足す（描画の口への中継）
-        description: '`{configDir}/middleware.{js,mjs,cjs}` を開発サーバーが読み、router を受け取る。`package.json` が `"type": "module"` なので `.cjs` にする'
-      - name: '*.stories.yaml'
-        kind: ストーリー
-        purpose: サーバー描画のストーリーを YAML で書く
-        description: '`title`・`stories[].name`・`stories[].parameters.server.id`・`stories[].args` を持つ。id は `title` と `name` を整えたもの（`Parts/Notice` と `Error` → `parts-notice--error`）。`name` は英数字で書く'
-  - name: API
-    version: '`@storybook/server==10.6.2`'
-    entries:
-      - name: parameters.server.url
-        kind: パラメータ
-        purpose: ストーリーの HTML を取りに行く先
-        description: '`new URL` で組み立てるため絶対 URL が要る（`${window.location.origin}/render`）。`globals`・`params`・`args` を合わせたクエリを付ける'
-      - name: parameters.server.fetchStoryHtml
-        kind: パラメータ
-        purpose: ストーリーの HTML の取り方を差し替える
-        description: 既定の取り方は応答の `ok` を見ず、404・500 の本文もストーリーとして描く。失敗の応答を例外にする取り方に差し替える
-        params:
-          - name: url
-            type: string
-            required: true
-            description: '`parameters.server.url`'
-          - name: path
-            type: string
-            required: true
-            description: '`parameters.server.id`'
-          - name: params
-            type: Record<string, unknown>
-            required: true
-            description: '`args` と `globals` を合わせた値'
-        returns:
-          - name: '-'
-            type: Promise<string>
-            description: '`#storybook-root` に入れる HTML'
-      - name: /index.json
-        kind: エンドポイント
-        purpose: ストーリーの索引
-      - name: iframe.html?id={ストーリーの id}
-        kind: エンドポイント
-        purpose: ストーリーを単独で開くプレビュー
-        description: 描いた HTML は `#storybook-root` に入る
-lead: UI の部品を状態ごとのストーリーとして並べ、ブラウザで開いて確かめる開発サーバー。サーバー描画（`@storybook/server-webpack5`）は、ストーリーの HTML を外のサーバーから取って表示する。
+- name: コマンド
+  version: '`storybook==10.6.2`'
+  entries:
+  - name: storybook dev
+    kind: コマンド
+    purpose: 開発サーバーを立ててストーリーを配信する
+    description: '`--ci --no-open --host 127.0.0.1 -p {ポート}` で起こす。環境変数 `RENDER_ORIGIN` に描画の口の origin を渡す（無ければ設定の読み込みで止まる）。撮影と結合テストは `storybook dev` に向ける'
+- name: ファイル
+  version: '`storybook==10.6.2`'
+  entries:
+  - name: .storybook/main.ts
+    kind: 設定ファイル
+    purpose: framework（`@storybook/react-vite`）・ストーリーの場所・`addon-a11y`・`staticDirs`・`viteFinal` を決める
+    description: '`viteFinal` で Tailwind の plugin・`/render` の描画の口への中継（`server.proxy`）・`@` の別名・React の `dedupe` を足す'
+  - name: .storybook/preview.tsx
+    kind: 設定ファイル
+    purpose: 全ストーリーに共通のデコレーター・`loaders`（`mswLoader`）・`globalTypes`・`parameters.a11y.test` を決める
+  - name: '*.stories.ts / *.stories.tsx'
+    kind: ストーリー
+    purpose: CSF（`export default meta` と名前付き export のストーリー）で書く
+    description: 部品の HTML のストーリーは `parameters.server.id` と `args` を持ち、デコレーターが描画の口の HTML を描く。id は `title` と export の名前を整えたもの（`Parts/Notice` と `Block` → `parts-notice--block`）
+- name: API
+  version: '`@storybook/react-vite==10.6.2`'
+  entries:
+  - name: Meta・StoryObj
+    kind: 型
+    purpose: ストーリーの型（部品の HTML のストーリーは `Meta<Record<string, unknown>>`）
+  - name: Decorator
+    kind: 型
+    purpose: ストーリーを包んで描く関数（`(Story, context) => ReactNode`）
+  - name: parameters.a11y.test
+    kind: パラメータ
+    purpose: '`addon-a11y` の違反を `error` にする（Vitest の addon のテストを失敗にする）'
+  - name: /index.json
+    kind: エンドポイント
+    purpose: ストーリーの索引
+  - name: iframe.html?id={ストーリーの id}
+    kind: エンドポイント
+    purpose: ストーリーを単独で開くプレビュー
+    description: 描いた要素は `#storybook-root` に入る
+lead: UI の部品を状態ごとのストーリーとして並べ、ブラウザで開いて確かめる開発サーバー。
 purl: pkg:npm/storybook@10.6.2
 dependency_scope: 開発のみ
 adoption: 採用
@@ -77,15 +57,14 @@ official_url: https://storybook.js.org/
 docs_url: https://storybook.js.org/docs
 verification:
   state: 済
-  date: '2026-10-13'
-  detail: 作業ツリーの外の作業場所で 3 パッケージの 10.6.2 を入れ、`overrides` で `webpack-dev-middleware` が 7.4.6 に上がることを `npm ls` で確かめた。Node 24 で TS を直接動かす描画の口と `.storybook/middleware.cjs` の中継を立て、`storybook dev --ci` の `/index.json` に YAML のストーリー（`parts-notice--error`）が載り、`/render/notice` が描画の口の HTML を、無い部品が 404 を返すこと、Playwright で開いた `iframe.html?id=parts-notice--error` の `#storybook-root` にその HTML が入ることを確かめた
+  date: '2026-11-06'
+  detail: '`RENDER_PORT=6181 node scripts/storybook-render.ts` と `RENDER_ORIGIN=http://127.0.0.1:6181 npx storybook dev --ci --no-open --host 127.0.0.1 -p 6106` を立て、`/index.json` に 446 個のストーリーが載った。Playwright で開いた `iframe.html?id=` の 446 個が `#storybook-root` にエラーの表示・`pageerror`・空の描画なしで描かれ、Error Boundary の描画の失敗に落ちたのは、その状態を見せる `vscode-previewstatus--unexpected` だけだった。`vscode-panelscreen--offline`・`--version-missing` は MSW の `HEAD` のハンドラどおりの描けない理由を出した'
 selection:
   candidates: '`@storybook/server-webpack5`・`@storybook/html-vite`・`@storybook/web-components-vite`（いずれも 10.6.2）・`storybook-html-rsbuild` 3.6.1 を比べた。'
   decision: 判定フローチャート『Storybookの描画の方式』の R3（部品を Node で描く描画の口）に合い、AI Monitor の Storybook の配信と同じ形で立てられる。html-vite はフローチャートの結果から外れ、Vitest 5 への対応が途中で TypeScript 7 も未対応と表明されている。web-components-vite は lit が要り、rsbuild は非公式で 3 つ目のバンドラーになる。
-  consequences: 描画の口を `scripts/` に Node の HTTP サーバーとして置き、`src/` の部品の関数を型の除去で直接読む。`fetchStoryHtml` で失敗の応答を例外にする。`webpack-dev-middleware` は `overrides` で 7.4.6 以上にして GHSA-g84c-rxfj-3j2c を外す（Storybook 10.6.2 が引く 6 系に修正版が無い）。
-install: |-
-  ```bash
-  npm i -D -E storybook@10.6.2 @storybook/server-webpack5@10.6.2 @storybook/server@10.6.2
-  ```
+  consequences: 描画の口を `scripts/` に Node の HTTP サーバーとして置き、`src/` の部品の関数を型の除去で直接読む。`fetchStoryHtml` で失敗の応答を例外にする。`webpack-dev-middleware` は `overrides` で 7.4.6 以上にして GHSA-g84c-rxfj-3j2c を外す（Storybook 10.6.2 が引く 6 系に修正版が無い）。 VS Code の Webview を React にした（#342）ため、framework を `@storybook/react-vite` に替え、部品の HTML のストーリーは CSF とデコレーターで描画の口の HTML を描く。`@storybook/server-webpack5` と `webpack-dev-middleware` の `overrides` は外した。
+install: '```bash
 
-  `package.json` に `"overrides": { "webpack-dev-middleware": "^7.4.6" }` を足す。
+  npm i -D -E storybook@10.6.2 @storybook/react-vite@10.6.2 @storybook/addon-a11y@10.6.2
+
+  ```'

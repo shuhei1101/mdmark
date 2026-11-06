@@ -10,6 +10,9 @@ import { createStubServer } from "./stub-server.ts";
 /** 結合テストを流す VS Code: 対応する下限と、その時点の stable */
 export const TEST_VSCODE_VERSIONS = ["1.141.0", "stable"];
 
+/** 結合テストの VS Code のテーマ（VS Code の既定のダークのテーマ） */
+const TEST_COLOR_THEME = "Dark 2026";
+
 /** 拡張機能の場所（`vscode/`）とリポジトリの直下 */
 const EXTENSION_PATH = resolve(import.meta.dirname, "..", "..");
 
@@ -45,6 +48,12 @@ export async function runIntegrationTests(): Promise<void> {
     for (const version of TEST_VSCODE_VERSIONS) {
       // 前回のバージョン（`globalState`）が空の状態で始めるため、バージョンごとに新しいユーザーデータを使う
       const userDataDir = await mkdtemp(join(tmpdir(), "mdmark-vscode-user-"));
+      // 空のユーザーデータでは既定と違うテーマで描くことがあるため、パネルの axe の検査を同じテーマで流す
+      await mkdir(join(userDataDir, "User"));
+      await writeFile(
+        join(userDataDir, "User", "settings.json"),
+        JSON.stringify({ "workbench.colorTheme": TEST_COLOR_THEME }),
+      );
       await runTests({
         version,
         extensionDevelopmentPath: EXTENSION_PATH,

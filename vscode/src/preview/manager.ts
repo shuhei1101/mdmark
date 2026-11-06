@@ -9,7 +9,7 @@ import {
 } from "vscode";
 import { resolveConfigPath } from "../config.ts";
 import type { ExtensionDeps } from "../deps.ts";
-import type { InspectedElement } from "../messages.ts";
+import type { AxeViolation, InspectedElement } from "../messages.ts";
 import { readSettings } from "../settings.ts";
 import { baseDirOf } from "../workspace.ts";
 import { panelKey, pickDiffTarget } from "./diff-target.ts";
@@ -230,6 +230,15 @@ export class PreviewManager {
       throw new Error("開いているプレビューが無い");
     }
     return panel.inspect(selector, play);
+  }
+
+  /** 最後に表に出たパネルを axe で検査する（テストのときだけ `activate` が返す） */
+  async auditPreview(): Promise<AxeViolation[]> {
+    const panel = this.lastActive;
+    if (panel === undefined) {
+      throw new Error("開いているプレビューが無い");
+    }
+    return panel.audit();
   }
 }
 

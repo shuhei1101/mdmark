@@ -4,6 +4,7 @@ import type { AddressInfo } from "node:net";
 import { join } from "node:path";
 import * as vscode from "vscode";
 import {
+  audit,
   closeRepositories,
   createRepo,
   gitUri,
@@ -448,6 +449,7 @@ suite("プレビューを描き直す", () => {
     );
     assert.strictEqual(buttons.length, 1);
     assert.strictEqual((await inspect(".markdown-alert")).length, 0);
+    assert.deepStrictEqual(await audit(), []);
   });
 
   // 読めない設定ファイルを直して保存すると、新しい設定で描き帯を消す

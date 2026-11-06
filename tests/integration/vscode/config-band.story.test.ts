@@ -6,14 +6,16 @@ const holder = createBrowserHolder();
 beforeAll(holder.launch);
 afterAll(holder.close);
 
-// 帯の幅が 480px 以上のとき、題と本文の右にボタンを横に並べる
+// 帯の幅が 30rem 以上のとき、題と本文の右にボタンを横に並べる
 const WIDE_VIEWPORT = { width: 800, height: 360 };
 
 /** 本文とボタンの位置 */
 async function readLayout(page: Awaited<ReturnType<typeof holder.openStory>>) {
   return page.evaluate(() => {
     const band = document.querySelector(".mdmark-config-band") as HTMLElement;
-    const text = band.querySelector(".mdmark-config-band-text") as HTMLElement;
+    const text = band.querySelector(
+      '[data-slot="alert-description"]',
+    ) as HTMLElement;
     const button = band.querySelector("button") as HTMLElement;
     const code = band.querySelector("p code") as HTMLElement;
     const bandBox = band.getBoundingClientRect();
@@ -87,7 +89,7 @@ test("test_default_when_keyboard", async () => {
   expect(result.clicks).toBe(1);
 });
 
-// 列の幅が 480px 未満でパスが長いとき、ボタンが文の下へ回り、パスが帯の中で折り返す（NarrowLongPath）
+// 帯の幅が 30rem 未満でパスが長いとき、ボタンが文の下へ回り、パスが帯の中で折り返す（NarrowLongPath）
 test("test_narrow_long_path", async () => {
   // 準備・実行
   const page = await holder.openStory("vscode-configband--narrow-long-path");
@@ -102,13 +104,13 @@ test("test_narrow_long_path", async () => {
   await expect(pageOverflows(page)).resolves.toBe(false);
 });
 
-// 知らせの枠の色の変数で、帯の地と線を変えられる（Default）
+// 帯の地と文字はエディタの地と文字、帯と「設定ファイルを開く」の線と警告のアイコンは警告の線の色のトークンで変えられる（Default）
 test("test_default_when_color_overridden", async () => {
   // 準備
   const page = await holder.openStory("vscode-configband--default");
   await page.addStyleTag({
     content:
-      ":root { --mdmark-color-notice-bg: rgb(1, 2, 3); --mdmark-color-notice-border: rgb(4, 5, 6); }",
+      ":root { --background: rgb(1, 2, 3); --warning-border: rgb(4, 5, 6); --foreground: rgb(7, 8, 9); }",
   });
   // 実行
   const colors = await page.evaluate(() => {
@@ -116,17 +118,24 @@ test("test_default_when_color_overridden", async () => {
       document.querySelector(".mdmark-config-band") as Element,
     );
     const button = getComputedStyle(
-      document.querySelector(".mdmark-preview-button") as Element,
+      document.querySelector('[data-action="openConfig"]') as Element,
+    );
+    const icon = getComputedStyle(
+      document.querySelector(".mdmark-config-band svg") as Element,
     );
     return {
+      icon: icon.color,
       background: band.backgroundColor,
+      text: band.color,
       bandBorder: band.borderTopColor,
       buttonBorder: button.borderTopColor,
     };
   });
   // 検証
   expect(colors).toEqual({
+    icon: "rgb(4, 5, 6)",
     background: "rgb(1, 2, 3)",
+    text: "rgb(7, 8, 9)",
     bandBorder: "rgb(4, 5, 6)",
     buttonBorder: "rgb(4, 5, 6)",
   });

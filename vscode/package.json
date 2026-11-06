@@ -221,14 +221,33 @@
     "test:integration": "node scripts/build.ts --tests && node tests/integration/run.ts"
   },
   "devDependencies": {
+    "@babel/core": "8.1.0",
+    "@radix-ui/react-slot": "1.5.0",
+    "@rolldown/plugin-babel": "0.3.0",
+    "@tailwindcss/vite": "4.3.4",
     "@types/mocha": "10.0.10",
     "@types/node": "24.19.2",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
     "@types/vscode": "1.140.0",
+    "@vitejs/plugin-react": "6.2.1",
     "@vscode/test-electron": "3.1.0",
     "@vscode/vsce": "4.0.0",
+    "axe-core": "4.14.0",
+    "babel-plugin-react-compiler": "1.0.0",
+    "class-variance-authority": "0.7.1",
+    "clsx": "2.1.1",
     "esbuild": "0.28.2",
+    "lucide-react": "1.69.0",
     "mocha": "12.0.3",
+    "msw": "3.0.4",
+    "react": "19.3.1",
+    "react-dom": "19.3.1",
+    "react-error-boundary": "6.1.6",
+    "tailwind-merge": "3.7.0",
+    "tailwindcss": "4.3.4",
     "typescript": "7.0.2",
+    "vite": "8.3.6",
     "yaml": "2.9.1"
   }
 }

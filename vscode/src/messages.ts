@@ -24,7 +24,8 @@ export type HostMessage =
       /** 書いたパスから Webview の URL を引く表。見つからないパスは `null` */
       urls: Record<string, string | null>;
     }
-  | { type: "inspect"; id: number; selector: string; play?: boolean };
+  | { type: "inspect"; id: number; selector: string; play?: boolean }
+  | { type: "axe"; id: number };
 
 /** 調べた要素 1 つの様子（結合テストが Webview の DOM の期待値を確かめるために返す） */
 export type InspectedElement = {
@@ -48,6 +49,16 @@ export type InspectedElement = {
   readyState?: number;
 };
 
+/** 結合テストが受け取る axe-core の違反 1 件 */
+export type AxeViolation = {
+  /** axe-core の規則の ID（`color-contrast` など） */
+  id: string;
+  /** axe-core の影響度 */
+  impact: string | null;
+  /** 違反した要素のセレクタ */
+  targets: string[];
+};
+
 /** 配布物を読めない理由 */
 export type LoadFailureReason =
   | "offline"
@@ -65,4 +76,5 @@ export type WebviewMessage =
   | { type: "openConfig" }
   | { type: "resolveAssets"; id: number; paths: string[] }
   | { type: "openAsset"; path: string }
-  | { type: "inspected"; id: number; elements: InspectedElement[] };
+  | { type: "inspected"; id: number; elements: InspectedElement[] }
+  | { type: "axed"; id: number; violations: AxeViolation[] };

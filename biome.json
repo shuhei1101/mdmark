@@ -8,6 +8,7 @@
       "!dist",
       "!vscode/dist",
       "!vscode/media",
+      "!.storybook/public",
       "!vscode/out",
       "!vscode/node_modules",
       "!vscode/.vscode-test",
@@ -20,13 +21,18 @@
       "!.vitest"
     ]
   },
+  "linter": {
+    "domains": {
+      "react": "none"
+    }
+  },
   "formatter": {
     "indentStyle": "space",
     "indentWidth": 2
   },
   "overrides": [
     {
-      "includes": ["src/index.css", "vscode/src/webview/preview.css"],
+      "includes": ["src/index.css"],
       "linter": {
         "rules": {
           "style": {
@@ -35,5 +41,10 @@
         }
       }
     }
-  ]
+  ],
+  "css": {
+    "parser": {
+      "tailwindDirectives": true
+    }
+  }
 }

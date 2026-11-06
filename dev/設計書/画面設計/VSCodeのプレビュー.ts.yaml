@@ -29,7 +29,7 @@ elements:
     id: preview-document
     kind: container
     position: 描く先を包む要素
-    description: 'mdmark の `mount` に渡す描く先の要素。中身と見た目は画面設計『文書』のままで、拡張機能は手を加えない。差分のパネルは `diffMode: "blocks"` で描き、画面設計『文書』の差分のブロックを出す'
+    description: 'mdmark の `mount` に渡す描く先の要素。React が中身を持たない要素として置き、中身は mdmark の `mount`・`update` だけが書き換える。中身と見た目は画面設計『文書』のままで、拡張機能は手を加えない。差分のパネルは `diffMode: "blocks"` で描き、画面設計『文書』の差分のブロックを出す'
     visible_when: 配布物を読み終え、最初の `rendered` を送った後
     source: プレビューを描き直すの送る中身（全文・差分のパネルの `previous`・`features`・`libraries`・`side-toc`・`colorTheme`）
     action: 本文のリンクを押すと `#` で始まるリンクはこの中で移り、それ以外は `openLink` を送る。スクロールすると `revealLine` を送る
@@ -80,11 +80,8 @@ elements:
         value: '`mdmark.configPath` の書いたままの値'
       - name: line
         value: '`configError.line`'
-    slots:
-      - name: default
-        value: 描いた文書
     position: 描く先を包む要素 > 描いた文書の前
-    description: 設定ファイルを読めないことを、文書を描いたまま文書の先頭で知らせる。固定せずスクロールで流す
+    description: 設定ファイルを読めないことを、文書を描いたまま文書の先頭で知らせる。固定せずスクロールで流す。描いた文書は React の外の DOM のため、帯の子にせず帯の後ろに並べる
     visible_when: '`configError` を受けてから `configOk` を受けるまで'
     action: 「設定ファイルを開く」を押すと `openConfig` を送る
     action_ref: dev/設計書/インターフェース定義/VSCode拡張機能/設定ファイルを開く.ts#
@@ -110,8 +107,8 @@ elements:
     refs:
       - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを開く.ts#constraints[再生できない動画・音声]
     status: planned
-screen: vscode/src/webview/preview.ts
-mock: dev/mock/pages/vscode-preview/69/panel/
+screen: vscode/src/webview/features/preview/panel/panel-screen.tsx
+mock: dev/mock/pages/vscode-preview/342/shadcn/
 lead: VS Code 拡張機能が開くプレビューのパネル（Webview）。mdmark が描いた文書と、拡張機能が足す状態の表示を同じパネルの中で切り替える。
 refs:
   - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを開く.ts#

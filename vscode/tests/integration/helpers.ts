@@ -15,7 +15,11 @@ import type { AddressInfo } from "node:net";
 import { dirname, join, resolve } from "node:path";
 import { promisify } from "node:util";
 import * as vscode from "vscode";
-import type { HostMessage, WebviewMessage } from "../../src/messages.ts";
+import type {
+  AxeViolation,
+  HostMessage,
+  WebviewMessage,
+} from "../../src/messages.ts";
 import type { TagRequestTiming } from "./stub-server.ts";
 
 /** 拡張機能の ID */
@@ -43,6 +47,7 @@ type TestApi = {
     selector: string,
     play?: boolean,
   ) => Promise<InspectedElement[]>;
+  auditPreview: () => Promise<AxeViolation[]>;
 };
 
 /** Webview の要素 1 つの様子 */
@@ -267,6 +272,11 @@ export async function inspect(
   play = false,
 ): Promise<InspectedElement[]> {
   return (await api()).inspectPreview(selector, play);
+}
+
+/** パネルの部品（状態の表示・帯）を axe で検査し、違反を返す（描いた文書は検査しない） */
+export async function audit(): Promise<AxeViolation[]> {
+  return (await api()).auditPreview();
 }
 
 /** `rendered` を `count` 回受けるまで待つ */

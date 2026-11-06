@@ -6,8 +6,7 @@ playwright-report/
 debug-storybook.log
 vscode/node_modules/
 vscode/dist/
-vscode/media/preview.js
-vscode/media/preview.css
+vscode/media/
 vscode/out/
 vscode/.vscode-test/
 *.vsix

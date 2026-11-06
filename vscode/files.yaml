@@ -152,75 +152,6 @@ files:
     related:
       - to: dev/設計書/モジュール構成/VSCode拡張機能/読むバージョン.ts
         type: implements
-  - path: src/webview/assets.ts
-    description: モジュール構成『VS Code 拡張機能 / Webview』のうち「画像・動画・音声の URL の差し替えと、再生できない動画・音声の知らせ」を受け持つ。プレビューのパネルの中の描き方を変えるときに読む。
-    tags: [tool:vscode, topic:webview, topic:動画]
-    related:
-      - to: dev/設計書/モジュール構成/VSCode拡張機能/Webview.ts
-        type: implements
-  - path: src/webview/parts/config-band.stories.yaml
-    description: 部品設計『設定ファイルを読めない帯』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに読む。
-    tags: [topic:ストーリー, tool:storybook, topic:部品, topic:設定]
-    related:
-      - to: dev/設計書/部品設計/設定ファイルを読めない帯.ts
-        type: implements
-  - path: src/webview/parts/config-band.ts
-    description: モジュール構成『VS Code 拡張機能 / Webview』のうち「設定ファイルを読めない帯の HTML」を受け持つ。プレビューのパネルの中の描き方を変えるときに読む。
-    tags: [tool:vscode, topic:webview, topic:設定]
-    related:
-      - to: dev/設計書/モジュール構成/VSCode拡張機能/Webview.ts
-        type: implements
-      - to: dev/設計書/部品設計/設定ファイルを読めない帯.ts
-        type: implements
-  - path: src/webview/parts/media-error.stories.yaml
-    description: 部品設計『再生できない動画・音声の知らせ』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに読む。
-    tags: [topic:ストーリー, tool:storybook, topic:部品, topic:動画]
-    related:
-      - to: dev/設計書/部品設計/再生できない動画・音声の知らせ.ts
-        type: implements
-  - path: src/webview/parts/media-error.ts
-    description: モジュール構成『VS Code 拡張機能 / Webview』のうち「再生できない動画・音声の知らせの HTML」を受け持つ。プレビューのパネルの中の描き方を変えるときに読む。
-    tags: [tool:vscode, topic:webview, topic:動画]
-    related:
-      - to: dev/設計書/モジュール構成/VSCode拡張機能/Webview.ts
-        type: implements
-      - to: dev/設計書/部品設計/再生できない動画・音声の知らせ.ts
-        type: implements
-  - path: src/webview/parts/preview-status.stories.yaml
-    description: 部品設計『プレビューの状態の表示』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに読む。
-    tags: [topic:ストーリー, tool:storybook, topic:部品]
-    related:
-      - to: dev/設計書/部品設計/プレビューの状態の表示.ts
-        type: implements
-  - path: src/webview/parts/preview-status.ts
-    description: モジュール構成『VS Code 拡張機能 / Webview』のうち「プレビューの状態の表示の HTML」を受け持つ。プレビューのパネルの中の描き方を変えるときに読む。
-    tags: [tool:vscode, topic:webview]
-    related:
-      - to: dev/設計書/モジュール構成/VSCode拡張機能/Webview.ts
-        type: implements
-      - to: dev/設計書/部品設計/プレビューの状態の表示.ts
-        type: implements
-  - path: src/webview/preview.css
-    id: vscode/src/webview/preview.css
-    description: モジュール構成『VS Code 拡張機能 / Webview』のうち「パネルの状態の表示と帯の CSS」を受け持つ。プレビューのパネルの中の描き方を変えるときに読む。
-    tags: [tool:vscode, topic:webview]
-    related:
-      - to: dev/設計書/モジュール構成/VSCode拡張機能/Webview.ts
-        type: implements
-  - path: src/webview/preview.ts
-    description: モジュール構成『VS Code 拡張機能 / Webview』のうち「パネルの中の入口（配布物の読み込み・描く・リンク・スクロール・inspect）」を受け持つ。プレビューのパネルの中の描き方を変えるときに読む。
-    tags: [tool:vscode, topic:webview]
-    related:
-      - to: dev/設計書/モジュール構成/VSCode拡張機能/Webview.ts
-        type: implements
-      - to: dev/設計書/画面設計/VSCodeのプレビュー.ts
-        type: implements
-  - path: src/webview/scroll.ts
-    description: モジュール構成『VS Code 拡張機能 / Webview』のうち「元の行番号とスクロールの位置の内分」を受け持つ。プレビューのパネルの中の描き方を変えるときに読む。
-    tags: [tool:vscode, topic:webview, topic:スクロール]
-    related:
-      - to: dev/設計書/モジュール構成/VSCode拡張機能/Webview.ts
-        type: implements
   - path: src/workspace.ts
     description: モジュール構成『VS Code 拡張機能 / 拡張機能の入口』のうち「相対パスの設定の基準のフォルダ（baseDirOf）」を受け持つ。拡張機能の起動やコマンドの登録を変えるときに読む。
     tags: [tool:vscode, topic:エントリポイント]
@@ -325,4 +256,202 @@ files:
     tags: [tool:vscode, topic:ci]
     related:
       - to: dev/設計書/モジュール構成/VSCode拡張機能/ビルドと配布.ts
+        type: implements
+  - path: components.json
+    description: モジュール構成『VS Code 拡張機能 / Webview』のうち「shadcn/ui の CLI の設定」を受け持つ。プレビューのパネルの中の描き方を変えるときに読む。
+    tags: [tool:vscode, topic:webview, topic:部品]
+    related:
+      - to: dev/設計書/モジュール構成/VSCode拡張機能/Webview.ts
+        type: implements
+  - path: src/webview/app/app.tsx
+    description: モジュール構成『VS Code 拡張機能 / Webview』のうち「Webview のアプリ」を受け持つ。プレビューのパネルの中の描き方を変えるときに読む。
+    tags: [tool:vscode, topic:webview, tool:react]
+    related:
+      - to: dev/設計書/モジュール構成/VSCode拡張機能/Webview.ts
+        type: implements
+  - path: src/webview/features/preview/panel/assets.ts
+    description: モジュール構成『VS Code 拡張機能 / Webview』のうち「相対パスの画像・動画・音声を集める・Webview の URL に替える・再生できない動画・音声を知らせに替える」を受け持つ。プレビューのパネルの中の描き方を変えるときに読む。
+    tags: [tool:vscode, topic:webview]
+    related:
+      - to: dev/設計書/モジュール構成/VSCode拡張機能/Webview.ts
+        type: implements
+  - path: src/webview/features/preview/panel/boot.ts
+    description: モジュール構成『VS Code 拡張機能 / Webview』のうち「パネルの始め方・始め方を読む・保存した行を読む」を受け持つ。プレビューのパネルの中の描き方を変えるときに読む。
+    tags: [tool:vscode, topic:webview]
+    related:
+      - to: dev/設計書/モジュール構成/VSCode拡張機能/Webview.ts
+        type: implements
+  - path: src/webview/features/preview/panel/diff-source.ts
+    description: モジュール構成『VS Code 拡張機能 / Webview』のうち「差分の全文・差分の取り出し元の docId・差分の取り出し元を作る」を受け持つ。プレビューのパネルの中の描き方を変えるときに読む。
+    tags: [tool:vscode, topic:webview]
+    related:
+      - to: dev/設計書/モジュール構成/VSCode拡張機能/Webview.ts
+        type: implements
+  - path: src/webview/features/preview/panel/document-view.ts
+    description: モジュール構成『VS Code 拡張機能 / Webview』のうち「再生してから調べるまでの待ち・描いた文書・描いた文書を作る」を受け持つ。プレビューのパネルの中の描き方を変えるときに読む。
+    tags: [tool:vscode, topic:webview]
+    related:
+      - to: dev/設計書/モジュール構成/VSCode拡張機能/Webview.ts
+        type: implements
+  - path: src/webview/features/preview/panel/hooks/use-document-view.ts
+    description: モジュール構成『VS Code 拡張機能 / Webview』のうち「描いた文書を持つ」を受け持つ。プレビューのパネルの中の描き方を変えるときに読む。
+    tags: [tool:vscode, topic:webview, tool:react]
+    related:
+      - to: dev/設計書/モジュール構成/VSCode拡張機能/Webview.ts
+        type: implements
+  - path: src/webview/features/preview/panel/hooks/use-host-messages.ts
+    description: モジュール構成『VS Code 拡張機能 / Webview』のうち「拡張機能のメッセージを受ける」を受け持つ。プレビューのパネルの中の描き方を変えるときに読む。
+    tags: [tool:vscode, topic:webview, tool:react]
+    related:
+      - to: dev/設計書/モジュール構成/VSCode拡張機能/Webview.ts
+        type: implements
+  - path: src/webview/features/preview/panel/hooks/use-link-clicks.ts
+    description: モジュール構成『VS Code 拡張機能 / Webview』のうち「リンクの押下を受ける」を受け持つ。プレビューのパネルの中の描き方を変えるときに読む。
+    tags: [tool:vscode, topic:webview, tool:react]
+    related:
+      - to: dev/設計書/モジュール構成/VSCode拡張機能/Webview.ts
+        type: implements
+  - path: src/webview/features/preview/panel/hooks/use-load-mdmark.ts
+    description: モジュール構成『VS Code 拡張機能 / Webview』のうち「読み込み中を出すまでの待ち・配布物を読む」を受け持つ。プレビューのパネルの中の描き方を変えるときに読む。
+    tags: [tool:vscode, topic:webview, tool:react]
+    related:
+      - to: dev/設計書/モジュール構成/VSCode拡張機能/Webview.ts
+        type: implements
+  - path: src/webview/features/preview/panel/hooks/use-media-errors.ts
+    description: モジュール構成『VS Code 拡張機能 / Webview』のうち「再生できない動画・音声を受ける」を受け持つ。プレビューのパネルの中の描き方を変えるときに読む。
+    tags: [tool:vscode, topic:webview, tool:react]
+    related:
+      - to: dev/設計書/モジュール構成/VSCode拡張機能/Webview.ts
+        type: implements
+  - path: src/webview/features/preview/panel/hooks/use-scroll-sync.ts
+    description: モジュール構成『VS Code 拡張機能 / Webview』のうち「スクロールを知らせる」を受け持つ。プレビューのパネルの中の描き方を変えるときに読む。
+    tags: [tool:vscode, topic:webview, tool:react]
+    related:
+      - to: dev/設計書/モジュール構成/VSCode拡張機能/Webview.ts
+        type: implements
+  - path: src/webview/features/preview/panel/load-mdmark.ts
+    description: モジュール構成『VS Code 拡張機能 / Webview』のうち「読んだ配布物・配布物を読む・読めない理由を見分ける・差分の色分けに対応するかを見る」を受け持つ。プレビューのパネルの中の描き方を変えるときに読む。
+    tags: [tool:vscode, topic:webview]
+    related:
+      - to: dev/設計書/モジュール構成/VSCode拡張機能/Webview.ts
+        type: implements
+  - path: src/webview/features/preview/panel/panel-screen.tsx
+    description: モジュール構成『VS Code 拡張機能 / Webview』のうち「プレビューのパネル」を受け持つ。プレビューのパネルの中の描き方を変えるときに読む。
+    tags: [tool:vscode, topic:webview, tool:react]
+    related:
+      - to: dev/設計書/モジュール構成/VSCode拡張機能/Webview.ts
+        type: implements
+      - to: dev/設計書/画面設計/VSCodeのプレビュー.ts
+        type: implements
+  - path: src/webview/features/preview/panel/scroll.ts
+    description: モジュール構成『VS Code 拡張機能 / Webview』のうち「行の印・行の印を集める・行を位置にする・位置を行にする・位置を切り捨てない行にする・上端の帯の高さを測る」を受け持つ。プレビューのパネルの中の描き方を変えるときに読む。
+    tags: [tool:vscode, topic:webview]
+    related:
+      - to: dev/設計書/モジュール構成/VSCode拡張機能/Webview.ts
+        type: implements
+  - path: src/webview/main.tsx
+    description: モジュール構成『VS Code 拡張機能 / Webview』のうち「パネルを始める」を受け持つ。プレビューのパネルの中の描き方を変えるときに読む。
+    tags: [tool:vscode, topic:webview, tool:react]
+    related:
+      - to: dev/設計書/モジュール構成/VSCode拡張機能/Webview.ts
+        type: implements
+  - path: src/webview/shared/adapters/vscode-api.ts
+    description: モジュール構成『VS Code 拡張機能 / Webview』のうち「Webview の状態・VS Code の Webview の API・VS Code の API を取る」を受け持つ。プレビューのパネルの中の描き方を変えるときに読む。
+    tags: [tool:vscode, topic:webview]
+    related:
+      - to: dev/設計書/モジュール構成/VSCode拡張機能/Webview.ts
+        type: implements
+  - path: src/webview/shared/components/config-band.tsx
+    description: モジュール構成『VS Code 拡張機能 / Webview』のうち「設定ファイルを読めない帯」を受け持つ。プレビューのパネルの中の描き方を変えるときに読む。
+    tags: [tool:vscode, topic:webview, tool:react]
+    related:
+      - to: dev/設計書/モジュール構成/VSCode拡張機能/Webview.ts
+        type: implements
+      - to: dev/設計書/部品設計/設定ファイルを読めない帯.ts
+        type: implements
+  - path: src/webview/shared/components/preview-status.tsx
+    description: モジュール構成『VS Code 拡張機能 / Webview』のうち「プレビューの状態の表示の props・プレビューの状態・プレビューの状態の表示」を受け持つ。プレビューのパネルの中の描き方を変えるときに読む。
+    tags: [tool:vscode, topic:webview, tool:react]
+    related:
+      - to: dev/設計書/モジュール構成/VSCode拡張機能/Webview.ts
+        type: implements
+      - to: dev/設計書/部品設計/プレビューの状態の表示.ts
+        type: implements
+  - path: src/webview/shared/components/ui/alert.tsx
+    description: モジュール構成『VS Code 拡張機能 / Webview』のうち「Alert」を受け持つ。プレビューのパネルの中の描き方を変えるときに読む。
+    tags: [tool:vscode, topic:webview, tool:react]
+    related:
+      - to: dev/設計書/モジュール構成/VSCode拡張機能/Webview.ts
+        type: implements
+  - path: src/webview/shared/components/ui/button.tsx
+    description: モジュール構成『VS Code 拡張機能 / Webview』のうち「Button」を受け持つ。プレビューのパネルの中の描き方を変えるときに読む。
+    tags: [tool:vscode, topic:webview, tool:react]
+    related:
+      - to: dev/設計書/モジュール構成/VSCode拡張機能/Webview.ts
+        type: implements
+  - path: src/webview/shared/components/ui/spinner.tsx
+    description: モジュール構成『VS Code 拡張機能 / Webview』のうち「Spinner」を受け持つ。プレビューのパネルの中の描き方を変えるときに読む。
+    tags: [tool:vscode, topic:webview, tool:react]
+    related:
+      - to: dev/設計書/モジュール構成/VSCode拡張機能/Webview.ts
+        type: implements
+  - path: src/webview/shared/lib/cn.ts
+    description: モジュール構成『VS Code 拡張機能 / Webview』のうち「class を結ぶ」を受け持つ。プレビューのパネルの中の描き方を変えるときに読む。
+    tags: [tool:vscode, topic:webview]
+    related:
+      - to: dev/設計書/モジュール構成/VSCode拡張機能/Webview.ts
+        type: implements
+  - path: src/webview/shared/lib/media-error.ts
+    description: モジュール構成『VS Code 拡張機能 / Webview』のうち「再生できない動画・音声の知らせを描く」を受け持つ。プレビューのパネルの中の描き方を変えるときに読む。
+    tags: [tool:vscode, topic:webview]
+    related:
+      - to: dev/設計書/モジュール構成/VSCode拡張機能/Webview.ts
+        type: implements
+  - path: src/webview/shared/styles/panel.css
+    description: モジュール構成『VS Code 拡張機能 / Webview』のうち「パネルの CSS」を受け持つ。プレビューのパネルの中の描き方を変えるときに読む。
+    tags: [tool:vscode, topic:webview]
+    related:
+      - to: dev/設計書/モジュール構成/VSCode拡張機能/Webview.ts
+        type: implements
+  - path: src/webview/testing/fake-vscode-api.ts
+    description: モジュール構成『VS Code 拡張機能 / Webview』のうち「VS Code の API の代役を作る」を受け持つ。プレビューのパネルの中の描き方を変えるときに読む。
+    tags: [tool:vscode, topic:webview]
+    related:
+      - to: dev/設計書/モジュール構成/VSCode拡張機能/Webview.ts
+        type: implements
+  - path: src/webview/testing/msw/handlers.ts
+    description: モジュール構成『VS Code 拡張機能 / Webview』のうち「MSW のハンドラ」を受け持つ。プレビューのパネルの中の描き方を変えるときに読む。
+    tags: [tool:vscode, topic:webview]
+    related:
+      - to: dev/設計書/モジュール構成/VSCode拡張機能/Webview.ts
+        type: implements
+  - path: vite.config.ts
+    description: モジュール構成『VS Code 拡張機能 / ビルドと配布』のうち「Webview の Vite の設定」を受け持つ。プレビューのパネルの中の描き方を変えるときに読む。
+    tags: [tool:vscode, topic:バンドル]
+    related:
+      - to: dev/設計書/モジュール構成/VSCode拡張機能/ビルドと配布.ts
+        type: implements
+  - path: src/webview/features/preview/panel/panel-screen.stories.tsx
+    description: 画面設計『VS Code のプレビュー』の状態ごとの Storybook のストーリーを並べる。画面の状態を追加・変更するときに読む。
+    tags: [topic:ストーリー, tool:storybook, tool:vscode]
+    related:
+      - to: dev/設計書/画面設計/VSCodeのプレビュー.ts
+        type: implements
+  - path: src/webview/shared/components/config-band.stories.tsx
+    description: 部品設計『設定ファイルを読めない帯』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに読む。
+    tags: [topic:ストーリー, tool:storybook, tool:vscode]
+    related:
+      - to: dev/設計書/部品設計/設定ファイルを読めない帯.ts
+        type: implements
+  - path: src/webview/shared/components/preview-status.stories.tsx
+    description: 部品設計『プレビューの状態の表示』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに読む。
+    tags: [topic:ストーリー, tool:storybook, tool:vscode]
+    related:
+      - to: dev/設計書/部品設計/プレビューの状態の表示.ts
+        type: implements
+  - path: src/webview/shared/lib/media-error.stories.ts
+    description: 再生できない動画・音声の知らせの Storybook のストーリーを並べる。知らせの見た目を確かめるときに読む。
+    tags: [topic:ストーリー, tool:storybook, tool:vscode]
+    related:
+      - to: dev/設計書/モジュール構成/VSCode拡張機能/Webview.ts
         type: implements

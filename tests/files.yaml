@@ -2187,39 +2187,135 @@ files:
     related:
       - to: vscode/src/version
         type: tests
-  - path: unit/vscode/src/webview/assets.browser.test.ts
-    description: vscode/src/webview/assets.ts（「相対パスの画像・動画・音声の集めと URL の差し替え・再生できない要素の知らせ」）を確かめるブラウザで流す単体テスト。assets.ts を変えたときに、合わせて見修正するケースを探すときに読む。
-    tags: [topic:単体テスト, tool:vitest, tool:vscode, topic:webview, topic:動画]
-    related:
-      - to: vscode/src/webview/assets
-        type: tests
-  - path: unit/vscode/src/webview/parts/config-band.test.ts
-    description: vscode/src/webview/parts/config-band.ts（「設定ファイルを読めない帯の HTML」）を確かめる単体テスト。config-band.ts を変えたときに、合わせて見修正するケースを探すときに読む。
-    tags: [topic:単体テスト, tool:vitest, tool:vscode, topic:webview, topic:設定]
-    related:
-      - to: vscode/src/webview/parts/config-band
-        type: tests
-  - path: unit/vscode/src/webview/parts/media-error.test.ts
-    description: vscode/src/webview/parts/media-error.ts（「再生できない動画・音声の知らせの HTML」）を確かめる単体テスト。media-error.ts を変えたときに、合わせて見修正するケースを探すときに読む。
-    tags: [topic:単体テスト, tool:vitest, tool:vscode, topic:webview, topic:動画]
-    related:
-      - to: vscode/src/webview/parts/media-error
-        type: tests
-  - path: unit/vscode/src/webview/parts/preview-status.test.ts
-    description: vscode/src/webview/parts/preview-status.ts（「プレビューの状態の表示の HTML」）を確かめる単体テスト。preview-status.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+  - path: unit/vscode/src/webview/main.browser.test.tsx
+    description: vscode/src/webview/main.tsx（「パネルを始める」）を確かめるブラウザで流す単体テスト。main.tsx を変えたときに、合わせて修正するケースを探すときに読む。
     tags: [topic:単体テスト, tool:vitest, tool:vscode, topic:webview]
     related:
-      - to: vscode/src/webview/parts/preview-status
+      - to: vscode/src/webview/main
         type: tests
-  - path: unit/vscode/src/webview/preview.browser.test.ts
-    description: vscode/src/webview/preview.ts（「パネルの中の入口（配布物の読み込み・描く・リンク・スクロール・inspect）」）を確かめるブラウザで流す単体テスト。preview.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+  - path: unit/vscode/src/webview/msw-test.ts
+    description: MSW の Service Worker をテストの間だけ動かす Vitest の test。配布物の HEAD を代役にするテストを追加するときに読む。
+    tags: [topic:単体テスト, tool:vitest, tool:vscode, topic:webview]
+  - path: unit/vscode/src/webview/webview-helpers.ts
+    description: Webview の単体テストが共有する道具（mdmark の代役・render のメッセージ・スクロールの位置・描く先の要素）。Webview のテストを追加するときに読む。
+    tags: [topic:単体テスト, tool:vitest, tool:vscode, topic:webview]
+  - path: unit/vscode/src/webview/app/app.browser.test.tsx
+    description: vscode/src/webview/app/app.tsx（「Webview のアプリ」）を確かめるブラウザで流す単体テスト。app.tsx を変えたときに、合わせて修正するケースを探すときに読む。
     tags: [topic:単体テスト, tool:vitest, tool:vscode, topic:webview]
     related:
-      - to: vscode/src/webview/preview
+      - to: vscode/src/webview/app/app
         type: tests
-  - path: unit/vscode/src/webview/scroll.browser.test.ts
-    description: vscode/src/webview/scroll.ts（「元の行番号とスクロールの位置の内分」）を確かめるブラウザで流す単体テスト。scroll.ts を変えたときに、合わせて見修正するケースを探すときに読む。
-    tags: [topic:単体テスト, tool:vitest, tool:vscode, topic:webview, topic:スクロール]
+  - path: unit/vscode/src/webview/features/preview/panel/assets.browser.test.ts
+    description: vscode/src/webview/features/preview/panel/assets.ts（「相対パスの画像・動画・音声を集める・Webview の URL に替える・再生できない動画・音声を知らせに替える」）を確かめるブラウザで流す単体テスト。assets.ts を変えたときに、合わせて修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, tool:vscode, topic:webview]
     related:
-      - to: vscode/src/webview/scroll
+      - to: vscode/src/webview/features/preview/panel/assets
+        type: tests
+  - path: unit/vscode/src/webview/features/preview/panel/boot.browser.test.ts
+    description: vscode/src/webview/features/preview/panel/boot.ts（「パネルの始め方・始め方を読む・保存した行を読む」）を確かめるブラウザで流す単体テスト。boot.ts を変えたときに、合わせて修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, tool:vscode, topic:webview]
+    related:
+      - to: vscode/src/webview/features/preview/panel/boot
+        type: tests
+  - path: unit/vscode/src/webview/features/preview/panel/diff-source.test.ts
+    description: vscode/src/webview/features/preview/panel/diff-source.ts（「差分の全文・差分の取り出し元の docId・差分の取り出し元を作る」）を確かめる単体テスト。diff-source.ts を変えたときに、合わせて修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, tool:vscode, topic:webview]
+    related:
+      - to: vscode/src/webview/features/preview/panel/diff-source
+        type: tests
+  - path: unit/vscode/src/webview/features/preview/panel/document-view.browser.test.ts
+    description: vscode/src/webview/features/preview/panel/document-view.ts（「再生してから調べるまでの待ち・描いた文書・描いた文書を作る」）を確かめるブラウザで流す単体テスト。document-view.ts を変えたときに、合わせて修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, tool:vscode, topic:webview]
+    related:
+      - to: vscode/src/webview/features/preview/panel/document-view
+        type: tests
+  - path: unit/vscode/src/webview/features/preview/panel/load-mdmark.test.ts
+    description: vscode/src/webview/features/preview/panel/load-mdmark.ts（「読んだ配布物・配布物を読む・読めない理由を見分ける・差分の色分けに対応するかを見る」）を確かめる単体テスト。load-mdmark.ts を変えたときに、合わせて修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, tool:vscode, topic:webview]
+    related:
+      - to: vscode/src/webview/features/preview/panel/load-mdmark
+        type: tests
+  - path: unit/vscode/src/webview/features/preview/panel/panel-screen.browser.test.tsx
+    description: vscode/src/webview/features/preview/panel/panel-screen.tsx（「プレビューのパネル」）を確かめるブラウザで流す単体テスト。panel-screen.tsx を変えたときに、合わせて修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, tool:vscode, topic:webview]
+    related:
+      - to: vscode/src/webview/features/preview/panel/panel-screen
+        type: tests
+  - path: unit/vscode/src/webview/features/preview/panel/scroll.browser.test.ts
+    description: vscode/src/webview/features/preview/panel/scroll.ts（「行の印・行の印を集める・行を位置にする・位置を行にする・位置を切り捨てない行にする・上端の帯の高さを測る」）を確かめるブラウザで流す単体テスト。scroll.ts を変えたときに、合わせて修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, tool:vscode, topic:webview]
+    related:
+      - to: vscode/src/webview/features/preview/panel/scroll
+        type: tests
+  - path: unit/vscode/src/webview/features/preview/panel/hooks/use-document-view.browser.test.tsx
+    description: vscode/src/webview/features/preview/panel/hooks/use-document-view.ts（「描いた文書を持つ」）を確かめるブラウザで流す単体テスト。use-document-view.ts を変えたときに、合わせて修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, tool:vscode, topic:webview]
+    related:
+      - to: vscode/src/webview/features/preview/panel/hooks/use-document-view
+        type: tests
+  - path: unit/vscode/src/webview/features/preview/panel/hooks/use-host-messages.browser.test.tsx
+    description: vscode/src/webview/features/preview/panel/hooks/use-host-messages.ts（「拡張機能のメッセージを受ける」）を確かめるブラウザで流す単体テスト。use-host-messages.ts を変えたときに、合わせて修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, tool:vscode, topic:webview]
+    related:
+      - to: vscode/src/webview/features/preview/panel/hooks/use-host-messages
+        type: tests
+  - path: unit/vscode/src/webview/features/preview/panel/hooks/use-link-clicks.browser.test.tsx
+    description: vscode/src/webview/features/preview/panel/hooks/use-link-clicks.ts（「リンクの押下を受ける」）を確かめるブラウザで流す単体テスト。use-link-clicks.ts を変えたときに、合わせて修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, tool:vscode, topic:webview]
+    related:
+      - to: vscode/src/webview/features/preview/panel/hooks/use-link-clicks
+        type: tests
+  - path: unit/vscode/src/webview/features/preview/panel/hooks/use-load-mdmark.browser.test.tsx
+    description: vscode/src/webview/features/preview/panel/hooks/use-load-mdmark.ts（「読み込み中を出すまでの待ち・配布物を読む」）を確かめるブラウザで流す単体テスト。use-load-mdmark.ts を変えたときに、合わせて修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, tool:vscode, topic:webview]
+    related:
+      - to: vscode/src/webview/features/preview/panel/hooks/use-load-mdmark
+        type: tests
+  - path: unit/vscode/src/webview/features/preview/panel/hooks/use-scroll-sync.browser.test.tsx
+    description: vscode/src/webview/features/preview/panel/hooks/use-scroll-sync.ts（「スクロールを知らせる」）を確かめるブラウザで流す単体テスト。use-scroll-sync.ts を変えたときに、合わせて修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, tool:vscode, topic:webview]
+    related:
+      - to: vscode/src/webview/features/preview/panel/hooks/use-scroll-sync
+        type: tests
+  - path: unit/vscode/src/webview/fixtures/preview.js
+    description: main.browser.test.tsx が読む、ビルドした Webview の代役の配布物。Webview の入口のテストを修正するときに読む。
+    tags: [topic:単体テスト, tool:vitest, tool:vscode, topic:webview]
+  - path: unit/vscode/src/webview/fixtures/test/axe.js
+    description: テストのときだけ読む axe-core の代役。axe の検査のテストを修正するときに読む。
+    tags: [topic:単体テスト, tool:vitest, tool:vscode, topic:webview]
+  - path: unit/vscode/src/webview/shared/adapters/vscode-api.test.ts
+    description: vscode/src/webview/shared/adapters/vscode-api.ts（「Webview の状態・VS Code の Webview の API・VS Code の API を取る」）を確かめる単体テスト。vscode-api.ts を変えたときに、合わせて修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, tool:vscode, topic:webview]
+    related:
+      - to: vscode/src/webview/shared/adapters/vscode-api
+        type: tests
+  - path: unit/vscode/src/webview/shared/components/config-band.browser.test.tsx
+    description: vscode/src/webview/shared/components/config-band.tsx（「設定ファイルを読めない帯」）を確かめるブラウザで流す単体テスト。config-band.tsx を変えたときに、合わせて修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, tool:vscode, topic:webview]
+    related:
+      - to: vscode/src/webview/shared/components/config-band
+        type: tests
+  - path: unit/vscode/src/webview/shared/components/preview-status.browser.test.tsx
+    description: vscode/src/webview/shared/components/preview-status.tsx（「プレビューの状態の表示の props・プレビューの状態・プレビューの状態の表示」）を確かめるブラウザで流す単体テスト。preview-status.tsx を変えたときに、合わせて修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, tool:vscode, topic:webview]
+    related:
+      - to: vscode/src/webview/shared/components/preview-status
+        type: tests
+  - path: unit/vscode/src/webview/shared/lib/media-error.test.ts
+    description: vscode/src/webview/shared/lib/media-error.ts（「再生できない動画・音声の知らせを描く」）を確かめる単体テスト。media-error.ts を変えたときに、合わせて修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, tool:vscode, topic:webview]
+    related:
+      - to: vscode/src/webview/shared/lib/media-error
+        type: tests
+  - path: git-env.ts
+    description: モジュール構成『ライブラリ本体 / 検査とGitフック』のうち「clearGitLocalEnv（Git のリポジトリの場所を指す環境変数を外す）」を受け持つ。テストの起動で外す環境変数を変えるときに読む。
+    tags: [topic:単体テスト, tool:vitest, tool:git]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/検査とGitフック.ts
+        type: implements
+  - path: unit/git-env.test.ts
+    description: tests/git-env.ts（「Git のリポジトリの場所を指す環境変数を外す」）を確かめる単体テスト。git-env.ts を変えたときに、合わせて修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, tool:git]
+    related:
+      - to: tests/git-env
         type: tests

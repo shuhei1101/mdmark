@@ -120,7 +120,7 @@ subsystems:
   - name: VS Code 拡張機能
     scope: vscode
     role: VS Code で開いている Markdown を、jsDelivr から読んだ配布物の `mount` で Webview に描き、HTML に書き出す。mdmark の配布物は同梱しない
-    runtime: TypeScript 7
+    runtime: TypeScript 7。Webview は React（Vite で書き出し、shadcn/ui と Tailwind の部品）
     runs_on: 文書を書く人の VS Code（拡張機能のホストと Webview）。`vscode/` に独自の `package.json` を置き、.vsix で配る
     refs:
       - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを開く.ts#
