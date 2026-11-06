@@ -76,6 +76,7 @@
 | モジュール構成設計 | `a54ede74..a572536b` | 実装で見つけた構造問題の修正（pre-push の単体テストの前に、worktree のフックに Git が渡す `GIT_DIR` などを外す） |
 | モジュール構成設計 | `629f1a9a..75b7939b` | レビューの指摘の修正（`GIT_DIR` などはフックでなく `vitest.config.ts` の `clearGitLocalEnv` で、`git rev-parse --local-env-vars` の一覧で外す） |
 | モジュール構成設計 | `150bb0ea..41017b9c` | 実装で見つけた構造問題の修正（拡張機能のメッセージでない `message` を処理しない。画面の処理の例外を state から次の描画で投げる。Storybook の `mswLoader` を msw-storybook-addon 3 の `csf3` にする。vscode の tsconfig の `paths`） |
+| モジュール構成設計 | `d870efc0..ca143a6f` | レビューの指摘の修正（`useDocumentView` の ref のコールバックを 1 回だけ作る。単体テストの記述） |
 
 ## PoC 結果
 
@@ -157,16 +158,17 @@ diff の見どころ: `vscode/vite.config.ts`（ライブラリの出力と Reac
 
 | ファイル | メソッド | 変更種別 | 結果 | 補足 |
 | --- | --- | --- | --- | --- |
-| `tests/unit/`（全ファイル） | 全実行 | 実行のみ | ✅ | 236 ファイル・1621 テスト pass<br>`テスト結果/20261106144508_50598965_単体テスト.log` |
+| `tests/unit/`（全ファイル） | 全実行 | 実行のみ | ✅ | 236 ファイル・1621 テスト pass<br>`テスト結果/20261106150156_add497d4_単体テスト.log` |
 | `tests/unit/vscode/src/webview/`（18 ファイル） | 全実行 | 新規 | ✅ | 上の全実行に含む |
 | `tests/unit/git-env.test.ts` | 全実行 | 新規 | ✅ | 上の全実行に含む |
+| `tests/unit/vscode/src/webview/features/preview/panel/hooks/use-document-view.browser.test.tsx` | `test_use_document_view` | 変更 | ✅ | 上の全実行に含む。レビューの指摘で、文書を描いた後の描き直しで `destroy` されない検証を加えた（設計書の単体テストの記述と合わせた） |
 | [tests/unit/vscode/scripts/build.test.ts](https://github.com/shuhei1101/mdmark/blob/develop/tests/unit/vscode/scripts/build.test.ts) | 全実行 | 変更 | ✅ | 上の全実行に含む。`test_build_extension`・`test_build_extension_when_tests` の待ちを 120 秒にした（Vite と React Compiler のビルドが単独で 17〜30 秒かかり、全件の並列で既定の 30 秒を超えた。期待値は変えていない） |
 
 ### lint
 
 | コマンド | 結果 | 補足 |
 | --- | --- | --- |
-| `lint` 層の全件実行（Biome・ESLint・ルートと `vscode/` の型検査） | ✅ | `テスト結果/20261106144508_a016bc69_lint.log` |
+| `lint` 層の全件実行（Biome・ESLint・ルートと `vscode/` の型検査） | ✅ | `テスト結果/20261106150156_add497d4_lint.log` |
 
 ### 結合
 
