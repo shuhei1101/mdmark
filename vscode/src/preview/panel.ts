@@ -25,6 +25,7 @@ import { openConfigFile } from "../config-file.ts";
 import { type ExtensionDeps, LAST_VERSION_KEY } from "../deps.ts";
 import type {
   HostMessage,
+  AxeViolation,
   InspectedElement,
   WebviewMessage,
 } from "../messages.ts";
@@ -85,7 +86,12 @@ export class PreviewPanel {
   >();
   /** 最後に HTML へ入れた配布物のバージョンと `index.js` の URL（決められなかったときは `undefined`） */
   private loaded: { version: string; distJs: string } | undefined;
-  /** 次の `inspect` の `id` */
+  /** `axe` の `id` → 結果を渡す関数（テストのときだけ使う） */
+  private readonly pendingAudits = new Map<
+    number,
+    (violations: AxeViolation[]) => void
+  >();
+  /** 次の `inspect`・`axe` の `id` */
   private nextInspectId = 1;
   /** 設定ファイルの `assets.root` の絶対パス（無ければ `undefined`） */
   private assetsRoot: string | undefined;
@@ -428,6 +434,10 @@ export class PreviewPanel {
         this.pendingInspects.get(message.id)?.(message.elements);
         this.pendingInspects.delete(message.id);
         return;
+      case "axed":
+        this.pendingAudits.get(message.id)?.(message.violations);
+        this.pendingAudits.delete(message.id);
+        return;
       case "loadFailed":
         if (message.reason === "diffUnsupported") {
           log.warn("差分の色分けに対応しないバージョン", this.loaded?.version);
@@ -569,6 +579,23 @@ export class PreviewPanel {
         resolve(elements);
       });
       void this.post({ type: "inspect", id, selector, play });
+    });
+  }
+
+  /** `inspect` と同じ番号の列の新しい `id` で `axe` を送り、`axed` を受けたら解決する（テストのときだけ呼ばれる） */
+  audit(): Promise<AxeViolation[]> {
+    const id = this.nextInspectId;
+    this.nextInspectId += 1;
+    return new Promise((resolve, reject) => {
+      const timeout = setTimeout(() => {
+        this.pendingAudits.delete(id);
+        reject(new Error("axe の応答が来ない"));
+      }, INSPECT_TIMEOUT_MS);
+      this.pendingAudits.set(id, (violations) => {
+        clearTimeout(timeout);
+        resolve(violations);
+      });
+      void this.post({ type: "axe", id });
     });
   }
 

@@ -15,7 +15,7 @@ import { openConfigFile } from "./config-file.ts";
 import type { ExtensionDeps } from "./deps.ts";
 import { type ExportMode, exportMarkdown } from "./export/export.ts";
 import type { Logger } from "./log.ts";
-import type { InspectedElement } from "./messages.ts";
+import type { AxeViolation, InspectedElement } from "./messages.ts";
 import { DIST_BASE } from "./preview/html.ts";
 import { PreviewManager } from "./preview/manager.ts";
 import { readSettings } from "./settings.ts";
@@ -29,6 +29,8 @@ export type TestApi = {
     selector: string,
     play?: boolean,
   ) => Promise<InspectedElement[]>;
+  /** 最後に表に出たパネルを axe で検査する */
+  auditPreview: () => Promise<AxeViolation[]>;
 };
 
 /** パネルが 1 つ以上開いているかを書くコンテキストキー */
@@ -180,5 +182,6 @@ export function activate(context: ExtensionContext): TestApi | undefined {
   }
   return {
     inspectPreview: (selector, play) => manager.inspectPreview(selector, play),
+    auditPreview: () => manager.auditPreview(),
   };
 }
