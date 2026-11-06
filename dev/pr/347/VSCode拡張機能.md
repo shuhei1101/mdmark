@@ -53,4 +53,23 @@
 
 ## テスト結果
 
-ドキュメント修正（`docs/` の公開ドキュメントの修正）には、関係する単体・結合テストが無い。単体・結合テストの結果は、テスト作成・実装で記入する。
+### 単体
+
+| ファイル | メソッド | 変更種別 | 結果 | 補足 |
+| --- | --- | --- | --- | --- |
+| `tests/unit/vscode/src/config.test.ts` | 全実行 | 変更 | ✅ | `npm run test:unit` で 238 ファイル・1649 テストが全 pass<br>[テスト結果/20261107011108_c30eea0f_単体テスト.log](./テスト結果/20261107011108_c30eea0f_単体テスト.log) |
+| `tests/unit/vscode/src/extensions-bundle.test.ts` | 全実行 | 新規 | ✅ |  |
+| `tests/unit/vscode/src/preview/html.test.ts` | 全実行 | 変更 | ✅ |  |
+| `tests/unit/vscode/src/export/html.test.ts` | 全実行 | 変更 | ✅ |  |
+| `tests/unit/vscode/scripts/build.test.ts` | 全実行 | 変更 | ✅ |  |
+| `tests/unit/vscode/src/webview/features/preview/panel/panel-screen.browser.test.tsx` | 全実行 | 変更 | ✅ |  |
+| `tests/unit/vscode/src/webview/features/preview/panel/load-mdmark.test.ts` | 全実行 | 変更 | ✅ |  |
+| `tests/unit/vscode/src/webview/features/preview/panel/boot.browser.test.ts` | 全実行 | 変更 | ✅ |  |
+| `tests/unit/vscode/src/webview/shared/components/config-band.browser.test.tsx` | 全実行 | 変更 | ✅ |  |
+
+`tests/unit/vscode/scripts/build.test.ts` は、拡張機能がライブラリ本体の `src/config-files.ts`・`src/bundle-module.ts` を束ねるようになったため、複製した `vscode/` の隣に `src/`・`schemas/`・`node_modules/` のリンクを置くよう直した（期待値は変えていない）。
+
+### 結合
+
+結合テスト作成で記入する。
+
