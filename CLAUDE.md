@@ -16,7 +16,7 @@ PROJECT_ROOT="$PWD" PYTHONPATH="$AI_MONITOR_HOME/src" python3 -m ai_monitor.inje
 ## VS Code 拡張機能の Webview
 
 - `vscode/src/webview/` は React（Vite・shadcn/ui・Tailwind）で書き、knowledge の React の規約（`docs/rule/react-*`・`ui-*`）に従う
-  - それ以外の `src/`・`vscode/src/` は React にしない（書き出す HTML に React のランタイムを入れない）
+  - それ以外の `src/`・`vscode/src/` は React にしない
 
 ## 設定・索引の Schema
 
