@@ -1,5 +1,5 @@
 title: ライブラリ本体 / 検査とGitフック
-lead: ESLint の道具と設定（`tools/eslint/`）・Git フック（lefthook）・検査の npm scripts。配布物には入らない。
+lead: ESLint の道具と設定（`tools/eslint/`）・Git フック（lefthook）・検査の npm scripts と、テストの起動で Git のリポジトリの場所を指す環境変数を外す処理。配布物には入らない。
 directory: |-
   ```tree
   {リポジトリの直下}/
@@ -8,7 +8,10 @@ directory: |-
   │       ├── package.json       # ESLint 9・TypeScript 6.0・typescript-eslint・plugin だけを持つ package
   │       ├── package-lock.json
   │       └── eslint.config.js   # VS Code 拡張機能の Webview（vscode/src/webview/）に当てる ESLint の Flat Config
+  ├── tests/
+  │   └── git-env.ts             # Git のリポジトリの場所を指す環境変数を外す
   ├── lefthook.yml               # pre-commit・pre-push で実行する検査
+  ├── vitest.config.ts           # 読み込んだ時点で git-env.ts の処理を呼ぶ
   └── package.json               # 検査の npm scripts（lint:eslint・typecheck:vscode・check）と prepare
   ```
 
@@ -71,7 +74,7 @@ constants:
       - key: pre-commit.commands.typecheck
         value: '`glob: "*.{ts,tsx}"`、`run: npm run typecheck && npm run typecheck:vscode`'
       - key: pre-push.commands.unit
-        value: '`run: env -u GIT_DIR -u GIT_INDEX_FILE -u GIT_WORK_TREE npm run test:unit`（worktree のフックに Git が渡す `GIT_DIR` を外す。残すと、一時のリポジトリで `git` を呼ぶ単体テストが作業中のリポジトリへ commit・設定・タグを書く）'
+        value: '`run: npm run test:unit`（フックに Git が渡す `GIT_DIR` などは、`vitest.config.ts` が `clearGitLocalEnv` で外す）'
     refs:
       - dev/設計書/外部ライブラリ/lefthook#
     status: planned
@@ -89,7 +92,29 @@ constants:
       - key: prepare
         value: '`lefthook install && npm ci --prefix tools/eslint`（`npm install` の後に Git フックと `tools/eslint/` の依存を入れる）'
     status: planned
+functions:
+  - name: clearGitLocalEnv
+    title: Git のリポジトリの場所を指す環境変数を外す
+    kind: 関数
+    container: tests/git-env.ts
+    usecase: 配布物をビルドして検査する
+    summary: '`git rev-parse --local-env-vars` が返す環境変数（`GIT_DIR`・`GIT_COMMON_DIR`・`GIT_INDEX_FILE`・`GIT_OBJECT_DIRECTORY`・`GIT_CONFIG` など）を `process.env` から外す'
+    description: '`vitest.config.ts` が読み込んだ時点で呼ぶ。Vitest の本体・`globalSetup`・テストの worker と、テストと製品のコード（`src/cli/git.ts` など）が起動する子プロセスは、外した後の環境を引き継ぐ。Git のフック（worktree のフックは `GIT_DIR` を持つ）や、`GIT_DIR` を持つ環境から Vitest を呼んでも、一時のフォルダで `git` を呼ぶテストが作業中のリポジトリへ書かない'
+    scope: public
+    process: |-
+      1. `git rev-parse --local-env-vars` を `execFileSync` で呼び、出力を行に分ける
+      2. 行の名前ごとに `delete process.env[名前]`
+    unit_tests:
+      - name: test_clear_git_local_env
+        case: 正常
+        summary: リポジトリの場所を指す環境変数だけを外す
+        condition: '`process.env` に `GIT_DIR`・`GIT_COMMON_DIR`・`GIT_INDEX_FILE` と、場所を指さない `GIT_AUTHOR_NAME` を置いて呼ぶ'
+        expected: '`GIT_DIR`・`GIT_COMMON_DIR`・`GIT_INDEX_FILE` が無くなり、`GIT_AUTHOR_NAME` は残る'
+    status: planned
 notes:
   道具を分ける理由: 直下の `typescript` 7.0 は JavaScript の API（`createProgram` など）を持たず、typescript-eslint 8 は TypeScript 6.1 未満だけに対応する。`eslint-plugin-jsx-a11y` 6.10 は ESLint 9 までに対応する。このため ESLint の実行に要るものを `tools/eslint/` に分け、直下の型検査・`scripts/baseline.ts` の ESLint 10 には手を入れない
   適用の範囲: 複雑さの規則を含む ESLint の規則は Webview（`vscode/src/webview/`）だけに当てる（要件.md の未確定「複雑さの lint を error にする範囲」の案 A）。リポジトリの他の TypeScript へ広げるのは別の Issue で扱う
   閾値: knowledge の規約『設計原則』が上限の値を持たないため、`sonarjs/cognitive-complexity` は規則の既定（15）、`max-depth` は ESLint の既定（4）、`max-params` は 3（オブジェクトの引数にまとめる今の書き方に合わせる）、`complexity` は 10 にする
+  テストの環境変数: 外す変数は Git が返す一覧に任せ、名前を書き並べない。外すのはテストの起動（`vitest.config.ts`）で、Git のフックの `run` では外さない（フックの外から呼んでも同じに守るため）
+test_files:
+  - tests/unit/git-env.test.ts
