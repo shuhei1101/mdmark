@@ -59,7 +59,10 @@ response:
     description: 最も近い `mdmark.config.yaml` の絶対パス（`explicit` を渡したときはそのパス）。1 つも無ければ `undefined`
   - name: issues
     type: CheckIssue[]
-    description: 重ねた設定ファイルごとの形のずれ（`file` はそのファイルのパス）。YAML として読めないファイルは `kind` が `yaml` のずれで、行を `where` に入れる
+    description: 重ねた設定ファイルごとの `schema` のずれ。`file` はそのファイルの絶対パス（表示するときは制約「パスの表示」で書き換える）
+  - name: unreadable
+    type: '{ path: string; line: number; message: string } | undefined'
+    description: YAML として読めなかった最初の設定ファイル（端末の設定 → 上 → 近いの順）。`path` は絶対パス、`line` は読めない行（1 始まり）。全て読めたときは `undefined`
 response_example: |-
   ```json
   {
@@ -75,7 +78,7 @@ response_example: |-
   ```
 exceptions:
   - name: なし（正常終了）
-    condition: 重ねて読めた。読めないファイル・形に合わないファイルがあっても例外にせず `issues` に入れる（読めないファイルは重ねない）
+    condition: 重ねて読めた。YAML として読めないファイルは例外にせず `unreadable` に、形に合わないファイルは `issues` に入れる（どちらも重ねない）
   - name: ConfigNotFoundError
     condition: '`explicit` のファイルが無い'
     notes: '`explicit` を渡さず `mdmark.config.yaml` が 1 つも無いときは例外にせず `nearest` を `undefined` にする（呼ぶ側が誤りにするかを決める）'
@@ -93,9 +96,11 @@ constraints:
   - item: 相対パスの基準
     constraint: '`theme`・`extensions`・`libraries` の値・`html-scripts.url`・`syntax.url`・`index`・`assets.root`・`build` の各パス・`aliases` のパスは、重ねる前に、その値を書いた設定ファイルのフォルダから絶対パスにする。`http:`・`https:` の URL は替えない'
   - item: 読めないファイル
-    constraint: YAML として読めない・形に合わないファイルは重ねずに `issues` に入れ、残りのファイルを重ねる。呼ぶ側は `issues` の最初の 1 つを誤り（CLI・MCP）か帯（VS Code 拡張機能）にする
+    constraint: YAML として読めないファイルは `unreadable` に、形に合わないファイルは `issues` に入れ、どちらも重ねずに残りのファイルを重ねる。呼ぶ側は、`unreadable` を今の「設定ファイルを読めない」誤り（CLI・MCP は終了コード 1）か帯の行に、`issues` の最初の 1 つを今の「設定の形に合わない」誤り（`mdmark check` は `schema` のずれ）か帯のキーにする。ずれの種類は今の一覧のままで、足さない
   - item: タイムアウト
     constraint: 制限なし（手元のファイルを読むだけ）
+  - item: パスの表示
+    constraint: 返すパスは全て絶対パス。表示するときは、基準のフォルダ（CLI・MCP は `cwd`、VS Code 拡張機能は Markdown を含むワークスペースのフォルダ）の中ならそこからの相対パス、外なら `home` を `~` にしたパス（`home` の外は絶対パス）にする。この書き換えは同じモジュールの関数で行い、CLI のずれの `file`・誤りの文と VS Code 拡張機能の帯が使う
 flows:
   - name: 正常系
     summary: 端末の設定と上のフォルダの設定と近いフォルダの設定を重ね、相対パスを書いた設定ファイルから解決する
@@ -201,7 +206,7 @@ flows:
         IF->>IF: 端末の設定を読めない
         IF-->>C: 端末の設定を除いた config・issues
     expected:
-      - '`issues[0].file` が端末の設定のパスで、`kind` が `yaml`、`where` が `3`'
+      - '`unreadable.path` が端末の設定の絶対パスで、`unreadable.line` が `3`、`issues` が空'
       - '`files` に端末の設定が無く、`config.features` が `{ table: false }`'
     test: test_normal_when_unreadable_file
   - name: 異常系（指定した設定ファイルが無い・ConfigNotFoundError）

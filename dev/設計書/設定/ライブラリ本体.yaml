@@ -814,7 +814,7 @@ settings:
     type: boolean
     required: false
     default: 'true'
-    description: '`false` のとき、`mdmark export`・`mdmark build`・`mdmark check`（MCP のツールと VS Code 拡張機能の書き出しも同じ）で端末の設定を重ねない。プレビューは常に重ねる'
+    description: '`false` のとき、`mdmark export`・`mdmark build`（MCP のツールと VS Code 拡張機能の書き出しも同じ）で端末の設定を重ねない。プレビューは常に重ねる。`mdmark check` は重ねる設定をこの値で決めつつ、端末の設定の形は常に検める'
     allowed: 真偽値。端末の設定だけが持ち、`mdmark.config.yaml` に書いても読まない
     reload: reload
     implementation: src/config-files.ts#loadLayeredConfig
