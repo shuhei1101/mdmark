@@ -1142,7 +1142,7 @@ functions:
     kind: フック
     container: vscode/src/webview/features/preview/panel/hooks/use-document-view.ts
     usecase: 共通
-    summary: '`useState` の初期化で `createDocumentView` を 1 回だけ呼び、描く先の要素の ref のコールバックで `attach`・後始末で `detach` を呼ぶ'
+    summary: '`useState` の初期化で `createDocumentView` と、描く先の要素の ref のコールバック（`attach`・後始末で `detach`）を 1 回だけ作る。ref のコールバックは描画をまたいで同じ関数で、再描画で `detach` が走らない（React Compiler のメモ化に頼らない）'
     scope: public
     args:
       - name: options
@@ -1155,10 +1155,10 @@ functions:
     unit_tests:
       - name: test_use_document_view
         case: 正常
-        summary: 描き直しても同じ view で、外すと detach する
-        condition: '`renderHook` で 2 回描き直し、`documentRef` に要素を渡してから `unmount`'
+        summary: 描き直しても同じ view で文書を残し、外すと detach する
+        condition: '`documentRef` を描く先の要素に渡す部品で描き、2 回描き直した後に文書を描き、さらに 2 回描き直してから `unmount`'
         mock: なし
-        expected: '`view` が同じ値で、`unmount` の後に描画が `destroy` される'
+        expected: '`view` が同じ値で、文書を描いた後の描き直しでは `destroy` されず、`unmount` の後に 1 回だけ `destroy` される'
     callees:
       - '#classes[DocumentView]'
     status: planned
