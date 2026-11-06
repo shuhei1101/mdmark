@@ -1,0 +1,24 @@
+import type { WebviewMessage } from "../../../messages.ts";
+import type { PreviewState } from "../../features/preview/panel/boot.ts";
+
+/** `acquireVsCodeApi()` が返す API のうち、Webview が使うもの */
+export type VsCodeApi = {
+  /** 拡張機能へ送る */
+  postMessage: (message: WebviewMessage) => void;
+  /** 保存した状態を読む。持たない代役では行を戻さない */
+  getState?: () => unknown;
+  /** 状態を保存する。持たない代役では行を保存しない */
+  setState?: (state: PreviewState) => void;
+};
+
+/** VS Code が Webview に渡す API の取得（2 回目の呼び出しは例外を投げる） */
+declare const acquireVsCodeApi: () => VsCodeApi;
+
+/** 最初に取得した API */
+let cached: VsCodeApi | undefined;
+
+/** `acquireVsCodeApi()` を初回だけ呼んで覚え、2 回目からは同じ値を返す */
+export const getVsCodeApi = (): VsCodeApi => {
+  cached ??= acquireVsCodeApi();
+  return cached;
+};
