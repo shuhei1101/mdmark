@@ -71,6 +71,7 @@
 | モジュール構成設計 | `bf28b6b..4a6ecbf` | 部品設計の状態 `Unexpected` の追加と、インターフェース定義のテストのときのメッセージの追加を含む |
 | モジュール構成設計 | `4a6ecbf..ad3ed91` | レビューの任意の指摘の修正 |
 | モジュール構成設計 | `48aac41..7ec8e8d` | 単体テスト作成で見つけた構造問題の修正（`DocumentView` をクラスでなく `createDocumentView` が返す型にする。単体テストの HEAD を MSW でなく `window.fetch` の代役にする） |
+| モジュール構成設計 | `d9509a0..b15cf5c` | レビューの指摘の修正（単体テストもストーリーと同じ MSW のハンドラに戻し、`unit-browser` の `publicDir` で Service Worker を配信する） |
 
 ## PoC 結果
 
