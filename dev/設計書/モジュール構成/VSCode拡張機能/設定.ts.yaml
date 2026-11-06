@@ -523,6 +523,49 @@ functions:
     status: planned
     introduced:
       pr: 181
+  - name: bundleExtensions
+    title: 拡張を束ねる
+    kind: 関数
+    container: vscode/src/extensions-bundle.ts
+    usecase: 共通
+    summary: 重ねた設定の `extensions` を esbuild-wasm で 1 つずつ ES モジュールに束ねる（`.ts` も読み、URL の import は束ねに取り込む）
+    description: プレビューは設定を読み直して `extensions` の並びかそのファイルが変わったときだけ、書き出しは書き出すたびに呼ぶ（esbuild-wasm は束ねた結果をメモリから解放しないため、Markdown の書き換えでは呼ばない）
+    scope: public
+    is_async: true
+    side_effects: URL の先を読む。初めて呼んだときだけ esbuild-wasm を初期化する
+    args:
+      - name: options
+        type: '{ paths: string[]; extensionPath: string; readFile: (path: string) => Promise<Uint8Array>; fetchText?: (url: string) => Promise<string> }'
+        required: true
+        description: '`ConfigLoad` の `extensions`（絶対パス）・拡張機能のフォルダ（`dist/esbuild.wasm` を読む）・ファイルを読む関数・URL を読む関数'
+    returns:
+      type: 'Promise<Array<{ path: string; code: string } | { path: string; error: string }>>'
+      description: '`paths` の順の、束ねたコードか束ねられない理由'
+    process: |-
+      1. 初めて呼んだときだけ、`{extensionPath}/dist/esbuild.wasm` を読んで `WebAssembly.compile` し、`initialize({ wasmModule, worker: false })` を呼ぶ（初期化の Promise を使い回す）
+      2. URL を読む関数を控え付きにし（URL を読む関数を控え付きにする）、`paths` の各パスをモジュールを 1 つに束ねる（`build` は esbuild-wasm の `build`）
+         - `error` の場合、そのパスと理由を返し、次のパスへ進む
+    unit_tests:
+      - name: test_bundle_extensions
+        case: 正常
+        summary: .ts とその相対パス・URL の import を 1 つに束ねる
+        condition: 型注釈を持ち `./lib.ts` と `https://cdn.example/a.js` を import する `entry.ts`
+        mock: 一時フォルダ。`fetchText` を URL の本文を返す代役にする。`extensionPath` は `vscode/node_modules/esbuild-wasm` の `esbuild.wasm` を置いた一時フォルダ
+        expected: '`code` に `import` 文と型注釈が残らず、既定の export を持つ'
+      - name: test_bundle_extensions_when_error
+        case: 異常
+        summary: 束ねられない拡張は理由を返して次へ進む
+        condition: '`paths` が無いファイルと `entry.ts` の順'
+        mock: 一時フォルダ
+        expected: 1 つ目が `error`、2 つ目が `code`
+    callees:
+      - dev/設計書/モジュール構成/ライブラリ本体/CLI.ts#functions[bundleModule]
+      - dev/設計書/モジュール構成/ライブラリ本体/CLI.ts#functions[cacheFetchText]
+    refs:
+      - dev/設計書/外部ライブラリ/esbuild-wasm#
+    status: planned
+    introduced:
+      pr: 347
 test_files:
   - tests/unit/vscode/src/settings.test.ts
   - tests/unit/vscode/src/config.test.ts

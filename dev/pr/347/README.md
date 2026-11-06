@@ -29,7 +29,7 @@ VS Code 拡張機能は `mdmark.configPath` をワークスペースのフォル
 - [x] ~~初期構築~~（既存リポジトリのため対象外）
 - [x] ~~リバースエンジニアリング~~（現状設計書が揃っている）
 - [x] ~~方針決め~~（方針決めを依頼する Issue ではない）
-- [x] ~~PoC 検証~~（未検証の技術機構に依存しない。設定ファイルのフォルダのファイルを Webview の URI にして CSP の `cspSource` と `localResourceRoots` で読む経路は、`libraries`・`assets.root` で動いている）
+- [x] PoC 検証（VS Code 拡張機能の拡張機能ホストの中で esbuild-wasm で `extensions` を束ねる。[#349](https://github.com/shuhei1101/mdmark/pull/349) で確かめ、esbuild-wasm を採用）
 - [x] 複合ユースケース設計
 - [x] ~~デザインスタイル選定~~（デザイン方針があり、見た目の方向を変えない）
 - [x] ~~画面一覧・画面遷移~~（画面の追加・削除と画面遷移の変更を含まない）

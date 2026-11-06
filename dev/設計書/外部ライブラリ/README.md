@@ -9,6 +9,7 @@
 | ページ | 概要 |
 | --- | --- |
 | [esbuild](./esbuild.yaml) | TS と CSS を配布物の ES モジュールの JS と CSS に束ねる |
+| [esbuild-wasm](./esbuild-wasm.yaml) | VS Code 拡張機能が拡張機能ホストの中で設定の extensions を束ねる |
 | [vitest](./vitest.yaml) | 単体テスト（Node）と結合テスト（実ブラウザ）のランナー |
 | [playwright](./playwright.yaml) | E2E のブラウザ操作と、結合テストのブラウザの起動 |
 | [biome](./biome.yaml) | lint と整形の検査 |

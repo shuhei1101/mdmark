@@ -284,9 +284,9 @@ classes:
         access: public
         description: 見張るファイル（重ねた設定ファイル・`theme`・`extensions` と、書いた `mdmark.configPath` のファイル）。`PreviewManager` が張る
       - name: loaded
-        type: '{ theme?: string; extensions: string[] }'
+        type: '{ theme?: string; extensions: Array<{ path: string; hash: string; file?: string }> }'
         access: private
-        description: 今の HTML に入れた `theme`・`extensions` の絶対パス。読み直した値と比べ、違えば HTML を入れ直す
+        description: 今の HTML に入れた `theme` の絶対パスと、`extensions` の絶対パス・そのファイルの中身の SHA-256・束ねて書いたファイル。読み直した値と比べ、違えば束ね直して HTML を入れ直す
     methods:
       - name: load
         title: 読み込む
@@ -303,13 +303,16 @@ classes:
              - `fetched` が `true` の場合、`mdmark.lastVersion` に書く
           3. 設定を読み直す（設定を読み直す）
           4. 控えた番号が今の `loadToken` と違えば、後の呼び出しに任せて終わる
-          5. `webview.options` の `localResourceRoots` に、`assets.root` のフォルダと `theme`・`extensions` のファイルのフォルダがあれば加えて入れ直す（前に加えたフォルダは外す）
-          6. `ready` を `false` にし、HTML を組んで（Webview の HTML を組む。`themeHref` は `theme` の `asWebviewUri`、`extensions` は `extensions` の各パスの `asWebviewUri`）`webview.html` に入れる。入れた `theme`・`extensions` のパスを控える。決められないときは配布物を読まない HTML（`status: "versionUndecidable"`）
+          5. `extensions` のパスの並びかそのファイルが `loaded` と違う場合、拡張を束ね（拡張を束ねる）、束ねたコードを `{globalStorageUri}/extensions/{コードの SHA-256}.mjs` に書く。束ねられない拡張は飛ばす
+             - `[warn]` 拡張を束ねられない（パス・理由）
+          6. `webview.options` の `localResourceRoots` に、`assets.root` のフォルダ・`theme` のファイルのフォルダ・`{globalStorageUri}/extensions` を加えて入れ直す（前に加えたフォルダは外す）。CSP には `extensions` のための origin を足さない（URL の import は束ねに取り込む）
+          7. `ready` を `false` にし、HTML を組んで（Webview の HTML を組む。`themeHref` は `theme` の `asWebviewUri`、`extensions` は書いた各ファイルの `asWebviewUri`）`webview.html` に入れる。入れた `theme`・`extensions` のパスを控える。決められないときは配布物を読まない HTML（`status: "versionUndecidable"`）
         callees:
           - dev/設計書/モジュール構成/VSCode拡張機能/読むバージョン.ts#functions[decideVersion]
           - dev/設計書/モジュール構成/VSCode拡張機能/読むバージョン.ts#functions[fetchLatestVersion]
           - dev/設計書/モジュール構成/VSCode拡張機能/設定.ts#functions[readSettings]
           - '#functions[buildPreviewHtml]'
+          - dev/設計書/モジュール構成/VSCode拡張機能/設定.ts#functions[bundleExtensions]
         refs:
           - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを開く.ts#
           - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューをリロードする.ts#

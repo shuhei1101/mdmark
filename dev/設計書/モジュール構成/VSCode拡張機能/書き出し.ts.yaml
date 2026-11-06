@@ -177,7 +177,7 @@ functions:
       1. 読むバージョンを決める（読むバージョンを決める）
          - `undecidable` の場合、画面設計の「バージョンを決められない通知」を `showErrorMessage` で出し、`undefined` を返す
          - `fetched` が `true` の場合、`mdmark.lastVersion` に書く
-      2. 設定ファイルを読み（設定ファイルを読む。`purpose: export`、`cwd` は Markdown のフォルダ、`baseDir` は Markdown を含むワークスペースのフォルダ、`env` は `process.env`、`home` は `os.homedir()`）、`libraries` を `pathToFileURL` で直し、`theme` の CSS を読んで `<style>` に、`extensions` を CLI の束ねる処理で 1 つのスクリプトにして埋める。`problem` があるときはそのファイルを重ねずに書き出す。続けて `mdmark.colorTheme` で上書きする（テーマの設定で上書きする）
+      2. 設定ファイルを読み（設定ファイルを読む。`purpose: export`、`cwd` は Markdown のフォルダ、`baseDir` は Markdown を含むワークスペースのフォルダ、`env` は `process.env`、`home` は `os.homedir()`）、`libraries` を `pathToFileURL` で直し、`theme` の CSS を読んで `<style>` に、`extensions` を拡張を束ねる（拡張を束ねる）で束ねて、それぞれを描く前に登録するスクリプトとして埋める（束ねられない拡張は `[warn]` を出して飛ばす）。`problem` があるときはそのファイルを重ねずに書き出す。続けて `mdmark.colorTheme` で上書きする（テーマの設定で上書きする）
          - `[warn]` 設定ファイルを読めないため設定なしで書き出す（パス・行・`message`）
       3. 書き出す先を決め（書き出す先を決める）、`getText()` の全文で HTML を組み（書き出す HTML を組む。`print` は `mode` が `print` のとき）、書く（一時ファイルから置き換える）
          - 書けない場合、画面設計の「書き出せない通知」を `showErrorMessage` で出し、`undefined` を返す
@@ -195,6 +195,7 @@ functions:
       - '#functions[resolveExportPath]'
       - '#functions[buildExportHtml]'
       - '#functions[writeFileAtomically]'
+      - dev/設計書/モジュール構成/VSCode拡張機能/設定.ts#functions[bundleExtensions]
     refs:
       - dev/設計書/インターフェース定義/VSCode拡張機能/HTMLに書き出す.ts#
       - dev/設計書/インターフェース定義/VSCode拡張機能/ブラウザで開く.ts#
