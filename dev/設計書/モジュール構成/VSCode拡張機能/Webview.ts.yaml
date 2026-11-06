@@ -697,6 +697,7 @@ components:
       - `scrollToLine`: `view.scrollToLine`
       - `configError`・`configOk`: `configErrorLine` を行にする・消す
       - `inspect`・`axe`: `boot.test` のときだけ `view.inspect`・`view.audit` の結果を `inspected`・`axed` で同じ `id` で送る
+      - 上の `type` 以外: 処理しない（`window` の `message` には、MSW の Service Worker など拡張機能以外が送るものも届く）
 
       メッセージの処理と配布物の読み込みの結果の処理で投げた例外（`view.render` の例外など）は、`react-error-boundary` の `useErrorBoundary` の `showBoundary` で `App` の Error Boundary へ渡し、描画の失敗（`unexpected`）を出す
     kind: 画面
@@ -790,6 +791,12 @@ components:
         condition: '`test` が `true` と `false` の `boot` で、それぞれ `inspect` を送る'
         mock: '`api` を代役にする'
         expected: '`true` のときだけ同じ `id` の `inspected` が送られる'
+      - name: test_panel_screen_when_unknown_message
+        case: 正常
+        summary: 拡張機能のメッセージでない `message` を処理しない
+        condition: '`App` で描いて `ready` を待った後、`{ type: "msw/worker:stop" }` と、`type` を持たない値を送り、続けて `render` を送る'
+        mock: '`api` を代役にする'
+        expected: 状態の表示が出ず、`render` の後に `rendered` が 1 回送られる
       - name: test_panel_screen_when_handler_throws
         case: 異常
         summary: メッセージの処理で投げた例外を Error Boundary へ渡す
