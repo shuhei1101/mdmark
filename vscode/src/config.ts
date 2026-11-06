@@ -1,5 +1,5 @@
 import { stat } from "node:fs/promises";
-import { dirname, isAbsolute, resolve } from "node:path";
+import { isAbsolute, resolve } from "node:path";
 import { loadLayeredConfig } from "../../src/config-files.ts";
 import type { PreviewSettings } from "./settings.ts";
 
