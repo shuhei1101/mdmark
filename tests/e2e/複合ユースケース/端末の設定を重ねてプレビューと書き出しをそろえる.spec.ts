@@ -2,6 +2,7 @@ import { existsSync } from "node:fs";
 import { readFile, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import {
+  CASCADE_THEME_VARIABLE,
   cascadeSettings,
   cascadeTheme,
   expectFeaturesOff,
@@ -16,22 +17,23 @@ import { openCascadedPreview } from "../vscode-cascade.ts";
 
 const e2e = useVscodeE2E();
 
-/** 書き出した HTML の、描く先の要素と注意書き・表・固有の部品の計算後のスタイル */
-async function computedStyles(
+/** 重ねた設定で決まる見た目（`theme.css` の CSS 変数・固有の部品の文字・注意書きの枠と表の並べ替えのボタンの数）。本文の色は VS Code とブラウザの明暗で変わるため比べない */
+async function cascadedLook(
   root: import("@playwright/test").Page | import("@playwright/test").Frame,
-): Promise<Record<string, string>> {
-  return root.evaluate(() => {
-    const pick = (selector: string) => {
-      const element = document.querySelector(selector);
-      return element === null ? "" : getComputedStyle(element).color;
-    };
+): Promise<Record<string, string | number>> {
+  return root.evaluate((variable) => {
+    const article = document.querySelector(".mdmark");
     return {
-      root: pick(".mdmark"),
-      blockquote: pick(".mdmark blockquote"),
-      table: pick(".mdmark table"),
-      slot: pick(".mdmark [data-mdmark-slot]"),
+      theme:
+        article === null
+          ? ""
+          : getComputedStyle(article).getPropertyValue(variable).trim(),
+      slot:
+        document.querySelector(".mdmark [data-mdmark-slot]")?.textContent ?? "",
+      alerts: document.querySelectorAll(".mdmark .markdown-alert").length,
+      sorts: document.querySelectorAll(".mdmark button.mdmark-sort").length,
     };
-  });
+  }, CASCADE_THEME_VARIABLE);
 }
 
 // 端末の設定と上のフォルダの設定を重ね、プレビュー・theme の CSS の保存・mdmark export・export_html を同じ見た目にそろえる（正常シナリオ）
@@ -49,7 +51,7 @@ test("test_normal", async ({ builtRoot, tempDir, page }) => {
     cascadeTheme("rgb(7, 8, 9)"),
   );
   await expect.poll(() => themeValue(opened.frame)).toBe("rgb(7, 8, 9)");
-  const preview = await computedStyles(opened.frame);
+  const preview = await cascadedLook(opened.frame);
   // 実行: 下のフォルダで mdmark export を流す
   const docs = join(opened.session.workspaceDir, "docs");
   const exported = await runCli(
@@ -66,7 +68,7 @@ test("test_normal", async ({ builtRoot, tempDir, page }) => {
   });
   await expectFeaturesOff(page);
   await expect.poll(() => themeValue(page)).toBe("rgb(7, 8, 9)");
-  const cli = await computedStyles(page);
+  const cli = await cascadedLook(page);
   expect(cli).toEqual(preview);
   // 実行: Claude Code から export_html を呼ぶ
   const tool = await withMcpClient(
@@ -92,7 +94,7 @@ test("test_normal", async ({ builtRoot, tempDir, page }) => {
     "greet:世界",
   ]);
   await expect.poll(() => themeValue(mcpPage)).toBe("rgb(7, 8, 9)");
-  expect(await computedStyles(mcpPage)).toEqual(cli);
+  expect(await cascadedLook(mcpPage)).toEqual(cli);
   await mcpPage.close();
   // 検証: 端末の設定と 2 つの mdmark.config.yaml は書き換わらない
   expect(await opened.configs()).toEqual(opened.before);
