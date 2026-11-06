@@ -146,10 +146,9 @@ export const PanelScreen = ({
           );
         }
         return;
-      default: {
-        const unknown: never = message;
-        throw new Error(`知らないメッセージ: ${JSON.stringify(unknown)}`);
-      }
+      default:
+        // MSW の Service Worker など、拡張機能以外が送るメッセージは処理しない
+        return;
     }
   };
 
