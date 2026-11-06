@@ -68,6 +68,7 @@ const PanelStory = ({ distJs, version, load, messages }: PanelStoryArgs) => {
             version,
             status: undefined,
             configPath: "mdmark.config.yaml",
+            extensions: [],
             test: false,
           }}
           api={api}
@@ -151,7 +152,10 @@ export const DiffUnsupported: Story = {
 export const ConfigError: Story = {
   name: "ConfigError",
   args: {
-    messages: [renderOf(SAMPLE_MARKDOWN), { type: "configError", line: 4 }],
+    messages: [
+      renderOf(SAMPLE_MARKDOWN),
+      { type: "configError", path: "mdmark.config.yaml", line: 4 },
+    ],
   },
 };
 

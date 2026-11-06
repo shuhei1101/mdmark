@@ -24,11 +24,39 @@ export type Mdmark = {
     },
   ) => MountHandle;
   diffModes?: unknown;
+  /** 拡張を登録する。配布物を読んだ後、`mount` の前に呼ぶ */
+  registerExtension?: (extension: unknown) => void;
 };
 
 /** 配布物を実行時の `import()` で読む（React Compiler は `import()` を持つコンポーネントを変換しないため、コンポーネントの外に置く） */
 export const loadMdmark = (url: string): Promise<Mdmark> =>
   import(/* @vite-ignore */ url);
+
+/** 拡張のモジュールを読む関数 */
+export type ImportModule = (url: string) => Promise<{ default?: unknown }>;
+
+/** 拡張を実行時の `import()` で読む */
+const importByUrl: ImportModule = (url) => import(/* @vite-ignore */ url);
+
+/** 拡張の URL を順に読み、`default` を読んだ配布物の `registerExtension` に渡す。読めない・登録できない拡張は飛ばして続ける */
+export const registerExtensions = async (options: {
+  /** 読んだ配布物 */
+  mdmark: Mdmark;
+  /** `boot.extensions` */
+  urls: string[];
+  /** 拡張を読む関数 */
+  importModule?: ImportModule | undefined;
+}): Promise<void> => {
+  const importModule = options.importModule ?? importByUrl;
+  for (const url of options.urls) {
+    try {
+      const module = await importModule(url);
+      options.mdmark.registerExtension?.(module.default);
+    } catch (error) {
+      console.error("拡張を登録できません:", url, error);
+    }
+  }
+};
 
 /** 読めなかった `index.js` の URL を `fetch` の `HEAD` で確かめ、404 なら `versionMissing`、それ以外は `offline` を返す */
 export const classifyLoadFailure = async (options: {

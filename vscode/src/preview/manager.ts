@@ -1,4 +1,7 @@
+import { basename, dirname, relative } from "node:path";
 import {
+  type FileSystemWatcher,
+  RelativePattern,
   TabInputTextDiff,
   type TextDocument,
   type TextEditorVisibleRangesChangeEvent,
@@ -7,7 +10,7 @@ import {
   window,
   workspace,
 } from "vscode";
-import { resolveConfigPath } from "../config.ts";
+import { CONFIG_FILE } from "../../../src/config-files.ts";
 import type { ExtensionDeps } from "../deps.ts";
 import type { AxeViolation, InspectedElement } from "../messages.ts";
 import { readSettings } from "../settings.ts";
@@ -36,6 +39,8 @@ export class PreviewManager {
   private readonly onPanelsChange: () => void;
   /** 最後に表に出たパネル */
   private lastActive: PreviewPanel | undefined;
+  /** 見張るファイル → その `FileSystemWatcher`（各パネルの `watched` の和） */
+  private readonly watchers = new Map<string, FileSystemWatcher>();
 
   constructor(options: { deps: ExtensionDeps; onPanelsChange?: () => void }) {
     this.deps = options.deps;
@@ -120,6 +125,9 @@ export class PreviewManager {
       document,
       ...(original === undefined ? {} : { original }),
       deps: this.deps,
+      onWatchedChange: () => {
+        this.syncWatchers();
+      },
     });
     this.panels.set(key, panel);
     this.lastActive = panel;
@@ -130,6 +138,7 @@ export class PreviewManager {
     });
     webviewPanel.onDidDispose(() => {
       this.panels.delete(key);
+      this.syncWatchers();
       if (this.lastActive === panel) {
         this.lastActive = undefined;
       }
@@ -183,30 +192,61 @@ export class PreviewManager {
   /** 設定ファイルの作成・変更・削除と、`mdmark.configPath`・`mdmark.preview.theme`・`mdmark.colorTheme` の変更を受け、影響するパネルに設定を読み直させて待たずに送らせる。`libraries` の origin の集まりが CSP に入れたものと違うパネルは、HTML を入れ直す */
   handleConfigChange(change: ConfigChange): void {
     for (const panel of this.panels.values()) {
-      if (!this.affects(change, panel.scope)) {
+      if (!this.affects(change, panel)) {
         continue;
       }
-      void panel.applyConfigChange();
+      void panel.applyConfigChange(
+        change.kind === "file" ? change.path : undefined,
+      );
     }
   }
 
   /** 変更がこのパネルの Markdown に影響するか */
-  private affects(change: ConfigChange, uri: Uri): boolean {
+  private affects(change: ConfigChange, panel: PreviewPanel): boolean {
     if (change.kind === "setting") {
       return (
-        change.affects("mdmark.configPath", uri) ||
-        change.affects("mdmark.preview.theme", uri) ||
-        change.affects("mdmark.colorTheme", uri)
+        change.affects("mdmark.configPath", panel.scope) ||
+        change.affects("mdmark.preview.theme", panel.scope) ||
+        change.affects("mdmark.colorTheme", panel.scope)
       );
     }
-    const configuration = workspace.getConfiguration("mdmark", uri);
-    const settings = readSettings((key) => configuration.get(key));
-    return (
-      resolveConfigPath({
-        configPath: settings.configPath,
-        baseDir: baseDirOf(uri),
-      }) === change.path
+    if (panel.watched.includes(change.path)) {
+      return true;
+    }
+    // まだ重ねていない上のフォルダの設定ファイルが作られた・変わった
+    if (basename(change.path) !== CONFIG_FILE) {
+      return false;
+    }
+    const rel = relative(dirname(change.path), panel.scope.fsPath);
+    return !rel.startsWith("..");
+  }
+
+  /** 各パネルの `watched` の和に合わせて、ファイルごとの `FileSystemWatcher` を張り替える */
+  private syncWatchers(): void {
+    const wanted = new Set(
+      [...this.panels.values()].flatMap((panel) => panel.watched),
     );
+    for (const [path, watcher] of this.watchers) {
+      if (!wanted.has(path)) {
+        watcher.dispose();
+        this.watchers.delete(path);
+      }
+    }
+    for (const path of wanted) {
+      if (this.watchers.has(path)) {
+        continue;
+      }
+      const watcher = workspace.createFileSystemWatcher(
+        new RelativePattern(Uri.file(dirname(path)), basename(path)),
+      );
+      const notify = () => {
+        this.handleConfigChange({ kind: "file", path });
+      };
+      watcher.onDidCreate(notify);
+      watcher.onDidChange(notify);
+      watcher.onDidDelete(notify);
+      this.watchers.set(path, watcher);
+    }
   }
 
   /** エディタの見えている範囲を、その文書のパネルに渡す */
