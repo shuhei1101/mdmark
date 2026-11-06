@@ -6,6 +6,7 @@ import {
   Client,
   StreamableHTTPClientTransport,
 } from "@modelcontextprotocol/client";
+import { NO_SETTINGS } from "./cli.ts";
 
 /** ツールを呼んだ結果 */
 export type ToolResult = {
@@ -122,7 +123,7 @@ function childEnv(overrides: Record<string, string>): Record<string, string> {
   for (const name of LEAKING_ENV) {
     delete env[name];
   }
-  return { ...env, ...overrides };
+  return { ...env, MDMARK_CONFIG: NO_SETTINGS, ...overrides };
 }
 
 /** 空いているポートを 1 つ返す */
@@ -308,13 +309,19 @@ export async function readMcpUrl(options: {
 
 /** HTTP でつないだクライアントを `use` に渡し、終わったら閉じる。`serverUrl` を渡すとその URL につなぎ、渡さなければ空きポートで `mdmark serve` を起動してつなぐ。`projectDir` を渡すと、`callTool` が PreToolUse のフック（`builtRoot` の `plugin/`）を通した引数で呼ぶ */
 export async function withMcpClient<T>(
-  options: { builtRoot: string; projectDir?: string; serverUrl?: string },
+  options: {
+    builtRoot: string;
+    projectDir?: string;
+    serverUrl?: string;
+    /** 常駐サーバーに渡す環境変数（`MDMARK_CONFIG` など） */
+    env?: Record<string, string>;
+  },
   use: (client: Client) => Promise<T>,
 ): Promise<T> {
   const { builtRoot, projectDir, serverUrl } = options;
   const started =
     serverUrl === undefined
-      ? await startServeOnFreePort({ builtRoot, env: {} })
+      ? await startServeOnFreePort({ builtRoot, env: options.env ?? {} })
       : undefined;
   const client = new Client({ name: "e2e", version: "0.0.0" });
   try {

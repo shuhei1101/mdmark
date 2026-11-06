@@ -2,6 +2,17 @@ import { existsSync } from "node:fs";
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import {
+  cascadeConfigPaths,
+  cascadeFolderFiles,
+  cascadeSettings,
+  expectFeaturesOff,
+  expectUpperApplied,
+  expectUpperNotApplied,
+  readConfigs,
+  themeValue,
+  writeSettings,
+} from "../cascade.ts";
+import {
   APP_TS,
   CHART_SOURCE,
   expect,
@@ -628,4 +639,104 @@ test("test_normal_when_range_scripts", async ({ builtRoot, tempDir, page }) => {
   expect(opened.blobRequests()).toEqual([]);
   expect(external).toEqual([]);
   await opened.close();
+});
+
+/** 重ねる設定を持つフォルダと端末の設定を作り、`docs/` で `mdmark export guide.md` を流す */
+async function exportCascaded(
+  builtRoot: string,
+  tempDir: () => Promise<string>,
+  settings: string,
+) {
+  const dir = await tempDir();
+  await writeFiles(dir, cascadeFolderFiles());
+  const settingsPath = await writeSettings(await tempDir(), settings);
+  const watched = [settingsPath, ...cascadeConfigPaths(dir)];
+  const before = await readConfigs(watched);
+  const result = await runCli(
+    builtRoot,
+    ["export", "guide.md", "--out", "out/guide.html"],
+    join(dir, "docs"),
+    "",
+    { MDMARK_CONFIG: settingsPath },
+  );
+  return {
+    dir,
+    result,
+    html: join(dir, "docs", "out", "guide.html"),
+    unchanged: async () => expect(await readConfigs(watched)).toEqual(before),
+  };
+}
+
+// 端末の設定・上のフォルダ・近いフォルダの設定を重ねて書き出し、上のフォルダの theme と extensions が当たる（正常シナリオ（設定を重ねる））
+test("test_normal_when_cascaded", async ({ builtRoot, tempDir, page }) => {
+  // 準備・実行
+  const exported = await exportCascaded(
+    builtRoot,
+    tempDir,
+    cascadeSettings({ cascade: true, applyToExport: true }),
+  );
+  // 検証
+  expect(exported.result.code).toBe(0);
+  expect(existsSync(exported.html)).toBe(true);
+  const opened = await openStandalone(page, {
+    tempDir,
+    htmlFile: exported.html,
+  });
+  await expectFeaturesOff(page);
+  await expectUpperApplied(page);
+  expect(opened.externalRequests()).toEqual([]);
+  await exported.unchanged();
+});
+
+// config.cascade が false のとき、近いフォルダの設定と端末の設定だけで書き出す（正常シナリオ（最初の 1 つだけを読む））
+test("test_normal_when_first_only", async ({ builtRoot, tempDir, page }) => {
+  // 準備・実行
+  const exported = await exportCascaded(
+    builtRoot,
+    tempDir,
+    cascadeSettings({ cascade: false }),
+  );
+  // 検証
+  expect(exported.result.code).toBe(0);
+  await openStandalone(page, { tempDir, htmlFile: exported.html });
+  await expectFeaturesOff(page);
+  await expectUpperNotApplied(page);
+});
+
+// config.applyToExport が false のとき、書き出しに端末の設定を重ねない（正常シナリオ（書き出しに端末の設定を重ねない））
+test("test_normal_when_settings_not_applied_to_export", async ({
+  builtRoot,
+  tempDir,
+  page,
+}) => {
+  // 準備・実行
+  const exported = await exportCascaded(
+    builtRoot,
+    tempDir,
+    cascadeSettings({ cascade: true, applyToExport: false }),
+  );
+  // 検証
+  expect(exported.result.code).toBe(0);
+  await openStandalone(page, { tempDir, htmlFile: exported.html });
+  const article = page.locator("article.mdmark");
+  await expect(article.locator(".markdown-alert")).toHaveCount(1);
+  await expect(article.locator("button.mdmark-sort")).toHaveCount(0);
+  await expect.poll(() => themeValue(page)).toBe("rgb(1, 2, 3)");
+});
+
+// 端末の設定を YAML として読めないとき、パスと行と直し方を出して書き出さない（異常シナリオ（設定ファイルを読めない））
+test("test_error_when_config_unreadable", async ({ builtRoot, tempDir }) => {
+  // 準備・実行
+  const exported = await exportCascaded(
+    builtRoot,
+    tempDir,
+    cascadeSettings({ cascade: true, broken: true }),
+  );
+  // 検証
+  expect(exported.result.code).toBe(1);
+  expect(exported.result.stderr).toContain("settings.yaml");
+  expect(exported.result.stderr).toContain("3 行目");
+  expect(exported.result.stderr).toContain("字下げと書き方を直してください");
+  expect(existsSync(exported.html)).toBe(false);
+  await exported.unchanged();
 });

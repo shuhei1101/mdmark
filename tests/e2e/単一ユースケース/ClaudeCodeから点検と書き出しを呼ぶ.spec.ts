@@ -2,6 +2,11 @@ import { existsSync } from "node:fs";
 import { readFile, rm } from "node:fs/promises";
 import { join } from "node:path";
 import {
+  cascadeFolderFiles,
+  cascadeSettings,
+  writeSettings,
+} from "../cascade.ts";
+import {
   createChangeTogetherDir,
   expect,
   INCLUDE_MISSING_FILES,
@@ -282,4 +287,42 @@ test("test_normal_when_include_missing", async ({ builtRoot, tempDir }) => {
   expect(
     await Promise.all(paths.map((path) => readFile(join(dir, path), "utf8"))),
   ).toEqual(before);
+});
+
+// 端末の設定と上のフォルダの設定を重ねて export_html で書き出し、同じ設定の mdmark export と同じ中身になる（正常シナリオ（設定を重ねる））
+test("test_normal_when_cascaded", async ({ builtRoot, tempDir }) => {
+  // 準備
+  const dir = await tempDir();
+  const cliDir = await tempDir();
+  await writeFiles(dir, cascadeFolderFiles());
+  await writeFiles(cliDir, cascadeFolderFiles());
+  const settings = await writeSettings(
+    await tempDir(),
+    cascadeSettings({ cascade: true, applyToExport: true }),
+  );
+  // 実行
+  const result = await withMcpClient(
+    {
+      builtRoot,
+      projectDir: join(dir, "docs"),
+      env: { MDMARK_CONFIG: settings },
+    },
+    (client) => callTool(client, "export_html", { file: "guide.md" }),
+  );
+  // 検証
+  expect(result.isError).toBe(false);
+  const json = JSON.parse(result.texts[0] ?? "");
+  expect(json.out).toBe(join(dir, "docs", "guide.html"));
+  expect(existsSync(json.out)).toBe(true);
+  const exported = await runCli(
+    builtRoot,
+    ["export", "guide.md"],
+    join(cliDir, "docs"),
+    "",
+    { MDMARK_CONFIG: settings },
+  );
+  expect(exported.code).toBe(0);
+  expect(await readFile(json.out, "utf8")).toBe(
+    await readFile(join(cliDir, "docs", "guide.html"), "utf8"),
+  );
 });

@@ -479,3 +479,33 @@ test("test_error_when_diagram_drift", async ({ package050, tempDir }) => {
   expect(work.b).toBe(WORK_FILES["docs/b.md"]);
   expect(await readFile(join(dir, "docs", "index.yaml"), "utf8")).toBe(index);
 });
+
+// 上のフォルダにも設定ファイルがあるとき、最も近い設定ファイルだけを書き換える（正常シナリオ（上のフォルダにも設定ファイルがある））
+test("test_normal_when_parent_config_exists", async ({
+  package050,
+  tempDir,
+}) => {
+  // 準備
+  await setMigrations(package050, migrationFiles());
+  const root = await tempDir();
+  const parentConfig = "version: v0.3.0\nfeatures:\n  callout: true\n";
+  await writeFiles(root, { "mdmark.config.yaml": parentConfig });
+  const dir = join(root, "docs");
+  await writeFiles(dir, { "mdmark.config.yaml": OLD_CONFIG, ...WORK_FILES });
+  const settingsDir = await tempDir();
+  const settings = join(settingsDir, "settings.yaml");
+  const settingsText = "config:\n  cascade: true\n";
+  await writeFiles(settingsDir, { "settings.yaml": settingsText });
+  // 実行
+  const result = await runCli(package050, ["upgrade"], dir, "", {
+    MDMARK_CONFIG: settings,
+  });
+  // 検証
+  expect(result.code).toBe(0);
+  const config = parse(await readFile(join(dir, "mdmark.config.yaml"), "utf8"));
+  expect(config.version).toBe("v0.5.0");
+  expect(await readFile(join(root, "mdmark.config.yaml"), "utf8")).toBe(
+    parentConfig,
+  );
+  expect(await readFile(settings, "utf8")).toBe(settingsText);
+});

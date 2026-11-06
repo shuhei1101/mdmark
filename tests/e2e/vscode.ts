@@ -258,6 +258,8 @@ export type LaunchOptions = {
   freshState?: boolean;
   /** ファイルを置いた後、VS Code を起動する前に呼ぶ（Git のリポジトリを作るときなど）。引数はワークスペースのフォルダ */
   prepare?: (workspaceDir: string) => Promise<void>;
+  /** VS Code に渡す環境変数に足すもの（`MDMARK_CONFIG` の既定は無いファイル） */
+  env?: Record<string, string>;
 };
 
 /** 拡張機能を入れた VS Code を、手元の代役の配信につないで起動する */
@@ -340,6 +342,9 @@ async function startVscode(
       PATH: `${binDir}${delimiter}${process.env.PATH}`,
       MDMARK_VSCODE_DIST_BASE: `${stub.origin}/mdmark`,
       MDMARK_VSCODE_TAGS_URL: `${stub.origin}/tags`,
+      // 開発者の端末の設定をシナリオに混ぜない
+      MDMARK_CONFIG: join(temp, "no-settings.yaml"),
+      ...options.env,
     },
     timeout: WAIT_TIMEOUT_MS * 2,
   });
