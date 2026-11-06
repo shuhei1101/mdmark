@@ -74,5 +74,10 @@
 
 ### 結合
 
-結合テスト作成で記入する。
+| ファイル | メソッド | 変更種別 | 結果 | 補足 |
+| --- | --- | --- | --- | --- |
+| `tests/integration/vscode/config-band.story.test.ts` | 全実行 | 変更 | ✅ | `npm run test:integration` を 1 回で流すとセッションの中で終わらないため、同じ projects を `--project` と Storybook の `--shard` に分けて全件流した（node 215・browser 230・Storybook 132+196+102、全 pass）<br>[テスト結果/20261107023918_966f7b64_結合テスト.log](./テスト結果/20261107023918_966f7b64_結合テスト.log)<br>文言を部品設計の新しい本文に合わせ、`SettingsUnreadable`・`NestedConfigUnreadable`・`SettingsInvalid` のテストを足した |
+| `vscode/tests/integration/open-config.test.ts` | `test_normal_when_template_created` | 変更 | ✅ | ボタン「作成」と detail を画面設計に合わせた |
+| `vscode/tests/integration/preview-rerender.test.ts` | `test_error_when_config_unreadable` | 変更 | ✅ | `configError` の `path` を確かめる行を足した |
+| `vscode/tests/integration/run.ts` | 全実行（VS Code 1.141.0・stable） | 変更 | ✅ | `MDMARK_CONFIG` を無いファイルに向ける。69 テスト pass ×2 |
 

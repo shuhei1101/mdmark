@@ -41,5 +41,7 @@
 
 ### 結合
 
-結合テスト作成で記入する。
+| ファイル | メソッド | 変更種別 | 結果 | 補足 |
+| --- | --- | --- | --- | --- |
+| `tests/integration/ClaudeCodeプラグイン` | 全実行 | 実行のみ | ✅ | `npm run test:integration` を 1 回で流すとセッションの中で終わらないため、同じ projects を `--project` と Storybook の `--shard` に分けて全件流した（node 215・browser 230・Storybook 132+196+102、全 pass）<br>[テスト結果/20261107023918_966f7b64_結合テスト.log](./テスト結果/20261107023918_966f7b64_結合テスト.log) |
 
