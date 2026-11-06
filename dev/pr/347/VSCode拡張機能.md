@@ -69,6 +69,9 @@
 
 `tests/unit/vscode/scripts/build.test.ts` は、拡張機能がライブラリ本体の `src/config-files.ts`・`src/bundle-module.ts` を束ねるようになったため、複製した `vscode/` の隣に `src/`・`schemas/`・`node_modules/` のリンクを置くよう直した（期待値は変えていない）。
 
+実装の途中で、合格したシグネチャの追加（`e67b7b91`）に合わせて、`tests/unit/vscode/src/export/html.test.ts` の `test_build_export_html_when_theme_and_extensions`（`buildExportHtml` の `themeCss`・`extensions`）を `9a6ca668` で足した。`9a6ca668` の Red のログは [テスト結果/20261107012238_9a6ca668_単体テスト.log](./テスト結果/20261107012238_9a6ca668_単体テスト.log)。
+`9a6ca668` の時点で、このテストは実装（`255b92e3`）が無いことにより fail している。
+
 ### 結合
 
 結合テスト作成で記入する。
