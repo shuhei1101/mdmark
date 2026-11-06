@@ -75,6 +75,7 @@
 | モジュール構成設計 | `24b4ad7f..d8cddd82` | 実装で見つけた構造問題の修正（ESLint を TypeScript 6.0 と組んだ `tools/eslint/` の package に分ける。`boundaries/dependencies` と Tailwind の規則の水準。`PreviewState` を `shared/adapters/vscode-api.ts` へ移す） |
 | モジュール構成設計 | `a54ede74..a572536b` | 実装で見つけた構造問題の修正（pre-push の単体テストの前に、worktree のフックに Git が渡す `GIT_DIR` などを外す） |
 | モジュール構成設計 | `629f1a9a..75b7939b` | レビューの指摘の修正（`GIT_DIR` などはフックでなく `vitest.config.ts` の `clearGitLocalEnv` で、`git rev-parse --local-env-vars` の一覧で外す） |
+| モジュール構成設計 | `150bb0ea..41017b9c` | 実装で見つけた構造問題の修正（拡張機能のメッセージでない `message` を処理しない。画面の処理の例外を state から次の描画で投げる。Storybook の `mswLoader` を msw-storybook-addon 3 の `csf3` にする。vscode の tsconfig の `paths`） |
 
 ## PoC 結果
 
