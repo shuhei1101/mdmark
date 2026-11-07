@@ -35,6 +35,27 @@ import {
   writeFixture,
 } from "./helpers.ts";
 
+/** 用語のエイリアスの行を 1 つ持つ設定ファイル */
+const ALIAS_CONFIG = [
+  "aliases:",
+  "  - id: terms",
+  "    paths: [glossary.yaml]",
+  "    alias_type: term",
+  "    records: terms",
+  "",
+].join("\n");
+
+/** 名前 `描画`・別名 `レンダリング` の用語 1 件を持つ YAML */
+const GLOSSARY = (meaning: string) =>
+  [
+    "terms:",
+    "  - id: render",
+    "    name: 描画",
+    "    aliases: [レンダリング]",
+    `    description: ${meaning}`,
+    "",
+  ].join("\n");
+
 /** 1 x 1 の PNG */
 const PNG = Buffer.from(
   "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==",
@@ -238,6 +259,80 @@ suite("プレビューを開く", () => {
     } finally {
       transpiler.close();
     }
+  });
+
+  // 設定の aliases から作ったエイリアスを render で送り、mount の opts.aliases に渡して下線とツールチップを出す
+  test("test_normal_when_aliases", async () => {
+    // 準備
+    await writeFixture("mdmark.config.yaml", ALIAS_CONFIG);
+    await writeFixture(
+      "glossary.yaml",
+      GLOSSARY("Markdown を HTML にすること"),
+    );
+    await writeFixture("guide.md", "# 案内\n\nレンダリングの段落\n");
+    await openMarkdown("guide.md");
+    // 実行
+    await vscode.commands.executeCommand("mdmark.openPreviewToSide");
+    const record = lastPanel();
+    await waitForRendered(record);
+    // 検証
+    const aliases = renders(record).at(-1)?.aliases ?? [];
+    assert.strictEqual(aliases.length, 1);
+    assert.strictEqual(aliases[0]?.alias_type, "term");
+    assert.strictEqual(aliases[0]?.name, "描画");
+    assert.deepStrictEqual(aliases[0]?.aliases, ["レンダリング"]);
+    const terms = await inspect(".mdmark-term");
+    assert.ok(terms.some((term) => term.text === "レンダリング"));
+    const tips = await inspect('[role="tooltip"]');
+    assert.ok(
+      tips.some(
+        (tip) =>
+          tip.text.includes("用語") &&
+          tip.text.includes("描画") &&
+          tip.text.includes("Markdown を HTML にすること"),
+      ),
+      JSON.stringify(tips.map((tip) => tip.text)),
+    );
+  });
+
+  // aliases の行の paths に当たるファイルが無いとき、その行を除いたエイリアスで描き、出力チャネルに警告を書く
+  test("test_error_when_aliases_missing", async () => {
+    // 準備
+    await writeFixture(
+      "mdmark.config.yaml",
+      [
+        ALIAS_CONFIG.trimEnd(),
+        "  - id: missing",
+        "    paths: [missing/*.yaml]",
+        "    alias_type: term",
+        "",
+      ].join("\n"),
+    );
+    await writeFixture(
+      "glossary.yaml",
+      GLOSSARY("Markdown を HTML にすること"),
+    );
+    await writeFixture("guide.md", "# 案内\n\nレンダリングの段落\n");
+    await openMarkdown("guide.md");
+    const logOffset = await extensionLogSize();
+    // 実行
+    await vscode.commands.executeCommand("mdmark.openPreviewToSide");
+    const record = lastPanel();
+    await waitForRendered(record);
+    // 検証
+    const aliases = renders(record).at(-1)?.aliases ?? [];
+    assert.deepStrictEqual(
+      aliases.map((alias) => alias.name),
+      ["描画"],
+    );
+    await waitFor(
+      async () =>
+        (await extensionLogSince(logOffset)).some((line) =>
+          line.includes("mdmark.config.yaml:aliases[1].paths: alias_no_files:"),
+        ),
+      { message: "エイリアスのずれの警告が出力チャネルに出ない" },
+    );
+    assert.ok(!record.sent.some((message) => message.type === "configError"));
   });
 
   // include のマーカーの取り込み先をワークスペースから読んで渡し、プレビューに描かせる
