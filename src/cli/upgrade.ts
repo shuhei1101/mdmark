@@ -270,7 +270,17 @@ export async function runUpgrade(
   try {
     for (const version of versions) {
       for (const step of version.steps) {
-        await applyStep({ step, version, target: migrationTarget });
+        const lines = await applyStep({
+          step,
+          version,
+          target: migrationTarget,
+        });
+        if (lines.length > 0) {
+          io.stdout(`${version.version} の手順「${step.description}」:`);
+          for (const line of lines) {
+            io.stdout(`  ${line}`);
+          }
+        }
       }
     }
     const issues = await collectCheckIssues(configPath, {
