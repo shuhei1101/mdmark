@@ -3,7 +3,7 @@ lead: 使う側が渡す設定に既定を当てる処理と、設定の `featur
 directory: |-
   ```tree
   src/
-  ├── config.ts    # 設定の型・既定・既定を当てる resolveConfig
+  ├── config.ts    # 設定の型・既定・既定を当てる resolveConfig・ページの設定を重ねる applyPageSettings
   └── features.ts  # 文書の印を重ねる resolveFeatures
   schemas/
   └── mdmark.config.schema.json  # 設定の JSON Schema
@@ -34,6 +34,9 @@ data_models:
       - name: colorTheme
         type: string | undefined
         description: 配色のテーマの名前（`COLOR_THEMES` のどれか）。知らない値も受けて `resolveConfig` が `DEFAULT_COLOR_THEME` にするため、型は `string`
+      - name: colorScheme
+        type: string | undefined
+        description: 配色の明暗（`COLOR_SCHEMES` のどれか）。知らない値も受けて `resolveConfig` が `DEFAULT_COLOR_SCHEME` にするため、型は `string`
       - name: labels
         type: '{ paramCopy?: string } | undefined'
         description: 部品の文言の設定。`paramCopy` は操作できる部品の今の値をコピーするボタンの文言。空文字も受けて `resolveConfig` が `DEFAULT_LABELS.paramCopy` にする
@@ -76,6 +79,9 @@ data_models:
       - name: colorTheme
         type: ColorTheme
         description: 設定の `colorTheme` が `COLOR_THEMES` にあればその値、それ以外は `DEFAULT_COLOR_THEME`
+      - name: colorScheme
+        type: ColorScheme
+        description: 設定の `colorScheme` が `COLOR_SCHEMES` にあればその値、それ以外は `DEFAULT_COLOR_SCHEME`
       - name: labels
         type: '{ paramCopy: string }'
         description: 設定の `labels.paramCopy` が空でない文字列ならその値、それ以外は `DEFAULT_LABELS.paramCopy`
@@ -105,12 +111,35 @@ data_models:
     status: planned
     introduced:
       pr: 181
+  - name: ColorScheme
+    title: 配色の明暗
+    container: src/config.ts
+    usecase: 共通
+    summary: 描いた文書の配色の明暗（`"light" | "dark" | "auto"`）
+    description: '`light`・`dark` は描く先の要素の class で祖先の class と OS の設定に勝たせ、`auto` は class を付けずに祖先の class と OS の設定に任せる'
+    status: planned
+  - name: PageSettings
+    title: ページの設定
+    container: src/config.ts
+    usecase: 共通
+    summary: 文書の page のマーカーから読んだ、設定より優先する値。書かなかったキーは持たない
+    properties:
+      - name: scheme
+        type: ColorScheme | undefined
+        description: '`scheme=` の値'
+      - name: theme
+        type: ColorTheme | undefined
+        description: '`theme=` の値'
+      - name: toc
+        type: SideTocMode | undefined
+        description: '`toc=` の値'
+    status: planned
 constants:
   - name: DEFAULT_FEATURES
     title: 機能の既定
     container: src/config.ts
     summary: この版が知っている機能とその既定。機能を作る Issue が行を足す
-    value: '{ print: true, table: true, callout: true, tabs: true, steps: true, tree: true, badge: true, footnotes: true, code: true, syntax: true, toc: true, anchors: true, sections: true, "row-details": true, figures: true, diagrams: true, "diagram-resize": true, glossary: true, backlinks: true, html: true, hints: true, views: true, comments: false, "html-scripts": false, "side-toc": true, "back-to-top": true, "text-color": true, images: true, gallery: true, lightbox: true, media: true, gif: true, cards: true, icon: true, columns: true, highlight: true, kbd: true, details: true, pagebreak: true, include: true, wide: true, csv: true }'
+    value: '{ print: true, table: true, callout: true, tabs: true, steps: true, tree: true, badge: true, footnotes: true, code: true, syntax: true, toc: true, anchors: true, sections: true, "row-details": true, figures: true, diagrams: true, "diagram-resize": true, glossary: true, backlinks: true, html: true, hints: true, views: true, comments: false, "html-scripts": false, "side-toc": true, "back-to-top": true, "text-color": true, images: true, gallery: true, lightbox: true, media: true, gif: true, cards: true, icon: true, columns: true, highlight: true, kbd: true, details: true, pagebreak: true, include: true, wide: true, csv: true, "card-grid": true }'
     refs:
       - dev/設計書/設定/ライブラリ本体#settings[features.print]
   - name: DEFAULT_LIBRARIES
@@ -151,6 +180,20 @@ constants:
     status: planned
     introduced:
       pr: 181
+  - name: COLOR_SCHEMES
+    title: 書ける明暗
+    container: src/config.ts
+    summary: 配色の明暗の値の並び。`resolveConfig`・page のマーカーの読み取り・CLI の点検が照らす
+    value: '["light", "dark", "auto"] as const'
+    refs:
+      - dev/設計書/設定/ライブラリ本体#settings[colorScheme]
+    status: planned
+  - name: DEFAULT_COLOR_SCHEME
+    title: 既定の明暗
+    container: src/config.ts
+    summary: 設定に `colorScheme` が無いか知らない値のときの明暗
+    value: '"auto"'
+    status: planned
   - name: DEFAULT_LABELS
     title: 既定の部品の文言
     container: src/config.ts
@@ -179,7 +222,7 @@ functions:
     kind: 関数
     scope: public
     summary: 使う側の設定に既定を当て、型の合わない値を落とした `ResolvedConfig` を返す
-    description: '`features` は `DEFAULT_FEATURES` のキーのうち、設定に真偽値があるものだけを置き換える。`libraries` は `MARK_NAME_PATTERN` に合うキーと文字列の値だけを取り、既定にある名前は `url` だけを置き換え、無い名前は `figure: true` で足す。`tooltips.placement` は `bottom` のときだけ `bottom` にし、無い値・他の値は `top` にする。`tooltips.diagramPlacement` は `top` のときだけ `top` にし、無い値・他の値は `bottom` にする。`syntax.url` は文字列のときだけ取り、無い値・他の型は `DEFAULT_SYNTAX_URL` にする。`html-scripts.url` は文字列のときだけ取って `htmlScripts.url` に入れ、無い値・他の型は `DEFAULT_HTML_SCRIPTS_URL` にする。`side-toc.mode` は `fixed` のときだけ `fixed` にし、無い値・他の値は `hover` にする。`colorTheme` は `COLOR_THEMES` にあるときだけ取り、無い値・他の値・文字列でない値は `DEFAULT_COLOR_THEME` にする（例外を投げない）。`labels.paramCopy` は空でない文字列のときだけ取り、無い値・空文字・他の型は `DEFAULT_LABELS.paramCopy` にする。渡されたオブジェクトは書き換えない'
+    description: '`features` は `DEFAULT_FEATURES` のキーのうち、設定に真偽値があるものだけを置き換える。`libraries` は `MARK_NAME_PATTERN` に合うキーと文字列の値だけを取り、既定にある名前は `url` だけを置き換え、無い名前は `figure: true` で足す。`tooltips.placement` は `bottom` のときだけ `bottom` にし、無い値・他の値は `top` にする。`tooltips.diagramPlacement` は `top` のときだけ `top` にし、無い値・他の値は `bottom` にする。`syntax.url` は文字列のときだけ取り、無い値・他の型は `DEFAULT_SYNTAX_URL` にする。`html-scripts.url` は文字列のときだけ取って `htmlScripts.url` に入れ、無い値・他の型は `DEFAULT_HTML_SCRIPTS_URL` にする。`side-toc.mode` は `fixed` のときだけ `fixed` にし、無い値・他の値は `hover` にする。`colorTheme` は `COLOR_THEMES` にあるときだけ取り、無い値・他の値・文字列でない値は `DEFAULT_COLOR_THEME` にする（例外を投げない）。`colorScheme` は `COLOR_SCHEMES` にあるときだけ取り、無い値・他の値・文字列でない値は `DEFAULT_COLOR_SCHEME` にする。`labels.paramCopy` は空でない文字列のときだけ取り、無い値・空文字・他の型は `DEFAULT_LABELS.paramCopy` にする。渡されたオブジェクトは書き換えない'
     args:
       - name: options
         type: '{ config?: MdmarkConfig; defaultLibraries?: Record<string, LibraryEntry> }'
@@ -194,7 +237,7 @@ functions:
         summary: 設定が無ければ既定を返す
         condition: '`config` が `undefined`'
         mock: なし
-        expected: '`{ features: DEFAULT_FEATURES, libraries: {}, tooltips: { placement: "top", diagramPlacement: "bottom" }, syntax: { url: DEFAULT_SYNTAX_URL }, htmlScripts: { url: DEFAULT_HTML_SCRIPTS_URL }, sideToc: { mode: "hover" }, colorTheme: "dev-swiss", labels: { paramCopy: "今の値を写す" } }`（`comments`・`html-scripts` を除く全ての機能が `true`）'
+        expected: '`{ features: DEFAULT_FEATURES, libraries: {}, tooltips: { placement: "top", diagramPlacement: "bottom" }, syntax: { url: DEFAULT_SYNTAX_URL }, htmlScripts: { url: DEFAULT_HTML_SCRIPTS_URL }, sideToc: { mode: "hover" }, colorTheme: "dev-swiss", colorScheme: "auto", labels: { paramCopy: "今の値を写す" } }`（`comments`・`html-scripts` を除く全ての機能が `true`）'
       - name: test_resolve_config_when_features_given
         case: 正常
         summary: 知っている機能の真偽値だけを置き換える
@@ -237,6 +280,12 @@ functions:
         condition: '`{ colorTheme: "theme-slate" }`、`{ colorTheme: "sepia" }`、`{ colorTheme: 1 }`、`{}`'
         mock: なし
         expected: 1 つ目の `colorTheme` が `theme-slate`、残りは `dev-swiss`。例外を投げない
+      - name: test_resolve_config_when_color_scheme_given
+        case: 正常
+        summary: '`COLOR_SCHEMES` の値だけを受け、他の値と無いときは `auto` にする'
+        condition: '`{ colorScheme: "dark" }`、`{ colorScheme: "sepia" }`、`{ colorScheme: 1 }`、`{}`'
+        mock: なし
+        expected: 1 つ目の `colorScheme` が `dark`、残りは `auto`。`{}` の `features["card-grid"]` が `true`。例外を投げない
       - name: test_resolve_config_when_labels_given
         case: 正常
         summary: 空でない文字列の `labels.paramCopy` だけを受け、空文字・他の型・無いときは既定にする
@@ -255,6 +304,31 @@ functions:
         condition: '`{ tooltips: { diagramPlacement: "top" } }`、`{ tooltips: { diagramPlacement: "left" } }`、`{ tooltips: { placement: "bottom" } }`'
         mock: なし
         expected: '`tooltips.diagramPlacement` が順に `top`・`bottom`・`bottom`。3 つ目の `tooltips.placement` は `bottom`'
+  - name: applyPageSettings
+    title: ページの設定を重ねる
+    container: src/config.ts
+    kind: 関数
+    scope: internal
+    summary: 既定を当てた設定に、文書の page のマーカーの値を重ねた設定を返す
+    description: '`page.scheme` があれば `colorScheme`、`page.theme` があれば `colorTheme`、`page.toc` があれば `sideToc.mode` を置き換える。無いキーは設定の値のまま。渡されたオブジェクトは書き換えない'
+    args:
+      - name: options
+        type: '{ config: ResolvedConfig; page: PageSettings }'
+        required: true
+        description: 既定を当てた設定と、`renderDocument` が返したページの設定
+    returns:
+      type: ResolvedConfig
+      description: '`mount` が描くのに使う設定'
+    unit_tests:
+      - name: test_apply_page_settings
+        case: 正常
+        summary: マーカーに書いたキーだけを置き換える
+        condition: '`colorScheme: "dark"`・`colorTheme: "theme-paper"`・`sideToc.mode: "hover"` の設定に、`{ scheme: "light", toc: "fixed" }` を重ねる。別に `{}` を重ねる'
+        mock: なし
+        expected: 1 つ目は `colorScheme` が `light`・`colorTheme` が `theme-paper`・`sideToc.mode` が `fixed`。2 つ目は設定と同じ値。渡した設定は変わらない
+    refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[ページの設定のマーカー]
+    status: planned
   - name: resolveFeatures
     title: 文書の印で機能のオン・オフを決める
     container: src/features.ts
@@ -296,7 +370,7 @@ functions:
         mock: なし
         expected: '`{ print: true }`'
 notes:
-  設定の Schema: '`schemas/mdmark.config.schema.json`（draft 2020-12）は設定の設計書の `settings` と同じキーと型を持つ。`features` は値が真偽値のオブジェクト、`libraries` はキーが `MARK_NAME_PATTERN`（`propertyNames.pattern`）で値が文字列のオブジェクト。`features.syntax` は真偽値、`syntax` は `url`（文字列）を持つオブジェクト。`side-toc` は `mode`（`hover` / `fixed` の列挙）を持つオブジェクト。`colorTheme` は文字列（知らない名前は Schema で拒まず、`mdmark check` が `unknown_color_theme` で返す）。`labels` は `paramCopy`（`minLength: 1` の文字列）を持つオブジェクト。Schema を変えたら `migrations/no-steps.yaml` に `version: next` の行を置く。他の Issue が足すキーを拒まないよう、最上位は `additionalProperties` を許す'
+  設定の Schema: '`schemas/mdmark.config.schema.json`（draft 2020-12）は設定の設計書の `settings` と同じキーと型を持つ。`features` は値が真偽値のオブジェクト、`libraries` はキーが `MARK_NAME_PATTERN`（`propertyNames.pattern`）で値が文字列のオブジェクト。`features.syntax` は真偽値、`syntax` は `url`（文字列）を持つオブジェクト。`side-toc` は `mode`（`hover` / `fixed` の列挙）を持つオブジェクト。`colorTheme` は文字列（知らない名前は Schema で拒まず、`mdmark check` が `unknown_color_theme` で返す）。`colorScheme` も文字列（知らない値は `unknown_color_scheme` で返す）。`labels` は `paramCopy`（`minLength: 1` の文字列）を持つオブジェクト。Schema を変えたら `migrations/no-steps.yaml` に `version: next` の行を置く。他の Issue が足すキーを拒まないよう、最上位は `additionalProperties` を許す'
 test_files:
   - tests/unit/src/config.test.ts
   - tests/unit/src/features.test.ts

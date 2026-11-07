@@ -354,7 +354,7 @@ classes:
       - name: renderNow
         title: 今すぐ送る
         kind: メソッド
-        summary: 待ちを消し、パネルが見えていて `ready` を受けていれば、その時点の `getText()` の全文・`config` をその時点の `mdmark.colorTheme` で上書きした設定（テーマの設定で上書きする）・`mdmark.preview.theme` で `render` を送る。差分のパネルでは `previous` に変更前の `getText()` の全文も入れる。見えていなければ送らない
+        summary: 待ちを消し、パネルが見えていて `ready` を受けていれば、その時点の `getText()` の全文・`config` をその時点の `mdmark.colorTheme` で上書きし（テーマの設定で上書きする）、`mdmark.preview.theme` が `light`・`dark` なら `colorScheme` を除いた設定（プレビューの配色の固定で明暗を外す）・`mdmark.preview.theme` で `render` を送る。差分のパネルでは `previous` に変更前の `getText()` の全文も入れる。見えていなければ送らない
         returns:
           type: void
           description: '-'
