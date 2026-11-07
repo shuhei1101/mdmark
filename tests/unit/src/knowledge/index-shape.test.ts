@@ -27,7 +27,6 @@ type IndexSchema = SchemaObject & {
   properties: {
     docs: { items: SchemaObject };
     terms: { items: SchemaObject };
-    tags: { items: SchemaObject };
   };
 };
 
@@ -60,7 +59,7 @@ test("test_normalize_index", async () => {
   // 準備
   const { normalizeIndex } = await loadShape();
   const value = {
-    schema: 1,
+    schema: 2,
     docs: [
       {
         id: "arch",
@@ -128,7 +127,7 @@ test("test_normalize_index_when_invalid_avoid", async () => {
   // 準備
   const { normalizeIndex } = await loadShape();
   const value = {
-    schema: 1,
+    schema: 2,
     docs: [],
     terms: [
       { id: "a", term: "語 A", meaning: "意味 A", avoid: [""] },
@@ -169,7 +168,6 @@ test("test_normalize_index_matches_json_schema", async () => {
   const root = shapeOf(schema);
   const doc = shapeOf(schema.properties.docs.items);
   const term = shapeOf(schema.properties.terms.items);
-  const tag = shapeOf(schema.properties.tags.items);
   const docTagItems = schema.properties.docs.items.properties?.tags?.items;
   const docRelated = schema.properties.docs.items.properties?.related;
   const docRelatedItems = docRelated?.items;
@@ -177,12 +175,10 @@ test("test_normalize_index_matches_json_schema", async () => {
   expect(root).toEqual(INDEX_SHAPE.root);
   expect(doc).toEqual(INDEX_SHAPE.doc);
   expect(term).toEqual(INDEX_SHAPE.term);
-  expect(tag).toEqual(INDEX_SHAPE.tag);
   for (const object of [
     schema,
     schema.properties.docs.items,
     schema.properties.terms.items,
-    schema.properties.tags.items,
   ]) {
     expect(object.additionalProperties).toBe(false);
   }
@@ -223,74 +219,55 @@ test("test_normalize_index_matches_json_schema", async () => {
   expect(docRelated?.maxItems).toBeUndefined();
 });
 
-// タグの語彙と、文字列・オブジェクトの文書のタグをそのまま返す（正常系）
-test("test_normalize_index_when_tags", async () => {
+// 文字列・オブジェクトの文書のタグをそのまま返す（正常系）
+test("test_normalize_index_when_doc_tags", async () => {
   // 準備
   const { normalizeIndex } = await loadShape();
-  const tags = [
-    {
-      name: "topic:mcp",
-      group: "topic",
-      description: "含める: MCP のツールの作り方",
-      aliases: ["MCP"],
-    },
-    { name: "topic:mcp", group: "kind" },
-    { name: "topic:old", deprecated: "topic:mcp" },
-  ];
   const docTags = ["設計", { name: "topic:mcp", main: true }];
   const value = {
-    schema: 1,
+    schema: 2,
     docs: [{ id: "a", path: "a.md", title: "A", tags: docTags }],
-    tags,
   };
   // 実行
   const { index, problems } = normalizeIndex(structuredClone(value));
   // 検証
   expect(problems).toEqual([]);
-  expect(index.tags).toEqual(tags);
   expect(index.docs[0]?.tags).toEqual(docTags);
 });
 
-// 形の合わないタグの語彙の要素と文書のタグを、場所を返して除く（異常系）
-test("test_normalize_index_when_invalid_tags", async () => {
+// 形の合わない文書のタグを持つ文書を、場所を返して除く（異常系）
+test("test_normalize_index_when_invalid_doc_tags", async () => {
   // 準備
   const { normalizeIndex } = await loadShape();
   const value = {
-    schema: 1,
+    schema: 2,
     docs: [{ id: "a", path: "a.md", title: "A", tags: [{ main: true }] }],
-    tags: [{ group: "topic" }, { name: "topic:mcp", color: "red" }],
   };
   // 実行
   const { index, problems } = normalizeIndex(value);
   // 検証
   expect(problems.map((problem) => problem.where)).toEqual([
-    "tags[0].name",
-    "tags[1].color",
     "docs[0].tags[0].name",
   ]);
-  expect(index.tags ?? []).toEqual([]);
   expect(index.docs).toEqual([]);
 });
 
-// 最上位に `tags` が無ければ、返す索引にも `tags` を持たせない（正常系）
-test("test_normalize_index_without_tags", async () => {
+// v0.9.0 までの `schema: 1` と最上位の `tags` を合わない場所にし、文書・用語は使う（異常系）
+test("test_normalize_index_when_old_schema", async () => {
   // 準備
   const { normalizeIndex } = await loadShape();
+  const doc = { id: "a", path: "a.md", title: "A", tags: ["MCP"] };
   const value = {
     schema: 1,
-    docs: [{ id: "arch", path: "設計/arch.md", title: "アーキテクチャ" }],
-    terms: [
-      {
-        id: "workspace",
-        term: "ワークスペース",
-        meaning: "話し合いの記録を置くフォルダ",
-      },
-    ],
+    docs: [doc],
+    tags: [{ name: "topic:mcp" }],
   };
   // 実行
   const { index, problems } = normalizeIndex(structuredClone(value));
   // 検証
-  expect(problems).toEqual([]);
+  expect(problems.map((problem) => problem.where)).toEqual(["schema", "tags"]);
+  expect(problems[0]?.message).toContain("mdmark upgrade");
+  expect(index.docs).toEqual([doc]);
   expect("tags" in index).toBe(false);
 });
 
@@ -304,7 +281,7 @@ test("test_normalize_index_when_related", async () => {
     when: "使い方を確かめるとき",
   }));
   const value = {
-    schema: 1,
+    schema: 2,
     docs: [
       {
         id: "a",
@@ -335,7 +312,7 @@ test("test_normalize_index_when_invalid_related", async () => {
   // 準備
   const { normalizeIndex } = await loadShape();
   const value = {
-    schema: 1,
+    schema: 2,
     docs: [
       {
         id: "a",
