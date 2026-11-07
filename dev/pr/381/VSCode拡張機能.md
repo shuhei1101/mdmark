@@ -45,8 +45,10 @@ lint: `テスト結果/20261108061106_aaf4f93f_lint.log`（違反なし）
 
 | ファイル | メソッド | 変更種別 | 結果 | 補足 |
 | --- | --- | --- | --- | --- |
-| `vscode/tests/integration/preview-rerender.test.ts` | `test_normal_when_param_copy_label_configured` | 新規 | ✅ | VS Code 1.141.0 と stable の両方で pass<br>`テスト結果/20261108063902_4f0d2fe4_結合テスト.log` |
-| `vscode/tests/integration/export.test.ts` | `test_normal_when_param_copy_label` | 新規 | ✅ | VS Code 1.141.0 と stable の両方で pass<br>`テスト結果/20261108063902_4f0d2fe4_結合テスト.log` |
-| VS Code 拡張機能の結合テストの全件（`xvfb-run -a npm --prefix vscode run test:integration`） | 全実行 | 実行のみ | ✅ | 版ごとに 74 件 pass<br>`テスト結果/20261108063902_4f0d2fe4_結合テスト.log` |
+| `vscode/tests/integration/preview-rerender.test.ts` | `test_normal_when_param_copy_label_configured` | 新規 | ✅ | VS Code 1.141.0 と stable の両方で pass<br>`テスト結果/20261108070548_76a37eae_結合テスト.log` |
+| `vscode/tests/integration/export.test.ts` | `test_normal_when_param_copy_label` | 新規 | ✅ | VS Code 1.141.0 と stable の両方で pass<br>`テスト結果/20261108070548_76a37eae_結合テスト.log` |
+| VS Code 拡張機能の結合テストの全件（`xvfb-run -a npm --prefix vscode run test:integration`） | 全実行 | 実行のみ | ✅ | 版ごとに 74 件 pass<br>`テスト結果/20261108070548_76a37eae_結合テスト.log` |
 
-lint: `テスト結果/20261108064321_4f0d2fe4_lint.log`（違反なし）
+lint: `テスト結果/20261108070938_76a37eae_lint.log`（違反なし）
+
+`paramMarkdown` を見本の `param` の範囲から取り出す形に変えた後（`76a37eae`）に流し直した結果。同じ commit の 1 回目の全件実行では、`preview-open.test.ts` の `test_normal_when_tags_unreachable` がタグ一覧の待ちの時間切れで 1 件落ち、2 回目で全 pass した（ログの末尾に 1 回目の失敗を残した）
