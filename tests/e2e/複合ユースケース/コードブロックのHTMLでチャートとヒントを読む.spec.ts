@@ -34,7 +34,7 @@ const TAIL_PARAGRAPHS = 40;
 
 /** 書き出しの索引: 描く文書 `guide.md` と、見本の用語 */
 const EXPORT_INDEX = [
-  "schema: 1",
+  "schema: 2",
   "docs:",
   "  - id: guide",
   "    path: guide.md",

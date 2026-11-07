@@ -15,7 +15,7 @@ let builtRoot = "";
 
 // 用語 `ワークスペース`（別名 `WS`）と、別名 `公開関数` の文書 `api`、文書 `guide` を持つ索引
 const INDEX: MdmarkIndex = {
-  schema: 1,
+  schema: 2,
   docs: [
     {
       id: "api",
@@ -166,7 +166,7 @@ test("test_normal_when_same_target_in_documents", async () => {
 test("test_normal_when_glossary_table", async () => {
   // 準備
   const index: MdmarkIndex = {
-    schema: 1,
+    schema: 2,
     docs: [
       { id: "glossary", path: "用語集.md", title: "用語集" },
       { id: "guide", path: "使い方/guide.md", title: "使い方" },
@@ -364,7 +364,7 @@ test("test_normal_when_width_and_case_differ", async () => {
 test("test_normal_when_aliases", async () => {
   // 準備
   const index: MdmarkIndex = {
-    schema: 1,
+    schema: 2,
     docs: [{ id: "guide", path: "guide.md", title: "使い方" }],
   };
   const aliases: MdmarkAlias[] = [

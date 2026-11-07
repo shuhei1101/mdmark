@@ -127,7 +127,7 @@ test("test_normal_when_syntax_disabled", async ({ page }) => {
 
 // 用語 `ワークスペース`（やめた言い方 `作業場`）を持ち、文書 `api`（題 `API`）の `related` が描く文書 `arch` を指す索引
 const INDEX: MdmarkIndex = {
-  schema: 1,
+  schema: 2,
   docs: [
     { id: "arch", path: "設計/arch.md", title: "アーキテクチャ" },
     { id: "api", path: "api.md", title: "API", related: ["arch"] },
@@ -195,7 +195,7 @@ test("test_normal_when_glossary_disabled", async ({ page }) => {
 test("test_normal_when_backlinks_disabled", async ({ page }) => {
   // 準備
   const index: MdmarkIndex = {
-    schema: 1,
+    schema: 2,
     docs: [
       { id: "arch", path: "設計/arch.md", title: "アーキテクチャ" },
       {

@@ -24,7 +24,7 @@ const DOC_ID = "doc";
 
 // 用語 `ワークスペース`（別名 `WS`）と `印` を持ち、描く文書を持つ索引
 const INDEX: MdmarkIndex = {
-  schema: 1,
+  schema: 2,
   docs: [{ id: DOC_ID, path: "doc.md", title: "描く文書" }],
   terms: [
     {
@@ -165,7 +165,7 @@ test("test_normal_when_no_index", async ({ page }) => {
 test("test_error_when_invalid_index", async ({ page }) => {
   // 準備
   const index = {
-    schema: 1,
+    schema: 2,
     docs: [{ id: DOC_ID, path: "doc.md", title: "描く文書" }],
     terms: [
       {
@@ -236,7 +236,7 @@ test("test_normal_when_embedded_html", async ({ page }) => {
 
 // 用語 `ワークスペース` のやめた言い方 `作業場` を持つ索引
 const AVOID_INDEX: MdmarkIndex = {
-  schema: 1,
+  schema: 2,
   docs: [{ id: DOC_ID, path: "doc.md", title: "描く文書" }],
   terms: [
     {
@@ -375,7 +375,7 @@ test("test_normal_when_placement_bottom", async ({ page }) => {
 test("test_normal_when_width_and_case_differ", async ({ page }) => {
   // 準備
   const index: MdmarkIndex = {
-    schema: 1,
+    schema: 2,
     docs: [{ id: DOC_ID, path: "doc.md", title: "描く文書" }],
     terms: [
       {

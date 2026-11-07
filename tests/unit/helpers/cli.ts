@@ -104,7 +104,7 @@ export async function writeDist(root: string): Promise<string> {
 
 /** ずれの無い索引（文書 a・b を載せる） */
 export const CLEAN_INDEX = [
-  "schema: 1",
+  "schema: 2",
   "docs:",
   "  - id: a",
   "    path: a.md",

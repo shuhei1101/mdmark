@@ -65,7 +65,7 @@ test("test_normal", async ({ page }) => {
 test("test_normal_when_index_has_same_term", async ({ page }) => {
   // 準備
   const index: MdmarkIndex = {
-    schema: 1,
+    schema: 2,
     docs: [{ id: "doc", path: "doc.md", title: "描く文書" }],
     terms: [{ id: "mark", term: "印", meaning: "索引に書いた意味" }],
   };
@@ -115,7 +115,7 @@ test("test_error_when_unknown_column", async ({ page }) => {
 test("test_normal_when_other_document", async ({ page }) => {
   // 準備
   const index: MdmarkIndex = {
-    schema: 1,
+    schema: 2,
     docs: [
       { id: "glossary", path: "用語集.md", title: "用語集" },
       { id: "guide", path: "使い方/guide.md", title: "使い方" },
@@ -211,7 +211,7 @@ test("test_normal_when_avoid_column", async ({ page }) => {
 test("test_normal_when_other_document_avoid_column", async ({ page }) => {
   // 準備
   const index: MdmarkIndex = {
-    schema: 1,
+    schema: 2,
     docs: [
       { id: "glossary", path: "用語集.md", title: "用語集" },
       { id: "guide", path: "使い方/guide.md", title: "使い方" },
@@ -264,7 +264,7 @@ test("test_normal_when_other_document_avoid_column", async ({ page }) => {
 test("test_normal_when_aliases_have_same_term", async ({ page }) => {
   // 準備
   const index: MdmarkIndex = {
-    schema: 1,
+    schema: 2,
     docs: [{ id: "doc", path: "doc.md", title: "描く文書" }],
     terms: [{ id: "mark", term: "印", meaning: "索引に書いた意味" }],
   };

@@ -71,7 +71,7 @@ export async function flowMarkdown(): Promise<string> {
 
 /** 用語 `意思決定モデル` を持つ索引（見本のフロー図の箱の `{{意思決定モデル}}` の意味になる） */
 export const TERM_INDEX: MdmarkIndex = {
-  schema: 1,
+  schema: 2,
   docs: [],
   terms: [
     {

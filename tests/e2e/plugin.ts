@@ -433,7 +433,7 @@ export function issueLine(issue: Issue): string {
 /** 設定の `index` が指す索引の中身。`docs` に文書の ID を並べる（パスは `{ID}.md`、題は大文字の ID） */
 export function indexYaml(ids: string[]): string {
   return [
-    "schema: 1",
+    "schema: 2",
     "docs:",
     ...ids.flatMap((id) => [
       `  - id: ${id}`,
