@@ -38,4 +38,22 @@
 
 ## テスト結果
 
-なし
+### 単体
+
+| ファイル | メソッド | 変更種別 | 結果 | 補足 |
+| --- | --- | --- | --- | --- |
+| `tests/unit/src/render/used.test.ts` | 全実行 | 新規 | ✅ | 3 テスト pass（`test_used_library_marks` は `tests/unit/src/cli/embed.test.ts` から移動）<br>`テスト結果/20261108000914_f3ea32eb_単体テスト.log` |
+| `tests/unit/vscode/src/export/embed.test.ts` | 全実行 | 新規 | ✅ | 2 テスト pass<br>`テスト結果/20261108000914_f3ea32eb_単体テスト.log` |
+| [tests/unit/vscode/src/export/html.test.ts](https://github.com/shuhei1101/mdmark/blob/develop/tests/unit/vscode/src/export/html.test.ts) | 全実行 | 変更 | ✅ | `test_module_data_url` を追加<br>`テスト結果/20261108000914_f3ea32eb_単体テスト.log` |
+| [tests/unit/src/cli/embed.test.ts](https://github.com/shuhei1101/mdmark/blob/develop/tests/unit/src/cli/embed.test.ts) | 全実行 | 変更 | ✅ | `test_used_library_marks` を `used.test.ts` へ移動<br>`テスト結果/20261108000914_f3ea32eb_単体テスト.log` |
+| 単体テスト全体 | 全実行 | 実行のみ | ✅ | 250 ファイル・1722 テスト pass。Red は `テスト結果/20261107234541_c39d877c_単体テスト.log`<br>lint: `テスト結果/20261108000914_f3ea32eb_lint.log` |
+
+`test_collect_range_scripts` の期待値を、範囲のコードの末尾の改行を含んだ値に直した（[f3ea32eb](https://github.com/shuhei1101/mdmark/commit/f3ea32eb)）。`mount` と CLI は範囲のコードの文字のまま照合するため、末尾の改行を落とさないのが設計書の「エスケープを戻したコード」と一致する。
+
+### 結合
+
+なし（結合テスト作成で追加する）
+
+### 拡張機能の配布物のサイズ
+
+`collectRangeScripts` が `renderDocument` を取り込むため、`vscode/dist/extension.cjs` は develop の 837,044 バイトから 2,547,009 バイトになった（主に lucide・`src/render`・`src/parts`・postcss・markdown-it）。非機能要件に拡張機能の配布物のサイズの上限は無い。
