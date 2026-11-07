@@ -730,10 +730,10 @@ functions:
     unit_tests:
       - name: test_create_mcp_server
         case: 正常
-        summary: 3 つのツールと instructions と annotations を出す
+        summary: 6 つのツールと instructions と annotations を出す
         condition: 作ったサーバーを `InMemoryTransport` でクライアントとつなぐ
         mock: なし（SDK の `Client`）
-        expected: '`listTools` の名前が `TOOLS` の 3 つと一致し、どのツールの `inputSchema.properties` にも `project_dir` が無く、`check` だけの `annotations.readOnlyHint` が `true`、`getInstructions()` が `INSTRUCTIONS` で 4,096 文字以下'
+        expected: '`listTools` の名前が `TOOLS` の 6 つと一致し、どのツールの `inputSchema.properties` にも `project_dir` が無く、`check` と `list_templates` だけの `annotations.readOnlyHint` が `true`、`getInstructions()` が `INSTRUCTIONS` で 4,096 文字以下'
       - name: test_create_mcp_server_when_arguments_invalid
         case: 正常
         summary: 合わない引数は SDK でなく日本語の文で返る
