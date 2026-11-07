@@ -1,0 +1,6 @@
+steps:
+  - op: call
+    description: 索引の文書のタグのうちタグの語彙の別名・やめたタグを語彙の name・振り替え先に書き換え、最上位の tags を外して schema を 2 にする
+    destructive: true
+    script: drop-tag-vocabulary.mjs
+    files: [index]

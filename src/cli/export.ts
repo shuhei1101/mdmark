@@ -123,7 +123,7 @@ async function prepareReferences(
     referenceDocs.length === 0
       ? undefined
       : collectReferences({
-          index: { schema: 1, docs: referenceDocs, terms: index?.terms ?? [] },
+          index: { schema: 2, docs: referenceDocs, terms: index?.terms ?? [] },
           documents,
           config: { features: loaded.config.features ?? {} },
         });
