@@ -63,4 +63,10 @@ Red のログは `テスト結果/20261108051930_d56c4c40_単体テスト.log`�
 
 ### 結合
 
-なし
+| ファイル | メソッド | 変更種別 | 結果 | 補足 |
+| --- | --- | --- | --- | --- |
+| [vscode/tests/integration/preview-open.test.ts](https://github.com/shuhei1101/mdmark/blob/develop/vscode/tests/integration/preview-open.test.ts) | `test_normal_when_aliases`・`test_error_when_aliases_missing` | 変更 | ✅ | 新規追加テスト<br>`テスト結果/20261108060657_60eeb9ae_結合テスト.log` |
+| [vscode/tests/integration/preview-rerender.test.ts](https://github.com/shuhei1101/mdmark/blob/develop/vscode/tests/integration/preview-rerender.test.ts) | `test_normal_when_aliases_yaml_saved` | 変更 | ✅ | 新規追加テスト<br>`テスト結果/20261108060657_60eeb9ae_結合テスト.log` |
+| `vscode/tests/integration/` のその他のファイル | 全実行 | 実行のみ | ✅ | 回帰確認。VS Code 1.141.0 と 1.145.2 で 75 テスト pass<br>`テスト結果/20261108060657_60eeb9ae_結合テスト.log` |
+
+1 回目の実行は、1.141.0 の `test_normal_when_tags_unreachable`（この PR が触らないタグ一覧の待ちの時間のテスト。待ちの上限 3 秒より前の 1.8 秒で配布物を要求した）で止まった。全件を流し直し、両方の版で全 pass を確かめて同じログに追記した。lint は `テスト結果/20261108062921_60eeb9ae_lint.log`。
