@@ -58,7 +58,7 @@ test("test_collect_range_scripts", async () => {
     config: {},
   });
   // 検証
-  const expected = [{ lang: "ts", source: ESCAPED_SCRIPT }];
+  const expected = [{ lang: "ts", source: `${ESCAPED_SCRIPT}\n` }];
   expect(byConfig).toEqual(expected);
   expect(byMarker).toEqual(expected);
 });
