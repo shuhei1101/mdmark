@@ -1,0 +1,53 @@
+$ npx vitest run --project 'unit*' tests/unit/scripts/eslint.test.ts
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/fix-package-skip-prepare-outside-dev
+
+ ❯ |unit| tests/unit/scripts/eslint.test.ts (3 tests | 3 failed) 23ms
+   × test_run_eslint 17ms
+   × test_run_eslint_when_not_installed 3ms
+   × test_run_eslint_when_install_fails 2ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit| tests/unit/scripts/eslint.test.ts > test_run_eslint
+Error: Cannot find module '/scripts/eslint.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/fix-package-skip-prepare-outside-dev/tests/unit/scripts/eslint.test.ts
+ ❯ tests/unit/scripts/eslint.test.ts:29:25
+     27| test("test_run_eslint", async () => {
+     28|   // 準備
+     29|   const { runEslint } = await loadModule();
+       |                         ^
+     30|   const root = await createTempDir();
+     31|   await writeFiles(root, {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+
+ FAIL  |unit| tests/unit/scripts/eslint.test.ts > test_run_eslint_when_not_installed
+Error: Cannot find module '/scripts/eslint.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/fix-package-skip-prepare-outside-dev/tests/unit/scripts/eslint.test.ts
+ ❯ tests/unit/scripts/eslint.test.ts:57:25
+     55| test("test_run_eslint_when_not_installed", async () => {
+     56|   // 準備
+     57|   const { runEslint } = await loadModule();
+       |                         ^
+     58|   const root = await createTempDir();
+     59|   const { calls, run } = createRun(() => 0);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯
+
+ FAIL  |unit| tests/unit/scripts/eslint.test.ts > test_run_eslint_when_install_fails
+Error: Cannot find module '/scripts/eslint.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/fix-package-skip-prepare-outside-dev/tests/unit/scripts/eslint.test.ts
+ ❯ tests/unit/scripts/eslint.test.ts:84:25
+     82| test("test_run_eslint_when_install_fails", async () => {
+     83|   // 準備
+     84|   const { runEslint } = await loadModule();
+       |                         ^
+     85|   const root = await createTempDir();
+     86|   const { calls, run } = createRun((command) => (command === "npm" ? 1…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/3]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  3 failed (3)
+   Start at  01:36:59
+   Duration  1.37s (import 45%, transform 34%, worker 13%, tests 8%)
+
