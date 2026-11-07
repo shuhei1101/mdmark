@@ -194,7 +194,7 @@ mdmark.config.yaml:build: schema: `build.out` がありません。書き出す 
 
 | 種類 | 意味 |
 | --- | --- |
-| `schema` | 設定か索引が Schema に合わない。`build.glossary`・`build.entry` が `build.include` に当たらないもの、`theme`・`extensions` のファイルと `assets.root` のフォルダが無いもの、`extensions` の拡張を読み込めないもの、`aliases` の行が取り込んだ Schema に合わないもの（場所は `aliases[1].metadata.alias_type` の形）を含む |
+| `schema` | 設定か索引が Schema に合わない。`build.glossary`・`build.entry` が `build.include` に当たらないもの、`theme`・`extensions` のファイルと `assets.root` のフォルダが無いもの、`extensions` の拡張を読み込めないもの、`aliases` の行が取り込んだ Schema に合わないもの（場所は `aliases[1].alias_type` の形）を含む |
 | `unknown_color_theme` | 設定の `colorTheme` が選べるテーマの名前に無い。場所は `colorTheme`。内容は `不明なテーマ名 {名前} です。dev-swiss・theme-paper・theme-slate・theme-contrast のいずれかに修正してください。` |
 | `no_documents` | `build.include` に当たり `build.exclude` に当たらない文書が 0 件 |
 | `missing_doc` | 索引にあって、文書が見つからない |
