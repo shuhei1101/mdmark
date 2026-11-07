@@ -1,5 +1,5 @@
 import { existsSync, readFileSync, rmSync } from "node:fs";
-import { mkdir, readFile, writeFile } from "node:fs/promises";
+import { copyFile, mkdir, readFile, writeFile } from "node:fs/promises";
 import { dirname, join } from "node:path";
 import { build, type Metafile } from "esbuild";
 import { parse } from "yaml";
@@ -18,9 +18,21 @@ import {
 /** プラグインに束ねるソースと書く先 */
 const PLUGIN_ENTRY_POINTS = [
   { in: "src/plugin/pre-tool-use.ts", out: "scripts/pre-tool-use" },
+  { in: "src/plugin/session-start.ts", out: "scripts/session-start" },
+  { in: "src/plugin/setup/main.ts", out: "bin/setup" },
 ];
 /** ビルドの最初と失敗したときに消す、`plugin/` の中の生成物 */
-const PLUGIN_OUTPUTS = ["plugin/scripts", "plugin/THIRD_PARTY_LICENSES.txt"];
+const PLUGIN_OUTPUTS = [
+  "plugin/scripts",
+  "plugin/bin",
+  "plugin/templates",
+  "plugin/THIRD_PARTY_LICENSES.txt",
+];
+/** `setup` のスキルが使う `mdmark.config.yaml` の雛形の正本と、プラグインに写す先 */
+const CONFIG_TEMPLATE = {
+  from: "templates/mdmark.config.yaml",
+  to: "plugin/templates/mdmark.config.yaml",
+};
 /** リポジトリの直下からの使い方集の索引のパス */
 const GUIDE_SOURCE = "guide/index.yaml";
 /** バージョンを書くプラグインの定義のパス */
@@ -171,6 +183,11 @@ export async function buildPlugin(options: {
     metafile: true,
     logLevel: "silent",
   });
+  await mkdir(dirname(join(root, CONFIG_TEMPLATE.to)), { recursive: true });
+  await copyFile(
+    join(root, CONFIG_TEMPLATE.from),
+    join(root, CONFIG_TEMPLATE.to),
+  );
   await writePluginManifest({ root, version });
   await writePluginLicenses({ metafile: result.metafile, root });
   return [];

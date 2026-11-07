@@ -1,3 +1,4 @@
+import { readFile } from "node:fs/promises";
 import {
   createServer,
   type IncomingMessage,
@@ -13,15 +14,23 @@ import {
   type McpHttpHandler,
   originValidationResponse,
 } from "@modelcontextprotocol/server";
-import { CliError } from "../cli/errors.ts";
 import { createMcpServer } from "./mcp.ts";
+import {
+  DEFAULT_PORT,
+  INVALID_PORT_MESSAGE,
+  PORT_ENV,
+  readPort,
+} from "./port.ts";
+import {
+  DEFAULT_SESSION_NAME,
+  readSessionName,
+  readYamlFile,
+  resolveSetupPaths,
+  SetupError,
+} from "./setup/paths.ts";
 import type { ServerRoots } from "./tools.ts";
 
-/** 待ち受けるポートを上書きする環境変数の名前。`plugin/.mcp.json` の `url` も同じ名前で展開する */
-export const PORT_ENV = "MDMARK_PORT";
-
-/** `PORT_ENV` が無いときに待ち受けるポート */
-export const DEFAULT_PORT = 8782;
+export { DEFAULT_PORT, INVALID_PORT_MESSAGE, PORT_ENV, readPort };
 
 /** 待ち受けるアドレス */
 export const LISTEN_HOST = "127.0.0.1";
@@ -29,32 +38,27 @@ export const LISTEN_HOST = "127.0.0.1";
 /** MCP の要求を受けるパス */
 export const MCP_PATH = "/mcp";
 
-/** `PORT_ENV` が 1〜65535 の整数でないときの `CliError` の文。`{value}` を受け取った値に置き換える */
-export const INVALID_PORT_MESSAGE =
-  "MDMARK_PORT の値 {value} はポートに使えません。1〜65535 の整数を設定してください。";
-
 /** 待ち受けるポートを別のプロセスが使っているときに標準エラーに書く文。`{port}` をポートに置き換える */
 export const PORT_IN_USE_MESSAGE =
   "ポート {port} は別のプロセスが使っています。mdmark serve が既に起動しているなら、そのまま使えます。別のポートで動かすときは、~/.claude/settings.json の env と mdmark serve を起動する環境の両方に同じ MDMARK_PORT を設定してください。";
 
-/** ポートに使える最小の値と最大の値 */
-const MIN_PORT = 1;
-const MAX_PORT = 65535;
-
 /** 本文を持たない HTTP のメソッド */
 const BODYLESS_METHODS = ["GET", "HEAD"];
 
-/** 待ち受けるポートを決める。`PORT_ENV` が無いか空なら `DEFAULT_PORT`、1〜65535 の整数ならその数、それ以外は `CliError` を投げる */
-export function readPort(options: { env: NodeJS.ProcessEnv }): number {
-  const value = options.env[PORT_ENV];
-  if (value === undefined || value === "") {
-    return DEFAULT_PORT;
+/** 端末の設定の tmux のセッション名を読む。端末の設定を読めなければ `DEFAULT_SESSION_NAME` にする（読めないことは `mdmark check` が知らせる） */
+async function readServeSessionName(env: NodeJS.ProcessEnv): Promise<string> {
+  try {
+    const settings = await readYamlFile({
+      path: resolveSetupPaths(env).settingsPath,
+      readFile: (path) => readFile(path, "utf8"),
+    });
+    return readSessionName(settings?.raw);
+  } catch (error) {
+    if (error instanceof SetupError) {
+      return DEFAULT_SESSION_NAME;
+    }
+    throw error;
   }
-  const port = Number(value);
-  if (!/^\d+$/.test(value) || port < MIN_PORT || port > MAX_PORT) {
-    throw new CliError(INVALID_PORT_MESSAGE.replace("{value}", value));
-  }
-  return port;
 }
 
 /** パス・Host・Origin を確かめ、通った要求だけを MCP のハンドラーへ渡す。パスが違えば 404、Host か Origin が localhost でなければ 403 を返す */
@@ -180,9 +184,10 @@ export async function runServe(options: {
   const roots: ServerRoots = {
     distDir: join(packageDir, "dist"),
   };
+  const sessionName = await readServeSessionName(env);
   // 要求ごとに MCP サーバーを作る（セッションの状態を持たない）
   const handler = createMcpHandler(
-    () => createMcpServer({ roots, version, stderr }),
+    () => createMcpServer({ roots, version, sessionName, stderr }),
     { onerror: (error) => stderr(`[error] ${error.message}`) },
   );
   const server = createServer((req, res) => {

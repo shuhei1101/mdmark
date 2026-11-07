@@ -98,13 +98,18 @@ async function setMigrations(
 /** パッケージの `dist/cli.js` で `upgrade` を流す。終了コードが 0 以外でも例外を投げず、結果を返す */
 function runUpgrade(
   pkg: string,
-  options: { args?: string[]; cwd: string; stdin?: string },
+  options: {
+    args?: string[];
+    cwd: string;
+    stdin?: string;
+    env?: Record<string, string>;
+  },
 ): Promise<CliResult> {
   return new Promise((resolveResult) => {
     const child = execFile(
       process.execPath,
       [join(pkg, "dist", "cli.js"), "upgrade", ...(options.args ?? [])],
-      { cwd: options.cwd },
+      { cwd: options.cwd, env: { ...process.env, ...options.env } },
       (error, stdout, stderr) => {
         const failed = error as { code?: number } | null;
         resolveResult({
@@ -268,6 +273,45 @@ test("test_normal", async () => {
   expect(
     (await readFile(join(dir, ".mdmark", ".gitignore"), "utf8")).trim(),
   ).toBe("*");
+});
+
+// --settings で端末の設定に file: config の手順を当て、version を書き換える（正常系（端末の設定を移行する））
+test("test_normal_when_settings", async () => {
+  // 準備
+  const pkg = packageOf("v0.5.0");
+  await setMigrations(pkg, migrationFiles());
+  const dir = await createWork();
+  const terminal = await createTempDir();
+  await writeFiles(terminal, {
+    "settings.yaml": "# 端末の設定\nversion: v0.3.0\nlegacy: 1\n",
+  });
+  const settingsPath = join(terminal, "settings.yaml");
+  // 実行
+  const result = await runUpgrade(pkg, {
+    args: ["--settings"],
+    cwd: dir,
+    env: { MDMARK_CONFIG: settingsPath },
+  });
+  // 検証
+  expect(result.code).toBe(0);
+  const after = await readFile(settingsPath, "utf8");
+  expect(after).toContain("# 端末の設定");
+  const settings = parse(after);
+  expect(settings.renamed).toBe(1);
+  expect(settings.legacy).toBeUndefined();
+  expect(settings.version).toBe("v0.5.0");
+  const backup = linesOf(result.stdout).find((line) =>
+    line.startsWith("写し: "),
+  );
+  expect(backup).toBeDefined();
+  expect(
+    await readFile(
+      join(terminal, (backup ?? "").slice("写し: ".length), "settings.yaml"),
+      "utf8",
+    ),
+  ).toContain("legacy: 1");
+  const work = await readWork(dir);
+  expect(work.a).toBe("# A\n\n<!-- note -->\n");
 });
 
 // --plan で版ごとの手順・変更履歴・壊す手順を示し、何も書き換えない（正常系）

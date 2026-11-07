@@ -779,16 +779,57 @@ export const displayConfigPath = (options: {
   return path.split(sep).join("/");
 };
 
-/** 端末の設定の `config` がマップで、`config.cascade`・`config.applyToExport` が真偽値かを検める */
+/** 端末の設定の `serve.tmuxSession` に使える文字 */
+const TMUX_SESSION_PATTERN = /^[A-Za-z0-9_-]+$/;
+
+/** 端末の設定の `serve` がマップで、`serve.tmuxSession` が英数字・`_`・`-` の文字列かを検める */
+const validateServeKeys = (
+  raw: Record<string, unknown>,
+  file: string,
+): CheckIssue[] => {
+  if (raw.serve === undefined) {
+    return [];
+  }
+  if (!isRecord(raw.serve)) {
+    return [
+      schemaIssue(
+        file,
+        "serve",
+        "`serve` は `tmuxSession` を持つキーと値で書いてください。",
+      ),
+    ];
+  }
+  const session = raw.serve.tmuxSession;
+  if (
+    session !== undefined &&
+    (typeof session !== "string" || !TMUX_SESSION_PATTERN.test(session))
+  ) {
+    return [
+      schemaIssue(
+        file,
+        "serve.tmuxSession",
+        "`serve.tmuxSession` は英数字・`_`・`-` の文字列で書いてください。",
+      ),
+    ];
+  }
+  return [];
+};
+
+/** 端末の設定の `config` がマップで、`config.cascade`・`config.applyToExport` が真偽値か、`serve.tmuxSession` が使える名前かを検める */
 export const validateSettingsKeys = (
   raw: unknown,
   file: string,
 ): CheckIssue[] => {
-  if (!isRecord(raw) || raw.config === undefined) {
+  if (!isRecord(raw)) {
     return [];
+  }
+  const serveIssues = validateServeKeys(raw, file);
+  if (raw.config === undefined) {
+    return serveIssues;
   }
   if (!isRecord(raw.config)) {
     return [
+      ...serveIssues,
       schemaIssue(
         file,
         "config",
@@ -796,7 +837,7 @@ export const validateSettingsKeys = (
       ),
     ];
   }
-  const issues: CheckIssue[] = [];
+  const issues: CheckIssue[] = [...serveIssues];
   for (const key of ["cascade", "applyToExport"] as const) {
     const value = raw.config[key];
     if (value !== undefined && typeof value !== "boolean") {

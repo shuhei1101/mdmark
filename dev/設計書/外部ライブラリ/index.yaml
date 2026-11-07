@@ -68,3 +68,5 @@ items:
     summary: Webview の画面の最上位の Error Boundary
   - page: testing-library.yaml
     summary: Webview のコンポーネントと hook の単体テスト
+  - page: tmux.yaml
+    summary: global-setup が常駐サーバーを動かすセッションの確かめ・起動・閉じる操作

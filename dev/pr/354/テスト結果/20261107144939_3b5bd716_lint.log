@@ -1,0 +1,94 @@
+$ (rc=0; npm run lint || rc=1; npm run lint:eslint || rc=1; npm run typecheck || rc=1; npm --prefix vscode run typecheck || rc=1; exit $rc)
+
+> lint
+> biome check .
+
+src/cli/embed.ts:2:28 lint/correctness/noUnusedImports  FIXABLE  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  ! Several of these imports are unused.
+  
+    1 │ import { readFile } from "node:fs/promises";
+  > 2 │ import { dirname, extname, resolve } from "node:path";
+      │                            ^^^^^^^
+    3 │ import { build, transform } from "esbuild";
+    4 │ import {
+  
+  i Unused imports might be the result of an incomplete refactoring.
+  
+  i Unsafe fix: Remove the unused imports.
+  
+    2 │ import·{·dirname,·extname,·resolve·}·from·"node:path";
+      │                            --------                   
+
+src/cli/embed.ts:38:7 lint/correctness/noUnusedVariables  FIXABLE  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  ! This variable HTTP_PATTERN is unused.
+  
+    37 │ /** `http:`・`https:` の URL か */
+  > 38 │ const HTTP_PATTERN = /^https?:\/\//i;
+       │       ^^^^^^^^^^^^
+    39 │ 
+    40 │ /** 文書の Markdown から印の名前を拾い、対応表にあるものだけを返す */
+  
+  i Unused variables are often the result of typos, incomplete refactors, or other sources of bugs.
+  
+  i Unsafe fix: If this is intentional, prepend HTTP_PATTERN with an underscore.
+  
+     36  36 │   
+     37  37 │   /** `http:`・`https:` の URL か */
+     38     │ - const·HTTP_PATTERN·=·/^https?:\/\//i;
+         38 │ + const·_HTTP_PATTERN·=·/^https?:\/\//i;
+     39  39 │   
+     40  40 │   /** 文書の Markdown から印の名前を拾い、対応表にあるものだけを返す */
+  
+
+tests/unit/src/plugin/session-start.test.ts:109:15 lint/suspicious/noTemplateCurlyInString ━━━━━━━━━━
+
+  ! Unexpected template string placeholder.
+  
+    107 │       type: "command",
+    108 │       command: "node",
+  > 109 │       args: ["${CLAUDE_PLUGIN_ROOT}/scripts/session-start.js"],
+        │               ^^^^^^^^^^^^^^^^^^^^^
+    110 │     },
+    111 │   ]);
+  
+  i Turn the string into a template string.
+  
+
+Checked 826 files in 4s. No fixes applied.
+Found 3 warnings.
+
+> lint:eslint
+> node tools/eslint/node_modules/eslint/bin/eslint.js -c tools/eslint/eslint.config.js --max-warnings 0
+
+
+> typecheck
+> tsc --noEmit
+
+tests/unit/src/cli/upgrade.test.ts(466,7): error TS2353: Object literal may only specify known properties, and 'settings' does not exist in type '{ config?: string | undefined; plan: boolean; yes: boolean; packageDir: string; cliVersion: string; now: Date; }'.
+tests/unit/src/plugin/mcp.test.ts(27,5): error TS2353: Object literal may only specify known properties, and 'sessionName' does not exist in type '{ roots: ServerRoots; version: string; stderr: (line: string) => void; }'.
+tests/unit/src/plugin/port.test.ts(6,31): error TS2307: Cannot find module '../../../../src/plugin/port.ts' or its corresponding type declarations.
+tests/unit/src/plugin/session-start.test.ts(9,10): error TS2307: Cannot find module '../../../../src/plugin/session-start.ts' or its corresponding type declarations.
+tests/unit/src/plugin/session-start.test.ts(50,14): error TS7006: Parameter 'line' implicitly has an 'any' type.
+tests/unit/src/plugin/session-start.test.ts(66,14): error TS7006: Parameter 'line' implicitly has an 'any' type.
+tests/unit/src/plugin/session-start.test.ts(87,14): error TS7006: Parameter 'line' implicitly has an 'any' type.
+tests/unit/src/plugin/setup/keys.test.ts(6,31): error TS2307: Cannot find module '../../../../../src/plugin/setup/keys.ts' or its corresponding type declarations.
+tests/unit/src/plugin/setup/keys.test.ts(26,35): error TS7006: Parameter 'entry' implicitly has an 'any' type.
+tests/unit/src/plugin/setup/keys.test.ts(27,39): error TS2339: Property 'current' does not exist on type '{}'.
+tests/unit/src/plugin/setup/keys.test.ts(50,35): error TS7006: Parameter 'entry' implicitly has an 'any' type.
+tests/unit/src/plugin/setup/keys.test.ts(51,39): error TS2339: Property 'current' does not exist on type '{}'.
+tests/unit/src/plugin/setup/keys.test.ts(52,39): error TS2339: Property 'inherited' does not exist on type '{}'.
+tests/unit/src/plugin/setup/main.test.ts(6,31): error TS2307: Cannot find module '../../../../../src/plugin/setup/main.ts' or its corresponding type declarations.
+tests/unit/src/plugin/setup/main.test.ts(27,14): error TS7006: Parameter 'line' implicitly has an 'any' type.
+tests/unit/src/plugin/setup/main.test.ts(49,14): error TS7006: Parameter 'line' implicitly has an 'any' type.
+tests/unit/src/plugin/setup/paths.test.ts(4,32): error TS2307: Cannot find module '../../../../../src/plugin/setup/paths.ts' or its corresponding type declarations.
+tests/unit/src/plugin/setup/server.test.ts(9,33): error TS2307: Cannot find module '../../../../../src/plugin/setup/server.ts' or its corresponding type declarations.
+tests/unit/src/plugin/setup/server.test.ts(135,15): error TS7006: Parameter 'ms' implicitly has an 'any' type.
+tests/unit/src/plugin/setup/status.test.ts(6,33): error TS2307: Cannot find module '../../../../../src/plugin/setup/status.ts' or its corresponding type declarations.
+tests/unit/src/plugin/setup/write.test.ts(9,32): error TS2307: Cannot find module '../../../../../src/plugin/setup/write.ts' or its corresponding type declarations.
+
+> mdmark-vscode@0.1.0 typecheck
+> tsc --noEmit
+
+# 残る違反は型検査の、まだ無い実装（src/plugin/setup/・port.ts・session-start.ts、sessionName・settings の引数）によるものだけ

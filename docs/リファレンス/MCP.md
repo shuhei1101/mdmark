@@ -38,6 +38,7 @@ MCP サーバーは、`mdmark serve` が起動する常駐サーバー。
 接続したときの `instructions` は、mdmark の文書を書く前に dev-docs の `search_docs` で配信元 `mdmark` の使い方集（`docs` の行をタグ `topic:使い方集` で絞る）を参照し、書いた後に `check` で点検する順序を記載する。
 dev-docs が無い、または配信元 `mdmark` が登録されていないときは、使い方集が見つからないことも記載する。
 使う側の CSS を探すときは `list_templates` で一覧を引き、`apply_template` で配置して返った値を設定の `theme` に記載し、作った CSS は `add_template` で登録する順序も記載する。
+常駐サーバーが動いている tmux のセッション名（[`serve.tmuxSession`](./設定.md#常駐サーバーの-tmux-のセッション名)、既定 `mdmark-mcp`）と、止まったときは `/mdmark:global-setup` で起動し直せることも記載する。
 仕組みは [Claude Code に使い方を渡す仕組み](../はじめに/コアコンセプト/ClaudeCodeに使い方を渡す仕組み.md)。
 
 ## 作業のフォルダ
