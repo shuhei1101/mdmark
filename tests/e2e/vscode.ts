@@ -40,6 +40,8 @@ const EVALUATE_ATTEMPTS = 5;
 const EVALUATE_RETRY_WAIT_MS = 1_000;
 // 複製に含めないもの
 const NOT_COPIED = ["node_modules", ".vscode-test", "out", "dist", "media"];
+// 拡張機能のビルドがライブラリ本体の設定ファイルの処理（`src/`）をまとめるため、複製の隣へリンクする直下の `src/`・`schemas/` と、その依存
+const LINKED_FROM_ROOT = ["src", "schemas", "node_modules"];
 
 /** 代役の配信の状態（`createStubServer` が受ける形） */
 type StubState = Parameters<typeof createStubServer>[0];
@@ -70,6 +72,9 @@ export async function buildExtensionAndDist(): Promise<BuiltExtension> {
     join(extensionDir, "node_modules"),
     "dir",
   );
+  for (const name of LINKED_FROM_ROOT) {
+    await symlink(join(REPO_ROOT, name), join(temp, name), "dir");
+  }
   await buildExtension({ root: extensionDir, tests: false });
   await writeFile(join(temp, "runner.cjs"), NEVER_ENDING_RUNNER);
   const built = await createBuiltRoot();
