@@ -57,6 +57,12 @@ files:
     related:
       - to: dev/設計書/シナリオ/単一ユースケース/ClaudeCodeにプラグインを入れる
         type: see_also
+  - path: e2e/単一ユースケース/GitHubの参照から入れてCLIを起動する.spec.ts
+    description: シナリオ『GitHubの参照から入れてCLIを起動する』に書いたシナリオを Playwright で流す E2E テスト。このユースケースの振る舞いを変えたときに読む。
+    tags: [topic:e2e, topic:シナリオ, tool:playwright]
+    related:
+      - to: dev/設計書/シナリオ/単一ユースケース/GitHubの参照から入れてCLIを起動する
+        type: see_also
   - path: e2e/単一ユースケース/HTMLに書き出す.spec.ts
     description: シナリオ『HTML に書き出す』に書いたシナリオを Playwright で流す E2E テスト。このユースケースの振る舞いを変えたときに読む。
     tags: [topic:e2e, topic:シナリオ, tool:playwright]
