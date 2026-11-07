@@ -391,6 +391,56 @@ test("test_normal_when_reapplied", async () => {
   expect(await readWork(dir)).toEqual(applied);
 });
 
+// 語彙を外す `call` の手順を当て、文書のタグを書き換えて索引の `schema` を `2` にし、点検を通す（正常系（v0.9.0 までの索引からタグの語彙を外す））
+test("test_normal_when_tag_vocabulary_dropped", async () => {
+  // 準備
+  const pkg = packageOf("v0.5.0");
+  const next = join(REPO_ROOT, "migrations", "next");
+  await setMigrations(pkg, {
+    "migrations/v0.5.0/steps.yaml": await readFile(
+      join(next, "steps.yaml"),
+      "utf8",
+    ),
+    "migrations/v0.5.0/drop-tag-vocabulary.mjs": await readFile(
+      join(next, "drop-tag-vocabulary.mjs"),
+      "utf8",
+    ),
+    "docs/はじめに/変更履歴.md": CHANGELOG,
+  });
+  const dir = await createWork();
+  await writeFile(
+    join(dir, "docs", "index.yaml"),
+    [
+      "schema: 1",
+      "docs:",
+      "  - id: a",
+      "    path: a.md",
+      "    title: A",
+      "    tags: [MCP]",
+      "  - id: b",
+      "    path: b.md",
+      "    title: B",
+      "    tags: [topic:old]",
+      "tags:",
+      "  - name: topic:mcp",
+      "    aliases: [MCP]",
+      "  - name: topic:old",
+      "    deprecated: topic:mcp",
+      "",
+    ].join("\n"),
+  );
+  // 実行
+  const result = await runUpgrade(pkg, { args: ["--yes"], cwd: dir });
+  // 検証
+  expect(result.code).toBe(0);
+  const index = parse(await readFile(join(dir, "docs", "index.yaml"), "utf8"));
+  expect(index.schema).toBe(2);
+  expect("tags" in index).toBe(false);
+  expect(index.docs[0].tags).toEqual(["topic:mcp"]);
+  expect(index.docs[1].tags).toEqual(["topic:mcp"]);
+  expect(parse((await readWork(dir)).config).version).toBe("v0.5.0");
+});
+
 // 壊す手順の確かめに y 以外を答えると、何も書き換えずに終わる（異常系）
 test("test_error_when_destructive_declined", async () => {
   // 準備
