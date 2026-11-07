@@ -18,8 +18,8 @@
 
 | 対象 | 方針 | 補足 |
 | --- | --- | --- |
-| 相対パスの `libraries` | 文書にマーカーがある名前のモジュールだけを、`bundleExtensions` と同じ esbuild-wasm のまとめ方で ES モジュールにし、`data:text/javascript` の URL にして `config.libraries` の値に配置する | マーカーの検出は CLI と同じ処理（`usedLibraryMarks`）を使用する |
-| 相対パスの `html-scripts.url` | 文書に `ts`・`js` の範囲があり `html-scripts` がオンのときだけ、変換のライブラリを同じまとめ方で `data:` の URL にして `config["html-scripts"].url` に配置する | 範囲を変換して埋めず、`mount` の公開の引数を変えない |
+| 相対パスの `libraries` | 文書にマーカーがある名前のモジュールだけを、`bundleExtensions` と同じ esbuild-wasm のまとめ方で ES モジュールにし、`data:text/javascript` の URL にして `config.libraries` の値に配置する | マーカーの検出は CLI と同じ `usedLibraryMarks` を、esbuild を import しない `src/render/used.ts` へ移して使用する |
+| 相対パスの `html-scripts.url` | 文書に `ts`・`js` の範囲があり `html-scripts` がオンのときだけ、変換のライブラリを同じまとめ方で `data:` の URL にして `config["html-scripts"].url` に配置する | 範囲の有無は CLI の `compileHtmlScripts` と同じく `renderDocument` の出力から取得する `collectRangeScripts`（`src/render/used.ts`）で判定する。範囲を変換して埋めず、`mount` の公開の引数を変えない |
 | `http:`・`https:` の URL | 今のまま `config` に配置する | - |
 | まとめられないモジュール | 埋めず、出力チャネルに警告を記録して書き出しを続ける | 開いたときは mdmark が知らせの枠を出す |
 | 書き出しの共通の処理 | 「HTML に書き出す」「ブラウザで開く」「PDF に印刷する」が使う `readExportConfig` で埋めるため、3 つとも同じ HTML になる | - |
@@ -34,6 +34,7 @@
 | インターフェース定義設計 | `49cbee03..14c4e182` | - |
 | インターフェース定義設計 | `602f08f4..a943b841` | レビューの指摘の修正（@babel/standalone を data: の URL で埋める経路の測定を外部ライブラリ『babel-standalone』に記録） |
 | モジュール構成設計 | `726f6043..95ac7fd8` | - |
+| モジュール構成設計 | `49771a42..47d1f7e0` | レビューの指摘の修正（判定を `src/render/used.ts` に共通化） |
 
 ## テスト結果
 
