@@ -122,7 +122,7 @@ flows:
     expected:
       - 書き出した HTML に埋めた `config.libraries["test-lib"]` と `config["html-scripts"].url` が `data:text/javascript` で始まり、`config.libraries` に `unused-lib` が無い
       - 書き出した HTML の `data:` の URL を復号した中に、`unused-lib` の目印の文字列が無い
-      - 開いた HTML で、`test-lib` のマーカーの場所がそのライブラリで描かれ、知らせの枠（`.mdmark-embed`）が無い
+      - 開いた HTML で、`test-lib` のマーカーの場所がそのライブラリで描かれ、知らせの枠（`.mdmark-notice`）が無い
       - 開いた HTML で、範囲の `ts` が書いた結果が範囲の要素に出る
       - 開いている間に、書き出した HTML 以外の `file:` の URL への要求が記録されない
     test: test_normal_when_relative_libraries
