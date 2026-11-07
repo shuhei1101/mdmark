@@ -70,6 +70,28 @@ docs/guide.md を 1 枚の HTML に書き出して
 `export_html` が `mdmark export`、`build_site` が `mdmark build` と同じ処理で HTML を書き、書いたパスと警告を返す。
 同じ文書・設定では、CLI と同じ中身の HTML になる。
 
+### CSS のテンプレートを使う
+
+#### 作った CSS を登録させる
+
+```text
+brand.css を、見出しを社の色にする CSS としてテンプレートに登録して
+```
+
+`add_template` が CSS を端末の設定のフォルダの `templates/css/` へコピーし、名前・説明・タグを索引 `templates.yaml` に記載する。
+同じ名前のテンプレートがあるときはエラーになり、何も書き換わらない。
+置き換えるときは、上書きするよう頼む。
+
+#### 一覧から選んで配置させる
+
+```text
+登録した CSS のテンプレートから、見出しの色を変えるものを選んで配置して、theme に記載して
+```
+
+`list_templates` がテンプレートの名前・説明・タグを返し、選んだテンプレートを `apply_template` が最も近い `mdmark.config.yaml` のフォルダへコピーする。
+`apply_template` は `theme` を書き換えず、記載する値（`./brand.css` など）を返すので、その値を設定の `theme` に記載させる。
+別のフォルダへ置くときは、配置先のフォルダを `dir` に渡すよう頼む。
+
 ### 設定ファイルの場所を決める
 
 ツールの `config` を省くと、端末の設定と、Claude Code のセッションのフォルダから上のフォルダの `mdmark.config.yaml` を重ねて読む（[設定を重ねて読む仕組み](../../はじめに/コアコンセプト/設定を重ねて読む仕組み.md)）。
@@ -79,6 +101,7 @@ docs/guide.md を 1 枚の HTML に書き出して
 
 ツールを呼ぶたびに、その場の設定・索引・文書を読む。
 `export_html`・`build_site` は HTML を書く。
+`add_template` はテンプレートのフォルダに CSS と索引を、`apply_template` は配置先に CSS を書く。
 
 ## 確認
 
@@ -90,7 +113,13 @@ docs/guide.md を 1 枚の HTML に書き出して
 
 `export_html` と `build_site` が返した `out` のファイルがある。
 
+#### テンプレートが登録され、配置されている
+
+`list_templates` が登録した名前を返し、`apply_template` が返した `path` のファイルがある。
+
 ## 元に戻す
 
 `check` は何も書き換えない。
 書き出した HTML は、`out` のファイルを消す。
+登録したテンプレートは、テンプレートのフォルダの CSS と索引の行を消す。
+配置した CSS は、`path` のファイルを消し、設定の `theme` から外す。
