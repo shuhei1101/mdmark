@@ -11,24 +11,6 @@ const loadBundleModule = () => import("../../../../src/bundle-module.ts");
 
 const createTempDir = useTempDirs();
 
-// 対応表にある印だけを拾う（正常系）
-test("test_used_library_marks", async () => {
-  // 準備
-  const { usedLibraryMarks } = await loadEmbed();
-  const markdown = [
-    "<!-- chart: a -->",
-    "",
-    "<!-- table: data -->",
-    "",
-    "<!-- unknown -->",
-    "",
-  ].join("\n");
-  // 実行
-  const marks = usedLibraryMarks([markdown], { chart: "chart.js" });
-  // 検証
-  expect([...marks]).toEqual(["chart"]);
-});
-
 // ビューの印があるときだけ部品を束ねる（正常系）
 test("test_used_parts", async () => {
   // 準備

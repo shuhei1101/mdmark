@@ -29,6 +29,19 @@ test("test_resolve_export_path", async () => {
   ]);
 });
 
+// 復号すると元のコードに戻る（正常系）
+test("test_module_data_url", async () => {
+  // 準備
+  const { moduleDataUrl } = await loadHtml();
+  const code = 'export default "a b#%あ";';
+  const prefix = "data:text/javascript;charset=utf-8,";
+  // 実行
+  const url = moduleDataUrl(code);
+  // 検証
+  expect(url.startsWith(prefix)).toBe(true);
+  expect(decodeURIComponent(url.slice(prefix.length))).toBe(code);
+});
+
 // 本文の script の閉じを含んでも `<` を残さず、読み戻すと同じ値（正常系）
 test("test_escape_script_json", async () => {
   // 準備
