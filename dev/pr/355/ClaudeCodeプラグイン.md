@@ -28,4 +28,6 @@
 
 ### 結合
 
-なし
+| ファイル | メソッド | 変更種別 | 結果 | 補足 |
+| --- | --- | --- | --- | --- |
+| [tests/integration/ClaudeCodeプラグイン/check.test.ts](https://github.com/shuhei1101/mdmark/blob/develop/tests/integration/ClaudeCode%E3%83%97%E3%83%A9%E3%82%B0%E3%82%A4%E3%83%B3/check.test.ts) | 全実行 | 変更 | ✅ | 索引の `schema` を `2` にした<br>`テスト結果/20261107204327_a97a16e_結合テスト.log` |
