@@ -1,5 +1,5 @@
 title: "VS Code 拡張機能 / 設定"
-lead: VS Code の設定 `mdmark.*` の読み取りと、`mdmark.config.yaml` の場所の解決・`features`・`libraries`・`side-toc`・`colorTheme` の取り出し・雛形の作成。
+lead: VS Code の設定 `mdmark.*` の読み取りと、`mdmark.config.yaml` の場所の解決・端末の設定と重ねた設定の読み取り・`mount` に渡すキーの取り出し・雛形の作成。
 directory: |-
   ```tree
   vscode/src/
@@ -67,24 +67,52 @@ data_models:
     title: 設定ファイルの読み取りの結果
     container: vscode/src/config.ts
     usecase: 書いた内容をプレビューに映す
-    summary: '`{ kind: "ok"; config: PreviewConfig; assetsRoot?: string }`・`{ kind: "missing" }`・`{ kind: "error"; line: number; message: string }` の判別付きの型'
+    summary: '`loadConfig` の戻り値。重ねた設定から取り出した `mount` に渡すキー・`theme`・`extensions`・見張るファイル・最も近い設定ファイル・読めないファイル'
     properties:
-      - name: kind
-        type: '"ok" | "missing" | "error"'
-        description: 読めた・ファイルが無い・ YAML として読めない
       - name: config
         type: PreviewConfig
-        description: '`ok` のときだけ。空のファイル・最上位がマップでないファイルは `{}`'
-      - name: line
-        type: number
-        description: '`error` のときだけ。読めない行（1 始まり）'
-      - name: message
-        type: string
-        description: '`error` のときだけ。`YAMLParseError` の `message`（ログに出す）'
+        description: 重ねた設定のうち、マップの `features`・`libraries`・`html-scripts`・`side-toc` と文字列の `colorTheme`。読めない・形の合わないファイルは重ねずに残りを重ねた値。相対パスはその値を書いた設定ファイルのフォルダから解決した絶対パス
+      - name: theme
+        type: string | undefined
+        description: 重ねた設定の `theme` の絶対パス
+      - name: extensions
+        type: string[]
+        description: 重ねた設定の `extensions` の絶対パス。無ければ空
+      - name: files
+        type: string[]
+        description: 重ねた設定ファイルの絶対パス（端末の設定 → 上 → 近い）。見張るファイルに使う
+      - name: nearest
+        type: string | undefined
+        description: 最も近い `mdmark.config.yaml`（`mdmark.configPath` を書いたときはそのファイル）の絶対パス。「設定ファイルを開く」が開く
       - name: assetsRoot
         type: string | undefined
-        description: '`ok` のときだけ。設定ファイルの `assets.root` が文字列なら、`parseConfig` は書いた値、`loadConfig` は設定ファイルのフォルダを基準にした絶対パス。`mount` には渡さない'
+        description: 重ねた設定の `assets.root` の絶対パス。`mount` には渡さない
+      - name: problem
+        type: ConfigProblem | undefined
+        description: 読めない・形の合わない最初の設定ファイル（端末の設定 → 上 → 近いの順）
     status: planned
+  - name: ConfigProblem
+    title: 読めない設定ファイル
+    container: vscode/src/config.ts
+    usecase: 書いた内容をプレビューに映す
+    role: DTO
+    summary: 帯に出す、読めない・形の合わない設定ファイル 1 つ
+    properties:
+      - name: path
+        type: string
+        description: 設定ファイルの絶対パス
+      - name: line
+        type: number | undefined
+        description: YAML として読めない行（1 始まり）。形に合わないときは無い
+      - name: settingKey
+        type: string | undefined
+        description: 設定の形に合わない最初のキー（`features.callout` のように `.` でつなぐ）。YAML として読めないときは無い
+      - name: message
+        type: string
+        description: 誤りの文（ログに出す）
+    status: planned
+    introduced:
+      pr: 347
 constants:
   - name: SETTING_DEFAULTS
     title: 設定の既定
@@ -94,7 +122,7 @@ constants:
       - key: version
         value: '"latest"'
       - key: configPath
-        value: '"mdmark.config.yaml"'
+        value: '""'
       - key: liveUpdate
         value: 'true'
       - key: updateDelayMs
@@ -123,7 +151,7 @@ constants:
   - name: CONFIG_TEMPLATE
     title: 設定ファイルの雛形
     container: vscode/src/config.ts
-    summary: '`mdmark.openConfig` が「作る」で書く YAML。キーを書かず、書き方をコメントで示す'
+    summary: '`mdmark.openConfig` が「作成」で書く YAML。キーを書かず、書き方をコメントで示す'
     description: 値は画面設計の「雛形の中身」の YAML をそのまま持つ
     refs:
       - dev/設計書/画面設計/VSCodeのコマンドと通知.ts#elements[雛形の中身]
@@ -229,93 +257,78 @@ functions:
          - `YAMLParseError` の場合、`{ kind: "error", line: error.linePos[0].line, message: error.message }` を返す
       2. 最上位がマップでなければ（空のファイルを含む）`{ kind: "ok", config: {} }` を返す
       3. `features`・`libraries`・`html-scripts`・`side-toc` のうち値がマップのキーと、値が文字列の `colorTheme` だけを `config` に入れ、`assets.root` が文字列なら `assetsRoot` に入れて返す。他のキーは読まない
-    unit_tests:
-      - name: test_parse_config
-        case: 正常
-        summary: features・libraries・side-toc だけを取り出す
-        condition: '`features: { callout: false }`・`libraries: { chart: ./chart.js }`・`side-toc: { mode: fixed }`・`theme: x`・`build: {}` の YAML'
-        mock: なし
-        expected: '`{ kind: "ok", config: { features: { callout: false }, libraries: { chart: "./chart.js" }, "side-toc": { mode: "fixed" } } }`'
-      - name: test_parse_config_when_not_map
-        case: 正常
-        summary: 最上位がマップでない・空・キーの値がマップでないときは渡さない
-        condition: '空の文字列、`- a` の YAML、`features: [a]` の YAML'
-        mock: なし
-        expected: 'どれも `{ kind: "ok", config: {} }`'
-      - name: test_parse_config_when_invalid_yaml
-        case: 正常
-        summary: YAML として読めなければ読めない行を返す
-        condition: '4 行目に `features: {callout: false` と閉じの無い YAML'
-        mock: なし
-        expected: '`kind` が `error`、`line` が `4`、`message` が空でない'
-      - name: test_parse_config_when_color_theme
-        case: 正常
-        summary: 文字列の colorTheme だけを取り出す
-        condition: '`colorTheme: theme-paper` の YAML と、`colorTheme: [a]` の YAML'
-        mock: なし
-        expected: '前者は `{ kind: "ok", config: { colorTheme: "theme-paper" } }`、後者は `{ kind: "ok", config: {} }`'
-      - name: test_parse_config_when_assets_root
-        case: 正常
-        summary: 文字列の assets.root を config に入れずに返す
-        condition: '`assets: { root: assets }` の YAML と `assets: { root: 1 }` の YAML'
-        mock: なし
-        expected: '前者は `{ kind: "ok", config: {}, assetsRoot: "assets" }`、後者は `{ kind: "ok", config: {} }`'
-      - name: test_parse_config_when_html_scripts
-        case: 正常
-        summary: マップの html-scripts だけを取り出す
-        condition: '`html-scripts: { url: ./babel.mjs }` の YAML と `html-scripts: x` の YAML'
-        mock: なし
-        expected: '前者は `{ kind: "ok", config: { "html-scripts": { url: "./babel.mjs" } } }`、後者は `{ kind: "ok", config: {} }`'
     refs:
       - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを描き直す.ts#constraints[設定の取り出し方]
       - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを描き直す.ts#constraints[設定ファイルを読めないとき]
       - dev/設計書/外部ライブラリ/yaml#
-    status: planned
+    status: removed
   - name: loadConfig
     title: 設定ファイルを読む
     kind: 関数
     container: vscode/src/config.ts
-    usecase: 書いた内容をプレビューに映す
-    summary: 設定ファイルを読んで設定を取り出す。ファイルが無ければ `missing`
+    usecase: 共通
+    summary: ライブラリ本体の `loadLayeredConfig` で設定を重ねて読み、`ConfigLoad` にする。設定ファイルが 1 つも無ければ端末の設定だけで返す
     scope: public
     is_async: true
     args:
       - name: options
-        type: '{ path: string; readFile: ReadTextFile }'
+        type: '{ cwd: string; configPath: string; baseDir: string; purpose: "preview" | "export"; env: Record<string, string | undefined>; home: string; readFile: ReadTextFile; isFile: (path: string) => Promise<boolean> }'
         required: true
-        description: 設定ファイルの絶対パスと、読む関数
+        description: Markdown のフォルダ・`mdmark.configPath`・基準のフォルダ（設定ファイルの場所を決める）・プレビューか書き出しか・環境変数・ホームのフォルダ・読む関数・ファイルがあるかを確かめる関数
     returns:
       type: Promise<ConfigLoad>
       description: 読み取りの結果
     process: |-
-      1. `readFile(path)` で読む
-         - 例外の `code` が `ENOENT` の場合、`{ kind: "missing" }` を返す。他の例外は投げ直す
-      2. 読んだ中身から設定を取り出す（設定を取り出す）
-      3. `assetsRoot` があれば `path` のフォルダを基準にした絶対パスにして返す
+      1. `configPath` が空でなければ設定ファイルの場所を決める（設定ファイルの場所を決める）
+         - そのファイルが無い（`isFile` が `false`）場合、`explicit` を渡さず、`isFile` を常に `false` を返す関数にして呼ぶ（上へ探さず、端末の設定だけを重ねる）
+      2. 設定を重ねて読む（設定を重ねて読む。`explicitName` は `mdmark.configPath`）
+      3. 結果を `ConfigLoad` にする
+         - `config` は重ねた設定のうち、値がマップの `features`・`libraries`・`html-scripts`・`side-toc` と、値が文字列の `colorTheme` だけ
+         - `files` は重ねた設定ファイルの `path`、`theme`・`extensions`・`assetsRoot` は重ねた設定の `theme`・`extensions`・`assets.root`
+         - `unreadable` がある場合、`problem` は `{ path, line, message }`。無く `issues` がある場合、`problem` は `{ path: issues[0].file, settingKey: issues[0].where, message: issues[0].message }`
     exceptions:
       - name: Error
         condition: '`readFile` が `ENOENT` 以外で失敗した（投げ直す）'
     unit_tests:
-      - name: test_load_config_when_missing
-        case: 正常
-        summary: ファイルが無ければ missing
-        condition: '`readFile` が `code` が `ENOENT` の例外を投げる'
-        mock: '`readFile` を代役にする'
-        expected: '`{ kind: "missing" }`'
       - name: test_load_config
         case: 正常
-        summary: 読んだ中身から取り出す
-        condition: '`readFile` が `features: { callout: false }` を返す'
-        mock: '`readFile` を代役にする'
-        expected: '`{ kind: "ok", config: { features: { callout: false } } }`'
+        summary: 重ねた設定から mount のキー・theme・extensions を取り出す
+        condition: '端末の設定に `features.callout: false`、`/w/docs/mdmark.config.yaml` に `theme: ./t.css`・`extensions: [./e.js]`・`build: { include: ["*.md"], out: a.html }`、`cwd` が `/w/docs`、`configPath` が空'
+        mock: '`readFile`・`isFile` をメモリのファイルの表に差し替える'
+        expected: '`config` が `{ features: { callout: false } }`、`theme` が `/w/docs/t.css`、`extensions` が `["/w/docs/e.js"]`、`files` が端末の設定と `/w/docs/mdmark.config.yaml`、`nearest` が `/w/docs/mdmark.config.yaml`、`problem` が無い'
+      - name: test_load_config_when_missing
+        case: 正常
+        summary: 設定ファイルが 1 つも無ければ空の設定
+        condition: '`readFile` がどのファイルにも `ENOENT` を投げ、`isFile` がどれも `false`'
+        mock: '`readFile`・`isFile` を代役にする'
+        expected: '`config` が `{}`、`extensions` と `files` が空、`nearest`・`problem` が無い'
       - name: test_load_config_when_assets_root
         case: 正常
-        summary: assets.root を設定ファイルのフォルダから解決する
-        condition: '`path` が `/w/mdmark.config.yaml` で、`readFile` が `assets: { root: ./assets }` を返す'
-        mock: '`readFile` を代役にする'
-        expected: '`assetsRoot` が `/w/assets`'
+        summary: assets.root を書いた設定ファイルのフォルダから解決する
+        condition: '`/w/mdmark.config.yaml` に `assets: { root: ./assets }`、`cwd` が `/w`'
+        mock: '`readFile`・`isFile` をメモリのファイルの表に差し替える'
+        expected: '`assetsRoot` が `/w/assets` で、`config` に `assets` が無い'
+      - name: test_load_config_when_unreadable
+        case: 正常
+        summary: YAML として読めないファイルを problem にし、残りを重ねる
+        condition: '端末の設定に `features.callout: false`、`/w/mdmark.config.yaml` の 4 行目に閉じていない `[`'
+        mock: '`readFile`・`isFile` をメモリのファイルの表に差し替える'
+        expected: '`problem` の `path` が `/w/mdmark.config.yaml`・`line` が 4、`config` が `{ features: { callout: false } }`'
+      - name: test_load_config_when_invalid
+        case: 正常
+        summary: 形の合わないファイルを problem にしてキーを返す
+        condition: '端末の設定に `features.callout: maybe`'
+        mock: '`readFile`・`isFile` をメモリのファイルの表に差し替える'
+        expected: '`problem` の `path` が端末の設定・`settingKey` が `features.callout`・`line` が無い'
+      - name: test_load_config_when_config_path_missing
+        case: 正常
+        summary: mdmark.configPath のファイルが無ければ上へ探さず端末の設定だけを重ねる
+        condition: '`configPath` が `missing.yaml`、`/w/mdmark.config.yaml` に `features.table: false`、端末の設定に `features.callout: false`'
+        mock: '`readFile`・`isFile` をメモリのファイルの表に差し替える'
+        expected: '`config` が `{ features: { callout: false } }`、`files` が端末の設定だけ、`nearest` が無い'
     callees:
-      - '#functions[parseConfig]'
+      - '#functions[resolveConfigPath]'
+      - dev/設計書/モジュール構成/ライブラリ本体/設定を重ねて読む.ts#functions[loadLayeredConfig]
     status: planned
   - name: resolveLibraries
     title: libraries の URL を直す
@@ -412,29 +425,33 @@ functions:
     kind: 関数
     container: vscode/src/config-file.ts
     usecase: 書いた内容をプレビューに映す
-    summary: '`mdmark.openConfig` の本体。設定ファイルをエディタで開き、無ければ雛形を作るか尋ねる'
+    summary: '`mdmark.openConfig` の本体。開くファイル（無ければ最も近い設定ファイル）をエディタで開き、無ければ雛形を作るか尋ねる'
     scope: public
     is_async: true
-    side_effects: 「作る」を選んだときだけ、フォルダを作って `CONFIG_TEMPLATE` を書く
+    side_effects: 「作成」を選んだときだけ、フォルダを作って `CONFIG_TEMPLATE` を書く
     args:
       - name: options
-        type: '{ configPath: string; baseDir: string; log: Logger }'
+        type: '{ path?: string; cwd: string; configPath: string; baseDir: string; log: Logger }'
         required: true
-        description: '`mdmark.configPath` と基準のフォルダ'
+        description: 開くファイル（帯から呼んだときは帯に出したファイル）・Markdown のフォルダ・`mdmark.configPath`・基準のフォルダ
     returns:
       type: Promise<void>
       description: 開いたか、作らないと答えたら解決する
     process: |-
-      1. 設定ファイルの場所を決める（設定ファイルの場所を決める）
+      1. 開くファイルを決める
+         - `path` があれば `path`
+         - 無く `configPath` が空でなければ、設定ファイルの場所を決める（設定ファイルの場所を決める）
+         - どちらも無ければ、`cwd` から上へ最も近い `mdmark.config.yaml` を探し（上のフォルダの設定ファイルを探す。`cascade: false`）、無ければ `baseDir` の `mdmark.config.yaml`
       2. ファイルがあれば `window.showTextDocument` で開いて終わる
-      3. 無ければ `window.showInformationMessage` を `{ modal: true, detail }` とボタン「作る」で出す（文言は画面設計の「雛形を作るかの確認」）
-         - 「作る」以外（閉じた・キャンセル）の場合、何も書かずに終わる
+      3. 無ければ `window.showInformationMessage` を `{ modal: true, detail }` とボタン「作成」で出す（文言は画面設計の「雛形を作るかの確認」）
+         - 「作成」以外（閉じた・キャンセル）の場合、何も書かずに終わる
       4. フォルダが無ければ作り、`CONFIG_TEMPLATE` を書いて `window.showTextDocument` で開く。書く前にファイルができていたら書き換えずに開く
          - フォルダを作れない・書けない場合、`window.showErrorMessage` で OS の誤りの文を出して終わる
            - `[error]` 設定ファイルの雛形を書けない（パス・誤り）
          - `[info]` 設定ファイルの雛形を作った（パス）
     callees:
       - '#functions[resolveConfigPath]'
+      - dev/設計書/モジュール構成/ライブラリ本体/設定を重ねて読む.ts#functions[findConfigChain]
       - '#constants[CONFIG_TEMPLATE]'
     refs:
       - dev/設計書/インターフェース定義/VSCode拡張機能/設定ファイルを開く.ts#
@@ -469,6 +486,50 @@ functions:
     status: planned
     introduced:
       pr: 181
+  - name: bundleExtensions
+    title: 拡張を束ねる
+    kind: 関数
+    container: vscode/src/extensions-bundle.ts
+    usecase: 共通
+    summary: 重ねた設定の `extensions` を esbuild-wasm で 1 つずつ ES モジュールに束ねる（`.ts` も読み、URL の import は束ねに取り込む）
+    description: プレビューは設定を読み直して `extensions` の並びかそのファイルが変わったときだけ、書き出しは書き出すたびに呼ぶ（esbuild-wasm は束ねた結果をメモリから解放しないため、Markdown の書き換えでは呼ばない）
+    scope: public
+    is_async: true
+    side_effects: URL の先を読む。初めて呼んだときだけ esbuild-wasm を初期化する
+    args:
+      - name: options
+        type: '{ paths: string[]; extensionPath: string; fetchText?: (url: string) => Promise<string> }'
+        required: true
+        description: '`ConfigLoad` の `extensions`（絶対パス）・拡張機能のフォルダ（`dist/esbuild.wasm` を `node:fs/promises` で読む）・URL を読む関数'
+    returns:
+      type: 'Promise<Array<{ path: string; code: string } | { path: string; error: string }>>'
+      description: '`paths` の順の、束ねたコードか束ねられない理由'
+    process: |-
+      1. 初めて呼んだときだけ、`{extensionPath}/dist/esbuild.wasm` を読んで `WebAssembly.compile` し、`initialize({ wasmModule, worker: false })` を呼ぶ（初期化の Promise を使い回す）
+      2. URL を読む関数を控え付きにし（URL を読む関数を控え付きにする）、`paths` の各パスをモジュールを 1 つに束ねる（`build` は esbuild-wasm の `build`）
+         - `error` の場合、そのパスと理由を返し、次のパスへ進む
+    unit_tests:
+      - name: test_bundle_extensions
+        case: 正常
+        summary: .ts とその相対パス・URL の import を 1 つに束ねる
+        condition: 型注釈を持ち `./lib.ts` と `https://cdn.example/a.js` を import する `entry.ts`
+        mock: 一時フォルダ。`fetchText` を URL の本文を返す代役にする。`extensionPath` は `vscode/node_modules/esbuild-wasm` の `esbuild.wasm` を置いた一時フォルダ
+        expected: '`code` に `import` 文と型注釈が残らず、既定の export を持つ'
+      - name: test_bundle_extensions_when_error
+        case: 異常
+        summary: 束ねられない拡張は理由を返して次へ進む
+        condition: '`paths` が無いファイルと `entry.ts` の順'
+        mock: 一時フォルダ
+        expected: 1 つ目が `error`、2 つ目が `code`
+    callees:
+      - dev/設計書/モジュール構成/ライブラリ本体/CLI.ts#functions[bundleModule]
+      - dev/設計書/モジュール構成/ライブラリ本体/CLI.ts#functions[cacheFetchText]
+    refs:
+      - dev/設計書/外部ライブラリ/esbuild-wasm#
+    status: planned
+    introduced:
+      pr: 347
 test_files:
   - tests/unit/vscode/src/settings.test.ts
   - tests/unit/vscode/src/config.test.ts
+  - tests/unit/vscode/src/extensions-bundle.test.ts

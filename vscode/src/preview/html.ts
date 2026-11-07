@@ -62,6 +62,10 @@ export function buildPreviewHtml(options: {
   styleUri: string;
   /** `mdmark.configPath` の記載したままの値 */
   configPath: string;
+  /** 重ねた設定の `theme` の `asWebviewUri` */
+  themeHref?: string | undefined;
+  /** 束ねた `extensions` のファイルの `asWebviewUri` */
+  extensions: string[];
   /** テストのときだけ `data-test` を持つ */
   test: boolean;
 }): string {
@@ -72,12 +76,19 @@ export function buildPreviewHtml(options: {
     version === undefined ? "" : `data-version="${escapeHtml(version)}"`,
     distJs === undefined ? 'data-status="versionUndecidable"' : "",
     `data-config-path="${escapeHtml(options.configPath)}"`,
+    options.extensions.length === 0
+      ? ""
+      : `data-extensions="${escapeHtml(JSON.stringify(options.extensions))}"`,
     options.test ? "data-test" : "",
   ].filter((attribute) => attribute !== "");
   const distLink =
     distCss === undefined
       ? ""
       : `<link rel="stylesheet" href="${escapeHtml(distCss)}">\n`;
+  const themeLink =
+    options.themeHref === undefined
+      ? ""
+      : `<link id="mdmark-theme" rel="stylesheet" href="${escapeHtml(options.themeHref)}">\n`;
   return `<!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -85,7 +96,7 @@ export function buildPreviewHtml(options: {
 <meta http-equiv="Content-Security-Policy" content="${escapeHtml(options.csp)}">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <base href="${escapeHtml(options.baseHref)}">
-${distLink}<link rel="stylesheet" href="${escapeHtml(options.styleUri)}">
+${distLink}${themeLink}<link rel="stylesheet" href="${escapeHtml(options.styleUri)}">
 <title>mdmark プレビュー</title>
 </head>
 <body>

@@ -77,7 +77,7 @@ functions:
     container: vscode/scripts/build.ts
     usecase: 拡張機能の配布物を作る
     summary: 'esbuild で `src/extension.ts` を `dist/extension.cjs`（`format: "cjs"`・`platform: "node"`・`external: ["vscode"]`）に書き、Vite の `build()` で `vite.config.ts` のとおり Webview を `media/preview.js`・`media/preview.css` に書く'
-    description: '`tests` が `true` のときは、`tests/integration/index.ts` と `*.test.ts` も `out/test/*.mjs`（`format: "esm"`・`platform: "node"`・`external: ["vscode", "mocha"]`）に書き、`axe-core` の `axe.min.js` を `media/test/axe.js` に複写する（Webview が `axe` を受けたときだけ読む。本番の `preview.js` には束ねない）。ファイルの末尾で `import.meta.main` が `true` のときだけ、`process.argv` に `--tests` があるかを渡して呼ぶ'
+    description: '拡張機能を束ねるときは、`esbuild-wasm/lib/browser.js` の先頭に `var self = globalThis;` を足す esbuild のプラグインを当て（`globalThis` に `self` を足さない）、`esbuild-wasm/esbuild.wasm` を `dist/esbuild.wasm` に複写する。`tests` が `true` のときは、`tests/integration/index.ts` と `*.test.ts` も `out/test/*.mjs`（`format: "esm"`・`platform: "node"`・`external: ["vscode", "mocha"]`）に書き、`axe-core` の `axe.min.js` を `media/test/axe.js` に複写する（Webview が `axe` を受けたときだけ読む。本番の `preview.js` には束ねない）。ファイルの末尾で `import.meta.main` が `true` のときだけ、`process.argv` に `--tests` があるかを渡して呼ぶ'
     scope: public
     is_async: true
     side_effects: '`dist/`・`media/`・`out/` に書く'

@@ -319,7 +319,7 @@ functions:
       pr: 32
   - name: validateConfig
     title: 設定の形を検める
-    container: src/cli/config.ts
+    container: src/config-files.ts
     usecase: 共通
     summary: 読んだ値を `schemas/mdmark.config.schema.json` と同じ形で検め、合わないところを `schema` のずれで返す
     description: 検めるのは、最上位がオブジェクトであること・`version` が `VERSION_PATTERN` に合う文字列・`features` の値が真偽値・`libraries` の値が文字列でキーが印の名前・`index`・`theme`・`colorTheme` が文字列（`colorTheme` の知らない名前はここでは拒まず、設定に残す）・`extensions` が文字列の配列・`build` があれば `include`（1 つ以上の文字列）と `out`（`.html` の文字列）を持ち `exclude`・`glossary` が文字列の配列で `entry` が文字列であること・`check` があれば `ignore` が印の名前（`MARK_NAME_PATTERN`）の文字列の配列であること・`tooltips` があれば `placement` と `diagramPlacement` がどちらも（あれば）`top` か `bottom` であること・`labels` があればオブジェクトで `paramCopy` があれば空でない文字列であること（合わなければ `labels` を設定から落とす。知らないキーは拒まない）・`side-toc` があればオブジェクトで `mode` が `hover` か `fixed` であること・`syntax` があればオブジェクトで `url` が文字列であること・`html-scripts` があればオブジェクトで `url` が文字列であること（合わなければ `html-scripts` を設定から落とす）・`assets` があればオブジェクトで `root` が文字列であること。`aliases` があれば配列であることを確かめ、行は `validateAliasRows` で検める（ずれをそのまま `schema` のずれに加え、返った行を `config.aliases` に入れる）。知らない最上位のキーは拒まない。`aliases` の行のほかの形の検査は手書きで、ライブラリを足さない（索引の `normalizeIndex` と同じやり方）。検める形は `schemas/mdmark.config.schema.json` と揃える
@@ -431,11 +431,13 @@ functions:
     status: planned
     introduced:
       pr: 32
+    notes:
+      置き場所: 設定を重ねて読む処理と VS Code 拡張機能からも呼ぶため、`src/config-files.ts` に置き、`src/cli/config.ts` は import して使う。使う `schemaIssue`・`validateBuild`・`validateCheck`・`isValid*` も同じファイルへ移す。`CliError` には依存しない
   - name: requireConfig
     title: 書き出しに使う設定を読む
     container: src/cli/config.ts
     usecase: 共通
-    summary: 設定ファイルを探して読み、形が合わなければ `mdmark check` で確かめられることを添えた CliError を投げる
+    summary: 端末の設定と上のフォルダの設定ファイルを重ねて読み、読めない・形が合わなければ `mdmark check` で確かめられることを添えた CliError を投げる
     kind: 関数
     scope: public
     is_async: true
@@ -464,12 +466,18 @@ functions:
         expected: '`CliError` を投げ、メッセージに `libraries` と `mdmark check` が入る'
         exception: CliError
     callees:
-      - '#functions[findConfigFile]'
-      - '#functions[loadConfig]'
-      - '#functions[validateConfig]'
+      - dev/設計書/モジュール構成/ライブラリ本体/設定を重ねて読む.ts#functions[loadLayeredConfig]
+      - dev/設計書/モジュール構成/ライブラリ本体/設定を重ねて読む.ts#functions[displayConfigPath]
     status: planned
     introduced:
       pr: 32
+    process: |-
+      1. 設定を重ねて読む（設定を重ねて読む。`purpose: export`、`env` は `process.env`、`home` は `os.homedir()`）
+         - `ConfigNotFoundError` の場合、その文で `CliError` を投げる
+      2. `nearest` が無い場合、今の「`mdmark.config.yaml` が見つかりません」の `CliError` を投げる
+      3. `unreadable` がある場合、そのファイルのパス（設定ファイルのパスを表示の形にする。`base` は `cwd`）と行で、今の「YAML として読めません」の `CliError` を投げる
+      4. `issues` が 1 件以上の場合、最初のずれのファイルを表示の形にして、今の「設定の形に合いません」の `CliError` を投げる
+      5. `{ path: nearest, dir: nearest のフォルダ, config }` を返す。`config` は重ねた設定のパスを相対パスに戻したもの（パスを相対パスに戻す。`dir` は nearest のフォルダ）
   - name: collectBuildDocuments
     title: まとめる文書を集める
     container: src/cli/documents.ts
@@ -618,10 +626,10 @@ functions:
       pr: 32
   - name: bundleModule
     title: モジュールを 1 つに束ねる
-    container: src/cli/embed.ts
+    container: src/bundle-module.ts
     usecase: 共通
-    summary: URL かファイルのモジュールを、import する先も含めて esbuild で 1 つの ES モジュールのコードに束ねる
-    description: '`bundle: true`・`format: esm`・`write: false`・`minify: true`・`target` は対応ブラウザ。`http:`・`https:` の import は、esbuild のプラグインで `fetch` して読み、相対・ルート相対の import はその URL を基準に解く（PoC #35 で確かめた jsDelivr の `+esm` の形）。ファイルは TypeScript もそのまま読む。届かない・束ねられないときは例外を投げずに理由を返す'
+    summary: URL かファイルのモジュールを、import する先も含めて渡した esbuild の `build` で 1 つの ES モジュールのコードに束ねる
+    description: '`bundle: true`・`format: esm`・`write: false`・`minify: true`・`target` は対応ブラウザ。`http:`・`https:` の import は、esbuild のプラグインで `fetch` して読み、相対・ルート相対の import はその URL を基準に解く（PoC #35 で確かめた jsDelivr の `+esm` の形）。ファイルは名前空間 `local` のプラグインで `node:fs/promises` の `readFile` で読み（esbuild-wasm はファイルシステムを持たず、`file` の名前空間は Windows のパスを拒む）、拡張子が `.ts`・`.mts`・`.cts`・`.tsx` なら `ts`・`tsx` の loader で読む。届かない・束ねられないときは例外を投げずに理由を返す。esbuild を import しないファイルに置き、CLI はネイティブの esbuild の `build` を、VS Code 拡張機能は esbuild-wasm の `build` を渡す'
     kind: 関数
     scope: public
     is_async: true
@@ -630,7 +638,7 @@ functions:
       - name: entry
         type: string
         required: true
-        description: モジュールの URL か、設定ファイルのフォルダからの相対パス
+        description: モジュールの URL か、設定ファイルのフォルダからの相対パス（絶対パスも受ける）
       - name: baseDir
         type: string
         required: true
@@ -641,6 +649,12 @@ functions:
         default: '`fetch` で本文を読む'
         passing: injected
         description: URL を読む関数（テストで差し替える）
+      - name: build
+        type: BuildFunction
+        required: true
+        default: ネイティブの esbuild の `build`（`src/cli/embed.ts` が渡す）
+        passing: injected
+        description: esbuild の `build`。`src/bundle-module.ts` は型だけを import し、CLI（`src/cli/embed.ts`）はネイティブの esbuild の、VS Code 拡張機能は esbuild-wasm の `build` を渡す
     returns:
       type: 'Promise<{ code: string } | { error: string }>'
       description: 束ねたコードか、読めなかった理由
@@ -694,12 +708,12 @@ functions:
       pr: 296
   - name: cacheFetchText
     title: URL を読む関数を控え付きにする
-    container: src/cli/embed.ts
+    container: src/bundle-module.ts
     usecase: 共通
     summary: 同じ URL を 1 回だけ読む `FetchText` を返す。`prepareEmbeds` の確かめと `bundleViewer` が同じ関数を使い、同じ URL を 2 回読まない
     description: URL ごとに読み込みの Promise を控える。拒否した Promise も控え、読み直さない
     kind: 関数
-    scope: internal
+    scope: public
     args:
       - name: fetchText
         type: FetchText
@@ -1371,7 +1385,7 @@ functions:
     title: 点検のずれを集める
     container: src/cli/check.ts
     usecase: 共通
-    summary: 設定ファイルを読み、`mdmark check` と同じ並びのずれを返す
+    summary: '設定を重ねて読み（`purpose: export`）、重ねた設定ファイルのそれぞれと端末の設定（`config.applyToExport` によらず）の形のずれを先に、続けて `mdmark check` と同じ並びのずれを返す。ずれの `file` は設定ファイルのパスを表示の形にしたパス（`base` は今のフォルダ）'
     description: '並びは設定の `schema`（`validateConfig` のずれ、`theme`・`extensions` の無いファイル、`build.glossary`・`build.entry` がまとめる文書に当たらないもの）→ `unknown_color_theme`（設定の `colorTheme` が `COLOR_THEMES` に無いとき 1 件。`where` は `colorTheme`、`message` は `不明なテーマ名 {名前} です。{COLOR_THEMES を「・」で結んだもの} のいずれかに修正してください。`）→ `no_documents` → `checkIndex` の並び → エイリアスのずれ（`loadAliases` の `issues`。設定に `aliases` があるときだけ）→ `missing_file`（`collectCheckDocuments` の文書ごとの `checkMissingFiles`）→ `unknown_mark`（`checkUnknownMarks`）→ 図の点検のずれ（`checkDiagrams`。`unknownMarks` によらず点検する）。知らない印の点検では、`collectCheckDocuments` の文書を、`loadExtensionDirectives` の `directive` を知っている印に入れて点検し、`loadExtensionDirectives` の `schema` のずれは設定の `schema` の並びの最後に置く。索引のずれの `file` は設定ファイルのフォルダからの相対パスに直す。索引を読めないときは索引を指す `schema` のずれにする。`base` があり設定に `index` があるときだけ、ずれを集める前に `changedPathsSince`（`cwd` は設定ファイルのフォルダ、`indexDir` は索引のファイルのフォルダ）で変わったファイルを引き、`checkIndex` の `changedPaths` に渡す。`runCheck` と `runUpgrade` が呼び、`runUpgrade` は `unknownMarks: false` で呼ぶ（拡張を読み込まず、知らない印を点検しない）。設定の `assets.root` のフォルダが無いときは `assets.root` を指す `schema` のずれを設定の `schema` の並びに置き、`missing_file` は文書のフォルダだけで探す'
     kind: 関数
     scope: public
@@ -1382,10 +1396,10 @@ functions:
         required: true
         description: 設定ファイルの絶対パス
       - name: options
-        type: '{ unknownMarks?: boolean; base?: string }'
+        type: '{ unknownMarks?: boolean; base?: string; cwd?: string; explicit?: boolean }'
         required: false
         default: '`{ unknownMarks: true }`'
-        description: '`unknownMarks` が `false` なら、拡張を読み込まず、知らない印を点検しない。`base` があれば、`change_together` の直し忘れを確かめる'
+        description: '`unknownMarks` が `false` なら、拡張を読み込まず、知らない印を点検しない。`base` があれば、`change_together` の直し忘れを確かめる。`cwd` はずれの `file` の表示の基準（既定は `path` のフォルダ）。`explicit` が `true` のときは上へ探さず、`path` と端末の設定だけを重ねる（`--config`・MCP の `config` を渡したとき）'
     returns:
       type: Promise<CheckIssue[]>
       description: ずれの並び（無ければ空）
@@ -1453,6 +1467,11 @@ functions:
     callees:
       - '#functions[checkMissingFiles]'
       - '#functions[checkDiagrams]'
+    process: |-
+      1. 設定を重ねて読む（設定を重ねて読む。`purpose: export`、`keepInvalid: true`、`explicit` のときは `explicit` に `path`、それ以外は `cwd` に `path` のフォルダ）
+         - `unreadable` がある場合、そのファイルのパス（設定ファイルのパスを表示の形にする）と行で「YAML として読めません」の `CliError` を投げる
+      2. `issues` の `file` を表示の形にして、設定の形のずれにする
+      3. 重ねた設定のパスを `path` のフォルダからの相対パスに戻し（パスを相対パスに戻す）、`{ path, dir: path のフォルダ, config }` で、設定が指すファイル以降のずれを `description` の並びで集めて、形のずれの後ろに続けて返す
   - name: loadExtensionDirectives
     title: 拡張の印の名前を読む
     container: src/cli/check.ts

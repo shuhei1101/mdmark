@@ -2,6 +2,12 @@ import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { expect, test } from "@playwright/test";
 import {
+  cascadeSettings,
+  expectFeaturesOff,
+  expectUpperApplied,
+  expectUpperNotApplied,
+} from "../cascade.ts";
+import {
   expectGuideRendered,
   guideMarkdown,
   replaceAllText,
@@ -9,6 +15,7 @@ import {
   TRANSPILER_PATH,
   useVscodeE2E,
 } from "../vscode.ts";
+import { openCascadedPreview } from "../vscode-cascade.ts";
 
 const e2e = useVscodeE2E();
 
@@ -324,4 +331,50 @@ test("test_normal_when_range_scripts", async () => {
     expect(scriptSrc).not.toContain(word);
   }
   expect(scriptSrc).toHaveLength(4);
+});
+
+// 端末の設定・上のフォルダ・近いフォルダの設定を重ね、上のフォルダの theme と extensions をプレビューに当てる（正常シナリオ（設定を重ねる））
+test("test_normal_when_cascaded", async () => {
+  // 準備・実行
+  const opened = await openCascadedPreview(
+    e2e,
+    cascadeSettings({ cascade: true }),
+  );
+  // 検証
+  await expectFeaturesOff(opened.frame);
+  await expectUpperApplied(opened.frame);
+  await expect(opened.frame.locator(".mdmark-notice")).toHaveCount(0);
+  await expect(opened.frame.locator(".mdmark-config-band")).toHaveCount(0);
+});
+
+// config.cascade が false のとき、近いフォルダの設定と端末の設定だけでプレビューを描く（正常シナリオ（最初の 1 つだけを読む））
+test("test_normal_when_first_only", async () => {
+  // 準備・実行
+  const opened = await openCascadedPreview(
+    e2e,
+    cascadeSettings({ cascade: false }),
+  );
+  // 検証
+  await expectFeaturesOff(opened.frame);
+  await expectUpperNotApplied(opened.frame);
+});
+
+// 端末の設定を YAML として読めないとき、文書を描いたまま帯に出し、帯から端末の設定を開く（異常シナリオ（設定ファイルを読めない））
+test("test_error_when_config_unreadable", async () => {
+  // 準備・実行
+  const opened = await openCascadedPreview(
+    e2e,
+    cascadeSettings({ cascade: true, broken: true }),
+  );
+  // 検証
+  const band = opened.frame.locator(".mdmark-config-band");
+  await expect(band).toHaveCount(1);
+  await expect(band).toContainText("settings.yaml");
+  await expect(band).toContainText("3 行目");
+  await expect(opened.frame.locator(".mdmark h1")).toContainText("ガイド");
+  await band.locator('[data-action="openConfig"]').click();
+  await expect(
+    opened.session.win.locator('.tab.active[aria-label*="settings.yaml"]'),
+  ).toHaveCount(1);
+  expect(await opened.configs()).toEqual(opened.before);
 });

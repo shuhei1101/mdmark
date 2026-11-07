@@ -6,6 +6,9 @@ import { useTempDirs, writeFiles } from "../../helpers/cli.ts";
 /** 埋め込みの処理を読み込む（実装が無い間は各テストが個別に失敗する） */
 const loadEmbed = () => import("../../../../src/cli/embed.ts");
 
+/** esbuild を渡して束ねる処理を読み込む */
+const loadBundleModule = () => import("../../../../src/bundle-module.ts");
+
 const createTempDir = useTempDirs();
 
 // 対応表にある印だけを拾う（正常系）
@@ -45,7 +48,8 @@ test("test_used_parts", async () => {
 // 手元のファイルとその import を 1 つに束ねる（正常系）
 test("test_bundle_module", async () => {
   // 準備
-  const { bundleModule } = await loadEmbed();
+  const { bundleModule } = await loadBundleModule();
+  const { build } = await import("esbuild");
   const dir = await createTempDir();
   await writeFiles(dir, {
     "lib.ts": [
@@ -58,7 +62,7 @@ test("test_bundle_module", async () => {
     "dep.ts": 'export const label: string = "ラベル";\n',
   });
   // 実行
-  const result = await bundleModule("lib.ts", dir);
+  const result = await bundleModule("lib.ts", dir, undefined, build);
   // 検証
   if (!("code" in result)) {
     throw new Error(`束ねられなかった: ${result.error}`);
@@ -71,7 +75,8 @@ test("test_bundle_module", async () => {
 // URL とそのルート相対の import を fetchText で読んで束ねる（正常系）
 test("test_bundle_module_when_url", async () => {
   // 準備
-  const { bundleModule } = await loadEmbed();
+  const { bundleModule } = await loadBundleModule();
+  const { build } = await import("esbuild");
   const dir = await createTempDir();
   const bodies: Record<string, string> = {
     "https://cdn.example/npm/a/+esm":
@@ -90,6 +95,7 @@ test("test_bundle_module_when_url", async () => {
     "https://cdn.example/npm/a/+esm",
     dir,
     fetchText,
+    build,
   );
   // 検証
   if (!("code" in result)) {
@@ -103,10 +109,11 @@ test("test_bundle_module_when_url", async () => {
 // 読めないモジュールは理由を返す（異常系）
 test("test_bundle_module_when_unreachable", async () => {
   // 準備
-  const { bundleModule } = await loadEmbed();
+  const { bundleModule } = await loadBundleModule();
+  const { build } = await import("esbuild");
   const dir = await createTempDir();
   // 実行
-  const result = await bundleModule("missing.js", dir);
+  const result = await bundleModule("missing.js", dir, undefined, build);
   // 検証
   if (!("error" in result)) {
     throw new Error("束ねられてしまった");

@@ -135,7 +135,7 @@ constraints:
   - item: 書き出す中身
     constraint: '`TextDocument.getText()` の全文（保存していない書き換えを含む）を、`<script type="application/json">` に JSON で埋める（JSON の中の `<` は、JSON の Unicode エスケープであるバックスラッシュ・`u`・`003c` の 6 文字に置き換え、本文の `</script>` で `script` 要素が閉じないようにする）。版はプレビューを開く.ts の制約「バージョンの決め方」で決め、`<link>` と `<script type="module">` でその版の jsDelivr の `dist/index.css`・`dist/index.js` を読み、`mount(document.querySelector("main"), { markdown, config })` を呼ぶ'
   - item: 設定と相対パス
-    constraint: '`config` はプレビューを描き直す.ts の制約「設定の取り出し方」と同じ。`colorTheme` は `mdmark.colorTheme` が空でないときはその値で上書きする（プレビューを描き直す.ts の制約「送る中身」と同じ）。`libraries` と `html-scripts.url` の相対パスは設定ファイルのフォルダから解決した `file:` の URL にする。HTML に `<base href="{Markdown のフォルダの file: の URL}/">` を置き、本文の相対パスの画像とリンクを Markdown のフォルダから解決する'
+    constraint: '`config` はプレビューを描き直す.ts の制約「設定の取り出し方」と同じ。`colorTheme` は `mdmark.colorTheme` が空でないときはその値で上書きする（プレビューを描き直す.ts の制約「送る中身」と同じ）。重ねた設定はインターフェース定義『設定を重ねて読む』を `purpose: export` で呼んで得る。`libraries` と `html-scripts.url` の相対パスは、その値を書いた設定ファイルのフォルダから解決した `file:` の URL にする。`theme` の CSS は HTML の `<style>` に埋め、`extensions` のモジュールは、インターフェース定義『文書をHTMLに書き出す』の制約「束ねるスクリプト」と同じ引数で、拡張機能の中では esbuild-wasm で束ねて HTML に埋め（`.ts` も読む。束ねられない拡張は飛ばして書き出す）、`mount` の前に登録する（`file:` のページから `file:` のモジュールを `import()` すると Chromium 系のブラウザが読まないため）。HTML に `<base href="{Markdown のフォルダの file: の URL}/">` を置き、本文の相対パスの画像とリンクを Markdown のフォルダから解決する'
     notes: ブラウザは `file:` のページから `file:` の ES モジュールを読まないため、相対パスの `libraries` の印と、相対パスの `html-scripts.url` の文書の範囲の `ts`・`js` は mdmark が知らせの枠にする。`http:`・`https:` の `libraries` と `html-scripts.url` は読める
   - item: 通信
     constraint: 書き出した HTML は、開くときに jsDelivr へ届く必要がある。配布物を HTML に埋めない

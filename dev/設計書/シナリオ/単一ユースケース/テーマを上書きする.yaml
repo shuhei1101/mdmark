@@ -281,6 +281,24 @@ scenarios:
       - '`json` のインデントとファイルツリーの罫線と入れ子の位置が、使う側の CSS を読まないときと同じ'
       - '`wrap` の `ts` のコードブロックは折り返す'
     test: test_normal_when_host_pre_wraps
+  - name: 正常シナリオ（VS Code のプレビューで上書きする）
+    setup:
+      - name: theme を指すワークスペース
+        description: '`mdmark.config.yaml` の `theme` に、`--mdmark-color-link` を上書きする CSS を書いたワークスペースと、リンクを持つ Markdown'
+      - name: Mock
+        description: VSCodeでプレビューを開くの正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant EX as 拡張機能
+        participant PV as プレビュー（Webview）
+        W->>EX: プレビューを横に開く
+        EX->>PV: theme の CSS を読むパネルを開く
+        PV-->>W: theme の CSS を当てた文書
+    expected:
+      - プレビューのリンクの色の計算値が、theme の CSS で上書きした `--mdmark-color-link` の値
+      - 同じ設定で `mdmark export` を流した HTML のリンクの色と同じ
+    test: test_normal_when_vscode_preview
 lead: 使う側が自分の CSS で `--mdmark-` の変数や本文の規則を書き、mdmark が描いた文書の見た目を変える。何も書かなければ既定の見た目（dev-swiss）で描かれる。
 issue: 3
 primary_actor: mdmark を使うアプリの開発者

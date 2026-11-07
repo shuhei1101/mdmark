@@ -1,6 +1,15 @@
 import { readFile } from "node:fs/promises";
 import { dirname, extname, resolve } from "node:path";
-import { build, type Plugin, transform } from "esbuild";
+import { build, transform } from "esbuild";
+import {
+  BROWSER_TARGETS,
+  cacheFetchText,
+  type FetchText,
+  urlPlugin,
+} from "../bundle-module.ts";
+
+export { cacheFetchText, type FetchText };
+
 import MarkdownIt from "markdown-it";
 import { type MdmarkConfig, resolveConfig } from "../config.ts";
 import { resolveLink } from "../knowledge/paths.ts";
@@ -11,15 +20,6 @@ import { unescapeHtml } from "../render/syntax/html.ts";
 import { mediaKindOf } from "../render/syntax/images.ts";
 import { findAssetRefs, resolveAssetFile } from "./assets.ts";
 import { ASSET_SCHEME } from "./html.ts";
-
-/** URL を読む関数 */
-export type FetchText = (url: string) => Promise<string>;
-
-/** 束ねたモジュールの target に渡すブラウザの版（対応ブラウザの下限） */
-const BROWSER_TARGETS = ["chrome99", "firefox98", "safari16.4"];
-
-/** esbuild が URL の import を読む名前空間 */
-const URL_NAMESPACE = "http-url";
 
 /** 画像の拡張子から MIME を引く表 */
 const IMAGE_MIME: Readonly<Record<string, string>> = {
@@ -36,15 +36,6 @@ const EXTERNAL_PATTERN = /^(?:[a-z][a-z0-9+.-]*:|\/\/)/i;
 
 /** `http:`・`https:` の URL か */
 const HTTP_PATTERN = /^https?:\/\//i;
-
-/** `fetch` で URL の本文を読む。読めなければ例外を投げる */
-const fetchByUrl: FetchText = async (url) => {
-  const response = await fetch(url);
-  if (!response.ok) {
-    throw new Error(`${url} は ${response.status} を返しました`);
-  }
-  return response.text();
-};
 
 /** 文書の Markdown から印の名前を拾い、対応表にあるものだけを返す */
 export function usedLibraryMarks(
@@ -107,84 +98,12 @@ export function usedParts(options: {
   );
 }
 
-/** URL の import を `fetchText` で読んで束ねる esbuild のプラグイン。取得したモジュールの中の import は、そのモジュールの URL を基準に解く */
-function urlPlugin(fetchText: FetchText): Plugin {
-  return {
-    name: "http-url",
-    setup(pluginBuild) {
-      pluginBuild.onResolve({ filter: /^https?:\/\// }, (args) => ({
-        path: args.path,
-        namespace: URL_NAMESPACE,
-      }));
-      pluginBuild.onResolve(
-        { filter: /.*/, namespace: URL_NAMESPACE },
-        (args) => ({
-          path: new URL(args.path, args.importer).href,
-          namespace: URL_NAMESPACE,
-        }),
-      );
-      pluginBuild.onLoad(
-        { filter: /.*/, namespace: URL_NAMESPACE },
-        async (args) => ({
-          contents: await fetchText(args.path),
-          loader: "js",
-        }),
-      );
-    },
-  };
-}
-
-/** URL かファイルのモジュールを、import する先も含めて 1 つの ES モジュールのコードに束ねる。届かない・束ねられないときは例外を投げずに理由を返す */
-export async function bundleModule(
-  entry: string,
-  baseDir: string,
-  fetchText: FetchText = fetchByUrl,
-): Promise<{ code: string } | { error: string }> {
-  try {
-    const result = await build({
-      absWorkingDir: baseDir,
-      entryPoints: [HTTP_PATTERN.test(entry) ? entry : resolve(baseDir, entry)],
-      bundle: true,
-      format: "esm",
-      platform: "browser",
-      target: BROWSER_TARGETS,
-      minify: true,
-      write: false,
-      outfile: "bundle.js",
-      plugins: [urlPlugin(fetchText)],
-      logLevel: "silent",
-    });
-    const code = result.outputFiles[0]?.text;
-    if (code === undefined) {
-      return { error: `${entry}: 束ねた結果がありません` };
-    }
-    return { code };
-  } catch (error) {
-    const reason =
-      error instanceof Error ? error.message.split("\n")[0] : String(error);
-    return { error: `${entry}: ${reason}` };
-  }
-}
-
 /** 束ねたコードに残った動的 `import()` の呼び出しの並び（`import` と `(` の間の空白を許す） */
 const DYNAMIC_IMPORT_PATTERN = /\bimport\s*\(/;
 
 /** 束ねたコードに動的 `import()` の呼び出しが残るかを返す。変数を渡す `import()` は esbuild が取り込めず、束ねた後も残る */
 export function hasDynamicImport(code: string): boolean {
   return DYNAMIC_IMPORT_PATTERN.test(code);
-}
-
-/** 同じ URL を 1 回だけ読む `FetchText` を返す。拒否した読み込みも控え、読み直さない */
-export function cacheFetchText(fetchText: FetchText = fetchByUrl): FetchText {
-  const cache = new Map<string, Promise<string>>();
-  return (url) => {
-    let pending = cache.get(url);
-    if (!pending) {
-      pending = fetchText(url);
-      cache.set(url, pending);
-    }
-    return pending;
-  };
 }
 
 /** `prepareEmbeds` が束ねられることを確かめた、起動の処理と 1 つのスクリプトに束ねるモジュールの読み先（URL か絶対パス） */

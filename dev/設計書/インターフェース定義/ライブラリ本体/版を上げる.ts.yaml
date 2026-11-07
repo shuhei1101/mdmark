@@ -378,7 +378,7 @@ request:
   - name: --config
     type: string
     required: false
-    default: なし（今のフォルダから上のフォルダへ順に `mdmark.config.yaml` を探し、最初に見つかったものを使う）
+    default: なし（今のフォルダから上のフォルダへ順に `mdmark.config.yaml` を探し、最初に見つかったものを使う。`config.cascade` によらず、上のフォルダの設定と端末の設定は書き換えない）
     location: argument
     description: 使う設定ファイルのパス
     example: docs/mdmark.config.yaml

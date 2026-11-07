@@ -67,17 +67,21 @@ export const test = base.extend<CliFixtures, CliWorkerFixtures>({
   },
 });
 
-/** ビルドした `dist/cli.js` を、`cwd` で子プロセスとして流す。標準入力には `stdin`（既定は空）を渡して閉じる。終了コードが 0 以外でも例外を投げず、結果を返す */
+/** 端末の設定を持たないことにする `MDMARK_CONFIG`（無いファイル）。開発者の端末の設定をシナリオに混ぜない */
+export const NO_SETTINGS = join(tmpdir(), "mdmark-e2e-no-settings.yaml");
+
+/** ビルドした `dist/cli.js` を、`cwd` で子プロセスとして流す。標準入力には `stdin`（既定は空）を渡して閉じる。`env` で環境変数を足す（`MDMARK_CONFIG` の既定は `NO_SETTINGS`）。終了コードが 0 以外でも例外を投げず、結果を返す */
 export async function runCli(
   builtRoot: string,
   args: string[],
   cwd: string,
   stdin = "",
+  env: Record<string, string> = {},
 ): Promise<CliResult> {
   const running = execFileAsync(
     process.execPath,
     [join(builtRoot, "dist", "cli.js"), ...args],
-    { cwd },
+    { cwd, env: { ...process.env, MDMARK_CONFIG: NO_SETTINGS, ...env } },
   );
   running.child.stdin?.end(stdin);
   try {

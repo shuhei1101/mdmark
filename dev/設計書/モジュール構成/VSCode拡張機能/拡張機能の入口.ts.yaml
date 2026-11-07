@@ -126,10 +126,10 @@ functions:
       3. コマンドを登録する
          - `mdmark.openPreviewToSide`・`mdmark.openPreview` は `PreviewManager.open`（`ViewColumn.Beside`・`ViewColumn.Active`）
          - `mdmark.refreshPreview` は `PreviewManager.refresh`
-         - `mdmark.openConfig` は対象の Markdown の基準のフォルダで `openConfigFile`
+         - `mdmark.openConfig` は対象の Markdown の基準のフォルダと Markdown のフォルダ（`cwd`。対象が無ければ基準のフォルダ）で `openConfigFile`
          - `mdmark.openSettings` は `commands.executeCommand("workbench.action.openSettings", "@ext:" + context.extension.id)`（`context.extension.id` は `package.json` の `publisher`.`name`）
          - `mdmark.exportHtml`・`mdmark.openInBrowser`・`mdmark.printToPdf` は `exportMarkdown`（`export`・`browser`・`print`）
-      4. `workspace.onDidChangeTextDocument`・`onDidSaveTextDocument`・`onDidChangeConfiguration`・`window.onDidChangeTextEditorVisibleRanges` を `PreviewManager` へ、設定ファイルの `createFileSystemWatcher` の作成・変更・削除を `PreviewManager.handleConfigChange` へつなぐ
+      4. `workspace.onDidChangeTextDocument`・`onDidSaveTextDocument`・`onDidChangeConfiguration`・`window.onDidChangeTextEditorVisibleRanges` を `PreviewManager` へ、ワークスペースの `**/mdmark.config.yaml` の `createFileSystemWatcher` の作成・変更・削除を `PreviewManager.handleConfigChange` へつなぐ（パネルごとの見張るファイルは `PreviewManager` が張る）
       5. テストのときだけ `{ inspectPreview, auditPreview }` を返す
     callees:
       - dev/設計書/モジュール構成/VSCode拡張機能/プレビュー.ts#classes[PreviewManager]

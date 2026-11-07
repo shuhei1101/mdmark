@@ -10,6 +10,8 @@ export type PreviewBoot = {
   status: "versionUndecidable" | undefined;
   /** `mdmark.configPath` の書いたままの値（帯に出す） */
   configPath: string;
+  /** 束ねた `extensions` の Webview で読める URL（`data-extensions` の JSON の配列） */
+  extensions: string[];
   /** `inspect`・`axe` を受けるか */
   test: boolean;
 };
@@ -24,8 +26,25 @@ export const readBoot = (root: HTMLElement): PreviewBoot => ({
       ? "versionUndecidable"
       : undefined,
   configPath: root.dataset.configPath ?? "",
+  extensions: readExtensions(root.dataset.extensions),
   test: root.dataset.test !== undefined,
 });
+
+/** `data-extensions` を JSON の文字列の配列として読む。無い・読めない・文字列の配列でないときは空 */
+const readExtensions = (value: string | undefined): string[] => {
+  if (value === undefined) {
+    return [];
+  }
+  try {
+    const parsed: unknown = JSON.parse(value);
+    return Array.isArray(parsed) &&
+      parsed.every((url) => typeof url === "string")
+      ? parsed
+      : [];
+  } catch {
+    return [];
+  }
+};
 
 /** `getState` で読んだ値が `PreviewState` なら、その行を返す */
 export const savedLineFrom = (state: unknown): number | undefined => {

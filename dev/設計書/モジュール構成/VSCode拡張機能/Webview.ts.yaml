@@ -59,10 +59,10 @@ data_models:
     usecase: 共通
     role: DTO
     summary: '`type` で見分ける判別付きの型'
-    description: '`{ type: "render"; markdown: string; previous?: string; config: PreviewConfig; theme: "auto" | "light" | "dark"; includes?: Record<string, string> }`・`{ type: "scrollToLine"; line: number }`・`{ type: "configError"; line: number }`・`{ type: "configOk" }`・`{ type: "assetsResolved"; id: number; urls: Record<string, string | null> }`・`{ type: "inspect"; id: number; selector: string; play?: boolean }`・`{ type: "axe"; id: number }`。`inspect`・`axe` はテストのときだけ送る'
+    description: '`{ type: "render"; markdown: string; previous?: string; config: PreviewConfig; theme: "auto" | "light" | "dark"; includes?: Record<string, string> }`・`{ type: "scrollToLine"; line: number }`・`{ type: "configError"; path: string; line?: number; settingKey?: string }`・`{ type: "configOk" }`・`{ type: "theme"; href: string }`・`{ type: "assetsResolved"; id: number; urls: Record<string, string | null> }`・`{ type: "inspect"; id: number; selector: string; play?: boolean }`・`{ type: "axe"; id: number }`。`configError` は `line` と `settingKey` のどちらか一方を持つ。`inspect`・`axe` はテストのときだけ送る'
     properties:
       - name: type
-        type: '"render" | "scrollToLine" | "configError" | "configOk" | "assetsResolved" | "inspect" | "axe"'
+        type: '"render" | "scrollToLine" | "configError" | "configOk" | "theme" | "assetsResolved" | "inspect" | "axe"'
         description: メッセージの種類
     refs:
       - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを開く.ts#constraints[Webview とのメッセージ]
@@ -163,6 +163,9 @@ data_models:
       - name: test
         type: boolean
         description: '`data-test` を持つか。`inspect`・`axe` を受けるのは `true` のときだけ'
+      - name: extensions
+        type: string[]
+        description: '`data-extensions`（JSON の配列）。重ねた設定の `extensions` の Webview で読める URL。無い・文字列の配列でないときは空'
     status: planned
   - name: PreviewState
     title: Webview の状態
@@ -208,6 +211,9 @@ data_models:
       - name: diffModes
         type: unknown
         description: 対応する差分の出し方。持たない前のバージョンもある
+      - name: registerExtension
+        type: '(extension: unknown) => void'
+        description: 拡張を登録する。配布物を読んだ後、`mount` の前に呼ぶ
     status: planned
   - name: Anchor
     title: 行の印
@@ -690,12 +696,13 @@ components:
     usecase: 共通
     summary: 画面設計『VSCodeのプレビュー』の要素を並べ、配布物の読み込み・拡張機能のメッセージ・スクロール・リンクを hook でつなぐ
     description: |-
-      描く順は 状態の表示（`status` があるとき）→ 帯（`configErrorLine` があるとき）→ 描く先の要素（`status` があるときは `hidden`）。描く先の要素は子を持たない `div` で、中身は `DocumentView` が mdmark で描く。メッセージは `type` ごとに次のとおり処理する（`settled`・`assetsId` は ref に持つ）
+      描く順は 状態の表示（`status` があるとき）→ 帯（`configError` があるとき）→ 描く先の要素（`status` があるときは `hidden`）。描く先の要素は子を持たない `div` で、中身は `DocumentView` が mdmark で描く。配布物を読んだ後、`boot.extensions` を登録してから（拡張を登録する）`ready` を送る。メッセージは `type` ごとに次のとおり処理する（`settled`・`assetsId` は ref に持つ）
 
       - `render`: `previous` を持ち `view.supportsDiff()` が false なら、描かずに `status` を `diffUnsupported` にして `loadFailed`（`diffUnsupported`）を送る。それ以外は `view.render` の後に `status` を消して `rendered` を送り、`currentPosition()` が数なら `setState({ line })` で保存する。`collectAssetPaths` が 1 つ以上返せば `assetsId` を増やして `resolveAssets` を送る
       - `assetsResolved`: `id` が `assetsId` と同じときだけ `applyAssetUrls` を呼ぶ
       - `scrollToLine`: `view.scrollToLine`
-      - `configError`・`configOk`: `configErrorLine` を行にする・消す
+      - `configError`・`configOk`: `configError` を受けた `path`・`line`・`settingKey` にする・消す
+      - `theme`: `#mdmark-theme` の `link` の `href` を替える（描き直さない）
       - `inspect`・`axe`: `boot.test` のときだけ `view.inspect`・`view.audit` の結果を `inspected`・`axed` で同じ `id` で送る
       - 上の `type` 以外: 処理しない（`window` の `message` には、MSW の Service Worker など拡張機能以外が送るものも届く）
 
@@ -719,16 +726,21 @@ components:
         required: false
         default: '`loadMdmark`'
         description: 配布物を読む関数。ストーリーと単体テストが代役を渡す
+      - name: importModule
+        type: '(url: string) => Promise<{ default?: unknown }>'
+        required: false
+        default: '`import(/* @vite-ignore */ url)`'
+        description: 拡張を読む関数（拡張を登録するに渡す）。単体テストが代役を渡す
     state:
       - name: status
         type: '{ state: PreviewStatusState; version?: string } | undefined'
         initial: '`boot.status` が `versionUndecidable` か `boot.distJs` が無いとき `{ state: "versionUndecidable" }`、それ以外は `undefined`'
         description: 文書の代わりに出す状態の表示
         notes: '`useState`'
-      - name: configErrorLine
-        type: number | undefined
+      - name: configError
+        type: '{ path: string; line?: number; settingKey?: string } | undefined'
         initial: '`undefined`'
-        description: 設定ファイルを読めない行。あるときだけ帯を出す
+        description: 帯に出す読めない設定ファイル。あるときだけ帯を出す
         notes: '`useState`'
     unit_tests:
       - name: test_panel_screen_when_rendered
@@ -770,9 +782,9 @@ components:
       - name: test_panel_screen_when_config_error
         case: 正常
         summary: configError で帯を文書の前に 1 つだけ出し、configOk で消す
-        condition: 描いた後に `configError`（4）、`configError`（5）、`configOk` の順に送り、2 回目の後に「設定ファイルを開く」を押す
+        condition: '描いた後に `configError`（`path: "mdmark.config.yaml"`・`line: 4`）、`configError`（`path: "~/.config/mdmark/settings.yaml"`・`settingKey: "features.callout"`）、`configOk` の順に送り、2 回目の後に「設定ファイルを開く」を押す'
         mock: '`api` を代役にする'
-        expected: 2 回目の後は帯が 1 つで `5` 行目を出し、描く先の要素より前にある。`openConfig` が送られる。`configOk` の後は帯が無い
+        expected: 1 回目の後は帯に `mdmark.config.yaml` と `4 行目`、2 回目の後は帯が 1 つで `~/.config/mdmark/settings.yaml` と `features.callout` を出し、描く先の要素より前にある。`openConfig` が送られる。`configOk` の後は帯が無い
       - name: test_panel_screen_when_state_saved
         case: 正常
         summary: 保存した行の途中の位置を持つ状態で始めると、最初の render の後にその位置へ戻してから保存し、revealLine を送らない
@@ -803,6 +815,18 @@ components:
         condition: '`App` で描き、`mount` が例外を投げる代役の配布物を読んだ後に `render` を送る'
         mock: '`api` を代役にする。`load` を `mount` が例外を投げる代役を返す関数にする'
         expected: 状態の表示に描画の失敗の文言と `data-action="reload"` のボタンがあり、`rendered` が送られない
+      - name: test_panel_screen_when_extensions
+        case: 正常
+        summary: 配布物を読んだ後、extensions を登録してから ready を送る
+        condition: '`extensions` が `["a.js", "b.js"]` の `boot` と、`a.js` だけ reject する拡張を読む関数を渡して描く'
+        mock: '`api` を代役にする。`load` を `registerExtension` を記録する mdmark の代役を返す関数にする。拡張を読む関数を代役にする'
+        expected: '`registerExtension` が `b.js` の `default` で 1 回だけ呼ばれ、その後に `ready` が送られる'
+      - name: test_panel_screen_when_theme
+        case: 正常
+        summary: theme で theme の CSS の link の href を替える
+        condition: '`<link id="mdmark-theme" href="t.css">` を置いたページで描き、`{ type: "theme", href: "t.css?v=1" }` を送る'
+        mock: '`api` を代役にする'
+        expected: '`#mdmark-theme` の `href` が `t.css?v=1` で、`render` を受けずに描いた文書がそのまま'
     refs:
       - dev/設計書/画面設計/VSCodeのプレビュー.ts#
       - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを開く.ts#constraints[Webview とのメッセージ]
@@ -865,18 +889,22 @@ components:
     title: 設定ファイルを読めない帯
     container: vscode/src/webview/shared/components/config-band.tsx
     usecase: 書いた内容をプレビューに映す
-    summary: 部品設計の引数どおりに、Alert の warning の帯と「設定ファイルを開く」（Button の outline）を描く
+    summary: 部品設計の引数どおりに、Alert の warning の帯と「設定ファイルを開く」（Button の outline）を描く。YAML として読めないときは行、設定の形に合わないときはキーを出す
     description: 幅の基準の枠は class `mdmark-config-band-frame`（`@container`）、帯は `mdmark-config-band` を持ち、ボタンは `data-action="openConfig"` を持つ。帯の幅が 30rem 以上でボタンを文の右に置く
     kind: コンポーネント
     props:
       - name: path
         type: string
         required: true
-        description: 設定ファイルのパス
+        description: 読めない設定ファイルのパス（設定ファイルのパスを表示の形にしたもの）
       - name: line
         type: number
-        required: true
-        description: 読めない行（1 始まり）
+        required: false
+        description: YAML として読めない行（1 始まり）。`settingKey` とどちらか一方だけを渡す
+      - name: settingKey
+        type: string
+        required: false
+        description: 設定の形に合わない最初のキー。`line` とどちらか一方だけを渡す
       - name: onOpenConfig
         type: () => void
         required: true
@@ -887,13 +915,19 @@ components:
         summary: 題・パス・行とボタンを出し、パスを文字のまま出す
         condition: '`path` が `a<b>.yaml`、`line` が 4'
         mock: なし
-        expected: '`role="status"` の要素に `h2` の題「設定ファイルを読み込めません」、`code` の文字が `a<b>.yaml` と `4 行目`、`data-action="openConfig"` の `button`'
+        expected: '`role="status"` の要素に `h2` の題「設定ファイルを読み込めません」、`code` の文字が `a<b>.yaml`、本文に `4 行目を YAML として読めないため` と `この設定ファイルを重ねずに表示しています`、`data-action="openConfig"` の `button`'
       - name: test_config_band_when_clicked
         case: 正常
         summary: 設定ファイルを開くを押すと onOpenConfig を呼ぶ
         condition: 「設定ファイルを開く」を userEvent で押す
         mock: '`onOpenConfig` を記録する関数にする'
         expected: '`onOpenConfig` が 1 回呼ばれる'
+      - name: test_config_band_when_setting_key
+        case: 正常
+        summary: 形に合わないときはキーを出す
+        condition: '`path` が `~/.config/mdmark/settings.yaml`、`settingKey` が `features.callout`'
+        mock: なし
+        expected: '`code` の文字が `~/.config/mdmark/settings.yaml` と `features.callout`、本文に `が設定の形に合わないため` があり、`行目` が無い'
     refs:
       - dev/設計書/部品設計/設定ファイルを読めない帯.ts#
     status: planned
@@ -982,10 +1016,10 @@ functions:
     unit_tests:
       - name: test_read_boot
         case: 正常
-        summary: data-* を読み、知らない status は持たない
-        condition: '`data-dist-js`・`data-version`・`data-config-path`・`data-test` を持つ要素と、`data-status="other"` だけを持つ要素'
+        summary: data-* を読み、知らない status と配列でない data-extensions は持たない
+        condition: '`data-dist-js`・`data-version`・`data-config-path`・`data-extensions`（`["web:/w/e.js"]`）・`data-test` を持つ要素と、`data-status="other"` と `data-extensions="x"` だけを持つ要素'
         mock: なし
-        expected: '1 つ目は全ての値と `test: true`、2 つ目は `status` が `undefined`・`configPath` が空・`test` が `false`'
+        expected: '1 つ目は全ての値と `extensions: ["web:/w/e.js"]`・`test: true`、2 つ目は `status` が `undefined`・`configPath` が空・`extensions` が空・`test` が `false`'
     status: planned
   - name: savedLineFrom
     title: 保存した行を読む
@@ -1674,6 +1708,38 @@ functions:
       type: DocumentView
       description: 描いた文書
     status: planned
+  - name: registerExtensions
+    title: 拡張を登録する
+    kind: 関数
+    container: vscode/src/webview/features/preview/panel/load-mdmark.ts
+    usecase: VSCodeでプレビューを開く
+    summary: 拡張の URL を順に読み、`default` を読んだ配布物の `registerExtension` に渡す。読めない・登録できない拡張は飛ばして続ける
+    description: CLI が書き出した HTML の `prepareModules` と同じ順と扱い。React Compiler は `import()` を中に持つコンポーネントを変換しないため、コンポーネントの外の関数に置く
+    scope: public
+    is_async: true
+    args:
+      - name: options
+        type: '{ mdmark: Mdmark; urls: string[]; importModule?: (url: string) => Promise<{ default?: unknown }> }'
+        required: true
+        description: 読んだ配布物・`boot.extensions`・拡張を読む関数（既定は `import(/* @vite-ignore */ url)`）
+    returns:
+      type: Promise<void>
+      description: 全ての拡張を試したら解決する
+    process: |-
+      1. `urls` の順に `importModule(url)` で読み、`default` を `mdmark.registerExtension` に渡す
+         - 読めない・`registerExtension` が例外を投げた場合、`console.error` に出して次の拡張へ進む（印は知らない印として取り除かれる）
+    unit_tests:
+      - name: test_register_extensions
+        case: 正常
+        summary: 順に登録し、読めない拡張を飛ばす
+        condition: '`urls` が `["a.js", "b.js", "c.js"]`、`b.js` だけ reject する `importModule`'
+        mock: '`importModule` と `registerExtension` を記録する代役にする。`console.error` を記録する'
+        expected: '`registerExtension` が `a.js`・`c.js` の `default` の順に呼ばれ、`console.error` が 1 回'
+    refs:
+      - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを描き直す.ts#constraints[theme と extensions]
+    status: planned
+    introduced:
+      pr: 347
 styles:
   - name: panel
     title: パネルの CSS

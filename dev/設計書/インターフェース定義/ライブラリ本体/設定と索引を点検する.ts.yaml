@@ -560,7 +560,7 @@ request:
   - name: --config
     type: string
     required: false
-    default: なし（今のフォルダから上のフォルダへ順に `mdmark.config.yaml` を探し、最初に見つかったものを使う）
+    default: 'なし（端末の設定と、今のフォルダから上のフォルダの `mdmark.config.yaml` を重ねる。インターフェース定義『設定を重ねて読む』を `purpose: export` で呼び、重ねた設定ファイルのそれぞれの形を検めて、ずれの `file` にそのファイルを出す）'
     location: argument
     description: 使う設定ファイルのパス
     example: docs/mdmark.config.yaml
@@ -622,7 +622,7 @@ exceptions:
     condition: '`--config` のファイルが無い、または今のフォルダと上のフォルダに `mdmark.config.yaml` が無い（`--text`・`--file` を渡し、`--config` を渡さないときを除く）'
     notes: 標準エラーに、探した場所と `mdmark init` で置けることを出す
   - name: 設定ファイルを読めない（終了コード 1）
-    condition: 設定ファイルを YAML として読めない
+    condition: 設定ファイル（重ねた設定ファイルのどれか。端末の設定を含む）を YAML として読めない
     notes: 標準エラーに、ファイルと読めない行と直し方を出す
   - name: 比べる基準を引けない（終了コード 1）
     condition: '`--base` を渡し、git が無い・設定ファイルのフォルダが git のリポジトリの中に無い・その ref と HEAD の merge-base を引けない'
@@ -680,4 +680,6 @@ constraints:
     notes: 入口を `mdmark check` の引数にするのは要件.md の未確定（記法の点検の入口、推奨 A）
   - item: 記法の点検の場所
     constraint: '`--text` のずれの場所は、文字列の中の行の番号（1 から）。`--file` のずれのファイルは YAML のファイル、場所は YAML のファイルの行の番号（1 から）。キーの値がブロックスカラー（`|`・`>`）なら、値の中の行を YAML のファイルの行へ置き換え、それ以外の書き方の値はキーの行にする。警告の場所は、警告の元になったマーカー（範囲なら開きのマーカー）の行。マーカーを持たない警告（読めないファイルツリーなど）は、警告を置いた場所の後ろのブロックの開始の行'
+  - item: 重ねた設定ファイルの点検
+    constraint: '索引と文書のずれは、インターフェース定義『設定を重ねて読む』を `purpose: export` で呼んで重ねた設定で点検する。設定の形は、重ねた設定ファイルのそれぞれと、`config.applyToExport` によらず端末の設定のファイルがあればその形も検める。ずれの `file` は『設定を重ねて読む』の制約「パスの表示」のパス（今のフォルダからの相対パスか `~` のパス）にする'
 test_file: tests/integration/lib/check-config.test.ts

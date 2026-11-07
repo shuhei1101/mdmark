@@ -27,7 +27,10 @@ test("test_config_band", async () => {
   );
   expect(band.querySelector("code")?.textContent).toBe("a<b>.yaml");
   expect(container.querySelector("b")).toBeNull();
-  expect(band.textContent).toContain("4 行目");
+  expect(band.textContent).toContain("4 行目を YAML として読めないため");
+  expect(band.textContent).toContain(
+    "この設定ファイルを重ねずに表示しています",
+  );
   expect(
     band.querySelector('button[data-action="openConfig"]')?.textContent,
   ).toBe("設定ファイルを開く");
@@ -51,4 +54,26 @@ test("test_config_band_when_clicked", async () => {
   );
   // 検証
   expect(onOpenConfig).toHaveBeenCalledTimes(1);
+});
+
+// 形に合わないときはキーを出す（正常系）
+test("test_config_band_when_setting_key", async () => {
+  // 準備
+  const { ConfigBand } = await loadPart();
+  // 実行
+  render(
+    <ConfigBand
+      path="~/.config/mdmark/settings.yaml"
+      settingKey="features.callout"
+      onOpenConfig={() => undefined}
+    />,
+  );
+  // 検証
+  const band = screen.getByRole("status");
+  const codes = [...band.querySelectorAll("code")].map(
+    (code) => code.textContent,
+  );
+  expect(codes).toEqual(["~/.config/mdmark/settings.yaml", "features.callout"]);
+  expect(band.textContent).toContain("が設定の形に合わないため");
+  expect(band.textContent).not.toContain("行目");
 });

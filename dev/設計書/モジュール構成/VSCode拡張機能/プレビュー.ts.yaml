@@ -144,7 +144,7 @@ classes:
       - name: handleConfigChange
         title: 設定の変更を振り分ける
         kind: メソッド
-        summary: 設定ファイルの作成・変更・削除（`createFileSystemWatcher`）と、`mdmark.configPath`・`mdmark.preview.theme`・`mdmark.colorTheme` の変更（`onDidChangeConfiguration`）を受け、影響するパネルに設定を読み直させて待たずに送らせる。`libraries` の origin の集まりがそのパネルの CSP に入れたものと違うときは、送らせずに読み込ませる（`PreviewPanel.applyConfigChange`）。`mdmark.configPath` が変わったら見張るファイルを張り替える
+        summary: 見張るファイルの作成・変更・削除（`createFileSystemWatcher`）と、`mdmark.configPath`・`mdmark.preview.theme`・`mdmark.colorTheme` の変更（`onDidChangeConfiguration`）を受け、影響するパネルに設定の変更を当てさせる（`PreviewPanel.applyConfigChange` に変わったファイルを渡す）。影響するのは、パネルの `watched` に入っているファイルか、パネルの Markdown のフォルダから上の `mdmark.config.yaml` が変わったとき。見張るのは、ワークスペースの `**/mdmark.config.yaml`（拡張機能の入口が張る）と、各パネルの `watched` の和（パネルが設定を読み直して `watched` が変わるたびに、ファイルごとの `RelativePattern` で張り替える。ワークスペースの外の端末の設定も含む）
         args:
           - name: event
             type: '{ kind: "file"; path: string } | { kind: "setting"; affects: (section: string, scope: Uri) => boolean }'
@@ -230,7 +230,7 @@ classes:
       - name: config
         type: PreviewConfig
         access: private
-        description: 最後に読めた設定（`libraries` は Webview で読める URL に直した値。読めたことが無ければ `{}`）
+        description: 最後に使った設定（`libraries`・`html-scripts.url` は Webview で読める URL に直した値）。読めない設定ファイルがあるときは前に使った設定を残し、使ったことが無ければ残りを重ねた設定
       - name: timer
         type: NodeJS.Timeout | undefined
         access: private
@@ -271,6 +271,22 @@ classes:
         type: 'Map<number, (violations: AxeViolation[]) => void>'
         access: private
         description: '`axe` の `id` → 結果を渡す関数（テストのときだけ使う）'
+      - name: configProblem
+        type: ConfigProblem | undefined
+        access: private
+        description: 帯に出している読めない設定ファイル。`ready` を受けたときに `configError` を送り直し、「設定ファイルを開く」で開く
+      - name: nearest
+        type: string | undefined
+        access: private
+        description: 最も近い設定ファイル（`loadConfig` の `nearest`）
+      - name: watched
+        type: string[]
+        access: public
+        description: 見張るファイル（重ねた設定ファイル・`theme`・`extensions` と、書いた `mdmark.configPath` のファイル）。`PreviewManager` が張る
+      - name: loaded
+        type: '{ theme?: string; extensions: Array<{ path: string; hash: string; file?: string }> }'
+        access: private
+        description: 今の HTML に入れた `theme` の絶対パスと、`extensions` の絶対パス・そのファイルの中身の SHA-256・束ねて書いたファイル。読み直した値と比べ、違えば束ね直して HTML を入れ直す
     methods:
       - name: load
         title: 読み込む
@@ -285,15 +301,18 @@ classes:
           1. `loadToken` を増やして控える
           2. 設定を読み（設定を読む）、読むバージョンを決める（読むバージョンを決める）
              - `fetched` が `true` の場合、`mdmark.lastVersion` に書く
-          3. 設定ファイルを読む（設定を読み直す）
+          3. 設定を読み直す（設定を読み直す）
           4. 控えた番号が今の `loadToken` と違えば、後の呼び出しに任せて終わる
-          5. `webview.options` の `localResourceRoots` に、設定ファイルの `assets.root` のフォルダがあれば加えて入れ直す
-          6. `ready` を `false` にし、HTML を組んで（Webview の HTML を組む）`webview.html` に入れる。決められないときは配布物を読まない HTML（`status: "versionUndecidable"`）
+          5. `extensions` のパスの並びかそのファイルが `loaded` と違う場合、拡張を束ね（拡張を束ねる）、束ねたコードを `{globalStorageUri}/extensions/{コードの SHA-256}.mjs` に書く。束ねられない拡張は飛ばす
+             - `[warn]` 拡張を束ねられない（パス・理由）
+          6. `webview.options` の `localResourceRoots` に、`assets.root` のフォルダ・`theme` のファイルのフォルダ・`{globalStorageUri}/extensions` を加えて入れ直す（前に加えたフォルダは外す）。CSP には `extensions` のための origin を足さない（URL の import は束ねに取り込む）
+          7. `ready` を `false` にし、HTML を組んで（Webview の HTML を組む。`themeHref` は `theme` の `asWebviewUri`、`extensions` は書いた各ファイルの `asWebviewUri`）`webview.html` に入れる。入れた `theme`・`extensions` のパスを控える。決められないときは配布物を読まない HTML（`status: "versionUndecidable"`）
         callees:
           - dev/設計書/モジュール構成/VSCode拡張機能/読むバージョン.ts#functions[decideVersion]
           - dev/設計書/モジュール構成/VSCode拡張機能/読むバージョン.ts#functions[fetchLatestVersion]
           - dev/設計書/モジュール構成/VSCode拡張機能/設定.ts#functions[readSettings]
           - '#functions[buildPreviewHtml]'
+          - dev/設計書/モジュール構成/VSCode拡張機能/設定.ts#functions[bundleExtensions]
         refs:
           - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを開く.ts#
           - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューをリロードする.ts#
@@ -301,25 +320,28 @@ classes:
       - name: reloadConfig
         title: 設定を読み直す
         kind: メソッド
-        summary: 設定ファイルを読み、読めたら `config` を替えて `configOk` を、読めなければ `config` を残して `configError` を送る。無ければ `config` を `{}` にする。読めたかを返す
+        summary: 設定を重ねて読み、読めない設定ファイルが無ければ `config` を替えて（前に帯を出していたら）`configOk` を、あれば前に使った `config` を残して `configError` を送る。読めない設定ファイルが無いかを返す
         is_async: true
         returns:
           type: Promise<boolean>
-          description: '`ok`・`missing` のとき true、`error`・開けないときは false'
+          description: '読めない設定ファイルが無いとき true、あるとき・開けないときは false'
         callees:
-          - dev/設計書/モジュール構成/VSCode拡張機能/設定.ts#functions[resolveConfigPath]
           - dev/設計書/モジュール構成/VSCode拡張機能/設定.ts#functions[loadConfig]
           - dev/設計書/モジュール構成/VSCode拡張機能/設定.ts#functions[resolveLibraries]
+          - dev/設計書/モジュール構成/VSCode拡張機能/設定.ts#functions[resolveHtmlScripts]
+          - dev/設計書/モジュール構成/ライブラリ本体/設定を重ねて読む.ts#functions[displayConfigPath]
         refs:
           - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを描き直す.ts#constraints[設定ファイルを読めないとき]
         process: |-
-          1. 設定ファイルの場所を決め（設定ファイルの場所を決める）、読む（設定ファイルを読む）
-             - `ok` の場合、`libraries` を `asWebviewUri` で直して（libraries の URL を直す）`config` を替え、前が読めなかったときだけ `configOk` を送る
-             - `missing` の場合、`config` を `{}` にする
-             - `error` の場合、`config` を残して `configError` を送る
-               - `[warn]` 設定ファイルを読めない（パス・行・`message`）
-             - `readFile` が `ENOENT` 以外で失敗した場合、`config` を残す
+          1. 設定ファイルを読む（設定ファイルを読む。`purpose: preview`、`cwd` は Markdown のフォルダ、`baseDir` は Markdown を含むワークスペースのフォルダ、`env` は `process.env`、`home` は `os.homedir()`）
+             - `readFile` が `ENOENT` 以外で失敗した場合、`config` を残して false を返す
                - `[error]` 設定ファイルを開けない（パス・誤り）
+          2. `files`・`theme`・`extensions` と、`configPath` を書いたときはそのファイルを `watched` に入れ、`nearest` を控える
+          3. `problem` で分ける
+             - 無い場合、`libraries`・`html-scripts` を `asWebviewUri` で直して（libraries の URL を直す・html-scripts の URL を直す）`config` を替え、`configProblem` があったときだけ消して `configOk` を送る
+             - ある場合、前に使った `config` が無ければ同じく直して使い、あれば残す。`configProblem` に入れ、`{ type: "configError", path, line, settingKey }` を送る（`path` は設定ファイルのパスを表示の形にする。`base` はワークスペースのフォルダ、`home` は `os.homedir()`）
+               - `[warn]` 設定ファイルを読めない（パス・行かキー・`message`）
+          4. `problem` が無ければ true、あれば false を返す
       - name: scheduleRender
         title: 描き直しを待つ
         kind: メソッド
@@ -360,7 +382,7 @@ classes:
              - `openLink` の場合、開き先を見分け（リンクの開き先を見分ける）、`external` は `env.openExternal`、`markdown` は元のエディタと同じ列に `window.showTextDocument`、`file` は `vscode.open` で開く。ファイルが無いときは何もしない
                - `[warn]` リンク先が無い（`href`・解決したパス）。`none` のときは `[warn]` 開けないリンク（`href`）
              - `reload` の場合、読み込む
-             - `openConfig` の場合、設定ファイルを開く
+             - `openConfig` の場合、設定ファイルを開く（`path` は `configProblem` のパス、無ければ `nearest`）
              - `resolveAssets` の場合、パスごとに探す場所の候補（探す場所の候補を返す）を `workspace.fs.stat` で順に確かめ、最初にあったファイルの `asWebviewUri` に候補の `suffix` を付けた URL を、どれも無ければ `null` を、`assetsResolved` で同じ `id` に返す
              - `openAsset` の場合、同じく探し、あったファイルだけを `env.openExternal(Uri.file(…))` で開く
                - `[warn]` 開けないファイル（パス）
@@ -419,13 +441,18 @@ classes:
       - name: applyConfigChange
         title: 設定の変更を当てる
         kind: メソッド
-        summary: 設定を読み直し（設定を読み直す）、読めなければ何も送らず、`libraries` の origin の集まりが `cspLibraryOrigins` と違えば読み込み（読み込む）、同じなら今すぐ送る（`PreviewManager.handleConfigChange` が呼ぶ）
+        summary: '設定を読み直し（設定を読み直す）、次のどれかに当てる（`PreviewManager.handleConfigChange` が呼ぶ）。`libraries` の origin の集まりが `cspLibraryOrigins` と違うか、`extensions` のパスの並びかそのファイルが変わったか、`theme` のパスが変わったときは読み込む（読み込む）。`theme` のファイルだけが変わったときは `{ type: "theme", href }`（`theme` の `asWebviewUri` に変えた回数の `?v={回数}` を付けた URL）を送る。それ以外は今すぐ送る。読めない設定ファイルがあれば `render` を送らない'
         is_async: true
         returns:
           type: Promise<void>
           description: '-'
         refs:
           - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを描き直す.ts#constraints[libraries の URL]
+        args:
+          - name: path
+            type: string | undefined
+            required: false
+            description: 変わった見張るファイル。設定の変更のときは無い
       - name: audit
         title: axe で検査させる
         kind: メソッド
@@ -558,14 +585,14 @@ functions:
     kind: 関数
     container: vscode/src/preview/html.ts
     usecase: VSCodeでプレビューを開く
-    summary: CSP・`<base>`・配布物の CSS・パネルの CSS・描く先を包む要素（`PreviewBoot` の `data-*`）・nonce 付きのパネルのスクリプトを持つ HTML を組む
-    description: 属性に入れる値は HTML として特別な文字をエスケープする。バージョンを決められないときは配布物の `link` と `data-dist-js` を持たず `data-status="versionUndecidable"` を持つ。テストのときだけ `data-test` を持つ
+    summary: CSP・`<base>`・配布物の CSS・`theme` の CSS・パネルの CSS・描く先を包む要素（`PreviewBoot` の `data-*`）・nonce 付きのパネルのスクリプトを持つ HTML を組む
+    description: 属性に入れる値は HTML として特別な文字をエスケープする。`themeHref` があれば配布物の CSS の後に `<link id="mdmark-theme" rel="stylesheet">` で読み、`extensions` は JSON の配列にして `data-extensions` に入れる（空なら持たない）。バージョンを決められないときは配布物の `link` と `data-dist-js` を持たず `data-status="versionUndecidable"` を持つ。テストのときだけ `data-test` を持つ
     scope: public
     args:
       - name: options
-        type: '{ nonce: string; csp: string; baseHref: string; distJs?: string; distCss?: string; version?: string; scriptUri: string; styleUri: string; configPath: string; test: boolean }'
+        type: '{ nonce: string; csp: string; baseHref: string; distJs?: string; distCss?: string; version?: string; scriptUri: string; styleUri: string; configPath: string; themeHref?: string; extensions: string[]; test: boolean }'
         required: true
-        description: 組むのに要る値。`baseHref` は Markdown のフォルダの `asWebviewUri` に `/` を付けたもの、`scriptUri`・`styleUri` は `media/preview.js`・`media/preview.css` の `asWebviewUri`
+        description: 組むのに要る値。`baseHref` は Markdown のフォルダの `asWebviewUri` に `/` を付けたもの、`scriptUri`・`styleUri` は `media/preview.js`・`media/preview.css` の `asWebviewUri`、`themeHref`・`extensions` は重ねた設定の `theme`・`extensions` の `asWebviewUri`
     returns:
       type: string
       description: HTML 文字列
@@ -588,6 +615,12 @@ functions:
         condition: '`configPath` が `a"><script>x</script>.yaml`'
         mock: なし
         expected: '`data-config-path="a&quot;&gt;&lt;script&gt;x&lt;/script&gt;.yaml"`、nonce を持たない `script` が無い'
+      - name: test_build_preview_html_when_theme_and_extensions
+        case: 正常
+        summary: theme の CSS を配布物の CSS の後に読み、extensions を data-extensions に入れる
+        condition: '`themeHref` が `web:/w/t.css`、`extensions` が `["web:/w/e.js"]`'
+        mock: なし
+        expected: '`<link id="mdmark-theme" rel="stylesheet" href="web:/w/t.css">` が配布物の `link` の後にあり、`#mdmark-preview` の `data-extensions` が `["web:/w/e.js"]` の JSON。`extensions` が空のときは `data-extensions` を持たず、`themeHref` が無いときは `#mdmark-theme` が無い'
     callees:
       - '#functions[buildCsp]'
       - '#functions[distUrl]'

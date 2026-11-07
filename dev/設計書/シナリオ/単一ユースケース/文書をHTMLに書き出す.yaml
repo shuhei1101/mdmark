@@ -278,6 +278,94 @@ scenarios:
       - 束ねていない名前のアイコンが描かれている
       - 描き終えるまでに、ページ自身と画像の `data:` のほかの要求が 0 件
     test: test_normal_when_includes_and_icons_embedded
+  - name: 正常シナリオ（設定を重ねる）
+    setup:
+      - name: 端末の設定
+        description: '`MDMARK_CONFIG` で指す一時フォルダの `settings.yaml`。`config.cascade: true`・`config.applyToExport: true`・`features.callout: false` を書く'
+      - name: 重ねる設定を持つフォルダ
+        description: '上のフォルダの `mdmark.config.yaml` に `theme: ./theme.css` と `extensions` の固有の部品 1 つを書き、その下の `docs/` の `mdmark.config.yaml` に `features.table: false` を書く。`docs/` に注意書き・表・固有の部品の印を持つ文書を 1 つ置く'
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant C as mdmark CLI
+        participant F as 出力の HTML
+        actor R as 読む人
+        W->>C: docs/ で mdmark export 文書のパス
+        C->>C: 端末の設定と docs/ から上の mdmark.config.yaml を読んで重ね、theme と extensions は書いた設定ファイルのフォルダから読む
+        C->>F: 重ねた設定・theme の CSS・extensions を埋めた HTML を書く
+        C-->>W: 出力のパス・終了コード 0
+        R->>F: file:// で開く
+        F-->>R: 文書
+    expected:
+      - 終了コードが 0 で、指定した出力に HTML が 1 つある
+      - file:// で開くと、注意書きと表の機能がオフで描かれ、固有の部品が描かれ、`theme.css` の規則が当たる
+      - 外への要求が 0 件
+      - 端末の設定と 2 つの `mdmark.config.yaml` は書き換わらない
+    test: test_normal_when_cascaded
+  - name: 正常シナリオ（最初の 1 つだけを読む）
+    setup:
+      - name: 端末の設定
+        description: '正常シナリオ（設定を重ねる）の端末の設定のうち、`config.cascade: false` にしたもの'
+      - name: 重ねる設定を持つフォルダ
+        description: 正常シナリオ（設定を重ねる）と同じ
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant C as mdmark CLI
+        participant F as 出力の HTML
+        W->>C: docs/ で mdmark export 文書のパス
+        C->>C: 端末の設定と、docs/ から上へ最初に見つかった mdmark.config.yaml を重ねる
+        C->>F: HTML を書く
+        C-->>W: 出力のパス・終了コード 0
+    expected:
+      - 終了コードが 0 で HTML が書かれている
+      - file:// で開くと注意書きと表の機能がオフで描かれ、固有の部品の印の場所には何も描かれず、`theme.css` の規則は当たらない
+    test: test_normal_when_first_only
+  - name: 正常シナリオ（書き出しに端末の設定を重ねない）
+    setup:
+      - name: 端末の設定
+        description: '正常シナリオ（設定を重ねる）の端末の設定のうち、`config.applyToExport: false` にしたもの'
+      - name: 重ねる設定を持つフォルダ
+        description: 正常シナリオ（設定を重ねる）と同じ
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant C as mdmark CLI
+        participant F as 出力の HTML
+        W->>C: docs/ で mdmark export 文書のパス
+        C->>C: docs/ から上の mdmark.config.yaml だけを重ねる（端末の設定は重ねない）
+        C->>F: HTML を書く
+        C-->>W: 出力のパス・終了コード 0
+    expected:
+      - 終了コードが 0 で HTML が書かれている
+      - file:// で開くと、注意書きは注意書きの枠で描かれ、表の機能はオフで描かれ、`theme.css` の規則が当たる
+    test: test_normal_when_settings_not_applied_to_export
+  - name: 異常シナリオ（設定ファイルを読めない）
+    setup:
+      - name: 端末の設定
+        description: 正常シナリオ（設定を重ねる）の端末の設定のうち、YAML として読めない行を 1 つ持つもの
+      - name: 重ねる設定を持つフォルダ
+        description: 正常シナリオ（設定を重ねる）と同じ
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant C as mdmark CLI
+        W->>C: docs/ で mdmark export 文書のパス
+        C->>C: 端末の設定を YAML として読めない
+        C-->>W: 読めないファイルのパスと行と直し方・終了コード 1
+    expected:
+      - 終了コードが 1
+      - 標準エラーに、端末の設定のパスと読めない行と直し方が出る
+      - HTML がどこにも書かれていない
+    test: test_error_when_config_unreadable
 lead: 文書を書く人が `mdmark export` で Markdown を 1 つ、配布物・使う側の CSS・外部ライブラリのモジュール・画像を埋めた 1 枚の HTML に書き出し、読む人は file:// で開いて外を読まずに読む。
 issue: 9
 primary_actor: 文書を書く人

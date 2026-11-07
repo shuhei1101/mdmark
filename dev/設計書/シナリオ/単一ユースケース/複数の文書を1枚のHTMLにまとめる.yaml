@@ -245,6 +245,27 @@ scenarios:
       - 束ねていない名前のアイコンが描かれている
       - 外への要求が 0 件
     test: test_normal_when_includes_and_icons_embedded
+  - name: 正常シナリオ（設定を重ねる）
+    setup:
+      - name: 端末の設定
+        description: '`MDMARK_CONFIG` で指す一時フォルダの `settings.yaml`。`config.cascade: true`・`config.applyToExport: true`・`features.callout: false` を書く'
+      - name: 重ねる設定を持つフォルダ
+        description: "上のフォルダの `mdmark.config.yaml` に `theme: ./theme.css` を書き、その下の `docs/` の `mdmark.config.yaml` に `build`（`include: ['*.md']`・`out: site.html`）を書く。`docs/` に注意書きを持つ文書を 2 つ置く"
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant C as mdmark CLI
+        participant F as 出力の HTML
+        W->>C: docs/ で mdmark build
+        C->>C: 端末の設定と docs/ から上の mdmark.config.yaml を重ね、build の glob は docs/ から当てる
+        C->>F: 2 つの文書と theme の CSS を埋めた 1 枚の HTML を docs/site.html に書く
+        C-->>W: 出力のパス・終了コード 0
+    expected:
+      - 終了コードが 0 で、`docs/site.html` に 1 枚の HTML がある
+      - file:// で開くと、2 つの文書の注意書きが引用として描かれ、`theme.css` の規則が当たる
+    test: test_normal_when_cascaded
 lead: 文書を書く人が設定の `build` で対象を決めて `mdmark build` を流し、参照・被参照・用語のツールチップが効く 1 枚の HTML にまとめる。
 issue: 9
 primary_actor: 文書を書く人

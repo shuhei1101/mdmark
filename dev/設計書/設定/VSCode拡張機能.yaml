@@ -5,8 +5,8 @@ files:
     manages: 読む mdmark の版・設定ファイルの場所・プレビューの描き直しとスクロールの同期と配色・書き出す先
     notes: VS Code の利用者の設定とワークスペースの設定（`.vscode/settings.json`）。後者が前者に勝つ
   - file: mdmark.config.yaml
-    manages: 機能のオン・オフの既定・外部ライブラリの対応表・右側の目次の出し方・選ぶテーマ（拡張機能はこの 4 つだけを読む）
-    notes: 場所は `mdmark.configPath`。他のキーは読まない。キーの意味は設定『ライブラリ本体』
+    manages: ライブラリ本体と同じキー。端末の設定と上のフォルダの設定と重ねて読み、`mount` の `opts.config` が読むキーと `theme`・`extensions`・`assets.root` を使う
+    notes: 場所は `mdmark.configPath`（空のときは Markdown のフォルダから上へ探す）。重ね方はインターフェース定義『設定を重ねて読む』。キーの意味は設定『ライブラリ本体』
   - file: 環境変数
     manages: 結合テストのときだけ差し替える配布物の配信元とタグ一覧の取得先
     notes: 拡張機能が `ExtensionMode.Test` で動くときだけ読む。利用者の設定には出さない
@@ -31,8 +31,8 @@ settings:
     file: settings.json
     type: string
     required: false
-    default: mdmark.config.yaml
-    description: 拡張機能が `features`・`libraries`・`html-scripts`・`side-toc`・`colorTheme` を読む YAML のパス。相対パスは Markdown を含むワークスペースのフォルダから（ワークスペースの外の Markdown は Markdown のフォルダから）解決する
+    default: 空（Markdown のフォルダから上へ `mdmark.config.yaml` を探して重ねる）
+    description: 拡張機能が読む YAML のパス。書いたときは上へ探さず、このファイルと端末の設定だけを重ねる。相対パスは Markdown を含むワークスペースのフォルダから（ワークスペースの外の Markdown は Markdown のフォルダから）解決する
     reload: immediate
     allowed: 相対パスか絶対パス
     status: planned

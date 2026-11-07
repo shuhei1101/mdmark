@@ -1,6 +1,7 @@
 import { existsSync } from "node:fs";
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
+import { writeSettings } from "../cascade.ts";
 import {
   BROKEN_FLOW,
   CLEAN_FLOW,
@@ -581,4 +582,52 @@ test("test_normal_when_group_options_invalid", async ({
   expect(invalid[0]).toContain("frame.hint");
   expect(invalid[0]).toContain("stickyTitles");
   expect(await snapshot(dir)).toEqual(before);
+});
+
+// 端末の設定と上のフォルダの設定のずれを、それぞれのファイルを指して返す（正常シナリオ（重ねた設定ファイルにずれがある））
+test("test_normal_when_cascaded_config_drift", async ({
+  builtRoot,
+  tempDir,
+}) => {
+  // 準備
+  const dir = await tempDir();
+  const files = {
+    "mdmark.config.yaml": "side-toc:\n  mode: wide\n",
+    "docs/mdmark.config.yaml": "features:\n  table: false\n",
+    "docs/guide.md": "# ガイド\n",
+  };
+  await writeFiles(dir, files);
+  const settingsDir = await tempDir();
+  const settings = await writeSettings(
+    settingsDir,
+    "config:\n  cascade: true\nfeatures:\n  callout: maybe\n",
+  );
+  const before = await Promise.all(
+    [settings, ...Object.keys(files).map((file) => join(dir, file))].map(
+      (path) => readFile(path, "utf8"),
+    ),
+  );
+  // 実行
+  const result = await runCli(builtRoot, ["check"], join(dir, "docs"), "", {
+    MDMARK_CONFIG: settings,
+  });
+  // 検証
+  expect(result.code).toBe(1);
+  const lines = linesOf(result.stdout);
+  const callout = lines.filter((line) =>
+    line.includes("features.callout: schema:"),
+  );
+  const sideToc = lines.filter((line) =>
+    line.includes("side-toc.mode: schema:"),
+  );
+  expect(callout).toHaveLength(1);
+  expect(callout[0]).toContain("settings.yaml");
+  expect(sideToc).toHaveLength(1);
+  expect(sideToc[0]).toMatch(/^\.\.\/mdmark\.config\.yaml:/);
+  const after = await Promise.all(
+    [settings, ...Object.keys(files).map((file) => join(dir, file))].map(
+      (path) => readFile(path, "utf8"),
+    ),
+  );
+  expect(after).toEqual(before);
 });

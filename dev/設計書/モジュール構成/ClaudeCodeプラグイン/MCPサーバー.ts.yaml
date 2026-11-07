@@ -544,7 +544,7 @@ functions:
     process: |-
       1. `text` か `file` を渡したときは、`runCheck` と同じ引数の組を確かめ、`checkMarkdownSource`（`cwd` は `projectDir`）のずれを `issues` で返す（記法を点検する）。以降の手順は行わない
 
-      2. `projectDir` から設定ファイルを探す（設定ファイルを探す）
+      2. 端末の設定と `projectDir` から上の設定ファイルを、`mdmark check` と同じく重ねて読む（設定を重ねて読む。`cwd` は `projectDir`、`env` は `mdmark serve` のプロセスの `process.env`）
       3. `base` を渡してずれを集め、`issues` で返す（ずれを集める）。比べる基準を引けない `CliError` は `callTool` がその文のツールのエラーにする
     unit_tests:
       - name: test_run_check_tool

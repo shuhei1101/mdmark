@@ -17,6 +17,24 @@ export const Default: Story = {
   args: { path: "mdmark.config.yaml", line: 4 },
 };
 
+export const SettingsUnreadable: Story = {
+  name: "SettingsUnreadable",
+  args: { path: "~/.config/mdmark/settings.yaml", line: 3 },
+};
+
+export const NestedConfigUnreadable: Story = {
+  name: "NestedConfigUnreadable",
+  args: { path: "docs/mdmark.config.yaml", line: 7 },
+};
+
+export const SettingsInvalid: Story = {
+  name: "SettingsInvalid",
+  args: {
+    path: "~/.config/mdmark/settings.yaml",
+    settingKey: "features.callout",
+  },
+};
+
 export const NarrowLongPath: Story = {
   name: "NarrowLongPath",
   args: {

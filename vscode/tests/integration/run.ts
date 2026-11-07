@@ -70,6 +70,8 @@ export async function runIntegrationTests(): Promise<void> {
           MDMARK_TEST_NODE_DIR: dirname(process.execPath),
           // 拡張機能のログ（出力チャネルが書くファイル）をテストが読めるようにする
           MDMARK_TEST_USER_DATA_DIR: userDataDir,
+          // 開発者の端末の設定を結合テストに混ぜない（無いファイルを指す）
+          MDMARK_CONFIG: join(userDataDir, "mdmark-settings.yaml"),
         },
       });
       await rm(userDataDir, { recursive: true, force: true });

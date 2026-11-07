@@ -284,7 +284,7 @@ request:
   - name: --config
     type: string
     required: false
-    default: なし（今のフォルダから上のフォルダへ順に `mdmark.config.yaml` を探す）
+    default: 'なし（端末の設定と、今のフォルダから上のフォルダの `mdmark.config.yaml` を重ねる。インターフェース定義『設定を重ねて読む』を `purpose: export` で呼ぶ）'
     location: argument
     description: 使う設定ファイルのパス
     notes: まとめる文書と書き出す先は設定の `build` が持つ
@@ -314,7 +314,7 @@ exceptions:
   - name: なし（正常終了）
     condition: '`build.out` に HTML を書いた（読めなかったものと 1 枚に含まれない文書へのリンクは警告に出す）。終了コード 0'
   - name: 設定ファイルの誤り（終了コード 1）
-    condition: 設定ファイルが無い・読めない・Schema に合わない（空の設定ファイルを含む）、または `build` が無い
+    condition: 設定ファイルが無い・読めない・Schema に合わない（空の設定ファイルを含む。重ねた設定ファイルのどれかでも同じ）、または重ねた設定に `build` が無い。`build` の glob と `build.out` は `build` を書いた設定ファイルのフォルダから当てる
     notes: 標準エラーに原因と直し方の 1 文を出す
   - name: 対象の文書が 0 件（終了コード 1）
     condition: '`build.include` に当たり `build.exclude` に当たらない文書が 0 件'

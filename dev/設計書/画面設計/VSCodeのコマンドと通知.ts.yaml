@@ -28,8 +28,8 @@ elements:
     id: confirm-create-config
     kind: dialog
     position: VS Code のモーダルのダイアログ
-    description: '設定ファイルが無いときに `mdmark.openConfig` が `showInformationMessage(文, { modal: true, detail }, "作る")` で尋ねる。作らないときは VS Code が足す「キャンセル」を押す'
-    label: '文: `{mdmark.configPath} がありません。雛形を作りますか？`、detail: `features と libraries の書き方をコメントで添えたファイルを作ります。作った直後は、プレビューの見た目は変わりません。`、ボタン: `作る`'
+    description: '設定ファイルが無いときに `mdmark.openConfig` が `showInformationMessage(文, { modal: true, detail }, "作成")` で尋ねる。作らないときは VS Code が足す「キャンセル」を押す'
+    label: '文: `{雛形を作るパス} がありません。雛形を作りますか？`（雛形を作るパスは `mdmark.configPath`、空のときは `mdmark.config.yaml` を、インターフェース定義『設定を重ねて読む』の制約「パスの表示」のパスにしたもの。例 `mdmark.config.yaml がありません。雛形を作りますか？`）、detail: `features・libraries・theme・extensions の書き方をコメントで添えたファイルを作ります。作った直後は、プレビューの見た目は変わりません。`、ボタン: `作成`'
     visible_when: '`mdmark.openConfig` を呼び、設定ファイルが無いとき'
     action_ref: dev/設計書/インターフェース定義/VSCode拡張機能/設定ファイルを開く.ts#
     status: planned
@@ -39,10 +39,10 @@ elements:
     id: config-template
     kind: label
     position: 作った設定ファイルのエディタ
-    description: 「作る」で書く YAML。キーは書かず、書き方をコメントで示す
+    description: 「作成」で書く YAML。キーは書かず、書き方をコメントで示す
     label: |-
       ```yaml
-      # mdmark の設定。VS Code のプレビューは features・libraries・side-toc・colorTheme を読みます
+      # mdmark の設定。端末の設定（~/.config/mdmark/settings.yaml）に重ねて読みます。端末の設定の config.cascade を true にすると、上のフォルダの mdmark.config.yaml も重ねます
 
       # 機能のオン・オフ（使うときは次の 2 行の # を外す）
       # features:
@@ -58,6 +58,13 @@ elements:
 
       # 配色のテーマ。dev-swiss・theme-paper・theme-slate・theme-contrast のどれか。VS Code の設定 mdmark.colorTheme が空でないときはそちらが優先（使うときは次の 1 行の # を外す）
       # colorTheme: theme-paper
+
+      # 使う側の CSS。相対パスはこのファイルのあるフォルダから（使うときは次の 1 行の # を外す）
+      # theme: ./theme.css
+
+      # 拡張のモジュール。相対パスはこのファイルのあるフォルダから（使うときは次の 2 行の # を外す）
+      # extensions:
+      #   - ./extensions/example.js
       ```
     visible_when: 雛形を作ったとき
     refs:

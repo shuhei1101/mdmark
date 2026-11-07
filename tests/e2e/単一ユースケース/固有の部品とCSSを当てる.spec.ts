@@ -9,6 +9,7 @@ import {
   routeCard,
 } from "../diagram.ts";
 import { mountDocument, openPage } from "../dist-page.ts";
+import { useVscodeE2E } from "../vscode.ts";
 
 // 固有の CSS が変える前の、フロー図の LLM の色（既定の明るい配色）
 const DEFAULT_LLM_COLOR = "rgb(109, 40, 217)";
@@ -98,4 +99,35 @@ test("test_normal_when_other_place", async ({ page, builtRoot }) => {
   );
   await expect(page.locator("#doc figure.mdmark-diagram")).toHaveCount(1);
   await expect(page.locator("#doc > p")).toHaveText("本文の段落");
+});
+
+test.describe("VS Code のプレビュー", () => {
+  const e2e = useVscodeE2E();
+
+  // 固有の部品と CSS を指す設定で、VS Code のプレビューにも固有の部品が描かれ、固有の CSS が当たる（正常シナリオ（VS Code のプレビューで当てる））
+  test("test_normal_when_vscode_preview", async () => {
+    // 準備
+    const session = await e2e.launch({
+      files: {
+        "mdmark.config.yaml":
+          "theme: theme.css\nextensions: [extensions/card.js]\n",
+        "theme.css": `${HOST_CSS}\n`,
+        "extensions/card.js": CARD_SOURCE,
+        "doc.md": await documentMarkdown(),
+      },
+    });
+    await session.openFile("doc.md");
+    // 実行
+    await session.openPreviewWithShortcut();
+    // 検証
+    const frame = await session.frameWith(".host-card");
+    const card = frame.locator(".host-card");
+    await expect(card).toHaveText("固有の題");
+    await expect(card).toHaveCSS("color", HOST_CARD_COLOR);
+    await expect(frame.locator('[data-node="draft"]')).toHaveCSS(
+      "border-top-color",
+      HOST_LLM_COLOR,
+    );
+    await expect(frame.locator(".mdmark-notice")).toHaveCount(0);
+  });
 });

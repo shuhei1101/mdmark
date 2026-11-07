@@ -31,6 +31,7 @@ const BASE_OPTIONS = {
   scriptUri: "vscode-webview://x/media/preview.js",
   styleUri: "vscode-webview://x/media/preview.css",
   configPath: "mdmark.config.yaml",
+  extensions: [] as string[],
 };
 
 // バージョン付きの URL を組む（正常系）
@@ -145,6 +146,35 @@ test("test_build_preview_html_when_special_chars", async () => {
   for (const tag of scriptTags(html)) {
     expect(tag).toContain('nonce="abc"');
   }
+});
+
+// theme の CSS を配布物の CSS の後に読み、extensions を data-extensions に入れる（正常系）
+test("test_build_preview_html_when_theme_and_extensions", async () => {
+  // 準備
+  const { buildPreviewHtml } = await loadHtml();
+  const distCss = "https://cdn.jsdelivr.net/gh/x/mdmark@v0.10.0/dist/index.css";
+  // 実行
+  const html = buildPreviewHtml({
+    ...BASE_OPTIONS,
+    distJs: "https://cdn.jsdelivr.net/gh/x/mdmark@v0.10.0/dist/index.js",
+    distCss,
+    version: "v0.10.0",
+    themeHref: "web:/w/t.css",
+    extensions: ["web:/w/e.js"],
+    test: false,
+  });
+  const plain = buildPreviewHtml({ ...BASE_OPTIONS, distCss, test: false });
+  // 検証
+  const theme = findTag(html, /<link\b[^>]*id="mdmark-theme"[^>]*>/);
+  expect(theme).toContain('rel="stylesheet"');
+  expect(theme).toContain('href="web:/w/t.css"');
+  expect(html.indexOf(distCss)).toBeLessThan(html.indexOf('id="mdmark-theme"'));
+  const boot = findTag(html, /<[a-z]+\b[^>]*id="mdmark-preview"[^>]*>/);
+  expect(unescapeAttribute(boot ?? "")).toContain(
+    'data-extensions="["web:/w/e.js"]"',
+  );
+  expect(plain).not.toContain("data-extensions");
+  expect(plain).not.toContain('id="mdmark-theme"');
 });
 
 // 呼ぶたびに違う base64url の文字列を返す（正常系）

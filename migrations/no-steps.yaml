@@ -39,3 +39,7 @@ entries:
     schema: mdmark.index.schema.json
     sha256: 1cf45f581478557deb004716f1465256615411b9cb89f16f4a2819ec776cf700
     reason: 説明文から MCP の find_docs・list_tags の記述を外しただけで、キーと型は変えないので、古い索引もそのまま新しい Schema に合う
+  - version: next
+    schema: mdmark.settings.schema.json
+    sha256: 2384ad0f6b2df88c4179f7bf3bfe0a9bbbb36776567af2ba36d31d849e5664fe
+    reason: 端末の設定の Schema を新しく足しただけで、既にある設定ファイルと索引の形は変えないので、古い設定もそのまま読める

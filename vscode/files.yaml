@@ -38,8 +38,14 @@ files:
     related:
       - to: dev/設計書/モジュール構成/VSCode拡張機能/設定.ts
         type: implements
+  - path: src/extensions-bundle.ts
+    description: モジュール構成『VS Code 拡張機能 / 設定』のうち「設定の extensions を esbuild-wasm で ES モジュールに束ねる処理」を受け持つ。プレビューと書き出しへの拡張の当て方を変えるときに読む。
+    tags: [tool:vscode, tool:esbuild]
+    related:
+      - to: dev/設計書/モジュール構成/VSCode拡張機能/設定.ts
+        type: implements
   - path: src/config.ts
-    description: モジュール構成『VS Code 拡張機能 / 設定』のうち「設定ファイルの場所・読み取り・features と libraries の取り出し・雛形（vscode を import しない）」を受け持つ。拡張機能の設定の読み方を変えるときに読む。
+    description: モジュール構成『VS Code 拡張機能 / 設定』のうち「設定ファイルの場所・端末の設定と重ねた設定の読み取り・mount に渡すキーの取り出し・雛形（vscode を import しない）」を受け持つ。拡張機能の設定の読み方を変えるときに読む。
     tags: [tool:vscode, topic:設定]
     related:
       - to: dev/設計書/モジュール構成/VSCode拡張機能/設定.ts

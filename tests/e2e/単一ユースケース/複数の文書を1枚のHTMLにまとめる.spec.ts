@@ -2,6 +2,12 @@ import { existsSync } from "node:fs";
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import {
+  cascadeSettings,
+  cascadeTheme,
+  themeValue,
+  writeSettings,
+} from "../cascade.ts";
+import {
   CHART_SOURCE,
   expect,
   GREET_TEXT_SOURCE,
@@ -508,4 +514,42 @@ test("test_normal_when_range_scripts", async ({ builtRoot, tempDir, page }) => {
   expect(await opened.violations()).toEqual([]);
   expect(opened.blobRequests()).toEqual([]);
   await opened.close();
+});
+
+// 端末の設定と上のフォルダの theme を重ねて、下のフォルダの build で 1 枚にまとめる（正常シナリオ（設定を重ねる））
+test("test_normal_when_cascaded", async ({ builtRoot, tempDir, page }) => {
+  // 準備
+  const dir = await tempDir();
+  await writeFiles(dir, {
+    "mdmark.config.yaml": "theme: ./theme.css\n",
+    "theme.css": cascadeTheme("rgb(1, 2, 3)"),
+    "docs/mdmark.config.yaml":
+      "build:\n  include: ['*.md']\n  out: site.html\n",
+    "docs/a.md": "# A\n\n> [!NOTE]\n> 注意書き A\n",
+    "docs/b.md": "# B\n\n> [!NOTE]\n> 注意書き B\n",
+  });
+  const settings = await writeSettings(
+    await tempDir(),
+    cascadeSettings({ cascade: true, applyToExport: true }),
+  );
+  // 実行
+  const result = await runCli(builtRoot, ["build"], join(dir, "docs"), "", {
+    MDMARK_CONFIG: settings,
+  });
+  // 検証
+  expect(result.code).toBe(0);
+  const html = join(dir, "docs", "site.html");
+  expect(existsSync(html)).toBe(true);
+  await openStandalone(page, { tempDir, htmlFile: html });
+  for (const heading of ["A", "B"]) {
+    await page
+      .locator(".mdmark-bundle-side .mdmark-doc-list a", { hasText: heading })
+      .first()
+      .click();
+    const article = page.locator("article.mdmark");
+    await expect(article.locator("h1")).toHaveText(heading);
+    await expect(article.locator(".markdown-alert")).toHaveCount(0);
+    await expect(article.locator("blockquote")).toHaveCount(1);
+  }
+  await expect.poll(() => themeValue(page)).toBe("rgb(1, 2, 3)");
 });

@@ -793,3 +793,105 @@ test("test_normal_when_range_scripts", async () => {
   expect(opened.inlineUrlScripts()).toEqual([]);
   await opened.close();
 });
+
+// 端末の設定と上のフォルダの設定を重ねて書き出し、theme と extensions は書いた設定ファイルのフォルダから読む（正常系（設定を重ねる））
+test("test_normal_when_cascaded", async () => {
+  // 準備
+  const dir = await createTempDir();
+  const settingsFiles = {
+    "settings/settings.yaml":
+      "config:\n  cascade: true\nfeatures:\n  callout: false\n",
+    "work/mdmark.config.yaml":
+      "theme: ./theme.css\nextensions: [./ext/greet.js]\n",
+    "work/theme.css": THEME_SOURCE,
+    "work/ext/greet.js": GREET_SOURCE,
+    "work/docs/mdmark.config.yaml": "features:\n  table: false\n",
+    "work/docs/guide.md": [
+      "# ガイド",
+      "",
+      "> [!NOTE]",
+      "> 注意書き",
+      "",
+      "<!-- table: data -->",
+      "",
+      "| a | b |",
+      "| --- | --- |",
+      "| 1 | 2 |",
+      "",
+      "<!-- /table -->",
+      "",
+      "<!-- greet: 世界 -->",
+      "",
+    ].join("\n"),
+  };
+  await writeFiles(dir, settingsFiles);
+  const settings = join(dir, "settings", "settings.yaml");
+  const before = await Promise.all(
+    [
+      settings,
+      join(dir, "work", "mdmark.config.yaml"),
+      join(dir, "work", "docs", "mdmark.config.yaml"),
+    ].map((path) => readFile(path, "utf8")),
+  );
+  // 実行
+  const result = await runCli(
+    ["export", "guide.md"],
+    join(dir, "work", "docs"),
+    {
+      MDMARK_CONFIG: settings,
+    },
+  );
+  // 検証
+  expect(result.code).toBe(0);
+  expect(linesOf(result.stdout)).toEqual(["書き出した: guide.html"]);
+  const { page } = await browser.openHtml(
+    join(dir, "work", "docs", "guide.html"),
+  );
+  await page.waitForSelector("article.mdmark h1");
+  await page.waitForFunction(
+    () => document.querySelector("[data-mdmark-slot]")?.textContent !== "",
+  );
+  await expect(page.locator(".markdown-alert").count()).resolves.toBe(0);
+  await expect(page.locator("article blockquote").count()).resolves.toBe(1);
+  await expect(page.locator("button.mdmark-sort").count()).resolves.toBe(0);
+  await expect(
+    page.locator("article [data-mdmark-slot]").allTextContents(),
+  ).resolves.toEqual(["greet:世界"]);
+  await expect(
+    page.evaluate(() =>
+      getComputedStyle(document.querySelector("article.mdmark") as Element)
+        .getPropertyValue("--mdmark-radius")
+        .trim(),
+    ),
+  ).resolves.toBe("0px");
+  await page.close();
+  const after = await Promise.all(
+    [
+      settings,
+      join(dir, "work", "mdmark.config.yaml"),
+      join(dir, "work", "docs", "mdmark.config.yaml"),
+    ].map((path) => readFile(path, "utf8")),
+  );
+  expect(after).toEqual(before);
+});
+
+// 端末の設定を YAML として読めないとき、そのパスと行を示して書き出さずに終わる（異常系（端末の設定を読めない・終了コード 1））
+test("test_error_when_settings_unreadable", async () => {
+  // 準備
+  const dir = await createSampleDir();
+  const settingsDir = await createTempDir();
+  await writeFiles(settingsDir, {
+    "settings.yaml": "features:\n  callout: false\nlibraries: [a, b}\n",
+  });
+  const settings = join(settingsDir, "settings.yaml");
+  // 実行
+  const result = await runCli(["export", "guide.md"], dir, {
+    MDMARK_CONFIG: settings,
+  });
+  // 検証
+  expect(result.code).toBe(1);
+  expect(result.stderr).toContain("settings.yaml");
+  expect(result.stderr).toContain("3 行目");
+  expect(result.stderr).toContain("字下げと書き方を直してください");
+  expect(existsSync(join(dir, "guide.html"))).toBe(false);
+});

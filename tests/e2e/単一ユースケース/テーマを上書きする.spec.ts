@@ -1,4 +1,7 @@
+import { join } from "node:path";
+import { pathToFileURL } from "node:url";
 import { expect, test } from "@playwright/test";
+import { runCli, writeFiles } from "../cli.ts";
 import { flowMarkdown } from "../diagram.ts";
 import {
   buildDistRoot,
@@ -6,6 +9,7 @@ import {
   openPage,
   removeDistRoot,
 } from "../dist-page.ts";
+import { useVscodeE2E } from "../vscode.ts";
 
 // ビルドした配布物を置いた作業ツリー
 let builtRoot = "";
@@ -395,4 +399,38 @@ test("test_normal_when_host_pre_wraps", async ({ page }) => {
   expect(withHost.jsonLefts).toEqual(withoutHost.jsonLefts);
   expect(withHost.nestedLeft).toBe(withoutHost.nestedLeft);
   expect(withHost.tsFits).toBe(true);
+});
+
+test.describe("VS Code のプレビュー", () => {
+  const e2e = useVscodeE2E();
+
+  // theme の CSS で上書きしたリンクの色が、VS Code のプレビューと mdmark export の HTML の両方に当たる（正常シナリオ（VS Code のプレビューで上書きする））
+  test("test_normal_when_vscode_preview", async ({ browser }) => {
+    // 準備
+    const files = {
+      "mdmark.config.yaml": "theme: theme.css\n",
+      "theme.css": ".mdmark { --mdmark-color-link: rgb(255, 0, 0) }\n",
+      "guide.md": MARKDOWN,
+    };
+    const session = await e2e.launch({ files });
+    await session.openFile("guide.md");
+    // 実行
+    await session.openPreviewWithShortcut();
+    // 検証
+    const frame = await session.frameWith(".mdmark a");
+    await expect(frame.locator(".mdmark a").first()).toHaveCSS(
+      "color",
+      "rgb(255, 0, 0)",
+    );
+    const dir = join(session.workspaceDir, "..", "cli");
+    await writeFiles(dir, files);
+    expect((await runCli(builtRoot, ["export", "guide.md"], dir)).code).toBe(0);
+    const page = await browser.newPage();
+    await page.goto(pathToFileURL(join(dir, "guide.html")).href);
+    await expect(page.locator("article.mdmark a").first()).toHaveCSS(
+      "color",
+      "rgb(255, 0, 0)",
+    );
+    await page.close();
+  });
 });

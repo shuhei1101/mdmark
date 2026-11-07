@@ -1,5 +1,6 @@
-import { dirname, isAbsolute, resolve } from "node:path";
-import { parse, YAMLParseError } from "yaml";
+import { stat } from "node:fs/promises";
+import { isAbsolute, resolve } from "node:path";
+import { loadLayeredConfig } from "../../src/config-files.ts";
 import type { PreviewSettings } from "./settings.ts";
 
 /** `mount` に渡す設定。設定ファイルから取り出した `features`・`libraries`・`html-scripts`・`side-toc`・`colorTheme` */
@@ -16,22 +17,50 @@ export type PreviewConfig = {
   colorTheme?: string;
 };
 
-/** 設定ファイルの読み取りの結果 */
-export type ConfigLoad =
-  | {
-      kind: "ok";
-      config: PreviewConfig;
-      /** 設定ファイルの `assets.root`。`parseConfig` は書いた値、`loadConfig` は設定ファイルのフォルダを基準にした絶対パス。`mount` には渡さない */
-      assetsRoot?: string;
-    }
-  | { kind: "missing" }
-  | { kind: "error"; line: number; message: string };
+/** 帯に出す、読めない・形の合わない設定ファイル 1 つ */
+export type ConfigProblem = {
+  /** 設定ファイルの絶対パス */
+  path: string;
+  /** YAML として読めない行（1 始まり）。形に合わないときは無い */
+  line?: number | undefined;
+  /** 設定の形に合わない最初のキー。YAML として読めないときは無い */
+  settingKey?: string | undefined;
+  /** 誤りの文（ログに出す） */
+  message: string;
+};
+
+/** `loadConfig` の戻り値 */
+export type ConfigLoad = {
+  /** 重ねた設定のうち `mount` に渡すキー */
+  config: PreviewConfig;
+  /** 重ねた設定の `theme` の絶対パス */
+  theme?: string | undefined;
+  /** 重ねた設定の `extensions` の絶対パス */
+  extensions: string[];
+  /** 重ねた設定ファイルの絶対パス（端末の設定 → 上 → 近い） */
+  files: string[];
+  /** 最も近い `mdmark.config.yaml`（`mdmark.configPath` を書いたときはそのファイル）の絶対パス */
+  nearest?: string | undefined;
+  /** 重ねた設定の `assets.root` の絶対パス。`mount` には渡さない */
+  assetsRoot?: string | undefined;
+  /** 読めない・形の合わない最初の設定ファイル */
+  problem?: ConfigProblem | undefined;
+};
+
+/** ファイルがあるか */
+export async function isFile(path: string): Promise<boolean> {
+  try {
+    return (await stat(path)).isFile();
+  } catch {
+    return false;
+  }
+}
 
 /** テキストのファイルを読む関数。ファイルが無ければ `code` が `ENOENT` の例外を投げる */
 export type ReadTextFile = (path: string) => Promise<string>;
 
-/** `mdmark.openConfig` が「作る」で書く YAML。キーを書かず、書き方をコメントで示す */
-export const CONFIG_TEMPLATE = `# mdmark の設定。VS Code のプレビューは features・libraries・side-toc・colorTheme を読みます
+/** `mdmark.openConfig` が「作成」で書く YAML。キーを書かず、書き方をコメントで示す */
+export const CONFIG_TEMPLATE = `# mdmark の設定。端末の設定（~/.config/mdmark/settings.yaml）に重ねて読みます。端末の設定の config.cascade を true にすると、上のフォルダの mdmark.config.yaml も重ねます
 
 # 機能のオン・オフ（使うときは次の 2 行の # を外す）
 # features:
@@ -47,6 +76,13 @@ export const CONFIG_TEMPLATE = `# mdmark の設定。VS Code のプレビュー�
 
 # 配色のテーマ。dev-swiss・theme-paper・theme-slate・theme-contrast のどれか。VS Code の設定 mdmark.colorTheme が空でないときはそちらが優先（使うときは次の 1 行の # を外す）
 # colorTheme: theme-paper
+
+# 使う側の CSS。相対パスはこのファイルのあるフォルダから（使うときは次の 1 行の # を外す）
+# theme: ./theme.css
+
+# 拡張のモジュール。相対パスはこのファイルのあるフォルダから（使うときは次の 2 行の # を外す）
+# extensions:
+#   - ./extensions/example.js
 `;
 
 /** ライブラリ本体が `html-scripts.url` を省いたときに読む URL の origin */
@@ -71,69 +107,91 @@ export function resolveConfigPath(options: {
   return isAbsolute(configPath) ? configPath : resolve(baseDir, configPath);
 }
 
-/** YAML を読み、最上位がマップのときだけ `features`・`libraries`・`html-scripts`・`side-toc`・文字列の `colorTheme` と、文字列の `assets.root` を取り出す */
-export function parseConfig(text: string): ConfigLoad {
-  let parsed: unknown;
-  try {
-    parsed = parse(text);
-  } catch (error) {
-    if (error instanceof YAMLParseError) {
-      return {
-        kind: "error",
-        line: error.linePos?.[0].line ?? 1,
-        message: error.message,
-      };
-    }
-    throw error;
+/** 重ねた設定から `mount` に渡すキー（マップの `features`・`libraries`・`html-scripts`・`side-toc` と文字列の `colorTheme`）だけを取り出す */
+function pickPreviewConfig(config: Record<string, unknown>): PreviewConfig {
+  const picked: PreviewConfig = {};
+  if (isMap(config.features)) {
+    picked.features = config.features;
   }
-  const config: PreviewConfig = {};
-  if (isMap(parsed)) {
-    if (isMap(parsed.features)) {
-      config.features = parsed.features;
-    }
-    if (isMap(parsed.libraries)) {
-      config.libraries = parsed.libraries;
-    }
-    if (isMap(parsed["html-scripts"])) {
-      config["html-scripts"] = parsed["html-scripts"];
-    }
-    if (isMap(parsed["side-toc"])) {
-      config["side-toc"] = parsed["side-toc"];
-    }
-    if (typeof parsed.colorTheme === "string") {
-      config.colorTheme = parsed.colorTheme;
-    }
-    if (isMap(parsed.assets) && typeof parsed.assets.root === "string") {
-      return { kind: "ok", config, assetsRoot: parsed.assets.root };
-    }
+  if (isMap(config.libraries)) {
+    picked.libraries = config.libraries;
   }
-  return { kind: "ok", config };
+  if (isMap(config["html-scripts"])) {
+    picked["html-scripts"] = config["html-scripts"];
+  }
+  if (isMap(config["side-toc"])) {
+    picked["side-toc"] = config["side-toc"];
+  }
+  if (typeof config.colorTheme === "string") {
+    picked.colorTheme = config.colorTheme;
+  }
+  return picked;
 }
 
-/** 設定ファイルを読んで設定を取り出す。ファイルが無ければ `missing` */
+/** ライブラリ本体の `loadLayeredConfig` で設定を重ねて読み、`ConfigLoad` にする。設定ファイルが 1 つも無ければ端末の設定だけで返す */
 export async function loadConfig(options: {
-  /** 設定ファイルの絶対パス */
-  path: string;
+  /** Markdown のフォルダ */
+  cwd: string;
+  /** `mdmark.configPath` */
+  configPath: string;
+  /** 設定ファイルの場所を決める基準のフォルダ */
+  baseDir: string;
+  /** プレビューか書き出しか */
+  purpose: "preview" | "export";
+  /** 環境変数 */
+  env: Record<string, string | undefined>;
+  /** ホームのフォルダ */
+  home: string;
   /** 読む関数 */
   readFile: ReadTextFile;
+  /** ファイルがあるかを確かめる関数 */
+  isFile: (path: string) => Promise<boolean>;
 }): Promise<ConfigLoad> {
-  let text: string;
-  try {
-    text = await options.readFile(options.path);
-  } catch (error) {
-    if ((error as NodeJS.ErrnoException).code === "ENOENT") {
-      return { kind: "missing" };
+  let explicit: string | undefined;
+  let isFile = options.isFile;
+  if (options.configPath !== "") {
+    const path = resolveConfigPath(options);
+    if (await options.isFile(path)) {
+      explicit = path;
+    } else {
+      // 書いたファイルが無いときは上へ探さず、端末の設定だけを重ねる
+      isFile = async () => false;
     }
-    throw error;
   }
-  const result = parseConfig(text);
-  if (result.kind === "ok" && result.assetsRoot !== undefined) {
-    return {
-      ...result,
-      assetsRoot: resolve(dirname(options.path), result.assetsRoot),
-    };
-  }
-  return result;
+  const layered = await loadLayeredConfig({
+    cwd: options.cwd,
+    explicit,
+    purpose: options.purpose,
+    env: options.env,
+    home: options.home,
+    readFile: options.readFile,
+    isFile,
+    explicitName: "mdmark.configPath",
+  });
+  const config = layered.config as Record<string, unknown>;
+  const first = layered.issues[0];
+  const problem: ConfigProblem | undefined = layered.unreadable
+    ? { ...layered.unreadable }
+    : first
+      ? { path: first.file, settingKey: first.where, message: first.message }
+      : undefined;
+  const assets = config.assets;
+  return {
+    config: pickPreviewConfig(config),
+    theme: typeof config.theme === "string" ? config.theme : undefined,
+    extensions: Array.isArray(config.extensions)
+      ? config.extensions.filter(
+          (path): path is string => typeof path === "string",
+        )
+      : [],
+    files: layered.files.map((file) => file.path),
+    nearest: layered.nearest,
+    assetsRoot:
+      isMap(assets) && typeof assets.root === "string"
+        ? assets.root
+        : undefined,
+    problem,
+  };
 }
 
 /** `http:`・`https:` の URL はそのまま、それ以外の文字列は設定ファイルのフォルダから解決した絶対パスを `toUrl` で URL にして返す。文字列でない値はそのまま渡す */

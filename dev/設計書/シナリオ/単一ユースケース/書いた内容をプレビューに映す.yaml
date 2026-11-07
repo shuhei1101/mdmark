@@ -57,7 +57,7 @@ scenarios:
         participant PV as プレビュー（Webview）
         W->>ED: mdmark.config.yaml に features.callout: false を書いて保存する
         ED->>EX: 設定ファイルの保存の知らせ
-        EX->>EX: features・libraries を取り出す
+        EX->>EX: 重ねた設定を読み直す
         EX->>PV: 新しい設定で描き直させる
         PV-->>W: 注意書きを枠にしない文書を表示
     expected:
@@ -137,6 +137,53 @@ scenarios:
       - パネルの上部に、設定ファイルを読めないことを示す帯と「設定ファイルを開く」のボタンが出る
       - ボタンを押すと `mdmark.config.yaml` がエディタで開く
     test: test_error_when_config_unreadable
+  - name: 正常シナリオ（theme の CSS を書き換える）
+    setup:
+      - name: プレビューを開いたワークスペース
+        description: VSCodeでプレビューを開くの正常シナリオ（設定を重ねる）の後
+      - name: Mock
+        description: VSCodeでプレビューを開くの正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant ED as エディタ（VS Code）
+        participant EX as 拡張機能
+        participant PV as プレビュー（Webview）
+        W->>ED: theme.css の色を書き換えて保存する
+        ED->>EX: theme の CSS の変更の知らせ
+        EX->>PV: theme の CSS を読み直させる
+        PV-->>W: 書き換えた色を当てた文書を表示
+    expected:
+      - リロードせずに、描く先の要素の計算値が書き換えた後の `theme.css` の色になる
+      - Markdown の本文とスクロールの位置は保存する前と同じ
+    test: test_normal_when_theme_css_saved
+  - name: 正常シナリオ（ワークスペースの外の設定を保存する）
+    setup:
+      - name: プレビューを開いたワークスペース
+        description: VSCodeでプレビューを開くの正常シナリオ（設定を重ねる）の後。端末の設定（`MDMARK_CONFIG` が指す `settings.yaml`）はワークスペースの外にある
+        notes: '端末の設定は `features` に `callout: false` を持たない状態から始める'
+      - name: Mock
+        description: VSCodeでプレビューを開くの正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant ED as エディタ（VS Code）
+        participant EX as 拡張機能
+        participant PV as プレビュー（Webview）
+        W->>ED: 端末の設定に features.callout: false を書いて保存する
+        ED->>EX: 重ねた設定ファイルの変更の知らせ
+        EX->>EX: 重ねた設定を読み直す
+        EX->>PV: 新しい設定で描き直させる
+        PV-->>W: 注意書きを枠にしない文書を表示
+        W->>ED: 上のフォルダの mdmark.config.yaml の extensions のモジュールを書き換えて保存する
+        ED->>EX: extensions のファイルの変更の知らせ
+        EX->>PV: パネルを読み込み直して描かせる
+        PV-->>W: 書き換えた固有の部品で描いた文書を表示
+    expected:
+      - 端末の設定を保存した後、リロードせずにプレビューの注意書きが引用として描かれる
+      - '`extensions` のモジュールを保存した後、固有の部品の場所に書き換えた後の部品が描いた要素がある'
+      - どちらの保存でも、Markdown の本文とスクロールの位置は保存する前と同じ
+    test: test_normal_when_outside_config_saved
 lead: 文書を書く人が Markdown や設定ファイルを書き換えると、開いているプレビューが描き直される。背面から表に戻したときと、「リロード」を押したときも最後の内容で描く。
 issue: 22
 primary_actor: 文書を書く人
@@ -146,6 +193,6 @@ stakeholders:
 trigger: 文書を書く人がプレビューを開いたまま Markdown か `mdmark.config.yaml` を書き換える
 preconditions:
   - Markdown のプレビューを開いている（VSCodeでプレビューを開く）
-success_guarantee: プレビューに、最後に書いた Markdown の全文が、設定ファイルの `features`・`libraries`・`side-toc` を当てて描かれる。
+success_guarantee: プレビューに、最後に書いた Markdown の全文が、重ねた設定の `features`・`libraries`・`side-toc`・`theme`・`extensions` を当てて描かれる。
 minimal_guarantee: 設定ファイルを読めないときも文書は描いたままにし、読めないことを知らせる。
 test_file: tests/e2e/単一ユースケース/書いた内容をプレビューに映す.spec.ts

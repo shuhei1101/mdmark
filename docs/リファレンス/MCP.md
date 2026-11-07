@@ -6,7 +6,8 @@ Claude Code のプラグイン `mdmark` の MCP サーバー（`plugin:mdmark:md
 入れ方は [プラグインを入れる](../使い方/ClaudeCodeで使う/プラグインを入れる.md)、使い方は [MCP のツールを使う](../使い方/ClaudeCodeで使う/MCPのツールを使う.md)。
 ツールの結果のテキストは JSON の文字列 1 つ。
 エラーは結果の `isError` を `true` にし、内容のテキストに、何が合わないかと直し方を日本語の 1 文で書く。
-`config` を省くと、Claude Code のセッションのフォルダから上のフォルダへ順に `mdmark.config.yaml` を探す。
+`config` を省くと、端末の設定と、Claude Code のセッションのフォルダから上のフォルダの `mdmark.config.yaml` を重ねて読む（[設定を重ねて読む仕組み](../はじめに/コアコンセプト/設定を重ねて読む仕組み.md)）。
+端末の設定の場所は、`mdmark serve` のプロセスの環境変数 `MDMARK_CONFIG` で決まる。
 相対パスの引数は、セッションのフォルダからの相対パス。
 設定のキーは [設定](./設定.md)、索引のキーは [索引](./索引.md)。
 

@@ -3,7 +3,7 @@ scenarios:
   - name: 正常シナリオ
     setup:
       - name: 見本のワークスペース
-        description: 見出し・表・注意書き・フロー図を持ち、画面の高さを超える長さの Markdown を 1 つと、`features`・`libraries` を書いた `mdmark.config.yaml` を置いたフォルダ
+        description: 見出し・表・注意書き・フロー図を持ち、画面の高さを超える長さの Markdown を 1 つと、`features`・`libraries`・`theme` を書いた `mdmark.config.yaml` と、`theme` が指す CSS を置いたフォルダ
       - name: Mock
         description: jsDelivr の代わりに、このブランチでビルドした配布物を版付きの形の URL で配る手元のサーバー。GitHub のタグ一覧は、その版を最新の `vX.Y.Z` として返す代役。既定のブラウザで開く操作は、開いた URL を記録する代役
     flow: |-
@@ -22,7 +22,7 @@ scenarios:
       - エディタで見出しを書き換えると、保存せずにプレビューの見出しが書き換えた文字になる
       - エディタを文書の終わりの節まで動かすと、プレビューにその節の見出しが出る
       - 書き出し先に HTML が 1 つ書かれ、ブラウザで開く代役にその HTML の URL が渡る
-      - 書き出した HTML を開くと、プレビューと同じ見出し・表・注意書き・フロー図が描かれる
+      - 書き出した HTML を開くと、プレビューと同じ見出し・表・注意書き・フロー図が描かれ、プレビューと同じ要素に `theme` の CSS の規則が当たる
       - PDF に印刷すると、書き出し直した HTML がブラウザで開き、印刷のダイアログが呼ばれる
     test: test_normal
     uses:

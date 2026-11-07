@@ -153,7 +153,7 @@ request:
   - name: config
     type: string
     required: false
-    default: なし（`project_dir` から上へ `mdmark.config.yaml` を探す）
+    default: なし（端末の設定と、`project_dir` から上のフォルダの `mdmark.config.yaml` を重ねる。端末の設定は `mdmark serve` のプロセスの環境変数で決まる）
     location: argument
     description: 使う設定ファイルのパス
   - name: base

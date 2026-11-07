@@ -36,6 +36,7 @@ test("test_app_when_render_error", async () => {
     version: undefined,
     status: undefined,
     configPath: "",
+    extensions: [],
     test: false,
   };
   // 実行

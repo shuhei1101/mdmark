@@ -3,6 +3,12 @@ import { readdir } from "node:fs/promises";
 import { join } from "node:path";
 import { pathToFileURL } from "node:url";
 import { expect, type Page, test } from "@playwright/test";
+import {
+  CARD_MARKDOWN,
+  CARD_SOURCE,
+  flowMarkdown,
+  HOST_CSS,
+} from "../diagram.ts";
 import { guideMarkdown, replaceFirstLine, useVscodeE2E } from "../vscode.ts";
 
 const e2e = useVscodeE2E();
@@ -161,5 +167,42 @@ test("test_normal_when_theme_selected", async ({ browser }) => {
     "background-color",
     "rgb(248, 250, 252)",
   );
+  await page.close();
+});
+
+// 固有の部品の色（固有の CSS が変えた値）
+const HOST_CARD_COLOR = "rgb(0, 0, 255)";
+
+// theme の CSS と extensions の部品を、プレビューと書き出した HTML の両方に当てる（正常シナリオ（theme と extensions を当てる））
+test("test_normal_when_theme_and_extensions", async ({ browser }) => {
+  // 準備
+  const session = await e2e.launch({
+    files: {
+      "mdmark.config.yaml":
+        "theme: theme.css\nextensions: [extensions/card.js]\n",
+      "theme.css": `${HOST_CSS}\n`,
+      "extensions/card.js": CARD_SOURCE,
+      "doc.md": `${CARD_MARKDOWN}\n${await flowMarkdown()}\n本文の段落\n`,
+    },
+  });
+  await session.openFile("doc.md");
+  await session.openPreviewWithShortcut();
+  const frame = await session.frameWith(".host-card");
+  const previewColor = await frame
+    .locator(".host-card")
+    .evaluate((element) => getComputedStyle(element).color);
+  const path = join(session.workspaceDir, "doc.html");
+  // 実行
+  await session.focusEditor();
+  await session.runCommand("mdmark: HTML に書き出す");
+  // 検証
+  await expect
+    .poll(() => session.notifications())
+    .toContain(`HTML を書き出しました: ${path}`);
+  const page = await openExported(browser, path);
+  const card = page.locator(".host-card");
+  await expect(card).toHaveText("固有の題");
+  await expect(card).toHaveCSS("color", HOST_CARD_COLOR);
+  expect(previewColor).toBe(HOST_CARD_COLOR);
   await page.close();
 });

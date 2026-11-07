@@ -15,7 +15,12 @@ import { useLinkClicks } from "./hooks/use-link-clicks.ts";
 import { useLoadMdmark } from "./hooks/use-load-mdmark.ts";
 import { useMediaErrors } from "./hooks/use-media-errors.ts";
 import { saveLine, useScrollSync } from "./hooks/use-scroll-sync.ts";
-import { loadMdmark, type Mdmark } from "./load-mdmark.ts";
+import {
+  type ImportModule,
+  loadMdmark,
+  type Mdmark,
+  registerExtensions,
+} from "./load-mdmark.ts";
 
 /** 文書の代わりに出す状態の表示 */
 type StatusView = { state: PreviewStatusState; version?: string };
@@ -30,7 +35,12 @@ export type PanelScreenProps = {
   savedLine?: number;
   /** 配布物を読む関数（ストーリーと単体テストが代役を渡す） */
   load?: (url: string) => Promise<Mdmark>;
+  /** 拡張を読む関数（単体テストが代役を渡す） */
+  importModule?: ImportModule;
 };
+
+/** 帯に出す読めない設定ファイル */
+type ConfigErrorView = { path: string; line?: number; settingKey?: string };
 
 /** 配布物を読まずに出す状態が始め方にあるか */
 const isUndecidable = (boot: PreviewBoot): boolean =>
@@ -69,17 +79,34 @@ const answerTest = (
         api.postMessage({ type: "axed", id: message.id, violations });
       });
 
+/** `configError` から帯に出す読めない設定ファイルを作る */
+const configErrorOf = (
+  message: Extract<HostMessage, { type: "configError" }>,
+): ConfigErrorView => ({
+  path: message.path,
+  ...(message.line === undefined ? {} : { line: message.line }),
+  ...(message.settingKey === undefined
+    ? {}
+    : { settingKey: message.settingKey }),
+});
+
+/** `theme` の CSS の `link` の `href` を替える（描き直さない） */
+const replaceThemeHref = (href: string): void => {
+  document.getElementById("mdmark-theme")?.setAttribute("href", href);
+};
+
 /** 状態の表示・帯・描く先の要素を並べ、配布物の読み込み・拡張機能のメッセージ・スクロール・リンクをつなぐ */
 export const PanelScreen = ({
   boot,
   api,
   savedLine,
   load = loadMdmark,
+  importModule,
 }: PanelScreenProps) => {
   const [status, setStatus] = useState<StatusView | undefined>(() =>
     isUndecidable(boot) ? { state: "versionUndecidable" } : undefined,
   );
-  const [configErrorLine, setConfigErrorLine] = useState<number | undefined>();
+  const [configError, setConfigError] = useState<ConfigErrorView | undefined>();
   // メッセージの処理と読み込みの結果の処理で投げた例外。次の描画で投げて Error Boundary へ渡す
   const [failure, setFailure] = useState<{ error: unknown } | undefined>();
   if (failure !== undefined) {
@@ -119,24 +146,34 @@ export const PanelScreen = ({
     requestAssets(boot, api, assetsId);
   };
 
+  /** 最後に送った `resolveAssets` への答えだけを当てる */
+  const applyResolvedAssets = (
+    message: Extract<HostMessage, { type: "assetsResolved" }>,
+  ): void => {
+    if (message.id === assetsId.current) {
+      applyAssetUrls(boot.root, message.urls);
+    }
+  };
+
   const onMessage = (message: HostMessage): void => {
     switch (message.type) {
       case "render":
         render(message);
         return;
       case "assetsResolved":
-        if (message.id === assetsId.current) {
-          applyAssetUrls(boot.root, message.urls);
-        }
+        applyResolvedAssets(message);
         return;
       case "scrollToLine":
         view.scrollToLine(message.line);
         return;
       case "configError":
-        setConfigErrorLine(message.line);
+        setConfigError(configErrorOf(message));
         return;
       case "configOk":
-        setConfigErrorLine(undefined);
+        setConfigError(undefined);
+        return;
+      case "theme":
+        replaceThemeHref(message.href);
         return;
       case "inspect":
       case "axe":
@@ -159,11 +196,16 @@ export const PanelScreen = ({
   useLoadMdmark({
     distJs: isUndecidable(boot) ? undefined : boot.distJs,
     load,
-    onLoaded: (mdmark) =>
-      run(() => {
-        view.useMdmark(mdmark);
-        api.postMessage({ type: "ready" });
-      }),
+    onLoaded: (mdmark) => {
+      registerExtensions({ mdmark, urls: boot.extensions, importModule })
+        .then(() =>
+          run(() => {
+            view.useMdmark(mdmark);
+            api.postMessage({ type: "ready" });
+          }),
+        )
+        .catch((error: unknown) => setFailure({ error }));
+    },
     onFailed: (reason) =>
       run(() => {
         settled.current = true;
@@ -187,13 +229,20 @@ export const PanelScreen = ({
           onReload={() => api.postMessage({ type: "reload" })}
         />
       )}
-      {configErrorLine !== undefined && (
-        <ConfigBand
-          path={boot.configPath}
-          line={configErrorLine}
-          onOpenConfig={() => api.postMessage({ type: "openConfig" })}
-        />
-      )}
+      {configError !== undefined &&
+        (configError.line === undefined ? (
+          <ConfigBand
+            path={configError.path}
+            settingKey={configError.settingKey ?? ""}
+            onOpenConfig={() => api.postMessage({ type: "openConfig" })}
+          />
+        ) : (
+          <ConfigBand
+            path={configError.path}
+            line={configError.line}
+            onOpenConfig={() => api.postMessage({ type: "openConfig" })}
+          />
+        ))}
       <div ref={documentRef} hidden={status !== undefined} />
     </>
   );

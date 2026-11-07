@@ -142,9 +142,9 @@
         },
         "mdmark.configPath": {
           "type": "string",
-          "default": "mdmark.config.yaml",
+          "default": "",
           "scope": "resource",
-          "description": "拡張機能が features・libraries・side-toc・colorTheme を読む YAML のパス。相対パスは Markdown を含むワークスペースのフォルダから解決する"
+          "description": "拡張機能が読む YAML のパス。空のときは Markdown のフォルダから上へ mdmark.config.yaml を探し、端末の設定と重ねる。書いたときは上へ探さず、このファイルと端末の設定だけを重ねる。相対パスは Markdown を含むワークスペースのフォルダから解決する"
         },
         "mdmark.preview.liveUpdate": {
           "type": "boolean",
@@ -238,6 +238,7 @@
     "class-variance-authority": "0.7.1",
     "clsx": "2.1.1",
     "esbuild": "0.28.2",
+    "esbuild-wasm": "0.28.2",
     "lucide-react": "1.69.0",
     "mocha": "12.0.3",
     "msw": "3.0.4",

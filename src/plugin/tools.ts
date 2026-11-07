@@ -110,10 +110,11 @@ export async function runCheckTool(
     return { json: { issues } };
   }
   const path = await findConfigFile(context.projectDir, args.config);
-  const issues = await collectCheckIssues(
-    path,
-    args.base === undefined ? {} : { base: args.base },
-  );
+  const issues = await collectCheckIssues(path, {
+    cwd: context.projectDir,
+    explicit: args.config !== undefined,
+    ...(args.base === undefined ? {} : { base: args.base }),
+  });
   return { json: { issues } };
 }
 

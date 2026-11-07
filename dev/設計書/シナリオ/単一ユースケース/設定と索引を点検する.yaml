@@ -314,6 +314,26 @@ scenarios:
       - 終了コードが 0 以外
       - 設定・索引・文書が変わっていない
     test: test_normal_when_group_options_invalid
+  - name: 正常シナリオ（重ねた設定ファイルにずれがある）
+    setup:
+      - name: 端末の設定
+        description: '`MDMARK_CONFIG` で指す `settings.yaml`。`config.cascade: true` と、真偽値でない `features.callout: maybe` を書く'
+      - name: 重ねる設定を持つフォルダ
+        description: '上のフォルダの `mdmark.config.yaml` に `side-toc.mode: wide` を書き、その下の `docs/` の `mdmark.config.yaml` と索引と文書はずれが無い'
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant C as mdmark CLI
+        W->>C: docs/ で mdmark check
+        C->>C: 端末の設定・上・docs/ の設定ファイルのそれぞれの形を検める
+        C-->>W: ファイルごとの schema のずれ・終了コード 1
+    expected:
+      - 終了コードが 1
+      - ずれの一覧に、端末の設定のパスを指す `features.callout` の `schema` と、上のフォルダの `mdmark.config.yaml` を指す `side-toc.mode` の `schema` が 1 件ずつある
+      - 設定・索引・文書が変わっていない
+    test: test_normal_when_cascaded_config_drift
 lead: 文書を書く人が `mdmark check` を流し、設定ファイルと索引の形・索引と文書のずれ・書き出す対象の有無・文書の本文にある知らない印・図の部品の定義のずれを、ファイル・場所・種類・内容の一覧で受け取る。
 issue: 9
 primary_actor: 文書を書く人

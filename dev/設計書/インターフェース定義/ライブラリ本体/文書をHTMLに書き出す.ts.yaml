@@ -355,6 +355,57 @@ flows:
     test: test_normal_when_includes_and_icons
     refs:
       - dev/設計書/シナリオ/単一ユースケース/文書をHTMLに書き出す#scenarios[正常シナリオ（取り込みとアイコンを埋める）]
+  - name: 正常系（設定を重ねる）
+    summary: 端末の設定と上のフォルダの設定を重ねて書き出し、`theme` と `extensions` は書いた設定ファイルのフォルダから読む
+    setup:
+      - name: 端末の設定
+        description: '`MDMARK_CONFIG` で指す一時フォルダの `settings.yaml`。`config.cascade: true`・`features.callout: false`'
+      - name: 重ねる設定を持つフォルダ
+        description: '`mdmark.config.yaml` に `theme: ./theme.css` と `extensions: [./ext/greet.js]` を書き、その下の `docs/mdmark.config.yaml` に `features.table: false` を書く。`docs/guide.md` は注意書き・表・`greet` の印を持つ'
+        notes: '`docs/` で `mdmark export guide.md` を流す'
+      - name: Mock
+        description: 差し替える依存は無い。書き出した HTML は Playwright の Chromium で file:// で開く
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant C as mdmark CLI
+        participant L as loadLayeredConfig
+        participant H as 出力の HTML
+        W->>C: docs/ で mdmark export guide.md
+        C->>L: cwd・purpose=export
+        L-->>C: 重ねた設定・重ねた設定ファイルの一覧
+        C->>C: 上のフォルダの theme.css と ext/greet.js を読む
+        C->>H: guide.html を書く
+        C-->>W: 書き出した: guide.html・終了コード 0
+    expected:
+      - 終了コードが 0
+      - 開いた HTML で、注意書きが引用として、表が機能を付けない表として描かれる
+      - '`greet` の印が描かれ、`theme.css` の規則が当たっている'
+      - 端末の設定と 2 つの `mdmark.config.yaml` が変わっていない
+    test: test_normal_when_cascaded
+  - name: 異常系（端末の設定を読めない・終了コード 1）
+    summary: 端末の設定を YAML として読めないとき、そのパスと行を示して書き出さずに終わる
+    setup:
+      - name: 端末の設定
+        description: '`MDMARK_CONFIG` で指す `settings.yaml` の 3 行目に閉じていない括弧を持つもの'
+      - name: 見本のフォルダ
+        description: 正常系と同じ
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant C as mdmark CLI
+        participant L as loadLayeredConfig
+        W->>C: mdmark export guide.md
+        C->>L: cwd・purpose=export
+        L-->>C: 端末の設定の yaml のずれ
+        C-->>W: 端末の設定のパスと 3 行目・終了コード 1
+    expected:
+      - 終了コードが 1
+      - 標準エラーに端末の設定のパスと `3` 行目と直し方が出る
+      - HTML が書かれていない
+    test: test_error_when_settings_unreadable
 lead: 文書を書く人が Markdown を 1 つ、配布物・使う側の CSS・外部ライブラリのモジュール・拡張・画像を埋めた 1 枚の HTML に書き出す。開いた HTML は `mount` で文書を描き、外へ要求しない。
 idempotent: true
 side_effects: 出力のパスに HTML を書く（既にあれば上書きする）。文書が指す動画・音声を、出力の隣の `_files/` のフォルダへコピーする（同じ名前のファイルは上書きする）。文書が使う外部ライブラリの設定の `libraries` の URL の先と、そのモジュールが import する先を読む。色分けの対象のコードブロックがあるとき、`syntax.url` の先の core と、使う言語のモジュールを読む
@@ -377,7 +428,7 @@ request:
   - name: --config
     type: string
     required: false
-    default: なし（今のフォルダから上のフォルダへ順に `mdmark.config.yaml` を探す）
+    default: 'なし（端末の設定と、今のフォルダから上のフォルダの `mdmark.config.yaml` を重ねる。インターフェース定義『設定を重ねて読む』を `purpose: export` で呼ぶ）'
     location: argument
     description: 使う設定ファイルのパス
     notes: 探し方はインターフェース定義『設定と索引を点検する』と同じ
@@ -407,7 +458,7 @@ exceptions:
   - name: なし（正常終了）
     condition: HTML を書いた（読めなかったものは警告に出す）。終了コード 0
   - name: 設定ファイルの誤り（終了コード 1）
-    condition: 設定ファイルが無い・読めない・Schema に合わない（空の設定ファイルを含む）
+    condition: 設定ファイルが無い・読めない・Schema に合わない（空の設定ファイルを含む）。重ねた設定ファイル（端末の設定を含む）のどれかが読めない・Schema に合わないときも同じ
     notes: 標準エラーに原因と直し方の 1 文を出す。Schema に合わないときは `mdmark check` でどこが合わないかを確かめられることを書く
   - name: 文書を読めない（終了コード 1）
     condition: '`{文書}` のファイルが無い・読めない'
@@ -422,7 +473,7 @@ constraints:
   - item: 束ねるスクリプト
     constraint: 起動の処理を入口にし、ビューの部品・色分けの本体と言語は静的な `import` で、拡張と外部ライブラリのモジュールはリテラルの動的 `import()` を返す関数で取り込み、分割せずに 1 つの ES モジュールに束ね（リテラルとパターンの動的 `import()` は同じスクリプトに取り込む）、`src` を持たない `<script type="module">` に入れる。文書に印が無い部品・外部ライブラリと、届かない・束ねられないモジュールは取り込まず、開いたときその印の場所に知らせの枠を出す。起動の処理は拡張と外部ライブラリを 1 つずつ `try` で囲んで評価し、評価で例外を投げたものは飛ばして、ほかの拡張の登録と描画を続ける。束ねた後に動的 `import()` が残る拡張・外部ライブラリ（変数を渡す `import()` を含む）は埋めたうえで警告に出す
   - item: 埋める外部ライブラリ
-    constraint: 文書に印がある外部ライブラリだけを、既定の対応表に設定の `libraries` を重ねた URL から読む。そのモジュールが import する先も含めて、制約「束ねるスクリプト」の 1 つのスクリプトに束ねる。相対パスの URL は設定ファイルのあるフォルダを基準に読む。届かない・束ねられないものは埋めず警告に出し、開いたときその印の場所に知らせの枠を出す
+    constraint: 文書に印がある外部ライブラリだけを、既定の対応表に設定の `libraries` を重ねた URL から読む。そのモジュールが import する先も含めて、制約「束ねるスクリプト」の 1 つのスクリプトに束ねる。相対パスの URL は、その値を書いた設定ファイルのフォルダを基準に読む。届かない・束ねられないものは埋めず警告に出し、開いたときその印の場所に知らせの枠を出す
   - item: 埋める拡張
     constraint: 設定の `extensions` のモジュールを、`load` の中で動的 `import()` で読む先も含めて制約「束ねるスクリプト」の 1 つのスクリプトに束ねて埋める（TypeScript は JavaScript に変える）。読めない・束ねられないものは埋めず警告に出す
   - item: 埋める画像
@@ -449,7 +500,7 @@ constraints:
     constraint: 設定の `tooltips.placement` と `tooltips.diagramPlacement` を、`features` と同じく埋める設定に写して `mount` の `opts.config` に渡す。無いキーは写さず、`mount` の既定（`placement` は `top`、`diagramPlacement` は `bottom`）に任せる。`top`・`bottom` 以外の値は設定ファイルの誤り（終了コード 1）にする
     decided_by: dev/設計書/設定/ライブラリ本体#settings[tooltips.placement]
   - item: 埋める色分け
-    constraint: '機能 `syntax` がオンのとき、文書のコードブロックの情報文字列から色分けの対象の言語を拾い（`mount` と同じ対応表で、`dockerfile`・`diff` とその別名を含む。言語は情報文字列の最初の `:` の前。文書の `<!-- features: -syntax -->` の文書は拾わない）、設定の `syntax.url`（無ければ既定の jsDelivr の URL）の本体と使う言語のモジュールだけを制約「束ねるスクリプト」の 1 つのスクリプトに束ねて埋める。開いたときは `mount` が埋めたモジュールから色分けし、埋めなかった言語は読みに行かず色分けせずに残す。相対パスの `syntax.url` は設定ファイルのあるフォルダを基準に読む。届かないモジュールは埋めず警告に出す（書き出しは止めない）'
+    constraint: '機能 `syntax` がオンのとき、文書のコードブロックの情報文字列から色分けの対象の言語を拾い（`mount` と同じ対応表で、`dockerfile`・`diff` とその別名を含む。言語は情報文字列の最初の `:` の前。文書の `<!-- features: -syntax -->` の文書は拾わない）、設定の `syntax.url`（無ければ既定の jsDelivr の URL）の本体と使う言語のモジュールだけを制約「束ねるスクリプト」の 1 つのスクリプトに束ねて埋める。開いたときは `mount` が埋めたモジュールから色分けし、埋めなかった言語は読みに行かず色分けせずに残す。相対パスの `syntax.url` は、その値を書いた設定ファイルのフォルダを基準に読む。届かないモジュールは埋めず警告に出す（書き出しは止めない）'
     notes: 'PoC #98 で、core と 3 言語を埋めた HTML を外への要求 0 件で色分けできることを確かめた（約 35KB）。埋めるモジュールは頭の BSD-3-Clause の著作権表示を残す'
   - item: 右側の目次の出し方
     constraint: 設定の `side-toc` を、`features` と同じく埋める設定に写して `mount` の `opts.config` に渡す。無いときは写さず、`mount` の既定（`hover`）に任せる。`mode` が `hover`・`fixed` 以外の値は設定ファイルの誤り（終了コード 1）にする

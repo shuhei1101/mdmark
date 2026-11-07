@@ -99,7 +99,7 @@ Markdown のエディタと同じ列のタブに、プレビューを開く。
 
 ## 設定ファイルを開く
 
-`mdmark.configPath` の設定ファイルをエディタで開く。
+最も近い `mdmark.config.yaml` をエディタで開く。設定ファイルを読めない帯から開いたときは、帯に出した読めないファイル（端末の設定を含む）を開く。
 無いときは、雛形を作るかをダイアログで尋ね、`作る` を選んだときだけ作って開く。
 
 ### 使い方
@@ -201,7 +201,7 @@ PDF は、そのダイアログの送信先で「PDF に保存」を選んで作
 ```json
 {
   "mdmark.version": "latest",
-  "mdmark.configPath": "mdmark.config.yaml",
+  "mdmark.configPath": "",
   "mdmark.preview.liveUpdate": true,
   "mdmark.preview.updateDelayMs": 300,
   "mdmark.preview.scrollPreviewWithEditor": true,
@@ -217,7 +217,7 @@ PDF は、そのダイアログの送信先で「PDF に保存」を選んで作
 | 設定 | 型 | 既定 | 許す値 | 説明 | 反映 |
 | --- | --- | --- | --- | --- | --- |
 | `mdmark.version` | 文字列 | `latest` | `latest` か `v{X}.{Y}.{Z}` | `latest` のときは、プレビューを開くときとリロードしたときに GitHub のタグ一覧から `v{X}.{Y}.{Z}` の最新を選ぶ。バージョンを記載するとそのバージョンに固定し、タグ一覧を取らない | プレビューを開き直すかリロードしたとき |
-| `mdmark.configPath` | 文字列 | `mdmark.config.yaml` | 相対パスか絶対パス | `features`・`libraries`・`side-toc`・`colorTheme` を読む YAML のパス。相対パスは Markdown を含むワークスペースのフォルダから（ワークスペースの外の Markdown は Markdown のフォルダから）解決する | 即時 |
+| `mdmark.configPath` | 文字列 | 空 | 空・相対パス・絶対パス | 拡張機能が読む YAML のパス。空のときは Markdown のフォルダから上へ `mdmark.config.yaml` を探して端末の設定と重ねる。値を書いたときは上へ探さず、そのファイルと端末の設定だけを重ねる。相対パスは Markdown を含むワークスペースのフォルダから（ワークスペースの外の Markdown は Markdown のフォルダから）解決する | 即時 |
 | `mdmark.preview.liveUpdate` | 真偽値 | `true` | `true`・`false` | `true` のときは Markdown を打つたびに描き直す。`false` のときは保存したときだけ描き直す | 即時 |
 | `mdmark.preview.updateDelayMs` | 整数 | `300` | 0〜5000 | 最後に打ってから描き直すまでのミリ秒。範囲の外の値は既定の値として扱う | 即時 |
 | `mdmark.preview.scrollPreviewWithEditor` | 真偽値 | `true` | `true`・`false` | エディタをスクロールしたときに、プレビューを同じ箇所まで動かす | 即時 |
@@ -239,7 +239,7 @@ PDF は、そのダイアログの送信先で「PDF に保存」を選んで作
 
 ## 設定ファイルのキー
 
-拡張機能が `mdmark.configPath` の設定ファイルから読むキー。
+拡張機能が、端末の設定と上のフォルダの設定ファイルを重ねた設定から読むキー（[設定を重ねて読む仕組み](../はじめに/コアコンセプト/設定を重ねて読む仕組み.md)）。
 キーの意味は [設定](./設定.md)。
 
 ### リクエスト
@@ -254,12 +254,15 @@ colorTheme: theme-slate
 
 | キー | 説明 |
 | --- | --- |
-| `features` | 機能のオン・オフの既定。書いた値をそのまま `mount` の `opts.config.features` に渡す |
-| `libraries` | 外部ライブラリの対応表。`http:`・`https:` の URL はそのまま、相対 URL は設定ファイルのあるフォルダを基準に解決して、`mount` の `opts.config.libraries` に渡す |
+| `features` | 機能のオン・オフの既定。重ねた値を `mount` の `opts.config.features` に渡す |
+| `libraries` | 外部ライブラリの対応表。`http:`・`https:` の URL はそのまま、相対 URL はその値を書いた設定ファイルのフォルダを基準に解決して、`mount` の `opts.config.libraries` に渡す |
 | `colorTheme` | 配色のテーマ。`mdmark.colorTheme` が空のときだけ、書いた値をそのまま `mount` の `opts.config.colorTheme` に渡す。空でないときは `mdmark.colorTheme` の値に置き換える |
-| `assets.root` | アセットのルート。Markdown のフォルダからの相対パスに無い画像・動画・音声を、設定ファイルのあるフォルダからのこのフォルダで同じ相対パスで探す。`mount` には渡さない |
+| `assets.root` | アセットのルート。Markdown のフォルダからの相対パスに無い画像・動画・音声を、その値を書いた設定ファイルのフォルダからのこのフォルダで同じ相対パスで探す。`mount` には渡さない |
 
-`theme`・`extensions`・`index`・`build` など、ほかのキーは読まない。
+| `theme` | 使う側の CSS。その値を書いた設定ファイルのフォルダから解決し、プレビューでは配布物の CSS の後に読み、書き出す HTML には埋める |
+| `extensions` | 拡張のモジュール。その値を書いた設定ファイルのフォルダから解決し、`mount` の前に登録する。書き出す HTML には 1 つのスクリプトに束ねて埋める |
+
+ほかの `mount` の `opts.config` が読むキー（`side-toc`・`tooltips`・`labels` など）も、重ねた値をそのまま渡す。`index`・`build`・`check` は読まない。
 最上位がマップでないファイルと空のファイルは、設定なしとして扱う。
 
 ### レスポンス
@@ -268,6 +271,6 @@ colorTheme: theme-slate
 
 ### エラー
 
-YAML として読めないときは、前に読めた設定（無ければ設定なし）で描いたまま、プレビューの文書の先頭に読めない行を知らせる帯を出す。
+重ねた設定ファイルのどれかが YAML として読めない・設定の形に合わないときは、前に使った設定（無ければそのファイルを除いた残りの設定）で描いたまま、プレビューの文書の先頭に読めないファイルと行（またはキー）を知らせる帯を出す。
 読めるようになると、帯は消える。
 キーの中の知らない名前と型の違う値は、mdmark が無視する。

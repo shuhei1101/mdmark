@@ -2,6 +2,8 @@ summary: 採用済みの外部ライブラリ / 外部ツールのリファレ�
 items:
   - page: esbuild.yaml
     summary: TS と CSS を配布物の ES モジュールの JS と CSS に束ねる
+  - page: esbuild-wasm.yaml
+    summary: VS Code 拡張機能が拡張機能ホストの中で設定の extensions を束ねる
   - page: vitest.yaml
     summary: 単体テスト（Node）と結合テスト（実ブラウザ）のランナー
   - page: playwright.yaml
