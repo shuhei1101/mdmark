@@ -1,0 +1,103 @@
+$ npx vitest run --project integration-storybook --maxWorkers=2 tests/integration/lib/back-to-top.story.test.ts tests/integration/lib/backlinks.story.test.ts tests/integration/lib/badge.story.test.ts tests/integration/lib/callout.story.test.ts tests/integration/lib/card.story.test.ts tests/integration/lib/chart.story.test.ts tests/integration/lib/code-block.story.test.ts tests/integration/lib/comment-bubble.story.test.ts tests/integration/lib/comment-button.story.test.ts tests/integration/lib/comment-form.story.test.ts 
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/chore-knowledge-drop-tag-vocabulary
+
+
+ Test Files  10 passed (10)
+      Tests  79 passed (79)
+   Start at  21:01:09
+   Duration  161.87s (tests 97%, import 3%)
+
+exit 0
+$ npx vitest run --project integration-storybook --maxWorkers=2 tests/integration/lib/comment-mark.story.test.ts tests/integration/lib/comment-marker.story.test.ts tests/integration/lib/comment-orphans.story.test.ts tests/integration/lib/details-range.story.test.ts tests/integration/lib/diagram-frame.story.test.ts tests/integration/lib/diagram-tooltip.story.test.ts tests/integration/lib/diff-blocks.story.test.ts tests/integration/lib/diff-html.story.test.ts tests/integration/lib/diff-lines.story.test.ts tests/integration/lib/diff-message.story.test.ts tests/integration/lib/diff-minimap.story.test.ts tests/integration/lib/diff-toggle.story.test.ts 
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/chore-knowledge-drop-tag-vocabulary
+
+
+ Test Files  12 passed (12)
+      Tests  59 passed (59)
+   Start at  21:04:16
+   Duration  226.19s (tests 95%, import 4%)
+
+exit 0
+$ npx vitest run --project integration-storybook --maxWorkers=2 tests/integration/lib/doc-list.story.test.ts tests/integration/lib/embed.story.test.ts tests/integration/lib/embedded-html.story.test.ts tests/integration/lib/er-diagram.story.test.ts tests/integration/lib/figure.story.test.ts tests/integration/lib/flow-diagram.story.test.ts tests/integration/lib/footnote.story.test.ts tests/integration/lib/gallery.story.test.ts tests/integration/lib/gif.story.test.ts tests/integration/lib/highlight.story.test.ts tests/integration/lib/hint.story.test.ts tests/integration/lib/image-figure.story.test.ts tests/integration/lib/inline-icon.story.test.ts tests/integration/lib/kbd.story.test.ts 
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/chore-knowledge-drop-tag-vocabulary
+
+ ❯ |integration-storybook| tests/integration/lib/image-figure.story.test.ts (12 tests | 1 failed) 221336ms
+   × test_no_caption 32098ms
+ ❯ |integration-storybook| tests/integration/lib/flow-diagram.story.test.ts (12 tests | 1 failed) 223268ms
+   × test_default 37480ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |integration-storybook| tests/integration/lib/flow-diagram.story.test.ts > test_default
+TimeoutError: page.waitForFunction: Timeout 30000ms exceeded.
+ ❯ openFlow tests/integration/lib/flow-diagram.story.test.ts:13:14
+     11| async function openFlow(id: string): Promise<Page> {
+     12|   const page = await holder.openStory(`parts-flowdiagram--${id}`);
+     13|   await page.waitForFunction(() =>
+       |              ^
+     14|     (
+     15|       document.querySelector<HTMLElement>(".mdmark-diagram-stage")?.st…
+ ❯ tests/integration/lib/flow-diagram.story.test.ts:25:16
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  |integration-storybook| tests/integration/lib/image-figure.story.test.ts > test_no_caption
+TimeoutError: page.goto: Timeout 30000ms exceeded.
+Call log:
+[2m  - navigating to "http://127.0.0.1:58156/iframe.html?id=parts-imagefigure--no-caption&viewMode=story", waiting until "load"[22m
+
+ ❯ Object.openStory tests/integration/story.ts:54:18
+     52|       const page = await browser.newPage({ viewport });
+     53|       pages.push(page);
+     54|       await page.goto(
+       |                  ^
+     55|         `${inject("storybookUrl")}/iframe.html?id=${id}&viewMode=story…
+     56|       );
+ ❯ open tests/integration/lib/image-figure.story.test.ts:11:16
+ ❯ tests/integration/lib/image-figure.story.test.ts:108:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  2 failed | 12 passed (14)
+      Tests  2 failed | 74 passed (76)
+   Start at  21:08:15
+   Duration  315.82s (tests 98%, import 2%)
+
+exit 1
+$ npx vitest run --project integration-storybook --maxWorkers=2 tests/integration/lib/flow-diagram.story.test.ts tests/integration/lib/image-figure.story.test.ts
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/chore-knowledge-drop-tag-vocabulary
+
+
+ Test Files  2 passed (2)
+      Tests  24 passed (24)
+   Start at  21:13:43
+   Duration  121.32s (tests 99%, import 1%)
+
+exit 0
+$ npx vitest run --project integration-storybook --maxWorkers=2 tests/integration/lib/layout-columns.story.test.ts tests/integration/lib/lightbox.story.test.ts tests/integration/lib/media.story.test.ts tests/integration/lib/notice.story.test.ts tests/integration/lib/param.story.test.ts tests/integration/lib/revision-picker.story.test.ts tests/integration/lib/row-detail.story.test.ts tests/integration/lib/section.story.test.ts tests/integration/lib/sequence-diagram.story.test.ts tests/integration/lib/side-toc.story.test.ts 
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/chore-knowledge-drop-tag-vocabulary
+
+
+ Test Files  10 passed (10)
+      Tests  50 passed (50)
+   Start at  21:15:56
+   Duration  205.01s (tests 97%, import 3%)
+
+exit 0
+$ npx vitest run --project integration-storybook --maxWorkers=2 tests/integration/lib/steps.story.test.ts tests/integration/lib/syntax-warning.story.test.ts tests/integration/lib/table.story.test.ts tests/integration/lib/tabs.story.test.ts tests/integration/lib/term-tip.story.test.ts tests/integration/lib/text-color.story.test.ts tests/integration/lib/toc.story.test.ts tests/integration/lib/tree.story.test.ts tests/integration/lib/view.story.test.ts tests/integration/lib/wide.story.test.ts 
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/chore-knowledge-drop-tag-vocabulary
+
+
+ Test Files  10 passed (10)
+      Tests  147 passed (147)
+   Start at  21:19:31
+   Duration  254.46s (tests 98%, import 2%)
+
+exit 0

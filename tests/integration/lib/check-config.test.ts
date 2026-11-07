@@ -34,7 +34,7 @@ async function createCleanDir(options?: { js?: boolean }): Promise<string> {
     "a.md": "# A\n",
     "b.md": "# B\n",
     "index.yaml": [
-      "schema: 1",
+      "schema: 2",
       "docs:",
       "  - id: a",
       "    path: a.md",
@@ -552,7 +552,7 @@ test("test_normal_when_diagram_drift", async () => {
     "docs/a.md": a.join("\n"),
     "docs/b.md": ["# B", "", ...flowLines(CLEAN_FLOW), ""].join("\n"),
     "index.yaml": [
-      "schema: 1",
+      "schema: 2",
       "docs:",
       "  - id: a",
       "    path: docs/a.md",
@@ -967,7 +967,7 @@ test("test_normal_when_group_options_invalid", async () => {
   await writeFiles(dir, {
     "docs/a.md": a.join("\n"),
     "index.yaml": [
-      "schema: 1",
+      "schema: 2",
       "docs:",
       "  - id: a",
       "    path: docs/a.md",

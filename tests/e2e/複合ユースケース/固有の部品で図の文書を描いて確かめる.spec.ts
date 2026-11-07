@@ -54,7 +54,7 @@ test("test_normal", async ({ builtRoot, tempDir, page }) => {
     "mdmark.config.yaml": `${config}\nextensions: [extensions/card.js]\n`,
     "docs/sample.md": sample,
     "index.yaml": [
-      "schema: 1",
+      "schema: 2",
       "docs:",
       "  - id: sample",
       "    path: docs/sample.md",
@@ -354,7 +354,7 @@ test("test_error_when_diagram_drift", async ({ builtRoot, tempDir, page }) => {
   await writeFiles(dir, {
     "docs/flow.md": broken,
     "index.yaml": [
-      "schema: 1",
+      "schema: 2",
       "docs:",
       "  - id: flow",
       "    path: docs/flow.md",

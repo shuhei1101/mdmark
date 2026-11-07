@@ -1,0 +1,798 @@
+$ npm run test:unit
+
+> test:unit
+> vitest run --project 'unit*'
+
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/chore-knowledge-drop-tag-vocabulary
+
+ ❯ |unit| tests/unit/src/plugin/tools.test.ts (15 tests | 1 failed) 6789ms
+   × test_run_check_tool_when_base_given 188ms
+ ❯ |unit| tests/unit/src/cli/upgrade.test.ts (12 tests | 2 failed) 9436ms
+   × test_run_upgrade 59ms
+   × test_run_upgrade_when_version_missing 41ms
+ ❯ |unit| tests/unit/src/cli/check.test.ts (28 tests | 9 failed) 10866ms
+   × test_run_check 10083ms
+   × test_run_check_when_drift 22ms
+   × test_collect_check_issues 15ms
+   × test_collect_check_issues_when_unknown_mark 13ms
+   × test_collect_check_issues_when_unknown_color_theme 27ms
+   × test_collect_check_issues_when_alias_drift 72ms
+   × test_collect_check_issues_when_unknown_marks_off 15ms
+   × test_run_check_when_unknown_mark 17ms
+   × test_run_check_when_base_given 184ms
+ ❯ |unit| tests/unit/src/knowledge/check.test.ts (23 tests | 9 failed) 57ms
+   × test_check_index 29ms
+   × test_check_index_when_drift 3ms
+   × test_check_index_when_avoided_term 9ms
+   × test_check_index_when_normalized_words 1ms
+   × test_check_index_when_glossary_avoided_term 1ms
+   × test_check_index_when_old_schema 1ms
+   × test_check_index_when_related_drift 1ms
+   × test_check_index_when_change_together_missed 1ms
+   × test_check_index_when_broken_related_object 1ms
+ ❯ |unit| tests/unit/src/knowledge/index-shape.test.ts (12 tests | 7 failed) 38ms
+   × test_normalize_index 18ms
+   × test_normalize_index_when_invalid_avoid 1ms
+   × test_normalize_index_when_doc_tags 1ms
+   × test_normalize_index_when_invalid_doc_tags 1ms
+   × test_normalize_index_when_old_schema 2ms
+   × test_normalize_index_when_related 1ms
+   × test_normalize_index_when_invalid_related 1ms
+ ❯ |unit| tests/unit/migrations/drop-tag-vocabulary.test.ts (6 tests | 6 failed) 56ms
+   × test_drop_tag_vocabulary 45ms
+   × test_drop_tag_vocabulary_without_vocabulary 2ms
+   × test_drop_tag_vocabulary_when_reapplied 2ms
+   × test_run_drop_tag_vocabulary 2ms
+   × test_run_drop_tag_vocabulary_without_index 2ms
+   × test_run_drop_tag_vocabulary_without_config 1ms
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 34 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit| tests/unit/migrations/drop-tag-vocabulary.test.ts > test_drop_tag_vocabulary
+Error: Cannot find module '/migrations/next/drop-tag-vocabulary.mjs' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/chore-knowledge-drop-tag-vocabulary/tests/unit/migrations/drop-tag-vocabulary.test.ts
+ ❯ tests/unit/migrations/drop-tag-vocabulary.test.ts:34:33
+     32| test("test_drop_tag_vocabulary", async () => {
+     33|   // 準備
+     34|   const { dropTagVocabulary } = await loadMigration();
+       |                                 ^
+     35|   // 実行
+     36|   const result = dropTagVocabulary(OLD_INDEX);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/34]⎯
+
+ FAIL  |unit| tests/unit/migrations/drop-tag-vocabulary.test.ts > test_drop_tag_vocabulary_without_vocabulary
+Error: Cannot find module '/migrations/next/drop-tag-vocabulary.mjs' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/chore-knowledge-drop-tag-vocabulary/tests/unit/migrations/drop-tag-vocabulary.test.ts
+ ❯ tests/unit/migrations/drop-tag-vocabulary.test.ts:53:33
+     51| test("test_drop_tag_vocabulary_without_vocabulary", async () => {
+     52|   // 準備
+     53|   const { dropTagVocabulary } = await loadMigration();
+       |                                 ^
+     54|   const source = [
+     55|     "schema: 1",
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/34]⎯
+
+ FAIL  |unit| tests/unit/migrations/drop-tag-vocabulary.test.ts > test_drop_tag_vocabulary_when_reapplied
+Error: Cannot find module '/migrations/next/drop-tag-vocabulary.mjs' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/chore-knowledge-drop-tag-vocabulary/tests/unit/migrations/drop-tag-vocabulary.test.ts
+ ❯ tests/unit/migrations/drop-tag-vocabulary.test.ts:72:33
+     70| test("test_drop_tag_vocabulary_when_reapplied", async () => {
+     71|   // 準備
+     72|   const { dropTagVocabulary } = await loadMigration();
+       |                                 ^
+     73|   const applied = dropTagVocabulary(OLD_INDEX) ?? "";
+     74|   // 実行
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/34]⎯
+
+ FAIL  |unit| tests/unit/migrations/drop-tag-vocabulary.test.ts > test_run_drop_tag_vocabulary
+Error: Cannot find module '/migrations/next/drop-tag-vocabulary.mjs' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/chore-knowledge-drop-tag-vocabulary/tests/unit/migrations/drop-tag-vocabulary.test.ts
+ ❯ tests/unit/migrations/drop-tag-vocabulary.test.ts:83:55
+     81| test("test_run_drop_tag_vocabulary", async () => {
+     82|   // 準備
+     83|   const { dropTagVocabulary, runDropTagVocabulary } = await loadMigrat…
+       |                                                       ^
+     84|   const root = await createTempDir();
+     85|   await writeFiles(root, {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/34]⎯
+
+ FAIL  |unit| tests/unit/migrations/drop-tag-vocabulary.test.ts > test_run_drop_tag_vocabulary_without_index
+Error: Cannot find module '/migrations/next/drop-tag-vocabulary.mjs' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/chore-knowledge-drop-tag-vocabulary/tests/unit/migrations/drop-tag-vocabulary.test.ts
+ ❯ tests/unit/migrations/drop-tag-vocabulary.test.ts:100:36
+     98| test("test_run_drop_tag_vocabulary_without_index", async () => {
+     99|   // 準備
+    100|   const { runDropTagVocabulary } = await loadMigration();
+       |                                    ^
+    101|   const root = await createTempDir();
+    102|   const config = "build:\n  include: ['**/*.md']\n";
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/34]⎯
+
+ FAIL  |unit| tests/unit/migrations/drop-tag-vocabulary.test.ts > test_run_drop_tag_vocabulary_without_config
+Error: Cannot find module '/migrations/next/drop-tag-vocabulary.mjs' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/chore-knowledge-drop-tag-vocabulary/tests/unit/migrations/drop-tag-vocabulary.test.ts
+ ❯ tests/unit/migrations/drop-tag-vocabulary.test.ts:114:36
+    112| test("test_run_drop_tag_vocabulary_without_config", async () => {
+    113|   // 準備
+    114|   const { runDropTagVocabulary } = await loadMigration();
+       |                                    ^
+    115|   // 実行・検証
+    116|   await expect(runDropTagVocabulary([])).rejects.toThrow();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/34]⎯
+
+ FAIL  |unit| tests/unit/src/cli/check.test.ts > test_run_check
+AssertionError: expected 1 to be +0 // Object.is equality
+
+- Expected
++ Received
+
+- 0
++ 1
+
+ ❯ tests/unit/src/cli/check.test.ts:54:16
+     52|   const code = await runCheck({}, io);
+     53|   // 検証
+     54|   expect(code).toBe(0);
+       |                ^
+     55|   expect(stdout).toEqual(["ずれ 0 件"]);
+     56| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/34]⎯
+
+ FAIL  |unit| tests/unit/src/cli/check.test.ts > test_run_check_when_drift
+AssertionError: expected [ …(4) ] to have a length of 3 but got 4
+
+- Expected
++ Received
+
+- 3
++ 4
+
+ ❯ tests/unit/src/cli/check.test.ts:71:18
+     69|   // 検証
+     70|   expect(code).toBe(1);
+     71|   expect(stdout).toHaveLength(3);
+       |                  ^
+     72|   expect(stdout[0]).toMatch(/^mdmark\.config\.yaml:build: schema: /);
+     73|   expect(stdout[0]).toContain("build.out");
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/34]⎯
+
+ FAIL  |unit| tests/unit/src/cli/check.test.ts > test_collect_check_issues
+AssertionError: expected [ 'schema', 'schema', 'missing_doc' ] to deeply equal [ 'schema', 'missing_doc' ]
+
+- Expected
++ Received
+
+  [
+    "schema",
++   "schema",
+    "missing_doc",
+  ]
+
+ ❯ tests/unit/src/cli/check.test.ts:134:45
+    132|   const issues = await collectCheckIssues(join(dir, "mdmark.config.yam…
+    133|   // 検証
+    134|   expect(issues.map((issue) => issue.kind)).toEqual(["schema", "missin…
+       |                                             ^
+    135| });
+    136|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/34]⎯
+
+ FAIL  |unit| tests/unit/src/cli/check.test.ts > test_collect_check_issues_when_unknown_mark
+AssertionError: expected [ 'schema', 'missing_doc', …(1) ] to deeply equal [ 'missing_doc', 'unknown_mark' ]
+
+- Expected
++ Received
+
+  [
++   "schema",
+    "missing_doc",
+    "unknown_mark",
+  ]
+
+ ❯ tests/unit/src/cli/check.test.ts:360:45
+    358|   const issues = await collectCheckIssues(join(dir, "mdmark.config.yam…
+    359|   // 検証
+    360|   expect(issues.map((issue) => issue.kind)).toEqual([
+       |                                             ^
+    361|     "missing_doc",
+    362|     "unknown_mark",
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/34]⎯
+
+ FAIL  |unit| tests/unit/src/cli/check.test.ts > test_collect_check_issues_when_unknown_color_theme
+AssertionError: expected [ 'schema', …(3) ] to deeply equal [ 'schema', …(2) ]
+
+- Expected
++ Received
+
+  [
+    "schema",
+    "unknown_color_theme",
+    "no_documents",
++   "schema",
+  ]
+
+ ❯ tests/unit/src/cli/check.test.ts:392:52
+    390|   );
+    391|   // 検証
+    392|   expect(unknownIssues.map((issue) => issue.kind)).toEqual([
+       |                                                    ^
+    393|     "schema",
+    394|     "unknown_color_theme",
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/34]⎯
+
+ FAIL  |unit| tests/unit/src/cli/check.test.ts > test_collect_check_issues_when_alias_drift
+AssertionError: expected [ 'schema', 'alias_no_files', …(2) ] to deeply equal [ 'alias_no_files', …(2) ]
+
+- Expected
++ Received
+
+  [
++   "schema",
+    "alias_no_files",
+    "alias_required_empty",
+    "unknown_mark",
+  ]
+
+ ❯ tests/unit/src/cli/check.test.ts:440:45
+    438|   const issues = await collectCheckIssues(join(dir, "mdmark.config.yam…
+    439|   // 検証
+    440|   expect(issues.map((issue) => issue.kind)).toEqual([
+       |                                             ^
+    441|     "alias_no_files",
+    442|     "alias_required_empty",
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[12/34]⎯
+
+ FAIL  |unit| tests/unit/src/cli/check.test.ts > test_collect_check_issues_when_unknown_marks_off
+AssertionError: expected [ { file: 'index.yaml', …(3) } ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   {
++     "file": "index.yaml",
++     "kind": "schema",
++     "message": "索引の `schema` が形に合いません: schema は 1 にします。直してください。",
++     "where": "schema",
++   },
++ ]
+
+ ❯ tests/unit/src/cli/check.test.ts:469:18
+    467|   });
+    468|   // 検証
+    469|   expect(issues).toEqual([]);
+       |                  ^
+    470| });
+    471|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[13/34]⎯
+
+ FAIL  |unit| tests/unit/src/cli/check.test.ts > test_run_check_when_unknown_mark
+AssertionError: expected [ …(3) ] to have a length of 2 but got 3
+
+- Expected
++ Received
+
+- 2
++ 3
+
+ ❯ tests/unit/src/cli/check.test.ts:487:18
+    485|     stdout.filter((line) => line.startsWith("a.md:3: unknown_mark:")),
+    486|   ).toHaveLength(1);
+    487|   expect(stdout).toHaveLength(2);
+       |                  ^
+    488|   expect(stdout[1]).toBe("ずれ 1 件");
+    489| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[14/34]⎯
+
+ FAIL  |unit| tests/unit/src/cli/check.test.ts > test_run_check_when_base_given
+AssertionError: expected [ …(3) ] to have a length of 2 but got 3
+
+- Expected
++ Received
+
+- 2
++ 3
+
+ ❯ tests/unit/src/cli/check.test.ts:504:27
+    502|   // 検証
+    503|   expect(codeWithBase).toBe(1);
+    504|   expect(withBase.stdout).toHaveLength(2);
+       |                           ^
+    505|   expect(withBase.stdout[0]).toMatch(/^b\.md: missed_change_together: …
+    506|   expect(withBase.stdout[0]).toContain("a.md");
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[15/34]⎯
+
+ FAIL  |unit| tests/unit/src/cli/upgrade.test.ts > test_run_upgrade
+AssertionError: expected 1 to be +0 // Object.is equality
+
+- Expected
++ Received
+
+- 0
++ 1
+
+ ❯ tests/unit/src/cli/upgrade.test.ts:161:16
+    159|   );
+    160|   // 検証
+    161|   expect(code).toBe(0);
+       |                ^
+    162|   const config = parse(await fixture.read("mdmark.config.yaml"));
+    163|   expect(config.renamed).toBe(1);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[16/34]⎯
+
+ FAIL  |unit| tests/unit/src/cli/upgrade.test.ts > test_run_upgrade_when_version_missing
+AssertionError: expected 1 to be +0 // Object.is equality
+
+- Expected
++ Received
+
+- 0
++ 1
+
+ ❯ tests/unit/src/cli/upgrade.test.ts:243:16
+    241|   );
+    242|   // 検証
+    243|   expect(code).toBe(0);
+       |                ^
+    244|   expect(asked).toHaveLength(1);
+    245|   const config = parse(await fixture.read("mdmark.config.yaml"));
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[17/34]⎯
+
+ FAIL  |unit| tests/unit/src/knowledge/check.test.ts > test_check_index
+AssertionError: expected [ { file: 'index.yaml', …(3) } ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   {
++     "file": "index.yaml",
++     "kind": "schema",
++     "message": "索引の `schema` が形に合いません: schema は 1 にします。直してください。",
++     "where": "schema",
++   },
++ ]
+
+ ❯ tests/unit/src/knowledge/check.test.ts:49:18
+     47|   const issues = checkIndex({ index, documents });
+     48|   // 検証
+     49|   expect(issues).toEqual([]);
+       |                  ^
+     50| });
+     51|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[18/34]⎯
+
+ FAIL  |unit| tests/unit/src/knowledge/check.test.ts > test_check_index_when_drift
+AssertionError: expected [ 'schema', 'missing_doc', …(5) ] to deeply equal [ 'missing_doc', 'orphan_doc', …(4) ]
+
+- Expected
++ Received
+
+@@ -1,6 +1,7 @@
+  [
++   "schema",
+    "missing_doc",
+    "orphan_doc",
+    "broken_ref",
+    "duplicate_term",
+    "duplicate_term",
+
+ ❯ tests/unit/src/knowledge/check.test.ts:91:45
+     89|   });
+     90|   // 検証
+     91|   expect(issues.map((issue) => issue.kind)).toEqual([
+       |                                             ^
+     92|     "missing_doc",
+     93|     "orphan_doc",
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[19/34]⎯
+
+ FAIL  |unit| tests/unit/src/knowledge/check.test.ts > test_check_index_when_avoided_term
+AssertionError: expected [ { file: 'index.yaml', …(2) }, …(3) ] to deeply equal [ { file: 'guide.md', …(2) }, …(2) ]
+
+- Expected
++ Received
+
+@@ -1,7 +1,12 @@
+  [
+    {
++     "file": "index.yaml",
++     "kind": "schema",
++     "where": "schema",
++   },
++   {
+      "file": "guide.md",
+      "kind": "avoided_term",
+      "where": "3 行目",
+    },
+    {
+
+ ❯ tests/unit/src/knowledge/check.test.ts:169:5
+    167|   expect(
+    168|     issues.map(({ file, where, kind }) => ({ file, where, kind })),
+    169|   ).toEqual([
+       |     ^
+    170|     { file: "guide.md", where: "3 行目", kind: "avoided_term" },
+    171|     { file: "guide.md", where: "8 行目", kind: "avoided_term" },
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[20/34]⎯
+
+ FAIL  |unit| tests/unit/src/knowledge/check.test.ts > test_check_index_when_normalized_words
+AssertionError: expected [ …(3) ] to deeply equal [ …(2) ]
+
+- Expected
++ Received
+
+@@ -1,8 +1,13 @@
+  [
+    {
+      "file": "docs/index.yaml",
++     "kind": "schema",
++     "where": "schema",
++   },
++   {
++     "file": "docs/index.yaml",
+      "kind": "duplicate_term",
+      "where": "terms[1].aliases[0]",
+    },
+    {
+      "file": "guide.md",
+
+ ❯ tests/unit/src/knowledge/check.test.ts:209:5
+    207|   expect(
+    208|     issues.map(({ file, where, kind }) => ({ file, where, kind })),
+    209|   ).toEqual([
+       |     ^
+    210|     {
+    211|       file: "docs/index.yaml",
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[21/34]⎯
+
+ FAIL  |unit| tests/unit/src/knowledge/check.test.ts > test_check_index_when_glossary_avoided_term
+AssertionError: expected [ { file: 'index.yaml', …(2) }, …(2) ] to deeply equal [ { file: 'guide.md', …(2) }, …(1) ]
+
+- Expected
++ Received
+
+@@ -1,7 +1,12 @@
+  [
+    {
++     "file": "index.yaml",
++     "kind": "schema",
++     "where": "schema",
++   },
++   {
+      "file": "guide.md",
+      "kind": "avoided_term",
+      "where": "1 行目",
+    },
+    {
+
+ ❯ tests/unit/src/knowledge/check.test.ts:373:5
+    371|   expect(
+    372|     issues.map(({ file, where, kind }) => ({ file, where, kind })),
+    373|   ).toEqual([
+       |     ^
+    374|     { file: "guide.md", where: "1 行目", kind: "avoided_term" },
+    375|     { file: "guide.md", where: "3 行目", kind: "avoided_term" },
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[22/34]⎯
+
+ FAIL  |unit| tests/unit/src/knowledge/check.test.ts > test_check_index_when_old_schema
+AssertionError: expected [] to deeply equal [ { file: 'index.yaml', …(2) }, …(1) ]
+
+- Expected
++ Received
+
+- [
+-   {
+-     "file": "index.yaml",
+-     "kind": "schema",
+-     "where": "schema",
+-   },
+-   {
+-     "file": "index.yaml",
+-     "kind": "schema",
+-     "where": "tags",
+-   },
+- ]
++ []
+
+ ❯ tests/unit/src/knowledge/check.test.ts:398:5
+    396|   expect(
+    397|     issues.map(({ file, where, kind }) => ({ file, where, kind })),
+    398|   ).toEqual([
+       |     ^
+    399|     { file: "index.yaml", where: "schema", kind: "schema" },
+    400|     { file: "index.yaml", where: "tags", kind: "schema" },
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[23/34]⎯
+
+ FAIL  |unit| tests/unit/src/knowledge/check.test.ts > test_check_index_when_related_drift
+AssertionError: expected [ { file: 'index.yaml', …(2) }, …(3) ] to deeply equal [ { file: 'index.yaml', …(2) }, …(2) ]
+
+- Expected
++ Received
+
+@@ -1,8 +1,13 @@
+  [
+    {
+      "file": "index.yaml",
++     "kind": "schema",
++     "where": "schema",
++   },
++   {
++     "file": "index.yaml",
+      "kind": "untyped_related",
+      "where": "docs[2].related[0]",
+    },
+    {
+      "file": "index.yaml",
+
+ ❯ tests/unit/src/knowledge/check.test.ts:479:5
+    477|   expect(
+    478|     issues.map(({ file, where, kind }) => ({ file, where, kind })),
+    479|   ).toEqual([
+       |     ^
+    480|     {
+    481|       file: "index.yaml",
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[24/34]⎯
+
+ FAIL  |unit| tests/unit/src/knowledge/check.test.ts > test_check_index_when_change_together_missed
+AssertionError: expected [ { file: 'index.yaml', …(3) } ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   {
++     "file": "index.yaml",
++     "kind": "schema",
++     "message": "索引の `schema` が形に合いません: schema は 1 にします。直してください。",
++     "where": "schema",
++   },
++ ]
+
+ ❯ tests/unit/src/knowledge/check.test.ts:537:21
+    535|   });
+    536|   // 検証
+    537|   expect(unchecked).toEqual([]);
+       |                     ^
+    538|   expect(missed).toHaveLength(1);
+    539|   expect(missed[0]).toMatchObject({
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[25/34]⎯
+
+ FAIL  |unit| tests/unit/src/knowledge/check.test.ts > test_check_index_when_broken_related_object
+AssertionError: expected [ { file: 'index.yaml', …(3) }, …(1) ] to have a length of 1 but got 2
+
+- Expected
++ Received
+
+- 1
++ 2
+
+ ❯ tests/unit/src/knowledge/check.test.ts:570:18
+    568|   const issues = checkIndex({ index, documents });
+    569|   // 検証
+    570|   expect(issues).toHaveLength(1);
+       |                  ^
+    571|   expect(issues[0]).toMatchObject({
+    572|     file: "index.yaml",
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[26/34]⎯
+
+ FAIL  |unit| tests/unit/src/knowledge/index-shape.test.ts > test_normalize_index
+AssertionError: expected [ { where: 'schema', …(1) } ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   {
++     "message": "schema は 1 にします",
++     "where": "schema",
++   },
++ ]
+
+ ❯ tests/unit/src/knowledge/index-shape.test.ts:96:20
+     94|   const { index, problems } = normalizeIndex(structuredClone(value));
+     95|   // 検証
+     96|   expect(problems).toEqual([]);
+       |                    ^
+     97|   expect(index).toEqual(value);
+     98| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[27/34]⎯
+
+ FAIL  |unit| tests/unit/src/knowledge/index-shape.test.ts > test_normalize_index_when_invalid_avoid
+AssertionError: expected [ 'schema', 'terms[0].avoid' ] to deeply equal [ 'terms[0].avoid' ]
+
+- Expected
++ Received
+
+  [
++   "schema",
+    "terms[0].avoid",
+  ]
+
+ ❯ tests/unit/src/knowledge/index-shape.test.ts:140:52
+    138|   const { index, problems } = normalizeIndex(value);
+    139|   // 検証
+    140|   expect(problems.map((problem) => problem.where)).toEqual(["terms[0].…
+       |                                                    ^
+    141|   expect((index.terms ?? []).map((term) => term.id)).toEqual(["b"]);
+    142| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[28/34]⎯
+
+ FAIL  |unit| tests/unit/src/knowledge/index-shape.test.ts > test_normalize_index_when_doc_tags
+AssertionError: expected [ { where: 'schema', …(1) } ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   {
++     "message": "schema は 1 にします",
++     "where": "schema",
++   },
++ ]
+
+ ❯ tests/unit/src/knowledge/index-shape.test.ts:234:20
+    232|   const { index, problems } = normalizeIndex(structuredClone(value));
+    233|   // 検証
+    234|   expect(problems).toEqual([]);
+       |                    ^
+    235|   expect(index.docs[0]?.tags).toEqual(docTags);
+    236| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[29/34]⎯
+
+ FAIL  |unit| tests/unit/src/knowledge/index-shape.test.ts > test_normalize_index_when_invalid_doc_tags
+AssertionError: expected [ 'schema', 'docs[0].tags[0].name' ] to deeply equal [ 'docs[0].tags[0].name' ]
+
+- Expected
++ Received
+
+  [
++   "schema",
+    "docs[0].tags[0].name",
+  ]
+
+ ❯ tests/unit/src/knowledge/index-shape.test.ts:249:52
+    247|   const { index, problems } = normalizeIndex(value);
+    248|   // 検証
+    249|   expect(problems.map((problem) => problem.where)).toEqual([
+       |                                                    ^
+    250|     "docs[0].tags[0].name",
+    251|   ]);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[30/34]⎯
+
+ FAIL  |unit| tests/unit/src/knowledge/index-shape.test.ts > test_normalize_index_when_old_schema
+AssertionError: expected [] to deeply equal [ 'schema', 'tags' ]
+
+- Expected
++ Received
+
+- [
+-   "schema",
+-   "tags",
+- ]
++ []
+
+ ❯ tests/unit/src/knowledge/index-shape.test.ts:268:52
+    266|   const { index, problems } = normalizeIndex(structuredClone(value));
+    267|   // 検証
+    268|   expect(problems.map((problem) => problem.where)).toEqual(["schema", …
+       |                                                    ^
+    269|   expect(problems[0]?.message).toContain("mdmark upgrade");
+    270|   expect(index.docs).toEqual([doc]);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[31/34]⎯
+
+ FAIL  |unit| tests/unit/src/knowledge/index-shape.test.ts > test_normalize_index_when_related
+AssertionError: expected [ { where: 'schema', …(1) } ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   {
++     "message": "schema は 1 にします",
++     "where": "schema",
++   },
++ ]
+
+ ❯ tests/unit/src/knowledge/index-shape.test.ts:306:20
+    304|   const { index, problems } = normalizeIndex(structuredClone(value));
+    305|   // 検証
+    306|   expect(problems).toEqual([]);
+       |                    ^
+    307|   expect(index.docs).toEqual(value.docs);
+    308| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[32/34]⎯
+
+ FAIL  |unit| tests/unit/src/knowledge/index-shape.test.ts > test_normalize_index_when_invalid_related
+AssertionError: expected [ 'schema', …(4) ] to deeply equal [ 'docs[0].related[0].when', …(3) ]
+
+- Expected
++ Received
+
+  [
++   "schema",
+    "docs[0].related[0].when",
+    "docs[1].related[0].type",
+    "docs[2].related[0].note",
+    "docs[3].related[0].when",
+  ]
+
+ ❯ tests/unit/src/knowledge/index-shape.test.ts:348:52
+    346|   const { index, problems } = normalizeIndex(value);
+    347|   // 検証
+    348|   expect(problems.map((problem) => problem.where)).toEqual([
+       |                                                    ^
+    349|     "docs[0].related[0].when",
+    350|     "docs[1].related[0].type",
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[33/34]⎯
+
+ FAIL  |unit| tests/unit/src/plugin/tools.test.ts > test_run_check_tool_when_base_given
+AssertionError: expected [ { file: 'index.yaml', …(3) }, …(1) ] to match object [ { file: 'b.md', where: '', …(1) } ]
+
+- Expected
++ Received
+
+  [
+    {
++     "file": "index.yaml",
++     "kind": "schema",
++     "message": "索引の `schema` が形に合いません: schema は 1 にします。直してください。",
++     "where": "schema",
++   },
++   {
+      "file": "b.md",
+      "kind": "missed_change_together",
++     "message": "`a.md` が変わっていますが、`change_together` の相手の `b.md` は変わっていません。`b.md` も直すか確かめてください。",
+      "where": "",
+    },
+  ]
+
+ ❯ tests/unit/src/plugin/tools.test.ts:357:31
+    355|   const result = await runCheckTool({ base: BASE_TAG }, context);
+    356|   // 検証
+    357|   expect(result.json?.issues).toMatchObject([
+       |                               ^
+    358|     { file: "b.md", where: "", kind: "missed_change_together" },
+    359|   ]);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[34/34]⎯
+
+
+ Test Files  6 failed | 232 passed (238)
+      Tests  34 failed | 1606 passed (1640)
+   Start at  14:22:25
+   Duration  136.03s (worker 59%, tests 24%, import 15%, transform 2%)
+

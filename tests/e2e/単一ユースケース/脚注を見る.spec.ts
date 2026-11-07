@@ -25,7 +25,7 @@ const DOC_ID = "doc";
 
 // 用語 `ワークスペース` を持ち、描く文書を持つ索引
 const INDEX: MdmarkIndex = {
-  schema: 1,
+  schema: 2,
   docs: [{ id: DOC_ID, path: "doc.md", title: "描く文書" }],
   terms: [
     {

@@ -465,12 +465,6 @@ files:
     related:
       - to: dev/設計書/モジュール構成/ライブラリ本体/索引と用語.ts
         type: implements
-  - path: knowledge/tags.ts
-    description: モジュール構成『ライブラリ本体 / 索引と用語』のうち「タグの語彙の照合・近いタグ」を受け持つ。索引・用語・被参照の扱いを変えるときに読む。
-    tags: [topic:索引, topic:用語, topic:タグ]
-    related:
-      - to: dev/設計書/モジュール構成/ライブラリ本体/索引と用語.ts
-        type: implements
   - path: libraries.ts
     description: モジュール構成『ライブラリ本体 / 描く』のうち「マーカーの場所に外部ライブラリのモジュールを描かせる loadLibraries」を受け持つ。mount の描く流れや外部ライブラリの読み込みを変えるときに読む。
     tags: [topic:dom, topic:markdown]

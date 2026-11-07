@@ -37,7 +37,7 @@ test("test_normal", async () => {
   // 準備
   const { checkIndex } = await loadBuilt();
   const index = {
-    schema: 1,
+    schema: 2,
     docs: [
       { id: "arch", path: "arch.md", title: "アーキテクチャ" },
       {
@@ -69,7 +69,7 @@ test("test_normal_when_normalized_words", async () => {
   // 準備
   const { checkIndex } = await loadBuilt();
   const index = {
-    schema: 1,
+    schema: 2,
     docs: [{ id: "guide", path: "guide.md", title: "手引き" }],
     terms: [
       { id: "mcp", term: "MCP", meaning: "Model Context Protocol" },
@@ -112,7 +112,7 @@ test("test_normal_when_drift", async () => {
   // 準備
   const { checkIndex } = await loadBuilt();
   const index = {
-    schema: 1,
+    schema: 2,
     docs: [
       {
         id: "api",
@@ -175,7 +175,7 @@ test("test_normal_when_avoided_term", async () => {
   // 準備
   const { checkIndex } = await loadBuilt();
   const index = {
-    schema: 1,
+    schema: 2,
     docs: [{ id: "guide", path: "guide.md", title: "手引き" }],
     terms: [
       {
@@ -223,7 +223,7 @@ test("test_normal_when_glossary_avoided_term", async () => {
   // 準備
   const { checkIndex } = await loadBuilt();
   const index = {
-    schema: 1,
+    schema: 2,
     docs: [
       { id: "glossary", path: "glossary.md", title: "用語集" },
       { id: "guide", path: "guide.md", title: "手引き" },
@@ -297,27 +297,14 @@ test("test_normal_when_invalid_schema", async () => {
   expect(issues.every((issue) => issue.kind === "schema")).toBe(true);
 });
 
-// タグの語彙の重なり・切れた振り替え先・語彙に無いタグ・やめたタグを返す（正常系）
-test("test_normal_when_tag_drift", async () => {
+// `schema` が `1` で最上位にタグの語彙 `tags` を持つ索引で、`schema` のずれを返す（正常系（v0.9.0 までの索引））
+test("test_normal_when_old_schema", async () => {
   // 準備
   const { checkIndex } = await loadBuilt();
   const index = {
     schema: 1,
-    docs: [
-      {
-        id: "a",
-        path: "a.md",
-        title: "A",
-        tags: [{ name: "topic:mcp", main: true }, "topic:mcq", "topic:old"],
-      },
-    ],
-    tags: [
-      { name: "topic:mcp", aliases: ["MCP"] },
-      { name: "topic:yaml", aliases: ["MCP"] },
-      { name: "topic:yaml" },
-      { name: "topic:old", deprecated: "topic:mcp" },
-      { name: "topic:gone", deprecated: "topic:none" },
-    ],
+    tags: [{ name: "topic:mcp", aliases: ["MCP"] }],
+    docs: [{ id: "a", path: "a.md", title: "A", tags: ["MCP"] }],
   };
   const documents = { "a.md": "# A\n" };
   // 実行
@@ -326,28 +313,10 @@ test("test_normal_when_tag_drift", async () => {
   expect(
     issues.map(({ file, where, kind }) => ({ file, where, kind })),
   ).toEqual([
-    { file: "index.yaml", where: "tags[2].name", kind: "duplicate_tag" },
-    {
-      file: "index.yaml",
-      where: "tags[1].aliases[0]",
-      kind: "tag_alias_conflict",
-    },
-    {
-      file: "index.yaml",
-      where: "tags[4].deprecated",
-      kind: "broken_tag_replacement",
-    },
-    { file: "index.yaml", where: "docs[0].tags[1]", kind: "unregistered_tag" },
-    { file: "index.yaml", where: "docs[0].tags[2]", kind: "deprecated_tag" },
+    { file: "index.yaml", where: "schema", kind: "schema" },
+    { file: "index.yaml", where: "tags", kind: "schema" },
   ]);
-  const unregistered = issues.find(
-    (issue) => issue.kind === "unregistered_tag",
-  );
-  expect(unregistered?.message).toContain("topic:mcq");
-  expect(unregistered?.message).toContain("topic:mcp");
-  const deprecated = issues.find((issue) => issue.kind === "deprecated_tag");
-  expect(deprecated?.message).toContain("topic:old");
-  expect(deprecated?.message).toContain("topic:mcp");
+  expect(issues[0]?.message).toContain("mdmark upgrade");
 });
 
 // 片側だけの change_together・本文のリンクと重なる関連・文字列の関連を、関連の場所ごとに返す（正常系（関連がずれる））
@@ -355,7 +324,7 @@ test("test_normal_when_related_drift", async () => {
   // 準備
   const { checkIndex } = await loadBuilt();
   const index = {
-    schema: 1,
+    schema: 2,
     docs: [
       {
         id: "a",
@@ -417,7 +386,7 @@ test("test_normal_when_change_together_missed", async () => {
     { to, type: "change_together", when: "索引の Schema を変えるとき" },
   ];
   const index = {
-    schema: 1,
+    schema: 2,
     docs: [
       { id: "a", path: "a.md", title: "A", related: together("b") },
       { id: "b", path: "b.md", title: "B", related: together("a") },

@@ -5,7 +5,7 @@ import type {
 
 /** 3 つの文書と用語 1 つを持つ索引（`api` の `related` が `arch`、`api` の別名が `公開関数`） */
 export const ARCH_INDEX: MdmarkIndex = {
-  schema: 1,
+  schema: 2,
   docs: [
     { id: "arch", path: "設計/arch.md", title: "アーキテクチャ" },
     {

@@ -13,7 +13,7 @@ import { renderDoc } from "../../../helpers/render.ts";
 
 /** 用語 `ワークスペース` を持つ索引 */
 const TERM_INDEX: MdmarkIndex = {
-  schema: 1,
+  schema: 2,
   docs: [{ id: "cur", path: "cur.md", title: "描く文書" }],
   terms: [
     {
