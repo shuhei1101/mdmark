@@ -47,7 +47,7 @@ functions:
       2. `isPortListening`（モジュール構成『ポート』の `CONNECT_TIMEOUT_MS`）が真なら何も書かずに 0 を返す
       3. `{ hookSpecificOutput: { hookEventName: "SessionStart", additionalContext: NOT_LISTENING_CONTEXT（ポートを埋める） } }` を JSON の 1 行で書いて 0 を返す
     callees:
-      - dev/設計書/モジュール構成/ClaudeCodeプラグイン/MCPサーバー.ts#functions[readPort]
+      - dev/設計書/モジュール構成/ClaudeCodeプラグイン/ポート.ts#functions[readPort]
       - dev/設計書/モジュール構成/ClaudeCodeプラグイン/ポート.ts#functions[isPortListening]
     unit_tests:
       - name: test_run_session_start

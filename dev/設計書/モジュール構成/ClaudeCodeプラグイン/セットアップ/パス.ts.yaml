@@ -46,7 +46,7 @@ functions:
       4. ポートは `readPort`（MCP サーバーと同じ）。値の先頭の `~` はホームに展開する
     callees:
       - dev/設計書/モジュール構成/ライブラリ本体/設定を重ねて読む.ts#functions[resolveSettingsPath]
-      - dev/設計書/モジュール構成/ClaudeCodeプラグイン/MCPサーバー.ts#functions[readPort]
+      - dev/設計書/モジュール構成/ClaudeCodeプラグイン/ポート.ts#functions[readPort]
     unit_tests:
       - name: test_resolve_setup_paths
         case: 正常
@@ -102,5 +102,43 @@ functions:
     status: planned
     introduced:
       pr: 354
+  - name: readYamlFile
+    title: YAML のファイルを読む
+    kind: 関数
+    container: src/plugin/setup/paths.ts
+    usecase: 端末の状態を調べる
+    role: 処理
+    summary: YAML のファイルを読む。無ければ `undefined`、読めないかキーと値の形でなければパスと行を添えて `SetupError`（1）
+    scope: public
+    is_async: true
+    args:
+      - name: options
+        type: '{ path: string; readFile: (path: string) => Promise<string> }'
+        required: true
+        description: パスと読む関数
+    returns:
+      type: 'Promise<{ text: string; raw: Record<string, unknown> } | undefined>'
+      description: 本文と読んだ値
+    process: |-
+      1. 読む。`ENOENT` なら `undefined`
+      2. YAML として読めなければ、パスと行を添えて `SetupError`（1）
+      3. 空なら `{}`、キーと値の形でなければ `SetupError`（1）
+    unit_tests: []
+    refs:
+      - dev/設計書/インターフェース定義/ClaudeCodeプラグイン/端末の状態を調べる.ts#exceptions
+    status: planned
+    introduced:
+      pr: 354
 test_files:
   - tests/unit/src/plugin/setup/paths.test.ts
+classes:
+  - name: SetupError
+    title: setup.js の誤り
+    kind: クラス
+    inherits: Error
+    container: src/plugin/setup/paths.ts
+    usecase: 端末の状態を調べる
+    summary: '`setup.js` のサブコマンドの誤り。`exitCode`（1・2・3）を `setup.js` の終了コードにする'
+    status: planned
+    introduced:
+      pr: 354

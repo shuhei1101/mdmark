@@ -12,9 +12,9 @@ functions:
     is_async: false
     args:
       - name: options
-        type: '{ target: "settings" | "config"; schema: JsonSchema; current: Record<string, unknown>; inherited?: Record<string, unknown> | undefined }'
+        type: '{ target: "settings" | "config"; schema: JsonSchema; resolveRef: (ref: string) => JsonSchema; current: Record<string, unknown>; inherited?: Record<string, unknown> | undefined }'
         required: true
-        description: 対象・設定の Schema・今の値・端末の設定の値（`config` のとき）
+        description: 対象・設定の Schema・`$ref` を Schema に解決する関数・今の値・端末の設定の値（`config` のとき）
     returns:
       type: ConfigKey[]
       description: '`key`・`current`・`inherited`・`default`・`description`'

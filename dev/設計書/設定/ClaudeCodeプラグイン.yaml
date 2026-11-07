@@ -17,7 +17,7 @@ settings:
     reload: restart
     allowed: 1〜65535 の整数。範囲外・整数でない値は `mdmark serve` が起動せず終了コード 1 で終わる
     refs:
-      - dev/設計書/モジュール構成/ClaudeCodeプラグイン/MCPサーバー.ts#constants[DEFAULT_PORT]
+      - dev/設計書/モジュール構成/ClaudeCodeプラグイン/ポート.ts#constants[DEFAULT_PORT]
     status: planned
     visibility: user
     implementation: src/plugin/http.ts#readPort

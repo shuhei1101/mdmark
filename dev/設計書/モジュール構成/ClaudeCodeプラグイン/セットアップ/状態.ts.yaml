@@ -45,5 +45,53 @@ functions:
     status: planned
     introduced:
       pr: 354
+  - name: hasTmux
+    title: tmux があるか
+    kind: 関数
+    container: src/plugin/setup/status.ts
+    usecase: 端末の状態を調べる
+    role: 処理
+    summary: '`tmux -V` が成功するか'
+    scope: public
+    is_async: true
+    args:
+      - name: run
+        type: RunCommand
+        required: true
+        description: コマンドの実行
+    returns:
+      type: Promise<boolean>
+      description: 終了コードが 0 か
+    process: 1. tmux -V` が成功するかを終了コードで返す
+    unit_tests: []
+    refs:
+      - dev/設計書/外部ライブラリ/tmux#catalogs
+    status: planned
+    introduced:
+      pr: 354
+  - name: hasSession
+    title: セッションがあるか
+    kind: 関数
+    container: src/plugin/setup/status.ts
+    usecase: 端末の状態を調べる
+    role: 処理
+    summary: '`tmux has-session -t ={セッション名}` が成功するか'
+    scope: public
+    is_async: true
+    args:
+      - name: options
+        type: '{ run: RunCommand; session: string }'
+        required: true
+        description: コマンドの実行とセッション名
+    returns:
+      type: Promise<boolean>
+      description: 終了コードが 0 か
+    process: 1. tmux has-session -t ={セッション名}` が成功するかを終了コードで返す
+    unit_tests: []
+    refs:
+      - dev/設計書/外部ライブラリ/tmux#catalogs
+    status: planned
+    introduced:
+      pr: 354
 test_files:
   - tests/unit/src/plugin/setup/status.test.ts
