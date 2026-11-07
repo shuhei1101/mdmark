@@ -19,7 +19,7 @@
 
 | 対象 | 方針 | 補足 |
 | --- | --- | --- |
-| プレビューの配色 | 文書のマーカー・設定ファイルの明暗と `mdmark.preview.theme` を、要件で決めた優先で当てる | 優先は要件の `未確定` |
+| プレビューの配色 | 文書のマーカー・設定ファイルの明暗と `mdmark.preview.theme` を、文書のマーカー → `mdmark.preview.theme`（`auto` 以外のとき）→ 設定ファイルの明暗 → VS Code のテーマの順で当てる | - |
 | HTML への書き出し | `mdmark.exportHtml`・`mdmark.openInBrowser`・`mdmark.printToPdf` の HTML に文書のページの設定を当てる | 処理はライブラリ本体と同じものを使う |
 
 ## 設計書の確定コミット

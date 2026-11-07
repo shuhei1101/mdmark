@@ -62,11 +62,11 @@ scenarios:
         participant M as mdmark
         P->>M: ページの設定を書いた設定と Markdown を渡して描かせる
         M->>M: 設定に文書のマーカーを重ねる
-        M-->>P: theme-slate の明るい配色と、右側の目次を出したままにする文書
+        M-->>P: theme-slate の明るい配色と、目次を出すボタンで開閉する右側の目次の文書
         P-->>U: 文書を表示
     expected:
       - 描く先の要素の地の色の計算値が theme-slate の明るい配色の `--mdmark-color-bg` の値
-      - 右側の目次が、ポインターを右端へ寄せなくても表示されたままになっている（`side-toc.mode` の `fixed` と同じ）
+      - 目次を出すボタンがあり `aria-expanded` が `false` で、右端にポインターを置いても右側の目次が表示されていない（`side-toc.mode` の `fixed` と同じ）
     test: test_normal_when_marker_overrides_config
     refs:
       - dev/設計書/シナリオ/単一ユースケース/目次と見出しのアンカーで節へ移る#scenarios[正常シナリオ（右側の目次をサイドバーで出す）]
@@ -74,8 +74,8 @@ scenarios:
   - name: 正常シナリオ（OS の設定に合わせる）
     setup:
       - name: mdmark を読むページ
-        description: 正常シナリオと同じ。設定の明暗のキーに `dark` を書く
-        notes: OS の配色はライト
+        description: 正常シナリオと同じ。設定の明暗のキーに `light` を書く
+        notes: OS の配色はライトで、描く先の要素の祖先（`body`）にダークを表す class（`mdmark-theme-dark`）を付ける
       - name: OS に合わせる Markdown
         description: '先頭の行に `<!-- page: scheme=auto -->` を持つ文書'
       - name: Mock
@@ -86,11 +86,11 @@ scenarios:
         participant P as 使う側のページ
         participant M as mdmark
         P->>M: 設定と Markdown を渡して描かせる
-        M->>M: 文書のマーカーで設定の明暗を外し、OS の設定に戻す
-        M-->>P: OS の配色の文書
+        M->>M: 文書のマーカーで設定の明暗を外し、祖先の class → OS の設定の順で決める
+        M-->>P: 祖先の class の配色の文書
         P-->>U: 文書を表示
     expected:
-      - 設定の明暗がダークでも、描く先の要素の地の色の計算値が dev-swiss の明るい配色の `--mdmark-color-bg` の値
+      - 設定の明暗と OS の配色がライトでも、描く先の要素の地の色の計算値が、祖先の class の dev-swiss の暗い配色の `--mdmark-color-bg` の値
     test: test_normal_when_auto
   - name: 正常シナリオ（本文を差し替える）
     setup:
@@ -137,7 +137,7 @@ scenarios:
         description: 正常シナリオと同じ。設定の明暗のキーに `dark` を書く
         notes: OS の配色はライト。画面の大きさは 1280×800px
       - name: 知らないキーと値を書いた Markdown
-        description: '先頭の行に `<!-- page: scheme=sepia size=wide toc=fixed -->` を持ち、h2 を 3 つ持つ文書'
+        description: '先頭の行に `<!-- page: scheme=sepia theme=theme-unknown size=wide toc=fixed -->` を持ち、h2 を 3 つ持つ文書'
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
@@ -150,9 +150,9 @@ scenarios:
         M-->>P: 書き方の警告と、設定の明暗と toc を当てた文書
         P-->>U: 書き方の警告と本文を表示
     expected:
-      - 文書の先頭に、`scheme=sepia` と `size=wide` を挙げ、書けるキーと値を書いた書き方の警告が 1 つある
-      - 描く先の要素の地の色の計算値が、設定の明暗の dev-swiss の暗い配色の `--mdmark-color-bg` の値
-      - 右側の目次が表示されたままになっている
+      - 文書の先頭に、`scheme=sepia`・`theme=theme-unknown`・`size=wide` を挙げ、書けるキーと値を書いた書き方の警告が 1 つある
+      - 描く先の要素の地の色の計算値が、設定の明暗と既定のテーマ（dev-swiss）の暗い配色の `--mdmark-color-bg` の値
+      - 目次を出すボタンがあり `aria-expanded` が `false` で、右端にポインターを置いても右側の目次が表示されていない（`side-toc.mode` の `fixed` と同じ）
     test: test_error_when_unknown_key_or_value
   - name: 異常シナリオ（文書の先頭に無いマーカー）
     setup:
@@ -192,4 +192,4 @@ minimal_guarantee: 知らないキー・値と、文書の先頭に無いマー�
 test_file: tests/e2e/単一ユースケース/ページの設定を文書で指定する.spec.ts
 notes:
   文書の先頭: '最初の見出し・段落・表・リスト・コードブロックより前。空の行と、ほかのマーカー（`<!-- features: … -->` など）は前にあってよい'
-  書けるキー: '`scheme`（`light`・`dark`・`auto`）・`theme`（`colorTheme` と同じ名前）・`toc`（`hover`・`fixed`）。右側の目次と先頭へ戻るボタンのオン・オフは、同じ文書の先頭の `<!-- features: -side-toc -back-to-top -->` で書く'
+  書けるキー: '`scheme`（`light`・`dark`・`auto`。`auto` は設定の明暗だけを外し、描く先の祖先の class → OS の設定の順で決める。VS Code のプレビューでは `mdmark.preview.theme` → VS Code のテーマの順）・`theme`（`colorTheme` と同じ名前）・`toc`（`hover`・`fixed`）。右側の目次と先頭へ戻るボタンのオン・オフは、同じ文書の先頭の `<!-- features: -side-toc -back-to-top -->` で書く'
