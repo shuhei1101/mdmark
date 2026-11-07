@@ -11,15 +11,14 @@
     "typecheck": "tsc --noEmit",
     "typecheck:vscode": "tsc --noEmit -p vscode",
     "lint": "biome check .",
-    "lint:eslint": "node tools/eslint/node_modules/eslint/bin/eslint.js -c tools/eslint/eslint.config.js --max-warnings 0",
+    "lint:eslint": "node scripts/eslint.ts",
     "check": "npm run lint && npm run lint:eslint && npm run typecheck && npm run typecheck:vscode",
     "build": "node scripts/build.ts",
     "test:integration": "vitest run --project 'integration*'",
     "test:e2e": "playwright test",
     "test": "npm run test:unit && npm run test:integration",
     "storybook:render": "node scripts/storybook-render.ts",
-    "storybook": "storybook dev --ci --no-open",
-    "prepare": "lefthook install && npm ci --prefix tools/eslint"
+    "storybook": "storybook dev --ci --no-open"
   },
   "devDependencies": {
     "@babel/standalone": "8.1.1",
