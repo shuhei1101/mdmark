@@ -6,9 +6,9 @@ scenarios:
         description: 端末の設定（`MDMARK_CONFIG` が指すパス）・状態の置き場所（`MDMARK_STATE_DIR`）・Claude Code の設定のフォルダ（`CLAUDE_CONFIG_DIR`）を、どれも空の一時フォルダにする
       - name: 文書のフォルダ
         description: '`mdmark.config.yaml` と索引の無いフォルダに、Markdown を 1 つ置く'
-      - name: 空いたポートと tmux のセッション名
-        description: '`MDMARK_PORT` に待ち受けるプロセスの無いポートを、tmux のセッション名にテストだけの名前を指定する'
-        notes: 手元の常駐サーバーが使う 8782 と既定のセッション名を避ける
+      - name: 手元と別の tmux サーバーと空いたポート
+        description: '`TMUX_TMPDIR` を空の一時フォルダにして手元と別の tmux サーバーを先に起動しておき、`MDMARK_PORT` に待ち受けるプロセスの無いポートを指定する'
+        notes: 手元の常駐サーバーが使う 8782 と手元の tmux のセッションを避ける。tmux サーバーを先に起動しておくと、`MDMARK_PORT` がセッションへ渡る経路を確かめられる
       - name: Mock
         description: スキルを読むモデルの代わりに、スキルの手順が呼ぶスクリプトを手順の順に流し、利用者への確認には決めた答えを返す。Claude Code のセッションの代わりに、SessionStart のフックを流し、`.mcp.json` の接続先へ HTTP でつなぐ MCP のクライアントを使う
     flow: |-
@@ -46,8 +46,7 @@ scenarios:
         description: 正常シナリオを終えた後の端末の設定・状態の置き場所・tmux のセッションと、待ち受けている常駐サーバー
       - name: 入れ直したプラグイン
         description: プラグインを外して入れ直した Claude Code の設定のフォルダ
-      - &id001
-        name: 空いたポートと tmux のセッション名
+      - name: 手元と別の tmux サーバーと空いたポート
         description: 正常シナリオと同じ
       - name: Mock
         description: 正常シナリオと同じ。端末の設定の各キーの確認には、今の値のままにする答えを返す
@@ -76,7 +75,8 @@ scenarios:
         description: 正常シナリオを終えた後の端末の設定・状態の置き場所
       - name: 止めた常駐サーバー
         description: tmux のセッションを閉じ、`MDMARK_PORT` のポートで待ち受けるプロセスが無い状態
-      - *id001
+      - name: 手元と別の tmux サーバーと空いたポート
+        description: 正常シナリオと同じ
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-

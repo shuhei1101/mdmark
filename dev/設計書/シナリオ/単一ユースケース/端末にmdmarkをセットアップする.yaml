@@ -5,9 +5,9 @@ scenarios:
       - name: 空の端末
         description: 端末の設定（`MDMARK_CONFIG` が指すパス）・状態の置き場所（`MDMARK_STATE_DIR`）・Claude Code の設定のフォルダ（`CLAUDE_CONFIG_DIR`）を、どれも空の一時フォルダにする
         notes: '`MDMARK_CONFIG` は既定の `${XDG_CONFIG_HOME:-~/.config}/mdmark/settings.yaml` と違うパスにする'
-      - name: 空いたポートと tmux のセッション名
-        description: '`MDMARK_PORT` に待ち受けるプロセスの無いポートを、端末の設定の tmux のセッション名にテストだけの名前を指定する'
-        notes: 手元の常駐サーバーが使う 8782 と既定のセッション名を避ける
+      - name: 手元と別の tmux サーバーと空いたポート
+        description: '`TMUX_TMPDIR` を空の一時フォルダにして手元と別の tmux サーバーを先に起動しておき、`MDMARK_PORT` に待ち受けるプロセスの無いポートを指定する'
+        notes: 手元の常駐サーバーが使う 8782 と手元の tmux のセッションを避ける。tmux サーバーを先に起動しておくと、`MDMARK_PORT` がセッションへ渡る経路を確かめられる
       - name: Mock
         description: スキルを読むモデルの代わりに、スキルの手順が呼ぶスクリプトを手順の順に流し、利用者への確認には決めた答えを返す。端末の設定のパスは `MDMARK_CONFIG` のパスを、キーは `features.table` だけ `false` を、ほかは既定のままを答え、書いてよいかには認める答えを返す
     flow: |-
@@ -35,7 +35,7 @@ scenarios:
     expected:
       - '`MDMARK_CONFIG` のパスに端末の設定があり、`features.table: false` を持ち、`mdmark check` と同じ点検が端末の設定の形のずれを返さない'
       - '`CLAUDE_CONFIG_DIR` の `settings.json` の `env` に、端末の設定のパスの `MDMARK_CONFIG` がある'
-      - 端末の設定のセッション名の tmux のセッションが 1 つだけあり、`MDMARK_PORT` のポートで待ち受けるプロセスが 1 つだけある
+      - 端末の設定のセッション名の tmux のセッションが 1 つだけあり、先に起動していた tmux サーバーの中でも `MDMARK_PORT` のポートで待ち受けるプロセスが 1 つだけある（8782 では待ち受けない）
       - 状態の置き場所に常駐サーバーのログがあり、待ち受ける URL の 1 行を含む
       - '`tools/list` が `export_html`・`build_site`・`check` を返す'
       - SessionStart のフックが何も出さずに終了コード 0 で終わる
@@ -45,8 +45,7 @@ scenarios:
     setup:
       - name: セットアップ済みの端末
         description: 正常シナリオを終えた後の端末の設定・`settings.json`・状態の置き場所・tmux のセッションと、待ち受けている常駐サーバー
-      - &id001
-        name: 空いたポートと tmux のセッション名
+      - name: 手元と別の tmux サーバーと空いたポート
         description: 正常シナリオと同じ
       - name: Mock
         description: 正常シナリオと同じ。端末の設定の各キーには今の値のままを答える
@@ -76,7 +75,8 @@ scenarios:
     setup:
       - name: 止めた常駐サーバー
         description: 正常シナリオを終えた後の端末から、tmux のセッションを閉じ、`MDMARK_PORT` のポートで待ち受けるプロセスが無い状態
-      - *id001
+      - name: 手元と別の tmux サーバーと空いたポート
+        description: 正常シナリオと同じ
       - name: Mock
         description: 正常シナリオと同じ。端末の設定の各キーには今の値のままを答える
     flow: |-
@@ -104,8 +104,12 @@ scenarios:
   - name: 正常シナリオ（古いバージョンの端末の設定）
     setup:
       - name: 古いバージョンの端末の設定
-        description: '`MDMARK_CONFIG` のパスに、移行の手順が要る前のバージョンの書き方を持つ端末の設定を置く'
-      - *id001
+        description: '`MDMARK_CONFIG` のパスに、`version` が今のバージョンより前の端末の設定を置く'
+      - name: テスト専用の移行の手順
+        description: 一時フォルダに、端末の設定のバージョンと今のバージョンの間の移行の手順を 1 版だけ置き、その手順の置き場所を移行の手順の読み取り先にする
+        notes: 今の版には移行の手順が無いため、`mdmark upgrade` と同じ手順の当て方を確かめるテストだけの手順を使う
+      - name: 手元と別の tmux サーバーと空いたポート
+        description: 正常シナリオと同じ
       - name: Mock
         description: 正常シナリオと同じ。移行してよいかには認める答えを、各キーには今の値のままを答える
     flow: |-
@@ -114,7 +118,7 @@ scenarios:
         participant C as Claude Code（global-setup）
         participant F as 端末の設定
         W->>C: /mdmark:global-setup
-        C-->>W: 端末の設定のバージョンが古いことと、当てる移行の手順
+        C-->>W: 端末の設定の version が古いことと、当てる移行の手順
         W->>C: 移行してよい
         C->>F: 写しを残して移行の手順を当てる
         loop 端末の設定のキーごと
@@ -123,14 +127,15 @@ scenarios:
         end
         C-->>W: 移行したこと・写しのパス
     expected:
-      - 端末の設定が今のバージョンの書き方になり、`mdmark check` と同じ点検が端末の設定の形のずれを返さない
+      - 端末の設定にテスト専用の移行の手順が当たり、`version` が今のバージョンになり、`mdmark check` と同じ点検が端末の設定の形のずれを返さない
       - 移行する前の端末の設定の写しが残り、最後の報告にそのパスが出る
     test: test_normal_when_settings_outdated
   - name: 異常シナリオ（書くことを断る）
     setup:
       - name: 空の端末
         description: 正常シナリオと同じ
-      - *id001
+      - name: 手元と別の tmux サーバーと空いたポート
+        description: 正常シナリオと同じ
       - name: Mock
         description: 正常シナリオと同じ。書いてよいかには断る答えを返す
     flow: |-
@@ -149,7 +154,7 @@ scenarios:
         C-->>W: 端末の設定と settings.json を書かなかったこと
     expected:
       - '`MDMARK_CONFIG` のパスに端末の設定が無く、`settings.json` が作られていない'
-      - 端末の設定のセッション名の代わりに既定のセッション名の tmux のセッションで常駐サーバーが待ち受ける
+      - 既定のセッション名 `mdmark-mcp` の tmux のセッションで、常駐サーバーが `MDMARK_PORT` のポートで待ち受ける
       - 最後の報告に、端末の設定と `settings.json` を書かなかったことが出る
     test: test_error_when_write_declined
   - name: 異常シナリオ（tmux が無い）
@@ -158,9 +163,9 @@ scenarios:
         description: 正常シナリオと同じ
       - name: tmux の無い PATH
         description: '`PATH` から tmux を外す'
-      - *id001
-      - &id002
-        name: Mock
+      - name: 手元と別の tmux サーバーと空いたポート
+        description: 正常シナリオと同じ
+      - name: Mock
         description: 正常シナリオと同じ
     flow: |-
       sequenceDiagram
@@ -181,7 +186,10 @@ scenarios:
         description: 正常シナリオと同じ
       - name: ポートを使うほかのプロセス
         description: '`MDMARK_PORT` のポートを mdmark ではないプロセスが待ち受ける'
-      - *id002
+      - name: 手元と別の tmux サーバーと空いたポート
+        description: 正常シナリオと同じ
+      - name: Mock
+        description: 正常シナリオと同じ
     flow: |-
       sequenceDiagram
         actor W as 文書を書く人
@@ -193,11 +201,11 @@ scenarios:
         T->>S: 起動
         S-->>T: ポートが使われている・終了コード 1
         C->>C: ログを読む
-        C-->>W: ポートが使われていることと直し方
+        C-->>W: ポートが使われていることと修正方法
     expected:
       - 端末の設定のセッション名の tmux のセッションが残らない
       - '`MDMARK_PORT` のポートは、ほかのプロセスが待ち受けたまま'
-      - 最後の報告に、ポートが使われていることと、`settings.json` の `env` と端末の設定の両方に同じ `MDMARK_PORT` を書く直し方が出る
+      - 最後の報告に、ポートが使われていることと、`settings.json` の `env` の `MDMARK_PORT` を空いたポートに変え、セッションを開き直して `global-setup` を呼び直す修正方法が出る
     test: test_error_when_port_in_use
 lead: 文書を書く人が Claude Code で `global-setup` を呼び、端末の設定を作る・移行し、tmux のセッションで常駐サーバーを起動して、つながりとフックを確かめる。
 issue: 165

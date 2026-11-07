@@ -3,8 +3,8 @@ scenarios:
   - name: 正常シナリオ
     setup:
       - name: 起動した常駐サーバー
-        description: 端末の設定のセッション名の tmux のセッションで、`MDMARK_PORT` に空いたポートを指定して `mdmark serve` を起動している
-        notes: 手元の常駐サーバーが使う 8782 と既定のセッション名を避ける
+        description: 手元と別の tmux サーバー（`TMUX_TMPDIR` を空の一時フォルダにする）の、端末の設定のセッション名のセッションで、`MDMARK_PORT` に空いたポートを指定して `mdmark serve` を起動している
+        notes: 手元の常駐サーバーが使う 8782 と手元の tmux のセッションを避ける
       - name: Mock
         description: Claude Code の代わりに、プラグインの `hooks/hooks.json` の SessionStart のコマンドを流し、`.mcp.json` の接続先へ HTTP でつなぐ MCP のクライアントを使う。モデルは使わない
     flow: |-
