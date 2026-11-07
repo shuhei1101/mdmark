@@ -23,3 +23,9 @@ items:
     summary: tmux のセッションで mdmark serve を起動し、待ち受けと tools/list を確かめる（setup.js start-server）
   - page: 文書のフォルダの設定を書く.ts.yaml
     summary: 答えた値で文書のフォルダの mdmark.config.yaml を作る・書き換える（setup.js write-config）
+  - page: CSSのテンプレートの一覧を返す.ts.yaml
+    summary: 端末の設定のフォルダの CSS のテンプレートを、名前・説明・タグ・パスつきで返す（list_templates）
+  - page: CSSのテンプレートを登録する.ts.yaml
+    summary: 作業のフォルダの CSS をテンプレートにコピーし、名前・説明・タグを索引に記載する（add_template）
+  - page: CSSのテンプレートを配置する.ts.yaml
+    summary: テンプレートの CSS を配置先へコピーし、theme に記載する値を返す（apply_template）

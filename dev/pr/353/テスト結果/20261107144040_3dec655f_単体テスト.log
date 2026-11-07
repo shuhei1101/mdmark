@@ -1,0 +1,14 @@
+$ npm run test:unit
+
+> test:unit
+> vitest run --project 'unit*'
+
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-plugin-css-templates
+
+
+ Test Files  239 passed (239)
+      Tests  1683 passed (1683)
+   Start at  14:38:28
+   Duration  126.25s (worker 53%, tests 28%, import 18%, transform 2%)
+

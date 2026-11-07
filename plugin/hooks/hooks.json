@@ -2,7 +2,7 @@
   "hooks": {
     "PreToolUse": [
       {
-        "matcher": "mcp__plugin_mdmark_mdmark__check|mcp__plugin_mdmark_mdmark__export_html|mcp__plugin_mdmark_mdmark__build_site",
+        "matcher": "mcp__plugin_mdmark_mdmark__check|mcp__plugin_mdmark_mdmark__export_html|mcp__plugin_mdmark_mdmark__build_site|mcp__plugin_mdmark_mdmark__list_templates|mcp__plugin_mdmark_mdmark__add_template|mcp__plugin_mdmark_mdmark__apply_template",
         "hooks": [
           {
             "type": "command",

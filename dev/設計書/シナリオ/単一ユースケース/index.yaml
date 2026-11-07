@@ -144,3 +144,7 @@ items:
     summary: 文書を書く人が Claude Code で setup を呼び、文書のフォルダの mdmark.config.yaml をキーごとに確認しながら作る・修正する
   - page: セッションの開始で常駐サーバーの状態を受け取る.yaml
     summary: セッションの開始で、常駐サーバーが待ち受けていないときだけ SessionStart のフックが起動の仕方を伝え、起動しているときは instructions がセッション名を伝える
+  - page: CSSのテンプレートを登録する.yaml
+    summary: Claude Code が MCP のツールで、作業のフォルダの CSS を名前・説明・タグつきで端末の設定のフォルダのテンプレートに登録する
+  - page: CSSのテンプレートを配置する.yaml
+    summary: Claude Code が MCP のツールで、テンプレートの一覧から CSS を選んで作業のフォルダへ配置し、theme に記載する値を受け取る

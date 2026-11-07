@@ -15,5 +15,6 @@ Claude Code プラグインの MCP サーバー・フック・使い方集と、
 | [セットアップ](./セットアップ/) | global-setup・setup のスキルが呼ぶ setup.js のサブコマンド |
 | [ポート.ts](./ポート.ts.yaml) | 127.0.0.1 のポートが待ち受けているかの確かめ |
 | [SessionStartのフック.ts](./SessionStartのフック.ts.yaml) | SessionStart のフックで常駐サーバーが待ち受けていないことを伝える |
+| [CSSのテンプレート.ts](./CSSのテンプレート.ts.yaml) | CSS のテンプレートの索引の読み取り・検査・書き込みと、一覧・登録・配置 |
 
 <!-- /table -->

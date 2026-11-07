@@ -19,5 +19,8 @@ Claude Code プラグインの MCP のツール・フックと、スキルが呼
 | [端末の設定を書く.ts](./端末の設定を書く.ts.yaml) | 答えた値で端末の設定を作る・書き換え、既定のパスでなければ settings.json の env に MDMARK_CONFIG を書く（setup.js write-settings） |
 | [常駐サーバーを起動する.ts](./常駐サーバーを起動する.ts.yaml) | tmux のセッションで mdmark serve を起動し、待ち受けと tools/list を確かめる（setup.js start-server） |
 | [文書のフォルダの設定を書く.ts](./文書のフォルダの設定を書く.ts.yaml) | 答えた値で文書のフォルダの mdmark.config.yaml を作る・書き換える（setup.js write-config） |
+| [CSSのテンプレートの一覧を返す.ts](./CSSのテンプレートの一覧を返す.ts.yaml) | 端末の設定のフォルダの CSS のテンプレートを、名前・説明・タグ・パスつきで返す（list_templates） |
+| [CSSのテンプレートを登録する.ts](./CSSのテンプレートを登録する.ts.yaml) | 作業のフォルダの CSS をテンプレートにコピーし、名前・説明・タグを索引に記載する（add_template） |
+| [CSSのテンプレートを配置する.ts](./CSSのテンプレートを配置する.ts.yaml) | テンプレートの CSS を配置先へコピーし、theme に記載する値を返す（apply_template） |
 
 <!-- /table -->

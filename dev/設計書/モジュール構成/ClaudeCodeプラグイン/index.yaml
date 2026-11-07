@@ -15,3 +15,5 @@ items:
     summary: 127.0.0.1 のポートが待ち受けているかの確かめ
   - page: SessionStartのフック.ts.yaml
     summary: SessionStart のフックで常駐サーバーが待ち受けていないことを伝える
+  - page: CSSのテンプレート.ts.yaml
+    summary: CSS のテンプレートの索引の読み取り・検査・書き込みと、一覧・登録・配置

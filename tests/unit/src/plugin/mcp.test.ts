@@ -39,7 +39,7 @@ async function connectClient(): Promise<Client> {
   return client;
 }
 
-// 3 つのツールと instructions と annotations を出す（正常系）
+// 6 つのツールと instructions と annotations を出す（正常系）
 test("test_create_mcp_server", async () => {
   // 準備
   const { INSTRUCTIONS } = await loadMcp();
@@ -51,7 +51,7 @@ test("test_create_mcp_server", async () => {
   expect(tools.map((tool) => tool.name).sort()).toEqual(
     TOOLS.map((tool) => tool.name).sort(),
   );
-  expect(tools).toHaveLength(3);
+  expect(tools).toHaveLength(6);
   for (const tool of tools) {
     expect(Object.keys(tool.inputSchema.properties ?? {})).not.toContain(
       "project_dir",
@@ -60,7 +60,7 @@ test("test_create_mcp_server", async () => {
   const readOnlyNames = tools
     .filter((tool) => tool.annotations?.readOnlyHint === true)
     .map((tool) => tool.name);
-  expect(readOnlyNames).toEqual(["check"]);
+  expect(readOnlyNames.sort()).toEqual(["check", "list_templates"]);
   const instructions = INSTRUCTIONS.replace("{session}", "mdmark-test");
   expect(client.getInstructions()).toBe(instructions);
   expect(instructions).toContain("mdmark-test");
