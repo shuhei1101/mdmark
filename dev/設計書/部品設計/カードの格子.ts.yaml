@@ -1,0 +1,64 @@
+title: カードの格子
+lead: cards の範囲のリストの項目を、アイコン・タイトル・説明を持つカードにして、入るだけ横に並べる。描く先の要素が狭いときは書いた順に 1 列に積む。
+implementation: src/parts/card-grid.ts#renderCardGrid
+story: Parts/CardGrid
+test_file: tests/integration/lib/card-grid.story.test.ts
+args:
+- name: items
+  type: オブジェクトの配列
+  required: true
+  description: 項目ごとのカード。1 個以上
+- name: items[].title
+  type: 文字列（HTML）
+  required: true
+  description: カードのタイトル。項目の最初のリンクの文字（リンクの無い項目は最初の行の文字）
+- name: items[].href
+  type: 文字列
+  required: false
+  description: リンク先。無いときはリンクではないカード（`div`）にする
+- name: items[].icon
+  type: 文字列（HTML）
+  required: false
+  description: アイコンの HTML（記法のアイコンの要素）。無いときはアイコンを置かず、タイトルを左端から始める
+- name: items[].description
+  type: 文字列（HTML）
+  required: false
+  description: タイトルの下に出す説明
+states:
+- name: Wide
+  description: 4 項目を 1280px の幅に並べる（3 列）
+  args:
+  - name: items
+    value: '[{"title":"使い方","href":"使い方/README.md","icon":"book","description":"導入と使い方の手順"},{"title":"リファレンス","href":"リファレンス/README.md","description":"名前から引く一覧"},{"title":"example.com/docs","href":"https://example.com/docs"},{"title":"始める","href":"はじめに/README.md","icon":"rocket"}]'
+- name: NoLink
+  description: リンクを持たない項目と、リンクを持つ項目
+  args:
+  - name: items
+    value: '[{"title":"準備中","icon":"clock","description":"次の版で追加する"},{"title":"使い方","href":"使い方/README.md","icon":"book","description":"導入と使い方の手順"}]'
+- name: Long
+  description: 長いタイトルと説明。同じ行のカードの高さが揃い、説明が折り返す
+  args:
+  - name: items
+    value: '[{"title":"設定を重ねて読む仕組みと優先の順番","href":"a.md","icon":"book","description":"端末の設定と、文書のフォルダから上のフォルダの設定ファイルを重ねる順・切り替え・相対パスの基準・優先の順番"},{"title":"変更履歴","href":"b.md","description":"版ごとの変更の一覧"},{"title":"始める","href":"c.md","icon":"rocket"}]'
+- name: Narrow
+  description: 描く先の要素の幅が 390px。1 列に積む
+  args:
+  - name: items
+    value: Wide と同じ
+  notes:
+    定義: ストーリーは幅 390px の枠に描く
+css_properties:
+- name: --mdmark-space
+  syntax: <length>
+  default: 1rem
+  description: 格子の上下の余白
+accessibility:
+- 格子は `ul`、カードは `li` に入れ、書いた順の DOM の並びのまま並べる
+- リンクのカードは 1 つの `a` で、Tab で書いた順にフォーカスでき、フォーカスの輪郭を出す。リンクの無いカードは Tab で止まらない
+- リンクのカードはタイトルをリンクの色と下線にし、色だけでリンクと分からせない。アイコンは `aria-hidden`
+refs:
+- dev/設計書/インターフェース定義/ライブラリ本体/文書をHTML文字列にする.ts#constraints[カードの格子]
+- dev/設計書/部品設計/カード.ts#
+status: planned
+notes:
+  HTML: '`<ul class="mdmark-card-grid"><li><a class="mdmark-card-grid-item" href="{href}">{icon}<span class="mdmark-card-grid-title">{title}</span><p class="mdmark-card-grid-desc">{description}</p></a></li>…</ul>`（リンクの無い項目は `a` の代わりに `div`）。列は `repeat(auto-fill, minmax(min(100%, 14rem), 1fr))`。モックは `dev/mock/components/card-grid/`（確認ログ）'
