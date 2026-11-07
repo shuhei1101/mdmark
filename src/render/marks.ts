@@ -4,6 +4,7 @@ import { extensionFor, type MdmarkMarkArgs } from "../extensions.ts";
 import { resolveFeatures } from "../features.ts";
 import { renderEmbed } from "../parts/embed.ts";
 import { markOwn } from "../parts/own.ts";
+import { readPageSettings } from "./page.ts";
 import type { RenderEnv } from "./parser.ts";
 import { warningBlock } from "./syntax/warnings.ts";
 
@@ -13,6 +14,9 @@ export const MARK_PATTERN =
 
 /** 機能のオン・オフを書く印の名前 */
 export const FEATURES_MARK = "features";
+
+/** 明暗・テーマ・右側の目次の出し方を書く印の名前 */
+export const PAGE_MARK = "page";
 
 /** 記法の印の名前から、その記法の機能の名前を引く */
 export const SYNTAX_MARKS: Readonly<Record<string, string>> = {
@@ -40,6 +44,7 @@ export const SYNTAX_MARKS: Readonly<Record<string, string>> = {
   pagebreak: "pagebreak",
   include: "include",
   wide: "wide",
+  cards: "card-grid",
 };
 
 /** 図の部品の印の名前。同じ名前の拡張と対応表が先に使われる */
@@ -171,6 +176,7 @@ function closeOf(tokens: Token[], index: number, mark: Mark): number {
 function isHandledMark(name: string, env: RenderEnv): boolean {
   return (
     name === FEATURES_MARK ||
+    name === PAGE_MARK ||
     Object.hasOwn(SYNTAX_MARKS, name) ||
     Object.hasOwn(env.libraries, name)
   );
@@ -275,10 +281,45 @@ function takeDefinitionRanges(state: StateCore): void {
   state.tokens = out;
 }
 
-/** 印を拾い、`features` は引数を環境へ足し、対応表と拡張の名前は印の場所の要素にし、記法の印は印のトークンにし、それ以外は取り除く */
+/** 印と空白だけの `html_block` か */
+function isMarksOnly(token: Token): boolean {
+  return (
+    token.type === "html_block" &&
+    token.content.replace(MARK_PATTERN, "").trim() === ""
+  );
+}
+
+/** 印だけの `html_block` の page の印を拾う。文書の先頭（それより前が印だけの `html_block`）の印は引数を環境へ足して取り除き、先頭に無い印は書き方の警告に置き換える */
+function takePageMarks(state: StateCore): void {
+  const env = state.env as RenderEnv;
+  let atTop = true;
+  state.tokens = state.tokens.map((token) => {
+    const mark =
+      token.type === "html_block" ? soleMark(token.content) : undefined;
+    if (mark?.name !== PAGE_MARK || mark.closing) {
+      atTop &&= isMarksOnly(token);
+      return token;
+    }
+    if (atTop) {
+      env.pageMarks ??= [];
+      env.pageMarks.push({ raw: mark.raw, args: mark.args });
+      token.content = "";
+      return token;
+    }
+    return warningBlock(state, {
+      mark: mark.raw,
+      ...(token.map?.[0] === undefined ? {} : { line: token.map[0] }),
+      message:
+        "は文書の先頭（最初の見出し・段落・表・リスト・コードブロックより前）に書きます。この場所のマーカーは使っていません。",
+    });
+  });
+}
+
+/** 印を拾い、`features` は引数を環境へ足し、`page` は文書の先頭なら環境へ足し、対応表と拡張の名前は印の場所の要素にし、記法の印は印のトークンにし、それ以外は取り除く */
 export function takeMarks(state: StateCore): void {
   const env = state.env as RenderEnv;
   takeDefinitionRanges(state);
+  takePageMarks(state);
   for (const token of state.tokens) {
     if (token.type === "html_block") {
       const mark = soleSyntaxMark(token.content, env);
@@ -306,6 +347,35 @@ export function resolveDocumentFeatures(state: StateCore): void {
     defaults: env.defaults,
     args: env.featureArgs,
   });
+}
+
+/** `takeMarks` が拾った先頭の page の印を読んで `env.page` に入れ、知らないキー・値があれば文書の先頭に書き方の警告を差し込む */
+export function resolvePageSettings(state: StateCore): void {
+  const env = state.env as RenderEnv;
+  const marks = env.pageMarks ?? [];
+  const keys: Record<string, string> = {};
+  const args: string[] = [];
+  for (const mark of marks) {
+    args.push(...mark.args.args);
+    for (const [key, value] of Object.entries(mark.args.keys)) {
+      // 同じキーは後に書いた値を使う
+      delete keys[key];
+      keys[key] = value;
+    }
+  }
+  const { settings, unknown } = readPageSettings({ args, keys });
+  env.page = settings;
+  const [first] = marks;
+  if (!first || unknown.length === 0) {
+    return;
+  }
+  const listed = unknown.map((arg) => `\`${arg}\``).join("・");
+  state.tokens.unshift(
+    warningBlock(state, {
+      mark: first.raw,
+      message: `の ${listed} は使えません。書けるのは \`scheme\`（\`light\`・\`dark\`・\`auto\`）・\`theme\`（\`dev-swiss\`・\`theme-paper\`・\`theme-slate\`・\`theme-contrast\`）・\`toc\`（\`hover\`・\`fixed\`）です。残りの指定で描いています。`,
+    }),
+  );
 }
 
 /** 最後に、記法が使わなかった印のトークン（オフの記法の印を含む）を取り除く */
