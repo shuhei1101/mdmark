@@ -5535,16 +5535,17 @@ flows:
         participant M as mdmark
         participant X as mermaid
         P->>M: mount(el, { markdown, config })
-        M->>P: mermaid のコードブロックをコードブロックのまま描く
+        M->>P: mermaid のコードブロックを隠し、その場所に読み込み中の枠を描く
         M->>X: import(mermaid.url)
         X-->>M: モジュール
         M->>M: 描く先の要素の CSS 変数から base テーマの変数を作る
         M->>X: render(ソース) をコードブロックの順に呼ぶ
         X-->>M: SVG
-        M->>P: コードブロックを、SVG を入れた図の枠に置き換える
+        M->>P: 読み込み中の枠とコードブロックを、SVG を入れた図の枠に置き換える
     expected:
       - '`mermaid.url` の本体への要求が 1 件'
-      - '`figure.mdmark-diagram[data-diagram="mermaid"]` が 2 つあり、それぞれの表示する枠に SVG があり、`div.mdmark-code` が残っていない'
+      - '`import()` が終わる前は、各 mermaid のコードブロックの場所に読み込み中の枠（`div.mdmark-embed[data-mdmark-slot="mermaid"]`）があり、コードブロックが見えていない'
+      - '`figure.mdmark-diagram[data-diagram="mermaid"]` が 2 つあり、それぞれの表示する枠に SVG があり、`div.mdmark-code` と読み込み中の枠が残っていない'
       - flowchart の図の枠のタイトルが front matter の `title` の文字で、sequenceDiagram の図の枠のタイトルが `シーケンス図`
       - flowchart のノードの塗り・枠線・文字の計算済みの色が、`--mdmark-color-surface`・`--mdmark-color-border`・`--mdmark-color-text` の計算済みの色と一致し、枠線の `stroke` が `url(` で始まらない
       - sequenceDiagram の `actor` の場所に、lucide の人のアイコンの `svg` がある
@@ -5651,12 +5652,13 @@ flows:
         participant M as mdmark
         participant X as mermaid
         P->>M: mount(el, { markdown, config })
+        M->>P: mermaid のコードブロックを隠し、その場所に読み込み中の枠を描く
         M->>X: import(mermaid.url)
         X-->>M: 404
-        M->>P: 各コードブロックの前に知らせの枠を置き、コードブロックのまま残す
+        M->>P: 読み込み中の枠を知らせの枠に替え、コードブロックを出す
     expected:
       - '`mount` が例外を投げない'
-      - 2 つの `div.mdmark-code` の前に、それぞれ知らせの枠（`mdmark-notice`）がある
+      - 2 つの `div.mdmark-code` が見えていて、その前にそれぞれ知らせの枠（`mdmark-notice`）があり、読み込み中の枠が残っていない
       - '`console.error` に `/fixtures/missing/mermaid.esm.min.mjs` を含む記録が 1 件以上ある'
     test: test_error_when_mermaid_not_found
   - name: 異常系（mermaid の記法を解釈できない）
@@ -5680,9 +5682,9 @@ flows:
         X-->>M: 解釈できないエラー
         M->>X: render(2 つ目のソース)
         X-->>M: SVG
-        M->>P: 1 つ目は書き方の警告とコードブロック、2 つ目は図の枠
+        M->>P: 1 つ目は読み込み中の枠を書き方の警告に替えてコードブロックを出し、2 つ目は図の枠
     expected:
-      - 1 つ目の `div.mdmark-code` の前に `mdmark-syntax-warning` があり、本文に mermaid のエラーの 1 行目がある
+      - 1 つ目の `div.mdmark-code` が見えていて、その前に `mdmark-syntax-warning` があり、本文に mermaid のエラーの 1 行目がある
       - 2 つ目のコードブロックの場所に `figure.mdmark-diagram[data-diagram="mermaid"]` がある
       - mermaid が文書に出すエラーの図（`#d{id}` の要素）が文書に残っていない
     test: test_error_when_mermaid_syntax_invalid
@@ -6010,10 +6012,10 @@ exceptions:
     notes: 例外を投げず、`ts`・`js` の範囲の前に知らせの枠を置き、範囲の `html`・`css` は描いたまま残す。URL と元のエラーを `console.error` に出す
   - name: なし（mermaid を読めない）
     condition: '`mermaid.url` のモジュールを読めないか、`render` を持たない'
-    notes: 例外を投げず、mermaid のコードブロックごとに前へ知らせの枠を置き、コードブロックのまま残す。URL と元のエラーを `console.error` に出す
+    notes: 例外を投げず、mermaid のコードブロックごとに読み込み中の枠を知らせの枠に替え、コードブロックを出して残す。URL と元のエラーを `console.error` に出す
   - name: なし（mermaid の記法を解釈できない）
     condition: mermaid の `render` がそのソースで例外を投げる
-    notes: 例外を投げず、そのコードブロックの前に書き方の警告（mermaid のエラーの 1 行目）を置き、コードブロックのまま残す。mermaid が文書に出すエラーの図は消す。ほかの mermaid のコードブロックは描く
+    notes: 例外を投げず、そのコードブロックの読み込み中の枠を書き方の警告（mermaid のエラーの 1 行目）に替え、コードブロックを出して残す。mermaid が文書に出すエラーの図は消す。ほかの mermaid のコードブロックは描く
   - name: なし（Lucide に無いアイコンの名前）
     condition: 束ねていない名前のアイコンのモジュールを読めず、同じ URL の `HEAD` が 404 を返す
     notes: 例外を投げず、その名前の場所を書いたとおりの行内のコードに戻し、段落の前に書き方の警告（Lucide に無い名前であること）を置く
@@ -6308,7 +6310,7 @@ constraints:
     constraint: 機能 `mermaid` がオンの文書で、`render` が属性 `data-mdmark-mermaid` を付けた mermaid のコードブロック（文書をHTML文字列にする.ts の制約『mermaid のコードブロック』）
     notes: 文書に書いた生の HTML のこの属性は sanitize が落とす
   - item: mermaid の読み込み
-    constraint: 描いた後に mermaid の対象が 1 つ以上あるときだけ、`mermaid.url` を `import()` で読み、既定のエクスポートの `initialize`・`render` を使う。同じ `mount` の中では 1 回だけ読む。読み終わる前に `update`・`destroy` したときは、前の描画の対象を図にしない。読み込みの完了は待たずに `mount` を返す。書き出した HTML の起動の処理が、まとめた mermaid のモジュールを渡したときは URL を読まない
+    constraint: 描いた後に mermaid の対象が 1 つ以上あるときだけ、`mermaid.url` を `import()` で読み、既定のエクスポートの `initialize`・`render` を使う。同じ `mount` の中では 1 回だけ読む。読み込んで描き終えるまで、各対象を隠し、その場所に読み込み中の枠（部品設計『読み込み中の枠』の名前 `mermaid`）を置く。読み終わる前に `update`・`destroy` したときは、前の描画の対象を図にしない。読み込みの完了は待たずに `mount` を返す。書き出した HTML の起動の処理が、まとめた mermaid のモジュールを渡したときは URL を読まない
     notes: 配布物 `dist/index.js` に mermaid を束ねない（非機能要件『配布ファイル 1 つのサイズ』）
   - item: mermaid の描き方
     constraint: '`initialize` には `startOnLoad: false`・`securityLevel: "strict"`・`theme`・`themeVariables` を渡し、使う側の設定でこの 2 つ（`startOnLoad`・`securityLevel`）を変えさせない。対象を文書の順に `render` し、返った SVG を図の枠（部品設計『図の枠』の種類 `mermaid`）の表示する枠に入れて、対象のコードブロックと置き換える。図の枠のタイトルは front matter の `title`、無ければ `accTitle`、どちらも無ければ図の種類の名前（`flowchart`・`graph` → フローチャート／`sequenceDiagram` → シーケンス図／`classDiagram` → クラス図／`stateDiagram`・`stateDiagram-v2` → 状態遷移図／`erDiagram` → ER 図／`gantt` → ガントチャート／`pie` → 円グラフ／ほか → 図）にし、front matter の `title` は図の中に重ねて描かない。範囲・更新日は出さない。シーケンス図の `actor` は lucide の人のアイコンに替え、本文の色の線で描く。開いたときの倍率は全体が収まる倍率で、0.75 より小さくしない（収まらない分は枠の中で動かす）。ガントチャートは描く先の幅と 720px の大きいほうの幅で描く'
@@ -6317,5 +6319,5 @@ constraints:
     constraint: '`theme` が `mdmark` のとき、描く先の要素の計算済みの CSS 変数（色は試しの要素の `color` で解決して sRGB の hex。`rgb()`・`rgba()` は値を読み、ほかの書き方は canvas で変換する）から mermaid の `base` テーマの変数を作る。対応はモジュール構成で表にする。どのテーマでも `useGradient: false`・`dropShadow: "none"` にし、SVG の filter の影も外す。描く先の配色の明暗（`colorScheme`・page のマーカー・祖先の class・OS の設定）が変わったら、変わった後の値で描き直す。印刷では明るい配色の図を出す。暗い配色で描くときは、明るい配色の CSS 変数（描く先の要素の中に置く、明るい配色の class を付けた試しの要素で解決する）から作ったテーマでも先に `render` し、2 つの SVG を表示する枠に並べて、画面では今の配色の SVG、`@media print` では明るい配色の SVG だけを出す。明るい配色で描くときは SVG を 1 つだけ置く（制約「配色の切り替え」の印刷で明るい配色にするのと揃える。`render` は非同期で、`beforeprint` の中で描き直しても印刷のレイアウトに間に合わないため、印刷のきっかけを待たない）'
     notes: PoC #384 で、`color-mix()` を含む CSS 変数を hex にして `base` テーマへ渡せることを確かめた。デザイン方針の「使わないもの」（影・グラデーション）
   - item: mermaid を読めないとき
-    constraint: mermaid を読めないときは、各 mermaid の対象の前に知らせの枠（本文の文言は画面設計『文書』）を置き、コードブロックのまま残す。解釈できないソースは書き方の警告を置いてコードブロックのまま残す
+    constraint: mermaid を読めないときは、各 mermaid の対象の読み込み中の枠を知らせの枠（本文の文言は画面設計『文書』）に替え、コードブロックを出して残す。解釈できないソースは読み込み中の枠を書き方の警告に替え、コードブロックを出して残す
 test_file: tests/integration/lib/mount.browser.test.ts

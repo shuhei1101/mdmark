@@ -63,6 +63,8 @@ states:
     args:
       - name: kind
         value: mermaid
+      - name: title
+        value: 問い合わせの受付
       - name: legend
         value: "'[]'"
     notes:
