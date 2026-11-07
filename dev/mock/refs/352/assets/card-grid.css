@@ -10,6 +10,11 @@
   list-style: none;
 }
 
+/* 項目: 本文のリストの項目の間の余白を消し、格子の gap だけで並べる */
+.mdmark-card-grid > li {
+  margin: 0;
+}
+
 /* カード: 線で囲み、上にアイコンとタイトル、下に説明を置く */
 .mdmark-card-grid-item {
   display: grid;
