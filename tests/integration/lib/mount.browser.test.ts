@@ -12546,9 +12546,23 @@ test("test_normal_when_page_marker_invalid", async () => {
       const warnings1 = el1.querySelectorAll(".mdmark-syntax-warning");
       expect(warnings1).toHaveLength(1);
       const text1 = warnings1[0]?.textContent ?? "";
-      for (const word of ["scheme=sepia", "theme=theme-unknown", "size=wide"]) {
+      for (const word of [
+        "scheme=sepia",
+        "theme=theme-unknown",
+        "size=wide",
+        "scheme",
+        "light",
+        "dark",
+        "auto",
+        "theme-slate",
+        "toc",
+        "hover",
+        "fixed",
+      ]) {
         expect(text1).toContain(word);
       }
+      const nodes1 = [...el1.querySelectorAll("h2, .mdmark-syntax-warning")];
+      expect(nodes1[0]?.classList.contains("mdmark-syntax-warning")).toBe(true);
       expect(el1.classList.contains("mdmark-theme-dark")).toBe(true);
       expect(el1.getAttribute("data-mdmark-color-theme")).toBe("dev-swiss");
       expect(sideTocOf(el1).aside.getAttribute("data-mode")).toBe("fixed");
