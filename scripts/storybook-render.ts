@@ -26,6 +26,7 @@ import { renderBacklinks } from "../src/parts/backlinks.ts";
 import { renderBadge } from "../src/parts/badge.ts";
 import { type CalloutKind, renderCallout } from "../src/parts/callout.ts";
 import { type AttachmentKind, renderCard } from "../src/parts/card.ts";
+import { type CardGridItem, renderCardGrid } from "../src/parts/card-grid.ts";
 import { type CodeLine, renderCodeBlock } from "../src/parts/code-block.ts";
 import { renderCollapsible } from "../src/parts/collapsible.ts";
 import type { ColorName } from "../src/parts/colors.ts";
@@ -517,6 +518,38 @@ function diagramArgs(args: PartArgs): {
     ...(args.modal === true ? { modal: true } : {}),
   };
 }
+
+/** カードの格子のストーリーで使う、配布物に入れない Lucide のアイコン */
+const CARD_GRID_ICONS: Record<string, MdmarkIconNode> = {
+  book: [
+    [
+      "path",
+      {
+        d: "M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H19a1 1 0 0 1 1 1v18a1 1 0 0 1-1 1H6.5a1 1 0 0 1 0-5H20",
+      },
+    ],
+  ],
+  rocket: [
+    ["path", { d: "M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5" }],
+    [
+      "path",
+      {
+        d: "M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09",
+      },
+    ],
+    [
+      "path",
+      {
+        d: "M9 12a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.4 22.4 0 0 1-4 2z",
+      },
+    ],
+    ["path", { d: "M9 12H4s.55-3.03 2-4c1.62-1.08 5 .05 5 .05" }],
+  ],
+  clock: [
+    ["circle", { cx: "12", cy: "12", r: "10" }],
+    ["path", { d: "M12 6v6l4 2" }],
+  ],
+};
 
 /** 問い合わせの引数の値を戻す: JSON として読める値（配列・オブジェクト・数・真偽値）は JSON として読み、読めなければ文字列のまま */
 function decodeValue(value: string): unknown {
@@ -1223,6 +1256,13 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
         ? {}
         : { fileKind: args.fileKind as AttachmentKind }),
     }),
+  // 配布物に入れないアイコンは、記法のアイコンと同じく Lucide の形を渡す
+  "card-grid": (args) => {
+    return renderCardGrid({
+      items: args.items as CardGridItem[],
+      icons: CARD_GRID_ICONS,
+    });
+  },
   "media-error": (args) =>
     renderMediaError({
       kind: args.kind as "video" | "audio",
