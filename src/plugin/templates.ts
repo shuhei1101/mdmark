@@ -87,9 +87,11 @@ export const validateTemplatesIndex = (options: {
   path: string;
 }): string | undefined => {
   const { value, path } = options;
-  validator ??= new Ajv2020({ allErrors: true, strict: true }).compile(
-    templatesSchema,
-  );
+  validator ??= new Ajv2020({
+    allErrors: true,
+    strict: true,
+    verbose: true,
+  }).compile(templatesSchema);
   if (!validator(value)) {
     const error = validator.errors?.[0];
     const params = (error?.params ?? {}) as Record<string, unknown>;
@@ -111,7 +113,10 @@ export const validateTemplatesIndex = (options: {
         ? "がありません。記載してください"
         : error?.keyword === "additionalProperties"
           ? "は記載できません。削除してください"
-          : "がスキーマに合いません。ER 図『CSSのテンプレート』の決まりに合わせてください";
+          : `の値 ${JSON.stringify(error?.data)} は使えません。${(error?.parentSchema as { description?: string } | undefined)?.description ?? "索引の決まりに合う値にしてください。"}`.replace(
+              /。$/,
+              "",
+            );
     return `${path} の ${where} ${reason}。`;
   }
   const names = new Set<string>();
@@ -216,6 +221,16 @@ export const addTemplate = async (options: {
   overwrite: boolean;
 }): Promise<{ name: string; path: string; replaced: boolean }> => {
   const { dir, source, name, description, tags, overwrite } = options;
+  if (!TEMPLATE_NAME_PATTERN.test(name)) {
+    throw new CliError(
+      `引数 name の ${name} は使えません。英小文字・数字・- の 1〜64 文字で、英小文字か数字で始まる名前を渡してください。`,
+    );
+  }
+  if (tags.some((tag) => tag === "")) {
+    throw new CliError(
+      "引数 tags に空の文字列があります。空でない語だけを渡してください。",
+    );
+  }
   if (extname(source) !== ".css") {
     throw new CliError(
       `${source} は CSS ではありません。拡張子が .css のファイルを渡してください。`,
@@ -315,7 +330,13 @@ export const applyTemplate = async (options: {
   }
   const destination = target ?? dirname(config as string);
   const path = join(destination, `${name}.css`);
-  const css = await fs.readFile(join(dir, row.file));
+  const sourcePath = join(dir, row.file);
+  const css = await readIfExists(sourcePath);
+  if (css === undefined) {
+    throw new CliError(
+      `テンプレート ${name} の CSS ${sourcePath} がありません。add_template で登録し直すか、索引の行を削除してください。`,
+    );
+  }
   const existing = await readIfExists(path);
   if (existing !== undefined && !existing.equals(css) && !overwrite) {
     throw new CliError(
