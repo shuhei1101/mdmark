@@ -1,0 +1,54 @@
+title: ClaudeCodeプラグイン / ポート
+lead: '`127.0.0.1` のポートが待ち受けているかの確かめ（SessionStart のフックと `setup.js` が使う）。'
+constants:
+  - name: CONNECT_TIMEOUT_MS
+    title: ポートへの接続の待ち
+    container: src/plugin/port.ts
+    usecase: 端末の状態を調べる
+    summary: 1 回の TCP の接続を待つ上限
+    value: '1000'
+    refs:
+      - dev/設計書/インターフェース定義/ClaudeCodeプラグイン/端末の状態を調べる.ts#constraints[ポートの確かめ]
+      - dev/設計書/インターフェース定義/ClaudeCodeプラグイン/常駐サーバーの状態を伝える.ts#constraints[待ち]
+    status: planned
+    introduced:
+      pr: 354
+functions:
+  - name: isPortListening
+    title: ポートが待ち受けているかを確かめる
+    kind: 関数
+    container: src/plugin/port.ts
+    usecase: 端末の状態を調べる
+    role: 処理
+    summary: '`127.0.0.1:{port}` へ TCP でつなぎ、接続を受ければ真'
+    scope: public
+    is_async: true
+    args:
+      - name: options
+        type: '{ port: number; timeoutMs: number }'
+        required: true
+        description: ポートと待ちの上限
+    returns:
+      type: Promise<boolean>
+      description: 接続を受けたか
+    process: 1. `node:net` で接続し、`connect` で真、`error` か待ちの上限で偽を返し、ソケットを閉じる
+    unit_tests:
+      - name: test_is_port_listening
+        case: 正常
+        summary: 待ち受けていれば真
+        condition: テストが `node:net` のサーバーで待ち受けるポート
+        mock: なし
+        expected: 真
+      - name: test_is_port_listening_when_closed
+        case: 正常
+        summary: 待ち受けていなければ偽
+        condition: 待ち受けるプロセスの無いポート
+        mock: なし
+        expected: 偽
+    refs:
+      - dev/設計書/インターフェース定義/ClaudeCodeプラグイン/常駐サーバーの状態を伝える.ts#constraints[待ち]
+    status: planned
+    introduced:
+      pr: 354
+test_files:
+  - tests/unit/src/plugin/port.test.ts

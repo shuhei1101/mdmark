@@ -1,0 +1,49 @@
+title: ClaudeCodeプラグイン / セットアップ / 状態
+lead: '`status` の結果を作る。'
+functions:
+  - name: readTerminalStatus
+    title: 端末の状態を調べる
+    kind: 関数
+    container: src/plugin/setup/status.ts
+    usecase: 端末の状態を調べる
+    role: 処理
+    summary: '`status` の結果を作る'
+    scope: public
+    is_async: true
+    args:
+      - name: options
+        type: '{ env: NodeJS.ProcessEnv; pluginRoot: string; version: string } & { run: RunCommand }'
+        required: true
+        description: 環境変数・プラグインの直下・プラグインのバージョン・コマンドの実行
+    returns:
+      type: Promise<TerminalStatus>
+      description: インターフェース定義『端末の状態を調べる』のレスポンス
+    process: |-
+      1. パスを決める
+      2. 端末の設定があれば YAML として読み（読めなければ `SetupError`（1））、`version` とセッション名を取る
+      3. `run("tmux", ["-V"])` が失敗すれば `tmux.available` を偽、成功なら `has-session -t ={セッション名}` の終了コードでセッションの有無を取る
+      4. `isPortListening` で待ち受けを確かめる
+    callees:
+      - dev/設計書/モジュール構成/ClaudeCodeプラグイン/セットアップ/パス.ts#functions[resolveSetupPaths]
+      - dev/設計書/モジュール構成/ClaudeCodeプラグイン/セットアップ/パス.ts#functions[readSessionName]
+      - dev/設計書/モジュール構成/ClaudeCodeプラグイン/ポート.ts#functions[isPortListening]
+    unit_tests:
+      - name: test_read_terminal_status
+        case: 正常
+        summary: 空の端末
+        condition: 一時フォルダの `MDMARK_CONFIG`（ファイル無し）・空いたポート
+        mock: '`has-session` に 1 を返す `run`'
+        expected: '`settings.exists` が偽、`server.session` が `mdmark-mcp`、`server.session_exists` と `server.listening` が偽'
+      - name: test_read_terminal_status_when_unreadable
+        case: 異常
+        summary: 読めない端末の設定は SetupError
+        condition: 3 行目が YAML として読めない端末の設定
+        mock: なし
+        expected: 終了コード 1 の `SetupError` で、メッセージに端末の設定のパスと 3 行目を含む
+    refs:
+      - dev/設計書/インターフェース定義/ClaudeCodeプラグイン/端末の状態を調べる.ts#
+    status: planned
+    introduced:
+      pr: 354
+test_files:
+  - tests/unit/src/plugin/setup/status.test.ts

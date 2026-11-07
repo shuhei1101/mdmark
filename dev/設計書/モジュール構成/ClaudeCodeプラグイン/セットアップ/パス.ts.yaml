@@ -1,0 +1,106 @@
+title: ClaudeCodeプラグイン / セットアップ / パス
+lead: 端末の設定・状態の置き場所・`settings.json` のパスと tmux のセッション名。
+constants:
+  - name: DEFAULT_SESSION_NAME
+    title: 既定の tmux のセッション名
+    container: src/plugin/setup/paths.ts
+    usecase: 常駐サーバーを起動する
+    summary: 端末の設定に `serve.tmuxSession` が無いときのセッション名
+    value: mdmark-mcp
+    refs:
+      - dev/設計書/設定/ライブラリ本体#settings[serve.tmuxSession]
+    status: planned
+    introduced:
+      pr: 354
+  - name: SERVE_LOG_FILE
+    title: 常駐サーバーのログのファイル名
+    container: src/plugin/setup/paths.ts
+    usecase: 常駐サーバーを起動する
+    summary: 状態の置き場所の下のログのファイル名
+    value: serve.log
+    status: planned
+    introduced:
+      pr: 354
+functions:
+  - name: resolveSetupPaths
+    title: 端末のパスを決める
+    kind: 関数
+    container: src/plugin/setup/paths.ts
+    usecase: 端末の状態を調べる
+    role: 処理
+    summary: 端末の設定・状態の置き場所・ログ・settings.json のパスとポートを返す
+    scope: public
+    is_async: false
+    args:
+      - name: env
+        type: NodeJS.ProcessEnv
+        required: true
+        description: 環境変数
+    returns:
+      type: SetupPaths
+      description: '`settingsPath`・`defaultPath`（既定のパスか）・`stateDir`・`logPath`・`claudeSettingsPath`・`port`'
+    process: |-
+      1. 端末の設定のパスは `resolveSettingsPath`（設定を重ねて読む）と同じ決め方にし、`MDMARK_CONFIG` が無いか既定のパスと同じなら `defaultPath` を真にする
+      2. 状態の置き場所は `MDMARK_STATE_DIR`、無ければ `${XDG_STATE_HOME:-~/.local/state}/mdmark`
+      3. `settings.json` は `${CLAUDE_CONFIG_DIR:-~/.claude}/settings.json`
+      4. ポートは `readPort`（MCP サーバーと同じ）。値の先頭の `~` はホームに展開する
+    callees:
+      - dev/設計書/モジュール構成/ライブラリ本体/設定を重ねて読む.ts#functions[resolveSettingsPath]
+      - dev/設計書/モジュール構成/ClaudeCodeプラグイン/MCPサーバー.ts#functions[readPort]
+    unit_tests:
+      - name: test_resolve_setup_paths
+        case: 正常
+        summary: 環境変数が無ければ既定のパス
+        condition: '`HOME=/h`、ほかの環境変数なし'
+        mock: なし
+        expected: '`settingsPath` が `/h/.config/mdmark/settings.yaml`、`defaultPath` が真、`logPath` が `/h/.local/state/mdmark/serve.log`、`claudeSettingsPath` が `/h/.claude/settings.json`、`port` が 8782'
+      - name: test_resolve_setup_paths_when_overridden
+        case: 正常
+        summary: 環境変数で上書きする
+        condition: '`MDMARK_CONFIG=~/x.yaml`・`MDMARK_STATE_DIR=/s`・`CLAUDE_CONFIG_DIR=/c`'
+        mock: なし
+        expected: '`settingsPath` が `/h/x.yaml`、`defaultPath` が偽、`logPath` が `/s/serve.log`、`claudeSettingsPath` が `/c/settings.json`'
+    refs:
+      - dev/設計書/インターフェース定義/ClaudeCodeプラグイン/端末の状態を調べる.ts#request
+      - dev/設計書/設定/ClaudeCodeプラグイン#settings
+    status: planned
+    introduced:
+      pr: 354
+  - name: readSessionName
+    title: セッション名を読む
+    kind: 関数
+    container: src/plugin/setup/paths.ts
+    usecase: 常駐サーバーを起動する
+    role: 処理
+    summary: 端末の設定の `serve.tmuxSession`、無ければ `DEFAULT_SESSION_NAME`
+    scope: public
+    is_async: false
+    args:
+      - name: settings
+        type: Record<string, unknown> | undefined
+        required: true
+        description: 読んだ端末の設定。無ければ `undefined`
+    returns:
+      type: string
+      description: セッション名
+    process: 1. `serve.tmuxSession` が文字列ならそれを、ほかは `DEFAULT_SESSION_NAME` を返す
+    unit_tests:
+      - name: test_read_session_name
+        case: 正常
+        summary: 無ければ既定
+        condition: '`undefined`'
+        mock: なし
+        expected: '`mdmark-mcp`'
+      - name: test_read_session_name_when_set
+        case: 正常
+        summary: 端末の設定の値
+        condition: '`{ serve: { tmuxSession: "x" } }`'
+        mock: なし
+        expected: '`x`'
+    refs:
+      - dev/設計書/設定/ライブラリ本体#settings[serve.tmuxSession]
+    status: planned
+    introduced:
+      pr: 354
+test_files:
+  - tests/unit/src/plugin/setup/paths.test.ts

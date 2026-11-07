@@ -825,7 +825,7 @@ functions:
       - '#functions[writeResponse]'
       - '#functions[createMcpServer]'
       - dev/設計書/外部ライブラリ/MCP-SDK#catalogs[API].entries[createMcpHandler]
-      - dev/設計書/モジュール構成/ClaudeCodeプラグイン/セットアップ.ts#functions[readSessionName]
+      - dev/設計書/モジュール構成/ClaudeCodeプラグイン/セットアップ/パス.ts#functions[readSessionName]
     refs:
       - dev/設計書/インターフェース定義/ClaudeCodeプラグイン/MCPサーバーを起動・停止する.ts#
     status: planned
