@@ -117,7 +117,7 @@ export async function git(cwd: string, ...args: string[]): Promise<string> {
 
 /** 文書 `a`・`b` が互いを `change_together` で記載した索引の中身 */
 const CHANGE_TOGETHER_INDEX = [
-  "schema: 1",
+  "schema: 2",
   "docs:",
   "  - id: a",
   "    path: a.md",
@@ -330,7 +330,7 @@ export const GLOSSARY_DOCUMENT = [
 
 /** 文書 3 つ（入口・用語集の表を持つ文書・Chart.js の印と画像を持つ文書）を載せた索引 */
 export const THREE_DOCS_INDEX = [
-  "schema: 1",
+  "schema: 2",
   "docs:",
   "  - id: top",
   "    path: README.md",

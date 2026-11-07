@@ -49,7 +49,7 @@ async function createSampleDir(options?: {
   await writeFiles(dir, {
     "mdmark.config.yaml": createConfig(options?.buildLines ?? BUILD_BASE),
     "index.yaml": [
-      "schema: 1",
+      "schema: 2",
       "docs:",
       "  - id: top",
       "    path: README.md",
@@ -221,10 +221,12 @@ test("test_normal_when_aliases", async () => {
   await writeFiles(dir, {
     "mdmark.config.yaml": [
       "aliases:",
-      "  - id: records",
-      "    paths: [aliases/*.yaml]",
-      "    metadata:",
-      "      alias_type: { type: ref, field: alias_type }",
+      "  - id: commands",
+      "    paths: [aliases/commands.yaml]",
+      "    alias_type: command",
+      "  - id: servers",
+      "    paths: [aliases/servers.yaml]",
+      "    alias_type: env",
       "build:",
       '  include: ["*.md"]',
       "  out: dist/docs.html",
@@ -232,15 +234,13 @@ test("test_normal_when_aliases", async () => {
     ].join("\n"),
     "a.md": "# A\n\nテストを流す、開発サーバーを使う。\n\n[B へ](b.md)\n",
     "b.md": "# B\n\nここでもテストを流す、開発サーバーを使う。\n",
-    "aliases/command.yaml": [
-      "alias_type: command",
+    "aliases/commands.yaml": [
       "id: run-test",
       "name: テストを流す",
       "command: npm test",
       "",
     ].join("\n"),
-    "aliases/env.yaml": [
-      "alias_type: env",
+    "aliases/servers.yaml": [
       "id: dev-server",
       "name: 開発サーバー",
       "url: http://127.0.0.1:8767/",

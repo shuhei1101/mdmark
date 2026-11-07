@@ -516,7 +516,7 @@ test("test_apply_step_when_index_missing", async () => {
   // 実行
   const result = applyStep({ step, version, target });
   // 検証
-  await expect(result).resolves.toBeUndefined();
+  await expect(result).resolves.toEqual([]);
   expect(await readFile(join(dir, "mdmark.config.yaml"), "utf8")).toBe(
     "title: 題\n",
   );
@@ -544,4 +544,55 @@ test("test_apply_step_when_script_fails", async () => {
   await expect(result).rejects.toThrow("v0.5.0");
   await expect(result).rejects.toThrow("設定をスクリプトで直す");
   await expect(result).rejects.toThrow("1");
+});
+
+// call のスクリプトの標準出力の行を返す（正常系）
+test("test_apply_step_when_script_prints", async () => {
+  // 準備
+  const { applyStep } = await loadModule();
+  const scriptDir = await createTempDir();
+  await writeFiles(scriptDir, {
+    "print.mjs": 'process.stdout.write("a\\n\\nb\\n");\n',
+  });
+  const step: MigrationStep = {
+    op: "call",
+    description: "設定をスクリプトで直す",
+    script: "print.mjs",
+    files: ["config"],
+  };
+  const { target } = await createTarget("title: 題\n");
+  const version = createVersion([step], "v0.5.0", scriptDir);
+  // 実行
+  const lines = await applyStep({ step, version, target });
+  // 検証
+  expect(lines).toEqual(["a", "b"]);
+});
+
+// call のスクリプトの標準エラーの行を CliError のメッセージに続ける（異常系）
+test("test_apply_step_when_script_fails_with_stderr", async () => {
+  // 準備
+  const { applyStep } = await loadModule();
+  const { CliError } = await loadMain();
+  const scriptDir = await createTempDir();
+  await writeFiles(scriptDir, {
+    "fail.mjs":
+      'process.stderr.write("行を分けてください\\n");\nprocess.exit(1);\n',
+  });
+  const step: MigrationStep = {
+    op: "call",
+    description: "設定をスクリプトで直す",
+    script: "fail.mjs",
+    files: ["config"],
+  };
+  const { target } = await createTarget("title: 題\n");
+  const version = createVersion([step], "v0.5.0", scriptDir);
+  // 実行
+  const error = await applyStep({ step, version, target }).catch(
+    (caught: unknown) => caught,
+  );
+  // 検証
+  expect(error).toBeInstanceOf(CliError);
+  expect(String((error as Error).message).split("\n")[1]).toBe(
+    "行を分けてください",
+  );
 });

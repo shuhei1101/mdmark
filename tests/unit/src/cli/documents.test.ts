@@ -50,7 +50,7 @@ test("test_read_index_with_documents", async () => {
   const { readIndexWithDocuments } = await loadDocuments();
   const dir = await createTempDir();
   await writeFiles(dir, {
-    "docs/index.yaml": "schema: 1\ndocs: []\n",
+    "docs/index.yaml": "schema: 2\ndocs: []\n",
     "docs/a.md": "# A\n",
     "docs/sub/b.md": "# B\n",
     "docs/c.txt": "c\n",

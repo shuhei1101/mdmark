@@ -328,7 +328,7 @@ test("test_run_check_tool", async () => {
   await writeFiles(context.projectDir, {
     "mdmark.config.yaml": "index: index.yaml\n",
     "index.yaml": [
-      "schema: 1",
+      "schema: 2",
       "docs:",
       "  - id: old",
       "    path: old.md",

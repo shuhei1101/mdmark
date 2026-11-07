@@ -16,7 +16,7 @@ const loadAliasesModule = (): Promise<
 
 const createTempDir = useTempDirs();
 
-/** `alias_type` を列から取る行 */
+/** `command` の種類の行 */
 function row(
   paths: string[],
   extra: Record<string, unknown> = {},
@@ -24,7 +24,7 @@ function row(
   return {
     id: "records",
     paths,
-    metadata: { alias_type: { type: "ref", field: "alias_type" } },
+    alias_type: "command",
     ...extra,
   };
 }
@@ -44,21 +44,30 @@ test("test_load_aliases", async () => {
   const { loadAliases } = await loadAliasesModule();
   const dir = await createTempDir();
   await writeFiles(dir, {
-    "aliases/a.yaml": [
+    "aliases/commands.yaml": [
       "items:",
-      "  - alias_type: command",
-      "    id: run-test",
+      "  - id: run-test",
       "    name: テストを流す",
       "    command: npm test",
-      "  - alias_type: env",
-      "    id: dev-server",
+      "",
+    ].join("\n"),
+    "aliases/servers.yaml": [
+      "items:",
+      "  - id: dev-server",
       "    name: 開発サーバー",
       "    url: http://127.0.0.1:8767/",
       "",
     ].join("\n"),
   });
   const loaded = createLoaded(dir, {
-    aliases: [row(["aliases/*.yaml"], { records: "items" })],
+    aliases: [
+      row(["aliases/commands.yaml"], { records: "items" }),
+      row(["aliases/servers.yaml"], {
+        id: "servers",
+        alias_type: "env",
+        records: "items",
+      }),
+    ],
   });
   // 実行
   const result = await loadAliases(loaded);
@@ -93,8 +102,7 @@ test("test_load_aliases_when_unreadable", async () => {
   const dir = await createTempDir();
   await writeFiles(dir, {
     "aliases/a.yaml": "items: [1, 2\n",
-    "aliases/b.yaml":
-      "alias_type: command\nid: run-test\nname: テストを流す\ncommand: npm test\n",
+    "aliases/b.yaml": "id: run-test\nname: テストを流す\ncommand: npm test\n",
   });
   const loaded = createLoaded(dir, { aliases: [row(["aliases/*.yaml"])] });
   // 実行

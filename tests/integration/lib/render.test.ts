@@ -811,7 +811,7 @@ test("test_normal_when_no_intl_segmenter", async () => {
   await withoutIntlSegmenter(async (built) => {
     // 準備
     const index: MdmarkIndex = {
-      schema: 1,
+      schema: 2,
       docs: [],
       terms: [
         {

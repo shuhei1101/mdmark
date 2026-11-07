@@ -453,19 +453,19 @@ test("test_collect_check_issues_when_alias_drift", async () => {
       "aliases:",
       "  - id: missing",
       '    paths: ["missing/*.yaml"]',
-      "    metadata:",
-      "      alias_type: { type: custom, value: term }",
-      "  - id: records",
-      '    paths: ["aliases/*.yaml"]',
-      "    metadata:",
-      "      alias_type: { type: ref, field: alias_type }",
+      "    alias_type: term",
+      "  - id: terms",
+      '    paths: ["aliases/term.yaml"]',
+      "    alias_type: term",
+      "  - id: servers",
+      '    paths: ["aliases/env.yaml"]',
+      "    alias_type: env",
     ],
     aMarkdown: TABZ_MARKDOWN,
     files: {
-      "aliases/term.yaml":
-        "alias_type: term\nid: empty-term\nname: 空の用語\ndescription: ''\n",
+      "aliases/term.yaml": "id: empty-term\nname: 空の用語\ndescription: ''\n",
       "aliases/env.yaml":
-        "alias_type: env\nid: dev-server\nname: 開発サーバー\nurl: http://127.0.0.1:8767/\n",
+        "id: dev-server\nname: 開発サーバー\nurl: http://127.0.0.1:8767/\n",
     },
   });
   // 実行

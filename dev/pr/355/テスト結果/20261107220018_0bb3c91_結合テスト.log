@@ -1,0 +1,11 @@
+$ npx vitest run --project integration-node tests/integration/lib/upgrade.test.ts
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/chore-knowledge-drop-tag-vocabulary
+
+
+ Test Files  1 passed (1)
+      Tests  17 passed (17)
+   Start at  21:53:15
+   Duration  424.13s (tests 93%, import 7%)
+
+exit 0

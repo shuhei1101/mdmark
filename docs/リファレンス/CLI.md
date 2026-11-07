@@ -194,7 +194,7 @@ mdmark.config.yaml:build: schema: `build.out` がありません。書き出す 
 
 | 種類 | 意味 |
 | --- | --- |
-| `schema` | 設定か索引が Schema に合わない。`build.glossary`・`build.entry` が `build.include` に当たらないもの、`theme`・`extensions` のファイルと `assets.root` のフォルダが無いもの、`extensions` の拡張を読み込めないもの、`aliases` の行が取り込んだ Schema に合わないもの（場所は `aliases[1].metadata.alias_type` の形）を含む |
+| `schema` | 設定か索引が Schema に合わない。`build.glossary`・`build.entry` が `build.include` に当たらないもの、`theme`・`extensions` のファイルと `assets.root` のフォルダが無いもの、`extensions` の拡張を読み込めないもの、`aliases` の行が取り込んだ Schema に合わないもの（場所は `aliases[1].alias_type` の形）を含む |
 | `unknown_color_theme` | 設定の `colorTheme` が選べるテーマの名前に無い。場所は `colorTheme`。内容は `不明なテーマ名 {名前} です。dev-swiss・theme-paper・theme-slate・theme-contrast のいずれかに修正してください。` |
 | `no_documents` | `build.include` に当たり `build.exclude` に当たらない文書が 0 件 |
 | `missing_doc` | 索引にあって、文書が見つからない |
@@ -206,17 +206,12 @@ mdmark.config.yaml:build: schema: `build.out` がありません。書き出す 
 | `missed_change_together` | `--base` を渡したとき、`change_together` の組のうち片方の文書だけが変わっている。場所は空で、ファイルは変わっていない側の文書のパス |
 | `duplicate_term` | 用語の語か別名が、NFKC・英字の小文字化・前後の空白の除去で正規化した後に重なっている |
 | `avoided_term` | 索引の文書の本文に、用語のやめた言い方が出ている |
-| `duplicate_tag` | タグの語彙の `name` が重なっている |
-| `tag_alias_conflict` | タグの語彙の `aliases` が、別のタグの `name` か `aliases` と重なっている |
-| `broken_tag_replacement` | タグの語彙の `deprecated` の振り替え先が、語彙に無い |
-| `unregistered_tag` | 文書のタグが、語彙の `name` にも `aliases` にも無い。近いタグを添える |
-| `deprecated_tag` | 文書のタグが、やめたタグに当たる。振り替え先を添える |
 | `alias_no_files` | `aliases` の行の `paths` に当たるファイルが 0 件。場所は `aliases[1].paths` |
 | `alias_unreadable` | `paths` に当たったファイルを YAML として読めない |
 | `duplicate_alias_row_id` | `aliases` の行の `id` が、前の行と重なっている。重なった後の行は読まない |
 | `alias_records_missing` | 行の `records` のキーの配列が、ファイルに無い |
-| `alias_field_missing` | `metadata` の `ref` が指す列が、レコードに無い |
-| `alias_unknown_type` | `ref` で取った `alias_type` が、9 つの種類に無い |
+| `alias_field_missing` | `metadata` に記載した列が、レコードに無い |
+| `alias_unknown_type` | 行の `alias_type` が、9 つの種類に無い（`buildAliases` に直接渡した行だけ。`mdmark check` は `schema` のずれにする） |
 | `alias_required_empty` | 種類の必須のキーが空。`env` は `url` と `port` が両方空のとき |
 | `duplicate_alias_id` | エイリアスの `id` が、前のエイリアス（`env` を含む）と重なっている |
 | `unknown_mark` | 文書の本文に、記法の印・`features`・`libraries` の対応表・`extensions` の拡張の印・`check.ignore` の名前のどれにも当たらない印がある。場所は印のある行の番号 |
@@ -232,11 +227,10 @@ mdmark.config.yaml:build: schema: `build.out` がありません。書き出す 
 
 <!-- /table -->
 
-`missing_doc` から `deprecated_tag` までは、`checkIndex` が返す `kind` と同じ（[点検が返すずれ](./索引.md#点検が返すずれ)）。
+`missing_doc` から `avoided_term` までは、`checkIndex` が返す `kind` と同じ（[点検が返すずれ](./索引.md#点検が返すずれ)）。
 `duplicate_alias_row_id` から `duplicate_alias_id` までは、`buildAliases` が返す `kind` と同じ（[エイリアスを作る](./API.md#エイリアスを作る)）。
 `diagram_` で始まる種類の場所は図の開く印の行の番号で、内容は図の題（無いときは印の名前）・箱の `id`・直し方。
 図の点検はブラウザを使わず、フロー図は配置まで確かめる（座標を省いた判定フローチャートは mdmark が配置した後の座標で確かめる）。埋め込んだ HTML の custom element は点検しない。
-タグのずれは、索引がタグの語彙（`tags`）を記載しているときだけ出る。
 `missed_change_together` は、`--base` を渡したときだけ出る。
 エイリアスのずれは、設定に `aliases` があるときだけ出る。`enabled` が `false` の行は読まない。`env` のレコードも種類と必須のキーを確かめ、ずれがあれば出す。
 

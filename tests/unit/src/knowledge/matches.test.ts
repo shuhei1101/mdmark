@@ -11,7 +11,7 @@ const loadMatches = () => import("../../../../src/knowledge/matches.ts");
 
 /** 用語 `ワークスペース`（別名 `WS`）と、別名 `公開関数` の文書 `api` を持つ索引 */
 const MATCH_INDEX: MdmarkIndex = {
-  schema: 1,
+  schema: 2,
   docs: [
     {
       id: "api",
@@ -102,7 +102,7 @@ test("test_collect_matches_ignores_avoided_terms", async () => {
   // 準備
   const { collectMatches } = await loadMatches();
   const index: MdmarkIndex = {
-    schema: 1,
+    schema: 2,
     docs: [{ id: "guide", path: "使い方/guide.md", title: "使い方" }],
     terms: [
       {
@@ -128,7 +128,7 @@ test("test_collect_matches_ignores_avoided_terms", async () => {
 /** 用語 `ワークスペース`（`ws`）に、やめた言い方 `avoid` を持たせた、文書 `guide`・`api` の索引 */
 function avoidIndex(avoid: string[]): MdmarkIndex {
   return {
-    schema: 1,
+    schema: 2,
     docs: [
       { id: "api", path: "api.md", title: "API" },
       { id: "guide", path: "使い方/guide.md", title: "使い方" },
@@ -345,7 +345,7 @@ test("test_collect_matches_when_glossary_table", async () => {
   // 準備
   const { collectMatches } = await loadMatches();
   const index: MdmarkIndex = {
-    schema: 1,
+    schema: 2,
     docs: [
       { id: "glossary", path: "用語集.md", title: "用語集" },
       { id: "guide", path: "使い方/guide.md", title: "使い方" },
@@ -406,7 +406,7 @@ test("test_collect_matches_when_invalid_index", async () => {
   const { collectMatches } = await loadMatches();
   // `meaning` を持たない用語 `印` と、`path` を持たない文書 `broken` を足した索引
   const index = {
-    schema: 1,
+    schema: 2,
     docs: [
       ...MATCH_INDEX.docs,
       { id: "broken", title: "壊れた", aliases: ["壊れた文書"] },
@@ -432,7 +432,7 @@ test("test_collect_matches_when_diagram_term_is_alias", async () => {
   const { collectMatches } = await loadMatches();
   // 用語 `公開関数`（`fn`）と、別名 `公開関数` を持つ文書 `api`
   const index: MdmarkIndex = {
-    schema: 1,
+    schema: 2,
     docs: [
       {
         id: "api",
@@ -567,7 +567,7 @@ test("test_diagram_term_matches_when_notation_differs", async () => {
   // 準備
   const { diagramTermMatches } = await loadMatches();
   const index: MdmarkIndex = {
-    schema: 1,
+    schema: 2,
     docs: [],
     terms: [{ id: "mcp", term: "MCP", meaning: "Model Context Protocol" }],
   };
@@ -591,7 +591,7 @@ test("test_diagram_term_matches_when_notation_differs", async () => {
 
 /** 文書 `guide`（`使い方/guide.md`）だけを持ち、用語を持たない索引 */
 const GUIDE_ONLY_INDEX: MdmarkIndex = {
-  schema: 1,
+  schema: 2,
   docs: [{ id: "guide", path: "使い方/guide.md", title: "使い方" }],
 };
 

@@ -187,7 +187,7 @@ export const BASE_TAG = "base";
 
 /** 文書 `a`・`b` が互いを `change_together` で記載した索引の中身 */
 const CHANGE_TOGETHER_INDEX = [
-  "schema: 1",
+  "schema: 2",
   "docs:",
   "  - id: a",
   "    path: a.md",

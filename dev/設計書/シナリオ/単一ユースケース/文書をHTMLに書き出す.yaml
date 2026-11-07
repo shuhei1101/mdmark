@@ -98,7 +98,7 @@ scenarios:
   - name: 正常シナリオ（エイリアスを読む）
     setup:
       - name: エイリアスを読む設定
-        description: '`aliases` に、`term` の `ワークスペース`（説明 `話し合いの記録を置くフォルダ`）と、`env` の `開発サーバー`（URL `http://127.0.0.1:8767/`、ポート `8767`）を持つ YAML を指す行と、無いファイルを指す行を持つ設定'
+        description: '`aliases` に、`alias_type` が `term` で `ワークスペース`（説明 `話し合いの記録を置くフォルダ`）を持つ YAML を指す行と、`alias_type` が `env` で `開発サーバー`（URL `http://127.0.0.1:8767/`、ポート `8767`）を持つ YAML を指す行と、無いファイルを指す行を持つ設定'
       - name: エイリアスが出る文書
         description: 段落に `ワークスペース` が出る文書
       - name: Mock

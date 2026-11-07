@@ -952,6 +952,12 @@ files:
         type: tests
       - to: dev/設計書/部品設計/プレビューの状態の表示.ts
         type: see_also
+  - path: unit/migrations/drop-tag-vocabulary.test.ts
+    description: migrations/next/drop-tag-vocabulary.mjs（「索引からタグの語彙を外す移行の手順」）を確かめる単体テスト。drop-tag-vocabulary.mjs を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, topic:バージョン, topic:移行, topic:索引, topic:タグ]
+    related:
+      - to: migrations/next/drop-tag-vocabulary
+        type: tests
   - path: unit/helpers/charts.ts
     description: 単体テストが使う見本のグラフの定義（棒・円）の JSON を受け持つ。単体テストの準備や比べ方を変えるときに読む。
     tags: [topic:単体テスト, tool:vitest, topic:図, topic:フィクスチャ]
@@ -1140,6 +1146,12 @@ files:
     tags: [topic:単体テスト, tool:vitest, topic:バージョン, topic:移行, topic:cli]
     related:
       - to: src/cli/migrations
+        type: tests
+  - path: unit/migrations/alias-rows.test.ts
+    description: migrations/*/alias-rows.mjs（「設定の aliases の行を alias-inject v0.3.0 の構造へ書き換える移行のスクリプト」）を確かめる単体テスト。移行のスクリプトを変えたときに、合わせて修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, topic:バージョン, topic:移行, topic:エイリアス]
+    related:
+      - to: migrations/next/alias-rows.mjs
         type: tests
   - path: unit/src/cli/prompt.test.ts
     description: src/cli/prompt.ts（「標準入力の 1 行を回答にする質問」）を確かめる単体テスト。prompt.ts を変えたときに、合わせて見修正するケースを探すときに読む。
@@ -1470,12 +1482,6 @@ files:
     tags: [topic:単体テスト, tool:vitest, topic:索引, topic:用語, topic:被参照]
     related:
       - to: src/knowledge/references
-        type: tests
-  - path: unit/src/knowledge/tags.test.ts
-    description: src/knowledge/tags.ts（「タグの語彙の照合・近いタグ」）を確かめる単体テスト。tags.ts を変えたときに、合わせて見修正するケースを探すときに読む。
-    tags: [topic:単体テスト, tool:vitest, topic:索引, topic:用語, topic:タグ]
-    related:
-      - to: src/knowledge/tags
         type: tests
   - path: unit/src/libraries.browser.test.ts
     description: src/libraries.ts（「マーカーの場所に外部ライブラリのモジュールを描かせる loadLibraries」）を確かめるブラウザで流す単体テスト。libraries.ts を変えたときに、合わせて見修正するケースを探すときに読む。

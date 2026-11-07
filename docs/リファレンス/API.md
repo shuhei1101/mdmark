@@ -517,11 +517,10 @@ const issues = checkIndex({ index, documents, indexFile: "docs/index.yaml" });
 | --- | --- | --- |
 | `file` | `string` | ずれのあるファイル。索引のずれは `indexFile`、文書のずれはその文書のパス |
 | `where` | `string` | 索引のキーのパス（`docs[3].path`）か、文書の行。ファイル全体のずれは空文字 |
-| `kind` | `'schema' \| 'missing_doc' \| 'orphan_doc' \| 'broken_ref' \| 'untyped_related' \| 'one_sided_change_together' \| 'related_link_overlap' \| 'missed_change_together' \| 'duplicate_term' \| 'avoided_term' \| 'duplicate_tag' \| 'tag_alias_conflict' \| 'broken_tag_replacement' \| 'unregistered_tag' \| 'deprecated_tag'` | ずれの種類。意味は [索引](./索引.md#点検が返すずれ) |
+| `kind` | `'schema' \| 'missing_doc' \| 'orphan_doc' \| 'broken_ref' \| 'untyped_related' \| 'one_sided_change_together' \| 'related_link_overlap' \| 'missed_change_together' \| 'duplicate_term' \| 'avoided_term'` | ずれの種類。意味は [索引](./索引.md#点検が返すずれ) |
 | `message` | `string` | ずれの内容と直し方を書いた日本語の 1 文 |
 
-並びは `schema` → `missing_doc` → `orphan_doc` → `broken_ref` → `untyped_related` → `one_sided_change_together` → `related_link_overlap` → `missed_change_together` → `duplicate_term` → `avoided_term` → `duplicate_tag` → `tag_alias_conflict` → `broken_tag_replacement` → `unregistered_tag` → `deprecated_tag` の順で、同じ種類の中は索引の並びとパスの順。
-タグの 5 種類は、索引がタグの語彙（`tags`）を記載しているときだけ返す。
+並びは `schema` → `missing_doc` → `orphan_doc` → `broken_ref` → `untyped_related` → `one_sided_change_together` → `related_link_overlap` → `missed_change_together` → `duplicate_term` → `avoided_term` の順で、同じ種類の中は索引の並びとパスの順。
 
 ```json
 [
@@ -553,14 +552,14 @@ DOM に頼らず、Node とブラウザのどちらでも同じ結果を返す�
 import { buildAliases } from "https://cdn.jsdelivr.net/gh/shuhei1101/mdmark@{タグ}/dist/index.js";
 
 const { aliases, problems } = buildAliases({
-  rows: [{ id: "terms", paths: ["terms/*.yaml"], records: "terms", metadata: { alias_type: { type: "custom", value: "term" }, name: { type: "ref", field: "term" } } }],
+  rows: [{ id: "terms", paths: ["terms/*.yaml"], alias_type: "term", records: "terms", metadata: { name: "term" } }],
   sources: [{ rowId: "terms", path: "terms/glossary.yaml", data: { terms: [{ id: "ws", term: "ワークスペース", description: "話し合いの記録を置くフォルダ" }] } }],
 });
 ```
 
 | 引数 | 必須 / 任意 | 説明 |
 | --- | --- | --- |
-| `input.rows` | 必須 | 使う側が設定の `aliases` を読んだ配列。行の形は [設定](./設定.md#エイリアスの元の行)。`id`・`paths`・`metadata.alias_type` を持たない行は使わず、ずれにもしない（形は `mdmark check` が `schema` のずれで返す）。`enabled` が `false` の行は読まない |
+| `input.rows` | 必須 | 使う側が設定の `aliases` を読んだ配列。行の形は [設定](./設定.md#エイリアスの元の行)。`id`・`paths`・`alias_type` を持たない行は使わず、ずれにもしない（形は `mdmark check` が `schema` のずれで返す）。`enabled` が `false` の行は読まない |
 | `input.sources` | 必須 | 行の `paths` に当たったファイルを YAML として読んだ中身（`MdmarkAliasSource`）の並び。行ごとに `paths` に記載した順、glob の中はパスの順に並べる。読めなかったファイルと、どのファイルにも当たらなかった `paths` は呼ぶ側が扱い、ここには入れない |
 | `input.configFile` | 任意 | 行のずれの `file` に出す設定ファイルの名前。既定は `mdmark.config.yaml` |
 
