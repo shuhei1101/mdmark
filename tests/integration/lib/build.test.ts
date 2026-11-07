@@ -200,10 +200,10 @@ test("test_normal", { timeout: BUILD_TIMEOUT_MS }, async () => {
     expect(existsSync(join(root, "dist", name))).toBe(true);
   }
   // Claude Code のプラグインの生成物と、バージョン。MCP サーバーは束ねない
-  expect(existsSync(join(root, "plugin", "scripts", "pre-tool-use.js"))).toBe(
-    true,
-  );
-  for (const path of ["scripts/session-start.js", "guide", "server", "dist"]) {
+  for (const path of ["scripts/pre-tool-use.js", "scripts/session-start.js"]) {
+    expect(existsSync(join(root, "plugin", path))).toBe(true);
+  }
+  for (const path of ["guide", "server", "dist"]) {
     expect(existsSync(join(root, "plugin", path))).toBe(false);
   }
   const manifest = JSON.parse(
