@@ -1027,6 +1027,12 @@ files:
     related:
       - to: scripts/build
         type: tests
+  - path: unit/scripts/eslint.test.ts
+    description: scripts/eslint.ts（「tools/eslint/ の ESLint が無ければ入れてから起動する」）を確かめる単体テスト。eslint.ts を変えたときに、合わせて修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, tool:eslint, topic:lint]
+    related:
+      - to: scripts/eslint
+        type: tests
   - path: unit/scripts/migrations.test.ts
     description: scripts/migrations.ts（「スキーマを変えたバージョンに移行の手順があるかの点検」）を確かめる単体テスト。migrations.ts を変えたときに、合わせて見修正するケースを探すときに読む。
     tags: [topic:単体テスト, tool:vitest, topic:バンドル, tool:esbuild]
