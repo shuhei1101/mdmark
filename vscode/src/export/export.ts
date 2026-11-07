@@ -4,13 +4,7 @@ import { basename, dirname } from "node:path";
 import { pathToFileURL } from "node:url";
 import { env, type TextDocument, Uri, window, workspace } from "vscode";
 import type { PreviewConfig } from "../config.ts";
-import {
-  applyColorTheme,
-  isFile,
-  loadConfig,
-  resolveHtmlScripts,
-  resolveLibraries,
-} from "../config.ts";
+import { applyColorTheme, isFile, loadConfig } from "../config.ts";
 import { type ExtensionDeps, LAST_VERSION_KEY } from "../deps.ts";
 import { bundleExtensions } from "../extensions-bundle.ts";
 import { distUrl } from "../preview/html.ts";
@@ -21,6 +15,7 @@ import {
   TAGS_TIMEOUT_MS,
 } from "../version.ts";
 import { baseDirOf } from "../workspace.ts";
+import { embedLocalLibraries } from "./embed.ts";
 import { buildExportHtml, resolveExportPath } from "./html.ts";
 import { writeFileAtomically } from "./write.ts";
 
@@ -30,7 +25,7 @@ export type ExportMode = "export" | "browser" | "print";
 /** 書き出した通知のボタン */
 const OPEN_LABEL = "ブラウザで開く";
 
-/** 設定を重ねて読み、`libraries` を `file:` の URL に直し、`theme` の CSS を読み、`extensions` を束ねる。読めない設定ファイルは重ねずに残りで書き出す */
+/** 設定を重ねて読み、相対パスの `libraries`・`html-scripts.url` を `data:` の URL で埋め、`theme` の CSS を読み、`extensions` を束ねる。読めない設定ファイルは重ねずに残りで書き出す */
 async function readExportConfig(options: {
   document: TextDocument;
   configPath: string;
@@ -74,18 +69,31 @@ async function readExportConfig(options: {
   }
   const { libraries, "html-scripts": htmlScripts, ...rest } = load.config;
   // 相対パスは重ねる前に絶対パスにしてある
-  const configDir = dirname(markdownPath);
-  const toUrl = (target: string) => pathToFileURL(target).href;
+  const embedded = await embedLocalLibraries({
+    markdown: document.getText(),
+    libraries,
+    htmlScripts,
+    config: {
+      features: Object.fromEntries(
+        Object.entries(rest.features ?? {}).filter(
+          (entry): entry is [string, boolean] => typeof entry[1] === "boolean",
+        ),
+      ),
+    },
+    bundle: (paths) =>
+      bundleExtensions({ paths, extensionPath: deps.context.extensionPath }),
+  });
+  for (const failure of embedded.failures) {
+    log.warn("ライブラリをまとめられない", failure.path, failure.error);
+  }
   const config: PreviewConfig = {
     ...rest,
-    ...(libraries === undefined
+    ...(embedded.libraries === undefined
       ? {}
-      : { libraries: resolveLibraries({ libraries, configDir, toUrl }) }),
-    ...(htmlScripts === undefined
+      : { libraries: embedded.libraries }),
+    ...(embedded.htmlScripts === undefined
       ? {}
-      : {
-          "html-scripts": resolveHtmlScripts({ htmlScripts, configDir, toUrl }),
-        }),
+      : { "html-scripts": embedded.htmlScripts }),
   };
   let themeCss: string | undefined;
   if (load.theme !== undefined) {

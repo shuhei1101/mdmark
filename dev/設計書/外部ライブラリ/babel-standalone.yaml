@@ -85,8 +85,8 @@ adoption: 採用
 upstream: babel/babel
 verification:
   state: 済
-  date: '2026-11-05'
-  detail: '`https://cdn.jsdelivr.net/npm/@babel/standalone@8.1.1/+esm` を、`default-src ''none''; script-src ''nonce-…'' https://cdn.jsdelivr.net` を `<meta http-equiv>` で指定したページ（VS Code のプレビューと同じ構造の CSP）で動的 `import()` し、`disableScriptTags()` と `transform`（preset `typescript`・plugin `transform-modules-commonjs`。enum・namespace・interface・`as` を含むコード）を呼んだ。出力を nonce を付けた `script` 要素で実行し、`exports.default` の関数の呼び出しと、返した `destroy` の呼び出しまで Chromium と Firefox で通った。読み込みは Chromium で 459ms、Firefox で 550ms（WSL で 1 回の計測）。スクリプトの CSP 違反は 0 件。ファイルに `new Function`・単独の `Function(`・`eval(`・`new Worker`・`WebAssembly.` は出ない。Safari（WebKit）は WSL で起動できず未確認'
+  date: '2026-11-07'
+  detail: '`https://cdn.jsdelivr.net/npm/@babel/standalone@8.1.1/+esm` を、`default-src ''none''; script-src ''nonce-…'' https://cdn.jsdelivr.net` を `<meta http-equiv>` で指定したページ（VS Code のプレビューと同じ構造の CSP）で動的 `import()` し、`disableScriptTags()` と `transform`（preset `typescript`・plugin `transform-modules-commonjs`。enum・namespace・interface・`as` を含むコード）を呼んだ。出力を nonce を付けた `script` 要素で実行し、`exports.default` の関数の呼び出しと、返した `destroy` の呼び出しまで Chromium と Firefox で通った。読み込みは Chromium で 459ms、Firefox で 550ms（WSL で 1 回の計測）。スクリプトの CSP 違反は 0 件。ファイルに `new Function`・単独の `Function(`・`eval(`・`new Worker`・`WebAssembly.` は出ない。Safari（WebKit）は WSL で起動できず未確認。VS Code 拡張機能の書き出しで埋める経路（#369）: `+esm` の手元のコピーを `bundleExtensions`（esbuild-wasm）でまとめると 1,250ms・2,348,527 文字で、`encodeURIComponent` した `data:text/javascript` の URL は 3,237,500 文字、`buildExportHtml` で書いた HTML は 3,238,521 バイト。その HTML を Chromium で file:// で開き、URL の `import()` は 252ms で通って `transform` を得た。develop の配布物の `mount` に `html-scripts.url` として渡し、`<!-- features: +html-scripts -->` の文書の範囲の `ts` が動いた（知らせの枠 0 件、書き出した HTML 以外の `file:` の要求 0 件、コンソールのエラー 0 件。WSL で 1 回の計測）'
 license: MIT。商用利用できる
 official_url: https://babeljs.io/docs/babel-standalone
 docs_url: https://babeljs.io/docs/babel-standalone

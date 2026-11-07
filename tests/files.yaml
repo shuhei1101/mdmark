@@ -1869,6 +1869,12 @@ files:
     related:
       - to: src/render/marks
         type: tests
+  - path: unit/src/render/used.test.ts
+    description: src/render/used.ts（書き出しで埋める外部ライブラリと範囲のスクリプトを文書から取得する処理）を確かめる単体テスト。used.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, topic:markdown, topic:書き出し]
+    related:
+      - to: src/render/used
+        type: tests
   - path: unit/src/render/parser.test.ts
     description: src/render/parser.ts（「markdown-it の解析器と、追加するコアルール」）を確かめる単体テスト。parser.ts を変えたときに、合わせて見修正するケースを探すときに読む。
     tags: [topic:単体テスト, tool:vitest, topic:markdown, tool:markdown-it]
@@ -2138,6 +2144,12 @@ files:
     tags: [topic:単体テスト, tool:vitest, tool:vscode, topic:設定]
     related:
       - to: vscode/src/config
+        type: tests
+  - path: unit/vscode/src/export/embed.test.ts
+    description: vscode/src/export/embed.ts（「相対パスの libraries と html-scripts.url を埋める処理（vscode を import しない）」）を確かめる単体テスト。embed.ts を変えたときに、合わせて見修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, tool:vscode, tool:html, topic:書き出し]
+    related:
+      - to: vscode/src/export/embed
         type: tests
   - path: unit/vscode/src/export/html.test.ts
     description: vscode/src/export/html.ts（「書き出す先のパスと HTML の組み立て（vscode を import しない）」）を確かめる単体テスト。html.ts を変えたときに、合わせて見修正するケースを探すときに読む。
