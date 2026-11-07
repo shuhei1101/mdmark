@@ -410,6 +410,40 @@ test("test_collect_check_issues_when_unknown_color_theme", async () => {
   ]);
 });
 
+// 知らない明暗の値を unknown_color_theme の後・no_documents の前に返す（正常系）
+test("test_collect_check_issues_when_unknown_color_scheme", async () => {
+  // 準備
+  const { collectCheckIssues } = await loadCheck();
+  const unknownDir = await createRootDir({
+    configLines: ["colorTheme: sepia", "colorScheme: sepia"],
+  });
+  const knownDir = await createRootDir({
+    configLines: ["colorScheme: dark"],
+  });
+  // 実行
+  const unknownIssues = await collectCheckIssues(
+    join(unknownDir, "mdmark.config.yaml"),
+  );
+  const knownIssues = await collectCheckIssues(
+    join(knownDir, "mdmark.config.yaml"),
+  );
+  // 検証
+  const kinds = unknownIssues.map((issue) => issue.kind);
+  expect(kinds.indexOf("unknown_color_scheme")).toBe(
+    kinds.indexOf("unknown_color_theme") + 1,
+  );
+  const scheme = unknownIssues.find(
+    (issue) => issue.kind === "unknown_color_scheme",
+  );
+  expect(scheme).toMatchObject({ where: "colorScheme" });
+  for (const text of ["sepia", "light", "dark", "auto"]) {
+    expect(scheme?.message).toContain(text);
+  }
+  expect(knownIssues.map((issue) => issue.kind)).not.toContain(
+    "unknown_color_scheme",
+  );
+});
+
 // エイリアスのずれを checkIndex の後・unknown_mark の前に置く（正常系）
 test("test_collect_check_issues_when_alias_drift", async () => {
   // 準備

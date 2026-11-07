@@ -231,3 +231,57 @@ test("test_take_marks_when_unknown_range_with_json", async () => {
   expect(html).toContain("<p>前</p>");
   expect(html).toContain("<p>後</p>");
 });
+
+/** 機能を重ねた設定で文書を描く助け */
+const loadRenderHelper = () => import("../../helpers/render.ts");
+
+// 先頭の印を読み、本文に印を残さない（正常系）
+test("test_resolve_page_settings", async () => {
+  // 準備
+  const { renderDoc } = await loadRenderHelper();
+  const markdown = [
+    "<!-- features: -toc -->",
+    "<!-- page: scheme=dark -->",
+    "",
+    "段落",
+  ].join("\n");
+  // 実行
+  const rendered = renderDoc(markdown);
+  // 検証
+  expect(rendered.page).toEqual({ scheme: "dark" });
+  expect(rendered.html).not.toContain("page:");
+  expect(rendered.html).not.toContain("mdmark-syntax-warning");
+  expect(rendered.warnings).toEqual([]);
+});
+
+// 先頭に無い印は読まずに警告を置く（異常系）
+test("test_resolve_page_settings_when_not_at_top", async () => {
+  // 準備
+  const { renderDoc } = await loadRenderHelper();
+  const markdown = ["段落", "", "<!-- page: scheme=dark -->", ""].join("\n");
+  // 実行
+  const rendered = renderDoc(markdown);
+  // 検証
+  expect(rendered.page).toEqual({});
+  expect(rendered.warnings).toHaveLength(1);
+  expect(rendered.warnings[0]?.message).toContain("先頭");
+  expect(rendered.html).toContain("mdmark-syntax-warning");
+});
+
+// 知らないキー・値を文書の先頭の警告にまとめる（異常系）
+test("test_resolve_page_settings_when_unknown", async () => {
+  // 準備
+  const { renderDoc } = await loadRenderHelper();
+  const markdown = ["<!-- page: scheme=sepia toc=fixed -->", "", "段落"].join(
+    "\n",
+  );
+  // 実行
+  const rendered = renderDoc(markdown);
+  // 検証
+  expect(rendered.page).toEqual({ toc: "fixed" });
+  expect(rendered.warnings).toHaveLength(1);
+  expect(rendered.warnings[0]?.message).toContain("scheme=sepia");
+  expect(rendered.html.indexOf("mdmark-syntax-warning")).toBeLessThan(
+    rendered.html.indexOf("段落"),
+  );
+});

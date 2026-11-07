@@ -204,6 +204,64 @@ test("test_mount_when_remounted", async () => {
   expect(el.querySelector(".mdmark-content h1")?.textContent).toBe("B");
 });
 
+// page の印の明暗・テーマ・目次の出し方を設定より優先し、update で決め直す（正常系）
+test("test_mount_when_page_marker", async () => {
+  // 準備
+  const el = createElement();
+  const config = {
+    colorScheme: "dark",
+    colorTheme: "theme-paper",
+    "side-toc": { mode: "hover" },
+  };
+  const markdown = [
+    "<!-- page: scheme=light theme=theme-slate toc=fixed -->",
+    "",
+    "## 導入",
+    "",
+    "段落",
+    "",
+    "## 使い方",
+    "",
+    "段落",
+    "",
+  ].join("\n");
+  // 実行
+  const handle = await mountTracked(el, { markdown, config });
+  const marked = {
+    light: el.classList.contains("mdmark-theme-light"),
+    dark: el.classList.contains("mdmark-theme-dark"),
+    theme: el.getAttribute("data-mdmark-color-theme"),
+    toggle: el.querySelector(".mdmark-side-toc-toggle") !== null,
+  };
+  handle.update("## 導入\n\n段落\n\n## 使い方\n\n段落\n");
+  // 検証
+  expect(marked).toEqual({
+    light: true,
+    dark: false,
+    theme: "theme-slate",
+    toggle: true,
+  });
+  expect(el.classList.contains("mdmark-theme-dark")).toBe(true);
+  expect(el.classList.contains("mdmark-theme-light")).toBe(false);
+  expect(el.getAttribute("data-mdmark-color-theme")).toBe("theme-paper");
+  expect(el.querySelector(".mdmark-side-toc-toggle")).toBeNull();
+});
+
+// destroy で mount が付けた明暗の class を外す（正常系）
+test("test_mount_when_color_scheme_destroyed", async () => {
+  // 準備
+  const el = createElement();
+  const handle = await mountTracked(el, {
+    markdown: "段落\n",
+    config: { colorScheme: "dark" },
+  });
+  // 実行
+  handle.destroy();
+  // 検証
+  expect(el.classList.contains("mdmark-theme-dark")).toBe(false);
+  expect(el.classList.contains("mdmark-theme-light")).toBe(false);
+});
+
 // 文書の印で印刷の機能を外すと、印刷の前に折り畳みを開かない（正常系）
 test("test_mount_when_print_disabled_by_mark", async () => {
   // 準備

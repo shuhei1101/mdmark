@@ -327,6 +327,30 @@ test("test_prepare_embeds_when_color_theme", async () => {
   expect(omitted.payload.config).not.toHaveProperty("colorTheme");
 });
 
+// 設定の colorScheme を埋める設定に写す（正常系）
+test("test_prepare_embeds_when_color_scheme", async () => {
+  // 準備
+  const { prepareEmbeds } = await loadExport();
+  const dir = await createTempDir();
+  await writeFiles(dir, { "guide.md": "# Guide\n" });
+  const docs = [{ path: "guide.md", file: join(dir, "guide.md") }];
+  const prepare = (config: Record<string, unknown>) =>
+    prepareEmbeds({
+      fetchText: NO_FETCH,
+      loaded: createLoaded(dir, config),
+      docs,
+      kind: "document",
+      entry: "guide.md",
+      out: join(dir, "guide.html"),
+    });
+  // 実行
+  const given = await prepare({ colorScheme: "dark" });
+  const omitted = await prepare({ features: { print: true } });
+  // 検証
+  expect(given.payload.config.colorScheme).toBe("dark");
+  expect(omitted.payload.config).not.toHaveProperty("colorScheme");
+});
+
 /** 色分けのライブラリの代役のモジュールを書く（`hl/` の下に本体と言語の分を置く） */
 const SYNTAX_MODULES = {
   "hl/core.min.js":
