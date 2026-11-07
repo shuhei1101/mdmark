@@ -516,7 +516,7 @@ test("test_apply_step_when_index_missing", async () => {
   // 実行
   const result = applyStep({ step, version, target });
   // 検証
-  await expect(result).resolves.toBeUndefined();
+  await expect(result).resolves.toEqual([]);
   expect(await readFile(join(dir, "mdmark.config.yaml"), "utf8")).toBe(
     "title: 題\n",
   );
