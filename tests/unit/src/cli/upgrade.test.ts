@@ -527,3 +527,53 @@ test("test_run_upgrade_when_settings", async () => {
     "v0.3.0",
   );
 });
+
+// --settings で files が config だけの call を端末の設定に当てる（正常系）
+test("test_run_upgrade_when_settings_with_config_call", async () => {
+  // 準備
+  const { runUpgrade } = await loadModule();
+  const fixture = await createFixture({
+    stepsV050: [
+      "steps:",
+      "  - op: call",
+      "    description: 設定をスクリプトで直す",
+      "    script: mark.mjs",
+      "    files: [config]",
+      "",
+    ].join("\n"),
+    packageFiles: {
+      "migrations/v0.5.0/mark.mjs": [
+        'import { appendFileSync } from "node:fs";',
+        'const path = process.argv[process.argv.indexOf("--config") + 1];',
+        'appendFileSync(path, "migrated: true\\n");',
+        "",
+      ].join("\n"),
+    },
+  });
+  const terminal = await createTempDir();
+  await writeFiles(terminal, {
+    "settings.yaml": "version: v0.3.0\n",
+  });
+  const settingsPath = join(terminal, "settings.yaml");
+  vi.stubEnv("MDMARK_CONFIG", settingsPath);
+  const { io } = createIo(fixture.work);
+  // 実行
+  const code = await runUpgrade(
+    {
+      settings: true,
+      plan: false,
+      yes: false,
+      packageDir: fixture.packageDir,
+      cliVersion: "v0.5.0",
+      now: NOW,
+    },
+    io,
+    failingAsk,
+  );
+  // 検証
+  expect(code).toBe(0);
+  const settings = parse(await readFile(settingsPath, "utf8"));
+  expect(settings.migrated).toBe(true);
+  expect(settings.version).toBe("v0.5.0");
+  expect(await fixture.read("mdmark.config.yaml")).toBe(OLD_CONFIG);
+});

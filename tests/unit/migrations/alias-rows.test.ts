@@ -184,3 +184,26 @@ test("test_migrate_alias_rows_when_already_migrated", async () => {
   expect(result).toEqual({ changed: false, notices: [], problems: [] });
   expect(doc.toString()).toBe(before);
 });
+
+// YAML として読めないファイルを problems にし、例外を投げない（異常系）
+test("test_migrate_alias_rows_when_unreadable", async () => {
+  // 準備
+  const migrateAliasRows = await loadMigrateAliasRows();
+  const { doc, configDir } = await createConfig(
+    [
+      "aliases:",
+      "  - id: broken",
+      '    paths: ["broken/*.yaml"]',
+      "    metadata:",
+      "      alias_type: { type: ref, field: alias_type }",
+    ],
+    { "broken/a.yaml": "items: [1, 2\n" },
+  );
+  // 実行
+  const result = await migrateAliasRows({ doc, configDir });
+  // 検証
+  expect(result.changed).toBe(false);
+  expect(result.problems).toHaveLength(1);
+  expect(result.problems[0]).toContain("broken");
+  expect(result.problems[0]).toContain("broken/a.yaml");
+});
