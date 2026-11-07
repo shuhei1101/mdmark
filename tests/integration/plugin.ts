@@ -67,7 +67,8 @@ type Spawned = {
 };
 
 // 子プロセスの環境から外す、テストを流す Claude Code や実機の設定が漏れる環境変数
-const LEAKING_ENV = ["CLAUDE_PROJECT_DIR", "MDMARK_PORT"];
+// `TMUX`・`TMUX_PANE` があると tmux は `TMUX_TMPDIR` を見ず、テストを流している手元の tmux サーバーにつなぐ
+const LEAKING_ENV = ["CLAUDE_PROJECT_DIR", "MDMARK_PORT", "TMUX", "TMUX_PANE"];
 // `mdmark serve` が待ち受けを始めたときに標準出力へ出す URL
 const LISTENING_URL_PATTERN = /http:\/\/127\.0\.0\.1:\d+\/mcp/;
 // 待ち受けるアドレス
@@ -152,7 +153,7 @@ function launch(options: {
 /** `hooks/hooks.json` の `event` のコマンドを、`CLAUDE_PLUGIN_ROOT` を `pluginDir` にして子プロセスで流す。`input` を標準入力に渡す。終了コードが 0 以外でも例外を投げず、結果を返す */
 async function runHook(options: {
   pluginDir: string;
-  event: "PreToolUse";
+  event: "PreToolUse" | "SessionStart";
   env: Record<string, string>;
   input: string;
 }): Promise<HookResult> {
@@ -186,6 +187,31 @@ export async function runPreToolUseHook(options: {
   input: string;
 }): Promise<HookResult> {
   return runHook({ ...options, event: "PreToolUse" });
+}
+
+/** `hooks/hooks.json` の SessionStart のコマンドを流す。`env` は子プロセスの環境変数に重ねる */
+export async function runSessionStartHook(options: {
+  pluginDir: string;
+  env: Record<string, string>;
+}): Promise<HookResult> {
+  return runHook({ ...options, event: "SessionStart", input: "{}" });
+}
+
+/** ビルドした `plugin/bin/setup.js` を `args` で子プロセスとして流す。`env` は子プロセスの環境変数に重ねる。終了コードが 0 以外でも例外を投げず、結果を返す */
+export async function runSetupScript(options: {
+  args: string[];
+  env: Record<string, string>;
+  pluginDir?: string;
+}): Promise<HookResult> {
+  const pluginDir = options.pluginDir ?? builtPluginDir();
+  const run = launch({
+    command: process.execPath,
+    args: [join(pluginDir, "bin", "setup.js"), ...options.args],
+    cwd: pluginDir,
+    env: childEnv(options.env),
+  });
+  const code = await run.exited;
+  return { code, stdout: run.stdout(), stderr: run.stderr() };
 }
 
 /** テストごとに起動した `mdmark serve` と作った MCP のクライアントを閉じる。起動・接続する関数を返す */

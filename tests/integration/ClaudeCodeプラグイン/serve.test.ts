@@ -14,8 +14,10 @@ test("test_normal", async () => {
   const { tools } = await client.listTools();
   // 検証
   expect(serve.stdout()).toContain(`http://127.0.0.1:${port}/mcp`);
-  expect(client.getInstructions()).toBe(INSTRUCTIONS);
-  expect(INSTRUCTIONS.length).toBeLessThanOrEqual(4096);
+  const instructions = client.getInstructions() ?? "";
+  expect(instructions).toBe(INSTRUCTIONS.replace("{session}", "mdmark-mcp"));
+  expect(instructions).toContain("mdmark-mcp");
+  expect(instructions.length).toBeLessThanOrEqual(4096);
   expect(tools.map((tool) => tool.name).sort()).toEqual([
     "add_template",
     "apply_template",
