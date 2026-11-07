@@ -140,6 +140,36 @@ flows:
     test: test_normal_when_theme_fixed
     refs:
       - dev/設計書/シナリオ/単一ユースケース/プレビューをVSCodeのテーマに合わせる#scenarios[正常シナリオ（配色を固定する）]
+  - name: 正常系（設定ファイルと文書のマーカーの明暗）
+    summary: '`mdmark.preview.theme` が `auto` のときは設定ファイルの `colorScheme` を渡し、文書の page のマーカーはどの設定より優先する'
+    setup:
+      - name: 明暗を書いた設定ファイル
+        description: '開いた Markdown のワークスペースの `mdmark.config.yaml` に `colorScheme: light` を書く'
+      - name: ダークのテーマ
+        description: VS Code のテーマが Default Dark Modern で、`mdmark.preview.theme` は `auto`
+      - name: Markdown
+        description: 'マーカーを持たない `a.md` と、先頭の行に `<!-- page: scheme=dark -->` を持つ `b.md`'
+      - name: Mock
+        description: 正常系と同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 文書を書く人
+        participant EX as 拡張機能
+        participant PV as プレビュー（Webview）
+        U->>EX: a.md のプレビューを開く
+        EX->>PV: render（config.colorScheme: light）
+        U->>EX: mdmark.preview.theme を dark にする
+        EX->>PV: render（colorScheme を除いた config・theme: dark）
+        U->>EX: b.md のプレビューを開き、mdmark.preview.theme を light にする
+        EX->>PV: render（colorScheme を除いた config・theme: light）
+    expected:
+      - a.md を開いた直後、`render` の `config.colorScheme` が `light` で、Webview の描く先の要素が class `mdmark-theme-light` を持つ
+      - '`mdmark.preview.theme` を `dark` にした後、`render` の `config` が `colorScheme` を持たず、包む要素が class `mdmark-theme-dark` を持つ'
+      - b.md のプレビューでは、`mdmark.preview.theme` が `light` でも、描く先の要素が class `mdmark-theme-dark` を持つ
+    test: test_normal_when_color_scheme
+    refs:
+      - dev/設計書/シナリオ/単一ユースケース/プレビューをVSCodeのテーマに合わせる#scenarios[正常シナリオ（設定ファイルの明暗で描く）]
+      - dev/設計書/シナリオ/単一ユースケース/プレビューをVSCodeのテーマに合わせる#scenarios[正常シナリオ（文書のマーカーで明暗を指定する）]
   - name: 正常系（相対パスの画像）
     summary: Markdown のフォルダからの相対パスの画像を読む
     setup:
@@ -508,12 +538,12 @@ constraints:
   - item: 相対パスの基準
     constraint: Webview の HTML に `<base href="{Markdown のフォルダの asWebviewUri}/">` を置き、本文の相対パスの画像を Markdown のフォルダから読む。`localResourceRoots` の外の画像は Webview が読まず、`alt` が出る
   - item: Webview とのメッセージ
-    constraint: '拡張機能 → Webview: `{ type: "render", markdown, previous?, config, theme, includes }`（`includes` は制約「取り込む文書」の取り込む文書の表、`previous` は差分のパネルだけが持つ変更前の Markdown、`config` は `{ features?, libraries?, "html-scripts"?, colorTheme? }`、`theme` は `mdmark.preview.theme` の値）・`{ type: "scrollToLine", line }`・`{ type: "configError", path, line?, settingKey? }`（`line` と `settingKey` はどちらか一方）・`{ type: "configOk" }`・`{ type: "theme", href }`・`{ type: "assetsResolved", id, urls }`（`urls` は `paths` の各パスから Webview の URL か `null` を引くオブジェクト）・`{ type: "inspect", id, selector }`・`{ type: "axe", id }`（どちらもテストのときだけ）。Webview → 拡張機能: `{ type: "ready" }`（配布物を読み終えた）・`{ type: "rendered" }`（`mount` か `update` を呼び終えた）・`{ type: "loadFailed", reason }`（`reason` は `offline`・`versionMissing`・`diffUnsupported`）・`{ type: "openLink", href }`・`{ type: "revealLine", line }`・`{ type: "reload" }`・`{ type: "openConfig" }`・`{ type: "resolveAssets", id, paths }`（制約「動画・音声とアセットのルートの解決」）・`{ type: "openAsset", path }`（制約「再生できない動画・音声」）・`{ type: "inspected", id, elements }`（テストのときだけ。`elements` は `selector` に当たる要素ごとの `{ tagName, className, attributes, text, naturalWidth?, top, height }`。`top` は見えている範囲の先頭からの位置、`height` は高さで、単位は px）・`{ type: "axed", id, violations }`（テストのときだけ。`violations` は axe-core の違反ごとの `{ id, impact, targets }`）。`render` は初回と `config` が変わったときは `mount`（前の描画は `destroy`）、それ以外は戻り値の `update` で描く'
+    constraint: '拡張機能 → Webview: `{ type: "render", markdown, previous?, config, theme, includes }`（`includes` は制約「取り込む文書」の取り込む文書の表、`previous` は差分のパネルだけが持つ変更前の Markdown、`config` は `{ features?, libraries?, "html-scripts"?, colorTheme?, colorScheme? }`、`theme` は `mdmark.preview.theme` の値）・`{ type: "scrollToLine", line }`・`{ type: "configError", path, line?, settingKey? }`（`line` と `settingKey` はどちらか一方）・`{ type: "configOk" }`・`{ type: "theme", href }`・`{ type: "assetsResolved", id, urls }`（`urls` は `paths` の各パスから Webview の URL か `null` を引くオブジェクト）・`{ type: "inspect", id, selector }`・`{ type: "axe", id }`（どちらもテストのときだけ）。Webview → 拡張機能: `{ type: "ready" }`（配布物を読み終えた）・`{ type: "rendered" }`（`mount` か `update` を呼び終えた）・`{ type: "loadFailed", reason }`（`reason` は `offline`・`versionMissing`・`diffUnsupported`）・`{ type: "openLink", href }`・`{ type: "revealLine", line }`・`{ type: "reload" }`・`{ type: "openConfig" }`・`{ type: "resolveAssets", id, paths }`（制約「動画・音声とアセットのルートの解決」）・`{ type: "openAsset", path }`（制約「再生できない動画・音声」）・`{ type: "inspected", id, elements }`（テストのときだけ。`elements` は `selector` に当たる要素ごとの `{ tagName, className, attributes, text, naturalWidth?, top, height }`。`top` は見えている範囲の先頭からの位置、`height` は高さで、単位は px）・`{ type: "axed", id, violations }`（テストのときだけ。`violations` は axe-core の違反ごとの `{ id, impact, targets }`）。`render` は初回と `config` が変わったときは `mount`（前の描画は `destroy`）、それ以外は戻り値の `update` で描く'
     notes: '`line` は 0 始まりの元の行番号（文書をHTML文字列にする.ts の制約「元の行番号」）'
   - item: 描けない理由の見分け方
     constraint: Webview は `import()` が失敗したら、同じ `index.js` の URL を `fetch` の `HEAD` で確かめる。404 なら `versionMissing`、それ以外（ネットワークのエラーを含む）は `offline` を拡張機能へ知らせ、パネルに描けない理由を出す。バージョンを決められないときは、拡張機能が配布物を読まない HTML で理由を出す
   - item: 配色
-    constraint: '`mdmark.preview.theme` が `light`・`dark` のときは、Webview の描く先の要素を包む要素に `mdmark-theme-light`・`mdmark-theme-dark` を付ける。`auto` のときは付けず、VS Code が `body` に付ける class に任せる。設定を変えると開いているパネルへ `render` を送り直す'
+    constraint: '`mdmark.preview.theme` が `light`・`dark` のときは、Webview の描く先の要素を包む要素に `mdmark-theme-light`・`mdmark-theme-dark` を付ける。`auto` のときは付けず、設定ファイルの `colorScheme` を `config` で渡し、無ければ VS Code が `body` に付ける class に任せる。`light`・`dark` のときは `config` から `colorScheme` を除く。明暗は、文書の page のマーカー → `mdmark.preview.theme`（`auto` 以外）→ 設定ファイルの `colorScheme` → VS Code のテーマの順に決まる（確認ログ）。設定を変えると開いているパネルへ `render` を送り直す'
     notes: dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts の制約「配色の切り替え」
   - item: テストのときの差し替え
     constraint: '`ExtensionContext.extensionMode` が `ExtensionMode.Test` のときだけ、環境変数 `MDMARK_VSCODE_DIST_BASE`（配布物の配信元）と `MDMARK_VSCODE_TAGS_URL`（タグ一覧の取得先）を読む。CSP の配布物の origin も差し替えた配信元の origin にする。それ以外のモードでは読まない。`ExtensionMode.Test` のときだけ、Webview の HTML に `inspect` を受ける処理を入れ、`activate` は開いているパネルへ `inspect` を送って `inspected` の `elements` を返す `inspectPreview(selector)` を戻り値で返す。同じく `axe` を送って `axed` の `violations` を返す `auditPreview()` も返す。Webview はテストのビルドが置いた axe-core を `axe` を受けたときだけ読む。結合テストは Webview の DOM の期待値とアクセシビリティの違反をこの戻り値で確かめる'
