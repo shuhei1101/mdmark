@@ -3,7 +3,7 @@ import { isAbsolute, resolve } from "node:path";
 import { loadLayeredConfig } from "../../src/config-files.ts";
 import type { PreviewSettings } from "./settings.ts";
 
-/** `mount` に渡す設定。設定ファイルから取り出した `features`・`libraries`・`html-scripts`・`side-toc`・`colorTheme`・`colorScheme` */
+/** `mount` に渡す設定。設定ファイルから取り出した `features`・`libraries`・`html-scripts`・`side-toc`・`labels`・`colorTheme`・`colorScheme` */
 export type PreviewConfig = {
   /** 記載した値のまま（中の知らない名前と型の違う値は mdmark が無視する） */
   features?: Record<string, unknown>;
@@ -13,6 +13,8 @@ export type PreviewConfig = {
   "html-scripts"?: Record<string, unknown>;
   /** 記載した値のまま（`mode` の知らない値は mdmark が `hover` で描く） */
   "side-toc"?: Record<string, unknown>;
+  /** 記載した値のまま（中の知らないキーと、空文字・文字列でない値は mdmark が無視して既定の文言で描く） */
+  labels?: Record<string, unknown>;
   /** 書いた値のまま。`mdmark.colorTheme` が空でないときは `applyColorTheme` がその値に置き換える（知らない名前は mdmark が dev-swiss で描く） */
   colorTheme?: string;
   /** 書いた値のまま。プレビューでは `mdmark.preview.theme` が `light`・`dark` のとき `applyPreviewTheme` が除く（知らない値は mdmark が `auto` で描く） */
@@ -109,7 +111,7 @@ export function resolveConfigPath(options: {
   return isAbsolute(configPath) ? configPath : resolve(baseDir, configPath);
 }
 
-/** 重ねた設定から `mount` に渡すキー（マップの `features`・`libraries`・`html-scripts`・`side-toc` と文字列の `colorTheme`・`colorScheme`）だけを取り出す */
+/** 重ねた設定から `mount` に渡すキー（マップの `features`・`libraries`・`html-scripts`・`side-toc`・`labels` と文字列の `colorTheme`・`colorScheme`）だけを取り出す */
 function pickPreviewConfig(config: Record<string, unknown>): PreviewConfig {
   const picked: PreviewConfig = {};
   if (isMap(config.features)) {
@@ -123,6 +125,9 @@ function pickPreviewConfig(config: Record<string, unknown>): PreviewConfig {
   }
   if (isMap(config["side-toc"])) {
     picked["side-toc"] = config["side-toc"];
+  }
+  if (isMap(config.labels)) {
+    picked.labels = config.labels;
   }
   if (typeof config.colorTheme === "string") {
     picked.colorTheme = config.colorTheme;
