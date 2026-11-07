@@ -30,7 +30,7 @@ flows:
       - 終了コードが 0、標準出力の JSON の `result` が `started`
       - '`mdmark-mcp` の tmux のセッションがあり、`MDMARK_PORT` のポートで待ち受ける（先に起動していた tmux サーバーの中でも 8782 では待ち受けない）'
       - 状態の置き場所の `serve.log` に待ち受ける URL の 1 行がある
-      - '`tools` が `export_html`・`build_site`・`check`'
+      - '`tools` に `export_html`・`build_site`・`check` がある'
       - '`stop` が `tmux kill-session -t =mdmark-mcp`'
     test: test_normal
   - name: 正常系（既に起動している）

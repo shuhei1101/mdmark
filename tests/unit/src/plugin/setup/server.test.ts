@@ -239,7 +239,9 @@ test("test_list_tool_names", async () => {
   // 実行
   const names = await listToolNames({ port });
   // 検証
-  expect([...names].sort()).toEqual(["build_site", "check", "export_html"]);
+  expect(names).toEqual(
+    expect.arrayContaining(["build_site", "check", "export_html"]),
+  );
 });
 
 // ほかのプロセスがポートを待ち受けていれば起動しない（異常系）

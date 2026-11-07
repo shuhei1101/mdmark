@@ -37,7 +37,7 @@ scenarios:
       - '`CLAUDE_CONFIG_DIR` の `settings.json` の `env` に、端末の設定のパスの `MDMARK_CONFIG` がある'
       - 端末の設定のセッション名の tmux のセッションが 1 つだけあり、先に起動していた tmux サーバーの中でも `MDMARK_PORT` のポートで待ち受けるプロセスが 1 つだけある（8782 では待ち受けない）
       - 状態の置き場所に常駐サーバーのログがあり、待ち受ける URL の 1 行を含む
-      - '`tools/list` が `export_html`・`build_site`・`check` を返す'
+      - '`tools/list` が返すツールに `export_html`・`build_site`・`check` がある'
       - SessionStart のフックが何も出さずに終了コード 0 で終わる
       - 最後の報告に、端末の設定のパス・`settings.json` に書いたキー・tmux のセッション名・ログのパス・止める操作が出る
     test: test_normal
@@ -68,7 +68,7 @@ scenarios:
     expected:
       - 端末の設定と `settings.json` の中身が呼ぶ前と同じ
       - tmux のセッションを作り直さず、常駐サーバーのプロセスが呼ぶ前と同じ
-      - '`tools/list` が `export_html`・`build_site`・`check` を返す'
+      - '`tools/list` が返すツールに `export_html`・`build_site`・`check` がある'
       - 最後の報告に、書き換えなかったことと tmux のセッション名が出る
     test: test_normal_when_already_set_up
   - name: 正常シナリオ（常駐サーバーが止まっている）

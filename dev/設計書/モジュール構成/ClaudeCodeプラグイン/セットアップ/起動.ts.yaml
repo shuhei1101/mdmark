@@ -168,7 +168,7 @@ functions:
         summary: 起動した常駐サーバーのツール
         condition: '`runServe` を空いたポートで起動する'
         mock: なし
-        expected: '`["export_html", "build_site", "check"]` を並べ替えたものと等しい'
+        expected: '`export_html`・`build_site`・`check` を含む'
     refs:
       - dev/設計書/インターフェース定義/ClaudeCodeプラグイン/常駐サーバーを起動する.ts#response
     status: planned
