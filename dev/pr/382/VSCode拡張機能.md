@@ -26,6 +26,21 @@
 | 相対パスの `mermaid.url` | プレビューは設定ファイルのフォルダから解決した Webview の URL、書き出しは `data:` の URL にする | `html-scripts.url` と同じ扱い |
 | テーマ | プレビューの VS Code のライト・ダークの切り替えで、mermaid の図も描き直す | ライブラリ本体のテーマ・明暗の追従を使用する |
 
+## PoC 結果
+
+| 検証構成 | 成功条件 | 結果 | PoC PR | 補足 |
+| --- | --- | --- | --- | --- |
+| `buildCsp` と同じ規則（`cspSource` の代わりにページの origin）で組んだ CSP のページで、mermaid 12.3.0 の本体と chunk を jsDelivr から読み込んで描く（Chromium） | CSP 違反が 0 件、7 種類の図すべてが SVG | ✅ 0 件・7/7 | [#384](https://github.com/shuhei1101/mdmark/pull/384)（closed） | ライト・ダークとも。jsDelivr への要求は 55 件（本体と chunk） |
+
+結論: Chromium で成立。
+
+所感:
+
+- mermaid が SVG に入れるインラインの `style` は、今の `style-src 'unsafe-inline'` で受けられた。jsDelivr の origin は配布物の origin と同じで、既定の `mermaid.url` なら CSP の `script-src` は今のままで足りる
+- 本番の Webview（`vscode-webview://` の origin）での CSP 違反は、実装の工程の結合テスト（VS Code を起動するテスト）で数えて確定する
+
+スクリーンショット: [CSP のページ（ライト）](https://github.com/shuhei1101/mdmark/blob/ff34427e99f18bfff63b68bb30998b369725f260/poc/mermaid/out/csp-light.png)・[CSP のページ（ダーク）](https://github.com/shuhei1101/mdmark/blob/ff34427e99f18bfff63b68bb30998b369725f260/poc/mermaid/out/csp-dark.png)
+
 ## テスト結果
 
 なし（テスト作成・実装の工程で記入する）
