@@ -257,12 +257,15 @@ export async function runUpgrade(
     from: local,
     to: target,
   });
-  // 端末の設定は設定ファイルの手順だけを当て、索引と文書の手順は飛ばす
+  // 端末の設定は設定ファイルの手順（設定ファイルだけを書き換える call を含む）だけを当て、索引と文書の手順は飛ばす
   const versions = options.settings
     ? loadedVersions.map((version) => ({
         ...version,
-        steps: version.steps.filter(
-          (step) => "file" in step && step.file === "config",
+        steps: version.steps.filter((step) =>
+          step.op === "call"
+            ? step.files.length > 0 &&
+              step.files.every((file) => file === "config")
+            : "file" in step && step.file === "config",
         ),
       }))
     : loadedVersions;
@@ -299,7 +302,17 @@ export async function runUpgrade(
   try {
     for (const version of versions) {
       for (const step of version.steps) {
-        await applyStep({ step, version, target: migrationTarget });
+        const lines = await applyStep({
+          step,
+          version,
+          target: migrationTarget,
+        });
+        if (lines.length > 0) {
+          io.stdout(`${version.version} の手順「${step.description}」:`);
+          for (const line of lines) {
+            io.stdout(`  ${line}`);
+          }
+        }
       }
     }
     const issues = options.settings

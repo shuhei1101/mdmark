@@ -34,7 +34,7 @@ async function createCleanDir(options?: { js?: boolean }): Promise<string> {
     "a.md": "# A\n",
     "b.md": "# B\n",
     "index.yaml": [
-      "schema: 1",
+      "schema: 2",
       "docs:",
       "  - id: a",
       "    path: a.md",
@@ -281,25 +281,24 @@ test("test_normal_when_alias_drift", async () => {
   await writeFiles(dir, {
     "mdmark.config.yaml": `${config}${[
       "aliases:",
-      "  - id: records",
-      "    paths: [aliases/*.yaml]",
-      "    metadata:",
-      "      alias_type: { type: ref, field: alias_type }",
+      "  - id: terms",
+      "    paths: [aliases/terms.yaml]",
+      "    alias_type: term",
+      "  - id: servers",
+      "    paths: [aliases/servers.yaml]",
+      "    alias_type: env",
       "  - id: missing",
       "    paths: [missing/*.yaml]",
-      "    metadata:",
-      "      alias_type: { type: ref, field: alias_type }",
+      "    alias_type: term",
       "",
     ].join("\n")}`,
-    "aliases/term.yaml": [
-      "alias_type: term",
+    "aliases/terms.yaml": [
       "id: empty-term",
       "name: 空の用語",
       "description: ''",
       "",
     ].join("\n"),
-    "aliases/env.yaml": [
-      "alias_type: env",
+    "aliases/servers.yaml": [
       "id: dev-server",
       "name: 開発サーバー",
       "url: http://127.0.0.1:8767/",
@@ -308,8 +307,8 @@ test("test_normal_when_alias_drift", async () => {
   });
   const before = [
     ...(await snapshot(dir)),
-    await readFile(join(dir, "aliases/term.yaml"), "utf8"),
-    await readFile(join(dir, "aliases/env.yaml"), "utf8"),
+    await readFile(join(dir, "aliases/terms.yaml"), "utf8"),
+    await readFile(join(dir, "aliases/servers.yaml"), "utf8"),
   ];
   // 実行
   const result = await runCli(["check"], dir);
@@ -324,15 +323,17 @@ test("test_normal_when_alias_drift", async () => {
   ).toBe(true);
   expect(
     lines.some((line) =>
-      line.startsWith("aliases/term.yaml:description: alias_required_empty"),
+      line.startsWith("aliases/terms.yaml:description: alias_required_empty"),
     ),
   ).toBe(true);
-  expect(lines.some((line) => line.includes("aliases/env.yaml"))).toBe(false);
+  expect(lines.some((line) => line.includes("aliases/servers.yaml"))).toBe(
+    false,
+  );
   expect(lines.at(-1)).toBe("ずれ 2 件");
   expect([
     ...(await snapshot(dir)),
-    await readFile(join(dir, "aliases/term.yaml"), "utf8"),
-    await readFile(join(dir, "aliases/env.yaml"), "utf8"),
+    await readFile(join(dir, "aliases/terms.yaml"), "utf8"),
+    await readFile(join(dir, "aliases/servers.yaml"), "utf8"),
   ]).toEqual(before);
 });
 
@@ -552,7 +553,7 @@ test("test_normal_when_diagram_drift", async () => {
     "docs/a.md": a.join("\n"),
     "docs/b.md": ["# B", "", ...flowLines(CLEAN_FLOW), ""].join("\n"),
     "index.yaml": [
-      "schema: 1",
+      "schema: 2",
       "docs:",
       "  - id: a",
       "    path: docs/a.md",
@@ -967,7 +968,7 @@ test("test_normal_when_group_options_invalid", async () => {
   await writeFiles(dir, {
     "docs/a.md": a.join("\n"),
     "index.yaml": [
-      "schema: 1",
+      "schema: 2",
       "docs:",
       "  - id: a",
       "    path: docs/a.md",

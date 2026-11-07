@@ -21,7 +21,7 @@ const OUTSIDE = ["```html", "<p>範囲の外</p>", "```", ""].join("\n");
 
 /** 用語 `索引` を持つ索引 */
 const TERM_INDEX: MdmarkIndex = {
-  schema: 1,
+  schema: 2,
   docs: [{ id: "cur", path: "cur.md", title: "描く文書" }],
   terms: [{ id: "idx", term: "索引", meaning: "文書と用語を並べた YAML" }],
 };
@@ -131,7 +131,7 @@ test("test_build_embedded_html_when_alias", () => {
 test("test_build_embedded_html_when_avoided_term", () => {
   // 準備
   const index: MdmarkIndex = {
-    schema: 1,
+    schema: 2,
     docs: [{ id: "cur", path: "cur.md", title: "描く文書" }],
     terms: [
       {

@@ -95,7 +95,7 @@ test("test_prepare_embeds_when_index", async () => {
   const dir = await createTempDir();
   await writeFiles(dir, {
     "index.yaml": [
-      "schema: 1",
+      "schema: 2",
       "docs:",
       "  - id: guide",
       "    path: guide.md",
@@ -454,19 +454,21 @@ test("test_prepare_embeds_when_aliases", async () => {
   const dir = await createTempDir();
   await writeFiles(dir, {
     "guide.md": "テストを流すと開発サーバーを使う。\n",
-    "aliases/command.yaml":
-      "alias_type: command\nid: run-test\nname: テストを流す\ncommand: npm test\n",
-    "aliases/env.yaml":
-      "alias_type: env\nid: dev-server\nname: 開発サーバー\nurl: http://127.0.0.1:8767/\n",
-    "aliases/term.yaml": "alias_type: term\nid: empty-term\nname: 空の用語\n",
+    "aliases/commands.yaml":
+      "id: run-test\nname: テストを流す\ncommand: npm test\n",
+    "aliases/servers.yaml":
+      "id: dev-server\nname: 開発サーバー\nurl: http://127.0.0.1:8767/\n",
+    "aliases/terms.yaml": "id: empty-term\nname: 空の用語\n",
   });
   const loaded = createLoaded(dir, {
     aliases: [
       {
-        id: "records",
-        paths: ["aliases/*.yaml"],
-        metadata: { alias_type: { type: "ref", field: "alias_type" } },
+        id: "commands",
+        paths: ["aliases/commands.yaml"],
+        alias_type: "command",
       },
+      { id: "servers", paths: ["aliases/servers.yaml"], alias_type: "env" },
+      { id: "terms", paths: ["aliases/terms.yaml"], alias_type: "term" },
     ],
   });
   // 実行
@@ -489,7 +491,7 @@ test("test_prepare_embeds_when_aliases", async () => {
   // description が空の用語は、`{ファイル}:{場所}: {種類}: {内容}` の警告 1 件
   expect(result.warnings).toHaveLength(1);
   expect(result.warnings[0]).toContain(
-    "aliases/term.yaml:description: alias_required_empty: ",
+    "aliases/terms.yaml:description: alias_required_empty: ",
   );
 });
 

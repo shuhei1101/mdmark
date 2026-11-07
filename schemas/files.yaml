@@ -1,6 +1,6 @@
 # yaml-language-server: $schema=../dev/テンプレート/files.schema.yaml
 files:
-  - path: alias-inject/v0.2.0/aliases.schema.json
+  - path: alias-inject/v0.3.0/aliases.schema.json
     description: モジュール構成『ライブラリ本体 / CLI』のうち「取り込んだ alias-inject の行の Schema」を受け持つ。CLI のコマンドの振る舞いを変えるときに読む。
     tags: [topic:cli, topic:エイリアス, tool:ajv]
     related:
@@ -25,7 +25,7 @@ files:
       - to: dev/設計書/ER図/CSSのテンプレート
         type: implements
   - path: mdmark.index.schema.json
-    description: 使う側が文書のメタデータ・用語・タグの語彙を書く索引の JSON Schema。索引のキーを追加・変更するときに読む。
+    description: 使う側が文書のメタデータ・用語を書く索引の JSON Schema。索引のキーを追加・変更するときに読む。
     tags: [topic:索引, topic:スキーマ, tool:jsonschema]
     related:
       - to: dev/設計書/ER図/索引

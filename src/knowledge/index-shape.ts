@@ -72,30 +72,14 @@ export type MdmarkIndexTerm = {
   avoid?: string[];
 };
 
-/** 索引のタグの語彙の 1 つ */
-export type MdmarkIndexTag = {
-  /** タグの名前 */
-  name: string;
-  /** グループ */
-  group?: string;
-  /** 説明（含める / 含めない / 例） */
-  description?: string;
-  /** 別名 */
-  aliases?: string[];
-  /** やめたタグの振り替え先の `name` */
-  deprecated?: string;
-};
-
 /** 使う側が索引の YAML を読んだ値の型 */
 export type MdmarkIndex = {
   /** 索引の版 */
-  schema: 1;
+  schema: 2;
   /** 文書 */
   docs: MdmarkIndexDoc[];
   /** 用語 */
   terms?: MdmarkIndexTerm[];
-  /** タグの語彙 */
-  tags?: MdmarkIndexTag[];
 };
 
 /** 索引のキー 1 つの型と必須か */
@@ -112,18 +96,16 @@ type KeyShape = {
   required: boolean;
 };
 
-/** 索引の最上位・`docs` の要素・`terms` の要素・`tags` の要素ごとの、キーと型と必須か */
+/** 索引の最上位・`docs` の要素・`terms` の要素ごとの、キーと型と必須か */
 export const INDEX_SHAPE: {
   root: Record<string, KeyShape>;
   doc: Record<string, KeyShape>;
   term: Record<string, KeyShape>;
-  tag: Record<string, KeyShape>;
 } = {
   root: {
     schema: { type: "integer", required: true },
     docs: { type: "array", required: true },
     terms: { type: "array", required: false },
-    tags: { type: "array", required: false },
   },
   doc: {
     id: { type: "string", required: true },
@@ -140,13 +122,6 @@ export const INDEX_SHAPE: {
     meaning: { type: "string", required: true },
     aliases: { type: "string[]", required: false },
     avoid: { type: "string[]", required: false },
-  },
-  tag: {
-    name: { type: "string", required: true },
-    group: { type: "string", required: false },
-    description: { type: "string", required: false },
-    aliases: { type: "string[]", required: false },
-    deprecated: { type: "string", required: false },
   },
 };
 
@@ -168,7 +143,7 @@ const DOC_RELATED_SHAPE: Record<string, KeyShape> = {
 const EMPTY_ALLOWED = new Set(["description"]);
 
 /** 今の索引の版 */
-const CURRENT_SCHEMA = 1;
+const CURRENT_SCHEMA = 2;
 
 /** 索引の形に合わない場所 */
 export type IndexProblem = {
@@ -420,37 +395,25 @@ export function normalizeIndex(value: unknown): {
     return { index, problems };
   }
   // 最上位のキー: 版・必須の欠け・知らないキー
+  if (value.schema !== CURRENT_SCHEMA && Number.isInteger(value.schema)) {
+    problems.push({
+      where: "schema",
+      message: `schema は ${CURRENT_SCHEMA} にします。古い版の索引は mdmark upgrade で移してください`,
+    });
+  }
   const root: IndexProblem[] = [];
   checkItem({
-    item: { ...value, docs: [], terms: [], tags: [] },
+    item: { ...value, docs: [], terms: [] },
     shape: INDEX_SHAPE.root,
     where: "",
     problems: root,
   });
   for (const problem of root) {
-    // 要素の検査に回す `docs`・`terms`・`tags` の値は、ここでは見ない
+    // 要素の検査に回す `docs`・`terms` の値は、ここでは見ない
     const key = problem.where.slice(1);
-    if (key !== "docs" && key !== "terms" && key !== "tags") {
+    if (key !== "docs" && key !== "terms") {
       problems.push({ where: key, message: problem.message });
     }
-  }
-  if (value.schema !== undefined && value.schema !== CURRENT_SCHEMA) {
-    if (Number.isInteger(value.schema)) {
-      problems.push({
-        where: "schema",
-        message: `schema は ${CURRENT_SCHEMA} にします`,
-      });
-    }
-  }
-  if (value.tags !== undefined) {
-    index.tags = checkTop<MdmarkIndexTag>({
-      list: value.tags,
-      name: "tags",
-      shape: INDEX_SHAPE.tag,
-      unique: [],
-      required: false,
-      problems,
-    });
   }
   index.docs = checkTop<MdmarkIndexDoc>({
     list: value.docs,

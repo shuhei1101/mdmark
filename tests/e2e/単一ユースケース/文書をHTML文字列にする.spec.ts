@@ -117,7 +117,7 @@ test("test_normal_when_syntax", async () => {
 
 // 用語と被参照を持つ索引
 const INDEX: MdmarkIndex = {
-  schema: 1,
+  schema: 2,
   docs: [
     { id: "arch", path: "設計/arch.md", title: "アーキテクチャ" },
     { id: "api", path: "api.md", title: "API", related: ["arch"] },

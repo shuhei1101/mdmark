@@ -2367,7 +2367,7 @@ test("test_normal_when_updated_with_syntax", async () => {
 
 /** 索引: 用語 `索引` と、文書 `arch`・`api`（別名 `公開関数`）・`index-ref`（別名 `索引`） */
 const GLOSSARY_INDEX: MdmarkIndex = {
-  schema: 1,
+  schema: 2,
   docs: [
     { id: "arch", path: "設計/arch.md", title: "アーキテクチャ" },
     {
@@ -2500,7 +2500,7 @@ test("test_normal_when_notation_differs", async () => {
   // 準備
   const el = createElement();
   const index: MdmarkIndex = {
-    schema: 1,
+    schema: 2,
     docs: [{ id: "cur", path: "cur.md", title: "描く文書" }],
     terms: [
       {
@@ -2616,7 +2616,7 @@ test("test_normal_when_glossary_avoid_column", async () => {
   // 準備
   const { collectReferences } = await loadBuilt();
   const index: MdmarkIndex = {
-    schema: 1,
+    schema: 2,
     docs: [
       { id: "glossary", path: "glossary.md", title: "用語集" },
       { id: "guide", path: "guide.md", title: "ガイド" },
@@ -2714,7 +2714,7 @@ const BACKLINKS_REFERENCES: MdmarkReferences = {
 
 /** 索引: 3 つの文書 */
 const BACKLINKS_INDEX: MdmarkIndex = {
-  schema: 1,
+  schema: 2,
   docs: [
     { id: "arch", path: "設計/arch.md", title: "アーキテクチャ" },
     { id: "api", path: "api.md", title: "API" },
@@ -3039,7 +3039,7 @@ test("test_normal_when_diagram_fullscreen", async () => {
 
 /** 索引: 用語 `意思決定モデル` を持つ */
 const TERM_INDEX: MdmarkIndex = {
-  schema: 1,
+  schema: 2,
   docs: [],
   terms: [
     {
@@ -5069,7 +5069,7 @@ test("test_error_when_part_module_unavailable", async () => {
 
 /** ツールチップの置く側を確かめる索引: 用語 `索引` */
 const PLACEMENT_INDEX: MdmarkIndex = {
-  schema: 1,
+  schema: 2,
   docs: [{ id: "arch", path: "設計/arch.md", title: "アーキテクチャ" }],
   terms: [
     {
@@ -7068,7 +7068,7 @@ test("test_normal_when_aliases_have_same_term", async () => {
   // 準備
   const el = createElement();
   const index: MdmarkIndex = {
-    schema: 1,
+    schema: 2,
     docs: [{ id: "guide", path: "guide.md", title: "ガイド" }],
     terms: [{ id: "mark", term: "印", meaning: "索引に書いた意味" }],
   };
