@@ -241,3 +241,31 @@ test("test_list_tool_names", async () => {
   // 検証
   expect([...names].sort()).toEqual(["build_site", "check", "export_html"]);
 });
+
+// ほかのプロセスがポートを待ち受けていれば起動しない（異常系）
+test("test_start_server_when_port_taken", async () => {
+  // 準備
+  const { startServer } = await loadServer();
+  const other = createServer();
+  await new Promise<void>((resolve) => other.listen(0, "127.0.0.1", resolve));
+  cleanups.push(
+    () => new Promise<void>((resolve) => other.close(() => resolve())),
+  );
+  const { port } = other.address() as AddressInfo;
+  const { env } = await createTerminal({ MDMARK_PORT: String(port) });
+  const { run, calls } = createFakeRun((args) =>
+    args[0] === "has-session" ? { code: 1 } : { code: 0 },
+  );
+  // 実行
+  const result = startServer({
+    env,
+    pluginRoot: "/p",
+    version: "v0.0.0",
+    run,
+    sleep: noSleep,
+  });
+  // 検証
+  await expect(result).rejects.toMatchObject({ exitCode: 1 });
+  await expect(result).rejects.toThrow("MDMARK_PORT");
+  expect(calls.some((args) => args[0] === "new-session")).toBe(false);
+});
