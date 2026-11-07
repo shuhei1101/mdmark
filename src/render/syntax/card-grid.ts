@@ -1,5 +1,6 @@
 import type { StateCore, Token } from "markdown-it";
 import { type CardGridItem, renderCardGrid } from "../../parts/card-grid.ts";
+import { SLOT_MARKER, splitSlots } from "../../parts/own.ts";
 import type { Mark } from "../marks.ts";
 import { ICON_NAME_PATTERN } from "./inline-icons.ts";
 import { envOf, featureOn, findClose, markOf, ownBlock } from "./tokens.ts";
@@ -64,10 +65,16 @@ const readItem = (state: StateCore, children: Token[]): CardGridItem => {
     const title = autolinked
       ? renderInline(state, inner).replace(SCHEME_PATTERN, "")
       : renderInline(state, inner);
-    const description = renderInline(state, [
-      ...rest.slice(0, openIndex),
-      ...trimStart(rest.slice(closeIndex + 1)),
-    ]);
+    // カードのリンクの中にリンクを入れられないため、説明のリンクは文字だけにする
+    const description = renderInline(
+      state,
+      [
+        ...rest.slice(0, openIndex),
+        ...trimStart(rest.slice(closeIndex + 1)),
+      ].filter(
+        (child) => child.type !== "link_open" && child.type !== "link_close",
+      ),
+    );
     return {
       title,
       href: String(open.attrGet("href") ?? ""),
@@ -85,6 +92,38 @@ const readItem = (state: StateCore, children: Token[]): CardGridItem => {
     icon,
     description: renderInline(state, descriptionChildren),
   };
+};
+
+/** カードの格子の枠だけに mdmark が出した要素の印を付け、書いた人のタイトルと説明の HTML を印の後に差し込んだトークン */
+const cardGridBlock = (
+  state: StateCore,
+  items: CardGridItem[],
+  source: Token,
+): Token => {
+  const slots: string[] = [];
+  const frames = items.map((item) => {
+    slots.push(item.title);
+    const hasDescription =
+      item.description !== undefined && item.description !== "";
+    if (hasDescription) {
+      slots.push(item.description as string);
+    }
+    return {
+      ...item,
+      title: SLOT_MARKER,
+      description: hasDescription ? SLOT_MARKER : undefined,
+    };
+  });
+  const token = ownBlock(
+    state,
+    renderCardGrid({ items: frames, icons: envOf(state).icons }),
+    source,
+  );
+  const pieces = splitSlots(token.content);
+  token.content = pieces
+    .map((piece, index) => `${piece}${slots[index] ?? ""}`)
+    .join("");
+  return token;
 };
 
 /** リスト 1 つの項目ごとに、段落の行内の子を改行でつないで集める */
@@ -164,13 +203,7 @@ export const buildCardGrid = (state: StateCore): void => {
         }),
       ),
     ).map((children) => readItem(state, children));
-    out.push(
-      ownBlock(
-        state,
-        renderCardGrid({ items, icons: envOf(state).icons }),
-        token,
-      ),
-    );
+    out.push(cardGridBlock(state, items, token));
     index = closeIndex;
   }
   state.tokens = out;
