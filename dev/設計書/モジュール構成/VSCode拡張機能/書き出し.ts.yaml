@@ -5,7 +5,7 @@ directory: |-
   vscode/src/export/
   ├── html.ts    # 書き出す先のパスと HTML の組み立て（vscode を import しない）
   ├── write.ts   # 一時ファイルからの置き換え（vscode を import しない）
-  ├── embed.ts   # 相対パスの libraries と html-scripts.url を埋めるかの判定と埋める処理（vscode を import しない）
+  ├── embed.ts   # 相対パスの libraries と html-scripts.url を埋める処理（vscode を import しない）
   └── export.ts  # mdmark.exportHtml・mdmark.openInBrowser・mdmark.printToPdf の本体
   ```
 enums:
@@ -237,84 +237,20 @@ functions:
     refs:
       - dev/設計書/インターフェース定義/VSCode拡張機能/HTMLに書き出す.ts#constraints[埋めるライブラリ]
     status: planned
-  - name: usedLibraryNames
-    title: 文書が使うライブラリの名前を拾う
-    kind: 関数
-    container: vscode/src/export/embed.ts
-    usecase: HTMLに書き出す
-    summary: 文書のマーカー（ライブラリ本体の `MARK_PATTERN`）のうち、閉じでなく `names` にある名前を返す
-    scope: public
-    args:
-      - name: markdown
-        type: string
-        required: true
-        description: 書き出す全文
-      - name: names
-        type: string[]
-        required: true
-        description: 調べるライブラリの名前
-    returns:
-      type: Set<string>
-      description: 文書にマーカーがある名前
-    unit_tests:
-      - name: test_used_library_names
-        case: 正常
-        summary: マーカーがある名前だけを返す
-        condition: '文書が `<!-- test-lib: a -->` と `<!-- /other-lib -->` を持ち、`names` が `test-lib`・`other-lib`・`unused-lib`'
-        mock: なし
-        expected: '`test-lib` だけ'
-    refs:
-      - dev/設計書/インターフェース定義/VSCode拡張機能/HTMLに書き出す.ts#constraints[埋めるライブラリ]
-    status: planned
-  - name: usesRangeScripts
-    title: 範囲のスクリプトを動かすかを決める
-    kind: 関数
-    container: vscode/src/export/embed.ts
-    usecase: HTMLに書き出す
-    summary: 設定の `features` に文書の `features` のマーカーを重ねて（ライブラリ本体の `resolveFeatures`）`html-scripts` がオンで、`<!-- html -->` の範囲に情報文字列が `ts`・`js` のコードブロックがあれば `true` を返す
-    scope: public
-    args:
-      - name: markdown
-        type: string
-        required: true
-        description: 書き出す全文
-      - name: features
-        type: Record<string, unknown> | undefined
-        required: true
-        description: 重ねた設定の `features`
-    returns:
-      type: boolean
-      description: 変換のライブラリを埋めるか
-    unit_tests:
-      - name: test_uses_range_scripts
-        case: 正常
-        summary: 設定か文書のマーカーでオンにし、`ts` の範囲があると `true`
-        condition: '`ts` の範囲を持つ文書を、`features` が `{ "html-scripts": true }` と、`features` が無く文書に `<!-- features: +html-scripts -->` を持つ場合で呼ぶ'
-        mock: なし
-        expected: どちらも `true`
-      - name: test_uses_range_scripts_when_off_or_no_script
-        case: 正常
-        summary: オフか、範囲に `ts`・`js` が無いと `false`
-        condition: '`features` が `{ "html-scripts": true }` で文書に `<!-- features: -html-scripts -->` を持つ場合と、オンで範囲が `html`・`css` だけの場合と、範囲の外に `ts` のコードブロックがある場合'
-        mock: なし
-        expected: どれも `false`
-    refs:
-      - dev/設計書/インターフェース定義/VSCode拡張機能/HTMLに書き出す.ts#constraints[埋めるライブラリ]
-    status: planned
   - name: embedLocalLibraries
     title: 相対パスのライブラリを埋める
     kind: 関数
     container: vscode/src/export/embed.ts
     usecase: HTMLに書き出す
-    summary: '`http:`・`https:` でない `libraries` の値のうち `usedLibraryNames` が拾った名前と、`usesRangeScripts` が `true` のときの `html-scripts.url` を `bundle` でまとめ、`moduleDataUrl` の URL に替えて返す'
+    summary: '`http:`・`https:` でない `libraries` の値のうちライブラリ本体の `usedLibraryMarks` が返す名前と、ライブラリ本体の `collectRangeScripts` が 1 件以上返すときの `html-scripts.url` を `bundle` でまとめ、`moduleDataUrl` の URL に替えて返す'
     description: 拾わなかった・まとめられなかった相対パスの `libraries` の値は返す `libraries` から外し、`html-scripts.url` は返す `htmlScripts` から `url` を外す。`http:`・`https:` の値と文字列でない値はそのまま返す。同じパスは 1 回だけまとめる
     scope: public
     is_async: true
     args:
       - name: options
-        type: '{ markdown: string; libraries: Record<string, unknown> | undefined; htmlScripts: Record<string, unknown> | undefined; features: Record<string, unknown> | undefined; bundle: (paths: string[]) => Promise<Array<{ path: string; code: string } | { path: string; error: string }>> }'
+        type: '{ markdown: string; libraries: Record<string, unknown> | undefined; htmlScripts: Record<string, unknown> | undefined; config: MdmarkConfig; bundle: (paths: string[]) => Promise<Array<{ path: string; code: string } | { path: string; error: string }>> }'
         required: true
-        description: 書き出す全文・重ねた設定の `libraries`・`html-scripts`・`features`（相対パスは設定を重ねる処理が絶対パスにした値）・絶対パスを ES モジュールにまとめる関数（拡張機能では `bundleExtensions`）
+        description: 書き出す全文・重ねた設定の `libraries`・`html-scripts`（相対パスは設定を重ねる処理が絶対パスにした値）・`collectRangeScripts` に渡す重ねた設定・絶対パスを ES モジュールにまとめる関数（拡張機能では `bundleExtensions`）
     returns:
       type: 'Promise<{ libraries: Record<string, unknown> | undefined; htmlScripts: Record<string, unknown> | undefined; failures: Array<{ path: string; error: string }> }>'
       description: 埋めた値に替えた `libraries`・`html-scripts` と、まとめられなかったパスと誤り
@@ -322,7 +258,7 @@ functions:
       - name: test_embed_local_libraries
         case: 正常
         summary: 'マーカーがある相対パスのライブラリと変換のライブラリだけを data: の URL に替える'
-        condition: '`libraries` が `test-lib: /ws/libs/test.js`・`unused-lib: /ws/libs/unused.js`・`cdn-lib: https://example.com/a.js`、`html-scripts.url` が `/ws/libs/babel.js`、文書は `test-lib`・`cdn-lib` のマーカーと `ts` の範囲を持ち `features` が `{ "html-scripts": true }`'
+        condition: '`libraries` が `test-lib: /ws/libs/test.js`・`unused-lib: /ws/libs/unused.js`・`cdn-lib: https://example.com/a.js`、`html-scripts.url` が `/ws/libs/babel.js`、文書は `test-lib`・`cdn-lib` のマーカーと `ts` の範囲を持ち `config.features` が `{ "html-scripts": true }`'
         mock: '`bundle` はパスごとに `export default "{パス}"` を返し、渡されたパスを記録する'
         expected: '`libraries` が `test-lib`（`moduleDataUrl` の値）と `cdn-lib`（そのまま）だけを持ち、`htmlScripts.url` が `moduleDataUrl` の値。`bundle` に渡ったパスが `/ws/libs/test.js` と `/ws/libs/babel.js` だけで、`failures` が空'
       - name: test_embed_local_libraries_when_bundle_fails
@@ -333,9 +269,9 @@ functions:
         expected: '`libraries` に `test-lib` が無く、`htmlScripts` が `url` を持たず、`failures` が `/ws/libs/test.js` と誤りの 1 件。`bundle` に `html-scripts.url` のパスが渡らない'
         exception: まとめられない
     callees:
-      - '#functions[usedLibraryNames]'
-      - '#functions[usesRangeScripts]'
       - '#functions[moduleDataUrl]'
+      - dev/設計書/モジュール構成/ライブラリ本体/CLI.ts#functions[usedLibraryMarks]
+      - dev/設計書/モジュール構成/ライブラリ本体/CLI.ts#functions[collectRangeScripts]
     refs:
       - dev/設計書/インターフェース定義/VSCode拡張機能/HTMLに書き出す.ts#constraints[埋めるライブラリ]
       - dev/設計書/インターフェース定義/VSCode拡張機能/HTMLに書き出す.ts#constraints[設定と相対パス]
