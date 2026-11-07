@@ -1,5 +1,5 @@
 title: "ER 図: エイリアス"
-lead: 使う側が設定の `aliases` に並べるエイリアスの元の行と、その行と元の YAML から作ったエイリアス。元の行の構造は alias-inject v0.2.0 の `schemas/aliases.schema.yaml` を取り込んで縛り、作ったエイリアスを `mount`・`render`・`collectMatches` に渡す。
+lead: 使う側が設定の `aliases` に並べるエイリアスの元の行と、その行と元の YAML から作ったエイリアス。元の行の構造は alias-inject v0.3.0 の `schemas/aliases.schema.yaml` を取り込んで縛り、作ったエイリアスを `mount`・`render`・`collectMatches` に渡す。
 er:
   entities:
     - name: エイリアスの元の行
@@ -40,19 +40,31 @@ tables:
         check: 要素が 1 つ以上で、どれも空でない文字列
         description: 読む YAML のパスか glob。設定ファイルのあるフォルダからの相対パスで、ファイルと glob を混ぜてよい。並びは書いた順、glob の中はパスの順
         example: '[terms/*.yaml]'
+      - name: alias_type
+        title: 引用の種類
+        type: string
+        not_null: true
+        description: 行の全レコードのエイリアスの種類（エイリアスの `alias_type`）
+        enum_values: "'term' / 'doc' / 'command' / 'url' / 'skill' / 'tool' / 'path' / 'env' / 'avoid'"
+        example: term
       - name: records
         title: 文書の並びのキー
         type: string
         check: 空でない
         description: ファイルの中のこのキーの配列の要素ごとに 1 件のエイリアスを作る。書かないとき、各ファイルを 1 件にする
         example: terms
+      - name: body_file
+        title: 本文のファイルの列
+        type: string
+        check: 空でない
+        description: レコードの本文のファイルのパスを持つ列の名前。`name` が空のレコードの名前に、その列の値のファイル名から拡張子を除いたものを使う
+        example: path
       - name: metadata
-        title: エイリアスのキーの値の取り方
+        title: エイリアスのキーの列
         type: object
-        not_null: true
-        description: 'エイリアスのキーごとに `{type: ref, field: 列名}`（文書の列から取る）か `{type: custom, value: 値}`（行の全文書に同じ値）を置く。書かないキーは同じ名前の列の `ref` とみなす'
-        example: '{alias_type: {type: custom, value: term}}'
-        notes: '`alias_type` は必ず書く。キーは `alias_type`・`id`・`name`・`aliases`・`description`・`related`・`command`・`cwd`・`url`・`avoid`・`skill`・`tool`・`path`・`port`・`replacement`。行と `metadata` のほかのキーは拒まず使わない'
+        description: エイリアスのキーごとに、値を取るレコードの列の名前を文字列で置く。入れ子の列は `meta.summary` のように `.` でつなぐ。書かないキーは同じ名前の列から取る
+        example: '{name: term, description: meta.meaning}'
+        notes: キーは `id`・`name`・`aliases`・`description`・`related`・`command`・`cwd`・`url`・`avoid`・`skill`・`tool`・`path`・`port`・`replacement`。行と `metadata` のほかのキーは拒まず使わない
     refs:
       - dev/設計書/設定/ライブラリ本体#settings[aliases]
     reason: 構造の正は alias-inject が持つ（D-120）。mdmark は取り込んだタグのスキーマで検証し、この表は読む側の使い方を書く

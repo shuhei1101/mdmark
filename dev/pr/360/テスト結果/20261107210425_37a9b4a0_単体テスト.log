@@ -1,0 +1,10 @@
+$ npx vitest run --project 'unit*' --maxWorkers=2
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-aliases-alias-inject-v0.3.0-schema
+
+
+ Test Files  240 passed (240)
+      Tests  1692 passed (1692)
+   Start at  20:56:15
+   Duration  245.28s (worker 82%, tests 12%, import 5%)
+

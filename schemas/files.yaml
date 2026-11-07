@@ -1,6 +1,6 @@
 # yaml-language-server: $schema=../dev/テンプレート/files.schema.yaml
 files:
-  - path: alias-inject/v0.2.0/aliases.schema.json
+  - path: alias-inject/v0.3.0/aliases.schema.json
     description: モジュール構成『ライブラリ本体 / CLI』のうち「取り込んだ alias-inject の行の Schema」を受け持つ。CLI のコマンドの振る舞いを変えるときに読む。
     tags: [topic:cli, topic:エイリアス, tool:ajv]
     related:

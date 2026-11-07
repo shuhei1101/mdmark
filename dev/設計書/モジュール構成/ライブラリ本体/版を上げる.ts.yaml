@@ -14,6 +14,8 @@ directory: |-
   migrations/
   ├── v{版}/        # 出した版の steps.yaml とスクリプト
   ├── next/          # 出していない版の steps.yaml とスクリプト
+  │   ├── steps.yaml
+  │   └── alias-rows.mjs  # 設定の aliases の行を alias-inject v0.3.0 の構造へ書き換える
   └── no-steps.yaml  # 移行の手順が要らないスキーマの変更の一覧
   ```
 function_types:
@@ -530,7 +532,7 @@ functions:
     container: src/cli/migrations.ts
     usecase: 版を上げる
     summary: 手順 1 つを当て先へ当てる
-    description: '`rename_key`・`set_default`・`map_values` は対象の YAML を `parseDocument` で読み、`renameKey`・`setDefault`・`mapValues` が書き換えたときだけ `doc.toString({ flowCollectionPadding: false })` で書き戻す。`file: index` で索引が無ければ何もしない。`set_default` の `ask` は `target.answers` の値を YAML の値として読んで足す。`replace_mark` は各文書の本文を `replaceMark` で書き換え、変わった文書だけ書き戻す。`call` は `process.execPath` で `[{スクリプト}, "--config", {設定ファイル}]` を設定ファイルのフォルダで流す（シェルを通さない）'
+    description: '`rename_key`・`set_default`・`map_values` は対象の YAML を `parseDocument` で読み、`renameKey`・`setDefault`・`mapValues` が書き換えたときだけ `doc.toString({ flowCollectionPadding: false })` で書き戻す。`file: index` で索引が無ければ何もしない。`set_default` の `ask` は `target.answers` の値を YAML の値として読んで足す。`replace_mark` は各文書の本文を `replaceMark` で書き換え、変わった文書だけ書き戻す。`call` は `process.execPath` で `[{スクリプト}, "--config", {設定ファイル}]` を設定ファイルのフォルダで流し（シェルを通さない）、標準出力を行に分けて空行を除いた並びを返す。0 以外で終わったときは、標準エラーの空でない行を `CliError` のメッセージの後ろに改行で続ける。`call` 以外は空の並びを返す'
     kind: 関数
     scope: public
     is_async: true
@@ -541,12 +543,12 @@ functions:
         required: true
         description: 当てる手順・その版・当て先
     returns:
-      type: Promise<void>
-      description: 当て終えた
+      type: Promise<string[]>
+      description: '`call` のスクリプトが標準出力に書いた行。ほかの手順は空'
     exceptions:
       - name: CliError
         condition: ファイルを読めない・書けない、対象の YAML を読めない、`call` のスクリプトが 0 以外で終わった
-        message: '{版} の手順「{説明}」に失敗しました（{理由}）。'
+        message: '{版} の手順「{説明}」に失敗しました（{理由}）。（`call` のスクリプトが標準エラーに書いた行があれば、改行して続ける）'
     unit_tests:
       - name: test_apply_step
         case: 正常
@@ -578,6 +580,18 @@ functions:
         condition: '`legacy: 1` と `include: ["**/*.md"]` を持つ設定に `rename_key`（`legacy` → `renamed`）'
         mock: 一時フォルダの設定
         expected: '設定ファイルに `include: ["**/*.md"]` がそのまま残る'
+      - name: test_apply_step_when_script_prints
+        case: 正常
+        summary: call のスクリプトの標準出力の行を返す
+        condition: 標準出力に `a`・空行・`b` を書いて 0 で終わる `.mjs` を流す `call`
+        mock: 一時フォルダのスクリプト
+        expected: '`["a", "b"]` を返す'
+      - name: test_apply_step_when_script_fails_with_stderr
+        case: 異常
+        summary: call のスクリプトの標準エラーの行を CliError のメッセージに続ける
+        condition: 標準エラーに `行を分けてください` を書いて 1 で終わる `.mjs` を流す `call`
+        mock: 一時フォルダのスクリプト
+        expected: '`CliError` を投げ、メッセージの 2 行目が `行を分けてください`'
     refs:
       - '#functions[renameKey]'
       - '#functions[setDefault]'
@@ -760,7 +774,7 @@ functions:
     container: src/cli/upgrade.ts
     usecase: 版を上げる
     summary: 手元の版から呼んだ CLI の版までの移行の手順を当て、点検が通ったら設定の版を書き換える
-    description: '順に、設定を探して読む（`findConfigFile`・`loadConfig`）→ 手元の版（設定の `version`、無ければ `ask`）→ 目標の版（`options.cliVersion`）と比べる（新しければ `CliError`、同じならその旨を出して 0）→ `loadMigrationVersions` → 当て先を作る（索引は設定の `index`、文書は `collectBuildDocuments` と `readIndexWithDocuments` の文書）→ 手順と `changelogRows` の行を出す → `--plan` ならその旨を出して 0 → キーが無い `set_default` の `ask` を当てる順に聞く → 壊す印があり `--yes` が無ければ確かめ、`CONFIRM_ANSWER` 以外なら `CliError` → `takeBackup`（`stepFiles`）→ 版の順に `applyStep` → `collectCheckIssues`（`unknownMarks: false`）→ ずれがあれば `restoreBackup` してずれの行を標準エラーに出し 1 → `writeConfigVersion` → 写しの場所と版を出して 0。`applyStep` が投げた `CliError` は `restoreBackup` してから投げ直す。問いに答えが無い（`undefined`）ときは、書き換えの前に `CliError` を投げる。`settings` が真のときは、設定を探す代わりに `resolveSettingsPath` の端末の設定を読み、`file: config` 以外の手順と索引・文書の当て先を飛ばし、点検は `validateConfig`（`settings: true`）だけにする。`config` と一緒なら `CliError`'
+    description: '順に、設定を探して読む（`findConfigFile`・`loadConfig`）→ 手元の版（設定の `version`、無ければ `ask`）→ 目標の版（`options.cliVersion`）と比べる（新しければ `CliError`、同じならその旨を出して 0）→ `loadMigrationVersions` → 当て先を作る（索引は設定の `index`、文書は `collectBuildDocuments` と `readIndexWithDocuments` の文書）→ 手順と `changelogRows` の行を出す → `--plan` ならその旨を出して 0 → キーが無い `set_default` の `ask` を当てる順に聞く → 壊す印があり `--yes` が無ければ確かめ、`CONFIRM_ANSWER` 以外なら `CliError` → `takeBackup`（`stepFiles`）→ 版の順に `applyStep`（返った行があれば、`{版} の手順「{説明}」:` の行に続けて 2 字下げて標準出力へ出す） → `collectCheckIssues`（`unknownMarks: false`）→ ずれがあれば `restoreBackup` してずれの行を標準エラーに出し 1 → `writeConfigVersion` → 写しの場所と版を出して 0。`applyStep` が投げた `CliError` は `restoreBackup` してから投げ直す。問いに答えが無い（`undefined`）ときは、書き換えの前に `CliError` を投げる。`settings` が真のときは、設定を探す代わりに `resolveSettingsPath` の端末の設定を読み、`file: config` 以外の手順（`files` が `[config]` だけの `call` は残す）と索引・文書の当て先を飛ばし、点検は `validateConfig`（`settings: true`）だけにする。`config` と一緒なら `CliError`'
     kind: 関数
     scope: public
     is_async: true
@@ -864,12 +878,24 @@ functions:
         condition: '`v0.5.0` が `ask` を持つ `set_default`、`plan: true`'
         mock: 呼ばれたら失敗にする `Prompter`
         expected: 0 を返し、`Prompter` が呼ばれない
+      - name: test_run_upgrade_when_script_prints
+        case: 正常
+        summary: call のスクリプトが標準出力に書いた行を、手順の行に続けて出す
+        condition: '`v0.5.0` が標準出力に `除外しました` を書いて 0 で終わる `call`'
+        mock: 一時フォルダ・差し替えた移行の手順のフォルダ
+        expected: 0 を返し、標準出力に `v0.5.0 の手順「` で始まる行と、その次の行に `  除外しました` がある
       - name: test_run_upgrade_when_settings
         case: 正常
         summary: --settings で端末の設定だけを移行する
         condition: '`version: v0.3.0`・`legacy: 1` の端末の設定を `MDMARK_CONFIG` で指し、`v0.4.0` が `rename_key`（config）・`v0.5.0` が `replace_mark`'
         mock: テスト用の `migrations/`
         expected: 0 を返し、端末の設定の `legacy` が `renamed`・`version` が `v0.5.0`、文書を読まない
+      - name: test_run_upgrade_when_settings_with_config_call
+        case: 正常
+        summary: --settings で files が config だけの call を端末の設定に当てる
+        condition: '`version: v0.3.0` の端末の設定を `MDMARK_CONFIG` で指し、`v0.5.0` が `--config` のファイルに `migrated: true` を書き足す `call`（`files: [config]`）'
+        mock: テスト用の `migrations/`
+        expected: 0 を返し、端末の設定の `migrated` が `true`・`version` が `v0.5.0`、手元の `mdmark.config.yaml` が書き換わらない
     refs:
       - '#functions[loadMigrationVersions]'
       - '#functions[stepFiles]'
@@ -905,6 +931,67 @@ functions:
     status: planned
     introduced:
       pr: 39
+  - name: migrateAliasRows
+    title: エイリアスの元の行を新しい構造へ書き換える
+    container: migrations/next/alias-rows.mjs
+    usecase: 版を上げる
+    kind: 関数
+    scope: public
+    summary: 設定の `aliases` の v0.2.0 の構造の行を、alias-inject v0.3.0 の構造へ書き換える移行の手順のスクリプトの処理
+    description: '`steps.yaml` の `call`（`destructive: true`・`files: [config]`。`description` は ``設定の `aliases` の行を alias-inject v0.3.0 の構造へ書き換える（値を失うのは `metadata` に固定値を記載した行だけ）``）が流す。スクリプトとして呼ばれると、`--config` の設定ファイルを `yaml` の `parseDocument` で読み、この関数を呼ぶ。`problems` があれば書き戻さずに標準エラーへ 1 行ずつ書いて 1 で終わり、無ければ `changed` のときだけ `doc.toString({ flowCollectionPadding: false })` で書き戻し、`notices` を標準出力へ 1 行ずつ書いて 0 で終わる。行ごとに、`metadata.alias_type` を持つ行だけを書き換える（行の `alias_type` を持つ行と、`metadata.alias_type` を持たない行は触らない）。`{type: custom, value}` は `value` を行の `alias_type` にする。`{type: ref, field}` は、行の `paths` を設定ファイルのフォルダから `node:fs/promises` の `glob` で引いた YAML のレコード（`records` を持つ行はそのキーの配列の要素、持たない行はファイルの値）の `field` の列の値を重ねずに集め（YAML として読めないファイルがあれば `problems` に ``aliases[{行}]（{id}）の `{パス}` を YAML として読めません。字下げと書き方を直してください。`` を足してその行を書き換えない）、1 つだけならその値を行の `alias_type` にする。0 個なら `problems` に ``aliases[{行}]（{id}）はレコードが無く、種類を決められません。行に `alias_type` を記載してください。`` を足し、2 個以上なら `problems` に ``aliases[{行}]（{id}）はレコードの `{field}` から種類を 1 つに決められません（{集めた値を `・` で並べた}）。種類ごとに行を分け、行に `alias_type` を記載してください。`` を足す。`metadata` のほかのキーは、`{type: ref, field}` を `field` の文字列にし、`{type: custom, value}` はキーを除いて `notices` に ``aliases[{行}]（{id}）の `metadata.{キー}` の固定値 `{value}` を除外しました。必要なら YAML の列に記載してください。`` を足す。`metadata.alias_type` を除き、空になった `metadata` も除く。当て直しても結果が変わらない。単体テストは `migrations/*/alias-rows.mjs` を探して import し、release で `next/` を版のフォルダへ移した後も同じテストで読む'
+    is_async: true
+    args:
+      - name: options
+        type: '{ doc: Document; configDir: string }'
+        required: true
+        description: 設定ファイルを `parseDocument` で読んだ文書と、設定ファイルのあるフォルダの絶対パス
+    returns:
+      type: 'Promise<{ changed: boolean; notices: string[]; problems: string[] }>'
+      description: '`doc` を書き換えたか・除外した固定値の通知・種類を決められない行の修正方法（並びは行の順）'
+    side_effects: '`doc` を書き換え、`paths` の YAML を読む'
+    refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/版を上げる.ts#constraints[スクリプトの呼び方]
+      - dev/設計書/ER図/エイリアス#tables[aliases]
+    unit_tests:
+      - name: test_migrate_alias_rows
+        case: 正常
+        summary: custom と種類が 1 つの ref の alias_type を行へ移し、ref の値を列名にする
+        condition: 単一ユースケース『版を上げる』の「正常シナリオ（エイリアスの元の行を新しい構造へ書き換える）」の `terms`・`commands` の 2 行とその YAML
+        mock: 一時フォルダ
+        expected: '`terms` が `alias_type: term`・`metadata: {name: term, description: meaning}`、`commands` が `alias_type: command` で `metadata` を持たず、`changed` が `true`、`notices`・`problems` が空。設定のコメントが残る'
+      - name: test_migrate_alias_rows_when_custom_value
+        case: 正常
+        summary: alias_type 以外の custom のキーを除外して通知する
+        condition: '`cwd` を `{type: custom, value: リポジトリの直下}` で取る `command` の行 `tests`'
+        mock: 一時フォルダ
+        expected: '`metadata` が `cwd` を持たず、`notices` が 1 件で `tests`・`cwd`・`リポジトリの直下` を含む'
+      - name: test_migrate_alias_rows_when_mixed_types
+        case: 異常
+        summary: ref の列の種類が 2 つ以上の行を problems にする
+        condition: レコードの `alias_type` に `term` と `command` が混ざる行 `mixed`
+        mock: 一時フォルダ
+        expected: '`problems` が 1 件で `mixed`・`term`・`command` を含む'
+      - name: test_migrate_alias_rows_when_already_migrated
+        case: 正常
+        summary: v0.3.0 の構造の行は触らない
+        condition: '`alias_type: term`・`metadata: {name: term}` の行'
+        mock: なし
+        expected: '`changed` が `false`、`notices`・`problems` が空'
+      - name: test_migrate_alias_rows_when_no_records
+        case: 異常
+        summary: ref の行のレコードが 0 件なら、alias_type の記載を求める problems にする
+        condition: '`alias_type` を `{type: ref, field: alias_type}` で取り、`paths` に当たるファイルが無い行 `empty`'
+        mock: 一時フォルダ
+        expected: '`problems` が 1 件で `empty` と `alias_type` を含み、「行を分け」を含まない'
+      - name: test_migrate_alias_rows_when_unreadable
+        case: 異常
+        summary: YAML として読めないファイルを problems にし、例外を投げない
+        condition: '`alias_type` を `{type: ref, field: alias_type}` で取り、`paths` に当たるファイルが字下げの崩れた YAML の行 `broken`'
+        mock: 一時フォルダ
+        expected: 例外を投げず、`problems` が 1 件で `broken` とファイルのパスを含み、`changed` が `false`
+    status: planned
+    introduced:
+      pr: 360
   - name: dropTagVocabulary
     title: 索引からタグの語彙を外す
     kind: 関数
@@ -989,4 +1076,5 @@ test_files:
   - tests/unit/src/cli/changelog.test.ts
   - tests/unit/src/cli/prompt.test.ts
   - tests/unit/src/cli/upgrade.test.ts
+  - tests/unit/migrations/alias-rows.test.ts
   - tests/unit/migrations/drop-tag-vocabulary.test.ts

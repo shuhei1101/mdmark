@@ -1,0 +1,10 @@
+$ npx vitest run --project 'integration*' --maxWorkers=2 tests/integration/lib/bundle.test.ts tests/integration/lib/check-config.test.ts tests/integration/lib/export.test.ts tests/integration/lib/upgrade.test.ts tests/integration/lib/collect-matches.test.ts
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-aliases-alias-inject-v0.3.0-schema
+
+
+ Test Files  5 passed (5)
+      Tests  79 passed (79)
+   Start at  21:59:01
+   Duration  529.24s (tests 93%, import 6%)
+

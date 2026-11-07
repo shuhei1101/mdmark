@@ -179,14 +179,18 @@ test("test_error_when_base_unknown", async ({ builtRoot, tempDir }) => {
   expect(await snapshot(dir)).toEqual(before);
 });
 
-// エイリアスの元の行を 1 行ずつ作る設定の行: `metadata` は `alias_type` を列から取る
-function aliasRow(id: string, paths: string, extra: string[] = []): string[] {
+// エイリアスの元の行を 1 行ずつ作る設定の行: 種類は行の `alias_type` に記載する
+function aliasRow(
+  id: string,
+  paths: string,
+  aliasType = "term",
+  extra: string[] = [],
+): string[] {
   return [
     `  - id: ${id}`,
     `    paths: [${paths}]`,
+    `    alias_type: ${aliasType}`,
     ...extra,
-    "    metadata:",
-    "      alias_type: { type: ref, field: alias_type }",
   ];
 }
 
@@ -197,31 +201,21 @@ test("test_normal_when_alias_drift", async ({ builtRoot, tempDir }) => {
   const config = await readFile(join(dir, "mdmark.config.yaml"), "utf8");
   const aliasFiles: Record<string, string> = {
     "aliases/valid.yaml": [
-      "alias_type: term",
       "id: valid-term",
       "name: 正しい用語",
       "description: 説明",
       "",
     ].join("\n"),
-    "aliases/broken.yaml": "alias_type: [term\n",
+    "aliases/broken.yaml": "id: [term\n",
     "aliases/list.yaml": "title: 一覧\n",
     "aliases/refcol.yaml": "id: ref-col\nname: 列が無い\n",
     "aliases/cmd.yaml": [
-      "alias_type: command",
       "id: build-cmd",
       "name: ビルド",
       "command: ''",
       "",
     ].join("\n"),
-    "aliases/types.yaml": [
-      "records:",
-      "  - alias_type: memo",
-      "    id: memo-1",
-      "    name: メモ",
-      "",
-    ].join("\n"),
     "aliases/dup.yaml": [
-      "alias_type: term",
       "id: valid-term",
       "name: 重なる用語",
       "description: 説明",
@@ -232,20 +226,23 @@ test("test_normal_when_alias_drift", async ({ builtRoot, tempDir }) => {
     "mdmark.config.yaml": `${config}${[
       "aliases:",
       ...aliasRow("valid", "aliases/valid.yaml"),
-      // Schema に合わない行: `paths` が無い
-      "  - id: no-paths",
-      "    metadata:",
-      "      alias_type: { type: ref, field: alias_type }",
+      // Schema に合わない行: `alias_type` が 9 つの種類に無い
+      ...aliasRow("memo-type", "aliases/valid.yaml", "memo"),
+      // Schema に合わない行: `metadata` の値が v0.2.0 の構造
+      ...aliasRow("old-metadata", "aliases/valid.yaml", "term", [
+        "    metadata:",
+        "      name: { type: ref, field: term }",
+      ]),
       ...aliasRow("no-files", "missing/*.yaml"),
       ...aliasRow("broken", "aliases/broken.yaml"),
-      ...aliasRow("no-records", "aliases/list.yaml", ["    records: items"]),
-      ...aliasRow("no-column", "aliases/refcol.yaml").slice(0, 2),
-      "    metadata:",
-      "      alias_type: { type: ref, field: kind }",
-      ...aliasRow("empty-command", "aliases/cmd.yaml"),
-      ...aliasRow("unknown-type", "aliases/types.yaml", [
-        "    records: records",
+      ...aliasRow("no-records", "aliases/list.yaml", "term", [
+        "    records: items",
       ]),
+      ...aliasRow("no-column", "aliases/refcol.yaml", "term", [
+        "    metadata:",
+        "      description: summary",
+      ]),
+      ...aliasRow("empty-command", "aliases/cmd.yaml", "command"),
       ...aliasRow("valid", "aliases/valid.yaml"),
       ...aliasRow("same-alias-id", "aliases/dup.yaml"),
       "",
@@ -266,23 +263,23 @@ test("test_normal_when_alias_drift", async ({ builtRoot, tempDir }) => {
   const lines = linesOf(result.stdout);
   // 誤った行ごとに、その行か元のファイルを指すずれの行があり、内容に直し方がある
   const kinds: Array<[string, string]> = [
-    ["mdmark.config.yaml", "schema"],
+    ["mdmark.config.yaml:aliases[1].alias_type", "schema"],
+    ["mdmark.config.yaml:aliases[2].metadata.name", "schema"],
     ["mdmark.config.yaml", "alias_no_files"],
     ["aliases/broken.yaml", "alias_unreadable"],
     ["aliases/list.yaml", "alias_records_missing"],
     ["aliases/refcol.yaml", "alias_field_missing"],
     ["aliases/cmd.yaml", "alias_required_empty"],
-    ["aliases/types.yaml", "alias_unknown_type"],
     ["mdmark.config.yaml", "duplicate_alias_row_id"],
     ["aliases/dup.yaml", "duplicate_alias_id"],
   ];
-  for (const [file, kind] of kinds) {
+  for (const [place, kind] of kinds) {
     const line = lines.find(
       (candidate) =>
-        candidate.startsWith(file) && candidate.includes(`${kind}:`),
+        candidate.startsWith(place) && candidate.includes(`${kind}:`),
     );
-    expect(line, `${file} ${kind}`).toBeDefined();
-    expect(line, `${file} ${kind}`).toContain("ください");
+    expect(line, `${place} ${kind}`).toBeDefined();
+    expect(line, `${place} ${kind}`).toContain("ください");
   }
   // 正しい行は指さない
   expect(lines.some((line) => line.includes("aliases/valid.yaml"))).toBe(false);

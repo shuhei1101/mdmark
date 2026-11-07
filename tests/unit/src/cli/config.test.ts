@@ -321,12 +321,12 @@ test("test_validate_config_when_aliases_invalid", async () => {
   const valid = {
     id: "terms",
     paths: ["terms/*.yaml"],
-    metadata: { alias_type: { type: "custom", value: "term" } },
+    alias_type: "term",
   };
   const invalid = {
     id: "memos",
     paths: ["memos/*.yaml"],
-    metadata: { alias_type: { type: "custom", value: "memo" } },
+    alias_type: "memo",
   };
   // 実行
   const { config, issues } = validateConfig(
@@ -336,7 +336,7 @@ test("test_validate_config_when_aliases_invalid", async () => {
   // 検証
   expect(issues).toHaveLength(1);
   expect(issues[0]?.kind).toBe("schema");
-  expect(issues[0]?.where).toBe("aliases[1].metadata.alias_type.value");
+  expect(issues[0]?.where).toBe("aliases[1].alias_type");
   expect(config.aliases).toHaveLength(2);
   expect(config.aliases?.[0]).toEqual(valid);
   expect(config.aliases?.[1]).toBeNull();

@@ -256,30 +256,36 @@ test("test_normal_when_code_highlighted", async ({
   expect(opened.externalRequests()).toEqual([]);
 });
 
-// エイリアスを読む設定の行: `records` の配列を持つ YAML を指す行と、無いファイルを指す行
+// エイリアスを読む設定の行: `term` の YAML を指す行・`env` の YAML を指す行・無いファイルを指す行
 const ALIAS_CONFIG_LINES = [
   "aliases:",
-  "  - id: records",
-  "    paths: [aliases/records.yaml]",
+  "  - id: terms",
+  "    paths: [aliases/terms.yaml]",
+  "    alias_type: term",
   "    records: records",
-  "    metadata:",
-  "      alias_type: { type: ref, field: alias_type }",
+  "  - id: servers",
+  "    paths: [aliases/servers.yaml]",
+  "    alias_type: env",
+  "    records: records",
   "  - id: missing",
   "    paths: [aliases/missing.yaml]",
-  "    metadata:",
-  "      alias_type: { type: ref, field: alias_type }",
+  "    alias_type: term",
   "",
 ].join("\n");
 
-// `term` の `ワークスペース` と、値に URL とポートを持つ `env` の `開発サーバー`
-const ALIAS_RECORDS = [
+// `term` の `ワークスペース`
+const ALIAS_TERMS = [
   "records:",
-  "  - alias_type: term",
-  "    id: workspace",
+  "  - id: workspace",
   "    name: ワークスペース",
   "    description: 話し合いの記録を置くフォルダ",
-  "  - alias_type: env",
-  "    id: dev-server",
+  "",
+].join("\n");
+
+// 値に URL とポートを持つ `env` の `開発サーバー`
+const ALIAS_SERVERS = [
+  "records:",
+  "  - id: dev-server",
   "    name: 開発サーバー",
   "    url: http://127.0.0.1:8767/",
   '    port: "8767"',
@@ -292,7 +298,8 @@ test("test_normal_when_aliases", async ({ builtRoot, tempDir, page }) => {
   const dir = await tempDir();
   await writeFiles(dir, {
     "mdmark.config.yaml": ALIAS_CONFIG_LINES,
-    "aliases/records.yaml": ALIAS_RECORDS,
+    "aliases/terms.yaml": ALIAS_TERMS,
+    "aliases/servers.yaml": ALIAS_SERVERS,
     "guide.md": "# ガイド\n\nワークスペースを置く。\n",
   });
   // 実行

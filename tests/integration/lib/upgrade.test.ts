@@ -4,6 +4,7 @@ import {
   copyFile,
   cp,
   mkdtemp,
+  readdir,
   readFile,
   rm,
   symlink,
@@ -440,15 +441,22 @@ test("test_normal_when_tag_vocabulary_dropped", async () => {
   // 準備
   const pkg = packageOf("v0.5.0");
   const next = join(REPO_ROOT, "migrations", "next");
+  // `steps.yaml` の手順が流す全てのスクリプトを置く
+  const scripts: Record<string, string> = {};
+  for (const name of await readdir(next)) {
+    if (name.endsWith(".mjs")) {
+      scripts[`migrations/v0.5.0/${name}`] = await readFile(
+        join(next, name),
+        "utf8",
+      );
+    }
+  }
   await setMigrations(pkg, {
     "migrations/v0.5.0/steps.yaml": await readFile(
       join(next, "steps.yaml"),
       "utf8",
     ),
-    "migrations/v0.5.0/drop-tag-vocabulary.mjs": await readFile(
-      join(next, "drop-tag-vocabulary.mjs"),
-      "utf8",
-    ),
+    ...scripts,
     "docs/はじめに/変更履歴.md": CHANGELOG,
   });
   const dir = await createWork();

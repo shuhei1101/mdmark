@@ -342,33 +342,35 @@ test("test_normal_when_syntax_highlighted", async () => {
   await page.close();
 });
 
-/** エイリアスを読む試験の設定の行: `aliases/` の YAML を `alias_type` の列で種類を決めて読む */
+/** エイリアスを読む試験の設定の行: 種類ごとの行で `aliases/` の YAML を読む */
 const ALIAS_CONFIG_LINES = [
   "aliases:",
-  "  - id: records",
-  "    paths: [aliases/*.yaml]",
-  "    metadata:",
-  "      alias_type: { type: ref, field: alias_type }",
+  "  - id: commands",
+  "    paths: [aliases/commands.yaml]",
+  "    alias_type: command",
+  "  - id: servers",
+  "    paths: [aliases/servers.yaml]",
+  "    alias_type: env",
+  "  - id: terms",
+  "    paths: [aliases/terms.yaml]",
+  "    alias_type: term",
 ];
 
 /** エイリアスを読む試験のレコード: 使える `command`・値に URL を持つ `env`・説明が空の `term` */
 const ALIAS_RECORD_FILES: Record<string, string> = {
-  "aliases/command.yaml": [
-    "alias_type: command",
+  "aliases/commands.yaml": [
     "id: run-test",
     "name: テストを流す",
     "command: npm test",
     "",
   ].join("\n"),
-  "aliases/env.yaml": [
-    "alias_type: env",
+  "aliases/servers.yaml": [
     "id: dev-server",
     "name: 開発サーバー",
     "url: http://127.0.0.1:8767/",
     "",
   ].join("\n"),
-  "aliases/term.yaml": [
-    "alias_type: term",
+  "aliases/terms.yaml": [
     "id: empty-term",
     "name: 空の用語",
     "description: ''",
@@ -401,7 +403,7 @@ test("test_normal_when_aliases", async () => {
   expect(result.code).toBe(0);
   const warnings = linesOf(result.stderr);
   expect(warnings).toHaveLength(1);
-  expect(warnings[0]).toContain("aliases/term.yaml");
+  expect(warnings[0]).toContain("aliases/terms.yaml");
   expect(warnings[0]).toContain("alias_required_empty");
   // env は埋めない: 値の URL と id が HTML のソースに無い
   const html = await readFile(join(dir, "guide.html"), "utf8");
