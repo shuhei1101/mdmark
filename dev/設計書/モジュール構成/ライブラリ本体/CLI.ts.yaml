@@ -2497,6 +2497,7 @@ test_files:
   - tests/unit/src/cli/build.test.ts
   - tests/unit/src/cli/alias-schema.test.ts
   - tests/unit/src/cli/aliases.test.ts
+  - tests/unit/src/cli/issues.test.ts
   - tests/unit/src/cli/assets.test.ts
   - tests/unit/src/cli/markdown-check.test.ts
   - tests/unit/src/cli/includes.test.ts
