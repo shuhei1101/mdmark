@@ -1,0 +1,10 @@
+$ npx vitest run --project integration-node tests/integration/ClaudeCodeプラグイン tests/integration/lib/upgrade.test.ts
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-plugin-setup-skills
+
+
+ Test Files  15 passed (15)
+      Tests  71 passed (71)
+   Start at  19:12:33
+   Duration  601.79s (tests 74%, import 24%, transform 2%)
+

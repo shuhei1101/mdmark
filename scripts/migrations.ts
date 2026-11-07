@@ -11,6 +11,8 @@ import { compareVersions, VERSION_PATTERN } from "../src/cli/versions.ts";
 const CHECKED_SCHEMAS = [
   "mdmark.config.schema.json",
   "mdmark.index.schema.json",
+  "mdmark.settings.schema.json",
+  "mdmark.templates.schema.json",
 ];
 
 /** 手順なしの一覧の SHA-256 の書式 */
@@ -202,7 +204,12 @@ export async function checkMigrations(options: {
   }
   const watchedSteps = join(migrations, watched, MIGRATIONS_DIR.steps);
   for (const name of CHECKED_SCHEMAS) {
-    const current = await readFile(join(root, "schemas", name), "utf8");
+    const currentPath = join(root, "schemas", name);
+    // 作業ツリーに無い Schema は比べない
+    if (!(await isFile(currentPath))) {
+      continue;
+    }
+    const current = await readFile(currentPath, "utf8");
     let released: string;
     try {
       released = await git(root, ["show", `${tag}:schemas/${name}`]);

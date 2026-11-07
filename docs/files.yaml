@@ -84,6 +84,9 @@ files:
   - path: 使い方/ClaudeCodeで使う/MCPサーバーを起動する.md
     description: MCP の常駐サーバーを起動・停止し、待ち受けているポートを確かめる手順。Claude Code から mdmark を使うときに読む。
     tags: [tool:claude-code, tool:mcp]
+  - path: 使い方/ClaudeCodeで使う/セットアップする.md
+    description: プラグインのスキル global-setup・setup で、端末の設定と常駐サーバー、文書のフォルダの設定を項目ごとに確認しながら用意する手順。Claude Code から mdmark を使い始めるときに読む。
+    tags: [tool:claude-code, tool:mcp, topic:プラグイン, topic:設定]
   - path: 使い方/ClaudeCodeで使う/プラグインを入れる.md
     description: マーケットプレイスを追加してプラグインを入れ、次のセッションからツールと使い方集への動線を受け取る手順。Claude Code から mdmark を使うときに読む。
     tags: [tool:claude-code, tool:mcp, topic:プラグイン]
