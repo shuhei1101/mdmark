@@ -1,6 +1,6 @@
 import { execFile } from "node:child_process";
 import { existsSync } from "node:fs";
-import { readFile, rm } from "node:fs/promises";
+import { readdir, readFile, rm } from "node:fs/promises";
 import { join, resolve } from "node:path";
 import { promisify } from "node:util";
 import { parse } from "yaml";
@@ -510,19 +510,21 @@ test("test_normal_when_parent_config_exists", async ({
   expect(await readFile(settings, "utf8")).toBe(settingsText);
 });
 
-/** リポジトリの `migrations/next/` の手順とスクリプトを、`v0.5.0` の手順として置くパッケージのファイル */
+/** リポジトリの `migrations/next/` の手順と全てのスクリプトを、`v0.5.0` の手順として置くパッケージのファイル */
 async function nextMigrationFiles(): Promise<Record<string, string>> {
-  return migrationFiles({
-    stepsV050: await readFile(
-      join(REPO_ROOT, "migrations", "next", "steps.yaml"),
-      "utf8",
-    ),
-    extra: {
-      "migrations/v0.5.0/alias-rows.mjs": await readFile(
-        join(REPO_ROOT, "migrations", "next", "alias-rows.mjs"),
+  const nextDir = join(REPO_ROOT, "migrations", "next");
+  const scripts: Record<string, string> = {};
+  for (const name of await readdir(nextDir)) {
+    if (name.endsWith(".mjs")) {
+      scripts[`migrations/v0.5.0/${name}`] = await readFile(
+        join(nextDir, name),
         "utf8",
-      ),
-    },
+      );
+    }
+  }
+  return migrationFiles({
+    stepsV050: await readFile(join(nextDir, "steps.yaml"), "utf8"),
+    extra: scripts,
   });
 }
 
