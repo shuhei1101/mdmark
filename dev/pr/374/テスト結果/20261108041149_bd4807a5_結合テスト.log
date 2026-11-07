@@ -1,0 +1,93 @@
+# 1 回目: ファイル全件（8 件 pass。3 件は端末の負荷で待ちの上限を超えた）
+$ npx vitest run --project 'integration*' tests/integration/lib/build.test.ts
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/test-build-expect-plugin-session-start
+
+ × |integration-node| tests/integration/lib/build.test.ts > test_normal 200160ms
+   → Test timed out in 200000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ × |integration-node| tests/integration/lib/build.test.ts > test_normal_when_version_given 200126ms
+   → Test timed out in 200000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ × |integration-node| tests/integration/lib/build.test.ts > test_error_when_version_format_invalid 60077ms
+   → Test timed out in 60000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ✓ |integration-node| tests/integration/lib/build.test.ts > test_error_when_dist_file_too_large 117443ms
+ ✓ |integration-node| tests/integration/lib/build.test.ts > test_normal_when_api_checked_before_use 188820ms
+ ✓ |integration-node| tests/integration/lib/build.test.ts > test_error_when_api_missing_in_baseline_browser 194035ms
+ ✓ |integration-node| tests/integration/lib/build.test.ts > test_normal_when_schema_changed_with_steps 180620ms
+ ✓ |integration-node| tests/integration/lib/build.test.ts > test_normal_when_schema_change_listed 169767ms
+ ✓ |integration-node| tests/integration/lib/build.test.ts > test_error_when_schema_changed_without_steps 37274ms
+ ✓ |integration-node| tests/integration/lib/build.test.ts > test_error_when_next_steps_left_in_release 24602ms
+ ✓ |integration-node| tests/integration/lib/build.test.ts > test_error_when_steps_invalid 32522ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |integration-node| tests/integration/lib/build.test.ts > test_normal
+Error: Test timed out in 200000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/integration/lib/build.test.ts:163:1
+    161|
+    162| // version.ini の版を埋めてビルドする（正常系）
+    163| test("test_normal", { timeout: BUILD_TIMEOUT_MS }, async () => {
+       | ^
+    164|   // 準備
+    165|   const root = await createWorkTree("v0.0.0\n");
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+
+ FAIL  |integration-node| tests/integration/lib/build.test.ts > test_normal_when_version_given
+Error: Test timed out in 200000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/integration/lib/build.test.ts:252:1
+    250|
+    251| // --version で渡した版を埋めてビルドする（正常系）
+    252| test("test_normal_when_version_given", {
+       | ^
+    253|   timeout: BUILD_TIMEOUT_MS,
+    254| }, async () => {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯
+
+ FAIL  |integration-node| tests/integration/lib/build.test.ts > test_error_when_version_format_invalid
+Error: Test timed out in 60000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/integration/lib/build.test.ts:272:1
+    270|
+    271| // 書式に合わない版を渡すと、配布物を書かずに終わる（異常系）
+    272| test("test_error_when_version_format_invalid", async () => {
+       | ^
+    273|   // 準備
+    274|   const root = await createWorkTree("v0.0.0\n");
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/3]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  3 failed | 8 passed (11)
+   Start at  03:31:25
+   Duration  1816.04s (tests 96%, import 4%)
+
+
+# 2 回目: 1 回目に待ちの上限を超えた 3 件
+$ npx vitest run --project 'integration*' tests/integration/lib/build.test.ts -t '^(test_normal|test_normal_when_version_given|test_error_when_version_format_invalid)$' --reporter=verbose
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/test-build-expect-plugin-session-start
+
+ ✓ |integration-node| tests/integration/lib/build.test.ts > test_normal 141220ms
+ ✓ |integration-node| tests/integration/lib/build.test.ts > test_normal_when_version_given 177583ms
+ ✓ |integration-node| tests/integration/lib/build.test.ts > test_error_when_version_format_invalid 54738ms
+ ↓ |integration-node| tests/integration/lib/build.test.ts > test_error_when_dist_file_too_large
+ ↓ |integration-node| tests/integration/lib/build.test.ts > test_normal_when_api_checked_before_use
+ ↓ |integration-node| tests/integration/lib/build.test.ts > test_error_when_api_missing_in_baseline_browser
+ ↓ |integration-node| tests/integration/lib/build.test.ts > test_normal_when_schema_changed_with_steps
+ ↓ |integration-node| tests/integration/lib/build.test.ts > test_normal_when_schema_change_listed
+ ↓ |integration-node| tests/integration/lib/build.test.ts > test_error_when_schema_changed_without_steps
+ ↓ |integration-node| tests/integration/lib/build.test.ts > test_error_when_next_steps_left_in_release
+ ↓ |integration-node| tests/integration/lib/build.test.ts > test_error_when_steps_invalid
+
+ Test Files  1 passed (1)
+      Tests  3 passed | 8 skipped (11)
+   Start at  04:01:31
+   Duration  641.09s (tests 91%, import 9%)
+

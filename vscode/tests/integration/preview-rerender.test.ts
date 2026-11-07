@@ -254,6 +254,52 @@ suite("プレビューを描き直す", () => {
     );
   });
 
+  // aliases の行が指す YAML を保存すると、作り直したエイリアスで描き直す
+  test("test_normal_when_aliases_yaml_saved", async () => {
+    // 準備
+    await writeFixture(
+      "mdmark.config.yaml",
+      [
+        "aliases:",
+        "  - id: terms",
+        "    paths: [glossary.yaml]",
+        "    alias_type: term",
+        "    records: terms",
+        "",
+      ].join("\n"),
+    );
+    const glossary = (meaning: string) =>
+      [
+        "terms:",
+        "  - id: render",
+        "    name: 描画",
+        "    aliases: [レンダリング]",
+        `    description: ${meaning}`,
+        "",
+      ].join("\n");
+    await writeFixture("glossary.yaml", glossary("前の意味"));
+    await writeFixture("guide.md", "# 案内\n\nレンダリングの段落\n");
+    await openMarkdown("guide.md");
+    await vscode.commands.executeCommand("mdmark.openPreviewToSide");
+    const record = lastPanel();
+    await waitForRendered(record);
+    const before = renders(record).length;
+    // 実行
+    await writeFixture("glossary.yaml", glossary("書き換えた意味"));
+    // 検証
+    await waitFor(
+      () =>
+        renders(record).at(-1)?.aliases?.[0]?.description === "書き換えた意味",
+      { message: "aliases の YAML の保存で再描画されない" },
+    );
+    assert.strictEqual(renders(record).length, before + 1);
+    await waitFor(async () =>
+      (await inspect('[role="tooltip"]')).some((tip) =>
+        tip.text.includes("書き換えた意味"),
+      ),
+    );
+  });
+
   // 取り込んでいるファイルを保存すると、読み直した取り込む文書で描き直す
   test("test_normal_when_include_target_saved", async () => {
     // 準備

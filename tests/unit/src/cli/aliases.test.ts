@@ -78,6 +78,10 @@ test("test_load_aliases", async () => {
     alias_type: "command",
     id: "run-test",
   });
+  expect(result.files).toEqual([
+    join(dir, "aliases/commands.yaml"),
+    join(dir, "aliases/servers.yaml"),
+  ]);
 });
 
 // 当たるファイルが無い行を alias_no_files にする（異常系）
@@ -114,6 +118,10 @@ test("test_load_aliases_when_unreadable", async () => {
   expect(unreadable).toHaveLength(1);
   expect(unreadable[0]?.file).toBe("aliases/a.yaml");
   expect(result.aliases?.map((alias) => alias.id)).toEqual(["run-test"]);
+  expect(result.files).toEqual([
+    join(dir, "aliases/a.yaml"),
+    join(dir, "aliases/b.yaml"),
+  ]);
 });
 
 // enabled が false の行と null の行は読まない（正常系）
@@ -142,4 +150,5 @@ test("test_load_aliases_when_no_aliases", async () => {
   // 検証
   expect(result.aliases).toBeUndefined();
   expect(result.issues).toEqual([]);
+  expect(result.files).toEqual([]);
 });

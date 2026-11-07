@@ -476,9 +476,57 @@ flows:
     test: test_normal_when_includes
     refs:
       - dev/設計書/シナリオ/単一ユースケース/VSCodeでプレビューを開く#scenarios[正常シナリオ（取り込む文書を描く）]
+  - name: 正常系（設定の aliases のエイリアス）
+    summary: 設定の `aliases` から作ったエイリアスを `render` で送り、`mount` の `opts.aliases` に渡して下線とツールチップを出す
+    setup:
+      - name: エイリアスを持つワークスペース
+        description: '`mdmark.config.yaml` の `aliases` に、`glossary.yaml` の用語の列（名前・別名・意味）を指す用語のエイリアスの行を 1 つ書き、`guide.md` の本文に `レンダリング` を置いたフォルダ。`glossary.yaml` は名前 `描画`・別名 `レンダリング`・意味 1 文の用語を 1 つ持つ'
+      - name: Mock
+        description: 正常系と同じ。Webview へ送ったメッセージを記録する
+    flow: |-
+      sequenceDiagram
+        participant U as 文書を書く人
+        participant EX as 拡張機能
+        participant PV as Webview
+        U->>EX: mdmark.openPreviewToSide
+        EX->>EX: 重ねた設定の aliases の行が指す glossary.yaml を読み、エイリアスを作る
+        EX->>PV: render（全文・設定・theme・aliases）
+        PV->>PV: mount（opts.aliases）
+        PV->>EX: rendered
+    expected:
+      - '`render` の `aliases` が 1 件で、その要素の `alias_type` が `term`・`name` が `描画`・`aliases` が `["レンダリング"]`'
+      - Webview の本文の `レンダリング` が用語の下線の要素に包まれている
+      - 下線の要素にフォーカスを移すと、`role="tooltip"` のツールチップの「用語」の区分に `描画` と `glossary.yaml` の意味が出る
+    test: test_normal_when_aliases
+    refs:
+      - dev/設計書/シナリオ/単一ユースケース/VSCodeでプレビューを開く#scenarios[正常シナリオ（設定の aliases のエイリアス）]
+  - name: 異常系（aliases の YAML が無い・行を除いて描く）
+    summary: '`aliases` の行の `paths` に当たるファイルが無いとき、その行を除いたエイリアスで描き、出力チャネルに警告を記録する'
+    setup:
+      - name: エイリアスを持つワークスペース
+        description: 正常系（設定の aliases のエイリアス）の `aliases` の 2 行目に、`paths` が `missing/*.yaml`（当たるファイルが無い）の行を足したもの
+      - name: Mock
+        description: 正常系と同じ。出力チャネルへ書いた行を記録する
+    flow: |-
+      sequenceDiagram
+        participant U as 文書を書く人
+        participant EX as 拡張機能
+        participant PV as Webview
+        U->>EX: mdmark.openPreviewToSide
+        EX->>EX: aliases の 2 行目に当たるファイルが無い
+        EX->>EX: 出力チャネルに警告を書く
+        EX->>PV: render（1 行目のエイリアス）
+        PV->>EX: rendered
+    expected:
+      - '`render` の `aliases` が 1 行目の用語だけを持つ'
+      - 出力チャネルに `mdmark.config.yaml:aliases[1].paths: alias_no_files:` で始まる警告が 1 行ある
+      - '`configError` を送らない'
+    test: test_error_when_aliases_missing
+    refs:
+      - dev/設計書/シナリオ/単一ユースケース/VSCodeでプレビューを開く#scenarios[異常シナリオ（aliases の YAML が無い）]
 lead: 文書を書く人が、開いている Markdown の横の列か同じ列に、mdmark で描くプレビューのパネルを開く。拡張機能は読む mdmark の版を決め、Webview に jsDelivr の配布物を読ませて描かせる。差分ビューから開いたときは、変更前と変更後の Markdown を読み、変更後の文書のブロックを色分けして描かせる。
 idempotent: true
-side_effects: Webview のパネルを開く。`mdmark.version` が `latest` のとき GitHub のタグ一覧を 1 回取り、選んだ版を拡張機能の `globalState` の `mdmark.lastVersion` に書く。差分ビューのときは、変更前と変更後の文書を `workspace.openTextDocument` で読む。Markdown・設定ファイル・Git のリポジトリは書き換えない
+side_effects: Webview のパネルを開く。`mdmark.version` が `latest` のとき GitHub のタグ一覧を 1 回取り、選んだ版を拡張機能の `globalState` の `mdmark.lastVersion` に書く。差分ビューのときは、変更前と変更後の文書を `workspace.openTextDocument` で読む。設定に `aliases` があるときは、その行の `paths` の YAML を読む。Markdown・設定ファイル・Git のリポジトリは書き換えない
 callers:
   - dev/設計書/シナリオ/単一ユースケース/VSCodeでプレビューを開く#
   - dev/設計書/シナリオ/単一ユースケース/プレビューをVSCodeのテーマに合わせる#
@@ -514,6 +562,9 @@ exceptions:
   - name: なし（ワークスペースの外の画像）
     condition: 本文の画像が `localResourceRoots` の外を指す
     notes: Webview が読まず `alt` が出る。他の本文は描く
+  - name: なし（aliases の YAML を使えない）
+    condition: '`aliases` の行の `paths` に当たるファイルが無い・YAML として読めない・行やレコードが `buildAliases` で使えない'
+    notes: 例外を投げず、使えない行・レコードを除いたエイリアスで描き、出力チャネルに警告を書く。`configError` は送らない
   - name: なし（描けない理由・差分に対応しないバージョン）
     condition: 差分のパネルで、読んだ配布物が `diffModes` を持たないか `blocks` を含まない
     notes: 変更後の文書だけを描いた表示は出さない。Markdown と差分ビューは変えない
@@ -538,7 +589,7 @@ constraints:
   - item: 相対パスの基準
     constraint: Webview の HTML に `<base href="{Markdown のフォルダの asWebviewUri}/">` を置き、本文の相対パスの画像を Markdown のフォルダから読む。`localResourceRoots` の外の画像は Webview が読まず、`alt` が出る
   - item: Webview とのメッセージ
-    constraint: '拡張機能 → Webview: `{ type: "render", markdown, previous?, config, theme, includes }`（`includes` は制約「取り込む文書」の取り込む文書の表、`previous` は差分のパネルだけが持つ変更前の Markdown、`config` は `{ features?, libraries?, "html-scripts"?, "side-toc"?, labels?, colorTheme?, colorScheme? }`、`theme` は `mdmark.preview.theme` の値）・`{ type: "scrollToLine", line }`・`{ type: "configError", path, line?, settingKey? }`（`line` と `settingKey` はどちらか一方）・`{ type: "configOk" }`・`{ type: "theme", href }`・`{ type: "assetsResolved", id, urls }`（`urls` は `paths` の各パスから Webview の URL か `null` を引くオブジェクト）・`{ type: "inspect", id, selector }`・`{ type: "axe", id }`（どちらもテストのときだけ）。Webview → 拡張機能: `{ type: "ready" }`（配布物を読み終えた）・`{ type: "rendered" }`（`mount` か `update` を呼び終えた）・`{ type: "loadFailed", reason }`（`reason` は `offline`・`versionMissing`・`diffUnsupported`）・`{ type: "openLink", href }`・`{ type: "revealLine", line }`・`{ type: "reload" }`・`{ type: "openConfig" }`・`{ type: "resolveAssets", id, paths }`（制約「動画・音声とアセットのルートの解決」）・`{ type: "openAsset", path }`（制約「再生できない動画・音声」）・`{ type: "inspected", id, elements }`（テストのときだけ。`elements` は `selector` に当たる要素ごとの `{ tagName, className, attributes, text, naturalWidth?, top, height }`。`top` は見えている範囲の先頭からの位置、`height` は高さで、単位は px）・`{ type: "axed", id, violations }`（テストのときだけ。`violations` は axe-core の違反ごとの `{ id, impact, targets }`）。`render` は初回と `config` が変わったときは `mount`（前の描画は `destroy`）、それ以外は戻り値の `update` で描く'
+    constraint: '拡張機能 → Webview: `{ type: "render", markdown, previous?, config, theme, includes, aliases? }`（`aliases` は制約「エイリアス」のエイリアスの配列で、設定に `aliases` が無いときは持たない、`includes` は制約「取り込む文書」の取り込む文書の表、`previous` は差分のパネルだけが持つ変更前の Markdown、`config` は `{ features?, libraries?, "html-scripts"?, "side-toc"?, labels?, colorTheme?, colorScheme? }`、`theme` は `mdmark.preview.theme` の値）・`{ type: "scrollToLine", line }`・`{ type: "configError", path, line?, settingKey? }`（`line` と `settingKey` はどちらか一方）・`{ type: "configOk" }`・`{ type: "theme", href }`・`{ type: "assetsResolved", id, urls }`（`urls` は `paths` の各パスから Webview の URL か `null` を引くオブジェクト）・`{ type: "inspect", id, selector }`・`{ type: "axe", id }`（どちらもテストのときだけ）。Webview → 拡張機能: `{ type: "ready" }`（配布物を読み終えた）・`{ type: "rendered" }`（`mount` か `update` を呼び終えた）・`{ type: "loadFailed", reason }`（`reason` は `offline`・`versionMissing`・`diffUnsupported`）・`{ type: "openLink", href }`・`{ type: "revealLine", line }`・`{ type: "reload" }`・`{ type: "openConfig" }`・`{ type: "resolveAssets", id, paths }`（制約「動画・音声とアセットのルートの解決」）・`{ type: "openAsset", path }`（制約「再生できない動画・音声」）・`{ type: "inspected", id, elements }`（テストのときだけ。`elements` は `selector` に当たる要素ごとの `{ tagName, className, attributes, text, naturalWidth?, top, height }`。`top` は見えている範囲の先頭からの位置、`height` は高さで、単位は px）・`{ type: "axed", id, violations }`（テストのときだけ。`violations` は axe-core の違反ごとの `{ id, impact, targets }`）。`render` は初回と `config` か `aliases` が変わったときは `mount`（前の描画は `destroy`）、それ以外は戻り値の `update` で描く'
     notes: '`line` は 0 始まりの元の行番号（文書をHTML文字列にする.ts の制約「元の行番号」）'
   - item: 描けない理由の見分け方
     constraint: Webview は `import()` が失敗したら、同じ `index.js` の URL を `fetch` の `HEAD` で確かめる。404 なら `versionMissing`、それ以外（ネットワークのエラーを含む）は `offline` を拡張機能へ知らせ、パネルに描けない理由を出す。バージョンを決められないときは、拡張機能が配布物を読まない HTML で理由を出す
@@ -572,3 +623,6 @@ constraints:
   - item: 取り込む文書
     constraint: 開いている Markdown（差分のパネルは変更後の側）の include のマーカーの取り込み先を、インターフェース定義『文書をHTML文字列にする』の制約「取り込み」と同じパスの解き方で、Markdown のフォルダを基準に `workspace.fs` で読む（取り込んだ文書の中のマーカーもたどり、同じファイルは 1 回だけ読む）。開いているエディタの保存していない書き換えではなく、保存した中身を読む。設定ファイルのフォルダ（無ければ Markdown のフォルダ）の外のパス（書き出しと同じ範囲）と読めないファイルは表に入れず、そのマーカーの場所には mdmark が書き方の警告を出す。読んだ表を `render` の `includes` に入れ、Webview は `mount` の `opts.includes`（`update` は `options.includes`）に渡す
     notes: プレビューでも取り込むことは確認ログの決定
+  - item: エイリアス
+    constraint: '重ねた設定に `aliases` があるとき、インターフェース定義『エイリアスを作る』の CLI と同じ読み方（`src/cli/aliases.ts` の `loadAliases`）で、各行の `paths` を値を書いた設定ファイルのフォルダから引いて YAML を読み、作ったエイリアスを `render` の `aliases` に入れる。`loadAliases` に渡す設定ファイルは、最も近い `mdmark.config.yaml`（`mdmark.configPath` を書いたときはそのファイル）で、無いときは端末の設定ファイルにする（CLI の `requireConfig` と同じく、重ねた設定のパスの値をそのファイルのフォルダからの相対パスに戻して渡す）。Webview は `mount` の `opts.aliases` に渡す。使えない行・レコードは除き、ずれごとに CLI の `mdmark check` と同じ `{file}:{where}: {kind}: {message}`（`where` が空なら `{file}: {kind}: {message}`）の警告を出力チャネルに書く。エイリアスを作るのは設定を読み直したときと、制約の YAML のファイルが変わったときだけで、Markdown の書き換えでは作り直さない'
+    notes: 書き出す HTML へのエイリアスの埋め込みは要件のスコープ外（#379）

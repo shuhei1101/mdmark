@@ -38,7 +38,6 @@
 | [tailwindcss](./tailwindcss.yaml) | Webview の部品の class とトークン（Preflight を読まない） |
 | [shadcn-ui](./shadcn-ui.yaml) | Webview の部品のソース（Button・Alert・Spinner） |
 | [msw](./msw.yaml) | ストーリーと単体テストの配布物の HEAD のモック |
-| [lefthook](./lefthook.yaml) | pre-commit・pre-push の検査 |
 | [axe-core](./axe-core.yaml) | テストのときだけパネルをアクセシビリティの規則で検査する |
 | [react-error-boundary](./react-error-boundary.yaml) | Webview の画面の最上位の Error Boundary |
 | [testing-library](./testing-library.yaml) | Webview のコンポーネントと hook の単体テスト |

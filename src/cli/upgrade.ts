@@ -9,6 +9,7 @@ import { collectCheckIssues } from "./check.ts";
 import { findConfigFile, loadConfig, validateConfig } from "./config.ts";
 import { collectBuildDocuments, readIndexWithDocuments } from "./documents.ts";
 import { CliError, type CliIo } from "./errors.ts";
+import { formatCheckIssue } from "./issues.ts";
 import {
   applyStep,
   loadMigrationVersions,
@@ -323,9 +324,7 @@ export async function runUpgrade(
     if (issues.length > 0) {
       await restoreBackup({ dir, backupDir });
       for (const issue of issues) {
-        const place =
-          issue.where === "" ? issue.file : `${issue.file}:${issue.where}`;
-        io.stderr(`${place}: ${issue.kind}: ${issue.message}`);
+        io.stderr(formatCheckIssue(issue));
       }
       io.stderr(
         `点検のずれが ${issues.length} 件あるため、写しから戻しました。版は書き換えていません。`,

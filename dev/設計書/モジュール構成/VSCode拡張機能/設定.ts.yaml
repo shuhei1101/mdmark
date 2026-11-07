@@ -96,6 +96,15 @@ data_models:
       - name: problem
         type: ConfigProblem | undefined
         description: 読めない・形の合わない最初の設定ファイル（端末の設定 → 上 → 近いの順）
+      - name: aliases
+        type: MdmarkAlias[] | undefined
+        description: '`purpose` が `preview` で重ねた設定に `aliases` があるときに作ったエイリアス。無いときは持たない'
+      - name: aliasIssues
+        type: CheckIssue[]
+        description: エイリアスを作ったときのずれ（`loadAliases` の `issues`）。無ければ空
+      - name: aliasFiles
+        type: string[]
+        description: '`aliases` の行の `paths` に当たった YAML の絶対パス。見張るファイルに使う。無ければ空'
     status: planned
   - name: ConfigProblem
     title: 読めない設定ファイル
@@ -292,6 +301,9 @@ functions:
          - `config` は重ねた設定のうち、値がマップの `features`・`libraries`・`html-scripts`・`side-toc`・`labels` と、値が文字列の `colorTheme`・`colorScheme` だけ
          - `files` は重ねた設定ファイルの `path`、`theme`・`extensions`・`assetsRoot` は重ねた設定の `theme`・`extensions`・`assets.root`
          - `unreadable` がある場合、`problem` は `{ path, line, message }`。無く `issues` がある場合、`problem` は `{ path: issues[0].file, settingKey: issues[0].where, message: issues[0].message }`
+      4. `purpose` が `preview` で重ねた設定に `aliases` がある場合、エイリアスを読む（エイリアスを読む）
+         - 渡す設定ファイルは `nearest`、無ければ端末の設定ファイル（`resolveSettingsPath` の `env`・`home`）。`dir` はそのフォルダで、`config` は重ねた設定のパスの値を `dir` からの相対パスに戻した値（`relativizeConfigPaths`）
+         - 返った `aliases`・`issues`・`files` を `aliases`・`aliasIssues`・`aliasFiles` に入れる
     exceptions:
       - name: Error
         condition: '`readFile` が `ENOENT` 以外で失敗した（投げ直す）'
@@ -338,9 +350,36 @@ functions:
         condition: '`/w/mdmark.config.yaml` に `labels: { paramCopy: コピー }`、`/w/b/mdmark.config.yaml` に `labels: コピー`、`cwd` が `/w` と `/w/b` の 2 回（端末の設定は無い）'
         mock: '`readFile`・`isFile` をメモリのファイルの表に差し替える'
         expected: '`cwd` が `/w` のとき `config` が `{ labels: { paramCopy: "コピー" } }`、`/w/b` のとき `config` に `labels` が無く、`problem` の `settingKey` が `labels`'
+      - name: test_load_config_when_aliases
+        case: 正常
+        summary: プレビューでは重ねた設定の aliases からエイリアスを作り、読んだ YAML を返す
+        condition: '一時フォルダの `mdmark.config.yaml` に `aliases` の用語の行（`paths: [glossary.yaml]`）、`glossary.yaml` に用語 1 件、`purpose` が `preview`'
+        mock: 一時フォルダ（`readFile`・`isFile` は実のファイルを読む）
+        expected: '`aliases` が用語の 1 件、`aliasIssues` が空、`aliasFiles` が `glossary.yaml` の絶対パスの 1 件'
+      - name: test_load_config_when_aliases_without_nearest
+        case: 正常
+        summary: mdmark.config.yaml が無いときは端末の設定ファイルを基準にエイリアスを作る
+        condition: '`MDMARK_CONFIG` が一時フォルダの `settings.yaml` で、そこに `aliases` の行（`paths: [glossary.yaml]`）、同じフォルダに `glossary.yaml`。`cwd` の上に `mdmark.config.yaml` は無い'
+        mock: 一時フォルダ
+        expected: '`nearest` が無く、`aliases` が用語の 1 件、`aliasFiles` が端末の設定のフォルダの `glossary.yaml`'
+      - name: test_load_config_when_aliases_missing_files
+        case: 正常
+        summary: 当たるファイルの無い行はずれにして残りで作る
+        condition: '`aliases` の 1 行目が `glossary.yaml`、2 行目が `paths: [missing/*.yaml]`'
+        mock: 一時フォルダ
+        expected: '`aliases` が 1 行目の用語だけ、`aliasIssues` が `alias_no_files`（`where` が `aliases[1].paths`）の 1 件'
+      - name: test_load_config_when_export
+        case: 正常
+        summary: 書き出しのときはエイリアスを作らない
+        condition: '`test_load_config_when_aliases` と同じファイルで `purpose` が `export`'
+        mock: 一時フォルダ
+        expected: '`aliases` が無く、`aliasIssues`・`aliasFiles` が空'
     callees:
       - '#functions[resolveConfigPath]'
       - dev/設計書/モジュール構成/ライブラリ本体/設定を重ねて読む.ts#functions[loadLayeredConfig]
+      - dev/設計書/モジュール構成/ライブラリ本体/CLI.ts#functions[loadAliases]
+    refs:
+      - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを開く.ts#constraints[エイリアス]
     status: planned
   - name: resolveLibraries
     title: libraries の URL を直す

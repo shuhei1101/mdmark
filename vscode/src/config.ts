@@ -1,6 +1,13 @@
 import { stat } from "node:fs/promises";
-import { isAbsolute, resolve } from "node:path";
-import { loadLayeredConfig } from "../../src/config-files.ts";
+import { dirname, isAbsolute, resolve } from "node:path";
+import { loadAliases } from "../../src/cli/aliases.ts";
+import type { CheckIssue } from "../../src/cli/check.ts";
+import {
+  loadLayeredConfig,
+  relativizeConfigPaths,
+  resolveSettingsPath,
+} from "../../src/config-files.ts";
+import type { MdmarkAlias } from "../../src/knowledge/aliases.ts";
 import type { PreviewSettings } from "./settings.ts";
 
 /** `mount` に渡す設定。設定ファイルから取り出した `features`・`libraries`・`html-scripts`・`side-toc`・`labels`・`colorTheme`・`colorScheme` */
@@ -49,6 +56,12 @@ export type ConfigLoad = {
   assetsRoot?: string | undefined;
   /** 読めない・形の合わない最初の設定ファイル */
   problem?: ConfigProblem | undefined;
+  /** プレビューで、重ねた設定の `aliases` から作ったエイリアス。`aliases` が無いときは持たない */
+  aliases?: MdmarkAlias[] | undefined;
+  /** エイリアスを作ったときのずれ */
+  aliasIssues: CheckIssue[];
+  /** `aliases` の行の `paths` に当たった YAML の絶対パス */
+  aliasFiles: string[];
 };
 
 /** ファイルがあるか */
@@ -186,6 +199,13 @@ export async function loadConfig(options: {
       ? { path: first.file, settingKey: first.where, message: first.message }
       : undefined;
   const assets = config.assets;
+  const aliasResult =
+    options.purpose === "preview" && config.aliases !== undefined
+      ? await loadPreviewAliases({
+          layered,
+          settingsPath: resolveSettingsPath(options),
+        })
+      : { aliases: undefined, issues: [], files: [] };
   return {
     config: pickPreviewConfig(config),
     theme: typeof config.theme === "string" ? config.theme : undefined,
@@ -201,7 +221,25 @@ export async function loadConfig(options: {
         ? assets.root
         : undefined,
     problem,
+    aliases: aliasResult.aliases,
+    aliasIssues: aliasResult.issues,
+    aliasFiles: aliasResult.files,
   };
+}
+
+/** 重ねた設定の `aliases` からエイリアスを作る。基準の設定ファイルは最も近い `mdmark.config.yaml`、無ければ端末の設定ファイル */
+async function loadPreviewAliases(options: {
+  layered: Awaited<ReturnType<typeof loadLayeredConfig>>;
+  settingsPath: string;
+}): ReturnType<typeof loadAliases> {
+  const { layered, settingsPath } = options;
+  const path = layered.nearest ?? settingsPath;
+  const dir = dirname(path);
+  return loadAliases({
+    path,
+    dir,
+    config: relativizeConfigPaths({ config: layered.config, dir }),
+  });
 }
 
 /** `http:`・`https:` の URL はそのまま、それ以外の文字列は設定ファイルのフォルダから解決した絶対パスを `toUrl` で URL にして返す。文字列でない値はそのまま渡す */

@@ -262,6 +262,7 @@ colorTheme: theme-slate
 | `labels` | 部品の文言。値がマップのときだけ、書いた値をそのまま `mount` の `opts.config.labels` に渡す |
 | `colorScheme` | 配色の明暗。プレビューでは `mdmark.preview.theme` が `auto` のときだけ、書き出す HTML ではいつも、書いた値をそのまま `mount` の `opts.config.colorScheme` に渡す |
 | `assets.root` | アセットのルート。Markdown のフォルダからの相対パスに無い画像・動画・音声を、その値を書いた設定ファイルのフォルダからのこのフォルダで同じ相対パスで探す。`mount` には渡さない |
+| `aliases` | エイリアスの元の行。プレビューでは、行の `paths` の YAML をその値を書いた設定ファイルのフォルダから読んでエイリアスを作り、`mount` の `opts.aliases` に渡す。使えない行・レコードは除き、出力チャネルに `mdmark check` と同じ書式の警告を出す。書き出す HTML には渡さない |
 
 | `theme` | 使う側の CSS。その値を書いた設定ファイルのフォルダから解決し、プレビューでは配布物の CSS の後に読み、書き出す HTML には埋める |
 | `extensions` | 拡張のモジュール。その値を書いた設定ファイルのフォルダから解決し、`mount` の前に登録する。書き出す HTML には 1 つのスクリプトに束ねて埋める |
