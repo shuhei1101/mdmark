@@ -69,6 +69,7 @@
 | `tests/unit/src/plugin/setup/status.test.ts` の `test_read_terminal_status_when_unreadable` | `test_read_terminal_status_when_unreadable` | 変更 | ✅ | 設計書の「3 行目が YAML として読めない」に合わせ、端末の設定の内容を 3 行目で読めないものにした |
 | `tests/unit/src/plugin/setup/server.test.ts` の `test_start_server_when_port_taken` | `test_start_server_when_port_taken` | 新規 | ✅ | レビューの指摘で追加。ほかのプロセスがポートを待ち受けていると起動しない<br>[テスト結果/20261107180547_09f60d1a_単体テスト.log](./テスト結果/20261107180547_09f60d1a_単体テスト.log) |
 | `tests/unit/src/plugin/session-start.test.ts` の `test_run_session_start_when_hooks_json` | `test_run_session_start_when_hooks_json` | 変更 | ✅ | `5de11a9e` で、展開しない `${CLAUDE_PLUGIN_ROOT}` の文字列に Biome の警告を外す理由のコメントを足しただけで、確かめる中身は変えていない |
+| `tests/unit/src/plugin/port.test.ts` の `test_read_port`・`test_read_port_when_overridden`・`test_read_port_when_invalid` | 3 つのメソッド | 変更 | ✅ | マージの前の設計書の検証で、モジュール構成『ポート』の `test_files` に無いと分かり、`http.test.ts` から移した（中身は同じ）。`npm run test:unit` で 247 ファイル・1716 テストが全 pass。この PR が触っていない `markdown-check.test.ts` の未処理の reject が 1 件出たが、単独の実行では出ない<br>[テスト結果/20261107205026_875702af_単体テスト.log](./テスト結果/20261107205026_875702af_単体テスト.log) |
 
 Red のログ（`2de9eb1e`）は `3fa99b49` で取った。その後の `3b5bd716` は Biome の整形だけで、テストの中身は変えていない。
 
