@@ -923,7 +923,7 @@ functions:
     kind: 関数
     scope: public
     summary: 設定の `aliases` の v0.2.0 の構造の行を、alias-inject v0.3.0 の構造へ書き換える移行の手順のスクリプトの処理
-    description: '`steps.yaml` の `call`（`destructive: true`・`files: [config]`）が流す。スクリプトとして呼ばれると、`--config` の設定ファイルを `yaml` の `parseDocument` で読み、この関数を呼ぶ。`problems` があれば書き戻さずに標準エラーへ 1 行ずつ書いて 1 で終わり、無ければ `changed` のときだけ `doc.toString({ flowCollectionPadding: false })` で書き戻し、`notices` を標準出力へ 1 行ずつ書いて 0 で終わる。行ごとに、`metadata.alias_type` を持つ行だけを書き換える（行の `alias_type` を持つ行と、`metadata.alias_type` を持たない行は触らない）。`{type: custom, value}` は `value` を行の `alias_type` にする。`{type: ref, field}` は、行の `paths` を設定ファイルのフォルダから `node:fs/promises` の `glob` で引いた YAML のレコード（`records` を持つ行はそのキーの配列の要素、持たない行はファイルの値）の `field` の列の値を重ねずに集め、1 つだけならその値を行の `alias_type` にする。0 個か 2 個以上なら `problems` に ``aliases[{行}]（{id}）はレコードの `{field}` から種類を 1 つに決められません（{集めた値を `・` で並べた}）。種類ごとに行を分け、行に `alias_type` を記載してください。`` を足す。`metadata` のほかのキーは、`{type: ref, field}` を `field` の文字列にし、`{type: custom, value}` はキーを除いて `notices` に ``aliases[{行}]（{id}）の `metadata.{キー}` の固定値 `{value}` を除外しました。必要なら YAML の列に記載してください。`` を足す。`metadata.alias_type` を除き、空になった `metadata` も除く。当て直しても結果が変わらない。単体テストは `migrations/*/alias-rows.mjs` を探して import し、release で `next/` を版のフォルダへ移した後も同じテストで読む'
+    description: '`steps.yaml` の `call`（`destructive: true`・`files: [config]`。`description` は ``設定の `aliases` の行を alias-inject v0.3.0 の構造へ書き換える（値を失うのは `metadata` に固定値を記載した行だけ）``）が流す。スクリプトとして呼ばれると、`--config` の設定ファイルを `yaml` の `parseDocument` で読み、この関数を呼ぶ。`problems` があれば書き戻さずに標準エラーへ 1 行ずつ書いて 1 で終わり、無ければ `changed` のときだけ `doc.toString({ flowCollectionPadding: false })` で書き戻し、`notices` を標準出力へ 1 行ずつ書いて 0 で終わる。行ごとに、`metadata.alias_type` を持つ行だけを書き換える（行の `alias_type` を持つ行と、`metadata.alias_type` を持たない行は触らない）。`{type: custom, value}` は `value` を行の `alias_type` にする。`{type: ref, field}` は、行の `paths` を設定ファイルのフォルダから `node:fs/promises` の `glob` で引いた YAML のレコード（`records` を持つ行はそのキーの配列の要素、持たない行はファイルの値）の `field` の列の値を重ねずに集め、1 つだけならその値を行の `alias_type` にする。0 個なら `problems` に ``aliases[{行}]（{id}）はレコードが無く、種類を決められません。行に `alias_type` を記載してください。`` を足し、2 個以上なら `problems` に ``aliases[{行}]（{id}）はレコードの `{field}` から種類を 1 つに決められません（{集めた値を `・` で並べた}）。種類ごとに行を分け、行に `alias_type` を記載してください。`` を足す。`metadata` のほかのキーは、`{type: ref, field}` を `field` の文字列にし、`{type: custom, value}` はキーを除いて `notices` に ``aliases[{行}]（{id}）の `metadata.{キー}` の固定値 `{value}` を除外しました。必要なら YAML の列に記載してください。`` を足す。`metadata.alias_type` を除き、空になった `metadata` も除く。当て直しても結果が変わらない。単体テストは `migrations/*/alias-rows.mjs` を探して import し、release で `next/` を版のフォルダへ移した後も同じテストで読む'
     is_async: true
     args:
       - name: options
@@ -962,6 +962,12 @@ functions:
         condition: '`alias_type: term`・`metadata: {name: term}` の行'
         mock: なし
         expected: '`changed` が `false`、`notices`・`problems` が空'
+      - name: test_migrate_alias_rows_when_no_records
+        case: 異常
+        summary: ref の行のレコードが 0 件なら、alias_type の記載を求める problems にする
+        condition: '`alias_type` を `{type: ref, field: alias_type}` で取り、`paths` に当たるファイルが無い行 `empty`'
+        mock: 一時フォルダ
+        expected: '`problems` が 1 件で `empty` と `alias_type` を含み、「行を分け」を含まない'
     status: planned
     introduced:
       pr: 360
