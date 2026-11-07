@@ -8,11 +8,13 @@ directory: |-
   │       ├── package.json       # ESLint 9・TypeScript 6.0・typescript-eslint・plugin だけを持つ package
   │       ├── package-lock.json
   │       └── eslint.config.js   # VS Code 拡張機能の Webview（vscode/src/webview/）に当てる ESLint の Flat Config
+  ├── scripts/
+  │   └── eslint.ts              # tools/eslint/ の ESLint が無ければ入れてから起動する
   ├── tests/
   │   └── git-env.ts             # Git のリポジトリの場所を指す環境変数を外す
   ├── lefthook.yml               # pre-commit・pre-push で実行する検査
   ├── vitest.config.ts           # 読み込んだ時点で git-env.ts の処理を呼ぶ
-  └── package.json               # 検査の npm scripts（lint:eslint・typecheck:vscode・check）と prepare
+  └── package.json               # 検査の npm scripts（lint:eslint・typecheck:vscode・check）
   ```
 
   整形とリポジトリ全体の lint は今と同じ Biome（`biome check .`）が受け持ち、ESLint は Biome に無い React・アクセシビリティ・import の向き・Tailwind・複雑さの規則だけを Webview に当てる。
@@ -81,18 +83,63 @@ constants:
   - name: rootScripts
     title: 検査の npm scripts
     container: package.json
-    summary: 直下の `package.json` の `scripts` に追加する検査の入口（今の `lint`・`typecheck`・`test:unit` はそのまま）
+    summary: 直下の `package.json` の `scripts` に追加する検査の入口（今の `lint`・`typecheck`・`test:unit` はそのまま）。`prepare` など、依存の導入で実行される lifecycle のスクリプトは持たない
     entries:
       - key: lint:eslint
-        value: '`node tools/eslint/node_modules/eslint/bin/eslint.js -c tools/eslint/eslint.config.js --max-warnings 0`（`warn` の規則（`react-hooks/exhaustive-deps` など）も 1 件で失敗にする。直下の `eslint` 10 ではなく `tools/eslint/` の ESLint 9 を呼ぶ。引数が無ければ `files` の全て）'
+        value: '`node scripts/eslint.ts`（引数はそのまま ESLint へ渡す。`tools/eslint/` の ESLint が無ければ入れてから起動する）'
       - key: typecheck:vscode
         value: '`tsc --noEmit -p vscode`'
       - key: check
         value: '`npm run lint && npm run lint:eslint && npm run typecheck && npm run typecheck:vscode`'
-      - key: prepare
-        value: '`lefthook install && npm ci --prefix tools/eslint`（`npm install` の後に Git フックと `tools/eslint/` の依存を入れる）'
     status: planned
 functions:
+  - name: runEslint
+    title: tools/eslint/ の ESLint を起動する
+    kind: 関数
+    container: scripts/eslint.ts
+    usecase: 配布物をビルドして検査する
+    summary: '`tools/eslint/` の ESLint が入っていなければ `npm ci --prefix tools/eslint` で入れてから、ESLint 9 を `tools/eslint/eslint.config.js` と `--max-warnings 0` で起動し、終了コードを返す'
+    description: '`lint:eslint` から `node scripts/eslint.ts` で呼ばれ、`import.meta.main` のとき `process.exitCode` に戻り値を入れる。`warn` の規則（`react-hooks/exhaustive-deps` など）も 1 件で失敗にする。直下の `eslint` 10 ではなく `tools/eslint/` の ESLint 9 を呼ぶ。引数が無ければ設定の `files` の全てを検査する'
+    scope: public
+    is_async: true
+    side_effects: '`tools/eslint/node_modules/` が無いときだけ作る。npm と ESLint の出力はそのまま標準出力・標準エラーへ出す'
+    args:
+      - name: argv
+        type: string[]
+        required: true
+        description: ESLint へ渡す引数（pre-commit は commit に入るファイル）
+      - name: options
+        type: '{ root: string; run: (command: string, args: string[], cwd: string) => Promise<number> }'
+        required: false
+        default: リポジトリの直下と、子プロセスを入出力を引き継いで起動し終了コードを返す関数
+        description: 作業ツリーの場所と子プロセスの起動（テストで差し替える）
+    returns:
+      type: Promise<number>
+      description: ESLint の終了コード。依存の導入が失敗したときはその終了コード
+    process: |-
+      1. `{root}/tools/eslint/node_modules/eslint/package.json` があるかを見る
+      2. 無ければ `run("npm", ["ci", "--prefix", "tools/eslint"], root)` を呼び、0 以外ならその値を返す
+      3. `run(process.execPath, ["tools/eslint/node_modules/eslint/bin/eslint.js", "-c", "tools/eslint/eslint.config.js", "--max-warnings", "0", ...argv], root)` の終了コードを返す
+    unit_tests:
+      - name: test_run_eslint
+        case: 正常
+        summary: ESLint が入っていれば入れずに起動する
+        condition: '`argv` は `["a.ts"]`'
+        mock: 一時フォルダを `root` にして `tools/eslint/node_modules/eslint/package.json` を置き、`run` を呼ばれた引数を記録して 0 を返す関数に差し替える
+        expected: 0 を返し、`run` は ESLint の 1 回だけで、引数が `-c tools/eslint/eslint.config.js --max-warnings 0 a.ts` で終わる
+      - name: test_run_eslint_when_not_installed
+        case: 正常
+        summary: ESLint が無ければ入れてから起動する
+        condition: '`tools/eslint/node_modules/` が無い'
+        mock: 一時フォルダを `root` にし、`run` を呼ばれた引数を記録して 0 を返す関数に差し替える
+        expected: 0 を返し、`run` は `npm ci --prefix tools/eslint`、ESLint の順に 2 回呼ばれる
+      - name: test_run_eslint_when_install_fails
+        case: 異常
+        summary: 依存の導入が失敗すると ESLint を起動しない
+        condition: '`tools/eslint/node_modules/` が無く、`npm ci` が 1 で終わる'
+        mock: 一時フォルダを `root` にし、`run` を npm には 1 を返す関数に差し替える
+        expected: 1 を返し、ESLint を呼ばない
+    status: planned
   - name: clearGitLocalEnv
     title: Git のリポジトリの場所を指す環境変数を外す
     kind: 関数
@@ -109,6 +156,7 @@ functions:
         case: 正常
         summary: リポジトリの場所を指す環境変数だけを外す
         condition: '`process.env` に `GIT_DIR`・`GIT_COMMON_DIR`・`GIT_INDEX_FILE` と、場所を指さない `GIT_AUTHOR_NAME` を置いて呼ぶ'
+        mock: '`vi.stubEnv` で環境変数を置き、テストの後に `vi.unstubAllEnvs` で戻す'
         expected: '`GIT_DIR`・`GIT_COMMON_DIR`・`GIT_INDEX_FILE` が無くなり、`GIT_AUTHOR_NAME` は残る'
     status: planned
 notes:
@@ -116,5 +164,7 @@ notes:
   適用の範囲: 複雑さの規則を含む ESLint の規則は Webview（`vscode/src/webview/`）だけに当てる（要件.md の未確定「複雑さの lint を error にする範囲」の案 A）。リポジトリの他の TypeScript へ広げるのは別の Issue で扱う
   閾値: knowledge の規約『設計原則』が上限の値を持たないため、`sonarjs/cognitive-complexity` は規則の既定（15）、`max-depth` は ESLint の既定（4）、`max-params` は 3（オブジェクトの引数にまとめる今の書き方に合わせる）、`complexity` は 10 にする
   テストの環境変数: 外す変数は Git が返す一覧に任せ、名前を書き並べない。外すのはテストの起動（`vitest.config.ts`）で、Git のフックの `run` では外さない（フックの外から呼んでも同じに守るため）
+  開発用の処理の置き場所: npm は GitHub の参照から入れるとき、版のタグの中身で `prepare` を実行するため、Git フックと `tools/eslint/` の依存の導入を `prepare` に置かない。Git フックは lefthook の package の postinstall が直下の `npm ci` で `lefthook install` を実行し、`tools/eslint/` の依存は `runEslint` が起動で無いときだけ入れる。`tools/eslint/package-lock.json` が変わった取り込みの後は、開発コマンドの取り込み後の追従で入れ直す
 test_files:
   - tests/unit/git-env.test.ts
+  - tests/unit/scripts/eslint.test.ts
