@@ -199,10 +199,11 @@ export function useMcpServers(): {
   runServeToExit: (options: {
     env: Record<string, string>;
   }) => Promise<HookResult>;
-  /** 空いているポートで `mdmark serve` を起動し、HTTP でつなぐ。`projectDir` を渡すと、`callTool` が `project_dir` として入れる（PreToolUse のフックの代わり） */
+  /** 空いているポートで `mdmark serve` を起動し、HTTP でつなぐ。`projectDir` を渡すと、`callTool` が `project_dir` として入れる（PreToolUse のフックの代わり）。`env` は子プロセスの環境変数に重ねる */
   connectHttp: (options?: {
     projectDir?: string;
     packageDir?: string;
+    env?: Record<string, string>;
   }) => Promise<Client>;
   /** 待ち受けている URL に HTTP でつなぐ */
   connectUrl: (url: string) => Promise<Client>;
@@ -283,14 +284,18 @@ export function useMcpServers(): {
   };
 
   const connectHttp = async (
-    options: { projectDir?: string; packageDir?: string } = {},
+    options: {
+      projectDir?: string;
+      packageDir?: string;
+      env?: Record<string, string>;
+    } = {},
   ): Promise<Client> => {
     // 空きを確かめてから起動するまでに別のプロセスにポートを取られたときは、ポートを選び直す
     for (let attempt = 1; ; attempt++) {
       const port = await findFreePort();
       try {
         const serve = await startServe({
-          env: { MDMARK_PORT: String(port) },
+          env: { ...options.env, MDMARK_PORT: String(port) },
           packageDir: options.packageDir,
         });
         const client = await connectUrl(serve.url);

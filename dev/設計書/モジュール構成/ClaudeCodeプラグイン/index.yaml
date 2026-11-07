@@ -9,3 +9,5 @@ items:
     summary: PreToolUse のフックで作業のフォルダを project_dir に入れる
   - page: プラグインのビルド.ts.yaml
     summary: 使い方集の索引を検査し、フックを束ね、バージョン・ライセンスを plugin/ に書く
+  - page: CSSのテンプレート.ts.yaml
+    summary: CSS のテンプレートの索引の読み取り・検査・書き込みと、一覧・登録・配置

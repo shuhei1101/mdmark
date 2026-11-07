@@ -1833,6 +1833,12 @@ files:
     related:
       - to: src/plugin/pre-tool-use
         type: tests
+  - path: unit/src/plugin/templates.test.ts
+    description: src/plugin/templates.ts（「テンプレートの索引・一覧・登録・配置」）を確かめる単体テスト。templates.ts を変えたときに、合わせて修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, tool:mcp, topic:テンプレート]
+    related:
+      - to: src/plugin/templates
+        type: tests
   - path: unit/src/plugin/tools.test.ts
     description: src/plugin/tools.ts（「7 つのツールの定義と処理・ツールの結果への変換」）を確かめる単体テスト。tools.ts を変えたときに、合わせて見修正するケースを探すときに読む。
     tags: [topic:単体テスト, tool:vitest, tool:mcp, tool:claude-code]

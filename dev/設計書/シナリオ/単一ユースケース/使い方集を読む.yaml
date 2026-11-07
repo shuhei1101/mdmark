@@ -39,7 +39,7 @@ scenarios:
         C->>M: initialize
         M-->>C: instructions（dev-docs が無いときは見つからないこと）
         C->>M: tools/list
-        M-->>C: export_html・build_site・check
+        M-->>C: export_html・build_site・check などのツール
     expected:
       - mdmark の MCP サーバーの instructions に、dev-docs が無い、または mdmark の配信元が登録されていないときは「dev-docs が無いので見つかりません」とある
       - mdmark の MCP のツールの一覧に `read_guide` が無い

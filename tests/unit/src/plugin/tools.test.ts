@@ -423,3 +423,79 @@ test("test_run_check_tool_when_text_and_key", async () => {
     { file: "records.yaml", where: "8", kind: "unknown_mark" },
   ]);
 });
+
+/** 一時フォルダを端末の設定のフォルダにし、そのテンプレートのフォルダを返す */
+async function stubSettingsDir(): Promise<string> {
+  const settingsDir = await createTempDir();
+  vi.stubEnv("MDMARK_CONFIG", join(settingsDir, "settings.yaml"));
+  return join(settingsDir, "templates", "css");
+}
+
+// `MDMARK_CONFIG` のフォルダのテンプレートを返す（正常系）
+test("test_run_list_templates", async () => {
+  // 準備
+  const { runListTemplates } = await loadTools();
+  const context = await createContext();
+  const templatesDir = await stubSettingsDir();
+  await writeFiles(templatesDir, {
+    "templates.yaml":
+      "schema: 1\ntemplates:\n  - name: brand\n    file: brand.css\n    description: 社の色\n",
+    "brand.css": "h1 {}",
+  });
+  // 実行
+  const result = await runListTemplates(context);
+  // 検証
+  expect(result.json.templates).toEqual([
+    {
+      name: "brand",
+      description: "社の色",
+      tags: [],
+      path: join(templatesDir, "brand.css"),
+    },
+  ]);
+  vi.unstubAllEnvs();
+});
+
+// 作業のフォルダからの相対パスの CSS を登録する（正常系）
+test("test_run_add_template", async () => {
+  // 準備
+  const { runAddTemplate } = await loadTools();
+  const context = await createContext();
+  const templatesDir = await stubSettingsDir();
+  await writeFiles(context.projectDir, { "brand.css": "h1 {}" });
+  // 実行
+  const result = await runAddTemplate(
+    { file: "brand.css", name: "brand", description: "x" },
+    context,
+  );
+  // 検証
+  expect(result.json.path).toBe(join(templatesDir, "brand.css"));
+  expect(result.json.replaced).toBe(false);
+  vi.unstubAllEnvs();
+});
+
+// 作業のフォルダから上の設定ファイルのフォルダへ配置する（正常系）
+test("test_run_apply_template", async () => {
+  // 準備
+  const { runApplyTemplate } = await loadTools();
+  const context = await createContext();
+  const templatesDir = await stubSettingsDir();
+  await writeFiles(templatesDir, {
+    "templates.yaml":
+      "schema: 1\ntemplates:\n  - name: brand\n    file: brand.css\n    description: 社の色\n",
+    "brand.css": "h1 {}",
+  });
+  await writeFiles(context.projectDir, {
+    "mdmark.config.yaml": "features: {}\n",
+    "docs/guide.md": "# 見出し\n",
+  });
+  // 実行
+  const result = await runApplyTemplate(
+    { name: "brand" },
+    { ...context, projectDir: join(context.projectDir, "docs") },
+  );
+  // 検証
+  expect(result.json.theme).toBe("./brand.css");
+  expect(existsSync(join(context.projectDir, "brand.css"))).toBe(true);
+  vi.unstubAllEnvs();
+});

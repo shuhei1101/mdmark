@@ -1271,6 +1271,12 @@ files:
     related:
       - to: dev/設計書/モジュール構成/ClaudeCodeプラグイン/MCPサーバー.ts
         type: implements
+  - path: plugin/templates.ts
+    description: モジュール構成『ClaudeCodeプラグイン / CSSのテンプレート』の「テンプレートのフォルダの場所・索引の読み取りと検査と書き込み・一覧・登録・配置」を受け持つ。CSS のテンプレートの扱いを変えるときに読む。
+    tags: [tool:mcp, tool:claude-code, topic:テンプレート, topic:css]
+    related:
+      - to: dev/設計書/モジュール構成/ClaudeCodeプラグイン/CSSのテンプレート.ts
+        type: implements
   - path: print.ts
     description: モジュール構成『ライブラリ本体 / 描く』のうち「印刷の前後で折り畳みを開いて戻す attachPrint」を受け持つ。mount の描く流れや外部ライブラリの読み込みを変えるときに読む。
     tags: [topic:dom, topic:markdown, topic:印刷]

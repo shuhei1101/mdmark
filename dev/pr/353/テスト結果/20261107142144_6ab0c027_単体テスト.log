@@ -1,0 +1,71 @@
+$ npm run test:unit
+
+> test:unit
+> vitest run --project 'unit*'
+
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-plugin-css-templates
+
+ ❯ |unit-browser (chromium)| tests/unit/src/viewer/bundle.browser.test.ts (5 tests | 1 failed) 15649ms
+   × test_start_bundle 15281ms
+ ❯ |unit| tests/unit/src/cli/backup.test.ts (4 tests | 1 failed) 30086ms
+   × test_take_backup_when_outside 30004ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit| tests/unit/src/cli/backup.test.ts > test_take_backup_when_outside
+Error: Test timed out in 30000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/unit/src/cli/backup.test.ts:59:1
+     57|
+     58| // 設定ファイルのフォルダの外のファイルは拒む（異常系）
+     59| test("test_take_backup_when_outside", async () => {
+       | ^
+     60|   // 準備
+     61|   const { takeBackup } = await loadModule();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/viewer/bundle.browser.test.ts > test_start_bundle
+Error: Test timed out in 15000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/bundle.browser.test.ts/test_start_bundle.png
+
+ ❯ task node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=6f83ad28:5128:43
+ ❯ Object.<anonymous> node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=6f83ad28:5145:16
+ ❯ Object.<anonymous> node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=6f83ad28:4935:28
+ ❯ chain node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=6f83ad28:4336:14
+ ❯ tests/unit/src/viewer/bundle.browser.test.ts:39:1
+     37|
+     38| // URL が指す文書を描き、一覧で開いている文書を示す（正常系）
+     39| test("test_start_bundle", async () => {
+       | ^
+     40|   // 準備
+     41|   const { startBundle } = await loadBundle();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  2 failed | 237 passed (239)
+      Tests  2 failed | 1678 passed (1680)
+   Start at  14:18:45
+   Duration  132.80s (worker 64%, tests 23%, import 12%, transform 1%)
+
+
+# 全件の実行で時間切れ（Test timed out）になった 2 件は今回の変更が触らないファイルのテストで、ファイルを絞って流し直すと pass した
+$ npx vitest run --project 'unit*' tests/unit/src/cli/backup.test.ts tests/unit/src/viewer/bundle.browser.test.ts
+
+ Test Files  2 passed (2)
+      Tests  9 passed (9)
+   Start at  14:21:58
+   Duration  23.81s (tests 91%, transform 5%, import 3%, worker 1%)
+
+$ npx vitest run --project 'unit*' tests/unit/src/plugin
+
+ Test Files  7 passed (7)
+      Tests  78 passed (78)
+   Start at  14:22:27
+   Duration  12.60s (tests 83%, import 12%, transform 5%, worker 1%)
+

@@ -9,3 +9,5 @@ items:
     summary: Claude Code のプラグインが渡す使い方集の索引
   - page: エイリアス.yaml
     summary: 設定の aliases に並べるエイリアスの元の行と、元の行から作るエイリアス
+  - page: CSSのテンプレート.yaml
+    summary: 端末の設定のフォルダに置く CSS のテンプレートの索引
