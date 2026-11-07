@@ -457,6 +457,12 @@ functions:
         condition: 配置先にテンプレートと同じ中身の `brand.css`
         mock: なし（一時フォルダ）
         expected: '`replaced` が `false` で、ファイルの更新時刻が変わらない'
+      - name: test_apply_template_when_overwrite
+        case: 正常
+        summary: 中身の違う同じ名前のファイルを `overwrite` で置き換える
+        condition: '配置先に中身の違う `brand.css`、`overwrite: true`'
+        mock: なし（一時フォルダ）
+        expected: '`replaced` が `true` で、配置先の中身がテンプレートと同じ'
       - name: test_apply_template_when_css_exists
         case: 異常
         summary: 中身の違う同じ名前のファイル
