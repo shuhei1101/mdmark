@@ -1,0 +1,6 @@
+steps:
+  - op: call
+    description: 設定の `aliases` の行を alias-inject v0.3.0 の構造へ書き換える（値を失うのは `metadata` に固定値を記載した行だけ）
+    destructive: true
+    script: alias-rows.mjs
+    files: [config]

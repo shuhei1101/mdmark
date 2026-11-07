@@ -6,3 +6,15 @@ files:
     related:
       - to: dev/設計書/モジュール構成/ライブラリ本体/版を上げる.ts
         type: implements
+  - path: next/steps.yaml
+    description: モジュール構成『ライブラリ本体 / 版を上げる』のうち「出していない版の移行の手順の並び」を受け持つ。次の版で設定・索引・文書へ当てる手順を変えるときに読む。
+    tags: [topic:バージョン, topic:移行, topic:cli, topic:ステップ]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/版を上げる.ts
+        type: implements
+  - path: next/alias-rows.mjs
+    description: モジュール構成『ライブラリ本体 / 版を上げる』のうち「設定の aliases の行を alias-inject v0.3.0 の構造へ書き換える移行のスクリプト（migrateAliasRows）」を受け持つ。エイリアスの元の行の移行を変えるときに読む。
+    tags: [topic:バージョン, topic:移行, topic:エイリアス]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/版を上げる.ts
+        type: implements

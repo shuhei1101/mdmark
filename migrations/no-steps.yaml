@@ -32,10 +32,6 @@ entries:
     sha256: 261633f2eeaf589d9a30cdabb41533f56be078f7c9839925304b31155497483f
     reason: features に省いてよい side-toc と、省いてよい side-toc と、省いてよい aliases と、省いてよい colorTheme を足しただけで、古い設定もそのまま新しい Schema に合う
   - version: next
-    schema: mdmark.config.schema.json
-    sha256: cf8fb4a2c0e80cbd635b815c2e8769f5c99870d3c085349d4750d2feb14a7d15
-    reason: 省いてよい labels と、features に省いてよい back-to-top・text-color・images・gallery・lightbox・media・gif・cards・footnotes・diagram-resize・html-scripts と、省いてよい html-scripts.url・assets と、tooltips に省いてよい diagramPlacement を足しただけで、古い設定もそのまま新しい Schema に合う
-  - version: next
     schema: mdmark.index.schema.json
     sha256: 1cf45f581478557deb004716f1465256615411b9cb89f16f4a2819ec776cf700
     reason: 説明文から MCP の find_docs・list_tags の記述を外しただけで、キーと型は変えないので、古い索引もそのまま新しい Schema に合う
