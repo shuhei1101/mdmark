@@ -349,7 +349,7 @@ export class PreviewPanel {
     };
     this.aliases = load.aliases;
     for (const issue of load.aliasIssues) {
-      log.warn("エイリアスのずれ", formatCheckIssue(issue));
+      log.warn(formatCheckIssue(issue));
     }
     this.configUsed = true;
     if (load.problem) {
