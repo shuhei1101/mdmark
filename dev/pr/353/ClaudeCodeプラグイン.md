@@ -20,10 +20,10 @@
 | 対象 | 方針 | 補足 |
 | --- | --- | --- |
 | テンプレートの索引 | `templates.yaml` の最上位に `schema`（整数、今は `1`）と `templates`（行の並び）を持ち、行は `name`・`file`・`description`・`tags` を持つ。JSON Schema を `schemas/` に追加し、ER 図を `dev/設計書/ER図/` に追加する | `file` はテンプレートのフォルダの直下のファイル名に限り、`/`・`..` を拒む |
-| テンプレートのフォルダ | 端末の設定のパス（`resolveSettingsPath`）のフォルダの `templates/css/` | `未確定`（要件.md の 1 つ目） |
+| テンプレートのフォルダ | 端末の設定のパス（`resolveSettingsPath`）のフォルダの `templates/css/` | `MDMARK_CONFIG` で端末の設定を移すとテンプレートも移り、テストを一時フォルダに閉じられる |
 | `list_templates` | 索引の行（`name`・`description`・`tags`・CSS の絶対パス）を返す。`annotations` は `readOnlyHint: true` | 索引がスキーマに合わないときは、合わない行とキーをツールのエラーにする |
 | `add_template` | 引数 `file`（作業のフォルダの CSS のパス）・`name`・`description`・`tags`・`overwrite`。CSS をフォルダへコピーし、索引を検査してから書き込む | 同じ名前は `overwrite` が `true` のときだけ置き換える |
-| `apply_template` | 引数 `name`・`dir`（配置先、省くと最も近い `mdmark.config.yaml` のフォルダ）・`overwrite`。CSS をコピーし、配置したパスと `theme` に記載する値を返す | `未確定`（要件.md の 2 つ目）。配置先に同じ名前のファイルがあれば、`overwrite` が `true` のときだけ置き換える |
+| `apply_template` | 引数 `name`・`dir`（配置先、省くと最も近い `mdmark.config.yaml` のフォルダ）・`overwrite`。CSS をコピーし、配置したパスと `theme` に記載する値を返す | 設定ファイルの `theme` は書き換えない（`theme` は 1 つの CSS しか指せず、既にある値を黙って置き換えない）。配置先に同じ名前のファイルがあれば、`overwrite` が `true` のときだけ置き換える |
 | エラーの文 | 既存のツールと同じく、何が合わないかと直し方を日本語の 1 文で返す | 名前が無い・同じ名前がある・CSS が無い・設定ファイルが見つからない |
 | `instructions` | 使う側の CSS を探すときに `list_templates` を呼び、`apply_template` で配置して `theme` に記載する順序を追加する | - |
 
@@ -34,6 +34,7 @@
 | 複合ユースケース設計 | `66d1c0f7..25af29e6` | - |
 | 単一ユースケース設計 | `fd91bf5d..f74e9295` | - |
 | 単一ユースケース設計 | `ca96cc66..c7cc6f76` | レビューの指摘の修正 |
+| インターフェース定義設計 | `33b4539d..b39a45b1` | ER 図と、MCP サーバーの起動・停止の `tools/list` と `instructions` を含む |
 
 ## テスト結果
 
