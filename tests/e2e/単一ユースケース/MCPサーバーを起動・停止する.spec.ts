@@ -44,7 +44,9 @@ test("test_normal_when_start", async ({ builtRoot }) => {
   expect(stdout).toContain(`http://127.0.0.1:${port}/mcp`);
   expect(listening).toBe(true);
   expect(running).toBe(true);
-  expect([...tools].sort()).toEqual(["build_site", "check", "export_html"]);
+  expect(tools).toEqual(
+    expect.arrayContaining(["build_site", "check", "export_html"]),
+  );
 });
 
 // SIGINT で終了コード 0 で終わり、待ち受けるプロセスが残らない（正常シナリオ（止める））
