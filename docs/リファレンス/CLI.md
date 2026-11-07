@@ -7,7 +7,7 @@
 npm のレジストリには公開しない。
 Node 24 以降で動く。
 `export`・`build`・`check` は、端末の設定と、`--config` で指した設定ファイルか今のフォルダから上のフォルダの `mdmark.config.yaml` を重ねて読む（[設定を重ねて読む仕組み](../はじめに/コアコンセプト/設定を重ねて読む仕組み.md)）。
-`upgrade` は、`--config` で指した設定ファイルか、今のフォルダから上へ最初に見つかった `mdmark.config.yaml` だけを書き換える。
+`upgrade` は、`--config` で指した設定ファイルか、今のフォルダから上へ最初に見つかった `mdmark.config.yaml` だけを書き換える。`--settings` を渡すと端末の設定だけを書き換える。
 設定のキーは [設定](./設定.md)。
 
 ## 一覧
@@ -294,7 +294,7 @@ v0.5.0:
 ### 使い方
 
 ```bash
-npx github:shuhei1101/mdmark#v{目標の版} upgrade [--plan] [--yes] [--config {設定ファイル}]
+npx github:shuhei1101/mdmark#v{目標の版} upgrade [--plan] [--yes] [--config {設定ファイル} | --settings]
 ```
 
 ### 引数
@@ -304,6 +304,7 @@ npx github:shuhei1101/mdmark#v{目標の版} upgrade [--plan] [--yes] [--config 
 | `--plan` | 任意 | 何も書き換えず、当てる版ごとの手順・変更履歴の行・壊す手順の有無を出す。写しは取らない | `--plan` |
 | `--yes` | 任意 | 壊す手順を、確かめずに当てる。手元の版と、値を聞く手順の問いは飛ばさない | `--yes` |
 | `--config` | 任意 | 書き換える設定ファイルのパス。省くと今のフォルダから上のフォルダへ順に `mdmark.config.yaml` を探し、最初に見つかったものを使う。上のフォルダの設定と端末の設定は書き換えない | `--config docs/mdmark.config.yaml` |
+| `--settings` | 任意 | 端末の設定（`MDMARK_CONFIG`、無ければ `${XDG_CONFIG_HOME:-~/.config}/mdmark/settings.yaml`）を書き換える。設定ファイルの手順だけを当て、索引と文書の手順は飛ばす。`--config` と一緒には渡せない | `--settings` |
 
 目標の版は引数で受けず、呼んだ CLI の版にする。
 手元の版は設定の `version` で、無ければ標準エラーに `手元の版（v{MAJOR}.{MINOR}.{PATCH}）を入れてください:` を出して聞く（`--plan` のときも聞く）。
@@ -334,6 +335,7 @@ npx github:shuhei1101/mdmark#v{目標の版} upgrade [--plan] [--yes] [--config 
 | `1` | 問いに答える前に標準入力が終わった。標準エラーに答える問いを出し、何も書き換えない |
 | `1` | 当てる版の `steps.yaml` が読めない・形に合わない、または `call` のスクリプトが無い。標準エラーに版と合わないところと、mdmark を入れ直すことを出す。何も書き換えない |
 | `1` | `--config` のファイルが無い、今のフォルダと上のフォルダに `mdmark.config.yaml` が無い、または YAML として読めない。`mdmark check` と同じ文を標準エラーに出す |
+| `1` | `--config` と `--settings` を一緒に渡した |
 
 <!-- /table -->
 

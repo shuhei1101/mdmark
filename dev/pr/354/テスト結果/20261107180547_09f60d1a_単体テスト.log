@@ -1,0 +1,14 @@
+$ npm run test:unit
+
+> test:unit
+> vitest run --project 'unit*'
+
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-plugin-setup-skills
+
+
+ Test Files  246 passed (246)
+      Tests  1683 passed (1683)
+   Start at  18:05:52
+   Duration  96.12s (worker 63%, tests 24%, import 12%, transform 1%)
+

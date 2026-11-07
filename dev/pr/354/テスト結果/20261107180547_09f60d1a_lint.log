@@ -1,0 +1,59 @@
+$ (rc=0; npm run lint || rc=1; npm run lint:eslint || rc=1; npm run typecheck || rc=1; npm --prefix vscode run typecheck || rc=1; exit $rc)
+
+> lint
+> biome check .
+
+src/cli/embed.ts:2:28 lint/correctness/noUnusedImports  FIXABLE  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  ! Several of these imports are unused.
+  
+    1 │ import { readFile } from "node:fs/promises";
+  > 2 │ import { dirname, extname, resolve } from "node:path";
+      │                            ^^^^^^^
+    3 │ import { build, transform } from "esbuild";
+    4 │ import {
+  
+  i Unused imports might be the result of an incomplete refactoring.
+  
+  i Unsafe fix: Remove the unused imports.
+  
+    2 │ import·{·dirname,·extname,·resolve·}·from·"node:path";
+      │                            --------                   
+
+src/cli/embed.ts:38:7 lint/correctness/noUnusedVariables  FIXABLE  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  ! This variable HTTP_PATTERN is unused.
+  
+    37 │ /** `http:`・`https:` の URL か */
+  > 38 │ const HTTP_PATTERN = /^https?:\/\//i;
+       │       ^^^^^^^^^^^^
+    39 │ 
+    40 │ /** 文書の Markdown から印の名前を拾い、対応表にあるものだけを返す */
+  
+  i Unused variables are often the result of typos, incomplete refactors, or other sources of bugs.
+  
+  i Unsafe fix: If this is intentional, prepend HTTP_PATTERN with an underscore.
+  
+     36  36 │   
+     37  37 │   /** `http:`・`https:` の URL か */
+     38     │ - const·HTTP_PATTERN·=·/^https?:\/\//i;
+         38 │ + const·_HTTP_PATTERN·=·/^https?:\/\//i;
+     39  39 │   
+     40  40 │   /** 文書の Markdown から印の名前を拾い、対応表にあるものだけを返す */
+  
+
+Checked 834 files in 5s. No fixes applied.
+Found 2 warnings.
+
+> lint:eslint
+> node tools/eslint/node_modules/eslint/bin/eslint.js -c tools/eslint/eslint.config.js --max-warnings 0
+
+
+> typecheck
+> tsc --noEmit
+
+
+> mdmark-vscode@0.1.0 typecheck
+> tsc --noEmit
+
+exit=0

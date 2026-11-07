@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "settings.yaml",
-  "description": "mdmark の端末の設定（`MDMARK_CONFIG`、無ければ `${XDG_CONFIG_HOME:-~/.config}/mdmark/settings.yaml`）。`mdmark.config.yaml` のキーに、端末の設定だけが持つ `config` を足したもの。他のキーは拒まない。",
+  "description": "mdmark の端末の設定（`MDMARK_CONFIG`、無ければ `${XDG_CONFIG_HOME:-~/.config}/mdmark/settings.yaml`）。`mdmark.config.yaml` のキーに、端末の設定だけが持つ `config`・`serve` を足したもの。他のキーは拒まない。",
   "allOf": [
     {
       "$ref": "mdmark.config.schema.json"
@@ -25,6 +25,21 @@
           "description": "`false` のとき、書き出し（`mdmark export`・`mdmark build`・VS Code 拡張機能の書き出し）で端末の設定を重ねない。プレビューは常に重ねる。",
           "type": "boolean",
           "default": true
+        }
+      }
+    },
+    "serve": {
+      "title": "常駐サーバーの起動",
+      "description": "端末の設定だけが持つ、`/mdmark:global-setup` が常駐サーバーを起動するときの値。`mdmark.config.yaml` に書いても読まない。",
+      "type": "object",
+      "properties": {
+        "tmuxSession": {
+          "title": "常駐サーバーの tmux のセッション名",
+          "description": "`/mdmark:global-setup` が `mdmark serve` を起動する tmux のセッション名。MCP の `instructions` もこの名前を伝える。",
+          "type": "string",
+          "pattern": "^[A-Za-z0-9_-]+$",
+          "default": "mdmark-mcp",
+          "examples": ["mdmark-mcp"]
         }
       }
     }
