@@ -1,0 +1,1 @@
+# 配布物のビルドの期待で、plugin/scripts/session-start.js を生成物として確かめる
