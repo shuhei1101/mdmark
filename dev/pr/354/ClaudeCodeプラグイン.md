@@ -74,3 +74,15 @@ Red のログ（`2de9eb1e`）は `3fa99b49` で取った。その後の `3b5bd71
 develop（#353）の取り込みの後: `test_list_tool_names` の期待値を、常駐サーバーのツールが 6 つになったことに合わせて 3 つを含むことにした（`83fe7b97`）。単体テストは 1716 件が全 pass（[テスト結果/20261107183746_3a1be07a_単体テスト.log](./テスト結果/20261107183746_3a1be07a_単体テスト.log)。`tests/unit/src/viewer/` のブラウザのテスト 2 件が全件の実行の負荷で 1 回待ちを超えたため、流し直した結果を置いた）
 
 lint: [テスト結果/20261107183746_3a1be07a_lint.log](./テスト結果/20261107183746_3a1be07a_lint.log)（違反は無し。警告は既存の `src/cli/embed.ts` の 2 件）
+
+### 結合
+
+| ファイル | メソッド | 変更種別 | 結果 | 補足 |
+| --- | --- | --- | --- | --- |
+| `tests/integration/ClaudeCodeプラグイン/setup-status.test.ts`・`setup-keys.test.ts`・`setup-write-settings.test.ts`・`setup-write-config.test.ts`・`setup-start-server.test.ts`・`session-start.test.ts` | 全実行 | 新規 | ✅ | 15 ファイル・71 テストが全 pass<br>[テスト結果/20261107191229_5e28d62f_結合テスト.log](./テスト結果/20261107191229_5e28d62f_結合テスト.log) |
+| `tests/integration/ClaudeCodeプラグイン/serve.test.ts` | 全実行 | 変更 | ✅ | 同上 |
+| `tests/integration/ClaudeCodeプラグイン/` のほかのテスト | 全実行 | 実行のみ | ✅ | 同上 |
+
+tmux を使うテストは、子プロセスの環境から `TMUX`・`TMUX_PANE` を外し、`TMUX_TMPDIR` の一時の tmux サーバーだけを使う（`TMUX` があると tmux は `TMUX_TMPDIR` を見ず、テストを流している手元の tmux サーバーにつなぐ）。
+
+lint: [テスト結果/20261107191229_5e28d62f_lint.log](./テスト結果/20261107191229_5e28d62f_lint.log)（違反は無し。警告は既存の `src/cli/embed.ts` の 2 件）
