@@ -1,0 +1,357 @@
+$ npx vitest run --project 'unit' tests/unit/src/config.test.ts tests/unit/src/render/page.test.ts tests/unit/src/render/marks.test.ts tests/unit/src/render/syntax/card-grid.test.ts tests/unit/src/parts/card-grid.test.ts tests/unit/src/cli/config.test.ts tests/unit/src/cli/export.test.ts tests/unit/src/cli/check.test.ts tests/unit/vscode/src/config.test.ts
+# Red（実装の前）。fail は全て実装が無いことによる
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-render-page-settings-and-cards-markers
+
+ ❯ |unit| tests/unit/src/render/page.test.ts (2 tests | 2 failed) 174ms
+   × test_read_page_settings 100ms
+   × test_read_page_settings_when_unknown 73ms
+ ❯ |unit| tests/unit/vscode/src/config.test.ts (13 tests | 1 failed) 2162ms
+   × test_apply_preview_theme 2ms
+ ❯ |unit| tests/unit/src/parts/card-grid.test.ts (2 tests | 2 failed) 41ms
+   × test_render_card_grid 31ms
+   × test_render_card_grid_when_unsafe_href 8ms
+ ❯ |unit| tests/unit/src/config.test.ts (13 tests | 4 failed) 42ms
+   × test_resolve_config 34ms
+   × test_resolve_config_when_features_given 2ms
+   × test_resolve_config_when_color_scheme_given 1ms
+   × test_apply_page_settings 0ms
+ ❯ |unit| tests/unit/src/render/marks.test.ts (13 tests | 3 failed) 6442ms
+   × test_resolve_page_settings 24ms
+   × test_resolve_page_settings_when_not_at_top 1ms
+   × test_resolve_page_settings_when_unknown 1ms
+ ❯ |unit| tests/unit/src/render/syntax/card-grid.test.ts (3 tests | 2 failed) 39ms
+   × test_build_card_grid 34ms
+   × test_build_card_grid_when_not_list 2ms
+ ❯ |unit| tests/unit/src/cli/check.test.ts (29 tests | 1 failed) 9735ms
+   × test_collect_check_issues_when_unknown_color_scheme 34ms
+ ❯ |unit| tests/unit/src/cli/config.test.ts (22 tests | 1 failed) 10264ms
+   × test_validate_config_when_color_scheme_invalid 9ms
+ ❯ |unit| tests/unit/src/cli/export.test.ts (21 tests | 1 failed) 11967ms
+   × test_prepare_embeds_when_color_scheme 7ms
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 17 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit| tests/unit/src/config.test.ts > test_resolve_config
+AssertionError: expected { …(8) } to deeply equal { …(9) }
+
+- Expected
++ Received
+
+@@ -1,15 +1,13 @@
+  {
+-   "colorScheme": "auto",
+    "colorTheme": "dev-swiss",
+    "features": {
+      "anchors": true,
+      "back-to-top": true,
+      "backlinks": true,
+      "badge": true,
+      "callout": true,
+-     "card-grid": true,
+      "cards": true,
+      "code": true,
+      "columns": true,
+      "comments": false,
+      "csv": true,
+
+ ❯ tests/unit/src/config.test.ts:69:20
+     67|   const resolved = resolveConfig({});
+     68|   // 検証
+     69|   expect(resolved).toEqual({
+       |                    ^
+     70|     features: DEFAULT_FEATURES,
+     71|     libraries: {},
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/17]⎯
+
+ FAIL  |unit| tests/unit/src/config.test.ts > test_resolve_config_when_features_given
+AssertionError: expected { print: false, table: true, …(40) } to deeply equal { print: false, table: true, …(41) }
+
+- Expected
++ Received
+
+@@ -2,11 +2,10 @@
+    "anchors": true,
+    "back-to-top": true,
+    "backlinks": true,
+    "badge": true,
+    "callout": true,
+-   "card-grid": true,
+    "cards": true,
+    "code": true,
+    "columns": true,
+    "comments": false,
+    "csv": true,
+
+ ❯ tests/unit/src/config.test.ts:92:29
+     90|   const resolved = resolveConfig({ config });
+     91|   // 検証
+     92|   expect(resolved.features).toEqual({ ...DEFAULT_FEATURES, print: fals…
+       |                             ^
+     93| });
+     94|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/17]⎯
+
+ FAIL  |unit| tests/unit/src/config.test.ts > test_resolve_config_when_color_scheme_given
+AssertionError: expected [ undefined, undefined, …(2) ] to deeply equal [ 'dark', 'auto', 'auto', 'auto' ]
+
+- Expected
++ Received
+
+  [
+-   "dark",
+-   "auto",
+-   "auto",
+-   "auto",
++   undefined,
++   undefined,
++   undefined,
++   undefined,
+  ]
+
+ ❯ tests/unit/src/config.test.ts:210:56
+    208|   const resolved = configs.map((config) => resolveConfig({ config }));
+    209|   // 検証
+    210|   expect(resolved.map((config) => config.colorScheme)).toEqual([
+       |                                                        ^
+    211|     "dark",
+    212|     "auto",
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/17]⎯
+
+ FAIL  |unit| tests/unit/src/config.test.ts > test_apply_page_settings
+TypeError: applyPageSettings is not a function
+ ❯ tests/unit/src/config.test.ts:294:19
+    292|   const before = structuredClone(config);
+    293|   // 実行
+    294|   const applied = applyPageSettings({
+       |                   ^
+    295|     config,
+    296|     page: { scheme: "light", toc: "fixed" },
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/17]⎯
+
+ FAIL  |unit| tests/unit/vscode/src/config.test.ts > test_apply_preview_theme
+TypeError: applyPreviewTheme is not a function
+ ❯ tests/unit/vscode/src/config.test.ts:172:17
+    170|   const snapshot = structuredClone(config);
+    171|   // 実行
+    172|   const fixed = applyPreviewTheme({ config, theme: "dark" });
+       |                 ^
+    173|   const auto = applyPreviewTheme({ config, theme: "auto" });
+    174|   // 検証
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/17]⎯
+
+ FAIL  |unit| tests/unit/src/cli/check.test.ts > test_collect_check_issues_when_unknown_color_scheme
+AssertionError: expected -1 to be 1 // Object.is equality
+
+- Expected
++ Received
+
+- 1
++ -1
+
+ ❯ tests/unit/src/cli/check.test.ts:432:49
+    430|   // 検証
+    431|   const kinds = unknownIssues.map((issue) => issue.kind);
+    432|   expect(kinds.indexOf("unknown_color_scheme")).toBe(
+       |                                                 ^
+    433|     kinds.indexOf("unknown_color_theme") + 1,
+    434|   );
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/17]⎯
+
+ FAIL  |unit| tests/unit/src/cli/config.test.ts > test_validate_config_when_color_scheme_invalid
+AssertionError: expected [] to have a length of 1 but got +0
+
+- Expected
++ Received
+
+- 1
++ 0
+
+ ❯ tests/unit/src/cli/config.test.ts:328:26
+    326|   );
+    327|   // 検証
+    328|   expect(invalid.issues).toHaveLength(1);
+       |                          ^
+    329|   expect(invalid.issues[0]).toMatchObject({
+    330|     where: "colorScheme",
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/17]⎯
+
+ FAIL  |unit| tests/unit/src/cli/export.test.ts > test_prepare_embeds_when_color_scheme
+AssertionError: expected undefined to be 'dark' // Object.is equality
+
+- Expected:
+"dark"
+
++ Received:
+undefined
+
+ ❯ tests/unit/src/cli/export.test.ts:350:44
+    348|   const omitted = await prepare({ features: { print: true } });
+    349|   // 検証
+    350|   expect(given.payload.config.colorScheme).toBe("dark");
+       |                                            ^
+    351|   expect(omitted.payload.config).not.toHaveProperty("colorScheme");
+    352| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/17]⎯
+
+ FAIL  |unit| tests/unit/src/parts/card-grid.test.ts > test_render_card_grid
+Error: Cannot find module '/src/parts/card-grid.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-render-page-settings-and-cards-markers/tests/unit/src/parts/card-grid.test.ts
+ ❯ tests/unit/src/parts/card-grid.test.ts:10:30
+      8| test("test_render_card_grid", async () => {
+      9|   // 準備
+     10|   const { renderCardGrid } = await loadCardGrid();
+       |                              ^
+     11|   // 実行
+     12|   const html = renderCardGrid({
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/17]⎯
+
+ FAIL  |unit| tests/unit/src/parts/card-grid.test.ts > test_render_card_grid_when_unsafe_href
+Error: Cannot find module '/src/parts/card-grid.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-render-page-settings-and-cards-markers/tests/unit/src/parts/card-grid.test.ts
+ ❯ tests/unit/src/parts/card-grid.test.ts:42:30
+     40| test("test_render_card_grid_when_unsafe_href", async () => {
+     41|   // 準備
+     42|   const { renderCardGrid } = await loadCardGrid();
+       |                              ^
+     43|   // 実行
+     44|   const html = renderCardGrid({
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/17]⎯
+
+ FAIL  |unit| tests/unit/src/render/marks.test.ts > test_resolve_page_settings
+AssertionError: expected undefined to deeply equal { scheme: 'dark' }
+
+- Expected:
+{
+  "scheme": "dark",
+}
+
++ Received:
+undefined
+
+ ❯ tests/unit/src/render/marks.test.ts:251:25
+    249|   const rendered = renderDoc(markdown);
+    250|   // 検証
+    251|   expect(rendered.page).toEqual({ scheme: "dark" });
+       |                         ^
+    252|   expect(rendered.html).not.toContain("page:");
+    253|   expect(rendered.html).not.toContain("mdmark-syntax-warning");
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/17]⎯
+
+ FAIL  |unit| tests/unit/src/render/marks.test.ts > test_resolve_page_settings_when_not_at_top
+AssertionError: expected undefined to deeply equal {}
+
+- Expected:
+{}
+
++ Received:
+undefined
+
+ ❯ tests/unit/src/render/marks.test.ts:265:25
+    263|   const rendered = renderDoc(markdown);
+    264|   // 検証
+    265|   expect(rendered.page).toEqual({});
+       |                         ^
+    266|   expect(rendered.warnings).toHaveLength(1);
+    267|   expect(rendered.warnings[0]?.message).toContain("先頭");
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[12/17]⎯
+
+ FAIL  |unit| tests/unit/src/render/marks.test.ts > test_resolve_page_settings_when_unknown
+AssertionError: expected undefined to deeply equal { toc: 'fixed' }
+
+- Expected:
+{
+  "toc": "fixed",
+}
+
++ Received:
+undefined
+
+ ❯ tests/unit/src/render/marks.test.ts:281:25
+    279|   const rendered = renderDoc(markdown);
+    280|   // 検証
+    281|   expect(rendered.page).toEqual({ toc: "fixed" });
+       |                         ^
+    282|   expect(rendered.warnings).toHaveLength(1);
+    283|   expect(rendered.warnings[0]?.message).toContain("scheme=sepia");
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[13/17]⎯
+
+ FAIL  |unit| tests/unit/src/render/page.test.ts > test_read_page_settings
+Error: Cannot find module '/src/render/page.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-render-page-settings-and-cards-markers/tests/unit/src/render/page.test.ts
+ ❯ tests/unit/src/render/page.test.ts:12:32
+     10| test("test_read_page_settings", async () => {
+     11|   // 準備
+     12|   const { readPageSettings } = await loadPage();
+       |                                ^
+     13|   const { parseMarkArgs } = await loadMarks();
+     14|   // 実行
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[14/17]⎯
+
+ FAIL  |unit| tests/unit/src/render/page.test.ts > test_read_page_settings_when_unknown
+Error: Cannot find module '/src/render/page.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-render-page-settings-and-cards-markers/tests/unit/src/render/page.test.ts
+ ❯ tests/unit/src/render/page.test.ts:28:32
+     26| test("test_read_page_settings_when_unknown", async () => {
+     27|   // 準備
+     28|   const { readPageSettings } = await loadPage();
+       |                                ^
+     29|   const { parseMarkArgs } = await loadMarks();
+     30|   // 実行
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[15/17]⎯
+
+ FAIL  |unit| tests/unit/src/render/syntax/card-grid.test.ts > test_build_card_grid
+AssertionError: expected [] to have a length of 1 but got +0
+
+- Expected
++ Received
+
+- 1
++ 0
+
+ ❯ tests/unit/src/render/syntax/card-grid.test.ts:24:54
+     22|   const { html } = renderDoc(markdown);
+     23|   // 検証
+     24|   expect(findTags(html, 'class="mdmark-card-grid"')).toHaveLength(1);
+       |                                                      ^
+     25|   const links = findTags(html, "mdmark-card-grid-item");
+     26|   expect(links).toHaveLength(4);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[16/17]⎯
+
+ FAIL  |unit| tests/unit/src/render/syntax/card-grid.test.ts > test_build_card_grid_when_not_list
+AssertionError: expected [] to have a length of 1 but got +0
+
+- Expected
++ Received
+
+- 1
++ 0
+
+ ❯ tests/unit/src/render/syntax/card-grid.test.ts:59:20
+     57|   const { html, warnings } = renderDoc(markdown);
+     58|   // 検証
+     59|   expect(warnings).toHaveLength(1);
+       |                    ^
+     60|   expect(warnings[0]?.message).toContain("リスト");
+     61|   expect(html.indexOf("mdmark-syntax-warning")).toBeLessThan(
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[17/17]⎯
+
+
+ Test Files  9 failed (9)
+      Tests  17 failed | 101 passed (118)
+   Start at  19:09:26
+   Duration  13.19s (tests 75%, transform 13%, import 12%, worker 1%)
+
