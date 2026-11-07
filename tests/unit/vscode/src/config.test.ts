@@ -139,6 +139,23 @@ test("test_load_config_when_config_path_missing", async () => {
   expect(result.nearest).toBeUndefined();
 });
 
+// labels を config に入れ、labels がマップでない設定ファイルは重ねない（正常系）
+test("test_load_config_when_labels", async () => {
+  // 準備
+  const { loadConfig: load } = await loadModule();
+  const files = {
+    "/w/mdmark.config.yaml": "labels:\n  paramCopy: コピー\n",
+    "/w/b/mdmark.config.yaml": "labels: コピー\n",
+  };
+  // 実行
+  const map = await load(loadOptions(files, { cwd: "/w" }));
+  const text = await load(loadOptions(files, { cwd: "/w/b" }));
+  // 検証
+  expect(map.config).toEqual({ labels: { paramCopy: "コピー" } });
+  expect(text.config).not.toHaveProperty("labels");
+  expect(text.problem?.settingKey).toBe("labels");
+});
+
 // 空でない mdmark.colorTheme が設定ファイルに勝ち、空なら設定ファイルのまま（正常系）
 test("test_apply_color_theme", async () => {
   // 準備
