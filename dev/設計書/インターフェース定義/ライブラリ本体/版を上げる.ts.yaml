@@ -411,7 +411,7 @@ request:
     default: 'false'
     location: argument
     description: 移行の対象を端末の設定（`MDMARK_CONFIG`、無ければ `${XDG_CONFIG_HOME:-~/.config}/mdmark/settings.yaml`）にする。`--config` と一緒には渡せない
-    notes: '`file: config` の手順だけを端末の設定へ当て、`index`・`documents` の手順は飛ばす。点検は端末の設定の形だけを見る'
+    notes: '`file: config` の手順と `files` が `[config]` だけの `call` だけを端末の設定へ当て（`call` のスクリプトの `--config` は端末の設定のパス）、`index`・`documents` の手順は飛ばす。点検は端末の設定の形だけを見る'
   - name: 標準入力
     type: string
     required: false
