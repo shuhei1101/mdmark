@@ -71,6 +71,51 @@ test("test_normal", async ({ builtRoot, tempDir, page }) => {
   expect(opened.externalRequests()).toEqual([]);
 });
 
+// 文書の page のマーカーの明暗で開き、マーカーを持たない文書へ移ると明るい配色に、戻ると暗い配色に描き直す（正常シナリオ（文書ごとのページの設定））
+test("test_normal_when_page_settings_per_document", async ({
+  builtRoot,
+  tempDir,
+  page,
+}) => {
+  // 準備
+  const dir = await tempDir();
+  await writeFiles(dir, {
+    "mdmark.config.yaml": [
+      "build:",
+      '  include: ["A.md", "B.md"]',
+      "  entry: A.md",
+      "  out: dist/docs.html",
+      "",
+    ].join("\n"),
+    "A.md": "<!-- page: scheme=dark -->\n\n# 文書A\n\n入口の文書。\n",
+    "B.md": "# 文書B\n\nマーカーを持たない文書。\n",
+  });
+  const result = await runCli(builtRoot, ["build"], dir);
+  expect(result.code).toBe(0);
+  await page.emulateMedia({ colorScheme: "light" });
+  const h1 = page.locator("article.mdmark h1");
+  const background = () =>
+    page
+      .locator("article.mdmark")
+      .evaluate((el) =>
+        getComputedStyle(el).getPropertyValue("--mdmark-color-bg").trim(),
+      );
+  // 実行・検証
+  const opened = await openStandalone(page, {
+    tempDir,
+    htmlFile: join(dir, "dist", "docs.html"),
+  });
+  await expect(h1).toContainText("文書A");
+  await expect.poll(background).toBe("#131316");
+  await page.locator('.mdmark-bundle-side a[data-doc-path="B.md"]').click();
+  await expect(h1).toContainText("文書B");
+  await expect.poll(background).toBe("#ffffff");
+  await page.goBack();
+  await expect(h1).toContainText("文書A");
+  await expect.poll(background).toBe("#131316");
+  expect(opened.externalRequests()).toEqual([]);
+});
+
 // URL の # が文書と見出しを指すと、その見出しが画面に入る（正常シナリオ（URL が文書と見出しを指す））
 test("test_normal_when_url_points_heading", async ({
   builtRoot,
