@@ -11,6 +11,7 @@ import { compareVersions, VERSION_PATTERN } from "../src/cli/versions.ts";
 const CHECKED_SCHEMAS = [
   "mdmark.config.schema.json",
   "mdmark.index.schema.json",
+  "mdmark.settings.schema.json",
 ];
 
 /** 手順なしの一覧の SHA-256 の書式 */
