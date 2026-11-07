@@ -95,6 +95,33 @@ scenarios:
       - '`ts` と `python` のコードブロックが色分けされている'
       - 手元のフォルダにある言語のモジュールのうち、文書が使わない言語（`yaml`）のモジュールは埋められていない
     test: test_normal_when_code_highlighted
+  - name: 正常シナリオ（mermaid のコードブロック）
+    setup:
+      - name: mermaid のコードブロックを持つ文書
+        description: 言語 `mermaid` の flowchart のコードブロックを 1 つ持つ文書 1 つと、設定
+      - name: mermaid のコードブロックを持たない文書
+        description: 段落だけを持つ文書 1 つ（同じ設定で別に書き出す）
+      - name: Mock
+        description: mermaid は、設定の `mermaid` の読み込み先を、mermaid の本体と chunk を置いた手元のフォルダの相対パスにする（書き出しがネットワークを読まない）
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant C as mdmark CLI
+        participant F as 出力の HTML
+        actor R as 読む人
+        W->>C: mdmark export 文書のパス
+        C->>C: mermaid のコードブロックがあるので、mermaid の本体と chunk を 1 つのスクリプトにまとめる
+        C->>F: mermaid を埋めた HTML を書く
+        C-->>W: 出力のパス・終了コード 0
+        R->>F: HTML だけを空のフォルダへ写して file:// で開く
+        F-->>R: 図の枠に入った mermaid の図
+    expected:
+      - 終了コードが 0 で、指定した出力に HTML が 1 つある
+      - HTML だけを空のフォルダへ写して file:// で開くと、描き終えるまでにページ自身と画像の `data:` のほかの要求が 0 件
+      - mermaid のコードブロックの場所に、図の枠と SVG の図がある
+      - 書き出した HTML のスクリプトに動的 `import()` が無い
+      - mermaid のコードブロックを持たない文書の書き出しには、mermaid が埋められていない
+    test: test_normal_when_mermaid
   - name: 正常シナリオ（エイリアスを読む）
     setup:
       - name: エイリアスを読む設定

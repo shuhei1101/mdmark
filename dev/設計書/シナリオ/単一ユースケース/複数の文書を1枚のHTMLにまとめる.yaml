@@ -67,6 +67,31 @@ scenarios:
       - 出力に対象が 0 件であることと、設定の `build.include` を直すことが出る
       - '`build.out` に HTML が書かれていない'
     test: test_error_when_no_documents
+  - name: 正常シナリオ（mermaid のコードブロック）
+    setup:
+      - name: mermaid を使う文書を含む文書群
+        description: 文書 2 つ（入口と、言語 `mermaid` の flowchart のコードブロックを持つ文書）と索引。入口から mermaid の文書へリンクする
+      - name: build の設定
+        description: '`include` が 2 つに当たる'
+      - name: Mock
+        description: mermaid は、設定の `mermaid` の読み込み先を、mermaid の本体と chunk を置いた手元のフォルダの相対パスにする
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant C as mdmark CLI
+        participant F as build.out
+        actor R as 読む人
+        W->>C: mdmark build
+        C->>C: include の文書に mermaid のコードブロックがあるので、mermaid を 1 つのスクリプトにまとめる
+        C->>F: mermaid を埋めた HTML を書く
+        R->>F: file:// で開き、入口から mermaid の文書へ移る
+        F-->>R: 図の枠に入った mermaid の図
+    expected:
+      - 終了コードが 0 で、`build.out` に HTML が 1 つある
+      - 入口から mermaid の文書へ移ると、mermaid のコードブロックの場所に図の枠と SVG の図がある
+      - 外への要求が 0 件
+      - mermaid のコードブロックを持たない文書だけを `include` にした build の出力には、mermaid が埋められていない
+    test: test_normal_when_mermaid
   - name: 正常シナリオ（エイリアスを読む）
     setup:
       - name: 見本の文書群

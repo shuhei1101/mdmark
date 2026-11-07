@@ -183,6 +183,29 @@ scenarios:
       - 範囲の箱を押すと根の要素に class `is-open` が付く
       - パネルの CSP の値が正常シナリオと同じで、CSP の違反が 0 件
     test: test_normal_when_range_scripts
+  - name: 正常シナリオ（mermaid のコードブロック）
+    setup:
+      - name: 見本のワークスペース
+        description: 言語 `mermaid` の flowchart のコードブロックを 1 つ持つ Markdown を置いたフォルダ。設定ファイルは置かない
+      - name: Mock
+        description: 正常シナリオと同じ。加えて、mermaid の本体と chunk を、配布物と同じ手元のサーバーから jsDelivr と同じパスで配る
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant EX as 拡張機能
+        participant PV as プレビュー（Webview）
+        participant CDN as jsDelivr
+        W->>EX: mdmark.openPreviewToSide
+        EX->>PV: 横の列にパネルを開き、Markdown の全文と設定を送る
+        PV->>CDN: mermaid の本体と chunk を読む
+        CDN-->>PV: mermaid
+        PV->>PV: mount で描く
+        PV-->>W: 図の枠に入った mermaid の図
+    expected:
+      - パネルの mermaid のコードブロックの場所に、図の枠と SVG の図がある
+      - パネルの CSP の値の `script-src` に mermaid の読み込み先の origin が入っていて、CSP の違反が 0 件
+      - VS Code の配色をダークに切り替えると、mermaid の図が暗い配色で描き直される
+    test: test_normal_when_mermaid
   - name: 正常シナリオ（取り込む文書を描く）
     setup:
       - name: 取り込みを持つワークスペース

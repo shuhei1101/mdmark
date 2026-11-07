@@ -47,6 +47,7 @@ scenarios:
       - 外部ライブラリの代役への要求が 0 件
       - 段落が描かれている
       - 色分けのライブラリへの要求も 0 件
+      - mermaid への要求も 0 件
     test: test_normal_when_no_mark
   - name: 異常シナリオ（外部ライブラリを読めない）
     setup:
