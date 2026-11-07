@@ -12,6 +12,7 @@ const CHECKED_SCHEMAS = [
   "mdmark.config.schema.json",
   "mdmark.index.schema.json",
   "mdmark.settings.schema.json",
+  "mdmark.templates.schema.json",
 ];
 
 /** 手順なしの一覧の SHA-256 の書式 */

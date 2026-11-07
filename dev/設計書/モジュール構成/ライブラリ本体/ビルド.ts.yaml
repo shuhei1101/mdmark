@@ -53,7 +53,7 @@ constants:
     title: 点検する Schema
     container: scripts/migrations.ts
     summary: 変えたら移行の手順を求める `schemas/` のファイル
-    value: '`["mdmark.config.schema.json", "mdmark.index.schema.json", "mdmark.settings.schema.json"]`'
+    value: '`["mdmark.config.schema.json", "mdmark.index.schema.json", "mdmark.settings.schema.json", "mdmark.templates.schema.json"]`'
   - name: BASELINE_ENTRIES
     title: 下限と照らす入口
     container: scripts/baseline.ts
