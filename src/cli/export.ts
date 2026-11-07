@@ -38,6 +38,7 @@ import { CliError, type CliIo } from "./errors.ts";
 import { assembleHtml, type ExportPayload } from "./html.ts";
 import { collectIconNodes } from "./icons.ts";
 import { collectIncludes, includeProblemMessage } from "./includes.ts";
+import { formatCheckIssue } from "./issues.ts";
 
 /** 索引に足す、用語集の文書の `id` の頭 */
 const GLOSSARY_ID_PREFIX = "mdmark-glossary-";
@@ -368,8 +369,7 @@ export async function prepareEmbeds(options: EmbedOptions): Promise<{
   // 設定の `aliases` の YAML を読み、使えない行・レコードを警告にする
   const aliasResult = await loadAliases(loaded);
   for (const issue of aliasResult.issues) {
-    const where = issue.where === "" ? "" : `:${issue.where}`;
-    warnings.push(`${issue.file}${where}: ${issue.kind}: ${issue.message}`);
+    warnings.push(formatCheckIssue(issue));
   }
 
   // 知らないテーマの名前は埋める設定にも写し、開いたときに `mount` が既定のテーマで描く

@@ -14,7 +14,9 @@ import {
   window,
   workspace,
 } from "vscode";
+import { formatCheckIssue } from "../../../src/cli/issues.ts";
 import { displayConfigPath } from "../../../src/config-files.ts";
+import type { MdmarkAlias } from "../../../src/knowledge/aliases.ts";
 import type { ConfigProblem, PreviewConfig } from "../config.ts";
 import {
   applyColorTheme,
@@ -81,8 +83,10 @@ export class PreviewPanel {
   private configUsed = false;
   /** 最も近い設定ファイル */
   private nearest: string | undefined;
-  /** 見張るファイル（重ねた設定ファイル・`theme`・`extensions`・書いた `mdmark.configPath` のファイル・端末の設定） */
+  /** 見張るファイル（重ねた設定ファイル・`theme`・`extensions`・`aliases` の行の `paths` に当たった YAML・書いた `mdmark.configPath` のファイル・端末の設定） */
   watched: string[] = [];
+  /** 最後に使ったエイリアス。読めない設定ファイルがあるときは前に使ったエイリアスを残す */
+  private aliases: MdmarkAlias[] | undefined;
   /** 読み直した `theme`・`extensions` の絶対パス */
   private wanted: { theme?: string | undefined; extensions: string[] } = {
     extensions: [],
@@ -295,6 +299,7 @@ export class PreviewPanel {
       ...load.files,
       ...(load.theme === undefined ? [] : [load.theme]),
       ...load.extensions,
+      ...load.aliasFiles,
       ...(settings.configPath === ""
         ? []
         : [resolveConfigPath({ configPath: settings.configPath, baseDir })]),
@@ -342,6 +347,10 @@ export class PreviewPanel {
             }),
           }),
     };
+    this.aliases = load.aliases;
+    for (const issue of load.aliasIssues) {
+      log.warn("エイリアスのずれ", formatCheckIssue(issue));
+    }
     this.configUsed = true;
     if (load.problem) {
       this.reportProblem(load.problem);
@@ -515,6 +524,7 @@ export class PreviewPanel {
       type: "render",
       markdown,
       includes,
+      ...(this.aliases === undefined ? {} : { aliases: this.aliases }),
       ...(this.original === undefined
         ? {}
         : { previous: this.original.getText() }),

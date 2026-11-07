@@ -1,3 +1,4 @@
+import type { MdmarkAlias } from "../../src/knowledge/aliases.ts";
 import type { PreviewConfig } from "./config.ts";
 
 /** 配色の設定（`mdmark.preview.theme` の値） */
@@ -14,6 +15,8 @@ export type HostMessage =
       theme: PreviewTheme;
       /** 取り込む文書の表（キーは Markdown のフォルダからのパス） */
       includes?: Record<string, string>;
+      /** 設定の `aliases` から作ったエイリアス。設定に `aliases` が無いときは持たない */
+      aliases?: MdmarkAlias[];
     }
   | { type: "scrollToLine"; line: number }
   | {
