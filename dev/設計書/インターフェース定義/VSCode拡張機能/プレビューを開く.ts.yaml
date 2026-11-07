@@ -519,7 +519,7 @@ flows:
         PV->>EX: rendered
     expected:
       - '`render` の `aliases` が 1 行目の用語だけを持つ'
-      - 出力チャネルに `mdmark.config.yaml:aliases[1].paths: alias_no_files:` で始まる警告が 1 行ある
+      - '出力チャネルに `mdmark.config.yaml:aliases[1].paths: alias_no_files:` で始まる警告が 1 行ある'
       - '`configError` を送らない'
     test: test_error_when_aliases_missing
     refs:
