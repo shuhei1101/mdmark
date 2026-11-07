@@ -1,11 +1,12 @@
 title: "ClaudeCodeプラグイン / MCPサーバー"
-lead: '`mdmark serve` が 127.0.0.1 の Streamable HTTP で待ち受ける MCP の常駐サーバー。`export_html`・`build_site`・`check` を登録し、作業のフォルダを引数の `project_dir` で受け、引数を検査してから CLI と同じ処理を呼ぶ。`src/cli/main.ts` は読まない。'
+lead: '`mdmark serve` が 127.0.0.1 の Streamable HTTP で待ち受ける MCP の常駐サーバー。`export_html`・`build_site`・`check`・`list_templates`・`add_template`・`apply_template` を登録し、作業のフォルダを引数の `project_dir` で受け、引数を検査してから CLI と同じ処理を呼ぶ。`src/cli/main.ts` は読まない。'
 directory: |-
   ```tree
   src/plugin/
   ├── mcp.ts        # MCP サーバーの組み立て・ツールの登録・instructions
   ├── http.ts       # mdmark serve の HTTP の待ち受け・ポートの読み取り・要求と応答の変換
   ├── tools.ts      # ツールの定義と処理・ツールの結果への変換
+  ├── templates.ts  # CSS のテンプレートの索引・一覧・登録・配置（別の設計書）
   └── arguments.ts  # ツールの引数の検査・SDK に渡す素通しの検証器
   ```
 diagrams:
@@ -49,7 +50,7 @@ data_models:
     summary: ツール 1 つの名前・説明・引数の形・処理
     properties:
       - name: name
-        type: "'export_html' | 'build_site' | 'check'"
+        type: "'export_html' | 'build_site' | 'check' | 'list_templates' | 'add_template' | 'apply_template'"
         description: ツールの名前
       - name: description
         type: string
@@ -62,7 +63,7 @@ data_models:
         description: 検査を通った引数で処理し、結果を返す。利用者に見せる誤りは `CliError` を投げる
       - name: annotations
         type: '{ readOnlyHint: boolean } | undefined'
-        description: '`tools/list` に出すツールの annotations。索引と文書を書き換えない `check` だけが `{ readOnlyHint: true }` を持つ'
+        description: '`tools/list` に出すツールの annotations。何も書き換えない `check` と `list_templates` だけが `{ readOnlyHint: true }` を持つ'
     status: planned
     introduced:
       pr: 72
@@ -131,11 +132,12 @@ constants:
     usecase: 共通
     summary: MCP の `instructions` に渡す、使う場面と順序の事実の文
     value: |-
-      mdmark は Markdown 文書の記法・部品・図を描くライブラリで、この MCP サーバーは mdmark の文書の点検（check）・HTML への書き出し（export_html）・1 枚へのまとめ（build_site）を持つ。
+      mdmark は Markdown 文書の記法・部品・図を描くライブラリで、この MCP サーバーは mdmark の文書の点検（check）・HTML への書き出し（export_html）・1 枚へのまとめ（build_site）と、使う側の CSS のテンプレートの一覧（list_templates）・登録（add_template）・配置（apply_template）を持つ。
       mdmark の記法・部品・図の書き方は、使い方集として dev-docs の配信元 mdmark にある。
       mdmark の文書を書く前に、dev-docs の search_docs で source: "mdmark" の kind が docs の文書をタグ topic:使い方集 で絞って一覧を引き、当てはまるページを view: "full" で読む。作業場所が mdmark のリポジトリの外なら outside_scope: true を付ける。
       dev-docs が無い、または配信元 mdmark が登録されていないときは、dev-docs が無いので見つかりません。
       書いた後は check で点検し、図は使い方集の『描いた図を確かめる』の手順で確かめる。
+      使う側の CSS を探すときは list_templates で一覧を引き、選んだテンプレートを apply_template で配置して、返った theme の値を設定の theme に記載する。作った CSS を使い回すときは add_template で登録する。
       記法を使わない Markdown の編集とコードの調査には、この MCP サーバーと使い方集は要らない。
     refs:
       - dev/設計書/インターフェース定義/ClaudeCodeプラグイン/MCPサーバーを起動・停止する.ts#constraints[instructions]
@@ -168,6 +170,15 @@ constants:
       - key: check
         value: config・base・text・file・key（文字列）
         description: '`mdmark check` と同じ点検をし、ずれの一覧 `issues`（file・where・kind・message）を返す。`base` を渡すと `mdmark check --base` と同じ `change_together` の直し忘れも返す。`text` か `file`・`key` を渡すと `mdmark check --text`・`--file --key` と同じく、渡した Markdown を描いたときの書き方の警告を返す（YAML のキーへ記法を書き込んだ後に呼ぶ）。点検は書き換えない。`annotations` は `readOnlyHint: true`'
+      - key: list_templates
+        value: 引数なし
+        description: '端末の設定のフォルダの CSS のテンプレートを、名前・説明・タグ・CSS の絶対パスの一覧 `templates` で返す。`annotations` は `readOnlyHint: true`'
+      - key: add_template
+        value: file・name・description（必須）・tags（文字列の配列）・overwrite（真偽値）
+        description: 作業のフォルダの CSS をテンプレートに登録し、`name`・`path`・`replaced` を返す。`name` は `TEMPLATE_NAME_PATTERN` に合う文字列
+      - key: apply_template
+        value: name（必須）・dir（文字列）・overwrite（真偽値）
+        description: テンプレートの CSS を配置先へコピーし、`path`・`theme`（基準の設定ファイルが無ければ持たない）・`replaced` を返す
     status: planned
     introduced:
       pr: 72
@@ -580,6 +591,121 @@ functions:
     status: planned
     introduced:
       pr: 72
+  - name: runListTemplates
+    title: CSS のテンプレートの一覧を返す（list_templates）
+    kind: 関数
+    container: src/plugin/tools.ts
+    usecase: CSSのテンプレートの一覧を返す
+    role: ツール
+    summary: '`mdmark serve` のプロセスの環境変数からテンプレートのフォルダを決め、一覧を返す'
+    scope: public
+    is_async: true
+    args:
+      - name: context
+        type: ToolContext
+        required: true
+        description: ツールの前提
+    returns:
+      type: Promise<ToolOutput>
+      description: '`json` が `{ templates }`'
+    process: |-
+      1. `resolveTemplatesDir`（`env` は `process.env`、`home` は `os.homedir()`）でテンプレートのフォルダを決める
+      2. `listTemplates` の結果を `templates` で返す
+    unit_tests:
+      - name: test_run_list_templates
+        case: 正常
+        summary: '`MDMARK_CONFIG` のフォルダのテンプレートを返す'
+        condition: '`process.env.MDMARK_CONFIG` に一時フォルダの `settings.yaml`、その `templates/css/` に 1 行の索引'
+        mock: '`process.env.MDMARK_CONFIG` をテストの間だけ差し替える'
+        expected: '`json.templates` が 1 行'
+    callees:
+      - dev/設計書/モジュール構成/ClaudeCodeプラグイン/CSSのテンプレート.ts#functions[resolveTemplatesDir]
+      - dev/設計書/モジュール構成/ClaudeCodeプラグイン/CSSのテンプレート.ts#functions[listTemplates]
+    refs:
+      - dev/設計書/インターフェース定義/ClaudeCodeプラグイン/CSSのテンプレートの一覧を返す.ts#
+    status: planned
+    introduced:
+      pr: 353
+  - name: runAddTemplate
+    title: CSS のテンプレートを登録する（add_template）
+    kind: 関数
+    container: src/plugin/tools.ts
+    usecase: CSSのテンプレートを登録する
+    role: ツール
+    summary: '`file` を `projectDir` から解決し、テンプレートに登録する'
+    scope: public
+    is_async: true
+    side_effects: テンプレートのフォルダに CSS と索引を書く
+    args:
+      - name: args
+        type: '{ file: string; name: string; description: string; tags?: string[]; overwrite?: boolean }'
+        required: true
+        description: 検査を通った引数
+      - name: context
+        type: ToolContext
+        required: true
+        description: ツールの前提
+    returns:
+      type: Promise<ToolOutput>
+      description: '`json` が `{ name, path, replaced }`'
+    process: |-
+      1. `resolveTemplatesDir` でテンプレートのフォルダを決める
+      2. `file` を `projectDir` から絶対パスにし、`tags` を省いたら空の並び、`overwrite` を省いたら `false` にして `addTemplate` を呼ぶ
+    unit_tests:
+      - name: test_run_add_template
+        case: 正常
+        summary: 作業のフォルダからの相対パスの CSS を登録する
+        condition: '`projectDir` に `brand.css`、`{ file: "brand.css", name: "brand", description: "x" }`'
+        mock: '`process.env.MDMARK_CONFIG` をテストの間だけ差し替える'
+        expected: '`json.path` が `{テンプレートのフォルダ}/brand.css`、`json.replaced` が `false`'
+    callees:
+      - dev/設計書/モジュール構成/ClaudeCodeプラグイン/CSSのテンプレート.ts#functions[resolveTemplatesDir]
+      - dev/設計書/モジュール構成/ClaudeCodeプラグイン/CSSのテンプレート.ts#functions[addTemplate]
+    refs:
+      - dev/設計書/インターフェース定義/ClaudeCodeプラグイン/CSSのテンプレートを登録する.ts#
+    status: planned
+    introduced:
+      pr: 353
+  - name: runApplyTemplate
+    title: CSS のテンプレートを配置する（apply_template）
+    kind: 関数
+    container: src/plugin/tools.ts
+    usecase: CSSのテンプレートを配置する
+    role: ツール
+    summary: '`dir` を `projectDir` から解決し、テンプレートを配置する'
+    scope: public
+    is_async: true
+    side_effects: 配置先に CSS を書く
+    args:
+      - name: args
+        type: '{ name: string; dir?: string; overwrite?: boolean }'
+        required: true
+        description: 検査を通った引数
+      - name: context
+        type: ToolContext
+        required: true
+        description: ツールの前提
+    returns:
+      type: Promise<ToolOutput>
+      description: '`json` が `{ path, theme, replaced }`（`theme` が `undefined` なら JSON に出ない）'
+    process: |-
+      1. `resolveTemplatesDir` でテンプレートのフォルダを決める
+      2. `dir` を渡したら `projectDir` から絶対パスにし、`cwd` を `projectDir`、`overwrite` を省いたら `false` にして `applyTemplate` を呼ぶ
+    unit_tests:
+      - name: test_run_apply_template
+        case: 正常
+        summary: 作業のフォルダから上の設定ファイルのフォルダへ配置する
+        condition: '`projectDir` の上に `mdmark.config.yaml`、テンプレート `brand` を登録した端末の設定、`{ name: "brand" }`'
+        mock: '`process.env.MDMARK_CONFIG` をテストの間だけ差し替える'
+        expected: '`json.theme` が `./brand.css`'
+    callees:
+      - dev/設計書/モジュール構成/ClaudeCodeプラグイン/CSSのテンプレート.ts#functions[resolveTemplatesDir]
+      - dev/設計書/モジュール構成/ClaudeCodeプラグイン/CSSのテンプレート.ts#functions[applyTemplate]
+    refs:
+      - dev/設計書/インターフェース定義/ClaudeCodeプラグイン/CSSのテンプレートを配置する.ts#
+    status: planned
+    introduced:
+      pr: 353
   - name: createMcpServer
     title: MCP サーバーを作る
     kind: 関数
@@ -809,7 +935,7 @@ functions:
         summary: 待ち受けの URL を書き、tools/list に答え、合図で止まる
         condition: '`MDMARK_PORT` に空きポート、`packageDir` にこのリポジトリの直下、`AbortController` の `signal`'
         mock: なし（SDK の `Client` と `StreamableHTTPClientTransport`）
-        expected: 標準出力に `http://127.0.0.1:{port}/mcp` を含む 1 行、`listTools` が 3 つ、`abort()` の後に 0 で解決し、同じポートへの接続が拒まれる
+        expected: 標準出力に `http://127.0.0.1:{port}/mcp` を含む 1 行、`listTools` が 6 つ、`abort()` の後に 0 で解決し、同じポートへの接続が拒まれる
       - name: test_run_serve_when_port_in_use
         case: 異常
         summary: ポートが使われていれば 1 を返す

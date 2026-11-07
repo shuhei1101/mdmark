@@ -41,7 +41,7 @@ response:
     description: 配置した CSS の絶対パス（`{配置先}/{name}.css`）
   - name: theme
     type: string | undefined
-    description: 設定の `theme` に記載する値。基準の設定ファイル（制約『基準の設定ファイル』）のフォルダから `path` への相対パスで、`./` か `../` で始まる。基準の設定ファイルが無ければ返さない
+    description: 設定の `theme` に記載する値。基準の設定ファイル（制約『基準の設定ファイル』）のフォルダから `path` への相対パスで、`./` で始まる（基準の設定ファイルは配置先か、その上のフォルダにある）。基準の設定ファイルが無ければ返さない
   - name: replaced
     type: boolean
     description: 配置先の同じ名前のファイルを置き換えたか
