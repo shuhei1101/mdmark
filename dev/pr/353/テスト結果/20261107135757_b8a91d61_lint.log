@@ -1,0 +1,63 @@
+$ (rc=0; npm run lint || rc=1; npm run lint:eslint || rc=1; npm run typecheck || rc=1; npm --prefix vscode run typecheck || rc=1; exit $rc)
+
+> lint
+> biome check .
+
+src/cli/embed.ts:2:28 lint/correctness/noUnusedImports  FIXABLE  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  ! Several of these imports are unused.
+  
+    1 │ import { readFile } from "node:fs/promises";
+  > 2 │ import { dirname, extname, resolve } from "node:path";
+      │                            ^^^^^^^
+    3 │ import { build, transform } from "esbuild";
+    4 │ import {
+  
+  i Unused imports might be the result of an incomplete refactoring.
+  
+  i Unsafe fix: Remove the unused imports.
+  
+    2 │ import·{·dirname,·extname,·resolve·}·from·"node:path";
+      │                            --------                   
+
+src/cli/embed.ts:38:7 lint/correctness/noUnusedVariables  FIXABLE  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  ! This variable HTTP_PATTERN is unused.
+  
+    37 │ /** `http:`・`https:` の URL か */
+  > 38 │ const HTTP_PATTERN = /^https?:\/\//i;
+       │       ^^^^^^^^^^^^
+    39 │ 
+    40 │ /** 文書の Markdown から印の名前を拾い、対応表にあるものだけを返す */
+  
+  i Unused variables are often the result of typos, incomplete refactors, or other sources of bugs.
+  
+  i Unsafe fix: If this is intentional, prepend HTTP_PATTERN with an underscore.
+  
+     36  36 │   
+     37  37 │   /** `http:`・`https:` の URL か */
+     38     │ - const·HTTP_PATTERN·=·/^https?:\/\//i;
+         38 │ + const·_HTTP_PATTERN·=·/^https?:\/\//i;
+     39  39 │   
+     40  40 │   /** 文書の Markdown から印の名前を拾い、対応表にあるものだけを返す */
+  
+
+Checked 819 files in 10s. No fixes applied.
+Found 2 warnings.
+
+> lint:eslint
+> node tools/eslint/node_modules/eslint/bin/eslint.js -c tools/eslint/eslint.config.js --max-warnings 0
+
+
+> typecheck
+> tsc --noEmit
+
+tests/unit/src/plugin/templates.test.ts(15,36): error TS2307: Cannot find module '../../../../src/plugin/templates.ts' or its corresponding type declarations.
+tests/unit/src/plugin/tools.test.ts(437,11): error TS2339: Property 'runListTemplates' does not exist on type 'typeof import("/mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-plugin-css-templates/src/plugin/tools")'.
+tests/unit/src/plugin/tools.test.ts(462,11): error TS2339: Property 'runAddTemplate' does not exist on type 'typeof import("/mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-plugin-css-templates/src/plugin/tools")'.
+tests/unit/src/plugin/tools.test.ts(480,11): error TS2339: Property 'runApplyTemplate' does not exist on type 'typeof import("/mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-plugin-css-templates/src/plugin/tools")'.
+
+> mdmark-vscode@0.1.0 typecheck
+> tsc --noEmit
+
+exit=0

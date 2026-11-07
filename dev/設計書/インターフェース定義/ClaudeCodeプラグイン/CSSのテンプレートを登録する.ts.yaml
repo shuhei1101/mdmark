@@ -1,0 +1,184 @@
+title: CSSのテンプレートを登録する
+entry:
+  kind: mcp_tool
+  value: add_template
+lead: 作業のフォルダの CSS を端末の設定のフォルダのテンプレートにコピーし、名前・説明・タグを索引に記載する。
+idempotent: false
+side_effects: テンプレートのフォルダに CSS を書き、索引に行を追加する（`overwrite` のときは同じ名前の CSS と行を置き換える）。フォルダと索引が無ければ作る
+request:
+  - name: file
+    type: string
+    required: true
+    location: argument
+    description: 登録する CSS のパス（`project_dir` からの相対パスか絶対パス）
+    constraints: 拡張子が `.css` で、ファイルがある
+  - name: name
+    type: string
+    required: true
+    location: argument
+    description: テンプレートの名前。索引の中で一意
+    constraints: 英小文字・数字・`-` の 1〜64 文字で、英小文字か数字で始まる
+  - name: description
+    type: string
+    required: true
+    location: argument
+    description: どんな見た目にする CSS か・どんな文書に向くかの説明
+    constraints: 空でない
+  - name: tags
+    type: string[]
+    required: false
+    default: '[]'
+    location: argument
+    description: 探すときの語
+    constraints: 要素は空でない文字列
+  - name: overwrite
+    type: boolean
+    required: false
+    default: 'false'
+    location: argument
+    description: 同じ名前のテンプレートがあるとき、CSS と索引の行を置き換えるか
+  - name: project_dir
+    type: string
+    required: true
+    location: argument
+    description: 作業のフォルダの絶対パス。プラグインの PreToolUse のフックが `CLAUDE_PROJECT_DIR` の値を入れる
+    constraints: 絶対パスで、そのフォルダがある
+    notes: '`tools/list` の `inputSchema` には出さず、サーバーの引数の検査だけが必須にする'
+request_example: |-
+  ```json
+  {"file": "brand.css", "name": "brand", "description": "見出しを社の色にする", "tags": ["見出し", "色"]}
+  ```
+response:
+  - name: name
+    type: string
+    description: 登録した名前
+  - name: path
+    type: string
+    description: テンプレートのフォルダの CSS の絶対パス
+  - name: replaced
+    type: boolean
+    description: 同じ名前のテンプレートを置き換えたか
+response_example: |-
+  ```json
+  {"name": "brand", "path": "/home/user/.config/mdmark/templates/css/brand.css", "replaced": false}
+  ```
+exceptions:
+  - name: なし（正常終了）
+    condition: 登録できた
+  - name: ツールのエラー（同じ名前のテンプレートがある）
+    condition: 索引に同じ `name` の行があり、`overwrite` が `true` でない
+    notes: 内容の文に、同じ名前があることと、`overwrite` を `true` にすれば置き換えられることを書く。CSS と索引を書き換えない
+  - name: ツールのエラー（CSS が無い）
+    condition: '`file` のファイルが無い、または拡張子が `.css` でない'
+    notes: 内容の文に、無いパスか拡張子を書く。何も書き換えない
+  - name: ツールのエラー（引数が合わない）
+    condition: '`name` の文字・`description`・`tags` が制約に合わない'
+    notes: 内容の文に、合わない引数の名前と許す値を書く。索引を読まず、何も書き換えない
+  - name: ツールのエラー（索引を読めない）
+    condition: 既にある索引が YAML として読めない、またはスキーマに合わない
+    notes: '`list_templates` と同じ文。何も書き換えない'
+  - name: ツールのエラー（作業のフォルダが無い）
+    condition: '`project_dir` が無い、絶対パスでない、またはそのフォルダが無い'
+    notes: ほかのツールと同じ文
+error_format: 'ツールの結果を `isError: true` にし、内容のテキストに、何が合わないかと直し方を日本語の 1 文で書く。'
+constraints:
+  - item: テンプレートのフォルダと索引
+    constraint: '`list_templates` と同じ'
+    decided_by: dev/設計書/インターフェース定義/ClaudeCodeプラグイン/CSSのテンプレートの一覧を返す.ts#constraints[テンプレートのフォルダ]
+  - item: CSS のファイル名
+    constraint: テンプレートのフォルダの CSS は `{name}.css`。索引の `file` にこの名前を記載する
+  - item: 書き込みの順
+    constraint: 書き込む索引をスキーマで検査してから、CSS を書き、索引を書く。検査に通らなければ何も書かない。索引は同じフォルダの一時ファイルに書いてから rename で置き換える。索引の書き込みに失敗したら、書いた CSS を消し（`overwrite` のときは元の中身に戻し）、エラーにする
+  - item: 索引の並び
+    constraint: 新しい名前は末尾に追加する。`overwrite` で置き換える行は元の位置のまま
+flows:
+  - name: 正常系
+    summary: フォルダと索引を作り、CSS をコピーして行を追加する
+    setup:
+      - name: 端末の設定
+        description: 一時フォルダの `settings.yaml`。常駐サーバーを `MDMARK_CONFIG` でこのファイルを指して起動する。テンプレートのフォルダは無い
+      - name: 作業のフォルダ
+        description: CSS `brand.css`
+      - name: Mock
+        description: Claude Code の代わりに、起動した常駐サーバーへ HTTP でつなぐ MCP のクライアント。`project_dir` に作業のフォルダの絶対パスを入れて呼ぶ
+    flow: |-
+      sequenceDiagram
+        participant C as Claude Code
+        participant S as MCP サーバー
+        participant F as 作業のフォルダ
+        participant T as テンプレートのフォルダ
+        C->>S: add_template（file・name・description・tags）
+        S->>F: brand.css を読む
+        S->>T: brand.css を書き、索引を書く
+        S-->>C: name・path・replaced
+    expected:
+      - テンプレートのフォルダに作業のフォルダの `brand.css` と同じ中身の `brand.css` がある
+      - '索引が `schema: 1` と、渡した `name`・`description`・`tags` と `file: brand.css` の行 1 つを持つ'
+      - '`replaced` が `false`'
+    test: test_normal
+  - name: 正常系（上書きする）
+    summary: 同じ名前を `overwrite` で置き換え、行を 1 つのままにする
+    setup:
+      - name: 端末の設定
+        description: 一時フォルダの `settings.yaml`。常駐サーバーを `MDMARK_CONFIG` でこのファイルを指して起動する。正常系の登録を終えたテンプレートのフォルダ
+      - name: 作業のフォルダ
+        description: 中身を書き換えた `brand.css`
+      - name: Mock
+        description: Claude Code の代わりに、起動した常駐サーバーへ HTTP でつなぐ MCP のクライアント。`project_dir` に作業のフォルダの絶対パスを入れて呼ぶ
+    flow: |-
+      sequenceDiagram
+        participant C as Claude Code
+        participant S as MCP サーバー
+        participant T as テンプレートのフォルダ
+        C->>S: add_template（同じ name・overwrite: true）
+        S->>T: CSS と索引の行を置き換える
+        S-->>C: replaced: true
+    expected:
+      - テンプレートのフォルダの `brand.css` が書き換えた中身になる
+      - 索引の行は 1 つのままで、`description`・`tags` が渡した値になる
+      - '`replaced` が `true`'
+    test: test_normal_when_overwriting
+  - name: 異常系（同じ名前のテンプレートがある・ツールのエラー）
+    summary: '`overwrite` なしの同じ名前は、何も書き換えずにエラーにする'
+    setup:
+      - name: 端末の設定
+        description: 一時フォルダの `settings.yaml`。常駐サーバーを `MDMARK_CONFIG` でこのファイルを指して起動する。正常系の登録を終えたテンプレートのフォルダ
+      - name: 作業のフォルダ
+        description: 正常系（上書きする）と同じ
+      - name: Mock
+        description: Claude Code の代わりに、起動した常駐サーバーへ HTTP でつなぐ MCP のクライアント。`project_dir` に作業のフォルダの絶対パスを入れて呼ぶ
+    flow: |-
+      sequenceDiagram
+        participant C as Claude Code
+        participant S as MCP サーバー
+        participant T as テンプレートのフォルダ
+        C->>S: add_template（同じ name）
+        S->>T: 索引を読む
+        S-->>C: isError（同じ名前があることと overwrite）
+    expected:
+      - '`isError` が立つ'
+      - 内容の文に `brand` と `overwrite` が出る
+      - テンプレートのフォルダの `brand.css` と索引が書き換わらない
+    test: test_error_when_name_exists
+  - name: 異常系（CSS が無い・ツールのエラー）
+    summary: 無い CSS は、フォルダと索引を作らずにエラーにする
+    setup:
+      - name: 端末の設定
+        description: 一時フォルダの `settings.yaml`。常駐サーバーを `MDMARK_CONFIG` でこのファイルを指して起動する。テンプレートのフォルダは無い
+      - name: 作業のフォルダ
+        description: CSS を持たない
+      - name: Mock
+        description: Claude Code の代わりに、起動した常駐サーバーへ HTTP でつなぐ MCP のクライアント。`project_dir` に作業のフォルダの絶対パスを入れて呼ぶ
+    flow: |-
+      sequenceDiagram
+        participant C as Claude Code
+        participant S as MCP サーバー
+        C->>S: add_template（file: missing.css）
+        S->>S: missing.css が無い
+        S-->>C: isError（無いパス）
+    expected:
+      - '`isError` が立つ'
+      - 内容の文に `missing.css` が出る
+      - テンプレートのフォルダが作られていない
+    test: test_error_when_file_missing
+test_file: tests/integration/ClaudeCodeプラグイン/add-template.test.ts

@@ -93,9 +93,12 @@ test("test_run_pre_tool_use_when_matcher", async () => {
     expect(new RegExp(matcher).test(`${TOOL_NAME_PREFIX}${name}`)).toBe(true);
   }
   expect([...PROJECT_DIR_TOOLS].sort()).toEqual([
+    "add_template",
+    "apply_template",
     "build_site",
     "check",
     "export_html",
+    "list_templates",
   ]);
   expect([...PROJECT_DIR_TOOLS].sort()).toEqual(
     TOOLS.map((tool) => tool.name).sort(),

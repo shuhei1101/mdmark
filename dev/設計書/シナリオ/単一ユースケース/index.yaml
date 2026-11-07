@@ -142,3 +142,7 @@ items:
     summary: URL・リンク・添付のファイルだけの段落を、外へ要求せずにカードとして描く
   - page: リンクをカードの格子に並べる.yaml
     summary: cards のマーカーで囲んだリストの項目を、リンク・説明・アイコンのカードにして格子に並べる
+  - page: CSSのテンプレートを登録する.yaml
+    summary: Claude Code が MCP のツールで、作業のフォルダの CSS を名前・説明・タグつきで端末の設定のフォルダのテンプレートに登録する
+  - page: CSSのテンプレートを配置する.yaml
+    summary: Claude Code が MCP のツールで、テンプレートの一覧から CSS を選んで作業のフォルダへ配置し、theme に記載する値を受け取る

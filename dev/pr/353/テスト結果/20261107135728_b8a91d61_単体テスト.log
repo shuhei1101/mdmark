@@ -1,0 +1,449 @@
+$ npm run test:unit
+
+> test:unit
+> vitest run --project 'unit*'
+
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-plugin-css-templates
+
+ ❯ |unit| tests/unit/src/plugin/templates.test.ts (27 tests | 27 failed) 24308ms
+   × test_resolve_templates_dir 2023ms
+   × test_resolve_templates_dir_when_xdg 391ms
+   × test_validate_templates_index 4690ms
+   × test_validate_templates_index_when_file_missing 1160ms
+   × test_validate_templates_index_when_file_has_slash 384ms
+   × test_validate_templates_index_when_name_duplicated 1034ms
+   × test_read_templates_index 918ms
+   × test_read_templates_index_when_missing 655ms
+   × test_read_templates_index_when_unreadable 883ms
+   × test_list_templates 361ms
+   × test_write_templates_index 158ms
+   × test_add_template 581ms
+   × test_add_template_when_overwrite 548ms
+   × test_add_template_when_concurrent 302ms
+   × test_add_template_when_name_exists 342ms
+   × test_add_template_when_source_missing 946ms
+   × test_add_template_when_index_write_fails 459ms
+   × test_apply_template 232ms
+   × test_apply_template_when_target_given 971ms
+   × test_apply_template_when_target_without_config 3845ms
+   × test_apply_template_when_same_content 606ms
+   × test_apply_template_when_file_differs_from_name 720ms
+   × test_apply_template_when_overwrite 547ms
+   × test_apply_template_when_css_exists 226ms
+   × test_apply_template_when_config_missing 453ms
+   × test_apply_template_when_target_missing 475ms
+   × test_apply_template_when_name_missing 395ms
+ ❯ |unit| tests/unit/src/plugin/tools.test.ts (18 tests | 4 failed) 36131ms
+   × test_call_tool 30039ms
+   × test_run_list_templates 12ms
+   × test_run_add_template 1ms
+   × test_run_apply_template 12ms
+ ❯ |unit| tests/unit/src/cli/export.test.ts (20 tests | 1 failed) 42263ms
+   × test_prepare_embeds 30011ms
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 32 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit| tests/unit/src/cli/export.test.ts > test_prepare_embeds
+Error: Test timed out in 30000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/unit/src/cli/export.test.ts:31:1
+     29|
+     30| // 印のあるモジュールだけを束ね、拡張と theme を読む（正常系）
+     31| test("test_prepare_embeds", async () => {
+       | ^
+     32|   // 準備
+     33|   const { prepareEmbeds } = await loadExport();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/32]⎯
+
+ FAIL  |unit| tests/unit/src/plugin/templates.test.ts > test_resolve_templates_dir
+Error: Cannot find module '/src/plugin/templates.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-plugin-css-templates/tests/unit/src/plugin/templates.test.ts
+ ❯ tests/unit/src/plugin/templates.test.ts:51:35
+     49| test("test_resolve_templates_dir", async () => {
+     50|   // 準備
+     51|   const { resolveTemplatesDir } = await loadTemplates();
+       |                                   ^
+     52|   // 実行
+     53|   const dir = resolveTemplatesDir({
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/32]⎯
+
+ FAIL  |unit| tests/unit/src/plugin/templates.test.ts > test_resolve_templates_dir_when_xdg
+Error: Cannot find module '/src/plugin/templates.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-plugin-css-templates/tests/unit/src/plugin/templates.test.ts
+ ❯ tests/unit/src/plugin/templates.test.ts:64:35
+     62| test("test_resolve_templates_dir_when_xdg", async () => {
+     63|   // 準備
+     64|   const { resolveTemplatesDir } = await loadTemplates();
+       |                                   ^
+     65|   // 実行
+     66|   const dir = resolveTemplatesDir({
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/32]⎯
+
+ FAIL  |unit| tests/unit/src/plugin/templates.test.ts > test_validate_templates_index
+Error: Cannot find module '/src/plugin/templates.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-plugin-css-templates/tests/unit/src/plugin/templates.test.ts
+ ❯ tests/unit/src/plugin/templates.test.ts:77:38
+     75| test("test_validate_templates_index", async () => {
+     76|   // 準備
+     77|   const { validateTemplatesIndex } = await loadTemplates();
+       |                                      ^
+     78|   // 実行
+     79|   const message = validateTemplatesIndex({
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/32]⎯
+
+ FAIL  |unit| tests/unit/src/plugin/templates.test.ts > test_validate_templates_index_when_file_missing
+Error: Cannot find module '/src/plugin/templates.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-plugin-css-templates/tests/unit/src/plugin/templates.test.ts
+ ❯ tests/unit/src/plugin/templates.test.ts:95:38
+     93| test("test_validate_templates_index_when_file_missing", async () => {
+     94|   // 準備
+     95|   const { validateTemplatesIndex } = await loadTemplates();
+       |                                      ^
+     96|   // 実行
+     97|   const message = validateTemplatesIndex({
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/32]⎯
+
+ FAIL  |unit| tests/unit/src/plugin/templates.test.ts > test_validate_templates_index_when_file_has_slash
+Error: Cannot find module '/src/plugin/templates.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-plugin-css-templates/tests/unit/src/plugin/templates.test.ts
+ ❯ tests/unit/src/plugin/templates.test.ts:109:38
+    107| test("test_validate_templates_index_when_file_has_slash", async () => {
+    108|   // 準備
+    109|   const { validateTemplatesIndex } = await loadTemplates();
+       |                                      ^
+    110|   // 実行
+    111|   const message = validateTemplatesIndex({
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/32]⎯
+
+ FAIL  |unit| tests/unit/src/plugin/templates.test.ts > test_validate_templates_index_when_name_duplicated
+Error: Cannot find module '/src/plugin/templates.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-plugin-css-templates/tests/unit/src/plugin/templates.test.ts
+ ❯ tests/unit/src/plugin/templates.test.ts:125:38
+    123| test("test_validate_templates_index_when_name_duplicated", async () =>…
+    124|   // 準備
+    125|   const { validateTemplatesIndex } = await loadTemplates();
+       |                                      ^
+    126|   const row = { name: "brand", file: "brand.css", description: "x" };
+    127|   // 実行
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/32]⎯
+
+ FAIL  |unit| tests/unit/src/plugin/templates.test.ts > test_read_templates_index
+Error: Cannot find module '/src/plugin/templates.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-plugin-css-templates/tests/unit/src/plugin/templates.test.ts
+ ❯ tests/unit/src/plugin/templates.test.ts:139:34
+    137| test("test_read_templates_index", async () => {
+    138|   // 準備
+    139|   const { readTemplatesIndex } = await loadTemplates();
+       |                                  ^
+    140|   const dir = await createTempDir();
+    141|   await writeTemplates(dir, [
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/32]⎯
+
+ FAIL  |unit| tests/unit/src/plugin/templates.test.ts > test_read_templates_index_when_missing
+Error: Cannot find module '/src/plugin/templates.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-plugin-css-templates/tests/unit/src/plugin/templates.test.ts
+ ❯ tests/unit/src/plugin/templates.test.ts:153:34
+    151| test("test_read_templates_index_when_missing", async () => {
+    152|   // 準備
+    153|   const { readTemplatesIndex } = await loadTemplates();
+       |                                  ^
+    154|   const dir = join(await createTempDir(), "templates", "css");
+    155|   // 実行
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/32]⎯
+
+ FAIL  |unit| tests/unit/src/plugin/templates.test.ts > test_read_templates_index_when_unreadable
+Error: Cannot find module '/src/plugin/templates.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-plugin-css-templates/tests/unit/src/plugin/templates.test.ts
+ ❯ tests/unit/src/plugin/templates.test.ts:165:34
+    163| test("test_read_templates_index_when_unreadable", async () => {
+    164|   // 準備
+    165|   const { readTemplatesIndex } = await loadTemplates();
+       |                                  ^
+    166|   const { CliError } = await loadErrors();
+    167|   const dir = await createTempDir();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/32]⎯
+
+ FAIL  |unit| tests/unit/src/plugin/templates.test.ts > test_list_templates
+Error: Cannot find module '/src/plugin/templates.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-plugin-css-templates/tests/unit/src/plugin/templates.test.ts
+ ❯ tests/unit/src/plugin/templates.test.ts:182:29
+    180| test("test_list_templates", async () => {
+    181|   // 準備
+    182|   const { listTemplates } = await loadTemplates();
+       |                             ^
+    183|   const dir = await createTempDir();
+    184|   await writeTemplates(dir, [
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/32]⎯
+
+ FAIL  |unit| tests/unit/src/plugin/templates.test.ts > test_write_templates_index
+Error: Cannot find module '/src/plugin/templates.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-plugin-css-templates/tests/unit/src/plugin/templates.test.ts
+ ❯ tests/unit/src/plugin/templates.test.ts:210:47
+    208| test("test_write_templates_index", async () => {
+    209|   // 準備
+    210|   const { addTemplate, readTemplatesIndex } = await loadTemplates();
+       |                                               ^
+    211|   const work = await createTempDir();
+    212|   const dir = join(await createTempDir(), "css");
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[12/32]⎯
+
+ FAIL  |unit| tests/unit/src/plugin/templates.test.ts > test_add_template
+Error: Cannot find module '/src/plugin/templates.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-plugin-css-templates/tests/unit/src/plugin/templates.test.ts
+ ❯ tests/unit/src/plugin/templates.test.ts:236:27
+    234| test("test_add_template", async () => {
+    235|   // 準備
+    236|   const { addTemplate } = await loadTemplates();
+       |                           ^
+    237|   const work = await createTempDir();
+    238|   const dir = join(await createTempDir(), "templates", "css");
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[13/32]⎯
+
+ FAIL  |unit| tests/unit/src/plugin/templates.test.ts > test_add_template_when_overwrite
+Error: Cannot find module '/src/plugin/templates.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-plugin-css-templates/tests/unit/src/plugin/templates.test.ts
+ ❯ tests/unit/src/plugin/templates.test.ts:264:27
+    262| test("test_add_template_when_overwrite", async () => {
+    263|   // 準備
+    264|   const { addTemplate } = await loadTemplates();
+       |                           ^
+    265|   const work = await createTempDir();
+    266|   const dir = await createTempDir();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[14/32]⎯
+
+ FAIL  |unit| tests/unit/src/plugin/templates.test.ts > test_add_template_when_concurrent
+Error: Cannot find module '/src/plugin/templates.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-plugin-css-templates/tests/unit/src/plugin/templates.test.ts
+ ❯ tests/unit/src/plugin/templates.test.ts:296:27
+    294| test("test_add_template_when_concurrent", async () => {
+    295|   // 準備
+    296|   const { addTemplate } = await loadTemplates();
+       |                           ^
+    297|   const work = await createTempDir();
+    298|   const dir = join(await createTempDir(), "css");
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[15/32]⎯
+
+ FAIL  |unit| tests/unit/src/plugin/templates.test.ts > test_add_template_when_name_exists
+Error: Cannot find module '/src/plugin/templates.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-plugin-css-templates/tests/unit/src/plugin/templates.test.ts
+ ❯ tests/unit/src/plugin/templates.test.ts:321:27
+    319| test("test_add_template_when_name_exists", async () => {
+    320|   // 準備
+    321|   const { addTemplate } = await loadTemplates();
+       |                           ^
+    322|   const { CliError } = await loadErrors();
+    323|   const work = await createTempDir();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[16/32]⎯
+
+ FAIL  |unit| tests/unit/src/plugin/templates.test.ts > test_add_template_when_source_missing
+Error: Cannot find module '/src/plugin/templates.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-plugin-css-templates/tests/unit/src/plugin/templates.test.ts
+ ❯ tests/unit/src/plugin/templates.test.ts:352:27
+    350| test("test_add_template_when_source_missing", async () => {
+    351|   // 準備
+    352|   const { addTemplate } = await loadTemplates();
+       |                           ^
+    353|   const { CliError } = await loadErrors();
+    354|   const work = await createTempDir();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[17/32]⎯
+
+ FAIL  |unit| tests/unit/src/plugin/templates.test.ts > test_add_template_when_index_write_fails
+Error: Cannot find module '/src/plugin/templates.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-plugin-css-templates/tests/unit/src/plugin/templates.test.ts
+ ❯ tests/unit/src/plugin/templates.test.ts:375:27
+    373| test("test_add_template_when_index_write_fails", async () => {
+    374|   // 準備
+    375|   const { addTemplate } = await loadTemplates();
+       |                           ^
+    376|   const work = await createTempDir();
+    377|   const dir = await createTempDir();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[18/32]⎯
+
+ FAIL  |unit| tests/unit/src/plugin/templates.test.ts > test_apply_template
+Error: Cannot find module '/src/plugin/templates.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-plugin-css-templates/tests/unit/src/plugin/templates.test.ts
+ ❯ tests/unit/src/plugin/templates.test.ts:421:29
+    419| test("test_apply_template", async () => {
+    420|   // 準備
+    421|   const { applyTemplate } = await loadTemplates();
+       |                             ^
+    422|   const { dir, work } = await createApplyFixture();
+    423|   // 実行
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[19/32]⎯
+
+ FAIL  |unit| tests/unit/src/plugin/templates.test.ts > test_apply_template_when_target_given
+Error: Cannot find module '/src/plugin/templates.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-plugin-css-templates/tests/unit/src/plugin/templates.test.ts
+ ❯ tests/unit/src/plugin/templates.test.ts:443:29
+    441| test("test_apply_template_when_target_given", async () => {
+    442|   // 準備
+    443|   const { applyTemplate } = await loadTemplates();
+       |                             ^
+    444|   const { dir, work } = await createApplyFixture();
+    445|   // 実行
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[20/32]⎯
+
+ FAIL  |unit| tests/unit/src/plugin/templates.test.ts > test_apply_template_when_target_without_config
+Error: Cannot find module '/src/plugin/templates.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-plugin-css-templates/tests/unit/src/plugin/templates.test.ts
+ ❯ tests/unit/src/plugin/templates.test.ts:462:29
+    460| test("test_apply_template_when_target_without_config", async () => {
+    461|   // 準備
+    462|   const { applyTemplate } = await loadTemplates();
+       |                             ^
+    463|   const { dir, work } = await createApplyFixture();
+    464|   const target = await createTempDir();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[21/32]⎯
+
+ FAIL  |unit| tests/unit/src/plugin/templates.test.ts > test_apply_template_when_same_content
+Error: Cannot find module '/src/plugin/templates.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-plugin-css-templates/tests/unit/src/plugin/templates.test.ts
+ ❯ tests/unit/src/plugin/templates.test.ts:481:29
+    479| test("test_apply_template_when_same_content", async () => {
+    480|   // 準備
+    481|   const { applyTemplate } = await loadTemplates();
+       |                             ^
+    482|   const { dir, work } = await createApplyFixture();
+    483|   await writeFiles(work, { "brand.css": BRAND_CSS });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[22/32]⎯
+
+ FAIL  |unit| tests/unit/src/plugin/templates.test.ts > test_apply_template_when_file_differs_from_name
+Error: Cannot find module '/src/plugin/templates.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-plugin-css-templates/tests/unit/src/plugin/templates.test.ts
+ ❯ tests/unit/src/plugin/templates.test.ts:501:29
+    499| test("test_apply_template_when_file_differs_from_name", async () => {
+    500|   // 準備
+    501|   const { applyTemplate } = await loadTemplates();
+       |                             ^
+    502|   const { work } = await createApplyFixture();
+    503|   const dir = await createTempDir();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[23/32]⎯
+
+ FAIL  |unit| tests/unit/src/plugin/templates.test.ts > test_apply_template_when_overwrite
+Error: Cannot find module '/src/plugin/templates.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-plugin-css-templates/tests/unit/src/plugin/templates.test.ts
+ ❯ tests/unit/src/plugin/templates.test.ts:525:29
+    523| test("test_apply_template_when_overwrite", async () => {
+    524|   // 準備
+    525|   const { applyTemplate } = await loadTemplates();
+       |                             ^
+    526|   const { dir, work } = await createApplyFixture();
+    527|   await writeFiles(work, { "brand.css": CHANGED_CSS });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[24/32]⎯
+
+ FAIL  |unit| tests/unit/src/plugin/templates.test.ts > test_apply_template_when_css_exists
+Error: Cannot find module '/src/plugin/templates.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-plugin-css-templates/tests/unit/src/plugin/templates.test.ts
+ ❯ tests/unit/src/plugin/templates.test.ts:544:29
+    542| test("test_apply_template_when_css_exists", async () => {
+    543|   // 準備
+    544|   const { applyTemplate } = await loadTemplates();
+       |                             ^
+    545|   const { CliError } = await loadErrors();
+    546|   const { dir, work } = await createApplyFixture();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[25/32]⎯
+
+ FAIL  |unit| tests/unit/src/plugin/templates.test.ts > test_apply_template_when_config_missing
+Error: Cannot find module '/src/plugin/templates.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-plugin-css-templates/tests/unit/src/plugin/templates.test.ts
+ ❯ tests/unit/src/plugin/templates.test.ts:566:29
+    564| test("test_apply_template_when_config_missing", async () => {
+    565|   // 準備
+    566|   const { applyTemplate } = await loadTemplates();
+       |                             ^
+    567|   const { CliError } = await loadErrors();
+    568|   const { dir } = await createApplyFixture();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[26/32]⎯
+
+ FAIL  |unit| tests/unit/src/plugin/templates.test.ts > test_apply_template_when_target_missing
+Error: Cannot find module '/src/plugin/templates.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-plugin-css-templates/tests/unit/src/plugin/templates.test.ts
+ ❯ tests/unit/src/plugin/templates.test.ts:588:29
+    586| test("test_apply_template_when_target_missing", async () => {
+    587|   // 準備
+    588|   const { applyTemplate } = await loadTemplates();
+       |                             ^
+    589|   const { CliError } = await loadErrors();
+    590|   const { dir, work } = await createApplyFixture();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[27/32]⎯
+
+ FAIL  |unit| tests/unit/src/plugin/templates.test.ts > test_apply_template_when_name_missing
+Error: Cannot find module '/src/plugin/templates.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-plugin-css-templates/tests/unit/src/plugin/templates.test.ts
+ ❯ tests/unit/src/plugin/templates.test.ts:609:29
+    607| test("test_apply_template_when_name_missing", async () => {
+    608|   // 準備
+    609|   const { applyTemplate } = await loadTemplates();
+       |                             ^
+    610|   const { CliError } = await loadErrors();
+    611|   const { dir, work } = await createApplyFixture();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[28/32]⎯
+
+ FAIL  |unit| tests/unit/src/plugin/tools.test.ts > test_call_tool
+Error: Test timed out in 30000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/unit/src/plugin/tools.test.ts:57:1
+     55|
+     56| // json を 1 つのテキストにする（正常系）
+     57| test("test_call_tool", async () => {
+       | ^
+     58|   // 準備
+     59|   const { callTool } = await loadTools();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[29/32]⎯
+
+ FAIL  |unit| tests/unit/src/plugin/tools.test.ts > test_run_list_templates
+TypeError: runListTemplates is not a function
+ ❯ tests/unit/src/plugin/tools.test.ts:446:24
+    444|   });
+    445|   // 実行
+    446|   const result = await runListTemplates(context);
+       |                        ^
+    447|   // 検証
+    448|   expect(result.json.templates).toEqual([
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[30/32]⎯
+
+ FAIL  |unit| tests/unit/src/plugin/tools.test.ts > test_run_add_template
+TypeError: runAddTemplate is not a function
+ ❯ tests/unit/src/plugin/tools.test.ts:467:24
+    465|   await writeFiles(context.projectDir, { "brand.css": "h1 {}" });
+    466|   // 実行
+    467|   const result = await runAddTemplate(
+       |                        ^
+    468|     { file: "brand.css", name: "brand", description: "x" },
+    469|     context,
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[31/32]⎯
+
+ FAIL  |unit| tests/unit/src/plugin/tools.test.ts > test_run_apply_template
+TypeError: runApplyTemplate is not a function
+ ❯ tests/unit/src/plugin/tools.test.ts:493:24
+    491|   });
+    492|   // 実行
+    493|   const result = await runApplyTemplate(
+       |                        ^
+    494|     { name: "brand" },
+    495|     { ...context, projectDir: join(context.projectDir, "docs") },
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[32/32]⎯
+
+
+ Test Files  3 failed | 236 passed (239)
+      Tests  32 failed | 1648 passed (1680)
+   Start at  13:53:24
+   Duration  173.41s (worker 64%, tests 22%, import 13%, transform 2%)
+
+
+# 全件の実行で時間切れになった 2 件（test_prepare_embeds・test_call_tool）は、ファイルを絞って流し直すと pass した。fail は実装の無いことによる 30 件だけ
+$ npx vitest run --project 'unit*' tests/unit/src/cli/export.test.ts tests/unit/src/plugin/tools.test.ts
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/3]⎯
+
+
+ Test Files  1 failed | 1 passed (2)
+      Tests  3 failed | 35 passed (38)
+   Start at  13:57:38
+   Duration  12.68s (tests 95%, transform 2%, import 2%)
+
