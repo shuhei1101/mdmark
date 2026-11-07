@@ -1,4 +1,4 @@
-title: CSSのテンプレートを登録して配置する
+title: CSSのテンプレートを登録する
 scenarios:
   - name: 正常シナリオ（登録する）
     setup:
@@ -26,32 +26,6 @@ scenarios:
       - '`list_templates` が、登録した名前・説明・タグを返す'
       - 作業のフォルダの `brand.css` と `mdmark.config.yaml` は書き換わらない
     test: test_normal_when_registering
-  - name: 正常シナリオ（一覧から選んで配置する）
-    setup:
-      - name: 端末の設定
-        description: 正常シナリオ（登録する）の登録を終えた後の端末の設定とテンプレートのフォルダ
-      - name: 配置先の作業のフォルダ
-        description: '`theme` を持たない `mdmark.config.yaml` を直下に持ち、作業のフォルダはその下の `docs/`'
-      - name: Mock
-        description: 正常シナリオ（登録する）と同じ
-    flow: |-
-      sequenceDiagram
-        participant C as Claude Code
-        participant S as MCP サーバー
-        participant T as テンプレートのフォルダ
-        participant F as 作業のフォルダ
-        C->>S: list_templates
-        S->>T: 索引を読む
-        S-->>C: 名前・説明・タグの一覧
-        C->>S: apply_template（名前）
-        S->>F: 上へ探して最も近い mdmark.config.yaml を見つける
-        S->>F: そのフォルダへ CSS をコピーする
-        S-->>C: 配置したパスと theme に記載する値
-    expected:
-      - '`mdmark.config.yaml` のフォルダに、テンプレートと同じ中身の CSS が配置される'
-      - '`apply_template` が、配置したパスと、`mdmark.config.yaml` のフォルダからの相対パスを `theme` に記載する値として返す'
-      - '`mdmark.config.yaml` とテンプレートのフォルダは書き換わらない'
-    test: test_normal_when_applying_from_list
   - name: 正常シナリオ（上書きして登録する）
     setup:
       - name: 端末の設定
@@ -93,38 +67,17 @@ scenarios:
       - エラーの文に、同じ名前のテンプレートがあることと、上書きを指定すれば置き換えられることが出る
       - テンプレートのフォルダの CSS と索引は書き換わらない
     test: test_error_when_template_name_exists
-  - name: 異常シナリオ（配置先の設定ファイルが無い）
-    setup:
-      - name: 端末の設定
-        description: 正常シナリオ（登録する）の登録を終えた後の端末の設定とテンプレートのフォルダ
-      - name: 設定ファイルの無い作業のフォルダ
-        description: そのフォルダと上のフォルダに `mdmark.config.yaml` が無い
-      - name: Mock
-        description: 正常シナリオ（登録する）と同じ
-    flow: |-
-      sequenceDiagram
-        participant C as Claude Code
-        participant S as MCP サーバー
-        participant F as 作業のフォルダ
-        C->>S: apply_template（名前・配置先を省く）
-        S->>F: 上へ mdmark.config.yaml を探す
-        S-->>C: エラー（設定ファイルが無いことと、配置先を指定するか mdmark init で置けること）
-    expected:
-      - ツールの結果がエラーになる
-      - エラーの文に、設定ファイルが無いことと、配置先を指定するか `mdmark init` で設定ファイルを置けることが出る
-      - 作業のフォルダに CSS が配置されない
-    test: test_error_when_config_missing
-lead: Claude Code が MCP のツールで、作業のフォルダの CSS を端末の設定のフォルダのテンプレートに説明つきで登録し、一覧から選んだテンプレートを作業のフォルダの設定ファイルの隣へ配置する。
+lead: Claude Code が MCP のツールで、作業のフォルダの CSS を、名前・説明・タグつきで端末の設定のフォルダのテンプレートに登録する。
 issue: 164
 primary_actor: Claude Code
 stakeholders:
   - name: 文書を書く人
-    interest: 作った CSS を説明つきで残し、ほかのリポジトリでも同じ CSS を使える
+    interest: 作った CSS を説明つきで残し、ほかのリポジトリでも使い回せる
   - name: Claude Code
-    interest: 説明とタグで CSS を選び、`theme` に記載する値を受け取れる
-trigger: 文書を書く人が Claude Code に、CSS をテンプレートに登録する、または使える CSS を探して配置するよう頼む
+    interest: 登録した CSS を、後で説明とタグから探せる
+trigger: 文書を書く人が Claude Code に、作った CSS をテンプレートに登録するよう頼む
 preconditions:
   - Claude Code に mdmark のプラグインを入れ、MCP の常駐サーバーを起動している
-success_guarantee: 登録した CSS と説明が端末の設定のフォルダに残り、配置した CSS が作業のフォルダの設定ファイルの隣にあり、`theme` に記載する値が返る。
-minimal_guarantee: エラーのときは、テンプレートのフォルダ・作業のフォルダの設定ファイルと CSS を書き換えない。
-test_file: tests/e2e/単一ユースケース/CSSのテンプレートを登録して配置する.spec.ts
+success_guarantee: 登録した CSS と名前・説明・タグが端末の設定のフォルダに残り、一覧に出る。
+minimal_guarantee: エラーのときは、テンプレートのフォルダの CSS と索引を書き換えない。
+test_file: tests/e2e/単一ユースケース/CSSのテンプレートを登録する.spec.ts

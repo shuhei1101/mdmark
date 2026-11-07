@@ -138,5 +138,7 @@ items:
     summary: 読む人が本文の画像を押すかキーで開き、ライトボックスで拡大して前後の画像へ移る
   - page: リンクと添付のカードを置く.yaml
     summary: URL・リンク・添付のファイルだけの段落を、外へ要求せずにカードとして描く
-  - page: CSSのテンプレートを登録して配置する.yaml
-    summary: Claude Code が MCP のツールで CSS を端末の設定のフォルダのテンプレートに登録し、一覧から選んで作業のフォルダへ配置する
+  - page: CSSのテンプレートを登録する.yaml
+    summary: Claude Code が MCP のツールで、作業のフォルダの CSS を名前・説明・タグつきで端末の設定のフォルダのテンプレートに登録する
+  - page: CSSのテンプレートを配置する.yaml
+    summary: Claude Code が MCP のツールで、テンプレートの一覧から CSS を選んで作業のフォルダへ配置し、theme に記載する値を受け取る
