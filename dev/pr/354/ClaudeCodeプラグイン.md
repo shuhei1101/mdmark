@@ -66,5 +66,9 @@
 | `tests/unit/src/plugin/mcp.test.ts`・`tests/unit/src/cli/upgrade.test.ts` | 全実行 | 変更 | ✅ | 同上 |
 | `tests/unit/src/plugin/setup/server.test.ts` の `test_start_server` | `test_start_server` | 変更 | ✅ | 起動するのはコミット済みの `dist/cli.js`（v0.9.0 のビルドで 6 つのツールを返す）のため、期待値を 3 つのツールを含むことにした |
 | `tests/unit/src/plugin/setup/status.test.ts` の `test_read_terminal_status_when_unreadable` | `test_read_terminal_status_when_unreadable` | 変更 | ✅ | 設計書の「3 行目が YAML として読めない」に合わせ、端末の設定の内容を 3 行目で読めないものにした |
+| `tests/unit/src/plugin/setup/server.test.ts` の `test_start_server_when_port_taken` | `test_start_server_when_port_taken` | 新規 | ✅ | レビューの指摘で追加。ほかのプロセスがポートを待ち受けていると起動しない<br>[テスト結果/20261107180547_09f60d1a_単体テスト.log](./テスト結果/20261107180547_09f60d1a_単体テスト.log) |
+| `tests/unit/src/plugin/session-start.test.ts` の `test_run_session_start_when_hooks_json` | `test_run_session_start_when_hooks_json` | 変更 | ✅ | `5de11a9e` で、展開しない `${CLAUDE_PLUGIN_ROOT}` の文字列に Biome の警告を外す理由のコメントを足しただけで、確かめる中身は変えていない |
 
-lint: [テスト結果/20261107175056_940a2f96_lint.log](./テスト結果/20261107175056_940a2f96_lint.log)（違反は無し。警告は既存の `src/cli/embed.ts` の 2 件）
+Red のログ（`2de9eb1e`）は `3fa99b49` で取った。その後の `3b5bd716` は Biome の整形だけで、テストの中身は変えていない。
+
+lint: [テスト結果/20261107180547_09f60d1a_lint.log](./テスト結果/20261107180547_09f60d1a_lint.log)（違反は無し。警告は既存の `src/cli/embed.ts` の 2 件）
