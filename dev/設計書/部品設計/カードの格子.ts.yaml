@@ -26,7 +26,7 @@ args:
   description: タイトルの下に出す説明
 states:
 - name: Wide
-  description: 4 項目を 1280px の幅に並べる（3 列）
+  description: 4 項目を 1280px の幅に 1 行で並べる
   args:
   - name: items
     value: '[{"title":"使い方","href":"使い方/README.md","icon":"book","description":"導入と使い方の手順"},{"title":"リファレンス","href":"リファレンス/README.md","description":"名前から引く一覧"},{"title":"example.com/docs","href":"https://example.com/docs"},{"title":"始める","href":"はじめに/README.md","icon":"rocket"}]'
