@@ -95,10 +95,10 @@ functions:
       description: インターフェース定義『常駐サーバーを起動する』のレスポンス
     process: |-
       1. `tmux -V` が失敗すれば、端末で動かすコマンドを添えて `SetupError`（2）
-      2. セッションがあり待ち受けていれば `already_running`。セッションがあり待ち受けていなければ `kill-session -t ={名前}` して起動へ進み `restarted` にする
+      2. セッションがあり待ち受けていれば `already_running`。セッションがあり待ち受けていなければ `kill-session -t ={名前}` して起動へ進み `restarted` にする。起動する前にポートが待ち受けていれば（セッションの外のプロセス）、`MDMARK_PORT` の修正方法を添えて `SetupError`（1）で起動しない
       3. 状態の置き場所を作り、`buildTmuxArgs` の引数で `run("tmux", …)` する。起動するコマンドは `MDMARK_SERVE_COMMAND`、無ければ `npx -y github:shuhei1101/mdmark#{version} serve`
       4. `POLL_INTERVAL_MS` ごとに、セッションが閉じていればログの末尾 20 行を添えて `SetupError`（1）、待ち受けていれば次へ。上限（`MDMARK_START_TIMEOUT_SEC`、無ければ `START_TIMEOUT_SEC`）を超えたら `kill-session` してログの末尾を添えて `SetupError`（3）
-      5. `listToolNames` でツールの名前を取り、結果を返す
+      5. `listToolNames` でツールの名前を取り、結果を返す。取れなければ `MDMARK_PORT` の修正方法を添えて `SetupError`（1）
     side_effects: tmux のセッションを作る・閉じる。状態の置き場所を作る
     callees:
       - dev/設計書/モジュール構成/ClaudeCodeプラグイン/セットアップ/パス.ts#functions[resolveSetupPaths]
@@ -125,6 +125,12 @@ functions:
         condition: '`MDMARK_START_TIMEOUT_SEC=0`、`has-session` に 0 を返し続ける `run`'
         mock: 差し替えた `run` と、すぐ解決する `sleep`
         expected: 終了コード 3 の `SetupError`、`kill-session` を呼んでいる
+      - name: test_start_server_when_port_taken
+        case: 異常
+        summary: ほかのプロセスがポートを待ち受けていれば起動しない
+        condition: '`node:net` で `MDMARK_PORT` のポートを先に待ち受け、`has-session` に 1 を返す `run`'
+        mock: 差し替えた `run`
+        expected: 終了コード 1 の `SetupError`、メッセージに `MDMARK_PORT`、`new-session` を呼んでいない
       - name: test_start_server_when_session_closed
         case: 異常
         summary: セッションが閉じたら 1

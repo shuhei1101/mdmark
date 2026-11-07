@@ -137,14 +137,28 @@ export const startServer = async (options: {
   const session = readSessionName(settings?.raw);
   const listening = () =>
     isPortListening({ port: paths.port, timeoutMs: CONNECT_TIMEOUT_MS });
-  const done = async (result: StartResult["result"]): Promise<StartResult> => ({
-    result,
-    session,
-    url: `http://127.0.0.1:${paths.port}/mcp`,
-    tools: await listToolNames({ port: paths.port }),
-    log: paths.logPath,
-    stop: `tmux kill-session -t =${session}`,
-  });
+  const portInUse = (detail: string) =>
+    new SetupError(
+      `ポート ${paths.port} で ${detail}。ほかのプロセスが使っているときは、~/.claude/settings.json の env の MDMARK_PORT を空いたポートに変え、セッションを開き直して /mdmark:global-setup を呼び直してください。`,
+    );
+  const done = async (result: StartResult["result"]): Promise<StartResult> => {
+    let tools: string[];
+    try {
+      tools = await listToolNames({ port: paths.port });
+    } catch (error) {
+      throw portInUse(
+        `待ち受けているプロセスから MCP のツールの一覧を受け取れません（${error instanceof Error ? error.message : String(error)}）`,
+      );
+    }
+    return {
+      result,
+      session,
+      url: `http://127.0.0.1:${paths.port}/mcp`,
+      tools,
+      log: paths.logPath,
+      stop: `tmux kill-session -t =${session}`,
+    };
+  };
   let result: StartResult["result"] = "started";
   if (await hasSession({ run, session })) {
     if (await listening()) {
@@ -152,6 +166,11 @@ export const startServer = async (options: {
     }
     await run("tmux", ["kill-session", "-t", `=${session}`]);
     result = "restarted";
+  }
+  if (await listening()) {
+    throw portInUse(
+      `セッション ${session} の外のプロセスが待ち受けているため、起動していません`,
+    );
   }
   await mkdir(paths.stateDir, { recursive: true });
   await run(

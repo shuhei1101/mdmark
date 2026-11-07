@@ -99,7 +99,7 @@ flows:
       - '`MDMARK_PORT` のポートで待ち受けるプロセスが無い'
     test: test_error_when_tmux_missing
   - name: 異常系（ポートが使われている・終了コード 1）
-    summary: '`mdmark serve` が終わったらセッションを残さず、ログの理由と修正方法を返す'
+    summary: セッションの外のプロセスがポートを待ち受けていれば起動せず、修正方法を返す。`mdmark serve` が起動の後に終わったときも、セッションを残さずログの理由と修正方法を返す
     setup:
       - name: 一時の端末
         description: '`MDMARK_CONFIG`・`MDMARK_STATE_DIR`・`CLAUDE_CONFIG_DIR`・`TMUX_TMPDIR` を、それぞれ空の一時フォルダの下にする'
@@ -112,16 +112,14 @@ flows:
         participant K as スキル（global-setup・setup）
         participant P as setup.js
         participant T as tmux
-        participant S as mdmark serve
         K->>P: start-server
-        P->>T: new-session で mdmark serve
-        S-->>T: 終了コード 1（セッションが閉じる）
-        P->>P: serve.log の末尾を読む
-        P-->>K: ログの末尾と修正方法・終了コード 1
+        P->>T: has-session（無い）
+        P->>P: ポートが待ち受けている（ほかのプロセス）
+        P-->>K: ポートが使われていることと修正方法・終了コード 1
     expected:
       - 終了コードが 1
-      - '`mdmark-mcp` の tmux のセッションが残らない'
-      - 標準エラーに `serve.log` の末尾（ポートが使われていること）と、`settings.json` の `env` の `MDMARK_PORT` を空いたポートに変えてセッションを開き直し `global-setup` を呼び直す修正方法が出る
+      - '`mdmark-mcp` の tmux のセッションを作らない'
+      - 標準エラーに、ポートが使われていることと、`settings.json` の `env` の `MDMARK_PORT` を空いたポートに変えてセッションを開き直し `global-setup` を呼び直す修正方法が出る
       - ほかのプロセスはポートを待ち受けたまま
     test: test_error_when_port_in_use
   - name: 異常系（待ちを超えた・終了コード 3）
@@ -206,7 +204,7 @@ exceptions:
   - name: なし（正常終了）
     condition: 待ち受けを確かめた。終了コード 0
   - name: なし（ポートが使われている・終了コード 1）
-    condition: 待ちの間に `mdmark serve` が終わった（セッションが閉じた）
+    condition: 起動する前にセッションの外のプロセスがポートを待ち受けている、待ちの間に `mdmark serve` が終わった（セッションが閉じた）、または待ち受けているプロセスから `tools/list` を受け取れない
   - name: なし（tmux が無い・終了コード 2）
     condition: '`PATH` に tmux が無い'
   - name: なし（待ちを超えた・終了コード 3）

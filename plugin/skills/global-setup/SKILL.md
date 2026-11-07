@@ -1,7 +1,7 @@
 ---
 name: global-setup
 description: 端末ごとに 1 回、mdmark の端末の設定を作る・移行し、tmux のセッションで MCP の常駐サーバーを起動して、つながることを確かめる。入れ直し・端末の移行・プラグインの更新の後と、常駐サーバーが待ち受けていないと伝わったときにも使う
-allowed-tools: Bash(node ${CLAUDE_PLUGIN_ROOT}/bin/setup.js *), Bash(npx -y github:shuhei1101/mdmark*)
+allowed-tools: Bash(node ${CLAUDE_PLUGIN_ROOT}/bin/setup.js *), Bash(node ${CLAUDE_PLUGIN_ROOT}/scripts/session-start.js), Bash(npx -y github:shuhei1101/mdmark*)
 ---
 
 # mdmark の端末のセットアップ
@@ -18,7 +18,8 @@ allowed-tools: Bash(node ${CLAUDE_PLUGIN_ROOT}/bin/setup.js *), Bash(npx -y gith
 5. `setup.js start-server` を流す
    - 終了コード 2: tmux が無い。標準エラーのコマンドを、端末を開いたまま動かすよう利用者に示す
    - 終了コード 1・3: 標準エラーの理由と修正方法を利用者に示す
-6. 常駐サーバーが待ち受けていれば、`/mcp` で `plugin:mdmark:mdmark` を接続し直すよう利用者に示す
-7. 作った・書いたファイル、`settings.json` に書いたキー、tmux のセッション名、ログのパス、止める操作（`stop`）を示す
+6. `node ${CLAUDE_PLUGIN_ROOT}/scripts/session-start.js` を流す。標準出力が空で終了コード 0 なら、フックが動き常駐サーバーが待ち受けていると示す。1 行が出たら、その文を利用者に示す
+7. 常駐サーバーが待ち受けていれば、`/mcp` で `plugin:mdmark:mdmark` を接続し直すよう利用者に示す
+8. 作った・書いたファイル、`settings.json` に書いたキー、tmux のセッション名、ログのパス、止める操作（`stop`）を示す
 
 `settings.json` の `env` を書いたときは、セッションを開き直すと次のセッションから効く。
