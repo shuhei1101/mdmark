@@ -54,6 +54,18 @@
 | [tests/unit/src/plugin/mcp.test.ts](https://github.com/shuhei1101/mdmark/blob/develop/tests/unit/src/plugin/mcp.test.ts) / [http.test.ts](https://github.com/shuhei1101/mdmark/blob/develop/tests/unit/src/plugin/http.test.ts) / [pre-tool-use.test.ts](https://github.com/shuhei1101/mdmark/blob/develop/tests/unit/src/plugin/pre-tool-use.test.ts) | 全実行 | 変更 | ✅ | ツールが 6 つになった設計（`test_create_mcp_server`・`test_run_serve`・`test_run_pre_tool_use_when_matcher`）に期待値を合わせた |
 | `tests/unit/` | 全実行 | 実行のみ | ✅ | `npm run test:unit` で 239 ファイル・1683 テストが全 pass<br>[テスト結果/20261107144040_3dec655f_単体テスト.log](./テスト結果/20261107144040_3dec655f_%E5%8D%98%E4%BD%93%E3%83%86%E3%82%B9%E3%83%88.log)<br>lint: [テスト結果/20261107144040_3dec655f_lint.log](./テスト結果/20261107144040_3dec655f_lint.log) |
 
+### 結合
+
+| ファイル | メソッド | 変更種別 | 結果 | 補足 |
+| --- | --- | --- | --- | --- |
+| `tests/integration/ClaudeCodeプラグイン/list-templates.test.ts` | 全実行 | 新規 | ✅ | 3 テスト pass |
+| `tests/integration/ClaudeCodeプラグイン/add-template.test.ts` | 全実行 | 新規 | ✅ | 4 テスト pass |
+| `tests/integration/ClaudeCodeプラグイン/apply-template.test.ts` | 全実行 | 新規 | ✅ | 6 テスト pass |
+| [tests/integration/ClaudeCodeプラグイン/serve.test.ts](https://github.com/shuhei1101/mdmark/blob/develop/tests/integration/ClaudeCode%E3%83%97%E3%83%A9%E3%82%B0%E3%82%A4%E3%83%B3/serve.test.ts) | 全実行 | 変更 | ✅ | インターフェース定義『MCPサーバーを起動・停止する』の 6 つのツールに期待値を合わせた |
+| `tests/integration/ClaudeCodeプラグイン/` のほかの 4 ファイル | 全実行 | 実行のみ | ✅ | 8 ファイル・33 テストが全 pass<br>[テスト結果/20261107172109_a1b41d47_結合テスト.log](./テスト結果/20261107172109_a1b41d47_%E7%B5%90%E5%90%88%E3%83%86%E3%82%B9%E3%83%88.log)<br>lint: [テスト結果/20261107172109_a1b41d47_lint.log](./テスト結果/20261107172109_a1b41d47_lint.log) |
+
+結合テストの土台 `tests/integration/plugin.ts` の `connectHttp` に、常駐サーバーの環境変数に重ねる `env` を足した（`MDMARK_CONFIG` で一時フォルダを端末の設定にするため）。
+
 直したテスト:
 
 - `test_read_templates_index_when_unreadable`: 用意した索引が 4 行目（ファイルの末尾）で読めない形だったため、設計書の「3 行目に閉じていない括弧を持つ索引」に合わせて 3 行目を `tags: [a, b}` にした

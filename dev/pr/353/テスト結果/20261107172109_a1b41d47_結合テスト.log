@@ -1,0 +1,10 @@
+$ npx vitest run --project integration-node tests/integration/ClaudeCodeプラグイン
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-plugin-css-templates
+
+
+ Test Files  8 passed (8)
+      Tests  33 passed (33)
+   Start at  17:18:17
+   Duration  128.07s (tests 48%, import 44%, transform 8%)
+

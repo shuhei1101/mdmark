@@ -39,5 +39,5 @@ MCP のツールは `export_html`・`build_site`・`check` だけで、テンプ
 - [x] ドキュメント修正（要件.md の `## 更新ドキュメント`。`schemas/files.yaml` と `migrations/no-steps.yaml` は実装で記載する）
 - [x] 単体テスト作成
 - [x] 実装
-- [ ] 結合テスト作成
+- [x] 結合テスト作成
 - [ ] E2E テスト作成
