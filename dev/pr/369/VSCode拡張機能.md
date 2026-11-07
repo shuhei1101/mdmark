@@ -19,7 +19,7 @@
 | 対象 | 方針 | 補足 |
 | --- | --- | --- |
 | 相対パスの `libraries` | 文書にマーカーがある名前のモジュールだけを、`bundleExtensions` と同じ esbuild-wasm のまとめ方で ES モジュールにし、`data:text/javascript` の URL にして `config.libraries` の値に配置する | マーカーの検出は CLI と同じ処理（`usedLibraryMarks`）を使用する |
-| 相対パスの `html-scripts.url` | 変換のライブラリを同じまとめ方で `data:` の URL にして `config["html-scripts"].url` に配置する | `未確定`（要件.md の `## 要望`。決める工程: インターフェース定義設計） |
+| 相対パスの `html-scripts.url` | 文書に `ts`・`js` の範囲があり `html-scripts` がオンのときだけ、変換のライブラリを同じまとめ方で `data:` の URL にして `config["html-scripts"].url` に配置する | 範囲を変換して埋めず、`mount` の公開の引数を変えない |
 | `http:`・`https:` の URL | 今のまま `config` に配置する | - |
 | まとめられないモジュール | 埋めず、出力チャネルに警告を記録して書き出しを続ける | 開いたときは mdmark が知らせの枠を出す |
 | 書き出しの共通の処理 | 「HTML に書き出す」「ブラウザで開く」「PDF に印刷する」が使う `readExportConfig` で埋めるため、3 つとも同じ HTML になる | - |
@@ -31,6 +31,7 @@
 | --- | --- | --- |
 | 単一ユースケース設計 | `e86a6cb0..78e6d91c` | - |
 | 単一ユースケース設計 | `78e6d91c..9347272c` | レビューの指摘の修正 |
+| インターフェース定義設計 | `49cbee03..14c4e182` | - |
 
 ## テスト結果
 
