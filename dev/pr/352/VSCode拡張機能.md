@@ -34,6 +34,17 @@
 
 ## テスト結果
 
+### 単体
+
+| ファイル | メソッド | 変更種別 | 結果 | 補足 |
+| --- | --- | --- | --- | --- |
+| [tests/unit/vscode/src/config.test.ts](https://github.com/shuhei1101/mdmark/blob/develop/tests/unit/vscode/src/config.test.ts) | 全実行 | 変更 | ✅ | `テスト結果/20261107195410_1c8fcba0_単体テスト.log` |
+| `tests/unit/` の残り | 全実行 | 実行のみ | ✅ | `npm run test:unit` で 242 ファイル・1701 テスト pass<br>`テスト結果/20261107195410_1c8fcba0_単体テスト.log` |
+
+### lint
+
+`npm run check`（biome・eslint・tsc・tsc -p vscode）が終了コード 0。残る biome の警告 2 件（`src/cli/embed.ts`）は base にもあり、この PR は触っていない。`テスト結果/20261107195410_1c8fcba0_lint.log`
+
 ### ドキュメント修正
 
 関係する単体・結合テストは無い（公開ドキュメントの Markdown だけを修正し、実装とテストの対応表に当たるファイルを変えていない）。
