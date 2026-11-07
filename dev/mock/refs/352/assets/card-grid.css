@@ -57,13 +57,15 @@ a.mdmark-card-grid-item:focus-visible {
   grid-column: 1 / -1;
 }
 
-/* タイトル: リンクのカードはリンクの色、リンクの無いカードは本文の色 */
+/* タイトル: リンクのカードはリンクと添付のカードと同じくリンクの色と下線、リンクの無いカードは本文の色で下線なし */
 .mdmark-card-grid-title {
   font-weight: 600;
   overflow-wrap: anywhere;
 }
 a.mdmark-card-grid-item .mdmark-card-grid-title {
   color: var(--mdmark-color-link);
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
 }
 
 /* 説明: タイトルの下に全幅で出し、長い文も折り返す */
