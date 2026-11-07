@@ -1,0 +1,30 @@
+$ npm_config_cache={空の一時フォルダ} npm_config_foreground_scripts=true MDMARK_PORT=18798 npm exec --yes "github:shuhei1101/mdmark#develop" serve
+
+npm notice
+npm notice New minor version of npm available! 11.9.0 -> 11.21.2
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v11.21.2
+npm notice To update run: npm install -g npm@11.21.2
+npm notice
+exit=1
+
+# npm のデバッグログの末尾
+1296 verbose stack Error: command failed
+1296 verbose stack     at promiseSpawn (/home/shuhei2441/.nvm/versions/node/v24.14.0/lib/node_modules/npm/node_modules/@npmcli/promise-spawn/lib/index.js:22:22)
+1296 verbose stack     at spawnWithShell (/home/shuhei2441/.nvm/versions/node/v24.14.0/lib/node_modules/npm/node_modules/@npmcli/promise-spawn/lib/index.js:124:10)
+1296 verbose stack     at promiseSpawn (/home/shuhei2441/.nvm/versions/node/v24.14.0/lib/node_modules/npm/node_modules/@npmcli/promise-spawn/lib/index.js:12:12)
+1296 verbose stack     at runScriptPkg (/home/shuhei2441/.nvm/versions/node/v24.14.0/lib/node_modules/npm/node_modules/@npmcli/run-script/lib/run-script-pkg.js:79:13)
+1296 verbose stack     at runScript (/home/shuhei2441/.nvm/versions/node/v24.14.0/lib/node_modules/npm/node_modules/@npmcli/run-script/lib/run-script.js:12:10)
+1296 verbose stack     at async Install.exec (/home/shuhei2441/.nvm/versions/node/v24.14.0/lib/node_modules/npm/lib/commands/install.js:164:9)
+1296 verbose stack     at async Npm.exec (/home/shuhei2441/.nvm/versions/node/v24.14.0/lib/node_modules/npm/lib/npm.js:208:9)
+1296 verbose stack     at async module.exports (/home/shuhei2441/.nvm/versions/node/v24.14.0/lib/node_modules/npm/lib/cli/entry.js:67:5)
+1297 error code 1
+1298 error path {一時フォルダ}/cache/_cacache/tmp/git-clone4eSG8i
+1299 error command failed
+1300 error command sh -c lefthook install && npm ci --prefix tools/eslint
+1301 verbose cwd {一時フォルダ}/cache/_cacache/tmp/git-clone4eSG8i
+1302 verbose os Linux 6.6.87.2-microsoft-standard-WSL2
+1303 verbose node v24.14.0
+1304 verbose npm  v11.9.0
+1305 verbose exit 1
+1306 verbose code 1
+1307 error A complete log of this run can be found in: {一時フォルダ}/cache/_logs/2026-11-07T15_37_15_851Z-debug-0.log
