@@ -38,12 +38,12 @@
 
 | ファイル | メソッド | 変更種別 | 結果 | 補足 |
 | --- | --- | --- | --- | --- |
-| [tests/unit/vscode/src/config.test.ts](https://github.com/shuhei1101/mdmark/blob/develop/tests/unit/vscode/src/config.test.ts) | 全実行 | 変更 | ✅ | `テスト結果/20261107202300_a075ec85_単体テスト.log` |
-| `tests/unit/` の残り | 全実行 | 実行のみ | ✅ | `npm run test:unit` で 242 ファイル・1703 テスト pass<br>`テスト結果/20261107202300_a075ec85_単体テスト.log` |
+| [tests/unit/vscode/src/config.test.ts](https://github.com/shuhei1101/mdmark/blob/develop/tests/unit/vscode/src/config.test.ts) | 全実行 | 変更 | ✅ | `テスト結果/20261107212700_4a0d696e_単体テスト.log` |
+| `tests/unit/` の残り | 全実行 | 実行のみ | ✅ | `npm run test:unit` で 250 ファイル・1736 テスト pass（develop の取り込み後）<br>`テスト結果/20261107212700_4a0d696e_単体テスト.log` |
 
 ### lint
 
-`npm run check`（biome・eslint・tsc・tsc -p vscode）が終了コード 0。残る biome の警告 2 件（`src/cli/embed.ts`）は base にもあり、この PR は触っていない。`テスト結果/20261107202300_a075ec85_lint.log`
+`npm run check`（biome・eslint・tsc・tsc -p vscode）が終了コード 0。残る biome の警告 2 件（`src/cli/embed.ts`）は base にもあり、この PR は触っていない。`テスト結果/20261107212700_4a0d696e_lint.log`
 
 ### ドキュメント修正
 

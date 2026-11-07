@@ -1,0 +1,15 @@
+$ npm run test:unit
+
+> test:unit
+> vitest run --project 'unit*'
+
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-render-page-settings-and-cards-markers
+
+
+ Test Files  250 passed (250)
+      Tests  1736 passed (1736)
+   Start at  21:26:05
+   Duration  106.95s (worker 65%, tests 22%, import 12%, transform 1%)
+
+exit=0
