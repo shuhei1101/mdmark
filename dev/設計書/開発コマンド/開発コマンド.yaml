@@ -23,12 +23,18 @@ categories:
       npm ci
       ```
 
+      Webview の ESLint の道具（`tools/eslint/package-lock.json`）が変わった取り込みの後は、その依存も入れ直す。
+
+      ```bash
+      npm ci --prefix tools/eslint
+      ```
+
       VS Code 拡張機能を触るときは、`vscode/` の依存も入れる。
 
       ```bash
       npm --prefix vscode ci
       ```
-    effects: '`node_modules/` を `package-lock.json` のとおりに作り直す。続けて `prepare` が、`lefthook install` で全ての worktree が共有する `.git/hooks` に Git フックを入れ、`npm ci --prefix tools/eslint` で `tools/eslint/node_modules/` を作り直す（`LEFTHOOK=0` を付けるとフックを入れない）'
+    effects: '`node_modules/` を `package-lock.json` のとおりに作り直す。lefthook の package の postinstall が、`lefthook install` で全ての worktree が共有する `.git/hooks` に Git フックを入れる（`LEFTHOOK=0` を付けるとフックを入れない）。`npm ci --prefix tools/eslint` は `tools/eslint/node_modules/` を作り直す（無いままでも `npm run lint:eslint` が起動の前に入れる）'
     verification:
       state: 済
       date: '2026-10-13'
