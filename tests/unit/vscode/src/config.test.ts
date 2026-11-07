@@ -1,4 +1,7 @@
+import { readFile } from "node:fs/promises";
+import { join } from "node:path";
 import { expect, test, vi } from "vitest";
+import { useTempDirs, writeFiles } from "../../helpers/cli.ts";
 
 /** 設定ファイルの処理を読み込む（実装が無い間は各テストが個別に失敗する） */
 const loadModule = () => import("../../../../vscode/src/config.ts");
@@ -137,6 +140,144 @@ test("test_load_config_when_config_path_missing", async () => {
   expect(result.config).toEqual({ features: { callout: false } });
   expect(result.files).toEqual([SETTINGS]);
   expect(result.nearest).toBeUndefined();
+});
+
+const createTempDir = useTempDirs();
+
+/** 用語のエイリアスの行 */
+const TERM_ROW = [
+  "aliases:",
+  "  - id: terms",
+  "    paths: [glossary.yaml]",
+  "    alias_type: term",
+  "    records: terms",
+];
+
+/** 名前 `描画`・別名 `レンダリング` の用語 1 件 */
+const GLOSSARY = [
+  "terms:",
+  "  - id: render",
+  "    name: 描画",
+  "    aliases: [レンダリング]",
+  "    description: Markdown を HTML にすること",
+  "",
+].join("\n");
+
+/** 一時フォルダの実のファイルを読む `loadConfig` の引数 */
+const fsOptions = (options: {
+  cwd: string;
+  settings: string;
+  purpose?: "preview" | "export";
+}) => ({
+  cwd: options.cwd,
+  configPath: "",
+  baseDir: options.cwd,
+  purpose: options.purpose ?? ("preview" as const),
+  env: { MDMARK_CONFIG: options.settings },
+  home: options.cwd,
+  readFile: (path: string) => readFile(path, "utf8"),
+  isFile: async (path: string) => {
+    const { isFile } = await loadModule();
+    return isFile(path);
+  },
+});
+
+// プレビューでは重ねた設定の aliases からエイリアスを作り、読んだ YAML を返す（正常系）
+test("test_load_config_when_aliases", async () => {
+  // 準備
+  const { loadConfig: load } = await loadModule();
+  const dir = await createTempDir();
+  await writeFiles(dir, {
+    "mdmark.config.yaml": `${TERM_ROW.join("\n")}\n`,
+    "glossary.yaml": GLOSSARY,
+  });
+  // 実行
+  const result = await load(
+    fsOptions({ cwd: dir, settings: join(dir, "none/settings.yaml") }),
+  );
+  // 検証
+  expect(result.aliases).toHaveLength(1);
+  expect(result.aliases?.[0]).toMatchObject({
+    alias_type: "term",
+    name: "描画",
+    aliases: ["レンダリング"],
+  });
+  expect(result.aliasIssues).toEqual([]);
+  expect(result.aliasFiles).toEqual([join(dir, "glossary.yaml")]);
+});
+
+// mdmark.config.yaml が無いときは端末の設定ファイルを基準にエイリアスを作る（正常系）
+test("test_load_config_when_aliases_without_nearest", async () => {
+  // 準備
+  const { loadConfig: load } = await loadModule();
+  const dir = await createTempDir();
+  await writeFiles(dir, {
+    "settings/settings.yaml": `${TERM_ROW.join("\n")}\n`,
+    "settings/glossary.yaml": GLOSSARY,
+    "docs/guide.md": "# ガイド\n",
+  });
+  // 実行
+  const result = await load(
+    fsOptions({
+      cwd: join(dir, "docs"),
+      settings: join(dir, "settings/settings.yaml"),
+    }),
+  );
+  // 検証
+  expect(result.nearest).toBeUndefined();
+  expect(result.aliases).toHaveLength(1);
+  expect(result.aliasFiles).toEqual([join(dir, "settings/glossary.yaml")]);
+});
+
+// 当たるファイルの無い行はずれにして残りで作る（正常系）
+test("test_load_config_when_aliases_missing_files", async () => {
+  // 準備
+  const { loadConfig: load } = await loadModule();
+  const dir = await createTempDir();
+  await writeFiles(dir, {
+    "mdmark.config.yaml": [
+      ...TERM_ROW,
+      "  - id: missing",
+      "    paths: [missing/*.yaml]",
+      "    alias_type: term",
+      "",
+    ].join("\n"),
+    "glossary.yaml": GLOSSARY,
+  });
+  // 実行
+  const result = await load(
+    fsOptions({ cwd: dir, settings: join(dir, "none/settings.yaml") }),
+  );
+  // 検証
+  expect(result.aliases?.map((alias) => alias.name)).toEqual(["描画"]);
+  expect(result.aliasIssues).toHaveLength(1);
+  expect(result.aliasIssues[0]).toMatchObject({
+    kind: "alias_no_files",
+    where: "aliases[1].paths",
+  });
+});
+
+// 書き出しのときはエイリアスを作らない（正常系）
+test("test_load_config_when_export", async () => {
+  // 準備
+  const { loadConfig: load } = await loadModule();
+  const dir = await createTempDir();
+  await writeFiles(dir, {
+    "mdmark.config.yaml": `${TERM_ROW.join("\n")}\n`,
+    "glossary.yaml": GLOSSARY,
+  });
+  // 実行
+  const result = await load(
+    fsOptions({
+      cwd: dir,
+      settings: join(dir, "none/settings.yaml"),
+      purpose: "export",
+    }),
+  );
+  // 検証
+  expect(result.aliases).toBeUndefined();
+  expect(result.aliasIssues).toEqual([]);
+  expect(result.aliasFiles).toEqual([]);
 });
 
 // 空でない mdmark.colorTheme が設定ファイルに勝ち、空なら設定ファイルのまま（正常系）

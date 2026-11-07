@@ -1135,6 +1135,12 @@ files:
     related:
       - to: src/cli/init
         type: tests
+  - path: unit/src/cli/issues.test.ts
+    description: src/cli/issues.ts（「点検のずれを 1 行の文字列にする処理」）を確かめる単体テスト。issues.ts を変えたときに、合わせて修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, topic:cli, topic:検査]
+    related:
+      - to: src/cli/issues
+        type: tests
   - path: unit/src/cli/main.test.ts
     description: src/cli/main.ts（「引数の読み取りとコマンドの振り分け」）を確かめる単体テスト。main.ts を変えたときに、合わせて見修正するケースを探すときに読む。
     tags: [topic:単体テスト, tool:vitest, topic:cli]
