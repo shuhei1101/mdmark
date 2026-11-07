@@ -106,7 +106,7 @@ stakeholders:
     interest: セッションの開始で常駐サーバーが待ち受けていないことを知り、`global-setup` で起動できる
 trigger: 文書を書く人が、新しい端末か入れ直した端末で、Claude Code から mdmark を使い始める
 preconditions:
-  - 文書を書く人の手元に Claude Code・git・Node 24 以降・tmux がある
+  - 文書を書く人の手元に Claude Code・git・Node 24 以降・tmux 3.4 以降がある
   - 文書を書く人の手元から GitHub と npm のレジストリへ届く
 success_guarantee: 端末の設定と文書のフォルダの `mdmark.config.yaml` が、文書を書く人が答えた値で書かれ、常駐サーバーが tmux のセッションの中で 1 つだけ待ち受ける。次に開いたセッションで、MCP の `instructions` からセッション名が伝わり、MCP のツールがそのセッションの作業のフォルダに対して働く。
 minimal_guarantee: 文書を書く人が書くことを認めなかった値は、端末の設定にも `mdmark.config.yaml` にも書かない。常駐サーバーが起動していないときも Claude Code のセッションは開け、セッションの開始で起動していないことと `global-setup` で起動できることが伝わる。

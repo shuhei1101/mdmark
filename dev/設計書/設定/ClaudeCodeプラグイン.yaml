@@ -106,3 +106,17 @@ settings:
       - dev/設計書/インターフェース定義/ClaudeCodeプラグイン/常駐サーバーを起動する.ts#
     introduced:
       pr: 354
+  - key: MDMARK_START_TIMEOUT_SEC
+    title: 常駐サーバーの待ち受けを待つ上限
+    file: 環境変数
+    type: integer
+    default: '120'
+    description: '`setup.js start-server` が `mdmark serve` の待ち受けを待つ上限の秒数。テストで短くする'
+    env_var: MDMARK_START_TIMEOUT_SEC
+    reload: restart
+    status: planned
+    visibility: developer
+    refs:
+      - dev/設計書/インターフェース定義/ClaudeCodeプラグイン/常駐サーバーを起動する.ts#constraints[待ち]
+    introduced:
+      pr: 354

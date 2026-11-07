@@ -20,7 +20,7 @@ flows:
         participant S as 常駐サーバー
         K->>P: start-server
         P->>T: has-session（無い）
-        P->>T: new-session -d -s {セッション名} -e MDMARK_PORT=… mdmark serve
+        P->>T: new-session -d -s {セッション名} -e MDMARK_PORT=… sh -c 'mdmark serve | tee'
         T->>S: 起動（ログを serve.log へ）
         P->>S: ポートが待ち受けるまで待つ
         P->>S: tools/list
@@ -29,7 +29,7 @@ flows:
     expected:
       - 終了コードが 0、標準出力の JSON の `result` が `started`
       - '`mdmark-mcp` の tmux のセッションがあり、`MDMARK_PORT` のポートで待ち受ける（先に起動していた tmux サーバーの中でも 8782 では待ち受けない）'
-      - '`state.log` に待ち受ける URL の 1 行がある'
+      - 状態の置き場所の `serve.log` に待ち受ける URL の 1 行がある
       - '`tools` が `export_html`・`build_site`・`check`'
       - '`stop` が `tmux kill-session -t =mdmark-mcp`'
     test: test_normal
@@ -124,6 +124,28 @@ flows:
       - 標準エラーに `serve.log` の末尾（ポートが使われていること）と、`settings.json` の `env` の `MDMARK_PORT` を空いたポートに変えてセッションを開き直し `global-setup` を呼び直す修正方法が出る
       - ほかのプロセスはポートを待ち受けたまま
     test: test_error_when_port_in_use
+  - name: 異常系（待ちを超えた・終了コード 3）
+    summary: 上限の間に待ち受けなければ、セッションを閉じてログの末尾と呼び直すことを返す
+    setup:
+      - name: 一時の端末
+        description: '`MDMARK_CONFIG`・`MDMARK_STATE_DIR`・`CLAUDE_CONFIG_DIR`・`TMUX_TMPDIR` を、それぞれ空の一時フォルダの下にする'
+      - name: Mock
+        description: 正常系と同じ。`MDMARK_SERVE_COMMAND` を待ち受けずに動き続ける `sleep 600` に、`MDMARK_START_TIMEOUT_SEC` を `2` にする
+    flow: |-
+      sequenceDiagram
+        participant K as スキル（global-setup・setup）
+        participant P as setup.js
+        participant T as tmux
+        K->>P: start-server
+        P->>T: new-session
+        P->>P: 上限まで待ち受けない
+        P->>T: kill-session
+        P-->>K: ログの末尾と呼び直すこと・終了コード 3
+    expected:
+      - 終了コードが 3
+      - '`mdmark-mcp` の tmux のセッションが残らない'
+      - 標準エラーに `serve.log` の末尾と、取得に時間がかかっているのでもう一度 `global-setup` を呼ぶことが出る
+    test: test_error_when_start_timed_out
 lead: '`global-setup` が呼び、tmux のセッションの中で `mdmark serve` を起動して待ち受けを待ち、`tools/list` でつながることを確かめる。'
 test_file: tests/integration/ClaudeCodeプラグイン/setup-start-server.test.ts
 idempotent: true
@@ -155,6 +177,12 @@ request:
     default: なし（`npx -y github:shuhei1101/mdmark#v{プラグインのバージョン} serve`）
     location: argument
     description: 起動するコマンド（環境変数）。テストでビルドした CLI に差し替える
+  - name: MDMARK_START_TIMEOUT_SEC
+    type: string
+    required: false
+    default: '120'
+    location: argument
+    description: 待ち受けを待つ上限の秒数（環境変数）。テストで短くする
 response:
   - name: result
     type: '"started" | "already_running" | "restarted"'
@@ -178,18 +206,24 @@ exceptions:
   - name: なし（正常終了）
     condition: 待ち受けを確かめた。終了コード 0
   - name: なし（ポートが使われている・終了コード 1）
-    condition: 待ちの間に `mdmark serve` が終わった（セッションが閉じた）か、待ちを超えた
-    notes: 待ちを超えたときはセッションを閉じる
+    condition: 待ちの間に `mdmark serve` が終わった（セッションが閉じた）
   - name: なし（tmux が無い・終了コード 2）
     condition: '`PATH` に tmux が無い'
+  - name: なし（待ちを超えた・終了コード 3）
+    condition: 上限の間にポートが待ち受けなかった
+    notes: セッションを閉じる
 constraints:
   - item: 起動のコマンド
-    constraint: '`tmux new-session -d -s {セッション名} -e MDMARK_PORT={ポート} -e MDMARK_CONFIG={パス} -e MDMARK_STATE_DIR={パス} "set -o pipefail; {起動するコマンド} 2>&1 | tee -a {serve.log}"`。環境変数は `-e` で明示して渡す'
-    notes: tmux サーバーが既に動いていると、呼んだ側の環境変数は新しいセッションに渡らない
+    constraint: '`tmux new-session -d -s {セッション名} -e MDMARK_PORT={ポート} -e MDMARK_CONFIG={パス} -e MDMARK_STATE_DIR={パス} sh -c ''{起動するコマンド} 2>&1 | tee -a {serve.log}''`。環境変数は `-e` で明示して渡し、コマンドは `sh -c` の引数として渡して POSIX の書き方だけを使う'
+    notes: tmux サーバーが既に動いていると呼んだ側の環境変数は渡らず、1 つの文字列のコマンドは `default-shell` で実行される
+    decided_by: dev/設計書/外部ライブラリ/tmux#limitations
   - item: セッションの指定
     constraint: '`has-session`・`kill-session` の `-t` は `={セッション名}` の完全一致'
+    decided_by: dev/設計書/外部ライブラリ/tmux#catalogs
   - item: 待ち
-    constraint: 1 秒ごとにポートへつなぎ直し、上限は 60 秒
+    constraint: 1 秒ごとにポートへつなぎ直し、上限は 120 秒（`MDMARK_START_TIMEOUT_SEC` で変えられる）
+    decided_by: dev/設計書/非機能要件/非機能要件#requirements[MCP サーバーの接続の待ち]
+    notes: '空の npm のキャッシュから CLI を取得すると 53 秒かかった（PoC #73）。新しい端末とプラグインの更新の後は空のキャッシュからの取得になるため、その 2 倍強を上限にする'
   - item: セッション名
     constraint: 端末の設定の `serve.tmuxSession`、無ければ `mdmark-mcp`
     decided_by: dev/設計書/設定/ライブラリ本体#settings[serve.tmuxSession]

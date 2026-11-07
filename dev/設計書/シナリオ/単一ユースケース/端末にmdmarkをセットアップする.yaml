@@ -218,7 +218,7 @@ stakeholders:
 trigger: 新しい端末・入れ直し・端末の移行・プラグインの更新の後か、セッションの開始で常駐サーバーが待ち受けていないと伝わったとき
 preconditions:
   - Claude Code に mdmark のプラグインを入れている
-  - 文書を書く人の手元に Node 24 以降と tmux がある
+  - 文書を書く人の手元に Node 24 以降と tmux 3.4 以降がある
 success_guarantee: 端末の設定が文書を書く人の答えた値で今のバージョンの書き方になり、常駐サーバーが端末の設定のセッション名の tmux のセッションの中で 1 つだけ待ち受け、`tools/list` がツールの一覧を返す。
 minimal_guarantee: 文書を書く人が書くことを認めなかったときは、端末の設定と `settings.json` を書き換えない。ほかのプロセスが待ち受けているポートは、そのプロセスのまま変わらない。
 test_file: tests/e2e/単一ユースケース/端末にmdmarkをセットアップする.spec.ts

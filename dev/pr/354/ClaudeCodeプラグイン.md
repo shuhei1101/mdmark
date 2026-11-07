@@ -29,7 +29,7 @@
 | スキル | `plugin/skills/global-setup/SKILL.md`・`plugin/skills/setup/SKILL.md` を置き、ビルドがソースから `plugin/` へ写す | dev-docs の `global-setup` を元にする |
 | `global-setup` | 端末の設定のパスを決める → 移行か雛形から作成 → `settings.json` の `env` に `MDMARK_CONFIG`（既定と違うときだけ） → 常駐サーバーの起動と `tools/list` の確認 → フックの確認 → 結果を示す | 端末の設定のキーは 1 つずつ今の値と既定を示して確認してから書く |
 | `setup` | 文書のフォルダの `mdmark.config.yaml` を、無ければ雛形から、あればキーごとに確認しながら作る・修正する | 雛形は `mdmark init` と同じものを使う |
-| 常駐サーバーの起動 | tmux の `has-session` で既にあるかを確かめ、無ければ `new-session -d` で起動し、ポートが待ち受けるまで待つ。ログは状態の置き場所の `serve.log` に書く | `未確定`（要件.md の起動の仕方・セッション名） |
+| 常駐サーバーの起動 | tmux の `has-session` で既にあるかを確かめ、無ければ `new-session -d` で起動し、ポートが待ち受けるまで待つ。ログは状態の置き場所の `serve.log` に書く | [常駐サーバーを起動する](https://github.com/shuhei1101/mdmark/blob/feat/plugin/setup-skills/dev/%E8%A8%AD%E8%A8%88%E6%9B%B8/%E3%82%A4%E3%83%B3%E3%82%BF%E3%83%BC%E3%83%95%E3%82%A7%E3%83%BC%E3%82%B9%E5%AE%9A%E7%BE%A9/ClaudeCode%E3%83%97%E3%83%A9%E3%82%B0%E3%82%A4%E3%83%B3/%E5%B8%B8%E9%A7%90%E3%82%B5%E3%83%BC%E3%83%90%E3%83%BC%E3%82%92%E8%B5%B7%E5%8B%95%E3%81%99%E3%82%8B.ts.yaml) |
 | 起動の案内 | SessionStart のフックでポートを確かめ、待ち受けていないときだけ `global-setup` での起動の仕方を 1 行で伝える。起動しているときのセッション名は MCP の `instructions` に書く | [確認ログ](./確認ログ.md) |
 | 状態の置き場所 | `MDMARK_STATE_DIR`、無ければ `${XDG_STATE_HOME:-~/.local/state}/mdmark` | - |
 | tmux のセッション名 | 端末の設定の `serve.tmuxSession`（既定 `mdmark-mcp`） | - |
