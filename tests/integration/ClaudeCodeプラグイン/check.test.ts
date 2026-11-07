@@ -42,7 +42,7 @@ test("test_normal", async () => {
       "",
     ].join("\n"),
     "index.yaml": [
-      "schema: 1",
+      "schema: 2",
       "docs:",
       "  - id: a",
       "    path: a.md",
@@ -78,7 +78,7 @@ test("test_normal_when_drift", async () => {
       "",
     ].join("\n"),
     "index.yaml": [
-      "schema: 1",
+      "schema: 2",
       "docs:",
       "  - id: a",
       "    path: a.md",
@@ -166,7 +166,7 @@ test("test_normal_when_text_and_key", async () => {
       "",
     ].join("\n"),
     "index.yaml": [
-      "schema: 1",
+      "schema: 2",
       "docs:",
       "  - id: a",
       "    path: a.md",

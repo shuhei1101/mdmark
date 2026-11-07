@@ -136,7 +136,7 @@ const CONFIG_WITHOUT_VERSION = OLD_CONFIG.replace("version: v0.3.0\n", "");
 /** 手元のフォルダに置く索引と文書 */
 const WORK_FILES = {
   "docs/index.yaml": [
-    "schema: 1",
+    "schema: 2",
     "docs:",
     "  - id: a",
     "    path: a.md",

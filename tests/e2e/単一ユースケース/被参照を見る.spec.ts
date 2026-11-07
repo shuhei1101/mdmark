@@ -12,7 +12,7 @@ let builtRoot = "";
 
 // 3 つの文書を別のフォルダに置く索引（`api` の `related` が `arch`）
 const INDEX: MdmarkIndex = {
-  schema: 1,
+  schema: 2,
   docs: [
     { id: "arch", path: "設計/arch.md", title: "アーキテクチャ" },
     {
@@ -103,7 +103,7 @@ test("test_normal_when_not_referenced", async ({ page }) => {
 test("test_normal_when_document_alias", async ({ page }) => {
   // 準備
   const index: MdmarkIndex = {
-    schema: 1,
+    schema: 2,
     docs: [
       { id: "arch", path: "設計/arch.md", title: "アーキテクチャ" },
       {
