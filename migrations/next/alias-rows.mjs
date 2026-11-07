@@ -18,7 +18,7 @@ const ruleOf = (node) => {
   return isRecord(rule) ? rule : undefined;
 };
 
-/** 行の `paths` に当たった YAML のレコードの `field` の列の値を、重ねずに集める */
+/** 行の `paths` に当たった YAML のレコードの `field` の列の値を、重ねずに集める。YAML として読めないファイルは `unreadable` に返す */
 const collectTypes = async ({ row, field, configDir }) => {
   const paths = row.get("paths")?.toJSON() ?? [];
   const records = row.get("records");
@@ -30,8 +30,15 @@ const collectTypes = async ({ row, field, configDir }) => {
     }
   }
   const values = new Set();
+  const unreadable = [];
   for (const path of [...files].sort()) {
-    const data = parse(await readFile(resolve(configDir, path), "utf8"));
+    let data;
+    try {
+      data = parse(await readFile(resolve(configDir, path), "utf8"));
+    } catch {
+      unreadable.push(path);
+      continue;
+    }
     const list =
       recordsKey === undefined
         ? [data]
@@ -44,7 +51,7 @@ const collectTypes = async ({ row, field, configDir }) => {
       }
     }
   }
-  return [...values];
+  return { types: [...values], unreadable };
 };
 
 /** 設定の `aliases` の v0.2.0 の構造の行を、alias-inject v0.3.0 の構造へ書き換える */
@@ -68,11 +75,19 @@ export const migrateAliasRows = async ({ doc, configDir }) => {
     if (typeRule?.type === "custom") {
       aliasType = String(typeRule.value);
     } else if (typeRule?.type === "ref" && typeof typeRule.field === "string") {
-      const types = await collectTypes({
+      const { types, unreadable } = await collectTypes({
         row,
         field: typeRule.field,
         configDir,
       });
+      if (unreadable.length > 0) {
+        for (const path of unreadable) {
+          problems.push(
+            `${label}の \`${path}\` を YAML として読めません。字下げと書き方を直してください。`,
+          );
+        }
+        continue;
+      }
       if (types.length === 0) {
         problems.push(
           `${label}はレコードが無く、種類を決められません。行に \`alias_type\` を記載してください。`,
