@@ -334,10 +334,10 @@ functions:
         expected: '`config` が `{ features: { callout: false } }`、`files` が端末の設定だけ、`nearest` が無い'
       - name: test_load_config_when_labels
         case: 正常
-        summary: labels の値がマップのときだけ config に入れる
+        summary: labels を config に入れ、labels がマップでない設定ファイルは重ねない
         condition: '`/w/mdmark.config.yaml` に `labels: { paramCopy: コピー }`、`/w/b/mdmark.config.yaml` に `labels: コピー`、`cwd` が `/w` と `/w/b` の 2 回（端末の設定は無い）'
         mock: '`readFile`・`isFile` をメモリのファイルの表に差し替える'
-        expected: '`cwd` が `/w` のとき `config` が `{ labels: { paramCopy: "コピー" } }`、`/w/b` のとき `config` に `labels` が無い'
+        expected: '`cwd` が `/w` のとき `config` が `{ labels: { paramCopy: "コピー" } }`、`/w/b` のとき `config` に `labels` が無く、`problem` の `settingKey` が `labels`'
     callees:
       - '#functions[resolveConfigPath]'
       - dev/設計書/モジュール構成/ライブラリ本体/設定を重ねて読む.ts#functions[loadLayeredConfig]
