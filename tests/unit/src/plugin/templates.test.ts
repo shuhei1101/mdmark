@@ -346,6 +346,54 @@ test("test_add_template_when_name_exists", async () => {
   expect(await readFile(join(dir, "templates.yaml"), "utf8")).toBe(before);
 });
 
+// `name` に許さない文字がある（異常系）
+test("test_add_template_when_name_invalid", async () => {
+  // 準備
+  const { addTemplate } = await loadTemplates();
+  const { CliError } = await loadErrors();
+  const work = await createTempDir();
+  const dir = join(await createTempDir(), "css");
+  await writeFiles(work, { "brand.css": BRAND_CSS });
+  // 実行
+  const adding = addTemplate({
+    dir,
+    source: join(work, "brand.css"),
+    name: "Bad_Name",
+    description: "x",
+    tags: [],
+    overwrite: false,
+  });
+  // 検証
+  await expect(adding).rejects.toBeInstanceOf(CliError);
+  await expect(adding).rejects.toThrow("name");
+  await expect(adding).rejects.toThrow("英小文字");
+  await expect(adding).rejects.not.toThrow("templates[0]");
+  expect(existsSync(dir)).toBe(false);
+});
+
+// `tags` に空の文字列がある（異常系）
+test("test_add_template_when_tags_empty", async () => {
+  // 準備
+  const { addTemplate } = await loadTemplates();
+  const { CliError } = await loadErrors();
+  const work = await createTempDir();
+  const dir = join(await createTempDir(), "css");
+  await writeFiles(work, { "brand.css": BRAND_CSS });
+  // 実行
+  const adding = addTemplate({
+    dir,
+    source: join(work, "brand.css"),
+    name: "brand",
+    description: "x",
+    tags: [""],
+    overwrite: false,
+  });
+  // 検証
+  await expect(adding).rejects.toBeInstanceOf(CliError);
+  await expect(adding).rejects.toThrow("tags");
+  expect(existsSync(dir)).toBe(false);
+});
+
 // 無い CSS（異常系）
 test("test_add_template_when_source_missing", async () => {
   // 準備
@@ -601,6 +649,32 @@ test("test_apply_template_when_target_missing", async () => {
   await expect(applying).rejects.toBeInstanceOf(CliError);
   await expect(applying).rejects.toThrow(target);
   expect(existsSync(target)).toBe(false);
+});
+
+// 索引に行があり、テンプレートのフォルダに CSS が無い（異常系）
+test("test_apply_template_when_css_missing", async () => {
+  // 準備
+  const { applyTemplate } = await loadTemplates();
+  const { CliError } = await loadErrors();
+  const { work } = await createApplyFixture();
+  const dir = await createTempDir();
+  await writeTemplates(dir, [
+    { name: "brand", file: "gone.css", description: "社の色" },
+  ]);
+  // 実行
+  const applying = applyTemplate({
+    dir,
+    name: "brand",
+    cwd: work,
+    target: undefined,
+    overwrite: false,
+  });
+  // 検証
+  await expect(applying).rejects.toBeInstanceOf(CliError);
+  await expect(applying).rejects.toThrow("brand");
+  await expect(applying).rejects.toThrow(join(dir, "gone.css"));
+  await expect(applying).rejects.toThrow("add_template");
+  expect(existsSync(join(work, "brand.css"))).toBe(false);
 });
 
 // 索引に無い名前（異常系）
