@@ -5570,7 +5570,7 @@ flows:
       - '`mermaid.url` の本体への要求が 1 件のまま'
     test: test_normal_when_mermaid_scheme_changed
   - name: 正常系（印刷で mermaid の図を明るい配色にする）
-    summary: ダークで開いた文書を印刷するとき、mermaid の図を明るい配色で描き直し、印刷の後に今の配色へ戻す
+    summary: ダークで開いた文書では明るい配色の SVG も先に描いて並べ、印刷のメディアでは明るい配色の SVG だけを出す
     setup:
       - name: 配布物を読んだページ
         description: 'OS の配色はダーク（`prefers-color-scheme: dark`）。ほかは正常系（mermaid のコードブロックを描く）と同じ'
@@ -5580,15 +5580,14 @@ flows:
         participant M as mdmark
         participant X as mermaid
         P->>M: mount(el, { markdown, config })
-        M->>P: 暗い配色の図を描く
-        P->>M: beforeprint
-        M->>X: 明るい配色のテーマで render を呼び直す
-        M->>P: 明るい配色の図に置き換える
-        P->>M: afterprint
-        M->>P: 暗い配色の図に戻す
+        M->>X: 暗い配色と明るい配色のテーマで render を呼ぶ
+        M->>P: 2 つの SVG を表示する枠に並べ、画面では暗い配色の SVG を出す
+        P->>P: 印刷のメディアにする
+        P-->>P: 明るい配色の SVG だけが見える
     expected:
-      - '`beforeprint` の後、flowchart のノードの塗りの計算済みの色が、明るい配色の `--mdmark-color-surface` の値と一致する'
-      - '`afterprint` の後、ノードの塗りの計算済みの色が、暗い配色の `--mdmark-color-surface` の計算済みの色に戻る'
+      - 画面のメディアでは、見えている SVG の flowchart のノードの塗りの計算済みの色が、暗い配色の `--mdmark-color-surface` の計算済みの色と一致する
+      - '`page.emulateMedia({ media: "print" })` の間は、見えている SVG が 1 つで、ノードの塗りの計算済みの色が明るい配色の `--mdmark-color-surface` の値と一致する'
+      - OS の配色がライトの文書では、表示する枠の SVG が 1 つ
     test: test_normal_when_mermaid_printed
   - name: 正常系（mermaid のテーマを設定で変える）
     summary: 設定で mermaid のテーマの名前を選び、変数を上書きする。`useGradient`・`dropShadow` は上書きできず、知らないテーマの名前は `mdmark` にする
@@ -6315,7 +6314,7 @@ constraints:
     constraint: '`initialize` には `startOnLoad: false`・`securityLevel: "strict"`・`theme`・`themeVariables` を渡し、使う側の設定でこの 2 つ（`startOnLoad`・`securityLevel`）を変えさせない。対象を文書の順に `render` し、返った SVG を図の枠（部品設計『図の枠』の種類 `mermaid`）の表示する枠に入れて、対象のコードブロックと置き換える。図の枠のタイトルは front matter の `title`、無ければ `accTitle`、どちらも無ければ図の種類の名前（`flowchart`・`graph` → フローチャート／`sequenceDiagram` → シーケンス図／`classDiagram` → クラス図／`stateDiagram`・`stateDiagram-v2` → 状態遷移図／`erDiagram` → ER 図／`gantt` → ガントチャート／`pie` → 円グラフ／ほか → 図）にし、front matter の `title` は図の中に重ねて描かない。範囲・更新日は出さない。シーケンス図の `actor` は lucide の人のアイコンに替え、本文の色の線で描く。開いたときの倍率は全体が収まる倍率で、0.75 より小さくしない（収まらない分は枠の中で動かす）。ガントチャートは描く先の幅と 720px の大きいほうの幅で描く'
     notes: 見た目はモック `dev/mock/components/mermaid-diagram/`（確認ログ）。倍率の下限とガントチャートの幅はモックで描いて決めた
   - item: mermaid のテーマ
-    constraint: '`theme` が `mdmark` のとき、描く先の要素の計算済みの CSS 変数（色は試しの要素の `color` で解決して sRGB の hex。`rgb()`・`rgba()` は値を読み、ほかの書き方は canvas で変換する）から mermaid の `base` テーマの変数を作る。対応はモジュール構成で表にする。どのテーマでも `useGradient: false`・`dropShadow: "none"` にし、SVG の filter の影も外す。描く先の配色の明暗（`colorScheme`・page のマーカー・祖先の class・OS の設定）が変わったら、変わった後の値で描き直す。印刷では、`beforeprint` で明るい配色の CSS 変数から作ったテーマで描き直し、`afterprint` で今の配色の値で描き直す（制約「配色の切り替え」の印刷で明るい配色にするのと揃える）'
+    constraint: '`theme` が `mdmark` のとき、描く先の要素の計算済みの CSS 変数（色は試しの要素の `color` で解決して sRGB の hex。`rgb()`・`rgba()` は値を読み、ほかの書き方は canvas で変換する）から mermaid の `base` テーマの変数を作る。対応はモジュール構成で表にする。どのテーマでも `useGradient: false`・`dropShadow: "none"` にし、SVG の filter の影も外す。描く先の配色の明暗（`colorScheme`・page のマーカー・祖先の class・OS の設定）が変わったら、変わった後の値で描き直す。印刷では明るい配色の図を出す。暗い配色で描くときは、明るい配色の CSS 変数（描く先の要素の中に置く、明るい配色の class を付けた試しの要素で解決する）から作ったテーマでも先に `render` し、2 つの SVG を表示する枠に並べて、画面では今の配色の SVG、`@media print` では明るい配色の SVG だけを出す。明るい配色で描くときは SVG を 1 つだけ置く（制約「配色の切り替え」の印刷で明るい配色にするのと揃える。`render` は非同期で、`beforeprint` の中で描き直しても印刷のレイアウトに間に合わないため、印刷のきっかけを待たない）'
     notes: PoC #384 で、`color-mix()` を含む CSS 変数を hex にして `base` テーマへ渡せることを確かめた。デザイン方針の「使わないもの」（影・グラデーション）
   - item: mermaid を読めないとき
     constraint: mermaid を読めないときは、各 mermaid の対象の前に知らせの枠（本文の文言は画面設計『文書』）を置き、コードブロックのまま残す。解釈できないソースは書き方の警告を置いてコードブロックのまま残す
