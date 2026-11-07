@@ -1,0 +1,27 @@
+<pre class="poc-mermaid" data-kind="flowchart">flowchart LR
+  A[入力] --> B{判定}
+  B -->|はい| C[保存]
+  B -->|いいえ| D[破棄]</pre>
+<pre class="poc-mermaid" data-kind="sequence">sequenceDiagram
+  actor U as 利用者
+  participant S as サーバー
+  U->>S: 要求
+  Note right of S: 処理する
+  S-->>U: 応答</pre>
+<pre class="poc-mermaid" data-kind="class">classDiagram
+  class Doc { +title: string +render() }
+  Doc <|-- Page</pre>
+<pre class="poc-mermaid" data-kind="state">stateDiagram-v2
+  [*] --> 下書き
+  下書き --> 公開
+  公開 --> [*]</pre>
+<pre class="poc-mermaid" data-kind="er">erDiagram
+  DOC ||--o{ TERM : has</pre>
+<pre class="poc-mermaid" data-kind="gantt">gantt
+  dateFormat YYYY-MM-DD
+  section 設計
+  要件 :a1, 2026-11-01, 3d
+  実装 :after a1, 5d</pre>
+<pre class="poc-mermaid" data-kind="pie">pie title 割合
+  "A" : 40
+  "B" : 60</pre>

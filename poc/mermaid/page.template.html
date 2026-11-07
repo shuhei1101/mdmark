@@ -1,0 +1,13 @@
+<!doctype html>
+<html lang="ja"><head><meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="__CSP__">
+<title>PoC CSP</title>
+<script nonce="poc">window.__csp = []; document.addEventListener("securitypolicyviolation", (e) => window.__csp.push(`${e.violatedDirective} ${e.blockedURI}`));</script>
+<link rel="stylesheet" href="./index.css">
+</head><body><div class="mdmark">__DIAGRAMS__</div>
+<script type="module" nonce="poc">
+import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@12.3.0/dist/mermaid.esm.min.mjs";
+import { run } from "./logic.js";
+run(mermaid);
+</script>
+</body></html>

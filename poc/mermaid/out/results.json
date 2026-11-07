@@ -1,0 +1,427 @@
+{
+  "csp": "default-src 'none'; script-src 'nonce-poc' https://cdn.jsdelivr.net http://127.0.0.1:57446; style-src https://cdn.jsdelivr.net http://127.0.0.1:57446 'unsafe-inline'; img-src http://127.0.0.1:57446 https: data:; media-src http://127.0.0.1:57446 https: data:; font-src https://cdn.jsdelivr.net http://127.0.0.1:57446; connect-src https://cdn.jsdelivr.net",
+  "export-light": {
+    "poc": {
+      "errors": [],
+      "svgs": 7,
+      "variables": {
+        "background": {
+          "name": "--mdmark-color-bg",
+          "computed": "rgb(255, 255, 255)",
+          "hex": "#ffffff"
+        },
+        "primaryColor": {
+          "name": "--mdmark-color-surface",
+          "computed": "rgb(244, 244, 245)",
+          "hex": "#f4f4f5"
+        },
+        "primaryTextColor": {
+          "name": "--mdmark-color-text",
+          "computed": "rgb(24, 24, 27)",
+          "hex": "#18181b"
+        },
+        "primaryBorderColor": {
+          "name": "--mdmark-color-border",
+          "computed": "rgb(228, 228, 231)",
+          "hex": "#e4e4e7"
+        },
+        "lineColor": {
+          "name": "--mdmark-color-diagram-line",
+          "computed": "rgb(113, 113, 122)",
+          "hex": "#71717a"
+        },
+        "textColor": {
+          "name": "--mdmark-color-text",
+          "computed": "rgb(24, 24, 27)",
+          "hex": "#18181b"
+        },
+        "noteBkgColor": {
+          "name": "--mdmark-color-border-muted",
+          "computed": "oklab(0.943804 0.000836098 -0.00268934)",
+          "hex": "#ececee"
+        },
+        "tertiaryColor": {
+          "name": "--mdmark-color-scroll-shadow",
+          "computed": "rgba(24, 24, 27, 0.14)",
+          "hex": "#15151c24"
+        }
+      },
+      "checks": [
+        {
+          "variable": "primaryColor",
+          "selector": "flowchart .node rect",
+          "property": "fill",
+          "actual": "rgb(244, 244, 245)",
+          "expected": "#f4f4f5",
+          "match": true
+        },
+        {
+          "variable": "primaryBorderColor",
+          "selector": "flowchart .node rect",
+          "property": "stroke",
+          "actual": "rgb(228, 228, 231)",
+          "expected": "#e4e4e7",
+          "match": true
+        },
+        {
+          "variable": "primaryTextColor",
+          "selector": "flowchart .node .nodeLabel",
+          "property": "color",
+          "actual": "rgb(24, 24, 27)",
+          "expected": "#18181b",
+          "match": true
+        },
+        {
+          "variable": "lineColor",
+          "selector": "flowchart .flowchart-link",
+          "property": "stroke",
+          "actual": "rgb(113, 113, 122)",
+          "expected": "#71717a",
+          "match": true
+        },
+        {
+          "variable": "textColor",
+          "selector": "sequence .messageText",
+          "property": "fill",
+          "actual": "rgb(24, 24, 27)",
+          "expected": "#18181b",
+          "match": true
+        },
+        {
+          "variable": "noteBkgColor",
+          "selector": "sequence rect.note",
+          "property": "fill",
+          "actual": "rgb(236, 236, 238)",
+          "expected": "#ececee",
+          "match": true
+        }
+      ],
+      "font": {
+        "expected": "system-ui, -apple-system, \"Segoe UI\", \"Hiragino Sans\", \"Noto Sans JP\",\n      \"Yu Gothic UI\", Meiryo, sans-serif",
+        "actual": "system-ui, -apple-system, \"Segoe UI\", \"Hiragino Sans\", \"Noto Sans JP\", \"Yu Gothic UI\", Meiryo, sans-serif",
+        "match": true
+      }
+    },
+    "cspViolations": [],
+    "externalRequests": [],
+    "consoleErrors": []
+  },
+  "csp-light": {
+    "poc": {
+      "errors": [],
+      "svgs": 7,
+      "variables": {
+        "background": {
+          "name": "--mdmark-color-bg",
+          "computed": "rgb(255, 255, 255)",
+          "hex": "#ffffff"
+        },
+        "primaryColor": {
+          "name": "--mdmark-color-surface",
+          "computed": "rgb(244, 244, 245)",
+          "hex": "#f4f4f5"
+        },
+        "primaryTextColor": {
+          "name": "--mdmark-color-text",
+          "computed": "rgb(24, 24, 27)",
+          "hex": "#18181b"
+        },
+        "primaryBorderColor": {
+          "name": "--mdmark-color-border",
+          "computed": "rgb(228, 228, 231)",
+          "hex": "#e4e4e7"
+        },
+        "lineColor": {
+          "name": "--mdmark-color-diagram-line",
+          "computed": "rgb(113, 113, 122)",
+          "hex": "#71717a"
+        },
+        "textColor": {
+          "name": "--mdmark-color-text",
+          "computed": "rgb(24, 24, 27)",
+          "hex": "#18181b"
+        },
+        "noteBkgColor": {
+          "name": "--mdmark-color-border-muted",
+          "computed": "oklab(0.943804 0.000836098 -0.00268934)",
+          "hex": "#ececee"
+        },
+        "tertiaryColor": {
+          "name": "--mdmark-color-scroll-shadow",
+          "computed": "rgba(24, 24, 27, 0.14)",
+          "hex": "#15151c24"
+        }
+      },
+      "checks": [
+        {
+          "variable": "primaryColor",
+          "selector": "flowchart .node rect",
+          "property": "fill",
+          "actual": "rgb(244, 244, 245)",
+          "expected": "#f4f4f5",
+          "match": true
+        },
+        {
+          "variable": "primaryBorderColor",
+          "selector": "flowchart .node rect",
+          "property": "stroke",
+          "actual": "rgb(228, 228, 231)",
+          "expected": "#e4e4e7",
+          "match": true
+        },
+        {
+          "variable": "primaryTextColor",
+          "selector": "flowchart .node .nodeLabel",
+          "property": "color",
+          "actual": "rgb(24, 24, 27)",
+          "expected": "#18181b",
+          "match": true
+        },
+        {
+          "variable": "lineColor",
+          "selector": "flowchart .flowchart-link",
+          "property": "stroke",
+          "actual": "rgb(113, 113, 122)",
+          "expected": "#71717a",
+          "match": true
+        },
+        {
+          "variable": "textColor",
+          "selector": "sequence .messageText",
+          "property": "fill",
+          "actual": "rgb(24, 24, 27)",
+          "expected": "#18181b",
+          "match": true
+        },
+        {
+          "variable": "noteBkgColor",
+          "selector": "sequence rect.note",
+          "property": "fill",
+          "actual": "rgb(236, 236, 238)",
+          "expected": "#ececee",
+          "match": true
+        }
+      ],
+      "font": {
+        "expected": "system-ui, -apple-system, \"Segoe UI\", \"Hiragino Sans\", \"Noto Sans JP\",\n      \"Yu Gothic UI\", Meiryo, sans-serif",
+        "actual": "system-ui, -apple-system, \"Segoe UI\", \"Hiragino Sans\", \"Noto Sans JP\", \"Yu Gothic UI\", Meiryo, sans-serif",
+        "match": true
+      }
+    },
+    "cspViolations": [],
+    "externalRequests": 55,
+    "consoleErrors": []
+  },
+  "export-dark": {
+    "poc": {
+      "errors": [],
+      "svgs": 7,
+      "variables": {
+        "background": {
+          "name": "--mdmark-color-bg",
+          "computed": "rgb(19, 19, 22)",
+          "hex": "#131316"
+        },
+        "primaryColor": {
+          "name": "--mdmark-color-surface",
+          "computed": "rgb(27, 27, 31)",
+          "hex": "#1b1b1f"
+        },
+        "primaryTextColor": {
+          "name": "--mdmark-color-text",
+          "computed": "rgb(237, 237, 239)",
+          "hex": "#ededef"
+        },
+        "primaryBorderColor": {
+          "name": "--mdmark-color-border",
+          "computed": "rgb(38, 38, 43)",
+          "hex": "#26262b"
+        },
+        "lineColor": {
+          "name": "--mdmark-color-diagram-line",
+          "computed": "rgb(143, 143, 153)",
+          "hex": "#8f8f99"
+        },
+        "textColor": {
+          "name": "--mdmark-color-text",
+          "computed": "rgb(237, 237, 239)",
+          "hex": "#ededef"
+        },
+        "noteBkgColor": {
+          "name": "--mdmark-color-border-muted",
+          "computed": "oklab(0.245889 0.00225046 -0.00792008)",
+          "hex": "#202025"
+        },
+        "tertiaryColor": {
+          "name": "--mdmark-color-scroll-shadow",
+          "computed": "rgba(0, 0, 0, 0.6)",
+          "hex": "#00000099"
+        }
+      },
+      "checks": [
+        {
+          "variable": "primaryColor",
+          "selector": "flowchart .node rect",
+          "property": "fill",
+          "actual": "rgb(27, 27, 31)",
+          "expected": "#1b1b1f",
+          "match": true
+        },
+        {
+          "variable": "primaryBorderColor",
+          "selector": "flowchart .node rect",
+          "property": "stroke",
+          "actual": "rgb(38, 38, 43)",
+          "expected": "#26262b",
+          "match": true
+        },
+        {
+          "variable": "primaryTextColor",
+          "selector": "flowchart .node .nodeLabel",
+          "property": "color",
+          "actual": "rgb(237, 237, 239)",
+          "expected": "#ededef",
+          "match": true
+        },
+        {
+          "variable": "lineColor",
+          "selector": "flowchart .flowchart-link",
+          "property": "stroke",
+          "actual": "rgb(143, 143, 153)",
+          "expected": "#8f8f99",
+          "match": true
+        },
+        {
+          "variable": "textColor",
+          "selector": "sequence .messageText",
+          "property": "fill",
+          "actual": "rgb(237, 237, 239)",
+          "expected": "#ededef",
+          "match": true
+        },
+        {
+          "variable": "noteBkgColor",
+          "selector": "sequence rect.note",
+          "property": "fill",
+          "actual": "rgb(32, 32, 37)",
+          "expected": "#202025",
+          "match": true
+        }
+      ],
+      "font": {
+        "expected": "system-ui, -apple-system, \"Segoe UI\", \"Hiragino Sans\", \"Noto Sans JP\",\n      \"Yu Gothic UI\", Meiryo, sans-serif",
+        "actual": "system-ui, -apple-system, \"Segoe UI\", \"Hiragino Sans\", \"Noto Sans JP\", \"Yu Gothic UI\", Meiryo, sans-serif",
+        "match": true
+      }
+    },
+    "cspViolations": [],
+    "externalRequests": [],
+    "consoleErrors": []
+  },
+  "csp-dark": {
+    "poc": {
+      "errors": [],
+      "svgs": 7,
+      "variables": {
+        "background": {
+          "name": "--mdmark-color-bg",
+          "computed": "rgb(19, 19, 22)",
+          "hex": "#131316"
+        },
+        "primaryColor": {
+          "name": "--mdmark-color-surface",
+          "computed": "rgb(27, 27, 31)",
+          "hex": "#1b1b1f"
+        },
+        "primaryTextColor": {
+          "name": "--mdmark-color-text",
+          "computed": "rgb(237, 237, 239)",
+          "hex": "#ededef"
+        },
+        "primaryBorderColor": {
+          "name": "--mdmark-color-border",
+          "computed": "rgb(38, 38, 43)",
+          "hex": "#26262b"
+        },
+        "lineColor": {
+          "name": "--mdmark-color-diagram-line",
+          "computed": "rgb(143, 143, 153)",
+          "hex": "#8f8f99"
+        },
+        "textColor": {
+          "name": "--mdmark-color-text",
+          "computed": "rgb(237, 237, 239)",
+          "hex": "#ededef"
+        },
+        "noteBkgColor": {
+          "name": "--mdmark-color-border-muted",
+          "computed": "oklab(0.245889 0.00225046 -0.00792008)",
+          "hex": "#202025"
+        },
+        "tertiaryColor": {
+          "name": "--mdmark-color-scroll-shadow",
+          "computed": "rgba(0, 0, 0, 0.6)",
+          "hex": "#00000099"
+        }
+      },
+      "checks": [
+        {
+          "variable": "primaryColor",
+          "selector": "flowchart .node rect",
+          "property": "fill",
+          "actual": "rgb(27, 27, 31)",
+          "expected": "#1b1b1f",
+          "match": true
+        },
+        {
+          "variable": "primaryBorderColor",
+          "selector": "flowchart .node rect",
+          "property": "stroke",
+          "actual": "rgb(38, 38, 43)",
+          "expected": "#26262b",
+          "match": true
+        },
+        {
+          "variable": "primaryTextColor",
+          "selector": "flowchart .node .nodeLabel",
+          "property": "color",
+          "actual": "rgb(237, 237, 239)",
+          "expected": "#ededef",
+          "match": true
+        },
+        {
+          "variable": "lineColor",
+          "selector": "flowchart .flowchart-link",
+          "property": "stroke",
+          "actual": "rgb(143, 143, 153)",
+          "expected": "#8f8f99",
+          "match": true
+        },
+        {
+          "variable": "textColor",
+          "selector": "sequence .messageText",
+          "property": "fill",
+          "actual": "rgb(237, 237, 239)",
+          "expected": "#ededef",
+          "match": true
+        },
+        {
+          "variable": "noteBkgColor",
+          "selector": "sequence rect.note",
+          "property": "fill",
+          "actual": "rgb(32, 32, 37)",
+          "expected": "#202025",
+          "match": true
+        }
+      ],
+      "font": {
+        "expected": "system-ui, -apple-system, \"Segoe UI\", \"Hiragino Sans\", \"Noto Sans JP\",\n      \"Yu Gothic UI\", Meiryo, sans-serif",
+        "actual": "system-ui, -apple-system, \"Segoe UI\", \"Hiragino Sans\", \"Noto Sans JP\", \"Yu Gothic UI\", Meiryo, sans-serif",
+        "match": true
+      }
+    },
+    "cspViolations": [],
+    "externalRequests": 55,
+    "consoleErrors": []
+  }
+}
