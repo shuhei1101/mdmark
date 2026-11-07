@@ -423,6 +423,51 @@ suite("プレビューを開く", () => {
     assert.strictEqual(recordedPanels().length, 1);
   });
 
+  // preview.theme が auto のときは設定ファイルの colorScheme を渡し、文書の page のマーカーはどの設定より優先する
+  test("test_normal_when_color_scheme", async () => {
+    // 準備
+    await writeFixture("mdmark.config.yaml", "colorScheme: light\n");
+    await writeFixture("a.md", "# A\n\n段落\n");
+    await writeFixture("b.md", "<!-- page: scheme=dark -->\n\n# B\n\n段落\n");
+    await setSetting("preview.theme", "auto");
+    await openMarkdown("a.md");
+    // 実行
+    await vscode.commands.executeCommand("mdmark.openPreviewToSide");
+    const record = lastPanel();
+    await waitForRendered(record);
+    // 検証: 設定ファイルの明暗を渡す
+    assert.strictEqual(renders(record).at(-1)?.config.colorScheme, "light");
+    const [light] = await inspect("[data-mdmark-color-theme]");
+    assert.ok(light?.className.split(" ").includes("mdmark-theme-light"));
+    // 実行: preview.theme を dark にする
+    await setSetting("preview.theme", "dark");
+    await waitForRendered(record, 2);
+    // 検証: 設定ファイルの明暗を渡さず、包む要素を dark にする
+    assert.ok(!("colorScheme" in (renders(record).at(-1)?.config ?? {})));
+    const [wrapper] = await inspect("#mdmark-preview");
+    assert.ok(wrapper?.className.split(" ").includes("mdmark-theme-dark"));
+    // 実行: b.md を開き、preview.theme を light にする
+    await openMarkdown("b.md");
+    await vscode.commands.executeCommand("mdmark.openPreviewToSide");
+    const recordB = lastPanel();
+    await setSetting("preview.theme", "light");
+    await waitFor(
+      () =>
+        renders(recordB).some(
+          (message) =>
+            message.theme === "light" && message.markdown.includes("# B"),
+        ),
+      { message: "b.md を light で描いていない" },
+    );
+    await waitFor(
+      async () =>
+        (await inspect("[data-mdmark-color-theme]"))[0]?.className
+          .split(" ")
+          .includes("mdmark-theme-dark") ?? false,
+      { message: "b.md のマーカーの明暗で描いていない" },
+    );
+  });
+
   // Markdown からの相対パスの画像を読む
   test("test_normal_when_relative_image", async () => {
     // 準備

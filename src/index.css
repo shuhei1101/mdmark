@@ -9368,6 +9368,80 @@
       color: var(--mdmark-color-text);
       font-weight: 600;
     }
+
+    /* カードの格子: 1 枚の幅を 14rem 以上にして入るだけ並べ、狭い幅では 1 列に積む */
+    .mdmark-card-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(min(100%, 14rem), 1fr));
+      gap: 0.75rem;
+      margin-block: var(--mdmark-space);
+      padding: 0;
+      list-style: none;
+
+      > li {
+        margin: 0;
+      }
+    }
+
+    /* 格子のカード: 線で囲み、上にアイコンとタイトル、下に説明を置く */
+    .mdmark-card-grid-item {
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr);
+      grid-template-rows: auto 1fr;
+      gap: 0.35em 0.6em;
+      align-content: start;
+      box-sizing: border-box;
+      min-height: 100%;
+      padding: 0.85em 1em;
+      border: 1px solid var(--mdmark-color-border);
+      border-radius: var(--mdmark-radius);
+      color: var(--mdmark-color-text);
+      text-decoration: none;
+
+      &:not(:has(.mdmark-card-grid-icon)) .mdmark-card-grid-title {
+        grid-column: 1 / -1;
+      }
+    }
+
+    /* リンクのカード: 押せることを面の色と輪郭で示す。タイトルはリンクの色と下線 */
+    a.mdmark-card-grid-item {
+      &:hover {
+        background: var(--mdmark-color-surface);
+        border-color: var(--mdmark-color-link);
+      }
+
+      &:focus-visible {
+        outline: 2px solid var(--mdmark-color-link);
+        outline-offset: 2px;
+      }
+
+      .mdmark-card-grid-title {
+        color: var(--mdmark-color-link);
+        text-decoration: underline;
+        text-underline-offset: 0.2em;
+      }
+    }
+
+    /* 格子のカードのアイコン: タイトルの行の先頭に控えめな色で置く */
+    .mdmark-card-grid-icon {
+      --mdmark-icon-inline-size: 1.25rem;
+      margin-top: 0.1em;
+      color: var(--mdmark-color-muted);
+    }
+
+    .mdmark-card-grid-title {
+      font-weight: 600;
+      overflow-wrap: anywhere;
+    }
+
+    /* 格子のカードの説明: タイトルの下に全幅で出し、長い文も折り返す */
+    .mdmark-card-grid-desc {
+      grid-column: 1 / -1;
+      margin: 0;
+      color: var(--mdmark-color-muted);
+      font-size: 0.875em;
+      overflow-wrap: anywhere;
+    }
   }
 
   /* ライトボックス: 図の全画面と同じく画面の端から 16px 空けて広げ、後ろの文書を暗くする */
@@ -9559,6 +9633,11 @@
         height: auto;
         border: 1px solid var(--mdmark-color-border);
         border-radius: var(--mdmark-radius);
+      }
+
+      .mdmark-card-grid-item {
+        break-inside: avoid;
+        background: none;
       }
 
       .mdmark-card {

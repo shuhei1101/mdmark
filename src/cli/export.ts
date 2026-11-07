@@ -390,6 +390,9 @@ export async function prepareEmbeds(options: EmbedOptions): Promise<{
         ? { "side-toc": loaded.config["side-toc"] }
         : {}),
       ...(colorTheme !== undefined ? { colorTheme } : {}),
+      ...(loaded.config.colorScheme !== undefined
+        ? { colorScheme: loaded.config.colorScheme }
+        : {}),
       ...(loaded.config.labels ? { labels: loaded.config.labels } : {}),
       // 埋めたモジュールは開いたときに束ねたモジュールを渡すため、値は印の名前にする（埋められなかった印が外へ要求しない）
       libraries: Object.fromEntries(

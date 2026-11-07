@@ -96,7 +96,7 @@ settings:
     type: '"auto" | "light" | "dark"'
     required: false
     default: auto
-    description: '`auto` は VS Code のテーマの明暗に合わせ、`light`・`dark` はその配色に固定する'
+    description: '`auto` は設定ファイルの `colorScheme`、無ければ VS Code のテーマの明暗に合わせ、`light`・`dark` はその配色に固定する。文書の先頭の `<!-- page: scheme=… -->` はこの設定より優先する'
     reload: immediate
     refs:
       - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[配色の切り替え]
@@ -221,6 +221,18 @@ settings:
     visibility: user
     introduced:
       pr: 181
+  - key: colorScheme
+    title: 配色の明暗（拡張機能が渡す）
+    file: mdmark.config.yaml
+    type: string
+    required: false
+    default: なし（`mount` に渡さず、VS Code のテーマの明暗で描く）
+    description: '`mdmark.preview.theme` が `auto` のときだけ、拡張機能は書いた値をそのまま `mount` の `opts.config.colorScheme` に渡す。`light`・`dark` のときは渡さない'
+    reload: immediate
+    refs:
+      - dev/設計書/設定/ライブラリ本体#settings[colorScheme]
+    status: planned
+    visibility: user
   - key: assets.root
     title: アセットのルート（拡張機能が読む）
     file: mdmark.config.yaml

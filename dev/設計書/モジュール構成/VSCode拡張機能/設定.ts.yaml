@@ -48,7 +48,7 @@ data_models:
     title: mount に渡す設定
     container: vscode/src/config.ts
     usecase: 共通
-    summary: 設定ファイルから取り出した `features`・`libraries`・`html-scripts`・`side-toc`・`colorTheme`。`render` の `config` と書き出す HTML の `config` になる
+    summary: 設定ファイルから取り出した `features`・`libraries`・`html-scripts`・`side-toc`・`colorTheme`・`colorScheme`。`render` の `config` と書き出す HTML の `config` になる
     properties:
       - name: features
         type: Record<string, unknown> | undefined
@@ -62,6 +62,9 @@ data_models:
       - name: colorTheme
         type: string | undefined
         description: 設定ファイルに書いた値のまま。`mdmark.colorTheme` が空でないときは `applyColorTheme` がその値に置き換える（知らない名前は mdmark が dev-swiss で描く）
+      - name: colorScheme
+        type: string | undefined
+        description: 設定ファイルに書いた値のまま。プレビューでは `mdmark.preview.theme` が `light`・`dark` のとき `applyPreviewTheme` が除く（知らない値は mdmark が `auto` で描く）
     status: planned
   - name: ConfigLoad
     title: 設定ファイルの読み取りの結果
@@ -71,7 +74,7 @@ data_models:
     properties:
       - name: config
         type: PreviewConfig
-        description: 重ねた設定のうち、マップの `features`・`libraries`・`html-scripts`・`side-toc` と文字列の `colorTheme`。読めない・形の合わないファイルは重ねずに残りを重ねた値。相対パスはその値を書いた設定ファイルのフォルダから解決した絶対パス
+        description: 重ねた設定のうち、マップの `features`・`libraries`・`html-scripts`・`side-toc` と文字列の `colorTheme`・`colorScheme`。読めない・形の合わないファイルは重ねずに残りを重ねた値。相対パスはその値を書いた設定ファイルのフォルダから解決した絶対パス
       - name: theme
         type: string | undefined
         description: 重ねた設定の `theme` の絶対パス
@@ -242,7 +245,7 @@ functions:
     kind: 関数
     container: vscode/src/config.ts
     usecase: 書いた内容をプレビューに映す
-    summary: YAML を `yaml` の `parse` で読み、最上位がマップのときだけ `features`・`libraries`・`html-scripts`・`side-toc`・`colorTheme` を取り出す。`assets` がマップで `root` が文字列なら `assetsRoot` に入れる
+    summary: YAML を `yaml` の `parse` で読み、最上位がマップのときだけ `features`・`libraries`・`html-scripts`・`side-toc`・`colorTheme`・`colorScheme` を取り出す。`assets` がマップで `root` が文字列なら `assetsRoot` に入れる
     scope: public
     args:
       - name: text
@@ -256,7 +259,7 @@ functions:
       1. `parse(text)` を呼ぶ
          - `YAMLParseError` の場合、`{ kind: "error", line: error.linePos[0].line, message: error.message }` を返す
       2. 最上位がマップでなければ（空のファイルを含む）`{ kind: "ok", config: {} }` を返す
-      3. `features`・`libraries`・`html-scripts`・`side-toc` のうち値がマップのキーと、値が文字列の `colorTheme` だけを `config` に入れ、`assets.root` が文字列なら `assetsRoot` に入れて返す。他のキーは読まない
+      3. `features`・`libraries`・`html-scripts`・`side-toc` のうち値がマップのキーと、値が文字列の `colorTheme`・`colorScheme` だけを `config` に入れ、`assets.root` が文字列なら `assetsRoot` に入れて返す。他のキーは読まない
     refs:
       - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを描き直す.ts#constraints[設定の取り出し方]
       - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを描き直す.ts#constraints[設定ファイルを読めないとき]
@@ -283,7 +286,7 @@ functions:
          - そのファイルが無い（`isFile` が `false`）場合、`explicit` を渡さず、`isFile` を常に `false` を返す関数にして呼ぶ（上へ探さず、端末の設定だけを重ねる）
       2. 設定を重ねて読む（設定を重ねて読む。`explicitName` は `mdmark.configPath`）
       3. 結果を `ConfigLoad` にする
-         - `config` は重ねた設定のうち、値がマップの `features`・`libraries`・`html-scripts`・`side-toc` と、値が文字列の `colorTheme` だけ
+         - `config` は重ねた設定のうち、値がマップの `features`・`libraries`・`html-scripts`・`side-toc` と、値が文字列の `colorTheme`・`colorScheme` だけ
          - `files` は重ねた設定ファイルの `path`、`theme`・`extensions`・`assetsRoot` は重ねた設定の `theme`・`extensions`・`assets.root`
          - `unreadable` がある場合、`problem` は `{ path, line, message }`。無く `issues` がある場合、`problem` は `{ path: issues[0].file, settingKey: issues[0].where, message: issues[0].message }`
     exceptions:
@@ -486,6 +489,33 @@ functions:
     status: planned
     introduced:
       pr: 181
+  - name: applyPreviewTheme
+    title: プレビューの配色の固定で明暗を外す
+    container: vscode/src/config.ts
+    usecase: プレビューをVSCodeのテーマに合わせる
+    kind: 関数
+    scope: public
+    summary: '`mdmark.preview.theme` が `light`・`dark` なら、設定から `colorScheme` を除いた設定を返す。`auto` なら `config` をそのまま返す'
+    description: プレビューの `render` だけが通し、書き出す HTML の `config` は通さない（書き出しは `mdmark.preview.theme` によらず設定ファイルの明暗を渡す）。渡されたオブジェクトは書き換えない
+    args:
+      - name: options
+        type: '{ config: PreviewConfig; theme: PreviewSettings["theme"] }'
+        required: true
+        description: '`applyColorTheme` の後の設定と、`readSettings` の `theme`'
+    returns:
+      type: PreviewConfig
+      description: プレビューの `render` に渡す設定
+    unit_tests:
+      - name: test_apply_preview_theme
+        case: 正常
+        summary: 固定した配色のときだけ設定の明暗を外す
+        condition: '`config` が `{ colorScheme: "light", colorTheme: "theme-paper" }` で、`theme` が `dark` と `auto`'
+        mock: なし
+        expected: '`dark` は `{ colorTheme: "theme-paper" }`、`auto` は `{ colorScheme: "light", colorTheme: "theme-paper" }`。渡した `config` は変わらない'
+    refs:
+      - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを開く.ts#constraints[配色]
+      - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを描き直す.ts#constraints[設定の取り出し方]
+    status: planned
   - name: bundleExtensions
     title: 拡張を束ねる
     kind: 関数

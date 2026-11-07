@@ -314,6 +314,27 @@ test("test_validate_config_when_color_theme_invalid", async () => {
   expect(unknown.config.colorTheme).toBe("sepia");
 });
 
+// 文字列でない colorScheme を schema のずれにして落とし、知らない値はそのまま残す（異常系）
+test("test_validate_config_when_color_scheme_invalid", async () => {
+  // 準備
+  const { validateConfig } = await loadModule();
+  // 実行
+  const invalid = validateConfig({ colorScheme: 1 }, "mdmark.config.yaml");
+  const unknown = validateConfig(
+    { colorScheme: "sepia" },
+    "mdmark.config.yaml",
+  );
+  // 検証
+  expect(invalid.issues).toHaveLength(1);
+  expect(invalid.issues[0]).toMatchObject({
+    where: "colorScheme",
+    kind: "schema",
+  });
+  expect(invalid.config.colorScheme).toBeUndefined();
+  expect(unknown.issues).toEqual([]);
+  expect(unknown.config.colorScheme).toBe("sepia");
+});
+
 // aliases の Schema に合わない行を schema のずれにし、行の位置を保つ（異常系）
 test("test_validate_config_when_aliases_invalid", async () => {
   // 準備

@@ -21,6 +21,7 @@ directory: |-
   ├── kbd.ts          # キー
   ├── highlight.ts    # 蛍光ペン
   ├── layout-columns.ts # 段組み
+  ├── card-grid.ts    # カードの格子
   ├── details.ts      # details の範囲
   ├── pagebreak.ts    # 改ページ
   ├── includes.ts     # 取り込みのパスの解き方・取り込む範囲の選び方・トークンの差し込み
@@ -2751,6 +2752,55 @@ functions:
         expected: それぞれの範囲の前に書き方の警告があり、その中身が `mdmark-layout-columns` に入っていない。入れ子の外側は 2 列のまま
         mock: なし
         summary: 2〜3 列でない範囲と入れ子は囲まずに警告する
+  - name: buildCardGrid
+    title: カードの格子にする
+    container: src/render/syntax/card-grid.ts
+    kind: 関数
+    scope: internal
+    summary: コアルール。`card-grid` がオンなら、`<!-- cards -->` 〜 `<!-- /cards -->` の中身のリスト 1 つを、項目ごとの最初のリンク・その前の `icon:名前` の行内のコード・残りの文字から部品『カードの格子』の HTML のトークンに置き換える。中身がリスト 1 つでないときは書き方の警告を差し込んで印だけを取り除く。オフのときは印を取り除く
+    description: 脚注の機能のオン・オフ（`collectFootnotes`）の後、行内のアイコン（`buildInlineIcons`）の直前に登録し、項目の `icon:` を行内のコードのまま読み、置き換えた範囲の中を行内のアイコンとリンクと添付のカード（`buildCards`）が触らないようにする。項目の最初のリンクが URL をそのまま書いたもの（`linkify`・`autolink`）なら、タイトルはスキームを除いた URL にする。リンクを持たない項目のタイトルは項目の最初の行の文字、説明は 2 行目以降の文字。リンクのカードの説明の中のリンクは文字だけにする。タイトルと説明は `SLOT_MARKER` で枠を作って `markOwn` を掛けた後に差し込む（notes「部品の差し込み方」）
+    args:
+      - name: state
+        type: StateCore
+        required: true
+        description: markdown-it の状態
+    side_effects: '`state.tokens` を書き換える'
+    callees:
+      - dev/設計書/モジュール構成/ライブラリ本体/部品.ts#functions[renderCardGrid]
+    unit_tests:
+      - name: test_build_card_grid
+        case: 正常
+        condition: '`` `icon:book` [使い方](a.md) `` の次の行に `導入の手順`、`[参照](b.md) 名前の一覧`、`https://example.com/docs`、`準備中` の 4 項目のリストを囲んだ範囲'
+        expected: '`renderCardGrid` に `[{ title: "使い方", href: "a.md", icon: "book", description: "導入の手順" }, { title: "参照", href: "b.md", description: "名前の一覧" }, { title: "example.com/docs", href: "https://example.com/docs" }, { title: "準備中" }]` を渡した HTML になり、`mdmark-card` の class が無い'
+        mock: なし
+        summary: 項目をカードの引数に分ける
+      - name: test_build_card_grid_when_not_list
+        case: 異常
+        condition: 段落 1 つとリストを囲んだ範囲
+        expected: 範囲の前に書き方の警告があり、段落とリストがそのまま残り、`mdmark-card-grid` が無い
+        mock: なし
+        summary: リスト 1 つでない範囲は囲まずに警告する
+      - name: test_build_card_grid_when_disabled
+        case: 正常
+        condition: '`card-grid` がオフで、URL だけの項目を含むリストを囲んだ範囲'
+        expected: 印が無く、リストがそのまま残る（URL だけの項目の段落は後の `buildCards` がカードにできる形のまま）
+        mock: なし
+        summary: オフのときは印だけを取り除く
+      - name: test_build_card_grid_when_item_has_html
+        case: 異常
+        condition: '`[使い方](a.md) <style>body{display:none}</style>説明` の項目を囲んだ範囲'
+        expected: カードが 1 枚あり、`render` の結果に `style` の要素と `display:none` が無い
+        mock: なし
+        summary: 項目に書いた HTML は mdmark が出した要素にしない
+      - name: test_build_card_grid_when_description_has_link
+        case: 正常
+        condition: '`[使い方](a.md) 詳しくは [参照](b.md)` の項目を囲んだ範囲'
+        expected: 説明が `詳しくは 参照` で、`href="b.md"` が無い
+        mock: なし
+        summary: リンクのカードの説明のリンクは文字だけにする
+    refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/文書をHTML文字列にする.ts#constraints[カードの格子]
+    status: planned
   - name: buildDetailsRanges
     title: details の範囲にする
     container: src/render/syntax/details.ts
@@ -3050,7 +3100,7 @@ functions:
     introduced:
       pr: 328
 notes:
-  コアルールの順: 描画の `createParser` が登録する。印 → 機能の重ね合わせ → 見出し → 用語集の表 → 行の詳細 → ビュー → 表 → タブ → ステップ → 注意書き → ファイルツリー → バッジ → 本文の文字の色 → 図の部品 → 埋め込んだ HTML → コードブロック → 画像の属性と種類 → 図表の番号 → ギャラリー → 画像と動画と音声の図 → カード → 用語の下線 → 節 → 目次 → 関連文書の一覧 → タスクリスト → www の自動リンク → 残った印を取り除く。行の詳細は表の囲みより前、節は記法の警告を差し込んだ後、目次は見出しの ID を付けた後。埋め込んだ HTML は用語の下線より前に置き、`html_block` にした中身を用語の下線が重ねて照合しないようにする。画像の属性は図表の番号より前に読み、図表の番号がギャラリーに番号を渡してからギャラリーを囲む。残った画像だけの段落は、その後に図にする
+  コアルールの順: 描画の `createParser` が登録する。印 → 機能の重ね合わせ → ページの設定 → 取り込み → 蛍光ペン → 脚注の機能のオン・オフ → カードの格子 → 行内のアイコン → 見出し → 用語集の表 → 行の詳細 → ビュー → CSV の表 → 表 → タブ → ステップ → 注意書き → ファイルツリー → バッジ → キー → 本文の文字の色 → 図の部品 → 埋め込んだ HTML → コードブロック → 表の見本の移動 → 画像の属性と種類 → 図表の番号 → ギャラリー → 画像と動画と音声の図 → カード → 段組み → details の範囲 → wide の範囲 → 改ページ → 用語の下線 → 節 → 目次 → 脚注の一覧 → 関連文書の一覧 → タスクリスト → www の自動リンク → 残った印を取り除く → 元の行番号 → 脚注の定義の取り出し → 書き方の警告を集める。行の詳細は表の囲みより前、節は記法の警告を差し込んだ後、目次は見出しの ID を付けた後。埋め込んだ HTML は用語の下線より前に置き、`html_block` にした中身を用語の下線が重ねて照合しないようにする。画像の属性は図表の番号より前に読み、図表の番号がギャラリーに番号を渡してからギャラリーを囲む。残った画像だけの段落は、その後に図にする
   部品の差し込み方: 中身を持つ部品（節・タブ・注意書き・行の詳細・図表の番号・表）は、中身の代わりに `SLOT_MARKER` を渡して HTML を作り、`markOwn` を掛けてから `SLOT_MARKER` の前後で分け、開きと閉じの `html_block` のトークンで中身のトークンを挟む。中身の HTML には `markOwn` を掛けない。見出し・表など Markdown から作ったトークンに付ける記法の属性は、同じトークンに `data-mdmark-own` も付ける。埋め込んだ HTML は例外で、`sanitizeEmbedded` で先に落とした中身にも `markOwn` を掛ける
 test_files:
   - tests/unit/src/render/syntax/headings.test.ts
@@ -3080,6 +3130,7 @@ test_files:
   - tests/unit/src/render/syntax/kbd.test.ts
   - tests/unit/src/render/syntax/highlight.test.ts
   - tests/unit/src/render/syntax/layout-columns.test.ts
+  - tests/unit/src/render/syntax/card-grid.test.ts
   - tests/unit/src/render/syntax/details.test.ts
   - tests/unit/src/render/syntax/pagebreak.test.ts
   - tests/unit/src/render/syntax/includes.test.ts

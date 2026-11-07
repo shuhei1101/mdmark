@@ -208,6 +208,41 @@ suite("HTML に書き出す", () => {
     assert.deepStrictEqual(opened, []);
     assert.deepStrictEqual(await readdir(join(workspaceDir(), "locked")), []);
   });
+
+  // mdmark.preview.theme によらず、設定ファイルの colorScheme を埋めた HTML を書き出す
+  test("test_normal_when_config_color_scheme", async () => {
+    // 準備
+    await writeFixture("mdmark.config.yaml", "colorScheme: dark\n");
+    await openGuide();
+    await setSetting("preview.theme", "light");
+    trackFile("docs/guide.html");
+    // 実行
+    await vscode.commands.executeCommand("mdmark.exportHtml");
+    // 検証
+    const path = join(workspaceDir(), "docs", "guide.html");
+    await waitFor(() => existsSync(path), { message: "書き出されない" });
+    assert.match(await readFixture("docs/guide.html"), /"colorScheme":"dark"/);
+    const exported = await openExported(path, async (page) => {
+      await page.emulateMedia({ colorScheme: "light" });
+    });
+    try {
+      await exported.page.waitForSelector(".mdmark h1");
+      const root = await exported.page.evaluate(() => {
+        const element = document.querySelector("[data-mdmark-color-theme]");
+        return {
+          dark: element?.classList.contains("mdmark-theme-dark") ?? false,
+          background: element
+            ? getComputedStyle(element)
+                .getPropertyValue("--mdmark-color-bg")
+                .trim()
+            : "",
+        };
+      });
+      assert.deepStrictEqual(root, { dark: true, background: "#131316" });
+    } finally {
+      await exported.close();
+    }
+  });
 });
 
 suite("ブラウザで開く", () => {

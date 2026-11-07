@@ -509,7 +509,7 @@ constraints:
     constraint: 設定に `aliases` があるとき、インターフェース定義『設定と索引を点検する』のエイリアスの点検と同じく行の `paths` の YAML を読んで `buildAliases` に渡し、返った `aliases`（`env` を含まない）を埋めて `mount` の `opts.aliases` に渡す。返った `problems` と、当たるファイルが無い行・読めないファイルは警告に出し、終了コードは 0 のまま
     decided_by: dev/設計書/インターフェース定義/ライブラリ本体/エイリアスを作る.ts#
   - item: 選ぶテーマ
-    constraint: 設定の `colorTheme` を、`tooltips.placement` と同じく埋める設定に写して `mount` の `opts.config` に渡す。無いときは写さず、`mount` の既定（`dev-swiss`）に任せる。知らないテーマの名前も写したうえで、標準エラーに知らないテーマの名前である旨を出す（終了コードは 0 のまま）
+    constraint: 設定の `colorTheme` と `colorScheme` を、`tooltips.placement` と同じく埋める設定に写して `mount` の `opts.config` に渡す。無いときは写さず、`mount` の既定（`dev-swiss`）に任せる。知らないテーマの名前も写したうえで、標準エラーに知らないテーマの名前である旨を出す（終了コードは 0 のまま）
     decided_by: dev/設計書/設定/ライブラリ本体#settings[colorTheme]
   - item: 部品の文言
     constraint: 設定の `labels` を、`tooltips.placement` と同じく埋める設定に写して `mount` の `opts.config` に渡す。無いときは写さず、`mount` の既定に任せる。`labels` がマップでない、または `labels.paramCopy` が空でない文字列でないときは設定ファイルの誤り（終了コード 1）にする

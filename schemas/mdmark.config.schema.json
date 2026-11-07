@@ -212,6 +212,12 @@
           "description": "リンク 1 つだけの段落をリンクと添付のカードにする。オフのときはリンクのまま描く。",
           "type": "boolean",
           "default": true
+        },
+        "card-grid": {
+          "title": "カードの格子の機能",
+          "description": "`<!-- cards -->` の印で囲んだリストをカードの格子にする。オフのときはリストのまま描く。",
+          "type": "boolean",
+          "default": true
         }
       },
       "additionalProperties": {
@@ -249,7 +255,8 @@
         "lightbox": true,
         "media": true,
         "gif": true,
-        "cards": true
+        "cards": true,
+        "card-grid": true
       }
     },
     "index": {
@@ -300,6 +307,12 @@
           "default": "hover"
         }
       }
+    },
+    "colorScheme": {
+      "title": "明暗",
+      "description": "描いた文書の明暗。`light` は明るい配色、`dark` はダークの配色に決め、`auto` は今の決め方（祖先の class・OS の設定）に任せる。文書の先頭の `<!-- page: scheme=… -->` の印がこの値に勝つ。`mount` は知らない値を無視して `auto` で描き、CLI は知らない値を `mdmark check` のずれ（`unknown_color_scheme`）にする。",
+      "type": "string",
+      "default": "auto"
     },
     "colorTheme": {
       "title": "選ぶテーマ",

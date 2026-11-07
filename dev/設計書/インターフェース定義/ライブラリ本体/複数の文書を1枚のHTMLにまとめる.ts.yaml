@@ -173,6 +173,30 @@ flows:
       - 終了コードが 0
       - 最初に開いた文書と、文書の一覧から移った 2 つ目の文書のどちらでも、文書の地の色の計算値が theme-slate の明るい配色の `--mdmark-color-bg` の値
     test: test_normal_when_color_theme
+  - name: 正常系（文書ごとのページの設定）
+    summary: page のマーカーを持つ文書と持たない文書を行き来すると、開いた文書の明暗で描き直す
+    setup:
+      - name: ページの設定を持つフォルダ
+        description: '正常系のフォルダで、`entry` の文書の先頭の行に `<!-- page: scheme=dark theme=theme-slate -->` を書き、もう 1 つの文書はマーカーを持たない'
+        notes: 設定は `colorScheme` を持たない。開くブラウザの配色はライト
+      - name: Mock
+        description: 差し替える依存は無い（書いた HTML だけを空のフォルダへ写して file:// で開く）
+    flow: |-
+      sequenceDiagram
+        participant W as 文書を書く人
+        participant C as mdmark build
+        participant H as まとめた HTML
+        W->>C: mdmark build
+        C->>H: マーカーを本文に残した文書を埋めて書く
+        W->>H: file:// で開き、もう 1 つの文書を選ぶ
+        H-->>W: 開いた文書の明暗で描き直す
+    expected:
+      - 開いたとき、描く先の要素が class `mdmark-theme-dark` と属性 `data-mdmark-color-theme="theme-slate"` を持つ
+      - もう 1 つの文書を選ぶと、描く先の要素が class `mdmark-theme-dark`・`mdmark-theme-light` を持たず、属性 `data-mdmark-color-theme` が `dev-swiss`
+      - 外への要求が 0 件
+    test: test_normal_when_page_settings_per_document
+    refs:
+      - dev/設計書/シナリオ/単一ユースケース/まとめたHTMLで文書を行き来する#scenarios[正常シナリオ（文書ごとのページの設定）]
   - name: 正常系（画像・動画・音声を埋める）
     summary: 2 つの文書が指す同じ画像を 1 回だけ埋め、動画・音声を出力の隣のフォルダへコピーする
     setup:
@@ -351,4 +375,7 @@ constraints:
     decided_by: dev/設計書/非機能要件/非機能要件#requirements[CLI が動く Node の版]
   - item: 取り込みとアイコン
     constraint: インターフェース定義『文書をHTMLに書き出す』の制約「埋める取り込み」「埋めるアイコン」と同じ。取り込む文書の表はまとめる文書ごとに、その文書のフォルダからのパスをキーにして作る。取り込み先が `build` の対象外のファイルでも、設定ファイルのフォルダの中なら読んで埋め、文書の一覧には出さない。同じファイルの本文と同じ名前のアイコンの形は 1 回だけ埋める
+  - item: 文書ごとのページの設定
+    constraint: 文書の page のマーカーは各文書の本文に残して埋め、開いた文書を `mount`（`update`）で描くときにその文書のマーカーで明暗・テーマ・右側の目次の出し方を決め直す。マーカーを持たない文書は、埋めた設定の `colorScheme`・`colorTheme`・`side-toc.mode` で描く
+    decided_by: dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[ページの設定のマーカー]
 test_file: tests/integration/lib/bundle.test.ts

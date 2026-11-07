@@ -3177,6 +3177,190 @@ flows:
       - '`mount` が例外を投げず、段落とリンクが描かれる'
       - el の地の色の計算値が dev-swiss の明るい配色の `--mdmark-color-bg` の値
     test: test_normal_when_color_theme_unknown
+  - name: 正常系（ページの設定のマーカー）
+    summary: '文書の先頭の `<!-- page: … -->` の明暗・テーマ・右側の目次の出し方を、`opts.config` より優先して当てる'
+    setup:
+      - name: 配布物を読んだページ
+        description: 正常系と同じ
+        notes: 'OS の配色はダーク（`prefers-color-scheme: dark`）。画面の大きさは 1280×800px'
+      - name: 設定
+        description: '`opts.config` は `{ colorScheme: "dark", colorTheme: "theme-paper", "side-toc": { mode: "hover" } }`'
+      - name: ページの設定を書いた Markdown
+        description: '先頭の行に `<!-- page: scheme=light theme=theme-slate toc=fixed -->` を持ち、h2 を 3 つと段落を持つ文書'
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: mount(el, { markdown, config })
+        M->>M: 先頭の page のマーカーを読み、設定に重ねる
+        M->>P: theme-slate の明るい配色と fixed の右側の目次で描く
+    expected:
+      - el が class `mdmark-theme-light` を持ち、`mdmark-theme-dark` を持たない
+      - el の地の色の計算値が theme-slate の明るい配色の `--mdmark-color-bg` の値
+      - el の属性 `data-mdmark-color-theme` が `theme-slate`
+      - 目次を出すボタンがあり `aria-expanded` が `false`（`side-toc.mode` の `fixed` と同じ）
+      - 本文にマーカーの文字が無く、書き方の警告が無い
+    test: test_normal_when_page_marker
+    refs:
+      - dev/設計書/シナリオ/単一ユースケース/ページの設定を文書で指定する#scenarios[正常シナリオ（文書のマーカーが設定に勝つ）]
+  - name: 正常系（設定の明暗）
+    summary: '`opts.config.colorScheme` の明暗を、祖先の class と OS の配色より優先して当てる'
+    setup:
+      - name: 配布物を読んだページ
+        description: 正常系と同じ。`body` に class `mdmark-theme-light` を付ける
+        notes: OS の配色はライト
+      - name: 設定
+        description: '`opts.config` は `{ colorScheme: "dark" }`'
+      - name: リンクを持つ Markdown
+        description: page のマーカーを持たず、リンクを持つ段落を持つ文書
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: mount(el, { markdown, config })
+        M->>P: el に mdmark-theme-dark を付けて描く
+        P->>M: destroy()
+        M->>P: el の mdmark-theme-dark を外す
+    expected:
+      - el が class `mdmark-theme-dark` を持ち、地の色の計算値が dev-swiss の暗い配色の `--mdmark-color-bg` の値
+      - '`destroy` の後、el が class `mdmark-theme-dark`・`mdmark-theme-light` を持たない'
+    test: test_normal_when_config_color_scheme
+    refs:
+      - dev/設計書/シナリオ/単一ユースケース/ページの設定を文書で指定する#scenarios[正常シナリオ（設定で全文書の既定にする）]
+  - name: 正常系（明暗を OS の設定に戻す）
+    summary: マーカーの `scheme=auto` は設定の明暗だけを外し、祖先の class → OS の配色の順で決める。`update` で決め直す
+    setup:
+      - name: 配布物を読んだページ
+        description: 正常系と同じ。`body` に class `mdmark-theme-dark` を付ける
+        notes: OS の配色はライト
+      - name: 設定
+        description: '`opts.config` は `{ colorScheme: "light" }`'
+      - name: auto を書いた Markdown
+        description: '先頭の行に `<!-- page: scheme=auto -->` を持つ文書'
+      - name: マーカーを持たない Markdown
+        description: page のマーカーを持たない文書
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: mount(el, { markdown: auto の文書, config })
+        M->>P: el に明暗の class を付けずに描く
+        P->>M: update(マーカーを持たない文書)
+        M->>P: el に mdmark-theme-light を付けて描き直す
+    expected:
+      - 描いた直後、el が class `mdmark-theme-light`・`mdmark-theme-dark` を持たず、地の色の計算値が祖先の class の dev-swiss の暗い配色の `--mdmark-color-bg` の値
+      - '`update` の後、el が class `mdmark-theme-light` を持ち、地の色の計算値が dev-swiss の明るい配色の `--mdmark-color-bg` の値'
+    test: test_normal_when_color_scheme_auto
+    refs:
+      - dev/設計書/シナリオ/単一ユースケース/ページの設定を文書で指定する#scenarios[正常シナリオ（OS の設定に合わせる）]
+      - dev/設計書/シナリオ/単一ユースケース/ページの設定を文書で指定する#scenarios[正常シナリオ（本文を差し替える）]
+  - name: 正常系（ページの設定のマーカーの書き方の誤り）
+    summary: 知らないキー・値と、先頭に無い page のマーカーは書き方の警告にして使わず、例外を投げない
+    setup:
+      - name: 配布物を読んだページ
+        description: 正常系と同じ
+        notes: OS の配色はライト
+      - name: 設定
+        description: '`opts.config` は `{ colorScheme: "dark" }`'
+      - name: 知らないキーと値を書いた Markdown
+        description: '先頭の行に `<!-- page: scheme=sepia theme=theme-unknown size=wide toc=fixed -->` を持ち、h2 を 3 つ持つ文書'
+      - name: 途中にマーカーを書いた Markdown
+        description: '最初の段落の後に `<!-- page: scheme=light -->` を書いた文書'
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: mount(el1, { markdown: 知らないキーと値の文書, config })
+        M->>P: 文書の先頭に書き方の警告を置き、残りのキーで描く
+        P->>M: mount(el2, { markdown: 途中にマーカーの文書, config })
+        M->>P: マーカーの場所に書き方の警告を置き、設定の明暗で描く
+    expected:
+      - どちらの `mount` も例外を投げない
+      - el1 の先頭に書き方の警告が 1 つあり、`scheme=sepia`・`theme=theme-unknown`・`size=wide` と書けるキーと値が書かれている
+      - el1 が class `mdmark-theme-dark` を持ち、属性 `data-mdmark-color-theme` が `dev-swiss` で、目次を出すボタンがある（`toc=fixed` は当たる）
+      - el2 のマーカーの場所に、page のマーカーは文書の先頭に書くことを書いた書き方の警告があり、el2 が class `mdmark-theme-dark` を持つ
+    test: test_normal_when_page_marker_invalid
+    refs:
+      - dev/設計書/シナリオ/単一ユースケース/ページの設定を文書で指定する#scenarios[異常シナリオ（知らないキーと値）]
+      - dev/設計書/シナリオ/単一ユースケース/ページの設定を文書で指定する#scenarios[異常シナリオ（文書の先頭に無いマーカー）]
+  - name: 正常系（カードの格子）
+    summary: '`<!-- cards -->` で囲んだリストの項目を、最初のリンク・前の `icon:`・残りの説明のカードにして格子に並べる'
+    setup:
+      - name: 配布物を読んだページ
+        description: 正常系と同じ
+        notes: 画面と描く先の要素の幅は 1280px
+      - name: cards の範囲を持つ Markdown
+        description: シナリオ『リンクをカードの格子に並べる』の正常シナリオの 4 項目と、`` `icon:clock` 準備中 `` の次の行に説明 `次の版で追加する` を書いたリンクの無い項目を囲んだ文書
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: mount(el, { markdown })
+        M->>P: 項目ごとのカードを格子に並べて描く
+    expected:
+      - '`ul.mdmark-card-grid` が 1 つあり、`li` が 5 つで、リンクを持つ 4 つの `li` の子が `a.mdmark-card-grid-item`、リンクの無い `li` の子が `div.mdmark-card-grid-item`'
+      - 1 つ目のカードの `href` が `使い方/README.md`、子に `.mdmark-card-grid-icon`（`data-icon="book"`）・タイトル `使い方`・説明 `導入と使い方の手順` がある
+      - 3 つ目のカードのタイトルが `example.com/docs` で、`.mdmark-card` を持たない
+      - 1280px で 2 列以上に並び、`a.mdmark-card-grid-item .mdmark-card-grid-title` の `text-decoration-line` が `underline`、`div` のカードのタイトルは `none`
+      - 本文にマーカーの文字が無く、書き方の警告が無い
+    test: test_normal_when_card_grid
+    refs:
+      - dev/設計書/シナリオ/単一ユースケース/リンクをカードの格子に並べる#scenarios[正常シナリオ]
+      - dev/設計書/シナリオ/単一ユースケース/リンクをカードの格子に並べる#scenarios[正常シナリオ（リンクを持たない項目）]
+  - name: 正常系（カードの格子の機能を外す）
+    summary: '`card-grid` がオフの文書は、囲んだリストをリストのまま描き、URL だけの項目はリンクと添付のカードにする'
+    setup:
+      - name: 配布物を読んだページ
+        description: 正常系と同じ
+      - name: 機能を外した Markdown
+        description: '先頭に `<!-- features: -card-grid -->` を持ち、正常系（カードの格子）と同じ cards の範囲を持つ文書'
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: mount(el, { markdown })
+        M->>P: 囲んだリストをリストのまま描く
+    expected:
+      - '`.mdmark-card-grid` が無く、5 つの項目の `ul` がある'
+      - 3 つ目の項目の中に `a.mdmark-card` がある
+      - マーカーの文字と書き方の警告が無い
+    test: test_normal_when_card_grid_disabled
+    refs:
+      - dev/設計書/シナリオ/単一ユースケース/リンクをカードの格子に並べる#scenarios[正常シナリオ（機能を外す）]
+  - name: 正常系（カードの格子にリスト以外の中身）
+    summary: cards の範囲の中身がリスト 1 つでないときは、書き方の警告を置いて中身を書いたとおりに描く
+    setup:
+      - name: 配布物を読んだページ
+        description: 正常系と同じ
+      - name: リスト以外を囲んだ Markdown
+        description: cards の範囲に、段落 1 つと 2 つの項目のリストを書いた文書
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: mount(el, { markdown })
+        M->>P: 範囲の上に書き方の警告、中身を書いたとおりに描く
+    expected:
+      - '`mount` が例外を投げない'
+      - 範囲の上に、`<!-- cards -->` で囲めるのはリスト 1 つであることを書いた書き方の警告がある
+      - '`.mdmark-card-grid` が無く、段落とリストが書いたとおりにある'
+    test: test_normal_when_card_grid_not_list
+    refs:
+      - dev/設計書/シナリオ/単一ユースケース/リンクをカードの格子に並べる#scenarios[異常シナリオ（リスト以外の中身）]
   - name: 正常系（地を透明にして不透明な地を指定する）
     summary: 使う側が `--mdmark-color-bg` を透明にし `--mdmark-color-bg-opaque` に周りの面の色を指定すると、本文の地は透け、浮く部品と覆いはその色で描く
     setup:
@@ -5389,7 +5573,7 @@ request:
     default: '`comments`・`html-scripts` を除く全ての機能が `true`'
     location: argument
     description: '機能のオン・オフの既定。文書の `<!-- features: +機能 -機能 -->` がその文書だけ上書きする'
-    notes: 知らない機能名は無視する。機能は `print`（印刷の前に折り畳みと記法を開く）と、記法ごとの `table`・`callout`・`tabs`・`steps`・`tree`・`badge`・`code`・`toc`・`side-toc`（右側の目次）・`anchors`・`sections`・`row-details`・`figures`、先頭へ戻るボタンの `back-to-top`、図の部品の `diagrams`、図の表示する枠の高さを変えるリサイズハンドルの `diagram-resize`、埋め込んだ HTML の `html`、図と埋め込んだ HTML のヒント（`data-hint`・`hint`・`io`・線の `tip`・`frame` と `lanes` の `hint`）のツールチップの `hints`、用語のツールチップの `glossary`、被参照の一覧と文書の別名の `backlinks`、ビューの印の `views`、脚注の `footnotes`、選んだ箇所へのコメントの `comments`、埋め込んだ HTML の範囲の `css`・`ts`・`js` の `html-scripts`（`comments` と `html-scripts` だけ既定は `false`）、アイコンの `icon`・段組みの `columns`・蛍光ペンの `highlight`・キーの `kbd`・details の範囲の `details`・改ページの `pagebreak`・取り込みの `include`・wide の範囲の `wide`・CSV の表の `csv`
+    notes: 知らない機能名は無視する。機能は `print`（印刷の前に折り畳みと記法を開く）と、記法ごとの `table`・`callout`・`tabs`・`steps`・`tree`・`badge`・`code`・`toc`・`side-toc`（右側の目次）・`anchors`・`sections`・`row-details`・`figures`、先頭へ戻るボタンの `back-to-top`、図の部品の `diagrams`、図の表示する枠の高さを変えるリサイズハンドルの `diagram-resize`、埋め込んだ HTML の `html`、図と埋め込んだ HTML のヒント（`data-hint`・`hint`・`io`・線の `tip`・`frame` と `lanes` の `hint`）のツールチップの `hints`、用語のツールチップの `glossary`、被参照の一覧と文書の別名の `backlinks`、ビューの印の `views`、脚注の `footnotes`、選んだ箇所へのコメントの `comments`、埋め込んだ HTML の範囲の `css`・`ts`・`js` の `html-scripts`（`comments` と `html-scripts` だけ既定は `false`）、アイコンの `icon`・段組みの `columns`・蛍光ペンの `highlight`・キーの `kbd`・details の範囲の `details`・改ページの `pagebreak`・取り込みの `include`・wide の範囲の `wide`・CSV の表の `csv`・カードの格子の `card-grid`
   - name: opts.config.libraries
     type: Record<string, string>
     required: false
@@ -5491,6 +5675,14 @@ request:
     location: argument
     description: 描いた文書の配色の値の組を選ぶテーマの名前。明暗は制約「配色の切り替え」のまま、選んだテーマの中で選ぶ
     notes: 知らない名前と文字列でない値は無視して `dev-swiss` で描く（例外を出さない）。使う側の CSS のパスの `theme` とは別のキー
+    status: planned
+  - name: opts.config.colorScheme
+    type: '"light" | "dark" | "auto"'
+    required: false
+    default: '`auto`'
+    location: argument
+    description: 描いた文書の配色の明暗。`light`・`dark` は描く先の祖先の class と OS の配色より優先し、`auto` は制約「配色の切り替え」の class と OS の配色に任せる
+    notes: 知らない値と文字列でない値は `auto` にする（例外を出さない）。文書の page のマーカーの `scheme` がこの値より優先する
     status: planned
   - name: opts.diffMode
     type: '"button" | "open" | "blocks"'
@@ -5758,7 +5950,7 @@ constraints:
   - item: 余白のマーカーの置き直し
     constraint: 印の付け直し（描くたびの `load`・保存）・描く先の要素の大きさの変化・節と行の詳細の開閉・タブの切り替え・吹き出しの開閉で、`requestAnimationFrame` で 1 フレームに 1 回にまとめて置き直す。印刷では余白の列を出さない。`destroy` で余白の列と受け取りを外す
   - item: 配色の切り替え
-    constraint: '描く先の要素かその祖先が持つ class で、画面の配色を次の優先順に決める。(1) `mdmark-theme-dark` はダーク、`mdmark-theme-light` はライト (2) `vscode-high-contrast-light`・`vscode-light` はライト、`vscode-dark` と、`vscode-high-contrast-light` を一緒に持たない `vscode-high-contrast` はダーク (3) どれも無ければ `prefers-color-scheme`。同じ優先度の class が両方あるときは、描く先に近い祖先の class に従う。ダークの値は `prefers-color-scheme: dark` のときと同じ変数の値で、差分のミニマップの色も同じ規則で決める。印刷では class によらず明るい配色にする'
+    constraint: '描く先の要素かその祖先が持つ class で、画面の配色を次の優先順に決める（描く先の要素に mount が付ける class は制約「明暗の当て方」）。(1) `mdmark-theme-dark` はダーク、`mdmark-theme-light` はライト (2) `vscode-high-contrast-light`・`vscode-light` はライト、`vscode-dark` と、`vscode-high-contrast-light` を一緒に持たない `vscode-high-contrast` はダーク (3) どれも無ければ `prefers-color-scheme`。同じ優先度の class が両方あるときは、描く先に近い祖先の class に従う。ダークの値は `prefers-color-scheme: dark` のときと同じ変数の値で、差分のミニマップの色も同じ規則で決める。印刷では class によらず明るい配色にする'
     notes: '`vscode-*` は VS Code が Webview の `body` に付ける class。`mdmark-theme-*` は、使う側が OS やホストの配色によらず固定するときに付ける（VS Code 拡張機能の `mdmark.preview.theme` が `light`・`dark` のとき）。使う側が層の外で上書きした変数は、どの配色でも層の中の値に勝つ'
   - item: やめた言い方のマーカー
     constraint: '`glossary` がオンのとき、索引の `terms[].avoid` の語と、`opts.aliases` の `avoid` の種類の `name`・`aliases` と `term` の種類の `avoid` の語と、描く文書の用語集の表と `opts.references` の `glossary` のやめた言い方の列の語も制約の「用語と文書の別名の下線」と同じ区切り・同じ正規化・同じ範囲で照合し、同じ位置で用語の語・別名にも当たるときは用語を選ぶ。文書の別名と同じ語は、関連文書を出さずにやめた言い方にする（点検の `avoided_term` と同じ）。当たった語は、節（h2〜h4）ごとにやめた言い方ごとの最初の 1 回だけを class `mdmark-term mdmark-term-avoided` の要素にして波線の下線を引き、「代わりの用語」のツールチップに代わりの用語の語と意味を出す（用語の下線とは別に数える）。用語集の表のやめた言い方は、その行の用語の列と意味の列の文字を代わりの用語にする。同じやめた言い方を複数の用語が持つときは、索引の `terms`、`opts.aliases` の並び、索引の `docs` の順の文書の表の順で先の用語を代わりの用語にする（描く文書が索引の `docs` に無いときは、描く文書の表をほかの文書の表より先にする）。開閉は制約の「ツールチップの操作」のとおりで、印刷ではマーカーとツールチップを外す。図の箱の中の `{{語}}` は照合しない'
@@ -5799,7 +5991,7 @@ constraints:
     constraint: '`side-toc` がオンで、文書に h1〜h3 の見出しが 1 つ以上あるとき、`el` の中を、本文（`render` の HTML）を入れた `div.mdmark-content` と、その右の `aside.mdmark-side-toc` に分ける。`aside` には、右端の線（見出しごとの短い線。`aria-hidden`）・目次を出すボタン・パネル（`nav`。タイトル `目次`・ピン止めのボタン・すべて展開とすべて折りたたむのボタン・項目の一覧）を置く。項目は h1〜h3 の見出しを階層どおりに入れ子にした `ul` の、各見出しの `#{ID}` へのリンクで、閉じた節と選ばれていないタブの中の見出しも載せる。見出しが無いか `side-toc` がオフのときは分けず、`el` の中は本文だけにする（余白の列を置くときを除く。制約「余白のマーカー」）。`--mdmark-content-width` は本文の列に当てる。差分を開いている間は `aside` を隠す（制約「差分を開く UI」）。印刷では `aside` を出さず、本文の列を紙の幅いっぱいに出す'
     notes: 読み上げ名・ボタンの文言・アイコンは画面設計『文書』と部品設計。パネルの `nav` は `aria-label="右側の目次"` で、本文の中の目次（`<!-- toc -->`）と読み上げ名を分ける
   - item: 右側の目次の出し方
-    constraint: '`side-toc.mode` が `hover` のとき、パネルは隠して置き（透明にしてポインターを受けない。Tab では項目へ移れる）、右端の線にポインターを乗せている間と、パネルの中にフォーカスがある間だけ出す。ピン止めのボタン（`aria-pressed`）を押すと、ポインターとフォーカスが外れても出し続け、パネルを本文に重ねず右の列に置く。押し直すと外す。ポインターを乗せられない端末（`hover: none`）では、右端の線の代わりに目次を出すボタンを置く。`fixed` のときは右端の線を置かず、目次を出すボタン（三点リーダーのアイコン・`aria-expanded`・`aria-controls`）を押すとパネルを右の列に出し続け、押し直すと隠す。目次を出すボタンで出したパネルの中にフォーカスがある間の Esc は、パネルを隠してフォーカスを目次を出すボタンへ戻す。ピン止めと目次を出すボタンの状態は保存せず、`mount` のたびに外した状態で始め、`update` では保つ'
+    constraint: '`side-toc.mode` が `hover` のとき、パネルは隠して置き（透明にしてポインターを受けない。Tab では項目へ移れる）、右端の線にポインターを乗せている間と、パネルの中にフォーカスがある間だけ出す。ピン止めのボタン（`aria-pressed`）を押すと、ポインターとフォーカスが外れても出し続け、パネルを本文に重ねず右の列に置く。押し直すと外す。ポインターを乗せられない端末（`hover: none`）では、右端の線の代わりに目次を出すボタンを置く。`fixed` のときは右端の線を置かず、目次を出すボタン（三点リーダーのアイコン・`aria-expanded`・`aria-controls`）を押すとパネルを右の列に出し続け、押し直すと隠す。目次を出すボタンで出したパネルの中にフォーカスがある間の Esc は、パネルを隠してフォーカスを目次を出すボタンへ戻す。ピン止めと目次を出すボタンの状態は保存せず、`mount` のたびに外した状態で始め、`update` では保つ。`update` で page のマーカーにより出し方（`hover`・`fixed`）が変わったときは、ピン止めと目次を出すボタンを外した状態から始める'
     notes: ピン止めで右の列に置くのと、ポインターを乗せられない端末のボタンは、モック作成で案 A に決定（確認ログ）
   - item: 狭い幅の右側の目次
     constraint: 描く先の要素の幅が 48rem 未満のとき、出し方によらず右端の線を置かず、本文の上端の `--mdmark-sticky-top` の位置に留める帯に、今いる節の見出しの文字と目次を出すボタンを置く。目次を出すボタンを押すと、パネルを帯の下に本文へ重ねて開き、幅は描く先の要素に収める。パネルの項目を押すとパネルを隠す。見出しへ移ったときは、見出しが帯に覆われない位置までスクロールする
@@ -5826,8 +6018,16 @@ constraints:
     constraint: '`command` のツールチップの `コピー` のボタン（`type="button"`）を押すと、`command` の文字を `navigator.clipboard.writeText` に書く。書けたらボタンを `コピーしました` にして 2 秒で戻し、書けないとき（`navigator.clipboard` が無いか拒まれた）は `コピーできませんでした` にして次に押すまで残す。どちらも `role="status"` で読み上げて知らせ、例外を外へ出さない。押した後もツールチップは出したままにする'
     notes: 知らせ方は制約の「コードブロックのコピー」と同じ
   - item: 選んだテーマ
-    constraint: '`opts.config.colorTheme` のテーマの `--mdmark-color-*` の値の組を、ページ全体（`:root`）に当てる。同じページに別のテーマの文書を並べたときは、`theme-paper`・`theme-slate`・`theme-contrast` の並びで後のテーマが全ての文書に当たる（`dev-swiss` は他のテーマに負ける）。値の組はテーマごとに明るい配色と暗い配色を持ち、どちらを使うかは制約「配色の切り替え」で決める。印刷では選んだテーマの明るい配色にする。値の組は `@layer mdmark` の中に置き、使う側が層の外で上書きした変数は選んだテーマに勝つ。`destroy` で当てたテーマを外し、`update` は `mount` に渡したテーマのまま描く'
+    constraint: '`opts.config.colorTheme` のテーマの `--mdmark-color-*` の値の組を、ページ全体（`:root`）に当てる。同じページに別のテーマの文書を並べたときは、`theme-paper`・`theme-slate`・`theme-contrast` の並びで後のテーマが全ての文書に当たる（`dev-swiss` は他のテーマに負ける）。値の組はテーマごとに明るい配色と暗い配色を持ち、どちらを使うかは制約「配色の切り替え」で決める。印刷では選んだテーマの明るい配色にする。値の組は `@layer mdmark` の中に置き、使う側が層の外で上書きした変数は選んだテーマに勝つ。`destroy` で当てたテーマを外す。`update` は差し替えた本文の page のマーカーの `theme` で決め直し、マーカーが無ければ `mount` に渡したテーマで描く'
     notes: テーマの値はデザイン方針の `## 採用スタイル`。描く先に属性 `data-mdmark-color-theme` を付け、`:root:has()` で当てる（モジュール構成『描く』の `COLOR_THEME_ATTRIBUTE`）
+  - item: ページの設定のマーカー
+    constraint: '文書の先頭（最初の見出し・段落・表・リスト・コードブロック・HTML のブロックより前。空の行とほかのマーカーは前にあってよい）の `<!-- page: キー=値 … -->` を読み、`scheme` を `opts.config.colorScheme`、`theme` を `opts.config.colorTheme`、`toc` を `opts.config.side-toc.mode` より優先して当てる（制約「配色の切り替え」「選んだテーマ」と右側の目次の出し方）。書けるのは `scheme`（`light`・`dark`・`auto`）・`theme`（`opts.config.colorTheme` と同じ名前）・`toc`（`hover`・`fixed`）で、同じキーが何度も出たら後に書いた値を使う。知らないキー・値は使わず、それらを並べた書き方の警告を文書の先頭に 1 つ置く。先頭に無い page のマーカーは使わず、その場所に書き方の警告を置く。マーカーは本文に出さない。`update` は差し替えた本文のマーカーで決め直す'
+    notes: '機能のオン・オフは page のマーカーに書かず `<!-- features: … -->` で書く（確認ログ）。`render` も同じマーカーを本文に出さず、同じ書き方の警告を出す'
+  - item: 明暗の当て方
+    constraint: page のマーカーの `scheme`、無ければ `opts.config.colorScheme` が `light`・`dark` のとき、描く先の要素に class `mdmark-theme-light`・`mdmark-theme-dark` を付ける（制約「配色の切り替え」で最も近い class として祖先の class に勝つ）。`auto` のときと、どちらも無いときは付けない。`update` で付け直し、`destroy` で mount が付けた class だけを外す
+  - item: カードの格子
+    constraint: 機能 `card-grid` がオンの文書で、`<!-- cards -->` 〜 `<!-- /cards -->` の中身がリスト 1 つのとき、`ul.mdmark-card-grid` にして項目ごとに 1 枚のカードを描く。項目の最初のリンクがカードのリンク（`a.mdmark-card-grid-item`）とタイトル、その前の行内の `icon:名前` がアイコン（`icon` の機能と同じ要素と読み込みに class `mdmark-card-grid-icon` を足したもの）、残りの文字が説明になる。URL をそのまま書いたリンクのタイトルはスキームを除いた URL。リンクを持たない項目は `div.mdmark-card-grid-item` にする。範囲の中のリンクはリンクと添付のカード（`cards`）にしない。中身がリスト 1 つでないときは範囲の上に書き方の警告を置き、中身を書いたとおりに描く。`card-grid` がオフのときはマーカーを出さずに中身を書いたとおりに描く
+    notes: class は `.mdmark-card`（リンクと添付のカード）・`.mdmark-view-cards`（ビューのボード）と別の名前。見た目はモック `dev/mock/components/card-grid/`（確認ログ）
   - item: 差分の出し方
     constraint: '`opts.diffMode` が `button` のときは制約「差分を開く UI」のとおり。`open` のときは、描いた時点で「変更を見る」を押した状態（`aria-expanded="true"`・本文を隠す）にし、制約「比べる 2 つのリビジョン」のとおり取り出し元を呼んで差分の行を出す。押し直すと閉じ、`update` の後は開いた状態で描き直して取り出し元を呼び直す。`blocks` のときは「変更を見る」と差分の場所・ミニマップを置かず、本文を描いた後に `revisions` を 1 回呼び、2 つ以上あれば 2 番目（前）と 1 番目（後）の `content` を 1 回ずつ呼び、制約「描いた文書のブロックの色分け」で本文を描き直す。取り出し元を待つ間・リビジョンが 1 つのとき・2 つの本文が同じときは、`opts.markdown` を色を当てずに描いた本文のまま出す。`update` のたびに取り出し元を呼び直し、制約「差分の待ち」と同じく古い結果は描かない'
     notes: '`blocks` は確認ログのモックへの合意（差分のプレビューは文書を色分けして出し、ボタンと選ぶ欄を持たない）。VS Code 拡張機能が `blocks` で描く'

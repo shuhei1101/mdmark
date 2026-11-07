@@ -953,8 +953,8 @@ handle.destroy();
 
 | 優先 | class | 配色 | 付けるもの |
 | --- | --- | --- | --- |
-| 1 | `mdmark-theme-dark` | ダーク | 使う側が、OS やホストの配色によらず固定するとき。VS Code 拡張機能は `mdmark.preview.theme` が `dark` のときに付ける |
-| 1 | `mdmark-theme-light` | ライト | 同上。`mdmark.preview.theme` が `light` のとき |
+| 1 | `mdmark-theme-dark` | ダーク | 使う側が、OS やホストの配色によらず固定するとき。VS Code 拡張機能は `mdmark.preview.theme` が `dark` のときに付ける。`mount` は、文書の [ページの設定](./記法.md#ページの設定) の `scheme` か設定の [配色の明暗](./設定.md#配色の明暗) が `dark` のとき、描く先の要素に付ける（最も近い class なので祖先の class に勝つ） |
+| 1 | `mdmark-theme-light` | ライト | 同上。`mdmark.preview.theme` が `light` のとき。`mount` は `scheme` か配色の明暗が `light` のとき |
 | 2 | `vscode-high-contrast-light`・`vscode-light` | ライト | VS Code が Webview の `body` に付ける |
 | 2 | `vscode-dark`・`vscode-high-contrast`（`vscode-high-contrast-light` を一緒に持たないとき） | ダーク | 同上 |
 

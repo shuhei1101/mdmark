@@ -245,6 +245,18 @@ export function validateConfig(
     delete config.colorTheme;
   }
 
+  // 知らない値はここでは拒まず、設定に残す（`mdmark check` が知らせる）
+  if (raw.colorScheme !== undefined && typeof raw.colorScheme !== "string") {
+    issues.push(
+      schemaIssue(
+        file,
+        "colorScheme",
+        "`colorScheme` は `light`・`dark`・`auto` のどれかの文字列で書いてください。",
+      ),
+    );
+    delete config.colorScheme;
+  }
+
   if (raw.extensions !== undefined && !isStringArray(raw.extensions)) {
     issues.push(
       schemaIssue(

@@ -3,7 +3,7 @@ elements:
   - name: 描く先の要素
     id: mdmark-root
     kind: container
-    description: 使う側のページが `mount` に渡した要素。class `mdmark` を付け、地の色・内側の余白・角丸を当てる（枠と影は付けない）。配色は祖先の class と `prefers-color-scheme` でライトかダークにし、印刷では明るい配色にする（文書を描く.ts の制約「配色の切り替え」）。配色の値の組は `opts.config.colorTheme` で選んだテーマのものにする（同じ制約「選んだテーマ」）
+    description: 使う側のページが `mount` に渡した要素。class `mdmark` を付け、地の色・内側の余白・角丸を当てる（枠と影は付けない）。配色は文書の page のマーカーの `scheme`・`opts.config.colorScheme`・祖先の class・`prefers-color-scheme` の順でライトかダークにし、印刷では明るい配色にする（文書を描く.ts の制約「明暗の当て方」「配色の切り替え」）。配色の値の組は page のマーカーの `theme` か `opts.config.colorTheme` で選んだテーマのものにする（同じ制約「選んだテーマ」）
     visible_when: 常時
     source: 文書を描く.request.el
     refs:
@@ -955,7 +955,7 @@ elements:
       - name: headings
         value: 文書の h1・h2・h3 の階層・ID・文字（閉じた節と選ばれていないタブの中も含める）
       - name: mode
-        value: 文書を描く.request.opts.config.side-toc.mode（hover・fixed 以外は hover）
+        value: 文書の page のマーカーの `toc`、無ければ 文書を描く.request.opts.config.side-toc.mode（hover・fixed 以外は hover）
       - name: sections
         value: '`sections` の機能がオンで、文書に節が 1 つ以上あるか'
     position: 描く先の要素 > 本文の列の右（hover でピン止めしていない間の右端の線と重ねて出す枠は、スクロールする場所の右端。狭い幅では本文の列の上の帯）
@@ -1471,6 +1471,21 @@ elements:
     status: planned
     introduced:
       pr: 307
+  - id: card-grid
+    name: カードの格子
+    kind: container
+    description: cards の範囲のリストの項目を、アイコン・タイトル・説明のカードにして入るだけ横に並べる。描く先の要素が狭いときは 1 列に積む。リンクを持つ項目はリンクのカード、持たない項目はリンクではないカード
+    position: 描く先の要素 > 本文の列
+    component: dev/設計書/部品設計/カードの格子.ts#
+    args:
+      - name: items
+        value: 範囲のリストの項目ごとの、最初のリンク先・リンクの文字・前の `icon:` のアイコン・残りの文字の説明
+    visible_when: '`card-grid` がオンで、`<!-- cards -->` の範囲の中身がリスト 1 つのとき'
+    refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/文書をHTML文字列にする.ts#constraints[カードの格子]
+    status: planned
+    introduced:
+      pr: 352
   - id: details-range
     name: details の範囲
     kind: details

@@ -198,6 +198,14 @@ constants:
     status: planned
     introduced:
       pr: 181
+  - name: COLOR_SCHEME_CLASSES
+    title: 明暗の class
+    container: src/mount.ts
+    summary: 描く先の要素に付ける明暗の class。`src/index.css` の `mdmark-theme-light`・`mdmark-theme-dark` と同じ名前
+    value: '{ light: "mdmark-theme-light", dark: "mdmark-theme-dark" } as const'
+    refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[明暗の当て方]
+    status: planned
   - name: embeddedHtmlScripts
     title: 埋めた範囲の関数
     container: src/html-scripts.ts
@@ -261,9 +269,9 @@ functions:
       3. 描く世代を 0、片付けた印を `false`、操作を外す関数・右側の目次を外す関数・先頭へ戻るボタンを外す関数を無しにし、右側の目次の状態（`SideTocState`）を `{ open: false, pinned: false }` で作る
       4. 文書を描く。描くたびに次を行う
          - 世代を 1 進め、前の操作を外す関数・右側の目次を外す関数・先頭へ戻るボタンを外す関数があれば呼ぶ
-         - 本文の HTML と機能のオン・オフを得て（文書を描く。`opts` の `index`・`docId`・`references`・`aliases` を渡す）、`el` の中を本文の HTML に置き換え、`el` に `ROOT_CLASS` を付け、`COLOR_THEME_ATTRIBUTE` に既定を当てた設定の `colorTheme` を付ける
+         - 本文の HTML と機能のオン・オフを得て（文書を描く。`opts` の `index`・`docId`・`references`・`aliases` を渡す）、戻りの `page` を既定を当てた設定に重ねてこの描画の設定にする（ページの設定を重ねる）。`el` の中を本文の HTML に置き換え、`el` に `ROOT_CLASS` を付け、`COLOR_THEME_ATTRIBUTE` にこの描画の設定の `colorTheme` を付ける。`COLOR_SCHEME_CLASSES` の 2 つの class を外してから、この描画の設定の `colorScheme` が `light`・`dark` ならその class を付ける
          - 機能のオン・オフを控える
-         - 機能の `side-toc` がオンなら右側の目次を付け（右側の目次を付ける。既定を当てた設定の `sideToc.mode`・機能の `sections`・手順 3 の状態を渡す）、外す関数を控える。以降の記法の操作・外部ライブラリ・色分け・部品・差分に描いた要素として渡すのは、戻りの `content`（本文の列。右側の目次を付けないときは `el`）
+         - 機能の `side-toc` がオンなら右側の目次を付け（右側の目次を付ける。この描画の設定の `sideToc.mode`・機能の `sections`・手順 3 の状態を渡す。前の描画と `sideToc.mode` が違うときは、渡す前に手順 3 の状態を `{ open: false, pinned: false }` に戻す）、外す関数を控える。以降の記法の操作・外部ライブラリ・色分け・部品・差分に描いた要素として渡すのは、戻りの `content`（本文の列。右側の目次を付けないときは `el`）
          - 比較元があって本文と違うときは、本文の HTML を `el` に置く前に、本文と比較元の Markdown を同じ引数で描いた `template` の中身を `colorDiffBlocks` に通し、本文の中身を `el` に置く（下の `blocks` の色分けと同じ）
          - 機能の `comments` がオンで `commentStore` と `docId` を渡し、右側の目次が本文の列に包んでいない（戻りの `content` が `el`）ときは、`el` の子を `div.mdmark-content` に包み、以降の描いた要素をその本文の列にする。外す関数は、包む前の子の並びへ戻す（余白の列を本文の列の右に置くため。インターフェース定義『文書を描く』の制約「余白のマーカー」）
          - 記法の操作を付け（記法の操作を付ける。ツールチップを出す場所は、既定を当てた設定の `tooltips.placement` と `tooltips.diagramPlacement` を渡す。`onColumnsChange` を渡したときはそれも渡す）、外す関数を控える
@@ -277,10 +285,11 @@ functions:
       5. 印刷の受け取りを付ける（印刷の前後で折り畳みと記法を開く）。`isEnabled` は控えた機能のオン・オフの `print` を返す
       6. `update` は、片付けた後なら何もしない。`options.baseMarkdown` を渡したときは `checkBaseMarkdown` で確かめ（投げたら描き直さずにそのまま投げる）、比較元を文字列ならその値、`null` なら無しに差し替える。手順 4 で描き直す（右側の目次の状態は保つ。`index`・`docId`・`references`・`aliases` は最初に渡したもののまま）
       7. `reloadComments` は、片付けた後なら解決した Promise を返し、そうでなければ控えた `PartsHandle` の `reloadComments()` を返す。`focusComment(id)` は、片付けた後なら何もせず、そうでなければ控えた `PartsHandle` の `focusComment(id)` を呼ぶ
-      8. `destroy` は、片付けた後なら何もせず、そうでなければ片付けた印を `true` にし、操作・差分・ビューとコメントの部品・右側の目次・先頭へ戻るボタン・印刷の受け取りを外し、`el` の中を空にして `ROOT_CLASS` と `COLOR_THEME_ATTRIBUTE` を外し、`mounted` の `el` が自分なら消す
+      8. `destroy` は、片付けた後なら何もせず、そうでなければ片付けた印を `true` にし、操作・差分・ビューとコメントの部品・右側の目次・先頭へ戻るボタン・印刷の受け取りを外し、`el` の中を空にして `ROOT_CLASS`・`COLOR_THEME_ATTRIBUTE`・`COLOR_SCHEME_CLASSES` の class を外し、`mounted` の `el` が自分なら消す
       9. `mounted` に `el` と戻り値を控えて返す
     callees:
       - dev/設計書/モジュール構成/ライブラリ本体/設定と機能.ts#functions[resolveConfig]
+      - dev/設計書/モジュール構成/ライブラリ本体/設定と機能.ts#functions[applyPageSettings]
       - dev/設計書/モジュール構成/ライブラリ本体/描画.ts#functions[renderDocument]
       - dev/設計書/モジュール構成/ライブラリ本体/操作.ts#functions[attachInteractions]
       - '#functions[loadLibraries]'
@@ -324,6 +333,18 @@ functions:
         condition: '`mount(el, A)` の後に `mount(el, B)`、続けて 1 回目の戻り値の `update("# C")`'
         mock: なし
         expected: '`el` の中の本文の列（`div.mdmark-content`）が 1 つだけで、その中の見出しが文字 `B` の `h1` のまま'
+      - name: test_mount_when_page_marker
+        case: 正常
+        summary: page の印の明暗・テーマ・目次の出し方を設定より優先し、`update` で決め直す
+        condition: '設定が `{ colorScheme: "dark", colorTheme: "theme-paper", "side-toc": { mode: "hover" } }` で、`<!-- page: scheme=light theme=theme-slate toc=fixed -->` と h2 を 2 つ持つ文書を描き、`update` で印を持たない文書にする'
+        mock: なし
+        expected: 描いた直後、`el` が class `mdmark-theme-light` を持ち `mdmark-theme-dark` を持たず、`data-mdmark-color-theme` が `theme-slate`、右側の目次の `data-mode` が `fixed`。`update` の後は class `mdmark-theme-dark`、`data-mdmark-color-theme` が `theme-paper`、右側の目次の `data-mode` が `hover`
+      - name: test_mount_when_color_scheme_destroyed
+        case: 正常
+        summary: '`destroy` で mount が付けた明暗の class を外す'
+        condition: '設定が `{ colorScheme: "dark" }` で描き、`destroy()`'
+        mock: なし
+        expected: '`el` が class `mdmark-theme-dark`・`mdmark-theme-light` を持たない'
       - name: test_mount_when_print_disabled_by_mark
         case: 正常
         summary: 文書の印で印刷の機能を外すと、印刷の前に折り畳みを開かない

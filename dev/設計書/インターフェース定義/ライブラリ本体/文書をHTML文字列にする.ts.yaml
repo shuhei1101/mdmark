@@ -1793,6 +1793,35 @@ flows:
     refs:
       - dev/設計書/シナリオ/単一ユースケース/表を操作する#scenarios[正常シナリオ（CSV の表）]
       - dev/設計書/シナリオ/単一ユースケース/表を操作する#scenarios[異常シナリオ（CSV の列の数がそろわない）]
+  - name: 正常系（ページの設定のマーカーとカードの格子）
+    summary: page のマーカーを本文に出さず、cards の範囲のリストをカードの格子の HTML にする
+    setup:
+      - name: 配布物を読んだ Node の処理
+        description: 正常系と同じ
+      - name: page のマーカーと cards の範囲を持つ Markdown
+        description: '先頭の行に `<!-- page: scheme=dark toc=fixed -->` を持ち、`<!-- cards -->` 〜 `<!-- /cards -->` で `` `icon:book` [使い方](使い方/README.md) `` の次の行に説明 `導入と使い方の手順`・`https://example.com/docs` だけ・`準備中` だけの 3 項目のリストを囲んだ文書'
+      - name: 途中に page のマーカーを持つ Markdown
+        description: '最初の段落の後に `<!-- page: scheme=dark -->` を書いた文書'
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        participant C as 使う側の処理
+        participant M as mdmark
+        C->>M: render(markdown)
+        M->>M: page のマーカーを取り除き、cards の範囲をカードにする
+        M-->>C: HTML 文字列
+    expected:
+      - 1 つ目の文書の HTML に `page:` の文字と書き方の警告が無い
+      - '`<ul class="mdmark-card-grid">` の中に `li` が 3 つある'
+      - 1 つ目の `li` が `<a class="mdmark-card-grid-item" href="使い方/README.md">` で、`data-icon="book"` と class `mdmark-card-grid-icon` のアイコン・`<span class="mdmark-card-grid-title">使い方</span>`・`<p class="mdmark-card-grid-desc">導入と使い方の手順</p>` を持つ
+      - 2 つ目の `li` のタイトルが `example.com/docs` で、`mdmark-card` の class を持つ要素が無い
+      - 3 つ目の `li` が `<div class="mdmark-card-grid-item">` でタイトルが `準備中`
+      - 2 つ目の文書の HTML で、マーカーの場所に書き方の警告がある
+    test: test_normal_when_page_marker_and_card_grid
+    refs:
+      - dev/設計書/シナリオ/単一ユースケース/リンクをカードの格子に並べる#scenarios[正常シナリオ]
+      - dev/設計書/シナリオ/単一ユースケース/ページの設定を文書で指定する#scenarios[異常シナリオ（文書の先頭に無いマーカー）]
   - name: 正常系（新しい記法の書き方の誤り）
     summary: 新しい記法の読めない書き方の箇所に書き方の警告を置き、読めた分で描く
     setup:
@@ -2171,6 +2200,11 @@ constraints:
   - item: CSV の表
     constraint: '`csv` がオンのとき、情報文字列の最初の語がちょうど `csv` のコードブロックを、RFC 4180 の決まり（区切りは `,`、`"` で囲んだ値の中の `,` と改行は値、`""` は `"`、改行は LF か CRLF）で行と値に読み、1 行目を見出しの行とした表にして制約「表」のとおり描く（表の印で囲めばその種類と機能、囲まなければ `default`）。値は文字として描き、Markdown として読まない。列の数が見出しの行と違う行は、足りない列を空のセルにし、多い値を捨て、表の前に書き方の警告（その行の行番号）を置く。表の後ろに、書いたとおりの CSV を `<pre class="mdmark-raw" hidden><code class="language-csv">` で置き、`.mdmark-table` に `data-source="csv"` を付ける（元の CSV への切り替えは `mount` が付ける）。中身が空のコードブロックは表にせず、制約「コードブロック」のとおり描く。表にしたコードブロックには、直前の `<!-- code: … -->` の飾りを当てない。`csv` がオフのときは制約「コードブロック」のとおり描く'
     notes: 読み取りは自前の同期の処理（ライブラリ選定で決定）。見た目はモック `dev/mock/components/csv-table/`
+  - item: ページの設定のマーカー
+    constraint: '文書の先頭の `<!-- page: … -->` は本文に出さない。知らないキー・値があるときは文書の先頭に、先頭に無い page のマーカーはその場所に、インターフェース定義『文書を描く』の制約「ページの設定のマーカー」と同じ書き方の警告を出す。明暗・テーマ・右側の目次の出し方は描く先の要素とページに当てるもので、`render` の文字列には含めない'
+  - item: カードの格子
+    constraint: '`card-grid` がオンのとき、`<!-- cards -->` 〜 `<!-- /cards -->` の中身のリスト 1 つを `<ul class="mdmark-card-grid">` にし、項目ごとの `<li>` に、リンクを持つ項目は `<a class="mdmark-card-grid-item" href="{最初のリンク先}">`、持たない項目は `<div class="mdmark-card-grid-item">` を置く。中に、項目の最初のリンクの前の行内の `icon:名前` のアイコン（制約「アイコン」と同じ要素に class `mdmark-card-grid-icon` を足したもの）、`<span class="mdmark-card-grid-title">`（リンクの文字。URL をそのまま書いたリンクはスキームを除いた URL、リンクの無い項目は項目の最初の行の文字）、残りの文字があれば `<p class="mdmark-card-grid-desc">` を置く。範囲の中のリンクは制約「リンクと添付のカード」にしない。中身がリスト 1 つでないときは範囲の前に書き方の警告（囲めるのはリスト 1 つであること）を置き、印を取り除いて中身を順に出す。`card-grid` がオフのときは印を取り除き、中身を順に出す'
+    notes: class はリンクと添付のカードの `.mdmark-card` とビューのボードの `.mdmark-view-cards` と分ける。見た目はモック `dev/mock/components/card-grid/`
   - item: 自動の配置
     constraint: フロー図の定義の全てのノードが `x`・`y`・`w`・`h` を、全ての線が `points` を持たず、図が `width`・`height` を持たず、ノードの種類が全て `start`・`question`・`action`・`result` のとき、mdmark が配置して描く。`start` を一番上に置き、`start` から線をたどって `question` を左の列に上から下へ並べる。`question` から出る線は、先が `question` の線を下、先が `action`・`result` の線を右へ出し、両方の先が `action`・`result` ならラベル `NO` の線を下、`YES` の線を右へ出す。右へ出した線の先のノードはその `question` と同じ行の右の列に、下へ出した線の先の `action`・`result` はその `question` の下の左の列に置き、`action` の先は同じ列の下へ続ける。複数の線が入るノードは、`question` から右へ出る線の先の位置（その `question` と同じ行）を優先して 1 つだけ置き、その線が無ければ最初にたどった線の先の位置に置く。線をたどって届かないノードは、届くノードの下に定義の順に並べる。ノードの大きさは種類と名前の文字から、インターフェース定義『設定と索引を点検する』の制約「ラベルの長さの目安」で収まる大きさにする。線は縦と横だけの折れ線で、`from`・`to` でないノードの中を通らない点を求める。図の `width`・`height` は、ノードと線を囲む大きさに余白を足した値にする。配置した結果は、同じ座標を書いた定義と同じ HTML に描く
     decided_by: dev/設計書/シナリオ/単一ユースケース/図を描く#scenarios[正常シナリオ（座標を省いた判定フローチャート）]

@@ -4,8 +4,9 @@ import type {
   Token,
 } from "markdown-it";
 import MarkdownIt from "markdown-it";
-import type { LibraryEntry } from "../config.ts";
+import type { LibraryEntry, PageSettings } from "../config.ts";
 import type { MdmarkParamDefinition } from "../diagram/definition.ts";
+import type { MdmarkMarkArgs } from "../extensions.ts";
 import type { MdmarkIndex } from "../knowledge/index-shape.ts";
 import type {
   MdmarkGlossaryEntry,
@@ -18,11 +19,13 @@ import {
   MARK_PATTERN,
   MARK_TOKEN,
   resolveDocumentFeatures,
+  resolvePageSettings,
   takeMarks,
 } from "./marks.ts";
 import { backlinksRule } from "./syntax/backlinks.ts";
 import { buildBadges } from "./syntax/badges.ts";
 import { buildCallouts } from "./syntax/callouts.ts";
+import { buildCardGrid } from "./syntax/card-grid.ts";
 import { buildCards } from "./syntax/cards.ts";
 import { buildCodeBlocks } from "./syntax/code-blocks.ts";
 import { buildCsvTables } from "./syntax/csv.ts";
@@ -76,6 +79,10 @@ export type RenderEnv = {
   featureArgs: string[];
   /** `defaults` に `featureArgs` を重ねたもの */
   features: Record<string, boolean>;
+  /** 文書の先頭の page の印を書いた順に並べたもの（`takeMarks` が足す） */
+  pageMarks?: Array<{ raw: string; args: MdmarkMarkArgs }>;
+  /** `pageMarks` を読んだページの設定（`resolvePageSettings` が入れる） */
+  page?: PageSettings;
   /** 見出しの ID と文字 */
   headings: Array<{ level: number; id: string; text: string }>;
   /** 描くごとに作る、mdmark が出した要素の印の値 */
@@ -280,8 +287,11 @@ export function createParser(): MarkdownItParser {
   const rules: Array<[string, (state: StateCore) => void]> = [
     ["mdmark_take_marks", takeMarks],
     ["mdmark_resolve_features", resolveDocumentFeatures],
+    ["mdmark_resolve_page_settings", resolvePageSettings],
     ["mdmark_expand_includes", expandIncludes],
     ["mdmark_collect_footnotes", collectFootnotes],
+    // 項目の `icon:` の行内のコードを読むため、行内のアイコンより前に置く
+    ["mdmark_build_card_grid", buildCardGrid],
     // 見出しの ID と文字から、アイコンにした行内のコードを外すため、見出しの ID より前に置く
     ["mdmark_build_inline_icons", buildInlineIcons],
     ["mdmark_assign_heading_ids", assignHeadingIds],

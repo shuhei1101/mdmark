@@ -376,6 +376,36 @@ test("test_normal_when_unknown_color_theme", async () => {
   expect(await snapshot(unknownDir)).toEqual(unknownBefore);
 });
 
+// 設定の colorScheme の知らない値を unknown_color_scheme のずれで出し、書ける値では出さない（正常系（知らない明暗の値がある））
+test("test_normal_when_unknown_color_scheme", async () => {
+  // 準備
+  const unknownDir = await createCleanDir();
+  const knownDir = await createCleanDir();
+  for (const [dir, value] of [
+    [unknownDir, "sepia"],
+    [knownDir, "dark"],
+  ] as const) {
+    const config = await readFile(join(dir, "mdmark.config.yaml"), "utf8");
+    await writeFiles(dir, {
+      "mdmark.config.yaml": `${config}colorScheme: ${value}\n`,
+    });
+  }
+  // 実行
+  const unknown = await runCli(["check"], unknownDir);
+  const known = await runCli(["check"], knownDir);
+  // 検証
+  expect(unknown.code).toBe(1);
+  const schemeLines = linesOf(unknown.stdout).filter((line) =>
+    line.startsWith("mdmark.config.yaml:colorScheme: unknown_color_scheme:"),
+  );
+  expect(schemeLines).toHaveLength(1);
+  for (const text of ["sepia", "light", "dark", "auto"]) {
+    expect(schemeLines[0]).toContain(text);
+  }
+  expect(known.code).toBe(0);
+  expect(known.stdout).not.toContain("unknown_color_scheme");
+});
+
 // 文書からの相対パスにもアセットのルートにも無い画像・動画・音声・添付のファイルを missing_file のずれにする（正常系（見つからないファイルがある））
 test("test_normal_when_files_missing", async () => {
   // 準備
