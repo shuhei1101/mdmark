@@ -5569,6 +5569,50 @@ flows:
       - 切り替えた後、flowchart のノードの塗りの計算済みの色が、暗い配色の `--mdmark-color-surface` の計算済みの色と一致する
       - '`mermaid.url` の本体への要求が 1 件のまま'
     test: test_normal_when_mermaid_scheme_changed
+  - name: 正常系（印刷で mermaid の図を明るい配色にする）
+    summary: ダークで開いた文書を印刷するとき、mermaid の図を明るい配色で描き直し、印刷の後に今の配色へ戻す
+    setup:
+      - name: 配布物を読んだページ
+        description: 'OS の配色はダーク（`prefers-color-scheme: dark`）。ほかは正常系（mermaid のコードブロックを描く）と同じ'
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        participant X as mermaid
+        P->>M: mount(el, { markdown, config })
+        M->>P: 暗い配色の図を描く
+        P->>M: beforeprint
+        M->>X: 明るい配色のテーマで render を呼び直す
+        M->>P: 明るい配色の図に置き換える
+        P->>M: afterprint
+        M->>P: 暗い配色の図に戻す
+    expected:
+      - '`beforeprint` の後、flowchart のノードの塗りの計算済みの色が、明るい配色の `--mdmark-color-surface` の値と一致する'
+      - '`afterprint` の後、ノードの塗りの計算済みの色が、暗い配色の `--mdmark-color-surface` の計算済みの色に戻る'
+    test: test_normal_when_mermaid_printed
+  - name: 正常系（mermaid のテーマを設定で変える）
+    summary: 設定で mermaid のテーマの名前を選び、変数を上書きする。`useGradient`・`dropShadow` は上書きできず、知らないテーマの名前は `mdmark` にする
+    setup:
+      - name: 配布物を読んだページ
+        description: 正常系と同じ
+      - name: mermaid のコードブロックを持つ Markdown
+        description: 正常系（mermaid のコードブロックを描く）と同じ文書を、設定を変えて 2 つの `mount` で描く
+      - name: 設定
+        description: '1 つ目は `opts.config.mermaid` に `theme: "neutral"`・`themeVariables: { primaryColor: "#e0f2f1", useGradient: "true" }`。2 つ目は `theme: "no-such-theme"`'
+      - name: Mock
+        description: 正常系（mermaid のコードブロックを描く）と同じ
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        participant X as mermaid
+        P->>M: mount(el, { markdown, config })
+        M->>X: initialize（neutral に変数を重ね、useGradient・dropShadow は mdmark の値）
+        M->>P: 図を描く
+    expected:
+      - 1 つ目の flowchart のノードの塗りの計算済みの色が `#e0f2f1`（rgb(224, 242, 241)）で、枠線の `stroke` が `url(` で始まらない
+      - 2 つ目の flowchart のノードの塗りの計算済みの色が `--mdmark-color-surface` の計算済みの色と一致する（`mdmark` のテーマで描く）
+    test: test_normal_when_mermaid_theme_configured
   - name: 正常系（mermaid のコードブロックが無い・機能 mermaid を外した）
     summary: mermaid のコードブロックが無い文書と、機能 `mermaid` を外した文書では、mermaid を読まない
     setup:
@@ -6271,7 +6315,7 @@ constraints:
     constraint: '`initialize` には `startOnLoad: false`・`securityLevel: "strict"`・`theme`・`themeVariables` を渡し、使う側の設定でこの 2 つ（`startOnLoad`・`securityLevel`）を変えさせない。対象を文書の順に `render` し、返った SVG を図の枠（部品設計『図の枠』の種類 `mermaid`）の表示する枠に入れて、対象のコードブロックと置き換える。図の枠のタイトルは front matter の `title`、無ければ `accTitle`、どちらも無ければ図の種類の名前（`flowchart`・`graph` → フローチャート／`sequenceDiagram` → シーケンス図／`classDiagram` → クラス図／`stateDiagram`・`stateDiagram-v2` → 状態遷移図／`erDiagram` → ER 図／`gantt` → ガントチャート／`pie` → 円グラフ／ほか → 図）にし、front matter の `title` は図の中に重ねて描かない。範囲・更新日は出さない。シーケンス図の `actor` は lucide の人のアイコンに替え、本文の色の線で描く。開いたときの倍率は全体が収まる倍率で、0.75 より小さくしない（収まらない分は枠の中で動かす）。ガントチャートは描く先の幅と 720px の大きいほうの幅で描く'
     notes: 見た目はモック `dev/mock/components/mermaid-diagram/`（確認ログ）。倍率の下限とガントチャートの幅はモックで描いて決めた
   - item: mermaid のテーマ
-    constraint: '`theme` が `mdmark` のとき、描く先の要素の計算済みの CSS 変数（色は試しの要素の `color` で解決して sRGB の hex。`rgb()`・`rgba()` は値を読み、ほかの書き方は canvas で変換する）から mermaid の `base` テーマの変数を作る。対応はモジュール構成で表にする。どのテーマでも `useGradient: false`・`dropShadow: "none"` にし、SVG の filter の影も外す。描く先の配色の明暗（`colorScheme`・page のマーカー・祖先の class・OS の設定）が変わったら、変わった後の値で描き直す'
+    constraint: '`theme` が `mdmark` のとき、描く先の要素の計算済みの CSS 変数（色は試しの要素の `color` で解決して sRGB の hex。`rgb()`・`rgba()` は値を読み、ほかの書き方は canvas で変換する）から mermaid の `base` テーマの変数を作る。対応はモジュール構成で表にする。どのテーマでも `useGradient: false`・`dropShadow: "none"` にし、SVG の filter の影も外す。描く先の配色の明暗（`colorScheme`・page のマーカー・祖先の class・OS の設定）が変わったら、変わった後の値で描き直す。印刷では、`beforeprint` で明るい配色の CSS 変数から作ったテーマで描き直し、`afterprint` で今の配色の値で描き直す（制約「配色の切り替え」の印刷で明るい配色にするのと揃える）'
     notes: PoC #384 で、`color-mix()` を含む CSS 変数を hex にして `base` テーマへ渡せることを確かめた。デザイン方針の「使わないもの」（影・グラデーション）
   - item: mermaid を読めないとき
     constraint: mermaid を読めないときは、各 mermaid の対象の前に知らせの枠（本文の文言は画面設計『文書』）を置き、コードブロックのまま残す。解釈できないソースは書き方の警告を置いてコードブロックのまま残す
