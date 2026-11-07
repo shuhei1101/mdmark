@@ -17,9 +17,9 @@ args:
   required: false
   description: リンク先。無いときはリンクではないカード（`div`）にする
 - name: items[].icon
-  type: 文字列（HTML）
+  type: 文字列
   required: false
-  description: アイコンの HTML（記法のアイコンの要素）。無いときはアイコンを置かず、タイトルを左端から始める
+  description: アイコンの名前（Lucide の名前。記法の `icon:名前` の `名前`）。部品が記法のアイコンと同じ要素に class `mdmark-card-grid-icon` を足して組み立てる。無いときはアイコンを置かず、タイトルを左端から始める
 - name: items[].description
   type: 文字列（HTML）
   required: false
@@ -52,6 +52,26 @@ css_properties:
   syntax: <length>
   default: 1rem
   description: 格子の上下の余白
+- name: --mdmark-color-border
+  syntax: <color>
+  default: '#e4e4e7（ダーク #26262b）'
+  description: カードの線の色
+- name: --mdmark-color-link
+  syntax: <color>
+  default: '#0f766e（ダーク #2dd4bf）'
+  description: リンクのカードのタイトルの色、ポインターを載せたときの線の色、キーボードのフォーカスの輪郭の色
+- name: --mdmark-color-muted
+  syntax: <color>
+  default: '#52525b（ダーク #b4b4bc）'
+  description: アイコンと説明の文字の色
+- name: --mdmark-color-surface
+  syntax: <color>
+  default: '#f4f4f5（ダーク #1b1b1f）'
+  description: リンクのカードにポインターを載せたときの面の色
+- name: --mdmark-radius
+  syntax: <length>
+  default: 4px
+  description: カードの角丸
 accessibility:
 - 格子は `ul`、カードは `li` に入れ、書いた順の DOM の並びのまま並べる
 - リンクのカードは 1 つの `a` で、Tab で書いた順にフォーカスでき、フォーカスの輪郭を出す。リンクの無いカードは Tab で止まらない
