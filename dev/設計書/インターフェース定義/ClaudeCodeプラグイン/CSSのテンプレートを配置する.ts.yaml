@@ -55,6 +55,9 @@ exceptions:
   - name: ツールのエラー（テンプレートが無い）
     condition: 索引に `name` の行が無い（フォルダか索引が無いときを含む）
     notes: 内容の文に、名前と、`list_templates` で名前を確かめられることを書く
+  - name: ツールのエラー（テンプレートの CSS が無い）
+    condition: 索引に `name` の行があり、テンプレートのフォルダに行の `file` の CSS が無い
+    notes: 内容の文に、テンプレートの名前と CSS のパスと、`add_template` で登録し直すか索引の行を削除することを書く。配置先を書き換えない
   - name: ツールのエラー（配置先に同じ名前の CSS がある）
     condition: 配置先に `{name}.css` があり、中身がテンプレートと違い、`overwrite` が `true` でない
     notes: 内容の文に、配置先のパスと、`overwrite` を `true` にすれば置き換えられることを書く。配置先を書き換えない

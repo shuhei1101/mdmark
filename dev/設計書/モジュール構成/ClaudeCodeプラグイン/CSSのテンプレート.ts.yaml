@@ -192,7 +192,7 @@ functions:
       description: 合わないときの 1 文（例「{path} の templates[0].file がありません。…」）。合えば `undefined`
     process: |-
       1. Ajv（2020-12）で JSON Schema を初めて使うときにコンパイルし、以降は使い回す
-      2. 合わなければ、最初の誤りの場所を `templates[0].file` の形にして文を作る
+      2. 合わなければ、最初の誤りの場所を `templates[0].file` の形にし、合わない値と、JSON Schema のその項目の `description`（許す値）を書いた文を作る
       3. `name` が重なる行があれば、2 つ目の行を指す文にする
     unit_tests:
       - name: test_validate_templates_index
@@ -355,7 +355,8 @@ functions:
       type: 'Promise<{ name: string; path: string; replaced: boolean }>'
       description: 登録した名前・テンプレートのフォルダの CSS の絶対パス・置き換えたか
     process: |-
-      1. `source` が無いか拡張子が `.css` でなければ、パスか拡張子を書いた `CliError` を投げる
+      1. `name` が `TEMPLATE_NAME_PATTERN` に合わないか、`tags` に空の文字列があれば、引数の名前と許す値を書いた `CliError` を投げる（索引を読まず、何も書かない）
+      `source` が無いか拡張子が `.css` でなければ、パスか拡張子を書いた `CliError` を投げる
       2〜6 は、モジュールの中の Promise の連鎖で 1 つずつ順に進める（同じプロセスで重なった登録が、互いの行を上書きしない。プロセスをまたぐ排他は持たない）
       2. `readTemplatesIndex` で索引を読む。同じ `name` の行があり `overwrite` でなければ、名前と `overwrite` を書いた `CliError` を投げる
       3. 新しい行（`file` は `{name}.css`）で書く索引を作る。新しい名前は末尾に追加し、置き換える行は元の位置に置く
@@ -381,6 +382,18 @@ functions:
         condition: '`brand` の行がある索引に `brand` を登録'
         mock: なし（一時フォルダ）
         expected: '`CliError` の文に `brand` と `overwrite`、CSS と索引が元のまま'
+      - name: test_add_template_when_name_invalid
+        case: 異常
+        summary: '`name` に許さない文字がある'
+        condition: '`name: Bad_Name`、無いフォルダ'
+        mock: なし（一時フォルダ）
+        expected: '`CliError` の文に `name` と許す文字が入り、`templates[0]` が入らない。フォルダが作られていない'
+      - name: test_add_template_when_tags_empty
+        case: 異常
+        summary: '`tags` に空の文字列がある'
+        condition: '`tags: [""]`、無いフォルダ'
+        mock: なし（一時フォルダ）
+        expected: '`CliError` の文に `tags` が入る。フォルダが作られていない'
       - name: test_add_template_when_source_missing
         case: 異常
         summary: 無い CSS
@@ -430,7 +443,7 @@ functions:
       1. `readTemplatesIndex` で索引を読み、`name` の行が無ければ、名前と `list_templates` を書いた `CliError` を投げる
       2. `findConfigChain`（`cascade: false`）で、`target` があれば `target` から、無ければ `cwd` から上へ最も近い `mdmark.config.yaml` を探す
       3. 配置先を決める。`target` が無く設定ファイルも無ければ、`dir` を渡すことと `mdmark init` を書いた `CliError` を投げる。`target` のフォルダが無ければ、そのパスを書いた `CliError` を投げる
-      4. コピー元は `{dir}/{行の file}`、コピー先は `{配置先}/{name}.css` にする。コピー先があり、中身がコピー元と同じなら書かずに返す。違い `overwrite` でなければ、コピー先のパスと `overwrite` を書いた `CliError` を投げる
+      4. コピー元は `{dir}/{行の file}`、コピー先は `{配置先}/{name}.css` にする。コピー元が無ければ、テンプレートの名前とコピー元のパスと、`add_template` で登録し直すか索引の行を削除することを書いた `CliError` を投げる。コピー先があり、中身がコピー元と同じなら書かずに返す。違い `overwrite` でなければ、コピー先のパスと `overwrite` を書いた `CliError` を投げる
       5. コピー元をコピー先へコピーし、設定ファイルがあれば、そのフォルダから配置した CSS への相対パスを `./` で始めて `theme` にする（設定ファイルは配置先か、その上のフォルダにあるため `../` にならない）
     unit_tests:
       - name: test_apply_template
@@ -487,6 +500,12 @@ functions:
         condition: '`target` に無いフォルダ'
         mock: なし（一時フォルダ）
         expected: '`CliError` の文にそのパス、何も書かれていない'
+      - name: test_apply_template_when_css_missing
+        case: 異常
+        summary: 索引に行があり、テンプレートのフォルダに CSS が無い
+        condition: '索引の行が `file: gone.css` で、`gone.css` が無い'
+        mock: なし（一時フォルダ）
+        expected: '`CliError` の文に `brand` と `gone.css` のパスと `add_template` が入り、配置先に何も書かれていない'
       - name: test_apply_template_when_name_missing
         case: 異常
         summary: 索引に無い名前
