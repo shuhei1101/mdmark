@@ -48,7 +48,7 @@ data_models:
     title: mount に渡す設定
     container: vscode/src/config.ts
     usecase: 共通
-    summary: 設定ファイルから取り出した `features`・`libraries`・`html-scripts`・`side-toc`・`colorTheme`・`colorScheme`。`render` の `config` と書き出す HTML の `config` になる
+    summary: 設定ファイルから取り出した `features`・`libraries`・`html-scripts`・`side-toc`・`labels`・`colorTheme`・`colorScheme`。`render` の `config` と書き出す HTML の `config` になる
     properties:
       - name: features
         type: Record<string, unknown> | undefined
@@ -59,6 +59,9 @@ data_models:
       - name: side-toc
         type: Record<string, unknown> | undefined
         description: 書いた値のまま（`mode` の知らない値は mdmark が `hover` で描く）
+      - name: labels
+        type: Record<string, unknown> | undefined
+        description: 書いた値のまま（中の知らないキーと、空文字・文字列でない値は mdmark が無視して既定の文言で描く）
       - name: colorTheme
         type: string | undefined
         description: 設定ファイルに書いた値のまま。`mdmark.colorTheme` が空でないときは `applyColorTheme` がその値に置き換える（知らない名前は mdmark が dev-swiss で描く）
@@ -74,7 +77,7 @@ data_models:
     properties:
       - name: config
         type: PreviewConfig
-        description: 重ねた設定のうち、マップの `features`・`libraries`・`html-scripts`・`side-toc` と文字列の `colorTheme`・`colorScheme`。読めない・形の合わないファイルは重ねずに残りを重ねた値。相対パスはその値を書いた設定ファイルのフォルダから解決した絶対パス
+        description: 重ねた設定のうち、マップの `features`・`libraries`・`html-scripts`・`side-toc`・`labels` と文字列の `colorTheme`・`colorScheme`。読めない・形の合わないファイルは重ねずに残りを重ねた値。相対パスはその値を書いた設定ファイルのフォルダから解決した絶対パス
       - name: theme
         type: string | undefined
         description: 重ねた設定の `theme` の絶対パス
@@ -286,7 +289,7 @@ functions:
          - そのファイルが無い（`isFile` が `false`）場合、`explicit` を渡さず、`isFile` を常に `false` を返す関数にして呼ぶ（上へ探さず、端末の設定だけを重ねる）
       2. 設定を重ねて読む（設定を重ねて読む。`explicitName` は `mdmark.configPath`）
       3. 結果を `ConfigLoad` にする
-         - `config` は重ねた設定のうち、値がマップの `features`・`libraries`・`html-scripts`・`side-toc` と、値が文字列の `colorTheme`・`colorScheme` だけ
+         - `config` は重ねた設定のうち、値がマップの `features`・`libraries`・`html-scripts`・`side-toc`・`labels` と、値が文字列の `colorTheme`・`colorScheme` だけ
          - `files` は重ねた設定ファイルの `path`、`theme`・`extensions`・`assetsRoot` は重ねた設定の `theme`・`extensions`・`assets.root`
          - `unreadable` がある場合、`problem` は `{ path, line, message }`。無く `issues` がある場合、`problem` は `{ path: issues[0].file, settingKey: issues[0].where, message: issues[0].message }`
     exceptions:
@@ -329,6 +332,12 @@ functions:
         condition: '`configPath` が `missing.yaml`、`/w/mdmark.config.yaml` に `features.table: false`、端末の設定に `features.callout: false`'
         mock: '`readFile`・`isFile` をメモリのファイルの表に差し替える'
         expected: '`config` が `{ features: { callout: false } }`、`files` が端末の設定だけ、`nearest` が無い'
+      - name: test_load_config_when_labels
+        case: 正常
+        summary: labels の値がマップのときだけ config に入れる
+        condition: '`/w/mdmark.config.yaml` に `labels: { paramCopy: コピー }`、`/w/b/mdmark.config.yaml` に `labels: コピー`、`cwd` が `/w` と `/w/b` の 2 回（端末の設定は無い）'
+        mock: '`readFile`・`isFile` をメモリのファイルの表に差し替える'
+        expected: '`cwd` が `/w` のとき `config` が `{ labels: { paramCopy: "コピー" } }`、`/w/b` のとき `config` に `labels` が無い'
     callees:
       - '#functions[resolveConfigPath]'
       - dev/設計書/モジュール構成/ライブラリ本体/設定を重ねて読む.ts#functions[loadLayeredConfig]
