@@ -42,5 +42,6 @@
 | [axe-core](./axe-core.yaml) | テストのときだけパネルをアクセシビリティの規則で検査する |
 | [react-error-boundary](./react-error-boundary.yaml) | Webview の画面の最上位の Error Boundary |
 | [testing-library](./testing-library.yaml) | Webview のコンポーネントと hook の単体テスト |
+| [tmux](./tmux.yaml) | global-setup が常駐サーバーを動かすセッションの確かめ・起動・閉じる操作 |
 
 <!-- /table -->

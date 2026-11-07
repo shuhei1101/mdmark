@@ -18,3 +18,21 @@ files:
     related:
       - to: dev/設計書/モジュール構成/ClaudeCodeプラグイン/プラグインのビルド.ts
         type: implements
+  - path: settings.sample.yaml
+    description: モジュール構成『ClaudeCodeプラグイン / セットアップ / 書き込み』のうち「端末の設定の雛形」を受け持つ。端末の設定のキーを変えるときに読む。
+    tags: [topic:プラグイン, topic:設定, tool:claude-code]
+    related:
+      - to: dev/設計書/モジュール構成/ClaudeCodeプラグイン/セットアップ/書き込み.ts
+        type: implements
+  - path: skills/global-setup/SKILL.md
+    description: `/mdmark:global-setup` のスキルの本文。端末の設定と常駐サーバーを用意する手順を変えるときに読む。
+    tags: [topic:プラグイン, topic:スキル, tool:claude-code]
+    related:
+      - to: dev/設計書/モジュール構成/ClaudeCodeプラグイン/セットアップ/全体
+        type: implements
+  - path: skills/setup/SKILL.md
+    description: `/mdmark:setup` のスキルの本文。文書のフォルダの設定を作る手順を変えるときに読む。
+    tags: [topic:プラグイン, topic:スキル, tool:claude-code]
+    related:
+      - to: dev/設計書/モジュール構成/ClaudeCodeプラグイン/セットアップ/全体
+        type: implements

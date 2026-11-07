@@ -138,6 +138,12 @@ items:
     summary: 読む人が本文の画像を押すかキーで開き、ライトボックスで拡大して前後の画像へ移る
   - page: リンクと添付のカードを置く.yaml
     summary: URL・リンク・添付のファイルだけの段落を、外へ要求せずにカードとして描く
+  - page: 端末にmdmarkをセットアップする.yaml
+    summary: 文書を書く人が Claude Code で global-setup を呼び、端末の設定を作る・移行し、tmux のセッションで常駐サーバーを起動して、つながりとフックを確かめる
+  - page: 文書のフォルダに設定を作る.yaml
+    summary: 文書を書く人が Claude Code で setup を呼び、文書のフォルダの mdmark.config.yaml をキーごとに確認しながら作る・修正する
+  - page: セッションの開始で常駐サーバーの状態を受け取る.yaml
+    summary: セッションの開始で、常駐サーバーが待ち受けていないときだけ SessionStart のフックが起動の仕方を伝え、起動しているときは instructions がセッション名を伝える
   - page: CSSのテンプレートを登録する.yaml
     summary: Claude Code が MCP のツールで、作業のフォルダの CSS を名前・説明・タグつきで端末の設定のフォルダのテンプレートに登録する
   - page: CSSのテンプレートを配置する.yaml

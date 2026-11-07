@@ -1,7 +1,7 @@
 import { existsSync } from "node:fs";
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
-import { expect, test } from "vitest";
+import { afterEach, expect, test, vi } from "vitest";
 import { parse } from "yaml";
 import {
   CLEAN_INDEX,
@@ -483,4 +483,47 @@ test("test_run_upgrade_when_script_prints", async () => {
       stdout[position + 1] === "  除外しました",
   );
   expect(index).toBeGreaterThanOrEqual(0);
+});
+
+afterEach(() => {
+  vi.unstubAllEnvs();
+});
+
+// --settings で端末の設定だけを移行する（正常系）
+test("test_run_upgrade_when_settings", async () => {
+  // 準備
+  const { runUpgrade } = await loadModule();
+  const fixture = await createFixture();
+  const terminal = await createTempDir();
+  await writeFiles(terminal, {
+    "settings.yaml": "# 端末の設定\nversion: v0.3.0\nlegacy: 1\n",
+  });
+  const settingsPath = join(terminal, "settings.yaml");
+  vi.stubEnv("MDMARK_CONFIG", settingsPath);
+  const { io } = createIo(fixture.work);
+  // 実行
+  const code = await runUpgrade(
+    {
+      settings: true,
+      plan: false,
+      yes: false,
+      packageDir: fixture.packageDir,
+      cliVersion: "v0.5.0",
+      now: NOW,
+    },
+    io,
+    failingAsk,
+  );
+  // 検証
+  expect(code).toBe(0);
+  const after = await readFile(settingsPath, "utf8");
+  expect(after).toContain("# 端末の設定");
+  const settings = parse(after);
+  expect(settings.renamed).toBe(1);
+  expect(settings.legacy).toBeUndefined();
+  expect(settings.version).toBe("v0.5.0");
+  expect(await fixture.read("docs/a.md")).toContain("<!-- note -->");
+  expect(parse(await fixture.read("mdmark.config.yaml")).version).toBe(
+    "v0.3.0",
+  );
 });

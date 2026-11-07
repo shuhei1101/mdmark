@@ -98,7 +98,7 @@ type HookContext = {
 };
 
 // 子プロセスの環境から外す、実機の設定が漏れる環境変数
-const LEAKING_ENV = ["CLAUDE_PROJECT_DIR", "MDMARK_PORT"];
+const LEAKING_ENV = ["CLAUDE_PROJECT_DIR", "MDMARK_PORT", "TMUX", "TMUX_PANE"];
 // `mdmark serve` が待ち受けを始めたときに標準出力へ出す URL
 const LISTENING_URL_PATTERN = /http:\/\/127\.0\.0\.1:\d+\/mcp/;
 // 待ち受けるアドレス
@@ -455,3 +455,13 @@ export const CONFIG_WITH_BUILD = [
 
 /** 文書 `a`・`b` の本文 */
 export const DOCUMENTS = { "a.md": "# A\n\n[B](b.md)\n", "b.md": "# B\n" };
+
+/** エラーと、その `cause` をたどって、メッセージとエラーコードを 1 つの文字列にする */
+export function describeError(error: unknown): string {
+  const parts: string[] = [];
+  for (let current = error; current instanceof Error; ) {
+    parts.push(current.message, String((current as { code?: string }).code));
+    current = current.cause;
+  }
+  return parts.join("\n");
+}

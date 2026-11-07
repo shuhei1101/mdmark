@@ -24,6 +24,7 @@ async function connectClient(): Promise<Client> {
   const server = createMcpServer({
     roots: { distDir: join(packageDir, "dist") },
     version: "v0.0.0",
+    sessionName: "mdmark-test",
     stderr: () => {},
   });
   const client = new Client({ name: "test", version: "0.0.0" });
@@ -60,8 +61,10 @@ test("test_create_mcp_server", async () => {
     .filter((tool) => tool.annotations?.readOnlyHint === true)
     .map((tool) => tool.name);
   expect(readOnlyNames.sort()).toEqual(["check", "list_templates"]);
-  expect(client.getInstructions()).toBe(INSTRUCTIONS);
-  expect(INSTRUCTIONS.length).toBeLessThanOrEqual(4096);
+  const instructions = INSTRUCTIONS.replace("{session}", "mdmark-test");
+  expect(client.getInstructions()).toBe(instructions);
+  expect(instructions).toContain("mdmark-test");
+  expect(instructions.length).toBeLessThanOrEqual(4096);
 });
 
 // 合わない引数は SDK でなく日本語の文で返る（正常系）

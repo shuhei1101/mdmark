@@ -1,4 +1,4 @@
-title: "ライブラリ本体 / 版を上げる"
+title: ライブラリ本体 / 版を上げる
 lead: '`mdmark upgrade` の処理。版の読み取りと比較、移行の手順の読み取り・検め・適用、写しと戻し、変更履歴の行の抽き出し、標準入力での問いを持ち、`runUpgrade` がこれらと CLI の点検をつなぐ。'
 directory: |-
   ```tree
@@ -774,16 +774,16 @@ functions:
     container: src/cli/upgrade.ts
     usecase: 版を上げる
     summary: 手元の版から呼んだ CLI の版までの移行の手順を当て、点検が通ったら設定の版を書き換える
-    description: '順に、設定を探して読む（`findConfigFile`・`loadConfig`）→ 手元の版（設定の `version`、無ければ `ask`）→ 目標の版（`options.cliVersion`）と比べる（新しければ `CliError`、同じならその旨を出して 0）→ `loadMigrationVersions` → 当て先を作る（索引は設定の `index`、文書は `collectBuildDocuments` と `readIndexWithDocuments` の文書）→ 手順と `changelogRows` の行を出す → `--plan` ならその旨を出して 0 → キーが無い `set_default` の `ask` を当てる順に聞く → 壊す印があり `--yes` が無ければ確かめ、`CONFIRM_ANSWER` 以外なら `CliError` → `takeBackup`（`stepFiles`）→ 版の順に `applyStep`（返った行があれば、`{版} の手順「{説明}」:` の行に続けて 2 字下げて標準出力へ出す） → `collectCheckIssues`（`unknownMarks: false`）→ ずれがあれば `restoreBackup` してずれの行を標準エラーに出し 1 → `writeConfigVersion` → 写しの場所と版を出して 0。`applyStep` が投げた `CliError` は `restoreBackup` してから投げ直す。問いに答えが無い（`undefined`）ときは、書き換えの前に `CliError` を投げる'
+    description: '順に、設定を探して読む（`findConfigFile`・`loadConfig`）→ 手元の版（設定の `version`、無ければ `ask`）→ 目標の版（`options.cliVersion`）と比べる（新しければ `CliError`、同じならその旨を出して 0）→ `loadMigrationVersions` → 当て先を作る（索引は設定の `index`、文書は `collectBuildDocuments` と `readIndexWithDocuments` の文書）→ 手順と `changelogRows` の行を出す → `--plan` ならその旨を出して 0 → キーが無い `set_default` の `ask` を当てる順に聞く → 壊す印があり `--yes` が無ければ確かめ、`CONFIRM_ANSWER` 以外なら `CliError` → `takeBackup`（`stepFiles`）→ 版の順に `applyStep`（返った行があれば、`{版} の手順「{説明}」:` の行に続けて 2 字下げて標準出力へ出す） → `collectCheckIssues`（`unknownMarks: false`）→ ずれがあれば `restoreBackup` してずれの行を標準エラーに出し 1 → `writeConfigVersion` → 写しの場所と版を出して 0。`applyStep` が投げた `CliError` は `restoreBackup` してから投げ直す。問いに答えが無い（`undefined`）ときは、書き換えの前に `CliError` を投げる。`settings` が真のときは、設定を探す代わりに `resolveSettingsPath` の端末の設定を読み、`file: config` 以外の手順（`files` が `[config]` だけの `call` は残す）と索引・文書の当て先を飛ばし、点検は `validateConfig`（`settings: true`）だけにする。`config` と一緒なら `CliError`'
     kind: 関数
     scope: public
     is_async: true
     side_effects: 設定・索引・文書を書き換え、写しを置く
     args:
       - name: options
-        type: '{ config?: string | undefined; plan: boolean; yes: boolean; packageDir: string; cliVersion: string; now: Date }'
+        type: '{ config?: string | undefined; settings: boolean; plan: boolean; yes: boolean; packageDir: string; cliVersion: string; now: Date }'
         required: true
-        description: '`--config`・`--plan`・`--yes`・パッケージの直下（`migrations/` と変更履歴の基準）・目標の版（`cliVersion()`。テストで差し替える）・今の時刻'
+        description: '`--config`・`--settings`・`--plan`・`--yes`・パッケージの直下（`migrations/` と変更履歴の基準）・目標の版（`cliVersion()`。テストで差し替える）・今の時刻'
       - name: io
         type: CliIo
         required: true
@@ -814,6 +814,9 @@ functions:
       - name: CliError
         condition: 手順のファイルの誤り・手順の失敗・写しを取れない
         message: '`loadMigrationVersions`・`applyStep`・`takeBackup` のメッセージ（手順の失敗は写しから戻した後）'
+      - name: CliError
+        condition: '`--config` と `--settings` を一緒に渡した'
+        message: --config と --settings は一緒に渡せません。
     unit_tests:
       - name: test_run_upgrade
         case: 正常
@@ -881,6 +884,18 @@ functions:
         condition: '`v0.5.0` が標準出力に `除外しました` を書いて 0 で終わる `call`'
         mock: 一時フォルダ・差し替えた移行の手順のフォルダ
         expected: 0 を返し、標準出力に `v0.5.0 の手順「` で始まる行と、その次の行に `  除外しました` がある
+      - name: test_run_upgrade_when_settings
+        case: 正常
+        summary: --settings で端末の設定だけを移行する
+        condition: '`version: v0.3.0`・`legacy: 1` の端末の設定を `MDMARK_CONFIG` で指し、`v0.4.0` が `rename_key`（config）・`v0.5.0` が `replace_mark`'
+        mock: テスト用の `migrations/`
+        expected: 0 を返し、端末の設定の `legacy` が `renamed`・`version` が `v0.5.0`、文書を読まない
+      - name: test_run_upgrade_when_settings_with_config_call
+        case: 正常
+        summary: --settings で files が config だけの call を端末の設定に当てる
+        condition: '`version: v0.3.0` の端末の設定を `MDMARK_CONFIG` で指し、`v0.5.0` が `--config` のファイルに `migrated: true` を書き足す `call`（`files: [config]`）'
+        mock: テスト用の `migrations/`
+        expected: 0 を返し、端末の設定の `migrated` が `true`・`version` が `v0.5.0`、手元の `mdmark.config.yaml` が書き換わらない
     refs:
       - '#functions[loadMigrationVersions]'
       - '#functions[stepFiles]'

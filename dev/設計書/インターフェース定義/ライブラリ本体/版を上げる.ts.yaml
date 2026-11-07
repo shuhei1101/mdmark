@@ -1,7 +1,7 @@
-title: "版を上げる"
+title: 版を上げる
 entry:
   kind: operation
-  value: '`mdmark upgrade [--plan] [--yes] [--config {設定ファイル}]`（CLI。`npx github:shuhei1101/mdmark#v{目標の版} upgrade` で呼ぶ）'
+  value: '`mdmark upgrade [--plan] [--yes] [--config {設定ファイル} | --settings]`（CLI。`npx github:shuhei1101/mdmark#v{目標の版} upgrade` で呼ぶ）'
 flows:
   - name: 正常系
     summary: 2 つの版の手順を版の順に当て、点検を通して版を書き換える
@@ -33,6 +33,29 @@ flows:
       - 標準出力に `v0.4.0:`・`v0.5.0:` の順で手順の行と、`v0.4.0`・`v0.5.0` の変更履歴の行が出て、`v0.3.0` の変更履歴の行が出ない
       - 標準出力の `写し:` のフォルダに当てる前の設定・索引・文書があり、`.mdmark/.gitignore` の中身が `*`
     test: test_normal
+  - name: 正常系（端末の設定を移行する）
+    summary: '`--settings` で端末の設定に `file: config` の手順を当て、`version` を書き換える'
+    setup:
+      - name: 手元の版が古い端末の設定
+        description: '`version: v0.3.0`・`legacy: 1` を持つコメントつきの端末の設定を一時フォルダに置き、`MDMARK_CONFIG` で指す'
+      - name: Mock
+        description: 正常系と同じテスト用のパッケージ
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant C as mdmark CLI
+        participant F as 端末の設定
+        W->>C: mdmark upgrade --settings
+        C->>F: 端末の設定を読む（version: v0.3.0）
+        C->>F: 写しを取り、v0.4.0 の rename_key を当てる（v0.5.0 の replace_mark は飛ばす）
+        C->>C: 端末の設定の形を点検する
+        C->>F: version を v0.5.0 にする
+        C-->>W: 終了コード 0
+    expected:
+      - 終了コードが 0
+      - 端末の設定の `legacy` が `renamed` になり、コメントが残り、`version` が `v0.5.0`
+      - 端末の設定のフォルダの `.mdmark/backup/{日時}/` に当てる前の端末の設定がある
+    test: test_normal_when_settings
   - name: 正常系（当てる前に示す）
     summary: '`--plan` で版ごとの手順・変更履歴・壊す手順を示し、何も書き換えない'
     setup:
@@ -382,6 +405,13 @@ request:
     location: argument
     description: 使う設定ファイルのパス
     example: docs/mdmark.config.yaml
+  - name: --settings
+    type: boolean
+    required: false
+    default: 'false'
+    location: argument
+    description: 移行の対象を端末の設定（`MDMARK_CONFIG`、無ければ `${XDG_CONFIG_HOME:-~/.config}/mdmark/settings.yaml`）にする。`--config` と一緒には渡せない
+    notes: '`file: config` の手順だけを端末の設定へ当て、`index`・`documents` の手順は飛ばす。点検は端末の設定の形だけを見る'
   - name: 標準入力
     type: string
     required: false

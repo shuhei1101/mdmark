@@ -23,7 +23,7 @@ const USAGE = [
   "  check --file {YAML のファイル} --key {キーのパス} [--config {設定ファイル}]",
   "  export {文書} [--out {出力}] [--config {設定ファイル}]",
   "  build [--config {設定ファイル}]",
-  "  upgrade [--plan] [--yes] [--config {設定ファイル}]",
+  "  upgrade [--plan] [--yes] [--config {設定ファイル} | --settings]",
   "  serve",
 ];
 
@@ -86,6 +86,7 @@ export async function main(
         js: { type: "boolean" },
         plan: { type: "boolean" },
         yes: { type: "boolean" },
+        settings: { type: "boolean" },
       },
       allowPositionals: true,
     });
@@ -137,6 +138,7 @@ export async function main(
         return await runUpgrade(
           {
             config: values.config,
+            settings: values.settings === true,
             plan: values.plan === true,
             yes: values.yes === true,
             packageDir: root,
