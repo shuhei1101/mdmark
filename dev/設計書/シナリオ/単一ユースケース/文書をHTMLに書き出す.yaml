@@ -366,6 +366,29 @@ scenarios:
       - 標準エラーに、端末の設定のパスと読めない行と直し方が出る
       - HTML がどこにも書かれていない
     test: test_error_when_config_unreadable
+  - name: 正常シナリオ（文書のマーカーで明暗を指定する）
+    setup:
+      - name: 明暗を指定した文書のフォルダ
+        description: '正常シナリオと同じフォルダで、書き出す文書の先頭の行に `<!-- page: scheme=dark theme=theme-paper -->` を書く'
+        notes: 書き出した HTML を開くブラウザの配色はライト
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant C as mdmark export
+        participant B as ブラウザ
+        W->>C: mdmark export を流す
+        C-->>W: HTML を書く
+        W->>B: file:// で開く
+        B-->>W: theme-paper の暗い配色で表示
+    expected:
+      - 終了コードが 0 で、指定した出力に HTML が 1 つある
+      - file:// で開くと、ブラウザの配色がライトでも、描く先の要素の地の色の計算値が theme-paper の暗い配色の `--mdmark-color-bg` の値
+      - 外への要求が 0 件
+    test: test_normal_when_page_marker
+    refs:
+      - dev/設計書/シナリオ/単一ユースケース/ページの設定を文書で指定する#scenarios[正常シナリオ]
 lead: 文書を書く人が `mdmark export` で Markdown を 1 つ、配布物・使う側の CSS・外部ライブラリのモジュール・画像を埋めた 1 枚の HTML に書き出し、読む人は file:// で開いて外を読まずに読む。
 issue: 9
 primary_actor: 文書を書く人

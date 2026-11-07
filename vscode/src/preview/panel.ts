@@ -18,6 +18,7 @@ import { displayConfigPath } from "../../../src/config-files.ts";
 import type { ConfigProblem, PreviewConfig } from "../config.ts";
 import {
   applyColorTheme,
+  applyPreviewTheme,
   isFile,
   libraryOrigins,
   loadConfig,
@@ -517,9 +518,12 @@ export class PreviewPanel {
       ...(this.original === undefined
         ? {}
         : { previous: this.original.getText() }),
-      config: applyColorTheme({
-        config: this.config,
-        colorTheme: settings.colorTheme,
+      config: applyPreviewTheme({
+        config: applyColorTheme({
+          config: this.config,
+          colorTheme: settings.colorTheme,
+        }),
+        theme: settings.theme,
       }),
       theme: settings.theme,
     });

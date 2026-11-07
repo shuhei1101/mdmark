@@ -102,6 +102,50 @@ scenarios:
     test: test_normal_when_config_theme_changed
     refs:
       - dev/設計書/シナリオ/単一ユースケース/書いた内容をプレビューに映す#
+  - name: 正常シナリオ（文書のマーカーで明暗を指定する）
+    setup:
+      - name: 明るい配色に固定したプレビュー
+        description: VS Code のテーマが Default Light Modern で、`mdmark.preview.theme` を `light` にしてプレビューを開いた状態
+      - name: ダークを指定した Markdown
+        description: '先頭の行に `<!-- page: scheme=dark -->` を持つ文書をエディタで開いている'
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant EX as 拡張機能
+        participant PV as プレビュー（Webview）
+        W->>EX: プレビューを横に開く
+        EX->>PV: ライトの配色の指定と文書を渡して描かせる
+        PV->>PV: mdmark が文書のマーカーの明暗を優先する
+        PV-->>W: ダークの配色で表示
+    expected:
+      - '`mdmark.preview.theme` が `light` でも、描く先の要素の地の色の計算値がダークの `--mdmark-color-bg` の値'
+    test: test_normal_when_document_marker
+    refs:
+      - dev/設計書/シナリオ/単一ユースケース/ページの設定を文書で指定する#scenarios[正常シナリオ]
+  - name: 正常シナリオ（設定ファイルの明暗で描く）
+    setup:
+      - name: 明暗を書いた設定ファイル
+        description: 開いた Markdown のワークスペースの `mdmark.config.yaml` の明暗のキーに `light` を書く
+        notes: キーの名前はインターフェース定義で決める
+      - name: ダークのテーマで開いたプレビュー
+        description: VS Code のテーマが Default Dark Modern で、`mdmark.preview.theme` は既定の `auto`
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant EX as 拡張機能
+        participant PV as プレビュー（Webview）
+        W->>EX: プレビューを横に開く
+        EX->>EX: VS Code の設定が auto なので設定ファイルの明暗を使う
+        EX->>PV: ライトの配色で描かせる
+        PV-->>W: ライトの配色で表示
+    expected:
+      - VS Code のテーマがダークでも、描く先の要素の地の色の計算値がライトの `--mdmark-color-bg` の値
+      - '`mdmark.preview.theme` を `dark` にすると、設定ファイルの明暗より VS Code の設定が勝ち、リロードせずにダークの `--mdmark-color-bg` の値になる'
+    test: test_normal_when_config_scheme
 lead: プレビューの配色が、VS Code のライト・ダークのテーマに合わせて切り替わる。設定で配色を固定もできる。
 issue: 22
 primary_actor: 文書を書く人

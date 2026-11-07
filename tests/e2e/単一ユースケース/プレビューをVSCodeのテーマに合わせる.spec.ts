@@ -139,3 +139,45 @@ test("test_normal_when_config_theme_changed", async () => {
   // 検証: theme-contrast の暗い配色
   await expect.poll(() => background(frame)).toBe("rgb(0, 0, 0)");
 });
+
+// 配色を明るい配色に固定しても、文書の page のマーカーのダークで描く（正常シナリオ（文書のマーカーで明暗を指定する））
+test("test_normal_when_document_marker", async () => {
+  // 準備
+  const session = await e2e.launch({
+    files: {
+      "dark.md": `<!-- page: scheme=dark -->\n\n${longDocument()}`,
+    },
+    settings: {
+      "workbench.colorTheme": "Default Light Modern",
+      "mdmark.preview.theme": "light",
+    },
+  });
+  await session.openFile("dark.md");
+  // 実行
+  await session.openPreviewWithShortcut();
+  // 検証
+  const frame = await session.frameWith("h2");
+  await expect.poll(() => background(frame)).toBe(DARK_BACKGROUND);
+});
+
+// 配色が auto のときは設定ファイルの明暗で描き、配色を dark に固定すると設定ファイルの明暗に勝つ（正常シナリオ（設定ファイルの明暗で描く））
+test("test_normal_when_config_scheme", async () => {
+  // 準備
+  const session = await e2e.launch({
+    files: {
+      "long.md": longDocument(),
+      "mdmark.config.yaml": "colorScheme: light\n",
+    },
+    settings: { "workbench.colorTheme": "Default Dark Modern" },
+  });
+  await session.openFile("long.md");
+  // 実行
+  await session.openPreviewWithShortcut();
+  // 検証: VS Code のテーマがダークでも、設定ファイルの明暗のライト
+  const frame = await session.frameWith("h2");
+  await expect.poll(() => background(frame)).toBe(LIGHT_BACKGROUND);
+  // 実行: 配色を dark に固定する
+  await updateWorkspaceSettings(session, { "mdmark.preview.theme": "dark" });
+  // 検証: リロードせずにダークになり、フレームは入れ替わらない
+  await expect.poll(() => background(frame)).toBe(DARK_BACKGROUND);
+});

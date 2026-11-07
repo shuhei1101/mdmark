@@ -56,6 +56,7 @@ const DEFAULT_FEATURES = {
   include: true,
   wide: true,
   csv: true,
+  "card-grid": true,
 };
 
 // 設定が無ければ既定を返す（正常系）
@@ -73,6 +74,7 @@ test("test_resolve_config", async () => {
     htmlScripts: { url: DEFAULT_HTML_SCRIPTS_URL },
     sideToc: { mode: "hover" },
     colorTheme: "dev-swiss",
+    colorScheme: "auto",
     labels: { paramCopy: "今の値を写す" },
   });
 });
@@ -192,6 +194,27 @@ test("test_resolve_config_when_color_theme_given", async () => {
   ]);
 });
 
+// `COLOR_SCHEMES` の値だけを受け、他の値と無いときは `auto` にする（正常系）
+test("test_resolve_config_when_color_scheme_given", async () => {
+  // 準備
+  const { resolveConfig } = await loadConfig();
+  const configs = [
+    { colorScheme: "dark" },
+    { colorScheme: "sepia" },
+    { colorScheme: 1 },
+    {},
+  ] as MdmarkConfig[];
+  // 実行
+  const resolved = configs.map((config) => resolveConfig({ config }));
+  // 検証
+  expect(resolved.map((config) => config.colorScheme)).toEqual([
+    "dark",
+    "auto",
+    "auto",
+    "auto",
+  ]);
+  expect(resolved[3]?.features["card-grid"]).toBe(true);
+});
 // 空でない文字列の `labels.paramCopy` だけを受け、空文字・他の型・無いときは既定にする（正常系）
 test("test_resolve_config_when_labels_given", async () => {
   // 準備
@@ -253,4 +276,30 @@ test("test_resolve_config_when_diagram_placement_given", async () => {
     "bottom",
   ]);
   expect(resolved[2]?.tooltips.placement).toBe("bottom");
+});
+
+// マーカーに書いたキーだけを置き換える（正常系）
+test("test_apply_page_settings", async () => {
+  // 準備
+  const { resolveConfig, applyPageSettings } = await loadConfig();
+  const config = resolveConfig({
+    config: {
+      colorScheme: "dark",
+      colorTheme: "theme-paper",
+      "side-toc": { mode: "hover" },
+    },
+  });
+  const before = structuredClone(config);
+  // 実行
+  const applied = applyPageSettings({
+    config,
+    page: { scheme: "light", toc: "fixed" },
+  });
+  const unchanged = applyPageSettings({ config, page: {} });
+  // 検証
+  expect(applied.colorScheme).toBe("light");
+  expect(applied.colorTheme).toBe("theme-paper");
+  expect(applied.sideToc.mode).toBe("fixed");
+  expect(unchanged).toEqual(before);
+  expect(config).toEqual(before);
 });

@@ -24,6 +24,7 @@ function resolvedConfig(
     htmlScripts: { url: "https://example.test/babel.mjs" },
     sideToc: { mode: "hover" },
     colorTheme: "dev-swiss",
+    colorScheme: "auto",
     labels: { paramCopy: "今の値を写す" },
   };
 }

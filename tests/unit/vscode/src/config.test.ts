@@ -162,6 +162,21 @@ test("test_apply_color_theme", async () => {
   expect(config).toEqual(snapshot);
 });
 
+// 固定した配色のときだけ設定の明暗を外す（正常系）
+test("test_apply_preview_theme", async () => {
+  // 準備
+  const { applyPreviewTheme } = await loadModule();
+  const config = { colorScheme: "light", colorTheme: "theme-paper" };
+  const snapshot = structuredClone(config);
+  // 実行
+  const fixed = applyPreviewTheme({ config, theme: "dark" });
+  const auto = applyPreviewTheme({ config, theme: "auto" });
+  // 検証
+  expect(fixed).toEqual({ colorTheme: "theme-paper" });
+  expect(auto).toEqual({ colorScheme: "light", colorTheme: "theme-paper" });
+  expect(config).toEqual(snapshot);
+});
+
 // 相対パスだけを設定ファイルのフォルダから直す（正常系）
 test("test_resolve_libraries", async () => {
   // 準備
