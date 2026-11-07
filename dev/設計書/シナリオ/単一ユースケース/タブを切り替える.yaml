@@ -177,7 +177,7 @@ scenarios:
       - 1 つ目のタブ群の上に、`group` の値が無いことを書いた書き方の警告がある
       - 1 つ目のタブ群は `Windows` を選び、2 つ目のタブ群は `macOS` を選んだまま
     test: test_error_when_empty_group
-  - name: 異常シナリオ（知らないタブの指定）
+  - name: 正常シナリオ（知らないタブの指定）
     setup:
       - name: mdmark を読むページ
         description: 正常シナリオと同じ
@@ -192,15 +192,15 @@ scenarios:
         participant P as 使う側のページ
         participant M as mdmark
         P->>M: 設定と Markdown を渡して描かせる
-        M->>M: 知らないキーと指定がある
-        M-->>P: 書き方の警告と、読めた指定だけを当てたタブ群を描く
+        M->>M: 知らないキーと指定を読み飛ばす
+        M-->>P: 読めた指定だけを当てたタブ群を描く
         U->>P: 1 つ目のタブ群の Windows のタブを押す
         P-->>U: 1 つ目のタブ群だけ Windows の中身を表示
     expected:
-      - 1 つ目のタブ群の上に `grop=` が使えないキーであること、2 つ目のタブ群の上に `fold` が使えない指定であることを書いた書き方の警告がある
+      - どちらのタブ群の上にも書き方の警告が無い
       - どちらのタブ群もタブに描かれている
       - 1 つ目のタブ群は `Windows` を選び、`group` を持つ 2 つ目のタブ群は `macOS` を選んだまま
-    test: test_error_when_unknown_option
+    test: test_normal_when_unknown_option
   - name: 正常シナリオ（折りたたみに入れたタブ）
     setup:
       - name: mdmark を読むページ
