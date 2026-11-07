@@ -43,3 +43,16 @@
 ## テスト結果
 
 ドキュメント修正（`docs/` の 5 ページ）は公開ドキュメントだけの変更で、規約『V字モデル』の対応表で関係する単体・結合テストが無いため、テストを回していない。
+
+### 単体
+
+| ファイル | メソッド | 変更種別 | 結果 | 補足 |
+| --- | --- | --- | --- | --- |
+| `tests/unit/src/plugin/templates.test.ts` | 全実行 | 新規 | ✅ | 28 テスト pass<br>Red: [テスト結果/20261107135728_b8a91d61_単体テスト.log](./テスト結果/20261107135728_b8a91d61_%E5%8D%98%E4%BD%93%E3%83%86%E3%82%B9%E3%83%88.log)<br>Green: [テスト結果/20261107142144_6ab0c027_単体テスト.log](./テスト結果/20261107142144_6ab0c027_%E5%8D%98%E4%BD%93%E3%83%86%E3%82%B9%E3%83%88.log) |
+| [tests/unit/src/plugin/tools.test.ts](https://github.com/shuhei1101/mdmark/blob/develop/tests/unit/src/plugin/tools.test.ts) | 全実行 | 変更 | ✅ | `test_run_list_templates`・`test_run_add_template`・`test_run_apply_template` を追加 |
+| [tests/unit/src/plugin/mcp.test.ts](https://github.com/shuhei1101/mdmark/blob/develop/tests/unit/src/plugin/mcp.test.ts) / [http.test.ts](https://github.com/shuhei1101/mdmark/blob/develop/tests/unit/src/plugin/http.test.ts) / [pre-tool-use.test.ts](https://github.com/shuhei1101/mdmark/blob/develop/tests/unit/src/plugin/pre-tool-use.test.ts) | 全実行 | 変更 | ✅ | ツールが 6 つになった設計（`test_create_mcp_server`・`test_run_serve`・`test_run_pre_tool_use_when_matcher`）に期待値を合わせた |
+| `tests/unit/` | 全実行 | 実行のみ | ✅ | `npm run test:unit` の 1680 テストのうち、今回触らない 2 件（`test_take_backup_when_outside`・`test_start_bundle`）が負荷で時間切れになり、ファイルを絞って流し直すと pass した<br>lint: [テスト結果/20261107142144_6ab0c027_lint.log](./テスト結果/20261107142144_6ab0c027_lint.log) |
+
+直したテスト:
+
+- `test_read_templates_index_when_unreadable`: 用意した索引が 4 行目（ファイルの末尾）で読めない形だったため、設計書の「3 行目に閉じていない括弧を持つ索引」に合わせて 3 行目を `tags: [a, b}` にした
