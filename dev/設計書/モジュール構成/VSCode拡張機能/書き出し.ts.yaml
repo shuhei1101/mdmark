@@ -5,6 +5,7 @@ directory: |-
   vscode/src/export/
   ├── html.ts    # 書き出す先のパスと HTML の組み立て（vscode を import しない）
   ├── write.ts   # 一時ファイルからの置き換え（vscode を import しない）
+  ├── embed.ts   # 相対パスの libraries と html-scripts.url を埋めるかの判定と埋める処理（vscode を import しない）
   └── export.ts  # mdmark.exportHtml・mdmark.openInBrowser・mdmark.printToPdf の本体
   ```
 enums:
@@ -90,13 +91,13 @@ functions:
     container: vscode/src/export/html.ts
     usecase: HTMLに書き出す
     summary: '`<base>`・そのバージョンの `index.css` の `<link>`・`theme` の CSS の `<style>`・本文と設定の JSON の `<script type="application/json">`・`index.js` を読んで拡張を `registerExtension` で登録してから `mount(document.querySelector("main"), { markdown, config })` を呼ぶ `<script type="module">` を持つ HTML を組む'
-    description: '`print` が `true` のときだけ、`mount` の後に「外部ライブラリの印の場所（class `mdmark-embed` と `role="status"` の要素）が無くなり、`document.fonts.ready` が解決したら `window.print()` を 1 回呼ぶ。`PRINT_WAIT_MS` を超えたらそのまま呼ぶ」処理を足す。印の場所は `MutationObserver` で待つ。`title` は Markdown のファイル名をエスケープして入れる'
+    description: '`print` が `true` のときだけ、`mount` の後に「外部ライブラリの印の場所（class `mdmark-embed` と `role="status"` の要素）が無くなり、`document.fonts.ready` が解決したら `window.print()` を 1 回呼ぶ。`PRINT_WAIT_MS` を超えたらそのまま呼ぶ」処理を足す。印の場所は `MutationObserver` で待つ。`title` は Markdown のファイル名をエスケープして入れる。拡張のコードは `moduleDataUrl` で `data:` の URL にする'
     scope: public
     args:
       - name: options
         type: '{ markdown: string; config: PreviewConfig; title: string; distJs: string; distCss: string; baseHref: string; print: boolean; themeCss?: string; extensions: string[] }'
         required: true
-        description: 全文・設定（`libraries` は `file:` の URL に直した値）・題・配布物の URL・Markdown のフォルダの `file:` の URL に `/` を付けたもの・印刷を待つか・重ねた設定の `theme` の CSS の中身・拡張を束ねた ES モジュールのコード（設定の順）
+        description: 全文・設定（相対パスの `libraries`・`html-scripts.url` は `embedLocalLibraries` が `data:` の URL にした値）・題・配布物の URL・Markdown のフォルダの `file:` の URL に `/` を付けたもの・印刷を待つか・重ねた設定の `theme` の CSS の中身・拡張を束ねた ES モジュールのコード（設定の順）
     returns:
       type: string
       description: HTML 文字列
@@ -183,8 +184,9 @@ functions:
       1. 読むバージョンを決める（読むバージョンを決める）
          - `undecidable` の場合、画面設計の「バージョンを決められない通知」を `showErrorMessage` で出し、`undefined` を返す
          - `fetched` が `true` の場合、`mdmark.lastVersion` に書く
-      2. 設定ファイルを読み（設定ファイルを読む。`purpose: export`、`cwd` は Markdown のフォルダ、`baseDir` は Markdown を含むワークスペースのフォルダ、`env` は `process.env`、`home` は `os.homedir()`）、`libraries` を `pathToFileURL` で直し、`theme` の CSS を読んで `<style>` に、`extensions` を拡張を束ねる（拡張を束ねる）で束ねて、それぞれを描く前に登録するスクリプトとして埋める（束ねられない拡張は `[warn]` を出して飛ばす）。`problem` があるときはそのファイルを重ねずに書き出す。続けて `mdmark.colorTheme` で上書きする（テーマの設定で上書きする）
+      2. 設定ファイルを読み（設定ファイルを読む。`purpose: export`、`cwd` は Markdown のフォルダ、`baseDir` は Markdown を含むワークスペースのフォルダ、`env` は `process.env`、`home` は `os.homedir()`）、相対パスの `libraries`・`html-scripts.url` を `getText()` の全文で判定して埋め（相対パスのライブラリを埋める。`bundle` は拡張を束ねる。まとめられないものは `[warn]` を出す）、`theme` の CSS を読んで `<style>` に、`extensions` を拡張を束ねる（拡張を束ねる）で束ねて、それぞれを描く前に登録するスクリプトとして埋める（束ねられない拡張は `[warn]` を出して飛ばす）。`problem` があるときはそのファイルを重ねずに書き出す。続けて `mdmark.colorTheme` で上書きする（テーマの設定で上書きする）
          - `[warn]` 設定ファイルを読めないため設定なしで書き出す（パス・行・`message`）
+         - `[warn]` ライブラリをまとめられない（パス・誤り）
       3. 書き出す先を決め（書き出す先を決める）、`getText()` の全文で HTML を組み（書き出す HTML を組む。`print` は `mode` が `print` のとき）、書く（一時ファイルから置き換える）
          - 書けない場合、画面設計の「書き出せない通知」を `showErrorMessage` で出し、`undefined` を返す
            - `[error]` HTML を書き出せない（パス・誤り）
@@ -196,12 +198,12 @@ functions:
     callees:
       - dev/設計書/モジュール構成/VSCode拡張機能/読むバージョン.ts#functions[decideVersion]
       - dev/設計書/モジュール構成/VSCode拡張機能/設定.ts#functions[loadConfig]
-      - dev/設計書/モジュール構成/VSCode拡張機能/設定.ts#functions[resolveLibraries]
       - dev/設計書/モジュール構成/VSCode拡張機能/プレビュー.ts#functions[distUrl]
       - '#functions[resolveExportPath]'
       - '#functions[buildExportHtml]'
       - '#functions[writeFileAtomically]'
       - dev/設計書/モジュール構成/VSCode拡張機能/設定.ts#functions[bundleExtensions]
+      - '#functions[embedLocalLibraries]'
     refs:
       - dev/設計書/インターフェース定義/VSCode拡張機能/HTMLに書き出す.ts#
       - dev/設計書/インターフェース定義/VSCode拡張機能/ブラウザで開く.ts#
@@ -210,6 +212,135 @@ functions:
       - dev/設計書/画面設計/VSCodeのコマンドと通知.ts#elements[書き出せない通知]
       - dev/設計書/画面設計/VSCodeのコマンドと通知.ts#elements[バージョンを決められない通知]
     status: planned
+  - name: moduleDataUrl
+    title: 'モジュールの data: の URL にする'
+    kind: 関数
+    container: vscode/src/export/html.ts
+    usecase: HTMLに書き出す
+    summary: ES モジュールのコードを `encodeURIComponent` して `data:text/javascript;charset=utf-8,` の後ろに置いた URL を返す
+    scope: public
+    args:
+      - name: code
+        type: string
+        required: true
+        description: ES モジュールのコード
+    returns:
+      type: string
+      description: '`data:text/javascript;charset=utf-8,` で始まる URL'
+    unit_tests:
+      - name: test_module_data_url
+        case: 正常
+        summary: 復号すると元のコードに戻る
+        condition: '`export default "a b#%あ";`'
+        mock: なし
+        expected: '`data:text/javascript;charset=utf-8,` で始まり、後ろを `decodeURIComponent` すると元のコード'
+    refs:
+      - dev/設計書/インターフェース定義/VSCode拡張機能/HTMLに書き出す.ts#constraints[埋めるライブラリ]
+    status: planned
+  - name: usedLibraryNames
+    title: 文書が使うライブラリの名前を拾う
+    kind: 関数
+    container: vscode/src/export/embed.ts
+    usecase: HTMLに書き出す
+    summary: 文書のマーカー（ライブラリ本体の `MARK_PATTERN`）のうち、閉じでなく `names` にある名前を返す
+    scope: public
+    args:
+      - name: markdown
+        type: string
+        required: true
+        description: 書き出す全文
+      - name: names
+        type: string[]
+        required: true
+        description: 調べるライブラリの名前
+    returns:
+      type: Set<string>
+      description: 文書にマーカーがある名前
+    unit_tests:
+      - name: test_used_library_names
+        case: 正常
+        summary: マーカーがある名前だけを返す
+        condition: '文書が `<!-- test-lib: a -->` と `<!-- /other-lib -->` を持ち、`names` が `test-lib`・`other-lib`・`unused-lib`'
+        mock: なし
+        expected: '`test-lib` だけ'
+    refs:
+      - dev/設計書/インターフェース定義/VSCode拡張機能/HTMLに書き出す.ts#constraints[埋めるライブラリ]
+    status: planned
+  - name: usesRangeScripts
+    title: 範囲のスクリプトを動かすかを決める
+    kind: 関数
+    container: vscode/src/export/embed.ts
+    usecase: HTMLに書き出す
+    summary: 設定の `features` に文書の `features` のマーカーを重ねて（ライブラリ本体の `resolveFeatures`）`html-scripts` がオンで、`<!-- html -->` の範囲に情報文字列が `ts`・`js` のコードブロックがあれば `true` を返す
+    scope: public
+    args:
+      - name: markdown
+        type: string
+        required: true
+        description: 書き出す全文
+      - name: features
+        type: Record<string, unknown> | undefined
+        required: true
+        description: 重ねた設定の `features`
+    returns:
+      type: boolean
+      description: 変換のライブラリを埋めるか
+    unit_tests:
+      - name: test_uses_range_scripts
+        case: 正常
+        summary: 設定か文書のマーカーでオンにし、`ts` の範囲があると `true`
+        condition: '`ts` の範囲を持つ文書を、`features` が `{ "html-scripts": true }` と、`features` が無く文書に `<!-- features: +html-scripts -->` を持つ場合で呼ぶ'
+        mock: なし
+        expected: どちらも `true`
+      - name: test_uses_range_scripts_when_off_or_no_script
+        case: 正常
+        summary: オフか、範囲に `ts`・`js` が無いと `false`
+        condition: '`features` が `{ "html-scripts": true }` で文書に `<!-- features: -html-scripts -->` を持つ場合と、オンで範囲が `html`・`css` だけの場合と、範囲の外に `ts` のコードブロックがある場合'
+        mock: なし
+        expected: どれも `false`
+    refs:
+      - dev/設計書/インターフェース定義/VSCode拡張機能/HTMLに書き出す.ts#constraints[埋めるライブラリ]
+    status: planned
+  - name: embedLocalLibraries
+    title: 相対パスのライブラリを埋める
+    kind: 関数
+    container: vscode/src/export/embed.ts
+    usecase: HTMLに書き出す
+    summary: '`http:`・`https:` でない `libraries` の値のうち `usedLibraryNames` が拾った名前と、`usesRangeScripts` が `true` のときの `html-scripts.url` を `bundle` でまとめ、`moduleDataUrl` の URL に替えて返す'
+    description: 拾わなかった・まとめられなかった相対パスの `libraries` の値は返す `libraries` から外し、`html-scripts.url` は返す `htmlScripts` から `url` を外す。`http:`・`https:` の値と文字列でない値はそのまま返す。同じパスは 1 回だけまとめる
+    scope: public
+    is_async: true
+    args:
+      - name: options
+        type: '{ markdown: string; libraries: Record<string, unknown> | undefined; htmlScripts: Record<string, unknown> | undefined; features: Record<string, unknown> | undefined; bundle: (paths: string[]) => Promise<Array<{ path: string; code: string } | { path: string; error: string }>> }'
+        required: true
+        description: 書き出す全文・重ねた設定の `libraries`・`html-scripts`・`features`（相対パスは設定を重ねる処理が絶対パスにした値）・絶対パスを ES モジュールにまとめる関数（拡張機能では `bundleExtensions`）
+    returns:
+      type: 'Promise<{ libraries: Record<string, unknown> | undefined; htmlScripts: Record<string, unknown> | undefined; failures: Array<{ path: string; error: string }> }>'
+      description: 埋めた値に替えた `libraries`・`html-scripts` と、まとめられなかったパスと誤り
+    unit_tests:
+      - name: test_embed_local_libraries
+        case: 正常
+        summary: 'マーカーがある相対パスのライブラリと変換のライブラリだけを data: の URL に替える'
+        condition: '`libraries` が `test-lib: /ws/libs/test.js`・`unused-lib: /ws/libs/unused.js`・`cdn-lib: https://example.com/a.js`、`html-scripts.url` が `/ws/libs/babel.js`、文書は `test-lib`・`cdn-lib` のマーカーと `ts` の範囲を持ち `features` が `{ "html-scripts": true }`'
+        mock: '`bundle` はパスごとに `export default "{パス}"` を返し、渡されたパスを記録する'
+        expected: '`libraries` が `test-lib`（`moduleDataUrl` の値）と `cdn-lib`（そのまま）だけを持ち、`htmlScripts.url` が `moduleDataUrl` の値。`bundle` に渡ったパスが `/ws/libs/test.js` と `/ws/libs/babel.js` だけで、`failures` が空'
+      - name: test_embed_local_libraries_when_bundle_fails
+        case: 異常
+        summary: まとめられないものは外して誤りを返し、範囲が無ければ変換のライブラリをまとめない
+        condition: '`test-lib` のマーカーを持ち範囲を持たない文書、`html-scripts.url` が絶対パス'
+        mock: '`bundle` は `/ws/libs/test.js` に `{ path, error: "読めない" }` を返す'
+        expected: '`libraries` に `test-lib` が無く、`htmlScripts` が `url` を持たず、`failures` が `/ws/libs/test.js` と誤りの 1 件。`bundle` に `html-scripts.url` のパスが渡らない'
+        exception: まとめられない
+    callees:
+      - '#functions[usedLibraryNames]'
+      - '#functions[usesRangeScripts]'
+      - '#functions[moduleDataUrl]'
+    refs:
+      - dev/設計書/インターフェース定義/VSCode拡張機能/HTMLに書き出す.ts#constraints[埋めるライブラリ]
+      - dev/設計書/インターフェース定義/VSCode拡張機能/HTMLに書き出す.ts#constraints[設定と相対パス]
+    status: planned
 test_files:
   - tests/unit/vscode/src/export/html.test.ts
   - tests/unit/vscode/src/export/write.test.ts
+  - tests/unit/vscode/src/export/embed.test.ts
