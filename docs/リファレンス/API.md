@@ -553,14 +553,14 @@ DOM に頼らず、Node とブラウザのどちらでも同じ結果を返す�
 import { buildAliases } from "https://cdn.jsdelivr.net/gh/shuhei1101/mdmark@{タグ}/dist/index.js";
 
 const { aliases, problems } = buildAliases({
-  rows: [{ id: "terms", paths: ["terms/*.yaml"], records: "terms", metadata: { alias_type: { type: "custom", value: "term" }, name: { type: "ref", field: "term" } } }],
+  rows: [{ id: "terms", paths: ["terms/*.yaml"], alias_type: "term", records: "terms", metadata: { name: "term" } }],
   sources: [{ rowId: "terms", path: "terms/glossary.yaml", data: { terms: [{ id: "ws", term: "ワークスペース", description: "話し合いの記録を置くフォルダ" }] } }],
 });
 ```
 
 | 引数 | 必須 / 任意 | 説明 |
 | --- | --- | --- |
-| `input.rows` | 必須 | 使う側が設定の `aliases` を読んだ配列。行の形は [設定](./設定.md#エイリアスの元の行)。`id`・`paths`・`metadata.alias_type` を持たない行は使わず、ずれにもしない（形は `mdmark check` が `schema` のずれで返す）。`enabled` が `false` の行は読まない |
+| `input.rows` | 必須 | 使う側が設定の `aliases` を読んだ配列。行の形は [設定](./設定.md#エイリアスの元の行)。`id`・`paths`・`alias_type` を持たない行は使わず、ずれにもしない（形は `mdmark check` が `schema` のずれで返す）。`enabled` が `false` の行は読まない |
 | `input.sources` | 必須 | 行の `paths` に当たったファイルを YAML として読んだ中身（`MdmarkAliasSource`）の並び。行ごとに `paths` に記載した順、glob の中はパスの順に並べる。読めなかったファイルと、どのファイルにも当たらなかった `paths` は呼ぶ側が扱い、ここには入れない |
 | `input.configFile` | 任意 | 行のずれの `file` に出す設定ファイルの名前。既定は `mdmark.config.yaml` |
 

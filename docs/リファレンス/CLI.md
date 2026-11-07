@@ -215,8 +215,8 @@ mdmark.config.yaml:build: schema: `build.out` がありません。書き出す 
 | `alias_unreadable` | `paths` に当たったファイルを YAML として読めない |
 | `duplicate_alias_row_id` | `aliases` の行の `id` が、前の行と重なっている。重なった後の行は読まない |
 | `alias_records_missing` | 行の `records` のキーの配列が、ファイルに無い |
-| `alias_field_missing` | `metadata` の `ref` が指す列が、レコードに無い |
-| `alias_unknown_type` | `ref` で取った `alias_type` が、9 つの種類に無い |
+| `alias_field_missing` | `metadata` に記載した列が、レコードに無い |
+| `alias_unknown_type` | 行の `alias_type` が、9 つの種類に無い（`buildAliases` に直接渡した行だけ。`mdmark check` は `schema` のずれにする） |
 | `alias_required_empty` | 種類の必須のキーが空。`env` は `url` と `port` が両方空のとき |
 | `duplicate_alias_id` | エイリアスの `id` が、前のエイリアス（`env` を含む）と重なっている |
 | `unknown_mark` | 文書の本文に、記法の印・`features`・`libraries` の対応表・`extensions` の拡張の印・`check.ignore` の名前のどれにも当たらない印がある。場所は印のある行の番号 |
