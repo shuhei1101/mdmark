@@ -334,6 +334,27 @@ scenarios:
       - ずれの一覧に、端末の設定のパスを指す `features.callout` の `schema` と、上のフォルダの `mdmark.config.yaml` を指す `side-toc.mode` の `schema` が 1 件ずつある
       - 設定・索引・文書が変わっていない
     test: test_normal_when_cascaded_config_drift
+  - name: 正常シナリオ（知らない明暗の値がある）
+    setup:
+      - name: 知らない明暗の値を書いたフォルダ
+        description: 正常シナリオと同じフォルダで、`mdmark.config.yaml` の明暗のキーに `sepia` を書く
+        notes: キーの名前とずれの種類はインターフェース定義で決める
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant C as mdmark check
+        W->>C: mdmark check を流す
+        C->>C: 設定の明暗の値を書ける値と照らす
+        C-->>W: 明暗のキーを指すずれの行
+    expected:
+      - '`mdmark.config.yaml` の明暗のキーを指すずれの行が 1 つだけあり、内容に書いた値 `sepia` と書ける値 `light`・`dark`・`auto` が書かれている'
+      - 終了コードが 0 以外
+      - 設定・索引・文書が変わっていない
+    test: test_normal_when_unknown_color_scheme
+    refs:
+      - dev/設計書/シナリオ/単一ユースケース/ページの設定を文書で指定する#scenarios[正常シナリオ（設定で全文書の既定にする）]
 lead: 文書を書く人が `mdmark check` を流し、設定ファイルと索引の形・索引と文書のずれ・書き出す対象の有無・文書の本文にある知らない印・図の部品の定義のずれを、ファイル・場所・種類・内容の一覧で受け取る。
 issue: 9
 primary_actor: 文書を書く人

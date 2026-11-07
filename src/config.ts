@@ -14,6 +14,8 @@ export type MdmarkConfig = {
   "side-toc"?: { mode?: string };
   /** 配色のテーマの名前（`COLOR_THEMES` のどれか）。知らない値も受けて `resolveConfig` が `DEFAULT_COLOR_THEME` にするため、型は `string` */
   colorTheme?: string;
+  /** 配色の明暗（`COLOR_SCHEMES` のどれか）。知らない値も受けて `resolveConfig` が `DEFAULT_COLOR_SCHEME` にするため、型は `string` */
+  colorScheme?: string;
   /** 部品の文言の設定。`paramCopy` は操作できる部品の今の値をコピーするボタンの文言。空文字も受けて `resolveConfig` が `DEFAULT_LABELS.paramCopy` にする */
   labels?: { paramCopy?: string };
   /** 範囲のスクリプトの設定。`url` は範囲の `ts`・`js` を変換する @babel/standalone の ES モジュールの URL */
@@ -32,6 +34,19 @@ export type ColorTheme =
   | "theme-paper"
   | "theme-slate"
   | "theme-contrast";
+
+/** 描いた文書の配色の明暗。`light`・`dark` は描く先の要素の class で祖先の class と OS の設定に勝たせ、`auto` は class を付けずに任せる */
+export type ColorScheme = "light" | "dark" | "auto";
+
+/** 文書の page の印から読んだ、設定より優先する値。書かなかったキーは持たない */
+export type PageSettings = {
+  /** `scheme=` の値 */
+  scheme?: ColorScheme;
+  /** `theme=` の値 */
+  theme?: ColorTheme;
+  /** `toc=` の値 */
+  toc?: SideTocMode;
+};
 
 /** 対応表の行: 印 1 つのモジュールの URL と、図の印か */
 export type LibraryEntry = {
@@ -55,6 +70,8 @@ export type ResolvedConfig = {
   sideToc: { mode: SideTocMode };
   /** 設定の `colorTheme` が `COLOR_THEMES` にあればその値、それ以外は `DEFAULT_COLOR_THEME` */
   colorTheme: ColorTheme;
+  /** 設定の `colorScheme` が `COLOR_SCHEMES` にあればその値、それ以外は `DEFAULT_COLOR_SCHEME` */
+  colorScheme: ColorScheme;
   /** 設定の `labels.paramCopy` が空でない文字列ならその値、それ以外は `DEFAULT_LABELS.paramCopy` */
   labels: { paramCopy: string };
   /** 範囲のスクリプトの変換のライブラリの URL（既定 `DEFAULT_HTML_SCRIPTS_URL`） */
@@ -71,6 +88,12 @@ export const COLOR_THEMES: readonly ColorTheme[] = [
 
 /** 設定に `colorTheme` が無いか知らない名前のときのテーマ。配色の値は `src/index.css` の `:root` の既定のまま */
 export const DEFAULT_COLOR_THEME: ColorTheme = "dev-swiss";
+
+/** 配色の明暗の値の並び。`resolveConfig`・page の印の読み取り・CLI の点検が照らす */
+export const COLOR_SCHEMES: readonly ColorScheme[] = ["light", "dark", "auto"];
+
+/** 設定に `colorScheme` が無いか知らない値のときの明暗 */
+export const DEFAULT_COLOR_SCHEME: ColorScheme = "auto";
 
 /** 設定の `labels.paramCopy` が空でない文字列でないときの部品の文言 */
 export const DEFAULT_LABELS: { paramCopy: string } = {
@@ -121,6 +144,7 @@ export const DEFAULT_FEATURES: Record<string, boolean> = {
   include: true,
   wide: true,
   csv: true,
+  "card-grid": true,
 };
 
 /** 設定の `syntax.url` が無いときに読む highlight.js の `es/` フォルダの URL。バージョンを固定する */
@@ -191,6 +215,10 @@ export function resolveConfig(options: {
   const colorTheme =
     COLOR_THEMES.find((name) => name === config?.colorTheme) ??
     DEFAULT_COLOR_THEME;
+  // 明暗は、COLOR_SCHEMES にある値だけを受け、他の値は既定にする
+  const colorScheme =
+    COLOR_SCHEMES.find((name) => name === config?.colorScheme) ??
+    DEFAULT_COLOR_SCHEME;
   // 部品の文言は、空でない文字列だけを受け、他の値は既定にする
   const paramCopy = config?.labels?.paramCopy;
   const labels = {
@@ -207,6 +235,23 @@ export function resolveConfig(options: {
     htmlScripts,
     sideToc: { mode },
     colorTheme,
+    colorScheme,
     labels,
   };
 }
+
+/** 既定を当てた設定に、文書の page の印の値を重ねた設定を返す（渡された設定は書き換えない） */
+export const applyPageSettings = (options: {
+  /** 既定を当てた設定 */
+  config: ResolvedConfig;
+  /** `renderDocument` が返したページの設定 */
+  page: PageSettings;
+}): ResolvedConfig => {
+  const { config, page } = options;
+  return {
+    ...config,
+    colorScheme: page.scheme ?? config.colorScheme,
+    colorTheme: page.theme ?? config.colorTheme,
+    sideToc: { mode: page.toc ?? config.sideToc.mode },
+  };
+};

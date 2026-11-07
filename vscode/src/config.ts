@@ -3,7 +3,7 @@ import { isAbsolute, resolve } from "node:path";
 import { loadLayeredConfig } from "../../src/config-files.ts";
 import type { PreviewSettings } from "./settings.ts";
 
-/** `mount` に渡す設定。設定ファイルから取り出した `features`・`libraries`・`html-scripts`・`side-toc`・`colorTheme` */
+/** `mount` に渡す設定。設定ファイルから取り出した `features`・`libraries`・`html-scripts`・`side-toc`・`colorTheme`・`colorScheme` */
 export type PreviewConfig = {
   /** 記載した値のまま（中の知らない名前と型の違う値は mdmark が無視する） */
   features?: Record<string, unknown>;
@@ -15,6 +15,8 @@ export type PreviewConfig = {
   "side-toc"?: Record<string, unknown>;
   /** 書いた値のまま。`mdmark.colorTheme` が空でないときは `applyColorTheme` がその値に置き換える（知らない名前は mdmark が dev-swiss で描く） */
   colorTheme?: string;
+  /** 書いた値のまま。プレビューでは `mdmark.preview.theme` が `light`・`dark` のとき `applyPreviewTheme` が除く（知らない値は mdmark が `auto` で描く） */
+  colorScheme?: string;
 };
 
 /** 帯に出す、読めない・形の合わない設定ファイル 1 つ */
@@ -107,7 +109,7 @@ export function resolveConfigPath(options: {
   return isAbsolute(configPath) ? configPath : resolve(baseDir, configPath);
 }
 
-/** 重ねた設定から `mount` に渡すキー（マップの `features`・`libraries`・`html-scripts`・`side-toc` と文字列の `colorTheme`）だけを取り出す */
+/** 重ねた設定から `mount` に渡すキー（マップの `features`・`libraries`・`html-scripts`・`side-toc` と文字列の `colorTheme`・`colorScheme`）だけを取り出す */
 function pickPreviewConfig(config: Record<string, unknown>): PreviewConfig {
   const picked: PreviewConfig = {};
   if (isMap(config.features)) {
@@ -124,6 +126,9 @@ function pickPreviewConfig(config: Record<string, unknown>): PreviewConfig {
   }
   if (typeof config.colorTheme === "string") {
     picked.colorTheme = config.colorTheme;
+  }
+  if (typeof config.colorScheme === "string") {
+    picked.colorScheme = config.colorScheme;
   }
   return picked;
 }
@@ -262,4 +267,19 @@ export function applyColorTheme(options: {
 }): PreviewConfig {
   const { config, colorTheme } = options;
   return colorTheme === "" ? config : { ...config, colorTheme };
+}
+
+/** `mdmark.preview.theme` が `light`・`dark` なら、設定から `colorScheme` を除いた設定を返す。`auto` のときは `config` をそのまま返し、渡された `config` は書き換えない（プレビューだけが通し、書き出しは通さない） */
+export function applyPreviewTheme(options: {
+  /** `applyColorTheme` の後の設定 */
+  config: PreviewConfig;
+  /** `readSettings` の `theme` */
+  theme: PreviewSettings["theme"];
+}): PreviewConfig {
+  const { config, theme } = options;
+  if (theme === "auto") {
+    return config;
+  }
+  const { colorScheme: _colorScheme, ...rest } = config;
+  return rest;
 }

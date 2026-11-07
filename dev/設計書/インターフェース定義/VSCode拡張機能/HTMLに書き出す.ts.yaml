@@ -126,6 +126,29 @@ flows:
       - 開いた HTML で、範囲の `ts` が書いた結果が範囲の要素に出る
       - 開いている間に、書き出した HTML 以外の `file:` の URL への要求が記録されない
     test: test_normal_when_relative_libraries
+  - name: 正常系（設定ファイルの明暗で書き出す）
+    summary: '`mdmark.preview.theme` によらず、設定ファイルの `colorScheme` を埋めた HTML を書き出す'
+    setup:
+      - name: 明暗を書いたワークスペース
+        description: '正常系と同じ `docs/guide.md` を開き、`mdmark.config.yaml` は `colorScheme: dark`、`mdmark.preview.theme` は `light`'
+      - name: Mock
+        description: '正常系と同じ。書き出した HTML は Playwright の Chromium で file:// で開き、配色はライト（`prefers-color-scheme: light`）にする'
+    flow: |-
+      sequenceDiagram
+        participant U as 文書を書く人
+        participant EX as 拡張機能
+        participant H as 書き出した HTML
+        U->>EX: mdmark.exportHtml
+        EX->>EX: 設定ファイルの colorScheme を入れた config で HTML を組む
+        EX->>H: docs/guide.html を書く
+        U->>H: 開く
+        H-->>U: ダークの配色で描く
+    expected:
+      - 書き出した HTML に埋めた `config` の `colorScheme` が `dark`
+      - 開いた HTML で、描く先の要素が class `mdmark-theme-dark` を持ち、地の色の計算値がダークの `--mdmark-color-bg` の値
+    test: test_normal_when_config_color_scheme
+    refs:
+      - dev/設計書/シナリオ/単一ユースケース/HTMLに書き出す#
 lead: 開いている Markdown を、jsDelivr の配布物を読んで `mount` で描く 1 つの HTML に書き出し、書き出したパスを通知で知らせる。
 idempotent: true
 side_effects: 書き出す先に `{Markdown の名前}.html` を書く（あれば上書きする）。`mdmark.version` が `latest` のときはタグ一覧を 1 回取る。Markdown は書き換えない
@@ -159,7 +182,7 @@ constraints:
   - item: 書き出す中身
     constraint: '`TextDocument.getText()` の全文（保存していない書き換えを含む）を、`<script type="application/json">` に JSON で埋める（JSON の中の `<` は、JSON の Unicode エスケープであるバックスラッシュ・`u`・`003c` の 6 文字に置き換え、本文の `</script>` で `script` 要素が閉じないようにする）。版はプレビューを開く.ts の制約「バージョンの決め方」で決め、`<link>` と `<script type="module">` でその版の jsDelivr の `dist/index.css`・`dist/index.js` を読み、`mount(document.querySelector("main"), { markdown, config })` を呼ぶ'
   - item: 設定と相対パス
-    constraint: '`config` はプレビューを描き直す.ts の制約「設定の取り出し方」と同じ。`colorTheme` は `mdmark.colorTheme` が空でないときはその値で上書きする（プレビューを描き直す.ts の制約「送る中身」と同じ）。重ねた設定はインターフェース定義『設定を重ねて読む』を `purpose: export` で呼んで得る。`libraries` と `html-scripts.url` の相対パスは、その値を書いた設定ファイルのフォルダから解決し、制約「埋めるライブラリ」のとおり HTML に埋める。`theme` の CSS は HTML の `<style>` に埋め、`extensions` のモジュールは、インターフェース定義『文書をHTMLに書き出す』の制約「束ねるスクリプト」と同じ引数で、拡張機能の中では esbuild-wasm で束ねて HTML に埋め（`.ts` も読む。束ねられない拡張は飛ばして書き出す）、`mount` の前に登録する（`file:` のページから `file:` のモジュールを `import()` すると Chromium 系のブラウザが読まないため）。HTML に `<base href="{Markdown のフォルダの file: の URL}/">` を置き、本文の相対パスの画像とリンクを Markdown のフォルダから解決する'
+    constraint: '`config` はプレビューを描き直す.ts の制約「設定の取り出し方」と同じ。`colorScheme` は `mdmark.preview.theme` によらず設定ファイルの値を渡す（`mdmark.preview.theme` はプレビューのパネルだけの配色）。`colorTheme` は `mdmark.colorTheme` が空でないときはその値で上書きする（プレビューを描き直す.ts の制約「送る中身」と同じ）。重ねた設定はインターフェース定義『設定を重ねて読む』を `purpose: export` で呼んで得る。`libraries` と `html-scripts.url` の相対パスは、その値を書いた設定ファイルのフォルダから解決し、制約「埋めるライブラリ」のとおり HTML に埋める。`theme` の CSS は HTML の `<style>` に埋め、`extensions` のモジュールは、インターフェース定義『文書をHTMLに書き出す』の制約「束ねるスクリプト」と同じ引数で、拡張機能の中では esbuild-wasm で束ねて HTML に埋め（`.ts` も読む。束ねられない拡張は飛ばして書き出す）、`mount` の前に登録する（`file:` のページから `file:` のモジュールを `import()` すると Chromium 系のブラウザが読まないため）。HTML に `<base href="{Markdown のフォルダの file: の URL}/">` を置き、本文の相対パスの画像とリンクを Markdown のフォルダから解決する'
     notes: '`http:`・`https:` の `libraries` と `html-scripts.url` は URL のまま読む'
   - item: 通信
     constraint: 書き出した HTML は、開くときに jsDelivr へ届く必要がある。配布物を HTML に埋めない

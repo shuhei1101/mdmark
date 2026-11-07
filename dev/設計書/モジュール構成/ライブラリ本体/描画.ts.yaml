@@ -6,6 +6,7 @@ directory: |-
   ├── index.ts     # render と renderDocument
   ├── parser.ts    # markdown-it の解析器と、足すコアルール
   ├── marks.ts     # 印を読み、置き換えるコアルール
+  ├── page.ts      # ページの設定の印の読み取り
   ├── sanitize.ts  # sanitize-html の設定と sanitize
   ├── used.ts      # 書き出しで埋める外部ライブラリと範囲のスクリプトを文書から取得する usedLibraryMarks・collectRangeScripts（esbuild を import しない。『CLI』）
   ├── scope-css.ts # 埋め込んだ HTML の範囲の css を範囲の根の要素の中だけに当てる scopeCss（DOM を使わない）
@@ -50,6 +51,12 @@ data_models:
       - name: features
         type: Record<string, boolean>
         description: '`defaults` に `featureArgs` を重ねたもの（`resolveDocumentFeatures` が入れる。記法のコアルールが読む）'
+      - name: pageArgs
+        type: 'Array<{ args: string[]; keys: Record<string, string> }>'
+        description: 文書の先頭の page の印の引数を書いた順に並べたもの（`takeMarks` が足す）
+      - name: page
+        type: PageSettings
+        description: '`pageArgs` を読んだページの設定（`resolvePageSettings` が入れる）'
       - name: headings
         type: 'Array<{ level: number; id: string; text: string }>'
         description: 見出しの ID と文字（`assignHeadingIds` が足す）
@@ -94,6 +101,9 @@ data_models:
       - name: warnings
         type: CollectedWarning[]
         description: 本文に置いた書き方の警告を、警告を置いた順に並べたもの。`collectWarnings` が返す
+      - name: page
+        type: PageSettings
+        description: 文書の先頭の page の印から読んだページの設定。`mount` が `applyPageSettings` で設定に重ねる
   - name: CollectedWarning
     title: 集めた書き方の警告
     container: src/render/syntax/warnings.ts
@@ -119,6 +129,12 @@ constants:
     container: src/render/marks.ts
     summary: 機能のオン・オフを書く印の名前
     value: '"features"'
+  - name: PAGE_MARK
+    title: ページの設定の印の名前
+    container: src/render/marks.ts
+    summary: 明暗・テーマ・右側の目次の出し方を書く印の名前
+    value: '"page"'
+    status: planned
   - name: ALIGN_VALUES
     title: 列の揃えの値
     container: src/render/sanitize.ts
@@ -311,7 +327,7 @@ functions:
     kind: 関数
     scope: internal
     summary: '`html: true`・`linkify: true` の markdown-it に、足すコアルールを登録して返す'
-    description: 'コアルールは `inline` の後に次の順で登録する: 印（`takeMarks`）→ 文書の機能（`resolveDocumentFeatures`）→ 脚注の機能のオン・オフ（`collectFootnotes`）→ 見出し（`assignHeadingIds`）→ 用語集の表（`glossaryRule`）→ 行の詳細 → 表（`decorateTables`。今の表の属性もここ）→ タブ → ステップ → 注意書き → ファイルツリー → バッジ → 本文の文字の色（`buildTextColors`）→ コードブロック（`buildCodeBlocks`。図の部品・埋め込んだ HTML より後）→ 画像の属性と種類（`readImages`）→ 図表の番号 → ギャラリー（`buildGallery`）→ 画像と動画と音声の図（`buildImageFigures`）→ カード（`buildCards`）→ 用語の下線（`termsRule`）→ 節 → 目次 → 脚注の一覧（`buildFootnoteList`）→ 関連文書の一覧（`backlinksRule`）→ タスクリスト → www の自動リンク → 残った印（`dropMarks`）→ 元の行番号（`markSourceLines`）→ 脚注の定義の取り出し（`takeFootnoteDefinitions`）。脚注の定義・参照・行内の脚注の block・inline のルールは `useFootnotes` で登録する。記法のコアルールは『記法』、用語と関連文書のコアルールは『索引と用語』。コードブロックの `pre` の属性は `renderer.rules.fence` を包んで付け、読み上げの名前はエスケープする（部品『HTML の特別な文字をエスケープする』）。www の自動リンクは `linkify.set({ fuzzyLink: true })` にし、スキームも `www.` もメールの `@` も持たない自動リンクを文字に戻す'
+    description: 'コアルールは `inline` の後に次の順で登録する: 印（`takeMarks`）→ 文書の機能（`resolveDocumentFeatures`）→ 文書のページの設定（`resolvePageSettings`）→ 取り込み（`expandIncludes`）→ 蛍光ペン（`useHighlight` が取り込みの後に足す）→ 脚注の機能のオン・オフ（`collectFootnotes`）→ カードの格子（`buildCardGrid`。項目の `icon:` の行内のコードを読むため行内のアイコンより前、範囲の中のリンクをリンクと添付のカードにしないためカードより前）→ 行内のアイコン（`buildInlineIcons`。見出しの ID より前）→ 見出し（`assignHeadingIds`）→ 用語集の表（`glossaryRule`）→ 行の詳細 → ビュー → CSV の表 → 表（`decorateTables`。今の表の属性もここ）→ タブ → ステップ → 注意書き → ファイルツリー → バッジ → キー → 本文の文字の色（`buildTextColors`）→ 図の部品 → 埋め込んだ HTML → コードブロック（`buildCodeBlocks`。図の部品・埋め込んだ HTML より後）→ 表の見本の移動（`linkTreeExamples`）→ 画像の属性と種類（`readImages`）→ 図表の番号 → ギャラリー（`buildGallery`）→ 画像と動画と音声の図（`buildImageFigures`）→ カード（`buildCards`）→ 段組み → details の範囲 → wide の範囲 → 改ページ → 用語の下線（`termsRule`）→ 節 → 目次 → 脚注の一覧（`buildFootnoteList`）→ 関連文書の一覧（`backlinksRule`）→ タスクリスト → www の自動リンク → 残った印（`dropMarks`）→ 元の行番号（`markSourceLines`）→ 脚注の定義の取り出し（`takeFootnoteDefinitions`）→ 書き方の警告を集める（`collectWarningsRule`）。脚注の定義・参照・行内の脚注の block・inline のルールは `useFootnotes` で登録する。記法のコアルールは『記法』、用語と関連文書のコアルールは『索引と用語』。コードブロックの `pre` の属性は `renderer.rules.fence` を包んで付け、読み上げの名前はエスケープする（部品『HTML の特別な文字をエスケープする』）。www の自動リンクは `linkify.set({ fuzzyLink: true })` にし、スキームも `www.` もメールの `@` も持たない自動リンクを文字に戻す'
     returns:
       type: MarkdownIt
       description: 解析器
@@ -368,14 +384,14 @@ functions:
     container: src/render/marks.ts
     kind: 関数
     scope: internal
-    summary: コアルール。`html_block`・`html_inline` のトークンの印を拾い、`features` は引数を `env.featureArgs` へ足し、対応表と登録した拡張の名前は `renderEmbed` の HTML（`markOwn` を掛ける）に置き換え、印だけの `html_block` の記法の印は印のトークン（type `mdmark_mark`、`meta` に `Mark`）に替え、それ以外は取り除く
+    summary: コアルール。`html_block`・`html_inline` のトークンの印を拾い、`features` は引数を `env.featureArgs` へ足し、`page` は文書の先頭（それより前のトークンが印か空のときだけ）なら引数を `env.pageArgs` へ足し、先頭に無ければ印の場所に書き方の警告を差し込み、対応表と登録した拡張の名前は `renderEmbed` の HTML（`markOwn` を掛ける）に置き換え、印だけの `html_block` の記法の印は印のトークン（type `mdmark_mark`、`meta` に `Mark`）に替え、それ以外は取り除く
     description: コードブロックと行内のコードは `html_*` のトークンにならないため、中の印のような文字はそのまま残る。記法の印は機能のオン・オフによらず印のトークンにし、オフの記法の印は `dropMarks` が取り除く
     args:
       - name: state
         type: StateCore
         required: true
         description: markdown-it の状態（`state.env` は `RenderEnv`）
-    side_effects: '`state.tokens` の中身と `state.env.featureArgs` を書き換える'
+    side_effects: '`state.tokens` の中身と `state.env.featureArgs`・`state.env.pageArgs` を書き換える'
     callees:
       - dev/設計書/モジュール構成/ライブラリ本体/部品.ts#functions[renderEmbed]
       - dev/設計書/モジュール構成/ライブラリ本体/部品.ts#functions[markOwn]
@@ -550,6 +566,73 @@ functions:
     side_effects: '`env.features` を書き換える'
     callees:
       - dev/設計書/モジュール構成/ライブラリ本体/設定と機能.ts#functions[resolveFeatures]
+  - name: readPageSettings
+    title: ページの設定の印を読む
+    container: src/render/page.ts
+    kind: 関数
+    scope: internal
+    summary: page の印の引数（`キー=値` の並び）から、書けるキーと値だけを `PageSettings` にし、知らないキー・値を並べて返す
+    description: '`scheme` は `COLOR_SCHEMES`、`theme` は `COLOR_THEMES`、`toc` は `hover`・`fixed` の値だけを受ける。同じキーが何度も出たら後に書いた値を使う。`=` を持たない引数は知らない引数にする'
+    args:
+      - name: options
+        type: '{ args: string[]; keys: Record<string, string> }'
+        required: true
+        description: '`parseMarkArgs` が返した印の引数'
+    returns:
+      type: '{ settings: PageSettings; unknown: string[] }'
+      description: 読めたページの設定と、知らないキー・値の引数を書いた順に並べたもの
+    unit_tests:
+      - name: test_read_page_settings
+        case: 正常
+        summary: 書けるキーと値を読む
+        condition: '`scheme=dark theme=theme-slate toc=fixed`'
+        mock: なし
+        expected: '`settings` が `{ scheme: "dark", theme: "theme-slate", toc: "fixed" }`、`unknown` が空'
+      - name: test_read_page_settings_when_unknown
+        case: 異常
+        summary: 知らないキー・値を残りと分ける
+        condition: '`scheme=sepia theme=theme-unknown size=wide toc=fixed toc=hover`'
+        mock: なし
+        expected: '`settings` が `{ toc: "hover" }`、`unknown` が `["scheme=sepia", "theme=theme-unknown", "size=wide"]`'
+    refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[ページの設定のマーカー]
+    status: planned
+  - name: resolvePageSettings
+    title: 文書のページの設定を決める
+    container: src/render/marks.ts
+    kind: 関数
+    scope: internal
+    summary: コアルール。`takeMarks` が拾った先頭の page の印を `readPageSettings` で読んで `env.page` に入れ、知らないキー・値があれば文書の先頭に書き方の警告を差し込む
+    args:
+      - name: state
+        type: StateCore
+        required: true
+        description: markdown-it の状態
+    side_effects: '`env.page` と `state.tokens` を書き換える'
+    callees:
+      - '#functions[readPageSettings]'
+    unit_tests:
+      - name: test_resolve_page_settings
+        case: 正常
+        summary: 先頭の印を読み、本文に印を残さない
+        condition: '先頭の行に `<!-- features: -toc -->`、次の行に `<!-- page: scheme=dark -->`、その後に段落'
+        mock: なし
+        expected: '`renderDocument` の `page` が `{ scheme: "dark" }`、HTML に印と書き方の警告が無い'
+      - name: test_resolve_page_settings_when_not_at_top
+        case: 異常
+        summary: 先頭に無い印は読まずに警告を置く
+        condition: '段落の後に `<!-- page: scheme=dark -->`'
+        mock: なし
+        expected: '`page` が `{}`、印の場所に page の印は文書の先頭に書くことを書いた書き方の警告がある'
+      - name: test_resolve_page_settings_when_unknown
+        case: 異常
+        summary: 知らないキー・値を文書の先頭の警告にまとめる
+        condition: '先頭の行に `<!-- page: scheme=sepia toc=fixed -->`'
+        mock: なし
+        expected: '`page` が `{ toc: "fixed" }`、文書の先頭に `scheme=sepia` を挙げた書き方の警告が 1 つ'
+    refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/文書をHTML文字列にする.ts#constraints[ページの設定のマーカー]
+    status: planned
   - name: dropMarks
     title: 残った印を取り除く
     container: src/render/marks.ts
@@ -878,5 +961,6 @@ test_files:
   - tests/unit/src/render/index.test.ts
   - tests/unit/src/render/parser.test.ts
   - tests/unit/src/render/marks.test.ts
+  - tests/unit/src/render/page.test.ts
   - tests/unit/src/render/sanitize.test.ts
   - tests/unit/src/render/scope-css.test.ts

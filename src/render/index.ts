@@ -1,6 +1,7 @@
 import type { MarkdownIt } from "markdown-it";
 import {
   type MdmarkConfig,
+  type PageSettings,
   type ResolvedConfig,
   resolveConfig,
 } from "../config.ts";
@@ -27,6 +28,8 @@ export type RenderedDocument = {
   paramDefinitions: MdmarkParamDefinition[];
   /** 本文に置いた書き方の警告を、警告を置いた順に並べたもの */
   warnings: CollectedWarning[];
+  /** 文書の先頭の page の印から読んだページの設定 */
+  page: PageSettings;
 };
 
 /** 描くごとに作る、mdmark が出した要素の印の値（乱数 16 バイトの 16 進） */
@@ -92,6 +95,7 @@ export function renderDocument(options: {
     extensionDefinitions: env.extensionDefinitions ?? [],
     paramDefinitions: env.paramDefinitions ?? [],
     warnings: env.warnings ?? [],
+    page: env.page ?? {},
   };
 }
 

@@ -1,0 +1,1195 @@
+# develop の取り込み後（9c25dc18）。メモリ不足で全件を 1 回に回せないため、npm run test:integration と同じ 3 つのプロジェクトを 1 つずつ回した
+
+$ npx vitest run --project integration-node --maxWorkers=2
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-render-page-settings-and-cards-markers
+
+ ✓  integration-node  tests/integration/lib/upgrade.test.ts (18 tests) 266550ms
+   ✓ test_normal 1521ms
+   ✓ test_normal_when_settings 1439ms
+   ✓ test_normal_when_plan 1674ms
+   ✓ test_normal_when_value_asked 1847ms
+   ✓ test_normal_when_version_missing 4676ms
+   ✓ test_normal_when_up_to_date 2463ms
+   ✓ test_normal_when_destructive_with_yes 2118ms
+   ✓ test_normal_when_reapplied 4377ms
+   ✓ test_normal_when_tag_vocabulary_dropped 5820ms
+   ✓ test_error_when_destructive_declined 2275ms
+   ✓ test_error_when_step_fails 2475ms
+   ✓ test_error_when_check_fails 2623ms
+   ✓ test_error_when_local_version_newer 2887ms
+   ✓ test_error_when_version_format_invalid 2667ms
+   ✓ test_error_when_answer_missing 3290ms
+   ✓ test_error_when_steps_invalid 2456ms
+   ✓ test_error_when_config_missing 2770ms
+   ✓ test_error_when_diagram_drift 2717ms
+ ✓  integration-node  tests/integration/lib/check-config.test.ts (25 tests) 112383ms
+   ✓ test_normal 6277ms
+   ✓ test_normal_when_drift 5168ms
+   ✓ test_normal_when_no_documents 4984ms
+   ✓ test_error_when_config_missing 2495ms
+   ✓ test_error_when_config_unreadable 1932ms
+   ✓ test_normal_when_unknown_mark 4537ms
+   ✓ test_normal_when_known_extension_and_ignored_mark 4422ms
+   ✓ test_normal_when_extension_unloadable 4340ms
+   ✓ test_normal_when_base_given 5407ms
+   ✓ test_error_when_base_unknown 4477ms
+   ✓ test_normal_when_alias_drift 4809ms
+   ✓ test_normal_when_unknown_color_theme 9266ms
+   ✓ test_normal_when_unknown_color_scheme 12968ms
+   ✓ test_normal_when_files_missing 2917ms
+   ✓ test_normal_when_diagram_drift 4554ms
+   ✓ test_normal_when_text 5582ms
+   ✓ test_normal_when_text_warnings 3705ms
+   ✓ test_normal_when_yaml_key 3388ms
+   ✓ test_normal_when_text_extension_mark 3321ms
+   ✓ test_error_when_key_missing 2691ms
+   ✓ test_normal_when_diagram_auto_layout 3019ms
+   ✓ test_normal_when_include_targets_missing 1318ms
+   ✓ test_normal_when_include_circular_or_outside 1330ms
+   ✓ test_normal_when_diagram_placement_invalid 7108ms
+   ✓ test_normal_when_group_options_invalid 2369ms
+ ✓  integration-node  tests/integration/lib/export.test.ts (17 tests) 50597ms
+   ✓ test_normal 3231ms
+   ✓ test_normal_when_unreadable_assets 2710ms
+   ✓ test_error_when_config_invalid 2636ms
+   ✓ test_error_when_document_missing 2482ms
+   ✓ test_error_when_output_unwritable 2641ms
+   ✓ test_normal_when_tooltip_placement 3041ms
+   ✓ test_normal_when_syntax_highlighted 2751ms
+   ✓ test_normal_when_aliases 2778ms
+   ✓ test_normal_when_color_theme 2671ms
+   ✓ test_normal_when_param_copy_label 2600ms
+   ✓ test_normal_when_media_embedded 3341ms
+   ✓ test_error_when_media_copy_unwritable 2565ms
+   ✓ test_normal_when_blob_and_dynamic_import_blocked 2914ms
+   ✓ test_normal_when_includes_and_icons 5446ms
+   ✓ test_normal_when_range_scripts 3341ms
+   ✓ test_normal_when_cascaded 2901ms
+   ✓ test_error_when_settings_unreadable 2457ms
+ ✓  integration-node  tests/integration/lib/render.test.ts (83 tests) 36651ms
+   ✓ test_normal 396ms
+   ✓ test_normal_when_gfm_extensions 337ms
+   ✓ test_normal_when_syntax 305ms
+   ✓ test_normal_when_syntax_features_disabled 348ms
+   ✓ test_normal_when_syntax_errors 334ms
+   ✓ test_normal_when_table_features 303ms
+   ✓ test_normal_when_table_feature_errors 357ms
+   ✓ test_normal_when_table_columns_specified 433ms
+   ✓ test_normal_when_table_column_errors 374ms
+   ✓ test_normal_when_raw_html_imitates_syntax 375ms
+   ✓ test_normal_when_extension_mark 346ms
+   ✓ test_normal_when_index 312ms
+   ✓ test_normal_when_no_intl_segmenter 1291ms
+   ✓ test_normal_when_diagram 375ms
+   ✓ test_normal_when_diagram_invalid 433ms
+   ✓ test_normal_when_diagram_feature_disabled 545ms
+   ✓ test_normal_when_diagram_sanitized 552ms
+   ✓ test_normal_when_extension_definition 548ms
+   ✓ test_normal_when_embedded_html 583ms
+   ✓ test_normal_when_html_and_hints_disabled 674ms
+   ✓ test_normal_when_embedded_html_invalid 682ms
+   ✓ test_normal_when_chart_types 670ms
+   ✓ test_normal_when_view_marked 739ms
+   ✓ test_normal_when_code_block_decorated 1656ms
+   ✓ test_normal_when_code_block_labeled 1302ms
+   ✓ test_normal_when_badge_empty 789ms
+   ✓ test_normal_when_total_cell_not_number 843ms
+   ✓ test_normal_when_code_block_syntax_invalid 739ms
+   ✓ test_normal_when_code_block_feature_disabled 660ms
+   ✓ test_normal_when_source_lines 646ms
+   ✓ test_normal_when_h1_sections 615ms
+   ✓ test_normal_when_aliases 611ms
+   ✓ test_normal_when_syntax_folded 505ms
+   ✓ test_normal_when_tree_annotated 436ms
+   ✓ test_normal_when_fold_and_tree_errors 423ms
+   ✓ test_normal_when_named_colors 447ms
+   ✓ test_normal_when_color_unknown 404ms
+   ✓ test_normal_when_image_attributes 396ms
+   ✓ test_normal_when_image_attribute_invalid 374ms
+   ✓ test_normal_when_gallery 336ms
+   ✓ test_normal_when_video_audio_gif 385ms
+   ✓ test_normal_when_cards 375ms
+   ✓ test_normal_when_media_features_disabled 321ms
+   ✓ test_normal_when_table_cells_merged 349ms
+   ✓ test_normal_when_table_merge_invalid 347ms
+   ✓ test_normal_when_callout_titled_and_nested 362ms
+   ✓ test_normal_when_tabs_nested 359ms
+   ✓ test_normal_when_nested_tabs_unclosed 347ms
+   ✓ test_normal_when_chart_types_added 350ms
+   ✓ test_normal_when_chart_series_too_many 363ms
+   ✓ test_normal_when_embedded_chart_types_added 359ms
+   ✓ test_normal_when_code_focus_error_warning 364ms
+   ✓ test_normal_when_code_foldable 384ms
+   ✓ test_normal_when_code_fold_invalid 365ms
+   ✓ test_normal_when_er_diagram 336ms
+   ✓ test_normal_when_er_diagram_invalid 333ms
+   ✓ test_normal_when_footnotes 327ms
+   ✓ test_normal_when_footnotes_matched 348ms
+   ✓ test_normal_when_footnotes_disabled 346ms
+   ✓ test_normal_when_wrap 325ms
+   ✓ test_normal_when_inline_notations 340ms
+   ✓ test_normal_when_icon_nodes 370ms
+   ✓ test_normal_when_block_notations 360ms
+   ✓ test_normal_when_includes 409ms
+   ✓ test_normal_when_include_errors 386ms
+   ✓ test_normal_when_csv 368ms
+   ✓ test_normal_when_new_syntax_errors 316ms
+   ✓ test_normal_when_new_syntax_disabled 310ms
+   ✓ test_normal_when_table_tree 353ms
+   ✓ test_normal_when_range_scripts 304ms
+ ✓  integration-node  tests/integration/lib/bundle.test.ts (13 tests) 46921ms
+   ✓ test_normal 2453ms
+   ✓ test_normal_when_link_outside_bundle 2964ms
+   ✓ test_error_when_build_missing 2274ms
+   ✓ test_error_when_no_documents 3982ms
+   ✓ test_error_when_output_unwritable 5565ms
+   ✓ test_normal_when_aliases 3608ms
+   ✓ test_normal_when_color_theme 4817ms
+   ✓ test_normal_when_page_settings_per_document 4226ms
+   ✓ test_normal_when_media_embedded 3193ms
+   ✓ test_error_when_media_copy_unwritable 3204ms
+   ✓ test_normal_when_blob_and_dynamic_import_blocked 3456ms
+   ✓ test_normal_when_includes_and_icons 3386ms
+   ✓ test_normal_when_range_scripts 3713ms
+ ✓  integration-node  tests/integration/ClaudeCodeプラグイン/check.test.ts (7 tests) 35538ms
+   ✓ test_normal 3322ms
+   ✓ test_normal_when_drift 5234ms
+   ✓ test_error_when_config_missing 3219ms
+   ✓ test_normal_when_base_given 9248ms
+   ✓ test_error_when_project_dir_missing 2237ms
+   ✓ test_normal_when_text_and_key 8011ms
+   ✓ test_normal_when_include_targets_missing 4264ms
+ ✓  integration-node  tests/integration/lib/init.test.ts (4 tests) 13821ms
+   ✓ test_normal 4476ms
+   ✓ test_normal_when_javascript 5248ms
+   ✓ test_normal_when_file_exists 1969ms
+   ✓ test_error_when_unwritable 2127ms
+ ✓  integration-node  tests/integration/ClaudeCodeプラグイン/setup-start-server.test.ts (6 tests) 12057ms
+   ✓ test_normal 2402ms
+   ✓ test_normal_when_already_running 2657ms
+   ✓ test_normal_when_session_stale 4525ms
+   ✓ test_error_when_start_timed_out 2230ms
+ ✓  integration-node  tests/integration/ClaudeCodeプラグイン/build-site.test.ts (3 tests) 12264ms
+   ✓ test_normal 6415ms
+   ✓ test_error_when_build_missing 3573ms
+   ✓ test_error_when_project_dir_missing 2275ms
+ ✓  integration-node  tests/integration/ClaudeCodeプラグイン/apply-template.test.ts (6 tests) 12783ms
+   ✓ test_normal 2547ms
+   ✓ test_normal_when_overwriting 2152ms
+   ✓ test_normal_when_dir_given 1854ms
+   ✓ test_error_when_css_exists 1901ms
+   ✓ test_error_when_config_missing 2097ms
+   ✓ test_error_when_template_missing 2230ms
+ ✓  integration-node  tests/integration/ClaudeCodeプラグイン/add-template.test.ts (4 tests) 7973ms
+   ✓ test_normal 1890ms
+   ✓ test_normal_when_overwriting 1761ms
+   ✓ test_error_when_name_exists 2062ms
+   ✓ test_error_when_file_missing 2258ms
+ ✓  integration-node  tests/integration/ClaudeCodeプラグイン/list-templates.test.ts (3 tests) 8992ms
+   ✓ test_normal 3306ms
+   ✓ test_normal_when_folder_missing 3105ms
+   ✓ test_error_when_index_invalid 2580ms
+ ✓  integration-node  tests/integration/lib/config-cascade.test.ts (6 tests) 5900ms
+   ✓ test_normal 5865ms
+ ✓  integration-node  tests/integration/ClaudeCodeプラグイン/export-html.test.ts (3 tests) 8648ms
+   ✓ test_normal 4797ms
+   ✓ test_error_when_file_missing 1950ms
+   ✓ test_error_when_project_dir_missing 1899ms
+ ✓  integration-node  tests/integration/ClaudeCodeプラグイン/serve.test.ts (5 tests) 11595ms
+   ✓ test_normal 3464ms
+   ✓ test_normal_when_port_overridden 2023ms
+   ✓ test_normal_when_stop 2124ms
+   ✓ test_error_when_port_in_use 1970ms
+   ✓ test_error_when_port_invalid 2012ms
+ ✓  integration-node  tests/integration/lib/collect-matches.test.ts (9 tests) 2138ms
+   ✓ test_normal 310ms
+ ✓  integration-node  tests/integration/lib/check-index.test.ts (9 tests) 2172ms
+ ✓  integration-node  tests/integration/ClaudeCodeプラグイン/setup-status.test.ts (4 tests) 3922ms
+   ✓ test_normal_when_already_set_up 3535ms
+ ✓  integration-node  tests/integration/lib/collect-references.test.ts (5 tests) 1546ms
+   ✓ test_normal 377ms
+   ✓ test_normal_when_alias_notation_differs 320ms
+   ✓ test_normal_when_glossary_table 312ms
+ ✓  integration-node  tests/integration/ClaudeCodeプラグイン/setup-write-settings.test.ts (4 tests) 421ms
+ ✓  integration-node  tests/integration/ClaudeCodeプラグイン/setup-write-config.test.ts (3 tests) 258ms
+ ✓  integration-node  tests/integration/ClaudeCodeプラグイン/setup-keys.test.ts (2 tests) 201ms
+ ✓  integration-node  tests/integration/ClaudeCodeプラグイン/session-start.test.ts (2 tests) 66ms
+ ✓  integration-node  tests/integration/ClaudeCodeプラグイン/pre-tool-use.test.ts (2 tests) 59ms
+ ❯  integration-node  tests/integration/lib/build.test.ts (11 tests | 2 failed) 1043169ms
+   × test_normal 118481ms
+   ✓ test_normal_when_version_given 156984ms
+   ✓ test_error_when_version_format_invalid 34030ms
+   ✓ test_error_when_dist_file_too_large 82313ms
+   × test_normal_when_api_checked_before_use 200026ms
+   ✓ test_error_when_api_missing_in_baseline_browser 160145ms
+   ✓ test_normal_when_schema_changed_with_steps 105460ms
+   ✓ test_normal_when_schema_change_listed 118865ms
+   ✓ test_error_when_schema_changed_without_steps 27190ms
+   ✓ test_error_when_next_steps_left_in_release 25064ms
+   ✓ test_error_when_steps_invalid 14610ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL   integration-node  tests/integration/lib/build.test.ts > test_normal
+AssertionError: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ tests/integration/lib/build.test.ts:207:52
+    205|   );
+    206|   for (const path of ["scripts/session-start.js", "guide", "server", "…
+    207|     expect(existsSync(join(root, "plugin", path))).toBe(false);
+       |                                                    ^
+    208|   }
+    209|   const manifest = JSON.parse(
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL   integration-node  tests/integration/lib/build.test.ts > test_normal_when_api_checked_before_use
+Error: Test timed out in 200000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/integration/lib/build.test.ts:308:1
+    306|
+    307| // 有無を確かめてから下限に無い API を使うと、止めずにビルドする（正常系）
+    308| test("test_normal_when_api_checked_before_use", {
+       | ^
+    309|   timeout: BUILD_TIMEOUT_MS,
+    310| }, async () => {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed | 24 passed (25)
+      Tests  2 failed | 252 passed (254)
+   Start at  00:18:42
+   Duration  1278.04s (tests 92%, import 7%, transform 1%)
+
+exit=1
+
+$ npx vitest run --project integration-browser --maxWorkers=2
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-render-page-settings-and-cards-markers
+
+12:41:22 AM [vite] (client) warning: 
+/tmp/mdmark-integration-dist-zZ6zbb/dist/index.js
+   |                                                                 ^
+
+  File: /tmp/mdmark-integration-dist-zZ6zbb/dist/index.js?test=1
+12:41:22 AM [vite] (client) warning: 
+/tmp/mdmark-integration-dist-zZ6zbb/dist/index.js
+   |                                                                 ^
+
+  File: /tmp/mdmark-integration-dist-zZ6zbb/dist/index.js?test=1
+12:41:22 AM [vite] (client) warning: 
+/tmp/mdmark-integration-dist-zZ6zbb/dist/index.js
+   |                                                                 ^
+
+  File: /tmp/mdmark-integration-dist-zZ6zbb/dist/index.js?test=1
+12:41:22 AM [vite] (client) warning: 
+/tmp/mdmark-integration-dist-zZ6zbb/dist/index.js
+   |                                                                 ^
+
+  File: /tmp/mdmark-integration-dist-zZ6zbb/dist/index.js?test=1
+12:41:22 AM [vite] (client) warning: 
+/tmp/mdmark-integration-dist-zZ6zbb/dist/index.js
+   |                                                                 ^
+
+  File: /tmp/mdmark-integration-dist-zZ6zbb/dist/index.js?test=1
+12:41:22 AM [vite] (client) warning: 
+/tmp/mdmark-integration-dist-zZ6zbb/dist/index.js
+   |                                                                 ^
+
+  File: /tmp/mdmark-integration-dist-zZ6zbb/dist/index.js
+12:41:22 AM [vite] (client) warning: 
+/tmp/mdmark-integration-dist-zZ6zbb/dist/index.js
+   |                                                                 ^
+
+  File: /tmp/mdmark-integration-dist-zZ6zbb/dist/index.js
+12:41:22 AM [vite] (client) warning: 
+/tmp/mdmark-integration-dist-zZ6zbb/dist/index.js
+   |                                                                 ^
+
+  File: /tmp/mdmark-integration-dist-zZ6zbb/dist/index.js
+12:41:22 AM [vite] (client) warning: 
+/tmp/mdmark-integration-dist-zZ6zbb/dist/index.js
+   |                                                                 ^
+
+  File: /tmp/mdmark-integration-dist-zZ6zbb/dist/index.js
+12:41:22 AM [vite] (client) warning: 
+/tmp/mdmark-integration-dist-zZ6zbb/dist/index.js
+   |                                                                 ^
+
+  File: /tmp/mdmark-integration-dist-zZ6zbb/dist/index.js
+12:41:23 AM [vite] (client) warning: 
+/tmp/mdmark-integration-dist-zZ6zbb/dist/index.js
+   |                                                                 ^
+
+  File: /tmp/mdmark-integration-dist-zZ6zbb/dist/index.js?test=2
+12:41:23 AM [vite] (client) warning: 
+/tmp/mdmark-integration-dist-zZ6zbb/dist/index.js
+   |                                                                 ^
+
+  File: /tmp/mdmark-integration-dist-zZ6zbb/dist/index.js?test=2
+12:41:23 AM [vite] (client) warning: 
+/tmp/mdmark-integration-dist-zZ6zbb/dist/index.js
+   |                                                                 ^
+
+  File: /tmp/mdmark-integration-dist-zZ6zbb/dist/index.js?test=2
+12:41:23 AM [vite] (client) warning: 
+/tmp/mdmark-integration-dist-zZ6zbb/dist/index.js
+   |                                                                 ^
+
+  File: /tmp/mdmark-integration-dist-zZ6zbb/dist/index.js?test=2
+12:41:23 AM [vite] (client) warning: 
+/tmp/mdmark-integration-dist-zZ6zbb/dist/index.js
+   |                                                                 ^
+
+  File: /tmp/mdmark-integration-dist-zZ6zbb/dist/index.js?test=2
+12:41:23 AM [vite] (client) warning: 
+/tmp/mdmark-integration-dist-zZ6zbb/dist/index.js
+   |                                                                 ^
+
+  File: /tmp/mdmark-integration-dist-zZ6zbb/dist/index.js?test=3
+12:41:23 AM [vite] (client) warning: 
+/tmp/mdmark-integration-dist-zZ6zbb/dist/index.js
+   |                                                                 ^
+
+  File: /tmp/mdmark-integration-dist-zZ6zbb/dist/index.js?test=3
+12:41:23 AM [vite] (client) warning: 
+/tmp/mdmark-integration-dist-zZ6zbb/dist/index.js
+   |                                                                 ^
+
+  File: /tmp/mdmark-integration-dist-zZ6zbb/dist/index.js?test=3
+12:41:23 AM [vite] (client) warning: 
+/tmp/mdmark-integration-dist-zZ6zbb/dist/index.js
+   |                                                                 ^
+
+  File: /tmp/mdmark-integration-dist-zZ6zbb/dist/index.js?test=3
+12:41:23 AM [vite] (client) warning: 
+/tmp/mdmark-integration-dist-zZ6zbb/dist/index.js
+   |                                                                 ^
+
+  File: /tmp/mdmark-integration-dist-zZ6zbb/dist/index.js?test=3
+12:41:24 AM [vite] (client) warning: 
+/tmp/mdmark-integration-dist-zZ6zbb/dist/index.js
+   |                                                                 ^
+
+  File: /tmp/mdmark-integration-dist-zZ6zbb/dist/index.js?test=4
+12:41:24 AM [vite] (client) warning: 
+/tmp/mdmark-integration-dist-zZ6zbb/dist/index.js
+   |                                                                 ^
+
+  File: /tmp/mdmark-integration-dist-zZ6zbb/dist/index.js?test=4
+12:41:24 AM [vite] (client) warning: 
+/tmp/mdmark-integration-dist-zZ6zbb/dist/index.js
+   |                                                                 ^
+
+  File: /tmp/mdmark-integration-dist-zZ6zbb/dist/index.js?test=4
+12:41:24 AM [vite] (client) warning: 
+/tmp/mdmark-integration-dist-zZ6zbb/dist/index.js
+   |                                                                 ^
+
+  File: /tmp/mdmark-integration-dist-zZ6zbb/dist/index.js?test=4
+12:41:24 AM [vite] (client) warning: 
+/tmp/mdmark-integration-dist-zZ6zbb/dist/index.js
+   |                                                                 ^
+
+  File: /tmp/mdmark-integration-dist-zZ6zbb/dist/index.js?test=4
+12:41:24 AM [vite] (client) warning: 
+/tmp/mdmark-integration-dist-zZ6zbb/dist/index.js
+   |                                                                 ^
+
+  File: /tmp/mdmark-integration-dist-zZ6zbb/dist/index.js?test=5
+12:41:24 AM [vite] (client) warning: 
+/tmp/mdmark-integration-dist-zZ6zbb/dist/index.js
+   |                                                                 ^
+
+  File: /tmp/mdmark-integration-dist-zZ6zbb/dist/index.js?test=5
+12:41:24 AM [vite] (client) warning: 
+/tmp/mdmark-integration-dist-zZ6zbb/dist/index.js
+   |                                                                 ^
+
+  File: /tmp/mdmark-integration-dist-zZ6zbb/dist/index.js?test=5
+12:41:24 AM [vite] (client) warning: 
+/tmp/mdmark-integration-dist-zZ6zbb/dist/index.js
+   |                                                                 ^
+
+  File: /tmp/mdmark-integration-dist-zZ6zbb/dist/index.js?test=5
+12:41:24 AM [vite] (client) warning: 
+/tmp/mdmark-integration-dist-zZ6zbb/dist/index.js
+   |                                                                 ^
+
+  File: /tmp/mdmark-integration-dist-zZ6zbb/dist/index.js?test=5
+12:41:25 AM [vite] (client) warning: 
+/tmp/mdmark-integration-dist-zZ6zbb/dist/index.js
+   |                                                                 ^
+
+  File: /tmp/mdmark-integration-dist-zZ6zbb/dist/index.js?test=6
+12:41:25 AM [vite] (client) warning: 
+/tmp/mdmark-integration-dist-zZ6zbb/dist/index.js
+   |                                                                 ^
+
+  File: /tmp/mdmark-integration-dist-zZ6zbb/dist/index.js?test=6
+12:41:25 AM [vite] (client) warning: 
+/tmp/mdmark-integration-dist-zZ6zbb/dist/index.js
+   |                                                                 ^
+
+  File: /tmp/mdmark-integration-dist-zZ6zbb/dist/index.js?test=6
+12:41:25 AM [vite] (client) warning: 
+/tmp/mdmark-integration-dist-zZ6zbb/dist/index.js
+   |                                                                 ^
+
+  File: /tmp/mdmark-integration-dist-zZ6zbb/dist/index.js?test=6
+12:41:25 AM [vite] (client) warning: 
+/tmp/mdmark-integration-dist-zZ6zbb/dist/index.js
+   |                                                                 ^
+
+  File: /tmp/mdmark-integration-dist-zZ6zbb/dist/index.js?test=6
+12:41:25 AM [vite] (client) warning: 
+/tmp/mdmark-integration-dist-zZ6zbb/dist/index.js
+   |                                                                 ^
+
+  File: /tmp/mdmark-integration-dist-zZ6zbb/dist/index.js?test=7
+12:41:25 AM [vite] (client) warning: 
+/tmp/mdmark-integration-dist-zZ6zbb/dist/index.js
+   |                                                                 ^
+
+  File: /tmp/mdmark-integration-dist-zZ6zbb/dist/index.js?test=7
+12:41:25 AM [vite] (client) warning: 
+/tmp/mdmark-integration-dist-zZ6zbb/dist/index.js
+   |                                                                 ^
+
+  File: /tmp/mdmark-integration-dist-zZ6zbb/dist/index.js?test=7
+12:41:25 AM [vite] (client) warning: 
+/tmp/mdmark-integration-dist-zZ6zbb/dist/index.js
+   |                                                                 ^
+
+  File: /tmp/mdmark-integration-dist-zZ6zbb/dist/index.js?test=7
+12:41:25 AM [vite] (client) warning: 
+/tmp/mdmark-integration-dist-zZ6zbb/dist/index.js
+   |                                                                 ^
+
+  File: /tmp/mdmark-integration-dist-zZ6zbb/dist/index.js?test=7
+12:41:25 AM [vite] (client) warning: 
+/tmp/mdmark-integration-dist-zZ6zbb/dist/index.js
+   |                                                                 ^
+
+  File: /tmp/mdmark-integration-dist-zZ6zbb/dist/index.js?test=8
+12:41:25 AM [vite] (client) warning: 
+/tmp/mdmark-integration-dist-zZ6zbb/dist/index.js
+   |                                                                 ^
+
+  File: /tmp/mdmark-integration-dist-zZ6zbb/dist/index.js?test=8
+12:41:25 AM [vite] (client) warning: 
+/tmp/mdmark-integration-dist-zZ6zbb/dist/index.js
+   |                                                                 ^
+
+  File: /tmp/mdmark-integration-dist-zZ6zbb/dist/index.js?test=8
+12:41:25 AM [vite] (client) warning: 
+/tmp/mdmark-integration-dist-zZ6zbb/dist/index.js
+   |                                                                 ^
+
+  File: /tmp/mdmark-integration-dist-zZ6zbb/dist/index.js?test=8
+12:41:25 AM [vite] (client) warning: 
+/tmp/mdmark-integration-dist-zZ6zbb/dist/index.js
+   |                                                                 ^
+
+  File: /tmp/mdmark-integration-dist-zZ6zbb/dist/index.js?test=8
+12:41:26 AM [vite] (client) warning: 
+/tmp/mdmark-integration-dist-zZ6zbb/dist/index.js
+   |                                                                 ^
+
+  File: /tmp/mdmark-integration-dist-zZ6zbb/dist/index.js?test=9
+12:41:26 AM [vite] (client) warning: 
+/tmp/mdmark-integration-dist-zZ6zbb/dist/index.js
+   |                                                                 ^
+
+  File: /tmp/mdmark-integration-dist-zZ6zbb/dist/index.js?test=9
+12:41:26 AM [vite] (client) warning: 
+/tmp/mdmark-integration-dist-zZ6zbb/dist/index.js
+   |                                                                 ^
+
+  File: /tmp/mdmark-integration-dist-zZ6zbb/dist/index.js?test=9
+12:41:26 AM [vite] (client) warning: 
+/tmp/mdmark-integration-dist-zZ6zbb/dist/index.js
+   |                                                                 ^
+
+  File: /tmp/mdmark-integration-dist-zZ6zbb/dist/index.js?test=9
+12:41:26 AM [vite] (client) warning: 
+/tmp/mdmark-integration-dist-zZ6zbb/dist/index.js
+   |                                                                 ^
+
+  File: /tmp/mdmark-integration-dist-zZ6zbb/dist/index.js?test=9
+stderr | tests/integration/lib/mount.browser.test.ts > test_normal_when_table_header_stuck
+[Error: ResizeObserver loop completed with undelivered notifications.]
+12:41:26 AM [vite] (client) warning: 
+/tmp/mdmark-integration-dist-zZ6zbb/dist/index.js
+   |                                                                 ^
+
+  File: /tmp/mdmark-integration-dist-zZ6zbb/dist/index.js?test=10
+12:41:26 AM [vite] (client) warning: 
+/tmp/mdmark-integration-dist-zZ6zbb/dist/index.js
+   |                                                                 ^
+
+  File: /tmp/mdmark-integration-dist-zZ6zbb/dist/index.js?test=10
+12:41:26 AM [vite] (client) warning: 
+/tmp/mdmark-integration-dist-zZ6zbb/dist/index.js
+   |                                                                 ^
+
+  File: /tmp/mdmark-integration-dist-zZ6zbb/dist/index.js?test=10
+12:41:26 AM [vite] (client) warning: 
+/tmp/mdmark-integration-dist-zZ6zbb/dist/index.js
+   |                                                                 ^
+
+  File: /tmp/mdmark-integration-dist-zZ6zbb/dist/index.js?test=10
+12:41:26 AM [vite] (client) warning: 
+/tmp/mdmark-integration-dist-zZ6zbb/dist/index.js
+   |                                                                 ^
+
+  File: /tmp/mdmark-integration-dist-zZ6zbb/dist/index.js?test=10
+12:41:26 AM [vite] (client) warning: 
+/tmp/mdmark-integration-dist-zZ6zbb/dist/index.js
+   |                                                                 ^
+
+  File: /tmp/mdmark-integration-dist-zZ6zbb/dist/index.js?test=11
+12:41:26 AM [vite] (client) warning: 
+/tmp/mdmark-integration-dist-zZ6zbb/dist/index.js
+   |                                                                 ^
+
+  File: /tmp/mdmark-integration-dist-zZ6zbb/dist/index.js?test=11
+12:41:26 AM [vite] (client) warning: 
+/tmp/mdmark-integration-dist-zZ6zbb/dist/index.js
+   |                                                                 ^
+
+  File: /tmp/mdmark-integration-dist-zZ6zbb/dist/index.js?test=11
+12:41:26 AM [vite] (client) warning: 
+/tmp/mdmark-integration-dist-zZ6zbb/dist/index.js
+   |                                                                 ^
+
+  File: /tmp/mdmark-integration-dist-zZ6zbb/dist/index.js?test=11
+12:41:26 AM [vite] (client) warning: 
+/tmp/mdmark-integration-dist-zZ6zbb/dist/index.js
+   |                                                                 ^
+
+  File: /tmp/mdmark-integration-dist-zZ6zbb/dist/index.js?test=11
+ ✓  integration-browser (chromium)  tests/integration/lib/register-extension.browser.test.ts (11 tests) 5852ms
+   ✓ test_normal 1437ms
+   ✓ test_normal_when_no_mark 726ms
+   ✓ test_error_when_args_invalid 375ms
+   ✓ test_error_when_module_not_found 390ms
+   ✓ test_error_when_validate_fails 405ms
+   ✓ test_error_when_extension_invalid 360ms
+   ✓ test_error_when_directive_taken 355ms
+   ✓ test_normal_when_definition 466ms
+   ✓ test_error_when_definition_invalid 438ms
+   ✓ test_error_when_definition_two_blocks 430ms
+   ✓ test_normal_when_directive_is_diagram_name 469ms
+stderr | tests/integration/lib/mount.browser.test.ts > test_normal_when_last_column_collapsed
+[Error: ResizeObserver loop completed with undelivered notifications.]
+stderr | tests/integration/lib/mount.browser.test.ts > test_normal_when_last_column_collapsed
+[Error: ResizeObserver loop completed with undelivered notifications.]
+stderr | tests/integration/lib/mount.browser.test.ts > test_normal_when_last_column_collapsed
+[Error: ResizeObserver loop completed with undelivered notifications.]
+ ✓  integration-browser (chromium)  tests/integration/lib/mount-comments.browser.test.ts (6 tests) 731ms
+   ✓ test_normal 390ms
+ ✓  integration-browser (chromium)  tests/integration/lib/version.browser.test.ts (1 test) 15ms
+ ✓  integration-browser (chromium)  tests/integration/lib/mount-view.browser.test.ts (6 tests) 162ms
+stderr | tests/integration/lib/mount.browser.test.ts > test_normal_when_printed_with_syntax
+[Error: ResizeObserver loop completed with undelivered notifications.]
+stderr | tests/integration/lib/mount.browser.test.ts > test_normal_when_wide_toggled
+[Error: ResizeObserver loop completed with undelivered notifications.]
+stderr | tests/integration/lib/mount.browser.test.ts > test_normal_when_wide_toggled
+[Error: ResizeObserver loop completed with undelivered notifications.]
+stderr | tests/integration/lib/mount.browser.test.ts > test_normal_when_columns_reordered
+[Error: ResizeObserver loop completed with undelivered notifications.]
+ ✓  integration-browser (chromium)  tests/integration/lib/mount.browser.test.ts (213 tests) 31516ms
+   ✓ test_normal 667ms
+   ✓ test_normal_when_table_header_stuck 3246ms
+   ✓ test_normal_when_code_copied 2042ms
+   ✓ test_normal_when_diagram_fullscreen 499ms
+   ✓ test_normal_when_diagram_tooltip 586ms
+   ✓ test_normal_when_diagram_tooltip_touch 462ms
+   ✓ test_normal_when_embedded_hint 659ms
+   ✓ test_normal_when_destroyed_while_waiting 1104ms
+   ✓ test_normal_when_diff_blocks_updated 915ms
+   ✓ test_normal_when_tooltip_placement_bottom 335ms
+   ✓ test_normal_when_bg_transparent_with_opaque 300ms
+   ✓ test_normal_when_no_syntax_target 306ms
+   ✓ test_normal_when_side_toc_hovered_and_pinned 337ms
+   ✓ test_normal_when_side_toc_focused 379ms
+   ✓ test_normal_when_back_to_top_pressed 636ms
+   ✓ test_normal_when_back_to_top_in_scroll_container 654ms
+   ✓ test_normal_when_back_to_top_avoids_side_parts 448ms
+   ✓ test_normal_when_gif_toggled 2070ms
+   ✓ test_normal_when_gif_reduced_motion 686ms
+   ✓ test_normal_when_er_table_tooltip 600ms
+   ✓ test_normal_when_side_toc_scrolled_to_end 310ms
+   ✓ test_normal_when_side_toc_at_scroll_edge 585ms
+   ✓ test_normal_when_glossary_touch 457ms
+   ✓ test_normal_when_diagram_placement_top 332ms
+   ✓ test_normal_when_chart_item_tooltip 665ms
+
+ Test Files  5 passed (5)
+      Tests  237 passed (237)
+   Start at  00:40:00
+   Duration  113.79s (tests 62%, worker 36%, import 2%)
+
+exit=0
+
+$ npx vitest run --project integration-storybook --maxWorkers=2
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-render-page-settings-and-cards-markers
+
+ ✓  integration-storybook  tests/integration/lib/term-tip.story.test.ts (22 tests) 277320ms
+   ✓ test_term_only 4882ms
+   ✓ test_docs_only 2722ms
+   ✓ test_both 3338ms
+   ✓ test_below 2106ms
+   ✓ test_many_docs 1722ms
+   ✓ test_long_meaning 2308ms
+   ✓ test_closed 2363ms
+   ✓ test_avoided 3783ms
+   ✓ test_avoided_closed 2163ms
+   ✓ test_alias_term 4112ms
+   ✓ test_alias_doc 2506ms
+   ✓ test_alias_command 6664ms
+   ✓ test_alias_command_copied 1982ms
+   ✓ test_alias_command_failed 1628ms
+   ✓ test_alias_command_long 2319ms
+   ✓ test_alias_url 2542ms
+   ✓ test_alias_url_long 2328ms
+   ✓ test_alias_url_not_http 2592ms
+   ✓ test_alias_skill 1779ms
+   ✓ test_alias_tool 2066ms
+   ✓ test_alias_path 2055ms
+   ✓ test_alias_avoid 1607ms
+ ✓  integration-storybook  tests/integration/lib/code-block.story.test.ts (18 tests) 38072ms
+   ✓ test_title_and_line_numbers 1929ms
+   ✓ test_line_marks 1197ms
+   ✓ test_title_only 1644ms
+   ✓ test_two_digits 2209ms
+   ✓ test_long_line_and_title 2189ms
+   ✓ test_language_label 2323ms
+   ✓ test_file_name 1744ms
+   ✓ test_long_file_name 1827ms
+   ✓ test_no_language 1644ms
+   ✓ test_copied 2222ms
+   ✓ test_copy_failed 2636ms
+   ✓ test_focus 1793ms
+   ✓ test_error_warning 1205ms
+   ✓ test_foldable 2108ms
+   ✓ test_folded 1810ms
+   ✓ test_fold_nested 1655ms
+   ✓ test_fold_no_line_numbers 2853ms
+   ✓ test_wrap 2459ms
+ ✓  integration-storybook  tests/integration/lib/table.story.test.ts (66 tests) 360541ms
+   ✓ test_data 3583ms
+   ✓ test_sorted_ascending 1331ms
+   ✓ test_sorted_descending 1418ms
+   ✓ test_filter_select_open 1286ms
+   ✓ test_filter_text_open 1267ms
+   ✓ test_filter_date_open 1809ms
+   ✓ test_filtered 2284ms
+   ✓ test_no_match 1845ms
+   ✓ test_default_overflow 2257ms
+   ✓ test_no_pin 1688ms
+   ✓ test_pin_and_wide 1688ms
+   ✓ test_check 1854ms
+   ✓ test_pinned 2156ms
+   ✓ test_default_fits 2598ms
+   ✓ test_plain 2205ms
+   ✓ test_closed 2536ms
+   ✓ test_closed_title 3041ms
+   ✓ test_open_title 3198ms
+   ✓ test_long_cells 1968ms
+   ✓ test_count 2232ms
+   ✓ test_count_filtered 2330ms
+   ✓ test_columns_hidden 2492ms
+   ✓ test_columns_menu_open 2497ms
+   ✓ test_totals 2861ms
+   ✓ test_totals_filtered 1828ms
+   ✓ test_totals_empty 2111ms
+   ✓ test_copied 2203ms
+   ✓ test_copy_failed 1715ms
+   ✓ test_row_link_target 1638ms
+   ✓ test_all_features 1822ms
+   ✓ test_totals_unreadable 2279ms
+   ✓ test_totals_menu_open 2190ms
+   ✓ test_totals_hidden 1932ms
+   ✓ test_copy_menu_open 1530ms
+   ✓ test_copy_fallback 2155ms
+   ✓ test_row_link_copied 2240ms
+   ✓ test_row_link_failed 2325ms
+   ✓ test_folded 1819ms
+   ✓ test_folded_open 1752ms
+   ✓ test_sticky_rows 1655ms
+   ✓ test_highlighted 2227ms
+   ✓ test_row_colors 1996ms
+   ✓ test_row_colors_sorted 2184ms
+   ✓ test_highlight_and_row_colors 1914ms
+   ✓ test_row_colors_dark 1969ms
+   ✓ test_merged 2283ms
+   ✓ test_merged_sorted 2313ms
+   ✓ test_merged_filtered 2289ms
+   ✓ test_row_header_pinned 1902ms
+   ✓ test_merge_invalid 1006ms
+   ✓ test_csv_table 1046ms
+   ✓ test_csv_raw 3647ms
+   ✓ test_settings_open_reorder 2680ms
+   ✓ test_settings_reorder_only 1722ms
+   ✓ test_reorder_dragging 2347ms
+   ✓ test_reordered 3590ms
+   ✓ test_reorder_groups 3083ms
+   ✓ test_tree 2250ms
+   ✓ test_tree_folded 1690ms
+   ✓ test_tree_filtered 1833ms
+   ✓ test_tree_selected 2416ms
+   ✓ test_tree_example 3541ms
+   ✓ test_tree_example_missing 2332ms
+   ✓ test_tree_example_hidden 1776ms
+   ✓ test_columns_button_a 2362ms
+   ✓ test_fills_width 2273ms
+ ✓  integration-storybook  tests/integration/lib/chart.story.test.ts (18 tests) 43037ms
+   ✓ test_two_series 2551ms
+   ✓ test_four_series 2672ms
+   ✓ test_invalid 2338ms
+   ✓ test_bar 3365ms
+   ✓ test_bar_four 2807ms
+   ✓ test_pie 2421ms
+   ✓ test_scatter 1585ms
+   ✓ test_six_series 1796ms
+   ✓ test_area 2386ms
+   ✓ test_stacked_area 3558ms
+   ✓ test_stacked_bar 2532ms
+   ✓ test_horizontal_bar 1622ms
+   ✓ test_donut 2307ms
+   ✓ test_radar 2351ms
+   ✓ test_bubble 1265ms
+   ✓ test_combo 1173ms
+   ✓ test_too_many_series 2040ms
+   ✓ test_item_focused 1519ms
+ ✓  integration-storybook  tests/integration/lib/flow-diagram.story.test.ts (12 tests) 28936ms
+   ✓ test_default 1598ms
+   ✓ test_long_names 1783ms
+   ✓ test_judgement 2282ms
+   ✓ test_judgement_long 3955ms
+   ✓ test_unknown_kind 3011ms
+   ✓ test_invalid 1474ms
+   ✓ test_judgement_auto 2058ms
+   ✓ test_linked_nodes 3391ms
+   ✓ test_linked_node_hover_focus 2856ms
+   ✓ test_link_not_allowed 1256ms
+   ✓ test_group_hints 1780ms
+   ✓ test_titles_stuck 1391ms
+ ✓  integration-storybook  tests/integration/lib/diagram-frame.story.test.ts (13 tests) 28720ms
+   ✓ test_fit 2998ms
+   ✓ test_zoomed 3293ms
+   ✓ test_max 2822ms
+   ✓ test_narrow 1424ms
+   ✓ test_fullscreen 2067ms
+   ✓ test_in_framed_surface 3382ms
+   ✓ test_in_framed_surface_fullscreen 2833ms
+   ✓ test_fit_when_resized 1997ms
+   ✓ test_fit_when_printed 1541ms
+   ✓ test_resized 893ms
+   ✓ test_resize_handle_focused 900ms
+   ✓ test_resize_off 969ms
+   ✓ test_no_legend_items 1870ms
+ ✓  integration-storybook  tests/integration/lib/footnote.story.test.ts (10 tests) 16291ms
+   ✓ test_footnote_ref_closed 1447ms
+   ✓ test_footnote_ref_open 968ms
+   ✓ test_footnote_ref_below 1003ms
+   ✓ test_footnote_ref_with_link 1014ms
+   ✓ test_footnote_ref_long 2424ms
+   ✓ test_footnote_ref_two_digits 1223ms
+   ✓ test_footnotes_closed 957ms
+   ✓ test_footnotes_open 891ms
+   ✓ test_footnotes_referenced_twice 2083ms
+   ✓ test_footnotes_long 2433ms
+ ✓  integration-storybook  tests/integration/lib/tree.story.test.ts (12 tests) 24574ms
+   ✓ test_basic 849ms
+   ✓ test_interactive 808ms
+   ✓ test_open_all 1259ms
+   ✓ test_open_levels 1705ms
+   ✓ test_notes 9953ms
+   ✓ test_file_icons 983ms
+   ✓ test_more 1318ms
+   ✓ test_deep 1208ms
+   ✓ test_long_name 892ms
+   ✓ test_copied 912ms
+   ✓ test_copy_failed 1585ms
+   ✓ test_wrap 1658ms
+ ✓  integration-storybook  tests/integration/lib/layout-columns.story.test.ts (3 tests) 8770ms
+   ✓ test_two 2257ms
+   ✓ test_three 2419ms
+   ✓ test_narrow 2448ms
+ ✓  integration-storybook  tests/integration/lib/callout.story.test.ts (12 tests) 19553ms
+   ✓ test_note 1547ms
+   ✓ test_tip 758ms
+   ✓ test_important 817ms
+   ✓ test_warning 1174ms
+   ✓ test_caution 1581ms
+   ✓ test_collapsed 1941ms
+   ✓ test_collapsed_opened 2495ms
+   ✓ test_long 1604ms
+   ✓ test_titled 1129ms
+   ✓ test_titled_collapsed 1084ms
+   ✓ test_open_plus 1412ms
+   ✓ test_nested 2464ms
+ ✓  integration-storybook  tests/integration/lib/wide.story.test.ts (4 tests) 7235ms
+   ✓ test_wide 1498ms
+   ✓ test_narrow 850ms
+   ✓ test_no_toggle 995ms
+   ✓ test_small_screen 1572ms
+ ✓  integration-storybook  tests/integration/lib/comment-orphans.story.test.ts (2 tests) 3344ms
+   ✓ test_default 1020ms
+   ✓ test_empty 756ms
+ ✓  integration-storybook  tests/integration/lib/comment-button.story.test.ts (2 tests) 3154ms
+   ✓ test_default 951ms
+   ✓ test_narrow_viewport 912ms
+ ✓  integration-storybook  tests/integration/lib/er-diagram.story.test.ts (4 tests) 4777ms
+   ✓ test_default 1054ms
+   ✓ test_colors 994ms
+   ✓ test_folded 1005ms
+   ✓ test_invalid 727ms
+ ✓  integration-storybook  tests/integration/lib/doc-list.story.test.ts (4 tests) 7871ms
+   ✓ test_grouped 1866ms
+   ✓ test_flat 1077ms
+   ✓ test_long_text 1497ms
+   ✓ test_many 1204ms
+ ✓  integration-storybook  tests/integration/lib/diff-message.story.test.ts (4 tests) 6801ms
+   ✓ test_same 1647ms
+   ✓ test_single 962ms
+   ✓ test_loading 1331ms
+   ✓ test_loading_spinner 1140ms
+ ✓  integration-storybook  tests/integration/lib/comment-mark.story.test.ts (2 tests) 4652ms
+   ✓ test_default 2232ms
+   ✓ test_expanded 1124ms
+ ✓  integration-storybook  tests/integration/lib/diagram-tooltip.story.test.ts (8 tests) 11411ms
+   ✓ test_closed 1002ms
+   ✓ test_wire 2145ms
+   ✓ test_io 1017ms
+   ✓ test_term 888ms
+   ✓ test_hint 775ms
+   ✓ test_table 1546ms
+   ✓ test_item 1353ms
+   ✓ test_group_hint 1491ms
+ ✓  integration-storybook  tests/integration/lib/tabs.story.test.ts (8 tests) 12078ms
+   ✓ test_first 1806ms
+   ✓ test_second 1054ms
+   ✓ test_many 951ms
+   ✓ test_unmounted 866ms
+   ✓ test_closed 1597ms
+   ✓ test_open_title 1920ms
+   ✓ test_nested 1631ms
+   ✓ test_strong_title 894ms
+ ✓  integration-storybook  tests/integration/lib/figure.story.test.ts (4 tests) 6612ms
+   ✓ test_image_with_caption 1455ms
+   ✓ test_image 961ms
+   ✓ test_table 933ms
+   ✓ test_gallery 972ms
+ ✓  integration-storybook  tests/integration/lib/sequence-diagram.story.test.ts (2 tests) 4329ms
+   ✓ test_default 1497ms
+   ✓ test_invalid 1419ms
+ ✓  integration-storybook  tests/integration/lib/diff-blocks.story.test.ts (8 tests) 12650ms
+   ✓ test_add_paragraph 1478ms
+   ✓ test_del_paragraph 898ms
+   ✓ test_add_heading 1633ms
+   ✓ test_table_row_del 1319ms
+   ✓ test_list_item_del 1386ms
+   ✓ test_code_block 946ms
+   ✓ test_callout 1892ms
+   ✓ test_long_url 1882ms
+ ✓  integration-storybook  tests/integration/lib/hint.story.test.ts (5 tests) 8530ms
+   ✓ test_block 1835ms
+   ✓ test_block_open 1260ms
+   ✓ test_inline 1194ms
+   ✓ test_inline_open 932ms
+   ✓ test_colored 1557ms
+ ✓  integration-storybook  tests/integration/lib/embed.story.test.ts (1 test) 2893ms
+   ✓ test_loading 1643ms
+ ✓  integration-storybook  tests/integration/lib/gif.story.test.ts (3 tests) 8187ms
+   ✓ test_playing 1600ms
+   ✓ test_paused 1608ms
+   ✓ test_no_lightbox 3307ms
+ ✓  integration-storybook  tests/integration/lib/gallery.story.test.ts (5 tests) 10643ms
+   ✓ test_three_columns 1425ms
+   ✓ test_two_columns 3336ms
+   ✓ test_narrow_two 745ms
+   ✓ test_narrow_one 1342ms
+   ✓ test_numbered 2188ms
+ ✓  integration-storybook  tests/integration/vscode/config-band.story.test.ts (7 tests) 18740ms
+   ✓ test_default 1857ms
+   ✓ test_default_when_keyboard 2570ms
+   ✓ test_narrow_long_path 2365ms
+   ✓ test_settings_unreadable 1565ms
+   ✓ test_nested_config_unreadable 2441ms
+   ✓ test_settings_invalid 3346ms
+   ✓ test_default_when_color_overridden 1796ms
+ ✓  integration-storybook  tests/integration/lib/comment-bubble.story.test.ts (4 tests) 27776ms
+   ✓ test_single 1010ms
+   ✓ test_multiple 1093ms
+   ✓ test_escaped_body 1505ms
+   ✓ test_narrow_viewport 21671ms
+ ✓  integration-storybook  tests/integration/lib/side-toc.story.test.ts (7 tests) 17035ms
+   ✓ test_hover_rail 1747ms
+   ✓ test_hover_shown 2657ms
+   ✓ test_hover_pinned 2833ms
+   ✓ test_fixed_closed 2059ms
+   ✓ test_fixed_open 2208ms
+   ✓ test_without_sections 1413ms
+   ✓ test_long_heading 2228ms
+ ✓  integration-storybook  tests/integration/vscode/preview-status.story.test.ts (9 tests) 21073ms
+   ✓ test_loading 1590ms
+   ✓ test_loading_when_reduced_motion 1817ms
+   ✓ test_offline 2059ms
+   ✓ test_offline_when_keyboard_focus 3596ms
+   ✓ test_offline_when_color_overridden 1718ms
+   ✓ test_version_missing 2602ms
+   ✓ test_version_missing_long 2123ms
+   ✓ test_version_undecidable 2291ms
+   ✓ test_diff_unsupported 1965ms
+ ✓  integration-storybook  tests/integration/lib/details-range.story.test.ts (2 tests) 5503ms
+   ✓ test_closed 2052ms
+   ✓ test_open 1770ms
+ ✓  integration-storybook  tests/integration/lib/embedded-html.story.test.ts (5 tests) 8092ms
+   ✓ test_default 1742ms
+   ✓ test_with_chart 857ms
+   ✓ test_wide 907ms
+   ✓ test_with_range_css 1471ms
+   ✓ test_range_script_opened 1055ms
+ ✓  integration-storybook  tests/integration/lib/param.story.test.ts (5 tests) 8468ms
+   ✓ test_default 1022ms
+   ✓ test_changed 987ms
+   ✓ test_copied 1142ms
+   ✓ test_failed 1639ms
+   ✓ test_custom_copy_label 2365ms
+ ✓  integration-storybook  tests/integration/lib/inline-icon.story.test.ts (3 tests) 6585ms
+   ✓ test_bundled 1624ms
+   ✓ test_in_heading 1262ms
+   ✓ test_pending 1079ms
+ ✓  integration-storybook  tests/integration/lib/kbd.story.test.ts (4 tests) 14621ms
+   ✓ test_single 3379ms
+   ✓ test_combo 2533ms
+   ✓ test_plus_key 2114ms
+   ✓ test_dark 2419ms
+ ✓  integration-storybook  tests/integration/lib/card.story.test.ts (8 tests) 24063ms
+   ✓ test_link 1600ms
+   ✓ test_bare_url 2908ms
+   ✓ test_long 2998ms
+   ✓ test_file_pdf 3862ms
+   ✓ test_file_sheet 4462ms
+   ✓ test_file_archive 2190ms
+   ✓ test_file_slide 2129ms
+   ✓ test_print 2070ms
+ ✓  integration-storybook  tests/integration/lib/card-grid.story.test.ts (4 tests) 11489ms
+   ✓ test_wide 2177ms
+   ✓ test_no_link 1445ms
+   ✓ test_long 2694ms
+   ✓ test_narrow 2560ms
+ ✓  integration-storybook  tests/integration/lib/text-color.story.test.ts (4 tests) 9404ms
+   ✓ test_blue 2390ms
+   ✓ test_red 1106ms
+   ✓ test_with_link 1173ms
+   ✓ test_dark 1683ms
+ ✓  integration-storybook  tests/integration/lib/revision-picker.story.test.ts (3 tests) 7090ms
+   ✓ test_normal 1642ms
+   ✓ test_before_selected 1295ms
+   ✓ test_sparse 2376ms
+ ✓  integration-storybook  tests/integration/lib/lightbox.story.test.ts (8 tests) 19198ms
+   ✓ test_middle 1976ms
+   ✓ test_first 1469ms
+   ✓ test_last 2607ms
+   ✓ test_single 2073ms
+   ✓ test_zoomed 2026ms
+   ✓ test_max 2078ms
+   ✓ test_long_caption 2335ms
+   ✓ test_narrow 1995ms
+ ✓  integration-storybook  tests/integration/lib/view.story.test.ts (12 tests) 27663ms
+   ✓ test_board 1930ms
+   ✓ test_table 2026ms
+   ✓ test_table_filtered_select 2308ms
+   ✓ test_board_after_filter 1947ms
+   ✓ test_table_filtered_text 1976ms
+   ✓ test_table_no_match 1381ms
+   ✓ test_default_icons 1193ms
+   ✓ test_overridden_icons 4231ms
+   ✓ test_many_columns 2122ms
+   ✓ test_long_title_empty_value 2012ms
+   ✓ test_board_disabled 1848ms
+   ✓ test_table_only 2120ms
+ ✓  integration-storybook  tests/integration/lib/notice.story.test.ts (8 tests) 18635ms
+   ✓ test_figure 1711ms
+   ✓ test_block 2129ms
+   ✓ test_long_name 1984ms
+   ✓ test_extension 2008ms
+   ✓ test_diff_revisions 1284ms
+   ✓ test_diff_content 1927ms
+   ✓ test_diff_blocks 1861ms
+   ✓ test_icons 2854ms
+ ✓  integration-storybook  tests/integration/lib/backlinks.story.test.ts (3 tests) 8684ms
+   ✓ test_two 1947ms
+   ✓ test_one 2140ms
+   ✓ test_long 1917ms
+ ✓  integration-storybook  tests/integration/lib/diff-lines.story.test.ts (4 tests) 14851ms
+   ✓ test_normal 3497ms
+   ✓ test_char_by_char 2669ms
+   ✓ test_long_line 2444ms
+   ✓ test_with_html 2809ms
+ ✓  integration-storybook  tests/integration/lib/syntax-warning.story.test.ts (11 tests) 35686ms
+   ✓ test_unknown_kind 1736ms
+   ✓ test_items 1285ms
+   ✓ test_broken_reference 1890ms
+   ✓ test_extension_schema 3075ms
+   ✓ test_long_mark 2304ms
+   ✓ test_glossary_column 2914ms
+   ✓ test_glossary_missing_arg 2362ms
+   ✓ test_view_group_column 1943ms
+   ✓ test_view_no_table 2705ms
+   ✓ test_view_unknown_icon 1213ms
+   ✓ test_new_syntax_warnings 11682ms
+ ✓  integration-storybook  tests/integration/lib/toc.story.test.ts (3 tests) 8446ms
+   ✓ test_nested 1812ms
+   ✓ test_flat 2214ms
+   ✓ test_long_heading 1148ms
+ ✓  integration-storybook  tests/integration/lib/section.story.test.ts (6 tests) 15109ms
+   ✓ test_open 2650ms
+   ✓ test_closed 2133ms
+   ✓ test_level_4 2429ms
+   ✓ test_level_1 2201ms
+   ✓ test_long_title 1538ms
+   ✓ test_unmounted 2029ms
+ ✓  integration-storybook  tests/integration/lib/image-figure.story.test.ts (12 tests) 22566ms
+   ✓ test_caption 2337ms
+   ✓ test_no_caption 2378ms
+   ✓ test_width_px 2222ms
+   ✓ test_width_percent 2031ms
+   ✓ test_align_left 1818ms
+   ✓ test_align_right 1012ms
+   ✓ test_align_center 1055ms
+   ✓ test_no_lightbox 1488ms
+   ✓ test_only_light 1600ms
+   ✓ test_only_dark 1515ms
+   ✓ test_sub_figure 1207ms
+   ✓ test_long_caption 1216ms
+ ✓  integration-storybook  tests/integration/vscode/media-error.story.test.ts (3 tests) 4981ms
+   ✓ test_audio 997ms
+   ✓ test_video 1073ms
+   ✓ test_long_path 1220ms
+ ✓  integration-storybook  tests/integration/lib/comment-form.story.test.ts (7 tests) 16196ms
+   ✓ test_idle 1556ms
+   ✓ test_typed 955ms
+   ✓ test_saving 1219ms
+   ✓ test_empty 1280ms
+   ✓ test_failed 922ms
+   ✓ test_long_quote 1046ms
+   ✓ test_narrow_viewport 7246ms
+ ✓  integration-storybook  tests/integration/lib/row-detail.story.test.ts (3 tests) 4668ms
+   ✓ test_closed 1098ms
+   ✓ test_open 935ms
+   ✓ test_open_with_folded_column 1431ms
+ ✓  integration-storybook  tests/integration/lib/diff-toggle.story.test.ts (2 tests) 3403ms
+   ✓ test_closed 786ms
+   ✓ test_open 1456ms
+ ✓  integration-storybook  tests/integration/lib/badge.story.test.ts (5 tests) 7397ms
+   ✓ test_inline 1304ms
+   ✓ test_long 1112ms
+   ✓ test_colored 1628ms
+   ✓ test_colored_dark 1423ms
+   ✓ test_colored_long 990ms
+ ✓  integration-storybook  tests/integration/lib/steps.story.test.ts (5 tests) 6865ms
+   ✓ test_basic 1764ms
+   ✓ test_rich 1024ms
+   ✓ test_long 1246ms
+   ✓ test_closed 1185ms
+   ✓ test_open_title 644ms
+ ✓  integration-storybook  tests/integration/lib/comment-marker.story.test.ts (6 tests) 7883ms
+   ✓ test_default 1475ms
+   ✓ test_merged 828ms
+   ✓ test_current 1913ms
+   ✓ test_closed_section 820ms
+   ✓ test_closed_tab 947ms
+   ✓ test_closed_row 953ms
+ ✓  integration-storybook  tests/integration/lib/media.story.test.ts (5 tests) 7134ms
+   ✓ test_video 1201ms
+   ✓ test_video_autoplay 1012ms
+   ✓ test_video_no_caption 1493ms
+   ✓ test_audio 964ms
+   ✓ test_video_print 1141ms
+ ✓  integration-storybook  tests/integration/lib/diff-minimap.story.test.ts (2 tests) 4137ms
+   ✓ test_top 1506ms
+   ✓ test_middle 945ms
+ ✓  integration-storybook  tests/integration/lib/highlight.story.test.ts (4 tests) 7134ms
+   ✓ test_default 1496ms
+   ✓ test_colored 1853ms
+   ✓ test_long 856ms
+   ✓ test_dark 1177ms
+ ✓  integration-storybook  tests/integration/lib/back-to-top.story.test.ts (2 tests) 3074ms
+   ✓ test_shown 769ms
+   ✓ test_hidden 979ms
+ ✓  integration-storybook  tests/integration/lib/diff-html.story.test.ts (6 tests) 5607ms
+   ✓ test_source 771ms
+   ✓ test_preview_side 663ms
+   ✓ test_preview_stack 782ms
+   ✓ test_one_side 748ms
+   ✓ test_unchanged 707ms
+   ✓ test_script_dropped 715ms
+
+ Test Files  60 passed (60)
+      Tests  434 passed (434)
+   Start at  00:42:00
+   Duration  819.17s (tests 95%, import 4%)
+
+exit=0
+
+# integration-node でタイムアウトした test_normal_when_api_checked_before_use を含む build.test.ts を単独で回した結果（test_normal は #372 の base の失敗）
+$ npx vitest run --project integration-node tests/integration/lib/build.test.ts
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-render-page-settings-and-cards-markers
+
+ ❯  integration-node  tests/integration/lib/build.test.ts (11 tests | 1 failed) 1023066ms
+   × test_normal 106288ms
+   ✓ test_normal_when_version_given 178949ms
+   ✓ test_error_when_version_format_invalid 41470ms
+   ✓ test_error_when_dist_file_too_large 141415ms
+   ✓ test_normal_when_api_checked_before_use 140385ms
+   ✓ test_error_when_api_missing_in_baseline_browser 129143ms
+   ✓ test_normal_when_schema_changed_with_steps 96303ms
+   ✓ test_normal_when_schema_change_listed 109724ms
+   ✓ test_error_when_schema_changed_without_steps 25578ms
+   ✓ test_error_when_next_steps_left_in_release 24206ms
+   ✓ test_error_when_steps_invalid 29602ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL   integration-node  tests/integration/lib/build.test.ts > test_normal
+AssertionError: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ tests/integration/lib/build.test.ts:207:52
+    205|   );
+    206|   for (const path of ["scripts/session-start.js", "guide", "server", "…
+    207|     expect(existsSync(join(root, "plugin", path))).toBe(false);
+       |                                                    ^
+    208|   }
+    209|   const manifest = JSON.parse(
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 10 passed (11)
+   Start at  01:03:43
+   Duration  1164.48s (tests 98%, import 2%)
+
+exit=1

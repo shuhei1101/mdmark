@@ -21,6 +21,7 @@ directory: |-
   ├── kbd.ts                       # キーの renderKbd
   ├── highlight.ts                 # 蛍光ペンの renderHighlight
   ├── layout-columns.ts            # 段組みの renderLayoutColumns
+  ├── card-grid.ts                 # カードの格子の renderCardGrid
   ├── wide.ts                      # wide の範囲の renderWide
   ├── footnote.ts                  # 脚注の番号の renderFootnoteRef と脚注の一覧の renderFootnotes
   ├── code-block.ts                # コードブロックの renderCodeBlock と renderCodeCopy と、行の開閉のボタンの renderCodeFoldToggle・renderCodeFoldMore
@@ -1879,6 +1880,36 @@ functions:
       expected: '`<div class="mdmark-layout-columns" data-count="2">` の中に `div.mdmark-layout-column` が 2 つ'
       mock: なし
       summary: 列の数を `data-count` に入れる
+  - name: renderCardGrid
+    title: カードの格子を描く
+    container: src/parts/card-grid.ts
+    summary: 部品設計『カードの格子』の HTML を返す。アイコンは `renderInlineIcon` の要素に class `mdmark-card-grid-icon` を足して組み立てる
+    kind: 関数
+    scope: internal
+    args:
+      - name: options
+        type: '{ items: CardGridItem[]; icons?: Record<string, MdmarkIconNode> }'
+        required: true
+        description: 項目ごとのカードの中身と、束ねていない名前のアイコンの形の表
+    returns:
+      type: string
+      description: 部品の HTML
+    unit_tests:
+      - name: test_render_card_grid
+        case: 正常
+        condition: '`href` と `icon` と `description` を持つ項目と、`title` だけの項目'
+        expected: '`ul.mdmark-card-grid` に `li` が 2 つで、1 つ目が `a.mdmark-card-grid-item`（`href` を持つ）の中に class `mdmark-card-grid-icon` と `data-icon` のアイコン・`span.mdmark-card-grid-title`・`p.mdmark-card-grid-desc`、2 つ目が `div.mdmark-card-grid-item` で `span.mdmark-card-grid-title` だけ'
+        mock: なし
+        summary: リンクの有無でカードの要素を分ける
+      - name: test_render_card_grid_when_unsafe_href
+        case: 異常
+        condition: '`href` が `javascript:alert(1)` の項目'
+        expected: '`href` を持たない `div.mdmark-card-grid-item` になる（`isAllowedUrl` で落とす）'
+        mock: なし
+        summary: 許さないリンク先はリンクにしない
+    refs:
+      - dev/設計書/部品設計/カードの格子.ts#
+    status: planned
   - name: renderWide
     title: wide の範囲を描く
     container: src/parts/wide.ts
@@ -1958,6 +1989,7 @@ test_files:
   - tests/unit/src/parts/kbd.test.ts
   - tests/unit/src/parts/highlight.test.ts
   - tests/unit/src/parts/layout-columns.test.ts
+  - tests/unit/src/parts/card-grid.test.ts
   - tests/unit/src/parts/wide.test.ts
 data_models:
   - name: CodeLine
@@ -1997,3 +2029,22 @@ data_models:
     status: planned
     introduced:
       pr: 166
+
+  - name: CardGridItem
+    title: カードの格子の項目
+    container: src/parts/card-grid.ts
+    summary: カード 1 枚の中身
+    properties:
+      - name: title
+        type: string
+        description: タイトルの HTML
+      - name: href
+        type: string | undefined
+        description: リンク先。無いときはリンクではないカード
+      - name: icon
+        type: string | undefined
+        description: Lucide のアイコンの名前
+      - name: description
+        type: string | undefined
+        description: 説明の HTML
+    status: planned
