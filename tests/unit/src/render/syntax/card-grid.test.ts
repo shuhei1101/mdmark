@@ -77,3 +77,39 @@ test("test_build_card_grid_when_disabled", () => {
   expect(warnings).toEqual([]);
   expect(findTags(html, "<li")).toHaveLength(4);
 });
+
+// 項目に書いた HTML は mdmark が出した要素にせず、サニタイズで落とす（異常系）
+test("test_build_card_grid_when_item_has_html", () => {
+  // 準備
+  const markdown = [
+    "<!-- cards -->",
+    "- [使い方](a.md) <style>body{display:none}</style>説明",
+    "<!-- /cards -->",
+    "",
+  ].join("\n");
+  // 実行
+  const { html } = renderDoc(markdown);
+  // 検証
+  expect(findTags(html, "mdmark-card-grid-item")).toHaveLength(1);
+  expect(html).not.toContain("<style");
+  expect(html).not.toContain("display:none");
+});
+
+// リンクのカードの説明のリンクは文字だけにする（正常系）
+test("test_build_card_grid_when_description_has_link", () => {
+  // 準備
+  const markdown = [
+    "<!-- cards -->",
+    "- [使い方](a.md) 詳しくは [参照](b.md)",
+    "<!-- /cards -->",
+    "",
+  ].join("\n");
+  // 実行
+  const { html } = renderDoc(markdown);
+  // 検証
+  const descriptions = [
+    ...html.matchAll(/<p class="mdmark-card-grid-desc">(.*?)<\/p>/g),
+  ].map((match) => match[1]);
+  expect(descriptions).toEqual(["詳しくは 参照"]);
+  expect(html).not.toContain('href="b.md"');
+});
