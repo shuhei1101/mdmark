@@ -80,15 +80,6 @@ test("test_normalize_index", async () => {
         meaning: "話し合いの記録を置くフォルダ",
       },
     ],
-    tags: [
-      {
-        name: "topic:mcp",
-        group: "topic",
-        description: "含める: MCP のツールの作り方",
-        aliases: ["MCP"],
-      },
-      { name: "設計", group: "kind" },
-    ],
   };
   // 実行
   const { index, problems } = normalizeIndex(structuredClone(value));
