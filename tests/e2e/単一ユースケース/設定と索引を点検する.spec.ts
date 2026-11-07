@@ -31,7 +31,7 @@ async function createCleanDir(
     "a.md": "# A\n",
     "b.md": "# B\n",
     "index.yaml": [
-      "schema: 1",
+      "schema: 2",
       "docs:",
       "  - id: a",
       "    path: a.md",

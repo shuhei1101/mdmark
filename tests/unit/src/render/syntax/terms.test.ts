@@ -12,14 +12,14 @@ import { renderDoc } from "../../../helpers/render.ts";
 
 /** 描く文書 `cur` と、用語 `印` を持つ索引 */
 const MARK_INDEX: MdmarkIndex = {
-  schema: 1,
+  schema: 2,
   docs: [{ id: "cur", path: "cur.md", title: "描く文書" }],
   terms: [{ id: "mark", term: "印", meaning: "HTML コメントで書く指定" }],
 };
 
 /** 文書 `api`・`guide` が別名 `公開関数` を持つ索引 */
 const ALIAS_INDEX: MdmarkIndex = {
-  schema: 1,
+  schema: 2,
   docs: [
     { id: "api", path: "api.md", title: "API", aliases: ["公開関数"] },
     {
@@ -65,7 +65,7 @@ test("test_terms_rule", () => {
 test("test_terms_rule_when_notation_differs", () => {
   // 準備
   const index: MdmarkIndex = {
-    schema: 1,
+    schema: 2,
     docs: [{ id: "cur", path: "cur.md", title: "描く文書" }],
     terms: [
       { id: "ws", term: "ワークスペース", meaning: "作業の置き場所" },
@@ -120,7 +120,7 @@ test("test_terms_rule_skips_code_and_links", () => {
 test("test_terms_rule_prefers_longer", () => {
   // 準備
   const index: MdmarkIndex = {
-    schema: 1,
+    schema: 2,
     docs: [{ id: "cur", path: "cur.md", title: "描く文書" }],
     terms: [
       { id: "feature", term: "機能", meaning: "働き" },
@@ -177,7 +177,7 @@ test("test_terms_rule_when_backlinks_off", () => {
 
 /** 描く文書 `guide` と、やめた言い方 `作業場` を持つ用語 `ワークスペース` の索引 */
 const AVOID_INDEX: MdmarkIndex = {
-  schema: 1,
+  schema: 2,
   docs: [{ id: "guide", path: "guide.md", title: "使い方" }],
   terms: [
     {
@@ -241,7 +241,7 @@ test("test_terms_rule_avoided", () => {
 test("test_terms_rule_avoided_prefers_term_words", () => {
   // 準備
   const index: MdmarkIndex = {
-    schema: 1,
+    schema: 2,
     docs: [{ id: "guide", path: "guide.md", title: "使い方" }],
     terms: [
       {

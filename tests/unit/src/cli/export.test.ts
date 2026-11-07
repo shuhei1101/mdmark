@@ -95,7 +95,7 @@ test("test_prepare_embeds_when_index", async () => {
   const dir = await createTempDir();
   await writeFiles(dir, {
     "index.yaml": [
-      "schema: 1",
+      "schema: 2",
       "docs:",
       "  - id: guide",
       "    path: guide.md",

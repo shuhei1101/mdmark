@@ -24,7 +24,7 @@ async function loadBuilt(): Promise<Built> {
 
 /** 用語 `ワークスペース`（別名 `WS`）と、別名 `公開関数` の文書 `api` を持つ索引 */
 const INDEX: MdmarkIndex = {
-  schema: 1,
+  schema: 2,
   docs: [
     {
       id: "api",
@@ -153,7 +153,7 @@ test("test_normal_when_glossary_table", async () => {
   // 準備
   const { collectMatches } = await loadBuilt();
   const index: MdmarkIndex = {
-    schema: 1,
+    schema: 2,
     docs: [
       { id: "glossary", path: "用語集.md", title: "用語集" },
       { id: "guide", path: "使い方/guide.md", title: "使い方" },
@@ -442,7 +442,7 @@ test("test_normal_when_invalid_index", async () => {
   const { collectMatches } = await loadBuilt();
   // `meaning` を持たない用語 `印` と、`path` を持たない文書 `broken` を足した索引
   const index = {
-    schema: 1,
+    schema: 2,
     docs: [
       ...INDEX.docs,
       { id: "broken", title: "壊れた", aliases: ["壊れた文書"] },
@@ -467,7 +467,7 @@ test("test_normal_when_aliases", async () => {
   // 準備
   const { collectMatches } = await loadBuilt();
   const index: MdmarkIndex = {
-    schema: 1,
+    schema: 2,
     docs: [{ id: "guide", path: "guide.md", title: "使い方" }],
   };
   const aliases = [

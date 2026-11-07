@@ -1,0 +1,14 @@
+$ npm run test:unit
+
+> test:unit
+> vitest run --project 'unit*'
+
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/chore-knowledge-drop-tag-vocabulary
+
+
+ Test Files  247 passed (247)
+      Tests  1706 passed (1706)
+   Start at  22:15:45
+   Duration  122.35s (worker 58%, tests 26%, import 14%, transform 2%)
+

@@ -399,7 +399,7 @@ test("test_normal_when_diagram_placement_top", async ({ page }) => {
 test("test_normal_when_term_width_and_case_differ", async ({ page }) => {
   // 準備
   const index: MdmarkIndex = {
-    schema: 1,
+    schema: 2,
     docs: [],
     terms: [{ id: "mcp", term: "MCP", meaning: "Model Context Protocol" }],
   };

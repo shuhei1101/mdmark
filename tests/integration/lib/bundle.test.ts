@@ -49,7 +49,7 @@ async function createSampleDir(options?: {
   await writeFiles(dir, {
     "mdmark.config.yaml": createConfig(options?.buildLines ?? BUILD_BASE),
     "index.yaml": [
-      "schema: 1",
+      "schema: 2",
       "docs:",
       "  - id: top",
       "    path: README.md",

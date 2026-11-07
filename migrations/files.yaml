@@ -7,8 +7,20 @@ files:
       - to: dev/設計書/モジュール構成/ライブラリ本体/版を上げる.ts
         type: implements
   - path: next/steps.yaml
-    description: モジュール構成『ライブラリ本体 / 版を上げる』のうち「出していない版の移行の手順の並び」を受け持つ。次の版で設定・索引・文書へ当てる手順を変えるときに読む。
+    description: モジュール構成『ライブラリ本体 / 版を上げる』のうち「出していない版の移行の手順」を受け持つ。mdmark upgrade で当てる手順を足す・変えるときに読む。
     tags: [topic:バージョン, topic:移行, topic:cli, topic:ステップ]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/版を上げる.ts
+        type: implements
+  - path: next/drop-tag-vocabulary.mjs
+    description: モジュール構成『ライブラリ本体 / 版を上げる』のうち「索引からタグの語彙を外す移行のスクリプト」を受け持つ。索引のタグの移行を変えるときに読む。
+    tags: [topic:バージョン, topic:移行, topic:索引, topic:タグ]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/版を上げる.ts
+        type: implements
+  - path: next/drop-tag-vocabulary.d.mts
+    description: 索引からタグの語彙を外す移行のスクリプトの型定義。drop-tag-vocabulary.mjs の公開する関数を変えるときに読む。
+    tags: [topic:バージョン, topic:移行, topic:型]
     related:
       - to: dev/設計書/モジュール構成/ライブラリ本体/版を上げる.ts
         type: implements

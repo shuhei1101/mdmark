@@ -18,7 +18,7 @@ async function loadBuilt(): Promise<Built> {
 
 /** 3 つの文書を持つ索引（`api` の `related` が `arch`、`api` の別名が `公開関数`） */
 const INDEX: MdmarkIndex = {
-  schema: 1,
+  schema: 2,
   docs: [
     { id: "arch", path: "設計/arch.md", title: "アーキテクチャ" },
     {
@@ -93,7 +93,7 @@ test("test_normal_when_glossary_table", async () => {
   // 準備
   const { collectReferences } = await loadBuilt();
   const index: MdmarkIndex = {
-    schema: 1,
+    schema: 2,
     docs: [
       { id: "glossary", path: "用語集.md", title: "用語集" },
       { id: "guide", path: "使い方/guide.md", title: "使い方" },

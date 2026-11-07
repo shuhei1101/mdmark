@@ -84,7 +84,7 @@ async function createSampleDir(): Promise<string> {
       "",
     ].join("\n"),
     "index.yaml": [
-      "schema: 1",
+      "schema: 2",
       "docs:",
       "  - id: guide",
       "    path: guide.md",
@@ -247,7 +247,7 @@ test("test_normal_when_tooltip_placement", async () => {
       "",
     ].join("\n"),
     "index.yaml": [
-      "schema: 1",
+      "schema: 2",
       "docs:",
       "  - id: guide",
       "    path: guide.md",

@@ -992,6 +992,80 @@ functions:
     status: planned
     introduced:
       pr: 360
+  - name: dropTagVocabulary
+    title: 索引からタグの語彙を外す
+    kind: 関数
+    container: migrations/next/drop-tag-vocabulary.mjs
+    usecase: 版を上げる
+    summary: v0.9.0 までの索引の YAML の文字列から、文書のタグの別名・やめたタグを語彙の `name`・振り替え先に書き換え、最上位の `tags` を外して `schema` を `2` にした YAML を返す
+    description: '`yaml` の `parseDocument` で読み、コメントとキーの並びを保って `doc.toString({ flowCollectionPadding: false })` で書き戻す。語彙の並びで先のタグを優先し、別名から `name` へ、`deprecated` を持つタグの `name` から振り替え先への表を作る。文書のタグの名前（文字列の要素はその文字列、オブジェクトの要素は `name`）を、別名なら `name` に、その結果がやめたタグなら振り替え先に 1 回だけ書き換える。書き換えで同じ文書に同じ名前が 2 つ以上できたら先の 1 つを残し、どれかが `main: true` なら残す要素を `main: true` のオブジェクトにする。最上位の `tags` を消し、`schema` が `1` なら `2` にする。変えるものが無ければ `undefined` を返す（当て直しても結果が変わらない）。ファイルの読み書きは `runDropTagVocabulary` が持つ。`migrations/next/` は release で `migrations/v{版}/` へ移る'
+    scope: internal
+    is_async: false
+    args:
+      - name: source
+        type: string
+        required: true
+        description: 索引の YAML の文字列
+    returns:
+      type: string | undefined
+      description: 書き換えた YAML。変えるものが無ければ `undefined`
+    unit_tests:
+      - name: test_drop_tag_vocabulary
+        case: 正常
+        summary: 別名・やめたタグを書き換え、語彙を外して `schema` を `2` にする
+        condition: '`schema: 1`、語彙が `topic:mcp`（`aliases` に `MCP`）・`topic:old`（`deprecated` が `topic:mcp`）・`topic:yaml`、`docs[0].tags` が `[MCP, {name: topic:old, main: true}, topic:yaml, 設計]`、最上位のコメントを持つ YAML'
+        mock: なし
+        expected: '`schema` が `2`、最上位に `tags` が無く、`docs[0].tags` が `[{name: topic:mcp, main: true}, topic:yaml, 設計]`、コメントが残る'
+      - name: test_drop_tag_vocabulary_without_vocabulary
+        case: 正常
+        summary: '語彙を持たない `schema: 1` の索引は `schema` だけを `2` にする'
+        condition: '`schema: 1` で最上位の `tags` を持たず、`docs[0].tags` が `[MCP]` の YAML'
+        mock: なし
+        expected: '`schema` が `2` で、ほかは入力と同じ'
+      - name: test_drop_tag_vocabulary_when_reapplied
+        case: 正常
+        summary: 当てた後の索引では `undefined` を返す
+        condition: '`test_drop_tag_vocabulary` の戻り値'
+        mock: なし
+        expected: '`undefined`'
+  - name: runDropTagVocabulary
+    title: 設定の索引からタグの語彙を外す
+    kind: 関数
+    container: migrations/next/drop-tag-vocabulary.mjs
+    usecase: 版を上げる
+    summary: '`call` のスクリプトの入口。`--config` の設定ファイルの `index` が指す索引を `dropTagVocabulary` で書き換えて書き戻す'
+    description: '`applyStep` が `[{スクリプト}, "--config", {設定ファイル}]` で流す。ファイルを直接流したとき（`import.meta.url` が `process.argv[1]` の `pathToFileURL` の `href`）だけ `process.argv.slice(2)` で呼ぶ。`--config` の次の値を設定ファイルのパスにし、設定を `yaml` の `parse` で読む。設定に `index` が無ければ何もせずに返す（`applyStep` の `file: index` と同じ扱い）。`index` を設定ファイルのフォルダからの相対パスとして索引を読み、`dropTagVocabulary` の戻り値が `undefined` でなければ書き戻す。`--config` が無い・設定や索引を読めないときは例外を投げ、Node が 0 以外の終了コードで終わる'
+    scope: internal
+    is_async: true
+    args:
+      - name: argv
+        type: string[]
+        required: true
+        description: スクリプトの引数（`["--config", {設定ファイル}]`）
+    returns:
+      type: Promise<void>
+      description: 書き戻した後に解決する
+    unit_tests:
+      - name: test_run_drop_tag_vocabulary
+        case: 正常
+        summary: 設定の `index` が指す索引を書き換える
+        condition: '一時フォルダに `index: docs/index.yaml` の設定と、`test_drop_tag_vocabulary` の入力の索引を置き、`["--config", {設定ファイル}]` で呼ぶ'
+        mock: なし（一時フォルダ）
+        expected: 索引のファイルが `test_drop_tag_vocabulary` の期待値と同じ中身になる
+      - name: test_run_drop_tag_vocabulary_without_index
+        case: 正常
+        summary: 設定に `index` が無ければ何も書き換えない
+        condition: '`index` を持たない設定だけの一時フォルダ'
+        mock: なし（一時フォルダ）
+        expected: 例外を投げず、フォルダの中身が変わらない
+      - name: test_run_drop_tag_vocabulary_without_config
+        case: 異常
+        summary: '`--config` が無ければ例外を投げる'
+        condition: '`[]` で呼ぶ'
+        mock: なし
+        expected: 例外を投げる
+    callees:
+      - '#functions[dropTagVocabulary]'
 refs:
   - dev/設計書/インターフェース定義/ライブラリ本体/版を上げる.ts#
   - dev/設計書/ER図/移行の手順#
@@ -1003,3 +1077,4 @@ test_files:
   - tests/unit/src/cli/prompt.test.ts
   - tests/unit/src/cli/upgrade.test.ts
   - tests/unit/migrations/alias-rows.test.ts
+  - tests/unit/migrations/drop-tag-vocabulary.test.ts

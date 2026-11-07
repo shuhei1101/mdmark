@@ -7,7 +7,7 @@ import { iconSvg } from "../../../src/parts/icons.ts";
 
 /** 索引つきの `render` の結合テストが使う索引: 文書 3 つと用語 1 つ */
 export const INDEX: MdmarkIndex = {
-  schema: 1,
+  schema: 2,
   docs: [
     { id: "arch", path: "設計/arch.md", title: "アーキテクチャ" },
     { id: "api", path: "api.md", title: "API", aliases: ["公開関数"] },
@@ -40,7 +40,7 @@ export const EXPECTED_HTML =
 
 /** やめた言い方の `render` の結合テストが使う索引: 描く文書 `guide` と、やめた言い方 `作業場` を持つ用語 1 つ */
 export const AVOID_INDEX: MdmarkIndex = {
-  schema: 1,
+  schema: 2,
   docs: [{ id: "guide", path: "guide.md", title: "使い方" }],
   terms: [
     {

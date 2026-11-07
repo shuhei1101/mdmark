@@ -132,7 +132,7 @@ request_example: |-
   ```json
   {
     "index": {
-      "schema": 1,
+      "schema": 2,
       "docs": [
         { "id": "arch", "path": "設計/arch.md", "title": "アーキテクチャ" },
         { "id": "api", "path": "api.md", "title": "API", "aliases": ["公開関数"], "related": ["arch"] },

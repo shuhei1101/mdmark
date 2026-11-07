@@ -1,5 +1,10 @@
 steps:
   - op: call
+    description: 索引の文書のタグのうちタグの語彙の別名・やめたタグを語彙の name・振り替え先に書き換え、最上位の tags を外して schema を 2 にする
+    destructive: true
+    script: drop-tag-vocabulary.mjs
+    files: [index]
+  - op: call
     description: 設定の `aliases` の行を alias-inject v0.3.0 の構造へ書き換える（値を失うのは `metadata` に固定値を記載した行だけ）
     destructive: true
     script: alias-rows.mjs
