@@ -16,7 +16,7 @@ scenarios:
         notes: 既定では lifecycle の出力は失敗したときにしか出ず、開発用の処理が実行されて成功しても出力から見分けられない
       - name: Mock
         description: GitHub の代わりに `git+file://{リポジトリ}#v0.0.1` を指定する。npm は `github:` の参照では codeload の tarball を展開したフォルダで、`git+file://` では clone したフォルダで、どちらも `prepare` があれば実行する。依存は npm レジストリから実際に入れ、Claude Code の代わりに常駐サーバーへ HTTP でつなぐ MCP のクライアントを使用する
-        notes: clone したフォルダは `.git` を持つため `lefthook install` が通り、`prepare` が残っていても CLI は起動する（`github:` の参照では `.git` が無く exit 1）。開発用の処理が実行されないことは、CLI の起動ではなく lifecycle の出力で確認する
+        notes: 開発用の処理が実行されないことは、CLI の起動ではなく lifecycle の出力で確認する
     flow: |-
       sequenceDiagram
         actor W as 文書を書く人
@@ -34,7 +34,7 @@ scenarios:
         C-->>M: mdmark のツールの一覧
     expected:
       - '`npm exec` のプロセスが終わらずに残り、出力に接続先 `http://127.0.0.1:{ポート}/mcp` が出る'
-      - 出力に、`lefthook install` が出す `sync hooks` の行と、`npm ci --prefix tools/eslint` が出す導入の集計の行（`added {数} packages`）が出ない
+      - 出力に、`npm ci --prefix tools/eslint` が出す導入の集計の行（`added {数} packages`）が出ない
       - クライアントの `tools/list` が返却するツールに `export_html`・`build_site`・`check` がある
     test: test_normal
 lead: 文書を書く人が `npx github:shuhei1101/mdmark#v{バージョン}` と同じ経路で版のタグから mdmark を入れ、CLI を起動する。
@@ -49,6 +49,6 @@ trigger: 文書を書く人が、版のタグを指定して mdmark の CLI を�
 preconditions:
   - 文書を書く人の手元に Node 24 以降と Git がある
   - npm レジストリへつながる
-success_guarantee: npm が版のタグの中身を取り出して `dependencies` を入れ、開発用の処理（Git フックの導入・`tools/eslint/` の依存の導入）を実行せずに CLI を起動する。
+success_guarantee: npm が版のタグの中身を取り出して `dependencies` を入れ、開発用の処理（`tools/eslint/` の依存の導入）を実行せずに CLI を起動する。
 minimal_guarantee: 入れる途中で失敗したときは CLI を起動せず、npm が 0 以外の終了コードで終わる。
 test_file: tests/e2e/単一ユースケース/GitHubの参照から入れてCLIを起動する.spec.ts

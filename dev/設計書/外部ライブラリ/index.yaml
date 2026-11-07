@@ -60,8 +60,6 @@ items:
     summary: Webview の部品のソース（Button・Alert・Spinner）
   - page: msw.yaml
     summary: ストーリーと単体テストの配布物の HEAD のモック
-  - page: lefthook.yaml
-    summary: pre-commit・pre-push の検査
   - page: axe-core.yaml
     summary: テストのときだけパネルをアクセシビリティの規則で検査する
   - page: react-error-boundary.yaml
