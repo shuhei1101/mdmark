@@ -38,12 +38,20 @@
 
 | ファイル | メソッド | 変更種別 | 結果 | 補足 |
 | --- | --- | --- | --- | --- |
-| [tests/unit/vscode/src/config.test.ts](https://github.com/shuhei1101/mdmark/blob/develop/tests/unit/vscode/src/config.test.ts) | 全実行 | 変更 | ✅ | `テスト結果/20261107212700_4a0d696e_単体テスト.log` |
-| `tests/unit/` の残り | 全実行 | 実行のみ | ✅ | `npm run test:unit` で 250 ファイル・1736 テスト pass（develop の取り込み後）<br>`テスト結果/20261107212700_4a0d696e_単体テスト.log` |
+| [tests/unit/vscode/src/config.test.ts](https://github.com/shuhei1101/mdmark/blob/develop/tests/unit/vscode/src/config.test.ts) | 全実行 | 変更 | ✅ | `テスト結果/20261108012300_9c25dc18_単体テスト.log` |
+| `tests/unit/` の残り | 全実行 | 実行のみ | ✅ | `npm run test:unit` で 251 ファイル・1737 テスト pass（develop の取り込み後。負荷でタイムアウトした 3 ファイルは単独で回して pass）<br>`テスト結果/20261108012300_9c25dc18_単体テスト.log` |
+
+### 結合
+
+| ファイル | メソッド | 変更種別 | 結果 | 補足 |
+| --- | --- | --- | --- | --- |
+| [vscode/tests/integration/preview-open.test.ts](https://github.com/shuhei1101/mdmark/blob/develop/vscode/tests/integration/preview-open.test.ts) | `test_normal_when_color_scheme` | 変更 | ✅ | `テスト結果/20261108012300_9c25dc18_結合テスト_VSCode.log` |
+| [vscode/tests/integration/export.test.ts](https://github.com/shuhei1101/mdmark/blob/develop/vscode/tests/integration/export.test.ts) | `test_normal_when_config_color_scheme` | 変更 | ✅ | `テスト結果/20261108012300_9c25dc18_結合テスト_VSCode.log` |
+| `vscode/tests/integration/` の残り | 全実行 | 実行のみ | ✅ | VS Code 1.141.0 と stable で 71 件ずつ pass<br>`テスト結果/20261108012300_9c25dc18_結合テスト_VSCode.log` |
 
 ### lint
 
-`npm run check`（biome・eslint・tsc・tsc -p vscode）が終了コード 0。残る biome の警告 2 件（`src/cli/embed.ts`）は base にもあり、この PR は触っていない。`テスト結果/20261107212700_4a0d696e_lint.log`
+`npm run check`（biome・eslint・tsc・tsc -p vscode）が終了コード 0。残る biome の警告 2 件（`src/cli/embed.ts`）は base にもあり、この PR は触っていない。`テスト結果/20261108012300_9c25dc18_lint.log`
 
 ### ドキュメント修正
 
