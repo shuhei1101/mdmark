@@ -99,3 +99,22 @@ test("test_run_init_writes_version", async () => {
   expect(parse(placed).version).toBe("v0.5.0");
   expect(placed).toBe(template.replace(/^version: .*$/m, "version: v0.5.0"));
 });
+
+// 置く設定の先頭のコメントで、端末の設定に重ねて読むことと切り替えの場所を示す（正常系）
+test("test_run_init_config_comment_on_cascade", async () => {
+  // 準備
+  const { runInit } = await loadInit();
+  const dir = await createTempDir();
+  const { io } = createIo(dir);
+  // 実行
+  await runInit(
+    { dir, js: false, templatesDir: TEMPLATES_DIR, version: "v0.5.0" },
+    io,
+  );
+  // 検証
+  const placed = await readFile(join(dir, "mdmark.config.yaml"), "utf8");
+  expect(placed.split("\n").slice(0, 2)).toEqual([
+    "# mdmark の設定。パスと glob は、このファイルのあるフォルダからの相対パスで書く",
+    "# 端末の設定（~/.config/mdmark/settings.yaml）に重ねて読む。端末の設定の config.cascade を true にすると、上のフォルダの mdmark.config.yaml も重ねる",
+  ]);
+});
