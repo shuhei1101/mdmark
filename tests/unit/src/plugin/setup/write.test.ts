@@ -23,7 +23,11 @@ async function createTerminal(): Promise<{
   const settingsPath = join(home, "x", "settings.yaml");
   const claudeDir = join(home, "c");
   return {
-    env: { HOME: home, MDMARK_CONFIG: settingsPath, CLAUDE_CONFIG_DIR: claudeDir },
+    env: {
+      HOME: home,
+      MDMARK_CONFIG: settingsPath,
+      CLAUDE_CONFIG_DIR: claudeDir,
+    },
     settingsPath,
     claudeSettingsPath: join(claudeDir, "settings.json"),
   };
@@ -68,10 +72,15 @@ test("test_write_settings", async () => {
   const settings = parse(await readFile(terminal.settingsPath, "utf8"));
   expect(settings.version).toBe("v0.10.0");
   expect(settings.features.table).toBe(false);
-  const claude = JSON.parse(await readFile(terminal.claudeSettingsPath, "utf8"));
+  const claude = JSON.parse(
+    await readFile(terminal.claudeSettingsPath, "utf8"),
+  );
   expect(claude.env.MDMARK_CONFIG).toBe(terminal.settingsPath);
   expect(result.written).toEqual(
-    expect.arrayContaining([terminal.settingsPath, terminal.claudeSettingsPath]),
+    expect.arrayContaining([
+      terminal.settingsPath,
+      terminal.claudeSettingsPath,
+    ]),
   );
   expect(result.keys).toContain("features.table");
 });
@@ -106,7 +115,9 @@ test("test_write_settings_when_comment", async () => {
     "  callout: false",
     "",
   ].join("\n");
-  await writeFiles(join(terminal.settingsPath, ".."), { "settings.yaml": before });
+  await writeFiles(join(terminal.settingsPath, ".."), {
+    "settings.yaml": before,
+  });
   // 実行
   await writeSettings({
     env: terminal.env,
@@ -133,7 +144,11 @@ test("test_write_claude_env", async () => {
   });
   const path = join(dir, "settings.json");
   // 実行
-  const written = await writeClaudeEnv({ path, key: "MDMARK_CONFIG", value: "/p" });
+  const written = await writeClaudeEnv({
+    path,
+    key: "MDMARK_CONFIG",
+    value: "/p",
+  });
   // 検証
   expect(written).toBe(true);
   const after = JSON.parse(await readFile(path, "utf8"));
@@ -152,7 +167,11 @@ test("test_write_claude_env_when_same", async () => {
   const path = join(dir, "settings.json");
   const before = (await stat(path)).mtimeMs;
   // 実行
-  const written = await writeClaudeEnv({ path, key: "MDMARK_CONFIG", value: "/p" });
+  const written = await writeClaudeEnv({
+    path,
+    key: "MDMARK_CONFIG",
+    value: "/p",
+  });
   // 検証
   expect(written).toBe(false);
   expect((await stat(path)).mtimeMs).toBe(before);

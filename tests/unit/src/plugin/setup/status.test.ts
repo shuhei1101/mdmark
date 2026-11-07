@@ -9,9 +9,7 @@ const createTempDir = useTempDirs();
 
 /** tmux の -V だけに成功し、has-session には 1 を返す */
 const runWithoutSession = async (_command: string, args: string[]) =>
-  args[0] === "-V"
-    ? { code: 0, stdout: "tmux 3.4" }
-    : { code: 1, stdout: "" };
+  args[0] === "-V" ? { code: 0, stdout: "tmux 3.4" } : { code: 1, stdout: "" };
 
 // 空の端末（正常系）
 test("test_read_terminal_status", async () => {

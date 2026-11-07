@@ -1,5 +1,5 @@
-import { createServer, type Server } from "node:net";
 import type { AddressInfo } from "node:net";
+import { createServer, type Server } from "node:net";
 import { afterEach, expect, test } from "vitest";
 
 /** ポートの確かめを読み込む（実装が無い間は各テストが個別に失敗する） */
@@ -9,9 +9,12 @@ const servers: Server[] = [];
 
 afterEach(async () => {
   await Promise.all(
-    servers.splice(0).map(
-      (server) => new Promise<void>((resolve) => server.close(() => resolve())),
-    ),
+    servers
+      .splice(0)
+      .map(
+        (server) =>
+          new Promise<void>((resolve) => server.close(() => resolve())),
+      ),
   );
 });
 

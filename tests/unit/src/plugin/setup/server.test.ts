@@ -1,6 +1,6 @@
 import { execFile, execFileSync } from "node:child_process";
-import { createServer } from "node:net";
 import type { AddressInfo } from "node:net";
+import { createServer } from "node:net";
 import { join } from "node:path";
 import { afterEach, expect, test } from "vitest";
 import { useTempDirs, writeFiles } from "../../../helpers/cli.ts";
@@ -46,13 +46,19 @@ async function findFreePort(): Promise<number> {
 const runReal = (env: NodeJS.ProcessEnv) => (command: string, args: string[]) =>
   new Promise<{ code: number; stdout: string }>((resolve) => {
     execFile(command, args, { env }, (error, stdout) => {
-      resolve({ code: error ? Number(error.code ?? 1) : 0, stdout: String(stdout) });
+      resolve({
+        code: error ? Number(error.code ?? 1) : 0,
+        stdout: String(stdout),
+      });
     });
   });
 
 /** 呼ばれた引数を貯め、応答を関数で決める RunCommand */
 function createFakeRun(
-  respond: (args: string[], calls: string[][]) => { code: number; stdout?: string },
+  respond: (
+    args: string[],
+    calls: string[][],
+  ) => { code: number; stdout?: string },
 ) {
   const calls: string[][] = [];
   const run = async (_command: string, args: string[]) => {
@@ -98,37 +104,49 @@ test("test_build_tmux_args", async () => {
   expect(args[args.indexOf("MDMARK_PORT=18782") - 1]).toBe("-e");
   expect(args).toContain("MDMARK_CONFIG=/c/settings.yaml");
   expect(args).toContain("MDMARK_STATE_DIR=/l");
-  expect(args.slice(-3)).toEqual(["sh", "-c", "serve 2>&1 | tee -a '/l/serve.log'"]);
+  expect(args.slice(-3)).toEqual([
+    "sh",
+    "-c",
+    "serve 2>&1 | tee -a '/l/serve.log'",
+  ]);
 });
 
 // 起動して待ち受けを待つ（正常系）
-test.skipIf(!hasTmux)("test_start_server", async () => {
-  // 準備
-  const { startServer } = await loadServer();
-  const tmuxDir = await createTempDir();
-  const { env } = await createTerminal({
-    TMUX_TMPDIR: tmuxDir,
-    MDMARK_SERVE_COMMAND: `'${process.execPath}' '${join(REPO, "dist", "cli.js")}' serve`,
-  });
-  const run = runReal(env);
-  cleanups.push(async () => {
-    await run("tmux", ["kill-session", "-t", "=mdmark-mcp"]);
-  });
-  // 実行
-  const result = await startServer({
-    env,
-    pluginRoot: join(REPO, "plugin"),
-    version: "v0.0.0",
-    run,
-    sleep: (ms) => new Promise((resolve) => setTimeout(resolve, ms)),
-  });
-  // 検証
-  expect(result.result).toBe("started");
-  expect(result.session).toBe("mdmark-mcp");
-  expect(result.url).toBe(`http://127.0.0.1:${env.MDMARK_PORT}/mcp`);
-  expect([...result.tools].sort()).toEqual(["build_site", "check", "export_html"]);
-  expect(result.stop).toBe("tmux kill-session -t =mdmark-mcp");
-}, 60_000);
+test.skipIf(!hasTmux)(
+  "test_start_server",
+  async () => {
+    // 準備
+    const { startServer } = await loadServer();
+    const tmuxDir = await createTempDir();
+    const { env } = await createTerminal({
+      TMUX_TMPDIR: tmuxDir,
+      MDMARK_SERVE_COMMAND: `'${process.execPath}' '${join(REPO, "dist", "cli.js")}' serve`,
+    });
+    const run = runReal(env);
+    cleanups.push(async () => {
+      await run("tmux", ["kill-session", "-t", "=mdmark-mcp"]);
+    });
+    // 実行
+    const result = await startServer({
+      env,
+      pluginRoot: join(REPO, "plugin"),
+      version: "v0.0.0",
+      run,
+      sleep: (ms) => new Promise((resolve) => setTimeout(resolve, ms)),
+    });
+    // 検証
+    expect(result.result).toBe("started");
+    expect(result.session).toBe("mdmark-mcp");
+    expect(result.url).toBe(`http://127.0.0.1:${env.MDMARK_PORT}/mcp`);
+    expect([...result.tools].sort()).toEqual([
+      "build_site",
+      "check",
+      "export_html",
+    ]);
+    expect(result.stop).toBe("tmux kill-session -t =mdmark-mcp");
+  },
+  60_000,
+);
 
 // tmux が無ければ 2（異常系）
 test("test_start_server_when_tmux_missing", async () => {
@@ -137,7 +155,13 @@ test("test_start_server_when_tmux_missing", async () => {
   const { env } = await createTerminal();
   const { run } = createFakeRun(() => ({ code: 127 }));
   // 実行
-  const result = startServer({ env, pluginRoot: "/p", version: "v0.0.0", run, sleep: noSleep });
+  const result = startServer({
+    env,
+    pluginRoot: "/p",
+    version: "v0.0.0",
+    run,
+    sleep: noSleep,
+  });
   // 検証
   await expect(result).rejects.toMatchObject({ exitCode: 2 });
   await expect(result).rejects.toThrow(`MDMARK_PORT=${env.MDMARK_PORT}`);
@@ -151,12 +175,20 @@ test("test_start_server_when_timed_out", async () => {
   const { env } = await createTerminal({ MDMARK_START_TIMEOUT_SEC: "0" });
   const { run, calls } = createFakeRun(() => ({ code: 0 }));
   // 実行
-  const result = startServer({ env, pluginRoot: "/p", version: "v0.0.0", run, sleep: noSleep });
+  const result = startServer({
+    env,
+    pluginRoot: "/p",
+    version: "v0.0.0",
+    run,
+    sleep: noSleep,
+  });
   // 検証
   await expect(result).rejects.toMatchObject({ exitCode: 3 });
   const started = calls.findIndex((args) => args[0] === "new-session");
   expect(started).toBeGreaterThanOrEqual(0);
-  expect(calls.slice(started).some((args) => args[0] === "kill-session")).toBe(true);
+  expect(calls.slice(started).some((args) => args[0] === "kill-session")).toBe(
+    true,
+  );
 });
 
 // セッションが閉じたら 1（異常系）
@@ -171,7 +203,13 @@ test("test_start_server_when_session_closed", async () => {
     args[0] === "has-session" ? { code: 1 } : { code: 0 },
   );
   // 実行
-  const result = startServer({ env, pluginRoot: "/p", version: "v0.0.0", run, sleep: noSleep });
+  const result = startServer({
+    env,
+    pluginRoot: "/p",
+    version: "v0.0.0",
+    run,
+    sleep: noSleep,
+  });
   // 検証
   await expect(result).rejects.toMatchObject({ exitCode: 1 });
   await expect(result).rejects.toThrow("EADDRINUSE");

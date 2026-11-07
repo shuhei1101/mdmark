@@ -482,5 +482,7 @@ test("test_run_upgrade_when_settings", async () => {
   expect(settings.legacy).toBeUndefined();
   expect(settings.version).toBe("v0.5.0");
   expect(await fixture.read("docs/a.md")).toContain("<!-- note -->");
-  expect(parse(await fixture.read("mdmark.config.yaml")).version).toBe("v0.3.0");
+  expect(parse(await fixture.read("mdmark.config.yaml")).version).toBe(
+    "v0.3.0",
+  );
 });

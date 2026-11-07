@@ -1,19 +1,23 @@
 import { readFile } from "node:fs/promises";
-import { createServer, type Server } from "node:net";
 import type { AddressInfo } from "node:net";
+import { createServer, type Server } from "node:net";
 import { join } from "node:path";
 import { afterEach, expect, test } from "vitest";
 
 /** SessionStart のフックを読み込む（実装が無い間は各テストが個別に失敗する） */
-const loadSessionStart = () => import("../../../../src/plugin/session-start.ts");
+const loadSessionStart = () =>
+  import("../../../../src/plugin/session-start.ts");
 
 const servers: Server[] = [];
 
 afterEach(async () => {
   await Promise.all(
-    servers.splice(0).map(
-      (server) => new Promise<void>((resolve) => server.close(() => resolve())),
-    ),
+    servers
+      .splice(0)
+      .map(
+        (server) =>
+          new Promise<void>((resolve) => server.close(() => resolve())),
+      ),
   );
 });
 
