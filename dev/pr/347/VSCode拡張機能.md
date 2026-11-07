@@ -57,7 +57,7 @@
 
 | ファイル | メソッド | 変更種別 | 結果 | 補足 |
 | --- | --- | --- | --- | --- |
-| `tests/unit/vscode/src/config.test.ts` | 全実行 | 変更 | ✅ | `npm run test:unit` で 238 ファイル・1649 テストが全 pass<br>[テスト結果/20261107012844_213fb845_単体テスト.log](./テスト結果/20261107012844_213fb845_単体テスト.log) |
+| `tests/unit/vscode/src/config.test.ts` | 全実行 | 変更 | ✅ | `npm run test:unit` で 238 ファイル・1650 テストが全 pass<br>[テスト結果/20261107113754_c45ba33b_単体テスト.log](./テスト結果/20261107113754_c45ba33b_単体テスト.log) |
 | `tests/unit/vscode/src/extensions-bundle.test.ts` | 全実行 | 新規 | ✅ |  |
 | `tests/unit/vscode/src/preview/html.test.ts` | 全実行 | 変更 | ✅ |  |
 | `tests/unit/vscode/src/export/html.test.ts` | 全実行 | 変更 | ✅ |  |
