@@ -103,6 +103,8 @@ const themeVariables = (root) => {
   // 枠線のグラデーションと影を付けない（デザイン方針の「使わないもの」）
   variables.useGradient = false;
   variables.dropShadow = "none";
+  // 円グラフの扇形を凡例と同じ系列の色で塗る（既定は半透明）
+  variables.pieOpacity = "1";
   return variables;
 };
 
@@ -173,14 +175,22 @@ const RESIZE_MIN_PX = 120;
 
 let renderCount = 0;
 
+/** コードブロックから、図か書き方の警告を入れる置き場所を引く表 */
+const holders = new WeakMap();
+
 /** 1 つのコードブロックを描く。解釈できないときは書き方の警告とコードブロックにする */
 const drawOne = async (block) => {
   const source = block.dataset.source;
   const root = block.closest(".mdmark");
   const { title, body } = splitTitle(source);
-  const holder = block.nextElementSibling?.matches("[data-mock-mermaid-out]") ? block.nextElementSibling : document.createElement("div");
-  holder.dataset.mockMermaidOut = "";
-  if (!holder.isConnected) block.after(holder);
+  // 前回の描画の置き場所を使い回す
+  let holder = holders.get(block);
+  if (!holder) {
+    holder = document.createElement("div");
+    holder.dataset.mockMermaidOut = "";
+    block.after(holder);
+    holders.set(block, holder);
+  }
   mermaid.initialize({ startOnLoad: false, securityLevel: "strict", theme: "base", themeVariables: themeVariables(root) });
   renderCount += 1;
   const id = `mock-mermaid-${renderCount}`;
@@ -199,9 +209,13 @@ const drawOne = async (block) => {
   } catch (error) {
     // mermaid が文書の中に残すエラーの図を消す
     document.getElementById(`d${id}`)?.remove();
-    block.hidden = false;
     holder.innerHTML = warningHtml(String(error?.message ?? error).split("\n")[0]);
     holder.after(block);
+    // 解釈できないソースは、ほかの言語と同じコードブロックとして見せる
+    block.setAttribute("tabindex", "0");
+    block.setAttribute("aria-label", "コード: mermaid");
+    block.innerHTML = `<code class="language-mermaid">${escapeHtml(source)}</code>`;
+    block.hidden = false;
   }
 };
 
