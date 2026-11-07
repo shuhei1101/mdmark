@@ -16,8 +16,8 @@ import { resolveLink } from "../knowledge/paths.ts";
 import { SYNTAX_ATTRIBUTE } from "../parts/code-block.ts";
 import { renderDocument } from "../render/index.ts";
 import { MARK_PATTERN } from "../render/marks.ts";
-import { unescapeHtml } from "../render/syntax/html.ts";
 import { mediaKindOf } from "../render/syntax/images.ts";
+import { collectRangeScripts } from "../render/used.ts";
 import { findAssetRefs, resolveAssetFile } from "./assets.ts";
 import { ASSET_SCHEME } from "./html.ts";
 
@@ -36,23 +36,6 @@ const EXTERNAL_PATTERN = /^(?:[a-z][a-z0-9+.-]*:|\/\/)/i;
 
 /** `http:`・`https:` の URL か */
 const HTTP_PATTERN = /^https?:\/\//i;
-
-/** 文書の Markdown から印の名前を拾い、対応表にあるものだけを返す */
-export function usedLibraryMarks(
-  markdowns: string[],
-  libraries: Record<string, string>,
-): Set<string> {
-  const marks = new Set<string>();
-  for (const markdown of markdowns) {
-    for (const match of markdown.matchAll(MARK_PATTERN)) {
-      const [, closing, name] = match;
-      if (closing !== "/" && name && Object.hasOwn(libraries, name)) {
-        marks.add(name);
-      }
-    }
-  }
-  return marks;
-}
 
 /** 色分けの対象の `code` が持つ属性から、言語のモジュール名を読む正規表現 */
 const SYNTAX_LANGUAGE_PATTERN = new RegExp(
@@ -120,11 +103,7 @@ export type ViewerEmbeds = {
   htmlScripts?: Array<{ source: string; code: string }> | undefined;
 };
 
-/** 描いた HTML の範囲のスクリプトの `template` と、その言語と中身 */
-const RANGE_SCRIPT_TEMPLATE =
-  /<template class="mdmark-html-script" data-lang="(ts|js)">([\s\S]*?)<\/template>/g;
-
-/** 文書ごとに設定と一緒に描き、範囲の `ts`・`js` を esbuild の `transform` で CommonJS に変える。同じコードは 1 回だけ変え、変えられない範囲は警告にする */
+/** 文書ごとに `collectRangeScripts` で範囲の `ts`・`js` を集め、esbuild の `transform` で CommonJS に変える。同じコードは 1 回だけ変え、変えられない範囲は警告にする */
 export async function compileHtmlScripts(options: {
   /** 書き出す文書 */
   documents: Array<{ path: string; markdown: string }>;
@@ -134,16 +113,14 @@ export async function compileHtmlScripts(options: {
   scripts: Array<{ source: string; code: string }>;
   warnings: string[];
 }> {
-  const config = resolveConfig({ config: options.config });
   const scripts: Array<{ source: string; code: string }> = [];
   const warnings: string[] = [];
   const seen = new Set<string>();
   for (const { path, markdown } of options.documents) {
-    // `html-scripts` がオフの文書は `template` を出さないため、対象にならない
-    const { html } = renderDocument({ markdown, config });
-    for (const match of html.matchAll(RANGE_SCRIPT_TEMPLATE)) {
-      const lang = match[1] === "js" ? "js" : "ts";
-      const source = unescapeHtml((match[2] ?? "").replaceAll("&#39;", "'"));
+    for (const { lang, source } of collectRangeScripts({
+      markdown,
+      config: options.config,
+    })) {
       if (seen.has(source)) {
         continue;
       }

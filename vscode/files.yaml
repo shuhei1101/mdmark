@@ -68,6 +68,12 @@ files:
     related:
       - to: dev/設計書/モジュール構成/VSCode拡張機能/書き出し.ts
         type: implements
+  - path: src/export/embed.ts
+    description: モジュール構成『VS Code 拡張機能 / 書き出し』のうち「相対パスの libraries と html-scripts.url を埋める処理（vscode を import しない）」を受け持つ。HTML への書き出しで相対パスのライブラリの埋め方を変えるときに読む。
+    tags: [tool:vscode, tool:html, topic:書き出し]
+    related:
+      - to: dev/設計書/モジュール構成/VSCode拡張機能/書き出し.ts
+        type: implements
   - path: src/export/html.ts
     description: モジュール構成『VS Code 拡張機能 / 書き出し』のうち「書き出す先のパスと HTML の組み立て（vscode を import しない）」を受け持つ。HTML への書き出しや PDF への印刷を変えるときに読む。
     tags: [tool:vscode, tool:html, topic:書き出し]

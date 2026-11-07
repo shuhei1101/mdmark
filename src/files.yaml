@@ -1295,6 +1295,12 @@ files:
     related:
       - to: dev/設計書/モジュール構成/ライブラリ本体/描画.ts
         type: implements
+  - path: render/used.ts
+    description: モジュール構成『ライブラリ本体 / CLI』のうち、書き出しで埋める外部ライブラリと範囲のスクリプトを文書から取得する処理（esbuild を import しない）を受け持つ。CLI と VS Code 拡張機能の書き出しで埋めるものの判定を変えるときに読む。
+    tags: [topic:markdown, topic:書き出し]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/CLI.ts
+        type: implements
   - path: render/parser.ts
     description: モジュール構成『ライブラリ本体 / 描画』のうち「markdown-it の解析器と、追加するコアルール」を受け持つ。Markdown から HTML 文字列にする流れを変えるときに読む。
     tags: [topic:markdown, tool:markdown-it]
