@@ -48,4 +48,19 @@
 
 ## テスト結果
 
+### 単体
+
+| ファイル | メソッド | 変更種別 | 結果 | 補足 |
+| --- | --- | --- | --- | --- |
+| `tests/unit/src/cli/issues.test.ts` | 全実行 | 新規 | ✅ | 2 テスト pass<br>`テスト結果/20261108054046_f8f65fe3_単体テスト.log` |
+| [tests/unit/src/cli/aliases.test.ts](https://github.com/shuhei1101/mdmark/blob/develop/tests/unit/src/cli/aliases.test.ts) | 全実行 | 変更 | ✅ | `files` の期待値を追加<br>`テスト結果/20261108054046_f8f65fe3_単体テスト.log` |
+| [tests/unit/vscode/src/config.test.ts](https://github.com/shuhei1101/mdmark/blob/develop/tests/unit/vscode/src/config.test.ts) | 全実行 | 変更 | ✅ | エイリアスの 4 テストを追加<br>`テスト結果/20261108054046_f8f65fe3_単体テスト.log` |
+| [tests/unit/vscode/src/webview/features/preview/panel/document-view.browser.test.ts](https://github.com/shuhei1101/mdmark/blob/develop/tests/unit/vscode/src/webview/features/preview/panel/document-view.browser.test.ts) | 全実行 | 変更 | ✅ | `test_render_when_aliases_changed` を追加<br>`テスト結果/20261108054046_f8f65fe3_単体テスト.log` |
+| その他の `tests/unit/` の全ファイル | 全実行 | 実行のみ | ✅ | 回帰確認<br>`テスト結果/20261108054046_f8f65fe3_単体テスト.log` |
+
+全件の実行（254 ファイル・1749 テスト）で、他のセッションの負荷による 30 秒・15 秒のタイムアウトが 8 ファイル 9 テストで出た。どれもこの PR が触らないコードのテストで、1 ファイルずつ流し直して全 pass を確かめ、同じログに追記した。
+Red のログは `テスト結果/20261108051930_d56c4c40_単体テスト.log`。lint は `テスト結果/20261108054817_f8f65fe3_lint.log`（Biome の警告 2 件は base ブランチと同じ `src/cli/embed.ts` の分）。
+
+### 結合
+
 なし
