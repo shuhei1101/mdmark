@@ -1,0 +1,1 @@
+# E2E『MCPサーバーを起動・停止する』の test_normal_when_start で、ツールの一覧が 3 つを含むことを確かめる
