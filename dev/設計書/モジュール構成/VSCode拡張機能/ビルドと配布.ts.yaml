@@ -98,7 +98,7 @@ functions:
         summary: 拡張機能と Webview を書き出し、vscode と axe を束ねない
         condition: 作業ツリーの `vscode/` を、`node_modules/`・`.vscode-test/`・`out/`・`dist/`・`media/` を除外して一時フォルダに複製し（`node_modules/` はシンボリックリンク）、`tests` が `false` で呼ぶ
         mock: なし（一時フォルダ）
-        expected: '`dist/extension.cjs` が `require("vscode")` と `var self = globalThis;` を含み、`dist/esbuild.wasm` があり、`media/` の JS が `preview.js` の 1 つだけで `axe-core` を含まず、`media/preview.css` があり、`out/` と `media/test/` が無い'
+        expected: '`dist/extension.cjs` が `require("vscode")` と、`self` を `globalThis` にする宣言（esbuild が名前に数字を付けた `var self{数字} = globalThis;`）を含み、`dist/esbuild.wasm` があり、`media/` の JS が `preview.js` の 1 つだけで `axe-core` を含まず、`media/preview.css` があり、`out/` と `media/test/` が無い'
       - name: test_build_extension_when_tests
         case: 正常
         summary: 結合テストのビルドでは axe を media/test に複写する
