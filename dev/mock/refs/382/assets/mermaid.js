@@ -168,6 +168,9 @@ const warningHtml = (message) => `
     <p>mermaid の図を描けません（${escapeHtml(message)}）。コードブロックのまま表示しています。</p>
   </div>`;
 
+/** リサイズハンドルで変えられる高さの下限（px。図の枠の部品のモックと同じ値） */
+const RESIZE_MIN_PX = 120;
+
 let renderCount = 0;
 
 /** 1 つのコードブロックを描く。解釈できないときは書き方の警告とコードブロックにする */
@@ -186,6 +189,12 @@ const drawOne = async (block) => {
     block.hidden = true;
     holder.innerHTML = `<figure class="mdmark-diagram" data-kind="mermaid">${frameHtml(id, title ?? kindName(body), svg)}</figure>`;
     const drawn = holder.querySelector("svg[id]");
+    // リサイズハンドル: 今の高さと、変えられる高さの下限・上限を伝える
+    const viewport = holder.querySelector(".mdmark-diagram-viewport");
+    const handle = holder.querySelector(".mdmark-diagram-resize");
+    handle.setAttribute("aria-valuemin", String(RESIZE_MIN_PX));
+    handle.setAttribute("aria-valuemax", String(Math.max(RESIZE_MIN_PX, Math.round(viewport.scrollHeight))));
+    handle.setAttribute("aria-valuenow", String(Math.round(viewport.offsetHeight)));
     if (block.dataset.mockActor !== "mermaid") replaceActors(drawn);
   } catch (error) {
     // mermaid が文書の中に残すエラーの図を消す
