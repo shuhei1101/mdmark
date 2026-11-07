@@ -414,7 +414,7 @@ test("test_normal_when_aliases", async () => {
       "glossary.yaml": glossary("Markdown を HTML にすること"),
       "guide.md": ALIAS_MARKDOWN,
       "plain/mdmark.config.yaml": "# エイリアスを持たない設定\n",
-      "plain/plain.md": ALIAS_MARKDOWN,
+      "plain/plain.md": "# 素の文書\n\nレンダリングの段落\n",
     },
   });
   await session.openFile("guide.md");
@@ -434,7 +434,7 @@ test("test_normal_when_aliases", async () => {
   await session.openFile("plain/plain.md");
   await session.openPreviewWithShortcut();
   // 検証
-  const plain = await session.frameWith(".mdmark h1");
+  const plain = await session.frameWith('.mdmark h1:has-text("素の文書")');
   await expect(plain.getByText("レンダリングの段落")).toBeVisible();
   await expect(plain.locator(".mdmark-term")).toHaveCount(0);
 });
