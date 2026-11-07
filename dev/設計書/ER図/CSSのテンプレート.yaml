@@ -1,6 +1,6 @@
 title: "ER 図: CSSのテンプレート"
 lead: 端末の設定のフォルダに置く CSS のテンプレートの索引。行ごとに名前・CSS のファイル名・説明・タグを持つ。
-overview: 正本は、端末の設定のファイルと同じフォルダの `templates/css/templates.yaml`（YAML の 1 ファイル）。最上位は `schema`（索引のバージョン。整数で今は `1`、必須）と `templates`（行の並び、必須）の 2 つのキーを持ち、ほかのキーを拒む。CSS は同じフォルダに `{name}.css` で置く。スキーマの正は `schemas/mdmark.templates.schema.json`。MCP の `add_template` が書き、`list_templates`・`apply_template` が読む
+overview: 正本は、端末の設定のファイルと同じフォルダの `templates/css/templates.yaml`（YAML の 1 ファイル）。最上位は `schema`（索引のバージョン。整数で今は `1`、必須）と `templates`（行の並び、必須）の 2 つのキーを持ち、ほかのキーを拒む。CSS は同じフォルダの、行の `file` のファイル名で置く。スキーマの正は `schemas/mdmark.templates.schema.json`。MCP の `add_template` が書き、`list_templates`・`apply_template` が読む
 tables:
   - name: templates
     title: テンプレートの行
@@ -23,8 +23,9 @@ tables:
         title: CSS のファイル名
         type: string
         not_null: true
-        check: '`{name}.css`。`/` と `..` を含まない'
-        description: テンプレートのフォルダの直下の CSS のファイル名
+        check: '`.css` で終わるファイル名。`/` と `..` を含まない'
+        description: テンプレートのフォルダの直下の CSS のファイル名。`list_templates`・`apply_template` はこの値で CSS を読む
+        notes: '`add_template` は `{name}.css` を記載する（名前と違うファイル名は、手で索引を書いたときだけ）'
         example: brand.css
       - name: description
         title: 説明

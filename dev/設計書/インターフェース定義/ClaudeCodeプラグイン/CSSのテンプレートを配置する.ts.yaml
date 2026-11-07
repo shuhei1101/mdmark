@@ -40,8 +40,8 @@ response:
     type: string
     description: 配置した CSS の絶対パス（`{配置先}/{name}.css`）
   - name: theme
-    type: string
-    description: 設定の `theme` に記載する値。最も近い `mdmark.config.yaml` のフォルダからの相対パスを `./` で始めたもの。設定ファイルが無ければ `path`
+    type: string | undefined
+    description: 設定の `theme` に記載する値。基準の設定ファイル（制約『基準の設定ファイル』）のフォルダから `path` への相対パスで、`./` か `../` で始まる。基準の設定ファイルが無ければ返さない
   - name: replaced
     type: boolean
     description: 配置先の同じ名前のファイルを置き換えたか
@@ -59,7 +59,7 @@ exceptions:
     condition: 配置先に `{name}.css` があり、中身がテンプレートと違い、`overwrite` が `true` でない
     notes: 内容の文に、配置先のパスと、`overwrite` を `true` にすれば置き換えられることを書く。配置先を書き換えない
   - name: ツールのエラー（配置先の設定ファイルが無い）
-    condition: '`dir` を省き、`project_dir` とその上のフォルダに `mdmark.config.yaml` が無い'
+    condition: '`dir` を省き、`project_dir` とその上のフォルダに `mdmark.config.yaml` が無い（`dir` を渡したときは、基準の設定ファイルが無くても配置し、`theme` を返さない）'
     notes: 内容の文に、設定ファイルが無いことと、`dir` を渡すか `mdmark init` で設定ファイルを置けることを書く
   - name: ツールのエラー（配置先が無い）
     condition: '`dir` のフォルダが無い'
@@ -75,8 +75,8 @@ constraints:
   - item: テンプレートのフォルダと索引
     constraint: '`list_templates` と同じ'
     decided_by: dev/設計書/インターフェース定義/ClaudeCodeプラグイン/CSSのテンプレートの一覧を返す.ts#constraints[テンプレートのフォルダ]
-  - item: 最も近い設定ファイル
-    constraint: '`project_dir` から上へ探して最初に見つかった `mdmark.config.yaml`（`loadLayeredConfig` の `nearest` と同じ探し方）'
+  - item: 基準の設定ファイル
+    constraint: '`dir` を渡したときは `dir` から、省いたときは `project_dir` から上へ探して最初に見つかった `mdmark.config.yaml`（`loadLayeredConfig` の `nearest` と同じ探し方）。`dir` を省いたときの配置先はこのファイルのフォルダ'
     decided_by: dev/設計書/インターフェース定義/ライブラリ本体/設定を重ねて読む.ts#response[nearest]
   - item: 設定ファイル
     constraint: 設定の `theme` を書き換えない。`theme` に記載するのは呼んだ側
@@ -128,6 +128,28 @@ flows:
       - '`/work/brand.css` がテンプレートと同じ中身'
       - '`replaced` が `true`'
     test: test_normal_when_overwriting
+  - name: 正常系（dir を渡す）
+    summary: 渡したフォルダへ配置し、`theme` を上の設定ファイルのフォルダからの相対パスにする
+    setup:
+      - name: 端末の設定
+        description: 一時フォルダの `settings.yaml`。常駐サーバーを `MDMARK_CONFIG` でこのファイルを指して起動する。正常系と同じテンプレートのフォルダ
+      - name: 作業のフォルダ
+        description: '正常系と同じ `/work/mdmark.config.yaml` と、その下の空のフォルダ `/work/styles/`。`project_dir` は `/work/docs`'
+      - name: Mock
+        description: Claude Code の代わりに、起動した常駐サーバーへ HTTP でつなぐ MCP のクライアント。`project_dir` に作業のフォルダの絶対パスを入れて呼ぶ
+    flow: |-
+      sequenceDiagram
+        participant C as Claude Code
+        participant S as MCP サーバー
+        participant F as 作業のフォルダ
+        C->>S: apply_template（name: brand・dir: ../styles）
+        S->>F: /work/styles から上へ mdmark.config.yaml を探し、/work/styles/brand.css を書く
+        S-->>C: path・theme・replaced
+    expected:
+      - '`/work/styles/brand.css` がテンプレートと同じ中身'
+      - '`path` が `/work/styles/brand.css`、`theme` が `./styles/brand.css`'
+      - '`/work/brand.css` が作られていない'
+    test: test_normal_when_dir_given
   - name: 異常系（配置先に同じ名前の CSS がある・ツールのエラー）
     summary: '`overwrite` なしで中身の違う同じ名前のファイルがあれば、書き換えずにエラーにする'
     setup:

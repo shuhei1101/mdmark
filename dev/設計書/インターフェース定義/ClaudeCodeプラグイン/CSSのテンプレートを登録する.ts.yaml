@@ -88,7 +88,7 @@ constraints:
   - item: CSS のファイル名
     constraint: テンプレートのフォルダの CSS は `{name}.css`。索引の `file` にこの名前を記載する
   - item: 書き込みの順
-    constraint: 書き込む索引をスキーマで検査してから、CSS を書き、索引を書く。検査に通らなければ何も書かない
+    constraint: 書き込む索引をスキーマで検査してから、CSS を書き、索引を書く。検査に通らなければ何も書かない。索引は同じフォルダの一時ファイルに書いてから rename で置き換える。索引の書き込みに失敗したら、書いた CSS を消し（`overwrite` のときは元の中身に戻し）、エラーにする
   - item: 索引の並び
     constraint: 新しい名前は末尾に追加する。`overwrite` で置き換える行は元の位置のまま
 flows:
