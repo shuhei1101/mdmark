@@ -190,6 +190,20 @@ settings:
     visibility: user
     introduced:
       pr: 166
+  - key: labels
+    title: 部品の文言（拡張機能が渡す）
+    file: mdmark.config.yaml
+    type: Record<string, unknown>
+    required: false
+    default: なし（`mount` に渡さず mdmark の既定の文言で描く）
+    description: 拡張機能は値がマップのときだけ、書いた値をそのまま `mount` の `opts.config.labels` に渡す。プレビューと書き出した HTML の操作できる部品の今の値をコピーするボタンの文言になる
+    reload: immediate
+    refs:
+      - dev/設計書/設定/ライブラリ本体#settings[labels.paramCopy]
+    status: planned
+    visibility: user
+    introduced:
+      pr: 381
   - key: mdmark.colorTheme
     title: プレビューと書き出しのテーマ
     file: settings.json
