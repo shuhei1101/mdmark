@@ -1,0 +1,1 @@
+# alias-inject v0.3.0 のエイリアスの元の行のスキーマ（行の alias_type・列名の metadata）を取り込む
