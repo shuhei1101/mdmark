@@ -509,3 +509,123 @@ test("test_normal_when_parent_config_exists", async ({
   );
   expect(await readFile(settings, "utf8")).toBe(settingsText);
 });
+
+/** リポジトリの `migrations/next/` の手順とスクリプトを、`v0.5.0` の手順として置くパッケージのファイル */
+async function nextMigrationFiles(): Promise<Record<string, string>> {
+  return migrationFiles({
+    stepsV050: await readFile(
+      join(REPO_ROOT, "migrations", "next", "steps.yaml"),
+      "utf8",
+    ),
+    extra: {
+      "migrations/v0.5.0/alias-rows.mjs": await readFile(
+        join(REPO_ROOT, "migrations", "next", "alias-rows.mjs"),
+        "utf8",
+      ),
+    },
+  });
+}
+
+/** v0.2.0 の構造のエイリアスの元の行を書き足した、手元の版が古い設定 */
+function configWithAliases(rows: string[]): string {
+  return `${OLD_CONFIG}${["aliases:", ...rows, ""].join("\n")}`;
+}
+
+// v0.2.0 の構造のエイリアスの元の行を、移行の手順で v0.3.0 の構造へ書き換える（正常シナリオ（エイリアスの元の行を新しい構造へ書き換える））
+test("test_normal_when_aliases_rows", async ({ package050, tempDir }) => {
+  // 準備
+  await setMigrations(package050, await nextMigrationFiles());
+  const dir = await createWork(
+    tempDir,
+    configWithAliases([
+      "  - id: terms",
+      "    paths: [aliases/terms.yaml]",
+      "    records: terms",
+      "    metadata:",
+      "      alias_type: { type: custom, value: term }",
+      "      name: { type: ref, field: term }",
+      "      description: { type: ref, field: meaning }",
+      "  - id: commands",
+      "    paths: [aliases/commands/*.yaml]",
+      "    metadata:",
+      "      alias_type: { type: ref, field: alias_type }",
+      "  - id: tests",
+      "    paths: [aliases/tests.yaml]",
+      "    metadata:",
+      "      alias_type: { type: custom, value: command }",
+      "      cwd: { type: custom, value: リポジトリの直下 }",
+    ]),
+  );
+  await writeFiles(dir, {
+    "aliases/terms.yaml": [
+      "terms:",
+      "  - id: ws",
+      "    term: ワークスペース",
+      "    meaning: 話し合いの記録を置くフォルダ",
+      "",
+    ].join("\n"),
+    "aliases/commands/unit-test.yaml":
+      "alias_type: command\nid: unit-test\nname: 単体テスト\ncommand: npm run test:unit\n",
+    "aliases/commands/build.yaml":
+      "alias_type: command\nid: build\nname: ビルド\ncommand: npm run build\n",
+    "aliases/tests.yaml": "id: e2e\nname: E2E\ncommand: npm run test:e2e\n",
+  });
+  // 実行
+  const result = await runCli(package050, ["upgrade", "--yes"], dir);
+  // 検証
+  expect(result.code).toBe(0);
+  const config = parse(
+    await readFile(join(dir, "mdmark.config.yaml"), "utf8"),
+  ) as { version: string; aliases: Record<string, unknown>[] };
+  expect(config.aliases[0]).toMatchObject({
+    alias_type: "term",
+    metadata: { name: "term", description: "meaning" },
+  });
+  expect(config.aliases[1]).toMatchObject({ alias_type: "command" });
+  expect(config.aliases[1]).not.toHaveProperty("metadata");
+  expect(config.aliases[2]).toMatchObject({ alias_type: "command" });
+  expect(config.aliases[2]).not.toHaveProperty("metadata");
+  expect(config.version).toBe("v0.5.0");
+  const lines = linesOf(result.stdout);
+  expect(
+    lines.some(
+      (line) =>
+        line.includes("tests") &&
+        line.includes("cwd") &&
+        line.includes("リポジトリの直下"),
+    ),
+  ).toBe(true);
+});
+
+// 種類が 1 つに決まらないエイリアスの元の行があると、手順が失敗して写しから戻し、行を分ける直し方を出す（異常シナリオ（エイリアスの元の行の種類が 1 つに決まらない））
+test("test_error_when_aliases_row_mixed_types", async ({
+  package050,
+  tempDir,
+}) => {
+  // 準備
+  await setMigrations(package050, await nextMigrationFiles());
+  const config = configWithAliases([
+    "  - id: mixed",
+    "    paths: [aliases/mixed/*.yaml]",
+    "    metadata:",
+    "      alias_type: { type: ref, field: alias_type }",
+  ]);
+  const dir = await createWork(tempDir, config);
+  await writeFiles(dir, {
+    "aliases/mixed/a.yaml":
+      "alias_type: term\nid: ws\nname: ワークスペース\ndescription: 説明\n",
+    "aliases/mixed/b.yaml":
+      "alias_type: command\nid: build\nname: ビルド\ncommand: npm run build\n",
+  });
+  // 実行
+  const result = await runCli(package050, ["upgrade", "--yes"], dir);
+  // 検証
+  expect(result.code).not.toBe(0);
+  expect(result.stderr).toContain("mixed");
+  expect(result.stderr).toContain("term");
+  expect(result.stderr).toContain("command");
+  expect(result.stderr).toContain("行を分け");
+  const work = await readWork(dir);
+  expect(work.config).toBe(config);
+  expect(parse(work.config).version).toBe("v0.3.0");
+});
