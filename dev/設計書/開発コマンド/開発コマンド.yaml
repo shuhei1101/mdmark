@@ -34,7 +34,7 @@ categories:
       ```bash
       npm --prefix vscode ci
       ```
-    effects: '`node_modules/` を `package-lock.json` のとおりに作り直す。lefthook の package の postinstall が、`lefthook install` で全ての worktree が共有する `.git/hooks` に Git フックを入れる（`LEFTHOOK=0` を付けるとフックを入れない）。`npm ci --prefix tools/eslint` は `tools/eslint/node_modules/` を作り直す（無いままでも `npm run lint:eslint` が起動の前に入れる）'
+    effects: '`node_modules/` を `package-lock.json` のとおりに作り直す。lefthook の package の postinstall が、`lefthook install` で全ての worktree が共有する `.git/hooks` に Git フックを入れる（`CI` を付けるとフックを入れない。`LEFTHOOK` に 0 以外の値を付けると `CI` でも入れる）。`npm ci --prefix tools/eslint` は `tools/eslint/node_modules/` を作り直す（無いままでも `npm run lint:eslint` が起動の前に入れる）'
     verification:
       state: 済
       date: '2026-10-13'
