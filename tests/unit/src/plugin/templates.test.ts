@@ -166,7 +166,7 @@ test("test_read_templates_index_when_unreadable", async () => {
   const { CliError } = await loadErrors();
   const dir = await createTempDir();
   await writeFiles(dir, {
-    "templates.yaml": "schema: 1\ntemplates:\n  - { name: brand\n",
+    "templates.yaml": "schema: 1\ntemplates:\ntags: [a, b}\n",
   });
   // 実行
   const reading = readTemplatesIndex(dir);
