@@ -102,6 +102,30 @@ flows:
       - 書き出した HTML に埋めた `config` の `colorTheme` が `theme-slate`
       - 開いた HTML で、描く先の要素の地の色の計算値が theme-slate の明るい配色の `--mdmark-color-bg` の値
     test: test_normal_when_color_theme_selected
+  - name: 正常系（相対パスの外部ライブラリを埋める）
+    summary: 相対パスの `libraries` と `html-scripts.url` を `data:` の URL で埋め、Chromium で file:// で開いて描く
+    setup:
+      - name: 手元のライブラリを指すワークスペース
+        description: '`mdmark.config.yaml` の `libraries` に、`test-lib` として同じフォルダの別のファイルを import する手元のモジュールと、`unused-lib` として目印の文字列を持つモジュールを相対パスで書き、`features.html-scripts: true` と `html-scripts.url` に変換のライブラリの手元のコピーを相対パスで書く。Markdown は `test-lib` のマーカーと `ts` の範囲を持ち、`unused-lib` のマーカーを持たない'
+      - name: Mock
+        description: 正常系と同じ。書き出した HTML は Playwright の Chromium で file:// で開き、要求を記録する
+    flow: |-
+      sequenceDiagram
+        participant U as 文書を書く人
+        participant EX as 拡張機能
+        participant BR as Chromium
+        U->>EX: mdmark.exportHtml
+        EX->>EX: test-lib と変換のライブラリを esbuild-wasm でまとめる
+        EX->>EX: data: の URL を config に置いた docs/guide.html を書く
+        U->>BR: docs/guide.html を file:// で開く
+        BR-->>U: test-lib のマーカーと範囲のスクリプトを描いた文書
+    expected:
+      - 書き出した HTML に埋めた `config.libraries["test-lib"]` と `config["html-scripts"].url` が `data:text/javascript` で始まり、`config.libraries` に `unused-lib` が無い
+      - 書き出した HTML の `data:` の URL を復号した中に、`unused-lib` の目印の文字列が無い
+      - 開いた HTML で、`test-lib` のマーカーの場所がそのライブラリで描かれ、知らせの枠（`.mdmark-embed`）が無い
+      - 開いた HTML で、範囲の `ts` が書いた結果が範囲の要素に出る
+      - 開いている間に、書き出した HTML 以外の `file:` の URL への要求が記録されない
+    test: test_normal_when_relative_libraries
 lead: 開いている Markdown を、jsDelivr の配布物を読んで `mount` で描く 1 つの HTML に書き出し、書き出したパスを通知で知らせる。
 idempotent: true
 side_effects: 書き出す先に `{Markdown の名前}.html` を書く（あれば上書きする）。`mdmark.version` が `latest` のときはタグ一覧を 1 回取る。Markdown は書き換えない
@@ -135,10 +159,13 @@ constraints:
   - item: 書き出す中身
     constraint: '`TextDocument.getText()` の全文（保存していない書き換えを含む）を、`<script type="application/json">` に JSON で埋める（JSON の中の `<` は、JSON の Unicode エスケープであるバックスラッシュ・`u`・`003c` の 6 文字に置き換え、本文の `</script>` で `script` 要素が閉じないようにする）。版はプレビューを開く.ts の制約「バージョンの決め方」で決め、`<link>` と `<script type="module">` でその版の jsDelivr の `dist/index.css`・`dist/index.js` を読み、`mount(document.querySelector("main"), { markdown, config })` を呼ぶ'
   - item: 設定と相対パス
-    constraint: '`config` はプレビューを描き直す.ts の制約「設定の取り出し方」と同じ。`colorTheme` は `mdmark.colorTheme` が空でないときはその値で上書きする（プレビューを描き直す.ts の制約「送る中身」と同じ）。重ねた設定はインターフェース定義『設定を重ねて読む』を `purpose: export` で呼んで得る。`libraries` と `html-scripts.url` の相対パスは、その値を書いた設定ファイルのフォルダから解決した `file:` の URL にする。`theme` の CSS は HTML の `<style>` に埋め、`extensions` のモジュールは、インターフェース定義『文書をHTMLに書き出す』の制約「束ねるスクリプト」と同じ引数で、拡張機能の中では esbuild-wasm で束ねて HTML に埋め（`.ts` も読む。束ねられない拡張は飛ばして書き出す）、`mount` の前に登録する（`file:` のページから `file:` のモジュールを `import()` すると Chromium 系のブラウザが読まないため）。HTML に `<base href="{Markdown のフォルダの file: の URL}/">` を置き、本文の相対パスの画像とリンクを Markdown のフォルダから解決する'
-    notes: ブラウザは `file:` のページから `file:` の ES モジュールを読まないため、相対パスの `libraries` の印と、相対パスの `html-scripts.url` の文書の範囲の `ts`・`js` は mdmark が知らせの枠にする。`http:`・`https:` の `libraries` と `html-scripts.url` は読める
+    constraint: '`config` はプレビューを描き直す.ts の制約「設定の取り出し方」と同じ。`colorTheme` は `mdmark.colorTheme` が空でないときはその値で上書きする（プレビューを描き直す.ts の制約「送る中身」と同じ）。重ねた設定はインターフェース定義『設定を重ねて読む』を `purpose: export` で呼んで得る。`libraries` と `html-scripts.url` の相対パスは、その値を書いた設定ファイルのフォルダから解決し、制約「埋めるライブラリ」のとおり HTML に埋める。`theme` の CSS は HTML の `<style>` に埋め、`extensions` のモジュールは、インターフェース定義『文書をHTMLに書き出す』の制約「束ねるスクリプト」と同じ引数で、拡張機能の中では esbuild-wasm で束ねて HTML に埋め（`.ts` も読む。束ねられない拡張は飛ばして書き出す）、`mount` の前に登録する（`file:` のページから `file:` のモジュールを `import()` すると Chromium 系のブラウザが読まないため）。HTML に `<base href="{Markdown のフォルダの file: の URL}/">` を置き、本文の相対パスの画像とリンクを Markdown のフォルダから解決する'
+    notes: '`http:`・`https:` の `libraries` と `html-scripts.url` は URL のまま読む'
   - item: 通信
     constraint: 書き出した HTML は、開くときに jsDelivr へ届く必要がある。配布物を HTML に埋めない
     notes: 要件.md の確認ログ「書き出す HTML の作り方」。外へ要求しない 1 枚の HTML は CLI の `mdmark export` が作る
   - item: 通知
     constraint: 書き出せたら `showInformationMessage` で書き出したパスと「ブラウザで開く」のボタンを出し、押されたら `env.openExternal` で開く。文言は画面設計で決める
+  - item: 埋めるライブラリ
+    constraint: 相対パスの `libraries` は、文書にマーカーがある名前のモジュールだけを、相対パスの `html-scripts.url` は、文書に `ts`・`js` の範囲があり重ねた設定と文書のマーカーで `html-scripts` がオンのときだけ変換のライブラリを、`extensions` と同じく esbuild-wasm で import する先も含めて 1 つの ES モジュールにまとめ、`data:text/javascript` の URL にして `config` のそのキーの値に置く。文書にマーカー・範囲が無い相対パスの値は `config` から外す。まとめられないモジュールは埋めず、出力チャネルに警告を記録して書き出しを続ける（開いたときそのマーカー・範囲に mdmark が知らせの枠を出す）
+    notes: Chromium 系のブラウザは `file:` のページから `file:` の ES モジュールを動的 `import()` で読まないため。変換のライブラリは範囲を変換して埋めずにそのまま埋め、配布物の `mount` の公開の引数を変えない
