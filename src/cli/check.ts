@@ -3,7 +3,12 @@ import { homedir } from "node:os";
 import { basename, dirname, join, relative, resolve, sep } from "node:path";
 import { build } from "esbuild";
 import { bundleModule } from "../bundle-module.ts";
-import { COLOR_THEMES, MARK_NAME_PATTERN, resolveConfig } from "../config.ts";
+import {
+  COLOR_SCHEMES,
+  COLOR_THEMES,
+  MARK_NAME_PATTERN,
+  resolveConfig,
+} from "../config.ts";
 import { displayConfigPath, relativizeConfigPaths } from "../config-files.ts";
 import {
   checkFlowLayout,
@@ -45,6 +50,7 @@ export type CheckIssue = {
   kind:
     | "schema"
     | "unknown_color_theme"
+    | "unknown_color_scheme"
     | "no_documents"
     | "unknown_mark"
     | "missing_file"
@@ -319,6 +325,22 @@ function checkColorTheme(config: CliConfig, file: string): CheckIssue[] {
   ];
 }
 
+/** 設定の `colorScheme` が書ける値に無いときの、`unknown_color_scheme` のずれを返す */
+function checkColorScheme(config: CliConfig, file: string): CheckIssue[] {
+  const value = config.colorScheme;
+  if (value === undefined || COLOR_SCHEMES.some((scheme) => scheme === value)) {
+    return [];
+  }
+  return [
+    {
+      file,
+      where: "colorScheme",
+      kind: "unknown_color_scheme",
+      message: `不明な明暗 ${value} です。${COLOR_SCHEMES.join("・")} のいずれかに修正してください。`,
+    },
+  ];
+}
+
 /** 索引の点検に渡す文書と `build` の対象の文書を合わせ、設定ファイルのフォルダからの相対パスの順に、重なりを除いて読む */
 export async function collectCheckDocuments(
   loaded: LoadedConfig,
@@ -530,6 +552,7 @@ export async function collectCheckIssues(
     ...build.schema,
     ...extensions.issues,
     ...checkColorTheme(config, file),
+    ...checkColorScheme(config, file),
     ...build.noDocuments,
     ...indexIssues,
     ...aliasIssues,

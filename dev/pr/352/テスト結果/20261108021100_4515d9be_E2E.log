@@ -1,0 +1,168 @@
+# 4515d9be（E2E は 738c5eb5 と同じ内容）で、追加した E2E を Chromium のプロジェクトで回した結果。VS Code の 2 件は拡張機能のビルドが #375 で失敗する
+$ npx playwright test --project=chromium tests/e2e/単一ユースケース/ページの設定を文書で指定する.spec.ts tests/e2e/単一ユースケース/リンクをカードの格子に並べる.spec.ts
+- Resolving version...
+✔ Validated version: 1.141.0
+✔ Found existing install in /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-render-page-settings-and-cards-markers/vscode/.vscode-test/vscode-linux-x64-1.141.0
+
+Running 13 tests using 2 workers
+
+  ✓   2 [chromium] › tests/e2e/単一ユースケース/ページの設定を文書で指定する.spec.ts:72:1 › test_normal (282ms)
+  ✓   1 [chromium] › tests/e2e/単一ユースケース/リンクをカードの格子に並べる.spec.ts:87:1 › test_normal (319ms)
+  ✓   3 [chromium] › tests/e2e/単一ユースケース/ページの設定を文書で指定する.spec.ts:88:1 › test_normal_when_config_default (163ms)
+  ✓   4 [chromium] › tests/e2e/単一ユースケース/リンクをカードの格子に並べる.spec.ts:134:1 › test_normal_when_narrow (200ms)
+  ✓   5 [chromium] › tests/e2e/単一ユースケース/ページの設定を文書で指定する.spec.ts:103:1 › test_normal_when_marker_overrides_config (237ms)
+  ✓   6 [chromium] › tests/e2e/単一ユースケース/リンクをカードの格子に並べる.spec.ts:164:1 › test_normal_when_item_without_link (163ms)
+  ✓   7 [chromium] › tests/e2e/単一ユースケース/ページの設定を文書で指定する.spec.ts:123:1 › test_normal_when_auto (134ms)
+  ✓   8 [chromium] › tests/e2e/単一ユースケース/リンクをカードの格子に並べる.spec.ts:193:1 › test_normal_when_disabled (165ms)
+  ✓   9 [chromium] › tests/e2e/単一ユースケース/ページの設定を文書で指定する.spec.ts:138:1 › test_normal_when_updated (143ms)
+  ✓  10 [chromium] › tests/e2e/単一ユースケース/リンクをカードの格子に並べる.spec.ts:211:1 › test_error_when_not_list (160ms)
+  ✓  11 [chromium] › tests/e2e/単一ユースケース/ページの設定を文書で指定する.spec.ts:154:1 › test_normal_when_printed (181ms)
+  ✓  12 [chromium] › tests/e2e/単一ユースケース/ページの設定を文書で指定する.spec.ts:171:1 › test_error_when_unknown_key_or_value (189ms)
+  ✓  13 [chromium] › tests/e2e/単一ユースケース/ページの設定を文書で指定する.spec.ts:208:1 › test_error_when_not_at_top (156ms)
+
+  13 passed (54.4s)
+exit=0
+
+$ xvfb-run -a npx playwright test --project=chromium -g (test_normal_when_unknown_color_scheme|test_normal_when_page_marker|test_normal_when_page_settings_per_document|test_normal_when_document_marker|test_normal_when_config_scheme)$ tests/e2e/単一ユースケース/設定と索引を点検する.spec.ts tests/e2e/単一ユースケース/文書をHTMLに書き出す.spec.ts tests/e2e/単一ユースケース/まとめたHTMLで文書を行き来する.spec.ts tests/e2e/単一ユースケース/プレビューをVSCodeのテーマに合わせる.spec.ts
+- Resolving version...
+✔ Validated version: 1.141.0
+✔ Found existing install in /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-render-page-settings-and-cards-markers/vscode/.vscode-test/vscode-linux-x64-1.141.0
+
+Running 5 tests using 4 workers
+
+  ✘  4 [chromium] › tests/e2e/単一ユースケース/プレビューをVSCodeのテーマに合わせる.spec.ts:144:1 › test_normal_when_document_marker (2ms)
+  -  5 [chromium] › tests/e2e/単一ユースケース/プレビューをVSCodeのテーマに合わせる.spec.ts:164:1 › test_normal_when_config_scheme
+  ✓  1 [chromium] › tests/e2e/単一ユースケース/まとめたHTMLで文書を行き来する.spec.ts:75:1 › test_normal_when_page_settings_per_document (2.3s)
+  ✓  2 [chromium] › tests/e2e/単一ユースケース/設定と索引を点検する.spec.ts:336:1 › test_normal_when_unknown_color_scheme (4.4s)
+  ✓  3 [chromium] › tests/e2e/単一ユースケース/文書をHTMLに書き出す.spec.ts:379:1 › test_normal_when_page_marker (7.2s)
+
+
+  1) [chromium] › tests/e2e/単一ユースケース/プレビューをVSCodeのテーマに合わせる.spec.ts:144:1 › test_normal_when_document_marker 
+
+    Error: Build failed with 6 errors:
+    src/config-file.ts:9:7: ERROR: Could not resolve "../../src/config-files.ts"
+    src/config.ts:3:34: ERROR: Could not resolve "../../src/config-files.ts"
+    src/extension.ts:12:28: ERROR: Could not resolve "../../src/config-files.ts"
+    src/extensions-bundle.ts:9:7: ERROR: Could not resolve "../../src/bundle-module.ts"
+    src/preview/manager.ts:13:28: ERROR: Could not resolve "../../../src/config-files.ts"
+    ...
+        at failureErrorWithLog (/mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-render-page-settings-and-cards-markers/vscode/node_modules/esbuild/lib/main.js:1752:15)
+        at /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-render-page-settings-and-cards-markers/vscode/node_modules/esbuild/lib/main.js:1211:25
+        at /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-render-page-settings-and-cards-markers/vscode/node_modules/esbuild/lib/main.js:1163:52
+        at buildResponseToResult (/mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-render-page-settings-and-cards-markers/vscode/node_modules/esbuild/lib/main.js:1209:7)
+        at /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-render-page-settings-and-cards-markers/vscode/node_modules/esbuild/lib/main.js:1236:16
+        at responseCallbacks.<computed> (/mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-render-page-settings-and-cards-markers/vscode/node_modules/esbuild/lib/main.js:886:9)
+        at handleIncomingPacket (/mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-render-page-settings-and-cards-markers/vscode/node_modules/esbuild/lib/main.js:941:12)
+        at Socket.readFromStdout (/mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-render-page-settings-and-cards-markers/vscode/node_modules/esbuild/lib/main.js:864:7)
+
+    {
+      detail: undefined,
+      id: '',
+      location: {
+        column: 7,
+        file: 'src/config-file.ts',
+        length: 27,
+        line: 9,
+        lineText: '} from "../../src/config-files.ts";',
+        namespace: '',
+        suggestion: ''
+      },
+      notes: [],
+      pluginName: '',
+      text: 'Could not resolve "../../src/config-files.ts"'
+    }
+
+    {
+      detail: undefined,
+      id: '',
+      location: {
+        column: 34,
+        file: 'src/config.ts',
+        length: 27,
+        line: 3,
+        lineText: 'import { loadLayeredConfig } from "../../src/config-files.ts";',
+        namespace: '',
+        suggestion: ''
+      },
+      notes: [],
+      pluginName: '',
+      text: 'Could not resolve "../../src/config-files.ts"'
+    }
+
+    {
+      detail: undefined,
+      id: '',
+      location: {
+        column: 28,
+        file: 'src/extension.ts',
+        length: 27,
+        line: 12,
+        lineText: 'import { CONFIG_FILE } from "../../src/config-files.ts";',
+        namespace: '',
+        suggestion: ''
+      },
+      notes: [],
+      pluginName: '',
+      text: 'Could not resolve "../../src/config-files.ts"'
+    }
+
+    {
+      detail: undefined,
+      id: '',
+      location: {
+        column: 7,
+        file: 'src/extensions-bundle.ts',
+        length: 28,
+        line: 9,
+        lineText: '} from "../../src/bundle-module.ts";',
+        namespace: '',
+        suggestion: ''
+      },
+      notes: [],
+      pluginName: '',
+      text: 'Could not resolve "../../src/bundle-module.ts"'
+    }
+
+    {
+      detail: undefined,
+      id: '',
+      location: {
+        column: 28,
+        file: 'src/preview/manager.ts',
+        length: 30,
+        line: 13,
+        lineText: 'import { CONFIG_FILE } from "../../../src/config-files.ts";',
+        namespace: '',
+        suggestion: ''
+      },
+      notes: [],
+      pluginName: '',
+      text: 'Could not resolve "../../../src/config-files.ts"'
+    }
+
+    {
+      detail: undefined,
+      id: '',
+      location: {
+        column: 34,
+        file: 'src/preview/panel.ts',
+        length: 30,
+        line: 17,
+        lineText: 'import { displayConfigPath } from "../../../src/config-files.ts";',
+        namespace: '',
+        suggestion: ''
+      },
+      notes: [],
+      pluginName: '',
+      text: 'Could not resolve "../../../src/config-files.ts"'
+    }
+
+    Error Context: test-results/単一ユースケース-プレビューをVSCodeのテーマに-68588-normal-when-document-marker-chromium/error-context.md
+
+    Error Context: test-results/単一ユースケース-プレビューをVSCodeのテーマに-68588-normal-when-document-marker-chromium/error-context.md
+
+  1 failed
+    [chromium] › tests/e2e/単一ユースケース/プレビューをVSCodeのテーマに合わせる.spec.ts:144:1 › test_normal_when_document_marker 
+  1 did not run
+  3 passed (3.5m)
+exit=1

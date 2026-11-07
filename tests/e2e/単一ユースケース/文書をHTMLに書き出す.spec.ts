@@ -375,6 +375,46 @@ test("test_normal_when_theme_selected", async ({
   expect(opened.externalRequests()).toEqual([]);
 });
 
+// 文書の先頭の page のマーカーの明暗とテーマで、書き出した HTML を描く（正常シナリオ（文書のマーカーで明暗を指定する））
+test("test_normal_when_page_marker", async ({ builtRoot, tempDir, page }) => {
+  // 準備
+  const dir = await tempDir();
+  await writeFiles(dir, {
+    "mdmark.config.yaml": ["libraries:", "  chart: lib/chart.js", ""].join(
+      "\n",
+    ),
+    "lib/chart.js": CHART_SOURCE,
+    "guide.md": `<!-- page: scheme=dark theme=theme-paper -->\n\n${GUIDE}`,
+    "api.md": "# API\n",
+    "img/a.png": PNG_BYTES,
+  });
+  await page.emulateMedia({ colorScheme: "light" });
+  // 実行
+  const result = await runCli(
+    builtRoot,
+    ["export", "guide.md", "--out", "out/guide.html"],
+    dir,
+  );
+  // 検証
+  expect(result.code).toBe(0);
+  expect(existsSync(join(dir, "out", "guide.html"))).toBe(true);
+  const opened = await openStandalone(page, {
+    tempDir,
+    htmlFile: join(dir, "out", "guide.html"),
+  });
+  const article = page.locator("article.mdmark");
+  await expect(article.locator("h1")).toContainText("ガイド");
+  // theme-paper の暗い配色の地の色
+  await expect
+    .poll(() =>
+      article.evaluate((el) =>
+        getComputedStyle(el).getPropertyValue("--mdmark-color-bg").trim(),
+      ),
+    )
+    .toBe("#1c1915");
+  expect(opened.externalRequests()).toEqual([]);
+});
+
 // 画像を data URL で埋め、動画・音声を出力先のフォルダへコピーし、文書からの相対パスに無いファイルをアセットのルートで探す（正常シナリオ（画像・動画・音声を埋める））
 test("test_normal_when_media_embedded", async ({
   builtRoot,

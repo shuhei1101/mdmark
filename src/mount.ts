@@ -1,5 +1,6 @@
 import { checkCommentStore, type MdmarkCommentStore } from "./comments/spec.ts";
 import {
+  applyPageSettings,
   type MdmarkConfig,
   type ResolvedConfig,
   resolveConfig,
@@ -92,6 +93,12 @@ const ROOT_CLASS = "mdmark";
 
 /** 描く先の要素に、既定を当てた設定の `colorTheme` を値にして付ける属性。`src/index.css` は `:root:has()` でこの属性を見て、テーマの配色の値を `:root` に当てる */
 const COLOR_THEME_ATTRIBUTE = "data-mdmark-color-theme";
+
+/** 描く先の要素に付ける明暗の class。`src/index.css` の `mdmark-theme-light`・`mdmark-theme-dark` と同じ名前 */
+const COLOR_SCHEME_CLASSES = {
+  light: "mdmark-theme-light",
+  dark: "mdmark-theme-dark",
+} as const;
 
 /** 印刷の機能の名前 */
 const PRINT_FEATURE = "print";
@@ -232,6 +239,8 @@ export function mount(el: HTMLElement, opts: MountOptions): MountHandle {
   let detachContent: (() => void) | undefined;
   // 右側の目次の状態（`mount` ごとに 1 つ。描き直しでも保つ）
   const sideTocState: SideTocState = { open: false, pinned: false };
+  // 前の描画の右側の目次の出し方（出し方が変わったら目次の状態を戻す）
+  let lastTocMode: ResolvedConfig["sideToc"]["mode"] | undefined;
   // 色分けのライブラリのモジュールの控え（`mount` ごとに 1 つ。描き直しでは読み直さない）
   const syntaxModules = new Map<string, Promise<{ default?: unknown }>>();
   // 範囲のスクリプトの変換のライブラリの読み込みの控え（`mount` ごとに 1 つ）
@@ -294,8 +303,19 @@ export function mount(el: HTMLElement, opts: MountOptions): MountHandle {
         }),
       );
     }
+    // 文書の page の印を、既定を当てた設定に重ねてこの描画の設定にする
+    const drawn = applyPageSettings({ config, page: rendered.page });
     el.classList.add(ROOT_CLASS);
-    el.setAttribute(COLOR_THEME_ATTRIBUTE, config.colorTheme);
+    el.setAttribute(COLOR_THEME_ATTRIBUTE, drawn.colorTheme);
+    el.classList.remove(COLOR_SCHEME_CLASSES.light, COLOR_SCHEME_CLASSES.dark);
+    if (drawn.colorScheme !== "auto") {
+      el.classList.add(COLOR_SCHEME_CLASSES[drawn.colorScheme]);
+    }
+    if (lastTocMode !== undefined && lastTocMode !== drawn.sideToc.mode) {
+      sideTocState.open = false;
+      sideTocState.pinned = false;
+    }
+    lastTocMode = drawn.sideToc.mode;
     features = rendered.features;
     // 右側の目次を付けたときは、以降の操作と部品を本文の列に付ける
     let body = el;
@@ -303,7 +323,7 @@ export function mount(el: HTMLElement, opts: MountOptions): MountHandle {
     if (features["side-toc"] === true) {
       const sideToc = attachSideToc({
         el,
-        mode: config.sideToc.mode,
+        mode: drawn.sideToc.mode,
         sections: features.sections === true,
         state: sideTocState,
       });
@@ -452,7 +472,11 @@ export function mount(el: HTMLElement, opts: MountOptions): MountHandle {
       parts?.detach();
       detachPrint();
       el.innerHTML = "";
-      el.classList.remove(ROOT_CLASS);
+      el.classList.remove(
+        ROOT_CLASS,
+        COLOR_SCHEME_CLASSES.light,
+        COLOR_SCHEME_CLASSES.dark,
+      );
       el.removeAttribute(COLOR_THEME_ATTRIBUTE);
       if (mounted.get(el) === handle) {
         mounted.delete(el);

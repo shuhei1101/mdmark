@@ -4250,3 +4250,66 @@ test("test_normal_when_single_kinds", async () => {
   expect(html).not.toContain("mdmark-diagram-legend-item");
   expect(html).not.toContain("mdmark-diagram-legend-sample");
 });
+
+// page のマーカーを本文に出さず、cards の範囲のリストをカードの格子の HTML にする（正常系（ページの設定のマーカーとカードの格子））
+test("test_normal_when_page_marker_and_card_grid", async () => {
+  // 準備
+  const render = await loadRender();
+  const markdown = [
+    "<!-- page: scheme=dark toc=fixed -->",
+    "",
+    "# 目次",
+    "",
+    "<!-- cards -->",
+    "- `icon:book` [使い方](使い方/README.md)",
+    "  導入と使い方の手順",
+    "- https://example.com/docs",
+    "- 準備中",
+    "<!-- /cards -->",
+    "",
+  ].join("\n");
+  const middle = [
+    "最初の段落",
+    "",
+    "<!-- page: scheme=dark -->",
+    "",
+    "後ろの段落",
+    "",
+  ].join("\n");
+  // 実行
+  const html = render(markdown);
+  const middleHtml = render(middle);
+  // 検証
+  expect(html).not.toContain("page:");
+  expect(html).not.toContain("mdmark-syntax-warning");
+  const grid = innerHtml(html, '<ul class="mdmark-card-grid"');
+  const items = grid.split("<li").slice(1);
+  expect(items).toHaveLength(3);
+  expect(items[0]).toContain(
+    `<a class="mdmark-card-grid-item" href="${encodeURI("使い方/README.md")}"`,
+  );
+  expect(findTag(items[0] ?? "", "mdmark-card-grid-icon")).toContain(
+    'data-icon="book"',
+  );
+  expect(items[0]).toContain(
+    '<span class="mdmark-card-grid-title">使い方</span>',
+  );
+  expect(items[0]).toContain(
+    '<p class="mdmark-card-grid-desc">導入と使い方の手順</p>',
+  );
+  expect(items[1]).toContain(
+    '<span class="mdmark-card-grid-title">example.com/docs</span>',
+  );
+  expect(html).not.toMatch(/class="mdmark-card[ "]/);
+  expect(items[2]).toContain('<div class="mdmark-card-grid-item"');
+  expect(items[2]).toContain(
+    '<span class="mdmark-card-grid-title">準備中</span>',
+  );
+  expect(findTags(middleHtml, 'class="mdmark-syntax-warning"')).toHaveLength(1);
+  expect(middleHtml.indexOf("mdmark-syntax-warning")).toBeGreaterThan(
+    middleHtml.indexOf("最初の段落"),
+  );
+  expect(middleHtml.indexOf("mdmark-syntax-warning")).toBeLessThan(
+    middleHtml.indexOf("後ろの段落"),
+  );
+});
