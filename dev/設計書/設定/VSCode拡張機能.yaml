@@ -261,3 +261,18 @@ settings:
     visibility: user
     introduced:
       pr: 303
+  - key: aliases
+    title: エイリアスの元の行（拡張機能が読む）
+    file: mdmark.config.yaml
+    type: object[]
+    required: false
+    default: なし（エイリアスを渡さない）
+    description: プレビューで、重ねた設定の行の `paths` の YAML を CLI と同じく読んでエイリアスを作り、`mount` の `opts.aliases` に渡す。行の `paths` はその値を書いた設定ファイルのフォルダから解決する。使えない行・レコードは除き、出力チャネルに警告を書く。行の `paths` に当たった YAML を保存すると描き直す。書き出した HTML には渡さない
+    reload: immediate
+    refs:
+      - dev/設計書/設定/ライブラリ本体#settings[aliases]
+      - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを開く.ts#constraints[エイリアス]
+    status: planned
+    visibility: user
+    introduced:
+      pr: 378

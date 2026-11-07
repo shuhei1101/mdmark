@@ -21,6 +21,8 @@ export type Mdmark = {
       diffMode?: "blocks";
       /** 取り込む文書の表（前のバージョンは読まない） */
       includes?: Record<string, string>;
+      /** 設定の `aliases` から作ったエイリアス（前のバージョンは読まない） */
+      aliases?: unknown[];
     },
   ) => MountHandle;
   diffModes?: unknown;

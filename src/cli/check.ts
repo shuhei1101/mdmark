@@ -38,6 +38,7 @@ import { collectBuildDocuments, readIndexWithDocuments } from "./documents.ts";
 import { CliError, type CliIo } from "./errors.ts";
 import { changedPathsSince } from "./git.ts";
 import { collectIncludes, includeProblemMessage } from "./includes.ts";
+import { formatCheckIssue } from "./issues.ts";
 import { checkMarkdownSource } from "./markdown-check.ts";
 
 /** `mdmark check` が出すずれ 1 件 */
@@ -627,9 +628,7 @@ export async function runCheck(
         ...(options.base === undefined ? {} : { base: options.base }),
       });
   for (const issue of issues) {
-    const place =
-      issue.where === "" ? issue.file : `${issue.file}:${issue.where}`;
-    io.stdout(`${place}: ${issue.kind}: ${issue.message}`);
+    io.stdout(formatCheckIssue(issue));
   }
   io.stdout(`ずれ ${issues.length} 件`);
   return issues.length === 0 ? 0 : 1;

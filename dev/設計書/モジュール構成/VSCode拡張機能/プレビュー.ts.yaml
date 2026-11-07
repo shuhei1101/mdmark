@@ -282,7 +282,11 @@ classes:
       - name: watched
         type: string[]
         access: public
-        description: 見張るファイル（重ねた設定ファイル・`theme`・`extensions` と、書いた `mdmark.configPath` のファイル）。`PreviewManager` が張る
+        description: 見張るファイル（重ねた設定ファイル・`theme`・`extensions`・`aliases` の行の `paths` に当たった YAML と、書いた `mdmark.configPath` のファイル）。`PreviewManager` が張る
+      - name: aliases
+        type: MdmarkAlias[] | undefined
+        access: private
+        description: 最後に使ったエイリアス（`loadConfig` の `aliases`）。読めない設定ファイルがあるときは前に使ったエイリアスを残す
       - name: loaded
         type: '{ theme?: string; extensions: Array<{ path: string; hash: string; file?: string }> }'
         access: private
@@ -330,15 +334,18 @@ classes:
           - dev/設計書/モジュール構成/VSCode拡張機能/設定.ts#functions[resolveLibraries]
           - dev/設計書/モジュール構成/VSCode拡張機能/設定.ts#functions[resolveHtmlScripts]
           - dev/設計書/モジュール構成/ライブラリ本体/設定を重ねて読む.ts#functions[displayConfigPath]
+          - dev/設計書/モジュール構成/ライブラリ本体/CLI.ts#functions[formatCheckIssue]
         refs:
           - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを描き直す.ts#constraints[設定ファイルを読めないとき]
+          - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを開く.ts#constraints[エイリアス]
         process: |-
           1. 設定ファイルを読む（設定ファイルを読む。`purpose: preview`、`cwd` は Markdown のフォルダ、`baseDir` は Markdown を含むワークスペースのフォルダ、`env` は `process.env`、`home` は `os.homedir()`）
              - `readFile` が `ENOENT` 以外で失敗した場合、`config` を残して false を返す
                - `[error]` 設定ファイルを開けない（パス・誤り）
-          2. `files`・`theme`・`extensions` と、`configPath` を書いたときはそのファイルを `watched` に入れ、`nearest` を控える
+          2. `files`・`theme`・`extensions`・`aliasFiles` と、`configPath` を書いたときはそのファイルを `watched` に入れ、`nearest` を控える
           3. `problem` で分ける
-             - 無い場合、`libraries`・`html-scripts` を `asWebviewUri` で直して（libraries の URL を直す・html-scripts の URL を直す）`config` を替え、`configProblem` があったときだけ消して `configOk` を送る
+             - 無い場合、`libraries`・`html-scripts` を `asWebviewUri` で直して（libraries の URL を直す・html-scripts の URL を直す）`config` を替え、`aliases` を `loadConfig` の `aliases` に替え、`configProblem` があったときだけ消して `configOk` を送る
+               - `[warn]` エイリアスのずれ（`aliasIssues` の 1 件ずつ、ずれを 1 行にした値）
              - ある場合、前に使った `config` が無ければ同じく直して使い、あれば残す。`configProblem` に入れ、`{ type: "configError", path, line, settingKey }` を送る（`path` は設定ファイルのパスを表示の形にする。`base` はワークスペースのフォルダ、`home` は `os.homedir()`）
                - `[warn]` 設定ファイルを読めない（パス・行かキー・`message`）
           4. `problem` が無ければ true、あれば false を返す
@@ -354,7 +361,7 @@ classes:
       - name: renderNow
         title: 今すぐ送る
         kind: メソッド
-        summary: 待ちを消し、パネルが見えていて `ready` を受けていれば、その時点の `getText()` の全文・`config` をその時点の `mdmark.colorTheme` で上書きし（テーマの設定で上書きする）、`mdmark.preview.theme` が `light`・`dark` なら `colorScheme` を除いた設定（プレビューの配色の固定で明暗を外す）・`mdmark.preview.theme` で `render` を送る。差分のパネルでは `previous` に変更前の `getText()` の全文も入れる。見えていなければ送らない
+        summary: 待ちを消し、パネルが見えていて `ready` を受けていれば、その時点の `getText()` の全文・`config` をその時点の `mdmark.colorTheme` で上書きし（テーマの設定で上書きする）、`mdmark.preview.theme` が `light`・`dark` なら `colorScheme` を除いた設定（プレビューの配色の固定で明暗を外す）・`mdmark.preview.theme`・`aliases`（無いときは持たない）で `render` を送る。差分のパネルでは `previous` に変更前の `getText()` の全文も入れる。見えていなければ送らない
         returns:
           type: void
           description: '-'

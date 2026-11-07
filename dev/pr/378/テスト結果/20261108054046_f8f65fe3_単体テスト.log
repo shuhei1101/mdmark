@@ -1,0 +1,303 @@
+$ npm run test:unit
+
+> test:unit
+> vitest run --project 'unit*'
+
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/design-vscode-preview-aliases
+
+ ❯ |unit-browser (chromium)| tests/unit/vscode/src/webview/main.browser.test.tsx (1 test | 1 failed) 15453ms
+   × test_start_preview_when_no_root 15452ms
+ ❯ |unit-browser (chromium)| tests/unit/src/views/index.browser.test.ts (5 tests | 1 failed) 15367ms
+   × test_draw_view 15340ms
+ ❯ |unit-browser (chromium)| tests/unit/src/viewer/index.browser.test.ts (2 tests | 1 failed) 19813ms
+   × test_start_viewer 15289ms
+ ❯ |unit-browser (chromium)| tests/unit/src/viewer/bundle.browser.test.ts (5 tests | 1 failed) 19837ms
+   × test_start_bundle 15307ms
+ ❯ |unit-browser (chromium)| tests/unit/vscode/src/webview/features/preview/panel/panel-screen.browser.test.tsx (14 tests | 2 failed) 23908ms
+   × test_panel_screen_when_rendered 15338ms
+   × test_panel_screen_when_load_failed 4387ms
+ ❯ |unit| tests/unit/src/cli/backup.test.ts (4 tests | 1 failed) 30169ms
+   × test_take_backup_when_outside 30004ms
+ ❯ |unit| tests/unit/src/cli/config.test.ts (22 tests | 1 failed) 39295ms
+   × test_find_config_file_when_missing 30030ms
+ ❯ |unit| tests/unit/src/cli/upgrade.test.ts (15 tests | 1 failed) 40103ms
+   × test_write_config_version 30017ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 9 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit| tests/unit/src/cli/backup.test.ts > test_take_backup_when_outside
+Error: Test timed out in 30000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/unit/src/cli/backup.test.ts:59:1
+     57|
+     58| // 設定ファイルのフォルダの外のファイルは拒む（異常系）
+     59| test("test_take_backup_when_outside", async () => {
+       | ^
+     60|   // 準備
+     61|   const { takeBackup } = await loadModule();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/9]⎯
+
+ FAIL  |unit| tests/unit/src/cli/config.test.ts > test_find_config_file_when_missing
+Error: Test timed out in 30000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/unit/src/cli/config.test.ts:44:1
+     42|
+     43| // 見つからないと CliError を投げる（異常系）
+     44| test("test_find_config_file_when_missing", async () => {
+       | ^
+     45|   // 準備
+     46|   const { findConfigFile } = await loadModule();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/9]⎯
+
+ FAIL  |unit| tests/unit/src/cli/upgrade.test.ts > test_write_config_version
+Error: Test timed out in 30000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/unit/src/cli/upgrade.test.ts:105:1
+    103|
+    104| // ある version を書き換え、コメントとフロー形式の並びを残す（正常系）
+    105| test("test_write_config_version", async () => {
+       | ^
+    106|   // 準備
+    107|   const { writeConfigVersion } = await loadModule();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/9]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/viewer/bundle.browser.test.ts > test_start_bundle
+Error: Test timed out in 15000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/bundle.browser.test.ts/test_start_bundle.png
+
+ ❯ task node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=38e716a2:5128:43
+ ❯ Object.<anonymous> node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=38e716a2:5145:16
+ ❯ Object.<anonymous> node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=38e716a2:4935:28
+ ❯ chain node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=38e716a2:4336:14
+ ❯ tests/unit/src/viewer/bundle.browser.test.ts:39:1
+     37|
+     38| // URL が指す文書を描き、一覧で開いている文書を示す（正常系）
+     39| test("test_start_bundle", async () => {
+       | ^
+     40|   // 準備
+     41|   const { startBundle } = await loadBundle();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/9]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/viewer/index.browser.test.ts > test_start_viewer
+Error: Test timed out in 15000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/index.browser.test.ts/test_start_viewer.png
+
+ ❯ task node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=38e716a2:5128:43
+ ❯ Object.<anonymous> node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=38e716a2:5145:16
+ ❯ Object.<anonymous> node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=38e716a2:4935:28
+ ❯ chain node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=38e716a2:4336:14
+ ❯ tests/unit/src/viewer/index.browser.test.ts:14:1
+     12|
+     13| // document の中身を描く先の要素に描く（正常系）
+     14| test("test_start_viewer", async () => {
+       | ^
+     15|   // 準備
+     16|   const payload = {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/9]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/views/index.browser.test.ts > test_draw_view
+Error: Test timed out in 15000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/index.browser.test.ts/test_draw_view.png
+
+ ❯ task node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=38e716a2:5128:43
+ ❯ Object.<anonymous> node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=38e716a2:5145:16
+ ❯ Object.<anonymous> node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=38e716a2:4935:28
+ ❯ chain node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=38e716a2:4336:14
+ ❯ tests/unit/src/views/index.browser.test.ts:71:1
+     69|
+     70| // ボードで描き、切り替えで表形式に替える（正常系）
+     71| test("test_draw_view", async () => {
+       | ^
+     72|   // 準備
+     73|   const { drawView } = await loadViews();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/9]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/vscode/src/webview/main.browser.test.tsx > test_start_preview_when_no_root
+Error: Test timed out in 15000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/main.browser.test.tsx/test_start_preview_when_no_root.png
+
+ ❯ task node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=38e716a2:5128:43
+ ❯ Object.<anonymous> node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=38e716a2:5145:16
+ ❯ Object.<anonymous> node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=38e716a2:4935:28
+ ❯ chain node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=38e716a2:4336:14
+ ❯ tests/unit/vscode/src/webview/main.browser.test.tsx:11:1
+      9|
+     10| // 描く先を包む要素が無いページでは描かない（正常系）
+     11| test("test_start_preview_when_no_root", async () => {
+       | ^
+     12|   // 準備
+     13|   const acquire = vi.fn(() => ({ postMessage: vi.fn() }));
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/9]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/vscode/src/webview/features/preview/panel/panel-screen.browser.test.tsx > test_panel_screen_when_rendered
+Error: Test timed out in 15000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/panel-screen.browser.test.tsx/test_panel_screen_when_rendered.png
+
+ ❯ task node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=38e716a2:5128:43
+ ❯ Object.<anonymous> node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=38e716a2:5145:16
+ ❯ Object.<anonymous> node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=38e716a2:4935:28
+ ❯ Object.<anonymous> node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=38e716a2:5394:7
+ ❯ chain node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=38e716a2:4336:14
+ ❯ tests/unit/vscode/src/webview/features/preview/panel/panel-screen.browser.test.tsx:84:1
+     82|
+     83| // 配布物を読み終えたら ready を送り、render で描いて rendered を送る（正常系）
+     84| test("test_panel_screen_when_rendered", async () => {
+       | ^
+     85|   // 準備
+     86|   const { PanelScreen } = await loadScreen();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/9]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/vscode/src/webview/features/preview/panel/panel-screen.browser.test.tsx > test_panel_screen_when_load_failed
+AssertionError: expected [] to deeply equal [ { type: 'loadFailed', …(1) } ]
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/panel-screen.browser.test.tsx/test_panel_screen_when_load_failed.png
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- [[39m
+[32m-   {[39m
+[32m-     "reason": "offline",[39m
+[32m-     "type": "loadFailed",[39m
+[32m-   },[39m
+[32m- ][39m
+[31m+ [][39m
+
+ ❯ tests/unit/vscode/src/webview/features/preview/panel/panel-screen.browser.test.tsx:161:48
+    159|   // 検証
+    160|   await vi.waitFor(() => {
+    161|     expect(postedOf(api.posted, "loadFailed")).toEqual([
+       |                                                ^
+    162|       { type: "loadFailed", reason: "offline" },
+    163|     ]);
+ ❯ checkCallback node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/index.uwTEEBsB-Cm3Wu9lp.js?v=38e716a2:6076:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/9]⎯
+
+
+ Test Files  8 failed | 246 passed (254)
+      Tests  9 failed | 1740 passed (1749)
+   Start at  05:40:57
+   Duration  213.39s (worker 59%, tests 25%, import 14%, transform 2%)
+
+
+# 全件の実行でタイムアウトしたファイルを、他のセッションの負荷を避けて 1 ファイルずつ流し直した結果
+$ npx vitest run --project 'unit*' tests/unit/src/viewer/bundle.browser.test.ts
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/design-vscode-preview-aliases
+
+
+ Test Files  1 passed (1)
+      Tests  5 passed (5)
+   Start at  05:45:10
+   Duration  8.08s (tests 96%, worker 4%)
+
+
+# 全件の実行でタイムアウトしたファイルを、他のセッションの負荷を避けて 1 ファイルずつ流し直した結果
+$ npx vitest run --project 'unit*' tests/unit/src/viewer/index.browser.test.ts
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/design-vscode-preview-aliases
+
+
+ Test Files  1 passed (1)
+      Tests  2 passed (2)
+   Start at  05:45:28
+   Duration  8.50s (tests 97%, worker 3%)
+
+
+# 全件の実行でタイムアウトしたファイルを、他のセッションの負荷を避けて 1 ファイルずつ流し直した結果
+$ npx vitest run --project 'unit*' tests/unit/src/views/index.browser.test.ts
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/design-vscode-preview-aliases
+
+
+ Test Files  1 passed (1)
+      Tests  5 passed (5)
+   Start at  05:45:44
+   Duration  2.25s (tests 66%, worker 33%, import 1%)
+
+
+# 全件の実行でタイムアウトしたファイルを、他のセッションの負荷を避けて 1 ファイルずつ流し直した結果
+$ npx vitest run --project 'unit*' tests/unit/vscode/src/webview/features/preview/panel/panel-screen.browser.test.tsx
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/design-vscode-preview-aliases
+
+
+ Test Files  1 passed (1)
+      Tests  14 passed (14)
+   Start at  05:45:58
+   Duration  3.86s (tests 86%, worker 9%, import 5%)
+
+
+# 全件の実行でタイムアウトしたファイルを、他のセッションの負荷を避けて 1 ファイルずつ流し直した結果
+$ npx vitest run --project 'unit*' tests/unit/vscode/src/webview/main.browser.test.tsx
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/design-vscode-preview-aliases
+
+
+ Test Files  1 passed (1)
+      Tests  1 passed (1)
+   Start at  05:46:11
+   Duration  3.49s (tests 66%, worker 34%)
+
+
+# 全件の実行でタイムアウトしたファイルを、他のセッションの負荷を避けて 1 ファイルずつ流し直した結果
+$ npx vitest run --project 'unit*' tests/unit/src/cli/backup.test.ts
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/design-vscode-preview-aliases
+
+
+ Test Files  1 passed (1)
+      Tests  4 passed (4)
+   Start at  05:46:21
+   Duration  20.05s (tests 98%, import 1%, transform 1%)
+
+
+# 全件の実行でタイムアウトしたファイルを、他のセッションの負荷を避けて 1 ファイルずつ流し直した結果
+$ npx vitest run --project 'unit*' tests/unit/src/cli/config.test.ts
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/design-vscode-preview-aliases
+
+
+ Test Files  1 passed (1)
+      Tests  22 passed (22)
+   Start at  05:46:53
+   Duration  29.43s (tests 96%, import 2%, transform 1%, worker 1%)
+
+
+# 全件の実行でタイムアウトしたファイルを、他のセッションの負荷を避けて 1 ファイルずつ流し直した結果
+$ npx vitest run --project 'unit*' tests/unit/src/cli/upgrade.test.ts
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/design-vscode-preview-aliases
+
+
+ Test Files  1 passed (1)
+      Tests  15 passed (15)
+   Start at  05:47:36
+   Duration  29.83s (tests 88%, import 10%, transform 1%)
+

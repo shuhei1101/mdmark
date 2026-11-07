@@ -110,6 +110,12 @@ files:
     related:
       - to: dev/設計書/モジュール構成/ライブラリ本体/CLI.ts
         type: implements
+  - path: cli/issues.ts
+    description: モジュール構成『ライブラリ本体 / CLI』のうち「点検のずれを 1 行の文字列にする処理」を受け持つ。点検のずれの出し方を変えるときに読む。
+    tags: [topic:cli, topic:検査]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/CLI.ts
+        type: implements
   - path: cli/init.ts
     description: モジュール構成『ライブラリ本体 / CLI』のうち「mdmark init」を受け持つ。CLI のコマンドの振る舞いを変えるときに読む。
     tags: [topic:cli]

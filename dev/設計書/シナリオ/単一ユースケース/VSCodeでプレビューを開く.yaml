@@ -309,6 +309,54 @@ scenarios:
       - 帯の「設定ファイルを開く」を押すと、端末の設定の `settings.yaml` がエディタで開く
       - 端末の設定と 2 つの `mdmark.config.yaml` は書き換わらない
     test: test_error_when_config_unreadable
+  - name: 正常シナリオ（設定の aliases のエイリアス）
+    setup:
+      - name: エイリアスを持つワークスペース
+        description: '`mdmark.config.yaml` の `aliases` に、`glossary.yaml` の用語の列（名前・別名・意味）を指す用語のエイリアスの行を 1 つ記載したフォルダ。`glossary.yaml` は名前 `描画`・別名 `レンダリング`・意味 1 文の用語を 1 つ持つ。本文に `レンダリング` を含む Markdown を 1 つ置く'
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant EX as 拡張機能
+        participant FS as 設定ファイル
+        participant PV as プレビュー（Webview）
+        W->>EX: プレビューを横に開く
+        EX->>FS: mdmark.config.yaml と aliases の行が指す glossary.yaml を読む
+        EX->>EX: aliases の行と読んだ YAML からエイリアスを作る
+        EX->>PV: Markdown の全文・設定・エイリアスを送る
+        PV->>PV: エイリアスを指定して mount で描く
+        PV-->>W: 別名に下線を付けた文書を表示
+        W->>PV: 下線の語にポインターを載せる
+        PV-->>W: 用語の種類と意味のツールチップ
+    expected:
+      - 本文の `レンダリング` に用語の下線が付く
+      - 下線の語にポインターを載せると、ツールチップの「用語」の区分に、名前 `描画` と `glossary.yaml` の意味が出る
+      - 設定に `aliases` が無い文書のプレビューは、下線もツールチップも出さず、今と同じに描かれる
+    test: test_normal_when_aliases
+  - name: 異常シナリオ（aliases の YAML が無い）
+    setup:
+      - name: エイリアスを持つワークスペース
+        description: 正常シナリオ（設定の aliases のエイリアス）の `aliases` に、無い YAML を指す行を 1 つ足したもの
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant EX as 拡張機能
+        participant FS as 設定ファイル
+        participant PV as プレビュー（Webview）
+        W->>EX: プレビューを横に開く
+        EX->>FS: aliases の行が指す YAML を読む
+        FS-->>EX: 1 つの行の YAML が無い
+        EX->>EX: 読めない行を除いてエイリアスを作り、出力チャネルに警告を記録する
+        EX->>PV: Markdown の全文・設定・エイリアスを送る
+        PV-->>W: 読めた行のエイリアスに下線を付けた文書を表示
+    expected:
+      - 本文の `レンダリング` に用語の下線が付き、文書が描かれる
+      - 出力チャネルに、読めない `aliases` の行の位置とずれの種類が記録される
+      - パネルに設定ファイルを読めない帯は出ない
+    test: test_error_when_aliases_missing
 lead: 文書を書く人が、VS Code で開いている Markdown の横に、mdmark で描いたプレビューを開く。拡張機能は読む mdmark の版を決め、jsDelivr の版付きの URL から配布物を読んで描く。
 issue: 22
 primary_actor: 文書を書く人
@@ -321,6 +369,6 @@ trigger: 文書を書く人が Markdown を開いているときに `Shift+Alt+D
 preconditions:
   - VS Code に mdmark の拡張機能を入れている
   - Markdown のファイルをエディタで開いている
-success_guarantee: Markdown の横の列（`mdmark.openPreview` のときは同じ列）にプレビューのパネルが開き、決めた版の mdmark で文書が描かれる。
+success_guarantee: Markdown の横の列（`mdmark.openPreview` のときは同じ列）にプレビューのパネルが開き、決めた版の mdmark で文書が描かれる。設定に `aliases` があるときは、作ったエイリアスに下線とツールチップが付く。
 minimal_guarantee: 配布物を読めないときは、パネルに描けない理由と「リロード」のボタンを出す。Markdown と設定ファイルは書き換えない。
 test_file: tests/e2e/単一ユースケース/VSCodeでプレビューを開く.spec.ts

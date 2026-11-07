@@ -1147,6 +1147,12 @@ files:
     related:
       - to: src/cli/init
         type: tests
+  - path: unit/src/cli/issues.test.ts
+    description: src/cli/issues.ts（「点検のずれを 1 行の文字列にする処理」）を確かめる単体テスト。issues.ts を変えたときに、合わせて修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, topic:cli, topic:検査]
+    related:
+      - to: src/cli/issues
+        type: tests
   - path: unit/src/cli/main.test.ts
     description: src/cli/main.ts（「引数の読み取りとコマンドの振り分け」）を確かめる単体テスト。main.ts を変えたときに、合わせて見修正するケースを探すときに読む。
     tags: [topic:単体テスト, tool:vitest, topic:cli]
@@ -2344,10 +2350,10 @@ files:
       - to: vscode/src/webview/shared/lib/media-error
         type: tests
   - path: git-env.ts
-    description: モジュール構成『ライブラリ本体 / 検査とGitフック』のうち「clearGitLocalEnv（Git のリポジトリの場所を指す環境変数を外す）」を受け持つ。テストの起動で外す環境変数を変えるときに読む。
+    description: モジュール構成『ライブラリ本体 / 検査』のうち「clearGitLocalEnv（Git のリポジトリの場所を指す環境変数を外す）」を受け持つ。テストの起動で外す環境変数を変えるときに読む。
     tags: [topic:単体テスト, tool:vitest, tool:git]
     related:
-      - to: dev/設計書/モジュール構成/ライブラリ本体/検査とGitフック.ts
+      - to: dev/設計書/モジュール構成/ライブラリ本体/検査.ts
         type: implements
   - path: unit/git-env.test.ts
     description: tests/git-env.ts（「Git のリポジトリの場所を指す環境変数を外す」）を確かめる単体テスト。git-env.ts を変えたときに、合わせて修正するケースを探すときに読む。

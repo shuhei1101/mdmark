@@ -44,7 +44,6 @@
     "eslint": "10.13.0",
     "eslint-plugin-compat": "7.0.2",
     "highlight.js": "11.12.0",
-    "lefthook": "2.2.2",
     "lucide-react": "1.69.0",
     "msw": "3.0.4",
     "msw-storybook-addon": "3.0.3",

@@ -129,10 +129,10 @@ test("test_normal", async () => {
   expect(declarations).toContain("MdmarkExtension");
   expect(await readBuiltVersion()).toBe(CLONE_VERSION);
   // Claude Code のプラグインの生成物と、バージョン
-  expect(existsSync(join(root, "plugin", "scripts", "pre-tool-use.js"))).toBe(
-    true,
-  );
-  for (const path of ["scripts/session-start.js", "guide", "server", "dist"]) {
+  for (const path of ["scripts/pre-tool-use.js", "scripts/session-start.js"]) {
+    expect(existsSync(join(root, "plugin", path)), path).toBe(true);
+  }
+  for (const path of ["guide", "server", "dist"]) {
     expect(existsSync(join(root, "plugin", path)), path).toBe(false);
   }
   expect(await readPluginVersion()).toBe(CLONE_VERSION);

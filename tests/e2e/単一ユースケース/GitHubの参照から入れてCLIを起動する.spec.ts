@@ -31,8 +31,6 @@ const POLL_INTERVAL_MS = 500;
 const INSTALL_TIMEOUT_MS = 480_000;
 // テスト 1 件の上限（ミリ秒）。導入の待ちの上限に、一時のリポジトリの用意とツールの一覧の取得の分を足す
 const TEST_TIMEOUT_MS = 600_000;
-// `lefthook install` が出す行の頭
-const LEFTHOOK_OUTPUT = "sync hooks";
 // `npm ci --prefix tools/eslint` が出す導入の集計の行
 const ESLINT_INSTALL_OUTPUT = /added \d+ packages/;
 
@@ -199,7 +197,6 @@ test("test_normal", async ({ builtRoot, tempDir }) => {
     // 検証
     expect(url).toBe(`http://127.0.0.1:${port}/mcp`);
     expect(exec.child.exitCode).toBeNull();
-    expect(exec.output()).not.toContain(LEFTHOOK_OUTPUT);
     expect(exec.output()).not.toMatch(ESLINT_INSTALL_OUTPUT);
     expect(tools).toEqual(
       expect.arrayContaining(["build_site", "check", "export_html"]),
