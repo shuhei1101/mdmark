@@ -52,7 +52,7 @@ functions:
         summary: hooks.json の matcher が `PROJECT_DIR_TOOLS` のツールだけに当たる
         condition: '`plugin/hooks/hooks.json` の PreToolUse の `matcher` を読む'
         mock: なし
-        expected: '`PROJECT_DIR_TOOLS` に `TOOL_NAME_PREFIX` を付けて `|` でつないだ文字列と等しく、`PROJECT_DIR_TOOLS` が `TOOLS` の名前と一致し、並べ替えると `build_site`・`check`・`export_html` になる'
+        expected: '`PROJECT_DIR_TOOLS` に `TOOL_NAME_PREFIX` を付けて `|` でつないだ文字列と等しく、`PROJECT_DIR_TOOLS` が `TOOLS` の名前と一致し、並べ替えると `add_template`・`apply_template`・`build_site`・`check`・`export_html`・`list_templates` になる'
     refs:
       - dev/設計書/インターフェース定義/ClaudeCodeプラグイン/作業のフォルダを引数に入れる.ts#
     status: planned
@@ -86,7 +86,7 @@ constants:
     container: src/plugin/pre-tool-use.ts
     usecase: 作業のフォルダを引数に入れる
     summary: '`project_dir` を入れるツールの名前。`TOOLS` のツールの名前と一致させ、`plugin/hooks/hooks.json` の PreToolUse の `matcher` はこの名前に `TOOL_NAME_PREFIX` を付けて `|` でつないだもの'
-    value: check・export_html・build_site
+    value: check・export_html・build_site・list_templates・add_template・apply_template
     refs:
       - dev/設計書/インターフェース定義/ClaudeCodeプラグイン/作業のフォルダを引数に入れる.ts#constraints
     status: planned

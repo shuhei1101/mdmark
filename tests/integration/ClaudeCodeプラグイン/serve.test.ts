@@ -5,7 +5,7 @@ import { findFreePort, useMcpServers } from "../plugin.ts";
 
 const { startServe, runServeToExit, connectUrl } = useMcpServers();
 
-// 空きポートで待ち受ける URL を出し、instructions と 3 つのツールを返す（正常系）
+// 空きポートで待ち受ける URL を出し、instructions と 6 つのツールを返す（正常系）
 test("test_normal", async () => {
   // 準備・実行
   const port = await findFreePort();
@@ -17,9 +17,12 @@ test("test_normal", async () => {
   expect(client.getInstructions()).toBe(INSTRUCTIONS);
   expect(INSTRUCTIONS.length).toBeLessThanOrEqual(4096);
   expect(tools.map((tool) => tool.name).sort()).toEqual([
+    "add_template",
+    "apply_template",
     "build_site",
     "check",
     "export_html",
+    "list_templates",
   ]);
   for (const tool of tools) {
     expect(Object.keys(tool.inputSchema.properties ?? {})).not.toContain(
@@ -37,7 +40,7 @@ test("test_normal_when_port_overridden", async () => {
   const { tools } = await client.listTools();
   // 検証
   expect(serve.stdout()).toContain("http://127.0.0.1:18782/mcp");
-  expect(tools).toHaveLength(3);
+  expect(tools).toHaveLength(6);
 });
 
 // SIGINT を受けて待ち受けを閉じ、終了コード 0 で終わる（正常系（止める））

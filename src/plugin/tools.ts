@@ -1,5 +1,6 @@
 import { statSync } from "node:fs";
-import { isAbsolute } from "node:path";
+import { homedir } from "node:os";
+import { isAbsolute, resolve } from "node:path";
 import type { CallToolResult } from "@modelcontextprotocol/server";
 import { buildSite } from "../cli/build.ts";
 import {
@@ -12,6 +13,12 @@ import { CliError } from "../cli/errors.ts";
 import { exportDocument } from "../cli/export.ts";
 import { checkMarkdownSource } from "../cli/markdown-check.ts";
 import { checkArguments, type ToolInputSchema } from "./arguments.ts";
+import {
+  addTemplate,
+  applyTemplate,
+  listTemplates,
+  resolveTemplatesDir,
+} from "./templates.ts";
 
 /** `mdmark serve` を起動したパッケージの直下から決める、配布物のフォルダ */
 export type ServerRoots = {
@@ -33,7 +40,13 @@ export type ToolOutput = {
 
 /** ツール 1 つの名前・説明・引数の形・処理 */
 export type ToolDefinition = {
-  name: "export_html" | "build_site" | "check";
+  name:
+    | "export_html"
+    | "build_site"
+    | "check"
+    | "list_templates"
+    | "add_template"
+    | "apply_template";
   /** ツールの説明。呼ぶ場面と、引数・戻り値を日本語で書く */
   description: string;
   /** 引数の形。`tools/list` に JSON Schema として出し、引数を検査するものにも使う */
@@ -43,7 +56,7 @@ export type ToolDefinition = {
     args: Record<string, unknown>,
     context: ToolContext,
   ) => Promise<ToolOutput>;
-  /** `tools/list` に出すツールの annotations。索引と文書を書き換えないツールだけが持つ */
+  /** `tools/list` に出すツールの annotations。何も書き換えないツールだけが持つ */
   annotations?: { readOnlyHint: boolean };
 };
 
@@ -116,6 +129,57 @@ export async function runCheckTool(
     ...(args.base === undefined ? {} : { base: args.base }),
   });
   return { json: { issues } };
+}
+
+/** `mdmark serve` のプロセスの環境変数から、テンプレートのフォルダを決める */
+const templatesDir = (): string =>
+  resolveTemplatesDir({ env: process.env, home: homedir() });
+
+/** CSS のテンプレートの一覧を返す: テンプレートのフォルダの索引の行を、CSS の絶対パスを付けて返す */
+export async function runListTemplates(
+  _context: ToolContext,
+): Promise<ToolOutput> {
+  return { json: { templates: await listTemplates(templatesDir()) } };
+}
+
+/** CSS のテンプレートを登録する: `file` を作業のフォルダから解決し、テンプレートに登録する */
+export async function runAddTemplate(
+  args: {
+    file: string;
+    name: string;
+    description: string;
+    tags?: string[];
+    overwrite?: boolean;
+  },
+  context: ToolContext,
+): Promise<ToolOutput> {
+  const result = await addTemplate({
+    dir: templatesDir(),
+    source: resolve(context.projectDir, args.file),
+    name: args.name,
+    description: args.description,
+    tags: args.tags ?? [],
+    overwrite: args.overwrite ?? false,
+  });
+  return { json: result };
+}
+
+/** CSS のテンプレートを配置する: `dir` を作業のフォルダから解決し、テンプレートを配置する */
+export async function runApplyTemplate(
+  args: { name: string; dir?: string; overwrite?: boolean },
+  context: ToolContext,
+): Promise<ToolOutput> {
+  const result = await applyTemplate({
+    dir: templatesDir(),
+    name: args.name,
+    cwd: context.projectDir,
+    target:
+      args.dir === undefined
+        ? undefined
+        : resolve(context.projectDir, args.dir),
+    overwrite: args.overwrite ?? false,
+  });
+  return { json: result };
 }
 
 /** 登録するツールの定義（どのツールも引数の `project_dir` を必須にし、`project_dir` は `inputSchema` に含めない） */
@@ -204,6 +268,100 @@ export const TOOLS: ToolDefinition[] = [
         context,
       ),
     annotations: { readOnlyHint: true },
+  },
+  {
+    name: "list_templates",
+    description:
+      "端末の設定のフォルダの templates/css/ にある CSS のテンプレートを、名前 name・説明 description・タグ tags・CSS の絶対パス path の一覧 templates で JSON にして返す。使う側の CSS を探すときに呼ぶ。テンプレートが無ければ空の一覧を返す。何も書き換えない。",
+    inputSchema: {
+      type: "object",
+      properties: {},
+      required: [],
+      additionalProperties: false,
+    },
+    run: (_args, context) => runListTemplates(context),
+    annotations: { readOnlyHint: true },
+  },
+  {
+    name: "add_template",
+    description:
+      "作業のフォルダの CSS を、端末の設定のフォルダの CSS のテンプレートに {name}.css でコピーし、名前・説明・タグを索引 templates.yaml に記載する。作った CSS を使い回すときに呼ぶ。同じ名前があるときは overwrite が true のときだけ置き換える。登録した名前 name・CSS の絶対パス path・置き換えたか replaced を JSON で返す。",
+    inputSchema: {
+      type: "object",
+      properties: {
+        file: {
+          type: "string",
+          minLength: 1,
+          description:
+            "登録する CSS のパス（project_dir からの相対パスか絶対パス）",
+        },
+        name: {
+          type: "string",
+          minLength: 1,
+          description:
+            "テンプレートの名前。英小文字・数字・- の 1〜64 文字で、英小文字か数字で始まる",
+        },
+        description: {
+          type: "string",
+          minLength: 1,
+          description: "どんな見た目にする CSS か・どんな文書に向くか",
+        },
+        tags: {
+          type: "array",
+          items: { type: "string" },
+          description: "探すときの語。省くと空",
+        },
+        overwrite: {
+          type: "boolean",
+          description: "同じ名前のテンプレートを置き換えるか。既定は false",
+        },
+      },
+      required: ["file", "name", "description"],
+      additionalProperties: false,
+    },
+    run: (args, context) =>
+      runAddTemplate(
+        args as {
+          file: string;
+          name: string;
+          description: string;
+          tags?: string[];
+          overwrite?: boolean;
+        },
+        context,
+      ),
+  },
+  {
+    name: "apply_template",
+    description:
+      "CSS のテンプレートを配置先のフォルダへ {name}.css でコピーし、配置した絶対パス path・設定の theme に記載する値 theme・置き換えたか replaced を JSON で返す。dir を省くと、作業のフォルダから上へ探して最も近い mdmark.config.yaml のフォルダに配置する。theme は書き換えないので、返った theme の値を設定の theme に記載する。配置先に中身の違う同じ名前のファイルがあるときは overwrite が true のときだけ置き換える。",
+    inputSchema: {
+      type: "object",
+      properties: {
+        name: {
+          type: "string",
+          minLength: 1,
+          description: "配置するテンプレートの名前",
+        },
+        dir: {
+          type: "string",
+          minLength: 1,
+          description:
+            "配置先のフォルダ（project_dir からの相対パスか絶対パス）。省くと最も近い mdmark.config.yaml のフォルダ",
+        },
+        overwrite: {
+          type: "boolean",
+          description: "配置先の同じ名前のファイルを置き換えるか。既定は false",
+        },
+      },
+      required: ["name"],
+      additionalProperties: false,
+    },
+    run: (args, context) =>
+      runApplyTemplate(
+        args as { name: string; dir?: string; overwrite?: boolean },
+        context,
+      ),
   },
 ];
 

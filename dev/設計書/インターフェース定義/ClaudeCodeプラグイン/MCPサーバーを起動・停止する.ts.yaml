@@ -20,11 +20,11 @@ flows:
         C->>S: POST /mcp（initialize）
         S-->>C: instructions
         C->>S: POST /mcp（tools/list）
-        S-->>C: 3 つのツール
+        S-->>C: 6 つのツール
     expected:
       - 標準出力に `http://127.0.0.1:{渡したポート}/mcp` を含む 1 行が出る
       - '`initialize` の `instructions` が制約『instructions』の文で、4,096 文字以下'
-      - '`tools/list` が `export_html`・`build_site`・`check` の 3 つのツールを返し、`read_guide` が無く、どのツールの `inputSchema` も `project_dir` を持たない'
+      - '`tools/list` が `export_html`・`build_site`・`check`・`list_templates`・`add_template`・`apply_template` の 6 つのツールを返し、`read_guide` が無く、どのツールの `inputSchema` も `project_dir` を持たない'
       - プロセスが動き続けている
     test: test_normal
   - name: 正常系（ポートを上書きする）
@@ -40,10 +40,10 @@ flows:
         W->>S: MDMARK_PORT=18782 mdmark serve
         S-->>W: 待ち受ける URL
         C->>S: POST :18782/mcp（tools/list）
-        S-->>C: 3 つのツール
+        S-->>C: 6 つのツール
     expected:
       - 標準出力に `http://127.0.0.1:18782/mcp` を含む 1 行が出る
-      - 18782 の `/mcp` への `tools/list` が 3 つのツールを返す
+      - 18782 の `/mcp` への `tools/list` が 6 つのツールを返す
     test: test_normal_when_port_overridden
   - name: 正常系（止める）
     summary: SIGINT を受けて待ち受けを閉じ、終了コード 0 で終わる
@@ -127,7 +127,7 @@ constraints:
   - item: 配布物
     constraint: 配布物は `mdmark serve` を呼んだパッケージから読む
   - item: instructions
-    constraint: '`initialize` の `instructions` に、使う場面と順序を事実の文で記載する。mdmark の記法・部品・図の書き方は使い方集として dev-docs の配信元 `mdmark` にあり、文書を書く前に dev-docs の `search_docs` で `source: "mdmark"` の `kind` が `docs` の文書をタグ `topic:使い方集` で絞って一覧を引き、当てはまるページを `view: "full"` で読むこと（作業場所が mdmark の外なら `outside_scope: true`）。dev-docs が無い、または配信元 `mdmark` が登録されていないときは「dev-docs が無いので見つかりません」であること。書いた後は `check` で点検し、図は使い方集の『描いた図を確かめる』の手順で確かめること。書き出しは `export_html`、まとめは `build_site` であること。記法を使わない Markdown の編集とコードの調査には要らないこと'
+    constraint: '`initialize` の `instructions` に、使う場面と順序を事実の文で記載する。mdmark の記法・部品・図の書き方は使い方集として dev-docs の配信元 `mdmark` にあり、文書を書く前に dev-docs の `search_docs` で `source: "mdmark"` の `kind` が `docs` の文書をタグ `topic:使い方集` で絞って一覧を引き、当てはまるページを `view: "full"` で読むこと（作業場所が mdmark の外なら `outside_scope: true`）。dev-docs が無い、または配信元 `mdmark` が登録されていないときは「dev-docs が無いので見つかりません」であること。書いた後は `check` で点検し、図は使い方集の『描いた図を確かめる』の手順で確かめること。書き出しは `export_html`、まとめは `build_site` であること。使う側の CSS を探すときは `list_templates` で一覧を引き、選んだテンプレートを `apply_template` で配置して、返った値を設定の `theme` に記載すること。作った CSS を使い回すときは `add_template` で登録すること。記法を使わない Markdown の編集とコードの調査には要らないこと'
     decided_by: dev/設計書/外部ライブラリ/ClaudeCode#limitations[MCP の instructions の文字数]
     notes: 4,096 文字以下。使い方集の選び方（最初に『文書の書き方』を読む等）は配信元の説明書（`dev-docs.yaml` の `instructions`）に置き、同じ文を instructions に置かない
   - item: ツールのログ

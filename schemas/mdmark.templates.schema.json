@@ -1,0 +1,79 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "templates.yaml",
+  "description": "端末の設定のファイルと同じフォルダの `templates/css/templates.yaml`。CSS のテンプレートごとに名前・CSS のファイル名・説明・タグを並べる。",
+  "type": "object",
+  "required": ["schema", "templates"],
+  "additionalProperties": false,
+  "properties": {
+    "schema": {
+      "title": "索引のバージョン",
+      "description": "索引のバージョン。今は `1`。",
+      "const": 1,
+      "examples": [1]
+    },
+    "templates": {
+      "title": "テンプレートの行",
+      "description": "テンプレートの行の並び。",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["name", "file", "description"],
+        "additionalProperties": false,
+        "properties": {
+          "name": {
+            "title": "名前",
+            "description": "テンプレートの名前。索引の中で一意。英小文字・数字・`-` の 1〜64 文字で、英小文字か数字で始まる。",
+            "type": "string",
+            "pattern": "^[a-z0-9][a-z0-9-]{0,63}$",
+            "examples": ["brand"]
+          },
+          "file": {
+            "title": "CSS のファイル名",
+            "description": "テンプレートのフォルダの直下の CSS のファイル名。`.css` で終わり、`/` と `..` を含まない。",
+            "type": "string",
+            "pattern": "^(?!.*\\.\\.)[^/\\\\]+\\.css$",
+            "examples": ["brand.css"]
+          },
+          "description": {
+            "title": "説明",
+            "description": "どんな見た目にする CSS か・どんな文書に向くか。",
+            "type": "string",
+            "minLength": 1,
+            "examples": ["見出しを社の色にする"]
+          },
+          "tags": {
+            "title": "タグ",
+            "description": "探すときの語。省くと空の並び。",
+            "type": "array",
+            "items": { "type": "string", "minLength": 1 },
+            "examples": [["見出し", "色"]]
+          }
+        }
+      },
+      "examples": [
+        [
+          {
+            "name": "brand",
+            "file": "brand.css",
+            "description": "見出しを社の色にする",
+            "tags": ["見出し", "色"]
+          }
+        ]
+      ]
+    }
+  },
+  "examples": [
+    {
+      "schema": 1,
+      "templates": [
+        {
+          "name": "brand",
+          "file": "brand.css",
+          "description": "見出しを社の色にする",
+          "tags": ["見出し", "色"]
+        }
+      ]
+    }
+  ]
+}
