@@ -443,3 +443,44 @@ test("test_run_upgrade_when_plan_with_ask", async () => {
   expect(code).toBe(0);
   expect(await fixture.read("mdmark.config.yaml")).toBe(OLD_CONFIG);
 });
+
+// call のスクリプトが標準出力に書いた行を、手順の行に続けて出す（正常系）
+test("test_run_upgrade_when_script_prints", async () => {
+  // 準備
+  const { runUpgrade } = await loadModule();
+  const fixture = await createFixture({
+    stepsV050: [
+      "steps:",
+      "  - op: call",
+      "    description: 設定をスクリプトで直す",
+      "    script: print.mjs",
+      "    files: [config]",
+      "",
+    ].join("\n"),
+    packageFiles: {
+      "migrations/v0.5.0/print.mjs":
+        'process.stdout.write("除外しました\\n");\n',
+    },
+  });
+  const { io, stdout } = createIo(fixture.work);
+  // 実行
+  const code = await runUpgrade(
+    {
+      plan: false,
+      yes: false,
+      packageDir: fixture.packageDir,
+      cliVersion: "v0.5.0",
+      now: NOW,
+    },
+    io,
+    failingAsk,
+  );
+  // 検証
+  expect(code).toBe(0);
+  const index = stdout.findIndex(
+    (line, position) =>
+      line.startsWith("v0.5.0 の手順「") &&
+      stdout[position + 1] === "  除外しました",
+  );
+  expect(index).toBeGreaterThanOrEqual(0);
+});
