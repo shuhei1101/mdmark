@@ -139,7 +139,7 @@ settings:
     type: Record<string, string>
     required: false
     default: なし（`mount` に渡さない）
-    description: 相対 URL は設定ファイルのあるフォルダを基準に解決し、プレビューでは Webview で読める URL、書き出した HTML では `file:` の URL に直してから `mount` の `opts.config.libraries` に渡す。`http:`・`https:` の URL はそのまま渡す
+    description: 相対 URL は設定ファイルのあるフォルダを基準に解決し、プレビューでは Webview で読める URL、書き出した HTML では文書にマーカーがあるモジュールをまとめた `data:` の URL にして `mount` の `opts.config.libraries` に渡す。`http:`・`https:` の URL はそのまま渡す
     reload: immediate
     refs:
       - dev/設計書/設定/ライブラリ本体#settings[libraries]
@@ -240,7 +240,7 @@ settings:
     type: string
     required: false
     default: なし（`mount` に渡さず、ライブラリ本体の既定を当てる）
-    description: '`libraries` と同じく、相対 URL は設定ファイルのあるフォルダを基準に解決し、プレビューでは Webview で読める URL、書き出した HTML では `file:` の URL に直してから `mount` の `opts.config.html-scripts.url` に渡す。`http:`・`https:` の URL はそのまま渡し、その origin を CSP の `script-src` に含める'
+    description: '`libraries` と同じく、相対 URL は設定ファイルのあるフォルダを基準に解決し、プレビューでは Webview で読める URL、書き出した HTML では変換のライブラリをまとめた `data:` の URL にして `mount` の `opts.config.html-scripts.url` に渡す。`http:`・`https:` の URL はそのまま渡し、その origin を CSP の `script-src` に含める'
     reload: immediate
     refs:
       - dev/設計書/設定/ライブラリ本体#settings[html-scripts.url]
