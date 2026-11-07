@@ -80,6 +80,9 @@ test("test_normal", async ({ builtRoot, tempDir }) => {
   );
   // 検証
   expect(added.isError).toBe(false);
+  expect(await readFile(join(templatesDir, "brand.css"), "utf8")).toBe(
+    BRAND_CSS,
+  );
   const index = parse(
     await readFile(join(templatesDir, "templates.yaml"), "utf8"),
   );
