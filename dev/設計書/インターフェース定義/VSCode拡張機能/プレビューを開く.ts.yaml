@@ -519,7 +519,7 @@ flows:
         PV->>EX: rendered
     expected:
       - '`render` の `aliases` が 1 行目の用語だけを持つ'
-      - 出力チャネルに `aliases[1].paths` と `alias_no_files` を含む警告が 1 行ある
+      - 出力チャネルに `mdmark.config.yaml:aliases[1].paths: alias_no_files:` で始まる警告が 1 行ある
       - '`configError` を送らない'
     test: test_error_when_aliases_missing
     refs:
@@ -624,5 +624,5 @@ constraints:
     constraint: 開いている Markdown（差分のパネルは変更後の側）の include のマーカーの取り込み先を、インターフェース定義『文書をHTML文字列にする』の制約「取り込み」と同じパスの解き方で、Markdown のフォルダを基準に `workspace.fs` で読む（取り込んだ文書の中のマーカーもたどり、同じファイルは 1 回だけ読む）。開いているエディタの保存していない書き換えではなく、保存した中身を読む。設定ファイルのフォルダ（無ければ Markdown のフォルダ）の外のパス（書き出しと同じ範囲）と読めないファイルは表に入れず、そのマーカーの場所には mdmark が書き方の警告を出す。読んだ表を `render` の `includes` に入れ、Webview は `mount` の `opts.includes`（`update` は `options.includes`）に渡す
     notes: プレビューでも取り込むことは確認ログの決定
   - item: エイリアス
-    constraint: '重ねた設定に `aliases` があるとき、インターフェース定義『エイリアスを作る』の CLI と同じ読み方（`src/cli/aliases.ts` の `loadAliases`）で、各行の `paths` を値を書いた設定ファイルのフォルダから引いて YAML を読み、作ったエイリアスを `render` の `aliases` に入れる。Webview は `mount` の `opts.aliases` に渡す。使えない行・レコードは除き、ずれごとに `[mdmark] {設定ファイルのパス} の {where}: {kind}` の形の警告を出力チャネルに書く。エイリアスを作るのは設定を読み直したときと、制約の YAML のファイルが変わったときだけで、Markdown の書き換えでは作り直さない'
+    constraint: '重ねた設定に `aliases` があるとき、インターフェース定義『エイリアスを作る』の CLI と同じ読み方（`src/cli/aliases.ts` の `loadAliases`）で、各行の `paths` を値を書いた設定ファイルのフォルダから引いて YAML を読み、作ったエイリアスを `render` の `aliases` に入れる。`loadAliases` に渡す設定ファイルは、最も近い `mdmark.config.yaml`（`mdmark.configPath` を書いたときはそのファイル）で、無いときは端末の設定ファイルにする（CLI の `requireConfig` と同じく、重ねた設定のパスの値をそのファイルのフォルダからの相対パスに戻して渡す）。Webview は `mount` の `opts.aliases` に渡す。使えない行・レコードは除き、ずれごとに CLI の `mdmark check` と同じ `{file}:{where}: {kind}: {message}`（`where` が空なら `{file}: {kind}: {message}`）の警告を出力チャネルに書く。エイリアスを作るのは設定を読み直したときと、制約の YAML のファイルが変わったときだけで、Markdown の書き換えでは作り直さない'
     notes: 書き出す HTML へのエイリアスの埋め込みは要件のスコープ外（#379）
