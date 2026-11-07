@@ -11,7 +11,7 @@ files:
     manages: 端末の設定。`mdmark.config.yaml` と同じキーと、重ね方の切り替えの `config.*` を持ち、重ねる最初の層になる
     notes: 環境変数 `MDMARK_CONFIG` があればそのパスを読む。無ければ空の設定として扱う。重ね方はインターフェース定義『設定を重ねて読む』
   - file: schemas/mdmark.settings.schema.json
-    manages: 端末の設定の JSON Schema。`mdmark.config.schema.json` のキーに `config.cascade`・`config.applyToExport` を足したもの
+    manages: 端末の設定の JSON Schema。`mdmark.config.schema.json` のキーに `config.cascade`・`config.applyToExport`・`serve.tmuxSession` を足したもの
     notes: 形を変えるときは `migrations/next/` に移行の手順か `migrations/no-steps.yaml` の行を置く
 settings:
   - key: features
@@ -356,7 +356,7 @@ settings:
     file: mdmark.config.yaml
     type: string
     required: false
-    description: この設定・索引・文書が合わせてある mdmark の版。`mdmark init` が呼んだ CLI の版を書き、`mdmark upgrade` が移行の手順を当てて点検が通った後に呼んだ CLI の版へ書き換える。`mount`・`render`・`export`・`build`・`check` は値で振る舞いを変えない
+    description: この設定・索引・文書が合わせてある mdmark の版。`mdmark init` が呼んだ CLI の版を書き、`mdmark upgrade` が移行の手順を当てて点検が通った後に呼んだ CLI の版へ書き換える。`mount`・`render`・`export`・`build`・`check` は値で振る舞いを変えない。端末の設定（`settings.yaml`）も同じキーを持ち、`global-setup` が作るときに書き、`mdmark upgrade --settings` が書き換える
     missing: '`mdmark upgrade` が利用者に手元の版を聞く（v0.3.0 までの `init` が置いた設定）'
     reload: reload
     allowed: '`^v\d+\.\d+\.\d+$`。合わないと `mdmark check` は `schema` のずれにする'
@@ -818,5 +818,19 @@ settings:
     allowed: 真偽値。端末の設定だけが持ち、`mdmark.config.yaml` に書いても読まない
     reload: reload
     implementation: src/config-files.ts#loadLayeredConfig
+  - key: serve.tmuxSession
+    title: 常駐サーバーの tmux のセッション名
+    file: settings.yaml
+    type: string
+    default: mdmark-mcp
+    description: '`global-setup` が常駐サーバー（`mdmark serve`）を起動する tmux のセッション名。MCP の `instructions` もこの名前を伝える'
+    allowed: '`^[A-Za-z0-9_-]+$`。端末の設定だけが持ち、`mdmark.config.yaml` に書いても読まない'
+    reload: restart
+    required: false
+    status: planned
+    refs:
+      - dev/設計書/インターフェース定義/ClaudeCodeプラグイン/常駐サーバーを起動する.ts#
+    introduced:
+      pr: 354
 refs:
   - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#

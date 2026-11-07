@@ -1,5 +1,5 @@
-title: "設定: Claude Code プラグイン"
-lead: Claude Code プラグインの MCP サーバー（`mdmark serve`）が待ち受けるポートと、Claude Code がつなぐ先の一覧。実装は `src/plugin/http.ts`、つなぐ先は `plugin/.mcp.json`
+title: '設定: Claude Code プラグイン'
+lead: Claude Code プラグインの MCP サーバー（`mdmark serve`）が待ち受けるポート、Claude Code がつなぐ先、スキルが呼ぶスクリプト（`plugin/scripts/setup.js`）と SessionStart のフックが読む環境変数の一覧。実装は `src/plugin/http.ts`、つなぐ先は `plugin/.mcp.json`
 files:
   - file: 環境変数
     manages: '`mdmark serve` が待ち受けるポートと、Claude Code が `.mcp.json` の URL を展開する値'
@@ -50,3 +50,59 @@ settings:
     visibility: developer
     introduced:
       pr: 141
+  - key: MDMARK_STATE_DIR
+    title: 状態の置き場所
+    file: 環境変数
+    type: string
+    default: ${XDG_STATE_HOME:-~/.local/state}/mdmark
+    description: '`setup.js start-server` が常駐サーバーのログ（`serve.log`）を書くフォルダ。tmux のセッションへ `-e` で渡す'
+    env_var: MDMARK_STATE_DIR
+    reload: restart
+    status: planned
+    visibility: user
+    refs:
+      - dev/設計書/インターフェース定義/ClaudeCodeプラグイン/常駐サーバーを起動する.ts#
+    introduced:
+      pr: 354
+  - key: MDMARK_CONFIG
+    title: 端末の設定のパス
+    file: 環境変数
+    type: string
+    default: ${XDG_CONFIG_HOME:-~/.config}/mdmark/settings.yaml
+    description: '`setup.js` が読み書きする端末の設定のパス。既定と違うパスにしたときは、`global-setup` が `~/.claude/settings.json` の `env` に書く'
+    env_var: MDMARK_CONFIG
+    reload: restart
+    status: planned
+    visibility: user
+    refs:
+      - dev/設計書/設定/ライブラリ本体#files
+    introduced:
+      pr: 354
+  - key: CLAUDE_CONFIG_DIR
+    title: Claude Code の設定のフォルダ
+    file: 環境変数
+    type: string
+    default: ~/.claude
+    description: '`setup.js write-settings` が `env.MDMARK_CONFIG` を書く `settings.json` のフォルダ'
+    env_var: CLAUDE_CONFIG_DIR
+    reload: restart
+    status: planned
+    visibility: developer
+    refs:
+      - dev/設計書/外部ライブラリ/ClaudeCode#
+    introduced:
+      pr: 354
+  - key: MDMARK_SERVE_COMMAND
+    title: 常駐サーバーを起動するコマンド
+    file: 環境変数
+    type: string
+    default: npx -y github:shuhei1101/mdmark#v{プラグインのバージョン} serve
+    description: '`setup.js start-server` が tmux のセッションで流すコマンド。テストでこのブランチのビルドした CLI に差し替える'
+    env_var: MDMARK_SERVE_COMMAND
+    reload: restart
+    status: planned
+    visibility: developer
+    refs:
+      - dev/設計書/インターフェース定義/ClaudeCodeプラグイン/常駐サーバーを起動する.ts#
+    introduced:
+      pr: 354

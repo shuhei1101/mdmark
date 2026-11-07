@@ -1,0 +1,202 @@
+title: 常駐サーバーを起動する
+entry:
+  kind: operation
+  value: '`node ${CLAUDE_PLUGIN_ROOT}/scripts/setup.js start-server`（スキルが Bash で呼ぶ）'
+flows:
+  - name: 正常系
+    summary: tmux のセッションで `mdmark serve` を起動し、待ち受けを待って `tools/list` を確かめる
+    setup:
+      - name: 一時の端末
+        description: '`MDMARK_CONFIG`・`MDMARK_STATE_DIR`・`CLAUDE_CONFIG_DIR`・`TMUX_TMPDIR` を、それぞれ空の一時フォルダの下にする'
+      - name: 先に起動した tmux サーバーと空いたポート
+        description: '`TMUX_TMPDIR` の tmux サーバーを別のセッションで先に起動しておき、`MDMARK_PORT` に空いたポートを指定する'
+      - name: Mock
+        description: ビルドした `plugin/scripts/setup.js` を子プロセスで流す。起動する `mdmark serve` は、`MDMARK_SERVE_COMMAND` でこのブランチのビルドした CLI に差し替える
+    flow: |-
+      sequenceDiagram
+        participant K as スキル（global-setup・setup）
+        participant P as setup.js
+        participant T as tmux
+        participant S as 常駐サーバー
+        K->>P: start-server
+        P->>T: has-session（無い）
+        P->>T: new-session -d -s {セッション名} -e MDMARK_PORT=… mdmark serve
+        T->>S: 起動（ログを serve.log へ）
+        P->>S: ポートが待ち受けるまで待つ
+        P->>S: tools/list
+        S-->>P: ツールの一覧
+        P-->>K: started・セッション名・ログ・止め方・終了コード 0
+    expected:
+      - 終了コードが 0、標準出力の JSON の `result` が `started`
+      - '`mdmark-mcp` の tmux のセッションがあり、`MDMARK_PORT` のポートで待ち受ける（先に起動していた tmux サーバーの中でも 8782 では待ち受けない）'
+      - '`state.log` に待ち受ける URL の 1 行がある'
+      - '`tools` が `export_html`・`build_site`・`check`'
+      - '`stop` が `tmux kill-session -t =mdmark-mcp`'
+    test: test_normal
+  - name: 正常系（既に起動している）
+    summary: セッションがあり待ち受けていれば、起動し直さない
+    setup:
+      - name: 一時の端末
+        description: '`MDMARK_CONFIG`・`MDMARK_STATE_DIR`・`CLAUDE_CONFIG_DIR`・`TMUX_TMPDIR` を、それぞれ空の一時フォルダの下にする'
+      - name: 起動した常駐サーバー
+        description: 正常系を流した後の状態
+      - name: Mock
+        description: 正常系と同じ
+    flow: |-
+      sequenceDiagram
+        participant K as スキル（global-setup・setup）
+        participant P as setup.js
+        participant T as tmux
+        participant S as 常駐サーバー
+        K->>P: start-server
+        P->>T: has-session（ある）
+        P->>S: tools/list
+        P-->>K: already_running・終了コード 0
+    expected:
+      - '`result` が `already_running`'
+      - 常駐サーバーのプロセスが呼ぶ前と同じ
+    test: test_normal_when_already_running
+  - name: 正常系（セッションはあるが待ち受けていない）
+    summary: 応答しないセッションを閉じてから起動し直す
+    setup:
+      - name: 一時の端末
+        description: '`MDMARK_CONFIG`・`MDMARK_STATE_DIR`・`CLAUDE_CONFIG_DIR`・`TMUX_TMPDIR` を、それぞれ空の一時フォルダの下にする'
+      - name: 止まったセッション
+        description: '`mdmark-mcp` の tmux のセッションで `sleep` だけを動かし、ポートで待ち受けていない'
+      - name: Mock
+        description: 正常系と同じ
+    flow: |-
+      sequenceDiagram
+        participant K as スキル（global-setup・setup）
+        participant P as setup.js
+        participant T as tmux
+        K->>P: start-server
+        P->>T: has-session（ある）・ポートが待ち受けていない
+        P->>T: kill-session してから new-session
+        P-->>K: restarted・終了コード 0
+    expected:
+      - '`result` が `restarted`'
+      - '`MDMARK_PORT` のポートで待ち受けるプロセスが 1 つある'
+    test: test_normal_when_session_stale
+  - name: 異常系（tmux が無い・終了コード 2）
+    summary: tmux が無ければ起動せず、端末で動かすコマンドを返す
+    setup:
+      - name: 一時の端末
+        description: '`MDMARK_CONFIG`・`MDMARK_STATE_DIR`・`CLAUDE_CONFIG_DIR`・`TMUX_TMPDIR` を、それぞれ空の一時フォルダの下にする'
+      - name: tmux の無い PATH
+        description: '`PATH` から tmux を外す'
+      - name: Mock
+        description: 正常系と同じ
+    flow: |-
+      sequenceDiagram
+        participant K as スキル（global-setup・setup）
+        participant P as setup.js
+        K->>P: start-server
+        P-->>K: 端末で動かすコマンド・終了コード 2
+    expected:
+      - 終了コードが 2
+      - 標準エラーに tmux が見つからないことと、`MDMARK_PORT` を付けた `npx -y github:shuhei1101/mdmark#v{バージョン} serve` のコマンドが出る
+      - '`MDMARK_PORT` のポートで待ち受けるプロセスが無い'
+    test: test_error_when_tmux_missing
+  - name: 異常系（ポートが使われている・終了コード 1）
+    summary: '`mdmark serve` が終わったらセッションを残さず、ログの理由と修正方法を返す'
+    setup:
+      - name: 一時の端末
+        description: '`MDMARK_CONFIG`・`MDMARK_STATE_DIR`・`CLAUDE_CONFIG_DIR`・`TMUX_TMPDIR` を、それぞれ空の一時フォルダの下にする'
+      - name: ポートを使うほかのプロセス
+        description: '`MDMARK_PORT` のポートを mdmark ではないプロセスが待ち受ける'
+      - name: Mock
+        description: 正常系と同じ
+    flow: |-
+      sequenceDiagram
+        participant K as スキル（global-setup・setup）
+        participant P as setup.js
+        participant T as tmux
+        participant S as mdmark serve
+        K->>P: start-server
+        P->>T: new-session で mdmark serve
+        S-->>T: 終了コード 1（セッションが閉じる）
+        P->>P: serve.log の末尾を読む
+        P-->>K: ログの末尾と修正方法・終了コード 1
+    expected:
+      - 終了コードが 1
+      - '`mdmark-mcp` の tmux のセッションが残らない'
+      - 標準エラーに `serve.log` の末尾（ポートが使われていること）と、`settings.json` の `env` の `MDMARK_PORT` を空いたポートに変えてセッションを開き直し `global-setup` を呼び直す修正方法が出る
+      - ほかのプロセスはポートを待ち受けたまま
+    test: test_error_when_port_in_use
+lead: '`global-setup` が呼び、tmux のセッションの中で `mdmark serve` を起動して待ち受けを待ち、`tools/list` でつながることを確かめる。'
+test_file: tests/integration/ClaudeCodeプラグイン/setup-start-server.test.ts
+idempotent: true
+side_effects: tmux のセッションを作り、`mdmark serve` を起動し、状態の置き場所の `serve.log` に追記する。応答しないセッションは閉じる
+callers:
+  - dev/設計書/シナリオ/単一ユースケース/端末にmdmarkをセットアップする#
+request:
+  - name: MDMARK_PORT
+    type: string
+    required: false
+    default: '8782'
+    location: argument
+    description: 常駐サーバーのポート（環境変数）。セッションへ `-e` で渡す
+  - name: MDMARK_CONFIG
+    type: string
+    required: false
+    default: なし（既定のパス）
+    location: argument
+    description: 端末の設定のパス（環境変数）。セッション名を読み、セッションへ `-e` で渡す
+  - name: MDMARK_STATE_DIR
+    type: string
+    required: false
+    default: なし（`${XDG_STATE_HOME:-~/.local/state}/mdmark`）
+    location: argument
+    description: 状態の置き場所（環境変数）
+  - name: MDMARK_SERVE_COMMAND
+    type: string
+    required: false
+    default: なし（`npx -y github:shuhei1101/mdmark#v{プラグインのバージョン} serve`）
+    location: argument
+    description: 起動するコマンド（環境変数）。テストでビルドした CLI に差し替える
+response:
+  - name: result
+    type: '"started" | "already_running" | "restarted"'
+    description: 起動したか・既に動いていたか・起動し直したか
+  - name: session
+    type: string
+    description: tmux のセッション名
+  - name: url
+    type: string
+    description: '`http://127.0.0.1:{ポート}/mcp`'
+  - name: tools[]
+    type: string
+    description: '`tools/list` が返したツールの名前'
+  - name: log
+    type: string
+    description: '`serve.log` のパス'
+  - name: stop
+    type: string
+    description: 止める操作（`tmux kill-session -t ={セッション名}`）
+exceptions:
+  - name: なし（正常終了）
+    condition: 待ち受けを確かめた。終了コード 0
+  - name: なし（ポートが使われている・終了コード 1）
+    condition: 待ちの間に `mdmark serve` が終わった（セッションが閉じた）か、待ちを超えた
+    notes: 待ちを超えたときはセッションを閉じる
+  - name: なし（tmux が無い・終了コード 2）
+    condition: '`PATH` に tmux が無い'
+constraints:
+  - item: 起動のコマンド
+    constraint: '`tmux new-session -d -s {セッション名} -e MDMARK_PORT={ポート} -e MDMARK_CONFIG={パス} -e MDMARK_STATE_DIR={パス} "set -o pipefail; {起動するコマンド} 2>&1 | tee -a {serve.log}"`。環境変数は `-e` で明示して渡す'
+    notes: tmux サーバーが既に動いていると、呼んだ側の環境変数は新しいセッションに渡らない
+  - item: セッションの指定
+    constraint: '`has-session`・`kill-session` の `-t` は `={セッション名}` の完全一致'
+  - item: 待ち
+    constraint: 1 秒ごとにポートへつなぎ直し、上限は 60 秒
+  - item: セッション名
+    constraint: 端末の設定の `serve.tmuxSession`、無ければ `mdmark-mcp`
+    decided_by: dev/設計書/設定/ライブラリ本体#settings[serve.tmuxSession]
+  - item: 常駐の仕方
+    constraint: tmux のセッションの外での `nohup`・`setsid`・`&` による常駐はしない
+  - item: 出力
+    constraint: 結果は標準出力に JSON の 1 行で出す。誤りは標準エラーに理由と修正方法を出す
+  - item: 動く Node の版
+    constraint: Node 24 以降
+    decided_by: dev/設計書/非機能要件/非機能要件#requirements[CLI が動く Node の版]
