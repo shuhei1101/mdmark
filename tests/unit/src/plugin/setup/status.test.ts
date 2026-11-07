@@ -41,7 +41,7 @@ test("test_read_terminal_status_when_unreadable", async () => {
   const { readTerminalStatus } = await loadStatus();
   const home = await createTempDir();
   await writeFiles(home, {
-    "settings.yaml": "version: v0.9.0\nfeatures:\n  table: [\n",
+    "settings.yaml": "version: v0.9.0\nfeatures:\n  table: a: b\n",
   });
   const settingsPath = join(home, "settings.yaml");
   // 実行
