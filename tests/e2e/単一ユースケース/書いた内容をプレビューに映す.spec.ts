@@ -20,6 +20,29 @@ import { openCascadedPreview } from "../vscode-cascade.ts";
 
 const e2e = useVscodeE2E();
 
+/** 用語のエイリアスの行を持つ設定ファイル（`extra` の行を `aliases` の後ろに足す） */
+const aliasConfig = (extra: string[] = []) =>
+  [
+    "aliases:",
+    "  - id: terms",
+    "    paths: [glossary.yaml]",
+    "    alias_type: term",
+    "    records: terms",
+    ...extra,
+    "",
+  ].join("\n");
+
+/** 名前 `描画`・別名 `レンダリング` の用語 1 件を持つ YAML */
+const glossary = (meaning: string) =>
+  [
+    "terms:",
+    "  - id: render",
+    "    name: 描画",
+    "    aliases: [レンダリング]",
+    `    description: ${meaning}`,
+    "",
+  ].join("\n");
+
 /** 設定ファイルの内容: `features` を書いていない */
 const EMPTY_CONFIG = "# mdmark の設定\n";
 
@@ -384,4 +407,37 @@ test("test_normal_when_outside_config_saved", async () => {
         .innerText(),
     )
     .toBe("hello:世界");
+});
+
+// aliases の行が指す YAML を保存すると、リロードせずに書き換えた意味のツールチップで描き直す（正常シナリオ（aliases の YAML を書き換える））
+test("test_normal_when_aliases_yaml_saved", async () => {
+  // 準備
+  const session = await e2e.launch({
+    files: {
+      "mdmark.config.yaml": aliasConfig(),
+      "glossary.yaml": glossary("前の意味"),
+      "guide.md": "# 案内\n\nレンダリングの段落\n",
+    },
+  });
+  await session.openFile("guide.md");
+  await session.openPreviewWithShortcut();
+  const frame = await session.frameWith(".mdmark-term");
+  const term = frame.locator(".mdmark-term", { hasText: "レンダリング" });
+  await expect(term).toHaveCount(1);
+  const top = await scrollTop(frame);
+  const text = await frame.locator(".mdmark").first().innerText();
+  // 実行
+  await writeFile(
+    join(session.workspaceDir, "glossary.yaml"),
+    glossary("書き換えた意味"),
+  );
+  // 検証
+  await expect
+    .poll(async () => {
+      await term.hover();
+      return frame.locator('[role="tooltip"]:visible').innerText();
+    })
+    .toContain("書き換えた意味");
+  expect(await frame.locator(".mdmark").first().innerText()).toBe(text);
+  expect(await scrollTop(frame)).toBe(top);
 });

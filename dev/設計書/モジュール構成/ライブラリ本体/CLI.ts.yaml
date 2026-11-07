@@ -1108,7 +1108,7 @@ functions:
     container: src/cli/export.ts
     usecase: 共通
     summary: 文書の画像を埋め、印のある外部ライブラリと設定の拡張と色分けのモジュールが束ねられることを確かめて読み先を集め、`html-scripts` がオンの文書の範囲の `ts`・`js` を `compileHtmlScripts` で変えて `embeds.htmlScripts` に入れ、`theme` を読み、索引があれば参照の表を作って、書き出しの中身と警告を返す。設定に `assets.root` があれば設定ファイルのフォルダから解決し、文書ごとに `copyMedia`（書き出しの中で共有する `copied` を渡す）の後に `inlineImages` を呼ぶ。`bundle` では `inlineImages` に共有の表を渡し、埋めた画像を `payload.assets` に入れる。設定の `features` で `images`・`media` をオフにした文書も同じく扱う
-    description: '`export` と `build` に共通の処理。埋める設定には、設定の `features`・`tooltips`・`side-toc`・`colorTheme`・`colorScheme`・`labels` をあるときだけ写す。`colorTheme` が `COLOR_THEMES` に無い名前のときも写したうえで、警告 `{設定ファイル}: 不明なテーマ名 {名前} です。既定の dev-swiss で描画します。` を 1 件出す。外部ライブラリ・拡張・色分けのモジュールは 1 つずつ `bundleModule` で束ねてみて、束ねられたものだけの読み先（URL はそのまま、パスは設定ファイルのあるフォルダを基準にした絶対パス）を `embeds` に入れる。同じ URL のモジュールは 1 回だけ束ねる。外部ライブラリと拡張で、束ねたコードに `hasDynamicImport` が当たるものは `embeds` に入れたうえで、警告 `{設定ファイル}: 拡張 \`{パス}\` は束ねた後も動的 import() が残り、blob: と動的 import を許さない環境では読み込めません。読む先をリテラルの文字列にしてください。`（外部ライブラリは `外部ライブラリ \`{印の名前}\``）を 1 件出す。文書の色分けの言語を `usedSyntaxLanguages` で拾い、1 つ以上あれば設定の `syntax.url`（無ければ `DEFAULT_SYNTAX_URL`）の `core.min.js` と言語ごとの `languages/{モジュール名}.min.js` を確かめて `embeds.syntax` に入れる（束ねたコードは esbuild の既定で頭の著作権表示を残す）。本体を束ねられなければ言語も確かめず `embeds.syntax` を持たない。言語のモジュールだけ束ねられなければ、その言語を `embeds.syntax.languages` に入れず、警告を 1 件出す（その言語のコードブロックは色分けせずに描く）。埋める設定には `syntax` を写さない（開いたときに外へ要求しない）。設定に `aliases` があれば `loadAliases` の `aliases` を `payload.aliases` に入れ、`issues` は 1 件ずつ警告 `{file}:{where}: {kind}: {message}`（`where` が空なら `{file}: {kind}: {message}`）にする（終了コードは変えない）。警告は `{ファイル}: {内容}` の文字列で、読めない画像・絶対 URL の画像・束ねられないモジュールと拡張・束ねられない色分けのライブラリ（`{設定ファイル}: 色分けのライブラリ \`{URL}\` を束ねられません（{理由}）。\`syntax.url\` を直してください。`）・読めない `theme`・読めない索引の文書を出す'
+    description: '`export` と `build` に共通の処理。埋める設定には、設定の `features`・`tooltips`・`side-toc`・`colorTheme`・`colorScheme`・`labels` をあるときだけ写す。`colorTheme` が `COLOR_THEMES` に無い名前のときも写したうえで、警告 `{設定ファイル}: 不明なテーマ名 {名前} です。既定の dev-swiss で描画します。` を 1 件出す。外部ライブラリ・拡張・色分けのモジュールは 1 つずつ `bundleModule` で束ねてみて、束ねられたものだけの読み先（URL はそのまま、パスは設定ファイルのあるフォルダを基準にした絶対パス）を `embeds` に入れる。同じ URL のモジュールは 1 回だけ束ねる。外部ライブラリと拡張で、束ねたコードに `hasDynamicImport` が当たるものは `embeds` に入れたうえで、警告 `{設定ファイル}: 拡張 \`{パス}\` は束ねた後も動的 import() が残り、blob: と動的 import を許さない環境では読み込めません。読む先をリテラルの文字列にしてください。`（外部ライブラリは `外部ライブラリ \`{印の名前}\``）を 1 件出す。文書の色分けの言語を `usedSyntaxLanguages` で拾い、1 つ以上あれば設定の `syntax.url`（無ければ `DEFAULT_SYNTAX_URL`）の `core.min.js` と言語ごとの `languages/{モジュール名}.min.js` を確かめて `embeds.syntax` に入れる（束ねたコードは esbuild の既定で頭の著作権表示を残す）。本体を束ねられなければ言語も確かめず `embeds.syntax` を持たない。言語のモジュールだけ束ねられなければ、その言語を `embeds.syntax.languages` に入れず、警告を 1 件出す（その言語のコードブロックは色分けせずに描く）。埋める設定には `syntax` を写さない（開いたときに外へ要求しない）。設定に `aliases` があれば `loadAliases` の `aliases` を `payload.aliases` に入れ、`issues` は 1 件ずつずれを 1 行にした（`formatCheckIssue`）警告にする（終了コードは変えない）。警告は `{ファイル}: {内容}` の文字列で、読めない画像・絶対 URL の画像・束ねられないモジュールと拡張・束ねられない色分けのライブラリ（`{設定ファイル}: 色分けのライブラリ \`{URL}\` を束ねられません（{理由}）。\`syntax.url\` を直してください。`）・読めない `theme`・読めない索引の文書を出す'
     kind: 関数
     scope: internal
     is_async: true
@@ -1943,7 +1943,7 @@ functions:
     container: src/cli/aliases.ts
     usecase: 共通
     summary: 設定の `aliases` の行の `paths` を設定ファイルのフォルダから引いて YAML を読み、`buildAliases` に渡して、エイリアスとずれを返す
-    description: '`check`・`export`・`build` が共通で使う。オブジェクトで `enabled` が `false` でない行ごとに、`paths` の各 glob を `node:fs/promises` の `glob`（`cwd` は設定ファイルのフォルダ。`globFiles` と同じやり方）で引き、当たったファイルを重ねずパスの順に並べる。当たるファイルが 0 件の行は `alias_no_files`（`file` は設定ファイル、`where` は `aliases[{行の位置}].paths`、`message` は ```{paths を `・` で並べた}` に当たるファイルがありません。`paths` を直してください。``）にする。当たったファイルは `yaml` で読み、読めないファイルは `alias_unreadable`（`file` はそのファイル、`where` は空、`message` は `loadConfig` と同じ形の ``{行} 行目を YAML として読めません（{理由}）。字下げと書き方を直してください。``）にしてそのファイルを使わない。読めたファイルを `MdmarkAliasSource`（`path` は設定ファイルのフォルダからの相対パス）にして、`config.aliases` の行と一緒に `buildAliases`（`configFile` は設定ファイルの名前）に渡し、返った `problems` を `CheckIssue` にする。ずれの並びは行の順で、行ごとに `alias_no_files`・`alias_unreadable` をその行の場所に置き、`buildAliases` の `problems` はその後ろに返った順で置く。設定に `aliases` が無ければファイルを読まず `{ aliases: undefined, issues: [] }` を返す'
+    description: '`check`・`export`・`build` が共通で使う。オブジェクトで `enabled` が `false` でない行ごとに、`paths` の各 glob を `node:fs/promises` の `glob`（`cwd` は設定ファイルのフォルダ。`globFiles` と同じやり方）で引き、当たったファイルを重ねずパスの順に並べる。当たるファイルが 0 件の行は `alias_no_files`（`file` は設定ファイル、`where` は `aliases[{行の位置}].paths`、`message` は ```{paths を `・` で並べた}` に当たるファイルがありません。`paths` を直してください。``）にする。当たったファイルは `yaml` で読み、読めないファイルは `alias_unreadable`（`file` はそのファイル、`where` は空、`message` は `loadConfig` と同じ形の ``{行} 行目を YAML として読めません（{理由}）。字下げと書き方を直してください。``）にしてそのファイルを使わない。読めたファイルを `MdmarkAliasSource`（`path` は設定ファイルのフォルダからの相対パス）にして、`config.aliases` の行と一緒に `buildAliases`（`configFile` は設定ファイルの名前）に渡し、返った `problems` を `CheckIssue` にする。ずれの並びは行の順で、行ごとに `alias_no_files`・`alias_unreadable` をその行の場所に置き、`buildAliases` の `problems` はその後ろに返った順で置く。設定に `aliases` が無ければファイルを読まず `{ aliases: undefined, issues: [], files: [] }` を返す。`files` は行の `paths` に当たった YAML の絶対パス（読めなかったファイルを含み、重ねずパスの順）で、VS Code 拡張機能のプレビューが見張るファイルに使う'
     kind: 関数
     scope: public
     is_async: true
@@ -1953,8 +1953,8 @@ functions:
         required: true
         description: 読んだ設定（`config.aliases` は `validateConfig` が Schema に合わない行を `null` にしたもの）
     returns:
-      type: 'Promise<{ aliases: MdmarkAlias[] | undefined; issues: CheckIssue[] }>'
-      description: 作ったエイリアス（`env` を含まない）と、エイリアスのずれ
+      type: 'Promise<{ aliases: MdmarkAlias[] | undefined; issues: CheckIssue[]; files: string[] }>'
+      description: 作ったエイリアス（`env` を含まない）と、エイリアスのずれと、当たった YAML の絶対パス
     callees:
       - dev/設計書/モジュール構成/ライブラリ本体/索引と用語.ts#functions[buildAliases]
     refs:
@@ -1965,7 +1965,7 @@ functions:
         summary: 行の paths の YAML を読んでエイリアスを作る
         condition: '`aliases` に `alias_type: command`・`paths: [aliases/commands.yaml]` の行と `alias_type: env`・`paths: [aliases/servers.yaml]` の行、それぞれのファイルにレコード 1 件'
         mock: 一時フォルダ
-        expected: '`aliases` が `command` の 1 件、`issues` が空'
+        expected: '`aliases` が `command` の 1 件、`issues` が空、`files` が `aliases/commands.yaml`・`aliases/servers.yaml` の絶対パスの 2 件'
       - name: test_load_aliases_when_no_files
         case: 異常
         summary: 当たるファイルが無い行を alias_no_files にする
@@ -1977,7 +1977,7 @@ functions:
         summary: YAML として読めないファイルを alias_unreadable にして使わない
         condition: '`aliases/a.yaml` が字下げの崩れた YAML、`aliases/b.yaml` が読める YAML'
         mock: 一時フォルダ
-        expected: '`alias_unreadable` が 1 件で `file` が `aliases/a.yaml`、`aliases` に `b.yaml` のレコードだけが入る'
+        expected: '`alias_unreadable` が 1 件で `file` が `aliases/a.yaml`、`aliases` に `b.yaml` のレコードだけが入り、`files` が `a.yaml`・`b.yaml` の 2 件'
       - name: test_load_aliases_when_disabled_or_null
         case: 正常
         summary: enabled が false の行と null の行は読まない
@@ -1989,10 +1989,45 @@ functions:
         summary: 設定に aliases が無ければ何も読まない
         condition: '`aliases` の無い設定'
         mock: なし
-        expected: '`aliases` が `undefined`、`issues` が空'
+        expected: '`aliases` が `undefined`、`issues` と `files` が空'
     status: planned
     introduced:
       pr: 176
+  - name: formatCheckIssue
+    title: ずれを 1 行にする
+    container: src/cli/issues.ts
+    usecase: 共通
+    kind: 関数
+    scope: public
+    summary: '`CheckIssue` を `{file}:{where}: {kind}: {message}`（`where` が空なら `{file}: {kind}: {message}`）の 1 行にする'
+    description: '`mdmark check` の出力・`mdmark export` の警告・`mdmark upgrade` の点検のずれ・VS Code 拡張機能のプレビューのエイリアスの警告が使う。拡張機能ホストの束ねに `check.ts` の依存（ネイティブ版の `esbuild` など）を入れないため、値の import を持たない `src/cli/issues.ts` に置き、`CheckIssue` は型だけを `check.ts` から import する'
+    args:
+      - name: issue
+        type: CheckIssue
+        required: true
+        description: ずれ
+    returns:
+      type: string
+      description: ずれの 1 行
+    unit_tests:
+      - name: test_format_check_issue
+        case: 正常
+        summary: where を持つずれは file と where を `:` でつなぐ
+        condition: '`file` が `mdmark.config.yaml`・`where` が `aliases[1].paths`・`kind` が `alias_no_files`・`message` が `m`'
+        mock: なし
+        expected: '`mdmark.config.yaml:aliases[1].paths: alias_no_files: m`'
+      - name: test_format_check_issue_when_no_where
+        case: 正常
+        summary: where が空のずれは file だけを置く
+        condition: '`file` が `aliases/a.yaml`・`where` が空・`kind` が `alias_unreadable`・`message` が `m`'
+        mock: なし
+        expected: '`aliases/a.yaml: alias_unreadable: m`'
+    callers:
+      - '#functions[runCheck]'
+      - '#functions[prepareEmbeds]'
+      - dev/設計書/モジュール構成/ライブラリ本体/版を上げる.ts#
+      - dev/設計書/モジュール構成/VSCode拡張機能/プレビュー.ts#classes[PreviewPanel]
+    status: planned
   - name: collectAssetRefs
     title: ファイルの参照を拾う
     container: src/cli/assets.ts
@@ -2462,6 +2497,7 @@ test_files:
   - tests/unit/src/cli/build.test.ts
   - tests/unit/src/cli/alias-schema.test.ts
   - tests/unit/src/cli/aliases.test.ts
+  - tests/unit/src/cli/issues.test.ts
   - tests/unit/src/cli/assets.test.ts
   - tests/unit/src/cli/markdown-check.test.ts
   - tests/unit/src/cli/includes.test.ts

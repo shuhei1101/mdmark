@@ -59,7 +59,7 @@ data_models:
     usecase: 共通
     role: DTO
     summary: '`type` で見分ける判別付きの型'
-    description: '`{ type: "render"; markdown: string; previous?: string; config: PreviewConfig; theme: "auto" | "light" | "dark"; includes?: Record<string, string> }`・`{ type: "scrollToLine"; line: number }`・`{ type: "configError"; path: string; line?: number; settingKey?: string }`・`{ type: "configOk" }`・`{ type: "theme"; href: string }`・`{ type: "assetsResolved"; id: number; urls: Record<string, string | null> }`・`{ type: "inspect"; id: number; selector: string; play?: boolean }`・`{ type: "axe"; id: number }`。`configError` は `line` と `settingKey` のどちらか一方を持つ。`inspect`・`axe` はテストのときだけ送る'
+    description: '`{ type: "render"; markdown: string; previous?: string; config: PreviewConfig; theme: "auto" | "light" | "dark"; includes?: Record<string, string>; aliases?: MdmarkAlias[] }`・`{ type: "scrollToLine"; line: number }`・`{ type: "configError"; path: string; line?: number; settingKey?: string }`・`{ type: "configOk" }`・`{ type: "theme"; href: string }`・`{ type: "assetsResolved"; id: number; urls: Record<string, string | null> }`・`{ type: "inspect"; id: number; selector: string; play?: boolean }`・`{ type: "axe"; id: number }`。`configError` は `line` と `settingKey` のどちらか一方を持つ。`inspect`・`axe` はテストのときだけ送る'
     properties:
       - name: type
         type: '"render" | "scrollToLine" | "configError" | "configOk" | "theme" | "assetsResolved" | "inspect" | "axe"'
@@ -206,7 +206,7 @@ data_models:
     summary: '`import()` で読んだ mdmark の配布物のうち、Webview が使うもの'
     properties:
       - name: mount
-        type: '(element: HTMLElement, options: { markdown: string; config?: unknown; diffSource?: DiffSource; docId?: string; diffMode?: "blocks"; includes?: Record<string, string> }) => MountHandle'
+        type: '(element: HTMLElement, options: { markdown: string; config?: unknown; diffSource?: DiffSource; docId?: string; diffMode?: "blocks"; includes?: Record<string, string>; aliases?: unknown[] }) => MountHandle'
         description: 描く。`MountHandle` は `update(markdown, options?)`・`destroy()` を持つ
       - name: diffModes
         type: unknown
@@ -381,7 +381,7 @@ classes:
       - name: configKey
         type: string | undefined
         access: private
-        description: 今の描画に渡した `config` の `JSON.stringify`（前と同じかの比較に使う）
+        description: 今の描画に渡した `config` と `aliases` の組の `JSON.stringify`（前と同じかの比較に使う）
       - name: pendingScrollTop
         type: number | undefined
         access: private
@@ -445,7 +445,7 @@ classes:
       - name: render
         title: 描く
         kind: メソッド
-        summary: '`render` を受けて文書を描く。初回と `config` が変わったときは `mount`（前の描画は `destroy`）、それ以外は `update`'
+        summary: '`render` を受けて文書を描く。初回と `config` か `aliases` が変わったときは `mount`（前の描画は `destroy`）、それ以外は `update`'
         args:
           - name: message
             type: 'Extract<HostMessage, { type: "render" }>'
@@ -458,7 +458,7 @@ classes:
           1. `theme` が `light`・`dark` なら `root` に class `mdmark-theme-light`・`mdmark-theme-dark` を付け、`auto` なら両方を外す
           2. 描き直す前の `scrollTop` を控える
           3. `previous` を持つときは、`diffTexts` が無ければ作り、`modified` を `markdown`、`original` を `previous` に書き換える
-          4. `configKey` が同じで `handle` があれば `handle.update(markdown)`（`includes` を持てば `{ includes }` も渡す）、違えば `handle?.destroy()` の後に描く先の要素へ `mount(element, { markdown, config, includes })`。`diffTexts` があるときは `diffSource: createDiffSource(diffTexts)`・`docId: DIFF_DOC_ID`・`diffMode: "blocks"` も渡す
+          4. `configKey` が同じで `handle` があれば `handle.update(markdown)`（`includes` を持てば `{ includes }` も渡す）、違えば `handle?.destroy()` の後に描く先の要素へ `mount(element, { markdown, config, includes, aliases })`（`aliases` は持つときだけ渡す）。`diffTexts` があるときは `diffSource: createDiffSource(diffTexts)`・`docId: DIFF_DOC_ID`・`diffMode: "blocks"` も渡す
           5. `savedLine` があれば `scrollToLine(savedLine)` で置いて `savedLine` を消し（`pendingScrollTop` に覚えるため `revealLine` は送らない）、無ければ控えた `scrollTop` に戻す
           6. `savedLine` で置いたときは、次の `requestAnimationFrame` で `scrollTop` が置いた値から動いていなければ、もう一度 `scrollToLine` で置き直す（差分のパネルは描いた後に色分けで描き直し、行より上の高さが変わる）
         exceptions:
@@ -478,6 +478,12 @@ classes:
             condition: '`config` が `{}` の `render` の後、`scrollTop` を 200 にして `config` が `{ features: { callout: false } }` の `render`'
             mock: mdmark を代役にする
             expected: '`destroy` の後に `mount` が新しい `config` で呼ばれ、`scrollTop` が 200'
+          - name: test_render_when_aliases_changed
+            case: 正常
+            summary: aliases が変わったら destroy してから mount し直し、mount に aliases を渡す
+            condition: '`aliases` を持たない `render` の後、同じ `config` で `aliases` に用語 1 件を持つ `render`'
+            mock: mdmark を `mount` に渡された引数と `update`・`destroy` を記録する代役にする
+            expected: '1 回目の `mount` に `aliases` が渡らず、2 回目は `destroy` の後に `mount` が `aliases` の 1 件で呼ばれ、`update` は呼ばれない'
           - name: test_render_when_theme
             case: 正常
             summary: 配色を固定するときだけ包む要素に class を付ける

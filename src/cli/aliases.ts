@@ -15,19 +15,21 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
-/** 設定の `aliases` の行の `paths` を設定ファイルのフォルダから引いて YAML を読み、`buildAliases` に渡して、エイリアスとずれを返す。設定に `aliases` が無ければファイルを読まず `undefined` を返す */
+/** 設定の `aliases` の行の `paths` を設定ファイルのフォルダから引いて YAML を読み、`buildAliases` に渡して、エイリアスとずれと、当たった YAML の絶対パスを返す。設定に `aliases` が無ければファイルを読まず `undefined` を返す */
 export async function loadAliases(loaded: LoadedConfig): Promise<{
   aliases: MdmarkAlias[] | undefined;
   issues: CheckIssue[];
+  files: string[];
 }> {
   const rows = loaded.config.aliases;
   if (rows === undefined) {
-    return { aliases: undefined, issues: [] };
+    return { aliases: undefined, issues: [], files: [] };
   }
   const configName = basename(loaded.path);
   const readIssues: CheckIssue[] = [];
   const sources: MdmarkAliasSource[] = [];
   const rowIds = new Set<string>();
+  const matched: string[] = [];
   for (const [position, row] of rows.entries()) {
     // 読まない行と、`buildAliases` が使わない行・前の行と同じ `id` の行は、ファイルも読まない
     if (
@@ -66,10 +68,12 @@ export async function loadAliases(loaded: LoadedConfig): Promise<{
       continue;
     }
     for (const file of files) {
+      const absolute = join(loaded.dir, file);
+      if (!matched.includes(absolute)) {
+        matched.push(absolute);
+      }
       try {
-        const data: unknown = parse(
-          await readFile(join(loaded.dir, file), "utf8"),
-        );
+        const data: unknown = parse(await readFile(absolute, "utf8"));
         sources.push({ rowId: row.id, path: file, data });
       } catch (error) {
         if (!(error instanceof YAMLParseError)) {
@@ -87,5 +91,9 @@ export async function loadAliases(loaded: LoadedConfig): Promise<{
     }
   }
   const built = buildAliases({ rows, sources, configFile: configName });
-  return { aliases: built.aliases, issues: [...readIssues, ...built.problems] };
+  return {
+    aliases: built.aliases,
+    issues: [...readIssues, ...built.problems],
+    files: matched,
+  };
 }

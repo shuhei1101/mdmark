@@ -194,13 +194,13 @@ export const createDocumentView = (options: {
     return top === undefined ? undefined : lineForTop(top.anchors, top.top);
   };
 
-  /** 初回と `config` が変わったときは `mount`（前の描画は `destroy`）、それ以外は `update` */
+  /** 初回と `config` か `aliases` が変わったときは `mount`（前の描画は `destroy`）、それ以外は `update` */
   const draw = (
     loaded: Mdmark,
     target: HTMLElement,
     message: RenderMessage,
   ): void => {
-    const key = JSON.stringify(message.config);
+    const key = JSON.stringify([message.config, message.aliases]);
     const includes =
       message.includes === undefined ? {} : { includes: message.includes };
     if (handle !== undefined && key === configKey) {
@@ -217,6 +217,7 @@ export const createDocumentView = (options: {
       markdown: message.markdown,
       config: message.config,
       ...includes,
+      ...(message.aliases === undefined ? {} : { aliases: message.aliases }),
       ...(diffTexts === undefined
         ? {}
         : {

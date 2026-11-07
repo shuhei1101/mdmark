@@ -4,6 +4,7 @@ import {
   cp,
   mkdir,
   mkdtemp,
+  readdir,
   readFile,
   rm,
   symlink,
@@ -24,6 +25,9 @@ import { buildExtension } from "../../vscode/scripts/build.ts";
 import { createStubServer } from "../../vscode/tests/integration/stub-server.ts";
 import { createBuiltRoot } from "../integration/built-root.ts";
 import { VSCODE_EXECUTABLE_ENV } from "./vscode-binary.ts";
+
+/** 拡張機能の ID（出力チャネルのログのフォルダの名前） */
+const EXTENSION_ID = "ShuheiNishikawa.mdmark-vscode";
 
 // リポジトリの直下と、拡張機能の場所
 const REPO_ROOT = resolve(import.meta.dirname, "../..");
@@ -241,6 +245,8 @@ export type VscodeSession = {
   guideFrame: () => Promise<Frame>;
   /** 通知に出ている文 */
   notifications: () => Promise<string[]>;
+  /** 拡張機能の出力チャネル（`mdmark`）のログの行。ログのファイルがまだ無ければ空 */
+  extensionLog: () => Promise<string[]>;
   /** エディタの見えている先頭の行（1 始まり） */
   editorTopLine: () => Promise<number>;
   /** 終了して一時フォルダを消す */
@@ -517,6 +523,21 @@ async function startVscode(
           ".notifications-toasts .notification-list-item .notification-list-item-message",
         )
         .allInnerTexts(),
+    extensionLog: async () => {
+      const logsDir = join(userDataDir, "logs");
+      const entries = await readdir(logsDir, { recursive: true }).catch(
+        () => [] as string[],
+      );
+      const files = entries.filter((entry) =>
+        entry.endsWith(join("exthost", EXTENSION_ID, "mdmark.log")),
+      );
+      const texts = await Promise.all(
+        files.map((entry) => readFile(join(logsDir, entry), "utf8")),
+      );
+      return texts.flatMap((text) =>
+        text.split("\n").filter((line) => line !== ""),
+      );
+    },
     editorTopLine: () =>
       win.evaluate(() => {
         const editor = document.querySelector(".monaco-editor");

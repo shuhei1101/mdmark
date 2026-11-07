@@ -27,6 +27,32 @@ function distRequests(): string[] {
     .filter((path) => path !== "/tags");
 }
 
+/** 用語のエイリアスの行を持つ設定ファイル（`extra` の行を `aliases` の後ろに足す） */
+const aliasConfig = (extra: string[] = []) =>
+  [
+    "aliases:",
+    "  - id: terms",
+    "    paths: [glossary.yaml]",
+    "    alias_type: term",
+    "    records: terms",
+    ...extra,
+    "",
+  ].join("\n");
+
+/** 名前 `描画`・別名 `レンダリング` の用語 1 件を持つ YAML */
+const glossary = (meaning: string) =>
+  [
+    "terms:",
+    "  - id: render",
+    "    name: 描画",
+    "    aliases: [レンダリング]",
+    `    description: ${meaning}`,
+    "",
+  ].join("\n");
+
+/** 本文に別名 `レンダリング` を含む Markdown */
+const ALIAS_MARKDOWN = "# 案内\n\nレンダリングの段落\n";
+
 /** 配布物を読めない・バージョンを決められないときの、文書の代わりの表示 */
 function notice(frame: import("@playwright/test").Frame) {
   return frame.locator(".mdmark-preview-notice");
@@ -377,4 +403,70 @@ test("test_error_when_config_unreadable", async () => {
     opened.session.win.locator('.tab.active[aria-label*="settings.yaml"]'),
   ).toHaveCount(1);
   expect(await opened.configs()).toEqual(opened.before);
+});
+
+// 設定の aliases から作ったエイリアスに、下線と種類ごとのツールチップが出る（正常シナリオ（設定の aliases のエイリアス））
+test("test_normal_when_aliases", async () => {
+  // 準備
+  const session = await e2e.launch({
+    files: {
+      "mdmark.config.yaml": aliasConfig(),
+      "glossary.yaml": glossary("Markdown を HTML にすること"),
+      "guide.md": ALIAS_MARKDOWN,
+      "plain/mdmark.config.yaml": "# エイリアスを持たない設定\n",
+      "plain/plain.md": "# 素の文書\n\nレンダリングの段落\n",
+    },
+  });
+  await session.openFile("guide.md");
+  // 実行
+  await session.openPreviewWithShortcut();
+  const frame = await session.frameWith(".mdmark-term");
+  const term = frame.locator(".mdmark-term", { hasText: "レンダリング" });
+  await term.hover();
+  // 検証
+  await expect(term).toHaveCount(1);
+  const tip = frame.locator('[role="tooltip"]:visible');
+  await expect(tip).toHaveCount(1);
+  await expect(tip).toContainText("用語");
+  await expect(tip).toContainText("描画");
+  await expect(tip).toContainText("Markdown を HTML にすること");
+  // 実行: aliases を持たない設定の文書を開く
+  await session.openFile("plain/plain.md");
+  await session.openPreviewWithShortcut();
+  // 検証
+  const plain = await session.frameWith('.mdmark h1:has-text("素の文書")');
+  await expect(plain.getByText("レンダリングの段落")).toBeVisible();
+  await expect(plain.locator(".mdmark-term")).toHaveCount(0);
+});
+
+// aliases の行の YAML が無いとき、その行を除いて描き、出力チャネルに警告を書く（異常シナリオ（aliases の YAML が無い））
+test("test_error_when_aliases_missing", async () => {
+  // 準備
+  const session = await e2e.launch({
+    files: {
+      "mdmark.config.yaml": aliasConfig([
+        "  - id: missing",
+        "    paths: [missing/*.yaml]",
+        "    alias_type: term",
+      ]),
+      "glossary.yaml": glossary("Markdown を HTML にすること"),
+      "guide.md": ALIAS_MARKDOWN,
+    },
+  });
+  await session.openFile("guide.md");
+  // 実行
+  await session.openPreviewWithShortcut();
+  // 検証
+  const frame = await session.frameWith(".mdmark-term");
+  await expect(
+    frame.locator(".mdmark-term", { hasText: "レンダリング" }),
+  ).toHaveCount(1);
+  await expect
+    .poll(async () =>
+      (await session.extensionLog()).some((line) =>
+        line.includes("mdmark.config.yaml:aliases[1].paths: alias_no_files:"),
+      ),
+    )
+    .toBe(true);
+  await expect(frame.locator(".mdmark-config-band")).toHaveCount(0);
 });

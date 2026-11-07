@@ -98,6 +98,33 @@ test("test_render_when_config_changed", async () => {
   expect(scroller().scrollTop).toBe(200);
 });
 
+// aliases が変わったら destroy してから mount し直し、mount に aliases を渡す（正常系）
+test("test_render_when_aliases_changed", async () => {
+  // 準備
+  const { mdmark, record } = createMdmark();
+  const { view } = await createView(mdmark);
+  const aliases = [
+    {
+      alias_type: "term" as const,
+      id: "render",
+      name: "描画",
+      aliases: ["レンダリング"],
+      description: "Markdown を HTML にすること",
+    },
+  ];
+  view.render(renderMessage("# レンダリング"));
+  // 実行
+  view.render({ ...renderMessage("# レンダリング"), aliases });
+  // 検証
+  const firstCall = record.mount.mock.calls[0] as unknown[];
+  expect(firstCall[1]).not.toHaveProperty("aliases");
+  expect(record.destroy).toHaveBeenCalledTimes(1);
+  expect(record.mount).toHaveBeenCalledTimes(2);
+  const secondCall = record.mount.mock.calls[1] as unknown[];
+  expect(secondCall[1]).toMatchObject({ aliases });
+  expect(record.update).not.toHaveBeenCalled();
+});
+
 // 配色を固定するときだけ包む要素に class を付ける（正常系）
 test("test_render_when_theme", async () => {
   // 準備
