@@ -8,7 +8,7 @@ scenarios:
       - name: 見本の Markdown
         description: 段落とリンクと、言語 `mermaid` の flowchart のコードブロックを持つ文書
       - name: Mock
-        description: jsDelivr を、ビルドした `dist/` を同じパスで返す手元の応答に差し替える
+        description: jsDelivr を、ビルドした `dist/` と mermaid の本体と chunk を同じパスで返す手元の応答に差し替える
     flow: |-
       sequenceDiagram
         actor U as 利用者
