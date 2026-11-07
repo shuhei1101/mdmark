@@ -51,6 +51,7 @@
 | 単体テスト全体 | 全実行 | 実行のみ | ✅ | 250 ファイル・1722 テスト pass。Red は `テスト結果/20261107234541_c39d877c_単体テスト.log`<br>lint: `テスト結果/20261108000914_f3ea32eb_lint.log` |
 | [tests/unit/vscode/scripts/build.test.ts](https://github.com/shuhei1101/mdmark/blob/develop/tests/unit/vscode/scripts/build.test.ts) | `test_build_extension` | 変更 | ✅ | `self` の宣言と `dist/esbuild.wasm` の複写を確かめる検証を追加<br>`テスト結果/20261108012829_34e7d120_単体テスト.log` |
 | 単体テスト全体（結合テスト作成の後） | 全実行 | 実行のみ | ✅ | 全件の実行で 7 件が 15〜30 秒のタイムアウトで落ち（load average 約 18）、その 7 ファイルを流し直して pass<br>`テスト結果/20261108012829_34e7d120_単体テスト.log`<br>lint: `テスト結果/20261108012829_34e7d120_lint.log`（biome の警告 2 件は develop でも同じ） |
+| 単体テスト全体（develop の取り込みの後） | 全実行 | 実行のみ | ✅ | 全件の実行で 4 件が 15〜30 秒のタイムアウトで落ち、その 4 ファイルを流し直して pass<br>`テスト結果/20261108025458_1d670327_単体テスト.log` |
 
 `test_collect_range_scripts` の期待値を、範囲のコードの末尾の改行を含んだ値に直した（[f3ea32eb](https://github.com/shuhei1101/mdmark/commit/f3ea32eb)）。`mount` と CLI は範囲のコードの文字のまま照合するため、末尾の改行を落とさないのが設計書の「エスケープを戻したコード」と一致する。
 
@@ -60,6 +61,7 @@
 | --- | --- | --- | --- | --- |
 | [vscode/tests/integration/export.test.ts](https://github.com/shuhei1101/mdmark/blob/develop/vscode/tests/integration/export.test.ts) | `test_normal_when_relative_libraries` | 新規 | ✅ | VS Code 1.141.0 と stable で pass<br>`テスト結果/20261108012829_3a58704c_結合テスト.log` |
 | VS Code 拡張機能の結合テスト全体 | 全実行 | 実行のみ | ✅ | 70 テスト pass（VS Code 1.141.0・stable）<br>`テスト結果/20261108012829_3a58704c_結合テスト.log` |
+| VS Code 拡張機能の結合テスト全体（develop の取り込みの後） | 全実行 | 実行のみ | ✅ | #352 の `test_normal_when_config_color_scheme` と `test_normal_when_relative_libraries` の両方を含む 72 テスト pass（VS Code 1.141.0・stable）<br>`テスト結果/20261108025458_1d670327_結合テスト.log` |
 
 結合テストで、拡張機能のビルドが `esbuild.wasm` を `dist/` に複写しておらず、esbuild-wasm の `self` も当てていないため `bundleExtensions` が拡張機能ホストで動かないことが分かった。モジュール構成『VS Code 拡張機能 / ビルドと配布』の `buildExtension` の記述どおりに実装し（[3a58704c](https://github.com/shuhei1101/mdmark/commit/3a58704c)）、単体テストの期待値に足した（[abd308f4](https://github.com/shuhei1101/mdmark/commit/abd308f4)・[34e7d120](https://github.com/shuhei1101/mdmark/commit/34e7d120)）。esbuild は束ねるときに `self` の名前に数字を付ける（`var self2 = globalThis;`）。
 
