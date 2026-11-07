@@ -1,5 +1,5 @@
 import { expect, test } from "vitest";
-import { findTag, findTags, innerHtml } from "../../../helpers/html.ts";
+import { findTag, findTags } from "../../../helpers/html.ts";
 import { renderDoc } from "../../../helpers/render.ts";
 
 /** cards の範囲で 4 項目のリストを囲んだ Markdown */
@@ -30,13 +30,13 @@ test("test_build_card_grid", () => {
   expect(links[3]?.startsWith("<div")).toBe(true);
   expect(findTag(html, "mdmark-card-grid-icon")).toContain('data-icon="book"');
   expect(findTags(html, "mdmark-card-grid-icon")).toHaveLength(1);
-  const titles = findTags(html, "mdmark-card-grid-title").map((tag) =>
-    innerHtml(html.slice(html.indexOf(tag)), "mdmark-card-grid-title"),
-  );
+  const titles = [
+    ...html.matchAll(/<span class="mdmark-card-grid-title">(.*?)<\/span>/g),
+  ].map((match) => match[1]);
   expect(titles).toEqual(["使い方", "参照", "example.com/docs", "準備中"]);
-  const descriptions = findTags(html, "mdmark-card-grid-desc").map((tag) =>
-    innerHtml(html.slice(html.indexOf(tag)), "mdmark-card-grid-desc"),
-  );
+  const descriptions = [
+    ...html.matchAll(/<p class="mdmark-card-grid-desc">(.*?)<\/p>/g),
+  ].map((match) => match[1]);
   expect(descriptions).toEqual(["導入の手順", "名前の一覧"]);
   expect(html).not.toContain('class="mdmark-card"');
   expect(html).not.toContain("<!--");
