@@ -1,5 +1,5 @@
 title: '設定: Claude Code プラグイン'
-lead: Claude Code プラグインの MCP サーバー（`mdmark serve`）が待ち受けるポート、Claude Code がつなぐ先、スキルが呼ぶスクリプト（`plugin/scripts/setup.js`）と SessionStart のフックが読む環境変数の一覧。実装は `src/plugin/http.ts`、つなぐ先は `plugin/.mcp.json`
+lead: Claude Code プラグインの MCP サーバー（`mdmark serve`）が待ち受けるポート、Claude Code がつなぐ先、スキルが呼ぶスクリプト（`plugin/bin/setup.js`）と SessionStart のフックが読む環境変数の一覧。実装は `src/plugin/http.ts`、つなぐ先は `plugin/.mcp.json`
 files:
   - file: 環境変数
     manages: '`mdmark serve` が待ち受けるポートと、Claude Code が `.mcp.json` の URL を展開する値'

@@ -1,7 +1,7 @@
 title: 端末の設定を書く
 entry:
   kind: operation
-  value: '`node ${CLAUDE_PLUGIN_ROOT}/scripts/setup.js write-settings [--set {キー}={値}]...`（スキルが Bash で呼ぶ）'
+  value: '`node ${CLAUDE_PLUGIN_ROOT}/bin/setup.js write-settings [--set {キー}={値}]...`（スキルが Bash で呼ぶ）'
 flows:
   - name: 正常系
     summary: 端末の設定を雛形から作り、`settings.json` の `env` に `MDMARK_CONFIG` を書く
@@ -9,7 +9,7 @@ flows:
       - name: 一時の端末
         description: '`MDMARK_CONFIG`・`MDMARK_STATE_DIR`・`CLAUDE_CONFIG_DIR`・`TMUX_TMPDIR` を、それぞれ空の一時フォルダの下にする'
       - name: Mock
-        description: ビルドした `plugin/scripts/setup.js` を子プロセスで流す。差し替える依存は無い
+        description: ビルドした `plugin/bin/setup.js` を子プロセスで流す。差し替える依存は無い
     flow: |-
       sequenceDiagram
         participant K as スキル（global-setup・setup）
@@ -33,7 +33,7 @@ flows:
       - name: 既にある端末の設定
         description: 'コメントの行と `features.callout: false` を持つ端末の設定'
       - name: Mock
-        description: ビルドした `plugin/scripts/setup.js` を子プロセスで流す。差し替える依存は無い
+        description: ビルドした `plugin/bin/setup.js` を子プロセスで流す。差し替える依存は無い
     flow: |-
       sequenceDiagram
         participant K as スキル（global-setup・setup）
@@ -52,7 +52,7 @@ flows:
       - name: 既定のパスの端末
         description: '`MDMARK_CONFIG` を外し、`XDG_CONFIG_HOME` と `CLAUDE_CONFIG_DIR` を空の一時フォルダにする'
       - name: Mock
-        description: ビルドした `plugin/scripts/setup.js` を子プロセスで流す。差し替える依存は無い
+        description: ビルドした `plugin/bin/setup.js` を子プロセスで流す。差し替える依存は無い
     flow: |-
       sequenceDiagram
         participant K as スキル（global-setup・setup）
@@ -69,7 +69,7 @@ flows:
       - name: 一時の端末
         description: '`MDMARK_CONFIG`・`MDMARK_STATE_DIR`・`CLAUDE_CONFIG_DIR`・`TMUX_TMPDIR` を、それぞれ空の一時フォルダの下にする'
       - name: Mock
-        description: ビルドした `plugin/scripts/setup.js` を子プロセスで流す。差し替える依存は無い
+        description: ビルドした `plugin/bin/setup.js` を子プロセスで流す。差し替える依存は無い
     flow: |-
       sequenceDiagram
         participant K as スキル（global-setup・setup）

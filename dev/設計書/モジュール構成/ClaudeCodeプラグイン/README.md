@@ -10,3 +10,4 @@ Claude Code プラグインの MCP サーバー・フック・使い方集と、
 | [使い方集.ts](./使い方集.ts.yaml) | 使い方集の索引の検査 |
 | [フック.ts](./フック.ts.yaml) | PreToolUse のフックで作業のフォルダを project_dir に入れる |
 | [プラグインのビルド.ts](./プラグインのビルド.ts.yaml) | 使い方集の索引を検査し、フックを束ね、バージョン・ライセンスを plugin/ に書く |
+| [セットアップ.ts](./セットアップ.ts.yaml) | global-setup・setup のスキルが呼ぶ setup.js のサブコマンドと、スキルの本文 |

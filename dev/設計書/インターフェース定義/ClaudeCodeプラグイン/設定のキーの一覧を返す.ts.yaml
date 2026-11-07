@@ -1,7 +1,7 @@
 title: 設定のキーの一覧を返す
 entry:
   kind: operation
-  value: '`node ${CLAUDE_PLUGIN_ROOT}/scripts/setup.js keys --target settings|config [--dir {文書のフォルダ}]`（スキルが Bash で呼ぶ）'
+  value: '`node ${CLAUDE_PLUGIN_ROOT}/bin/setup.js keys --target settings|config [--dir {文書のフォルダ}]`（スキルが Bash で呼ぶ）'
 flows:
   - name: 正常系
     summary: 端末の設定のキーごとに、今の値・既定・説明を返す
@@ -11,7 +11,7 @@ flows:
       - name: 端末の設定
         description: '`features.table: false` を持つ端末の設定'
       - name: Mock
-        description: ビルドした `plugin/scripts/setup.js` を子プロセスで流す。差し替える依存は無い
+        description: ビルドした `plugin/bin/setup.js` を子プロセスで流す。差し替える依存は無い
     flow: |-
       sequenceDiagram
         participant K as スキル（global-setup・setup）
@@ -31,7 +31,7 @@ flows:
       - name: 端末の設定と文書のフォルダ
         description: '`features.table: false` を持つ端末の設定と、`mdmark.config.yaml` の無い文書のフォルダ'
       - name: Mock
-        description: ビルドした `plugin/scripts/setup.js` を子プロセスで流す。差し替える依存は無い
+        description: ビルドした `plugin/bin/setup.js` を子プロセスで流す。差し替える依存は無い
     flow: |-
       sequenceDiagram
         participant K as スキル（global-setup・setup）

@@ -1,0 +1,666 @@
+title: ClaudeCodeプラグイン / セットアップ
+lead: '`global-setup`・`setup` のスキルが Bash で呼ぶ `plugin/bin/setup.js` のサブコマンド（`status`・`keys`・`write-settings`・`start-server`・`write-config`）と、スキルの本文。'
+directory: |-
+  ```tree
+  src/plugin/
+  ├── port.ts            # ポートの読み取りと、待ち受けているかの確かめ（フックと共用）
+  └── setup/
+      ├── main.ts        # setup.js の入口とサブコマンドの振り分け
+      ├── paths.ts       # 端末の設定・状態の置き場所・settings.json のパスとセッション名
+      ├── status.ts      # status
+      ├── keys.ts        # keys
+      ├── write.ts       # write-settings・write-config
+      └── server.ts      # start-server
+  plugin/
+  ├── bin/setup.js       # ビルドが束ねる
+  ├── settings.sample.yaml
+  └── skills/
+      ├── global-setup/SKILL.md
+      └── setup/SKILL.md
+  ```
+function_types:
+  - name: RunCommand
+    title: 外部のコマンドを実行する
+    container: src/plugin/setup/server.ts
+    usecase: 常駐サーバーを起動する
+    summary: コマンドと引数を受け、終了コードと標準出力を返す。テストで tmux の呼び出しを差し替える
+    args:
+      - name: command
+        type: string
+        required: true
+        description: コマンド
+      - name: args
+        type: string[]
+        required: true
+        description: 引数
+    returns:
+      type: 'Promise<{ code: number; stdout: string }>'
+      description: 終了コードと標準出力
+    status: planned
+    introduced:
+      pr: 354
+constants:
+  - name: DEFAULT_SESSION_NAME
+    title: 既定の tmux のセッション名
+    container: src/plugin/setup/paths.ts
+    usecase: 常駐サーバーを起動する
+    summary: 端末の設定に `serve.tmuxSession` が無いときのセッション名
+    value: mdmark-mcp
+    refs:
+      - dev/設計書/設定/ライブラリ本体#settings[serve.tmuxSession]
+    status: planned
+    introduced:
+      pr: 354
+  - name: SERVE_LOG_FILE
+    title: 常駐サーバーのログのファイル名
+    container: src/plugin/setup/paths.ts
+    usecase: 常駐サーバーを起動する
+    summary: 状態の置き場所の下のログのファイル名
+    value: serve.log
+    status: planned
+    introduced:
+      pr: 354
+  - name: START_TIMEOUT_SEC
+    title: 待ち受けを待つ上限の既定
+    container: src/plugin/setup/server.ts
+    usecase: 常駐サーバーを起動する
+    summary: '`MDMARK_START_TIMEOUT_SEC` が無いときの上限の秒数'
+    value: '120'
+    refs:
+      - dev/設計書/インターフェース定義/ClaudeCodeプラグイン/常駐サーバーを起動する.ts#constraints[待ち]
+    status: planned
+    introduced:
+      pr: 354
+  - name: POLL_INTERVAL_MS
+    title: 待ち受けを確かめる間隔
+    container: src/plugin/setup/server.ts
+    usecase: 常駐サーバーを起動する
+    summary: ポートへつなぎ直す間隔
+    value: '1000'
+    refs:
+      - dev/設計書/インターフェース定義/ClaudeCodeプラグイン/常駐サーバーを起動する.ts#constraints[待ち]
+    status: planned
+    introduced:
+      pr: 354
+  - name: CONNECT_TIMEOUT_MS
+    title: ポートへの接続の待ち
+    container: src/plugin/port.ts
+    usecase: 端末の状態を調べる
+    summary: 1 回の TCP の接続を待つ上限
+    value: '1000'
+    refs:
+      - dev/設計書/インターフェース定義/ClaudeCodeプラグイン/端末の状態を調べる.ts#constraints[ポートの確かめ]
+      - dev/設計書/インターフェース定義/ClaudeCodeプラグイン/常駐サーバーの状態を伝える.ts#constraints[待ち]
+    status: planned
+    introduced:
+      pr: 354
+  - name: SETUP_EXIT
+    title: setup.js の終了コード
+    container: src/plugin/setup/main.ts
+    usecase: 常駐サーバーを起動する
+    summary: サブコマンドの終了コード
+    entries:
+      - key: ok
+        value: '0'
+        description: 正常
+      - key: failed
+        value: '1'
+        description: 設定を読めない・Schema に合わない・ポートが使われている
+      - key: tmuxMissing
+        value: '2'
+        description: tmux が無い
+      - key: timedOut
+        value: '3'
+        description: 待ち受けを待つ上限を超えた
+    status: planned
+    introduced:
+      pr: 354
+functions:
+  - name: runSetup
+    title: setup.js を動かす
+    kind: 関数
+    container: src/plugin/setup/main.ts
+    usecase: 共通
+    role: 入口
+    summary: サブコマンドを振り分け、結果の JSON を標準出力に 1 行書き、終了コードを返す
+    description: 束ねた `plugin/bin/setup.js` を入口として実行したときだけ `process.argv`・`process.env` で呼び、戻り値を終了コードにする（`import.meta.main`）
+    scope: public
+    is_async: true
+    args:
+      - name: options
+        type: '{ argv: string[]; env: NodeJS.ProcessEnv; pluginRoot: string; version: string; run: RunCommand; stdout: (line: string) => void; stderr: (line: string) => void }'
+        required: true
+        description: 引数・環境変数・プラグインの直下・プラグインのバージョン・コマンドの実行・出力の先
+    returns:
+      type: Promise<0 | 1 | 2 | 3>
+      description: '`SETUP_EXIT` の値'
+    process: |-
+      1. 先頭の引数でサブコマンドを選び、知らないサブコマンドは使い方を標準エラーに書いて 1 を返す
+      2. 各サブコマンドの関数を呼び、成功なら結果を JSON の 1 行で標準出力に書く
+      3. `SetupError` は理由と修正方法を標準エラーに書き、その終了コードを返す
+    callees:
+      - '#functions[readTerminalStatus]'
+      - '#functions[listConfigKeys]'
+      - '#functions[writeSettings]'
+      - '#functions[writeConfig]'
+      - '#functions[startServer]'
+    unit_tests:
+      - name: test_run_setup
+        case: 正常
+        summary: status の結果を JSON の 1 行で書く
+        condition: '`argv` が `["status"]`、一時の端末の環境変数'
+        mock: 行を配列に貯める `stdout`、終了コード 1 の `run`（tmux が無い）
+        expected: 0 を返し、`stdout` の 1 行を JSON として読むと `tmux.available` が `false`
+      - name: test_run_setup_when_unknown_command
+        case: 異常
+        summary: 知らないサブコマンドは 1
+        condition: '`argv` が `["foo"]`'
+        mock: 行を配列に貯める `stderr`
+        expected: 1 を返し、`stderr` に `status` を含む使い方が出る
+    refs:
+      - dev/設計書/インターフェース定義/ClaudeCodeプラグイン/端末の状態を調べる.ts#
+      - dev/設計書/インターフェース定義/ClaudeCodeプラグイン/常駐サーバーを起動する.ts#
+    status: planned
+    introduced:
+      pr: 354
+  - name: resolveSetupPaths
+    title: 端末のパスを決める
+    kind: 関数
+    container: src/plugin/setup/paths.ts
+    usecase: 端末の状態を調べる
+    role: 処理
+    summary: 端末の設定・状態の置き場所・ログ・settings.json のパスとポートを返す
+    scope: public
+    is_async: false
+    args:
+      - name: env
+        type: NodeJS.ProcessEnv
+        required: true
+        description: 環境変数
+    returns:
+      type: SetupPaths
+      description: '`settingsPath`・`defaultPath`（既定のパスか）・`stateDir`・`logPath`・`claudeSettingsPath`・`port`'
+    process: |-
+      1. 端末の設定のパスは `resolveSettingsPath`（設定を重ねて読む）と同じ決め方にし、`MDMARK_CONFIG` が無いか既定のパスと同じなら `defaultPath` を真にする
+      2. 状態の置き場所は `MDMARK_STATE_DIR`、無ければ `${XDG_STATE_HOME:-~/.local/state}/mdmark`
+      3. `settings.json` は `${CLAUDE_CONFIG_DIR:-~/.claude}/settings.json`
+      4. ポートは `readPort`（MCP サーバーと同じ）。値の先頭の `~` はホームに展開する
+    callees:
+      - dev/設計書/モジュール構成/ライブラリ本体/設定を重ねて読む.ts#functions[resolveSettingsPath]
+      - dev/設計書/モジュール構成/ClaudeCodeプラグイン/MCPサーバー.ts#functions[readPort]
+    unit_tests:
+      - name: test_resolve_setup_paths
+        case: 正常
+        summary: 環境変数が無ければ既定のパス
+        condition: '`HOME=/h`、ほかの環境変数なし'
+        mock: なし
+        expected: '`settingsPath` が `/h/.config/mdmark/settings.yaml`、`defaultPath` が真、`logPath` が `/h/.local/state/mdmark/serve.log`、`claudeSettingsPath` が `/h/.claude/settings.json`、`port` が 8782'
+      - name: test_resolve_setup_paths_when_overridden
+        case: 正常
+        summary: 環境変数で上書きする
+        condition: '`MDMARK_CONFIG=~/x.yaml`・`MDMARK_STATE_DIR=/s`・`CLAUDE_CONFIG_DIR=/c`'
+        mock: なし
+        expected: '`settingsPath` が `/h/x.yaml`、`defaultPath` が偽、`logPath` が `/s/serve.log`、`claudeSettingsPath` が `/c/settings.json`'
+    refs:
+      - dev/設計書/インターフェース定義/ClaudeCodeプラグイン/端末の状態を調べる.ts#request
+      - dev/設計書/設定/ClaudeCodeプラグイン#settings
+    status: planned
+    introduced:
+      pr: 354
+  - name: readSessionName
+    title: セッション名を読む
+    kind: 関数
+    container: src/plugin/setup/paths.ts
+    usecase: 常駐サーバーを起動する
+    role: 処理
+    summary: 端末の設定の `serve.tmuxSession`、無ければ `DEFAULT_SESSION_NAME`
+    scope: public
+    is_async: false
+    args:
+      - name: settings
+        type: Record<string, unknown> | undefined
+        required: true
+        description: 読んだ端末の設定。無ければ `undefined`
+    returns:
+      type: string
+      description: セッション名
+    process: 1. `serve.tmuxSession` が文字列ならそれを、ほかは `DEFAULT_SESSION_NAME` を返す
+    unit_tests:
+      - name: test_read_session_name
+        case: 正常
+        summary: 無ければ既定
+        condition: '`undefined`'
+        mock: なし
+        expected: '`mdmark-mcp`'
+      - name: test_read_session_name_when_set
+        case: 正常
+        summary: 端末の設定の値
+        condition: '`{ serve: { tmuxSession: "x" } }`'
+        mock: なし
+        expected: '`x`'
+    refs:
+      - dev/設計書/設定/ライブラリ本体#settings[serve.tmuxSession]
+    status: planned
+    introduced:
+      pr: 354
+  - name: readTerminalStatus
+    title: 端末の状態を調べる
+    kind: 関数
+    container: src/plugin/setup/status.ts
+    usecase: 端末の状態を調べる
+    role: 処理
+    summary: '`status` の結果を作る'
+    scope: public
+    is_async: true
+    args:
+      - name: options
+        type: '{ env: NodeJS.ProcessEnv; pluginRoot: string; version: string } & { run: RunCommand }'
+        required: true
+        description: 環境変数・プラグインの直下・プラグインのバージョン・コマンドの実行
+    returns:
+      type: Promise<TerminalStatus>
+      description: インターフェース定義『端末の状態を調べる』のレスポンス
+    process: |-
+      1. パスを決める
+      2. 端末の設定があれば YAML として読み（読めなければ `SetupError`（1））、`version` とセッション名を取る
+      3. `run("tmux", ["-V"])` が失敗すれば `tmux.available` を偽、成功なら `has-session -t ={セッション名}` の終了コードでセッションの有無を取る
+      4. `isPortListening` で待ち受けを確かめる
+    callees:
+      - '#functions[resolveSetupPaths]'
+      - '#functions[readSessionName]'
+      - '#functions[isPortListening]'
+    unit_tests:
+      - name: test_read_terminal_status
+        case: 正常
+        summary: 空の端末
+        condition: 一時フォルダの `MDMARK_CONFIG`（ファイル無し）・空いたポート
+        mock: '`has-session` に 1 を返す `run`'
+        expected: '`settings.exists` が偽、`server.session` が `mdmark-mcp`、`server.session_exists` と `server.listening` が偽'
+      - name: test_read_terminal_status_when_unreadable
+        case: 異常
+        summary: 読めない端末の設定は SetupError
+        condition: 3 行目が YAML として読めない端末の設定
+        mock: なし
+        expected: 終了コード 1 の `SetupError` で、メッセージに端末の設定のパスと 3 行目を含む
+    refs:
+      - dev/設計書/インターフェース定義/ClaudeCodeプラグイン/端末の状態を調べる.ts#
+    status: planned
+    introduced:
+      pr: 354
+  - name: isPortListening
+    title: ポートが待ち受けているかを確かめる
+    kind: 関数
+    container: src/plugin/port.ts
+    usecase: 端末の状態を調べる
+    role: 処理
+    summary: '`127.0.0.1:{port}` へ TCP でつなぎ、接続を受ければ真'
+    scope: public
+    is_async: true
+    args:
+      - name: options
+        type: '{ port: number; timeoutMs: number }'
+        required: true
+        description: ポートと待ちの上限
+    returns:
+      type: Promise<boolean>
+      description: 接続を受けたか
+    process: 1. `node:net` で接続し、`connect` で真、`error` か待ちの上限で偽を返し、ソケットを閉じる
+    unit_tests:
+      - name: test_is_port_listening
+        case: 正常
+        summary: 待ち受けていれば真
+        condition: テストが `node:net` のサーバーで待ち受けるポート
+        mock: なし
+        expected: 真
+      - name: test_is_port_listening_when_closed
+        case: 正常
+        summary: 待ち受けていなければ偽
+        condition: 待ち受けるプロセスの無いポート
+        mock: なし
+        expected: 偽
+    refs:
+      - dev/設計書/インターフェース定義/ClaudeCodeプラグイン/常駐サーバーの状態を伝える.ts#constraints[待ち]
+    status: planned
+    introduced:
+      pr: 354
+  - name: listConfigKeys
+    title: 設定のキーの一覧を作る
+    kind: 関数
+    container: src/plugin/setup/keys.ts
+    usecase: 設定のキーの一覧を返す
+    role: 処理
+    summary: Schema の葉のキーごとに今の値・端末の設定の値・既定・説明を返す
+    scope: public
+    is_async: false
+    args:
+      - name: options
+        type: '{ target: "settings" | "config"; schema: JsonSchema; current: Record<string, unknown>; inherited?: Record<string, unknown> | undefined }'
+        required: true
+        description: 対象・設定の Schema・今の値・端末の設定の値（`config` のとき）
+    returns:
+      type: ConfigKey[]
+      description: '`key`・`current`・`inherited`・`default`・`description`'
+    process: |-
+      1. Schema の `properties` を並びのまま葉まで展開する（`allOf` の `$ref` は先に展開する）。`version` は含めない
+      2. `target` が `config` なら、端末の設定だけが持つキー（`config.*`・`serve.*`）を除く
+      3. `additionalProperties` で受けるキーは、今の値にあるものだけを足す
+    unit_tests:
+      - name: test_list_config_keys
+        case: 正常
+        summary: 端末の設定のキー
+        condition: '`target: settings`、`schemas/mdmark.settings.schema.json`、`{ features: { table: false } }`'
+        mock: なし
+        expected: '`features.table` の `current` が `false`、`config.cascade` と `serve.tmuxSession` があり、`version` が無い'
+      - name: test_list_config_keys_when_config
+        case: 正常
+        summary: 文書のフォルダの設定では端末の設定だけのキーを除く
+        condition: '`target: config`、`inherited` が `{ features: { table: false } }`'
+        mock: なし
+        expected: '`features.table` の `inherited` が `false`、`config.cascade` と `serve.tmuxSession` が無い'
+    refs:
+      - dev/設計書/インターフェース定義/ClaudeCodeプラグイン/設定のキーの一覧を返す.ts#
+    status: planned
+    introduced:
+      pr: 354
+  - name: parseSetArgs
+    title: --set を読む
+    kind: 関数
+    container: src/plugin/setup/write.ts
+    usecase: 端末の設定を書く
+    role: 処理
+    summary: '`{キー}={値}` の並びを、ドットのキーと YAML として読んだ値の組にする'
+    scope: public
+    is_async: false
+    args:
+      - name: args
+        type: string[]
+        required: true
+        description: '`--set` の値の並び'
+    returns:
+      type: 'Array<{ path: string[]; value: unknown }>'
+      description: キーの区切りと値
+    process: 1. 最初の `=` で分け、キーを `.` で区切り、値を YAML として読む。`=` が無ければ `SetupError`（1）
+    unit_tests:
+      - name: test_parse_set_args
+        case: 正常
+        summary: 値を YAML として読む
+        condition: '`["features.table=false", "serve.tmuxSession=x"]`'
+        mock: なし
+        expected: '`[{ path: ["features","table"], value: false }, { path: ["serve","tmuxSession"], value: "x" }]`'
+      - name: test_parse_set_args_when_no_equal
+        case: 異常
+        summary: = が無ければ SetupError
+        condition: '`["features.table"]`'
+        mock: なし
+        expected: 終了コード 1 の `SetupError`
+    refs:
+      - dev/設計書/インターフェース定義/ClaudeCodeプラグイン/端末の設定を書く.ts#request
+    status: planned
+    introduced:
+      pr: 354
+  - name: writeSettings
+    title: 端末の設定を書く
+    kind: 関数
+    container: src/plugin/setup/write.ts
+    usecase: 端末の設定を書く
+    role: 処理
+    summary: '`write-settings` の本体。端末の設定を作る・書き換え、既定のパスでなければ `settings.json` の `env` に `MDMARK_CONFIG` を書く'
+    scope: public
+    is_async: true
+    args:
+      - name: options
+        type: '{ env: NodeJS.ProcessEnv; pluginRoot: string; version: string } & { sets: string[] }'
+        required: true
+        description: 環境変数・プラグインの直下・プラグインのバージョン・`--set` の値
+    returns:
+      type: 'Promise<{ written: string[]; keys: string[] }>'
+      description: 書いたファイルとキー
+    process: |-
+      1. パスを決め、端末の設定があれば `yaml` の `Document` で読む。無ければ `plugin/settings.sample.yaml` を雛形にし、`version` をプラグインのバージョンにする
+      2. `--set` の組を `Document.setIn` で当て、`toJS()` を `validateConfig`（`settings: true`）で検める。ずれがあれば `SetupError`（1）で何も書かない
+      3. 端末の設定を書く（親のフォルダが無ければ作る）
+      4. `defaultPath` が偽なら `writeClaudeEnv` で `MDMARK_CONFIG` を書く
+    side_effects: 端末の設定と `settings.json` を書く
+    callees:
+      - '#functions[parseSetArgs]'
+      - '#functions[writeClaudeEnv]'
+      - dev/設計書/モジュール構成/ライブラリ本体/設定を重ねて読む.ts#functions[validateSettingsKeys]
+      - dev/設計書/外部ライブラリ/yaml#
+    unit_tests:
+      - name: test_write_settings
+        case: 正常
+        summary: 雛形から作り env を書く
+        condition: 一時フォルダの `MDMARK_CONFIG`・`CLAUDE_CONFIG_DIR`、`sets` が `["features.table=false"]`
+        mock: なし
+        expected: '端末の設定が `version` と `features.table: false` を持ち、`settings.json` の `env.MDMARK_CONFIG` が端末の設定のパス'
+      - name: test_write_settings_when_invalid
+        case: 異常
+        summary: Schema に合わなければ書かない
+        condition: '`sets` が `["config.cascade=yes"]`'
+        mock: なし
+        expected: 終了コード 1 の `SetupError`、端末の設定と `settings.json` が無い
+      - name: test_write_settings_when_comment
+        case: 正常
+        summary: コメントを残す
+        condition: 'コメントの行と `features.callout: false` を持つ端末の設定、`sets` が `["serve.tmuxSession=x"]`'
+        mock: なし
+        expected: 'コメントの行と `features.callout: false` が残り、`version` が変わらない'
+    refs:
+      - dev/設計書/インターフェース定義/ClaudeCodeプラグイン/端末の設定を書く.ts#
+    status: planned
+    introduced:
+      pr: 354
+  - name: writeClaudeEnv
+    title: settings.json の env に書く
+    kind: 関数
+    container: src/plugin/setup/write.ts
+    usecase: 端末の設定を書く
+    role: 処理
+    summary: '`settings.json` の `env` の 1 つのキーだけを書き換える'
+    scope: public
+    is_async: true
+    args:
+      - name: options
+        type: '{ path: string; key: string; value: string }'
+        required: true
+        description: '`settings.json` のパス・キー・値'
+    returns:
+      type: Promise<boolean>
+      description: 書き換えたか（同じ値なら偽で書かない）
+    process: |-
+      1. `settings.json` を JSON として読み（無ければ `{}`）、`env[key]` が同じ値なら偽を返す
+      2. `env[key]` を書き、ほかのキーの並びを保って 2 つの空白で字下げした JSON を書く
+    side_effects: '`settings.json` を書く'
+    unit_tests:
+      - name: test_write_claude_env
+        case: 正常
+        summary: ほかのキーを残して env を書く
+        condition: '`{ "model": "x", "env": { "A": "1" } }` の `settings.json`'
+        mock: なし
+        expected: '`env` が `{ "A": "1", "MDMARK_CONFIG": "/p" }`、`model` が残る'
+      - name: test_write_claude_env_when_same
+        case: 正常
+        summary: 同じ値なら書かない
+        condition: '`env.MDMARK_CONFIG` が `/p` の `settings.json`'
+        mock: なし
+        expected: 偽を返し、ファイルの更新時刻が変わらない
+    refs:
+      - dev/設計書/インターフェース定義/ClaudeCodeプラグイン/端末の設定を書く.ts#constraints[settings.json]
+    status: planned
+    introduced:
+      pr: 354
+  - name: writeConfig
+    title: 文書のフォルダの設定を書く
+    kind: 関数
+    container: src/plugin/setup/write.ts
+    usecase: 文書のフォルダの設定を書く
+    role: 処理
+    summary: '`write-config` の本体'
+    scope: public
+    is_async: true
+    args:
+      - name: options
+        type: '{ env: NodeJS.ProcessEnv; pluginRoot: string; version: string } & { dir: string; sets: string[] }'
+        required: true
+        description: 環境変数・プラグインの直下・プラグインのバージョン・文書のフォルダ・`--set` の値
+    returns:
+      type: 'Promise<{ written: string[]; keys: string[] }>'
+      description: 書いたファイルとキー
+    process: |-
+      1. `{dir}/mdmark.config.yaml` があれば `Document` で読み、無ければ `mdmark init` と同じ雛形を読み `version` をプラグインのバージョンにする
+      2. `--set` のキーが端末の設定だけが持つキー（`config.*`・`serve.*`）なら `SetupError`（1）
+      3. 当てた後を `validateConfig` で検め、ずれがあれば `SetupError`（1）で書かない
+      4. 書く
+    side_effects: '`mdmark.config.yaml` を書く'
+    callees:
+      - '#functions[parseSetArgs]'
+      - dev/設計書/モジュール構成/ライブラリ本体/CLI.ts#
+    unit_tests:
+      - name: test_write_config
+        case: 正常
+        summary: 雛形から作る
+        condition: '`mdmark.config.yaml` の無い一時フォルダ、`sets` が `["features.callout=false"]`'
+        mock: なし
+        expected: '`version` と `features.callout: false` を持つ'
+      - name: test_write_config_when_settings_key
+        case: 異常
+        summary: 端末の設定だけのキーは書かない
+        condition: '`sets` が `["config.cascade=true"]`'
+        mock: なし
+        expected: 終了コード 1 の `SetupError`、ファイルが無い
+    refs:
+      - dev/設計書/インターフェース定義/ClaudeCodeプラグイン/文書のフォルダの設定を書く.ts#
+    status: planned
+    introduced:
+      pr: 354
+  - name: buildTmuxArgs
+    title: tmux の起動の引数を作る
+    kind: 関数
+    container: src/plugin/setup/server.ts
+    usecase: 常駐サーバーを起動する
+    role: 処理
+    summary: '`new-session` の引数の並びを作る'
+    scope: public
+    is_async: false
+    args:
+      - name: options
+        type: '{ session: string; port: number; settingsPath: string; stateDir: string; logPath: string; command: string }'
+        required: true
+        description: セッション名・ポート・端末の設定のパス・状態の置き場所・ログ・起動するコマンド
+    returns:
+      type: string[]
+      description: '`tmux` に渡す引数'
+    process: 1. `["new-session", "-d", "-s", session, "-e", "MDMARK_PORT=…", "-e", "MDMARK_CONFIG=…", "-e", "MDMARK_STATE_DIR=…", "sh", "-c", "{command} 2>&1 | tee -a '{logPath}'"]` を返す。ログのパスは一重引用符で囲み、中の一重引用符は `'\''` にする
+    unit_tests:
+      - name: test_build_tmux_args
+        case: 正常
+        summary: 環境変数を -e で渡し sh -c で包む
+        condition: セッション `s`・ポート 18782・ログ `/l/serve.log`・コマンド `serve`
+        mock: なし
+        expected: '`-e MDMARK_PORT=18782` を含み、末尾 3 つが `sh`・`-c`・`serve 2>&1 | tee -a ''/l/serve.log''`'
+    refs:
+      - dev/設計書/インターフェース定義/ClaudeCodeプラグイン/常駐サーバーを起動する.ts#constraints[起動のコマンド]
+      - dev/設計書/外部ライブラリ/tmux#limitations
+    status: planned
+    introduced:
+      pr: 354
+  - name: startServer
+    title: 常駐サーバーを起動する
+    kind: 関数
+    container: src/plugin/setup/server.ts
+    usecase: 常駐サーバーを起動する
+    role: 処理
+    summary: '`start-server` の本体'
+    scope: public
+    is_async: true
+    args:
+      - name: options
+        type: '{ env: NodeJS.ProcessEnv; pluginRoot: string; version: string } & { run: RunCommand; sleep: (ms: number) => Promise<void> }'
+        required: true
+        description: 環境変数・プラグインの直下・プラグインのバージョン・コマンドの実行・待つ関数
+    returns:
+      type: Promise<StartResult>
+      description: インターフェース定義『常駐サーバーを起動する』のレスポンス
+    process: |-
+      1. `tmux -V` が失敗すれば、端末で動かすコマンドを添えて `SetupError`（2）
+      2. セッションがあり待ち受けていれば `already_running`。セッションがあり待ち受けていなければ `kill-session -t ={名前}` して起動へ進み `restarted` にする
+      3. 状態の置き場所を作り、`buildTmuxArgs` の引数で `run("tmux", …)` する。起動するコマンドは `MDMARK_SERVE_COMMAND`、無ければ `npx -y github:shuhei1101/mdmark#{version} serve`
+      4. `POLL_INTERVAL_MS` ごとに、セッションが閉じていればログの末尾 20 行を添えて `SetupError`（1）、待ち受けていれば次へ。上限（`MDMARK_START_TIMEOUT_SEC`、無ければ `START_TIMEOUT_SEC`）を超えたら `kill-session` してログの末尾を添えて `SetupError`（3）
+      5. `listToolNames` でツールの名前を取り、結果を返す
+    side_effects: tmux のセッションを作る・閉じる。状態の置き場所を作る
+    callees:
+      - '#functions[resolveSetupPaths]'
+      - '#functions[readSessionName]'
+      - '#functions[buildTmuxArgs]'
+      - '#functions[isPortListening]'
+      - '#functions[listToolNames]'
+    unit_tests:
+      - name: test_start_server
+        case: 正常
+        summary: 起動して待ち受けを待つ
+        condition: 一時の端末、`MDMARK_SERVE_COMMAND` に空いたポートで待ち受ける `node -e` のサーバー
+        mock: '`run` は実際の tmux（`TMUX_TMPDIR` は一時フォルダ）'
+        expected: '`result` が `started`、`stop` が `tmux kill-session -t =mdmark-mcp`'
+      - name: test_start_server_when_tmux_missing
+        case: 異常
+        summary: tmux が無ければ 2
+        condition: '`tmux -V` に 127 を返す `run`'
+        mock: 差し替えた `run`
+        expected: 終了コード 2 の `SetupError`、メッセージに `MDMARK_PORT=` と `serve` のコマンド
+      - name: test_start_server_when_timed_out
+        case: 異常
+        summary: 上限を超えたら 3
+        condition: '`MDMARK_START_TIMEOUT_SEC=0`、`has-session` に 0 を返し続ける `run`'
+        mock: 差し替えた `run` と、すぐ解決する `sleep`
+        expected: 終了コード 3 の `SetupError`、`kill-session` を呼んでいる
+      - name: test_start_server_when_session_closed
+        case: 異常
+        summary: セッションが閉じたら 1
+        condition: '`has-session` が起動の後に 1 を返す `run`、ログに `EADDRINUSE` の行'
+        mock: 差し替えた `run`
+        expected: 終了コード 1 の `SetupError`、メッセージにログの行と `MDMARK_PORT` の修正方法
+    refs:
+      - dev/設計書/インターフェース定義/ClaudeCodeプラグイン/常駐サーバーを起動する.ts#
+    status: planned
+    introduced:
+      pr: 354
+  - name: listToolNames
+    title: ツールの名前を取る
+    kind: 関数
+    container: src/plugin/setup/server.ts
+    usecase: 常駐サーバーを起動する
+    role: 処理
+    summary: 常駐サーバーへ `initialize` と `tools/list` を送り、ツールの名前を返す
+    scope: public
+    is_async: true
+    args:
+      - name: options
+        type: '{ port: number }'
+        required: true
+        description: ポート
+    returns:
+      type: Promise<string[]>
+      description: ツールの名前
+    process: 1. MCP-SDK の `Client` と `StreamableHTTPClientTransport` で `http://127.0.0.1:{port}/mcp` につなぎ、`listTools` の名前を返して閉じる
+    callees:
+      - dev/設計書/外部ライブラリ/MCP-SDK#
+    unit_tests:
+      - name: test_list_tool_names
+        case: 正常
+        summary: 起動した常駐サーバーのツール
+        condition: '`runServe` を空いたポートで起動する'
+        mock: なし
+        expected: '`["export_html", "build_site", "check"]` を並べ替えたものと等しい'
+    refs:
+      - dev/設計書/インターフェース定義/ClaudeCodeプラグイン/常駐サーバーを起動する.ts#response
+    status: planned
+    introduced:
+      pr: 354
+test_files:
+  - tests/unit/src/plugin/setup/main.test.ts
+  - tests/unit/src/plugin/setup/paths.test.ts
+  - tests/unit/src/plugin/setup/status.test.ts
+  - tests/unit/src/plugin/setup/keys.test.ts
+  - tests/unit/src/plugin/setup/write.test.ts
+  - tests/unit/src/plugin/setup/server.test.ts
+  - tests/unit/src/plugin/port.test.ts

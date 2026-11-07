@@ -1,4 +1,4 @@
-title: "ClaudeCodeプラグイン / MCPサーバー"
+title: ClaudeCodeプラグイン / MCPサーバー
 lead: '`mdmark serve` が 127.0.0.1 の Streamable HTTP で待ち受ける MCP の常駐サーバー。`export_html`・`build_site`・`check` を登録し、作業のフォルダを引数の `project_dir` で受け、引数を検査してから CLI と同じ処理を呼ぶ。`src/cli/main.ts` は読まない。'
 directory: |-
   ```tree
@@ -49,7 +49,7 @@ data_models:
     summary: ツール 1 つの名前・説明・引数の形・処理
     properties:
       - name: name
-        type: "'export_html' | 'build_site' | 'check'"
+        type: '''export_html'' | ''build_site'' | ''check'''
         description: ツールの名前
       - name: description
         type: string
@@ -85,10 +85,10 @@ data_models:
     usecase: 共通
     role: DTO
     summary: ツールの引数の JSON Schema（2020-12）のうち、使う範囲だけの型
-    description: "最上位は `type: 'object'`・`properties`・`required`・`additionalProperties: false`。各引数は `type`（`string`・`integer`・`boolean`・`array`・`object`・`null` かその並び）・`items`（要素が `string` で、`enum` を持てる）・`enum`・`minItems`・`minLength`・`minimum`・`maximum`・`description`（任意）だけを持つ"
+    description: '最上位は `type: ''object''`・`properties`・`required`・`additionalProperties: false`。各引数は `type`（`string`・`integer`・`boolean`・`array`・`object`・`null` かその並び）・`items`（要素が `string` で、`enum` を持てる）・`enum`・`minItems`・`minLength`・`minimum`・`maximum`・`description`（任意）だけを持つ'
     properties:
       - name: type
-        type: "'object'"
+        type: '''object'''
         description: 引数はオブジェクト
       - name: properties
         type: Record<string, ArgumentSchema>
@@ -129,7 +129,7 @@ constants:
     title: サーバーの使い方の説明
     container: src/plugin/mcp.ts
     usecase: 共通
-    summary: MCP の `instructions` に渡す、使う場面と順序の事実の文
+    summary: MCP の `instructions` に渡す、使う場面と順序の事実の文。`{session}` は tmux のセッション名
     value: |-
       mdmark は Markdown 文書の記法・部品・図を描くライブラリで、この MCP サーバーは mdmark の文書の点検（check）・HTML への書き出し（export_html）・1 枚へのまとめ（build_site）を持つ。
       mdmark の記法・部品・図の書き方は、使い方集として dev-docs の配信元 mdmark にある。
@@ -137,6 +137,8 @@ constants:
       dev-docs が無い、または配信元 mdmark が登録されていないときは、dev-docs が無いので見つかりません。
       書いた後は check で点検し、図は使い方集の『描いた図を確かめる』の手順で確かめる。
       記法を使わない Markdown の編集とコードの調査には、この MCP サーバーと使い方集は要らない。
+
+      この常駐サーバーは tmux のセッション {session} で動く。止まったときは /mdmark:global-setup で起動し直せる。
     refs:
       - dev/設計書/インターフェース定義/ClaudeCodeプラグイン/MCPサーバーを起動・停止する.ts#constraints[instructions]
     status: planned
@@ -592,14 +594,14 @@ functions:
     is_async: false
     args:
       - name: options
-        type: '{ roots: ServerRoots; version: string; stderr: (line: string) => void }'
+        type: '{ roots: ServerRoots; version: string; sessionName: string; stderr: (line: string) => void }'
         required: true
-        description: サーバーの読む場所・サーバーのバージョン（mdmark のバージョン）・標準エラーへ 1 行書く関数
+        description: サーバーの読む場所・サーバーのバージョン（mdmark のバージョン）・tmux のセッション名・標準エラーへ 1 行書く関数
     returns:
       type: McpServer
       description: ツールを登録したサーバー
     process: |-
-      1. `{ name: SERVER_NAME, version }` と `{ capabilities: { tools: {} }, instructions: INSTRUCTIONS }` で `McpServer` を作る
+      1. `{ name: SERVER_NAME, version }` と `{ capabilities: { tools: {} }, instructions: INSTRUCTIONS の {session} をセッション名にしたもの }` で `McpServer` を作る
       2. `TOOLS` の各ツールを、説明・`fromJsonSchema(inputSchema, ACCEPT_ALL_VALIDATOR)`・`annotations`（持つツールだけ）で登録し、呼び出しごとに `roots` を渡してツールを呼ぶ（ツールを呼ぶ）
     unit_tests:
       - name: test_create_mcp_server
@@ -607,7 +609,7 @@ functions:
         summary: 3 つのツールと instructions と annotations を出す
         condition: 作ったサーバーを `InMemoryTransport` でクライアントとつなぐ
         mock: なし（SDK の `Client`）
-        expected: '`listTools` の名前が `TOOLS` の 3 つと一致し、どのツールの `inputSchema.properties` にも `project_dir` が無く、`check` だけの `annotations.readOnlyHint` が `true`、`getInstructions()` が `INSTRUCTIONS` で 4,096 文字以下'
+        expected: '`listTools` の名前が `TOOLS` の 3 つと一致し、どのツールの `inputSchema.properties` にも `project_dir` が無く、`check` だけの `annotations.readOnlyHint` が `true`、`getInstructions()` が `INSTRUCTIONS` の `{session}` を渡したセッション名にしたもので 4,096 文字以下'
       - name: test_create_mcp_server_when_arguments_invalid
         case: 正常
         summary: 合わない引数は SDK でなく日本語の文で返る
@@ -797,7 +799,7 @@ functions:
       description: 終了コード
     process: |-
       1. ポートを読む（`CliError` は呼び出し元の CLI が終了コード 1 にする）
-      2. `{packageDir}/dist` でサーバーの読む場所を作る
+      2. `{packageDir}/dist` でサーバーの読む場所を作り、端末の設定（`resolveSettingsPath`）の `serve.tmuxSession`（無ければ `mdmark-mcp`）をセッション名にする。端末の設定を読めなければ既定の名前にする
       3. `createMcpHandler` に、要求ごとに MCP サーバーを作る関数を渡してハンドラーを作る
       4. `node:http` のサーバーで、要求ごとに要求を変換し、要求を振り分け、応答を書く
       5. `LISTEN_HOST` とポートで待ち受ける。`EADDRINUSE` なら `PORT_IN_USE_MESSAGE` を標準エラーに書いて 1 を返す
@@ -823,6 +825,7 @@ functions:
       - '#functions[writeResponse]'
       - '#functions[createMcpServer]'
       - dev/設計書/外部ライブラリ/MCP-SDK#catalogs[API].entries[createMcpHandler]
+      - dev/設計書/モジュール構成/ClaudeCodeプラグイン/セットアップ.ts#functions[readSessionName]
     refs:
       - dev/設計書/インターフェース定義/ClaudeCodeプラグイン/MCPサーバーを起動・停止する.ts#
     status: planned

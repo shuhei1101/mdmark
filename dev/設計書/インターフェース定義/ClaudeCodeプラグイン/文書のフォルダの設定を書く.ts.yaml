@@ -1,7 +1,7 @@
 title: 文書のフォルダの設定を書く
 entry:
   kind: operation
-  value: '`node ${CLAUDE_PLUGIN_ROOT}/scripts/setup.js write-config --dir {文書のフォルダ} [--set {キー}={値}]...`（スキルが Bash で呼ぶ）'
+  value: '`node ${CLAUDE_PLUGIN_ROOT}/bin/setup.js write-config --dir {文書のフォルダ} [--set {キー}={値}]...`（スキルが Bash で呼ぶ）'
 flows:
   - name: 正常系
     summary: '`mdmark.config.yaml` を雛形から作り、答えた値を入れる'
@@ -9,7 +9,7 @@ flows:
       - name: 文書のフォルダ
         description: '`mdmark.config.yaml` の無い一時フォルダ'
       - name: Mock
-        description: ビルドした `plugin/scripts/setup.js` を子プロセスで流す。差し替える依存は無い
+        description: ビルドした `plugin/bin/setup.js` を子プロセスで流す。差し替える依存は無い
     flow: |-
       sequenceDiagram
         participant K as スキル（global-setup・setup）
@@ -29,7 +29,7 @@ flows:
       - name: 設定のあるフォルダ
         description: 'コメントの行と `features.table: false` を持つ `mdmark.config.yaml` を置いたフォルダ'
       - name: Mock
-        description: ビルドした `plugin/scripts/setup.js` を子プロセスで流す。差し替える依存は無い
+        description: ビルドした `plugin/bin/setup.js` を子プロセスで流す。差し替える依存は無い
     flow: |-
       sequenceDiagram
         participant K as スキル（global-setup・setup）
@@ -48,7 +48,7 @@ flows:
       - name: 文書のフォルダ
         description: 正常系と同じ
       - name: Mock
-        description: ビルドした `plugin/scripts/setup.js` を子プロセスで流す。差し替える依存は無い
+        description: ビルドした `plugin/bin/setup.js` を子プロセスで流す。差し替える依存は無い
     flow: |-
       sequenceDiagram
         participant K as スキル（global-setup・setup）

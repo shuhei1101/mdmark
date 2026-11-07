@@ -1,7 +1,7 @@
 title: 常駐サーバーを起動する
 entry:
   kind: operation
-  value: '`node ${CLAUDE_PLUGIN_ROOT}/scripts/setup.js start-server`（スキルが Bash で呼ぶ）'
+  value: '`node ${CLAUDE_PLUGIN_ROOT}/bin/setup.js start-server`（スキルが Bash で呼ぶ）'
 flows:
   - name: 正常系
     summary: tmux のセッションで `mdmark serve` を起動し、待ち受けを待って `tools/list` を確かめる
@@ -11,7 +11,7 @@ flows:
       - name: 先に起動した tmux サーバーと空いたポート
         description: '`TMUX_TMPDIR` の tmux サーバーを別のセッションで先に起動しておき、`MDMARK_PORT` に空いたポートを指定する'
       - name: Mock
-        description: ビルドした `plugin/scripts/setup.js` を子プロセスで流す。起動する `mdmark serve` は、`MDMARK_SERVE_COMMAND` でこのブランチのビルドした CLI に差し替える
+        description: ビルドした `plugin/bin/setup.js` を子プロセスで流す。起動する `mdmark serve` は、`MDMARK_SERVE_COMMAND` でこのブランチのビルドした CLI に差し替える
     flow: |-
       sequenceDiagram
         participant K as スキル（global-setup・setup）

@@ -1,4 +1,4 @@
-title: "ClaudeCodeプラグイン / プラグインのビルド"
+title: ClaudeCodeプラグイン / プラグインのビルド
 lead: 配布物のビルド（`scripts/build.ts`）から呼ばれ、使い方集の索引を検査してから、フックを束ね、プラグインのバージョン・束ねた依存のライセンスを `plugin/` に書く。MCP サーバーと使い方集は束ねない。
 directory: |-
   ```tree
@@ -26,6 +26,12 @@ constants:
       - key: src/plugin/pre-tool-use.ts
         value: plugin/scripts/pre-tool-use.js
         description: PreToolUse のフック
+      - key: src/plugin/session-start.ts
+        value: plugin/scripts/session-start.js
+        description: SessionStart のフック
+      - key: src/plugin/setup/main.ts
+        value: plugin/bin/setup.js
+        description: '`global-setup`・`setup` のスキルが呼ぶスクリプト'
     status: planned
     introduced:
       pr: 72
@@ -34,7 +40,7 @@ constants:
     container: scripts/build-plugin.ts
     usecase: 配布物をビルドして検査する
     summary: ビルドの最初と失敗したときに消す、`plugin/` の中の生成物
-    value: '["plugin/scripts", "plugin/THIRD_PARTY_LICENSES.txt"]'
+    value: '["plugin/scripts", "plugin/bin", "plugin/THIRD_PARTY_LICENSES.txt"]'
     status: planned
     introduced:
       pr: 72

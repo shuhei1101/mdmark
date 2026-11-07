@@ -1,7 +1,7 @@
 title: 端末の状態を調べる
 entry:
   kind: operation
-  value: '`node ${CLAUDE_PLUGIN_ROOT}/scripts/setup.js status`（スキルが Bash で呼ぶ）'
+  value: '`node ${CLAUDE_PLUGIN_ROOT}/bin/setup.js status`（スキルが Bash で呼ぶ）'
 flows:
   - name: 正常系
     summary: 空の端末で、端末の設定が無いこと・既定のセッション名・待ち受けていないことを返す
@@ -11,7 +11,7 @@ flows:
       - name: 空いたポート
         description: '`MDMARK_PORT` に待ち受けるプロセスの無いポート'
       - name: Mock
-        description: ビルドした `plugin/scripts/setup.js` を子プロセスで流す。差し替える依存は無い
+        description: ビルドした `plugin/bin/setup.js` を子プロセスで流す。差し替える依存は無い
     flow: |-
       sequenceDiagram
         participant K as スキル（global-setup・setup）
@@ -33,7 +33,7 @@ flows:
       - name: セットアップ済みの端末
         description: '`version` と `serve.tmuxSession: mdmark-test` を持つ端末の設定と、そのセッション名の tmux のセッションで待ち受けている常駐サーバー'
       - name: Mock
-        description: ビルドした `plugin/scripts/setup.js` を子プロセスで流す。差し替える依存は無い
+        description: ビルドした `plugin/bin/setup.js` を子プロセスで流す。差し替える依存は無い
     flow: |-
       sequenceDiagram
         participant K as スキル（global-setup・setup）
@@ -52,7 +52,7 @@ flows:
       - name: tmux の無い PATH
         description: '`PATH` から tmux を外す'
       - name: Mock
-        description: ビルドした `plugin/scripts/setup.js` を子プロセスで流す。差し替える依存は無い
+        description: ビルドした `plugin/bin/setup.js` を子プロセスで流す。差し替える依存は無い
     flow: |-
       sequenceDiagram
         participant K as スキル（global-setup・setup）
@@ -71,7 +71,7 @@ flows:
       - name: 読めない端末の設定
         description: '`MDMARK_CONFIG` のパスに、3 行目が YAML として読めない端末の設定を置く'
       - name: Mock
-        description: ビルドした `plugin/scripts/setup.js` を子プロセスで流す。差し替える依存は無い
+        description: ビルドした `plugin/bin/setup.js` を子プロセスで流す。差し替える依存は無い
     flow: |-
       sequenceDiagram
         participant K as スキル（global-setup・setup）
