@@ -39,6 +39,7 @@
 | モジュール構成設計 | `13f31815..ac0ea2c9` | `apply_template` の `theme` が `./` で始まることをインターフェース定義にも反映 |
 | モジュール構成設計 | `e7dce49a..5892a140` | レビューの指摘の修正 |
 | モジュール構成設計 | `c127e0aa..344bda0e` | 実装で見つけたフックの対象ツールの漏れの修正（`PROJECT_DIR_TOOLS`・`hooks.json` の `matcher`・`test_create_mcp_server` の期待値） |
+| モジュール構成設計 | `e2d6ed4e..e24d64fd` | 実装のレビューの指摘の修正（引数の検査と誤りの文・テンプレートの CSS が無いとき） |
 
 ## テスト結果
 
@@ -48,10 +49,10 @@
 
 | ファイル | メソッド | 変更種別 | 結果 | 補足 |
 | --- | --- | --- | --- | --- |
-| `tests/unit/src/plugin/templates.test.ts` | 全実行 | 新規 | ✅ | 28 テスト pass<br>Red: [テスト結果/20261107135728_b8a91d61_単体テスト.log](./テスト結果/20261107135728_b8a91d61_%E5%8D%98%E4%BD%93%E3%83%86%E3%82%B9%E3%83%88.log)<br>Green: [テスト結果/20261107142144_6ab0c027_単体テスト.log](./テスト結果/20261107142144_6ab0c027_%E5%8D%98%E4%BD%93%E3%83%86%E3%82%B9%E3%83%88.log) |
+| `tests/unit/src/plugin/templates.test.ts` | 全実行 | 新規 | ✅ | 30 テスト pass<br>Red: [テスト結果/20261107135728_b8a91d61_単体テスト.log](./テスト結果/20261107135728_b8a91d61_%E5%8D%98%E4%BD%93%E3%83%86%E3%82%B9%E3%83%88.log)<br>Green: [テスト結果/20261107142144_6ab0c027_単体テスト.log](./テスト結果/20261107142144_6ab0c027_%E5%8D%98%E4%BD%93%E3%83%86%E3%82%B9%E3%83%88.log) |
 | [tests/unit/src/plugin/tools.test.ts](https://github.com/shuhei1101/mdmark/blob/develop/tests/unit/src/plugin/tools.test.ts) | 全実行 | 変更 | ✅ | `test_run_list_templates`・`test_run_add_template`・`test_run_apply_template` を追加 |
 | [tests/unit/src/plugin/mcp.test.ts](https://github.com/shuhei1101/mdmark/blob/develop/tests/unit/src/plugin/mcp.test.ts) / [http.test.ts](https://github.com/shuhei1101/mdmark/blob/develop/tests/unit/src/plugin/http.test.ts) / [pre-tool-use.test.ts](https://github.com/shuhei1101/mdmark/blob/develop/tests/unit/src/plugin/pre-tool-use.test.ts) | 全実行 | 変更 | ✅ | ツールが 6 つになった設計（`test_create_mcp_server`・`test_run_serve`・`test_run_pre_tool_use_when_matcher`）に期待値を合わせた |
-| `tests/unit/` | 全実行 | 実行のみ | ✅ | `npm run test:unit` の 1680 テストのうち、今回触らない 2 件（`test_take_backup_when_outside`・`test_start_bundle`）が負荷で時間切れになり、ファイルを絞って流し直すと pass した<br>lint: [テスト結果/20261107142144_6ab0c027_lint.log](./テスト結果/20261107142144_6ab0c027_lint.log) |
+| `tests/unit/` | 全実行 | 実行のみ | ✅ | `npm run test:unit` で 239 ファイル・1683 テストが全 pass<br>[テスト結果/20261107144040_3dec655f_単体テスト.log](./テスト結果/20261107144040_3dec655f_%E5%8D%98%E4%BD%93%E3%83%86%E3%82%B9%E3%83%88.log)<br>lint: [テスト結果/20261107144040_3dec655f_lint.log](./テスト結果/20261107144040_3dec655f_lint.log) |
 
 直したテスト:
 
