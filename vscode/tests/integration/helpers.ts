@@ -455,6 +455,17 @@ export async function sampleFlowJson(): Promise<string> {
   return match[1];
 }
 
+/** 見本の操作できる部品の範囲（`docs/使い方/図を描く/見本.md` の `<!-- param -->` から `<!-- /param -->` まで）を持つ Markdown */
+export async function paramMarkdown(): Promise<string> {
+  const sample = await readFile(
+    join(REPO_ROOT, "docs", "使い方", "図を描く", "見本.md"),
+    "utf8",
+  );
+  const range = /<!-- param -->[\s\S]*?<!-- \/param -->/.exec(sample)?.[0];
+  assert.ok(range, "見本に操作できる部品の範囲が無い");
+  return ["# 部品", "", range, ""].join("\n");
+}
+
 /** 見出し・表・注意書き・流れ図を持つ Markdown */
 export async function guideMarkdown(): Promise<string> {
   return [

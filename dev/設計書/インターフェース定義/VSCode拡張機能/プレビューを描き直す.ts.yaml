@@ -64,6 +64,27 @@ flows:
       - '`render` の `config.features` が `{ callout: false }`'
       - Webview の注意書きが `markdown-alert` の枠でなく `blockquote` で描かれる
     test: test_normal_when_config_saved
+  - name: 正常系（設定ファイルの部品の文言で描く）
+    summary: 設定ファイルの `labels` を `config` に入れ、操作できる部品の今の値をコピーするボタンを設定の文言で描き直す
+    setup:
+      - name: プレビューを開いたワークスペース
+        description: 正常系と同じ。`mdmark.config.yaml` は `labels` を持たず、`guide.md` は `<!-- param -->` の印で操作できる部品の定義を 1 つ持つ
+      - name: Mock
+        description: 正常系と同じ
+    flow: |-
+      sequenceDiagram
+        participant U as 文書を書く人
+        participant EX as 拡張機能
+        participant PV as Webview
+        U->>EX: mdmark.config.yaml に labels.paramCopy: コピー を書いて保存
+        EX->>EX: features・libraries・labels などを取り出す
+        EX->>PV: render（新しい config）
+        PV->>PV: destroy して mount
+        PV->>EX: rendered
+    expected:
+      - '`render` の `config.labels` が `{ paramCopy: "コピー" }`'
+      - Webview の `button.mdmark-param-copy` の `textContent` が `コピー`
+    test: test_normal_when_param_copy_label_configured
   - name: 正常系（設定ファイルが無い）
     summary: 設定ファイルが無ければ設定なしで描き、知らせを出さない
     setup:
@@ -336,7 +357,7 @@ constraints:
     constraint: '`mdmark.configPath` が空（既定）のときは、Markdown のフォルダを起点にインターフェース定義『設定を重ねて読む』で探して重ねる。値を書いたときは Markdown を含むワークスペースのフォルダ（ワークスペースの外の Markdown は Markdown のフォルダ）から解決したそのファイルと端末の設定だけを重ねる。設定ファイルが 1 つも無ければ端末の設定だけで描き、知らせは出さない。重ねた設定ファイルのどれかを読めない・設定の形に合わないときは、端末の設定 → 上 → 近いの順で最初の 1 つを帯に出す'
     notes: dev/設計書/設定/VSCode拡張機能
   - item: 設定の取り出し方
-    constraint: インターフェース定義『設定を重ねて読む』で重ねた設定から、値がマップの `features`・`libraries`・`html-scripts`・`mermaid`・`side-toc` と値が文字列の `colorTheme`・`colorScheme` だけを `config` にする（プレビューでは、`colorScheme` は `mdmark.preview.theme` が `auto` のときだけ渡す。プレビューを開く.ts の制約「配色」。HTML への書き出しは `mdmark.preview.theme` によらず渡す）（マップでない値のキーは渡さない）。`theme` と `extensions` は制約「theme と extensions」のとおり当てる。他のキーは渡さない。キーの中の知らない名前と型の違う値は mdmark が無視する
+    constraint: インターフェース定義『設定を重ねて読む』で重ねた設定から、値がマップの `features`・`libraries`・`html-scripts`・`side-toc`・`labels`・`mermaid` と値が文字列の `colorTheme`・`colorScheme` だけを `config` にする（プレビューでは、`colorScheme` は `mdmark.preview.theme` が `auto` のときだけ渡す。プレビューを開く.ts の制約「配色」。HTML への書き出しは `mdmark.preview.theme` によらず渡す）（マップでない値のキーは渡さない）。`theme` と `extensions` は制約「theme と extensions」のとおり当てる。他のキーは渡さない。キーの中の知らない名前と型の違う値は mdmark が無視する
     notes: dev/設計書/設定/ライブラリ本体
   - item: libraries の URL
     constraint: '`libraries` の各 URL と `html-scripts.url` に当てる。`http:`・`https:` の URL はそのまま渡す。それ以外は、その値を書いた設定ファイルのフォルダを基準に解決したファイルを `asWebviewUri` で Webview で読める URL にして渡す。`localResourceRoots` の外のファイルは Webview が読めず、mdmark がその印の場所に知らせの枠を出す。読み直した `libraries` と `html-scripts.url`（書かないときは既定の jsDelivr）の `http:`・`https:` の origin の集まりが今の HTML の CSP に入れた集まりと違うときは、`render` でなく Webview の HTML を入れ直す（`ready` を受けて全文を送る）'

@@ -1,0 +1,14 @@
+$ npm run test:unit
+
+> test:unit
+> vitest run --project 'unit*'
+
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/fix-vscode-pass-labels-config
+
+
+ Test Files  255 passed (255)
+      Tests  1753 passed (1753)
+   Start at  07:22:58
+   Duration  162.02s (worker 78%, tests 12%, import 6%, transform 4%)
+
