@@ -406,6 +406,27 @@ flows:
       - 標準エラーに端末の設定のパスと `3` 行目と直し方が出る
       - HTML が書かれていない
     test: test_error_when_settings_unreadable
+  - name: 正常系（mermaid のコードブロック）
+    summary: mermaid のコードブロックがある文書のときだけ mermaid をまとめて埋め、開いたときに外へ要求せずに図にする
+    setup:
+      - name: mermaid のコードブロックを持つフォルダ
+        description: 言語 `mermaid` の flowchart のコードブロックを 1 つ持つ文書と、`mermaid.url` に手元の `vendor/mermaid/mermaid.esm.min.mjs` を書いた設定。同じフォルダに段落だけの文書も置く
+      - name: Mock
+        description: 差し替える依存は無い（`mermaid.url` を手元のフォルダに向け、書き出しがネットワークを読まない）
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant C as mdmark CLI
+        participant H as 出力の HTML
+        W->>C: mdmark export 文書のパス
+        C->>C: mermaid のコードブロックがあるので、mermaid を起動の処理と 1 つのスクリプトにまとめる
+        C->>H: mermaid を埋めて書く
+        C-->>W: 出力のパス・終了コード 0
+    expected:
+      - 終了コードが 0 で、書き出した HTML を file:// で開くと外への要求が 0 件で、mermaid のコードブロックの場所に `figure.mdmark-diagram[data-diagram="mermaid"]` がある
+      - 書き出した HTML のスクリプトに動的 `import()` が無い
+      - 段落だけの文書を書き出した HTML には mermaid が埋められていない
+    test: test_normal_when_mermaid_embedded
 lead: 文書を書く人が Markdown を 1 つ、配布物・使う側の CSS・外部ライブラリのモジュール・拡張・画像を埋めた 1 枚の HTML に書き出す。開いた HTML は `mount` で文書を描き、外へ要求しない。
 idempotent: true
 side_effects: 出力のパスに HTML を書く（既にあれば上書きする）。文書が指す動画・音声を、出力の隣の `_files/` のフォルダへコピーする（同じ名前のファイルは上書きする）。文書が使う外部ライブラリの設定の `libraries` の URL の先と、そのモジュールが import する先を読む。色分けの対象のコードブロックがあるとき、`syntax.url` の先の core と、使う言語のモジュールを読む
@@ -502,6 +523,10 @@ constraints:
   - item: 埋める色分け
     constraint: '機能 `syntax` がオンのとき、文書のコードブロックの情報文字列から色分けの対象の言語を拾い（`mount` と同じ対応表で、`dockerfile`・`diff` とその別名を含む。言語は情報文字列の最初の `:` の前。文書の `<!-- features: -syntax -->` の文書は拾わない）、設定の `syntax.url`（無ければ既定の jsDelivr の URL）の本体と使う言語のモジュールだけを制約「束ねるスクリプト」の 1 つのスクリプトに束ねて埋める。開いたときは `mount` が埋めたモジュールから色分けし、埋めなかった言語は読みに行かず色分けせずに残す。相対パスの `syntax.url` は、その値を書いた設定ファイルのフォルダを基準に読む。届かないモジュールは埋めず警告に出す（書き出しは止めない）'
     notes: 'PoC #98 で、core と 3 言語を埋めた HTML を外への要求 0 件で色分けできることを確かめた（約 35KB）。埋めるモジュールは頭の BSD-3-Clause の著作権表示を残す'
+  - item: 埋める mermaid
+    constraint: 機能 `mermaid` がオンで、文書に mermaid のコードブロック（文書をHTML文字列にする.ts の制約『mermaid のコードブロック』）があるときだけ、設定の `mermaid.url`（無ければ既定の jsDelivr の URL）のモジュールを、それが読む chunk ごと制約「束ねるスクリプト」の 1 つのスクリプトにまとめて埋める。開いたときは `mount` が埋めたモジュールで図にし、URL を読まない。相対パスの `mermaid.url` は、その値を書いた設定ファイルのフォルダを基準に読む。届かないときは埋めず警告に出す（書き出しは止めない）。設定の `mermaid.theme`・`mermaid.themeVariables` は `features` と同じく埋める設定に写す
+    decided_by: dev/設計書/非機能要件/非機能要件#requirements[mermaid を埋めた書き出しの HTML のサイズ]
+    notes: PoC #384 で、CLI の `bundleViewer` が mermaid 12.3.0 の本体と chunk を動的 `import()` を残さずにまとめられることを確かめた
   - item: 右側の目次の出し方
     constraint: 設定の `side-toc` を、`features` と同じく埋める設定に写して `mount` の `opts.config` に渡す。無いときは写さず、`mount` の既定（`hover`）に任せる。`mode` が `hover`・`fixed` 以外の値は設定ファイルの誤り（終了コード 1）にする
     decided_by: dev/設計書/設定/ライブラリ本体#settings[side-toc.mode]

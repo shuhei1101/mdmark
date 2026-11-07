@@ -50,6 +50,17 @@ requirements:
       version: Playwright 1.64.0（Chromium 156.0.8078.4・Firefox 157.0）
       date: '2026-10-31'
       result: 合格
+  - name: mermaid を埋めた書き出しの HTML のサイズ
+    english_name: exported_html_mermaid_size
+    category: 性能
+    external_constraint: 制限なし（書き出した HTML は 1 枚のファイルとして配り、jsDelivr の 1 ファイル 20MB の上限は当たらない）
+    source_kind: 制限なし
+    value: mermaid の本体と全ての図の種類の chunk を埋める（mermaid 12.3.0 で約 5.3MB 増える）
+    rationale: '使う側の利用者が file:// で開くたびに読む大きさ。PoC #384 で、mermaid 12.3.0 の本体と全ての chunk をまとめた script は 5,489,182 バイトだった。文書が使う図の種類の chunk だけをまとめ、ほかを空のモジュールに差し替えると、flowchart だけで 4,342,441 バイト、flowchart と sequenceDiagram で 4,462,681 バイト、種類なし（本体と共通の chunk だけ）で 4,276,727 バイト（2026-11-08、作業ツリーの外で実測）。図の種類を絞っても本体と共通の chunk の約 4.3MB は残り、減るのは最大で約 1.2MB'
+    overflow: mermaid のコードブロックを持たない文書の書き出しには埋めない（インターフェース定義『文書をHTMLに書き出す』の制約「埋める mermaid」）
+    status: planned
+    introduced:
+      pr: 382
   - name: CLI が動く Node の版
     english_name: cli_node_version
     category: 動作環境

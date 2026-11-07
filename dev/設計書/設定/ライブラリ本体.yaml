@@ -651,6 +651,63 @@ settings:
     status: planned
     introduced:
       pr: 303
+  - key: features.mermaid
+    title: mermaid のコードブロックの機能
+    file: mdmark.config.yaml
+    type: boolean
+    required: false
+    default: 'true'
+    description: 言語 `mermaid` のコードブロックを図にする。オフのときはコードブロックのまま描き、mermaid を読まない。文書の `features` の印でその文書だけオン・オフできる
+    reload: reload
+    refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[mermaid の対象]
+    status: planned
+    introduced:
+      pr: 382
+  - key: mermaid.url
+    title: mermaid の読み込み先
+    file: mdmark.config.yaml
+    type: string
+    default: '`https://cdn.jsdelivr.net/npm/mermaid@12.3.0/dist/mermaid.esm.min.mjs`'
+    description: mermaid の ES モジュールの URL。`mount` は mermaid のコードブロックがある文書でだけ、ページの `document.baseURI` を基準に解決して読む。CLI の `export`・`build` は、mermaid のコードブロックがある文書のときだけ、この URL のモジュールと chunk をまとめて埋める
+    missing: 既定の jsDelivr の URL から読む
+    reload: reload
+    allowed: URL かパス。`mount` は文字列でない値を無視して既定を当て、CLI は文字列でない値を設定ファイルの誤りにする
+    refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#request[opts.config.mermaid.url]
+      - dev/設計書/外部ライブラリ/mermaid#
+    reason: '`syntax.url`・`html-scripts.url` と同じく、印の名前の対応表 `libraries` と分ける'
+    status: planned
+    introduced:
+      pr: 382
+  - key: mermaid.theme
+    title: mermaid の図のテーマ
+    file: mdmark.config.yaml
+    type: string
+    default: '`mdmark`'
+    description: '`mdmark`（描く先の要素の CSS 変数から作る mdmark の見た目のテーマ）か、mermaid のテーマの名前（`default`・`neutral`・`dark`・`forest`・`base`）'
+    missing: '`mdmark` で描く'
+    reload: reload
+    allowed: '`mdmark`・`default`・`neutral`・`dark`・`forest`・`base`。`mount` は知らない値を無視して `mdmark` にし、CLI は知らない値を設定ファイルの誤りにする'
+    refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#request[opts.config.mermaid.theme]
+    status: planned
+    introduced:
+      pr: 382
+  - key: mermaid.themeVariables
+    title: mermaid のテーマの変数の上書き
+    file: mdmark.config.yaml
+    type: map
+    required: false
+    description: mermaid のテーマの変数（`primaryColor` など）を上書きする値。`theme` で選んだテーマの変数に重ねる。`useGradient`・`dropShadow` は上書きできない
+    missing: 上書きしない
+    reload: reload
+    allowed: 値が文字列のキー。`mount` はほかの値を無視し、CLI は文字列でない値を設定ファイルの誤りにする
+    refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#request[opts.config.mermaid.themeVariables]
+    status: planned
+    introduced:
+      pr: 382
   - key: html-scripts.url
     title: 範囲の TypeScript の変換のライブラリの読み込み先
     file: mdmark.config.yaml

@@ -1977,6 +1977,26 @@ flows:
       - '`figure.mdmark-diagram` が 1 つあり、箱 3 つと線 2 本と題名を持つ'
       - 凡例に箱の種類と線の種類の項目が無い
     test: test_normal_when_single_kinds
+  - name: 正常系（mermaid のコードブロック）
+    summary: mermaid のコードブロックは図にせず、属性 `data-mdmark-mermaid` を付けたコードブロックとして返す
+    setup:
+      - name: 配布物を読んだ Node の処理
+        description: 正常系と同じ
+      - name: mermaid のコードブロックを持つ Markdown
+        description: '言語 `mermaid` のコードブロックを 1 つ持つ文書と、`<!-- features: -mermaid -->` を書いて同じコードブロックを持つ文書の 2 つ'
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        participant C as 使う側の処理
+        participant M as mdmark
+        C->>M: render(markdown)
+        M-->>C: data-mdmark-mermaid を付けたコードブロックの HTML 文字列
+    expected:
+      - 1 つ目の文書の `div.mdmark-code` が属性 `data-mdmark-mermaid` を持ち、`code` が `language-mermaid` でソースの文字を持つ
+      - 2 つ目の文書の `div.mdmark-code` が属性 `data-mdmark-mermaid` を持たない
+      - どちらの文字列にも `svg` と `data-mdmark-syntax` が無い
+    test: test_normal_when_mermaid_code_block
 lead: 使う側（書き出し・ビルドの処理やサーバー）が、画面を持たずに Markdown を HTML 文字列にする。`mount` が描く本文と同じ文字列を、ブラウザでも Node でも返す。
 idempotent: true
 side_effects: なし（外部ライブラリも読まない）
@@ -2126,6 +2146,9 @@ constraints:
   - item: コードブロックの色分け
     constraint: '`render` は色分けせず、色分けのライブラリを読まない（返す HTML に `hljs-*` の class を入れない）。色分けは `mount` が描いた後に、色分けの対象の `code` に `render` が付ける属性 `data-mdmark-syntax="{言語のモジュール名}"`（言語は制約『コードブロック』の `:` の前）を手掛かりに行う（文書に書いた生の HTML のこの属性は sanitize が落とす）。機能 `syntax` は機能のオン・オフの一つとして文書の `<!-- features: -syntax -->` を受け、返す `features` に含める'
     notes: '`render` を同期のまま保ち、外部ライブラリの印を `mount` だけが描く今の役割分担と揃える（要件.md の推奨案 A）。色分けの中身は dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts の制約『色分けの対象』〜『色分けを読めないとき』'
+  - item: mermaid のコードブロック
+    constraint: '機能 `mermaid` がオンの文書で、情報文字列の最初の語がちょうど `mermaid` のコードブロックは、制約『コードブロック』のとおりのコードブロックに描き、囲む `div.mdmark-code` に属性 `data-mdmark-mermaid` を付ける。`render` は図にせず、mermaid を読まない。色分けの対象にしない（`data-mdmark-syntax` を付けない）。機能 `mermaid` は文書の `<!-- features: -mermaid -->` を受け、返す `features` に含める'
+    notes: 図にするのは `mount`（文書を描く.ts の制約『mermaid の対象』〜『mermaid を読めないとき』）。JavaScript が動かない場所でもソースがコードブロックとして読める
   - item: 色の名前
     constraint: 色の名前は `blue`・`red`・`green`・`yellow`・`orange`・`purple`・`gray`（小文字だけ）。表のマーカー・バッジ・本文の文字の属性に書いた色の名前を、出力の要素の `data-color` に写す。色の名前の一覧に無い名前は、その指定を当てずに制約「書き手の誤り」と同じ書き方の警告を置き、本文に書いた名前と色の名前の一覧を出す
     notes: 色の名前の一覧は確認ログの決定。色の値は CSS 変数（インターフェース定義『文書を描く』の制約「色のプリセット」）
