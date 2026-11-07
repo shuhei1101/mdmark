@@ -61,6 +61,8 @@ test(
       "utf8",
     );
     expect(extension).toContain('require("vscode")');
+    expect(extension).toContain("var self = globalThis;");
+    expect(existsSync(join(root, "dist", "esbuild.wasm"))).toBe(true);
     const scripts = (await readdir(join(root, "media"))).filter((name) =>
       name.endsWith(".js"),
     );
