@@ -27,7 +27,7 @@ flows:
       - '`dist/index.d.ts` が `version`・`mount`・`render`・`registerExtension` と `MdmarkExtension`・`MdmarkExtensionModule`・`MdmarkMarkArgs`・`StandardSchemaV1`・`MdmarkFlowDefinition`・`MdmarkSequenceDefinition`・`MdmarkChartDefinition`・`MdmarkParamDefinition`・`MdmarkErDefinition` を export し、`tsc --noEmit` で型エラーが 0 件'
       - '`dist/cli.js` があり、`node dist/cli.js init {一時フォルダ}` が終了コード 0 で雛形を置く'
       - '`dist/viewer.js` と `dist/viewer.css` がある'
-      - '`plugin/scripts/pre-tool-use.js` があり、`plugin/scripts/session-start.js`・`plugin/guide`・`plugin/server`・`plugin/dist` が無く、`plugin/.claude-plugin/plugin.json` の `version` が `v0.0.0`'
+      - '`plugin/scripts/pre-tool-use.js`・`plugin/scripts/session-start.js` があり、`plugin/guide`・`plugin/server`・`plugin/dist` が無く、`plugin/.claude-plugin/plugin.json` の `version` が `v0.0.0`'
       - '`dist/THIRD_PARTY_LICENSES.txt` に `dist/cli.js` に束ねた `@modelcontextprotocol/server` と、その配布物に取り込まれた `ajv` の名前とライセンスの本文がある'
     test: test_normal
   - name: 正常系（版を指定する）

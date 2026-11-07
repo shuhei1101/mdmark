@@ -1,0 +1,14 @@
+$ npm run test:unit
+
+> test:unit
+> vitest run --project 'unit*'
+
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/fix-package-skip-prepare-outside-dev
+
+
+ Test Files  249 passed (249)
+      Tests  1720 passed (1720)
+   Start at  02:09:02
+   Duration  188.62s (worker 58%, tests 25%, import 15%, transform 2%)
+

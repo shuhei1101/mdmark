@@ -1,0 +1,14 @@
+手元のクローンのGitフックの削除:
+  説明: 手元のクローン（/mnt/c/Users/shuhe/repo/mdmark）の、全ての worktree が共有する .git/hooks から、lefthook が入れた pre-commit と pre-push を削除する。develop・master の package.json に lefthook が残る間は、そこから作った worktree の npm ci で lefthook の package の postinstall がフックを入れ直す。消えた後も、既に入ったフックは残り、lefthook の package が残る他の worktree の node_modules を探して検査を実行し続けるため。削除する前にフックを /mnt/c/Users/shuhe/repo/mdmark/.git/hooks-backup-383 へコピーし、切り戻しで戻す。dry-run.log は develop に lefthook が残る時点の前提確認で止まった出力のため、削除の対象は実行の前に流す dry-run の出力で確認する
+  タグ: [Gitフック, 手元のクローン]
+  実行者: tester
+  時期: master へ入った後
+  回数: 1 回限り
+  可逆: true
+  疎通確認: 手元のクローンのGitフックの削除/疎通確認.sh
+  実行: 手元のクローンのGitフックの削除/実行.sh
+  確認: 手元のクローンのGitフックの削除/確認.sh
+  切り戻し: 手元のクローンのGitフックの削除/切り戻し.sh
+  失敗時: 既定の対処を 1 回、2 回連続で失敗したら依頼元へ返す
+  確認方法: 手元のクローンの .git/hooks に pre-commit と pre-push が無い
+  状態: "-"

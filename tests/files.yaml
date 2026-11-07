@@ -57,6 +57,12 @@ files:
     related:
       - to: dev/設計書/シナリオ/単一ユースケース/ClaudeCodeにプラグインを入れる
         type: see_also
+  - path: e2e/単一ユースケース/GitHubの参照から入れてCLIを起動する.spec.ts
+    description: シナリオ『GitHubの参照から入れてCLIを起動する』に書いたシナリオを Playwright で流す E2E テスト。このユースケースの振る舞いを変えたときに読む。
+    tags: [topic:e2e, topic:シナリオ, tool:playwright]
+    related:
+      - to: dev/設計書/シナリオ/単一ユースケース/GitHubの参照から入れてCLIを起動する
+        type: see_also
   - path: e2e/単一ユースケース/HTMLに書き出す.spec.ts
     description: シナリオ『HTML に書き出す』に書いたシナリオを Playwright で流す E2E テスト。このユースケースの振る舞いを変えたときに読む。
     tags: [topic:e2e, topic:シナリオ, tool:playwright]
@@ -1026,6 +1032,12 @@ files:
     tags: [topic:単体テスト, tool:vitest, topic:バンドル, tool:esbuild]
     related:
       - to: scripts/build
+        type: tests
+  - path: unit/scripts/eslint.test.ts
+    description: scripts/eslint.ts（「tools/eslint/ の ESLint が無ければ入れてから起動する」）を確かめる単体テスト。eslint.ts を変えたときに、合わせて修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, tool:eslint, topic:lint]
+    related:
+      - to: scripts/eslint
         type: tests
   - path: unit/scripts/migrations.test.ts
     description: scripts/migrations.ts（「スキーマを変えたバージョンに移行の手順があるかの点検」）を確かめる単体テスト。migrations.ts を変えたときに、合わせて見修正するケースを探すときに読む。
@@ -2338,10 +2350,10 @@ files:
       - to: vscode/src/webview/shared/lib/media-error
         type: tests
   - path: git-env.ts
-    description: モジュール構成『ライブラリ本体 / 検査とGitフック』のうち「clearGitLocalEnv（Git のリポジトリの場所を指す環境変数を外す）」を受け持つ。テストの起動で外す環境変数を変えるときに読む。
+    description: モジュール構成『ライブラリ本体 / 検査』のうち「clearGitLocalEnv（Git のリポジトリの場所を指す環境変数を外す）」を受け持つ。テストの起動で外す環境変数を変えるときに読む。
     tags: [topic:単体テスト, tool:vitest, tool:git]
     related:
-      - to: dev/設計書/モジュール構成/ライブラリ本体/検査とGitフック.ts
+      - to: dev/設計書/モジュール構成/ライブラリ本体/検査.ts
         type: implements
   - path: unit/git-env.test.ts
     description: tests/git-env.ts（「Git のリポジトリの場所を指す環境変数を外す」）を確かめる単体テスト。git-env.ts を変えたときに、合わせて修正するケースを探すときに読む。

@@ -23,16 +23,22 @@ categories:
       npm ci
       ```
 
+      Webview の ESLint の道具（`tools/eslint/package-lock.json`）が変わった取り込みの後は、その依存も入れ直す。
+
+      ```bash
+      npm ci --prefix tools/eslint
+      ```
+
       VS Code 拡張機能を触るときは、`vscode/` の依存も入れる。
 
       ```bash
       npm --prefix vscode ci
       ```
-    effects: '`node_modules/` を `package-lock.json` のとおりに作り直す。続けて `prepare` が、`lefthook install` で全ての worktree が共有する `.git/hooks` に Git フックを入れ、`npm ci --prefix tools/eslint` で `tools/eslint/node_modules/` を作り直す（`LEFTHOOK=0` を付けるとフックを入れない）'
+    effects: '`node_modules/` を `package-lock.json` のとおりに作り直す。`.git/hooks` に Git フックを入れない。`npm ci --prefix tools/eslint` は `tools/eslint/node_modules/` を作り直す（無いままでも `npm run lint:eslint` が起動の前に入れる）'
     verification:
       state: 済
-      date: '2026-10-13'
-      detail: '`npm ci` が終了コード 0 で終わり、脆弱性 0 件を確かめた。`npm --prefix vscode ci` は `vscode/` をまだ実装していないため走らせていない'
+      date: '2026-11-08'
+      detail: 'lefthook を除いた作業ツリーで `npm ci` を流し、終了コード 0 で終わり、`.git/hooks` の pre-commit・pre-push の更新時刻が変わらず、`node_modules/` に lefthook が入らないことを確かめた。`tools/eslint/node_modules/` が無いまま `npm run lint:eslint` を流し、`npm ci --prefix tools/eslint` で入れてから ESLint が終了コード 0 で終わることを確かめた。`npm --prefix vscode ci` も終了コード 0 で終わった'
   - name: 依存の追加・更新・削除
     commands: |-
       版を完全一致で固定して追加・更新する。
@@ -143,26 +149,18 @@ categories:
       detail: '`npm run build` が終了コード 0 で終わり、`dist/` に `index.js`・`index.css`・`THIRD_PARTY_LICENSES.txt`・`cli.js` と型定義が書かれることを確かめた。スキーマをタグ v0.3.0 から変えたのに `migrations/no-steps.yaml` の合う行が無いと終了コード 1 で `dist/` が残らず、行を置くと通ること、`--version v0.4.0` のビルドで `migrations/next/` が残ると終了コード 1 で終わることを確かめた。`--version` の指定と、版の書式の誤り・`version.ini` の欠け・esbuild の失敗・上限超過のとき `dist/` が残らないこと、型定義が `--moduleResolution bundler` と `nodenext` の使う側で型検査を通ること、移行の手順の点検の分岐は、単体テストで確かめた。2026-10-23 に、`npm run build` が終了コード 0 で `plugin/` の生成物を書くことを確かめた。`plugin/` の失敗の分岐は単体テストで確かめた。VS Code 拡張機能のコマンドは `vscode/` を実装して走らせた（2026-10-23）。`npm --prefix vscode run build` が終了コード 0 で終わり、`vscode/dist/extension.cjs`（`require("vscode")` を持つ）・`vscode/media/preview.js`・`vscode/media/preview.css` が書かれ、`npm --prefix vscode run typecheck` が終了コード 0 で通る。`npm --prefix vscode run package` が `vscode:prepublish` のビルドも流して `vscode/mdmark-0.1.0.vsix`（`package.json`・`readme.md`・`dist/extension.cjs`・`media/preview.css`・`media/preview.js` の 7 ファイル、73KB。`src/`・`node_modules/` を含まない）を書く。LICENSE が無いと `vsce` が警告を出すが、終了コードは 0。2026-10-24 に、対応ブラウザの下限の確かめを足した `npm run build` が終了コード 0 で通ること、下限に無い API を確かめずに使うと終了コード 1 で `dist/` が残らず標準エラーに配布ファイル・行・列・報告の文が出ることを、単体テストで確かめた'
   - name: 取り込み前の検査
     commands: |-
-      commit で pre-commit（commit に入るファイルに Biome・Webview の ESLint・型検査）、push で pre-push（`npm run test:unit`）が lefthook から実行される。
-
       手で全件を検査する（Biome・Webview の ESLint・ルートと `vscode/` の型検査を順に実行し、最初の失敗で止まる）。
 
       ```bash
       npm run check
       ```
-
-      フックを入れずに、pre-commit の検査だけを実行する。
-
-      ```bash
-      npx lefthook run pre-commit
-      ```
     prerequisites:
-      - '`npm ci` で依存を入れてある（Git フックと `tools/eslint/` の依存も入る）'
+      - '`npm ci` で依存を入れてある'
     effects: 検査だけで、ファイルを書き換えない
     verification:
       state: 済
       date: '2026-11-06'
-      detail: '`npm run check` が終了コード 0 で終わった（ESLint は Webview の 30 ファイルだけを検査した）。`npx lefthook validate` が `All good` を返した。commit で pre-commit の 3 つの検査が当たらないファイルを飛ばし、push で pre-push の `npm run test:unit` が実行されることを確かめた'
+      detail: '`npm run check` が終了コード 0 で終わった（ESLint は Webview の 30 ファイルだけを検査した）'
   - name: 管理作業
     prerequisites:
       - タグを打つ担当（tester）が、master へマージする前に対象のブランチの worktree で流す

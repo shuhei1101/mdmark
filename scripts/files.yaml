@@ -24,6 +24,12 @@ files:
     related:
       - to: dev/設計書/モジュール構成/ライブラリ本体/ビルド.ts
         type: implements
+  - path: eslint.ts
+    description: モジュール構成『ライブラリ本体 / 検査』のうち「tools/eslint/ の ESLint が無ければ入れてから起動する」を受け持つ。Webview の ESLint の起動を変えるときに読む。
+    tags: [tool:eslint, topic:lint]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/検査.ts
+        type: implements
   - path: migrations.ts
     description: モジュール構成『ライブラリ本体 / ビルド』のうち「スキーマを変えたバージョンに移行の手順があるかの点検」を受け持つ。配布物のビルドや検査を変えるときに読む。
     tags: [topic:バンドル, tool:esbuild]
