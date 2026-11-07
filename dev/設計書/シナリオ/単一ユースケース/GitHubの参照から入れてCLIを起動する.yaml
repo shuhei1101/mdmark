@@ -1,0 +1,50 @@
+title: GitHubの参照から入れてCLIを起動する
+scenarios:
+  - name: 正常シナリオ
+    setup:
+      - name: 版のタグを打った Git のリポジトリ
+        description: ビルドした作業ツリー（`dist/` を含む）を一時の Git のリポジトリに commit し、版のタグ `v0.0.1` を打つ
+        notes: release のタグと同じく `dist/` を commit に含め、`package.json` は作業ツリーのものを使用する
+      - name: 空の npm のキャッシュ
+        description: '`npm_config_cache` を空の一時フォルダにする'
+        notes: 手元のキャッシュに入った前回の中身を使用しない
+      - name: 空いたポート
+        description: '`MDMARK_PORT` に、待ち受けるプロセスの無いポートを指定する'
+        notes: 手元の `mdmark serve` が待ち受ける 8782 は使用しない
+      - name: Mock
+        description: GitHub の代わりに `git+file://{リポジトリ}#v0.0.1` を指定する。npm が Git のリポジトリを clone して入れ、`prepare` があれば実行する経路は `github:` の参照と同じ。依存は npm レジストリから実際に入れ、Claude Code の代わりに常駐サーバーへ HTTP でつなぐ MCP のクライアントを使用する
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant N as npm
+        participant G as Git のリポジトリ
+        participant C as mdmark CLI
+        participant M as MCP のクライアント
+        W->>N: MDMARK_PORT={ポート} npm exec --yes {版のタグの参照} serve
+        N->>G: 版のタグを clone する
+        G-->>N: 版のタグの中身
+        N->>N: dependencies を入れる
+        N->>C: mdmark serve
+        C-->>W: 接続先の URL
+        M->>C: tools/list
+        C-->>M: mdmark のツールの一覧
+    expected:
+      - '`npm exec` のプロセスが終わらずに残り、出力に接続先 `http://127.0.0.1:{ポート}/mcp` が出る'
+      - 出力に、Git フックの導入（lefthook）と `tools/eslint/` の依存の導入の出力・エラーが出ない
+      - クライアントの `tools/list` が、mdmark のツールの一覧を返却する
+    test: test_normal
+lead: 文書を書く人が `npx github:shuhei1101/mdmark#v{バージョン}` と同じ経路で版のタグから mdmark を入れ、CLI を起動する。
+issue: 350
+primary_actor: 文書を書く人
+stakeholders:
+  - name: 文書を書く人
+    interest: 版のタグを指定するだけで、開発の道具を入れずに CLI を起動できる
+  - name: Claude Code
+    interest: プラグインの手順が起動する `npx -y github:shuhei1101/mdmark#v{バージョン} serve` の常駐サーバーにつながる
+trigger: 文書を書く人が、版のタグを指定して mdmark の CLI を初めて呼ぶ
+preconditions:
+  - 文書を書く人の手元に Node 24 以降と Git がある
+  - npm レジストリへつながる
+success_guarantee: npm が版のタグの中身を clone して `dependencies` を入れ、開発用の処理（Git フックの導入・`tools/eslint/` の依存の導入）を実行せずに CLI を起動する。
+minimal_guarantee: 入れる途中で失敗したときは CLI を起動せず、npm が 0 以外の終了コードで終わる。
+test_file: tests/e2e/単一ユースケース/GitHubの参照から入れてCLIを起動する.spec.ts

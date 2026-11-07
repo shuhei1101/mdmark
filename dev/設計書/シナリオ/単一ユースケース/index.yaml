@@ -124,6 +124,8 @@ items:
     summary: Claude Code が `check`・`export_html`・`build_site` で、CLI と同じ点検・書き出し・まとめを呼ぶ
   - page: MCPサーバーを起動・停止する.yaml
     summary: 文書を書く人が `mdmark serve` で MCP の常駐サーバーを起動し、接続先を確かめ、使い終えたら止める
+  - page: GitHubの参照から入れてCLIを起動する.yaml
+    summary: 文書を書く人が `npx github:shuhei1101/mdmark#v{バージョン}` と同じ経路で版のタグから mdmark を入れ、CLI を起動する
   - page: テーマを選ぶ.yaml
     summary: 設定で mdmark に入れたテーマを選び、明暗は今の決め方のままそのテーマの配色で描く
   - page: プレビューから設定を開く.yaml
