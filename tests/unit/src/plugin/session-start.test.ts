@@ -106,6 +106,8 @@ test("test_run_session_start_when_hooks_json", async () => {
     {
       type: "command",
       command: "node",
+      // hooks.json の文字列をそのまま比べる（Claude Code が展開する）
+      // biome-ignore lint/suspicious/noTemplateCurlyInString: 展開しない文字列そのもの
       args: ["${CLAUDE_PLUGIN_ROOT}/scripts/session-start.js"],
     },
   ]);
