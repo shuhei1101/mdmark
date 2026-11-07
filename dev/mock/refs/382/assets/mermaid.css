@@ -3,15 +3,14 @@
 /* 表示する枠: mermaid の SVG を枠の幅に収め、中央に配置する */
 .mock-mermaid-viewport {
   display: grid;
-  place-items: center;
+  /* 収まらない図は左上から見せ、枠の中で動かす */
+  place-items: safe center;
   padding: var(--mdmark-space);
   overflow: auto;
 }
 
-/* SVG: mermaid が付けた元の幅を上限にして拡大せず、表示する枠の幅と高さに収める（全体が収まる倍率） */
+/* SVG: 全体が収まる倍率の高さの上限（幅と高さは mermaid.js が倍率の下限つきで決める） */
 .mock-mermaid-viewport > svg {
-  width: 100%;
-  height: auto;
   max-height: calc(var(--mdmark-diagram-max-height, 32rem) - 2 * var(--mdmark-space));
 }
 
@@ -28,4 +27,13 @@
 .mock-mermaid-viewport svg [filter],
 .mock-mermaid-viewport svg .actor {
   filter: none;
+}
+
+/* 状態遷移図の終了の印: 外側の線と内側の塗りを本文の色にし、開始の印（本文の色の塗り）とそろえる */
+.mock-mermaid-viewport svg g.node[id*="_end"] path {
+  stroke: var(--mdmark-color-text);
+}
+
+.mock-mermaid-viewport svg g.node[id*="_end"] > g:last-child path {
+  fill: var(--mdmark-color-text);
 }

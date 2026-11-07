@@ -61,6 +61,46 @@ const COLOR_VARIABLES = {
   pieTitleTextColor: "--mdmark-color-heading",
   pieSectionTextColor: "--mdmark-color-bg",
   pieLegendTextColor: "--mdmark-color-text",
+  // ノードとグループの枠（flowchart・クラス図などの共通）
+  mainBkg: "--mdmark-color-surface",
+  nodeBorder: "--mdmark-color-border",
+  clusterBkg: "--mdmark-color-surface",
+  clusterBorder: "--mdmark-color-border",
+  // 状態遷移図: 開始と終了の印は本文の色でそろえる
+  stateBkg: "--mdmark-color-surface",
+  stateBorder: "--mdmark-color-border",
+  stateLabelColor: "--mdmark-color-text",
+  transitionColor: "--mdmark-color-diagram-line",
+  specialStateColor: "--mdmark-color-text",
+  innerEndBackground: "--mdmark-color-text",
+  labelBackgroundColor: "--mdmark-color-bg",
+  compositeBackground: "--mdmark-color-bg",
+  // ER 図: 属性の行を地と面の色で交互に塗る
+  attributeBackgroundColorOdd: "--mdmark-color-bg",
+  attributeBackgroundColorEven: "--mdmark-color-surface",
+  rowOdd: "--mdmark-color-bg",
+  rowEven: "--mdmark-color-surface",
+  relationColor: "--mdmark-color-diagram-line",
+  relationLabelBackground: "--mdmark-color-bg",
+  relationLabelColor: "--mdmark-color-text",
+  // ガントチャート: 今日の線は強い色の印（リンクと同じ 1 色）、棒は面と枠線の色
+  todayLineColor: "--mdmark-color-link",
+  gridColor: "--mdmark-color-border",
+  sectionBkgColor: "--mdmark-color-surface",
+  sectionBkgColor2: "--mdmark-color-bg",
+  altSectionBkgColor: "--mdmark-color-bg",
+  taskBkgColor: "--mdmark-color-surface",
+  taskBorderColor: "--mdmark-color-border",
+  taskTextColor: "--mdmark-color-text",
+  taskTextDarkColor: "--mdmark-color-text",
+  taskTextLightColor: "--mdmark-color-text",
+  taskTextOutsideColor: "--mdmark-color-text",
+  activeTaskBkgColor: "--mdmark-color-bg",
+  activeTaskBorderColor: "--mdmark-color-link",
+  doneTaskBkgColor: "--mdmark-color-border",
+  doneTaskBorderColor: "--mdmark-color-border",
+  critBkgColor: "--mdmark-color-bg",
+  critBorderColor: "--mdmark-color-callout-caution",
 };
 
 const canvas = document.createElement("canvas");
@@ -170,6 +210,26 @@ const warningHtml = (message) => `
     <p>mermaid の図を描けません（${escapeHtml(message)}）。コードブロックのまま表示しています。</p>
   </div>`;
 
+/** ガントチャートを描く幅の下限（px）。目盛りの日付が重ならない幅 */
+const GANTT_MIN_WIDTH = 720;
+
+/** 開いたときに縮める倍率の下限。これより縮めると図の小さい文字（ガントチャートの目盛りなど）が読めないため、収まらない分は枠の中で動かして見る */
+const MIN_FIT_SCALE = 0.75;
+
+/** 図を表示する枠に全体が収まる倍率にする。ただし MIN_FIT_SCALE より縮めない */
+const fitWithFloor = (svg, viewport) => {
+  const box = svg.viewBox.baseVal;
+  const style = getComputedStyle(viewport);
+  const width = viewport.clientWidth - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight);
+  const maxHeight = parseFloat(getComputedStyle(svg).maxHeight) || Infinity;
+  const scale = Math.max(MIN_FIT_SCALE, Math.min(1, width / box.width, maxHeight / box.height));
+  svg.removeAttribute("style");
+  svg.style.width = `${box.width * scale}px`;
+  svg.style.height = `${box.height * scale}px`;
+  svg.style.maxWidth = "none";
+  svg.dataset.mockScale = scale.toFixed(2);
+};
+
 /** リサイズハンドルで変えられる高さの下限（px。図の枠の部品のモックと同じ値） */
 const RESIZE_MIN_PX = 120;
 
@@ -191,7 +251,9 @@ const drawOne = async (block) => {
     block.after(holder);
     holders.set(block, holder);
   }
-  mermaid.initialize({ startOnLoad: false, securityLevel: "strict", theme: "base", themeVariables: themeVariables(root) });
+  // ガントチャートは描く時点の幅で目盛りを並べるので、幅の下限を渡して目盛りを重ねない
+  const ganttWidth = Math.max(root.clientWidth, GANTT_MIN_WIDTH);
+  mermaid.initialize({ startOnLoad: false, securityLevel: "strict", theme: "base", themeVariables: themeVariables(root), gantt: { useWidth: ganttWidth } });
   renderCount += 1;
   const id = `mock-mermaid-${renderCount}`;
   try {
@@ -199,6 +261,7 @@ const drawOne = async (block) => {
     block.hidden = true;
     holder.innerHTML = `<figure class="mdmark-diagram" data-kind="mermaid">${frameHtml(id, title ?? kindName(body), svg)}</figure>`;
     const drawn = holder.querySelector("svg[id]");
+    fitWithFloor(drawn, holder.querySelector(".mdmark-diagram-viewport"));
     // リサイズハンドル: 今の高さと、変えられる高さの下限・上限を伝える
     const viewport = holder.querySelector(".mdmark-diagram-viewport");
     const handle = holder.querySelector(".mdmark-diagram-resize");
