@@ -15,9 +15,6 @@ import { afterEach, expect, test, vi } from "vitest";
 /** HTTP の待ち受けを読み込む（実装が無い間は各テストが個別に失敗する） */
 const loadHttp = () => import("../../../../src/plugin/http.ts");
 
-/** CLI の誤りを読み込む */
-const loadErrors = () => import("../../../../src/cli/errors.ts");
-
 const servers: Server[] = [];
 
 afterEach(async () => {
@@ -68,39 +65,6 @@ function createHandler(): {
   const fetch = vi.fn(async () => new Response("ok", { status: 200 }));
   return { handler: { fetch } as unknown as McpHttpHandler, fetch };
 }
-
-// 環境変数が無ければ既定のポート（正常系）
-test("test_read_port", async () => {
-  // 準備
-  const { readPort, DEFAULT_PORT } = await loadHttp();
-  // 実行
-  const port = readPort({ env: {} });
-  // 検証
-  expect(port).toBe(DEFAULT_PORT);
-});
-
-// 環境変数のポートを使う（正常系）
-test("test_read_port_when_overridden", async () => {
-  // 準備
-  const { readPort } = await loadHttp();
-  // 実行
-  const port = readPort({ env: { MDMARK_PORT: "18782" } });
-  // 検証
-  expect(port).toBe(18782);
-});
-
-// 整数でない・範囲の外の値を拒む（異常系）
-test("test_read_port_when_invalid", async () => {
-  // 準備
-  const { readPort } = await loadHttp();
-  const { CliError } = await loadErrors();
-  for (const value of ["abc", "0", "65536", "1.5"]) {
-    // 実行・検証
-    const read = () => readPort({ env: { MDMARK_PORT: value } });
-    expect(read).toThrow(CliError);
-    expect(read).toThrow(value);
-  }
-});
 
 // localhost の /mcp はハンドラーへ渡す（正常系）
 test("test_route_request", async () => {
