@@ -35,7 +35,7 @@ scenarios:
     expected:
       - '`npm exec` のプロセスが終わらずに残り、出力に接続先 `http://127.0.0.1:{ポート}/mcp` が出る'
       - 出力に、`lefthook install` が出す `sync hooks` の行と、`npm ci --prefix tools/eslint` が出す導入の集計の行（`added {数} packages`）が出ない
-      - クライアントの `tools/list` が、mdmark のツールの一覧を返却する
+      - クライアントの `tools/list` が返却するツールに `export_html`・`build_site`・`check` がある
     test: test_normal
 lead: 文書を書く人が `npx github:shuhei1101/mdmark#v{バージョン}` と同じ経路で版のタグから mdmark を入れ、CLI を起動する。
 issue: 350
