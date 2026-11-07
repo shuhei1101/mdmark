@@ -14,6 +14,7 @@ import {
   messages,
   opened,
   openMarkdown,
+  paramMarkdown,
   REPO_ROOT,
   readFixture,
   resetEnvironment,
@@ -372,6 +373,31 @@ suite("HTML に書き出す", () => {
         };
       });
       assert.deepStrictEqual(root, { dark: true, background: "#131316" });
+    } finally {
+      await exported.close();
+    }
+  });
+
+  // 設定ファイルの labels を埋めた HTML を書き出し、開いた HTML で操作できる部品のボタンを設定の文言で描く
+  test("test_normal_when_param_copy_label", async () => {
+    // 準備
+    await writeFixture("mdmark.config.yaml", "labels:\n  paramCopy: コピー\n");
+    await openGuide({ extra: await paramMarkdown() });
+    trackFile("docs/guide.html");
+    // 実行
+    await vscode.commands.executeCommand("mdmark.exportHtml");
+    // 検証
+    const path = join(workspaceDir(), "docs", "guide.html");
+    await waitFor(() => existsSync(path), { message: "書き出されない" });
+    assert.match(
+      await readFixture("docs/guide.html"),
+      /"labels":\{"paramCopy":"コピー"\}/,
+    );
+    const exported = await openExported(path);
+    try {
+      const button = exported.page.locator("button.mdmark-param-copy");
+      await button.waitFor();
+      assert.strictEqual(await button.textContent(), "コピー");
     } finally {
       await exported.close();
     }

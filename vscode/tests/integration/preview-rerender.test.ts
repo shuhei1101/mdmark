@@ -16,6 +16,7 @@ import {
   lastPanel,
   openDiffView,
   openMarkdown,
+  paramMarkdown,
   type RecordedPanel,
   readFixture,
   recordedPanels,
@@ -225,6 +226,32 @@ suite("プレビューを描き直す", () => {
     });
     await waitFor(async () => (await inspect(".markdown-alert")).length === 0);
     assert.ok((await inspect("blockquote")).length > 0);
+  });
+
+  // 設定ファイルの labels を config に入れ、操作できる部品のボタンを設定の文言で描き直す
+  test("test_normal_when_param_copy_label_configured", async () => {
+    // 準備
+    await writeFixture("guide.md", await paramMarkdown());
+    await writeFixture("mdmark.config.yaml", "# 設定\n");
+    await openMarkdown("guide.md");
+    await vscode.commands.executeCommand("mdmark.openPreviewToSide");
+    const record = lastPanel();
+    await waitForRendered(record);
+    const before = renders(record).length;
+    // 実行
+    await writeFixture("mdmark.config.yaml", "labels:\n  paramCopy: コピー\n");
+    // 検証
+    await waitFor(() => renders(record).length > before, {
+      message: "再描画されない",
+    });
+    assert.deepStrictEqual(renders(record).at(-1)?.config.labels, {
+      paramCopy: "コピー",
+    });
+    await waitFor(async () =>
+      (await inspect("button.mdmark-param-copy")).some(
+        (item) => item.text === "コピー",
+      ),
+    );
   });
 
   // 取り込んでいるファイルを保存すると、読み直した取り込む文書で描き直す
