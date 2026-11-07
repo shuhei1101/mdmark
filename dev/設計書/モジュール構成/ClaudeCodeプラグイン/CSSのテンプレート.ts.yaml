@@ -323,7 +323,7 @@ functions:
       type: Promise<void>
       description: 書けたら解決する。書けなければ書き込みの例外を投げる（一時ファイルは消す）
     process: |-
-      1. `{dir}/templates.yaml.{プロセス ID}.tmp` に YAML の文字列を書く
+      1. `{dir}/templates.yaml.{プロセス ID}.{呼び出しごとの乱数}.tmp` に YAML の文字列を書く
       2. `templates.yaml` へ rename する
       3. 途中で失敗したら一時ファイルを消して例外を投げ直す
     unit_tests:
@@ -356,6 +356,7 @@ functions:
       description: 登録した名前・テンプレートのフォルダの CSS の絶対パス・置き換えたか
     process: |-
       1. `source` が無いか拡張子が `.css` でなければ、パスか拡張子を書いた `CliError` を投げる
+      2〜6 は、モジュールの中の Promise の連鎖で 1 つずつ順に進める（同じプロセスで重なった登録が、互いの行を上書きしない。プロセスをまたぐ排他は持たない）
       2. `readTemplatesIndex` で索引を読む。同じ `name` の行があり `overwrite` でなければ、名前と `overwrite` を書いた `CliError` を投げる
       3. 新しい行（`file` は `{name}.css`）で書く索引を作る。新しい名前は末尾に追加し、置き換える行は元の位置に置く
       4. `validateTemplatesIndex` の文があれば `CliError` を投げる（何も書かない）
@@ -386,6 +387,12 @@ functions:
         condition: '`source` に無いパス'
         mock: なし（一時フォルダ）
         expected: '`CliError` の文にそのパス、フォルダが作られていない'
+      - name: test_add_template_when_concurrent
+        case: 正常
+        summary: 別の名前の登録が重なっても、両方の行が残る
+        condition: 無いフォルダに、`brand` と `paper` の `addTemplate` を `Promise.all` で同時に呼ぶ
+        mock: なし（一時フォルダ）
+        expected: 索引が `brand` と `paper` の 2 行で、両方の CSS がある
       - name: test_add_template_when_index_write_fails
         case: 異常
         summary: 索引を書けなければ CSS を戻す
@@ -423,8 +430,8 @@ functions:
       1. `readTemplatesIndex` で索引を読み、`name` の行が無ければ、名前と `list_templates` を書いた `CliError` を投げる
       2. `findConfigChain`（`cascade: false`）で、`target` があれば `target` から、無ければ `cwd` から上へ最も近い `mdmark.config.yaml` を探す
       3. 配置先を決める。`target` が無く設定ファイルも無ければ、`dir` を渡すことと `mdmark init` を書いた `CliError` を投げる。`target` のフォルダが無ければ、そのパスを書いた `CliError` を投げる
-      4. 配置先に同じファイル名のファイルがあり、中身が同じなら書かずに返す。違い `overwrite` でなければ、パスと `overwrite` を書いた `CliError` を投げる
-      5. CSS をコピーし、設定ファイルがあれば、そのフォルダから配置した CSS への相対パスを `./` で始めて `theme` にする（設定ファイルは配置先か、その上のフォルダにあるため `../` にならない）
+      4. コピー元は `{dir}/{行の file}`、コピー先は `{配置先}/{name}.css` にする。コピー先があり、中身がコピー元と同じなら書かずに返す。違い `overwrite` でなければ、コピー先のパスと `overwrite` を書いた `CliError` を投げる
+      5. コピー元をコピー先へコピーし、設定ファイルがあれば、そのフォルダから配置した CSS への相対パスを `./` で始めて `theme` にする（設定ファイルは配置先か、その上のフォルダにあるため `../` にならない）
     unit_tests:
       - name: test_apply_template
         case: 正常
@@ -462,6 +469,18 @@ functions:
         condition: 上に `mdmark.config.yaml` が無い `cwd`
         mock: なし（一時フォルダ）
         expected: '`CliError` の文に `dir` と `mdmark init`'
+      - name: test_apply_template_when_file_differs_from_name
+        case: 正常
+        summary: 索引の `file` が名前と違う行は、`file` から読んで `{name}.css` に配置する
+        condition: '索引の行が `name: brand`・`file: corporate.css`'
+        mock: なし（一時フォルダ）
+        expected: '`path` が `{work}/brand.css` で、中身が `corporate.css` と同じ'
+      - name: test_apply_template_when_target_missing
+        case: 異常
+        summary: '`target` のフォルダが無い'
+        condition: '`target` に無いフォルダ'
+        mock: なし（一時フォルダ）
+        expected: '`CliError` の文にそのパス、何も書かれていない'
       - name: test_apply_template_when_name_missing
         case: 異常
         summary: 索引に無い名前
