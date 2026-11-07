@@ -12417,3 +12417,289 @@ async function checkTableFillsWidth(): Promise<void> {
     document.documentElement.clientWidth,
   );
 }
+
+/** h2 を 3 つと段落を持つ本文（page のマーカーの後ろに続ける） */
+const PAGE_BODY = [
+  "## 概要",
+  "",
+  "段落",
+  "",
+  "## 使い方",
+  "",
+  "段落",
+  "",
+  "## 補足",
+  "",
+  "段落",
+  "",
+].join("\n");
+
+// 文書の先頭の page のマーカーの明暗・テーマ・右側の目次の出し方を、設定より優先して当てる（正常系（ページの設定のマーカー））
+test("test_normal_when_page_marker", async () => {
+  await withViewport(1280, async () => {
+    // 準備
+    const el = createElement();
+    await emulateColorScheme("dark");
+    try {
+      // 実行
+      await mountTracked(el, {
+        markdown: `<!-- page: scheme=light theme=theme-slate toc=fixed -->\n\n${PAGE_BODY}`,
+        config: {
+          colorScheme: "dark",
+          colorTheme: "theme-paper",
+          "side-toc": { mode: "hover" },
+        },
+      });
+      // 検証
+      expect(el.classList.contains("mdmark-theme-light")).toBe(true);
+      expect(el.classList.contains("mdmark-theme-dark")).toBe(false);
+      expect(readBackground(el)).toBe(SLATE_LIGHT_BG);
+      expect(el.getAttribute("data-mdmark-color-theme")).toBe("theme-slate");
+      const { aside, toggle } = sideTocOf(el);
+      expect(aside.getAttribute("data-mode")).toBe("fixed");
+      expect(toggle.getAttribute("aria-expanded")).toBe("false");
+      expect(el.textContent).not.toContain("page:");
+      expect(el.querySelector(".mdmark-syntax-warning")).toBeNull();
+    } finally {
+      await resetThemed();
+    }
+  });
+});
+
+// 設定の明暗を、祖先の class と OS の配色より優先して当て、destroy で外す（正常系（設定の明暗））
+test("test_normal_when_config_color_scheme", async () => {
+  // 準備
+  const el = createElement();
+  document.body.className = "mdmark-theme-light";
+  await emulateColorScheme("light");
+  try {
+    // 実行
+    const handle = await mountTracked(el, {
+      markdown: THEME_MARKDOWN,
+      config: { colorScheme: "dark" },
+    });
+    // 検証
+    expect(el.classList.contains("mdmark-theme-dark")).toBe(true);
+    expect(readBackground(el)).toBe(DARK_BG);
+    // 実行: destroy で明暗の class を外す
+    handle.destroy();
+    // 検証
+    expect(el.classList.contains("mdmark-theme-dark")).toBe(false);
+    expect(el.classList.contains("mdmark-theme-light")).toBe(false);
+  } finally {
+    await resetThemed();
+  }
+});
+
+// マーカーの scheme=auto は設定の明暗だけを外して祖先の class に任せ、update で決め直す（正常系（明暗を OS の設定に戻す））
+test("test_normal_when_color_scheme_auto", async () => {
+  // 準備
+  const el = createElement();
+  document.body.className = "mdmark-theme-dark";
+  await emulateColorScheme("light");
+  try {
+    // 実行
+    const handle = await mountTracked(el, {
+      markdown: `<!-- page: scheme=auto -->\n\n${THEME_MARKDOWN}`,
+      config: { colorScheme: "light" },
+    });
+    // 検証
+    expect(el.classList.contains("mdmark-theme-light")).toBe(false);
+    expect(el.classList.contains("mdmark-theme-dark")).toBe(false);
+    expect(readBackground(el)).toBe(DARK_BG);
+    // 実行: マーカーを持たない文書に差し替える
+    handle.update(THEME_MARKDOWN);
+    // 検証
+    expect(el.classList.contains("mdmark-theme-light")).toBe(true);
+    expect(readBackground(el)).toBe(LIGHT_BG);
+  } finally {
+    await resetThemed();
+  }
+});
+
+// 知らないキー・値と、先頭に無い page のマーカーは書き方の警告にして使わない（正常系（ページの設定のマーカーの書き方の誤り））
+test("test_normal_when_page_marker_invalid", async () => {
+  await withViewport(1280, async () => {
+    // 準備
+    const el1 = createElement();
+    const el2 = createElement();
+    const { mount } = await loadBuilt();
+    await emulateColorScheme("light");
+    try {
+      // 実行
+      expect(() => {
+        handles.push(
+          mount(el1, {
+            markdown: `<!-- page: scheme=sepia theme=theme-unknown size=wide toc=fixed -->\n\n${PAGE_BODY}`,
+            config: { colorScheme: "dark" },
+          }),
+        );
+        handles.push(
+          mount(el2, {
+            markdown:
+              "最初の段落\n\n<!-- page: scheme=light -->\n\n後ろの段落\n",
+            config: { colorScheme: "dark" },
+          }),
+        );
+      }).not.toThrow();
+      // 検証: el1
+      const warnings1 = el1.querySelectorAll(".mdmark-syntax-warning");
+      expect(warnings1).toHaveLength(1);
+      const text1 = warnings1[0]?.textContent ?? "";
+      for (const word of ["scheme=sepia", "theme=theme-unknown", "size=wide"]) {
+        expect(text1).toContain(word);
+      }
+      expect(el1.classList.contains("mdmark-theme-dark")).toBe(true);
+      expect(el1.getAttribute("data-mdmark-color-theme")).toBe("dev-swiss");
+      expect(sideTocOf(el1).aside.getAttribute("data-mode")).toBe("fixed");
+      // 検証: el2
+      const warnings2 = el2.querySelectorAll(".mdmark-syntax-warning");
+      expect(warnings2).toHaveLength(1);
+      expect(warnings2[0]?.textContent).toContain("先頭");
+      const order = [...el2.querySelectorAll("p, .mdmark-syntax-warning")].map(
+        (node) =>
+          node.classList.contains("mdmark-syntax-warning")
+            ? "warning"
+            : node.textContent,
+      );
+      expect(order.indexOf("warning")).toBeGreaterThan(
+        order.indexOf("最初の段落"),
+      );
+      expect(order.indexOf("warning")).toBeLessThan(
+        order.indexOf("後ろの段落"),
+      );
+      expect(el2.classList.contains("mdmark-theme-dark")).toBe(true);
+    } finally {
+      await resetThemed();
+    }
+  });
+});
+
+/** シナリオ『リンクをカードの格子に並べる』の 4 項目と、リンクの無い 1 項目を囲んだ cards の範囲 */
+const CARD_GRID_MARKDOWN = [
+  "<!-- cards -->",
+  "- `icon:book` [使い方](使い方/README.md)",
+  "  導入と使い方の手順",
+  "- [リファレンス](リファレンス/README.md) 名前から引く一覧",
+  "- https://example.com/docs",
+  "- `icon:rocket` [始める](はじめに/README.md)",
+  "- `icon:clock` 準備中",
+  "  次の版で追加する",
+  "<!-- /cards -->",
+  "",
+].join("\n");
+
+// cards の範囲のリストの項目をカードにして格子に並べる（正常系（カードの格子））
+test("test_normal_when_card_grid", async () => {
+  await withViewport(1280, async () => {
+    // 準備
+    const el = createElement();
+    // 実行
+    await mountTracked(el, { markdown: CARD_GRID_MARKDOWN });
+    // 検証
+    const grids = el.querySelectorAll("ul.mdmark-card-grid");
+    expect(grids).toHaveLength(1);
+    const grid = grids[0] as HTMLElement;
+    const cards = [...grid.querySelectorAll(":scope > li")].map(
+      (li) => li.firstElementChild as HTMLElement,
+    );
+    expect(cards).toHaveLength(5);
+    expect(cards.map((card) => card.tagName)).toEqual([
+      "A",
+      "A",
+      "A",
+      "A",
+      "DIV",
+    ]);
+    for (const card of cards) {
+      expect(card.classList.contains("mdmark-card-grid-item")).toBe(true);
+    }
+    const first = cards[0] as HTMLAnchorElement;
+    expect(decodeURI(first.getAttribute("href") ?? "")).toBe(
+      "使い方/README.md",
+    );
+    expect(find(first, ".mdmark-card-grid-icon").outerHTML).toContain(
+      'data-icon="book"',
+    );
+    expect(find(first, ".mdmark-card-grid-title").textContent).toBe("使い方");
+    expect(find(first, ".mdmark-card-grid-desc").textContent).toBe(
+      "導入と使い方の手順",
+    );
+    expect(
+      find(cards[2] as HTMLElement, ".mdmark-card-grid-title").textContent,
+    ).toBe("example.com/docs");
+    expect(el.querySelector(".mdmark-card")).toBeNull();
+    const columns = getComputedStyle(grid)
+      .gridTemplateColumns.split(" ")
+      .filter((value) => value !== "");
+    expect(columns.length).toBeGreaterThanOrEqual(2);
+    expect(
+      getComputedStyle(find(first, ".mdmark-card-grid-title"))
+        .textDecorationLine,
+    ).toBe("underline");
+    expect(
+      getComputedStyle(find(cards[4] as HTMLElement, ".mdmark-card-grid-title"))
+        .textDecorationLine,
+    ).toBe("none");
+    expect(el.textContent).not.toContain("cards");
+    expect(el.querySelector(".mdmark-syntax-warning")).toBeNull();
+  });
+});
+
+// card-grid がオフの文書は、囲んだリストをリストのまま描く（正常系（カードの格子の機能を外す））
+test("test_normal_when_card_grid_disabled", async () => {
+  // 準備
+  const el = createElement();
+  // 実行
+  await mountTracked(el, {
+    markdown: `<!-- features: -card-grid -->\n\n${CARD_GRID_MARKDOWN}`,
+  });
+  // 検証
+  expect(el.querySelector(".mdmark-card-grid")).toBeNull();
+  const lists = el.querySelectorAll("ul");
+  const list = [...lists].find(
+    (ul) => ul.querySelectorAll(":scope > li").length === 5,
+  );
+  expect(list).toBeDefined();
+  const third = list?.querySelectorAll(":scope > li")[2] as HTMLElement;
+  expect(third.querySelector("a.mdmark-card")).not.toBeNull();
+  expect(el.textContent).not.toContain("cards");
+  expect(el.querySelector(".mdmark-syntax-warning")).toBeNull();
+});
+
+// cards の範囲の中身がリスト 1 つでないときは、書き方の警告を置いて中身を書いたとおりに描く（正常系（カードの格子にリスト以外の中身））
+test("test_normal_when_card_grid_not_list", async () => {
+  // 準備
+  const el = createElement();
+  const { mount } = await loadBuilt();
+  const markdown = [
+    "<!-- cards -->",
+    "",
+    "囲んだ段落",
+    "",
+    "- [使い方](a.md)",
+    "- [参照](b.md)",
+    "<!-- /cards -->",
+    "",
+  ].join("\n");
+  // 実行
+  expect(() => {
+    handles.push(mount(el, { markdown }));
+  }).not.toThrow();
+  // 検証
+  const warning = find(el, ".mdmark-syntax-warning");
+  expect(warning.textContent).toContain("<!-- cards -->");
+  expect(warning.textContent).toContain("リスト 1 つ");
+  expect(el.querySelector(".mdmark-card-grid")).toBeNull();
+  expect(paragraphTexts(el)).toContain("囲んだ段落");
+  expect(el.querySelectorAll("ul > li")).toHaveLength(2);
+  const position = (node: Element) =>
+    [...el.querySelectorAll("*")].indexOf(node);
+  expect(position(warning)).toBeLessThan(
+    position(
+      [...el.querySelectorAll("p")].find(
+        (p) => p.textContent === "囲んだ段落",
+      ) as Element,
+    ),
+  );
+});

@@ -325,6 +325,62 @@ test("test_normal_when_color_theme", async () => {
   await page.close();
 });
 
+// page のマーカーを持つ文書と持たない文書を行き来すると、開いた文書の明暗とテーマで描き直す（正常系（文書ごとのページの設定））
+test("test_normal_when_page_settings_per_document", async () => {
+  // 準備
+  const dir = await createTempDir();
+  await writeFiles(dir, {
+    "mdmark.config.yaml": [
+      "build:",
+      '  include: ["*.md"]',
+      "  entry: a.md",
+      "  out: dist/docs.html",
+      "",
+    ].join("\n"),
+    "a.md":
+      "<!-- page: scheme=dark theme=theme-slate -->\n\n# A\n\n[B へ](b.md)\n",
+    "b.md": "# B\n\nもう 1 つの文書。\n",
+  });
+  // 実行
+  const result = await runCli(["build"], dir);
+  // 検証
+  expect(result.code).toBe(0);
+  const { page, externalRequests } = await browser.openHtml(
+    join(dir, "dist", "docs.html"),
+  );
+  await page.emulateMedia({ colorScheme: "light" });
+  const readRoot = () =>
+    page.evaluate(() => {
+      const root = document.querySelector("article.mdmark");
+      return {
+        dark: root?.classList.contains("mdmark-theme-dark") ?? false,
+        light: root?.classList.contains("mdmark-theme-light") ?? false,
+        theme: root?.getAttribute("data-mdmark-color-theme") ?? null,
+      };
+    });
+  // 最初に開いた文書
+  await page.waitForFunction(() =>
+    document.querySelector("article.mdmark h1")?.textContent?.includes("A"),
+  );
+  await expect(readRoot()).resolves.toEqual({
+    dark: true,
+    light: false,
+    theme: "theme-slate",
+  });
+  // マーカーを持たない文書
+  await page.locator('article p a[href="#/b.md"]').click();
+  await page.waitForFunction(() =>
+    document.querySelector("article.mdmark h1")?.textContent?.includes("B"),
+  );
+  await expect(readRoot()).resolves.toEqual({
+    dark: false,
+    light: false,
+    theme: "dev-swiss",
+  });
+  expect(externalRequests()).toEqual([]);
+  await page.close();
+});
+
 /** 2 つの文書が同じ画像と別々の動画・音声を指すフォルダを作る */
 async function createMediaDir(): Promise<string> {
   const dir = await createTempDir();
