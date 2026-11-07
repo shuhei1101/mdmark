@@ -255,7 +255,8 @@ colorTheme: theme-slate
 | キー | 説明 |
 | --- | --- |
 | `features` | 機能のオン・オフの既定。重ねた値を `mount` の `opts.config.features` に渡す |
-| `libraries` | 外部ライブラリの対応表。`http:`・`https:` の URL はそのまま、相対 URL はその値を書いた設定ファイルのフォルダを基準に解決して、`mount` の `opts.config.libraries` に渡す |
+| `libraries` | 外部ライブラリの対応表。`http:`・`https:` の URL はそのまま、相対 URL はその値を書いた設定ファイルのフォルダを基準に解決して、`mount` の `opts.config.libraries` に渡す。書き出す HTML には、相対 URL のうち文書にマーカーがあるモジュールを埋める |
+| `html-scripts.url` | 範囲のスクリプトの変換のライブラリ。`http:`・`https:` の URL はそのまま、相対 URL はその値を書いた設定ファイルのフォルダを基準に解決して、`mount` の `opts.config.html-scripts.url` に渡す。書き出す HTML には、文書に `ts`・`js` の範囲があるとき相対 URL のモジュールを埋める |
 | `colorTheme` | 配色のテーマ。`mdmark.colorTheme` が空のときだけ、書いた値をそのまま `mount` の `opts.config.colorTheme` に渡す。空でないときは `mdmark.colorTheme` の値に置き換える |
 | `colorScheme` | 配色の明暗。プレビューでは `mdmark.preview.theme` が `auto` のときだけ、書き出す HTML ではいつも、書いた値をそのまま `mount` の `opts.config.colorScheme` に渡す |
 | `assets.root` | アセットのルート。Markdown のフォルダからの相対パスに無い画像・動画・音声を、その値を書いた設定ファイルのフォルダからのこのフォルダで同じ相対パスで探す。`mount` には渡さない |

@@ -1,0 +1,99 @@
+$ npm run test:unit
+
+> test:unit
+> vitest run --project 'unit*'
+
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/fix-export-embed-relative-libraries
+
+ ❯ |unit| tests/unit/src/render/used.test.ts (3 tests | 3 failed) 67ms
+   × test_used_library_marks 58ms
+   × test_collect_range_scripts 4ms
+   × test_collect_range_scripts_when_off_or_no_script 4ms
+ ❯ |unit| tests/unit/vscode/src/export/html.test.ts (6 tests | 1 failed) 26ms
+   × test_module_data_url 2ms
+ ❯ |unit| tests/unit/vscode/src/export/embed.test.ts (2 tests | 2 failed) 56ms
+   × test_embed_local_libraries 52ms
+   × test_embed_local_libraries_when_bundle_fails 3ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 6 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit| tests/unit/src/render/used.test.ts > test_used_library_marks
+Error: Cannot find module '/src/render/used.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/fix-export-embed-relative-libraries/tests/unit/src/render/used.test.ts
+ ❯ tests/unit/src/render/used.test.ts:31:32
+     29| test("test_used_library_marks", async () => {
+     30|   // 準備
+     31|   const { usedLibraryMarks } = await loadUsed();
+       |                                ^
+     32|   const markdown = [
+     33|     "<!-- chart: a -->",
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/6]⎯
+
+ FAIL  |unit| tests/unit/src/render/used.test.ts > test_collect_range_scripts
+Error: Cannot find module '/src/render/used.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/fix-export-embed-relative-libraries/tests/unit/src/render/used.test.ts
+ ❯ tests/unit/src/render/used.test.ts:49:35
+     47| test("test_collect_range_scripts", async () => {
+     48|   // 準備
+     49|   const { collectRangeScripts } = await loadUsed();
+       |                                   ^
+     50|   const range = rangeScriptDoc("ts", ESCAPED_SCRIPT);
+     51|   // 実行
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/6]⎯
+
+ FAIL  |unit| tests/unit/src/render/used.test.ts > test_collect_range_scripts_when_off_or_no_script
+Error: Cannot find module '/src/render/used.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/fix-export-embed-relative-libraries/tests/unit/src/render/used.test.ts
+ ❯ tests/unit/src/render/used.test.ts:69:35
+     67| test("test_collect_range_scripts_when_off_or_no_script", async () => {
+     68|   // 準備
+     69|   const { collectRangeScripts } = await loadUsed();
+       |                                   ^
+     70|   const on = { features: { "html-scripts": true } };
+     71|   const offByMarker = `<!-- features: -html-scripts -->\n\n${rangeScri…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/6]⎯
+
+ FAIL  |unit| tests/unit/vscode/src/export/embed.test.ts > test_embed_local_libraries
+Error: Cannot find module '/vscode/src/export/embed.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/fix-export-embed-relative-libraries/tests/unit/vscode/src/export/embed.test.ts
+ ❯ tests/unit/vscode/src/export/embed.test.ts:42:35
+     40| test("test_embed_local_libraries", async () => {
+     41|   // 準備
+     42|   const { embedLocalLibraries } = await loadEmbed();
+       |                                   ^
+     43|   const { moduleDataUrl } = await loadHtml();
+     44|   const { bundle, calls } = recordingBundle();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/6]⎯
+
+ FAIL  |unit| tests/unit/vscode/src/export/embed.test.ts > test_embed_local_libraries_when_bundle_fails
+Error: Cannot find module '/vscode/src/export/embed.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/fix-export-embed-relative-libraries/tests/unit/vscode/src/export/embed.test.ts
+ ❯ tests/unit/vscode/src/export/embed.test.ts:75:35
+     73| test("test_embed_local_libraries_when_bundle_fails", async () => {
+     74|   // 準備
+     75|   const { embedLocalLibraries } = await loadEmbed();
+       |                                   ^
+     76|   const { bundle, calls } = recordingBundle(["/ws/libs/test.js"]);
+     77|   // 実行
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/6]⎯
+
+ FAIL  |unit| tests/unit/vscode/src/export/html.test.ts > test_module_data_url
+TypeError: moduleDataUrl is not a function
+ ❯ tests/unit/vscode/src/export/html.test.ts:39:15
+     37|   const prefix = "data:text/javascript;charset=utf-8,";
+     38|   // 実行
+     39|   const url = moduleDataUrl(code);
+       |               ^
+     40|   // 検証
+     41|   expect(url.startsWith(prefix)).toBe(true);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/6]⎯
+
+
+ Test Files  3 failed | 247 passed (250)
+      Tests  6 failed | 1716 passed (1722)
+   Start at  23:43:29
+   Duration  118.08s (worker 60%, tests 27%, import 12%, transform 1%)
+
+exit=1

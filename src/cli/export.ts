@@ -17,6 +17,7 @@ import {
   collectReferences,
   type MdmarkReferences,
 } from "../knowledge/references.ts";
+import { usedLibraryMarks } from "../render/used.ts";
 import { loadAliases } from "./aliases.ts";
 import { copyMedia } from "./assets.ts";
 import { type LoadedConfig, requireConfig } from "./config.ts";
@@ -29,7 +30,6 @@ import {
   type FetchText,
   hasDynamicImport,
   inlineImages,
-  usedLibraryMarks,
   usedParts,
   usedSyntaxLanguages,
   type ViewerEmbeds,

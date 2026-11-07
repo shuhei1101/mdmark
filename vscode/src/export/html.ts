@@ -26,6 +26,11 @@ export function escapeScriptJson(value: unknown): string {
   return JSON.stringify(value).replaceAll("<", "\\u003c");
 }
 
+/** ES モジュールのコードを、`file:` のページから `import()` で読める `data:` の URL にする */
+export function moduleDataUrl(code: string): string {
+  return `data:text/javascript;charset=utf-8,${encodeURIComponent(code)}`;
+}
+
 /** 束ねた拡張を順に読み、`mount` の前に登録する（読めない拡張は飛ばす） */
 const REGISTER_EXTENSIONS_SCRIPT = `
 for (const url of data.extensions) {
@@ -68,7 +73,7 @@ setTimeout(print, PRINT_WAIT_MS);
 export function buildExportHtml(options: {
   /** 全文 */
   markdown: string;
-  /** 設定（`libraries` は `file:` の URL に直した値） */
+  /** 設定（相対パスの `libraries`・`html-scripts.url` は `data:` の URL にした値） */
   config: PreviewConfig;
   /** Markdown のファイル名 */
   title: string;
@@ -89,10 +94,7 @@ export function buildExportHtml(options: {
     markdown: options.markdown,
     config: options.config,
     // `file:` のページは `file:` のモジュールを読まないため、`data:` の URL にして読む
-    extensions: options.extensions.map(
-      (code) =>
-        `data:text/javascript;charset=utf-8,${encodeURIComponent(code)}`,
-    ),
+    extensions: options.extensions.map(moduleDataUrl),
   });
   const themeStyle =
     options.themeCss === undefined
