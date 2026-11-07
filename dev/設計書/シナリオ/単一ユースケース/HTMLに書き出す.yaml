@@ -107,7 +107,7 @@ scenarios:
     setup:
       - name: 手元のライブラリを指すワークスペース
         description: '`mdmark.config.yaml` の `libraries` に、同じフォルダの別のファイルを import する手元のモジュールを相対パスで書き、`html-scripts.url` に変換のライブラリの手元のコピーを相対パスで書く。Markdown はその外部ライブラリのマーカーと、`features.html-scripts` をオンにした `ts` の範囲を持つ'
-        notes: '`libraries` には文書にマーカーの無いライブラリの行も 1 つ書く'
+        notes: '`libraries` には文書にマーカーの無いライブラリの行も 1 つ書く。そのモジュールは、他のファイルに出ない目印の文字列を持つ'
       - name: Mock
         description: 正常シナリオと同じ。書き出した HTML は Chromium で file:// で開く
     flow: |-
@@ -122,8 +122,8 @@ scenarios:
     expected:
       - 書き出した HTML を Chromium で開くと、外部ライブラリのマーカーの場所がそのライブラリで描かれ、知らせの枠が出ない
       - 範囲の `ts` が動き、範囲の要素にスクリプトが書いた結果が出る
-      - 書き出した HTML に、文書にマーカーの無いライブラリのモジュールは入らない
-      - 開いている間に `file:` の URL への要求が出ない
+      - 書き出した HTML の `data:` の URL を復号した中に、文書にマーカーの無いライブラリの目印の文字列が無い
+      - 開いている間に、書き出した HTML 以外の `file:` の URL への要求が出ない
     test: test_normal_when_relative_libraries
 lead: 文書を書く人が、開いている Markdown をコマンドパレットから HTML に書き出し、既定のブラウザで開く。
 issue: 22
