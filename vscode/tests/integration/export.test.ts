@@ -1,6 +1,6 @@
 import * as assert from "node:assert";
 import { existsSync } from "node:fs";
-import { chmod, mkdir, readdir } from "node:fs/promises";
+import { chmod, mkdir, readdir, readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { pathToFileURL } from "node:url";
 import playwright from "playwright";
@@ -14,6 +14,7 @@ import {
   messages,
   opened,
   openMarkdown,
+  REPO_ROOT,
   readFixture,
   resetEnvironment,
   setSetting,
@@ -95,6 +96,87 @@ async function createReadOnlyDir(relative: string): Promise<void> {
   await chmod(path, 0o555);
   trackFile(relative);
 }
+
+/** 書き出した HTML に埋めた本文と設定の JSON */
+function exportedData(html: string): {
+  config: {
+    libraries?: Record<string, string>;
+    "html-scripts"?: { url?: string };
+  };
+} {
+  const found = html.match(
+    /<script type="application\/json" id="mdmark-data">([\s\S]*?)<\/script>/,
+  );
+  assert.ok(found?.[1], "埋めた JSON が無い");
+  return JSON.parse(found[1]);
+}
+
+/** 書き出した HTML の `data:` の URL をすべて復号してつなげる */
+function decodedDataUrls(html: string): string {
+  return [...html.matchAll(/data:text\/javascript;charset=utf-8,([^"\\]+)/g)]
+    .map((match) => decodeURIComponent(match[1] ?? ""))
+    .join("\n");
+}
+
+/** マーカーの無いライブラリの目印の文字列 */
+const UNUSED_LIBRARY_SIGN = "unused-library-sign-369";
+
+/** 相対パスの `libraries` と `html-scripts.url` を書いた設定と、手元のライブラリを置く */
+async function writeLocalLibraries(): Promise<void> {
+  await writeFixture(
+    "libs/test-lib.js",
+    'import { label } from "./label.js";\nexport function draw(slot) { slot.textContent = label; }\n',
+  );
+  await writeFixture("libs/label.js", 'export const label = "drawn-local";\n');
+  await writeFixture(
+    "libs/unused.js",
+    `export function draw(slot) { slot.textContent = "${UNUSED_LIBRARY_SIGN}"; }\n`,
+  );
+  const babel = await readFile(
+    join(REPO_ROOT, "node_modules", "@babel", "standalone", "babel.min.js"),
+    "utf8",
+  );
+  await writeFixture(
+    "libs/babel.mjs",
+    `const module = { exports: {} };\nconst exports = module.exports;\n${babel}\nexport default module.exports;\n`,
+  );
+  await writeFixture(
+    "mdmark.config.yaml",
+    [
+      "libraries:",
+      "  test-lib: ./libs/test-lib.js",
+      "  unused-lib: ./libs/unused.js",
+      "features:",
+      "  html-scripts: true",
+      "html-scripts:",
+      "  url: ./libs/babel.mjs",
+      "",
+    ].join("\n"),
+  );
+}
+
+/** `test-lib` のマーカーと、`.box` に書く `ts` の範囲 */
+const LOCAL_LIBRARIES_EXTRA = [
+  "<!-- test-lib -->",
+  "",
+  "<!-- html -->",
+  "",
+  "```html",
+  '<div class="box">箱</div>',
+  "```",
+  "",
+  "```ts",
+  "export default (root: HTMLElement): void => {",
+  '  const box = root.querySelector<HTMLElement>(".box");',
+  "  if (box) {",
+  '    box.textContent = "ran-ts";',
+  "  }",
+  "};",
+  "```",
+  "",
+  "<!-- /html -->",
+  "",
+].join("\n");
 
 suite("HTML に書き出す", () => {
   suiteSetup(() => {
@@ -207,6 +289,57 @@ suite("HTML に書き出す", () => {
     assertExportFailedNotice(messages.error[0]);
     assert.deepStrictEqual(opened, []);
     assert.deepStrictEqual(await readdir(join(workspaceDir(), "locked")), []);
+  });
+
+  // 相対パスの libraries と html-scripts.url を data: の URL で埋め、Chromium で file:// で開いて描く
+  test("test_normal_when_relative_libraries", async () => {
+    // 準備
+    await writeLocalLibraries();
+    await writeFixture(
+      "docs/guide.md",
+      `# 手元のライブラリ\n\n${LOCAL_LIBRARIES_EXTRA}`,
+    );
+    await openMarkdown("docs/guide.md");
+    trackFile("docs/guide.html");
+    // 実行
+    await vscode.commands.executeCommand("mdmark.exportHtml");
+    // 検証
+    const path = join(workspaceDir(), "docs", "guide.html");
+    await waitFor(() => existsSync(path), { message: "書き出されない" });
+    const html = await readFixture("docs/guide.html");
+    const { config } = exportedData(html);
+    assert.ok(
+      config.libraries?.["test-lib"]?.startsWith("data:text/javascript"),
+    );
+    assert.ok(config["html-scripts"]?.url?.startsWith("data:text/javascript"));
+    assert.ok(!Object.hasOwn(config.libraries ?? {}, "unused-lib"));
+    assert.ok(!decodedDataUrls(html).includes(UNUSED_LIBRARY_SIGN));
+    const fileRequests: string[] = [];
+    const exported = await openExported(path, async (page) => {
+      page.on("request", (request) => {
+        if (request.url().startsWith("file:")) {
+          fileRequests.push(request.url());
+        }
+      });
+    });
+    try {
+      await exported.page.waitForFunction(
+        () =>
+          document.querySelector(".mdmark-embed")?.textContent ===
+            "drawn-local" &&
+          document.querySelector(".box")?.textContent === "ran-ts",
+      );
+      assert.strictEqual(
+        await exported.page.locator(".mdmark-notice").count(),
+        0,
+      );
+      assert.deepStrictEqual(
+        fileRequests.filter((url) => url !== exportedUrl("docs/guide.html")),
+        [],
+      );
+    } finally {
+      await exported.close();
+    }
   });
 
   // mdmark.preview.theme によらず、設定ファイルの colorScheme を埋めた HTML を書き出す

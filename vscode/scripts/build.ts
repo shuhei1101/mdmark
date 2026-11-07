@@ -1,8 +1,22 @@
-import { copyFile, mkdir, readdir } from "node:fs/promises";
+import { copyFile, mkdir, readdir, readFile } from "node:fs/promises";
 import { createRequire } from "node:module";
 import { join } from "node:path";
-import { build } from "esbuild";
+import { build, type Plugin } from "esbuild";
 import { build as buildWebview } from "vite";
+
+/** esbuild-wasm のブラウザ向けの入口は `self` を参照するため、拡張機能ホスト（Node）では先頭で `self` を `globalThis` にする */
+const esbuildWasmSelfPlugin: Plugin = {
+  name: "esbuild-wasm-self",
+  setup(pluginBuild) {
+    pluginBuild.onLoad(
+      { filter: /esbuild-wasm[\\/]lib[\\/]browser\.js$/ },
+      async (args) => ({
+        contents: `var self = globalThis;\n${await readFile(args.path, "utf8")}`,
+        loader: "js",
+      }),
+    );
+  },
+};
 
 /** 拡張機能と Webview のスクリプトを束ね、`tests` が `true` のときは結合テストも `out/test/` に束ねる */
 export const buildExtension = async (options: {
@@ -26,7 +40,14 @@ export const buildExtension = async (options: {
     platform: "node",
     target: "node22",
     external: ["vscode"],
+    plugins: [esbuildWasmSelfPlugin],
   });
+  // 拡張機能ホストの esbuild-wasm が読む WebAssembly
+  const require = createRequire(join(root, "package.json"));
+  await copyFile(
+    require.resolve("esbuild-wasm/esbuild.wasm"),
+    join(root, "dist", "esbuild.wasm"),
+  );
   // Webview の中で動く React の画面と CSS: mdmark の配布物は束ねず、実行時に読む
   await buildWebview({ root, logLevel: "silent" });
   if (!tests) {
@@ -47,7 +68,6 @@ export const buildExtension = async (options: {
     external: ["vscode", "mocha", "playwright", "yaml"],
   });
   // 結合テストの axe: Webview が `axe` を受けたときだけ読む（本番の `preview.js` には束ねない）
-  const require = createRequire(join(root, "package.json"));
   await mkdir(join(root, "media", "test"), { recursive: true });
   await copyFile(
     require.resolve("axe-core/axe.min.js"),

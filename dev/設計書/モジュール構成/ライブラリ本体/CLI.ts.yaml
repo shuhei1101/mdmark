@@ -603,7 +603,7 @@ functions:
       pr: 32
   - name: usedLibraryMarks
     title: 文書が使う印の名前を拾う
-    container: src/cli/embed.ts
+    container: src/render/used.ts
     usecase: 共通
     summary: 文書の Markdown から `MARK_PATTERN` に当たる印の名前を拾い、対応表にあるものだけを返す
     kind: 関数
@@ -630,6 +630,7 @@ functions:
     status: planned
     introduced:
       pr: 32
+    description: esbuild を import しないファイルに置き、CLI の書き出しと VS Code 拡張機能の書き出し（`embedLocalLibraries`）が使う
   - name: bundleModule
     title: モジュールを 1 つに束ねる
     container: src/bundle-module.ts
@@ -2187,7 +2188,7 @@ functions:
     kind: 関数
     scope: internal
     is_async: true
-    summary: '文書ごとに `render` を設定と一緒に呼び、返った HTML の `template.mdmark-html-script` のコードを、`ts` は型を外して、esbuild の `transform`（`format: "cjs"`）で CommonJS に変える。同じコードは 1 回だけ変える'
+    summary: '文書ごとに `collectRangeScripts` で範囲のコードを集め、`ts` は型を外して、esbuild の `transform`（`format: "cjs"`）で CommonJS に変える。同じコードは 1 回だけ変える'
     description: '`render` は文書の `features` の印を重ねるので、`html-scripts` がオフの文書は `template` を出さず対象にならない。変えられない範囲は返さず、文書のパスと元のエラーの 1 行の警告にする（開いたときは `mount` が表に無い範囲として書き方の警告を出す）'
     args:
       - name: options
@@ -2219,6 +2220,8 @@ functions:
     status: planned
     introduced:
       pr: 303
+    callees:
+      - '#functions[collectRangeScripts]'
   - name: collectIncludes
     title: 取り込む文書を集める
     container: src/cli/includes.ts
@@ -2401,6 +2404,38 @@ functions:
     status: planned
     introduced:
       pr: 328
+  - name: collectRangeScripts
+    title: 範囲のスクリプトを集める
+    container: src/render/used.ts
+    usecase: 共通
+    kind: 関数
+    scope: public
+    summary: 文書を `renderDocument` で設定と一緒に描き、返った HTML の `template.mdmark-html-script` の言語と、エスケープを戻したコードを書いた順に返す
+    description: '`mount` が変換のライブラリを読むのと同じ出力から判定する。`html-scripts` がオフの文書は `template` を出さないため、空を返す。esbuild を import しないファイルに置き、CLI の `compileHtmlScripts` と VS Code 拡張機能の `embedLocalLibraries` が使う'
+    args:
+      - name: options
+        type: '{ markdown: string; config: MdmarkConfig }'
+        required: true
+        description: 文書の Markdown と設定
+    returns:
+      type: 'Array<{ lang: "ts" | "js"; source: string }>'
+      description: 範囲のスクリプトの言語とコード
+    unit_tests:
+      - name: test_collect_range_scripts
+        case: 正常
+        summary: 設定か文書のマーカーでオンの文書の範囲の `ts` を、エスケープを戻して返す
+        condition: "`'` と `<` を含む `ts` の範囲を持つ文書を、`features.html-scripts` が `true` の設定と、設定に書かず文書に `<!-- features: +html-scripts -->` を持つ場合で呼ぶ"
+        mock: なし
+        expected: 'どちらも `[{ lang: "ts", source: 範囲のコード }]`'
+      - name: test_collect_range_scripts_when_off_or_no_script
+        case: 正常
+        summary: オフか、範囲に `ts`・`js` が無いと空
+        condition: '`features.html-scripts` が `true` で文書に `<!-- features: -html-scripts -->` を持つ場合と、オンで範囲が `html`・`css` だけの場合と、範囲の外に `ts` のコードブロックがある場合'
+        mock: なし
+        expected: どれも空の配列
+    callees:
+      - dev/設計書/モジュール構成/ライブラリ本体/描画.ts#functions[renderDocument]
+    status: planned
 constants:
   - name: TEMPLATE_FILES
     title: 雛形の一覧
@@ -2431,3 +2466,4 @@ test_files:
   - tests/unit/src/cli/markdown-check.test.ts
   - tests/unit/src/cli/includes.test.ts
   - tests/unit/src/cli/icons.test.ts
+  - tests/unit/src/render/used.test.ts

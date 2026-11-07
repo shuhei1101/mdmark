@@ -8,6 +8,7 @@ directory: |-
   ├── marks.ts     # 印を読み、置き換えるコアルール
   ├── page.ts      # ページの設定の印の読み取り
   ├── sanitize.ts  # sanitize-html の設定と sanitize
+  ├── used.ts      # 書き出しで埋める外部ライブラリと範囲のスクリプトを文書から取得する usedLibraryMarks・collectRangeScripts（esbuild を import しない。『CLI』）
   ├── scope-css.ts # 埋め込んだ HTML の範囲の css を範囲の根の要素の中だけに当てる scopeCss（DOM を使わない）
   └── syntax/      # 記法ごとのコアルール（『記法』）
   ```
