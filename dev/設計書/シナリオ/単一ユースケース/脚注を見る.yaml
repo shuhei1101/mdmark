@@ -182,7 +182,7 @@ scenarios:
     setup:
       - name: mdmark を読むページ
         description: 正常シナリオと同じページを、タッチの端末（`hasTouch`）として開いたページ
-        notes: Chromium のタッチの再現では `:hover` が残らないため、外のタップで閉じる期待値は今の実装でも pass しうる。iOS の `:hover` が残る状態は単体テストで、`pointerleave`・`blur` を発火させずに外の `pointerdown` だけで閉じることを確かめる
+        notes: Chromium のタッチの再現では `:hover` が残らないため、外のタップで閉じる期待値は今の実装でも pass しうる。iOS の `:hover` が残る状態は単体テストで、`pointerleave`・`blur` を発火させずに外の `pointerdown` だけで閉じることを確かめる。ツールチップの中のリンクのタップで閉じないことも単体テストで確かめる
       - name: 脚注を持つ Markdown
         description: 正常シナリオと同じ文書の後ろに、脚注を含まない段落を続けた文書
       - name: Mock
