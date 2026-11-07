@@ -338,7 +338,7 @@ functions:
         summary: page の印の明暗・テーマ・目次の出し方を設定より優先し、`update` で決め直す
         condition: '設定が `{ colorScheme: "dark", colorTheme: "theme-paper", "side-toc": { mode: "hover" } }` で、`<!-- page: scheme=light theme=theme-slate toc=fixed -->` と h2 を 2 つ持つ文書を描き、`update` で印を持たない文書にする'
         mock: なし
-        expected: 描いた直後、`el` が class `mdmark-theme-light` を持ち `mdmark-theme-dark` を持たず、`data-mdmark-color-theme` が `theme-slate`、目次を出すボタンがある。`update` の後は class `mdmark-theme-dark`、`data-mdmark-color-theme` が `theme-paper`、目次を出すボタンが無い
+        expected: 描いた直後、`el` が class `mdmark-theme-light` を持ち `mdmark-theme-dark` を持たず、`data-mdmark-color-theme` が `theme-slate`、右側の目次の `data-mode` が `fixed`。`update` の後は class `mdmark-theme-dark`、`data-mdmark-color-theme` が `theme-paper`、右側の目次の `data-mode` が `hover`
       - name: test_mount_when_color_scheme_destroyed
         case: 正常
         summary: '`destroy` で mount が付けた明暗の class を外す'

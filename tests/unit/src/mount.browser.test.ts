@@ -231,7 +231,7 @@ test("test_mount_when_page_marker", async () => {
     light: el.classList.contains("mdmark-theme-light"),
     dark: el.classList.contains("mdmark-theme-dark"),
     theme: el.getAttribute("data-mdmark-color-theme"),
-    toggle: el.querySelector(".mdmark-side-toc-toggle") !== null,
+    tocMode: el.querySelector(".mdmark-side-toc")?.getAttribute("data-mode"),
   };
   handle.update("## 導入\n\n段落\n\n## 使い方\n\n段落\n");
   // 検証
@@ -239,12 +239,14 @@ test("test_mount_when_page_marker", async () => {
     light: true,
     dark: false,
     theme: "theme-slate",
-    toggle: true,
+    tocMode: "fixed",
   });
   expect(el.classList.contains("mdmark-theme-dark")).toBe(true);
   expect(el.classList.contains("mdmark-theme-light")).toBe(false);
   expect(el.getAttribute("data-mdmark-color-theme")).toBe("theme-paper");
-  expect(el.querySelector(".mdmark-side-toc-toggle")).toBeNull();
+  expect(el.querySelector(".mdmark-side-toc")?.getAttribute("data-mode")).toBe(
+    "hover",
+  );
 });
 
 // destroy で mount が付けた明暗の class を外す（正常系）
