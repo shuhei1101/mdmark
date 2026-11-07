@@ -273,6 +273,54 @@ scenarios:
       - '`docs/` の `mdmark.config.yaml` の `version` が目標の版になる'
       - 上のフォルダの `mdmark.config.yaml` と端末の設定は書き換わらない
     test: test_normal_when_parent_config_exists
+  - name: 正常シナリオ（エイリアスの元の行を新しい構造へ書き換える）
+    setup:
+      - name: v0.2.0 の構造のエイリアスの元の行を持つフォルダ
+        description: '`version: v0.9.0` の設定の `aliases` に、次の 3 行とその YAML を持つフォルダ。`alias_type` を `{type: custom, value: term}`、`name`・`description` を `{type: ref, field}` で取る行 `terms`。`alias_type` を `{type: ref, field: alias_type}` で取り、レコードの `alias_type` が全て `command` の行 `commands`。`cwd` を `{type: custom, value: リポジトリの直下}` で取る `command` の行 `tests`'
+      - name: Mock
+        description: 呼んだ CLI の版を目標の版にし、リポジトリの `migrations/next/` の移行の手順を目標の版の手順として使用する
+        notes: '`--yes` を付ける'
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant C as mdmark CLI
+        participant F as フォルダ
+        W->>C: mdmark upgrade --yes
+        C->>F: 書き換えうるファイルを写しのフォルダへ写す
+        C->>F: aliases の行の paths の YAML を参照し、行を新しい構造へ書き換える
+        C->>C: mdmark check と同じ点検を流す（ずれ 0 件）
+        C->>F: 設定の version を目標の版にする
+        C-->>W: 当てた手順・除外したキーと値・写しのフォルダの場所・終了コード 0
+    expected:
+      - '`terms` の行が `alias_type: term` を持ち、`metadata` の `name`・`description` が元の `field` の列名の文字列になっている'
+      - '`commands` の行が `alias_type: command` を持ち、`metadata` が `alias_type` を持たない'
+      - '`tests` の行の `metadata` が `cwd` を持たず、出力に `tests` の行から除外した `cwd` と値 `リポジトリの直下` が出る'
+      - 設定の `aliases` が alias-inject v0.3.0 の Schema に合う
+      - 設定の `version` が目標の版
+      - 終了コードが 0
+    test: test_normal_when_aliases_rows
+  - name: 異常シナリオ（エイリアスの元の行の種類が 1 つに決まらない）
+    setup:
+      - name: 種類を混ぜた行を持つフォルダ
+        description: '`version: v0.9.0` の設定の `aliases` に、`alias_type` を `{type: ref, field: alias_type}` で取り、レコードの `alias_type` に `term` と `command` が混ざる行 `mixed` を持つフォルダ'
+      - name: Mock
+        description: 正常シナリオ（エイリアスの元の行を新しい構造へ書き換える）と同じ
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant C as mdmark CLI
+        participant F as フォルダ
+        W->>C: mdmark upgrade --yes
+        C->>F: 写しを取り、手順を当てる（mixed の行は書き換えない）
+        C->>C: 点検を流す（mixed の行が Schema に合わない）
+        C->>F: 写しから戻す
+        C-->>W: mixed の行を種類ごとの行に分ける直し方・ずれの一覧・終了コード 0 以外
+    expected:
+      - 出力に `mixed` の行と、レコードの種類 `term`・`command` ごとに行を分ける直し方が出る
+      - 設定が当てる前と同じ中身に戻っている
+      - 設定の `version` が `v0.9.0` のまま
+      - 終了コードが 0 以外
+    test: test_error_when_aliases_row_mixed_types
 lead: 文書を書く人が `mdmark upgrade` を流し、設定の手元の版から目標の版までの移行の手順を版の順に当て、点検を通してから設定の版を書き換え、その範囲の変更履歴を受け取る。
 issue: 10
 primary_actor: 文書を書く人
