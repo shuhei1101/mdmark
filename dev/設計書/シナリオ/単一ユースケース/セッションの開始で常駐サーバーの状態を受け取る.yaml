@@ -1,0 +1,57 @@
+title: セッションの開始で常駐サーバーの状態を受け取る
+scenarios:
+  - name: 正常シナリオ
+    setup:
+      - name: 起動した常駐サーバー
+        description: 端末の設定のセッション名の tmux のセッションで、`MDMARK_PORT` に空いたポートを指定して `mdmark serve` を起動している
+        notes: 手元の常駐サーバーが使う 8782 と既定のセッション名を避ける
+      - name: Mock
+        description: Claude Code の代わりに、プラグインの `hooks/hooks.json` の SessionStart のコマンドを流し、`.mcp.json` の接続先へ HTTP でつなぐ MCP のクライアントを使う。モデルは使わない
+    flow: |-
+      sequenceDiagram
+        participant C as Claude Code
+        participant H as SessionStart のフック
+        participant S as 常駐サーバー
+        C->>H: セッションの開始
+        H->>S: ポートが待ち受けているか
+        S-->>H: 待ち受けている
+        H-->>C: 何も出さない・終了コード 0
+        C->>S: initialize
+        S-->>C: instructions
+    expected:
+      - SessionStart のフックが標準出力に何も出さず、終了コード 0 で終わる
+      - '`initialize` の `instructions` に、端末の設定の tmux のセッション名と、`global-setup` で起動し直せることがある'
+    test: test_normal
+  - name: 異常シナリオ（起動していない）
+    setup:
+      - name: 止めた常駐サーバー
+        description: '`MDMARK_PORT` に指定した空いたポートで待ち受けるプロセスが無い'
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        participant C as Claude Code
+        participant H as SessionStart のフック
+        participant S as 常駐サーバー
+        C->>H: セッションの開始
+        H->>S: ポートが待ち受けているか
+        S-->>H: 接続を拒否された
+        H-->>C: additionalContext の 1 行・終了コード 0
+    expected:
+      - SessionStart のフックが終了コード 0 で終わり、`additionalContext` に、常駐サーバーが `127.0.0.1:{ポート}` で待ち受けていないことと `/mdmark:global-setup` で起動できることを 1 行で出す
+      - MCP のクライアントの接続が、接続を拒否されたエラー（`ECONNREFUSED`）で失敗する
+    test: test_error_when_server_not_running
+lead: Claude Code のセッションの開始で、mdmark のプラグインが常駐サーバーの状態を伝える。待ち受けていないときだけ SessionStart のフックで起動の仕方を伝え、起動しているときは MCP の `instructions` で tmux のセッション名を伝える。
+issue: 165
+primary_actor: Claude Code
+stakeholders:
+  - name: 文書を書く人
+    interest: 常駐サーバーが落ちているときに、mdmark のツールが使えない理由と起動の仕方がセッションの中で分かる
+  - name: Claude Code
+    interest: mdmark を使わないセッションでも、常駐サーバーが起動しているときは何も入らない
+trigger: 文書を書く人が Claude Code のセッションを開く
+preconditions:
+  - Claude Code に mdmark のプラグインを入れている
+success_guarantee: 常駐サーバーが待ち受けているときは SessionStart のフックが何も出さず、`instructions` から tmux のセッション名が分かる。待ち受けていないときは、待ち受けていないことと `global-setup` での起動の仕方が 1 行で伝わる。
+minimal_guarantee: SessionStart のフックはどの場合も終了コード 0 で終わり、セッションの開始を止めない。
+test_file: tests/e2e/単一ユースケース/セッションの開始で常駐サーバーの状態を受け取る.spec.ts
