@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <!-- viewport: スマホ幅で等倍に表示する -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>document / a-mdmark-theme（mermaid の図を mdmark のテーマで描く） | mdmark のモック</title>
+  <!-- 配布物の CSS（ライブラリ本体） -->
+  <link rel="stylesheet" href="../../../../../../dist/index.css">
+  <!-- 使う側のページの見た目と、モック専用の操作列（#287 で共有するアセット） -->
+  <link rel="stylesheet" href="../../../../refs/287/assets/scene.css">
+  <!-- mermaid の図の枠のモックの規則（#382 で共有するアセット） -->
+  <link rel="stylesheet" href="../../../../refs/382/assets/mermaid.css">
+  <!-- 配布物の mount で文書を描き、mermaid のコードブロックをこの PR の案の図の枠に替える -->
+  <script type="module" src="../../../../refs/382/assets/scene.js"></script>
+</head>
+<body>
+  <!-- モック専用の操作列: 明暗の切り替え。[data-scene-scheme]: scene.js が行き先の URL と今の明暗の aria-current を当てる -->
+  <div class="mock-bar" data-mock-bar>
+    <div class="mock-bar-group" role="group" aria-label="明暗">
+      <span class="mock-bar-label">明暗</span>
+      <a class="mock-bar-item" data-scene-scheme="light">明るい配色</a>
+      <a class="mock-bar-item" data-scene-scheme="dark">ダーク</a>
+    </div>
+  </div>
+
+  <!-- 使う側のページのトップバー（mdmark の外） -->
+  <header class="host-bar">使う側のアプリ</header>
+
+  <nav class="crumbs" aria-label="パンくずリスト">
+    <a href="../../../index.md">pages</a> / <a href="../../index.md">document</a> / <a href="../index.md">382</a> / a-mdmark-theme
+  </nav>
+
+  <main class="host">
+    <!-- mount で描く先の要素 -->
+    <div id="doc"></div>
+  </main>
+</body>
+</html>

@@ -1,0 +1,31 @@
+/* mermaid の図の枠のモックの規則: 表示する枠の中で SVG を全体が収まる倍率にし、actor のアイコンを本文の色の線で描く */
+
+/* 表示する枠: mermaid の SVG を枠の幅に収め、中央に配置する */
+.mock-mermaid-viewport {
+  display: grid;
+  place-items: center;
+  padding: var(--mdmark-space);
+  overflow: auto;
+}
+
+/* SVG: mermaid が付けた元の幅を上限にして拡大せず、表示する枠の幅と高さに収める（全体が収まる倍率） */
+.mock-mermaid-viewport > svg {
+  width: 100%;
+  height: auto;
+  max-height: calc(var(--mdmark-diagram-max-height, 32rem) - 2 * var(--mdmark-space));
+}
+
+/* actor の人のアイコン（lucide の user）: 図のほかの線と同じ太さで、本文の色の線にする */
+.mock-mermaid-actor {
+  fill: none;
+  stroke: var(--mdmark-color-text);
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* 影: mermaid が SVG の filter で付ける影（シーケンス図の参加者の箱など）を外す。テーマの変数の dropShadow では外れない */
+.mock-mermaid-viewport svg [filter],
+.mock-mermaid-viewport svg .actor {
+  filter: none;
+}
