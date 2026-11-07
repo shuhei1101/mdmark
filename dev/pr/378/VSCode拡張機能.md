@@ -17,6 +17,7 @@
 | 実装 | [vscode/src/preview/panel.ts](https://github.com/shuhei1101/mdmark/blob/develop/vscode/src/preview/panel.ts) | 設定の再読み込み・`render` の送信・見張るファイル | - |
 | 実装 | [vscode/src/webview/features/preview/panel/document-view.ts](https://github.com/shuhei1101/mdmark/blob/develop/vscode/src/webview/features/preview/panel/document-view.ts) | Webview で `mount`・`update` を呼ぶ | エイリアスを指定していない |
 | 実装 | [src/cli/aliases.ts](https://github.com/shuhei1101/mdmark/blob/develop/src/cli/aliases.ts) | 設定の `aliases` の YAML を参照してエイリアスとずれを返却する `loadAliases` | CLI の書き出しが使用。プレビューからも呼ぶ |
+| 実装 | [src/cli/check.ts](https://github.com/shuhei1101/mdmark/blob/develop/src/cli/check.ts) | `mdmark check` の点検とずれの出力 | ずれの 1 行の組み立てを `formatCheckIssue` に切り出す |
 | テスト | [tests/e2e/単一ユースケース/VSCodeでプレビューを開く.spec.ts](https://github.com/shuhei1101/mdmark/blob/develop/tests/e2e/%E5%8D%98%E4%B8%80%E3%83%A6%E3%83%BC%E3%82%B9%E3%82%B1%E3%83%BC%E3%82%B9/VSCode%E3%81%A7%E3%83%97%E3%83%AC%E3%83%93%E3%83%A5%E3%83%BC%E3%82%92%E9%96%8B%E3%81%8F.spec.ts) | プレビューを開く E2E | ケースを追加 |
 
 ## 変更方針
@@ -30,6 +31,8 @@
 | 描き直し | `aliases` の行が指す YAML をパネルの見張るファイルに追加し、書き換えで描き直す | - |
 | 既存機能への影響 | 設定に `aliases` が無い文書の描画・メッセージは今と同じ | - |
 | 性能 | YAML の参照は設定の再読み込みのときだけ行い、Markdown の書き換えごとには行わない | - |
+| 保守性 | `{file}:{where}: {kind}: {message}` の組み立てを `src/cli/check.ts` の `formatCheckIssue` にまとめ、`mdmark check`・`mdmark export`・`mdmark upgrade` とプレビューの警告で使う | 3 か所の重複にプレビューが 4 か所目として加わるため |
+| エイリアスの元の YAML | `loadAliases` の戻り値に、当たった YAML の絶対パス `files` を追加し、プレビューの見張るファイルに入れる | CLI の呼び出し元は `files` を使わない |
 
 ## 設計書の確定コミット
 
@@ -39,6 +42,7 @@
 | 単一ユースケース設計 | `008729cf..0ca531c5` | レビューの指摘の修正 |
 | インターフェース定義設計 | `2218cc68..93c23883` | - |
 | インターフェース定義設計 | `14cf3214..3235d19a` | レビューの指摘の修正 |
+| モジュール構成設計 | `af5be2f6..fc8e6833` | - |
 
 ## テスト結果
 
