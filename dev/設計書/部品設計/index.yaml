@@ -47,6 +47,8 @@ items:
     summary: 系列を色と模様の組で分ける折れ線・棒・円・散布図のグラフ
   - page: ER図.ts.yaml
     summary: テーブル・列・関係を定義の座標に置き、多重度の記号で結ぶ ER 図
+  - page: mermaidの図.ts.yaml
+    summary: mermaid のコードブロックを mdmark の見た目のテーマで描いた SVG を入れた図の枠
   - page: 図のツールチップ.ts.yaml
     summary: 図の線の入力の詳細と、箱の入力・処理・出力・ヒントと、ER 図のテーブルの概要と列の説明を出すツールチップ
   - page: 操作できる部品.ts.yaml
