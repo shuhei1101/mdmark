@@ -194,7 +194,7 @@ mdmark.config.yaml:build: schema: `build.out` がありません。書き出す 
 
 | 種類 | 意味 |
 | --- | --- |
-| `schema` | 設定か索引が Schema に合わない。`build.glossary`・`build.entry` が `build.include` に当たらないもの、`theme`・`extensions` のファイルと `assets.root` のフォルダが無いもの、`extensions` の拡張を読み込めないもの、`aliases` の行が取り込んだ Schema に合わないもの（場所は `aliases[1].metadata.alias_type` の形）を含む |
+| `schema` | 設定か索引が Schema に合わない。`build.glossary`・`build.entry` が `build.include` に当たらないもの、`theme`・`extensions` のファイルと `assets.root` のフォルダが無いもの、`extensions` の拡張を読み込めないもの、`aliases` の行が取り込んだ Schema に合わないもの（場所は `aliases[1].alias_type` の形）を含む |
 | `unknown_color_theme` | 設定の `colorTheme` が選べるテーマの名前に無い。場所は `colorTheme`。内容は `不明なテーマ名 {名前} です。dev-swiss・theme-paper・theme-slate・theme-contrast のいずれかに修正してください。` |
 | `no_documents` | `build.include` に当たり `build.exclude` に当たらない文書が 0 件 |
 | `missing_doc` | 索引にあって、文書が見つからない |
@@ -215,8 +215,8 @@ mdmark.config.yaml:build: schema: `build.out` がありません。書き出す 
 | `alias_unreadable` | `paths` に当たったファイルを YAML として読めない |
 | `duplicate_alias_row_id` | `aliases` の行の `id` が、前の行と重なっている。重なった後の行は読まない |
 | `alias_records_missing` | 行の `records` のキーの配列が、ファイルに無い |
-| `alias_field_missing` | `metadata` の `ref` が指す列が、レコードに無い |
-| `alias_unknown_type` | `ref` で取った `alias_type` が、9 つの種類に無い |
+| `alias_field_missing` | `metadata` に記載した列が、レコードに無い |
+| `alias_unknown_type` | 行の `alias_type` が、9 つの種類に無い（`buildAliases` に直接渡した行だけ。`mdmark check` は `schema` のずれにする） |
 | `alias_required_empty` | 種類の必須のキーが空。`env` は `url` と `port` が両方空のとき |
 | `duplicate_alias_id` | エイリアスの `id` が、前のエイリアス（`env` を含む）と重なっている |
 | `unknown_mark` | 文書の本文に、記法の印・`features`・`libraries` の対応表・`extensions` の拡張の印・`check.ignore` の名前のどれにも当たらない印がある。場所は印のある行の番号 |

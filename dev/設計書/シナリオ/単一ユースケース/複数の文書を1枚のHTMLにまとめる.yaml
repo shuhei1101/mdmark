@@ -72,7 +72,7 @@ scenarios:
       - name: 見本の文書群
         description: 正常シナリオと同じ文書 3 つと索引
       - name: エイリアスを読む設定
-        description: 正常シナリオの build の設定に、`command` の `単体テスト`（コマンド `npm run test:unit`）と、`env` の `開発サーバー`（URL `http://127.0.0.1:8767/`）を持つ YAML を指す `aliases` を加えたもの
+        description: 正常シナリオの build の設定に、`alias_type` が `command` で `単体テスト`（コマンド `npm run test:unit`）を持つ YAML を指す行と、`alias_type` が `env` で `開発サーバー`（URL `http://127.0.0.1:8767/`）を持つ YAML を指す行の `aliases` を加えたもの
       - name: Mock
         description: 外部ライブラリは相対パスの手元のモジュール
     flow: |-

@@ -20,7 +20,7 @@ directory: |-
   ├── export.ts     # mdmark export
   └── build.ts      # mdmark build
   templates/        # init が置く雛形の正本
-  schemas/alias-inject/v0.2.0/aliases.schema.json # 取り込んだ alias-inject の行の Schema
+  schemas/alias-inject/v0.3.0/aliases.schema.json # 取り込んだ alias-inject の行の Schema
   ```
 data_models:
   - name: CliIo
@@ -407,9 +407,9 @@ functions:
       - name: test_validate_config_when_aliases_invalid
         case: 異常
         summary: aliases の Schema に合わない行を schema のずれにし、行の位置を保つ
-        condition: '`aliases` に、Schema に合う行と、`metadata.alias_type` が `{type: custom, value: memo}` の行'
+        condition: '`aliases` に、Schema に合う行と、`alias_type` が `memo` の行'
         mock: なし
-        expected: '`schema` のずれが 1 件で `where` が `aliases[1].metadata.alias_type.value`、`config.aliases` の長さが 2 で 2 番目が `null`'
+        expected: '`schema` のずれが 1 件で `where` が `aliases[1].alias_type`、`config.aliases` の長さが 2 で 2 番目が `null`'
       - name: test_validate_config_when_color_theme_invalid
         case: 正常
         summary: 文字列でない `colorTheme` を schema のずれにして落とし、知らない名前はそのまま残す
@@ -1873,7 +1873,7 @@ functions:
     container: src/cli/alias-schema.ts
     usecase: 共通
     summary: 設定の `aliases` の配列に、取り込んだ alias-inject の `aliases.schema.json` を ajv で当て、ずれを日本語の 1 文の `schema` のずれにする
-    description: '`new Ajv2020({ allErrors: true, strict: true, verbose: true })` に `schemas/alias-inject/v0.2.0/aliases.schema.json` を読み込んで作った検査の関数を、モジュールの中で 1 回だけ作って使い回す（`$data` は使わない）。この Schema は alias-inject v0.2.0 の `aliases.schema.yaml` を内容を変えず JSON にして置き（他の `schemas/` と同じく JSON で持ち、esbuild がそのまま束ねる）、`schemas/mdmark.config.schema.json` の `aliases` から相対の `$ref` で指す。Schema を変えるので `migrations/no-steps.yaml` に `next` の行を置く。ajv のエラーのうち、`anyOf` の枝のエラーは、枝の判別子（`type` の `const`）に合う枝のものだけを残す（`schemaPath` の枝の番号で絞る。判別子に合う枝が無ければ、判別子の `const` の値を並べた 1 件にする）。`instancePath` の `/1/metadata/alias_type` を `aliases[1].metadata.alias_type` の形にして `where` にする。`message` は `keyword`・`params`・`parentSchema.title` から組む: `required` は ``\`{where}\` に `{missingProperty}`（{子の title}）がありません。記載してください。``、`type` は ``\`{where}\`（{title}）は{型}にしてください。``（型は `文字列`・`真偽値`・`配列`・`オブジェクト`）、`minLength`・`minItems` は ``\`{where}\`（{title}）が空です。記載してください。``、`const`・`enum` は ``\`{where}\`（{title}）は {値を `・` で並べた} のどれかにしてください。``、`additionalProperties` は ``\`{where}\` の `{additionalProperty}` は記載できません。消してください。``、ほかは ``\`{where}\`（{title}）が Schema に合いません（{ajv の message}）。``（`where` が空なら `aliases`）。1 つの場所に同じ文が重なるときは 1 件にする。ずれのある行は返す行で `null` に置き換え、行の位置を保つ。引数を書き換えない'
+    description: '`new Ajv2020({ allErrors: true, strict: true, verbose: true })` に `schemas/alias-inject/v0.3.0/aliases.schema.json` を読み込んで作った検査の関数を、モジュールの中で 1 回だけ作って使い回す（`$data` は使わない）。この Schema は alias-inject v0.3.0 の `aliases.schema.yaml` を内容を変えず JSON にして置き（他の `schemas/` と同じく JSON で持ち、esbuild がそのまま束ねる）、`schemas/mdmark.config.schema.json` の `aliases` から相対の `$ref` で指す。Schema を変えるので `migrations/next/` に移行の手順を置く。`instancePath` の `/1/alias_type` を `aliases[1].alias_type` の形にして `where` にする。`message` は `keyword`・`params`・`parentSchema.title` から組む: `required` は ``\`{where}\` に `{missingProperty}`（{子の title}）がありません。記載してください。``、`type` は ``\`{where}\`（{title}）は{型}にしてください。``（型は `文字列`・`真偽値`・`配列`・`オブジェクト`）、`minLength`・`minItems` は ``\`{where}\`（{title}）が空です。記載してください。``、`enum` は ``\`{where}\`（{title}）は {値を `・` で並べた} のどれかにしてください。``、`additionalProperties` は ``\`{where}\` の `{additionalProperty}` は記載できません。消してください。``、ほかは ``\`{where}\`（{title}）が Schema に合いません（{ajv の message}）。``（`where` が空なら `aliases`）。1 つの場所に同じ文が重なるときは 1 件にする。ずれのある行は返す行で `null` に置き換え、行の位置を保つ。引数を書き換えない'
     kind: 関数
     scope: public
     args:
@@ -1895,27 +1895,27 @@ functions:
       - name: test_validate_alias_rows
         case: 正常
         summary: Schema に合う行はずれにせず、そのまま返す
-        condition: '`{id: terms, paths: [aliases/*.yaml], metadata: {alias_type: {type: ref, field: alias_type}}}` の 1 行'
+        condition: '`{id: terms, paths: [aliases/*.yaml], alias_type: term, records: terms, body_file: path, metadata: {name: term, description: meta.summary}}` の 1 行'
         mock: なし
         expected: '`issues` が空、`rows` が渡した行と同じ'
       - name: test_validate_alias_rows_when_required_missing
         case: 異常
         summary: 必須のキーが無い行を、キーの title を入れた 1 文にする
-        condition: '`paths` の無い行'
+        condition: '`alias_type` の無い行'
         mock: なし
-        expected: '`where` が `aliases[0]`、`message` に `paths` と `読む YAML` が入り、`rows[0]` が `null`'
-      - name: test_validate_alias_rows_when_any_of_branch
+        expected: '`where` が `aliases[0]`、`message` に `alias_type` と `引用の種類` が入り、`rows[0]` が `null`'
+      - name: test_validate_alias_rows_when_alias_type_unknown
         case: 異常
-        summary: anyOf の枝のエラーを判別子に合う枝のものだけにする
-        condition: '`metadata.alias_type` が `{type: ref}`（`field` が無い）'
+        summary: 9 つの種類に無い alias_type を、許す値を並べた 1 文にする
+        condition: '`alias_type` が `memo` の行'
         mock: なし
-        expected: ずれが 1 件で `where` が `aliases[0].metadata.alias_type`、`message` に `field` が入り、`custom` の枝の `value` を求める文が無い
-      - name: test_validate_alias_rows_when_discriminator_unknown
+        expected: ずれが 1 件で `where` が `aliases[0].alias_type`、`message` に `term` と `avoid` が入る
+      - name: test_validate_alias_rows_when_v020_metadata
         case: 異常
-        summary: 判別子がどの枝にも合わなければ、許す値を並べた 1 件にする
-        condition: '`metadata.alias_type` が `{type: copy, field: alias_type}`'
+        summary: v0.2.0 の構造の metadata の値を文字列でないずれにする
+        condition: '`alias_type: term` で、`metadata.name` が `{type: ref, field: term}` の行'
         mock: なし
-        expected: ずれが 1 件で、`message` に `ref` と `custom` が入る
+        expected: ずれが 1 件で `where` が `aliases[0].metadata.name`、`message` が文字列にするよう求める
     status: planned
     introduced:
       pr: 176
@@ -1944,7 +1944,7 @@ functions:
       - name: test_load_aliases
         case: 正常
         summary: 行の paths の YAML を読んでエイリアスを作る
-        condition: '`aliases` に `paths: [aliases/*.yaml]` の 1 行、`aliases/a.yaml` に `command` のレコード 1 件と `env` のレコード 1 件'
+        condition: '`aliases` に `alias_type: command`・`paths: [aliases/commands.yaml]` の行と `alias_type: env`・`paths: [aliases/servers.yaml]` の行、それぞれのファイルにレコード 1 件'
         mock: 一時フォルダ
         expected: '`aliases` が `command` の 1 件、`issues` が空'
       - name: test_load_aliases_when_no_files
