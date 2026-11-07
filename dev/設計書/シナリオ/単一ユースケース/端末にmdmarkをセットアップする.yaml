@@ -195,12 +195,9 @@ scenarios:
         actor W as 文書を書く人
         participant C as Claude Code（global-setup）
         participant T as tmux
-        participant S as mdmark serve
         W->>C: /mdmark:global-setup
-        C->>T: 新しいセッションで mdmark serve を起動する
-        T->>S: 起動
-        S-->>T: ポートが使われている・終了コード 1
-        C->>C: ログを読む
+        C->>T: セッションが無い
+        C->>C: ポートをほかのプロセスが待ち受けているので、起動しない
         C-->>W: ポートが使われていることと修正方法
     expected:
       - 端末の設定のセッション名の tmux のセッションが残らない
