@@ -96,8 +96,8 @@ used_in:
   - src/cli/
 verification:
   state: 済
-  date: '2026-10-28'
-  detail: 'PoC #177 で、Node の ESM から 8.20.0 の `Ajv2020`（`allErrors: true`・`strict: true`・`verbose: true`）に、`yaml` で読んだ alias-inject v0.2.0 の `aliases.schema.yaml` を `addSchema(schema, id)` で登録し、設定のスキーマの `properties.aliases` を `{ $ref: id }` にして strict のエラー無しで `compile` できることを確かめた。正しい行はエラー 0 件、`alias_type` 欠け・`paths` が空・`alias_type` が `memo` の 3 行はそれぞれ `required`・`minItems`・`enum` のエラーになり、`instancePath` が `/aliases/{行の番号}/...` だった。`anyOf` の枝のエラーは `schemaPath` で判別子の `const` が合わない枝を落として 7 件から 3 件に絞れた。`parentSchema.title` と `params` から日本語の 1 文を組めた。esbuild で 1 ファイルに束ねた実行でも出力が一致し、検証の間の外への要求は 0 件だった'
+  date: '2026-11-07'
+  detail: 'PoC #177 で、Node の ESM から 8.20.0 の `Ajv2020`（`allErrors: true`・`strict: true`・`verbose: true`）に、`yaml` で読んだ alias-inject v0.2.0 の `aliases.schema.yaml` を `addSchema(schema, id)` で登録し、設定のスキーマの `properties.aliases` を `{ $ref: id }` にして strict のエラー無しで `compile` できることを確かめた。正しい行はエラー 0 件、`alias_type` 欠け・`paths` が空・`alias_type` が `memo` の 3 行はそれぞれ `required`・`minItems`・`enum` のエラーになり、`instancePath` が `/aliases/{行の番号}/...` だった。`anyOf` の枝のエラーは `schemaPath` で判別子の `const` が合わない枝を落として 7 件から 3 件に絞れた。`parentSchema.title` と `params` から日本語の 1 文を組めた。esbuild で 1 ファイルに束ねた実行でも出力が一致し、検証の間の外への要求は 0 件だった。2026-11-07 に #360 で、同じ設定の `Ajv2020` が alias-inject v0.3.0 の `aliases.schema.yaml` を JSON にした `schemas/alias-inject/v0.3.0/aliases.schema.json` を strict のエラー無しで `compile` でき、`alias_type` 欠け・`alias_type` が `memo`・`metadata.name` がオブジェクトの行がそれぞれ `required`・`enum`・`type` のエラーになることを、単体テスト `tests/unit/src/cli/alias-schema.test.ts` で確かめた。v0.3.0 の Schema は `anyOf` の枝を持たないため、枝を落とす処理は使わない'
 license: MIT（商用利用可）。推移の依存は fast-deep-equal（MIT）・fast-uri（BSD-3-Clause）・json-schema-traverse（MIT）・require-from-string（MIT）
 official_url: https://ajv.js.org/
 docs_url: https://ajv.js.org/api.html
