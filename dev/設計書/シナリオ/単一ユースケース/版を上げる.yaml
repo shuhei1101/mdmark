@@ -311,10 +311,9 @@ scenarios:
         participant C as mdmark CLI
         participant F as フォルダ
         W->>C: mdmark upgrade --yes
-        C->>F: 写しを取り、手順を当てる（mixed の行は書き換えない）
-        C->>C: 点検を流す（mixed の行が Schema に合わない）
+        C->>F: 写しを取り、手順を当てる（mixed の行を書き換えられず、手順が失敗する）
         C->>F: 写しから戻す
-        C-->>W: mixed の行を種類ごとの行に分ける直し方・ずれの一覧・終了コード 0 以外
+        C-->>W: mixed の行を種類ごとの行に分ける直し方・終了コード 0 以外
     expected:
       - 出力に `mixed` の行と、レコードの種類 `term`・`command` ごとに行を分ける直し方が出る
       - 設定が当てる前と同じ中身に戻っている

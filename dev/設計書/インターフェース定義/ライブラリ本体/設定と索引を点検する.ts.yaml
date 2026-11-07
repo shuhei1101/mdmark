@@ -233,7 +233,7 @@ flows:
     summary: エイリアスの行とレコードのずれを出し、終了コード 1 で終わる
     setup:
       - name: エイリアスにずれを持つフォルダ
-        description: '正常系のフォルダの設定に `aliases` の 2 行を加えたフォルダ。2 行とも `metadata` に `alias_type: {type: ref, field: alias_type}` を記載する。1 行目は `paths: aliases/*.yaml` で、`aliases/` に `alias_type: term` で `id`・`name` を持ち `description` が空のレコードを持つ YAML と、`alias_type: env` で `id`・`name`・`url` を持つレコードを持つ YAML を置く。2 行目は `paths: missing/*.yaml` で、当たるファイルが無い'
+        description: '正常系のフォルダの設定に `aliases` の 3 行を加えたフォルダ。1 行目は `alias_type: term`・`paths: aliases/terms.yaml` で、`id`・`name` を持ち `description` が空のレコードを持つ YAML を置く。2 行目は `alias_type: env`・`paths: aliases/servers.yaml` で、`id`・`name`・`url` を持つレコードを持つ YAML を置く。3 行目は `alias_type: term`・`paths: missing/*.yaml` で、当たるファイルが無い'
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
