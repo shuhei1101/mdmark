@@ -35,7 +35,9 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-08T21:30:52.232322+00:00'
   - process: 単一ユースケース設計
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-08T21:42:03.178708+00:00'
   - process: モック作成
     status: todo
     note: 表の部品のモックに、右端に留めた列と境の線、複数の列を留めた状態を追加する
