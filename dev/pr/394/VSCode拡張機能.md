@@ -35,6 +35,10 @@
 | 部品設計・画面設計 | [6d3fb522..4e251afc](https://github.com/shuhei1101/mdmark/compare/6d3fb522...4e251afc) | レビューの指摘の修正（バッククォート内の文言はインターフェース定義も同じ commit で修正） |
 | 部品設計・画面設計 | [06d3bce2..5637b731](https://github.com/shuhei1101/mdmark/compare/06d3bce2...5637b731) | レビューの指摘の修正（読み込みと保存の関数） |
 
+## 実装
+
+ストーリーの文言を変えた 3 ファイル（`panel-screen.stories.tsx`・`config-band.stories.tsx`・`media-error.stories.ts`）の全てのストーリーを、`start_storybook_serve` の Storybook の `iframe.html?id={ストーリーの id}` で開き、エラー無く描かれることを確かめた（2 システム合計 455 件）。
+
 ## テスト結果
 
 ### ドキュメント修正
