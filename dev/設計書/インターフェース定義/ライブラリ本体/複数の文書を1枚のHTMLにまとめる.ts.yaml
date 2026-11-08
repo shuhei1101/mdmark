@@ -4,25 +4,25 @@ entry:
   value: '`mdmark build [--config {設定ファイル}]`（CLI。`npx github:shuhei1101/mdmark#v{版} build` で呼ぶ）'
 flows:
   - name: 正常系
-    summary: 3 つの文書を、文書をまたぐ用語と被参照が効く 1 枚にまとめる
+    summary: 3 つの文書を、文書をまたぐ用語と被参照が有効になる 1 枚にまとめる
     setup:
       - name: 見本の文書群
-        description: 入口 `README.md`・用語集の表を持つ `用語集.md`・`test-lib` の印と画像を持つ `使い方/guide.md` と、3 つを載せた索引。`README.md` から他の 2 つへリンクし、本文に用語集の表の語を持つ
+        description: 入口 `README.md`・用語集の表を持つ `用語集.md`・`test-lib` のマーカーと画像を持つ `使い方/guide.md` と、3 つを記載した索引。`README.md` から他の 2 つへリンクし、本文に用語集の表の単語を持つ
       - name: build の設定
         description: '`include: ["**/*.md"]`・`glossary: ["用語集.md"]`・`entry: README.md`・`out: dist/docs.html`'
       - name: Mock
         description: 外部ライブラリは相対パスの手元のモジュール。書き出した HTML は Playwright の Chromium で file:// で開く
     flow: |-
       sequenceDiagram
-        actor W as 文書を書く人
+        actor W as 文書の作成者
         participant C as mdmark CLI
         participant M as collectReferences
         participant H as build.out
         W->>C: mdmark build
-        C->>C: 設定・索引・include の文書を読む
+        C->>C: 設定・索引・include の文書を読み込む
         C->>M: 索引・文書
         M-->>C: 参照の表
-        C->>H: 3 つの文書と参照の表を埋めた HTML を書く
+        C->>H: 3 つの文書と参照の表を埋めた HTML を書き込む
         C-->>W: 書き出した: dist/docs.html（文書 3 件）・終了コード 0
     expected:
       - '終了コードが 0 で、標準出力が `書き出した: dist/docs.html（文書 3 件）`、標準エラーが空'
@@ -32,29 +32,29 @@ flows:
       - 描き終えるまでと文書を移った後に、ページ自身と画像の `data:` のほかの要求が 0 件
     test: test_normal
   - name: 正常系（1 枚に含まれない文書へのリンクがある）
-    summary: 外した文書へのリンクを書いたまま残し、警告に出す
+    summary: 除外した文書へのリンクを記載したまま残し、警告に出す
     setup:
-      - name: 外した文書を指す文書群
-        description: '正常系の文書群に `下書き/メモ.md` を足し、`exclude: ["下書き/**"]` で外し、`README.md` からリンクする'
+      - name: 除外した文書を指す文書群
+        description: '正常系の文書群に `下書き/メモ.md` を追加し、`exclude: ["下書き/**"]` で除外し、`README.md` からリンクする'
       - name: Mock
         description: 外部ライブラリは相対パスの手元のモジュール
     flow: |-
       sequenceDiagram
-        actor W as 文書を書く人
+        actor W as 文書の作成者
         participant C as mdmark CLI
         participant H as build.out
         W->>C: mdmark build
-        C->>C: exclude に当たる文書を外す
-        C->>H: 3 つの文書を埋めた HTML を書く
+        C->>C: exclude に該当する文書を除外する
+        C->>H: 3 つの文書を埋めた HTML を書き込む
         C-->>W: リンクの警告・終了コード 0
     expected:
       - 終了コードが 0 で、標準出力の文書の件数が 3
       - 標準エラーに `README.md` と `下書き/メモ.md` を含む警告の行がある
-      - HTML の中で、そのリンクが書いたままの `href` で残る
+      - HTML の中で、そのリンクが記載したままの `href` で残る
       - 文書の一覧に `下書き/メモ.md` が無い
     test: test_normal_when_link_outside_bundle
   - name: 異常系（build が無い・終了コード 1）
-    summary: 設定に `build` が無いと、書き方を示して終わる
+    summary: 設定に `build` が無いと、記載方法を示して終わる
     setup:
       - name: build の無い設定
         description: '`build` を持たない `mdmark.config.yaml` と文書を持つフォルダ'
@@ -62,99 +62,99 @@ flows:
         description: 差し替える依存は無い
     flow: |-
       sequenceDiagram
-        actor W as 文書を書く人
+        actor W as 文書の作成者
         participant C as mdmark CLI
         W->>C: mdmark build
         C->>C: 設定に build が無い
-        C-->>W: build の書き方・終了コード 1
+        C-->>W: build の記載方法・終了コード 1
     expected:
       - 終了コードが 1
-      - 標準エラーに `build` が無いことと `build.include`・`build.out` を書くことが出る
-      - HTML が書かれていない
+      - 標準エラーに `build` が無いことと `build.include`・`build.out` を記載することが出る
+      - HTML が記載されていない
     test: test_error_when_build_missing
   - name: 異常系（対象の文書が 0 件・終了コード 1）
-    summary: '`build.include` がどの文書にも当たらないと、HTML を書かずに終わる'
+    summary: '`build.include` がどの文書にも該当しないと、HTML を書き込まずに終わる'
     setup:
-      - name: 当たらない include
-        description: '`build.include` がどのファイルにも当たらない設定'
+      - name: 該当しない include
+        description: '`build.include` がどのファイルにも該当しない設定'
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
       sequenceDiagram
-        actor W as 文書を書く人
+        actor W as 文書の作成者
         participant C as mdmark CLI
         W->>C: mdmark build
-        C->>C: include に当たる文書が 0 件
-        C-->>W: 対象が 0 件と include の直し方・終了コード 1
+        C->>C: include に該当する文書が 0 件
+        C-->>W: 対象が 0 件と include の修正方法・終了コード 1
     expected:
       - 終了コードが 1
       - 標準エラーに対象が 0 件であることと `build.include` が出る
-      - '`build.out` に HTML が書かれていない'
+      - '`build.out` に HTML が記載されていない'
     test: test_error_when_no_documents
-  - name: 異常系（出力先へ書けない・終了コード 1）
-    summary: '`build.out` へ書けないと、パスと直し方を示して終わる'
+  - name: 異常系（出力先へ書き込めない・終了コード 1）
+    summary: '`build.out` へ記載できないと、パスと修正方法を示して終わる'
     setup:
-      - name: 書けない out
-        description: 正常系の文書群にファイル `dist` を置き、`build.out` を `dist/docs.html` にしたもの
+      - name: 記載できない out
+        description: 正常系の文書群にファイル `dist` を配置し、`build.out` を `dist/docs.html` にしたもの
       - name: Mock
         description: 外部ライブラリは相対パスの手元のモジュール
     flow: |-
       sequenceDiagram
-        actor W as 文書を書く人
+        actor W as 文書の作成者
         participant C as mdmark CLI
         W->>C: mdmark build
-        C-->>W: 書けないパスと直し方・終了コード 1
+        C-->>W: 書き込めないパスと修正方法・終了コード 1
     expected:
       - 終了コードが 1
-      - 標準エラーに `dist/docs.html` と直し方が出る
+      - 標準エラーに `dist/docs.html` と修正方法が出る
       - ファイル `dist` が変わっていない
     test: test_error_when_output_unwritable
-  - name: 異常系（動画・音声のコピー先へ書けない・終了コード 1）
-    summary: 動画・音声のコピー先の `_files/` へ書けないと、HTML を書かずにパスと直し方を示して終わる
+  - name: 異常系（動画・音声のコピー先へ書き込めない・終了コード 1）
+    summary: 動画・音声のコピー先の `_files/` へ書き込めないと、HTML を書き込まずにパスと修正方法を示して終わる
     setup:
-      - name: 書けないコピー先
-        description: 正常系（画像・動画・音声を埋める）の文書群で、`dist/` にファイル `docs_files` を置いたもの
+      - name: 記載できないコピー先
+        description: 正常系（画像・動画・音声を埋める）の文書群で、`dist/` にファイル `docs_files` を配置したもの
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
       sequenceDiagram
-        actor W as 文書を書く人
+        actor W as 文書の作成者
         participant C as mdmark CLI
         W->>C: mdmark build
         C->>C: 動画・音声を docs_files/ へコピーする（作れない）
-        C-->>W: 書けないパスと直し方・終了コード 1
+        C-->>W: 書き込めないパスと修正方法・終了コード 1
     expected:
       - 終了コードが 1
-      - 標準エラーに `dist/docs_files` と直し方が出る
-      - ファイル `dist/docs_files` が変わっておらず、`dist/docs.html` が書かれていない
+      - 標準エラーに `dist/docs_files` と修正方法が出る
+      - ファイル `dist/docs_files` が変わっておらず、`dist/docs.html` が記載されていない
     test: test_error_when_media_copy_unwritable
-  - name: 正常系（エイリアスを読む）
-    summary: 設定の aliases の YAML から作ったエイリアスを埋め、まとめた全ての文書で効かせる
+  - name: 正常系（エイリアスを読み込む）
+    summary: 設定の aliases の YAML から作ったエイリアスを埋め、まとめた全ての文書で有効にしる
     setup:
       - name: エイリアスを持つフォルダ
-        description: '正常系のフォルダの設定に `aliases` の 2 行（`alias_type` が `command` で `paths: aliases/commands.yaml`、`env` で `paths: aliases/servers.yaml`）を記載し、`aliases/commands.yaml` にレコード（`id: run-test`・`name: テストを流す`・`command: npm test`）、`aliases/servers.yaml` にレコード（`id: dev-server`・`name: 開発サーバー`・`url: http://127.0.0.1:8767/`）を置いたフォルダ。まとめる 2 つの文書の本文に `テストを流す` と `開発サーバー` がある'
+        description: '正常系のフォルダの設定に `aliases` の 2 行（`alias_type` が `command` で `paths: aliases/commands.yaml`、`env` で `paths: aliases/servers.yaml`）を記載し、`aliases/commands.yaml` にレコード（`id: run-test`・`name: テストを実行する`・`command: npm test`）、`aliases/servers.yaml` にレコード（`id: dev-server`・`name: 開発サーバー`・`url: http://127.0.0.1:8767/`）を配置したフォルダ。まとめる 2 つの文書の本文に `テストを実行する` と `開発サーバー` がある'
       - name: Mock
         description: 差し替える依存は無い。書き出した HTML は Playwright の Chromium で file:// で開く
     flow: |-
       sequenceDiagram
-        actor W as 文書を書く人
+        actor W as 文書の作成者
         participant C as mdmark CLI
         participant B as buildAliases
         participant H as 出力の HTML
         W->>C: mdmark build
-        C->>C: 設定の aliases の YAML を読む
-        C->>B: 行・読んだ中身
+        C->>C: 設定の aliases の YAML を読み込む
+        C->>B: 行・読み込んだ中身
         B-->>C: エイリアス
-        C->>H: エイリアスを埋めた 1 枚の HTML を書く
+        C->>H: エイリアスを埋めた 1 枚の HTML を書き込む
         C-->>W: 書き出した・終了コード 0
     expected:
       - 終了コードが 0
-      - まとめた 2 つの文書のどちらでも、`テストを流す` に下線が付き、ツールチップに `npm test` が出る
+      - まとめた 2 つの文書のどちらでも、`テストを実行する` に下線が付き、ツールチップに `npm test` が出る
       - '`開発サーバー` に下線が付かない'
       - 書き出した HTML のソースに `env` のレコードの `dev-server`・`http://127.0.0.1:8767/` が入っていない
     test: test_normal_when_aliases
   - name: 正常系（テーマを選ぶ設定）
-    summary: 設定の `colorTheme` を埋める設定に写し、まとめた全ての文書を選んだテーマで描く
+    summary: 設定の `colorTheme` を埋める設定にコピー、まとめた全ての文書を選んだテーマで描く
     setup:
       - name: テーマを選ぶフォルダ
         description: '正常系のフォルダの設定に `colorTheme: theme-slate` を記載したフォルダ'
@@ -162,11 +162,11 @@ flows:
         description: '差し替える依存は無い。書き出した HTML は Playwright の Chromium で file:// で開き、OS の配色はライト（`prefers-color-scheme: light`）にする'
     flow: |-
       sequenceDiagram
-        actor W as 文書を書く人
+        actor W as 文書の作成者
         participant C as mdmark CLI
         participant H as 出力の HTML
         W->>C: mdmark build
-        C->>H: colorTheme を写した設定を埋めて 1 枚の HTML を書く
+        C->>H: colorTheme をコピーした設定を埋めて 1 枚の HTML を書き込む
         C-->>W: 書き出した・終了コード 0
         W->>H: 開いて 2 つ目の文書へ移る
     expected:
@@ -174,22 +174,22 @@ flows:
       - 最初に開いた文書と、文書の一覧から移った 2 つ目の文書のどちらでも、文書の地の色の計算値が theme-slate の明るい配色の `--mdmark-color-bg` の値
     test: test_normal_when_color_theme
   - name: 正常系（文書ごとのページの設定）
-    summary: page のマーカーを持つ文書と持たない文書を行き来すると、開いた文書の明暗で描き直す
+    summary: page のマーカーを持つ文書と持たない文書を行き来すると、開いた文書の明暗で再描画する
     setup:
       - name: ページの設定を持つフォルダ
-        description: '正常系のフォルダで、`entry` の文書の先頭の行に `<!-- page: scheme=dark theme=theme-slate -->` を書き、もう 1 つの文書はマーカーを持たない'
+        description: '正常系のフォルダで、`entry` の文書の先頭の行に `<!-- page: scheme=dark theme=theme-slate -->` を記載し、もう 1 つの文書はマーカーを持たない'
         notes: 設定は `colorScheme` を持たない。開くブラウザの配色はライト
       - name: Mock
-        description: 差し替える依存は無い（書いた HTML だけを空のフォルダへ写して file:// で開く）
+        description: 差し替える依存は無い（記載した HTML だけを空のフォルダへコピーして file:// で開く）
     flow: |-
       sequenceDiagram
-        participant W as 文書を書く人
+        participant W as 文書の作成者
         participant C as mdmark build
         participant H as まとめた HTML
         W->>C: mdmark build
-        C->>H: マーカーを本文に残した文書を埋めて書く
+        C->>H: マーカーを本文に残した文書を埋めて記載する
         W->>H: file:// で開き、もう 1 つの文書を選ぶ
-        H-->>W: 開いた文書の明暗で描き直す
+        H-->>W: 開いた文書の明暗で再描画する
     expected:
       - 開いたとき、描く先の要素が class `mdmark-theme-dark` と属性 `data-mdmark-color-theme="theme-slate"` を持つ
       - もう 1 つの文書を選ぶと、描く先の要素が class `mdmark-theme-dark`・`mdmark-theme-light` を持たず、属性 `data-mdmark-color-theme` が `dev-swiss`
@@ -206,93 +206,93 @@ flows:
         description: 差し替える依存は無い。まとめた HTML は Playwright の Chromium で file:// で開き、要求を記録する
     flow: |-
       sequenceDiagram
-        actor W as 文書を書く人
+        actor W as 文書の作成者
         participant C as mdmark CLI
         participant H as 出力の HTML
         W->>C: mdmark build
         C->>C: 画像を 1 回だけ data URL に替え、動画・音声を docs_files/ へコピーする
-        C->>H: docs.html と docs_files/ を書く
+        C->>H: docs.html と docs_files/ を書き込む
         C-->>W: 書き出した: dist/docs.html（文書 2 件）・終了コード 0
     expected:
       - 終了コードが 0
       - '`chart.png` の `data:` URL が HTML の中に 1 回だけある'
       - '`dist/docs_files/media/demo.mp4` と `dist/docs_files/sub/media/voice.mp3` がある'
       - どちらの文書を開いても、`video`・`audio` の `src` がコピーへの相対パスで、`readyState` が 1 以上になる
-      - '`docs.html` と `docs_files/` だけを空のフォルダへ写して file:// で開き、文書を移っても、ページ自身・`docs_files/` の下のファイルと画像の `data:` のほかの要求が 0 件'
+      - '`docs.html` と `docs_files/` だけを空のフォルダへコピーして file:// で開き、文書を移っても、ページ自身・`docs_files/` の下のファイルと画像の `data:` のほかの要求が 0 件'
     test: test_normal_when_media_embedded
     refs:
       - dev/設計書/シナリオ/単一ユースケース/複数の文書を1枚のHTMLにまとめる#scenarios[正常シナリオ（画像・動画・音声を埋める）]
   - name: '正常系（blob: と動的 import を許さない環境で開く）'
-    summary: 'まとめる全ての文書が使うモジュールを 1 つのスクリプトに束ねて埋め、blob: と動的 import を許さない環境でも文書を移って描く'
+    summary: 'まとめる全ての文書が使用するモジュールを 1 つのスクリプトにまとめて埋め、blob: と動的 import を許さない環境でも文書を移って描く'
     setup:
-      - name: 埋めるモジュールを使う文書群
-        description: '入口 `README.md`（`greet` の印と言語 `ts` のコードブロック）と、`README.md` からリンクする `guide.md`（ビューの印と `test-lib` の印）。`build` と、`extensions`（印 `greet` の拡張）・`libraries`（`test-lib` に相対パスの手元のモジュール）・`syntax.url`（手元の `vendor/highlightjs/es/`）を書いた設定'
-        notes: '`greet` の拡張は `load` の中で同じフォルダの別のファイルを動的 `import()` で読む'
+      - name: 埋めるモジュールを使用する文書群
+        description: '入口 `README.md`（`greet` のマーカーと言語 `ts` のコードブロック）と、`README.md` からリンクする `guide.md`（ビューのマーカーと `test-lib` のマーカー）。`build` と、`extensions`（マーカー `greet` の拡張）・`libraries`（`test-lib` に相対パスの手元のモジュール）・`syntax.url`（手元の `vendor/highlightjs/es/`）を記載した設定'
+        notes: '`greet` の拡張は `load` の中で同じフォルダの別のファイルを動的 `import()` で読み込む'
       - name: Mock
-        description: "外部ライブラリと色分けのライブラリは手元のモジュール。まとめた HTML を、`Content-Security-Policy: script-src 'unsafe-inline'` のヘッダーを付けて返す手元のサーバーから Playwright の Chromium で開く（`blob:` と `data:` のスクリプトと、動的 `import()` で読むスクリプトを許さない）"
+        description: "外部ライブラリと色分けのライブラリは手元のモジュール。まとめた HTML を、`Content-Security-Policy: script-src 'unsafe-inline'` のヘッダーを付けて返却する手元のサーバーから Playwright の Chromium で開く（`blob:` と `data:` のスクリプトと、動的 `import()` で読み込むスクリプトを許さない）"
     flow: |-
       sequenceDiagram
-        actor W as 文書を書く人
+        actor W as 文書の作成者
         participant C as mdmark CLI
         participant H as build.out
         W->>C: mdmark build
-        C->>C: 2 つの文書が使う greet・ビューの部品・色分けの本体と ts・test-lib を起動の処理と 1 つのスクリプトに束ねる
-        C->>H: 束ねたスクリプトを script 要素に入れて書く
+        C->>C: 2 つの文書が使用する greet・ビューの部品・色分けの本体と ts・test-lib を起動の処理と 1 つのスクリプトにまとめる
+        C->>H: まとめたスクリプトを script 要素に入れて記載する
         C-->>W: 書き出した: dist/docs.html（文書 2 件）・終了コード 0
         W->>H: blob: と動的 import を許さない環境で開き、リンクで guide.md へ移る
-        H-->>W: どちらの文書も印・ビュー・色分けを描く
+        H-->>W: どちらの文書もマーカー・ビュー・色分けを描く
     expected:
       - 終了コードが 0 で、標準エラーが空
-      - '`README.md` で、`greet` の印の場所に拡張が描いた要素があり、`ts` の `code` の中に class が `hljs-` で始まる `span` がある'
-      - リンクで移った `guide.md` で、ビューが描かれ、`test-lib` の印が描かれて知らせの枠が出ない
+      - '`README.md` で、`greet` のマーカーの場所に拡張が描いた要素があり、`ts` の `code` の中に class が `hljs-` で始まる `span` がある'
+      - リンクで移った `guide.md` で、ビューが描かれ、`test-lib` のマーカーが描かれて通知の枠が出ない
       - 開いてから文書を移った後までに、CSP の違反（`securitypolicyviolation`）が 0 件で、`blob:`・`data:` の URL のスクリプトへの要求が 0 件
     test: test_normal_when_blob_and_dynamic_import_blocked
     refs:
       - 'dev/設計書/シナリオ/単一ユースケース/複数の文書を1枚のHTMLにまとめる#scenarios[正常シナリオ（blob: と動的 import を許さない環境で開く）]'
   - name: 正常系（範囲のスクリプトと CSS）
-    summary: 範囲の `ts` を変換して束ね、文書を移るときに範囲の `destroy` を呼ぶ
+    summary: 範囲の `ts` を変換してまとめ、文書を移るときに範囲の `destroy` を呼ぶ
     setup:
       - name: 範囲のスクリプトを持つフォルダ
-        description: '`features.html-scripts` を `true` にし、`build` に、`<!-- html -->` の範囲に `html`・`css`・`ts` を置いた文書と、範囲を持たない文書の 2 つを指定した設定'
-        notes: '`ts` は箱を押すと根の要素に class `is-open` を付け外しし、`destroy` で `window.__mdmarkDestroyed` を 1 増やす'
+        description: '`features.html-scripts` を `true` にし、`build` に、`<!-- html -->` の範囲に `html`・`css`・`ts` を配置した文書と、範囲を持たない文書の 2 つを指定した設定'
+        notes: '`ts` はノードを押すと根の要素に class `is-open` を付与・解除し、`destroy` で `window.__mdmarkDestroyed` を 1 増やす'
       - name: Mock
         description: '正常系（blob: と動的 import を許さない環境で開く）と同じ'
     flow: |-
       sequenceDiagram
-        actor W as 文書を書く人
+        actor W as 文書の作成者
         participant C as mdmark CLI
         participant H as 出力の HTML
         W->>C: mdmark build
-        C->>C: 範囲の ts を esbuild で変え、束ねるスクリプトに加える
-        C->>H: 1 枚の HTML を書く
+        C->>C: 範囲の ts を esbuild で変え、まとめるスクリプトに加える
+        C->>H: 1 枚の HTML を書き込む
         W->>H: 範囲を持つ文書を開き、範囲を持たない文書へ移る
         H-->>W: 範囲の destroy を呼んでから移った文書を描く
     expected:
-      - 終了コードが 0 で、範囲を持つ文書の範囲の箱の背景が `css` の色で、押すと根の要素が class `is-open` を持つ
+      - 終了コードが 0 で、範囲を持つ文書の範囲のノードの背景が `css` の色で、押すと根の要素が class `is-open` を持つ
       - 範囲を持たない文書へ移ると `window.__mdmarkDestroyed` が 1 で、移った先に `style.mdmark-html-style` が無い
       - 開いてから文書を移り終えるまでに、CSP の違反が 0 件で、`blob:` の URL への要求が 0 件
     test: test_normal_when_range_scripts
     refs:
       - dev/設計書/シナリオ/単一ユースケース/複数の文書を1枚のHTMLにまとめる#scenarios[正常シナリオ（範囲のスクリプトと CSS）]
   - name: 正常系（取り込みとアイコンを埋める）
-    summary: まとめる文書の取り込み先と束ねていない名前のアイコンの形を埋め、外へ要求せずに描く
+    summary: まとめる文書の取り込み先とまとめていない名前のアイコンの形状を埋め、外へ要求せずに描く
     setup:
       - name: 取り込みとアイコンを持つ文書群
-        description: '設定の `build.include` が `docs/a.md` と `docs/b.md` に当たる。`a.md` が `<!-- include: b.md#使い方 -->`・`<!-- include: ../共通/手順.md -->`・段落の `` `icon:sailboat` `` を持ち、`b.md` が `## 使い方` を持つ。`共通/手順.md` は `build.include` に当たらない'
+        description: '設定の `build.include` が `docs/a.md` と `docs/b.md` に該当する。`a.md` が `<!-- include: b.md#使い方 -->`・`<!-- include: ../共通/手順.md -->`・段落の `` `icon:sailboat` `` を持ち、`b.md` が `## 使用方法` を持つ。`共通/手順.md` は `build.include` に該当しない'
       - name: Mock
         description: 差し替える依存は無い。書き出した HTML は Playwright の Chromium で file:// で開き、要求を記録する
     flow: |-
       sequenceDiagram
-        actor W as 文書を書く人
+        actor W as 文書の作成者
         participant C as mdmark CLI
         participant H as 出力の HTML
         W->>C: mdmark build
-        C->>C: 文書ごとに取り込み先を読み、アイコンの形を lucide から取り出す
-        C->>H: 文書ごとの includes と icons を埋めて書く
+        C->>C: 文書ごとに取り込み先を読み込み、アイコンの形状を lucide から取り出す
+        C->>H: 文書ごとの includes と icons を埋めて記載する
         C-->>W: 書き出した: {build.out}・終了コード 0
     expected:
       - 終了コードが 0
-      - 開いた HTML の `a.md` の 2 つのマーカーの場所に、`b.md` の `使い方` の中身と `共通/手順.md` の中身が描かれている
+      - 開いた HTML の `a.md` の 2 つのマーカーの場所に、`b.md` の `使用方法` の中身と `共通/手順.md` の中身が描かれている
       - 文書の一覧に `共通/手順.md` が無い
       - '`sailboat` の場所に `svg` がある'
       - 描き終えるまでに外への要求が 0 件
@@ -302,34 +302,34 @@ flows:
   - name: 正常系（mermaid のコードブロック）
     summary: まとめる文書のどれかに mermaid のコードブロックがあるときだけ mermaid を 1 回まとめて埋める
     setup:
-      - name: mermaid を使う文書を含むフォルダ
-        description: 入口と、言語 `mermaid` の flowchart のコードブロックを持つ文書の 2 つ。`mermaid.url` に手元の `vendor/mermaid/mermaid.esm.min.mjs` を書いた設定
+      - name: mermaid を使用する文書を含むフォルダ
+        description: 入口と、言語 `mermaid` の flowchart のコードブロックを持つ文書の 2 つ。`mermaid.url` に手元の `vendor/mermaid/mermaid.esm.min.mjs` を記載した設定
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
       sequenceDiagram
-        actor W as 文書を書く人
+        actor W as 文書の作成者
         participant C as mdmark CLI
         participant H as build.out
         W->>C: mdmark build
         C->>C: mermaid のコードブロックがある文書があるので、mermaid を 1 つのスクリプトにまとめる
-        C->>H: mermaid を埋めて書く
+        C->>H: mermaid を埋めて記載する
     expected:
       - 終了コードが 0 で、まとめた HTML を file:// で開いて mermaid の文書へ移ると、`figure.mdmark-diagram[data-diagram="mermaid"]` があり、外への要求が 0 件
       - mermaid のコードブロックを持たない文書だけを `include` にしたときは、mermaid が埋められていない
     test: test_normal_when_mermaid_embedded
-lead: 文書を書く人が設定の `build` で決めた文書を、参照・被参照・用語のツールチップが効き、文書を行き来できる 1 枚の HTML にまとめる。埋めるものと外へ要求しないことはインターフェース定義『文書をHTMLに書き出す』と同じ。
+lead: 文書の作成者が設定の `build` で決めた文書を、参照・被参照・用語のツールチップが有効になり、文書を行き来できる 1 枚の HTML にまとめる。埋めるものと外へ要求しないことはインターフェース定義『文書をHTMLに書き出す』と同じ。
 idempotent: true
-side_effects: '`build.out` に HTML を書く（既にあれば上書きする）。文書が指す動画・音声を、`build.out` の隣の `_files/` のフォルダへコピーする。文書が使う外部ライブラリの URL の先を読む'
+side_effects: '`build.out` に HTML を書き込む（既にあれば上書きする）。文書が指す動画・音声を、`build.out` の隣の `_files/` のフォルダへコピーする。文書が使用する外部ライブラリの URL の先を読み込む'
 callers:
   - dev/設計書/シナリオ/単一ユースケース/複数の文書を1枚のHTMLにまとめる#
 request:
   - name: --config
     type: string
     required: false
-    default: 'なし（端末の設定と、今のフォルダから上のフォルダの `mdmark.config.yaml` を重ねる。インターフェース定義『設定を重ねて読む』を `purpose: export` で呼ぶ）'
+    default: 'なし（端末の設定と、今のフォルダから上のフォルダの `mdmark.config.yaml` を重ねる。インターフェース定義『設定を重ねて読み込む』を `purpose: export` で呼ぶ）'
     location: argument
-    description: 使う設定ファイルのパス
+    description: 使用する設定ファイルのパス
     notes: まとめる文書と書き出す先は設定の `build` が持つ
 response:
   - name: 標準出力
@@ -338,64 +338,64 @@ response:
   - name: 標準エラー
     type: string
     description: '警告 1 つを 1 行（`警告: {ファイル}: {内容}`）で並べる'
-    notes: インターフェース定義『文書をHTMLに書き出す』の警告に、まとめた HTML に含まれない文書へのリンク・`build.glossary` と `build.entry` がまとめる文書に当たらないことを足す
+    notes: インターフェース定義『文書をHTMLに書き出す』の警告に、まとめた HTML に含まれない文書へのリンク・`build.glossary` と `build.entry` がまとめる文書に該当しないことを追加する
   - name: 終了コード
     type: 0 | 1
     description: 書き出したら（警告があっても）0、書き出せなかったら 1
   - name: 出力の HTML
     type: ファイル
-    description: インターフェース定義『文書をHTMLに書き出す』と同じものを埋め、文書はまとめる全ての文書をパスで引ける形で埋める。開くと、文書の一覧と、URL が指す文書（指していなければ `build.entry`）を描く
+    description: インターフェース定義『文書をHTMLに書き出す』と同じものを埋め、文書はまとめる全ての文書をパスで参照できる構造で埋める。開くと、文書の一覧と、URL が指す文書（指していなければ `build.entry`）を描く
 response_example: |-
   ```text
   書き出した: dist/docs.html（文書 3 件）
   ```
 
   ```text
-  警告: README.md: `下書き/メモ.md` へのリンクはまとめた HTML に含まれません。書いたままのリンクで残します。まとめるなら `build.include` に足してください。
+  警告: README.md: `下書き/メモ.md` へのリンクはまとめた HTML に含まれません。記載したままのリンクで残します。まとめるなら `build.include` に追加してください。
   ```
 exceptions:
   - name: なし（正常終了）
-    condition: '`build.out` に HTML を書いた（読めなかったものと 1 枚に含まれない文書へのリンクは警告に出す）。終了コード 0'
+    condition: '`build.out` に HTML を書き込んだ（読み込めなかったものと 1 枚に含まれない文書へのリンクは警告に出す）。終了コード 0'
   - name: 設定ファイルの誤り（終了コード 1）
-    condition: 設定ファイルが無い・読めない・Schema に合わない（空の設定ファイルを含む。重ねた設定ファイルのどれかでも同じ）、または重ねた設定に `build` が無い。`build` の glob と `build.out` は `build` を書いた設定ファイルのフォルダから当てる
-    notes: 標準エラーに原因と直し方の 1 文を出す
+    condition: 設定ファイルが無い・読み込めない・Schema に合わない（空の設定ファイルを含む。重ねた設定ファイルのどれかでも同じ）、または重ねた設定に `build` が無い。`build` の glob と `build.out` は `build` を記載した設定ファイルのフォルダから適用する
+    notes: 標準エラーに原因と修正方法の 1 文を出す
   - name: 対象の文書が 0 件（終了コード 1）
-    condition: '`build.include` に当たり `build.exclude` に当たらない文書が 0 件'
-    notes: 標準エラーに、対象が 0 件であることと `build.include` を直すことを出す。HTML は書かない
-  - name: 出力先へ書けない（終了コード 1）
-    condition: '`build.out` か、動画・音声のコピー先の `_files/` へ書けない'
-    notes: 標準エラーに書けなかったパスと直し方を出す。HTML は書かない
+    condition: '`build.include` に該当し `build.exclude` に該当しない文書が 0 件'
+    notes: 標準エラーに、対象が 0 件であることと `build.include` を修正することを出す。HTML は記載しない
+  - name: 出力先へ書き込めない（終了コード 1）
+    condition: '`build.out` か、動画・音声のコピー先の `_files/` へ書き込めない'
+    notes: 標準エラーに書き込めなかったパスと修正方法を出す。HTML は記載しない
 constraints:
   - item: まとめる文書
-    constraint: '`build.include` の glob に当たり `build.exclude` に当たらない `.md` のファイル。並びは glob の並び、同じ glob の中はパスの順で、重なりは最初の 1 つだけを残す。文書のパスは設定ファイルのあるフォルダからの相対パス（区切りは `/`）'
+    constraint: '`build.include` の glob に該当し `build.exclude` に該当しない `.md` のファイル。並びは glob の並び、同じ glob の中はパスの順で、重なりは最初の 1 つだけを残す。文書のパスは設定ファイルのあるフォルダからの相対パス（区切りは `/`）'
     decided_by: dev/設計書/設定/ライブラリ本体#settings[build.include]
   - item: 文書間のリンク
-    constraint: まとめる文書への相対リンク（フロー図のノードのリンク先を含む）は、開いたとき 1 枚の中の文書へ移る。それ以外の文書への相対リンクは書いたままの `href` で残し、リンクを持つ文書とリンク先を警告に出す
-    notes: 1 枚の中の文書を指す URL の書き方は画面設計で決める
+    constraint: まとめる文書への相対リンク（フロー図のノードのリンク先を含む）は、開いたとき 1 枚の中の文書へ移る。それ以外の文書への相対リンクは記載したままの `href` で残し、リンクを持つ文書とリンク先を警告に出す
+    notes: 1 枚の中の文書を指す URL の記載方法は画面設計で決める
   - item: 参照の表
-    constraint: 設定に `index` があるとき、索引と索引の `docs` の文書を `collectReferences` に渡して作った参照の表を埋め、索引にある文書はその `id` を `mount` の `docId` に渡す
+    constraint: 設定に `index` があるとき、索引と索引の `docs` の文書を `collectReferences` に指定して作った参照の表を埋め、索引にある文書はその `id` を `mount` の `docId` に指定する
     decided_by: dev/設計書/インターフェース定義/ライブラリ本体/参照の表を作る.ts#
   - item: 用語集の文書
-    constraint: '`build.glossary` の文書の用語集の表の用語を、まとめた全ての文書で効かせる（索引が無いときも）。まとめる文書に当たらないパスは飛ばして警告に出す'
+    constraint: '`build.glossary` の文書の用語集の表の用語を、まとめた全ての文書で有効にしる（索引が無いときも）。まとめる文書に該当しないパスは飛ばして警告に出す'
     decided_by: dev/設計書/設定/ライブラリ本体#settings[build.glossary]
   - item: 最初に開く文書
-    constraint: '`build.entry`。無いかまとめる文書に当たらないときは、まとめる文書の最初の 1 つ（当たらないときは警告に出す）'
+    constraint: '`build.entry`。無いかまとめる文書に該当しないときは、まとめる文書の最初の 1 つ（該当しないときは警告に出す）'
     decided_by: dev/設計書/設定/ライブラリ本体#settings[build.entry]
   - item: 埋めるもの
-    constraint: インターフェース定義『文書をHTMLに書き出す』と同じ。外部ライブラリ・部品・色分けの言語はまとめる文書のどれかが使うものだけを、同じものは 1 つだけ、1 つのスクリプトに束ねて埋める。画像・動画・音声はそれぞれの文書のフォルダを基準に探し、無ければ `assets.root` で探す。複数の文書が指す同じ画像は 1 回だけ埋め、文書からは同じ埋めた画像を指す。動画・音声は `build.out` と同じフォルダの `{build.out のファイル名から拡張子を除いた名前}_files/` へ、同じファイルを 1 回だけ、HTML を書く前にコピーする
+    constraint: インターフェース定義『文書をHTMLに書き出す』と同じ。外部ライブラリ・部品・色分けの言語はまとめる文書のどれかが使用するものだけを、同じものは 1 つだけ、1 つのスクリプトにまとめて埋める。画像・動画・音声はそれぞれの文書のフォルダを基準に探し、無ければ `assets.root` で探す。複数の文書が指す同じ画像は 1 回だけ埋め、文書からは同じ埋めた画像を指す。動画・音声は `build.out` と同じフォルダの `{build.out のファイル名から拡張子を除いた名前}_files/` へ、同じファイルを 1 回だけ、HTML を書き込む前にコピーする
     decided_by: dev/設計書/インターフェース定義/ライブラリ本体/文書をHTMLに書き出す.ts#
   - item: 外部への要求
     constraint: 開いてから、文書を移っても、ページ自身・`_files/` の下にコピーした動画と音声と画像の `data:` のほかへ要求しない
     decided_by: dev/設計書/非機能要件/非機能要件#requirements[書き出した HTML の外部への要求]
   - item: 文書の数
     constraint: 制限なし
-  - item: 動く Node の版
+  - item: 動く Node のバージョン
     constraint: Node 24 以降
     decided_by: dev/設計書/非機能要件/非機能要件#requirements[CLI が動く Node の版]
   - item: 取り込みとアイコン
-    constraint: インターフェース定義『文書をHTMLに書き出す』の制約「埋める取り込み」「埋めるアイコン」と同じ。取り込む文書の表はまとめる文書ごとに、その文書のフォルダからのパスをキーにして作る。取り込み先が `build` の対象外のファイルでも、設定ファイルのフォルダの中なら読んで埋め、文書の一覧には出さない。同じファイルの本文と同じ名前のアイコンの形は 1 回だけ埋める
+    constraint: インターフェース定義『文書をHTMLに書き出す』の制約「埋める取り込み」「埋めるアイコン」と同じ。取り込む文書の表はまとめる文書ごとに、その文書のフォルダからのパスをキーにして作る。取り込み先が `build` の対象外のファイルでも、設定ファイルのフォルダの中なら読み込んで埋め、文書の一覧には出さない。同じファイルの本文と同じ名前のアイコンの形状は 1 回だけ埋める
   - item: 文書ごとのページの設定
-    constraint: 文書の page のマーカーは各文書の本文に残して埋め、開いた文書を `mount`（`update`）で描くときにその文書のマーカーで明暗・テーマ・右側の目次の出し方を決め直す。マーカーを持たない文書は、埋めた設定の `colorScheme`・`colorTheme`・`side-toc.mode` で描く
+    constraint: 文書の page のマーカーは各文書の本文に残して埋め、開いた文書を `mount`（`update`）で描くときにその文書のマーカーで明暗・テーマ・右側の目次の出し方をもう一度決める。マーカーを持たない文書は、埋めた設定の `colorScheme`・`colorTheme`・`side-toc.mode` で描く
     decided_by: dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[ページの設定のマーカー]
   - item: 埋める mermaid
     constraint: 文書をHTMLに書き出す.ts の制約「埋める mermaid」と同じ。まとめる文書のどれかに mermaid のコードブロックがあるときだけ、mermaid を 1 回埋める

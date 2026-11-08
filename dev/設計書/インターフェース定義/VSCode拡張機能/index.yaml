@@ -2,11 +2,11 @@ summary: "VS Code 拡張機能のコマンド・Webview とのメッセージ・
 docs_index: true
 items:
   - page: プレビューを開く.ts.yaml
-    summary: Markdown の横か同じ列に、読む版を決めて mdmark で描くプレビューを開く（mdmark.openPreviewToSide・mdmark.openPreview）
+    summary: Markdown の横か同じ列に、読み込むバージョンを決めて mdmark で描くプレビューを開く（mdmark.openPreviewToSide・mdmark.openPreview）
   - page: プレビューを描き直す.ts.yaml
-    summary: Markdown・設定ファイルの書き換えと背面からの復帰で、最後の内容で描き直す
+    summary: Markdown・設定ファイルの書き換えと背面からの復帰で、最後の内容で再描画する
   - page: プレビューをリロードする.ts.yaml
-    summary: 設定ファイルと読む版を決め直し、配布物を読み直して描く（mdmark.refreshPreview）
+    summary: 設定ファイルと読み込むバージョンをもう一度決め、配布物を再読み込みして描く（mdmark.refreshPreview）
   - page: スクロールを合わせる.ts.yaml
     summary: エディタとプレビューのスクロールを、元の行番号で両方向に合わせる
   - page: プレビューのリンクを開く.ts.yaml
@@ -16,7 +16,7 @@ items:
   - page: HTMLに書き出す.ts.yaml
     summary: 開いている Markdown を jsDelivr の配布物で描く HTML に書き出す（mdmark.exportHtml）
   - page: ブラウザで開く.ts.yaml
-    summary: 書き出し直した HTML を既定のブラウザで開く（mdmark.openInBrowser）
+    summary: もう一度書き出した HTML を既定のブラウザで開く（mdmark.openInBrowser）
   - page: PDFに印刷する.ts.yaml
     summary: 描き終えた後に印刷のダイアログを出す HTML を書き出して開く（mdmark.printToPdf）
   - page: 拡張機能の配布物を作る.ts.yaml

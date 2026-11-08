@@ -7,12 +7,12 @@ flows:
     summary: 設定ファイルがあれば、そのままエディタで開く
     setup:
       - name: 設定ファイルのあるワークスペース
-        description: '`mdmark.config.yaml` と `guide.md` を置いたフォルダで `guide.md` を開いた状態'
+        description: '`mdmark.config.yaml` と `guide.md` を配置したフォルダで `guide.md` を開いた状態'
       - name: Mock
         description: '`window.showInformationMessage` を、呼ばれた回数を数える代役に差し替える'
     flow: |-
       sequenceDiagram
-        participant U as 文書を書く人
+        participant U as 文書の作成者
         participant EX as 拡張機能
         U->>EX: mdmark.openConfig
         EX->>EX: showTextDocument（mdmark.config.yaml）
@@ -21,34 +21,34 @@ flows:
       - 確認のダイアログの代役が呼ばれず、ファイルの中身が変わらない
     test: test_normal
   - name: 正常系（雛形を作る）
-    summary: 設定ファイルが無いとき、作ると答えると雛形を書いて開く
+    summary: 設定ファイルが無いとき、作ると回答すると雛形を書き込んで開く
     setup:
       - name: 設定ファイルの無いワークスペース
-        description: '`guide.md` だけを置いたフォルダ'
+        description: '`guide.md` だけを配置したフォルダ'
       - name: Mock
-        description: 確認のダイアログの代役が「作成」を返す
+        description: 確認のダイアログの代役が「作成」を返却する
     flow: |-
       sequenceDiagram
-        participant U as 文書を書く人
+        participant U as 文書の作成者
         participant EX as 拡張機能
         U->>EX: mdmark.openConfig
         EX->>U: 雛形を作るかの確認
         U->>EX: 作る
-        EX->>EX: 雛形を書いて開く
+        EX->>EX: 雛形を書き込んで開く
     expected:
-      - '`mdmark.config.yaml` が雛形の中身で書かれ、エディタで開いている'
-      - 雛形を YAML として読むと、`features`・`libraries` のキーを持たない
+      - '`mdmark.config.yaml` が雛形の中身で記載され、エディタで開いている'
+      - 雛形を YAML として読み込むと、`features`・`libraries` のキーを持たない
     test: test_normal_when_template_created
   - name: 異常系（作らない・何もしない）
-    summary: 作らないを選ぶとファイルを書かない
+    summary: 作らないを選ぶとファイルを書き込まない
     setup:
       - name: 設定ファイルの無いワークスペース
         description: 正常系（雛形を作る）と同じ
       - name: Mock
-        description: 確認のダイアログの代役が `undefined`（閉じた）を返す
+        description: 確認のダイアログの代役が `undefined`（閉じた）を返却する
     flow: |-
       sequenceDiagram
-        participant U as 文書を書く人
+        participant U as 文書の作成者
         participant EX as 拡張機能
         U->>EX: mdmark.openConfig
         EX->>U: 雛形を作るかの確認
@@ -58,9 +58,9 @@ flows:
       - '`mdmark.config.yaml` が無いまま'
       - エディタの数が変わらない
     test: test_error_when_template_declined
-lead: 拡張機能が読む設定ファイルをエディタで開く。無ければ雛形を作るかを尋ね、作ると答えたときだけ作って開く。
+lead: 拡張機能が読み込む設定ファイルをエディタで開く。無ければ雛形を作るかを尋ね、作ると回答したときだけ作って開く。
 idempotent: true
-side_effects: 雛形を作ると答えたときだけ、`mdmark.configPath` の場所に雛形の YAML を書く。既にあるファイルは書き換えない
+side_effects: 雛形を作ると回答したときだけ、`mdmark.configPath` の場所に雛形の YAML を記載する。既にあるファイルは書き換えない
 callers:
   - dev/設計書/シナリオ/単一ユースケース/書いた内容をプレビューに映す#scenarios[異常シナリオ（設定ファイルを読めない）]
 request:
@@ -73,18 +73,18 @@ request:
 response:
   - name: '-'
     type: Promise<void>
-    description: 設定ファイルを開いたか、作らないと答えたら解決する
+    description: 設定ファイルを開いたか、作らないと回答したら解決する
 exceptions:
   - name: なし（正常終了）
     condition: 設定ファイルをエディタで開く
   - name: なし（作らない）
     condition: 設定ファイルが無く、雛形を作るかの確認で作らないを選ぶか、ダイアログを閉じる
-    notes: 何も書かずに終わる
+    notes: 何も書き込まずに終わる
 constraints:
   - item: 設定ファイルの場所
-    constraint: プレビューを描き直す.ts の制約「設定ファイルの場所」で見つけた最も近い `mdmark.config.yaml` を開く。設定ファイルを読めない帯の「設定ファイルを開く」から呼んだときは、帯に出した読めないファイル（端末の設定を含む）を開く。最も近い `mdmark.config.yaml` が無ければ、`mdmark.configPath`（空のときは `mdmark.config.yaml`）を Markdown を含むワークスペースのフォルダから解決した場所に雛形を作るかを尋ねる
+    constraint: プレビューを再描画する.ts の制約「設定ファイルの場所」で見つけた最も近い `mdmark.config.yaml` を開く。設定ファイルを読み込めない帯の「設定ファイルを開く」から呼んだときは、帯に出した読み込めないファイル（端末の設定を含む）を開く。最も近い `mdmark.config.yaml` が無ければ、`mdmark.configPath`（空のときは `mdmark.config.yaml`）を Markdown を含むワークスペースのフォルダから解決した場所に雛形を作るかを尋ねる
   - item: 雛形を作るかの確認
     constraint: '`window.showInformationMessage` を `{ modal: true }` で出し、「作成」を選んだときだけ作る。文言は画面設計で決める'
   - item: 雛形の中身
-    constraint: '`features`・`libraries`・`theme`・`extensions` の書き方と、上のフォルダの設定・端末の設定と重ねて読むことをコメントで示し、キーは書かない YAML（中身は画面設計で決める）。フォルダが無ければ作る'
-    notes: キーを書かないため、作った直後のプレビューは雛形を作る前と同じに描く
+    constraint: '`features`・`libraries`・`theme`・`extensions` の記載方法と、上のフォルダの設定・端末の設定と重ねて読み込むことをコメントで示し、キーは記載しない YAML（中身は画面設計で決める）。フォルダが無ければ作る'
+    notes: キーを記載しないため、作った直後のプレビューは雛形を作る前と同じに描く

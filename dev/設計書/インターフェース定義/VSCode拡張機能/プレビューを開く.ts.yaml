@@ -4,15 +4,15 @@ entry:
   value: コマンド `mdmark.openPreviewToSide`・`mdmark.openPreview`（VS Code 拡張機能のコマンド）
 flows:
   - name: 正常系
-    summary: タグ一覧から最新の版を選び、横の列のパネルに描かせる
+    summary: タグ一覧から最新のバージョンを選び、横の列のパネルに描かせる
     setup:
       - name: 見本のワークスペース
-        description: 見出し・表・注意書き・フロー図を持つ `guide.md` を置いたフォルダ。`mdmark.version` は既定の `latest`。`mdmark.lastVersion` は空
+        description: 見出し・表・注意書き・フロー図を持つ `guide.md` を配置したフォルダ。`mdmark.version` は既定の `latest`。`mdmark.lastVersion` は空
       - name: Mock
-        description: '`MDMARK_VSCODE_DIST_BASE` に、このブランチでビルドした配布物を `@{版}/dist/` の形の URL で配る手元のサーバー。`MDMARK_VSCODE_TAGS_URL` に `v0.7.0`・`v0.10.0`・`v0.6.0`・`vscode-v0.11.0` を返す代役'
+        description: '`MDMARK_VSCODE_DIST_BASE` に、このブランチでビルドした配布物を `@{版}/dist/` の構造の URL で配る手元のサーバー。`MDMARK_VSCODE_TAGS_URL` に `v0.7.0`・`v0.10.0`・`v0.6.0`・`vscode-v0.11.0` を返却する代役'
     flow: |-
       sequenceDiagram
-        participant U as 文書を書く人
+        participant U as 文書の作成者
         participant EX as 拡張機能
         participant GH as GitHub のタグ一覧
         participant PV as Webview
@@ -20,19 +20,19 @@ flows:
         U->>EX: mdmark.openPreviewToSide
         EX-->>GH: タグ一覧を取る
         GH-->>EX: v0.7.0・v0.10.0・v0.6.0・vscode-v0.11.0
-        EX->>EX: v0.10.0 を選び mdmark.lastVersion に書く
+        EX->>EX: v0.10.0 を選び mdmark.lastVersion に記載する
         EX->>PV: 横の列にパネルを開き HTML を入れる
         PV-->>CDN: v0.10.0 の index.js・index.css
         PV->>EX: ready
         EX->>PV: render（全文・設定・theme）
         PV->>EX: rendered
     expected:
-      - パネルが `ViewColumn.Beside` に開き、題が `プレビュー guide.md`
+      - パネルが `ViewColumn.Beside` に開き、タイトルが `プレビュー guide.md`
       - 配布物の要求が `@v0.10.0/dist/index.js` と `@v0.10.0/dist/index.css` だけで、`vscode-v0.11.0` を選んでいない（文字の並びでなく数で比べている）
       - '`mdmark.lastVersion` が `v0.10.0`'
       - '`rendered` を受けた後、Webview の本文に見出し・表・注意書き・フロー図の要素がある'
       - Webview の HTML の CSP が制約「CSP」のとおりで、`script` 要素が全て nonce を持つ
-      - '`auditPreview()` が返すパネルの部品の axe の違反が 0 件'
+      - '`auditPreview()` が返却するパネルの部品の axe の違反が 0 件'
     test: test_normal
   - name: 正常系（同じ列に開く）
     summary: '`mdmark.openPreview` は同じ列のタブに開く'
@@ -43,7 +43,7 @@ flows:
         description: 正常系と同じ
     flow: |-
       sequenceDiagram
-        participant U as 文書を書く人
+        participant U as 文書の作成者
         participant EX as 拡張機能
         participant PV as Webview
         U->>EX: mdmark.openPreview
@@ -61,7 +61,7 @@ flows:
         description: 正常系と同じ。タグ一覧の代役は呼ばれた回数を数える
     flow: |-
       sequenceDiagram
-        participant U as 文書を書く人
+        participant U as 文書の作成者
         participant EX as 拡張機能
         participant PV as Webview
         U->>EX: mdmark.openPreviewToSide
@@ -71,7 +71,7 @@ flows:
       - タグ一覧の代役が 2 回目に呼ばれていない
     test: test_normal_when_already_open
   - name: 正常系（バージョンを固定する）
-    summary: '`mdmark.version` に書いた版を、タグ一覧を取らずに読む'
+    summary: '`mdmark.version` に記載したバージョンを、タグ一覧を取らずに読み込む'
     setup:
       - name: 見本のワークスペース
         description: 正常系と同じ。ワークスペースの設定で `mdmark.version` を `v0.6.0` にする。`mdmark.lastVersion` は `v0.7.0`
@@ -79,7 +79,7 @@ flows:
         description: 正常系と同じ。タグ一覧の代役は呼ばれた回数を数える
     flow: |-
       sequenceDiagram
-        participant U as 文書を書く人
+        participant U as 文書の作成者
         participant EX as 拡張機能
         participant PV as Webview
         participant CDN as jsDelivr
@@ -93,16 +93,16 @@ flows:
       - '`mdmark.lastVersion` が `v0.7.0` のまま'
     test: test_normal_when_version_pinned
   - name: 正常系（タグ一覧を取れない）
-    summary: タグ一覧が待ちの上限まで返らないとき、前回の版で描く
+    summary: タグ一覧が待ちの上限まで返らないとき、前回のバージョンで描く
     setup:
       - name: 見本のワークスペース
         description: 正常系と同じ。`mdmark.lastVersion` は `v0.6.0`
       - name: Mock
         description: タグ一覧の代役は待ちの上限を超えても応えない。配布物は正常系と同じ
-        notes: 403 を返す代役でも同じ結果になることを同じテストで確かめる
+        notes: 403 を返却する代役でも同じ結果になることを同じテストで確認する
     flow: |-
       sequenceDiagram
-        participant U as 文書を書く人
+        participant U as 文書の作成者
         participant EX as 拡張機能
         participant GH as GitHub のタグ一覧
         participant PV as Webview
@@ -117,7 +117,7 @@ flows:
       - '`mdmark.lastVersion` が `v0.6.0` のまま'
     test: test_normal_when_tags_unreachable
   - name: 正常系（配色を固定する）
-    summary: '`mdmark.preview.theme` の `light`・`dark` を包む要素の class にし、`auto` に戻すと外す'
+    summary: '`mdmark.preview.theme` の `light`・`dark` を包む要素の class にし、`auto` に戻すと除外する'
     setup:
       - name: 見本のワークスペース
         description: 正常系と同じ。`mdmark.preview.theme` を `light` にする
@@ -125,7 +125,7 @@ flows:
         description: 正常系と同じ
     flow: |-
       sequenceDiagram
-        participant U as 文書を書く人
+        participant U as 文書の作成者
         participant EX as 拡張機能
         participant PV as Webview
         U->>EX: mdmark.openPreviewToSide
@@ -136,15 +136,15 @@ flows:
         PV->>EX: rendered
     expected:
       - '`light` の間、描く先を包む要素が class `mdmark-theme-light` を持ち、`mdmark-theme-dark` を持たない'
-      - '`auto` にすると、パネルを開き直さずに包む要素が `mdmark-theme-*` を持たなくなる'
+      - '`auto` にすると、パネルをもう一度開かずに包む要素が `mdmark-theme-*` を持たなくなる'
     test: test_normal_when_theme_fixed
     refs:
       - dev/設計書/シナリオ/単一ユースケース/プレビューをVSCodeのテーマに合わせる#scenarios[正常シナリオ（配色を固定する）]
   - name: 正常系（設定ファイルと文書のマーカーの明暗）
-    summary: '`mdmark.preview.theme` が `auto` のときは設定ファイルの `colorScheme` を渡し、文書の page のマーカーはどの設定より優先する'
+    summary: '`mdmark.preview.theme` が `auto` のときは設定ファイルの `colorScheme` を指定し、文書の page のマーカーはどの設定より優先する'
     setup:
-      - name: 明暗を書いた設定ファイル
-        description: '開いた Markdown のワークスペースの `mdmark.config.yaml` に `colorScheme: light` を書く'
+      - name: 明暗を記載した設定ファイル
+        description: '開いた Markdown のワークスペースの `mdmark.config.yaml` に `colorScheme: light` を記載する'
       - name: ダークのテーマ
         description: VS Code のテーマが Default Dark Modern で、`mdmark.preview.theme` は `auto`
       - name: Markdown
@@ -153,7 +153,7 @@ flows:
         description: 正常系と同じ
     flow: |-
       sequenceDiagram
-        actor U as 文書を書く人
+        actor U as 文書の作成者
         participant EX as 拡張機能
         participant PV as プレビュー（Webview）
         U->>EX: a.md のプレビューを開く
@@ -171,7 +171,7 @@ flows:
       - dev/設計書/シナリオ/単一ユースケース/プレビューをVSCodeのテーマに合わせる#scenarios[正常シナリオ（設定ファイルの明暗で描く）]
       - dev/設計書/シナリオ/単一ユースケース/プレビューをVSCodeのテーマに合わせる#scenarios[正常シナリオ（文書のマーカーで明暗を指定する）]
   - name: 正常系（相対パスの画像）
-    summary: Markdown のフォルダからの相対パスの画像を読む
+    summary: Markdown のフォルダからの相対パスの画像を読み込む
     setup:
       - name: 画像を持つワークスペース
         description: '`docs/guide.md` が `./images/figure.png` を持ち、`docs/images/figure.png` がワークスペースの中にある'
@@ -179,7 +179,7 @@ flows:
         description: 正常系と同じ
     flow: |-
       sequenceDiagram
-        participant U as 文書を書く人
+        participant U as 文書の作成者
         participant EX as 拡張機能
         participant PV as Webview
         U->>EX: mdmark.openPreviewToSide
@@ -191,7 +191,7 @@ flows:
     refs:
       - dev/設計書/シナリオ/単一ユースケース/プレビューのリンクと画像を開く#scenarios[正常シナリオ（相対パスの画像）]
   - name: 異常系（ワークスペースの外の画像・代わりの文字）
-    summary: ワークスペースの外の画像は読まず、他の本文は描く
+    summary: ワークスペースの外の画像は読み込まず、他の本文は描く
     setup:
       - name: 外の画像を指すワークスペース
         description: '`guide.md` がワークスペースの外を指す `../../outside.png`（`alt` は `外の画像`）と見出しを持ち、`outside.png` は実際にある'
@@ -199,12 +199,12 @@ flows:
         description: 正常系と同じ
     flow: |-
       sequenceDiagram
-        participant U as 文書を書く人
+        participant U as 文書の作成者
         participant EX as 拡張機能
         participant PV as Webview
         U->>EX: mdmark.openPreviewToSide
         EX->>PV: HTML を入れる
-        PV->>PV: localResourceRoots の外は読まない
+        PV->>PV: localResourceRoots の外は読み込まない
         PV->>EX: rendered
     expected:
       - '`img` の `naturalWidth` が 0 で、`alt` が `外の画像`'
@@ -212,7 +212,7 @@ flows:
     test: test_error_when_image_outside_workspace
     refs:
       - dev/設計書/シナリオ/単一ユースケース/プレビューのリンクと画像を開く#scenarios[異常シナリオ（ワークスペースの外の画像）]
-  - name: 異常系（配布物を読めない・オフライン）
+  - name: 異常系（配布物を読み込めない・オフライン）
     summary: 配布物の配信元が応えないとき、オフラインの理由と「リロード」を出す
     setup:
       - name: 見本のワークスペース
@@ -221,14 +221,14 @@ flows:
         description: '`MDMARK_VSCODE_DIST_BASE` に、接続を受け付けないポートの URL。タグ一覧は正常系と同じ'
     flow: |-
       sequenceDiagram
-        participant U as 文書を書く人
+        participant U as 文書の作成者
         participant EX as 拡張機能
         participant PV as Webview
         participant CDN as jsDelivr
         U->>EX: mdmark.openPreviewToSide
         EX->>PV: v0.10.0 で HTML を入れる
-        PV--xCDN: index.js を読めない
-        PV--xCDN: HEAD で確かめても応答なし
+        PV--xCDN: index.js を読み込めない
+        PV--xCDN: HEAD で確認しても応答なし
         PV->>EX: loadFailed（offline）
     expected:
       - '`loadFailed` の `reason` が `offline`'
@@ -242,10 +242,10 @@ flows:
       - name: 見本のワークスペース
         description: 正常系と同じ。`mdmark.version` を `v9.9.9` にする
       - name: Mock
-        description: 配布物を配る手元のサーバーは `@v9.9.9` に 404 を返す
+        description: 配布物を配る手元のサーバーは `@v9.9.9` に 404 を返却する
     flow: |-
       sequenceDiagram
-        participant U as 文書を書く人
+        participant U as 文書の作成者
         participant EX as 拡張機能
         participant PV as Webview
         participant CDN as jsDelivr
@@ -259,7 +259,7 @@ flows:
       - パネルに `v9.9.9` を含む描けない理由と「リロード」のボタンがある
     test: test_error_when_version_missing
   - name: 異常系（バージョンを決められない）
-    summary: タグ一覧を取れず前回の版も無いとき、配布物を要求せずに理由を出す
+    summary: タグ一覧を取れず前回のバージョンも無いとき、配布物を要求せずに理由を出す
     setup:
       - name: 見本のワークスペース
         description: 正常系と同じ。`mdmark.lastVersion` は空
@@ -267,14 +267,14 @@ flows:
         description: タグ一覧の代役は応えない。配布物のサーバーは要求を数える
     flow: |-
       sequenceDiagram
-        participant U as 文書を書く人
+        participant U as 文書の作成者
         participant EX as 拡張機能
         participant GH as GitHub のタグ一覧
         participant PV as Webview
         U->>EX: mdmark.openPreviewToSide
         EX-->>GH: タグ一覧を取る
         GH--xEX: 待ちの上限まで応答なし
-        EX->>PV: 配布物を読まない HTML で理由を出す
+        EX->>PV: 配布物を読み込まない HTML で理由を出す
     expected:
       - パネルにバージョンを決められない描けない理由と「リロード」のボタンがある
       - 配布物の要求が 0 件
@@ -288,7 +288,7 @@ flows:
         description: 正常系と同じ。タグ一覧の代役は呼ばれた回数を数える
     flow: |-
       sequenceDiagram
-        participant U as 文書を書く人
+        participant U as 文書の作成者
         participant EX as 拡張機能
         U->>EX: mdmark.openPreviewToSide（executeCommand）
         EX->>EX: Markdown でないので何もしない
@@ -306,26 +306,26 @@ flows:
         description: 正常系と同じ。配布物を配る手元のサーバーは、このブランチでビルドした `diffModes` を持つ配布物を配る。拡張機能と Webview の間のメッセージを記録する
     flow: |-
       sequenceDiagram
-        participant U as 文書を書く人
+        participant U as 文書の作成者
         participant EX as 拡張機能
         participant PV as Webview
         U->>EX: mdmark.openPreviewToSide（差分ビューの変更後の側）
-        EX->>EX: TabInputTextDiff の original・modified を読む
+        EX->>EX: TabInputTextDiff の original・modified を読み込む
         EX->>PV: 横の列に差分のパネルを開き HTML を入れる
         PV->>EX: ready
         EX->>PV: render（変更後の全文・previous に変更前の全文）
         PV->>PV: mount（diffSource・diffMode: blocks）
         PV->>EX: rendered
     expected:
-      - パネルの題が `差分プレビュー guide.md` で、`ViewColumn.Beside` に開く
+      - パネルのタイトルが `差分プレビュー guide.md` で、`ViewColumn.Beside` に開く
       - '`render` の `markdown` が変更後の全文、`previous` がコミットした時点の全文'
-      - Webview の本文で、追加した段落が `div.mdmark-diff-block[data-kind="add"]`、削除した段落が `div.mdmark-diff-block[data-kind="del"]` にあり、「変更を見る」が無い
+      - Webview の本文で、追加した段落が `div.mdmark-diff-block[data-kind="add"]`、削除した段落が `div.mdmark-diff-block[data-kind="del"]` にあり、「変更を表示」が無い
       - 同じ `guide.md` を差分でない普通のエディタから開いたプレビューとは別のパネルになる
     test: test_normal_when_opened_from_diff_view
     refs:
       - dev/設計書/シナリオ/単一ユースケース/差分ビューの変更をプレビューで見る#scenarios[正常シナリオ]
   - name: 正常系（コミットの差分から開く）
-    summary: 両側が `git:` の URI の差分ビューでも、両方の内容を読んで差分のパネルを開く
+    summary: 両側が `git:` の URI の差分ビューでも、両方の内容を読み込んで差分のパネルを開く
     setup:
       - name: コミットの差分を開いたワークスペース
         description: Git のリポジトリで `guide.md` を 2 回コミットし、タイムラインから 2 つのコミットの差分ビューを開いた状態
@@ -334,24 +334,24 @@ flows:
         description: 正常系（差分ビューから開く）と同じ
     flow: |-
       sequenceDiagram
-        participant U as 文書を書く人
+        participant U as 文書の作成者
         participant EX as 拡張機能
         participant PV as Webview
         U->>EX: mdmark.openPreviewToSide
-        EX->>EX: git: の original・modified を openTextDocument で読む
+        EX->>EX: git: の original・modified を openTextDocument で読み込む
         EX->>PV: 差分のパネルを開く
         PV->>EX: ready
         EX->>PV: render（後のコミットの全文・previous に前のコミットの全文）
         PV->>EX: rendered
     expected:
-      - パネルの題が `差分プレビュー guide.md`
+      - パネルのタイトルが `差分プレビュー guide.md`
       - Webview の本文に 2 つのコミットの間で変えたブロックだけが `mdmark-diff-block` で出る
       - 拡張機能が Git のコマンドを実行していない（子プロセスを作らない）
     test: test_normal_when_commit_diff
     refs:
       - dev/設計書/シナリオ/単一ユースケース/差分ビューの変更をプレビューで見る#scenarios[正常シナリオ（コミットの差分）]
   - name: 異常系（差分に対応しないバージョン）
-    summary: 差分のパネルで読んだ配布物が `blocks` に対応しないとき、描けない理由と「リロード」を出す
+    summary: 差分のパネルで読み込んだ配布物が `blocks` に対応しないとき、描けない理由と「リロード」を出す
     setup:
       - name: 差分を持つワークスペース
         description: 正常系（差分ビューから開く）と同じ。`mdmark.version` を `v0.8.0` にする
@@ -359,7 +359,7 @@ flows:
         description: 配布物を配る手元のサーバーは、`@v0.8.0` に `diffModes` を持たない配布物を配る
     flow: |-
       sequenceDiagram
-        participant U as 文書を書く人
+        participant U as 文書の作成者
         participant EX as 拡張機能
         participant PV as Webview
         U->>EX: mdmark.openPreviewToSide（差分ビュー）
@@ -383,10 +383,10 @@ flows:
       - name: 設定ファイル
         description: ワークスペースの `mdmark.config.yaml` の `assets.root` が `assets`
       - name: Mock
-        description: '正常系と同じ。音声と動画の再生は、`inspectPreview` に `play: true` を渡して、Webview の要素の `play()` を呼ばせる'
+        description: '正常系と同じ。音声と動画の再生は、`inspectPreview` に `play: true` を指定して、Webview の要素の `play()` を呼ばせる'
     flow: |-
       sequenceDiagram
-        participant U as 文書を書く人
+        participant U as 文書の作成者
         participant EX as 拡張機能
         participant PV as Webview
         U->>EX: mdmark.openPreviewToSide
@@ -397,14 +397,14 @@ flows:
         PV->>PV: src を替える
     expected:
       - '`demo.mp3`・`demo.mp4` の要素の `src` が `docs/media/` の、`intro.mp3` の要素の `src` が `assets/media/intro.mp3` の `asWebviewUri` の URL'
-      - '`play()` の 1 秒後に、`demo.mp4` の映像の `currentTime` が 0.5 秒以上進む。`demo.mp3` と `intro.mp3` は `readyState` が 4 で、再生できない動画・音声の知らせに替わっていない（Webview は音声の `play()` に利用者の操作を求めるため、音声は読み込めたことで確かめる）'
+      - '`play()` の 1 秒後に、`demo.mp4` の映像の `currentTime` が 0.5 秒以上進む。`demo.mp3` と `intro.mp3` は `readyState` が 4 で、再生できない動画・音声の通知に替わっていない（Webview は音声の `play()` に利用者の操作を求めるため、音声は読み込めたことで確認する）'
       - Webview の HTML の CSP が `media-src` を持つ
     test: test_normal_when_relative_media
     refs:
       - dev/設計書/シナリオ/単一ユースケース/プレビューのリンクと画像を開く#scenarios[正常シナリオ（相対パスの動画・音声）]
       - dev/設計書/シナリオ/単一ユースケース/プレビューのリンクと画像を開く#scenarios[正常シナリオ（アセットのルートの動画・音声）]
   - name: 異常系（プレビューで再生できない形式）
-    summary: 再生できない動画・音声を知らせの枠に替え、既定のアプリで開くリンクを出す
+    summary: 再生できない動画・音声を通知の枠に替え、既定のアプリで開くリンクを出す
     setup:
       - name: 再生できない形式を持つワークスペース
         description: '`docs/guide.md` が相対パスで `media/voice.m4a` と `media/clip.webm` を指し、各ファイルは実在する'
@@ -412,18 +412,18 @@ flows:
         description: 正常系と同じ。`vscode.env.openExternal` を記録するものに差し替える
     flow: |-
       sequenceDiagram
-        participant U as 文書を書く人
+        participant U as 文書の作成者
         participant EX as 拡張機能
         participant PV as Webview
         U->>EX: mdmark.openPreviewToSide
         EX-->>PV: render と assetsResolved
         PV->>PV: 音声・動画の要素が error になる
-        PV->>PV: 要素を知らせの枠と「既定のアプリで開く」に替える
+        PV->>PV: 要素を通知の枠と「既定のアプリで開く」に替える
         U->>PV: 既定のアプリで開くを押す
         PV->>EX: openAsset（media/voice.m4a）
         EX->>EX: openExternal（docs/media/voice.m4a の file の URI）
     expected:
-      - 2 つの要素の場所に、プレビューで再生できないことを示す知らせの枠があり、それぞれ「既定のアプリで開く」のリンクを持つ
+      - 2 つの要素の場所に、プレビューで再生できないことを示す通知の枠があり、それぞれ「既定のアプリで開く」のリンクを持つ
       - リンクを押すと、`openExternal` が `docs/media/voice.m4a` の `file:` の URI で 1 回呼ばれる
       - 他の本文は描かれている
     test: test_error_when_unsupported_media
@@ -433,12 +433,12 @@ flows:
     summary: CSP を広げずに、範囲の `ts` をページの nonce を付けた `script` 要素で動かす
     setup:
       - name: 見本のワークスペース
-        description: '`<!-- html -->` の範囲に `html`・`css`・`ts` のコードブロックを 1 つずつ置いた Markdown と、`features.html-scripts` を `true`、`html-scripts.url` を手元のサーバーの URL にした `mdmark.config.yaml` を置いたフォルダ'
+        description: '`<!-- html -->` の範囲に `html`・`css`・`ts` のコードブロックを 1 つずつ配置した Markdown と、`features.html-scripts` を `true`、`html-scripts.url` を手元のサーバーの URL にした `mdmark.config.yaml` を配置したフォルダ'
       - name: Mock
         description: 正常系と同じ。加えて、範囲の `ts` の変換のライブラリ（@babel/standalone 8.1.1）を配布物と同じ手元のサーバーから配る
     flow: |-
       sequenceDiagram
-        participant U as 文書を書く人
+        participant U as 文書の作成者
         participant EX as 拡張機能
         participant PV as Webview
         U->>EX: mdmark.openPreviewToSide
@@ -447,26 +447,26 @@ flows:
         PV->>PV: mount で描き、範囲の関数を nonce を付けた script 要素で動かす
         PV->>EX: rendered
     expected:
-      - 範囲の箱の背景が `css` の色で、箱を押すと根の要素が class `is-open` を持つ
+      - 範囲のノードの背景が `css` の色で、ノードを押すと根の要素が class `is-open` を持つ
       - Webview の HTML の CSP が制約「CSP」のとおりで、`script-src` に `blob:`・`'unsafe-inline'`・`'unsafe-eval'` が無い
       - CSP の違反が 0 件
     test: test_normal_when_range_scripts
     refs:
       - dev/設計書/シナリオ/単一ユースケース/VSCodeでプレビューを開く#scenarios[正常シナリオ（範囲のスクリプトと CSS）]
   - name: 正常系（取り込む文書を描く）
-    summary: include のマーカーの取り込み先をワークスペースから読んで渡し、プレビューに描かせる
+    summary: include のマーカーの取り込み先をワークスペースから読み込んで指定し、プレビューに描かせる
     setup:
       - name: 取り込みを持つワークスペース
         description: '`docs/guide.md` が `<!-- include: 共通/手順.md#実行 -->` と `<!-- include: missing.md -->` を持ち、`docs/共通/手順.md` が `## 準備`・`## 実行` を持つフォルダ'
       - name: Mock
-        description: 正常系と同じ。Webview へ送ったメッセージを記録する
+        description: 正常系と同じ。Webview へ送信したメッセージを記録する
     flow: |-
       sequenceDiagram
-        participant U as 文書を書く人
+        participant U as 文書の作成者
         participant EX as 拡張機能
         participant PV as Webview
         U->>EX: mdmark.openPreviewToSide
-        EX->>EX: include の取り込み先を workspace.fs で読む
+        EX->>EX: include の取り込み先を workspace.fs で読み込む
         EX->>PV: render（全文・設定・theme・includes）
         PV->>EX: rendered
     expected:
@@ -477,19 +477,19 @@ flows:
     refs:
       - dev/設計書/シナリオ/単一ユースケース/VSCodeでプレビューを開く#scenarios[正常シナリオ（取り込む文書を描く）]
   - name: 正常系（設定の aliases のエイリアス）
-    summary: 設定の `aliases` から作ったエイリアスを `render` で送り、`mount` の `opts.aliases` に渡して下線とツールチップを出す
+    summary: 設定の `aliases` から作ったエイリアスを `render` で送信し、`mount` の `opts.aliases` に指定して下線とツールチップを出す
     setup:
       - name: エイリアスを持つワークスペース
-        description: '`mdmark.config.yaml` の `aliases` に、`glossary.yaml` の用語の列（名前・別名・意味）を指す用語のエイリアスの行を 1 つ書き、`guide.md` の本文に `レンダリング` を置いたフォルダ。`glossary.yaml` は名前 `描画`・別名 `レンダリング`・意味 1 文の用語を 1 つ持つ'
+        description: '`mdmark.config.yaml` の `aliases` に、`glossary.yaml` の用語の列（名前・別名・意味）を指す用語のエイリアスの行を 1 つ記載し、`guide.md` の本文に `レンダリング` を配置したフォルダ。`glossary.yaml` は名前 `描画`・別名 `レンダリング`・意味 1 文の用語を 1 つ持つ'
       - name: Mock
-        description: 正常系と同じ。Webview へ送ったメッセージを記録する
+        description: 正常系と同じ。Webview へ送信したメッセージを記録する
     flow: |-
       sequenceDiagram
-        participant U as 文書を書く人
+        participant U as 文書の作成者
         participant EX as 拡張機能
         participant PV as Webview
         U->>EX: mdmark.openPreviewToSide
-        EX->>EX: 重ねた設定の aliases の行が指す glossary.yaml を読み、エイリアスを作る
+        EX->>EX: 重ねた設定の aliases の行が指す glossary.yaml を読み込み、エイリアスを作る
         EX->>PV: render（全文・設定・theme・aliases）
         PV->>PV: mount（opts.aliases）
         PV->>EX: rendered
@@ -501,55 +501,55 @@ flows:
     refs:
       - dev/設計書/シナリオ/単一ユースケース/VSCodeでプレビューを開く#scenarios[正常シナリオ（設定の aliases のエイリアス）]
   - name: 異常系（aliases の YAML が無い・行を除いて描く）
-    summary: '`aliases` の行の `paths` に当たるファイルが無いとき、その行を除いたエイリアスで描き、出力チャネルに警告を記録する'
+    summary: '`aliases` の行の `paths` に該当するファイルが無いとき、その行を除いたエイリアスで描き、出力チャネルに警告を記録する'
     setup:
       - name: エイリアスを持つワークスペース
-        description: 正常系（設定の aliases のエイリアス）の `aliases` の 2 行目に、`paths` が `missing/*.yaml`（当たるファイルが無い）の行を足したもの
+        description: 正常系（設定の aliases のエイリアス）の `aliases` の 2 行目に、`paths` が `missing/*.yaml`（該当するファイルが無い）の行を追加したもの
       - name: Mock
-        description: 正常系と同じ。出力チャネルへ書いた行を記録する
+        description: 正常系と同じ。出力チャネルへ書き込んだ行を記録する
     flow: |-
       sequenceDiagram
-        participant U as 文書を書く人
+        participant U as 文書の作成者
         participant EX as 拡張機能
         participant PV as Webview
         U->>EX: mdmark.openPreviewToSide
-        EX->>EX: aliases の 2 行目に当たるファイルが無い
-        EX->>EX: 出力チャネルに警告を書く
+        EX->>EX: aliases の 2 行目に該当するファイルが無い
+        EX->>EX: 出力チャネルに警告を記載する
         EX->>PV: render（1 行目のエイリアス）
         PV->>EX: rendered
     expected:
       - '`render` の `aliases` が 1 行目の用語だけを持つ'
       - '出力チャネルに `mdmark.config.yaml:aliases[1].paths: alias_no_files:` で始まる警告が 1 行ある'
-      - '`configError` を送らない'
+      - '`configError` を送信しない'
     test: test_error_when_aliases_missing
     refs:
       - dev/設計書/シナリオ/単一ユースケース/VSCodeでプレビューを開く#scenarios[異常シナリオ（aliases の YAML が無い）]
   - name: 正常系（mermaid のコードブロック）
-    summary: CSP を `mermaid.url` の配信元だけ広げ、mermaid の本体と chunk を読んで、プレビューで mermaid の図を描く
+    summary: CSP を `mermaid.url` の配信元だけ広げ、mermaid の本体と chunk を読み込んで、プレビューで mermaid の図を描く
     setup:
       - name: 見本のワークスペース
-        description: 言語 `mermaid` の flowchart のコードブロックを 1 つ持つ Markdown と、`mermaid.url` に手元の配信の URL を書いた設定ファイルを置いたフォルダ
+        description: 言語 `mermaid` の flowchart のコードブロックを 1 つ持つ Markdown と、`mermaid.url` に手元の配信の URL を記載した設定ファイルを配置したフォルダ
       - name: Mock
         description: 正常系と同じ。加えて、mermaid の本体と chunk を、手元の配信が jsDelivr と同じパス（`/npm/mermaid@12.3.0/dist/`）で配る（既定の URL は jsDelivr の origin のため、手元の代役に差し替えられない）
     flow: |-
       sequenceDiagram
-        actor W as 文書を書く人
+        actor W as 文書の作成者
         participant EX as 拡張機能
         participant PV as プレビュー（Webview）
         participant CDN as jsDelivr
         W->>EX: mdmark.openPreviewToSide
-        EX->>PV: 横の列にパネルを開き、Markdown の全文と設定を送る
-        PV->>CDN: mermaid の本体と chunk を読む
+        EX->>PV: 横の列にパネルを開き、Markdown の全文と設定を送信する
+        PV->>CDN: mermaid の本体と chunk を読み込む
         PV->>PV: mount で描く
         PV-->>W: 図の枠に入った mermaid の図
     expected:
-      - パネルの mermaid のコードブロックの場所に `figure.mdmark-diagram[data-diagram="mermaid"]` があり、SVG を持ち、知らせの枠が無い
+      - パネルの mermaid のコードブロックの場所に `figure.mdmark-diagram[data-diagram="mermaid"]` があり、SVG を持ち、通知の枠が無い
       - Webview の HTML の CSP の `script-src` に `mermaid.url` の origin があり、`blob:`・`'unsafe-inline'`・`'unsafe-eval'` が無い
       - CSP の違反が 0 件（テストのときに Webview が数える `securitypolicyviolation` の件数）
     test: test_normal_when_mermaid
-lead: 文書を書く人が、開いている Markdown の横の列か同じ列に、mdmark で描くプレビューのパネルを開く。拡張機能は読む mdmark の版を決め、Webview に jsDelivr の配布物を読ませて描かせる。差分ビューから開いたときは、変更前と変更後の Markdown を読み、変更後の文書のブロックを色分けして描かせる。
+lead: 文書の作成者が、開いている Markdown の横の列か同じ列に、mdmark で描くプレビューのパネルを開く。拡張機能は読み込む mdmark のバージョンを決め、Webview に jsDelivr の配布物を読み込ませて描かせる。差分ビューから開いたときは、変更前と変更後の Markdown を読み込み、変更後の文書のブロックを色分けして描かせる。
 idempotent: true
-side_effects: Webview のパネルを開く。`mdmark.version` が `latest` のとき GitHub のタグ一覧を 1 回取り、選んだ版を拡張機能の `globalState` の `mdmark.lastVersion` に書く。差分ビューのときは、変更前と変更後の文書を `workspace.openTextDocument` で読む。設定に `aliases` があるときは、その行の `paths` の YAML を読む。Markdown・設定ファイル・Git のリポジトリは書き換えない
+side_effects: Webview のパネルを開く。`mdmark.version` が `latest` のとき GitHub のタグ一覧を 1 回取り、選んだバージョンを拡張機能の `globalState` の `mdmark.lastVersion` に記載する。差分ビューのときは、変更前と変更後の文書を `workspace.openTextDocument` で読み込む。設定に `aliases` があるときは、その行の `paths` の YAML を読み込む。Markdown・設定ファイル・Git のリポジトリは書き換えない
 callers:
   - dev/設計書/シナリオ/単一ユースケース/VSCodeでプレビューを開く#
   - dev/設計書/シナリオ/単一ユースケース/プレビューをVSCodeのテーマに合わせる#
@@ -561,7 +561,7 @@ request:
     required: false
     default: なし（アクティブなエディタの文書。mdmark のプレビューにフォーカスがあるときはそのプレビューの Markdown）
     location: argument
-    description: プレビューを開く Markdown。エディタのタイトルのボタンから呼ぶと VS Code がそのエディタの文書を渡す
+    description: プレビューを開く Markdown。エディタのタイトルのボタンから呼ぶと VS Code がそのエディタの文書を指定する
     constraints: '`languageId` が `markdown` の文書'
 response:
   - name: '-'
@@ -569,12 +569,12 @@ response:
     description: パネルを開き、Webview に描かせる HTML を入れたら解決する（描き終わりを待たない）
 exceptions:
   - name: なし（正常終了）
-    condition: パネルを開き、決めた版の mdmark で文書を描く
+    condition: パネルを開き、決めたバージョンの mdmark で文書を描く
   - name: なし（描けない理由・オフライン）
-    condition: Webview が配布物を読めず、配布物の URL への確かめの要求も応答が無いか 404 以外の失敗を返す
+    condition: Webview が配布物を読み込めず、配布物の URL への確認の要求も応答が無いか 404 以外の失敗を返却する
     notes: 例外を投げず、パネルに描けない理由と「リロード」を出す
   - name: なし（描けない理由・指定したバージョンが無い）
-    condition: 配布物の URL が 404 を返す
+    condition: 配布物の URL が 404 を返却する
     notes: 同上
   - name: なし（描けない理由・バージョンを決められない）
     condition: '`mdmark.version` が `latest` で、タグ一覧を取れず、`mdmark.lastVersion` も無い'
@@ -584,68 +584,68 @@ exceptions:
     notes: 何もしない。コマンドは `editorLangId == markdown` か mdmark のプレビューにフォーカスがあるときだけ、エディタのタイトル・ショートカット・コマンドパレットに出す（`package.json` の `when`）
   - name: なし（ワークスペースの外の画像）
     condition: 本文の画像が `localResourceRoots` の外を指す
-    notes: Webview が読まず `alt` が出る。他の本文は描く
-  - name: なし（aliases の YAML を使えない）
-    condition: '`aliases` の行の `paths` に当たるファイルが無い・YAML として読めない・行やレコードが `buildAliases` で使えない'
-    notes: 例外を投げず、使えない行・レコードを除いたエイリアスで描き、出力チャネルに警告を書く。`configError` は送らない
+    notes: Webview が読み込まず `alt` が出る。他の本文は描く
+  - name: なし（aliases の YAML を使用できない）
+    condition: '`aliases` の行の `paths` に該当するファイルが無い・YAML として読み込めない・行やレコードが `buildAliases` で使用できない'
+    notes: 例外を投げず、使用できない行・レコードを除いたエイリアスで描き、出力チャネルに警告を記載する。`configError` は送信しない
   - name: なし（描けない理由・差分に対応しないバージョン）
-    condition: 差分のパネルで、読んだ配布物が `diffModes` を持たないか `blocks` を含まない
+    condition: 差分のパネルで、読み込んだ配布物が `diffModes` を持たないか `blocks` を含まない
     notes: 変更後の文書だけを描いた表示は出さない。Markdown と差分ビューは変えない
 constraints:
   - item: 配布物の URL
-    constraint: '`https://cdn.jsdelivr.net/gh/shuhei1101/mdmark@{版}/dist/index.js` と `.../dist/index.css`。版なしの URL と `@latest` は使わない'
+    constraint: '`https://cdn.jsdelivr.net/gh/shuhei1101/mdmark@{版}/dist/index.js` と `.../dist/index.css`。バージョンなしの URL と `@latest` は使用しない'
     notes: dev/設計書/外部API/jsDelivr
   - item: バージョンの決め方
-    constraint: '`mdmark.version` が `latest` のときは GitHub の `GET /repos/shuhei1101/mdmark/tags?per_page=100` を header `Link` の `rel="next"` が無くなるまで辿って全てのページを読み、その名前から `^v\d+\.\d+\.\d+$` に合うものだけを拾い、数で比べて最大を選ぶ（`vscode-` で始まるタグは拾わない）。`latest` でないときは書いた版をそのまま使い、タグ一覧を取らない。タグ一覧はプレビューを開くときとリロードしたときだけ取り、描き直すたびには取らない'
+    constraint: '`mdmark.version` が `latest` のときは GitHub の `GET /repos/shuhei1101/mdmark/tags?per_page=100` を header `Link` の `rel="next"` が無くなるまで辿って全てのページを読み込み、その名前から `^v\d+\.\d+\.\d+$` に合うものだけを取得し、数で比べて最大を選ぶ（`vscode-` で始まるタグは取得しない）。`latest` でないときは記載したバージョンをそのまま使用し、タグ一覧を取らない。タグ一覧はプレビューを開くときとリロードしたときだけ取り、再描画するたびには取らない'
     notes: dev/設計書/外部API/GitHub
   - item: タグ一覧の待ち
-    constraint: 待ちの上限は全てのページを読み終えるまでの合計にかけ、超えたら要求を打ち切る。上限を超えたとき・ネットワークのエラー・200 以外（上限を超えた 403・429 を含む）・合うタグが 0 件のときは、取れなかったものとして前回のバージョンを使う。再試行しない
+    constraint: 待ちの上限は全てのページを読み込み終えるまでの合計にかけ、超えたら要求を打ち切る。上限を超えたとき・ネットワークのエラー・200 以外（上限を超えた 403・429 を含む）・合うタグが 0 件のときは、取れなかったものとして前回のバージョンを使用する。再試行しない
     decided_by: dev/設計書/非機能要件/非機能要件#requirements[タグ一覧を取る待ちの上限]
   - item: 前回のバージョン
-    constraint: タグ一覧から選んだ版を `globalState` の `mdmark.lastVersion` に書き、取れないときに読む。`latest` でない版を書いたときは書き換えない
+    constraint: タグ一覧から選んだバージョンを `globalState` の `mdmark.lastVersion` に記載し、取れないときに読み込む。`latest` でないバージョンを記載したときは書き換えない
   - item: パネル
-    constraint: 'viewType `mdmark.preview`、タブの題 `プレビュー {ファイル名}`。`openPreviewToSide` は `ViewColumn.Beside`、`openPreview` は `ViewColumn.Active` に開く。`enableScripts: true`・`retainContextWhenHidden: false`。`localResourceRoots` は Markdown を含むワークスペースのフォルダ（ワークスペースの外の Markdown は Markdown のフォルダ）と、拡張機能の `media/`'
-    notes: 背面に回したパネルは Webview が作り直され、`ready` を受けて最後の全文を送り直し、背面に回す前のスクロールの位置へ戻す（プレビューを描き直す.ts）
+    constraint: 'viewType `mdmark.preview`、タブのタイトル `プレビュー {ファイル名}`。`openPreviewToSide` は `ViewColumn.Beside`、`openPreview` は `ViewColumn.Active` に開く。`enableScripts: true`・`retainContextWhenHidden: false`。`localResourceRoots` は Markdown を含むワークスペースのフォルダ（ワークスペースの外の Markdown は Markdown のフォルダ）と、拡張機能の `media/`'
+    notes: 背面に回したパネルは Webview が再作成され、`ready` を受けて最後の全文をもう一度送信し、背面に回す前のスクロールの位置へ戻す（プレビューを再描画する.ts）
   - item: CSP
-    constraint: "`default-src 'none'; script-src 'nonce-{nonce}' {配布物の origin} {libraries の origin} {html-scripts.url の origin} {mermaid.url の origin} {cspSource}; style-src {配布物の origin} {cspSource} 'unsafe-inline'; img-src {cspSource} https: data:; media-src {cspSource} https: data:; font-src {配布物の origin} {cspSource}; connect-src {配布物の origin}`。`{cspSource}` は `Webview.cspSource`、nonce は HTML を入れるたびに作り直す。`libraries`・`html-scripts.url`・`mermaid.url` の origin は設定ファイルの `http:`・`https:` の URL の origin だけ（`html-scripts.url`・`mermaid.url` を書かないときは既定の jsDelivr の origin）。mermaid が図の SVG に入れるインラインの `style` は、今の `style-src 'unsafe-inline'` で受ける。範囲の `ts`・`js` は、`mount` がページの `script[nonce]` の nonce を付けた `script` 要素で動かすため、`blob:`・`'unsafe-inline'`・`'unsafe-eval'` を足さない。束ねていない名前のアイコンを読む `https://cdn.jsdelivr.net` を `script-src` と `connect-src` に含める"
-    notes: "図とヒントの部品が HTML に `style` 属性を書くため `style-src` に `'unsafe-inline'` が要る（PoC #70）。スクリプトは nonce で絞る"
+    constraint: "`default-src 'none'; script-src 'nonce-{nonce}' {配布物の origin} {libraries の origin} {html-scripts.url の origin} {mermaid.url の origin} {cspSource}; style-src {配布物の origin} {cspSource} 'unsafe-inline'; img-src {cspSource} https: data:; media-src {cspSource} https: data:; font-src {配布物の origin} {cspSource}; connect-src {配布物の origin}`。`{cspSource}` は `Webview.cspSource`、nonce は HTML を入れるたびに再作成する。`libraries`・`html-scripts.url`・`mermaid.url` の origin は設定ファイルの `http:`・`https:` の URL の origin だけ（`html-scripts.url`・`mermaid.url` を記載しないときは既定の jsDelivr の origin）。mermaid が図の SVG に入れるインラインの `style` は、今の `style-src 'unsafe-inline'` で受ける。範囲の `ts`・`js` は、`mount` がページの `script[nonce]` の nonce を付けた `script` 要素で動かすため、`blob:`・`'unsafe-inline'`・`'unsafe-eval'` を追加しない。まとめていない名前のアイコンを読み込む `https://cdn.jsdelivr.net` を `script-src` と `connect-src` に含める"
+    notes: "図とヒントの部品が HTML に `style` 属性を記載するため `style-src` に `'unsafe-inline'` が要る（PoC #70）。スクリプトは nonce で絞る"
   - item: 相対パスの基準
-    constraint: Webview の HTML に `<base href="{Markdown のフォルダの asWebviewUri}/">` を置き、本文の相対パスの画像を Markdown のフォルダから読む。`localResourceRoots` の外の画像は Webview が読まず、`alt` が出る
+    constraint: Webview の HTML に `<base href="{Markdown のフォルダの asWebviewUri}/">` を配置し、本文の相対パスの画像を Markdown のフォルダから読み込む。`localResourceRoots` の外の画像は Webview が読み込まず、`alt` が出る
   - item: Webview とのメッセージ
-    constraint: '拡張機能 → Webview: `{ type: "render", markdown, previous?, config, theme, includes, aliases? }`（`aliases` は制約「エイリアス」のエイリアスの配列で、設定に `aliases` が無いときは持たない、`includes` は制約「取り込む文書」の取り込む文書の表、`previous` は差分のパネルだけが持つ変更前の Markdown、`config` は `{ features?, libraries?, "html-scripts"?, "side-toc"?, labels?, mermaid?, colorTheme?, colorScheme? }`、`theme` は `mdmark.preview.theme` の値）・`{ type: "scrollToLine", line }`・`{ type: "configError", path, line?, settingKey? }`（`line` と `settingKey` はどちらか一方）・`{ type: "configOk" }`・`{ type: "theme", href }`・`{ type: "assetsResolved", id, urls }`（`urls` は `paths` の各パスから Webview の URL か `null` を引くオブジェクト）・`{ type: "inspect", id, selector }`・`{ type: "axe", id }`（どちらもテストのときだけ）。Webview → 拡張機能: `{ type: "ready" }`（配布物を読み終えた）・`{ type: "rendered" }`（`mount` か `update` を呼び終えた）・`{ type: "loadFailed", reason }`（`reason` は `offline`・`versionMissing`・`diffUnsupported`）・`{ type: "openLink", href }`・`{ type: "revealLine", line }`・`{ type: "reload" }`・`{ type: "openConfig" }`・`{ type: "resolveAssets", id, paths }`（制約「動画・音声とアセットのルートの解決」）・`{ type: "openAsset", path }`（制約「再生できない動画・音声」）・`{ type: "inspected", id, elements }`（テストのときだけ。`elements` は `selector` に当たる要素ごとの `{ tagName, className, attributes, text, naturalWidth?, top, height }`。`top` は見えている範囲の先頭からの位置、`height` は高さで、単位は px）・`{ type: "axed", id, violations }`（テストのときだけ。`violations` は axe-core の違反ごとの `{ id, impact, targets }`）。`render` は初回と `config` か `aliases` が変わったときは `mount`（前の描画は `destroy`）、それ以外は戻り値の `update` で描く'
+    constraint: '拡張機能 → Webview: `{ type: "render", markdown, previous?, config, theme, includes, aliases? }`（`aliases` は制約「エイリアス」のエイリアスの配列で、設定に `aliases` が無いときは持たない、`includes` は制約「取り込む文書」の取り込む文書の表、`previous` は差分のパネルだけが持つ変更前の Markdown、`config` は `{ features?, libraries?, "html-scripts"?, "side-toc"?, labels?, mermaid?, colorTheme?, colorScheme? }`、`theme` は `mdmark.preview.theme` の値）・`{ type: "scrollToLine", line }`・`{ type: "configError", path, line?, settingKey? }`（`line` と `settingKey` はどちらか一方）・`{ type: "configOk" }`・`{ type: "theme", href }`・`{ type: "assetsResolved", id, urls }`（`urls` は `paths` の各パスから Webview の URL か `null` を参照するオブジェクト）・`{ type: "inspect", id, selector }`・`{ type: "axe", id }`（どちらもテストのときだけ）。Webview → 拡張機能: `{ type: "ready" }`（配布物を読み込み終えた）・`{ type: "rendered" }`（`mount` か `update` を呼び終えた）・`{ type: "loadFailed", reason }`（`reason` は `offline`・`versionMissing`・`diffUnsupported`）・`{ type: "openLink", href }`・`{ type: "revealLine", line }`・`{ type: "reload" }`・`{ type: "openConfig" }`・`{ type: "resolveAssets", id, paths }`（制約「動画・音声とアセットのルートの解決」）・`{ type: "openAsset", path }`（制約「再生できない動画・音声」）・`{ type: "inspected", id, elements }`（テストのときだけ。`elements` は `selector` に該当する要素ごとの `{ tagName, className, attributes, text, naturalWidth?, top, height }`。`top` は見えている範囲の先頭からの位置、`height` は高さで、単位は px）・`{ type: "axed", id, violations }`（テストのときだけ。`violations` は axe-core の違反ごとの `{ id, impact, targets }`）。`render` は初回と `config` か `aliases` が変わったときは `mount`（前の描画は `destroy`）、それ以外は戻り値の `update` で描く'
     notes: '`line` は 0 始まりの元の行番号（文書をHTML文字列にする.ts の制約「元の行番号」）'
   - item: 描けない理由の見分け方
-    constraint: Webview は `import()` が失敗したら、同じ `index.js` の URL を `fetch` の `HEAD` で確かめる。404 なら `versionMissing`、それ以外（ネットワークのエラーを含む）は `offline` を拡張機能へ知らせ、パネルに描けない理由を出す。バージョンを決められないときは、拡張機能が配布物を読まない HTML で理由を出す
+    constraint: Webview は `import()` が失敗したら、同じ `index.js` の URL を `fetch` の `HEAD` で確認する。404 なら `versionMissing`、それ以外（ネットワークのエラーを含む）は `offline` を拡張機能へ通知し、パネルに描けない理由を出す。バージョンを決められないときは、拡張機能が配布物を読み込まない HTML で理由を出す
   - item: 配色
-    constraint: '`mdmark.preview.theme` が `light`・`dark` のときは、Webview の描く先の要素を包む要素に `mdmark-theme-light`・`mdmark-theme-dark` を付ける。`auto` のときは付けず、設定ファイルの `colorScheme` を `config` で渡し、無ければ VS Code が `body` に付ける class に任せる。`light`・`dark` のときは `config` から `colorScheme` を除く。明暗は、文書の page のマーカー → `mdmark.preview.theme`（`auto` 以外）→ 設定ファイルの `colorScheme` → VS Code のテーマの順に決まる（確認ログ）。設定を変えると開いているパネルへ `render` を送り直す'
+    constraint: '`mdmark.preview.theme` が `light`・`dark` のときは、Webview の描く先の要素を包む要素に `mdmark-theme-light`・`mdmark-theme-dark` を付ける。`auto` のときは付けず、設定ファイルの `colorScheme` を `config` で指定し、無ければ VS Code が `body` に付ける class に任せる。`light`・`dark` のときは `config` から `colorScheme` を除く。明暗は、文書の page のマーカー → `mdmark.preview.theme`（`auto` 以外）→ 設定ファイルの `colorScheme` → VS Code のテーマの順に決まる（確認ログ）。設定を変えると開いているパネルへ `render` をもう一度送信する'
     notes: dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts の制約「配色の切り替え」
   - item: テストのときの差し替え
-    constraint: '`ExtensionContext.extensionMode` が `ExtensionMode.Test` のときだけ、環境変数 `MDMARK_VSCODE_DIST_BASE`（配布物の配信元）と `MDMARK_VSCODE_TAGS_URL`（タグ一覧の取得先）を読む。CSP の配布物の origin も差し替えた配信元の origin にする。それ以外のモードでは読まない。`ExtensionMode.Test` のときだけ、Webview の HTML に `inspect` を受ける処理を入れ、`activate` は開いているパネルへ `inspect` を送って `inspected` の `elements` を返す `inspectPreview(selector)` を戻り値で返す。同じく `axe` を送って `axed` の `violations` を返す `auditPreview()` も返す。Webview はテストのビルドが置いた axe-core を `axe` を受けたときだけ読む。Webview はテストのときだけ `document` の `securitypolicyviolation` を数え、`html` 要素の `data-mdmark-csp-violations` に件数を持つ。結合テストは Webview の DOM の期待値・アクセシビリティの違反・CSP の違反の件数（`inspectPreview("html")` の属性）をこの戻り値で確かめる'
+    constraint: '`ExtensionContext.extensionMode` が `ExtensionMode.Test` のときだけ、環境変数 `MDMARK_VSCODE_DIST_BASE`（配布物の配信元）と `MDMARK_VSCODE_TAGS_URL`（タグ一覧の取得先）を読み込む。CSP の配布物の origin も差し替えた配信元の origin にする。それ以外のモードでは読み込まない。`ExtensionMode.Test` のときだけ、Webview の HTML に `inspect` を受ける処理を入れ、`activate` は開いているパネルへ `inspect` を送信して `inspected` の `elements` を返却する `inspectPreview(selector)` を戻り値で返却する。同じく `axe` を送信して `axed` の `violations` を返却する `auditPreview()` も返却する。Webview はテストのビルドが配置した axe-core を `axe` を受けたときだけ読み込む。Webview はテストのときだけ `document` の `securitypolicyviolation` を数え、`html` 要素の `data-mdmark-csp-violations` に件数を持つ。結合テストは Webview の DOM の期待値・アクセシビリティの違反・CSP の違反の件数（`inspectPreview("html")` の属性）をこの戻り値で確認する'
     notes: dev/設計書/設定/VSCode拡張機能
   - item: 対応する VS Code
     constraint: '`engines.vscode` の下限より古い VS Code には入らない'
     decided_by: dev/設計書/非機能要件/非機能要件#requirements[対応する VS Code の版]
   - item: 差分ビューの判定
-    constraint: コマンドを呼んだとき、`window.tabGroups.activeTabGroup.activeTab` の入力が `TabInputTextDiff` で、コマンドに渡された `uri` がそのタブの `original` か `modified` と一致し（`uri` が無ければそのタブを使う）、`original`・`modified` の文書の `languageId` がどちらも `markdown` なら差分ビューとして扱う。当たらないときは、今のとおり 1 つの Markdown のプレビューを開く。差分ビューの変更前の側にフォーカスがあるときも、変更後の側を対象にする。複数ファイルの差分エディター（`TabInputTextDiff` でない入力）は差分ビューとして扱わない
-    notes: PoC で作業ツリー・ステージ・コミットの差分がどれも `TabInputTextDiff` で両側 `markdown` になることを確かめた（計画書）。複数ファイルの差分エディターは要件のスコープ外。ボタンとショートカットは今の `editorLangId == markdown` のまま差分ビューの両側に出る
+    constraint: コマンドを呼んだとき、`window.tabGroups.activeTabGroup.activeTab` の入力が `TabInputTextDiff` で、コマンドに指定された `uri` がそのタブの `original` か `modified` と一致し（`uri` が無ければそのタブを使用する）、`original`・`modified` の文書の `languageId` がどちらも `markdown` なら差分ビューとして扱う。該当しないときは、今のとおり 1 つの Markdown のプレビューを開く。差分ビューの変更前の側にフォーカスがあるときも、変更後の側を対象にする。複数ファイルの差分エディター（`TabInputTextDiff` でない入力）は差分ビューとして扱わない
+    notes: PoC で作業ツリー・ステージ・コミットの差分がどれも `TabInputTextDiff` で両側 `markdown` になることを確認した（計画書）。複数ファイルの差分エディターは要件のスコープ外。ボタンとショートカットは今の `editorLangId == markdown` のまま差分ビューの両側に出る
   - item: 差分のパネル
-    constraint: viewType は `mdmark.preview` のままで、タブの題は `差分プレビュー {変更後のファイル名}`。変更前と変更後の URI の組で持ち、同じ組のパネルが開いていれば作らずに表に出す。同じ変更後の URI の差分でないパネルとは別に持つ。`localResourceRoots`・相対パスの基準・設定ファイルの場所は、変更後の側が `file:` のときはそのファイル、`git:` のときはその URI の `path` のファイルを基準にする
-    notes: タブの題は確認ログの決定（A）
+    constraint: viewType は `mdmark.preview` のままで、タブのタイトルは `差分プレビュー {変更後のファイル名}`。変更前と変更後の URI の組で持ち、同じ組のパネルが開いていれば作らずに表に出す。同じ変更後の URI の差分でないパネルとは別に持つ。`localResourceRoots`・相対パスの基準・設定ファイルの場所は、変更後の側が `file:` のときはそのファイル、`git:` のときはその URI の `path` のファイルを基準にする
+    notes: タブのタイトルは確認ログの決定（A）
   - item: 差分の受け渡し
-    constraint: 拡張機能は `original`・`modified` の URI を `workspace.openTextDocument` で読み、`render` の `markdown` に変更後、`previous` に変更前の全文を入れる。Webview は `previous` を持つ `render` を受けたら、`revisions` が `modified`・`original` の 2 つをこの順に返し、`content` がそれぞれその時点の変更後・変更前の全文を返す `DiffSource` を作り、`docId` を `diff`、`diffMode` を `blocks` にして `mount` に渡す。`update` で描き直すときは、取り出し元が返す全文を先に書き換えてから `update` を呼ぶ
-    notes: 拡張機能は Git を呼ばず、`git:` の URI も VS Code の Git の機能が返す内容を使う（計画書）。`revisions` の `at` は描くたびの時刻で、`blocks` では出さない
+    constraint: 拡張機能は `original`・`modified` の URI を `workspace.openTextDocument` で読み込み、`render` の `markdown` に変更後、`previous` に変更前の全文を入れる。Webview は `previous` を持つ `render` を受けたら、`revisions` が `modified`・`original` の 2 つをこの順に返却し、`content` がそれぞれその時点の変更後・変更前の全文を返却する `DiffSource` を作り、`docId` を `diff`、`diffMode` を `blocks` にして `mount` に指定する。`update` で再描画するときは、取り出し元が返却する全文を先に書き換えてから `update` を呼ぶ
+    notes: 拡張機能は Git を呼ばず、`git:` の URI も VS Code の Git の機能が返却する内容を使用する（計画書）。`revisions` の `at` は描くたびの時刻で、`blocks` では出さない
   - item: 差分に対応しないバージョン
-    constraint: Webview は差分の `render` を受けたとき、読んだ配布物の `diffModes` が無いか `blocks` を含まなければ、`mount` を呼ばずに `loadFailed`（`diffUnsupported`）を知らせ、描けない理由 `読み込んだ mdmark（{バージョン}）は差分の表示に対応していません。設定 mdmark.version を差分の表示に対応したバージョンか latest に変更してから、リロードしてください。` と「リロード」を出す
-    notes: 判定はライブラリ本体の文書を描く.ts の制約「対応する差分の出し方」。文言は確認ログの決定（A）。書き方（`code` の位置）は画面設計
+    constraint: Webview は差分の `render` を受けたとき、読み込んだ配布物の `diffModes` が無いか `blocks` を含まなければ、`mount` を呼ばずに `loadFailed`（`diffUnsupported`）を通知し、描けない理由 `読み込んだ mdmark（{バージョン}）は差分の表示に対応していません。設定 mdmark.version を差分の表示に対応したバージョンか latest に変更してから、リロードしてください。` と「リロード」を出す
+    notes: 判定はライブラリ本体の文書を描く.ts の制約「対応する差分の出し方」。文言は確認ログの決定（A）。記載方法（`code` の位置）は画面設計
   - item: 動画・音声とアセットのルートの解決
-    constraint: '`mount` か `update` の後に、Webview は本文の `img` の `src`、`video`・`audio` の `src` と `poster` のうち相対パスのものを集め、`resolveAssets` で拡張機能に送る。拡張機能は、Markdown のフォルダを基準にしたファイル、無ければ設定ファイルの `assets.root` を基準にしたファイルがワークスペースの中にあれば、その `asWebviewUri` の URL（クエリとフラグメントは残す）を、どちらにも無ければ `null` を返す。Webview は URL を受け取った要素の属性を替え、`null` の要素は替えない。`localResourceRoots` に `assets.root` のフォルダを含める'
+    constraint: '`mount` か `update` の後に、Webview は本文の `img` の `src`、`video`・`audio` の `src` と `poster` のうち相対パスのものを集め、`resolveAssets` で拡張機能に送信する。拡張機能は、Markdown のフォルダを基準にしたファイル、無ければ設定ファイルの `assets.root` を基準にしたファイルがワークスペースの中にあれば、その `asWebviewUri` の URL（クエリとフラグメントは残す）を、どちらにも無ければ `null` を返却する。Webview は URL を受け取った要素の属性を替え、`null` の要素は替えない。`localResourceRoots` に `assets.root` のフォルダを含める'
     decided_by: dev/設計書/設定/VSCode拡張機能#settings[assets.root]
   - item: 再生できない動画・音声
-    constraint: '`video`・`audio` が `error` になったとき、要素を mdmark の知らせの枠の見た目の枠に替え、プレビューで再生できないことと、`openAsset` を送る「既定のアプリで開く」のリンクを出す。拡張機能は受け取ったパスを制約「動画・音声とアセットのルートの解決」と同じく解決し、ワークスペースの中のファイルだけを `vscode.env.openExternal` で開く'
+    constraint: '`video`・`audio` が `error` になったとき、要素を mdmark の通知の枠の外観の枠に替え、プレビューで再生できないことと、`openAsset` を送信する「既定のアプリで開く」のリンクを出す。拡張機能は受け取ったパスを制約「動画・音声とアセットのルートの解決」と同じく解決し、ワークスペースの中のファイルだけを `vscode.env.openExternal` で開く'
     notes: PoC 結果で、プレビューの Webview は AAC の音声と webm を再生できない。mp4・mov は映像だけが再生される
   - item: 取り込む文書
-    constraint: 開いている Markdown（差分のパネルは変更後の側）の include のマーカーの取り込み先を、インターフェース定義『文書をHTML文字列にする』の制約「取り込み」と同じパスの解き方で、Markdown のフォルダを基準に `workspace.fs` で読む（取り込んだ文書の中のマーカーもたどり、同じファイルは 1 回だけ読む）。開いているエディタの保存していない書き換えではなく、保存した中身を読む。設定ファイルのフォルダ（無ければ Markdown のフォルダ）の外のパス（書き出しと同じ範囲）と読めないファイルは表に入れず、そのマーカーの場所には mdmark が書き方の警告を出す。読んだ表を `render` の `includes` に入れ、Webview は `mount` の `opts.includes`（`update` は `options.includes`）に渡す
+    constraint: 開いている Markdown（差分のパネルは変更後の側）の include のマーカーの取り込み先を、インターフェース定義『文書をHTML文字列にする』の制約「取り込み」と同じパスの解き方で、Markdown のフォルダを基準に `workspace.fs` で読み込む（取り込んだ文書の中のマーカーもたどり、同じファイルは 1 回だけ読み込む）。開いているエディタの保存していない書き換えではなく、保存した中身を読み込む。設定ファイルのフォルダ（無ければ Markdown のフォルダ）の外のパス（書き出しと同じ範囲）と読み込めないファイルは表に入れず、そのマーカーの場所には mdmark が記載の警告を出す。読み込んだ表を `render` の `includes` に入れ、Webview は `mount` の `opts.includes`（`update` は `options.includes`）に指定する
     notes: プレビューでも取り込むことは確認ログの決定
   - item: エイリアス
-    constraint: '重ねた設定に `aliases` があるとき、インターフェース定義『エイリアスを作る』の CLI と同じ読み方（`src/cli/aliases.ts` の `loadAliases`）で、各行の `paths` を値を書いた設定ファイルのフォルダから引いて YAML を読み、作ったエイリアスを `render` の `aliases` に入れる。`loadAliases` に渡す設定ファイルは、最も近い `mdmark.config.yaml`（`mdmark.configPath` を書いたときはそのファイル）で、無いときは端末の設定ファイルにする（CLI の `requireConfig` と同じく、重ねた設定のパスの値をそのファイルのフォルダからの相対パスに戻して渡す）。Webview は `mount` の `opts.aliases` に渡す。使えない行・レコードは除き、ずれごとに CLI の `mdmark check` と同じ `{file}:{where}: {kind}: {message}`（`where` が空なら `{file}: {kind}: {message}`）の警告を出力チャネルに書く。エイリアスを作るのは設定を読み直したときと、制約の YAML のファイルが変わったときだけで、Markdown の書き換えでは作り直さない'
+    constraint: '重ねた設定に `aliases` があるとき、インターフェース定義『エイリアスを作る』の CLI と同じ読み込み方（`src/cli/aliases.ts` の `loadAliases`）で、各行の `paths` を値を記載した設定ファイルのフォルダから参照して YAML を読み込み、作ったエイリアスを `render` の `aliases` に入れる。`loadAliases` に指定する設定ファイルは、最も近い `mdmark.config.yaml`（`mdmark.configPath` を記載したときはそのファイル）で、無いときは端末の設定ファイルにする（CLI の `requireConfig` と同じく、重ねた設定のパスの値をそのファイルのフォルダからの相対パスに戻して指定する）。Webview は `mount` の `opts.aliases` に指定する。使用できない行・レコードは除き、ずれごとに CLI の `mdmark check` と同じ `{file}:{where}: {kind}: {message}`（`where` が空なら `{file}: {kind}: {message}`）の警告を出力チャネルに書き込む。エイリアスを作るのは設定を再読み込みしたときと、制約の YAML のファイルが変わったときだけで、Markdown の書き換えでは再作成しない'
     notes: 書き出す HTML へのエイリアスの埋め込みは要件のスコープ外（#379）

@@ -4,20 +4,20 @@ entry:
   value: '`node ${CLAUDE_PLUGIN_ROOT}/bin/setup.js status`（スキルが Bash で呼ぶ）'
 flows:
   - name: 正常系
-    summary: 空の端末で、端末の設定が無いこと・既定のセッション名・待ち受けていないことを返す
+    summary: 空の端末で、端末の設定が無いこと・既定のセッション名・待ち受けていないことを返却する
     setup:
       - name: 一時の端末
         description: '`MDMARK_CONFIG`・`MDMARK_STATE_DIR`・`CLAUDE_CONFIG_DIR`・`TMUX_TMPDIR` を、それぞれ空の一時フォルダの下にする'
       - name: 空いたポート
         description: '`MDMARK_PORT` に待ち受けるプロセスの無いポート'
       - name: Mock
-        description: ビルドした `plugin/bin/setup.js` を子プロセスで流す。差し替える依存は無い
+        description: ビルドした `plugin/bin/setup.js` を子プロセスで実行する。差し替える依存は無い
     flow: |-
       sequenceDiagram
         participant K as スキル（global-setup・setup）
         participant P as setup.js
         K->>P: status
-        P->>P: 端末の設定のパス・tmux・ポートを確かめる
+        P->>P: 端末の設定のパス・tmux・ポートを確認する
         P-->>K: JSON の 1 行・終了コード 0
     expected:
       - 終了コードが 0
@@ -26,14 +26,14 @@ flows:
       - '`state.log` が `MDMARK_STATE_DIR` の下の `serve.log`'
     test: test_normal
   - name: 正常系（セットアップ済み）
-    summary: 端末の設定のバージョン・セッション名・待ち受けていることを返す
+    summary: 端末の設定のバージョン・セッション名・待ち受けていることを返却する
     setup:
       - name: 一時の端末
         description: '`MDMARK_CONFIG`・`MDMARK_STATE_DIR`・`CLAUDE_CONFIG_DIR`・`TMUX_TMPDIR` を、それぞれ空の一時フォルダの下にする'
       - name: セットアップ済みの端末
         description: '`version` と `serve.tmuxSession: mdmark-test` を持つ端末の設定と、そのセッション名の tmux のセッションで待ち受けている常駐サーバー'
       - name: Mock
-        description: ビルドした `plugin/bin/setup.js` を子プロセスで流す。差し替える依存は無い
+        description: ビルドした `plugin/bin/setup.js` を子プロセスで実行する。差し替える依存は無い
     flow: |-
       sequenceDiagram
         participant K as スキル（global-setup・setup）
@@ -45,14 +45,14 @@ flows:
       - '`server.session` が `mdmark-test`、`server.session_exists` と `server.listening` が `true`'
     test: test_normal_when_already_set_up
   - name: 正常系（tmux が無い）
-    summary: '`PATH` に tmux が無いことを返す'
+    summary: '`PATH` に tmux が無いことを返却する'
     setup:
       - name: 一時の端末
         description: '`MDMARK_CONFIG`・`MDMARK_STATE_DIR`・`CLAUDE_CONFIG_DIR`・`TMUX_TMPDIR` を、それぞれ空の一時フォルダの下にする'
       - name: tmux の無い PATH
-        description: '`PATH` から tmux を外す'
+        description: '`PATH` から tmux を除外する'
       - name: Mock
-        description: ビルドした `plugin/bin/setup.js` を子プロセスで流す。差し替える依存は無い
+        description: ビルドした `plugin/bin/setup.js` を子プロセスで実行する。差し替える依存は無い
     flow: |-
       sequenceDiagram
         participant K as スキル（global-setup・setup）
@@ -63,15 +63,15 @@ flows:
       - 終了コードが 0
       - '`tmux.available` が `false`、`server.session_exists` が `false`'
     test: test_normal_when_tmux_missing
-  - name: 異常系（端末の設定を読めない・終了コード 1）
-    summary: 端末の設定が YAML として読めないとき、パスと行を出して終わる
+  - name: 異常系（端末の設定を読み込めない・終了コード 1）
+    summary: 端末の設定が YAML として読み込めないとき、パスと行を出して終わる
     setup:
       - name: 一時の端末
         description: '`MDMARK_CONFIG`・`MDMARK_STATE_DIR`・`CLAUDE_CONFIG_DIR`・`TMUX_TMPDIR` を、それぞれ空の一時フォルダの下にする'
-      - name: 読めない端末の設定
-        description: '`MDMARK_CONFIG` のパスに、3 行目が YAML として読めない端末の設定を置く'
+      - name: 読み込めない端末の設定
+        description: '`MDMARK_CONFIG` のパスに、3 行目が YAML として読み込めない端末の設定を配置する'
       - name: Mock
-        description: ビルドした `plugin/bin/setup.js` を子プロセスで流す。差し替える依存は無い
+        description: ビルドした `plugin/bin/setup.js` を子プロセスで実行する。差し替える依存は無い
     flow: |-
       sequenceDiagram
         participant K as スキル（global-setup・setup）
@@ -82,7 +82,7 @@ flows:
       - 終了コードが 1
       - 標準エラーに端末の設定のパスと 3 行目が出る
     test: test_error_when_settings_unreadable
-lead: '`global-setup` と `setup` が最初に呼び、端末の設定のパスとバージョン・tmux のセッション名・常駐サーバーが待ち受けているか・ログの場所を返す。何も書き換えない。'
+lead: '`global-setup` と `setup` が最初に呼び、端末の設定のパスとバージョン・tmux のセッション名・常駐サーバーが待ち受けているか・ログの場所を返却する。何も書き換えない。'
 test_file: tests/integration/ClaudeCodeプラグイン/setup-status.test.ts
 idempotent: true
 side_effects: なし
@@ -107,7 +107,7 @@ request:
     required: false
     default: なし（`${XDG_STATE_HOME:-~/.local/state}/mdmark`）
     location: argument
-    description: 状態の置き場所（環境変数）
+    description: 状態の配置場所（環境変数）
 response:
   - name: settings.path
     type: string
@@ -141,22 +141,22 @@ response:
     description: '`PATH` に tmux がある'
   - name: state.dir
     type: string
-    description: 状態の置き場所
+    description: 状態の配置場所
   - name: state.log
     type: string
     description: 常駐サーバーのログのパス（`{state.dir}/serve.log`）
 exceptions:
   - name: なし（正常終了）
-    condition: 状態を返した。終了コード 0
-  - name: なし（端末の設定を読めない・終了コード 1）
-    condition: 端末の設定が YAML として読めない
+    condition: 状態を返却した。終了コード 0
+  - name: なし（端末の設定を読み込めない・終了コード 1）
+    condition: 端末の設定が YAML として読み込めない
 constraints:
-  - item: ポートの確かめ
+  - item: ポートの確認
     constraint: '`127.0.0.1:{ポート}` へ TCP でつなぎ、接続を受けたら待ち受けているとする。待ちは 1 秒'
-  - item: セッションの確かめ
+  - item: セッションの確認
     constraint: '`tmux has-session -t ={セッション名}` の終了コード 0 をセッションがあるとする'
   - item: 出力
     constraint: 結果は標準出力に JSON の 1 行で出す。誤りは標準エラーに理由と修正方法を出す
-  - item: 動く Node の版
+  - item: 動く Node のバージョン
     constraint: Node 24 以降
     decided_by: dev/設計書/非機能要件/非機能要件#requirements[CLI が動く Node の版]

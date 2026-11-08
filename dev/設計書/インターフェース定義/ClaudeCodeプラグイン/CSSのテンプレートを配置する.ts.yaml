@@ -2,9 +2,9 @@ title: CSSのテンプレートを配置する
 entry:
   kind: mcp_tool
   value: apply_template
-lead: 選んだテンプレートの CSS を配置先のフォルダへコピーし、配置したパスと、設定の `theme` に記載する値を返す。
+lead: 選んだテンプレートの CSS を配置先のフォルダへコピーし、配置したパスと、設定の `theme` に記載する値を返却する。
 idempotent: true
-side_effects: 配置先のフォルダに CSS を書く（`overwrite` のときは同じ名前の CSS を置き換える）。設定ファイルとテンプレートのフォルダは書き換えない
+side_effects: 配置先のフォルダに CSS を書き込む（`overwrite` のときは同じ名前の CSS を置き換える）。設定ファイルとテンプレートのフォルダは書き換えない
 request:
   - name: name
     type: string
@@ -41,7 +41,7 @@ response:
     description: 配置した CSS の絶対パス（`{配置先}/{name}.css`）
   - name: theme
     type: string | undefined
-    description: 設定の `theme` に記載する値。基準の設定ファイル（制約『基準の設定ファイル』）のフォルダから `path` への相対パスで、`./` で始まる（基準の設定ファイルは配置先か、その上のフォルダにある）。基準の設定ファイルが無ければ返さない
+    description: 設定の `theme` に記載する値。基準の設定ファイル（制約『基準の設定ファイル』）のフォルダから `path` への相対パスで、`./` で始まる（基準の設定ファイルは配置先か、その上のフォルダにある）。基準の設定ファイルが無ければ返却しない
   - name: replaced
     type: boolean
     description: 配置先の同じ名前のファイルを置き換えたか
@@ -54,40 +54,40 @@ exceptions:
     condition: 配置できた
   - name: ツールのエラー（テンプレートが無い）
     condition: 索引に `name` の行が無い（フォルダか索引が無いときを含む）
-    notes: 内容の文に、名前と、`list_templates` で名前を確かめられることを書く
+    notes: 内容の文に、名前と、`list_templates` で名前を確認できることを記載する
   - name: ツールのエラー（テンプレートの CSS が無い）
     condition: 索引に `name` の行があり、テンプレートのフォルダに行の `file` の CSS が無い
-    notes: 内容の文に、テンプレートの名前と CSS のパスと、`add_template` で登録し直すか索引の行を削除することを書く。配置先を書き換えない
+    notes: 内容の文に、テンプレートの名前と CSS のパスと、`add_template` でもう一度登録するか索引の行を削除することを記載する。配置先を書き換えない
   - name: ツールのエラー（配置先に同じ名前の CSS がある）
     condition: 配置先に `{name}.css` があり、中身がテンプレートと違い、`overwrite` が `true` でない
-    notes: 内容の文に、配置先のパスと、`overwrite` を `true` にすれば置き換えられることを書く。配置先を書き換えない
+    notes: 内容の文に、配置先のパスと、`overwrite` を `true` にすれば置き換えられることを記載する。配置先を書き換えない
   - name: ツールのエラー（配置先の設定ファイルが無い）
-    condition: '`dir` を省き、`project_dir` とその上のフォルダに `mdmark.config.yaml` が無い（`dir` を渡したときは、基準の設定ファイルが無くても配置し、`theme` を返さない）'
-    notes: 内容の文に、設定ファイルが無いことと、`dir` を渡すか `mdmark init` で設定ファイルを置けることを書く
+    condition: '`dir` を省き、`project_dir` とその上のフォルダに `mdmark.config.yaml` が無い（`dir` を指定したときは、基準の設定ファイルが無くても配置し、`theme` を返却しない）'
+    notes: 内容の文に、設定ファイルが無いことと、`dir` を指定するか `mdmark init` で設定ファイルを配置できることを記載する
   - name: ツールのエラー（配置先が無い）
     condition: '`dir` のフォルダが無い'
-    notes: 内容の文に、無いパスを書く
-  - name: ツールのエラー（索引を読めない）
-    condition: 索引が YAML として読めない、またはスキーマに合わない
+    notes: 内容の文に、無いパスを記載する
+  - name: ツールのエラー（索引を読み込めない）
+    condition: 索引が YAML として読み込めない、またはスキーマに合わない
     notes: '`list_templates` と同じ文'
   - name: ツールのエラー（作業のフォルダが無い）
     condition: '`project_dir` が無い、絶対パスでない、またはそのフォルダが無い'
     notes: ほかのツールと同じ文
-error_format: 'ツールの結果を `isError: true` にし、内容のテキストに、何が合わないかと直し方を日本語の 1 文で書く。'
+error_format: 'ツールの結果を `isError: true` にし、内容のテキストに、何が合わないかと修正方法を日本語の 1 文で記載する。'
 constraints:
   - item: テンプレートのフォルダと索引
     constraint: '`list_templates` と同じ'
     decided_by: dev/設計書/インターフェース定義/ClaudeCodeプラグイン/CSSのテンプレートの一覧を返す.ts#constraints[テンプレートのフォルダ]
   - item: 基準の設定ファイル
-    constraint: '`dir` を渡したときは `dir` から、省いたときは `project_dir` から上へ探して最初に見つかった `mdmark.config.yaml`（`loadLayeredConfig` の `nearest` と同じ探し方）。`dir` を省いたときの配置先はこのファイルのフォルダ'
+    constraint: '`dir` を指定したときは `dir` から、省いたときは `project_dir` から上へ探して最初に見つかった `mdmark.config.yaml`（`loadLayeredConfig` の `nearest` と同じ探し方）。`dir` を省いたときの配置先はこのファイルのフォルダ'
     decided_by: dev/設計書/インターフェース定義/ライブラリ本体/設定を重ねて読む.ts#response[nearest]
   - item: 設定ファイル
     constraint: 設定の `theme` を書き換えない。`theme` に記載するのは呼んだ側
   - item: 同じ中身
-    constraint: 配置先に同じ名前で同じ中身のファイルがあるときは、エラーにせず書き換えずに返す（`replaced` は `false`）
+    constraint: 配置先に同じ名前で同じ中身のファイルがあるときは、エラーにせず書き換えずに返却する（`replaced` は `false`）
 flows:
   - name: 正常系
-    summary: 最も近い設定ファイルのフォルダへコピーし、`theme` に記載する値を返す
+    summary: 最も近い設定ファイルのフォルダへコピーし、`theme` に記載する値を返却する
     setup:
       - name: 端末の設定
         description: 一時フォルダの `settings.yaml`。常駐サーバーを `MDMARK_CONFIG` でこのファイルを指して起動する。テンプレート `brand` を 1 つ登録したテンプレートのフォルダ
@@ -102,8 +102,8 @@ flows:
         participant T as テンプレートのフォルダ
         participant F as 作業のフォルダ
         C->>S: apply_template（name: brand）
-        S->>T: 索引と brand.css を読む
-        S->>F: 上へ mdmark.config.yaml を探し、/work/brand.css を書く
+        S->>T: 索引と brand.css を読み込む
+        S->>F: 上へ mdmark.config.yaml を探し、/work/brand.css を書き込む
         S-->>C: path・theme・replaced
     expected:
       - '`/work/brand.css` がテンプレートと同じ中身'
@@ -116,7 +116,7 @@ flows:
       - name: 端末の設定
         description: 一時フォルダの `settings.yaml`。常駐サーバーを `MDMARK_CONFIG` でこのファイルを指して起動する。正常系と同じテンプレートのフォルダ
       - name: 作業のフォルダ
-        description: 正常系のフォルダの `/work/brand.css` に中身の違う CSS を置いたもの
+        description: 正常系のフォルダの `/work/brand.css` に中身の違う CSS を配置したもの
       - name: Mock
         description: Claude Code の代わりに、起動した常駐サーバーへ HTTP でつなぐ MCP のクライアント。`project_dir` に作業のフォルダの絶対パスを入れて呼ぶ
     flow: |-
@@ -131,8 +131,8 @@ flows:
       - '`/work/brand.css` がテンプレートと同じ中身'
       - '`replaced` が `true`'
     test: test_normal_when_overwriting
-  - name: 正常系（dir を渡す）
-    summary: 渡したフォルダへ配置し、`theme` を上の設定ファイルのフォルダからの相対パスにする
+  - name: 正常系（dir を指定する）
+    summary: 指定したフォルダへ配置し、`theme` を上の設定ファイルのフォルダからの相対パスにする
     setup:
       - name: 端末の設定
         description: 一時フォルダの `settings.yaml`。常駐サーバーを `MDMARK_CONFIG` でこのファイルを指して起動する。正常系と同じテンプレートのフォルダ
@@ -146,7 +146,7 @@ flows:
         participant S as MCP サーバー
         participant F as 作業のフォルダ
         C->>S: apply_template（name: brand・dir: ../styles）
-        S->>F: /work/styles から上へ mdmark.config.yaml を探し、/work/styles/brand.css を書く
+        S->>F: /work/styles から上へ mdmark.config.yaml を探し、/work/styles/brand.css を書き込む
         S-->>C: path・theme・replaced
     expected:
       - '`/work/styles/brand.css` がテンプレートと同じ中身'
@@ -176,7 +176,7 @@ flows:
       - '`/work/brand.css` が書き換わらない'
     test: test_error_when_css_exists
   - name: 異常系（配置先の設定ファイルが無い・ツールのエラー）
-    summary: '`dir` を省き、上に設定ファイルが無ければ、何も書かずにエラーにする'
+    summary: '`dir` を省き、上に設定ファイルが無ければ、何も書き込まずにエラーにする'
     setup:
       - name: 端末の設定
         description: 一時フォルダの `settings.yaml`。常駐サーバーを `MDMARK_CONFIG` でこのファイルを指して起動する。正常系と同じテンプレートのフォルダ
@@ -194,10 +194,10 @@ flows:
     expected:
       - '`isError` が立つ'
       - 内容の文に `dir` と `mdmark init` が出る
-      - 作業のフォルダに CSS が書かれていない
+      - 作業のフォルダに CSS が記載されていない
     test: test_error_when_config_missing
   - name: 異常系（テンプレートが無い・ツールのエラー）
-    summary: 索引に無い名前は、何も書かずにエラーにする
+    summary: 索引に無い名前は、何も書き込まずにエラーにする
     setup:
       - name: 端末の設定
         description: 一時フォルダの `settings.yaml`。常駐サーバーを `MDMARK_CONFIG` でこのファイルを指して起動する。正常系と同じテンプレートのフォルダ

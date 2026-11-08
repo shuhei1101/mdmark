@@ -1,11 +1,11 @@
-title: 設定を重ねて読む
+title: 設定を重ねて読み込む
 entry:
   kind: operation
-  value: '`loadLayeredConfig`（ライブラリ本体の Node から使う関数。CLI・MCP のツール・VS Code 拡張機能が呼ぶ）'
-lead: 端末の設定と、起点のフォルダから上のフォルダの `mdmark.config.yaml` を探して重ね、重ねた設定と、重ねた設定ファイルの一覧を返す。
+  value: '`loadLayeredConfig`（ライブラリ本体の Node から使用する関数。CLI・MCP のツール・VS Code 拡張機能が呼ぶ）'
+lead: 端末の設定と、起点のフォルダから上のフォルダの `mdmark.config.yaml` を探して重ね、重ねた設定と、重ねた設定ファイルの一覧を返却する。
 test_file: tests/integration/lib/config-cascade.test.ts
 idempotent: true
-side_effects: 無し（端末の設定と設定ファイルを読むだけで、書き換えない）
+side_effects: 無し（端末の設定と設定ファイルを読み込むだけで、書き換えない）
 callers:
   - dev/設計書/インターフェース定義/ライブラリ本体/文書をHTMLに書き出す#
   - dev/設計書/インターフェース定義/ライブラリ本体/複数の文書を1枚のHTMLにまとめる#
@@ -24,18 +24,18 @@ request:
     required: false
     default: なし（`cwd` から上のフォルダへ `mdmark.config.yaml` を探す）
     location: argument
-    description: 指定した設定ファイルのパス（CLI の `--config`・MCP の `config`・VS Code 拡張機能の `mdmark.configPath`）。渡したときは上へ探さず、このファイルと端末の設定だけを重ねる
+    description: 指定した設定ファイルのパス（CLI の `--config`・MCP の `config`・VS Code 拡張機能の `mdmark.configPath`）。指定したときは上へ探さず、このファイルと端末の設定だけを重ねる
     notes: 相対パスは `cwd` から解決する
   - name: purpose
     type: '"preview" | "export"'
     required: true
     location: argument
-    description: 読む目的。`export` のときだけ、端末の設定の `config.applyToExport` が `false` なら端末の設定を重ねない
+    description: 読み込む目的。`export` のときだけ、端末の設定の `config.applyToExport` が `false` なら端末の設定を重ねない
   - name: env
     type: Record<string, string | undefined>
     required: true
     location: argument
-    description: 環境変数（`MDMARK_CONFIG`・`XDG_CONFIG_HOME` を読む）
+    description: 環境変数（`MDMARK_CONFIG`・`XDG_CONFIG_HOME` を読み込む）
   - name: home
     type: string
     required: true
@@ -44,7 +44,7 @@ request:
 response:
   - name: config
     type: CliConfig
-    description: 重ねた設定。相対パスの値は、その値を書いた設定ファイルのフォルダから解決した絶対パス
+    description: 重ねた設定。相対パスの値は、その値を記載した設定ファイルのフォルダから解決した絶対パス
   - name: files
     type: ConfigFile[]
     description: 重ねた設定ファイルを重ねた順（端末の設定 → 上 → 近い）に並べたもの。端末の設定が無ければ含めない
@@ -56,13 +56,13 @@ response:
     description: 端末の設定か、フォルダの `mdmark.config.yaml` か
   - name: nearest
     type: string | undefined
-    description: 最も近い `mdmark.config.yaml` の絶対パス（`explicit` を渡したときはそのパス）。1 つも無ければ `undefined`
+    description: 最も近い `mdmark.config.yaml` の絶対パス（`explicit` を指定したときはそのパス）。1 つも無ければ `undefined`
   - name: issues
     type: CheckIssue[]
     description: 重ねた設定ファイルごとの `schema` のずれ。`file` はそのファイルの絶対パス（表示するときは制約「パスの表示」で書き換える）
   - name: unreadable
     type: '{ path: string; line: number; message: string } | undefined'
-    description: YAML として読めなかった最初の設定ファイル（端末の設定 → 上 → 近いの順）。`path` は絶対パス、`line` は読めない行（1 始まり）。全て読めたときは `undefined`
+    description: YAML として読み込めなかった最初の設定ファイル（端末の設定 → 上 → 近いの順）。`path` は絶対パス、`line` は読み込めない行（1 始まり）。全て読み込めたときは `undefined`
 response_example: |-
   ```json
   {
@@ -78,10 +78,10 @@ response_example: |-
   ```
 exceptions:
   - name: なし（正常終了）
-    condition: 重ねて読めた。YAML として読めないファイルは例外にせず `unreadable` に、形に合わないファイルは `issues` に入れる（どちらも重ねない）
+    condition: 重ねて読み込めた。YAML として読み込めないファイルは例外にせず `unreadable` に、構造に合わないファイルは `issues` に入れる（どちらも重ねない）
   - name: ConfigNotFoundError
     condition: '`explicit` のファイルが無い'
-    notes: '`explicit` を渡さず `mdmark.config.yaml` が 1 つも無いときは例外にせず `nearest` を `undefined` にする（呼ぶ側が誤りにするかを決める）'
+    notes: '`explicit` を指定せず `mdmark.config.yaml` が 1 つも無いときは例外にせず `nearest` を `undefined` にする（呼ぶ側が誤りにするかを決める）'
 constraints:
   - item: 端末の設定のパス
     constraint: '`MDMARK_CONFIG` があればその値、無ければ `${XDG_CONFIG_HOME:-{home}/.config}/mdmark/settings.yaml`。ファイルが無ければ空の設定として扱い、`files` に含めない'
@@ -92,18 +92,18 @@ constraints:
   - item: 重ね方の切り替え
     constraint: 端末の設定の `config.cascade` が `true` のときだけ上のフォルダの設定を全て重ねる。既定の `false` では、`cwd` から上へ最初に見つかった 1 つと端末の設定だけを重ねる
   - item: 書き出しの切り替え
-    constraint: '`purpose` が `export` で、端末の設定の `config.applyToExport` が `false` のときは端末の設定を重ねない（既定は `true`）。`config` のキーは端末の設定だけが持ち、フォルダの設定に書いても読まない'
+    constraint: '`purpose` が `export` で、端末の設定の `config.applyToExport` が `false` のときは端末の設定を重ねない（既定は `true`）。`config` のキーは端末の設定だけが持ち、フォルダの設定に記載しても読み込まない'
   - item: 相対パスの基準
-    constraint: '`theme`・`extensions`・`libraries` の値・`html-scripts.url`・`syntax.url`・`index`・`assets.root`・`build` の各パス・`aliases` のパスは、重ねる前に、その値を書いた設定ファイルのフォルダから絶対パスにする。`http:`・`https:` の URL は替えない'
-  - item: 読めないファイル
-    constraint: YAML として読めないファイルは `unreadable` に、形に合わないファイルは `issues` に入れ、どちらも重ねずに残りのファイルを重ねる。呼ぶ側は、`unreadable` を今の「設定ファイルを読めない」誤り（CLI・MCP は終了コード 1）か帯の行に、`issues` の最初の 1 つを今の「設定の形に合わない」誤り（`mdmark check` は `schema` のずれ）か帯のキーにする。ずれの種類は今の一覧のままで、足さない
+    constraint: '`theme`・`extensions`・`libraries` の値・`html-scripts.url`・`syntax.url`・`index`・`assets.root`・`build` の各パス・`aliases` のパスは、重ねる前に、その値を記載した設定ファイルのフォルダから絶対パスにする。`http:`・`https:` の URL は替えない'
+  - item: 読み込めないファイル
+    constraint: YAML として読み込めないファイルは `unreadable` に、構造に合わないファイルは `issues` に入れ、どちらも重ねずに残りのファイルを重ねる。呼ぶ側は、`unreadable` を今の「設定ファイルを読み込めない」誤り（CLI・MCP は終了コード 1）か帯の行に、`issues` の最初の 1 つを今の「設定の構造に合わない」誤り（`mdmark check` は `schema` のずれ）か帯のキーにする。ずれの種類は今の一覧のままで、追加しない
   - item: タイムアウト
-    constraint: 制限なし（手元のファイルを読むだけ）
+    constraint: 制限なし（手元のファイルを読み込むだけ）
   - item: パスの表示
-    constraint: 返すパスは全て絶対パス。表示するときは、基準のフォルダ（CLI・MCP は `cwd`、VS Code 拡張機能は Markdown を含むワークスペースのフォルダ）の中ならそこからの相対パス、外なら `home` を `~` にしたパス（`home` の外は絶対パス）にする。この書き換えは同じモジュールの関数で行い、CLI のずれの `file`・誤りの文と VS Code 拡張機能の帯が使う
+    constraint: 返却するパスは全て絶対パス。表示するときは、基準のフォルダ（CLI・MCP は `cwd`、VS Code 拡張機能は Markdown を含むワークスペースのフォルダ）の中ならそこからの相対パス、外なら `home` を `~` にしたパス（`home` の外は絶対パス）にする。この書き換えは同じモジュールの関数で行い、CLI のずれの `file`・誤りの文と VS Code 拡張機能の帯が使用する
 flows:
   - name: 正常系
-    summary: 端末の設定と上のフォルダの設定と近いフォルダの設定を重ね、相対パスを書いた設定ファイルから解決する
+    summary: 端末の設定と上のフォルダの設定と近いフォルダの設定を重ね、相対パスを記載した設定ファイルから解決する
     setup:
       - name: 端末の設定
         description: '`MDMARK_CONFIG` で指す一時フォルダの `settings.yaml`。`config.cascade: true`・`features.callout: false`'
@@ -111,15 +111,15 @@ flows:
         description: '`/work/mdmark.config.yaml` に `theme: ./theme.css`・`features.table: true`、`/work/docs/mdmark.config.yaml` に `features.table: false`'
         notes: '`cwd` に `/work/docs`、`purpose` に `preview`'
       - name: Mock
-        description: なし（一時フォルダの実ファイルを読む）
+        description: なし（一時フォルダの実ファイルを読み込む）
     flow: |-
       sequenceDiagram
         participant C as 呼ぶ側
         participant IF as loadLayeredConfig
         participant F as 設定ファイル
         C->>IF: cwd・purpose・env・home
-        IF->>F: 端末の設定を読む
-        IF->>F: /work/docs から上へ mdmark.config.yaml を探して読む
+        IF->>F: 端末の設定を読み込む
+        IF->>F: /work/docs から上へ mdmark.config.yaml を探して読み込む
         IF->>IF: 相対パスを絶対パスにして、端末 → 上 → 近いの順に重ねる
         IF-->>C: config・files・nearest・issues
     expected:
@@ -128,7 +128,7 @@ flows:
       - '`files` が端末の設定・`/work/mdmark.config.yaml`・`/work/docs/mdmark.config.yaml` の順'
       - '`nearest` が `/work/docs/mdmark.config.yaml` で、`issues` が空'
     test: test_normal
-  - name: 正常系（最初の 1 つだけを読む）
+  - name: 正常系（最初の 1 つだけを読み込む）
     summary: '`config.cascade` が `false` のとき、近いフォルダの設定と端末の設定だけを重ねる'
     setup:
       - name: 端末の設定
@@ -189,8 +189,8 @@ flows:
       - '`files` が `/work/docs/mdmark.config.yaml` の 1 つ（`config.cascade` は既定の `false`）'
       - '`issues` が空'
     test: test_normal_when_settings_missing
-  - name: 正常系（読めない設定ファイルがある）
-    summary: YAML として読めない端末の設定を重ねずに、ずれとして返す
+  - name: 正常系（読み込めない設定ファイルがある）
+    summary: YAML として読み込めない端末の設定を重ねずに、ずれとして返却する
     setup:
       - name: 端末の設定
         description: 正常系の端末の設定の 3 行目に閉じていない括弧を持つもの
@@ -203,7 +203,7 @@ flows:
         participant C as 呼ぶ側
         participant IF as loadLayeredConfig
         C->>IF: cwd・purpose・env・home
-        IF->>IF: 端末の設定を読めない
+        IF->>IF: 端末の設定を読み込めない
         IF-->>C: 端末の設定を除いた config・issues
     expected:
       - '`unreadable.path` が端末の設定の絶対パスで、`unreadable.line` が `3`、`issues` が空'

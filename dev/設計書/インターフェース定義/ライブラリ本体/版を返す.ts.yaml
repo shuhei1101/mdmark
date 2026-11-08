@@ -1,18 +1,18 @@
-title: "版を返す"
+title: "バージョンを返却する"
 entry:
   kind: operation
   value: '`version()`（配布物 `dist/index.js` の公開関数）'
 flows:
   - name: 正常系
-    summary: 配布物を読んだページで公開関数を呼び、埋めた版と CSS 変数が一致する
+    summary: 配布物を読み込んだページで公開関数を呼び、埋めたバージョンと CSS 変数が一致する
     setup:
-      - name: 版を埋めてビルドした配布物
+      - name: バージョンを埋めてビルドした配布物
         description: '`v0.0.1` を埋めてビルドした `dist/index.js` と `dist/index.css`'
       - name: Mock
-        description: 差し替える依存は無い（手元で配信した配布物をブラウザで読む）
+        description: 差し替える依存は無い（手元で配信した配布物をブラウザで読み込む）
     flow: |-
       sequenceDiagram
-        participant P as 使う側のページ
+        participant P as 利用側のページ
         participant L as ライブラリ本体
         P->>L: version()
         L-->>P: "v0.0.1"
@@ -20,7 +20,7 @@ flows:
       - 戻り値が `v0.0.1`
       - ルート要素の `--mdmark-version` の計算値が `"v0.0.1"`
     test: test_normal
-lead: 使う側のページが、読み込んだ配布物の版を取る。配布物の CSS は同じ版を `--mdmark-version` で持つ。
+lead: 利用側のページが、読み込んだ配布物のバージョンを取る。配布物の CSS は同じバージョンを `--mdmark-version` で持つ。
 idempotent: true
 side_effects: なし
 callers:
@@ -28,10 +28,10 @@ callers:
 response:
   - name: '-'
     type: string
-    description: ビルドで埋めた版
+    description: ビルドで埋めたバージョン
     format: '`v{MAJOR}.{MINOR}.{PATCH}`'
     example: v0.0.1
 exceptions:
   - name: なし（正常終了）
-    condition: 常に埋めた版を返す
+    condition: 常に埋めたバージョンを返却する
 test_file: tests/integration/lib/version.browser.test.ts

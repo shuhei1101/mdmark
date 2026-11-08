@@ -7,9 +7,9 @@ flows:
     summary: 常駐サーバーが待ち受けていれば何も出さない
     setup:
       - name: 待ち受けるポート
-        description: '`MDMARK_PORT` のポートで、テストが TCP の接続を受けるサーバーを立てる'
+        description: '`MDMARK_PORT` のポートで、テストが TCP の接続を受けるサーバーを起動する'
       - name: Mock
-        description: ビルドした `plugin/scripts/session-start.js` を子プロセスで流し、標準入力に SessionStart の入力の JSON を渡す
+        description: ビルドした `plugin/scripts/session-start.js` を子プロセスで実行し、標準入力に SessionStart の入力の JSON を指定する
     flow: |-
       sequenceDiagram
         participant C as Claude Code
@@ -42,7 +42,7 @@ flows:
       - 標準出力の JSON の `hookSpecificOutput.hookEventName` が `SessionStart`
       - '`hookSpecificOutput.additionalContext` が 1 行で、`127.0.0.1:{ポート}` と `/mdmark:global-setup` を含む'
     test: test_normal_when_not_listening
-lead: セッションの開始で、常駐サーバーのポートが待ち受けているかを確かめ、待ち受けていないときだけ、そのことと `global-setup` で起動できることを 1 行で渡す。
+lead: セッションの開始で、常駐サーバーのポートが待ち受けているかを確認し、待ち受けていないときだけ、そのことと `global-setup` で起動できることを 1 行で指定する。
 test_file: tests/integration/ClaudeCodeプラグイン/session-start.test.ts
 idempotent: true
 side_effects: なし
@@ -54,7 +54,7 @@ request:
     required: false
     default: '8782'
     location: argument
-    description: 確かめるポート（環境変数）
+    description: 確認するポート（環境変数）
 response:
   - name: hookSpecificOutput.hookEventName
     type: '"SessionStart"'
@@ -72,4 +72,4 @@ constraints:
     constraint: 待ち受けているときは何も出さない
     decided_by: dev/設計書/シナリオ/単一ユースケース/セッションの開始で常駐サーバーの状態を受け取る#
   - item: 終了コード
-    constraint: '`MDMARK_PORT` が使えない値でも 0 で終わり、使えない値であることを 1 行で出す'
+    constraint: '`MDMARK_PORT` が使用できない値でも 0 で終わり、使用できない値であることを 1 行で出す'

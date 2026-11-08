@@ -1,37 +1,37 @@
-title: 設定のキーの一覧を返す
+title: 設定のキーの一覧を返却する
 entry:
   kind: operation
   value: '`node ${CLAUDE_PLUGIN_ROOT}/bin/setup.js keys --target settings|config [--dir {文書のフォルダ}]`（スキルが Bash で呼ぶ）'
 flows:
   - name: 正常系
-    summary: 端末の設定のキーごとに、今の値・既定・説明を返す
+    summary: 端末の設定のキーごとに、今の値・既定・説明を返却する
     setup:
       - name: 一時の端末
         description: '`MDMARK_CONFIG`・`MDMARK_STATE_DIR`・`CLAUDE_CONFIG_DIR`・`TMUX_TMPDIR` を、それぞれ空の一時フォルダの下にする'
       - name: 端末の設定
         description: '`features.table: false` を持つ端末の設定'
       - name: Mock
-        description: ビルドした `plugin/bin/setup.js` を子プロセスで流す。差し替える依存は無い
+        description: ビルドした `plugin/bin/setup.js` を子プロセスで実行する。差し替える依存は無い
     flow: |-
       sequenceDiagram
         participant K as スキル（global-setup・setup）
         participant P as setup.js
         K->>P: keys --target settings
-        P->>P: Schema と端末の設定を読む
+        P->>P: Schema と端末の設定を読み込む
         P-->>K: キーごとの今の値・既定・説明・終了コード 0
     expected:
       - 終了コードが 0
       - '`keys[]` に `features.table`（`current` が `false`）・`config.cascade`・`serve.tmuxSession` があり、それぞれ `default` と `description` を持つ'
     test: test_normal
   - name: 正常系（文書のフォルダの設定）
-    summary: '`mdmark.config.yaml` のキーを、端末の設定で重なる値つきで返し、端末の設定だけのキーを含めない'
+    summary: '`mdmark.config.yaml` のキーを、端末の設定で重なる値つきで返却し、端末の設定だけのキーを含めない'
     setup:
       - name: 一時の端末
         description: '`MDMARK_CONFIG`・`MDMARK_STATE_DIR`・`CLAUDE_CONFIG_DIR`・`TMUX_TMPDIR` を、それぞれ空の一時フォルダの下にする'
       - name: 端末の設定と文書のフォルダ
         description: '`features.table: false` を持つ端末の設定と、`mdmark.config.yaml` の無い文書のフォルダ'
       - name: Mock
-        description: ビルドした `plugin/bin/setup.js` を子プロセスで流す。差し替える依存は無い
+        description: ビルドした `plugin/bin/setup.js` を子プロセスで実行する。差し替える依存は無い
     flow: |-
       sequenceDiagram
         participant K as スキル（global-setup・setup）
@@ -42,7 +42,7 @@ flows:
       - '`features.table` の `current` が `null`、`inherited` が `false`'
       - '`config.cascade` と `serve.tmuxSession` が無い'
     test: test_normal_when_config
-lead: '`global-setup` と `setup` が利用者に 1 つずつ確認するために、設定の Schema のキーごとに今の値・既定・説明を返す。何も書き換えない。'
+lead: '`global-setup` と `setup` が利用者に 1 つずつ確認するために、設定の Schema のキーごとに今の値・既定・説明を返却する。何も書き換えない。'
 test_file: tests/integration/ClaudeCodeプラグイン/setup-keys.test.ts
 idempotent: true
 side_effects: なし
@@ -79,14 +79,14 @@ response:
     description: Schema の `description`
 exceptions:
   - name: なし（正常終了）
-    condition: 返した。終了コード 0
+    condition: 返却した。終了コード 0
 constraints:
   - item: 並び
     constraint: Schema の `properties` の並び。`version` は含めない
   - item: キーの範囲
-    constraint: 葉のキーまで展開する。`additionalProperties` で受けるキーは今の値にあるものだけ返す
+    constraint: 葉のキーまで展開する。`additionalProperties` で受けるキーは今の値にあるものだけ返却する
   - item: 出力
     constraint: 結果は標準出力に JSON の 1 行で出す。誤りは標準エラーに理由と修正方法を出す
-  - item: 動く Node の版
+  - item: 動く Node のバージョン
     constraint: Node 24 以降
     decided_by: dev/設計書/非機能要件/非機能要件#requirements[CLI が動く Node の版]
