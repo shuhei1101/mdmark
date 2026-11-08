@@ -1,0 +1,36 @@
+use_cases:
+  - kind: single
+    scenario: dev/設計書/シナリオ/単一ユースケース/まとめたHTMLで文書を行き来する.yaml
+    impact: changed
+    detail: ブラウザの戻る・進む・再読み込みで、離れたときのスクロール位置から文書を表示する
+    depends_on: []
+  - kind: single
+    scenario: dev/設計書/シナリオ/単一ユースケース/セクションと行の詳細を開閉する.yaml
+    impact: changed
+    detail: 要件の未確定の案 B のとき、戻る・進むで文書に戻ると開いていたセクションと行の詳細を開いて表示する（案 A なら none）
+    depends_on: []
+  - kind: single
+    scenario: dev/設計書/シナリオ/単一ユースケース/タブを切り替える.yaml
+    impact: run_only
+    detail: 選んだタブ名の保持は変えないが、文書を描き直す処理の変更が保持を壊しうる
+    depends_on: []
+  - kind: composite
+    scenario: dev/設計書/シナリオ/複合ユースケース/雛形から1枚のHTMLを配る.yaml
+    impact: run_only
+    detail: まとめた HTML で文書を行き来する流れを含む
+    depends_on: []
+docs:
+  - page: docs/はじめに/コアコンセプト/1枚にまとめる仕組み.md
+    new: false
+    change: ブラウザの戻る・進むで移った文書を行き来する行に、離れたときのスクロール位置から表示することを追加する
+    status: todo
+scope_out:
+  - item: VS Code のプレビューの Webview のスクロール位置の保持
+    reason: まとめた HTML とは別の画面で、要望に含まれない
+    plan: none
+  - item: 公開ドキュメントのサイト（docs/_theme/assets/app.js）のページの移動の状態の保持
+    reason: 本文の「サイト（build_site）」は mdmark build と同じ処理のまとめた HTML で、公開ドキュメントのサイトは含めないと判断した。ページごとの移動はブラウザの移動で、ブラウザが位置を戻す。レビューで確定する
+    plan: none
+  - item: mount を使う側のページでのページ全体のスクロール位置の保持
+    reason: ページ全体の移動と履歴は使う側のアプリのルーターが管理する（判定フローチャートの ※2）
+    plan: none
