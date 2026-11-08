@@ -10918,6 +10918,45 @@ test("test_normal_when_includes_updated", async () => {
   expect(el.textContent).toContain("追加の段落");
 });
 
+// 見出しの節の中に置いた取り込みの枠の中で、取り込んだ見出しの節を開閉する（正常系（取り込みの枠の中の節を開閉する））
+test("test_normal_when_sections_in_include_toggled", async () => {
+  // 準備
+  const el = createElement();
+  const markdown = [
+    "## 航海",
+    "",
+    "<!-- include: 共通/手順.md#実行 -->",
+    "",
+    "後の段落",
+    "",
+  ].join("\n");
+  const includes = {
+    "共通/手順.md": "## 準備\n\n準備の段落\n\n## 実行\n\n実行の段落\n",
+  };
+  await mountTracked(el, { markdown, includes });
+  const toggleOf = (id: string) =>
+    find<HTMLButtonElement>(el, `[aria-controls="section-${id}"]`);
+  const bodyOf = (id: string) => find<HTMLElement>(el, `[id="section-${id}"]`);
+  // 検証: 描いた直後
+  const include = find<HTMLElement>(bodyOf("航海"), ".mdmark-include");
+  expect(include.contains(bodyOf("実行"))).toBe(true);
+  expect(bodyOf("実行").textContent).toContain("実行の段落");
+  const after = [...bodyOf("航海").querySelectorAll("p")].find(
+    (paragraph) => paragraph.textContent === "後の段落",
+  );
+  expect(after).toBeDefined();
+  expect(include.contains(after as Node)).toBe(false);
+  // 実行・検証: 取り込んだ実行の開閉を押す
+  toggleOf("実行").click();
+  expect(bodyOf("実行").hasAttribute("hidden")).toBe(true);
+  expect(toggleOf("実行").getAttribute("aria-expanded")).toBe("false");
+  expect(bodyOf("航海").hasAttribute("hidden")).toBe(false);
+  // 実行・検証: 航海の開閉を押す
+  toggleOf("航海").click();
+  expect(bodyOf("航海").hasAttribute("hidden")).toBe(true);
+  expect(toggleOf("航海").getAttribute("aria-expanded")).toBe("false");
+});
+
 // 蛍光ペンの mark を、コメントの印と分けて扱う（正常系（蛍光ペンとコメント））
 test("test_normal_when_highlight_with_comments", async () => {
   // 準備
