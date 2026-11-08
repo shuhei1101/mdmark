@@ -459,6 +459,25 @@ test("test_color_diff_blocks_when_paragraphs_joined", async () => {
   expect(colored.querySelectorAll('[data-kind="del"]')).toHaveLength(0);
 });
 
+// 描いた結果に要素を出さない行が範囲の末尾にあっても、手前に追加した段落だけに色を適用する（正常系）
+test("test_color_diff_blocks_when_unrendered_line_follows", async () => {
+  // 準備: リンクの参照の定義は描いた結果に要素を出さず、直前のブロックの範囲に入る
+  const before = "段落 P\n\n[ref]: https://example.com\n";
+  const after = "段落 P\n\n段落 N\n\n[ref]: https://example.com\n";
+  // 実行
+  const colored = await colorBlocks({ before, after });
+  // 検証: 段落 N だけが追加の色に包まれる
+  const adds = [
+    ...colored.querySelectorAll('div.mdmark-diff-block[data-kind="add"]'),
+  ];
+  expect(adds.map(paragraphText)).toEqual(["段落 N"]);
+  // 検証: 段落 P は包まれない
+  const p = [...colored.querySelectorAll("p")].find(
+    (element) => element.textContent === "段落 P",
+  );
+  expect(p?.closest(".mdmark-diff-block")).toBeNull();
+});
+
 // 段落の間の空行の数だけを変えた変更では、色を適用しない（正常系）
 test("test_color_diff_blocks_when_blank_lines_only", async () => {
   // 準備
