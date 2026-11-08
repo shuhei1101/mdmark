@@ -37,7 +37,8 @@ const LONG_PAYLOAD = {
     {
       path: "b.md",
       title: "B",
-      markdown: "# 文書B\n\n<!-- toc -->\n\n## 一つ目\n\n本文\n\n## 二つ目\n\n本文\n",
+      markdown:
+        "# 文書B\n\n<!-- toc -->\n\n## 一つ目\n\n本文\n\n## 二つ目\n\n本文\n",
     },
   ],
 };

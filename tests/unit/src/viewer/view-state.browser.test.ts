@@ -128,9 +128,7 @@ test("test_apply_view_state", async () => {
   // 検証
   expect(view.querySelector("details")?.hasAttribute("open")).toBe(false);
   expect(
-    view
-      .querySelector(".mdmark-section-toggle")
-      ?.getAttribute("aria-expanded"),
+    view.querySelector(".mdmark-section-toggle")?.getAttribute("aria-expanded"),
   ).toBe("true");
   expect(secondPlainTab(view).getAttribute("aria-selected")).toBe("true");
   expect(Math.abs(window.scrollY - 1200)).toBeLessThanOrEqual(1);
@@ -151,9 +149,7 @@ test("test_apply_view_state_when_counts_differ", async () => {
   // 検証
   expect(view.querySelector("details")?.hasAttribute("open")).toBe(true);
   expect(
-    view
-      .querySelector(".mdmark-section-toggle")
-      ?.getAttribute("aria-expanded"),
+    view.querySelector(".mdmark-section-toggle")?.getAttribute("aria-expanded"),
   ).toBe("true");
 });
 
