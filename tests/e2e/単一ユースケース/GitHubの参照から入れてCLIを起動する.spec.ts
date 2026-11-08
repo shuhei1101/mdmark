@@ -29,7 +29,7 @@ const LISTENING_URL_PATTERN = /http:\/\/127\.0\.0\.1:\d+\/mcp/;
 const POLL_INTERVAL_MS = 500;
 // 依存を npm レジストリから入れてから起動するまで待つ上限（ミリ秒）。`prepare` が残っていると devDependencies も入れるため、その時間（実測で約 3 分）を含める
 const INSTALL_TIMEOUT_MS = 480_000;
-// テスト 1 件の上限（ミリ秒）。導入の待ちの上限に、一時のリポジトリの用意とツールの一覧の取得の分を追加する
+// テスト 1 件の上限（ミリ秒）。導入の待ちの上限に、一時のリポジトリの用意とツールの一覧の取得の分を加算する
 const TEST_TIMEOUT_MS = 600_000;
 // `npm ci --prefix tools/eslint` が出す導入の集計の行
 const ESLINT_INSTALL_OUTPUT = /added \d+ packages/;

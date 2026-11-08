@@ -286,7 +286,7 @@ async function hoverRailTop(page: Page): Promise<void> {
   await page.mouse.move(box.x + box.width / 2, Math.max(box.y, 0) + 8);
 }
 
-/** hover で開く目次の枠の上端に期待する位置: 画面の上端から --mdmark-sticky-top と --mdmark-space を追加した位置（px） */
+/** hover で開く目次の枠の上端に期待する位置: 画面の上端から --mdmark-sticky-top と --mdmark-space を加算した位置（px） */
 function expectedPanelTop(page: Page): Promise<number> {
   return page.locator("#doc").evaluate((doc) => {
     const probe = document.createElement("span");

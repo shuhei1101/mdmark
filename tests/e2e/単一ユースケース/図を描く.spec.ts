@@ -619,7 +619,7 @@ async function barBoxes(figure: Locator) {
     );
 }
 
-// 追加した 8 つの種類のグラフを、タイトルと凡例つきで図の枠に描き、積み上げは同じ項目の値を追加した高さにする（正常シナリオ（追加したグラフの種類））
+// 追加した 8 つの種類のグラフを、タイトルと凡例つきで図の枠に描き、積み上げは同じ項目の値を加算した高さにする（正常シナリオ（追加したグラフの種類））
 test("test_normal_when_more_chart_types", async ({ page }) => {
   // 準備
   await openPage(page, builtRoot);
