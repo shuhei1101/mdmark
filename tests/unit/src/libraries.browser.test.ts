@@ -348,7 +348,9 @@ test("test_load_libraries_when_extension_fails", async () => {
   const notices = [...root.querySelectorAll(".mdmark-notice")];
   expect(notices).toHaveLength(2);
   for (const notice of notices) {
-    expect(notice.querySelector("p")?.textContent).toMatch(/^表示に使用する拡張（/);
+    expect(notice.querySelector("p")?.textContent).toMatch(
+      /^表示に使用する拡張（/,
+    );
   }
   const calls = errorSpy.mock.calls;
   expect(

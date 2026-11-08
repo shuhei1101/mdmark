@@ -79,7 +79,9 @@ test("test_render_revision_picker", async () => {
   expect(has(after.get("r1"), "disabled")).toBe(true);
   expect(has(before.get("r1"), "disabled")).toBe(false);
   expect(has(after.get("r3"), "disabled")).toBe(false);
-  expect(before.get("r2")?.text).toBe("2026/10/19 16:40 件数を修正する（鈴木）");
+  expect(before.get("r2")?.text).toBe(
+    "2026/10/19 16:40 件数を修正する（鈴木）",
+  );
   const status = plainText(outerHtml(html, 'role="status"'));
   expect(status).toContain("削除した行 1・追加した行 8");
 });

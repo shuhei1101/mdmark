@@ -129,7 +129,9 @@ test("test_write_config_version_when_missing", async () => {
   // 準備
   const { writeConfigVersion } = await loadModule();
   const work = await createTempDir();
-  await writeFiles(work, { "mdmark.config.yaml": "legacy: 1\ntitle: タイトル\n" });
+  await writeFiles(work, {
+    "mdmark.config.yaml": "legacy: 1\ntitle: タイトル\n",
+  });
   const configPath = join(work, "mdmark.config.yaml");
   // 実行
   await writeConfigVersion(configPath, "v0.5.0");

@@ -39,7 +39,9 @@ test("test_start_viewer_when_aliases", async () => {
   const payload = {
     kind: "document",
     config: {},
-    docs: [{ path: "a.md", title: "タイトル", markdown: "単体テストを実行する。\n" }],
+    docs: [
+      { path: "a.md", title: "タイトル", markdown: "単体テストを実行する。\n" },
+    ],
     entry: "a.md",
     aliases: [
       {

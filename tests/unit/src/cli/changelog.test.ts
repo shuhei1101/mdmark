@@ -29,7 +29,11 @@ test("test_changelog_rows", async () => {
   const rows = changelogRows({ text, from: "v0.3.0", to: "v0.5.0" });
   // 検証
   expect(rows).toEqual([
-    { version: "v0.5.0", pr: "#45", change: "注意書きのマーカーの名前を統一する" },
+    {
+      version: "v0.5.0",
+      pr: "#45",
+      change: "注意書きのマーカーの名前を統一する",
+    },
     { version: "v0.4.0", pr: "#41", change: "表の列を追加する" },
     {
       version: "v0.4.0",

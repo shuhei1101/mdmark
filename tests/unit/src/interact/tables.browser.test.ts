@@ -741,7 +741,9 @@ test("test_attach_tables_when_cell_has_term", async () => {
     expect(buttons.map((button) => button.getAttribute("aria-label"))).toEqual([
       "「名前」で絞り込む",
     ]);
-    expect(root.querySelector("tbody td .mdmark-term")?.textContent).toBe("マーカー");
+    expect(root.querySelector("tbody td .mdmark-term")?.textContent).toBe(
+      "マーカー",
+    );
   } finally {
     handle.destroy();
     root.remove();

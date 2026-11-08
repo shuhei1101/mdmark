@@ -9,8 +9,14 @@ const LINES =
   '<div class="mdmark-diff-line" data-kind="same"><span class="mdmark-diff-text">&lt;table&gt;</span></div>';
 
 // 前と後の範囲の HTML
-const BEFORE = { label: "2026/10/19 16:40 件数を修正する", html: "<p>前の表</p>" };
-const AFTER = { label: "2026/10/20 11:05 見出しを修正する", html: "<p>後の表</p>" };
+const BEFORE = {
+  label: "2026/10/19 16:40 件数を修正する",
+  html: "<p>前の表</p>",
+};
+const AFTER = {
+  label: "2026/10/20 11:05 見出しを修正する",
+  html: "<p>後の表</p>",
+};
 
 // 変えた範囲に見方のボタンを付け、既定でソースを出す（正常系）
 test("test_render_diff_html", async () => {

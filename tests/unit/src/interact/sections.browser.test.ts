@@ -189,7 +189,9 @@ test("test_attach_sections_when_row_has_term", async () => {
     const toggle = root.querySelector<HTMLButtonElement>(
       "button.mdmark-row-toggle",
     );
-    expect(root.querySelector("tbody td .mdmark-term")?.textContent).toBe("マーカー");
+    expect(root.querySelector("tbody td .mdmark-term")?.textContent).toBe(
+      "マーカー",
+    );
     expect(toggle?.getAttribute("aria-label")).toBe("「マーカー」の詳細");
   } finally {
     handle.destroy();
@@ -284,9 +286,9 @@ test("test_attach_sections_when_diff_block", async () => {
   // 検証
   expect(wrapper.querySelector("h2 .mdmark-section-toggle")).not.toBeNull();
   sectionToggle(root, "新しいセクション").click();
-  expect(sectionToggle(root, "新しいセクション").getAttribute("aria-expanded")).toBe(
-    "false",
-  );
+  expect(
+    sectionToggle(root, "新しいセクション").getAttribute("aria-expanded"),
+  ).toBe("false");
   const body = wrapper.nextElementSibling;
   expect(body?.classList.contains("mdmark-section-body")).toBe(true);
   expect(body?.getAttribute("hidden")).toBe("until-found");

@@ -292,7 +292,9 @@ test("test_legend_for", async () => {
   expect(labels).toContain("処理の流れ");
   expect(labels).toContain("読み込む");
   expect(
-    labels.filter((label) => /処理の流れ|読み込む|書き込む|返却する|戻る/.test(label)),
+    labels.filter((label) =>
+      /処理の流れ|読み込む|書き込む|返却する|戻る/.test(label),
+    ),
   ).toHaveLength(2);
   expect(labels.some((label) => label.includes("システムの枠"))).toBe(false);
   expect(labels.some((label) => label.includes("交差"))).toBe(false);

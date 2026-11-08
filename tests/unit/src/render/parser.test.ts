@@ -142,7 +142,9 @@ test("test_find_marks_when_code", async () => {
 test("test_find_marks_when_multiline_block", async () => {
   // 準備
   const { findMarks } = await loadParser();
-  const markdown = ["# タイトル", "<div>", "<!-- tabz -->", "</div>", ""].join("\n");
+  const markdown = ["# タイトル", "<div>", "<!-- tabz -->", "</div>", ""].join(
+    "\n",
+  );
   // 実行
   const marks = findMarks(markdown);
   // 検証

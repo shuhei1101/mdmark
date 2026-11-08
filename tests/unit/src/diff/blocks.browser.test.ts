@@ -267,7 +267,9 @@ test("test_color_diff_blocks", async () => {
     "古い注意書きを削除します。",
     "配布物が届くまで数分かかります。",
   ]);
-  expect(colored.querySelector("#section-セクション")?.firstElementChild).toBe(dels[0]);
+  expect(colored.querySelector("#section-セクション")?.firstElementChild).toBe(
+    dels[0],
+  );
   expect(adds[1]?.previousElementSibling).toBe(dels[1]);
   // 検証: 書き換えた段落 A の削除は無い
   expect(dels.some((del) => del.textContent?.includes("差分を確認する"))).toBe(

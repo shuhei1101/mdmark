@@ -27,7 +27,9 @@ test("test_render_card_grid", async () => {
     '<a class="mdmark-card-grid-item" href="a.md">',
   );
   expect(findTag(html, "mdmark-card-grid-icon")).toContain('data-icon="book"');
-  expect(html).toContain('<span class="mdmark-card-grid-title">使用方法</span>');
+  expect(html).toContain(
+    '<span class="mdmark-card-grid-title">使用方法</span>',
+  );
   expect(html).toContain('<p class="mdmark-card-grid-desc">導入の手順</p>');
   expect(findTags(html, "mdmark-card-grid-item")[1]).toBe(
     '<div class="mdmark-card-grid-item">',

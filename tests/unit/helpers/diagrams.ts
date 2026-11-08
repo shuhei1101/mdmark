@@ -107,7 +107,11 @@ export const LINKED_TEXT: string = JSON.stringify({
       h: 72,
       name: "分類する",
       href: "./other.md",
-      io: { in: "問い合わせの本文", do: "種類を 1 つ選ぶ", out: "種類と確信度" },
+      io: {
+        in: "問い合わせの本文",
+        do: "種類を 1 つ選ぶ",
+        out: "種類と確信度",
+      },
     },
     {
       id: "store",

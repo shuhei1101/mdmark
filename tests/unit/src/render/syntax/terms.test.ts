@@ -14,7 +14,9 @@ import { renderDoc } from "../../../helpers/render.ts";
 const MARK_INDEX: MdmarkIndex = {
   schema: 2,
   docs: [{ id: "cur", path: "cur.md", title: "描く文書" }],
-  terms: [{ id: "mark", term: "マーカー", meaning: "HTML コメントで記載する指定" }],
+  terms: [
+    { id: "mark", term: "マーカー", meaning: "HTML コメントで記載する指定" },
+  ],
 };
 
 /** 文書 `api`・`guide` が別名 `公開関数` を持つ索引 */
@@ -287,7 +289,11 @@ test("test_terms_rule_avoided_over_doc_alias", () => {
     ],
   };
   // 実行
-  const { html } = renderDoc("作業場を使用する。\n", {}, { index, docId: "guide" });
+  const { html } = renderDoc(
+    "作業場を使用する。\n",
+    {},
+    { index, docId: "guide" },
+  );
   // 検証
   expect(matches(html, AVOIDED_TERM)).toHaveLength(1);
   expect(html).not.toContain("関連文書");

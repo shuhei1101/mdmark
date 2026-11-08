@@ -41,7 +41,10 @@ test("test_check_view_options_when_invalid", async () => {
   const el = new HTMLElement();
   const cases: Array<{ opts: unknown; name: string }> = [
     { opts: { ...VALID, columns: [] }, name: "opts.columns" },
-    { opts: { ...VALID, columns: ["タイトル", "タイトル"] }, name: "opts.columns" },
+    {
+      opts: { ...VALID, columns: ["タイトル", "タイトル"] },
+      name: "opts.columns",
+    },
     {
       opts: { ...VALID, items: [["配色", "未着手", "佐藤"]] },
       name: "opts.items",
