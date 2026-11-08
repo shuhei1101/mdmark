@@ -128,6 +128,51 @@ async function startTranspilerServer(): Promise<{
   };
 }
 
+/** mermaid（`mermaid@12.3.0` の `dist/` の本体と chunk）を、jsDelivr と同じパス `/npm/mermaid@12.3.0/dist/` で配る手元の配信を立てる */
+async function startMermaidServer(): Promise<{
+  url: string;
+  requests: () => number;
+  close: () => void;
+}> {
+  const dist = join(REPO_ROOT, "node_modules", "mermaid", "dist");
+  const prefix = "/npm/mermaid@12.3.0/dist/";
+  let count = 0;
+  const server = createServer((request, response) => {
+    const path = (request.url ?? "").split("?")[0] ?? "";
+    const file = join(dist, path.slice(prefix.length));
+    if (
+      !path.startsWith(prefix) ||
+      !file.startsWith(dist) ||
+      !file.endsWith(".mjs")
+    ) {
+      response.writeHead(404);
+      response.end();
+      return;
+    }
+    count += 1;
+    readFile(file).then(
+      (body) => {
+        response.writeHead(200, {
+          "Content-Type": "text/javascript; charset=utf-8",
+          "Access-Control-Allow-Origin": "*",
+        });
+        response.end(body);
+      },
+      () => {
+        response.writeHead(404);
+        response.end();
+      },
+    );
+  });
+  await new Promise<void>((resolve) => server.listen(0, "127.0.0.1", resolve));
+  const { port } = server.address() as AddressInfo;
+  return {
+    url: `http://127.0.0.1:${port}${prefix}mermaid.esm.min.mjs`,
+    requests: () => count,
+    close: () => server.close(),
+  };
+}
+
 suite("プレビューを開く", () => {
   suiteSetup(() => {
     installRecorder();
@@ -202,6 +247,56 @@ suite("プレビューを開く", () => {
   });
 
   // CSP を広げずに、範囲の ts をページの nonce を付けた script 要素で動かす（正常系（範囲のスクリプトと CSS））
+  test("test_normal_when_mermaid", async () => {
+    // 準備
+    const mermaid = await startMermaidServer();
+    try {
+      await stub.setTags(["v0.10.0"]);
+      await writeFixture(
+        "flow.md",
+        "# 図\n\n```mermaid\nflowchart LR\n  A[受付] --> B[回答]\n```\n",
+      );
+      await writeFixture(
+        "mdmark.config.yaml",
+        `mermaid:\n  url: ${mermaid.url}\n`,
+      );
+      await openMarkdown("flow.md");
+      // 実行
+      await vscode.commands.executeCommand("mdmark.openPreviewToSide");
+      const record = lastPanel();
+      await waitForRendered(record);
+      // 検証: mermaid の図
+      await waitFor(
+        async () =>
+          (
+            await inspect(
+              'figure.mdmark-diagram[data-diagram="mermaid"] .mdmark-mermaid svg',
+            )
+          ).length === 1,
+        { message: "mermaid の図を描かない", timeout: 60_000 },
+      );
+      assert.ok(mermaid.requests() > 0);
+      assert.strictEqual((await inspect(".mdmark-notice")).length, 0);
+      // 検証: CSP
+      const html = record.panel.webview.html;
+      const csp = /<meta http-equiv="Content-Security-Policy" content="([^"]*)"/
+        .exec(html)?.[1]
+        ?.replaceAll("&#39;", "'");
+      const scriptSrc = csp
+        ?.split("; ")
+        .find((directive) => directive.startsWith("script-src "));
+      assert.ok(scriptSrc);
+      assert.ok(scriptSrc.includes(new URL(mermaid.url).origin), scriptSrc);
+      for (const word of ["blob:", "'unsafe-inline'", "'unsafe-eval'"]) {
+        assert.ok(!scriptSrc.includes(word), scriptSrc);
+      }
+      const [root] = await inspect("html");
+      assert.strictEqual(root?.attributes["data-mdmark-csp-violations"], "0");
+    } finally {
+      mermaid.close();
+    }
+  });
+
   test("test_normal_when_range_scripts", async () => {
     // 準備
     const transpiler = await startTranspilerServer();

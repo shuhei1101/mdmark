@@ -301,3 +301,20 @@ test("test_no_legend_items", async () => {
   });
   expect(gap).toBeLessThanOrEqual(16);
 });
+
+// 種類 mermaid は題名だけの題で、範囲と更新日を出さず、凡例の場所を取らない（Mermaid）
+test("test_mermaid", async () => {
+  // 準備・実行
+  const page = await openFrame("mermaid", true);
+  // 検証
+  const figure = page.locator("figure.mdmark-diagram");
+  await expect(figure.getAttribute("data-diagram")).resolves.toBe("mermaid");
+  await expect(figure.locator("figcaption").innerText()).resolves.toBe(
+    "問い合わせの受付",
+  );
+  await expect(figure.locator("figcaption time").count()).resolves.toBe(0);
+  await expect(page.locator('[aria-label="凡例"]').isVisible()).resolves.toBe(
+    false,
+  );
+  await expect(figure.locator(".mdmark-mermaid svg").count()).resolves.toBe(1);
+});

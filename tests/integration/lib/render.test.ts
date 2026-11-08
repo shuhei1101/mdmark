@@ -4308,3 +4308,28 @@ test("test_normal_when_page_marker_and_card_grid", async () => {
     middleHtml.indexOf("後ろの段落"),
   );
 });
+
+// mermaid のコードブロックは図にせず、属性 data-mdmark-mermaid を付けたコードブロックとして返す（正常系（mermaid のコードブロック））
+test("test_normal_when_mermaid_code_block", async () => {
+  // 準備
+  const render = await loadRender();
+  const block = ["```mermaid", "flowchart LR", "  A --> B", "```", ""].join(
+    "\n",
+  );
+  // 実行
+  const enabled = render(block);
+  const disabled = render(`<!-- features: -mermaid -->\n\n${block}`);
+  // 検証
+  expect(findTag(enabled, 'class="mdmark-code"')).toContain(
+    "data-mdmark-mermaid",
+  );
+  expect(findTag(enabled, "<code")).toContain('class="language-mermaid"');
+  expect(plainText(innerHtml(enabled, "<code"))).toContain("A --> B");
+  expect(findTag(disabled, 'class="mdmark-code"')).not.toContain(
+    "data-mdmark-mermaid",
+  );
+  for (const html of [enabled, disabled]) {
+    expect(html).not.toContain("<svg");
+    expect(html).not.toContain("data-mdmark-syntax");
+  }
+});

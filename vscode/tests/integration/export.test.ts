@@ -1,6 +1,6 @@
 import * as assert from "node:assert";
 import { existsSync } from "node:fs";
-import { chmod, mkdir, readdir, readFile } from "node:fs/promises";
+import { chmod, cp, mkdir, readdir, readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { pathToFileURL } from "node:url";
 import playwright from "playwright";
@@ -103,6 +103,7 @@ function exportedData(html: string): {
   config: {
     libraries?: Record<string, string>;
     "html-scripts"?: { url?: string };
+    mermaid?: { url?: string };
   };
 } {
   const found = html.match(
@@ -290,6 +291,56 @@ suite("HTML に書き出す", () => {
     assertExportFailedNotice(messages.error[0]);
     assert.deepStrictEqual(opened, []);
     assert.deepStrictEqual(await readdir(join(workspaceDir(), "locked")), []);
+  });
+
+  // 相対パスの mermaid.url を、本体と chunk をまとめた data: の URL で埋め、Chromium で file:// で開いて描く
+  test("test_normal_when_relative_mermaid", async () => {
+    // 準備
+    const dist = join(REPO_ROOT, "node_modules", "mermaid", "dist");
+    await cp(
+      join(dist, "mermaid.esm.min.mjs"),
+      join(workspaceDir(), "libs", "mermaid", "mermaid.esm.min.mjs"),
+    );
+    await cp(
+      join(dist, "chunks", "mermaid.esm.min"),
+      join(workspaceDir(), "libs", "mermaid", "chunks", "mermaid.esm.min"),
+      { recursive: true },
+    );
+    trackFile("libs/mermaid");
+    await writeFixture(
+      "mdmark.config.yaml",
+      "mermaid:\n  url: ./libs/mermaid/mermaid.esm.min.mjs\n",
+    );
+    await writeFixture(
+      "docs/flow.md",
+      "# 図\n\n```mermaid\nflowchart LR\n  A[受付] --> B[回答]\n```\n",
+    );
+    await openMarkdown("docs/flow.md");
+    trackFile("docs/flow.html");
+    // 実行
+    await vscode.commands.executeCommand("mdmark.exportHtml");
+    // 検証
+    const path = join(workspaceDir(), "docs", "flow.html");
+    await waitFor(() => existsSync(path), {
+      message: "書き出されない",
+      timeout: 120_000,
+    });
+    const html = await readFixture("docs/flow.html");
+    const { config } = exportedData(html);
+    assert.ok(config.mermaid?.url?.startsWith("data:text/javascript"));
+    const exported = await openExported(path);
+    try {
+      await exported.page.waitForSelector(
+        'figure.mdmark-diagram[data-diagram="mermaid"] svg',
+        { timeout: 60_000 },
+      );
+      assert.strictEqual(
+        await exported.page.locator(".mdmark-notice").count(),
+        0,
+      );
+    } finally {
+      await exported.close();
+    }
   });
 
   // 相対パスの libraries と html-scripts.url を data: の URL で埋め、Chromium で file:// で開いて描く
