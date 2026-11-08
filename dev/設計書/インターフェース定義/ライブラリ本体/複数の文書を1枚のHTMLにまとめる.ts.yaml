@@ -318,9 +318,118 @@ flows:
       - 終了コードが 0 で、まとめた HTML を file:// で開いて mermaid の文書へ移ると、`figure.mdmark-diagram[data-diagram="mermaid"]` があり、外への要求が 0 件
       - mermaid のコードブロックを持たない文書だけを `include` にしたときは、mermaid が埋められていない
     test: test_normal_when_mermaid_embedded
+  - name: 正常系（戻る・進むで離れたときの位置に戻る）
+    summary: 文書間のリンクで移ってから戻る・進むと、その履歴の項目を離れたときのスクロール位置で描く
+    setup:
+      - name: 長い文書を持つフォルダ
+        description: '`entry` の `a.md` は段落を 200 個持ち、100 個目の段落に `b.md` へのリンクを持つ。`b.md` は段落を 200 個持ち、末尾に `a.md` へのリンクを持つ'
+        notes: 開く画面は 1280 × 800px
+      - name: Mock
+        description: 差し替える依存は無い（記載した HTML だけを空のフォルダへコピーして Playwright の Chromium で file:// で開く）
+    flow: |-
+      sequenceDiagram
+        actor U as 読者
+        participant H as まとめた HTML
+        participant S as sessionStorage
+        U->>H: a.md を b.md へのリンクまでスクロールして押す
+        H->>S: a.md の項目の位置を保存する
+        H-->>U: b.md の頭
+        U->>H: b.md を 1000px スクロールして戻る
+        H->>S: b.md の項目の位置を保存する
+        S-->>H: a.md の項目の位置
+        H-->>U: a.md を保存した位置で描く
+        U->>H: 進む
+        S-->>H: b.md の項目の位置
+        H-->>U: b.md を保存した位置で描く
+        U->>H: b.md の末尾の a.md へのリンクを押す
+        H-->>U: 新しい項目として a.md の頭
+    expected:
+      - 開いた後、`history.scrollRestoration` が `manual`
+      - リンクで b.md へ移ると `scrollY` が 0
+      - 戻るで a.md が描かれ、`scrollY` がリンクを押したときの値（±1px）で、b.md へのリンクが画面に入っている
+      - 進むで b.md が描かれ、`scrollY` が 1000（±1px）
+      - b.md の末尾のリンクで a.md へ移ると `scrollY` が 0
+      - どの時点も URL の `#` が文書のパス（と見出し）だけを持ち、位置を持たない
+      - 外への要求が 0 件
+    test: test_normal_when_back_forward_restore_scroll
+    refs:
+      - dev/設計書/シナリオ/単一ユースケース/まとめたHTMLで文書を行き来する#scenarios[正常シナリオ（戻る・進むで離れたときの位置に戻る）]
+  - name: 正常系（再読み込みで離れたときの位置に戻る）
+    summary: 開いている文書をスクロールして再読み込みすると、再読み込みの前の位置で描く
+    setup:
+      - name: 長い文書を持つフォルダ
+        description: 正常系（戻る・進むで離れたときの位置に戻る）と同じ
+      - name: Mock
+        description: 正常系（戻る・進むで離れたときの位置に戻る）と同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 読者
+        participant H as まとめた HTML
+        participant S as sessionStorage
+        U->>H: a.md を 3000px スクロールして再読み込みする
+        H->>S: pagehide で a.md の項目の位置を保存する
+        S-->>H: a.md の項目の位置
+        H-->>U: a.md を保存した位置で描く
+    expected:
+      - 再読み込みの後、a.md が描かれ、`scrollY` が 3000（±1px）
+    test: test_normal_when_reload_restore_scroll
+    refs:
+      - dev/設計書/シナリオ/単一ユースケース/まとめたHTMLで文書を行き来する#scenarios[正常シナリオ（再読み込みで離れたときの位置に戻る）]
+  - name: 正常系（戻るで開閉と選んだタブを戻す）
+    summary: 開閉と group= の無いタブを変えてから移り、戻ると開閉とタブを戻してから位置を戻す
+    setup:
+      - name: 開閉とタブを持つフォルダ
+        description: '`entry` の `a.md` は、`<!-- section: closed -->` の h2 のセクション（中に `group=` の無い 2 つのタブ。2 つ目のタブに段落 100 個と `b.md` へのリンク）、閉じた表（`<!-- table: data closed -->`）、フォルダを持つファイルツリーを持つ。`b.md` は 1 段落'
+      - name: Mock
+        description: 正常系（戻る・進むで離れたときの位置に戻る）と同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 読者
+        participant H as まとめた HTML
+        participant S as sessionStorage
+        U->>H: セクションと閉じた表を開き、ファイルツリーのフォルダを閉じ、2 つ目のタブを選ぶ
+        U->>H: 2 つ目のタブの b.md へのリンクまでスクロールして押す
+        H->>S: a.md の項目の開閉・タブ・位置を保存する
+        H-->>U: b.md
+        U->>H: 戻る
+        S-->>H: a.md の項目の開閉・タブ・位置
+        H-->>U: 開閉とタブを戻し、保存した位置で a.md を描く
+    expected:
+      - 戻るで a.md に戻ると、セクションのボタンの `aria-expanded` が `true` で中身が `hidden` を持たない
+      - 閉じた表の `details` が `open` を持つ
+      - ファイルツリーの閉じたフォルダのボタンの `aria-expanded` が `false`
+      - 2 つ目のタブの `aria-selected` が `true`
+      - '`scrollY` がリンクを押したときの値（±1px）で、b.md へのリンクが画面に入っている'
+      - localStorage に `mdmark-tabs:` で始まるキーが無い
+    test: test_normal_when_back_restore_folds_and_tabs
+    refs:
+      - dev/設計書/シナリオ/単一ユースケース/まとめたHTMLで文書を行き来する#scenarios[正常シナリオ（戻る・進むで開閉と選んだタブを戻す）]
+  - name: 正常系（sessionStorage が使えない）
+    summary: sessionStorage を取り出せないページでは、戻るで文書の頭から描き、例外を出さない
+    setup:
+      - name: 長い文書を持つフォルダ
+        description: 正常系（戻る・進むで離れたときの位置に戻る）と同じ
+      - name: Mock
+        description: 開く前に `addInitScript` で `window.sessionStorage` を読むと `SecurityError` を投げるように差し替える
+    flow: |-
+      sequenceDiagram
+        actor U as 読者
+        participant H as まとめた HTML
+        participant S as sessionStorage
+        U->>H: a.md をスクロールして b.md へのリンクを押す
+        H->>S: 保存する（SecurityError）
+        H-->>U: b.md の頭
+        U->>H: 戻る
+        H-->>U: a.md の頭
+    expected:
+      - 戻るで a.md が描かれ、`scrollY` が 0
+      - '`pageerror` が 0 件で、`console.warn` に表示の状態を保存できなかった旨が出る'
+    test: test_normal_when_session_storage_unavailable
+    refs:
+      - dev/設計書/シナリオ/単一ユースケース/まとめたHTMLで文書を行き来する#scenarios[異常シナリオ（sessionStorage が使えない）]
 lead: 文書の作成者が設定の `build` で決めた文書を、参照・被参照・用語のツールチップが有効になり、文書を行き来できる 1 枚の HTML にまとめる。埋めるものと外へ要求しないことはインターフェース定義『文書をHTMLに書き出す』と同じ。
 idempotent: true
-side_effects: '`build.out` に HTML を書き込む（既にあれば上書きする）。文書が指す動画・音声を、`build.out` の隣の `_files/` のフォルダへコピーする。文書が使用する外部ライブラリの URL の先を読み込む'
+side_effects: '`build.out` に HTML を書き込む（既にあれば上書きする）。文書が指す動画・音声を、`build.out` の隣の `_files/` のフォルダへコピーする。文書が使用する外部ライブラリの URL の先を読み込む。書き出した HTML を開いたページでは、`history.scrollRestoration` を `manual` にし、履歴の項目ごとの表示の状態を sessionStorage に記載する'
 callers:
   - dev/設計書/シナリオ/単一ユースケース/複数の文書を1枚のHTMLにまとめる#
 request:
@@ -400,4 +509,10 @@ constraints:
   - item: 埋める mermaid
     constraint: 文書をHTMLに書き出す.ts の制約「埋める mermaid」と同じ。まとめる文書のどれかに mermaid のコードブロックがあるときだけ、mermaid を 1 回埋める
     decided_by: dev/設計書/非機能要件/非機能要件#requirements[mermaid を埋めた書き出しの HTML のサイズ]
+  - item: 戻る・進む・再読み込みの表示の状態
+    constraint: 書き出した HTML は開いたとき `history.scrollRestoration` を `manual` にし、履歴の項目ごとに、縦横のスクロール位置・本文の開閉（`<details>`・セクション・行の詳細・最終列の畳み・コードの行の畳み・ER 図の畳み・ファイルツリーのフォルダ・表のツリーと見本）・`group=` の無いタブで選んだタブを保存する。保存するのは `popstate`・文書の一覧と文書間のリンクのクリック・`pagehide`・間引いたスクロールのとき。戻る・進む・再読み込みで保存した状態を持つ項目へ戻ったときは、文書を描いた後に開閉とタブを戻してから位置を戻す。保存した状態を持たない項目（文書の一覧・文書間のリンクで新しく移った項目）は、今どおり見出しか文書の頭から描く
+    notes: 表のメニュー・ドロワー・絞り込み、右側の目次、差分のパネル、コメントの吹き出しは戻さない。位置は URL に出さない
+  - item: 表示の状態の保存先
+    constraint: sessionStorage。キーは履歴の項目ごとに振る ID（`history.state` に持たせる）を含む。sessionStorage を取り出せない・書き込めないときは `console.warn` に出し、保存した状態を持たない項目と同じく描く
+    decided_by: dev/設計書/シナリオ/単一ユースケース/まとめたHTMLで文書を行き来する#scenarios[異常シナリオ（sessionStorage が使えない）]
 test_file: tests/integration/lib/bundle.test.ts
