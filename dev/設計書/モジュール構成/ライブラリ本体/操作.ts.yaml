@@ -72,9 +72,9 @@ functions:
     summary: 機能がオンの記法だけ `attachSections`・`attachTables`・`attachTabs` の順に呼び（付けたときも `hashchange` も、`attachTables` が行へ送信する前に `attachSections` が URL の `#ID` の指す閉じたセクションを開くため）、`table` がオンなら `attachTables` の後に `attachStickyRows` を、`code` がオンなら `attachCodeCopy` と `attachCodeFolds` を、`tree` がオンなら `attachFileTrees` を呼び、`footnotes` がオンなら `attachFootnotes` を呼び、`glossary` か `backlinks` がオンなら `attachTermTips` を呼ぶ。`html` がオンなら `attachEmbeddedHtml` を、さらに `hints` がオンなら `div.mdmark-html` ごとに `attachDiagramTips` を呼ぶ。`attachTermTips`・`attachFootnotes` には `placement` を、`attachDiagrams` と `div.mdmark-html` の `attachDiagramTips` には `diagramPlacement` を指定する。まとめて削除する関数を返却する。`lightbox` がオンなら `attachLightbox` を、`gif` がオンなら `attachLightbox` の後に `attachGifs` を呼ぶ（GIF の包みが拡大のボタンを含むため）
     args:
       - name: options
-        type: '{ root: HTMLElement; features: Record<string, boolean>; placement: TooltipPlacement; diagramPlacement: TooltipPlacement; onColumnsChange?: (event: MdmarkColumnsChange) => void }'
+        type: '{ root: HTMLElement; features: Record<string, boolean>; placement: TooltipPlacement; diagramPlacement: TooltipPlacement; pinMode?: TablePinMode; onColumnsChange?: (event: MdmarkColumnsChange) => void }'
         required: true
-        description: 描いた要素と文書で決まった機能のオン・オフと、既定を適用した設定のツールチップを出す場所（本文の `placement` と図の `diagramPlacement`）と、`attachTables` に指定する列の表示の通知（`mount` の `opts.onColumnsChange`。`MdmarkColumnsChange` は `src/mount.ts` から型だけを読み込む）
+        description: 描いた要素と文書で決まった機能のオン・オフと、既定を適用した設定のツールチップを出す場所（本文の `placement` と図の `diagramPlacement`）と、`attachTables` に指定する表のピン止めの動き（既定を適用した設定の `table.pin`。既定 `each`）と列の表示の通知（`mount` の `opts.onColumnsChange`。`MdmarkColumnsChange` は `src/mount.ts` から型だけを読み込む）
     returns:
       type: () => void
       description: 付けた操作を削除する関数
@@ -200,7 +200,7 @@ functions:
     scope: internal
     summary: 表を横にスクロールさせるのは表を包む `div.mdmark-table-scroll` で、ピン止めを適用するはみ出しはその要素の `scrollWidth` と `clientWidth` で決める。列の表示を切り替えるたびに、テーブル設定のボタンの隠した列の数のバッジ（`span.mdmark-table-tool-badge`。0 列なら `hidden` にする）・`is-active`・`aria-label` を書き換える。コピーの結果はボタンの `title` とスクリーンリーダー向けの名前を書き換えて示す。各 `mdmark-table` の `data-features`・`data-filter`・`data-hide`・`data-total`・`data-pin` を読み込み、見出しに `renderTableTools` のボタンとドロワーを配置して、並べ替え・ピン止め・絞り込みを付ける。`count`・`columns`・`reorder`・`total`・`copy` の表は `renderTableBar` の帯とメニュー（テーブル設定の一覧を分ける留めた列の数は `data-pin` がある表だけ数え、無い表は 0）を、`columns`・`reorder` の表は `attachTableSettings` でテーブル設定を、`data-tree` の表は `attachTableTree` で階層の操作を、`total` の表は `renderTotalRows` の集計の行を配置し、`rowlink` の表は行へ移る処理と行の URL のコピーを付ける。全ての表に、描く先の要素の幅で最終列を畳む処理を付ける。`thead` が複数の行を持つ表は `bottomHeadCells` で列ごとの最下段の見出しのセルを決め、ボタンをそのセルにだけ配置し、列の位置はそのセルの列で数える（`cellIndex` を使用しない）。`data-merge-columns` の表は、並べ替え・絞り込みのたびに、表示している本文の行のその列の値から `mergeSpans` で結合を決め、始まりのセルに `rowspan` と `is-merged`、続くセルに `hidden` をもう一度付ける。結合で隠したセルも値を持つセルとして並べ替え・絞り込み・コピー・集計に使用する。囲み・表から探す部品の要素（ピン止めのボタン・ドロワー・畳んだ列のセル・行の詳細の行など）は、`closest(".mdmark-table")` がその囲みのものだけにし、行の詳細の中の表の要素を取得しない。受け取り（`click`・`change`・`input`・`keydown`）は、対象の `closest(".mdmark-table")` がその囲みのときだけ処理する
     description: |-
-      並べ替えは降順 → 昇順 → 元の並び（描いたときの順を行に記録する）を繰り返し、`th` の `aria-sort` を付与・解除する。行の詳細の行と畳んだ最終列の開閉の行はその行に付いて動かす。ピン止めのボタンは `ResizeObserver` で表がはみ出すときだけ出し、留める列の数（付けたときは `data-pin` の位置 + 1、無ければ `th scope="row"` の行見出しの列の数、行見出しも無ければ 1。ボタンを押すとその列まで、もう一度押すと 0）までのセルに、表がはみ出す間だけ `position: sticky` と左端からの位置を適用する（はみ出さない間は留めず、留める列の数は記録したまま）。`thead` が複数の行を持つ表の見出しのセルは、またぐ列が全て留める範囲のときだけ留める。セルの値は `cellValue` で読み込む（`data-check` の列は `data-value`）。絞り込みのドロワーは `hidden` と `aria-expanded` で開閉し、同時に 1 つだけ開く。開いたら最初の入力欄へフォーカスを移し（スマホでもボタンの押下の処理の中で移す）、開いている間だけ `document` の `pointerdown`（外を押す）と `keydown`（Esc）を受け取る。「絞り込みを解除」はその列の入力を空にして絞り込みをもう一度適用する（ドロワーの中の押下を外の押下として扱わない）。列ごとの絞り込みは `matchesFilter` で重ねて当て、合わない行に `hidden` を付ける。
+      並べ替えは降順 → 昇順 → 元の並び（描いたときの順を行に記録する）を繰り返し、`th` の `aria-sort` を付与・解除する。行の詳細の行と畳んだ最終列の開閉の行はその行に付いて動かす。ピン止めのボタンは `ResizeObserver` で表がはみ出すときだけ出し、留める列の位置の集まり（付けたときは `initialPinnedColumns`、ボタンを押すと `togglePinnedColumn`）のセルに、表がはみ出す間だけ `position: sticky` と `pinOffsets` の `left`（`each` は `right` も）を適用する（はみ出さない間は留めず、留める列は記録したまま）。列の幅は見出しの列ごとのセルの `offsetWidth`（隠した列は 0）で測る。ボタンの `aria-pressed` は、`each` は留めた列、`through` は留めた最も右の列だけを `true` にする。境の線は、表を包む要素の `scroll` と留める列を変えるたびに、左端に留まっている最も右の列のセルに `is-pinned-edge`、右端に留まっている最も左の列のセルに `is-pinned-edge-end` を付ける（留まっているかは列の元の位置と `scrollLeft`・`clientWidth`・`pinOffsets` で決める）。`thead` が複数の行を持つ表の見出しのセルは、またぐ列が全て留める列のときだけ留め、`left` は最初の列、`right` は最後の列の値にする。セルの値は `cellValue` で読み込む（`data-check` の列は `data-value`）。絞り込みのドロワーは `hidden` と `aria-expanded` で開閉し、同時に 1 つだけ開く。開いたら最初の入力欄へフォーカスを移し（スマホでもボタンの押下の処理の中で移す）、開いている間だけ `document` の `pointerdown`（外を押す）と `keydown`（Esc）を受け取る。「絞り込みを解除」はその列の入力を空にして絞り込みをもう一度適用する（ドロワーの中の押下を外の押下として扱わない）。列ごとの絞り込みは `matchesFilter` で重ねて当て、合わない行に `hidden` を付ける。
 
       件数と集計の行は、絞り込みを適用するたびに、行の詳細・開閉の行・`一致する行がありません` の行を除く本文の行のうち `hidden` を持たない行から再作成する（集計は `computeTotal`）。集計の行は計算ごとの 1 行で、付けたときに全ての本文の行から `findUnreadableTotals` で数として読み込めないセルを持つ列と計算を記録し、そのセルは再作成しても空にする。`集計` のボタンのメニュー（`表示する集計`）のチェックボックスに合わせて計算の行の `hidden` を切り替え、ボタンの `is-active` とスクリーンリーダー向けの名前を書き換え、`{計算の名前}の行を出しました`・`{計算の名前}の行を隠しました` を帯の `mdmark-table-status` に入れる（選択は覚えない）。テーブル設定のパネル・集計のメニュー・コピーの形式のメニューは絞り込みのドロワーと同じ開閉の受け取りを使用する（同時に開くのはドロワーとパネル・メニューを合わせて 1 つ）。列の表示と順の切り替え（テーブル設定のパネルの目のアイコンとつまみ）は `attachTableSettings` に任せ、切り替えるたびに最終列を畳むかをもう一度決める。ピン止めの左端からの位置は隠した列を除いてもう一度測る。`onColumnsChange` を指定したときは、`attachTableSettings` が目のアイコンで列の表示を切り替えた後に、`{ tableIndex, hidden }` で 1 回呼ぶ。`tableIndex` は付けたときに `root` の中の `columns` の表（`.mdmark-diff-block[data-kind="del"]` の中の表を除く）を文書の順に並べた位置、`hidden` は隠している列の見出しのセルの `visibleText` を列の順に並べた新しい配列。例外を投げたら、`onColumnsChange` と元のエラーを `console.error` に出して続ける。
 
@@ -215,9 +215,9 @@ functions:
         required: true
         description: 描いた要素
       - name: options
-        type: '{ onColumnsChange?: (event: MdmarkColumnsChange) => void }'
+        type: '{ onColumnsChange?: (event: MdmarkColumnsChange) => void; pinMode?: TablePinMode }'
         required: false
-        description: 列の表示の通知
+        description: 列の表示の通知と、ピン止めの動き（既定 `each`）
     returns:
       type: () => void
       description: ボタン・ドロワー・パネル・開閉の行・受け取り・`ResizeObserver`・タイマーを削除する関数
@@ -257,16 +257,16 @@ functions:
         expected: ドロワーが `hidden`、ボタンにフォーカス
       - name: test_attach_tables_when_pinned
         case: 正常
-        summary: はみ出す表だけピン止めのボタンを出して先頭の列を既定で留め、押した列までを留める
-        condition: 幅 320px の要素に 10 列の表と 2 列の表、2 列目のピン止めを押し、もう一度押す
+        summary: はみ出す表だけピン止めのボタンを出して先頭の列を既定で留め、押した列だけを留める
+        condition: 幅 320px の要素に 10 列の表と 2 列の表、3 列目のピン止めを押し、もう一度押す
         mock: なし
-        expected: 10 列の表だけボタンが `hidden` を持たない。付けた直後は 10 列の表の 1 列目のセルだけが `sticky` で 1 列目のボタンが `aria-pressed="true"`、2 列の表はどのセルも `sticky` でない。押した後は 1・2 列目のセルが `sticky`、もう一度押した後はどのセルも `sticky` でない
+        expected: 10 列の表だけボタンが `hidden` を持たない。付けた直後は 10 列の表の 1 列目のセルだけが `sticky` で 1 列目のボタンが `aria-pressed="true"`、2 列の表はどのセルも `sticky` でない。押した後は 1・3 列目のセルが `sticky` で 2 列目は `sticky` でなく、3 列目のセルの `left` が 1 列目のセルの `offsetWidth`、もう一度押した後は 1 列目のセルだけが `sticky`
       - name: test_attach_tables_when_pin_specified
         case: 正常
-        summary: data-pin の列までを留め、pin の無い表は留めず、幅が広がると留めを解除する
+        summary: data-pin の列だけを留め、pin の無い表は留めず、幅が広がると留めを解除する
         condition: 幅 320px の要素に、`data-features="pin"`・`data-pin="1"` の 8 列の表と `data-features=""` の 10 列の表を付け、要素の幅を 2000px にする
         mock: なし
-        expected: 付けた直後は 1 つ目の表の 1・2 列目のセルが `sticky` で 2 列目のボタンが `aria-pressed="true"`、2 つ目の表はピン止めのボタンが無くどのセルも `sticky` でない。2000px にした後は 1 つ目の表のどのセルも `sticky` でない
+        expected: 付けた直後は 1 つ目の表の 2 列目のセルだけが `sticky` で 2 列目のボタンだけが `aria-pressed="true"`、2 つ目の表はピン止めのボタンが無くどのセルも `sticky` でない。2000px にした後は 1 つ目の表のどのセルも `sticky` でない
       - name: test_attach_tables_when_check_column
         case: 正常
         summary: 真偽値の列を data-value の値で並べ替え・絞り込み・コピーする
@@ -377,10 +377,10 @@ functions:
         expected: ボタンが 2 行目の `th` にだけある。降順の後に分類のセルがどれも `rowspan` と `hidden` を持たない。`A` に絞り込んだ後に 1 行目の分類のセルが `rowspan="2"`。TSV の各行の分類が `A`
       - name: test_attach_tables_when_row_header_pinned
         case: 正常
-        summary: 行見出しを持つはみ出す表を、描いた直後に行見出しの列まで留める
+        summary: 行見出しを持つはみ出す表を、描いた直後に行見出しの全ての列を留める
         condition: 幅 320px の要素に、`row-header=2` の 10 列 5 行の表
         mock: なし
-        expected: 2 列目のピン止めのボタンが `aria-pressed="true"`、1・2 列目のセルの `position` が `sticky`、3 列目は `sticky` でない
+        expected: 1・2 列目のピン止めのボタンが `aria-pressed="true"`、1・2 列目のセルの `position` が `sticky`、3 列目は `sticky` でない
       - name: test_attach_tables_when_tree_copied
         case: 正常
         summary: 階層の表のコピーに畳んだ行を含め、キーを全体のパスで記載し、補った行を含めない
@@ -411,6 +411,24 @@ functions:
         condition: 幅 1000px の要素に、`div.mdmark-table-scroll` で包んだ 2 列の `data` の表と 12 列の `data` の表
         mock: なし（Chromium）
         expected: 2 列の表はピン止めのボタンが `hidden` で `table` の幅が包む要素の幅と同じ。12 列の表はピン止めのボタンが `hidden` を持たず、包む要素の `scrollWidth` が `clientWidth` より大きい
+      - name: test_attach_tables_when_pinned_at_end
+        case: 正常
+        summary: 留めた列より左を表示している間は、留めた列を右端に並べて留める
+        condition: 幅 320px の要素に 10 列の表、右端までスクロールして 8・9 列目のピン止めを押し、左端までスクロールする
+        mock: なし
+        expected: 8 列目のセルの `right` が 9 列目のセルの `offsetWidth`、9 列目のセルの `right` が `0px`。左端に戻した後、表を包む要素の右端と 9 列目のセルの右端がそろい、8 列目のセルが `is-pinned-edge-end` を持ち、9 列目は持たない
+      - name: test_attach_tables_when_pinned_through
+        case: 正常
+        summary: '`pinMode: through` の表は押した列までを左端に留め、押した列のボタンだけを押した状態にする'
+        condition: '幅 320px の要素に 10 列の表を `pinMode: "through"` で付け、3 列目のピン止めを押し、もう一度押す'
+        mock: なし
+        expected: 押した後は 1〜3 列目のセルが `sticky` で `right` が空、3 列目のボタンだけが `aria-pressed="true"`、ボタンの `aria-label` が `「{列名}」の列までピン止め`。もう一度押した後はどのセルも `sticky` でない
+      - name: test_attach_tables_when_pinned_under_merged_header
+        case: 正常
+        summary: 結合した見出しの下の 1 列だけを留めると、結合したセルは留めない
+        condition: 幅 320px の要素に、1 行目が `名前`・`設定`（3 列）・`備考`、2 行目が `名前`・`型`・`既定`・`必須`・`備考` の表を付け、`既定` のピン止めを押す
+        mock: なし
+        expected: '`既定` の 2 行目の `th` と本文の `td` が `sticky` で `left` が `名前` のセルの `offsetWidth`、1 行目の `設定` の `th` は `sticky` でない'
     refs:
       - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[列の表示の通知]
       - '#functions[computeTotal]'
@@ -2184,7 +2202,7 @@ functions:
     container: src/table-logic.ts
     kind: 関数
     scope: internal
-    summary: 動かす列と動かす先の列が同じ結合した見出しの範囲で、ピン止めの同じ側にあるとき `true` を返却する
+    summary: 動かす列と動かす先の列が同じ結合した見出しの範囲で、ピン止めの同じ側にあるとき `true` を返却する。`each` の表は呼ぶ側が全ての列の `pinned` を `false` にして渡し、ピン止めの側で分けない
     args:
       - name: options
         type: '{ from: ColumnPlace; to: ColumnPlace }'
@@ -2233,7 +2251,7 @@ functions:
     kind: 関数
     scope: internal
     summary: 表の帯のテーブル設定のボタンでパネルを開閉し、目のアイコンで列を隠し、つまみのドラッグ＆ドロップと ↑・↓ キーで列を動かす。列を動かしたら見出し・本文の行・集計の行のセルと一覧をもう一度並べ、隠したらバッジと `aria-label` を書き換えて `onColumnsChange` を呼ぶ
-    description: 並べ替えはセルの並びを DOM の上で入れ替え、列の位置は各セルに描いたときの `data-col` を持たせて数える（並べ替え・絞り込み・コピー・集計は `data-col` で列を参照する）。動かせるかは `canMoveColumn`、新しい順は `moveColumn` で決める。`dragover` で動かせない行には `preventDefault` せず線も出さない。列の順は覚えない。受け取りはその表の囲みの中だけで処理する
+    description: 並べ替えはセルの並びを DOM の上で入れ替え、列の位置は各セルに描いたときの `data-col` を持たせて数える（並べ替え・絞り込み・コピー・集計は `data-col` で列を参照する）。動かせるかは `canMoveColumn`（`pinned` は `through` の表の `pin=` で留めた列だけを `true` にする）、新しい順は `moveColumn` で決める。`dragover` で動かせない行には `preventDefault` せず線も出さない。列の順は覚えない。受け取りはその表の囲みの中だけで処理する
     side_effects: 表のセルと一覧の並び・`hidden`・ボタンの属性を書き換える。パネルを開いている間だけ `document` の `pointerdown`・`keydown` を受け取る
     args:
       - name: options
@@ -2380,6 +2398,81 @@ functions:
         expected: 1 回目の後は表を包む要素（`.mdmark-table-scroll`）が隠れ `pre.mdmark-raw` が出て `aria-pressed="true"`、2 回目の後は元に戻る
         mock: なし（ブラウザ）
         summary: 押すたびに表と元の CSV を入れ替える
+  - name: initialPinnedColumns
+    title: 描いた直後に留める列を決める
+    container: src/table-logic.ts
+    kind: 関数
+    scope: internal
+    summary: '`data-pin` の位置・行見出しの列の数・ピン止めの動きから、描いた直後に留める列の位置を小さい順に返却する'
+    description: 留める元の列は `pin` があればその列、無ければ行見出しの全ての列、行見出しも無ければ先頭の列。`each` はそのまま、`through` は先頭からその最も右の列までの全ての列にする
+    args:
+      - name: options
+        type: '{ pin: number[]; rowHeadCount: number; mode: TablePinMode }'
+        required: true
+        description: '`data-pin` の位置（無ければ空）、`th scope="row"` の行見出しの列の数、ピン止めの動き'
+    returns:
+      type: number[]
+      description: 留める列の位置
+    unit_tests:
+      - name: test_initial_pinned_columns
+        case: 正常
+        summary: pin・行見出し・先頭の列の順に決め、through は最も右の列まで広げる
+        condition: '`{ pin: [0, 2], rowHeadCount: 0, mode: each }`・`{ pin: [], rowHeadCount: 2, mode: each }`・`{ pin: [], rowHeadCount: 0, mode: each }`・`{ pin: [2], rowHeadCount: 0, mode: through }`'
+        mock: なし
+        expected: '`[0, 2]`・`[0, 1]`・`[0]`・`[0, 1, 2]`'
+    status: planned
+    introduced:
+      pr: 438
+  - name: togglePinnedColumn
+    title: 押した列で留める列を切り替える
+    container: src/table-logic.ts
+    kind: 関数
+    scope: internal
+    summary: ピン止めのボタンを押した列と今の留める列から、新しい留める列の位置を小さい順に返却する
+    description: '`each` は押した列が留める列にあれば除き、無ければ加える。`through` は押した列が留める列の最も右なら空にし、それ以外は先頭から押した列までの全ての列にする。指定された配列は書き換えない'
+    args:
+      - name: options
+        type: '{ pinned: number[]; column: number; mode: TablePinMode }'
+        required: true
+        description: 今の留める列、押した列の位置、ピン止めの動き
+    returns:
+      type: number[]
+      description: 新しい留める列の位置
+    unit_tests:
+      - name: test_toggle_pinned_column
+        case: 正常
+        summary: each は押した列だけを出し入れし、through は押した列までにするか解除する
+        condition: '`{ pinned: [0], column: 2, mode: each }`・`{ pinned: [0, 2], column: 2, mode: each }`・`{ pinned: [0], column: 2, mode: through }`・`{ pinned: [0, 1, 2], column: 2, mode: through }`'
+        mock: なし
+        expected: '`[0, 2]`・`[0]`・`[0, 1, 2]`・`[]`'
+    status: planned
+    introduced:
+      pr: 438
+  - name: pinOffsets
+    title: 留める列の左右の位置を求める
+    container: src/table-logic.ts
+    kind: 関数
+    scope: internal
+    summary: 列ごとの幅と留める列から、留める列ごとにそれより左で留めた列の幅の合計（`start`）と右で留めた列の幅の合計（`end`）を返却する
+    description: 幅は整数（`offsetWidth`）をそのまま足し合わせ、留めた列の間に隙間を出さない。留めない列の位置には値を入れない
+    args:
+      - name: options
+        type: '{ widths: number[]; pinned: number[] }'
+        required: true
+        description: 列ごとの幅（隠した列は 0）と留める列の位置
+    returns:
+      type: 'Map<number, { start: number; end: number }>'
+      description: 留める列の位置から左右の位置
+    unit_tests:
+      - name: test_pin_offsets
+        case: 正常
+        summary: 左右で留めた列の幅だけを足し合わせる
+        condition: '`widths` が `[100, 80, 60, 40, 30]`、`pinned` が `[0, 2, 4]`'
+        mock: なし
+        expected: '0 が `{ start: 0, end: 90 }`、2 が `{ start: 100, end: 30 }`、4 が `{ start: 160, end: 0 }`、1・3 は値を持たない'
+    status: planned
+    introduced:
+      pr: 438
 test_files:
   - tests/unit/src/interact/index.browser.test.ts
   - tests/unit/src/interact/tables.browser.test.ts
