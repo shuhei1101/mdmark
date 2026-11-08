@@ -587,6 +587,9 @@ functions:
         condition: '`printSvg` を渡した呼び出しと渡さない呼び出し'
         mock: なし
         expected: '前者は `mdmark-mermaid mdmark-mermaid-has-print` の中に `svg` と `div.mdmark-mermaid-print[aria-hidden="true"]` がこの順にある。後者は `mdmark-mermaid-print` が無い。どちらも `width`・`height` が渡した値'
+test_files:
+  - tests/unit/src/mermaid-source.test.ts
+  - tests/unit/src/mermaid.browser.test.ts
+  - tests/unit/src/parts/mermaid.test.ts
 notes:
-  単体テストのファイル: '`tests/unit/src/mermaid-source.test.ts`・`tests/unit/src/mermaid.browser.test.ts`・`tests/unit/src/parts/mermaid.test.ts` を置き、単体テスト作成の段で `test_files` に載せる'
   他の分類への変更: '`mount` は記法の操作と外部ライブラリの後に `attachMermaid` を呼ぶ（分類『描く』）。`render` は機能 `mermaid` がオンなら言語 `mermaid` のコードブロックに `data-mdmark-mermaid` を付ける（分類『記法』『部品』）。図の枠は種類 `mermaid` と倍率の下限を持ち、`attachDiagrams` は渡した図だけに付けられる（分類『図』）。書き出しは mermaid を束ね、起動の処理が `setEmbeddedMermaid` で渡す（分類『CLI』『書き出したHTMLの起動』）'
