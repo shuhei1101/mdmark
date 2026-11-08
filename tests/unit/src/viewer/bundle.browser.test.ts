@@ -181,6 +181,49 @@ test("test_start_bundle_when_back_restores_view_state", async () => {
   expect(history.scrollRestoration).toBe("manual");
 });
 
+// 戻るで開閉とタブを戻した後、フォーカスを h1 へ移す（正常系）
+test("test_start_bundle_when_back_focuses_title", async () => {
+  // 準備
+  const { startBundle } = await loadBundle();
+  await placeSkeleton();
+  const payload = {
+    ...PAYLOAD,
+    docs: [
+      {
+        path: "a.md",
+        title: "A",
+        markdown:
+          "# 文書A\n\n<!-- tabs -->\n\n## 一つ目\n\n本文\n\n## 二つ目\n\n[B へ](b.md)\n\n<!-- /tabs -->\n",
+      },
+      { path: "b.md", title: "B", markdown: "# 文書B\n" },
+    ],
+  };
+  history.replaceState(null, "", "#/a.md");
+  startBundle(document, payload, {});
+  const tab = document.querySelector<HTMLButtonElement>(
+    ".mdmark-bundle-main .mdmark-tab:nth-of-type(2)",
+  );
+  if (tab === null) {
+    throw new Error("2 つ目のタブが無い");
+  }
+  tab.click();
+  const changed = nextHashchange();
+  linkTo("b.md").click();
+  await changed;
+  // 実行
+  const back = nextHashchange();
+  history.back();
+  await back;
+  // 検証
+  const restored = document.querySelector(
+    ".mdmark-bundle-main .mdmark-tab:nth-of-type(2)",
+  );
+  expect(restored?.getAttribute("aria-selected")).toBe("true");
+  expect(document.activeElement).toBe(
+    document.querySelector(".mdmark-bundle-main h1"),
+  );
+});
+
 // 見出しへ移るリンクで URL を置き換えても、履歴の項目の ID を引き継ぐ（正常系）
 test("test_start_bundle_when_heading_link_keeps_entry_id", async () => {
   // 準備
