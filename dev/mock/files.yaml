@@ -84,6 +84,9 @@ files:
   - path: components/details-range/index.html
     description: '部品『details-range』のモック: `details` のマーカーで囲んだ範囲の折りたたみ（閉じた・開いた・長いタイトル）と、閉じのマーカーが無い記載の警告。部品の外観や状態を決めるときに参照する。'
     tags: [topic:モック, topic:記法]
+  - path: components/frontmatter/index.html
+    description: '部品『frontmatter』のモック: 機能 frontmatter をオンにしたときに本文の先頭に置くフロントマターの表示（キーと値の表と yaml のコードブロックの案、閉じた・開いた・入れ子・長い値）。部品の外観や状態を決めるときに参照する。'
+    tags: [topic:モック, topic:フロントマター]
   - path: components/highlighter/index.html
     description: '部品『highlighter』のモック: `==text==` の蛍光ペンの既定の色と色の名前ごとの色、コメントのマーカーとの区別、知らない色の名前の記載の警告。部品の外観や状態を決めるときに参照する。'
     tags: [topic:モック, topic:記法]
@@ -401,6 +404,15 @@ files:
     tags: [topic:モック, topic:図, tool:css]
   - path: pages/document/42/index.md
     description: '#42（図・部品の基盤を TypeScript で点検して配り、ワークスペース固有の定義・AI が読み込む作り方の手順書・図の外観の決まりを持たせる）の画面のモックの案の一覧。案ごとの違いを見比べるときに参照する。'
+    tags: [topic:モック]
+  - path: pages/document/422/a-table/index.html
+    description: '#422 の画面のモックの案『a-table』: 配布物の mount でフロントマターを除外した文書を描き、表示をオンにしたときは本文の先頭の閉じた折りたたみにキーと値の表を置く。描き方と明暗を操作列で切り替える。画面の外観や振る舞いを決めるときに参照する。'
+    tags: [topic:モック, topic:フロントマター]
+  - path: pages/document/422/b-yaml-code/index.html
+    description: '#422 の画面のモックの案『b-yaml-code』: 配布物の mount でフロントマターを除外した文書を描き、表示をオンにしたときは本文の先頭の閉じた折りたたみに yaml のコードブロックを置く。描き方と明暗を操作列で切り替える。画面の外観や振る舞いを決めるときに参照する。'
+    tags: [topic:モック, topic:フロントマター]
+  - path: pages/document/422/index.md
+    description: '#422 の画面のモックの案の一覧。この PR で作った画面の案を探すときに参照する。'
     tags: [topic:モック]
   - path: pages/document/45/embedded-html/app.js
     description: 'モック『embedded-html』の動き: モックの「HTML の表示」「ヒント」の切り替え（設定の features.html・features.hints に該当する）。このモックの動きを変えるときに参照する。'
@@ -881,6 +893,18 @@ files:
     tags: [topic:モック, tool:javascript]
   - path: refs/42/index.md
     description: '#42（図・部品の基盤を TypeScript で点検して配り、ワークスペース固有の定義・AI が読み込む作り方の手順書・図の外観の決まりを持たせる）の PR のモックへのリンク集。この PR で作ったモックを探すときに参照する。'
+    tags: [topic:モック]
+  - path: refs/422/assets/catalog.js
+    description: '#422 の部品のモックの描画: 状態ごとのフロントマターの表示の Markdown を配布物の mount で描く。このモックの振る舞いを変えるときに参照する。'
+    tags: [topic:モック, topic:フロントマター]
+  - path: refs/422/assets/frontmatter.css
+    description: '#422 のモックのフロントマターの表示の規則: 折りたたみの見出しを控えめな文字の色にする。このモックの外観を変えるときに参照する。'
+    tags: [topic:モック, topic:フロントマター, tool:css]
+  - path: refs/422/assets/scene.js
+    description: '#422 の画面のモックの場面: 配布物の mount でフロントマターを除外した文書を描き、表示の形式・描き方・明暗を URL で選ぶ。このモックの振る舞いを変えるときに参照する。'
+    tags: [topic:モック, topic:フロントマター]
+  - path: refs/422/index.md
+    description: '#422（文書の先頭の YAML のフロントマターを既定で表示せず、設定で表示に切り替えられるようにする）の PR のモックへのリンク集。この PR で作ったモックを探すときに参照する。'
     tags: [topic:モック]
   - path: refs/45/assets/embed.css
     id: dev/mock/refs/45/assets/embed.css

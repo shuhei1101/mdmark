@@ -1,0 +1,6 @@
+/* フロントマターの表示（実装で足す規則の見本。mdmark の層の外に置く） */
+
+/* 折りたたみの見出し: 本文の見出しと見分けるため、控えめな文字の色にする */
+.mdmark-frontmatter > summary {
+  color: var(--mdmark-color-muted);
+}

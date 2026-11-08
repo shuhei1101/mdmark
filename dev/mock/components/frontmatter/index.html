@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <!-- viewport: スマホ幅で等倍に表示する -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>フロントマターの表示 | mdmark の部品のモック</title>
+  <!-- 配布物の CSS（ライブラリ本体） -->
+  <link rel="stylesheet" href="../../../../dist/index.css">
+  <!-- 利用側のページの外観（#287 で共有するアセット） -->
+  <link rel="stylesheet" href="../../refs/287/assets/scene.css">
+  <!-- カタログの並べ方（#19 で共有するアセット） -->
+  <link rel="stylesheet" href="../../refs/19/assets/catalog.css">
+  <!-- フロントマターの表示の規則（#422 で共有するアセット） -->
+  <link rel="stylesheet" href="../../refs/422/assets/frontmatter.css">
+  <!-- 状態ごとの Markdown を配布物の mount で描く -->
+  <script type="module" src="../../refs/422/assets/catalog.js"></script>
+</head>
+<body class="mdmark-theme-light">
+  <main class="host">
+    <div class="catalog">
+      <h1 class="catalog-title">フロントマターの表示</h1>
+      <p>機能 <code>frontmatter</code> をオンにしたときに、本文の先頭に置く表示。既定（オフ）とキーの無いフロントマターでは何も置かない。</p>
+
+      <section aria-labelledby="a-closed">
+        <h2 class="catalog-label" id="a-closed">案 A: キーと値の表・閉じた状態（既定）</h2>
+        <div data-catalog="a-short"></div>
+      </section>
+
+      <section aria-labelledby="a-open">
+        <h2 class="catalog-label" id="a-open">案 A: キーと値の表・開いた状態</h2>
+        <div data-catalog="a-short" data-open></div>
+      </section>
+
+      <section aria-labelledby="a-nested">
+        <h2 class="catalog-label" id="a-nested">案 A: 入れ子・複数行の値（記載した文字のまま）</h2>
+        <div data-catalog="a-nested" data-open></div>
+      </section>
+
+      <section aria-labelledby="a-long">
+        <h2 class="catalog-label" id="a-long">案 A: 長い値（セルの中で折り返す）</h2>
+        <div data-catalog="a-long" data-open></div>
+      </section>
+
+      <section aria-labelledby="b-open">
+        <h2 class="catalog-label" id="b-open">案 B: yaml のコードブロック・開いた状態</h2>
+        <div data-catalog="b-short" data-open></div>
+      </section>
+
+      <section aria-labelledby="b-nested">
+        <h2 class="catalog-label" id="b-nested">案 B: 入れ子の値</h2>
+        <div data-catalog="b-nested" data-open></div>
+      </section>
+    </div>
+  </main>
+</body>
+</html>
