@@ -6,8 +6,8 @@ use_cases:
     depends_on: []
   - kind: single
     scenario: dev/設計書/シナリオ/単一ユースケース/まとめたHTMLで文書を行き来する.yaml
-    impact: run_only
-    detail: まとめた HTML で wide の範囲を、文書の一覧の列に重ねずに本文の幅より広げるシナリオを設計どおりに通す
+    impact: changed
+    detail: wide の範囲を持つ文書のシナリオの準備に、本文の幅を 640px にするテーマを記載し、文書の一覧の列に重ねずに本文の幅より広げるシナリオを通す
     depends_on: []
   - kind: composite
     scenario: dev/設計書/シナリオ/複合ユースケース/ビューで探してコメントを付ける.yaml
