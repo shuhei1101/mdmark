@@ -28,6 +28,9 @@ const ZOOM_CLICKS = 2;
 // 横にはみ出すまで拡大するときに、拡大のボタンを押す回数の上限（上限の 300% に届く回数）
 const ZOOM_MAX_CLICKS = 6;
 
+// 縦のドラッグで離す位置を、表示する枠の端から離す量（px）
+const DRAG_EDGE = 8;
+
 // 表示する枠を下限の高さまで低くするときに、リサイズハンドルで ↑ を押す回数
 const RESIZE_UP_PRESSES = 20;
 
@@ -533,17 +536,29 @@ async function emptyPointIn(
   return point;
 }
 
-/** 表示する枠を、押したまま縦に `dy`（上へは負）動かして離す */
+/** 表示する枠を、押したまま縦に `dy`（上へは負）動かして離す。表示する枠の高さを超える量は、枠の中に収まる量ずつ分けて動かす */
 async function dragVertically(
   page: Page,
   viewport: Locator,
   dy: number,
 ): Promise<void> {
-  const from = await emptyPointIn(viewport);
-  await page.mouse.move(from.x, from.y);
-  await page.mouse.down();
-  await page.mouse.move(from.x, from.y + dy, { steps: 8 });
-  await page.mouse.up();
+  let rest = dy;
+  while (Math.abs(rest) > 0.5) {
+    const from = await emptyPointIn(viewport);
+    const box = await rectOf(viewport);
+    // 離す位置が表示する枠の外（画面の外）に出ないだけ動かす
+    const room =
+      rest < 0 ? from.y - box.y - DRAG_EDGE : box.bottom - DRAG_EDGE - from.y;
+    if (room <= 0) {
+      throw new Error("表示する枠の中で縦に動かせる余地が無い");
+    }
+    const step = Math.sign(rest) * Math.min(Math.abs(rest), room);
+    await page.mouse.move(from.x, from.y);
+    await page.mouse.down();
+    await page.mouse.move(from.x, from.y + step, { steps: 8 });
+    await page.mouse.up();
+    rest -= step;
+  }
 }
 
 /** 図の今の倍率（図の本体に掛けた `scale()`） */
