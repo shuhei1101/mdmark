@@ -230,7 +230,10 @@ export async function checkMarkdownSource(options: {
       message: warning.message,
     }));
   const unknownMarks = checkUnknownMarks(document, config, directives);
-  const layout = checkDiagrams(document).filter(
+  const layout = checkDiagrams(
+    document,
+    new Set([...Object.keys(config.libraries ?? {}), ...directives]),
+  ).filter(
     (issue) => issue.kind !== "diagram_invalid",
   );
   return [...warnings, ...unknownMarks, ...layout]

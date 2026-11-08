@@ -419,13 +419,17 @@ function flowLayoutMessage(title: string, issue: FlowLayoutIssue): string {
   }
 }
 
-/** 文書ごとに図の部品の範囲を読み、読めない定義を 1 件の `diagram_invalid`、読めたフロー図の定義を `checkFlowLayout` のずれにする。並びは文書の順、同じ文書の中は行の順 */
+/** 文書ごとに図の部品の範囲を読み（`overridden` の名前の印の範囲は飛ばす）、読めない定義を 1 件の `diagram_invalid`、読めたフロー図の定義を `checkFlowLayout` のずれにする。並びは文書の順、同じ文書の中は行の順 */
 export function checkDiagrams(
   documents: Array<{ path: string; markdown: string }>,
+  overridden: ReadonlySet<string>,
 ): CheckIssue[] {
   const issues: CheckIssue[] = [];
   for (const document of documents) {
     for (const found of findDiagramBlocks(document.markdown)) {
+      if (overridden.has(found.directive)) {
+        continue;
+      }
       const where = String(found.line);
       const result = readDefinition(found.directive, found.blocks);
       if (!result.ok || result.definition === undefined) {
@@ -539,20 +543,22 @@ export async function collectCheckIssues(
   const aliasIssues = (await loadAliases(loaded)).issues;
   const missingFiles = await checkDocumentFiles(loaded);
   const checkMarks = options.unknownMarks !== false;
-  const extensions = checkMarks
-    ? await loadExtensionDirectives(loaded, file)
-    : { directives: new Set<string>(), issues: [] };
+  // 拡張の `directive` は図の点検に渡すため、`unknownMarks` によらず読み込む
+  const extensions = await loadExtensionDirectives(loaded, file);
   const documents = await collectCheckDocuments(loaded);
   const unknownMarks = checkMarks
     ? checkUnknownMarks(documents, config, extensions.directives)
     : [];
   const includes = await checkIncludes({ documents, root: loaded.dir });
-  const diagrams = checkDiagrams(documents);
+  const diagrams = checkDiagrams(
+    documents,
+    new Set([...Object.keys(config.libraries ?? {}), ...extensions.directives]),
+  );
   return [
     ...shapeIssues,
     ...referenced,
     ...build.schema,
-    ...extensions.issues,
+    ...(checkMarks ? extensions.issues : []),
     ...checkColorTheme(config, file),
     ...checkColorScheme(config, file),
     ...build.noDocuments,
