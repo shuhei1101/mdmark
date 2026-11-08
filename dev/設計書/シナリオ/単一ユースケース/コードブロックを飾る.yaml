@@ -136,7 +136,7 @@ scenarios:
       - name: mdmark を読むページ
         description: 正常シナリオと同じ
       - name: 知らない印を持つ Markdown
-        description: 行末に `// [!code focus]` を付けた行を持つ言語 `ts` のコードブロックの文書
+        description: 行末に `// [!code blink]` を付けた行を持つ言語 `ts` のコードブロックの文書
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
@@ -145,12 +145,12 @@ scenarios:
         participant P as 使う側のページ
         participant M as mdmark
         P->>M: 設定と Markdown を渡して描かせる
-        M->>M: 知らない印 focus がある
+        M->>M: 知らない印 blink がある
         M-->>P: 書き方の警告と、印を当てない行を描く
         P-->>U: 書き方の警告とコードブロックを表示
     expected:
-      - コードブロックの上に、`[!code focus]` が使えない印であることと使える印を書いた書き方の警告がある
-      - 行が `// [!code focus]` の文字のまま出ている
+      - コードブロックの上に、`[!code blink]` が使えない印であることと使える印を書いた書き方の警告がある
+      - 行が `// [!code blink]` の文字のまま出ている
     test: test_error_when_unknown_line_mark
   - name: 異常シナリオ（印の後にコードブロックが無い）
     setup:

@@ -1,0 +1,61 @@
+use_cases:
+  - kind: single
+    scenario: dev/設計書/シナリオ/単一ユースケース/コードブロックを飾る.yaml
+    impact: changed
+    detail: 異常シナリオ（知らないコードの行の印）の例を、使える印になった focus から、使えない印へ替える
+    depends_on: []
+  - kind: single
+    scenario: dev/設計書/シナリオ/単一ユースケース/文書をHTML文字列にする.yaml
+    impact: run_only
+    detail: 取り込みの枠の確かめ方を、元の行番号の属性が付いた今の出力に合わせる
+    depends_on: []
+  - kind: single
+    scenario: dev/設計書/シナリオ/単一ユースケース/PDFに印刷する.yaml
+    impact: run_only
+    detail: 選んだテーマの配色を確かめるリンクを、リンクのカードにならない本文のリンクにする
+    depends_on: []
+  - kind: single
+    scenario: dev/設計書/シナリオ/単一ユースケース/VSCodeでプレビューを開く.yaml
+    impact: run_only
+    detail: 範囲のスクリプトの CSP の確かめ方を、Webview の配信元を含む今の script-src に合わせる
+    depends_on: []
+  - kind: single
+    scenario: dev/設計書/シナリオ/単一ユースケース/外部ライブラリを使うときだけ読み込む.yaml
+    impact: run_only
+    detail: Lucide に無いアイコンの名前の確かめ方を、書き方の警告の中の印の文字を除いて数える
+    depends_on: []
+  - kind: single
+    scenario: dev/設計書/シナリオ/単一ユースケース/選んだ箇所にコメントする.yaml
+    impact: run_only
+    detail: 箇所が見つからないコメントの一覧が末尾にあることの確かめ方を、先頭へ戻るボタンを除いて見る
+    depends_on: []
+  - kind: single
+    scenario: dev/設計書/シナリオ/単一ユースケース/書いた内容をプレビューに映す.yaml
+    impact: run_only
+    detail: aliases の YAML を書き換えた後の本文の比べ方を、ツールチップを閉じた状態で比べる
+    depends_on: []
+  - kind: composite
+    scenario: dev/設計書/シナリオ/複合ユースケース/プラグインを入れて端末と文書のフォルダをセットアップする.yaml
+    impact: run_only
+    detail: プラグインを入れる前に、端末の Claude Code の設定のフォルダを用意する
+    depends_on: []
+scope_out:
+  - item: 使い方集の 2 ケースの MCP の時間切れ
+    reason: 原因が別の E2E の fail
+    plan: '#398'
+  - item: 表の操作の E2E 9 件
+    reason: 原因が別の E2E の fail
+    plan: '#399'
+  - item: 図の操作と表示の E2E 8 件
+    reason: 原因が別の E2E の fail
+    plan: '#400'
+  - item: CLI の E2E 6 件（取り込みとアイコンを埋めた書き出し 等）
+    reason: 原因が別の E2E の fail（未確定で、実装の不具合のおそれがある）
+    plan: '#401'
+  - item: 脚注と先頭へ戻るボタンの E2E 5 件
+    reason: 原因が別の E2E の fail
+    plan: '#402'
+  - item: 本文の幅とビューの E2E 4 件
+    reason: 原因が別の E2E の fail
+    plan: '#403'
+docs: []

@@ -229,7 +229,7 @@ test("test_normal_when_includes_given", async () => {
   const html = await renderInNode(builtRoot, markdown, { includes });
   const without = await renderInNode(builtRoot, markdown);
   // 検証
-  expect(html).toContain('<div class="mdmark-include"');
+  expect(html).toMatch(/<div [^>]*class="mdmark-include"/);
   expect(html).toMatch(/<h2[^>]*>実行/);
   expect(html).toContain("実行の段落");
   expect(html).not.toContain("準備の段落");

@@ -155,7 +155,9 @@ test("test_error_when_icon_not_in_lucide", async ({ page }) => {
   });
   // 検証
   await expect(
-    page.locator("#doc code", { hasText: "icon:no-such-icon" }),
+    page.locator("#doc code:not(.mdmark-syntax-warning code)", {
+      hasText: "icon:no-such-icon",
+    }),
   ).toHaveCount(1);
   await expect(page.locator("#doc .mdmark-syntax-warning")).toContainText(
     "no-such-icon",
