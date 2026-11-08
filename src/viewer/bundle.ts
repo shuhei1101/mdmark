@@ -161,12 +161,12 @@ export function startBundle(
     entryId = ensureEntryId(win);
     const saved =
       switched || initial ? readViewState({ win, id: entryId }) : undefined;
-    // 戻る・進む・再読み込みで、表示の状態を保存した項目へ戻った: 開閉・タブ・位置を戻す（開いた直後はフォーカスを移さない）
+    // 戻る・進む・再読み込みで、表示の状態を保存した項目へ戻った: 開閉・タブ・位置を戻し、部品のボタンへ移ったフォーカスを元へ戻してから、戻る・進むでは h1 へ移す（開いた直後は移さない）
     if (saved !== undefined && saved.path === path) {
+      stopRestore = applyViewState({ view, state: saved, keepFocus: true });
       if (!initial) {
         focusTitle(true);
       }
-      stopRestore = applyViewState({ view, state: saved, keepFocus: initial });
       return;
     }
     const target = heading ? doc.getElementById(heading) : null;
