@@ -36,6 +36,14 @@ import {
   SYNTAX_ES_ROOT,
 } from "../dist-page.ts";
 import { openStandaloneWithFiles, readMediaSamples } from "../media.ts";
+import {
+  copyMermaidDist,
+  countDynamicImports,
+  MERMAID_EMBED_MIN_BYTES,
+  MERMAID_FLOWCHART,
+  MERMAID_SVG,
+  MERMAID_WAIT_MS,
+} from "../mermaid.ts";
 
 // 色分けのライブラリの本体と、手元に置く言語のモジュール（文書が使うのは `typescript` と `python`、`yaml` は使わない）
 const SYNTAX_FILES = [
@@ -786,4 +794,43 @@ test("test_error_when_config_unreadable", async ({ builtRoot, tempDir }) => {
   expect(exported.result.stderr).toContain("字下げと書き方を直してください");
   expect(existsSync(exported.html)).toBe(false);
   await exported.unchanged();
+});
+
+// mermaid のコードブロックがある文書だけ mermaid を埋めて書き出し、開いたときに外へ要求せずに図を描く（正常シナリオ（mermaid のコードブロック））
+test("test_normal_when_mermaid", async ({ builtRoot, tempDir, page }) => {
+  // 準備
+  const dir = await tempDir();
+  const url = await copyMermaidDist(dir);
+  await writeFiles(dir, {
+    "mdmark.config.yaml": `mermaid:\n  url: ${url}\n`,
+    "guide.md": MERMAID_FLOWCHART,
+    "plain.md": "# 段落\n\n本文だけ。\n",
+  });
+  // 実行
+  const result = await runCli(
+    builtRoot,
+    ["export", "guide.md", "--out", "out/guide.html"],
+    dir,
+  );
+  const plain = await runCli(
+    builtRoot,
+    ["export", "plain.md", "--out", "out/plain.html"],
+    dir,
+  );
+  // 検証
+  expect(result.code).toBe(0);
+  expect(plain.code).toBe(0);
+  expect(existsSync(join(dir, "out", "guide.html"))).toBe(true);
+  const opened = await openStandalone(page, {
+    tempDir,
+    htmlFile: join(dir, "out", "guide.html"),
+  });
+  await expect(page.locator(`article.mdmark ${MERMAID_SVG}`)).toHaveCount(1, {
+    timeout: MERMAID_WAIT_MS,
+  });
+  expect(opened.externalRequests()).toEqual([]);
+  const html = await readFile(join(dir, "out", "guide.html"), "utf8");
+  const plainHtml = await readFile(join(dir, "out", "plain.html"), "utf8");
+  expect(countDynamicImports(html)).toBe(countDynamicImports(plainHtml));
+  expect(plainHtml.length).toBeLessThan(html.length - MERMAID_EMBED_MIN_BYTES);
 });

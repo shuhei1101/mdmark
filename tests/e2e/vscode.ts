@@ -10,7 +10,7 @@ import {
   symlink,
   writeFile,
 } from "node:fs/promises";
-import { createServer, type Server } from "node:http";
+import { createServer, type Server, type ServerResponse } from "node:http";
 import type { AddressInfo } from "node:net";
 import { tmpdir } from "node:os";
 import { delimiter, dirname, join, resolve } from "node:path";
@@ -24,6 +24,7 @@ import {
 import { buildExtension } from "../../vscode/scripts/build.ts";
 import { createStubServer } from "../../vscode/tests/integration/stub-server.ts";
 import { createBuiltRoot } from "../integration/built-root.ts";
+import { MERMAID_DIST, MERMAID_STUB_PATH } from "./mermaid.ts";
 import { VSCODE_EXECUTABLE_ENV } from "./vscode-binary.ts";
 
 /** 拡張機能の ID（出力チャネルのログのフォルダの名前） */
@@ -131,7 +132,30 @@ const TRANSPILER_UMD_PATH = join(
   "babel.min.js",
 );
 
-/** 配布物とタグ一覧の代役の配信を立てる。`TRANSPILER_PATH` には、変換のライブラリを既定のエクスポートを持つ ES モジュールに包んで返す */
+/** `MERMAID_STUB_PATH` の下の要求に、mermaid の dist の `.mjs` を返す（無ければ 404） */
+function respondMermaid(path: string, response: ServerResponse): void {
+  const file = resolve(MERMAID_DIST, path.slice(MERMAID_STUB_PATH.length));
+  if (!file.startsWith(`${MERMAID_DIST}/`) || !file.endsWith(".mjs")) {
+    response.writeHead(404);
+    response.end();
+    return;
+  }
+  readFile(file).then(
+    (body) => {
+      response.writeHead(200, {
+        "Content-Type": "text/javascript; charset=utf-8",
+        "Access-Control-Allow-Origin": "*",
+      });
+      response.end(body);
+    },
+    () => {
+      response.writeHead(404);
+      response.end();
+    },
+  );
+}
+
+/** 配布物とタグ一覧の代役の配信を立てる。`TRANSPILER_PATH` には、変換のライブラリを既定のエクスポートを持つ ES モジュールに包んで返し、`MERMAID_STUB_PATH` の下には mermaid の dist を返す */
 export async function startStub(distRoot: string): Promise<Stub> {
   const state: StubState = {
     tags: ["v0.7.0", "v0.6.0", "vscode-v0.1.0"],
@@ -141,7 +165,13 @@ export async function startStub(distRoot: string): Promise<Stub> {
   };
   const inner: Server = createStubServer(state, join(distRoot, "dist"));
   const server: Server = createServer((request, response) => {
-    if (request.url?.split("?")[0] !== TRANSPILER_PATH) {
+    const path = request.url?.split("?")[0] ?? "";
+    if (path.startsWith(MERMAID_STUB_PATH)) {
+      state.requests.push(path);
+      respondMermaid(path, response);
+      return;
+    }
+    if (path !== TRANSPILER_PATH) {
       inner.emit("request", request, response);
       return;
     }

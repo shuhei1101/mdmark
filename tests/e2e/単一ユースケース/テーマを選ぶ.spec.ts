@@ -6,13 +6,19 @@ import {
   removeDistRoot,
 } from "../dist-page.ts";
 import { contrastRatio, resolveColor } from "../media.ts";
+import {
+  MERMAID_SVG,
+  MERMAID_WAIT_MS,
+  mermaidColors,
+  routeMermaid,
+} from "../mermaid.ts";
 
 // ビルドした配布物を置いた作業ツリー
 let builtRoot = "";
 
-// 段落とリンクを持つ見本の Markdown（リンク 1 つだけの段落はカードにするため、文の中にリンクを置く）
+// 段落とリンクと mermaid の flowchart を持つ見本の Markdown（リンク 1 つだけの段落はカードにするため、文の中にリンクを置く）
 const MARKDOWN =
-  "段落\n\n詳しくは [リンク](https://example.com/page) を見る。\n";
+  "段落\n\n詳しくは [リンク](https://example.com/page) を見る。\n\n```mermaid\nflowchart LR\n  A[受付] --> B[回答]\n```\n";
 
 // デザイン方針の theme-slate の値（明るい配色とダークの配色の地の色と、明るい配色のリンクの色）
 const SLATE_LIGHT_BACKGROUND = "rgb(248, 250, 252)";
@@ -39,6 +45,7 @@ test.afterAll(async () => {
 test("test_normal", async ({ page }) => {
   // 準備
   await page.emulateMedia({ colorScheme: "light" });
+  await routeMermaid(page);
   await openPage(page, builtRoot);
   // 実行
   await mountDocument(page, {
@@ -54,12 +61,20 @@ test("test_normal", async ({ page }) => {
     "color",
     SLATE_LIGHT_LINK_COLOR,
   );
+  // 検証: mermaid の図のノードの塗りと文字の色
+  await expect(page.locator(`#doc ${MERMAID_SVG}`)).toHaveCount(1, {
+    timeout: MERMAID_WAIT_MS,
+  });
+  const colors = await mermaidColors(page, { scope: "#doc" });
+  expect(colors.fill).toBe(colors.surface);
+  expect(colors.text).toBe(colors.textVar);
 });
 
 // OS の配色がダークのとき、選んだテーマの暗い配色で描く（正常シナリオ（ダークの配色））
 test("test_normal_when_dark", async ({ page }) => {
   // 準備
   await page.emulateMedia({ colorScheme: "dark" });
+  await routeMermaid(page);
   await openPage(page, builtRoot);
   // 実行
   await mountDocument(page, {
@@ -71,12 +86,20 @@ test("test_normal_when_dark", async ({ page }) => {
     "background-color",
     SLATE_DARK_BACKGROUND,
   );
+  // 検証: mermaid の図のノードの塗りと文字の色
+  await expect(page.locator(`#doc ${MERMAID_SVG}`)).toHaveCount(1, {
+    timeout: MERMAID_WAIT_MS,
+  });
+  const colors = await mermaidColors(page, { scope: "#doc" });
+  expect(colors.fill).toBe(colors.surface);
+  expect(colors.text).toBe(colors.textVar);
 });
 
 // OS の配色がダークでも、親の `mdmark-theme-light` で選んだテーマの明るい配色にする（正常シナリオ（親の class で明るい配色にする））
 test("test_normal_when_parent_class_light", async ({ page }) => {
   // 準備
   await page.emulateMedia({ colorScheme: "dark" });
+  await routeMermaid(page);
   await openPage(page, builtRoot);
   await page.evaluate(() => {
     document.body.className = "mdmark-theme-light";
@@ -91,12 +114,20 @@ test("test_normal_when_parent_class_light", async ({ page }) => {
     "background-color",
     SLATE_LIGHT_BACKGROUND,
   );
+  // 検証: mermaid の図のノードの塗りと文字の色
+  await expect(page.locator(`#doc ${MERMAID_SVG}`)).toHaveCount(1, {
+    timeout: MERMAID_WAIT_MS,
+  });
+  const colors = await mermaidColors(page, { scope: "#doc" });
+  expect(colors.fill).toBe(colors.surface);
+  expect(colors.text).toBe(colors.textVar);
 });
 
 // テーマを選ばないと、既定のテーマ（dev-swiss）の明るい配色で描く（正常シナリオ（テーマを選ばない））
 test("test_normal_when_not_selected", async ({ page }) => {
   // 準備
   await page.emulateMedia({ colorScheme: "light" });
+  await routeMermaid(page);
   await openPage(page, builtRoot);
   // 実行
   await mountDocument(page, { markdown: MARKDOWN, config: {} });
@@ -117,6 +148,7 @@ test("test_normal_when_unknown_theme", async ({ page }) => {
   const errors: string[] = [];
   page.on("pageerror", (error) => errors.push(error.message));
   await page.emulateMedia({ colorScheme: "light" });
+  await routeMermaid(page);
   await openPage(page, builtRoot);
   // 実行
   await mountDocument(page, {

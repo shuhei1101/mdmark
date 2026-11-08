@@ -11,6 +11,7 @@ import {
   routeLucide,
   routeSyntax,
 } from "../dist-page.ts";
+import { routeMermaid } from "../mermaid.ts";
 
 // ビルドした配布物を置いた作業ツリー
 let builtRoot = "";
@@ -48,6 +49,7 @@ test("test_normal_when_no_mark", async ({ page }) => {
   // 準備
   const requestCount = await routeLibrary(page, 200);
   const syntaxRequests = await routeSyntax(page);
+  const mermaidRequests = await routeMermaid(page);
   await openPage(page, builtRoot);
   // 実行
   await mountDocument(page, { markdown: "段落\n", config: CONFIG });
@@ -55,6 +57,7 @@ test("test_normal_when_no_mark", async ({ page }) => {
   // 検証
   expect(requestCount()).toBe(0);
   expect(syntaxRequests()).toEqual([]);
+  expect(mermaidRequests()).toEqual([]);
   await expect(page.locator("#doc p")).toHaveText("段落");
 });
 
