@@ -205,6 +205,30 @@ scenarios:
       - リロードせずに、下線の単語のツールチップに書き換えた後の意味が出る
       - Markdown の本文とスクロールの位置は保存する前と同じ
     test: test_normal_when_aliases_yaml_saved
+  - name: 正常シナリオ（フロントマターを持つ文書）
+    setup:
+      - name: プレビューを開いたワークスペース
+        description: 正常シナリオと同じ。`mdmark.config.yaml` は `features` を記載していない
+      - name: フロントマターを持つ Markdown
+        description: '1〜4 行目に `---`・`title: テスト`・`tags: [a, b]`・`---` のフロントマター、6 行目に `# 見出し` を配置した文書'
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor W as 文書の作成者
+        participant ED as エディタ（VS Code）
+        participant EX as 拡張機能
+        participant PV as プレビュー（Webview）
+        W->>ED: フロントマターを持つ Markdown のプレビューを開く
+        EX->>PV: 全文を送信する
+        PV-->>W: フロントマターを除いた文書を表示
+        W->>ED: mdmark.config.yaml に features.frontmatter: true を記載して保存する
+        EX->>PV: 新しい設定で再描画させる
+        PV-->>W: 先頭にフロントマターの表示を置いた文書を表示
+    expected:
+      - '設定ファイルを保存する前は、プレビューに `title: テスト` の文字と h2 の要素が無い'
+      - 設定ファイルを保存した後は、プレビューの `見出し` の要素より前にフロントマターの表示の要素があり、その中に `title`・`テスト` の文字がある
+    test: test_normal_when_frontmatter
 lead: 文書の作成者が Markdown や設定ファイルを書き換えると、開いているプレビューが再描画される。背面から表に戻したときと、「リロード」を押したときも最後の内容で描く。
 issue: 22
 primary_actor: 文書の作成者
