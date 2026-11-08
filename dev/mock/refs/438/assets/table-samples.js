@@ -31,7 +31,7 @@ window.mdmarkMockTables438 = {};
     mode: "each",
     pin: ["物理名", "無い列"],
     scroll: "end",
-    warning: "<code>&lt;!-- table: pin=物理名,無い列 --&gt;</code> の列名 <code>無い列</code> は、この表にありません。列名は No・物理名・論理名・型・必須・既定・説明・例です。この列名を無視して描いています。",
+    warning: "<code>&lt;!-- table: pin=物理名,無い列 --&gt;</code> の列名 <code>無い列</code> は表にありません。表の見出しの文字で記載してください。",
   };
 
   T.merged = {

@@ -23,3 +23,9 @@ confirmations:
     approver: shuhei1101
     commit:
     thread: https://github.com/shuhei1101/mdmark/pull/438#discussion_r4508033766
+  - topic: 表に無い列名の警告の文面（確認のやり直し）
+    decision: 今の実装の文面「{mark} の列名 {列名} は表にありません。表の見出しの文字で記載してください。」のままにし、pin= も同じ文面にする（推奨案 A）。前の「pin= に読めない列名を混ぜたときの警告の文面」の決着を置き換える
+    decided_by: thumbs_up
+    approver: shuhei1101
+    commit:
+    thread: https://github.com/shuhei1101/mdmark/pull/438#discussion_r4508235124
