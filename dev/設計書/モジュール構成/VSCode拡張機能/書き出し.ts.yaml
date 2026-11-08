@@ -157,7 +157,7 @@ functions:
         expected: '`out/guide.html` が中身どおりで、`out/` に `.tmp` のファイルが無い'
       - name: test_write_file_atomically_when_not_writable
         case: 異常
-        summary: 記載できなければ一時ファイルを削除してもう一度投げる
+        summary: 書き込めなければ一時ファイルを削除してもう一度投げる
         condition: 書き出す先が既にあるフォルダ（`rename` が失敗する）
         mock: なし（一時フォルダ）
         expected: 例外を投げ、フォルダに `.tmp` のファイルが無い

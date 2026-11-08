@@ -19,7 +19,7 @@ states:
       - name: copy
         value: copied
   - name: Failed
-    description: 写せなかった。記載できなかったことと、選んで写せる JSON を出す
+    description: 写せなかった。書き込めなかったことと、選んで写せる JSON を出す
     args:
       - name: value
         value: '8'

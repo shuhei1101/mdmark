@@ -321,7 +321,7 @@ functions:
         description: テンプレートのフォルダと記載する索引
     returns:
       type: Promise<void>
-      description: 記載できたら解決する。記載できなければ書き込みの例外を投げる（一時ファイルは削除する）
+      description: 書き込めたら解決する。書き込めなければ書き込みの例外を投げる（一時ファイルは削除する）
     process: |-
       1. `{dir}/templates.yaml.{プロセス ID}.{呼び出しごとの乱数}.tmp` に YAML の文字列を記載する
       2. `templates.yaml` へ rename する

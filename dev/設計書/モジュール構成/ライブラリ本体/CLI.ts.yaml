@@ -997,7 +997,7 @@ functions:
     exceptions:
       - name: CliError
         condition: 配置先のフォルダを作れない・ファイルを書き込めない
-        message: '{パス} に記載できません（{理由}）。配置先のフォルダを確認してください。'
+        message: '{パス} に書き込めません（{理由}）。配置先のフォルダを確認してください。'
     unit_tests:
       - name: test_run_init
         case: 正常
@@ -1278,7 +1278,7 @@ functions:
     exceptions:
       - name: CliError
         condition: 設定の誤り・文書が無い・出力先へ書き込めない
-        message: '文書が無い: {パス} が見つかりません。文書のパスを修正してください。／記載できない: {出力} に記載できません（{理由}）。出力先のフォルダを確認してください。'
+        message: '文書が無い: {パス} が見つかりません。文書のパスを修正してください。／書き込めない: {出力} に書き込めません（{理由}）。出力先のフォルダを確認してください。'
     unit_tests:
       - name: test_run_export
         case: 正常
@@ -1295,7 +1295,7 @@ functions:
         exception: CliError
       - name: test_run_export_when_output_unwritable
         case: 異常
-        summary: 記載できない出力先は CliError
+        summary: 書き込めない出力先は CliError
         condition: '`out: blocked/guide.html` で `blocked` がファイル'
         mock: 一時フォルダ
         expected: '`CliError` を投げ、メッセージに `blocked/guide.html` が入る'
@@ -1417,7 +1417,7 @@ functions:
     exceptions:
       - name: CliError
         condition: 記載する先に記載できない
-        message: '記載できない: {出力} に記載できません（{理由}）。出力先のフォルダを確認してください。'
+        message: '書き込めない: {出力} に書き込めません（{理由}）。出力先のフォルダを確認してください。'
     status: planned
     introduced:
       pr: 32
@@ -1706,7 +1706,7 @@ functions:
     exceptions:
       - name: CliError
         condition: 設定の誤り・文書が無い・出力先へ書き込めない
-        message: '`runExport` と同じ（文書が無い: {パス} が見つかりません。文書のパスを修正してください。／記載できない: {出力} に記載できません（{理由}）。出力先のフォルダを確認してください。／コピー先へ書き込めない: `copyMedia` のメッセージ）'
+        message: '`runExport` と同じ（文書が無い: {パス} が見つかりません。文書のパスを修正してください。／書き込めない: {出力} に書き込めません（{理由}）。出力先のフォルダを確認してください。／コピー先へ書き込めない: `copyMedia` のメッセージ）'
     unit_tests:
       - name: test_export_document
         case: 正常
@@ -2169,7 +2169,7 @@ functions:
     exceptions:
       - name: CliError
         condition: '`_files/` を作れない・記載できない'
-        message: '`{出力のフォルダ}/{名前}_files に記載できません（{理由}）。出力先のフォルダを確認してください。`'
+        message: '`{出力のフォルダ}/{名前}_files に書き込めません（{理由}）。出力先のフォルダを確認してください。`'
     callees:
       - '#functions[collectAssetRefs]'
       - '#functions[resolveAssetFile]'

@@ -992,11 +992,11 @@ functions:
         description: 記載する文字
     returns:
       type: Promise<boolean>
-      description: 記載できたか
+      description: 書き込めたか
     unit_tests:
       - name: test_copy_text
         case: 正常
-        summary: 記載できたら true を返却する
+        summary: 書き込めたら true を返却する
         condition: '`a\tb`'
         mock: '`navigator.clipboard.writeText` を記録して解決する関数に差し替える'
         expected: '`true`。`a\tb` で 1 回呼ばれる'
@@ -1058,7 +1058,7 @@ functions:
   - name: attachCodeCopy
     title: コードブロックにコピーを付ける
     container: src/interact/code-blocks.ts
-    summary: 各 `mdmark-code-bar` の末尾に `renderCodeCopy` のボタンを配置し、押すと `copyText` でコードを写す。写す文字は、行に分けたブロックでは `data-kind="del"` の行を除いた `mdmark-code-text` を改行でつないだもの（畳んで `hidden` を持つ行も含め、`⋯` のボタンの文字は含めない）、それ以外は `code` の文字から末尾の改行を 1 つ除いたもの。記載できたら `data-state="copied"` にして 2 秒で `idle` に戻し、記載できなければ `failed` にして次に押すまで残す
+    summary: 各 `mdmark-code-bar` の末尾に `renderCodeCopy` のボタンを配置し、押すと `copyText` でコードを写す。写す文字は、行に分けたブロックでは `data-kind="del"` の行を除いた `mdmark-code-text` を改行でつないだもの（畳んで `hidden` を持つ行も含め、`⋯` のボタンの文字は含めない）、それ以外は `code` の文字から末尾の改行を 1 つ除いたもの。書き込めたら `data-state="copied"` にして 2 秒で `idle` に戻し、書き込めなければ `failed` にして次に押すまで残す
     kind: 関数
     scope: internal
     side_effects: コードブロックの帯にボタンを配置し、クリップボードへ書き込む
@@ -1501,7 +1501,7 @@ functions:
   - name: attachFileTrees
     title: ファイルツリーに開閉とコピーを付ける
     container: src/interact/trees.ts
-    summary: '各 `div.mdmark-tree` の `ul` の前に `renderTreeBar` の帯を配置し、子を持つフォルダの名前を `aria-expanded`・`aria-controls` を持つ `mdmark-tree-toggle` のボタンで包む。`data-open` とルートを 0 とした深さを `folderOpenByDefault` に指定し、開かないフォルダの入れ子の `ul` を `hidden="until-found"` にする。注釈を持つツリーは、最も右で終わる名前の端を測って `--mdmark-tree-note-start` に入れる。ボタンを押すとそのフォルダを開閉し、Shift を押しながらなら入れ子のフォルダも同じ状態にする。ページ内検索が閉じた `ul` を開いたとき（`beforematch`）はそのフォルダを開いた状態にする。コピーボタンは `copyText` で `data-source` を記載し、記載できたら `data-state="copied"` と `role="status"` の通知にして 2 秒で `idle` に戻し、記載できなければツリーの下に `renderCopyPanel`（`format: tree`）のパネルを配置して文字を選んだ状態にする（閉じるボタンでパネルを取り除き、コピーボタンへフォーカスを戻す）'
+    summary: '各 `div.mdmark-tree` の `ul` の前に `renderTreeBar` の帯を配置し、子を持つフォルダの名前を `aria-expanded`・`aria-controls` を持つ `mdmark-tree-toggle` のボタンで包む。`data-open` とルートを 0 とした深さを `folderOpenByDefault` に指定し、開かないフォルダの入れ子の `ul` を `hidden="until-found"` にする。注釈を持つツリーは、最も右で終わる名前の端を測って `--mdmark-tree-note-start` に入れる。ボタンを押すとそのフォルダを開閉し、Shift を押しながらなら入れ子のフォルダも同じ状態にする。ページ内検索が閉じた `ul` を開いたとき（`beforematch`）はそのフォルダを開いた状態にする。コピーボタンは `copyText` で `data-source` を記載し、書き込めたら `data-state="copied"` と `role="status"` の通知にして 2 秒で `idle` に戻し、書き込めなければツリーの下に `renderCopyPanel`（`format: tree`）のパネルを配置して文字を選んだ状態にする（閉じるボタンでパネルを取り除き、コピーボタンへフォーカスを戻す）'
     kind: 関数
     scope: internal
     side_effects: ツリーに帯・ボタン・パネルを配置し、クリップボードへ書き込む
@@ -1546,7 +1546,7 @@ functions:
         expected: '`src/\n└── index.ts` で 1 回呼ばれ、ボタンが `data-state="copied"` で `コピーしました` を持ち、`mdmark-tree-status` が `コピーしました`。2 秒進めると `idle`'
       - name: test_attach_file_trees_when_copy_denied
         case: 正常
-        summary: 記載できなければツリーの下にパネルを出し、閉じると取り除く
+        summary: 書き込めなければツリーの下にパネルを出し、閉じると取り除く
         condition: コピーボタンを押し、次にパネルの閉じるボタンを押す
         mock: '`navigator.clipboard.writeText` を `NotAllowedError` で拒む関数に差し替える'
         expected: 1 回目の後は `mdmark-tree-list` の後ろに `mdmark-copy-panel` があり、`textarea` の中身が `data-source` で全て選ばれている。閉じた後はパネルが無く、コピーボタンにフォーカスがある。`unhandledrejection` が起きない

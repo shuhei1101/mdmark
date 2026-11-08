@@ -54,7 +54,7 @@ scenarios:
     test: test_normal_when_unreadable_assets
   - name: 異常シナリオ（出力先へ書き込めない）
     setup:
-      - name: 記載できない出力先
+      - name: 書き込めない出力先
         description: 出力のパスの親がフォルダではなくファイル
       - name: Mock
         description: 差し替える依存は無い
@@ -63,10 +63,10 @@ scenarios:
         actor W as 文書の作成者
         participant C as mdmark CLI
         W->>C: mdmark export 文書のパス（記載できない出力を指定）
-        C-->>W: 記載できない出力先と修正方法・終了コード 0 以外
+        C-->>W: 書き込めない出力先と修正方法・終了コード 0 以外
     expected:
       - 終了コードが 0 以外
-      - 出力に記載できなかったパスと修正方法が出る
+      - 出力に書き込めなかったパスと修正方法が出る
       - HTML がどこにも記載されていない
     test: test_error_when_output_unwritable
   - name: 正常シナリオ（色分けするコードブロック）

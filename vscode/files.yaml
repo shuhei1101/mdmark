@@ -213,7 +213,7 @@ files:
     description: 拡張機能ホストの中で「差分ビューの変更をプレビューで確認する」の振る舞いを確認する結合テスト。この操作の振る舞いを変えたときに参照する。
     tags: [topic:結合テスト, tool:vscode, tool:mocha]
     related:
-      - to: dev/設計書/シナリオ/単一ユースケース/差分ビューの変更をプレビューで見る
+      - to: dev/設計書/シナリオ/単一ユースケース/差分ビューの変更をプレビューで確認する
         type: see_also
   - path: tests/integration/preview-link.test.ts
     description: 拡張機能ホストの中で「プレビューのリンクを開く」の振る舞いを確認する結合テスト。この操作の振る舞いを変えたときに参照する。
@@ -234,7 +234,7 @@ files:
       - to: dev/設計書/インターフェース定義/VSCode拡張機能/プレビューをリロードする.ts
         type: see_also
   - path: tests/integration/preview-rerender.test.ts
-    description: 拡張機能ホストの中で「プレビューを描き修正する」の振る舞いを確認する結合テスト。この操作の振る舞いを変えたときに参照する。
+    description: 拡張機能ホストの中で「プレビューを再描画する」の振る舞いを確認する結合テスト。この操作の振る舞いを変えたときに参照する。
     tags: [topic:結合テスト, tool:vscode, tool:mocha]
     related:
       - to: dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを再描画する.ts

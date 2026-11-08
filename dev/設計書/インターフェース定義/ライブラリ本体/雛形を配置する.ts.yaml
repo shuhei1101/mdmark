@@ -115,7 +115,7 @@ response:
     notes: パスは配置先のフォルダからの相対パス
   - name: 終了コード
     type: 0 | 1
-    description: 配置できたら（配置しなかったファイルがあっても）0、記載できなかったら 1
+    description: 配置できたら（配置しなかったファイルがあっても）0、書き込めなかったら 1
 response_example: |-
   ```text
   配置しなかった（既にある）: mdmark.config.yaml
