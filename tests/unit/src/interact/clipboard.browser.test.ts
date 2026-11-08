@@ -17,7 +17,7 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
-// 記載できたら true を返却する（正常系）
+// 書き込めたら true を返却する（正常系）
 test("test_copy_text", async () => {
   // 準備
   const { copyText } = await loadClipboard();

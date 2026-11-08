@@ -1250,7 +1250,7 @@ test("test_attach_tables_when_row_link_copied", async () => {
   // 実行: 2 つ目の表の行のリンクを押す（拒まれる）
   findButtonLike(rowOf("もも"), "a.mdmark-row-anchor").click();
   await vi.advanceTimersByTimeAsync(0);
-  // 検証: 記載できなかったことを通知し、行へは移る
+  // 検証: 書き込めなかったことを通知し、行へは移る
   expect(noticeOf("もも").dataset.state).toBe("failed");
   expect(noticeOf("もも").textContent).toBe("リンクをコピーできませんでした");
   expect(rowOf("もも").hasAttribute("data-target")).toBe(true);

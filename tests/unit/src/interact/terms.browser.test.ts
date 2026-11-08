@@ -193,7 +193,7 @@ test("test_attach_term_tips_copy_command", async () => {
   expect(status?.textContent).toBe("");
 });
 
-// コマンドを記載できなければ failed にして残し、例外を外へ出さない（正常系）
+// コマンドを書き込めなければ failed にして残し、例外を外へ出さない（正常系）
 test("test_attach_term_tips_copy_command_denied", async () => {
   // 準備
   vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] });

@@ -166,7 +166,7 @@ test("test_run_export_when_document_missing", async () => {
   await expect(result).rejects.toThrow("missing.md");
 });
 
-// 記載できない出力先は CliError（異常系）
+// 書き込めない出力先は CliError（異常系）
 test("test_run_export_when_output_unwritable", async () => {
   // 準備
   const { runExport } = await loadExport();

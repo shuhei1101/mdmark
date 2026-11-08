@@ -220,7 +220,7 @@ test("test_attach_file_trees_when_copied", async () => {
   expect(button.dataset.state).toBe("idle");
 });
 
-// 記載できなければツリーの下にパネルを出し、閉じると取り除く（正常系）
+// 書き込めなければツリーの下にパネルを出し、閉じると取り除く（正常系）
 test("test_attach_file_trees_when_copy_denied", async () => {
   // 準備
   vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] });

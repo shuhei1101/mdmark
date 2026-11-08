@@ -35,7 +35,7 @@ test("test_write_file_atomically", async () => {
   expect(names).toEqual(["guide.html"]);
 });
 
-// 記載できなければ一時ファイルを削除してもう一度投げる（異常系・置き換えられない）
+// 書き込めなければ一時ファイルを削除してもう一度投げる（異常系・置き換えられない）
 test("test_write_file_atomically_when_not_writable", async () => {
   // 準備
   const { writeFileAtomically } = await loadWrite();
