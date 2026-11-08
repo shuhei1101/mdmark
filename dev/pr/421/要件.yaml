@@ -1,0 +1,6 @@
+use_cases: []
+docs: []
+scope_out:
+  - item: tests/integration/lib/mount-view.browser.test.ts・mount-comments.browser.test.ts など、Promise を 1 つだけ作って待つテスト
+    reason: Promise が 1 つだけで、待っている間に別の Promise が拒否されないため直す必要が無い
+    plan: none
