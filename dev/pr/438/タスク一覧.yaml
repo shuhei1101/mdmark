@@ -1,0 +1,60 @@
+tasks:
+  - process: 初期構築
+    status: skipped
+    reason: 既存のリポジトリのため対象外
+    updated_by: planner
+    updated_at: '2026-11-08T21:30:52.232322+00:00'
+  - process: リバースエンジニアリング
+    status: skipped
+    reason: 設計書が既にあるため対象外
+    updated_by: planner
+    updated_at: '2026-11-08T21:30:52.232322+00:00'
+  - process: 方針決め
+    status: skipped
+    reason: 方針決めを依頼する Issue ではない
+    updated_by: planner
+    updated_at: '2026-11-08T21:30:52.232322+00:00'
+  - process: PoC 検証
+    status: skipped
+    reason: '左端と右端に留めるのは、今の position: sticky に left と right を両方入れるだけで、未検証の技術に依存しない'
+    updated_by: planner
+    updated_at: '2026-11-08T21:30:52.232322+00:00'
+  - process: 複合ユースケース設計
+    status: skipped
+    reason: ピン止めに触れる複合ユースケースが無い
+    updated_by: planner
+    updated_at: '2026-11-08T21:30:52.232322+00:00'
+  - process: デザインスタイル選定
+    status: skipped
+    reason: デザイン方針があり、Issue は見た目の方向を変えない
+    updated_by: planner
+    updated_at: '2026-11-08T21:30:52.232322+00:00'
+  - process: 画面一覧・画面遷移
+    status: skipped
+    reason: 画面の追加・削除と画面遷移の変更が無い
+    updated_by: planner
+    updated_at: '2026-11-08T21:30:52.232322+00:00'
+  - process: 単一ユースケース設計
+    status: todo
+  - process: モック作成
+    status: todo
+    note: 表の部品のモックに、右端に留めた列と境の線、複数の列を留めた状態を追加する
+  - process: インターフェース定義設計
+    status: todo
+  - process: 部品設計
+    status: todo
+  - process: 画面設計
+    status: todo
+  - process: モジュール構成設計
+    status: todo
+  - process: ドキュメント修正
+    status: todo
+    note: 要件.yaml の docs の行
+  - process: 単体テスト作成
+    status: todo
+  - process: 実装
+    status: todo
+  - process: 結合テスト作成
+    status: todo
+  - process: E2E テスト作成
+    status: todo
