@@ -31,7 +31,7 @@ scope_out:
     reason: まとめた HTML とは別の画面で、要望に含まれない
     plan: none
   - item: 公開ドキュメントのサイト（docs/_theme/assets/app.js）のページの移動の状態の保持
-    reason: 本文の「サイト（build_site）」は mdmark build と同じ処理のまとめた HTML で、公開ドキュメントのサイトは含めないと判断した。ページごとの移動はブラウザの移動で、ブラウザが位置を戻す。レビューで確定する
+    reason: 本文の「サイト（build_site）」は mdmark build と同じ処理のまとめた HTML で、公開ドキュメントのサイトは含めないと判断した。ページごとの移動はブラウザの移動で、ブラウザが位置を戻す
     plan: none
   - item: mount を使う側のページでのページ全体のスクロール位置の保持
     reason: ページ全体の移動と履歴は使う側のアプリのルーターが管理する（判定フローチャートの ※2）
