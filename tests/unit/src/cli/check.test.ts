@@ -97,7 +97,7 @@ test("test_run_check_when_no_documents", async () => {
   ).toBe(true);
 });
 
-// まとめる文書に当たらない build.entry を schema のずれにする（正常系）
+// まとめる文書に該当しない build.entry を schema のずれにする（正常系）
 test("test_run_check_when_entry_outside", async () => {
   // 準備
   const { runCheck } = await loadCheck();
@@ -120,7 +120,7 @@ test("test_run_check_when_entry_outside", async () => {
   ).toBe(true);
 });
 
-// 設定の schema と索引の missing_doc をこの順に返す（正常系）
+// 設定の schema と索引の missing_doc をこの順に返却する（正常系）
 test("test_collect_check_issues", async () => {
   // 準備
   const { collectCheckIssues } = await loadCheck();
@@ -134,7 +134,7 @@ test("test_collect_check_issues", async () => {
   expect(issues.map((issue) => issue.kind)).toEqual(["schema", "missing_doc"]);
 });
 
-/** 設定ファイルのフォルダの直下に索引（`index.yaml`）と文書 `a.md`・`b.md` を置いたフォルダを作る */
+/** 設定ファイルのフォルダの直下に索引（`index.yaml`）と文書 `a.md`・`b.md` を配置したフォルダを作る */
 async function createRootDir(options?: {
   configLines?: string[];
   aMarkdown?: string;
@@ -158,10 +158,10 @@ async function createRootDir(options?: {
   return dir;
 }
 
-/** 3 行目に知らない印 `<!-- tabz -->` を持つ文書 */
+/** 3 行目に知らないマーカー `<!-- tabz -->` を持つ文書 */
 const TABZ_MARKDOWN = "# A\n\n<!-- tabz -->\n";
 
-/** 読み込みの時点でブラウザの API を使う拡張 */
+/** 読み込みの時点でブラウザの API を使用する拡張 */
 const BROKEN_EXTENSION = [
   "class Broken extends HTMLElement {}",
   'customElements.define("x-broken", Broken);',
@@ -177,7 +177,7 @@ function createLoaded(
   return { path: join(dir, "mdmark.config.yaml"), dir, config };
 }
 
-// 知っている印に当たらない印だけをずれにする（正常系）
+// 知っているマーカーに該当しないマーカーだけをずれにする（正常系）
 test("test_check_unknown_marks", async () => {
   // 準備
   const { checkUnknownMarks } = await loadCheck();
@@ -205,7 +205,7 @@ test("test_check_unknown_marks", async () => {
   expect(issues[0]?.message).toContain("tabz");
 });
 
-// 対応表・拡張・check.ignore の名前の印はずれにしない（正常系）
+// 対応表・拡張・check.ignore の名前のマーカーはずれにしない（正常系）
 test("test_check_unknown_marks_when_known_by_config", async () => {
   // 準備
   const { checkUnknownMarks } = await loadCheck();
@@ -249,7 +249,7 @@ test("test_load_extension_directives", async () => {
   expect(result.issues).toEqual([]);
 });
 
-// 読み込みの時点でブラウザの API を使う拡張を schema のずれにする（異常系）
+// 読み込みの時点でブラウザの API を使用する拡張を schema のずれにする（異常系）
 test("test_load_extension_directives_when_browser_api", async () => {
   // 準備
   const { loadExtensionDirectives } = await loadCheck();
@@ -289,7 +289,7 @@ test("test_load_extension_directives_when_no_directive", async () => {
   });
 });
 
-// 無いファイルの拡張は束ねずにずれにしない（正常系）
+// 無いファイルの拡張はまとめずにずれにしない（正常系）
 test("test_load_extension_directives_when_file_missing", async () => {
   // 準備
   const { loadExtensionDirectives } = await loadCheck();
@@ -309,7 +309,7 @@ test("test_load_extension_directives_when_file_missing", async () => {
   expect(result.issues).toEqual([]);
 });
 
-// 索引の文書と build の文書を重なりを除いてパスの順に返す（正常系）
+// 索引の文書と build の文書を重なりを除いてパスの順に返却する（正常系）
 test("test_collect_check_documents", async () => {
   // 準備
   const { collectCheckDocuments } = await loadCheck();
@@ -346,7 +346,7 @@ test("test_collect_check_documents_when_no_index_and_build", async () => {
   expect(documents).toEqual([]);
 });
 
-// 知らない印を checkIndex のずれの後ろに返す（正常系）
+// 知らないマーカーを checkIndex のずれの後ろに返却する（正常系）
 test("test_collect_check_issues_when_unknown_mark", async () => {
   // 準備
   const { collectCheckIssues } = await loadCheck();
@@ -364,7 +364,7 @@ test("test_collect_check_issues_when_unknown_mark", async () => {
   expect(issues[1]).toMatchObject({ file: "a.md", where: "3" });
 });
 
-// 知らないテーマの名前を schema の後・no_documents の前に返す（正常系）
+// 知らないテーマの名前を schema の後・no_documents の前に返却する（正常系）
 test("test_collect_check_issues_when_unknown_color_theme", async () => {
   // 準備
   const { collectCheckIssues } = await loadCheck();
@@ -410,7 +410,7 @@ test("test_collect_check_issues_when_unknown_color_theme", async () => {
   ]);
 });
 
-// 知らない明暗の値を unknown_color_theme の後・no_documents の前に返す（正常系）
+// 知らない明暗の値を unknown_color_theme の後・no_documents の前に返却する（正常系）
 test("test_collect_check_issues_when_unknown_color_scheme", async () => {
   // 準備
   const { collectCheckIssues } = await loadCheck();
@@ -444,7 +444,7 @@ test("test_collect_check_issues_when_unknown_color_scheme", async () => {
   );
 });
 
-// エイリアスのずれを checkIndex の後・unknown_mark の前に置く（正常系）
+// エイリアスのずれを checkIndex の後・unknown_mark の前に配置する（正常系）
 test("test_collect_check_issues_when_alias_drift", async () => {
   // 準備
   const { collectCheckIssues } = await loadCheck();
@@ -486,7 +486,7 @@ test("test_collect_check_issues_when_alias_drift", async () => {
   expect(issues.some((issue) => issue.file === "aliases/env.yaml")).toBe(false);
 });
 
-// unknownMarks: false では知らない印を返さず、拡張を読み込まない（正常系）
+// unknownMarks: false では知らないマーカーを返却せず、拡張を読み込まない（正常系）
 test("test_collect_check_issues_when_unknown_marks_off", async () => {
   // 準備
   const { collectCheckIssues } = await loadCheck();
@@ -503,7 +503,7 @@ test("test_collect_check_issues_when_unknown_marks_off", async () => {
   expect(issues).toEqual([]);
 });
 
-// 知らない印を文書と行を指す unknown_mark の行にする（正常系）
+// 知らないマーカーを文書と行を指す unknown_mark の行にする（正常系）
 test("test_run_check_when_unknown_mark", async () => {
   // 準備
   const { runCheck } = await loadCheck();
@@ -543,7 +543,7 @@ test("test_run_check_when_base_given", async () => {
   expect(withoutBase.stdout).toEqual(["ずれ 0 件"]);
 });
 
-// 引けない `--base` は、ずれを点検せずに止める（異常系）
+// 参照できない `--base` は、ずれを点検せずに止める（異常系）
 test("test_run_check_when_base_unknown", async () => {
   // 準備
   const { runCheck } = await loadCheck();
@@ -560,7 +560,7 @@ test("test_run_check_when_base_unknown", async () => {
   expect(stdout.some((line) => line.startsWith("ずれ"))).toBe(false);
 });
 
-// 設定に `index` が無ければ `base` を使わない（正常系）
+// 設定に `index` が無ければ `base` を使用しない（正常系）
 test("test_collect_check_issues_when_base_without_index", async () => {
   // 準備
   const { collectCheckIssues } = await loadCheck();
@@ -582,7 +582,7 @@ test("test_collect_check_issues_when_base_without_index", async () => {
   expect(withBase).toEqual(withoutBase);
 });
 
-// 見つからないファイルを unknown_mark の前に返し、無い assets.root を schema にする（正常系）
+// 見つからないファイルを unknown_mark の前に返却し、無い assets.root を schema にする（正常系）
 test("test_collect_check_issues_when_missing_file", async () => {
   // 準備
   const { collectCheckIssues } = await loadCheck();
@@ -610,10 +610,10 @@ test("test_collect_check_issues_when_missing_file", async () => {
   ]);
 });
 
-/** 読めないグラフの定義の印（開きが先頭の行） */
+/** 読み込めないグラフの定義のマーカー（開きが先頭の行） */
 const BROKEN_CHART = wrapDirective("chart", '{ "type": "nope" }');
 
-/** 見本の `inquiry` の定義に、題を `受付` にして `chat` のノードに重なるノード `extra` を加えた JSON */
+/** 見本の `inquiry` の定義に、タイトルを `受付` にして `chat` のノードに重なるノード `extra` を加えた JSON */
 const OVERLAP_FLOW = (() => {
   const definition = JSON.parse(INQUIRY_TEXT) as {
     title: string;
@@ -632,7 +632,7 @@ const OVERLAP_FLOW = (() => {
   return JSON.stringify(definition, null, 2);
 })();
 
-// 図の点検のずれを最後に返し、upgrade の呼び方でも点検する（正常系）
+// 図の点検のずれを最後に返却し、upgrade の呼び方でも点検する（正常系）
 test("test_collect_check_issues_when_diagram", async () => {
   // 準備
   const { collectCheckIssues } = await loadCheck();
@@ -675,7 +675,7 @@ test("test_collect_check_issues_when_diagram", async () => {
   }
 });
 
-// 読めない定義と配置のずれを返す（正常系）
+// 読み込めない定義と配置のずれを返却する（正常系）
 test("test_check_diagrams", async () => {
   // 準備
   const { checkDiagrams } = await loadCheck();
@@ -707,7 +707,7 @@ test("test_check_diagrams", async () => {
   }
 });
 
-// 整った図と図の無い文書はずれを返さない（正常系）
+// 整った図と図の無い文書はずれを返却しない（正常系）
 test("test_check_diagrams_when_clean", async () => {
   // 準備
   const { checkDiagrams } = await loadCheck();
@@ -751,7 +751,7 @@ test("test_check_includes", async () => {
     root: dir,
   });
   // 検証
-  // 循環は、循環を閉じるマーカーを書いたファイル（`b.md` の 1 行目）で報告する
+  // 循環は、循環を閉じるマーカーを記載したファイル（`b.md` の 1 行目）で報告する
   expect(issues.map((issue) => [issue.kind, issue.file, issue.where])).toEqual([
     ["include_circular", "b.md", "1"],
     ["include_target_missing", "guide.md", "1"],
@@ -760,7 +760,7 @@ test("test_check_includes", async () => {
   ]);
 });
 
-// 文字列の書き方の警告を - の行にして出す（正常系）
+// 文字列の記載の警告を - の行にして出す（正常系）
 test("test_run_check_when_text", async () => {
   // 準備
   const { runCheck } = await loadCheck();
@@ -782,7 +782,7 @@ test("test_run_check_when_text", async () => {
   expect(stdout[2]).toMatch(/^-:22: syntax_warning: /);
 });
 
-// 一緒に渡せない引数を点検せずに止める（異常系）
+// 一緒に指定できない引数を点検せずに止める（異常系）
 test("test_run_check_when_arguments_conflict", async () => {
   // 準備
   const { runCheck } = await loadCheck();

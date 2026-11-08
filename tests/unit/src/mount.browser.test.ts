@@ -42,7 +42,7 @@ const TABS_MARKDOWN = [
 const elements: HTMLElement[] = [];
 const handles: MountHandle[] = [];
 
-/** 描く先の要素を作り、ページに置く */
+/** 描く先の要素を作り、ページに配置する */
 function createElement(): HTMLElement {
   const el = document.createElement("div");
   document.body.append(el);
@@ -50,7 +50,7 @@ function createElement(): HTMLElement {
   return el;
 }
 
-/** 要素に文書を描き、後始末のために戻り値を控える */
+/** 要素に文書を描き、後始末のために戻り値を記録する */
 async function mountTracked(
   el: HTMLElement,
   opts: MountOptions,
@@ -61,7 +61,7 @@ async function mountTracked(
   return handle;
 }
 
-/** 要素の中の折り畳みを返す */
+/** 要素の中の折り畳みを返却する */
 function findDetails(el: HTMLElement): HTMLDetailsElement {
   const details = el.querySelector("details");
   if (!details) {
@@ -70,7 +70,7 @@ function findDetails(el: HTMLElement): HTMLDetailsElement {
   return details;
 }
 
-/** 印刷の前のイベントを送る */
+/** 印刷の前のイベントを送信する */
 function sendBeforePrint(): void {
   window.dispatchEvent(new Event("beforeprint"));
 }
@@ -98,7 +98,7 @@ test("test_mount", async () => {
   expect(typeof handle.destroy).toBe("function");
 });
 
-// update で本文だけを描き直す（正常系）
+// update で本文だけを再描画する（正常系）
 test("test_mount_when_updated", async () => {
   // 準備
   const el = createElement();
@@ -112,7 +112,7 @@ test("test_mount_when_updated", async () => {
   expect(el.classList.contains("mdmark")).toBe(true);
 });
 
-// update で描き直しても、最初に渡したエイリアスで下線を付ける（正常系）
+// update で再描画しても、最初に指定したエイリアスで下線を付ける（正常系）
 test("test_mount_when_aliases_updated", async () => {
   // 準備
   const el = createElement();
@@ -122,16 +122,16 @@ test("test_mount_when_aliases_updated", async () => {
       id: "unit-test",
       name: "単体テスト",
       aliases: [],
-      description: "ライブラリ本体の単体テストを流す",
+      description: "ライブラリ本体の単体テストを実行する",
       command: "npm run test:unit",
     },
   ];
   const handle = await mountTracked(el, {
-    markdown: "単体テストを流す。",
+    markdown: "単体テストを実行する。",
     aliases,
   });
   // 実行
-  handle.update("もう一度単体テストを流す。");
+  handle.update("もう一度単体テストを実行する。");
   // 検証
   expect(el.querySelectorAll(".mdmark-term-wrap")).toHaveLength(1);
   expect(el.querySelector(".mdmark-term-tip code")?.textContent).toBe(
@@ -140,7 +140,7 @@ test("test_mount_when_aliases_updated", async () => {
   expect(el.querySelector("button.mdmark-term-tip-copy")).not.toBeNull();
 });
 
-// 選んだテーマを描く先の属性に付け、update でも保ち、destroy で外す（正常系）
+// 選んだテーマを描く先の属性に付け、update でも保ち、destroy で削除する（正常系）
 test("test_mount_when_color_theme", async () => {
   // 準備
   const el = createElement();
@@ -204,7 +204,7 @@ test("test_mount_when_remounted", async () => {
   expect(el.querySelector(".mdmark-content h1")?.textContent).toBe("B");
 });
 
-// page の印の明暗・テーマ・目次の出し方を設定より優先し、update で決め直す（正常系）
+// page のマーカーの明暗・テーマ・目次の出し方を設定より優先し、update でもう一度決める（正常系）
 test("test_mount_when_page_marker", async () => {
   // 準備
   const el = createElement();
@@ -220,7 +220,7 @@ test("test_mount_when_page_marker", async () => {
     "",
     "段落",
     "",
-    "## 使い方",
+    "## 使用方法",
     "",
     "段落",
     "",
@@ -233,7 +233,7 @@ test("test_mount_when_page_marker", async () => {
     theme: el.getAttribute("data-mdmark-color-theme"),
     tocMode: el.querySelector(".mdmark-side-toc")?.getAttribute("data-mode"),
   };
-  handle.update("## 導入\n\n段落\n\n## 使い方\n\n段落\n");
+  handle.update("## 導入\n\n段落\n\n## 使用方法\n\n段落\n");
   // 検証
   expect(marked).toEqual({
     light: true,
@@ -249,7 +249,7 @@ test("test_mount_when_page_marker", async () => {
   );
 });
 
-// destroy で mount が付けた明暗の class を外す（正常系）
+// destroy で mount が付けた明暗の class を削除する（正常系）
 test("test_mount_when_color_scheme_destroyed", async () => {
   // 準備
   const el = createElement();
@@ -264,7 +264,7 @@ test("test_mount_when_color_scheme_destroyed", async () => {
   expect(el.classList.contains("mdmark-theme-light")).toBe(false);
 });
 
-// 文書の印で印刷の機能を外すと、印刷の前に折り畳みを開かない（正常系）
+// 文書のマーカーで印刷の機能を解除すると、印刷の前に折り畳みを開かない（正常系）
 test("test_mount_when_print_disabled_by_mark", async () => {
   // 準備
   const el = createElement();
@@ -277,7 +277,7 @@ test("test_mount_when_print_disabled_by_mark", async () => {
   expect(findDetails(el).open).toBe(false);
 });
 
-// update で描き直した文書の印が印刷の機能に効く（正常系）
+// update で再描画した文書のマーカーが印刷の機能に有効になる（正常系）
 test("test_mount_when_updated_with_print_mark", async () => {
   // 準備
   const el = createElement();
@@ -289,7 +289,7 @@ test("test_mount_when_updated_with_print_mark", async () => {
   expect(findDetails(el).open).toBe(false);
 });
 
-// 描き直すと前の操作を外し、新しい本文に操作を付ける（正常系）
+// 再描画すると前の操作を削除し、新しい本文に操作を付ける（正常系）
 test("test_mount_when_updated_with_syntax", async () => {
   // 準備
   const el = createElement();
@@ -305,7 +305,7 @@ test("test_mount_when_updated_with_syntax", async () => {
   expect(el.querySelector('[role="tablist"]')).not.toBeNull();
 });
 
-/** 範囲で書いた拡張の印を持つ文書 */
+/** 範囲で記載した拡張のマーカーを持つ文書 */
 function definitionMarkdown(json: string): string {
   return [
     "前の段落",
@@ -323,7 +323,7 @@ function definitionMarkdown(json: string): string {
   ].join("\n");
 }
 
-// 範囲の部品の定義を schema と draw に渡し、定義の JSON を文書に残さない（正常系）
+// 範囲の部品の定義を schema と draw に指定し、定義の JSON を文書に残さない（正常系）
 test("test_mount_when_extension_definition", async () => {
   // 準備
   const { registerExtension, resetExtensions } = await import(
@@ -360,7 +360,7 @@ test("test_mount_when_extension_definition", async () => {
   }
 });
 
-// 範囲の部品の定義を JSON として読めないときは、schema も load も呼ばず書き方の警告にする（異常系）
+// 範囲の部品の定義を JSON として読み込めないときは、schema も load も呼ばず記載の警告にする（異常系）
 test("test_mount_when_extension_definition_invalid", async () => {
   // 準備
   const { registerExtension, resetExtensions } = await import(
@@ -399,7 +399,7 @@ test("test_mount_when_extension_definition_invalid", async () => {
 /** 手元の mermaid 12.3.0 の ES モジュール（依存の mermaid の dist） */
 const MERMAID_URL = "/node_modules/mermaid/dist/mermaid.esm.min.mjs";
 
-/** mermaid の図を描き終えるまでの待ちの上限（全件を並べて流すと、5MB の mermaid のモジュールの読み込みに 10 秒を超えることがある） */
+/** mermaid の図を描き終えるまでの待ちの上限（全件を並べて実行すると、5MB の mermaid のモジュールの読み込みに 10 秒を超えることがある） */
 const MERMAID_WAIT_MS = 60_000;
 
 /** flowchart の mermaid のコードブロックを 1 つ持つ文書 */
@@ -411,7 +411,7 @@ const MERMAID_MARKDOWN = [
   "",
 ].join("\n");
 
-// mermaid のコードブロックを図にし、描き直す前と片付けで mermaid の図を外す（正常系）
+// mermaid のコードブロックを図にし、再描画する前と片付けで mermaid の図を削除する（正常系）
 test(
   "test_mount_when_mermaid",
   async () => {
@@ -445,7 +445,7 @@ test(
   MERMAID_WAIT_MS + 30_000,
 );
 
-// 機能 mermaid をオフにした設定では mermaid を読まない（正常系）
+// 機能 mermaid をオフにした設定では mermaid を読み込まない（正常系）
 test("test_mount_when_mermaid_disabled", async () => {
   // 準備
   const el = createElement();
@@ -464,7 +464,7 @@ test("test_mount_when_mermaid_disabled", async () => {
   expect(el.querySelector("div.mdmark-code")).not.toBeNull();
 });
 
-// 取り出し元を渡すと見出しの後ろに差分を開くボタンを置き、片付けると取り除く（正常系）
+// 取り出し元を指定すると見出しの後ろに差分を開くボタンを配置し、片付けると取り除く（正常系）
 test("test_mount_when_diff_source", async () => {
   // 準備
   const el = createElement();
@@ -492,7 +492,7 @@ test("test_mount_when_diff_source", async () => {
   const toggle = content?.querySelector(".mdmark-diff-toggle");
   const sectionBody = content?.querySelector('[id="section-見出し"]');
   if (!toggle || !sectionBody) {
-    throw new Error("差分を開くボタンか節の中身が無い");
+    throw new Error("差分を開くボタンかセクションの中身が無い");
   }
   expect(
     toggle.compareDocumentPosition(sectionBody) &
@@ -503,7 +503,7 @@ test("test_mount_when_diff_source", async () => {
   expect(el.querySelector(".mdmark-diff-toggle")).toBeNull();
 });
 
-// 取り出し元を渡して docId が無いと投げる（異常系）
+// 取り出し元を指定して docId が無いと投げる（異常系）
 test("test_mount_when_diff_source_without_doc_id", async () => {
   // 準備
   const el = createElement();
@@ -520,7 +520,7 @@ test("test_mount_when_diff_source_without_doc_id", async () => {
   expect(el.innerHTML).toBe("<p>前の中身</p>");
 });
 
-// コメントの読み書きの関数を渡して docId が無いと投げる（異常系）
+// コメントの読み込みと保存の関数を指定して docId が無いと投げる（異常系）
 test("test_mount_when_comment_store_without_doc_id", async () => {
   // 準備
   const el = createElement();
@@ -624,7 +624,7 @@ test("test_mount_when_diff_preview_zoomed", async () => {
   expect(after.querySelector(`#${CSS.escape(labelId)}`)).not.toBeNull();
 });
 
-// 見出しのある文書に右側の目次を置き、記法の操作を本文の列に付ける（正常系）
+// 見出しのある文書に右側の目次を配置し、記法の操作を本文の列に付ける（正常系）
 test("test_mount_when_side_toc", async () => {
   // 準備
   const el = createElement();
@@ -644,7 +644,7 @@ test("test_mount_when_side_toc", async () => {
   expect(content?.querySelector(".mdmark-section-toggle")).not.toBeNull();
 });
 
-// 描き直しても右側の目次を 1 つだけ置き、ピン止めを保つ（正常系）
+// 再描画しても右側の目次を 1 つだけ配置し、ピン止めを保つ（正常系）
 test("test_mount_when_side_toc_kept_on_update", async () => {
   // 準備
   const el = createElement();
@@ -665,7 +665,7 @@ test("test_mount_when_side_toc_kept_on_update", async () => {
   expect(hrefs).toEqual(["#b", "#c"]);
 });
 
-// 機能をオフにすると右側の目次を置かず、本文を列に包まない（正常系）
+// 機能をオフにすると右側の目次を配置せず、本文を列に包まない（正常系）
 test("test_mount_when_side_toc_off", async () => {
   // 準備
   const el = createElement();
@@ -679,7 +679,7 @@ test("test_mount_when_side_toc_off", async () => {
   expect(el.querySelector(":scope > h1")).not.toBeNull();
 });
 
-// 先頭へ戻るボタンを描く先の要素の子の末尾に置き、描き直しても 1 つだけ置く（正常系）
+// 先頭へ戻るボタンを描く先の要素の子の末尾に配置し、再描画しても 1 つだけ配置する（正常系）
 test("test_mount_when_back_to_top", async () => {
   // 準備
   const el = createElement();
@@ -697,7 +697,7 @@ test("test_mount_when_back_to_top", async () => {
   expect(el.querySelector(".mdmark-back-to-top")).toBeNull();
 });
 
-// 機能をオフにすると先頭へ戻るボタンを置かない（正常系）
+// 機能をオフにすると先頭へ戻るボタンを配置しない（正常系）
 test("test_mount_when_back_to_top_off", async () => {
   // 準備
   const el = createElement();
@@ -709,7 +709,7 @@ test("test_mount_when_back_to_top_off", async () => {
   expect(el.querySelector("button.mdmark-back-to-top")).toBeNull();
 });
 
-/** 知らせの枠の処理を読み込む（blocks で本文を取り出せない知らせの枠を期待値にする） */
+/** 通知ブロックの処理を読み込む（blocks で本文を取り出せない通知ブロックを期待値にする） */
 const loadNotice = () => import("../../../src/parts/notice.ts");
 
 // 新しい順に並べた 2 つのリビジョン（後 r2・前 r1）
@@ -718,7 +718,7 @@ const DIFF_REVISIONS = [
   { id: "r1", at: "2026-10-18T00:12:00Z" },
 ];
 
-/** 追加の色で包まれたブロックの最初の段落の文字を、上から順に返す */
+/** 追加の色で包まれたブロックの最初の段落の文字を、上から順に返却する */
 function addedParagraphs(el: HTMLElement): (string | undefined)[] {
   return [...el.querySelectorAll('div.mdmark-diff-block[data-kind="add"]')].map(
     (block) => block.querySelector("p")?.textContent ?? undefined,
@@ -753,14 +753,14 @@ test("test_mount_when_diff_mode_open", async () => {
   expect(expanded()).toBe("true");
   // 実行
   handle.update("# 次");
-  // 検証: 描き直しても開いたままで、取り出し元を呼び直す
+  // 検証: 再描画しても開いたままで、取り出し元をもう一度呼ぶ
   await vi.waitFor(() => {
     expect(revisionsCalls).toEqual(["guide", "guide"]);
   });
   expect(expanded()).toBe("true");
 });
 
-// blocks ではボタンを置かず、取り出した 2 つの本文で色分けして描き直す（正常系）
+// blocks ではボタンを配置せず、取り出した 2 つの本文で色分けして再描画する（正常系）
 test("test_mount_when_diff_blocks", async () => {
   // 準備
   const el = createElement();
@@ -786,7 +786,7 @@ test("test_mount_when_diff_blocks", async () => {
     diffSource,
     diffMode: "blocks",
   });
-  // 検証: 取り出しを終えた後に、足した段落が追加の色で包まれる
+  // 検証: 取り出しを終えた後に、追加した段落が追加の色で包まれる
   await vi.waitFor(() => {
     expect(addedParagraphs(el)).toEqual(["追加した段落"]);
   });
@@ -800,9 +800,9 @@ test("test_mount_when_diff_blocks", async () => {
   expect(el.querySelector("button.mdmark-filter")).not.toBeNull();
 });
 
-// blocks で update した後に届いた古い取り出しの結果で描き直さない（正常系）
+// blocks で update した後に届いた古い取り出しの結果で再描画しない（正常系）
 test("test_mount_when_diff_blocks_stale", async () => {
-  // 準備: 呼ばれた順に控え、合図で返す取り出し元
+  // 準備: 呼ばれた順に記録し、合図で返却する取り出し元
   const el = createElement();
   const pending: { revisionId: string; resolve: (text: string) => void }[] = [];
   const diffSource = {
@@ -815,7 +815,7 @@ test("test_mount_when_diff_blocks_stale", async () => {
   const base = "# 見出し\n\n最初の段落\n";
   const first = `${base}\n一回目の追加\n`;
   const second = `${base}\n二回目の追加\n`;
-  /** 控えた呼び出しに、前は共通の本文、後は渡した本文を返す */
+  /** 記録した呼び出しに、前は共通の本文、後は指定した本文を返却する */
   const answer = (calls: typeof pending, afterText: string) => {
     for (const call of calls) {
       call.resolve(call.revisionId === "r1" ? base : afterText);
@@ -830,7 +830,7 @@ test("test_mount_when_diff_blocks_stale", async () => {
   await vi.waitFor(() => {
     expect(pending).toHaveLength(2);
   });
-  // 実行: 1 回目の本文を待たせたまま update し、2 回目を先に返してから 1 回目を返す
+  // 実行: 1 回目の本文を待たせたまま update し、2 回目を先に返却してから 1 回目を返却する
   handle.update(second);
   await vi.waitFor(() => {
     expect(pending).toHaveLength(4);
@@ -845,13 +845,13 @@ test("test_mount_when_diff_blocks_stale", async () => {
   expect(addedParagraphs(el)).toEqual(["二回目の追加"]);
 });
 
-// blocks で本文を取り出せなければ、色分けせずに知らせの枠を先頭に置く（異常系）
+// blocks で本文を取り出せなければ、色分けせずに通知ブロックを先頭に配置する（異常系）
 test("test_mount_when_diff_blocks_failed", async () => {
   // 準備
   const consoleError = vi.spyOn(console, "error").mockImplementation(() => {});
   const { renderNotice } = await loadNotice();
   const el = createElement();
-  const error = new Error("本文を返せない");
+  const error = new Error("本文を返却できない");
   const diffSource = {
     revisions: async () => DIFF_REVISIONS,
     content: async () => {
@@ -879,7 +879,7 @@ test("test_mount_when_diff_blocks_failed", async () => {
   expect(consoleError.mock.calls.flat()).toContain(error);
 });
 
-/** 差分のブロックの種類ごとに、包んだ段落の文字を上から順に返す */
+/** 差分のブロックの種類ごとに、包んだ段落の文字を上から順に返却する */
 function blockParagraphs(
   el: HTMLElement,
   kind: "add" | "del",
@@ -889,7 +889,7 @@ function blockParagraphs(
   ].map((block) => block.querySelector("p")?.textContent ?? undefined);
 }
 
-// 比較元を渡すと、取り出し元なしで変えたブロックを色分けして描く（正常系）
+// 比較元を指定すると、取り出し元なしで変えたブロックを色分けして描く（正常系）
 test("test_mount_when_base_markdown", async () => {
   // 準備
   const el = createElement();
@@ -914,7 +914,7 @@ test("test_mount_when_base_markdown_same", async () => {
   expect(el.querySelector(".mdmark-diff-block")).toBeNull();
 });
 
-// update で比較元を差し替え、省くと前の比較元のまま、null で外す（正常系）
+// update で比較元を差し替え、省くと前の比較元のまま、null で削除する（正常系）
 test("test_mount_when_base_replaced", async () => {
   // 準備
   const el = createElement();
@@ -928,12 +928,12 @@ test("test_mount_when_base_replaced", async () => {
   // 実行・検証: 省くと前の比較元のまま
   handle.update("A\n\nD\n");
   expect(blockParagraphs(el, "add")).toEqual(["D"]);
-  // 実行・検証: null で外す
+  // 実行・検証: null で削除する
   handle.update("A\n\nD\n", { baseMarkdown: null });
   expect(el.querySelector(".mdmark-diff-block")).toBeNull();
 });
 
-// 比較元と取り出し元を両方渡すと、色分けに比較元を使い、取り出し元は差分を開く UI にだけ使う（正常系）
+// 比較元と取り出し元を両方渡すと、色分けに比較元を使用し、取り出し元は差分を開く UI にだけ使用する（正常系）
 test("test_mount_when_base_with_diff_source", async () => {
   // 準備
   const calls: string[] = [];
@@ -992,7 +992,7 @@ test("test_mount_when_base_not_string", async () => {
   expect(updated.querySelector("h1")?.textContent).toBe("A");
 });
 
-// 列の表示の知らせが関数でないと投げる（異常系）
+// 列の表示の通知が関数でないと投げる（異常系）
 test("test_mount_when_columns_callback_not_function", async () => {
   // 準備
   const { mount } = await loadMount();
@@ -1008,7 +1008,7 @@ test("test_mount_when_columns_callback_not_function", async () => {
   expect(el.innerHTML).toBe("<p>前の中身</p>");
 });
 
-// 列の表示を切り替えると知らせ、描いたときと update では知らせない（正常系）
+// 列の表示を切り替えると通知し、描いたときと update では通知しない（正常系）
 test("test_mount_when_columns_changed", async () => {
   // 準備
   const el = createElement();
@@ -1042,7 +1042,7 @@ test("test_mount_when_columns_changed", async () => {
   });
 });
 
-// 読み書きの関数の update・remove が関数でないと投げる（異常系）
+// 読み込みと保存の関数の update・remove が関数でないと投げる（異常系）
 test("test_mount_when_comment_store_edit_invalid", async () => {
   // 準備
   const { mount } = await loadMount();
@@ -1069,10 +1069,10 @@ test("test_mount_when_comment_store_edit_invalid", async () => {
   expect(el.innerHTML).toBe("<p>前の中身</p>");
 });
 
-/** 部品のモジュールを読む処理を読み込む */
+/** 部品のモジュールを読み込む処理を読み込む */
 const loadPartModules = () => import("../../../src/part-modules.ts");
 
-/** 代役のコメントのモジュールが呼ばれたことを控える場所（グローバル） */
+/** 代役のコメントのモジュールが呼ばれたことを記録する場所（グローバル） */
 declare global {
   var __mdmarkMountCommentsTest:
     | { reload: number; focus: string[] }
@@ -1128,7 +1128,7 @@ export async function attachComments() {
   }
 });
 
-// 文字列・null・undefined は通す（正常系）
+// 文字列・null・undefined は経由する（正常系）
 test("test_check_base_markdown", async () => {
   // 準備
   const { checkBaseMarkdown } = await loadMount();
@@ -1153,7 +1153,7 @@ test("test_check_base_markdown_when_invalid", async () => {
 const RANGE_SCRIPT_CODE =
   'export default (root) => { root.dataset.ran = "1"; };';
 
-// 描くたびに範囲のスクリプトを動かし、描き直す前と `destroy` で範囲の `destroy` を呼ぶ（正常系）
+// 描くたびに範囲のスクリプトを動かし、再描画する前と `destroy` で範囲の `destroy` を呼ぶ（正常系）
 test("test_mount_when_range_scripts", async () => {
   // 準備
   const { setEmbeddedHtmlScripts } = await import(
@@ -1199,7 +1199,7 @@ test("test_mount_when_range_scripts", async () => {
         el.querySelector<HTMLElement>("div.mdmark-html")?.dataset.ran,
       ).toBe("1");
     });
-    // 実行・検証: 描き直す前に呼ぶ
+    // 実行・検証: 再描画する前に呼ぶ
     handle.update(markdown);
     expect(destroyed).toBe(1);
     await vi.waitFor(() => {

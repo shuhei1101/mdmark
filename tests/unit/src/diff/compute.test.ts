@@ -4,18 +4,18 @@ import type { DiffEngine } from "../../../../src/diff/compute.ts";
 /** 差分の計算を読み込む（実装が無い間は各テストが個別に失敗する） */
 const loadCompute = () => import("../../../../src/diff/compute.ts");
 
-// 段落の語を書き換え、別の行を消し、行を 1 つ足した前と後
-const BEFORE = "# ガイド\n差分を色分けして読む。\n消す行\n終わり\n";
-const AFTER = "# ガイド\n変更を色分けして読む。\n終わり\n足す行\n";
+// 段落の単語を書き換え、別の行を削除し、行を 1 つ追加した前と後
+const BEFORE = "# ガイド\n差分を色分けして読み込む。\n削除する行\n終わり\n";
+const AFTER = "# ガイド\n変更を色分けして読み込む。\n終わり\n追加する行\n";
 
-/** 差分の行の切れ（語）の形 */
+/** 差分の行の切れ（単語）の構造 */
 type Part = { text: string; changed: boolean };
-/** 差分の行の形 */
+/** 差分の行の構造 */
 type Line = { kind: "same" | "del" | "add"; parts: Part[] };
-/** 差分の塊の形 */
+/** 差分の塊の構造 */
 type Block = { type: "lines" | "html"; lines: Line[] };
 
-/** 結果の全ての行を、上から順に平らにして返す */
+/** 結果の全ての行を、上から順に平らにして返却する */
 function allLines(blocks: Block[]): Line[] {
   return blocks.flatMap((block) => block.lines);
 }
@@ -25,7 +25,7 @@ function textOf(line: Line): string {
   return line.parts.map((part) => part.text).join("");
 }
 
-/** 行の中で変わった切れだけをつないだ文字を返す */
+/** 行の中で変わった切れだけをつないだ文字を返却する */
 function changedOf(line: Line): string {
   return line.parts
     .filter((part) => part.changed)
@@ -33,7 +33,7 @@ function changedOf(line: Line): string {
     .join("");
 }
 
-/** 指定した種類の行のうち、変わった切れを持つものを返す */
+/** 指定した種類の行のうち、変わった切れを持つものを返却する */
 function pairedLine(blocks: Block[], kind: "del" | "add"): Line {
   const line = allLines(blocks).find(
     (candidate) => candidate.kind === kind && changedOf(candidate) !== "",
@@ -44,7 +44,7 @@ function pairedLine(blocks: Block[], kind: "del" | "add"): Line {
   return line;
 }
 
-// 行の差と対の行の語の差を出す（正常系）
+// 行の差と対の行の単語の差を出す（正常系）
 test("test_compute_diff", async () => {
   // 準備
   const { computeDiff } = await loadCompute();
@@ -55,19 +55,19 @@ test("test_compute_diff", async () => {
   expect(result.counts).toEqual({ del: 2, add: 2 });
   const del = pairedLine(result.blocks, "del");
   const add = pairedLine(result.blocks, "add");
-  expect(textOf(del)).toBe("差分を色分けして読む。");
+  expect(textOf(del)).toBe("差分を色分けして読み込む。");
   expect(changedOf(del)).toBe("差分");
-  expect(textOf(add)).toBe("変更を色分けして読む。");
+  expect(textOf(add)).toBe("変更を色分けして読み込む。");
   expect(changedOf(add)).toBe("変更");
   // 対にならない行は 1 つの切れで、変わった切れを持たない
   const unpaired = allLines(result.blocks).filter(
     (line) => line.kind !== "same" && changedOf(line) === "",
   );
-  expect(unpaired.map(textOf)).toEqual(["消す行", "足す行"]);
+  expect(unpaired.map(textOf)).toEqual(["削除する行", "追加する行"]);
   expect(unpaired.every((line) => line.parts.length === 1)).toBe(true);
 });
 
-// 語の区切りが無ければ 1 文字ずつ比べる（正常系）
+// 単語の区切りが無ければ 1 文字ずつ比べる（正常系）
 test("test_compute_diff_when_no_segmenter", async () => {
   // 準備
   const { computeDiff } = await loadCompute();
@@ -82,8 +82,8 @@ test("test_compute_diff_when_no_segmenter", async () => {
   const add = pairedLine(result.blocks, "add");
   expect(changedOf(del)).toBe("差分");
   expect(changedOf(add)).toBe("変更");
-  expect(textOf(del)).toBe("差分を色分けして読む。");
-  expect(textOf(add)).toBe("変更を色分けして読む。");
+  expect(textOf(del)).toBe("差分を色分けして読み込む。");
+  expect(textOf(add)).toBe("変更を色分けして読み込む。");
 });
 
 // 同じ本文なら数が 0（正常系）
@@ -146,7 +146,7 @@ test("test_compute_diff_when_html", async () => {
   expect(htmlBlocks[2]?.after).toContain("新しい");
 });
 
-// 渡した計算を使う（正常系）
+// 指定した計算を使用する（正常系）
 test("test_compute_diff_when_engine", async () => {
   // 準備
   const { computeDiff } = await loadCompute();

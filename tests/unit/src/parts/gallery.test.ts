@@ -4,10 +4,10 @@ import { innerHtml } from "../../helpers/html.ts";
 /** ギャラリーの処理を読み込む（実装が無い間は各テストが個別に失敗する） */
 const loadGallery = () => import("../../../../src/parts/gallery.ts");
 
-/** 中身の差し込み口の処理を読み込む */
+/** 中身の差し込みインターフェースの処理を読み込む */
 const loadOwn = () => import("../../../../src/parts/own.ts");
 
-// 列の数を style に置き、中身を格子に入れる（正常系）
+// 列の数を style に配置し、中身を格子に入れる（正常系）
 test("test_render_gallery", async () => {
   // 準備
   const { renderGallery } = await loadGallery();

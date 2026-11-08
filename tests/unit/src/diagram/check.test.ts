@@ -50,7 +50,7 @@ const BROKEN_FLOW: MdmarkFlowDefinition = {
   ],
 } as MdmarkFlowDefinition;
 
-// 整った配置はずれを返さない（正常系）
+// 整った配置はずれを返却しない（正常系）
 test("test_check_flow_layout", async () => {
   // 準備
   const { checkFlowLayout } = await loadCheck();
@@ -74,7 +74,7 @@ test("test_check_flow_layout", async () => {
   expect(edges).toEqual([]);
 });
 
-// 重なり・はみ出し・横切り・ラベルの長さを返す（異常系）
+// 重なり・はみ出し・横切り・ラベルの長さを返却する（異常系）
 test("test_check_flow_layout_when_broken", async () => {
   // 準備
   const { checkFlowLayout } = await loadCheck();

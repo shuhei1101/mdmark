@@ -2,7 +2,7 @@ import { expect, test } from "vitest";
 import { findTag, innerHtml } from "../../../helpers/html.ts";
 import { renderDoc } from "../../../helpers/render.ts";
 
-// 束ねた名前だけ形を入れ、打ち消しと空はコードに残す（正常系）
+// まとめた名前だけ構造を入れ、打ち消しと空はコードに残す（正常系）
 test("test_build_inline_icons", () => {
   // 準備
   const markdown =
@@ -21,7 +21,7 @@ test("test_build_inline_icons", () => {
   expect(html).toContain("<code>icon:</code>");
 });
 
-// 名前の書き方に合わないと警告する（異常系）
+// 名前の記載方法に合わないと警告する（異常系）
 test("test_build_inline_icons_when_invalid_name", () => {
   // 準備
   const markdown = "`icon:Rocket!`\n";
@@ -36,7 +36,7 @@ test("test_build_inline_icons_when_invalid_name", () => {
   expect(innerHtml(html, "mdmark-syntax-warning")).toContain("Rocket!");
 });
 
-// 渡した形の表を使う（正常系）
+// 指定した構造の表を使用する（正常系）
 test("test_build_inline_icons_when_icon_nodes", () => {
   // 準備
   const markdown = "`icon:sailboat`\n";

@@ -2,7 +2,7 @@ import { cleanup, render, screen } from "@testing-library/react";
 import { afterEach, expect, test, vi } from "vitest";
 import { userEvent } from "vitest/browser";
 
-/** 設定ファイルを読めない帯を読み込む（実装が無い間は各テストが個別に失敗する） */
+/** 設定ファイルを読み込めない帯を読み込む（実装が無い間は各テストが個別に失敗する） */
 const loadPart = () =>
   import(
     "../../../../../../../vscode/src/webview/shared/components/config-band.tsx"
@@ -27,7 +27,7 @@ test("test_config_band", async () => {
   );
   expect(band.querySelector("code")?.textContent).toBe("a<b>.yaml");
   expect(container.querySelector("b")).toBeNull();
-  expect(band.textContent).toContain("4 行目を YAML として読めないため");
+  expect(band.textContent).toContain("4 行目を YAML として読み込めないため");
   expect(band.textContent).toContain(
     "この設定ファイルを重ねずに表示しています",
   );
@@ -56,7 +56,7 @@ test("test_config_band_when_clicked", async () => {
   expect(onOpenConfig).toHaveBeenCalledTimes(1);
 });
 
-// 形に合わないときはキーを出す（正常系）
+// 構造に合わないときはキーを出す（正常系）
 test("test_config_band_when_setting_key", async () => {
   // 準備
   const { ConfigBand } = await loadPart();
@@ -74,6 +74,6 @@ test("test_config_band_when_setting_key", async () => {
     (code) => code.textContent,
   );
   expect(codes).toEqual(["~/.config/mdmark/settings.yaml", "features.callout"]);
-  expect(band.textContent).toContain("が設定の形に合わないため");
+  expect(band.textContent).toContain("が設定の構造に合わないため");
   expect(band.textContent).not.toContain("行目");
 });

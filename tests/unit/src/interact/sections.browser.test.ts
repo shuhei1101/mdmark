@@ -1,7 +1,7 @@
 import { afterEach, expect, test, vi } from "vitest";
 import { createRoot, removeRoots } from "../../helpers/dom.ts";
 
-/** 節の操作を読み込む（実装が無い間は各テストが個別に失敗する） */
+/** セクションの操作を読み込む（実装が無い間は各テストが個別に失敗する） */
 const loadSections = () => import("../../../../src/interact/sections.ts");
 
 /** 差分のブロックの処理を読み込む（見出しを包む `div` を作る） */
@@ -9,16 +9,16 @@ const loadDiffBlocks = () => import("../../../../src/parts/diff-blocks.ts");
 
 const detachers: Array<() => void> = [];
 
-/** 節の ID の中身の要素を返す */
+/** セクションの ID の中身の要素を返却する */
 function sectionBody(root: HTMLElement, id: string): HTMLElement {
   const body = root.querySelector<HTMLElement>(`[id="section-${id}"]`);
   if (!body) {
-    throw new Error(`節の中身が無い: ${id}`);
+    throw new Error(`セクションの中身が無い: ${id}`);
   }
   return body;
 }
 
-/** 節の ID の開閉のボタンを返す */
+/** セクションの ID の開閉のボタンを返却する */
 function sectionToggle(root: HTMLElement, id: string): HTMLButtonElement {
   const toggle = root.querySelector<HTMLButtonElement>(
     `[aria-controls="section-${id}"]`,
@@ -29,14 +29,14 @@ function sectionToggle(root: HTMLElement, id: string): HTMLButtonElement {
   return toggle;
 }
 
-/** 節の ID の開閉のボタンの `aria-expanded` を、渡した順に返す */
+/** セクションの ID の開閉のボタンの `aria-expanded` を、指定した順に返却する */
 function expandedStates(root: HTMLElement, ids: string[]): string[] {
   return ids.map(
     (id) => sectionToggle(root, id).getAttribute("aria-expanded") ?? "",
   );
 }
 
-// Shift の開閉の確かめに使う入れ子の節（A の中に B、B の中に閉じた C、A の外に D）
+// Shift の開閉の確認に使用する入れ子のセクション（A の中に B、B の中に閉じた C、A の外に D）
 const NESTED_MARKDOWN = [
   "## A",
   "",
@@ -67,7 +67,7 @@ afterEach(() => {
   history.replaceState(null, "", location.pathname);
 });
 
-// 閉じた節を閉じ、押すと開く（正常系）
+// 閉じたセクションを閉じ、押すと開く（正常系）
 test("test_attach_sections", async () => {
   // 準備
   const { attachSections } = await loadSections();
@@ -88,7 +88,7 @@ test("test_attach_sections", async () => {
   expect(toggle?.getAttribute("aria-expanded")).toBe("true");
 });
 
-// 閉じた節の中の ID への hashchange で開く（正常系）
+// 閉じたセクションの中の ID への hashchange で開く（正常系）
 test("test_attach_sections_when_hash", async () => {
   // 準備
   const { attachSections } = await loadSections();
@@ -105,7 +105,7 @@ test("test_attach_sections_when_hash", async () => {
   });
 });
 
-// まとめた HTML の # の形でも閉じた節を開く（正常系）
+// まとめた HTML の # の構造でも閉じたセクションを開く（正常系）
 test("test_attach_sections_when_bundle_hash", async () => {
   // 準備
   const { attachSections } = await loadSections();
@@ -163,7 +163,7 @@ test("test_attach_sections_when_row_has_term", async () => {
   const markdown = [
     "| 名前 | 値 |",
     "| --- | --- |",
-    "| 印 | 1 |",
+    "| マーカー | 1 |",
     "",
     "<!-- row-detail: 1 -->",
     "",
@@ -175,7 +175,7 @@ test("test_attach_sections_when_row_has_term", async () => {
     "",
     "| 用語 | 意味 |",
     "| --- | --- |",
-    "| 印 | HTML コメントで書く指定 |",
+    "| マーカー | HTML コメントで記載する指定 |",
     "",
     "<!-- /glossary -->",
     "",
@@ -189,8 +189,8 @@ test("test_attach_sections_when_row_has_term", async () => {
     const toggle = root.querySelector<HTMLButtonElement>(
       "button.mdmark-row-toggle",
     );
-    expect(root.querySelector("tbody td .mdmark-term")?.textContent).toBe("印");
-    expect(toggle?.getAttribute("aria-label")).toBe("「印」の詳細");
+    expect(root.querySelector("tbody td .mdmark-term")?.textContent).toBe("マーカー");
+    expect(toggle?.getAttribute("aria-label")).toBe("「マーカー」の詳細");
   } finally {
     handle.destroy();
     root.remove();
@@ -239,7 +239,7 @@ test("test_attach_sections_when_hash_in_tab", async () => {
   expect(closed.hasAttribute("hidden")).toBe(false);
 });
 
-// H1 の節も開閉する（正常系）
+// H1 のセクションも開閉する（正常系）
 test("test_attach_sections_when_h1", async () => {
   // 準備
   const { attachSections } = await loadSections();
@@ -258,12 +258,12 @@ test("test_attach_sections_when_h1", async () => {
   expect(body.contains(root.querySelector("h2"))).toBe(true);
 });
 
-// 差分のブロックに包まれた見出しの節も開閉する（正常系）
+// 差分のブロックに包まれた見出しのセクションも開閉する（正常系）
 test("test_attach_sections_when_diff_block", async () => {
   // 準備: 見出しを追加のブロックの `div` で包む
   const { attachSections } = await loadSections();
   const { renderDiffBlock } = await loadDiffBlocks();
-  const { root } = createRoot("## 新しい節\n\n段落\n");
+  const { root } = createRoot("## 新しいセクション\n\n段落\n");
   const heading = root.querySelector("h2");
   if (heading === null) {
     throw new Error("見出しが描かれていない");
@@ -283,8 +283,8 @@ test("test_attach_sections_when_diff_block", async () => {
   detachers.push(attachSections({ root, sections: true, rowDetails: true }));
   // 検証
   expect(wrapper.querySelector("h2 .mdmark-section-toggle")).not.toBeNull();
-  sectionToggle(root, "新しい節").click();
-  expect(sectionToggle(root, "新しい節").getAttribute("aria-expanded")).toBe(
+  sectionToggle(root, "新しいセクション").click();
+  expect(sectionToggle(root, "新しいセクション").getAttribute("aria-expanded")).toBe(
     "false",
   );
   const body = wrapper.nextElementSibling;
@@ -292,7 +292,7 @@ test("test_attach_sections_when_diff_block", async () => {
   expect(body?.getAttribute("hidden")).toBe("until-found");
 });
 
-// Shift を押しながら押すと、その節と入れ子の節を同じ状態にし、外の節は変えない（正常系）
+// Shift を押しながら押すと、そのセクションと入れ子のセクションを同じ状態にし、外のセクションは変えない（正常系）
 test("test_attach_sections_when_shift_click", async () => {
   // 準備
   const { attachSections } = await loadSections();
@@ -320,7 +320,7 @@ test("test_attach_sections_when_shift_click", async () => {
   expect(sectionBody(root, "c").hasAttribute("hidden")).toBe(false);
 });
 
-// Shift を押しながら Enter・Space を押しても入れ子をまとめて開閉し、click を起こさない（正常系）
+// Shift を押しながら Enter・Space を押しても入れ子をまとめて開閉し、click を発生させない（正常系）
 test("test_attach_sections_when_shift_key", async () => {
   // 準備
   const { attachSections } = await loadSections();
@@ -359,7 +359,7 @@ test("test_attach_sections_when_shift_key", async () => {
   expect(clicks).toBe(0);
 });
 
-// 外すと節の開閉の関数の控えから取り除く（正常系）
+// 削除するとセクションの開閉の関数の記録から取り除く（正常系）
 test("test_attach_sections_when_detached", async () => {
   // 準備
   const { attachSections, foldAllSections } = await loadSections();
@@ -372,7 +372,7 @@ test("test_attach_sections_when_detached", async () => {
   expect(sectionBody(root, "導入").hasAttribute("hidden")).toBe(false);
 });
 
-// 入れ子の閉じた節を外側から開いて移る（正常系）
+// 入れ子の閉じたセクションを外側から開いて移る（正常系）
 test("test_reveal_target", async () => {
   // 準備
   const { attachSections, revealTarget } = await loadSections();
@@ -481,7 +481,7 @@ test("test_fold_all_sections", async () => {
   ]);
 });
 
-// 閉じた節と閉じた行の詳細を開き、スクロールしない（正常系）
+// 閉じたセクションと閉じた行の詳細を開き、スクロールしない（正常系）
 test("test_open_enclosing", async () => {
   // 準備: 閉じた `## A` の中の表の、閉じた行の詳細の中の段落
   const { attachSections, openEnclosing } = await loadSections();

@@ -5,7 +5,7 @@ import { parseMarkArgs } from "../../../../../src/render/marks.ts";
 const loadCollapse = () =>
   import("../../../../../src/render/syntax/collapse.ts");
 
-// closed と title= を読み、残りの引数を返す（正常系）
+// closed と title= を読み込み、残りの引数を返却する（正常系）
 test("test_read_collapse", async () => {
   // 準備
   const { readCollapse } = await loadCollapse();
@@ -95,7 +95,7 @@ test("test_read_collapse_when_title_followed_by_known", async () => {
   expect(featureSpec.rest.args).toEqual(["+sort"]);
 });
 
-// title= の直後の単語だけを返す（正常系）
+// title= の直後の単語だけを返却する（正常系）
 test("test_title_tail_of", async () => {
   // 準備
   const { titleTailOf } = await loadCollapse();

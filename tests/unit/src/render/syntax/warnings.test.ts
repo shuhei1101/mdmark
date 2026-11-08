@@ -1,7 +1,7 @@
 import { expect, test } from "vitest";
 import { renderDoc } from "../../../helpers/render.ts";
 
-/** 行番号（1 から）に中身を置いた Markdown を作る */
+/** 行番号（1 から）に中身を配置した Markdown を作る */
 function markdownAt(blocks: Record<number, string[]>): string {
   const lines: string[] = [];
   for (const [at, content] of Object.entries(blocks).sort(
@@ -71,7 +71,7 @@ test("test_collect_warnings_rule_when_marks", () => {
   expect(warnings.map(({ line }) => line)).toEqual([3, 11, 20]);
 });
 
-// 読み飛ばした引数を、印の行で unknown_mark_arg にして集める（正常系）
+// スキップした引数を、マーカーの行で unknown_mark_arg にして集める（正常系）
 test("test_collect_warnings_rule_when_skipped_args", () => {
   // 準備
   const markdown = markdownAt({
@@ -100,7 +100,7 @@ test("test_collect_warnings_rule_when_skipped_args", () => {
   expect(warnings[0]?.message).toContain("title=");
 });
 
-// 読み飛ばした引数ごとに中身の空のトークンを差し込み、画面には出さない（正常系）
+// スキップした引数ごとに中身の空のトークンを差し込み、画面には出さない（正常系）
 test("test_push_skipped_args", () => {
   // 準備
   const markdown = markdownAt({

@@ -10,7 +10,7 @@ const loadArguments = () => import("../../../../src/plugin/arguments.ts");
 /** ツールの一覧を読み込む */
 const loadTools = () => import("../../../../src/plugin/tools.ts");
 
-/** 名前のツールの引数の形を引く */
+/** 名前のツールの引数の構造を参照する */
 async function schemaOf(name: string) {
   const { TOOLS } = await loadTools();
   const tool = TOOLS.find((candidate) => candidate.name === name);
@@ -20,7 +20,7 @@ async function schemaOf(name: string) {
   return tool.inputSchema;
 }
 
-/** テストの中で作る、引数 1 つの形 */
+/** テストの中で作る、引数 1 つの構造 */
 function schemaWith(name: string, argument: ArgumentSchema): ToolInputSchema {
   return {
     type: "object",

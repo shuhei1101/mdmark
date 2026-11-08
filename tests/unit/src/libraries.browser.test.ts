@@ -7,10 +7,10 @@ import type { ImportModule, LibraryModule } from "../../../src/libraries.ts";
 /** 読み込みの処理を読み込む（実装が無い間は各テストが個別に失敗する） */
 const loadLibraries = () => import("../../../src/libraries.ts");
 
-/** 読み込み中の枠の処理を読み込む */
+/** 読み込み中のブロックの処理を読み込む */
 const loadEmbed = () => import("../../../src/parts/embed.ts");
 
-/** 知らせの枠の処理を読み込む */
+/** 通知ブロックの処理を読み込む */
 const loadNotice = () => import("../../../src/parts/notice.ts");
 
 /** 拡張の処理を読み込む */
@@ -18,7 +18,7 @@ const loadExtensions = () => import("../../../src/extensions.ts");
 
 const cleanups: Array<() => void> = [];
 
-/** 登録表を空にしてから拡張を登録し、後始末のために空にする関数を控える */
+/** 登録表を空にしてから拡張を登録し、後始末のために空にする関数を記録する */
 async function registerTracked(extension: MdmarkExtension): Promise<void> {
   const { registerExtension, resetExtensions } = await loadExtensions();
   resetExtensions();
@@ -29,7 +29,7 @@ async function registerTracked(extension: MdmarkExtension): Promise<void> {
 // 対応表の URL を解決した結果（ページの URL を基準にする）
 const MODULE_URL = `${location.origin}/fixtures/test-lib.js`;
 
-/** 図の印の `test-lib` だけを持つ対応表 */
+/** 図のマーカーの `test-lib` だけを持つ対応表 */
 const TEST_LIB: Record<string, LibraryEntry> = {
   "test-lib": { url: "/fixtures/test-lib.js", figure: true },
 };
@@ -41,12 +41,12 @@ function createRoot(html: string): HTMLElement {
   return root;
 }
 
-/** DOM が書き出す形に揃えた HTML にする */
+/** DOM が書き出す構造に統一した HTML にする */
 function normalize(html: string): string {
   return createRoot(html).innerHTML;
 }
 
-/** 印の場所の要素を、文書の並びの順に返す */
+/** マーカーの場所の要素を、文書の並びの順に返却する */
 function findSlots(root: HTMLElement): HTMLElement[] {
   return [...root.querySelectorAll<HTMLElement>("[data-mdmark-slot]")];
 }
@@ -63,7 +63,7 @@ afterEach(() => {
   }
 });
 
-// 印の場所ごとに draw を呼び、描けた場所の読み込み中の印を外す（正常系）
+// マーカーの場所ごとに draw を呼び、描けた場所の読み込み中のマーカーを削除する（正常系）
 test("test_load_libraries", async () => {
   // 準備
   const { loadLibraries: load } = await loadLibraries();
@@ -93,7 +93,7 @@ test("test_load_libraries", async () => {
   }
 });
 
-// 印の場所が無ければ何も読まない（正常系）
+// マーカーの場所が無ければ何も読み込まない（正常系）
 test("test_load_libraries_when_no_slot", async () => {
   // 準備
   const { loadLibraries: load } = await loadLibraries();
@@ -110,7 +110,7 @@ test("test_load_libraries_when_no_slot", async () => {
   expect(importModule).not.toHaveBeenCalled();
 });
 
-// 対応表に無い名前の印の場所を取り除き、何も読まない（正常系）
+// 対応表に無い名前のマーカーの場所を取り除き、何も読み込まない（正常系）
 test("test_load_libraries_when_unknown_slot", async () => {
   // 準備
   const { loadLibraries: load } = await loadLibraries();
@@ -133,7 +133,7 @@ test("test_load_libraries_when_unknown_slot", async () => {
   expect(errorSpy).not.toHaveBeenCalled();
 });
 
-// 読めない印の場所を知らせの枠に替え、エラーを出す（正常系）
+// 読み込めないマーカーの場所を通知ブロックに替え、エラーを出す（正常系）
 test("test_load_libraries_when_import_fails", async () => {
   // 準備
   const { loadLibraries: load } = await loadLibraries();
@@ -162,7 +162,7 @@ test("test_load_libraries_when_import_fails", async () => {
   expect(args).toContain(error);
 });
 
-// draw が例外を投げた印の場所を知らせの枠に替える（正常系）
+// draw が例外を投げたマーカーの場所を通知ブロックに替える（正常系）
 test("test_load_libraries_when_draw_throws", async () => {
   // 準備
   const { loadLibraries: load } = await loadLibraries();
@@ -188,7 +188,7 @@ test("test_load_libraries_when_draw_throws", async () => {
   );
 });
 
-// draw を export しないモジュールの印の場所を知らせの枠に替える（正常系）
+// draw を export しないモジュールのマーカーの場所を通知ブロックに替える（正常系）
 test("test_load_libraries_when_draw_missing", async () => {
   // 準備
   const { loadLibraries: load } = await loadLibraries();
@@ -211,7 +211,7 @@ test("test_load_libraries_when_draw_missing", async () => {
   expect(errorSpy).toHaveBeenCalledTimes(1);
 });
 
-// 描き直した後に読み終えた古い印の場所には手を付けない（正常系）
+// 再描画した後に読み込み終えた古いマーカーの場所には手を付けない（正常系）
 test("test_load_libraries_when_stale", async () => {
   // 準備
   const { loadLibraries: load } = await loadLibraries();
@@ -233,7 +233,7 @@ test("test_load_libraries_when_stale", async () => {
   expect(errorSpy).not.toHaveBeenCalled();
 });
 
-// draw が印の場所を取り除いてから例外を投げても、知らせの枠に替えず拒否しない（正常系）
+// draw がマーカーの場所を取り除いてから例外を投げても、通知ブロックに替えず拒否しない（正常系）
 test("test_load_libraries_when_draw_removes_slot", async () => {
   // 準備
   const { loadLibraries: load } = await loadLibraries();
@@ -259,7 +259,7 @@ test("test_load_libraries_when_draw_removes_slot", async () => {
   expect(errorSpy).toHaveBeenCalledTimes(1);
 });
 
-// 拡張の印を load で読み、読み分けた引数で draw を呼ぶ（正常系）
+// 拡張のマーカーを load で読み込み、判別した引数で draw を呼ぶ（正常系）
 test("test_load_libraries_when_extension", async () => {
   // 準備
   const { loadLibraries: load } = await loadLibraries();
@@ -288,7 +288,7 @@ test("test_load_libraries_when_extension", async () => {
   }
 });
 
-// 引数が schema に合わない場所は書き方の警告にし、load しない（異常系）
+// 引数が schema に合わない場所は記載の警告にし、load しない（異常系）
 test("test_load_libraries_when_extension_args_invalid", async () => {
   // 準備
   const { loadLibraries: load } = await loadLibraries();
@@ -311,7 +311,7 @@ test("test_load_libraries_when_extension_args_invalid", async () => {
   expect(extensionLoad).not.toHaveBeenCalled();
 });
 
-// load の拒否と validate の拒否は拡張の知らせの枠にする（異常系）
+// load の拒否と validate の拒否は拡張の通知ブロックにする（異常系）
 test("test_load_libraries_when_extension_fails", async () => {
   // 準備
   const { loadLibraries: load } = await loadLibraries();
@@ -348,7 +348,7 @@ test("test_load_libraries_when_extension_fails", async () => {
   const notices = [...root.querySelectorAll(".mdmark-notice")];
   expect(notices).toHaveLength(2);
   for (const notice of notices) {
-    expect(notice.querySelector("p")?.textContent).toMatch(/^表示に使う拡張（/);
+    expect(notice.querySelector("p")?.textContent).toMatch(/^表示に使用する拡張（/);
   }
   const calls = errorSpy.mock.calls;
   expect(
@@ -361,7 +361,7 @@ test("test_load_libraries_when_extension_fails", async () => {
   ).toBe(true);
 });
 
-// 埋めた外部ライブラリは URL を読まずに表の関数で読み、表に無い名前は知らせの枠にする（正常系）
+// 埋めた外部ライブラリは URL を読み込まずに表の関数で読み込み、表に無い名前は通知ブロックにする（正常系）
 test("test_load_libraries_when_embedded", async () => {
   // 準備
   const { loadLibraries: load, setEmbeddedLibraries } = await loadLibraries();

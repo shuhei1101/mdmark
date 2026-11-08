@@ -1,6 +1,6 @@
 import { expect, test } from "vitest";
 
-/** mermaid のソースの読み取りを読み込む（実装が無い間は各テストが個別に失敗する。ファイルが無いと Vite の解決が失敗してテストファイルごと落ちるため、URL を組んで読む） */
+/** mermaid のソースの読み取りを読み込む（実装が無い間は各テストが個別に失敗する。ファイルが無いと Vite の解決が失敗してテストファイルごと落ちるため、URL を組んで読み込む） */
 const loadSource = (): Promise<
   typeof import("../../../src/mermaid-source.ts")
 > =>
@@ -66,7 +66,7 @@ test("test_split_mermaid_title_when_none", async () => {
   expect(result.kind).toBe("classDiagram");
 });
 
-// 表の語は名前に、表に無い語と継承した名前は 図 にする（正常系）
+// 表の単語は名前に、表に無い単語と継承した名前は 図 にする（正常系）
 test("test_mermaid_kind_name", async () => {
   // 準備
   const { mermaidKindName } = await loadSource();

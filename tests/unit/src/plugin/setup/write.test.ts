@@ -33,7 +33,7 @@ async function createTerminal(): Promise<{
   };
 }
 
-// 値を YAML として読む（正常系）
+// 値を YAML として読み込む（正常系）
 test("test_parse_set_args", async () => {
   // 準備
   const { parseSetArgs } = await loadWrite();
@@ -56,7 +56,7 @@ test("test_parse_set_args_when_no_equal", async () => {
   );
 });
 
-// 雛形から作り env を書く（正常系）
+// 雛形から作り env を記載する（正常系）
 test("test_write_settings", async () => {
   // 準備
   const { writeSettings } = await loadWrite();
@@ -85,7 +85,7 @@ test("test_write_settings", async () => {
   expect(result.keys).toContain("features.table");
 });
 
-// Schema に合わなければ書かない（異常系）
+// Schema に合わなければ記載しない（異常系）
 test("test_write_settings_when_invalid", async () => {
   // 準備
   const { writeSettings } = await loadWrite();
@@ -134,7 +134,7 @@ test("test_write_settings_when_comment", async () => {
   expect(settings.serve.tmuxSession).toBe("x");
 });
 
-// ほかのキーを残して env を書く（正常系）
+// ほかのキーを残して env を記載する（正常系）
 test("test_write_claude_env", async () => {
   // 準備
   const { writeClaudeEnv } = await loadWrite();
@@ -156,7 +156,7 @@ test("test_write_claude_env", async () => {
   expect(after.model).toBe("x");
 });
 
-// 同じ値なら書かない（正常系）
+// 同じ値なら記載しない（正常系）
 test("test_write_claude_env_when_same", async () => {
   // 準備
   const { writeClaudeEnv } = await loadWrite();
@@ -196,7 +196,7 @@ test("test_write_config", async () => {
   expect(config.features.callout).toBe(false);
 });
 
-// 端末の設定だけのキーは書かない（異常系）
+// 端末の設定だけのキーは記載しない（異常系）
 test("test_write_config_when_settings_key", async () => {
   // 準備
   const { writeConfig } = await loadWrite();

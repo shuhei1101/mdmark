@@ -16,7 +16,7 @@ const API_INDEX: MdmarkIndex = {
   docs: [{ id: "api", path: "api.md", title: "API", aliases: ["公開関数"] }],
 };
 
-// 同じ語は索引 → 描く文書の表 → ほかの文書の表の順で選ぶ（正常系）
+// 同じ単語は索引 → 描く文書の表 → ほかの文書の表の順で選ぶ（正常系）
 test("test_build_dictionary", async () => {
   // 準備
   const { buildDictionary } = await loadDictionary();
@@ -29,7 +29,7 @@ test("test_build_dictionary", async () => {
     ],
     terms: [{ id: "mark", term: "印", meaning: "索引の意味" }],
   };
-  // 参照の表は索引の `docs` で後の文書から並べ、並びでなく `docs` の順で選ぶことを確かめる
+  // 参照の表は索引の `docs` で後の文書から並べ、並びでなく `docs` の順で選ぶことを確認する
   const references: MdmarkReferences = {
     backlinks: {},
     glossary: [
@@ -58,7 +58,7 @@ test("test_build_dictionary", async () => {
   expect(dictionary.words).toEqual(["マーク", "印"]);
 });
 
-// 正規化した後に同じになる語を 1 つの語にまとめ、優先の順で先の用語と表記を残す（正常系）
+// 正規化した後に同じになる単語を 1 つの単語にまとめ、優先の順で先の用語と表記を残す（正常系）
 test("test_build_dictionary_when_notation_differs", async () => {
   // 準備
   const { buildDictionary } = await loadDictionary();
@@ -85,13 +85,13 @@ test("test_build_dictionary_when_notation_differs", async () => {
     features: { ...DEFAULT_FEATURES },
   });
   // 検証
-  // 正規化した語だけが入り、記載したままの表記は入らない
+  // 正規化した単語だけが入り、記載したままの表記は入らない
   expect(dictionary.words).toContain("mcp");
   expect(dictionary.words).toContain("api");
   for (const word of ["MCP", "ｍｃｐ", "ＡＰＩ"]) {
     expect(dictionary.words).not.toContain(word);
   }
-  // 同じ語は索引の `terms` の用語を選び、記載した表記も先の側
+  // 同じ単語は索引の `terms` の用語を選び、記載した表記も先の側
   expect(dictionary.terms.get("mcp")).toEqual({
     id: "mcp",
     meaning: "索引の意味",
@@ -102,7 +102,7 @@ test("test_build_dictionary_when_notation_differs", async () => {
   });
   expect(dictionary.written.get("mcp")).toBe("MCP");
   expect(dictionary.docs.get("api")?.map((doc) => doc.id)).toEqual(["api"]);
-  // `ws` は用語の別名 `WS` と同じ語なので、やめた言い方に入らない
+  // `ws` は用語の別名 `WS` と同じ単語なので、やめた言い方に入らない
   expect(dictionary.avoided.size).toBe(0);
 });
 
@@ -357,7 +357,7 @@ const UNIT_TEST_ALIAS = {
   command: "npm run test:unit",
 };
 
-// エイリアスの名前と別名を、索引の後・描く文書の表の前の優先で入れ、term では引かない（正常系）
+// エイリアスの名前と別名を、索引の後・描く文書の表の前の優先で入れ、term では参照しない（正常系）
 test("test_build_dictionary_when_aliases", async () => {
   // 準備
   const { buildDictionary } = await loadDictionary();
@@ -390,7 +390,7 @@ test("test_build_dictionary_when_aliases", async () => {
     id: "index-mark",
     meaning: "索引の意味",
   });
-  // エイリアスが描く文書の表より先で、名前と別名の両方の語から引ける
+  // エイリアスが描く文書の表より先で、名前と別名の両方の単語から参照できる
   for (const word of ["単体テスト", "ユニットテスト"]) {
     expect(dictionary.terms.get(word)).toMatchObject({
       id: "alias:unit-test",
@@ -398,7 +398,7 @@ test("test_build_dictionary_when_aliases", async () => {
       alias: UNIT_TEST_ALIAS,
     });
   }
-  // term は、エイリアスを入れずに描く文書の表の用語を引く
+  // term は、エイリアスを入れずに描く文書の表の用語を参照する
   expect(dictionary.term("単体テスト")).toEqual({
     id: "glossary::単体テスト",
     meaning: "表の意味",
@@ -466,7 +466,7 @@ test("test_build_dictionary_avoided_from_aliases", async () => {
   }
 });
 
-// 使えないエイリアスと、glossary がオフのときのエイリアスを入れない（正常系）
+// 使用できないエイリアスと、glossary がオフのときのエイリアスを入れない（正常系）
 test("test_build_dictionary_skips_unusable_aliases", async () => {
   // 準備
   const { buildDictionary } = await loadDictionary();
@@ -506,7 +506,7 @@ test("test_build_dictionary_skips_unusable_aliases", async () => {
   expect(disabled.words).toEqual([]);
 });
 
-// 語の区切りに揃う語だけを返す（正常系）
+// 単語の区切りに一致する単語だけを返却する（正常系）
 test("test_find_words", async () => {
   // 準備
   const { findWords } = await loadDictionary();
@@ -514,7 +514,7 @@ test("test_find_words", async () => {
   expectFindWords(findWords);
 });
 
-// 重なる語は長い語を選ぶ（正常系）
+// 重なる単語は長い単語を選ぶ（正常系）
 test("test_find_words_prefers_longer", async () => {
   // 準備
   const { findWords } = await loadDictionary();
@@ -524,7 +524,7 @@ test("test_find_words_prefers_longer", async () => {
   expect(found.map((item) => item.word)).toEqual(["オン・オフの印"]);
 });
 
-// 全角と半角・英字の大文字と小文字だけが違う語を、元の文字列の位置で返す（正常系）
+// 全角と半角・英字の大文字と小文字だけが違う単語を、元の文字列の位置で返却する（正常系）
 test("test_find_words_when_notation_differs", async () => {
   // 準備
   const { findWords } = await loadDictionary();
@@ -542,7 +542,7 @@ test("test_normalize_word", async () => {
   expect(normalizeWord("㍻")).toBe("平成");
 });
 
-/** `Intl.Segmenter` を取り除いた間だけ `run` を流し、終わったら戻す */
+/** `Intl.Segmenter` を取り除いた間だけ `run` を実行し、終わったら戻す */
 async function withoutIntlSegmenter(run: () => Promise<void>): Promise<void> {
   const original = Intl.Segmenter;
   Reflect.deleteProperty(Intl, "Segmenter");
@@ -563,7 +563,7 @@ const loadFreshDictionary = (key: string) =>
     /* @vite-ignore */ `../../../../src/knowledge/dictionary.ts?${key}`
   ) as Promise<typeof import("../../../../src/knowledge/dictionary.ts")>;
 
-// `Intl.Segmenter` を持たない環境で、英数字の語の一部を照合しない（正常系）
+// `Intl.Segmenter` を持たない環境で、英数字の単語の一部を照合しない（正常系）
 test("test_find_words_without_intl_segmenter", async () => {
   await withoutIntlSegmenter(async () => {
     // 準備・実行
@@ -579,7 +579,7 @@ test("test_find_words_without_intl_segmenter", async () => {
   });
 });
 
-// `Intl.Segmenter` を持たない環境で、英数字の連なりを 1 語、それ以外を 1 文字ずつ区切る（正常系）
+// `Intl.Segmenter` を持たない環境で、英数字の連なりを 1 単語、それ以外を 1 文字ずつ区切る（正常系）
 test("test_word_starts_without_intl_segmenter", async () => {
   await withoutIntlSegmenter(async () => {
     // 準備・実行
@@ -592,7 +592,7 @@ test("test_word_starts_without_intl_segmenter", async () => {
   });
 });
 
-// `Intl.Segmenter` を持たない環境で、全角の英数字の連なりも 1 語にする（正常系）
+// `Intl.Segmenter` を持たない環境で、全角の英数字の連なりも 1 単語にする（正常系）
 test("test_word_starts_without_intl_segmenter_when_fullwidth", async () => {
   await withoutIntlSegmenter(async () => {
     // 準備・実行

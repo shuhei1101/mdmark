@@ -8,10 +8,10 @@ import { findTag, matches, plainText } from "../../helpers/html.ts";
 /** グラフの部品を読み込む（実装が無い間は各テストが個別に失敗する） */
 const loadChart = () => import("../../../../src/parts/chart.ts");
 
-/** 題・範囲・更新日に `rest` を加えたグラフの定義 */
+/** タイトル・範囲・更新日に `rest` を加えたグラフの定義 */
 function chartOf(rest: Partial<MdmarkChartDefinition>): MdmarkChartDefinition {
   return {
-    title: "確かめのグラフ",
+    title: "確認のグラフ",
     scope: "10 月",
     updated: "2026-11-03",
     ...rest,
@@ -43,7 +43,7 @@ function rectsOf(
   );
 }
 
-/** パスの `d` の座標の組を、現れた順に返す */
+/** パスの `d` の座標の組を、現れた順に返却する */
 function pathPoints(d: string): Array<[number, number]> {
   const numbers = (d.match(/-?\d+(?:\.\d+)?/g) ?? []).map(Number);
   const points: Array<[number, number]> = [];
@@ -63,7 +63,7 @@ function near(a: number, b: number): boolean {
   return Math.abs(a - b) < 0.6;
 }
 
-// 系列を積み上げ、棒の上に合計を置く（正常系）
+// 系列を積み上げ、棒の上に合計を配置する（正常系）
 test("test_render_chart_when_stacked_bar", async () => {
   // 準備
   const { renderChart } = await loadChart();
@@ -91,7 +91,7 @@ test("test_render_chart_when_stacked_bar", async () => {
   expect(texts).toContain("7");
 });
 
-// 負の値を 0 から下へ積む（正常系）
+// 負の値を 0 から下へ追加する（正常系）
 test("test_render_chart_when_stacked_negative", async () => {
   // 準備
   const { renderChart } = await loadChart();
@@ -194,7 +194,7 @@ test("test_render_chart_when_donut", async () => {
     type: "donut",
     unit: " 件",
     items: [
-      { name: "よくある質問で答えた", value: 186 },
+      { name: "よくある質問で回答した", value: 186 },
       { name: "担当者へ回した", value: 92 },
       { name: "返信しなかった", value: 22 },
     ],
@@ -303,7 +303,7 @@ test("test_render_chart_when_combo", async () => {
   }
 });
 
-// 6 つの系列を色・線の模様・点の形の組で分ける（正常系）
+// 6 つの系列を色・線の模様・点の形状の組で分ける（正常系）
 test("test_render_chart_when_six_series", async () => {
   // 準備
   const { renderChart } = await loadChart();
@@ -354,7 +354,7 @@ test("test_render_chart_when_six_series", async () => {
   ).toBe(true);
 });
 
-// 項目ごとにツールチップの中身と当たりの円を置く（正常系）
+// 項目ごとにツールチップの中身とクリックを受ける円を配置する（正常系）
 test("test_render_chart_when_item_tips", async () => {
   // 準備
   const { renderChart } = await loadChart();
@@ -380,7 +380,7 @@ test("test_render_chart_when_item_tips", async () => {
   expect(plainText(pieChart.tips)).toContain("186 件（62%）");
 });
 
-// 種類ごとの値の文を返す（正常系）
+// 種類ごとの値の文を返却する（正常系）
 test("test_chart_item_text", async () => {
   // 準備
   const { chartItemText } = await loadChart();

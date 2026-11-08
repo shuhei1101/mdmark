@@ -12,7 +12,7 @@ import {
   writeFiles,
 } from "../../helpers/cli.ts";
 
-/** 版を上げる処理を読み込む（実装が無い間は各テストが個別に失敗する） */
+/** バージョンを上げる処理を読み込む（実装が無い間は各テストが個別に失敗する） */
 const loadModule = () => import("../../../../src/cli/upgrade.ts");
 
 /** CLI の誤りを読み込む */
@@ -20,10 +20,10 @@ const loadMain = () => import("../../../../src/cli/main.ts");
 
 const createTempDir = useTempDirs();
 
-// 写しのフォルダ名に使う時刻（手元の時刻）
+// コピーのフォルダ名に使用する時刻（手元の時刻）
 const NOW = new Date(2026, 9, 17, 12, 0, 0);
 
-/** 手元の版が古い設定（`legacy` は点検が拒まない最上位の知らないキー） */
+/** 手元のバージョンが古い設定（`legacy` は点検が拒まない最上位の知らないキー） */
 const OLD_CONFIG = [
   "# 設定",
   "version: v0.3.0",
@@ -46,11 +46,11 @@ const STEPS_V040 = [
   "",
 ].join("\n");
 
-/** v0.5.0 の手順: 文書の印を書き換える */
+/** v0.5.0 の手順: 文書のマーカーを書き換える */
 const STEPS_V050 = [
   "steps:",
   "  - op: replace_mark",
-  "    description: 印 note を callout に書き換える",
+  "    description: マーカー note を callout に書き換える",
   "    from: <!-- note -->",
   "    to: <!-- callout -->",
   "",
@@ -62,13 +62,13 @@ const CHANGELOG = [
   "",
   "| バージョン | PR | 変更 |",
   "| --- | --- | --- |",
-  "| v0.5.0 | [#45](https://example.com/45) | 注意書きの印の名前を揃える |",
+  "| v0.5.0 | [#45](https://example.com/45) | 注意書きのマーカーの名前を統一する |",
   "| v0.4.0 | [#40](https://example.com/40) | 設定のキーの名前を改める |",
-  "| v0.3.0 | [#38](https://example.com/38) | 手元の版より古い行 |",
+  "| v0.3.0 | [#38](https://example.com/38) | 手元のバージョンより古い行 |",
   "",
 ].join("\n");
 
-/** 版を上げる手順を流す一時フォルダ（手元のフォルダとパッケージ）を作る */
+/** バージョンを上げる手順を実行する一時フォルダ（手元のフォルダとパッケージ）を作る */
 async function createFixture(options?: {
   config?: string;
   stepsV050?: string;
@@ -124,22 +124,22 @@ test("test_write_config_version", async () => {
   );
 });
 
-// 無い version を先頭に足す（正常系）
+// 無い version を先頭に追加する（正常系）
 test("test_write_config_version_when_missing", async () => {
   // 準備
   const { writeConfigVersion } = await loadModule();
   const work = await createTempDir();
-  await writeFiles(work, { "mdmark.config.yaml": "legacy: 1\ntitle: 題\n" });
+  await writeFiles(work, { "mdmark.config.yaml": "legacy: 1\ntitle: タイトル\n" });
   const configPath = join(work, "mdmark.config.yaml");
   // 実行
   await writeConfigVersion(configPath, "v0.5.0");
   // 検証
   const config = parse(await readFile(configPath, "utf8"));
   expect(Object.keys(config)[0]).toBe("version");
-  expect(config).toEqual({ version: "v0.5.0", legacy: 1, title: "題" });
+  expect(config).toEqual({ version: "v0.5.0", legacy: 1, title: "タイトル" });
 });
 
-// 2 つの版の手順を当てて版を書き換える（正常系）
+// 2 つのバージョンの手順を適用してバージョンを書き換える（正常系）
 test("test_run_upgrade", async () => {
   // 準備
   const { runUpgrade } = await loadModule();
@@ -165,7 +165,7 @@ test("test_run_upgrade", async () => {
   expect(config.version).toBe("v0.5.0");
   expect(await fixture.read("docs/a.md")).toContain("<!-- callout -->");
   expect(await fixture.read("docs/b.md")).toContain("<!-- callout -->");
-  expect(stdout.at(-1)).toBe("版を v0.5.0 にしました");
+  expect(stdout.at(-1)).toBe("バージョンを v0.5.0 にしました");
 });
 
 // --plan は何も書き換えない（正常系）
@@ -193,7 +193,7 @@ test("test_run_upgrade_when_plan", async () => {
   expect(existsSync(join(fixture.work, ".mdmark"))).toBe(false);
 });
 
-// 同じ版なら何も当てない（正常系）
+// 同じバージョンなら何も適用しない（正常系）
 test("test_run_upgrade_when_up_to_date", async () => {
   // 準備
   const { runUpgrade } = await loadModule();
@@ -215,10 +215,10 @@ test("test_run_upgrade_when_up_to_date", async () => {
   );
   // 検証
   expect(code).toBe(0);
-  expect(stdout.join("\n")).toContain("当てる手順はありません");
+  expect(stdout.join("\n")).toContain("適用する手順はありません");
 });
 
-// version が無ければ手元の版を聞く（正常系）
+// version が無ければ手元のバージョンを聞く（正常系）
 test("test_run_upgrade_when_version_missing", async () => {
   // 準備
   const { runUpgrade } = await loadModule();
@@ -246,7 +246,7 @@ test("test_run_upgrade_when_version_missing", async () => {
   expect(config.version).toBe("v0.5.0");
 });
 
-// 手元の版が新しければ CliError（異常系）
+// 手元のバージョンが新しければ CliError（異常系）
 test("test_run_upgrade_when_local_newer", async () => {
   // 準備
   const { runUpgrade } = await loadModule();
@@ -308,7 +308,7 @@ test("test_run_upgrade_when_declined", async () => {
   expect(existsSync(join(fixture.work, ".mdmark"))).toBe(false);
 });
 
-// 手順が失敗すると写しから戻して投げ直す（異常系）
+// 手順が失敗するとコピーから戻してもう一度投げる（異常系）
 test("test_run_upgrade_when_step_fails", async () => {
   // 準備
   const { runUpgrade } = await loadModule();
@@ -317,7 +317,7 @@ test("test_run_upgrade_when_step_fails", async () => {
     stepsV050: [
       "steps:",
       "  - op: call",
-      "    description: 設定をスクリプトで直す",
+      "    description: 設定をスクリプトで修正する",
       "    script: fail.mjs",
       "    files: [config]",
       "",
@@ -345,7 +345,7 @@ test("test_run_upgrade_when_step_fails", async () => {
   expect(config.version).toBe("v0.3.0");
 });
 
-// 点検のずれで写しから戻し 1 を返す（異常系）
+// 点検のずれでコピーから戻し 1 を返却する（異常系）
 test("test_run_upgrade_when_check_fails", async () => {
   // 準備
   const { runUpgrade } = await loadModule();
@@ -353,7 +353,7 @@ test("test_run_upgrade_when_check_fails", async () => {
     stepsV050: [
       "steps:",
       "  - op: map_values",
-      "    description: build.out を txt に読み替える",
+      "    description: build.out を txt として解釈する",
       "    file: config",
       "    key: build.out",
       "    mapping:",
@@ -384,7 +384,7 @@ test("test_run_upgrade_when_check_fails", async () => {
   expect(await fixture.read("mdmark.config.yaml")).toBe(OLD_CONFIG);
 });
 
-// 問いに答えが無ければ書き換えずに CliError（異常系）
+// 質問に回答が無ければ書き換えずに CliError（異常系）
 test("test_run_upgrade_when_answer_missing", async () => {
   // 準備
   const { runUpgrade } = await loadModule();
@@ -419,10 +419,10 @@ test("test_run_upgrade_when_plan_with_ask", async () => {
     stepsV050: [
       "steps:",
       "  - op: set_default",
-      "    description: title を足す",
+      "    description: title を追加する",
       "    file: config",
       "    key: title",
-      "    ask: 題を入れてください",
+      "    ask: タイトルを入れてください",
       "",
     ].join("\n"),
   });
@@ -444,7 +444,7 @@ test("test_run_upgrade_when_plan_with_ask", async () => {
   expect(await fixture.read("mdmark.config.yaml")).toBe(OLD_CONFIG);
 });
 
-// call のスクリプトが標準出力に書いた行を、手順の行に続けて出す（正常系）
+// call のスクリプトが標準出力に書き込んだ行を、手順の行に続けて出す（正常系）
 test("test_run_upgrade_when_script_prints", async () => {
   // 準備
   const { runUpgrade } = await loadModule();
@@ -452,7 +452,7 @@ test("test_run_upgrade_when_script_prints", async () => {
     stepsV050: [
       "steps:",
       "  - op: call",
-      "    description: 設定をスクリプトで直す",
+      "    description: 設定をスクリプトで修正する",
       "    script: print.mjs",
       "    files: [config]",
       "",
@@ -528,7 +528,7 @@ test("test_run_upgrade_when_settings", async () => {
   );
 });
 
-// --settings で files が config だけの call を端末の設定に当てる（正常系）
+// --settings で files が config だけの call を端末の設定に適用する（正常系）
 test("test_run_upgrade_when_settings_with_config_call", async () => {
   // 準備
   const { runUpgrade } = await loadModule();
@@ -536,7 +536,7 @@ test("test_run_upgrade_when_settings_with_config_call", async () => {
     stepsV050: [
       "steps:",
       "  - op: call",
-      "    description: 設定をスクリプトで直す",
+      "    description: 設定をスクリプトで修正する",
       "    script: mark.mjs",
       "    files: [config]",
       "",

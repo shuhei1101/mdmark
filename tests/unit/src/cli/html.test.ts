@@ -4,7 +4,7 @@ import { type PayloadView, readPayload } from "../../helpers/cli.ts";
 /** HTML の組み立てを読み込む（実装が無い間は各テストが個別に失敗する） */
 const loadHtml = () => import("../../../../src/cli/html.ts");
 
-// 束ねたスクリプトは `</script` を含まない
+// まとめたスクリプトは `</script` を含まない
 const SCRIPT = "console.log(1);";
 
 /** 書き出しの中身を作る */
@@ -15,16 +15,16 @@ function createPayload(
   return {
     kind,
     config: {},
-    docs: [{ path: "a.md", title: "題", markdown }],
+    docs: [{ path: "a.md", title: "タイトル", markdown }],
     entry: "a.md",
   };
 }
 
-// 配布物の CSS が使う側の CSS より前にあり、中身を JSON.parse すると元に戻る（正常系）
+// 配布物の CSS が利用側の CSS より前にあり、中身を JSON.parse すると元に戻る（正常系）
 test("test_assemble_html", async () => {
   // 準備
   const { assembleHtml } = await loadHtml();
-  const payload = createPayload("document", "# 題\n");
+  const payload = createPayload("document", "# タイトル\n");
   // 実行
   const html = assembleHtml({
     payload,
@@ -53,11 +53,11 @@ test("test_assemble_html_when_script_in_markdown", async () => {
   expect(readPayload(html).docs[0]?.markdown).toBe(markdown);
 });
 
-// bundle は画面の骨組みを置く（正常系）
+// bundle は画面の骨組みを配置する（正常系）
 test("test_assemble_html_when_bundle", async () => {
   // 準備
   const { assembleHtml } = await loadHtml();
-  const payload = createPayload("bundle", "# 題\n");
+  const payload = createPayload("bundle", "# タイトル\n");
   // 実行
   const html = assembleHtml({ payload, distCss: "", script: SCRIPT });
   // 検証

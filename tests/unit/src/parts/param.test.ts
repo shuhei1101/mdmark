@@ -21,10 +21,10 @@ test("test_render_param", async () => {
   expect(range).toContain('value="5"');
   expect(html).toContain("今の値（5）");
   expect(html).toContain("既定の値（5）");
-  expect(plainText(innerHtml(html, "mdmark-param-copy"))).toBe("今の値を写す");
+  expect(plainText(innerHtml(html, "mdmark-param-copy"))).toBe("今の値をコピーする");
 });
 
-// 渡した文言でボタンを描き、HTML の特別な文字をエスケープする（正常系）
+// 指定した文言でボタンを描き、HTML の特別な文字をエスケープする（正常系）
 test("test_render_param_when_copy_label", async () => {
   // 準備
   const { renderParam } = await loadParam();

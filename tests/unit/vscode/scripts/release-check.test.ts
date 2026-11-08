@@ -27,7 +27,7 @@ test("test_check_release_tag_when_mismatch", async () => {
   }
 });
 
-// 形に合わないタグは合わないときと同じく止める（正常系）
+// 構造に合わないタグは合わないときと同じく止める（正常系）
 test("test_check_release_tag_when_invalid_tag", async () => {
   // 準備
   const { checkReleaseTag } = await loadCheck();

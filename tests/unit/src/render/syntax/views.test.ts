@@ -2,22 +2,22 @@ import { expect, test } from "vitest";
 import { findTag, outerHtml, plainText } from "../../../helpers/html.ts";
 import { renderDoc } from "../../../helpers/render.ts";
 
-/** 題・状態・担当の列と 3 行を持つ表 */
+/** タイトル・状態・担当の列と 3 行を持つ表 */
 const TABLE = [
-  "| 題 | 状態 | 担当 |",
+  "| タイトル | 状態 | 担当 |",
   "| --- | --- | --- |",
   "| 配色の変数を洗い出す | 未着手 | 佐藤 |",
   "| 余白の変数を決める | 進行中 | 鈴木 |",
-  "| 印刷を直す | 完了 | 佐藤 |",
+  "| 印刷を修正する | 完了 | 佐藤 |",
   "",
 ].join("\n");
 
-/** ビューの印の引数を指定して、表を印で囲んだ文書にする */
+/** ビューのマーカーの引数を指定して、表をマーカーで囲んだ文書にする */
 function viewMarkdown(args: string): string {
   return `<!-- view: ${args} -->\n\n${TABLE}\n<!-- /view -->\n`;
 }
 
-/** `div.mdmark-view` の `data-view` を JSON として読む */
+/** `div.mdmark-view` の `data-view` を JSON として読み込む */
 function readViewSpec(html: string): unknown {
   const tag = findTag(html, 'class="mdmark-view"');
   const raw = /data-view="([^"]*)"/.exec(tag)?.[1] ?? "";
@@ -82,7 +82,7 @@ test("test_build_views_when_no_table", () => {
   expect(html).not.toContain('class="mdmark-view"');
 });
 
-// 使えないアイコンは当てずに警告にする（正常系）
+// 使用できないアイコンは当てずに警告にする（正常系）
 test("test_build_views_when_unknown_icon", () => {
   // 準備
   const markdown = viewMarkdown("group=状態 icons=完了:rocket");
@@ -90,11 +90,11 @@ test("test_build_views_when_unknown_icon", () => {
   const { html } = renderDoc(markdown);
   // 検証
   const warning = outerHtml(html, "mdmark-syntax-warning");
-  expect(plainText(warning)).toContain("のアイコン rocket は使えません");
+  expect(plainText(warning)).toContain("のアイコン rocket は使用できません");
   expect(readViewSpec(html)).toMatchObject({ icons: {} });
 });
 
-// 知らないキーは警告にせず読み飛ばす（正常系）
+// 知らないキーは警告にせずスキップする（正常系）
 test("test_build_views_when_unknown_key", () => {
   // 準備
   const markdown = viewMarkdown("group=状態 size=2");

@@ -1,7 +1,7 @@
 import { afterEach, expect, test, vi } from "vitest";
 import { addStyles, createRoot, removeRoots } from "../../helpers/dom.ts";
 
-/** 見出し行と集計の行を留める処理を読み込む（実装が無い間は各テストが個別に失敗する。ファイルが無いと Vite の解決が失敗してテストファイルごと落ちるため、URL を組んで読む） */
+/** 見出し行と集計の行を留める処理を読み込む（実装が無い間は各テストが個別に失敗する。ファイルが無いと Vite の解決が失敗してテストファイルごと落ちるため、URL を組んで読み込む） */
 const loadSticky = (): Promise<
   typeof import("../../../../src/interact/sticky.ts")
 > =>
@@ -12,7 +12,7 @@ const loadSticky = (): Promise<
     ).href
   );
 
-/** 集計の行を置く表の操作を読み込む */
+/** 集計の行を配置する表の操作を読み込む */
 const loadTables = () => import("../../../../src/interact/tables.ts");
 
 const detachers: Array<() => void> = [];
@@ -36,7 +36,7 @@ function nextFrame(): Promise<void> {
   return new Promise((resolve) => requestAnimationFrame(() => resolve()));
 }
 
-/** 表の囲みか表自身に入れた CSS 変数の値を返す（入れていなければ空） */
+/** 表の囲みか表自身に入れた CSS 変数の値を返却する（入れていなければ空） */
 function stickyVar(root: HTMLElement, name: string): string {
   const elements = root.querySelectorAll<HTMLElement>(
     ".mdmark-table, .mdmark-table table",
@@ -50,7 +50,7 @@ function stickyVar(root: HTMLElement, name: string): string {
   return "";
 }
 
-/** 留め方の属性を、描く先の要素かその中の要素から探して値を返す */
+/** 留め方の属性を、描く先の要素かその中の要素から探して値を返却する */
 function stickyMode(root: HTMLElement): string | null {
   return (
     root.getAttribute("data-mdmark-sticky") ??
@@ -61,7 +61,7 @@ function stickyMode(root: HTMLElement): string | null {
   );
 }
 
-/** 表の見出し行の最初のセルを返す */
+/** 表の見出し行の最初のセルを返却する */
 function headCell(root: HTMLElement): HTMLElement {
   const cell = root.querySelector<HTMLElement>("thead th");
   if (!cell) {
@@ -98,7 +98,7 @@ test("test_attach_sticky_rows_when_timeline", async () => {
   expect(
     Number.parseFloat(stickyVar(root, "--mdmark-sticky-foot-max")),
   ).toBeGreaterThan(0);
-  // 実行・検証: 外すと属性と CSS 変数が無くなる
+  // 実行・検証: 削除すると属性と CSS 変数が無くなる
   detach();
   expect(stickyMode(root)).toBeNull();
   expect(stickyVar(root, "--mdmark-sticky-head-max")).toBe("");
@@ -133,7 +133,7 @@ test("test_attach_sticky_rows_when_script", async () => {
   );
 });
 
-// 外した後はスクロールしても書き換えない（正常系）
+// 削除した後はスクロールしても書き換えない（正常系）
 test("test_attach_sticky_rows_when_detached", async () => {
   // 準備
   addStyles();

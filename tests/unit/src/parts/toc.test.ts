@@ -12,7 +12,7 @@ test("test_render_toc", async () => {
     headings: [
       { level: 2, id: "導入", text: "導入" },
       { level: 3, id: "前提", text: "前提" },
-      { level: 2, id: "使い方", text: "使い方" },
+      { level: 2, id: "使用方法", text: "使用方法" },
     ],
   });
   // 検証
@@ -22,5 +22,5 @@ test("test_render_toc", async () => {
   expect(html).toContain(
     '<li><a href="#導入">導入</a><ul><li><a href="#前提">前提</a></li></ul></li>',
   );
-  expect(html).toContain('<li><a href="#使い方">使い方</a></li>');
+  expect(html).toContain('<li><a href="#使用方法">使用方法</a></li>');
 });

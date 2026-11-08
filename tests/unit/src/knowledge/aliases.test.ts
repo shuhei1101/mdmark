@@ -1,6 +1,6 @@
 import { expect, test } from "vitest";
 
-/** エイリアスを作る処理を読み込む（ファイルが無いと Vite の解決が失敗してテストファイルごと落ちるため、URL を組んで読む。実装が無い間は各テストが個別に失敗する） */
+/** エイリアスを作る処理を読み込む（ファイルが無いと Vite の解決が失敗してテストファイルごと落ちるため、URL を組んで読み込む。実装が無い間は各テストが個別に失敗する） */
 const loadAliases = (): Promise<
   typeof import("../../../../src/knowledge/aliases.ts")
 > =>
@@ -20,7 +20,7 @@ const TERMS_ROW = {
   metadata: { name: "term", description: "meta.meaning" },
 };
 
-/** `TERMS_ROW` が読むファイル（`aliases` は文字列で書く） */
+/** `TERMS_ROW` が読み込むファイル（`aliases` は文字列で記載する） */
 const TERMS_SOURCE = {
   rowId: "terms",
   path: "terms/glossary.yaml",
@@ -30,7 +30,7 @@ const TERMS_SOURCE = {
         id: "ws",
         term: "ワークスペース",
         aliases: "WS",
-        meta: { meaning: "話し合いの記録を置くフォルダ" },
+        meta: { meaning: "話し合いの記録を配置するフォルダ" },
       },
     ],
   },
@@ -43,13 +43,13 @@ const COMMANDS_ROW = {
   alias_type: "command",
 };
 
-/** `COMMANDS_ROW` が読むファイル（`name` を持たない） */
+/** `COMMANDS_ROW` が読み込むファイル（`name` を持たない） */
 const COMMANDS_SOURCE = {
   rowId: "commands",
   path: "commands/unit-test.yaml",
   data: {
     id: "unit-test",
-    description: "ライブラリ本体の単体テストを流す",
+    description: "ライブラリ本体の単体テストを実行する",
     command: "npm run test:unit",
   },
 };
@@ -68,7 +68,7 @@ function typedRow(
   };
 }
 
-// records を持つ行と持たない行から、metadata を当てたエイリアスを並びの順に作り、env と読まない行を除く（正常系）
+// records を持つ行と持たない行から、metadata を適用したエイリアスを並びの順に作り、env と読み込まない行を除く（正常系）
 test("test_build_aliases", async () => {
   // 準備
   const { buildAliases } = await loadAliases();
@@ -89,7 +89,7 @@ test("test_build_aliases", async () => {
     {
       rowId: "off",
       path: "off/memo.yaml",
-      data: { id: "memo", name: "メモ", description: "読まない" },
+      data: { id: "memo", name: "メモ", description: "読み込まない" },
     },
   ];
   const before = structuredClone({ rows, sources });
@@ -102,13 +102,13 @@ test("test_build_aliases", async () => {
     id: "ws",
     name: "ワークスペース",
     aliases: ["WS"],
-    description: "話し合いの記録を置くフォルダ",
+    description: "話し合いの記録を配置するフォルダ",
   });
   expect(result.aliases[1]).toMatchObject({
     alias_type: "command",
     id: "unit-test",
     name: "unit-test",
-    description: "ライブラリ本体の単体テストを流す",
+    description: "ライブラリ本体の単体テストを実行する",
     command: "npm run test:unit",
   });
   const ids = result.aliases.map((alias) => alias.id);
@@ -118,7 +118,7 @@ test("test_build_aliases", async () => {
   expect({ rows, sources }).toEqual(before);
 });
 
-// 使えない行とレコードを除いてずれにし、残りからエイリアスを作る（正常系）
+// 使用できない行とレコードを除いてずれにし、残りからエイリアスを作る（正常系）
 test("test_build_aliases_when_invalid_rows", async () => {
   // 準備
   const { buildAliases } = await loadAliases();
@@ -258,8 +258,8 @@ test("test_build_aliases_when_name_missing", async () => {
       path: "with-records/a.yaml",
       data: {
         terms: [
-          { id: "g", path: "docs/guide.md", description: "使い方の文書" },
-          { id: "ws", description: "話し合いの記録を置くフォルダ" },
+          { id: "g", path: "docs/guide.md", description: "使用方法の文書" },
+          { id: "ws", description: "話し合いの記録を配置するフォルダ" },
         ],
       },
     },
@@ -277,7 +277,7 @@ test("test_build_aliases_when_name_missing", async () => {
   ]);
 });
 
-// metadata に記載した列が無いレコードは、無い列ごとにずれにし、必須のキーを確かめない（正常系）
+// metadata に記載した列が無いレコードは、無い列ごとにずれにし、必須のキーを確認しない（正常系）
 test("test_build_aliases_when_fields_missing", async () => {
   // 準備
   const { buildAliases } = await loadAliases();
@@ -364,9 +364,9 @@ test("test_read_alias_record", async () => {
   const { readAliasRecord } = await loadAliases();
   const record = {
     term: "ワークスペース",
-    meta: { summary: "話し合いの記録を置くフォルダ" },
+    meta: { summary: "話し合いの記録を配置するフォルダ" },
     aliases: "WS",
-    memo: "使わない列",
+    memo: "使用しない列",
   };
   const metadata = { name: "term", description: "meta.summary" };
   // 実行
@@ -374,7 +374,7 @@ test("test_read_alias_record", async () => {
   // 検証
   expect(result.values).toEqual({
     name: "ワークスペース",
-    description: "話し合いの記録を置くフォルダ",
+    description: "話し合いの記録を配置するフォルダ",
     aliases: ["WS"],
   });
   expect(result.missing).toEqual([]);
@@ -395,7 +395,7 @@ test("test_read_alias_record_when_nested_column_missing", async () => {
   expect(result.values).not.toHaveProperty("description");
 });
 
-// 種類ごとに必須のキーの空を返す（正常系）
+// 種類ごとに必須のキーの空を返却する（正常系）
 test("test_check_alias_fields", async () => {
   // 準備
   const { checkAliasFields } = await loadAliases();

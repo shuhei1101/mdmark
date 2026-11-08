@@ -3,7 +3,7 @@ import { expect, test } from "vitest";
 /** 描いた文書のリンクを書き換える処理を読み込む（実装が無い間は各テストが個別に失敗する） */
 const loadRoute = () => import("../../../../src/viewer/route.ts");
 
-// 文書間のリンク・見出しのアンカー・含まれないリンクを書き分ける（正常系）
+// 文書間のリンク・見出しのアンカー・含まれないリンクを記載し分ける（正常系）
 test("test_rewrite_links", async () => {
   // 準備
   const { rewriteLinks } = await loadRoute();

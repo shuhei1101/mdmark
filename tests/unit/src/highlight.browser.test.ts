@@ -8,14 +8,14 @@ import type { SyntaxImport } from "../../../src/highlight.ts";
 import { renderCodeBlock } from "../../../src/parts/code-block.ts";
 import { renderDoc } from "../helpers/render.ts";
 
-/** 色分けの処理を読み込む（実装が無い間は各テストが個別に失敗する。ファイルが無いと Vite の解決が失敗してテストファイルごと落ち、ほかのテストも巻き込むため、URL を組んで読む） */
+/** 色分けの処理を読み込む（実装が無い間は各テストが個別に失敗する。ファイルが無いと Vite の解決が失敗してテストファイルごと落ち、ほかのテストも巻き込むため、URL を組んで読み込む） */
 const loadHighlight = (): Promise<typeof import("../../../src/highlight.ts")> =>
   import(
     /* @vite-ignore */ new URL("../../../src/highlight.ts", import.meta.url)
       .href
   );
 
-/** 色分けのライブラリを置く URL（ページの origin を基準に解決される） */
+/** 色分けのライブラリを配置する URL（ページの origin を基準に解決される） */
 const BASE_URL = "/hl/";
 
 /** 本体の URL（解決後） */
@@ -27,7 +27,7 @@ const TYPESCRIPT_URL = `${location.origin}/hl/languages/typescript.min.js`;
 /** yaml の言語のモジュールの URL（解決後） */
 const YAML_URL = `${location.origin}/hl/languages/yaml.min.js`;
 
-/** 言語のモジュール名から、npm の言語の定義を引く */
+/** 言語のモジュール名から、npm の言語の定義を参照する */
 const LANGUAGES: Record<string, unknown> = {
   typescript,
   yaml,
@@ -56,7 +56,7 @@ function createRoot(): HTMLElement {
   return root;
 }
 
-/** 本体と言語のモジュールを返し、`failing` の URL は拒否する読み込みの関数を作る */
+/** 本体と言語のモジュールを返却し、`failing` の URL は拒否する読み込みの関数を作る */
 function createImport(failing: Record<string, Error> = {}) {
   const hljs = core.newInstance();
   return vi.fn<SyntaxImport>(async (url) => {
@@ -72,7 +72,7 @@ function createImport(failing: Record<string, Error> = {}) {
   });
 }
 
-/** 色分けの `span` を持つ `code` を返す */
+/** 色分けの `span` を持つ `code` を返却する */
 const coloredCodes = (root: HTMLElement): HTMLElement[] =>
   [...root.querySelectorAll<HTMLElement>("code")].filter(
     (code) => code.querySelector('span[class^="hljs-"]') !== null,
@@ -88,7 +88,7 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
-// 行に分けた形と分けない形の両方を色分けし、文字と行の形を変えない（正常系）
+// 行に分けた構造と分けない構造の両方を色分けし、文字と行の構造を変えない（正常系）
 test("test_highlight_code_blocks", async () => {
   // 準備
   const { highlightCodeBlocks } = await loadHighlight();
@@ -113,7 +113,7 @@ test("test_highlight_code_blocks", async () => {
   expect(lineShape(root)).toEqual(shape);
 });
 
-// 色分けの対象が無ければ何も読まない（正常系）
+// 色分けの対象が無ければ何も読み込まない（正常系）
 test("test_highlight_code_blocks_when_no_target", async () => {
   // 準備
   const { highlightCodeBlocks } = await loadHighlight();
@@ -132,7 +132,7 @@ test("test_highlight_code_blocks_when_no_target", async () => {
   expect(importModule).not.toHaveBeenCalled();
 });
 
-// 本体を読めないときは色分けせずに残し、エラーを出す（異常系）
+// 本体を読み込めないときは色分けせずに残し、エラーを出す（異常系）
 test("test_highlight_code_blocks_when_core_fails", async () => {
   // 準備
   const { highlightCodeBlocks } = await loadHighlight();
@@ -157,7 +157,7 @@ test("test_highlight_code_blocks_when_core_fails", async () => {
   expect(output).toContain("404");
 });
 
-// 読めない言語だけ色分けせずに残す（異常系）
+// 読み込めない言語だけ色分けせずに残す（異常系）
 test("test_highlight_code_blocks_when_language_fails", async () => {
   // 準備
   const { highlightCodeBlocks } = await loadHighlight();
@@ -182,7 +182,7 @@ test("test_highlight_code_blocks_when_language_fails", async () => {
   expect(output).toContain("languages/yaml.min.js");
 });
 
-// 読み終えたときに描き直していたら色を当てない（正常系）
+// 読み込み終えたときに再描画していたら色を適用しない（正常系）
 test("test_highlight_code_blocks_when_stale", async () => {
   // 準備
   const { highlightCodeBlocks } = await loadHighlight();
@@ -200,7 +200,7 @@ test("test_highlight_code_blocks_when_stale", async () => {
   expect(root.innerHTML).toBe(before);
 });
 
-// 同じモジュールの控えで 2 回呼ぶとモジュールを読み直さない（正常系）
+// 同じモジュールの記録で 2 回呼ぶとモジュールを再読み込みしない（正常系）
 test("test_highlight_code_blocks_when_cached", async () => {
   // 準備
   const { highlightCodeBlocks } = await loadHighlight();
@@ -224,7 +224,7 @@ test("test_highlight_code_blocks_when_cached", async () => {
   expect(coloredCodes(second)).toHaveLength(2);
 });
 
-// 埋めたモジュールがあれば URL を読まずに使い、埋めていない言語は色分けしない（正常系）
+// 埋めたモジュールがあれば URL を読み込まずに使用し、埋めていない言語は色分けしない（正常系）
 test("test_highlight_code_blocks_when_embedded", async () => {
   // 準備
   const { highlightCodeBlocks, setEmbeddedSyntax } = await loadHighlight();
@@ -256,7 +256,7 @@ test("test_highlight_code_blocks_when_embedded", async () => {
   expect(consoleError).not.toHaveBeenCalled();
 });
 
-// 本体を埋めていなければ何も読まずに色分けせずに残す（正常系）
+// 本体を埋めていなければ何も読み込まずに色分けせずに残す（正常系）
 test("test_highlight_code_blocks_when_embedded_without_core", async () => {
   // 準備
   const { highlightCodeBlocks, setEmbeddedSyntax } = await loadHighlight();
@@ -287,7 +287,7 @@ test("test_highlight_code_blocks_when_embedded_without_core", async () => {
   ).toEqual(before);
 });
 
-// dockerfile と、行の印を持つ diff を色分けする（正常系）
+// dockerfile と、行のマーカーを持つ diff を色分けする（正常系）
 test("test_highlight_code_blocks_when_dockerfile_and_diff", async () => {
   // 準備
   const { highlightCodeBlocks } = await loadHighlight();
@@ -314,16 +314,16 @@ test("test_highlight_code_blocks_when_dockerfile_and_diff", async () => {
     modules: new Map(),
     importModule,
   });
-  // 検証: 言語のモジュールを読む
+  // 検証: 言語のモジュールを読み込む
   const urls = importModule.mock.calls.map(([url]) => url);
   expect(urls).toContain(`${location.origin}/hl/languages/dockerfile.min.js`);
   expect(urls).toContain(`${location.origin}/hl/languages/diff.min.js`);
-  // 検証: dockerfile の命令と、diff の消した行・足した行が色分けされる
+  // 検証: dockerfile の命令と、diff の削除した行・追加した行が色分けされる
   const [dockerCode, diffCode] = [...root.querySelectorAll("code")];
   expect(dockerCode.querySelector("span.hljs-keyword")).not.toBeNull();
   expect(diffCode.querySelector("span.hljs-deletion")).not.toBeNull();
   expect(diffCode.querySelector("span.hljs-addition")).not.toBeNull();
-  // 検証: 行の印は残る
+  // 検証: 行のマーカーは残る
   const lines = [
     ...diffCode.querySelectorAll<HTMLElement>(".mdmark-code-line"),
   ];

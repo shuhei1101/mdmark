@@ -57,7 +57,7 @@ test("test_attach_interactions", async () => {
   expect(root.querySelector("thead th button")).not.toBeNull();
 });
 
-// 閉じた節の中の行へは、節を開いてから送る（正常系）
+// 閉じたセクションの中の行へは、セクションを開いてから送信する（正常系）
 test("test_attach_interactions_when_row_in_closed_section", async () => {
   // 準備
   const { attachInteractions } = await loadInteract();
@@ -84,7 +84,7 @@ test("test_attach_interactions_when_row_in_closed_section", async () => {
   const toggle = root.querySelector<HTMLButtonElement>(
     '[aria-controls="section-親"]',
   );
-  // 節の中身が隠れているかを、行へ送られた時点で記録する
+  // セクションの中身が隠れているかを、行へ送信された時点で記録する
   const hiddenWhenScrolled: boolean[] = [];
   vi.spyOn(Element.prototype, "scrollIntoView").mockImplementation(function (
     this: Element,
@@ -98,7 +98,7 @@ test("test_attach_interactions_when_row_in_closed_section", async () => {
   detachers.push(attachInteractions({ root, features, placement: "top" }));
   expect(hiddenWhenScrolled).toEqual([false]);
   expect(row?.hasAttribute("data-target")).toBe(true);
-  // 実行・検証: 節を閉じ直し、まとめた HTML の # の形に変えて hashchange を送る
+  // 実行・検証: セクションをもう一度閉じ、まとめた HTML の # の構造に変えて hashchange を送信する
   toggle?.click();
   row?.removeAttribute("data-target");
   hiddenWhenScrolled.length = 0;
@@ -131,14 +131,14 @@ test("test_attach_interactions_when_hints_off", async () => {
   const onMark = on.root.querySelector<HTMLElement>(".mdmark-hint-mark");
   const offMark = off.root.querySelector<HTMLElement>(".mdmark-hint-mark");
   if (!onMark || !offMark) {
-    throw new Error("ヒントの印が描かれていない");
+    throw new Error("ヒントのマーカーが描かれていない");
   }
   const onTip = on.root.querySelector<HTMLElement>('[role="tooltip"]');
   const offTip = off.root.querySelector<HTMLElement>('[role="tooltip"]');
-  // 実行・検証: オンでは印にフォーカスすると開く
+  // 実行・検証: オンではマーカーにフォーカスすると開く
   onMark.focus();
   expect(onTip?.hidden).toBe(false);
-  // 実行・検証: オフでは印にフォーカスしても閉じたまま
+  // 実行・検証: オフではマーカーにフォーカスしても閉じたまま
   offMark.focus();
   expect(offTip?.hidden).toBe(true);
 });

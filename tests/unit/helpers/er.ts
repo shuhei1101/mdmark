@@ -21,7 +21,7 @@ function shopTables(): MdmarkErTable[] {
           name: "email",
           type: "varchar(255)",
           nn: true,
-          desc: "ログインに使う。重複を許さない",
+          desc: "ログインに使用する。重複を許さない",
         },
         { name: "name", type: "varchar(100)", nn: true },
         { name: "created_at", type: "timestamp", nn: true },
@@ -181,7 +181,7 @@ export function foldEr(): MdmarkErDefinition {
   }));
   return {
     title: "列の開閉",
-    scope: "確かめ",
+    scope: "確認",
     updated: "2026-11-03",
     width: 640,
     tables: [

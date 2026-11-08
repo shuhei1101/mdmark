@@ -28,7 +28,7 @@ export const REPLY_KIND_TEXT: string = JSON.stringify(
     updated: "2026-10-17",
     unit: " 件",
     items: [
-      { name: "よくある質問で答えた", value: 186 },
+      { name: "よくある質問で回答した", value: 186 },
       { name: "担当者へ回した", value: 92 },
       { name: "返信しなかった", value: 22 },
     ],
@@ -75,22 +75,22 @@ export const LENGTH_TIME_TEXT: string = JSON.stringify(
   2,
 );
 
-/** 見本の箱の hint を持つフロー図の定義（`inquiry-hint`）の JSON: `inquiry` の箱 `mcp` に、`io` を持たない `hint` だけを足す */
+/** 見本のノードの hint を持つフロー図の定義（`inquiry-hint`）の JSON: `inquiry` のノード `mcp` に、`io` を持たない `hint` だけを追加する */
 export const INQUIRY_HINT_TEXT: string = JSON.stringify(inquiryHint(), null, 2);
 
-/** `inquiry` の箱 `mcp` に `hint` を足した定義 */
+/** `inquiry` のノード `mcp` に `hint` を追加した定義 */
 function inquiryHint(): MdmarkFlowDefinition {
   const definition = parsed<MdmarkFlowDefinition>(INQUIRY_TEXT);
   const node = definition.nodes.find((candidate) => candidate.id === "mcp");
   if (node === undefined) {
-    throw new Error("見本の箱 mcp が無い");
+    throw new Error("見本のノード mcp が無い");
   }
   node.hint =
-    "保存と送信のツールだけを持つ MCP サーバー。メールの本文は読まず、下書きの ID で頼まれた操作をする";
+    "保存と送信のツールだけを持つ MCP サーバー。メールの本文は読み込まず、下書きの ID で頼まれた操作をする";
   return definition;
 }
 
-/** `<!-- html -->` の範囲に、`html` のコードブロック 1 つを置いた文書にする。`head` は文書の先頭に置く行（印など） */
+/** `<!-- html -->` の範囲に、`html` のコードブロック 1 つを配置した文書にする。`head` は文書の先頭に配置する行（マーカーなど） */
 export function wrapHtml(html: string, head = ""): string {
   return [
     ...(head === "" ? [] : [head, ""]),
@@ -105,7 +105,7 @@ export function wrapHtml(html: string, head = ""): string {
   ].join("\n");
 }
 
-/** 題・範囲・更新日 */
+/** タイトル・範囲・更新日 */
 const CHART_BASE = {
   title: "追加したグラフの種類",
   scope: "10 月の第 2 週",
@@ -134,7 +134,7 @@ export const ADDED_CHART_DEFINITIONS: Array<Record<string, unknown>> = [
     type: "donut",
     unit: " 件",
     items: [
-      { name: "よくある質問で答えた", value: 186 },
+      { name: "よくある質問で回答した", value: 186 },
       { name: "担当者へ回した", value: 92 },
     ],
   },

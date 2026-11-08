@@ -21,14 +21,14 @@ afterEach(() => {
 const GIF_URL =
   "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7";
 
-/** GIF の画像の図を置いた要素を返す */
+/** GIF の画像の図を配置した要素を返却する */
 function createGifRoot(src = GIF_URL): HTMLElement {
   return createRootFromHtml(
     `<figure class="mdmark-figure mdmark-image"><img src="${src}" alt="ビルド" data-gif></figure>`,
   );
 }
 
-/** 止める・再生するボタンが付くまで待って返す */
+/** 止める・再生するボタンが付くまで待って返却する */
 async function waitForToggle(root: ParentNode): Promise<HTMLButtonElement> {
   return vi.waitFor(() => {
     const toggle = root.querySelector<HTMLButtonElement>(

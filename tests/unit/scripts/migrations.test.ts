@@ -15,7 +15,7 @@ const createTempDir = useTempDirs();
 const CONFIG_SCHEMA = '{ "type": "object" }\n';
 /** 変える前の索引の Schema */
 const INDEX_SCHEMA = '{ "type": "object", "required": ["docs"] }\n';
-/** 変えた後の設定の Schema（省いてよいキーを足した） */
+/** 変えた後の設定の Schema（省いてよいキーを追加した） */
 const CONFIG_SCHEMA_CHANGED =
   '{ "type": "object", "properties": { "title": { "type": "string" } } }\n';
 /** 変えた後の索引の Schema（必須のキーの名前を変えた） */
@@ -33,7 +33,7 @@ const STEPS = [
   "",
 ].join("\n");
 
-/** 一時フォルダで git を流す */
+/** 一時フォルダで git を実行する */
 async function git(root: string, args: string[]): Promise<string> {
   const { stdout } = await execFileAsync(
     "git",
@@ -83,13 +83,13 @@ function noStepsYaml(
       `  - version: ${row.version}`,
       `    schema: ${row.schema}`,
       `    sha256: ${row.sha256}`,
-      "    reason: 省いてよいキーを足しただけで、古い設定もそのまま合う",
+      "    reason: 省いてよいキーを追加しただけで、古い設定もそのまま合う",
     ]),
     "",
   ].join("\n");
 }
 
-// 数として最も新しいタグを返す（正常系）
+// 数として最も新しいタグを返却する（正常系）
 test("test_latest_version_tag", async () => {
   // 準備
   const { latestVersionTag } = await loadModule();

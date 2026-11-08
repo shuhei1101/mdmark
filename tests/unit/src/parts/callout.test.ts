@@ -3,7 +3,7 @@ import { expect, test } from "vitest";
 /** 注意書きの処理を読み込む（実装が無い間は各テストが個別に失敗する） */
 const loadCallout = () => import("../../../../src/parts/callout.ts");
 
-// 種類の class と題を出す（正常系）
+// 種類の class とタイトルを出す（正常系）
 test("test_render_callout", async () => {
   // 準備
   const { renderCallout } = await loadCallout();
@@ -31,7 +31,7 @@ test("test_render_callout_when_collapsed", async () => {
   );
 });
 
-// タイトルの頭に読み上げだけの種類の名前を置く（正常系）
+// タイトルの頭にスクリーンリーダー向けの種類の名前を配置する（正常系）
 test("test_render_callout_when_titled", async () => {
   // 準備
   const { renderCallout } = await loadCallout();

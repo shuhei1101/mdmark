@@ -48,10 +48,10 @@ const API_TARGET = {
   description: "公開関数の一覧",
 };
 
-/** JSON の `\u` の 4 桁のエスケープ（`ア`）。ソースに書くと整形で文字に戻るため、組み立てる */
+/** JSON の `\u` の 4 桁のエスケープ（`ア`）。ソースに記載すると整形で文字に戻るため、組み立てる */
 const UNICODE_ESCAPE = ["\\", "u30a2"].join("");
 
-/** 箱の `name` に `{{語}}` を書いた、フロー図の定義の JSON */
+/** ノードの `name` に `{{単語}}` を記載した、フロー図の定義の JSON */
 function flowDefinition(name: string): string[] {
   return [
     "{",
@@ -76,12 +76,12 @@ function cut(
   return (body.split("\n")[match.line - 1] ?? "").slice(match.start, match.end);
 }
 
-/** 本文の頭からの位置を、1 から数える行に直す */
+/** 本文の頭からの位置を、1 から数える行に修正する */
 function lineOf(body: string, offset: number): number {
   return body.slice(0, offset).split("\n").length;
 }
 
-/** 本文を読んだトークンと、文書 `guide` の辞書 */
+/** 本文を読み込んだトークンと、文書 `guide` の辞書 */
 function prepare(body: string, index: MdmarkIndex = MATCH_INDEX) {
   const { tokens, features } = parseDocument({
     body,
@@ -144,7 +144,7 @@ function avoidIndex(avoid: string[]): MdmarkIndex {
   };
 }
 
-// 本文に出たやめた言い方の全ての出現を、代わりの用語と位置つきで avoided に返す（正常系）
+// 本文に出たやめた言い方の全ての出現を、代わりの用語と位置つきで avoided に返却する（正常系）
 test("test_collect_matches_returns_avoided_terms", async () => {
   // 準備
   const { collectMatches } = await loadMatches();
@@ -200,7 +200,7 @@ test("test_collect_matches_when_avoided_contains_term", async () => {
   ]);
 });
 
-// glossary がオフの文書はやめた言い方を返さない（正常系）
+// glossary がオフの文書はやめた言い方を返却しない（正常系）
 test("test_collect_matches_when_avoided_and_glossary_disabled", async () => {
   // 準備
   const { collectMatches } = await loadMatches();
@@ -214,7 +214,7 @@ test("test_collect_matches_when_avoided_and_glossary_disabled", async () => {
   expect(result.avoided.guide).toEqual([]);
 });
 
-// 索引の用語・別名と文書の別名の一致を、参照先と位置つきで返す（正常系）
+// 索引の用語・別名と文書の別名の一致を、参照先と位置つきで返却する（正常系）
 test("test_collect_matches", async () => {
   // 準備
   const { collectMatches } = await loadMatches();
@@ -259,7 +259,7 @@ test("test_collect_matches", async () => {
   expect(documents).toEqual(documentsBefore);
 });
 
-// 全角と半角・英字の大文字と小文字だけが違う語の一致を、本文の位置と記載した表記の text で返す（正常系）
+// 全角と半角・英字の大文字と小文字だけが違う単語の一致を、本文の位置と記載した表記の text で返却する（正常系）
 test("test_collect_matches_when_notation_differs", async () => {
   // 準備
   const { collectMatches } = await loadMatches();
@@ -290,7 +290,7 @@ test("test_collect_matches_when_notation_differs", async () => {
   });
 });
 
-// 同じ節に同じ用語が何度出ても全ての出現を並べ、targets には 1 回だけ入れる（正常系）
+// 同じセクションに同じ用語が何度出ても全ての出現を並べ、targets には 1 回だけ入れる（正常系）
 test("test_collect_matches_lists_every_occurrence", async () => {
   // 準備
   const { collectMatches } = await loadMatches();
@@ -318,7 +318,7 @@ test("test_collect_matches_lists_every_occurrence", async () => {
   expect(matches.targets).toEqual([WS_TARGET]);
 });
 
-// コード・リンクの文字・見出し・用語集の表の中の語と、文書自身の別名を一致にしない（正常系）
+// コード・リンクの文字・見出し・用語集の表の中の単語と、文書自身の別名を一致にしない（正常系）
 test("test_collect_matches_ignores_code_links_and_headings", async () => {
   // 準備
   const { collectMatches } = await loadMatches();
@@ -340,7 +340,7 @@ test("test_collect_matches_ignores_code_links_and_headings", async () => {
   expect(matches.targets).toEqual([]);
 });
 
-// ほかの文書の用語集の表の用語を glossary の参照先として返す（正常系）
+// ほかの文書の用語集の表の用語を glossary の参照先として返却する（正常系）
 test("test_collect_matches_when_glossary_table", async () => {
   // 準備
   const { collectMatches } = await loadMatches();
@@ -365,16 +365,16 @@ test("test_collect_matches_when_glossary_table", async () => {
   // 実行
   const matches = collectMatches({ index, documents });
   // 検証
-  // `印刷` は 1 語なので、その中の `印` は一致にならない
+  // `印刷` は 1 単語なので、その中の `マーカー` は一致にならない
   expect(matches.byDocument.guide).toEqual([
     { ...target, text: "印", line: 3, start: 0, end: 1 },
   ]);
-  // 用語集の表の中の `印` は、表を持つ文書の一致にならない
+  // 用語集の表の中の `マーカー` は、表を持つ文書の一致にならない
   expect(matches.byDocument.glossary).toEqual([]);
   expect(matches.targets).toEqual([target]);
 });
 
-// 文書の印でオフにした機能の種類の一致を返さない（正常系）
+// 文書のマーカーでオフにした機能の種類の一致を返却しない（正常系）
 test("test_collect_matches_when_disabled", async () => {
   // 準備
   const { collectMatches } = await loadMatches();
@@ -391,11 +391,11 @@ test("test_collect_matches_when_disabled", async () => {
     documents: { "使い方/guide.md": guide, "memo.md": memo },
   });
   // 検証
-  // glossary がオフの guide は、用語を返さず文書の別名だけを返す
+  // glossary がオフの guide は、用語を返却せず文書の別名だけを返却する
   expect(matches.byDocument.guide).toEqual([
     { ...API_TARGET, text: "公開関数", line: 3, start: 8, end: 12 },
   ]);
-  // 両方がオフの memo は何も返さない
+  // 両方がオフの memo は何も返却しない
   expect(matches.byDocument.memo).toEqual([]);
   expect(matches.targets).toEqual([API_TARGET]);
 });
@@ -404,7 +404,7 @@ test("test_collect_matches_when_disabled", async () => {
 test("test_collect_matches_when_invalid_index", async () => {
   // 準備
   const { collectMatches } = await loadMatches();
-  // `meaning` を持たない用語 `印` と、`path` を持たない文書 `broken` を足した索引
+  // `meaning` を持たない用語 `マーカー` と、`path` を持たない文書 `broken` を追加した索引
   const index = {
     schema: 2,
     docs: [
@@ -426,7 +426,7 @@ test("test_collect_matches_when_invalid_index", async () => {
   expect(matches?.targets.map((target) => target.id)).toEqual(["ws"]);
 });
 
-// 図の部品の {{語}} は、語が文書の別名でもあるときも用語の参照先だけを返す（正常系）
+// 図の部品の {{単語}} は、単語が文書の別名でもあるときも用語の参照先だけを返却する（正常系）
 test("test_collect_matches_when_diagram_term_is_alias", async () => {
   // 準備
   const { collectMatches } = await loadMatches();
@@ -461,7 +461,7 @@ test("test_collect_matches_when_diagram_term_is_alias", async () => {
     documents: { "使い方/guide.md": body },
   });
   // 検証
-  // 箱の `{{公開関数}}` は用語の 1 件だけで、文書 `api` は返らない
+  // ノードの `{{公開関数}}` は用語の 1 件だけで、文書 `api` は返らない
   const guide = matches.byDocument.guide ?? [];
   expect(
     guide.map((match) => [match.kind, match.id, cut(body, match)]),
@@ -476,7 +476,7 @@ test("test_collect_matches_when_diagram_term_is_alias", async () => {
   ]);
 });
 
-// 埋め込んだ HTML の文字の用語の位置だけを返し、属性の値・落ちる要素・照合しない要素が直接持つ同じ綴りは返さない（正常系）
+// 埋め込んだ HTML の文字の用語の位置だけを返却し、属性の値・落ちる要素・照合しない要素が直接持つ同じ綴りは返却しない（正常系）
 test("test_embedded_html_matches", async () => {
   // 準備
   const { embeddedHtmlMatches } = await loadMatches();
@@ -518,7 +518,7 @@ test("test_embedded_html_matches", async () => {
   expect(body[(matches[1]?.offset ?? 0) - 1]).toBe(">");
 });
 
-// 定義の {{語}} の用語の位置を返し、用語でない語は返さない（正常系）
+// 定義の {{単語}} の用語の位置を返却し、用語でない単語は返却しない（正常系）
 test("test_diagram_term_matches", async () => {
   // 準備
   const { diagramTermMatches } = await loadMatches();
@@ -526,7 +526,7 @@ test("test_diagram_term_matches", async () => {
     "<!-- flow -->",
     "",
     "```json",
-    // JSON のエスケープ（\" と \u の 4 桁）の後ろの語
+    // JSON のエスケープ（\" と \u の 4 桁）の後ろの単語
     ...flowDefinition(
       `\\"鍵\\" ${UNICODE_ESCAPE} {{ワークスペース}} と {{公開関数}}`,
     ),
@@ -562,7 +562,7 @@ test("test_diagram_term_matches", async () => {
   expect(body.slice(0, matches[0]?.offset ?? 0)).not.toContain("<!-- html -->");
 });
 
-// 表記の違う {{語}} も用語の位置として返す（正常系）
+// 表記の違う {{単語}} も用語の位置として返却する（正常系）
 test("test_diagram_term_matches_when_notation_differs", async () => {
   // 準備
   const { diagramTermMatches } = await loadMatches();
@@ -595,7 +595,7 @@ const GUIDE_ONLY_INDEX: MdmarkIndex = {
   docs: [{ id: "guide", path: "使い方/guide.md", title: "使い方" }],
 };
 
-// 渡したエイリアスの一致を alias の参照先として返し、avoid の種類を avoided に返す（正常系）
+// 指定したエイリアスの一致を alias の参照先として返却し、avoid の種類を avoided に返却する（正常系）
 test("test_collect_matches_when_aliases", async () => {
   // 準備
   const { collectMatches } = await loadMatches();
@@ -615,7 +615,7 @@ test("test_collect_matches_when_aliases", async () => {
       aliases: [],
       replacement: "ワークスペース",
     },
-    // `env` は `buildAliases` を通さずに渡されても照合しない
+    // `env` は `buildAliases` を経由せずに指定されても照合しない
     {
       alias_type: "env",
       id: "dev-server",
@@ -656,7 +656,7 @@ test("test_collect_matches_when_aliases", async () => {
     });
   }
   expect(result.targets.map((target) => target.id)).toEqual(["unit-test"]);
-  // avoid の種類は avoided に返し、置き換え先を title にして description を持たない
+  // avoid の種類は avoided に返却し、置き換え先を title にして description を持たない
   const avoided = result.avoided.guide ?? [];
   expect(avoided).toHaveLength(1);
   expect(avoided[0]).toMatchObject({
@@ -671,7 +671,7 @@ test("test_collect_matches_when_aliases", async () => {
   expect({ index: GUIDE_ONLY_INDEX, documents, aliases }).toEqual(before);
 });
 
-// 図の部品の {{語}} はエイリアスを引かない（正常系）
+// 図の部品の {{単語}} はエイリアスを参照しない（正常系）
 test("test_collect_matches_when_diagram_term_is_alias_word", async () => {
   // 準備
   const { collectMatches } = await loadMatches();

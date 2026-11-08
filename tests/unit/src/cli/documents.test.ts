@@ -29,7 +29,7 @@ test("test_collect_build_documents", async () => {
   expect(paths).toEqual(["README.md", "a/x.md", "b/y.md"]);
 });
 
-// exclude に当たる文書を外す（正常系）
+// exclude に該当する文書を除外する（正常系）
 test("test_collect_build_documents_when_excluded", async () => {
   // 準備
   const { collectBuildDocuments } = await loadDocuments();
@@ -44,7 +44,7 @@ test("test_collect_build_documents_when_excluded", async () => {
   expect(paths).toEqual(["a.md"]);
 });
 
-// 索引と索引のフォルダの文書を読む（正常系）
+// 索引と索引のフォルダの文書を読み込む（正常系）
 test("test_read_index_with_documents", async () => {
   // 準備
   const { readIndexWithDocuments } = await loadDocuments();
@@ -100,7 +100,7 @@ test("test_read_index_with_documents_when_missing", async () => {
   await expect(result).rejects.toThrow("docs/index.yaml");
 });
 
-// 索引の題を優先する（正常系）
+// 索引のタイトルを優先する（正常系）
 test("test_document_title", async () => {
   // 準備
   const { documentTitle } = await loadDocuments();
@@ -114,17 +114,17 @@ test("test_document_title", async () => {
   expect(title).toBe("API");
 });
 
-// 索引の題が無ければ最初の h1（正常系）
+// 索引のタイトルが無ければ最初の h1（正常系）
 test("test_document_title_when_no_index", async () => {
   // 準備
   const { documentTitle } = await loadDocuments();
   // 実行
   const title = documentTitle({
     path: "使い方/guide.md",
-    markdown: "# 使い方\n\n本文\n",
+    markdown: "# 使用方法\n\n本文\n",
   });
   // 検証
-  expect(title).toBe("使い方");
+  expect(title).toBe("使用方法");
 });
 
 // h1 も無ければファイル名（正常系）

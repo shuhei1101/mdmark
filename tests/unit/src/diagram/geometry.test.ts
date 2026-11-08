@@ -104,7 +104,7 @@ test("test_nice_ticks_when_flat", async () => {
   expect(ticks.step).toBeGreaterThan(0);
 });
 
-// 正の値を上へ、負の値を下へ積む（正常系）
+// 正の値を上へ、負の値を下へ追加する（正常系）
 test("test_stack_series", async () => {
   // 準備
   const { stackSeries } = await loadGeometry();

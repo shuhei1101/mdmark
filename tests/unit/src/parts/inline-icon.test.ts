@@ -3,7 +3,7 @@ import { expect, test } from "vitest";
 /** 行内のアイコンの処理を読み込む（実装が無い間は各テストが個別に失敗する） */
 const loadInlineIcon = () => import("../../../../src/parts/inline-icon.ts");
 
-// 形があれば svg を入れる（正常系）
+// 構造があれば svg を入れる（正常系）
 test("test_render_inline_icon", async () => {
   // 準備
   const { renderInlineIcon } = await loadInlineIcon();

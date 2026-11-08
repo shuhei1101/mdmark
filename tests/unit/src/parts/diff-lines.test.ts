@@ -4,7 +4,7 @@ import { findTag, outerHtml } from "../../helpers/html.ts";
 /** 差分の行の処理を読み込む（実装が無い間は各テストが個別に失敗する） */
 const loadLines = () => import("../../../../src/parts/diff-lines.ts");
 
-// 同じ行・語を書き換えた削除した行と追加した行
+// 同じ行・単語を書き換えた削除した行と追加した行
 const NORMAL_BLOCKS = [
   {
     type: "lines" as const,
@@ -17,21 +17,21 @@ const NORMAL_BLOCKS = [
         kind: "del" as const,
         parts: [
           { text: "差分", changed: true },
-          { text: "を色分けして読む。", changed: false },
+          { text: "を色分けして読み込む。", changed: false },
         ],
       },
       {
         kind: "add" as const,
         parts: [
           { text: "変更", changed: true },
-          { text: "を色分けして読む。", changed: false },
+          { text: "を色分けして読み込む。", changed: false },
         ],
       },
     ],
   },
 ];
 
-// 行の種類と変わった語を出す（正常系）
+// 行の種類と変わった単語を出す（正常系）
 test("test_render_diff_lines", async () => {
   // 準備
   const { renderDiffLines } = await loadLines();

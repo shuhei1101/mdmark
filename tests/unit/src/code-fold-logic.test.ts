@@ -1,6 +1,6 @@
 import { expect, test } from "vitest";
 
-/** コードの行の畳みの計算を読み込む（実装が無い間は各テストが個別に失敗する。ファイルが無いと Vite の解決が失敗してテストファイルごと落ちるため、URL を組んで読む） */
+/** コードの行の畳みの計算を読み込む（実装が無い間は各テストが個別に失敗する。ファイルが無いと Vite の解決が失敗してテストファイルごと落ちるため、URL を組んで読み込む） */
 const loadLogic = (): Promise<
   typeof import("../../../src/code-fold-logic.ts")
 > =>
@@ -77,7 +77,7 @@ test("test_hidden_lines_of_when_outer_folded", async () => {
   expect(hidden).toEqual(new Set([1, 2, 3]));
 });
 
-// 最も内側の範囲を返す（正常系）
+// 最も内側の範囲を返却する（正常系）
 test("test_guide_range_of", async () => {
   // 準備
   const { guideRangeOf } = await loadLogic();

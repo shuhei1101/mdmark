@@ -26,7 +26,7 @@ const TREE_ROWS = [
   "| aliases[].metadata.alias_type.type | 別名の種類 |",
 ];
 
-/** 表の印で囲んだ階層の表の Markdown */
+/** 表のマーカーで囲んだ階層の表の Markdown */
 function treeTable(mark: string): string {
   return [
     `<!-- table: ${mark} -->`,
@@ -64,7 +64,7 @@ const EXAMPLE_DOC = [
   "",
 ].join("\n");
 
-/** 文書を描いて操作を付け、描いた要素を返す */
+/** 文書を描いて操作を付け、描いた要素を返却する */
 async function attach(markdown: string): Promise<HTMLElement> {
   addStyles();
   const { attachInteractions } = await loadInteract();
@@ -73,7 +73,7 @@ async function attach(markdown: string): Promise<HTMLElement> {
   return root;
 }
 
-/** パスの階層の行を返す（無ければ例外） */
+/** パスの階層の行を返却する（無ければ例外） */
 function rowOf(root: HTMLElement, path: string): HTMLTableRowElement {
   const row = [
     ...root.querySelectorAll<HTMLTableRowElement>("tr.mdmark-tree-row"),
@@ -84,7 +84,7 @@ function rowOf(root: HTMLElement, path: string): HTMLTableRowElement {
   return row;
 }
 
-/** 表示している階層の行のパスを、並んだ順に返す */
+/** 表示している階層の行のパスを、並んだ順に返却する */
 function shownPaths(root: HTMLElement): string[] {
   return [...root.querySelectorAll<HTMLTableRowElement>("tr.mdmark-tree-row")]
     .filter((row) => !row.hidden)
@@ -169,7 +169,7 @@ test("test_attach_table_tree_when_filtered", async () => {
   );
 });
 
-// コピーのボタンで全体のパスを書き、行の選択を変えない（正常系）
+// コピーのボタンで全体のパスを記載し、行の選択を変えない（正常系）
 test("test_attach_table_tree_when_copied", async () => {
   // 準備
   const writeText = vi.fn(async () => {});

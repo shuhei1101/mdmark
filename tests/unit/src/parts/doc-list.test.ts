@@ -3,7 +3,7 @@ import { expect, test } from "vitest";
 /** 文書の一覧の処理を読み込む（実装が無い間は各テストが個別に失敗する） */
 const loadDocList = () => import("../../../../src/parts/doc-list.ts");
 
-/** フォルダの見出し（`mdmark-doc-list-folder`）の文字を、出た順に返す */
+/** フォルダの見出し（`mdmark-doc-list-folder`）の文字を、出た順に返却する */
 function folderHeadings(html: string): string[] {
   return [
     ...html.matchAll(
@@ -12,7 +12,7 @@ function folderHeadings(html: string): string[] {
   ].map((match) => match[1] ?? "");
 }
 
-/** `data-doc-path` が path のリンクの開きタグを返す */
+/** `data-doc-path` が path のリンクの開きタグを返却する */
 function linkTag(html: string, path: string): string {
   const match = new RegExp(`<a [^>]*data-doc-path="${path}"[^>]*>`).exec(html);
   if (!match) {
@@ -49,7 +49,7 @@ test("test_render_doc_list", async () => {
   expect(linkTag(html, "b/y.md")).toContain('aria-current="page"');
 });
 
-// 題とパスの HTML の特殊文字を替える（正常系）
+// タイトルとパスの HTML の特殊文字を替える（正常系）
 test("test_render_doc_list_when_escaped", async () => {
   // 準備
   const { renderDocList } = await loadDocList();

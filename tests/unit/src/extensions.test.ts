@@ -15,7 +15,7 @@ const GREET_SCHEMA = v.object({
   keys: v.record(v.string(), v.string()),
 });
 
-/** 形の合う拡張を作る */
+/** 構造の合う拡張を作る */
 function createExtension(
   overrides: Partial<MdmarkExtension> = {},
 ): MdmarkExtension {
@@ -32,7 +32,7 @@ beforeEach(async () => {
   resetExtensions();
 });
 
-// 登録した拡張を extensionFor で引ける（正常系）
+// 登録した拡張を extensionFor で参照できる（正常系）
 test("test_register_extension", async () => {
   // 準備
   const { registerExtension, extensionFor } = await loadExtensions();
@@ -43,7 +43,7 @@ test("test_register_extension", async () => {
   expect(extensionFor("greet")).toBe(extension);
 });
 
-// 形の合わない拡張は TypeError で登録しない（異常系）
+// 構造の合わない拡張は TypeError で登録しない（異常系）
 test("test_register_extension_when_invalid", async () => {
   // 準備
   const { registerExtension, extensionFor } = await loadExtensions();
@@ -69,7 +69,7 @@ test("test_register_extension_when_invalid", async () => {
   expect(extensionFor("Greet!")).toBeUndefined();
 });
 
-// 記法の印と登録済みの名前は Error で登録しない（異常系）
+// 記法のマーカーと登録済みの名前は Error で登録しない（異常系）
 test("test_register_extension_when_directive_taken", async () => {
   // 準備
   const { registerExtension, extensionFor } = await loadExtensions();
@@ -102,7 +102,7 @@ test("test_register_extension_when_directive_taken", async () => {
   expect(extensionFor("glossary")).toBeUndefined();
 });
 
-/** 関数が投げた例外を返す（投げなければ undefined） */
+/** 関数が投げた例外を返却する（投げなければ undefined） */
 function catchError(fn: () => void): Error | undefined {
   try {
     fn();
@@ -112,7 +112,7 @@ function catchError(fn: () => void): Error | undefined {
   return undefined;
 }
 
-// 合う値は空を返す（正常系）
+// 合う値は空を返却する（正常系）
 test("test_validate_mark_args", async () => {
   // 準備
   const { validateMarkArgs } = await loadExtensions();
@@ -123,7 +123,7 @@ test("test_validate_mark_args", async () => {
   expect(items).toEqual([]);
 });
 
-// 合わない値は issue ごとの項目を返す（正常系）
+// 合わない値は issue ごとの項目を返却する（正常系）
 test("test_validate_mark_args_when_invalid", async () => {
   // 準備
   const { validateMarkArgs } = await loadExtensions();

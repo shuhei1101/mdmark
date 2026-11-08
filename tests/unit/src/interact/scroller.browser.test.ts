@@ -5,7 +5,7 @@ const loadScroller = () => import("../../../../src/interact/scroller.ts");
 
 const elements: HTMLElement[] = [];
 
-/** 高さ 600px の縦にスクロールする枠の中に、指定した高さの中身を入れてページに置き、中身を返す */
+/** 高さ 600px の縦にスクロールする枠の中に、指定した高さの中身を入れてページに配置し、中身を返却する */
 function createBox(innerHeight: number): {
   box: HTMLElement;
   inner: HTMLElement;
@@ -27,7 +27,7 @@ afterEach(() => {
   }
 });
 
-// 中身がはみ出す一番近いスクロールする祖先の要素を返す（正常系）
+// 中身がはみ出す一番近いスクロールする祖先の要素を返却する（正常系）
 test("test_find_scroll_container", async () => {
   // 準備
   const { findScrollContainer } = await loadScroller();
@@ -41,7 +41,7 @@ test("test_find_scroll_container", async () => {
   expect(found.page).toBe(false);
 });
 
-// 中身がはみ出さない祖先の要素は飛ばして画面全体を返す（正常系）
+// 中身がはみ出さない祖先の要素は飛ばして画面全体を返却する（正常系）
 test("test_find_scroll_container_when_not_overflowing", async () => {
   // 準備
   const { findScrollContainer } = await loadScroller();

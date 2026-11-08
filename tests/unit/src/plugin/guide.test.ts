@@ -1,20 +1,20 @@
 import { expect, test } from "vitest";
 
-/** 使い方集の処理を読み込む（実装が無い間は各テストが個別に失敗する） */
+/** ガイドの処理を読み込む（実装が無い間は各テストが個別に失敗する） */
 const loadGuide = () => import("../../../../src/plugin/guide.ts");
 
 /** 索引の行を作る（`page` は `docs/{名前}.md`） */
 function createEntry(name: string, overrides: Record<string, string> = {}) {
   return {
     name,
-    when: `${name} を書くとき`,
+    when: `${name} を記載するとき`,
     summary: `${name} の概要`,
     page: `docs/${name}.md`,
     ...overrides,
   };
 }
 
-// 合う索引の行を全て返す（正常系）
+// 合う索引の行を全て返却する（正常系）
 test("test_parse_guide_index", async () => {
   // 準備
   const { parseGuideIndex } = await loadGuide();
@@ -26,7 +26,7 @@ test("test_parse_guide_index", async () => {
   expect(result.problems).toEqual([]);
 });
 
-// 欠けたキーを場所つきで返す（正常系）
+// 欠けたキーを場所つきで返却する（正常系）
 test("test_parse_guide_index_when_key_missing", async () => {
   // 準備
   const { parseGuideIndex } = await loadGuide();
@@ -43,7 +43,7 @@ test("test_parse_guide_index_when_key_missing", async () => {
   );
 });
 
-// 名前の重なりを返す（正常系）
+// 名前の重なりを返却する（正常系）
 test("test_parse_guide_index_when_name_duplicated", async () => {
   // 準備
   const { parseGuideIndex } = await loadGuide();
@@ -58,7 +58,7 @@ test("test_parse_guide_index_when_name_duplicated", async () => {
   );
 });
 
-// docs/ の外のページを返す（正常系）
+// docs/ の外のページを返却する（正常系）
 test("test_parse_guide_index_when_page_outside_docs", async () => {
   // 準備
   const { parseGuideIndex } = await loadGuide();
@@ -73,7 +73,7 @@ test("test_parse_guide_index_when_page_outside_docs", async () => {
   );
 });
 
-// オブジェクトでない値を返す（正常系）
+// オブジェクトでない値を返却する（正常系）
 test("test_parse_guide_index_when_not_object", async () => {
   // 準備
   const { parseGuideIndex } = await loadGuide();

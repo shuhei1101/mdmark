@@ -32,7 +32,7 @@ afterEach(() => {
   vi.useRealTimers();
 });
 
-/** `tip` を持つ線のラベル（ツールチップの持ち主）を返す */
+/** `tip` を持つ線のラベル（ツールチップの持ち主）を返却する */
 function tipOwner(figure: ParentNode): HTMLElement {
   const owner = figure.querySelector<HTMLElement>(
     ".mdmark-diagram-label.has-tip",
@@ -101,7 +101,7 @@ test("test_attach_diagram_tips_when_hovered", async () => {
   expect(tip.hidden).toBe(false);
 });
 
-// 箱の印の外では開かない（正常系）
+// ノードのマーカーの外では開かない（正常系）
 test("test_attach_diagram_tips_when_box_hovered", async () => {
   // 準備
   const { attachDiagramTips } = await loadTips();
@@ -112,7 +112,7 @@ test("test_attach_diagram_tips_when_box_hovered", async () => {
   const box = info?.closest<HTMLElement>(".mdmark-diagram-node");
   const name = box?.querySelector<HTMLElement>(".mdmark-diagram-node-name");
   if (!info || !box || !name) {
-    throw new Error("入力・処理・出力を持つ箱が無い");
+    throw new Error("入力・処理・出力を持つノードが無い");
   }
   const tip = tipOf(info);
   // 実行
@@ -129,7 +129,7 @@ test("test_attach_diagram_tips_when_box_hovered", async () => {
 /** 埋め込んだ HTML のヒント: ブロックの要素 1 つと、行内の要素 1 つ */
 const HINT_BODY = [
   '<div data-hint="ブロックの説明" style="width: 20rem; padding: 1rem">ブロックの文字</div>',
-  '<p>前の文字 <span data-hint="行内の説明">行内の語</span> 後ろの文字</p>',
+  '<p>前の文字 <span data-hint="行内の説明">行内の単語</span> 後ろの文字</p>',
 ].join("\n");
 
 /** ヒントを持つ埋め込んだ HTML を描いた `div.mdmark-html` */
@@ -166,7 +166,7 @@ test("test_attach_diagram_tips_when_embedded_hint", async () => {
   block.dispatchEvent(new PointerEvent("pointerenter"));
   // 検証
   expect(openCount(embedded)).toBe(0);
-  // 実行: 印の上
+  // 実行: マーカーの上
   mark.dispatchEvent(new PointerEvent("pointerenter"));
   // 検証
   expect(tipOf(mark).hidden).toBe(false);
@@ -212,7 +212,7 @@ test("test_attach_diagram_tips_when_embedded_unique_ids", async () => {
   }
 });
 
-// 上に収まれば持ち主の上、bottom では下にツールチップを置く（正常系）
+// 上に収まれば持ち主の上、bottom では下にツールチップを配置する（正常系）
 test("test_attach_diagram_tips_when_placed", async () => {
   // 準備
   const { attachDiagramTips } = await loadTips();
@@ -223,12 +223,12 @@ test("test_attach_diagram_tips_when_placed", async () => {
       owner: tipOwner,
     },
     {
-      name: "ブロックのヒントの印",
+      name: "ブロックのヒントのマーカー",
       create: createEmbedded,
       owner: (embedded: HTMLElement) => {
         const mark = embedded.querySelector<HTMLElement>(".mdmark-hint-mark");
         if (!mark) {
-          throw new Error("ヒントの印が描かれていない");
+          throw new Error("ヒントのマーカーが描かれていない");
         }
         return mark;
       },
@@ -237,7 +237,7 @@ test("test_attach_diagram_tips_when_placed", async () => {
   for (const target of targets) {
     for (const placement of ["top", "bottom"] as const) {
       const host = target.create();
-      // 上にも下にも収まるよう、持ち主を画面の中ほどに置く
+      // 上にも下にも収まるよう、持ち主を画面の中ほどに配置する
       host
         .closest<HTMLElement>(".mdmark")
         ?.style.setProperty("margin", "100vh 0");
@@ -265,20 +265,20 @@ test("test_attach_diagram_tips_when_placed", async () => {
   }
 });
 
-/** 入力・処理・出力を持つ箱の右上の印 */
+/** 入力・処理・出力を持つノードの右上のマーカー */
 function infoMark(figure: ParentNode): HTMLElement {
   const info = figure.querySelector<HTMLElement>(".mdmark-diagram-info");
   if (!info) {
-    throw new Error("入力・処理・出力を持つ箱の印が無い");
+    throw new Error("入力・処理・出力を持つノードのマーカーが無い");
   }
   return info;
 }
 
-/** ブロックのヒントの印 */
+/** ブロックのヒントのマーカー */
 function hintMark(embedded: ParentNode): HTMLElement {
   const mark = embedded.querySelector<HTMLElement>(".mdmark-hint-mark");
   if (!mark) {
-    throw new Error("ヒントの印が描かれていない");
+    throw new Error("ヒントのマーカーが描かれていない");
   }
   return mark;
 }
@@ -292,7 +292,7 @@ function pointer(type: string, pointerType: string): PointerEvent {
 }
 
 /**
- * タッチのタップを、実際の順序（`pointerenter`・`pointerdown`・`pointerup`・`pointerleave` の後にフォーカス）で起こす。
+ * タッチのタップを、実際の順序（`pointerenter`・`pointerdown`・`pointerup`・`pointerleave` の後にフォーカス）で発生させる。
  * `focus()` は既にフォーカスを持つ持ち主では `focus` を発火しない
  */
 function tap(owner: HTMLElement): void {
@@ -346,7 +346,7 @@ test("test_attach_diagram_tips_when_touch_outside", async () => {
   tip.dispatchEvent(pointer("pointerdown", "touch"));
   // 検証
   expect(tip.hidden).toBe(false);
-  // 実行: 図の外（pointerleave・blur は送らない）
+  // 実行: 図の外（pointerleave・blur は送信しない）
   outside.dispatchEvent(pointer("pointerdown", "touch"));
   // 検証
   expect(tip.hidden).toBe(true);
@@ -409,7 +409,7 @@ test("test_attach_diagram_tips_when_touch_tip_tapped", async () => {
   const mark = infoMark(figure);
   const tip = tipOf(mark);
   tap(mark);
-  // 実行: ツールチップの中のタップ（フォーカスできない所なので、持ち主のフォーカスが外れる）
+  // 実行: ツールチップの中のタップ（フォーカスできない所なので、持ち主のフォーカスが離れる）
   for (const type of ["pointerdown", "pointerup", "pointerleave"]) {
     tip.dispatchEvent(pointer(type, "touch"));
   }
@@ -419,7 +419,7 @@ test("test_attach_diagram_tips_when_touch_tip_tapped", async () => {
   expect(tip.hidden).toBe(false);
 });
 
-// グラフの項目とグループのタイトルの印で開き、bottom で下に置く（正常系）
+// グラフの項目とグループのタイトルのマーカーで開き、bottom で下に配置する（正常系）
 test("test_attach_diagram_tips_when_chart_item", async () => {
   // 準備
   const { attachDiagramTips } = await loadTips();
@@ -441,7 +441,7 @@ test("test_attach_diagram_tips_when_chart_item", async () => {
     ".mdmark-diagram-group-info",
   );
   if (!item || !groupMark) {
-    throw new Error("グラフの項目かグループのタイトルの印が無い");
+    throw new Error("グラフの項目かグループのタイトルのマーカーが無い");
   }
   // 実行: グラフの項目にフォーカスする
   item.focus();
@@ -451,7 +451,7 @@ test("test_attach_diagram_tips_when_chart_item", async () => {
   expect(itemTip.getBoundingClientRect().top).toBeGreaterThanOrEqual(
     item.getBoundingClientRect().bottom,
   );
-  // 実行: グループのタイトルの印にポインターを乗せる
+  // 実行: グループのタイトルのマーカーにポインターを乗せる
   groupMark.dispatchEvent(
     new PointerEvent("pointerenter", { pointerType: "mouse" }),
   );

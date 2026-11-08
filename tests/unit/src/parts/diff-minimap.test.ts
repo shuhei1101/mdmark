@@ -17,7 +17,7 @@ const TOP = {
   view: { top: 0, height: 0.18 },
 };
 
-// 印と枠を割合の位置に置く（正常系）
+// マーカーと枠を割合の位置に配置する（正常系）
 test("test_render_diff_minimap", async () => {
   // 準備
   const { renderDiffMinimap } = await loadMinimap();

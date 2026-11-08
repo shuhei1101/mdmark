@@ -7,7 +7,7 @@ const loadStatus = () => import("../../../../../src/plugin/setup/status.ts");
 
 const createTempDir = useTempDirs();
 
-/** tmux の -V だけに成功し、has-session には 1 を返す */
+/** tmux の -V だけに成功し、has-session には 1 を返却する */
 const runWithoutSession = async (_command: string, args: string[]) =>
   args[0] === "-V" ? { code: 0, stdout: "tmux 3.4" } : { code: 1, stdout: "" };
 
@@ -35,7 +35,7 @@ test("test_read_terminal_status", async () => {
   expect(status.tmux.available).toBe(true);
 });
 
-// 読めない端末の設定は SetupError（異常系）
+// 読み込めない端末の設定は SetupError（異常系）
 test("test_read_terminal_status_when_unreadable", async () => {
   // 準備
   const { readTerminalStatus } = await loadStatus();

@@ -1,9 +1,9 @@
 import { expect, test } from "vitest";
 
-/** ヒントの印と中身を読み込む（実装が無い間は各テストが個別に失敗する） */
+/** ヒントのマーカーと中身を読み込む（実装が無い間は各テストが個別に失敗する） */
 const loadHint = () => import("../../../../src/parts/hint.ts");
 
-// ブロックの要素には印、行内の要素には tabindex を付ける（正常系）
+// ブロックの要素にはマーカー、行内の要素には tabindex を付ける（正常系）
 test("test_render_hint_markup", async () => {
   // 準備
   const { renderHintMarkup } = await loadHint();

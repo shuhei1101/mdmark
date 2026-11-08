@@ -3,7 +3,7 @@ import { matches, outerHtml } from "../../../helpers/html.ts";
 import { ARCH_INDEX } from "../../../helpers/index-fixtures.ts";
 import { renderDoc } from "../../../helpers/render.ts";
 
-// 被参照を末尾の一覧に足す（正常系）
+// 被参照を末尾の一覧に追加する（正常系）
 test("test_backlinks_rule", () => {
   // 準備
   const references = {
@@ -23,14 +23,14 @@ test("test_backlinks_rule", () => {
     '<a href="../api.md"',
     '<a href="../使い方/guide.md"',
   ]);
-  expect(matches(nav, />(?:API|使い方)<\/a>/g)).toEqual([
+  expect(matches(nav, />(?:API|使用方法)<\/a>/g)).toEqual([
     ">API</a>",
-    ">使い方</a>",
+    ">使用方法</a>",
   ]);
   expect(html.trimEnd().endsWith("</nav>")).toBe(true);
 });
 
-// 被参照が無ければ足さない（正常系）
+// 被参照が無ければ追加しない（正常系）
 test("test_backlinks_rule_when_empty", () => {
   // 準備
   const empty = { backlinks: { arch: [] }, glossary: [] };
@@ -48,7 +48,7 @@ test("test_backlinks_rule_when_empty", () => {
     { index: ARCH_INDEX, docId: "arch", references: referenced },
   );
   // 検証
-  // 被参照が 1 つあれば一覧を足す同じ入力で、0 件だと足さない
+  // 被参照が 1 つあれば一覧を追加する同じ入力で、0 件だと追加しない
   expect(withOne.html).toContain("mdmark-backlinks");
   expect(withNone.html).not.toContain("mdmark-backlinks");
 });
@@ -61,7 +61,7 @@ test("test_backlinks_rule_without_references", () => {
   const guide = index.docs.find((doc) => doc.id === "guide");
   if (api && guide) {
     api.related = [
-      { to: "arch", type: "requires", when: "前提を確かめるとき" },
+      { to: "arch", type: "requires", when: "前提を確認するとき" },
     ];
     guide.related = ["arch"];
   }
@@ -73,8 +73,8 @@ test("test_backlinks_rule_without_references", () => {
   );
   // 検証
   const nav = outerHtml(html, "mdmark-backlinks");
-  expect(matches(nav, />(?:API|使い方)<\/a>/g)).toEqual([
+  expect(matches(nav, />(?:API|使用方法)<\/a>/g)).toEqual([
     ">API</a>",
-    ">使い方</a>",
+    ">使用方法</a>",
   ]);
 });

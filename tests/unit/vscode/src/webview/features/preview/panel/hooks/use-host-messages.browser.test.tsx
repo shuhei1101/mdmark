@@ -12,7 +12,7 @@ afterEach(() => {
   cleanup();
 });
 
-// 描き直した後の処理にメッセージを渡し、外した後は渡さない（正常系）
+// 再描画した後の処理にメッセージを指定し、削除した後は指定しない（正常系）
 test("test_use_host_messages", async () => {
   // 準備
   const { useHostMessages } = await loadHook();
@@ -33,7 +33,7 @@ test("test_use_host_messages", async () => {
   expect(second).toHaveBeenCalledWith({ type: "configOk" });
 });
 
-// type を持たない data は処理に渡さない（正常系）
+// type を持たない data は処理に指定しない（正常系）
 test("test_use_host_messages_when_not_object", async () => {
   // 準備
   const { useHostMessages } = await loadHook();

@@ -36,7 +36,7 @@ test("test_collect_references_when_disabled", async () => {
       "",
       "[構成](../設計/arch.md)",
       "",
-      glossaryDocument([["印", "HTML コメントで書く指定"]]),
+      glossaryDocument([["マーカー", "HTML コメントで記載する指定"]]),
     ].join("\n"),
   };
   // 実行
@@ -77,9 +77,9 @@ test("test_collect_references_when_alias_notation_differs", async () => {
   }
   // どちらの本文も `api` へのリンクを持たず、別名の表記だけが違う
   const documents = {
-    "設計/arch.md": "# アーキテクチャ\n\nmcp を使う。",
+    "設計/arch.md": "# アーキテクチャ\n\nmcp を使用する。",
     "api.md": "# API\n",
-    "使い方/guide.md": "# 使い方\n\nＭＣＰ を使う。",
+    "使い方/guide.md": "# 使用方法\n\nＭＣＰ を使用する。",
   };
   // 実行
   const references = collectReferences({ index, documents });
@@ -97,7 +97,7 @@ test("test_collect_references_when_related_objects", async () => {
   if (api && guide) {
     api.aliases = [];
     api.related = [
-      { to: "arch", type: "requires", when: "前提を確かめるとき" },
+      { to: "arch", type: "requires", when: "前提を確認するとき" },
     ];
     guide.related = ["arch"];
   }
@@ -105,7 +105,7 @@ test("test_collect_references_when_related_objects", async () => {
   const documents = {
     "設計/arch.md": "# アーキテクチャ\n",
     "api.md": "# API\n",
-    "使い方/guide.md": "# 使い方\n",
+    "使い方/guide.md": "# 使用方法\n",
   };
   // 実行
   const references = collectReferences({ index, documents });

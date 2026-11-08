@@ -4,7 +4,7 @@ import { renderDoc } from "./render.ts";
 const roots: HTMLElement[] = [];
 let styleElement: HTMLStyleElement | undefined;
 
-/** 描いた文書の CSS をページに足す（表のはみ出しなど、見た目で決まる動きを確かめる） */
+/** 描いた文書の CSS をページに追加する（表のはみ出しなど、外観で決まる動きを確認する） */
 export function addStyles(): void {
   if (styleElement === undefined) {
     styleElement = document.createElement("style");
@@ -13,7 +13,7 @@ export function addStyles(): void {
   }
 }
 
-/** Markdown を描いた HTML を持つ、描く先の要素をページに置く */
+/** Markdown を描いた HTML を持つ、描く先の要素をページに配置する */
 export function createRoot(markdown: string): {
   root: HTMLElement;
   features: Record<string, boolean>;
@@ -27,7 +27,7 @@ export function createRoot(markdown: string): {
   return { root, features };
 }
 
-/** HTML をそのまま入れた、描く先の要素をページに置く */
+/** HTML をそのまま入れた、描く先の要素をページに配置する */
 export function createRootFromHtml(html: string): HTMLElement {
   const root = document.createElement("div");
   root.className = "mdmark";
@@ -37,7 +37,7 @@ export function createRootFromHtml(html: string): HTMLElement {
   return root;
 }
 
-/** 置いた要素を全て取り除く */
+/** 配置した要素を全て取り除く */
 export function removeRoots(): void {
   for (const root of roots.splice(0)) {
     root.remove();

@@ -12,7 +12,7 @@ const loadBlocks = () =>
     ),
   );
 
-/** 差分の計算を読み込む（書き換えの見分けに既定の計算を渡す） */
+/** 差分の計算を読み込む（書き換えの見分けに既定の計算を指定する） */
 const loadCompute = () => import("../../../../src/diff/compute.ts");
 
 // 新しい順に並べた、後（変更後）と前（変更前）のリビジョン
@@ -24,13 +24,13 @@ const REVISIONS: DiffRevision[] = [
 /** `content` が受けた引数 */
 type ContentCall = { docId: string; revisionId: string };
 
-/** 呼ばれた引数を控える取り出し元 */
+/** 呼ばれた引数を記録する取り出し元 */
 type RecordingSource = DiffSource & {
   revisionsCalls: string[];
   contentCalls: ContentCall[];
 };
 
-/** 呼ばれた引数を控え、リビジョンごとの全文を返す取り出し元を作る */
+/** 呼ばれた引数を記録し、リビジョンごとの全文を返却する取り出し元を作る */
 function createSource(
   override: Partial<DiffSource> = {},
   revisions: DiffRevision[] = REVISIONS,
@@ -56,12 +56,12 @@ function createSource(
   };
 }
 
-/** 語の区切り（本番の `mount` と同じ） */
+/** 単語の区切り（本番の `mount` と同じ） */
 function createSegmenter(): Intl.Segmenter {
   return new Intl.Segmenter("ja", { granularity: "word" });
 }
 
-/** Markdown を既定の設定で描いた中身を、画面に置く前の断片として返す（元の行番号を残す） */
+/** Markdown を既定の設定で描いた中身を、画面に配置する前の断片として返却する（元の行番号を残す） */
 function renderFragment(markdown: string): DocumentFragment {
   const config = resolveConfig({ config: { features: {} } });
   const template = document.createElement("template");
@@ -69,7 +69,7 @@ function renderFragment(markdown: string): DocumentFragment {
   return template.content;
 }
 
-/** 前と後の Markdown を描いて色分けし、色分けした後の断片を返す */
+/** 前と後の Markdown を描いて色分けし、色分けした後の断片を返却する */
 async function colorBlocks(options: {
   before: string;
   after: string;
@@ -85,14 +85,14 @@ async function colorBlocks(options: {
   return after;
 }
 
-/** 断片の HTML を返す */
+/** 断片の HTML を返却する */
 function htmlOf(fragment: DocumentFragment): string {
   const holder = document.createElement("div");
   holder.append(fragment.cloneNode(true));
   return holder.innerHTML;
 }
 
-/** 要素の中の最初の段落の文字を返す */
+/** 要素の中の最初の段落の文字を返却する */
 function paragraphText(element: Element): string {
   return element.querySelector("p")?.textContent ?? "";
 }
@@ -136,12 +136,12 @@ test("test_load_diff_pair_when_single", async () => {
   expect(source.contentCalls).toEqual([]);
 });
 
-// 本文を取り出せなければ failed を返す（異常系）
+// 本文を取り出せなければ failed を返却する（異常系）
 test("test_load_diff_pair_when_content_rejected", async () => {
   // 準備
   const consoleError = vi.spyOn(console, "error").mockImplementation(() => {});
   const { loadDiffPair } = await loadBlocks();
-  const error = new Error("本文を返せない");
+  const error = new Error("本文を返却できない");
   const source = createSource({
     content: async ({ revisionId }) => {
       if (revisionId === "original") {
@@ -161,7 +161,7 @@ test("test_load_diff_pair_when_content_rejected", async () => {
   }
 });
 
-// 一覧の形が合わなければ failed を返す（異常系）
+// 一覧の構造が合わなければ failed を返却する（異常系）
 test("test_load_diff_pair_when_revisions_invalid", async () => {
   // 準備
   vi.spyOn(console, "error").mockImplementation(() => {});
@@ -176,14 +176,14 @@ test("test_load_diff_pair_when_revisions_invalid", async () => {
   expect(source.contentCalls).toEqual([]);
 });
 
-// 節の中身の中のブロックと、リストの項目・表の行を分ける（正常系）
+// セクションの中身の中のブロックと、リストの項目・表の行を分ける（正常系）
 test("test_collect_block_ranges", async () => {
   // 準備
   const { collectBlockRanges } = await loadBlocks();
   const markdown = [
-    "# 題", // 0
+    "# タイトル", // 0
     "", // 1
-    "## 節", // 2
+    "## セクション", // 2
     "", // 3
     "段落", // 4
     "", // 5
@@ -226,27 +226,27 @@ test("test_collect_block_ranges", async () => {
   ).toBe(false);
 });
 
-// 足した・書き換えた段落に追加の色、消した段落を前の位置に削除の色で差し込む（正常系）
+// 追加した・書き換えた段落に追加の色、削除した段落を前の位置に削除の色で差し込む（正常系）
 test("test_color_diff_blocks", async () => {
   // 準備
   const before = [
-    "# 題",
+    "# タイトル",
     "",
-    "差分を確かめる手順です。",
+    "差分を確認する手順です。",
     "",
-    "## 節",
+    "## セクション",
     "",
-    "古い注意書きを消します。",
+    "古い注意書きを削除します。",
     "",
     "配布物が届くまで数分かかります。",
     "",
   ].join("\n");
   const after = [
-    "# 題",
+    "# タイトル",
     "",
-    "変更を確かめる手順です。",
+    "変更を確認する手順です。",
     "",
-    "## 節",
+    "## セクション",
     "",
     "表の列を増やす案をまとめました。",
     "",
@@ -258,19 +258,19 @@ test("test_color_diff_blocks", async () => {
     ...colored.querySelectorAll('div.mdmark-diff-block[data-kind="add"]'),
   ];
   expect(adds.map(paragraphText)).toEqual([
-    "変更を確かめる手順です。",
+    "変更を確認する手順です。",
     "表の列を増やす案をまとめました。",
   ]);
-  // 検証: 段落 C が節の中身の先頭、段落 D が E の直前に削除のブロックで入る
+  // 検証: 段落 C がセクションの中身の先頭、段落 D が E の直前に削除のブロックで入る
   const dels = [...colored.querySelectorAll('[data-kind="del"]')];
   expect(dels.map(paragraphText)).toEqual([
-    "古い注意書きを消します。",
+    "古い注意書きを削除します。",
     "配布物が届くまで数分かかります。",
   ]);
-  expect(colored.querySelector("#section-節")?.firstElementChild).toBe(dels[0]);
+  expect(colored.querySelector("#section-セクション")?.firstElementChild).toBe(dels[0]);
   expect(adds[1]?.previousElementSibling).toBe(dels[1]);
   // 検証: 書き換えた段落 A の削除は無い
-  expect(dels.some((del) => del.textContent?.includes("差分を確かめる"))).toBe(
+  expect(dels.some((del) => del.textContent?.includes("差分を確認する"))).toBe(
     false,
   );
   // 検証: 削除のブロックの中に元の行番号と id が無い
@@ -281,7 +281,7 @@ test("test_color_diff_blocks", async () => {
   }
 });
 
-// リストの項目と表の行の単位で色を当てる（正常系）
+// リストの項目と表の行の単位で色を適用する（正常系）
 test("test_color_diff_blocks_when_list_and_table", async () => {
   // 準備: 番号付きリストの番号は全て 1 にして、行の違いを項目の文字だけにする
   const list = (items: string[]) =>
@@ -307,7 +307,7 @@ test("test_color_diff_blocks_when_list_and_table", async () => {
   const tableElement = colored.querySelector("table");
   expect(ol?.closest(".mdmark-diff-block")).toBeNull();
   expect(tableElement?.closest(".mdmark-diff-block")).toBeNull();
-  // 検証: 消した項目が 3 番目の項目の後ろに削除、足した項目が追加で、どちらも li に class を持つ
+  // 検証: 削除した項目が 3 番目の項目の後ろに削除、追加した項目が追加で、どちらも li に class を持つ
   const items = [...(ol?.querySelectorAll(":scope > li") ?? [])];
   expect(items.map((item) => item.getAttribute("data-kind"))).toEqual([
     null,
@@ -337,7 +337,7 @@ test("test_color_diff_blocks_when_list_and_table", async () => {
   }
 });
 
-// 見出しごと消した節を 1 つの削除のブロックにする（正常系）
+// 見出しごと削除したセクションを 1 つの削除のブロックにする（正常系）
 test("test_color_diff_blocks_when_section_deleted", async () => {
   // 準備
   const before = [
@@ -371,7 +371,7 @@ test("test_color_diff_blocks_when_section_deleted", async () => {
   expect(colored.querySelector("#section-一")?.nextElementSibling).toBe(del);
 });
 
-// 見出し行を変えて行を消した表でも、消した行を差し込む（正常系）
+// 見出し行を変えて行を削除した表でも、削除した行を差し込む（正常系）
 test("test_color_diff_blocks_when_table_header_changed", async () => {
   // 準備
   const table = (header: string, rows: string[]) =>
@@ -397,7 +397,7 @@ test("test_color_diff_blocks_when_table_header_changed", async () => {
   expect(rows[1]?.textContent).toContain("b");
 });
 
-// 1 行の段落だけの文書で、空行の一致に引かれず変えていない段落に色を当てない（正常系）
+// 1 行の段落だけの文書で、空行の一致に参照されず変えていない段落に色を適用しない（正常系）
 test("test_color_diff_blocks_when_one_line_paragraphs", async () => {
   // 準備: 空行どうしが一致する並びと段落 C が一致する並びが同じ長さになる組
   const paragraphs = (texts: string[]) =>
@@ -428,7 +428,7 @@ test("test_color_diff_blocks_when_one_line_paragraphs", async () => {
 // 同じ本文なら何も変えない（正常系）
 test("test_color_diff_blocks_when_same", async () => {
   // 準備
-  const markdown = "# 題\n\n段落\n\n## 節\n\n段落二\n";
+  const markdown = "# タイトル\n\n段落\n\n## セクション\n\n段落二\n";
   const { colorDiffBlocks } = await loadBlocks();
   const before = renderFragment(markdown);
   const after = renderFragment(markdown);
@@ -443,15 +443,15 @@ test("test_color_diff_blocks_when_same", async () => {
   expect(htmlOf(after)).toBe(htmlBefore);
 });
 
-// 語を 1 つ書き換えた文は書き換え（正常系）
+// 単語を 1 つ書き換えた文は書き換え（正常系）
 test("test_is_rewrite", async () => {
   // 準備
   const { isRewrite } = await loadBlocks();
   const { jsdiffEngine } = await loadCompute();
   // 実行
   const rewrite = isRewrite({
-    before: "差分を確かめる手順です。",
-    after: "変更を確かめる手順です。",
+    before: "差分を確認する手順です。",
+    after: "変更を確認する手順です。",
     segmenter: createSegmenter(),
     engine: jsdiffEngine,
   });
@@ -464,7 +464,7 @@ test("test_is_rewrite_when_replaced", async () => {
   // 準備
   const { isRewrite } = await loadBlocks();
   const { jsdiffEngine } = await loadCompute();
-  // 実行: 共通する語が句点だけの 2 つの文
+  // 実行: 共通する単語が句点だけの 2 つの文
   const rewrite = isRewrite({
     before: "配布物が届く。",
     after: "表を増やす。",
@@ -480,7 +480,7 @@ test("test_is_rewrite_when_half", async () => {
   // 準備
   const { isRewrite } = await loadBlocks();
   const { jsdiffEngine } = await loadCompute();
-  // 実行: 語の区切りが無く、1 文字ずつ比べる
+  // 実行: 単語の区切りが無く、1 文字ずつ比べる
   const rewrite = isRewrite({
     before: "abcd",
     after: "abxy",

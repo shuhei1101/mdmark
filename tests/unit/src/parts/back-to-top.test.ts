@@ -7,7 +7,7 @@ const loadBackToTop = () => import("../../../../src/parts/back-to-top.ts");
 /** 開始タグが値なしの hidden 属性を持つか */
 const HIDDEN_ATTRIBUTE = /\shidden(?=[\s=>])/;
 
-// 読み上げの名前とアイコンを持つボタンを返す（正常系）
+// スクリーンリーダー向けの名前とアイコンを持つボタンを返却する（正常系）
 test("test_render_back_to_top", async () => {
   // 準備
   const { renderBackToTop } = await loadBackToTop();

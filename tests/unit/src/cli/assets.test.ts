@@ -12,7 +12,7 @@ const createTempDir = useTempDirs();
 /** 中身を持たない動画のファイル */
 const VIDEO_BYTES = new Uint8Array([0, 0, 0, 24, 102, 116, 121, 112]);
 
-// 画像・動画・poster・添付を拾う（正常系）
+// 画像・動画・poster・添付を取得する（正常系）
 test("test_collect_asset_refs", async () => {
   // 準備
   const { collectAssetRefs } = await loadAssets();
@@ -34,7 +34,7 @@ test("test_collect_asset_refs", async () => {
   ]);
 });
 
-// コードの中は拾わない（正常系）
+// コードの中は取得しない（正常系）
 test("test_collect_asset_refs_when_code", async () => {
   // 準備
   const { collectAssetRefs } = await loadAssets();
@@ -110,7 +110,7 @@ test("test_copy_media", async () => {
   expect(result.warnings).toEqual([]);
 });
 
-// 基準の外のファイルは external に名前を重ねずに置く（正常系）
+// 基準の外のファイルは external に名前を重ねずに配置する（正常系）
 test("test_copy_media_when_outside", async () => {
   // 準備
   const { copyMedia } = await loadAssets();

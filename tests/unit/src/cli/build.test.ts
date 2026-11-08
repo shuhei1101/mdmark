@@ -23,7 +23,7 @@ function createConfig(buildLines: string[]): string {
   return ["build:", ...buildLines, ""].join("\n");
 }
 
-// 3 つの文書をまとめて build.out に書く（正常系）
+// 3 つの文書をまとめて build.out に記載する（正常系）
 test("test_run_build", async () => {
   // 準備
   const { runBuild } = await loadBuild();
@@ -90,13 +90,13 @@ test("test_run_build_when_glossary_without_index", async () => {
       '  glossary: ["用語集.md"]',
       "  out: dist/docs.html",
     ]),
-    "README.md": "印を書く。\n",
+    "README.md": "マーカーを記載する。\n",
     "用語集.md": [
       "<!-- glossary: term=用語 meaning=意味 -->",
       "",
       "| 用語 | 意味 |",
       "| --- | --- |",
-      "| 印 | HTML コメントで書く指定 |",
+      "| マーカー | HTML コメントで記載する指定 |",
       "",
       "<!-- /glossary -->",
       "",
@@ -111,7 +111,7 @@ test("test_run_build_when_glossary_without_index", async () => {
     await readFile(join(dir, "dist", "docs.html"), "utf8"),
   );
   expect(payload.references?.glossary.map((entry) => entry.term)).toContain(
-    "印",
+    "マーカー",
   );
 });
 
@@ -135,7 +135,7 @@ test("test_run_build_when_build_missing", async () => {
   await expect(result).rejects.toThrow("build.out");
 });
 
-// 対象が 0 件だと CliError で HTML を書かない（異常系）
+// 対象が 0 件だと CliError で HTML を書き込まない（異常系）
 test("test_run_build_when_no_documents", async () => {
   // 準備
   const { runBuild } = await loadBuild();
@@ -157,7 +157,7 @@ test("test_run_build_when_no_documents", async () => {
   expect(existsSync(join(dir, "dist", "docs.html"))).toBe(false);
 });
 
-// まとめて絶対パスと文書の数を返す（正常系）
+// まとめて絶対パスと文書の数を返却する（正常系）
 test("test_build_site", async () => {
   // 準備
   const { buildSite } = await loadBuild();
@@ -180,7 +180,7 @@ test("test_build_site", async () => {
   expect(result.warnings).toEqual([]);
 });
 
-// まとめる文書に当たらない build.entry を警告で返す（正常系）
+// まとめる文書に該当しない build.entry を警告で返却する（正常系）
 test("test_build_site_when_entry_outside", async () => {
   // 準備
   const { buildSite } = await loadBuild();

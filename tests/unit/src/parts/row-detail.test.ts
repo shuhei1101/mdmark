@@ -3,7 +3,7 @@ import { expect, test } from "vitest";
 /** 行の詳細の処理を読み込む（実装が無い間は各テストが個別に失敗する） */
 const loadRowDetail = () => import("../../../../src/parts/row-detail.ts");
 
-// 閉じた詳細の行とボタンを返す（正常系）
+// 閉じた詳細の行とボタンを返却する（正常系）
 test("test_render_row_detail", async () => {
   // 準備
   const { renderRowDetail } = await loadRowDetail();
@@ -23,7 +23,7 @@ test("test_render_row_detail", async () => {
   expect(toggle).toContain('aria-label="「table」の詳細"');
 });
 
-// 畳んだ最終列を詳細の中身の上に置く（正常系）
+// 畳んだ最終列を詳細の中身の上に配置する（正常系）
 test("test_render_row_detail_when_folded_column", async () => {
   // 準備
   const { renderRowDetail } = await loadRowDetail();

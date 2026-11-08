@@ -72,7 +72,7 @@ function tabOf(root: HTMLElement, index: number, name: string): HTMLElement {
   return tab;
 }
 
-/** `window.localStorage` を読むと `SecurityError` を投げる状態にし、元に戻す関数を返す */
+/** `window.localStorage` を読み込むと `SecurityError` を投げる状態にし、元に戻す関数を返却する */
 function blockLocalStorage(): () => void {
   const original = Object.getOwnPropertyDescriptor(window, "localStorage");
   Object.defineProperty(window, "localStorage", {
@@ -134,7 +134,7 @@ test("test_attach_tabs", async () => {
   expectSelected(0);
 });
 
-// 同じ組のタブを揃えて残す（正常系）
+// 同じ組のタブを統一して残す（正常系）
 test("test_attach_tabs_when_group_synced", async () => {
   // 準備
   const { attachTabs } = await loadTabs();
@@ -175,7 +175,7 @@ test("test_attach_tabs_when_choice_saved", async () => {
   expect(localStorage.getItem("mdmark-tabs:lang")).toBe("Go");
 });
 
-// 外したタブは揃える対象から外れる（正常系）
+// 削除したタブは統一する対象から削除される（正常系）
 test("test_attach_tabs_when_detached", async () => {
   // 準備
   const { attachTabs } = await loadTabs();
@@ -193,7 +193,7 @@ test("test_attach_tabs_when_detached", async () => {
   expect(localStorage.getItem("mdmark-tabs:os")).toBe("Windows");
 });
 
-// セレクタの記号を含む組の名前でも揃える（正常系）
+// セレクタの記号を含む組の名前でも統一する（正常系）
 test("test_attach_tabs_when_group_has_quote", async () => {
   // 準備
   const { attachTabs } = await loadTabs();
@@ -209,7 +209,7 @@ test("test_attach_tabs_when_group_has_quote", async () => {
   expect(localStorage.getItem(`mdmark-tabs:${group}`)).toBe("Windows");
 });
 
-// 残したタブ名を返す（正常系）
+// 残したタブ名を返却する（正常系）
 test("test_load_tab_choice", async () => {
   // 準備
   const { loadTabChoice } = await loadTabs();
@@ -220,7 +220,7 @@ test("test_load_tab_choice", async () => {
   expect(name).toBe("Windows");
 });
 
-// localStorage を取り出せなければ undefined を返す（異常系）
+// localStorage を取り出せなければ undefined を返却する（異常系）
 test("test_load_tab_choice_when_storage_unavailable", async () => {
   // 準備
   const { loadTabChoice } = await loadTabs();
@@ -247,7 +247,7 @@ test("test_save_tab_choice", async () => {
   expect(localStorage.getItem("mdmark-tabs:os")).toBe("Windows");
 });
 
-// localStorage を取り出せなければ書かずに続ける（異常系）
+// localStorage を取り出せなければ記載せずに続ける（異常系）
 test("test_save_tab_choice_when_storage_unavailable", async () => {
   // 準備
   const { saveTabChoice } = await loadTabs();

@@ -2,7 +2,7 @@ import type { AddressInfo } from "node:net";
 import { createServer, type Server } from "node:net";
 import { afterEach, expect, test } from "vitest";
 
-/** ポートの確かめを読み込む（実装が無い間は各テストが個別に失敗する） */
+/** ポートの確認を読み込む（実装が無い間は各テストが個別に失敗する） */
 const loadPort = () => import("../../../../src/plugin/port.ts");
 
 /** CLI の誤りを読み込む */
@@ -21,7 +21,7 @@ afterEach(async () => {
   );
 });
 
-/** 127.0.0.1 の空いたポートで待ち受け、そのポートを返す */
+/** 127.0.0.1 の空いたポートで待ち受け、そのポートを返却する */
 async function listen(): Promise<number> {
   const server = createServer();
   servers.push(server);
@@ -29,7 +29,7 @@ async function listen(): Promise<number> {
   return (server.address() as AddressInfo).port;
 }
 
-/** 空いたポートを取って閉じ、待ち受けていないポートを返す */
+/** 空いたポートを取って閉じ、待ち受けていないポートを返却する */
 async function closedPort(): Promise<number> {
   const server = createServer();
   await new Promise<void>((resolve) => server.listen(0, "127.0.0.1", resolve));
@@ -66,7 +66,7 @@ test("test_read_port", async () => {
   expect(port).toBe(DEFAULT_PORT);
 });
 
-// 環境変数のポートを使う（正常系）
+// 環境変数のポートを使用する（正常系）
 test("test_read_port_when_overridden", async () => {
   // 準備
   const { readPort } = await loadPort();

@@ -3,25 +3,25 @@ import { afterEach, expect, test, vi } from "vitest";
 /** 埋めたモジュールを用意する処理を読み込む（実装が無い間は各テストが個別に失敗する） */
 const loadModules = () => import("../../../../src/viewer/modules.ts");
 
-/** 色分けのモジュールの控えを持つ処理を読み込む */
+/** 色分けのモジュールの記録を持つ処理を読み込む */
 const loadHighlight = () => import("../../../../src/highlight.ts");
 
-/** mermaid のモジュールの控えを持つ処理を読み込む（実装が無い間は各テストが個別に失敗する。ファイルが無いと解決が失敗してテストファイルごと落ちるため、URL を組んで読む） */
+/** mermaid のモジュールの記録を持つ処理を読み込む（実装が無い間は各テストが個別に失敗する。ファイルが無いと解決が失敗してテストファイルごと落ちるため、URL を組んで読み込む） */
 const loadMermaid = (): Promise<typeof import("../../../../src/mermaid.ts")> =>
   import(
     /* @vite-ignore */ new URL("../../../../src/mermaid.ts", import.meta.url)
       .href
   );
 
-/** 外部ライブラリのモジュールの控えを持つ処理を読み込む */
+/** 外部ライブラリのモジュールの記録を持つ処理を読み込む */
 const loadLibraries = () => import("../../../../src/libraries.ts");
 
-/** 部品のモジュールを読む処理を読み込む */
+/** 部品のモジュールを読み込む処理を読み込む */
 const loadPartModules = () => import("../../../../src/part-modules.ts");
 
 const GREET = { name: "greet", directive: "greet", load: async () => ({}) };
 
-/** ビューの部品のモジュールの形 */
+/** ビューの部品のモジュールの構造 */
 const VIEW_MODULE = { drawView: () => () => {}, attachView: () => () => {} };
 
 afterEach(async () => {
@@ -35,7 +35,7 @@ afterEach(async () => {
   partModuleLoaders.clear();
 });
 
-// 埋めたモジュールを読み込みに渡し、拡張を登録する（正常系）
+// 埋めたモジュールを読み込みに指定し、拡張を登録する（正常系）
 test("test_prepare_modules", async () => {
   // 準備
   const { prepareModules } = await loadModules();

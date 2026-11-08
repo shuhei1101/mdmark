@@ -1,10 +1,10 @@
 import { afterEach, beforeEach, expect, test, vi } from "vitest";
 
-/** コメントの引数とコメントの形の検査を読み込む（実装が無い間は各テストが個別に失敗する） */
+/** コメントの引数とコメントの構造の検査を読み込む（実装が無い間は各テストが個別に失敗する） */
 const loadSpec = () => import("../../../../src/comments/spec.ts");
 
 beforeEach(() => {
-  // Node には要素が無いため、`instanceof HTMLElement` で通る代役を置く
+  // Node には要素が無いため、`instanceof HTMLElement` で通る代役を配置する
   vi.stubGlobal("HTMLElement", class FakeElement {});
 });
 
@@ -34,7 +34,7 @@ test("test_check_comment_options_when_invalid", async () => {
   }
 });
 
-// 形の合う値と合わない値を見分ける（正常系）
+// 構造の合う値と合わない値を見分ける（正常系）
 test("test_is_comment", async () => {
   // 準備
   const { isComment } = await loadSpec();
@@ -60,7 +60,7 @@ test("test_is_comment", async () => {
   expect(results).toEqual([true, false, false]);
 });
 
-// update・remove を持たないか関数で持てば通す（正常系）
+// update・remove を持たないか関数で持てば経由する（正常系）
 test("test_check_comment_store", async () => {
   // 準備
   const { checkCommentStore } = await loadSpec();

@@ -16,12 +16,12 @@ const DOC_ID = "panel-setup";
 
 const bubbles: HTMLElement[] = [];
 
-/** 修正と削除を持つ読み書きの関数 */
+/** 修正と削除を持つ読み込みと保存の関数 */
 function createStore() {
   return {
     load: vi.fn(async () => []),
     save: vi.fn(async () => {
-      throw new Error("使わない");
+      throw new Error("使用しない");
     }),
     update: vi.fn(
       async (_target: { docId: string; id: string; body: string }) => {},
@@ -30,7 +30,7 @@ function createStore() {
   };
 }
 
-/** `一つ目`・`二つ目` の 2 件の吹き出しをページに置いて操作を付け、吹き出しと控えを返す */
+/** `一つ目`・`二つ目` の 2 件の吹き出しをページに配置して操作を付け、吹き出しと記録を返却する */
 async function setup(options?: {
   store?: ReturnType<typeof createStore>;
   isActive?: () => boolean;
@@ -62,12 +62,12 @@ async function setup(options?: {
   return { bubble, store, onUpdated, onRemoved, actions };
 }
 
-/** 吹き出しの `li` を並んだ順に返す */
+/** 吹き出しの `li` を並んだ順に返却する */
 function items(bubble: HTMLElement): HTMLElement[] {
   return [...bubble.querySelectorAll<HTMLElement>(".mdmark-comment-list > li")];
 }
 
-/** 要素の中のセレクタに合う要素を返す（無ければ例外） */
+/** 要素の中のセレクタに合う要素を返却する（無ければ例外） */
 function find(parent: Element | undefined, selector: string): HTMLElement {
   const element = parent?.querySelector<HTMLElement>(selector);
   if (!element) {
@@ -76,12 +76,12 @@ function find(parent: Element | undefined, selector: string): HTMLElement {
   return element;
 }
 
-/** 本文の欄を返す */
+/** 本文の欄を返却する */
 function field(item: HTMLElement | undefined): HTMLTextAreaElement {
   return find(item, "textarea") as HTMLTextAreaElement;
 }
 
-/** 本文の欄に書く */
+/** 本文の欄に記載する */
 function type(item: HTMLElement | undefined, body: string): void {
   const textarea = field(item);
   textarea.value = body;
@@ -121,22 +121,22 @@ test("test_attach_comment_actions_when_edited", async () => {
   expect(document.activeElement).toBe(field(items(bubble)[0]));
   expect(field(items(bubble)[0]).value).toBe("一つ目");
   // 実行: 本文を書き換えて「保存」を押す
-  type(items(bubble)[0], "直した本文");
+  type(items(bubble)[0], "修正した本文");
   find(items(bubble)[0], 'button[type="submit"]').click();
   // 検証
   await vi.waitFor(() => expect(onUpdated).toHaveBeenCalledTimes(1));
   expect(store.update).toHaveBeenCalledWith({
     docId: DOC_ID,
     id: "c1",
-    body: "直した本文",
+    body: "修正した本文",
   });
-  expect(onUpdated).toHaveBeenCalledWith("c1", "直した本文");
+  expect(onUpdated).toHaveBeenCalledWith("c1", "修正した本文");
   const first = items(bubble)[0];
-  expect(find(first, ".mdmark-comment-body").textContent).toBe("直した本文");
+  expect(find(first, ".mdmark-comment-body").textContent).toBe("修正した本文");
   expect(document.activeElement).toBe(find(first, '[data-action="edit"]'));
 });
 
-// 本文を空にして保存すると知らせを出して update を呼ばない（異常系）
+// 本文を空にして保存すると通知を出して update を呼ばない（異常系）
 test("test_attach_comment_actions_when_edit_empty", async () => {
   // 準備
   const { bubble, store } = await setup();
@@ -147,13 +147,13 @@ test("test_attach_comment_actions_when_edit_empty", async () => {
   // 検証
   const first = items(bubble)[0];
   expect(find(first, '[role="alert"]').textContent).toBe(
-    "コメントを書いてから保存してください。",
+    "コメントを記載してから保存してください。",
   );
   expect(field(first).getAttribute("aria-invalid")).toBe("true");
   expect(store.update).not.toHaveBeenCalled();
 });
 
-// 修正できないと入力欄と本文を残して知らせる（異常系）
+// 修正できないと入力欄と本文を残して通知する（異常系）
 test("test_attach_comment_actions_when_update_rejected", async () => {
   // 準備
   const spy = vi.spyOn(console, "error").mockImplementation(() => {});
@@ -161,7 +161,7 @@ test("test_attach_comment_actions_when_update_rejected", async () => {
   store.update.mockRejectedValue(new Error("network"));
   const { bubble, onUpdated } = await setup({ store });
   find(items(bubble)[0], '[data-action="edit"]').click();
-  type(items(bubble)[0], "直した本文");
+  type(items(bubble)[0], "修正した本文");
   // 実行
   find(items(bubble)[0], 'button[type="submit"]').click();
   // 検証
@@ -170,10 +170,10 @@ test("test_attach_comment_actions_when_update_rejected", async () => {
       items(bubble)[0]?.querySelector('[role="alert"]:not([hidden])')
         ?.textContent,
     ).toBe(
-      "コメントを保存できませんでした。書いたコメントは残っています。もう一度「保存」を押してください。",
+      "コメントを保存できませんでした。記載したコメントは残っています。もう一度「保存」を押してください。",
     ),
   );
-  expect(field(items(bubble)[0]).value).toBe("直した本文");
+  expect(field(items(bubble)[0]).value).toBe("修正した本文");
   expect(loggedText(spy)).toContain("update");
   expect(loggedText(spy)).toContain(DOC_ID);
   expect(loggedText(spy)).toContain("c1");
@@ -188,7 +188,7 @@ test("test_attach_comment_actions_when_edit_cancelled", async () => {
   expect(actions.cancel()).toBe(false);
   // 実行・検証: 「キャンセル」
   find(items(bubble)[0], '[data-action="edit"]').click();
-  type(items(bubble)[0], "書きかけ");
+  type(items(bubble)[0], "書き込みかけ");
   find(items(bubble)[0], '[data-action="cancel-edit"]').click();
   expect(find(items(bubble)[0], ".mdmark-comment-body").textContent).toBe(
     "一つ目",
@@ -198,7 +198,7 @@ test("test_attach_comment_actions_when_edit_cancelled", async () => {
   );
   // 実行・検証: cancel()
   find(items(bubble)[0], '[data-action="edit"]').click();
-  type(items(bubble)[0], "書きかけ");
+  type(items(bubble)[0], "書き込みかけ");
   expect(actions.cancel()).toBe(true);
   expect(find(items(bubble)[0], ".mdmark-comment-body").textContent).toBe(
     "一つ目",
@@ -208,7 +208,7 @@ test("test_attach_comment_actions_when_edit_cancelled", async () => {
   );
 });
 
-// 削除を確かめてから remove を呼び、残ったコメントのボタンへフォーカスを移す（正常系）
+// 削除を確認してから remove を呼び、残ったコメントのボタンへフォーカスを移す（正常系）
 test("test_attach_comment_actions_when_removed", async () => {
   // 準備
   const { bubble, store, onRemoved } = await setup();
@@ -254,7 +254,7 @@ test("test_attach_comment_actions_when_remove_cancelled", async () => {
   expect(store.remove).not.toHaveBeenCalled();
 });
 
-// 削除できないと確認を開いたまま知らせる（異常系）
+// 削除できないと確認を開いたまま通知する（異常系）
 test("test_attach_comment_actions_when_remove_rejected", async () => {
   // 準備
   const spy = vi.spyOn(console, "error").mockImplementation(() => {});
@@ -278,7 +278,7 @@ test("test_attach_comment_actions_when_remove_rejected", async () => {
   expect(onRemoved).not.toHaveBeenCalled();
 });
 
-// 待つ間に外れたら結果を描かない（正常系）
+// 待つ間に削除されたら結果を描かない（正常系）
 test("test_attach_comment_actions_when_inactive", async () => {
   // 準備
   let active = true;
@@ -290,7 +290,7 @@ test("test_attach_comment_actions_when_inactive", async () => {
     isActive: () => active,
   });
   find(items(bubble)[0], '[data-action="edit"]').click();
-  type(items(bubble)[0], "直した本文");
+  type(items(bubble)[0], "修正した本文");
   find(items(bubble)[0], 'button[type="submit"]').click();
   // 実行
   active = false;

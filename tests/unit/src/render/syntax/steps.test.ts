@@ -6,7 +6,7 @@ import { renderDoc } from "../../../helpers/render.ts";
 /** ステップの処理を読み込む（実装が無い間は各テストが個別に失敗する） */
 const loadSteps = () => import("../../../../../src/render/syntax/steps.ts");
 
-/** `<!-- steps: {rest} -->` の開きの印（引数が無ければ `<!-- steps -->`） */
+/** `<!-- steps: {rest} -->` の開きのマーカー（引数が無ければ `<!-- steps -->`） */
 function stepsMark(rest?: string): Mark {
   return {
     name: "steps",
@@ -85,7 +85,7 @@ test("test_build_steps_when_collapsed", () => {
   expect(html).not.toContain("mdmark-syntax-warning");
 });
 
-// 読めない指定は警告にして折り畳まずに手順にする（異常系）
+// 読み込めない指定は警告にして折り畳まずに手順にする（異常系）
 test("test_build_steps_when_unreadable_options", () => {
   // 準備
   const markdown = [
@@ -120,7 +120,7 @@ test("test_build_steps_when_unreadable_options", () => {
   );
 });
 
-// open と title= を読む（正常系）
+// open と title= を読み込む（正常系）
 test("test_read_steps_options", async () => {
   // 準備
   const { readStepsOptions } = await loadSteps();
@@ -144,7 +144,7 @@ test("test_read_steps_options_when_none", async () => {
   expect(options.warning).toBeUndefined();
 });
 
-// 組み合わせの誤りを警告にし、知らない指定とキーを読み飛ばす（異常系）
+// 組み合わせの誤りを警告にし、知らない指定とキーをスキップする（異常系）
 test("test_read_steps_options_when_unreadable", async () => {
   // 準備
   const { readStepsOptions } = await loadSteps();
@@ -160,7 +160,7 @@ test("test_read_steps_options_when_unreadable", async () => {
   );
 });
 
-// title= の値の空白の後ろの単語を警告にし、読み飛ばさない（異常系）
+// title= の値の空白の後ろの単語を警告にし、スキップしない（異常系）
 test("test_read_steps_options_when_title_has_space", async () => {
   // 準備
   const { readStepsOptions } = await loadSteps();

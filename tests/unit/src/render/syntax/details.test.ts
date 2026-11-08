@@ -5,7 +5,7 @@ import { renderDoc } from "../../../helpers/render.ts";
 /** details の範囲の処理を読み込む（実装が無い間は各テストが個別に失敗する） */
 const loadDetails = () => import("../../../../../src/render/syntax/details.ts");
 
-// タイトルと開閉を当てる（正常系）
+// タイトルと開閉を適用する（正常系）
 test("test_build_details_ranges", () => {
   // 準備
   const markdown = [
@@ -33,7 +33,7 @@ test("test_build_details_ranges", () => {
   expect(innerHtml(html, "mdmark-collapsible")).toContain("中身 A");
 });
 
-// 閉じの印が無いと囲まずに警告する（異常系）
+// 閉じのマーカーが無いと囲まずに警告する（異常系）
 test("test_build_details_ranges_when_unclosed", () => {
   // 準備
   const markdown = "<!-- details: 補足 -->\n\n段落\n";
@@ -47,7 +47,7 @@ test("test_build_details_ranges_when_unclosed", () => {
   expect(html).toContain("段落");
 });
 
-// 最後の `open` を開閉として読む（正常系）
+// 最後の `open` を開閉として読み込む（正常系）
 test("test_read_details_options", async () => {
   // 準備
   const { readDetailsOptions } = await loadDetails();

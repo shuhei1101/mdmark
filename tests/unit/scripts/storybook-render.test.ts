@@ -5,13 +5,13 @@ import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { afterEach, expect, test, vi } from "vitest";
 
-/** 描画の口のスクリプトを読み込む（実装が無い間は各テストが個別に失敗する） */
+/** 描画のインターフェースのスクリプトを読み込む（実装が無い間は各テストが個別に失敗する） */
 const loadRender = () => import("../../../scripts/storybook-render.ts");
 
-/** 知らせの枠の処理を読み込む */
+/** 通知ブロックの処理を読み込む */
 const loadNotice = () => import("../../../src/parts/notice.ts");
 
-/** 読み込み中の枠の処理を読み込む */
+/** 読み込み中のブロックの処理を読み込む */
 const loadEmbed = () => import("../../../src/parts/embed.ts");
 
 /** 表の処理を読み込む */
@@ -30,7 +30,7 @@ const loadMediaError = () =>
 const servers: Server[] = [];
 const createdRoots: string[] = [];
 
-/** 一時フォルダに作業ツリーの代わりを作り、css があれば src/index.css に置く */
+/** 一時フォルダに作業ツリーの代わりを作り、css があれば src/index.css に配置する */
 async function createRoot(css?: string): Promise<string> {
   const root = await mkdtemp(join(tmpdir(), "mdmark-render-"));
   createdRoots.push(root);
@@ -41,7 +41,7 @@ async function createRoot(css?: string): Promise<string> {
   return root;
 }
 
-/** 127.0.0.1 の空きポートで待ち受け、そのポートを返す */
+/** 127.0.0.1 の空きポートで待ち受け、そのポートを返却する */
 async function listen(server: Server): Promise<number> {
   servers.push(server);
   await new Promise<void>((resolve) => {
@@ -50,7 +50,7 @@ async function listen(server: Server): Promise<number> {
   return (server.address() as AddressInfo).port;
 }
 
-/** 標準エラーへの出力を集め、集めた文字列を返す関数を返す */
+/** 標準エラーへの出力を集め、集めた文字列を返却する関数を返却する */
 function captureStderr(): () => string {
   const chunks: string[] = [];
   vi.spyOn(process.stderr, "write").mockImplementation((chunk: unknown) => {
@@ -82,7 +82,7 @@ afterEach(async () => {
   );
 });
 
-// 知らせの枠を引数どおりに描く（正常系）
+// 通知ブロックを引数どおりに描く（正常系）
 test("test_render_part_when_notice", async () => {
   // 準備
   const { renderPart } = await loadRender();
@@ -96,7 +96,7 @@ test("test_render_part_when_notice", async () => {
   );
 });
 
-// カンマで結ばれた引数を配列に戻して読み込み中の枠を描く（正常系）
+// カンマで結ばれた引数を配列に戻して読み込み中のブロックを描く（正常系）
 test("test_render_part_when_embed", async () => {
   // 準備
   const { renderPart } = await loadRender();
@@ -141,7 +141,7 @@ test("test_render_part_when_doc_list", async () => {
   const { renderDocList } = await loadDocList();
   const docs = [
     { path: "README.md", title: "入口" },
-    { path: "使い方/guide.md", title: "使い方" },
+    { path: "使い方/guide.md", title: "使用方法" },
   ];
   const params = new URLSearchParams({
     docs: JSON.stringify(docs),
@@ -155,7 +155,7 @@ test("test_render_part_when_doc_list", async () => {
   );
 });
 
-// 拡張機能の再生できない動画・音声の知らせを引数どおりに描く（正常系）
+// 拡張機能の再生できない動画・音声の通知を引数どおりに描く（正常系）
 test("test_render_part_when_vscode_part", async () => {
   // 準備
   const { renderPart } = await loadRender();
@@ -171,7 +171,7 @@ test("test_render_part_when_vscode_part", async () => {
   );
 });
 
-// highlight が true のコードブロックを色分けして返す（正常系）
+// highlight が true のコードブロックを色分けして返却する（正常系）
 test("test_render_part_when_code_block_highlighted", async () => {
   // 準備
   const { renderPart } = await loadRender();
@@ -212,7 +212,7 @@ test("test_render_part_when_comment_popover", async () => {
   );
 });
 
-// 見本の SVG のファイルを読み、図の枠で包んで描く（正常系）
+// 見本の SVG のファイルを読み込み、図の枠で包んで描く（正常系）
 test("test_render_part_when_mermaid_diagram", async () => {
   // 準備
   const { renderPart } = await loadRender();
@@ -232,7 +232,7 @@ test("test_render_part_when_mermaid_diagram", async () => {
   expect(none).toBeUndefined();
 });
 
-// 知らない部品は返さない（正常系）
+// 知らない部品は返却しない（正常系）
 test("test_render_part_when_unknown", async () => {
   // 準備
   const { renderPart } = await loadRender();
@@ -245,7 +245,7 @@ test("test_render_part_when_unknown", async () => {
   expect(html).toBeUndefined();
 });
 
-// 部品の HTML を 200 で返す（正常系）
+// 部品の HTML を 200 で返却する（正常系）
 test("test_create_render_server", async () => {
   // 準備
   const { createRenderServer } = await loadRender();
@@ -260,7 +260,7 @@ test("test_create_render_server", async () => {
   expect(await response.text()).toContain("この図を表示できません");
 });
 
-// 本文の CSS を返す（正常系）
+// 本文の CSS を返却する（正常系）
 test("test_create_render_server_when_css", async () => {
   // 準備
   const { createRenderServer } = await loadRender();
@@ -276,7 +276,7 @@ test("test_create_render_server_when_css", async () => {
   expect(await response.text()).toBe(css);
 });
 
-// 見出し行と集計の行を留める処理を束ねて返す（正常系）
+// 見出し行と集計の行を留める処理をまとめて返却する（正常系）
 test("test_create_render_server_when_sticky_script", async () => {
   // 準備
   const { createRenderServer } = await loadRender();
@@ -292,7 +292,7 @@ test("test_create_render_server_when_sticky_script", async () => {
   expect(await response.text()).toContain("attachStickyRows");
 });
 
-// 知らない部品は 404 を返す（正常系）
+// 知らない部品は 404 を返却する（正常系）
 test("test_create_render_server_when_unknown_part", async () => {
   // 準備
   const { createRenderServer } = await loadRender();

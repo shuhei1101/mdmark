@@ -6,19 +6,19 @@ import { useTempDirs, writeFiles } from "../../helpers/cli.ts";
 /** 埋め込みの処理を読み込む（実装が無い間は各テストが個別に失敗する） */
 const loadEmbed = () => import("../../../../src/cli/embed.ts");
 
-/** esbuild を渡して束ねる処理を読み込む */
+/** esbuild を指定してまとめる処理を読み込む */
 const loadBundleModule = () => import("../../../../src/bundle-module.ts");
 
 const createTempDir = useTempDirs();
 
-// ビューの印があるときだけ部品を束ねる（正常系）
+// ビューのマーカーがあるときだけ部品をまとめる（正常系）
 test("test_used_parts", async () => {
   // 準備
   const { usedParts } = await loadEmbed();
   const marked =
-    "<!-- view: group=状態 -->\n\n| 題 |\n| --- |\n| a |\n\n<!-- /view -->\n";
+    "<!-- view: group=状態 -->\n\n| タイトル |\n| --- |\n| a |\n\n<!-- /view -->\n";
   const unmarked =
-    "<!-- table: data -->\n\n| 題 |\n| --- |\n| a |\n\n<!-- /table -->\n";
+    "<!-- table: data -->\n\n| タイトル |\n| --- |\n| a |\n\n<!-- /table -->\n";
   // 実行
   const withView = usedParts({ markdowns: [unmarked, marked] });
   const withoutView = usedParts({ markdowns: [unmarked] });
@@ -27,7 +27,7 @@ test("test_used_parts", async () => {
   expect(withoutView).toBe(false);
 });
 
-// 手元のファイルとその import を 1 つに束ねる（正常系）
+// 手元のファイルとその import を 1 つにまとめる（正常系）
 test("test_bundle_module", async () => {
   // 準備
   const { bundleModule } = await loadBundleModule();
@@ -47,14 +47,14 @@ test("test_bundle_module", async () => {
   const result = await bundleModule("lib.ts", dir, undefined, build);
   // 検証
   if (!("code" in result)) {
-    throw new Error(`束ねられなかった: ${result.error}`);
+    throw new Error(`まとめられなかった: ${result.error}`);
   }
   expect(result.code).not.toMatch(/\bimport\b/);
   expect(result.code).toContain("draw");
   expect(result.code).toMatch(/\bexport\b/);
 });
 
-// URL とそのルート相対の import を fetchText で読んで束ねる（正常系）
+// URL とそのルート相対の import を fetchText で読み込んでまとめる（正常系）
 test("test_bundle_module_when_url", async () => {
   // 準備
   const { bundleModule } = await loadBundleModule();
@@ -68,7 +68,7 @@ test("test_bundle_module_when_url", async () => {
   const fetchText = vi.fn(async (url: string) => {
     const body = bodies[url];
     if (body === undefined) {
-      throw new Error(`読めない URL: ${url}`);
+      throw new Error(`読み込めない URL: ${url}`);
     }
     return body;
   });
@@ -81,14 +81,14 @@ test("test_bundle_module_when_url", async () => {
   );
   // 検証
   if (!("code" in result)) {
-    throw new Error(`束ねられなかった: ${result.error}`);
+    throw new Error(`まとめられなかった: ${result.error}`);
   }
   expect(fetchText).toHaveBeenCalledWith("https://cdn.example/npm/b/+esm");
   expect(result.code).not.toContain("https:");
   expect(result.code).not.toContain("/npm/");
 });
 
-// 読めないモジュールは理由を返す（異常系）
+// 読み込めないモジュールは理由を返却する（異常系）
 test("test_bundle_module_when_unreachable", async () => {
   // 準備
   const { bundleModule } = await loadBundleModule();
@@ -98,7 +98,7 @@ test("test_bundle_module_when_unreachable", async () => {
   const result = await bundleModule("missing.js", dir, undefined, build);
   // 検証
   if (!("error" in result)) {
-    throw new Error("束ねられてしまった");
+    throw new Error("まとめられてしまった");
   }
   expect(result.error).toContain("missing.js");
 });
@@ -118,7 +118,7 @@ test("test_inline_images", async () => {
   expect(result.warnings).toEqual([]);
 });
 
-// 読めない画像は残して警告にする（正常系）
+// 読み込めない画像は残して警告にする（正常系）
 test("test_inline_images_when_missing", async () => {
   // 準備
   const { inlineImages } = await loadEmbed();
@@ -131,7 +131,7 @@ test("test_inline_images_when_missing", async () => {
   expect(result.warnings.join("\n")).toContain("img/missing.png");
 });
 
-// 絶対 URL の画像は読まずに警告にする（正常系）
+// 絶対 URL の画像は読み込まずに警告にする（正常系）
 test("test_inline_images_when_absolute_url", async () => {
   // 準備
   const { inlineImages } = await loadEmbed();
@@ -144,7 +144,7 @@ test("test_inline_images_when_absolute_url", async () => {
   expect(result.warnings.join("\n")).toContain("https://example.com/a.png");
 });
 
-// まとめる文書に無い .md へのリンクだけを返す（正常系）
+// まとめる文書に無い .md へのリンクだけを返却する（正常系）
 test("test_find_outside_links", async () => {
   // 準備
   const { findOutsideLinks } = await loadEmbed();
@@ -165,7 +165,7 @@ test("test_find_outside_links", async () => {
   expect(links).toEqual(["下書き/メモ.md"]);
 });
 
-// 色分けの対象の言語だけを拾い、機能を外した文書は拾わない（正常系）
+// 色分けの対象の言語だけを取得し、機能を解除した文書は取得しない（正常系）
 test("test_used_syntax_languages", async () => {
   // 準備
   const { usedSyntaxLanguages } = await loadEmbed();
@@ -202,7 +202,7 @@ test("test_used_syntax_languages", async () => {
   expect(languages).toEqual(["typescript", "yaml"]);
 });
 
-// 別名とファイル名付きの言語をモジュール名にして拾う（正常系）
+// 別名とファイル名付きの言語をモジュール名にして取得する（正常系）
 test("test_used_syntax_languages_when_aliases_and_file_name", async () => {
   // 準備
   const { usedSyntaxLanguages } = await loadEmbed();
@@ -227,7 +227,7 @@ test("test_used_syntax_languages_when_aliases_and_file_name", async () => {
   expect(languages).toEqual(["diff", "dockerfile", "typescript"]);
 });
 
-// 設定で機能を外すと何も拾わない（正常系）
+// 設定で機能を解除すると何も取得しない（正常系）
 test("test_used_syntax_languages_when_disabled", async () => {
   // 準備
   const { usedSyntaxLanguages } = await loadEmbed();
@@ -241,7 +241,7 @@ test("test_used_syntax_languages_when_disabled", async () => {
   expect(languages).toEqual([]);
 });
 
-// mermaid のコードブロックがある文書があれば true、機能を外した文書だけなら false（正常系）
+// mermaid のコードブロックがある文書があれば true、機能を解除した文書だけなら false（正常系）
 test("test_uses_mermaid", async () => {
   // 準備
   const { usesMermaid } = await loadEmbed();
@@ -325,7 +325,7 @@ test("test_has_dynamic_import", async () => {
   expect(hasDynamicImport("const x=1")).toBe(false);
 });
 
-// 同じ URL を 1 回だけ読む（正常系）
+// 同じ URL を 1 回だけ読み込む（正常系）
 test("test_cache_fetch_text", async () => {
   // 準備
   const { cacheFetchText } = await loadEmbed();
@@ -422,7 +422,7 @@ test("test_create_viewer_entry_when_mermaid", async () => {
   expect(source).toMatch(/startViewer\(document,[\s\S]*\bmermaid\b/);
 });
 
-/** startViewer を export する起動の処理と、load の中で ./part.js を動的 import で読む拡張を置く */
+/** startViewer を export する起動の処理と、load の中で ./part.js を動的 import で読み込む拡張を配置する */
 async function writeViewerFixture(
   dir: string,
   extension: string,
@@ -443,7 +443,7 @@ function fixtureEntry(dir: string): string {
   ].join("\n");
 }
 
-// 入口と関数で取り込んだモジュールを 1 つに束ね、動的 import を残さない（正常系）
+// 入口と関数で取り込んだモジュールを 1 つにまとめ、動的 import を残さない（正常系）
 test("test_bundle_viewer", async () => {
   // 準備
   const { bundleViewer } = await loadEmbed();
@@ -464,7 +464,7 @@ test("test_bundle_viewer", async () => {
   expect(script).toContain("part-module-marker");
 });
 
-// </script を替えて返す（正常系）
+// </script を替えて返却する（正常系）
 test("test_bundle_viewer_when_script_close", async () => {
   // 準備
   const { bundleViewer } = await loadEmbed();
@@ -507,7 +507,7 @@ test("test_bundle_viewer_when_html_comment_open", async () => {
   expect(evaluated.value).toBe("<!-- <script>");
 });
 
-/** 範囲に `html` と、言語 `lang` のコードブロックを置いた文書 */
+/** 範囲に `html` と、言語 `lang` のコードブロックを配置した文書 */
 function rangeScriptDoc(lang: string, code: string): string {
   return [
     "<!-- html -->",
@@ -529,7 +529,7 @@ function rangeScriptDoc(lang: string, code: string): string {
 const TYPED_SCRIPT =
   'export default (root: HTMLElement): void => { root.classList.add("is-open"); };';
 
-// 範囲の `ts` の型を外して CommonJS にし、同じコードは 1 つにする（正常系）
+// 範囲の `ts` の型を削除して CommonJS にし、同じコードは 1 つにする（正常系）
 test("test_compile_html_scripts", async () => {
   // 準備
   const { compileHtmlScripts } = await loadEmbed();
@@ -564,7 +564,7 @@ test("test_compile_html_scripts_when_off", async () => {
   expect(scripts).toEqual([]);
 });
 
-// 変えられない範囲は警告にし、返さない（異常系）
+// 変えられない範囲は警告にし、返却しない（異常系）
 test("test_compile_html_scripts_when_syntax_error", async () => {
   // 準備
   const { compileHtmlScripts } = await loadEmbed();

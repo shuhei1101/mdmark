@@ -52,7 +52,7 @@ test("test_render_footnote_ref_when_link", async () => {
   expect(link).not.toContain("aria-describedby");
 });
 
-// below で is-below を付け、refIndex を id に使う（正常系）
+// below で is-below を付け、refIndex を id に使用する（正常系）
 test("test_render_footnote_ref_when_below", async () => {
   // 準備
   const { renderFootnoteRef } = await loadFootnote();
@@ -104,12 +104,12 @@ test("test_render_footnotes", async () => {
     expect(backs).toHaveLength(1);
     expect(backs[0]).toContain(`href="#mdmark-fnref-${number}-0"`);
     expect(backs[0]).toContain(`aria-label="本文の脚注 ${number} へ戻る"`);
-    // 戻るリンクは最後の段落の末尾に置く
+    // 戻るリンクは最後の段落の末尾に配置する
     expect(item).toMatch(/<a class="mdmark-fn-back"[^>]*>.*<\/a><\/p>$/);
   }
 });
 
-// 2 回参照した脚注に a・b の戻るリンクを置く（正常系）
+// 2 回参照した脚注に a・b の戻るリンクを配置する（正常系）
 test("test_render_footnotes_when_referenced_twice", async () => {
   // 準備
   const { renderFootnotes } = await loadFootnote();
@@ -118,7 +118,7 @@ test("test_render_footnotes_when_referenced_twice", async () => {
     items: [
       {
         number: 1,
-        html: "<p>閉じの印を書き忘れると、範囲の上に警告が出る。</p>",
+        html: "<p>閉じのマーカーの記載を忘れると、範囲の上に警告が出る。</p>",
         refCount: 2,
       },
     ],
@@ -143,7 +143,7 @@ test("test_render_footnotes_when_referenced_twice", async () => {
   expect(texts).toEqual(["a", "b"]);
 });
 
-// 項目が無ければ一覧を置かない（正常系）
+// 項目が無ければ一覧を配置しない（正常系）
 test("test_render_footnotes_when_empty", async () => {
   // 準備
   const { renderFootnotes } = await loadFootnote();

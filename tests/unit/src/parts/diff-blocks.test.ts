@@ -4,7 +4,7 @@ import { findTag, innerHtml, outerHtml } from "../../helpers/html.ts";
 /** 差分のブロックの処理を読み込む（実装が無い間は各テストが個別に失敗する） */
 const loadBlocks = () => import("../../../../src/parts/diff-blocks.ts");
 
-// 本文のブロックを包み、記号と読み上げの文字を置く（正常系）
+// 本文のブロックを包み、記号とスクリーンリーダーの文字を配置する（正常系）
 test("test_render_diff_block", async () => {
   // 準備
   const { renderDiffBlock } = await loadBlocks();
@@ -24,11 +24,11 @@ test("test_render_diff_block", async () => {
   expect(inner).toContain("<p>確認する項目は表のとおりです。</p>");
 });
 
-// 削除したブロックから行番号と id を外す（正常系）
+// 削除したブロックから行番号と id を削除する（正常系）
 test("test_render_diff_block_when_deleted", async () => {
   // 準備
   const { renderDiffBlock } = await loadBlocks();
-  // 実行: 状態 DelParagraph の引数に、id を持つ見出しを足した html
+  // 実行: 状態 DelParagraph の引数に、id を持つ見出しを追加した html
   const html = renderDiffBlock({
     kind: "del",
     unit: "block",
@@ -43,7 +43,7 @@ test("test_render_diff_block_when_deleted", async () => {
   expect(html).toContain("リリースの後");
 });
 
-// 表の行は tr に class を付け、1 つ目のセルに記号を置く（正常系）
+// 表の行は tr に class を付け、1 つ目のセルに記号を配置する（正常系）
 test("test_render_diff_block_when_row", async () => {
   // 準備
   const { renderDiffBlock } = await loadBlocks();

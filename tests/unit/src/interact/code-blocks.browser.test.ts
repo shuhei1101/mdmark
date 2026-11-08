@@ -2,7 +2,7 @@ import { afterEach, expect, test, vi } from "vitest";
 import { restoreClipboard, stubClipboard } from "../../helpers/clipboard.ts";
 import { createRoot, removeRoots } from "../../helpers/dom.ts";
 
-/** コードブロックの操作を読み込む（実装が無い間は各テストが個別に失敗する。ファイルが無いと Vite の解決が失敗してテストファイルごと落ちるため、URL を組んで読む） */
+/** コードブロックの操作を読み込む（実装が無い間は各テストが個別に失敗する。ファイルが無いと Vite の解決が失敗してテストファイルごと落ちるため、URL を組んで読み込む） */
 const loadCodeBlocks = (): Promise<
   typeof import("../../../../src/interact/code-blocks.ts")
 > =>
@@ -20,7 +20,7 @@ function tsBlock(lines: string[]): string {
   return ["```ts", ...lines, "```", ""].join("\n");
 }
 
-/** コードブロックのコピーのボタンを返す（無ければ例外） */
+/** コードブロックのコピーのボタンを返却する（無ければ例外） */
 function copyButton(root: HTMLElement): HTMLButtonElement {
   const button = root.querySelector<HTMLButtonElement>(
     ".mdmark-code-bar button.mdmark-code-copy",
@@ -41,7 +41,7 @@ afterEach(() => {
   vi.useRealTimers();
 });
 
-// 押すとコードを写して 2 秒でボタンを戻す（正常系）
+// 押すとコードをコピーして 2 秒でボタンを戻す（正常系）
 test("test_attach_code_copy", async () => {
   // 準備
   vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] });
@@ -56,7 +56,7 @@ test("test_attach_code_copy", async () => {
   // 実行
   button.click();
   await vi.advanceTimersByTimeAsync(0);
-  // 検証: 末尾の改行を除いたコードを 1 回写し、写したことを知らせる
+  // 検証: 末尾の改行を除いたコードを 1 回写し、コピーしたことを通知する
   expect(writeText).toHaveBeenCalledTimes(1);
   expect(writeText).toHaveBeenCalledWith("const a = 1;\nconst b = 2;");
   expect(button.dataset.state).toBe("copied");
@@ -68,7 +68,7 @@ test("test_attach_code_copy", async () => {
   expect(button.dataset.state).toBe("idle");
 });
 
-// 消した行を除いて写す（正常系）
+// 削除した行を除いて写す（正常系）
 test("test_attach_code_copy_when_line_marks", async () => {
   // 準備
   const writeText = vi.fn<(text: string) => Promise<void>>(() =>
@@ -117,7 +117,7 @@ test("test_attach_code_copy_when_denied", async () => {
     );
     await vi.advanceTimersByTimeAsync(2000);
     expect(button.dataset.state).toBe("failed");
-    // 実行・検証: もう一度押して書けると写したことを知らせる
+    // 実行・検証: もう一度押して記載できるとコピーしたことを通知する
     button.click();
     await vi.advanceTimersByTimeAsync(0);
     expect(button.dataset.state).toBe("copied");
@@ -127,7 +127,7 @@ test("test_attach_code_copy_when_denied", async () => {
   }
 });
 
-// 外すとボタンを取り除く（正常系）
+// 削除するとボタンを取り除く（正常系）
 test("test_attach_code_copy_when_detached", async () => {
   // 準備
   vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] });
@@ -143,7 +143,7 @@ test("test_attach_code_copy_when_detached", async () => {
   await vi.advanceTimersByTimeAsync(2000);
 });
 
-/** コードの行の畳みの操作を読み込む（ファイルが無い間は URL を組んで読む） */
+/** コードの行の畳みの操作を読み込む（ファイルが無い間は URL を組んで読み込む） */
 const loadCodeFolds = (): Promise<
   typeof import("../../../../src/interact/code-folds.ts")
 > =>

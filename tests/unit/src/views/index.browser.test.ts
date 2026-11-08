@@ -12,7 +12,7 @@ const loadViews = () =>
 const detachers: Array<() => void> = [];
 const hosts: HTMLElement[] = [];
 
-/** ビューを描く先の要素をページに置く */
+/** ビューを描く先の要素をページに配置する */
 function createHost(html = ""): HTMLElement {
   const host = document.createElement("div");
   host.innerHTML = html;
@@ -21,26 +21,26 @@ function createHost(html = ""): HTMLElement {
   return host;
 }
 
-/** 題・状態・担当の列名 */
-const COLUMNS = ["題", "状態", "担当"];
+/** タイトル・状態・担当の列名 */
+const COLUMNS = ["タイトル", "状態", "担当"];
 
 /** 状態が上から未着手・進行中・未着手・完了・進行中、担当が佐藤・鈴木・佐藤・田中・鈴木の 5 件 */
 const ITEMS = [
-  { 題: "<script>alert(1)</script>設計", 状態: "未着手", 担当: "佐藤" },
-  { 題: "余白の変数を決める", 状態: "進行中", 担当: "鈴木" },
-  { 題: "印刷の見え方を確かめる", 状態: "未着手", 担当: "佐藤" },
-  { 題: "配色を直す", 状態: "完了", 担当: "田中" },
-  { 題: "表を絞り込む", 状態: "進行中", 担当: "鈴木" },
+  { タイトル: "<script>alert(1)</script>設計", 状態: "未着手", 担当: "佐藤" },
+  { タイトル: "余白の変数を決める", 状態: "進行中", 担当: "鈴木" },
+  { タイトル: "印刷の見え方を確認する", 状態: "未着手", 担当: "佐藤" },
+  { タイトル: "配色を修正する", 状態: "完了", 担当: "田中" },
+  { タイトル: "表を絞り込む", 状態: "進行中", 担当: "鈴木" },
 ];
 
-/** ボードの列の見出しの値を、並びの順に返す */
+/** ボードの列の見出しの値を、並びの順に返却する */
 function columnNames(root: HTMLElement): string[] {
   return [...root.querySelectorAll(".mdmark-view-column-name")].map(
     (name) => name.textContent ?? "",
   );
 }
 
-/** 切り替えのボタンを返す */
+/** 切り替えのボタンを返却する */
 function switchButton(root: HTMLElement, mode: string): HTMLButtonElement {
   const button = root.querySelector<HTMLButtonElement>(
     `.mdmark-view-switch button[data-mode="${mode}"]`,
@@ -93,7 +93,7 @@ test("test_draw_view", async () => {
   expect(switchButton(el, "table").getAttribute("aria-pressed")).toBe("true");
 });
 
-// 表形式の絞り込みはボードに当たらず、戻すと残っている（正常系）
+// 表形式の絞り込みはボードに該当せず、戻すと残っている（正常系）
 test("test_draw_view_when_filtered", async () => {
   // 準備
   const { drawView } = await loadViews();
@@ -126,7 +126,7 @@ test("test_draw_view_when_filtered", async () => {
   expect(visibleRows(el)).toBe(2);
 });
 
-// 外すと el が空になる（正常系）
+// 削除すると el が空になる（正常系）
 test("test_draw_view_when_destroyed", async () => {
   // 準備
   const { drawView } = await loadViews();
@@ -142,19 +142,19 @@ test("test_draw_view_when_destroyed", async () => {
   expect(el.childNodes).toHaveLength(0);
 });
 
-/** 題・状態の表を `div.mdmark-view` に入れた HTML。`data-view` を指定する */
+/** タイトル・状態の表を `div.mdmark-view` に入れた HTML。`data-view` を指定する */
 function viewHtml(spec: string): string {
   return [
     `<div class="mdmark-view" data-view='${spec}'>`,
     '<div class="mdmark-table" data-kind="data" data-features="sort">',
-    "<table><thead><tr><th>題</th><th>状態</th></tr></thead>",
-    "<tbody><tr><td>配色を直す</td><td>未着手</td></tr>",
+    "<table><thead><tr><th>タイトル</th><th>状態</th></tr></thead>",
+    "<tbody><tr><td>配色を修正する</td><td>未着手</td></tr>",
     "<tr><td>表を絞り込む</td><td>完了</td></tr></tbody></table>",
     "</div></div>",
   ].join("");
 }
 
-// 印の表からボードを足し、外すと戻す（正常系）
+// マーカーの表からボードを追加し、削除すると戻す（正常系）
 test("test_attach_view", async () => {
   // 準備
   const { attachView } = await loadViews();

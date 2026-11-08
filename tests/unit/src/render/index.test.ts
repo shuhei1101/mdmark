@@ -12,7 +12,7 @@ import { innerHtml, plainText } from "../../helpers/html.ts";
 /** 描画の処理を読み込む（実装が無い間は各テストが個別に失敗する） */
 const loadRender = () => import("../../../../src/render/index.ts");
 
-/** 既定を当てた設定を作る */
+/** 既定を適用した設定を作る */
 function resolvedConfig(
   libraries: ResolvedConfig["libraries"] = {},
 ): ResolvedConfig {
@@ -30,11 +30,11 @@ function resolvedConfig(
     sideToc: { mode: "hover" },
     colorTheme: "dev-swiss",
     colorScheme: "auto",
-    labels: { paramCopy: "今の値を写す" },
+    labels: { paramCopy: "今の値をコピーする" },
   };
 }
 
-// 設定を渡さなくても本文の HTML を返す（正常系）
+// 設定を指定しなくても本文の HTML を返却する（正常系）
 test("test_render", async () => {
   // 準備
   const { render } = await loadRender();
@@ -44,7 +44,7 @@ test("test_render", async () => {
   expect(html).toMatch(/<h1[^>]*>見出し/);
 });
 
-// 機能の印を重ねたオン・オフを返し、印は本文に残さない（正常系）
+// 機能のマーカーを重ねたオン・オフを返却し、マーカーは本文に残さない（正常系）
 test("test_render_document", async () => {
   // 準備
   const { renderDocument } = await loadRender();
@@ -58,7 +58,7 @@ test("test_render_document", async () => {
   expect(rendered.html).not.toContain("<!--");
 });
 
-// 同じ入力には同じ文字列を返す（解析器を使い回しても前の呼び出しの印が残らない）（正常系）
+// 同じ入力には同じ文字列を返却する（解析器を使い回しても前の呼び出しのマーカーが残らない）（正常系）
 test("test_render_document_when_same_input", async () => {
   // 準備
   const { renderDocument } = await loadRender();
@@ -76,7 +76,7 @@ test("test_render_document_when_same_input", async () => {
   expect(second.features).toEqual(first.features);
 });
 
-// 生の HTML で書いた記法の class・data-*・id を落とし、記法が出したものは残す（正常系）
+// 生の HTML で記載した記法の class・data-*・id を落とし、記法が出したものは残す（正常系）
 test("test_render_document_when_raw_html_imitates_syntax", async () => {
   // 準備
   const { renderDocument } = await loadRender();
@@ -99,7 +99,7 @@ test("test_render_document_when_raw_html_imitates_syntax", async () => {
   expect(html).not.toContain("data-mdmark-own");
 });
 
-// 渡したエイリアスに下線と種類のツールチップを付けた文字列を返す（正常系）
+// 指定したエイリアスに下線と種類のツールチップを付けた文字列を返却する（正常系）
 test("test_render_when_aliases", async () => {
   // 準備
   const { render } = await loadRender();
@@ -109,30 +109,30 @@ test("test_render_when_aliases", async () => {
       id: "ws",
       name: "ワークスペース",
       aliases: [],
-      description: "話し合いの記録を置くフォルダ",
+      description: "話し合いの記録を配置するフォルダ",
     },
     {
       alias_type: "command",
       id: "unit-test",
       name: "単体テスト",
       aliases: [],
-      description: "ライブラリ本体の単体テストを流す",
+      description: "ライブラリ本体の単体テストを実行する",
       command: "npm run test:unit",
     },
   ];
   // 実行
-  const html = render("ワークスペースと単体テストを流す。\n", { aliases });
+  const html = render("ワークスペースと単体テストを実行する。\n", { aliases });
   // 検証
-  // 下線の語の隣に、種類の区分と内容を持つツールチップがある
+  // 下線の単語の隣に、種類の区分と内容を持つツールチップがある
   expect(html).toMatch(/<span class="mdmark-term"[^>]*>ワークスペース<\/span>/);
   expect(html).toMatch(/<span class="mdmark-term"[^>]*>単体テスト<\/span>/);
   const [, term, command] = html.split('class="mdmark-term-wrap"');
   expect(term).toContain(">用語<");
-  expect(term).toContain("話し合いの記録を置くフォルダ");
+  expect(term).toContain("話し合いの記録を配置するフォルダ");
   expect(command).toContain(">コマンド<");
   expect(command).toMatch(/<code[^>]*>npm run test:unit<\/code>/);
   expect(command).toMatch(/<button[^>]*type="button"[^>]*>[\s\S]*?コピー/);
-  // スクリプトも印の文字も残らない
+  // スクリプトもマーカーの文字も残らない
   expect(html).not.toContain("<script");
   expect(html).not.toContain("<!--");
 });
@@ -148,10 +148,10 @@ test("test_render_document_when_labels_given", async () => {
   const { html } = renderDocument({ markdown, config });
   // 検証
   expect(plainText(innerHtml(html, "mdmark-param-copy"))).toBe("コピー");
-  expect(html).not.toContain("今の値を写す");
+  expect(html).not.toContain("今の値をコピーする");
 });
 
-// 書き方の警告を場所と種類つきで返す（正常系）
+// 記載の警告を場所と種類つきで返却する（正常系）
 test("test_collect_warnings", async () => {
   // 準備
   const { collectWarnings, render } = await loadRender();
@@ -173,7 +173,7 @@ test("test_collect_warnings", async () => {
   }
 });
 
-// 警告の無い Markdown は空の配列を返す（正常系）
+// 警告の無い Markdown は空の配列を返却する（正常系）
 test("test_collect_warnings_when_clean", async () => {
   // 準備
   const { collectWarnings } = await loadRender();

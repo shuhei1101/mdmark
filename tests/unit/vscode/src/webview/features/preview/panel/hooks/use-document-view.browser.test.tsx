@@ -12,9 +12,9 @@ afterEach(() => {
   cleanup();
 });
 
-// 描き直しても同じ view で文書を残し、外すと detach する（正常系）
+// 再描画しても同じ view で文書を残し、削除すると detach する（正常系）
 test("test_use_document_view", async () => {
-  // 準備: hook の ref を描く先の要素に渡す部品で描く
+  // 準備: hook の ref を描く先の要素に指定する部品で描く
   const { useDocumentView } = await loadHook();
   const root = document.createElement("div");
   const { mdmark, record } = createMdmark();

@@ -9,10 +9,10 @@ import {
 /** 差分を付ける処理を読み込む（実装が無い間は各テストが個別に失敗する） */
 const loadPanel = () => import("../../../../src/diff/panel.ts");
 
-/** 節の操作を読み込む（H1 の節の中の差分を確かめる） */
+/** セクションの操作を読み込む（H1 のセクションの中の差分を確認する） */
 const loadSections = () => import("../../../../src/interact/sections.ts");
 
-/** 知らせの枠の処理を読み込む（差分の知らせの枠を期待値にする） */
+/** 通知ブロックの処理を読み込む（差分の通知ブロックを期待値にする） */
 const loadNotice = () => import("../../../../src/parts/notice.ts");
 
 // 差分を開いている間に隠した要素に付ける属性
@@ -20,28 +20,28 @@ const HIDDEN_ATTRIBUTE = "data-mdmark-diff-hidden";
 
 // 新しい順に並べた 3 つのリビジョン
 const REVISIONS: DiffRevision[] = [
-  { id: "r3", at: "2026-10-20T02:05:00Z", label: "足す" },
-  { id: "r2", at: "2026-10-19T07:40:00Z", label: "件数を直す" },
+  { id: "r3", at: "2026-10-20T02:05:00Z", label: "追加する" },
+  { id: "r2", at: "2026-10-19T07:40:00Z", label: "件数を修正する" },
   { id: "r1", at: "2026-10-18T00:12:00Z", label: "初版" },
 ];
 
 // リビジョンごとの本文
 const CONTENTS: Record<string, string> = {
-  r1: "# ガイド\n差分を色分けして読む。\n",
-  r2: "# ガイド\n変更を色分けして読む。\n",
-  r3: "# ガイド\n変更を色分けして読む。\n足す行\n",
+  r1: "# ガイド\n差分を色分けして読み込む。\n",
+  r2: "# ガイド\n変更を色分けして読み込む。\n",
+  r3: "# ガイド\n変更を色分けして読み込む。\n追加する行\n",
 };
 
 /** `content` が受けた引数 */
 type ContentCall = { docId: string; revisionId: string };
 
-/** 呼ばれた引数を控える取り出し元 */
+/** 呼ばれた引数を記録する取り出し元 */
 type RecordingSource = DiffSource & {
   revisionsCalls: string[];
   contentCalls: ContentCall[];
 };
 
-/** 呼ばれた引数を控え、本文をすぐに返す取り出し元を作る */
+/** 呼ばれた引数を記録し、本文をすぐに返却する取り出し元を作る */
 function createSource(
   override: Partial<DiffSource> = {},
   revisions: DiffRevision[] = REVISIONS,
@@ -66,7 +66,7 @@ function createSource(
 const roots: HTMLElement[] = [];
 const detaches: (() => void)[] = [];
 
-/** 見出しと段落を描いた、描く先の要素をページに置く */
+/** 見出しと段落を描いた、描く先の要素をページに配置する */
 function createRoot(): HTMLElement {
   const root = document.createElement("div");
   root.className = "mdmark";
@@ -76,7 +76,7 @@ function createRoot(): HTMLElement {
   return root;
 }
 
-/** 差分を付け、後始末のために外す関数を控える */
+/** 差分を付け、後始末のために削除する関数を記録する */
 async function attachTracked(
   root: HTMLElement,
   source: DiffSource,
@@ -88,16 +88,16 @@ async function attachTracked(
   return detach;
 }
 
-/** 「変更を見る」のボタンを押す */
+/** 「変更表示」のボタンを押す */
 function clickToggle(root: HTMLElement): void {
   const toggle = root.querySelector<HTMLButtonElement>(".mdmark-diff-toggle");
   if (toggle === null) {
-    throw new Error("変更を見るのボタンが無い");
+    throw new Error("変更表示のボタンが無い");
   }
   toggle.click();
 }
 
-/** `ラベルの文字` を持つ label が指す select を返す */
+/** `ラベルの文字` を持つ label が指す select を返却する */
 function findSelect(root: HTMLElement, labelText: string): HTMLSelectElement {
   const label = [...root.querySelectorAll("label")].find(
     (candidate) => candidate.textContent?.trim() === labelText,
@@ -109,7 +109,7 @@ function findSelect(root: HTMLElement, labelText: string): HTMLSelectElement {
   return select;
 }
 
-/** 差分の行の文字を、上から順に返す */
+/** 差分の行の文字を、上から順に返却する */
 function lineTexts(root: HTMLElement): string[] {
   return [...root.querySelectorAll(".mdmark-diff-line")].map(
     (line) => line.textContent ?? "",
@@ -119,7 +119,7 @@ function lineTexts(root: HTMLElement): string[] {
 /** 保留した `content` の呼び出し */
 type Pending = { revisionId: string; resolve: (text: string) => void };
 
-/** `content` が結果を返すのを保留して、呼ばれた順に控える取り出し元を作る */
+/** `content` が結果を返却するのを保留して、呼ばれた順に記録する取り出し元を作る */
 function createPendingSource(): { source: DiffSource; pending: Pending[] } {
   const pending: Pending[] = [];
   const source: DiffSource = {
@@ -172,7 +172,7 @@ test("test_attach_diff", async () => {
   expect(root.querySelector("h1")?.hasAttribute(HIDDEN_ATTRIBUTE)).toBe(false);
 });
 
-// 前を選び直すと後の選択を直して描き直す（正常系）
+// 前をもう一度選ぶと後の選択を修正して再描画する（正常系）
 test("test_attach_diff_when_reselected", async () => {
   // 準備
   const root = createRoot();
@@ -199,7 +199,7 @@ test("test_attach_diff_when_reselected", async () => {
   expect(r1?.disabled).toBe(true);
 });
 
-// 待つ間に選び直すと、前の待ちの結果を描かない（正常系）
+// 待つ間にもう一度選ぶと、前の待ちの結果を描かない（正常系）
 test("test_attach_diff_when_stale", async () => {
   // 準備
   const root = createRoot();
@@ -210,7 +210,7 @@ test("test_attach_diff_when_stale", async () => {
     expect(pending).toHaveLength(2);
   });
   const first = [...pending];
-  // 実行: 1 回目の本文を返さないまま選び直し、2 回目を先に返す
+  // 実行: 1 回目の本文を返却しないままもう一度選び、2 回目を先に返却する
   const before = findSelect(root, "前のリビジョン");
   before.value = "r1";
   before.dispatchEvent(new Event("change", { bubbles: true }));
@@ -258,12 +258,12 @@ test("test_attach_diff_when_loading", async () => {
   expect(spinner?.getAttribute("aria-hidden")).toBe("true");
 });
 
-// 一覧を取り出せないと知らせの枠を出す（異常系）
+// 一覧を取り出せないと通知ブロックを出す（異常系）
 test("test_attach_diff_when_revisions_rejected", async () => {
   // 準備
   const consoleError = vi.spyOn(console, "error").mockImplementation(() => {});
   const { renderNotice } = await loadNotice();
-  const error = new Error("一覧を返せない");
+  const error = new Error("一覧を返却できない");
   const root = createRoot();
   const source = createSource({
     revisions: async () => {
@@ -287,12 +287,12 @@ test("test_attach_diff_when_revisions_rejected", async () => {
   expect(source.contentCalls).toEqual([]);
 });
 
-// 本文を取り出せないと選択を残して知らせの枠を出す（異常系）
+// 本文を取り出せないと選択を残して通知ブロックを出す（異常系）
 test("test_attach_diff_when_content_rejected", async () => {
   // 準備
   const consoleError = vi.spyOn(console, "error").mockImplementation(() => {});
   const { renderNotice } = await loadNotice();
-  const error = new Error("本文を返せない");
+  const error = new Error("本文を返却できない");
   const root = createRoot();
   const source = createSource({
     content: async ({ revisionId }) => {
@@ -311,7 +311,7 @@ test("test_attach_diff_when_content_rejected", async () => {
   });
   expect(root.innerHTML).toContain(
     renderNotice({
-      name: "2026/10/19 16:40 件数を直す",
+      name: "2026/10/19 16:40 件数を修正する",
       source: "diff-content",
     }),
   );
@@ -323,7 +323,7 @@ test("test_attach_diff_when_content_rejected", async () => {
   expect(args.some((arg) => String(arg).includes("r2"))).toBe(true);
 });
 
-// 外すと置いた要素を取り除き、本文を戻す（正常系）
+// 削除すると配置した要素を取り除き、本文を戻す（正常系）
 test("test_attach_diff_when_detached", async () => {
   // 準備
   const root = createRoot();
@@ -343,7 +343,7 @@ test("test_attach_diff_when_detached", async () => {
   expect(document.querySelector(".mdmark-diff-minimap")).toBeNull();
 });
 
-// H1 の節では見出しと節の中身の間に置き、開いている間は右側の目次も隠し、閉じても節の開閉を変えない（正常系）
+// H1 のセクションでは見出しとセクションの中身の間に配置し、開いている間は右側の目次も隠し、閉じてもセクションの開閉を変えない（正常系）
 test("test_attach_diff_when_h1_section", async () => {
   // 準備
   const { attachSections } = await loadSections();
@@ -381,7 +381,7 @@ test("test_attach_diff_when_h1_section", async () => {
   const outer = root.querySelector<HTMLElement>('[id="section-手引き"]');
   const inner = root.querySelector<HTMLElement>('[id="section-導入"]');
   if (toggle === null || h1 === null || outer === null || inner === null) {
-    throw new Error("見出し・ボタン・節の中身のどれかが無い");
+    throw new Error("見出し・ボタン・セクションの中身のどれかが無い");
   }
   // 実行
   toggle.click();
@@ -400,7 +400,7 @@ test("test_attach_diff_when_h1_section", async () => {
   expect(inner.getAttribute("hidden")).toBe("until-found");
 });
 
-// 選び直した本文の待ちが 1 秒・2 秒を過ぎると、前の差分に替えて読み込み中と回る表示を出す（正常系）
+// もう一度選んだ本文の待ちが 1 秒・2 秒を過ぎると、前の差分に替えて読み込み中と回る表示を出す（正常系）
 test("test_attach_diff_when_content_loading", async () => {
   // 準備
   vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] });
@@ -415,7 +415,7 @@ test("test_attach_diff_when_content_loading", async () => {
   clickToggle(root);
   await vi.advanceTimersByTimeAsync(0);
   expect(root.querySelector(".mdmark-diff-line")).not.toBeNull();
-  // 実行: 前の欄で、本文を返さない r1 を選ぶ
+  // 実行: 前の欄で、本文を返却しない r1 を選ぶ
   const before = findSelect(root, "前のリビジョン");
   before.value = "r1";
   before.dispatchEvent(new Event("change", { bubbles: true }));
@@ -442,7 +442,7 @@ function tableDocument(count: number): string {
   return `# ガイド\n<!-- html -->\n\`\`\`html\n<table><tr><td>${count}</td></tr></table>\n\`\`\`\n<!-- /html -->\n`;
 }
 
-// プレビューの前と後に操作を付け、選び直しと閉じるで外す（正常系）
+// プレビューの前と後に操作を付け、再選択と閉じるで削除する（正常系）
 test("test_attach_diff_when_preview_attached", async () => {
   // 準備
   const contents: Record<string, string> = {
@@ -470,25 +470,25 @@ test("test_attach_diff_when_preview_attached", async () => {
   await vi.waitFor(() => {
     expect(attached).toHaveLength(2);
   });
-  // 検証: 前と後のプレビューの中身に 1 回ずつ付き、まだ外れていない
+  // 検証: 前と後のプレビューの中身に 1 回ずつ付き、まだ削除されていない
   const sides = root.querySelectorAll(".mdmark-diff-side");
   expect(sides).toHaveLength(2);
   expect(attached.every((element) => root.contains(element))).toBe(true);
   expect(sides[0]?.contains(attached[0] ?? null)).toBe(true);
   expect(sides[1]?.contains(attached[1] ?? null)).toBe(true);
   expect(detached).toHaveLength(0);
-  // 実行: 前を選び直す
+  // 実行: 前をもう一度選ぶ
   const before = findSelect(root, "前のリビジョン");
   before.value = "r1";
   before.dispatchEvent(new Event("change", { bubbles: true }));
-  // 検証: 前の 2 つが外され、新しい 2 つが付く
+  // 検証: 前の 2 つが削除され、新しい 2 つが付く
   await vi.waitFor(() => {
     expect(attached).toHaveLength(4);
   });
   expect(detached).toEqual(attached.slice(0, 2));
   // 実行: 閉じる
   clickToggle(root);
-  // 検証: 全て外される
+  // 検証: 全て削除される
   expect(detached).toHaveLength(4);
 });
 
@@ -498,7 +498,7 @@ test("test_scope_ids", async () => {
   const { scopeIds } = await loadPanel();
   const root = document.createElement("div");
   root.innerHTML =
-    '<figure><figcaption id="d-1-title">題</figcaption><div aria-labelledby="d-1-title" aria-describedby="outside"><svg><line marker-end="url(#d-1-arrow)"></line><marker id="d-1-arrow"></marker></svg></div></figure>';
+    '<figure><figcaption id="d-1-title">タイトル</figcaption><div aria-labelledby="d-1-title" aria-describedby="outside"><svg><line marker-end="url(#d-1-arrow)"></line><marker id="d-1-arrow"></marker></svg></div></figure>';
   document.body.append(root);
   roots.push(root);
   // 実行
@@ -516,13 +516,13 @@ test("test_scope_ids", async () => {
   );
 });
 
-// open では置いた時点で開き、押すと閉じる（正常系）
+// open では配置した時点で開き、押すと閉じる（正常系）
 test("test_attach_diff_when_open", async () => {
   // 準備
   const root = createRoot();
   const source = createSource({}, REVISIONS.slice(1));
   const { attachDiff } = await loadPanel();
-  // 実行: 押さずに、置いた時点で開く
+  // 実行: 押さずに、配置した時点で開く
   const detach = attachDiff({
     root,
     source,

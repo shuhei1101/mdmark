@@ -1,4 +1,4 @@
-/** `import.meta.glob` で引いた実装を読む。ファイルが無い間は、テストの中で失敗させる（`import()` に直に書くと、テストのファイルごと読み込めなくなる） */
+/** `import.meta.glob` で参照した実装を読み込む。ファイルが無い間は、テストの中で失敗させる（`import()` に直に記載すると、テストのファイルごと読み込めなくなる） */
 export function loadSource<T>(
   loaders: Record<string, () => Promise<T>>,
 ): Promise<T> {

@@ -1,10 +1,10 @@
 import { expect, test } from "vitest";
 
-/** 取り込む文書を読む処理を読み込む（実装が無い間は各テストが個別に失敗する） */
+/** 取り込む文書を読み込む処理を読み込む（実装が無い間は各テストが個別に失敗する） */
 const loadIncludes = () =>
   import("../../../../../vscode/src/preview/includes.ts");
 
-// 根の中の読めるファイルだけを読む（正常系）
+// 根の中の読み込めるファイルだけを読み込む（正常系）
 test("test_read_includes", async () => {
   // 準備
   const { readIncludes } = await loadIncludes();

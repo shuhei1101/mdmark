@@ -20,13 +20,13 @@ const loadScreen = () =>
   import(
     "../../../../../../../../vscode/src/webview/features/preview/panel/panel-screen.tsx"
   );
-/** Webview のアプリを読み込む（Error Boundary へ渡すテストで使う） */
+/** Webview のアプリを読み込む（Error Boundary へ指定するテストで使用する） */
 const loadApp = () =>
   import("../../../../../../../../vscode/src/webview/app/app.tsx");
 
 /** 読み込み中を出すまでの待ち（設計書の `LOADING_DELAY_MS`） */
 const LOADING_DELAY_MS = 1000;
-/** 配布物の URL（MSW の HEAD のハンドラが当たる） */
+/** 配布物の URL（MSW の HEAD のハンドラが該当する） */
 const DIST_JS =
   "https://cdn.jsdelivr.net/gh/shuhei1101/mdmark@v0.7.0/dist/index.js";
 
@@ -55,11 +55,11 @@ const createBoot = (
   };
 };
 
-/** 送られたメッセージのうち `type` が一致するもの */
+/** 送信されたメッセージのうち `type` が一致するもの */
 const postedOf = (posted: WebviewMessage[], type: WebviewMessage["type"]) =>
   posted.filter((message) => message.type === type);
 
-/** `ready` が送られるまで待つ */
+/** `ready` が送信されるまで待つ */
 const waitReady = async (posted: WebviewMessage[]): Promise<void> => {
   await vi.waitFor(() => {
     expect(postedOf(posted, "ready")).toHaveLength(1);
@@ -80,7 +80,7 @@ afterEach(() => {
   }
 });
 
-// 配布物を読み終えたら ready を送り、render で描いて rendered を送る（正常系）
+// 配布物を読み込み終えたら ready を送信し、render で描いて rendered を送信する（正常系）
 test("test_panel_screen_when_rendered", async () => {
   // 準備
   const { PanelScreen } = await loadScreen();
@@ -106,7 +106,7 @@ test("test_panel_screen_when_rendered", async () => {
   expect(boot.root.querySelector(".mdmark-preview-status")).toBeNull();
 });
 
-// 1 秒経っても描けていなければ読み込み中を出し、render で消す（正常系）
+// 1 秒経っても描けていなければ読み込み中を出し、render で削除する（正常系）
 test("test_panel_screen_when_slow", async () => {
   // 準備
   const { PanelScreen } = await loadScreen();
@@ -140,7 +140,7 @@ test("test_panel_screen_when_slow", async () => {
   });
 });
 
-// 配布物を読めなければ理由とバージョンを出し、loadFailed を送る（異常系）
+// 配布物を読み込めなければ理由とバージョンを出し、loadFailed を送信する（異常系）
 test("test_panel_screen_when_load_failed", async ({ worker }) => {
   // 準備
   worker.use(...handlers("offline"));
@@ -168,7 +168,7 @@ test("test_panel_screen_when_load_failed", async ({ worker }) => {
   expect(boot.root.textContent).not.toContain("mdmark を読み込んでいます");
 });
 
-// バージョンを決められないときは配布物を読まずに理由を出す（正常系）
+// バージョンを決められないときは配布物を読み込まずに理由を出す（正常系）
 test("test_panel_screen_when_version_undecidable", async () => {
   // 準備
   const { PanelScreen } = await loadScreen();
@@ -188,7 +188,7 @@ test("test_panel_screen_when_version_undecidable", async () => {
   expect(load).not.toHaveBeenCalled();
   expect(postedOf(api.posted, "ready")).toEqual([]);
   expect(screen.getByRole("status").textContent).toContain(
-    "読む mdmark のバージョンを決められませんでした。",
+    "読み込む mdmark のバージョンを決められませんでした。",
   );
 });
 
@@ -219,7 +219,7 @@ test("test_panel_screen_when_diff_unsupported", async () => {
   expect(status.querySelector('button[data-action="reload"]')).not.toBeNull();
 });
 
-// リロードで reload を送る（正常系）
+// リロードで reload を送信する（正常系）
 test("test_panel_screen_when_reload_clicked", async ({ worker }) => {
   // 準備
   worker.use(...handlers("offline"));
@@ -241,7 +241,7 @@ test("test_panel_screen_when_reload_clicked", async ({ worker }) => {
   expect(postedOf(api.posted, "reload")).toEqual([{ type: "reload" }]);
 });
 
-// configError で帯を文書の前に 1 つだけ出し、configOk で消す（正常系）
+// configError で帯を文書の前に 1 つだけ出し、configOk で削除する（正常系）
 test("test_panel_screen_when_config_error", async () => {
   // 準備
   const { PanelScreen } = await loadScreen();
@@ -299,7 +299,7 @@ test("test_panel_screen_when_config_error", async () => {
   expect(boot.root.querySelectorAll(".mdmark-config-band")).toHaveLength(0);
 });
 
-// 配布物を読んだ後、extensions を登録してから ready を送る（正常系）
+// 配布物を読み込んだ後、extensions を登録してから ready を送信する（正常系）
 test("test_panel_screen_when_extensions", async () => {
   // 準備
   const { PanelScreen } = await loadScreen();
@@ -316,7 +316,7 @@ test("test_panel_screen_when_extensions", async () => {
   });
   const importModule = vi.fn(async (url: string) => {
     if (url === "a.js") {
-      throw new Error("読めない");
+      throw new Error("読み込めない");
     }
     return { default: { name: url } };
   });
@@ -371,7 +371,7 @@ test("test_panel_screen_when_theme", async () => {
   link.remove();
 });
 
-// 保存した行の途中の位置を持つ状態で始めると、最初の render の後にその位置へ戻してから保存し、revealLine を送らない（正常系）
+// 保存した行の途中の位置を持つ状態で始めると、最初の render の後にその位置へ戻してから保存し、revealLine を送信しない（正常系）
 test("test_panel_screen_when_state_saved", async () => {
   // 準備
   const { PanelScreen } = await loadScreen();
@@ -431,12 +431,12 @@ test("test_panel_screen_when_assets", async () => {
   const request = await vi.waitFor(() => {
     const [found] = postedOf(api.posted, "resolveAssets");
     if (found?.type !== "resolveAssets") {
-      throw new Error("resolveAssets が送られていない");
+      throw new Error("resolveAssets が送信されていない");
     }
     return found;
   });
   expect(request.paths).toEqual(["m/demo.mp4"]);
-  // 実行: 同じ id で URL を返す
+  // 実行: 同じ id で URL を返却する
   act(() =>
     sendHostMessage({
       type: "assetsResolved",
@@ -452,7 +452,7 @@ test("test_panel_screen_when_assets", async () => {
   });
 });
 
-// テストのときだけ inspect と axe に答える（正常系）
+// テストのときだけ inspect と axe に回答する（正常系）
 test("test_panel_screen_when_inspect", async () => {
   // 準備
   const { PanelScreen } = await loadScreen();
@@ -481,7 +481,7 @@ test("test_panel_screen_when_inspect", async () => {
   expect(results.false).toEqual([]);
 });
 
-// テストのときだけ CSP の違反の件数を html 要素に書く（正常系）
+// テストのときだけ CSP の違反の件数を html 要素に記載する（正常系）
 test("test_panel_screen_when_csp_violation", async () => {
   // 準備
   const { PanelScreen } = await loadScreen();
@@ -518,7 +518,7 @@ test("test_panel_screen_when_unknown_message", async () => {
   const { App } = await loadApp();
   const api = createFakeVsCodeApi();
   const boot = createBoot();
-  // App は `load` を受けないため、画面が読む配布物の URL を代役のモジュールにする
+  // App は `load` を受けないため、画面が読み込む配布物の URL を代役のモジュールにする
   const moduleUrl = createMdmarkModuleUrl();
   try {
     render(<App boot={{ ...boot, distJs: moduleUrl }} api={api} />, {
@@ -541,14 +541,14 @@ test("test_panel_screen_when_unknown_message", async () => {
   }
 });
 
-// メッセージの処理で投げた例外を Error Boundary へ渡す（異常系）
+// メッセージの処理で投げた例外を Error Boundary へ指定する（異常系）
 test("test_panel_screen_when_handler_throws", async () => {
   // 準備
   const { App } = await loadApp();
   const api = createFakeVsCodeApi();
   vi.spyOn(console, "error").mockImplementation(() => undefined);
   const boot = createBoot();
-  // App は `load` を受けないため、画面が読む配布物の URL を代役のモジュールにする
+  // App は `load` を受けないため、画面が読み込む配布物の URL を代役のモジュールにする
   const moduleUrl = URL.createObjectURL(
     new Blob(
       [

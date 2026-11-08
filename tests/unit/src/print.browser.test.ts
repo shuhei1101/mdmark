@@ -12,7 +12,7 @@ const loadPrint = () => import("../../../src/print.ts");
 /** 記法の操作を付ける処理を読み込む */
 const loadInteract = () => import("../../../src/interact/index.ts");
 
-// 詳細を持つ行の表、2 つの中身のタブ、閉じた節を持つ文書
+// 詳細を持つ行の表、2 つの中身のタブ、閉じたセクションを持つ文書
 const SYNTAX_MARKDOWN = [
   "| 名前 | 値 |",
   "| --- | --- |",
@@ -57,7 +57,7 @@ function createRoot(): HTMLElement {
   return root;
 }
 
-/** 印刷の受け取りを付け、後始末のために外す関数を控える */
+/** 印刷の受け取りを付け、後始末のために削除する関数を記録する */
 async function attachTracked(
   root: HTMLElement,
   isEnabled: () => boolean,
@@ -68,7 +68,7 @@ async function attachTracked(
   return detach;
 }
 
-/** 要素の中の折り畳みを id で返す */
+/** 要素の中の折り畳みを id で返却する */
 function findDetails(root: HTMLElement, id: string): HTMLDetailsElement {
   const details = root.querySelector<HTMLDetailsElement>(`#${id}`);
   if (!details) {
@@ -84,7 +84,7 @@ afterEach(() => {
   removeRoots();
 });
 
-// 印刷の前に閉じた折り畳みを開き、後に開いたものだけを閉じ直す（正常系）
+// 印刷の前に閉じた折り畳みを開き、後に開いたものだけをもう一度閉じる（正常系）
 test("test_attach_print", async () => {
   // 準備
   const root = createRoot();
@@ -112,7 +112,7 @@ test("test_attach_print_when_disabled", async () => {
   expect(findDetails(root, "closed").open).toBe(false);
 });
 
-// 外した後は受け取らない（正常系）
+// 削除した後は受け取らない（正常系）
 test("test_attach_print_when_detached", async () => {
   // 準備
   const root = createRoot();
@@ -124,7 +124,7 @@ test("test_attach_print_when_detached", async () => {
   expect(findDetails(root, "closed").open).toBe(false);
 });
 
-// 印刷の前に閉じた節・行の詳細・タブの中身を出し、後に戻す（正常系）
+// 印刷の前に閉じたセクション・行の詳細・タブの中身を出し、後に戻す（正常系）
 test("test_attach_print_when_syntax", async () => {
   // 準備
   const { attachInteractions } = await loadInteract();
@@ -152,7 +152,7 @@ test("test_attach_print_when_syntax", async () => {
   expect(panels[1].hasAttribute("hidden")).toBe(false);
 });
 
-// 印刷の前にファイルツリーの閉じたフォルダを開き、後に閉じ直す（正常系）
+// 印刷の前にファイルツリーの閉じたフォルダを開き、後にもう一度閉じる（正常系）
 test("test_attach_print_when_tree", async () => {
   // 準備
   const { attachInteractions } = await loadInteract();
@@ -198,7 +198,7 @@ const FOLDED_MARKDOWN = [
   "",
 ].join("\n");
 
-// 印刷の前にコードブロックの畳んだ行を開き、後に畳み直す（正常系）
+// 印刷の前にコードブロックの畳んだ行を開き、後にもう一度畳む（正常系）
 test("test_attach_print_when_code_folded", async () => {
   // 準備
   const { attachInteractions } = await loadInteract();
@@ -226,7 +226,7 @@ test("test_attach_print_when_code_folded", async () => {
   expect(inner?.open).toBe(false);
 });
 
-// 印刷の前に ER 図の畳んだテーブルを開き、後に畳み直す（正常系）
+// 印刷の前に ER 図の畳んだテーブルを開き、後にもう一度畳む（正常系）
 test("test_attach_print_when_er_folded", async () => {
   // 準備
   const { attachInteractions } = await loadInteract();

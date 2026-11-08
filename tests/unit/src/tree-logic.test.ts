@@ -3,7 +3,7 @@ import { expect, test } from "vitest";
 /** 階層の表の計算を読み込む（実装が無い間は各テストが個別に失敗する） */
 const loadTreeLogic = () => import("../../../src/tree-logic.ts");
 
-/** test_plan_tree_rows と test_filter_tree_rows で使う表のキーの列 */
+/** test_plan_tree_rows と test_filter_tree_rows で使用する表のキーの列 */
 const TREE_KEYS = [
   "features.table",
   "features.html",
@@ -52,7 +52,7 @@ test("test_plan_tree_rows", async () => {
   expect(rows[1]?.hasChildren).toBe(false);
 });
 
-// 後ろに書いた親の行は補わず、その行を親にする（正常系）
+// 後ろに記載した親の行は補わず、その行を親にする（正常系）
 test("test_plan_tree_rows_when_parent_written_later", async () => {
   // 準備
   const { planTreeRows } = await loadTreeLogic();
@@ -103,7 +103,7 @@ test("test_yaml_line_paths_when_comments", async () => {
   expect(paths).toEqual([undefined, undefined, "note", undefined, "next"]);
 });
 
-// 当たった行の祖先を残し、補った行を数えない（正常系）
+// 該当した行の祖先を残し、補った行を数えない（正常系）
 test("test_filter_tree_rows", async () => {
   // 準備
   const { planTreeRows, filterTreeRows } = await loadTreeLogic();

@@ -23,7 +23,7 @@ afterEach(async () => {
   }
 });
 
-/** tmux が使えるか */
+/** tmux が使用できるか */
 const hasTmux = (() => {
   try {
     execFileSync("tmux", ["-V"]);
@@ -33,7 +33,7 @@ const hasTmux = (() => {
   }
 })();
 
-/** 空いたポートを取って閉じ、その番号を返す */
+/** 空いたポートを取って閉じ、その番号を返却する */
 async function findFreePort(): Promise<number> {
   const probe = createServer();
   await new Promise<void>((resolve) => probe.listen(0, "127.0.0.1", resolve));
@@ -42,7 +42,7 @@ async function findFreePort(): Promise<number> {
   return port;
 }
 
-/** 実際のコマンドを流す RunCommand */
+/** 実際のコマンドを実行する RunCommand */
 const runReal = (env: NodeJS.ProcessEnv) => (command: string, args: string[]) =>
   new Promise<{ code: number; stdout: string }>((resolve) => {
     execFile(command, args, { env }, (error, stdout) => {
@@ -85,7 +85,7 @@ async function createTerminal(extra: NodeJS.ProcessEnv = {}) {
 
 const noSleep = async () => {};
 
-// 環境変数を -e で渡し sh -c で包む（正常系）
+// 環境変数を -e で指定し sh -c で包む（正常系）
 test("test_build_tmux_args", async () => {
   // 準備
   const { buildTmuxArgs } = await loadServer();
@@ -138,7 +138,7 @@ test.skipIf(!hasTmux)(
     expect(result.result).toBe("started");
     expect(result.session).toBe("mdmark-mcp");
     expect(result.url).toBe(`http://127.0.0.1:${env.MDMARK_PORT}/mcp`);
-    // 起動するのはコミット済みの dist/cli.js で、ビルドした時点のツールを返すため、3 つを含むことを確かめる
+    // 起動するのはコミット済みの dist/cli.js で、ビルドした時点のツールを返却するため、3 つを含むことを確認する
     expect(result.tools).toEqual(
       expect.arrayContaining(["build_site", "check", "export_html"]),
     );

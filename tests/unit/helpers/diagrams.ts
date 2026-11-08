@@ -1,12 +1,12 @@
-import guide from "../../../docs/使い方/図を描く/図を描く.md?raw";
-import sample from "../../../docs/使い方/図を描く/見本.md?raw";
+import guide from "../../../docs/使用方法/図を描く/図を描く.md?raw";
+import sample from "../../../docs/使用方法/図を描く/見本.md?raw";
 
-/** 見本の文書に書いた部品の定義（`json` のコードブロックを書いた順に） */
+/** 見本の文書に記載した部品の定義（`json` のコードブロックを記載した順に） */
 const SAMPLE_BLOCKS: string[] = [
   ...sample.matchAll(/```json\n([\s\S]*?)\n```/g),
 ].map((match) => match[1] ?? "");
 
-/** 見本の `json` のコードブロックの中身を返す（文書の並びの番号） */
+/** 見本の `json` のコードブロックの中身を返却する（文書の並びの番号） */
 function block(index: number): string {
   const text = SAMPLE_BLOCKS[index];
   if (text === undefined) {
@@ -27,23 +27,23 @@ export const REPLY_TIME_TEXT: string = block(2);
 /** 見本の操作できる部品の定義（`strength`）の JSON */
 export const STRENGTH_TEXT: string = block(3);
 
-/** 使い方『図を描く』の判定フローチャートの定義（モックの `judgement` に線の端を加えたもの）の JSON */
+/** 使用方法『図を描く』の判定フローチャートの定義（モックの `judgement` に線の端を加えたもの）の JSON */
 export const JUDGEMENT_TEXT: string = (() => {
   const found = [...guide.matchAll(/```json\n([\s\S]*?)\n```/g)]
     .map((match) => match[1] ?? "")
     .find((text) => text.includes('"kind": "question"'));
   if (found === undefined) {
-    throw new Error("使い方『図を描く』に判定フローチャートの定義が無い");
+    throw new Error("使用方法『図を描く』に判定フローチャートの定義が無い");
   }
   return found;
 })();
 
-/** 定義の JSON を読んだ値 */
+/** 定義の JSON を読み込んだ値 */
 export function parsed<T>(text: string): T {
   return JSON.parse(text) as T;
 }
 
-/** 部品の印で囲んだ文書にする */
+/** 部品のマーカーで囲んだ文書にする */
 export function wrapDirective(directive: string, json: string): string {
   return [
     `<!-- ${directive} -->`,
@@ -57,16 +57,16 @@ export function wrapDirective(directive: string, json: string): string {
   ].join("\n");
 }
 
-/** モックの `judgement-auto` から座標・`points`・`width`・`height` を除き、線に `from`・`to` を足した定義の JSON */
+/** モックの `judgement-auto` から座標・`points`・`width`・`height` を除き、線に `from`・`to` を追加した定義の JSON */
 export const JUDGEMENT_AUTO_TEXT: string = JSON.stringify({
   title: "問い合わせの返信の判定",
   scope: "問い合わせを受け取ったとき",
   updated: "2026-11-04",
   nodes: [
     { id: "start", kind: "start", name: "問い合わせを受け取る" },
-    { id: "q1", kind: "question", name: "よくある質問で答えられるか" },
+    { id: "q1", kind: "question", name: "よくある質問で回答できるか" },
     { id: "a1", kind: "action", name: "よくある質問のリンクを添える" },
-    { id: "q2", kind: "question", name: "担当者が答えられるか" },
+    { id: "q2", kind: "question", name: "担当者が回答できるか" },
     { id: "r1", kind: "result", name: "返信を送信する" },
     { id: "r2", kind: "result", name: "開発に起票する" },
   ],
@@ -80,7 +80,7 @@ export const JUDGEMENT_AUTO_TEXT: string = JSON.stringify({
   ],
 });
 
-/** モックの `linked` の定義（線に `from`・`to` を足したもの）の JSON */
+/** モックの `linked` の定義（線に `from`・`to` を追加したもの）の JSON */
 export const LINKED_TEXT: string = JSON.stringify({
   title: "問い合わせの処理",
   scope: "受け取りから記録まで",
@@ -107,7 +107,7 @@ export const LINKED_TEXT: string = JSON.stringify({
       h: 72,
       name: "分類する",
       href: "./other.md",
-      io: { in: "問い合わせの本文", do: "種類を 1 つ選ぶ", out: "種類と確度" },
+      io: { in: "問い合わせの本文", do: "種類を 1 つ選ぶ", out: "種類と確信度" },
     },
     {
       id: "store",
@@ -144,7 +144,7 @@ export const LINKED_TEXT: string = JSON.stringify({
 });
 
 /**
- * インターフェース定義『設定と索引を点検する』の「正常系（文字列に書き方の警告がある）」の Markdown。
+ * インターフェース定義『設定と索引を点検する』の「正常系（文字列に記載の警告がある）」の Markdown。
  * 1 行目の `<!-- flow -->` の範囲にノードの種類 `begin` の定義、20 行目に `<!-- tabz -->`、22 行目に `<!-- code: highlight=9 -->` と 3 行のコードブロックを持つ
  */
 export const WARNINGS_MARKDOWN: string = (() => {
@@ -191,7 +191,7 @@ export const INQUIRY_GROUPS_TEXT: string = (() => {
   };
   definition.lanes = definition.lanes.map((lane) =>
     lane.kind === "llm"
-      ? { ...lane, hint: "返信の種類を選び、下書きを書く" }
+      ? { ...lane, hint: "返信の種類を選び、下書きを作成する" }
       : lane,
   );
   return JSON.stringify(definition);

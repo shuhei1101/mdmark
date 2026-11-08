@@ -3,7 +3,7 @@ import { expect, test } from "vitest";
 /** 機能のオン・オフの処理を読み込む（実装が無い間は各テストが個別に失敗する） */
 const loadFeatures = () => import("../../../src/features.ts");
 
-// 印が無ければ設定のままにする（正常系）
+// マーカーが無ければ設定のままにする（正常系）
 test("test_resolve_features", async () => {
   // 準備
   const { resolveFeatures } = await loadFeatures();

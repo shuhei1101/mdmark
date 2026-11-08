@@ -30,7 +30,7 @@ function nextFrame(): Promise<void> {
   );
 }
 
-// ボタンを置いて状態を入れ替える（正常系）
+// ボタンを配置して状態を入れ替える（正常系）
 test("test_attach_wide_toggles", async () => {
   // 準備
   addStyles();

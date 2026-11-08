@@ -14,13 +14,13 @@ const loadTermTip = () => import("../../../../src/parts/term-tip.ts");
 
 const detachers: Array<() => void> = [];
 
-/** 意味だけのツールチップを持つ語の HTML */
+/** 意味だけのツールチップを持つ単語の HTML */
 async function termHtml(): Promise<string> {
   const { renderTermTip } = await loadTermTip();
   return renderTermTip({
     text: "ワークスペース",
     id: "tip",
-    meaning: "話し合いの記録を置くフォルダ",
+    meaning: "話し合いの記録を配置するフォルダ",
   });
 }
 
@@ -89,7 +89,7 @@ test("test_attach_term_tips_unique_ids", async () => {
   }
 });
 
-// 上に収まれば語の上、収まらなければ語の下に置き is-below を付ける（正常系）
+// 上に収まれば単語の上、収まらなければ単語の下に配置し is-below を付ける（正常系）
 test("test_attach_term_tips_when_no_room_above", async () => {
   // 準備
   const { attachTermTips } = await loadTerms();
@@ -118,21 +118,21 @@ test("test_attach_term_tips_when_no_room_above", async () => {
   ) {
     throw new Error("用語のツールチップが描かれていない");
   }
-  // 実行: 画面の中ほどの語にフォーカスする
+  // 実行: 画面の中ほどの単語にフォーカスする
   middleTerm.focus();
-  // 検証: 語の上に置き、is-below を付けない
+  // 検証: 単語の上に配置し、is-below を付けない
   expect(middleWrap.classList.contains("is-below")).toBe(false);
   expect(middleTip.getBoundingClientRect().bottom).toBeLessThanOrEqual(
     middleTerm.getBoundingClientRect().top,
   );
-  // 実行: 上端の語にフォーカスする
+  // 実行: 上端の単語にフォーカスする
   topTerm.focus();
-  // 検証: 語の下に置き、is-below を付ける
+  // 検証: 単語の下に配置し、is-below を付ける
   expect(topWrap.classList.contains("is-below")).toBe(true);
   expect(topTip.getBoundingClientRect().top).toBeGreaterThanOrEqual(
     topTerm.getBoundingClientRect().bottom,
   );
-  // 実行: フォーカスを外して閉じるのを待つ
+  // 実行: フォーカスを削除して閉じるのを待つ
   topTerm.blur();
   // 検証: 閉じた後に is-below が残らない
   await vi.waitFor(() => {
@@ -141,7 +141,7 @@ test("test_attach_term_tips_when_no_room_above", async () => {
   expect(topWrap.classList.contains("is-below")).toBe(false);
 });
 
-/** `command` のエイリアスの語とツールチップの HTML */
+/** `command` のエイリアスの単語とツールチップの HTML */
 async function commandHtml(): Promise<string> {
   const { renderTermTip } = await loadTermTip();
   return renderTermTip({
@@ -152,13 +152,13 @@ async function commandHtml(): Promise<string> {
       id: "unit-test",
       name: "単体テスト",
       aliases: [],
-      description: "ライブラリ本体の単体テストを流す",
+      description: "ライブラリ本体の単体テストを実行する",
       command: "npm run test:unit",
     },
   });
 }
 
-// コピーのボタンでコマンドを書き、ボタンと読み上げの要素で知らせ、待った後に戻す（正常系）
+// コピーのボタンでコマンドを記載し、ボタンとスクリーンリーダー向けの要素で通知し、待った後に戻す（正常系）
 test("test_attach_term_tips_copy_command", async () => {
   // 準備
   vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] });
@@ -179,7 +179,7 @@ test("test_attach_term_tips_copy_command", async () => {
   button?.focus();
   button?.click();
   await vi.advanceTimersByTimeAsync(0);
-  // 検証: 書いて、コピーしたことをボタンと読み上げの要素で知らせ、ツールチップを開いたままにする
+  // 検証: 記載して、コピーしたことをボタンとスクリーンリーダー向けの要素で通知し、ツールチップを開いたままにする
   expect(writeText).toHaveBeenCalledTimes(1);
   expect(writeText).toHaveBeenCalledWith("npm run test:unit");
   expect(button?.dataset.state).toBe("copied");
@@ -193,7 +193,7 @@ test("test_attach_term_tips_copy_command", async () => {
   expect(status?.textContent).toBe("");
 });
 
-// コマンドを書けなければ failed にして残し、例外を外へ出さない（正常系）
+// コマンドを記載できなければ failed にして残し、例外を外へ出さない（正常系）
 test("test_attach_term_tips_copy_command_denied", async () => {
   // 準備
   vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] });
@@ -219,7 +219,7 @@ test("test_attach_term_tips_copy_command_denied", async () => {
   await vi.advanceTimersByTimeAsync(0);
   await vi.advanceTimersByTimeAsync(2000);
   window.removeEventListener("unhandledrejection", onRejection);
-  // 検証: 失敗の知らせが 2 秒たっても残り、未処理の例外が無い
+  // 検証: 失敗の通知が 2 秒たっても残り、未処理の例外が無い
   expect(button?.dataset.state).toBe("failed");
   expect(button?.textContent).toContain("コピーできませんでした");
   expect(status?.textContent).toBe("コマンドをコピーできませんでした");
@@ -235,9 +235,9 @@ function pointer(type: string, pointerType: string): PointerEvent {
 }
 
 /**
- * 語へのタッチのタップを、実際の順序（`pointerenter`・`pointerdown`・`pointerup`・`pointerleave` の後にフォーカス）で起こす。
- * `pointerenter`・`pointerleave` は泡立たないため、ブラウザと同じく語の枠と語の両方に送る。
- * `focus()` は既にフォーカスを持つ語では `focus` を発火しない
+ * 単語へのタッチのタップを、実際の順序（`pointerenter`・`pointerdown`・`pointerup`・`pointerleave` の後にフォーカス）で発生させる。
+ * `pointerenter`・`pointerleave` は泡立たないため、ブラウザと同じく単語の枠と単語の両方に送信する。
+ * `focus()` は既にフォーカスを持つ単語では `focus` を発火しない
  */
 function tap(wrap: HTMLElement, term: HTMLElement): void {
   wrap.dispatchEvent(pointer("pointerenter", "touch"));
@@ -249,7 +249,7 @@ function tap(wrap: HTMLElement, term: HTMLElement): void {
   term.focus();
 }
 
-/** 語の枠と語を取り出す */
+/** 単語の枠と単語を取り出す */
 function termParts(root: HTMLElement): {
   wrap: HTMLElement;
   term: HTMLElement;
@@ -257,7 +257,7 @@ function termParts(root: HTMLElement): {
   const wrap = root.querySelector<HTMLElement>(".mdmark-term-wrap");
   const term = root.querySelector<HTMLElement>(".mdmark-term");
   if (!wrap || !term) {
-    throw new Error("用語の語が描かれていない");
+    throw new Error("用語の単語が描かれていない");
   }
   return { wrap, term };
 }
@@ -300,10 +300,10 @@ test("test_attach_term_tips_when_touch_outside", async () => {
   vi.advanceTimersByTime(1000);
   // 検証
   expect(wrap.classList.contains("is-open")).toBe(true);
-  // 実行: root の外（pointerleave・focusout は送らない）
+  // 実行: root の外（pointerleave・focusout は送信しない）
   outside.dispatchEvent(pointer("pointerdown", "touch"));
   vi.advanceTimersByTime(1000);
-  // 検証: 語にフォーカスが残ったままでも、ツールチップを出さない
+  // 検証: 単語にフォーカスが残ったままでも、ツールチップを出さない
   expect(wrap.classList.contains("is-open")).toBe(false);
   expect(wrap.classList.contains("is-dismissed")).toBe(true);
   expect(document.activeElement).toBe(term);
@@ -311,7 +311,7 @@ test("test_attach_term_tips_when_touch_outside", async () => {
   expect(tip && getComputedStyle(tip).display).toBe("none");
 });
 
-// ツールチップの中のボタンにフォーカスがある状態で語をタップすると、閉じたままになる（正常系）
+// ツールチップの中のボタンにフォーカスがある状態で単語をタップすると、閉じたままになる（正常系）
 test("test_attach_term_tips_when_touch_tapped_after_button_focus", async () => {
   // 準備
   vi.useFakeTimers();
@@ -323,7 +323,7 @@ test("test_attach_term_tips_when_touch_tapped_after_button_focus", async () => {
   tap(wrap, term);
   button?.dispatchEvent(pointer("pointerdown", "touch"));
   button?.focus();
-  // 実行: 語の focusin が pointerdown の後に発火する
+  // 実行: 単語の focusin が pointerdown の後に発火する
   tap(wrap, term);
   vi.advanceTimersByTime(1000);
   // 検証

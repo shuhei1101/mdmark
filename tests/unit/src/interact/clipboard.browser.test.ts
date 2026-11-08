@@ -1,7 +1,7 @@
 import { afterEach, expect, test, vi } from "vitest";
 import { restoreClipboard, stubClipboard } from "../../helpers/clipboard.ts";
 
-/** クリップボードへ書く処理を読み込む（実装が無い間は各テストが個別に失敗する。ファイルが無いと Vite の解決が失敗してテストファイルごと落ちるため、URL を組んで読む） */
+/** クリップボードへ書き込む処理を読み込む（実装が無い間は各テストが個別に失敗する。ファイルが無いと Vite の解決が失敗してテストファイルごと落ちるため、URL を組んで読み込む） */
 const loadClipboard = (): Promise<
   typeof import("../../../../src/interact/clipboard.ts")
 > =>
@@ -17,7 +17,7 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
-// 書けたら true を返す（正常系）
+// 記載できたら true を返却する（正常系）
 test("test_copy_text", async () => {
   // 準備
   const { copyText } = await loadClipboard();
@@ -33,7 +33,7 @@ test("test_copy_text", async () => {
   expect(writeText).toHaveBeenCalledWith("a\tb");
 });
 
-// 拒まれたら false を返し、例外を外へ出さない（正常系）
+// 拒まれたら false を返却し、例外を外へ出さない（正常系）
 test("test_copy_text_when_denied", async () => {
   // 準備
   const { copyText } = await loadClipboard();
@@ -54,7 +54,7 @@ test("test_copy_text_when_denied", async () => {
   expect(rejections).toHaveLength(0);
 });
 
-// クリップボードが無ければ false を返す（正常系）
+// クリップボードが無ければ false を返却する（正常系）
 test("test_copy_text_when_unavailable", async () => {
   // 準備
   const { copyText } = await loadClipboard();

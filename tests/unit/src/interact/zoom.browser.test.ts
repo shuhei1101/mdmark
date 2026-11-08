@@ -32,7 +32,7 @@ const TOOLS_HTML = [
   "</div>",
 ].join("");
 
-/** 幅 600px・高さ 400px の表示する枠に、幅 1100・高さ 300 の中身を置き、拡大・縮小・移動を付ける */
+/** 幅 600px・高さ 400px の表示する枠に、幅 1100・高さ 300 の中身を配置し、拡大・縮小・移動を付ける */
 async function setUp(
   onChange?: (zoom: number, fit: number) => void,
   percentBase?: "fit" | "content",
@@ -59,7 +59,7 @@ async function setUp(
   return { root, tools, viewport, zoom };
 }
 
-/** 読み上げの名前でボタンを探す */
+/** スクリーンリーダー向けの名前でボタンを探す */
 function button(root: ParentNode, name: string): HTMLButtonElement {
   const found = root.querySelector<HTMLButtonElement>(
     `button[aria-label="${name}"]`,
@@ -142,7 +142,7 @@ test("test_attach_zoom_when_panned", async () => {
   expect(viewport.scrollLeft - afterKey).toBe(40);
 });
 
-// 外すと操作が効かない（正常系）
+// 削除すると操作が有効にならない（正常系）
 test("test_attach_zoom_when_detached", async () => {
   // 準備
   const { root, zoom } = await setUp();
@@ -154,7 +154,7 @@ test("test_attach_zoom_when_detached", async () => {
   expect(zoomText(root)).toBe(before);
 });
 
-/** 中身の中にリンク先を持つノードのリンクを置き、拡大を 2 回押した状態にする */
+/** 中身の中にリンク先を持つノードのリンクを配置し、拡大を 2 回押した状態にする */
 async function setUpWithLink() {
   vi.spyOn(Element.prototype, "setPointerCapture").mockImplementation(() => {});
   const view = await setUp();
@@ -182,7 +182,7 @@ function dragOnLink(link: HTMLElement, dx: number): void {
   );
 }
 
-// リンクの上から動かした後の click を window で止め、次のタスクで受け取りを外す（正常系）
+// リンクの上から動かした後の click を window で止め、次のタスクで受け取りを解除する（正常系）
 test("test_attach_zoom_when_dragged_on_link", async () => {
   // 準備
   const { viewport, link } = await setUpWithLink();
@@ -284,7 +284,7 @@ test("test_attach_zoom_when_drag_threshold", async () => {
   expect(panStarts).toBe(1);
 });
 
-// fitHeight の関数が true を返すようになった後の refit() で、倍率を保ち下限を高さで求め直す（正常系）
+// fitHeight の関数が true を返却するようになった後の refit() で、倍率を保ち下限を高さでもう一度求める（正常系）
 test("test_attach_zoom_when_refit", async () => {
   // 準備
   const { attachZoom } = await loadZoom();

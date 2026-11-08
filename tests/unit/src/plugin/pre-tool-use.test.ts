@@ -8,7 +8,7 @@ const loadPreToolUse = () => import("../../../../src/plugin/pre-tool-use.ts");
 /** ツールの一覧を読み込む */
 const loadTools = () => import("../../../../src/plugin/tools.ts");
 
-/** フックの標準入力に渡す JSON を作る */
+/** フックの標準入力に指定する JSON を作る */
 function createInput(toolInput: Record<string, unknown>): string {
   return JSON.stringify({
     hook_event_name: "PreToolUse",
@@ -17,7 +17,7 @@ function createInput(toolInput: Record<string, unknown>): string {
   });
 }
 
-// project_dir を入れた updatedInput を書く（正常系）
+// project_dir を入れた updatedInput を記載する（正常系）
 test("test_run_pre_tool_use", async () => {
   // 準備
   const { runPreToolUse } = await loadPreToolUse();
@@ -40,7 +40,7 @@ test("test_run_pre_tool_use", async () => {
   expect(output.hookSpecificOutput).not.toHaveProperty("permissionDecision");
 });
 
-// エージェントが書いた project_dir を上書きする（正常系）
+// エージェントが記載した project_dir を上書きする（正常系）
 test("test_run_pre_tool_use_when_project_dir_given", async () => {
   // 準備
   const { runPreToolUse } = await loadPreToolUse();
@@ -56,7 +56,7 @@ test("test_run_pre_tool_use_when_project_dir_given", async () => {
   expect(output.hookSpecificOutput.updatedInput.project_dir).toBe("/work");
 });
 
-// 環境変数が無ければ何も書かない（正常系）
+// 環境変数が無ければ何も書き込まない（正常系）
 test("test_run_pre_tool_use_when_project_dir_unknown", async () => {
   // 準備
   const { runPreToolUse } = await loadPreToolUse();
@@ -72,7 +72,7 @@ test("test_run_pre_tool_use_when_project_dir_unknown", async () => {
   expect(stdout).toEqual([]);
 });
 
-// hooks.json の matcher が `PROJECT_DIR_TOOLS` のツールだけに当たる（正常系）
+// hooks.json の matcher が `PROJECT_DIR_TOOLS` のツールだけに該当する（正常系）
 test("test_run_pre_tool_use_when_matcher", async () => {
   // 準備
   const { PROJECT_DIR_TOOLS, TOOL_NAME_PREFIX } = await loadPreToolUse();

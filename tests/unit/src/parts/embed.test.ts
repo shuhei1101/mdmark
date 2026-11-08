@@ -1,9 +1,9 @@
 import { expect, test } from "vitest";
 
-/** 読み込み中の枠の処理を読み込む（実装が無い間は各テストが個別に失敗する） */
+/** 読み込み中のブロックの処理を読み込む（実装が無い間は各テストが個別に失敗する） */
 const loadEmbed = () => import("../../../../src/parts/embed.ts");
 
-// 印の名前と引数を属性に持つ枠を返す（正常系）
+// マーカーの名前と引数を属性に持つ枠を返却する（正常系）
 test("test_render_embed", async () => {
   // 準備
   const { renderEmbed } = await loadEmbed();

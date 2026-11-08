@@ -23,7 +23,7 @@ test("test_render_gif_toggle", async () => {
   }
 });
 
-// 再生中は canvas を隠し、停止のボタンを置く（正常系）
+// 再生中は canvas を隠し、停止のボタンを配置する（正常系）
 test("test_render_gif", async () => {
   // 準備
   const { renderGif } = await loadGif();

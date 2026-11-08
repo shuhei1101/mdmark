@@ -5,7 +5,7 @@ import { afterEach } from "vitest";
 import type { ExportPayload } from "../../../src/cli/html.ts";
 import type { Prompter } from "../../../src/cli/prompt.ts";
 
-/** テストが渡す CLI の入出力 */
+/** テストが指定する CLI の入出力 */
 export type TestIo = {
   cwd: string;
   stdout: (line: string) => void;
@@ -15,7 +15,7 @@ export type TestIo = {
 /** 書き出した HTML に埋まる中身 */
 export type PayloadView = ExportPayload;
 
-/** テストごとに作った一時フォルダを消す。一時フォルダを作る関数を返す */
+/** テストごとに作った一時フォルダを削除する。一時フォルダを作る関数を返却する */
 export function useTempDirs(): () => Promise<string> {
   const created: string[] = [];
   afterEach(async () => {
@@ -30,7 +30,7 @@ export function useTempDirs(): () => Promise<string> {
   };
 }
 
-/** フォルダの下にファイルを書く（親のフォルダは作る） */
+/** フォルダの下にファイルを書き込む（親のフォルダは作る） */
 export async function writeFiles(
   root: string,
   files: Record<string, string | Uint8Array>,
@@ -61,12 +61,12 @@ export function createIo(cwd: string): {
   };
 }
 
-/** 呼ばれたら失敗にする問い（問いが出ないはずの場面で渡す） */
+/** 呼ばれたら失敗にする質問（質問が出ないはずの場面で指定する） */
 export const failingAsk: Prompter = async (question) => {
-  throw new Error(`問いが出ないはずの場面で問われました: ${question}`);
+  throw new Error(`質問が出ないはずの場面で問われました: ${question}`);
 };
 
-/** 決めた答えを問われた順に返す問いと、問われた文を貯める配列を作る */
+/** 決めた回答を問われた順に返却する質問と、問われた文を貯める配列を作る */
 export function createAnswers(answers: Array<string | undefined>): {
   ask: Prompter;
   asked: string[];
@@ -82,7 +82,7 @@ export function createAnswers(answers: Array<string | undefined>): {
   };
 }
 
-/** 書き出した HTML から、埋めた中身（`#mdmark-payload` の JSON）を読む */
+/** 書き出した HTML から、埋めた中身（`#mdmark-payload` の JSON）を読み込む */
 export function readPayload(html: string): PayloadView {
   const match =
     /<script[^>]*id="mdmark-payload"[^>]*>([\s\S]*?)<\/script>/.exec(html);
@@ -92,7 +92,7 @@ export function readPayload(html: string): PayloadView {
   return JSON.parse(match[1]) as PayloadView;
 }
 
-/** 中身を短くした dist/ を置き、そのフォルダの絶対パスを返す */
+/** 中身を短くした dist/ を配置し、そのフォルダの絶対パスを返却する */
 export async function writeDist(root: string): Promise<string> {
   await writeFiles(root, {
     "dist/index.css": "/* dist css */",
@@ -102,7 +102,7 @@ export async function writeDist(root: string): Promise<string> {
   return join(root, "dist");
 }
 
-/** ずれの無い索引（文書 a・b を載せる） */
+/** ずれの無い索引（文書 a・b を記載する） */
 export const CLEAN_INDEX = [
   "schema: 2",
   "docs:",

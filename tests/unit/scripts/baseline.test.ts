@@ -4,15 +4,15 @@ import { dirname, join } from "node:path";
 import { Linter, type SourceCode } from "eslint";
 import { afterEach, expect, test } from "vitest";
 
-/** 対応ブラウザの下限を確かめるスクリプトを読み込む（実装が無い間は各テストが個別に失敗する） */
+/** 対応ブラウザの下限を確認するスクリプトを読み込む（実装が無い間は各テストが個別に失敗する） */
 const loadBaseline = () => import("../../../scripts/baseline.ts");
 
-// 位置を確かめる API の名前
+// 位置を確認する API の名前
 const API = "Intl.Segmenter";
 
 const createdRoots: string[] = [];
 
-/** 与えたコードを ESLint で解析し、その `SourceCode` を返す */
+/** 与えたコードを ESLint で解析し、その `SourceCode` を返却する */
 function createSourceCode(code: string): SourceCode {
   const linter = new Linter({ configType: "flat" });
   linter.verify(
@@ -23,7 +23,7 @@ function createSourceCode(code: string): SourceCode {
   return linter.getSourceCode();
 }
 
-/** コードの中の `needle` の `occurrence` 番目（1 始まり）の先頭の位置を、行と列（どちらも 1 始まり）で返す */
+/** コードの中の `needle` の `occurrence` 番目（1 始まり）の先頭の位置を、行と列（どちらも 1 始まり）で返却する */
 function positionOf(
   code: string,
   needle: string,
@@ -37,7 +37,7 @@ function positionOf(
   return { line: before.length, column: (before.at(-1) ?? "").length + 1 };
 }
 
-/** 一時フォルダに `files` を置き、作業ツリーの node_modules へのリンクを張って、そのパスを返す */
+/** 一時フォルダに `files` を配置し、作業ツリーの node_modules へのリンクを張って、そのパスを返却する */
 async function createRoot(files: Record<string, string>): Promise<string> {
   const root = await mkdtemp(join(tmpdir(), "mdmark-baseline-"));
   createdRoots.push(root);
@@ -61,7 +61,7 @@ afterEach(async () => {
   );
 });
 
-// 名前と版の間に空白を入れる（正常系）
+// 名前とバージョンの間に空白を入れる（正常系）
 test("test_to_browserslist", async () => {
   // 準備
   const { toBrowserslist } = await loadBaseline();
@@ -71,7 +71,7 @@ test("test_to_browserslist", async () => {
   expect(queries).toEqual(["chrome 99", "firefox 98", "safari 16.4"]);
 });
 
-// 版の無い target を拒む（異常系）
+// バージョンの無い target を拒む（異常系）
 test("test_to_browserslist_when_format_invalid", async () => {
   // 準備
   const { toBrowserslist } = await loadBaseline();
@@ -136,7 +136,7 @@ test("test_is_guarded_by_typeof_when_in_test", async () => {
   expect(guarded).toBe(true);
 });
 
-// 確かめの if の直前の位置は偽。列を 0 始まりに直さず引くと 1 つ右の if の i を指して真になる（正常系）
+// 確認の if の直前の位置は偽。列を 0 始まりに修正せず参照すると 1 つ右の if の i を指して真になる（正常系）
 test("test_is_guarded_by_typeof_when_just_before_if", async () => {
   // 準備
   const { isGuardedByTypeof } = await loadBaseline();
@@ -227,7 +227,7 @@ test("test_is_guarded_by_typeof_when_ternary", async () => {
   expect(guarded).toBe(false);
 });
 
-// 確かめずに使う下限に無い API を返し、同じ API の typeof の if の中は返さない（正常系）
+// 確認せずに使用する下限に無い API を返却し、同じ API の typeof の if の中は返却しない（正常系）
 test("test_lint_bundle", async () => {
   // 準備
   const { lintBundle } = await loadBaseline();
@@ -260,7 +260,7 @@ test("test_lint_bundle_when_inline_config", async () => {
   expect(violations).toEqual([]);
 });
 
-// 構文として読めない JS を拒む（異常系）
+// 構文として読み込めない JS を拒む（異常系）
 test("test_lint_bundle_when_parse_error", async () => {
   // 準備
   const { lintBundle } = await loadBaseline();
@@ -270,7 +270,7 @@ test("test_lint_bundle_when_parse_error", async () => {
   ).toThrow(/dist\/index\.js[\s\S]*Parsing error/);
 });
 
-// 設定が当たらないファイル名を拒む（異常系）
+// 設定が該当しないファイル名を拒む（異常系）
 test("test_lint_bundle_when_config_not_matched", async () => {
   // 準備
   const { lintBundle } = await loadBaseline();
@@ -280,7 +280,7 @@ test("test_lint_bundle_when_config_not_matched", async () => {
   ).toThrow(/dist\/index\.ts[\s\S]*No matching configuration/);
 });
 
-// 下限に無い API を使わなければ空を返す（正常系）
+// 下限に無い API を使用しなければ空を返却する（正常系）
 test("test_find_baseline_violations", async () => {
   // 準備
   const { findBaselineViolations } = await loadBaseline();
@@ -291,7 +291,7 @@ test("test_find_baseline_violations", async () => {
   expect(violations).toEqual([]);
 });
 
-// 確かめずに使う下限に無い API を返す（正常系）
+// 確認せずに使用する下限に無い API を返却する（正常系）
 test("test_find_baseline_violations_when_api_unguarded", async () => {
   // 準備
   const { findBaselineViolations } = await loadBaseline();
@@ -307,7 +307,7 @@ test("test_find_baseline_violations_when_api_unguarded", async () => {
   expect(violations[0]?.message).toContain("Firefox 98");
 });
 
-// 同じ API の typeof の if の中で使えば返さない（正常系）
+// 同じ API の typeof の if の中で使用すれば返却しない（正常系）
 test("test_find_baseline_violations_when_api_guarded", async () => {
   // 準備
   const { findBaselineViolations } = await loadBaseline();
@@ -326,7 +326,7 @@ test("test_find_baseline_violations_when_api_guarded", async () => {
   expect(violations).toEqual([]);
 });
 
-// 無関係な条件の if の中の使用も返す（正常系）
+// 無関係な条件の if の中の使用も返却する（正常系）
 test("test_find_baseline_violations_when_unrelated_if", async () => {
   // 準備
   const { findBaselineViolations } = await loadBaseline();

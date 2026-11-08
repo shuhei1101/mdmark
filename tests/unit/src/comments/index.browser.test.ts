@@ -15,7 +15,7 @@ const BODY = "手順の数を <b>3</b> にする";
 const detachers: Array<() => void> = [];
 const roots: HTMLElement[] = [];
 
-/** コメントの形のコメント */
+/** コメントの構造のコメント */
 type StoredComment = {
   id: string;
   quote: string;
@@ -42,7 +42,7 @@ const ORPHAN: StoredComment = {
   body: "迷子のコメント",
 };
 
-/** HTML を入れた範囲の要素をページに置く */
+/** HTML を入れた範囲の要素をページに配置する */
 function createRoot(html = "<p>導入の手順を整える。</p>"): HTMLElement {
   const root = document.createElement("div");
   root.innerHTML = html;
@@ -51,7 +51,7 @@ function createRoot(html = "<p>導入の手順を整える。</p>"): HTMLElement
   return root;
 }
 
-/** 読み書きの関数。`save` は受けた下書きに `id` を足して返す */
+/** 読み込みと保存の関数。`save` は受けた下書きに `id` を追加して返却する */
 function createStore(comments: StoredComment[] = []) {
   return {
     load: vi.fn(async () => comments),
@@ -64,7 +64,7 @@ function createStore(comments: StoredComment[] = []) {
   };
 }
 
-/** 要素の中の最初の文字の節の、始まりと終わりの位置の間を選ぶ */
+/** 要素の中の最初の文字のセクションの、始まりと終わりの位置の間を選ぶ */
 function select(element: Element, start: number, end: number): void {
   const textNode = element.firstChild;
   if (textNode === null) {
@@ -79,18 +79,18 @@ function select(element: Element, start: number, end: number): void {
   document.dispatchEvent(new Event("selectionchange"));
 }
 
-/** 少し待つ（出ないことを確かめる前に、受け取りが動き終わるのを待つ） */
+/** 少し待つ（出ないことを確認する前に、受け取りが動き終わるのを待つ） */
 function settle(): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, 50));
 }
 
-/** 隠れていないコメントのボタンを返す（無ければ `undefined`） */
+/** 隠れていないコメントのボタンを返却する（無ければ `undefined`） */
 function visibleButton(): HTMLElement | undefined {
   const button = document.querySelector<HTMLElement>(".mdmark-comment-add");
   return button && !button.hidden ? button : undefined;
 }
 
-/** 文字を選んでボタンを押し、開いた入力欄を返す */
+/** 文字を選んでボタンを押し、開いた入力欄を返却する */
 async function openForm(root: HTMLElement): Promise<HTMLElement> {
   const paragraph = root.querySelector("p");
   if (!paragraph) {
@@ -106,7 +106,7 @@ async function openForm(root: HTMLElement): Promise<HTMLElement> {
   return form;
 }
 
-/** 入力欄の本文の欄に書く */
+/** 入力欄の本文の欄に記載する */
 function type(form: HTMLElement, body: string): void {
   const field = form.querySelector("textarea");
   if (!field) {
@@ -140,7 +140,7 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
-// 読んだコメントに印を付け、見つからないものを一覧に出す（正常系）
+// 読み込んだコメントにマーカーを付け、見つからないものを一覧に出す（正常系）
 test("test_attach_comments_when_loaded", async () => {
   // 準備
   const { attachComments } = await loadComments();
@@ -157,7 +157,7 @@ test("test_attach_comments_when_loaded", async () => {
   expect(orphans?.textContent).toContain("無い文字");
 });
 
-// 選んで書いて保存すると印を付ける（正常系）
+// 選んで記載して保存するとマーカーを付ける（正常系）
 test("test_attach_comments_when_saved", async () => {
   // 準備
   const { attachComments } = await loadComments();
@@ -193,7 +193,7 @@ test("test_attach_comments_when_saved", async () => {
   expect(bubble?.querySelector("b")).toBeNull();
 });
 
-// 空のまま保存すると知らせを出して save を呼ばない（異常系）
+// 空のまま保存すると通知を出して save を呼ばない（異常系）
 test("test_attach_comments_when_empty_body", async () => {
   // 準備
   const { attachComments } = await loadComments();
@@ -206,13 +206,13 @@ test("test_attach_comments_when_empty_body", async () => {
   // 検証
   await vi.waitFor(() =>
     expect(form.querySelector('[role="alert"]')?.textContent).toContain(
-      "コメントを書いてから保存してください。",
+      "コメントを記載してから保存してください。",
     ),
   );
   expect(store.save).not.toHaveBeenCalled();
 });
 
-// 保存できないと本文を残して知らせる（異常系）
+// 保存できないと本文を残して通知する（異常系）
 test("test_attach_comments_when_save_rejected", async () => {
   // 準備
   const { attachComments } = await loadComments();
@@ -238,7 +238,7 @@ test("test_attach_comments_when_save_rejected", async () => {
   expect(loggedText(spy)).toContain(DOC_ID);
 });
 
-// 読めないと印を付けずに新しいコメントは付けられる（異常系）
+// 読み込めないとマーカーを付けずに新しいコメントは付けられる（異常系）
 test("test_attach_comments_when_load_rejected", async () => {
   // 準備
   const { attachComments } = await loadComments();
@@ -258,7 +258,7 @@ test("test_attach_comments_when_load_rejected", async () => {
   await vi.waitFor(() => expect(visibleButton()).toBeDefined());
 });
 
-// 本文があるときの Esc で確かめ、捨てないと残す（正常系）
+// 本文があるときの Esc で確認し、捨てないと残す（正常系）
 test("test_attach_comments_when_discarding", async () => {
   // 準備
   const { attachComments } = await loadComments();
@@ -277,7 +277,7 @@ test("test_attach_comments_when_discarding", async () => {
       new KeyboardEvent("keydown", { key: "Escape", bubbles: true }),
     );
   // 検証
-  expect(confirm).toHaveBeenCalledWith("書いたコメントを捨てて閉じますか？");
+  expect(confirm).toHaveBeenCalledWith("記載したコメントを捨てて閉じますか？");
   expect(document.querySelector(".mdmark-comment-form")).toBe(form);
 });
 
@@ -302,7 +302,7 @@ test("test_attach_comments_when_excluded", async () => {
   expect(visibleButton()).toBeUndefined();
 });
 
-// 外すと文字を元の並びに戻す（正常系）
+// 削除すると文字を元の並びに戻す（正常系）
 test("test_attach_comments_when_detached", async () => {
   // 準備
   const { attachComments } = await loadComments();
@@ -323,7 +323,7 @@ test("test_attach_comments_when_detached", async () => {
   expect(document.getElementById("mdmark-comment-hint")).toBeNull();
 });
 
-// 下に収まらなければ上に置く（正常系）
+// 下に収まらなければ上に配置する（正常系）
 test("test_place_popover_when_no_room_below", async () => {
   // 準備
   const { placePopover } = await loadComments();
@@ -343,25 +343,25 @@ const SECOND: StoredComment = {
   id: "c2",
   quote: "手順の数",
   prefix: "",
-  suffix: "を確かめる。",
+  suffix: "を確認する。",
   body: "二つ目のコメント",
 };
 
 /** 2 つの段落の HTML（`導入の手順` と `手順の数` を別の段落に持つ） */
-const TWO_PARAGRAPHS = "<p>導入の手順を整える。</p><p>手順の数を確かめる。</p>";
+const TWO_PARAGRAPHS = "<p>導入の手順を整える。</p><p>手順の数を確認する。</p>";
 
 /** 次の描画のタイミングまで待つ */
 const nextFrame = (): Promise<void> =>
   new Promise((resolve) => requestAnimationFrame(() => resolve()));
 
-/** 範囲の中の印の文字を、並んだ順に返す */
+/** 範囲の中のマーカーの文字を、並んだ順に返却する */
 function markTexts(root: HTMLElement): string[] {
   return [...root.querySelectorAll("mark.mdmark-comment-mark")].map(
     (mark) => mark.textContent ?? "",
   );
 }
 
-/** 範囲の中の最初の印を押して開いた吹き出しを返す */
+/** 範囲の中の最初のマーカーを押して開いた吹き出しを返却する */
 function openBubble(root: HTMLElement): HTMLElement {
   root.querySelector<HTMLElement>("mark.mdmark-comment-mark")?.click();
   const bubble = document.querySelector<HTMLElement>(".mdmark-comment-bubble");
@@ -410,7 +410,7 @@ test("test_attach_comments_when_store_without_edit", async () => {
   expect(buttons[0]?.getAttribute("aria-label")).toBe("削除");
 });
 
-// 印の最後のコメントを削除すると印を外して吹き出しを閉じ、ブロックへフォーカスを移す（正常系）
+// マーカーの最後のコメントを削除するとマーカーを削除して吹き出しを閉じ、ブロックへフォーカスを移す（正常系）
 test("test_attach_comments_when_removed_last", async () => {
   // 準備
   const { attachComments } = await loadComments();
@@ -434,7 +434,7 @@ test("test_attach_comments_when_removed_last", async () => {
   expect(document.activeElement).toBe(paragraph);
 });
 
-// 読み直すと印を付け直し、開いている吹き出しを閉じる（正常系）
+// 再読み込みするとマーカーをもう一度付け、開いている吹き出しを閉じる（正常系）
 test("test_attach_comments_when_reloaded", async () => {
   // 準備
   const { attachComments } = await loadComments();
@@ -451,7 +451,7 @@ test("test_attach_comments_when_reloaded", async () => {
   expect(document.querySelector(".mdmark-comment-bubble")).toBeNull();
 });
 
-// 余白のマーカーを置いたとき、読み直すと付け直した印の数に余白のマーカーを置き直す（正常系）
+// 余白のマーカーを配置したとき、再読み込みするともう一度付けたマーカーの数に余白のマーカーをもう一度配置する（正常系）
 test("test_attach_comments_when_reloaded_with_margin", async () => {
   // 準備
   const { attachComments } = await loadComments();
@@ -484,7 +484,7 @@ test("test_attach_comments_when_reloaded_with_margin", async () => {
   ).toHaveLength(2);
 });
 
-// 読み直しても書いている入力欄は残す（正常系）
+// 再読み込みしても記載している入力欄は残す（正常系）
 test("test_attach_comments_when_reloaded_with_form", async () => {
   // 準備
   const { attachComments } = await loadComments();
@@ -504,7 +504,7 @@ test("test_attach_comments_when_reloaded_with_form", async () => {
   expect(form.querySelector("textarea")?.value).toBe(BODY);
 });
 
-// 読み直せないと印を残して元のエラーで reject する（異常系）
+// 再読み込みできないとマーカーを残して元のエラーで reject する（異常系）
 test("test_attach_comments_when_reload_rejected", async () => {
   // 準備
   const { attachComments } = await loadComments();
@@ -522,7 +522,7 @@ test("test_attach_comments_when_reload_rejected", async () => {
   expect(loggedText(spy)).toContain(DOC_ID);
 });
 
-// 次の reload か detach の後に届いた読み直しの結果を描かない（正常系）
+// 次の reload か detach の後に届いた再読み込みの結果を描かない（正常系）
 test("test_attach_comments_when_reload_superseded", async () => {
   // 準備
   const { attachComments } = await loadComments();
@@ -535,7 +535,7 @@ test("test_attach_comments_when_reload_superseded", async () => {
   store.load
     .mockReturnValueOnce(second.promise)
     .mockReturnValueOnce(third.promise);
-  // 実行: 2 回目を待たせたまま 3 回目を呼び、3 回目を先に返してから 2 回目を返す
+  // 実行: 2 回目を待たせたまま 3 回目を呼び、3 回目を先に返却してから 2 回目を返却する
   const secondReload = controller.reload();
   const thirdReload = controller.reload();
   third.resolve([LOADED]);
@@ -544,7 +544,7 @@ test("test_attach_comments_when_reload_superseded", async () => {
   await secondReload;
   // 検証
   expect(markTexts(root)).toEqual(["導入の手順"]);
-  // 準備: 別の範囲で、読み直しを待たせたまま外す
+  // 準備: 別の範囲で、再読み込みを待たせたまま削除する
   const otherRoot = createRoot();
   const otherStore = createStore();
   const other = await attachComments({
@@ -563,7 +563,7 @@ test("test_attach_comments_when_reload_superseded", async () => {
   expect(otherRoot.querySelector("mark.mdmark-comment-mark")).toBeNull();
 });
 
-// 印へ移ってフォーカスと data-focused を付け、次の focus で前の強調を外す（正常系）
+// マーカーへ移ってフォーカスと data-focused を付け、次の focus で前の強調を解除する（正常系）
 test("test_attach_comments_when_focused", async () => {
   // 準備
   const { attachComments } = await loadComments();
@@ -589,7 +589,7 @@ test("test_attach_comments_when_focused", async () => {
   expect(reveal).toHaveBeenCalledWith(first);
   expect(scrollIntoView).toHaveBeenCalledWith({ block: "nearest" });
   expect(scrollIntoView.mock.contexts.at(-1)).toBe(first);
-  // 実行・検証: c2 へ移ると前の強調を外す
+  // 実行・検証: c2 へ移ると前の強調を解除する
   controller.focus("c2");
   expect(first?.hasAttribute("data-focused")).toBe(false);
   expect(next?.hasAttribute("data-focused")).toBe(true);

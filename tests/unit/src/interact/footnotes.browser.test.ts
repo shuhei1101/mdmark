@@ -9,7 +9,7 @@ import {
 /** 脚注の操作を読み込む（実装が無い間は各テストが個別に失敗する） */
 const loadFootnotes = () => import("../../../../src/interact/footnotes.ts");
 
-/** 節と行の詳細の操作を読み込む（実装が無い間は各テストが個別に失敗する） */
+/** セクションと行の詳細の操作を読み込む（実装が無い間は各テストが個別に失敗する） */
 const loadSections = () => import("../../../../src/interact/sections.ts");
 
 /** 脚注の部品を読み込む（実装が無い間は各テストが個別に失敗する） */
@@ -65,7 +65,7 @@ function pointer(type: string, pointerType: string): PointerEvent {
   });
 }
 
-/** 取り消せる `click` を送り、既定の動作が止められたかを返す */
+/** 取り消せる `click` を送信し、既定の動作が止められたかを返却する */
 function click(element: HTMLElement): boolean {
   const event = new MouseEvent("click", { bubbles: true, cancelable: true });
   element.dispatchEvent(event);
@@ -73,8 +73,8 @@ function click(element: HTMLElement): boolean {
 }
 
 /**
- * 番号のリンクへのタッチのタップを、実際の順序（`pointerenter`・`pointerdown`・`pointerup`・`pointerleave` の後にフォーカスと `click`）で起こし、`click` の既定の動作が止められたかを返す。
- * `pointerenter`・`pointerleave` は泡立たないため、ブラウザと同じく `sup` とリンクの両方に送る。
+ * 番号のリンクへのタッチのタップを、実際の順序（`pointerenter`・`pointerdown`・`pointerup`・`pointerleave` の後にフォーカスと `click`）で発生させ、`click` の既定の動作が止められたかを返却する。
+ * `pointerenter`・`pointerleave` は泡立たないため、ブラウザと同じく `sup` とリンクの両方に送信する。
  * `focus()` は既にフォーカスを持つリンクでは `focus` を発火しない
  */
 function tap(ref: HTMLElement, link: HTMLElement): boolean {
@@ -187,13 +187,13 @@ test("test_attach_footnotes_unique_ids", async () => {
   }
 });
 
-// 閉じた節の中の番号へ、戻るリンクで節を開いて移る（正常系）
+// 閉じたセクションの中の番号へ、戻るリンクでセクションを開いて移る（正常系）
 test("test_attach_footnotes_when_back_into_closed_section", async () => {
   // 準備
   const { attachFootnotes } = await loadFootnotes();
   const { attachSections } = await loadSections();
   const { root } = createRoot(
-    "## 節\n\n<!-- section: closed -->\n\n本文[^a]。\n\n[^a]: 補足\n",
+    "## セクション\n\n<!-- section: closed -->\n\n本文[^a]。\n\n[^a]: 補足\n",
   );
   detachers.push(attachSections({ root, sections: true, rowDetails: false }));
   detachers.push(attachFootnotes({ root, placement: "top" }));
@@ -255,7 +255,7 @@ test("test_attach_footnotes_when_touch_outside", async () => {
   vi.advanceTimersByTime(1000);
   // 検証
   expect(ref.classList.contains("is-open")).toBe(true);
-  // 実行: root の外（pointerleave・focusout は送らない）
+  // 実行: root の外（pointerleave・focusout は送信しない）
   outside.dispatchEvent(pointer("pointerdown", "touch"));
   vi.advanceTimersByTime(1000);
   // 検証: 番号にフォーカスが残ったままでも、ツールチップを出さない
@@ -266,7 +266,7 @@ test("test_attach_footnotes_when_touch_outside", async () => {
   expect(tip && getComputedStyle(tip).display).toBe("none");
 });
 
-// タップで一覧へ移った後も、同じ番号のタップで開き直す（正常系）
+// タップで一覧へ移った後も、同じ番号のタップでもう一度開く（正常系）
 test("test_attach_footnotes_when_touch_reopened", async () => {
   // 準備
   vi.useFakeTimers();

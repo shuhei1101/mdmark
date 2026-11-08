@@ -44,15 +44,15 @@ test("test_create_parser_when_autolink", async () => {
 // 取り消し線を del にする（正常系）
 test("test_create_parser_when_strikethrough", async () => {
   // 準備
-  const markdown = "~~消す~~\n";
+  const markdown = "~~削除する~~\n";
   // 実行
   const html = await parse(markdown);
   // 検証
-  expect(html).toContain("<del>消す</del>");
+  expect(html).toContain("<del>削除する</del>");
   expect(html).not.toContain("<s>");
 });
 
-// 表に読み上げの名前と tabindex、セルに列名を付ける（正常系）
+// 表にスクリーンリーダー向けの名前と tabindex、セルに列名を付ける（正常系）
 test("test_create_parser_when_table", async () => {
   // 準備
   const markdown = "## 変数\n\n| **列A** | 列B |\n| --- | --- |\n| 1 | 2 |\n";
@@ -64,7 +64,7 @@ test("test_create_parser_when_table", async () => {
   expect(html).toMatch(/<td[^>]*data-label="列B"/);
 });
 
-// 直前に見出しが無ければ読み上げの名前は「表」にする（正常系）
+// 直前に見出しが無ければスクリーンリーダー向けの名前は「表」にする（正常系）
 test("test_create_parser_when_table_without_heading", async () => {
   // 準備
   const markdown = "| 列A |\n| --- |\n| 1 |\n";
@@ -74,7 +74,7 @@ test("test_create_parser_when_table_without_heading", async () => {
   expect(html).toContain('<table tabindex="0" aria-label="表">');
 });
 
-// コードブロックの pre に読み上げの名前と tabindex を付ける（正常系）
+// コードブロックの pre にスクリーンリーダー向けの名前と tabindex を付ける（正常系）
 test("test_create_parser_when_code_block", async () => {
   // 準備
   const markdown = "```ts\nconst a = 1;\n```\n\n```\nplain\n```\n";
@@ -87,7 +87,7 @@ test("test_create_parser_when_code_block", async () => {
   expect(html).toContain('<pre tabindex="0" aria-label="コード">');
 });
 
-// 情報文字列に " があっても、コードブロックの読み上げの名前が途中で切れない（正常系）
+// 情報文字列に " があっても、コードブロックのスクリーンリーダー向けの名前が途中で切れない（正常系）
 test("test_create_parser_when_info_has_quote", async () => {
   // 準備
   const markdown = '```ts"x\nconst a = 1;\n```\n';
@@ -97,12 +97,12 @@ test("test_create_parser_when_info_has_quote", async () => {
   expect(html).toContain('aria-label="コード: ts&quot;x"');
 });
 
-// ブロックと行内の印を行の番号つきで拾う（正常系）
+// ブロックと行内のマーカーを行の番号つきで取得する（正常系）
 test("test_find_marks", async () => {
   // 準備
   const { findMarks } = await loadParser();
   const markdown = [
-    "# 題",
+    "# タイトル",
     "",
     "<!-- tabz -->",
     "",
@@ -120,7 +120,7 @@ test("test_find_marks", async () => {
   ]);
 });
 
-// コードブロックとインラインコードの中の印は拾わない（正常系）
+// コードブロックとインラインコードの中のマーカーは取得しない（正常系）
 test("test_find_marks_when_code", async () => {
   // 準備
   const { findMarks } = await loadParser();
@@ -138,18 +138,18 @@ test("test_find_marks_when_code", async () => {
   expect(marks).toEqual([]);
 });
 
-// 複数行の HTML のブロックの中の印の行を数える（正常系）
+// 複数行の HTML のブロックの中のマーカーの行を数える（正常系）
 test("test_find_marks_when_multiline_block", async () => {
   // 準備
   const { findMarks } = await loadParser();
-  const markdown = ["# 題", "<div>", "<!-- tabz -->", "</div>", ""].join("\n");
+  const markdown = ["# タイトル", "<div>", "<!-- tabz -->", "</div>", ""].join("\n");
   // 実行
   const marks = findMarks(markdown);
   // 検証
   expect(marks).toEqual([{ name: "tabz", line: 3 }]);
 });
 
-// 表のセルの中の印の行を行の番号で返す（正常系）
+// 表のセルの中のマーカーの行を行の番号で返却する（正常系）
 test("test_find_marks_when_table_cell", async () => {
   // 準備
   const { findMarks } = await loadParser();
@@ -165,7 +165,7 @@ test("test_find_marks_when_table_cell", async () => {
   expect(marks).toEqual([{ name: "tabz", line: 3 }]);
 });
 
-// 前に複数行の行内の HTML がある印の行を数える（正常系）
+// 前に複数行の行内の HTML があるマーカーの行を数える（正常系）
 test("test_find_marks_when_multiline_inline_html", async () => {
   // 準備
   const { findMarks } = await loadParser();
@@ -231,7 +231,7 @@ test("test_mark_source_lines_when_table_and_code", async () => {
   );
 });
 
-// 印の範囲を囲む要素と注意書きに開きの印の行を付け、中のブロックにもそれぞれの行を付ける（正常系）
+// マーカーの範囲を囲む要素と注意書きに開きのマーカーの行を付け、中のブロックにもそれぞれの行を付ける（正常系）
 test("test_mark_source_lines_when_mark_range", async () => {
   // 準備
   const { render } = await loadRender();
@@ -255,7 +255,7 @@ test("test_mark_source_lines_when_mark_range", async () => {
   expect(html).toMatch(/<[a-z]+[^>]*data-source-line="7"/);
 });
 
-// 文書に書いた生の HTML のブロックは変えない（正常系）
+// 文書に記載した生の HTML のブロックは変えない（正常系）
 test("test_mark_source_lines_when_raw_html", async () => {
   // 準備
   const { render } = await loadRender();

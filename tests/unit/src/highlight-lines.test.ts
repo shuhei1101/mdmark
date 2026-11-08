@@ -5,7 +5,7 @@ import { expect, test } from "vitest";
 /** 色分けした HTML を行に分ける処理を読み込む（実装が無い間は各テストが個別に失敗する） */
 const loadLines = () => import("../../../src/highlight-lines.ts");
 
-/** タグを外してエスケープを戻した文字にする */
+/** タグを削除してエスケープを戻した文字にする */
 function plainText(html: string): string {
   return html
     .replace(/<[^>]*>/g, "")
@@ -34,7 +34,7 @@ test("test_highlight_lines", async () => {
   expect(result.map(plainText)).toEqual(lines);
 });
 
-// 行をまたぐ span を行末で閉じ、次の行で開き直す（正常系）
+// 行をまたぐ span を行末で閉じ、次の行でもう一度開く（正常系）
 test("test_split_highlighted_lines", async () => {
   // 準備
   const { splitHighlightedLines } = await loadLines();
@@ -50,7 +50,7 @@ test("test_split_highlighted_lines", async () => {
   ]);
 });
 
-// 入れ子の span を内側から閉じ、外側から開き直す（正常系）
+// 入れ子の span を内側から閉じ、外側からもう一度開く（正常系）
 test("test_split_highlighted_lines_when_nested", async () => {
   // 準備
   const { splitHighlightedLines } = await loadLines();
@@ -69,7 +69,7 @@ test("test_split_highlighted_lines_when_nested", async () => {
   ).toBe(true);
 });
 
-// 改行が無ければそのまま 1 要素で返す（正常系）
+// 改行が無ければそのまま 1 要素で返却する（正常系）
 test("test_split_highlighted_lines_when_single_line", async () => {
   // 準備
   const { splitHighlightedLines } = await loadLines();

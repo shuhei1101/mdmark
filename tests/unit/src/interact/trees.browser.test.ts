@@ -20,12 +20,12 @@ const NESTED_TREE = [
 /** `src/` の下に `index.ts` を持つツリーの罫線のテキスト */
 const COPY_SOURCE = "src/\n└── index.ts";
 
-/** ツリーを書いた Markdown を作る（行を改行でつなぐ） */
+/** ツリーを記載した Markdown を作る（行を改行でつなぐ） */
 function markdownOf(...lines: string[]): string {
   return [...lines, ""].join("\n");
 }
 
-/** 描いた要素の中の `index` 番目のファイルツリーを返す */
+/** 描いた要素の中の `index` 番目のファイルツリーを返却する */
 function treeOf(root: HTMLElement, index = 0): HTMLElement {
   const tree = root.querySelectorAll<HTMLElement>("div.mdmark-tree")[index];
   if (!tree) {
@@ -34,7 +34,7 @@ function treeOf(root: HTMLElement, index = 0): HTMLElement {
   return tree;
 }
 
-/** ツリーの中で、名前のフォルダの開閉のボタンを返す */
+/** ツリーの中で、名前のフォルダの開閉のボタンを返却する */
 function toggleOf(tree: HTMLElement, name: string): HTMLButtonElement {
   const button = [
     ...tree.querySelectorAll<HTMLButtonElement>("button.mdmark-tree-toggle"),
@@ -45,14 +45,14 @@ function toggleOf(tree: HTMLElement, name: string): HTMLButtonElement {
   return button;
 }
 
-/** ツリーの中の、開閉のボタンの `aria-expanded` を名前の順に返す */
+/** ツリーの中の、開閉のボタンの `aria-expanded` を名前の順に返却する */
 function expandedOf(tree: HTMLElement, names: string[]): Array<string | null> {
   return names.map((name) =>
     toggleOf(tree, name).getAttribute("aria-expanded"),
   );
 }
 
-/** 開閉のボタンが開閉する入れ子の `ul` を返す */
+/** 開閉のボタンが開閉する入れ子の `ul` を返却する */
 function nestedListOf(button: HTMLButtonElement): HTMLElement {
   const list = button.closest("li")?.querySelector<HTMLElement>(":scope > ul");
   if (!list) {
@@ -72,7 +72,7 @@ function shiftClick(button: HTMLElement): void {
   );
 }
 
-/** ツリーのコピーのボタンを返す */
+/** ツリーのコピーのボタンを返却する */
 function copyButtonOf(tree: HTMLElement): HTMLButtonElement {
   const button = tree.querySelector<HTMLButtonElement>(
     "button.mdmark-tree-copy",
@@ -93,7 +93,7 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
-// 帯と開閉のボタンを置き、指定が無ければルートだけを開く（正常系）
+// 帯と開閉のボタンを配置し、指定が無ければルートだけを開く（正常系）
 test("test_attach_file_trees", async () => {
   // 準備
   const { attachFileTrees } = await loadTrees();
@@ -189,7 +189,7 @@ test("test_attach_file_trees_when_found", async () => {
   expect(list.hasAttribute("hidden")).toBe(false);
 });
 
-// 押すと元の罫線のテキストを写して 2 秒でボタンを戻す（正常系）
+// 押すと元の罫線のテキストをコピーして 2 秒でボタンを戻す（正常系）
 test("test_attach_file_trees_when_copied", async () => {
   // 準備
   vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] });
@@ -207,7 +207,7 @@ test("test_attach_file_trees_when_copied", async () => {
   // 実行
   button.click();
   await vi.advanceTimersByTimeAsync(0);
-  // 検証: 元のテキストを写し、ボタンと読み上げで知らせる
+  // 検証: 元のテキストをコピーし、ボタンとスクリーンリーダーで通知する
   expect(writeText).toHaveBeenCalledTimes(1);
   expect(writeText).toHaveBeenCalledWith(COPY_SOURCE);
   expect(button.dataset.state).toBe("copied");
@@ -220,7 +220,7 @@ test("test_attach_file_trees_when_copied", async () => {
   expect(button.dataset.state).toBe("idle");
 });
 
-// 書けなければツリーの下にパネルを出し、閉じると取り除く（正常系）
+// 記載できなければツリーの下にパネルを出し、閉じると取り除く（正常系）
 test("test_attach_file_trees_when_copy_denied", async () => {
   // 準備
   vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] });
@@ -264,7 +264,7 @@ test("test_attach_file_trees_when_copy_denied", async () => {
   }
 });
 
-// 外すと render の出した状態に戻す（正常系）
+// 削除すると render の出した状態に戻す（正常系）
 test("test_attach_file_trees_when_detached", async () => {
   // 準備
   vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] });
@@ -277,7 +277,7 @@ test("test_attach_file_trees_when_detached", async () => {
   const detach = attachFileTrees(root);
   const tree = treeOf(root);
   expect(tree.querySelector("ul[hidden]")).not.toBeNull();
-  // 実行: コピーのボタンを押してすぐ外し、2 秒進める
+  // 実行: コピーのボタンを押してすぐ削除し、2 秒進める
   copyButtonOf(tree).click();
   detach();
   await vi.advanceTimersByTimeAsync(2000);

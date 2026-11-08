@@ -8,19 +8,19 @@ import { stripSourceLine } from "../../helpers/source-line.ts";
 /** 解析の処理を読み込む（実装が無い間は各テストが個別に失敗する） */
 const loadParser = () => import("../../../../src/render/parser.ts");
 
-/** 印の処理を読み込む */
+/** マーカーの処理を読み込む */
 const loadMarks = () => import("../../../../src/render/marks.ts");
 
-/** 読み込み中の枠の処理を読み込む */
+/** 読み込み中のブロックの処理を読み込む */
 const loadEmbed = () => import("../../../../src/parts/embed.ts");
 
-/** mdmark が出した要素の印の処理を読み込む */
+/** mdmark が出した要素のマーカーの処理を読み込む */
 const loadOwn = () => import("../../../../src/parts/own.ts");
 
 /** 拡張の処理を読み込む */
 const loadExtensions = () => import("../../../../src/extensions.ts");
 
-/** 印を拾う規則を持つ解析器で Markdown を HTML にし、拾った印を入れた環境と一緒に返す */
+/** マーカーを取得する規則を持つ解析器で Markdown を HTML にし、取得したマーカーを入れた環境と一緒に返却する */
 async function parse(
   markdown: string,
   libraries: ResolvedConfig["libraries"] = {},
@@ -31,7 +31,7 @@ async function parse(
   return { html, env };
 }
 
-// 機能の印の引数を書いた順に拾い、本文から取り除く（正常系）
+// 機能のマーカーの引数を記載した順に取得し、本文から取り除く（正常系）
 test("test_take_marks", async () => {
   // 準備
   const markdown =
@@ -43,7 +43,7 @@ test("test_take_marks", async () => {
   expect(html).not.toContain("<!--");
 });
 
-// 対応表にある印を印の場所の要素にする（正常系）
+// 対応表にあるマーカーをマーカーの場所の要素にする（正常系）
 test("test_take_marks_when_library_mark", async () => {
   // 準備
   const { renderEmbed } = await loadEmbed();
@@ -60,7 +60,7 @@ test("test_take_marks_when_library_mark", async () => {
   );
 });
 
-// 未知の印を取り除き、印でないコメントとコードの中はそのままにする（正常系）
+// 未知のマーカーを取り除き、マーカーでないコメントとコードの中はそのままにする（正常系）
 test("test_take_marks_when_unknown_mark", async () => {
   // 準備
   const markdown = [
@@ -82,7 +82,7 @@ test("test_take_marks_when_unknown_mark", async () => {
   expect(env.featureArgs).toEqual([]);
 });
 
-// 記法の印と閉じの印、コロンの無い印を印のトークンにする（正常系）
+// 記法のマーカーと閉じのマーカー、コロンの無いマーカーをマーカーのトークンにする（正常系）
 test("test_take_marks_when_syntax_mark", async () => {
   // 準備
   const { takeMarks } = await loadMarks();
@@ -100,7 +100,7 @@ test("test_take_marks_when_syntax_mark", async () => {
   ]);
 });
 
-// 登録した拡張の印を印の場所の要素にする（正常系）
+// 登録した拡張のマーカーをマーカーの場所の要素にする（正常系）
 test("test_take_marks_when_extension_mark", async () => {
   // 準備
   const { registerExtension, resetExtensions } = await loadExtensions();
@@ -128,7 +128,7 @@ test("test_take_marks_when_extension_mark", async () => {
   }
 });
 
-// 種類・機能・キー・開閉を読み分ける（正常系）
+// 種類・機能・キー・開閉を判別しる（正常系）
 test("test_parse_mark_args", async () => {
   // 準備
   const { parseMarkArgs } = await loadMarks();
@@ -151,7 +151,7 @@ test("test_parse_mark_args_when_empty", async () => {
   expect(args).toEqual({ args: [], keys: {} });
 });
 
-// オフの記法の印を取り除き、囲んだ Markdown は残す（正常系）
+// オフの記法のマーカーを取り除き、囲んだ Markdown は残す（正常系）
 test("test_drop_marks", async () => {
   // 準備
   const { createParser } = await loadParser();
@@ -168,7 +168,7 @@ test("test_drop_marks", async () => {
   expect(tokens.some((token) => token.type === "mdmark_mark")).toBe(false);
 });
 
-// 範囲で書いた拡張の印は、印の場所の要素だけを出して範囲の中身と定義の JSON を残さない（正常系）
+// 範囲で記載した拡張のマーカーは、マーカーの場所の要素だけを出して範囲の中身と定義の JSON を残さない（正常系）
 test("test_take_marks_when_extension_range", async () => {
   // 準備
   const { registerExtension, resetExtensions } = await loadExtensions();
@@ -206,7 +206,7 @@ test("test_take_marks_when_extension_range", async () => {
   }
 });
 
-// 登録していない印の範囲のうち、中身が json のコードブロックだけのものは中身ごと取り除く（正常系）
+// 登録していないマーカーの範囲のうち、中身が json のコードブロックだけのものは中身ごと取り除く（正常系）
 test("test_take_marks_when_unknown_range_with_json", async () => {
   // 準備
   const markdown = [
@@ -235,7 +235,7 @@ test("test_take_marks_when_unknown_range_with_json", async () => {
 /** 機能を重ねた設定で文書を描く助け */
 const loadRenderHelper = () => import("../../helpers/render.ts");
 
-// 先頭の印を読み、本文に印を残さない（正常系）
+// 先頭のマーカーを読み込み、本文にマーカーを残さない（正常系）
 test("test_resolve_page_settings", async () => {
   // 準備
   const { renderDoc } = await loadRenderHelper();
@@ -254,7 +254,7 @@ test("test_resolve_page_settings", async () => {
   expect(rendered.warnings).toEqual([]);
 });
 
-// 先頭に無い印は読まずに警告を置く（異常系）
+// 先頭に無いマーカーは読み込まずに警告を配置する（異常系）
 test("test_resolve_page_settings_when_not_at_top", async () => {
   // 準備
   const { renderDoc } = await loadRenderHelper();
@@ -268,7 +268,7 @@ test("test_resolve_page_settings_when_not_at_top", async () => {
   expect(rendered.html).toContain("mdmark-syntax-warning");
 });
 
-// 知らない値を文書の先頭の警告にまとめ、知らないキーを読み飛ばす（異常系）
+// 知らない値を文書の先頭の警告にまとめ、知らないキーをスキップする（異常系）
 test("test_resolve_page_settings_when_unknown", async () => {
   // 準備
   const { renderDoc } = await loadRenderHelper();
@@ -286,7 +286,7 @@ test("test_resolve_page_settings_when_unknown", async () => {
   );
   expect(shown).toHaveLength(1);
   expect(shown[0]?.message).toContain("scheme=sepia");
-  // 本文の頭は印の文字のため、印の後ろの挙げた指定だけを見る
+  // 本文の頭はマーカーの文字のため、マーカーの後ろの挙げた指定だけを確認する
   const listed = (shown[0]?.message ?? "").replace(
     "<!-- page: scheme=sepia size=wide toc=fixed -->",
     "",

@@ -17,17 +17,17 @@ const loadMain = () => import("../../../../src/cli/main.ts");
 
 const createTempDir = useTempDirs();
 
-/** URL を読まない書き出しで使う、呼ばれたら拒否する URL を読む関数 */
+/** URL を読み込まない書き出しで使用する、呼ばれたら拒否する URL を読み込む関数 */
 const NO_FETCH = async (url: string): Promise<string> => {
-  throw new Error(`URL を読まない: ${url}`);
+  throw new Error(`URL を読み込まない: ${url}`);
 };
 
-/** 読んだ設定を作る */
+/** 読み込んだ設定を作る */
 function createLoaded(dir: string, config: Record<string, unknown>) {
   return { path: join(dir, "mdmark.config.yaml"), dir, config };
 }
 
-// 印のあるモジュールだけを束ね、拡張と theme を読む（正常系）
+// マーカーのあるモジュールだけをまとめ、拡張と theme を読み込む（正常系）
 test("test_prepare_embeds", async () => {
   // 準備
   const { prepareEmbeds } = await loadExport();
@@ -62,7 +62,7 @@ test("test_prepare_embeds", async () => {
   expect(result.warnings).toEqual([]);
 });
 
-// 読めないものを警告にして続ける（正常系）
+// 読み込めないものを警告にして続ける（正常系）
 test("test_prepare_embeds_when_unreadable", async () => {
   // 準備
   const { prepareEmbeds } = await loadExport();
@@ -129,14 +129,14 @@ test("test_prepare_embeds_when_index", async () => {
   ).toBe("guide");
 });
 
-// 既定の出力に HTML を書く（正常系）
+// 既定の出力に HTML を書き込む（正常系）
 test("test_run_export", async () => {
   // 準備
   const { runExport } = await loadExport();
   const dir = await createTempDir();
   await writeFiles(dir, {
     "mdmark.config.yaml": "features:\n  print: true\n",
-    "guide.md": "# 題\n",
+    "guide.md": "# タイトル\n",
   });
   const distDir = await writeDist(dir);
   const { io, stdout } = createIo(dir);
@@ -166,7 +166,7 @@ test("test_run_export_when_document_missing", async () => {
   await expect(result).rejects.toThrow("missing.md");
 });
 
-// 書けない出力先は CliError（異常系）
+// 記載できない出力先は CliError（異常系）
 test("test_run_export_when_output_unwritable", async () => {
   // 準備
   const { runExport } = await loadExport();
@@ -174,7 +174,7 @@ test("test_run_export_when_output_unwritable", async () => {
   const dir = await createTempDir();
   await writeFiles(dir, {
     "mdmark.config.yaml": "features:\n  print: true\n",
-    "guide.md": "# 題\n",
+    "guide.md": "# タイトル\n",
     blocked: "ファイル\n",
   });
   const distDir = await writeDist(dir);
@@ -189,14 +189,14 @@ test("test_run_export_when_output_unwritable", async () => {
   await expect(result).rejects.toThrow("blocked/guide.html");
 });
 
-// HTML を書いて絶対パスと警告を返す（正常系）
+// HTML を書き込んで絶対パスと警告を返却する（正常系）
 test("test_export_document", async () => {
   // 準備
   const { exportDocument } = await loadExport();
   const dir = await createTempDir();
   await writeFiles(dir, {
     "mdmark.config.yaml": "features:\n  print: true\n",
-    "guide.md": "# 題\n\n![図](missing.png)\n",
+    "guide.md": "# タイトル\n\n![図](missing.png)\n",
   });
   const distDir = await writeDist(dir);
   // 実行
@@ -208,7 +208,7 @@ test("test_export_document", async () => {
   expect(result.warnings).toHaveLength(1);
 });
 
-// 無い文書は何も書かずに CliError（異常系）
+// 無い文書は何も書き込まずに CliError（異常系）
 test("test_export_document_when_document_missing", async () => {
   // 準備
   const { exportDocument } = await loadExport();
@@ -298,7 +298,7 @@ test("test_prepare_embeds_when_side_toc_mode", async () => {
   expect(withoutSideToc.payload.config).not.toHaveProperty("side-toc");
 });
 
-// 設定の colorTheme を埋める設定に写し、知らない名前は写して警告する（正常系）
+// 設定の colorTheme を埋める設定にコピーし、知らない名前はコピーして警告する（正常系）
 test("test_prepare_embeds_when_color_theme", async () => {
   // 準備
   const { prepareEmbeds } = await loadExport();
@@ -351,7 +351,7 @@ test("test_prepare_embeds_when_color_scheme", async () => {
   expect(omitted.payload.config).not.toHaveProperty("colorScheme");
 });
 
-/** 色分けのライブラリの代役のモジュールを書く（`hl/` の下に本体と言語の分を置く） */
+/** 色分けのライブラリの代役のモジュールを記載する（`hl/` の下に本体と言語の分を配置する） */
 const SYNTAX_MODULES = {
   "hl/core.min.js":
     "export default { registerLanguage() {}, highlight() {} };\n",
@@ -361,7 +361,7 @@ const SYNTAX_MODULES = {
     'export default function yaml() { return { name: "YAML" }; }\n',
 };
 
-// 文書が使う言語だけ色分けのモジュールを束ね、埋める設定に syntax を写さない（正常系）
+// 文書が使用する言語だけ色分けのモジュールをまとめ、埋める設定に syntax を写さない（正常系）
 test("test_prepare_embeds_when_syntax", async () => {
   // 準備
   const { prepareEmbeds } = await loadExport();
@@ -389,7 +389,7 @@ test("test_prepare_embeds_when_syntax", async () => {
   expect(result.warnings).toEqual([]);
 });
 
-// 色分けの本体を束ねられなければ警告にして埋めずに続ける（正常系）
+// 色分けの本体をまとめられなければ警告にして埋めずに続ける（正常系）
 test("test_prepare_embeds_when_syntax_unreadable", async () => {
   // 準備
   const { prepareEmbeds } = await loadExport();
@@ -412,14 +412,14 @@ test("test_prepare_embeds_when_syntax_unreadable", async () => {
   expect(result.warnings[0]).toContain("syntax.url");
 });
 
-// mermaid のコードブロックがある文書だけ mermaid を束ね、埋める設定に url を写さない（正常系）
+// mermaid のコードブロックがある文書だけ mermaid をまとめ、埋める設定に url を写さない（正常系）
 test("test_prepare_embeds_when_mermaid", async () => {
   // 準備
   const { prepareEmbeds } = await loadExport();
   const dir = await createTempDir();
   await writeFiles(dir, {
     "guide.md": "```mermaid\nflowchart LR\n```\n",
-    "plain.md": "# 題\n",
+    "plain.md": "# タイトル\n",
     "vendor/mermaid.mjs": "export default { initialize() {}, render() {} };\n",
   });
   const loaded = createLoaded(dir, {
@@ -450,7 +450,7 @@ test("test_prepare_embeds_when_mermaid", async () => {
   expect(unused.embeds.mermaid).toBeUndefined();
 });
 
-// mermaid を束ねられなければ警告にして埋めずに続ける（正常系）
+// mermaid をまとめられなければ警告にして埋めずに続ける（正常系）
 test("test_prepare_embeds_when_mermaid_unreadable", async () => {
   // 準備
   const { prepareEmbeds } = await loadExport();
@@ -473,7 +473,7 @@ test("test_prepare_embeds_when_mermaid_unreadable", async () => {
   expect(result.warnings[0]).toContain("mermaid.url");
 });
 
-// 束ねられない言語だけ埋めずに警告にし、他の言語は埋める（正常系）
+// まとめられない言語だけ埋めずに警告にし、他の言語は埋める（正常系）
 test("test_prepare_embeds_when_syntax_language_unreadable", async () => {
   // 準備
   const { prepareEmbeds } = await loadExport();
@@ -502,13 +502,13 @@ test("test_prepare_embeds_when_syntax_language_unreadable", async () => {
   expect(result.warnings[0]).toContain("syntax.url");
 });
 
-// 束ねた後に動的 import が残る拡張を入れたうえで警告にする（正常系）
+// まとめた後に動的 import が残る拡張を入れたうえで警告にする（正常系）
 test("test_prepare_embeds_when_dynamic_import_left", async () => {
   // 準備
   const { prepareEmbeds } = await loadExport();
   const dir = await createTempDir();
   await writeFiles(dir, {
-    "guide.md": "# 題\n",
+    "guide.md": "# タイトル\n",
     "extensions/dynamic.js": [
       'const name = "./part.js";',
       'export default { name: "dynamic", directive: "dynamic", load: () => import(name) };',
@@ -538,7 +538,7 @@ test("test_prepare_embeds_when_aliases", async () => {
   const { prepareEmbeds } = await loadExport();
   const dir = await createTempDir();
   await writeFiles(dir, {
-    "guide.md": "テストを流すと開発サーバーを使う。\n",
+    "guide.md": "テストを実行すると開発サーバーを使用する。\n",
     "aliases/commands.yaml":
       "id: run-test\nname: テストを流す\ncommand: npm test\n",
     "aliases/servers.yaml":
@@ -566,7 +566,7 @@ test("test_prepare_embeds_when_aliases", async () => {
     out: join(dir, "guide.html"),
   });
   // 検証
-  // env は埋めず、使えるコマンドだけが入る
+  // env は埋めず、使用できるコマンドだけが入る
   expect(result.payload.aliases).toHaveLength(1);
   expect(result.payload.aliases?.[0]).toMatchObject({
     alias_type: "command",
@@ -618,7 +618,7 @@ test("test_prepare_embeds_when_media", async () => {
   expect(markdown).toMatch(/!\[図\]\(data:image\/png;base64,[^)\s]+\)/);
 });
 
-// 動画のコピー先へ書けなければ HTML を書かずに CliError（異常系）
+// 動画のコピー先へ書き込めなければ HTML を書き込まずに CliError（異常系）
 test("test_export_document_when_media_unwritable", async () => {
   // 準備
   const { exportDocument } = await loadExport();

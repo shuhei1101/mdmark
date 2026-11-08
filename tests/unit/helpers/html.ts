@@ -1,9 +1,9 @@
-/** HTML の中の開始タグを、現れた順に全て返す */
+/** HTML の中の開始タグを、現れた順に全て返却する */
 export function startTags(html: string): string[] {
   return html.match(/<[a-zA-Z][^>]*>/g) ?? [];
 }
 
-/** `needle` を含む最初の開始タグを返す（無ければ例外） */
+/** `needle` を含む最初の開始タグを返却する（無ければ例外） */
 export function findTag(html: string, needle: string): string {
   const tag = startTags(html).find((candidate) => candidate.includes(needle));
   if (tag === undefined) {
@@ -12,21 +12,21 @@ export function findTag(html: string, needle: string): string {
   return tag;
 }
 
-/** `needle` を含む開始タグを全て返す */
+/** `needle` を含む開始タグを全て返却する */
 export function findTags(html: string, needle: string): string[] {
   return startTags(html).filter((candidate) => candidate.includes(needle));
 }
 
-/** 開始タグのタグ名を返す */
+/** 開始タグのタグ名を返却する */
 function tagName(tag: string): string {
   const name = /^<([a-zA-Z0-9]+)/.exec(tag)?.[1];
   if (name === undefined) {
-    throw new Error(`タグ名が読めない: ${tag}`);
+    throw new Error(`タグ名が読み込めない: ${tag}`);
   }
   return name;
 }
 
-/** `needle` を含む最初の開始タグの要素の中身を、同じ名前の入れ子を数えて返す */
+/** `needle` を含む最初の開始タグの要素の中身を、同じ名前の入れ子を数えて返却する */
 export function innerHtml(html: string, needle: string): string {
   const tag = findTag(html, needle);
   const name = tagName(tag);
@@ -43,7 +43,7 @@ export function innerHtml(html: string, needle: string): string {
   throw new Error(`閉じタグが無い: ${tag}`);
 }
 
-/** `needle` を含む最初の開始タグから、その要素の閉じタグまでを返す */
+/** `needle` を含む最初の開始タグから、その要素の閉じタグまでを返却する */
 export function outerHtml(html: string, needle: string): string {
   const tag = findTag(html, needle);
   return `${tag}${innerHtml(html, needle)}</${tagName(tag)}>`;
@@ -58,7 +58,7 @@ export function plainText(html: string): string {
     .replaceAll("&amp;", "&");
 }
 
-/** 正規表現（`g` 付き）に合う文字列を全て返す（合わなければ空） */
+/** 正規表現（`g` 付き）に合う文字列を全て返却する（合わなければ空） */
 export function matches(text: string, pattern: RegExp): string[] {
   return text.match(pattern) ?? [];
 }

@@ -4,7 +4,7 @@ import { findTag, findTags, innerHtml } from "../../helpers/html.ts";
 /** コードブロックの部品を読み込む（実装が無い間は各テストが個別に失敗する） */
 const loadCodeBlock = () => import("../../../../src/parts/code-block.ts");
 
-// 題・行番号・行の種類を付け、文字をエスケープする（正常系）
+// タイトル・行番号・行の種類を付け、文字をエスケープする（正常系）
 test("test_render_code_block", async () => {
   // 準備
   const { renderCodeBlock } = await loadCodeBlock();
@@ -15,7 +15,7 @@ test("test_render_code_block", async () => {
     lineNumbers: true,
     lines: [{ text: "x < 1", kind: "add" }, { text: "y" }],
   });
-  // 検証: 題を持てば figure と figcaption の帯で、言語のラベルが題の前にある
+  // 検証: タイトルを持てば figure と figcaption の帯で、言語のラベルがタイトルの前にある
   expect(
     html.startsWith(
       '<figure class="mdmark-code"><figcaption class="mdmark-code-title mdmark-code-bar">',
@@ -43,7 +43,7 @@ test("test_render_code_block", async () => {
   expect(html).toContain('<span class="mdmark-code-text">x &lt; 1</span>');
 });
 
-// 題だけなら行に分けない（正常系）
+// タイトルだけなら行に分けない（正常系）
 test("test_render_code_block_when_title_only", async () => {
   // 準備
   const { renderCodeBlock } = await loadCodeBlock();
@@ -60,7 +60,7 @@ test("test_render_code_block_when_title_only", async () => {
   expect(html).not.toContain("mdmark-code-line");
 });
 
-// 行の数の桁の数を渡す（正常系）
+// 行の数の桁の数を指定する（正常系）
 test("test_render_code_block_when_two_digits", async () => {
   // 準備
   const { renderCodeBlock } = await loadCodeBlock();
@@ -80,7 +80,7 @@ test("test_render_code_block_when_two_digits", async () => {
   expect(last).toContain('data-line="13"');
 });
 
-// 色分けする言語を渡すと code に色分けの対象の属性を付ける（正常系）
+// 色分けする言語を指定すると code に色分けの対象の属性を付ける（正常系）
 test("test_render_code_block_when_syntax", async () => {
   // 準備
   const { renderCodeBlock } = await loadCodeBlock();
@@ -134,7 +134,7 @@ test("test_render_code_block_when_mermaid", async () => {
   expect(withoutBar).not.toContain("data-mdmark-syntax");
 });
 
-// ファイル名を言語の後ろに出し、読み上げの名前に使う（正常系）
+// ファイル名を言語の後ろに出し、スクリーンリーダー向けの名前に使用する（正常系）
 test("test_render_code_block_when_file_name", async () => {
   // 準備
   const { renderCodeBlock } = await loadCodeBlock();
@@ -174,7 +174,7 @@ test("test_render_code_block_when_no_language", async () => {
   expect(findTag(html, "<pre")).toContain('aria-label="コード"');
 });
 
-// 帯を付けないときは pre だけを返す（正常系）
+// 帯を付けないときは pre だけを返却する（正常系）
 test("test_render_code_block_when_bar_off", async () => {
   // 準備
   const { renderCodeBlock } = await loadCodeBlock();
@@ -194,7 +194,7 @@ test("test_render_code_block_when_bar_off", async () => {
   expect(html).not.toContain("mdmark-code-bar");
 });
 
-// コピーの状態を渡すと帯の右端にボタンを置く（正常系）
+// コピーの状態を指定すると帯の右端にボタンを配置する（正常系）
 test("test_render_code_block_when_copy_state", async () => {
   // 準備
   const { renderCodeBlock } = await loadCodeBlock();
@@ -215,7 +215,7 @@ test("test_render_code_block_when_copy_state", async () => {
   expect(bar).toContain("コピーしました");
 });
 
-// 状態ごとの文言と読み上げを返す（正常系）
+// 状態ごとの文言とスクリーンリーダーを返却する（正常系）
 test("test_render_code_copy", async () => {
   // 準備
   const { renderCodeCopy } = await loadCodeBlock();
@@ -230,7 +230,7 @@ test("test_render_code_copy", async () => {
   expect(innerHtml(failed, "mdmark-code-copy")).toContain(
     "コピーできませんでした",
   );
-  // 検証: 読み上げの要素
+  // 検証: スクリーンリーダー向けの要素
   expect(innerHtml(idle, "mdmark-code-status")).toBe("");
   expect(innerHtml(copied, "mdmark-code-status")).toBe(
     "コードをコピーしました",
@@ -279,7 +279,7 @@ function foldableLines(foldedLine?: number) {
   );
 }
 
-/** HTML の `mdmark-code-line` を、行ごとの開始タグから次の行の手前までの文字列にして返す */
+/** HTML の `mdmark-code-line` を、行ごとの開始タグから次の行の手前までの文字列にして返却する */
 function codeLinesOf(html: string): string[] {
   const parts = html.split('<span class="mdmark-code-line"').slice(1);
   return parts.map((part) => `<span class="mdmark-code-line"${part}`);
@@ -334,7 +334,7 @@ test("test_render_code_block_when_indented", async () => {
   expect(html).not.toContain("mdmark-code-fold");
 });
 
-// 畳んだ行の後ろを隠し、開閉のボタンと ⋯ を置く（正常系）
+// 畳んだ行の後ろを隠し、開閉のボタンと ⋯ を配置する（正常系）
 test("test_render_code_block_when_fold_buttons", async () => {
   // 準備
   const { renderCodeBlock } = await loadCodeBlock();
@@ -372,7 +372,7 @@ test("test_render_code_block_when_fold_buttons", async () => {
   }
 });
 
-// 開閉の状態と範囲を読み上げの名前に持つ（正常系）
+// 開閉の状態と範囲をスクリーンリーダー向けの名前に持つ（正常系）
 test("test_render_code_fold_toggle", async () => {
   // 準備
   const { renderCodeFoldToggle } = await loadCodeBlock();
@@ -394,7 +394,7 @@ test("test_render_code_fold_toggle", async () => {
   expect(html).toContain("chevron-right");
 });
 
-// 開く範囲を読み上げの名前に持つ（正常系）
+// 開く範囲をスクリーンリーダー向けの名前に持つ（正常系）
 test("test_render_code_fold_more", async () => {
   // 準備
   const { renderCodeFoldMore } = await loadCodeBlock();
@@ -415,7 +415,7 @@ test("test_render_code_block_when_wrap", async () => {
   const lines = [
     { text: 'import { mount } from "mdmark";' },
     {
-      text: 'const url = "https://cdn.jsdelivr.net/gh/shuhei1101/mdmark@v0.10.0/dist/index.js"; // バージョンを固定した URL から配布物を読み、描く先の要素に文書を描く',
+      text: 'const url = "https://cdn.jsdelivr.net/gh/shuhei1101/mdmark@v0.10.0/dist/index.js"; // バージョンを固定した URL から配布物を読み込み、描く先の要素に文書を描く',
     },
     { text: 'mount(document.querySelector("#doc"), markdown);' },
   ];

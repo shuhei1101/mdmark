@@ -1,13 +1,13 @@
 import { afterEach, expect, test, vi } from "vitest";
 
-/** 版の処理を読み込む（実装が無い間は各テストが個別に失敗する） */
+/** バージョンの処理を読み込む（実装が無い間は各テストが個別に失敗する） */
 const loadModule = () => import("../../../../src/cli/versions.ts");
 
 afterEach(() => {
   vi.unstubAllGlobals();
 });
 
-// 版を 3 つの数にする（正常系）
+// バージョンを 3 つの数にする（正常系）
 test("test_parse_version", async () => {
   // 準備
   const { parseVersion } = await loadModule();
@@ -17,7 +17,7 @@ test("test_parse_version", async () => {
   expect(parsed).toEqual([0, 12, 3]);
 });
 
-// 書式の違う版は undefined（異常系）
+// 書式の違うバージョンは undefined（異常系）
 test("test_parse_version_when_invalid", async () => {
   // 準備
   const { parseVersion } = await loadModule();
@@ -37,7 +37,7 @@ test("test_compare_versions", async () => {
   expect(compareVersions("v0.3.0", "v0.4.0")).toBe(-1);
 });
 
-// ビルドが埋めた版を返す（正常系）
+// ビルドが埋めたバージョンを返却する（正常系）
 test("test_cli_version", async () => {
   // 準備
   const { cliVersion } = await loadModule();

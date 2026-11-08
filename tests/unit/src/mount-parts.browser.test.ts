@@ -9,7 +9,7 @@ const loadMountParts = () =>
     ),
   );
 
-/** 部品のモジュールを読む処理を読み込む */
+/** 部品のモジュールを読み込む処理を読み込む */
 const loadPartModules = () =>
   loadSource(
     import.meta.glob<typeof import("../../../src/part-modules.ts")>(
@@ -17,7 +17,7 @@ const loadPartModules = () =>
     ),
   );
 
-/** 代役の部品のモジュールが呼ばれたことを控える場所 */
+/** 代役の部品のモジュールが呼ばれたことを記録する場所 */
 type Recorder = {
   imports: string[];
   drawView: Array<{ el: unknown; opts: unknown }>;
@@ -32,7 +32,7 @@ type Recorder = {
   commentsGate?: Promise<void>;
 };
 
-/** 代役の部品のモジュールが書き込む控えの置き場（グローバル） */
+/** 代役の部品のモジュールが書き込む記録の配置し場（グローバル） */
 declare global {
   var __mdmarkPartTest: Recorder | undefined;
 }
@@ -70,7 +70,7 @@ export async function attachComments(options) {
 const hosts: HTMLElement[] = [];
 const blobUrls: string[] = [];
 
-/** 控えを空にして、部品のモジュールの読み込み済みと URL の差し替えを空にする */
+/** 記録を空にして、部品のモジュールの読み込み済みと URL の差し替えを空にする */
 async function resetParts(): Promise<Recorder> {
   const recorder: Recorder = {
     imports: [],
@@ -120,7 +120,7 @@ async function useBrokenModule(name: "view" | "comments"): Promise<string> {
   return url;
 }
 
-/** HTML を入れた要素をページに置く */
+/** HTML を入れた要素をページに配置する */
 function createHost(html = ""): HTMLElement {
   const host = document.createElement("div");
   host.innerHTML = html;
@@ -129,7 +129,7 @@ function createHost(html = ""): HTMLElement {
   return host;
 }
 
-/** 少し待つ（読み込みが起きないことを確かめる前に、非同期の処理が動き終わるのを待つ） */
+/** 少し待つ（読み込みが起きないことを確認する前に、非同期の処理が動き終わるのを待つ） */
 function settle(): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, 50));
 }
@@ -142,14 +142,14 @@ function loggedText(spy: { mock: { calls: unknown[][] } }): string {
     .join(" ");
 }
 
-/** ビューの印の囲みを 2 つ持つ HTML */
+/** ビューのマーカーの囲みを 2 つ持つ HTML */
 const TWO_VIEWS =
   '<div class="mdmark-view"></div><div class="mdmark-view"></div>';
 
 /** 描く対象の項目 */
 const VIEW_OPTIONS = {
-  columns: ["題", "状態"],
-  items: [{ 題: "配色を直す", 状態: "未着手" }],
+  columns: ["タイトル", "状態"],
+  items: [{ タイトル: "配色を修正する", 状態: "未着手" }],
   group: "状態",
 };
 
@@ -164,7 +164,7 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
-// モジュールの drawView を呼んで destroy を返す（正常系）
+// モジュールの drawView を呼んで destroy を返却する（正常系）
 test("test_mount_view", async () => {
   // 準備
   const { mountView } = await loadMountParts();
@@ -182,7 +182,7 @@ test("test_mount_view", async () => {
   expect(recorder.drawViewDetached).toBe(1);
 });
 
-// 引数が合わないと同期で投げ、モジュールを読まない（異常系）
+// 引数が合わないと同期で投げ、モジュールを読み込まない（異常系）
 test("test_mount_view_when_invalid", async () => {
   // 準備
   const { mountView } = await loadMountParts();
@@ -198,7 +198,7 @@ test("test_mount_view_when_invalid", async () => {
   expect(el.innerHTML).toBe("前の中身");
 });
 
-// 読めないと知らせの枠を置いて reject する（異常系）
+// 読み込めないと通知ブロックを配置して reject する（異常系）
 test("test_mount_view_when_module_unavailable", async () => {
   // 準備
   const { mountView } = await loadMountParts();
@@ -216,7 +216,7 @@ test("test_mount_view_when_module_unavailable", async () => {
   expect(loggedText(spy)).toContain(url);
 });
 
-// モジュールの attachComments を呼んで destroy を返す（正常系）
+// モジュールの attachComments を呼んで destroy を返却する（正常系）
 test("test_mount_comments", async () => {
   // 準備
   const { mountComments } = await loadMountParts();
@@ -238,7 +238,7 @@ test("test_mount_comments", async () => {
   expect(recorder.attachCommentsDetached).toBe(1);
 });
 
-// 読み書きの関数が無いと同期で投げる（異常系）
+// 読み込みと保存の関数が無いと同期で投げる（異常系）
 test("test_mount_comments_when_invalid", async () => {
   // 準備
   const { mountComments } = await loadMountParts();
@@ -254,7 +254,7 @@ test("test_mount_comments_when_invalid", async () => {
   ).toThrow("opts.store");
 });
 
-// 読めないと el を書き換えずに reject する（異常系）
+// 読み込めないと el を書き換えずに reject する（異常系）
 test("test_mount_comments_when_module_unavailable", async () => {
   // 準備
   const { mountComments } = await loadMountParts();
@@ -270,7 +270,7 @@ test("test_mount_comments_when_module_unavailable", async () => {
   expect(store.load).not.toHaveBeenCalled();
 });
 
-// ビューの印ごとに attachView を呼ぶ（正常系）
+// ビューのマーカーごとに attachView を呼ぶ（正常系）
 test("test_attach_parts", async () => {
   // 準備
   const { attachParts } = await loadMountParts();
@@ -293,14 +293,14 @@ test("test_attach_parts", async () => {
   expect(recorder.attachViewDetached).toBe(2);
 });
 
-// 印も機能も無ければモジュールを読まない（正常系）
+// マーカーも機能も無ければモジュールを読み込まない（正常系）
 test("test_attach_parts_when_no_marks", async () => {
   // 準備
   const { attachParts } = await loadMountParts();
   const recorder = await resetParts();
   await useFakeModule("view");
   await useFakeModule("comments");
-  const root = createHost("<p>印の無い文書</p>");
+  const root = createHost("<p>マーカーの無い文書</p>");
   // 実行
   attachParts({
     root,
@@ -313,7 +313,7 @@ test("test_attach_parts_when_no_marks", async () => {
   expect(recorder.imports).toEqual([]);
 });
 
-// comments がオンでも読み書きの関数が無ければ読まず、console.error に 1 回だけ出す（正常系）
+// comments がオンでも読み込みと保存の関数が無ければ読み込まず、console.error に 1 回だけ出す（正常系）
 test("test_attach_parts_when_comments_without_store", async () => {
   // 準備
   const { attachParts } = await loadMountParts();
@@ -337,7 +337,7 @@ test("test_attach_parts_when_comments_without_store", async () => {
   expect(spy).toHaveBeenCalledTimes(1);
 });
 
-// 読み込みを待つ間に外すと付けない（正常系）
+// 読み込みを待つ間に削除すると付けない（正常系）
 test("test_attach_parts_when_detached_while_loading", async () => {
   // 準備
   const { attachParts } = await loadMountParts();
@@ -362,7 +362,7 @@ test("test_attach_parts_when_detached_while_loading", async () => {
   expect(recorder.attachView).toEqual([]);
 });
 
-// 読めないと表を残して console.error に 1 回出す（異常系）
+// 読み込めないと表を残して console.error に 1 回出す（異常系）
 test("test_attach_parts_when_module_unavailable", async () => {
   // 準備
   const { attachParts } = await loadMountParts();
@@ -387,7 +387,7 @@ test("test_attach_parts_when_module_unavailable", async () => {
   expect(loggedText(spy)).toContain(url);
 });
 
-// root の中に mountView・mountComments で付けた部品も外す関数で片付け、root の外の部品は片付けない（正常系）
+// root の中に mountView・mountComments で付けた部品も削除する関数で片付け、root の外の部品は片付けない（正常系）
 test("test_attach_parts_when_parts_mounted_inside", async () => {
   // 準備
   const { attachParts, mountView, mountComments } = await loadMountParts();
@@ -417,10 +417,10 @@ test("test_attach_parts_when_parts_mounted_inside", async () => {
   expect(recorder.drawViewDetached).toBe(1);
 });
 
-/** 部品を開閉する処理を読み込む（`reveal` に渡す関数を比べる） */
+/** 部品を開閉する処理を読み込む（`reveal` に指定する関数を比べる） */
 const loadSections = () => import("../../../src/interact/sections.ts");
 
-/** コメントの読み書きの関数 */
+/** コメントの読み込みと保存の関数 */
 function createStore() {
   return { load: vi.fn(async () => []), save: vi.fn() };
 }
@@ -454,7 +454,7 @@ test("test_attach_parts_when_comments_reloaded", async () => {
   handle.detach();
 });
 
-// コメントを付けていないとき・読めないときは load を呼ばずに解決する（正常系）
+// コメントを付けていないとき・読み込めないときは load を呼ばずに解決する（正常系）
 test("test_attach_parts_when_comments_reload_disabled", async () => {
   // 準備
   const { attachParts } = await loadMountParts();
@@ -473,7 +473,7 @@ test("test_attach_parts_when_comments_reload_disabled", async () => {
   await expect(off.reloadComments()).resolves.toBeUndefined();
   expect(recorder.imports).toEqual([]);
   off.detach();
-  // 準備: 読めないモジュール
+  // 準備: 読み込めないモジュール
   await resetParts();
   await useBrokenModule("comments");
   const broken = attachParts({
@@ -490,7 +490,7 @@ test("test_attach_parts_when_comments_reload_disabled", async () => {
   broken.detach();
 });
 
-// 外した後の reloadComments は reload を呼ばずに解決する（正常系）
+// 削除した後の reloadComments は reload を呼ばずに解決する（正常系）
 test("test_attach_parts_when_comments_reload_after_detach", async () => {
   // 準備
   const { attachParts } = await loadMountParts();
@@ -509,7 +509,7 @@ test("test_attach_parts_when_comments_reload_after_detach", async () => {
     warned: { missingStore: false },
   });
   await vi.waitFor(() => expect(recorder.attachComments).toHaveLength(1));
-  // 実行: attachComments の解決の前に外し、その後に読み直す
+  // 実行: attachComments の解決の前に削除し、その後に再読み込みする
   handle.detach();
   release();
   // 検証

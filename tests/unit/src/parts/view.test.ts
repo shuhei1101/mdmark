@@ -5,7 +5,7 @@ import { findTag, innerHtml, matches } from "../../helpers/html.ts";
 const loadView = () => import("../../../../src/parts/view.ts");
 
 /** 部品設計『ビュー』の Board の引数の列名 */
-const COLUMNS = ["題", "状態", "担当"];
+const COLUMNS = ["タイトル", "状態", "担当"];
 
 /** 部品設計『ビュー』の Board の引数の項目（状態は進行中・未着手・未着手・完了・進行中） */
 const ITEMS = [
@@ -13,10 +13,10 @@ const ITEMS = [
   ["コメントを保存する", "未着手", "鈴木"],
   ["表を絞り込む", "未着手", "佐藤"],
   ["アイコンを決める", "完了", "高橋"],
-  ["印刷を直す", "進行中", ""],
+  ["印刷を修正する", "進行中", ""],
 ];
 
-/** ボードの列を、見出しから次の列の前までの HTML に分けて返す */
+/** ボードの列を、見出しから次の列の前までの HTML に分けて返却する */
 function splitColumns(html: string): string[] {
   return html.split('<div class="mdmark-view-column">').slice(1);
 }
@@ -54,7 +54,7 @@ test("test_render_view_when_values_have_html", async () => {
   const { renderView } = await loadView();
   // 実行
   const html = renderView({
-    columns: ["題", "状態"],
+    columns: ["タイトル", "状態"],
     items: [["<b>x</b>", "未着手"]],
     group: "状態",
     id: "story-view",
@@ -64,7 +64,7 @@ test("test_render_view_when_values_have_html", async () => {
   expect(html).not.toContain("<b>");
 });
 
-// group が無ければ切り替えもボードも置かない（正常系）
+// group が無ければ切り替えもボードも配置しない（正常系）
 test("test_render_view_when_table_only", async () => {
   // 準備
   const { renderView } = await loadView();
@@ -95,13 +95,13 @@ test("test_render_view_switch_when_board_disabled", async () => {
   expect(board).toContain('aria-pressed="false"');
 });
 
-// 既定・上書き・対応に無い値のアイコンを引く（正常系）
+// 既定・上書き・対応に無い値のアイコンを参照する（正常系）
 test("test_render_view_board_icons", async () => {
   // 準備
   const { renderViewBoard, VIEW_ICON_PATHS } = await loadView();
   // 実行
   const html = renderViewBoard({
-    columns: ["題", "状態"],
+    columns: ["タイトル", "状態"],
     items: [
       ["項目 1", "未着手"],
       ["項目 2", "完了"],
@@ -130,12 +130,12 @@ test("test_render_view_board_when_empty_value", async () => {
   // 実行
   const html = renderViewBoard({
     columns: COLUMNS,
-    items: [["印刷を直す", "進行中", ""]],
+    items: [["印刷を修正する", "進行中", ""]],
     group: 1,
     icons: {},
   });
   // 検証
   const card = innerHtml(html, "mdmark-view-card");
-  expect(card).toContain("印刷を直す");
+  expect(card).toContain("印刷を修正する");
   expect(card).not.toContain("<dt>担当</dt>");
 });

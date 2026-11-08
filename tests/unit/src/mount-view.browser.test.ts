@@ -6,7 +6,7 @@ import { loadSource } from "../helpers/lazy.ts";
 /** 描く処理を読み込む（実装が無い間は各テストが個別に失敗する） */
 const loadMount = () => import("../../../src/mount.ts");
 
-/** 部品のモジュールを読む処理を読み込む */
+/** 部品のモジュールを読み込む処理を読み込む */
 const loadPartModules = () =>
   loadSource(
     import.meta.glob<typeof import("../../../src/part-modules.ts")>(
@@ -14,15 +14,15 @@ const loadPartModules = () =>
     ),
   );
 
-/** 代役のビューの部品のモジュールが呼ばれたことを控える場所 */
+/** 代役のビューの部品のモジュールが呼ばれたことを記録する場所 */
 type Recorder = { attached: Element[]; detached: number };
 
-/** 代役のモジュールが書き込む控えの置き場（グローバル） */
+/** 代役のモジュールが書き込む記録の配置し場（グローバル） */
 declare global {
   var __mdmarkMountTest: Recorder | undefined;
 }
 
-/** attachView が呼ばれた要素と外した回数を控える、ビューの代役のモジュールのコード */
+/** attachView が呼ばれた要素と削除した回数を記録する、ビューの代役のモジュールのコード */
 const VIEW_MODULE_CODE = `
 const rec = globalThis.__mdmarkMountTest;
 export function drawView() { return () => {}; }
@@ -32,11 +32,11 @@ export function attachView(view) {
 }
 `;
 
-/** ビューの印を持つ文書 */
+/** ビューのマーカーを持つ文書 */
 const VIEW_MARKDOWN = [
   "<!-- view: group=状態 -->",
   "",
-  "| 題 | 状態 |",
+  "| タイトル | 状態 |",
   "| --- | --- |",
   "| a | 未着手 |",
   "",
@@ -65,7 +65,7 @@ afterEach(async () => {
   globalThis.__mdmarkMountTest = undefined;
 });
 
-// ビューの印があると部品を付け、描き直すと前の部品を外す（正常系）
+// ビューのマーカーがあると部品を付け、再描画すると前の部品を削除する（正常系）
 test("test_mount_when_view_marked", async () => {
   // 準備
   const record: Recorder = { attached: [], detached: 0 };
@@ -91,12 +91,12 @@ test("test_mount_when_view_marked", async () => {
   expect(record.attached[0]).toBe(el.querySelector("div.mdmark-view"));
   expect(record.detached).toBe(0);
   // 実行
-  handle.update("印の無い文書\n");
+  handle.update("マーカーの無い文書\n");
   // 検証
   await vi.waitFor(() => expect(record.detached).toBe(1));
 });
 
-/** attachComments が受けた root を控える、コメントの代役のモジュールのコード */
+/** attachComments が受けた root を記録する、コメントの代役のモジュールのコード */
 const COMMENTS_MODULE_CODE = `
 const rec = globalThis.__mdmarkMountTest;
 export async function attachComments({ root }) {

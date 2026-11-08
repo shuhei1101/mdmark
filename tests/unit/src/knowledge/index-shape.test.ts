@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { expect, test } from "vitest";
 
-/** 索引の形の検査を読み込む（実装が無い間は各テストが個別に失敗する） */
+/** 索引の構造の検査を読み込む（実装が無い間は各テストが個別に失敗する） */
 const loadShape = () => import("../../../../src/knowledge/index-shape.ts");
 
 /** 索引の JSON Schema の要素: キーの型と、必須のキーの並び */
@@ -30,7 +30,7 @@ type IndexSchema = SchemaObject & {
   };
 };
 
-/** JSON Schema のキー 1 つを、`INDEX_SHAPE` と同じ型の書き方（`string[]` など）にする */
+/** JSON Schema のキー 1 つを、`INDEX_SHAPE` と同じ型の記載方法（`string[]` など）にする */
 function shapeType(key: string, property: SchemaProperty): string {
   if (property.type === "array") {
     if (property.items?.anyOf !== undefined) {
@@ -41,7 +41,7 @@ function shapeType(key: string, property: SchemaProperty): string {
   return property.type ?? "";
 }
 
-/** JSON Schema の要素を、`INDEX_SHAPE` の 1 要素と同じ形（キーから型と必須か）にする */
+/** JSON Schema の要素を、`INDEX_SHAPE` の 1 要素と同じ構造（キーから型と必須か）にする */
 function shapeOf(
   schema: SchemaObject,
 ): Record<string, { type: string; required: boolean }> {
@@ -54,7 +54,7 @@ function shapeOf(
   );
 }
 
-// 合う索引はそのまま返し、合わない場所が無い（正常系）
+// 合う索引はそのまま返却し、合わない場所が無い（正常系）
 test("test_normalize_index", async () => {
   // 準備
   const { normalizeIndex } = await loadShape();
@@ -77,7 +77,7 @@ test("test_normalize_index", async () => {
         id: "workspace",
         term: "ワークスペース",
         aliases: ["WS"],
-        meaning: "話し合いの記録を置くフォルダ",
+        meaning: "話し合いの記録を配置するフォルダ",
       },
     ],
   };
@@ -88,7 +88,7 @@ test("test_normalize_index", async () => {
   expect(index).toEqual(value);
 });
 
-// 形の合わない文書・用語を除き、場所を返す（異常系）
+// 構造の合わない文書・用語を除き、場所を返却する（異常系）
 test("test_normalize_index_when_invalid_item", async () => {
   // 準備
   const { normalizeIndex } = await loadShape();
@@ -98,7 +98,7 @@ test("test_normalize_index_when_invalid_item", async () => {
       { id: "b", title: "B" },
       { id: "a", path: "c.md", title: "C" },
     ],
-    terms: [{ id: "t", term: "語" }],
+    terms: [{ id: "t", term: "単語" }],
   };
   // 実行
   const { index, problems } = normalizeIndex(value);
@@ -113,7 +113,7 @@ test("test_normalize_index_when_invalid_item", async () => {
   expect(index.terms ?? []).toEqual([]);
 });
 
-// 空の要素を持つ avoid の用語を除き、場所を返す（異常系）
+// 空の要素を持つ avoid の用語を除き、場所を返却する（異常系）
 test("test_normalize_index_when_invalid_avoid", async () => {
   // 準備
   const { normalizeIndex } = await loadShape();
@@ -121,8 +121,8 @@ test("test_normalize_index_when_invalid_avoid", async () => {
     schema: 2,
     docs: [],
     terms: [
-      { id: "a", term: "語 A", meaning: "意味 A", avoid: [""] },
-      { id: "b", term: "語 B", meaning: "意味 B", avoid: ["作業場"] },
+      { id: "a", term: "単語 A", meaning: "意味 A", avoid: [""] },
+      { id: "b", term: "単語 B", meaning: "意味 B", avoid: ["作業場"] },
     ],
   };
   // 実行
@@ -181,7 +181,7 @@ test("test_normalize_index_matches_json_schema", async () => {
   expect(docTagObject?.required).toEqual(["name"]);
   expect(Object.keys(docTagObject?.properties ?? {})).toEqual(["name", "main"]);
   expect(docTagObject?.additionalProperties).toBe(false);
-  // 文書の関連の要素は、文字列か `to`・`type`・`when` が必須で `paths` を持つオブジェクトで、件数の上限を置かない
+  // 文書の関連の要素は、文字列か `to`・`type`・`when` が必須で `paths` を持つオブジェクトで、件数の上限を配置しない
   expect(docRelatedItems?.anyOf).toHaveLength(2);
   expect(docRelatedItems?.anyOf?.[0]?.type).toBe("string");
   const docRelatedObject = docRelatedItems?.anyOf?.[1];
@@ -210,7 +210,7 @@ test("test_normalize_index_matches_json_schema", async () => {
   expect(docRelated?.maxItems).toBeUndefined();
 });
 
-// 文字列・オブジェクトの文書のタグをそのまま返す（正常系）
+// 文字列・オブジェクトの文書のタグをそのまま返却する（正常系）
 test("test_normalize_index_when_doc_tags", async () => {
   // 準備
   const { normalizeIndex } = await loadShape();
@@ -226,7 +226,7 @@ test("test_normalize_index_when_doc_tags", async () => {
   expect(index.docs[0]?.tags).toEqual(docTags);
 });
 
-// 形の合わない文書のタグを持つ文書を、場所を返して除く（異常系）
+// 構造の合わない文書のタグを持つ文書を、場所を返却して除く（異常系）
 test("test_normalize_index_when_invalid_doc_tags", async () => {
   // 準備
   const { normalizeIndex } = await loadShape();
@@ -243,7 +243,7 @@ test("test_normalize_index_when_invalid_doc_tags", async () => {
   expect(index.docs).toEqual([]);
 });
 
-// v0.9.0 までの `schema: 1` と最上位の `tags` を合わない場所にし、文書・用語は使う（異常系）
+// v0.9.0 までの `schema: 1` と最上位の `tags` を合わない場所にし、文書・用語は使用する（異常系）
 test("test_normalize_index_when_old_schema", async () => {
   // 準備
   const { normalizeIndex } = await loadShape();
@@ -262,14 +262,14 @@ test("test_normalize_index_when_old_schema", async () => {
   expect("tags" in index).toBe(false);
 });
 
-// 文字列とオブジェクトの関連をそのまま返す（正常系）
+// 文字列とオブジェクトの関連をそのまま返却する（正常系）
 test("test_normalize_index_when_related", async () => {
   // 準備
   const { normalizeIndex } = await loadShape();
   const manyRelated = Array.from({ length: 9 }, (_, i) => ({
     to: `doc${i}`,
     type: "references",
-    when: "使い方を確かめるとき",
+    when: "使用方法を確認するとき",
   }));
   const value = {
     schema: 2,
@@ -298,7 +298,7 @@ test("test_normalize_index_when_related", async () => {
   expect(index.docs).toEqual(value.docs);
 });
 
-// 形の合わない関連を持つ文書を、場所を返して除く（異常系）
+// 構造の合わない関連を持つ文書を、場所を返却して除く（異常系）
 test("test_normalize_index_when_invalid_related", async () => {
   // 準備
   const { normalizeIndex } = await loadShape();
@@ -315,14 +315,14 @@ test("test_normalize_index_when_invalid_related", async () => {
         id: "b",
         path: "b.md",
         title: "B",
-        related: [{ to: "a", type: "depends_on", when: "前提を確かめるとき" }],
+        related: [{ to: "a", type: "depends_on", when: "前提を確認するとき" }],
       },
       {
         id: "c",
         path: "c.md",
         title: "C",
         related: [
-          { to: "a", type: "requires", when: "前提を確かめるとき", note: "x" },
+          { to: "a", type: "requires", when: "前提を確認するとき", note: "x" },
         ],
       },
       {
@@ -368,14 +368,14 @@ test("test_read_related", async () => {
   expect("paths" in related).toBe(false);
 });
 
-// オブジェクトの要素をそのままのキーで返す（正常系）
+// オブジェクトの要素をそのままのキーで返却する（正常系）
 test("test_read_related_when_object", async () => {
   // 準備
   const { readRelated } = await loadShape();
   const item = {
     to: "arch",
     type: "requires" as const,
-    when: "前提を確かめるとき",
+    when: "前提を確認するとき",
     paths: ["src/**"],
   };
   // 実行

@@ -4,7 +4,7 @@ import { findTag, findTags, innerHtml } from "../../helpers/html.ts";
 /** 画像の図の処理を読み込む（実装が無い間は各テストが個別に失敗する） */
 const loadImage = () => import("../../../../src/parts/image.ts");
 
-// 読み上げの名前を alt から作り、アイコンを置く（正常系）
+// スクリーンリーダー向けの名前を alt から作り、アイコンを配置する（正常系）
 test("test_render_image_opener", async () => {
   // 準備
   const { renderImageOpener } = await loadImage();
@@ -25,7 +25,7 @@ test("test_render_image_opener", async () => {
   expect(innerHtml(html, 'class="mdmark-image-open-icon"')).toContain("<svg");
 });
 
-// icon が false ならアイコンを置かない（正常系）
+// icon が false ならアイコンを配置しない（正常系）
 test("test_render_image_opener_when_no_icon", async () => {
   // 準備
   const { renderImageOpener } = await loadImage();
@@ -46,7 +46,7 @@ test("test_render_image_opener_when_no_icon", async () => {
 test("test_render_image_figure", async () => {
   // 準備
   const { renderImageFigure } = await loadImage();
-  // 実行（部品設計の Caption に幅と配置を足す）
+  // 実行（部品設計の Caption に幅と配置を追加する）
   const html = renderImageFigure({
     src: "screen-light.svg",
     alt: "プレビューを開いた画面",
@@ -68,7 +68,7 @@ test("test_render_image_figure", async () => {
   );
 });
 
-// opener が false なら img だけを置く（正常系）
+// opener が false なら img だけを配置する（正常系）
 test("test_render_image_figure_when_render", async () => {
   // 準備
   const { renderImageFigure } = await loadImage();

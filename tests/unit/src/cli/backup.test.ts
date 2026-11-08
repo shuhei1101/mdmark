@@ -4,7 +4,7 @@ import { join } from "node:path";
 import { expect, test } from "vitest";
 import { useTempDirs, writeFiles } from "../../helpers/cli.ts";
 
-/** 写しの処理を読み込む（実装が無い間は各テストが個別に失敗する） */
+/** コピーの処理を読み込む（実装が無い間は各テストが個別に失敗する） */
 const loadModule = () => import("../../../../src/cli/backup.ts");
 
 /** CLI の誤りを読み込む */
@@ -12,10 +12,10 @@ const loadMain = () => import("../../../../src/cli/main.ts");
 
 const createTempDir = useTempDirs();
 
-// 写しのフォルダ名に使う時刻（手元の時刻）
+// コピーのフォルダ名に使用する時刻（手元の時刻）
 const NOW = new Date(2026, 9, 17, 12, 0, 0);
 
-// 相対パスを保って写し、.gitignore を置く（正常系）
+// 相対パスを保ってコピーし、.gitignore を配置する（正常系）
 test("test_take_backup", async () => {
   // 準備
   const { takeBackup } = await loadModule();
@@ -40,7 +40,7 @@ test("test_take_backup", async () => {
   expect(ignore.trim()).toBe("*");
 });
 
-// 同じ日時の写しがあれば別の名前にする（正常系）
+// 同じ日時のコピーがあれば別の名前にする（正常系）
 test("test_take_backup_when_same_time", async () => {
   // 準備
   const { takeBackup } = await loadModule();
@@ -84,7 +84,7 @@ test("test_take_backup_when_outside", async () => {
   }
 });
 
-// 書き換えたファイルを写しの中身に戻す（正常系）
+// 書き換えたファイルをコピーの中身に戻す（正常系）
 test("test_restore_backup", async () => {
   // 準備
   const { takeBackup, restoreBackup } = await loadModule();

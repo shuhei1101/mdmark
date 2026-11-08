@@ -1,6 +1,6 @@
 import { expect, test } from "vitest";
 
-/** 設定の aliases の行を Schema で検める処理を読み込む（ファイルが無いと Vite の解決が失敗してテストファイルごと落ちるため、URL を組んで読む。実装が無い間は各テストが個別に失敗する） */
+/** 設定の aliases の行を Schema で検める処理を読み込む（ファイルが無いと Vite の解決が失敗してテストファイルごと落ちるため、URL を組んで読み込む。実装が無い間は各テストが個別に失敗する） */
 const loadAliasSchema = (): Promise<
   typeof import("../../../../src/cli/alias-schema.ts")
 > =>
@@ -21,7 +21,7 @@ const VALID_ROW = {
   metadata: { name: "term", description: "meta.summary" },
 };
 
-// Schema に合う行はずれにせず、そのまま返す（正常系）
+// Schema に合う行はずれにせず、そのまま返却する（正常系）
 test("test_validate_alias_rows", async () => {
   // 準備
   const { validateAliasRows } = await loadAliasSchema();

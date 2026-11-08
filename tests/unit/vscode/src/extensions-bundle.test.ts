@@ -4,16 +4,16 @@ import { join, resolve } from "node:path";
 import { beforeAll, expect, test, vi } from "vitest";
 import { useTempDirs, writeFiles } from "../../helpers/cli.ts";
 
-/** 拡張を束ねる処理を読み込む（実装が無い間は各テストが個別に失敗する） */
+/** 拡張をまとめる処理を読み込む（実装が無い間は各テストが個別に失敗する） */
 const loadModule = () => import("../../../../vscode/src/extensions-bundle.ts");
 
 const createTempDir = useTempDirs();
 
-/** `dist/esbuild.wasm` を置いた、拡張機能のフォルダの代わり */
+/** `dist/esbuild.wasm` を配置した、拡張機能のフォルダの代わり */
 let extensionPath: string;
 
 beforeAll(async () => {
-  // esbuild-wasm の browser.js は `self` を参照する（拡張機能ではビルドのプラグインが足す）
+  // esbuild-wasm の browser.js は `self` を参照する（拡張機能ではビルドのプラグインが追加する）
   Object.assign(globalThis, { self: globalThis });
   extensionPath = await createTempDir();
   await mkdir(join(extensionPath, "dist"));
@@ -26,7 +26,7 @@ beforeAll(async () => {
   );
 });
 
-// .ts とその相対パス・URL の import を 1 つに束ねる（正常系）
+// .ts とその相対パス・URL の import を 1 つにまとめる（正常系）
 test("test_bundle_extensions", async () => {
   // 準備
   const { bundleExtensions } = await loadModule();
@@ -51,7 +51,7 @@ test("test_bundle_extensions", async () => {
   });
   // 検証
   if (result === undefined || !("code" in result)) {
-    throw new Error(`束ねられなかった: ${JSON.stringify(result)}`);
+    throw new Error(`まとめられなかった: ${JSON.stringify(result)}`);
   }
   expect(result.path).toBe(join(dir, "entry.ts"));
   expect(result.code).not.toMatch(/\bimport\b/);
@@ -60,7 +60,7 @@ test("test_bundle_extensions", async () => {
   expect(fetchText).toHaveBeenCalledWith("https://cdn.example/a.js");
 });
 
-// 束ねられない拡張は理由を返して次へ進む（異常系）
+// まとめられない拡張は理由を返却して次へ進む（異常系）
 test("test_bundle_extensions_when_error", async () => {
   // 準備
   const { bundleExtensions } = await loadModule();

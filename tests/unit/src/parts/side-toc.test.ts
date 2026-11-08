@@ -9,15 +9,15 @@ const HEADINGS = [
   { level: 1, id: "手引き", text: "手引き" },
   { level: 2, id: "導入", text: "導入" },
   { level: 3, id: "前提", text: "前提" },
-  { level: 2, id: "使い方", text: "使い方" },
+  { level: 2, id: "使用方法", text: "使用方法" },
 ] as const;
 
-/** 属性が値なしの形（`data-open` か `data-open=""`）で付いているかを返す */
+/** 属性が値なしの構造（`data-open` か `data-open=""`）で付いているかを返却する */
 function hasBooleanAttribute(tag: string, name: string): boolean {
   return new RegExp(`\\s${name}(?=[\\s=>])`).test(tag);
 }
 
-// 見出しを入れ子にし、右端の線と読み上げ名を付ける（正常系）
+// 見出しを入れ子にし、右端の線とスクリーンリーダー向けの名前を付ける（正常系）
 test("test_render_side_toc", async () => {
   // 準備
   const { renderSideToc } = await loadSideToc();
@@ -27,7 +27,7 @@ test("test_render_side_toc", async () => {
   expect(findTag(html, "<aside")).toContain('data-mode="hover"');
   expect(findTag(html, "<nav")).toContain('aria-label="右側の目次"');
   expect(html).toContain(
-    '<li><a href="#手引き" data-heading-id="手引き">手引き</a><ul><li><a href="#導入" data-heading-id="導入">導入</a><ul><li><a href="#前提" data-heading-id="前提">前提</a></li></ul></li><li><a href="#使い方" data-heading-id="使い方">使い方</a></li></ul></li>',
+    '<li><a href="#手引き" data-heading-id="手引き">手引き</a><ul><li><a href="#導入" data-heading-id="導入">導入</a><ul><li><a href="#前提" data-heading-id="前提">前提</a></li></ul></li><li><a href="#使用方法" data-heading-id="使用方法">使用方法</a></li></ul></li>',
   );
   expect(findTags(html, 'class="mdmark-side-toc-bar"')).toHaveLength(4);
   expect(findTag(html, "mdmark-side-toc-rail")).toContain('aria-hidden="true"');
@@ -72,7 +72,7 @@ test("test_render_side_toc_when_fixed_open", async () => {
   expect(findTag(html, "mdmark-side-toc-pin")).toContain('aria-pressed="true"');
 });
 
-// sections が false ならすべて展開・すべて折りたたむを置かない（正常系）
+// sections が false ならすべて展開・すべて折りたたむを配置しない（正常系）
 test("test_render_side_toc_when_without_sections", async () => {
   // 準備
   const { renderSideToc } = await loadSideToc();
@@ -85,7 +85,7 @@ test("test_render_side_toc_when_without_sections", async () => {
   );
 });
 
-// 今いる節の項目・線・狭い幅の帯の文字を付ける（正常系）
+// 今いるセクションの項目・線・狭い幅の帯の文字を付ける（正常系）
 test("test_render_side_toc_when_current", async () => {
   // 準備
   const { renderSideToc } = await loadSideToc();

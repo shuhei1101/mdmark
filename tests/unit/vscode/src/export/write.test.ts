@@ -21,7 +21,7 @@ afterEach(async () => {
   );
 });
 
-// 無いフォルダを作って書き、一時ファイルを残さない（正常系）
+// 無いフォルダを作って記載し、一時ファイルを残さない（正常系）
 test("test_write_file_atomically", async () => {
   // 準備
   const { writeFileAtomically } = await loadWrite();
@@ -35,7 +35,7 @@ test("test_write_file_atomically", async () => {
   expect(names).toEqual(["guide.html"]);
 });
 
-// 書けなければ一時ファイルを消して投げ直す（異常系・置き換えられない）
+// 記載できなければ一時ファイルを削除してもう一度投げる（異常系・置き換えられない）
 test("test_write_file_atomically_when_not_writable", async () => {
   // 準備
   const { writeFileAtomically } = await loadWrite();

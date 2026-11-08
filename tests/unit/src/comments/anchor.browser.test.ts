@@ -11,7 +11,7 @@ const loadAnchor = () =>
 
 const roots: HTMLElement[] = [];
 
-/** HTML を入れた範囲の要素をページに置く */
+/** HTML を入れた範囲の要素をページに配置する */
 function createRoot(html: string): HTMLElement {
   const root = document.createElement("div");
   root.innerHTML = html;
@@ -20,7 +20,7 @@ function createRoot(html: string): HTMLElement {
   return root;
 }
 
-/** 要素の最初の文字の節の、始まりと終わりの位置の間を選んだ範囲 */
+/** 要素の最初の文字のセクションの、始まりと終わりの位置の間を選んだ範囲 */
 function selectText(root: HTMLElement, start: number, end: number): Range {
   const textNode = root.querySelector("p")?.firstChild;
   if (textNode === null || textNode === undefined) {

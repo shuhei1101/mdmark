@@ -14,7 +14,7 @@ afterEach(() => {
   }
 });
 
-/** `data-*` を持つ要素を置く */
+/** `data-*` を持つ要素を配置する */
 const element = (dataset: Record<string, string>): HTMLElement => {
   const root = document.createElement("div");
   Object.assign(root.dataset, dataset);
@@ -23,7 +23,7 @@ const element = (dataset: Record<string, string>): HTMLElement => {
   return root;
 };
 
-// data-* を読み、知らない status と配列でない data-extensions は持たない（正常系）
+// data-* を読み込み、知らない status と配列でない data-extensions は持たない（正常系）
 test("test_read_boot", async () => {
   // 準備
   const { readBoot } = await loadBoot();
@@ -56,7 +56,7 @@ test("test_read_boot", async () => {
   expect(second.test).toBe(false);
 });
 
-// line が数のときだけ返す（正常系）
+// line が数のときだけ返却する（正常系）
 test("test_saved_line_from", async () => {
   // 準備
   const { savedLineFrom } = await loadBoot();

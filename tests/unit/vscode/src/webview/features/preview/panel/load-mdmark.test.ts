@@ -68,7 +68,7 @@ test("test_supports_diff_blocks_when_missing", async () => {
   expect(supportsDiffBlocks({ diffModes: "blocks" })).toBe(false);
 });
 
-// 順に登録し、読めない拡張を飛ばす（正常系）
+// 順に登録し、読み込めない拡張を飛ばす（正常系）
 test("test_register_extensions", async () => {
   // 準備
   const { registerExtensions } = await loadLoadMdmark();
@@ -76,7 +76,7 @@ test("test_register_extensions", async () => {
   const mdmark = { mount: vi.fn(), registerExtension };
   const importModule = vi.fn(async (url: string) => {
     if (url === "b.js") {
-      throw new Error("読めない");
+      throw new Error("読み込めない");
     }
     return { default: { name: url } };
   });

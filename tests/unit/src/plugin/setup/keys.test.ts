@@ -7,7 +7,7 @@ const loadKeys = () => import("../../../../../src/plugin/setup/keys.ts");
 
 const SCHEMAS = join(import.meta.dirname, "../../../../../schemas");
 
-/** schemas/ の JSON Schema を読む */
+/** schemas/ の JSON Schema を読み込む */
 const readSchema = (name: string) =>
   JSON.parse(readFileSync(join(SCHEMAS, name), "utf8"));
 

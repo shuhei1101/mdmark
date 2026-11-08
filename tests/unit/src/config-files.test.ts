@@ -1,6 +1,6 @@
 import { expect, test } from "vitest";
 
-/** 設定を重ねて読む処理を読み込む（実装が無い間は各テストが個別に失敗する） */
+/** 設定を重ねて読み込む処理を読み込む（実装が無い間は各テストが個別に失敗する） */
 const loadModule = () => import("../../../src/config-files.ts");
 
 /** 端末の設定の場所 */
@@ -36,7 +36,7 @@ const options = (
   ...memoryFiles(files),
 });
 
-// 端末の設定・上・近いを重ね、相対パスを書いたファイルから解決する（正常系）
+// 端末の設定・上・近いを重ね、相対パスを記載したファイルから解決する（正常系）
 test("test_load_layered_config", async () => {
   // 準備
   const { loadLayeredConfig } = await loadModule();
@@ -118,7 +118,7 @@ test("test_load_layered_config_when_settings_missing", async () => {
   expect(layered.issues).toEqual([]);
 });
 
-// YAML として読めないファイルを unreadable にして重ねない（正常系）
+// YAML として読み込めないファイルを unreadable にして重ねない（正常系）
 test("test_load_layered_config_when_unreadable", async () => {
   // 準備
   const { loadLayeredConfig } = await loadModule();
@@ -134,7 +134,7 @@ test("test_load_layered_config_when_unreadable", async () => {
   expect(layered.files.map((file) => file.path)).not.toContain(SETTINGS);
 });
 
-// 形の合わないファイルのずれを返して重ねない（正常系）
+// 構造の合わないファイルのずれを返却して重ねない（正常系）
 test("test_load_layered_config_when_invalid", async () => {
   // 準備
   const { loadLayeredConfig } = await loadModule();
@@ -149,7 +149,7 @@ test("test_load_layered_config_when_invalid", async () => {
   expect(layered.files).toEqual([]);
 });
 
-// フォルダの設定の config のキーは読まない（正常系）
+// フォルダの設定の config のキーは読み込まない（正常系）
 test("test_load_layered_config_when_folder_has_config_key", async () => {
   // 準備
   const { loadLayeredConfig } = await loadModule();
@@ -193,7 +193,7 @@ test("test_resolve_settings_path", async () => {
   expect(path).toBe("/x/my.yaml");
 });
 
-// XDG_CONFIG_HOME の下を使う（正常系）
+// XDG_CONFIG_HOME の下を使用する（正常系）
 test("test_resolve_settings_path_when_xdg", async () => {
   // 準備
   const { resolveSettingsPath } = await loadModule();
@@ -206,7 +206,7 @@ test("test_resolve_settings_path_when_xdg", async () => {
   expect(path).toBe("/xdg/mdmark/settings.yaml");
 });
 
-// ホームの .config の下を使う（正常系）
+// ホームの .config の下を使用する（正常系）
 test("test_resolve_settings_path_when_no_env", async () => {
   // 準備
   const { resolveSettingsPath } = await loadModule();
@@ -216,13 +216,13 @@ test("test_resolve_settings_path_when_no_env", async () => {
   expect(path).toBe("/h/.config/mdmark/settings.yaml");
 });
 
-/** 2 段上と起点に設定ファイルを置いた `isFile` */
+/** 2 段上と起点に設定ファイルを配置した `isFile` */
 const chainFiles = memoryFiles({
   "/w/mdmark.config.yaml": "",
   "/w/a/b/mdmark.config.yaml": "",
 }).isFile;
 
-// 全て集めて上 → 近いの順に返す（正常系）
+// 全て集めて上 → 近いの順に返却する（正常系）
 test("test_find_config_chain", async () => {
   // 準備
   const { findConfigChain } = await loadModule();

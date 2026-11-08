@@ -6,7 +6,7 @@ import { addStyles, createRoot, removeRoots } from "../../helpers/dom.ts";
 /** 右側の目次の操作を読み込む（実装が無い間は各テストが個別に失敗する） */
 const loadSideToc = () => import("../../../../src/interact/side-toc.ts");
 
-/** 節の操作を読み込む */
+/** セクションの操作を読み込む */
 const loadSections = () => import("../../../../src/interact/sections.ts");
 
 /** 記法の操作をまとめて付ける処理を読み込む */
@@ -14,7 +14,7 @@ const loadInteractions = () => import("../../../../src/interact/index.ts");
 
 const detachers: Array<() => void> = [];
 
-/** 外す関数を控える（後始末で付けた順の逆に外す） */
+/** 削除する関数を記録する（後始末で付けた順の逆に削除する） */
 function track(detach: () => void): void {
   detachers.push(detach);
 }
@@ -24,7 +24,7 @@ function createState(overrides: Partial<SideTocState> = {}): SideTocState {
   return { open: false, pinned: false, ...overrides };
 }
 
-/** 本文の高さを稼ぐ段落を並べた Markdown を返す（見出しを画面の上端へ送れるようにする） */
+/** 本文の高さを稼ぐ段落を並べた Markdown を返却する（見出しを画面の上端へスクロールできるようにする） */
 function filler(count = 30): string {
   return Array.from(
     { length: count },
@@ -32,21 +32,21 @@ function filler(count = 30): string {
   ).join("\n");
 }
 
-/** 右側の目次の中で `aria-current` を持つ項目の `href` を返す */
+/** 右側の目次の中で `aria-current` を持つ項目の `href` を返却する */
 function currentHrefs(aside: HTMLElement): string[] {
   return [...aside.querySelectorAll('a[aria-current="location"]')].map(
     (link) => link.getAttribute("href") ?? "",
   );
 }
 
-/** 右端の線が `data-current` を持つかを、上から順に返す */
+/** 右端の線が `data-current` を持つかを、上から順に返却する */
 function currentBars(aside: HTMLElement): boolean[] {
   return [...aside.querySelectorAll(".mdmark-side-toc-bar")].map((bar) =>
     bar.hasAttribute("data-current"),
   );
 }
 
-/** 右側の目次の中の要素を返す（無ければ例外） */
+/** 右側の目次の中の要素を返却する（無ければ例外） */
 function find<T extends HTMLElement>(aside: HTMLElement, selector: string): T {
   const element = aside.querySelector<T>(selector);
   if (!element) {
@@ -55,7 +55,7 @@ function find<T extends HTMLElement>(aside: HTMLElement, selector: string): T {
   return element;
 }
 
-/** 本文の中の要素を返す（無ければ例外） */
+/** 本文の中の要素を返却する（無ければ例外） */
 function queryContent(root: HTMLElement, selector: string): HTMLElement {
   const element = root.querySelector<HTMLElement>(selector);
   if (!element) {
@@ -64,7 +64,7 @@ function queryContent(root: HTMLElement, selector: string): HTMLElement {
   return element;
 }
 
-/** 節の ID の開閉のボタンの `aria-expanded` を、渡した順に返す */
+/** セクションの ID の開閉のボタンの `aria-expanded` を、指定した順に返却する */
 function expandedStates(root: HTMLElement, ids: string[]): string[] {
   return ids.map(
     (id) =>
@@ -162,7 +162,7 @@ test("test_pick_current_heading_when_none", async () => {
   expect(id).toBeUndefined();
 });
 
-// 本文を列に包み、見出しを入れ子にした右側の目次を置く（正常系）
+// 本文を列に包み、見出しを入れ子にした右側の目次を配置する（正常系）
 test("test_attach_side_toc", async () => {
   // 準備
   const { attachSideToc } = await loadSideToc();
@@ -188,7 +188,7 @@ test("test_attach_side_toc", async () => {
   expect(result.aside?.getAttribute("data-mode")).toBe("hover");
 });
 
-// 見出しが無ければ何も置かない（正常系）
+// 見出しが無ければ何も配置しない（正常系）
 test("test_attach_side_toc_when_no_headings", async () => {
   // 準備
   const { attachSideToc } = await loadSideToc();
@@ -208,7 +208,7 @@ test("test_attach_side_toc_when_no_headings", async () => {
   expect(root.innerHTML).toBe(before);
 });
 
-// 目次を出すボタン・ピン止め・Esc で状態を切り替えて控える（正常系）
+// 目次を出すボタン・ピン止め・Esc で状態を切り替えて記録する（正常系）
 test("test_attach_side_toc_when_toggled", async () => {
   // 準備
   const { attachSideToc } = await loadSideToc();
@@ -240,7 +240,7 @@ test("test_attach_side_toc_when_toggled", async () => {
   expect(state).toEqual({ open: false, pinned: true });
 });
 
-// 保った状態で付け直すと同じ出し方で出す（正常系）
+// 保った状態でもう一度付けると同じ出し方で出す（正常系）
 test("test_attach_side_toc_when_state_kept", async () => {
   // 準備
   const { attachSideToc } = await loadSideToc();
@@ -258,7 +258,7 @@ test("test_attach_side_toc_when_state_kept", async () => {
   expect(result.aside?.hasAttribute("data-pinned")).toBe(true);
 });
 
-// 閉じた節の中の見出しの項目を押すと節を開いて移る（正常系）
+// 閉じたセクションの中の見出しの項目を押すとセクションを開いて移る（正常系）
 test("test_attach_side_toc_when_link_into_closed_section", async () => {
   // 準備
   const { attachSideToc } = await loadSideToc();
@@ -299,7 +299,7 @@ test("test_attach_side_toc_when_link_into_closed_section", async () => {
   expect(click.defaultPrevented).toBe(false);
 });
 
-// 項目の href を書き換えても、data-heading-id の見出しへ節を開いて移る（正常系）
+// 項目の href を書き換えても、data-heading-id の見出しへセクションを開いて移る（正常系）
 test("test_attach_side_toc_when_href_rewritten", async () => {
   // 準備
   const { attachSideToc } = await loadSideToc();
@@ -342,7 +342,7 @@ test("test_attach_side_toc_when_href_rewritten", async () => {
   );
 });
 
-// すべて折りたたみ・すべて展開で節をまとめて開閉する（正常系）
+// すべて折りたたみ・すべて展開でセクションをまとめて開閉する（正常系）
 test("test_attach_side_toc_when_fold_all", async () => {
   // 準備
   const { attachSideToc } = await loadSideToc();
@@ -373,7 +373,7 @@ test("test_attach_side_toc_when_fold_all", async () => {
   expect(expandedStates(root, ids)).toEqual(["true", "true", "true"]);
 });
 
-// 節の開閉がオフならすべて展開・すべて折りたたむを置かない（正常系）
+// セクションの開閉がオフならすべて展開・すべて折りたたむを配置しない（正常系）
 test("test_attach_side_toc_when_sections_off", async () => {
   // 準備
   const { attachSideToc } = await loadSideToc();
@@ -390,7 +390,7 @@ test("test_attach_side_toc_when_sections_off", async () => {
   expect(result.aside?.querySelector("[data-fold-all]")).toBeNull();
 });
 
-// スクロールすると今いる節の項目を付け替える（正常系）
+// スクロールすると今いるセクションの項目を付け替える（正常系）
 test("test_attach_side_toc_when_scrolled", async () => {
   // 準備
   const { attachSideToc } = await loadSideToc();
@@ -417,7 +417,7 @@ test("test_attach_side_toc_when_scrolled", async () => {
   expect(find(aside, ".mdmark-side-toc-current").textContent).toBe("二つ目");
 });
 
-// 外すと包む前の子の並びへ戻す（正常系）
+// 削除すると包む前の子の並びへ戻す（正常系）
 test("test_attach_side_toc_when_detached", async () => {
   // 準備
   const { attachSideToc } = await loadSideToc();
@@ -436,7 +436,7 @@ test("test_attach_side_toc_when_detached", async () => {
   expect(root.querySelector("aside")).toBeNull();
 });
 
-// 選ばれていないタブの中の見出しを今いる節に数えない（正常系）
+// 選ばれていないタブの中の見出しを今いるセクションに数えない（正常系）
 test("test_attach_side_toc_when_heading_in_unselected_tab", async () => {
   // 準備
   const { attachSideToc } = await loadSideToc();
@@ -480,7 +480,7 @@ test("test_attach_side_toc_when_heading_in_unselected_tab", async () => {
   });
 });
 
-// すべて折りたたむと、閉じた節に入った見出しから今いる節を決め直す（正常系）
+// すべて折りたたむと、閉じたセクションに入った見出しから今いるセクションをもう一度決める（正常系）
 test("test_attach_side_toc_when_fold_all_moves_current", async () => {
   // 準備
   const { attachSideToc } = await loadSideToc();
@@ -532,14 +532,14 @@ function rootFontSize(): number {
   return Number.parseFloat(getComputedStyle(document.documentElement).fontSize);
 }
 
-/** 見出しが 3 つの、画面より長い本文の Markdown を返す */
+/** 見出しが 3 つの、画面より長い本文の Markdown を返却する */
 function longDocument(): string {
   return ["一つ目", "二つ目", "三つ目"]
     .map((title) => `## ${title}\n\n${filler()}`)
     .join("\n");
 }
 
-/** aside に入れた CSS 変数の値を返す */
+/** aside に入れた CSS 変数の値を返却する */
 function panelVariable(aside: HTMLElement, name: string): string {
   return aside.style.getPropertyValue(name);
 }
@@ -556,7 +556,7 @@ test("test_attach_side_toc_when_hover_panel_placed", async () => {
   track(() => box.remove());
   const { root } = createRoot(longDocument());
   box.append(root);
-  // aside の右端に依らないことを確かめるため、描く先の要素をスクロールする要素より狭くして左に寄せる
+  // aside の右端に依らないことを確認するため、描く先の要素をスクロールする要素より狭くして左に配置する
   root.style.width = "50%";
   root.style.setProperty("--mdmark-sticky-top", "8px");
   const result = attachSideToc({
@@ -592,7 +592,7 @@ test("test_attach_side_toc_when_hover_panel_placed", async () => {
       expectedTop,
     );
   });
-  // 実行・検証: 外した後は、要素を動かしても値を決め直さない
+  // 実行・検証: 削除した後は、要素を動かしても値をもう一度決めない
   result.detach();
   box.style.top = "50px";
   window.dispatchEvent(new Event("resize"));
@@ -709,7 +709,7 @@ test("test_attach_side_toc_when_hover_rail_placed", async () => {
   expect(getComputedStyle(rail).display).toBe("none");
 });
 
-// 差分のミニマップの帯が出たときと消えたときに、スクロールせずに右端の位置を決め直す（正常系）
+// 差分のミニマップの帯が出たときと消えたときに、スクロールせずに右端の位置をもう一度決める（正常系）
 test("test_attach_side_toc_when_hover_edge_avoids_minimap", async () => {
   // 準備
   addStyles();
@@ -755,7 +755,7 @@ test("test_attach_side_toc_when_hover_edge_avoids_minimap", async () => {
   });
   expect(scroll).not.toHaveBeenCalled();
   expect(resize).not.toHaveBeenCalled();
-  // 実行・検証: 外した後は、帯を追加しても値を決め直さない
+  // 実行・検証: 削除した後は、帯を追加しても値をもう一度決めない
   const before = panelVariable(aside, "--mdmark-side-toc-panel-end");
   result.detach();
   document.body.append(minimap);

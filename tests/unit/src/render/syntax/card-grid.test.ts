@@ -5,7 +5,7 @@ import { renderDoc } from "../../../helpers/render.ts";
 /** cards の範囲で 4 項目のリストを囲んだ Markdown */
 const CARDS_MARKDOWN = [
   "<!-- cards -->",
-  "- `icon:book` [使い方](a.md)",
+  "- `icon:book` [使用方法](a.md)",
   "  導入の手順",
   "- [参照](b.md) 名前の一覧",
   "- https://example.com/docs",
@@ -33,7 +33,7 @@ test("test_build_card_grid", () => {
   const titles = [
     ...html.matchAll(/<span class="mdmark-card-grid-title">(.*?)<\/span>/g),
   ].map((match) => match[1]);
-  expect(titles).toEqual(["使い方", "参照", "example.com/docs", "準備中"]);
+  expect(titles).toEqual(["使用方法", "参照", "example.com/docs", "準備中"]);
   const descriptions = [
     ...html.matchAll(/<p class="mdmark-card-grid-desc">(.*?)<\/p>/g),
   ].map((match) => match[1]);
@@ -49,7 +49,7 @@ test("test_build_card_grid_when_not_list", () => {
     "<!-- cards -->",
     "入口のページです。",
     "",
-    "- [使い方](a.md)",
+    "- [使用方法](a.md)",
     "<!-- /cards -->",
     "",
   ].join("\n");
@@ -62,10 +62,10 @@ test("test_build_card_grid_when_not_list", () => {
     html.indexOf("入口のページです。"),
   );
   expect(html).not.toContain("mdmark-card-grid");
-  expect(html).toContain('<a href="a.md">使い方</a>');
+  expect(html).toContain('<a href="a.md">使用方法</a>');
 });
 
-// オフのときは印だけを取り除く（正常系）
+// オフのときはマーカーだけを取り除く（正常系）
 test("test_build_card_grid_when_disabled", () => {
   // 準備
   const markdown = CARDS_MARKDOWN;
@@ -78,12 +78,12 @@ test("test_build_card_grid_when_disabled", () => {
   expect(findTags(html, "<li")).toHaveLength(4);
 });
 
-// 項目に書いた HTML は mdmark が出した要素にせず、サニタイズで落とす（異常系）
+// 項目に記載した HTML は mdmark が出した要素にせず、サニタイズで落とす（異常系）
 test("test_build_card_grid_when_item_has_html", () => {
   // 準備
   const markdown = [
     "<!-- cards -->",
-    "- [使い方](a.md) <style>body{display:none}</style>説明",
+    "- [使用方法](a.md) <style>body{display:none}</style>説明",
     "<!-- /cards -->",
     "",
   ].join("\n");
@@ -100,7 +100,7 @@ test("test_build_card_grid_when_description_has_link", () => {
   // 準備
   const markdown = [
     "<!-- cards -->",
-    "- [使い方](a.md) 詳しくは [参照](b.md)",
+    "- [使用方法](a.md) 詳しくは [参照](b.md)",
     "<!-- /cards -->",
     "",
   ].join("\n");

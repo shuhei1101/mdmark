@@ -21,7 +21,7 @@ afterEach(async () => {
   );
 });
 
-/** 127.0.0.1 の空いたポートで待ち受け、そのポートを返す */
+/** 127.0.0.1 の空いたポートで待ち受け、そのポートを返却する */
 async function listen(): Promise<number> {
   const server = createServer();
   servers.push(server);
@@ -29,7 +29,7 @@ async function listen(): Promise<number> {
   return (server.address() as AddressInfo).port;
 }
 
-/** 空いたポートを取って閉じ、待ち受けていないポートを返す */
+/** 空いたポートを取って閉じ、待ち受けていないポートを返却する */
 async function closedPort(): Promise<number> {
   const server = createServer();
   await new Promise<void>((resolve) => server.listen(0, "127.0.0.1", resolve));
@@ -38,7 +38,7 @@ async function closedPort(): Promise<number> {
   return port;
 }
 
-// 待ち受けていれば何も書かない（正常系）
+// 待ち受けていれば何も書き込まない（正常系）
 test("test_run_session_start", async () => {
   // 準備
   const { runSessionStart } = await loadSessionStart();
@@ -54,7 +54,7 @@ test("test_run_session_start", async () => {
   expect(stdout).toEqual([]);
 });
 
-// 待ち受けていなければ 1 行を書く（正常系）
+// 待ち受けていなければ 1 行を記載する（正常系）
 test("test_run_session_start_when_not_listening", async () => {
   // 準備
   const { runSessionStart } = await loadSessionStart();
@@ -76,7 +76,7 @@ test("test_run_session_start_when_not_listening", async () => {
   expect(context).toContain("/mdmark:global-setup");
 });
 
-// 使えないポートでも 0（正常系）
+// 使用できないポートでも 0（正常系）
 test("test_run_session_start_when_port_invalid", async () => {
   // 準備
   const { runSessionStart } = await loadSessionStart();
