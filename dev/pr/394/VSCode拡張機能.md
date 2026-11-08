@@ -49,6 +49,6 @@
 
 | ファイル | メソッド | 変更種別 | 結果 | 補足 |
 | --- | --- | --- | --- | --- |
-| [tests/unit/vscode/](https://github.com/shuhei1101/mdmark/tree/docs/wording/word-choice/tests/unit/vscode) | 全実行 | 変更 | ✅ | 全 1816 テスト pass（3 システム合計）<br>`テスト結果/20261108201445_092a55c1_単体テスト.log` |
+| [tests/unit/vscode/](https://github.com/shuhei1101/mdmark/tree/docs/wording/word-choice/tests/unit/vscode) | 全実行 | 変更 | ✅ | 全 1816 テスト pass（3 システム合計。タイムアウトした 6 件は単独で再実行して pass）<br>`テスト結果/20261108210451_c60ff294_単体テスト.log` |
 
-コメント・テストの名前・文言の期待値を変えた。実装を変える前の Red（49 件 fail）は `テスト結果/20261108195022_86928303_単体テスト.log`。lint は `テスト結果/20261108201445_092a55c1_lint.log`（Biome の警告 2 件は base から残る `src/cli/embed.ts` の未使用）。
+コメント・テストの名前・文言の期待値を変えた。実装を変える前の Red（49 件 fail）は `テスト結果/20261108195022_86928303_単体テスト.log`。lint は `テスト結果/20261108210451_c60ff294_lint.log`（Biome の警告 2 件は base から残る `src/cli/embed.ts` の未使用）。

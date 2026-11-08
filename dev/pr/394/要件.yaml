@@ -527,3 +527,6 @@ scope_out:
   - item: dist/・plugin/ のうちビルドで生成するファイル
     reason: 修正した元からビルドで生成し直すため、直接は修正しない
     plan: none
+  - item: '`src/parts/lightbox.stories.ts` のストーリー `Narrow` が 390x844 で横にスクロールする（`scrollWidth 430 > clientWidth 390`）'
+    reason: 画面の検査（横スクロール）から外れているが、この PR の変更は文言だけで幅に関わらず、今回の要望に含まれない
+    plan: '#367'

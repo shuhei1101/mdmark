@@ -1,7 +1,7 @@
 """出力先（クリップボード・標準出力・ファイルなど）への「記載」を「書き込む」の活用に直す。"""
 import re, sys, pathlib
 
-CTX = re.compile(r'writeText|クリップボード|settings\.json|標準エラー|stderr|標準出力|stdout|env に|`env`|ログに|書き出し先|MDMARK_CONFIG')
+CTX = re.compile(r'dist/|fixtures/|plugin/` に|LICENSES_FILE|writeText|クリップボード|settings\.json|標準エラー|stderr|標準出力|stdout|env に|`env`|ログに|書き出し先|MDMARK_CONFIG')
 # 記載の活用と、書き込むの活用の対応（長い順に照合する）
 FORMS = [
     ('記載できなければ', '書き込めなければ'), ('記載できなかった', '書き込めなかった'), ('記載できない', '書き込めない'),
@@ -13,7 +13,7 @@ FORM = re.compile('|'.join(re.escape(a) for a, _ in FORMS))
 MAP = dict(FORMS)
 # 人が文書・入力に書いた意味の「記載」は残す
 KEEP_BEFORE = re.compile(r'(Markdown に|文書に|コードブロックに|本文に|`data-[a-z-]+` に|定義に|表に)$')
-KEEP_AFTER = re.compile(r'^した(文字|罫線|先頭|順|計算|列|行|値|内容)')
+KEEP_AFTER = re.compile(r'^(方法|の警告)|^した(文字|罫線|先頭|順|計算|列|行|値|内容)')
 
 
 def fix_line(line):

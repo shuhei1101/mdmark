@@ -1,7 +1,7 @@
 dev/設計書/ER図/使い方集.yaml	dev/設計書/ER図/ガイド.yaml
 dev/設計書/インターフェース定義/ClaudeCodeプラグイン/CSSのテンプレートの一覧を返す.ts.yaml	dev/設計書/インターフェース定義/ClaudeCodeプラグイン/CSSのテンプレートの一覧を返却する.ts.yaml
-dev/設計書/インターフェース定義/ClaudeCodeプラグイン/文書のフォルダの設定を書く.ts.yaml	dev/設計書/インターフェース定義/ClaudeCodeプラグイン/文書のフォルダの設定を記載する.ts.yaml
-dev/設計書/インターフェース定義/ClaudeCodeプラグイン/端末の設定を書く.ts.yaml	dev/設計書/インターフェース定義/ClaudeCodeプラグイン/端末の設定を記載する.ts.yaml
+dev/設計書/インターフェース定義/ClaudeCodeプラグイン/文書のフォルダの設定を書く.ts.yaml	dev/設計書/インターフェース定義/ClaudeCodeプラグイン/文書のフォルダの設定を書き込む.ts.yaml
+dev/設計書/インターフェース定義/ClaudeCodeプラグイン/端末の設定を書く.ts.yaml	dev/設計書/インターフェース定義/ClaudeCodeプラグイン/端末の設定を書き込む.ts.yaml
 dev/設計書/インターフェース定義/ClaudeCodeプラグイン/設定のキーの一覧を返す.ts.yaml	dev/設計書/インターフェース定義/ClaudeCodeプラグイン/設定のキーの一覧を返却する.ts.yaml
 dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを描き直す.ts.yaml	dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを再描画する.ts.yaml
 dev/設計書/インターフェース定義/ライブラリ本体/版を上げる.ts.yaml	dev/設計書/インターフェース定義/ライブラリ本体/バージョンを上げる.ts.yaml
