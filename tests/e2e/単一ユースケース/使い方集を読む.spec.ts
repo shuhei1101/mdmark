@@ -7,6 +7,7 @@ import {
   GUIDE_FILTER,
   REPO_ROOT,
   searchDocs,
+  TWO_SEARCHES_TEST_TIMEOUT_MS,
   withDevDocs,
 } from "../dev-docs.ts";
 import { findFreePort, withMcpClient, withServe } from "../plugin.ts";
@@ -33,6 +34,7 @@ async function readGuides(): Promise<Guide[]> {
 
 // instructions の動線に沿って、dev-docs から使い方集の一覧と本文を受け取る（正常シナリオ）
 test("test_normal", async ({ builtRoot, tempDir }) => {
+  test.setTimeout(TWO_SEARCHES_TEST_TIMEOUT_MS);
   // 準備
   const guides = await readGuides();
   const writing = guides.find((guide) => guide.name === WRITING_GUIDE);
