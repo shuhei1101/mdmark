@@ -56,7 +56,9 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-08T23:18:18.506507+00:00'
   - process: モジュール構成設計
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-08T23:51:28.979637+00:00'
   - process: ドキュメント修正
     status: todo
     note: 要件.yaml の docs の行
