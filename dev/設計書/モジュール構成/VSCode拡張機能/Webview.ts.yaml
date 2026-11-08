@@ -1425,6 +1425,12 @@ functions:
         condition: '`data-source-line` が 0 の見出しと 2 の段落、4 の見出しと `hidden` の付いた中身（6 の段落と、8 の見出しの閉じた入れ子のセクション）、12 の見出しを並べる'
         mock: なし
         expected: '`line` が `[0, 2, 4, 12]` の並びで、`collapsed` は 4 のマーカーだけが `true`'
+      - name: test_collect_anchors_when_closed_section_in_diff_block
+        case: 正常
+        summary: 差分のブロックに包まれた閉じたセクションの見出しにも collapsed を付ける
+        condition: '`data-source-line` が 0 の見出し、`.mdmark-diff-block` で包んだ 4 の見出しと、ブロックの直後の `hidden` の付いた中身（6 の段落）、12 の見出しを並べる'
+        mock: なし
+        expected: '`line` が `[0, 4, 12]` の並びで、`collapsed` は 4 のマーカーだけが `true`'
     status: planned
   - name: topForLine
     title: 行を位置にする
