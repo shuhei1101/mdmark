@@ -70,11 +70,15 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-08T17:50:41.168145+00:00'
   - process: 単体テスト作成
-    status: todo
+    status: done
     note: markdown-check.test.ts の test_read_yaml_key_when_missing と check.test.ts の test_run_check_when_arguments_conflict を、Promise を 1 つずつ待つ書き方に直す
+    updated_by: planner
+    updated_at: '2026-11-08T17:57:05.239644+00:00'
   - process: 実装
-    status: todo
+    status: done
     note: 実装コードは変えず、単体テストの全件実行で未処理の拒否が出ないことと lint を確かめる
+    updated_by: planner
+    updated_at: '2026-11-08T18:34:28.852476+00:00'
   - process: 結合テスト作成
     status: skipped
     reason: 結合テストは変わらないため対象外

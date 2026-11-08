@@ -4,3 +4,6 @@ scope_out:
   - item: tests/integration/lib/mount-view.browser.test.ts・mount-comments.browser.test.ts など、Promise を 1 つだけ作って待つテスト
     reason: Promise が 1 つだけで、待っている間に別の Promise が拒否されないため直す必要が無い
     plan: none
+  - item: ほかの作業の vitest と重ねた全件実行で、test_prepare_embeds・test_run_check・test_main などが 30〜70 秒の時間切れで fail する
+    reason: ほかの全件実行と重ねたときだけ起き、重ねなければ全件 pass する。今回の変更と関係が無く、重ねない運用は連絡事項で決まっている
+    plan: none
