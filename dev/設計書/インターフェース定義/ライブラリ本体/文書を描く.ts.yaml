@@ -5746,6 +5746,55 @@ flows:
       - 2 つ目のコードブロックの場所に `figure.mdmark-diagram[data-diagram="mermaid"]` がある
       - mermaid が文書に出すエラーの図（`#d{id}` の要素）が文書に残っていない
     test: test_error_when_mermaid_syntax_invalid
+  - name: 正常系（フロントマターを除外する）
+    summary: 文書の先頭の YAML のフロントマターを本文・見出し・右側の目次に出さず、本文の元の行番号は元の Markdown のままにする
+    setup:
+      - name: 配布物を読み込んだページ
+        description: 正常系と同じ
+      - name: フロントマターを持つ Markdown
+        description: '1〜4 行目に `---`・`title: テスト`・`tags: [a, b]`・`---`、6 行目に `# 見出し`、8 行目に段落、10 行目に `## 節` を配置した文書'
+        notes: '`opts.config` は指定しない（`features.frontmatter` は既定の `false`、`side-toc` は既定の `true`）'
+      - name: Mock
+        description: 正常系と同じ
+    flow: |-
+      sequenceDiagram
+        participant P as 利用側のページ
+        participant M as mdmark
+        P->>M: mount(el, { markdown })
+        M->>M: render と同じく先頭のフロントマターを除外して本文を描く
+        M->>M: 本文の見出しから右側の目次を作る
+        M-->>P: el の中に本文と右側の目次を描く
+    expected:
+      - '`el` の中に `title: テスト` と `tags: [a, b]` の文字が無く、`.mdmark-frontmatter` の要素が無い'
+      - 本文の見出しは `見出し` の `h1` と `節` の `h2` だけで、右側の目次の項目も `見出し` と `節` だけ
+      - '`h1` と段落の `data-source-line` が `"5"` と `"7"`'
+    test: test_normal_when_frontmatter
+  - name: 正常系（フロントマターの表示をオンにする）
+    summary: 機能 `frontmatter` を設定か文書のマーカーでオンにすると、本文の先頭の閉じた折りたたみにフロントマターを描き、読者が開ける
+    setup:
+      - name: 配布物を読み込んだページ
+        description: 正常系と同じ
+      - name: フロントマターとマーカーを持つ Markdown
+        description: '正常系（フロントマターを除外する）の文書の 5 行目に `<!-- features: +frontmatter -->` を配置した文書'
+        notes: '`opts.config` は指定しない'
+      - name: Mock
+        description: 正常系と同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 読者
+        participant P as 利用側のページ
+        participant M as mdmark
+        P->>M: mount(el, { markdown })
+        M->>M: 設定の features に文書のマーカーを重ねる
+        M-->>P: 本文の先頭にフロントマターの閉じた折りたたみを描く
+        U->>P: 折りたたみの見出しを押す
+        P-->>U: yaml のコードブロックを表示
+    expected:
+      - 本文の最初の要素が `details.mdmark-frontmatter` で、描いた直後は `open` を持たず、`summary` の文字が `フロントマター`
+      - '見出しを押すと `open` を持ち、中の言語 `yaml` のコードブロックに `title: テスト` と `tags: [a, b]` が出る'
+      - 右側の目次の項目は `見出し` と `節` だけ
+      - 'マーカーを `-frontmatter` にして `opts.config.features` に `{ frontmatter: true }` を指定すると、`.mdmark-frontmatter` の要素が無い'
+    test: test_normal_when_frontmatter_enabled
 lead: 利用側のページが、要素と Markdown と設定を指定し、要素の中に文書を描く。戻り値で本文の差し替えと片付けができる。
 idempotent: false
 side_effects: '`el` の中身と class を書き換え、記法の操作のイベントを `el` の中に付ける。まとめていない名前の `icon:` があるとき、jsDelivr の Lucide のアイコンのモジュールを名前ごとに `import()` し、読み込めなかった名前だけ同じ URL へ `HEAD` の `fetch` を送信する。`side-toc` がオンで見出しがあるとき、`el` の中を本文の列と右側の目次に分け、見出しの位置を `IntersectionObserver` で確認する。出し方が `hover` のときは、右端の線とパネルの位置を決めるため、`window` の `scroll`・`resize` と、`el` に最も近いスクロールする祖先の要素があればその `scroll` を受け取り、`document.body` の子の追加・削除を `MutationObserver` で確認する。`back-to-top` がオンのとき、`el` の子に先頭へ戻るボタンを配置し、スクロールする場所が画面全体なら `window` の `scroll`、`el` に最も近いスクロールする祖先の要素なら `document` の `scroll`（キャプチャーフェーズ）と、`window` の `resize` を受け取り、`document.body` と `el` の子の追加・削除を `MutationObserver` で確認する。`window` の `beforeprint`・`afterprint`・`hashchange` と、絞り込みのドロワーを開いている間だけ `document` の `pointerdown`・`keydown` を受け取る。図の部品か埋め込んだ HTML があるとき、図の表示する枠と埋め込んだ HTML の大きさを `ResizeObserver` で見、ツールチップを開いている間だけ `document` の `keydown`・`pointerdown` と `window` の `scroll`・`resize` を受け取り、全画面の間だけ `el` の中に `dialog` を配置する。リンク先を持つフロー図のノードの上から図を動かしたとき、次の 1 回の `click` まで `window` の `click`（キャプチャーフェーズ）を受け取る。`diagram-resize` がオンのとき、リサイズハンドルで変えた図の高さを sessionStorage に書き込み、描くたびに読み込み、ダブルクリックで戻すと削除する。操作できる部品の写すボタン・表のコピー・行の URL のコピー・コードブロックのコピー・ファイルツリーのコピーでクリップボードに書き込む。表があるとき、表の大きさと描く先の要素の幅を `ResizeObserver` で見、`animation-timeline` を持たないブラウザでは `window` と文書の中の `scroll` と `window` の `resize` を受け取る。`data-group` を持つタブがあるとき、localStorage の `mdmark-tabs:{group}` を描くたびに読み込み、読者がタブを選ぶと書き込む。そのとき、ページの中の `el` の外にある同じ `group` のタブ群の選択も書き換える。文書に外部ライブラリか拡張のマーカーがあるとき、そのモジュールを読み込む。色分けの対象のコードブロックがあるとき、`syntax.url` の先の core と、使用する言語のモジュールを読み込む。`mermaid` がオンの文書に mermaid のコードブロックがあるとき、`mermaid.url` の先のモジュールを読み込み、描く先の配色の明暗の変化を確認して再描画する。`html-scripts` がオンの文書に範囲の `ts`・`js` があるとき、`html-scripts.url` の先の変換のライブラリを読み込み、範囲ごとに `document.head` へ `script` 要素を 1 つ配置してすぐ削除し、範囲の関数を呼ぶ。`opts.diffSource` を指定したとき、読者が差分を開くと（`opts.diffMode` が `open` なら描いた時点、`blocks` なら描くたびに）取り出し元の `revisions`・`content` を呼び、差分の行を出している間だけミニマップの帯を配置し、スクロール先のスクロールの `scroll` と `window` の `resize` を受け取る。文書にビューのマーカーがあるとき、ビューの部品のモジュールを読み込む。`comments` がオンで `opts.commentStore` を指定したとき、コメントの部品のモジュールを読み込み、`load` を描くたびに 1 回呼び、保存で `save`、読み込みと保存の関数が持つときは吹き出しの修正で `update`・削除で `remove`、`reloadComments` で `load` を呼ぶ。その間は `document` の `selectionchange` を受け取り、コメントのボタン・入力欄・吹き出しを `document.body` に配置する。あわせて本文の列の右に余白の列を配置し、描く先の要素の大きさを `ResizeObserver`、描く先の要素の中の開閉・切り替えを `MutationObserver` で確認する'
@@ -5798,10 +5847,10 @@ request:
   - name: opts.config.features
     type: Record<string, boolean>
     required: false
-    default: '`comments`・`html-scripts` を除く全ての機能が `true`'
+    default: '`comments`・`html-scripts`・`frontmatter` を除く全ての機能が `true`'
     location: argument
     description: '機能のオン・オフの既定。文書の `<!-- features: +機能 -機能 -->` がその文書だけ上書きする'
-    notes: 知らない機能名は無視する。機能は `print`（印刷の前に折り畳みと記法を開く）と、記法ごとの `table`・`callout`・`tabs`・`steps`・`tree`・`badge`・`code`・`toc`・`side-toc`（右側の目次）・`anchors`・`sections`・`row-details`・`figures`、先頭へ戻るボタンの `back-to-top`、図の部品の `diagrams`、図の表示する枠の高さを変えるリサイズハンドルの `diagram-resize`、埋め込んだ HTML の `html`、図と埋め込んだ HTML のヒント（`data-hint`・`hint`・`io`・線の `tip`・`frame` と `lanes` の `hint`）のツールチップの `hints`、用語のツールチップの `glossary`、被参照の一覧と文書の別名の `backlinks`、ビューのマーカーの `views`、脚注の `footnotes`、選んだ箇所へのコメントの `comments`、埋め込んだ HTML の範囲の `css`・`ts`・`js` の `html-scripts`（`comments` と `html-scripts` だけ既定は `false`）、アイコンの `icon`・段組みの `columns`・蛍光ペンの `highlight`・キーの `kbd`・details の範囲の `details`・改ページの `pagebreak`・取り込みの `include`・wide の範囲の `wide`・CSV の表の `csv`・カードの格子の `card-grid`・mermaid のコードブロックを図にする `mermaid`
+    notes: 知らない機能名は無視する。機能は `print`（印刷の前に折り畳みと記法を開く）と、記法ごとの `table`・`callout`・`tabs`・`steps`・`tree`・`badge`・`code`・`toc`・`side-toc`（右側の目次）・`anchors`・`sections`・`row-details`・`figures`、先頭へ戻るボタンの `back-to-top`、図の部品の `diagrams`、図の表示する枠の高さを変えるリサイズハンドルの `diagram-resize`、埋め込んだ HTML の `html`、図と埋め込んだ HTML のヒント（`data-hint`・`hint`・`io`・線の `tip`・`frame` と `lanes` の `hint`）のツールチップの `hints`、用語のツールチップの `glossary`、被参照の一覧と文書の別名の `backlinks`、ビューのマーカーの `views`、脚注の `footnotes`、選んだ箇所へのコメントの `comments`、埋め込んだ HTML の範囲の `css`・`ts`・`js` の `html-scripts`、文書の先頭のフロントマターの表示の `frontmatter`（`comments`・`html-scripts`・`frontmatter` だけ既定は `false`）、アイコンの `icon`・段組みの `columns`・蛍光ペンの `highlight`・キーの `kbd`・details の範囲の `details`・改ページの `pagebreak`・取り込みの `include`・wide の範囲の `wide`・CSV の表の `csv`・カードの格子の `card-grid`・mermaid のコードブロックを図にする `mermaid`
   - name: opts.config.libraries
     type: Record<string, string>
     required: false
@@ -6381,4 +6430,6 @@ constraints:
     notes: PoC #384 で、`color-mix()` を含む CSS 変数を hex にして `base` テーマへ指定できることを確認した。デザイン方針の「使用しないもの」（影・グラデーション）
   - item: mermaid を読み込めないとき
     constraint: mermaid を読み込めないときは、各 mermaid の対象の読み込み中のブロックを通知ブロック（本文の文言は画面設計『文書』）に替え、コードブロックを出して残す。解釈できないソースは読み込み中のブロックを記載の警告に替え、コードブロックを出して残す
+  - item: フロントマター
+    constraint: インターフェース定義『文書をHTML文字列にする』の制約「フロントマター」と同じく、文書の先頭のフロントマターを除外して描き、機能 `frontmatter` がオンのときだけ本文の先頭に閉じた折りたたみを描く。右側の目次・目次・セクションの開閉はフロントマターとその表示を対象にしない。折りたたみの開閉は、印刷の前に開く折り畳みに含める。`update` は差し替えた本文のフロントマターでもう一度決める
 test_file: tests/integration/lib/mount.browser.test.ts
