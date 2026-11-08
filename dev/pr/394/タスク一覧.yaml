@@ -45,8 +45,10 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-08T06:49:59.531091+00:00'
   - process: インターフェース定義設計
-    status: todo
+    status: done
     note: CLI・MCP のツール・VS Code のコマンドのエラーと出力の文言を、対応表と規約『入力と文言』の書式で修正する
+    updated_by: planner
+    updated_at: '2026-11-08T07:24:08.815709+00:00'
   - process: 部品設計
     status: todo
     note: 部品の表示の文言と、部品設計のファイル名（コメントの印・節・知らせの枠 など）を修正する
