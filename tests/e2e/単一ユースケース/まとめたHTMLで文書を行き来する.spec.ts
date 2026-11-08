@@ -338,8 +338,8 @@ test("test_normal_when_back_forward_restore_scroll", async ({
   await toB.click();
   await expect(h1).toContainText("文書B");
   await expect.poll(scrollY).toBe(0);
-  await page.mouse.wheel(0, 1000);
-  await expect.poll(scrollY).toBeGreaterThan(0);
+  await page.evaluate(() => window.scrollTo(0, 1000));
+  await expect.poll(scrollY).toBe(1000);
   const leftB = await scrollY();
   await page.goBack();
   await expect(h1).toContainText("文書A");
@@ -374,8 +374,8 @@ test("test_normal_when_reload_restore_scroll", async ({
   // 実行・検証
   await openStandalone(page, { tempDir, htmlFile });
   await expect(h1).toContainText("文書A");
-  await page.mouse.wheel(0, 3000);
-  await expect.poll(scrollY).toBeGreaterThan(0);
+  await page.evaluate(() => window.scrollTo(0, 3000));
+  await expect.poll(scrollY).toBe(3000);
   const before = await scrollY();
   await page.reload();
   await expect(h1).toContainText("文書A");
