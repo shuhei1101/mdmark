@@ -272,7 +272,7 @@ suite("プレビューを開く", () => {
         async () =>
           (
             await inspect(
-              'figure.mdmark-diagram[data-diagram="mermaid"] .mdmark-mermaid svg',
+              'figure.mdmark-diagram[data-diagram="mermaid"] .mdmark-mermaid > svg',
             )
           ).length === 1,
         { message: "mermaid の図を描かない", timeout: 60_000 },

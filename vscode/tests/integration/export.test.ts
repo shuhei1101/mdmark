@@ -333,7 +333,7 @@ suite("HTML に書き出す", () => {
     const exported = await openExported(path);
     try {
       await exported.page.waitForSelector(
-        'figure.mdmark-diagram[data-diagram="mermaid"] svg',
+        'figure.mdmark-diagram[data-diagram="mermaid"] .mdmark-mermaid > svg',
         { timeout: 60_000 },
       );
       assert.strictEqual(
