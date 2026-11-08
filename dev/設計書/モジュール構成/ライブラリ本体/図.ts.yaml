@@ -1448,7 +1448,7 @@ functions:
     container: src/interact/zoom.ts
     kind: 関数
     scope: internal
-    summary: '表示する枠と中身に、`fitScale` の倍率から `ZOOM.max` までの拡大・縮小（縮小・拡大・倍率のボタンと `+`・`-`・`0`）と、拡大中の移動（移動のボタン・矢印キー・ドラッグ）を付ける。倍率は中身に `transform: scale()` を掛け、大きさの箱を倍率を掛けた大きさにしてスクロールさせる。端のボタンの `disabled`、倍率の文字と読み上げの名前（`percentBase` が `fit` なら全体が収まる倍率を 100%、`content` なら中身の大きさを 100% とする）、移動のボタンのまとまりの `hidden` を倍率が変わるたびに書き換え、`onChange` に倍率を知らせる。`.mdmark-diagram-node-link` の上からもドラッグを始め（文字を選ばせない）、`DRAG_THRESHOLD` を超えて動いたときだけ動かしたことにする。動かした後の `pointerup` で `window` にキャプチャの `click` の受け取り（次の 1 回を `preventDefault`・`stopPropagation` して外れる）を付け、`setTimeout(0)` でも外す（`click` が来ない終わり方で受け取りを残さない）。`pointercancel` では受け取りを付けず、`detach` でも外す。ドラッグを始めたとき（`DRAG_THRESHOLD` を超えたとき）に `onPanStart` を 1 回呼ぶ（超えないまま離したら動かさない）。`fitHeight` は真偽値か、全体が収まる倍率を求めるたびに呼ぶ関数で受ける。`refit()` は今の倍率と位置を保ったまま、全体が収まる倍率（下限）とボタンの状態を求め直す。図（`attachDiagrams`）とライトボックス（`attachLightbox`）が使う'
+    summary: '表示する枠と中身に、`fitScale` の倍率から `ZOOM.max` までの拡大・縮小（縮小・拡大・倍率のボタンと `+`・`-`・`0`）と、拡大中の移動（移動のボタン・矢印キー・ドラッグ）を付ける。倍率は中身に `transform: scale()` を掛け、大きさの箱を倍率を掛けた大きさにしてスクロールさせる。端のボタンの `disabled`、倍率の文字と読み上げの名前（`percentBase` が `fit` なら全体が収まる倍率を 100%、`content` なら中身の大きさを 100% とする）、移動のボタンのまとまりの `hidden` を倍率が変わるたびに書き換え、`onChange` に倍率を知らせる。`.mdmark-diagram-node-link` の上からもドラッグを始め（文字を選ばせず、リンクの `dragstart` を `preventDefault` してブラウザのリンクのドラッグを始めない）、`DRAG_THRESHOLD` を超えて動いたときだけ動かしたことにする。動かした後の `pointerup` で `window` にキャプチャの `click` の受け取り（次の 1 回を `preventDefault`・`stopPropagation` して外れる）を付け、`setTimeout(0)` でも外す（`click` が来ない終わり方で受け取りを残さない）。`pointercancel` では受け取りを付けず、`detach` でも外す。ドラッグを始めたとき（`DRAG_THRESHOLD` を超えたとき）に `onPanStart` を 1 回呼ぶ（超えないまま離したら動かさない）。`fitHeight` は真偽値か、全体が収まる倍率を求めるたびに呼ぶ関数で受ける。`refit()` は今の倍率と位置を保ったまま、全体が収まる倍率（下限）とボタンの状態を求め直す。図（`attachDiagrams`）とライトボックス（`attachLightbox`）が使う'
     args:
       - name: options
         type: '{ viewport: HTMLElement; content: HTMLElement; size: { width: number; height: number }; tools: HTMLElement; onChange?: (zoom: number, fit: number) => void; onPanStart?: () => void; fitHeight?: boolean | (() => boolean); dragIgnore?: string; keyTargets?: HTMLElement[]; percentBase?: "fit" | "content"; fitMin?: number }'
@@ -1508,6 +1508,12 @@ functions:
         condition: 幅 600px・高さ 400px の枠に幅 500・高さ 1600 の中身。始めは `fitHeight` が `false` を返し、`true` を返すようにして `refit()` を呼ぶ
         mock: なし
         expected: '`refit()` の前後で倍率が `1` のままで、`fit()` が `1` から `0.25` になり、縮小のボタンが `disabled` でなくなる'
+      - name: test_attach_zoom_when_link_dragstart
+        case: 正常
+        summary: ノードのリンクの上の押下で、ブラウザのリンクのドラッグを始めない
+        condition: 拡大を 2 回押し、中身の `a.mdmark-diagram-node-link` に `dragstart` を出す
+        mock: なし
+        expected: '`dragstart` が `defaultPrevented`'
     status: planned
     introduced:
       pr: 263
