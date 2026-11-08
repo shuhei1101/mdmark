@@ -36,8 +36,8 @@ test("test_read_gallery_options", async () => {
   const first = readGalleryOptions(withCols);
   const second = readGalleryOptions(plain);
   // 検証
-  expect(first).toEqual({ cols: 3, items: [] });
-  expect(second).toEqual({ cols: 2, items: [] });
+  expect(first).toEqual({ cols: 3, items: [], skipped: [] });
+  expect(second).toEqual({ cols: 2, items: [], skipped: [] });
 });
 
 // 読めない列の数と指定を項目にする（異常系）

@@ -286,7 +286,12 @@ test("test_resolve_page_settings_when_unknown", async () => {
   );
   expect(shown).toHaveLength(1);
   expect(shown[0]?.message).toContain("scheme=sepia");
-  expect(shown[0]?.message).not.toContain("size=wide");
+  // 本文の頭は印の文字のため、印の後ろの挙げた指定だけを見る
+  const listed = (shown[0]?.message ?? "").replace(
+    "<!-- page: scheme=sepia size=wide toc=fixed -->",
+    "",
+  );
+  expect(listed).not.toContain("size=wide");
   const skipped = rendered.warnings.filter(
     (warning) => warning.kind === "unknown_mark_arg",
   );

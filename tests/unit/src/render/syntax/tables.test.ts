@@ -31,6 +31,7 @@ test("test_read_table_spec", async () => {
     ],
     collapse: "closed",
     warnings: [],
+    skipped: [],
     hide: [],
     totals: [],
     wide: [],
