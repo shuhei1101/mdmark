@@ -1,0 +1,45 @@
+use_cases:
+  - kind: single
+    scenario: dev/設計書/シナリオ/単一ユースケース/図を描く.yaml
+    impact: changed
+    detail: フロー図の種類 dm の箱と凡例に出る名前が、利用側の固有の用語でない汎用の名前になる。判定の質問の箱を描く人は question を選ぶ
+    depends_on: []
+  - kind: single
+    scenario: dev/設計書/シナリオ/単一ユースケース/図の要素のツールチップを確認する.yaml
+    impact: run_only
+    detail: シナリオの記述は変わらない。E2E の見本の用語「意思決定モデル」を汎用の用語に替えるため実行する
+    depends_on: []
+  - kind: composite
+    scenario: dev/設計書/シナリオ/複合ユースケース/コードブロックのHTMLでチャートとヒントを読み取る.yaml
+    impact: run_only
+    detail: シナリオの記述は変わらない。E2E の見本の用語を汎用の用語に替えるため実行する
+    depends_on: []
+  - kind: composite
+    scenario: dev/設計書/シナリオ/複合ユースケース/固有の部品で図の文書を描いて確認する.yaml
+    impact: run_only
+    detail: シナリオの記述は変わらない。E2E の見本の用語を汎用の用語に替えるため実行する
+    depends_on: []
+docs:
+  - page: docs/使用方法/図を描く/図を描く.md
+    new: false
+    change: kind の表の dm の表すものと io の説明から「意思決定モデル」を外し、dm と question の使い分けを示す
+    status: todo
+  - page: docs/使用方法/図を描く/見本.md
+    new: false
+    change: 見本の文書・フロー図の層とノードの tag・用語集から「意思決定モデル」を外し、汎用の例にする
+    status: todo
+  - page: docs/リファレンス/構成図の決まり.md
+    new: false
+    change: レイヤーの説明と種類の表の dm の名前を汎用の名前にする
+    status: todo
+  - page: docs/リファレンス/API.md
+    new: false
+    change: --mdmark-color-diagram-dm の説明の「意思決定モデル」を汎用の名前にする
+    status: todo
+scope_out:
+  - item: 過去の PR ドキュメント（dev/pr/）に残る「意思決定モデル」
+    reason: マージ済みの作業の記録で、書き換えると当時の経緯と食い違う
+    plan: none
+  - item: 変更履歴（docs/はじめに/変更履歴.md）への記載
+    reason: release を master へ入れるときに tester が書く
+    plan: none
