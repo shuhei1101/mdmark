@@ -1,0 +1,7 @@
+confirmations:
+  - topic: フロー図のノードの種類 dm の扱いと表示名
+    decision: dm のキーと CSS 変数 --mdmark-color-diagram-dm を残し、表示名を「判断（AI）」にする。使用方法で判定フローチャートの質問のノードは question を指定すると示す（推奨案 A）
+    decided_by: thumbs_up
+    approver: shuhei1101
+    commit: b68c299c1a8169ba64ec6cb7e31634f87a02533f
+    thread: https://github.com/shuhei1101/mdmark/pull/424#discussion_r4507239642
