@@ -67,24 +67,27 @@ const entries = frontmatter.split("\n").map((line) => {
   return [line.slice(0, at), line.slice(at + 1).trim()];
 });
 
+/** HTML の特殊文字を文字参照にする */
+const escapeHtml = (text) =>
+  text.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;");
+
 /** 表示をオンにしたときに本文の先頭に置く、フロントマターの表示 */
 const display =
   variant === "a"
     ? [
-        "<!-- details: フロントマター -->",
-        "",
-        "<!-- table: plain -->",
-        "",
-        "| キー | 値 |",
-        "| --- | --- |",
-        ...entries.map(([key, value]) => `| \`${key}\` | ${value.replaceAll("|", "\\|")} |`),
-        "",
-        "<!-- /table -->",
-        "",
-        "<!-- /details -->",
+        "<details>",
+        "<summary>フロントマター</summary>",
+        "<table>",
+        "<tbody>",
+        ...entries.map(
+          ([key, value]) => `<tr><th scope="row"><code>${escapeHtml(key)}</code></th><td>${escapeHtml(value)}</td></tr>`,
+        ),
+        "</tbody>",
+        "</table>",
+        "</details>",
         "",
       ].join("\n")
-    : ["<!-- details: フロントマター -->", "", "```yaml", frontmatter, "```", "", "<!-- /details -->", ""].join("\n");
+    : ["<details>", "<summary>フロントマター</summary>", "", "```yaml", frontmatter, "```", "", "</details>", ""].join("\n");
 
 /** 描き方ごとに mount へ指定する Markdown */
 const markdown = {
@@ -100,5 +103,5 @@ mount(doc, { markdown });
 
 // 表示の折りたたみに、フロントマターの表示を示す class を付ける（実装で付ける class の見本）
 if (state === "on") {
-  doc.querySelector(".mdmark-content > details")?.classList.add("mdmark-frontmatter");
+  doc.querySelector("details")?.classList.add("mdmark-frontmatter");
 }

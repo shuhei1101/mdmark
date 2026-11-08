@@ -87,6 +87,9 @@ files:
   - path: components/frontmatter/index.html
     description: '部品『frontmatter』のモック: 機能 frontmatter をオンにしたときに本文の先頭に置くフロントマターの表示（キーと値の表と yaml のコードブロックの案、閉じた・開いた・入れ子・長い値）。部品の外観や状態を決めるときに参照する。'
     tags: [topic:モック, topic:フロントマター]
+  - path: components/frontmatter/style.css
+    description: 'モック『frontmatter』の外観: カタログの状態の見出しの上の余白。このモックの外観を変えるときに参照する。'
+    tags: [topic:モック, tool:css]
   - path: components/highlighter/index.html
     description: '部品『highlighter』のモック: `==text==` の蛍光ペンの既定の色と色の名前ごとの色、コメントのマーカーとの区別、知らない色の名前の記載の警告。部品の外観や状態を決めるときに参照する。'
     tags: [topic:モック, topic:記法]
