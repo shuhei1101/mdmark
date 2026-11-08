@@ -70,8 +70,10 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-08T17:50:29.706352+00:00'
   - process: 単体テスト作成
-    status: todo
+    status: done
     note: scroll.browser.test.ts に、閉じたセクションのケースを追加する
+    updated_by: planner
+    updated_at: '2026-11-08T18:51:33.763598+00:00'
   - process: 実装
     status: todo
     note: scroll.ts を修正する
