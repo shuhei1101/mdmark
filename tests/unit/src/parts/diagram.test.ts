@@ -772,7 +772,8 @@ test("test_render_diagram_frame_when_mermaid", async () => {
   const figure = findTag(html, "<figure");
   expect(figure).toContain('data-diagram="mermaid"');
   expect(figure).toContain('data-fit-min="0.75"');
-  const caption = /<figcaption[^>]*>([\s\S]*?)<\/figcaption>/.exec(html)?.[1] ?? "";
+  const caption =
+    /<figcaption[^>]*>([\s\S]*?)<\/figcaption>/.exec(html)?.[1] ?? "";
   expect(plainText(caption).trim()).toBe("問い合わせの受付");
   expect(caption).not.toContain("<time");
 });

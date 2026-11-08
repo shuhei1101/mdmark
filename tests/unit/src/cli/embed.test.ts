@@ -252,7 +252,10 @@ test("test_uses_mermaid", async () => {
   const results = [
     usesMermaid({ markdowns: [mermaid, ts], config: {} }),
     usesMermaid({ markdowns: [disabled], config: {} }),
-    usesMermaid({ markdowns: [mermaid], config: { features: { mermaid: false } } }),
+    usesMermaid({
+      markdowns: [mermaid],
+      config: { features: { mermaid: false } },
+    }),
   ];
   // 検証
   expect(results).toEqual([true, false, false]);
@@ -399,7 +402,8 @@ test("test_create_viewer_entry_when_nothing_embedded", async () => {
 test("test_create_viewer_entry_when_mermaid", async () => {
   // 準備
   const { createViewerEntry } = await loadEmbed();
-  const url = "https://cdn.jsdelivr.net/npm/mermaid@12.3.0/dist/mermaid.esm.min.mjs";
+  const url =
+    "https://cdn.jsdelivr.net/npm/mermaid@12.3.0/dist/mermaid.esm.min.mjs";
   // 実行
   const source = createViewerEntry({
     viewer: "/w/dist/viewer.js",
@@ -409,7 +413,11 @@ test("test_create_viewer_entry_when_mermaid", async () => {
   // 検証
   const mermaidImports = source
     .split("\n")
-    .filter((line) => /^import \* as \w+ from /.test(line) && line.includes(JSON.stringify(url)));
+    .filter(
+      (line) =>
+        /^import \* as \w+ from /.test(line) &&
+        line.includes(JSON.stringify(url)),
+    );
   expect(mermaidImports).toHaveLength(1);
   expect(source).toMatch(/startViewer\(document,[\s\S]*\bmermaid\b/);
 });

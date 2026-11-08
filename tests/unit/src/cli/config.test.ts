@@ -267,7 +267,10 @@ test("test_validate_config_when_mermaid_invalid", async () => {
   );
   // 検証
   expect(badUrl.issues).toHaveLength(1);
-  expect(badUrl.issues[0]).toMatchObject({ where: "mermaid.url", kind: "schema" });
+  expect(badUrl.issues[0]).toMatchObject({
+    where: "mermaid.url",
+    kind: "schema",
+  });
   expect(badUrl.config.mermaid).toBeUndefined();
   expect(badVariables.issues).toHaveLength(1);
   expect(badVariables.issues[0]).toMatchObject({
@@ -276,7 +279,10 @@ test("test_validate_config_when_mermaid_invalid", async () => {
   });
   expect(badVariables.config.mermaid).toBeUndefined();
   expect(valid.issues).toEqual([]);
-  expect(valid.config.mermaid).toEqual({ url: "/vendor/mermaid.mjs", theme: "no-such-theme" });
+  expect(valid.config.mermaid).toEqual({
+    url: "/vendor/mermaid.mjs",
+    theme: "no-such-theme",
+  });
 });
 
 // 文字列でない syntax.url を schema のずれにし、設定から落とす（正常系）

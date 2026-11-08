@@ -1,10 +1,14 @@
 import { expect, test } from "vitest";
 
 /** mermaid のソースの読み取りを読み込む（実装が無い間は各テストが個別に失敗する。ファイルが無いと Vite の解決が失敗してテストファイルごと落ちるため、URL を組んで読む） */
-const loadSource = (): Promise<typeof import("../../../src/mermaid-source.ts")> =>
+const loadSource = (): Promise<
+  typeof import("../../../src/mermaid-source.ts")
+> =>
   import(
-    /* @vite-ignore */ new URL("../../../src/mermaid-source.ts", import.meta.url)
-      .href
+    /* @vite-ignore */ new URL(
+      "../../../src/mermaid-source.ts",
+      import.meta.url,
+    ).href
   );
 
 // front matter の title を取り出し、ほかの行が無ければ front matter ごと除く（正常系）
@@ -26,7 +30,8 @@ test("test_split_mermaid_title", async () => {
 test("test_split_mermaid_title_when_other_keys", async () => {
   // 準備
   const { splitMermaidTitle } = await loadSource();
-  const source = "---\ntitle: 受付\nconfig:\n  look: classic\n---\nflowchart LR";
+  const source =
+    "---\ntitle: 受付\nconfig:\n  look: classic\n---\nflowchart LR";
   // 実行
   const result = splitMermaidTitle(source);
   // 検証
@@ -66,7 +71,9 @@ test("test_mermaid_kind_name", async () => {
   // 準備
   const { mermaidKindName } = await loadSource();
   // 実行
-  const names = ["stateDiagram-v2", "journey", "constructor"].map(mermaidKindName);
+  const names = ["stateDiagram-v2", "journey", "constructor"].map(
+    mermaidKindName,
+  );
   // 検証
   expect(names).toEqual(["状態遷移図", "図", "図"]);
 });

@@ -400,7 +400,13 @@ test("test_mount_when_extension_definition_invalid", async () => {
 const MERMAID_URL = "/node_modules/mermaid/dist/mermaid.esm.min.mjs";
 
 /** flowchart の mermaid のコードブロックを 1 つ持つ文書 */
-const MERMAID_MARKDOWN = ["```mermaid", "flowchart LR", "  A --> B", "```", ""].join("\n");
+const MERMAID_MARKDOWN = [
+  "```mermaid",
+  "flowchart LR",
+  "  A --> B",
+  "```",
+  "",
+].join("\n");
 
 // mermaid のコードブロックを図にし、描き直す前と片付けで mermaid の図を外す（正常系）
 test("test_mount_when_mermaid", async () => {
@@ -412,7 +418,9 @@ test("test_mount_when_mermaid", async () => {
   const handle = await mountTracked(el, { markdown: MERMAID_MARKDOWN, config });
   await vi.waitFor(
     () => {
-      expect(el.querySelectorAll('figure.mdmark-diagram[data-diagram="mermaid"]')).toHaveLength(1);
+      expect(
+        el.querySelectorAll('figure.mdmark-diagram[data-diagram="mermaid"]'),
+      ).toHaveLength(1);
     },
     { timeout: 10_000 },
   );
@@ -431,7 +439,10 @@ test("test_mount_when_mermaid", async () => {
 test("test_mount_when_mermaid_disabled", async () => {
   // 準備
   const el = createElement();
-  const config = { features: { mermaid: false }, mermaid: { url: `${MERMAID_URL}?disabled` } };
+  const config = {
+    features: { mermaid: false },
+    mermaid: { url: `${MERMAID_URL}?disabled` },
+  };
   // 実行
   await mountTracked(el, { markdown: MERMAID_MARKDOWN, config });
   await new Promise((resolve) => setTimeout(resolve, 200));

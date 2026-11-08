@@ -105,14 +105,20 @@ test("test_resolve_config_when_mermaid_given", async () => {
     mermaid: { url: 1, theme: "no-such-theme", themeVariables: "x" },
   } as unknown as MdmarkConfig;
   // 実行
-  const results = [given, invalid, {}].map((config) => resolveConfig({ config }));
+  const results = [given, invalid, {}].map((config) =>
+    resolveConfig({ config }),
+  );
   // 検証
   expect(results[0]?.mermaid).toEqual({
     url: "/vendor/mermaid.mjs",
     theme: "neutral",
     themeVariables: { primaryColor: "#e0f2f1" },
   });
-  const fallback = { url: DEFAULT_MERMAID_URL, theme: "mdmark", themeVariables: {} };
+  const fallback = {
+    url: DEFAULT_MERMAID_URL,
+    theme: "mdmark",
+    themeVariables: {},
+  };
   expect(results[1]?.mermaid).toEqual(fallback);
   expect(results[2]?.mermaid).toEqual(fallback);
   expect(results[2]?.features.mermaid).toBe(true);

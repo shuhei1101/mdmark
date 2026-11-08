@@ -54,8 +54,9 @@ const codeBlock = (source: string): string =>
   `<div class="mdmark-code" data-mdmark-mermaid><div class="mdmark-code-bar"></div><pre tabindex="0" aria-label="コード: mermaid"><code class="language-mermaid">${escapeHtml(source)}</code></pre></div>`;
 
 /** mermaid のコードブロックを並べた描く先の要素を置く */
-const createMermaidRoot = (sources: string[] = [FLOWCHART, SEQUENCE]): HTMLElement =>
-  createRootFromHtml(sources.map(codeBlock).join(""));
+const createMermaidRoot = (
+  sources: string[] = [FLOWCHART, SEQUENCE],
+): HTMLElement => createRootFromHtml(sources.map(codeBlock).join(""));
 
 /** `css` の色の値を、試しの要素の color で rgb() の文字にする */
 const computedColor = (scope: HTMLElement, value: string): string => {
@@ -122,20 +123,34 @@ test("test_attach_mermaid", async () => {
   const handle = attachMermaid(attachOptions(root, { importModule }));
   detachers.push(handle.detach);
   // 検証: 止めている間
-  expect(root.querySelectorAll('div.mdmark-embed[data-mdmark-slot="mermaid"]')).toHaveLength(2);
-  for (const block of root.querySelectorAll<HTMLElement>("[data-mdmark-mermaid]")) {
+  expect(
+    root.querySelectorAll('div.mdmark-embed[data-mdmark-slot="mermaid"]'),
+  ).toHaveLength(2);
+  for (const block of root.querySelectorAll<HTMLElement>(
+    "[data-mdmark-mermaid]",
+  )) {
     expect(block.hidden).toBe(true);
   }
   release();
   await handle.ready;
   // 検証: 描いた後
-  const figures = [...root.querySelectorAll<HTMLElement>('figure.mdmark-diagram[data-diagram="mermaid"]')];
+  const figures = [
+    ...root.querySelectorAll<HTMLElement>(
+      'figure.mdmark-diagram[data-diagram="mermaid"]',
+    ),
+  ];
   expect(figures).toHaveLength(2);
-  expect(figures[0]?.querySelector("figcaption")?.textContent?.trim()).toBe("問い合わせの受付");
-  expect(figures[1]?.querySelector("figcaption")?.textContent?.trim()).toBe("シーケンス図");
+  expect(figures[0]?.querySelector("figcaption")?.textContent?.trim()).toBe(
+    "問い合わせの受付",
+  );
+  expect(figures[1]?.querySelector("figcaption")?.textContent?.trim()).toBe(
+    "シーケンス図",
+  );
   expect(root.querySelector(".mdmark-embed")).toBeNull();
   expect(root.querySelector("[data-mdmark-mermaid]")).toBeNull();
-  expect(figures[0]?.querySelector('button[aria-label^="倍率"]')).not.toBeNull();
+  expect(
+    figures[0]?.querySelector('button[aria-label^="倍率"]'),
+  ).not.toBeNull();
   expect(importModule).toHaveBeenCalledTimes(1);
 });
 
@@ -143,7 +158,9 @@ test("test_attach_mermaid", async () => {
 test("test_attach_mermaid_when_no_target", async () => {
   // 準備
   const { attachMermaid } = await loadMermaid();
-  const root = createRootFromHtml('<pre><code class="language-ts">const a = 1;</code></pre>');
+  const root = createRootFromHtml(
+    '<pre><code class="language-ts">const a = 1;</code></pre>',
+  );
   const importModule = vi.fn<SyntaxImport>(importMermaid);
   // 実行
   const handle = attachMermaid(attachOptions(root, { importModule }));
@@ -168,11 +185,15 @@ test("test_attach_mermaid_when_unavailable", async () => {
   detachers.push(handle.detach);
   await handle.ready;
   // 検証
-  const blocks = [...root.querySelectorAll<HTMLElement>("[data-mdmark-mermaid]")];
+  const blocks = [
+    ...root.querySelectorAll<HTMLElement>("[data-mdmark-mermaid]"),
+  ];
   expect(blocks).toHaveLength(2);
   for (const block of blocks) {
     expect(block.hidden).toBe(false);
-    expect(block.previousElementSibling?.classList.contains("mdmark-notice")).toBe(true);
+    expect(
+      block.previousElementSibling?.classList.contains("mdmark-notice"),
+    ).toBe(true);
   }
   expect(root.querySelector(".mdmark-embed")).toBeNull();
   const logged = consoleError.mock.calls.flat();
@@ -194,7 +215,9 @@ test("test_attach_mermaid_when_syntax_invalid", async () => {
   const warning = block?.previousElementSibling;
   expect(warning?.classList.contains("mdmark-syntax-warning")).toBe(true);
   expect(warning?.textContent).toContain("mermaid の図を描けません（");
-  expect(root.querySelectorAll('figure.mdmark-diagram[data-diagram="mermaid"]')).toHaveLength(1);
+  expect(
+    root.querySelectorAll('figure.mdmark-diagram[data-diagram="mermaid"]'),
+  ).toHaveLength(1);
   expect(document.querySelector('[id^="dmdmark-mermaid"]')).toBeNull();
 });
 
@@ -203,7 +226,9 @@ test("test_attach_mermaid_when_stale", async () => {
   // 準備
   const { attachMermaid } = await loadMermaid();
   const root = createMermaidRoot();
-  const mermaid = (await importMermaid()).default as { render: (...args: unknown[]) => unknown };
+  const mermaid = (await importMermaid()).default as {
+    render: (...args: unknown[]) => unknown;
+  };
   const render = vi.spyOn(mermaid, "render");
   // 実行
   const handle = attachMermaid(attachOptions(root, { isCurrent: () => false }));
@@ -227,7 +252,9 @@ test("test_attach_mermaid_when_embedded", async () => {
   await handle.ready;
   // 検証
   expect(importModule).not.toHaveBeenCalled();
-  expect(root.querySelectorAll('figure.mdmark-diagram[data-diagram="mermaid"]')).toHaveLength(2);
+  expect(
+    root.querySelectorAll('figure.mdmark-diagram[data-diagram="mermaid"]'),
+  ).toHaveLength(2);
 });
 
 // 埋めたモジュールが mermaid を持たなければ、外へ読まずに知らせの枠にする（異常系）
@@ -245,8 +272,12 @@ test("test_attach_mermaid_when_embedded_without_module", async () => {
   // 検証
   expect(importModule).not.toHaveBeenCalled();
   expect(consoleError).not.toHaveBeenCalled();
-  for (const block of root.querySelectorAll<HTMLElement>("[data-mdmark-mermaid]")) {
-    expect(block.previousElementSibling?.classList.contains("mdmark-notice")).toBe(true);
+  for (const block of root.querySelectorAll<HTMLElement>(
+    "[data-mdmark-mermaid]",
+  )) {
+    expect(
+      block.previousElementSibling?.classList.contains("mdmark-notice"),
+    ).toBe(true);
   }
 });
 
@@ -255,7 +286,9 @@ test("test_attach_mermaid_when_scheme_changed", async () => {
   // 準備
   const { attachMermaid } = await loadMermaid();
   const root = createMermaidRoot([FLOWCHART]);
-  const mermaid = (await importMermaid()).default as { render: (...args: unknown[]) => unknown };
+  const mermaid = (await importMermaid()).default as {
+    render: (...args: unknown[]) => unknown;
+  };
   const render = vi.spyOn(mermaid, "render");
   const handle = attachMermaid(attachOptions(root));
   detachers.push(handle.detach);
@@ -267,7 +300,9 @@ test("test_attach_mermaid_when_scheme_changed", async () => {
     expect(render.mock.calls.length).toBe(before + 2);
   });
   await vi.waitFor(() => {
-    const node = root.querySelector<SVGElement>(".mdmark-mermaid > svg g.node rect, .mdmark-mermaid > svg g.node path");
+    const node = root.querySelector<SVGElement>(
+      ".mdmark-mermaid > svg g.node rect, .mdmark-mermaid > svg g.node path",
+    );
     expect(node).not.toBeNull();
     expect(getComputedStyle(node as Element).fill).toBe(
       computedColor(root, "var(--mdmark-color-surface)"),
@@ -286,12 +321,16 @@ test("test_attach_mermaid_when_detached", async () => {
   // 準備
   const { attachMermaid } = await loadMermaid();
   const root = createMermaidRoot([FLOWCHART]);
-  const mermaid = (await importMermaid()).default as { render: (...args: unknown[]) => unknown };
+  const mermaid = (await importMermaid()).default as {
+    render: (...args: unknown[]) => unknown;
+  };
   const render = vi.spyOn(mermaid, "render");
   const handle = attachMermaid(attachOptions(root));
   await handle.ready;
   const before = render.mock.calls.length;
-  const zoom = root.querySelector<HTMLButtonElement>('button[aria-label^="倍率"]');
+  const zoom = root.querySelector<HTMLButtonElement>(
+    'button[aria-label^="倍率"]',
+  );
   const zoomTextBefore = zoom?.textContent;
   // 実行
   handle.detach();
@@ -309,7 +348,8 @@ const drawOptions = async (
   source: string,
   config = resolveConfig({}).mermaid,
 ) => ({
-  mermaid: (await importMermaid()).default as import("../../../src/mermaid.ts").MermaidModule,
+  mermaid: (await importMermaid())
+    .default as import("../../../src/mermaid.ts").MermaidModule,
   source,
   root: scope,
   scope,
@@ -347,7 +387,9 @@ test("test_draw_mermaid_diagram", async () => {
   const variables = config.themeVariables as Record<string, unknown>;
   expect(variables.useGradient).toBe(false);
   expect(variables.dropShadow).toBe("none");
-  for (const shape of scope.querySelectorAll<SVGElement>("g.node rect, g.node path")) {
+  for (const shape of scope.querySelectorAll<SVGElement>(
+    "g.node rect, g.node path",
+  )) {
     expect(getComputedStyle(shape).stroke.startsWith("url(")).toBe(false);
   }
 });
@@ -379,7 +421,9 @@ test("test_draw_mermaid_diagram_when_dark", async () => {
   expect(print?.getAttribute("aria-hidden")).toBe("true");
   expect(print?.querySelector("svg")).not.toBeNull();
   expect(initialize).toHaveBeenCalledTimes(2);
-  const second = initialize.mock.calls[1]?.[0] as { themeVariables: Record<string, unknown> };
+  const second = initialize.mock.calls[1]?.[0] as {
+    themeVariables: Record<string, unknown>;
+  };
   expect(second.themeVariables.primaryColor).toBe(lightSurface);
 });
 
@@ -437,13 +481,17 @@ test("test_draw_mermaid_diagram_when_gantt", async () => {
   // 実行
   const result = await drawMermaidDiagram(options);
   // 検証
-  const called = initialize.mock.calls[0]?.[0] as { gantt: { useWidth: number } };
+  const called = initialize.mock.calls[0]?.[0] as {
+    gantt: { useWidth: number };
+  };
   expect(called.gantt.useWidth).toBe(720);
   if (!("html" in result)) {
     throw new Error(`描けなかった: ${result.error}`);
   }
   place(scope, result.html);
-  expect(scope.querySelector("figure")?.getAttribute("data-fit-min")).toBe("0.75");
+  expect(scope.querySelector("figure")?.getAttribute("data-fit-min")).toBe(
+    "0.75",
+  );
 });
 
 // 対応表の変数を全て hex にし、固定の値を重ねる（正常系）
@@ -451,16 +499,24 @@ test("test_mermaid_theme_variables", async () => {
   // 準備
   const { mermaidThemeVariables } = await loadMermaid();
   const { MERMAID_THEME_COLORS } = await import(
-    /* @vite-ignore */ new URL("../../../src/mermaid-source.ts", import.meta.url).href
+    /* @vite-ignore */ new URL(
+      "../../../src/mermaid-source.ts",
+      import.meta.url,
+    ).href
   );
   const scope = createRootFromHtml("");
   // 実行
-  const variables = mermaidThemeVariables({ scope, config: resolveConfig({}).mermaid });
+  const variables = mermaidThemeVariables({
+    scope,
+    config: resolveConfig({}).mermaid,
+  });
   // 検証
   for (const key of Object.keys(MERMAID_THEME_COLORS)) {
     expect(variables[key]).toMatch(/^#(?:[0-9a-f]{6}|[0-9a-f]{8})$/);
   }
-  expect(variables.primaryColor).toBe(rgbToHex(computedColor(scope, "var(--mdmark-color-surface)")));
+  expect(variables.primaryColor).toBe(
+    rgbToHex(computedColor(scope, "var(--mdmark-color-surface)")),
+  );
   expect(variables.useGradient).toBe(false);
   expect(variables.dropShadow).toBe("none");
   expect(variables.pieOpacity).toBe("1");
@@ -475,12 +531,21 @@ test("test_mermaid_theme_variables_when_other_theme", async () => {
   const { mermaidThemeVariables } = await loadMermaid();
   const scope = createRootFromHtml("");
   const config = resolveConfig({
-    config: { mermaid: { theme: "dark", themeVariables: { lineColor: "#ff0000", fontSize: 14 } } },
+    config: {
+      mermaid: {
+        theme: "dark",
+        themeVariables: { lineColor: "#ff0000", fontSize: 14 },
+      },
+    },
   }).mermaid;
   // 実行
   const variables = mermaidThemeVariables({ scope, config });
   // 検証
-  expect(variables).toEqual({ lineColor: "#ff0000", useGradient: false, dropShadow: "none" });
+  expect(variables).toEqual({
+    lineColor: "#ff0000",
+    useGradient: false,
+    dropShadow: "none",
+  });
 });
 
 // rgb・rgba は丸めずに読み、color-mix の値も hex にする（正常系）
@@ -492,7 +557,9 @@ test("test_css_color_to_hex", async () => {
   scope.style.setProperty("--b", "rgba(24, 24, 27, 0.14)");
   scope.style.setProperty("--c", "color-mix(in oklab, #0f766e 50%, #ffffff)");
   // 実行
-  const values = ["--a", "--b", "--c"].map((name) => cssColorToHex({ scope, name }));
+  const values = ["--a", "--b", "--c"].map((name) =>
+    cssColorToHex({ scope, name }),
+  );
   // 検証
   expect(values[0]).toBe("#18181b");
   expect(values[1]).toBe("#18181b24");
@@ -524,7 +591,10 @@ test("test_replace_mermaid_actors", async () => {
   // 検証
   const group = svg.querySelector("g.actor-man");
   const children = [...(group?.children ?? [])];
-  expect(children.map((child) => child.tagName.toLowerCase())).toEqual(["svg", "text"]);
+  expect(children.map((child) => child.tagName.toLowerCase())).toEqual([
+    "svg",
+    "text",
+  ]);
   const icon = children[0];
   expect(icon?.classList.contains("mdmark-mermaid-actor")).toBe(true);
   expect(icon?.getAttribute("width")).toBe("30");

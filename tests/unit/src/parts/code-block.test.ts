@@ -126,7 +126,9 @@ test("test_render_code_block_when_mermaid", async () => {
   const withBar = renderCodeBlock(options);
   const withoutBar = renderCodeBlock({ ...options, bar: false });
   // 検証
-  expect(withBar.startsWith('<div class="mdmark-code" data-mdmark-mermaid>')).toBe(true);
+  expect(
+    withBar.startsWith('<div class="mdmark-code" data-mdmark-mermaid>'),
+  ).toBe(true);
   expect(withoutBar.startsWith("<pre data-mdmark-mermaid")).toBe(true);
   expect(withBar).not.toContain("data-mdmark-syntax");
   expect(withoutBar).not.toContain("data-mdmark-syntax");

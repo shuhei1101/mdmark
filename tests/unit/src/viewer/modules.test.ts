@@ -9,7 +9,8 @@ const loadHighlight = () => import("../../../../src/highlight.ts");
 /** mermaid のモジュールの控えを持つ処理を読み込む（実装が無い間は各テストが個別に失敗する。ファイルが無いと解決が失敗してテストファイルごと落ちるため、URL を組んで読む） */
 const loadMermaid = (): Promise<typeof import("../../../../src/mermaid.ts")> =>
   import(
-    /* @vite-ignore */ new URL("../../../../src/mermaid.ts", import.meta.url).href
+    /* @vite-ignore */ new URL("../../../../src/mermaid.ts", import.meta.url)
+      .href
   );
 
 /** 外部ライブラリのモジュールの控えを持つ処理を読み込む */
@@ -120,10 +121,15 @@ test("test_prepare_modules_when_mermaid", async () => {
   // 準備
   const { prepareModules } = await loadModules();
   const mermaidModule = await loadMermaid();
-  const mermaid = { default: { initialize: () => {}, render: async () => ({ svg: "" }) } };
+  const mermaid = {
+    default: { initialize: () => {}, render: async () => ({ svg: "" }) },
+  };
   const deps = { register: vi.fn() };
   // 実行
-  await prepareModules({ parts: {}, mermaid, libraries: {}, extensions: [] }, deps);
+  await prepareModules(
+    { parts: {}, mermaid, libraries: {}, extensions: [] },
+    deps,
+  );
   const embedded = mermaidModule.embeddedMermaid;
   await prepareModules({ parts: {}, libraries: {}, extensions: [] }, deps);
   const missing = mermaidModule.embeddedMermaid;

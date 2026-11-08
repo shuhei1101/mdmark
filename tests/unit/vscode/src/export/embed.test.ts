@@ -103,7 +103,12 @@ test("test_embed_local_libraries_when_mermaid", async () => {
   const used = recordingBundle();
   const unused = recordingBundle();
   const mermaid = { url: "/ws/libs/mermaid.mjs", theme: "neutral" };
-  const options = { libraries: undefined, htmlScripts: undefined, config: {}, mermaid };
+  const options = {
+    libraries: undefined,
+    htmlScripts: undefined,
+    config: {},
+    mermaid,
+  };
   // 実行
   const withBlock = await embedLocalLibraries({
     ...options,

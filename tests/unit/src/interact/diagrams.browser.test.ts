@@ -370,7 +370,9 @@ test("test_attach_diagrams_when_figures_given", async () => {
   }
   floored.dataset.fitMin = "0.75";
   // 実行
-  detachers.push(attachDiagrams({ root, placement: "bottom", figures: [floored] }));
+  detachers.push(
+    attachDiagrams({ root, placement: "bottom", figures: [floored] }),
+  );
   // 検証
   const content = floored.querySelector<HTMLElement>(".mdmark-diagram-stage");
   expect(content?.style.transform).toBe("scale(0.75)");

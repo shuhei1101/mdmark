@@ -216,14 +216,19 @@ test("test_render_part_when_comment_popover", async () => {
 test("test_render_part_when_mermaid_diagram", async () => {
   // 準備
   const { renderPart } = await loadRender();
-  const params = new URLSearchParams({ svg: "flowchart", title: "問い合わせの受付" });
+  const params = new URLSearchParams({
+    svg: "flowchart",
+    title: "問い合わせの受付",
+  });
   const missing = new URLSearchParams({ svg: "missing", title: "x" });
   // 実行
   const html = renderPart({ component: "mermaid-diagram", params });
   const none = renderPart({ component: "mermaid-diagram", params: missing });
   // 検証
   expect(html).toContain('data-diagram="mermaid"');
-  expect(html).toMatch(/<figure class="mdmark-diagram"[\s\S]*<svg[\s\S]*<\/figure>/);
+  expect(html).toMatch(
+    /<figure class="mdmark-diagram"[\s\S]*<svg[\s\S]*<\/figure>/,
+  );
   expect(none).toBeUndefined();
 });
 
