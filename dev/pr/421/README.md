@@ -1,0 +1,1 @@
+# 単体テスト test_read_yaml_key_when_missing の 2 つの Promise を 1 つずつ待ち、全件実行での未処理の拒否を無くす
