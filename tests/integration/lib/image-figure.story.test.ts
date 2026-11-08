@@ -6,7 +6,7 @@ const holder = createBrowserHolder();
 beforeAll(holder.launch);
 afterAll(holder.close);
 
-/** 画像の図のストーリーを開き、図と中の要素の位置を返す */
+/** 画像の図のストーリーを開き、図と中の要素の位置を返却する */
 async function open(id: string) {
   const page = await holder.openStory(`parts-imagefigure--${id}`);
   const layout = await page.evaluate(() => {
@@ -28,7 +28,7 @@ async function open(id: string) {
           }
         : null;
     };
-    // 段落の最初の行の箱（回り込みは最初の行で見る）
+    // 段落の最初の行のノード（回り込みは最初の行で確認する）
     const firstLine = paragraph
       ? (() => {
           const range = document.createRange();
@@ -66,7 +66,7 @@ async function open(id: string) {
   return { page, layout };
 }
 
-// title をキャプションにして画像の下に出し、画像を拡大のボタンで包んで右上に拡大のアイコンを置く（Caption）
+// title をキャプションにして画像の下に出し、画像を拡大のボタンで包んで右上に拡大のアイコンを配置する（Caption）
 test("test_caption", async () => {
   // 準備・実行
   const { page, layout } = await open("caption");
@@ -132,7 +132,7 @@ test("test_width_percent", async () => {
   expect(layout.figure?.width).toBeCloseTo(layout.contentWidth / 2, 0);
 });
 
-// align=left の画像は左に置き、右を本文が回り込む（AlignLeft）
+// align=left の画像は左に配置し、右を本文が回り込む（AlignLeft）
 test("test_align_left", async () => {
   // 準備・実行
   const { layout } = await open("align-left");
@@ -145,7 +145,7 @@ test("test_align_left", async () => {
   expect(layout.firstLine?.top ?? 0).toBeLessThan(layout.figure?.bottom ?? 0);
 });
 
-// align=right の画像は右に置き、左を本文が回り込む（AlignRight）
+// align=right の画像は右に配置し、左を本文が回り込む（AlignRight）
 test("test_align_right", async () => {
   // 準備・実行
   const { layout } = await open("align-right");
@@ -158,7 +158,7 @@ test("test_align_right", async () => {
   expect(layout.firstLine?.top ?? 0).toBeLessThan(layout.figure?.bottom ?? 0);
 });
 
-// align=center の画像は中央に置き、回り込まない（AlignCenter）
+// align=center の画像は中央に配置し、回り込まない（AlignCenter）
 test("test_align_center", async () => {
   // 準備・実行
   const { layout } = await open("align-center");

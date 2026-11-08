@@ -33,7 +33,7 @@ export const STUB_ORIGIN = new URL(
   process.env.MDMARK_VSCODE_DIST_BASE ?? "http://127.0.0.1:0",
 ).origin;
 
-/** 代役の配信が配布物を返す経路 `/mdmark@{バージョン}/dist/{ファイル}` */
+/** 代役の配信が配布物を返却する経路 `/mdmark@{バージョン}/dist/{ファイル}` */
 export function distPath(
   version: string,
   file: "index.js" | "index.css",
@@ -41,7 +41,7 @@ export function distPath(
   return `/mdmark@${version}/dist/${file}`;
 }
 
-/** 拡張機能が `activate` で返す、テストのときだけの口 */
+/** 拡張機能が `activate` で返却する、テストのときだけのインターフェース */
 type TestApi = {
   inspectPreview: (
     selector: string,
@@ -68,13 +68,13 @@ export type RecordedPanel = {
   panel: vscode.WebviewPanel;
   /** 拡張機能 → Webview */
   sent: HostMessage[];
-  /** `sent` の各メッセージを送った時刻（ミリ秒） */
+  /** `sent` の各メッセージを送信した時刻（ミリ秒） */
   sentAt: number[];
   /** Webview → 拡張機能 */
   received: WebviewMessage[];
   /** 拡張機能が `onDidReceiveMessage` に登録した関数（Webview から届いたことにして呼ぶ） */
   listeners: Array<(message: unknown) => void>;
-  /** 記録せずに Webview へ送る */
+  /** 記録せずに Webview へ送信する */
   postRaw: (message: unknown) => Thenable<boolean>;
   /** 作ったときの列とタイトル */
   options: { title: string; showOptions: unknown };
@@ -114,7 +114,7 @@ export function installRecorder(): void {
     register((message: WebviewMessage) => {
       record.received.push(message);
     });
-    // 拡張機能が登録する関数を控え、テストが Webview から届いたことにして呼べるようにする
+    // 拡張機能が登録する関数を記録し、テストが Webview から届いたことにして呼べるようにする
     (panel.webview as { onDidReceiveMessage: unknown }).onDidReceiveMessage = (
       listener: (message: unknown) => void,
       thisArgs?: unknown,
@@ -128,7 +128,7 @@ export function installRecorder(): void {
   };
 }
 
-/** Webview に足す、テストの操作の中継のスクリプト。`testClick` はセレクタに当たる最初の要素を押し、`testDrag` はその要素の中央で押して横に `dx` 動かして離し、続く `click` を送る（合成のポインターは捕捉できないため、`setPointerCapture` を何もしない関数にする） */
+/** Webview に追加する、テストの操作の中継のスクリプト。`testClick` はセレクタに該当する最初の要素を押し、`testDrag` はその要素の中央で押して横に `dx` 動かして離し、続く `click` を送信する（合成のポインターは捕捉できないため、`setPointerCapture` を何もしない関数にする） */
 const RELAY_SCRIPT = [
   'window.addEventListener("message", (event) => {',
   "  const data = event.data;",
@@ -149,7 +149,7 @@ const RELAY_SCRIPT = [
   "});",
 ].join("");
 
-/** `testClick` のメッセージを受けたら、セレクタに当たる最初の要素を押す（クリックの代わり）スクリプトを、Webview の HTML に足す。HTML を入れるたびに、その HTML の nonce を付けて足す */
+/** `testClick` のメッセージを受けたら、セレクタに該当する最初の要素を押す（クリックの代わり）スクリプトを、Webview の HTML に追加する。HTML を入れるたびに、その HTML の nonce を付けて追加する */
 function injectClickRelay(webview: vscode.Webview): void {
   let descriptor: PropertyDescriptor | undefined;
   for (
@@ -182,12 +182,12 @@ function injectClickRelay(webview: vscode.Webview): void {
   });
 }
 
-/** Webview の要素を押す（`injectClickRelay` が足したスクリプトが受ける） */
+/** Webview の要素を押す（`injectClickRelay` が追加したスクリプトが受ける） */
 export function clickInPreview(record: RecordedPanel, selector: string): void {
   void record.postRaw({ type: "testClick", selector });
 }
 
-/** Webview の要素の中央で押したまま横に `dx` 動かして離す（`injectClickRelay` が足したスクリプトが受ける） */
+/** Webview の要素の中央で押したまま横に `dx` 動かして離す（`injectClickRelay` が追加したスクリプトが受ける） */
 export function dragInPreview(
   record: RecordedPanel,
   selector: string,
@@ -225,7 +225,7 @@ export async function replaceFirstLine(
   await editor.edit((builder) => builder.replace(line.range, text));
 }
 
-/** エディタの先頭の行が動き終わるまで待ち、その行を返す（スクロールは少しずつ動く） */
+/** エディタの先頭の行が動き終わるまで待ち、その行を返却する（スクロールは少しずつ動く） */
 export async function settledStart(editor: vscode.TextEditor): Promise<number> {
   let last = -1;
   for (let attempt = 0; attempt < 50; attempt += 1) {
@@ -259,14 +259,14 @@ export function sleep(ms: number): Promise<void> {
   return new Promise((resolveSleep) => setTimeout(resolveSleep, ms));
 }
 
-/** 拡張機能を動かして、テストのときだけの口を返す */
+/** 拡張機能を動かして、テストのときだけのインターフェースを返却する */
 export async function api(): Promise<TestApi> {
   const extension = vscode.extensions.getExtension(EXTENSION_ID);
   assert.ok(extension, "拡張機能が見つからない");
   return (await extension.activate()) as TestApi;
 }
 
-/** Webview の要素を調べる。`play` のときは、当たった動画・音声を再生してから調べる */
+/** Webview の要素を調べる。`play` のときは、該当した動画・音声を再生してから調べる */
 export async function inspect(
   selector: string,
   play = false,
@@ -274,7 +274,7 @@ export async function inspect(
   return (await api()).inspectPreview(selector, play);
 }
 
-/** パネルの部品（状態の表示・帯）を axe で検査し、違反を返す（描いた文書は検査しない） */
+/** パネルの部品（状態の表示・帯）を axe で検査し、違反を返却する（描いた文書は検査しない） */
 export async function audit(): Promise<AxeViolation[]> {
   return (await api()).auditPreview();
 }
@@ -292,7 +292,7 @@ export async function waitForRendered(
   );
 }
 
-/** 記録した `render` を送ったメッセージ */
+/** 記録した `render` を送信したメッセージ */
 export function renders(record: RecordedPanel) {
   return record.sent.filter(
     (message): message is Extract<HostMessage, { type: "render" }> =>
@@ -307,17 +307,17 @@ export function workspaceDir(): string {
   return folder.uri.fsPath;
 }
 
-/** テストが作ったファイル（後始末で消す） */
+/** テストが作ったファイル（後始末で削除する） */
 const createdFiles = new Set<string>();
 
-/** ワークスペースの下にファイルを書く（フォルダが無ければ作る） */
+/** ワークスペースの下にファイルを書き込む（フォルダが無ければ作る） */
 export async function writeFixture(
   relative: string,
   content: string | Buffer,
 ): Promise<string> {
   const path = join(workspaceDir(), relative);
   await mkdir(dirname(path), { recursive: true });
-  // 書きかけを見張りに読ませないよう、別の名前に書いてから置き換える
+  // 書き込みかけを見張りに読み込ませないよう、別の名前に記載してから置き換える
   const temporary = `${path}.tmp-${process.pid}`;
   await writeFile(temporary, content);
   await rename(temporary, path);
@@ -325,12 +325,12 @@ export async function writeFixture(
   return path;
 }
 
-/** 拡張機能が作るファイルを、後始末で消すものに加える */
+/** 拡張機能が作るファイルを、後始末で削除するものに加える */
 export function trackFile(relative: string): void {
   createdFiles.add(join(workspaceDir(), relative));
 }
 
-/** ワークスペースの下のファイルを読む */
+/** ワークスペースの下のファイルを読み込む */
 export function readFixture(relative: string): Promise<string> {
   return readFile(join(workspaceDir(), relative), "utf8");
 }
@@ -341,7 +341,7 @@ export async function openMarkdown(
 ): Promise<vscode.TextEditor> {
   const uri = vscode.Uri.file(join(workspaceDir(), relative));
   const document = await vscode.workspace.openTextDocument(uri);
-  // 同じファイルを前のテストで開いたままだと、ディスクの内容へ追いつくまで古い全文を返す
+  // 同じファイルを前のテストで開いたままだと、ディスクの内容へ追いつくまで古い全文を返却する
   const onDisk = await readFile(uri.fsPath, "utf8");
   await waitFor(() => document.getText() === onDisk, {
     message: "文書がディスクの内容に追いつかない",
@@ -349,7 +349,7 @@ export async function openMarkdown(
   return vscode.window.showTextDocument(document, vscode.ViewColumn.One);
 }
 
-/** `mdmark.*` の設定をワークスペースの設定に書く（`undefined` で消す） */
+/** `mdmark.*` の設定をワークスペースの設定に記載する（`undefined` で削除する） */
 export async function setSetting(key: string, value: unknown): Promise<void> {
   await vscode.workspace
     .getConfiguration("mdmark")
@@ -391,7 +391,7 @@ export const stub = {
   },
 };
 
-/** 拡張機能の出力チャネル `mdmark` を VS Code が書くログファイル（`{ユーザーデータ}/logs/{起動}/window*\/exthost/{拡張機能の ID}/mdmark.log`）のうち、最後に書かれたもの。見つからなければ `undefined` */
+/** 拡張機能の出力チャネル `mdmark` を VS Code が記載するログファイル（`{ユーザーデータ}/logs/{起動}/window*\/exthost/{拡張機能の ID}/mdmark.log`）のうち、最後に記載されたもの。見つからなければ `undefined` */
 async function extensionLogPath(): Promise<string | undefined> {
   const userDataDir = process.env.MDMARK_TEST_USER_DATA_DIR;
   if (userDataDir === undefined) {
@@ -415,13 +415,13 @@ async function extensionLogPath(): Promise<string | undefined> {
   return latest?.path;
 }
 
-/** 拡張機能のログの今の長さ（バイト）。`extensionLogSince` に渡して、これより後に書かれた分を読む */
+/** 拡張機能のログの今の長さ（バイト）。`extensionLogSince` に指定して、これより後に記載された分を読み込む */
 export async function extensionLogSize(): Promise<number> {
   const path = await extensionLogPath();
   return path === undefined ? 0 : (await stat(path)).size;
 }
 
-/** 拡張機能のログのうち、`offset` バイトより後に書かれた行。ログファイルが無ければその旨を返す */
+/** 拡張機能のログのうち、`offset` バイトより後に記載された行。ログファイルが無ければその旨を返却する */
 export async function extensionLogSince(offset: number): Promise<string[]> {
   const path = await extensionLogPath();
   if (path === undefined) {
@@ -447,7 +447,7 @@ export async function tagRequestCount(): Promise<number> {
 /** 見本の流れ図の定義（`docs/使用方法/図を描く/見本.md` の最初の `json`） */
 export async function sampleFlowJson(): Promise<string> {
   const sample = await readFile(
-    join(REPO_ROOT, "docs", "使い方", "図を描く", "見本.md"),
+    join(REPO_ROOT, "docs", "使用方法", "図を描く", "見本.md"),
     "utf8",
   );
   const match = /```json\n([\s\S]*?)\n```/.exec(sample);
@@ -458,7 +458,7 @@ export async function sampleFlowJson(): Promise<string> {
 /** 見本の操作できる部品の範囲（`docs/使用方法/図を描く/見本.md` の `<!-- param -->` から `<!-- /param -->` まで）を持つ Markdown */
 export async function paramMarkdown(): Promise<string> {
   const sample = await readFile(
-    join(REPO_ROOT, "docs", "使い方", "図を描く", "見本.md"),
+    join(REPO_ROOT, "docs", "使用方法", "図を描く", "見本.md"),
     "utf8",
   );
   const range = /<!-- param -->[\s\S]*?<!-- \/param -->/.exec(sample)?.[0];
@@ -489,12 +489,12 @@ export async function guideMarkdown(): Promise<string> {
   ].join("\n");
 }
 
-/** 全てのパネルとエディタを閉じ、テストが作ったファイルと書いた設定を戻し、代役の配信を元の状態に戻す */
+/** 全てのパネルとエディタを閉じ、テストが作ったファイルと記載した設定を戻し、代役の配信を元の状態に戻す */
 export async function resetEnvironment(): Promise<void> {
   for (const record of recorded.splice(0)) {
     record.panel.dispose();
   }
-  // 保存していない書き換えを残すと、同じ名前のファイルを次のテストが書いても古い内容のまま開く
+  // 保存していない書き換えを残すと、同じ名前のファイルを次のテストが記載しても古い内容のまま開く
   for (const document of vscode.workspace.textDocuments) {
     if (document.isDirty) {
       await vscode.window.showTextDocument(document);
@@ -526,7 +526,7 @@ export async function resetEnvironment(): Promise<void> {
   opened.length = 0;
 }
 
-/** 通知（`showInformationMessage`・`showErrorMessage`）に出た文と、ボタンの答え */
+/** 通知（`showInformationMessage`・`showErrorMessage`）に出た文と、ボタンの回答 */
 export const messages = {
   /** 情報の通知に出た文 */
   info: [] as string[],
@@ -534,7 +534,7 @@ export const messages = {
   error: [] as string[],
   /** 情報の通知に出たボタン */
   infoItems: [] as string[][],
-  /** 情報の通知やダイアログへ返すボタン（`undefined` は閉じた） */
+  /** 情報の通知やダイアログへ返却するボタン（`undefined` は閉じた） */
   answer: undefined as string | undefined,
   /** 情報の通知のオプション（ダイアログの `modal`・`detail`） */
   infoOptions: [] as unknown[],
@@ -574,12 +574,12 @@ export function clearMessages(): void {
   messages.answer = undefined;
 }
 
-/** `env.openExternal` に渡された URL */
+/** `env.openExternal` に指定された URL */
 export const opened: string[] = [];
 
 let openInstalled = false;
 
-/** `env.openExternal` を、渡された URL を記録するだけの関数に替える（1 度だけ） */
+/** `env.openExternal` を、指定された URL を記録するだけの関数に替える（1 度だけ） */
 export function installOpenExternal(): void {
   if (openInstalled) {
     return;
@@ -606,7 +606,7 @@ export type LibraryServer = {
   close: () => Promise<void>;
 };
 
-/** `delayMs` 遅らせてモジュールを返す（`hang` のときは応えない）代役の配信を立てる */
+/** `delayMs` 遅らせてモジュールを返却する（`hang` のときは応えない）代役の配信を起動する */
 export async function startLibraryServer(options: {
   delayMs: number | "hang";
 }): Promise<LibraryServer> {
@@ -646,7 +646,7 @@ export async function startLibraryServer(options: {
   };
 }
 
-/** Git のコマンドを `cwd` で実行し、標準出力の前後の空白を除いて返す（コミットの作者と署名はテスト用に固定する） */
+/** Git のコマンドを `cwd` で実行し、標準出力の前後の空白を除いて返却する（コミットの作者と署名はテスト用に固定する） */
 export async function git(cwd: string, args: string[]): Promise<string> {
   const { stdout } = await promisify(execFile)(
     "git",
@@ -664,13 +664,13 @@ export async function git(cwd: string, args: string[]): Promise<string> {
   return stdout.trim();
 }
 
-/** VS Code の Git 拡張の API のうち、テストが使うもの */
+/** VS Code の Git 拡張の API のうち、テストが使用するもの */
 type GitApi = {
   toGitUri: (uri: vscode.Uri, ref: string) => vscode.Uri;
   openRepository: (root: vscode.Uri) => Promise<unknown>;
 };
 
-/** VS Code の Git 拡張を動かして、API を返す */
+/** VS Code の Git 拡張を動かして、API を返却する */
 export async function gitApi(): Promise<GitApi> {
   const extension = vscode.extensions.getExtension<{
     getAPI: (version: 1) => GitApi;
@@ -683,14 +683,14 @@ export async function gitApi(): Promise<GitApi> {
 /** `createRepo` が作り、VS Code に開かせたリポジトリのフォルダ */
 const openedRepos: string[] = [];
 
-/** `createRepo` が開かせたリポジトリを VS Code の Git 拡張に閉じさせる。フォルダを消した後も Git 拡張が `git` を起こし続けないよう、後始末でフォルダを消す前に呼ぶ */
+/** `createRepo` が開かせたリポジトリを VS Code の Git 拡張に閉じさせる。フォルダを削除した後も Git 拡張が `git` を発生させ続けないよう、後始末でフォルダを削除する前に呼ぶ */
 export async function closeRepositories(): Promise<void> {
   for (const dir of openedRepos.splice(0)) {
     await vscode.commands.executeCommand("git.close", vscode.Uri.file(dir));
   }
 }
 
-/** ワークスペースの下に Git のリポジトリを作り、`files` を最初のコミットにして VS Code に開かせる。リポジトリのフォルダの絶対パスを返す（後始末で消す） */
+/** ワークスペースの下に Git のリポジトリを作り、`files` を最初のコミットにして VS Code に開かせる。リポジトリのフォルダの絶対パスを返却する（後始末で削除する） */
 export async function createRepo(
   name: string,
   files: Record<string, string>,
@@ -708,7 +708,7 @@ export async function createRepo(
   return dir;
 }
 
-/** リポジトリの変更を全てコミットし、コミットの ID を返す */
+/** リポジトリの変更を全てコミットし、コミットの ID を返却する */
 export async function commitAll(dir: string, message: string): Promise<string> {
   await git(dir, ["add", "-A"]);
   await git(dir, ["commit", "-q", "-m", message]);
@@ -751,10 +751,10 @@ export function modifiedEditor(uri: vscode.Uri): vscode.TextEditor {
   return editor;
 }
 
-/** 拡張機能の束ね先。子プロセスを起こした呼び出しの出どころを見分けるのに使う */
+/** 拡張機能のまとめ先。子プロセスを発生させた呼び出しの出典を見分けるのに使用する */
 const EXTENSION_BUNDLE = join(REPO_ROOT, "vscode", "dist", "extension.cjs");
 
-/** `child_process` の起動の関数を包み、この拡張機能（mdmark）の束ね先から呼ばれた回数を数える。止めると元に戻す */
+/** `child_process` の起動の関数を包み、この拡張機能（mdmark）のまとめ先から呼ばれた回数を数える。止めると元に戻す */
 export function watchChildProcesses(): {
   fromExtension: () => number;
   stop: () => void;

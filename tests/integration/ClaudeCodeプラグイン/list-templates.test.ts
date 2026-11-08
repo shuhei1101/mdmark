@@ -20,7 +20,7 @@ async function createSettings(): Promise<{
   };
 }
 
-// 索引の行を、名前・説明・タグ・CSS の絶対パスで返す（正常系）
+// 索引の行を、名前・説明・タグ・CSS の絶対パスで返却する（正常系）
 test("test_normal", async () => {
   // 準備
   const { env, templatesDir } = await createSettings();
@@ -61,7 +61,7 @@ test("test_normal", async () => {
   ]);
 });
 
-// フォルダが無いとき、作らずに空の一覧を返す（正常系（テンプレートのフォルダが無い））
+// フォルダが無いとき、作らずに空の一覧を返却する（正常系（テンプレートのフォルダが無い））
 test("test_normal_when_folder_missing", async () => {
   // 準備
   const { env, templatesDir } = await createSettings();
@@ -74,7 +74,7 @@ test("test_normal_when_folder_missing", async () => {
   expect(existsSync(templatesDir)).toBe(false);
 });
 
-// 索引がスキーマに合わないとき、合わないキーを示してエラーにする（異常系（索引を読めない））
+// 索引がスキーマに合わないとき、合わないキーを示してエラーにする（異常系（索引を読み込めない））
 test("test_error_when_index_invalid", async () => {
   // 準備
   const { env, templatesDir } = await createSettings();

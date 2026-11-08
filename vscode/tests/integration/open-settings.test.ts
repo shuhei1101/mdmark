@@ -18,7 +18,7 @@ import {
 const OPEN_SETTINGS_COMMAND = "workbench.action.openSettings";
 
 suite("設定を開く", () => {
-  /** 設定画面を開くコマンドに渡された引数 */
+  /** 設定画面を開くコマンドに指定された引数 */
   const calls: unknown[][] = [];
   const target = vscode.commands as unknown as Record<string, unknown>;
   let original: typeof vscode.commands.executeCommand;

@@ -137,7 +137,7 @@ test("test_footnote_ref_with_link", async () => {
   ).resolves.toBe("テーマを選ぶ");
 });
 
-// 2 段落の中身を段落ごとに積み、幅の上限で折り返す。狭い画面でも横スクロールが出ない（Long）
+// 2 段落の中身を段落ごとに追加し、幅の上限で折り返す。狭い画面でも横スクロールが出ない（Long）
 test("test_footnote_ref_long", async () => {
   // 準備・実行
   for (const viewport of [WIDE_VIEWPORT, NARROW_VIEWPORT]) {
@@ -255,7 +255,7 @@ test("test_footnotes_long", async () => {
     // 検証
     const first = page.locator(".mdmark-fn-item").first();
     await expect(first.locator("p").count()).resolves.toBe(2);
-    // 戻るリンクは最後の段落の末尾に置く
+    // 戻るリンクは最後の段落の末尾に配置する
     await expect(
       first.locator("p").last().locator(".mdmark-fn-back").count(),
     ).resolves.toBe(1);

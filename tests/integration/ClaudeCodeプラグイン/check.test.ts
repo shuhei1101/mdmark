@@ -24,12 +24,12 @@ function toLine(issue: Issue): string {
   return `${place}: ${issue.kind}: ${issue.message}`;
 }
 
-/** フォルダの下のファイルの中身を、パスと並べて読む */
+/** フォルダの下のファイルの中身を、パスと並べて読み込む */
 async function snapshot(dir: string, paths: string[]): Promise<string[]> {
   return Promise.all(paths.map((path) => readFile(join(dir, path), "utf8")));
 }
 
-// ずれの無いフォルダで空の一覧を返す（正常系）
+// ずれの無いフォルダで空の一覧を返却する（正常系）
 test("test_normal", async () => {
   // 準備
   const dir = await createTempDir();
@@ -66,7 +66,7 @@ test("test_normal", async () => {
   expect(await snapshot(dir, Object.keys(files))).toEqual(before);
 });
 
-// CLI と同じずれを一覧で返す（正常系）
+// CLI と同じずれを一覧で返却する（正常系）
 test("test_normal_when_drift", async () => {
   // 準備
   const dir = await createTempDir();
@@ -106,7 +106,7 @@ test("test_normal_when_drift", async () => {
   expect(linesOf(cli.stdout).slice(0, -1)).toEqual(issues.map(toLine));
 });
 
-// 設定ファイルが見つからないと mdmark init で置けることを返す（異常系）
+// 設定ファイルが見つからないと mdmark init で配置できることを返却する（異常系）
 test("test_error_when_config_missing", async () => {
   // 準備
   const dir = await createTempDir();
@@ -120,7 +120,7 @@ test("test_error_when_config_missing", async () => {
   expect(result.texts[0]).toContain("mdmark init");
 });
 
-// base を渡すと、mdmark check --base と同じ直し忘れを返す（正常系（比べる基準を渡す））
+// base を指定すると、mdmark check --base と同じ修正漏れを返却する（正常系（比べる基準を指定する））
 test("test_normal_when_base_given", async () => {
   // 準備
   const dir = await createChangeTogetherDir(createTempDir);
@@ -140,7 +140,7 @@ test("test_normal_when_base_given", async () => {
   expect(linesOf(cli.stdout).slice(0, -1)).toEqual(issues.map(toLine));
 });
 
-// project_dir を持たない呼び出しを、作業のフォルダを読まずにエラーにする（異常系）
+// project_dir を持たない呼び出しを、作業のフォルダを読み込まずにエラーにする（異常系）
 test("test_error_when_project_dir_missing", async () => {
   // 準備
   const client = await connectHttp();
@@ -152,7 +152,7 @@ test("test_error_when_project_dir_missing", async () => {
   expect(result.texts[0]).toContain("プラグインを入れた");
 });
 
-// text と file・key を渡すと、mdmark check --text・--file --key と同じずれを返す（正常系（文字列と YAML のキーを渡す））
+// text と file・key を指定すると、mdmark check --text・--file --key と同じずれを返却する（正常系（文字列と YAML のキーを指定する））
 test("test_normal_when_text_and_key", async () => {
   // 準備
   const dir = await createTempDir();
@@ -217,7 +217,7 @@ test("test_normal_when_text_and_key", async () => {
   expect(await snapshot(dir, Object.keys(files))).toEqual(before);
 });
 
-// CLI と同じ include_target_missing のずれを返し、説明文で取り込み先も点検すると知らせる（正常系（取り込み先が無い））
+// CLI と同じ include_target_missing のずれを返却し、説明文で取り込み先も点検すると通知する（正常系（取り込み先が無い））
 test("test_normal_when_include_targets_missing", async () => {
   // 準備
   const dir = await createTempDir();

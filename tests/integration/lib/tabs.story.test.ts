@@ -7,7 +7,7 @@ const holder = createBrowserHolder();
 beforeAll(holder.launch);
 afterAll(holder.close);
 
-/** タブの `aria-selected` と `tabindex` を並んだ順に返す */
+/** タブの `aria-selected` と `tabindex` を並んだ順に返却する */
 function tabStates(page: Page): Promise<Array<[string | null, string | null]>> {
   return page
     .locator("[role=tab]")
@@ -19,7 +19,7 @@ function tabStates(page: Page): Promise<Array<[string | null, string | null]>> {
     );
 }
 
-/** 中身の `hidden` を並んだ順に返す */
+/** 中身の `hidden` を並んだ順に返却する */
 function panelHidden(page: Page): Promise<boolean[]> {
   return page
     .locator(".mdmark-tab-panel")
@@ -95,7 +95,7 @@ test("test_many", async () => {
   await expect(pageOverflows(page)).resolves.toBe(false);
 });
 
-// タブの並びを付けず、全ての中身がタブ名を題にして縦に並ぶ（Unmounted）
+// タブの並びを付けず、全ての中身がタブ名をタイトルにして縦に並ぶ（Unmounted）
 test("test_unmounted", async () => {
   // 準備・実行
   const page = await holder.openStory("parts-tabs--unmounted");

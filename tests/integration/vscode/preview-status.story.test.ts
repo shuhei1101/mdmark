@@ -6,7 +6,7 @@ const holder = createBrowserHolder();
 beforeAll(holder.launch);
 afterAll(holder.close);
 
-// 配布物を読み終えていないとき、回る印と題「mdmark を読み込んでいます」を出す（Loading）
+// 配布物を読み込み終えていないとき、回るマーカーとタイトル「mdmark を読み込んでいます」を出す（Loading）
 test("test_loading", async () => {
   // 準備・実行
   const page = await holder.openStory("vscode-previewstatus--loading");
@@ -21,7 +21,7 @@ test("test_loading", async () => {
   await expect(page.locator("#storybook-root button").count()).resolves.toBe(0);
 });
 
-// 動きを減らす設定のとき、回る印は 6 秒で 1 回転にゆっくり回す（Loading）
+// 動きを減らす設定のとき、回るマーカーは 6 秒で 1 回転にゆっくり回す（Loading）
 test("test_loading_when_reduced_motion", async () => {
   // 準備
   const page = await holder.openStory("vscode-previewstatus--loading");
@@ -39,7 +39,7 @@ test("test_loading_when_reduced_motion", async () => {
   expect(durations).toBe("6s");
 });
 
-// 配布物を読めないとき、理由と「リロード」を出す（Offline）
+// 配布物を読み込めないとき、理由と「リロード」を出す（Offline）
 test("test_offline", async () => {
   // 準備・実行
   const page = await holder.openStory("vscode-previewstatus--offline");
@@ -50,7 +50,7 @@ test("test_offline", async () => {
     "プレビューを表示できません",
   );
   await expect(notice.locator("p").innerText()).resolves.toBe(
-    "mdmark（v0.7.0）を jsDelivr から読み込めませんでした。ネットワークにつながっているかを確かめてから、リロードしてください。",
+    "mdmark（v0.7.0）を jsDelivr から読み込めませんでした。ネットワークにつながっているかを確認してから、リロードしてください。",
   );
   await expect(notice.locator("p code").innerText()).resolves.toBe("v0.7.0");
   const button = notice.locator('button[data-action="reload"]');
@@ -114,14 +114,14 @@ test("test_offline_when_color_overridden", async () => {
   });
 });
 
-// 指定したバージョンが無いとき、設定を直す文を出す（VersionMissing）
+// 指定したバージョンが無いとき、設定を修正する文を出す（VersionMissing）
 test("test_version_missing", async () => {
   // 準備・実行
   const page = await holder.openStory("vscode-previewstatus--version-missing");
   // 検証
   const notice = page.locator(".mdmark-preview-notice");
   await expect(notice.locator("p").innerText()).resolves.toBe(
-    "設定 mdmark.version に指定したバージョン v9.9.9 の mdmark が見つかりませんでした。存在するバージョンか latest に直してから、リロードしてください。",
+    "設定 mdmark.version に指定したバージョン v9.9.9 の mdmark が見つかりませんでした。存在するバージョンか latest に修正してから、リロードしてください。",
   );
   await expect(notice.locator("p code").allInnerTexts()).resolves.toEqual([
     "mdmark.version",
@@ -167,12 +167,12 @@ test("test_version_undecidable", async () => {
   // 検証
   const notice = page.locator(".mdmark-preview-notice");
   await expect(notice.locator("p").innerText()).resolves.toBe(
-    "読む mdmark のバージョンを決められませんでした。GitHub から最新のバージョンを取得できず、前回のバージョンも残っていません。ネットワークにつながっているかを確かめてから、リロードしてください。",
+    "読み込む mdmark のバージョンを決められませんでした。GitHub から最新のバージョンを取得できず、前回のバージョンも残っていません。ネットワークにつながっているかを確認してから、リロードしてください。",
   );
   await expect(notice.locator("p code").count()).resolves.toBe(0);
 });
 
-// 差分に対応しないバージョンを読んだとき、読んだバージョンと直し方を伝え、「リロード」を出す（DiffUnsupported）
+// 差分に対応しないバージョンを読み込んだとき、読み込んだバージョンと修正方法を伝え、「リロード」を出す（DiffUnsupported）
 test("test_diff_unsupported", async () => {
   // 準備・実行
   const page = await holder.openStory("vscode-previewstatus--diff-unsupported");

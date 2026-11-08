@@ -12,7 +12,7 @@ function tipOf(page: Page) {
   return page.locator('[role="tooltip"]');
 }
 
-// ブロックの要素は右上に印があり、閉じている（Block）
+// ブロックの要素は右上にマーカーがあり、閉じている（Block）
 test("test_block", async () => {
   // 準備・実行
   const page = await holder.openStory("parts-hint--block");
@@ -40,7 +40,7 @@ test("test_block", async () => {
   ).resolves.toBe("説明");
 });
 
-// ブロックの要素の印に乗せて開いた状態は、印の上に文を出し、横にはみ出さない（BlockOpen）
+// ブロックの要素のマーカーに乗せて開いた状態は、マーカーの上に文を出し、横にはみ出さない（BlockOpen）
 test("test_block_open", async () => {
   // 準備・実行
   const page = await holder.openStory("parts-hint--block-open");
@@ -53,7 +53,7 @@ test("test_block_open", async () => {
     const mark = document.querySelector(".mdmark-hint-mark");
     const tooltip = document.querySelector('[role="tooltip"]');
     if (!mark || !tooltip) {
-      throw new Error("印かツールチップが無い");
+      throw new Error("マーカーかツールチップが無い");
     }
     return {
       markTop: mark.getBoundingClientRect().top,
@@ -80,7 +80,7 @@ test("test_inline", async () => {
   await expect(tipOf(page).isVisible()).resolves.toBe(false);
 });
 
-// 行内の要素にフォーカスして開いた状態は、ダークでもツールチップの文字が読める（InlineOpen）
+// 行内の要素にフォーカスして開いた状態は、ダークでもツールチップの文字が読み込める（InlineOpen）
 test("test_inline_open", async () => {
   // 準備・実行
   const page = await holder.openStory("parts-hint--inline-open");
@@ -104,7 +104,7 @@ test("test_inline_open", async () => {
   await expect(pageOverflows(page)).resolves.toBe(false);
 });
 
-// 書いた人が地の色を付けたブロックの要素でも、印が地の色の上で読める（Colored）
+// 記載した人が地の色を付けたブロックの要素でも、マーカーが地の色の上で読み込める（Colored）
 test("test_colored", async () => {
   // 準備・実行
   const page = await holder.openStory("parts-hint--colored");

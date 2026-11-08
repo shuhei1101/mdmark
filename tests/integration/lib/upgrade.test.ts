@@ -24,15 +24,15 @@ const REPO_ROOT = resolve(import.meta.dirname, "../../..");
 // 配布ファイル 1 つの上限（jsDelivr の 20MB）
 const MAX_BYTES = 20 * 1024 * 1024;
 
-// 版を埋めたパッケージをビルドする待つ上限（ミリ秒）
+// バージョンを埋めたパッケージをビルドする待つ上限（ミリ秒）
 const BUILD_TIMEOUT_MS = 180_000;
 
 const createTempDir = useTempDirs();
 
-/** 版を埋めてビルドしたテスト用のパッケージ（版 → パッケージの直下） */
+/** バージョンを埋めてビルドしたテスト用のパッケージ（バージョン → パッケージの直下） */
 const packages = new Map<string, string>();
 
-/** 作業ツリーの `src`・`templates` と依存を一時フォルダへ写し、`--version` で版を埋めた `dist/cli.js` をビルドする */
+/** 作業ツリーの `src`・`templates` と依存を一時フォルダへコピーし、`--version` でバージョンを埋めた `dist/cli.js` をビルドする */
 async function buildPackage(version: string): Promise<string> {
   const root = await mkdtemp(join(tmpdir(), "mdmark-integration-upgrade-"));
   await cp(join(REPO_ROOT, "src"), join(root, "src"), { recursive: true });
@@ -77,7 +77,7 @@ afterAll(async () => {
   );
 });
 
-/** 版を埋めたパッケージの直下 */
+/** バージョンを埋めたパッケージの直下 */
 function packageOf(version: string): string {
   const root = packages.get(version);
   if (!root) {
@@ -96,7 +96,7 @@ async function setMigrations(
   await writeFiles(pkg, files);
 }
 
-/** パッケージの `dist/cli.js` で `upgrade` を流す。終了コードが 0 以外でも例外を投げず、結果を返す */
+/** パッケージの `dist/cli.js` で `upgrade` を実行する。終了コードが 0 以外でも例外を投げず、結果を返却する */
 function runUpgrade(
   pkg: string,
   options: {
@@ -124,7 +124,7 @@ function runUpgrade(
   });
 }
 
-/** 手元の版が古い設定（コメントと、点検が拒まない最上位の知らないキー `legacy` を持つ） */
+/** 手元のバージョンが古い設定（コメントと、点検が拒まない最上位の知らないキー `legacy` を持つ） */
 const OLD_CONFIG = [
   "# mdmark の設定",
   "version: v0.3.0",
@@ -136,10 +136,10 @@ const OLD_CONFIG = [
   "",
 ].join("\n");
 
-/** 版を持たない設定（v0.3.0 までの `init` が置いた設定） */
+/** バージョンを持たない設定（v0.3.0 までの `init` が配置した設定） */
 const CONFIG_WITHOUT_VERSION = OLD_CONFIG.replace("version: v0.3.0\n", "");
 
-/** 手元のフォルダに置く索引と文書 */
+/** 手元のフォルダに配置する索引と文書 */
 const WORK_FILES = {
   "docs/index.yaml": [
     "schema: 2",
@@ -167,13 +167,13 @@ const STEPS_V040 = [
   "",
 ].join("\n");
 
-/** v0.5.0 の手順: 文書の印を書き換える（`destructive` を付けるときは先頭に足す） */
+/** v0.5.0 の手順: 文書のマーカーを書き換える（`destructive` を付けるときは先頭に追加する） */
 function stepsV050(destructive = false): string {
   return [
     "steps:",
     "  - op: replace_mark",
     ...(destructive ? ["    destructive: true"] : []),
-    "    description: 印 note を callout に書き換える",
+    "    description: マーカー note を callout に書き換える",
     "    from: <!-- note -->",
     "    to: <!-- callout -->",
     "",
@@ -186,9 +186,9 @@ const CHANGELOG = [
   "",
   "| バージョン | PR | 変更 |",
   "| --- | --- | --- |",
-  "| v0.5.0 | [#45](https://example.com/45) | 注意書きの印の名前を揃える |",
+  "| v0.5.0 | [#45](https://example.com/45) | 注意書きのマーカーの名前を統一する |",
   "| v0.4.0 | [#40](https://example.com/40) | 設定のキーの名前を改める |",
-  "| v0.3.0 | [#38](https://example.com/38) | 手元の版より古い行 |",
+  "| v0.3.0 | [#38](https://example.com/38) | 手元のバージョンより古い行 |",
   "",
 ].join("\n");
 
@@ -205,14 +205,14 @@ function migrationFiles(options?: {
   };
 }
 
-/** 手元のフォルダを作り、その場所を返す */
+/** 手元のフォルダを作り、その場所を返却する */
 async function createWork(config = OLD_CONFIG): Promise<string> {
   const dir = await createTempDir();
   await writeFiles(dir, { "mdmark.config.yaml": config, ...WORK_FILES });
   return dir;
 }
 
-/** 手元のフォルダの設定と文書を読む */
+/** 手元のフォルダの設定と文書を読み込む */
 async function readWork(dir: string): Promise<{
   config: string;
   a: string;
@@ -225,7 +225,7 @@ async function readWork(dir: string): Promise<{
   };
 }
 
-/** 設定・索引・文書が流す前と同じ中身で、`.mdmark/` が無いことを確かめる */
+/** 設定・索引・文書が実行する前と同じ中身で、`.mdmark/` が無いことを確認する */
 async function expectUntouched(dir: string, config = OLD_CONFIG) {
   const work = await readWork(dir);
   expect(work.config).toBe(config);
@@ -234,7 +234,7 @@ async function expectUntouched(dir: string, config = OLD_CONFIG) {
   expect(existsSync(join(dir, ".mdmark"))).toBe(false);
 }
 
-// 2 つの版の手順を版の順に当て、点検を通して版を書き換える（正常系）
+// 2 つのバージョンの手順をバージョンの順に当て、点検に合格してバージョンを書き換える（正常系）
 test("test_normal", async () => {
   // 準備
   const pkg = packageOf("v0.5.0");
@@ -262,9 +262,9 @@ test("test_normal", async () => {
   expect(lines.some((line) => line.startsWith("  v0.4.0 #40 "))).toBe(true);
   expect(lines.some((line) => line.startsWith("  v0.5.0 #45 "))).toBe(true);
   expect(lines.some((line) => line.startsWith("  v0.3.0 "))).toBe(false);
-  const backup = lines.find((line) => line.startsWith("写し: "));
+  const backup = lines.find((line) => line.startsWith("コピー: "));
   expect(backup).toBeDefined();
-  const backupDir = join(dir, (backup ?? "").slice("写し: ".length));
+  const backupDir = join(dir, (backup ?? "").slice("コピー: ".length));
   expect(await readFile(join(backupDir, "mdmark.config.yaml"), "utf8")).toBe(
     OLD_CONFIG,
   );
@@ -302,12 +302,12 @@ test("test_normal_when_settings", async () => {
   expect(settings.legacy).toBeUndefined();
   expect(settings.version).toBe("v0.5.0");
   const backup = linesOf(result.stdout).find((line) =>
-    line.startsWith("写し: "),
+    line.startsWith("コピー: "),
   );
   expect(backup).toBeDefined();
   expect(
     await readFile(
-      join(terminal, (backup ?? "").slice("写し: ".length), "settings.yaml"),
+      join(terminal, (backup ?? "").slice("コピー: ".length), "settings.yaml"),
       "utf8",
     ),
   ).toContain("legacy: 1");
@@ -315,7 +315,7 @@ test("test_normal_when_settings", async () => {
   expect(work.a).toBe("# A\n\n<!-- note -->\n");
 });
 
-// --plan で版ごとの手順・変更履歴・壊す手順を示し、何も書き換えない（正常系）
+// --plan でバージョンごとの手順・変更履歴・壊す手順を示し、何も書き換えない（正常系）
 test("test_normal_when_plan", async () => {
   // 準備
   const pkg = packageOf("v0.5.0");
@@ -333,7 +333,7 @@ test("test_normal_when_plan", async () => {
   await expectUntouched(dir);
 });
 
-// set_default の ask で値を聞き、答えた値でキーを足す（正常系）
+// set_default の ask で値を聞き、回答した値でキーを追加する（正常系）
 test("test_normal_when_value_asked", async () => {
   // 準備
   const pkg = packageOf("v0.4.0");
@@ -341,10 +341,10 @@ test("test_normal_when_value_asked", async () => {
     "migrations/v0.4.0/steps.yaml": [
       "steps:",
       "  - op: set_default",
-      "    description: title を足す",
+      "    description: title を追加する",
       "    file: config",
       "    key: title",
-      "    ask: 書き出す HTML の題を入れてください",
+      "    ask: 書き出す HTML のタイトルを入れてください",
       "",
     ].join("\n"),
     "docs/はじめに/変更履歴.md": CHANGELOG,
@@ -354,13 +354,13 @@ test("test_normal_when_value_asked", async () => {
   const result = await runUpgrade(pkg, { cwd: dir, stdin: "設計の文書\n" });
   // 検証
   expect(result.code).toBe(0);
-  expect(result.stderr).toContain("書き出す HTML の題を入れてください");
+  expect(result.stderr).toContain("書き出す HTML のタイトルを入れてください");
   const config = parse(await readFile(join(dir, "mdmark.config.yaml"), "utf8"));
   expect(config.title).toBe("設計の文書");
   expect(config.version).toBe("v0.4.0");
 });
 
-// 設定に version が無いと手元の版を聞き、当てた後に version を足す（正常系）
+// 設定に version が無いと手元のバージョンを聞き、適用した後に version を追加する（正常系）
 test("test_normal_when_version_missing", async () => {
   // 準備
   const pkg = packageOf("v0.5.0");
@@ -383,7 +383,7 @@ test("test_normal_when_version_missing", async () => {
   expect(actual.b).toBe(expected.b);
 });
 
-// 当てる手順が無ければ何も書き換えずに終わる（正常系）
+// 適用する手順が無ければ何も書き換えずに終わる（正常系）
 test("test_normal_when_up_to_date", async () => {
   // 準備
   const pkg = packageOf("v0.5.0");
@@ -395,12 +395,12 @@ test("test_normal_when_up_to_date", async () => {
   // 検証
   expect(result.code).toBe(0);
   expect(result.stdout).toContain(
-    "手元の版が目標の版と同じです。当てる手順はありません",
+    "手元のバージョンが目標のバージョンと同じです。適用する手順はありません",
   );
   await expectUntouched(dir, config);
 });
 
-// --yes なら壊す手順を確かめずに当てる（正常系）
+// --yes なら壊す手順を確認せずに適用する（正常系）
 test("test_normal_when_destructive_with_yes", async () => {
   // 準備
   const pkg = packageOf("v0.5.0");
@@ -410,13 +410,13 @@ test("test_normal_when_destructive_with_yes", async () => {
   const result = await runUpgrade(pkg, { args: ["--yes"], cwd: dir });
   // 検証
   expect(result.code).toBe(0);
-  expect(result.stderr).not.toContain("壊す手順を当ててよいですか");
+  expect(result.stderr).not.toContain("壊す手順を適用してよいですか");
   const work = await readWork(dir);
   expect(work.a).toBe("# A\n\n<!-- callout -->\n");
   expect(parse(work.config).version).toBe("v0.5.0");
 });
 
-// 手順が既に当たった設定・文書に同じ手順を当てても中身が変わらない（正常系）
+// 手順が既に該当した設定・文書に同じ手順を適用しても中身が変わらない（正常系）
 test("test_normal_when_reapplied", async () => {
   // 準備
   const pkg = packageOf("v0.5.0");
@@ -424,7 +424,7 @@ test("test_normal_when_reapplied", async () => {
   const dir = await createWork();
   await runUpgrade(pkg, { cwd: dir });
   const applied = await readWork(dir);
-  // 写しから戻せずに止まった状態にする
+  // コピーから戻せずに止まった状態にする
   await writeFile(
     join(dir, "mdmark.config.yaml"),
     applied.config.replace("version: v0.5.0", "version: v0.3.0"),
@@ -436,12 +436,12 @@ test("test_normal_when_reapplied", async () => {
   expect(await readWork(dir)).toEqual(applied);
 });
 
-// 語彙を外す `call` の手順を当て、文書のタグを書き換えて索引の `schema` を `2` にし、点検を通す（正常系（v0.9.0 までの索引からタグの語彙を外す））
+// 語彙を削除する `call` の手順を当て、文書のタグを書き換えて索引の `schema` を `2` にし、点検に合格させる（正常系（v0.9.0 までの索引からタグの語彙を削除する））
 test("test_normal_when_tag_vocabulary_dropped", async () => {
   // 準備
   const pkg = packageOf("v0.5.0");
   const next = join(REPO_ROOT, "migrations", "next");
-  // `steps.yaml` の手順が流す全てのスクリプトを置く
+  // `steps.yaml` の手順が実行する全てのスクリプトを配置する
   const scripts: Record<string, string> = {};
   for (const name of await readdir(next)) {
     if (name.endsWith(".mjs")) {
@@ -493,7 +493,7 @@ test("test_normal_when_tag_vocabulary_dropped", async () => {
   expect(parse((await readWork(dir)).config).version).toBe("v0.5.0");
 });
 
-// 壊す手順の確かめに y 以外を答えると、何も書き換えずに終わる（異常系）
+// 壊す手順の確認に y 以外を回答すると、何も書き換えずに終わる（異常系）
 test("test_error_when_destructive_declined", async () => {
   // 準備
   const pkg = packageOf("v0.5.0");
@@ -507,7 +507,7 @@ test("test_error_when_destructive_declined", async () => {
   await expectUntouched(dir);
 });
 
-// call のスクリプトが失敗すると、前の版で当てた分も写しから戻す（異常系）
+// call のスクリプトが失敗すると、前のバージョンで適用した分もコピーから戻す（異常系）
 test("test_error_when_step_fails", async () => {
   // 準備
   const pkg = packageOf("v0.5.0");
@@ -517,7 +517,7 @@ test("test_error_when_step_fails", async () => {
       stepsV050: [
         "steps:",
         "  - op: call",
-        "    description: 設定をスクリプトで直す",
+        "    description: 設定をスクリプトで修正する",
         "    script: fail.mjs",
         "    files: [config]",
         "",
@@ -531,14 +531,14 @@ test("test_error_when_step_fails", async () => {
   // 検証
   expect(result.code).toBe(1);
   expect(result.stderr).toContain("v0.5.0");
-  expect(result.stderr).toContain("設定をスクリプトで直す");
+  expect(result.stderr).toContain("設定をスクリプトで修正する");
   expect(result.stderr).toContain("終了コード 1");
   const work = await readWork(dir);
   expect(work.config).toBe(OLD_CONFIG);
   expect(work.a).toBe(WORK_FILES["docs/a.md"]);
 });
 
-// 当てた後の点検でずれがあると、写しから戻してずれを出す（異常系）
+// 適用した後の点検でずれがあると、コピーから戻してずれを出す（異常系）
 test("test_error_when_check_fails", async () => {
   // 準備
   const pkg = packageOf("v0.5.0");
@@ -548,7 +548,7 @@ test("test_error_when_check_fails", async () => {
       stepsV050: [
         "steps:",
         "  - op: map_values",
-        "    description: build.out を txt に読み替える",
+        "    description: build.out を txt として解釈する",
         "    file: config",
         "    key: build.out",
         "    mapping:",
@@ -570,7 +570,7 @@ test("test_error_when_check_fails", async () => {
   expect((await readWork(dir)).config).toBe(OLD_CONFIG);
 });
 
-// 手元の版が呼んだ CLI の版より新しいと、呼び直し方を示して終わる（異常系）
+// 手元のバージョンが呼んだ CLI のバージョンより新しいと、もう一度呼ぶ方法を示して終わる（異常系）
 test("test_error_when_local_version_newer", async () => {
   // 準備
   const pkg = packageOf("v0.5.0");
@@ -589,7 +589,7 @@ test("test_error_when_local_version_newer", async () => {
   await expectUntouched(dir, config);
 });
 
-// 手元の版の問いに書式の違う答えを返すと、書式を示して終わる（異常系）
+// 手元のバージョンの質問に書式の違う回答を返却すると、書式を示して終わる（異常系）
 test("test_error_when_version_format_invalid", async () => {
   // 準備
   const pkg = packageOf("v0.5.0");
@@ -603,7 +603,7 @@ test("test_error_when_version_format_invalid", async () => {
   await expectUntouched(dir, CONFIG_WITHOUT_VERSION);
 });
 
-// 問いに答える前に標準入力が終わると、何も書き換えずに終わる（異常系）
+// 質問に回答する前に標準入力が終わると、何も書き換えずに終わる（異常系）
 test("test_error_when_answer_missing", async () => {
   // 準備
   const pkg = packageOf("v0.5.0");
@@ -613,12 +613,12 @@ test("test_error_when_answer_missing", async () => {
   const result = await runUpgrade(pkg, { cwd: dir });
   // 検証
   expect(result.code).toBe(1);
-  expect(result.stderr).toContain("手元の版");
-  expect(result.stderr).toContain("答えがありません");
+  expect(result.stderr).toContain("手元のバージョン");
+  expect(result.stderr).toContain("回答がありません");
   await expectUntouched(dir, CONFIG_WITHOUT_VERSION);
 });
 
-// 当てる版の steps.yaml が Schema に合わないと、書き換える前に終わる（異常系）
+// 適用するバージョンの steps.yaml が Schema に合わないと、書き換える前に終わる（異常系）
 test("test_error_when_steps_invalid", async () => {
   // 準備
   const pkg = packageOf("v0.5.0");
@@ -628,7 +628,7 @@ test("test_error_when_steps_invalid", async () => {
       stepsV050: [
         "steps:",
         "  - op: replace_mark",
-        "    description: 印 note を書き換える",
+        "    description: マーカー note を書き換える",
         "    from: <!-- note -->",
         "",
       ].join("\n"),
@@ -644,7 +644,7 @@ test("test_error_when_steps_invalid", async () => {
   await expectUntouched(dir);
 });
 
-// 設定ファイルが見つからないと、mdmark init で置けることを示して終わる（異常系）
+// 設定ファイルが見つからないと、mdmark init で配置できることを示して終わる（異常系）
 test("test_error_when_config_missing", async () => {
   // 準備
   const pkg = packageOf("v0.5.0");
@@ -658,7 +658,7 @@ test("test_error_when_config_missing", async () => {
   expect(result.stderr).toContain("mdmark init");
 });
 
-// 当てた後の点検で図の定義のずれが見つかると、写しから戻して終わる（異常系（図の定義のずれ・終了コード 1））
+// 適用した後の点検で図の定義のずれが見つかると、コピーから戻して終わる（異常系（図の定義のずれ・終了コード 1））
 test("test_error_when_diagram_drift", async () => {
   // 準備
   const pkg = packageOf("v0.5.0");

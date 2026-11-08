@@ -24,12 +24,12 @@ async function readToggle(id: string) {
   return { page, button, info };
 }
 
-// 差分を閉じている間は、アイコンと「変更を見る」を出す（Closed）
+// 差分を閉じている間は、アイコンと「変更表示」を出す（Closed）
 test("test_closed", async () => {
   // 準備・実行
   const { page, button, info } = await readToggle("parts-difftoggle--closed");
   // 検証
-  await expect(button.innerText()).resolves.toBe("変更を見る");
+  await expect(button.innerText()).resolves.toBe("変更表示");
   expect(info.expanded).toBe("false");
   expect(info.controls).toBe("mdmark-diff-panel-1");
   expect(info.iconHidden).toBe("true");
@@ -37,7 +37,7 @@ test("test_closed", async () => {
   await expect(pageOverflows(page)).resolves.toBe(false);
 });
 
-// 差分を開いている間は、押された見た目にする（Open）
+// 差分を開いている間は、押された外観にする（Open）
 test("test_open", async () => {
   // 準備・実行
   const closed = await readToggle("parts-difftoggle--closed");

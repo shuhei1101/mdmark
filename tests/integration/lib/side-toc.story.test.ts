@@ -10,7 +10,7 @@ afterAll(holder.close);
 // 右側の目次が出る広い幅の画面
 const WIDE = { width: 1280, height: 800 };
 
-/** 右側の目次の中の要素の computed style の値を返す */
+/** 右側の目次の中の要素の computed style の値を返却する */
 function styleOf(
   page: Page,
   selector: string,
@@ -25,7 +25,7 @@ function styleOf(
     );
 }
 
-/** `aria-current` を持つ項目の `data-heading-id` を返す */
+/** `aria-current` を持つ項目の `data-heading-id` を返却する */
 function currentIds(page: Page): Promise<(string | null)[]> {
   return page
     .locator('.mdmark-side-toc a[aria-current="location"]')
@@ -34,7 +34,7 @@ function currentIds(page: Page): Promise<(string | null)[]> {
     );
 }
 
-/** 目次の頭の子の class を並びの順に返す */
+/** 目次の頭の子の class を並びの順に返却する */
 function headChildren(page: Page): Promise<string[]> {
   return page
     .locator(".mdmark-side-toc-head")
@@ -77,22 +77,22 @@ test("test_hover_rail", async () => {
   expect(widths[1]).toBeGreaterThan(widths[3] as number);
 });
 
-// ポインターを乗せると目次が画面の中に出て、今いる節の項目と線がハイライトされる（HoverShown）
+// ポインターを乗せると目次が画面の中に出て、今いるセクションの項目と線がハイライトされる（HoverShown）
 test("test_hover_shown", async () => {
   // 準備
   const page = await holder.openStory("parts-sidetoc--hover-shown", WIDE);
-  // 実行: ポインターを乗せると開いた目次が右端の線を覆うため、乗せた後に線が最も手前にあるかは確かめない
+  // 実行: ポインターを乗せると開いた目次が右端の線を覆うため、乗せた後に線が最も手前にあるかは確認しない
   await page.locator(".mdmark-side-toc-rail").hover({ force: true });
   // 検証
   await expect(
     styleOf(page, ".mdmark-side-toc-panel", "opacity"),
   ).resolves.toBe("1");
   await expect(panelInViewport(page)).resolves.toBe(true);
-  await expect(currentIds(page)).resolves.toEqual(["使い方"]);
+  await expect(currentIds(page)).resolves.toEqual(["使用方法"]);
   await expect(
     page.locator(".mdmark-side-toc-bar[data-current]").count(),
   ).resolves.toBe(1);
-  // 目次の頭: タイトルを置かず、まとめて開閉するボタンの並び → ピン止めの順。ピン止めは押す前のアイコンを出す
+  // 目次の頭: タイトルを配置せず、まとめて開閉するボタンの並び → ピン止めの順。ピン止めは押す前のアイコンを出す
   await expect(headChildren(page)).resolves.toEqual([
     "mdmark-side-toc-actions",
     "mdmark-side-toc-pin",
@@ -129,7 +129,7 @@ test("test_hover_pinned", async () => {
   await expect(styleOf(page, ".mdmark-side-toc-rail", "display")).resolves.toBe(
     "none",
   );
-  await expect(currentIds(page)).resolves.toEqual(["使い方"]);
+  await expect(currentIds(page)).resolves.toEqual(["使用方法"]);
   await expect(panelInViewport(page)).resolves.toBe(true);
   // ピン止めした後: 押した後のアイコン（実線の右の列）と選択中の背景
   await expect(
@@ -162,7 +162,7 @@ test("test_fixed_closed", async () => {
   );
 });
 
-// fixed でサイドバーを開くと、今いる節の項目をハイライトする（FixedOpen）
+// fixed でサイドバーを開くと、今いるセクションの項目をハイライトする（FixedOpen）
 test("test_fixed_open", async () => {
   // 準備・実行
   const page = await holder.openStory("parts-sidetoc--fixed-open", WIDE);

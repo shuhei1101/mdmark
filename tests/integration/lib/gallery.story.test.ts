@@ -6,10 +6,10 @@ const holder = createBrowserHolder();
 beforeAll(holder.launch);
 afterAll(holder.close);
 
-// 置き場所の幅が 32rem 以上になる画面（列を減らさない）
+// 配置場所の幅が 32rem 以上になる画面（列を減らさない）
 const WIDE_VIEWPORT = { width: 900, height: 700 };
 
-/** ギャラリーのストーリーを開き、列の数と画像の図の位置を返す */
+/** ギャラリーのストーリーを開き、列の数と画像の図の位置を返却する */
 async function open(id: string, viewport = WIDE_VIEWPORT) {
   const page = await holder.openStory(`parts-gallery--${id}`, viewport);
   const layout = await page.evaluate(() => {
@@ -44,7 +44,7 @@ function countPerRow(boxes: { top: number }[]): number[] {
   return [...rows.entries()].sort(([a], [b]) => a - b).map(([, n]) => n);
 }
 
-// cols=3 の 4 枚は、3 列で並べて 4 枚目を 2 段目に置く（ThreeColumns）
+// cols=3 の 4 枚は、3 列で並べて 4 枚目を 2 行目に配置する（ThreeColumns）
 test("test_three_columns", async () => {
   // 準備・実行
   const { page, layout } = await open("three-columns");
@@ -68,7 +68,7 @@ test("test_two_columns", async () => {
   expect(countPerRow(layout.boxes)).toEqual([2, 2]);
 });
 
-// 置き場所が 32rem より狭いと、cols=3 でも 2 列に減らす（NarrowTwo）
+// 配置場所が 32rem より狭いと、cols=3 でも 2 列に減らす（NarrowTwo）
 test("test_narrow_two", async () => {
   // 準備・実行
   const { page, layout } = await open("narrow-two");
@@ -81,7 +81,7 @@ test("test_narrow_two", async () => {
   await expect(pageOverflows(page)).resolves.toBe(false);
 });
 
-// 置き場所が 20rem より狭いと、1 列に減らす（NarrowOne）
+// 配置場所が 20rem より狭いと、1 列に減らす（NarrowOne）
 test("test_narrow_one", async () => {
   // 準備・実行
   const { page, layout } = await open("narrow-one");

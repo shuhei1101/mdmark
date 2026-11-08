@@ -6,7 +6,7 @@ const holder = createBrowserHolder();
 beforeAll(holder.launch);
 afterAll(holder.close);
 
-// 相手 5 つを左から右へ、呼ぶと返すのメッセージを上から下へ並べ、繰り返しの戻りを描く（Default）
+// 相手 5 つを左から右へ、呼び出しと応答のメッセージを上から下へ並べ、繰り返しの戻りを描く（Default）
 test("test_default", async () => {
   // 準備・実行
   const page = await holder.openStory("parts-sequencediagram--default");
@@ -46,13 +46,13 @@ test("test_default", async () => {
   await expect(pageOverflows(page)).resolves.toBe(false);
 });
 
-// 定義を読めないときは、図の代わりに書き方の警告を出す（Invalid）
+// 定義を読み込めないときは、図の代わりに記載の警告を出す（Invalid）
 test("test_invalid", async () => {
   // 準備・実行
   const page = await holder.openStory("parts-sequencediagram--invalid");
   // 検証
   await expect(
     page.locator(".mdmark-syntax-warning").innerText(),
-  ).resolves.toContain("シーケンス図の部品の定義を JSON として読めません");
+  ).resolves.toContain("シーケンス図の部品の定義を JSON として読み込めません");
   await expect(page.locator("figure.mdmark-diagram").count()).resolves.toBe(0);
 });

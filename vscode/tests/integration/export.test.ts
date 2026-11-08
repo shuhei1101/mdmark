@@ -53,7 +53,7 @@ async function openExported(
   return { page, close: () => page.close() };
 }
 
-/** 見出し・表・注意書き・図と画像、本文の `</script>` を持つ見本の文書を `docs/guide.md` に書いて開く */
+/** 見出し・表・注意書き・図と画像、本文の `</script>` を持つ見本の文書を `docs/guide.md` に書き込んで開く */
 async function openGuide(options: { extra?: string } = {}): Promise<void> {
   await writeFixture("docs/images/figure.png", PIXEL_PNG);
   await writeFixture(
@@ -77,7 +77,7 @@ function exportedUrl(relative: string): string {
   return pathToFileURL(join(workspaceDir(), relative)).href;
 }
 
-/** 書き出せない通知の文: 書き出す先のパスと、OS が返した理由を含む */
+/** 書き出せない通知の文: 書き出す先のパスと、OS が返却した理由を含む */
 function assertExportFailedNotice(message: string | undefined): void {
   const path = join(workspaceDir(), "locked", "out", "guide.html");
   assert.ok(message, "書き出せない通知が出ていない");
@@ -85,7 +85,7 @@ function assertExportFailedNotice(message: string | undefined): void {
   assert.ok(message.includes("EACCES"));
   assert.ok(
     message.endsWith(
-      "）。設定 mdmark.export.outputDir を書き込めるフォルダに直してください。",
+      "）。設定 mdmark.export.outputDir を書き込めるフォルダに修正してください。",
     ),
   );
 }
@@ -123,7 +123,7 @@ function decodedDataUrls(html: string): string {
 /** マーカーの無いライブラリの目印の文字列 */
 const UNUSED_LIBRARY_SIGN = "unused-library-sign-369";
 
-/** 相対パスの `libraries` と `html-scripts.url` を書いた設定と、手元のライブラリを置く */
+/** 相対パスの `libraries` と `html-scripts.url` を記載した設定と、手元のライブラリを配置する */
 async function writeLocalLibraries(): Promise<void> {
   await writeFixture(
     "libs/test-lib.js",
@@ -157,14 +157,14 @@ async function writeLocalLibraries(): Promise<void> {
   );
 }
 
-/** `test-lib` のマーカーと、`.box` に書く `ts` の範囲 */
+/** `test-lib` のマーカーと、`.box` に記載する `ts` の範囲 */
 const LOCAL_LIBRARIES_EXTRA = [
   "<!-- test-lib -->",
   "",
   "<!-- html -->",
   "",
   "```html",
-  '<div class="box">箱</div>',
+  '<div class="box">ノード</div>',
   "```",
   "",
   "```ts",
@@ -243,7 +243,7 @@ suite("HTML に書き出す", () => {
     }
   });
 
-  // outputDir のフォルダに書き、保存していない書き換えも入れる
+  // outputDir のフォルダに書き込み、保存していない書き換えも入れる
   test("test_normal_when_output_dir", async () => {
     // 準備
     await openGuide();
@@ -278,7 +278,7 @@ suite("HTML に書き出す", () => {
     }
   });
 
-  // 書き出す先に書けないとき、理由を通知して何も残さない
+  // 書き出す先に書き込めないとき、理由を通知して何も残さない
   test("test_error_when_output_unwritable", async () => {
     // 準備
     await openGuide();
@@ -295,7 +295,7 @@ suite("HTML に書き出す", () => {
 
   // 相対パスの mermaid.url を、本体と chunk をまとめた data: の URL で埋め、Chromium で file:// で開いて描く
   test("test_normal_when_relative_mermaid", async function () {
-    // 5MB の mermaid を esbuild-wasm で束ねる書き出しを最大 120 秒待つ
+    // 5MB の mermaid を esbuild-wasm でまとめる書き出しを最大 120 秒待つ
     this.timeout(150000);
     // 準備
     const dist = join(REPO_ROOT, "node_modules", "mermaid", "dist");
@@ -553,7 +553,7 @@ async function recordPrint(page: playwright.Page): Promise<void> {
   await page.addInitScript(() => {
     const target = window as unknown as { __prints: unknown[] };
     target.__prints = [];
-    // ブラウザの印刷は、ダイアログの前後に beforeprint・afterprint を送る
+    // ブラウザの印刷は、ダイアログの前後に beforeprint・afterprint を送信する
     window.print = () => {
       window.dispatchEvent(new Event("beforeprint"));
       target.__prints.push({
@@ -601,7 +601,7 @@ suite("PDF に印刷", () => {
     await resetEnvironment();
   });
 
-  /** 外部ライブラリの印と閉じた `details` を持つ見本を開く */
+  /** 外部ライブラリのマーカーと閉じた `details` を持つ見本を開く */
   async function openPrintGuide(delayMs: number | "hang"): Promise<void> {
     library = await startLibraryServer({ delayMs });
     await writeFixture(
@@ -651,7 +651,7 @@ suite("PDF に印刷", () => {
     assert.ok((await readFixture("docs/guide.html")).length > 0);
   });
 
-  // 外部ライブラリが待ちの上限まで読み終わらなければ、そのまま印刷する
+  // 外部ライブラリが待ちの上限まで読み込み終わらなければ、そのまま印刷する
   test("test_normal_when_wait_limit_reached", async () => {
     // 準備
     await openPrintGuide("hang");
@@ -686,9 +686,9 @@ suite("PDF に印刷", () => {
   test("test_normal_when_color_theme_selected", async () => {
     // 準備
     await setSetting("colorTheme", "theme-slate");
-    // リンク 1 つだけの段落はカードにするため、文の中にリンクを置く
+    // リンク 1 つだけの段落はカードにするため、文の中にリンクを配置する
     await openGuide({
-      extra: "詳しくは [リンク](https://example.com/) を見る。\n",
+      extra: "詳しくは [リンク](https://example.com/) を確認する。\n",
     });
     trackFile("docs/guide.html");
     // 実行
@@ -718,7 +718,7 @@ suite("PDF に印刷", () => {
       await exported.page.waitForFunction(
         () => (window as unknown as { __printed: boolean }).__printed,
       );
-      // ダークの画面では theme-slate の暗い配色（印刷にする前に確かめる）
+      // ダークの画面では theme-slate の暗い配色（印刷にする前に確認する）
       assert.strictEqual(await readLinkColor(), "rgb(125, 211, 252)");
       // 印刷のメディアでは、OS がダークでも theme-slate の明るい配色
       await exported.page.emulateMedia({ media: "print", colorScheme: "dark" });

@@ -6,7 +6,7 @@ const holder = createBrowserHolder();
 beforeAll(holder.launch);
 afterAll(holder.close);
 
-// 図の印の外部ライブラリを読めない知らせの枠は、題が「この図を表示できません」になる（Figure）
+// 図のマーカーの外部ライブラリを読み込めない通知ブロックは、タイトルが「この図を表示できません」になる（Figure）
 test("test_figure", async () => {
   // 準備・実行
   const page = await holder.openStory("parts-notice--figure");
@@ -18,11 +18,11 @@ test("test_figure", async () => {
   );
   await expect(notice.locator("p code").innerText()).resolves.toBe("chart");
   await expect(notice.locator("p").innerText()).resolves.toBe(
-    "表示に使うライブラリ（chart）を読み込めませんでした。ネットワークにつながっているかを確かめて、ページを読み込み直してください。",
+    "表示に使用するライブラリ（chart）を読み込めませんでした。ネットワークにつながっているかを確認して、ページを再読み込みしてください。",
   );
 });
 
-// 図でない印の知らせの枠は、題が「この箇所を表示できません」になる（Block）
+// 図でないマーカーの通知ブロックは、タイトルが「この箇所を表示できません」になる（Block）
 test("test_block", async () => {
   // 準備・実行
   const page = await holder.openStory("parts-notice--block");
@@ -35,7 +35,7 @@ test("test_block", async () => {
   );
 });
 
-// 印の名前が枠の幅を超えても、名前が枠の中で折り返し、横スクロールが出ない（LongName）
+// マーカーの名前が枠の幅を超えても、名前が枠の中で折り返し、横スクロールが出ない（LongName）
 test("test_long_name", async () => {
   // 準備・実行
   const page = await holder.openStory("parts-notice--long-name");
@@ -44,7 +44,7 @@ test("test_long_name", async () => {
     const notice = document.querySelector(".mdmark-notice");
     const code = document.querySelector(".mdmark-notice code");
     if (!notice || !code) {
-      throw new Error("知らせの枠が描かれていない");
+      throw new Error("通知ブロックが描かれていない");
     }
     const noticeBox = notice.getBoundingClientRect();
     const codeBoxes = [...code.getClientRects()];
@@ -63,7 +63,7 @@ test("test_long_name", async () => {
   expect(layout.pageOverflows).toBe(false);
 });
 
-// 拡張のモジュールを読めない知らせの枠は、本文が「表示に使う拡張（greet）」で始まる（Extension）
+// 拡張のモジュールを読み込めない通知ブロックは、本文が「表示に使用する拡張（greet）」で始まる（Extension）
 test("test_extension", async () => {
   // 準備・実行
   const page = await holder.openStory("parts-notice--extension");
@@ -75,11 +75,11 @@ test("test_extension", async () => {
     "greet",
   );
   await expect(page.locator(".mdmark-notice p").innerText()).resolves.toBe(
-    "表示に使う拡張（greet）を読み込めませんでした。ネットワークにつながっているかを確かめて、ページを読み込み直してください。",
+    "表示に使用する拡張（greet）を読み込めませんでした。ネットワークにつながっているかを確認して、ページを再読み込みしてください。",
   );
 });
 
-// 差分の取り出し元がリビジョンの一覧を返せない知らせの枠は、題が「変更の履歴を表示できません」になる（DiffRevisions）
+// 差分の取り出し元がリビジョンの一覧を返却できない通知ブロックは、タイトルが「変更の履歴を表示できません」になる（DiffRevisions）
 test("test_diff_revisions", async () => {
   // 準備・実行
   const page = await holder.openStory("parts-notice--diff-revisions");
@@ -88,12 +88,12 @@ test("test_diff_revisions", async () => {
     "変更の履歴を表示できません",
   );
   await expect(page.locator(".mdmark-notice p").innerText()).resolves.toBe(
-    "リビジョンの一覧を取り出せませんでした。時間をおいて、変更を開き直してください。",
+    "リビジョンの一覧を取り出せませんでした。時間をおいて、変更をもう一度開いてください。",
   );
   await expect(page.locator(".mdmark-notice code").count()).resolves.toBe(0);
 });
 
-// 1 つのリビジョンの本文を返せない知らせの枠は、題が「このリビジョンの本文を表示できません」になる（DiffContent）
+// 1 つのリビジョンの本文を返却できない通知ブロックは、タイトルが「このリビジョンの本文を表示できません」になる（DiffContent）
 test("test_diff_content", async () => {
   // 準備・実行
   const page = await holder.openStory("parts-notice--diff-content");
@@ -106,7 +106,7 @@ test("test_diff_content", async () => {
   );
 });
 
-// 描いた文書のブロックを色分けできない知らせの枠は、題が「変更を表示できません」になる（DiffBlocks）
+// 描いた文書のブロックを色分けできない通知ブロックは、タイトルが「変更を表示できません」になる（DiffBlocks）
 test("test_diff_blocks", async () => {
   // 準備・実行
   const page = await holder.openStory("parts-notice--diff-blocks");
@@ -122,7 +122,7 @@ test("test_diff_blocks", async () => {
   await expect(page.locator(".mdmark-notice code").count()).resolves.toBe(0);
 });
 
-// 束ねていないアイコンを読めない知らせの枠は、題が「アイコンを表示できません」になる（Icons）
+// まとめていないアイコンを読み込めない通知ブロックは、タイトルが「アイコンを表示できません」になる（Icons）
 test("test_icons", async () => {
   // 準備・実行
   const page = await holder.openStory("parts-notice--icons");

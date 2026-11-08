@@ -9,7 +9,7 @@ import { linesOf, runCli, useTempDirs, writeFiles } from "../cli.ts";
 
 const createTempDir = useTempDirs();
 
-// TypeScript の雛形を置く順
+// TypeScript の雛形を配置する順
 const TYPESCRIPT_FILES = [
   "mdmark.config.yaml",
   "theme.css",
@@ -19,7 +19,7 @@ const TYPESCRIPT_FILES = [
   "package.json",
 ];
 
-/** 置いた設定と索引が、設定と索引の形に合うことを確かめる */
+/** 配置した設定と索引が、設定と索引の構造に合うことを確認する */
 async function expectShapes(dir: string): Promise<void> {
   const config = parse(await readFile(join(dir, "mdmark.config.yaml"), "utf8"));
   expect(validateConfig(config, "mdmark.config.yaml").issues).toEqual([]);
@@ -27,7 +27,7 @@ async function expectShapes(dir: string): Promise<void> {
   expect(normalizeIndex(index).problems).toEqual([]);
 }
 
-// 空のフォルダに TypeScript の雛形を置く（正常系）
+// 空のフォルダに TypeScript の雛形を配置する（正常系）
 test("test_normal", async () => {
   // 準備
   const dir = await createTempDir();
@@ -40,9 +40,9 @@ test("test_normal", async () => {
   }
   await expectShapes(dir);
   expect(linesOf(result.stdout)).toEqual(
-    TYPESCRIPT_FILES.map((path) => `置いた: ${path}`),
+    TYPESCRIPT_FILES.map((path) => `配置した: ${path}`),
   );
-  // 置いた設定の version は、ビルドした CLI に埋めた版
+  // 配置した設定の version は、ビルドした CLI に埋めたバージョン
   const builtVersion = (
     await readFile(join(inject("builtRoot"), "version.ini"), "utf8")
   ).trim();
@@ -50,7 +50,7 @@ test("test_normal", async () => {
   expect(config.version).toBe(builtVersion);
 });
 
-// --js で JavaScript の拡張の雛形を置く（正常系）
+// --js で JavaScript の拡張の雛形を配置する（正常系）
 test("test_normal_when_javascript", async () => {
   // 準備
   const typescript = await createTempDir();
@@ -74,7 +74,7 @@ test("test_normal_when_javascript", async () => {
   expect(linesOf(result.stdout)).toHaveLength(5);
 });
 
-// 既にあるファイルを上書きせず、無いものだけを置く（正常系）
+// 既にあるファイルを上書きせず、無いものだけを配置する（正常系）
 test("test_normal_when_file_exists", async () => {
   // 準備
   const dir = await createTempDir();
@@ -89,11 +89,11 @@ test("test_normal_when_file_exists", async () => {
     "features:\n  print: false\n",
   );
   const lines = linesOf(result.stdout);
-  expect(lines[0]).toBe("置かなかった（既にある）: mdmark.config.yaml");
-  expect(lines.filter((line) => line.startsWith("置いた:"))).toHaveLength(5);
+  expect(lines[0]).toBe("配置しなかった（既にある）: mdmark.config.yaml");
+  expect(lines.filter((line) => line.startsWith("配置した:"))).toHaveLength(5);
 });
 
-// 置く先のフォルダを作れないと、書けないパスと直し方を示して終わる（異常系）
+// 配置先のフォルダを作れないと、書き込めないパスと修正方法を示して終わる（異常系）
 test("test_error_when_unwritable", async () => {
   // 準備
   const dir = await createTempDir();
@@ -104,6 +104,6 @@ test("test_error_when_unwritable", async () => {
   // 検証
   expect(result.code).toBe(1);
   expect(result.stderr).toContain(target);
-  expect(result.stderr).toContain("確かめて");
+  expect(result.stderr).toContain("確認して");
   expect(await readFile(target, "utf8")).toBe("ファイル\n");
 });

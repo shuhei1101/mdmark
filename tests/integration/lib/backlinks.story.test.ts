@@ -6,7 +6,7 @@ const holder = createBrowserHolder();
 beforeAll(holder.launch);
 afterAll(holder.close);
 
-// 2 件の関連文書を、題「関連文書」の一覧で並べる（Two）
+// 2 件の関連文書を、タイトル「関連文書」の一覧で並べる（Two）
 test("test_two", async () => {
   // 準備・実行
   const page = await holder.openStory("parts-backlinks--two");
@@ -28,7 +28,7 @@ test("test_two", async () => {
     );
   expect(links).toEqual([
     ["../api.md", "API"],
-    ["../使い方/guide.md", "使い方"],
+    ["../使い方/guide.md", "使用方法"],
   ]);
   await expect(pageOverflows(page)).resolves.toBe(false);
 });
@@ -48,7 +48,7 @@ test("test_one", async () => {
   );
 });
 
-// 題が長い文書は折り返し、一覧は枠の中に収まる（Long）
+// タイトルが長い文書は折り返し、一覧は枠の中に収まる（Long）
 test("test_long", async () => {
   // 準備・実行
   const page = await holder.openStory("parts-backlinks--long");

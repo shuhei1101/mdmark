@@ -19,7 +19,7 @@ test("test_nested", async () => {
   const hrefs = await nav
     .locator("a")
     .evaluateAll((links) => links.map((link) => link.getAttribute("href")));
-  expect(hrefs).toEqual(["#導入", "#前提", "#使い方"]);
+  expect(hrefs).toEqual(["#導入", "#前提", "#使用方法"]);
   await expect(
     nav.locator("li:has(> a[href='#導入']) > ul a").getAttribute("href"),
   ).resolves.toBe("#前提");

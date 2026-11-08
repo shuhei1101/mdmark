@@ -7,12 +7,12 @@ const holder = createBrowserHolder();
 beforeAll(holder.launch);
 afterAll(holder.close);
 
-/** 一覧のフォルダの見出しの文字を、出た順に返す */
+/** 一覧のフォルダの見出しの文字を、出た順に返却する */
 function folderHeadings(page: Page): Promise<string[]> {
   return page.locator(".mdmark-doc-list-folder").allTextContents();
 }
 
-/** 開いている文書として示された行の `data-doc-path` を返す */
+/** 開いている文書として示された行の `data-doc-path` を返却する */
 function currentPaths(page: Page): Promise<(string | null)[]> {
   return page
     .locator('.mdmark-doc-list a[aria-current="page"]')
@@ -21,7 +21,7 @@ function currentPaths(page: Page): Promise<(string | null)[]> {
     );
 }
 
-// フォルダの無い文書を先に、フォルダごとに 1 段の見出しでまとめ、開いている文書を示す（Grouped）
+// フォルダの無い文書を先に、フォルダごとに 1 階層の見出しでまとめ、開いている文書を示す（Grouped）
 test("test_grouped", async () => {
   // 準備・実行
   const page = await holder.openStory("parts-doclist--grouped");
@@ -33,7 +33,7 @@ test("test_grouped", async () => {
     "使い方/導入",
     "リファレンス",
   ]);
-  // フォルダの無い文書のまとまりは見出しを持たず、先頭に置く
+  // フォルダの無い文書のまとまりは見出しを持たず、先頭に配置する
   await expect(
     nav
       .locator(".mdmark-doc-list-group")
@@ -60,7 +60,7 @@ test("test_grouped", async () => {
   await expect(pageOverflows(page)).resolves.toBe(false);
 });
 
-// フォルダの無い文書だけのとき、見出しを置かない（Flat）
+// フォルダの無い文書だけのとき、見出しを配置しない（Flat）
 test("test_flat", async () => {
   // 準備・実行
   const page = await holder.openStory("parts-doclist--flat");
@@ -72,7 +72,7 @@ test("test_flat", async () => {
   await expect(currentPaths(page)).resolves.toEqual(["intro.md"]);
 });
 
-// 題とフォルダのパスが長くても、一覧の幅で折り返して横にはみ出さない（LongText）
+// タイトルとフォルダのパスが長くても、一覧の幅で折り返して横にはみ出さない（LongText）
 test("test_long_text", async () => {
   // 準備・実行
   const page = await holder.openStory("parts-doclist--long-text");
@@ -81,7 +81,7 @@ test("test_long_text", async () => {
     "使い方/カスタマイズ/テーマ/層の外の CSS",
   ]);
   await expect(page.locator(".mdmark-doc-list a").innerText()).resolves.toBe(
-    "版を固定した URL で JavaScript と CSS を読み込み、要素に文書を描くまで",
+    "バージョンを固定した URL で JavaScript と CSS を読み込み、要素に文書を描くまで",
   );
   await expect(pageOverflows(page)).resolves.toBe(false);
 });

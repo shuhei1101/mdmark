@@ -100,13 +100,13 @@ test("test_folded", async () => {
   ).resolves.toBe("false");
 });
 
-// 定義を読めないときは、図の代わりに書き方の警告を出す（Invalid）
+// 定義を読み込めないときは、図の代わりに記載の警告を出す（Invalid）
 test("test_invalid", async () => {
   // 準備・実行
   const page = await holder.openStory("parts-erdiagram--invalid");
   // 検証
   await expect(
     page.locator(".mdmark-syntax-warning").innerText(),
-  ).resolves.toContain("ER 図の部品の定義を読めません");
+  ).resolves.toContain("ER 図の部品の定義を読み込めません");
   await expect(page.locator("figure.mdmark-diagram").count()).resolves.toBe(0);
 });

@@ -1,12 +1,12 @@
 import { type Browser, chromium, type Page } from "playwright";
 import { inject } from "vitest";
 
-// ストーリーを開く画面の大きさ（狭い幅で折り返しを見る）
+// ストーリーを開く画面の大きさ（狭い幅で折り返しを確認する）
 const VIEWPORT = { width: 420, height: 360 };
 
-/** 最初のストーリーを開いて、Vite が依存を束ね終えるまで待つ上限（ミリ秒。測った起動の直後の読み込み 56 秒の約 5 倍） */
+/** 最初のストーリーを開いて、Vite が依存をまとめ終えるまで待つ上限（ミリ秒。測った起動の直後の読み込み 56 秒の約 5 倍） */
 export const WARM_UP_TIMEOUT_MS = 300_000;
-// 温めに開くストーリー（React の部品と、部品の HTML の描画の口の両方を通す）
+// 温めに開くストーリー（React の部品と、部品の HTML の描画のインターフェースの両方を経由する）
 const WARM_UP_STORIES = [
   "vscode-previewstatus--offline",
   "parts-notice--block",
@@ -15,7 +15,7 @@ const WARM_UP_STORIES = [
 /** ストーリーを開く画面の大きさ */
 export type Viewport = { width: number; height: number };
 
-/** テストファイルの間で使う、Chromium の起動と終了 */
+/** テストファイルの間で使用する、Chromium の起動と終了 */
 export function createBrowserHolder(): {
   launch: () => Promise<void>;
   close: () => Promise<void>;
@@ -24,7 +24,7 @@ export function createBrowserHolder(): {
   let browser: Browser | undefined;
   const pages: Page[] = [];
   return {
-    // Chromium を起こし、ストーリーを開いて Vite が依存を束ね終えるまで待つ
+    // Chromium を発生させ、ストーリーを開いて Vite が依存をまとめ終えるまで待つ
     launch: async () => {
       browser = await chromium.launch();
       const page = await browser.newPage();
@@ -75,7 +75,7 @@ export function resolveColor(page: Page, expression: string): Promise<string> {
   }, expression);
 }
 
-/** ページ座標の細い帯を撮り、指定した色（`rgb(r, g, b)`）と同じ色の画素の数を返す */
+/** ページ座標の細い帯を撮り、指定した色（`rgb(r, g, b)`）と同じ色の画素の数を返却する */
 export async function countColorPixels(options: {
   page: Page;
   clip: { x: number; y: number; width: number; height: number };
@@ -123,7 +123,7 @@ export function pageOverflows(page: Page): Promise<boolean> {
   );
 }
 
-/** 色の式を、`selector` に当たる要素の中で解決した computed の色の文字列にする（`.mdmark` の中だけで決まる CSS 変数を解決する） */
+/** 色の式を、`selector` に該当する要素の中で解決した computed の色の文字列にする（`.mdmark` の中だけで決まる CSS 変数を解決する） */
 export function resolveColorIn(
   page: Page,
   selector: string,

@@ -10,7 +10,7 @@ import { useTerminals } from "../terminal.ts";
 const { createTerminal } = useTerminals();
 const createTempDir = useTempDirs();
 
-// 端末の設定を雛形から作り、settings.json の env に MDMARK_CONFIG を書く（正常系）
+// 端末の設定を雛形から作り、settings.json の env に MDMARK_CONFIG を記載する（正常系）
 test("test_normal", async () => {
   // 準備
   const terminal = await createTerminal();
@@ -57,7 +57,7 @@ test("test_normal_when_settings_exist", async () => {
   expect(parse(after).serve.tmuxSession).toBe("mdmark-test");
 });
 
-// 端末の設定が既定のパスなら settings.json を書かない（正常系（既定のパス））
+// 端末の設定が既定のパスなら settings.json を書き込まない（正常系（既定のパス））
 test("test_normal_when_default_path", async () => {
   // 準備
   const terminal = await createTerminal();
@@ -75,7 +75,7 @@ test("test_normal_when_default_path", async () => {
   expect(existsSync(terminal.claudeSettingsPath)).toBe(false);
 });
 
-// Schema に合わない値は何も書かずに終わる（異常系（Schema に合わない値・終了コード 1））
+// Schema に合わない値は何も書き込まずに終わる（異常系（Schema に合わない値・終了コード 1））
 test("test_error_when_value_invalid", async () => {
   // 準備
   const terminal = await createTerminal();

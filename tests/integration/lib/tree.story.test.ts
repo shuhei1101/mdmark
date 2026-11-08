@@ -12,7 +12,7 @@ function open(id: string): Promise<Page> {
   return holder.openStory(`parts-filetree--${id}`);
 }
 
-/** 項目の名前の `::before`（アイコン）の `mask-image` と色を、名前の文字ごとに返す */
+/** 項目の名前の `::before`（アイコン）の `mask-image` と色を、名前の文字ごとに返却する */
 function iconsOf(
   page: Page,
 ): Promise<Record<string, { mask: string; color: string }>> {
@@ -29,7 +29,7 @@ function iconsOf(
   );
 }
 
-/** 開閉のボタンの `aria-expanded` を、並んだ順に返す */
+/** 開閉のボタンの `aria-expanded` を、並んだ順に返却する */
 function expandedStates(page: Page): Promise<Array<string | null>> {
   return page
     .locator("button.mdmark-tree-toggle")
@@ -107,7 +107,7 @@ test("test_open_levels", async () => {
   await expect(nameVisible(page, "tree.ts")).resolves.toBe(false);
 });
 
-// 注釈が全ての行で同じ位置の列に揃い、名前から注釈まで点線でつながり、# を出さない。注釈の中のコード・太字・バッジを描く（Notes）
+// 注釈が全ての行で同じ位置の列に一致し、名前から注釈まで点線でつながり、# を出さない。注釈の中のコード・太字・バッジを描く（Notes）
 test("test_notes", async () => {
   // 準備・実行
   const page = await open("notes");
@@ -143,7 +143,7 @@ test("test_notes", async () => {
   ).resolves.toBe("新規");
 });
 
-// 拡張子ごとのアイコンを、種類ごとの形と色で出し、知らない拡張子を汎用のアイコンで出す（FileIcons）
+// 拡張子ごとのアイコンを、種類ごとの構造と色で出し、知らない拡張子を汎用のアイコンで出す（FileIcons）
 test("test_file_icons", async () => {
   // 準備・実行
   const page = await open("file-icons");
@@ -180,7 +180,7 @@ test("test_file_icons", async () => {
   ]);
 });
 
-// 名前が ... の項目を、省略のアイコンと読み上げの文で出す（More）
+// 名前が ... の項目を、省略のアイコンとスクリーンリーダーの文で出す（More）
 test("test_more", async () => {
   // 準備・実行
   const page = await open("more");
@@ -198,7 +198,7 @@ test("test_more", async () => {
   expect(mask).not.toBe(icons["index.ts"]?.mask);
 });
 
-// 5 段の深い入れ子を全て開き、段ごとに字下げして並べる（Deep）
+// 5 階層の深い入れ子を全て開き、段ごとに字下げして並べる（Deep）
 test("test_deep", async () => {
   // 準備・実行
   const page = await open("deep");

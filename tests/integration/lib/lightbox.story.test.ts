@@ -71,7 +71,7 @@ test("test_middle", async () => {
   expect(tools.caption).toBe("幅 240px");
   await expect(
     page
-      .locator('[role="group"][aria-label="画像の送り"] button')
+      .locator('[role="group"][aria-label="画像の切り替え"] button')
       .evaluateAll((buttons) =>
         buttons.map((button) => button.getAttribute("aria-label")),
       ),
@@ -119,10 +119,10 @@ test("test_single", async () => {
   // 検証
   expect(tools.navVisible).toBe(false);
   expect(tools.closeLabel).toBe("拡大を閉じる");
-  expect(tools.caption).toBe("中央に置いた画面");
+  expect(tools.caption).toBe("中央に配置した画面");
 });
 
-// 250% に拡大したときは、移動のボタンを出し、画像の場所に読み上げの名前を付ける（Zoomed）
+// 250% に拡大したときは、移動のボタンを出し、画像の場所にスクリーンリーダー向けの名前を付ける（Zoomed）
 test("test_zoomed", async () => {
   // 準備・実行
   const page = await open("zoomed");
@@ -185,10 +185,10 @@ test("test_long_caption", async () => {
   await expect(pageOverflows(page)).resolves.toBe(false);
 });
 
-// 幅の狭い画面では、帯を折り返し、送りと閉じるのボタンを両端に残す（Narrow）
+// 幅の狭い画面では、帯を折り返し、切り替えと閉じるのボタンを両端に残す（Narrow）
 test("test_narrow", async () => {
   // 準備・実行
-  // ストーリーは幅 390px の枠で描くため、描く先の要素の余白を足した幅の画面で開く
+  // ストーリーは幅 390px の枠で描くため、描く先の要素の余白を加算した幅の画面で開く
   const page = await open("narrow", { width: 480, height: 600 });
   // 検証
   const layout = await page.evaluate(() => {

@@ -8,11 +8,11 @@ import type {
 
 type Built = typeof import("../../../src/index.ts");
 
-// 拡張のモジュールの代役と、404 を返すモジュールの URL（手元の開発サーバーが配る）
+// 拡張のモジュールの代役と、404 を返却するモジュールの URL（手元の開発サーバーが配る）
 const GREET_PATH = "/fixtures/greet.js";
 const DEFINITION_PATH = "/fixtures/definition.js";
 const MISSING_PATH = "/fixtures/missing.js";
-// 拡張のモジュールの代役が `slot` に書く、引数の読み分けた値
+// 拡張のモジュールの代役が `slot` に記載する、引数の判別した値
 const GREET_TEXT = '{"args":["world"],"keys":{"lang":"ja"}}';
 
 const elements: HTMLElement[] = [];
@@ -45,7 +45,7 @@ async function loadBuilt(): Promise<Built> {
   return import(/* @vite-ignore */ `${distUrl("index.js")}?test=${loadCount}`);
 }
 
-/** 描く先の要素を作り、ページに置く */
+/** 描く先の要素を作り、ページに配置する */
 function createElement(): HTMLElement {
   const el = document.createElement("div");
   document.body.append(el);
@@ -53,7 +53,7 @@ function createElement(): HTMLElement {
   return el;
 }
 
-/** 要素に文書を描き、後始末のために戻り値を控える */
+/** 要素に文書を描き、後始末のために戻り値を記録する */
 function mountTracked(
   built: Built,
   el: HTMLElement,
@@ -64,7 +64,7 @@ function mountTracked(
   return handle;
 }
 
-/** 要素の中を CSS セレクタで 1 つ引く（無ければ失敗する） */
+/** 要素の中を CSS セレクタで 1 つ参照する（無ければ失敗する） */
 function find<T extends Element>(el: Element, selector: string): T {
   const found = el.querySelector<T>(selector);
   if (!found) {
@@ -73,12 +73,12 @@ function find<T extends Element>(el: Element, selector: string): T {
   return found;
 }
 
-/** 要素の直下の段落の文字を並べて返す */
+/** 要素の直下の段落の文字を並べて返却する */
 function paragraphTexts(el: Element): string[] {
   return [...el.querySelectorAll(":scope > p")].map((p) => p.textContent ?? "");
 }
 
-/** 拡張の代役のモジュールを読む（URL は開発サーバーが配るため、Vite に解決させない） */
+/** 拡張の代役のモジュールを読み込む（URL は開発サーバーが配るため、Vite に解決させない） */
 function importFixture(path: string): Promise<MdmarkExtensionModule> {
   return import(/* @vite-ignore */ path);
 }
@@ -95,7 +95,7 @@ function createGreet(overrides: Partial<MdmarkExtension> = {}): {
   };
 }
 
-/** `console.error` を黙らせて、呼ばれた引数を控える */
+/** `console.error` を黙らせて、呼ばれた引数を記録する */
 function spyConsoleError() {
   return vi.spyOn(console, "error").mockImplementation(() => {});
 }
@@ -113,7 +113,7 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
-// 拡張を登録し、文書の拡張の印の場所にモジュールで描かせる（正常系）
+// 拡張を登録し、文書の拡張のマーカーの場所にモジュールで描かせる（正常系）
 test("test_normal", async () => {
   // 準備
   const built = await loadBuilt();
@@ -136,7 +136,7 @@ test("test_normal", async () => {
   expect(paragraphTexts(el)).toEqual(["前の段落", "中の段落", "後の段落"]);
 });
 
-// 拡張の印が無い文書では拡張のモジュールを読まない（正常系）
+// 拡張のマーカーが無い文書では拡張のモジュールを読み込まない（正常系）
 test("test_normal_when_no_mark", async () => {
   // 準備
   const built = await loadBuilt();
@@ -151,7 +151,7 @@ test("test_normal_when_no_mark", async () => {
   expect(paragraphTexts(el)).toEqual(["段落"]);
 });
 
-// 引数が schema に合わない印の場所だけを書き方の警告にし、モジュールを読まない（異常系）
+// 引数が schema に合わないマーカーの場所だけを記載の警告にし、モジュールを読み込まない（異常系）
 test("test_error_when_args_invalid", async () => {
   // 準備
   const built = await loadBuilt();
@@ -176,7 +176,7 @@ test("test_error_when_args_invalid", async () => {
     find<HTMLElement>(el, ".mdmark-syntax-warning"),
   );
   expect(find(warning, ".mdmark-syntax-warning-title").textContent).toBe(
-    "書き方の警告",
+    "記載の警告",
   );
   expect(warning.textContent).toContain("<!-- greet: World 2 -->");
   expect(warning.textContent).toContain("greet");
@@ -190,7 +190,7 @@ test("test_error_when_args_invalid", async () => {
   expect(paragraphTexts(el)).toEqual(["前の段落", "後の段落"]);
 });
 
-// 拡張のモジュールを読めない印の場所だけを知らせの枠にし、ほかは描く（異常系）
+// 拡張のモジュールを読み込めないマーカーの場所だけを通知ブロックにし、ほかは描く（異常系）
 test("test_error_when_module_not_found", async () => {
   // 準備
   const built = await loadBuilt();
@@ -214,7 +214,7 @@ test("test_error_when_module_not_found", async () => {
     "この図を表示できません",
   );
   expect(find(notice, "p").textContent).toBe(
-    "表示に使う拡張（greet）を読み込めませんでした。ネットワークにつながっているかを確かめて、ページを読み込み直してください。",
+    "表示に使用する拡張（greet）を読み込めませんでした。ネットワークにつながっているかを確認して、ページを再読み込みしてください。",
   );
   expect(paragraphTexts(el)).toEqual(["前の段落", "後の段落"]);
   expect(errorSpy).toHaveBeenCalled();
@@ -223,7 +223,7 @@ test("test_error_when_module_not_found", async () => {
   expect(args.some((arg) => arg instanceof Error)).toBe(true);
 });
 
-// schema の validate が拒否される印の場所を知らせの枠にし、モジュールを読まない（異常系）
+// schema の validate が拒否されるマーカーの場所を通知ブロックにし、モジュールを読み込まない（異常系）
 test("test_error_when_validate_fails", async () => {
   // 準備
   const built = await loadBuilt();
@@ -280,7 +280,7 @@ test("test_error_when_extension_invalid", async () => {
   expect(paragraphTexts(el)).toEqual(["前の段落", "後の段落"]);
 });
 
-// 記法の印や登録済みの拡張と同じ directive は登録せずに Error を投げる（異常系）
+// 記法のマーカーや登録済みの拡張と同じ directive は登録せずに Error を投げる（異常系）
 test("test_error_when_directive_taken", async () => {
   // 準備
   const built = await loadBuilt();
@@ -303,7 +303,7 @@ test("test_error_when_directive_taken", async () => {
   expect(second.load).not.toHaveBeenCalled();
 });
 
-/** 範囲で書いた拡張の印の Markdown: `json` のコードブロックを `blocks` の数だけ置く */
+/** 範囲で記載した拡張のマーカーの Markdown: `json` のコードブロックを `blocks` の数だけ配置する */
 function rangeMarkdown(blocks: string[]): string {
   const fences = blocks.flatMap((json) => ["```json", json, "```", ""]);
   return [
@@ -319,7 +319,7 @@ function rangeMarkdown(blocks: string[]): string {
   ].join("\n");
 }
 
-// 範囲で書いた拡張の印の json を、definition として schema と draw へ渡す（正常系）
+// 範囲で記載した拡張のマーカーの json を、definition として schema と draw へ指定する（正常系）
 test("test_normal_when_definition", async () => {
   // 準備
   const built = await loadBuilt();
@@ -350,7 +350,7 @@ test("test_normal_when_definition", async () => {
   expect(load).toHaveBeenCalledTimes(1);
 });
 
-// JSON として読めない定義の印の場所を書き方の警告にし、モジュールを読まない（異常系）
+// JSON として読み込めない定義のマーカーの場所を記載の警告にし、モジュールを読み込まない（異常系）
 test("test_error_when_definition_invalid", async () => {
   // 準備
   const built = await loadBuilt();
@@ -370,7 +370,7 @@ test("test_error_when_definition_invalid", async () => {
   expect(paragraphTexts(el)).toEqual(["前の段落", "後の段落"]);
 });
 
-// json のコードブロックが 2 つあると、モジュールを読まずに書き方の警告にする（異常系）
+// json のコードブロックが 2 つあると、モジュールを読み込まずに記載の警告にする（異常系）
 test("test_error_when_definition_two_blocks", async () => {
   // 準備
   const built = await loadBuilt();
@@ -389,7 +389,7 @@ test("test_error_when_definition_two_blocks", async () => {
   expect(load).not.toHaveBeenCalled();
 });
 
-// 図の部品の印と同じ directive の拡張を登録でき、その印を拡張に描かせる（正常系）
+// 図の部品のマーカーと同じ directive の拡張を登録でき、そのマーカーを拡張に描かせる（正常系）
 test("test_normal_when_directive_is_diagram_name", async () => {
   // 準備
   const built = await loadBuilt();

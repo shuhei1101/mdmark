@@ -8,7 +8,7 @@ const holder = createBrowserHolder();
 beforeAll(holder.launch);
 afterAll(holder.close);
 
-// 題と行番号を出し、2 行目だけを強調の地と左の線で分ける（TitleAndLineNumbers）
+// タイトルと行番号を出し、2 行目だけを強調の地と左の線で分ける（TitleAndLineNumbers）
 test("test_title_and_line_numbers", async () => {
   // 準備・実行
   const page = await holder.openStory(
@@ -47,7 +47,7 @@ test("test_title_and_line_numbers", async () => {
   );
 });
 
-// 足した行・消した行・強調を色と行頭の印で分け、印の無い行も文字の頭を揃える（LineMarks）
+// 追加した行・削除した行・強調を色と行頭のマーカーで分け、マーカーの無い行も文字の頭の位置を合わせる（LineMarks）
 test("test_line_marks", async () => {
   // 準備・実行
   const page = await holder.openStory("parts-codeblock--line-marks");
@@ -77,7 +77,7 @@ test("test_line_marks", async () => {
   await expect(page.locator(".mdmark-code-title").count()).resolves.toBe(0);
 });
 
-// 題だけなら行に分けず、今の pre のまま題の帯の下に置く（TitleOnly）
+// タイトルだけなら行に分けず、今の pre のままタイトルの帯の下に配置する（TitleOnly）
 test("test_title_only", async () => {
   // 準備・実行
   const page = await holder.openStory("parts-codeblock--title-only");
@@ -94,7 +94,7 @@ test("test_title_only", async () => {
   ).resolves.toBe("コード: mdmark.config.yaml");
 });
 
-// 2 桁の行番号を揃え、空の行も 1 行の高さを取り、9〜10 行目を強調する（TwoDigits）
+// 2 桁の行番号を統一し、空の行も 1 行の高さを取り、9〜10 行目を強調する（TwoDigits）
 test("test_two_digits", async () => {
   // 準備・実行
   const page = await holder.openStory("parts-codeblock--two-digits");
@@ -127,7 +127,7 @@ test("test_two_digits", async () => {
   );
 });
 
-// 幅を超える題は帯の中で折り返し、行はブロックの中で横にスクロールして行の地を右端まで敷く（LongLineAndTitle）
+// 幅を超えるタイトルは帯の中で折り返し、行はブロックの中で横にスクロールして行の地を右端まで敷く（LongLineAndTitle）
 test("test_long_line_and_title", async () => {
   // 準備・実行
   const page = await holder.openStory("parts-codeblock--long-line-and-title");
@@ -171,7 +171,7 @@ function hasIcon(button: Locator, icon: Parameters<typeof iconSvg>[0]) {
   }, iconSvg(icon));
 }
 
-/** 帯の左端の言語のラベルと右端のコピーのボタンの、帯の中での位置を返す */
+/** 帯の左端の言語のラベルと右端のコピーのボタンの、帯の中での位置を返却する */
 function barLayout(page: Awaited<ReturnType<typeof holder.openStory>>) {
   return page.locator(".mdmark-code-bar").evaluate((bar) => {
     const rect = bar.getBoundingClientRect();
@@ -190,7 +190,7 @@ function barLayout(page: Awaited<ReturnType<typeof holder.openStory>>) {
   });
 }
 
-// 言語のラベルを帯の左端に、コピーのボタンを右端に置く（LanguageLabel）
+// 言語のラベルを帯の左端に、コピーのボタンを右端に配置する（LanguageLabel）
 test("test_language_label", async () => {
   // 準備・実行
   const page = await holder.openStory("parts-codeblock--language-label");
@@ -239,7 +239,7 @@ test("test_file_name", async () => {
   await expect(pageOverflows(page)).resolves.toBe(false);
 });
 
-// 帯の幅を超えるファイル名と題は帯の中で折り返し、コピーのボタンは右端に残る（LongFileName）
+// 帯の幅を超えるファイル名とタイトルは帯の中で折り返し、コピーのボタンは右端に残る（LongFileName）
 test("test_long_file_name", async () => {
   // 準備・実行
   const page = await holder.openStory("parts-codeblock--long-file-name");
@@ -318,7 +318,7 @@ test("test_copy_failed", async () => {
   await expect(pageOverflows(page)).resolves.toBe(false);
 });
 
-/** コードの行の不透明度を、上から並べて返す */
+/** コードの行の不透明度を、上から並べて返却する */
 function lineOpacities(lines: Locator): Promise<number[]> {
   return lines.evaluateAll((elements) =>
     elements.map((element) => Number(getComputedStyle(element).opacity)),
@@ -368,7 +368,7 @@ test("test_error_warning", async () => {
   expect(new Set([plain, warning, error].map((s) => s?.border)).size).toBe(3);
 });
 
-// 全て開いた畳める行は、インデントの縦線を引き、ポインターを乗せた行だけに開閉のボタンを出す（Foldable）
+// 全て開いた畳める行は、インデントの縦線を描き、ポインターを乗せた行だけに開閉のボタンを出す（Foldable）
 test("test_foldable", async () => {
   // 準備
   const page = await holder.openStory("parts-codeblock--foldable");
@@ -407,7 +407,7 @@ test("test_foldable", async () => {
   await expect(opacity(0)).resolves.toBe(0);
 });
 
-// `fold=3` の 3 行目は、開閉のボタンを常に出して `⋯` を置き、閉じ括弧の 8 行目を残す（Folded）
+// `fold=3` の 3 行目は、開閉のボタンを常に出して `⋯` を配置し、閉じ括弧の 8 行目を残す（Folded）
 test("test_folded", async () => {
   // 準備・実行
   const page = await holder.openStory("parts-codeblock--folded");
@@ -471,7 +471,7 @@ test("test_fold_nested", async () => {
   expect(hidden.slice(3, 7)).toEqual([true, true, true, true]);
   expect(hidden[9]).toBe(true);
   expect(hidden[1]).toBe(false);
-  // ⋯ は畳んだ 3・4・9 行目に置き、隠れた 4 行目の分は見えない
+  // ⋯ は畳んだ 3・4・9 行目に配置し、隠れた 4 行目の分は見えない
   const more = page.locator(".mdmark-code-line > .mdmark-code-fold-more");
   await expect(more.count()).resolves.toBe(3);
   await expect(
@@ -482,7 +482,7 @@ test("test_fold_nested", async () => {
   ).resolves.toBe(2);
 });
 
-// 行番号の無いコードブロックでは、開閉のボタンを行の頭の余白に置き、文字に重ねない（FoldNoLineNumbers）
+// 行番号の無いコードブロックでは、開閉のボタンを行の頭の余白に配置し、文字に重ねない（FoldNoLineNumbers）
 test("test_fold_no_line_numbers", async () => {
   // 準備・実行
   const page = await holder.openStory("parts-codeblock--fold-no-line-numbers");

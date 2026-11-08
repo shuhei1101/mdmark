@@ -7,10 +7,10 @@ const holder = createBrowserHolder();
 beforeAll(holder.launch);
 afterAll(holder.close);
 
-/** 色を当てたブロックの要素（本文のブロックは `div`、項目は `li`、行は `tr`） */
+/** 色を適用したブロックの要素（本文のブロックは `div`、項目は `li`、行は `tr`） */
 const BLOCK = ".mdmark-diff-block";
 
-/** 色を当てたブロックの背景色の計算値と、種類ごとの地の色の変数の値 */
+/** 色を適用したブロックの背景色の計算値と、種類ごとの地の色の変数の値 */
 async function backgrounds(
   page: Page,
   kind: "add" | "del",
@@ -25,7 +25,7 @@ async function backgrounds(
   return { actual, expected };
 }
 
-/** 色を当てたブロックの先頭の、読み上げにだけ出す名前と記号 */
+/** 色を適用したブロックの先頭の、スクリーンリーダーにだけ出す名前と記号 */
 async function marks(page: Page): Promise<{ name: string; sign: string }> {
   return {
     name: await page.locator(`${BLOCK} .mdmark-visually-hidden`).innerText(),
@@ -36,7 +36,7 @@ async function marks(page: Page): Promise<{ name: string; sign: string }> {
   };
 }
 
-// 語を書き換えた段落と足した段落は、追加の地の色と左の余白の + で出し、読み上げの名前を持つ（AddParagraph）
+// 単語を書き換えた段落と追加した段落は、追加の地の色と左の余白の + で出し、スクリーンリーダー向けの名前を持つ（AddParagraph）
 test("test_add_paragraph", async () => {
   // 準備・実行
   const page = await holder.openStory("parts-diffblocks--add-paragraph");
@@ -52,7 +52,7 @@ test("test_add_paragraph", async () => {
   expect(color).toBe(
     await resolveColor(page, "var(--mdmark-color-diff-add-sign)"),
   );
-  // 変えていない段落と文字の位置が揃う
+  // 変えていない段落と文字の位置が一致する
   const lefts = await page.evaluate(() =>
     [...document.querySelectorAll("#storybook-root p")].map((p) =>
       Math.round(p.getBoundingClientRect().left),
@@ -78,7 +78,7 @@ test("test_del_paragraph", async () => {
   ).resolves.toBe(0);
 });
 
-// 足した見出しは、見出しの文字の大きさのまま追加の色を当てる（AddHeading）
+// 追加した見出しは、見出しの文字の大きさのまま追加の色を適用する（AddHeading）
 test("test_add_heading", async () => {
   // 準備・実行
   const page = await holder.openStory("parts-diffblocks--add-heading");
@@ -99,7 +99,7 @@ test("test_add_heading", async () => {
   expect(sizes.heading).toBeGreaterThan(sizes.paragraph);
 });
 
-// 表の削除した行は、tr に class を付け、1 つ目のセルの先頭に読み上げの `削除:` と − を置く（TableRowDel）
+// 表の削除した行は、tr に class を付け、1 つ目のセルの先頭にスクリーンリーダーの `削除:` と − を配置する（TableRowDel）
 test("test_table_row_del", async () => {
   // 準備・実行
   const page = await holder.openStory("parts-diffblocks--table-row-del");
@@ -136,7 +136,7 @@ test("test_list_item_del", async () => {
     listStyleType: "none",
     counterIncrement: "list-item 0",
   });
-  // 色を当てていない項目は、番号を出して数える
+  // 色を適用していない項目は、番号を出して数える
   const others = await page.evaluate(() =>
     [...document.querySelectorAll("li:not(.mdmark-diff-block)")].map((li) => {
       const computed = getComputedStyle(li);
@@ -149,7 +149,7 @@ test("test_list_item_del", async () => {
   }
 });
 
-// 足したコードブロックは、コードブロックの地の色を変えず、外側に追加の色を当てる（CodeBlock）
+// 追加したコードブロックは、コードブロックの地の色を変えず、外側に追加の色を適用する（CodeBlock）
 test("test_code_block", async () => {
   // 準備・実行
   const page = await holder.openStory("parts-diffblocks--code-block");
@@ -162,7 +162,7 @@ test("test_code_block", async () => {
   expect(code).not.toBe(expected);
 });
 
-// 削除した注意書きは、注意書きの色を変えず、外側に削除の色を当てる（Callout）
+// 削除した注意書きは、注意書きの色を変えず、外側に削除の色を適用する（Callout）
 test("test_callout", async () => {
   // 準備・実行
   const page = await holder.openStory("parts-diffblocks--callout");

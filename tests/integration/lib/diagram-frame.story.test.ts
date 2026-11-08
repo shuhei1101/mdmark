@@ -7,7 +7,7 @@ const holder = createBrowserHolder();
 beforeAll(holder.launch);
 afterAll(holder.close);
 
-/** 図の枠のストーリーを開く。`zoom` を渡さないストーリーは、収まる倍率になるまで待つ */
+/** 図の枠のストーリーを開く。`zoom` を指定しないストーリーは、収まる倍率になるまで待つ */
 async function openFrame(id: string, fitted: boolean): Promise<Page> {
   const page = await holder.openStory(`parts-diagramframe--${id}`);
   if (fitted) {
@@ -21,20 +21,20 @@ async function openFrame(id: string, fitted: boolean): Promise<Page> {
   return page;
 }
 
-/** 表示する箱の既定の線（`inset 0 0 0 1px` の `--mdmark-color-border`）の computed の `box-shadow` */
+/** 表示するノードの既定の線（`inset 0 0 0 1px` の `--mdmark-color-border`）の computed の `box-shadow` */
 async function defaultBoxShadow(page: Page): Promise<string> {
   const border = await resolveColor(page, "var(--mdmark-color-border)");
   return `${border} 0px 0px 0px 1px inset`;
 }
 
-/** 表示する箱（`selector` の中のもの）の computed の `box-shadow` */
+/** 表示するノード（`selector` の中のもの）の computed の `box-shadow` */
 function boxShadow(page: Page, selector = ".mdmark-diagram-box") {
   return page
     .locator(selector)
     .evaluate((box) => getComputedStyle(box).boxShadow);
 }
 
-/** 読み上げの名前を持つボタンの状態 */
+/** スクリーンリーダー向けの名前を持つボタンの状態 */
 function tool(page: Page, name: string) {
   return page.locator(`button[aria-label="${name}"]`);
 }
@@ -68,7 +68,7 @@ test("test_fit", async () => {
     false,
   );
   await expect(pageOverflows(page)).resolves.toBe(false);
-  // 面に包まない表示する箱は、既定の線で描く
+  // 面に包まない表示するノードは、既定の線で描く
   await expect(boxShadow(page)).resolves.toBe(await defaultBoxShadow(page));
 });
 
@@ -134,7 +134,7 @@ test("test_fullscreen", async () => {
   await expect(tool(page, "全画面で開く").count()).resolves.toBe(0);
 });
 
-// 使う側の枠を持つ面で `--mdmark-diagram-box-shadow: none` を指定すると、表示する箱の線が無い（InFramedSurface）
+// 利用側の枠を持つ面で `--mdmark-diagram-box-shadow: none` を指定すると、表示するノードの線が無い（InFramedSurface）
 test("test_in_framed_surface", async () => {
   // 準備・実行
   const page = await openFrame("in-framed-surface", true);
@@ -142,7 +142,7 @@ test("test_in_framed_surface", async () => {
   await expect(boxShadow(page)).resolves.toBe("none");
 });
 
-// 枠を持つ面の中の図を全画面で開くと、面の値を受け継がず、モーダルの中の表示する箱に既定の線がある（InFramedSurfaceFullscreen）
+// 枠を持つ面の中の図を全画面で開くと、面の値を受け継がず、モーダルの中の表示するノードに既定の線がある（InFramedSurfaceFullscreen）
 test("test_in_framed_surface_fullscreen", async () => {
   // 準備・実行
   const page = await openFrame("in-framed-surface-fullscreen", false);
@@ -155,7 +155,7 @@ test("test_in_framed_surface_fullscreen", async () => {
 /** `--mdmark-diagram-max-height` の既定（36rem）の px */
 const MAX_HEIGHT_PX = 576;
 
-/** 表示する枠の今の倍率での図の高さ（大きさの箱の `style.height`）と、表示する枠の `clientHeight` */
+/** 表示する枠の今の倍率での図の高さ（大きさのノードの `style.height`）と、表示する枠の `clientHeight` */
 function viewportHeights(page: Page) {
   return page.locator(".mdmark-diagram-viewport").evaluate((viewport) => {
     const sizer = viewport.querySelector<HTMLElement>(".mdmark-diagram-sizer");
@@ -166,7 +166,7 @@ function viewportHeights(page: Page) {
   });
 }
 
-// 使う側が高さを広げると、36rem を超えて定義の高さ × 倍率まで広がる（Fit から拡大した状態）
+// 利用側が高さを広げると、36rem を超えて定義の高さ × 倍率まで広がる（Fit から拡大した状態）
 test("test_fit_when_resized", async () => {
   // 準備: 定義の高さ × 倍率が 36rem を超えるまで拡大する
   const page = await openFrame("fit", true);
@@ -191,9 +191,9 @@ test("test_fit_when_resized", async () => {
   expect(Math.abs(client - content)).toBeLessThanOrEqual(1);
 });
 
-// 印刷では、attachDiagrams が当てたインラインの高さと上限を外し、表示する枠の高さが定義の高さ × 倍率になる（Fit から拡大した状態）
+// 印刷では、attachDiagrams が適用したインラインの高さと上限を削除し、表示する枠の高さが定義の高さ × 倍率になる（Fit から拡大した状態）
 test("test_fit_when_printed", async () => {
-  // 準備: 大きさの箱の高さが、開いたときの枠のインラインの高さを超えるまで拡大する
+  // 準備: 大きさのノードの高さが、開いたときの枠のインラインの高さを超えるまで拡大する
   const page = await openFrame("fit", true);
   const viewport = page.locator(".mdmark-diagram-viewport");
   const opened = await viewport.evaluate((element) =>
@@ -214,7 +214,7 @@ test("test_fit_when_printed", async () => {
   expect(Math.abs(client - content)).toBeLessThanOrEqual(1);
 });
 
-/** 表示する枠の高さと、全体が収まる倍率を確かめる値（表示する枠の幅と高さ・図の大きさ） */
+/** 表示する枠の高さと、全体が収まる倍率を確認する値（表示する枠の幅と高さ・図の大きさ） */
 function frameSizes(page: Page) {
   return page.locator(".mdmark-diagram-viewport").evaluate((viewport) => {
     const sizer = viewport.querySelector<HTMLElement>(".mdmark-diagram-sizer");
@@ -256,7 +256,7 @@ test("test_resized", async () => {
 test("test_resize_handle_focused", async () => {
   // 準備・実行
   const page = await openFrame("resize-handle-focused", false);
-  // 図の操作を付けた後にハンドルへフォーカスを当てるため、当たるまで待つ
+  // 図の操作を付けた後にハンドルへフォーカスを適用するため、該当するまで待つ
   await page.waitForFunction(
     () => document.activeElement?.matches(".mdmark-diagram-resize") === true,
   );
@@ -302,7 +302,7 @@ test("test_no_legend_items", async () => {
   expect(gap).toBeLessThanOrEqual(16);
 });
 
-// 種類 mermaid は題名だけの題で、範囲と更新日を出さず、凡例の場所を取らない（Mermaid）
+// 種類 mermaid は題名だけのタイトルで、範囲と更新日を出さず、凡例の場所を取らない（Mermaid）
 test("test_mermaid", async () => {
   // 準備・実行
   const page = await openFrame("mermaid", true);

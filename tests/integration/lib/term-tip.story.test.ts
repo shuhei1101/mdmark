@@ -4,19 +4,19 @@ import { createBrowserHolder, pageOverflows } from "../story.ts";
 
 const holder = createBrowserHolder();
 
-// スクリプトが動かないときも語の上に開く広い画面（狭い画面は語の直後に出す）
+// スクリプトが動かないときも単語の上に開く広い画面（狭い画面は単語の直後に出す）
 const WIDE_VIEWPORT = { width: 1280, height: 800 };
 
 beforeAll(holder.launch);
 afterAll(holder.close);
 
-/** ツールチップと語の画面に対する上端・下端 */
+/** ツールチップと単語の画面に対する上端・下端 */
 function tipAndTermRects(page: Page) {
   return page.evaluate(() => {
     const tip = document.querySelector(".mdmark-term-tip");
     const term = document.querySelector(".mdmark-term");
     if (!tip || !term) {
-      throw new Error("ツールチップか語が無い");
+      throw new Error("ツールチップか単語が無い");
     }
     const t = tip.getBoundingClientRect();
     const w = term.getBoundingClientRect();
@@ -29,7 +29,7 @@ function tipAndTermRects(page: Page) {
   });
 }
 
-/** 広い画面でストーリーを開き、開いたツールチップが語の上にあり、透明な線が下側にあることを確かめる */
+/** 広い画面でストーリーを開き、開いたツールチップが単語の上にあり、透明な線が下側にあることを確認する */
 async function expectOpenedAbove(id: string): Promise<void> {
   const page = await holder.openStory(id, WIDE_VIEWPORT);
   const rects = await tipAndTermRects(page);
@@ -44,7 +44,7 @@ async function expectOpenedAbove(id: string): Promise<void> {
   expect(borders.top).not.toBe("rgba(0, 0, 0, 0)");
 }
 
-// 用語だけに一致した語は、意味だけを持つ role="tooltip" のツールチップを開く（TermOnly）
+// 用語だけに一致した単語は、意味だけを持つ role="tooltip" のツールチップを開く（TermOnly）
 test("test_term_only", async () => {
   // 準備・実行
   const page = await holder.openStory("parts-termtip--term-only");
@@ -53,7 +53,7 @@ test("test_term_only", async () => {
   await expect(tip.isVisible()).resolves.toBe(true);
   await expect(tip.getAttribute("role")).resolves.toBe("tooltip");
   await expect(tip.innerText()).resolves.toContain(
-    "話し合いの記録を置くフォルダ",
+    "話し合いの記録を配置するフォルダ",
   );
   await expect(
     tip.locator(".mdmark-term-tip-heading").allInnerTexts(),
@@ -65,7 +65,7 @@ test("test_term_only", async () => {
   await expect(pageOverflows(page)).resolves.toBe(false);
 });
 
-// 文書の別名だけに一致した語は、関連文書だけを持つ role="group" のツールチップを開く（DocsOnly）
+// 文書の別名だけに一致した単語は、関連文書だけを持つ role="group" のツールチップを開く（DocsOnly）
 test("test_docs_only", async () => {
   // 準備・実行
   const page = await holder.openStory("parts-termtip--docs-only");
@@ -94,7 +94,7 @@ test("test_docs_only", async () => {
   await expect(pageOverflows(page)).resolves.toBe(false);
 });
 
-// 用語にも文書の別名にも一致した語は、用語 → 関連文書の順に並ぶ（Both）
+// 用語にも文書の別名にも一致した単語は、用語 → 関連文書の順に並ぶ（Both）
 test("test_both", async () => {
   // 準備・実行
   const page = await holder.openStory("parts-termtip--both");
@@ -115,7 +115,7 @@ test("test_both", async () => {
   await expect(pageOverflows(page)).resolves.toBe(false);
 });
 
-// 上に収まらず語の下に開いた状態は、is-below が付き、ツールチップが語の下、透明な線が上側にある（Below）
+// 上に収まらず単語の下に開いた状態は、is-below が付き、ツールチップが単語の下、透明な線が上側にある（Below）
 test("test_below", async () => {
   // 準備・実行
   const page = await holder.openStory("parts-termtip--below", WIDE_VIEWPORT);
@@ -219,7 +219,7 @@ test("test_avoided", async () => {
   ).resolves.toBe("600");
   await expect(
     tip.locator(".mdmark-term-tip-meaning").innerText(),
-  ).resolves.toBe("話し合いの記録を置くフォルダ");
+  ).resolves.toBe("話し合いの記録を配置するフォルダ");
   const term = page.locator(".mdmark-term");
   await expect(term.getAttribute("class")).resolves.toBe(
     "mdmark-term mdmark-term-avoided",
@@ -259,7 +259,7 @@ test("test_avoided_closed", async () => {
   await expect(tip.isVisible()).resolves.toBe(true);
 });
 
-/** ストーリーのツールチップの区分の見出しを並べて返す */
+/** ストーリーのツールチップの区分の見出しを並べて返却する */
 function tipHeadings(page: Page): Promise<string[]> {
   return page
     .locator(".mdmark-term-tip .mdmark-term-tip-heading")
@@ -280,7 +280,7 @@ test("test_alias_term", async () => {
   );
   await expect(
     tip.locator(".mdmark-term-tip-meaning").innerText(),
-  ).resolves.toBe("変更を別の人が確かめること");
+  ).resolves.toBe("変更を別の人が確認すること");
   const term = page.locator(".mdmark-term");
   await expect(term.getAttribute("class")).resolves.toBe("mdmark-term");
   await expect(term.getAttribute("aria-describedby")).resolves.toBe(
@@ -323,7 +323,7 @@ test("test_alias_command", async () => {
   await expect(tipHeadings(page)).resolves.toEqual(["コマンド"]);
   await expect(
     tip.locator(".mdmark-term-tip-meaning").innerText(),
-  ).resolves.toBe("ライブラリ本体の単体テストを流す");
+  ).resolves.toBe("ライブラリ本体の単体テストを実行する");
   await expect(tip.locator("code").innerText()).resolves.toBe(
     "npm run test:unit",
   );
@@ -346,7 +346,7 @@ test("test_alias_command", async () => {
   await expect(pageOverflows(page)).resolves.toBe(false);
 });
 
-// コマンドをコピーした状態は、ボタンが「コピーしました」と読み上げの要素の文を持つ（AliasCommandCopied）
+// コマンドをコピーした状態は、ボタンが「コピーしました」とスクリーンリーダー向けの要素の文を持つ（AliasCommandCopied）
 test("test_alias_command_copied", async () => {
   // 準備・実行
   const page = await holder.openStory("parts-termtip--alias-command-copied");
@@ -360,7 +360,7 @@ test("test_alias_command_copied", async () => {
   await expect(pageOverflows(page)).resolves.toBe(false);
 });
 
-// コマンドをコピーできなかった状態は、ボタンが「コピーできませんでした」と読み上げの要素の文を持つ（AliasCommandFailed）
+// コマンドをコピーできなかった状態は、ボタンが「コピーできませんでした」とスクリーンリーダー向けの要素の文を持つ（AliasCommandFailed）
 test("test_alias_command_failed", async () => {
   // 準備・実行
   const page = await holder.openStory("parts-termtip--alias-command-failed");
@@ -497,7 +497,7 @@ test("test_alias_tool", async () => {
   await expect(tipHeadings(page)).resolves.toEqual(["ツール"]);
   await expect(
     tip.locator(".mdmark-term-tip-meaning").innerText(),
-  ).resolves.toBe("設定と索引のずれを返す");
+  ).resolves.toBe("設定と索引のずれを返却する");
   await expect(
     tip.locator("code.mdmark-term-tip-code").innerText(),
   ).resolves.toBe("check");
@@ -513,14 +513,14 @@ test("test_alias_path", async () => {
   await expect(tipHeadings(page)).resolves.toEqual(["パス"]);
   await expect(
     tip.locator(".mdmark-term-tip-meaning").innerText(),
-  ).resolves.toBe("機能のオン・オフと読む文書を記載する");
+  ).resolves.toBe("機能のオン・オフと読み込む文書を記載する");
   await expect(
     tip.locator("code.mdmark-term-tip-code").innerText(),
   ).resolves.toBe("mdmark.config.yaml");
   await expect(pageOverflows(page)).resolves.toBe(false);
 });
 
-// avoid の種類のエイリアスは、波線の下線を引き、「代わりの用語」の区分に置き換え先の語だけを出す（AliasAvoid）
+// avoid の種類のエイリアスは、波線の下線を付け、「代わりの用語」の区分に置き換え先の単語だけを出す（AliasAvoid）
 test("test_alias_avoid", async () => {
   // 準備・実行
   const page = await holder.openStory("parts-termtip--alias-avoid");

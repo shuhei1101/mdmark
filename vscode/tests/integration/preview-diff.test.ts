@@ -31,9 +31,9 @@ import {
 
 /** 変更前の `guide.md` */
 const BEFORE_GUIDE =
-  "# ガイド\n\n最初の段落です。\n\n古い手順を消します。\n\n最後の段落です。\n";
+  "# ガイド\n\n最初の段落です。\n\n古い手順を削除します。\n\n最後の段落です。\n";
 
-/** 変更後の `guide.md`: 2 番目の段落を共通する語の無い段落に入れ替える */
+/** 変更後の `guide.md`: 2 番目の段落を共通する単語の無い段落に入れ替える */
 const AFTER_GUIDE =
   "# ガイド\n\n最初の段落です。\n\n表の列を増やす案をまとめました。\n\n最後の段落です。\n";
 
@@ -54,7 +54,7 @@ type DiffView = {
   relative: string;
 };
 
-/** 見出しで区切った 10 の節を持つ長い Markdown。`edit` が `true` のとき、5 番目の節の最初の段落を消し、8 番目の節の末尾に段落を足す */
+/** 見出しで区切った 10 のセクションを持つ長い Markdown。`edit` が `true` のとき、5 番目のセクションの最初の段落を削除し、8 番目のセクションの末尾に段落を追加する */
 function longDocument(edit: boolean): string {
   return Array.from({ length: 10 }, (_, index) => {
     const section = index + 1;
@@ -65,13 +65,15 @@ function longDocument(edit: boolean): string {
     if (edit && section === 8) {
       paragraphs.push("8-41 追加した段落です。");
     }
-    return [`## 節 ${section}`, "", ...paragraphs.flatMap((p) => [p, ""])].join(
-      "\n",
-    );
+    return [
+      `## セクション ${section}`,
+      "",
+      ...paragraphs.flatMap((p) => [p, ""]),
+    ].join("\n");
   }).join("\n");
 }
 
-/** 新しいリポジトリに `before` をコミットして `guide.md` を置く。`after` があれば、作業ツリーの `guide.md` を `after` に書き換える（保存した状態でステージはしない） */
+/** 新しいリポジトリに `before` をコミットして `guide.md` を配置する。`after` があれば、作業ツリーの `guide.md` を `after` に書き換える（保存した状態でステージはしない） */
 async function createDiffRepo(
   before: string,
   after?: string,
@@ -95,7 +97,7 @@ async function openWorkingTreePreview(view: DiffView): Promise<RecordedPanel> {
   return record;
 }
 
-/** 変更後の側のエディタで、`line` の行を先頭にして、止まった先頭の行を返す。差分エディタでは `AtTop` が指定した行の手前に空ける行数が通常のエディタと違うため、`line` が先頭になるまで手前の行数を替えて試す */
+/** 変更後の側のエディタで、`line` の行を先頭にして、止まった先頭の行を返却する。差分エディタでは `AtTop` が指定した行の手前に空ける行数が通常のエディタと違うため、`line` が先頭になるまで手前の行数を替えて試す */
 async function revealAtTop(
   editor: vscode.TextEditor,
   line: number,
@@ -130,12 +132,12 @@ async function waitForBlocks(selector: string): Promise<void> {
   });
 }
 
-/** `selector` に当たる要素の文字を並べて返す */
+/** `selector` に該当する要素の文字を並べて返却する */
 async function texts(selector: string): Promise<string[]> {
   return (await inspect(selector)).map((item) => item.text);
 }
 
-suite("差分ビューの変更をプレビューで見る", () => {
+suite("差分ビューの変更をプレビューで確認する", () => {
   suiteSetup(() => {
     installRecorder();
     installMessages();
@@ -164,7 +166,7 @@ suite("差分ビューの変更をプレビューで見る", () => {
       assert.strictEqual((await inspect(ADDED)).length, 1);
       assert.ok((await texts(ADDED))[0]?.includes("表の列を増やす案"));
       assert.strictEqual((await inspect(DELETED)).length, 1);
-      assert.ok((await texts(DELETED))[0]?.includes("古い手順を消します"));
+      assert.ok((await texts(DELETED))[0]?.includes("古い手順を削除します"));
       assert.strictEqual((await inspect(".mdmark-diff-toggle")).length, 0);
       // 拡張機能は Git のコマンドを実行しない（子プロセスを作らない）
       assert.strictEqual(watcher.fromExtension(), 0);
@@ -178,7 +180,7 @@ suite("差分ビューの変更をプレビューで見る", () => {
     assert.strictEqual(lastPanel().options.title, "プレビュー guide.md");
   });
 
-  // 両側が Git の URI のコミットの差分でも、両方の内容を読んで差分のパネルを開く
+  // 両側が Git の URI のコミットの差分でも、両方の内容を読み込んで差分のパネルを開く
   test("test_normal_when_commit_diff", async () => {
     // 準備
     const view = await createDiffRepo(BEFORE_GUIDE, AFTER_GUIDE);
@@ -208,7 +210,7 @@ suite("差分ビューの変更をプレビューで見る", () => {
     }
   });
 
-  // 差分に対応しないバージョンを読んだときは、変更後の文書だけを描かず、理由とリロードを出す
+  // 差分に対応しないバージョンを読み込んだときは、変更後の文書だけを描かず、理由とリロードを出す
   test("test_error_when_version_without_diff", async () => {
     // 準備
     await setSetting("version", "v0.8.0");
@@ -255,7 +257,7 @@ suite("差分ビューの変更をプレビューで見る", () => {
     );
   });
 
-  // 変更後の側を書き換えると、待ってから同じパネルを描き直し、色を当てたブロックは同じまま出る
+  // 変更後の側を書き換えると、待ってから同じパネルを再描画し、色を適用したブロックは同じまま出る
   test("test_normal_when_diff_modified_side_edited", async () => {
     // 準備
     const view = await createDiffRepo(BEFORE_GUIDE, AFTER_GUIDE);
@@ -264,11 +266,11 @@ suite("差分ビューの変更をプレビューで見る", () => {
     const addedBefore = await texts(ADDED);
     const deletedBefore = await texts(DELETED);
     const before = renders(record).length;
-    // 実行: 変更後の側の末尾に段落を 1 つ書き足す（保存しない）
+    // 実行: 変更後の側の末尾に段落を 1 つ追記する（保存しない）
     const editor = modifiedEditor(view.modified);
     const end = editor.document.lineAt(editor.document.lineCount - 1).range.end;
     await editor.edit((builder) => {
-      builder.insert(end, "\n新しく書き足した段落です。\n");
+      builder.insert(end, "\n新しく追記した段落です。\n");
     });
     // 検証
     await waitFor(() => renders(record).length > before, {
@@ -277,10 +279,10 @@ suite("差分ビューの変更をプレビューで見る", () => {
     await sleep(600);
     const sent = renders(record).slice(before);
     assert.strictEqual(sent.length, 1);
-    assert.ok(sent[0]?.markdown.includes("新しく書き足した段落です。"));
+    assert.ok(sent[0]?.markdown.includes("新しく追記した段落です。"));
     assert.strictEqual(sent[0]?.previous, BEFORE_GUIDE);
     await waitFor(async () =>
-      (await texts(ADDED)).some((text) => text.includes("新しく書き足した")),
+      (await texts(ADDED)).some((text) => text.includes("新しく追記した")),
     );
     const addedAfter = await texts(ADDED);
     assert.deepStrictEqual(
@@ -291,7 +293,7 @@ suite("差分ビューの変更をプレビューで見る", () => {
     assert.strictEqual(recordedPanels().length, 1);
   });
 
-  // 差分のパネルは変更後の側のエディタと合わせ、削除したブロックを飛ばしてその行のブロックを先頭に置く
+  // 差分のパネルは変更後の側のエディタと合わせ、削除したブロックを飛ばしてその行のブロックを先頭に配置する
   test("test_normal_when_diff_preview", async function () {
     // 長い文書の差分の描画と、先頭の行が止まるまでの待ちに時間がかかる
     this.timeout(60000);
@@ -302,22 +304,22 @@ suite("差分ビューの変更をプレビューで見る", () => {
     await waitForBlocks(DELETED);
     await sleep(500);
     const editor = modifiedEditor(view.modified);
-    const heading = after.split("\n").indexOf("## 節 8");
+    const heading = after.split("\n").indexOf("## セクション 8");
     const scrolls = () =>
       record.sent.filter((message) => message.type === "scrollToLine");
     const before = scrolls().length;
-    // 実行: 変更後の側で 8 番目の節の見出しの行を先頭にする
+    // 実行: 変更後の側で 8 番目のセクションの見出しの行を先頭にする
     const start = await revealAtTop(editor, heading);
     // 検証
     await waitFor(() => scrolls().length > before, {
-      message: "scrollToLine が送られない",
+      message: "scrollToLine が送信されない",
     });
     await waitFor(
       () => {
         const last = scrolls().at(-1);
         return last?.type === "scrollToLine" && last.line === start;
       },
-      { message: "止まった先頭の行を送っていない" },
+      { message: "止まった先頭の行を送信していない" },
     );
     assert.strictEqual(start, heading);
     // 先頭の行のブロックが、プレビューの見えている先頭（狭い幅の帯があればその下端）から 1 行分の高さの中に来る
@@ -331,12 +333,14 @@ suite("差分ビューの変更をプレビューで見る", () => {
           block.top + block.height > inset
         );
       },
-      { message: "8 番目の節の見出しがプレビューの先頭に来ない" },
+      { message: "8 番目のセクションの見出しがプレビューの先頭に来ない" },
     );
     assert.ok(
-      (await texts(`[data-source-line="${start}"]`))[0]?.includes("節 8"),
+      (await texts(`[data-source-line="${start}"]`))[0]?.includes(
+        "セクション 8",
+      ),
     );
-    // 5 番目の節の削除したブロックは、行を持たず、合わせる先にならない
+    // 5 番目のセクションの削除したブロックは、行を持たず、合わせる先にならない
     assert.strictEqual((await inspect(DELETED)).length, 1);
     assert.strictEqual(
       (await inspect(`${DELETED}, ${DELETED} [data-source-line]`)).filter(

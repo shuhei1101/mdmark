@@ -7,7 +7,7 @@ import { runTests } from "@vscode/test-electron";
 import { createBuiltRoot } from "../../../tests/integration/built-root.ts";
 import { createStubServer } from "./stub-server.ts";
 
-/** 結合テストを流す VS Code: 対応する下限と、その時点の stable */
+/** 結合テストを実行する VS Code: 対応する下限と、その時点の stable */
 export const TEST_VSCODE_VERSIONS = ["1.141.0", "stable"];
 
 /** 結合テストの VS Code のテーマ（VS Code の既定のダークのテーマ） */
@@ -16,7 +16,7 @@ const TEST_COLOR_THEME = "Dark 2026";
 /** 拡張機能の場所（`vscode/`）とリポジトリの直下 */
 const EXTENSION_PATH = resolve(import.meta.dirname, "..", "..");
 
-/** 127.0.0.1 の空きポートで待ち受け、そのポートを返す */
+/** 127.0.0.1 の空きポートで待ち受け、そのポートを返却する */
 async function listen(server: Server): Promise<number> {
   await new Promise<void>((resolveListen) => {
     server.listen(0, "127.0.0.1", resolveListen);
@@ -24,7 +24,7 @@ async function listen(server: Server): Promise<number> {
   return (server.address() as AddressInfo).port;
 }
 
-/** 代役の配信（このブランチでビルドした mdmark の配布物とタグ一覧）を立て、`TEST_VSCODE_VERSIONS` のそれぞれで `runTests` を呼ぶ */
+/** 代役の配信（このブランチでビルドした mdmark の配布物とタグ一覧）を起動し、`TEST_VSCODE_VERSIONS` のそれぞれで `runTests` を呼ぶ */
 export async function runIntegrationTests(): Promise<void> {
   const stub: Parameters<typeof createStubServer>[0] = {
     tags: ["v0.10.0"],
@@ -46,9 +46,9 @@ export async function runIntegrationTests(): Promise<void> {
   );
   try {
     for (const version of TEST_VSCODE_VERSIONS) {
-      // 前回のバージョン（`globalState`）が空の状態で始めるため、バージョンごとに新しいユーザーデータを使う
+      // 前回のバージョン（`globalState`）が空の状態で始めるため、バージョンごとに新しいユーザーデータを使用する
       const userDataDir = await mkdtemp(join(tmpdir(), "mdmark-vscode-user-"));
-      // 空のユーザーデータでは既定と違うテーマで描くことがあるため、パネルの axe の検査を同じテーマで流す
+      // 空のユーザーデータでは既定と違うテーマで描くことがあるため、パネルの axe の検査を同じテーマで実行する
       await mkdir(join(userDataDir, "User"));
       await writeFile(
         join(userDataDir, "User", "settings.json"),
@@ -66,9 +66,9 @@ export async function runIntegrationTests(): Promise<void> {
         extensionTestsEnv: {
           MDMARK_VSCODE_DIST_BASE: `${origin}/mdmark`,
           MDMARK_VSCODE_TAGS_URL: `${origin}/tags`,
-          // 子プロセスの npm が、この入口と同じ Node を使うようにする
+          // 子プロセスの npm が、この入口と同じ Node を使用するようにする
           MDMARK_TEST_NODE_DIR: dirname(process.execPath),
-          // 拡張機能のログ（出力チャネルが書くファイル）をテストが読めるようにする
+          // 拡張機能のログ（出力チャネルが記載するファイル）をテストが読み込めるようにする
           MDMARK_TEST_USER_DATA_DIR: userDataDir,
           // 開発者の端末の設定を結合テストに混ぜない（無いファイルを指す）
           MDMARK_CONFIG: join(userDataDir, "mdmark-settings.yaml"),
@@ -83,7 +83,7 @@ export async function runIntegrationTests(): Promise<void> {
   }
 }
 
-// `node tests/integration/run.ts` で入口として実行されたときだけ流す。どれかが落ちたら終了コードを 1 にする
+// `node tests/integration/run.ts` で入口として実行されたときだけ実行する。どれかが落ちたら終了コードを 1 にする
 if (import.meta.main) {
   runIntegrationTests().catch((error: unknown) => {
     console.error(error);

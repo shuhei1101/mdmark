@@ -12,7 +12,7 @@ function open(id: string): Promise<Page> {
   return holder.openStory(`parts-commentbubble--${id}`);
 }
 
-/** 吹き出しの枠が `role="dialog"` で、閉じるボタンを持つことを確かめる */
+/** 吹き出しの枠が `role="dialog"` で、閉じるボタンを持つことを確認する */
 async function expectFrame(page: Page): Promise<void> {
   const bubble = page.locator(".mdmark-comment-bubble");
   await expect(bubble.getAttribute("role")).resolves.toBe("dialog");
@@ -26,7 +26,7 @@ async function expectFrame(page: Page): Promise<void> {
   await expect(close.locator("svg").count()).resolves.toBe(1);
 }
 
-/** 本文の並びを返す */
+/** 本文の並びを返却する */
 function bodies(page: Page): Promise<string[]> {
   return page.locator(".mdmark-comment-list li").allInnerTexts();
 }

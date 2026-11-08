@@ -31,15 +31,15 @@ import {
   writeFixture,
 } from "./helpers.ts";
 
-/** 外部ライブラリの代役のモジュール: 印の場所の文字を `drawn` にする */
+/** 外部ライブラリの代役のモジュール: マーカーの場所の文字を `drawn` にする */
 const LIBRARY_SOURCE = `export function draw(slot) {
   slot.textContent = "drawn";
 }
 `;
 
-/** 長い文書の見出し A の行（0 始まり）。前に 8 つの段落を置き、文書の先頭から離す */
+/** 長い文書の見出し A の行（0 始まり）。前に 8 つの段落を配置し、文書の先頭から離す */
 const HEADING_A_LINE = 18;
-/** 見えている範囲の先頭を見出し A の途中に置く位置（元の行番号）。見出し A と次の段落の間を 4 分の 1 だけ進めた位置 */
+/** 見えている範囲の先頭を見出し A の途中に配置する位置（元の行番号）。見出し A と次の段落の間を 4 分の 1 だけ進めた位置 */
 const WITHIN_HEADING_A = HEADING_A_LINE + 0.5;
 /** 長い文書の見出し B の行（0 始まり）。見出し A の下で、エディタを先頭から動かさずに見える範囲にある */
 const HEADING_B_LINE = 26;
@@ -77,18 +77,18 @@ async function headingTop(text: string): Promise<number | undefined> {
   return (await inspect("h2")).find((item) => item.text.includes(text))?.top;
 }
 
-/** プレビューを `line` の位置が先頭に来るまでスクロールし、止まった後の見出し A の位置を返す（エディタは動かさない） */
+/** プレビューを `line` の位置が先頭に来るまでスクロールし、止まった後の見出し A の位置を返却する（エディタは動かさない） */
 async function scrollPreviewTo(
   record: RecordedPanel,
   line: number,
 ): Promise<number> {
   const start = await headingTop("見出し A");
-  // 拡張機能を通さずに Webview へ送り、Webview の中だけでスクロールする
+  // 拡張機能を経由せずに Webview へ送信し、Webview の中だけでスクロールする
   await record.postRaw({ type: "scrollToLine", line });
   await waitFor(async () => (await headingTop("見出し A")) !== start, {
     message: "プレビューがスクロールしない",
   });
-  // スクロールの知らせで見えている先頭の行を保存し終えるまで待つ
+  // スクロールの通知で見えている先頭の行を保存し終えるまで待つ
   await sleep(500);
   const top = await headingTop("見出し A");
   assert.ok(top !== undefined, "見出し A が無い");
@@ -103,7 +103,7 @@ async function bandBottom(): Promise<number> {
     : 0;
 }
 
-/** 見出し A の上端が、見えている範囲の先頭（上端の帯があればその下端）より上に出ていることを確かめる */
+/** 見出し A の上端が、見えている範囲の先頭（上端の帯があればその下端）より上に出ていることを確認する */
 async function assertWithinHeadingA(top: number): Promise<void> {
   const inset = await bandBottom();
   assert.ok(
@@ -150,7 +150,7 @@ async function openGuide(
   return { editor, record };
 }
 
-suite("プレビューを描き直す", () => {
+suite("プレビューを再描画する", () => {
   suiteSetup(() => {
     installRecorder();
     installMessages();
@@ -161,7 +161,7 @@ suite("プレビューを描き直す", () => {
     await resetEnvironment();
   });
 
-  // 打つたびに待ち、最後の全文だけを送る
+  // 打つたびに待ち、最後の全文だけを送信する
   test("test_normal", async () => {
     // 準備
     const { editor, record } = await openGuide();
@@ -189,13 +189,13 @@ suite("プレビューを描き直す", () => {
     );
   });
 
-  // liveUpdate が false のときは保存でだけ送る
+  // liveUpdate が false のときは保存でだけ送信する
   test("test_normal_when_live_update_off", async () => {
     // 準備
     await setSetting("preview.liveUpdate", false);
     const { editor, record } = await openGuide();
     const before = renders(record).length;
-    // 実行・検証: 保存する前は送らない
+    // 実行・検証: 保存する前は送信しない
     await replaceFirstLine(editor, "# 書き換えた見出し");
     await sleep(700);
     assert.strictEqual(renders(record).length, before);
@@ -209,7 +209,7 @@ suite("プレビューを描き直す", () => {
     );
   });
 
-  // 設定ファイルの保存で、新しい features で描き直す
+  // 設定ファイルの保存で、新しい features で再描画する
   test("test_normal_when_config_saved", async () => {
     // 準備
     const { record } = await openGuide({ config: "# 設定\n" });
@@ -228,7 +228,7 @@ suite("プレビューを描き直す", () => {
     assert.ok((await inspect("blockquote")).length > 0);
   });
 
-  // 設定ファイルの labels を config に入れ、操作できる部品のボタンを設定の文言で描き直す
+  // 設定ファイルの labels を config に入れ、操作できる部品のボタンを設定の文言で再描画する
   test("test_normal_when_param_copy_label_configured", async () => {
     // 準備
     await writeFixture("guide.md", await paramMarkdown());
@@ -254,7 +254,7 @@ suite("プレビューを描き直す", () => {
     );
   });
 
-  // aliases の行が指す YAML を保存すると、作り直したエイリアスで描き直す
+  // aliases の行が指す YAML を保存すると、再作成したエイリアスで再描画する
   test("test_normal_when_aliases_yaml_saved", async () => {
     // 準備
     await writeFixture(
@@ -300,7 +300,7 @@ suite("プレビューを描き直す", () => {
     );
   });
 
-  // 取り込んでいるファイルを保存すると、読み直した取り込む文書で描き直す
+  // 取り込んでいるファイルを保存すると、再読み込みした取り込む文書で再描画する
   test("test_normal_when_include_target_saved", async () => {
     // 準備
     await writeFixture(
@@ -349,7 +349,7 @@ suite("プレビューを描き直す", () => {
     );
   });
 
-  // 設定ファイルが無ければ設定なしで描き、知らせを出さない
+  // 設定ファイルが無ければ設定なしで描き、通知を出さない
   test("test_normal_when_config_missing", async () => {
     // 準備・実行
     const { record } = await openGuide();
@@ -359,11 +359,11 @@ suite("プレビューを描き直す", () => {
     assert.strictEqual((await inspect(".mdmark-config-band")).length, 0);
   });
 
-  // 背面の間は送らず、ready を受けて最後の全文を送り、作り直した Webview を背面に回す前の位置へ戻す
+  // 背面の間は送信せず、ready を受けて最後の全文を送信し、再作成した Webview を背面に回す前の位置へ戻す
   test("test_normal_when_revealed", async function () {
     // 長い文書の描画と、スクロールが止まるまでの待ちに時間がかかる
     this.timeout(60000);
-    // 準備: 左の列のエディタと右の列のプレビューで長い文書を開き、プレビューを見えている範囲の先頭が見出し A の途中に当たるまでスクロールして位置を控える
+    // 準備: 左の列のエディタと右の列のプレビューで長い文書を開き、プレビューを見えている範囲の先頭が見出し A の途中に該当するまでスクロールして位置を記録する
     await writeFixture("long.md", longMarkdown());
     const editor = await openMarkdown("long.md");
     await vscode.commands.executeCommand("mdmark.openPreviewToSide");
@@ -388,11 +388,11 @@ suite("プレビューを描き直す", () => {
     record.panel.reveal(record.panel.viewColumn);
     // 検証
     await waitFor(() => renders(record).length > before, {
-      message: "戻した後に送られない",
+      message: "戻した後に送信されない",
     });
     assert.ok(
       renders(record).at(-1)?.markdown.includes("## 見出し B 3\n"),
-      "3 回目の全文を送っていない",
+      "3 回目の全文を送信していない",
     );
     await waitFor(async () => (await headingTop("見出し B 3")) !== undefined, {
       message: "見出し B が 3 回目の文字にならない",
@@ -404,7 +404,7 @@ suite("プレビューを描き直す", () => {
       },
       { message: "見出し A が背面に回す前の位置に戻らない" },
     );
-    // 戻したスクロールでは revealLine を送らず、エディタも動かない
+    // 戻したスクロールでは revealLine を送信せず、エディタも動かない
     await sleep(700);
     const revealed = record.received
       .slice(receivedBefore)
@@ -413,11 +413,11 @@ suite("プレビューを描き直す", () => {
     assert.strictEqual(editor.visibleRanges[0]?.start.line, editorStart);
   });
 
-  // 差分のパネルも、作り直した Webview を背面に回す前の位置へ戻す
+  // 差分のパネルも、再作成した Webview を背面に回す前の位置へ戻す
   test("test_normal_when_diff_revealed", async function () {
     // 長い文書の差分の描画と、スクロールが止まるまでの待ちに時間がかかる
     this.timeout(60000);
-    // 準備: 最初の段落だけを書き換えた長い文書の差分ビューから差分のプレビューを開き、見えている範囲の先頭が見出し A の途中に当たるまでスクロールして位置を控える
+    // 準備: 最初の段落だけを書き換えた長い文書の差分ビューから差分のプレビューを開き、見えている範囲の先頭が見出し A の途中に該当するまでスクロールして位置を記録する
     const dir = await createRepo("diff-repo-revealed", {
       "guide.md": longMarkdown(),
     });
@@ -442,7 +442,7 @@ suite("プレビューを描き直す", () => {
     record.panel.reveal(record.panel.viewColumn);
     // 検証
     await waitFor(() => renders(record).length > before, {
-      message: "戻した後に送られない",
+      message: "戻した後に送信されない",
     });
     assert.ok(
       renders(record).at(-1)?.previous !== undefined,
@@ -457,7 +457,7 @@ suite("プレビューを描き直す", () => {
     );
   });
 
-  // 設定ファイルからの相対パスの libraries を Webview で読める URL にして渡す
+  // 設定ファイルからの相対パスの libraries を Webview で読み込める URL にして指定する
   test("test_normal_when_relative_library", async () => {
     // 準備
     await writeFixture("config/libs/my-lib.js", LIBRARY_SOURCE);
@@ -487,13 +487,13 @@ suite("プレビューを描き直す", () => {
       async () =>
         (await inspect(".mdmark-embed[data-mdmark-drawn]")).length === 1,
       {
-        message: "印の場所が描かれない",
+        message: "マーカーの場所が描かれない",
       },
     );
     assert.strictEqual((await inspect(".mdmark-notice")).length, 0);
   });
 
-  // 読めない YAML を保存すると、前の設定で描いたまま読めない行を知らせる
+  // 読み込めない YAML を保存すると、前の設定で描いたまま読み込めない行を通知する
   test("test_error_when_config_unreadable", async () => {
     // 準備
     const { record } = await openGuide({
@@ -529,9 +529,9 @@ suite("プレビューを描き直す", () => {
     assert.deepStrictEqual(await audit(), []);
   });
 
-  // 読めない設定ファイルを直して保存すると、新しい設定で描き帯を消す
+  // 読み込めない設定ファイルを修正して保存すると、新しい設定で描き帯を削除する
   test("test_normal_when_config_fixed", async () => {
-    // 準備: 読めない設定ファイルで開いている
+    // 準備: 読み込めない設定ファイルで開いている
     const { record } = await openGuide({
       config: "a: 1\nb: 2\nc: 3\nfeatures: [",
     });
@@ -554,7 +554,7 @@ suite("プレビューを描き直す", () => {
     );
   });
 
-  // 開いたまま設定ファイルにまだ CSP に無い origin の libraries を足して保存すると、HTML を入れ直してそのモジュールを読む
+  // 開いたまま設定ファイルにまだ CSP に無い origin の libraries を追加して保存すると、HTML をもう一度入れてそのモジュールを読み込む
   test("test_normal_when_library_origin_added", async () => {
     // 準備: 別の配信元
     const requested: string[] = [];
@@ -599,7 +599,7 @@ suite("プレビューを描き直す", () => {
     }
   });
 
-  // mdmark.colorTheme を変えると設定ファイルの colorTheme を上書きして描き直し、空に戻すと設定ファイルのテーマで描く
+  // mdmark.colorTheme を変えると設定ファイルの colorTheme を上書きして再描画し、空に戻すと設定ファイルのテーマで描く
   test("test_normal_when_color_theme_changed", async () => {
     // 準備
     const config = "colorTheme: theme-paper\n";

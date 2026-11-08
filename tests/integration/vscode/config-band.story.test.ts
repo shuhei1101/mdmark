@@ -6,7 +6,7 @@ const holder = createBrowserHolder();
 beforeAll(holder.launch);
 afterAll(holder.close);
 
-// 帯の幅が 30rem 以上のとき、題と本文の右にボタンを横に並べる
+// 帯の幅が 30rem 以上のとき、タイトルと本文の右にボタンを横に並べる
 const WIDE_VIEWPORT = { width: 800, height: 360 };
 
 /** 本文とボタンの位置 */
@@ -32,7 +32,7 @@ async function readLayout(page: Awaited<ReturnType<typeof holder.openStory>>) {
   });
 }
 
-// 設定ファイルを読めない行を知らせ、「設定ファイルを開く」を横に並べる（Default）
+// 設定ファイルを読み込めない行を通知し、「設定ファイルを開く」を横に並べる（Default）
 test("test_default", async () => {
   // 準備
   const page = await holder.openStory("vscode-configband--default");
@@ -45,7 +45,7 @@ test("test_default", async () => {
     "設定ファイルを読み込めません",
   );
   await expect(band.locator("p").innerText()).resolves.toBe(
-    "mdmark.config.yaml の 4 行目を YAML として読めないため、この設定ファイルを重ねずに表示しています。",
+    "mdmark.config.yaml の 4 行目を YAML として読み込めないため、この設定ファイルを重ねずに表示しています。",
   );
   await expect(band.locator("p code").allInnerTexts()).resolves.toEqual([
     "mdmark.config.yaml",
@@ -94,7 +94,7 @@ test("test_narrow_long_path", async () => {
   // 検証
   const band = page.locator(".mdmark-config-band");
   await expect(band.locator("p").innerText()).resolves.toBe(
-    "docs/settings/mdmark/mdmark.config.workspace-shared.yaml の 12 行目を YAML として読めないため、この設定ファイルを重ねずに表示しています。",
+    "docs/settings/mdmark/mdmark.config.workspace-shared.yaml の 12 行目を YAML として読み込めないため、この設定ファイルを重ねずに表示しています。",
   );
   const layout = await readLayout(page);
   expect(layout.buttonBelow).toBe(true);
@@ -102,17 +102,17 @@ test("test_narrow_long_path", async () => {
   await expect(pageOverflows(page)).resolves.toBe(false);
 });
 
-// 端末の設定を読めない行を、ホームを ~ にしたパスで知らせる（SettingsUnreadable）
+// 端末の設定を読み込めない行を、ホームを ~ にしたパスで通知する（SettingsUnreadable）
 test("test_settings_unreadable", async () => {
   // 準備・実行
   const page = await holder.openStory("vscode-configband--settings-unreadable");
   // 検証
   await expect(page.locator(".mdmark-config-band p").innerText()).resolves.toBe(
-    "~/.config/mdmark/settings.yaml の 3 行目を YAML として読めないため、この設定ファイルを重ねずに表示しています。",
+    "~/.config/mdmark/settings.yaml の 3 行目を YAML として読み込めないため、この設定ファイルを重ねずに表示しています。",
   );
 });
 
-// 近いフォルダの設定を読めない行を、ワークスペースからのパスで知らせる（NestedConfigUnreadable）
+// 近いフォルダの設定を読み込めない行を、ワークスペースからのパスで通知する（NestedConfigUnreadable）
 test("test_nested_config_unreadable", async () => {
   // 準備・実行
   const page = await holder.openStory(
@@ -120,18 +120,18 @@ test("test_nested_config_unreadable", async () => {
   );
   // 検証
   await expect(page.locator(".mdmark-config-band p").innerText()).resolves.toBe(
-    "docs/mdmark.config.yaml の 7 行目を YAML として読めないため、この設定ファイルを重ねずに表示しています。",
+    "docs/mdmark.config.yaml の 7 行目を YAML として読み込めないため、この設定ファイルを重ねずに表示しています。",
   );
 });
 
-// 端末の設定が形に合わないキーを知らせ、行を出さない（SettingsInvalid）
+// 端末の設定が構造に合わないキーを通知し、行を出さない（SettingsInvalid）
 test("test_settings_invalid", async () => {
   // 準備・実行
   const page = await holder.openStory("vscode-configband--settings-invalid");
   // 検証
   const band = page.locator(".mdmark-config-band");
   await expect(band.locator("p").innerText()).resolves.toBe(
-    "~/.config/mdmark/settings.yaml の features.callout が設定の形に合わないため、この設定ファイルを重ねずに表示しています。",
+    "~/.config/mdmark/settings.yaml の features.callout が設定の構造に合わないため、この設定ファイルを重ねずに表示しています。",
   );
   await expect(band.locator("p code").allInnerTexts()).resolves.toEqual([
     "~/.config/mdmark/settings.yaml",

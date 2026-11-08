@@ -6,7 +6,7 @@ const holder = createBrowserHolder();
 beforeAll(holder.launch);
 afterAll(holder.close);
 
-/** 行の種類ごとの地の色と、行頭の印 */
+/** 行の種類ごとの地の色と、行頭のマーカー */
 async function readLines(id: string) {
   const page = await holder.openStory(id);
   const info = await page.evaluate(() => {
@@ -44,7 +44,7 @@ async function readLines(id: string) {
   return { page, info };
 }
 
-// 削除した行は赤、追加した行は緑で、対の行は変わった語だけを濃い色にする（Normal）
+// 削除した行は赤、追加した行は緑で、対の行は変わった単語だけを濃い色にする（Normal）
 test("test_normal", async () => {
   // 準備・実行
   const { page, info } = await readLines("parts-difflines--normal");
@@ -63,7 +63,7 @@ test("test_normal", async () => {
   await expect(pageOverflows(page)).resolves.toBe(false);
 });
 
-// 語の区切りを持たないブラウザの結果は、1 文字ずつ比べた語が濃い色になる（CharByChar）
+// 単語の区切りを持たないブラウザの結果は、1 文字ずつ比べた単語が濃い色になる（CharByChar）
 test("test_char_by_char", async () => {
   // 準備・実行
   const { info } = await readLines("parts-difflines--char-by-char");

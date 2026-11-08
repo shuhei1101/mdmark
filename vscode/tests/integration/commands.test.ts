@@ -37,7 +37,7 @@ type Contributes = {
   }>;
 };
 
-/** 拡張機能が足すもの */
+/** 拡張機能が追加するもの */
 function contributes(): Contributes {
   const extension = vscode.extensions.getExtension(EXTENSION_ID);
   assert.ok(extension, "拡張機能が見つからない");
@@ -95,7 +95,7 @@ suite("コマンドと通知の入口", () => {
     ]);
   });
 
-  // 設定を開くボタン: プレビューがアクティブなときだけ出る歯車で、表示名がツールチップと読み上げの名前になる
+  // 設定を開くボタン: プレビューがアクティブなときだけ出る歯車で、表示名がツールチップとスクリーンリーダー向けの名前になる
   test("test_normal_when_settings_button", () => {
     const { menus, commands } = contributes();
     const button = (menus["editor/title"] ?? []).find(

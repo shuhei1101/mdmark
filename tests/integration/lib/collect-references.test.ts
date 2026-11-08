@@ -28,23 +28,23 @@ const INDEX: MdmarkIndex = {
       aliases: ["公開関数"],
       related: ["arch"],
     },
-    { id: "guide", path: "使い方/guide.md", title: "使い方" },
+    { id: "guide", path: "使い方/guide.md", title: "使用方法" },
   ],
   terms: [
     {
       id: "ws",
       term: "ワークスペース",
       aliases: ["WS"],
-      meaning: "話し合いの記録を置くフォルダ",
+      meaning: "話し合いの記録を配置するフォルダ",
     },
   ],
 };
 
 /** `INDEX` の文書の本文（`arch` に `api` の別名、`guide` に `arch` へのリンク） */
 const DOCUMENTS: Record<string, string> = {
-  "設計/arch.md": "# アーキテクチャ\n\n公開関数を使う。",
+  "設計/arch.md": "# アーキテクチャ\n\n公開関数を使用する。",
   "api.md": "# API\n",
-  "使い方/guide.md": "# 使い方\n\n[構成](../設計/arch.md)",
+  "使い方/guide.md": "# 使用方法\n\n[構成](../設計/arch.md)",
 };
 
 // related・本文のリンク・文書の別名から被参照を作る（正常系）
@@ -78,9 +78,9 @@ test("test_normal_when_alias_notation_differs", async () => {
   };
   // どちらの本文も `api` を指すリンクを持たず、別名の出現の表記だけが違う
   const documents = {
-    "設計/arch.md": "# アーキテクチャ\n\nmcp を使う。",
+    "設計/arch.md": "# アーキテクチャ\n\nmcp を使用する。",
     "api.md": "# API\n",
-    "使い方/guide.md": "# 使い方\n\nＭＣＰ を使う。",
+    "使い方/guide.md": "# 使用方法\n\nＭＣＰ を使用する。",
   };
   // 実行
   const references = collectReferences({ index, documents });
@@ -96,7 +96,7 @@ test("test_normal_when_glossary_table", async () => {
     schema: 2,
     docs: [
       { id: "glossary", path: "用語集.md", title: "用語集" },
-      { id: "guide", path: "使い方/guide.md", title: "使い方" },
+      { id: "guide", path: "使い方/guide.md", title: "使用方法" },
     ],
   };
   const documents = {
@@ -105,21 +105,21 @@ test("test_normal_when_glossary_table", async () => {
       "",
       "| 用語 | 別名 | 意味 | やめた言い方 |",
       "| --- | --- | --- | --- |",
-      "| 印 | マーク、オン・オフの印 | HTML コメントで書く指定 | しるし |",
+      "| マーカー | マーク、オン・オフのマーカー | HTML コメントで記載する指定 | しるし |",
       "",
       "<!-- /glossary -->",
       "",
     ].join("\n"),
-    "使い方/guide.md": "# 使い方\n",
+    "使い方/guide.md": "# 使用方法\n",
   };
   // 実行
   const references = collectReferences({ index, documents });
   // 検証
   expect(references.glossary).toEqual([
     {
-      term: "印",
-      aliases: ["マーク", "オン・オフの印"],
-      meaning: "HTML コメントで書く指定",
+      term: "マーカー",
+      aliases: ["マーク", "オン・オフのマーカー"],
+      meaning: "HTML コメントで記載する指定",
       docId: "glossary",
       avoid: ["しるし"],
     },
@@ -144,14 +144,14 @@ test("test_normal_when_invalid_index", async () => {
   expect(Object.keys(references.backlinks)).not.toContain("broken");
 });
 
-// 符号化して書いたリンクと ?・# を持つリンクも、同じ文書への参照にする（正常系）
+// 符号化して記載したリンクと ?・# を持つリンクも、同じ文書への参照にする（正常系）
 test("test_normal_when_encoded_link", async () => {
   // 準備
   const { collectReferences } = await loadBuilt();
   const documents = {
     ...DOCUMENTS,
     "使い方/guide.md":
-      "# 使い方\n\n[構成](../%E8%A8%AD%E8%A8%88/arch.md?v=1#top)",
+      "# 使用方法\n\n[構成](../%E8%A8%AD%E8%A8%88/arch.md?v=1#top)",
   };
   // 実行
   const references = collectReferences({ index: INDEX, documents });

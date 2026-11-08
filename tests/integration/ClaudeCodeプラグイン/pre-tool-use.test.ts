@@ -4,14 +4,14 @@ import { builtPluginDir, runPreToolUseHook } from "../plugin.ts";
 
 const createTempDir = useTempDirs();
 
-/** Claude Code が標準入力に渡す呼び出しの JSON。`check` に設定のパスと、エージェントが書いた `project_dir` を入れる */
+/** Claude Code が標準入力に指定する呼び出しの JSON。`check` に設定のパスと、エージェントが記載した `project_dir` を入れる */
 const INPUT = JSON.stringify({
   hook_event_name: "PreToolUse",
   tool_name: "mcp__plugin_mdmark_mdmark__check",
   tool_input: { config: "docs/mdmark.config.yaml", project_dir: "/tmp/other" },
 });
 
-// 引数の project_dir を CLAUDE_PROJECT_DIR の値に置き換えて返す（正常系）
+// 引数の project_dir を CLAUDE_PROJECT_DIR の値に置き換えて返却する（正常系）
 test("test_normal", async () => {
   // 準備
   const projectDir = await createTempDir();

@@ -17,12 +17,12 @@ function marker(page: Page): Locator {
   return page.locator("button.mdmark-comment-marker");
 }
 
-/** マーカーの線の種類を返す */
+/** マーカーの線の種類を返却する */
 function borderStyle(page: Page): Promise<string> {
   return marker(page).evaluate((el) => getComputedStyle(el).borderTopStyle);
 }
 
-// 箇所が 1 つの行は、数を出さず、選んだ文字を読み上げ名に入れたボタンにする（Default）
+// 箇所が 1 つの行は、数を出さず、選んだ文字をスクリーンリーダー向けの名前に入れたボタンにする（Default）
 test("test_default", async () => {
   // 準備・実行
   const page = await open("default");
@@ -44,7 +44,7 @@ test("test_default", async () => {
   await expect(borderStyle(page)).resolves.toBe("solid");
 });
 
-// 同じ行の 2 か所は、アイコンの後ろに数を出し、読み上げ名に件数を入れる（Merged）
+// 同じ行の 2 か所は、アイコンの後ろに数を出し、スクリーンリーダー向けの名前に件数を入れる（Merged）
 test("test_merged", async () => {
   // 準備・実行
   const page = await open("merged");
@@ -76,7 +76,7 @@ test("test_current", async () => {
   expect(colors.color).not.toBe(defaultColors.color);
 });
 
-// 閉じた中の箇所は、data-closed に種類を入れ、線を破線にし、読み上げ名に閉じた中であることを入れる
+// 閉じた中の箇所は、data-closed に種類を入れ、線を破線にし、スクリーンリーダー向けの名前に閉じた中であることを入れる
 test.each([
   [
     "test_closed_section",

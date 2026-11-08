@@ -5,7 +5,7 @@ import { findFreePort, useMcpServers } from "../plugin.ts";
 
 const { startServe, runServeToExit, connectUrl } = useMcpServers();
 
-// 空きポートで待ち受ける URL を出し、instructions と 6 つのツールを返す（正常系）
+// 空きポートで待ち受ける URL を出し、instructions と 6 つのツールを返却する（正常系）
 test("test_normal", async () => {
   // 準備・実行
   const port = await findFreePort();
@@ -60,7 +60,7 @@ test("test_normal_when_stop", async () => {
   );
 });
 
-// ポートを別のプロセスが使っているとき、対処を出して終わる（異常系（ポートが使われている・終了コード 1））
+// ポートを別のプロセスが使用しているとき、対処を出して終わる（異常系（ポートが使用されている・終了コード 1））
 test("test_error_when_port_in_use", async () => {
   // 準備
   const port = await findFreePort();
@@ -84,7 +84,7 @@ test("test_error_when_port_in_use", async () => {
   }
 });
 
-// MDMARK_PORT が整数でないとき、待ち受けずに終わる（異常系（MDMARK_PORT が使えない値・終了コード 1））
+// MDMARK_PORT が整数でないとき、待ち受けずに終わる（異常系（MDMARK_PORT が使用できない値・終了コード 1））
 test("test_error_when_port_invalid", async () => {
   // 実行
   const result = await runServeToExit({ env: { MDMARK_PORT: "abc" } });

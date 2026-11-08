@@ -35,7 +35,7 @@ async function createFixture(): Promise<{
   return { env: { MDMARK_CONFIG: join(settingsDir, "settings.yaml") }, work };
 }
 
-// 最も近い設定ファイルのフォルダへコピーし、theme に記載する値を返す（正常系）
+// 最も近い設定ファイルのフォルダへコピーし、theme に記載する値を返却する（正常系）
 test("test_normal", async () => {
   // 準備
   const { env, work } = await createFixture();
@@ -71,7 +71,7 @@ test("test_normal_when_overwriting", async () => {
   expect(JSON.parse(result.texts[0] ?? "").replaced).toBe(true);
 });
 
-// 渡したフォルダへ配置し、theme を上の設定ファイルのフォルダからの相対パスにする（正常系（dir を渡す））
+// 指定したフォルダへ配置し、theme を上の設定ファイルのフォルダからの相対パスにする（正常系（dir を指定する））
 test("test_normal_when_dir_given", async () => {
   // 準備
   const { env, work } = await createFixture();
@@ -105,7 +105,7 @@ test("test_error_when_css_exists", async () => {
   expect(await readFile(join(work, "brand.css"), "utf8")).toBe(OTHER_CSS);
 });
 
-// dir を省き、上に設定ファイルが無ければ、何も書かずにエラーにする（異常系（配置先の設定ファイルが無い））
+// dir を省き、上に設定ファイルが無ければ、何も書き込まずにエラーにする（異常系（配置先の設定ファイルが無い））
 test("test_error_when_config_missing", async () => {
   // 準備
   const { env } = await createFixture();
@@ -120,7 +120,7 @@ test("test_error_when_config_missing", async () => {
   expect(existsSync(join(empty, "brand.css"))).toBe(false);
 });
 
-// 索引に無い名前は、何も書かずにエラーにする（異常系（テンプレートが無い））
+// 索引に無い名前は、何も書き込まずにエラーにする（異常系（テンプレートが無い））
 test("test_error_when_template_missing", async () => {
   // 準備
   const { env, work } = await createFixture();

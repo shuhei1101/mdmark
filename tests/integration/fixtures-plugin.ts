@@ -22,7 +22,7 @@ const DEFINITION_SOURCE = `export function draw(slot, value) {
 }
 `;
 
-// 色分けのライブラリ（`@highlightjs/cdn-assets@11.12.0` の `es/`）を配る経路の頭。`/fixtures/highlightjs/{名前}/es/{ファイル}` で引く。名前ごとに別の URL にして、ページの中のモジュールの読み込み済みを分ける
+// 色分けのライブラリ（`@highlightjs/cdn-assets@11.12.0` の `es/`）を配る経路の頭。`/fixtures/highlightjs/{名前}/es/{ファイル}` で参照する。名前ごとに別の URL にして、ページの中のモジュールの読み込み済みを分ける
 const HIGHLIGHT_PREFIX = "/fixtures/highlightjs/";
 // 色分けのライブラリを配るとき、言語のモジュール `yaml.min.js` だけを 404 にする名前
 const NO_YAML_NAME = "no-yaml";
@@ -31,7 +31,7 @@ const HIGHLIGHT_ES_ROOT = fileURLToPath(
   new URL("../../node_modules/@highlightjs/cdn-assets/es/", import.meta.url),
 );
 
-// mermaid（`mermaid@12.3.0` の `dist/`）を配る経路の頭。`/fixtures/mermaid/{名前}/{ファイル}` で引く。名前ごとに別の URL にして、ページの中のモジュールの読み込み済みを分ける
+// mermaid（`mermaid@12.3.0` の `dist/`）を配る経路の頭。`/fixtures/mermaid/{名前}/{ファイル}` で参照する。名前ごとに別の URL にして、ページの中のモジュールの読み込み済みを分ける
 const MERMAID_PREFIX = "/fixtures/mermaid/";
 // mermaid の `dist/` のある場所
 const MERMAID_DIST_ROOT = fileURLToPath(
@@ -43,20 +43,20 @@ const BABEL_UMD_PATH = fileURLToPath(
   new URL("../../node_modules/@babel/standalone/babel.min.js", import.meta.url),
 );
 
-// ビルドした配布物を写して配る経路の頭。`/fixtures/dist/{名前}{配布物のファイルの絶対パス}` で引く
+// ビルドした配布物をコピーして配る経路の頭。`/fixtures/dist/{名前}{配布物のファイルの絶対パス}` で参照する
 const DIST_COPY_PREFIX = "/fixtures/dist/";
-// 配布物を写して配るときに、404 を返す部品のモジュール（名前が `blocked` のとき）
+// 配布物をコピーして配るときに、404 を返却する部品のモジュール（名前が `blocked` のとき）
 const BLOCKED_NAME = "blocked";
 const BLOCKED_FILES = ["view.js", "comments.js"];
-// 配布物を置く一時フォルダの頭（`global-setup.ts` が作る）
+// 配布物を配置する一時フォルダの頭（`global-setup.ts` が作る）
 const BUILT_ROOT_PREFIX = "mdmark-integration-dist-";
-// ファイルの拡張子から Content-Type を引く表
+// ファイルの拡張子から Content-Type を参照する表
 const CONTENT_TYPES: Record<string, string> = {
   ".js": "text/javascript; charset=utf-8",
   ".css": "text/css; charset=utf-8",
 };
 
-/** 結合テストの開発サーバーに、色分けのライブラリを `/fixtures/highlightjs/{名前}/es/` で配る経路（名前が `no-yaml` のときは `languages/yaml.min.js` を 404 にする）と、404 を返す `/fixtures/missing/` を足す。ほかに、外部ライブラリの代役 `/fixtures/test-lib.js`・拡張の代役 `/fixtures/greet.js`・部品の定義を受ける拡張の代役 `/fixtures/definition.js` と、404 を返す `/fixtures/missing.js` を足す。mermaid の `dist/` は `/fixtures/mermaid/{名前}/` で配る。範囲の `ts`・`js` の変換のライブラリは `/fixtures/babel.mjs` で配る（クエリが違えば別のモジュールとして読ませられる）。ビルドした配布物は `/fixtures/dist/{名前}{絶対パス}` でも配り、名前ごとに別の URL にして、ページの中のモジュールの読み込み済みを分ける（名前が `blocked` のときは部品のモジュール `view.js`・`comments.js` を 404 にする） */
+/** 結合テストの開発サーバーに、色分けのライブラリを `/fixtures/highlightjs/{名前}/es/` で配る経路（名前が `no-yaml` のときは `languages/yaml.min.js` を 404 にする）と、404 を返却する `/fixtures/missing/` を追加する。ほかに、外部ライブラリの代役 `/fixtures/test-lib.js`・拡張の代役 `/fixtures/greet.js`・部品の定義を受ける拡張の代役 `/fixtures/definition.js` と、404 を返却する `/fixtures/missing.js` を追加する。mermaid の `dist/` は `/fixtures/mermaid/{名前}/` で配る。範囲の `ts`・`js` の変換のライブラリは `/fixtures/babel.mjs` で配る（クエリが違えば別のモジュールとして読み込ませられる）。ビルドした配布物は `/fixtures/dist/{名前}{絶対パス}` でも配り、名前ごとに別の URL にして、ページの中のモジュールの読み込み済みを分ける（名前が `blocked` のときは部品のモジュール `view.js`・`comments.js` を 404 にする） */
 export function fixturesPlugin(): Plugin {
   return {
     name: "mdmark-fixtures",
@@ -136,7 +136,7 @@ export function fixturesPlugin(): Plugin {
               "Content-Type",
               "text/javascript; charset=utf-8",
             );
-            // UMD が `module.exports` に置くように `module` と `exports` を用意し、既定のエクスポートにする
+            // UMD が `module.exports` に配置するように `module` と `exports` を用意し、既定のエクスポートにする
             response.end(
               `const module = { exports: {} };\nconst exports = module.exports;\n${body}\nexport default module.exports;\n`,
             );

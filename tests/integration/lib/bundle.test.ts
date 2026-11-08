@@ -20,7 +20,7 @@ import {
 const createTempDir = useTempDirs();
 const browser = useBrowser(createTempDir);
 
-// build の設定の書き方: 行を足して使う
+// build の設定の記載方法: 行を追加して使用する
 const BUILD_BASE = [
   '  include: ["**/*.md"]',
   '  exclude: ["dist/**"]',
@@ -41,7 +41,7 @@ function createConfig(buildLines: string[]): string {
   ].join("\n");
 }
 
-/** 見本の文書群を作る: 入口 `README.md`・用語集の表を持つ `用語集.md`・外部ライブラリの印と画像を持つ `使い方/guide.md` と、3 つを載せた索引 */
+/** 見本の文書群を作る: 入口 `README.md`・用語集の表を持つ `用語集.md`・外部ライブラリのマーカーと画像を持つ `使い方/guide.md` と、3 つを記載した索引 */
 async function createSampleDir(options?: {
   buildLines?: string[];
   readme?: string;
@@ -60,12 +60,12 @@ async function createSampleDir(options?: {
       "    title: 用語集",
       "  - id: guide",
       "    path: 使い方/guide.md",
-      "    title: 使い方",
+      "    title: 使用方法",
       "",
     ].join("\n"),
     "README.md":
       options?.readme ??
-      "# 入口\n\n[使い方](使い方/guide.md) を読む。\n\n印を書く。\n",
+      "# 入口\n\n[使用方法](使い方/guide.md) を読み込む。\n\nマーカーを記載する。\n",
     "用語集.md": [
       "# 用語集",
       "",
@@ -73,20 +73,20 @@ async function createSampleDir(options?: {
       "",
       "| 用語 | 意味 |",
       "| --- | --- |",
-      "| 印 | HTML コメントで書く指定 |",
+      "| マーカー | HTML コメントで記載する指定 |",
       "",
       "<!-- /glossary -->",
       "",
     ].join("\n"),
     "使い方/guide.md":
-      "# 使い方\n\n<!-- test-lib: a -->\n\n![図](../img/a.png)\n\n[入口へ](../README.md)\n",
+      "# 使用方法\n\n<!-- test-lib: a -->\n\n![図](../img/a.png)\n\n[入口へ](../README.md)\n",
     "lib/test-lib.js": TEST_LIB_SOURCE,
     "img/a.png": PNG_BYTES,
   });
   return dir;
 }
 
-// 3 つの文書を、文書をまたぐ用語と被参照が効く 1 枚にまとめる（正常系）
+// 3 つの文書を、文書をまたぐ用語と被参照が有効になる 1 枚にまとめる（正常系）
 test("test_normal", async () => {
   // 準備
   const dir = await createSampleDir();
@@ -110,12 +110,12 @@ test("test_normal", async () => {
   ).resolves.toBe(3);
   await expect(
     page.locator("article .mdmark-term").first().textContent(),
-  ).resolves.toBe("印");
+  ).resolves.toBe("マーカー");
   await page.locator('article p a[href="#/使い方/guide.md"]').click();
   await page.waitForFunction(() =>
     document
       .querySelector("article.mdmark h1")
-      ?.textContent?.includes("使い方"),
+      ?.textContent?.includes("使用方法"),
   );
   await page.waitForFunction(
     () =>
@@ -134,7 +134,7 @@ test("test_normal", async () => {
   await page.close();
 });
 
-// 外した文書へのリンクを書いたまま残し、警告に出す（正常系（1 枚に含まれない文書へのリンクがある））
+// 除外した文書へのリンクを記載したまま残し、警告に出す（正常系（1 枚に含まれない文書へのリンクがある））
 test("test_normal_when_link_outside_bundle", async () => {
   // 準備
   const dir = await createSampleDir({
@@ -169,7 +169,7 @@ test("test_normal_when_link_outside_bundle", async () => {
   await page.close();
 });
 
-// 設定に build が無いと、書き方を示して終わる（異常系（build が無い））
+// 設定に build が無いと、記載方法を示して終わる（異常系（build が無い））
 test("test_error_when_build_missing", async () => {
   // 準備
   const dir = await createTempDir();
@@ -186,7 +186,7 @@ test("test_error_when_build_missing", async () => {
   expect(existsSync(join(dir, "dist", "docs.html"))).toBe(false);
 });
 
-// build.include がどの文書にも当たらないと、HTML を書かずに終わる（異常系（対象の文書が 0 件））
+// build.include がどの文書にも該当しないと、HTML を書き込まずに終わる（異常系（対象の文書が 0 件））
 test("test_error_when_no_documents", async () => {
   // 準備
   const dir = await createSampleDir({
@@ -201,7 +201,7 @@ test("test_error_when_no_documents", async () => {
   expect(existsSync(join(dir, "dist", "docs.html"))).toBe(false);
 });
 
-// build.out へ書けないと、パスと直し方を示して終わる（異常系（出力先へ書けない））
+// build.out へ記載できないと、パスと修正方法を示して終わる（異常系（出力先へ書き込めない））
 test("test_error_when_output_unwritable", async () => {
   // 準備
   const dir = await createSampleDir();
@@ -211,11 +211,11 @@ test("test_error_when_output_unwritable", async () => {
   // 検証
   expect(result.code).toBe(1);
   expect(result.stderr).toContain("dist/docs.html");
-  expect(result.stderr).toContain("確かめて");
+  expect(result.stderr).toContain("確認して");
   expect(await readFile(join(dir, "dist"), "utf8")).toBe("ファイル\n");
 });
 
-// 設定の aliases の YAML から作ったエイリアスを埋め、まとめた全ての文書で効かせる（正常系（エイリアスを読む））
+// 設定の aliases の YAML から作ったエイリアスを埋め、まとめた全ての文書で有効にしる（正常系（エイリアスを読み込む））
 test("test_normal_when_aliases", async () => {
   // 準備
   const dir = await createTempDir();
@@ -233,11 +233,12 @@ test("test_normal_when_aliases", async () => {
       "  out: dist/docs.html",
       "",
     ].join("\n"),
-    "a.md": "# A\n\nテストを流す、開発サーバーを使う。\n\n[B へ](b.md)\n",
-    "b.md": "# B\n\nここでもテストを流す、開発サーバーを使う。\n",
+    "a.md":
+      "# A\n\nテストを実行する、開発サーバーを使用する。\n\n[B へ](b.md)\n",
+    "b.md": "# B\n\nここでもテストを実行する、開発サーバーを使用する。\n",
     "aliases/commands.yaml": [
       "id: run-test",
-      "name: テストを流す",
+      "name: テストを実行する",
       "command: npm test",
       "",
     ].join("\n"),
@@ -262,7 +263,7 @@ test("test_normal_when_aliases", async () => {
   await page.waitForSelector("article .mdmark-term");
   await expect(
     page.locator("article .mdmark-term").allTextContents(),
-  ).resolves.toEqual(["テストを流す"]);
+  ).resolves.toEqual(["テストを実行する"]);
   await expect(
     page.locator("article .mdmark-term-tip code").textContent(),
   ).resolves.toBe("npm test");
@@ -274,11 +275,11 @@ test("test_normal_when_aliases", async () => {
   await page.waitForFunction(
     () =>
       document.querySelector("article .mdmark-term")?.textContent ===
-      "テストを流す",
+      "テストを実行する",
   );
   await expect(
     page.locator("article .mdmark-term").allTextContents(),
-  ).resolves.toEqual(["テストを流す"]);
+  ).resolves.toEqual(["テストを実行する"]);
   await expect(
     page.locator("article .mdmark-term-tip code").textContent(),
   ).resolves.toBe("npm test");
@@ -286,7 +287,7 @@ test("test_normal_when_aliases", async () => {
   await page.close();
 });
 
-// 設定の colorTheme を埋める設定に写し、まとめた全ての文書を選んだテーマで描く（正常系（テーマを選ぶ設定））
+// 設定の colorTheme を埋める設定にコピーし、まとめた全ての文書を選んだテーマで描く（正常系（テーマを選ぶ設定））
 test("test_normal_when_color_theme", async () => {
   // 準備
   const dir = await createTempDir();
@@ -326,7 +327,7 @@ test("test_normal_when_color_theme", async () => {
   await page.close();
 });
 
-// page のマーカーを持つ文書と持たない文書を行き来すると、開いた文書の明暗とテーマで描き直す（正常系（文書ごとのページの設定））
+// page のマーカーを持つ文書と持たない文書を行き来すると、開いた文書の明暗とテーマで再描画する（正常系（文書ごとのページの設定））
 test("test_normal_when_page_settings_per_document", async () => {
   // 準備
   const dir = await createTempDir();
@@ -402,7 +403,7 @@ async function createMediaDir(): Promise<string> {
       "",
       "![操作](media/demo.mp4)",
       "",
-      "続きは [B](sub/b.md) を読む。",
+      "続きは [B](sub/b.md) を読み込む。",
       "",
     ].join("\n"),
     "sub/b.md": [
@@ -410,7 +411,7 @@ async function createMediaDir(): Promise<string> {
       "",
       "![グラフ](../images/chart.png)",
       "",
-      "![読み上げ](media/voice.mp3)",
+      "![スクリーンリーダー](media/voice.mp3)",
       "",
     ].join("\n"),
     "images/chart.png": PNG_BYTES,
@@ -464,7 +465,7 @@ test("test_normal_when_media_embedded", async () => {
   await page.close();
 });
 
-// 動画・音声のコピー先の _files/ へ書けないと、HTML を書かずにパスと直し方を示して終わる（異常系（動画・音声のコピー先へ書けない））
+// 動画・音声のコピー先の _files/ へ書き込めないと、HTML を書き込まずにパスと修正方法を示して終わる（異常系（動画・音声のコピー先へ書き込めない））
 test("test_error_when_media_copy_unwritable", async () => {
   // 準備
   const dir = await createMediaDir();
@@ -474,14 +475,14 @@ test("test_error_when_media_copy_unwritable", async () => {
   // 検証
   expect(result.code).toBe(1);
   expect(result.stderr).toContain("dist/docs_files");
-  expect(result.stderr).toContain("確かめて");
+  expect(result.stderr).toContain("確認して");
   expect(await readFile(join(dir, "dist", "docs_files"), "utf8")).toBe(
     "ファイル\n",
   );
   expect(existsSync(join(dir, "dist", "docs.html"))).toBe(false);
 });
 
-// 全ての文書が使うモジュールを 1 つのスクリプトに束ね、blob: と動的 import を許さない環境でも文書を移って描く（正常系（blob: と動的 import を許さない環境で開く））
+// 全ての文書が使用するモジュールを 1 つのスクリプトにまとめ、blob: と動的 import を許さない環境でも文書を移って描く（正常系（blob: と動的 import を許さない環境で開く））
 test("test_normal_when_blob_and_dynamic_import_blocked", async () => {
   // 準備
   const dir = await createTempDir();
@@ -499,12 +500,12 @@ test("test_normal_when_blob_and_dynamic_import_blocked", async () => {
       "",
     ].join("\n"),
     "extensions/greet.js": GREET_WITH_IMPORT_SOURCE,
-    "extensions/greet-text.js": 'export const TEXT = "読んだ";\n',
+    "extensions/greet-text.js": 'export const TEXT = "読み込んだ";\n',
     "lib/test-lib.js": TEST_LIB_SOURCE,
     "README.md": [
       "# 入口",
       "",
-      "[ガイド](guide.md) を読む。",
+      "[ガイド](guide.md) を読み込む。",
       "",
       "<!-- greet: 世界 -->",
       "",
@@ -533,7 +534,7 @@ test("test_normal_when_blob_and_dynamic_import_blocked", async () => {
   await page.waitForFunction(
     () =>
       document.querySelector("article [data-mdmark-slot]")?.textContent ===
-      "greet:読んだ:世界",
+      "greet:読み込んだ:世界",
   );
   await page.waitForSelector('article code.language-ts span[class^="hljs-"]');
   await page.locator('article p a[href="#/guide.md"]').click();
@@ -549,7 +550,7 @@ test("test_normal_when_blob_and_dynamic_import_blocked", async () => {
   await opened.close();
 });
 
-// まとめる文書の取り込み先と束ねていない名前のアイコンの形を埋め、外へ要求せずに描く（正常系（取り込みとアイコンを埋める））
+// まとめる文書の取り込み先とまとめていない名前のアイコンの形状を埋め、外へ要求せずに描く（正常系（取り込みとアイコンを埋める））
 test("test_normal_when_includes_and_icons", async () => {
   // 準備
   const dir = await createTempDir();
@@ -563,14 +564,14 @@ test("test_normal_when_includes_and_icons", async () => {
     "docs/a.md": [
       "# A",
       "",
-      "<!-- include: b.md#使い方 -->",
+      "<!-- include: b.md#使用方法 -->",
       "",
       "<!-- include: ../共通/手順.md -->",
       "",
       "`icon:sailboat` の段落",
       "",
     ].join("\n"),
-    "docs/b.md": "# B\n\n## 使い方\n\n使い方の段落\n",
+    "docs/b.md": "# B\n\n## 使用方法\n\n使用方法の段落\n",
     "共通/手順.md": "手順の段落\n",
   });
   // 実行
@@ -585,7 +586,7 @@ test("test_normal_when_includes_and_icons", async () => {
   const includes = await page
     .locator("article .mdmark-include")
     .allTextContents();
-  expect(includes.some((text) => text.includes("使い方の段落"))).toBe(true);
+  expect(includes.some((text) => text.includes("使用方法の段落"))).toBe(true);
   expect(includes.some((text) => text.includes("手順の段落"))).toBe(true);
   const listed = await page
     .locator(".mdmark-bundle-side .mdmark-doc-list a")
@@ -594,7 +595,7 @@ test("test_normal_when_includes_and_icons", async () => {
   expect(externalRequests()).toEqual([]);
 });
 
-// 範囲の ts を変換して束ね、文書を移るときに範囲の destroy を呼ぶ（正常系（範囲のスクリプトと CSS））
+// 範囲の ts を変換してまとめ、文書を移るときに範囲の destroy を呼ぶ（正常系（範囲のスクリプトと CSS））
 test("test_normal_when_range_scripts", async () => {
   // 準備
   const dir = await createTempDir();
@@ -611,12 +612,12 @@ test("test_normal_when_range_scripts", async () => {
     "README.md": [
       "# 入口",
       "",
-      "[ガイド](guide.md) を読む。",
+      "[ガイド](guide.md) を読み込む。",
       "",
       "<!-- html -->",
       "",
       "```html",
-      '<div class="box">箱</div>',
+      '<div class="box">ノード</div>',
       "```",
       "",
       "```css",

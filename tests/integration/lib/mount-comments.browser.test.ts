@@ -42,14 +42,14 @@ function loadStylesheet(): Promise<void> {
   return stylesheetLoaded;
 }
 
-/** ビルドした JS を 1 度だけ読み込み、CSS と合わせて使える状態にする */
+/** ビルドした JS を 1 度だけ読み込み、CSS と合わせて使用できる状態にする */
 async function loadBuilt(): Promise<Built> {
   await loadStylesheet();
   built ??= import(/* @vite-ignore */ distUrl("index.js"));
   return built;
 }
 
-/** `導入の手順を整える。` の段落を持つ、コメントを付けられる範囲の要素と、その外の段落をページに置く */
+/** `導入の手順を整える。` の段落を持つ、コメントを付けられる範囲の要素と、その外の段落をページに配置する */
 function createHost(): { el: HTMLElement; outside: HTMLElement } {
   const el = document.createElement("div");
   el.innerHTML = "<p>導入の手順を整える。</p>";
@@ -60,7 +60,7 @@ function createHost(): { el: HTMLElement; outside: HTMLElement } {
   return { el, outside };
 }
 
-/** 読み書きの関数。`save` は受けた下書きに `id: "c1"` を足して返す */
+/** 読み込みと保存の関数。`save` は受けた下書きに `id: "c1"` を追加して返却する */
 function createStore(loaded: MdmarkComment[] = []) {
   return {
     load: vi.fn(async (_target: { docId: string }) => loaded),
@@ -73,7 +73,7 @@ function createStore(loaded: MdmarkComment[] = []) {
   };
 }
 
-/** コメントを付けられるようにし、後始末のために戻り値を控える */
+/** コメントを付けられるようにし、後始末のために戻り値を記録する */
 async function mountCommentsTracked(
   el: HTMLElement,
   store: ReturnType<typeof createStore>,
@@ -84,7 +84,7 @@ async function mountCommentsTracked(
   return handle;
 }
 
-/** 要素の中の最初の文字の節の、始まりと終わりの位置の間を選ぶ */
+/** 要素の中の最初の文字のセクションの、始まりと終わりの位置の間を選ぶ */
 function select(element: Element, start: number, end: number): void {
   const text = element.firstChild;
   if (!text) {
@@ -98,18 +98,18 @@ function select(element: Element, start: number, end: number): void {
   selection?.addRange(range);
 }
 
-/** 隠れていないコメントのボタンを返す（無ければ `undefined`） */
+/** 隠れていないコメントのボタンを返却する（無ければ `undefined`） */
 function visibleButton(): HTMLElement | undefined {
   const button = document.querySelector<HTMLElement>(".mdmark-comment-add");
   return button && !button.hidden ? button : undefined;
 }
 
-/** 少し待つ（出ないことを確かめる前に、選びの受け取りが動き終わるのを待つ） */
+/** 少し待つ（出ないことを確認する前に、選びの受け取りが動き終わるのを待つ） */
 function settle(): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, 100));
 }
 
-/** 段落の文字を選び、ボタンを押して入力欄を開き、本文を書く */
+/** 段落の文字を選び、ボタンを押して入力欄を開き、本文を記載する */
 async function openFormAndType(el: Element, body: string): Promise<Element> {
   const paragraph = el.querySelector("p");
   if (!paragraph) {
@@ -152,7 +152,7 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
-// 使う側の要素の中の文字を選んでコメントを保存し、印を付け、片付ける（正常系）
+// 利用側の要素の中の文字を選んでコメントを保存し、マーカーを付け、片付ける（正常系）
 test("test_normal", async () => {
   // 準備
   const { el, outside } = createHost();
@@ -201,7 +201,7 @@ test("test_normal", async () => {
   expect(visibleButton()).toBeUndefined();
 });
 
-// load が返したコメントの箇所に、呼んだ時点で印を付ける（正常系）
+// load が返却したコメントの箇所に、呼んだ時点でマーカーを付ける（正常系）
 test("test_normal_when_loaded", async () => {
   // 準備
   const { el } = createHost();
@@ -217,7 +217,7 @@ test("test_normal_when_loaded", async () => {
   expect(el.querySelectorAll("mark.mdmark-comment-mark")).toHaveLength(1);
 });
 
-// save が reject すると、入力欄と本文を残して知らせを出し、印を付けない（異常系）
+// save が reject すると、入力欄と本文を残して通知を出し、マーカーを付けない（異常系）
 test("test_error_when_save_rejected", async () => {
   // 準備
   const spy = vi.spyOn(console, "error").mockImplementation(() => {});
@@ -243,7 +243,7 @@ test("test_error_when_save_rejected", async () => {
   expect(loggedText(spy)).toContain("network");
 });
 
-// load が reject すると、印を付けずに解決し、新しいコメントは付けられる（異常系）
+// load が reject すると、マーカーを付けずに解決し、新しいコメントは付けられる（異常系）
 test("test_error_when_load_rejected", async () => {
   // 準備
   const spy = vi.spyOn(console, "error").mockImplementation(() => {});
@@ -290,7 +290,7 @@ test("test_error_when_arguments_invalid", async () => {
   expect(el.innerHTML).toBe(before);
 });
 
-// コメントの部品のモジュールを読めないと、el を書き換えずに reject する（異常系）
+// コメントの部品のモジュールを読み込めないと、el を書き換えずに reject する（異常系）
 test("test_error_when_module_unavailable", async () => {
   // 準備
   await loadStylesheet();

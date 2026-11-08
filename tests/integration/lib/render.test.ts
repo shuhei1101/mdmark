@@ -72,23 +72,23 @@ async function loadBuilt(): Promise<Built> {
   return await import(url);
 }
 
-/** ビルドした配布物を Node で読み込み、`render` をそのまま返す */
+/** ビルドした配布物を Node で読み込み、`render` をそのまま返却する */
 async function loadRawRender(): Promise<Built["render"]> {
   return (await loadBuilt()).render;
 }
 
-/** ビルドした配布物を Node で読み込み、元の行番号の属性を取り除いた出力を返す `render` を返す。元の行番号以外の出力を比べるテストが使う */
+/** ビルドした配布物を Node で読み込み、元の行番号の属性を取り除いた出力を返却する `render` を返却する。元の行番号以外の出力を比べるテストが使用する */
 async function loadRender(): Promise<Built["render"]> {
   const render = await loadRawRender();
   return (markdown, opts) => stripSourceLine(render(markdown, opts));
 }
 
-/** HTML 文字列の中の、指定した要素の開始タグを全て返す */
+/** HTML 文字列の中の、指定した要素の開始タグを全て返却する */
 function startTags(html: string, tagName: string): string[] {
   return html.match(new RegExp(`<${tagName}(?:\\s[^>]*)?>`, "g")) ?? [];
 }
 
-// DOM を使わずに Markdown を HTML 文字列にする（正常系）
+// DOM を使用せずに Markdown を HTML 文字列にする（正常系）
 test("test_normal", async () => {
   // 準備
   const render = await loadRender();
@@ -107,8 +107,8 @@ test("test_normal", async () => {
     "const a = 1;",
     "```",
     "",
-    // リンク 1 つだけの段落はカードにするため、文の中にリンクを置く
-    "詳しくは [リンク](https://example.com/page) を見る。",
+    // リンク 1 つだけの段落はカードにするため、文の中にリンクを配置する
+    "詳しくは [リンク](https://example.com/page) を確認する。",
     "",
   ].join("\n");
   // 実行
@@ -147,7 +147,7 @@ test("test_normal_when_gfm_extensions", async () => {
     "- [x] 済み",
     "- [ ] 未",
     "",
-    "~~消す~~",
+    "~~削除する~~",
     "",
     "www.example.com と example.com",
     "",
@@ -167,12 +167,12 @@ test("test_normal_when_gfm_extensions", async () => {
     '<li class="task-list-item">',
     '<li class="task-list-item">',
   ]);
-  expect(html).toContain("<del>消す</del>");
+  expect(html).toContain("<del>削除する</del>");
   expect(html).toContain('href="http://www.example.com"');
   expect(startTags(html, "a")).toHaveLength(1);
 });
 
-// 印のコメントと、文書に書いたスクリプト・style を出力から落とす（正常系）
+// マーカーのコメントと、文書に記載したスクリプト・style を出力から落とす（正常系）
 test("test_normal_when_marks_and_scripts", async () => {
   // 準備
   const render = await loadRender();
@@ -213,7 +213,7 @@ test("test_normal_when_marks_and_scripts", async () => {
   expect(html).toContain("<summary>");
 });
 
-// 外部ライブラリの印を、読み込み中の印の場所の要素に置き換える。モジュールは読まない（正常系）
+// 外部ライブラリのマーカーを、読み込み中のマーカーの場所の要素に置き換える。モジュールは読み込まない（正常系）
 test("test_normal_when_library_mark", async () => {
   // 準備
   const render = await loadRender();
@@ -232,7 +232,7 @@ test("test_normal_when_library_mark", async () => {
   expect(html).not.toContain("example.invalid");
 });
 
-// 記法の印と書き方を、スクリプト無しで中身を読める HTML にする（正常系）
+// 記法のマーカーと記載方法を、スクリプト無しで中身を読み込める HTML にする（正常系）
 test("test_normal_when_syntax", async () => {
   // 準備
   const render = await loadRender();
@@ -286,7 +286,7 @@ test("test_normal_when_syntax", async () => {
     "",
     "<!-- section: closed -->",
     "",
-    "節の本文",
+    "セクションの本文",
     "",
     "| 名前 | 値 |",
     "| --- | --- |",
@@ -342,7 +342,7 @@ test("test_normal_when_syntax", async () => {
   expect(html).toContain('<span class="mdmark-badge">v1</span>');
   expect(html).not.toContain("badge:");
   expect(html).toMatch(
-    /<div class="mdmark-section-body" id="section-補足" data-section="closed">[\s\S]*節の本文/,
+    /<div class="mdmark-section-body" id="section-補足" data-section="closed">[\s\S]*セクションの本文/,
   );
   expect(html).toMatch(
     /<tr class="mdmark-row-detail" data-row="1"[^>]*><td colspan="2">\s*<p>詳細の段落<\/p>/,
@@ -364,18 +364,18 @@ test("test_normal_when_syntax", async () => {
 test("test_normal_when_headings", async () => {
   // 準備
   const render = await loadRender();
-  const markdown = "# Hello, World!\n\n## 使い方\n\n## 使い方\n";
+  const markdown = "# Hello, World!\n\n## 使用方法\n\n## 使用方法\n";
   // 実行
   const html = render(markdown);
   // 検証
   const ids = [...html.matchAll(/<h[1-6][^>]*\sid="([^"]*)"/g)].map(
     (match) => match[1],
   );
-  expect(ids).toEqual(["hello-world", "使い方", "使い方-1"]);
+  expect(ids).toEqual(["hello-world", "使用方法", "使用方法-1"]);
   for (const [id, text] of [
     ["hello-world", "Hello, World!"],
-    ["使い方", "使い方"],
-    ["使い方-1", "使い方"],
+    ["使用方法", "使用方法"],
+    ["使用方法-1", "使用方法"],
   ]) {
     expect(html).toContain(
       `<a class="mdmark-anchor" href="#${id}" aria-label="「${text}」へのリンク">`,
@@ -383,7 +383,7 @@ test("test_normal_when_headings", async () => {
   }
 });
 
-// オフの記法は印を取り除き、書いた Markdown を普通の Markdown として描く（正常系）
+// オフの記法はマーカーを取り除き、記載した Markdown を普通の Markdown として描く（正常系）
 test("test_normal_when_syntax_features_disabled", async () => {
   // 準備
   const render = await loadRender();
@@ -401,7 +401,7 @@ test("test_normal_when_syntax_features_disabled", async () => {
     "> [!WARNING]",
     "> 引用",
     "",
-    "## 使い方",
+    "## 使用方法",
     "",
   ].join("\n");
   // 実行
@@ -411,12 +411,12 @@ test("test_normal_when_syntax_features_disabled", async () => {
   expect(html).not.toContain("mdmark-table");
   expect(html).toContain("<blockquote>");
   expect(html).not.toContain("markdown-alert");
-  expect(html).toMatch(/<h2[^>]*\sid="使い方"/);
+  expect(html).toMatch(/<h2[^>]*\sid="使用方法"/);
   expect(html).not.toContain("mdmark-anchor");
   expect(html).not.toContain("<!--");
 });
 
-// 読めない指定の箇所に書き方の警告を置き、読めた指定で本文を描く（正常系）
+// 読み込めない指定の箇所に記載の警告を配置し、読み込めた指定で本文を描く（正常系）
 test("test_normal_when_syntax_errors", async () => {
   // 準備
   const render = await loadRender();
@@ -463,13 +463,13 @@ test("test_normal_when_syntax_errors", async () => {
     html.match(/<div class="mdmark-syntax-warning" role="note">/g),
   ).toHaveLength(4);
   expect(
-    html.match(/<p class="mdmark-syntax-warning-title">書き方の警告<\/p>/g),
+    html.match(/<p class="mdmark-syntax-warning-title">記載の警告<\/p>/g),
   ).toHaveLength(4);
-  // 知らない種類 unknown は読み飛ばす
+  // 知らない種類 unknown はスキップする
   expect(html).toContain('data-kind="default" data-features="pin sort"');
   expect(html).not.toContain("<code>unknown</code>");
   expect(html).toContain("<p>見出しの無い範囲</p>");
-  // 見出しの無い範囲はタブにせず、読めない指定の範囲だけが組を持たないタブになる
+  // 見出しの無い範囲はタブにせず、読み込めない指定の範囲だけが組を持たないタブになる
   expect(html.match(/<div class="mdmark-tabs"/g)).toHaveLength(1);
   expect(html).toContain('<div class="mdmark-tabs">');
   expect(html).not.toContain("data-group");
@@ -481,7 +481,7 @@ test("test_normal_when_syntax_errors", async () => {
     html.indexOf('<div class="mdmark-tabs">'),
   );
   expect(tabsWarning).toContain("<code>group=</code>");
-  // 知らないキー grop= と知らない指定 fold は読み飛ばす
+  // 知らないキー grop= と知らない指定 fold はスキップする
   expect(tabsWarning).not.toContain("<code>grop=</code>");
   expect(tabsWarning).not.toContain("<code>fold</code>");
   expect(html).toContain('<a href="#fig-missing">図</a>');
@@ -490,7 +490,7 @@ test("test_normal_when_syntax_errors", async () => {
   expect(html).toContain("&lt;!-- /table --&gt;");
 });
 
-// 表の印の 5 つの機能と hide=・total= を data-* に写し、行に ID とリンクを付ける（正常系）
+// 表のマーカーの 5 つの機能と hide=・total= を data-* にコピーし、行に ID とリンクを付ける（正常系）
 test("test_normal_when_table_features", async () => {
   // 準備
   const render = await loadRender();
@@ -502,8 +502,8 @@ test("test_normal_when_table_features", async () => {
     "| 名前 | 説明 | 数量 |",
     "| --- | --- | --- |",
     "| りんご | 描画を速くする | 1 |",
-    "| みかん | 印刷を直す | 2 |",
-    "| みかん | 描画の崩れを直す | 3 |",
+    "| みかん | 印刷を修正する | 2 |",
+    "| みかん | 描画の崩れを修正する | 3 |",
     "",
     "<!-- /table -->",
     "",
@@ -530,7 +530,7 @@ test("test_normal_when_table_features", async () => {
   expect(html).not.toContain("<!--");
 });
 
-// 読めない集計・隠す列と、機能を付けていない表のキーを書き方の警告にして当てない（正常系）
+// 読み込めない集計・隠す列と、機能を付けていない表のキーを記載の警告にして適用しない（正常系）
 test("test_normal_when_table_feature_errors", async () => {
   // 準備
   const render = await loadRender();
@@ -560,15 +560,15 @@ test("test_normal_when_table_feature_errors", async () => {
   expect(wrappers).toHaveLength(3);
   const [a, b, c] = wrappers as [string, string, string];
   const wrapperTag = (part: string): string => part.slice(0, part.indexOf(">"));
-  // 表 A: 読めた計算だけを当て、隠す列は当てない
+  // 表 A: 読み込めた計算だけを当て、隠す列は適用しない
   expect(wrapperTag(a)).toContain('data-total="2:avg"');
   expect(wrapperTag(a)).not.toContain("data-hide");
   const warnings = html.split('<div class="mdmark-syntax-warning"');
   expect(warnings).toHaveLength(6);
-  // 警告の本文: 先頭の `<code>` は印の文字なので、取り除いた本文だけを見る
+  // 警告の本文: 先頭の `<code>` はマーカーの文字なので、取り除いた本文だけを確認する
   const bodyOf = (warning: string | undefined): string =>
     (warning ?? "").replace(/<code>.*?<\/code>/, "");
-  // 表 A: 読めない指定ごとに 1 つずつ、本文に列名と計算がある
+  // 表 A: 読み込めない指定ごとに 1 つずつ、本文に列名と計算がある
   const [maxBody, priceBody, noteBody, firstBody] = [1, 2, 3, 4].map((i) =>
     bodyOf(warnings[i]),
   );
@@ -579,7 +579,7 @@ test("test_normal_when_table_feature_errors", async () => {
   expect(noteBody).toContain("備考");
   expect(firstBody).toContain("<code>名前</code>");
   expect(firstBody).toContain("先頭の列");
-  // 表 B: 機能の無い表のキーは当てず、機能が要ることを知らせる
+  // 表 B: 機能の無い表のキーは当てず、機能が要ることを通知する
   expect(wrapperTag(b)).not.toContain("data-total");
   expect(wrapperTag(b)).not.toContain("data-hide");
   const warningB = warnings[5] ?? "";
@@ -593,7 +593,7 @@ test("test_normal_when_table_feature_errors", async () => {
   ).toHaveLength(5);
 });
 
-// pin=・wide=・check= の列の位置を data-* に写し、広く取る列のセルに class を付け、真偽値のセルを ✓ と空欄にする（正常系）
+// pin=・wide=・check= の列の位置を data-* にコピーし、広く取る列のセルに class を付け、真偽値のセルを ✓ と空欄にする（正常系）
 test("test_normal_when_table_columns_specified", async () => {
   // 準備
   const render = await loadRender();
@@ -649,7 +649,7 @@ test("test_normal_when_table_columns_specified", async () => {
   expect(html).not.toContain("mdmark-syntax-warning");
 });
 
-// 見出しに無い列名の pin=・check= と、pin の機能の無い表の pin= を書き方の警告にして当てない（正常系）
+// 見出しに無い列名の pin=・check= と、pin の機能の無い表の pin= を記載の警告にして適用しない（正常系）
 test("test_normal_when_table_column_errors", async () => {
   // 準備
   const render = await loadRender();
@@ -688,7 +688,7 @@ test("test_normal_when_table_column_errors", async () => {
   for (const warning of warningsA) {
     expect(warning).toContain("無い列");
   }
-  // 表 B: pin を外した表の pin= は当てず、+pin が要ることを知らせる
+  // 表 B: pin を削除した表の pin= は当てず、+pin が要ることを通知する
   expect(wrapperTag(b)).not.toMatch(/data-features="[^"]*pin/);
   expect(wrapperTag(b)).not.toContain("data-pin");
   const warningsB = b
@@ -703,7 +703,7 @@ test("test_normal_when_table_column_errors", async () => {
   ).toHaveLength(3);
 });
 
-// 文書に生の HTML で書いた記法の class・data-*・id を落とす（正常系）
+// 文書に生の HTML で記載した記法の class・data-*・id を落とす（正常系）
 test("test_normal_when_raw_html_imitates_syntax", async () => {
   // 準備
   const render = await loadRender();
@@ -723,7 +723,7 @@ test("test_normal_when_raw_html_imitates_syntax", async () => {
   }
 });
 
-// 登録した拡張の印を、読み込み中の印の場所の要素に置き換える。拡張のモジュールは読まない（正常系）
+// 登録した拡張のマーカーを、読み込み中のマーカーの場所の要素に置き換える。拡張のモジュールは読み込まない（正常系）
 test("test_normal_when_extension_mark", async () => {
   // 準備
   const { render, registerExtension } = await loadBuilt();
@@ -746,7 +746,7 @@ test("test_normal_when_extension_mark", async () => {
   expect(validate).not.toHaveBeenCalled();
 });
 
-// 用語の意味・関連文書・末尾の関連文書の一覧を、スクリプト無しで読める HTML 文字列にする（正常系）
+// 用語の意味・関連文書・末尾の関連文書の一覧を、スクリプト無しで読み込める HTML 文字列にする（正常系）
 test("test_normal_when_index", async () => {
   // 準備
   const render = await loadRender();
@@ -763,7 +763,7 @@ test("test_normal_when_index", async () => {
   expect(html).not.toContain("<!--");
 });
 
-// やめた言い方のマーカーと代わりの用語を、スクリプト無しで読める HTML 文字列にする（正常系）
+// やめた言い方のマーカーと代わりの用語を、スクリプト無しで読み込める HTML 文字列にする（正常系）
 test("test_normal_when_avoided_term", async () => {
   // 準備
   const render = await loadRender();
@@ -775,7 +775,7 @@ test("test_normal_when_avoided_term", async () => {
   // 検証
   expect(typeof document).toBe("undefined");
   expect(html).toBe(AVOID_EXPECTED_HTML);
-  // 用語は破線の下線で「用語」の意味を持ち、やめた言い方は波線のマーカーで「代わりの用語」の語と意味を持つ
+  // 用語は破線の下線で「用語」の意味を持ち、やめた言い方は波線のマーカーで「代わりの用語」の単語と意味を持つ
   expect(html).toContain(
     '<span class="mdmark-term" tabindex="0" aria-describedby="mdmark-term-1">ワークスペース</span>',
   );
@@ -783,12 +783,12 @@ test("test_normal_when_avoided_term", async () => {
     '<span class="mdmark-term mdmark-term-avoided" tabindex="0" aria-describedby="mdmark-term-2">作業場</span>',
   );
   expect(plainText(html)).toContain(
-    "代わりの用語ワークスペース話し合いの記録を置くフォルダ",
+    "代わりの用語ワークスペース話し合いの記録を配置するフォルダ",
   );
   expect(html).not.toContain("<script");
 });
 
-/** `Intl.Segmenter` を取り除いた間だけ、ほかのテストと共有しない新しいモジュールとして配布物の入口を読み込んで `run` に渡す */
+/** `Intl.Segmenter` を取り除いた間だけ、ほかのテストと共有しない新しいモジュールとして配布物の入口を読み込んで `run` に指定する */
 async function withoutIntlSegmenter(
   run: (built: Built) => Promise<void>,
 ): Promise<void> {
@@ -807,7 +807,7 @@ async function withoutIntlSegmenter(
   }
 }
 
-// `Intl.Segmenter` を持たない環境でも配布物を読み込め、英数字の語の一部に下線を付けずに用語を照合する（正常系）
+// `Intl.Segmenter` を持たない環境でも配布物を読み込め、英数字の単語の一部に下線を付けずに用語を照合する（正常系）
 test("test_normal_when_no_intl_segmenter", async () => {
   await withoutIntlSegmenter(async (built) => {
     // 準備
@@ -819,27 +819,27 @@ test("test_normal_when_no_intl_segmenter", async () => {
           id: "ws",
           term: "ワークスペース",
           aliases: ["WS"],
-          meaning: "話し合いの記録を置くフォルダ",
+          meaning: "話し合いの記録を配置するフォルダ",
         },
       ],
     };
     // 実行
-    const html = built.render("ワークスペースを WSL に置く\n", { index });
+    const html = built.render("ワークスペースを WSL に配置する\n", { index });
     // 検証
     expect(matches(html, /class="mdmark-term"/g)).toHaveLength(1);
     expect(html).toContain(">ワークスペース</span>");
-    expect(html).toContain("を WSL に置く");
+    expect(html).toContain("を WSL に配置する");
   });
 });
 
-/** `figure.mdmark-diagram` の開始タグを、現れた順に返す */
+/** `figure.mdmark-diagram` の開始タグを、現れた順に返却する */
 function diagramFigures(html: string): string[] {
   return startTags(html, "figure").filter((tag) =>
     tag.includes('class="mdmark-diagram"'),
   );
 }
 
-// 図の部品の定義から、題・図・凡例を持つ図を描き、定義の JSON と文書のスクリプトを出さない（正常系）
+// 図の部品の定義から、タイトル・図・凡例を持つ図を描き、定義の JSON と文書のスクリプトを出さない（正常系）
 test("test_normal_when_diagram", async () => {
   // 準備
   const render = await loadRender();
@@ -879,7 +879,7 @@ test("test_normal_when_diagram", async () => {
   expect(html).toContain(
     "範囲: メールを受け取ってから返信するまで・更新日: <time",
   );
-  // フロー図: 3 つの層が定義の順にあり、枠の外の箱が枠の外の座標にある
+  // フロー図: 3 つの層が定義の順にあり、枠の外のノードが枠の外の座標にある
   const lanes = startTags(html, "div").filter((tag) =>
     tag.includes('class="mdmark-diagram-lane"'),
   );
@@ -904,7 +904,7 @@ test("test_normal_when_diagram", async () => {
   expect(html).toMatch(/<path[^>]*data-line="flow"[^>]*d="[^"]* A6,6 /);
   expect(html).toMatch(/<path[^>]*data-line="loop"[^>]*stroke-dasharray="8 4"/);
   expect(html).toContain("次の問い合わせへ（受け取りへ戻る）");
-  // tip を持つ線と io を持つ箱: role="tooltip" と hidden を持つ中身があり、印は io を持つ箱にだけ
+  // tip を持つ線と io を持つノード: role="tooltip" と hidden を持つ中身があり、マーカーは io を持つノードにだけ
   const tips = startTags(html, "div").filter((tag) =>
     tag.includes('role="tooltip"'),
   );
@@ -930,7 +930,7 @@ test("test_normal_when_diagram", async () => {
   expect(html).toContain("<p>前の段落</p>");
 });
 
-// 読めない定義の図の場所だけを書き方の警告にし、ほかの図と本文を描く（正常系）
+// 読み込めない定義の図の場所だけを記載の警告にし、ほかの図と本文を描く（正常系）
 test("test_normal_when_diagram_invalid", async () => {
   // 準備
   const render = await loadRender();
@@ -953,7 +953,9 @@ test("test_normal_when_diagram_invalid", async () => {
     ),
   ].map((match) => match[1] ?? "");
   expect(warnings).toHaveLength(2);
-  expect(warnings[0]).toContain("フロー図の部品の定義を JSON として読めません");
+  expect(warnings[0]).toContain(
+    "フロー図の部品の定義を JSON として読み込めません",
+  );
   expect(warnings[0]).toContain("行目");
   expect(warnings[0]).toContain("}");
   for (const word of [
@@ -967,7 +969,7 @@ test("test_normal_when_diagram_invalid", async () => {
   expect(html).toContain("<p>段落</p>");
 });
 
-// 文書の印で図の部品の機能を外すと、印だけを取り除き、定義を json のコードブロックのまま描く（正常系）
+// 文書のマーカーで図の部品の機能を解除すると、マーカーだけを取り除き、定義を json のコードブロックのまま描く（正常系）
 test("test_normal_when_diagram_feature_disabled", async () => {
   // 準備
   const render = await loadRender();
@@ -980,7 +982,7 @@ test("test_normal_when_diagram_feature_disabled", async () => {
   expect(html).not.toContain("<!--");
 });
 
-// 図の部品が出した hidden は sanitize を通った後も残り、文書に書いた生の svg・button は残らない（正常系）
+// 図の部品が出した hidden は sanitize を通った後も残り、文書に記載した生の svg・button は残らない（正常系）
 test("test_normal_when_diagram_sanitized", async () => {
   // 準備
   const render = await loadRender();
@@ -1000,7 +1002,7 @@ test("test_normal_when_diagram_sanitized", async () => {
   expect(html).not.toContain("生のボタン");
 });
 
-// 拡張の印を範囲で書いたときは、印の場所の要素だけを出し、定義の JSON を出力に残さない。json が 2 つ以上あれば書き方の警告にする（正常系）
+// 拡張のマーカーを範囲で記載したときは、マーカーの場所の要素だけを出し、定義の JSON を出力に残さない。json が 2 つ以上あれば記載の警告にする（正常系）
 test("test_normal_when_extension_definition", async () => {
   // 準備
   const { render, registerExtension } = await loadBuilt();
@@ -1031,7 +1033,7 @@ test("test_normal_when_extension_definition", async () => {
   expect(load).not.toHaveBeenCalled();
 });
 
-/** 開始タグのうち `needle` を含む最初のものを返す（無ければ失敗する） */
+/** 開始タグのうち `needle` を含む最初のものを返却する（無ければ失敗する） */
 function tagOf(html: string, needle: string): string {
   const tag = (html.match(/<[a-zA-Z][^>]*>/g) ?? []).find((candidate) =>
     candidate.includes(needle),
@@ -1052,15 +1054,15 @@ function textById(html: string, id: string): string {
 
 /** 埋め込んだ HTML の見本: 許されない宣言・スクリプト・ボタン・ヒント・チャートを持つ */
 const EMBEDDED_BODY = [
-  '<div style="display: flex; gap: 12px; position: fixed; background-image: url(https://example.com/a.png)">箱</div>',
+  '<div style="display: flex; gap: 12px; position: fixed; background-image: url(https://example.com/a.png)">ノード</div>',
   '<button onclick="x" type="submit">押す</button>',
   "<script>window.__ran = true</script>",
   '<div data-hint="返信の種類を選ぶ">自動返信</div>',
-  '<p>問い合わせは <span data-hint="本文を読んで種類を決める">分類</span> する。</p>',
+  '<p>問い合わせは <span data-hint="本文を読み込んで種類を決める">分類</span> する。</p>',
   `<mdmark-chart>\n${INQUIRY_COUNT_TEXT}\n</mdmark-chart>`,
 ].join("\n");
 
-// 印を付けた html のコードブロックの中身を HTML として描き、スクリプトと許可していない宣言を落とす（正常系）
+// マーカーを付けた html のコードブロックの中身を HTML として描き、スクリプトと許可していない宣言を落とす（正常系）
 test("test_normal_when_embedded_html", async () => {
   // 準備
   const render = await loadRender();
@@ -1071,7 +1073,7 @@ test("test_normal_when_embedded_html", async () => {
   // 検証
   expect(html).toMatch(/<div class="mdmark-html">\s*<div style=/);
   expect(html).not.toMatch(
-    /<pre[^>]*><code class="language-html"[^>]*>[\s\S]*箱/,
+    /<pre[^>]*><code class="language-html"[^>]*>[\s\S]*ノード/,
   );
   expect(html).toMatch(/<pre[^>]*><code class="language-html"[^>]*>/);
   expect(html).toContain("&lt;p&gt;範囲の外&lt;/p&gt;");
@@ -1089,7 +1091,7 @@ test("test_normal_when_embedded_html", async () => {
   ).toHaveLength(8);
   expect(html).not.toContain("<mdmark-chart");
   expect(html).not.toContain('"series"');
-  // data-hint: ブロックは印、行内は tabindex を持ち、どちらもツールチップを指す
+  // data-hint: ブロックはマーカー、行内は tabindex を持ち、どちらもツールチップを指す
   const block = tagOf(html, "mdmark-hint-block");
   expect(block).toContain("<div");
   const mark = tagOf(html, "mdmark-hint-mark");
@@ -1100,10 +1102,10 @@ test("test_normal_when_embedded_html", async () => {
   expect(tagOf(html, `id="${markTip}"`)).toMatch(/role="tooltip"/);
   expect(tagOf(html, `id="${markTip}"`)).toMatch(/\bhidden\b/);
   expect(textById(html, markTip)).toBe("返信の種類を選ぶ");
-  expect(textById(html, inlineTip)).toBe("本文を読んで種類を決める");
+  expect(textById(html, inlineTip)).toBe("本文を読み込んで種類を決める");
 });
 
-// html がオフならコードブロックをコードのまま出し、hints がオフならグラフの項目以外のツールチップの中身と印を出さない（正常系）
+// html がオフならコードブロックをコードのまま出し、hints がオフならグラフの項目以外のツールチップの中身とマーカーを出さない（正常系）
 test("test_normal_when_html_and_hints_disabled", async () => {
   // 準備
   const render = await loadRender();
@@ -1130,7 +1132,7 @@ test("test_normal_when_html_and_hints_disabled", async () => {
   expect(offHints).not.toContain("mdmark-diagram-info");
 });
 
-// 範囲にコードブロックが 1 つでないときと、読めないチャートの定義の場所に書き方の警告を置く（正常系）
+// 範囲にコードブロックが 1 つでないときと、読み込めないチャートの定義の場所に記載の警告を配置する（正常系）
 test("test_normal_when_embedded_html_invalid", async () => {
   // 準備
   const render = await loadRender();
@@ -1150,7 +1152,7 @@ test("test_normal_when_embedded_html_invalid", async () => {
     "",
   ].join("\n");
   const broken = wrapHtml(
-    `<p>読めない定義の前</p><mdmark-chart>{"title": "a",</mdmark-chart><p>同じ範囲のほかの HTML</p>`,
+    `<p>読み込めない定義の前</p><mdmark-chart>{"title": "a",</mdmark-chart><p>同じ範囲のほかの HTML</p>`,
   );
   const markdown = [none, two, broken, "後ろの段落", ""].join("\n");
   // 実行
@@ -1159,11 +1161,11 @@ test("test_normal_when_embedded_html_invalid", async () => {
   expect(matches(html, /class="mdmark-syntax-warning"/g)).toHaveLength(3);
   const text = plainText(html);
   const sentence =
-    "<!-- html --> の範囲に html のコードブロックを 1 つだけ置いてください";
+    "<!-- html --> の範囲に html のコードブロックを 1 つだけ配置してください";
   expect(text.split(sentence)).toHaveLength(3);
   expect(html).toContain("コードブロックの無い範囲");
   expect(html).toMatch(/<pre[^>]*><code class="language-html"[^>]*>/);
-  expect(text).toContain("グラフの部品の定義を JSON として読めません");
+  expect(text).toContain("グラフの部品の定義を JSON として読み込めません");
   expect(html).toContain("同じ範囲のほかの HTML");
   expect(html).toContain("<p>後ろの段落</p>");
 });
@@ -1190,7 +1192,7 @@ test("test_normal_when_chart_types", async () => {
     ),
   );
   expect(fills.size).toBe(2);
-  // 塗りの模様は、系列の上限の 6 つ分を定義に置く
+  // 塗りの模様は、系列の上限の 6 つ分を定義に配置する
   expect(matches(bar, /<pattern[^>]*patternunits/g)).toHaveLength(6);
   const ticks = matches(
     bar,
@@ -1205,8 +1207,8 @@ test("test_normal_when_chart_types", async () => {
       /<text[^>]*class="mdmark-diagram-value-text"[^>]*>[^<]*<\/text>/g,
     ).map((text) => plainText(text)),
   ).toEqual(["62%", "31%", "7%"]);
-  expect(pie).toContain("よくある質問で答えた（186 件）");
-  // 散布図: 系列ごとに違う形の点と、数値の目盛りを持つ横の軸
+  expect(pie).toContain("よくある質問で回答した（186 件）");
+  // 散布図: 系列ごとに違う構造の点と、数値の目盛りを持つ横の軸
   const first = /<g data-series="1">([\s\S]*?)<\/g>/.exec(scatter)?.[1] ?? "";
   const second = /<g data-series="2">([\s\S]*?)<\/g>/.exec(scatter)?.[1] ?? "";
   expect(matches(first, /<circle[^>]*mdmark-diagram-point/g)).toHaveLength(6);
@@ -1219,12 +1221,12 @@ test("test_normal_when_chart_types", async () => {
   ).toBeGreaterThanOrEqual(2);
 });
 
-// ビューの印の範囲を、引数を持つ `mdmark-view` の中に表を残した HTML にする（正常系）
+// ビューのマーカーの範囲を、引数を持つ `mdmark-view` の中に表を残した HTML にする（正常系）
 test("test_normal_when_view_marked", async () => {
   // 準備
   const render = await loadRender();
   const table = [
-    "| 題 | 状態 | 担当 |",
+    "| タイトル | 状態 | 担当 |",
     "| --- | --- | --- |",
     "| 配色の変数を洗い出す | 未着手 | 佐藤 |",
     "| 余白の変数を決める | 進行中 | 鈴木 |",
@@ -1260,12 +1262,12 @@ test("test_normal_when_view_marked", async () => {
   expect(withoutViews).toContain("<table");
 });
 
-/** HTML 文字列の中の、コードブロックの `pre` を書いた順に全て返す */
+/** HTML 文字列の中の、コードブロックの `pre` を記載した順に全て返却する */
 function codeBlocks(html: string): string[] {
   return html.match(/<pre[\s\S]*?<\/pre>/g) ?? [];
 }
 
-/** HTML 文字列の中の、題を持つコードブロックの題の文字（`figcaption` から言語とファイル名のラベルを除いたもの）を書いた順に全て返す */
+/** HTML 文字列の中の、タイトルを持つコードブロックのタイトルの文字（`figcaption` から言語とファイル名のラベルを除いたもの）を記載した順に全て返却する */
 function codeTitles(html: string): string[] {
   return [...html.matchAll(/<figcaption[^>]*>([\s\S]*?)<\/figcaption>/g)].map(
     ([, inner = ""]) =>
@@ -1276,12 +1278,12 @@ function codeTitles(html: string): string[] {
   );
 }
 
-/** HTML 文字列の中の、書き方の警告の枠を書いた順に全て返す */
+/** HTML 文字列の中の、記載の警告の枠を記載した順に全て返却する */
 function warnings(html: string): string[] {
   return html.match(/<div class="mdmark-syntax-warning"[\s\S]*?<\/div>/g) ?? [];
 }
 
-// コードブロックの印と行の印から、題・行番号・行の強調・行の種類を付ける（正常系）
+// コードブロックのマーカーと行のマーカーから、タイトル・行番号・行の強調・行の種類を付ける（正常系）
 test("test_normal_when_code_block_decorated", async () => {
   // 準備
   const render = await loadRender();
@@ -1291,7 +1293,7 @@ test("test_normal_when_code_block_decorated", async () => {
     "```ts",
     "const a = 1;",
     "let count = 1; // [!code ++]",
-    "foo(); // 消す [!code --]",
+    "foo(); // 削除する [!code --]",
     "```",
     "",
     "```python",
@@ -1322,7 +1324,7 @@ test("test_normal_when_code_block_decorated", async () => {
   expect(first).toContain('data-line="2" data-kind="add"');
   expect(first).toContain('data-line="3" data-kind="del"');
   expect(first).toMatch(/let count = 1;<\/span>/);
-  expect(first).toMatch(/foo\(\); \/\/ 消す<\/span>/);
+  expect(first).toMatch(/foo\(\); \/\/ 削除する<\/span>/);
   expect(second).toContain('data-kind="highlight"');
   expect(second).not.toContain("[!code highlight]");
   expect(second).not.toContain("#");
@@ -1336,7 +1338,7 @@ test("test_normal_when_code_block_decorated", async () => {
   expect(html).not.toContain("<!--");
 });
 
-// 情報文字列の `言語:ファイル名` を言語とファイル名に分け、全てのコードブロックを帯で囲んで言語とファイル名のラベルを置く（正常系）
+// 情報文字列の `言語:ファイル名` を言語とファイル名に分け、全てのコードブロックを帯で囲んで言語とファイル名のラベルを配置する（正常系）
 test("test_normal_when_code_block_labeled", async () => {
   // 準備
   const render = await loadRender();
@@ -1425,7 +1427,7 @@ test("test_normal_when_badge_empty", async () => {
   expect(html).toContain('<span class="mdmark-badge">v1</span>');
 });
 
-// 集計する列に数として読めないセルがあるとき、表の前に書き方の警告を置く（正常系）
+// 集計する列に数として読み込めないセルがあるとき、表の前に記載の警告を配置する（正常系）
 test("test_normal_when_total_cell_not_number", async () => {
   // 準備
   const render = await loadRender();
@@ -1456,7 +1458,7 @@ test("test_normal_when_total_cell_not_number", async () => {
   expect(html).toContain('data-total="1:sum 2:avg 0:count"');
 });
 
-// コードブロックの印と行の印の読めない指定を書き方の警告にし、読めた指定で描く（正常系）
+// コードブロックのマーカーと行のマーカーの読み込めない指定を記載の警告にし、読み込めた指定で描く（正常系）
 test("test_normal_when_code_block_syntax_invalid", async () => {
   // 準備
   const render = await loadRender();
@@ -1484,11 +1486,11 @@ test("test_normal_when_code_block_syntax_invalid", async () => {
   expect(boxes).toHaveLength(4);
   for (const box of boxes) {
     expect(box).toContain('role="note"');
-    expect(box).toContain("書き方の警告");
+    expect(box).toContain("記載の警告");
   }
   const [lineBox = "", markBox = "", fenceBox = "", spaceBox = ""] =
     boxes.map(plainText);
-  // 知らないキー color= は読み飛ばす
+  // 知らないキー color= はスキップする
   expect(boxes.map(plainText).join("\n")).not.toContain("color=");
   expect(lineBox).toContain("5");
   expect(lineBox).toContain("3 行");
@@ -1496,7 +1498,7 @@ test("test_normal_when_code_block_syntax_invalid", async () => {
   expect(markBox).toContain("[!code ++]");
   expect(fenceBox).toContain("直後にコードブロックがありません");
   expect(spaceBox).toContain("App.ts");
-  expect(spaceBox).toContain("題に空白は書けません");
+  expect(spaceBox).toContain("タイトルに空白は記載できません");
   expect(codeTitles(html)).toEqual(["app.ts", "My"]);
   expect(matches(html, /<figure/g)).toHaveLength(2);
   const [, highlighted = "", focused = ""] = codeBlocks(html);
@@ -1509,7 +1511,7 @@ test("test_normal_when_code_block_syntax_invalid", async () => {
   expect(html).toContain("<p>直後の段落</p>");
 });
 
-// コードブロックの飾りの機能を外すと、印を取り除き、行の印を書いた文字のまま描く（正常系）
+// コードブロックの飾りの機能を解除すると、マーカーを取り除き、行のマーカーを記載した文字のまま描く（正常系）
 test("test_normal_when_code_block_feature_disabled", async () => {
   // 準備
   const render = await loadRender();
@@ -1534,7 +1536,7 @@ test("test_normal_when_code_block_feature_disabled", async () => {
   expect(html).not.toContain("app.ts");
 });
 
-/** 元の行番号の確認に使う、行の位置が分かる Markdown（1 行目に見出し、3 行目に段落、5〜7 行目に表、8 行目に印、9〜11 行目にコードブロック、13〜14 行目にリスト） */
+/** 元の行番号の確認に使用する、行の位置が分かる Markdown（1 行目に見出し、3 行目に段落、5〜7 行目に表、8 行目にマーカー、9〜11 行目にコードブロック、13〜14 行目にリスト） */
 const SOURCE_LINE_MARKDOWN = [
   "# 見出し",
   "",
@@ -1584,7 +1586,7 @@ test("test_normal_when_source_lines", async () => {
   );
 });
 
-// h1 の見出しも節にし、次の h1 の前までを節の中身で囲む（正常系（H1 の節））
+// h1 の見出しもセクションにし、次の h1 の前までをセクションの中身で囲む（正常系（H1 のセクション））
 test("test_normal_when_h1_sections", async () => {
   // 準備
   const render = await loadRender();
@@ -1625,7 +1627,7 @@ test("test_normal_when_h1_sections", async () => {
   expect(html).not.toContain("section: closed");
 });
 
-// 渡したエイリアスの下線と種類ごとのツールチップを、スクリプト無しで読める HTML 文字列にする（正常系）
+// 指定したエイリアスの下線と種類ごとのツールチップを、スクリプト無しで読み込める HTML 文字列にする（正常系）
 test("test_normal_when_aliases", async () => {
   // 準備
   const render = await loadRender();
@@ -1636,17 +1638,17 @@ test("test_normal_when_aliases", async () => {
   expect(html).toBe(ALIAS_EXPECTED_HTML);
   // 用語は「用語」の下に説明を持つ role="tooltip" のツールチップ、コマンドは「コマンド」の下に code とコピーのボタンを持つ
   expect(html).toMatch(
-    /<span class="mdmark-term"[^>]*>ワークスペース<\/span><span class="mdmark-term-tip"[^>]*role="tooltip"[^>]*>[\s\S]*?>用語<[\s\S]*?話し合いの記録を置くフォルダ/,
+    /<span class="mdmark-term"[^>]*>ワークスペース<\/span><span class="mdmark-term-tip"[^>]*role="tooltip"[^>]*>[\s\S]*?>用語<[\s\S]*?話し合いの記録を配置するフォルダ/,
   );
   expect(html).toMatch(
     /<span class="mdmark-term"[^>]*>単体テスト<\/span><span class="mdmark-term-tip"[^>]*>[\s\S]*?>コマンド<[\s\S]*?<code>npm run test:unit<\/code><button[^>]*type="button"[^>]*>[\s\S]*?コピー<\/button>/,
   );
-  // スクリプトも印の文字も含まない
+  // スクリプトもマーカーの文字も含まない
   expect(html).not.toContain("<script");
   expect(html).not.toContain("<!--");
 });
 
-/** 書き方の警告の枠の中身を、現れた順に返す（警告の枠は入れ子の `div` を持たない） */
+/** 記載の警告の枠の中身を、現れた順に返却する（警告の枠は入れ子の `div` を持たない） */
 function warningBodies(html: string): string[] {
   return html
     .split('<div class="mdmark-syntax-warning" role="note">')
@@ -1781,7 +1783,7 @@ test("test_normal_when_tree_annotated", async () => {
   expect(secondRaw.startsWith(" data-open")).toBe(false);
   expect(firstRaw).toContain(`data-source="${annotated.join("\n")}"`);
   expect(secondRaw).toContain(`data-source="${ascii.join("\n")}"`);
-  // 名前と注釈は、元の罫線のテキストを持つ属性を除いた HTML で確かめる
+  // 名前と注釈は、元の罫線のテキストを持つ属性を除いた HTML で確認する
   const first = firstRaw.replace(/ data-source="[^"]*"/, "");
   const second = secondRaw.replace(/ data-source="[^"]*"/, "");
   const note = (name: string): RegExp =>
@@ -1826,7 +1828,7 @@ test("test_normal_when_tree_annotated", async () => {
   expect(html).not.toContain("<button");
 });
 
-// closed と open の両方・closed も open も無い title=・読めない open= に書き方の警告を置き、読めた指定で描く（正常系）
+// closed と open の両方・closed も open も無い title=・読み込めない open= に記載の警告を配置し、読み込めた指定で描く（正常系）
 test("test_normal_when_fold_and_tree_errors", async () => {
   // 準備
   const render = await loadRender();
@@ -1888,7 +1890,7 @@ test("test_normal_when_fold_and_tree_errors", async () => {
   expect(html).toContain(
     '<details class="mdmark-collapsible"><summary>手順（2 ステップ）</summary><ol class="mdmark-steps">',
   );
-  // 知らない指定 fold は読み飛ばす
+  // 知らない指定 fold はスキップする
   expect(warnings.join("\n")).not.toContain("fold");
   expect(titleAlone).toContain("title=");
   expect(titleAlone).toContain("closed");
@@ -1902,7 +1904,7 @@ test("test_normal_when_fold_and_tree_errors", async () => {
   expect(html).not.toContain("data-open");
 });
 
-/** 色の名前の一覧（書き方の警告の本文に出す） */
+/** 色の名前の一覧（記載の警告の本文に出す） */
 const COLOR_NAMES = [
   "blue",
   "red",
@@ -1955,7 +1957,7 @@ test("test_normal_when_named_colors", async () => {
   expect(html).not.toContain("mdmark-syntax-warning");
 });
 
-// 色の名前の一覧に無い名前を書き方の警告にし、色を付けない（正常系）
+// 色の名前の一覧に無い名前を記載の警告にし、色を付けない（正常系）
 test("test_normal_when_color_unknown", async () => {
   // 準備
   const render = await loadRender();
@@ -1999,7 +2001,7 @@ test("test_normal_when_color_unknown", async () => {
   expect(html).not.toContain("[決め手");
 });
 
-// 画像だけの段落の画像を図にし、後ろの属性・title・テーマごとのフラグメントを当てる（正常系）
+// 画像だけの段落の画像を図にし、後ろの属性・title・テーマごとのフラグメントを適用する（正常系）
 test("test_normal_when_image_attributes", async () => {
   // 準備
   const render = await loadRender();
@@ -2010,7 +2012,7 @@ test("test_normal_when_image_attributes", async () => {
     "",
     "![構成](arch-dark.png#only-dark)",
     "",
-    "押す前に ![アイコン](icon.png){width=16} を確かめる。",
+    "押す前に ![アイコン](icon.png){width=16} を確認する。",
   ].join("\n");
   // 実行
   const html = render(markdown);
@@ -2031,7 +2033,7 @@ test("test_normal_when_image_attributes", async () => {
   expect(findTag(html, 'alt="構成"')).toContain(
     'src="arch-dark.png#only-dark"',
   );
-  // 文の中の画像は図にせず、幅を img に置く
+  // 文の中の画像は図にせず、幅を img に配置する
   const icon = findTag(html, 'src="icon.png"');
   expect(icon).toContain('style="--mdmark-image-width: 16px"');
   expect(html).toMatch(/<p>押す前に <img [^>]*src="icon.png"/);
@@ -2040,14 +2042,14 @@ test("test_normal_when_image_attributes", async () => {
   expect(html).not.toContain("mdmark-syntax-warning");
 });
 
-// 読めない属性を書き方の警告にし、読めた属性だけを当てる（正常系）
+// 読み込めない属性を記載の警告にし、読み込めた属性だけを適用する（正常系）
 test("test_normal_when_image_attribute_invalid", async () => {
   // 準備
   const render = await loadRender();
   const markdown = [
     "![グラフ](chart.png){width=big align=center foo}",
     "",
-    "押す前に ![アイコン](icon.png){align=left} を確かめる。",
+    "押す前に ![アイコン](icon.png){align=left} を確認する。",
   ].join("\n");
   // 実行
   const html = render(markdown);
@@ -2080,7 +2082,7 @@ test("test_normal_when_gallery", async () => {
     "<!-- fig: shots -->",
     "<!-- gallery: cols=3 -->",
     '![開いた画面](open.png "開く")',
-    '![書いた画面](write.png "書く")',
+    '![記載した画面](write.png "記載する")',
     "<!-- /gallery -->",
     "",
     "<!-- gallery -->",
@@ -2088,7 +2090,7 @@ test("test_normal_when_gallery", async () => {
     "![設定](settings.png)",
     "<!-- /gallery -->",
     "",
-    "[図](#fig-shots) を見る。",
+    "[図](#fig-shots) を確認する。",
   ].join("\n");
   // 実行
   const html = render(markdown);
@@ -2107,7 +2109,7 @@ test("test_normal_when_gallery", async () => {
     '<figcaption class="mdmark-figure-caption"><b>図 1a</b>開く</figcaption>',
   );
   expect(innerHtml(html, 'id="fig-shots-b"')).toContain(
-    '<figcaption class="mdmark-figure-caption"><b>図 1b</b>書く</figcaption>',
+    '<figcaption class="mdmark-figure-caption"><b>図 1b</b>記載する</figcaption>',
   );
   const galleries = findTags(html, 'class="mdmark-gallery"');
   expect(galleries).toHaveLength(2);
@@ -2125,7 +2127,7 @@ test("test_normal_when_video_audio_gif", async () => {
   const markdown = [
     '![操作の様子](demo.mp4 "保存までの操作"){autoplay loop poster=demo.png width=480}',
     "",
-    "![読み上げ](voice.mp3)",
+    "![スクリーンリーダー](voice.mp3)",
     "",
     "![ビルド](build.gif)",
   ].join("\n");
@@ -2160,7 +2162,7 @@ test("test_normal_when_video_audio_gif", async () => {
     'src="voice.mp3"',
     " controls",
     'preload="metadata"',
-    'aria-label="読み上げ"',
+    'aria-label="スクリーンリーダー"',
   ]) {
     expect(audio).toContain(part);
   }
@@ -2192,7 +2194,7 @@ test("test_normal_when_cards", async () => {
     "",
     "[仕様書](files/spec.pdf)",
     "",
-    "詳しくは https://example.com/docs を見る。",
+    "詳しくは https://example.com/docs を確認する。",
   ].join("\n");
   // 実行
   const html = render(markdown);
@@ -2218,12 +2220,12 @@ test("test_normal_when_cards", async () => {
   expect(file).toContain('<span class="mdmark-card-domain">PDF</span>');
   expect(file).toContain('<span class="mdmark-card-url">spec.pdf</span>');
   expect(html).toContain(
-    '<p>詳しくは <a href="https://example.com/docs">https://example.com/docs</a> を見る。</p>',
+    '<p>詳しくは <a href="https://example.com/docs">https://example.com/docs</a> を確認する。</p>',
   );
   expect(html).not.toContain("iframe");
 });
 
-// 文書のマーカーで外した新しい記法を、普通の Markdown として描く（正常系）
+// 文書のマーカーで削除した新しい記法を、普通の Markdown として描く（正常系）
 test("test_normal_when_media_features_disabled", async () => {
   // 準備
   const render = await loadRender();
@@ -2310,12 +2312,12 @@ const COMBO_CHART = {
   ],
 };
 
-/** 描いた HTML の図を、`figure.mdmark-diagram` ごとに書いた順に返す */
+/** 描いた HTML の図を、`figure.mdmark-diagram` ごとに記載した順に返却する */
 function chartFigures(html: string): string[] {
   return html.split('<figure class="mdmark-diagram"').slice(1);
 }
 
-/** 棒の `rect` の属性の値を数にして返す */
+/** 棒の `rect` の属性の値を数にして返却する */
 function rectBox(tag: string): {
   x: number;
   y: number;
@@ -2332,13 +2334,13 @@ function rectBox(tag: string): {
   };
 }
 
-/** 図の中の、凡例の見本を除いた棒の `rect` を書いた順に返す */
+/** 図の中の、凡例の見本を除いた棒の `rect` を記載した順に返却する */
 function chartBars(figure: string): string[] {
   const svg = /<svg[^>]*role="img"[\s\S]*?<\/svg>/.exec(figure)?.[0] ?? "";
   return matches(svg, /<rect[^>]*class="mdmark-diagram-bar"[^>]*>/g);
 }
 
-// 表の印の `header-rows=`・`row-header=` と `^^`・`<<` で、多段の見出し・行見出し・結合したセルを出す（正常系）
+// 表のマーカーの `header-rows=`・`row-header=` と `^^`・`<<` で、多段の見出し・行見出し・結合したセルを出す（正常系）
 test("test_normal_when_table_cells_merged", async () => {
   // 準備
   const render = await loadRender();
@@ -2390,7 +2392,7 @@ test("test_normal_when_table_cells_merged", async () => {
   expect(html).not.toContain('<div class="mdmark-syntax-warning"');
 });
 
-// 読めない `header-rows=` と、結合する相手の無い `^^`・`<<` を書き方の警告にし、文字のまま出す（正常系）
+// 読み込めない `header-rows=` と、結合する相手の無い `^^`・`<<` を記載の警告にし、文字のまま出す（正常系）
 test("test_normal_when_table_merge_invalid", async () => {
   // 準備
   const render = await loadRender();
@@ -2461,7 +2463,7 @@ test("test_normal_when_callout_titled_and_nested", async () => {
   }
 });
 
-/** 外側のタブの `macOS` の中に内側のタブを置いた Markdown。`closeInner` が偽なら内側の閉じの印を書かない */
+/** 外側のタブの `macOS` の中に内側のタブを配置した Markdown。`closeInner` が偽なら内側の閉じのマーカーを記載しない */
 function nestedTabs(closeInner: boolean): string {
   return [
     "<!-- tabs -->",
@@ -2515,7 +2517,7 @@ test("test_normal_when_tabs_nested", async () => {
   expect(html).not.toContain("<!--");
 });
 
-// 内側の閉じの印が無い入れ子のタブは、外側の開きに書き方の警告を置き、見出しと本文のまま出す（正常系）
+// 内側の閉じのマーカーが無い入れ子のタブは、外側の開きに記載の警告を配置し、見出しと本文のまま出す（正常系）
 test("test_normal_when_nested_tabs_unclosed", async () => {
   // 準備
   const render = await loadRender();
@@ -2527,7 +2529,7 @@ test("test_normal_when_nested_tabs_unclosed", async () => {
   expect(html.indexOf("mdmark-syntax-warning")).toBeLessThan(
     html.indexOf("macOS"),
   );
-  expect(plainText(boxes[0] ?? "")).toContain("閉じの印");
+  expect(plainText(boxes[0] ?? "")).toContain("閉じのマーカー");
   expect(html).not.toContain('<div class="mdmark-tabs"');
   for (const [tag, name] of [
     ["h3", "macOS"],
@@ -2542,7 +2544,7 @@ test("test_normal_when_nested_tabs_unclosed", async () => {
   }
 });
 
-// 追加したグラフの種類と 6 つの系列を、題と凡例を持つ図に描く（正常系）
+// 追加したグラフの種類と 6 つの系列を、タイトルと凡例を持つ図に描く（正常系）
 test("test_normal_when_chart_types_added", async () => {
   // 準備
   const render = await loadRender();
@@ -2646,7 +2648,7 @@ test("test_normal_when_chart_types_added", async () => {
   }
 });
 
-// 系列（ドーナツは項目）が 6 つを超えるグラフを描かず、書き方の警告にする（正常系）
+// 系列（ドーナツは項目）が 6 つを超えるグラフを描かず、記載の警告にする（正常系）
 test("test_normal_when_chart_series_too_many", async () => {
   // 準備
   const render = await loadRender();
@@ -2738,7 +2740,7 @@ test("test_normal_when_code_focus_error_warning", async () => {
   expect(html).not.toContain("//");
 });
 
-/** 行に分けたコードブロックの、行ごとの開始タグを書いた順に返す */
+/** 行に分けたコードブロックの、行ごとの開始タグを記載した順に返却する */
 function codeLineTags(block: string): string[] {
   return startTags(block, "span").filter((tag) =>
     tag.includes('"mdmark-code-line"'),
@@ -2796,7 +2798,7 @@ test("test_normal_when_code_foldable", async () => {
   expect(html).not.toContain("mdmark-syntax-warning");
 });
 
-// 畳めない行とコードブロックに無い行の `fold=` を書き方の警告にし、畳める行だけを畳む（正常系）
+// 畳めない行とコードブロックに無い行の `fold=` を記載の警告にし、畳める行だけを畳む（正常系）
 test("test_normal_when_code_fold_invalid", async () => {
   // 準備
   const render = await loadRender();
@@ -2934,7 +2936,7 @@ test("test_normal_when_er_diagram", async () => {
   const tipText = plainText(innerHtml(html, `id="${tipId}"`));
   expect(tipText).toContain("顧客（customers）");
   expect(tipText).toContain("注文する人");
-  expect(tipText).toContain("ログインに使う");
+  expect(tipText).toContain("ログインに使用する");
   expect(erTableHtml(html, "products")).not.toContain("mdmark-diagram-info");
   const legend = plainText(innerHtml(html, "mdmark-diagram-legend"));
   expect(findTags(html, "mdmark-diagram-legend-item")).toHaveLength(8);
@@ -2953,7 +2955,7 @@ test("test_normal_when_er_diagram", async () => {
   expect(html).not.toContain('"tables"');
 });
 
-// 誤った ER 図の定義は書き方の警告にし、ほかの図と本文は描く（正常系）
+// 誤った ER 図の定義は記載の警告にし、ほかの図と本文は描く（正常系）
 test("test_normal_when_er_diagram_invalid", async () => {
   // 準備
   const render = await loadRender();
@@ -2981,7 +2983,7 @@ test("test_normal_when_er_diagram_invalid", async () => {
       plainText(part.slice(part.indexOf(">") + 1, part.indexOf("</div>"))),
     );
   expect(warnings).toHaveLength(2);
-  expect(warnings[0]).toMatch(/^書き方の警告ER 図の部品の定義を読めません/);
+  expect(warnings[0]).toMatch(/^記載の警告ER 図の部品の定義を読み込めません/);
   expect(warnings[0]).toContain(
     "関係「注文する」の先の列 orders.customer がテーブル orders にありません",
   );
@@ -2990,7 +2992,7 @@ test("test_normal_when_er_diagram_invalid", async () => {
   expect(html).toContain("<p>段落</p>");
 });
 
-/** 1 つ目の段落に参照、2 つ目の段落に行内の脚注を持ち、途中に 2 段落の定義を置いた文書 */
+/** 1 つ目の段落に参照、2 つ目の段落に行内の脚注を持ち、途中に 2 段落の定義を配置した文書 */
 const FOOTNOTES_MARKDOWN = [
   "出典がある[^src]。",
   "",
@@ -2998,7 +3000,7 @@ const FOOTNOTES_MARKDOWN = [
   "",
   "    [詳しく](https://example.com)",
   "",
-  "行内にも書ける^[行内の補足]。",
+  "行内にも記載できる^[行内の補足]。",
   "",
 ].join("\n");
 
@@ -3058,7 +3060,7 @@ test("test_normal_when_footnotes_matched", async () => {
     "",
     "[^NOTE]: 2 つ目",
     "",
-    "[^unused]: 使わない",
+    "[^unused]: 使用しない",
     "",
   ].join("\n");
   // 実行
@@ -3071,7 +3073,7 @@ test("test_normal_when_footnotes_matched", async () => {
   expect(plainText(innerHtml(html, 'id="mdmark-fn-tip-1-0"'))).toBe(
     "脚注 11 つ目",
   );
-  // 戻るリンクの読み上げの名前（`2 つ目の参照`）は除き、画面に出る文字で確かめる
+  // 戻るリンクのスクリーンリーダー向けの名前（`2 つ目の参照`）は除き、画面に出る文字で確認する
   expect(plainText(html)).not.toContain("2 つ目");
   expect(html).toContain("[^missing]");
   expect(html).toContain('<a href="https://example.com">^x</a>');
@@ -3081,10 +3083,10 @@ test("test_normal_when_footnotes_matched", async () => {
   expect(
     matches(innerHtml(html, 'id="mdmark-fn-1"'), /<\/svg>([ab])<\/a>/g),
   ).toEqual(["</svg>a</a>", "</svg>b</a>"]);
-  expect(html).not.toContain("使わない");
+  expect(html).not.toContain("使用しない");
 });
 
-// 文書の印で `footnotes` を外し、参照と定義を書いた文字のまま書いた位置に残す（正常系）
+// 文書のマーカーで `footnotes` を削除し、参照と定義を記載した文字のまま記載した位置に残す（正常系）
 test("test_normal_when_footnotes_disabled", async () => {
   // 準備
   const render = await loadRender();
@@ -3155,7 +3157,7 @@ function wirePoints(html: string): Map<string, Array<[number, number]>> {
   return points;
 }
 
-// 座標を省いた判定フローチャートを配置して描き、座標を省けない定義を書き方の警告にする（正常系）
+// 座標を省いた判定フローチャートを配置して描き、座標を省けない定義を記載の警告にする（正常系）
 test("test_normal_when_flowchart_auto_layout", async () => {
   // 準備
   const render = await loadRender();
@@ -3242,14 +3244,14 @@ test("test_normal_when_flowchart_auto_layout", async () => {
     }
   }
   const [mixedWarning = "", kindWarning = ""] = warnings(html).map(plainText);
-  expect(mixedWarning).toContain("全て書くか、全て省いて");
+  expect(mixedWarning).toContain("全て記載するか、全て省いて");
   expect(kindWarning).toContain("llm");
   expect(kindWarning).toContain("判定フローチャート");
   expect(html).toContain("<p>後の段落</p>");
   expect(render(markdown)).toBe(html);
 });
 
-// リンク先を持つノードをリンクにし、許さないリンク先のノードをリンクにせず書き方の警告にする（正常系）
+// リンク先を持つノードをリンクにし、許さないリンク先のノードをリンクにせず記載の警告にする（正常系）
 test("test_normal_when_node_link", async () => {
   // 準備
   const render = await loadRender();
@@ -3326,7 +3328,7 @@ test("test_normal_when_node_link", async () => {
   expect(html.replace("javascript:alert(1)", "")).not.toContain("javascript:");
 });
 
-// wrap を持つコードブロックとファイルツリーに折り返す class を付け、値を持つ wrap= を書き方の警告にする（正常系）
+// wrap を持つコードブロックとファイルツリーに折り返す class を付け、値を持つ wrap= を記載の警告にする（正常系）
 test("test_normal_when_wrap", async () => {
   // 準備
   const render = await loadRender();
@@ -3393,7 +3395,7 @@ test("test_normal_when_wrap", async () => {
   expect(tree).toContain('data-open="all"');
   const [warning = ""] = warnings(html);
   expect(plainText(warning)).toContain("wrap=yes");
-  expect(plainText(warning)).toContain("wrap と書いて");
+  expect(plainText(warning)).toContain("wrap と記載して");
   expect(html.indexOf(warning)).toBeLessThan(html.indexOf("const valued"));
   expect(classOf(pres[3] ?? "")).not.toContain("mdmark-code-wrap");
 });
@@ -3430,7 +3432,7 @@ const PROCEDURE_MD = [
   "",
 ].join("\n");
 
-// 行内の新しい記法を、スクリプト無しで読める HTML にする（正常系）
+// 行内の新しい記法を、スクリプト無しで読み込める HTML にする（正常系）
 test("test_normal_when_inline_notations", async () => {
   // 準備
   const render = await loadRender();
@@ -3470,7 +3472,7 @@ test("test_normal_when_inline_notations", async () => {
   expect(html).not.toContain("kbd:");
 });
 
-// opts.icons にある束ねていない名前を、その形の svg で描く（正常系）
+// opts.icons にあるまとめていない名前を、その構造の svg で描く（正常系）
 test("test_normal_when_icon_nodes", async () => {
   // 準備
   const render = await loadRender();
@@ -3565,7 +3567,7 @@ test("test_normal_when_block_notations", async () => {
   expect(html).not.toContain("<button");
 });
 
-// include のマーカーの場所に、取り込む文書の表から引いた全体・見出しの中・行の範囲を描く（正常系）
+// include のマーカーの場所に、取り込む文書の表から参照した全体・見出しの中・行の範囲を描く（正常系）
 test("test_normal_when_includes", async () => {
   // 準備
   const render = await loadRender();
@@ -3611,7 +3613,7 @@ test("test_normal_when_includes", async () => {
   expect(html).not.toContain("mdmark-syntax-warning");
 });
 
-// 取り込めないマーカーの場所に書き方の警告を置き、循環する取り込みを止める（正常系）
+// 取り込めないマーカーの場所に記載の警告を配置し、循環する取り込みを止める（正常系）
 test("test_normal_when_include_errors", async () => {
   // 準備
   const render = await loadRender();
@@ -3719,7 +3721,7 @@ test("test_normal_when_csv", async () => {
   expect(rows[0]).toMatch(/<td[^>]*><\/td>/);
 });
 
-// 新しい記法の読めない書き方の箇所に書き方の警告を置き、読めた分で描く（正常系）
+// 新しい記法の読み込めない記載方法の箇所に記載の警告を配置し、読み込めた分で描く（正常系）
 test("test_normal_when_new_syntax_errors", async () => {
   // 準備
   const render = await loadRender();
@@ -3810,7 +3812,7 @@ test("test_normal_when_new_syntax_errors", async () => {
   expect(html).toContain("補足の段落");
 });
 
-// オフの新しい記法を、書いた文字か普通の Markdown として描く（正常系）
+// オフの新しい記法を、記載した文字か普通の Markdown として描く（正常系）
 test("test_normal_when_new_syntax_disabled", async () => {
   // 準備
   const render = await loadRender();
@@ -3876,7 +3878,7 @@ test("test_normal_when_new_syntax_disabled", async () => {
   expect(html).not.toContain("<!--");
 });
 
-// `+reorder` を `data-features` に写し、結合した見出しの範囲を列ごとに写す（正常系）
+// `+reorder` を `data-features` に設定し、結合した見出しの範囲を列ごとに写す（正常系）
 test("test_normal_when_table_reorder", async () => {
   // 準備
   const render = await loadRender();
@@ -3930,7 +3932,7 @@ const TREE_TABLE_ROWS = [
   "| aliases[].metadata.alias_type.type | ref \\| custom |  |  | 別名の種類 |",
 ];
 
-/** 表の印に `extra` を加えた階層の表の文書 */
+/** 表のマーカーに `extra` を加えた階層の表の文書 */
 function treeMarkdown(extra = ""): string {
   return [
     `<!-- table: data tree=キー type=型 required=必須 default=既定${extra} -->`,
@@ -3942,7 +3944,7 @@ function treeMarkdown(extra = ""): string {
   ].join("\n");
 }
 
-/** 階層の行の開始タグを、上から並べて返す */
+/** 階層の行の開始タグを、上から並べて返却する */
 function treeRowTags(html: string): string[] {
   return startTags(html, "tr").filter((tag) => tag.includes("mdmark-tree-row"));
 }
@@ -4066,7 +4068,7 @@ test("test_normal_when_table_tree_example", async () => {
   expect(plainText(typeLine.split("\n")[0] ?? "")).toContain("type: custom");
 });
 
-// 表に無い列名の tree=・tree= の無い type=・無い見出しの example= に書き方の警告を置く（正常系）
+// 表に無い列名の tree=・tree= の無い type=・無い見出しの example= に記載の警告を配置する（正常系）
 test("test_normal_when_table_tree_invalid", async () => {
   // 準備
   const render = await loadRender();
@@ -4102,12 +4104,12 @@ test("test_normal_when_table_tree_invalid", async () => {
   expect(html).not.toContain("mdmark-tree-example");
 });
 
-/** 範囲に html（class `box` の div と `<script>`）・css・ts を置いた文書 */
+/** 範囲に html（class `box` の div と `<script>`）・css・ts を配置した文書 */
 const RANGE_MARKDOWN = [
   "<!-- html -->",
   "",
   "```html",
-  '<div class="box">箱</div>',
+  '<div class="box">ノード</div>',
   "<script>window.__mdmarkScriptRan = true</script>",
   "```",
   "",
@@ -4165,7 +4167,7 @@ test("test_normal_when_range_scripts", async () => {
       .trim(),
   ).toBe(RANGE_TS);
   expect(html).not.toContain("<script");
-  expect(inner).toContain('<div class="box">箱</div>');
+  expect(inner).toContain('<div class="box">ノード</div>');
   expect(html).not.toContain('class="language-css"');
   expect(html).not.toContain('class="language-ts"');
 });
@@ -4186,7 +4188,7 @@ test("test_normal_when_range_scripts_off", async () => {
   expect(html).not.toContain("mdmark-syntax-warning");
 });
 
-// ts と js を両方置いた範囲に書き方の警告を置き、どちらのスクリプトも置かない（正常系）
+// ts と js を両方置いた範囲に記載の警告を配置し、どちらのスクリプトも配置しない（正常系）
 test("test_normal_when_range_scripts_both_languages", async () => {
   // 準備
   const render = await loadRender();
@@ -4256,8 +4258,8 @@ test("test_normal_when_page_marker_and_card_grid", async () => {
     "# 目次",
     "",
     "<!-- cards -->",
-    "- `icon:book` [使い方](使い方/README.md)",
-    "  導入と使い方の手順",
+    "- `icon:book` [使用方法](使い方/README.md)",
+    "  導入と使用方法の手順",
     "- https://example.com/docs",
     "- 準備中",
     "<!-- /cards -->",
@@ -4287,10 +4289,10 @@ test("test_normal_when_page_marker_and_card_grid", async () => {
     'data-icon="book"',
   );
   expect(items[0]).toContain(
-    '<span class="mdmark-card-grid-title">使い方</span>',
+    '<span class="mdmark-card-grid-title">使用方法</span>',
   );
   expect(items[0]).toContain(
-    '<p class="mdmark-card-grid-desc">導入と使い方の手順</p>',
+    '<p class="mdmark-card-grid-desc">導入と使用方法の手順</p>',
   );
   expect(items[1]).toContain(
     '<span class="mdmark-card-grid-title">example.com/docs</span>',
@@ -4309,7 +4311,7 @@ test("test_normal_when_page_marker_and_card_grid", async () => {
   );
 });
 
-// mermaid のコードブロックは図にせず、属性 data-mdmark-mermaid を付けたコードブロックとして返す（正常系（mermaid のコードブロック））
+// mermaid のコードブロックは図にせず、属性 data-mdmark-mermaid を付けたコードブロックとして返却する（正常系（mermaid のコードブロック））
 test("test_normal_when_mermaid_code_block", async () => {
   // 準備
   const render = await loadRender();
