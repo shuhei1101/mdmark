@@ -23,3 +23,9 @@ scope_out:
   - item: 結合テストの MCP の呼び出しの時間切れの見直し
     reason: 報告された fail は E2E の dev-docs の呼び出しだけで、結合テストは dev-docs を起動しない
     plan: none
+  - item: 'dev-docs が `dev/mock/files.yaml` の #263 のバイナリの素材 4 行を配信から除いている'
+    reason: 配信の除外の不具合で、今回の要望（E2E の呼び出しの時間切れ）に含まれない
+    plan: '#341'
+  - item: '`plugin/files.yaml` の `skills/global-setup/SKILL.md`・`skills/setup/SKILL.md` の行の description がバッククォートで始まり、dev-docs が参照できない'
+    reason: YAML の記載の不具合で、今回の要望（E2E の呼び出しの時間切れ）に含まれない
+    plan: '#413'
