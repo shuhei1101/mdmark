@@ -27,6 +27,7 @@
 | 工程 | 範囲 | 補足 |
 | --- | --- | --- |
 | インターフェース定義設計 | [7a9367dd..8d8ca21e](https://github.com/shuhei1101/mdmark/compare/7a9367dd...8d8ca21e) | ファイル名と参照の改名はドキュメント修正で行う |
+| インターフェース定義設計 | [f828e525..05587ca2](https://github.com/shuhei1101/mdmark/compare/f828e525...05587ca2) | レビューの指摘の修正 |
 
 ## テスト結果
 
