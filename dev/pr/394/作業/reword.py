@@ -370,7 +370,7 @@ def build_context():
     return out
 
 CONTEXT_RULES = build_context()
-CLIP_RULE = re.compile(NK + '(?P<stem>書)(?P<form>[かきくけこい])(?P<rest>[ぁ-ん]{0,3})')
+CLIP_RULE = re.compile(NK + '(?<!読み)(?P<stem>書)(?P<form>[かきくけこい])(?P<rest>[ぁ-ん]{0,3})')
 PROTECT = re.compile(r'(?:[^\s\'"`（）、。<>]*/[^\s\'"`（）、。<>]*\.(?:md|yaml|yml|ts|html|css|json|js|png|svg|mp4|mp3|vsix))|(?:(?<![\w])(?:dev|docs|src|tests|vscode|plugin|scripts|schemas|guide|templates|migrations)/[^\s\'"`）)、。,]+)|(?:#[\w\[\]（）一-鿿ぁ-んァ-ヶー・]+)')
 SKIP_KEYS = re.compile(r'^\s*-?\s*(?:callers|decided_by|refs|test|tests|test_file|test_files|path|page|id|kind|ref|source_path|related)\s*:')
 
