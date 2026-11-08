@@ -3224,6 +3224,31 @@ functions:
         mock: なし
         expected: '`App.ts`・`undefined`・`undefined`'
     status: planned
+  - name: skippedArgBlocks
+    title: 読み飛ばした引数のトークンを作る
+    container: src/render/syntax/warnings.ts
+    kind: 関数
+    scope: internal
+    summary: '`pushSkippedArgs` と同じトークンを、差し込まずに書いた順の並びで返す（トークンの並びを作り直すコアルールが、警告の `warningBlock` と同じく差し込む位置を決めるときに使う）。`pushSkippedArgs` はこの並びを `index` の位置に差し込む'
+    args:
+      - name: state
+        type: StateCore
+        required: true
+        description: markdown-it の状態
+      - name: options
+        type: '{ mark: string; skipped: SkippedArg[] }'
+        required: true
+        description: '`pushSkippedArgs` と同じ'
+      - name: source
+        type: Token | undefined
+        required: false
+        description: '`pushSkippedArgs` と同じ'
+    returns:
+      type: Token[]
+      description: 読み飛ばした引数 1 つにつき 1 つのトークン
+    callees:
+      - '#functions[collectWarningsRule]'
+    status: planned
 notes:
   コアルールの順: 描画の `createParser` が登録する。印 → 機能の重ね合わせ → ページの設定 → 取り込み → 蛍光ペン → 脚注の機能のオン・オフ → カードの格子 → 行内のアイコン → 見出し → 用語集の表 → 行の詳細 → ビュー → CSV の表 → 表 → タブ → ステップ → 注意書き → ファイルツリー → バッジ → キー → 本文の文字の色 → 図の部品 → 埋め込んだ HTML → コードブロック → 表の見本の移動 → 画像の属性と種類 → 図表の番号 → ギャラリー → 画像と動画と音声の図 → カード → 段組み → details の範囲 → wide の範囲 → 改ページ → 用語の下線 → 節 → 目次 → 脚注の一覧 → 関連文書の一覧 → タスクリスト → www の自動リンク → 残った印を取り除く → 元の行番号 → 脚注の定義の取り出し → 書き方の警告を集める。行の詳細は表の囲みより前、節は記法の警告を差し込んだ後、目次は見出しの ID を付けた後。埋め込んだ HTML は用語の下線より前に置き、`html_block` にした中身を用語の下線が重ねて照合しないようにする。画像の属性は図表の番号より前に読み、図表の番号がギャラリーに番号を渡してからギャラリーを囲む。残った画像だけの段落は、その後に図にする
   部品の差し込み方: 中身を持つ部品（節・タブ・注意書き・行の詳細・図表の番号・表）は、中身の代わりに `SLOT_MARKER` を渡して HTML を作り、`markOwn` を掛けてから `SLOT_MARKER` の前後で分け、開きと閉じの `html_block` のトークンで中身のトークンを挟む。中身の HTML には `markOwn` を掛けない。見出し・表など Markdown から作ったトークンに付ける記法の属性は、同じトークンに `data-mdmark-own` も付ける。埋め込んだ HTML は例外で、`sanitizeEmbedded` で先に落とした中身にも `markOwn` を掛ける
