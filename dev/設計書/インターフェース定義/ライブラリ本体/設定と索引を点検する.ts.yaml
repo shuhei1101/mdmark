@@ -131,7 +131,7 @@ flows:
   - name: 正常系（拡張と check.ignore のマーカー）
     summary: 拡張が登録したマーカーと `check.ignore` に記載した名前のマーカーは、ずれにしない
     setup:
-      - name: 拡張と解除する名前を記載したフォルダ
+      - name: 拡張と除外する名前を記載したフォルダ
         description: '`mdmark init` の雛形の拡張 `extensions/example.js`（`directive` が `greet`）を設定の `extensions` に記載し、設定の `check.ignore` に `prettier-ignore` を記載したフォルダ。文書 `a.md` に `<!-- greet: 太郎 -->` と `<!-- prettier-ignore -->` を記載する'
       - name: Mock
         description: 差し替える依存は無い

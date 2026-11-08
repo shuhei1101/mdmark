@@ -154,7 +154,7 @@ flows:
     setup:
       - name: 配布物を読み込んだ Node の処理
         description: 正常系と同じ
-      - name: 記法を解除する Markdown
+      - name: 記法を削除する Markdown
         description: '先頭に `<!-- features: -table -callout -anchors -->` を持ち、`<!-- table: data -->` 〜 `<!-- /table -->` で囲んだ表、`> [!WARNING]` の引用、`## 使用方法` を持つ文書'
       - name: Mock
         description: 差し替える依存は無い
@@ -597,7 +597,7 @@ flows:
     expected:
       - class `mdmark-view` の `div` があり、その `data-view` を JSON として読み込むと `{"group":1,"mode":"table","boardDisabled":"","icons":{"未着手":"inbox"}}` で、その中に担当の列を `data-filter` に持つ表がある
       - 文字列にボードと切り替えのボタンが無く、マーカーの文字が残らない
-      - '`features` で `views` を解除すると、`mdmark-view` が無く表だけが出る'
+      - '`features` で `views` を削除すると、`mdmark-view` が無く表だけが出る'
     test: test_normal_when_view_marked
   - name: 正常系（コードブロックを飾る）
     summary: コードブロックのマーカーと行のマーカーから、タイトル・行番号・行の強調・行の種類を付けた HTML にする
@@ -659,7 +659,7 @@ flows:
     setup:
       - name: 配布物を読み込んだ Node の処理
         description: 正常系と同じ
-      - name: 飾りを解除する Markdown
+      - name: 飾りを削除する Markdown
         description: '先頭に `<!-- features: -code -->` を持ち、`<!-- code: title=app.ts lines -->` の直後に、行末に `// [!code ++]` を持つ行を含む 2 行の言語 `ts` のコードブロックを持つ文書'
       - name: Mock
         description: 差し替える依存は無い
@@ -1096,7 +1096,7 @@ flows:
       - dev/設計書/シナリオ/単一ユースケース/リンクと添付のカードを置く#scenarios[正常シナリオ]
       - dev/設計書/シナリオ/単一ユースケース/リンクと添付のカードを置く#scenarios[正常シナリオ（文の中のリンク）]
   - name: 正常系（色・画像・カードの機能を解除する）
-    summary: 文書のマーカーで解除した新しい記法を、普通の Markdown として描く
+    summary: 文書のマーカーで削除した新しい記法を、普通の Markdown として描く
     setup:
       - name: 配布物を読み込んだ Node の処理
         description: 正常系と同じ
@@ -1110,7 +1110,7 @@ flows:
         participant M as mdmark
         C->>M: render(markdown)
         M->>M: 設定の features に文書のマーカーを重ねる
-        M-->>C: 解除した記法を普通の Markdown として描いた HTML 文字列
+        M-->>C: 削除した記法を普通の Markdown として描いた HTML 文字列
     expected:
       - '`mdmark-color` が無く、段落の文字が `[決め手の 1 文]{color=blue}`'
       - '`img` が `figure` に入らず、段落の文字に `{width=300}` が残る'
@@ -1438,11 +1438,11 @@ flows:
       - dev/設計書/シナリオ/単一ユースケース/脚注を見る#scenarios[正常シナリオ（同じ脚注を複数回参照する）]
       - dev/設計書/シナリオ/単一ユースケース/脚注を見る#scenarios[異常シナリオ（定義の無い参照）]
   - name: 正常系（脚注の機能を解除する）
-    summary: 文書のマーカーで `footnotes` を解除し、参照と定義を記載した文字のまま記載した位置に残す
+    summary: 文書のマーカーで `footnotes` を削除し、参照と定義を記載した文字のまま記載した位置に残す
     setup:
       - name: 配布物を読み込んだ Node の処理
         description: 正常系と同じ
-      - name: 脚注を解除する Markdown
+      - name: 脚注を削除する Markdown
         description: '先頭に `<!-- features: -footnotes -->` を持ち、段落に `[^src]` と行内の `^[補足]`、その次の段落に定義 `[^src]: 出典の説明`、その次に段落 `終わり` を持つ文書'
         notes: 定義の行がリンク参照の定義として読み込まれないことを決定的に発生させる
       - name: Mock
@@ -2090,7 +2090,7 @@ constraints:
   - item: タブ
     constraint: '`<!-- tabs -->` の範囲を `<div class="mdmark-tabs">` で囲み、範囲で最初に出る見出しの階層で区切った中身ごとに `<div class="mdmark-tab-panel">` に入れる。区切りの見出しは `<p class="mdmark-tab-title">{見出しの行内の HTML}</p>` に替え（`**` の強調は `strong` のまま残す）、本文の見出しとして残さない。全ての中身を隠さずに出す（タブの並びと切り替えは `mount` が付ける）。`<!-- tabs: group=名前 -->` の範囲は `<div class="mdmark-tabs" data-group="{名前}">` にし、組は写すだけで選択は持たない。範囲の中の `<!-- tabs -->` は入れ子として数え、開きと閉じを内側から対応させる。内側のタブは、内側の範囲で最初に出る見出しの階層で区切り、`mdmark-tab-panel` の中に `mdmark-tabs` を入れる。閉じの無い開きは、範囲の中に別のタブの開きを持たなければ文書の終わりまでを範囲にし、持てばその開きから文書の終わりまでのタブのマーカーをどれもタブにせず、見出しと中身をそのまま出す'
   - item: ステップ・ファイルツリー・バッジ
-    constraint: '`<!-- steps -->` の範囲の番号付きリストの `ol` に class `mdmark-steps` を付ける。言語 `tree` のコードブロックを `<div class="mdmark-tree">` の中の `<ul class="mdmark-tree-list" aria-label="ファイルツリー">` の入れ子にし、項目を `<li class="mdmark-tree-folder">`（名前が `/` で終わるか子を持つ）・`<li class="mdmark-tree-file">` と `<span class="mdmark-tree-name">` にする。直前の `<!-- tree: {引数} -->` の `wrap`（`open=` と空白で並べて記載できる）は、そのツリーの `div.mdmark-tree` に class `mdmark-tree-wrap` を付ける。頭が `badge:` の行内のコードを `<span class="mdmark-badge">{頭を外した文言}</span>` にし、`badge\:` の行内のコードは `\` を解除した `<code>` にする。`badge:` の後ろが空か空白だけの行内のコードはバッジにせず、`<code>` のまま出す'
+    constraint: '`<!-- steps -->` の範囲の番号付きリストの `ol` に class `mdmark-steps` を付ける。言語 `tree` のコードブロックを `<div class="mdmark-tree">` の中の `<ul class="mdmark-tree-list" aria-label="ファイルツリー">` の入れ子にし、項目を `<li class="mdmark-tree-folder">`（名前が `/` で終わるか子を持つ）・`<li class="mdmark-tree-file">` と `<span class="mdmark-tree-name">` にする。直前の `<!-- tree: {引数} -->` の `wrap`（`open=` と空白で並べて記載できる）は、そのツリーの `div.mdmark-tree` に class `mdmark-tree-wrap` を付ける。頭が `badge:` の行内のコードを `<span class="mdmark-badge">{頭を外した文言}</span>` にし、`badge\:` の行内のコードは `\` を削除した `<code>` にする。`badge:` の後ろが空か空白だけの行内のコードはバッジにせず、`<code>` のまま出す'
   - item: 見出しの ID とアンカー
     constraint: 全ての見出しに GitHub と同じ規則の `id` を付ける（小文字にし、英数字・`-`・`_`・空白と英字以外の文字のほかを落とし、空白を `-` にする。同じ ID の 2 つ目から `-1`・`-2` を付ける）。見出しの ID は機能に関わらず付ける。`anchors` がオンのとき、見出しの中に `<a class="mdmark-anchor" href="#{ID}" aria-label="「{見出しの文字}」へのリンク">` を追加する
   - item: 目次
@@ -2138,7 +2138,7 @@ constraints:
     constraint: '`<!-- view: 引数 -->` 〜 `<!-- /view -->` の範囲を class `mdmark-view` の `div` にし、マーカーの引数を読み込んだ指定を `data-view` に JSON（`group` は分ける列の位置か `null`、`mode` は `board`・`table`、`boardDisabled` は `group=` の列が表に無いときの記載の警告の `id` か空、`icons` は読み込めた `icons=` の対応）で持たせ、中に範囲の表を記法の表と同じ構造（`filter=` は表の `data-filter`）で残す。ボードと切り替えは `mount` が作るため、`render` の出力だけを読み込む表示では表のまま読み込める。記載方法の誤りは記載の警告にし、`views` がオフのときは `mdmark-view` を作らず表だけを出す'
     notes: 引数と警告の種類はインターフェース定義『文書を描く』の制約の「ビューのマーカー」
   - item: コードブロック
-    constraint: 'コードブロックの情報文字列の最初の単語を最初の `:` で分け、前を言語、後ろをファイル名として読み込み、`code` の class を `language-{言語}` にする（`code` のオン・オフによらない。`:` の前が空のときは言語もファイル名も持たないものとして扱う）。言語 `tree`・図の部品の範囲の `json`・埋め込んだ HTML の範囲の `html` は、最初の単語がその言語とちょうど一致するときだけ当て、`:ファイル名` を付けたものは普通のコードブロックとして描く（埋め込んだ HTML の範囲では、`html` のコードブロックが無いときの警告を配置する）。`code` がオンのとき、コードブロックの直前の `<!-- code: {引数} -->` を次のコードブロックへの指定として読み込む。引数は `title=タイトル`（タイトル。マーカーの引数は空白で区切るためタイトルに空白は記載できず、空白の後ろは別の引数として読み込む）・`lines`（行番号）・`highlight=行,…`（強調する行。`2`・`4-6` を `,` で並べる）・`fold=行,…`（最初から畳む行。`highlight=` と同じ記載方法）・`wrap`（長い行を枠の幅で折り返す）。コードブロックの行末の行コメントの `[!code ++]`・`[!code --]`・`[!code highlight]`・`[!code focus]`・`[!code error]`・`[!code warning]` を行の種類（`add`・`del`・`highlight`・`focus`・`error`・`warning`）として読み込んでマーカーを削除し、行コメントがマーカーだけならマーカーの直前の行コメントの頭（`//`・`#`・`--`・`;`・`<!--` 〜 `-->`・`/*` 〜 `*/`）も解除し、解除した後の行末の空白も解除する。`[\!code …]` は `\` を解除した文字のまま出す。行番号・強調・行の種類・インデントのある行・`wrap` のどれかを持つコードブロックは、`pre` に class `mdmark-code-lines`（行番号を持てば `mdmark-code-numbered`、`wrap` を持てば `mdmark-code-wrap`、`add`・`del` の行を持てば `mdmark-code-signs`、`focus` の行を持てば `mdmark-code-has-focus` も）を付け、`code` の中身を行ごとに `<span class="mdmark-code-line" data-line="{行番号}" data-kind="{種類}"><span class="mdmark-code-text">{行の文字}</span></span>` に分けて改行でつなぐ（`data-line` は行番号を持つときだけ、`data-kind` は種類を持つ行だけ）。インデントのある行は `data-indent="{レベル}"` を持つ（コードブロックの中の最も小さいインデントの幅を 1 レベル、タブを 1 レベルとする）。次の空でない行がより深い行は畳める行とし、`data-fold-lines="{畳む行の数}"`（次の同じ深さ以下の行の手前まで。範囲の末尾の空行は含めない）を持つ。`fold=` の畳める行は `data-folded` も持つ。行番号を持つときは `code` の `style` に `--mdmark-code-digits: {行の数の桁の数}` を配置する。コードブロックを `<div class="mdmark-code">`（タイトルを持てば `<figure class="mdmark-code">`）で囲み、`pre` の前にラベルの帯 `<div class="mdmark-code-bar">`（タイトルを持てば `<figcaption class="mdmark-code-title mdmark-code-bar">`）を配置する。帯の左端には、言語を持つとき `<span class="mdmark-code-lang"><span class="mdmark-code-lang-name" aria-hidden="true">{言語}</span><span class="mdmark-code-file">{ファイル名}</span></span>`（`mdmark-code-file` はファイル名を持つときだけ）を配置し、タイトルを持つときはその後ろにタイトルの文字を配置する。`pre` のアクセシブルネームは、タイトルを持てば `コード: {タイトル}`、ファイル名を持てば `コード: {ファイル名}`、言語を持てば `コード: {言語}`、どれも無ければ `コード` にする。コピーのボタンは `mount` が帯の右端に付ける。行番号と行頭の `+`・`-` は HTML の文字に入れない（CSS の擬似要素で出し、選んで写す中身に入らない）。言語 `tree` のコードブロックと、図の部品・埋め込んだ HTML の範囲のコードブロックには適用しない。マーカーも行のマーカーもインデントのある行も持たないコードブロックは、帯で囲むほかは今のとおり描く。`code` がオフのときはマーカーを取り除き、コードブロックを今のとおり描く（行のマーカーは記載した文字のまま出す）'
+    constraint: 'コードブロックの情報文字列の最初の単語を最初の `:` で分け、前を言語、後ろをファイル名として読み込み、`code` の class を `language-{言語}` にする（`code` のオン・オフによらない。`:` の前が空のときは言語もファイル名も持たないものとして扱う）。言語 `tree`・図の部品の範囲の `json`・埋め込んだ HTML の範囲の `html` は、最初の単語がその言語とちょうど一致するときだけ当て、`:ファイル名` を付けたものは普通のコードブロックとして描く（埋め込んだ HTML の範囲では、`html` のコードブロックが無いときの警告を配置する）。`code` がオンのとき、コードブロックの直前の `<!-- code: {引数} -->` を次のコードブロックへの指定として読み込む。引数は `title=タイトル`（タイトル。マーカーの引数は空白で区切るためタイトルに空白は記載できず、空白の後ろは別の引数として読み込む）・`lines`（行番号）・`highlight=行,…`（強調する行。`2`・`4-6` を `,` で並べる）・`fold=行,…`（最初から畳む行。`highlight=` と同じ記載方法）・`wrap`（長い行を枠の幅で折り返す）。コードブロックの行末の行コメントの `[!code ++]`・`[!code --]`・`[!code highlight]`・`[!code focus]`・`[!code error]`・`[!code warning]` を行の種類（`add`・`del`・`highlight`・`focus`・`error`・`warning`）として読み込んでマーカーを削除し、行コメントがマーカーだけならマーカーの直前の行コメントの頭（`//`・`#`・`--`・`;`・`<!--` 〜 `-->`・`/*` 〜 `*/`）も削除し、削除した後の行末の空白も削除する。`[\!code …]` は `\` を削除した文字のまま出す。行番号・強調・行の種類・インデントのある行・`wrap` のどれかを持つコードブロックは、`pre` に class `mdmark-code-lines`（行番号を持てば `mdmark-code-numbered`、`wrap` を持てば `mdmark-code-wrap`、`add`・`del` の行を持てば `mdmark-code-signs`、`focus` の行を持てば `mdmark-code-has-focus` も）を付け、`code` の中身を行ごとに `<span class="mdmark-code-line" data-line="{行番号}" data-kind="{種類}"><span class="mdmark-code-text">{行の文字}</span></span>` に分けて改行でつなぐ（`data-line` は行番号を持つときだけ、`data-kind` は種類を持つ行だけ）。インデントのある行は `data-indent="{レベル}"` を持つ（コードブロックの中の最も小さいインデントの幅を 1 レベル、タブを 1 レベルとする）。次の空でない行がより深い行は畳める行とし、`data-fold-lines="{畳む行の数}"`（次の同じ深さ以下の行の手前まで。範囲の末尾の空行は含めない）を持つ。`fold=` の畳める行は `data-folded` も持つ。行番号を持つときは `code` の `style` に `--mdmark-code-digits: {行の数の桁の数}` を配置する。コードブロックを `<div class="mdmark-code">`（タイトルを持てば `<figure class="mdmark-code">`）で囲み、`pre` の前にラベルの帯 `<div class="mdmark-code-bar">`（タイトルを持てば `<figcaption class="mdmark-code-title mdmark-code-bar">`）を配置する。帯の左端には、言語を持つとき `<span class="mdmark-code-lang"><span class="mdmark-code-lang-name" aria-hidden="true">{言語}</span><span class="mdmark-code-file">{ファイル名}</span></span>`（`mdmark-code-file` はファイル名を持つときだけ）を配置し、タイトルを持つときはその後ろにタイトルの文字を配置する。`pre` のアクセシブルネームは、タイトルを持てば `コード: {タイトル}`、ファイル名を持てば `コード: {ファイル名}`、言語を持てば `コード: {言語}`、どれも無ければ `コード` にする。コピーのボタンは `mount` が帯の右端に付ける。行番号と行頭の `+`・`-` は HTML の文字に入れない（CSS の擬似要素で出し、選んで写す中身に入らない）。言語 `tree` のコードブロックと、図の部品・埋め込んだ HTML の範囲のコードブロックには適用しない。マーカーも行のマーカーもインデントのある行も持たないコードブロックは、帯で囲むほかは今のとおり描く。`code` がオフのときはマーカーを取り除き、コードブロックを今のとおり描く（行のマーカーは記載した文字のまま出す）'
     notes: 外観はモック `dev/mock/components/code-block/`。タイトルの前のファイルのアイコンは CSS で付ける。`mdmark-code-text` の中身は、`mount` が描いた後に色分けした HTML に置き換える（制約『コードブロックの色分け』）
   - item: 元の行番号
     constraint: 本文のブロック（見出し・段落・リスト・リストの項目・表・表の行・コードブロック・引用・水平線・注意書き・マーカーの範囲を囲む要素）の開始の要素に、そのブロックが Markdown で始まる行の番号を `data-source-line` で出す。番号は 0 始まり（Markdown の 1 行目が `0`）。入れ子のブロックはそれぞれの開始の行を持つ。sanitize は `data-source-line` を全ての要素で残す
@@ -2159,7 +2159,7 @@ constraints:
     constraint: 頭が `badge:` の行内のコードで、`badge:` の後ろの最初の `:` の前が色の名前のときだけ、`<span class="mdmark-badge" data-color="{色}">{2 つ目の `:` の後ろ}</span>` にする。最初の `:` の前が色の名前でないときと `:` が無いときは、今のとおり `badge:` の後ろを全てラベルにする。色の名前の後ろが空か空白だけのときはバッジにせず、`<code>` のまま出す
     notes: 前のバージョンで ``badge:red:x`` と記載した文書は、ラベルが `red:x` から `x` に変わる（変更履歴で通知する）。色の名前に該当しない頭は記載の警告にしない
   - item: 本文の文字の色
-    constraint: '`text-color` がオンのとき、角括弧で囲んだ文字の直後の `{color=色}`（リンクの `[文字](URL)` を除く）を、`<span class="mdmark-color" data-color="{色}">{角括弧の中の文字}</span>` にする。角括弧の中は行内の Markdown として描く。知らない色の名前は、角括弧と属性を解除した文字を色を付けずに出し、段落の前に記載の警告を配置する。`text-color` がオフのときは、記載した文字のまま出す'
+    constraint: '`text-color` がオンのとき、角括弧で囲んだ文字の直後の `{color=色}`（リンクの `[文字](URL)` を除く）を、`<span class="mdmark-color" data-color="{色}">{角括弧の中の文字}</span>` にする。角括弧の中は行内の Markdown として描く。知らない色の名前は、角括弧と属性を削除した文字を色を付けずに出し、段落の前に記載の警告を配置する。`text-color` がオフのときは、記載した文字のまま出す'
     notes: 色だけで意味を伝えないよう、太字は CSS で付ける（確認ログ）
   - item: 画像の属性
     constraint: '`images` がオンのとき、画像（動画・音声を含む）の直後の `{属性 …}` を空白で区切って読み込み、画像に適用して出力から除外する。属性は `width=値`（`300` か `300px` の px と、`1`〜`100` の `%`）・`align=left|center|right`・`nolightbox`、動画・音声だけの `autoplay`・`muted`・`loop`・`poster=パス`。`width` は `--mdmark-image-width: {値}` を、画像だけの段落なら `figure` の `style`、文の中の画像なら `img` の `style` に配置する。`align` は画像だけの段落の `figure` の `data-align` にする。`nolightbox` は `img` に `data-nolightbox` を付ける。知らない属性・読み込めない値・文の中の画像の `align`・画像に記載した動画と音声だけの属性は当てずに、画像の前（文の中の画像は段落の前）に記載の警告を配置し、本文に読み込めない属性と記載できる属性を出す。`images` がオフのときは `{…}` を記載した文字のまま出す'
@@ -2195,16 +2195,16 @@ constraints:
     constraint: '`html` と `html-scripts` がどちらもオンのとき、`<!-- html -->` の範囲に言語 `html`（必須・1 つ）・`css`・`ts`・`js`（それぞれ 1 つまで。`ts` と `js` はどちらか 1 つ）のコードブロックを配置できる。範囲の根の `<div class="mdmark-html">` に、文書の中の範囲の通し番号（0 から）を `data-html-scope` に付ける。`css` は、各規則をその根の要素の中だけに該当するようにした `<style class="mdmark-html-style">` を根の要素の先頭に配置する（当て方はモジュール構成『描画』）。`ts`・`js` は、コードを文字として入れた `<template class="mdmark-html-script" data-lang="{ts|js}">` を根の要素の末尾に配置し、実行しない（動かすのは `mount`）。範囲の `html` は機能がオンでも制約「埋め込んだ HTML」のとおり `script` 要素・`on` で始まる属性・`javascript:` の URL を落とす。範囲の `html` の要素に記載した class は、記法の class（制約「残す要素・属性」）を除いて残す。`html-scripts` がオフのときは、範囲の `css`・`ts`・`js` をコードの `pre` のまま範囲の HTML の後ろに出す。`ts` と `js` を両方置いた範囲は、範囲の `html`・`css` を描き、どちらの `template` も配置しない'
     notes: 機能の既定はオフ。範囲ごとには許さない（シナリオ『コードブロックのHTMLを描く』）
   - item: アイコン
-    constraint: '`icon` がオンのとき、頭が `icon:` の行内のコードで、後ろが Lucide の名前の記載方法（英小文字か数字で始まり、英小文字・数字・`-` だけ）のものを `<span class="mdmark-inline-icon" data-icon="{名前}" aria-hidden="true">` にする。配布物にまとめた名前と `opts.icons` にある名前は、中に `<svg class="mdmark-icon" viewBox="0 0 24 24">` とその構造の要素を配置し、それ以外の名前は中を空にする（`mount` が読み込んで入れる。`render` はアイコンを読み込まない）。制約「残す要素・属性」の図の部品と同じ見分けで、アイコンの `svg` と `path`・`circle`・`rect`・`line`・`polyline`・`polygon`・`ellipse` と描画の属性を許す。`icon\:` は `\` を解除した `<code>` にし、後ろが空か空白だけのものは `<code>` のまま出す。名前の記載方法に合わないものは `<code>` のまま出し、段落の前に制約「作成者の誤り」と同じ記載の警告（記載した名前と名前の記載方法）を配置する。`icon` がオフのときは記載した文字のまま出す'
+    constraint: '`icon` がオンのとき、頭が `icon:` の行内のコードで、後ろが Lucide の名前の記載方法（英小文字か数字で始まり、英小文字・数字・`-` だけ）のものを `<span class="mdmark-inline-icon" data-icon="{名前}" aria-hidden="true">` にする。配布物にまとめた名前と `opts.icons` にある名前は、中に `<svg class="mdmark-icon" viewBox="0 0 24 24">` とその構造の要素を配置し、それ以外の名前は中を空にする（`mount` が読み込んで入れる。`render` はアイコンを読み込まない）。制約「残す要素・属性」の図の部品と同じ見分けで、アイコンの `svg` と `path`・`circle`・`rect`・`line`・`polyline`・`polygon`・`ellipse` と描画の属性を許す。`icon\:` は `\` を削除した `<code>` にし、後ろが空か空白だけのものは `<code>` のまま出す。名前の記載方法に合わないものは `<code>` のまま出し、段落の前に制約「作成者の誤り」と同じ記載の警告（記載した名前と名前の記載方法）を配置する。`icon` がオフのときは記載した文字のまま出す'
     notes: 外観はモック `dev/mock/components/icon/`。まとめる名前の一覧は外部ライブラリ『lucide』
   - item: キー
-    constraint: '`kbd` がオンのとき、頭が `kbd:` の行内のコードを `+` で区切り、キーごとの `<kbd class="mdmark-kbd">{キー}</kbd>` を `<span class="mdmark-kbd-join">+</span>` でつないで `<span class="mdmark-kbd-group">` で囲む。キーの前後の空白は解除する。`+` のキーは `++` と記載する（`kbd:Ctrl++` は `Ctrl` と `+`）。`kbd\:` と、後ろが空か空白だけのものの扱いはバッジと同じ。`kbd` がオフのときは記載した文字のまま出す'
+    constraint: '`kbd` がオンのとき、頭が `kbd:` の行内のコードを `+` で区切り、キーごとの `<kbd class="mdmark-kbd">{キー}</kbd>` を `<span class="mdmark-kbd-join">+</span>` でつないで `<span class="mdmark-kbd-group">` で囲む。キーの前後の空白は削除する。`+` のキーは `++` と記載する（`kbd:Ctrl++` は `Ctrl` と `+`）。`kbd\:` と、後ろが空か空白だけのものの扱いはバッジと同じ。`kbd` がオフのときは記載した文字のまま出す'
     notes: 外観はモック `dev/mock/components/kbd/`
   - item: ルビ
     constraint: 文書に記載した `ruby`・`rt`・`rp` を記法の機能によらず残す（sanitize-html の既定の要素）
     notes: ルビは features のキーを持たない（確認ログ）
   - item: 蛍光ペン
-    constraint: '`highlight` がオンのとき、`==文字==`（開きの `==` の直後と閉じの `==` の直前が空白でない）を `<mark class="mdmark-highlight">` にし、中を行内の Markdown として描く。閉じの `==` の直後の `{color=色}` は、色の名前（制約「色の名前」）を `data-color` に設定して解除する。知らない色の名前は属性を解除して `data-color` を持たない既定の色で描き、段落の前に制約「本文の文字の色」と同じ記載の警告を配置する。`\=\=` は記載した文字のまま出す。コメントの `mark.mdmark-comment-mark` とは class で分け、蛍光ペンの `mark` はコメントの操作の対象にしない。`highlight` がオフのときは `==` を含む記載した文字のまま出す'
+    constraint: '`highlight` がオンのとき、`==文字==`（開きの `==` の直後と閉じの `==` の直前が空白でない）を `<mark class="mdmark-highlight">` にし、中を行内の Markdown として描く。閉じの `==` の直後の `{color=色}` は、色の名前（制約「色の名前」）を `data-color` に設定して削除する。知らない色の名前は属性を削除して `data-color` を持たない既定の色で描き、段落の前に制約「本文の文字の色」と同じ記載の警告を配置する。`\=\=` は記載した文字のまま出す。コメントの `mark.mdmark-comment-mark` とは class で分け、蛍光ペンの `mark` はコメントの操作の対象にしない。`highlight` がオフのときは `==` を含む記載した文字のまま出す'
     notes: 外観はモック `dev/mock/components/highlighter/`
   - item: 段組み
     constraint: '`columns` がオンのとき、`<!-- columns -->` 〜 `<!-- /columns -->` を `<!-- column -->` で区切った中身を、`<div class="mdmark-layout-columns" data-count="{列の数}">` の中の `<div class="mdmark-layout-column">` に記載した順に入れる。列の数は 2〜3。`<!-- column -->` を持たない範囲と 4 列以上の範囲は、範囲の前に記載の警告（列の数と、並べられるのは 2〜3 列であること）を配置し、区切りのマーカーを取り除いて中身を囲まずに順に出す。columns の範囲の中の columns の範囲は、内側の前に記載の警告（入れ子にできないこと）を配置し、内側を囲まずに中身を順に出す。範囲の外の `<!-- column -->` は取り除く。`columns` がオフのときはマーカーを取り除き、中身を順に出す'

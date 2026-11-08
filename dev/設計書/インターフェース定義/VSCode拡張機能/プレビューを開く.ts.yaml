@@ -117,7 +117,7 @@ flows:
       - '`mdmark.lastVersion` が `v0.6.0` のまま'
     test: test_normal_when_tags_unreachable
   - name: 正常系（配色を固定する）
-    summary: '`mdmark.preview.theme` の `light`・`dark` を包む要素の class にし、`auto` に戻すと解除する'
+    summary: '`mdmark.preview.theme` の `light`・`dark` を包む要素の class にし、`auto` に戻すと削除する'
     setup:
       - name: 見本のワークスペース
         description: 正常系と同じ。`mdmark.preview.theme` を `light` にする

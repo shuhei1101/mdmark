@@ -50,7 +50,7 @@ flows:
       - name: 一時の端末
         description: '`MDMARK_CONFIG`・`MDMARK_STATE_DIR`・`CLAUDE_CONFIG_DIR`・`TMUX_TMPDIR` を、それぞれ空の一時フォルダの下にする'
       - name: tmux の無い PATH
-        description: '`PATH` から tmux を解除する'
+        description: '`PATH` から tmux を削除する'
       - name: Mock
         description: ビルドした `plugin/bin/setup.js` を子プロセスで実行する。差し替える依存は無い
     flow: |-
