@@ -755,6 +755,28 @@ test("test_render_diagram_frame_when_no_legend", async () => {
   expect(findTag(html, "<figure")).toContain('data-sticky-titles="off"');
 });
 
+// 種類 mermaid は範囲と更新日を出さず、倍率の下限を付ける（正常系）
+test("test_render_diagram_frame_when_mermaid", async () => {
+  // 準備
+  const { renderDiagramFrame } = await loadDiagram();
+  const frame = {
+    kind: "mermaid" as const,
+    title: "問い合わせの受付",
+    legend: [],
+    fitMin: 0.75,
+    id: "d1",
+  };
+  // 実行
+  const html = renderDiagramFrame(frame, BODY);
+  // 検証
+  const figure = findTag(html, "<figure");
+  expect(figure).toContain('data-diagram="mermaid"');
+  expect(figure).toContain('data-fit-min="0.75"');
+  const caption = /<figcaption[^>]*>([\s\S]*?)<\/figcaption>/.exec(html)?.[1] ?? "";
+  expect(plainText(caption).trim()).toBe("問い合わせの受付");
+  expect(caption).not.toContain("<time");
+});
+
 // 枠と層の hint の印と留める範囲を置く（正常系）
 test("test_render_flow_when_group_hint", async () => {
   // 準備

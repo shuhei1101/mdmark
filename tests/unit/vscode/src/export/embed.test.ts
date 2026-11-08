@@ -94,3 +94,33 @@ test("test_embed_local_libraries_when_bundle_fails", async () => {
   ]);
   expect(calls).not.toContain("/ws/libs/babel.js");
 });
+
+// mermaid のコードブロックがある文書のときだけ、相対パスの mermaid.url を data の URL に替える（正常系）
+test("test_embed_local_libraries_when_mermaid", async () => {
+  // 準備
+  const { embedLocalLibraries } = await loadEmbed();
+  const { moduleDataUrl } = await loadHtml();
+  const used = recordingBundle();
+  const unused = recordingBundle();
+  const mermaid = { url: "/ws/libs/mermaid.mjs", theme: "neutral" };
+  const options = { libraries: undefined, htmlScripts: undefined, config: {}, mermaid };
+  // 実行
+  const withBlock = await embedLocalLibraries({
+    ...options,
+    markdown: "```mermaid\nflowchart LR\n```\n",
+    bundle: used.bundle,
+  });
+  const withoutBlock = await embedLocalLibraries({
+    ...options,
+    markdown: "# 題\n",
+    bundle: unused.bundle,
+  });
+  // 検証
+  expect(withBlock.mermaid).toEqual({
+    url: moduleDataUrl('export default "/ws/libs/mermaid.mjs";'),
+    theme: "neutral",
+  });
+  expect(used.calls).toContain("/ws/libs/mermaid.mjs");
+  expect(unused.calls).not.toContain("/ws/libs/mermaid.mjs");
+  expect(withoutBlock.mermaid).toEqual(mermaid);
+});

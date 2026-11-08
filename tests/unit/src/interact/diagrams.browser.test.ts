@@ -353,6 +353,34 @@ test("test_attach_diagrams_when_handle_resized", async () => {
   expect(viewportOf(root).clientHeight).toBe(776);
 });
 
+// 渡した図だけに付け、倍率の下限を守る（正常系）
+test("test_attach_diagrams_when_figures_given", async () => {
+  // 準備
+  const { attachDiagrams } = await loadDiagrams();
+  const { root } = createRoot(
+    `${wrapDirective("flow", INQUIRY_TEXT)}\n\n${wrapDirective("flow", INQUIRY_TEXT)}`,
+  );
+  root.style.width = "300px";
+  root.style.setProperty("--mdmark-padding", "0");
+  const [other, floored] = [
+    ...root.querySelectorAll<HTMLElement>("figure.mdmark-diagram"),
+  ];
+  if (other === undefined || floored === undefined) {
+    throw new Error("図が 2 つ無い");
+  }
+  floored.dataset.fitMin = "0.75";
+  // 実行
+  detachers.push(attachDiagrams({ root, placement: "bottom", figures: [floored] }));
+  // 検証
+  const content = floored.querySelector<HTMLElement>(".mdmark-diagram-stage");
+  expect(content?.style.transform).toBe("scale(0.75)");
+  button(floored, "拡大").click();
+  expect(content?.style.transform).not.toBe("scale(0.75)");
+  const before = zoomText(other);
+  button(other, "拡大").click();
+  expect(zoomText(other)).toBe(before);
+});
+
 // 動かした間、グループのタイトルを上端に留め、off の図では留めない（正常系）
 test("test_attach_diagrams_when_titles_stuck", async () => {
   // 準備

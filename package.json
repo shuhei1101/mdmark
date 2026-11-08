@@ -45,6 +45,7 @@
     "eslint-plugin-compat": "7.0.2",
     "highlight.js": "11.12.0",
     "lucide-react": "1.69.0",
+    "mermaid": "12.3.0",
     "msw": "3.0.4",
     "msw-storybook-addon": "3.0.3",
     "playwright": "1.64.0",

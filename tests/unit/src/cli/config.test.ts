@@ -251,6 +251,34 @@ test("test_validate_config_when_html_scripts_url_invalid", async () => {
   expect(valid.config["html-scripts"]?.url).toBe("/vendor/babel.mjs");
 });
 
+// 形の合わない mermaid を schema のずれにし、設定から落とす（正常系）
+test("test_validate_config_when_mermaid_invalid", async () => {
+  // 準備
+  const { validateConfig } = await loadModule();
+  // 実行
+  const badUrl = validateConfig({ mermaid: { url: 1 } }, "mdmark.config.yaml");
+  const badVariables = validateConfig(
+    { mermaid: { themeVariables: "x" } },
+    "mdmark.config.yaml",
+  );
+  const valid = validateConfig(
+    { mermaid: { url: "/vendor/mermaid.mjs", theme: "no-such-theme" } },
+    "mdmark.config.yaml",
+  );
+  // 検証
+  expect(badUrl.issues).toHaveLength(1);
+  expect(badUrl.issues[0]).toMatchObject({ where: "mermaid.url", kind: "schema" });
+  expect(badUrl.config.mermaid).toBeUndefined();
+  expect(badVariables.issues).toHaveLength(1);
+  expect(badVariables.issues[0]).toMatchObject({
+    where: "mermaid.themeVariables",
+    kind: "schema",
+  });
+  expect(badVariables.config.mermaid).toBeUndefined();
+  expect(valid.issues).toEqual([]);
+  expect(valid.config.mermaid).toEqual({ url: "/vendor/mermaid.mjs", theme: "no-such-theme" });
+});
+
 // 文字列でない syntax.url を schema のずれにし、設定から落とす（正常系）
 test("test_validate_config_when_syntax_url_invalid", async () => {
   // 準備
