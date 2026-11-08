@@ -2241,13 +2241,17 @@ functions:
     usecase: 設定と索引を点検する
     kind: 関数
     scope: internal
-    summary: 文書ごとに `findDiagramBlocks` で図の部品の範囲を読み、`readDefinition` で読めない定義を 1 件の `diagram_invalid`、読めたフロー図の定義を `checkFlowLayout` のずれにする
+    summary: 文書ごとに `findDiagramBlocks` で図の部品の範囲を読み（`overridden` の名前の印の範囲は飛ばす）、`readDefinition` で読めない定義を 1 件の `diagram_invalid`、読めたフロー図の定義を `checkFlowLayout` のずれにする
     description: ずれの `file` は文書のパス、`where` は開きの印の行の番号の文字、`message` は `diagram_invalid` なら書き方の警告と同じ文、ほかは図の題（無ければ印の名前）・対象のノードか線の `id`・直し方の 1 文。並びは文書の順、同じ文書の中は行の順
     args:
       - name: documents
         type: '{ path: string; markdown: string }[]'
         required: true
         description: '`collectCheckDocuments` の文書'
+      - name: overridden
+        type: ReadonlySet<string>
+        required: true
+        description: 図の部品として読まない印の名前。`collectCheckIssues` が、重ねた設定の `libraries` の名前と `loadExtensionDirectives` の `directive` を合わせて渡す
     returns:
       type: CheckIssue[]
       description: '`diagram_*` のずれ（無ければ空）'
@@ -2268,6 +2272,12 @@ functions:
         condition: モックの `inquiry` の定義を持つ文書と、図の無い文書
         mock: なし
         expected: 空の配列
+      - name: test_check_diagrams_when_overridden
+        summary: 対応表か拡張と同じ名前の印の範囲は点検しない
+        case: 正常
+        condition: '`a.md` の 3 行目に `json` のコードブロックを持たない `<!-- chart: a -->`、`overridden` に `chart`'
+        expected: '空の配列。同じ文書を空の `overridden` で点検すると `{ file: "a.md", where: "3", kind: "diagram_invalid" }` の 1 件'
+        mock: なし
     refs:
       - dev/設計書/インターフェース定義/ライブラリ本体/設定と索引を点検する.ts#constraints[図の定義の点検]
     status: planned
