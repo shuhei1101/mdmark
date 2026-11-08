@@ -114,6 +114,9 @@ files:
   - path: 使い方/カスタマイズ/部品をJavaScriptから使う.md
     description: 使う側のページと拡張のモジュールから部品を描く関数を呼ぶ手順と、コメントの読み書きの関数の渡し方。見た目や機能を使う側で変えるときに読む。
     tags: [topic:テーマ, topic:拡張]
+  - path: 使い方/図を描く/mermaidの図を描く.md
+    description: mermaid のコードブロックを記載して mdmark の見た目の図にし、テーマを変える手順。文書に図や部品を描くときに読む。
+    tags: [topic:図, topic:使い方集]
   - path: 使い方/図を描く/コードブロックのHTMLを描く.md
     description: コードブロックの HTML を描かせるマーカー・チャートの custom element の置き方・`data-hint` の書き方の手順。文書に図や部品を描くときに読む。
     tags: [topic:図, tool:html, topic:使い方集]
