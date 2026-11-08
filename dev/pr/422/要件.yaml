@@ -62,6 +62,26 @@ use_cases:
     impact: run_only
     detail: フロントマターを除外しても、変更したブロックの色分けの位置がずれない
     depends_on: []
+  - kind: single
+    scenario: dev/設計書/シナリオ/単一ユースケース/被参照を確認する.yaml
+    impact: run_only
+    detail: フロントマターにだけ出る文書の別名からは、被参照の一覧に文書を出さない
+    depends_on: []
+  - kind: single
+    scenario: dev/設計書/シナリオ/単一ユースケース/用語の意味をツールチップで確認する.yaml
+    impact: run_only
+    detail: フロントマターにだけ出る用語は、ツールチップの用語が出る文書に数えない
+    depends_on: []
+  - kind: single
+    scenario: dev/設計書/シナリオ/単一ユースケース/本文に出た用語と文書の参照を取り出す.yaml
+    impact: run_only
+    detail: フロントマターの文字は、本文に出た用語・文書の別名として取り出さない
+    depends_on: []
+  - kind: single
+    scenario: dev/設計書/シナリオ/単一ユースケース/索引と文書のずれを点検する.yaml
+    impact: run_only
+    detail: フロントマターの文字は、索引と文書のずれの照合の対象にしない
+    depends_on: []
 docs:
   - page: dev/設計書/設定/ライブラリ本体.yaml
     new: false
@@ -111,9 +131,6 @@ scope_out:
     plan: to_file
   - item: 描いた文書の差分のブロックで、フロントマターの変更を示すこと
     reason: 除外した範囲は描いた文書に出ず、要望に含まれない。Markdown の行の差分には今と同じく出る
-    plan: to_file
-  - item: 本文の参照の取り出し（collectMatches・collectReferences）で、フロントマターの文字を照合から除外すること
-    reason: '判断が分かれる。今の判断はスコープ外: 描く処理と別のインターフェースで、要望は描いた文書の表示に限られるため。インターフェース定義設計のレビューで確定する'
     plan: to_file
   - item: TOML（+++）・JSON のフロントマター
     reason: 要望は YAML のフロントマターで、GitHub の Markdown の表示も YAML だけをフロントマターとして扱う

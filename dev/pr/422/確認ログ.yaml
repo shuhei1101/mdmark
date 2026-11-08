@@ -17,3 +17,9 @@ confirmations:
     approver: shuhei1101
     commit:
     thread: https://github.com/shuhei1101/mdmark/pull/422#discussion_r4507406476
+  - topic: 被参照・用語の出現でもフロントマターの文字を照合から除外する作業をスコープに入れるか
+    decision: スコープに入れ、描く処理と参照の表・本文の参照の取り出し・索引の点検が同じ判定で除外する（推奨案 A）
+    decided_by: thumbs_up
+    approver: shuhei1101
+    commit:
+    thread: https://github.com/shuhei1101/mdmark/pull/422#discussion_r4507518503
