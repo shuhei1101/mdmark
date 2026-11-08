@@ -399,6 +399,9 @@ test("test_mount_when_extension_definition_invalid", async () => {
 /** 手元の mermaid 12.3.0 の ES モジュール（依存の mermaid の dist） */
 const MERMAID_URL = "/node_modules/mermaid/dist/mermaid.esm.min.mjs";
 
+/** mermaid の図を描き終えるまでの待ちの上限（全件を並べて流すと、5MB の mermaid のモジュールの読み込みに 10 秒を超えることがある） */
+const MERMAID_WAIT_MS = 60_000;
+
 /** flowchart の mermaid のコードブロックを 1 つ持つ文書 */
 const MERMAID_MARKDOWN = [
   "```mermaid",
@@ -409,31 +412,38 @@ const MERMAID_MARKDOWN = [
 ].join("\n");
 
 // mermaid のコードブロックを図にし、描き直す前と片付けで mermaid の図を外す（正常系）
-test("test_mount_when_mermaid", async () => {
-  // 準備
-  addStyles();
-  const el = createElement();
-  const disconnect = vi.spyOn(MutationObserver.prototype, "disconnect");
-  const config = { mermaid: { url: MERMAID_URL } };
-  const handle = await mountTracked(el, { markdown: MERMAID_MARKDOWN, config });
-  await vi.waitFor(
-    () => {
-      expect(
-        el.querySelectorAll('figure.mdmark-diagram[data-diagram="mermaid"]'),
-      ).toHaveLength(1);
-    },
-    { timeout: 10_000 },
-  );
-  const beforeUpdate = disconnect.mock.calls.length;
-  // 実行
-  handle.update(MERMAID_MARKDOWN);
-  const afterUpdate = disconnect.mock.calls.length;
-  handle.destroy();
-  // 検証
-  expect(afterUpdate).toBeGreaterThan(beforeUpdate);
-  expect(disconnect.mock.calls.length).toBeGreaterThan(afterUpdate);
-  expect(el.innerHTML).toBe("");
-});
+test(
+  "test_mount_when_mermaid",
+  async () => {
+    // 準備
+    addStyles();
+    const el = createElement();
+    const disconnect = vi.spyOn(MutationObserver.prototype, "disconnect");
+    const config = { mermaid: { url: MERMAID_URL } };
+    const handle = await mountTracked(el, {
+      markdown: MERMAID_MARKDOWN,
+      config,
+    });
+    await vi.waitFor(
+      () => {
+        expect(
+          el.querySelectorAll('figure.mdmark-diagram[data-diagram="mermaid"]'),
+        ).toHaveLength(1);
+      },
+      { timeout: MERMAID_WAIT_MS },
+    );
+    const beforeUpdate = disconnect.mock.calls.length;
+    // 実行
+    handle.update(MERMAID_MARKDOWN);
+    const afterUpdate = disconnect.mock.calls.length;
+    handle.destroy();
+    // 検証
+    expect(afterUpdate).toBeGreaterThan(beforeUpdate);
+    expect(disconnect.mock.calls.length).toBeGreaterThan(afterUpdate);
+    expect(el.innerHTML).toBe("");
+  },
+  MERMAID_WAIT_MS + 30_000,
+);
 
 // 機能 mermaid をオフにした設定では mermaid を読まない（正常系）
 test("test_mount_when_mermaid_disabled", async () => {

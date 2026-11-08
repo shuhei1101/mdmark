@@ -91,6 +91,9 @@ const attachOptions = (
 
 const detachers: Array<() => void> = [];
 
+// 全件を並べて流すと、5MB の mermaid のモジュールの読み込みに既定の 15 秒を超えることがある
+vi.setConfig({ testTimeout: 60_000 });
+
 beforeAll(() => {
   addStyles();
 });
