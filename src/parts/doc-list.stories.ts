@@ -28,8 +28,8 @@ export const LongText: Story = {
   name: "LongText",
   parameters: { server: { id: "doc-list" } },
   args: {
-    docs: '[{"path":"使用方法/カスタマイズ/テーマ/層の外の CSS/load.md","title":"バージョンを固定した URL で JavaScript と CSS を読み込み、要素に文書を描くまで"}]',
-    current: "使用方法/カスタマイズ/テーマ/層の外の CSS/load.md",
+    docs: '[{"path":"使い方/カスタマイズ/テーマ/層の外の CSS/load.md","title":"バージョンを固定した URL で JavaScript と CSS を読み込み、要素に文書を描くまで"}]',
+    current: "使い方/カスタマイズ/テーマ/層の外の CSS/load.md",
   },
 };
 
