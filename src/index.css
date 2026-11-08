@@ -8380,11 +8380,14 @@
     }
 
     /* 状態遷移図の終了の印: 外側の線と内側の塗りを本文の色にし、開始の印（本文の色の塗り）とそろえる */
-    svg g.node[id*="_end"] path {
+    svg[aria-roledescription="stateDiagram"] g.node.default[id*="_end-"] path {
       stroke: var(--mdmark-color-text);
     }
 
-    svg g.node[id*="_end"] > g:last-child path {
+    svg[aria-roledescription="stateDiagram"]
+      g.node.default[id*="_end-"]
+      > g:last-child
+      path {
       fill: var(--mdmark-color-text);
     }
 
@@ -8392,6 +8395,11 @@
     .mdmark-mermaid-print > svg {
       display: block;
     }
+  }
+
+  /* 表示する枠より小さい mermaid の図: 枠の中で横の中央に置く（大きい図は左端から動かして見る） */
+  .mdmark figure.mdmark-diagram[data-diagram="mermaid"] .mdmark-diagram-sizer {
+    margin-inline: auto;
   }
 
   /* actor の人のアイコン（lucide の user）: 図のほかの線と同じ太さで、本文の色の線にする */
