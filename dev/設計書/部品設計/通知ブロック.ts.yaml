@@ -100,7 +100,7 @@ accessibility:
   - タイトルは `strong`（class `mdmark-notice-title`）、本文は `p` で、色に頼らず文言で伝える
   - マーカーの名前は長くても枠の中で折り返し、横スクロールを出さない
 refs:
-  - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[知らせの枠]
+  - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[通知ブロック]
   - dev/設計書/インターフェース定義/ライブラリ本体/拡張を登録する.ts#constraints[読み込み]
 notes:
   出力: '`<div class="mdmark-notice" role="status"><strong class="mdmark-notice-title">{タイトル}</strong><p>表示に使用するライブラリ（<code>{name}</code>）を読み込めませんでした。ネットワークにつながっているかを確認して、ページを再読み込みしてください。</p></div>`。文言は確認ログの決定（通知ブロックの文言）。モックは `dev/mock/components/notice/`'

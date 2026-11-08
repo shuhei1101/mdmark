@@ -228,7 +228,7 @@ functions:
         mock: なし
         expected: 1 つ目の `colorTheme` が `theme-slate`、残りは `""`
     refs:
-      - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを再描画する.ts#constraints[描き直すまでの待ち]
+      - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを再描画する.ts#constraints[再描画するまでの待ち]
     status: planned
   - name: resolveConfigPath
     title: 設定ファイルの場所を決める
@@ -277,7 +277,7 @@ functions:
       3. `features`・`libraries`・`html-scripts`・`side-toc` のうち値がマップのキーと、値が文字列の `colorTheme`・`colorScheme` だけを `config` に入れ、`assets.root` が文字列なら `assetsRoot` に入れて返却する。他のキーは読み込まない
     refs:
       - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを再描画する.ts#constraints[設定の取り出し方]
-      - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを再描画する.ts#constraints[設定ファイルを読めないとき]
+      - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを再描画する.ts#constraints[設定ファイルを読み込めないとき]
       - dev/設計書/外部ライブラリ/yaml#
     status: removed
   - name: loadConfig
@@ -573,7 +573,7 @@ functions:
         mock: なし
         expected: '1 つ目は `{ colorTheme: "theme-slate", features: { callout: false } }`、2 つ目は `{ colorTheme: "theme-paper", features: { callout: false } }`、3 つ目は `{}`。指定した `config` は変わらない'
     refs:
-      - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを再描画する.ts#constraints[送る中身]
+      - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを再描画する.ts#constraints[送信する中身]
       - dev/設計書/インターフェース定義/VSCode拡張機能/HTMLに書き出す.ts#constraints[設定と相対パス]
     status: planned
     introduced:

@@ -147,7 +147,7 @@ functions:
         mock: なし
         expected: どちらも `ok` が `false` で、`message` がタグを含む
     refs:
-      - dev/設計書/インターフェース定義/VSCode拡張機能/拡張機能の配布物を作る.ts#constraints[タグの形]
+      - dev/設計書/インターフェース定義/VSCode拡張機能/拡張機能の配布物を作る.ts#constraints[タグの構造]
     status: planned
   - name: runIntegrationTests
     title: 結合テストを実行する

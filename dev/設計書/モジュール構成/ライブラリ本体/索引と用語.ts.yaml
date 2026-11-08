@@ -1643,7 +1643,7 @@ functions:
     callees:
       - '#functions[readRelated]'
     refs:
-      - dev/設計書/インターフェース定義/ライブラリ本体/索引を点検する.ts#constraints[直し忘れ]
+      - dev/設計書/インターフェース定義/ライブラリ本体/索引を点検する.ts#constraints[修正漏れ]
     status: planned
     introduced:
       pr: 127

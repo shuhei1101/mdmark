@@ -1311,7 +1311,7 @@ functions:
         mock: '`api` を `postMessage`・`setState` を記録する代役にする。mdmark を代役にする'
         expected: '`render` の前の `scroll` では `setState` が呼ばれない。`revealLine` が 30 で送信され、最後の `setState` の `line` が 30 との差が 0.05 未満'
     refs:
-      - dev/設計書/インターフェース定義/VSCode拡張機能/スクロールを合わせる.ts#constraints[知らせの間引き]
+      - dev/設計書/インターフェース定義/VSCode拡張機能/スクロールを合わせる.ts#constraints[通知の間引き]
     status: planned
   - name: useLinkClicks
     title: リンクの押下を受ける

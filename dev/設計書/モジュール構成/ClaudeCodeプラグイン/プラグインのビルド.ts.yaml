@@ -72,7 +72,7 @@ constants:
     value: scripts/licenses
     reason: MCP の SDK の配布物は ajv などを取り込んでいるが、その著作権表示を含まない
     refs:
-      - dev/設計書/外部ライブラリ/MCP-SDK#limitations[束ねたときのライセンスの表示]
+      - dev/設計書/外部ライブラリ/MCP-SDK#limitations[まとめたときのライセンスの表示]
     status: planned
     introduced:
       pr: 72

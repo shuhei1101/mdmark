@@ -705,7 +705,7 @@ constraints:
     constraint: 索引の点検に指定する文書（設定に `index` があるとき）と、`build` の対象の文書（設定に `build` があるとき）を合わせ、同じファイルは 1 回だけ点検する。どちらも無い設定では知らないマーカーを点検しない
   - item: 変わった文書
     constraint: '`--base` を指定したときだけ、設定ファイルのフォルダで `--base` と HEAD の merge-base を引き、merge-base から作業ツリーまでに変わったファイルと、git が管理していない新しいファイル（無視するファイルを除く）を、索引のファイルからの相対パスにして `checkIndex` の `changedPaths` に指定する。設定に `index` が無いときは `--base` を使用しない'
-    decided_by: dev/設計書/インターフェース定義/ライブラリ本体/索引を点検する.ts#constraints[直し忘れ]
+    decided_by: dev/設計書/インターフェース定義/ライブラリ本体/索引を点検する.ts#constraints[修正漏れ]
   - item: エイリアスの点検
     constraint: 設定に `aliases` があるときだけ行う。Schema に合う行だけを使用し、行の `paths` を設定ファイルのフォルダから参照して YAML として読み込み、`buildAliases` に指定して返った `problems` をそのまま出す。`enabled` が `false` の行は読み込まない。`paths` に該当するファイルが 0 件の行は `alias_no_files`、YAML として読み込めないファイルは `alias_unreadable` のずれにする
     decided_by: dev/設計書/インターフェース定義/ライブラリ本体/エイリアスを作る.ts#

@@ -72,7 +72,7 @@ constants:
         value: '{ in: "src/viewer/index.ts", out: "viewer" }'
         description: '`dist/viewer.js`'
     refs:
-      - dev/設計書/インターフェース定義/ライブラリ本体/配布物をビルドする.ts#constraints[対応ブラウザの下限の確かめ]
+      - dev/設計書/インターフェース定義/ライブラリ本体/配布物をビルドする.ts#constraints[対応ブラウザの下限の確認]
 functions:
   - name: main
     title: ビルドを実行する
@@ -515,7 +515,7 @@ functions:
     callers:
       - '#functions[main]'
     refs:
-      - dev/設計書/インターフェース定義/ライブラリ本体/配布物をビルドする.ts#constraints[対応ブラウザの下限の確かめ]
+      - dev/設計書/インターフェース定義/ライブラリ本体/配布物をビルドする.ts#constraints[対応ブラウザの下限の確認]
       - dev/設計書/外部ライブラリ/eslint-plugin-compat#
       - dev/設計書/外部ライブラリ/eslint#
     notes:

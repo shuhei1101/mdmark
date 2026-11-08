@@ -62,9 +62,10 @@ for f in ymls:
         nv = no.get(sec)
         if isinstance(bv, list) and isinstance(nv, list) and len(bv) == len(nv):
             for a, b in zip(bv, nv):
-                if isinstance(a, dict) and isinstance(b, dict) and isinstance(a.get('name'), str) and isinstance(b.get('name'), str) and a['name'] != b['name']:
-                    pairs.append((f'{did}#{sec}[{a["name"]}]', f'{did}#{sec}[{b["name"]}]'))
-                    pairs.append((f'{did}#{sec}[{a["name"]}].', f'{did}#{sec}[{b["name"]}].'))
+                if not (isinstance(a, dict) and isinstance(b, dict)): continue
+                for key in ('name', 'item', 'title'):
+                    if isinstance(a.get(key), str) and isinstance(b.get(key), str) and a[key] != b[key]:
+                        pairs.append((f'{did}#{sec}[{a[key]}]', f'{did}#{sec}[{b[key]}]'))
 pairs.sort(key=lambda x: -len(x[0]))
 files = [f for f in subprocess.run(['git', 'ls-files'], capture_output=True, text=True).stdout.split('\n')
          if f and not f.startswith(('dev/pr/', 'dev/mock/refs/', 'docs/_theme/')) and f.endswith(('.yaml', '.yml', '.md', '.ts'))]

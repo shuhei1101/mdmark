@@ -44,7 +44,7 @@ accessibility:
 - アイコンは `aria-hidden="true"` でスクリーンリーダーから除外し、見出しや段落のスクリーンリーダー向けの名前に名前を含めない
 refs:
 - dev/設計書/インターフェース定義/ライブラリ本体/文書をHTML文字列にする.ts#constraints[アイコン]
-- dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[束ねていないアイコンの読み込み]
+- dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[まとめていないアイコンの読み込み]
 status: planned
 notes:
   HTML: '`<span class="mdmark-inline-icon" data-icon="{name}" aria-hidden="true"><svg class="mdmark-icon" viewBox="0 0 24 24">…</svg></span>`（`node` が無いときは中を空にする）。モックは `dev/mock/components/icon/`'

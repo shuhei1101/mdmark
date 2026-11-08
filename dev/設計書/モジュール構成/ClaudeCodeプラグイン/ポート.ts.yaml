@@ -8,7 +8,7 @@ constants:
     summary: 1 回の TCP の接続を待つ上限
     value: '1000'
     refs:
-      - dev/設計書/インターフェース定義/ClaudeCodeプラグイン/端末の状態を調べる.ts#constraints[ポートの確かめ]
+      - dev/設計書/インターフェース定義/ClaudeCodeプラグイン/端末の状態を調べる.ts#constraints[ポートの確認]
       - dev/設計書/インターフェース定義/ClaudeCodeプラグイン/常駐サーバーの状態を伝える.ts#constraints[待ち]
     status: planned
     introduced:

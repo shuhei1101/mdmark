@@ -140,7 +140,7 @@ classes:
           type: void
           description: '-'
         refs:
-          - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを再描画する.ts#constraints[描き直すきっかけ]
+          - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを再描画する.ts#constraints[再描画するきっかけ]
       - name: handleConfigChange
         title: 設定の変更を振り分ける
         kind: メソッド
@@ -200,7 +200,7 @@ classes:
           type: PreviewPanel[]
           description: 該当したパネル
         refs:
-          - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを再描画する.ts#constraints[差分のパネルを描き直すきっかけ]
+          - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを再描画する.ts#constraints[差分のパネルを再描画するきっかけ]
       - name: auditPreview
         title: パネルを axe で検査する
         kind: メソッド
@@ -336,7 +336,7 @@ classes:
           - dev/設計書/モジュール構成/ライブラリ本体/設定を重ねて読み込む.ts#functions[displayConfigPath]
           - dev/設計書/モジュール構成/ライブラリ本体/CLI.ts#functions[formatCheckIssue]
         refs:
-          - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを再描画する.ts#constraints[設定ファイルを読めないとき]
+          - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを再描画する.ts#constraints[設定ファイルを読み込めないとき]
           - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを開く.ts#constraints[エイリアス]
         process: |-
           1. 設定ファイルを読み込む（設定ファイルを読み込む。`purpose: preview`、`cwd` は Markdown のフォルダ、`baseDir` は Markdown を含むワークスペースのフォルダ、`env` は `process.env`、`home` は `os.homedir()`）
@@ -357,7 +357,7 @@ classes:
           type: void
           description: '-'
         refs:
-          - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを再描画する.ts#constraints[描き直すまでの待ち]
+          - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを再描画する.ts#constraints[再描画するまでの待ち]
       - name: renderNow
         title: 今すぐ送信する
         kind: メソッド
@@ -366,7 +366,7 @@ classes:
           type: void
           description: '-'
         refs:
-          - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを再描画する.ts#constraints[送る中身]
+          - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを再描画する.ts#constraints[送信する中身]
           - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを再描画する.ts#constraints[背面のパネル]
           - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを開く.ts#constraints[差分の受け渡し]
       - name: handleMessage

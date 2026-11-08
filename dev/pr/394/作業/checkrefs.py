@@ -32,7 +32,7 @@ def names(did,sec):
     d=cache[did]
     if d is None: return None
     v=d.get(sec) if isinstance(d,dict) else None
-    return {x.get('name') for x in v if isinstance(x,dict)} if isinstance(v,list) else set()
+    return {x.get(k) for x in v if isinstance(x,dict) for k in ('name','item','title')} if isinstance(v,list) else set()
 bad_r=0
 for f in files:
     if not f.endswith(('.yaml','.md','.ts')): continue

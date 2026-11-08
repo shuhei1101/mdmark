@@ -35,7 +35,7 @@ data_models:
         type: Map<string, () => unknown> | undefined
         description: 範囲のコードの文字から、既定のエクスポートを返却する関数を参照する表（CLI が esbuild で変えてまとめたもの）
     refs:
-      - dev/設計書/インターフェース定義/ライブラリ本体/文書をHTMLに書き出す.ts#constraints[束ねるスクリプト]
+      - dev/設計書/インターフェース定義/ライブラリ本体/文書をHTMLに書き出す.ts#constraints[まとめるスクリプト]
     status: planned
     introduced:
       pr: 296

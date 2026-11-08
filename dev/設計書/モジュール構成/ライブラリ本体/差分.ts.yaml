@@ -856,7 +856,7 @@ functions:
       - '#functions[renderDiffBlock]'
     refs:
       - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[描いた文書のブロックの色分け]
-      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[色を当てたブロックの要素]
+      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[色を適用したブロックの要素]
     status: planned
     introduced:
       pr: 196

@@ -81,7 +81,7 @@ accessibility:
   - 開閉のボタンは `「{label}」の詳細` をスクリーンリーダー向けの名前に持ち、`aria-expanded`・`aria-controls` で開閉の状態を示す
 refs:
   - dev/設計書/インターフェース定義/ライブラリ本体/文書をHTML文字列にする.ts#constraints[行の詳細]
-  - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[節と行の詳細の開閉]
+  - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[セクションと行の詳細の開閉]
 status: planned
 notes:
   HTML: 詳細の行は `<tr class="mdmark-row-detail" data-row="{row}"><td colspan="{columns}">{中身}</td></tr>`。`toggle` のときは行の先頭のセルを `<span class="mdmark-row-head"><button class="mdmark-row-toggle" type="button" aria-expanded="{open}" aria-controls="…" aria-label="「{label}」の詳細"></button>{セルの中身}</span>` にし、閉じた詳細の行に `hidden` を付ける。モックは `dev/mock/components/row-detail/`

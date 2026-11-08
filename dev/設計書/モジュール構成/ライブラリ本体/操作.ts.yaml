@@ -412,7 +412,7 @@ functions:
         mock: なし（Chromium）
         expected: 2 列の表はピン止めのボタンが `hidden` で `table` の幅が包む要素の幅と同じ。12 列の表はピン止めのボタンが `hidden` を持たず、包む要素の `scrollWidth` が `clientWidth` より大きい
     refs:
-      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[列の表示の知らせ]
+      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[列の表示の通知]
       - '#functions[computeTotal]'
       - '#functions[tableToTsv]'
       - '#functions[rowIdFromHash]'

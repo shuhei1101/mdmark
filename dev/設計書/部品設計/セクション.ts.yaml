@@ -120,8 +120,8 @@ accessibility:
   - アンカーは `「{見出しの文字}」へのリンク` をスクリーンリーダー向けの名前に持つ
   - 開閉のボタンで Shift+Enter・Shift+Space を押すと、Shift を押しながらのクリックと同じく入れ子のセクションをまとめて開閉する
 refs:
-  - dev/設計書/インターフェース定義/ライブラリ本体/文書をHTML文字列にする.ts#constraints[節]
-  - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[節と行の詳細の開閉]
+  - dev/設計書/インターフェース定義/ライブラリ本体/文書をHTML文字列にする.ts#constraints[セクション]
+  - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[セクションと行の詳細の開閉]
   - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[入れ子をまとめて開閉]
 status: planned
 notes:

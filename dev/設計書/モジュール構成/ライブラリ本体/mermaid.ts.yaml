@@ -278,7 +278,7 @@ functions:
     refs:
       - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[mermaid の対象]
       - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[mermaid の読み込み]
-      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[mermaid を読めないとき]
+      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[mermaid を読み込めないとき]
     test_setup:
       - name: mermaid のコードブロック
         description: '`render` で、front matter の `title` を持つ flowchart と `actor` を持つ sequenceDiagram の 2 つの mermaid のコードブロックを描いた要素（`src/index.css` を適用した Chromium のページ）'

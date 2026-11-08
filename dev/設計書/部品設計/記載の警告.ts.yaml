@@ -149,7 +149,7 @@ accessibility:
   - タイトルのアイコンは CSS で付け、スクリーンリーダーに含めない
   - マーカーは長くても枠の中で折り返し、横スクロールを出さない
 refs:
-  - dev/設計書/インターフェース定義/ライブラリ本体/文書をHTML文字列にする.ts#constraints[書き手の誤り]
+  - dev/設計書/インターフェース定義/ライブラリ本体/文書をHTML文字列にする.ts#constraints[作成者の誤り]
   - dev/設計書/インターフェース定義/ライブラリ本体/拡張を登録する.ts#constraints[引数の検査]
 status: planned
 notes:

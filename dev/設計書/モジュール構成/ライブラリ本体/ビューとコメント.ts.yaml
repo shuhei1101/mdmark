@@ -569,7 +569,7 @@ functions:
         expected: '`reloadComments()` が解決し、`reload` は呼ばれず、得た `detach` が 1 回呼ばれる'
     refs:
       - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#exceptions[なし（ビュー・コメントの部品のモジュールを読み込めない）]
-      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[コメントの読み直し]
+      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[コメントの再読み込み]
   - name: checkViewOptions
     title: ビューの引数を検める
     container: src/views/spec.ts
@@ -1124,7 +1124,7 @@ functions:
     refs:
       - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[コメントの操作]
       - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[コメントの修正と削除]
-      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[コメントの読み直し]
+      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[コメントの再読み込み]
       - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[コメントの箇所へ移る]
       - dev/設計書/インターフェース定義/ライブラリ本体/コメントを付ける.ts#
       - dev/設計書/画面設計/文書.ts#
@@ -1267,7 +1267,7 @@ functions:
     refs:
       - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[余白のマーカー]
       - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[余白のマーカーから移る]
-      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[余白のマーカーの置き直し]
+      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[余白のマーカーの再配置]
   - name: layoutMarkers
     title: マーカーの縦の位置を決める
     container: src/comments/margin.ts
