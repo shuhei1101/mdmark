@@ -70,8 +70,10 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-08T13:21:02.168224+00:00'
   - process: 単体テスト作成
-    status: todo
+    status: done
     note: 点検の図の点検が libraries のマーカーを飛ばすことと、節の組み立てが取り込みの枠の中の見出しを枠の外へ出さないことの単体テスト
+    updated_by: planner
+    updated_at: '2026-11-08T17:01:21.277186+00:00'
   - process: 実装
     status: todo
     note: 見出しの節の組み立てで取り込みの枠の中の見出しを枠の外へ出さない。mdmark check の図の点検で libraries のマーカーを図の部品として読まない
