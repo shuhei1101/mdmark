@@ -70,16 +70,24 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-08T12:35:58.631655+00:00'
   - process: 単体テスト作成
-    status: todo
+    status: skipped
     note: test_normal_when_table_fills_width の原因が実装にあり、関数の振る舞いを変えるときだけ作る
+    reason: 9 件ともテストの準備と期待値が設計と食い違うもので、実装の関数の振る舞いを変えない
+    updated_by: planner
+    updated_at: '2026-11-08T13:01:16.336579+00:00'
   - process: 実装
-    status: todo
+    status: skipped
     note: test_normal_when_table_fills_width の見出しの折り返しの原因を調べ、実装が設計と食い違えば修正する
+    reason: test_normal_when_table_fills_width の見出しは 1 行で描かれ、テストが並べ替えのボタンの枠と文字の矩形を別の行と数えていた。実装は設計どおり
+    updated_by: planner
+    updated_at: '2026-11-08T13:01:16.336579+00:00'
   - process: 結合テスト作成
     status: skipped
     reason: インターフェース定義と画面設計は変わらない
     updated_by: planner
     updated_at: '2026-11-08T12:35:58.631655+00:00'
   - process: E2E テスト作成
-    status: todo
+    status: done
     note: tests/e2e/単一ユースケース/表を操作する.spec.ts の 9 件
+    updated_by: planner
+    updated_at: '2026-11-08T13:01:16.336579+00:00'
