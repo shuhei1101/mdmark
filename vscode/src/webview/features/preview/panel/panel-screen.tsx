@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { HostMessage } from "../../../../messages.ts";
 import type { VsCodeApi } from "../../../shared/adapters/vscode-api.ts";
 import { ConfigBand } from "../../../shared/components/config-band.tsx";
@@ -95,6 +95,25 @@ const replaceThemeHref = (href: string): void => {
   document.getElementById("mdmark-theme")?.setAttribute("href", href);
 };
 
+/** テストのときだけ、`document` の CSP の違反を数えて html 要素の `data-mdmark-csp-violations` に記載し、後始末で受け取りを解除する */
+const useCspViolations = (test: boolean): void => {
+  useEffect(() => {
+    if (!test) {
+      return;
+    }
+    const root = document.documentElement;
+    let count = 0;
+    root.dataset.mdmarkCspViolations = "0";
+    const onViolation = (): void => {
+      count += 1;
+      root.dataset.mdmarkCspViolations = String(count);
+    };
+    document.addEventListener("securitypolicyviolation", onViolation);
+    return () =>
+      document.removeEventListener("securitypolicyviolation", onViolation);
+  }, [test]);
+};
+
 /** 状態の表示・帯・描く先の要素を並べ、配布物の読み込み・拡張機能のメッセージ・スクロール・リンクをつなぐ */
 export const PanelScreen = ({
   boot,
@@ -189,6 +208,7 @@ export const PanelScreen = ({
     }
   };
 
+  useCspViolations(boot.test);
   useLinkClicks(api);
   useScrollSync({ view, api });
   useMediaErrors(boot.root);
