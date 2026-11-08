@@ -118,7 +118,7 @@ function chooseOption(el: Element, text: string): void {
   (label?.control as HTMLInputElement | null)?.click();
 }
 
-/** `document` に付けた受け取りの数（付けた数から除外した数を参照した値）を、種類ごとに数える */
+/** `document` に付けた受け取りの数（付けた数から解除した数を減算した値）を、種類ごとに数える */
 function trackDocumentListeners(): { balance: (type: string) => number } {
   const counts = new Map<string, number>();
   const add = document.addEventListener.bind(document);
