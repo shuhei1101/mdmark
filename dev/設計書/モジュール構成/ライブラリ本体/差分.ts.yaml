@@ -262,7 +262,7 @@ functions:
   - name: computeDiff
     title: 差分を計算する
     container: src/diff/compute.ts
-    summary: 2 つの Markdown のソースを行ごとに比べ、対の行を単語ごとに比べ、埋め込んだ HTML の範囲を塊に分ける
+    summary: 2 つの Markdown のソースを、空白だけの行を除いて行ごとに比べ、対の行を単語ごとに比べ、埋め込んだ HTML の範囲を塊に分ける
     kind: 関数
     scope: internal
     args:
@@ -274,7 +274,7 @@ functions:
       type: DiffResult
       description: 塊の並びと行の数
     process: |-
-      1. `engine.lines` で前と後を比べ、切れを行に分けて `same`・`del`・`add` の行の並びにする。変えた塊の中では削除した行を先、追加した行を後に並べる
+      1. 前と後を行に分け、空白だけでない行をそれぞれ行末に改行を付けてつなぎ、`engine.lines` で比べる（空白だけの行どうしの一致を、変えていない行の手がかりにしない。最後の行の改行の有無は比べない）。比べた切れを行に分けて `same`・`del`・`add` の行の並びにし、除いた空白だけの行を、前と後のそれぞれで直前の空白でない行（無ければソースの先頭）の後ろに戻す。付けた先が `same` の行かソースの先頭なら、前と後の空白だけの行を前から順に対にし、文字が同じ対を `same`、文字が違う対を `del` と `add`、対にならない行をその側の `del` か `add` にする。付けた先が `del`・`add` の行なら、その側の空白だけの行を同じ `del`・`add` にする。変えた塊の中では削除した行を先、追加した行を後に並べる
       2. 変えた塊ごとに、削除した行と追加した行を前から順に対にし、対の行を `engine.words` で比べて `parts` を作る（削除した側は `removed` を、追加した側は `added` を `changed` にする）。対にならない行は 1 つの切れにする
       3. 行を上から読み込み、`<!-- html -->` から `<!-- /html -->` までの行を `html` の塊、それ以外を `lines` の塊にまとめる。`html` の塊は、`same` 以外の行を持つかで `changed` を決め、`add` を除いた行と `del` を除いた行からそれぞれの側の `html` のコードブロックの中身を取り出す（その側に範囲の行が無ければ `null`）
       4. `del`・`add` の行を数えて `counts` にする
@@ -309,6 +309,36 @@ functions:
         condition: '`engine` に、全ての行を削除して追加する切れを返却する `lines` を指定する'
         mock: '`engine` を差し替える'
         expected: 全ての行が `del` か `add` になる
+      - name: test_compute_diff_when_one_line_paragraphs
+        case: 正常
+        summary: 1 行の段落だけの文書で、空行の一致を手がかりにせず、変えていない段落を同じ行にする
+        condition: '前: `A\n\nC\n\nD\n`。後: `A\n\nB\n\nC\n`'
+        mock: なし（既定の `jsdiffEngine`）
+        expected: '行の並びが `same` の `A`・`same` の空行・`add` の `B`・`add` の空行・`same` の `C`・`del` の空行・`del` の `D` の順。`counts` が `{ del: 2, add: 2 }`'
+      - name: test_compute_diff_when_blank_line_added
+        case: 正常
+        summary: 空行だけを追加した変更を、追加した空行にする
+        condition: '前: `X\nY\n`。後: `X\n\nY\n`'
+        mock: なし
+        expected: '行の並びが `same` の `X`・`add` の空行・`same` の `Y` の順。`counts` が `{ del: 0, add: 1 }`'
+      - name: test_compute_diff_when_blank_text_differs
+        case: 正常
+        summary: 文字の違う空白だけの行は、削除した行と追加した行にする
+        condition: '前: `A\n␣␣\nB\n`（`␣` は空白）。後: `A\n\nB\n`'
+        mock: なし
+        expected: '行の並びが `same` の `A`・`del` の `␣␣`・`add` の空行・`same` の `B` の順'
+      - name: test_compute_diff_when_leading_blank_lines
+        case: 正常
+        summary: 先頭の空行はソースの先頭に付け、前と後で対にする
+        condition: '前: `\n\nA\n`。後: `\nA\n`'
+        mock: なし
+        expected: '行の並びが `same` の空行・`del` の空行・`same` の `A` の順'
+      - name: test_compute_diff_when_last_newline_missing
+        case: 正常
+        summary: 最後の行の改行の有無は比べない
+        condition: '前: `A\nB`。後: `A\nB\n`'
+        mock: なし
+        expected: '`counts` が `{ del: 0, add: 0 }` で、全ての行が `same`'
     callees:
       - '#function_types[DiffEngine]'
     refs:
@@ -807,8 +837,8 @@ functions:
       type: void
       description: なし
     process: |-
-      1. 前と後の Markdown から空白だけの行を除き、残った行を元の行番号と対にして `computeDiff` で比べる（空行だけが一致する並びを、変えていない行の手がかりにしない）。全ての塊の行を上から読み込んで元の行番号に戻し、前の行番号ごとに削除したか、後の行番号ごとに追加したか、`same` の行の前から後への行番号の対応を作る。`same` でない行が続くところを 1 つの変えた塊にする
-      2. `collectBlockRanges` で前と後をブロックに分ける。後のブロックで範囲に追加した行を持つものを追加、前のブロックで範囲の空白だけでない行が全て削除した行のものを削除の候補にする。前のブロックで見出しのセクションが丸ごと削除の候補なら、見出しとセクションの中身を 1 つの候補にまとめる。リスト・表の全ての項目・行が候補で、後にそのリスト・表が無いときはリスト・表ごと 1 つの候補にする
+      1. 前と後の Markdown を `computeDiff` で比べる（空白だけの行どうしの一致は、`computeDiff` が変えていない行の手がかりにしない）。`del`・`add` の行が無ければ何もしない。全ての塊の行を上から読み込んで前と後の行番号を数え、前の行番号ごとに削除したか、後の行番号ごとに追加したか、`same` の行の前から後への行番号の対応を作る。`same` でない行が続くところを 1 つの変えた塊にする
+      2. `collectBlockRanges` で前と後をブロックに分ける。後のブロックで、範囲に空白だけでない追加した行を持つものと、分け直したものを追加にする。分け直したものは、範囲の空白だけでない `same` の行を対応で前の行番号にした並びが、それを範囲に含む前の同じ `unit` のブロック（含むものが 2 つ以上あれば最も狭いもの）の範囲の空白だけでない `same` の行の並びと一致しないもの（空行で段落を分けた・つないだもの）。前のブロックで範囲の空白だけでない行が全て削除した行のものを削除の候補にする。前のブロックで範囲の空白だけでない行が全て削除した行のものを削除の候補にする。前のブロックで見出しのセクションが丸ごと削除の候補なら、見出しとセクションの中身を 1 つの候補にまとめる。リスト・表の全ての項目・行が候補で、後にそのリスト・表が無いときはリスト・表ごと 1 つの候補にする
       3. 同じ変えた塊の候補と追加のブロックを前から順に対にし、`isRewrite` が true の対は候補を削除する。残った候補を削除したブロックにする
       4. 追加のブロックを `renderDiffBlock({ kind: "add", unit, html: 要素の outerHTML })` の要素に置き換える。置き換えたブロックの中の項目・行の範囲は、置き換えた後の要素の中の同じ位置の要素を指すように付け替える
       5. 削除したブロックごとに、`renderDiffBlock({ kind: "del", ... })` の要素を作り、差し込む場所を決める。前の文書で同じ親の直前にあった変えていないブロックの `start` を行の対応で後の行番号にし、その行を範囲に持つ後のブロックの後ろ（その後ろに先に差し込んだ削除のブロックがあればその後ろ）に配置する。直前に無ければ、前の文書で属していたセクションの見出しを同じ対応で参照した後のセクションの中身の先頭、セクションに属さなければ `after.root` の先頭に配置する。リストの項目と表の行は、前の文書で直前の項目・行の後ろ（無ければ対応するリスト・`tbody` の先頭）に配置する
@@ -849,6 +879,24 @@ functions:
         condition: '前: 段落 `A`・`C`・`D`。後: 段落 `A`・`B`・`C`。どれも 1 行の段落を空行で区切り、既定の設定で描いた中身'
         mock: なし（既定の `jsdiffEngine`）
         expected: 段落 B だけが `data-kind="add"` の `div.mdmark-diff-block` に包まれ、段落 C の後ろに段落 D が `data-kind="del"` である。段落 A と C は包まれない
+      - name: test_color_diff_blocks_when_paragraph_split
+        case: 正常
+        summary: 空行だけを追加して段落を 2 つに分けた変更で、分けた後の段落に追加の色を適用する
+        condition: '前: 2 行の段落 `X\nY`。後: `X\n\nY`（段落 `X`・`Y`）。どちらも既定の設定で描いた中身'
+        mock: なし（既定の `jsdiffEngine`）
+        expected: 段落 `X` と `Y` がそれぞれ `data-kind="add"` の `div.mdmark-diff-block` に包まれる。`data-kind="del"` のブロックは無い
+      - name: test_color_diff_blocks_when_paragraphs_joined
+        case: 正常
+        summary: 空行だけを削除して 2 つの段落を 1 つにつないだ変更で、つないだ段落に追加の色を適用する
+        condition: '前: `X\n\nY`（段落 `X`・`Y`）。後: 2 行の段落 `X\nY`。どちらも既定の設定で描いた中身'
+        mock: なし
+        expected: つないだ段落が `data-kind="add"` の `div.mdmark-diff-block` に包まれる。`data-kind="del"` のブロックは無い
+      - name: test_color_diff_blocks_when_blank_lines_only
+        case: 正常
+        summary: 段落の間の空行の数だけを変えた変更では、色を適用しない
+        condition: '前: `A\n\nB\n`。後: `A\n\n\nB\n`。どちらも既定の設定で描いた中身'
+        mock: なし
+        expected: '`after.root` の HTML が呼ぶ前と同じ'
     callees:
       - '#functions[computeDiff]'
       - '#functions[collectBlockRanges]'
