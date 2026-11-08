@@ -1088,7 +1088,7 @@ function attachTable(
       copyTimer = setTimeout(() => setCopyState("idle"), COPIED_NOTICE_MS);
       return;
     }
-    // 記載できなかったことはボタンで通知し、中身を選択したパネルで手でコピーさせる
+    // 書き込めなかったことはボタンで通知し、中身を選択したパネルで手でコピーさせる
     setCopyState("failed");
     wrapper
       .querySelector(".mdmark-table-bar")

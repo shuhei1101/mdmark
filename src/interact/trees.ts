@@ -240,7 +240,7 @@ function attachTree(tree: HTMLElement): () => void {
   list.addEventListener("beforematch", onBeforeMatch);
   cleanups.push(() => list.removeEventListener("beforematch", onBeforeMatch));
 
-  // コピー: 元の罫線のテキストを記載し、記載できなければ手でコピーさせるパネルを出す
+  // コピー: 元の罫線のテキストを書き込み、書き込めなければ手でコピーさせるパネルを出す
   let copyTimer: ReturnType<typeof setTimeout> | undefined;
   const setCopyState = (state: TreeCopyState): void => {
     if (copyButton) {

@@ -73,7 +73,7 @@ export async function runInit(
       await mkdir(dirname(target), { recursive: true });
     } catch (error) {
       throw new CliError(
-        `${template.path} に記載できません（${reasonOf(error)}）。配置先のフォルダを確認してください。`,
+        `${template.path} に書き込めません（${reasonOf(error)}）。配置先のフォルダを確認してください。`,
       );
     }
     try {
@@ -90,7 +90,7 @@ export async function runInit(
         continue;
       }
       throw new CliError(
-        `${template.path} に記載できません（${reasonOf(error)}）。配置先のフォルダを確認してください。`,
+        `${template.path} に書き込めません（${reasonOf(error)}）。配置先のフォルダを確認してください。`,
       );
     }
   }

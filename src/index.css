@@ -7533,7 +7533,7 @@
         outline-offset: 0;
       }
 
-      /* 記載できなかった・保存できなかったときの入力欄: 線を誤りの色にする */
+      /* 書き込めなかった・保存できなかったときの入力欄: 線を誤りの色にする */
       &[aria-invalid="true"] {
         border-color: var(--mdmark-color-error);
       }

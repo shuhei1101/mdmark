@@ -521,7 +521,7 @@ export async function readDistAssets(options: {
   return { distCss, viewer, view };
 }
 
-/** HTML を書き込む。親のフォルダが無ければ作り、記載できなければ記載できなかったパスを示す誤りを投げる */
+/** HTML を書き込む。親のフォルダが無ければ作り、書き込めなければ書き込めなかったパスを示す誤りを投げる */
 export async function writeHtml(options: {
   /** 記載する先の絶対パス */
   file: string;
@@ -536,7 +536,7 @@ export async function writeHtml(options: {
     await writeFile(file, html);
   } catch (error) {
     throw new CliError(
-      `記載できない: ${display} に記載できません（${reasonOf(error)}）。出力先のフォルダを確認してください。`,
+      `書き込めない: ${display} に書き込めません（${reasonOf(error)}）。出力先のフォルダを確認してください。`,
     );
   }
 }

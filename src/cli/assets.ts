@@ -273,7 +273,7 @@ export async function copyMedia(options: {
       } catch (error) {
         const reason = error instanceof Error ? error.message : String(error);
         throw new CliError(
-          `${filesDir} に記載できません（${reason}）。出力先のフォルダを確認してください。`,
+          `${filesDir} に書き込めません（${reason}）。出力先のフォルダを確認してください。`,
         );
       }
       copied.set(file, target);
