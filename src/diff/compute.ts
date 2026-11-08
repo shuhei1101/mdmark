@@ -263,7 +263,11 @@ function withBlankLines(options: {
   const pairBlanks = (beforeLine: number, afterLine: number): void => {
     const dels = before.blanks.get(beforeLine) ?? [];
     const adds = after.blanks.get(afterLine) ?? [];
-    for (let index = 0; index < Math.max(dels.length, adds.length); index += 1) {
+    for (
+      let index = 0;
+      index < Math.max(dels.length, adds.length);
+      index += 1
+    ) {
       const del = dels[index];
       const add = adds[index];
       if (del !== undefined && del === add) {
