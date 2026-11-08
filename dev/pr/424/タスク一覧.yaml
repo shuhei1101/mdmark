@@ -47,7 +47,9 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-08T18:44:19.546326+00:00'
   - process: 部品設計
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-08T18:52:06.449645+00:00'
   - process: 画面設計
     status: skipped
     reason: 画面設計の elements は変わらず、変わるのはフロー図の部品の中の種類の名前と凡例で、部品設計が持つため対象外（画面設計要否の Q2 NO）
