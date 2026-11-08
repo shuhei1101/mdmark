@@ -35,8 +35,10 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-08T10:57:57.512784+00:00'
   - process: 単一ユースケース設計
-    status: todo
+    status: done
     note: シナリオ『コードブロックを飾る』の異常シナリオ（知らないコードの行の印）の印を、LINE_MARK_KINDS に無い印へ替える
+    updated_by: planner
+    updated_at: '2026-11-08T11:08:06.943515+00:00'
   - process: モック作成
     status: skipped
     reason: 画面を変えない
