@@ -502,7 +502,9 @@ docs:
   - page: migrations/no-steps.yaml
     new: false
     change: JSON Schema の説明だけの変更の行を追加する
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-08T11:00:24.653060+00:00'
 scope_out:
   - item: コードの識別子・Enum の値・定数・設定と索引のキー・CLI のサブコマンドとオプション名・MCP のツール名
     reason: Issue の対象外。英語のまま維持する
