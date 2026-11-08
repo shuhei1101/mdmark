@@ -39,13 +39,11 @@ export const collectAnchors = (options: {
     scroller === document.documentElement;
   const origin = page ? 0 : scroller.getBoundingClientRect().top;
   const anchors: Anchor[] = [];
-  for (const element of root.querySelectorAll<HTMLElement>(
-    "[data-source-line]",
-  )) {
-    // 閉じたセクションの中の要素も高さを持って返却されるため、中身の祖先で除く
-    if (element.closest(CLOSED_BODY) !== null) {
-      continue;
-    }
+  // 閉じたセクションの中の要素も高さを持って返却されるため、中身の祖先で除く
+  const elements = [
+    ...root.querySelectorAll<HTMLElement>("[data-source-line]"),
+  ].filter((element) => element.closest(CLOSED_BODY) === null);
+  for (const element of elements) {
     const rect = element.getBoundingClientRect();
     const line = Number(element.dataset.sourceLine);
     const top = rect.top - origin + scroller.scrollTop;
