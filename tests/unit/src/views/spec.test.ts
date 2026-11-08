@@ -3,14 +3,14 @@ import { afterEach, beforeEach, expect, test, vi } from "vitest";
 /** ビューの引数の検査を読み込む（実装が無い間は各テストが個別に失敗する） */
 const loadSpec = () => import("../../../../src/views/spec.ts");
 
-/** 題・状態・担当の列と項目 */
+/** タイトル・状態・担当の列と項目 */
 const VALID = {
-  columns: ["題", "状態", "担当"],
-  items: [{ 題: "配色の変数を洗い出す", 状態: "未着手", 担当: "佐藤" }],
+  columns: ["タイトル", "状態", "担当"],
+  items: [{ タイトル: "配色の変数を洗い出す", 状態: "未着手", 担当: "佐藤" }],
 };
 
 beforeEach(() => {
-  // Node には要素が無いため、`instanceof HTMLElement` で通る代役を置く
+  // Node には要素が無いため、`instanceof HTMLElement` で通る代役を配置する
   vi.stubGlobal("HTMLElement", class FakeElement {});
 });
 
@@ -41,7 +41,10 @@ test("test_check_view_options_when_invalid", async () => {
   const el = new HTMLElement();
   const cases: Array<{ opts: unknown; name: string }> = [
     { opts: { ...VALID, columns: [] }, name: "opts.columns" },
-    { opts: { ...VALID, columns: ["題", "題"] }, name: "opts.columns" },
+    {
+      opts: { ...VALID, columns: ["タイトル", "タイトル"] },
+      name: "opts.columns",
+    },
     {
       opts: { ...VALID, items: [["配色", "未着手", "佐藤"]] },
       name: "opts.items",

@@ -2,7 +2,7 @@ import { cva, type VariantProps } from "class-variance-authority";
 import type { ComponentProps } from "react";
 import { cn } from "../../lib/cn.ts";
 
-/** Button の見た目 */
+/** Button の外観 */
 const buttonVariants = cva(
   "inline-flex h-9 min-w-9 cursor-pointer touch-manipulation items-center justify-center gap-2 rounded-md border px-4 text-sm font-medium whitespace-nowrap focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring",
   {

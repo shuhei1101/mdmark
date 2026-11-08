@@ -44,7 +44,7 @@ test("test_default", async () => {
   await expect(pageOverflows(page)).resolves.toBe(false);
 });
 
-// 長い題とノードの名前は、題を折り返し、ノードの中で折り返してノードから出ない（LongNames）
+// 長いタイトルとノードの名前は、タイトルを折り返し、ノードの中で折り返してノードから出ない（LongNames）
 test("test_long_names", async () => {
   // 準備・実行
   const page = await openFlow("long-names");
@@ -102,7 +102,7 @@ function nodeBoxes(page: Page) {
   );
 }
 
-// 判定フローチャートは種類ごとの形のノードで描き、凡例は 2 種類以上あるノードの種類だけで、1 種類の線を載せない（Judgement）
+// 判定フローチャートは種類ごとの構造のノードで描き、凡例は 2 種類以上あるノードの種類だけで、1 種類の線を記載しない（Judgement）
 test("test_judgement", async () => {
   // 準備・実行
   const page = await openFlow("judgement");
@@ -157,7 +157,7 @@ test("test_judgement_long", async () => {
   await expect(pageOverflows(page)).resolves.toBe(false);
 });
 
-// 知らない種類のノードは、追加した 4 種類を含む 10 種類を使える種類に並べた書き方の警告にする（UnknownKind）
+// 知らない種類のノードは、追加した 4 種類を含む 10 種類を使用できる種類に並べた記載の警告にする（UnknownKind）
 test("test_unknown_kind", async () => {
   // 準備・実行
   const page = await holder.openStory("parts-flowdiagram--unknown-kind");
@@ -165,23 +165,23 @@ test("test_unknown_kind", async () => {
   await expect(
     page.locator(".mdmark-syntax-warning").innerText(),
   ).resolves.toContain(
-    "ノード「分類」の種類 robot は使えません。使える種類は llm・dm・script・mcp・data・external・start・question・action・result です",
+    "ノード「分類」の種類 robot は使用できません。使用できる種類は llm・dm・script・mcp・data・external・start・question・action・result です",
   );
   await expect(page.locator("figure.mdmark-diagram").count()).resolves.toBe(0);
 });
 
-// 定義を読めないときは、図の代わりに書き方の警告を出す（Invalid）
+// 定義を読み込めないときは、図の代わりに記載の警告を出す（Invalid）
 test("test_invalid", async () => {
   // 準備・実行
   const page = await holder.openStory("parts-flowdiagram--invalid");
   // 検証
   await expect(
     page.locator(".mdmark-syntax-warning").innerText(),
-  ).resolves.toContain("フロー図の部品の定義を JSON として読めません");
+  ).resolves.toContain("フロー図の部品の定義を JSON として読み込めません");
   await expect(page.locator("figure.mdmark-diagram").count()).resolves.toBe(0);
 });
 
-// 座標を省いた判定フローチャートを、質問を左の列に、右へ出す線の先を同じ行の右の列に置いて描く（JudgementAuto）
+// 座標を省いた判定フローチャートを、質問を左の列に、右へ出す線の先を同じ行の右の列に配置して描く（JudgementAuto）
 test("test_judgement_auto", async () => {
   // 準備・実行
   const page = await openFlow("judgement-auto");
@@ -212,7 +212,7 @@ test("test_judgement_auto", async () => {
   await expect(pageOverflows(page)).resolves.toBe(false);
 });
 
-/** リンク先を持つノードの、リンク・名前の色と下線・`has-link` を `data-node` ごとに返す */
+/** リンク先を持つノードの、リンク・名前の色と下線・`has-link` を `data-node` ごとに返却する */
 function linkStates(page: Page) {
   return page.locator(".mdmark-diagram-node").evaluateAll((nodes) =>
     Object.fromEntries(
@@ -239,7 +239,7 @@ function linkStates(page: Page) {
   );
 }
 
-// リンク先を持つノードの名前を本文のリンクと同じ色と下線にし、io の印をリンクの上に重ねる（LinkedNodes）
+// リンク先を持つノードの名前を本文のリンクと同じ色と下線にし、io のマーカーをリンクの上に重ねる（LinkedNodes）
 test("test_linked_nodes", async () => {
   // 準備・実行
   const page = await openFlow("linked-nodes");
@@ -291,7 +291,7 @@ test("test_linked_node_hover_focus", async () => {
   await expect(pageOverflows(page)).resolves.toBe(false);
 });
 
-// 許さないリンク先を持つノードはリンクにせず、図の前に書き方の警告を置く（LinkNotAllowed）
+// 許さないリンク先を持つノードはリンクにせず、図の前に記載の警告を配置する（LinkNotAllowed）
 test("test_link_not_allowed", async () => {
   // 準備・実行
   const page = await openFlow("link-not-allowed");
@@ -322,7 +322,7 @@ test("test_link_not_allowed", async () => {
   await expect(pageOverflows(page)).resolves.toBe(false);
 });
 
-// システムの枠と LLM の層の hint は、タイトルの右に箱と同じ情報の印を置き、hint を持たない層には置かない。凡例は 2 種類以上ある箱と線の種類だけ（GroupHints）
+// システムの枠と LLM の層の hint は、タイトルの右にノードと同じ情報のマーカーを配置し、hint を持たない層には配置しない。凡例は 2 種類以上あるノードと線の種類だけ（GroupHints）
 test("test_group_hints", async () => {
   // 準備・実行
   const page = await openFlow("group-hints");

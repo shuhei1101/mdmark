@@ -11,12 +11,12 @@ import { join, resolve } from "node:path";
 import { main } from "../../scripts/build.ts";
 import { copyPluginInputs, writeRootPackageJson } from "./plugin-inputs.ts";
 
-// 埋めてビルドする版
+// 埋めてビルドするバージョン
 const BUILT_VERSION = "v0.0.1";
 // 配布ファイル 1 つの上限（jsDelivr の 20MB）
 const MAX_BYTES = 20 * 1024 * 1024;
 
-/** `v0.0.1` を埋めてビルドした配布物を、一時フォルダの作業ツリーに作る。作業ツリーの場所と、消す関数を返す */
+/** `v0.0.1` を埋めてビルドした配布物を、一時フォルダの作業ツリーに作る。作業ツリーの場所と、削除する関数を返却する */
 export async function createBuiltRoot(): Promise<{
   root: string;
   dispose: () => Promise<void>;
@@ -25,7 +25,7 @@ export async function createBuiltRoot(): Promise<{
   await cp(resolve(import.meta.dirname, "../../src"), join(root, "src"), {
     recursive: true,
   });
-  // 設定の Schema と取り込んだ alias-inject の Schema（CLI が束ねる）
+  // 設定の Schema と取り込んだ alias-inject の Schema（CLI がまとめる）
   await cp(
     resolve(import.meta.dirname, "../../schemas"),
     join(root, "schemas"),
@@ -34,9 +34,9 @@ export async function createBuiltRoot(): Promise<{
     },
   );
   await writeFile(join(root, "version.ini"), `${BUILT_VERSION}\n`);
-  // CLI が配布物と雛形を探す、パッケージの直下の印と雛形の正本
+  // CLI が配布物と雛形を探す、パッケージの直下のマーカーと雛形の原本
   await writeRootPackageJson(root);
-  // プラグインのビルドが読む入力
+  // プラグインのビルドが読み込む入力
   await copyPluginInputs(root);
   await cp(
     resolve(import.meta.dirname, "../../templates"),
@@ -45,14 +45,14 @@ export async function createBuiltRoot(): Promise<{
       recursive: true,
     },
   );
-  // 型定義を書く `tsc` が読む設定
+  // 型定義を記載する `tsc` が読み込む設定
   for (const name of ["tsconfig.json", "tsconfig.dist.json"]) {
     await copyFile(
       resolve(import.meta.dirname, "../..", name),
       join(root, name),
     );
   }
-  // 束ねる依存（markdown-it など）を作業ツリーの node_modules から引く
+  // まとめる依存（markdown-it など）を作業ツリーの node_modules から参照する
   await symlink(
     resolve(import.meta.dirname, "../../node_modules"),
     join(root, "node_modules"),

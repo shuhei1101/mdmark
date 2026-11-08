@@ -9,7 +9,7 @@ scenarios:
       - name: リポジトリ B
         description: '`theme` を持たない `mdmark.config.yaml` と、見出しを持つ文書 `guide.md`'
       - name: Mock
-        description: Claude Code の代わりに、プラグインの PreToolUse のフックを通した引数で常駐サーバーへ HTTP でつなぐ MCP のクライアントを、リポジトリごとに 1 つずつ使う。モデルは使わない
+        description: Claude Code の代わりに、プラグインの PreToolUse のフックを経由した引数で常駐サーバーへ HTTP でつなぐ MCP のクライアントを、リポジトリごとに 1 つずつ使用する。モデルは使用しない
     flow: |-
       flowchart TD
         A[CSSのテンプレートを登録する:正常シナリオ（登録する）] --> B[CSSのテンプレートを配置する:正常シナリオ（一覧から選んで配置する）]
@@ -19,8 +19,8 @@ scenarios:
         click C "../単一ユースケース/ClaudeCodeから点検と書き出しを呼ぶ.yaml#正常シナリオ1-文書を書き出す"
     expected:
       - リポジトリ A のクライアントの `add_template` の後、端末の設定のフォルダに `brand.css` と、その名前・説明・タグを持つ索引がある
-      - リポジトリ B のクライアントの `list_templates` が、登録した名前・説明・タグを返す
-      - リポジトリ B のクライアントの `apply_template` が、リポジトリ B の `mdmark.config.yaml` のフォルダに CSS を配置し、`theme` に記載する値を返す
+      - リポジトリ B のクライアントの `list_templates` が、登録した名前・説明・タグを返却する
+      - リポジトリ B のクライアントの `apply_template` が、リポジトリ B の `mdmark.config.yaml` のフォルダに CSS を配置し、`theme` に記載する値を返却する
       - 返った値を `theme` に記載して呼んだ `export_html` の HTML に、`brand.css` の見出しの規則が入る
       - リポジトリ A の `brand.css` と `mdmark.config.yaml` は書き換わらない
     test: test_normal
@@ -54,15 +54,15 @@ scenarios:
       - dev/設計書/シナリオ/単一ユースケース/CSSのテンプレートを登録する#scenarios[異常シナリオ（同じ名前のテンプレートがある）]
       - dev/設計書/シナリオ/単一ユースケース/CSSのテンプレートを登録する#scenarios[正常シナリオ（上書きして登録する）]
       - dev/設計書/シナリオ/単一ユースケース/CSSのテンプレートを配置する#scenarios[正常シナリオ（一覧から選んで配置する）]
-lead: 文書を書く人が、あるリポジトリで作った CSS を Claude Code から端末の設定のフォルダのテンプレートに登録し、別のリポジトリで一覧から選んで配置し、設定の `theme` に記載して書き出した HTML に適用する。
+lead: 文書の作成者が、あるリポジトリで作った CSS を Claude Code から端末の設定のフォルダのテンプレートに登録し、別のリポジトリで一覧から選んで配置し、設定の `theme` に記載して書き出した HTML に適用する。
 issue: 164
-primary_actor: 文書を書く人
+primary_actor: 文書の作成者
 stakeholders:
-  - name: 文書を書く人
-    interest: 一度作った CSS を、リポジトリごとにコピーし直さずに、説明から選んで使い回せる
+  - name: 文書の作成者
+    interest: 一度作った CSS を、リポジトリごとにもう一度コピーせずに、説明から選んで使い回せる
   - name: Claude Code
     interest: テンプレートの説明とタグから、作業に合う CSS を選んで配置できる
-trigger: 文書を書く人が、別のリポジトリで作った CSS と同じ見た目の文書を書きたくなる
+trigger: 文書の作成者が、別のリポジトリで作った CSS と同じ外観の文書を記載したくなる
 preconditions:
   - Claude Code に mdmark のプラグインを入れ、MCP の常駐サーバーを起動している
   - 2 つのリポジトリのそれぞれに `mdmark.config.yaml` がある

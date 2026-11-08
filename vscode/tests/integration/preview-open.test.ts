@@ -72,14 +72,14 @@ async function closePreviews(): Promise<void> {
   await sleep(500);
 }
 
-/** 範囲に html・css・ts を置き、ts が箱を押すと根の要素に class `is-open` を付け外しする文書 */
+/** 範囲に html・css・ts を配置し、ts がノードを押すと根の要素に class `is-open` を付与・解除する文書 */
 const RANGE_SCRIPT_MARKDOWN = [
   "# 見出し",
   "",
   "<!-- html -->",
   "",
   "```html",
-  '<div class="box">箱</div>',
+  '<div class="box">ノード</div>',
   "```",
   "",
   "```css",
@@ -98,7 +98,7 @@ const RANGE_SCRIPT_MARKDOWN = [
   "",
 ].join("\n");
 
-/** 範囲の `ts` の変換のライブラリ（`@babel/standalone` の UMD）を、既定のエクスポートを持つ ES モジュールに包んで配る手元の配信を立てる */
+/** 範囲の `ts` の変換のライブラリ（`@babel/standalone` の UMD）を、既定のエクスポートを持つ ES モジュールに包んで配る手元の配信を起動する */
 async function startTranspilerServer(): Promise<{
   url: string;
   requests: () => number;
@@ -128,7 +128,7 @@ async function startTranspilerServer(): Promise<{
   };
 }
 
-/** mermaid（`mermaid@12.3.0` の `dist/` の本体と chunk）を、jsDelivr と同じパス `/npm/mermaid@12.3.0/dist/` で配る手元の配信を立てる */
+/** mermaid（`mermaid@12.3.0` の `dist/` の本体と chunk）を、jsDelivr と同じパス `/npm/mermaid@12.3.0/dist/` で配る手元の配信を起動する */
 async function startMermaidServer(): Promise<{
   url: string;
   requests: () => number;
@@ -199,7 +199,7 @@ suite("プレビューを開く", () => {
       distPath("v0.10.0", "index.js"),
     ]);
     assert.strictEqual(await tagRequestCount(), 1);
-    // 前回のバージョンが v0.10.0 になったことを、タグ一覧が応えない状態のリロードで確かめる
+    // 前回のバージョンが v0.10.0 になったことを、タグ一覧が応えない状態のリロードで確認する
     await stub.setMode({ tags: "hang", dist: "ok" });
     await stub.clear();
     await vscode.commands.executeCommand("mdmark.refreshPreview");
@@ -323,7 +323,7 @@ suite("プレビューを開く", () => {
       await waitForRendered(record);
       // 検証: 範囲の css を根の要素に限って当て、ts を動かす
       await waitFor(() => transpiler.requests() === 1, {
-        message: "変換のライブラリを読まない",
+        message: "変換のライブラリを読み込まない",
       });
       assert.strictEqual((await inspect(".mdmark-html-style")).length, 1);
       assert.strictEqual(
@@ -359,7 +359,7 @@ suite("プレビューを開く", () => {
     }
   });
 
-  // 設定の aliases から作ったエイリアスを render で送り、mount の opts.aliases に渡して下線とツールチップを出す
+  // 設定の aliases から作ったエイリアスを render で送信し、mount の opts.aliases に指定して下線とツールチップを出す
   test("test_normal_when_aliases", async () => {
     // 準備
     await writeFixture("mdmark.config.yaml", ALIAS_CONFIG);
@@ -393,7 +393,7 @@ suite("プレビューを開く", () => {
     );
   });
 
-  // aliases の行の paths に当たるファイルが無いとき、その行を除いたエイリアスで描き、出力チャネルに警告を書く
+  // aliases の行の paths に該当するファイルが無いとき、その行を除いたエイリアスで描き、出力チャネルに警告を記載する
   test("test_error_when_aliases_missing", async () => {
     // 準備
     await writeFixture(
@@ -433,7 +433,7 @@ suite("プレビューを開く", () => {
     assert.ok(!record.sent.some((message) => message.type === "configError"));
   });
 
-  // include のマーカーの取り込み先をワークスペースから読んで渡し、プレビューに描かせる
+  // include のマーカーの取り込み先をワークスペースから読み込んで指定し、プレビューに描かせる
   test("test_normal_when_includes", async () => {
     // 準備
     await writeFixture(
@@ -506,7 +506,7 @@ suite("プレビューを開く", () => {
     assert.strictEqual(await tagRequestCount(), 1);
   });
 
-  // mdmark.version に記載したバージョンを、タグ一覧を取らずに読む
+  // mdmark.version に記載したバージョンを、タグ一覧を取らずに読み込む
   test("test_normal_when_version_pinned", async () => {
     // 準備: 前回のバージョンを v0.7.0 にする
     await stub.setTags(["v0.7.0"]);
@@ -528,7 +528,7 @@ suite("プレビューを開く", () => {
       distPath("v0.6.0", "index.js"),
     ]);
     assert.strictEqual(await tagRequestCount(), 0);
-    // 前回のバージョンが v0.7.0 のままであることを、固定を外してタグ一覧が応えない状態で開いて確かめる
+    // 前回のバージョンが v0.7.0 のままであることを、固定を削除してタグ一覧が応えない状態で開いて確認する
     await closePreviews();
     await setSetting("version", undefined);
     await stub.setMode({ tags: "hang", dist: "ok" });
@@ -564,7 +564,7 @@ suite("プレビューを開く", () => {
     await waitForRendered(record);
     // 検証: 待ちの上限（3 秒）を少し過ぎたところで要求される
     if (!(elapsed >= 2800 && elapsed < 6000)) {
-      // 出力チャネルがログファイルへ書き終えるのを待つ
+      // 出力チャネルがログファイルへ書き込み終えるのを待つ
       await sleep(1000);
       const timings = (await stub.tagRequests()).map(
         ({ receivedAt, closedAt }) =>
@@ -582,7 +582,7 @@ suite("プレビューを開く", () => {
       );
     }
     assert.strictEqual((await inspect(".mdmark-preview-notice")).length, 0);
-    // 403 を返す代役でも、待たずに前回のバージョンで描く
+    // 403 を返却する代役でも、待たずに前回のバージョンで描く
     await closePreviews();
     await stub.setMode({ tags: "forbidden", dist: "ok" });
     await stub.clear();
@@ -594,7 +594,7 @@ suite("プレビューを開く", () => {
     assert.ok((await distRequests()).includes(distPath("v0.6.0", "index.js")));
   });
 
-  // 配色を固定する設定を、描く先を包む要素の class にし、auto に戻すと外す
+  // 配色を固定する設定を、描く先を包む要素の class にし、auto に戻すと削除する
   test("test_normal_when_theme_fixed", async () => {
     // 準備
     await setSetting("preview.theme", "light");
@@ -610,13 +610,13 @@ suite("プレビューを開く", () => {
     // 実行: auto にする
     await setSetting("preview.theme", "auto");
     await waitForRendered(record, 2);
-    // 検証: パネルを開き直さずに class が外れる
+    // 検証: パネルをもう一度開かずに class が削除される
     const [released] = await inspect("#mdmark-preview");
     assert.ok(!released?.className.includes("mdmark-theme-"));
     assert.strictEqual(recordedPanels().length, 1);
   });
 
-  // preview.theme が auto のときは設定ファイルの colorScheme を渡し、文書の page のマーカーはどの設定より優先する
+  // preview.theme が auto のときは設定ファイルの colorScheme を指定し、文書の page のマーカーはどの設定より優先する
   test("test_normal_when_color_scheme", async () => {
     // 準備
     await writeFixture("mdmark.config.yaml", "colorScheme: light\n");
@@ -628,14 +628,14 @@ suite("プレビューを開く", () => {
     await vscode.commands.executeCommand("mdmark.openPreviewToSide");
     const record = lastPanel();
     await waitForRendered(record);
-    // 検証: 設定ファイルの明暗を渡す
+    // 検証: 設定ファイルの明暗を指定する
     assert.strictEqual(renders(record).at(-1)?.config.colorScheme, "light");
     const [light] = await inspect("[data-mdmark-color-theme]");
     assert.ok(light?.className.split(" ").includes("mdmark-theme-light"));
     // 実行: preview.theme を dark にする
     await setSetting("preview.theme", "dark");
     await waitForRendered(record, 2);
-    // 検証: 設定ファイルの明暗を渡さず、包む要素を dark にする
+    // 検証: 設定ファイルの明暗を指定せず、包む要素を dark にする
     assert.ok(!("colorScheme" in (renders(record).at(-1)?.config ?? {})));
     const [wrapper] = await inspect("#mdmark-preview");
     assert.ok(wrapper?.className.split(" ").includes("mdmark-theme-dark"));
@@ -661,7 +661,7 @@ suite("プレビューを開く", () => {
     );
   });
 
-  // Markdown からの相対パスの画像を読む
+  // Markdown からの相対パスの画像を読み込む
   test("test_normal_when_relative_image", async () => {
     // 準備
     await writeFixture("docs/images/figure.png", PNG);
@@ -678,14 +678,14 @@ suite("プレビューを開く", () => {
     await waitFor(
       async () => ((await inspect("img"))[0]?.naturalWidth ?? 0) > 0,
       {
-        message: "画像を読めていない",
+        message: "画像を読み込めていない",
       },
     );
   });
 
-  // ワークスペースの外の画像は読まず、他の本文は描く
+  // ワークスペースの外の画像は読み込まず、他の本文は描く
   test("test_error_when_image_outside_workspace", async () => {
-    // 準備: ワークスペースの 1 つ上に画像を置く
+    // 準備: ワークスペースの 1 つ上に画像を配置する
     await writeFixture("../mdmark-outside.png", PNG);
     await writeFixture(
       "docs/guide.md",
@@ -747,7 +747,7 @@ suite("プレビューを開く", () => {
     );
   });
 
-  // 1 秒経っても描き終えないとき、読み込み中を出し、描き終えたら消す
+  // 1 秒経っても描き終えないとき、読み込み中を出し、描き終えたら削除する
   test("test_normal_when_loading_shown", async () => {
     // 準備
     await writeFixture("guide.md", await guideMarkdown());
@@ -908,7 +908,7 @@ suite("プレビューを開く", () => {
     assert.match(csp ?? "", /(?:^|;)\s*media-src /);
   });
 
-  // 再生できない動画・音声を知らせの枠に替え、既定のアプリで開くリンクから開く
+  // 再生できない動画・音声を通知ブロックに替え、既定のアプリで開くリンクから開く
   test("test_error_when_unsupported_media", async () => {
     // 準備
     await writeFixture("docs/media/voice.m4a", Buffer.from("m4a"));
@@ -931,9 +931,9 @@ suite("プレビューを開く", () => {
     await vscode.commands.executeCommand("mdmark.openPreviewToSide");
     const record = lastPanel();
     await waitForRendered(record);
-    // 検証: 2 つの要素の場所に知らせの枠を出す
+    // 検証: 2 つの要素の場所に通知ブロックを出す
     await waitFor(async () => (await inspect(".mdmark-notice")).length === 2, {
-      message: "知らせの枠が 2 つにならない",
+      message: "通知ブロックが 2 つにならない",
     });
     const notices = await inspect(".mdmark-notice");
     assert.ok(

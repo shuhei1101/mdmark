@@ -103,7 +103,7 @@ const loadFigures = () => import("../../../../../src/render/syntax/figures.ts");
 /** 画像の属性の処理を読み込む */
 const loadImages = () => import("../../../../../src/render/syntax/images.ts");
 
-// fig の画像を画像の図にし、ギャラリーに番号を渡す（正常系）
+// fig の画像を画像の図にし、ギャラリーに番号を指定する（正常系）
 test("test_number_figures_when_image_figure", async () => {
   // 準備
   const { numberFigures } = await loadFigures();

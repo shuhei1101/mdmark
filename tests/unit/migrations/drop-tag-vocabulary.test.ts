@@ -4,7 +4,7 @@ import { expect, test } from "vitest";
 import { parse } from "yaml";
 import { useTempDirs, writeFiles } from "../helpers/cli.ts";
 
-/** 語彙を外す移行のスクリプトを読み込む（実装が無い間は各テストが個別に失敗する） */
+/** 語彙を削除する移行のスクリプトを読み込む（実装が無い間は各テストが個別に失敗する） */
 const loadMigration = () =>
   import("../../../migrations/next/drop-tag-vocabulary.mjs");
 
@@ -28,7 +28,7 @@ const OLD_INDEX = [
   "",
 ].join("\n");
 
-// 別名・やめたタグを書き換え、語彙を外して `schema` を `2` にする（正常系）
+// 別名・やめたタグを書き換え、語彙を削除して `schema` を `2` にする（正常系）
 test("test_drop_tag_vocabulary", async () => {
   // 準備
   const { dropTagVocabulary } = await loadMigration();
@@ -66,7 +66,7 @@ test("test_drop_tag_vocabulary_without_vocabulary", async () => {
   expect(result).toBe(source.replace("schema: 1", "schema: 2"));
 });
 
-// 当てた後の索引では `undefined` を返す（正常系）
+// 適用した後の索引では `undefined` を返却する（正常系）
 test("test_drop_tag_vocabulary_when_reapplied", async () => {
   // 準備
   const { dropTagVocabulary } = await loadMigration();

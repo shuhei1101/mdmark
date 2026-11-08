@@ -1,4 +1,4 @@
-/** `navigator.clipboard.writeText` を差し替える（`undefined` を渡すとクリップボードが無い状態にする） */
+/** `navigator.clipboard.writeText` を差し替える（`undefined` を指定するとクリップボードが無い状態にする） */
 export function stubClipboard(
   writeText: ((text: string) => Promise<void>) | undefined,
 ): void {

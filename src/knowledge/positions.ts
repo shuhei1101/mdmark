@@ -14,10 +14,10 @@ const { unescapeAll } = new MarkdownIt().utils;
 /** 本文の頭の実体参照 */
 const ENTITY_PATTERN = /^&(?:#\d+|#x[0-9a-f]+|[a-z][a-z0-9]*);/i;
 
-/** 実体参照の最長の長さ（名前つきの実体参照の最長に余裕を足した値） */
+/** 実体参照の最長の長さ（名前つきの実体参照の最長に余裕を追加した値） */
 const ENTITY_MAX_LENGTH = 40;
 
-/** 伏せた範囲を埋める文字。どの文字にも当たらない */
+/** 伏せた範囲を埋める文字。どの文字にも該当しない */
 const MASK_CHAR = "\u0000";
 
 /** 完結した開きタグ・閉じタグ（属性の値の引用符の中の `>` を含む） */
@@ -39,7 +39,7 @@ const DROPPED_TAGS = new Set([
   ...[...DIAGRAM_ONLY_TAGS].filter((tag) => tag !== "button"),
 ]);
 
-/** 本文の位置 `cursor` から、照合した文字を 1 文字ずつ本文へ当て、各文字の本文の位置と当て終えた位置を返す */
+/** 本文の位置 `cursor` から、照合した文字を 1 文字ずつ本文へ当て、各文字の本文の位置と当て終えた位置を返却する */
 export function alignText(options: {
   body: string;
   cursor: number;
@@ -50,7 +50,7 @@ export function alignText(options: {
   let at = options.cursor;
   let position = 0;
   while (position < text.length) {
-    // 本文の最後まで探しても当たらない文字は、本文の終わりを指す
+    // 本文の最後まで探しても該当しない文字は、本文の終わりを指す
     if (at >= body.length) {
       offsets.push(body.length);
       position += 1;
@@ -90,14 +90,14 @@ export function alignText(options: {
       position += 1;
       continue;
     }
-    // どれにも当たらない本文の文字（記法の記号・字下げ・引用の印）は飛ばす
+    // どれにも該当しない本文の文字（記法の記号・字下げ・引用のマーカー）は飛ばす
     at += 1;
   }
   offsets.push(at);
   return { offsets, end: at };
 }
 
-/** `at` の開き括弧から、入れ子を数えて閉じ括弧の次の位置を返す。閉じが無いときは開き括弧の次の位置 */
+/** `at` の開き括弧から、入れ子を数えて閉じ括弧の次の位置を返却する。閉じが無いときは開き括弧の次の位置 */
 function skipGroup(options: {
   body: string;
   at: number;
@@ -115,7 +115,7 @@ function skipGroup(options: {
       (char === '"' || char === "'") &&
       /\s/.test(body[position - 1] ?? "")
     ) {
-      // リンクの題の引用符の中の括弧は数えない
+      // リンクのタイトルの引用符の中の括弧は数えない
       const quoteEnd = body.indexOf(char, position + 1);
       if (quoteEnd >= 0) {
         position = quoteEnd;
@@ -132,7 +132,7 @@ function skipGroup(options: {
   return at + 1;
 }
 
-/** `from` 以降で行の中身が始まる位置を返す。リストの印・引用の印・字下げを飛ばし、見つからなければ `from` */
+/** `from` 以降で行の中身が始まる位置を返却する。リストのマーカー・引用のマーカー・字下げを飛ばし、見つからなければ `from` */
 function locateLine(body: string, from: number, line: string): number {
   const text = line.trimEnd();
   if (text === "") {
@@ -142,7 +142,7 @@ function locateLine(body: string, from: number, line: string): number {
   return at < 0 ? from : at;
 }
 
-/** 行内のトークンの子を頭から本文へ当て、照合してよい `text` の子ごとに各文字の本文の位置を返す */
+/** 行内のトークンの子を頭から本文へ当て、照合してよい `text` の子ごとに各文字の本文の位置を返却する */
 export function inlineOffsets(options: {
   body: string;
   inline: Token;
@@ -256,7 +256,7 @@ export function inlineOffsets(options: {
   return { byChild, end: cursor };
 }
 
-/** `from` の次から、同じ名前の要素の入れ子を数えて閉じタグの次の位置を返す。閉じが無いときは文字列の終わり */
+/** `from` の次から、同じ名前の要素の入れ子を数えて閉じタグの次の位置を返却する。閉じが無いときは文字列の終わり */
 function elementEnd(html: string, from: number, name: string): number {
   const pattern = new RegExp(
     `<(/?)${name}(?![A-Za-z0-9-])((?:"[^"]*"|'[^']*'|[^'">])*)>`,
@@ -277,7 +277,7 @@ function elementEnd(html: string, from: number, name: string): number {
   return html.length;
 }
 
-/** 埋め込んだ HTML のうち、照合に渡らない範囲を、どの文字にも当たらない文字で伏せた同じ長さの文字列を返す */
+/** 埋め込んだ HTML のうち、照合に渡らない範囲を、どの文字にも該当しない文字で伏せた同じ長さの文字列を返却する */
 export function maskEmbeddedHtml(html: string): string {
   const hidden = new Uint8Array(html.length);
   /** 開いている要素の名前（外側から） */

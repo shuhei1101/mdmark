@@ -19,12 +19,12 @@ const TERM_INDEX: MdmarkIndex = {
     {
       id: "workspace",
       term: "ワークスペース",
-      meaning: "話し合いの記録を置くフォルダ",
+      meaning: "話し合いの記録を配置するフォルダ",
     },
   ],
 };
 
-/** 1 つ目の段落に参照、2 つ目の段落に行内の脚注を持ち、途中に 2 段落の定義を置いた文書 */
+/** 1 つ目の段落に参照、2 つ目の段落に行内の脚注を持ち、途中に 2 段落の定義を配置した文書 */
 const FOOTNOTES_MARKDOWN = [
   "出典がある[^src]。",
   "",
@@ -32,11 +32,11 @@ const FOOTNOTES_MARKDOWN = [
   "",
   "    [詳しく](https://example.com)",
   "",
-  "行内にも書ける^[行内の補足]。",
+  "行内にも記載できる^[行内の補足]。",
   "",
 ].join("\n");
 
-/** `id` の要素の中身を返す */
+/** `id` の要素の中身を返却する */
 function byId(html: string, id: string): string {
   return innerHtml(html, `id="${id}"`);
 }
@@ -75,7 +75,7 @@ test("test_use_footnotes", () => {
 
 // リンクと重なる参照はリンクを優先する（正常系）
 test("test_use_footnotes_when_link_label", () => {
-  // 準備（リンクだけの段落はカードになるため、前後に文字を置く）
+  // 準備（リンクだけの段落はカードになるため、前後に文字を配置する）
   const markdown = "前 [^x](https://example.com) 後\n\n[^x]: 補足\n";
   // 実行
   const { html } = renderDoc(markdown);
@@ -122,7 +122,7 @@ test("test_read_footnote_definition_when_case_and_duplicate", () => {
     "",
     "[^NOTE]: 2 つ目",
     "",
-    "[^unused]: 使わない",
+    "[^unused]: 使用しない",
     "",
   ].join("\n");
   // 実行
@@ -132,9 +132,9 @@ test("test_read_footnote_definition_when_case_and_duplicate", () => {
   expect(html).toContain('id="mdmark-fnref-1-1"');
   expect(html).not.toContain('id="mdmark-fnref-2-0"');
   expect(plainText(byId(html, "mdmark-fn-tip-1-0"))).toBe("脚注 11 つ目");
-  // 戻るリンクの読み上げの名前（`2 つ目の参照`）は文字に含めず、画面に出る文字で確かめる
+  // 戻るリンクのスクリーンリーダー向けの名前（`2 つ目の参照`）は文字に含めず、画面に出る文字で確認する
   expect(plainText(html)).not.toContain("2 つ目");
-  expect(html).not.toContain("使わない");
+  expect(html).not.toContain("使用しない");
   expect(html).toContain("[^missing]");
   expect(html).toContain('<a href="https://example.com">^x</a>');
   expect(findTags(html, "mdmark-fn-item")).toHaveLength(1);
@@ -198,7 +198,7 @@ test("test_read_inline_footnote", () => {
   );
 });
 
-// 文書の印で外すと書いた文字のまま書いた位置に残す（正常系）
+// 文書のマーカーで削除すると記載した文字のまま記載した位置に残す（正常系）
 test("test_collect_footnotes_when_disabled_by_mark", () => {
   // 準備
   const markdown = [
@@ -223,7 +223,7 @@ test("test_collect_footnotes_when_disabled_by_mark", () => {
   expect(html).not.toContain("mdmark-footnotes");
 });
 
-// 設定で外した脚注も文字のままにする（正常系）
+// 設定で削除した脚注も文字のままにする（正常系）
 test("test_collect_footnotes_when_disabled_by_config", () => {
   // 準備
   const markdown = "本文[^1]。\n\n[^1]: 補足\n";
@@ -235,7 +235,7 @@ test("test_collect_footnotes_when_disabled_by_config", () => {
   expect(html).not.toContain("mdmark-fn-");
 });
 
-// コードブロックの中の印は数えない（正常系）
+// コードブロックの中のマーカーは数えない（正常系）
 test("test_collect_footnotes_when_mark_in_code", () => {
   // 準備
   const markdown = [
@@ -255,7 +255,7 @@ test("test_collect_footnotes_when_mark_in_code", () => {
   expect(html).toContain("mdmark-footnotes");
 });
 
-// 脚注の中身には用語の下線を引かない（正常系）
+// 脚注の中身には用語の下線を付けない（正常系）
 test("test_collect_footnotes_when_terms", () => {
   // 準備
   const markdown = "本文[^1]。\n\n[^1]: ワークスペースの説明\n";
@@ -300,10 +300,10 @@ test("test_footnote_bodies_when_list", () => {
   expect(item).toContain("<ul>");
 });
 
-// 本文の節の後ろ・関連文書の一覧の前に閉じた一覧を置く（正常系）
+// 本文のセクションの後ろ・関連文書の一覧の前に閉じた一覧を配置する（正常系）
 test("test_build_footnote_list", () => {
   // 準備
-  const markdown = "## 節\n\n本文[^1]。\n\n[^1]: 補足\n";
+  const markdown = "## セクション\n\n本文[^1]。\n\n[^1]: 補足\n";
   const references = { backlinks: { arch: ["api"] }, glossary: [] };
   // 実行
   const { html } = renderDoc(
@@ -316,7 +316,7 @@ test("test_build_footnote_list", () => {
   expect(list.startsWith('<details class="mdmark-footnotes">')).toBe(true);
   expect(innerHtml(list, "<summary")).toBe("脚注（1 件）");
   const listAt = html.indexOf(list);
-  // 一覧は節の中身（div.mdmark-section-body）の外に置く
+  // 一覧はセクションの中身（div.mdmark-section-body）の外に配置する
   expect(html.slice(0, listAt).endsWith("</div>")).toBe(true);
   expect(html.indexOf("mdmark-backlinks")).toBeGreaterThan(listAt);
   expect(html).not.toContain("data-mdmark-own");
@@ -324,13 +324,13 @@ test("test_build_footnote_list", () => {
   expect(list).toContain('href="#mdmark-fnref-1-0"');
 });
 
-// 定義と行内の脚注の中身にも、本文と同じ記法とリンクの扱いを当てる（正常系）
+// 定義と行内の脚注の中身にも、本文と同じ記法とリンクの扱いを適用する（正常系）
 test("test_take_footnote_definitions_when_syntax", () => {
   // 準備
   const markdown = [
-    "本文で README.md と example.com と `badge:新規` を書く[^a]。行内も `badge:新規` ^[行内で README.md と `badge:新規`]。",
+    "本文で README.md と example.com と `badge:新規` を記載する[^a]。行内も `badge:新規` ^[行内で README.md と `badge:新規`]。",
     "",
-    "[^a]: 脚注で README.md と example.com と `badge:新規` を書く。",
+    "[^a]: 脚注で README.md と example.com と `badge:新規` を記載する。",
     "",
   ].join("\n");
   // 実行
@@ -351,15 +351,15 @@ test("test_take_footnote_definitions_when_syntax", () => {
   expect(byId(html, "mdmark-fn-1")).not.toContain("http://example.com");
 });
 
-// 定義の中の見出しで節を作らず、一覧は節の外に置く（正常系）
+// 定義の中の見出しでセクションを作らず、一覧はセクションの外に配置する（正常系）
 test("test_take_footnote_definitions_when_heading", () => {
   // 準備
   const markdown =
-    "<!-- toc -->\n\n## 節\n\n本文[^a]。\n\n[^a]: 補足\n\n    ### 定義の見出し\n";
+    "<!-- toc -->\n\n## セクション\n\n本文[^a]。\n\n[^a]: 補足\n\n    ### 定義の見出し\n";
   // 実行
   const { html } = renderDoc(markdown);
   // 検証
-  // 節は本文の見出しの 1 つだけで、一覧はその節の中身の外に置く
+  // セクションは本文の見出しの 1 つだけで、一覧はそのセクションの中身の外に配置する
   expect(matches(html, /class="mdmark-section-body"/g)).toHaveLength(1);
   const listAt = html.indexOf('<details class="mdmark-footnotes"');
   expect(html.slice(0, listAt).endsWith("</div>")).toBe(true);

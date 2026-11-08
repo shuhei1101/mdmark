@@ -5,7 +5,7 @@ import { renderDoc } from "../../../helpers/render.ts";
 /** CSV の処理を読み込む（実装が無い間は各テストが個別に失敗する） */
 const loadCsv = () => import("../../../../../src/render/syntax/csv.ts");
 
-// 引用符の中の区切り・改行・`""` を読む（正常系）
+// 引用符の中の区切り・改行・`""` を読み込む（正常系）
 test("test_parse_csv", async () => {
   // 準備
   const { parseCsv } = await loadCsv();

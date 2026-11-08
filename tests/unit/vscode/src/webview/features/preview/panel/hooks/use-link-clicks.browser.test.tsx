@@ -11,7 +11,7 @@ const loadHook = () =>
 
 const placed: HTMLElement[] = [];
 
-/** HTML を入れた要素をページに置く */
+/** HTML を入れた要素をページに配置する */
 const place = (html: string): HTMLElement => {
   const holder = document.createElement("div");
   holder.innerHTML = html;
@@ -27,7 +27,7 @@ afterEach(() => {
   }
 });
 
-// 本物のクリックでもリンクの押下を window へ伝えず、openLink を 1 回だけ送る（正常系）
+// 本物のクリックでもリンクの押下を window へ伝えず、openLink を 1 回だけ送信する（正常系）
 test("test_use_link_clicks", async () => {
   // 準備
   const { useLinkClicks } = await loadHook();
@@ -83,7 +83,7 @@ test("test_use_link_clicks_when_side_toc", async () => {
   );
 });
 
-// 既定のアプリで開くは書いたパスで openAsset を送る（正常系）
+// 既定のアプリで開くは記載したパスで openAsset を送信する（正常系）
 test("test_use_link_clicks_when_open_asset", async () => {
   // 準備
   const { useLinkClicks } = await loadHook();

@@ -5,7 +5,7 @@ const meta = { title: "Parts/Footnotes" } satisfies Meta<
 >;
 export default meta;
 
-/** ストーリー: 描画の口（`parameters.server.id`）の部品を `args` で描く */
+/** ストーリー: 描画のインターフェース（`parameters.server.id`）の部品を `args` で描く */
 type Story = StoryObj<Record<string, unknown>>;
 
 export const Closed: Story = {
@@ -32,7 +32,7 @@ export const ReferencedTwice: Story = {
   parameters: { server: { id: "footnotes" } },
   args: {
     items:
-      '[{"number":1,"html":"<p>閉じの印を書き忘れると、範囲の上に警告が出る。</p>","refCount":2}]',
+      '[{"number":1,"html":"<p>閉じのマーカーの記載を忘れると、範囲の上に警告が出る。</p>","refCount":2}]',
     open: true,
   },
 };

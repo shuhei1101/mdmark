@@ -17,10 +17,10 @@ import {
 } from "../cli.ts";
 import { groupFlowText, JUDGEMENT_AUTO_TEXT } from "../diagram.ts";
 
-// 雛形が置く設定の build.out の行
+// 雛形が配置する設定の build.out の行
 const OUT_LINE = "  out: dist/docs.html\n";
 
-/** ずれの無いフォルダを作る: `mdmark init` の後に文書 2 つを書き、索引に 2 つとも載せる */
+/** ずれの無いフォルダを作る: `mdmark init` の後に文書 2 つを記載し、索引に 2 つとも記載する */
 async function createCleanDir(
   builtRoot: string,
   tempDir: () => Promise<string>,
@@ -45,7 +45,7 @@ async function createCleanDir(
   return dir;
 }
 
-/** 設定・索引・文書の中身を返す（変わっていないことを確かめる） */
+/** 設定・索引・文書の中身を返却する（変わっていないことを確認する） */
 async function snapshot(dir: string): Promise<string[]> {
   return Promise.all(
     ["mdmark.config.yaml", "index.yaml", "a.md", "b.md"].map((path) =>
@@ -90,13 +90,13 @@ test("test_normal_when_drift", async ({ builtRoot, tempDir }) => {
     (line) => line.includes("missing_doc") && line.includes("old.md"),
   );
   expect(missing).toMatch(/^index\.yaml:docs\[\d+\]\.path: missing_doc: /);
-  // 内容に直し方が書かれている
+  // 内容に修正方法が記載されている
   expect(schema).toContain("書いてください");
   expect(missing).toContain("ください");
   expect(await snapshot(dir)).toEqual(before);
 });
 
-// 設定ファイルが無いと、mdmark init で置けることを示して終わる（異常シナリオ（設定ファイルが無い））
+// 設定ファイルが無いと、mdmark init で配置できることを示して終わる（異常シナリオ（設定ファイルが無い））
 test("test_error_when_config_missing", async ({ builtRoot, tempDir }) => {
   // 準備
   const dir = await tempDir();
@@ -109,7 +109,7 @@ test("test_error_when_config_missing", async ({ builtRoot, tempDir }) => {
   expect(result.stderr).toContain("mdmark init");
 });
 
-// 本文の知らない印を、文書と行を指す unknown_mark の行にして終了コード 0 以外で終わる（正常シナリオ（知らない印がある））
+// 本文の知らないマーカーを、文書と行を指す unknown_mark の行にして終了コード 0 以外で終わる（正常シナリオ（知らないマーカーがある））
 test("test_normal_when_unknown_mark", async ({ builtRoot, tempDir }) => {
   // 準備
   const dir = await createCleanDir(builtRoot, tempDir);
@@ -124,16 +124,16 @@ test("test_normal_when_unknown_mark", async ({ builtRoot, tempDir }) => {
   const marks = linesOf(result.stdout).filter((line) =>
     line.includes("unknown_mark"),
   );
-  // コードブロックの中（8 行目）の印は拾わず、段落の間（3 行目）の印だけを指す
+  // コードブロックの中（8 行目）のマーカーは取得せず、段落の間（3 行目）のマーカーだけを指す
   expect(marks).toHaveLength(1);
   expect(marks[0]).toMatch(/^a\.md:3: unknown_mark: /);
-  // 内容に印の名前と直し方が書かれている
+  // 内容にマーカーの名前と修正方法が記載されている
   expect(marks[0]).toContain("tabz");
   expect(marks[0]).toContain("ください");
   expect(await snapshot(dir)).toEqual(before);
 });
 
-// 基準から片方だけが変わった change_together の組を、直し忘れとして出して終了コード 0 以外で終わる（正常シナリオ（比べる基準を渡す））
+// 基準から片方だけが変わった change_together の組を、修正漏れとして出して終了コード 0 以外で終わる（正常シナリオ（比べる基準を指定する））
 test("test_normal_when_base_given", async ({ builtRoot, tempDir }) => {
   // 準備
   const { dir, base } = await createChangeTogetherDir(builtRoot, tempDir);
@@ -145,7 +145,7 @@ test("test_normal_when_base_given", async ({ builtRoot, tempDir }) => {
   // 検証
   expect(result.code).not.toBe(0);
   const lines = linesOf(result.stdout);
-  // 変わっていない 2 つ目の文書を指す行が 1 件で、組の相手と変わった 1 つ目の文書が書かれている
+  // 変わっていない 2 つ目の文書を指す行が 1 件で、組の相手と変わった 1 つ目の文書が記載されている
   const missed = lines.filter((line) =>
     line.includes("missed_change_together"),
   );
@@ -153,7 +153,7 @@ test("test_normal_when_base_given", async ({ builtRoot, tempDir }) => {
   expect(missed[0]).toMatch(/^b\.md: missed_change_together: /);
   expect(missed[0]).toContain("a.md");
   expect(lines.at(-1)).toBe("ずれ 1 件");
-  // 比べる基準を渡さなければ、ずれ 0 件
+  // 比べる基準を指定しなければ、ずれ 0 件
   expect(withoutBase.code).toBe(0);
   expect(linesOf(withoutBase.stdout)).toEqual(["ずれ 0 件"]);
   // 設定・索引・文書と git の履歴が変わっていない
@@ -161,7 +161,7 @@ test("test_normal_when_base_given", async ({ builtRoot, tempDir }) => {
   expect(await git(dir, "rev-parse", "HEAD")).toBe(head);
 });
 
-// リポジトリに無い基準は、引けないことと直し方を出して終了コード 0 以外で終わる（異常シナリオ（比べる基準を引けない））
+// リポジトリに無い基準は、参照できないことと修正方法を出して終了コード 0 以外で終わる（異常シナリオ（比べる基準を参照できない））
 test("test_error_when_base_unknown", async ({ builtRoot, tempDir }) => {
   // 準備
   const { dir } = await createChangeTogetherDir(builtRoot, tempDir);
@@ -261,7 +261,7 @@ test("test_normal_when_alias_drift", async ({ builtRoot, tempDir }) => {
   // 検証
   expect(result.code).not.toBe(0);
   const lines = linesOf(result.stdout);
-  // 誤った行ごとに、その行か元のファイルを指すずれの行があり、内容に直し方がある
+  // 誤った行ごとに、その行か元のファイルを指すずれの行があり、内容に修正方法がある
   const kinds: Array<[string, string]> = [
     ["mdmark.config.yaml:aliases[1].alias_type", "schema"],
     ["mdmark.config.yaml:aliases[2].metadata.name", "schema"],
@@ -284,7 +284,7 @@ test("test_normal_when_alias_drift", async ({ builtRoot, tempDir }) => {
   // 正しい行は指さない
   expect(lines.some((line) => line.includes("aliases/valid.yaml"))).toBe(false);
   expect(lines.at(-1)).toBe(`ずれ ${kinds.length} 件`);
-  // 設定・索引・文書・エイリアスの元が変わっていない（設定は書き足した後の中身）
+  // 設定・索引・文書・エイリアスの元が変わっていない（設定は追記した後の中身）
   const after = await read();
   expect(after).toEqual(before);
 });
@@ -332,7 +332,7 @@ test("test_normal_when_unknown_theme", async ({ builtRoot, tempDir }) => {
   }
 });
 
-// 設定の明暗の知らない値を、書ける値を添えたずれにして終了コード 0 以外で終わる（正常シナリオ（知らない明暗の値がある））
+// 設定の明暗の知らない値を、記載できる値を添えたずれにして終了コード 0 以外で終わる（正常シナリオ（知らない明暗の値がある））
 test("test_normal_when_unknown_color_scheme", async ({
   builtRoot,
   tempDir,
@@ -496,7 +496,7 @@ test("test_normal_when_diagram_auto_layout", async ({ builtRoot, tempDir }) => {
   expect(invalid[0]).toMatch(/^a\.md:30: diagram_invalid: /);
   expect(invalid[0]).toContain("llm");
   expect(invalid[0]).toContain("判定フローチャート");
-  expect(invalid[0]).toContain("座標を書くか");
+  expect(invalid[0]).toContain("座標を記載するか");
   expect(await snapshot(dir)).toEqual(before);
 });
 
@@ -534,7 +534,7 @@ test("test_normal_when_include_missing", async ({ builtRoot, tempDir }) => {
   ).toEqual(before);
 });
 
-/** 設定ファイルの末尾に行を書き足す */
+/** 設定ファイルの末尾に行を追記する */
 async function appendConfig(dir: string, lines: string[]): Promise<void> {
   const config = await readFile(join(dir, "mdmark.config.yaml"), "utf8");
   await writeFiles(dir, {
@@ -570,7 +570,7 @@ test("test_normal_when_diagram_placement_invalid", async ({
   expect(lines[0]).toContain("top");
   expect(lines[0]).toContain("bottom");
   expect(await snapshot(invalidDir)).toEqual(before);
-  // 実行・検証: top・bottom を書いた設定と、書かない設定では、このずれの行が出ない
+  // 実行・検証: top・bottom を記載した設定と、記載しない設定では、このずれの行が出ない
   for (const dir of validDirs) {
     const valid = await runCli(builtRoot, ["check"], dir);
     expect(valid.stdout).not.toContain("tooltips.diagramPlacement");
@@ -607,7 +607,7 @@ test("test_normal_when_group_options_invalid", async ({
   expect(await snapshot(dir)).toEqual(before);
 });
 
-// 端末の設定と上のフォルダの設定のずれを、それぞれのファイルを指して返す（正常シナリオ（重ねた設定ファイルにずれがある））
+// 端末の設定と上のフォルダの設定のずれを、それぞれのファイルを指して返却する（正常シナリオ（重ねた設定ファイルにずれがある））
 test("test_normal_when_cascaded_config_drift", async ({
   builtRoot,
   tempDir,

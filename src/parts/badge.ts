@@ -1,7 +1,7 @@
 import type { ColorName } from "./colors.ts";
 import { escapeHtml } from "./escape.ts";
 
-/** バッジの HTML を返す。色を渡したときは `data-color` を付ける */
+/** バッジの HTML を返却する。色を指定したときは `data-color` を付ける */
 export function renderBadge(options: {
   /** 札の文言 */
   label: string;

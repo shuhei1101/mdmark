@@ -5,7 +5,7 @@ import {
 } from "../../../src/render/marks.ts";
 import { createEnv } from "./env.ts";
 
-/** 印を拾って機能を重ねた後に `rules` だけを当てた解析器で Markdown を解析し、トークンを返す（`features` で機能を上書きする） */
+/** マーカーを取得して機能を重ねた後に `rules` だけを適用した解析器で Markdown を解析し、トークンを返却する（`features` で機能を上書きする） */
 export function parseWithRules(
   markdown: string,
   rules: Array<(state: StateCore) => void>,
@@ -22,7 +22,7 @@ export function parseWithRules(
   return parser.parse(markdown, env);
 }
 
-/** トークンと、その `inline` の子のトークンを、現れた順に全て返す */
+/** トークンと、その `inline` の子のトークンを、現れた順に全て返却する */
 export function flattenTokens(tokens: Token[]): Token[] {
   return tokens.flatMap((token) => [token, ...(token.children ?? [])]);
 }

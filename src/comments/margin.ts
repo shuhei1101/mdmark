@@ -15,17 +15,17 @@ export const MAX_OPEN_DEPTH = 4;
 /** 箇所の行の上端と高さ（px） */
 type Line = { top: number; height: number };
 
-/** マーカーを置く基準 */
+/** マーカーを配置する基準 */
 type Anchor = {
-  /** コメントの印 */
+  /** コメントのマーカー */
   mark: HTMLElement;
-  /** 縦の位置を測る要素（印か、閉じた要素を開くボタン） */
+  /** 縦の位置を測る要素（マーカーか、閉じた要素を開くボタン） */
   target: Element;
   /** 箇所を包む、いちばん外側の閉じた要素の種類 */
   closed?: CommentClosedKind;
 };
 
-/** 行の上端と高さの並びから、同じ行をまとめ、重ならないように下げたマーカーの縦の中ほどを返す */
+/** 行の上端と高さの並びから、同じ行をまとめ、重ならないように下げたマーカーの縦の中ほどを返却する */
 export function layoutMarkers(options: {
   /** 箇所ごとの行の上端と高さ（並びは問わない） */
   lines: Line[];
@@ -57,7 +57,7 @@ export function layoutMarkers(options: {
   });
 }
 
-/** 印を包む `hidden` の祖先のうち、いちばん外側の要素を返す */
+/** マーカーを包む `hidden` の祖先のうち、いちばん外側の要素を返却する */
 function outermostHidden(
   mark: HTMLElement,
   content: HTMLElement,
@@ -75,7 +75,7 @@ function outermostHidden(
   return found;
 }
 
-/** 閉じた要素を `aria-controls` で指す開くボタンを返す */
+/** 閉じた要素を `aria-controls` で指す開くボタンを返却する */
 function openerOf(
   hidden: HTMLElement,
   content: HTMLElement,
@@ -90,7 +90,7 @@ function openerOf(
   );
 }
 
-/** 閉じた要素の種類を返す */
+/** 閉じた要素の種類を返却する */
 function closedKindOf(hidden: HTMLElement): CommentClosedKind {
   if (hidden.matches('[role="tabpanel"]')) {
     return "tab";
@@ -101,7 +101,7 @@ function closedKindOf(hidden: HTMLElement): CommentClosedKind {
   return "section";
 }
 
-/** 本文の列の右に余白の列を置き、印の行の縦の中ほどに余白のマーカーを置いて、押すと印へ移る操作と置き直しを付け、外す関数を返す */
+/** 本文の列の右に余白の列を配置し、マーカーの行の縦の中ほどに余白のマーカーを配置して、押すとマーカーへ移る操作と再配置を付け、削除する関数を返却する */
 export function attachMarginMarkers(options: {
   /** 本文の列（`div.mdmark-content`） */
   content: HTMLElement;
@@ -113,7 +113,7 @@ export function attachMarginMarkers(options: {
   let frame = 0;
   let detached = false;
 
-  /** 印ごとに、縦の位置を測る要素と閉じた中の種類を求める。開くボタンの無い閉じた中の印は除く */
+  /** マーカーごとに、縦の位置を測る要素と閉じた中の種類を求める。開くボタンの無い閉じた中のマーカーは除く */
   const collectAnchors = (): Anchor[] =>
     [
       ...content.querySelectorAll<HTMLElement>("mark.mdmark-comment-mark"),
@@ -128,7 +128,7 @@ export function attachMarginMarkers(options: {
         : [];
     });
 
-  /** 閉じた中を外側から開き、印を画面の中ほどまでスクロールして押す */
+  /** 閉じた中を外側から開き、マーカーを画面の中ほどまでスクロールして押す */
   const jump = (mark: HTMLElement): void => {
     for (let depth = 0; depth < MAX_OPEN_DEPTH; depth += 1) {
       const hidden = outermostHidden(mark, content);
@@ -141,7 +141,7 @@ export function attachMarginMarkers(options: {
     mark.click();
   };
 
-  /** 今の印の位置で、マーカーを全て置き直す */
+  /** 今のマーカーの位置で、マーカーを全てもう一度配置する */
   const place = (): void => {
     frame = 0;
     const anchors = collectAnchors();
@@ -150,7 +150,7 @@ export function attachMarginMarkers(options: {
       const rect = target.getClientRects()[0] ?? target.getBoundingClientRect();
       return { top: rect.top - base, height: rect.height };
     });
-    // まとまりを決めてからマーカーを描き、描いたマーカーの高さで重なりを避ける
+    // まとまりを決めてからマーカーを描き、描いたマーカーの高さで重なりを回避する
     const groups = layoutMarkers({ lines, markerSize: 0 });
     const markers = groups.map(({ indexes }) => {
       const group = indexes.map((index) => anchors[index] as Anchor);
@@ -168,7 +168,7 @@ export function attachMarginMarkers(options: {
       button.addEventListener("click", () => jump(first.mark));
       return button;
     });
-    // 作り直してもフォーカスを失わないよう、フォーカスのあったマーカーの順番を控えて戻す
+    // 再作成してもフォーカスを失わないよう、フォーカスのあったマーカーの順番を記録して戻す
     const focused = [...margin.children].indexOf(
       document.activeElement as Element,
     );
@@ -185,7 +185,7 @@ export function attachMarginMarkers(options: {
     });
   };
 
-  /** 置き直しを 1 フレームに 1 回にまとめる */
+  /** 再配置を 1 フレームに 1 回にまとめる */
   const schedule = (): void => {
     if (!detached && frame === 0) {
       frame = requestAnimationFrame(place);

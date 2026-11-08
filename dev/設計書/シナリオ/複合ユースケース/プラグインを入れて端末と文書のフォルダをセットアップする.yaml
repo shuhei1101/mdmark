@@ -3,14 +3,14 @@ scenarios:
   - name: 正常シナリオ
     setup:
       - name: 空の端末
-        description: 端末の設定（`MDMARK_CONFIG` が指すパス）・状態の置き場所（`MDMARK_STATE_DIR`）・Claude Code の設定のフォルダ（`CLAUDE_CONFIG_DIR`）を、どれも空の一時フォルダにする
+        description: 端末の設定（`MDMARK_CONFIG` が指すパス）・状態の配置場所（`MDMARK_STATE_DIR`）・Claude Code の設定のフォルダ（`CLAUDE_CONFIG_DIR`）を、どれも空の一時フォルダにする
       - name: 文書のフォルダ
-        description: '`mdmark.config.yaml` と索引の無いフォルダに、Markdown を 1 つ置く'
+        description: '`mdmark.config.yaml` と索引の無いフォルダに、Markdown を 1 つ配置する'
       - name: 手元と別の tmux サーバーと空いたポート
         description: '`TMUX_TMPDIR` を空の一時フォルダにして手元と別の tmux サーバーを先に起動しておき、`MDMARK_PORT` に待ち受けるプロセスの無いポートを指定する'
-        notes: 手元の常駐サーバーが使う 8782 と手元の tmux のセッションを避ける。tmux サーバーを先に起動しておくと、`MDMARK_PORT` がセッションへ渡る経路を確かめられる
+        notes: 手元の常駐サーバーが使用する 8782 と手元の tmux のセッションを回避する。tmux サーバーを先に起動しておくと、`MDMARK_PORT` がセッションへ渡る経路を確認できる
       - name: Mock
-        description: スキルを読むモデルの代わりに、スキルの手順が呼ぶスクリプトを手順の順に流し、利用者への確認には決めた答えを返す。Claude Code のセッションの代わりに、SessionStart のフックを流し、`.mcp.json` の接続先へ HTTP でつなぐ MCP のクライアントを使う
+        description: スキルを読み込むモデルの代わりに、スキルの手順が呼ぶスクリプトを手順の順に実行し、利用者への確認には決めた回答を返却する。Claude Code のセッションの代わりに、SessionStart のフックを実行し、`.mcp.json` の接続先へ HTTP でつなぐ MCP のクライアントを使用する
     flow: |-
       flowchart TD
         A[ClaudeCodeにプラグインを入れる:正常シナリオ] --> B[セッションの開始で常駐サーバーの状態を受け取る:異常シナリオ（起動していない）]
@@ -26,11 +26,11 @@ scenarios:
         click F "../単一ユースケース/ClaudeCodeから点検と書き出しを呼ぶ.yaml#正常シナリオ1-文書を書き出す"
     expected:
       - プラグインを入れた直後のセッションの開始で、常駐サーバーが起動していないことと `global-setup` で起動できることが伝わる
-      - '`global-setup` の後、端末の設定のパスに確認で答えた値の端末の設定があり、指定したセッション名の tmux のセッションが 1 つだけあり、`MDMARK_PORT` のポートで待ち受けるプロセスが 1 つだけある'
+      - '`global-setup` の後、端末の設定のパスに確認で回答した値の端末の設定があり、指定したセッション名の tmux のセッションが 1 つだけあり、`MDMARK_PORT` のポートで待ち受けるプロセスが 1 つだけある'
       - '`CLAUDE_CONFIG_DIR` の `settings.json` の `env` に、端末の設定のパスの `MDMARK_CONFIG` がある'
-      - 状態の置き場所に常駐サーバーのログがあり、待ち受ける URL の 1 行を含む
-      - 次のセッションの開始で SessionStart のフックが何も渡さず、MCP の `instructions` に tmux のセッション名がある
-      - '`setup` の後、文書のフォルダに確認で答えた値の `mdmark.config.yaml` があり、`mdmark check` と同じ点検が設定の形のずれを返さない'
+      - 状態の配置場所に常駐サーバーのログがあり、待ち受ける URL の 1 行を含む
+      - 次のセッションの開始で SessionStart のフックが何も指定せず、MCP の `instructions` に tmux のセッション名がある
+      - '`setup` の後、文書のフォルダに確認で回答した値の `mdmark.config.yaml` があり、`mdmark check` と同じ点検が設定の構造のずれを返却しない'
       - MCP のクライアントの `export_html` が、文書のフォルダの Markdown を 1 枚の HTML に書き出す
     test: test_normal
     uses:
@@ -40,16 +40,16 @@ scenarios:
       - dev/設計書/シナリオ/単一ユースケース/セッションの開始で常駐サーバーの状態を受け取る#scenarios[正常シナリオ]
       - dev/設計書/シナリオ/単一ユースケース/文書のフォルダに設定を作る#scenarios[正常シナリオ]
       - dev/設計書/シナリオ/単一ユースケース/ClaudeCodeから点検と書き出しを呼ぶ#scenarios[正常シナリオ（1 文書を書き出す）]
-  - name: 正常シナリオ（セットアップ済みの端末で入れ直す）
+  - name: 正常シナリオ（セットアップ済みの端末でもう一度入れる）
     setup:
       - name: セットアップ済みの端末
-        description: 正常シナリオを終えた後の端末の設定・状態の置き場所・tmux のセッションと、待ち受けている常駐サーバー
-      - name: 入れ直したプラグイン
-        description: プラグインを外して入れ直した Claude Code の設定のフォルダ
+        description: 正常シナリオを終えた後の端末の設定・状態の配置場所・tmux のセッションと、待ち受けている常駐サーバー
+      - name: もう一度入れたプラグイン
+        description: プラグインを削除してもう一度入れた Claude Code の設定のフォルダ
       - name: 手元と別の tmux サーバーと空いたポート
         description: 正常シナリオと同じ
       - name: Mock
-        description: 正常シナリオと同じ。端末の設定の各キーの確認には、今の値のままにする答えを返す
+        description: 正常シナリオと同じ。端末の設定の各キーの確認には、今の値のままにする回答を返却する
     flow: |-
       flowchart TD
         A[ClaudeCodeにプラグインを入れる:正常シナリオ] --> B[セッションの開始で常駐サーバーの状態を受け取る:正常シナリオ]
@@ -60,9 +60,9 @@ scenarios:
         click C "../単一ユースケース/端末にmdmarkをセットアップする.yaml#正常シナリオセットアップ済み"
         click D "../単一ユースケース/ClaudeCodeから点検と書き出しを呼ぶ.yaml#正常シナリオ"
     expected:
-      - '`global-setup` が tmux のセッションを作り直さず、常駐サーバーのプロセスが入れ直す前と同じ'
-      - 端末の設定の中身が入れ直す前と同じ
-      - MCP のクライアントの `check` が、文書のフォルダの空のずれの一覧を返す
+      - '`global-setup` が tmux のセッションを再作成せず、常駐サーバーのプロセスがもう一度入れる前と同じ'
+      - 端末の設定の中身がもう一度入れる前と同じ
+      - MCP のクライアントの `check` が、文書のフォルダの空のずれの一覧を返却する
     test: test_normal_when_already_set_up
     uses:
       - dev/設計書/シナリオ/単一ユースケース/ClaudeCodeにプラグインを入れる#scenarios[正常シナリオ]
@@ -72,7 +72,7 @@ scenarios:
   - name: 異常シナリオ（常駐サーバーが止まっている）
     setup:
       - name: セットアップ済みの端末
-        description: 正常シナリオを終えた後の端末の設定・状態の置き場所
+        description: 正常シナリオを終えた後の端末の設定・状態の配置場所
       - name: 止めた常駐サーバー
         description: tmux のセッションを閉じ、`MDMARK_PORT` のポートで待ち受けるプロセスが無い状態
       - name: 手元と別の tmux サーバーと空いたポート
@@ -90,24 +90,24 @@ scenarios:
       - セッションの開始で、常駐サーバーが起動していないことと `global-setup` で起動できることが伝わる
       - '`global-setup` の後、指定したセッション名の tmux のセッションが 1 つだけあり、`MDMARK_PORT` のポートで待ち受けるプロセスが 1 つだけある'
       - 端末の設定の中身が止める前と同じ
-      - 同じ MCP のクライアントが接続し直すと、`check` が文書のフォルダの空のずれの一覧を返す
+      - 同じ MCP のクライアントがもう一度接続すると、`check` が文書のフォルダの空のずれの一覧を返却する
     test: test_error_when_server_stopped
     uses:
       - dev/設計書/シナリオ/単一ユースケース/セッションの開始で常駐サーバーの状態を受け取る#scenarios[異常シナリオ（起動していない）]
       - dev/設計書/シナリオ/単一ユースケース/端末にmdmarkをセットアップする#scenarios[正常シナリオ（常駐サーバーが止まっている）]
       - dev/設計書/シナリオ/単一ユースケース/ClaudeCodeから点検と書き出しを呼ぶ#scenarios[正常シナリオ]
-lead: 文書を書く人が mdmark のプラグインを入れ、`global-setup` で端末の設定と常駐サーバーを、`setup` で文書のフォルダの `mdmark.config.yaml` を用意して、MCP のツールで点検と書き出しを呼ぶ。
+lead: 文書の作成者が mdmark のプラグインを入れ、`global-setup` で端末の設定と常駐サーバーを、`setup` で文書のフォルダの `mdmark.config.yaml` を用意して、MCP のツールで点検と書き出しを呼ぶ。
 issue: 165
-primary_actor: 文書を書く人
+primary_actor: 文書の作成者
 stakeholders:
-  - name: 文書を書く人
-    interest: 設定のキーを調べずに、項目ごとに聞かれて答えるだけで端末と文書のフォルダの設定がそろい、常駐サーバーがどこで動いているか・どう止めるか・ログをどこで見るかが分かる
+  - name: 文書の作成者
+    interest: 設定のキーを調べずに、項目ごとに聞かれて回答するだけで端末と文書のフォルダの設定がそろい、常駐サーバーがどこで動いているか・どう止めるか・ログをどこで確認するかが分かる
   - name: Claude Code
     interest: セッションの開始で常駐サーバーが待ち受けていないことを知り、`global-setup` で起動できる
-trigger: 文書を書く人が、新しい端末か入れ直した端末で、Claude Code から mdmark を使い始める
+trigger: 文書の作成者が、新しい端末かもう一度入れた端末で、Claude Code から mdmark を使用し始める
 preconditions:
-  - 文書を書く人の手元に Claude Code・git・Node 24 以降・tmux 3.4 以降がある
-  - 文書を書く人の手元から GitHub と npm のレジストリへ届く
-success_guarantee: 端末の設定と文書のフォルダの `mdmark.config.yaml` が、文書を書く人が答えた値で書かれ、常駐サーバーが tmux のセッションの中で 1 つだけ待ち受ける。次に開いたセッションで、MCP の `instructions` からセッション名が伝わり、MCP のツールがそのセッションの作業のフォルダに対して働く。
-minimal_guarantee: 文書を書く人が書くことを認めなかった値は、端末の設定にも `mdmark.config.yaml` にも書かない。常駐サーバーが起動していないときも Claude Code のセッションは開け、セッションの開始で起動していないことと `global-setup` で起動できることが伝わる。
+  - 文書の作成者の手元に Claude Code・git・Node 24 以降・tmux 3.4 以降がある
+  - 文書の作成者の手元から GitHub と npm のレジストリへ届く
+success_guarantee: 端末の設定と文書のフォルダの `mdmark.config.yaml` が、文書の作成者が回答した値で書き込まれ、常駐サーバーが tmux のセッションの中で 1 つだけ待ち受ける。次に開いたセッションで、MCP の `instructions` からセッション名が伝わり、MCP のツールがそのセッションの作業のフォルダに対して働く。
+minimal_guarantee: 文書の作成者が書き込むことを認めなかった値は、端末の設定にも `mdmark.config.yaml` にも書き込まない。常駐サーバーが起動していないときも Claude Code のセッションは開け、セッションの開始で起動していないことと `global-setup` で起動できることが伝わる。
 test_file: tests/e2e/複合ユースケース/プラグインを入れて端末と文書のフォルダをセットアップする.spec.ts

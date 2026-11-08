@@ -23,11 +23,11 @@ import {
 
 /** `attachComments` の Promise の値 */
 export type CommentsController = {
-  /** 印を外して文字を元に戻し、置いた要素と受け取りを外す。2 回目以降は何もしない */
+  /** マーカーを削除して文字を元に戻し、配置した要素と受け取りを解除する。2 回目以降は何もしない */
   detach: () => void;
-  /** `load` を呼び直して印を付け直す */
+  /** `load` をもう一度呼んでマーカーをもう一度付ける */
   reload: () => Promise<void>;
-  /** その `id` のコメントの印へ移って強調する */
+  /** その `id` のコメントのマーカーへ移って強調する */
   focus: (id: string) => void;
 };
 
@@ -46,11 +46,11 @@ export type CommentsPartModule = {
 /** 選んだ文字の始まりと終わりが同じ 1 つに入っていればボタンを出すブロック */
 const COMMENT_BLOCKS = "p, li, td, th, h1, h2, h3, h4, h5, h6, blockquote";
 
-/** 入力欄を開いている間の選んだ文字に当てる Custom Highlight の名前（CSS の `::highlight()` と揃える） */
+/** 入力欄を開いている間の選んだ文字に適用する Custom Highlight の名前（CSS の `::highlight()` と統一する） */
 const PENDING_HIGHLIGHT = "mdmark-comment-pending";
 
 /** 本文がある入力欄を閉じるときの `window.confirm` の文 */
-const DISCARD_MESSAGE = "書いたコメントを捨てて閉じますか？";
+const DISCARD_MESSAGE = "記載したコメントを捨てて閉じますか？";
 
 /** ボタン・入力欄・吹き出しを箇所から離す幅（px） */
 const POPOVER_GAP_PX = 6;
@@ -58,10 +58,10 @@ const POPOVER_GAP_PX = 6;
 /** ボタン・入力欄・吹き出しを画面の端から離す幅（px） */
 const POPOVER_GUTTER_PX = 8;
 
-/** 印の読み上げの説明の文 */
+/** マーカーのスクリーンリーダーの説明の文 */
 const HINT_TEXT = "コメントが付いた箇所";
 
-// 印の説明を使っている `attachComments` の数。最後の 1 つが外れたら説明を取り除く
+// マーカーの説明を使用している `attachComments` の数。最後の 1 つが削除されたら説明を取り除く
 let hintUsers = 0;
 
 // 入力欄と吹き出しの `id` を文書の中で重ならせないための通し番号
@@ -74,9 +74,9 @@ function elementFrom(html: string): HTMLElement {
   return template.content.firstElementChild as HTMLElement;
 }
 
-/** 枠を箇所の下に置き、下に収まらなければ上に置き、左右は画面の中に収める */
+/** 枠を箇所の下に配置し、下に収まらなければ上に配置し、左右は画面の中に収める */
 export function placePopover(options: {
-  /** 置く枠 */
+  /** 配置する枠 */
   element: HTMLElement;
   /** 箇所の矩形 */
   rect: DOMRect;
@@ -104,13 +104,13 @@ type OpenPopover = {
   element: HTMLElement;
   /** 入力欄か吹き出しか */
   kind: "form" | "bubble";
-  /** 元の箇所の矩形を返す（スクロールや幅の変化で付いていくのに使う） */
+  /** 元の箇所の矩形を返却する（スクロールや幅の変化で付いていくのに使用する） */
   anchor: () => DOMRect;
   /** 閉じたらフォーカスを戻す先 */
   returnTo: HTMLElement;
 };
 
-/** 範囲の端の要素から、同じ 1 つのコメントを付けられるブロックを返す。付けられなければ `undefined` */
+/** 範囲の端の要素から、同じ 1 つのコメントを付けられるブロックを返却する。付けられなければ `undefined` */
 function blockOf(root: HTMLElement, range: Range): HTMLElement | undefined {
   const closest = (node: Node): HTMLElement | null =>
     (node instanceof Element ? node : node.parentElement)?.closest<HTMLElement>(
@@ -133,30 +133,30 @@ function blockOf(root: HTMLElement, range: Range): HTMLElement | undefined {
   return start;
 }
 
-/** 読んだコメントに印を付け、文字の選び・ボタン・入力欄・吹き出しの操作を付け、外す関数を返す */
+/** 読み込んだコメントにマーカーを付け、文字の選び・ボタン・入力欄・吹き出しの操作を付け、削除する関数を返却する */
 export async function attachComments(options: {
   /** 範囲の要素 */
   root: HTMLElement;
-  /** 読み書きの関数 */
+  /** 読み込みと保存の関数 */
   store: MdmarkCommentStore;
   /** 対象の ID */
   docId: string;
-  /** 印を囲む閉じた節と行の詳細を開く */
+  /** マーカーを囲む閉じたセクションと行の詳細を開く */
   reveal?: (element: HTMLElement) => void;
-  /** 余白のマーカーを置くか（既定 `false`） */
+  /** 余白のマーカーを配置するか（既定 `false`） */
   margin?: boolean;
 }): Promise<CommentsController> {
   const { root, store, docId, reveal, margin = false } = options;
   let destroyed = false;
   let comments: MdmarkComment[] = [];
-  // 印 → その印に付いたコメント
+  // マーカー → そのマーカーに付いたコメント
   const marked = new Map<HTMLElement, MdmarkComment[]>();
   let open: OpenPopover | undefined;
   // 開いている吹き出しの修正と削除の操作
   let actions: { cancel: () => boolean } | undefined;
   let pending: Range | undefined;
   let frame = 0;
-  // 読み直しの番号。後から読み直したら前の読み直しの結果を捨てる
+  // 再読み込みの番号。後から再読み込みしたら前の再読み込みの結果を捨てる
   let reloadCount = 0;
 
   // ─── 読み込み ───
@@ -171,7 +171,7 @@ export async function attachComments(options: {
     console.error("[mdmark] コメントを読み込めません", "load", docId, error);
   }
 
-  // ─── 読み上げの説明 ───
+  // ─── スクリーンリーダーの説明 ───
   hintUsers += 1;
   if (document.getElementById(COMMENT_HINT_ID) === null) {
     const hint = document.createElement("span");
@@ -181,8 +181,8 @@ export async function attachComments(options: {
     document.body.append(hint);
   }
 
-  // ─── 印 ───
-  /** 付けた印を外して中の文字の節に戻し、箇所が見つからないコメントの一覧を取り除く */
+  // ─── マーカー ───
+  /** 付けたマーカーを削除して中の文字のセクションに戻し、箇所が見つからないコメントの一覧を取り除く */
   const clearMarks = (): void => {
     for (const mark of marked.keys()) {
       mark.replaceWith(...mark.childNodes);
@@ -191,7 +191,7 @@ export async function attachComments(options: {
     root.querySelector(":scope > .mdmark-comment-orphans")?.remove();
     root.normalize();
   };
-  /** 文字の節の `start`〜`end` を印で包む */
+  /** 文字のセクションの `start`〜`end` をマーカーで包む */
   const wrap = (node: Text, start: number, end: number): HTMLElement => {
     let target = node;
     if (end < target.length) {
@@ -206,12 +206,12 @@ export async function attachComments(options: {
     mark.append(target);
     return mark;
   };
-  /** 読んだコメントの箇所を探して印を付け直し、見つからないものを末尾の一覧に出す */
+  /** 読み込んだコメントの箇所を探してマーカーをもう一度付け、見つからないものを末尾の一覧に出す */
   const applyMarks = (): void => {
     clearMarks();
     const { text, nodes } = commentText(root);
     const { anchors, orphans } = locateComments({ text, comments });
-    // 文字の節の位置がずれないよう、後ろの箇所から包む
+    // 文字のセクションの位置がずれないよう、後ろの箇所から包む
     for (const anchor of [...anchors].reverse()) {
       for (const { node, start } of [...nodes].reverse()) {
         const from = Math.max(anchor.start, start) - start;
@@ -249,7 +249,7 @@ export async function attachComments(options: {
         : below
     }px`;
   };
-  /** 選びに合わせてボタンを出し入れする。ボタンは選んだ文字のブロックの直後に置き、Tab で届くようにする */
+  /** 選びに合わせてボタンを出し入れする。ボタンは選んだ文字のブロックの直後に配置し、Tab で届くようにする */
   const syncButton = (): void => {
     frame = 0;
     if (destroyed || open) {
@@ -284,7 +284,7 @@ export async function attachComments(options: {
   };
 
   // ─── 入力欄と吹き出しの閉じ方 ───
-  /** 入力欄を閉じる。本文があるときは捨ててよいかを確かめ、閉じたら真を返す */
+  /** 入力欄を閉じる。本文があるときは捨ててよいかを確認し、閉じたら真を返却する */
   const closeForm = (force: boolean): boolean => {
     if (open?.kind !== "form") {
       return true;
@@ -300,7 +300,7 @@ export async function attachComments(options: {
     }
     return true;
   };
-  /** 吹き出しを閉じる。`returnFocus` が真なら印へフォーカスを戻す */
+  /** 吹き出しを閉じる。`returnFocus` が真ならマーカーへフォーカスを戻す */
   const closeBubble = (returnFocus: boolean): void => {
     if (open?.kind !== "bubble") {
       return;
@@ -316,7 +316,7 @@ export async function attachComments(options: {
   };
 
   // ─── 入力欄 ───
-  /** 入力欄の状態を DOM に書く */
+  /** 入力欄の状態を DOM に記載する */
   const setFormState = (
     form: HTMLElement,
     state: "idle" | "saving" | "empty" | "failed",
@@ -348,7 +348,7 @@ export async function attachComments(options: {
       form.removeAttribute("aria-busy");
     }
   };
-  /** 保存の関数を呼び、保存できたら入力欄を閉じて選んだ箇所に印を付ける */
+  /** 保存の関数を呼び、保存できたら入力欄を閉じて選んだ箇所にマーカーを付ける */
   const save = async (form: HTMLElement, range: Range): Promise<void> => {
     const field = form.querySelector("textarea");
     const body = field?.value.trim() ?? "";
@@ -366,7 +366,7 @@ export async function attachComments(options: {
         comment: draftFromRange({ root, range, body }),
       });
       if (!isComment(saved)) {
-        throw new Error("save が返した値がコメントの形に合いません");
+        throw new Error("save が返却した値がコメントの構造に合いません");
       }
     } catch (error) {
       console.error("[mdmark] コメントを保存できません", "save", docId, error);
@@ -428,7 +428,7 @@ export async function attachComments(options: {
       void save(form, range);
     });
   };
-  /** キャンセルか Esc で入力欄を閉じ、ボタンへフォーカスを戻す。捨てないと答えたときは残す */
+  /** キャンセルか Esc で入力欄を閉じ、ボタンへフォーカスを戻す。捨てないと回答したときは残す */
   const cancelForm = (): void => {
     if (!closeForm(false)) {
       return;
@@ -441,7 +441,7 @@ export async function attachComments(options: {
   };
 
   // ─── 吹き出し ───
-  /** 印の下に、付いたコメントの吹き出しを開く */
+  /** マーカーの下に、付いたコメントの吹き出しを開く */
   const openBubble = (mark: HTMLElement): void => {
     if (open?.kind === "form" && !closeForm(false)) {
       return;
@@ -485,7 +485,7 @@ export async function attachComments(options: {
   };
 
   // ─── 修正と削除の反映 ───
-  /** 修正できたコメントの本文を、控えたコメントと印に付いたコメントで書き換える */
+  /** 修正できたコメントの本文を、記録したコメントとマーカーに付いたコメントで書き換える */
   const onUpdated = (id: string, body: string): void => {
     const replace = (comment: MdmarkComment): MdmarkComment =>
       comment.id === id ? { ...comment, body } : comment;
@@ -494,7 +494,7 @@ export async function attachComments(options: {
       marked.set(mark, list.map(replace));
     }
   };
-  /** 削除できたコメントを除き、コメントが残らない印は外す。同じ印にコメントが残るかを返す */
+  /** 削除できたコメントを除き、コメントが残らないマーカーは削除する。同じマーカーにコメントが残るかを返却する */
   const onRemoved = (id: string): boolean => {
     comments = comments.filter((comment) => comment.id !== id);
     let remains = true;
@@ -507,7 +507,7 @@ export async function attachComments(options: {
         marked.set(mark, rest);
         continue;
       }
-      // 開いている吹き出しの印なら閉じ、フォーカスを移す先のブロックを控えてから印を外す
+      // 開いている吹き出しのマーカーなら閉じ、フォーカスを移す先のブロックを記録してからマーカーを削除する
       remains = false;
       const wasOpen = open?.kind === "bubble" && open.returnTo === mark;
       if (wasOpen) {
@@ -558,7 +558,7 @@ export async function attachComments(options: {
       closeBubble(true);
     }
   };
-  /** 外側を押す: 吹き出しだけを閉じる（入力欄は書いた文字を失わないよう、キャンセルか Esc で閉じる） */
+  /** 外側を押す: 吹き出しだけを閉じる（入力欄は記載した文字を失わないよう、キャンセルか Esc で閉じる） */
   const onPointerDown = (event: Event): void => {
     if (open?.kind !== "bubble") {
       return;
@@ -595,8 +595,8 @@ export async function attachComments(options: {
       ? attachMarginMarkers({ content: root })
       : undefined;
 
-  // ─── 読み直しと印へ移る ───
-  /** `load` を呼び直し、読めたら印と一覧を付け直す。読めなければ印を残して reject する */
+  // ─── 再読み込みとマーカーへ移る ───
+  /** `load` をもう一度呼び、読み込めたらマーカーと一覧をもう一度付ける。読み込めなければマーカーを残して reject する */
   const reload = async (): Promise<void> => {
     reloadCount += 1;
     const count = reloadCount;
@@ -615,13 +615,15 @@ export async function attachComments(options: {
     }
     if (!Array.isArray(loaded) || !loaded.every(isComment)) {
       console.error("[mdmark] コメントを読み込めません", "load", docId, loaded);
-      throw new TypeError("load が返した値がコメントの配列の形に合いません");
+      throw new TypeError(
+        "load が返却した値がコメントの配列の構造に合いません",
+      );
     }
     comments = loaded;
     closeBubble(false);
     applyMarks();
   };
-  /** その `id` のコメントの印を開いて見せ、フォーカスを移して強調する */
+  /** その `id` のコメントのマーカーを開いて見せ、フォーカスを移して強調する */
   const focus = (id: string): void => {
     if (destroyed) {
       return;
@@ -644,7 +646,7 @@ export async function attachComments(options: {
     }
   };
 
-  /** 受け取りを外し、置いた要素と印を取り除く */
+  /** 受け取りを解除し、配置した要素とマーカーを取り除く */
   const detach = (): void => {
     if (destroyed) {
       return;

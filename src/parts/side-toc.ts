@@ -57,7 +57,7 @@ function renderItems(
     .join("");
 }
 
-/** すべて展開・すべて折りたたむのボタンの HTML を返す。文字を持たず、読み上げの名前とツールチップで操作を伝える */
+/** すべて展開・すべて折りたたむのボタンの HTML を返却する。文字を持たず、スクリーンリーダー向けの名前とツールチップで操作を伝える */
 function renderFoldAll(): string {
   return [
     ["open", "すべて展開", "chevrons-up-down"],
@@ -70,19 +70,19 @@ function renderFoldAll(): string {
     .join("");
 }
 
-/** 右側の目次の HTML を返す。深いレベルの見出しは直前の浅いレベルの入れ子にし、右端の線を見出しの数だけ並べる */
+/** 右側の目次の HTML を返却する。深いレベルの見出しは直前の浅いレベルの入れ子にし、右端の線を見出しの数だけ並べる */
 export function renderSideToc(options: {
   /** 文書の頭からの h1・h2・h3 */
   headings: SideTocHeading[];
   /** 出し方（既定 `hover`） */
   mode?: SideTocMode;
-  /** すべて展開・すべて折りたたむのボタンを置くか（既定 `true`） */
+  /** すべて展開・すべて折りたたむのボタンを配置するか（既定 `true`） */
   sections?: boolean;
   /** 目次を出しているか（既定 `false`） */
   open?: boolean;
   /** ピン止めしているか（既定 `false`） */
   pinned?: boolean;
-  /** 今いる節の見出しの ID */
+  /** 今いるセクションの見出しの ID */
   current?: string;
   /** パネルの ID */
   panelId?: string;

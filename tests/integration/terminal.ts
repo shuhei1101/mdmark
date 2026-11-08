@@ -4,7 +4,7 @@ import { afterEach, inject } from "vitest";
 import { useTempDirs } from "./cli.ts";
 import { findFreePort } from "./plugin.ts";
 
-/** 一時の端末: 環境変数と、端末の設定・状態の置き場所・settings.json のパス */
+/** 一時の端末: 環境変数と、端末の設定・状態の配置場所・settings.json のパス */
 export type Terminal = {
   home: string;
   env: Record<string, string>;
@@ -15,7 +15,7 @@ export type Terminal = {
   port: number;
 };
 
-/** tmux が使えるか */
+/** tmux が使用できるか */
 export const HAS_TMUX = (() => {
   try {
     execFileSync("tmux", ["-V"]);
@@ -25,7 +25,7 @@ export const HAS_TMUX = (() => {
   }
 })();
 
-/** `TMUX`・`TMUX_PANE` を外した環境。あると tmux は `TMUX_TMPDIR` を見ず、テストを流している手元の tmux サーバーにつなぐ */
+/** `TMUX`・`TMUX_PANE` を削除した環境。あると tmux は `TMUX_TMPDIR` を確認せず、テストを実行している手元の tmux サーバーにつなぐ */
 const isolatedEnv = (env: Record<string, string>): Record<string, string> => {
   const merged: Record<string, string | undefined> = { ...process.env, ...env };
   delete merged.TMUX;
@@ -33,7 +33,7 @@ const isolatedEnv = (env: Record<string, string>): Record<string, string> => {
   return merged as Record<string, string>;
 };
 
-/** 一時の端末の tmux サーバーで tmux を流し、終了コードと標準出力を返す */
+/** 一時の端末の tmux サーバーで tmux を実行し、終了コードと標準出力を返却する */
 const runTmux = (terminal: Terminal, args: string[]) =>
   new Promise<{ code: number; stdout: string }>((resolve) => {
     execFile(

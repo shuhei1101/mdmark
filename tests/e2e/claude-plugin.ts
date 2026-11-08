@@ -12,14 +12,14 @@ const REPOSITORY = "shuhei1101/mdmark";
 // 入れるプラグイン
 const PLUGIN_ID = "mdmark@mdmark";
 
-/** `claude plugin list --json` の 1 行のうち、検証に使う項目 */
+/** `claude plugin list --json` の 1 行のうち、検証に使用する項目 */
 export type InstalledPlugin = {
   id: string;
   enabled: boolean;
   installPath: string;
 };
 
-/** コマンドを流し、終了コードと出力を返す。0 以外でも例外を投げない */
+/** コマンドを実行し、終了コードと出力を返却する。0 以外でも例外を投げない */
 export async function run(
   command: string,
   args: string[],
@@ -41,7 +41,7 @@ export async function run(
   }
 }
 
-/** 今の HEAD のブランチを返す。push 済みで `plugin/` の生成物を commit してあることを確かめ、満たさないときは理由を添えて投げる */
+/** 今の HEAD のブランチを返却する。push 済みで `plugin/` の生成物を commit してあることを確認し、満たさないときは理由を添えて投げる */
 async function pushedBranch(): Promise<string> {
   const branch = (
     await run("git", ["rev-parse", "--abbrev-ref", "HEAD"], { cwd: REPO_ROOT })
@@ -84,7 +84,7 @@ async function pushedBranch(): Promise<string> {
   return branch;
 }
 
-/** 今の HEAD のブランチをマーケットプレイスとして足し、設定のフォルダ `configDir` にプラグインを入れて、入った `mdmark@mdmark` を返す */
+/** 今の HEAD のブランチをマーケットプレイスとして追加し、設定のフォルダ `configDir` にプラグインを入れて、入った `mdmark@mdmark` を返却する */
 export async function installPlugin(
   configDir: string,
 ): Promise<InstalledPlugin> {
@@ -116,7 +116,7 @@ export async function installPlugin(
   return plugin as InstalledPlugin;
 }
 
-/** 設定のフォルダ `configDir` から、プラグインとマーケットプレイスの追加を外す */
+/** 設定のフォルダ `configDir` から、プラグインとマーケットプレイスの追加を削除する */
 export async function uninstallPlugin(configDir: string): Promise<void> {
   const env = { ...process.env, CLAUDE_CONFIG_DIR: configDir };
   const options = { cwd: configDir, env };

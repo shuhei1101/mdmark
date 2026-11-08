@@ -1,8 +1,8 @@
 import { expect, type Frame, type Locator, type Page } from "@playwright/test";
 
-/** 「変更を見る」のボタン */
+/** 「変更表示」のボタン */
 export function toggleOf(page: Page): Locator {
-  return page.getByRole("button", { name: "変更を見る" });
+  return page.getByRole("button", { name: "変更表示" });
 }
 
 /** 前のリビジョンの選ぶ欄 */
@@ -44,7 +44,7 @@ export function disabledValues(select: Locator): Promise<string[]> {
 /** 描いた結果の上で色分けした文書を探す範囲（ページかプレビューのフレーム） */
 type Scope = Page | Frame;
 
-/** 色を当てたブロック */
+/** 色を適用したブロック */
 export function diffBlocks(scope: Scope, kind: "add" | "del"): Locator {
   return scope.locator(`div.mdmark-diff-block[data-kind="${kind}"]`);
 }
@@ -72,14 +72,14 @@ function variableColor(scope: Scope, name: string): Promise<string> {
   }, name);
 }
 
-/** 色分けした見本の文書（`BLOCKS_BEFORE` から `BLOCKS_AFTER`）の見え方を確かめる */
+/** 色分けした見本の文書（`BLOCKS_BEFORE` から `BLOCKS_AFTER`）の見え方を確認する */
 export async function expectBlockDiff(scope: Scope): Promise<void> {
-  // 変更後の文書が、見出し・表を描いた形で出る
+  // 変更後の文書が、見出し・表を描いた構造で出る
   await expect(scope.locator(".mdmark-content h1")).toHaveText(
     "問い合わせ窓口の週の報告",
   );
   await expect(scope.locator(".mdmark-content table")).toHaveCount(1);
-  // 語を書き換えた段落と足した段落が、追加の色とマーカーで出る
+  // 単語を書き換えた段落と追加した段落が、追加の色とマーカーで出る
   const added = diffBlocks(scope, "add");
   await expect(added).toHaveCount(2);
   await expect(added.nth(0)).toContainText("よくある質問の変更は");
@@ -92,7 +92,7 @@ export async function expectBlockDiff(scope: Scope): Promise<void> {
       added.nth(index).locator('.mdmark-diff-block-sign[aria-hidden="true"]'),
     ).toHaveText("+");
   }
-  // 消した段落が、変更前の位置に削除の色とマーカーで出る
+  // 削除した段落が、変更前の位置に削除の色とマーカーで出る
   const deleted = diffBlocks(scope, "del");
   await expect(deleted).toHaveCount(1);
   await expect(deleted).toContainText("旧い注意の段落です。");

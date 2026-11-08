@@ -1,25 +1,25 @@
 title: "ライブラリ本体 / CLI"
-lead: '`dist/cli.js` に束ねる Node の CLI。引数を読んでコマンドを振り分け、設定と索引と文書を読み、`render`・`checkIndex`・`collectReferences` を同じソースから呼んで、雛形の配置・点検・書き出しを行う。ファイル・YAML・glob・esbuild を使うのはこの分類だけにする。'
+lead: '`dist/cli.js` にまとめる Node の CLI。引数を読み込んでコマンドを振り分け、設定と索引と文書を読み込み、`render`・`checkIndex`・`collectReferences` を同じソースから呼んで、雛形の配置・点検・書き出しをする。ファイル・YAML・glob・esbuild を使用するのはこの分類だけにする。'
 directory: |-
   ```tree
   src/cli/
   ├── main.ts       # 引数の読み取りとコマンドの振り分け
   ├── errors.ts     # CLI の誤りと入出力の型
-  ├── config.ts     # 設定ファイルの探索・読み取り・形の検査
+  ├── config.ts     # 設定ファイルの探索・読み取り・構造の検査
   ├── alias-schema.ts # 設定の aliases の行の JSON Schema での検査
   ├── aliases.ts    # aliases の行の paths の YAML の読み取りとエイリアスの組み立て
-  ├── documents.ts  # build の対象の文書・索引と索引の文書の読み取り・文書の題
-  ├── embed.ts      # 外部ライブラリと拡張の束ね・起動の処理と埋めるモジュールの 1 つのスクリプトへの束ね・色分けの言語の拾い出し・画像の埋め込み・1 枚に含まれない文書へのリンク
-  ├── assets.ts     # 画像・動画・音声・添付の参照の拾い出し・アセットのルートでの探索・動画と音声のコピー・見つからないファイルの点検
-  ├── includes.ts   # 取り込む文書の表の組み立てと、取り込めない問題の拾い出し
-  ├── icons.ts      # 束ねていない名前のアイコンの形の取り出し
+  ├── documents.ts  # build の対象の文書・索引と索引の文書の読み取り・文書のタイトル
+  ├── embed.ts      # 外部ライブラリと拡張のまとめ・起動の処理と埋めるモジュールの 1 つのスクリプトへのまとめ・色分けの言語の抽出・画像の埋め込み・1 枚に含まれない文書へのリンク
+  ├── assets.ts     # 画像・動画・音声・添付の参照の抽出・アセットのルートでの探索・動画と音声のコピー・見つからないファイルの点検
+  ├── includes.ts   # 取り込む文書の表の組み立てと、取り込めない問題の抽出
+  ├── icons.ts      # まとめていない名前のアイコンの形状の取り出し
   ├── html.ts       # 書き出す HTML の組み立て
   ├── init.ts       # mdmark init
   ├── check.ts      # mdmark check
   ├── git.ts        # 比べる基準から変わったファイルの引き出し
   ├── export.ts     # mdmark export
   └── build.ts      # mdmark build
-  templates/        # init が置く雛形の正本
+  templates/        # init が配置する雛形の原本
   schemas/alias-inject/v0.3.0/aliases.schema.json # 取り込んだ alias-inject の行の Schema
   ```
 data_models:
@@ -27,7 +27,7 @@ data_models:
     title: CLI の入出力
     container: src/cli/errors.ts
     usecase: 共通
-    summary: コマンドが使う今のフォルダと、標準出力・標準エラーへの書き出し
+    summary: コマンドが使用する今のフォルダと、標準出力・標準エラーへの書き出し
     properties:
       - name: cwd
         type: string
@@ -42,30 +42,30 @@ data_models:
     title: CLI の誤り
     container: src/cli/errors.ts
     usecase: 共通
-    summary: 原因と直し方の 1 文を持ち、`main` が標準エラーに出して終了コード 1 にする誤り
+    summary: 原因と修正方法の 1 文を持ち、`main` が標準エラーに出して終了コード 1 にする誤り
     inherits: Error
     properties:
       - name: message
         type: string
-        description: 原因と直し方の日本語の 1 文
+        description: 原因と修正方法の日本語の 1 文
   - name: IncludeProblem
     title: 取り込みの問題
     container: src/cli/includes.ts
     usecase: 共通
-    summary: '`collectIncludes` が返す、取り込めない include のマーカー 1 つ'
+    summary: '`collectIncludes` が返却する、取り込めない include のマーカー 1 つ'
     properties:
       - name: kind
         type: '"missing" | "heading" | "lines" | "outside" | "circular"'
         description: 無いファイル・無い見出し・行の数を越える範囲・根の外・循環
       - name: file
         type: string
-        description: マーカーを書いた文書の、文書のフォルダからのパス（文書そのものは空文字）
+        description: マーカーを記載した文書の、文書のフォルダからのパス（文書そのものは空文字）
       - name: line
         type: number
         description: マーカーの行（1 から）
       - name: target
         type: string
-        description: マーカーに書いた取り込み先
+        description: マーカーに記載した取り込み先
       - name: lineCount
         type: number
         description: '`lines` のときのファイルの行の数'
@@ -73,10 +73,10 @@ data_models:
         type: string[]
         description: '`circular` のときの取り込みの順（最初と最後が同じキー）'
   - name: LoadedConfig
-    title: 読んだ設定
+    title: 読み込んだ設定
     container: src/cli/config.ts
     usecase: 共通
-    summary: 見つけた設定ファイルの場所と、読んだ値
+    summary: 見つけた設定ファイルの場所と、読み込んだ値
     properties:
       - name: path
         type: string
@@ -86,7 +86,7 @@ data_models:
         description: 設定ファイルのあるフォルダ（設定のパスと glob の基準）
       - name: config
         type: CliConfig
-        description: 読んだ値。`MdmarkConfig` に `index`・`theme`・`extensions`・`build`・`aliases`（Schema に合わない行は `null`）を足した形
+        description: 読み込んだ値。`MdmarkConfig` に `index`・`theme`・`extensions`・`build`・`aliases`（Schema に合わない行は `null`）を追加した構造
   - name: CheckIssue
     title: 点検のずれ
     container: src/cli/check.ts
@@ -104,12 +104,12 @@ data_models:
         description: ずれの種類
       - name: message
         type: string
-        description: 内容と直し方の 1 文
+        description: 内容と修正方法の 1 文
   - name: ExportPayload
     title: 書き出しの中身
     container: src/cli/html.ts
     usecase: 共通
-    summary: 書き出した HTML に JSON で埋め、開いたときに起動の処理が読む中身
+    summary: 書き出した HTML に JSON で埋め、開いたときに起動の処理が読み込む中身
     properties:
       - name: kind
         type: "'document' | 'bundle'"
@@ -134,33 +134,33 @@ data_models:
         description: '`loadAliases` が作ったエイリアス（`env` を含まない）。設定に `aliases` が無ければ持たない'
       - name: assets
         type: Record<string, string> | undefined
-        description: '`bundle` で埋めた画像のキーから `data:` URL を引く表。複数の文書が指す同じ画像を 1 回だけ持つ。`document` では持たない'
+        description: '`bundle` で埋めた画像のキーから `data:` URL を参照する表。複数の文書が指す同じ画像を 1 回だけ持つ。`document` では持たない'
   - name: ViewerEmbeds
-    title: 起動の処理と束ねるモジュール
+    title: 起動の処理とまとめるモジュール
     container: src/cli/embed.ts
     usecase: 共通
-    summary: '`prepareEmbeds` が束ねられることを確かめた、起動の処理と 1 つのスクリプトに束ねるモジュールの読み先（URL か絶対パス）'
+    summary: '`prepareEmbeds` がまとめられることを確認した、起動の処理と 1 つのスクリプトにまとめるモジュールの読み込み先（URL か絶対パス）'
     properties:
       - name: libraries
         type: Record<string, string>
-        description: 文書に印があり束ねられた外部ライブラリの、印の名前から読み先を引く表
+        description: 文書にマーカーがありまとめられた外部ライブラリの、マーカーの名前から読み込み先を参照する表
       - name: extensions
         type: string[]
-        description: 束ねられた設定の `extensions` の拡張の読み先。設定の順
+        description: まとめられた設定の `extensions` の拡張の読み込み先。設定の順
       - name: syntax
         type: '{ core: string; languages: Record<string, string> } | undefined'
-        description: 束ねられた色分けの本体の読み先と、言語のモジュール名から読み先を引く表。文書に色分けの対象があり本体を束ねられたときだけ持つ
+        description: まとめられた色分けの本体の読み込み先と、言語のモジュール名から読み込み先を参照する表。文書に色分けの対象があり本体をまとめられたときだけ持つ
       - name: view
         type: boolean
-        description: ビューの部品を束ねるか。文書にビューの印があるときだけ `true`（書き出した HTML はコメントの読み書きの関数を持たないため、コメントの部品は束ねない）
+        description: ビューの部品をまとめるか。文書にビューのマーカーがあるときだけ `true`（書き出した HTML はコメントの読み込みと保存の関数を持たないため、コメントの部品はまとめない）
       - name: mermaid
         type: string | undefined
-        description: 束ねられた mermaid の読み先。文書に mermaid のコードブロックがあり、束ねられたときだけ持つ
+        description: まとめられた mermaid の読み込み先。文書に mermaid のコードブロックがあり、まとめられたときだけ持つ
       - name: htmlScripts
         type: 'Array<{ source: string; code: string }> | undefined'
-        description: '`compileHtmlScripts` の結果。`source` は範囲のコードの文字（開いたときに `mount` が引く鍵）、`code` は CommonJS のコード。範囲が無ければ入れない'
+        description: '`compileHtmlScripts` の結果。`source` は範囲のコードの文字（開いたときに `mount` が参照する鍵）、`code` は CommonJS のコード。範囲が無ければ入れない'
     refs:
-      - dev/設計書/インターフェース定義/ライブラリ本体/文書をHTMLに書き出す.ts#constraints[束ねるスクリプト]
+      - dev/設計書/インターフェース定義/ライブラリ本体/文書をHTMLに書き出す.ts#constraints[まとめるスクリプト]
     status: planned
     introduced:
       pr: 296
@@ -172,13 +172,13 @@ data_models:
     properties:
       - name: src
         type: string
-        description: 書いたパス（クエリとフラグメントを含む）
+        description: 記載したパス（クエリとフラグメントを含む）
       - name: kind
         type: "'image' | 'video' | 'audio' | 'poster' | 'attachment'"
         description: 種類。`mediaKindOf` と `ATTACHMENT_KINDS` で見分ける（GIF は `image`）
       - name: line
         type: number
-        description: 書いた行の番号（1 から）
+        description: 記載した行の番号（1 から）
     status: planned
     introduced:
       pr: 263
@@ -187,8 +187,8 @@ functions:
     title: CLI を実行する
     container: src/cli/main.ts
     usecase: 共通
-    summary: 最初の引数のコマンド名で `init`・`check`・`export`・`build`・`upgrade`・`serve` を呼び分け、終了コードを返す
-    description: '引数は `node:util` の `parseArgs`（`--out`・`--config`・`--base`・`--text`・`--file`・`--key` は文字列、`--js`・`--plan`・`--yes` は真偽値、位置引数を許す）で読む。`upgrade` はパッケージの直下・`cliVersion()`・今の時刻・`ask` を `runUpgrade` に渡す。`init` は `cliVersion()` を `runInit` に渡す。`serve` は `process.env`・パッケージの直下・`cliVersion()`・`SIGINT` か `SIGTERM` で止める合図になる `AbortSignal` を `runServe` に渡す。コマンドが投げた `CliError` はその文を標準エラーに出して 1 を返す。知らないコマンド・知らない引数・引数が無いときは、使えるコマンドの一覧を標準エラーに出して 1 を返す。`check` の `--text -` は標準入力を終わりまで読んだ文字を `text` にして `runCheck` に渡す。`src/cli/main.ts` の末尾で、入口として実行されたときだけ `main(process.argv.slice(2), 標準の入出力, createLinePrompter({ input: process.stdin, write: 標準エラー }))` を呼び、戻り値を `process.exitCode` に入れる'
+    summary: 最初の引数のコマンド名で `init`・`check`・`export`・`build`・`upgrade`・`serve` を呼び分け、終了コードを返却する
+    description: '引数は `node:util` の `parseArgs`（`--out`・`--config`・`--base`・`--text`・`--file`・`--key` は文字列、`--js`・`--plan`・`--yes` は真偽値、位置引数を許す）で読み込む。`upgrade` はパッケージの直下・`cliVersion()`・今の時刻・`ask` を `runUpgrade` に指定する。`init` は `cliVersion()` を `runInit` に指定する。`serve` は `process.env`・パッケージの直下・`cliVersion()`・`SIGINT` か `SIGTERM` で止める合図になる `AbortSignal` を `runServe` に指定する。コマンドが投げた `CliError` はその文を標準エラーに出して 1 を返却する。知らないコマンド・知らない引数・引数が無いときは、使用できるコマンドの一覧を標準エラーに出して 1 を返却する。`check` の `--text -` は標準入力を終わりまで読み込んだ文字を `text` にして `runCheck` に指定する。`src/cli/main.ts` の末尾で、入口として実行されたときだけ `main(process.argv.slice(2), 標準の入出力, createLinePrompter({ input: process.stdin, write: 標準エラー }))` を呼び、戻り値を `process.exitCode` に入れる'
     kind: 関数
     scope: public
     is_async: true
@@ -204,35 +204,35 @@ functions:
       - name: ask
         type: Prompter
         required: true
-        description: '`upgrade` の問い（テストで差し替える）'
+        description: '`upgrade` の質問（テストで差し替える）'
     returns:
       type: Promise<0 | 1>
       description: コマンドの終了コード
     unit_tests:
       - name: test_main
         case: 正常
-        summary: コマンド名で init を呼び、その終了コードを返す
+        summary: コマンド名で init を呼び、その終了コードを返却する
         condition: '`["init", "{一時フォルダ}"]`'
-        mock: 出力を配列に貯める `CliIo`、`vi.stubGlobal("__MDMARK_VERSION__", "v0.5.0")`（`init` が `cliVersion()` を読むため）
-        expected: 0 を返し、標準出力に `置いた:` の行がある
+        mock: 出力を配列に貯める `CliIo`、`vi.stubGlobal("__MDMARK_VERSION__", "v0.5.0")`（`init` が `cliVersion()` を読み込むため）
+        expected: 0 を返却し、標準出力に `配置した:` の行がある
       - name: test_main_when_command_unknown
         case: 異常
-        summary: 知らないコマンドは一覧を出して 1 を返す
+        summary: 知らないコマンドは一覧を出して 1 を返却する
         condition: '`["deploy"]`'
         mock: 出力を配列に貯める `CliIo`
-        expected: 1 を返し、標準エラーに `init`・`check`・`export`・`build`・`serve` が出る
+        expected: 1 を返却し、標準エラーに `init`・`check`・`export`・`build`・`serve` が出る
       - name: test_main_when_cli_error
         case: 異常
-        summary: コマンドが投げた CliError の文を出して 1 を返す
+        summary: コマンドが投げた CliError の文を出して 1 を返却する
         condition: 設定ファイルの無い一時フォルダで `["check"]`
         mock: 出力を配列に貯める `CliIo`
-        expected: 1 を返し、標準エラーに `mdmark init` が出る
+        expected: 1 を返却し、標準エラーに `mdmark init` が出る
       - name: test_main_when_upgrade
         case: 正常
-        summary: upgrade を呼び、--plan を runUpgrade に渡す
+        summary: upgrade を呼び、--plan を runUpgrade に指定する
         condition: 設定の `version` がパッケージと同じ一時フォルダで `["upgrade", "--plan"]`
         mock: 出力を配列に貯める `CliIo`、呼ばれたら失敗にする `Prompter`
-        expected: 0 を返し、標準出力に `当てる手順はありません` が出る
+        expected: 0 を返却し、標準出力に `適用する手順はありません` が出る
     status: planned
     introduced:
       pr: 32
@@ -240,7 +240,7 @@ functions:
     title: 設定ファイルを探す
     container: src/cli/config.ts
     usecase: 共通
-    summary: '`--config` があればそのパスを、無ければ今のフォルダから上へ順に最初に見つかった `mdmark.config.yaml` の絶対パスを返す'
+    summary: '`--config` があればそのパスを、無ければ今のフォルダから上へ順に最初に見つかった `mdmark.config.yaml` の絶対パスを返却する'
     kind: 関数
     scope: public
     is_async: true
@@ -259,7 +259,7 @@ functions:
     exceptions:
       - name: CliError
         condition: '`--config` のファイルが無い、またはルートまで探しても無い'
-        message: mdmark.config.yaml が見つかりません（{探し始めたフォルダ} から上を探しました）。mdmark init で置けます。
+        message: mdmark.config.yaml が見つかりません（{探し始めたフォルダ} から上を探しました）。mdmark init で配置できます。
     unit_tests:
       - name: test_find_config_file
         case: 正常
@@ -271,7 +271,7 @@ functions:
         case: 正常
         summary: '`--config` のパスを優先する'
         condition: '`explicit` に `docs/mdmark.config.yaml`'
-        mock: 一時フォルダにそのファイルを置く
+        mock: 一時フォルダにそのファイルを配置する
         expected: '`{cwd}/docs/mdmark.config.yaml`'
       - name: test_find_config_file_when_missing
         case: 異常
@@ -284,10 +284,10 @@ functions:
     introduced:
       pr: 32
   - name: loadConfig
-    title: 設定ファイルを読む
+    title: 設定ファイルを読み込む
     container: src/cli/config.ts
     usecase: 共通
-    summary: 設定ファイルを yaml の `parse` で読み、形を検めずに返す
+    summary: 設定ファイルを yaml の `parse` で読み込み、構造を検めずに返却する
     kind: 関数
     scope: public
     is_async: true
@@ -298,21 +298,21 @@ functions:
         description: 設定ファイルの絶対パス
     returns:
       type: 'Promise<{ path: string; dir: string; raw: unknown }>'
-      description: 場所と読んだ値（空のファイルは `null`）
+      description: 場所と読み込んだ値（空のファイルは `null`）
     exceptions:
       - name: CliError
-        condition: YAML として読めない（`YAMLParseError`）、またはファイルを開けない
-        message: '{ファイル} の {行} 行目を YAML として読めません（{誤りの内容}）。字下げと書き方を直してください。'
+        condition: YAML として読み込めない（`YAMLParseError`）、またはファイルを開けない
+        message: '{ファイル} の {行} 行目を YAML として読み込めません（{誤りの内容}）。字下げと記載方法を修正してください。'
     unit_tests:
       - name: test_load_config
         case: 正常
-        summary: 読んだ値とフォルダを返す
+        summary: 読み込んだ値とフォルダを返却する
         condition: '`build: {include: ["*.md"], out: a.html}` のファイル'
         mock: 一時フォルダ
         expected: '`raw.build.out` が `a.html`、`dir` が一時フォルダ'
       - name: test_load_config_when_yaml_broken
         case: 異常
-        summary: 読めない行を示す CliError を投げる
+        summary: 読み込めない行を示す CliError を投げる
         condition: 3 行目の字下げが崩れたファイル
         mock: 一時フォルダ
         expected: '`CliError` を投げ、メッセージに `3 行目` が入る'
@@ -321,35 +321,35 @@ functions:
     introduced:
       pr: 32
   - name: validateConfig
-    title: 設定の形を検める
+    title: 設定の構造を検める
     container: src/config-files.ts
     usecase: 共通
-    summary: 読んだ値を `schemas/mdmark.config.schema.json` と同じ形で検め、合わないところを `schema` のずれで返す
-    description: 検めるのは、最上位がオブジェクトであること・`version` が `VERSION_PATTERN` に合う文字列・`features` の値が真偽値・`libraries` の値が文字列でキーが印の名前・`index`・`theme`・`colorTheme`・`colorScheme` が文字列（`colorTheme` の知らない名前と `colorScheme` の知らない値はここでは拒まず、設定に残す）・`extensions` が文字列の配列・`build` があれば `include`（1 つ以上の文字列）と `out`（`.html` の文字列）を持ち `exclude`・`glossary` が文字列の配列で `entry` が文字列であること・`check` があれば `ignore` が印の名前（`MARK_NAME_PATTERN`）の文字列の配列であること・`tooltips` があれば `placement` と `diagramPlacement` がどちらも（あれば）`top` か `bottom` であること・`labels` があればオブジェクトで `paramCopy` があれば空でない文字列であること（合わなければ `labels` を設定から落とす。知らないキーは拒まない）・`side-toc` があればオブジェクトで `mode` が `hover` か `fixed` であること・`syntax` があればオブジェクトで `url` が文字列であること・`html-scripts` があればオブジェクトで `url` が文字列であること（合わなければ `html-scripts` を設定から落とす）・`mermaid` があればオブジェクトで、`url`・`theme` が（あれば）文字列、`themeVariables` が（あれば）オブジェクトであること（合わなければ `mermaid` を設定から落とす。`theme` の知らない名前はここでは拒まず、設定に残す）・`assets` があればオブジェクトで `root` が文字列であること。`aliases` があれば配列であることを確かめ、行は `validateAliasRows` で検める（ずれをそのまま `schema` のずれに加え、返った行を `config.aliases` に入れる）。知らない最上位のキーは拒まない。`aliases` の行のほかの形の検査は手書きで、ライブラリを足さない（索引の `normalizeIndex` と同じやり方）。検める形は `schemas/mdmark.config.schema.json` と揃える
+    summary: 読み込んだ値を `schemas/mdmark.config.schema.json` と同じ構造で検め、合わないところを `schema` のずれで返却する
+    description: 検めるのは、最上位がオブジェクトであること・`version` が `VERSION_PATTERN` に合う文字列・`features` の値が真偽値・`libraries` の値が文字列でキーがマーカーの名前・`index`・`theme`・`colorTheme`・`colorScheme` が文字列（`colorTheme` の知らない名前と `colorScheme` の知らない値はここでは拒まず、設定に残す）・`extensions` が文字列の配列・`build` があれば `include`（1 つ以上の文字列）と `out`（`.html` の文字列）を持ち `exclude`・`glossary` が文字列の配列で `entry` が文字列であること・`check` があれば `ignore` がマーカーの名前（`MARK_NAME_PATTERN`）の文字列の配列であること・`tooltips` があれば `placement` と `diagramPlacement` がどちらも（あれば）`top` か `bottom` であること・`labels` があればオブジェクトで `paramCopy` があれば空でない文字列であること（合わなければ `labels` を設定から落とす。知らないキーは拒まない）・`side-toc` があればオブジェクトで `mode` が `hover` か `fixed` であること・`syntax` があればオブジェクトで `url` が文字列であること・`html-scripts` があればオブジェクトで `url` が文字列であること（合わなければ `html-scripts` を設定から落とす）・`mermaid` があればオブジェクトで、`url`・`theme` が（あれば）文字列、`themeVariables` が（あれば）オブジェクトであること（合わなければ `mermaid` を設定から落とす。`theme` の知らない名前はここでは拒まず、設定に残す）・`assets` があればオブジェクトで `root` が文字列であること。`aliases` があれば配列であることを確認し、行は `validateAliasRows` で検める（ずれをそのまま `schema` のずれに加え、返った行を `config.aliases` に入れる）。知らない最上位のキーは拒まない。`aliases` の行のほかの構造の検査は手書きで、ライブラリを追加しない（索引の `normalizeIndex` と同じやり方）。検める構造は `schemas/mdmark.config.schema.json` と統一する
     kind: 関数
     scope: public
     args:
       - name: raw
         type: unknown
         required: true
-        description: '`loadConfig` が読んだ値'
+        description: '`loadConfig` が読み込んだ値'
       - name: file
         type: string
         required: true
         description: ずれの `file` に出す設定ファイルの名前
     returns:
       type: '{ config: CliConfig; issues: CheckIssue[] }'
-      description: 形の合うところだけを残した設定と、`schema` のずれ（無ければ空）
+      description: 構造の合うところだけを残した設定と、`schema` のずれ（無ければ空）
     unit_tests:
       - name: test_validate_config
         case: 正常
-        summary: 形の合う設定はずれ 0 件
+        summary: 構造の合う設定はずれ 0 件
         condition: '`version: v0.3.0`・`theme`・`extensions`・`build`（`include`・`out`）と知らないキー `title` を持つ値'
         mock: なし
         expected: '`issues` が空'
       - name: test_validate_config_when_build_out_missing
         case: 正常
-        summary: '`build.out` が無いと schema のずれを返す'
+        summary: '`build.out` が無いと schema のずれを返却する'
         condition: '`build` が `include` だけを持つ'
         mock: なし
         expected: '`{ where: "build", kind: "schema" }` の 1 件で、`message` に `build.out` が入る'
@@ -361,7 +361,7 @@ functions:
         expected: '`{ where: "", kind: "schema" }` の 1 件'
       - name: test_validate_config_when_libraries_not_object
         case: 正常
-        summary: 形の違う `libraries` を schema のずれにし、設定から落とす
+        summary: 構造の違う `libraries` を schema のずれにし、設定から落とす
         condition: '`libraries` が文字列'
         mock: なし
         expected: '`where` が `libraries` のずれが 1 件で、`config.libraries` が無い'
@@ -373,7 +373,7 @@ functions:
         expected: '`where` が `version` の `schema` のずれが 1 件'
       - name: test_validate_config_when_check_ignore_invalid
         case: 正常
-        summary: 印の名前の書式に合わない `check.ignore` の値を schema のずれにし、設定から落とす
+        summary: マーカーの名前の書式に合わない `check.ignore` の値を schema のずれにし、設定から落とす
         condition: '`check.ignore` が `["prettier-ignore", "Bad Name"]`'
         mock: なし
         expected: '`where` が `check.ignore[1]` の `schema` のずれが 1 件で、`config.check.ignore` が `["prettier-ignore"]`'
@@ -397,10 +397,10 @@ functions:
         expected: '`1` は `where` が `html-scripts.url` の `schema` のずれが 1 件で `config["html-scripts"]` が無い。`/vendor/babel.mjs` は `issues` が空で `config["html-scripts"].url` が `/vendor/babel.mjs`'
       - name: test_validate_config_when_mermaid_invalid
         case: 正常
-        summary: 形の合わない `mermaid` を schema のずれにし、設定から落とす
+        summary: 構造の合わない `mermaid` を schema のずれにし、設定から落とす
         condition: '`mermaid.url` が `1` の値、`mermaid.themeVariables` が `"x"` の値、`{ url: "/vendor/mermaid.mjs", theme: "no-such-theme" }` の値'
         mock: なし
-        expected: 1 つ目は `where` が `mermaid.url`、2 つ目は `mermaid.themeVariables` の `schema` のずれが 1 件で、どちらも `config.mermaid` が無い。3 つ目は `issues` が空で `config.mermaid` が書いた値のまま
+        expected: 1 つ目は `where` が `mermaid.url`、2 つ目は `mermaid.themeVariables` の `schema` のずれが 1 件で、どちらも `config.mermaid` が無い。3 つ目は `issues` が空で `config.mermaid` が記載した値のまま
       - name: test_validate_config_when_syntax_url_invalid
         case: 正常
         summary: 文字列でない `syntax.url` を schema のずれにし、設定から落とす
@@ -433,7 +433,7 @@ functions:
         expected: '`1` は `where` が `colorScheme` の `schema` のずれが 1 件で `config.colorScheme` が無い。`sepia` は `issues` が空で `config.colorScheme` が `sepia`'
       - name: test_validate_config_when_assets_not_string
         case: 正常
-        summary: 形の違う assets.root を schema のずれにする
+        summary: 構造の違う assets.root を schema のずれにする
         condition: '`assets: { root: 1 }`'
         mock: なし
         expected: '`{ where: "assets.root", kind: "schema" }` の 1 件'
@@ -447,12 +447,12 @@ functions:
     introduced:
       pr: 32
     notes:
-      置き場所: 設定を重ねて読む処理と VS Code 拡張機能からも呼ぶため、`src/config-files.ts` に置き、`src/cli/config.ts` は import して使う。使う `schemaIssue`・`validateBuild`・`validateCheck`・`isValid*` も同じファイルへ移す。`CliError` には依存しない
+      配置場所: 設定を重ねて読み込む処理と VS Code 拡張機能からも呼ぶため、`src/config-files.ts` に配置し、`src/cli/config.ts` は import して使用する。使用する `schemaIssue`・`validateBuild`・`validateCheck`・`isValid*` も同じファイルへ移す。`CliError` には依存しない
   - name: requireConfig
-    title: 書き出しに使う設定を読む
+    title: 書き出しに使用する設定を読み込む
     container: src/cli/config.ts
     usecase: 共通
-    summary: 端末の設定と上のフォルダの設定ファイルを重ねて読み、読めない・形が合わなければ `mdmark check` で確かめられることを添えた CliError を投げる
+    summary: 端末の設定と上のフォルダの設定ファイルを重ねて読み込み、読み込めない・構造が合わなければ `mdmark check` で確認できることを添えた CliError を投げる
     kind: 関数
     scope: public
     is_async: true
@@ -467,38 +467,38 @@ functions:
         description: '`--config` の値'
     returns:
       type: Promise<LoadedConfig>
-      description: 形の合う設定
+      description: 構造の合う設定
     exceptions:
       - name: CliError
-        condition: 設定ファイルが無い・読めない・`validateConfig` のずれが 1 件以上
-        message: '{ファイル} の {場所} が設定の形に合いません（{内容}）。mdmark check で合わないところを確かめられます。'
+        condition: 設定ファイルが無い・読み込めない・`validateConfig` のずれが 1 件以上
+        message: '{ファイル} の {場所} が設定の構造に合いません（{内容}）。mdmark check で合わないところを確認できます。'
     unit_tests:
       - name: test_require_config_when_invalid
         case: 異常
-        summary: 形が合わないと mdmark check を添えた CliError を投げる
+        summary: 構造が合わないと mdmark check を添えた CliError を投げる
         condition: '`libraries` が文字列の設定ファイル'
         mock: 一時フォルダ
         expected: '`CliError` を投げ、メッセージに `libraries` と `mdmark check` が入る'
         exception: CliError
     callees:
-      - dev/設計書/モジュール構成/ライブラリ本体/設定を重ねて読む.ts#functions[loadLayeredConfig]
-      - dev/設計書/モジュール構成/ライブラリ本体/設定を重ねて読む.ts#functions[displayConfigPath]
+      - dev/設計書/モジュール構成/ライブラリ本体/設定を重ねて読み込む.ts#functions[loadLayeredConfig]
+      - dev/設計書/モジュール構成/ライブラリ本体/設定を重ねて読み込む.ts#functions[displayConfigPath]
     status: planned
     introduced:
       pr: 32
     process: |-
-      1. 設定を重ねて読む（設定を重ねて読む。`purpose: export`、`env` は `process.env`、`home` は `os.homedir()`）
+      1. 設定を重ねて読み込む（設定を重ねて読み込む。`purpose: export`、`env` は `process.env`、`home` は `os.homedir()`）
          - `ConfigNotFoundError` の場合、その文で `CliError` を投げる
       2. `nearest` が無い場合、今の「`mdmark.config.yaml` が見つかりません」の `CliError` を投げる
-      3. `unreadable` がある場合、そのファイルのパス（設定ファイルのパスを表示の形にする。`base` は `cwd`）と行で、今の「YAML として読めません」の `CliError` を投げる
-      4. `issues` が 1 件以上の場合、最初のずれのファイルを表示の形にして、今の「設定の形に合いません」の `CliError` を投げる
-      5. `{ path: nearest, dir: nearest のフォルダ, config }` を返す。`config` は重ねた設定のパスを相対パスに戻したもの（パスを相対パスに戻す。`dir` は nearest のフォルダ）
+      3. `unreadable` がある場合、そのファイルのパス（設定ファイルのパスを表示の構造にする。`base` は `cwd`）と行で、今の「YAML として読み込めません」の `CliError` を投げる
+      4. `issues` が 1 件以上の場合、最初のずれのファイルを表示の構造にして、今の「設定の構造に合いません」の `CliError` を投げる
+      5. `{ path: nearest, dir: nearest のフォルダ, config }` を返却する。`config` は重ねた設定のパスを相対パスに戻したもの（パスを相対パスに戻す。`dir` は nearest のフォルダ）
   - name: collectBuildDocuments
     title: まとめる文書を集める
     container: src/cli/documents.ts
     usecase: 複数の文書を1枚のHTMLにまとめる
-    summary: '`build.include` の glob に当たり `build.exclude` に当たらない `.md` のパスを、glob の並び・同じ glob の中はパスの順で、重なりを除いて返す'
-    description: glob は Node の `fs.glob`（`cwd` に設定ファイルのフォルダ、`exclude` に `build.exclude`）で引く。パスは区切りを `/` に揃える
+    summary: '`build.include` の glob に該当し `build.exclude` に該当しない `.md` のパスを、glob の並び・同じ glob の中はパスの順で、重なりを除いて返却する'
+    description: glob は Node の `fs.glob`（`cwd` に設定ファイルのフォルダ、`exclude` に `build.exclude`）で参照する。パスは区切りを `/` に統一する
     kind: 関数
     scope: public
     is_async: true
@@ -523,7 +523,7 @@ functions:
         expected: '`["README.md", "a/x.md", "b/y.md"]`'
       - name: test_collect_build_documents_when_excluded
         case: 正常
-        summary: exclude に当たる文書を外す
+        summary: exclude に該当する文書を除外する
         condition: '`include: ["**/*.md"]`・`exclude: ["下書き/**"]`、`下書き/メモ.md` と `a.md`'
         mock: 一時フォルダ
         expected: '`["a.md"]`'
@@ -531,10 +531,10 @@ functions:
     introduced:
       pr: 32
   - name: readIndexWithDocuments
-    title: 索引と索引の文書を読む
+    title: 索引と索引の文書を読み込む
     container: src/cli/documents.ts
     usecase: 共通
-    summary: 設定の `index` の YAML と、索引のフォルダの下の `.md`（`build.exclude` に当たらないもの）を読む
+    summary: 設定の `index` の YAML と、索引のフォルダの下の `.md`（`build.exclude` に該当しないもの）を読み込む
     kind: 関数
     scope: public
     is_async: true
@@ -542,18 +542,18 @@ functions:
       - name: loaded
         type: LoadedConfig
         required: true
-        description: 読んだ設定
+        description: 読み込んだ設定
     returns:
       type: 'Promise<{ indexFile: string; indexDir: string; raw: unknown; documents: Record<string, string> } | undefined>'
-      description: 索引のファイル（設定ファイルのフォルダからの相対）、索引のフォルダ、読んだ値、索引のフォルダからのパスで引く文書。設定に `index` が無ければ `undefined`
+      description: 索引のファイル（設定ファイルのフォルダからの相対）、索引のフォルダ、読み込んだ値、索引のフォルダからのパスで参照する文書。設定に `index` が無ければ `undefined`
     exceptions:
       - name: CliError
-        condition: 索引のファイルが無い・YAML として読めない
-        message: 索引 {ファイル} を読めません（{理由}）。設定の index のパスを直すか、索引を置いてください。
+        condition: 索引のファイルが無い・YAML として読み込めない
+        message: 索引 {ファイル} を読み込めません（{理由}）。設定の index のパスを修正するか、索引を配置してください。
     unit_tests:
       - name: test_read_index_with_documents
         case: 正常
-        summary: 索引と索引のフォルダの文書を読む
+        summary: 索引と索引のフォルダの文書を読み込む
         condition: '`index: docs/index.yaml`、`docs/a.md` と `docs/sub/b.md` と `docs/c.txt`'
         mock: 一時フォルダ
         expected: '`indexFile` が `docs/index.yaml`、`documents` のキーが `a.md`・`sub/b.md`'
@@ -574,33 +574,33 @@ functions:
     introduced:
       pr: 32
   - name: documentTitle
-    title: 文書の題を決める
+    title: 文書のタイトルを決める
     container: src/cli/documents.ts
     usecase: 共通
-    summary: 索引に文書があればその `title`、無ければ本文の最初の h1 の文字、無ければ拡張子を落としたファイル名を返す
+    summary: 索引に文書があればその `title`、無ければ本文の最初の h1 の文字、無ければ拡張子を落としたファイル名を返却する
     kind: 関数
     scope: public
     args:
       - name: doc
         type: '{ path: string; markdown: string; indexTitle?: string }'
         required: true
-        description: 文書のパス・本文・索引の題
+        description: 文書のパス・本文・索引のタイトル
     returns:
       type: string
-      description: 文書の題
+      description: 文書のタイトル
     unit_tests:
       - name: test_document_title
         case: 正常
-        summary: 索引の題を優先する
+        summary: 索引のタイトルを優先する
         condition: '`indexTitle: "API"`、本文の h1 は `公開関数`'
         mock: なし
         expected: '`API`'
       - name: test_document_title_when_no_index
         case: 正常
-        summary: 索引の題が無ければ最初の h1
-        condition: 本文が `# 使い方` で始まる
+        summary: 索引のタイトルが無ければ最初の h1
+        condition: 本文が `# 使用方法` で始まる
         mock: なし
-        expected: '`使い方`'
+        expected: '`使用方法`'
       - name: test_document_title_when_no_heading
         case: 正常
         summary: h1 も無ければファイル名
@@ -611,10 +611,10 @@ functions:
     introduced:
       pr: 32
   - name: usedLibraryMarks
-    title: 文書が使う印の名前を拾う
+    title: 文書が使用するマーカーの名前を取得する
     container: src/render/used.ts
     usecase: 共通
-    summary: 文書の Markdown から `MARK_PATTERN` に当たる印の名前を拾い、対応表にあるものだけを返す
+    summary: 文書の Markdown から `MARK_PATTERN` に該当するマーカーの名前を取得し、対応表にあるものだけを返却する
     kind: 関数
     scope: public
     args:
@@ -628,28 +628,28 @@ functions:
         description: 既定の対応表に設定の `libraries` を重ねた表
     returns:
       type: Set<string>
-      description: 埋める印の名前
+      description: 埋めるマーカーの名前
     unit_tests:
       - name: test_used_library_marks
         case: 正常
-        summary: 対応表にある印だけを拾う
+        summary: 対応表にあるマーカーだけを取得する
         condition: '文書に `<!-- chart: a -->` と `<!-- table: data -->` と `<!-- unknown -->`、対応表は `chart` だけ'
         mock: なし
         expected: '`{"chart"}`'
     status: planned
     introduced:
       pr: 32
-    description: esbuild を import しないファイルに置き、CLI の書き出しと VS Code 拡張機能の書き出し（`embedLocalLibraries`）が使う
+    description: esbuild を import しないファイルに配置し、CLI の書き出しと VS Code 拡張機能の書き出し（`embedLocalLibraries`）が使用する
   - name: bundleModule
-    title: モジュールを 1 つに束ねる
+    title: モジュールを 1 つにまとめる
     container: src/bundle-module.ts
     usecase: 共通
-    summary: URL かファイルのモジュールを、import する先も含めて渡した esbuild の `build` で 1 つの ES モジュールのコードに束ねる
-    description: '`bundle: true`・`format: esm`・`write: false`・`minify: true`・`target` は対応ブラウザ。`http:`・`https:` の import は、esbuild のプラグインで `fetch` して読み、相対・ルート相対の import はその URL を基準に解く（PoC #35 で確かめた jsDelivr の `+esm` の形）。ファイルは名前空間 `local` のプラグインで `node:fs/promises` の `readFile` で読み（esbuild-wasm はファイルシステムを持たず、`file` の名前空間は Windows のパスを拒む）、拡張子が `.ts`・`.mts`・`.cts`・`.tsx` なら `ts`・`tsx` の loader で読む。届かない・束ねられないときは例外を投げずに理由を返す。esbuild を import しないファイルに置き、CLI はネイティブの esbuild の `build` を、VS Code 拡張機能は esbuild-wasm の `build` を渡す'
+    summary: URL かファイルのモジュールを、import する先も含めて指定した esbuild の `build` で 1 つの ES モジュールのコードにまとめる
+    description: '`bundle: true`・`format: esm`・`write: false`・`minify: true`・`target` は対応ブラウザ。`http:`・`https:` の import は、esbuild のプラグインで `fetch` して読み込み、相対・ルート相対の import はその URL を基準に解く（PoC #35 で確認した jsDelivr の `+esm` の構造）。ファイルは名前空間 `local` のプラグインで `node:fs/promises` の `readFile` で読み込み（esbuild-wasm はファイルシステムを持たず、`file` の名前空間は Windows のパスを拒む）、拡張子が `.ts`・`.mts`・`.cts`・`.tsx` なら `ts`・`tsx` の loader で読み込む。届かない・まとめられないときは例外を投げずに理由を返却する。esbuild を import しないファイルに配置し、CLI はネイティブの esbuild の `build` を、VS Code 拡張機能は esbuild-wasm の `build` を指定する'
     kind: 関数
     scope: public
     is_async: true
-    side_effects: URL の先を読む
+    side_effects: URL の先を読み込む
     args:
       - name: entry
         type: string
@@ -662,34 +662,34 @@ functions:
       - name: fetchText
         type: '(url: string) => Promise<string>'
         required: false
-        default: '`fetch` で本文を読む'
+        default: '`fetch` で本文を読み込む'
         passing: injected
-        description: URL を読む関数（テストで差し替える）
+        description: URL を読み込む関数（テストで差し替える）
       - name: build
         type: BuildFunction
         required: true
-        default: ネイティブの esbuild の `build`（`src/cli/embed.ts` が渡す）
+        default: ネイティブの esbuild の `build`（`src/cli/embed.ts` が指定する）
         passing: injected
-        description: esbuild の `build`。`src/bundle-module.ts` は型だけを import し、CLI（`src/cli/embed.ts`）はネイティブの esbuild の、VS Code 拡張機能は esbuild-wasm の `build` を渡す
+        description: esbuild の `build`。`src/bundle-module.ts` は型だけを import し、CLI（`src/cli/embed.ts`）はネイティブの esbuild の、VS Code 拡張機能は esbuild-wasm の `build` を指定する
     returns:
       type: 'Promise<{ code: string } | { error: string }>'
-      description: 束ねたコードか、読めなかった理由
+      description: まとめたコードか、読み込めなかった理由
     unit_tests:
       - name: test_bundle_module
         case: 正常
-        summary: 手元のファイルとその import を 1 つに束ねる
+        summary: 手元のファイルとその import を 1 つにまとめる
         condition: '`lib.ts` が `./dep.ts` を import し `draw` を export する'
         mock: 一時フォルダ
         expected: '`code` に `import` 文が残らず、`draw` を export する'
       - name: test_bundle_module_when_url
         case: 正常
-        summary: URL とそのルート相対の import を fetchText で読んで束ねる
+        summary: URL とそのルート相対の import を fetchText で読み込んでまとめる
         condition: '`https://cdn.example/npm/a/+esm` が `/npm/b/+esm` を import する'
-        mock: 2 つの URL の本文を返す `fetchText`
-        expected: '`fetchText` が `https://cdn.example/npm/b/+esm` も読み、`code` に `https:` と `/npm/` の import が残らない'
+        mock: 2 つの URL の本文を返却する `fetchText`
+        expected: '`fetchText` が `https://cdn.example/npm/b/+esm` も読み込み、`code` に `https:` と `/npm/` の import が残らない'
       - name: test_bundle_module_when_unreachable
         case: 異常
-        summary: 読めないモジュールは理由を返す
+        summary: 読み込めないモジュールは理由を返却する
         condition: 無いファイル `missing.js`
         mock: 一時フォルダ
         expected: '`error` に `missing.js` が入り、例外を投げない'
@@ -697,18 +697,18 @@ functions:
     introduced:
       pr: 32
   - name: hasDynamicImport
-    title: 動的 import が残るかを確かめる
+    title: 動的 import が残るかを確認する
     container: src/cli/embed.ts
     usecase: 共通
-    summary: 束ねたコードに動的 `import()` の呼び出し（`import(` の並び。間の空白を許す）が残るかを返す
-    description: 変数を渡す `import()` は esbuild が取り込めず、束ねた後もコードに残る
+    summary: まとめたコードに動的 `import()` の呼び出し（`import(` の並び。間の空白を許す）が残るかを返却する
+    description: 変数を指定する `import()` は esbuild が取り込めず、まとめた後もコードに残る
     kind: 関数
     scope: internal
     args:
       - name: code
         type: string
         required: true
-        description: '`bundleModule` が束ねたコード'
+        description: '`bundleModule` がまとめたコード'
     returns:
       type: boolean
       description: 動的 `import()` が残るか
@@ -723,29 +723,29 @@ functions:
     introduced:
       pr: 296
   - name: cacheFetchText
-    title: URL を読む関数を控え付きにする
+    title: URL を読み込む関数を記録付きにする
     container: src/bundle-module.ts
     usecase: 共通
-    summary: 同じ URL を 1 回だけ読む `FetchText` を返す。`prepareEmbeds` の確かめと `bundleViewer` が同じ関数を使い、同じ URL を 2 回読まない
-    description: URL ごとに読み込みの Promise を控える。拒否した Promise も控え、読み直さない
+    summary: 同じ URL を 1 回だけ読み込む `FetchText` を返却する。`prepareEmbeds` の確認と `bundleViewer` が同じ関数を使用し、同じ URL を 2 回読まない
+    description: URL ごとに読み込みの Promise を記録する。拒否した Promise も記録し、再読み込みしない
     kind: 関数
     scope: public
     args:
       - name: fetchText
         type: FetchText
         required: false
-        default: '`fetch` で本文を読む'
+        default: '`fetch` で本文を読み込む'
         passing: injected
-        description: URL を読む関数（テストで差し替える）
+        description: URL を読み込む関数（テストで差し替える）
     returns:
       type: FetchText
-      description: 控え付きの URL を読む関数
+      description: 記録付きの URL を読み込む関数
     unit_tests:
       - name: test_cache_fetch_text
         case: 正常
-        summary: 同じ URL を 1 回だけ読む
+        summary: 同じ URL を 1 回だけ読み込む
         condition: 同じ URL で 2 回、別の URL で 1 回呼ぶ
-        mock: 呼ばれた URL を控える `fetchText`
+        mock: 呼ばれた URL を記録する `fetchText`
         expected: '`fetchText` が 2 回呼ばれ、同じ URL の 2 回は同じ本文'
     status: planned
     introduced:
@@ -754,24 +754,24 @@ functions:
     title: 起動の処理の入口を作る
     container: src/cli/embed.ts
     usecase: 共通
-    summary: 起動の処理・部品・色分けを静的な `import`、外部ライブラリと拡張をリテラルの動的 `import()` を返す関数で取り込み、`startViewer(document, 埋めたモジュール)` を呼ぶ入口のモジュールのソースを返す
-    description: 読み先は `JSON.stringify` した文字列リテラルで書く。`syntax` の本体と言語は `default` の import、ビューの部品は名前空間の import にする
+    summary: 起動の処理・部品・色分けを静的な `import`、外部ライブラリと拡張をリテラルの動的 `import()` を返却する関数で取り込み、`startViewer(document, 埋めたモジュール)` を呼ぶ入口のモジュールのソースを返却する
+    description: 読み込み先は `JSON.stringify` した文字列リテラルで記載する。`syntax` の本体と言語は `default` の import、ビューの部品は名前空間の import にする
     kind: 関数
     scope: internal
     args:
       - name: options
         type: '{ viewer: string; view: string; embeds: ViewerEmbeds }'
         required: true
-        description: '`dist/viewer.js`・`dist/view.js` の絶対パスと、束ねるモジュールの読み先'
+        description: '`dist/viewer.js`・`dist/view.js` の絶対パスと、まとめるモジュールの読み込み先'
     returns:
       type: string
       description: 入口のモジュールの JavaScript のソース
     process: |-
-      1. `viewer` から `startViewer` を import する行を置く
-      2. `embeds.view` が `true` なら `view` を名前空間で import する行を置く
-      3. `embeds.syntax` があれば、本体と言語ごとに `default` を import する行を置く。`embeds.mermaid` があれば、mermaid を名前空間で import する行を置く（mermaid が中で読む chunk の動的 `import()` は同じスクリプトに取り込まれる）
-      4. `embeds.htmlScripts` があれば、範囲ごとに `compileHtmlScripts` の CommonJS のコードを `(module, exports, require) => { … }` で包んだ関数を、範囲のコードの文字を鍵にした `htmlScripts` の表に置く行を置く
-      5. `startViewer(document, { parts, syntax, mermaid, libraries, extensions, htmlScripts })` を呼ぶ行を置く。`mermaid` は `embeds.mermaid` があれば import した名前空間、無ければ持たない。`libraries` は印の名前ごとの `() => import("{読み先}")`、`extensions` は `embeds.extensions` の順の `() => import("{読み先}")`
+      1. `viewer` から `startViewer` を import する行を配置する
+      2. `embeds.view` が `true` なら `view` を名前空間で import する行を配置する
+      3. `embeds.syntax` があれば、本体と言語ごとに `default` を import する行を配置する。`embeds.mermaid` があれば、mermaid を名前空間で import する行を配置する（mermaid が中で読み込む chunk の動的 `import()` は同じスクリプトに取り込まれる）
+      4. `embeds.htmlScripts` があれば、範囲ごとに `compileHtmlScripts` の CommonJS のコードを `(module, exports, require) => { … }` で包んだ関数を、範囲のコードの文字を鍵にした `htmlScripts` の表に配置する行を配置する
+      5. `startViewer(document, { parts, syntax, mermaid, libraries, extensions, htmlScripts })` を呼ぶ行を配置する。`mermaid` は `embeds.mermaid` があれば import した名前空間、無ければ持たない。`libraries` はマーカーの名前ごとの `() => import("{読み込み先}")`、`extensions` は `embeds.extensions` の順の `() => import("{読み込み先}")`
     unit_tests:
       - name: test_create_viewer_entry
         case: 正常
@@ -790,38 +790,38 @@ functions:
         summary: mermaid を名前空間で静的に取り込む
         condition: '`embeds` が `{ view: false, libraries: {}, extensions: [], mermaid: "https://cdn.jsdelivr.net/npm/mermaid@12.3.0/dist/mermaid.esm.min.mjs" }`'
         mock: なし
-        expected: ソースに `import * as` と mermaid の URL の静的な `import` が 1 行あり、`startViewer(document,` に `mermaid` を渡す
+        expected: ソースに `import * as` と mermaid の URL の静的な `import` が 1 行あり、`startViewer(document,` に `mermaid` を指定する
     status: planned
     introduced:
       pr: 296
   - name: bundleViewer
-    title: 起動の処理と埋めるモジュールを束ねる
+    title: 起動の処理と埋めるモジュールをまとめる
     container: src/cli/embed.ts
     usecase: 共通
-    summary: '`createViewerEntry` のソースを入口に、esbuild で分割せずに 1 つの ES モジュールのスクリプトに束ね、`</script` の並びを `<\/script` に、`<!--` の並びを `<\x21--` に替えて返す'
-    description: '`bundleModule` と同じ設定（`bundle: true`・`format: esm`・`minify: true`・対応ブラウザの `target`・`http:`・`https:` の import を `fetchText` で読むプラグイン）で、入口は `stdin`（`resolveDir` は設定ファイルのあるフォルダ）。リテラルとパターンの動的 `import()` は同じスクリプトに取り込まれ、評価は呼び出しまで遅れる。`</script` の並び（大文字小文字を問わない）は `<\/script` に、`<!--` の並びは `<\x21--` に替え、HTML の `script` 要素が途中で閉じないように、また script data escaped state に入って閉じなくならないようにする。esbuild はコードのトークンとして `<!--` を出力せず、どちらの並びも文字列・テンプレート・正規表現・コメントの中にしか現れないため、替えても意味は変わらない（`String.raw` の raw の値だけが変わる）。`prepareEmbeds` が確かめたモジュールだけを渡すため、束ねる失敗は例外のまま投げる'
+    summary: '`createViewerEntry` のソースを入口に、esbuild で分割せずに 1 つの ES モジュールのスクリプトにまとめ、`</script` の並びを `<\/script` に、`<!--` の並びを `<\x21--` に替えて返却する'
+    description: '`bundleModule` と同じ設定（`bundle: true`・`format: esm`・`minify: true`・対応ブラウザの `target`・`http:`・`https:` の import を `fetchText` で読み込むプラグイン）で、入口は `stdin`（`resolveDir` は設定ファイルのあるフォルダ）。リテラルとパターンの動的 `import()` は同じスクリプトに取り込まれ、評価は呼び出しまで遅れる。`</script` の並び（大文字小文字を問わない）は `<\/script` に、`<!--` の並びは `<\x21--` に替え、HTML の `script` 要素が途中で閉じないように、また script data escaped state に入って閉じなくならないようにする。esbuild はコードのトークンとして `<!--` を出力せず、どちらの並びも文字列・テンプレート・正規表現・コメントの中にしか現れないため、替えても意味は変わらない（`String.raw` の raw の値だけが変わる）。`prepareEmbeds` が確認したモジュールだけを指定するため、まとめる失敗は例外のまま投げる'
     kind: 関数
     scope: internal
     is_async: true
-    side_effects: URL の先を読む
+    side_effects: URL の先を読み込む
     args:
       - name: options
         type: '{ entry: string; baseDir: string; fetchText: FetchText }'
         required: true
-        description: '`createViewerEntry` のソース、設定ファイルのあるフォルダ、URL を読む関数'
+        description: '`createViewerEntry` のソース、設定ファイルのあるフォルダ、URL を読み込む関数'
     returns:
       type: Promise<string>
-      description: 束ねたスクリプト
+      description: まとめたスクリプト
     unit_tests:
       - name: test_bundle_viewer
         case: 正常
-        summary: 入口と関数で取り込んだモジュールを 1 つに束ね、動的 import を残さない
-        condition: 一時フォルダに `startViewer` を export する `viewer.js` と、`load` の中で `./part.js` を動的 `import()` で読む `ext.js`。入口は `viewer.js` を静的に、`ext.js` を `() => import(…)` で取り込む
+        summary: 入口と関数で取り込んだモジュールを 1 つにまとめ、動的 import を残さない
+        condition: 一時フォルダに `startViewer` を export する `viewer.js` と、`load` の中で `./part.js` を動的 `import()` で読み込む `ext.js`。入口は `viewer.js` を静的に、`ext.js` を `() => import(…)` で取り込む
         mock: 一時フォルダ
         expected: 戻り値に `import(` と `from"` の並びが無く、`part.js` の中身を含む
       - name: test_bundle_viewer_when_script_close
         case: 正常
-        summary: '`</script` を替えて返す'
+        summary: '`</script` を替えて返却する'
         condition: '`ext.js` が `/*! </SCRIPT> */` の注釈を持つ'
         mock: 一時フォルダ
         expected: 戻り値に `</script` の並び（大文字小文字を問わない）が無く、`<\/SCRIPT>` がある
@@ -832,7 +832,7 @@ functions:
         mock: 一時フォルダ
         expected: 戻り値に `<!--` の並びが無く、戻り値を評価して取り出した文字列が `<!-- <script>`
     refs:
-      - dev/設計書/インターフェース定義/ライブラリ本体/文書をHTMLに書き出す.ts#constraints[束ねるスクリプト]
+      - dev/設計書/インターフェース定義/ライブラリ本体/文書をHTMLに書き出す.ts#constraints[まとめるスクリプト]
     status: planned
     introduced:
       pr: 296
@@ -840,8 +840,8 @@ functions:
     title: 画像を埋める
     container: src/cli/embed.ts
     usecase: 共通
-    summary: Markdown の画像（`![]()` と HTML の `img`）の相対パスを、文書のフォルダを基準に読んだ `data:` URL に替える。`options.assetsRoot` があれば `resolveAssetFile` の順で探し、フラグメントは `data:` URL の後ろに残す。画像の属性の `poster=` も替え、動画・音声は替えない（`copyMedia` が扱う）。`options.assets` を渡したとき（`build`）は `data:` URL の代わりに `mdmark-asset:{キー}` に替え、同じファイルを同じキーにして `options.assets` に `data:` URL を入れる
-    description: 画像の場所は markdown-it のトークン（`image` と `html_inline`・`html_block` の `src`）から拾い、その文字列だけを置き換える。MIME は拡張子（png・jpg・jpeg・gif・webp・svg）で決める。読めない画像は書いたまま残して警告に、絶対 URL の画像は読まずに残して警告にする
+    summary: Markdown の画像（`![]()` と HTML の `img`）の相対パスを、文書のフォルダを基準に読み込んだ `data:` URL に替える。`options.assetsRoot` があれば `resolveAssetFile` の順で探し、フラグメントは `data:` URL の後ろに残す。画像の属性の `poster=` も替え、動画・音声は替えない（`copyMedia` が扱う）。`options.assets` を指定したとき（`build`）は `data:` URL の代わりに `mdmark-asset:{キー}` に替え、同じファイルを同じキーにして `options.assets` に `data:` URL を入れる
+    description: 画像の場所は markdown-it のトークン（`image` と `html_inline`・`html_block` の `src`）から取得し、その文字列だけを置き換える。MIME は拡張子（png・jpg・jpeg・gif・webp・svg）で決める。読み込めない画像は記載したまま残して警告に、絶対 URL の画像は読み込まずに残して警告にする
     kind: 関数
     scope: public
     is_async: true
@@ -870,13 +870,13 @@ functions:
         expected: '`markdown` に `data:image/png;base64,` が入り、`warnings` が空'
       - name: test_inline_images_when_missing
         case: 正常
-        summary: 読めない画像は残して警告にする
+        summary: 読み込めない画像は残して警告にする
         condition: '`![図](img/missing.png)` でファイルが無い'
         mock: 一時フォルダ
         expected: '`markdown` が元のままで、`warnings` に `img/missing.png` が入る'
       - name: test_inline_images_when_absolute_url
         case: 正常
-        summary: 絶対 URL の画像は読まずに警告にする
+        summary: 絶対 URL の画像は読み込まずに警告にする
         condition: '`![図](https://example.com/a.png)`'
         mock: なし
         expected: '`markdown` が元のままで、`warnings` に `https://example.com/a.png` が入る'
@@ -889,7 +889,7 @@ functions:
       - name: test_inline_images_when_shared
         case: 正常
         summary: build では同じ画像を 1 つのキーにする
-        condition: 2 つの文書が同じ `img/a.png` を指し、同じ `assets` を渡す
+        condition: 2 つの文書が同じ `img/a.png` を指し、同じ `assets` を指定する
         mock: 一時フォルダ
         expected: どちらの `markdown` も同じ `mdmark-asset:{キー}` を持ち、`assets` が 1 件
     status: planned
@@ -899,11 +899,11 @@ functions:
       - '#functions[resolveAssetFile]'
       - '#functions[collectAssetRefs]'
   - name: findOutsideLinks
-    title: 1 枚に含まれない文書へのリンクを拾う
+    title: 1 枚に含まれない文書へのリンクを取得する
     container: src/cli/embed.ts
     usecase: 複数の文書を1枚のHTMLにまとめる
-    summary: 文書の相対リンクのうち、`.md` を指してまとめる文書に無いものを返す
-    description: リンクは markdown-it の `link_open` の `href` から拾い、`resolveLink`（索引と用語）で文書のパスから解く。`#` だけのリンクとスキームを持つリンクは拾わない
+    summary: 文書の相対リンクのうち、`.md` を指してまとめる文書に無いものを返却する
+    description: リンクは markdown-it の `link_open` の `href` から取得し、`resolveLink`（索引と用語）で文書のパスから解く。`#` だけのリンクとスキームを持つリンクは取得しない
     kind: 関数
     scope: public
     args:
@@ -921,11 +921,11 @@ functions:
         description: まとめる文書のパス
     returns:
       type: string[]
-      description: 1 枚に含まれないリンク先（書いたままの `href`。書いた順）
+      description: 1 枚に含まれないリンク先（記載したままの `href`。記載した順）
     unit_tests:
       - name: test_find_outside_links
         case: 正常
-        summary: まとめる文書に無い .md へのリンクだけを返す
+        summary: まとめる文書に無い .md へのリンクだけを返却する
         condition: '`README.md` が `[a](使い方/guide.md)`・`[b](下書き/メモ.md)`・`[c](#見出し)`・`[d](https://example.com/x.md)` を持ち、まとめるのは `README.md`・`使い方/guide.md`'
         mock: なし
         expected: '`["下書き/メモ.md"]`'
@@ -936,15 +936,15 @@ functions:
     title: 書き出す HTML を組み立てる
     container: src/cli/html.ts
     usecase: 共通
-    summary: 配布物の CSS・使う側の CSS・束ねたスクリプト・書き出しの中身を埋めた 1 枚の HTML を返す
-    description: '`<style>` に配布物の CSS、続けて使う側の CSS、`<script type="application/json" id="mdmark-payload">` に書き出しの中身、`src` を持たない `<script type="module">` に起動の処理と埋めるモジュールを束ねたスクリプトを置く。`kind` が `bundle` のときは画面設計『まとめたHTML』の骨組み、`document` のときは描く先の要素だけを `body` に置く。`#mdmark-payload` の JSON だけは、`JSON.stringify` した文字列の `<` を `\u003c`（JSON の文字列のエスケープ）に替え、文書の `</script>` で要素が閉じないようにする。束ねたスクリプトは替えずに置く（`</script` と `<!--` の並びは `bundleViewer` が替えてある）。ページの題は `entry` の文書の題'
+    summary: 配布物の CSS・利用側の CSS・まとめたスクリプト・書き出しの中身を埋めた 1 枚の HTML を返却する
+    description: '`<style>` に配布物の CSS、続けて利用側の CSS、`<script type="application/json" id="mdmark-payload">` に書き出しの中身、`src` を持たない `<script type="module">` に起動の処理と埋めるモジュールをまとめたスクリプトを配置する。`kind` が `bundle` のときは画面設計『まとめたHTML』の骨組み、`document` のときは描く先の要素だけを `body` に配置する。`#mdmark-payload` の JSON だけは、`JSON.stringify` した文字列の `<` を `\u003c`（JSON の文字列のエスケープ）に替え、文書の `</script>` で要素が閉じないようにする。まとめたスクリプトは替えずに配置する（`</script` と `<!--` の並びは `bundleViewer` が替えてある）。ページのタイトルは `entry` の文書のタイトル'
     kind: 関数
     scope: public
     args:
       - name: parts
         type: '{ payload: ExportPayload; distCss: string; themeCss?: string; script: string }'
         required: true
-        description: 埋めるもの。`script` は `bundleViewer` が返した束ねたスクリプト
+        description: 埋めるもの。`script` は `bundleViewer` が返却したまとめたスクリプト
     returns:
       type: string
       description: HTML の文字列
@@ -954,7 +954,7 @@ functions:
         summary: CSS・中身・起動の処理をこの順に埋める
         condition: '`kind: document` の中身と `themeCss`'
         mock: なし
-        expected: 配布物の CSS が使う側の CSS より前にあり、`id="mdmark-payload"` の JSON を `JSON.parse` すると中身に戻る
+        expected: 配布物の CSS が利用側の CSS より前にあり、`id="mdmark-payload"` の JSON を `JSON.parse` すると中身に戻る
       - name: test_assemble_html_when_script_in_markdown
         case: 正常
         summary: 文書の `</script>` で要素が閉じない
@@ -963,7 +963,7 @@ functions:
         expected: HTML の `</script>` は起動の処理と中身の要素を閉じる 2 つだけで、中身を `JSON.parse` すると元の Markdown に戻る
       - name: test_assemble_html_when_bundle
         case: 正常
-        summary: bundle は画面の骨組みを置く
+        summary: bundle は画面の骨組みを配置する
         condition: '`kind: bundle` の中身'
         mock: なし
         expected: '`body` に `.mdmark-bundle`・`.mdmark-bundle-side`・`dialog.mdmark-bundle-panel` がある'
@@ -973,41 +973,41 @@ functions:
     refs:
       - dev/設計書/モジュール構成/ライブラリ本体/ビルド.ts#functions[buildDist]
   - name: runInit
-    title: 雛形を置く
+    title: 雛形を配置する
     container: src/cli/init.ts
-    usecase: 雛形を置く
-    summary: '`TEMPLATE_FILES` のうち置く先に無いものを写し、置いた・置かなかった行を出す'
-    description: '雛形の正本は `dist/cli.js` から見た `../templates/` を読む。既にあるファイルは中身を読まずに飛ばす（`writeFile` の `flag: "wx"`）。`mdmark.config.yaml` は雛形の `version` の値を `options.version` に置き換えて書く'
+    usecase: 雛形を配置する
+    summary: '`TEMPLATE_FILES` のうち配置先に無いものをコピーし、配置した・配置しなかった行を出す'
+    description: '雛形の原本は `dist/cli.js` を基準にした `../templates/` を読み込む。既にあるファイルは中身を読み込まずに飛ばす（`writeFile` の `flag: "wx"`）。`mdmark.config.yaml` は雛形の `version` の値を `options.version` に置き換えて記載する'
     kind: 関数
     scope: public
     is_async: true
-    side_effects: 置く先にフォルダとファイルを書く
+    side_effects: 配置先にフォルダとファイルを書き込む
     args:
       - name: options
         type: '{ dir: string; js: boolean; templatesDir: string; version: string }'
         required: true
-        description: 置く先・`--js`・雛形の正本のフォルダ・呼んだ CLI の版
+        description: 配置先・`--js`・雛形の原本のフォルダ・呼んだ CLI のバージョン
       - name: io
         type: CliIo
         required: true
         description: 出力の先
     returns:
       type: Promise<0>
-      description: 置けたら 0
+      description: 配置できたら 0
     exceptions:
       - name: CliError
-        condition: 置く先のフォルダを作れない・ファイルを書けない
-        message: '{パス} に書けません（{理由}）。置く先のフォルダを確かめてください。'
+        condition: 配置先のフォルダを作れない・ファイルを書き込めない
+        message: '{パス} に書き込めません（{理由}）。配置先のフォルダを確認してください。'
     unit_tests:
       - name: test_run_init
         case: 正常
-        summary: 空のフォルダに 6 つの雛形を置く
+        summary: 空のフォルダに 6 つの雛形を配置する
         condition: '`js: false`、空の一時フォルダ'
         mock: 作業ツリーの `templates/`
-        expected: 6 つのファイルがあり、標準出力に `置いた:` が 6 行
+        expected: 6 つのファイルがあり、標準出力に `配置した:` が 6 行
       - name: test_run_init_when_javascript
         case: 正常
-        summary: --js では JavaScript の拡張だけを置く
+        summary: --js では JavaScript の拡張だけを配置する
         condition: '`js: true`'
         mock: 作業ツリーの `templates/`
         expected: '`extensions/example.js` があり、`extensions/example.ts`・`tsconfig.json`・`package.json` が無い'
@@ -1016,13 +1016,13 @@ functions:
         summary: 既にあるファイルを上書きしない
         condition: '中身 `x: 1` の `mdmark.config.yaml` がある'
         mock: 作業ツリーの `templates/`
-        expected: '`mdmark.config.yaml` が `x: 1` のままで、標準出力に `置かなかった（既にある）: mdmark.config.yaml` が出る'
+        expected: '`mdmark.config.yaml` が `x: 1` のままで、標準出力に `配置しなかった（既にある）: mdmark.config.yaml` が出る'
       - name: test_run_init_writes_version
         case: 正常
-        summary: 置く設定の version を呼んだ CLI の版にする
+        summary: 配置する設定の version を呼んだ CLI のバージョンにする
         condition: '`version: v0.5.0`、空の一時フォルダ'
         mock: 作業ツリーの `templates/`
-        expected: 置いた `mdmark.config.yaml` の `version` が `v0.5.0` で、コメントは雛形のまま
+        expected: 配置した `mdmark.config.yaml` の `version` が `v0.5.0` で、コメントは雛形のまま
     status: planned
     introduced:
       pr: 32
@@ -1030,8 +1030,8 @@ functions:
     title: 設定と索引を点検する
     container: src/cli/check.ts
     usecase: 設定と索引を点検する
-    summary: '設定の形・設定が指すファイル・`build` の対象・`checkIndex` のずれと文書の本文の知らない印を集め、`{ファイル}:{場所}: {種類}: {内容}` の行と `ずれ {件数} 件` を出す'
-    description: '`text` か `file` を渡したときは、引数の組（`text` と `file`・`base` を一緒に渡せない、`file` と `key` は一緒に渡す、`file` と `base` を一緒に渡せない）を確かめ、`checkMarkdownSource` のずれを同じ行の形で出す（設定と索引は点検しない）。それ以外は設定ファイルを `findConfigFile` で探し、`collectCheckIssues`（`base` を渡す）のずれを 1 件 1 行で出す'
+    summary: '設定の構造・設定が指すファイル・`build` の対象・`checkIndex` のずれと文書の本文の知らないマーカーを集め、`{ファイル}:{場所}: {種類}: {内容}` の行と `ずれ {件数} 件` を出す'
+    description: '`text` か `file` を指定したときは、引数の組（`text` と `file`・`base` を一緒に指定できない、`file` と `key` は一緒に指定する、`file` と `base` を一緒に指定できない）を確認し、`checkMarkdownSource` のずれを同じ行の構造で出す（設定と索引は点検しない）。それ以外は設定ファイルを `findConfigFile` で探し、`collectCheckIssues`（`base` を指定する）のずれを 1 件 1 行で出す'
     kind: 関数
     scope: public
     is_async: true
@@ -1039,7 +1039,7 @@ functions:
       - name: options
         type: '{ config?: string; base?: string; text?: string; file?: string; key?: string }'
         required: true
-        description: '`--config`・`--base`・`--text`（`-` のときは読んだ標準入力）・`--file`・`--key` の値'
+        description: '`--config`・`--base`・`--text`（`-` のときは読み込んだ標準入力）・`--file`・`--key` の値'
       - name: io
         type: CliIo
         required: true
@@ -1049,61 +1049,61 @@ functions:
       description: ずれが 0 件なら 0、あれば 1
     exceptions:
       - name: CliError
-        condition: 引数の組が誤り・設定ファイルが無い（`text`・`file` で `config` を渡さないときを除く）・`checkMarkdownSource` が投げた・YAML として読めない・`--base` を渡し、比べる基準を引けない
+        condition: 引数の組が誤り・設定ファイルが無い（`text`・`file` で `config` を指定しないときを除く）・`checkMarkdownSource` が投げた・YAML として読み込めない・`--base` を指定し、比べる基準を参照できない
         message: '`findConfigFile`・`loadConfig`・`changedPathsSince` のメッセージ'
     unit_tests:
       - name: test_run_check
         case: 正常
         summary: ずれの無いフォルダで 0 件
-        condition: 索引に 2 つの文書を載せ、`build.include` が 2 つに当たる
+        condition: 索引に 2 つの文書を記載し、`build.include` が 2 つに該当する
         mock: 一時フォルダ、出力を配列に貯める `CliIo`
-        expected: 0 を返し、標準出力が `ずれ 0 件` の 1 行
+        expected: 0 を返却し、標準出力が `ずれ 0 件` の 1 行
       - name: test_run_check_when_drift
         case: 正常
         summary: 設定の schema と索引の missing_doc をこの順に出す
         condition: '`build.out` が無く、索引の `old.md` が無い'
         mock: 一時フォルダ、出力を配列に貯める `CliIo`
-        expected: '1 を返し、`mdmark.config.yaml:build: schema:` の行、`missing_doc` の行、`ずれ 2 件` の順に出る'
+        expected: '1 を返却し、`mdmark.config.yaml:build: schema:` の行、`missing_doc` の行、`ずれ 2 件` の順に出る'
       - name: test_run_check_when_no_documents
         case: 正常
         summary: build の対象が 0 件なら no_documents
-        condition: '`build.include` がどのファイルにも当たらない'
+        condition: '`build.include` がどのファイルにも該当しない'
         mock: 一時フォルダ、出力を配列に貯める `CliIo`
-        expected: '1 を返し、`mdmark.config.yaml:build.include: no_documents:` の行がある'
+        expected: '1 を返却し、`mdmark.config.yaml:build.include: no_documents:` の行がある'
       - name: test_run_check_when_entry_outside
         case: 正常
-        summary: まとめる文書に当たらない build.entry を schema のずれにする
+        summary: まとめる文書に該当しない build.entry を schema のずれにする
         condition: '`build.entry: missing.md`'
         mock: 一時フォルダ、出力を配列に貯める `CliIo`
-        expected: '1 を返し、`mdmark.config.yaml:build.entry: schema:` の行がある'
+        expected: '1 を返却し、`mdmark.config.yaml:build.entry: schema:` の行がある'
       - name: test_run_check_when_unknown_mark
         case: 正常
-        summary: 知らない印を文書と行を指す unknown_mark の行にする
-        condition: 索引に載せた文書 `a.md` の 3 行目に `<!-- tabz -->`、`markdown` のコードブロックの中にも `<!-- tabz -->`
+        summary: 知らないマーカーを文書と行を指す unknown_mark の行にする
+        condition: 索引に記載した文書 `a.md` の 3 行目に `<!-- tabz -->`、`markdown` のコードブロックの中にも `<!-- tabz -->`
         mock: 一時フォルダ、出力を配列に貯める `CliIo`
-        expected: '1 を返し、`a.md:3: unknown_mark:` で始まる行が 1 つだけで、`ずれ 1 件`'
+        expected: '1 を返却し、`a.md:3: unknown_mark:` で始まる行が 1 つだけで、`ずれ 1 件`'
       - name: test_run_check_when_base_given
         case: 正常
         summary: '`--base` から片方だけが変わった change_together の組を出す'
         condition: '索引の `a`（`a.md`）と `b`（`b.md`）が互いを `change_together` で記載したフォルダをコミットしてタグ `base` を付け、`a.md` だけを書き換えてコミットする。`{ base: "base" }` と `{}` の 2 回'
         mock: 一時フォルダの git のリポジトリ、出力を配列に貯める `CliIo`
-        expected: '1 回目は 1 を返し、`b.md: missed_change_together:` で始まる行と `ずれ 1 件` を出す。2 回目は 0 を返し、`ずれ 0 件`'
+        expected: '1 回目は 1 を返却し、`b.md: missed_change_together:` で始まる行と `ずれ 1 件` を出す。2 回目は 0 を返却し、`ずれ 0 件`'
       - name: test_run_check_when_base_unknown
         case: 異常
-        summary: 引けない `--base` はずれを点検せずに止める
+        summary: 参照できない `--base` はずれを点検せずに止める
         condition: '`test_run_check_when_base_given` と同じリポジトリ、`{ base: "no-such-ref" }`'
         mock: 一時フォルダの git のリポジトリ、出力を配列に貯める `CliIo`
         expected: '`CliError` を投げ、メッセージに `no-such-ref` が入り、標準出力に `ずれ` の行が無い'
-        exception: 比べる基準を引けない
+        exception: 比べる基準を参照できない
       - name: test_run_check_when_text
         case: 正常
-        summary: 文字列の書き方の警告を - の行にして出す
-        condition: '`mdmark init` の後のフォルダで、インターフェース定義『設定と索引を点検する』の「正常系（文字列に書き方の警告がある）」の文字列を `{ text }` で渡す'
+        summary: 文字列の記載の警告を - の行にして出す
+        condition: '`mdmark init` の後のフォルダで、インターフェース定義『設定と索引を点検する』の「正常系（文字列に記載の警告がある）」の文字列を `{ text }` で指定する'
         mock: 一時フォルダ、出力を配列に貯める `CliIo`
-        expected: '1 を返し、`-:1: diagram_invalid:`・`-:20: unknown_mark:`・`-:22: syntax_warning:` の行と `ずれ 3 件` を出す'
+        expected: '1 を返却し、`-:1: diagram_invalid:`・`-:20: unknown_mark:`・`-:22: syntax_warning:` の行と `ずれ 3 件` を出す'
       - name: test_run_check_when_arguments_conflict
         case: 異常
-        summary: 一緒に渡せない引数を点検せずに止める
+        summary: 一緒に指定できない引数を点検せずに止める
         condition: '`{ text: "a", base: "main" }` と `{ file: "records.yaml" }`'
         mock: 一時フォルダ、出力を配列に貯める `CliIo`
         expected: どちらも `CliError` で、1 つ目の文に `--text` と `--base`、2 つ目の文に `--key` がある
@@ -1122,30 +1122,30 @@ functions:
     title: 埋めるものを用意する
     container: src/cli/export.ts
     usecase: 共通
-    summary: 文書の画像を埋め、印のある外部ライブラリと設定の拡張と色分けのモジュールが束ねられることを確かめて読み先を集め、`html-scripts` がオンの文書の範囲の `ts`・`js` を `compileHtmlScripts` で変えて `embeds.htmlScripts` に入れ、`theme` を読み、索引があれば参照の表を作って、書き出しの中身と警告を返す。設定に `assets.root` があれば設定ファイルのフォルダから解決し、文書ごとに `copyMedia`（書き出しの中で共有する `copied` を渡す）の後に `inlineImages` を呼ぶ。`bundle` では `inlineImages` に共有の表を渡し、埋めた画像を `payload.assets` に入れる。設定の `features` で `images`・`media` をオフにした文書も同じく扱う
-    description: '`export` と `build` に共通の処理。埋める設定には、設定の `features`・`tooltips`・`side-toc`・`colorTheme`・`colorScheme`・`labels` をあるときだけ写す。`colorTheme` が `COLOR_THEMES` に無い名前のときも写したうえで、警告 `{設定ファイル}: 不明なテーマ名 {名前} です。既定の dev-swiss で描画します。` を 1 件出す。外部ライブラリ・拡張・色分けのモジュールは 1 つずつ `bundleModule` で束ねてみて、束ねられたものだけの読み先（URL はそのまま、パスは設定ファイルのあるフォルダを基準にした絶対パス）を `embeds` に入れる。同じ URL のモジュールは 1 回だけ束ねる。外部ライブラリと拡張で、束ねたコードに `hasDynamicImport` が当たるものは `embeds` に入れたうえで、警告 `{設定ファイル}: 拡張 \`{パス}\` は束ねた後も動的 import() が残り、blob: と動的 import を許さない環境では読み込めません。読む先をリテラルの文字列にしてください。`（外部ライブラリは `外部ライブラリ \`{印の名前}\``）を 1 件出す。文書の色分けの言語を `usedSyntaxLanguages` で拾い、1 つ以上あれば設定の `syntax.url`（無ければ `DEFAULT_SYNTAX_URL`）の `core.min.js` と言語ごとの `languages/{モジュール名}.min.js` を確かめて `embeds.syntax` に入れる（束ねたコードは esbuild の既定で頭の著作権表示を残す）。本体を束ねられなければ言語も確かめず `embeds.syntax` を持たない。言語のモジュールだけ束ねられなければ、その言語を `embeds.syntax.languages` に入れず、警告を 1 件出す（その言語のコードブロックは色分けせずに描く）。埋める設定には `syntax` を写さない（開いたときに外へ要求しない）。文書に mermaid のコードブロックがあるかを `usesMermaid` で見て、あれば設定の `mermaid.url`（無ければ `DEFAULT_MERMAID_URL`。パスは設定ファイルのあるフォルダを基準にした絶対パス）を束ねてみて `embeds.mermaid` に入れる。束ねられなければ `embeds.mermaid` を持たず、警告 `{設定ファイル}: mermaid \`{URL}\` を束ねられません（{理由}）。\`mermaid.url\` を直してください。` を 1 件出す（mermaid のコードブロックは開いたときに知らせの枠とコードブロックになる）。埋める設定には `mermaid` の `theme`・`themeVariables` だけを写し、`url` を写さない。設定に `aliases` があれば `loadAliases` の `aliases` を `payload.aliases` に入れ、`issues` は 1 件ずつずれを 1 行にした（`formatCheckIssue`）警告にする（終了コードは変えない）。警告は `{ファイル}: {内容}` の文字列で、読めない画像・絶対 URL の画像・束ねられないモジュールと拡張・束ねられない色分けのライブラリ（`{設定ファイル}: 色分けのライブラリ \`{URL}\` を束ねられません（{理由}）。\`syntax.url\` を直してください。`）・読めない `theme`・読めない索引の文書を出す'
+    summary: 文書の画像を埋め、マーカーのある外部ライブラリと設定の拡張と色分けのモジュールがまとめられることを確認して読み込み先を集め、`html-scripts` がオンの文書の範囲の `ts`・`js` を `compileHtmlScripts` で変えて `embeds.htmlScripts` に入れ、`theme` を読み込み、索引があれば参照の表を作って、書き出しの中身と警告を返却する。設定に `assets.root` があれば設定ファイルのフォルダから解決し、文書ごとに `copyMedia`（書き出しの中で共有する `copied` を指定する）の後に `inlineImages` を呼ぶ。`bundle` では `inlineImages` に共有の表を指定し、埋めた画像を `payload.assets` に入れる。設定の `features` で `images`・`media` をオフにした文書も同じく扱う
+    description: '`export` と `build` に共通の処理。埋める設定には、設定の `features`・`tooltips`・`side-toc`・`colorTheme`・`colorScheme`・`labels` をあるときだけ写す。`colorTheme` が `COLOR_THEMES` に無い名前のときもコピーしたうえで、警告 `{設定ファイル}: 不明なテーマ名 {名前} です。既定の dev-swiss で描画します。` を 1 件出す。外部ライブラリ・拡張・色分けのモジュールは 1 つずつ `bundleModule` でまとめてみて、まとめられたものだけの読み込み先（URL はそのまま、パスは設定ファイルのあるフォルダを基準にした絶対パス）を `embeds` に入れる。同じ URL のモジュールは 1 回だけまとめる。外部ライブラリと拡張で、まとめたコードに `hasDynamicImport` が該当するものは `embeds` に入れたうえで、警告 `{設定ファイル}: 拡張 \`{パス}\` はまとめた後も動的 import() が残り、blob: と動的 import を許さない環境では読み込めません。読み込む先をリテラルの文字列にしてください。`（外部ライブラリは `外部ライブラリ \`{マーカーの名前}\``）を 1 件出す。文書の色分けの言語を `usedSyntaxLanguages` で取得し、1 つ以上あれば設定の `syntax.url`（無ければ `DEFAULT_SYNTAX_URL`）の `core.min.js` と言語ごとの `languages/{モジュール名}.min.js` を確認して `embeds.syntax` に入れる（まとめたコードは esbuild の既定で頭の著作権表示を残す）。本体をまとめられなければ言語も確認せず `embeds.syntax` を持たない。言語のモジュールだけまとめられなければ、その言語を `embeds.syntax.languages` に入れず、警告を 1 件出す（その言語のコードブロックは色分けせずに描く）。埋める設定には `syntax` を写さない（開いたときに外へ要求しない）。文書に mermaid のコードブロックがあるかを `usesMermaid` で確認して、あれば設定の `mermaid.url`（無ければ `DEFAULT_MERMAID_URL`。パスは設定ファイルのあるフォルダを基準にした絶対パス）をまとめてみて `embeds.mermaid` に入れる。まとめられなければ `embeds.mermaid` を持たず、警告 `{設定ファイル}: mermaid \`{URL}\` をまとめられません（{理由}）。\`mermaid.url\` を修正してください。` を 1 件出す（mermaid のコードブロックは開いたときに通知ブロックとコードブロックになる）。埋める設定には `mermaid` の `theme`・`themeVariables` だけをコピーし、`url` を写さない。設定に `aliases` があれば `loadAliases` の `aliases` を `payload.aliases` に入れ、`issues` は 1 件ずつずれを 1 行にした（`formatCheckIssue`）警告にする（終了コードは変えない）。警告は `{ファイル}: {内容}` の文字列で、読み込めない画像・絶対 URL の画像・まとめられないモジュールと拡張・まとめられない色分けのライブラリ（`{設定ファイル}: 色分けのライブラリ \`{URL}\` をまとめられません（{理由}）。\`syntax.url\` を修正してください。`）・読み込めない `theme`・読み込めない索引の文書を出す'
     kind: 関数
     scope: internal
     is_async: true
-    side_effects: 外部ライブラリの URL の先を読む
+    side_effects: 外部ライブラリの URL の先を読み込む
     args:
       - name: options
         type: "{ loaded: LoadedConfig; docs: Array<{ path: string; file: string }>; kind: 'document' | 'bundle'; entry: string; out: string; fetchText: FetchText }"
         required: true
-        description: 読んだ設定、埋める文書のパスと絶対パス、種類、最初に開く文書、出力の HTML の絶対パス、URL を読む関数（`bundleViewer` と共有する `cacheFetchText` の関数）
+        description: 読み込んだ設定、埋める文書のパスと絶対パス、種類、最初に開く文書、出力の HTML の絶対パス、URL を読み込む関数（`bundleViewer` と共有する `cacheFetchText` の関数）
     returns:
       type: 'Promise<{ payload: ExportPayload; embeds: ViewerEmbeds; themeCss?: string; warnings: string[] }>'
-      description: 書き出しの中身・束ねるモジュールの読み先・使う側の CSS・警告
+      description: 書き出しの中身・まとめるモジュールの読み込み先・利用側の CSS・警告
     unit_tests:
       - name: test_prepare_embeds
         case: 正常
-        summary: 印のあるモジュールだけを束ね、拡張と theme を読む
-        condition: '`libraries` に `test-lib`（印あり）と `other`（印なし）、`extensions` に 1 つ、`theme` あり'
-        mock: 一時フォルダに手元のモジュールを置く
+        summary: マーカーのあるモジュールだけをまとめ、拡張と theme を読み込む
+        condition: '`libraries` に `test-lib`（マーカーあり）と `other`（マーカーなし）、`extensions` に 1 つ、`theme` あり'
+        mock: 一時フォルダに手元のモジュールを配置する
         expected: '`embeds.libraries` のキーが `test-lib` だけ、`embeds.extensions` が拡張の絶対パスの 1 件、`themeCss` があり、`warnings` が空'
       - name: test_prepare_embeds_when_unreadable
         case: 正常
-        summary: 読めないものを警告にして続ける
+        summary: 読み込めないものを警告にして続ける
         condition: '`test-lib` が無いファイルを指し、`theme` も無い'
         mock: 一時フォルダ
         expected: '`embeds.libraries` が空、`warnings` に `test-lib` と `theme` のパスが入る'
@@ -1169,38 +1169,38 @@ functions:
         expected: '前者の `payload.config.labels` が `{ paramCopy: "コピー" }`、後者は `payload.config` が `labels` を持たない'
       - name: test_prepare_embeds_when_syntax
         case: 正常
-        summary: 文書が使う言語だけ色分けのモジュールを束ね、埋める設定に `syntax` を写さない
+        summary: 文書が使用する言語だけ色分けのモジュールをまとめ、埋める設定に `syntax` を写さない
         condition: 文書に `ts` のコードブロック。設定の `syntax.url` が一時フォルダの `hl/`
-        mock: 一時フォルダの `hl/core.min.js` と `hl/languages/typescript.min.js`・`hl/languages/yaml.min.js` に手元のモジュールを置く
+        mock: 一時フォルダの `hl/core.min.js` と `hl/languages/typescript.min.js`・`hl/languages/yaml.min.js` に手元のモジュールを配置する
         expected: '`embeds.syntax.core` が `hl/core.min.js` の絶対パスで、`embeds.syntax.languages` のキーが `typescript` だけ。`payload.config` が `syntax` を持たず、`warnings` が空'
       - name: test_prepare_embeds_when_syntax_unreadable
         case: 正常
-        summary: 色分けの本体を束ねられなければ警告にして埋めずに続ける
+        summary: 色分けの本体をまとめられなければ警告にして埋めずに続ける
         condition: 文書に `ts` のコードブロック。設定の `syntax.url` が無いフォルダ `missing/`
         mock: 一時フォルダ
         expected: '`embeds.syntax` が無く、`warnings` に `missing/core.min.js` と `syntax.url` を含む 1 件'
       - name: test_prepare_embeds_when_mermaid
         case: 正常
-        summary: mermaid のコードブロックがある文書だけ mermaid を束ね、埋める設定に url を写さない
+        summary: mermaid のコードブロックがある文書だけ mermaid をまとめ、埋める設定に url を写さない
         condition: '文書に `mermaid` のコードブロック。設定の `mermaid` が `{ url: "vendor/mermaid.mjs", theme: "neutral" }`。もう 1 つは同じ設定で mermaid のコードブロックを持たない文書'
-        mock: 一時フォルダの `vendor/mermaid.mjs` に既定のエクスポートを持つ手元のモジュールを置く
+        mock: 一時フォルダの `vendor/mermaid.mjs` に既定のエクスポートを持つ手元のモジュールを配置する
         expected: '前者の `embeds.mermaid` が `vendor/mermaid.mjs` の絶対パスで、`payload.config.mermaid` が `{ theme: "neutral" }`、`warnings` が空。後者は `embeds.mermaid` を持たない'
       - name: test_prepare_embeds_when_mermaid_unreadable
         case: 正常
-        summary: mermaid を束ねられなければ警告にして埋めずに続ける
+        summary: mermaid をまとめられなければ警告にして埋めずに続ける
         condition: 文書に `mermaid` のコードブロック。設定の `mermaid.url` が無いファイル `missing/mermaid.mjs`
         mock: 一時フォルダ
         expected: '`embeds.mermaid` が無く、`warnings` に `missing/mermaid.mjs` と `mermaid.url` を含む 1 件'
       - name: test_prepare_embeds_when_syntax_language_unreadable
         case: 正常
-        summary: 束ねられない言語だけ埋めずに警告にし、他の言語は埋める
+        summary: まとめられない言語だけ埋めずに警告にし、他の言語は埋める
         condition: 文書に `ts` と `yml` のコードブロック。設定の `syntax.url` が一時フォルダの `hl/`
-        mock: 一時フォルダの `hl/core.min.js` と `hl/languages/typescript.min.js` だけに手元のモジュールを置き、`yaml.min.js` は置かない
+        mock: 一時フォルダの `hl/core.min.js` と `hl/languages/typescript.min.js` だけに手元のモジュールを配置し、`yaml.min.js` は配置しない
         expected: '`embeds.syntax.languages` のキーが `typescript` だけで、`warnings` に `hl/languages/yaml.min.js` と `syntax.url` を含む 1 件'
       - name: test_prepare_embeds_when_dynamic_import_left
         case: 正常
-        summary: 束ねた後に動的 import が残る拡張を入れたうえで警告にする
-        condition: '`extensions` に、`load` の中で `import(name)`（変数を渡す）を書いた拡張 1 つ'
+        summary: まとめた後に動的 import が残る拡張を入れたうえで警告にする
+        condition: '`extensions` に、`load` の中で `import(name)`（変数を指定する）を記載した拡張 1 つ'
         mock: 一時フォルダ
         expected: '`embeds.extensions` が 1 件で、`warnings` に拡張のパスと `動的 import()` を含む 1 件'
       - name: test_prepare_embeds_when_side_toc_mode
@@ -1212,12 +1212,12 @@ functions:
       - name: test_prepare_embeds_when_aliases
         case: 正常
         summary: エイリアスを payload に入れ、ずれを警告にする
-        condition: インターフェース定義『文書をHTMLに書き出す』の「正常系（エイリアスを読む）」のフォルダ
+        condition: インターフェース定義『文書をHTMLに書き出す』の「正常系（エイリアスを読み込む）」のフォルダ
         mock: 一時フォルダ
         expected: '`payload.aliases` が `command` の `run-test` の 1 件だけで `dev-server` を含まず、`warnings` に `alias_required_empty` の 1 件がある'
       - name: test_prepare_embeds_when_color_theme
         case: 正常
-        summary: 設定の `colorTheme` を埋める設定に写し、知らない名前は写して警告する
+        summary: 設定の `colorTheme` を埋める設定にコピーし、知らない名前はコピーして警告する
         condition: '`colorTheme: theme-slate` の設定、`colorTheme: sepia` の設定、`colorTheme` を持たない設定'
         mock: 一時フォルダ
         expected: 1 つ目の `payload.config.colorTheme` が `theme-slate` で `warnings` が空。2 つ目は `sepia` で `warnings` に `sepia` を含む 1 件。3 つ目は `payload.config` が `colorTheme` を持たない
@@ -1258,11 +1258,11 @@ functions:
     title: 文書を HTML に書き出す
     container: src/cli/export.ts
     usecase: 文書をHTMLに書き出す
-    summary: '文書 1 つを `kind: document` の中身にして HTML を書き、警告と `書き出した: {出力}` を出す'
+    summary: '文書 1 つを `kind: document` の中身にして HTML を書き込み、警告と `書き出した: {出力}` を出す'
     kind: 関数
     scope: public
     is_async: true
-    side_effects: 出力のパスに HTML を書く
+    side_effects: 出力のパスに HTML を書き込む
     args:
       - name: options
         type: '{ file: string; out?: string; config?: string; distDir: string }'
@@ -1277,15 +1277,15 @@ functions:
       description: 書き出したら 0
     exceptions:
       - name: CliError
-        condition: 設定の誤り・文書が無い・出力先へ書けない
-        message: '文書が無い: {パス} が見つかりません。文書のパスを直してください。／書けない: {出力} に書けません（{理由}）。出力先のフォルダを確かめてください。'
+        condition: 設定の誤り・文書が無い・出力先へ書き込めない
+        message: '文書が無い: {パス} が見つかりません。文書のパスを修正してください。／書き込めない: {出力} に書き込めません（{理由}）。出力先のフォルダを確認してください。'
     unit_tests:
       - name: test_run_export
         case: 正常
-        summary: 既定の出力に HTML を書く
+        summary: 既定の出力に HTML を書き込む
         condition: '`file: guide.md`、`--out` 無し'
         mock: 一時フォルダと、中身を短くした `dist/index.css`・`startViewer` を export する `dist/viewer.js`・`dist/view.js`
-        expected: '0 を返し、`guide.html` があり、標準出力が `書き出した: guide.html`'
+        expected: '0 を返却し、`guide.html` があり、標準出力が `書き出した: guide.html`'
       - name: test_run_export_when_document_missing
         case: 異常
         summary: 無い文書は CliError
@@ -1295,7 +1295,7 @@ functions:
         exception: CliError
       - name: test_run_export_when_output_unwritable
         case: 異常
-        summary: 書けない出力先は CliError
+        summary: 書き込めない出力先は CliError
         condition: '`out: blocked/guide.html` で `blocked` がファイル'
         mock: 一時フォルダ
         expected: '`CliError` を投げ、メッセージに `blocked/guide.html` が入る'
@@ -1311,12 +1311,12 @@ functions:
     title: 複数の文書を 1 枚にまとめる
     container: src/cli/build.ts
     usecase: 複数の文書を1枚のHTMLにまとめる
-    summary: '`build` の対象の文書を `kind: bundle` の中身にして `build.out` に HTML を書き、警告と `書き出した: {build.out}（文書 {件数} 件）` を出す'
-    description: 警告には `prepareEmbeds` のものに、`findOutsideLinks` のリンク、`build.glossary` と `build.entry` がまとめる文書に当たらないことを足す。`build.glossary` の文書は、索引が無いときもその用語集の表を全ての文書で効かせるため、索引の `docs` に無ければ足してから `collectReferences` を呼ぶ
+    summary: '`build` の対象の文書を `kind: bundle` の中身にして `build.out` に HTML を書き込み、警告と `書き出した: {build.out}（文書 {件数} 件）` を出す'
+    description: 警告には `prepareEmbeds` のものに、`findOutsideLinks` のリンク、`build.glossary` と `build.entry` がまとめる文書に該当しないことを追加する。`build.glossary` の文書は、索引が無いときもその用語集の表を全ての文書で有効にしるため、索引の `docs` に無ければ追加してから `collectReferences` を呼ぶ
     kind: 関数
     scope: public
     is_async: true
-    side_effects: '`build.out` に HTML を書く'
+    side_effects: '`build.out` に HTML を書き込む'
     args:
       - name: options
         type: '{ config?: string; distDir: string }'
@@ -1331,15 +1331,15 @@ functions:
       description: 書き出したら 0
     exceptions:
       - name: CliError
-        condition: 設定の誤り・`build` が無い・対象が 0 件・出力先へ書けない
-        message: 'build が無い: 設定に build がありません。build.include と build.out を書いてください。／0 件: build.include に当たる文書がありません。build.include を直してください。'
+        condition: 設定の誤り・`build` が無い・対象が 0 件・出力先へ書き込めない
+        message: 'build が無い: 設定に build がありません。build.include と build.out を記載してください。／0 件: build.include に該当する文書がありません。build.include を修正してください。'
     unit_tests:
       - name: test_run_build
         case: 正常
-        summary: 3 つの文書をまとめて build.out に書く
-        condition: '`include: ["**/*.md"]` が 3 つに当たる'
+        summary: 3 つの文書をまとめて build.out に記載する
+        condition: '`include: ["**/*.md"]` が 3 つに該当する'
         mock: 一時フォルダと、中身を短くした `dist/index.css`・`startViewer` を export する `dist/viewer.js`・`dist/view.js`
-        expected: '0 を返し、標準出力が `書き出した: dist/docs.html（文書 3 件）`、中身の `docs` が 3 件'
+        expected: '0 を返却し、標準出力が `書き出した: dist/docs.html（文書 3 件）`、中身の `docs` が 3 件'
       - name: test_run_build_when_link_outside_bundle
         case: 正常
         summary: 1 枚に含まれない文書へのリンクを警告に出す
@@ -1349,9 +1349,9 @@ functions:
       - name: test_run_build_when_glossary_without_index
         case: 正常
         summary: 索引が無くても build.glossary の用語を参照の表に入れる
-        condition: '`index` 無し、`glossary: ["用語集.md"]` の用語集の表に `印`'
+        condition: '`index` 無し、`glossary: ["用語集.md"]` の用語集の表に `マーカー`'
         mock: 一時フォルダ
-        expected: 中身の `references` の用語に `印` がある
+        expected: 中身の `references` の用語に `マーカー` がある
       - name: test_run_build_when_build_missing
         case: 異常
         summary: build が無いと CliError
@@ -1361,8 +1361,8 @@ functions:
         exception: CliError
       - name: test_run_build_when_no_documents
         case: 異常
-        summary: 対象が 0 件だと CliError で HTML を書かない
-        condition: '`build.include` がどのファイルにも当たらない'
+        summary: 対象が 0 件だと CliError で HTML を書き込まない
+        condition: '`build.include` がどのファイルにも該当しない'
         mock: 一時フォルダ
         expected: '`CliError` を投げ、`build.out` が無い'
         exception: CliError
@@ -1374,11 +1374,11 @@ functions:
     introduced:
       pr: 32
   - name: readDistAssets
-    title: 配布物を読む
+    title: 配布物を読み込む
     container: src/cli/export.ts
     usecase: 共通
-    summary: '`dist/index.css` を読み、`dist/viewer.js`・`dist/view.js` があることを確かめて絶対パスを返し、`bundle` では `dist/viewer.css` を CSS の後ろに足す'
-    description: '`dist/viewer.css` が無いときは足さずに続ける（それ以外の読めない理由はそのまま投げる）。`index.css` を読めないか、`viewer.js`・`view.js` が無ければ `CliError`'
+    summary: '`dist/index.css` を読み込み、`dist/viewer.js`・`dist/view.js` があることを確認して絶対パスを返却し、`bundle` では `dist/viewer.css` を CSS の後ろに追加する'
+    description: '`dist/viewer.css` が無いときは追加せずに続ける（それ以外の読み込めない理由はそのまま投げる）。`index.css` を読み込めないか、`viewer.js`・`view.js` が無ければ `CliError`'
     kind: 関数
     scope: public
     is_async: true
@@ -1392,32 +1392,32 @@ functions:
       description: 埋める CSS と、起動の処理（`dist/viewer.js`）・ビューの部品のモジュール（`dist/view.js`）の絶対パス
     exceptions:
       - name: CliError
-        condition: '`index.css` を読めないか、`viewer.js`・`view.js` が無い'
-        message: 配布物を読めません（{理由}）。mdmark を入れ直してください。
+        condition: '`index.css` を読み込めないか、`viewer.js`・`view.js` が無い'
+        message: 配布物を読み込めません（{理由}）。mdmark をもう一度入れてください。
     status: planned
     introduced:
       pr: 32
   - name: writeHtml
-    title: HTML を書く
+    title: HTML を書き込む
     container: src/cli/export.ts
     usecase: 共通
-    summary: 親のフォルダを作って HTML を書く
+    summary: 親のフォルダを作って HTML を書き込む
     kind: 関数
     scope: public
     is_async: true
-    side_effects: 出力のパスに HTML を書く
+    side_effects: 出力のパスに HTML を書き込む
     args:
       - name: options
         type: '{ file: string; display: string; html: string }'
         required: true
-        description: 書く先の絶対パス・利用者に見せるパス・HTML
+        description: 記載する先の絶対パス・利用者に見せるパス・HTML
     returns:
       type: Promise<void>
-      description: 書いたら解決する
+      description: 記載したら解決する
     exceptions:
       - name: CliError
-        condition: 書く先に書けない
-        message: '書けない: {出力} に書けません（{理由}）。出力先のフォルダを確かめてください。'
+        condition: 記載する先に記載できない
+        message: '書き込めない: {出力} に書き込めません（{理由}）。出力先のフォルダを確認してください。'
     status: planned
     introduced:
       pr: 32
@@ -1425,8 +1425,8 @@ functions:
     title: 点検のずれを集める
     container: src/cli/check.ts
     usecase: 共通
-    summary: '設定を重ねて読み（`purpose: export`）、重ねた設定ファイルのそれぞれと端末の設定（`config.applyToExport` によらず）の形のずれを先に、続けて `mdmark check` と同じ並びのずれを返す。ずれの `file` は設定ファイルのパスを表示の形にしたパス（`base` は今のフォルダ）'
-    description: '並びは設定の `schema`（`validateConfig` のずれ、`theme`・`extensions` の無いファイル、`build.glossary`・`build.entry` がまとめる文書に当たらないもの）→ `unknown_color_theme`（設定の `colorTheme` が `COLOR_THEMES` に無いとき 1 件。`where` は `colorTheme`、`message` は `不明なテーマ名 {名前} です。{COLOR_THEMES を「・」で結んだもの} のいずれかに修正してください。`）→ `unknown_color_scheme`（設定の `colorScheme` が `COLOR_SCHEMES` に無いとき 1 件。`where` は `colorScheme`、`message` は `不明な明暗 {値} です。{COLOR_SCHEMES を「・」で結んだもの} のいずれかに修正してください。`）→ `no_documents` → `checkIndex` の並び → エイリアスのずれ（`loadAliases` の `issues`。設定に `aliases` があるときだけ）→ `missing_file`（`collectCheckDocuments` の文書ごとの `checkMissingFiles`）→ `unknown_mark`（`checkUnknownMarks`）→ 図の点検のずれ（`checkDiagrams`。`unknownMarks` によらず点検する）。知らない印の点検では、`collectCheckDocuments` の文書を、`loadExtensionDirectives` の `directive` を知っている印に入れて点検し、`loadExtensionDirectives` の `schema` のずれは設定の `schema` の並びの最後に置く。索引のずれの `file` は設定ファイルのフォルダからの相対パスに直す。索引を読めないときは索引を指す `schema` のずれにする。`base` があり設定に `index` があるときだけ、ずれを集める前に `changedPathsSince`（`cwd` は設定ファイルのフォルダ、`indexDir` は索引のファイルのフォルダ）で変わったファイルを引き、`checkIndex` の `changedPaths` に渡す。`runCheck` と `runUpgrade` が呼び、`runUpgrade` は `unknownMarks: false` で呼ぶ（拡張を読み込まず、知らない印を点検しない）。設定の `assets.root` のフォルダが無いときは `assets.root` を指す `schema` のずれを設定の `schema` の並びに置き、`missing_file` は文書のフォルダだけで探す'
+    summary: '設定を重ねて読み込み（`purpose: export`）、重ねた設定ファイルのそれぞれと端末の設定（`config.applyToExport` によらず）の構造のずれを先に、続けて `mdmark check` と同じ並びのずれを返却する。ずれの `file` は設定ファイルのパスを表示の構造にしたパス（`base` は今のフォルダ）'
+    description: '並びは設定の `schema`（`validateConfig` のずれ、`theme`・`extensions` の無いファイル、`build.glossary`・`build.entry` がまとめる文書に該当しないもの）→ `unknown_color_theme`（設定の `colorTheme` が `COLOR_THEMES` に無いとき 1 件。`where` は `colorTheme`、`message` は `不明なテーマ名 {名前} です。{COLOR_THEMES を「・」で結んだもの} のいずれかに修正してください。`）→ `unknown_color_scheme`（設定の `colorScheme` が `COLOR_SCHEMES` に無いとき 1 件。`where` は `colorScheme`、`message` は `不明な明暗 {値} です。{COLOR_SCHEMES を「・」で結んだもの} のいずれかに修正してください。`）→ `no_documents` → `checkIndex` の並び → エイリアスのずれ（`loadAliases` の `issues`。設定に `aliases` があるときだけ）→ `missing_file`（`collectCheckDocuments` の文書ごとの `checkMissingFiles`）→ `unknown_mark`（`checkUnknownMarks`）→ 図の点検のずれ（`checkDiagrams`。`unknownMarks` によらず点検する）。知らないマーカーの点検では、`collectCheckDocuments` の文書を、`loadExtensionDirectives` の `directive` を知っているマーカーに入れて点検し、`loadExtensionDirectives` の `schema` のずれは設定の `schema` の並びの最後に配置する。索引のずれの `file` は設定ファイルのフォルダからの相対パスに修正する。索引を読み込めないときは索引を指す `schema` のずれにする。`base` があり設定に `index` があるときだけ、ずれを集める前に `changedPathsSince`（`cwd` は設定ファイルのフォルダ、`indexDir` は索引のファイルのフォルダ）で変わったファイルを引き、`checkIndex` の `changedPaths` に指定する。`runCheck` と `runUpgrade` が呼び、`runUpgrade` は `unknownMarks: false` で呼ぶ（拡張を読み込まず、知らないマーカーを点検しない）。設定の `assets.root` のフォルダが無いときは `assets.root` を指す `schema` のずれを設定の `schema` の並びに配置し、`missing_file` は文書のフォルダだけで探す'
     kind: 関数
     scope: public
     is_async: true
@@ -1439,67 +1439,67 @@ functions:
         type: '{ unknownMarks?: boolean; base?: string; cwd?: string; explicit?: boolean }'
         required: false
         default: '`{ unknownMarks: true }`'
-        description: '`unknownMarks` が `false` なら、拡張を読み込まず、知らない印を点検しない。`base` があれば、`change_together` の直し忘れを確かめる。`cwd` はずれの `file` の表示の基準（既定は `path` のフォルダ）。`explicit` が `true` のときは上へ探さず、`path` と端末の設定だけを重ねる（`--config`・MCP の `config` を渡したとき）'
+        description: '`unknownMarks` が `false` なら、拡張を読み込まず、知らないマーカーを点検しない。`base` があれば、`change_together` の修正漏れを確認する。`cwd` はずれの `file` の表示の基準（既定は `path` のフォルダ）。`explicit` が `true` のときは上へ探さず、`path` と端末の設定だけを重ねる（`--config`・MCP の `config` を指定したとき）'
     returns:
       type: Promise<CheckIssue[]>
       description: ずれの並び（無ければ空）
     exceptions:
       - name: CliError
-        condition: 設定ファイルを YAML として読めない・`base` を渡し、比べる基準を引けない
+        condition: 設定ファイルを YAML として読み込めない・`base` を指定し、比べる基準を参照できない
         message: '`loadConfig`・`changedPathsSince` のメッセージ'
     unit_tests:
       - name: test_collect_check_issues
         case: 正常
-        summary: 設定の schema と索引の missing_doc をこの順に返す
+        summary: 設定の schema と索引の missing_doc をこの順に返却する
         condition: '`build.out` が無く、索引の `old.md` が無い'
         mock: 一時フォルダ
         expected: 2 件で、`kind` が `schema`・`missing_doc` の順
       - name: test_collect_check_issues_when_unknown_mark
         case: 正常
-        summary: 知らない印を checkIndex のずれの後ろに返す
+        summary: 知らないマーカーを checkIndex のずれの後ろに返却する
         condition: 索引の `old.md` が無く、文書 `a.md` の 3 行目に `<!-- tabz -->`
         mock: 一時フォルダ
         expected: '`kind` が `missing_doc`・`unknown_mark` の順で、`unknown_mark` の `file` が `a.md`・`where` が `3`'
       - name: test_collect_check_issues_when_unknown_marks_off
         case: 正常
-        summary: '`unknownMarks: false` では知らない印を返さず、拡張を読み込まない'
+        summary: '`unknownMarks: false` では知らないマーカーを返却せず、拡張を読み込まない'
         condition: '文書 `a.md` に `<!-- tabz -->`、設定の `extensions` に読み込めない拡張 `broken.js`、`{ unknownMarks: false }`'
         mock: 一時フォルダ
         expected: '`unknown_mark` のずれも `extensions[0]` の `schema` のずれも無い'
       - name: test_collect_check_issues_when_base_without_index
         case: 正常
-        summary: 設定に `index` が無ければ `base` を使わない
+        summary: 設定に `index` が無ければ `base` を使用しない
         condition: '`index` の無い設定を持ち git のリポジトリでない一時フォルダ、`{ base: "no-such-ref" }`'
         mock: 一時フォルダ
-        expected: 例外を投げず、`base` を渡さないときと同じずれを返す
+        expected: 例外を投げず、`base` を指定しないときと同じずれを返却する
       - name: test_collect_check_issues_when_alias_drift
         case: 正常
-        summary: エイリアスのずれを checkIndex の後・unknown_mark の前に置く
-        condition: インターフェース定義『設定と索引を点検する』の「正常系（エイリアスにずれがある）」のフォルダに、知らない印のある文書を加える
+        summary: エイリアスのずれを checkIndex の後・unknown_mark の前に配置する
+        condition: インターフェース定義『設定と索引を点検する』の「正常系（エイリアスにずれがある）」のフォルダに、知らないマーカーのある文書を加える
         mock: 一時フォルダ
         expected: ずれの並びが `alias_no_files`（`missing/*.yaml`）→ `alias_required_empty`（`description`）→ `unknown_mark` で、`env` のレコードを指すずれが無い
       - name: test_collect_check_issues_when_unknown_color_theme
         case: 正常
-        summary: 知らないテーマの名前を schema の後・no_documents の前に返す
-        condition: '`colorTheme: sepia` と、無いファイルを指す `extensions`、`build.out` と当たる文書の無い `build.include` を持つ `build` を持つ設定。別に `colorTheme: theme-slate` の設定'
+        summary: 知らないテーマの名前を schema の後・no_documents の前に返却する
+        condition: '`colorTheme: sepia` と、無いファイルを指す `extensions`、`build.out` と該当する文書の無い `build.include` を持つ `build` を持つ設定。別に `colorTheme: theme-slate` の設定'
         mock: 一時フォルダ
         expected: 前者の `kind` が `schema`・`unknown_color_theme`・`no_documents` の順で、`unknown_color_theme` の `where` が `colorTheme`、`message` に `sepia` と 4 つの名前を含む。後者は `unknown_color_theme` が無い
       - name: test_collect_check_issues_when_unknown_color_scheme
         case: 正常
-        summary: 知らない明暗の値を unknown_color_theme の後・no_documents の前に返す
+        summary: 知らない明暗の値を unknown_color_theme の後・no_documents の前に返却する
         condition: '`colorTheme: sepia` と `colorScheme: sepia` を持つ設定。別に `colorScheme: dark` の設定'
         mock: 一時フォルダ
         expected: 前者の `kind` が `unknown_color_theme`・`unknown_color_scheme` の順で、`unknown_color_scheme` の `where` が `colorScheme`、`message` に `sepia` と `light`・`dark`・`auto` を含む。後者は `unknown_color_scheme` が無い
       - name: test_collect_check_issues_when_missing_file
         case: 正常
-        summary: 見つからないファイルを unknown_mark の前に返し、無い assets.root を schema にする
+        summary: 見つからないファイルを unknown_mark の前に返却し、無い assets.root を schema にする
         condition: '`assets.root: none` の設定、文書 `a.md` の 2 行目に `![図](x.png)` と 4 行目に `<!-- tabz -->`'
         mock: 一時フォルダ
         expected: '`kind` が `schema`（`where` が `assets.root`）・`missing_file`（`where` が `2`）・`unknown_mark` の順'
       - name: test_collect_check_issues_when_diagram
         case: 正常
-        summary: 図の点検のずれを最後に返し、upgrade の呼び方でも点検する
-        condition: 索引の無い設定で、`docs/a.md` の 3 行目に読めない `<!-- flow -->` の定義と、見つからない画像。`unknownMarks` が `true` と `false`
+        summary: 図の点検のずれを最後に返却し、upgrade の呼び方でも点検する
+        condition: 索引の無い設定で、`docs/a.md` の 3 行目に読み込めない `<!-- flow -->` の定義と、見つからない画像。`unknownMarks` が `true` と `false`
         mock: なし
         expected: 'どちらも `missing_file` の後に `{ file: "docs/a.md", where: "3", kind: "diagram_invalid" }` の 1 件がある'
     refs:
@@ -1514,16 +1514,16 @@ functions:
       - '#functions[checkMissingFiles]'
       - '#functions[checkDiagrams]'
     process: |-
-      1. 設定を重ねて読む（設定を重ねて読む。`purpose: export`、`keepInvalid: true`、`explicit` のときは `explicit` に `path`、それ以外は `cwd` に `path` のフォルダ）
-         - `unreadable` がある場合、そのファイルのパス（設定ファイルのパスを表示の形にする）と行で「YAML として読めません」の `CliError` を投げる
-      2. `issues` の `file` を表示の形にして、設定の形のずれにする
-      3. 重ねた設定のパスを `path` のフォルダからの相対パスに戻し（パスを相対パスに戻す）、`{ path, dir: path のフォルダ, config }` で、設定が指すファイル以降のずれを `description` の並びで集めて、形のずれの後ろに続けて返す
+      1. 設定を重ねて読み込む（設定を重ねて読み込む。`purpose: export`、`keepInvalid: true`、`explicit` のときは `explicit` に `path`、それ以外は `cwd` に `path` のフォルダ）
+         - `unreadable` がある場合、そのファイルのパス（設定ファイルのパスを表示の構造にする）と行で「YAML として読み込めません」の `CliError` を投げる
+      2. `issues` の `file` を表示の構造にして、設定の構造のずれにする
+      3. 重ねた設定のパスを `path` のフォルダからの相対パスに戻し（パスを相対パスに戻す）、`{ path, dir: path のフォルダ, config }` で、設定が指すファイル以降のずれを `description` の並びで集めて、構造のずれの後ろに続けて返却する
   - name: loadExtensionDirectives
-    title: 拡張の印の名前を読む
+    title: 拡張のマーカーの名前を読み込む
     container: src/cli/check.ts
     usecase: 設定と索引を点検する
-    summary: 設定の `extensions` の拡張を `bundleModule` で束ねて Node で読み込み、既定の書き出しの `directive` を集める
-    description: '`extensions` の位置の順に、ファイルが在る拡張だけを束ねる（無いファイルは `checkReferencedFiles` のずれだけにする）。束ねたコードは `importCode` で読み込む。束ねられない・読み込めない・既定の書き出しの `directive` が印の名前（`MARK_NAME_PATTERN`）の文字列でない拡張は、`extensions[{位置}]` を指す `schema` のずれにし、`directive` に入れない。読み込めないときの内容は、元のエラーの 1 行目と、読み込みの時点でブラウザの API を使う処理を `load` の中へ移す直し方'
+    summary: 設定の `extensions` の拡張を `bundleModule` でまとめて Node で読み込み、既定の書き出しの `directive` を集める
+    description: '`extensions` の位置の順に、ファイルが在る拡張だけをまとめる（無いファイルは `checkReferencedFiles` のずれだけにする）。まとめたコードは `importCode` で読み込む。まとめられない・読み込めない・既定の書き出しの `directive` がマーカーの名前（`MARK_NAME_PATTERN`）の文字列でない拡張は、`extensions[{位置}]` を指す `schema` のずれにし、`directive` に入れない。読み込めないときの内容は、元のエラーの 1 行目と、読み込みの時点でブラウザの API を使用する処理を `load` の中へ移す修正方法'
     kind: 関数
     scope: internal
     is_async: true
@@ -1532,7 +1532,7 @@ functions:
       - name: loaded
         type: LoadedConfig
         required: true
-        description: 形を検めた設定
+        description: 構造を検めた設定
       - name: file
         type: string
         required: true
@@ -1542,10 +1542,10 @@ functions:
         required: false
         default: コードを `data:text/javascript;base64,` の URL にして `import()` する
         passing: injected
-        description: 束ねたコードを読み込み、モジュールの名前空間を返す関数（テストで差し替える）
+        description: まとめたコードを読み込み、モジュールの名前空間を返却する関数（テストで差し替える）
     returns:
       type: 'Promise<{ directives: Set<string>; issues: CheckIssue[] }>'
-      description: 読めた拡張の `directive` と、読めなかった拡張の `schema` のずれ
+      description: 読み込めた拡張の `directive` と、読み込めなかった拡張の `schema` のずれ
     unit_tests:
       - name: test_load_extension_directives
         case: 正常
@@ -1555,7 +1555,7 @@ functions:
         expected: '`directives` が `{"greet"}` で、`issues` が空'
       - name: test_load_extension_directives_when_browser_api
         case: 異常
-        summary: 読み込みの時点でブラウザの API を使う拡張を schema のずれにする
+        summary: 読み込みの時点でブラウザの API を使用する拡張を schema のずれにする
         condition: 最上位で `class extends HTMLElement` を定義する `extensions/broken.js`（`directive` は `broken`）
         mock: 一時フォルダ
         expected: '`directives` が空で、`where` が `extensions[0]` の `schema` のずれが 1 件、`message` に `HTMLElement` と `load` が入る'
@@ -1567,7 +1567,7 @@ functions:
         expected: '`directives` が空で、`where` が `extensions[0]` の `schema` のずれが 1 件'
       - name: test_load_extension_directives_when_file_missing
         case: 正常
-        summary: 無いファイルの拡張は束ねずにずれにしない
+        summary: 無いファイルの拡張はまとめずにずれにしない
         condition: 設定の `extensions` に無いファイル `missing.js`
         mock: 一時フォルダ、呼ばれたら失敗する `importCode`
         expected: '`directives` も `issues` も空'
@@ -1577,11 +1577,11 @@ functions:
     introduced:
       pr: 64
   - name: collectCheckDocuments
-    title: 知らない印を点検する文書を集める
+    title: 知らないマーカーを点検する文書を集める
     container: src/cli/check.ts
     usecase: 設定と索引を点検する
-    summary: 索引の点検に渡す文書と `build` の対象の文書を合わせ、設定ファイルのフォルダからの相対パスの順に、重なりを除いて返す
-    description: 索引の文書は `readIndexWithDocuments`（索引のフォルダからの相対パスを設定ファイルのフォルダからの相対パスに直す）、`build` の文書は `collectBuildDocuments` の文書を読む。索引を読めない（`CliError`）ときは索引の文書を入れない（ずれは `checkIndexFile` が出す）。設定に `index` も `build` も無ければ空
+    summary: 索引の点検に指定する文書と `build` の対象の文書を合わせ、設定ファイルのフォルダからの相対パスの順に、重なりを除いて返却する
+    description: 索引の文書は `readIndexWithDocuments`（索引のフォルダからの相対パスを設定ファイルのフォルダからの相対パスに修正する）、`build` の文書は `collectBuildDocuments` の文書を読み込む。索引を読み込めない（`CliError`）ときは索引の文書を入れない（ずれは `checkIndexFile` が出す）。設定に `index` も `build` も無ければ空
     kind: 関数
     scope: internal
     is_async: true
@@ -1589,15 +1589,15 @@ functions:
       - name: loaded
         type: LoadedConfig
         required: true
-        description: 形を検めた設定
+        description: 構造を検めた設定
     returns:
       type: 'Promise<{ path: string; markdown: string }[]>'
       description: 点検する文書（パスは設定ファイルのフォルダからの相対パス）
     unit_tests:
       - name: test_collect_check_documents
         case: 正常
-        summary: 索引の文書と build の文書を重なりを除いてパスの順に返す
-        condition: 索引のフォルダ `docs/` に `docs/a.md`・`docs/b.md`、`build.include` が `docs/b.md` と `notes/c.md` に当たる
+        summary: 索引の文書と build の文書を重なりを除いてパスの順に返却する
+        condition: 索引のフォルダ `docs/` に `docs/a.md`・`docs/b.md`、`build.include` が `docs/b.md` と `notes/c.md` に該当する
         mock: 一時フォルダ
         expected: パスが `docs/a.md`・`docs/b.md`・`notes/c.md` の 3 件
       - name: test_collect_check_documents_when_no_index_and_build
@@ -1613,11 +1613,11 @@ functions:
     introduced:
       pr: 64
   - name: checkUnknownMarks
-    title: 知らない印をずれにする
+    title: 知らないマーカーをずれにする
     container: src/cli/check.ts
     usecase: 設定と索引を点検する
-    summary: 文書ごとに `findMarks` で拾った印のうち、知っている印に当たらないものを 1 つにつき 1 件の `unknown_mark` のずれにする
-    description: 知っている印は `FEATURES_MARK`・`SYNTAX_MARKS` の名前・`resolveConfig` が設定の `libraries` に既定を当てた対応表の名前・`directives`・設定の `check.ignore` の名前。ずれの `file` は文書のパス、`where` は印の行の番号の文字、`message` は印の名前と、名前を直すか、拡張・`libraries`・`check.ignore` に足すかの直し方の 1 文。並びは文書の並び、同じ文書の中は行の順
+    summary: 文書ごとに `findMarks` で取得したマーカーのうち、知っているマーカーに該当しないものを 1 つにつき 1 件の `unknown_mark` のずれにする
+    description: 知っているマーカーは `FEATURES_MARK`・`SYNTAX_MARKS` の名前・`resolveConfig` が設定の `libraries` に既定を適用した対応表の名前・`directives`・設定の `check.ignore` の名前。ずれの `file` は文書のパス、`where` はマーカーの行の番号の文字、`message` はマーカーの名前と、名前を修正するか、拡張・`libraries`・`check.ignore` に追加するかの修正方法の 1 文。並びは文書の並び、同じ文書の中は行の順
     kind: 関数
     scope: internal
     args:
@@ -1628,7 +1628,7 @@ functions:
       - name: config
         type: CliConfig
         required: true
-        description: 形を検めた設定（`libraries`・`check.ignore` を読む）
+        description: 構造を検めた設定（`libraries`・`check.ignore` を読み込む）
       - name: directives
         type: Set<string>
         required: true
@@ -1639,26 +1639,26 @@ functions:
     unit_tests:
       - name: test_check_unknown_marks
         case: 正常
-        summary: 知っている印に当たらない印だけをずれにする
+        summary: 知っているマーカーに該当しないマーカーだけをずれにする
         condition: '文書 `a.md` に `<!-- features: toc -->`・`<!-- table: data -->`・`<!-- /table -->`・3 行目に `<!-- tabz -->`'
         mock: なし
         expected: '`{ file: "a.md", where: "3", kind: "unknown_mark" }` の 1 件で、`message` に `tabz` が入る'
       - name: test_check_unknown_marks_when_known_by_config
         case: 正常
-        summary: 対応表・拡張・check.ignore の名前の印はずれにしない
-        condition: '`libraries` に `mermaid`、`directives` に `greet`、`check.ignore` に `prettier-ignore`、文書に 3 つの印'
+        summary: 対応表・拡張・check.ignore の名前のマーカーはずれにしない
+        condition: '`libraries` に `mermaid`、`directives` に `greet`、`check.ignore` に `prettier-ignore`、文書に 3 つのマーカー'
         mock: なし
         expected: 空の配列
     refs:
       - dev/設計書/モジュール構成/ライブラリ本体/描画.ts#functions[findMarks]
-      - dev/設計書/インターフェース定義/ライブラリ本体/設定と索引を点検する.ts#constraints[知っている印]
+      - dev/設計書/インターフェース定義/ライブラリ本体/設定と索引を点検する.ts#constraints[知っているマーカー]
     status: planned
     introduced:
       pr: 64
   - name: usedParts
     title: 埋める部品を選ぶ
     container: src/cli/embed.ts
-    summary: 埋める文書にビューの印があれば `true` を返す。`prepareEmbeds` が `embeds.view` に入れる
+    summary: 埋める文書にビューのマーカーがあれば `true` を返却する。`prepareEmbeds` が `embeds.view` に入れる
     kind: 関数
     scope: internal
     args:
@@ -1668,27 +1668,27 @@ functions:
         description: 埋める文書の Markdown
     returns:
       type: boolean
-      description: ビューの部品を束ねるか
-    process: 1. `MARK_PATTERN` で印を拾い、閉じでない `view` の印を持つ Markdown が 1 つでもあれば `true` を返す。無ければ `false`
+      description: ビューの部品をまとめるか
+    process: 1. `MARK_PATTERN` でマーカーを取得し、閉じでない `view` のマーカーを持つ Markdown が 1 つでもあれば `true` を返却する。無ければ `false`
     unit_tests:
       - name: test_used_parts
         case: 正常
-        summary: ビューの印があるときだけ部品を束ねる
-        condition: '`<!-- view: group=状態 -->` を持つ文書と、印の無い文書だけ'
+        summary: ビューのマーカーがあるときだけ部品をまとめる
+        condition: '`<!-- view: group=状態 -->` を持つ文書と、マーカーの無い文書だけ'
         mock: なし
         expected: 前者は `true`、後者は `false`
     refs:
       - dev/設計書/インターフェース定義/ライブラリ本体/文書をHTMLに書き出す.ts#
   - name: exportDocument
-    title: 文書を HTML に書き出して結果を返す
+    title: 文書を HTML に書き出して結果を返却する
     kind: 関数
     container: src/cli/export.ts
     usecase: 文書をHTMLに書き出す
-    summary: '文書 1 つを `kind: document` の中身にして HTML を書き、書いたパスと警告を返す。動画と音声は HTML を書く前に `_files/` へコピーする（埋めるものを用意する）'
-    description: '`runExport`（CLI）と MCP の `export_html` が同じ処理を呼ぶ。標準出力・標準エラーには書かない'
+    summary: '文書 1 つを `kind: document` の中身にして HTML を書き込み、書き込んだパスと警告を返却する。動画と音声は HTML を書き込む前に `_files/` へコピーする（埋めるものを用意する）'
+    description: '`runExport`（CLI）と MCP の `export_html` が同じ処理を呼ぶ。標準出力・標準エラーには書き込まない'
     scope: public
     is_async: true
-    side_effects: 出力のパスに HTML を書く
+    side_effects: 出力のパスに HTML を書き込む
     args:
       - name: options
         type: '{ cwd: string; file: string; out?: string; config?: string; distDir: string }'
@@ -1696,38 +1696,38 @@ functions:
         description: 今のフォルダ・文書・出力・設定ファイル・`dist/` の場所
     returns:
       type: 'Promise<{ out: string; display: string; warnings: string[] }>'
-      description: '書いた HTML の絶対パス、利用者に見せるパス（`--out` か今のフォルダからの相対パス）、`{ファイル}: {内容}` の警告'
+      description: '記載した HTML の絶対パス、利用者に見せるパス（`--out` か今のフォルダからの相対パス）、`{ファイル}: {内容}` の警告'
     process: |-
-      1. 設定を読む（設定を読んで形を検める）
+      1. 設定を読み込む（設定を読み込んで構造を検める）
       2. 文書が無ければ例外にする
       3. 出力のパスを決める。`out` が無ければ文書と同じフォルダの拡張子を `.html` にしたパス
-      4. URL を読む関数を `cacheFetchText` で作って埋めるものを用意し、配布物を読み、起動の処理と埋めるモジュールを 1 つのスクリプトに束ねて HTML を組み立てて書く（埋めるものを用意する・配布物を読む・起動の処理の入口を作る・起動の処理と埋めるモジュールを束ねる・HTML を書く）
-      5. 絶対パス・見せるパス・警告を返す
+      4. URL を読み込む関数を `cacheFetchText` で作って埋めるものを用意し、配布物を読み込み、起動の処理と埋めるモジュールを 1 つのスクリプトにまとめて HTML を組み立てて記載する（埋めるものを用意する・配布物を読み込む・起動の処理の入口を作る・起動の処理と埋めるモジュールをまとめる・HTML を書き込む）
+      5. 絶対パス・見せるパス・警告を返却する
     exceptions:
       - name: CliError
-        condition: 設定の誤り・文書が無い・出力先へ書けない
-        message: '`runExport` と同じ（文書が無い: {パス} が見つかりません。文書のパスを直してください。／書けない: {出力} に書けません（{理由}）。出力先のフォルダを確かめてください。／コピー先へ書けない: `copyMedia` のメッセージ）'
+        condition: 設定の誤り・文書が無い・出力先へ書き込めない
+        message: '`runExport` と同じ（文書が無い: {パス} が見つかりません。文書のパスを修正してください。／書き込めない: {出力} に書き込めません（{理由}）。出力先のフォルダを確認してください。／コピー先へ書き込めない: `copyMedia` のメッセージ）'
     unit_tests:
       - name: test_export_document
         case: 正常
-        summary: HTML を書いて絶対パスと警告を返す
-        condition: '`file: guide.md`、`out` 無し、文書に読めない画像が 1 つ'
+        summary: HTML を書き込んで絶対パスと警告を返却する
+        condition: '`file: guide.md`、`out` 無し、文書に読み込めない画像が 1 つ'
         mock: 一時フォルダと、中身を短くした `dist/index.css`・`startViewer` を export する `dist/viewer.js`・`dist/view.js`
         expected: '`out` が `guide.html` の絶対パスでファイルがあり、`display` が `guide.html`、`warnings` が 1 件'
       - name: test_export_document_when_document_missing
         case: 異常
-        summary: 無い文書は何も書かずに CliError
+        summary: 無い文書は何も書き込まずに CliError
         condition: '`file: missing.md`'
         mock: 一時フォルダ
         expected: '`CliError` を投げ、メッセージに `missing.md` が入り、`.html` が無い'
-        exception: 設定の誤り・文書が無い・出力先へ書けない
+        exception: 設定の誤り・文書が無い・出力先へ書き込めない
       - name: test_export_document_when_media_unwritable
         case: 異常
-        summary: 動画のコピー先へ書けなければ HTML を書かずに CliError
+        summary: 動画のコピー先へ書き込めなければ HTML を書き込まずに CliError
         condition: 文書に `![操作](demo.mp4)`、出力のフォルダに `guide_files` という名前のファイル
         mock: 一時フォルダと、中身を短くした `dist/index.css`・`startViewer` を export する `dist/viewer.js`・`dist/view.js`
         expected: '`CliError` を投げ、`guide.html` が無い'
-        exception: 設定の誤り・文書が無い・出力先へ書けない
+        exception: 設定の誤り・文書が無い・出力先へ書き込めない
     callees:
       - '#functions[requireConfig]'
       - '#functions[prepareEmbeds]'
@@ -1744,15 +1744,15 @@ functions:
     introduced:
       pr: 72
   - name: buildSite
-    title: 複数の文書を 1 枚にまとめて結果を返す
+    title: 複数の文書を 1 枚にまとめて結果を返却する
     kind: 関数
     container: src/cli/build.ts
     usecase: 複数の文書を1枚のHTMLにまとめる
-    summary: '`build` の対象の文書を `kind: bundle` の中身にして `build.out` に HTML を書き、書いたパス・文書の数・警告を返す。動画と音声は HTML を書く前に `_files/` へコピーする（埋めるものを用意する）'
-    description: '`runBuild`（CLI）と MCP の `build_site` が同じ処理を呼ぶ。警告の中身と並びは `runBuild` が標準エラーに出していたものと同じ。標準出力・標準エラーには書かない'
+    summary: '`build` の対象の文書を `kind: bundle` の中身にして `build.out` に HTML を書き込み、書き込んだパス・文書の数・警告を返却する。動画と音声は HTML を書き込む前に `_files/` へコピーする（埋めるものを用意する）'
+    description: '`runBuild`（CLI）と MCP の `build_site` が同じ処理を呼ぶ。警告の中身と並びは `runBuild` が標準エラーに出していたものと同じ。標準出力・標準エラーには書き込まない'
     scope: public
     is_async: true
-    side_effects: '`build.out` に HTML を書く'
+    side_effects: '`build.out` に HTML を書き込む'
     args:
       - name: options
         type: '{ cwd: string; config?: string; distDir: string }'
@@ -1760,28 +1760,28 @@ functions:
         description: 今のフォルダ・設定ファイル・`dist/` の場所
     returns:
       type: 'Promise<{ out: string; display: string; docs: number; warnings: string[] }>'
-      description: 書いた HTML の絶対パス、`build.out` のままのパス、入れた文書の数、警告
+      description: 記載した HTML の絶対パス、`build.out` のままのパス、入れた文書の数、警告
     process: |-
-      1. 設定を読み、`build` が無ければ例外にする（設定を読んで形を検める）
+      1. 設定を読み込み、`build` が無ければ例外にする（設定を読み込んで構造を検める）
       2. まとめる文書を集め、0 件なら例外にする（build の対象の文書を集める）
-      3. 最初に開く文書を決め、`build.entry`・`build.glossary` がまとめる文書に当たらないことを警告にする
-      4. URL を読む関数を `cacheFetchText` で作って埋めるものを用意し、1 枚に含まれない文書へのリンクを警告に足す（埋めるものを用意する・1 枚に含まれない文書へのリンク）
-      5. 配布物を読み、起動の処理と埋めるモジュールを 1 つのスクリプトに束ねて HTML を書く（起動の処理の入口を作る・起動の処理と埋めるモジュールを束ねる）
-      6. 絶対パス・`build.out`・文書の数・警告を返す
+      3. 最初に開く文書を決め、`build.entry`・`build.glossary` がまとめる文書に該当しないことを警告にする
+      4. URL を読み込む関数を `cacheFetchText` で作って埋めるものを用意し、1 枚に含まれない文書へのリンクを警告に追加する（埋めるものを用意する・1 枚に含まれない文書へのリンク）
+      5. 配布物を読み込み、起動の処理と埋めるモジュールを 1 つのスクリプトにまとめて HTML を書き込む（起動の処理の入口を作る・起動の処理と埋めるモジュールをまとめる）
+      6. 絶対パス・`build.out`・文書の数・警告を返却する
     exceptions:
       - name: CliError
-        condition: 設定の誤り・`build` が無い・対象が 0 件・出力先へ書けない
+        condition: 設定の誤り・`build` が無い・対象が 0 件・出力先へ書き込めない
         message: '`runBuild` と同じ'
     unit_tests:
       - name: test_build_site
         case: 正常
-        summary: まとめて絶対パスと文書の数を返す
-        condition: '`include: ["**/*.md"]` が 2 つに当たり、`out: dist/docs.html`'
+        summary: まとめて絶対パスと文書の数を返却する
+        condition: '`include: ["**/*.md"]` が 2 つに該当し、`out: dist/docs.html`'
         mock: 一時フォルダと、中身を短くした `dist/index.css`・`startViewer` を export する `dist/viewer.js`・`dist/view.js`
         expected: '`out` が `dist/docs.html` の絶対パスでファイルがあり、`docs` が 2、`warnings` が空'
       - name: test_build_site_when_entry_outside
         case: 正常
-        summary: まとめる文書に当たらない build.entry を警告で返す
+        summary: まとめる文書に該当しない build.entry を警告で返却する
         condition: '`build.entry: missing.md`'
         mock: 一時フォルダ
         expected: '`warnings` に `missing.md` を含む文がある'
@@ -1791,13 +1791,13 @@ functions:
         condition: '`build` の無い設定'
         mock: 一時フォルダ
         expected: '`CliError` を投げ、メッセージに `build.include` と `build.out` が入る'
-        exception: 設定の誤り・`build` が無い・対象が 0 件・出力先へ書けない
+        exception: 設定の誤り・`build` が無い・対象が 0 件・出力先へ書き込めない
       - name: test_build_site_when_shared_image
         case: 正常
         summary: 同じ画像を 1 回だけ埋める
         condition: '`a.md` と `b.md` が同じ `img/a.png` を指す'
         mock: 一時フォルダと、中身を短くした `dist/index.css`・`startViewer` を export する `dist/viewer.js`・`dist/view.js`
-        expected: 書いた HTML の中の `data:image/png;base64,` が 1 つで、`payload.assets` が 1 件
+        expected: 記載した HTML の中の `data:image/png;base64,` が 1 つで、`payload.assets` が 1 件
     callees:
       - '#functions[requireConfig]'
       - '#functions[collectBuildDocuments]'
@@ -1816,17 +1816,17 @@ functions:
     introduced:
       pr: 72
   - name: usedSyntaxLanguages
-    title: 文書が使う色分けの言語を拾う
+    title: 文書が使用する色分けの言語を取得する
     container: src/cli/embed.ts
     kind: 関数
     scope: public
-    summary: 文書ごとに `render` を設定と一緒に呼び、返った HTML の `data-mdmark-syntax` の値を重なりなく拾う
-    description: '`mount` と同じ色分けの対象（機能 `syntax` と文書の `<!-- features: -syntax -->`、生の HTML の `code` を外すことを含む）を、同じ処理から得るために `render` を通す'
+    summary: 文書ごとに `render` を設定と一緒に呼び、返った HTML の `data-mdmark-syntax` の値を重なりなく取得する
+    description: '`mount` と同じ色分けの対象（機能 `syntax` と文書の `<!-- features: -syntax -->`、生の HTML の `code` を削除することを含む）を、同じ処理から得るために `render` を経由する'
     args:
       - name: options
         type: '{ markdowns: string[]; config: MdmarkConfig }'
         required: true
-        description: 文書の Markdown と読んだ設定
+        description: 文書の Markdown と読み込んだ設定
     returns:
       type: string[]
       description: 言語のモジュール名。名前の順に並べる
@@ -1835,19 +1835,19 @@ functions:
     unit_tests:
       - name: test_used_syntax_languages
         case: 正常
-        summary: 色分けの対象の言語だけを拾い、機能を外した文書は拾わない
+        summary: 色分けの対象の言語だけを取得し、機能を解除した文書は取得しない
         condition: '文書 1 が `ts`・`yml`・`text` のコードブロックと生の HTML `<pre><code class="language-python">x</code></pre>`、文書 2 が `<!-- features: -syntax -->` と `sql` のコードブロック。設定は空'
         mock: なし
         expected: '`["typescript", "yaml"]`'
       - name: test_used_syntax_languages_when_disabled
         case: 正常
-        summary: 設定で機能を外すと何も拾わない
+        summary: 設定で機能を解除すると何も取得しない
         condition: '`ts` のコードブロックを持つ文書と、`features.syntax: false` の設定'
         mock: なし
         expected: '`[]`'
       - name: test_used_syntax_languages_when_aliases_and_file_name
         case: 正常
-        summary: 別名とファイル名付きの言語をモジュール名にして拾う
+        summary: 別名とファイル名付きの言語をモジュール名にして取得する
         condition: '`dockerfile`・`patch`・`ts:app.ts` のコードブロックを持つ文書。設定は空'
         mock: なし
         expected: '`["diff", "dockerfile", "typescript"]`'
@@ -1855,17 +1855,17 @@ functions:
     introduced:
       pr: 97
   - name: usesMermaid
-    title: 文書が mermaid を使うかを見る
+    title: 文書が mermaid を使用するかを確認する
     container: src/render/used.ts
     kind: 関数
     scope: public
-    summary: 文書ごとに `render` を設定と一緒に呼び、返った HTML に `data-mdmark-mermaid` があれば `true` を返す
-    description: '`mount` と同じ mermaid の対象（機能 `mermaid` と文書の `<!-- features: -mermaid -->` を含む）を、同じ処理から得るために `render` を通す。VS Code 拡張機能の書き出しも呼ぶため、`collectRangeScripts` と同じく `src/render/used.ts` に置き、`src/cli/embed.ts` から同じ名前で export する'
+    summary: 文書ごとに `render` を設定と一緒に呼び、返った HTML に `data-mdmark-mermaid` があれば `true` を返却する
+    description: '`mount` と同じ mermaid の対象（機能 `mermaid` と文書の `<!-- features: -mermaid -->` を含む）を、同じ処理から得るために `render` を経由する。VS Code 拡張機能の書き出しも呼ぶため、`collectRangeScripts` と同じく `src/render/used.ts` に配置し、`src/cli/embed.ts` から同じ名前で export する'
     args:
       - name: options
         type: '{ markdowns: string[]; config: MdmarkConfig }'
         required: true
-        description: 文書の Markdown と読んだ設定
+        description: 文書の Markdown と読み込んだ設定
     returns:
       type: boolean
       description: どれかの文書に mermaid の対象があるか
@@ -1876,7 +1876,7 @@ functions:
     unit_tests:
       - name: test_uses_mermaid
         case: 正常
-        summary: mermaid のコードブロックがある文書があれば true、機能を外した文書だけなら false
+        summary: mermaid のコードブロックがある文書があれば true、機能を解除した文書だけなら false
         condition: '`mermaid` のコードブロックを持つ文書と `ts` だけの文書の組、`<!-- features: -mermaid -->` と `mermaid` のコードブロックを持つ文書だけの組、`features.mermaid: false` の設定と `mermaid` のコードブロックを持つ文書の組'
         mock: なし
         expected: 順に `true`・`false`・`false`
@@ -1884,12 +1884,12 @@ functions:
     introduced:
       pr: 382
   - name: changedPathsSince
-    title: 比べる基準から変わったファイルを引く
+    title: 比べる基準から変わったファイルを参照する
     kind: 関数
     container: src/cli/git.ts
     usecase: 設定と索引を点検する
-    summary: git の ref と HEAD の merge-base から作業ツリーまでに変わったファイルと、git が管理していない新しいファイルを、索引のフォルダからの相対パスで返す
-    description: git は `node:child_process` の `execFile` で引数を配列にして呼び、シェルを通さない。出力は `-z` の NUL 区切りで読む。パスの区切りは `/` にそろえる
+    summary: git の ref と HEAD の merge-base から作業ツリーまでに変わったファイルと、git が管理していない新しいファイルを、索引のフォルダからの相対パスで返却する
+    description: git は `node:child_process` の `execFile` で引数を配列にして呼び、シェルを経由しない。出力は `-z` の NUL 区切りで読み込む。パスの区切りは `/` にそろえる
     scope: public
     is_async: true
     args:
@@ -1901,29 +1901,29 @@ functions:
       type: Promise<string[]>
       description: 変わったファイルと新しいファイルの、索引のフォルダからの相対パス（重なりを除く）
     process: |-
-      1. `base` が `-` で始まれば、引けないものとして例外にする
+      1. `base` が `-` で始まれば、参照できないものとして例外にする
       2. `cwd` で `git rev-parse --show-toplevel` を呼び、リポジトリの直下を得る。git が無い・リポジトリの中に無ければ例外にする
       3. リポジトリの直下で `git merge-base {base} HEAD` を呼ぶ。失敗したら例外にする
-      4. `git diff --name-only -z {merge-base}` で merge-base から作業ツリーまでに変わったファイルを、`git ls-files --others --exclude-standard -z` で git が管理していない新しいファイル（無視するファイルを除く）を引く
-      5. 両方をリポジトリの直下から解き、`indexDir` からの相対パスにして重なりを除いて返す
+      4. `git diff --name-only -z {merge-base}` で merge-base から作業ツリーまでに変わったファイルを、`git ls-files --others --exclude-standard -z` で git が管理していない新しいファイル（無視するファイルを除く）を参照する
+      5. 両方をリポジトリの直下から解き、`indexDir` からの相対パスにして重なりを除いて返却する
     exceptions:
       - name: CliError
-        condition: '`base` が `-` で始まる・git が無い・`cwd` が git のリポジトリの中に無い・`base` と HEAD の merge-base を引けない'
-        message: '比べる基準 {base} を引けません（{理由}）。ref を直すか、履歴を取得してください（CI の checkout は fetch-depth: 0）。'
+        condition: '`base` が `-` で始まる・git が無い・`cwd` が git のリポジトリの中に無い・`base` と HEAD の merge-base を参照できない'
+        message: '比べる基準 {base} を参照できません（{理由}）。ref を修正するか、履歴を取得してください（CI の checkout は fetch-depth: 0）。'
     unit_tests:
       - name: test_changed_paths_since
         case: 正常
-        summary: merge-base からのコミット済み・未コミットの変更と新しいファイルを、索引のフォルダからのパスで返す
-        condition: '`docs/a.md`・`docs/b.md`・`docs/c.md` と `.gitignore`（`*.log`）をコミットしてタグ `base` を付け、`docs/a.md` を書き換えてコミットし、`docs/b.md` をコミットせずに書き換え、`docs/d.md` と `docs/x.log` を新しく置く。`base: "base"`、`indexDir` が `docs`'
+        summary: merge-base からのコミット済み・未コミットの変更と新しいファイルを、索引のフォルダからのパスで返却する
+        condition: '`docs/a.md`・`docs/b.md`・`docs/c.md` と `.gitignore`（`*.log`）をコミットしてタグ `base` を付け、`docs/a.md` を書き換えてコミットし、`docs/b.md` をコミットせずに書き換え、`docs/d.md` と `docs/x.log` を新しく配置する。`base: "base"`、`indexDir` が `docs`'
         mock: なし（一時フォルダの git のリポジトリ）
         expected: 並びを問わず `a.md`・`b.md`・`d.md` の 3 つ
       - name: test_changed_paths_since_when_ref_unknown
         case: 異常
-        summary: merge-base を引けない ref
+        summary: merge-base を参照できない ref
         condition: '`test_changed_paths_since` と同じリポジトリ、`base: "no-such-ref"`'
         mock: なし（一時フォルダの git のリポジトリ）
         expected: '`CliError` を投げ、メッセージに `no-such-ref` と `fetch-depth` が入る'
-        exception: merge-base を引けない
+        exception: merge-base を参照できない
       - name: test_changed_paths_since_when_not_repository
         case: 異常
         summary: git のリポジトリの中に無いフォルダ
@@ -1933,7 +1933,7 @@ functions:
         exception: リポジトリの中に無い
       - name: test_changed_paths_since_when_ref_starts_with_dash
         case: 異常
-        summary: '`-` で始まる ref を git の引数に渡さない'
+        summary: '`-` で始まる ref を git の引数に指定しない'
         condition: '`test_changed_paths_since` と同じリポジトリ、`base: "--output=x"`'
         mock: なし（一時フォルダの git のリポジトリ）
         expected: '`CliError` を投げ、リポジトリに `x` のファイルができていない'
@@ -1948,7 +1948,7 @@ functions:
     container: src/cli/alias-schema.ts
     usecase: 共通
     summary: 設定の `aliases` の配列に、取り込んだ alias-inject の `aliases.schema.json` を ajv で当て、ずれを日本語の 1 文の `schema` のずれにする
-    description: '`new Ajv2020({ allErrors: true, strict: true, verbose: true })` に `schemas/alias-inject/v0.3.0/aliases.schema.json` を読み込んで作った検査の関数を、モジュールの中で 1 回だけ作って使い回す（`$data` は使わない）。この Schema は alias-inject v0.3.0 の `aliases.schema.yaml` を内容を変えず JSON にして置き（他の `schemas/` と同じく JSON で持ち、esbuild がそのまま束ねる）、`schemas/mdmark.config.schema.json` の `aliases` から相対の `$ref` で指す。Schema を変えるので `migrations/next/` に移行の手順を置く。`instancePath` の `/1/alias_type` を `aliases[1].alias_type` の形にして `where` にする。`message` は `keyword`・`params`・`parentSchema.title` から組む: `required` は ``\`{where}\` に `{missingProperty}`（{子の title}）がありません。記載してください。``、`type` は ``\`{where}\`（{title}）は{型}にしてください。``（型は `文字列`・`真偽値`・`配列`・`オブジェクト`）、`minLength`・`minItems` は ``\`{where}\`（{title}）が空です。記載してください。``、`enum` は ``\`{where}\`（{title}）は {値を `・` で並べた} のどれかにしてください。``、`additionalProperties` は ``\`{where}\` の `{additionalProperty}` は記載できません。消してください。``、ほかは ``\`{where}\`（{title}）が Schema に合いません（{ajv の message}）。``（`where` が空なら `aliases`）。1 つの場所に同じ文が重なるときは 1 件にする。ずれのある行は返す行で `null` に置き換え、行の位置を保つ。引数を書き換えない'
+    description: '`new Ajv2020({ allErrors: true, strict: true, verbose: true })` に `schemas/alias-inject/v0.3.0/aliases.schema.json` を読み込んで作った検査の関数を、モジュールの中で 1 回だけ作って使い回す（`$data` は使用しない）。この Schema は alias-inject v0.3.0 の `aliases.schema.yaml` を内容を変えず JSON にして配置し（他の `schemas/` と同じく JSON で持ち、esbuild がそのまままとめる）、`schemas/mdmark.config.schema.json` の `aliases` から相対の `$ref` で指す。Schema を変えるので `migrations/next/` に移行の手順を配置する。`instancePath` の `/1/alias_type` を `aliases[1].alias_type` の構造にして `where` にする。`message` は `keyword`・`params`・`parentSchema.title` から組む: `required` は ``\`{where}\` に `{missingProperty}`（{子の title}）がありません。記載してください。``、`type` は ``\`{where}\`（{title}）は{型}にしてください。``（型は `文字列`・`真偽値`・`配列`・`オブジェクト`）、`minLength`・`minItems` は ``\`{where}\`（{title}）が空です。記載してください。``、`enum` は ``\`{where}\`（{title}）は {値を `・` で並べた} のどれかにしてください。``、`additionalProperties` は ``\`{where}\` の `{additionalProperty}` は記載できません。削除してください。``、ほかは ``\`{where}\`（{title}）が Schema に合いません（{ajv の message}）。``（`where` が空なら `aliases`）。1 つの場所に同じ文が重なるときは 1 件にする。ずれのある行は返却する行で `null` に置き換え、行の位置を保つ。引数を書き換えない'
     kind: 関数
     scope: public
     args:
@@ -1962,17 +1962,17 @@ functions:
         description: ずれの `file` に出す設定ファイルの名前
     returns:
       type: '{ rows: unknown[]; issues: CheckIssue[] }'
-      description: Schema に合わない行を `null` にした行の並びと、`schema` のずれ（並びは行の順、行の中は ajv が返した順）
+      description: Schema に合わない行を `null` にした行の並びと、`schema` のずれ（並びは行の順、行の中は ajv が返却した順）
     refs:
       - dev/設計書/外部ライブラリ/ajv#
       - dev/設計書/インターフェース定義/ライブラリ本体/設定と索引を点検する.ts#constraints[エイリアスの点検]
     unit_tests:
       - name: test_validate_alias_rows
         case: 正常
-        summary: Schema に合う行はずれにせず、そのまま返す
+        summary: Schema に合う行はずれにせず、そのまま返却する
         condition: '`{id: terms, paths: [aliases/*.yaml], alias_type: term, records: terms, body_file: path, metadata: {name: term, description: meta.summary}}` の 1 行'
         mock: なし
-        expected: '`issues` が空、`rows` が渡した行と同じ'
+        expected: '`issues` が空、`rows` が指定した行と同じ'
       - name: test_validate_alias_rows_when_required_missing
         case: 異常
         summary: 必須のキーが無い行を、キーの title を入れた 1 文にする
@@ -1995,11 +1995,11 @@ functions:
     introduced:
       pr: 176
   - name: loadAliases
-    title: エイリアスを読む
+    title: エイリアスを読み込む
     container: src/cli/aliases.ts
     usecase: 共通
-    summary: 設定の `aliases` の行の `paths` を設定ファイルのフォルダから引いて YAML を読み、`buildAliases` に渡して、エイリアスとずれを返す
-    description: '`check`・`export`・`build` が共通で使う。オブジェクトで `enabled` が `false` でない行ごとに、`paths` の各 glob を `node:fs/promises` の `glob`（`cwd` は設定ファイルのフォルダ。`globFiles` と同じやり方）で引き、当たったファイルを重ねずパスの順に並べる。当たるファイルが 0 件の行は `alias_no_files`（`file` は設定ファイル、`where` は `aliases[{行の位置}].paths`、`message` は ```{paths を `・` で並べた}` に当たるファイルがありません。`paths` を直してください。``）にする。当たったファイルは `yaml` で読み、読めないファイルは `alias_unreadable`（`file` はそのファイル、`where` は空、`message` は `loadConfig` と同じ形の ``{行} 行目を YAML として読めません（{理由}）。字下げと書き方を直してください。``）にしてそのファイルを使わない。読めたファイルを `MdmarkAliasSource`（`path` は設定ファイルのフォルダからの相対パス）にして、`config.aliases` の行と一緒に `buildAliases`（`configFile` は設定ファイルの名前）に渡し、返った `problems` を `CheckIssue` にする。ずれの並びは行の順で、行ごとに `alias_no_files`・`alias_unreadable` をその行の場所に置き、`buildAliases` の `problems` はその後ろに返った順で置く。設定に `aliases` が無ければファイルを読まず `{ aliases: undefined, issues: [], files: [] }` を返す。`files` は行の `paths` に当たった YAML の絶対パス（読めなかったファイルを含み、重ねずパスの順）で、VS Code 拡張機能のプレビューが見張るファイルに使う'
+    summary: 設定の `aliases` の行の `paths` を設定ファイルのフォルダから参照して YAML を読み込み、`buildAliases` に指定して、エイリアスとずれを返却する
+    description: '`check`・`export`・`build` が共通で使用する。オブジェクトで `enabled` が `false` でない行ごとに、`paths` の各 glob を `node:fs/promises` の `glob`（`cwd` は設定ファイルのフォルダ。`globFiles` と同じやり方）で引き、該当したファイルを重ねずパスの順に並べる。該当するファイルが 0 件の行は `alias_no_files`（`file` は設定ファイル、`where` は `aliases[{行の位置}].paths`、`message` は ```{paths を `・` で並べた}` に該当するファイルがありません。`paths` を修正してください。``）にする。該当したファイルは `yaml` で読み込み、読み込めないファイルは `alias_unreadable`（`file` はそのファイル、`where` は空、`message` は `loadConfig` と同じ構造の ``{行} 行目を YAML として読み込めません（{理由}）。字下げと記載方法を修正してください。``）にしてそのファイルを使用しない。読み込めたファイルを `MdmarkAliasSource`（`path` は設定ファイルのフォルダからの相対パス）にして、`config.aliases` の行と一緒に `buildAliases`（`configFile` は設定ファイルの名前）に指定し、返った `problems` を `CheckIssue` にする。ずれの並びは行の順で、行ごとに `alias_no_files`・`alias_unreadable` をその行の場所に配置し、`buildAliases` の `problems` はその後ろに返った順で配置する。設定に `aliases` が無ければファイルを読み込まず `{ aliases: undefined, issues: [], files: [] }` を返却する。`files` は行の `paths` に該当した YAML の絶対パス（読み込めなかったファイルを含み、重ねずパスの順）で、VS Code 拡張機能のプレビューが見張るファイルに使用する'
     kind: 関数
     scope: public
     is_async: true
@@ -2007,10 +2007,10 @@ functions:
       - name: loaded
         type: LoadedConfig
         required: true
-        description: 読んだ設定（`config.aliases` は `validateConfig` が Schema に合わない行を `null` にしたもの）
+        description: 読み込んだ設定（`config.aliases` は `validateConfig` が Schema に合わない行を `null` にしたもの）
     returns:
       type: 'Promise<{ aliases: MdmarkAlias[] | undefined; issues: CheckIssue[]; files: string[] }>'
-      description: 作ったエイリアス（`env` を含まない）と、エイリアスのずれと、当たった YAML の絶対パス
+      description: 作ったエイリアス（`env` を含まない）と、エイリアスのずれと、該当した YAML の絶対パス
     callees:
       - dev/設計書/モジュール構成/ライブラリ本体/索引と用語.ts#functions[buildAliases]
     refs:
@@ -2018,31 +2018,31 @@ functions:
     unit_tests:
       - name: test_load_aliases
         case: 正常
-        summary: 行の paths の YAML を読んでエイリアスを作る
+        summary: 行の paths の YAML を読み込んでエイリアスを作る
         condition: '`aliases` に `alias_type: command`・`paths: [aliases/commands.yaml]` の行と `alias_type: env`・`paths: [aliases/servers.yaml]` の行、それぞれのファイルにレコード 1 件'
         mock: 一時フォルダ
         expected: '`aliases` が `command` の 1 件、`issues` が空、`files` が `aliases/commands.yaml`・`aliases/servers.yaml` の絶対パスの 2 件'
       - name: test_load_aliases_when_no_files
         case: 異常
-        summary: 当たるファイルが無い行を alias_no_files にする
+        summary: 該当するファイルが無い行を alias_no_files にする
         condition: '`paths: [missing/*.yaml]` の行'
         mock: 一時フォルダ
         expected: '`issues` が 1 件で `kind` が `alias_no_files`、`where` が `aliases[0].paths`、`message` に `missing/*.yaml` が入る'
       - name: test_load_aliases_when_unreadable
         case: 異常
-        summary: YAML として読めないファイルを alias_unreadable にして使わない
-        condition: '`aliases/a.yaml` が字下げの崩れた YAML、`aliases/b.yaml` が読める YAML'
+        summary: YAML として読み込めないファイルを alias_unreadable にして使用しない
+        condition: '`aliases/a.yaml` が字下げの崩れた YAML、`aliases/b.yaml` が読み込める YAML'
         mock: 一時フォルダ
         expected: '`alias_unreadable` が 1 件で `file` が `aliases/a.yaml`、`aliases` に `b.yaml` のレコードだけが入り、`files` が `a.yaml`・`b.yaml` の 2 件'
       - name: test_load_aliases_when_disabled_or_null
         case: 正常
-        summary: enabled が false の行と null の行は読まない
-        condition: '`enabled: false` で当たるファイルの無い行と、`null` の行'
+        summary: enabled が false の行と null の行は読み込まない
+        condition: '`enabled: false` で該当するファイルの無い行と、`null` の行'
         mock: 一時フォルダ
         expected: '`issues` が空、`aliases` が空の配列'
       - name: test_load_aliases_when_no_aliases
         case: 正常
-        summary: 設定に aliases が無ければ何も読まない
+        summary: 設定に aliases が無ければ何も読み込まない
         condition: '`aliases` の無い設定'
         mock: なし
         expected: '`aliases` が `undefined`、`issues` と `files` が空'
@@ -2056,7 +2056,7 @@ functions:
     kind: 関数
     scope: public
     summary: '`CheckIssue` を `{file}:{where}: {kind}: {message}`（`where` が空なら `{file}: {kind}: {message}`）の 1 行にする'
-    description: '`mdmark check` の出力・`mdmark export` の警告・`mdmark upgrade` の点検のずれ・VS Code 拡張機能のプレビューのエイリアスの警告が使う。拡張機能ホストの束ねに `check.ts` の依存（ネイティブ版の `esbuild` など）を入れないため、値の import を持たない `src/cli/issues.ts` に置き、`CheckIssue` は型だけを `check.ts` から import する'
+    description: '`mdmark check` の出力・`mdmark export` の警告・`mdmark upgrade` の点検のずれ・VS Code 拡張機能のプレビューのエイリアスの警告が使用する。拡張機能ホストのまとめに `check.ts` の依存（ネイティブバージョンの `esbuild` など）を入れないため、値の import を持たない `src/cli/issues.ts` に配置し、`CheckIssue` は型だけを `check.ts` から import する'
     args:
       - name: issue
         type: CheckIssue
@@ -2074,23 +2074,23 @@ functions:
         expected: '`mdmark.config.yaml:aliases[1].paths: alias_no_files: m`'
       - name: test_format_check_issue_when_no_where
         case: 正常
-        summary: where が空のずれは file だけを置く
+        summary: where が空のずれは file だけを配置する
         condition: '`file` が `aliases/a.yaml`・`where` が空・`kind` が `alias_unreadable`・`message` が `m`'
         mock: なし
         expected: '`aliases/a.yaml: alias_unreadable: m`'
     callers:
       - '#functions[runCheck]'
       - '#functions[prepareEmbeds]'
-      - dev/設計書/モジュール構成/ライブラリ本体/版を上げる.ts#
+      - dev/設計書/モジュール構成/ライブラリ本体/バージョンを上げる.ts#
       - dev/設計書/モジュール構成/VSCode拡張機能/プレビュー.ts#classes[PreviewPanel]
     status: planned
   - name: collectAssetRefs
-    title: ファイルの参照を拾う
+    title: ファイルの参照を取得する
     container: src/cli/assets.ts
     usecase: 共通
     kind: 関数
     scope: internal
-    summary: markdown-it のトークン（`image`・`link_open` と `html_inline`・`html_block` の `img` の `src`）と画像の属性の `poster=` から、相対パスの参照を `AssetRef` で返す。絶対 URL・`data:`・`#` で始まるもの、コードブロックとインラインコードの中は拾わない。リンクは拡張子が `ATTACHMENT_KINDS` にあるものだけを `attachment` で拾う
+    summary: markdown-it のトークン（`image`・`link_open` と `html_inline`・`html_block` の `img` の `src`）と画像の属性の `poster=` から、相対パスの参照を `AssetRef` で返却する。絶対 URL・`data:`・`#` で始まるもの、コードブロックとインラインコードの中は取得しない。リンクは拡張子が `ATTACHMENT_KINDS` にあるものだけを `attachment` で取得する
     args:
       - name: markdown
         type: string
@@ -2098,19 +2098,19 @@ functions:
         description: 文書の Markdown
     returns:
       type: AssetRef[]
-      description: 書いた順の参照
+      description: 記載した順の参照
     callees:
       - dev/設計書/モジュール構成/ライブラリ本体/記法.ts#functions[mediaKindOf]
     unit_tests:
       - name: test_collect_asset_refs
         case: 正常
-        summary: 画像・動画・poster・添付を拾う
+        summary: 画像・動画・poster・添付を取得する
         condition: 1 行目 `![図](a.png#only-dark)`、2 行目 `![操作](demo.mp4){poster=demo.png}`、3 行目 `[仕様](spec.pdf)`、4 行目 `[外](https://example.com/b.png)`
         mock: なし
         expected: '`a.png#only-dark`（image, 1）・`demo.mp4`（video, 2）・`demo.png`（poster, 2）・`spec.pdf`（attachment, 3）の 4 件'
       - name: test_collect_asset_refs_when_code
         case: 正常
-        summary: コードの中は拾わない
+        summary: コードの中は取得しない
         condition: コードブロックの中の `![図](a.png)` とインラインコードの `` `![図](b.png)` ``
         mock: なし
         expected: 空
@@ -2123,13 +2123,13 @@ functions:
     usecase: 共通
     kind: 関数
     scope: internal
-    summary: 書いたパスからクエリとフラグメントを外し、文書のフォルダを基準に探して、無ければ `assetsRoot` を基準に同じ相対パスで探す。見つかったファイルの絶対パスを返す
+    summary: 記載したパスからクエリとフラグメントを削除し、文書のフォルダを基準に探して、無ければ `assetsRoot` を基準に同じ相対パスで探す。見つかったファイルの絶対パスを返却する
     is_async: true
     args:
       - name: src
         type: string
         required: true
-        description: 書いたパス
+        description: 記載したパス
       - name: options
         type: '{ docDir: string; assetsRoot?: string }'
         required: true
@@ -2155,21 +2155,21 @@ functions:
     usecase: 共通
     kind: 関数
     scope: internal
-    summary: '`collectAssetRefs` の `video`・`audio` を `resolveAssetFile` で探し、`{出力のファイル名から拡張子を除いた名前}_files/` の下へコピーして、Markdown の `src` を HTML からの相対パス（クエリとフラグメントは残す）に替える。コピー先の中のパスは `baseDir` からの相対パスにし、`baseDir` の外のファイルは `external/{ファイル名}`（重なれば `-1`・`-2`）にする。`copied` に入っているファイルはコピーせず同じパスを使う。見つからないものは書いたまま残して警告にする'
+    summary: '`collectAssetRefs` の `video`・`audio` を `resolveAssetFile` で探し、`{出力のファイル名から拡張子を除いた名前}_files/` の下へコピーして、Markdown の `src` を HTML からの相対パス（クエリとフラグメントは残す）に替える。コピー先の中のパスは `baseDir` からの相対パスにし、`baseDir` の外のファイルは `external/{ファイル名}`（重なれば `-1`・`-2`）にする。`copied` に入っているファイルはコピーせず同じパスを使用する。見つからないものは記載したまま残して警告にする'
     is_async: true
     side_effects: '`_files/` を作り、ファイルをコピーする'
     args:
       - name: options
         type: '{ markdown: string; docFile: string; assetsRoot?: string; baseDir: string; out: string; copied: Map<string, string> }'
         required: true
-        description: 文書の Markdown・文書の絶対パス・`assets.root`・設定ファイルのフォルダ（無ければ文書のフォルダ）・出力の HTML の絶対パス・この書き出しでコピーしたファイルからコピー先を引く表（文書をまたいで共有する）
+        description: 文書の Markdown・文書の絶対パス・`assets.root`・設定ファイルのフォルダ（無ければ文書のフォルダ）・出力の HTML の絶対パス・この書き出しでコピーしたファイルからコピー先を参照する表（文書をまたいで共有する）
     returns:
       type: 'Promise<{ markdown: string; warnings: string[] }>'
       description: '`src` を替えた Markdown と警告'
     exceptions:
       - name: CliError
-        condition: '`_files/` を作れない・書けない'
-        message: '`{出力のフォルダ}/{名前}_files に書けません（{理由}）。出力先のフォルダを確かめてください。`'
+        condition: '`_files/` を作れない・記載できない'
+        message: '`{出力のフォルダ}/{名前}_files に書き込めません（{理由}）。出力先のフォルダを確認してください。`'
     callees:
       - '#functions[collectAssetRefs]'
       - '#functions[resolveAssetFile]'
@@ -2184,7 +2184,7 @@ functions:
         expected: '`out/guide_files/docs/media/demo.mp4` が 1 つあり、`markdown` の `src` が `guide_files/docs/media/demo.mp4#t=3` と `guide_files/docs/media/demo.mp4`、`copied` が 1 件'
       - name: test_copy_media_when_outside
         case: 正常
-        summary: 基準の外のファイルは external に名前を重ねずに置く
+        summary: 基準の外のファイルは external に名前を重ねずに配置する
         condition: '`baseDir` の外の `x/demo.mp4` と `y/demo.mp4` を指す文書'
         mock: 一時フォルダ
         expected: '`_files/external/demo.mp4` と `_files/external/demo-1.mp4`'
@@ -2200,7 +2200,7 @@ functions:
         condition: '`out/guide_files` という名前のファイルがある'
         mock: 一時フォルダ
         expected: '`CliError` を投げ、メッセージに `guide_files` が入る'
-        exception: '`_files/` を作れない・書けない'
+        exception: '`_files/` を作れない・記載できない'
     status: planned
     introduced:
       pr: 263
@@ -2210,7 +2210,7 @@ functions:
     usecase: 設定と索引を点検する
     kind: 関数
     scope: internal
-    summary: '`collectAssetRefs` の参照ごとに `resolveAssetFile` で探し、見つからないものを 1 つにつき 1 件の `missing_file` のずれにする（`where` は行の番号、`message` は書いたパスと種類（画像・動画・音声・添付）と直し方の 1 文）'
+    summary: '`collectAssetRefs` の参照ごとに `resolveAssetFile` で探し、見つからないものを 1 つにつき 1 件の `missing_file` のずれにする（`where` は行の番号、`message` は記載したパスと種類（画像・動画・音声・添付）と修正方法の 1 文）'
     is_async: true
     args:
       - name: options
@@ -2241,8 +2241,8 @@ functions:
     usecase: 設定と索引を点検する
     kind: 関数
     scope: internal
-    summary: 文書ごとに `findDiagramBlocks` で図の部品の範囲を読み、`readDefinition` で読めない定義を 1 件の `diagram_invalid`、読めたフロー図の定義を `checkFlowLayout` のずれにする
-    description: ずれの `file` は文書のパス、`where` は開きの印の行の番号の文字、`message` は `diagram_invalid` なら書き方の警告と同じ文、ほかは図の題（無ければ印の名前）・対象のノードか線の `id`・直し方の 1 文。並びは文書の順、同じ文書の中は行の順
+    summary: 文書ごとに `findDiagramBlocks` で図の部品の範囲を読み込み、`readDefinition` で読み込めない定義を 1 件の `diagram_invalid`、読み込めたフロー図の定義を `checkFlowLayout` のずれにする
+    description: ずれの `file` は文書のパス、`where` は開きのマーカーの行の番号の文字、`message` は `diagram_invalid` なら記載の警告と同じ文、ほかは図のタイトル（無ければマーカーの名前）・対象のノードか線の `id`・修正方法の 1 文。並びは文書の順、同じ文書の中は行の順
     args:
       - name: documents
         type: '{ path: string; markdown: string }[]'
@@ -2258,13 +2258,13 @@ functions:
     unit_tests:
       - name: test_check_diagrams
         case: 正常
-        summary: 読めない定義と配置のずれを返す
-        condition: '`a.md` の 3 行目に読めない `<!-- chart -->` の定義、10 行目に 2 つのノードが重なる `<!-- flow -->` の定義（題 `受付`）'
+        summary: 読み込めない定義と配置のずれを返却する
+        condition: '`a.md` の 3 行目に読み込めない `<!-- chart -->` の定義、10 行目に 2 つのノードが重なる `<!-- flow -->` の定義（タイトル `受付`）'
         mock: なし
         expected: '`{ file: "a.md", where: "3", kind: "diagram_invalid" }` と `{ file: "a.md", where: "10", kind: "diagram_node_overlap" }` の 2 件で、2 件目の `message` に `受付` と 2 つのノードの `id` が入る'
       - name: test_check_diagrams_when_clean
         case: 正常
-        summary: 整った図と図の無い文書はずれを返さない
+        summary: 整った図と図の無い文書はずれを返却しない
         condition: モックの `inquiry` の定義を持つ文書と、図の無い文書
         mock: なし
         expected: 空の配列
@@ -2279,8 +2279,8 @@ functions:
     kind: 関数
     scope: internal
     is_async: true
-    summary: '文書ごとに `collectRangeScripts` で範囲のコードを集め、`ts` は型を外して、esbuild の `transform`（`format: "cjs"`）で CommonJS に変える。同じコードは 1 回だけ変える'
-    description: '`render` は文書の `features` の印を重ねるので、`html-scripts` がオフの文書は `template` を出さず対象にならない。変えられない範囲は返さず、文書のパスと元のエラーの 1 行の警告にする（開いたときは `mount` が表に無い範囲として書き方の警告を出す）'
+    summary: '文書ごとに `collectRangeScripts` で範囲のコードを集め、`ts` は型を削除して、esbuild の `transform`（`format: "cjs"`）で CommonJS に変える。同じコードは 1 回だけ変える'
+    description: '`render` は文書の `features` のマーカーを重ねるので、`html-scripts` がオフの文書は `template` を出さず対象にならない。変えられない範囲は返却せず、文書のパスと元のエラーの 1 行の警告にする（開いたときは `mount` が表に無い範囲として記載の警告を出す）'
     args:
       - name: options
         type: '{ documents: Array<{ path: string; markdown: string }>; config: MdmarkConfig }'
@@ -2292,19 +2292,19 @@ functions:
     unit_tests:
       - name: test_compile_html_scripts
         case: 正常
-        summary: 範囲の `ts` の型を外して CommonJS にし、同じコードは 1 つにする
+        summary: 範囲の `ts` の型を削除して CommonJS にし、同じコードは 1 つにする
         condition: '`features.html-scripts` が `true` の設定と、同じ `ts` の範囲を持つ 2 つの文書'
         mock: なし
         expected: '`scripts` が 1 件で、`code` が `exports.default` への代入を含み、型の注釈を含まない'
       - name: test_compile_html_scripts_when_off
         case: 正常
         summary: '`html-scripts` がオフの文書は変えない'
-        condition: 設定に `html-scripts` を書かない
+        condition: 設定に `html-scripts` を記載しない
         mock: なし
         expected: '`scripts` が空'
       - name: test_compile_html_scripts_when_syntax_error
         case: 異常
-        summary: 変えられない範囲は警告にし、返さない
+        summary: 変えられない範囲は警告にし、返却しない
         condition: 閉じ括弧の足りない `js` の範囲
         mock: なし
         expected: '`scripts` が空で、`warnings` に文書のパスを含む 1 行'
@@ -2316,7 +2316,7 @@ functions:
   - name: collectIncludes
     title: 取り込む文書を集める
     container: src/cli/includes.ts
-    summary: '文書の include のマーカー（コードブロックとインラインコードの中を除く）を `resolveIncludePath` で解き、根のフォルダ（設定ファイルのフォルダ。無ければ文書のフォルダ）の中のファイルだけを読んで、キーを文書のフォルダからのパスにした取り込む文書の表を作る。取り込んだ Markdown の中のマーカーもたどり、同じファイルは 1 回だけ読む。根の外を指すパス・無いファイル・無い見出し・行の数を越える範囲・循環を、マーカーの文書と行を持つ問題として返す。`<!-- features: -include -->` の文書は読まない'
+    summary: '文書の include のマーカー（コードブロックとインラインコードの中を除く）を `resolveIncludePath` で解き、根のフォルダ（設定ファイルのフォルダ。無ければ文書のフォルダ）の中のファイルだけを読み込んで、キーを文書のフォルダからのパスにした取り込む文書の表を作る。取り込んだ Markdown の中のマーカーもたどり、同じファイルは 1 回だけ読み込む。根の外を指すパス・無いファイル・無い見出し・行の数を越える範囲・循環を、マーカーの文書と行を持つ問題として返却する。`<!-- features: -include -->` の文書は読み込まない'
     kind: 関数
     scope: internal
     args:
@@ -2327,7 +2327,7 @@ functions:
     returns:
       type: '{ includes: Record<string, string>; problems: IncludeProblem[] }'
       description: 取り込む文書の表と問題
-    side_effects: ファイルを読む
+    side_effects: ファイルを読み込む
     callees:
       - dev/設計書/モジュール構成/ライブラリ本体/記法.ts#functions[resolveIncludePath]
     unit_tests:
@@ -2335,18 +2335,18 @@ functions:
         case: 正常
         condition: '`guide.md` が `共通/手順.md#実行` を、`共通/手順.md` が `../../src/app.ts#L1` を取り込む'
         expected: 表のキーが `共通/手順.md` と `../src/app.ts` で、問題が 0 件
-        mock: 一時フォルダに文書を置く
+        mock: 一時フォルダに文書を配置する
         summary: 入れ子の取り込みもたどって表を作る
       - name: test_collect_includes_when_problems
         case: 異常
         condition: '`missing.md`・`共通/手順.md#無い見出し`・5 行の `src/app.ts#L8-L10`・根の外の `../../outside.md`・`a.md` と `b.md` の循環'
-        expected: '`missing`・`heading`・`lines`（行の数 5）・`outside`・`circular`（順 `a.md → b.md → a.md`）の問題が 1 件ずつで、`outside.md` を読んでいない'
-        mock: 一時フォルダに文書を置く
+        expected: '`missing`・`heading`・`lines`（行の数 5）・`outside`・`circular`（順 `a.md → b.md → a.md`）の問題が 1 件ずつで、`outside.md` を読み込んでいない'
+        mock: 一時フォルダに文書を配置する
         summary: 取り込めないものを種類ごとの問題にする
   - name: collectIconNodes
-    title: 埋めるアイコンの形を集める
+    title: 埋めるアイコンの形状を集める
     container: src/cli/icons.ts
-    summary: 文書と取り込む文書の `icon:` のうち配布物に束ねていない名前の IconNode を、依存の lucide の `icons` から取り出す。lucide に無い名前は別に返す
+    summary: 文書と取り込む文書の `icon:` のうち配布物にまとめていない名前の IconNode を、依存の lucide の `icons` から取り出す。lucide に無い名前は別に返却する
     kind: 関数
     scope: internal
     args:
@@ -2356,18 +2356,18 @@ functions:
         description: 文書と取り込む文書の本文
     returns:
       type: '{ icons: Record<string, MdmarkIconNode>; missing: string[] }'
-      description: アイコンの形の表と lucide に無い名前
+      description: アイコンの形状の表と lucide に無い名前
     unit_tests:
       - name: test_collect_icon_nodes
         case: 正常
-        condition: '`` `icon:sailboat` ``・`` `icon:flag` ``（束ねた名前）・`` `icon:no-such-icon` `` を持つ本文'
+        condition: '`` `icon:sailboat` ``・`` `icon:flag` ``（まとめた名前）・`` `icon:no-such-icon` `` を持つ本文'
         expected: '`icons` が `sailboat` だけを持ち、`missing` が `["no-such-icon"]`'
         mock: なし
-        summary: 束ねていない名前の形だけを取り出す
+        summary: まとめていない名前の構造だけを取り出す
   - name: checkIncludes
     title: 取り込み先を点検する
     container: src/cli/check.ts
-    summary: 点検する文書ごとに `collectIncludes` を呼び、`circular` の問題を `include_circular`、それ以外を `include_target_missing` のずれにする。内容の文は問題の種類ごとの直し方を含む
+    summary: 点検する文書ごとに `collectIncludes` を呼び、`circular` の問題を `include_circular`、それ以外を `include_target_missing` のずれにする。内容の文は問題の種類ごとの修正方法を含む
     kind: 関数
     scope: internal
     args:
@@ -2385,17 +2385,17 @@ functions:
         case: 正常
         condition: 無いファイル・無い見出し・無い行の範囲・循環・正しい取り込みを持つ文書
         expected: '`include_target_missing` が 3 件と `include_circular` が 1 件で、正しい取り込みのずれが無い'
-        mock: 一時フォルダに文書を置く
+        mock: 一時フォルダに文書を配置する
         summary: 問題を種類ごとのずれにする
   - name: checkMarkdownSource
-    title: 渡した Markdown の記法を点検する
+    title: 指定した Markdown の記法を点検する
     container: src/cli/markdown-check.ts
     usecase: 文字列とYAMLのキーの記法を点検する
     kind: 関数
     scope: public
     is_async: true
-    summary: Markdown の文字列か、YAML のファイルのキーの値を、描いたときの書き方の警告・読み飛ばした記法の印の引数・知らない印・図の配置のずれにして返す。`runCheck` と MCP の `runCheckTool` が呼ぶ
-    description: 設定ファイルは `config` か、`cwd` から上へ `CONFIG_FILE` を探して見つかったものを使い、見つからなければ既定の設定で点検する（`config` を渡して無いときだけ `CliError`）。`file` のときは `readYamlKey` で値と行の置き換えを得る。ずれは `collectWarnings` の警告（設定の `features`・`libraries` を当てる。include の取り込み先が無い警告（`includeTarget` を持つもの）は除く）、`checkUnknownMarks`（`loadExtensionDirectives` の `directive` と `check.ignore` を知っている印に入れる）、`checkDiagrams` のうち `diagram_invalid` でないずれ（定義の誤りは `collectWarnings` が返すため）を合わせ、行の順（同じ行は警告・知らない印と読み飛ばした引数・配置のずれの順）に並べる。`collectWarnings` の `unknown_mark_arg` はそのまま `unknown_mark_arg` のずれにする。`file` は `text` のとき `-`、`file` のとき設定ファイルのフォルダ（無ければ `cwd`）からの相対パス。`where` は文字列の行を `file` のとき `readYamlKey` の `lineOf` で YAML のファイルの行に置き換えた番号の文字
+    summary: Markdown の文字列か、YAML のファイルのキーの値を、描いたときの記載の警告・スキップした記法のマーカーの引数・知らないマーカー・図の配置のずれにして返却する。`runCheck` と MCP の `runCheckTool` が呼ぶ
+    description: 設定ファイルは `config` か、`cwd` から上へ `CONFIG_FILE` を探して見つかったものを使用し、見つからなければ既定の設定で点検する（`config` を指定して無いときだけ `CliError`）。`file` のときは `readYamlKey` で値と行の置き換えを得る。ずれは `collectWarnings` の警告（設定の `features`・`libraries` を適用する。include の取り込み先が無い警告（`includeTarget` を持つもの）は除く）、`checkUnknownMarks`（`loadExtensionDirectives` の `directive` と `check.ignore` を知っているマーカーに入れる）、`checkDiagrams` のうち `diagram_invalid` でないずれ（定義の誤りは `collectWarnings` が返却するため）を合わせ、行の順（同じ行は警告・知らないマーカーとスキップした引数・配置のずれの順）に並べる。`collectWarnings` の `unknown_mark_arg` はそのまま `unknown_mark_arg` のずれにする。`file` は `text` のとき `-`、`file` のとき設定ファイルのフォルダ（無ければ `cwd`）からの相対パス。`where` は文字列の行を `file` のとき `readYamlKey` の `lineOf` で YAML のファイルの行に置き換えた番号の文字
     args:
       - name: options
         type: '{ cwd: string; config?: string; text?: string; file?: string; key?: string; importCode: (code: string) => Promise<unknown> }'
@@ -2406,7 +2406,7 @@ functions:
       description: ずれの並び（無ければ空）
     exceptions:
       - name: CliError
-        condition: '`config` のファイルが無いか読めない、`readYamlKey` が投げた'
+        condition: '`config` のファイルが無いか読み込めない、`readYamlKey` が投げた'
         message: '`findConfigFile`・`loadConfig`・`readYamlKey` のメッセージ'
     callees:
       - '#functions[readYamlKey]'
@@ -2419,19 +2419,19 @@ functions:
     unit_tests:
       - name: test_check_markdown_source
         case: 正常
-        summary: 警告・知らない印を行の順に返し、図の定義の誤りを 1 件にする
-        condition: 「正常系（文字列に書き方の警告がある）」の文字列を `text` で渡す
+        summary: 警告・知らないマーカーを行の順に返却し、図の定義の誤りを 1 件にする
+        condition: 「正常系（文字列に記載の警告がある）」の文字列を `text` で指定する
         mock: 一時フォルダ
         expected: '`kind` が `diagram_invalid`・`unknown_mark`・`syntax_warning` の 3 件で、`where` が `1`・`20`・`22`、`file` がどれも `-`'
       - name: test_check_markdown_source_when_yaml_key
         case: 正常
-        summary: YAML のキーの値のずれを YAML のファイルの行で返す
+        summary: YAML のキーの値のずれを YAML のファイルの行で返却する
         condition: 「正常系（ファイルと YAML のキー）」の `records.yaml` と `items[0].body`
         mock: 一時フォルダ
         expected: '`{ file: "records.yaml", where: "8", kind: "unknown_mark" }` の 1 件'
       - name: test_check_markdown_source_when_extension
         case: 正常
-        summary: 設定の拡張の印を知っている印にする
+        summary: 設定の拡張のマーカーを知っているマーカーにする
         condition: 設定の `extensions` に `directive` が `note-card` の拡張。文字列は 1 行目に `<!-- note-card -->`、3 行目に `<!-- tabz -->`
         mock: 一時フォルダ
         expected: '`unknown_mark`（`where` が `3`）の 1 件だけ'
@@ -2449,22 +2449,22 @@ functions:
         summary: 取り込み先が無い警告を出さない
       - name: test_check_markdown_source_when_unknown_mark_args
         case: 正常
-        summary: 描くときに読み飛ばす印の引数を unknown_mark_arg にする
-        condition: 「正常系（文字列の記法の印に知らない引数がある）」の文字列を `text` で渡す
+        summary: 描くときにスキップするマーカーの引数を unknown_mark_arg にする
+        condition: 「正常系（文字列の記法のマーカーに知らない引数がある）」の文字列を `text` で指定する
         mock: 一時フォルダ
         expected: '`kind` がどれも `unknown_mark_arg` の 3 件で、`where` が `1`・`1`・`8`、`syntax_warning` が無い'
     status: planned
     introduced:
       pr: 328
   - name: readYamlKey
-    title: YAML のキーの値を読む
+    title: YAML のキーの値を読み込む
     container: src/cli/markdown-check.ts
     usecase: 文字列とYAMLのキーの記法を点検する
     kind: 関数
     scope: internal
     is_async: true
-    summary: YAML のファイルを `yaml` の `parseDocument`（`LineCounter` つき）で読み、キーのパスをたどって文字列の値と、値の中の行（1 から）をファイルの行（1 から）に置き換える関数を返す
-    description: キーのパスは `.` でマップのキーを、`[位置]` で配列の要素をたどる（`items[0].body`）。値がブロックスカラー（`BLOCK_LITERAL`・`BLOCK_FOLDED`）なら、値の 1 行目はインジケータ（`|`・`>`）の次の行で、`lineOf(n)` はその行に `n - 1` を足した行。それ以外の書き方の値は、`lineOf` がどの `n` にもキーの行を返す
+    summary: YAML のファイルを `yaml` の `parseDocument`（`LineCounter` つき）で読み込み、キーのパスをたどって文字列の値と、値の中の行（1 から）をファイルの行（1 から）に置き換える関数を返却する
+    description: キーのパスは `.` でマップのキーを、`[位置]` で配列の要素をたどる（`items[0].body`）。値がブロックスカラー（`BLOCK_LITERAL`・`BLOCK_FOLDED`）なら、値の 1 行目はインジケータ（`|`・`>`）の次の行で、`lineOf(n)` はその行に `n - 1` を追加した行。それ以外の記載方法の値は、`lineOf` がどの `n` にもキーの行を返却する
     args:
       - name: options
         type: '{ path: string; key: string }'
@@ -2475,20 +2475,20 @@ functions:
       description: キーの値と行の置き換え
     exceptions:
       - name: CliError
-        condition: ファイルが無い・YAML として読めない・キーのパスを読めない・キーが無い・値が文字列でない
-        message: ファイルと、無いことか読めない行か、渡したキーとたどれたところまでのキー（配列なら要素の数）か値の型と、直し方の 1 文
+        condition: ファイルが無い・YAML として読み込めない・キーのパスを読み込めない・キーが無い・値が文字列でない
+        message: ファイルと、無いことか読み込めない行か、指定したキーとたどれたところまでのキー（配列なら要素の数）か値の型と、修正方法の 1 文
     refs:
       - dev/設計書/インターフェース定義/ライブラリ本体/設定と索引を点検する.ts#constraints[記法の点検の場所]
     unit_tests:
       - name: test_read_yaml_key
         case: 正常
-        summary: ブロックスカラーの値と行を返す
+        summary: ブロックスカラーの値と行を返却する
         condition: '5 行目が `    body: |` の `records.yaml` と `items[0].body`'
         mock: 一時フォルダ
         expected: '`value` が値の文字で、`lineOf(3)` が 8'
       - name: test_read_yaml_key_when_plain
         case: 正常
-        summary: ブロックスカラーでない値はキーの行を返す
+        summary: ブロックスカラーでない値はキーの行を返却する
         condition: '2 行目が `title: "<!-- tabz -->"` の YAML と `title`'
         mock: 一時フォルダ
         expected: '`lineOf(1)` も `lineOf(5)` も 2'
@@ -2507,8 +2507,8 @@ functions:
     usecase: 共通
     kind: 関数
     scope: public
-    summary: 文書を `renderDocument` で設定と一緒に描き、返った HTML の `template.mdmark-html-script` の言語と、エスケープを戻したコードを書いた順に返す
-    description: '`mount` が変換のライブラリを読むのと同じ出力から判定する。`html-scripts` がオフの文書は `template` を出さないため、空を返す。esbuild を import しないファイルに置き、CLI の `compileHtmlScripts` と VS Code 拡張機能の `embedLocalLibraries` が使う'
+    summary: 文書を `renderDocument` で設定と一緒に描き、返った HTML の `template.mdmark-html-script` の言語と、エスケープを戻したコードを記載した順に返却する
+    description: '`mount` が変換のライブラリを読み込むのと同じ出力から判定する。`html-scripts` がオフの文書は `template` を出さないため、空を返却する。esbuild を import しないファイルに配置し、CLI の `compileHtmlScripts` と VS Code 拡張機能の `embedLocalLibraries` が使用する'
     args:
       - name: options
         type: '{ markdown: string; config: MdmarkConfig }'
@@ -2520,8 +2520,8 @@ functions:
     unit_tests:
       - name: test_collect_range_scripts
         case: 正常
-        summary: 設定か文書のマーカーでオンの文書の範囲の `ts` を、エスケープを戻して返す
-        condition: "`'` と `<` を含む `ts` の範囲を持つ文書を、`features.html-scripts` が `true` の設定と、設定に書かず文書に `<!-- features: +html-scripts -->` を持つ場合で呼ぶ"
+        summary: 設定か文書のマーカーでオンの文書の範囲の `ts` を、エスケープを戻して返却する
+        condition: "`'` と `<` を含む `ts` の範囲を持つ文書を、`features.html-scripts` が `true` の設定と、設定に記載せず文書に `<!-- features: +html-scripts -->` を持つ場合で呼ぶ"
         mock: なし
         expected: 'どちらも `[{ lang: "ts", source: 範囲のコード }]`'
       - name: test_collect_range_scripts_when_off_or_no_script
@@ -2537,10 +2537,10 @@ constants:
   - name: TEMPLATE_FILES
     title: 雛形の一覧
     container: src/cli/init.ts
-    summary: '`init` が置く雛形の、置く先のパスと `templates/` の中の正本のパスを、置く順に並べたもの。`--js` のときに置くかを各行が持つ'
+    summary: '`init` が配置する雛形の、配置先のパスと `templates/` の中の原本のパスを、配置する順に並べたもの。`--js` のときに配置するかを各行が持つ'
     value: '`mdmark.config.yaml`・`theme.css`・`index.yaml`・`extensions/example.ts`（TypeScript だけ）・`extensions/example.js`（JavaScript だけ）・`tsconfig.json`（TypeScript だけ）・`package.json`（TypeScript だけ）'
     refs:
-      - dev/設計書/インターフェース定義/ライブラリ本体/雛形を置く.ts#constraints[置く雛形]
+      - dev/設計書/インターフェース定義/ライブラリ本体/雛形を配置する.ts#constraints[配置する雛形]
   - name: CONFIG_FILE
     title: 設定ファイルの名前
     container: src/cli/config.ts

@@ -4,7 +4,7 @@ import type { IconName } from "../../../../src/parts/icons.ts";
 /** アイコンの処理を読み込む（実装が無い間は各テストが個別に失敗する） */
 const loadIcons = () => import("../../../../src/parts/icons.ts");
 
-/** 外部ライブラリ『lucide』の一覧のうち図と記法で使うアイコンの名前 */
+/** 外部ライブラリ『lucide』の一覧のうち図と記法で使用するアイコンの名前 */
 const ICON_NAMES = [
   "plus",
   "minus",
@@ -58,7 +58,7 @@ function shapeOf(html: string): string[] {
   });
 }
 
-// lucide の形をそのまま出す（正常系）
+// lucide の構造をそのまま出す（正常系）
 test("test_icon_svg", async () => {
   // 準備
   const { iconSvg } = await loadIcons();
@@ -73,7 +73,7 @@ test("test_icon_svg", async () => {
   expect(svg).toContain('stroke="currentColor"');
 });
 
-// 使うアイコンの要素と属性が sanitize で落ちない（正常系）
+// 使用するアイコンの要素と属性が sanitize で落ちない（正常系）
 test("test_icon_svg_when_sanitized", async () => {
   // 準備
   const { iconSvg } = await loadIcons();

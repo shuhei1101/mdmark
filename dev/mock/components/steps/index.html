@@ -24,7 +24,7 @@
 <body>
   <!-- モック専用の操作列: 配色の切り替え -->
   <div class="mock-bar">
-    <!-- [data-scheme-set]: sample.js が押されたボタンの値を html の data-scheme に当てる -->
+    <!-- [data-scheme-set]: sample.js が押されたボタンの値を html の data-scheme に適用する -->
     <div class="mock-bar-group" role="group" aria-label="配色">
       <button class="mock-bar-item" type="button" data-scheme-set="light" aria-pressed="false">明るい配色</button>
       <button class="mock-bar-item" type="button" data-scheme-set="dark" aria-pressed="false">ダーク</button>
@@ -42,7 +42,7 @@
 <ol class="mdmark-steps">
   <li>配布物を読み込む</li>
   <li>描く先の要素を用意する</li>
-  <li><code>mount</code> に要素と Markdown を渡す</li>
+  <li><code>mount</code> に要素と Markdown を指定する</li>
 </ol>
         </article>
       </section>
@@ -56,7 +56,7 @@
   <pre tabindex="0" aria-label="コード: html"><code>&lt;link rel="stylesheet" href="dist/index.css"&gt;</code></pre></li>
   <li>描く先の要素を用意する
   <ol><li>要素に ID を付ける</li><li>高さを決める</li></ol></li>
-  <li><code>mount</code> に要素と Markdown を渡す</li>
+  <li><code>mount</code> に要素と Markdown を指定する</li>
 </ol>
         </article>
       </section>
@@ -66,7 +66,7 @@
         <h2 class="catalog-label" id="state-long">長文</h2>
         <article class="mdmark">
 <ol class="mdmark-steps">
-  <li>使う側のページで、版を固定した URL から配布物の JavaScript と CSS の両方を読み込み、読み込みが終わってから次の手順へ進む</li>
+  <li>利用側のページで、バージョンを固定した URL から配布物の JavaScript と CSS の両方を読み込み、読み込みが終わってから次の手順へ進む</li>
   <li>描く先の要素を用意する</li>
 </ol>
         </article>
@@ -77,8 +77,8 @@
         <h2 class="catalog-label" id="state-no-list">番号付きリストが無い（異常シナリオ）</h2>
         <article class="mdmark">
 <div class="mdmark-syntax-warning">
-  <p class="mdmark-syntax-warning-title"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg>書き方の警告</p>
-  <p><code>&lt;!-- steps --&gt;</code> の範囲に、手順にする番号付きリストがありません。手順を <code>1.</code> から始まる番号付きリストで書いてください。範囲の中身はそのまま描いています。</p>
+  <p class="mdmark-syntax-warning-title"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg>記載の警告</p>
+  <p><code>&lt;!-- steps --&gt;</code> の範囲に、手順にする番号付きリストがありません。手順を <code>1.</code> から始まる番号付きリストで記載してください。範囲の中身はそのまま描いています。</p>
 </div>
 <ul><li>配布物を読み込む</li><li>描く先の要素を用意する</li></ul>
         </article>
@@ -107,19 +107,19 @@
 <ol class="mdmark-steps">
   <li>リポジトリをクローンする</li>
   <li>依存を入れる</li>
-  <li>テストを流す</li>
+  <li>テストを実行する</li>
 </ol>
 </details>
         </article>
       </section>
 
-      <!-- closed open: 書き方の警告を出し、closed として描く -->
+      <!-- closed open: 記載の警告を出し、closed として描く -->
       <section aria-labelledby="state-closed-open">
         <h2 class="catalog-label" id="state-closed-open">closed と open を両方書いた（異常シナリオ）</h2>
         <article class="mdmark">
 <div class="mdmark-syntax-warning">
-  <p class="mdmark-syntax-warning-title"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg>書き方の警告</p>
-  <p><code>&lt;!-- steps: closed open --&gt;</code> の <code>closed</code> と <code>open</code> は同時に書けません。<code>closed</code> として描いています。</p>
+  <p class="mdmark-syntax-warning-title"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg>記載の警告</p>
+  <p><code>&lt;!-- steps: closed open --&gt;</code> の <code>closed</code> と <code>open</code> は同時に記載できません。<code>closed</code> として描いています。</p>
 </div>
 <details class="mdmark-collapsible">
 <summary>手順（2 ステップ）</summary>
@@ -131,13 +131,13 @@
         </article>
       </section>
 
-      <!-- fold: 書き方の警告を出し、fold を当てずに描く -->
+      <!-- fold: 記載の警告を出し、fold を当てずに描く -->
       <section aria-labelledby="state-fold">
-        <h2 class="catalog-label" id="state-fold">使えない指定 fold（異常シナリオ）</h2>
+        <h2 class="catalog-label" id="state-fold">使用できない指定 fold（異常シナリオ）</h2>
         <article class="mdmark">
 <div class="mdmark-syntax-warning">
-  <p class="mdmark-syntax-warning-title"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg>書き方の警告</p>
-  <p><code>&lt;!-- steps: fold --&gt;</code> の <code>fold</code> はステップでは使えません。使える指定は <code>closed</code>・<code>open</code>・<code>title=</code> です。</p>
+  <p class="mdmark-syntax-warning-title"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg>記載の警告</p>
+  <p><code>&lt;!-- steps: fold --&gt;</code> の <code>fold</code> はステップでは使用できません。使用できる指定は <code>closed</code>・<code>open</code>・<code>title=</code> です。</p>
 </div>
 <ol class="mdmark-steps">
   <li>依存を入れる</li>
@@ -146,13 +146,13 @@
         </article>
       </section>
 
-      <!-- title= だけ: 書き方の警告を出し、開閉しないステップとして描く -->
+      <!-- title= だけ: 記載の警告を出し、開閉しないステップとして描く -->
       <section aria-labelledby="state-title-only">
-        <h2 class="catalog-label" id="state-title-only">title= だけを書いた（異常シナリオ）</h2>
+        <h2 class="catalog-label" id="state-title-only">title= だけを記載した（異常シナリオ）</h2>
         <article class="mdmark">
 <div class="mdmark-syntax-warning">
-  <p class="mdmark-syntax-warning-title"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg>書き方の警告</p>
-  <p><code>&lt;!-- steps: title=準備 --&gt;</code> の <code>title=</code> は <code>closed</code> か <code>open</code> と一緒に書きます。タイトルを付けずに描いています。</p>
+  <p class="mdmark-syntax-warning-title"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg>記載の警告</p>
+  <p><code>&lt;!-- steps: title=準備 --&gt;</code> の <code>title=</code> は <code>closed</code> か <code>open</code> と一緒に記載します。タイトルを付けずに描いています。</p>
 </div>
 <ol class="mdmark-steps">
   <li>依存を入れる</li>

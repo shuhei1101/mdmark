@@ -58,7 +58,7 @@ export type { MdmarkViewHandle, MdmarkViewOptions } from "./views/spec.ts";
 
 declare const __MDMARK_VERSION__: string;
 
-/** ビルドで埋めた版（`v{MAJOR}.{MINOR}.{PATCH}`）を返す */
+/** ビルドで埋めたバージョン（`v{MAJOR}.{MINOR}.{PATCH}`）を返却する */
 export function version(): string {
   return __MDMARK_VERSION__;
 }

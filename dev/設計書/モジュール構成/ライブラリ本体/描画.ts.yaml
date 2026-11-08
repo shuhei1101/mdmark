@@ -1,68 +1,68 @@
 title: ライブラリ本体 / 描画
-lead: Markdown を本文の HTML 文字列にする処理。markdown-it で解析し、トークンの段で印を拾い GitHub Flavored Markdown の不足と画面設計の属性を足し、sanitize-html で許可していない要素・属性・URL を落とす。DOM に頼らず、ブラウザと Node で同じ文字列を返す。
+lead: Markdown を本文の HTML 文字列にする処理。markdown-it で解析し、トークンの段階でマーカーを取得し GitHub Flavored Markdown の不足と画面設計の属性を追加し、sanitize-html で許可していない要素・属性・URL を落とす。DOM に頼らず、ブラウザと Node で同じ文字列を返却する。
 directory: |-
   ```tree
   src/render/
   ├── index.ts     # render と renderDocument
-  ├── parser.ts    # markdown-it の解析器と、足すコアルール
-  ├── marks.ts     # 印を読み、置き換えるコアルール
-  ├── page.ts      # ページの設定の印の読み取り
+  ├── parser.ts    # markdown-it の解析器と、追加するコアルール
+  ├── marks.ts     # マーカーを読み込み、置き換えるコアルール
+  ├── page.ts      # ページの設定のマーカーの読み取り
   ├── sanitize.ts  # sanitize-html の設定と sanitize
   ├── used.ts      # 書き出しで埋める外部ライブラリと範囲のスクリプトを文書から取得する usedLibraryMarks・collectRangeScripts（esbuild を import しない。『CLI』）
-  ├── scope-css.ts # 埋め込んだ HTML の範囲の css を範囲の根の要素の中だけに当てる scopeCss（DOM を使わない）
+  ├── scope-css.ts # 埋め込んだ HTML の範囲の css を範囲の根の要素の中だけに適用する scopeCss（DOM を使用しない）
   └── syntax/      # 記法ごとのコアルール（『記法』）
   ```
 data_models:
   - name: Mark
-    title: 印
+    title: マーカー
     container: src/render/marks.ts
     usecase: 共通
-    summary: 文書から拾った印 1 つ
+    summary: 文書から取得したマーカー 1 つ
     properties:
       - name: name
         type: string
-        description: 印の名前
+        description: マーカーの名前
       - name: args
         type: MdmarkMarkArgs
-        description: 読み分けた引数（`parseMarkArgs`）
+        description: 判別した引数（`parseMarkArgs`）
       - name: raw
         type: string
-        description: 印の文字のまま（書き方の警告に出す）
+        description: マーカーの文字のまま（記載の警告に出す）
       - name: closing
         type: boolean
-        description: 閉じの印（`<!-- /名前 -->`）か
+        description: 閉じのマーカー（`<!-- /名前 -->`）か
   - name: RenderEnv
     title: 解析の環境
     container: src/render/parser.ts
-    summary: markdown-it の `env` としてコアルールに渡す値と、コアルールが拾ったもの
+    summary: markdown-it の `env` としてコアルールに指定する値と、コアルールが取得したもの
     properties:
       - name: libraries
         type: Record<string, LibraryEntry>
-        description: 対応表（どの印を印の場所の要素にするか）
+        description: 対応表（どのマーカーをマーカーの場所の要素にするか）
       - name: defaults
         type: Record<string, boolean>
         description: 設定の `features`
       - name: labels
         type: '{ paramCopy: string } | undefined'
-        description: 既定を当てた設定の `labels`（部品の文言。`renderDocument` が入れ、図の部品・埋め込んだ HTML のコアルールが `env.labels?.paramCopy` を `renderParam` に渡す）
+        description: 既定を適用した設定の `labels`（部品の文言。`renderDocument` が入れ、図の部品・埋め込んだ HTML のコアルールが `env.labels?.paramCopy` を `renderParam` に指定する）
       - name: featureArgs
         type: string[]
-        description: '`features` の印の引数を書いた順に並べたもの（コアルールが足す）'
+        description: '`features` のマーカーの引数を記載した順に並べたもの（コアルールが追加する）'
       - name: features
         type: Record<string, boolean>
-        description: '`defaults` に `featureArgs` を重ねたもの（`resolveDocumentFeatures` が入れる。記法のコアルールが読む）'
+        description: '`defaults` に `featureArgs` を重ねたもの（`resolveDocumentFeatures` が入れる。記法のコアルールが読み込む）'
       - name: pageArgs
         type: 'Array<{ args: string[]; keys: Record<string, string> }>'
-        description: 文書の先頭の page の印の引数を書いた順に並べたもの（`takeMarks` が足す）
+        description: 文書の先頭の page のマーカーの引数を記載した順に並べたもの（`takeMarks` が追加する）
       - name: page
         type: PageSettings
-        description: '`pageArgs` を読んだページの設定（`resolvePageSettings` が入れる）'
+        description: '`pageArgs` を読み込んだページの設定（`resolvePageSettings` が入れる）'
       - name: headings
         type: 'Array<{ level: number; id: string; text: string }>'
-        description: 見出しの ID と文字（`assignHeadingIds` が足す）
+        description: 見出しの ID と文字（`assignHeadingIds` が追加する）
       - name: nonce
         type: string
-        description: 描くごとに作る mdmark が出した要素の印（`markOwn`）の値
+        description: 描くごとに作る mdmark が出した要素のマーカー（`markOwn`）の値
       - name: index
         type: MdmarkIndex | undefined
         description: '`normalizeIndex` で合う要素だけにした索引'
@@ -71,79 +71,79 @@ data_models:
         description: 描く文書の索引の `id`（索引に無ければ `undefined`）
       - name: mdmarkReferences
         type: MdmarkReferences | undefined
-        description: 参照の表（`render`・`mount` の `references`）。markdown-it が `env.references` にリンク参照定義を書くため、この名前にする
+        description: 参照の表（`render`・`mount` の `references`）。markdown-it が `env.references` にリンク参照定義を記載するため、この名前にする
       - name: ownGlossary
         type: MdmarkGlossaryEntry[]
-        description: 描く文書の用語集の表から読んだ用語（`glossaryRule` が足す）
+        description: 描く文書の用語集の表から読み込んだ用語（`glossaryRule` が追加する）
       - name: glossaryLines
         type: number[] | undefined
-        description: 用語集の表の用語ごとの文書の中の行番号（`ownGlossary` と同じ並び。`checkIndex` が `duplicate_term` の `where` に使う）
+        description: 用語集の表の用語ごとの文書の中の行番号（`ownGlossary` と同じ並び。`checkIndex` が `duplicate_term` の `where` に使用する）
       - name: aliases
         type: MdmarkAlias[] | undefined
-        description: 使う側が渡したエイリアス（`render`・`mount` の `aliases`）。`termsRule`・`buildEmbeddedHtml` が `buildDictionary` に渡す
+        description: 利用側が指定したエイリアス（`render`・`mount` の `aliases`）。`termsRule`・`buildEmbeddedHtml` が `buildDictionary` に指定する
       - name: mdmarkFootnotes
         type: FootnoteState | undefined
-        description: 読んだ脚注の定義と参照（`readFootnoteDefinition` が作り、機能がオフなら `collectFootnotes` が消す）
+        description: 読み込んだ脚注の定義と参照（`readFootnoteDefinition` が作り、機能がオフなら `collectFootnotes` が削除する）
       - name: warnings
         type: CollectedWarning[]
-        description: 書き方の警告（`collectWarningsRule` が最後に集める）
+        description: 記載の警告（`collectWarningsRule` が最後に集める）
   - name: RenderedDocument
     title: 描いた文書
     container: src/render/index.ts
-    summary: 本文の HTML と、文書の印で決まった機能のオン・オフ
+    summary: 本文の HTML と、文書のマーカーで決まった機能のオン・オフ
     properties:
       - name: html
         type: string
         description: 本文の HTML 文字列
       - name: features
         type: Record<string, boolean>
-        description: '`resolveFeatures` が返したオン・オフ。`mount` と、機能を作る Issue が読む'
+        description: '`resolveFeatures` が返却したオン・オフ。`mount` と、機能を作る Issue が読み込む'
       - name: warnings
         type: CollectedWarning[]
-        description: 本文に置いた書き方の警告を、警告を置いた順に並べたもの。`collectWarnings` が返す
+        description: 本文に配置した記載の警告を、警告を配置した順に並べたもの。`collectWarnings` が返却する
       - name: page
         type: PageSettings
-        description: 文書の先頭の page の印から読んだページの設定。`mount` が `applyPageSettings` で設定に重ねる
+        description: 文書の先頭の page のマーカーから読み込んだページの設定。`mount` が `applyPageSettings` で設定に重ねる
   - name: CollectedWarning
-    title: 集めた書き方の警告
+    title: 集めた記載の警告
     container: src/render/syntax/warnings.ts
-    summary: 書き方の警告 1 つの場所・種類・文
+    summary: 記載の警告 1 つの場所・種類・文
     properties:
       - name: line
         type: number
         description: 警告の元になったマーカー（範囲なら開きのマーカー）の元の行番号（1 から）。マーカーを持たない警告は、警告のトークンの後ろで最初に `map` を持つトークンの開始の行（無ければ前で最後に `map` を持つトークンの終わりの行）
       - name: kind
         type: '"diagram_invalid" | "syntax_warning" | "unknown_mark_arg"'
-        description: 図の部品の定義の警告は `diagram_invalid`、読み飛ばした記法の印の引数（画面には出さない）は `unknown_mark_arg`、ほかは `syntax_warning`（`render` は知らないマーカーに警告を置かない）
+        description: 図の部品の定義の警告は `diagram_invalid`、スキップした記法のマーカーの引数（画面には出さない）は `unknown_mark_arg`、ほかは `syntax_warning`（`render` は知らないマーカーに警告を配置しない）
       - name: message
         type: string
-        description: 警告の本文と項目を、HTML のタグを除いた文字にして空白 1 つでつないだもの（画面で読む文と同じ順）
+        description: 警告の本文と項目を、HTML のタグを除いた文字にして空白 1 つでつないだもの（画面で読み込む文と同じ順）
 constants:
   - name: MARK_PATTERN
-    title: 印の書式
+    title: マーカーの書式
     container: src/render/marks.ts
-    summary: '生の HTML の中の印（`<!-- 名前: 引数 -->`・`<!-- 名前 -->`・`<!-- /名前 -->`）を拾う正規表現'
+    summary: '生の HTML の中のマーカー（`<!-- 名前: 引数 -->`・`<!-- 名前 -->`・`<!-- /名前 -->`）を取得する正規表現'
     value: /<!--\s*(\/)?([a-z][a-z0-9-]*)(?::\s*(.*?))?\s*-->/gs
   - name: FEATURES_MARK
-    title: 機能の印の名前
+    title: 機能のマーカーの名前
     container: src/render/marks.ts
-    summary: 機能のオン・オフを書く印の名前
+    summary: 機能のオン・オフを記載するマーカーの名前
     value: '"features"'
   - name: PAGE_MARK
-    title: ページの設定の印の名前
+    title: ページの設定のマーカーの名前
     container: src/render/marks.ts
-    summary: 明暗・テーマ・右側の目次の出し方を書く印の名前
+    summary: 明暗・テーマ・右側の目次の出し方を記載するマーカーの名前
     value: '"page"'
     status: planned
   - name: ALIGN_VALUES
-    title: 列の揃えの値
+    title: 列の配置の値
     container: src/render/sanitize.ts
     summary: class `mdmark-align-{値}` に移す `text-align` の値
     value: '["left", "center", "right"]'
   - name: SANITIZE_OPTIONS
     title: 落とす設定
     container: src/render/sanitize.ts
-    summary: sanitize-html に渡す設定。記法の要素と属性を許し（mdmark が出した `style.mdmark-html-style` と `template.mdmark-html-script`・`data-html-scope`・`data-lang` を含む。文書に書いた `style`・`template` は落とす）、誰が出したかは `sanitize` の `transformTags` が見分ける。`allowedTags` に `nav`・`figure`・`figcaption` を足し、`allowedAttributes`・`allowedClasses` に記法が出す class（部品設計の HTML）・`data-kind`・`data-features`・`data-filter`・`data-section`・`data-row`・`data-mdmark-own`・見出しと `figure`・`div` の `id`・`colspan`・`rowspan`・`scope`・`aria-label`・`role`（`note`・`status`）を足す。今の値は下の entries。記法が出す `video`・`audio` と、`controls`・`autoplay`・`muted`・`loop`・`playsinline`・`preload`・`poster`・`data-color`・`data-align`・`data-nolightbox`・`data-gif`・`data-card`・`data-file-kind` も許す（文書に書いた `video`・`audio`・`source` は `sanitize` が落とす）
+    summary: sanitize-html に指定する設定。記法の要素と属性を許し（mdmark が出した `style.mdmark-html-style` と `template.mdmark-html-script`・`data-html-scope`・`data-lang` を含む。文書に記載した `style`・`template` は落とす）、誰が出したかは `sanitize` の `transformTags` が見分ける。`allowedTags` に `nav`・`figure`・`figcaption` を追加し、`allowedAttributes`・`allowedClasses` に記法が出す class（部品設計の HTML）・`data-kind`・`data-features`・`data-filter`・`data-section`・`data-row`・`data-mdmark-own`・見出しと `figure`・`div` の `id`・`colspan`・`rowspan`・`scope`・`aria-label`・`role`（`note`・`status`）を追加する。今の値は下の entries。記法が出す `video`・`audio` と、`controls`・`autoplay`・`muted`・`loop`・`playsinline`・`preload`・`poster`・`data-color`・`data-align`・`data-nolightbox`・`data-gif`・`data-card`・`data-file-kind` も許す（文書に記載した `video`・`audio`・`source` は `sanitize` が落とす）
     value: 下の entries
     entries:
       - key: allowedTags
@@ -151,19 +151,19 @@ constants:
       - key: allowedAttributes
         value: '`*`: `data-source-line` / `a`: `href`・`title` / `img`: `src`・`alt`・`title` / `details`: `open` / `input`: `type`・`disabled`・`checked` / `td`: `data-label` / `pre`・`table`: `tabindex`・`aria-label` / `div`: `data-mdmark-slot`・`data-mdmark-args`・`role`（値は `status` だけ）'
       - key: allowedClasses
-        value: '`code`: `language-*` / `li`: `task-list-item` / `th`・`td`: `mdmark-align-*` / `div`: `mdmark-embed`。ここに無い要素は class を持てない（`allowedAttributes` に `class` を載せない）'
+        value: '`code`: `language-*` / `li`: `task-list-item` / `th`・`td`: `mdmark-align-*` / `div`: `mdmark-embed`。ここに無い要素は class を持てない（`allowedAttributes` に `class` を記載しない）'
       - key: allowedSchemes
         value: '`http`・`https`・`mailto`（相対 URL は既定で許す）'
       - key: parseStyleAttributes
         value: '`false`（postcss を呼ばない）'
       - key: transformTags
-        value: '`*`: `style` の `text-align` の値が `ALIGN_VALUES` なら class `mdmark-align-{値}` を足し、`style` は常に消す。`data-source-line` は値が `^\d+$` の形でなければ消す / `img`: `src` が `data:` で始まり `data:image/(png|jpeg|gif|webp|svg+xml);base64,{base64 の文字}` の形（末尾に `#only-light`・`#only-dark` のフラグメントを持ってよい）でなければ `src` を消す / `input`: `type="checkbox"` と `disabled` を付け直し、`checked` だけを引き継ぐ / `pre`・`table`: `tabindex` があれば `"0"` にする'
+        value: '`*`: `style` の `text-align` の値が `ALIGN_VALUES` なら class `mdmark-align-{値}` を追加し、`style` は常に削除する。`data-source-line` は値が `^\d+$` の構造でなければ削除する / `img`: `src` が `data:` で始まり `data:image/(png|jpeg|gif|webp|svg+xml);base64,{base64 の文字}` の構造（末尾に `#only-light`・`#only-dark` のフラグメントを持ってよい）でなければ `src` を削除する / `input`: `type="checkbox"` と `disabled` をもう一度付け、`checked` だけを引き継ぐ / `pre`・`table`: `tabindex` があれば `"0"` にする'
       - key: allowedSchemesByTag
-        value: '`img`: `http`・`https`・`data`（書き出しが画像を `data:` URL で埋めるため。残す `data:` URL の形は `transformTags` が絞る） / `video`・`audio`: `http`・`https`・`data`（`src` と `poster`。`data:` URL は `poster` の `img` と同じ形だけを残し、`src` の `data:` URL は消す）'
+        value: '`img`: `http`・`https`・`data`（書き出しが画像を `data:` URL で埋めるため。残す `data:` URL の構造は `transformTags` が絞る） / `video`・`audio`: `http`・`https`・`data`（`src` と `poster`。`data:` URL は `poster` の `img` と同じ構造だけを残し、`src` の `data:` URL は削除する）'
   - name: SYNTAX_MARKS
-    title: 記法の印と機能
+    title: 記法のマーカーと機能
     container: src/render/marks.ts
-    summary: 記法の印の名前から、その記法の機能の名前を引く
+    summary: 記法のマーカーの名前から、その記法の機能の名前を参照する
     entries:
       - key: table
         value: table
@@ -214,7 +214,7 @@ constants:
   - name: EMBED_STYLES
     title: 埋め込んだ HTML の残す宣言
     container: src/render/sanitize.ts
-    summary: 埋め込んだ HTML の要素の `style` に残す宣言の名前と、値の許可の正規表現。sanitize-html の `allowedStyles` には渡さず（postcss を差し替えているため）、`filterEmbeddedStyle` が使う。どの宣言も値に `url(`・`expression(`・単位 `vw`・`vh` を含むと落とす
+    summary: 埋め込んだ HTML の要素の `style` に残す宣言の名前と、値の許可の正規表現。sanitize-html の `allowedStyles` には指定せず（postcss を差し替えているため）、`filterEmbeddedStyle` が使用する。どの宣言も値に `url(`・`expression(`・単位 `vw`・`vh` を含むと落とす
     value: 下の entries
     entries:
       - key: display
@@ -244,7 +244,7 @@ functions:
     container: src/render/index.ts
     kind: 関数
     scope: public
-    summary: 公開関数。設定に既定を当てて `renderDocument` を呼び、本文の HTML だけを返す
+    summary: 公開関数。設定に既定を適用して `renderDocument` を呼び、本文の HTML だけを返却する
     args:
       - name: markdown
         type: string
@@ -266,13 +266,13 @@ functions:
     unit_tests:
       - name: test_render
         case: 正常
-        summary: 設定を渡さなくても本文の HTML を返す
+        summary: 設定を指定しなくても本文の HTML を返却する
         condition: '`# 見出し` だけの Markdown、`opts` 無し'
         mock: なし
         expected: 文字が `見出し` の `h1` を含む文字列
       - name: test_render_when_aliases
         case: 正常
-        summary: 渡したエイリアスに下線と種類のツールチップを付けた文字列を返す
+        summary: 指定したエイリアスに下線と種類のツールチップを付けた文字列を返却する
         condition: インターフェース定義『文書をHTML文字列にする』の「正常系（エイリアス）」のエイリアスと Markdown
         mock: なし
         expected: そのフローの期待値のうち、下線・ツールチップ・`script` と `<!--` が無いことが成り立つ
@@ -281,13 +281,13 @@ functions:
     container: src/render/index.ts
     kind: 関数
     scope: public
-    summary: 描くごとに `nonce` を作って `env` に入れ、解析器で Markdown を HTML にし、`sanitize` をかけ、コアルールが決めた `env.features` と、`env.warnings` に集めた書き方の警告と一緒に返す
-    description: '`render` と `mount` が共通で使う。解析器はモジュールで 1 つだけ作り（`createParser` を初めて使うときに呼ぶ）、呼び出しごとの値は `env` で渡す。`nonce` は `crypto.getRandomValues` の 16 バイトを 16 進にしたもので、`sanitize` が出力から外すため、同じ入力には同じ文字列を返す'
+    summary: 描くごとに `nonce` を作って `env` に入れ、解析器で Markdown を HTML にし、`sanitize` をかけ、コアルールが決めた `env.features` と、`env.warnings` に集めた記載の警告と一緒に返却する
+    description: '`render` と `mount` が共通で使用する。解析器はモジュールで 1 つだけ作り（`createParser` を初めて使用するときに呼ぶ）、呼び出しごとの値は `env` で指定する。`nonce` は `crypto.getRandomValues` の 16 バイトを 16 進にしたもので、`sanitize` が出力から除外するため、同じ入力には同じ文字列を返却する'
     args:
       - name: options
         type: '{ markdown: string; config: ResolvedConfig; index?: MdmarkIndex; docId?: string; references?: MdmarkReferences; aliases?: MdmarkAlias[]; includes?: Record<string, string>; icons?: Record<string, MdmarkIconNode> }'
         required: true
-        description: '`markdown` は Markdown、`config` は既定を当てた設定、`index`・`docId`・`references`・`aliases` は `env` に入れる値（`index` は `normalizeIndex` にかけてから入れる。`aliases` はそのまま入れ、使えるものへの絞り込みは `buildDictionary` が行う）。`config` の `libraries`・`features`・`labels` は `env` の `libraries`・`defaults`・`labels` に入れる'
+        description: '`markdown` は Markdown、`config` は既定を適用した設定、`index`・`docId`・`references`・`aliases` は `env` に入れる値（`index` は `normalizeIndex` にかけてから入れる。`aliases` はそのまま入れ、使用できるものへの絞り込みは `buildDictionary` が行う）。`config` の `libraries`・`features`・`labels` は `env` の `libraries`・`defaults`・`labels` に入れる'
     returns:
       type: RenderedDocument
       description: 本文の HTML と機能のオン・オフ
@@ -299,35 +299,35 @@ functions:
     unit_tests:
       - name: test_render_document
         case: 正常
-        summary: 機能の印を重ねたオン・オフを返し、印は本文に残さない
+        summary: 機能のマーカーを重ねたオン・オフを返却し、マーカーは本文に残さない
         condition: '`<!-- features: -print -->` と段落。設定の `features` は `{ print: true }`'
         mock: なし
         expected: '`features` が `{ print: false }`、`html` に `<!--` が無い'
       - name: test_render_document_when_same_input
         case: 正常
-        summary: 同じ入力には同じ文字列を返す（解析器を使い回しても前の呼び出しの印が残らない）
-        condition: 印を持つ文書を 2 回描く
+        summary: 同じ入力には同じ文字列を返却する（解析器を使い回しても前の呼び出しのマーカーが残らない）
+        condition: マーカーを持つ文書を 2 回描く
         mock: なし
         expected: 2 回の `html` と `features` が等しい
       - name: test_render_document_when_raw_html_imitates_syntax
         case: 正常
-        summary: 生の HTML で書いた記法の class・data-*・id を落とし、記法が出したものは残す
+        summary: 生の HTML で記載した記法の class・data-*・id を落とし、記法が出したものは残す
         condition: '`<div class="mdmark-tabs" data-kind="data"><p id="fig-x">偽り</p></div>` と `> [!NOTE]` の引用'
         mock: なし
         expected: '`偽り` の段落に class・`data-kind`・`id` が無く、注意書きが `markdown-alert-note` を持ち、出力に `data-mdmark-own` が無い'
       - name: test_render_document_when_labels_given
         case: 正常
         summary: 設定の部品の文言で操作できる部品のボタンを描く
-        condition: '`<!-- param -->` の範囲に `strength` の定義を置いた文書。設定の `labels` は `{ paramCopy: "コピー" }`'
+        condition: '`<!-- param -->` の範囲に `strength` の定義を配置した文書。設定の `labels` は `{ paramCopy: "コピー" }`'
         mock: なし
-        expected: '`button.mdmark-param-copy` の文字が `コピー` で、`今の値を写す` が無い'
+        expected: '`button.mdmark-param-copy` の文字が `コピー` で、`今の値をコピーする` が無い'
   - name: createParser
     title: 解析器を作る
     container: src/render/parser.ts
     kind: 関数
     scope: internal
-    summary: '`html: true`・`linkify: true` の markdown-it に、足すコアルールを登録して返す'
-    description: 'コアルールは `inline` の後に次の順で登録する: 印（`takeMarks`）→ 文書の機能（`resolveDocumentFeatures`）→ 文書のページの設定（`resolvePageSettings`）→ 取り込み（`expandIncludes`）→ 蛍光ペン（`useHighlight` が取り込みの後に足す）→ 脚注の機能のオン・オフ（`collectFootnotes`）→ カードの格子（`buildCardGrid`。項目の `icon:` の行内のコードを読むため行内のアイコンより前、範囲の中のリンクをリンクと添付のカードにしないためカードより前）→ 行内のアイコン（`buildInlineIcons`。見出しの ID より前）→ 見出し（`assignHeadingIds`）→ 用語集の表（`glossaryRule`）→ 行の詳細 → ビュー → CSV の表 → 表（`decorateTables`。今の表の属性もここ）→ タブ → ステップ → 注意書き → ファイルツリー → バッジ → キー → 本文の文字の色（`buildTextColors`）→ 図の部品 → 埋め込んだ HTML → コードブロック（`buildCodeBlocks`。図の部品・埋め込んだ HTML より後）→ 表の見本の移動（`linkTreeExamples`）→ 画像の属性と種類（`readImages`）→ 図表の番号 → ギャラリー（`buildGallery`）→ 画像と動画と音声の図（`buildImageFigures`）→ カード（`buildCards`）→ 段組み → details の範囲 → wide の範囲 → 改ページ → 用語の下線（`termsRule`）→ 節 → 目次 → 脚注の一覧（`buildFootnoteList`）→ 関連文書の一覧（`backlinksRule`）→ タスクリスト → www の自動リンク → 残った印（`dropMarks`）→ 元の行番号（`markSourceLines`）→ 脚注の定義の取り出し（`takeFootnoteDefinitions`）→ 書き方の警告を集める（`collectWarningsRule`）。脚注の定義・参照・行内の脚注の block・inline のルールは `useFootnotes` で登録する。記法のコアルールは『記法』、用語と関連文書のコアルールは『索引と用語』。コードブロックの `pre` の属性は `renderer.rules.fence` を包んで付け、読み上げの名前はエスケープする（部品『HTML の特別な文字をエスケープする』）。www の自動リンクは `linkify.set({ fuzzyLink: true })` にし、スキームも `www.` もメールの `@` も持たない自動リンクを文字に戻す'
+    summary: '`html: true`・`linkify: true` の markdown-it に、追加するコアルールを登録して返却する'
+    description: 'コアルールは `inline` の後に次の順で登録する: マーカー（`takeMarks`）→ 文書の機能（`resolveDocumentFeatures`）→ 文書のページの設定（`resolvePageSettings`）→ 取り込み（`expandIncludes`）→ 蛍光ペン（`useHighlight` が取り込みの後に追加する）→ 脚注の機能のオン・オフ（`collectFootnotes`）→ カードの格子（`buildCardGrid`。項目の `icon:` の行内のコードを読み込むため行内のアイコンより前、範囲の中のリンクをリンクと添付のカードにしないためカードより前）→ 行内のアイコン（`buildInlineIcons`。見出しの ID より前）→ 見出し（`assignHeadingIds`）→ 用語集の表（`glossaryRule`）→ 行の詳細 → ビュー → CSV の表 → 表（`decorateTables`。今の表の属性もここ）→ タブ → ステップ → 注意書き → ファイルツリー → バッジ → キー → 本文の文字の色（`buildTextColors`）→ 図の部品 → 埋め込んだ HTML → コードブロック（`buildCodeBlocks`。図の部品・埋め込んだ HTML より後）→ 表の見本の移動（`linkTreeExamples`）→ 画像の属性と種類（`readImages`）→ 図表の番号 → ギャラリー（`buildGallery`）→ 画像と動画と音声の図（`buildImageFigures`）→ カード（`buildCards`）→ 段組み → details の範囲 → wide の範囲 → 改ページ → 用語の下線（`termsRule`）→ セクション → 目次 → 脚注の一覧（`buildFootnoteList`）→ 関連文書の一覧（`backlinksRule`）→ タスクリスト → www の自動リンク → 残ったマーカー（`dropMarks`）→ 元の行番号（`markSourceLines`）→ 脚注の定義の取り出し（`takeFootnoteDefinitions`）→ 記載の警告を集める（`collectWarningsRule`）。脚注の定義・参照・行内の脚注の block・inline のルールは `useFootnotes` で登録する。記法のコアルールは『記法』、用語と関連文書のコアルールは『索引と用語』。コードブロックの `pre` の属性は `renderer.rules.fence` を包んで付け、スクリーンリーダー向けの名前はエスケープする（部品『HTML の特別な文字をエスケープする』）。www の自動リンクは `linkify.set({ fuzzyLink: true })` にし、スキームも `www.` もメールの `@` も持たない自動リンクを文字に戻す'
     returns:
       type: MarkdownIt
       description: 解析器
@@ -347,30 +347,30 @@ functions:
       - name: test_create_parser_when_strikethrough
         case: 正常
         summary: 取り消し線を `del` にする
-        condition: '`~~消す~~`'
+        condition: '`~~削除する~~`'
         mock: なし
-        expected: '`<del>消す</del>`（`<s>` が無い）'
+        expected: '`<del>削除する</del>`（`<s>` が無い）'
       - name: test_create_parser_when_table
         case: 正常
-        summary: 表に読み上げの名前と `tabindex`、セルに列名を付ける
+        summary: 表にスクリーンリーダー向けの名前と `tabindex`、セルに列名を付ける
         condition: '`## 変数` の後に、見出しが `**列A**` と `列B` の表'
         mock: なし
         expected: '`<table tabindex="0" aria-label="表: 変数">`、`td` が `data-label="列A"` と `data-label="列B"` を持つ'
       - name: test_create_parser_when_table_without_heading
         case: 正常
-        summary: 直前に見出しが無ければ読み上げの名前は `表`
+        summary: 直前に見出しが無ければスクリーンリーダー向けの名前は `表`
         condition: 見出しの無い文書の表
         mock: なし
         expected: '`aria-label="表"`'
       - name: test_create_parser_when_code_block
         case: 正常
-        summary: コードブロックの `pre` に読み上げの名前と `tabindex` を付ける
+        summary: コードブロックの `pre` にスクリーンリーダー向けの名前と `tabindex` を付ける
         condition: 情報文字列 `ts` のコードブロックと、情報文字列の無いコードブロック
         mock: なし
         expected: '`<pre tabindex="0" aria-label="コード: ts"><code class="language-ts">` と `<pre tabindex="0" aria-label="コード">`'
       - name: test_create_parser_when_info_has_quote
         case: 正常
-        summary: 情報文字列に `"` があっても、コードブロックの読み上げの名前が途中で切れない
+        summary: 情報文字列に `"` があっても、コードブロックのスクリーンリーダー向けの名前が途中で切れない
         condition: 情報文字列 `ts"x` のコードブロック
         mock: なし
         expected: '`aria-label="コード: ts&quot;x"`'
@@ -380,12 +380,12 @@ functions:
       - dev/設計書/モジュール構成/ライブラリ本体/記法.ts#functions[collectFootnotes]
       - dev/設計書/モジュール構成/ライブラリ本体/記法.ts#functions[takeFootnoteDefinitions]
   - name: takeMarks
-    title: 印を拾って置き換える
+    title: マーカーを取得して置き換える
     container: src/render/marks.ts
     kind: 関数
     scope: internal
-    summary: コアルール。`html_block`・`html_inline` のトークンの印を拾い、`features` は引数を `env.featureArgs` へ足し、`page` は文書の先頭（それより前のトークンが印か空のときだけ）なら引数を `env.pageArgs` へ足し、先頭に無ければ印の場所に書き方の警告を差し込み、対応表と登録した拡張の名前は `renderEmbed` の HTML（`markOwn` を掛ける）に置き換え、印だけの `html_block` の記法の印は印のトークン（type `mdmark_mark`、`meta` に `Mark`）に替え、それ以外は取り除く
-    description: コードブロックと行内のコードは `html_*` のトークンにならないため、中の印のような文字はそのまま残る。記法の印は機能のオン・オフによらず印のトークンにし、オフの記法の印は `dropMarks` が取り除く
+    summary: コアルール。`html_block`・`html_inline` のトークンのマーカーを取得し、`features` は引数を `env.featureArgs` へ追加し、`page` は文書の先頭（それより前のトークンがマーカーか空のときだけ）なら引数を `env.pageArgs` へ追加し、先頭に無ければマーカーの場所に記載の警告を差し込み、対応表と登録した拡張の名前は `renderEmbed` の HTML（`markOwn` を掛ける）に置き換え、マーカーだけの `html_block` の記法のマーカーはマーカーのトークン（type `mdmark_mark`、`meta` に `Mark`）に替え、それ以外は取り除く
+    description: コードブロックと行内のコードは `html_*` のトークンにならないため、中のマーカーのような文字はそのまま残る。記法のマーカーは機能のオン・オフによらずマーカーのトークンにし、オフの記法のマーカーは `dropMarks` が取り除く
     args:
       - name: state
         type: StateCore
@@ -400,31 +400,31 @@ functions:
     unit_tests:
       - name: test_take_marks
         case: 正常
-        summary: 機能の印の引数を書いた順に拾い、本文から取り除く
+        summary: 機能のマーカーの引数を記載した順に取得し、本文から取り除く
         condition: '行頭の `<!-- features: +a -b -->` と、文中の `<!-- features: +c -->`'
         mock: なし
-        expected: '`env.featureArgs` が `["+a", "-b", "+c"]`、描いた HTML に印が無い'
+        expected: '`env.featureArgs` が `["+a", "-b", "+c"]`、描いた HTML にマーカーが無い'
       - name: test_take_marks_when_library_mark
         case: 正常
-        summary: 対応表にある印を印の場所の要素にする
+        summary: 対応表にあるマーカーをマーカーの場所の要素にする
         condition: '`<!-- test-lib: a b -->`、対応表に `test-lib`'
         mock: なし
         expected: '`renderEmbed({ name: "test-lib", args: ["a", "b"] })` の HTML が入る'
       - name: test_take_marks_when_unknown_mark
         case: 正常
-        summary: 未知の印を取り除き、印でないコメントとコードの中はそのままにする
+        summary: 未知のマーカーを取り除き、マーカーでないコメントとコードの中はそのままにする
         condition: '`<!-- unknown: 1 -->`・`<!-- ただのコメント -->`・コードブロックの中の `<!-- features: -print -->`'
         mock: なし
         expected: '`unknown` が消え、コードブロックの中は文字として残り、`env.featureArgs` は空'
       - name: test_take_marks_when_syntax_mark
         case: 正常
-        summary: 記法の印と閉じの印、コロンの無い印を印のトークンにする
+        summary: 記法のマーカーと閉じのマーカー、コロンの無いマーカーをマーカーのトークンにする
         condition: '行に `<!-- table: data -->`・`<!-- /table -->`・`<!-- tabs -->`'
         mock: なし
-        expected: '印のトークンが 3 つで、`meta` が `{ name: "table", closing: false }`・`{ name: "table", closing: true }`・`{ name: "tabs", args: { args: [], keys: {} } }`'
+        expected: 'マーカーのトークンが 3 つで、`meta` が `{ name: "table", closing: false }`・`{ name: "table", closing: true }`・`{ name: "tabs", args: { args: [], keys: {} } }`'
       - name: test_take_marks_when_extension_mark
         case: 正常
-        summary: 登録した拡張の印を印の場所の要素にする
+        summary: 登録した拡張のマーカーをマーカーの場所の要素にする
         condition: '`greet` を登録し、`<!-- greet: world lang=ja -->`'
         mock: なし（テストの前後で `resetExtensions`）
         expected: '`renderEmbed({ name: "greet", args: ["world", "lang=ja"] })` の HTML が入る'
@@ -433,7 +433,7 @@ functions:
     container: src/render/sanitize.ts
     kind: 関数
     scope: internal
-    summary: '`SANITIZE_OPTIONS` に `nonce` を見る `transformTags` を足して sanitize-html を呼ぶ。`data-mdmark-own` が `nonce` と等しい要素は記法の class・`data-*`・`id`・`role`・`aria-*` を残して属性だけを外し（mdmark が出した要素の `style` は、図の部品の位置・大きさ・余白・倍率（`DIAGRAM_STYLE_PATTERN`。余白は `padding` の 0 以上の px の値 1 つか 2 つ）か、コードブロックの `code` の行番号の桁の数（`--mdmark-code-digits: {数字}`）か、画像の幅（`--mdmark-image-width: {整数}px` か `{整数}%`）か、ギャラリーの列の数（`--mdmark-gallery-cols: {1〜6}`）か、埋め込んだ HTML の中の要素の `filterEmbeddedStyle` の宣言だけを残す）、それ以外の要素からは記法の class（`mdmark-` で始まる記法のものと `markdown-alert*`）・記法の `data-*`・`id`・`hidden`・`colspan`・`rowspan`・`scope` を落とす。`data-source-line` は誰が出した要素でも、値が 0 以上の整数のときだけ残す。`video`・`audio` は `data-mdmark-own` が `nonce` と等しいときだけ残し、それ以外は中身ごと落とす'
+    summary: '`SANITIZE_OPTIONS` に `nonce` を確認する `transformTags` を追加して sanitize-html を呼ぶ。`data-mdmark-own` が `nonce` と等しい要素は記法の class・`data-*`・`id`・`role`・`aria-*` を残して属性だけを削除し（mdmark が出した要素の `style` は、図の部品の位置・大きさ・余白・倍率（`DIAGRAM_STYLE_PATTERN`。余白は `padding` の 0 以上の px の値 1 つか 2 つ）か、コードブロックの `code` の行番号の桁の数（`--mdmark-code-digits: {数字}`）か、画像の幅（`--mdmark-image-width: {整数}px` か `{整数}%`）か、ギャラリーの列の数（`--mdmark-gallery-cols: {1〜6}`）か、埋め込んだ HTML の中の要素の `filterEmbeddedStyle` の宣言だけを残す）、それ以外の要素からは記法の class（`mdmark-` で始まる記法のものと `markdown-alert*`）・記法の `data-*`・`id`・`hidden`・`colspan`・`rowspan`・`scope` を落とす。`data-source-line` は誰が出した要素でも、値が 0 以上の整数のときだけ残す。`video`・`audio` は `data-mdmark-own` が `nonce` と等しいときだけ残し、それ以外は中身ごと落とす'
     args:
       - name: html
         type: string
@@ -455,13 +455,13 @@ functions:
         expected: '`script`・`onclick`・`javascript:`・`style` が無く、`details` と `summary` が残る'
       - name: test_sanitize_when_align
         case: 正常
-        summary: 列の揃えを class に移す
+        summary: 列の配置を class に移す
         condition: '`<td style="text-align:right">` と `<td style="text-align:justify;color:red">`'
         mock: なし
         expected: 前者が `class="mdmark-align-right"`、後者は class も `style` も持たない
       - name: test_sanitize_when_input
         case: 正常
-        summary: 入力欄を無効のチェックボックスに付け直す
+        summary: 入力欄を無効のチェックボックスにもう一度付ける
         condition: '`<input type="text" value="x">` と `<input type="checkbox" checked>`'
         mock: なし
         expected: '`<input type="checkbox" disabled />` と `<input type="checkbox" disabled checked />`'
@@ -473,28 +473,28 @@ functions:
         expected: '`class="language-ts"` と `class="mdmark-embed"`。`data-mdmark-slot` と `role="status"` は残る。`<p>` は class を持たず、`role="alert"` が無い（値の無い `role` 属性は残る）'
       - name: test_sanitize_when_tabindex
         case: 正常
-        summary: 文書に書いた `tabindex` を 0 にする
+        summary: 文書に記載した `tabindex` を 0 にする
         condition: '`<table tabindex="5">`'
         mock: なし
         expected: '`<table tabindex="0">`'
       - name: test_sanitize_when_data_image
         case: 正常
-        summary: 画像の種類と base64 の形の `data:` URL だけを画像の `src` に残す
+        summary: 画像の種類と base64 の構造の `data:` URL だけを画像の `src` に残す
         condition: '`<img src="data:image/png;base64,iVBORw0KGgo=">`・`<img src="data:text/html;base64,PHNjcmlwdD4=">`・`<img src="data:image/svg+xml,<svg/>">`・`<a href="data:image/png;base64,iVBORw0KGgo=">`'
         mock: なし
         expected: 1 つ目の `img` だけが `src` を持ち、2 つ目と3 つ目の `img` は `src` を持たず、`a` は `href` を持たない
       - name: test_sanitize_when_own_style
         case: 正常
-        summary: 自分が出した要素の style は図の部品と埋め込んだ HTML の許した宣言だけ残し、書いた要素の style は落とす
-        condition: '`data-mdmark-own` が `nonce` と等しい図の箱の `<div class="mdmark-diagram-node" style="left:10px;top:20px">` と、`div.mdmark-html` の中の `<div style="display:flex;position:fixed">`、持たない `<div style="display:flex">`'
+        summary: 自分が出した要素の style は図の部品と埋め込んだ HTML の許した宣言だけ残し、記載した要素の style は落とす
+        condition: '`data-mdmark-own` が `nonce` と等しい図のノードの `<div class="mdmark-diagram-node" style="left:10px;top:20px">` と、`div.mdmark-html` の中の `<div style="display:flex;position:fixed">`、持たない `<div style="display:flex">`'
         mock: なし
-        expected: 図の箱が `style="left:10px;top:20px"`、埋め込んだ HTML の要素が `style="display:flex"`、書いた要素は `style` を持たない
+        expected: 図のノードが `style="left:10px;top:20px"`、埋め込んだ HTML の要素が `style="display:flex"`、記載した要素は `style` を持たない
       - name: test_sanitize_when_diagram_node_padding
         case: 正常
         summary: 自分が出した図のノードの余白の style を位置と大きさと一緒に残し、負の余白の style は図の部品の宣言として扱わない
         condition: '`data-mdmark-own` が `nonce` と等しい `<div class="mdmark-diagram-node" style="left:10px;top:20px;width:280px;height:136px;padding:34px 70px">`・`<div class="mdmark-diagram-node" style="left:0px;top:0px;width:56px;height:56px;padding:14.6px">`・`<div class="mdmark-diagram-node" style="left:10px;top:20px;padding:-4px">`'
         mock: なし
-        expected: 1 つ目と 2 つ目の `style` が書いたとおり残り、3 つ目は `left`・`top` を持たない
+        expected: 1 つ目と 2 つ目の `style` が記載したとおり残り、3 つ目は `left`・`top` を持たない
       - name: test_sanitize_when_code_digits
         case: 正常
         summary: 自分が出したコードブロックの行番号の桁の数だけを残す
@@ -509,40 +509,40 @@ functions:
         expected: 1 つ目と 2 つ目は属性が残り、3 つ目は `data-source-line` を持たない
       - name: test_sanitize_when_media
         case: 正常
-        summary: 記法の動画を残し、文書に書いた動画を落とす
-        condition: '`nonce` を持つ `<figure data-mdmark-own><video src="a.mp4" controls preload="metadata" playsinline aria-label="操作" poster="a.png"></video></figure>` と、文書に書いた `<video src="b.mp4"><source src="b.webm"></video>`'
+        summary: 記法の動画を残し、文書に記載した動画を落とす
+        condition: '`nonce` を持つ `<figure data-mdmark-own><video src="a.mp4" controls preload="metadata" playsinline aria-label="操作" poster="a.png"></video></figure>` と、文書に記載した `<video src="b.mp4"><source src="b.webm"></video>`'
         mock: なし
         expected: 1 つ目の `video` と属性が残り、2 つ目の `video`・`source` が無い
       - name: test_sanitize_when_image_style
         case: 正常
         summary: 画像の幅とギャラリーの列の数の style だけを残す
-        condition: '`nonce` を持つ `<figure style="--mdmark-image-width: 40%">`・`<div style="--mdmark-gallery-cols: 3">`・`<figure style="--mdmark-image-width: calc(1px)">` と、文書に書いた `<p style="--mdmark-image-width: 10px">`'
+        condition: '`nonce` を持つ `<figure style="--mdmark-image-width: 40%">`・`<div style="--mdmark-gallery-cols: 3">`・`<figure style="--mdmark-image-width: calc(1px)">` と、文書に記載した `<p style="--mdmark-image-width: 10px">`'
         mock: なし
         expected: 1 つ目と 2 つ目の `style` が残り、3 つ目と 4 つ目は `style` を持たない
       - name: test_sanitize_when_cell_span
         case: 正常
         summary: セルの結合と見出しの範囲は記法が出したセルにだけ残す
-        condition: '`data-mdmark-own` が `nonce` と等しい `<th rowspan="2" colspan="2" scope="colgroup">` と、文書に書いた `<td rowspan="9" scope="row">`'
+        condition: '`data-mdmark-own` が `nonce` と等しい `<th rowspan="2" colspan="2" scope="colgroup">` と、文書に記載した `<td rowspan="9" scope="row">`'
         mock: なし
         expected: 前者が `rowspan`・`colspan`・`scope` を持ち、後者はどれも持たない
   - name: parseMarkArgs
-    title: 印の引数を読み分ける
+    title: マーカーの引数を判別しる
     container: src/render/marks.ts
     kind: 関数
     scope: internal
-    summary: 引数の文字を空白で区切り、`キー=値` を `keys`（同じキーは後の値）、それ以外を書いた順に `args` に入れる
+    summary: 引数の文字を空白で区切り、`キー=値` を `keys`（同じキーは後の値）、それ以外を記載した順に `args` に入れる
     args:
       - name: text
         type: string
         required: true
-        description: 印の `:` の後ろの文字（無ければ空）
+        description: マーカーの `:` の後ろの文字（無ければ空）
     returns:
       type: MdmarkMarkArgs
-      description: 読み分けた引数
+      description: 判別した引数
     unit_tests:
       - name: test_parse_mark_args
         case: 正常
-        summary: 種類・機能・キー・開閉を読み分ける
+        summary: 種類・機能・キー・開閉を判別しる
         condition: '`data +sort -pin filter=名前:text closed`'
         mock: なし
         expected: '`{ args: ["data", "+sort", "-pin", "closed"], keys: { filter: "名前:text" } }`'
@@ -567,24 +567,24 @@ functions:
     callees:
       - dev/設計書/モジュール構成/ライブラリ本体/設定と機能.ts#functions[resolveFeatures]
   - name: readPageSettings
-    title: ページの設定の印を読む
+    title: ページの設定のマーカーを読み込む
     container: src/render/page.ts
     kind: 関数
     scope: internal
-    summary: page の印の引数（`キー=値` の並び）から、書けるキーと値だけを `PageSettings` にし、書けるキーの知らない値と、知らないキー・`=` を持たない引数を分けて返す
-    description: '`scheme` は `COLOR_SCHEMES`、`theme` は `COLOR_THEMES`、`toc` は `hover`・`fixed` の値だけを受ける。同じキーが何度も出たら後に書いた値を使う。`scheme`・`theme`・`toc` の受けない値は `unknown` に、それ以外のキーと `=` を持たない引数は `skipped` に入れる'
+    summary: page のマーカーの引数（`キー=値` の並び）から、記載できるキーと値だけを `PageSettings` にし、記載できるキーの知らない値と、知らないキー・`=` を持たない引数を分けて返却する
+    description: '`scheme` は `COLOR_SCHEMES`、`theme` は `COLOR_THEMES`、`toc` は `hover`・`fixed` の値だけを受ける。同じキーが何度も出たら後に記載した値を使用する。`scheme`・`theme`・`toc` の受けない値は `unknown` に、それ以外のキーと `=` を持たない引数は `skipped` に入れる'
     args:
       - name: options
         type: '{ args: string[]; keys: Record<string, string> }'
         required: true
-        description: '`parseMarkArgs` が返した印の引数'
+        description: '`parseMarkArgs` が返却したマーカーの引数'
     returns:
       type: '{ settings: PageSettings; unknown: string[]; skipped: string[] }'
-      description: 読めたページの設定と、書けるキーの知らない値の引数と、知らないキー・指定の引数（キーは `{キー}=`）を、それぞれ書いた順に並べたもの
+      description: 読み込めたページの設定と、記載できるキーの知らない値の引数と、知らないキー・指定の引数（キーは `{キー}=`）を、それぞれ記載した順に並べたもの
     unit_tests:
       - name: test_read_page_settings
         case: 正常
-        summary: 書けるキーと値を読む
+        summary: 記載できるキーと値を読み込む
         condition: '`scheme=dark theme=theme-slate toc=fixed`'
         mock: なし
         expected: '`settings` が `{ scheme: "dark", theme: "theme-slate", toc: "fixed" }`、`unknown` と `skipped` が空'
@@ -602,7 +602,7 @@ functions:
     container: src/render/marks.ts
     kind: 関数
     scope: internal
-    summary: コアルール。`takeMarks` が拾った先頭の page の印を `readPageSettings` で読んで `env.page` に入れ、書けるキーの知らない値があれば文書の先頭に書き方の警告を差し込み、`skipped` は `pushSkippedArgs`（使えるのは `scheme=`・`theme=`・`toc=`）で文書の先頭に差し込む
+    summary: コアルール。`takeMarks` が取得した先頭の page のマーカーを `readPageSettings` で読み込んで `env.page` に入れ、記載できるキーの知らない値があれば文書の先頭に記載の警告を差し込み、`skipped` は `pushSkippedArgs`（使用できるのは `scheme=`・`theme=`・`toc=`）で文書の先頭に差し込む
     args:
       - name: state
         type: StateCore
@@ -614,31 +614,31 @@ functions:
     unit_tests:
       - name: test_resolve_page_settings
         case: 正常
-        summary: 先頭の印を読み、本文に印を残さない
+        summary: 先頭のマーカーを読み込み、本文にマーカーを残さない
         condition: '先頭の行に `<!-- features: -toc -->`、次の行に `<!-- page: scheme=dark -->`、その後に段落'
         mock: なし
-        expected: '`renderDocument` の `page` が `{ scheme: "dark" }`、HTML に印と書き方の警告が無い'
+        expected: '`renderDocument` の `page` が `{ scheme: "dark" }`、HTML にマーカーと記載の警告が無い'
       - name: test_resolve_page_settings_when_not_at_top
         case: 異常
-        summary: 先頭に無い印は読まずに警告を置く
+        summary: 先頭に無いマーカーは読み込まずに警告を配置する
         condition: '段落の後に `<!-- page: scheme=dark -->`'
         mock: なし
-        expected: '`page` が `{}`、印の場所に page の印は文書の先頭に書くことを書いた書き方の警告がある'
+        expected: '`page` が `{}`、マーカーの場所に page のマーカーは文書の先頭に記載することを記載した記載の警告がある'
       - name: test_resolve_page_settings_when_unknown
         case: 異常
-        summary: 知らない値を文書の先頭の警告にまとめ、知らないキーを読み飛ばす
+        summary: 知らない値を文書の先頭の警告にまとめ、知らないキーをスキップする
         condition: '先頭の行に `<!-- page: scheme=sepia size=wide toc=fixed -->`'
         mock: なし
-        expected: '`page` が `{ toc: "fixed" }`、文書の先頭に `scheme=sepia` を挙げ `size=wide` を挙げない書き方の警告が 1 つ、`warnings` に `size=` の `unknown_mark_arg` が 1 件'
+        expected: '`page` が `{ toc: "fixed" }`、文書の先頭に `scheme=sepia` を挙げ `size=wide` を挙げない記載の警告が 1 つ、`warnings` に `size=` の `unknown_mark_arg` が 1 件'
     refs:
       - dev/設計書/インターフェース定義/ライブラリ本体/文書をHTML文字列にする.ts#constraints[ページの設定のマーカー]
     status: planned
   - name: dropMarks
-    title: 残った印を取り除く
+    title: 残ったマーカーを取り除く
     container: src/render/marks.ts
     kind: 関数
     scope: internal
-    summary: コアルール。最後に、記法が使わなかった印のトークン（オフの記法の印を含む）を取り除く
+    summary: コアルール。最後に、記法が使用しなかったマーカーのトークン（オフの記法のマーカーを含む）を取り除く
     args:
       - name: state
         type: StateCore
@@ -648,14 +648,14 @@ functions:
     unit_tests:
       - name: test_drop_marks
         case: 正常
-        summary: オフの記法の印を取り除き、囲んだ Markdown は残す
+        summary: オフの記法のマーカーを取り除き、囲んだ Markdown は残す
         condition: '`<!-- features: -tabs -->` と、段落を囲んだ `<!-- tabs -->` 〜 `<!-- /tabs -->`'
         mock: なし
-        expected: 段落があり、印のトークンと `<!--` が無い
+        expected: 段落があり、マーカーのトークンと `<!--` が無い
   - name: sanitizeEmbedded
     title: 埋め込んだ HTML を落とす
     container: src/render/sanitize.ts
-    summary: 埋め込んだ HTML の中身を `SANITIZE_OPTIONS` に `button`・`data-hint`・`style` を足した設定で落とし、`style` は `transformTags` で `filterEmbeddedStyle` に通す。`button` は `type="button"` に付け直し `form` で始まる属性を落とし、書いた人の class・`id`・`data-hint` 以外の `data-*`・`role`・`aria-*` を落とす。`textFilter` で文字を `onText` に渡し、返った HTML に置き換える（用語の下線。`a`・`code`・`pre`・見出しの中は渡さない）
+    summary: 埋め込んだ HTML の中身を `SANITIZE_OPTIONS` に `button`・`data-hint`・`style` を追加した設定で落とし、`style` は `transformTags` で `filterEmbeddedStyle` に経由する。`button` は `type="button"` にもう一度付け `form` で始まる属性を落とし、記載した人の class・`id`・`data-hint` 以外の `data-*`・`role`・`aria-*` を落とす。`textFilter` で文字を `onText` に指定し、返った HTML に置き換える（用語の下線。`a`・`code`・`pre`・見出しの中は指定しない）
     kind: 関数
     scope: internal
     args:
@@ -666,11 +666,11 @@ functions:
       - name: onText
         type: '(text: string) => string'
         required: true
-        description: 文字（エスケープ済み）を受け、置き換える HTML を返す関数
+        description: 文字（エスケープ済み）を受け、置き換える HTML を返却する関数
       - name: keepClasses
         type: boolean
         required: false
-        description: '真なら、書いた人の class を記法の class（`SYNTAX_CLASS_PATTERN` に合うもの）を除いて残し、class を残した要素に `data-mdmark-keep-class` を付ける（`sanitize` は、mdmark が出した要素のうちこの属性を持つものの class を絞らず、属性を削除する）。書いた人の `data-mdmark-keep-class` は削除する。`html-scripts` がオンの範囲の `html` で真にする。既定は偽'
+        description: '真なら、記載した人の class を記法の class（`SYNTAX_CLASS_PATTERN` に合うもの）を除いて残し、class を残した要素に `data-mdmark-keep-class` を付ける（`sanitize` は、mdmark が出した要素のうちこの属性を持つものの class を絞らず、属性を削除する）。記載した人の `data-mdmark-keep-class` は削除する。`html-scripts` がオンの範囲の `html` で真にする。既定は偽'
     returns:
       type: string
       description: 落とした後の HTML
@@ -689,13 +689,13 @@ functions:
         expected: 前者が `style="display:flex"`、後者は `style` を持たない
       - name: test_sanitize_embedded_when_text
         case: 正常
-        summary: 本文の文字だけを onText に渡す
+        summary: 本文の文字だけを onText に指定する
         condition: '`<p>索引</p><a href="#">索引</a><code>索引</code>`、`onText` は `索引` を `<span class="t">索引</span>` にする'
         mock: なし
         expected: '`p` の中だけが置き換わり、`a` と `code` の中は文字のまま'
       - name: test_sanitize_embedded_when_keep_classes
         case: 正常
-        summary: keepClasses が真なら、記法の class を除いて書いた人の class を残す
+        summary: keepClasses が真なら、記法の class を除いて記載した人の class を残す
         condition: '`<div class="box mdmark-table has-tip" data-mdmark-keep-class="x">`、`keepClasses` が `true` と省いたとき'
         mock: なし
         expected: '`true` は `<div class="box" data-mdmark-keep-class>`、省いたときは `class` と `data-mdmark-keep-class` が無い'
@@ -708,7 +708,7 @@ functions:
   - name: filterEmbeddedStyle
     title: 埋め込んだ HTML の style を絞る
     container: src/render/sanitize.ts
-    summary: '`style` の値を `;` で宣言に分け、宣言ごとに `:` の前を名前、後ろを値として `EMBED_STYLES` の名前と値の正規表現で絞り、残った宣言を `名前:値` を `;` でつないで組み直す。値に `/*`・引用符・`\` を含む宣言は落とす。postcss を使わない（`DIAGRAM_STYLE_PATTERN` と同じ作り）'
+    summary: '`style` の値を `;` で宣言に分け、宣言ごとに `:` の前を名前、後ろを値として `EMBED_STYLES` の名前と値の正規表現で絞り、残った宣言を `名前:値` を `;` でつないでもう一度組む。値に `/*`・引用符・`\` を含む宣言は落とす。postcss を使用しない（`DIAGRAM_STYLE_PATTERN` と同じ作り）'
     kind: 関数
     scope: internal
     args:
@@ -718,7 +718,7 @@ functions:
         description: 要素の `style` の値
     returns:
       type: string
-      description: 残した宣言をつないだ値。残る宣言が無ければ空の文字で、呼び元は `style` を消す
+      description: 残した宣言をつないだ値。残る宣言が無ければ空の文字で、呼び元は `style` を削除する
     unit_tests:
       - name: test_filter_embedded_style
         case: 正常
@@ -738,11 +738,11 @@ functions:
     introduced:
       pr: 45
   - name: findMarks
-    title: 文書の印を拾う
+    title: 文書のマーカーを取得する
     container: src/render/parser.ts
     usecase: 設定と索引を点検する
-    summary: Markdown の生の HTML のブロックと行内の HTML から `MARK_PATTERN` に当たる印を拾い、名前と行の番号を書いた順に返す
-    description: '`createParser` と同じ設定（`html: true`・`linkify: true`）の markdown-it で、足すコアルールを登録せずに解析する（コードブロックとインラインコードの中は `html_block`・`html_inline` にならないため拾わない）。行の番号は 1 からで、`html_block` はトークンの `map` の開始行に印より前の改行の数を足し、`html_inline` は親の `inline` の `map` の開始行（表のセルのように `map` が `null` のときは直前の `tr_open` の `map` の開始行）に、印より前の子の `softbreak`・`hardbreak` の数と、印より前の子の `html_inline` の内容の改行の数と、同じ `html_inline` の中で印より前の改行の数を足す。閉じの印も 1 つの印として返す'
+    summary: Markdown の生の HTML のブロックと行内の HTML から `MARK_PATTERN` に該当するマーカーを取得し、名前と行の番号を記載した順に返却する
+    description: '`createParser` と同じ設定（`html: true`・`linkify: true`）の markdown-it で、追加するコアルールを登録せずに解析する（コードブロックとインラインコードの中は `html_block`・`html_inline` にならないため取得しない）。行の番号は 1 からで、`html_block` はトークンの `map` の開始行にマーカーより前の改行の数を追加し、`html_inline` は親の `inline` の `map` の開始行（表のセルのように `map` が `null` のときは直前の `tr_open` の `map` の開始行）に、マーカーより前の子の `softbreak`・`hardbreak` の数と、マーカーより前の子の `html_inline` の内容の改行の数と、同じ `html_inline` の中でマーカーより前の改行の数を追加する。閉じのマーカーも 1 つのマーカーとして返却する'
     kind: 関数
     scope: public
     args:
@@ -752,35 +752,35 @@ functions:
         description: 文書の Markdown
     returns:
       type: '{ name: string; line: number }[]'
-      description: 拾った印の名前と行の番号
+      description: 取得したマーカーの名前と行の番号
     unit_tests:
       - name: test_find_marks
         case: 正常
-        summary: ブロックと行内の印を行の番号つきで拾う
-        condition: '1 行目が `# 題`、3 行目が `<!-- tabz -->`、5・6 行目が `段落` と `続き <!-- note: a --> と <!-- /note -->`'
+        summary: ブロックと行内のマーカーを行の番号つきで取得する
+        condition: '1 行目が `# タイトル`、3 行目が `<!-- tabz -->`、5・6 行目が `段落` と `続き <!-- note: a --> と <!-- /note -->`'
         mock: なし
         expected: '`[{ name: "tabz", line: 3 }, { name: "note", line: 6 }, { name: "note", line: 6 }]`'
       - name: test_find_marks_when_code
         case: 正常
-        summary: コードブロックとインラインコードの中の印は拾わない
+        summary: コードブロックとインラインコードの中のマーカーは取得しない
         condition: '`markdown` のコードブロックの中の `<!-- tabz -->` と、段落の中のインラインコード `` `<!-- tabz -->` ``'
         mock: なし
         expected: 空の配列
       - name: test_find_marks_when_multiline_block
         case: 正常
-        summary: 複数行の HTML のブロックの中の印の行を数える
+        summary: 複数行の HTML のブロックの中のマーカーの行を数える
         condition: 2 行目から `<div>`・`<!-- tabz -->`・`</div>` の 3 行のブロック
         mock: なし
         expected: '`[{ name: "tabz", line: 3 }]`'
       - name: test_find_marks_when_table_cell
         case: 正常
-        summary: 表のセルの中の印の行を行の番号で返す
+        summary: 表のセルの中のマーカーの行を行の番号で返却する
         condition: 1・2 行目が表の見出しと区切り、3 行目が `| 1 <!-- tabz --> | 2 |`
         mock: なし
         expected: '`[{ name: "tabz", line: 3 }]`'
       - name: test_find_marks_when_multiline_inline_html
         case: 正常
-        summary: 前に複数行の行内の HTML がある印の行を数える
+        summary: 前に複数行の行内の HTML があるマーカーの行を数える
         condition: 1・2 行目が `p <a` と `href="x">l</a> <!-- c -->`
         mock: なし
         expected: '`[{ name: "c", line: 2 }]`'
@@ -796,7 +796,7 @@ functions:
     container: src/render/parser.ts
     usecase: 文書を描く
     summary: コアルール。`map` を持つブロックの開始のトークンに、`map[0]` を `data-source-line` で付ける
-    description: 対象は `block` が `true` で `map` を持ち、`nesting` が `1`（見出し・段落・リスト・リストの項目・表・表の行・引用）か `0`（`hr`・`code_block`）のトークンで、`attrSet("data-source-line", String(map[0]))` を呼ぶ。`fence` は `createParser` が包んだ `renderer.rules.fence` が、帯で包むコードブロックでは外側の `div.mdmark-code` に、帯で包まないコードブロック（`code` がオフ）では `pre` に付ける。記法のコアルールが印の範囲を置き換えた `html_block`（`ownBlock`。開きの印のトークンの `map` を写す）は、HTML の最初の開始タグに属性を差し込む。文書に書いた生の HTML の `html_block` は変えない
+    description: 対象は `block` が `true` で `map` を持ち、`nesting` が `1`（見出し・段落・リスト・リストの項目・表・表の行・引用）か `0`（`hr`・`code_block`）のトークンで、`attrSet("data-source-line", String(map[0]))` を呼ぶ。`fence` は `createParser` が包んだ `renderer.rules.fence` が、帯で包むコードブロックでは外側の `div.mdmark-code` に、帯で包まないコードブロック（`code` がオフ）では `pre` に付ける。記法のコアルールがマーカーの範囲を置き換えた `html_block`（`ownBlock`。開きのマーカーのトークンの `map` を写す）は、HTML の最初の開始タグに属性を差し込む。文書に記載した生の HTML の `html_block` は変えない
     scope: internal
     side_effects: '`state.tokens` の属性と `html_block` の `content` を書き換える'
     args:
@@ -819,13 +819,13 @@ functions:
         expected: '`<table data-source-line="0"`、本体の `tr` が `data-source-line="2"` と `"3"`、コードブロックを包む `div.mdmark-code` が `data-source-line="5"`'
       - name: test_mark_source_lines_when_mark_range
         case: 正常
-        summary: 印の範囲を囲む要素と注意書きに開きの印の行を付け、中のブロックにもそれぞれの行を付ける
+        summary: マーカーの範囲を囲む要素と注意書きに開きのマーカーの行を付け、中のブロックにもそれぞれの行を付ける
         condition: '1 行目 `<!-- table: data -->`、3 行目から表、6 行目 `<!-- /table -->`、8 行目から `> [!NOTE]` の注意書き'
         mock: なし
         expected: 表を囲む要素が `data-source-line="0"`、中の `table` が `data-source-line="2"`、注意書きの外側の要素が `data-source-line="7"`
       - name: test_mark_source_lines_when_raw_html
         case: 正常
-        summary: 文書に書いた生の HTML のブロックは変えない
+        summary: 文書に記載した生の HTML のブロックは変えない
         condition: 1 行目 `<div class="x">地</div>`
         mock: なし
         expected: '`div` が `data-source-line` を持たない'
@@ -841,8 +841,8 @@ functions:
     container: src/render/scope-css.ts
     kind: 関数
     scope: internal
-    summary: 範囲の `css` の各規則のセレクタの前に `.mdmark-html[data-html-scope="{scope}"]` を付け、`:scope` をその根の要素のセレクタに置き換えた CSS を返す
-    description: 要件の `未確定`（範囲の `css` を範囲の HTML にだけ当てる手段）の案 A。対応ブラウザの下限（Chrome 99・Firefox 98・Safari 16.4）で効き、範囲の中の mdmark の部品に `dist/index.css` が当たるため、`@scope` と Shadow DOM は使わない。文字列・コメント・括弧の中の `,`・`{`・`}` を区切りとして扱わない。`@media`・`@supports`・`@container`・`@layer` の中の規則も同じく書き換え、`@keyframes`・`@font-face` は中を書き換えずに残す。この 6 つ以外の `@` の規則（`@import`・`@scope`・`@starting-style` など）は、範囲の外へ当てない・外へ要求させないため落とし、書き方の警告は出さない。`html`・`body`・`:root` で始まるセレクタはその部分を根の要素に置き換える。DOM を使わず、`render` と同じく Node でも動く
+    summary: 範囲の `css` の各規則のセレクタの前に `.mdmark-html[data-html-scope="{scope}"]` を付け、`:scope` をその根の要素のセレクタに置き換えた CSS を返却する
+    description: 要件の `未確定`（範囲の `css` を範囲の HTML にだけ適用する手段）の案 A。対応ブラウザの下限（Chrome 99・Firefox 98・Safari 16.4）で有効になり、範囲の中の mdmark の部品に `dist/index.css` が該当するため、`@scope` と Shadow DOM は使用しない。文字列・コメント・括弧の中の `,`・`{`・`}` を区切りとして扱わない。`@media`・`@supports`・`@container`・`@layer` の中の規則も同じく書き換え、`@keyframes`・`@font-face` は中を書き換えずに残す。この 6 つ以外の `@` の規則（`@import`・`@scope`・`@starting-style` など）は、範囲の外へ適用しない・外へ要求させないため落とし、記載の警告は出さない。`html`・`body`・`:root` で始まるセレクタはその部分を根の要素に置き換える。DOM を使用せず、`render` と同じく Node でも動く
     args:
       - name: options
         type: '{ css: string; scope: number }'
@@ -853,12 +853,12 @@ functions:
       description: 書き換えた CSS。`</style` の並びは `<\/style` に替える
     process: |-
       1. 文字列とコメントを飛ばしながら、最上位の規則を `{` と対応する `}` で切り出す
-      2. 規則ごとに次を行う
-         - `@media`・`@supports`・`@container`・`@layer` は中身に 1 からを当て直す
+      2. 規則ごとに次の処理をする
+         - `@media`・`@supports`・`@container`・`@layer` は中身に 1 からをもう一度適用する
          - `@keyframes`・`@font-face` はそのまま残す
          - 他の `@` の規則（`@import` を含む）は落とす
          - それ以外はセレクタを最上位の `,` で分け、各セレクタの `:scope`・先頭の `html`・`body`・`:root` を根の要素のセレクタに置き換え、置き換えなかったセレクタの前に根の要素のセレクタと空白を付ける
-      3. 書き換えた規則をつなげ、`</style` を `<\/style` に替えて返す
+      3. 書き換えた規則をつなげ、`</style` を `<\/style` に替えて返却する
     unit_tests:
       - name: test_scope_css
         case: 正常
@@ -894,11 +894,11 @@ functions:
     introduced:
       pr: 303
   - name: collectWarnings
-    title: 書き方の警告を取り出す
+    title: 記載の警告を取り出す
     container: src/render/index.ts
     kind: 関数
     scope: internal
-    summary: '`render` と同じ設定の当て方で `renderDocument` を呼び、描いたときに置く書き方の警告を HTML にせずに返す。`mdmark check --text`・`--file` が Node で呼ぶ（ブラウザを使わない）'
+    summary: '`render` と同じ設定の当て方で `renderDocument` を呼び、描いたときに配置する記載の警告を HTML にせずに返却する。`mdmark check --text`・`--file` が Node で呼ぶ（ブラウザを使用しない）'
     args:
       - name: markdown
         type: string
@@ -908,10 +908,10 @@ functions:
         type: '{ config?: MdmarkConfig }'
         required: false
         default: '{}'
-        description: 設定（`features`・`libraries` を当てる）
+        description: 設定（`features`・`libraries` を適用する）
     returns:
       type: CollectedWarning[]
-      description: 警告を置いた順の警告（無ければ空）
+      description: 警告を配置した順の警告（無ければ空）
     callees:
       - dev/設計書/モジュール構成/ライブラリ本体/設定と機能.ts#functions[resolveConfig]
       - '#functions[renderDocument]'
@@ -920,13 +920,13 @@ functions:
     unit_tests:
       - name: test_collect_warnings
         case: 正常
-        summary: 書き方の警告を場所と種類つきで返す
+        summary: 記載の警告を場所と種類つきで返却する
         condition: '1 行目の `<!-- flow -->` の範囲にノードの種類 `begin` の定義、22 行目に `<!-- code: highlight=9 -->` と 3 行のコードブロックを持つ Markdown'
         mock: なし
         expected: '`{ line: 1, kind: "diagram_invalid" }` と `{ line: 22, kind: "syntax_warning" }` の 2 件で、`message` が同じ Markdown を `render` で描いた警告の文字と同じ'
       - name: test_collect_warnings_when_clean
         case: 正常
-        summary: 警告の無い Markdown は空の配列を返す
+        summary: 警告の無い Markdown は空の配列を返却する
         condition: '正しいフロー図の定義と `<!-- table: data -->` で囲んだ表'
         mock: なし
         expected: 空の配列
@@ -934,16 +934,16 @@ functions:
     introduced:
       pr: 328
   - name: isAllowedUrl
-    title: 許す URL かを確かめる
+    title: 許す URL かを確認する
     container: src/render/sanitize.ts
     kind: 関数
     scope: internal
-    summary: '`SANITIZE_OPTIONS` の `allowedSchemes`（`http`・`https`・`mailto`）のスキームか、スキームを持たない相対 URL なら `true` を返す。スキームは前後の空白と制御文字を除き、小文字にして比べる（sanitize-html と同じ見分け）'
+    summary: '`SANITIZE_OPTIONS` の `allowedSchemes`（`http`・`https`・`mailto`）のスキームか、スキームを持たない相対 URL なら `true` を返却する。スキームは前後の空白と制御文字を除き、小文字にして比べる（sanitize-html と同じ見分け）'
     args:
       - name: url
         type: string
         required: true
-        description: 確かめる URL
+        description: 確認する URL
     returns:
       type: boolean
       description: 本文のリンクで許すか

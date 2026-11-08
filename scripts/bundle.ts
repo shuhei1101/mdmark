@@ -2,17 +2,17 @@ import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import type { Metafile, Plugin } from "esbuild";
 
-/** 使う側のブラウザが読む JS の束ねの target（esbuild に渡すブラウザの版） */
+/** 利用側のブラウザが読み込む JS のまとめの target（esbuild に指定するブラウザのバージョン） */
 export const BROWSER_TARGETS = ["chrome99", "firefox98", "safari16.4"];
-/** Node で動く束ねの target */
+/** Node で動くまとめの target */
 export const NODE_TARGET = "node24";
-/** Node で動く束ねの先頭に置く行: 入口として実行できるようにし、束ねた CommonJS の依存の `require` を使えるようにする */
+/** Node で動くまとめの先頭に配置する行: 入口として実行できるようにし、まとめた CommonJS の依存の `require` を使用できるようにする */
 export const NODE_BANNER = [
   "#!/usr/bin/env node",
   'import { createRequire as __createRequire } from "node:module";',
   "const require = __createRequire(import.meta.url);",
 ].join("\n");
-/** 束ねるときに `define` で埋める値: mdmark の版と、束ねる lucide のバージョン（mdmark の `package.json` の `dependencies`。束ねる場所 `root` によらない） */
+/** まとめるときに `define` で埋める値: mdmark のバージョンと、まとめる lucide のバージョン（mdmark の `package.json` の `dependencies`。まとめる場所 `root` によらない） */
 export function bundleDefines(version: string): Record<string, string> {
   const manifest = JSON.parse(
     readFileSync(join(import.meta.dirname, "..", "package.json"), "utf8"),
@@ -25,11 +25,11 @@ export function bundleDefines(version: string): Record<string, string> {
   };
 }
 
-/** 束ねたパッケージの入力のパスにある、依存の置き場所 */
+/** まとめたパッケージの入力のパスにある、依存の配置場所 */
 export const NODE_MODULES_SEGMENT = "node_modules/";
-/** 束ねたパッケージの配布物の中に取り込まれ、`node_modules` に無いパッケージのライセンスの本文を置くフォルダ */
+/** まとめたパッケージの配布物の中に取り込まれ、`node_modules` に無いパッケージのライセンスの本文を配置するフォルダ */
 const EMBEDDED_LICENSES_DIR = "scripts/licenses";
-// 差し替えた postcss を置く esbuild の名前空間
+// 差し替えた postcss を配置する esbuild の名前空間
 const STUB_NAMESPACE = "stub";
 // パッケージの直下にあるライセンスのファイル名
 const LICENSE_FILE_PATTERN = /^licen[sc]e/i;
@@ -40,7 +40,7 @@ export function packageNameAfter(path: string): string {
   return first?.startsWith("@") ? `${first}/${second}` : (first ?? "");
 }
 
-/** esbuild の `metafile` の入力から束ねたパッケージの名前を、名前の順に返す */
+/** esbuild の `metafile` の入力からまとめたパッケージの名前を、名前の順に返却する */
 export function listBundledPackages(metafile: Metafile): string[] {
   const names = new Set<string>();
   for (const path of Object.keys(metafile.inputs)) {
@@ -55,7 +55,7 @@ export function listBundledPackages(metafile: Metafile): string[] {
   return [...names].sort();
 }
 
-/** `node_modules` のパッケージの名前・バージョン・ライセンスと、ライセンスのファイルの本文を並べた 1 ブロックを返す */
+/** `node_modules` のパッケージの名前・バージョン・ライセンスと、ライセンスのファイルの本文を並べた 1 ブロックを返却する */
 export function readLicenseBlock(options: {
   /** 作業ツリーの場所 */
   root: string;
@@ -76,7 +76,7 @@ export function readLicenseBlock(options: {
   return `${options.name} ${pkg.version} (${pkg.license})\n\n${text}`;
 }
 
-/** 束ねたパッケージの配布物に取り込まれたパッケージの名前と、`EMBEDDED_LICENSES_DIR` のライセンスの本文を並べた 1 ブロックを返す。本文のファイルが無ければ例外を投げる */
+/** まとめたパッケージの配布物に取り込まれたパッケージの名前と、`EMBEDDED_LICENSES_DIR` のライセンスの本文を並べた 1 ブロックを返却する。本文のファイルが無ければ例外を投げる */
 export function readEmbeddedLicenseBlock(options: {
   /** 作業ツリーの場所 */
   root: string;
@@ -88,7 +88,7 @@ export function readEmbeddedLicenseBlock(options: {
   const path = join(root, EMBEDDED_LICENSES_DIR, file);
   if (!existsSync(path)) {
     throw new Error(
-      `ライセンスの本文が無い: ${name}（${EMBEDDED_LICENSES_DIR}/${file} を置く）`,
+      `ライセンスの本文が無い: ${name}（${EMBEDDED_LICENSES_DIR}/${file} を配置する）`,
     );
   }
   return `${name}\n\n${readFileSync(path, "utf8")}`;

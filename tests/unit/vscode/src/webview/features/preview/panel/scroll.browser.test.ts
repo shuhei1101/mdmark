@@ -13,7 +13,7 @@ type Anchor = { line: number; top: number };
 
 const placed: HTMLElement[] = [];
 
-/** 要素をページの末尾に置く */
+/** 要素をページの末尾に配置する */
 function place<T extends HTMLElement>(element: T, parent?: HTMLElement): T {
   (parent ?? document.body).append(element);
   if (parent === undefined) {
@@ -41,7 +41,7 @@ afterEach(() => {
   }
 });
 
-/** 幅 `width`（px）の要素に `markdown` を `mount` で描き、描いた要素を返す */
+/** 幅 `width`（px）の要素に `markdown` を `mount` で描き、描いた要素を返却する */
 function mountDocument(markdown: string, width: number): HTMLElement {
   addStyles();
   const element = place(document.createElement("div"));
@@ -77,7 +77,7 @@ test("test_collect_anchors", async () => {
   expect(new Set(tops).size).toBe(tops.length);
 });
 
-// 印の間を行の割合で内分する（正常系）
+// マーカーの間を行の割合で内分する（正常系）
 test("test_top_for_line", async () => {
   // 準備
   const { topForLine } = await loadScroll();
@@ -91,7 +91,7 @@ test("test_top_for_line", async () => {
   expect(tops).toEqual([200, 0, 400]);
 });
 
-// 印が無ければ先頭（正常系）
+// マーカーが無ければ先頭（正常系）
 test("test_top_for_line_when_no_anchor", async () => {
   // 準備
   const { topForLine } = await loadScroll();
@@ -101,7 +101,7 @@ test("test_top_for_line_when_no_anchor", async () => {
   expect(top).toBe(0);
 });
 
-// 印の間を内分して切り捨てる（正常系）
+// マーカーの間を内分して切り捨てる（正常系）
 test("test_line_for_top", async () => {
   // 準備
   const { lineForTop } = await loadScroll();
@@ -115,7 +115,7 @@ test("test_line_for_top", async () => {
   expect(lines).toEqual([5, 10]);
 });
 
-// 印の間を内分して切り捨てない（正常系）
+// マーカーの間を内分して切り捨てない（正常系）
 test("test_fractional_line_for_top", async () => {
   // 準備
   const { fractionalLineForTop } = await loadScroll();
@@ -129,7 +129,7 @@ test("test_fractional_line_for_top", async () => {
   expect(lines).toEqual([5.25, 10, 0]);
 });
 
-// 切り捨てない行を topForLine に渡すと元の位置に戻る（正常系）
+// 切り捨てない行を topForLine に指定すると元の位置に戻る（正常系）
 test("test_fractional_line_for_top_when_round_trip", async () => {
   // 準備
   const { fractionalLineForTop, topForLine } = await loadScroll();
@@ -146,7 +146,7 @@ test("test_fractional_line_for_top_when_round_trip", async () => {
   expect(tops).toEqual([210, 700]);
 });
 
-// 狭い幅の帯の下端までの高さを返す（正常系）
+// 狭い幅の帯の下端までの高さを返却する（正常系）
 test("test_top_inset_when_band", async () => {
   // 準備
   const { topInset } = await loadScroll();

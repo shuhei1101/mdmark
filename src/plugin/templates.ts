@@ -30,7 +30,7 @@ export type TemplatesIndex = {
   templates: TemplateEntry[];
 };
 
-/** `list_templates` が返す 1 行 */
+/** `list_templates` が返却する 1 行 */
 export type ListedTemplate = {
   /** テンプレートの名前 */
   name: string;
@@ -42,31 +42,31 @@ export type ListedTemplate = {
   path: string;
 };
 
-/** 端末の設定のファイルのフォルダから見たテンプレートのフォルダ */
+/** 端末の設定のファイルのフォルダを基準にしたテンプレートのフォルダ */
 export const TEMPLATES_SUBDIR = "templates/css";
 
 /** テンプレートのフォルダの索引のファイル名 */
 export const TEMPLATES_INDEX_FILE = "templates.yaml";
 
-/** 書く索引の `schema` の値 */
+/** 記載する索引の `schema` の値 */
 export const TEMPLATES_SCHEMA_VERSION = 1;
 
 /** `add_template` の `name` の正規表現。JSON Schema の `pattern` と同じ */
 export const TEMPLATE_NAME_PATTERN = /^[a-z0-9][a-z0-9-]{0,63}$/;
 
-/** 検査の関数。初めて使うときに作り、以降は使い回す */
+/** 検査の関数。初めて使用するときに作り、以降は使い回す */
 let validator: ValidateFunction | undefined;
 
 /** 登録の書き込みを 1 つずつ順に進める連鎖の末尾 */
 let writing: Promise<unknown> = Promise.resolve();
 
-/** 端末の設定のパスのフォルダの `templates/css` の絶対パスを返す */
+/** 端末の設定のパスのフォルダの `templates/css` の絶対パスを返却する */
 export const resolveTemplatesDir = (options: {
   env: Record<string, string | undefined>;
   home: string;
 }): string => join(dirname(resolveSettingsPath(options)), TEMPLATES_SUBDIR);
 
-/** JSON Pointer（`/templates/0/file`）を `templates[0].file` の形にする */
+/** JSON Pointer（`/templates/0/file`）を `templates[0].file` の構造にする */
 const whereOf = (pointer: string): string =>
   pointer
     .split("/")
@@ -81,7 +81,7 @@ const whereOf = (pointer: string): string =>
       "",
     );
 
-/** 値を索引の JSON Schema で検査し、最初に合わないところを、索引のパス・キーのパス・直し方の 1 文で返す */
+/** 値を索引の JSON Schema で検査し、最初に合わないところを、索引のパス・キーのパス・修正方法の 1 文で返却する */
 export const validateTemplatesIndex = (options: {
   value: unknown;
   path: string;
@@ -113,7 +113,7 @@ export const validateTemplatesIndex = (options: {
         ? "がありません。記載してください"
         : error?.keyword === "additionalProperties"
           ? "は記載できません。削除してください"
-          : `の値 ${JSON.stringify(error?.data)} は使えません。${(error?.parentSchema as { description?: string } | undefined)?.description ?? "索引の決まりに合う値にしてください。"}`.replace(
+          : `の値 ${JSON.stringify(error?.data)} は使用できません。${(error?.parentSchema as { description?: string } | undefined)?.description ?? "索引の決まりに合う値にしてください。"}`.replace(
               /。$/,
               "",
             );
@@ -130,7 +130,7 @@ export const validateTemplatesIndex = (options: {
   return undefined;
 };
 
-/** テンプレートのフォルダの索引を読んで検査し、無ければ空の索引を返す */
+/** テンプレートのフォルダの索引を読み込んで検査し、無ければ空の索引を返却する */
 export const readTemplatesIndex = async (
   dir: string,
 ): Promise<TemplatesIndex> => {
@@ -151,7 +151,7 @@ export const readTemplatesIndex = async (
     if (error instanceof YAMLParseError) {
       const line = error.linePos?.[0].line ?? 1;
       throw new CliError(
-        `${path} の ${line} 行目を YAML として読めません。${line} 行目を直してください。`,
+        `${path} の ${line} 行目を YAML として読み込めません。${line} 行目を修正してください。`,
       );
     }
     throw error;
@@ -169,7 +169,7 @@ export const readTemplatesIndex = async (
   };
 };
 
-/** 索引の行を、CSS の絶対パスを付けて索引の順に返す */
+/** 索引の行を、CSS の絶対パスを付けて索引の順に返却する */
 export const listTemplates = async (dir: string): Promise<ListedTemplate[]> => {
   const index = await readTemplatesIndex(dir);
   return index.templates.map((row) => ({
@@ -180,7 +180,7 @@ export const listTemplates = async (dir: string): Promise<ListedTemplate[]> => {
   }));
 };
 
-/** 索引を同じフォルダの一時ファイルに書いてから rename で置き換える */
+/** 索引を同じフォルダの一時ファイルに書き込んでから rename で置き換える */
 const writeTemplatesIndex = async (options: {
   dir: string;
   index: TemplatesIndex;
@@ -199,7 +199,7 @@ const writeTemplatesIndex = async (options: {
   }
 };
 
-/** ファイルの中身を読む。無ければ `undefined` */
+/** ファイルの中身を読み込む。無ければ `undefined` */
 const readIfExists = async (path: string): Promise<Buffer | undefined> => {
   try {
     return await fs.readFile(path);
@@ -223,23 +223,23 @@ export const addTemplate = async (options: {
   const { dir, source, name, description, tags, overwrite } = options;
   if (!TEMPLATE_NAME_PATTERN.test(name)) {
     throw new CliError(
-      `引数 name の ${name} は使えません。英小文字・数字・- の 1〜64 文字で、英小文字か数字で始まる名前を渡してください。`,
+      `引数 name の ${name} は使用できません。英小文字・数字・- の 1〜64 文字で、英小文字か数字で始まる名前を指定してください。`,
     );
   }
   if (tags.some((tag) => tag === "")) {
     throw new CliError(
-      "引数 tags に空の文字列があります。空でない語だけを渡してください。",
+      "引数 tags に空の文字列があります。空でない単語だけを指定してください。",
     );
   }
   if (extname(source) !== ".css") {
     throw new CliError(
-      `${source} は CSS ではありません。拡張子が .css のファイルを渡してください。`,
+      `${source} は CSS ではありません。拡張子が .css のファイルを指定してください。`,
     );
   }
   const css = await readIfExists(source);
   if (css === undefined) {
     throw new CliError(
-      `${source} が見つかりません。登録する CSS のパスを確かめてください。`,
+      `${source} が見つかりません。登録する CSS のパスを確認してください。`,
     );
   }
   // 同じプロセスで重なった登録が、互いの行を上書きしないよう 1 つずつ順に進める
@@ -297,7 +297,7 @@ const isDirectory = async (path: string): Promise<boolean> =>
 const isFile = async (path: string): Promise<boolean> =>
   (await stat(path).catch(() => undefined))?.isFile() === true;
 
-/** テンプレートの CSS を配置先へコピーし、配置したパスと基準の設定ファイルからの `theme` の値を返す */
+/** テンプレートの CSS を配置先へコピーし、配置したパスと基準の設定ファイルからの `theme` の値を返却する */
 export const applyTemplate = async (options: {
   dir: string;
   name: string;
@@ -310,12 +310,12 @@ export const applyTemplate = async (options: {
   const row = index.templates.find((current) => current.name === name);
   if (row === undefined) {
     throw new CliError(
-      `テンプレート ${name} がありません。list_templates で名前を確かめてください。`,
+      `テンプレート ${name} がありません。list_templates で名前を確認してください。`,
     );
   }
   if (target !== undefined && !(await isDirectory(target))) {
     throw new CliError(
-      `配置先のフォルダ ${target} が見つかりません。ある配置先を dir に渡してください。`,
+      `配置先のフォルダ ${target} が見つかりません。ある配置先を dir に指定してください。`,
     );
   }
   const [config] = await findConfigChain({
@@ -325,7 +325,7 @@ export const applyTemplate = async (options: {
   });
   if (target === undefined && config === undefined) {
     throw new CliError(
-      `${cwd} とその上のフォルダに mdmark.config.yaml がありません。配置先を dir に渡すか、mdmark init で設定ファイルを置いてください。`,
+      `${cwd} とその上のフォルダに mdmark.config.yaml がありません。配置先を dir に指定するか、mdmark init で設定ファイルを配置してください。`,
     );
   }
   const destination = target ?? dirname(config as string);
@@ -334,7 +334,7 @@ export const applyTemplate = async (options: {
   const css = await readIfExists(sourcePath);
   if (css === undefined) {
     throw new CliError(
-      `テンプレート ${name} の CSS ${sourcePath} がありません。add_template で登録し直すか、索引の行を削除してください。`,
+      `テンプレート ${name} の CSS ${sourcePath} がありません。add_template でもう一度登録するか、索引の行を削除してください。`,
     );
   }
   const existing = await readIfExists(path);

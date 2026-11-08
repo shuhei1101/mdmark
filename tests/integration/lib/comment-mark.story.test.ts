@@ -7,19 +7,19 @@ const holder = createBrowserHolder();
 beforeAll(holder.launch);
 afterAll(holder.close);
 
-/** コメントの印のストーリーを開く */
+/** コメントのマーカーのストーリーを開く */
 function open(id: string): Promise<Page> {
   return holder.openStory(`parts-commentmark--${id}`);
 }
 
-/** 印の下線の種類を返す */
+/** マーカーの下線の種類を返却する */
 function underline(page: Page): Promise<string> {
   return page
     .locator("mark.mdmark-comment-mark")
     .evaluate((mark) => getComputedStyle(mark).textDecorationLine);
 }
 
-// 段落の中の印は、本文の文字を変えず、押せる印として読み上げる（Default）
+// 段落の中のマーカーは、本文の文字を変えず、押せるマーカーとしてスクリーンリーダーに伝える（Default）
 test("test_default", async () => {
   // 準備・実行
   const page = await open("default");
@@ -34,7 +34,7 @@ test("test_default", async () => {
     "mdmark-comment-hint",
   );
   await expect(page.locator("#storybook-root p").innerText()).resolves.toBe(
-    "本文のテーマの変数を読む。",
+    "本文のテーマの変数を読み込む。",
   );
   await expect(underline(page)).resolves.toContain("underline");
   await expect(
@@ -42,7 +42,7 @@ test("test_default", async () => {
   ).resolves.not.toBe("rgba(0, 0, 0, 0)");
 });
 
-// 吹き出しを開いているときは、aria-expanded を true にして印のまま出す（Expanded）
+// 吹き出しを開いているときは、aria-expanded を true にしてマーカーのまま出す（Expanded）
 test("test_expanded", async () => {
   // 準備・実行
   const page = await open("expanded");

@@ -5,7 +5,7 @@ import { renderDoc } from "../../../helpers/render.ts";
 // 角括弧の文字を文字の色の部品にする（正常系）
 test("test_build_text_colors", () => {
   // 準備
-  const markdown = "押す前に [決め手の 1 文]{color=blue} を読む。\n";
+  const markdown = "押す前に [決め手の 1 文]{color=blue} を読み込む。\n";
   // 実行
   const { html } = renderDoc(markdown);
   // 検証
@@ -28,7 +28,7 @@ test("test_build_text_colors_when_nested", () => {
   );
 });
 
-// リンクには当てない（正常系）
+// リンクには適用しない（正常系）
 test("test_build_text_colors_when_link", () => {
   // 準備
   const markdown = "[資料](https://example.com){color=blue}\n";
@@ -66,7 +66,7 @@ test("test_build_text_colors_when_unknown", () => {
   expect(html).not.toContain("mdmark-color");
 });
 
-// text-color がオフなら書いた文字のまま（正常系）
+// text-color がオフなら記載した文字のまま（正常系）
 test("test_build_text_colors_when_feature_off", () => {
   // 準備
   const markdown = "[決め手]{color=blue}\n";

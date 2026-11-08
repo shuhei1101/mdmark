@@ -12,19 +12,19 @@ catalogs:
   entries:
   - name: '@import "tailwindcss/theme.css" layer(theme)'
     kind: CSS
-    purpose: テーマの層だけを読む（Preflight を読まず、描いた文書の要素の既定を変えない）
+    purpose: テーマの層だけを読み込む（Preflight を読み込まず、描いた文書の要素の既定を変えない）
   - name: '@import "tailwindcss/utilities.css" layer(utilities)'
     kind: CSS
-    purpose: 使った class のユーティリティだけを書き出す
+    purpose: 使用した class のユーティリティだけを書き出す
   - name: '@theme inline'
     kind: CSS
-    purpose: '`--color-*: initial` で標準のパレットを外し、自前のトークンだけを class に割り当てる'
+    purpose: '`--color-*: initial` で標準のパレットを削除し、自前のトークンだけを class に割り当てる'
   - name: '@utility'
     kind: CSS
-    purpose: 任意値の class の代わりに、名前を付けたユーティリティを足す（`grid-cols-alert`）
+    purpose: 任意値の class の代わりに、名前を付けたユーティリティを追加する（`grid-cols-alert`）
   - name: '@container'
     kind: class
-    purpose: 帯の幅で操作の列を足す（`@band:`）
+    purpose: 帯の幅で操作の列を追加する（`@band:`）
 lead: class 名から CSS を書き出すユーティリティファーストの CSS フレームワーク。v4 は CSS の `@theme` でトークンを定める。
 purl: pkg:npm/tailwindcss@4.3.4
 dependency_scope: 開発のみ
@@ -37,7 +37,7 @@ used_in:
 verification:
   state: 済
   date: '2026-11-06'
-  detail: '`npm run build`（vscode/）の `media/preview.css` に、使った class と `@theme inline` のトークンだけが入り、Preflight の要素の既定（`*, ::before, ::after` の `border` など）が入らないことを確かめた。Biome は `css.parser.tailwindDirectives` を有効にすると `@theme`・`@utility` を読める'
+  detail: '`npm run build`（vscode/）の `media/preview.css` に、使用した class と `@theme inline` のトークンだけが入り、Preflight の要素の既定（`*, ::before, ::after` の `border` など）が入らないことを確認した。Biome は `css.parser.tailwindDirectives` を有効にすると `@theme`・`@utility` を読み込める'
 license: MIT（商用利用可）
 official_url: https://tailwindcss.com/
 docs_url: https://tailwindcss.com/docs/theme

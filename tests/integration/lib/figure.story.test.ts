@@ -6,7 +6,7 @@ const holder = createBrowserHolder();
 beforeAll(holder.launch);
 afterAll(holder.close);
 
-/** 図表のストーリーを開き、`figure` の id と題の文字を返す */
+/** 図表のストーリーを開き、`figure` の id とタイトルの文字を返却する */
 async function open(id: string) {
   const page = await holder.openStory(`parts-figure--${id}`);
   const figure = page.locator("figure.mdmark-figure");
@@ -17,7 +17,7 @@ async function open(id: string) {
   };
 }
 
-// 画像は題を下に置き、番号の後ろに画像の title を続ける（ImageWithCaption）
+// 画像はタイトルを下に配置し、番号の後ろに画像の title を続ける（ImageWithCaption）
 test("test_image_with_caption", async () => {
   // 準備・実行
   const { figure, caption } = await open("image-with-caption");
@@ -35,7 +35,7 @@ test("test_image_with_caption", async () => {
   expect(below).toBe(true);
 });
 
-// 画像の title が無いときは、題が番号だけになる（Image）
+// 画像の title が無いときは、タイトルが番号だけになる（Image）
 test("test_image", async () => {
   // 準備・実行
   const { figure, caption } = await open("image");
@@ -44,7 +44,7 @@ test("test_image", async () => {
   await expect(caption.innerText()).resolves.toBe("図 2");
 });
 
-// 表は題を表の上に置く（Table）
+// 表はタイトルを表の上に配置する（Table）
 test("test_table", async () => {
   // 準備・実行
   const { figure, caption } = await open("table");

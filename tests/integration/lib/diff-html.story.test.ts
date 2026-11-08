@@ -6,7 +6,7 @@ const holder = createBrowserHolder();
 beforeAll(holder.launch);
 afterAll(holder.close);
 
-// 変えた範囲を既定のソースの色分けで出し、右端に「HTML」のラベルを置く（Source）
+// 変えた範囲を既定のソースの色分けで出し、右端に「HTML」のラベルを配置する（Source）
 test("test_source", async () => {
   // 準備・実行
   const page = await holder.openStory("parts-diffhtml--source");

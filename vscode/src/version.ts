@@ -3,20 +3,20 @@ import type { Logger } from "./log.ts";
 /** `mdmark.version` の既定で、タグ一覧から最新を選ぶ値 */
 export const LATEST = "latest";
 
-/** 拾うタグの名前の形（`vscode-` で始まるタグは合わない） */
+/** 取得するタグの名前の構造（`vscode-` で始まるタグは合わない） */
 export const VERSION_TAG_PATTERN = /^v(\d+)\.(\d+)\.(\d+)$/;
 
 /** テストで差し替えないときのタグ一覧の最初のページの URL */
 export const TAGS_URL =
   "https://api.github.com/repos/shuhei1101/mdmark/tags?per_page=100";
 
-/** タグ一覧を全てのページ読み終えるまでの合計の待ちの上限（ミリ秒） */
+/** タグ一覧を全てのページ読み込み終えるまでの合計の待ちの上限（ミリ秒） */
 export const TAGS_TIMEOUT_MS = 3000;
 
 /** header `Link` の `rel="next"` の URL を取り出す正規表現 */
 const NEXT_LINK_PATTERN = /<([^>]*)>\s*;\s*rel="next"/;
 
-/** 読むバージョンの決まり方 */
+/** 読み込むバージョンの決まり方 */
 export type VersionDecision =
   | { kind: "decided"; version: string; fetched: boolean }
   | { kind: "undecidable" };
@@ -34,7 +34,7 @@ function isNewer(candidate: number[], current: number[]): boolean {
   return false;
 }
 
-/** タグの名前から `VERSION_TAG_PATTERN` に合うものだけを拾い、メジャー・マイナー・パッチを数で比べた最大を返す */
+/** タグの名前から `VERSION_TAG_PATTERN` に合うものだけを取得し、メジャー・マイナー・パッチを数で比べた最大を返却する */
 export function pickLatestVersion(names: string[]): string | undefined {
   let latest: { name: string; parts: number[] } | undefined;
   for (const name of names) {
@@ -55,19 +55,19 @@ export function nextPageUrl(link: string | null): string | undefined {
   return link === null ? undefined : NEXT_LINK_PATTERN.exec(link)?.[1];
 }
 
-/** タグ一覧を `rel="next"` が無くなるまで辿り、最新のバージョンを返す。取れなければ例外を投げず `undefined` */
+/** タグ一覧を `rel="next"` が無くなるまで辿り、最新のバージョンを返却する。取れなければ例外を投げず `undefined` */
 export async function fetchLatestVersion(options: {
   /** 最初のページの URL */
   url: string;
-  /** 全てのページを読み終えるまでの合計の待ちの上限（ミリ秒） */
+  /** 全てのページを読み込み終えるまでの合計の待ちの上限（ミリ秒） */
   timeoutMs: number;
-  /** 要求に使う `fetch` */
+  /** 要求に使用する `fetch` */
   fetch: typeof fetch;
   /** ログの出力先 */
   log: Logger;
 }): Promise<string | undefined> {
   const { timeoutMs, log } = options;
-  // 全てのページの要求に同じ中断の合図を渡し、合計の待ちにする
+  // 全てのページの要求に同じ中断の合図を指定し、合計の待ちにする
   const signal = AbortSignal.timeout(timeoutMs);
   const names: string[] = [];
   let url: string | undefined = options.url;
@@ -103,7 +103,7 @@ export async function fetchLatestVersion(options: {
   return latest;
 }
 
-/** `mdmark.version` が `latest` ならタグ一覧の最新を、取れなければ前回のバージョンを、`latest` でなければ記載したバージョンを使う */
+/** `mdmark.version` が `latest` ならタグ一覧の最新を、取れなければ前回のバージョンを、`latest` でなければ記載したバージョンを使用する */
 export async function decideVersion(options: {
   /** `mdmark.version` の値 */
   setting: string;
@@ -126,6 +126,6 @@ export async function decideVersion(options: {
     log.info("前回のバージョンで描く", lastVersion);
     return { kind: "decided", version: lastVersion, fetched: false };
   }
-  log.warn("読むバージョンを決められない");
+  log.warn("読み込むバージョンを決められない");
   return { kind: "undecidable" };
 }

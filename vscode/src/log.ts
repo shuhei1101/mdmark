@@ -1,4 +1,4 @@
-/** 各処理に依存として渡すログの出力先。`LogOutputChannel` のうち使うメソッドだけを持つ */
+/** 各処理に依存として指定するログの出力先。`LogOutputChannel` のうち使用するメソッドだけを持つ */
 export type Logger = {
   /** 経過 */
   info: (message: string, ...args: unknown[]) => void;

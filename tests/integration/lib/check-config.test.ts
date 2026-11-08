@@ -23,10 +23,10 @@ import {
 
 const createTempDir = useTempDirs();
 
-// 雛形が置く設定の build.out の行
+// 雛形が配置する設定の build.out の行
 const OUT_LINE = "  out: dist/docs.html\n";
 
-/** ずれの無いフォルダを作る: `mdmark init` の雛形に文書 2 つを足し、索引に 2 つとも載せる */
+/** ずれの無いフォルダを作る: `mdmark init` の雛形に文書 2 つを追加し、索引に 2 つとも記載する */
 async function createCleanDir(options?: { js?: boolean }): Promise<string> {
   const dir = await createTempDir();
   await runCli(["init", dir, ...(options?.js ? ["--js"] : [])], dir);
@@ -48,7 +48,7 @@ async function createCleanDir(options?: { js?: boolean }): Promise<string> {
   return dir;
 }
 
-/** フォルダの設定・索引・文書の中身を返す（変わっていないことを確かめる） */
+/** フォルダの設定・索引・文書の中身を返却する（変わっていないことを確認する） */
 async function snapshot(dir: string): Promise<string[]> {
   return Promise.all(
     ["mdmark.config.yaml", "index.yaml", "a.md", "b.md"].map((path) =>
@@ -57,7 +57,7 @@ async function snapshot(dir: string): Promise<string[]> {
   );
 }
 
-// ずれの無いフォルダで 0 件を返す（正常系）
+// ずれの無いフォルダで 0 件を返却する（正常系）
 test("test_normal", async () => {
   // 準備
   const dir = await createCleanDir();
@@ -101,7 +101,7 @@ test("test_normal_when_drift", async () => {
   expect(await snapshot(dir)).toEqual(before);
 });
 
-// build.include がどの文書にも当たらないと no_documents を出す（正常系（build の対象が 0 件））
+// build.include がどの文書にも該当しないと no_documents を出す（正常系（build の対象が 0 件））
 test("test_normal_when_no_documents", async () => {
   // 準備
   const dir = await createCleanDir();
@@ -123,7 +123,7 @@ test("test_normal_when_no_documents", async () => {
   ).toBe(true);
 });
 
-// 設定ファイルが見つからないと、mdmark init で置けることを示して終わる（異常系（設定ファイルが無い））
+// 設定ファイルが見つからないと、mdmark init で配置できることを示して終わる（異常系（設定ファイルが無い））
 test("test_error_when_config_missing", async () => {
   // 準備
   const dir = await createTempDir();
@@ -136,7 +136,7 @@ test("test_error_when_config_missing", async () => {
   expect(result.stderr).toContain("mdmark init");
 });
 
-// YAML として読めない設定ファイルは、読めない行を示して終わる（異常系（設定ファイルを読めない））
+// YAML として読み込めない設定ファイルは、読み込めない行を示して終わる（異常系（設定ファイルを読み込めない））
 test("test_error_when_config_unreadable", async () => {
   // 準備
   const dir = await createTempDir();
@@ -151,7 +151,7 @@ test("test_error_when_config_unreadable", async () => {
   expect(result.stderr).toContain("3 行目");
 });
 
-/** 設定ファイルの末尾に、キーを足す */
+/** 設定ファイルの末尾に、キーを追加する */
 async function appendConfig(dir: string, lines: string[]): Promise<void> {
   const path = join(dir, "mdmark.config.yaml");
   await writeFiles(dir, {
@@ -159,7 +159,7 @@ async function appendConfig(dir: string, lines: string[]): Promise<void> {
   });
 }
 
-// 文書の本文の知らない印を、文書と行を指す unknown_mark の行にして終了コード 1 で終わる（正常系（知らない印がある））
+// 文書の本文の知らないマーカーを、文書と行を指す unknown_mark の行にして終了コード 1 で終わる（正常系（知らないマーカーがある））
 test("test_normal_when_unknown_mark", async () => {
   // 準備
   const dir = await createCleanDir();
@@ -179,7 +179,7 @@ test("test_normal_when_unknown_mark", async () => {
   expect(await snapshot(dir)).toEqual(before);
 });
 
-// 拡張が登録した印と check.ignore に書いた名前の印は、ずれにしない（正常系（拡張と check.ignore の印））
+// 拡張が登録したマーカーと check.ignore に記載した名前のマーカーは、ずれにしない（正常系（拡張と check.ignore のマーカー））
 test("test_normal_when_known_extension_and_ignored_mark", async () => {
   // 準備
   const dir = await createCleanDir({ js: true });
@@ -198,7 +198,7 @@ test("test_normal_when_known_extension_and_ignored_mark", async () => {
   expect(linesOf(result.stdout)).toEqual(["ずれ 0 件"]);
 });
 
-// 読み込めない拡張を schema のずれにし、その拡張の印を知らない印として出す（正常系（拡張を読み込めない））
+// 読み込めない拡張を schema のずれにし、その拡張のマーカーを知らないマーカーとして出す（正常系（拡張を読み込めない））
 test("test_normal_when_extension_unloadable", async () => {
   // 準備
   const dir = await createCleanDir();
@@ -233,7 +233,7 @@ test("test_normal_when_extension_unloadable", async () => {
   ).toBe(true);
 });
 
-// --base との merge-base から片方だけが変わった change_together の組を出し、終了コード 1 で終わる（正常系（比べる基準を渡す））
+// --base との merge-base から片方だけが変わった change_together の組を出し、終了コード 1 で終わる（正常系（比べる基準を指定する））
 test("test_normal_when_base_given", async () => {
   // 準備
   const dir = await createChangeTogetherDir(createTempDir);
@@ -259,7 +259,7 @@ test("test_normal_when_base_given", async () => {
   expect(await git(dir, "rev-parse", "HEAD")).toBe(head);
 });
 
-// merge-base を引けない --base は、引けないことと直し方を示して終わる（異常系（比べる基準を引けない））
+// merge-base を参照できない --base は、参照できないことと修正方法を示して終わる（異常系（比べる基準を参照できない））
 test("test_error_when_base_unknown", async () => {
   // 準備
   const dir = await createChangeTogetherDir(createTempDir);
@@ -377,7 +377,7 @@ test("test_normal_when_unknown_color_theme", async () => {
   expect(await snapshot(unknownDir)).toEqual(unknownBefore);
 });
 
-// 設定の colorScheme の知らない値を unknown_color_scheme のずれで出し、書ける値では出さない（正常系（知らない明暗の値がある））
+// 設定の colorScheme の知らない値を unknown_color_scheme のずれで出し、記載できる値では出さない（正常系（知らない明暗の値がある））
 test("test_normal_when_unknown_color_scheme", async () => {
   // 準備
   const unknownDir = await createCleanDir();
@@ -549,7 +549,7 @@ function flowLines(definition: unknown): string[] {
   ];
 }
 
-// 図の定義の読めない箇所と配置のずれを、文書と行を指す行で出し、終了コード 1 で終わる（正常系（図の定義にずれがある））
+// 図の定義の読み込めない箇所と配置のずれを、文書と行を指す行で出し、終了コード 1 で終わる（正常系（図の定義にずれがある））
 test("test_normal_when_diagram_drift", async () => {
   // 準備
   const dir = await createTempDir();
@@ -635,7 +635,7 @@ test("test_normal_when_diagram_drift", async () => {
   expect(await read()).toEqual(before);
 });
 
-/** ビルドした `dist/cli.js` を `cwd` で流し、`input` を標準入力に書く。終了コードと出力を返す */
+/** ビルドした `dist/cli.js` を `cwd` で実行し、`input` を標準入力に記載する。終了コードと出力を返却する */
 function runCliWithInput(
   args: string[],
   cwd: string,
@@ -674,12 +674,12 @@ const RECORDS_YAML = [
   "",
 ].join("\n");
 
-/** フォルダの中のファイルの一覧と中身（変わっていないことを確かめる） */
+/** フォルダの中のファイルの一覧と中身（変わっていないことを確認する） */
 async function folderSnapshot(dir: string, paths: string[]): Promise<string[]> {
   return Promise.all(paths.map((path) => readFile(join(dir, path), "utf8")));
 }
 
-// 書き方の警告を持たない Markdown の文字列で 0 件を返す（正常系（文字列の記法を点検する））
+// 記載の警告を持たない Markdown の文字列で 0 件を返却する（正常系（文字列の記法を点検する））
 test("test_normal_when_text", async () => {
   // 準備
   const dir = await createTempDir();
@@ -706,7 +706,7 @@ test("test_normal_when_text", async () => {
   expect(await folderSnapshot(dir, paths)).toEqual(before);
 });
 
-// 文字列を描いたときの書き方の警告を、行を指すずれにして終了コード 1 で終わる（正常系（文字列に書き方の警告がある））
+// 文字列を描いたときの記載の警告を、行を指すずれにして終了コード 1 で終わる（正常系（文字列に記載の警告がある））
 test("test_normal_when_text_warnings", async () => {
   // 準備
   const dir = await createTempDir();
@@ -731,7 +731,7 @@ test("test_normal_when_text_warnings", async () => {
   }
 });
 
-// 描くときに読み飛ばす記法の印の知らない機能・キー・指定を、行を指す unknown_mark_arg のずれにして終了コード 1 で終わる（正常系（文字列の記法の印に知らない引数がある））
+// 描くときにスキップする記法のマーカーの知らない機能・キー・指定を、行を指す unknown_mark_arg のずれにして終了コード 1 で終わる（正常系（文字列の記法のマーカーに知らない引数がある））
 test("test_normal_when_text_unknown_mark_args", async () => {
   // 準備
   const dir = await createTempDir();
@@ -837,7 +837,7 @@ test("test_normal_when_text_extension_mark", async () => {
   expect(lines.some((line) => line.startsWith("-:1:"))).toBe(false);
 });
 
-// YAML に無いキーは、キーが無いことと直し方を示して終わる（異常系（キーが無い））
+// YAML に無いキーは、キーが無いことと修正方法を示して終わる（異常系（キーが無い））
 test("test_error_when_key_missing", async () => {
   // 準備
   const dir = await createTempDir();
@@ -886,7 +886,7 @@ test("test_normal_when_diagram_auto_layout", async () => {
   expect(invalid).toHaveLength(1);
   expect(invalid[0]).toContain("llm");
   expect(invalid[0]).toContain("判定フローチャート");
-  expect(invalid[0]).toContain("座標を書くか");
+  expect(invalid[0]).toContain("座標を記載するか");
   expect(lines.at(-1)).toBe("ずれ 1 件");
   expect(await snapshot(dir)).toEqual(before);
 });
@@ -899,7 +899,7 @@ const DOCS_CONFIG = [
   "",
 ].join("\n");
 
-/** フォルダの中のファイルの中身を、名前の順に返す（変わっていないことを確かめる） */
+/** フォルダの中のファイルの中身を、名前の順に返却する（変わっていないことを確認する） */
 async function snapshotFiles(dir: string, paths: string[]): Promise<string[]> {
   return Promise.all(paths.map((path) => readFile(join(dir, path), "utf8")));
 }

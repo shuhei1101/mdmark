@@ -4,12 +4,12 @@ scenarios:
     setup:
       - name: 空いたポート
         description: '`MDMARK_PORT` に、待ち受けるプロセスの無いポートを指定する'
-        notes: 手元の `mdmark serve` が使う既定の 8782 を避ける。`MDMARK_PORT` が無いときに既定のポートを使うことは、単体テスト `test_read_port` で確認する
+        notes: 手元の `mdmark serve` が使用する既定の 8782 を回避する。`MDMARK_PORT` が無いときに既定のポートを使用することは、単体テスト `test_read_port` で確認する
       - name: Mock
-        description: Claude Code の代わりに、常駐サーバーへ HTTP でつなぐ MCP のクライアントを使う
+        description: Claude Code の代わりに、常駐サーバーへ HTTP でつなぐ MCP のクライアントを使用する
     flow: |-
       sequenceDiagram
-        actor W as 文書を書く人
+        actor W as 文書の作成者
         participant C as mdmark CLI
         participant S as 常駐サーバー
         participant M as MCP のクライアント
@@ -21,7 +21,7 @@ scenarios:
     expected:
       - 出力に接続先 `http://127.0.0.1:{ポート}/mcp` が出る
       - '`127.0.0.1` の指定したポートで待ち受けるプロセスがあり、`mdmark serve` のプロセスが終わらずに残っている'
-      - クライアントの `tools/list` が、mdmark のツールの一覧を返す
+      - クライアントの `tools/list` が、mdmark のツールの一覧を返却する
     test: test_normal_when_start
   - name: 正常シナリオ（止める）
     setup:
@@ -31,7 +31,7 @@ scenarios:
         description: 差し替える依存は無い
     flow: |-
       sequenceDiagram
-        actor W as 文書を書く人
+        actor W as 文書の作成者
         participant C as mdmark CLI
         W->>C: Ctrl+C（SIGINT）
         C->>C: 待ち受けを閉じる
@@ -40,54 +40,54 @@ scenarios:
       - '`mdmark serve` が終了コード 0 で終わる'
       - 指定したポートで待ち受けるプロセスが無い
     test: test_normal_when_stop
-  - name: 異常シナリオ（ポートが使われている）
+  - name: 異常シナリオ（ポートが使用されている）
     setup:
-      - name: ポートを使うほかのプロセス
+      - name: ポートを使用するほかのプロセス
         description: 空いたポートを mdmark ではないプロセスが待ち受け、そのポートを `MDMARK_PORT` に指定する
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
       sequenceDiagram
-        actor W as 文書を書く人
+        actor W as 文書の作成者
         participant C as mdmark CLI
         W->>C: MDMARK_PORT={ポート} mdmark serve
         C->>C: 127.0.0.1:{ポート} で待ち受けられない
         C-->>W: 理由と修正方法・0 以外の終了コード
     expected:
-      - 出力に、指定したポートがほかのプロセスに使われていることが出る
+      - 出力に、指定したポートがほかのプロセスに使用されていることが出る
       - 出力に、`~/.claude/settings.json` の `env` と `mdmark serve` を起動する環境の両方に、同じ `MDMARK_PORT` を設定する修正方法が出る
       - 終了コードが 0 以外で、`mdmark serve` のプロセスが残らない
       - 指定したポートは、ほかのプロセスが待ち受けたまま
     test: test_error_when_port_in_use
-  - name: 異常シナリオ（MDMARK_PORT が使えない値）
+  - name: 異常シナリオ（MDMARK_PORT が使用できない値）
     setup:
-      - name: 使えない MDMARK_PORT
-        description: '`MDMARK_PORT` にポートとして使えない値を指定する'
+      - name: 使用できない MDMARK_PORT
+        description: '`MDMARK_PORT` にポートとして使用できない値を指定する'
         notes: 数値でない値（例 `abc`）
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
       sequenceDiagram
-        actor W as 文書を書く人
+        actor W as 文書の作成者
         participant C as mdmark CLI
         W->>C: MDMARK_PORT=abc mdmark serve
-        C->>C: MDMARK_PORT を読む
+        C->>C: MDMARK_PORT を読み込む
         C-->>W: 理由と修正方法・0 以外の終了コード
     expected:
-      - 出力に、`MDMARK_PORT` の値 `abc` がポートとして使えないことと、使える値の範囲が出る
+      - 出力に、`MDMARK_PORT` の値 `abc` がポートとして使用できないことと、使用できる値の範囲が出る
       - 終了コードが 0 以外で、`mdmark serve` のプロセスが残らない
     test: test_error_when_port_invalid
-lead: 文書を書く人が `mdmark serve` で MCP の常駐サーバーを起動し、待ち受けている接続先を確かめ、使い終えたら止める。
+lead: 文書の作成者が `mdmark serve` で MCP の常駐サーバーを起動し、待ち受けている接続先を確認し、使用し終えたら止める。
 issue: 111
-primary_actor: 文書を書く人
+primary_actor: 文書の作成者
 stakeholders:
-  - name: 文書を書く人
+  - name: 文書の作成者
     interest: 端末で 1 回起動したら、並行に開いたどのセッションからも同じプロセスのツールを呼べる。ポートがぶつかるときは理由と修正方法が分かる
   - name: Claude Code
     interest: '`.mcp.json` の接続先 `http://127.0.0.1:${MDMARK_PORT:-8782}/mcp` で常駐サーバーにつながる'
-trigger: 文書を書く人が、Claude Code で mdmark のツールを使う作業を始める前
+trigger: 文書の作成者が、Claude Code で mdmark のツールを使用する作業を始める前
 preconditions:
-  - 文書を書く人の手元に Node 24 以降がある
+  - 文書の作成者の手元に Node 24 以降がある
 success_guarantee: 常駐サーバーが `127.0.0.1` の `/mcp` で、既定のポート 8782（`MDMARK_PORT` を指定したときはそのポート）を待ち受け、接続先の URL を出す。止めると終了コード 0 で終わり、待ち受けるプロセスが残らない。
-minimal_guarantee: ポートを使えないときは待ち受けず、理由と修正方法を出して 0 以外の終了コードで終わる。ほかのプロセスが待ち受けているポートは、そのプロセスのまま変わらない。
+minimal_guarantee: ポートを使用できないときは待ち受けず、理由と修正方法を出して 0 以外の終了コードで終わる。ほかのプロセスが待ち受けているポートは、そのプロセスのまま変わらない。
 test_file: tests/e2e/単一ユースケース/MCPサーバーを起動・停止する.spec.ts

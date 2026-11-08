@@ -7,7 +7,7 @@ import { HAS_TMUX, useTerminals } from "../terminal.ts";
 
 const { createTerminal, tmux } = useTerminals();
 
-// 空の端末で、端末の設定が無いこと・既定のセッション名・待ち受けていないことを返す（正常系）
+// 空の端末で、端末の設定が無いこと・既定のセッション名・待ち受けていないことを返却する（正常系）
 test.skipIf(!HAS_TMUX)("test_normal", async () => {
   // 準備
   const terminal = await createTerminal();
@@ -25,7 +25,7 @@ test.skipIf(!HAS_TMUX)("test_normal", async () => {
   expect(status.state.log).toBe(terminal.logPath);
 });
 
-// 端末の設定のバージョン・セッション名・待ち受けていることを返す（正常系（セットアップ済み））
+// 端末の設定のバージョン・セッション名・待ち受けていることを返却する（正常系（セットアップ済み））
 test.skipIf(!HAS_TMUX)(
   "test_normal_when_already_set_up",
   async () => {
@@ -59,7 +59,7 @@ test.skipIf(!HAS_TMUX)(
   60_000,
 );
 
-// PATH に tmux が無いことを返す（正常系（tmux が無い））
+// PATH に tmux が無いことを返却する（正常系（tmux が無い））
 test("test_normal_when_tmux_missing", async () => {
   // 準備
   const terminal = await createTerminal();
@@ -77,7 +77,7 @@ test("test_normal_when_tmux_missing", async () => {
   expect(status.server.session_exists).toBe(false);
 });
 
-// 端末の設定が YAML として読めないとき、パスと行を出して終わる（異常系（端末の設定を読めない・終了コード 1））
+// 端末の設定が YAML として読み込めないとき、パスと行を出して終わる（異常系（端末の設定を読み込めない・終了コード 1））
 test("test_error_when_settings_unreadable", async () => {
   // 準備
   const terminal = await createTerminal();

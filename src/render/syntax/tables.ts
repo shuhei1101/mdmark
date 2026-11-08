@@ -62,7 +62,7 @@ export const TABLE_KINDS: Readonly<Record<TableKind, readonly TableFeature[]>> =
     plain: [],
   };
 
-/** 表の機能の名前。後ろの 6 つはどの種類の既定にも入らず、`+機能` を書いた表にだけ付く */
+/** 表の機能の名前。後ろの 6 つはどの種類の既定にも入らず、`+機能` を記載した表にだけ付く */
 export const TABLE_FEATURES: readonly TableFeature[] = [
   "sort",
   "pin",
@@ -75,14 +75,14 @@ export const TABLE_FEATURES: readonly TableFeature[] = [
   "rowlink",
 ];
 
-/** 表の印に書ける種類（`default` は印を書かない表の種類） */
+/** 表のマーカーに記載できる種類（`default` はマーカーを記載しない表の種類） */
 const WRITABLE_KINDS = ["data", "plain"];
 
-/** 表の印を読んだ結果 */
+/** 表のマーカーを読み込んだ結果 */
 export type TableSpec = {
   /** 種類。知らない種類は `default` */
   kind: TableKind;
-  /** 種類の機能に `+機能`・`-機能` を当てたもの */
+  /** 種類の機能に `+機能`・`-機能` を適用したもの */
   features: TableFeature[];
   /** 絞り込む列。表に無い列名・知らない種類は入れない */
   filters: TableFilter[];
@@ -90,9 +90,9 @@ export type TableSpec = {
   collapse: "none" | "closed" | "open";
   /** 折り畳みの見出し（`title=` の値）。`collapse` が `none` のときと、値の無い `title=` では入れない */
   title?: string | undefined;
-  /** 読めなかった指定 */
+  /** 読み込めなかった指定 */
   warnings: WarningItem[];
-  /** 読み飛ばした知らない種類・`+機能`・`-機能`・キー */
+  /** スキップした知らない種類・`+機能`・`-機能`・キー */
   skipped: SkippedArg[];
   /** `hide=` で既定で隠す列の位置。`columns` の無い表・先頭の列・表に無い列名は入れない */
   hide: number[];
@@ -120,16 +120,16 @@ export type TableSpec = {
   example?: string | undefined;
 };
 
-/** `tree=` と一緒に書くキー */
+/** `tree=` と一緒に記載するキー */
 const TREE_KEYS = ["type", "required", "default", "example"];
 
-/** 表の色の指定を読んだ結果 */
+/** 表の色の指定を読み込んだ結果 */
 export type TableColors = {
   /** 強調する列の位置と色。色を省いた列は `blue` */
   highlight: Array<{ column: number; color: ColorName }>;
   /** 本文の行ごとの色。色を付けない行は `null` */
   rows: Array<ColorName | null>;
-  /** 読めなかった指定 */
+  /** 読み込めなかった指定 */
   warnings: WarningItem[];
 };
 
@@ -144,7 +144,7 @@ export function codes(values: readonly string[]): string {
   return values.map((value) => `\`${value}\``).join("・");
 }
 
-/** `filter=` の値を、表の見出しの文字と照らして読む */
+/** `filter=` の値を、表の見出しの文字と照らして読み込む */
 export function readFilters(
   value: string,
   headers: string[],
@@ -163,12 +163,12 @@ export function readFilters(
     if (column < 0) {
       warnings.push({
         label: name,
-        message: `の列名 \`${name}\` は表にありません。表の見出しの文字で書いてください。`,
+        message: `の列名 \`${name}\` は表にありません。表の見出しの文字で記載してください。`,
       });
     } else if (!FILTER_KINDS.includes(kind as FilterKind)) {
       warnings.push({
         label: kind,
-        message: `の絞り込みの種類 \`${kind}\` は使えません。使える種類は ${codes(FILTER_KINDS)} です。\`${name}\` の列には絞り込みを付けずに描いています。`,
+        message: `の絞り込みの種類 \`${kind}\` は使用できません。使用できる種類は ${codes(FILTER_KINDS)} です。\`${name}\` の列には絞り込みを付けずに描いています。`,
       });
     } else {
       filters.push({ column, kind: kind as FilterKind });
@@ -177,7 +177,7 @@ export function readFilters(
   return filters;
 }
 
-/** `hide=` の値を、表の見出しの文字と照らして読む。先頭の列は隠せない */
+/** `hide=` の値を、表の見出しの文字と照らして読み込む。先頭の列は隠せない */
 function readHide(
   value: string,
   headers: string[],
@@ -192,12 +192,12 @@ function readHide(
     if (column < 0) {
       warnings.push({
         label: name,
-        message: `の列名 \`${name}\` は表にありません。表の見出しの文字で書いてください。`,
+        message: `の列名 \`${name}\` は表にありません。表の見出しの文字で記載してください。`,
       });
     } else if (column === 0) {
       warnings.push({
         label: name,
-        message: `の列 \`${name}\` は先頭の列のため隠せません。先頭の列は行の識別子と行へのリンクの置き場所なので、隠さずに描いています。`,
+        message: `の列 \`${name}\` は先頭の列のため隠せません。先頭の列は行の識別子と行へのリンクの配置場所なので、隠さずに描いています。`,
       });
     } else if (!hide.includes(column)) {
       hide.push(column);
@@ -227,7 +227,7 @@ function readColumns(
   return columns;
 }
 
-/** `total=` の値を、表の見出しの文字と照らして読む */
+/** `total=` の値を、表の見出しの文字と照らして読み込む */
 function readTotals(
   value: string,
   headers: string[],
@@ -246,15 +246,15 @@ function readTotals(
     if (column < 0) {
       warnings.push({
         label: name,
-        message: `の列名 \`${name}\` は表にありません。表の見出しの文字で書いてください。`,
+        message: `の列名 \`${name}\` は表にありません。表の見出しの文字で記載してください。`,
       });
     } else if (!TOTAL_CALCS.includes(calc as TotalCalc)) {
       warnings.push({
         label: calc || item,
-        message: `の計算 \`${calc}\` は使えません。\`total=列名:計算\` の形で書き、使える計算は ${codes(TOTAL_CALCS)} です。\`${name}\` の列は集計せずに描いています。`,
+        message: `の計算 \`${calc}\` は使用できません。\`total=列名:計算\` の構造で記載し、使用できる計算は ${codes(TOTAL_CALCS)} です。\`${name}\` の列は集計せずに描いています。`,
       });
     } else {
-      // 同じ列に別の計算を書けるため、列と計算が同じ指定だけを重ねない
+      // 同じ列に別の計算を記載できるため、列と計算が同じ指定だけを重ねない
       const duplicated = totals.some(
         (total) => total.column === column && total.calc === calc,
       );
@@ -266,7 +266,7 @@ function readTotals(
   return totals;
 }
 
-/** `header-rows=`・`row-header=` の値を、`limit` 未満の正の整数として読む。読めないときは警告を足して `fallback` を返す */
+/** `header-rows=`・`row-header=` の値を、`limit` 未満の正の整数として読み込む。読み込めないときは警告を追加して `fallback` を返却する */
 function readHeaderCount(options: {
   key: string;
   value: string;
@@ -282,12 +282,12 @@ function readHeaderCount(options: {
   }
   warnings.push({
     label: `${key}=`,
-    message: `\`${value}\` は使えません。1 以上で表の${unit}の数（${limit}）より小さい整数を指定してください。既定の ${fallback} で描いています`,
+    message: `\`${value}\` は使用できません。1 以上で表の${unit}の数（${limit}）より小さい整数を指定してください。既定の ${fallback} で描いています`,
   });
   return fallback;
 }
 
-/** 表の印の引数と表の見出しから `TableSpec` を作る。印が無い表は `default`。知らない種類・`+機能`・`-機能`・キーは `skipped` に入れる。`text` は印の引数の文字 */
+/** 表のマーカーの引数と表の見出しから `TableSpec` を作る。マーカーが無い表は `default`。知らない種類・`+機能`・`-機能`・キーは `skipped` に入れる。`text` はマーカーの引数の文字 */
 export function readTableSpec(
   args: MdmarkMarkArgs | undefined,
   headers: string[],
@@ -314,7 +314,7 @@ export function readTableSpec(
       unknownKinds.push(arg);
     }
   }
-  // 種類の機能に、`+機能`・`-機能` を書いた順に当てる
+  // 種類の機能に、`+機能`・`-機能` を記載した順に適用する
   const features: TableFeature[] = [...TABLE_KINDS[kind]];
   const unknownFeatures: string[] = [];
   for (const arg of featureArgs) {
@@ -345,7 +345,7 @@ export function readTableSpec(
   let wide: number[] = [];
   let check: number[] = [];
   const treeValues: Record<string, string> = {};
-  // `hide=` は `columns`、`total=` は `total`、`pin=` は `pin` を付けた表でだけ読む
+  // `hide=` は `columns`、`total=` は `total`、`pin=` は `pin` を付けた表でだけ読み込む
   const keyFeatures: Record<string, TableFeature> = {
     hide: "columns",
     total: "total",
@@ -356,7 +356,7 @@ export function readTableSpec(
     if (needed && !features.includes(needed)) {
       warnings.push({
         label: `${key}=`,
-        message: `\`+${needed}\` を書いた表でだけ使えます。当てずに描いています`,
+        message: `\`+${needed}\` を記載した表でだけ使用できます。当てずに描いています`,
       });
     } else if (key === "filter") {
       filters = readFilters(value, headers, warnings);
@@ -394,7 +394,7 @@ export function readTableSpec(
     } else if (key === "check") {
       check = readColumns(value, headers, warnings);
     } else if (COLOR_KEYS.includes(key)) {
-      // 色の指定は `readTableColors` が読む
+      // 色の指定は `readTableColors` が読み込む
     } else if (key === "tree" || TREE_KEYS.includes(key)) {
       treeValues[key] = value.trim();
     } else {
@@ -444,7 +444,7 @@ export function readTableSpec(
   };
 }
 
-/** `tree=`・`type=`・`required=`・`default=`・`example=` を、表の見出しの文字と照らして読む */
+/** `tree=`・`type=`・`required=`・`default=`・`example=` を、表の見出しの文字と照らして読み込む */
 function readTree(options: {
   values: Record<string, string>;
   headers: string[];
@@ -482,7 +482,7 @@ function readTree(options: {
     if (values[key] !== undefined && tree === undefined) {
       warnings.push({
         label: `${key}=`,
-        message: "は tree= と一緒に書いてください。当てずに描いています。",
+        message: "は tree= と一緒に記載してください。当てずに描いています。",
       });
     }
   }
@@ -502,7 +502,7 @@ function readTree(options: {
 function unknownColumn(name: string): WarningItem {
   return {
     label: name,
-    message: `の列名 \`${name}\` は表にありません。表の見出しの文字で書いてください。`,
+    message: `の列名 \`${name}\` は表にありません。表の見出しの文字で記載してください。`,
   };
 }
 
@@ -510,7 +510,7 @@ function unknownColumn(name: string): WarningItem {
 function unknownColor(name: string): WarningItem {
   return {
     label: name,
-    message: `の \`${name}\` は色の名前ではありません。使える色の名前は ${codes(COLOR_NAMES)} です。色を付けずに描いています。`,
+    message: `の \`${name}\` は色の名前ではありません。使用できる色の名前は ${codes(COLOR_NAMES)} です。色を付けずに描いています。`,
   };
 }
 
@@ -518,11 +518,11 @@ function unknownColor(name: string): WarningItem {
 function missingEquals(item: string, form: string): WarningItem {
   return {
     label: item,
-    message: `の \`${item}\` に \`=\` がありません。\`${form}\` の形で書いてください。`,
+    message: `の \`${item}\` に \`=\` がありません。\`${form}\` の構造で記載してください。`,
   };
 }
 
-/** `highlight=` の値を、表の見出しの文字と照らして読む */
+/** `highlight=` の値を、表の見出しの文字と照らして読み込む */
 function readHighlight(
   value: string,
   headers: string[],
@@ -549,7 +549,7 @@ function readHighlight(
   return highlight;
 }
 
-/** 項目の頭の `列名:` が表の見出しに当たれば、列の位置と残りの文字を返す */
+/** 項目の頭の `列名:` が表の見出しに該当すれば、列の位置と残りの文字を返却する */
 function splitColumnHead(
   item: string,
   headers: string[],
@@ -567,7 +567,7 @@ function splitColumnHead(
   return undefined;
 }
 
-/** `row-color=` の値を、見出しと本文のセルの文字と照らして読み、行の色を `rows` に書く */
+/** `row-color=` の値を、見出しと本文のセルの文字と照らして読み込み、行の色を `rows` に記載する */
 function readRowColor(
   value: string,
   headers: string[],
@@ -609,7 +609,7 @@ function readRowColor(
   }
 }
 
-/** `row-at=` の値を、本文の行の数と照らして読み、行の色を `rows` に書く */
+/** `row-at=` の値を、本文の行の数と照らして読み込み、行の色を `rows` に記載する */
 function readRowAt(
   value: string,
   rows: TableColors["rows"],
@@ -632,7 +632,7 @@ function readRowAt(
     if (!range || first < 1 || last < first || last > rows.length) {
       warnings.push({
         label: position,
-        message: `の行の位置 \`${position}\` は表にありません。表の本文は ${rows.length} 行です。行の位置を 1〜${rows.length} で書いてください。`,
+        message: `の行の位置 \`${position}\` は表にありません。表の本文は ${rows.length} 行です。行の位置を 1〜${rows.length} で記載してください。`,
       });
     } else if (!isColorName(color)) {
       warnings.push(unknownColor(color));
@@ -642,7 +642,7 @@ function readRowAt(
   }
 }
 
-/** 表の印の `highlight=`・`row-color=`・`row-at=` を、表の見出しと本文の行のセルの文字で照らして読む */
+/** 表のマーカーの `highlight=`・`row-color=`・`row-at=` を、表の見出しと本文の行のセルの文字で照らして読み込む */
 export function readTableColors(
   args: MdmarkMarkArgs | undefined,
   headers: string[],
@@ -658,7 +658,7 @@ export function readTableColors(
   if (keys["row-color"] !== undefined) {
     readRowColor(keys["row-color"], headers, cells, rows, warnings);
   }
-  // `row-at=` は `row-color=` の後に読み、両方が当たる行を `row-at=` の色にする
+  // `row-at=` は `row-color=` の後に読み込み、両方が該当する行を `row-at=` の色にする
   if (keys["row-at"] !== undefined) {
     readRowAt(keys["row-at"], rows, warnings);
   }
@@ -751,7 +751,7 @@ function applyColumnStyles(
   }
 }
 
-/** `tableOpen` の表の直下のトークンの位置を返す（中の表のトークンと、自分の `table_open`・`table_close` を含まない） */
+/** `tableOpen` の表の直下のトークンの位置を返却する（中の表のトークンと、自分の `table_open`・`table_close` を含まない） */
 function ownTokenIndexes(tokens: Token[], tableOpen: number): number[] {
   const indexes: number[] = [];
   let depth = 0;
@@ -788,7 +788,7 @@ function bodyRowCount(tokens: Token[], tableOpen: number): number {
   return count;
 }
 
-/** 先頭のセルの文字から行の ID を作る。見出しの ID と同じ規則で、`taken` にあれば `-1`・`-2` と番号を上げる。作れないときは `row` を元にする。返した ID を `taken` に足す */
+/** 先頭のセルの文字から行の ID を作る。見出しの ID と同じ規則で、`taken` にあれば `-1`・`-2` と番号を上げる。作れないときは `row` を元にする。返却した ID を `taken` に追加する */
 export function rowIdOf(text: string, taken: Set<string>): string {
   const base = slugBase(text) || "row";
   let id = base;
@@ -807,7 +807,7 @@ function linkRows(
   taken: Set<string>,
 ): void {
   const nonce = envOf(state).nonce;
-  /** 印を付けた HTML の `html_inline` を作る */
+  /** マーカーを付けた HTML の `html_inline` を作る */
   const inlineHtml = (html: string): Token => {
     const token = new state.Token("html_inline", "", 0);
     token.content = markOwn(html, nonce);
@@ -841,7 +841,7 @@ function linkRows(
   }
 }
 
-/** 項目の形（`+機能`・`キー=`・結合できない `^^`・`<<`）の警告か、1 文の警告かを見分ける */
+/** 項目の構造（`+機能`・`キー=`・結合できない `^^`・`<<`）の警告か、1 文の警告かを見分ける */
 function isItemWarning(item: WarningItem): boolean {
   return (
     /^[+-]/.test(item.label) ||
@@ -851,7 +851,7 @@ function isItemWarning(item: WarningItem): boolean {
   );
 }
 
-/** 表の指定の警告を、書き方の警告に渡す値にする: 項目の形のものは 1 つにまとめ、1 文のものは 1 つずつ */
+/** 表の指定の警告を、記載の警告に指定する値にする: 項目の構造のものは 1 つにまとめ、1 文のものは 1 つずつ */
 export function warningsOf(
   mark: string,
   warnings: WarningItem[],
@@ -865,32 +865,32 @@ export function warningsOf(
   if (items.length) {
     result.push({
       mark,
-      message: "の読めない指定を当てずに描いています。",
+      message: "の読み込めない指定を当てずに描いています。",
       items,
     });
   }
   return result;
 }
 
-/** 表の印の範囲 */
+/** 表のマーカーの範囲 */
 type TableRange = {
-  /** 開きの印の位置 */
+  /** 開きのマーカーの位置 */
   open: number;
-  /** 閉じの印の位置。無ければ `-1` */
+  /** 閉じのマーカーの位置。無ければ `-1` */
   close: number;
-  /** 開きの印 */
+  /** 開きのマーカー */
   mark: Mark;
-  /** 閉じの印が無い警告を出したか */
+  /** 閉じのマーカーが無い警告を出したか */
   warned: boolean;
 };
 
-/** 表に読み上げの名前と tabindex を付け、セルに同じ列の見出しの文字を写す */
+/** 表にスクリーンリーダー向けの名前と tabindex を付け、セルに同じ列の見出しの文字を写す */
 function decorateAttributes(state: StateCore): void {
   const tokens = state.tokens;
   let heading = "";
   let headers: string[] = [];
   let column = 0;
-  // 中の表を読む間、外の表の見出しと列の位置を控える
+  // 中の表を読み込む間、外の表の見出しと列の位置を記録する
   const outers: Array<{ headers: string[]; column: number }> = [];
   for (let index = 0; index < tokens.length; index++) {
     const token = tokens[index];
@@ -939,7 +939,7 @@ function bodyCellsOf(tokens: Token[], tableOpen: number): string[][] {
   return rows;
 }
 
-/** 集計する列に数として読めないセルがあるときの警告を、列と計算ごとに作る */
+/** 集計する列に数として読み込めないセルがあるときの警告を、列と計算ごとに作る */
 function unreadableTotalWarnings(options: {
   tokens: Token[];
   tableOpen: number;
@@ -951,7 +951,7 @@ function unreadableTotalWarnings(options: {
     rows: bodyCellsOf(tokens, tableOpen),
     totals,
   }).map((item) => ({
-    message: `「${headers[item.column] ?? ""}」の列に数として読めない値 ${codes(item.values)} があるため、${TOTAL_LABELS[item.calc]}を出していません。数を書くか、セルを空にしてください。`,
+    message: `「${headers[item.column] ?? ""}」の列に数として読み込めない値 ${codes(item.values)} があるため、${TOTAL_LABELS[item.calc]}を出していません。数を記載するか、セルを空にしてください。`,
   }));
 }
 
@@ -1034,7 +1034,7 @@ function moveRowsToHead(tokens: Token[], tableOpen: number, count: number) {
       const open = tokens[cell.open];
       if (open?.type === "td_open") {
         toHeadCell(open, tokens[cell.close]);
-        // 本文のセルに写した列名は、見出しにしたセルには要らない
+        // 本文のセルにコピーした列名は、見出しにしたセルには要らない
         open.attrs = (open.attrs ?? []).filter(
           ([name]) => name !== "data-label",
         );
@@ -1043,7 +1043,7 @@ function moveRowsToHead(tokens: Token[], tableOpen: number, count: number) {
   }
 }
 
-/** 表の印の範囲の表に、多段の見出し・行見出し・セルの結合を当て、本文の行で結合した列と結合できない警告を返す。見出しの結合したセルのトークンは `dropped` に入れる */
+/** 表のマーカーの範囲の表に、多段の見出し・行見出し・セルの結合を当て、本文の行で結合した列と結合できない警告を返却する。見出しの結合したセルのトークンは `dropped` に入れる */
 function mergeTableCells(options: {
   state: StateCore;
   tableOpen: number;
@@ -1121,7 +1121,7 @@ function mergeTableCells(options: {
       }
       if (!row.head && c < spec.rowHeader) {
         toHeadCell(open, tokens[cell.close]);
-        // 行見出しの `scope` は開始タグの先頭に置く
+        // 行見出しの `scope` は開始タグの先頭に配置する
         open.attrs = [["scope", "row"], ...(open.attrs ?? [])];
         open.attrSet("data-mdmark-own", nonce);
       }
@@ -1156,7 +1156,7 @@ function mergeTableCells(options: {
   return { mergeColumns: plan.mergeColumns, warnings: plan.warnings };
 }
 
-/** 見出しの行のセルの文字から、最下段の列ごとの列名を返す。上と結合した `^^` は上のセルの文字にする */
+/** 見出しの行のセルの文字から、最下段の列ごとの列名を返却する。上と結合した `^^` は上のセルの文字にする */
 function headLabelsOf(head: string[][]): string[] {
   const bottom = head.length - 1;
   return (head[bottom] ?? []).map((text, column) => {
@@ -1170,7 +1170,7 @@ function headLabelsOf(head: string[][]): string[] {
   });
 }
 
-/** 表の印の範囲を集める */
+/** 表のマーカーの範囲を集める */
 function collectRanges(tokens: Token[]): TableRange[] {
   const ranges: TableRange[] = [];
   tokens.forEach((token, index) => {
@@ -1187,7 +1187,7 @@ function collectRanges(tokens: Token[]): TableRange[] {
   return ranges;
 }
 
-/** 表に読み上げの名前と tabindex を付け、`table` がオンなら、表の印の範囲の表と囲まない表を表の部品の囲みに入れる */
+/** 表にスクリーンリーダー向けの名前と tabindex を付け、`table` がオンなら、表のマーカーの範囲の表と囲まない表を表の部品の囲みに入れる */
 export function decorateTables(state: StateCore): void {
   decorateAttributes(state);
   if (!featureOn(state, "table")) {
@@ -1195,10 +1195,10 @@ export function decorateTables(state: StateCore): void {
   }
   const tokens = state.tokens;
   const ranges = collectRanges(tokens);
-  // 行の ID が重ならないよう、見出しの ID と前の行の ID を文書の頭から控える
+  // 行の ID が重ならないよう、見出しの ID と前の行の ID を文書の頭から記録する
   const taken = new Set(envOf(state).headings.map((heading) => heading.id));
   const out: Token[] = [];
-  // 囲みに入れて閉じていない表の `table_open` の位置と、閉じるときに置く囲みの終わり
+  // 囲みに入れて閉じていない表の `table_open` の位置と、閉じるときに配置する囲みの終わり
   const openTables: Array<{ open: number; tail: string }> = [];
   // 見出しの結合したセルのトークン（囲みに移さない）
   const dropped = new Set<Token>();
@@ -1209,7 +1209,7 @@ export function decorateTables(state: StateCore): void {
     }
     const mark = markOf(token);
     if (mark?.name === "table") {
-      // 表の印は、ここで使い切る
+      // 表のマーカーは、ここで使用し切る
       continue;
     }
     const outer = openTables.at(-1);
@@ -1233,7 +1233,7 @@ export function decorateTables(state: StateCore): void {
           (candidate.close < 0 || index < candidate.close),
       )
       .pop();
-    // ビューの印が表の指定を当てた表は、その指定で表の部品にする
+    // ビューのマーカーが表の指定を適用した表は、その指定で表の部品にする
     const viewSpec = (token.meta as { tableSpec?: TableSpec } | null)
       ?.tableSpec;
     const rowCount = bodyRowCount(tokens, index) + 1;
@@ -1248,7 +1248,7 @@ export function decorateTables(state: StateCore): void {
     let mergeColumns: number[] = [];
     if (range && !viewSpec) {
       if (spec.headRows > 1) {
-        // 列名は見出しの最下段の行から読む（上と結合した `^^` は上のセルの文字）
+        // 列名は見出しの最下段の行から読み込む（上と結合した `^^` は上のセルの文字）
         const head = [
           headersOf(tokens, index),
           ...bodyCellsOf(tokens, index).slice(0, spec.headRows - 1),
@@ -1305,7 +1305,7 @@ export function decorateTables(state: StateCore): void {
       range.warned = true;
       warnings.push(unclosedWarning(range.mark));
     }
-    // 色の指定の警告と集計できない列の警告は、表の囲みの直前に置く
+    // 色の指定の警告と集計できない列の警告は、表の囲みの直前に配置する
     if (range) {
       for (const warning of warningsOf(range.mark.raw, colors.warnings)) {
         out.push(warningBlock(state, warning, tokens[range.open]));

@@ -5,7 +5,7 @@ function distUrl(file: string): string {
   return `/@fs${inject("builtRoot")}/dist/${file}`;
 }
 
-// 配布物を読んだページで version() を呼ぶと、埋めた版を返し、CSS 変数も同じ版になる（正常系）
+// 配布物を読み込んだページで version() を呼ぶと、埋めたバージョンを返却し、CSS 変数も同じバージョンになる（正常系）
 test("test_normal", async () => {
   // 準備
   const link = document.createElement("link");

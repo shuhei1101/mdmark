@@ -95,7 +95,7 @@ test("test_render_tabs_when_collapsed", async () => {
   ).toBe(true);
 });
 
-// タブ名の strong をそのまま置く（正常系）
+// タブ名の strong をそのまま配置する（正常系）
 test("test_render_tabs_when_strong_title", async () => {
   // 準備
   const { renderTabs } = await loadTabs();

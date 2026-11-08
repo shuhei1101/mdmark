@@ -7,13 +7,14 @@ import { renderDiagram } from "./diagram.ts";
 import { escapeHtml } from "./escape.ts";
 import { iconSvg } from "./icons.ts";
 
-/** 写した結果 */
+/** コピーした結果 */
 export type CopyState = "none" | "copied" | "failed";
 
-/** 写した結果の知らせの文言 */
+/** コピーした結果の通知の文言 */
 const COPY_MESSAGES = {
-  copied: "クリップボードに写しました",
-  failed: "クリップボードへ書けませんでした。下の JSON を選んで写してください",
+  copied: "クリップボードにコピーしました",
+  failed:
+    "クリップボードへ書き込めませんでした。下の JSON を選んでコピーしてください",
 };
 
 /** スライダーの値を表の見出しの文字にする。小数の誤差は落とす */
@@ -47,13 +48,13 @@ export function paramChart(
   };
 }
 
-/** 写した結果の知らせの中身（アイコンと文言） */
+/** コピーした結果の通知の中身（アイコンと文言） */
 export function renderCopyStatus(state: "copied" | "failed"): string {
   const icon = iconSvg(state === "copied" ? "check" : "circle-alert");
   return `${icon}${escapeHtml(COPY_MESSAGES[state])}`;
 }
 
-/** 操作できる部品を描く: 題・スライダー・今の値・写すボタン・知らせ・写せなかったときの `pre` と、今の値と既定の値の系列のグラフ */
+/** 操作できる部品を描く: タイトル・スライダー・今の値・写すボタン・通知し・写せなかったときの `pre` と、今の値と既定の値の系列のグラフ */
 export function renderParam(
   definition: MdmarkParamDefinition,
   state: {

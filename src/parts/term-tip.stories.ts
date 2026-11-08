@@ -3,7 +3,7 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 const meta = { title: "Parts/TermTip" } satisfies Meta<Record<string, unknown>>;
 export default meta;
 
-/** ストーリー: 描画の口（`parameters.server.id`）の部品を `args` で描く */
+/** ストーリー: 描画のインターフェース（`parameters.server.id`）の部品を `args` で描く */
 type Story = StoryObj<Record<string, unknown>>;
 
 export const TermOnly: Story = {
@@ -12,7 +12,7 @@ export const TermOnly: Story = {
   args: {
     text: "ワークスペース",
     id: "tip-term",
-    meaning: "話し合いの記録を置くフォルダ",
+    meaning: "話し合いの記録を配置するフォルダ",
     open: true,
   },
 };
@@ -35,7 +35,7 @@ export const Both: Story = {
     text: "索引",
     id: "tip-both",
     meaning: "文書と用語を並べた YAML のファイル",
-    docs: '[{"title":"索引のリファレンス","href":"../リファレンス/索引.md","description":"索引のキー・型・必須・既定と、点検が返すずれの種類"}]',
+    docs: '[{"title":"索引のリファレンス","href":"../リファレンス/索引.md","description":"索引のキー・型・必須・既定と、点検が返却するずれの種類"}]',
     open: true,
   },
 };
@@ -47,8 +47,8 @@ export const ManyDocs: Story = {
     text: "設定",
     id: "tip-many",
     meaning:
-      "mdmark.config.yaml に書く、機能のオン・オフと外部ライブラリの読み方",
-    docs: '[{"title":"設定の一覧","href":"../リファレンス/設定.md","description":"設定のキーと既定の一覧"},{"title":"機能をオン・オフする","href":"../使い方/カスタマイズ/機能をオン・オフする.md","description":"設定の features と文書の印で、機能のオン・オフを切り替える"},{"title":"テーマを上書きする","href":"../使い方/カスタマイズ/テーマを上書きする.md","description":"CSS 変数と層の外の CSS で、描いた文書の見た目を変える"},{"title":"文書を描く","href":"../使い方/導入/文書を描く.md","description":"配布物を読んだページで mount を呼び、要素の中に Markdown を描く"},{"title":"文書を描く仕組み","href":"../はじめに/コアコンセプト/文書を描く仕組み.md","description":"Markdown と設定を渡してから描かれるまでの流れと、機能のオン・オフの優先順"},{"title":"印刷する","href":"../使い方/カスタマイズ/印刷する.md","description":"印刷・PDF にしたときの文書の見え方"},{"title":"非機能要件","href":"../非機能要件.md","description":"配布物のサイズと対応ブラウザの決定値"}]',
+      "mdmark.config.yaml に書き込む、機能のオン・オフと外部ライブラリの読み込み方",
+    docs: '[{"title":"設定の一覧","href":"../リファレンス/設定.md","description":"設定のキーと既定の一覧"},{"title":"機能をオン・オフする","href":"../使い方/カスタマイズ/機能をオン・オフする.md","description":"設定の features と文書のマーカーで、機能のオン・オフを切り替える"},{"title":"テーマを上書きする","href":"../使い方/カスタマイズ/テーマを上書きする.md","description":"CSS 変数と層の外の CSS で、描いた文書の外観を変える"},{"title":"文書を描く","href":"../使い方/導入/文書を描く.md","description":"配布物を読み込んだページで mount を呼び、要素の中に Markdown を描く"},{"title":"文書を描く仕組み","href":"../はじめに/コアコンセプト/文書を描く仕組み.md","description":"Markdown と設定を指定してから描かれるまでの流れと、機能のオン・オフの優先順"},{"title":"印刷する","href":"../使い方/カスタマイズ/印刷する.md","description":"印刷・PDF にしたときの文書の見え方"},{"title":"非機能要件","href":"../非機能要件.md","description":"配布物のサイズと対応ブラウザの決定値"}]',
     open: true,
   },
 };
@@ -60,7 +60,7 @@ export const LongMeaning: Story = {
     text: "サニタイズ",
     id: "tip-long",
     meaning:
-      "描く前の HTML から、スクリプトと許可していない要素・属性を落とすこと。文書に書いた script 要素・イベント属性・javascript: の URL を実行しないための処理で、索引に書いた題と意味にも当てる",
+      "描く前の HTML から、スクリプトと許可していない要素・属性を落とすこと。文書に記載した script 要素・イベント属性・javascript: の URL を実行しないための処理で、索引に記載したタイトルと意味にも適用する",
     open: true,
   },
 };
@@ -71,7 +71,7 @@ export const Below: Story = {
   args: {
     text: "ワークスペース",
     id: "tip-below",
-    meaning: "話し合いの記録を置くフォルダ",
+    meaning: "話し合いの記録を配置するフォルダ",
     below: true,
     open: true,
   },
@@ -83,7 +83,7 @@ export const Closed: Story = {
   args: {
     text: "ワークスペース",
     id: "tip-closed",
-    meaning: "話し合いの記録を置くフォルダ",
+    meaning: "話し合いの記録を配置するフォルダ",
   },
 };
 
@@ -94,7 +94,7 @@ export const Avoided: Story = {
     text: "作業場",
     id: "tip-avoided",
     replacement:
-      '{"term":"ワークスペース","meaning":"話し合いの記録を置くフォルダ"}',
+      '{"term":"ワークスペース","meaning":"話し合いの記録を配置するフォルダ"}',
     open: true,
   },
 };
@@ -106,7 +106,7 @@ export const AvoidedClosed: Story = {
     text: "作業場",
     id: "tip-avoided-closed",
     replacement:
-      '{"term":"ワークスペース","meaning":"話し合いの記録を置くフォルダ"}',
+      '{"term":"ワークスペース","meaning":"話し合いの記録を配置するフォルダ"}',
   },
 };
 
@@ -117,7 +117,7 @@ export const AliasTerm: Story = {
     text: "査読",
     id: "tip-alias-term",
     alias:
-      '{"alias_type":"term","id":"review","name":"レビュー","aliases":["査読"],"description":"変更を別の人が確かめること"}',
+      '{"alias_type":"term","id":"review","name":"レビュー","aliases":["査読"],"description":"変更を別の人が確認すること"}',
     open: true,
   },
 };
@@ -141,7 +141,7 @@ export const AliasCommand: Story = {
     text: "単体テスト",
     id: "tip-alias-command",
     alias:
-      '{"alias_type":"command","id":"unit-test","name":"単体テスト","description":"ライブラリ本体の単体テストを流す","command":"npm run test:unit","cwd":"リポジトリの直下"}',
+      '{"alias_type":"command","id":"unit-test","name":"単体テスト","description":"ライブラリ本体の単体テストを実行する","command":"npm run test:unit","cwd":"リポジトリの直下"}',
     open: true,
   },
 };
@@ -153,7 +153,7 @@ export const AliasCommandCopied: Story = {
     text: "単体テスト",
     id: "tip-alias-command-copied",
     alias:
-      '{"alias_type":"command","id":"unit-test","name":"単体テスト","description":"ライブラリ本体の単体テストを流す","command":"npm run test:unit","cwd":"リポジトリの直下"}',
+      '{"alias_type":"command","id":"unit-test","name":"単体テスト","description":"ライブラリ本体の単体テストを実行する","command":"npm run test:unit","cwd":"リポジトリの直下"}',
     copy: "copied",
     open: true,
   },
@@ -166,7 +166,7 @@ export const AliasCommandFailed: Story = {
     text: "単体テスト",
     id: "tip-alias-command-failed",
     alias:
-      '{"alias_type":"command","id":"unit-test","name":"単体テスト","description":"ライブラリ本体の単体テストを流す","command":"npm run test:unit","cwd":"リポジトリの直下"}',
+      '{"alias_type":"command","id":"unit-test","name":"単体テスト","description":"ライブラリ本体の単体テストを実行する","command":"npm run test:unit","cwd":"リポジトリの直下"}',
     copy: "failed",
     open: true,
   },
@@ -239,7 +239,7 @@ export const AliasTool: Story = {
     text: "点検のツール",
     id: "tip-alias-tool",
     alias:
-      '{"alias_type":"tool","id":"check-tool","name":"点検のツール","description":"設定と索引のずれを返す","tool":"check"}',
+      '{"alias_type":"tool","id":"check-tool","name":"点検のツール","description":"設定と索引のずれを返却する","tool":"check"}',
     open: true,
   },
 };
@@ -251,7 +251,7 @@ export const AliasPath: Story = {
     text: "設定ファイル",
     id: "tip-alias-path",
     alias:
-      '{"alias_type":"path","id":"config-file","name":"設定ファイル","description":"機能のオン・オフと読む文書を記載する","path":"mdmark.config.yaml"}',
+      '{"alias_type":"path","id":"config-file","name":"設定ファイル","description":"機能のオン・オフと読み込む文書を記載する","path":"mdmark.config.yaml"}',
     open: true,
   },
 };

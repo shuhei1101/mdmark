@@ -10,7 +10,7 @@ import { parseDocument } from "../../../../src/knowledge/references.ts";
 /** 本文の位置の処理を読み込む（実装が無い間は各テストが個別に失敗する） */
 const loadPositions = () => import("../../../../src/knowledge/positions.ts");
 
-/** 本文の行内のトークンを、本文の頭から順に返す */
+/** 本文の行内のトークンを、本文の頭から順に返却する */
 function inlineTokens(body: string): Token[] {
   const { tokens } = parseDocument({
     body,
@@ -20,7 +20,7 @@ function inlineTokens(body: string): Token[] {
   return tokens.filter((token) => token.type === "inline");
 }
 
-// 記法の記号を飛ばして文字を当てる（正常系）
+// 記法の記号を飛ばして文字を適用する（正常系）
 test("test_align_text", async () => {
   // 準備
   const { alignText } = await loadPositions();
@@ -31,12 +31,12 @@ test("test_align_text", async () => {
     text: "ワークスペース",
   });
   // 検証
-  // 7 文字の始まりと、末尾に足した終わりの位置
+  // 7 文字の始まりと、末尾に追加した終わりの位置
   expect(aligned.offsets).toEqual([2, 3, 4, 5, 6, 7, 8, 9]);
   expect(aligned.end).toBe(9);
 });
 
-// エスケープと実体参照を数えて当てる（正常系）
+// エスケープと実体参照を数えて適用する（正常系）
 test("test_align_text_with_escape_and_entity", async () => {
   // 準備
   const { alignText } = await loadPositions();
@@ -67,7 +67,7 @@ test("test_align_text_with_escape_and_entity", async () => {
   expect(hex.offsets).toEqual([0, 8, 9, 10, 11]);
 });
 
-// 同じ綴りが先に行内のコードとリンクの文字にあっても、地の文の位置を返す（正常系）
+// 同じ綴りが先に行内のコードとリンクの文字にあっても、地の文の位置を返却する（正常系）
 test("test_inline_offsets", async () => {
   // 準備
   const { inlineOffsets } = await loadPositions();

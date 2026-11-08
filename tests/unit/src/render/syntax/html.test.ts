@@ -16,7 +16,7 @@ import { renderDoc } from "../../../helpers/render.ts";
 /** 解析の処理を読み込む（実装が無い間は各テストが個別に失敗する） */
 const loadParser = () => import("../../../../../src/render/parser.ts");
 
-/** 範囲の外に置く `html` のコードブロック */
+/** 範囲の外に配置する `html` のコードブロック */
 const OUTSIDE = ["```html", "<p>範囲の外</p>", "```", ""].join("\n");
 
 /** 用語 `索引` を持つ索引 */
@@ -29,9 +29,9 @@ const TERM_INDEX: MdmarkIndex = {
 /** 範囲の中の `html` のコードブロックと、範囲の外のコードブロックを持つ文書 */
 const BASIC = `${wrapHtml("<p>こんにちは</p>")}\n${OUTSIDE}`;
 
-/** 範囲のコードブロックが 1 つでない書き方の警告の文 */
+/** 範囲のコードブロックが 1 つでない記載の警告の文 */
 const BLOCK_COUNT_WARNING =
-  "<!-- html --> の範囲に html のコードブロックを 1 つだけ置いてください";
+  "<!-- html --> の範囲に html のコードブロックを 1 つだけ配置してください";
 
 // 範囲のコードブロックを HTML として描き、範囲の外はコードのままにする（正常系）
 test("test_build_embedded_html", () => {
@@ -64,7 +64,7 @@ test("test_build_embedded_html_when_chart", () => {
   expect(html).not.toContain('"series"');
 });
 
-// data-hint に印とツールチップの中身を置き、hints がオフなら外す（正常系）
+// data-hint にマーカーとツールチップの中身を配置し、hints がオフなら削除する（正常系）
 test("test_build_embedded_html_when_hint", () => {
   // 準備
   const body =
@@ -90,7 +90,7 @@ test("test_build_embedded_html_when_hint", () => {
   expect(withoutHints).not.toContain("mdmark-hint-");
 });
 
-// 中の文字の用語に下線を引く（正常系）
+// 中の文字の用語に下線を付ける（正常系）
 test("test_build_embedded_html_when_terms", () => {
   // 準備
   const markdown = wrapHtml("<p>索引と索引</p>");
@@ -102,7 +102,7 @@ test("test_build_embedded_html_when_terms", () => {
   expect(matches(html, /class="mdmark-term-wrap"/g)).toHaveLength(1);
 });
 
-// 中の文字のエイリアスに下線を引き、種類のツールチップを置く（正常系）
+// 中の文字のエイリアスに下線を付け、種類のツールチップを配置する（正常系）
 test("test_build_embedded_html_when_alias", () => {
   // 準備
   const aliases: MdmarkAlias[] = [
@@ -119,7 +119,7 @@ test("test_build_embedded_html_when_alias", () => {
   // 実行
   const { html } = renderDoc(markdown, {}, { aliases });
   // 検証
-  // 範囲ごとに語の最初の 1 回だけで、ツールチップのリンクが URL を指す
+  // 範囲ごとに単語の最初の 1 回だけで、ツールチップのリンクが URL を指す
   const embedded = innerHtml(html, 'class="mdmark-html"');
   expect(matches(embedded, /class="mdmark-term-wrap"/g)).toHaveLength(1);
   expect(findTag(embedded, 'class="mdmark-term-tip-link"')).toContain(
@@ -137,7 +137,7 @@ test("test_build_embedded_html_when_avoided_term", () => {
       {
         id: "ws",
         term: "ワークスペース",
-        meaning: "話し合いの記録を置くフォルダ",
+        meaning: "話し合いの記録を配置するフォルダ",
         avoid: ["作業場"],
       },
     ],
@@ -152,7 +152,7 @@ test("test_build_embedded_html_when_avoided_term", () => {
   ).toHaveLength(1);
 });
 
-// 範囲のコードブロックが 1 つでないときは書き方の警告を置く（異常系）
+// 範囲のコードブロックが 1 つでないときは記載の警告を配置する（異常系）
 test("test_build_embedded_html_when_blocks_count", () => {
   // 準備
   const none = [
@@ -226,12 +226,12 @@ test("test_build_embedded_html_when_param_copy_label", async () => {
   expect(plainText(innerHtml(embedded, "mdmark-param-copy"))).toBe("コピー");
 });
 
-/** 範囲に `html`・`css`・`ts` のコードブロックを 1 つずつ置いた文書 */
+/** 範囲に `html`・`css`・`ts` のコードブロックを 1 つずつ配置した文書 */
 const RANGE_SCRIPTS = [
   "<!-- html -->",
   "",
   "```html",
-  '<div class="box">箱</div>',
+  '<div class="box">ノード</div>',
   "```",
   "",
   "```css",
@@ -252,7 +252,7 @@ const loadScopeCss = () => import("../../../../../src/render/scope-css.ts");
 /** 埋め込んだ HTML の処理を読み込む */
 const loadHtml = () => import("../../../../../src/render/syntax/html.ts");
 
-/** コードブロックを並べた Markdown を記法のルールを通さずに解析し、`fence` のトークンを返す */
+/** コードブロックを並べた Markdown を記法のルールを経由せずに解析し、`fence` のトークンを返却する */
 function fenceTokens(languages: string[]) {
   const markdown = languages
     .map((lang) => [`\`\`\`${lang}`, `${lang} の中身`, "```", ""].join("\n"))
@@ -300,7 +300,7 @@ test("test_build_embedded_html_when_range_scripts_off", () => {
   expect(after).toMatch(/<pre[^>]*><code class="language-ts"/);
 });
 
-// `html`・`css`・`ts` を 1 つずつ読む（正常系）
+// `html`・`css`・`ts` を 1 つずつ読み込む（正常系）
 test("test_read_range_scripts", async () => {
   // 準備
   const { readRangeScripts } = await loadHtml();
@@ -314,7 +314,7 @@ test("test_read_range_scripts", async () => {
   expect(read.warnings).toEqual([]);
 });
 
-// `ts` と `js` を両方持つ範囲は警告を返し `script` を返さない（異常系）
+// `ts` と `js` を両方持つ範囲は警告を返却し `script` を返却しない（異常系）
 test("test_read_range_scripts_when_both_languages", async () => {
   // 準備
   const { readRangeScripts } = await loadHtml();
@@ -326,7 +326,7 @@ test("test_read_range_scripts_when_both_languages", async () => {
   expect(read.warnings).toHaveLength(1);
 });
 
-// 同じ言語を 2 つ持つ範囲は警告を返す（異常系）
+// 同じ言語を 2 つ持つ範囲は警告を返却する（異常系）
 test("test_read_range_scripts_when_duplicate", async () => {
   // 準備
   const { readRangeScripts } = await loadHtml();

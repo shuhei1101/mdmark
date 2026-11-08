@@ -6,7 +6,7 @@ const holder = createBrowserHolder();
 beforeAll(holder.launch);
 afterAll(holder.close);
 
-// 束ねた名前のアイコンを、文字の高さにそろえて段落の文字の間に描く（Bundled）
+// まとめた名前のアイコンを、文字の高さにそろえて段落の文字の間に描く（Bundled）
 test("test_bundled", async () => {
   // 準備・実行
   const page = await holder.openStory("parts-inlineicon--bundled");
@@ -38,7 +38,7 @@ test("test_in_heading", async () => {
   await expect(page.locator("h2").innerText()).resolves.toBe("はじめに");
 });
 
-// 束ねていない名前は、mount が読む前は中が空の要素になる（Pending）
+// まとめていない名前は、mount が読み込む前は中が空の要素になる（Pending）
 test("test_pending", async () => {
   // 準備・実行
   const page = await holder.openStory("parts-inlineicon--pending");

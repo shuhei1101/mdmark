@@ -23,7 +23,7 @@ import { ASSET_SCHEME } from "./html.ts";
 
 export { usesMermaid } from "../render/used.ts";
 
-/** 画像の拡張子から MIME を引く表 */
+/** 画像の拡張子から MIME を参照する表 */
 const IMAGE_MIME: Readonly<Record<string, string>> = {
   ".png": "image/png",
   ".jpg": "image/jpeg",
@@ -39,19 +39,19 @@ const EXTERNAL_PATTERN = /^(?:[a-z][a-z0-9+.-]*:|\/\/)/i;
 /** `http:`・`https:` の URL か */
 const HTTP_PATTERN = /^https?:\/\//i;
 
-/** 色分けの対象の `code` が持つ属性から、言語のモジュール名を読む正規表現 */
+/** 色分けの対象の `code` が持つ属性から、言語のモジュール名を読み込む正規表現 */
 const SYNTAX_LANGUAGE_PATTERN = new RegExp(
   `<code\\b[^>]*\\s${SYNTAX_ATTRIBUTE}="([^"]*)"`,
   "g",
 );
 
-/** 文書ごとに `render` を設定と一緒に呼び、返った HTML の色分けの属性の値を、重なりなく名前の順に返す。`mount` と同じ色分けの対象（機能 `syntax` と文書の `<!-- features: -syntax -->`、生の HTML の `code` を外すことを含む）を、同じ処理から得る */
+/** 文書ごとに `render` を設定と一緒に呼び、返った HTML の色分けの属性の値を、重なりなく名前の順に返却する。`mount` と同じ色分けの対象（機能 `syntax` と文書の `<!-- features: -syntax -->`、生の HTML の `code` を削除することを含む）を、同じ処理から得る */
 export function usedSyntaxLanguages(options: {
   /** 文書の Markdown */
   markdowns: string[];
   /** 文書ごとの取り込む文書の表（`markdowns` と同じ順） */
   includes?: Array<Record<string, string>>;
-  /** 読んだ設定 */
+  /** 読み込んだ設定 */
   config: MdmarkConfig;
 }): string[] {
   const config = resolveConfig({ config: options.config });
@@ -71,7 +71,7 @@ export function usedSyntaxLanguages(options: {
   return [...languages].sort();
 }
 
-/** 埋める文書にビューの印があれば `true` を返す。書き出した HTML はコメントの読み書きの関数を持たないため、コメントの部品は束ねない */
+/** 埋める文書にビューのマーカーがあれば `true` を返却する。書き出した HTML はコメントの読み込みと保存の関数を持たないため、コメントの部品はまとめない */
 export function usedParts(options: {
   /** 埋める文書の Markdown */
   markdowns: string[];
@@ -83,25 +83,25 @@ export function usedParts(options: {
   );
 }
 
-/** 束ねたコードに残った動的 `import()` の呼び出しの並び（`import` と `(` の間の空白を許す） */
+/** まとめたコードに残った動的 `import()` の呼び出しの並び（`import` と `(` の間の空白を許す） */
 const DYNAMIC_IMPORT_PATTERN = /\bimport\s*\(/;
 
-/** 束ねたコードに動的 `import()` の呼び出しが残るかを返す。変数を渡す `import()` は esbuild が取り込めず、束ねた後も残る */
+/** まとめたコードに動的 `import()` の呼び出しが残るかを返却する。変数を指定する `import()` は esbuild が取り込めず、まとめた後も残る */
 export function hasDynamicImport(code: string): boolean {
   return DYNAMIC_IMPORT_PATTERN.test(code);
 }
 
-/** `prepareEmbeds` が束ねられることを確かめた、起動の処理と 1 つのスクリプトに束ねるモジュールの読み先（URL か絶対パス） */
+/** `prepareEmbeds` がまとめられることを確認した、起動の処理と 1 つのスクリプトにまとめるモジュールの読み込み先（URL か絶対パス） */
 export type ViewerEmbeds = {
-  /** 文書に印があり束ねられた外部ライブラリの、印の名前から読み先を引く表 */
+  /** 文書にマーカーがありまとめられた外部ライブラリの、マーカーの名前から読み込み先を参照する表 */
   libraries: Record<string, string>;
-  /** 束ねられた設定の `extensions` の拡張の読み先。設定の順 */
+  /** まとめられた設定の `extensions` の拡張の読み込み先。設定の順 */
   extensions: string[];
-  /** 束ねられた色分けの本体の読み先と、言語のモジュール名から読み先を引く表。文書に色分けの対象があり本体を束ねられたときだけ持つ */
+  /** まとめられた色分けの本体の読み込み先と、言語のモジュール名から読み込み先を参照する表。文書に色分けの対象があり本体をまとめられたときだけ持つ */
   syntax?: { core: string; languages: Record<string, string> } | undefined;
-  /** 束ねられた mermaid の読み先。文書に mermaid のコードブロックがあり、束ねられたときだけ持つ */
+  /** まとめられた mermaid の読み込み先。文書に mermaid のコードブロックがあり、まとめられたときだけ持つ */
   mermaid?: string | undefined;
-  /** ビューの部品を束ねるか */
+  /** ビューの部品をまとめるか */
   view: boolean;
   /** `compileHtmlScripts` の結果。`source` は範囲のコードの文字、`code` は CommonJS のコード。範囲が無ければ入れない */
   htmlScripts?: Array<{ source: string; code: string }> | undefined;
@@ -140,7 +140,7 @@ export async function compileHtmlScripts(options: {
           error instanceof Error ? error.message : error,
         ).split("\n")[0];
         warnings.push(
-          `${path}: 範囲の ${lang} を変換できません（${reason}）。開いたときは書き方の警告になります。`,
+          `${path}: 範囲の ${lang} を変換できません（${reason}）。開いたときは記載の警告になります。`,
         );
       }
     }
@@ -148,13 +148,13 @@ export async function compileHtmlScripts(options: {
   return { scripts, warnings };
 }
 
-/** 起動の処理・部品・色分けを静的な `import`、外部ライブラリと拡張をリテラルの動的 `import()` を返す関数で取り込み、`startViewer(document, 埋めたモジュール)` を呼ぶ入口のモジュールのソースを返す */
+/** 起動の処理・部品・色分けを静的な `import`、外部ライブラリと拡張をリテラルの動的 `import()` を返却する関数で取り込み、`startViewer(document, 埋めたモジュール)` を呼ぶ入口のモジュールのソースを返却する */
 export function createViewerEntry(options: {
   /** `dist/viewer.js` の絶対パス */
   viewer: string;
   /** `dist/view.js` の絶対パス */
   view: string;
-  /** 束ねるモジュールの読み先 */
+  /** まとめるモジュールの読み込み先 */
   embeds: ViewerEmbeds;
 }): string {
   const { viewer, view, embeds } = options;
@@ -171,7 +171,7 @@ export function createViewerEntry(options: {
     });
   }
   if (embeds.mermaid) {
-    // mermaid が中で読む chunk の動的 `import()` も、同じスクリプトに取り込まれる
+    // mermaid が中で読み込む chunk の動的 `import()` も、同じスクリプトに取り込まれる
     lines.push(`import * as mermaidModule from ${literal(embeds.mermaid)};`);
   }
   const lazy = (path: string): string => `() => import(${literal(path)})`;
@@ -187,12 +187,12 @@ export function createViewerEntry(options: {
         )
         .join(", ")} } }`
     : "";
-  // 範囲のスクリプトは、範囲のコードの文字を鍵に、CommonJS のコードを包んだ関数で既定のエクスポートを返す
+  // 範囲のスクリプトは、範囲のコードの文字を鍵に、CommonJS のコードを包んだ関数で既定のエクスポートを返却する
   const htmlScripts = embeds.htmlScripts?.length
     ? `, htmlScripts: new Map([${embeds.htmlScripts
         .map(
           ({ source, code }) =>
-            `[${literal(source)}, () => { const module = { exports: {} }; (function (module, exports, require) {\n${code}\n})(module, module.exports, (name) => { throw new Error("範囲のスクリプトでは require を使えません: " + name); }); return module.exports.default; }]`,
+            `[${literal(source)}, () => { const module = { exports: {} }; (function (module, exports, require) {\n${code}\n})(module, module.exports, (name) => { throw new Error("範囲のスクリプトでは require を使用できません: " + name); }); return module.exports.default; }]`,
         )
         .join(", ")}])`
     : "";
@@ -202,13 +202,13 @@ export function createViewerEntry(options: {
   return `${lines.join("\n")}\n`;
 }
 
-/** `createViewerEntry` のソースを入口に、分割せずに 1 つの ES モジュールのスクリプトに束ね、`</script` を `<\/script` に、`<!--` を `<\x21--` に替えて返す。束ねる失敗は例外のまま投げる */
+/** `createViewerEntry` のソースを入口に、分割せずに 1 つの ES モジュールのスクリプトにまとめ、`</script` を `<\/script` に、`<!--` を `<\x21--` に替えて返却する。まとめる失敗は例外のまま投げる */
 export async function bundleViewer(options: {
   /** `createViewerEntry` のソース */
   entry: string;
   /** 設定ファイルのあるフォルダ */
   baseDir: string;
-  /** URL を読む関数 */
+  /** URL を読み込む関数 */
   fetchText: FetchText;
 }): Promise<string> {
   const { entry, baseDir, fetchText } = options;
@@ -227,7 +227,7 @@ export async function bundleViewer(options: {
   });
   const code = result.outputFiles[0]?.text;
   if (code === undefined) {
-    throw new Error("起動の処理を束ねた結果がありません");
+    throw new Error("起動の処理をまとめた結果がありません");
   }
   // `script` 要素が途中で閉じない・script data escaped state に入らないように替える（どちらも文字列・正規表現・コメントの中にしか現れない）
   return code.replace(/<\/(script)/gi, "<\\/$1").replaceAll("<!--", "<\\x21--");
@@ -265,21 +265,21 @@ function findImageSources(
   return found;
 }
 
-/** HTML の文字列の `img` の `src` を拾う */
+/** HTML の文字列の `img` の `src` を取得する */
 function imgSources(html: string): string[] {
   return [
     ...html.matchAll(/<img\b[^>]*?\bsrc\s*=\s*(?:"([^"]*)"|'([^']*)')/gi),
   ].map((match) => match[1] ?? match[2] ?? "");
 }
 
-/** Markdown の画像の相対パス（画像の属性の `poster=` を含む）を、文書のフォルダか `assetsRoot` で探して読んだ `data:` URL に替える（フラグメントは後ろに残す）。`assets` を渡したときは `mdmark-asset:{キー}` に替え、`data:` URL を `assets` に入れる。動画・音声は替えない。読めない画像は書いたまま残して警告に、絶対 URL の画像は読まずに残して警告にする */
+/** Markdown の画像の相対パス（画像の属性の `poster=` を含む）を、文書のフォルダか `assetsRoot` で探して読み込んだ `data:` URL に替える（フラグメントは後ろに残す）。`assets` を指定したときは `mdmark-asset:{キー}` に替え、`data:` URL を `assets` に入れる。動画・音声は替えない。読み込めない画像は記載したまま残して警告に、絶対 URL の画像は読み込まずに残して警告にする */
 export async function inlineImages(
   markdown: string,
   docFile: string,
   options: {
     /** `assets.root` の絶対パス */
     assetsRoot?: string | undefined;
-    /** `build` が文書をまたいで共有する、埋めた画像のファイルからキーと `data:` URL を引く表 */
+    /** `build` が文書をまたいで共有する、埋めた画像のファイルからキーと `data:` URL を参照する表 */
     assets?: Map<string, { key: string; url: string }>;
   } = {},
 ): Promise<{ markdown: string; warnings: string[] }> {
@@ -294,7 +294,7 @@ export async function inlineImages(
       );
     }
   }
-  // 同じ `src` は 1 回だけ読む
+  // 同じ `src` は 1 回だけ読み込む
   const urls = new Map<string, string | undefined>();
   const replacements: Array<{ offset: number; src: string; to: string }> = [];
   for (const ref of findAssetRefs(markdown)) {
@@ -328,13 +328,13 @@ function isAbsoluteSrc(src: string): boolean {
   );
 }
 
-/** 書いたパスのフラグメント（`#` から後ろ） */
+/** 記載したパスのフラグメント（`#` から後ろ） */
 function fragmentOf(src: string): string {
   const at = src.indexOf("#");
   return at < 0 ? "" : src.slice(at);
 }
 
-/** 画像 1 つを探して読み、`data:` URL（`assets` を渡したときは `mdmark-asset:{キー}`）にする。埋められないときは理由を `warnings` に足して `undefined` を返す */
+/** 画像 1 つを探して読み込み、`data:` URL（`assets` を指定したときは `mdmark-asset:{キー}`）にする。埋められないときは理由を `warnings` に追加して `undefined` を返却する */
 async function readImage(
   src: string,
   docFile: string,
@@ -373,13 +373,13 @@ async function readImage(
     return `${ASSET_SCHEME}${key}`;
   } catch {
     warnings.push(
-      `画像 \`${src}\` を読めません。パスを直すか画像を置いてください。`,
+      `画像 \`${src}\` を読み込めません。パスを修正するか画像を配置してください。`,
     );
     return undefined;
   }
 }
 
-/** パーセント符号化を戻す。戻せないときはそのまま返す */
+/** パーセント符号化を戻す。戻せないときはそのまま返却する */
 function decodeHref(href: string): string {
   try {
     return decodeURI(href);
@@ -388,7 +388,7 @@ function decodeHref(href: string): string {
   }
 }
 
-/** 文書の相対リンクのうち、`.md` を指してまとめる文書に無いものを、書いたままの `href` で書いた順に返す */
+/** 文書の相対リンクのうち、`.md` を指してまとめる文書に無いものを、記載したままの `href` で記載した順に返却する */
 export function findOutsideLinks(
   markdown: string,
   docPath: string,
@@ -403,7 +403,7 @@ export function findOutsideLinks(
         continue;
       }
       const target = resolveLink(docPath, href);
-      // markdown-it が符号化したリンクを、書いたままの形に戻す
+      // markdown-it が符号化したリンクを、記載したままの構造に戻す
       const written = decodeHref(href);
       if (
         target !== undefined &&

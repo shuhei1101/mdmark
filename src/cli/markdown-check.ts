@@ -25,16 +25,16 @@ import {
 } from "./config.ts";
 import { CliError } from "./errors.ts";
 
-/** `text` で渡した Markdown のずれの `file` */
+/** `text` で指定した Markdown のずれの `file` */
 const TEXT_FILE = "-";
 
 /** キーのパスの 1 つ分（`.` で区切ったマップのキーと、`[位置]` の配列の要素） */
 const KEY_PART_PATTERN = /([^.[\]]+)|\[(\d+)\]/g;
 
-/** 読めるキーのパス（`items[0].body`） */
+/** 読み込めるキーのパス（`items[0].body`） */
 const KEY_PATH_PATTERN = /^[^.[\]]+(?:\[\d+\])*(?:\.[^.[\]]+(?:\[\d+\])*)*$/;
 
-/** 同じ行のずれを並べる順（警告・知らない印と読み飛ばした引数・配置のずれ） */
+/** 同じ行のずれを並べる順（警告・知らないマーカーとスキップした引数・配置のずれ） */
 function issueRank(issue: CheckIssue): number {
   if (issue.kind === "diagram_invalid" || issue.kind === "syntax_warning") {
     return 0;
@@ -64,7 +64,7 @@ function joinKeyPath(parts: Array<string | number>): string {
     .join("");
 }
 
-/** 値の YAML の型の名前（文字列でないときの知らせに書く） */
+/** 値の YAML の型の名前（文字列でないときの通知に記載する） */
 function nodeTypeName(node: Node | null | undefined): string {
   if (isMap(node)) {
     return "マップ";
@@ -78,7 +78,7 @@ function nodeTypeName(node: Node | null | undefined): string {
   return "値なし";
 }
 
-/** YAML のファイルを読み、キーのパスをたどって文字列の値と、値の中の行（1 から）をファイルの行（1 から）に置き換える関数を返す */
+/** YAML のファイルを読み込み、キーのパスをたどって文字列の値と、値の中の行（1 から）をファイルの行（1 から）に置き換える関数を返却する */
 export async function readYamlKey(options: {
   path: string;
   key: string;
@@ -90,7 +90,7 @@ export async function readYamlKey(options: {
     text = await readFile(path, "utf8");
   } catch (error) {
     throw new CliError(
-      `${name} を開けません（${error instanceof Error ? error.message : String(error)}）。--file のパスを確かめてください。`,
+      `${name} を開けません（${error instanceof Error ? error.message : String(error)}）。--file のパスを確認してください。`,
     );
   }
   const lineCounter = new LineCounter();
@@ -100,12 +100,12 @@ export async function readYamlKey(options: {
     const line = parseError.linePos?.[0].line ?? "?";
     const reason = parseError.message.split("\n")[0] ?? "";
     throw new CliError(
-      `${name} の ${line} 行目を YAML として読めません（${reason}）。字下げと書き方を直してください。`,
+      `${name} の ${line} 行目を YAML として読み込めません（${reason}）。字下げと記載方法を修正してください。`,
     );
   }
   if (!KEY_PATH_PATTERN.test(key)) {
     throw new CliError(
-      `--key の ${key} をキーのパスとして読めません。マップのキーを . で、配列の要素を [位置] でつないでください（例 items[0].body）。`,
+      `--key の ${key} をキーのパスとして読み込めません。マップのキーを . で、配列の要素を [位置] でつないでください（例 items[0].body）。`,
     );
   }
   const parts = splitKeyPath(key);
@@ -118,13 +118,13 @@ export async function readYamlKey(options: {
     if (typeof part === "number") {
       if (!isSeq(node)) {
         throw new CliError(
-          `${name} に ${key} がありません（${parent} は配列ではありません）。キーのパスを確かめてください。`,
+          `${name} に ${key} がありません（${parent} は配列ではありません）。キーのパスを確認してください。`,
         );
       }
       const item: unknown = node.items[part];
       if (item === undefined) {
         throw new CliError(
-          `${name} に ${key} がありません（${parent} は ${node.items.length} 要素です）。位置を 0〜${node.items.length - 1} で書いてください。`,
+          `${name} に ${key} がありません（${parent} は ${node.items.length} 要素です）。位置を 0〜${node.items.length - 1} で記載してください。`,
         );
       }
       node = item as Node;
@@ -133,7 +133,7 @@ export async function readYamlKey(options: {
     }
     if (!isMap(node)) {
       throw new CliError(
-        `${name} に ${key} がありません（${parent} はマップではありません）。キーのパスを確かめてください。`,
+        `${name} に ${key} がありません（${parent} はマップではありません）。キーのパスを確認してください。`,
       );
     }
     const pair = node.items.find(
@@ -141,7 +141,7 @@ export async function readYamlKey(options: {
     );
     if (pair === undefined) {
       throw new CliError(
-        `${name} に ${key} がありません（${parent} にキー ${part} がありません）。キーのパスを確かめてください。`,
+        `${name} に ${key} がありません（${parent} にキー ${part} がありません）。キーのパスを確認してください。`,
       );
     }
     keyOffset = (pair.key as Scalar).range?.[0] ?? keyOffset;
@@ -149,7 +149,7 @@ export async function readYamlKey(options: {
   }
   if (!isScalar(node) || typeof node.value !== "string") {
     throw new CliError(
-      `${name} の ${key} の値は文字列ではありません（${nodeTypeName(node)}）。Markdown の文字列を持つキーを渡してください。`,
+      `${name} の ${key} の値は文字列ではありません（${nodeTypeName(node)}）。Markdown の文字列を持つキーを指定してください。`,
     );
   }
   const value = node.value;
@@ -164,7 +164,7 @@ export async function readYamlKey(options: {
   return { value, lineOf: () => keyLine };
 }
 
-/** `cwd` から上へ探した設定ファイル（`config` を渡せばそのファイル）を読む。`config` を渡さずに見つからなければ `undefined` */
+/** `cwd` から上へ探した設定ファイル（`config` を指定すればそのファイル）を読み込む。`config` を指定せずに見つからなければ `undefined` */
 async function readConfigIfAny(
   cwd: string,
   config: string | undefined,
@@ -183,7 +183,7 @@ async function readConfigIfAny(
   return { path, dir: read.dir, config: validated };
 }
 
-/** Markdown の文字列か、YAML のファイルのキーの値を、描いたときの書き方の警告・読み飛ばした記法の印の引数・知らない印・図の配置のずれにして返す */
+/** Markdown の文字列か、YAML のファイルのキーの値を、描いたときの記載の警告・スキップした記法のマーカーの引数・知らないマーカー・図の配置のずれにして返却する */
 export async function checkMarkdownSource(options: {
   cwd: string;
   config?: string | undefined;
@@ -221,7 +221,7 @@ export async function checkMarkdownSource(options: {
       ...(config.libraries ? { libraries: config.libraries } : {}),
     },
   })
-    // 取り込み先を読まないため、include の取り込み先が無い警告は出さない
+    // 取り込み先を読み込まないため、include の取り込み先が無い警告は出さない
     .filter((warning) => !warning.includeTarget)
     .map((warning) => ({
       file,

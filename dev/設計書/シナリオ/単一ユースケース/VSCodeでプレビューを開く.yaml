@@ -3,12 +3,12 @@ scenarios:
   - name: 正常シナリオ
     setup:
       - name: 見本のワークスペース
-        description: 見出し・表・注意書き・フロー図を持つ Markdown を 1 つ置いたフォルダ。`mdmark.version` は既定の `latest`
+        description: 見出し・表・注意書き・フロー図を持つ Markdown を 1 つ配置したフォルダ。`mdmark.version` は既定の `latest`
       - name: Mock
-        description: jsDelivr の代わりに、このブランチでビルドした配布物を版付きの形の URL で配る手元のサーバー。GitHub のタグ一覧は `v0.7.0`・`v0.6.0`・`vscode-v0.1.0` を返す代役
+        description: jsDelivr の代わりに、このブランチでビルドした配布物を版付きの構造の URL で配る手元のサーバー。GitHub のタグ一覧は `v0.7.0`・`v0.6.0`・`vscode-v0.1.0` を返却する代役
     flow: |-
       sequenceDiagram
-        actor W as 文書を書く人
+        actor W as 文書の作成者
         participant ED as エディタ（VS Code）
         participant EX as 拡張機能
         participant GH as GitHub のタグ一覧
@@ -18,19 +18,19 @@ scenarios:
         ED->>EX: mdmark.openPreviewToSide
         EX->>GH: タグ一覧を取る
         GH-->>EX: v0.7.0・v0.6.0・vscode-v0.1.0
-        EX->>EX: vX.Y.Z の最新 v0.7.0 を選び、前回の版として残す
+        EX->>EX: vX.Y.Z の最新 v0.7.0 を選び、前回のバージョンとして残す
         EX->>PV: 横の列にパネルを開く
-        PV->>CDN: v0.7.0 の配布物を読む
+        PV->>CDN: v0.7.0 の配布物を読み込む
         CDN-->>PV: dist/index.js・dist/index.css
         PV-->>EX: ready
-        EX->>PV: Markdown の全文と設定を送る
+        EX->>PV: Markdown の全文と設定を送信する
         PV->>PV: mount で描く
         PV-->>W: 描いた文書を表示
     expected:
       - Markdown のエディタの横の列にプレビューのパネルが開く
       - パネルに見出し・表・注意書き・フロー図が mdmark で描かれる
-      - 読んだ配布物の版が `v0.7.0` で、`vscode-v0.1.0` を選んでいない
-      - 前回の版として `v0.7.0` が拡張機能の状態に残る
+      - 読み込んだ配布物のバージョンが `v0.7.0` で、`vscode-v0.1.0` を選んでいない
+      - 前回のバージョンとして `v0.7.0` が拡張機能の状態に残る
     test: test_normal
   - name: 正常シナリオ（同じ列に開く）
     setup:
@@ -40,7 +40,7 @@ scenarios:
         description: 正常シナリオと同じ
     flow: |-
       sequenceDiagram
-        actor W as 文書を書く人
+        actor W as 文書の作成者
         participant ED as エディタ（VS Code）
         participant EX as 拡張機能
         participant PV as プレビュー（Webview）
@@ -51,7 +51,7 @@ scenarios:
     expected:
       - プレビューのパネルが Markdown のエディタと同じ列のタブで開き、文書が描かれる
     test: test_normal_when_same_column
-  - name: 正常シナリオ（版を固定する）
+  - name: 正常シナリオ（バージョンを固定する）
     setup:
       - name: 見本のワークスペース
         description: 正常シナリオと同じ。ワークスペースの設定で `mdmark.version` を `v0.6.0` にする
@@ -59,43 +59,43 @@ scenarios:
         description: 正常シナリオと同じ。タグ一覧の代役は呼ばれた回数を数える
     flow: |-
       sequenceDiagram
-        actor W as 文書を書く人
+        actor W as 文書の作成者
         participant EX as 拡張機能
         participant PV as プレビュー（Webview）
         participant CDN as jsDelivr
         W->>EX: プレビューを横に開く
         EX->>PV: v0.6.0 でパネルを開く
-        PV->>CDN: v0.6.0 の配布物を読む
+        PV->>CDN: v0.6.0 の配布物を読み込む
         PV-->>W: 描いた文書を表示
     expected:
-      - 読んだ配布物の版が `v0.6.0`
+      - 読み込んだ配布物のバージョンが `v0.6.0`
       - タグ一覧の代役が 1 回も呼ばれない
     test: test_normal_when_version_pinned
   - name: 正常シナリオ（タグ一覧を取れない）
     setup:
       - name: 見本のワークスペース
         description: 正常シナリオと同じ
-      - name: 前回の版
-        description: 拡張機能の状態に前回の版 `v0.6.0` が残っている
+      - name: 前回のバージョン
+        description: 拡張機能の状態に前回のバージョン `v0.6.0` が残っている
       - name: Mock
-        description: タグ一覧の代役は応答しない（待ちの上限まで返さない）。配布物は正常シナリオと同じ
+        description: タグ一覧の代役は応答しない（待ちの上限まで返却しない）。配布物は正常シナリオと同じ
     flow: |-
       sequenceDiagram
-        actor W as 文書を書く人
+        actor W as 文書の作成者
         participant EX as 拡張機能
         participant GH as GitHub のタグ一覧
         participant PV as プレビュー（Webview）
         W->>EX: プレビューを横に開く
         EX->>GH: タグ一覧を取る
         GH--xEX: 待ちの上限まで応答なし
-        EX->>EX: 前回の版 v0.6.0 を使う
+        EX->>EX: 前回のバージョン v0.6.0 を使用する
         EX->>PV: v0.6.0 でパネルを開く
         PV-->>W: 描いた文書を表示
     expected:
-      - 読んだ配布物の版が前回の版の `v0.6.0`
+      - 読み込んだ配布物のバージョンが前回のバージョンの `v0.6.0`
       - パネルに描けない理由は出ない
     test: test_normal_when_tags_unreachable
-  - name: 異常シナリオ（配布物を読めない）
+  - name: 異常シナリオ（配布物を読み込めない）
     setup:
       - name: 見本のワークスペース
         description: 正常シナリオと同じ
@@ -103,163 +103,163 @@ scenarios:
         description: 配布物を配る手元のサーバーが配布物の要求に応えない（オフラインの代わり）。タグ一覧は正常シナリオと同じ
     flow: |-
       sequenceDiagram
-        actor W as 文書を書く人
+        actor W as 文書の作成者
         participant EX as 拡張機能
         participant PV as プレビュー（Webview）
         participant CDN as jsDelivr
         W->>EX: プレビューを横に開く
         EX->>PV: v0.7.0 でパネルを開く
-        PV->>CDN: v0.7.0 の配布物を読む
+        PV->>CDN: v0.7.0 の配布物を読み込む
         CDN--xPV: 応答なし
-        PV-->>EX: 読めなかったことを知らせる
+        PV-->>EX: 読み込めなかったことを通知する
         PV-->>W: 描けない理由と「リロード」のボタンを表示
     expected:
-      - パネルに、配布物を読めない（オフライン）ことを示す理由と「リロード」のボタンが出る
+      - パネルに、配布物を読み込めない（オフライン）ことを示す理由と「リロード」のボタンが出る
       - Markdown と `mdmark.config.yaml` は書き換わらない
     test: test_error_when_distribution_unreachable
-  - name: 異常シナリオ（指定した版が無い）
+  - name: 異常シナリオ（指定したバージョンが無い）
     setup:
       - name: 見本のワークスペース
         description: 正常シナリオと同じ。ワークスペースの設定で `mdmark.version` を `v9.9.9` にする
       - name: Mock
-        description: 配布物を配る手元のサーバーは `v9.9.9` に 404 を返す
+        description: 配布物を配る手元のサーバーは `v9.9.9` に 404 を返却する
     flow: |-
       sequenceDiagram
-        actor W as 文書を書く人
+        actor W as 文書の作成者
         participant EX as 拡張機能
         participant PV as プレビュー（Webview）
         participant CDN as jsDelivr
         W->>EX: プレビューを横に開く
         EX->>PV: v9.9.9 でパネルを開く
-        PV->>CDN: v9.9.9 の配布物を読む
+        PV->>CDN: v9.9.9 の配布物を読み込む
         CDN-->>PV: 404
         PV-->>W: 描けない理由と「リロード」のボタンを表示
     expected:
-      - パネルに、指定した版 `v9.9.9` が無いことを示す理由と「リロード」のボタンが出る
+      - パネルに、指定したバージョン `v9.9.9` が無いことを示す理由と「リロード」のボタンが出る
     test: test_error_when_version_missing
-  - name: 異常シナリオ（版を決められない）
+  - name: 異常シナリオ（バージョンを決められない）
     setup:
       - name: 見本のワークスペース
         description: 正常シナリオと同じ
-      - name: 前回の版
-        description: 拡張機能の状態に前回の版が無い（初めて開く）
+      - name: 前回のバージョン
+        description: 拡張機能の状態に前回のバージョンが無い（初めて開く）
       - name: Mock
         description: タグ一覧の代役は応答しない
     flow: |-
       sequenceDiagram
-        actor W as 文書を書く人
+        actor W as 文書の作成者
         participant EX as 拡張機能
         participant GH as GitHub のタグ一覧
         participant PV as プレビュー（Webview）
         W->>EX: プレビューを横に開く
         EX->>GH: タグ一覧を取る
         GH--xEX: 待ちの上限まで応答なし
-        EX->>PV: 版を決められないことを知らせてパネルを開く
+        EX->>PV: バージョンを決められないことを通知してパネルを開く
         PV-->>W: 描けない理由と「リロード」のボタンを表示
     expected:
-      - パネルに、版を決められない（タグ一覧を取れず前回の版も無い）ことを示す理由と「リロード」のボタンが出る
+      - パネルに、バージョンを決められない（タグ一覧を取れず前回のバージョンも無い）ことを示す理由と「リロード」のボタンが出る
       - 配布物の要求が 0 件
     test: test_error_when_version_undecidable
   - name: 正常シナリオ（範囲のスクリプトと CSS）
     setup:
       - name: 見本のワークスペース
-        description: '`<!-- html -->` の範囲に `html`・`css`・`ts` のコードブロックを 1 つずつ置いた Markdown と、`features.html-scripts` を `true` にした `mdmark.config.yaml` を置いたフォルダ'
+        description: '`<!-- html -->` の範囲に `html`・`css`・`ts` のコードブロックを 1 つずつ配置した Markdown と、`features.html-scripts` を `true` にした `mdmark.config.yaml` を配置したフォルダ'
       - name: Mock
-        description: 正常シナリオと同じ。加えて、範囲の `ts` の型を外す変換のライブラリを、配布物と同じ手元のサーバーから配る
+        description: 正常シナリオと同じ。加えて、範囲の `ts` の型を削除する変換のライブラリを、配布物と同じ手元のサーバーから配る
     flow: |-
       sequenceDiagram
-        actor W as 文書を書く人
+        actor W as 文書の作成者
         participant EX as 拡張機能
         participant PV as プレビュー（Webview）
         W->>EX: mdmark.openPreviewToSide
         EX->>PV: 横の列にパネルを開く
-        EX->>PV: Markdown の全文と設定を送る
+        EX->>PV: Markdown の全文と設定を送信する
         PV->>PV: mount で描き、範囲の関数をページの nonce を付けた script 要素で動かす
-        PV-->>W: 範囲の css と ts を当てた文書
-        W->>PV: 範囲の箱を押す
+        PV-->>W: 範囲の css と ts を適用した文書
+        W->>PV: 範囲のノードを押す
         PV-->>W: 根の要素に class が付いた表示
     expected:
-      - パネルの範囲の箱の背景が `css` の色で描かれる
-      - 範囲の箱を押すと根の要素に class `is-open` が付く
+      - パネルの範囲のノードの背景が `css` の色で描かれる
+      - 範囲のノードを押すと根の要素に class `is-open` が付く
       - パネルの CSP の値が正常シナリオと同じで、CSP の違反が 0 件
     test: test_normal_when_range_scripts
   - name: 正常シナリオ（mermaid のコードブロック）
     setup:
       - name: 見本のワークスペース
-        description: 言語 `mermaid` の flowchart のコードブロックを 1 つ持つ Markdown と、`mermaid.url` に手元の配信の URL を書いた設定ファイルを置いたフォルダ
+        description: 言語 `mermaid` の flowchart のコードブロックを 1 つ持つ Markdown と、`mermaid.url` に手元の配信の URL を記載した設定ファイルを配置したフォルダ
       - name: Mock
         description: 正常シナリオと同じ。加えて、mermaid の本体と chunk を、手元の配信が jsDelivr と同じパス（`/npm/mermaid@12.3.0/dist/`）で配る（既定の URL は jsDelivr の origin のため、手元の代役に差し替えられない）
     flow: |-
       sequenceDiagram
-        actor W as 文書を書く人
+        actor W as 文書の作成者
         participant EX as 拡張機能
         participant PV as プレビュー（Webview）
         participant CDN as jsDelivr
         W->>EX: mdmark.openPreviewToSide
-        EX->>PV: 横の列にパネルを開き、Markdown の全文と設定を送る
-        PV->>CDN: mermaid の本体と chunk を読む
+        EX->>PV: 横の列にパネルを開き、Markdown の全文と設定を送信する
+        PV->>CDN: mermaid の本体と chunk を読み込む
         CDN-->>PV: mermaid
         PV->>PV: mount で描く
         PV-->>W: 図の枠に入った mermaid の図
     expected:
       - パネルの mermaid のコードブロックの場所に、図の枠と SVG の図がある
       - パネルの CSP の値の `script-src` に mermaid の読み込み先の origin が入っていて、CSP の違反が 0 件
-      - VS Code の配色をダークに切り替えると、mermaid の図が暗い配色で描き直される
+      - VS Code の配色をダークに切り替えると、mermaid の図が暗い配色で再描画される
     test: test_normal_when_mermaid
   - name: 正常シナリオ（取り込む文書を描く）
     setup:
       - name: 取り込みを持つワークスペース
-        description: '`<!-- include: 共通/手順.md#実行 -->` を持つ Markdown と、その Markdown からの相対パスに `共通/手順.md` を置いたフォルダ'
+        description: '`<!-- include: 共通/手順.md#実行 -->` を持つ Markdown と、その Markdown からの相対パスに `共通/手順.md` を配置したフォルダ'
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
       sequenceDiagram
-        actor W as 文書を書く人
+        actor W as 文書の作成者
         participant ED as エディタ（VS Code）
         participant EX as 拡張機能
         participant PV as プレビュー（Webview）
         W->>ED: Shift+Alt+D を押す
         ED->>EX: mdmark.openPreviewToSide
-        EX->>EX: include のマーカーの取り込み先をワークスペースから読む
-        EX->>PV: Markdown の全文・設定・取り込む文書の表を送る
+        EX->>EX: include のマーカーの取り込み先をワークスペースから読み込む
+        EX->>PV: Markdown の全文・設定・取り込む文書の表を送信する
         PV->>PV: mount で描く
         PV-->>W: 取り込んだ中身を持つ文書を表示
         W->>ED: 共通/手順.md を書き換えて保存する
-        EX->>PV: 取り込む文書の表を送り直す
-        PV-->>W: 描き直した文書を表示
+        EX->>PV: 取り込む文書の表をもう一度送信する
+        PV-->>W: 再描画した文書を表示
     expected:
       - プレビューのマーカーの場所に、`実行` の見出しとその下の中身が描かれている
       - '`共通/手順.md` を保存した後、プレビューの取り込んだ中身が書き換えた後の文になっている'
-      - 取り込み先がワークスペースに無いマーカーの場所には、書き方の警告が出ている
+      - 取り込み先がワークスペースに無いマーカーの場所には、記載の警告が出ている
     test: test_normal_when_includes
   - name: 正常シナリオ（設定を重ねる）
     setup:
       - name: 端末の設定
-        description: '`MDMARK_CONFIG` で指す一時フォルダの `settings.yaml`。`config.cascade: true` と `features.callout: false` を書く'
+        description: '`MDMARK_CONFIG` で指す一時フォルダの `settings.yaml`。`config.cascade: true` と `features.callout: false` を記載する'
       - name: 重ねる設定を持つワークスペース
-        description: 'ワークスペースのフォルダの `mdmark.config.yaml` に `theme: ./theme.css` と `extensions` の固有の部品 1 つを書き、その下の `docs/` の `mdmark.config.yaml` に `features.table: false` を書く。`docs/` に注意書き・表・固有の部品の印を持つ Markdown を 1 つ置く'
+        description: 'ワークスペースのフォルダの `mdmark.config.yaml` に `theme: ./theme.css` と `extensions` の固有の部品 1 つを記載し、その下の `docs/` の `mdmark.config.yaml` に `features.table: false` を記載する。`docs/` に注意書き・表・固有の部品のマーカーを持つ Markdown を 1 つ配置する'
         notes: '`mdmark.configPath` は既定の空'
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
       sequenceDiagram
-        actor W as 文書を書く人
+        actor W as 文書の作成者
         participant EX as 拡張機能
         participant FS as 設定ファイル
         participant PV as プレビュー（Webview）
         W->>EX: docs/ の Markdown でプレビューを横に開く
-        EX->>FS: 端末の設定と、docs/ から上の mdmark.config.yaml を読む
-        EX->>EX: 端末の設定 → 上 → 近いの順に重ね、theme と extensions のフォルダを読める場所に足す
-        EX->>PV: theme の CSS と extensions を読むパネルを開く
+        EX->>FS: 端末の設定と、docs/ から上の mdmark.config.yaml を読み込む
+        EX->>EX: 端末の設定 → 上 → 近いの順に重ね、theme と extensions のフォルダを読み込める場所に追加する
+        EX->>PV: theme の CSS と extensions を読み込むパネルを開く
         PV->>PV: extensions を登録してから mount で描く
         PV-->>W: 描いた文書を表示
     expected:
       - 注意書きが注意書きの枠ではなく引用として、表が機能を付けない表として描かれる
-      - 固有の部品の印の場所に、固有の部品が描いた要素がある
+      - 固有の部品のマーカーの場所に、固有の部品が描いた要素がある
       - '`theme.css` の規則が描く先の要素の計算値に出ている'
       - パネルの CSP の違反が 0 件
     test: test_normal_when_cascaded
-  - name: 正常シナリオ（最初の 1 つだけを読む）
+  - name: 正常シナリオ（最初の 1 つだけを読み込む）
     setup:
       - name: 端末の設定
         description: '正常シナリオ（設定を重ねる）の端末の設定のうち、`config.cascade: false` にしたもの'
@@ -269,106 +269,106 @@ scenarios:
         description: 正常シナリオと同じ
     flow: |-
       sequenceDiagram
-        actor W as 文書を書く人
+        actor W as 文書の作成者
         participant EX as 拡張機能
         participant FS as 設定ファイル
         participant PV as プレビュー（Webview）
         W->>EX: docs/ の Markdown でプレビューを横に開く
-        EX->>FS: 端末の設定と、docs/ から上へ最初に見つかった mdmark.config.yaml を読む
+        EX->>FS: 端末の設定と、docs/ から上へ最初に見つかった mdmark.config.yaml を読み込む
         EX->>EX: 端末の設定 → docs/ の設定の順に重ねる
         EX->>PV: パネルを開いて描かせる
         PV-->>W: 描いた文書を表示
     expected:
       - 注意書きと表の機能がオフで描かれる
-      - 固有の部品の印の場所には何も描かれず、`theme.css` の規則は当たらない
+      - 固有の部品のマーカーの場所には何も描かれず、`theme.css` の規則は該当しない
     test: test_normal_when_first_only
-  - name: 異常シナリオ（設定ファイルを読めない）
+  - name: 異常シナリオ（設定ファイルを読み込めない）
     setup:
       - name: 端末の設定
-        description: 正常シナリオ（設定を重ねる）の端末の設定のうち、YAML として読めない行（閉じていない括弧）を 1 つ持つもの
+        description: 正常シナリオ（設定を重ねる）の端末の設定のうち、YAML として読み込めない行（閉じていない括弧）を 1 つ持つもの
       - name: 重ねる設定を持つワークスペース
         description: 正常シナリオ（設定を重ねる）と同じ
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
       sequenceDiagram
-        actor W as 文書を書く人
+        actor W as 文書の作成者
         participant EX as 拡張機能
         participant FS as 設定ファイル
         participant PV as プレビュー（Webview）
         W->>EX: docs/ の Markdown でプレビューを横に開く
-        EX->>FS: 端末の設定を読む
-        FS-->>EX: YAML として読めない
-        EX->>PV: 読めた設定で描かせ、読めないファイルを知らせる
-        PV-->>W: 文書と、上部に読めないファイルを示す帯と「設定ファイルを開く」
+        EX->>FS: 端末の設定を読み込む
+        FS-->>EX: YAML として読み込めない
+        EX->>PV: 読み込めた設定で描かせ、読み込めないファイルを通知する
+        PV-->>W: 文書と、上部に読み込めないファイルを示す帯と「設定ファイルを開く」
         W->>PV: 「設定ファイルを開く」を押す
         PV-->>EX: 設定ファイルを開く依頼
         EX-->>W: 端末の設定をエディタで開く
     expected:
-      - パネルに文書が描かれ、上部の帯に端末の設定を読めないことと、そのファイルのパスが出る
+      - パネルに文書が描かれ、上部の帯に端末の設定を読み込めないことと、そのファイルのパスが出る
       - 帯の「設定ファイルを開く」を押すと、端末の設定の `settings.yaml` がエディタで開く
       - 端末の設定と 2 つの `mdmark.config.yaml` は書き換わらない
     test: test_error_when_config_unreadable
   - name: 正常シナリオ（設定の aliases のエイリアス）
     setup:
       - name: エイリアスを持つワークスペース
-        description: '`mdmark.config.yaml` の `aliases` に、`glossary.yaml` の用語の列（名前・別名・意味）を指す用語のエイリアスの行を 1 つ記載したフォルダ。`glossary.yaml` は名前 `描画`・別名 `レンダリング`・意味 1 文の用語を 1 つ持つ。本文に `レンダリング` を含む Markdown を 1 つ置く'
+        description: '`mdmark.config.yaml` の `aliases` に、`glossary.yaml` の用語の列（名前・別名・意味）を指す用語のエイリアスの行を 1 つ記載したフォルダ。`glossary.yaml` は名前 `描画`・別名 `レンダリング`・意味 1 文の用語を 1 つ持つ。本文に `レンダリング` を含む Markdown を 1 つ配置する'
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
       sequenceDiagram
-        actor W as 文書を書く人
+        actor W as 文書の作成者
         participant EX as 拡張機能
         participant FS as 設定ファイル
         participant PV as プレビュー（Webview）
         W->>EX: プレビューを横に開く
-        EX->>FS: mdmark.config.yaml と aliases の行が指す glossary.yaml を読む
-        EX->>EX: aliases の行と読んだ YAML からエイリアスを作る
-        EX->>PV: Markdown の全文・設定・エイリアスを送る
+        EX->>FS: mdmark.config.yaml と aliases の行が指す glossary.yaml を読み込む
+        EX->>EX: aliases の行と読み込んだ YAML からエイリアスを作る
+        EX->>PV: Markdown の全文・設定・エイリアスを送信する
         PV->>PV: エイリアスを指定して mount で描く
         PV-->>W: 別名に下線を付けた文書を表示
-        W->>PV: 下線の語にポインターを載せる
+        W->>PV: 下線の単語にポインターを乗せる
         PV-->>W: 用語の種類と意味のツールチップ
     expected:
       - 本文の `レンダリング` に用語の下線が付く
-      - 下線の語にポインターを載せると、ツールチップの「用語」の区分に、名前 `描画` と `glossary.yaml` の意味が出る
+      - 下線の単語にポインターを乗せると、ツールチップの「用語」の区分に、名前 `描画` と `glossary.yaml` の意味が出る
       - 設定に `aliases` が無い文書のプレビューは、下線もツールチップも出さず、今と同じに描かれる
     test: test_normal_when_aliases
   - name: 異常シナリオ（aliases の YAML が無い）
     setup:
       - name: エイリアスを持つワークスペース
-        description: 正常シナリオ（設定の aliases のエイリアス）の `aliases` に、無い YAML を指す行を 1 つ足したもの
+        description: 正常シナリオ（設定の aliases のエイリアス）の `aliases` に、無い YAML を指す行を 1 つ追加したもの
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
       sequenceDiagram
-        actor W as 文書を書く人
+        actor W as 文書の作成者
         participant EX as 拡張機能
         participant FS as 設定ファイル
         participant PV as プレビュー（Webview）
         W->>EX: プレビューを横に開く
-        EX->>FS: aliases の行が指す YAML を読む
+        EX->>FS: aliases の行が指す YAML を読み込む
         FS-->>EX: 1 つの行の YAML が無い
-        EX->>EX: 読めない行を除いてエイリアスを作り、出力チャネルに警告を記録する
-        EX->>PV: Markdown の全文・設定・エイリアスを送る
-        PV-->>W: 読めた行のエイリアスに下線を付けた文書を表示
+        EX->>EX: 読み込めない行を除いてエイリアスを作り、出力チャネルに警告を記録する
+        EX->>PV: Markdown の全文・設定・エイリアスを送信する
+        PV-->>W: 読み込めた行のエイリアスに下線を付けた文書を表示
     expected:
       - 本文の `レンダリング` に用語の下線が付き、文書が描かれる
-      - 出力チャネルに、読めない `aliases` の行の位置とずれの種類が記録される
-      - パネルに設定ファイルを読めない帯は出ない
+      - 出力チャネルに、読み込めない `aliases` の行の位置とずれの種類が記録される
+      - パネルに設定ファイルを読み込めない帯は出ない
     test: test_error_when_aliases_missing
-lead: 文書を書く人が、VS Code で開いている Markdown の横に、mdmark で描いたプレビューを開く。拡張機能は読む mdmark の版を決め、jsDelivr の版付きの URL から配布物を読んで描く。
+lead: 文書の作成者が、VS Code で開いている Markdown の横に、mdmark で描いたプレビューを開く。拡張機能は読み込む mdmark のバージョンを決め、jsDelivr の版付きの URL から配布物を読み込んで描く。
 issue: 22
-primary_actor: 文書を書く人
+primary_actor: 文書の作成者
 stakeholders:
-  - name: 文書を書く人
-    interest: Markdown を開いたまま、mdmark で描いた見た目を横で確かめられる
+  - name: 文書の作成者
+    interest: Markdown を開いたまま、mdmark で描いた外観を横で確認できる
   - name: mdmark の開発者
-    interest: mdmark にタグを打てば、拡張機能を上げ直さなくてもプレビューに届く
-trigger: 文書を書く人が Markdown を開いているときに `Shift+Alt+D`・エディタのタイトルのボタン・コマンドパレットのどれかでプレビューを開く
+    interest: mdmark にタグを打てば、拡張機能をもう一度上げなくてもプレビューに届く
+trigger: 文書の作成者が Markdown を開いているときに `Shift+Alt+D`・エディタのタイトルのボタン・コマンドパレットのどれかでプレビューを開く
 preconditions:
   - VS Code に mdmark の拡張機能を入れている
   - Markdown のファイルをエディタで開いている
-success_guarantee: Markdown の横の列（`mdmark.openPreview` のときは同じ列）にプレビューのパネルが開き、決めた版の mdmark で文書が描かれる。設定に `aliases` があるときは、作ったエイリアスに下線とツールチップが付く。
-minimal_guarantee: 配布物を読めないときは、パネルに描けない理由と「リロード」のボタンを出す。Markdown と設定ファイルは書き換えない。
+success_guarantee: Markdown の横の列（`mdmark.openPreview` のときは同じ列）にプレビューのパネルが開き、決めたバージョンの mdmark で文書が描かれる。設定に `aliases` があるときは、作ったエイリアスに下線とツールチップが付く。
+minimal_guarantee: 配布物を読み込めないときは、パネルに描けない理由と「リロード」のボタンを出す。Markdown と設定ファイルは書き換えない。
 test_file: tests/e2e/単一ユースケース/VSCodeでプレビューを開く.spec.ts

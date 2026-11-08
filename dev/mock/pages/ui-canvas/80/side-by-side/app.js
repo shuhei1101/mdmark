@@ -2,7 +2,7 @@
 
 import { mount } from "../../../../refs/80/assets/mdmark/index.js";
 
-/** 列の名前と class: class が列に当てる値と部品の CSS の変更を決める */
+/** 列の名前と class: class が列に適用する値と部品の CSS の変更を決める */
 const COLUMNS = {
   "theme-modern": { classes: ["theme-modern"], label: "今の値（modern）" },
   "theme-dev-swiss": { classes: ["theme-dev-swiss"], label: "dev-swiss" },
@@ -11,10 +11,10 @@ const COLUMNS = {
   "table-c": { classes: ["theme-dev-swiss", "table-c"], label: "案 C: 案 A ＋ 横の線だけ・角丸の見出し行" },
 };
 
-/** 節の [data-canvas-columns] が無いときに並べる列 */
+/** セクションの [data-canvas-columns] が無いときに並べる列 */
 const DEFAULT_COLUMNS = ["theme-modern", "theme-dev-swiss"];
 
-/** 外部ライブラリの対応表: 読めない印（知らせの枠）と、読み終わらない印（読み込み中の枠） */
+/** 外部ライブラリの対応表: 読み込めないマーカー（通知ブロック）と、読み込み終わらないマーカー（読み込み中のブロック） */
 const LIBRARIES = {
   "missing-chart": "./not-found.js",
   "slow-chart": "data:text/javascript,await new Promise(() => {});",
@@ -24,17 +24,17 @@ const LIBRARIES = {
 const INDEX = {
   schema: 1,
   docs: [
-    { id: "canvas", path: "canvas.md", title: "見た目の洗い出し" },
-    { id: "guide", path: "使い方/文書を描く.md", title: "文書を描く", description: "配布物を読んだページで mount を呼ぶ", related: ["canvas"] },
-    { id: "theme", path: "使い方/テーマを上書きする.md", title: "テーマを上書きする", description: "CSS 変数で見た目を変える", related: ["canvas"] },
+    { id: "canvas", path: "canvas.md", title: "外観の洗い出し" },
+    { id: "guide", path: "使い方/文書を描く.md", title: "文書を描く", description: "配布物を読み込んだページで mount を呼ぶ", related: ["canvas"] },
+    { id: "theme", path: "使い方/テーマを上書きする.md", title: "テーマを上書きする", description: "CSS 変数で外観を変える", related: ["canvas"] },
   ],
 };
 
-/** 差分の取り出し元: 新しい順に 2 つのリビジョンと、それぞれの本文を返す */
+/** 差分の取り出し元: 新しい順に 2 つのリビジョンと、それぞれの本文を返却する */
 const DIFF_SOURCE = {
   revisions: async () => [
     { id: "r2", at: "2026-10-23T15:00:00+09:00", label: "色を薄くする", author: "designer" },
-    { id: "r1", at: "2026-10-20T10:00:00+09:00", label: "最初の版", author: "planner" },
+    { id: "r1", at: "2026-10-20T10:00:00+09:00", label: "最初のバージョン", author: "planner" },
   ],
   content: async ({ revisionId }) =>
     revisionId === "r1"
@@ -42,28 +42,28 @@ const DIFF_SOURCE = {
       : "# テーマ\n\nリンクの色は #0f766e です。\n\n変数の名前は変わりません。\n\n印刷ではダークを解除します。\n",
 };
 
-/** コメントの読み書き: 本文の「既定の見た目」に付いたコメントと、本文に無い文字に付いたコメント（箇所が見つからない）を返し、保存は下書きに ID を付けて返す */
+/** コメントの読み込みと保存: 本文の「既定の外観」に付いたコメントと、本文に無い文字に付いたコメント（箇所が見つからない）を返却し、保存は下書きに ID を付けて返却する */
 const COMMENT_STORE = {
   load: async () => [
-    { id: "c1", quote: "既定の見た目", prefix: "mdmark の", suffix: "を mindstella", body: "表の見出し行の濃さも揃えたい。" },
+    { id: "c1", quote: "既定の外観", prefix: "mdmark の", suffix: "を mindstella", body: "表の見出し行の濃さも統一したい。" },
     { id: "c2", quote: "濃い青のリンク", prefix: "", suffix: "", body: "書き換える前の本文に付けたコメント。" },
   ],
   save: async ({ comment }) => ({ ...comment, id: `c${Date.now()}` }),
 };
 
-/** 部品ごとに mount へ渡す追加の引数と、設定の機能 */
+/** 部品ごとに mount へ指定する追加の引数と、設定の機能 */
 const OPTIONS = {
   backlinks: { index: INDEX, docId: "canvas" },
   diff: { docId: "canvas", diffSource: DIFF_SOURCE },
   comment: { docId: "canvas", commentStore: COMMENT_STORE, features: { comments: true } },
 };
 
-/** 描いた後に場面を作る操作: 差分は「変更を見る」を押して開く */
+/** 描いた後に場面を作る操作: 差分は「変更表示」を押して開く */
 const AFTER_MOUNT = {
   diff: (el) => el.querySelector(".mdmark-diff-toggle").click(),
 };
 
-/** 節の後ろに 2 つの列を足し、列ごとの中身の置き場所を返す */
+/** セクションの後ろに 2 つの列を追加し、列ごとの中身の配置場所を返却する */
 function addColumns(section) {
   const pair = document.createElement("div");
   pair.className = "canvas-pair";
@@ -90,7 +90,7 @@ const PARAMS = new URLSearchParams(location.search);
 const PARTS = PARAMS.get("parts")?.split(",");
 const SHOWN_COLUMNS = PARAMS.get("columns")?.split(",");
 
-// 列を 1 つに絞ったときは、本文の外（body の直下）に置く部品にも列の値が効くよう、ページの根にもその列の class を当てる
+// 列を 1 つに絞ったときは、本文の外（body の直下）に配置する部品にも列の値が有効になるよう、ページの根にもその列の class を適用する
 if (SHOWN_COLUMNS?.length === 1) {
   document.documentElement.classList.add(...COLUMNS[SHOWN_COLUMNS[0]].classes);
 }
@@ -110,7 +110,7 @@ for (const section of document.querySelectorAll("[data-canvas]")) {
   }
   const markdown = source.textContent.replace(/^\n/, "");
   const { features, ...extra } = OPTIONS[key] ?? {};
-  // 列ごとに同じ本文と設定で描く（列の値の違いだけが見た目の差になる）
+  // 列ごとに同じ本文と設定で描く（列の値の違いだけが外観の差になる）
   for (const slot of slots) {
     mount(slot, { markdown, ...extra, config: { libraries: LIBRARIES, ...(features && { features }) } });
     AFTER_MOUNT[key]?.(slot);

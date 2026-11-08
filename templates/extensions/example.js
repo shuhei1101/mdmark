@@ -1,5 +1,5 @@
 // @ts-check
-// 型は、使う版の dist/ の index.d.ts を ../mdmark/ に置いて読む
+// 型は、使用するバージョンの dist/ の index.d.ts を ../mdmark/ に配置して読み込む
 
 /** `<!-- greet: 名前 -->` の場所に挨拶を描く拡張 */
 /** @type {import("../mdmark/index.js").MdmarkExtension} */

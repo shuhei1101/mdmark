@@ -6,13 +6,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <!-- color-scheme: 明るい配色とダークの両方を持つことをブラウザへ伝える -->
   <meta name="color-scheme" content="light dark">
-  <title>ui-canvas / side-by-side（見た目の洗い出し） | mdmark のモック</title>
+  <title>ui-canvas / side-by-side（外観の洗い出し） | mdmark のモック</title>
   <!-- モック専用の操作列の規則（#16 で共有するアセット） -->
   <link rel="stylesheet" href="../../../../refs/16/assets/sample.css">
   <!-- 今の src から作った配布物の CSS と、まとめた HTML の画面の CSS（番号で共有するアセット） -->
   <link rel="stylesheet" href="../../../../refs/80/assets/mdmark/index.css">
   <link rel="stylesheet" href="../../../../refs/80/assets/mdmark/viewer.css">
-  <!-- 列ごとの値（今の値と dev-swiss）と、dev-swiss の列だけに当てる部品の CSS の変更 -->
+  <!-- 列ごとの値（今の値と dev-swiss）と、dev-swiss の列だけに適用する部品の CSS の変更 -->
   <link rel="stylesheet" href="../../../../refs/80/assets/canvas-themes.css">
   <!-- 表の案（案 A〜C）の囲み方 -->
   <link rel="stylesheet" href="../../../../refs/80/assets/table-options.css">
@@ -26,7 +26,7 @@
 <body>
   <!-- モック専用の操作列: 配色の切り替え -->
   <div class="mock-bar">
-    <!-- [data-scheme-set]: sample.js が押されたボタンの値を html の data-scheme に当てる -->
+    <!-- [data-scheme-set]: sample.js が押されたボタンの値を html の data-scheme に適用する -->
     <div class="mock-bar-group" role="group" aria-label="配色">
       <button class="mock-bar-item" type="button" data-scheme-set="light" aria-pressed="false">明るい配色</button>
       <button class="mock-bar-item" type="button" data-scheme-set="dark" aria-pressed="false">ダーク</button>
@@ -36,7 +36,7 @@
   <main class="canvas">
     <!-- パンくず -->
     <nav class="canvas-crumbs" aria-label="パンくず"><a href="../../../index.md">pages</a> / <a href="../../index.md">ui-canvas</a> / <a href="../index.md">80</a> / side-by-side</nav>
-    <h1>見た目の洗い出し</h1>
+    <h1>外観の洗い出し</h1>
     <p>mdmark が描く文書とまとめた HTML の UI を部品ごとに、今の値（左）と採用した dev-swiss の値（右）で並べる。どちらも今の src から作った配布物で描いている。</p>
 
     <!-- 部品の CSS を変える箇所の一覧 -->
@@ -46,9 +46,9 @@
       </thead>
       <tbody>
         <tr><td><a href="#part-callout">注意書き</a></td><td>種類の色を地に 7% 混ぜた面と、40% 混ぜた線。今の CSS は種類の色そのものの線だけで、面を塗らない</td><td>部品の CSS を変える（dev-swiss の列は変えた後）</td></tr>
-        <tr><td><a href="#part-comment">コメントの入力欄</a></td><td>「コメントを保存」を印の色ではなく文字の色で塗り、文字を地の色にする</td><td>部品の CSS を変える（dev-swiss の列は変えた後）</td></tr>
+        <tr><td><a href="#part-comment">コメントの入力欄</a></td><td>「コメントを保存」をマーカーの色ではなく文字の色で塗り、文字を地の色にする</td><td>部品の CSS を変える（dev-swiss の列は変えた後）</td></tr>
         <tr><td><a href="#part-table-options">表</a></td><td>角張った印象を和らげる囲み方（案 A〜C）</td><td>案を選ぶ</td></tr>
-        <tr><td><a href="#part-flow">フロー図</a></td><td>箱の角丸 8px（データの箱は 8px / 20px）を CSS に直に持ち、<code>--mdmark-radius</code>（4px）に揃わない</td><td>今のまま残す</td></tr>
+        <tr><td><a href="#part-flow">フロー図</a></td><td>ノードの角丸 8px（データのノードは 8px / 20px）を CSS に直に持ち、<code>--mdmark-radius</code>（4px）に一致しない</td><td>今のまま残す</td></tr>
         <tr><td>図の全画面・まとめた HTML の一覧のパネル</td><td>開いたときの後ろの幕の色 <code>rgb(0 0 0 / 0.5)</code>・<code>rgb(0 0 0 / 0.4)</code> を CSS に直に持つ</td><td>今のまま残す</td></tr>
       </tbody>
     </table>
@@ -66,7 +66,7 @@
         <li><a href="#part-tree">ファイルツリー</a></li>
         <li><a href="#part-badge">バッジ</a></li>
         <li><a href="#part-code">コードブロック</a></li>
-        <li><a href="#part-toc">目次・節</a></li>
+        <li><a href="#part-toc">目次・セクション</a></li>
         <li><a href="#part-figure">図表の番号</a></li>
         <li><a href="#part-glossary">用語</a></li>
         <li><a href="#part-backlinks">関連文書</a></li>
@@ -76,24 +76,24 @@
         <li><a href="#part-chart">グラフ</a></li>
         <li><a href="#part-param">操作できる部品</a></li>
         <li><a href="#part-html">埋め込んだ HTML・ヒント</a></li>
-        <li><a href="#part-notice">知らせ・読み込み中</a></li>
-        <li><a href="#part-warning">書き方の警告</a></li>
+        <li><a href="#part-notice">通知し・読み込み中</a></li>
+        <li><a href="#part-warning">記載の警告</a></li>
         <li><a href="#part-diff">差分</a></li>
         <li><a href="#part-comment">コメント</a></li>
         <li><a href="#part-bundle">まとめた HTML</a></li>
       </ul>
     </nav>
 
-    <!-- 部品の節: [data-canvas] の節ごとに、app.js が 2 つの列を作り、[data-canvas-source] の Markdown を描く -->
+    <!-- 部品のセクション: [data-canvas] のセクションごとに、app.js が 2 つの列を作り、[data-canvas-source] の Markdown を描く -->
 
     <!-- 文書（本文の基本） -->
     <section class="canvas-section" id="part-body" data-canvas="body">
       <h2>文書（本文の基本）</h2>
       <p>見出し・段落・リンク・リスト・文中のコード・コードブロック・引用・区切り線・折り畳み</p>
       <script type="text/markdown" data-canvas-source>
-# 見た目の洗い出し
+# 外観の洗い出し
 
-mdmark の既定の見た目を mindstella の値に揃える。リンクは [テーマの上書き](#part-body)、文中のコードは `--mdmark-color-link`。
+mdmark の既定の外観を mindstella の値に統一する。リンクは [テーマの上書き](#part-body)、文中のコードは `--mdmark-color-link`。
 
 ## 導入の流れ
 
@@ -106,12 +106,12 @@ mdmark の既定の見た目を mindstella の値に揃える。リンクは [�
 const view = mount(document.querySelector("#doc"), { markdown });
 ```
 
-> 印の無い引用は、面の色と字下げで本文と分ける。
+> マーカーの無い引用は、面の色と字下げで本文と分ける。
 
 ### 対応ブラウザ
 
 <details>
-<summary>下限の版を見る</summary>
+<summary>下限のバージョンを確認する</summary>
 
 - Chrome 99
 - Safari 16.4
@@ -148,7 +148,7 @@ const view = mount(document.querySelector("#doc"), { markdown });
 
 | 項目 | 内容 |
 | --- | --- |
-| 線 | 縦の罫線と面を外す |
+| 線 | 縦の罫線と面を削除する |
 
 <!-- /table -->
 
@@ -166,7 +166,7 @@ const view = mount(document.querySelector("#doc"), { markdown });
     <section class="canvas-section" id="part-table-options" data-canvas="table-options" data-canvas-columns="theme-dev-swiss,table-a,table-b,table-c">
       <h2>表の案</h2>
       <p>既定の表・data の表・plain の表・閉じた表・用語集の表・ビューの表を、今の dev-swiss と案 A〜C で並べる。どの案も dev-swiss の値のまま、表の囲み方だけを変える</p>
-      <p class="canvas-change">今の表は表全体を面の色（#f4f4f5）で塗り、見出し行の下に 2px の線を引く。案 A〜C は本文の行を地の色にし、見出し行だけを面の色にする（mindstella の本文の表と同じ）</p>
+      <p class="canvas-change">今の表は表全体を面の色（#f4f4f5）で塗り、見出し行の下に 2px の線を描く。案 A〜C は本文の行を地の色にし、見出し行だけを面の色にする（mindstella の本文の表と同じ）</p>
       <script type="text/markdown" data-canvas-source>
 | 変数 | 役割 | 既定の値 |
 | --- | --- | ---: |
@@ -188,7 +188,7 @@ const view = mount(document.querySelector("#doc"), { markdown });
 
 | 項目 | 内容 |
 | --- | --- |
-| 線 | 縦の罫線と面を外す |
+| 線 | 縦の罫線と面を削除する |
 | 行 | 行の境の線だけ |
 
 <!-- /table -->
@@ -205,13 +205,13 @@ const view = mount(document.querySelector("#doc"), { markdown });
 
 | 用語 | 意味 |
 | --- | --- |
-| 印 | HTML コメントで書く指定 |
+| マーカー | HTML コメントで記載する指定 |
 
 <!-- /glossary -->
 
 <!-- view: group=状態 default=table -->
 
-| 題 | 状態 | 担当 |
+| タイトル | 状態 | 担当 |
 | --- | --- | --- |
 | 配色の変数を洗い出す | 完了 | designer |
 | 表の囲み方を決める | 進行中 | designer |
@@ -242,22 +242,22 @@ const view = mount(document.querySelector("#doc"), { markdown });
     <section class="canvas-section" id="part-callout" data-canvas="callout">
       <h2>注意書き</h2>
       <p>5 つの種類と、閉じた注意書き</p>
-      <p class="canvas-change">種類の色の薄い面（地に 7%）と淡い線（地に 40%）は、.markdown-alert の CSS を変えて当てる（dev-swiss の列は CSS を変えた後の見た目）</p>
+      <p class="canvas-change">種類の色の薄い面（地に 7%）と淡い線（地に 40%）は、.markdown-alert の CSS を変えて適用する（dev-swiss の列は CSS を変えた後の外観）</p>
       <script type="text/markdown" data-canvas-source>
 > [!NOTE]
 > 変数の名前は変わらない。
 
 > [!TIP]
-> 層の外に書いた CSS が勝つ。
+> 層の外に記載した CSS が勝つ。
 
 > [!IMPORTANT]
-> 書き出した HTML は外を読まない。
+> 書き出した HTML は外を読み込まない。
 
 > [!WARNING]
-> 版を上げる前に点検する。
+> バージョンを上げる前に点検する。
 
 > [!CAUTION]
-> 設定の版を手で書き換えない。
+> 設定のバージョンを手で書き換えない。
 
 > [!NOTE]-
 > 閉じた状態で始める補足。
@@ -292,7 +292,7 @@ Windows の手順。
 
 1. 依存を入れる。
 2. ビルドする。
-3. 描いて確かめる。
+3. 描いて確認する。
 
 <!-- /steps -->
 </script>
@@ -301,7 +301,7 @@ Windows の手順。
     <!-- ファイルツリー -->
     <section class="canvas-section" id="part-tree" data-canvas="tree">
       <h2>ファイルツリー</h2>
-      <p>罫線で書いたフォルダ構成</p>
+      <p>罫線で記載したフォルダ構成</p>
       <script type="text/markdown" data-canvas-source>
 ```tree
 mdmark/
@@ -318,14 +318,14 @@ mdmark/
       <h2>バッジ</h2>
       <p>行内の札</p>
       <script type="text/markdown" data-canvas-source>
-この版は `badge:v0.7.0` で、状態は `badge:作業中` です。
+このバージョンは `badge:v0.7.0` で、状態は `badge:作業中` です。
 </script>
     </section>
 
     <!-- コードブロックの飾り -->
     <section class="canvas-section" id="part-code" data-canvas="code">
       <h2>コードブロックの飾り</h2>
-      <p>題・行番号・行の強調と、足した行・消した行</p>
+      <p>タイトル・行番号・行の強調と、追加した行・削除した行</p>
       <script type="text/markdown" data-canvas-source>
 <!-- code: title=theme.css lines highlight=2 -->
 
@@ -344,10 +344,10 @@ mount(el, { markdown }); // [!code highlight]
 </script>
     </section>
 
-    <!-- 目次・見出しのアンカー・節の開閉 -->
+    <!-- 目次・見出しのアンカー・セクションの開閉 -->
     <section class="canvas-section" id="part-toc" data-canvas="toc">
-      <h2>目次・見出しのアンカー・節の開閉</h2>
-      <p>h2〜h3 の目次、見出しのリンク、閉じた節</p>
+      <h2>目次・見出しのアンカー・セクションの開閉</h2>
+      <p>h2〜h3 の目次、見出しのリンク、閉じたセクション</p>
       <script type="text/markdown" data-canvas-source>
 <!-- toc -->
 
@@ -363,7 +363,7 @@ mount(el, { markdown }); // [!code highlight]
 
 <!-- section: closed -->
 
-閉じた節の本文。
+閉じたセクションの本文。
 </script>
     </section>
 
@@ -391,13 +391,13 @@ mount(el, { markdown }); // [!code highlight]
       <h2>用語集の表と用語のツールチップ</h2>
       <p>用語集の表から入れた用語の破線の下線（ポインター・フォーカスでツールチップ）</p>
       <script type="text/markdown" data-canvas-source>
-本文の印は、HTML コメントで書く。
+本文のマーカーは、HTML コメントで記載する。
 
 <!-- glossary: term=用語 aliases=別名 meaning=意味 -->
 
 | 用語 | 別名 | 意味 |
 | --- | --- | --- |
-| 印 | マーク | HTML コメントで書く指定 |
+| マーカー | マーク | HTML コメントで記載する指定 |
 
 <!-- /glossary -->
 </script>
@@ -406,7 +406,7 @@ mount(el, { markdown }); // [!code highlight]
     <!-- 関連文書の一覧 -->
     <section class="canvas-section" id="part-backlinks" data-canvas="backlinks">
       <h2>関連文書の一覧</h2>
-      <p>文書の末尾に置く、この文書を参照している文書の一覧</p>
+      <p>文書の末尾に配置する、この文書を参照している文書の一覧</p>
       <script type="text/markdown" data-canvas-source>
 ## 本文
 
@@ -421,11 +421,11 @@ mount(el, { markdown }); // [!code highlight]
       <script type="text/markdown" data-canvas-source>
 <!-- view: group=状態 filter=担当 -->
 
-| 題 | 状態 | 担当 |
+| タイトル | 状態 | 担当 |
 | --- | --- | --- |
 | 配色の変数を洗い出す | 完了 | designer |
 | 余白の変数を決める | 進行中 | designer |
-| 部品の CSS を直す | 未着手 | implementer |
+| 部品の CSS を修正する | 未着手 | implementer |
 
 <!-- /view -->
 </script>
@@ -434,8 +434,8 @@ mount(el, { markdown }); // [!code highlight]
     <!-- フロー図 -->
     <section class="canvas-section" id="part-flow" data-canvas="flow">
       <h2>フロー図</h2>
-      <p>システムの枠と層・箱・線（図の枠の題・凡例・拡大のボタン）</p>
-      <p class="canvas-change">箱の角丸は 8px（データの箱は 8px / 20px）を CSS に直に持ち、--mdmark-radius（4px）に揃わない。今のまま残す</p>
+      <p>システムの枠と層・ノード・線（図の枠のタイトル・凡例・拡大のボタン）</p>
+      <p class="canvas-change">ノードの角丸は 8px（データのノードは 8px / 20px）を CSS に直に持ち、--mdmark-radius（4px）に一致しない。今のまま残す</p>
       <script type="text/markdown" data-canvas-source>
 <!-- flow -->
 
@@ -454,19 +454,19 @@ mount(el, { markdown }); // [!code highlight]
   ],
   "nodes": [
     { "id": "mail", "kind": "external", "x": 12, "y": 174, "w": 116, "h": 64, "tag": "外部", "name": "メールサーバー" },
-    { "id": "recv", "kind": "script", "x": 190, "y": 174, "w": 140, "h": 64, "name": "受け取り", "sub": "1 通ずつ読む", "io": { "in": "メール", "do": "本文を取り出す", "out": "本文" } },
+    { "id": "recv", "kind": "script", "x": 190, "y": 174, "w": 140, "h": 64, "name": "受け取り", "sub": "1 通ずつ読み込む", "io": { "in": "メール", "do": "本文を取り出す", "out": "本文" } },
     { "id": "classify", "kind": "dm", "x": 390, "y": 74, "w": 140, "h": 64, "name": "分類", "sub": "返信の種類を選ぶ" },
     { "id": "draft", "kind": "llm", "x": 580, "y": 74, "w": 140, "h": 64, "name": "返信の下書き" },
     { "id": "mcp", "kind": "mcp", "x": 390, "y": 174, "w": 140, "h": 64, "name": "窓口の MCP" },
     { "id": "table", "kind": "data", "x": 390, "y": 276, "w": 140, "h": 64, "name": "問い合わせの表" }
   ],
   "wires": [
-    { "id": "w1", "from": "mail", "to": "recv", "line": "flow", "points": [[128, 206], [190, 206]], "label": "メール", "labelAt": [159, 206], "tip": "件名・本文・送り主" },
+    { "id": "w1", "from": "mail", "to": "recv", "line": "flow", "points": [[128, 206], [190, 206]], "label": "メール", "labelAt": [159, 206], "tip": "件名・本文・送信者" },
     { "id": "w2", "from": "recv", "to": "classify", "line": "flow", "points": [[260, 174], [260, 106], [390, 106]], "label": "本文", "labelAt": [260, 140] },
     { "id": "w3", "from": "classify", "to": "draft", "line": "flow", "points": [[530, 106], [580, 106]], "label": "種類", "labelAt": [555, 106] },
     { "id": "w4", "from": "draft", "to": "mcp", "line": "reply", "points": [[650, 138], [650, 206], [530, 206]], "label": "保存", "labelAt": [650, 172] },
-    { "id": "w5", "from": "mcp", "to": "table", "line": "write", "points": [[460, 238], [460, 276]], "label": "書く", "labelAt": [460, 257] },
-    { "id": "w6", "from": "table", "to": "recv", "line": "read", "points": [[390, 308], [260, 308], [260, 238]], "label": "読む", "labelAt": [325, 308] }
+    { "id": "w5", "from": "mcp", "to": "table", "line": "write", "points": [[460, 238], [460, 276]], "label": "記載する", "labelAt": [460, 257] },
+    { "id": "w6", "from": "table", "to": "recv", "line": "read", "points": [[390, 308], [260, 308], [260, 238]], "label": "読み込む", "labelAt": [325, 308] }
   ]
 }
 ```
@@ -605,41 +605,41 @@ mount(el, { markdown }); // [!code highlight]
     <!-- 埋め込んだ HTML とヒント -->
     <section class="canvas-section" id="part-html" data-canvas="html">
       <h2>埋め込んだ HTML とヒント</h2>
-      <p>コードブロックの HTML をその場に描いた場所と、data-hint の印と下線</p>
+      <p>コードブロックの HTML をその場に描いた場所と、data-hint のマーカーと下線</p>
       <script type="text/markdown" data-canvas-source>
 <!-- html -->
 
 ```html
 <div style="display: flex; gap: 12px; flex-wrap: wrap">
-  <div style="padding: 12px; border: 1px solid currentColor" data-hint="1 通ずつ読む">受け取り</div>
+  <div style="padding: 12px; border: 1px solid currentColor" data-hint="1 通ずつ読み込む">受け取り</div>
   <div style="padding: 12px; border: 1px solid currentColor">分類</div>
 </div>
-<p>問い合わせは <span data-hint="本文を読んで返信の種類を決める処理">分類</span> してから返す。</p>
+<p>問い合わせは <span data-hint="本文を読み込んで返信の種類を決める処理">分類</span> してから返却する。</p>
 ```
 
 <!-- /html -->
 </script>
     </section>
 
-    <!-- 知らせの枠・読み込み中の枠 -->
+    <!-- 通知ブロック・読み込み中のブロック -->
     <section class="canvas-section" id="part-notice" data-canvas="notice">
-      <h2>知らせの枠・読み込み中の枠</h2>
-      <p>外部ライブラリを読めない印の場所と、読み込んでいる間の印の場所</p>
+      <h2>通知ブロック・読み込み中のブロック</h2>
+      <p>外部ライブラリを読み込めないマーカーの場所と、読み込んでいる間のマーカーの場所</p>
       <script type="text/markdown" data-canvas-source>
-読めない印:
+読み込めないマーカー:
 
 <!-- missing-chart: sales -->
 
-読み込み中の印:
+読み込み中のマーカー:
 
 <!-- slow-chart: sales -->
 </script>
     </section>
 
-    <!-- 書き方の警告 -->
+    <!-- 記載の警告 -->
     <section class="canvas-section" id="part-warning" data-canvas="warning">
-      <h2>書き方の警告</h2>
-      <p>記法の印に読めない指定がある箇所に置く枠</p>
+      <h2>記載の警告</h2>
+      <p>記法のマーカーに読み込めない指定がある箇所に配置する枠</p>
       <script type="text/markdown" data-canvas-source>
 <!-- table: data hide=名前 -->
 
@@ -654,7 +654,7 @@ mount(el, { markdown }); // [!code highlight]
     <!-- 差分 -->
     <section class="canvas-section" id="part-diff" data-canvas="diff">
       <h2>差分</h2>
-      <p>「変更を見る」・リビジョンを選ぶ欄・行と語の色分け・ミニマップ（描いた後に「変更を見る」を押している）</p>
+      <p>「変更表示」・リビジョンを選ぶ欄・行と単語の色分け・ミニマップ（描いた後に「変更表示」を押している）</p>
       <script type="text/markdown" data-canvas-source>
 # テーマ
 
@@ -671,9 +671,9 @@ mount(el, { markdown }); // [!code highlight]
       <h2>コメント</h2>
       <p>コメントが付いた本文の文字の地と下線・箇所が見つからないコメントの一覧（文字を選ぶとコメントのボタン、押すと入力欄）</p>
       <script type="text/markdown" data-canvas-source>
-mdmark の既定の見た目を mindstella の値に揃える。
+mdmark の既定の外観を mindstella の値に統一する。
 
-コメントを付けた語は、地の色と下線で示す。
+コメントを付けた単語は、地の色と下線で示す。
 </script>
     </section>
 
@@ -693,7 +693,7 @@ mdmark の既定の見た目を mindstella の値に揃える。
                   </ul>
                 </div>
                 <div class="mdmark-doc-list-group">
-                  <p class="mdmark-doc-list-folder">使い方/導入</p>
+                  <p class="mdmark-doc-list-folder">使用方法/導入</p>
                   <ul>
                     <li><a href="#part-bundle" aria-current="page">文書を描く</a></li>
                     <li><a href="#part-bundle">配布物を読み込む</a></li>

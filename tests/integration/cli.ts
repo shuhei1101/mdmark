@@ -19,7 +19,7 @@ import { afterAll, afterEach, beforeAll, inject } from "vitest";
 
 const execFileAsync = promisify(execFile);
 
-/** CLI を子プロセスで流した結果 */
+/** CLI を子プロセスで実行した結果 */
 export type CliResult = {
   /** 終了コード */
   code: number;
@@ -40,7 +40,7 @@ const MEDIA_SAMPLE_DIR = fileURLToPath(
   new URL("../../dev/mock/refs/263/assets/media/", import.meta.url),
 );
 
-/** 見本の動画（mp4）・音声（mp3）・動く GIF の中身を読む */
+/** 見本の動画（mp4）・音声（mp3）・動く GIF の中身を読み込む */
 export async function readMediaSamples(): Promise<{
   mp4: Buffer;
   mp3: Buffer;
@@ -54,13 +54,13 @@ export async function readMediaSamples(): Promise<{
   return { mp4: mp4 as Buffer, mp3: mp3 as Buffer, gif: gif as Buffer };
 }
 
-/** 外部ライブラリの代役: `draw` で印の場所の文字を `drawn:` と引数を `,` で結んだものにする */
+/** 外部ライブラリの代役: `draw` でマーカーの場所の文字を `drawn:` と引数を `,` で結んだものにする */
 export const TEST_LIB_SOURCE = `export function draw(slot, args) {
   slot.textContent = "drawn:" + args.join(",");
 }
 `;
 
-/** 拡張の代役: `draw` で印の場所の文字を `greet:` と引数を `,` で結んだものにする */
+/** 拡張の代役: `draw` でマーカーの場所の文字を `greet:` と引数を `,` で結んだものにする */
 export const GREET_SOURCE = `export default {
   name: "greet",
   directive: "greet",
@@ -72,7 +72,7 @@ export const GREET_SOURCE = `export default {
 };
 `;
 
-/** 拡張の代役: `load` の中で同じフォルダの `greet-text.js` を動的 `import()` で読み、印の場所の文字を `greet:` と読んだ文字と引数にする */
+/** 拡張の代役: `load` の中で同じフォルダの `greet-text.js` を動的 `import()` で読み込み、マーカーの場所の文字を `greet:` と読み込んだ文字と引数にする */
 export const GREET_WITH_IMPORT_SOURCE = `export default {
   name: "greet",
   directive: "greet",
@@ -87,11 +87,11 @@ export const GREET_WITH_IMPORT_SOURCE = `export default {
 };
 `;
 
-/** 項目の表をビューの印で囲んだ本文 */
+/** 項目の表をビューのマーカーで囲んだ本文 */
 export const VIEW_SOURCE = [
   "<!-- view: group=状態 -->",
   "",
-  "| 題 | 状態 |",
+  "| タイトル | 状態 |",
   "| --- | --- |",
   "| a | 未着手 |",
   "| b | 完了 |",
@@ -99,7 +99,7 @@ export const VIEW_SOURCE = [
   "<!-- /view -->",
 ].join("\n");
 
-/** 色分けのライブラリの本体と `typescript` のモジュールを、`vendor/highlightjs/es/` の下のファイルの中身にして返す */
+/** 色分けのライブラリの本体と `typescript` のモジュールを、`vendor/highlightjs/es/` の下のファイルの中身にして返却する */
 export async function readHighlightVendor(): Promise<Record<string, string>> {
   const vendor: Record<string, string> = {};
   for (const file of ["core.min.js", "languages/typescript.min.js"]) {
@@ -116,7 +116,7 @@ export async function readHighlightVendor(): Promise<Record<string, string>> {
   return vendor;
 }
 
-/** 使う側の CSS の見本: 角丸の変数を上書きする */
+/** 利用側の CSS の見本: 角丸の変数を上書きする */
 export const THEME_SOURCE = ".mdmark { --mdmark-radius: 0px; }\n";
 
 /** 端末の設定を持たないことにする `MDMARK_CONFIG`（無いファイル）。開発者の端末の設定をテストに混ぜない */
@@ -125,7 +125,7 @@ export const NO_SETTINGS = join(
   "mdmark-integration-no-settings.yaml",
 );
 
-/** ビルドした `dist/cli.js` を、`cwd` で子プロセスとして流す。終了コードが 0 以外でも例外を投げず、結果を返す。`env` で環境変数を足す（`MDMARK_CONFIG` の既定は `NO_SETTINGS`） */
+/** ビルドした `dist/cli.js` を、`cwd` で子プロセスとして実行する。終了コードが 0 以外でも例外を投げず、結果を返却する。`env` で環境変数を追加する（`MDMARK_CONFIG` の既定は `NO_SETTINGS`） */
 export async function runCli(
   args: string[],
   cwd: string,
@@ -149,7 +149,7 @@ export async function runCli(
   }
 }
 
-/** テストごとに作った一時フォルダを消す。一時フォルダを作る関数を返す */
+/** テストごとに作った一時フォルダを削除する。一時フォルダを作る関数を返却する */
 export function useTempDirs(): () => Promise<string> {
   const created: string[] = [];
   afterEach(async () => {
@@ -164,7 +164,7 @@ export function useTempDirs(): () => Promise<string> {
   };
 }
 
-/** フォルダの下にファイルを書く（親のフォルダは作る） */
+/** フォルダの下にファイルを書き込む（親のフォルダは作る） */
 export async function writeFiles(
   root: string,
   files: Record<string, string | Uint8Array>,
@@ -176,7 +176,7 @@ export async function writeFiles(
   }
 }
 
-/** フォルダで git を 1 回呼び、標準出力を返す */
+/** フォルダで git を 1 回呼び、標準出力を返却する */
 export async function git(cwd: string, ...args: string[]): Promise<string> {
   const { stdout } = await execFileAsync("git", args, { cwd });
   return stdout;
@@ -207,7 +207,7 @@ const CHANGE_TOGETHER_INDEX = [
 ].join("\n");
 
 /**
- * `mdmark init` の雛形に、互いを `change_together` で記載した文書 `a`・`b` を足した git のフォルダを作る。
+ * `mdmark init` の雛形に、互いを `change_together` で記載した文書 `a`・`b` を追加した git のフォルダを作る。
  * 全てをコミットしてタグ `base` を付け、その後 `a.md` だけを書き換えてコミットする
  */
 export async function createChangeTogetherDir(
@@ -238,7 +238,7 @@ export function linesOf(text: string): string[] {
   return text.split("\n").filter((line) => line !== "");
 }
 
-/** 書き出した HTML を、1 つだけ空のフォルダへ写して file:// で開いた結果 */
+/** 書き出した HTML を、1 つだけ空のフォルダへコピーして file:// で開いた結果 */
 export type OpenedHtml = {
   /** 開いたページ */
   page: Page;
@@ -246,7 +246,7 @@ export type OpenedHtml = {
   externalRequests: () => string[];
 };
 
-/** テストファイルの間で使う、Chromium の起動と終了と、書き出した HTML を開く関数を返す */
+/** テストファイルの間で使用する、Chromium の起動と終了と、書き出した HTML を開く関数を返却する */
 export function useBrowser(createTempDir: () => Promise<string>): {
   openHtml: (
     htmlFile: string,
@@ -273,7 +273,7 @@ export function useBrowser(createTempDir: () => Promise<string>): {
       if (!browser) {
         throw new Error("ブラウザを起動していない");
       }
-      // 配布先と同じく、HTML だけを空のフォルダへ写して開く
+      // 配布先と同じく、HTML だけを空のフォルダへコピーして開く
       const dir = await createTempDir();
       const alone = join(dir, "alone.html");
       await copyFile(htmlFile, alone);
@@ -289,7 +289,7 @@ export function useBrowser(createTempDir: () => Promise<string>): {
       await page.goto(`file://${alone}`);
       return { page, externalRequests: () => requests };
     },
-    // HTML と隣のコピー先のフォルダだけを空のフォルダへ写して開き、コピー先の下への要求も外への要求に数えない
+    // HTML と隣のコピー先のフォルダだけを空のフォルダへコピーして開き、コピー先の下への要求も外への要求に数えない
     openWithFiles: async (htmlFile, filesDir) => {
       if (!browser) {
         throw new Error("ブラウザを起動していない");
@@ -321,7 +321,7 @@ export function useBrowser(createTempDir: () => Promise<string>): {
   };
 }
 
-/** `blob:` と `data:` のスクリプトを許さない CSP。動的 `import()` で読むスクリプトも、ページ自身のほかは許さない */
+/** `blob:` と `data:` のスクリプトを許さない CSP。動的 `import()` で読み込むスクリプトも、ページ自身のほかは許さない */
 export const STRICT_SCRIPT_CSP = "script-src 'unsafe-inline'";
 
 /** CSP のヘッダーを付けて開いたページと、CSP の違反・`blob:`・`data:` のスクリプトへの要求の記録 */
@@ -338,7 +338,7 @@ export type CspOpenedHtml = {
   close: () => Promise<void>;
 };
 
-/** HTML を `STRICT_SCRIPT_CSP` のヘッダーを付けて返す手元のサーバーを立て、Chromium で開く */
+/** HTML を `STRICT_SCRIPT_CSP` のヘッダーを付けて返却する手元のサーバーを起動し、Chromium で開く */
 export async function openWithCsp(
   browser: Browser,
   htmlFile: string,

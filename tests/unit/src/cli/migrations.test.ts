@@ -31,7 +31,7 @@ function stepsYaml(lines: string[]): string {
   return ["steps:", ...lines, ""].join("\n");
 }
 
-/** 一時フォルダのパッケージに `migrations/{版}/` のファイルを置く */
+/** 一時フォルダのパッケージに `migrations/{バージョン}/` のファイルを配置する */
 async function writeMigrations(
   packageDir: string,
   files: Record<string, string>,
@@ -61,7 +61,7 @@ async function createTarget(
   };
 }
 
-/** 版と手順だけを持つ当てる版を作る */
+/** バージョンと手順だけを持つ適用するバージョンを作る */
 function createVersion(
   steps: MigrationStep[],
   version = "v0.5.0",
@@ -70,7 +70,7 @@ function createVersion(
   return { version, dir, steps };
 }
 
-// 5 つの種類の手順をそのまま返す（正常系）
+// 5 つの種類の手順をそのまま返却する（正常系）
 test("test_validate_steps", async () => {
   // 準備
   const { validateSteps } = await loadModule();
@@ -85,21 +85,21 @@ test("test_validate_steps", async () => {
       },
       {
         op: "set_default",
-        description: "diff を足す",
+        description: "diff を追加する",
         file: "config",
         key: "features.diff",
         value: true,
       },
       {
         op: "map_values",
-        description: "出力先を読み替える",
+        description: "出力先を解釈する",
         file: "config",
         key: "build.out",
         mapping: { "dist/docs.html": "dist/index.html" },
       },
       {
         op: "replace_mark",
-        description: "印を書き換える",
+        description: "マーカーを書き換える",
         from: "<!-- note -->",
         to: "<!-- callout -->",
       },
@@ -122,7 +122,7 @@ test("test_validate_steps", async () => {
   expect(steps).toMatchObject(raw.steps);
 });
 
-// op の必須のプロパティが無いと合わないところを返す（異常系）
+// op の必須のプロパティが無いと合わないところを返却する（異常系）
 test("test_validate_steps_when_required_missing", async () => {
   // 準備
   const { validateSteps } = await loadModule();
@@ -130,7 +130,7 @@ test("test_validate_steps_when_required_missing", async () => {
     steps: [
       {
         op: "replace_mark",
-        description: "印を書き換える",
+        description: "マーカーを書き換える",
         from: "<!-- note -->",
       },
     ],
@@ -143,7 +143,7 @@ test("test_validate_steps_when_required_missing", async () => {
   expect(problems[0]).toContain("steps[0].to");
 });
 
-// 当て直すと結果が変わる手順を拒む（異常系）
+// もう一度適用すると結果が変わる手順を拒む（異常系）
 test("test_validate_steps_when_not_reapplicable", async () => {
   // 準備
   const { validateSteps } = await loadModule();
@@ -151,13 +151,13 @@ test("test_validate_steps_when_not_reapplicable", async () => {
     steps: [
       {
         op: "replace_mark",
-        description: "印を書き換える",
+        description: "マーカーを書き換える",
         from: "<!-- note -->",
         to: "<!-- note --> 追記",
       },
       {
         op: "map_values",
-        description: "出力先を読み替える",
+        description: "出力先を解釈する",
         file: "config",
         key: "build.out",
         mapping: { a: "b", b: "c" },
@@ -191,7 +191,7 @@ test("test_validate_steps_when_script_ts", async () => {
   expect(problems[0]).toContain("steps[0].script");
 });
 
-// 範囲の版だけを昇順に返す（正常系）
+// 範囲のバージョンだけを昇順に返却する（正常系）
 test("test_load_migration_versions", async () => {
   // 準備
   const { loadMigrationVersions } = await loadModule();
@@ -222,7 +222,7 @@ test("test_load_migration_versions", async () => {
   expect(versions[0]?.steps).toHaveLength(1);
 });
 
-// 形の合わない版があれば CliError（異常系）
+// 構造の合わないバージョンがあれば CliError（異常系）
 test("test_load_migration_versions_when_steps_invalid", async () => {
   // 準備
   const { loadMigrationVersions } = await loadModule();
@@ -248,7 +248,7 @@ test("test_load_migration_versions_when_steps_invalid", async () => {
   await expect(result).rejects.toThrow("steps[0].op");
 });
 
-// 版のフォルダの外を指すスクリプトを拒む（異常系）
+// バージョンのフォルダの外を指すスクリプトを拒む（異常系）
 test("test_load_migration_versions_when_script_outside", async () => {
   // 準備
   const { loadMigrationVersions } = await loadModule();
@@ -257,7 +257,7 @@ test("test_load_migration_versions_when_script_outside", async () => {
   await writeMigrations(packageDir, {
     "v0.4.0/steps.yaml": stepsYaml([
       "  - op: call",
-      "    description: 外のスクリプトを流す",
+      "    description: 外のスクリプトを実行する",
       "    script: ../x.mjs",
       "    files: [config]",
     ]),
@@ -314,7 +314,7 @@ test("test_rename_key_when_already_renamed", async () => {
   expect(String(doc)).toBe(text);
 });
 
-// 無いキーを足す（正常系）
+// 無いキーを追加する（正常系）
 test("test_set_default", async () => {
   // 準備
   const { setDefault } = await loadModule();
@@ -354,7 +354,7 @@ test("test_map_values", async () => {
   expect(doc.toJS()).toEqual({ build: { include: ["**/*.md", "a.md"] } });
 });
 
-// 当て直しても変わらない（正常系）
+// もう一度適用しても変わらない（正常系）
 test("test_map_values_when_no_match", async () => {
   // 準備
   const { mapValues } = await loadModule();
@@ -367,7 +367,7 @@ test("test_map_values_when_no_match", async () => {
   expect(changed).toBe(false);
 });
 
-// 全ての印を書き換える（正常系）
+// 全てのマーカーを書き換える（正常系）
 test("test_replace_mark", async () => {
   // 準備
   const { replaceMark } = await loadModule();
@@ -378,7 +378,7 @@ test("test_replace_mark", async () => {
   expect(replaced).toBe("前\n<!-- callout -->\n中\n<!-- callout -->\n後\n");
 });
 
-// 設定・索引・文書を重なりなく返す（正常系）
+// 設定・索引・文書を重なりなく返却する（正常系）
 test("test_step_files", async () => {
   // 準備
   const { stepFiles } = await loadModule();
@@ -400,7 +400,7 @@ test("test_step_files", async () => {
       },
       {
         op: "replace_mark",
-        description: "印を書き換える",
+        description: "マーカーを書き換える",
         from: "<!-- note -->",
         to: "<!-- callout -->",
       },
@@ -422,7 +422,7 @@ test("test_step_files", async () => {
   );
 });
 
-// 索引が無ければ足さない（正常系）
+// 索引が無ければ追加しない（正常系）
 test("test_step_files_when_no_index", async () => {
   // 準備
   const { stepFiles } = await loadModule();
@@ -449,20 +449,20 @@ test("test_step_files_when_no_index", async () => {
   expect(files).toEqual(["/work/mdmark.config.yaml"]);
 });
 
-// rename_key で設定のキーの名前を変えて書き戻す（正常系）
+// rename_key で設定のキーの名前を変えて書き込んで戻す（正常系）
 test("test_apply_step", async () => {
   // 準備
   const { applyStep } = await loadModule();
-  const { dir, target } = await createTarget("legacy: 1\ntitle: 題\n");
+  const { dir, target } = await createTarget("legacy: 1\ntitle: タイトル\n");
   const version = createVersion([RENAME_STEP]);
   // 実行
   await applyStep({ step: RENAME_STEP, version, target });
   // 検証
   const config = parse(await readFile(join(dir, "mdmark.config.yaml"), "utf8"));
-  expect(config).toEqual({ renamed: 1, title: "題" });
+  expect(config).toEqual({ renamed: 1, title: "タイトル" });
 });
 
-// 手順が触らないフロー形式の並びの書き方を残す（正常系）
+// 手順が触らないフロー形式の並びの記載方法を残す（正常系）
 test("test_apply_step_keeps_flow_style", async () => {
   // 準備
   const { applyStep } = await loadModule();
@@ -478,18 +478,18 @@ test("test_apply_step_keeps_flow_style", async () => {
   expect(text).toContain("renamed: 1");
 });
 
-// ask の答えを YAML の値として足す（正常系）
+// ask の回答を YAML の値として追加する（正常系）
 test("test_apply_step_when_asked", async () => {
   // 準備
   const { applyStep } = await loadModule();
   const step: MigrationStep = {
     op: "set_default",
-    description: "count を足す",
+    description: "count を追加する",
     file: "config",
     key: "count",
     ask: "件数を入れてください",
   };
-  const { dir, target } = await createTarget("title: 題\n", {
+  const { dir, target } = await createTarget("title: タイトル\n", {
     answers: new Map([[step, "3"]]),
   });
   const version = createVersion([step]);
@@ -511,14 +511,14 @@ test("test_apply_step_when_index_missing", async () => {
     from: "a",
     to: "b",
   };
-  const { dir, target } = await createTarget("title: 題\n");
+  const { dir, target } = await createTarget("title: タイトル\n");
   const version = createVersion([step]);
   // 実行
   const result = applyStep({ step, version, target });
   // 検証
   await expect(result).resolves.toEqual([]);
   expect(await readFile(join(dir, "mdmark.config.yaml"), "utf8")).toBe(
-    "title: 題\n",
+    "title: タイトル\n",
   );
 });
 
@@ -531,22 +531,22 @@ test("test_apply_step_when_script_fails", async () => {
   await writeFiles(scriptDir, { "fail.mjs": "process.exit(1);\n" });
   const step: MigrationStep = {
     op: "call",
-    description: "設定をスクリプトで直す",
+    description: "設定をスクリプトで修正する",
     script: "fail.mjs",
     files: ["config"],
   };
-  const { target } = await createTarget("title: 題\n");
+  const { target } = await createTarget("title: タイトル\n");
   const version = createVersion([step], "v0.5.0", scriptDir);
   // 実行
   const result = applyStep({ step, version, target });
   // 検証
   await expect(result).rejects.toBeInstanceOf(CliError);
   await expect(result).rejects.toThrow("v0.5.0");
-  await expect(result).rejects.toThrow("設定をスクリプトで直す");
+  await expect(result).rejects.toThrow("設定をスクリプトで修正する");
   await expect(result).rejects.toThrow("1");
 });
 
-// call のスクリプトの標準出力の行を返す（正常系）
+// call のスクリプトの標準出力の行を返却する（正常系）
 test("test_apply_step_when_script_prints", async () => {
   // 準備
   const { applyStep } = await loadModule();
@@ -556,11 +556,11 @@ test("test_apply_step_when_script_prints", async () => {
   });
   const step: MigrationStep = {
     op: "call",
-    description: "設定をスクリプトで直す",
+    description: "設定をスクリプトで修正する",
     script: "print.mjs",
     files: ["config"],
   };
-  const { target } = await createTarget("title: 題\n");
+  const { target } = await createTarget("title: タイトル\n");
   const version = createVersion([step], "v0.5.0", scriptDir);
   // 実行
   const lines = await applyStep({ step, version, target });
@@ -580,11 +580,11 @@ test("test_apply_step_when_script_fails_with_stderr", async () => {
   });
   const step: MigrationStep = {
     op: "call",
-    description: "設定をスクリプトで直す",
+    description: "設定をスクリプトで修正する",
     script: "fail.mjs",
     files: ["config"],
   };
-  const { target } = await createTarget("title: 題\n");
+  const { target } = await createTarget("title: タイトル\n");
   const version = createVersion([step], "v0.5.0", scriptDir);
   // 実行
   const error = await applyStep({ step, version, target }).catch(

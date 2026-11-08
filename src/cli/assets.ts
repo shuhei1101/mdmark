@@ -17,15 +17,15 @@ import { CliError } from "./errors.ts";
 
 /** 文書が相対パスで指すファイル 1 つ */
 export type AssetRef = {
-  /** 書いたパス（クエリとフラグメントを含む） */
+  /** 記載したパス（クエリとフラグメントを含む） */
   src: string;
   /** 種類（GIF は `image`） */
   kind: "image" | "video" | "audio" | "poster" | "attachment";
-  /** 書いた行の番号（1 から） */
+  /** 記載した行の番号（1 から） */
   line: number;
 };
 
-/** 書いた場所の分かるファイルの参照。`offset` は Markdown の頭からの位置（見つからなければ `-1`） */
+/** 記載した場所の分かるファイルの参照。`offset` は Markdown の頭からの位置（見つからなければ `-1`） */
 export type LocatedAssetRef = AssetRef & { offset: number };
 
 /** スキームを持つ URL か（`//` で始まる URL を含む） */
@@ -69,7 +69,7 @@ function refKindOf(src: string): AssetRef["kind"] {
   return kind === "video" || kind === "audio" ? kind : "image";
 }
 
-/** markdown-it のトークンから相対パスの参照を、書いた場所つきで書いた順に返す */
+/** markdown-it のトークンから相対パスの参照を、記載した場所つきで記載した順に返却する */
 export function findAssetRefs(markdown: string): LocatedAssetRef[] {
   const tokens = new MarkdownIt({ html: true }).parse(markdown, {});
   const lineStarts = [0];
@@ -96,7 +96,7 @@ export function findAssetRefs(markdown: string): LocatedAssetRef[] {
     const [startLine] = token.map;
     let cursor = lineStarts[startLine] ?? 0;
     const push = (parsed: string, kind: AssetRef["kind"]) => {
-      // markdown-it が符号化した `src` は、書いたままの形に戻して探す
+      // markdown-it が符号化した `src` は、記載したままの構造に戻して探す
       const src = [parsed, decodeSrc(parsed)].find(
         (candidate) => markdown.indexOf(candidate, cursor) >= 0,
       );
@@ -146,14 +146,14 @@ export function findAssetRefs(markdown: string): LocatedAssetRef[] {
   return refs;
 }
 
-/** HTML の文字列の `img` の `src` を拾う */
+/** HTML の文字列の `img` の `src` を取得する */
 function imgSources(html: string): string[] {
   return [...html.matchAll(IMG_SRC_PATTERN)].map(
     (match) => match[1] ?? match[2] ?? "",
   );
 }
 
-/** 文書が相対パスで指す画像・動画・音声・`poster`・添付のファイルを、書いた順に返す */
+/** 文書が相対パスで指す画像・動画・音声・`poster`・添付のファイルを、記載した順に返却する */
 export function collectAssetRefs(markdown: string): AssetRef[] {
   return findAssetRefs(markdown).map(({ src, kind, line }) => ({
     src,
@@ -162,7 +162,7 @@ export function collectAssetRefs(markdown: string): AssetRef[] {
   }));
 }
 
-/** パーセント符号化を戻す。戻せないときはそのまま返す */
+/** パーセント符号化を戻す。戻せないときはそのまま返却する */
 function decodeSrc(src: string): string {
   try {
     return decodeURI(src);
@@ -176,7 +176,7 @@ function pathOf(src: string): string {
   return decodeSrc(src.split(/[?#]/, 1)[0] ?? "");
 }
 
-/** 書いたパスを文書のフォルダで探し、無ければ `assetsRoot` で探して、見つかったファイルの絶対パスを返す */
+/** 記載したパスを文書のフォルダで探し、無ければ `assetsRoot` で探して、見つかったファイルの絶対パスを返却する */
 export async function resolveAssetFile(
   src: string,
   options: { docDir: string; assetsRoot?: string | undefined },
@@ -199,7 +199,7 @@ export async function resolveAssetFile(
   return undefined;
 }
 
-/** 書いたパスのクエリとフラグメント（`?` か `#` から後ろ） */
+/** 記載したパスのクエリとフラグメント（`?` か `#` から後ろ） */
 function suffixOf(src: string): string {
   const at = src.search(/[?#]/);
   return at < 0 ? "" : src.slice(at);
@@ -210,7 +210,7 @@ function toPosix(path: string): string {
   return path.split(sep).join("/");
 }
 
-/** `_files/` の中のコピー先のパス。基準の外のファイルは `external/{名前}` にし、使っているパスと重なれば `-1`・`-2` を付ける */
+/** `_files/` の中のコピー先のパス。基準の外のファイルは `external/{名前}` にし、使用しているパスと重なれば `-1`・`-2` を付ける */
 function copyTargetOf(
   file: string,
   baseDir: string,
@@ -229,7 +229,7 @@ function copyTargetOf(
   return name;
 }
 
-/** 文書の動画と音声を `{出力の名前}_files/` へコピーし、Markdown の `src` を HTML からの相対パスに替える。`copied` のファイルはコピーせず同じパスを使う */
+/** 文書の動画と音声を `{出力の名前}_files/` へコピーし、Markdown の `src` を HTML からの相対パスに替える。`copied` のファイルはコピーせず同じパスを使用する */
 export async function copyMedia(options: {
   /** 文書の Markdown */
   markdown: string;
@@ -241,7 +241,7 @@ export async function copyMedia(options: {
   baseDir: string;
   /** 出力の HTML の絶対パス */
   out: string;
-  /** この書き出しでコピーしたファイルから `_files/` の中のパスを引く表（文書をまたいで共有する） */
+  /** この書き出しでコピーしたファイルから `_files/` の中のパスを参照する表（文書をまたいで共有する） */
   copied: Map<string, string>;
 }): Promise<{ markdown: string; warnings: string[] }> {
   const { markdown, docFile, assetsRoot, baseDir, out, copied } = options;
@@ -259,7 +259,7 @@ export async function copyMedia(options: {
     });
     if (file === undefined) {
       warnings.push(
-        `${KIND_LABELS[ref.kind]} \`${ref.src}\` を読めません。パスを直すかファイルを置いてください。`,
+        `${KIND_LABELS[ref.kind]} \`${ref.src}\` を読み込めません。パスを修正するかファイルを配置してください。`,
       );
       continue;
     }
@@ -273,7 +273,7 @@ export async function copyMedia(options: {
       } catch (error) {
         const reason = error instanceof Error ? error.message : String(error);
         throw new CliError(
-          `${filesDir} に書けません（${reason}）。出力先のフォルダを確かめてください。`,
+          `${filesDir} に書き込めません（${reason}）。出力先のフォルダを確認してください。`,
         );
       }
       copied.set(file, target);
@@ -315,7 +315,7 @@ export async function checkMissingFiles(options: {
         file: options.file,
         where: String(ref.line),
         kind: "missing_file",
-        message: `${KIND_LABELS[ref.kind]}のファイル \`${ref.src}\` が見つかりません。パスを直すか、文書のフォルダか \`assets.root\` のフォルダにファイルを置いてください。`,
+        message: `${KIND_LABELS[ref.kind]}のファイル \`${ref.src}\` が見つかりません。パスを修正するか、文書のフォルダか \`assets.root\` のフォルダにファイルを配置してください。`,
       });
     }
   }

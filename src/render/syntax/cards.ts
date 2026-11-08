@@ -3,7 +3,7 @@ import { type AttachmentKind, renderCard } from "../../parts/card.ts";
 import { DEF_CLOSE, DEF_OPEN } from "./footnotes.ts";
 import { featureOn, ownBlock } from "./tokens.ts";
 
-/** 添付の拡張子（小文字）から添付の種類を引く */
+/** 添付の拡張子（小文字）から添付の種類を参照する */
 export const ATTACHMENT_KINDS: Readonly<Record<string, AttachmentKind>> = {
   pdf: "pdf",
   doc: "doc",
@@ -29,7 +29,7 @@ export const ATTACHMENT_KINDS: Readonly<Record<string, AttachmentKind>> = {
 /** カードにする URL のスキーム */
 const WEB_URL_PATTERN = /^https?:\/\//i;
 
-/** URL のまま書いたリンクのマークアップ */
+/** URL のまま記載したリンクのマークアップ */
 const AUTOLINK_MARKUPS = ["linkify", "autolink"];
 
 /** カードの指定 */
@@ -38,13 +38,13 @@ export type CardSpec = {
   kind: "link" | "file";
   /** リンク先 */
   href: string;
-  /** タイトル。`link` で URL をそのまま書いたときはスキームを除いた URL */
+  /** タイトル。`link` で URL をそのまま記載したときはスキームを除いた URL */
   title: string;
   /** `file` のときの種類 */
   fileKind?: AttachmentKind | undefined;
 };
 
-/** リンク先のパス（クエリとフラグメントを除く）の拡張子を小文字で返す */
+/** リンク先のパス（クエリとフラグメントを除く）の拡張子を小文字で返却する */
 function extensionOf(href: string): string {
   const path = href.split(/[?#]/, 1)[0] ?? "";
   const name = path.slice(path.lastIndexOf("/") + 1);
@@ -52,7 +52,7 @@ function extensionOf(href: string): string {
   return dot < 0 ? "" : name.slice(dot + 1).toLowerCase();
 }
 
-/** リンク先の拡張子が添付の種類にあれば `file`、`http`・`https` の URL なら `link` のカードの指定を返す。カードにしないリンクは `undefined` */
+/** リンク先の拡張子が添付の種類にあれば `file`、`http`・`https` の URL なら `link` のカードの指定を返却する。カードにしないリンクは `undefined` */
 export function cardOf(
   href: string,
   text: string,
@@ -72,7 +72,7 @@ export function cardOf(
   return { kind: "link", href, title };
 }
 
-/** 段落の行内の子が、前後の空白を除いてリンク 1 つだけなら、リンクの開きと書いた文字を返す */
+/** 段落の行内の子が、前後の空白を除いてリンク 1 つだけなら、リンクの開きと記載した文字を返却する */
 function soleLinkOf(
   inline: Token | undefined,
 ): { open: Token; text: string } | undefined {
@@ -102,7 +102,7 @@ export function buildCards(state: StateCore): void {
   }
   const tokens = state.tokens;
   const out: Token[] = [];
-  // 脚注の定義の中のリンクは、ツールチップでリンクのまま読めるようにカードにしない
+  // 脚注の定義の中のリンクは、ツールチップでリンクのまま読み込めるようにカードにしない
   let definitionDepth = 0;
   for (let index = 0; index < tokens.length; index++) {
     const token = tokens[index] as Token;

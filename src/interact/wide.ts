@@ -41,7 +41,7 @@ const availableEdges = (root: HTMLElement): { left: number; right: number } => {
   return edges;
 };
 
-/** `div.mdmark-wide-range` の直前に切り替えのボタンの帯を置き、押すたびに `data-state` と `aria-pressed` を入れ替える。描く先の要素の幅が本文の幅以下なら帯を隠す */
+/** `div.mdmark-wide-range` の直前に切り替えのボタンの帯を配置し、押すたびに `data-state` と `aria-pressed` を入れ替える。描く先の要素の幅が本文の幅以下なら帯を隠す */
 export const attachWideToggles = (root: HTMLElement): (() => void) => {
   const ranges = [
     ...root.querySelectorAll<HTMLElement>("div.mdmark-wide-range"),

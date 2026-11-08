@@ -2,7 +2,7 @@ import { basename, dirname, extname, resolve } from "node:path";
 import type { PreviewConfig } from "../config.ts";
 import { escapeHtml } from "../escape.ts";
 
-/** 印刷のダイアログを出すまでの待ちの上限（ミリ秒）。`mount` の後、外部ライブラリの印の場所が無くなるのとフォントを待つ上限 */
+/** 印刷のダイアログを出すまでの待ちの上限（ミリ秒）。`mount` の後、外部ライブラリのマーカーの場所が無くなるのとフォントを待つ上限 */
 export const PRINT_WAIT_MS = 10000;
 
 /** 書き出す HTML のパスを決める。`outputDir` が空なら Markdown と同じフォルダ、相対パスならワークスペースのフォルダから、絶対パスならそのまま。拡張子を `.html` に替えた名前を付ける */
@@ -21,17 +21,17 @@ export function resolveExportPath(options: {
   return resolve(directory, name);
 }
 
-/** `JSON.stringify` し、`<` を JSON の Unicode エスケープ（6 文字）に置き換えて返す。本文の `</script>` で `script` 要素が閉じない */
+/** `JSON.stringify` し、`<` を JSON の Unicode エスケープ（6 文字）に置き換えて返却する。本文の `</script>` で `script` 要素が閉じない */
 export function escapeScriptJson(value: unknown): string {
   return JSON.stringify(value).replaceAll("<", "\\u003c");
 }
 
-/** ES モジュールのコードを、`file:` のページから `import()` で読める `data:` の URL にする */
+/** ES モジュールのコードを、`file:` のページから `import()` で読み込める `data:` の URL にする */
 export function moduleDataUrl(code: string): string {
   return `data:text/javascript;charset=utf-8,${encodeURIComponent(code)}`;
 }
 
-/** 束ねた拡張を順に読み、`mount` の前に登録する（読めない拡張は飛ばす） */
+/** まとめた拡張を順に読み込み、`mount` の前に登録する（読み込めない拡張は飛ばす） */
 const REGISTER_EXTENSIONS_SCRIPT = `
 for (const url of data.extensions) {
   try {
@@ -41,7 +41,7 @@ for (const url of data.extensions) {
   }
 }`;
 
-/** 印刷を待つ処理。外部ライブラリの印の場所が無くなり、フォントを読み終えたら 1 回だけ `window.print()` を呼ぶ。待ちの上限を超えたらそのまま呼ぶ */
+/** 印刷を待つ処理。外部ライブラリのマーカーの場所が無くなり、フォントを読み込み終えたら 1 回だけ `window.print()` を呼ぶ。待ちの上限を超えたらそのまま呼ぶ */
 const PRINT_SCRIPT = `
 const PRINT_WAIT_MS = ${PRINT_WAIT_MS};
 let printed = false;
@@ -69,7 +69,7 @@ document.fonts.ready.then(() => {
 setTimeout(print, PRINT_WAIT_MS);
 `;
 
-/** 書き出す HTML を組む。`<base>`・そのバージョンの `index.css` の `<link>`・本文と設定の JSON の `<script type="application/json">`・`index.js` を読んで `mount` を呼ぶ `<script type="module">` を持つ。`print` が `true` のときだけ印刷を待つ処理を足す */
+/** 書き出す HTML を組む。`<base>`・そのバージョンの `index.css` の `<link>`・本文と設定の JSON の `<script type="application/json">`・`index.js` を読み込んで `mount` を呼ぶ `<script type="module">` を持つ。`print` が `true` のときだけ印刷を待つ処理を追加する */
 export function buildExportHtml(options: {
   /** 全文 */
   markdown: string;
@@ -87,13 +87,13 @@ export function buildExportHtml(options: {
   print: boolean;
   /** 重ねた設定の `theme` の CSS の中身 */
   themeCss?: string | undefined;
-  /** 拡張を束ねた ES モジュールのコード（設定の順） */
+  /** 拡張をまとめた ES モジュールのコード（設定の順） */
   extensions: string[];
 }): string {
   const data = escapeScriptJson({
     markdown: options.markdown,
     config: options.config,
-    // `file:` のページは `file:` のモジュールを読まないため、`data:` の URL にして読む
+    // `file:` のページは `file:` のモジュールを読み込まないため、`data:` の URL にして読み込む
     extensions: options.extensions.map(moduleDataUrl),
   });
   const themeStyle =

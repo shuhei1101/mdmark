@@ -1,0 +1,238 @@
+# 部品をJavaScriptから使用する
+
+利用側のページと拡張のモジュールから部品を描く関数を呼ぶ手順と、コメントの読み込みと保存の関数の指定方法
+
+文書のマーカーを使用せずに、自分のページのデータからビューを描くとき、利用側が記載した要素にコメントを付けられるようにするとき、拡張のマーカーの場所に mdmark のビューを描くときに実行する。
+文書に記載した任意のスクリプトは動かない。動くのは mdmark の部品と、利用側が登録した拡張だけ。
+
+## 前提
+
+- [文書を描く](../導入/文書を描く.md)
+- 拡張のモジュールから呼ぶときは [拡張を登録する](./拡張を登録する.md)
+- TypeScript で記載するときは、配布物を読み込んだタグと同じタグの `dist/` にある型定義（`index.d.ts` と、それが読み込む `.d.ts`）を配置する
+
+## 手順
+
+### ビューを描く
+
+#### `mountView` を呼ぶ
+
+```js
+import { mountView } from "https://cdn.jsdelivr.net/gh/shuhei1101/mdmark@{タグ}/dist/index.js";
+
+const handle = await mountView(document.querySelector("#tasks"), {
+  columns: ["タイトル", "状態", "担当"],
+  items: [
+    { タイトル: "配色の変数を洗い出す", 状態: "未着手", 担当: "佐藤" },
+    { タイトル: "余白の変数を決める", 状態: "進行中", 担当: "鈴木" },
+  ],
+  group: "状態",
+  filter: { 担当: "select" },
+});
+```
+
+要素の中に、文書のビューのマーカーで描いたものと同じ外観と操作のビューを描く。
+要素の中身は空にして、class `mdmark` の要素を 1 つ配置し、その中に描く。
+列名と項目の値は文字として出し、HTML として解釈しない。
+
+<!-- table: data -->
+
+| 引数 | 必須 / 任意 | 説明 |
+| --- | --- | --- |
+| `el` | 必須 | 描く先の要素 |
+| `opts.columns` | 必須 | 列名の配列。表形式のビューの列の並びになる。1 つ以上で、空の文字列と重なりを持たない |
+| `opts.items` | 必須 | 項目の配列。列名をキーにして文字列の値を持つオブジェクト。並びは表の行の順で、キーが無い値は空にする |
+| `opts.group` | 任意 | ボード表示で列に分ける列名。省くとボード表示を持たず、表形式のビューだけを描く |
+| `opts.default` | 任意 | 描いた直後に出すビュー（`"board"` か `"table"`）。省くと、`group` があればボード表示、無ければ表形式 |
+| `opts.filter` | 任意 | 表形式のビューで絞り込みを付ける列名と種類（`select`・`text`・`date`）のオブジェクト |
+| `opts.icons` | 任意 | ボードの列の見出しの値からアイコンの名前を参照するオブジェクト。既定のアイコンに重ねて上書きする |
+
+<!-- /table -->
+
+ビューの操作は、文書のビューのマーカーと同じ（[ビューとコメントを使用する](../記載する/ビューとコメントを使用する.md)）。
+アイコンの名前は、[ボードの列の見出しのアイコン](../記載する/ビューとコメントを使用する.md#ボードの列の見出しのアイコンを変える) の使用できるアイコンから選ぶ。
+戻り値は `Promise<{ destroy }>` で、部品のモジュールを読み込み、ビューを描いてから解決する。
+型 `MdmarkViewOptions` と `MdmarkViewHandle` は、型定義 `dist/index.d.ts` に書き出して配布物と一緒に配る。
+
+#### 片付ける
+
+```js
+handle.destroy();
+```
+
+`destroy` は要素の中を空にして、ビューの操作と、絞り込みのドロワーを開いている間だけ受け取る `document` のイベントを削除する。
+2 回目以降は何もしない。
+同じ要素へもう一度 `mountView` を呼ぶと、前のビューを片付けてから描く。
+
+#### 引数の誤りと読み込みの失敗を知る
+
+`el` が要素でない、`columns` が空か重なりを持つ、`items` が配列でない、`group`・`filter` の列名が `columns` に無い、`icons` に使用できない名前がある、などの誤りは、`mountView` が `TypeError` を同期で投げる。
+メッセージに誤った引数の名前が入り、要素は書き換えない。
+ビューの部品のモジュールを読み込めないときは、要素の中にタイトル `この箇所を表示できません` の通知ブロックを配置し、`Promise` を元のエラーで拒否する。
+
+### 拡張のモジュールから描く
+
+#### `draw` から `mountView` を呼んで待つ
+
+```js
+import { mountView } from "https://cdn.jsdelivr.net/gh/shuhei1101/mdmark@{タグ}/dist/index.js";
+
+export async function draw(slot, value) {
+  const { columns, items, filter } = value.definition;
+  await mountView(slot, { columns, items, filter });
+}
+```
+
+拡張のマーカーの範囲に配置した `json` のコードブロックを `value.definition` で受け取り、その値をビューに指定する。
+`slot` はマーカーの場所の要素。
+`import` の URL は、文書を描くページが配布物を読み込んだタグと同じにする。
+`draw` が `mountView` の `Promise` を待つと、`mount` はマーカーの場所を描き終えたものとして扱う。
+`mount` の `update` と `destroy` でマーカーの場所を片付けるときは、その中のビューの `destroy` も行う。
+
+マーカーの定義と登録は [拡張を登録する](./拡張を登録する.md)、固有の部品と CSS を適用する手順は [固有の部品とCSSを適用する](../図を描く/固有の部品とCSSを適用する.md)。
+`mountComments` も、同じように `slot` に対して呼べる。
+
+### コメントを付ける
+
+#### `mount` の文書のコメントを再読み込みする・箇所へ移る
+
+`mount` で描いた文書のコメントは、戻り値の `reloadComments` と `focusComment` で操作する。
+
+```js
+const handle = mount(el, { markdown, docId: "guide", commentStore, config: { features: { comments: true } } });
+
+// 別の画面でコメントが変わったとき、本文を再描画せずに再読み込みする
+await handle.reloadComments();
+
+// 利用側のコメントの一覧から、そのコメントの箇所へ移る
+handle.focusComment(comment.id);
+```
+
+`reloadComments` は `commentStore.load` をもう一度呼んでマーカーをもう一度付け、表の並べ替え・絞り込みやセクションの開閉はそのまま残す。
+`load` が失敗したときは今のマーカーを残し、`Promise` を元のエラーで拒否する。
+`focusComment` は、閉じたセクション・行の詳細の中のマーカーなら開いてから画面に入れ、フォーカスを移して強調する。
+マーカーが無い `id` では何もしない。
+構造は [API](../../リファレンス/API.md#文書を描く) のレスポンス。
+
+#### `mountComments` を呼ぶ
+
+```js
+import { mountComments } from "https://cdn.jsdelivr.net/gh/shuhei1101/mdmark@{タグ}/dist/index.js";
+
+const handle = await mountComments(document.querySelector("#panel"), {
+  docId: "panel-setup",
+  store: {
+    load: ({ docId }) => fetch(`/api/comments/${docId}`).then((res) => res.json()),
+    save: ({ docId, comment }) =>
+      fetch(`/api/comments/${docId}`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(comment),
+      }).then((res) => res.json()),
+    update: ({ docId, id, body }) =>
+      fetch(`/api/comments/${docId}/${id}`, {
+        method: "PATCH",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ body }),
+      }).then(() => undefined),
+    remove: ({ docId, id }) =>
+      fetch(`/api/comments/${docId}/${id}`, { method: "DELETE" }).then(() => undefined),
+  },
+});
+```
+
+利用側が自分で記載した要素の中の文字を選んで、コメントを付けられるようにする。
+`mount` で描いた文書でなくてもよい。
+要素の外の文字を選んでも、コメントのボタンは出ない。
+
+| 引数 | 必須 / 任意 | 説明 |
+| --- | --- | --- |
+| `el` | 必須 | コメントを付けられる範囲の要素 |
+| `opts.store` | 必須 | コメントの読み込みと保存の関数 `load`・`save` と、任意の `update`・`remove`。`update` を持つと吹き出しに「編集」、`remove` を持つと「削除」を出す |
+| `opts.docId` | 必須 | 読み込みと保存の関数に指定する、コメントを付ける対象の ID。空でない文字列 |
+
+読み込みと保存の関数の構造と、読者の操作は [ビューとコメントを使用する](../記載する/ビューとコメントを使用する.md#コメントを付けられるようにする) と同じ。
+呼んだ時点で `load` を 1 回呼び、返ったコメントの箇所をマーカーで包んでから解決する。
+マーカーは要素の文字を変えない。
+コメントのボタン・入力欄・吹き出しは `document.body` に配置する。
+戻り値は `Promise<{ destroy }>`。
+型 `MdmarkCommentStore`・`MdmarkComment`・`MdmarkCommentDraft`・`MdmarkCommentsHandle` は、型定義 `dist/index.d.ts` に書き出して配布物と一緒に配る。
+
+#### 片付ける
+
+```js
+handle.destroy();
+```
+
+マーカーを削除して要素の文字を呼ぶ前の並びに戻し、コメントのボタン・入力欄・吹き出しと `document` の受け取りを解除する。
+2 回目以降は何もしない。
+同じ要素へもう一度 `mountComments` を呼ぶと、前のコメントを片付けてから付ける。
+
+#### 失敗したときの動きを知る
+
+| 起きたこと | 動き |
+| --- | --- |
+| `el` が要素でない、`store` が `load`・`save` の関数を持たないか `update`・`remove` を関数でない値で持つ、`docId` が空か文字列でない | `TypeError` を同期で投げる。メッセージに誤った引数の名前が入り、要素は書き換えず、`load` も呼ばない |
+| `load` が失敗する、または返却した値がコメントの構造に合わない | 例外を投げず、マーカーを付けずに解決する。新しいコメントは付けられる。`console.error` に出る |
+| `save` が失敗する、または返却した値がコメントの構造に合わない | 例外を投げず、入力欄と本文を残して通知を出し、マーカーを付けない。`console.error` に出る |
+| `update` が失敗する | 例外を投げず、入力欄と書き換えた本文を残して通知を出す。コメントは書き換える前のまま。`console.error` に出る |
+| `remove` が失敗する | 例外を投げず、コメントとマーカーを残し、削除の確認を開いたまま通知を出す。`console.error` に出る |
+| コメントの部品のモジュールを読み込めない | 要素を書き換えず、`load` を呼ばずに、`Promise` を元のエラーで拒否する |
+
+## 反映
+
+即時。呼んだ時点で有効になる。
+部品のモジュール（`dist/view.js`・`dist/comments.js`）は、初めて呼んだときに 1 回だけ読み込む。
+配布物を読み込んだ URL の隣から読み込むため、同じタグの `dist/` を配信しておく。
+
+## 確認
+
+#### ビューが描かれている
+
+`mountView` を呼んだ要素の中に、class `mdmark` の要素と、ボード表示（`group` を指定したとき）か表形式のビューがある。
+「表」を押すと、`items` の数の行が `columns` の順で並ぶ。
+
+```js
+document.querySelectorAll("#tasks .mdmark-view-table tbody tr").length
+```
+
+`items` の数が出る。
+
+#### 片付けられている
+
+`handle.destroy()` を呼んだ後、要素の中が空になっている。
+
+```js
+document.querySelector("#tasks").childElementCount
+```
+
+`0` が出る。
+
+#### 拡張から描かれている
+
+拡張のマーカーを記載した文書を描く。
+マーカーの場所に、定義の項目を並べたビューが出る。
+`mount` の `destroy` を呼ぶと、マーカーの場所のビューも片付く。
+
+#### コメントが付く
+
+`mountComments` を呼んだ要素の中の文字を選ぶと、「コメント」のボタンが出る。
+本文を記載して保存すると、`save` が `{ docId, comment }` で 1 回呼ばれ、選んだ文字が class `mdmark-comment-mark` のマーカーで包まれる。
+マーカーから開いた吹き出しの本文は、HTML として解釈されず文字のまま出る。
+
+#### 型検査が通る
+
+TypeScript か、`// @ts-check` を付けた JavaScript で記載したとき、型検査を実行する。
+
+```bash
+npx tsc --noEmit
+```
+
+型エラーが 0 件になる。
+
+## 元に戻す
+
+呼び出しを削除するか、`destroy` を呼ぶ。
+`mountView` が描いたものは要素ごと空になる。
+`mountComments` が付けたマーカーは削除される。
+保存したコメントは利用側の保存先に残るため、削除するときは保存先で削除する。

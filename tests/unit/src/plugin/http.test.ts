@@ -30,7 +30,7 @@ afterEach(async () => {
   );
 });
 
-/** 127.0.0.1 の空いているポートを 1 つ得る（得た後に閉じるため、すぐ使う） */
+/** 127.0.0.1 の空いているポートを 1 つ得る（得た後に閉じるため、すぐ使用する） */
 async function findFreePort(): Promise<number> {
   const probe = createServer();
   await new Promise<void>((resolve) => probe.listen(0, "127.0.0.1", resolve));
@@ -39,7 +39,7 @@ async function findFreePort(): Promise<number> {
   return port;
 }
 
-/** 要求を受ける関数で 127.0.0.1 の空いているポートを待ち受けるサーバーを立て、ポートを返す */
+/** 要求を受ける関数で 127.0.0.1 の空いているポートを待ち受けるサーバーを起動し、ポートを返却する */
 async function listen(
   onRequest: (
     req: IncomingMessage,
@@ -57,7 +57,7 @@ async function listen(
   return port;
 }
 
-/** 呼ばれたかを記録し、200 を返す `fetch` を持つハンドラーを作る */
+/** 呼ばれたかを記録し、200 を返却する `fetch` を持つハンドラーを作る */
 function createHandler(): {
   handler: McpHttpHandler;
   fetch: ReturnType<typeof vi.fn>;
@@ -66,7 +66,7 @@ function createHandler(): {
   return { handler: { fetch } as unknown as McpHttpHandler, fetch };
 }
 
-// localhost の /mcp はハンドラーへ渡す（正常系）
+// localhost の /mcp はハンドラーへ指定する（正常系）
 test("test_route_request", async () => {
   // 準備
   const { routeRequest } = await loadHttp();
@@ -154,7 +154,7 @@ test("test_to_request", async () => {
   });
 });
 
-// ステータス・ヘッダー・本文を流す（正常系）
+// ステータス・ヘッダー・本文を実行する（正常系）
 test("test_write_response", async () => {
   // 準備
   const { writeResponse } = await loadHttp();
@@ -172,7 +172,7 @@ test("test_write_response", async () => {
   expect(await response.text()).toBe("ok");
 });
 
-// 待ち受けの URL を書き、tools/list に答え、合図で止まる（正常系）
+// 待ち受けの URL を記載し、tools/list に回答し、合図で止まる（正常系）
 test("test_run_serve", async () => {
   // 準備
   const { runServe } = await loadHttp();
@@ -205,7 +205,7 @@ test("test_run_serve", async () => {
   await expect(fetch(url)).rejects.toThrow();
 });
 
-// ポートが使われていれば 1 を返す（異常系）
+// ポートが使用されていれば 1 を返却する（異常系）
 test("test_run_serve_when_port_in_use", async () => {
   // 準備
   const { runServe } = await loadHttp();

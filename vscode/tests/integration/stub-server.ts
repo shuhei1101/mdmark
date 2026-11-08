@@ -17,7 +17,7 @@ const CONTENT_TYPES: Record<string, string> = {
 type Mode = {
   /** タグ一覧: 通常・応答しない・403 */
   tags: "ok" | "hang" | "forbidden";
-  /** 配布物: 通常・接続を切る（オフライン）・`SLOW_DIST_MS` 遅らせて返す */
+  /** 配布物: 通常・接続を切る（オフライン）・`SLOW_DIST_MS` 遅らせて返却する */
   dist: "ok" | "drop" | "slow";
 };
 
@@ -40,7 +40,7 @@ type Stub = {
   tagRequests: TagRequestTiming[];
 };
 
-/** 要求の本文を JSON として読む */
+/** 要求の本文を JSON として読み込む */
 async function readJson(request: IncomingMessage): Promise<unknown> {
   const chunks: Buffer[] = [];
   for await (const chunk of request) {
@@ -49,24 +49,24 @@ async function readJson(request: IncomingMessage): Promise<unknown> {
   return JSON.parse(Buffer.concat(chunks).toString("utf8"));
 }
 
-/** 応答を JSON で返す */
+/** 応答を JSON で返却する */
 function sendJson(response: ServerResponse, body: unknown): void {
   response.writeHead(200, { "Content-Type": "application/json" });
   response.end(JSON.stringify(body));
 }
 
-/** 配布物を遅らせて返すときの遅れ（ミリ秒）。読み込み中の表示を出す 1 秒より長くする */
+/** 配布物を遅らせて返却するときの遅れ（ミリ秒）。読み込み中の表示を出す 1 秒より長くする */
 const SLOW_DIST_MS = 6000;
 
-/** 配布物が無いバージョン: `@v9.9.9` の配布物には 404 を返す */
+/** 配布物が無いバージョン: `@v9.9.9` の配布物には 404 を返却する */
 const MISSING_VERSION = "v9.9.9";
 
-/** 差分の色分けに対応しない配布物を返すバージョン: `@v0.8.0` の `index.js` は `diffModes` を持たず `mount` だけを持つ */
+/** 差分の色分けに対応しない配布物を返却するバージョン: `@v0.8.0` の `index.js` は `diffModes` を持たず `mount` だけを持つ */
 const NO_DIFF_VERSION = "v0.8.0";
 const NO_DIFF_DIST_JS =
   "export function mount() { return { update() {}, destroy() {} }; }\n";
 
-/** 配布物の経路 `/mdmark@{バージョン}/dist/{ファイル}` を、どのバージョンでも `distDir` のファイルに引く。`MISSING_VERSION` だけ 404 を返し、`NO_DIFF_VERSION` の `index.js` は差分に対応しない配布物を返す */
+/** 配布物の経路 `/mdmark@{バージョン}/dist/{ファイル}` を、どのバージョンでも `distDir` のファイルに参照する。`MISSING_VERSION` だけ 404 を返却し、`NO_DIFF_VERSION` の `index.js` は差分に対応しない配布物を返却する */
 async function serveDist(
   path: string,
   distDir: string,
@@ -90,7 +90,7 @@ async function serveDist(
       match[1] === NO_DIFF_VERSION && file === "index.js"
         ? Buffer.from(NO_DIFF_DIST_JS)
         : await readFile(target);
-    // Webview が前のテストで読んだ配布物を使い回さないよう、キャッシュさせない
+    // Webview が前のテストで読み込んだ配布物を使い回さないよう、キャッシュさせない
     response.writeHead(200, {
       "Content-Type":
         CONTENT_TYPES[extname(file)] ?? "application/octet-stream",
@@ -103,7 +103,7 @@ async function serveDist(
   }
 }
 
-/** 待ち受けを始めていない代役の配信のサーバーを作る。配布物とタグ一覧に加えて、テストが状態を切り替える `PUT /tags`・`PUT /mode` と、受けた要求を読む `GET /requests`・`DELETE /requests`・`GET /tag-requests` を持つ */
+/** 待ち受けを始めていない代役の配信のサーバーを作る。配布物とタグ一覧に加えて、テストが状態を切り替える `PUT /tags`・`PUT /mode` と、受けた要求を読み込む `GET /requests`・`DELETE /requests`・`GET /tag-requests` を持つ */
 export function createStubServer(stub: Stub, distDir: string): Server {
   return createServer(async (request, response) => {
     const url = new URL(request.url ?? "/", "http://127.0.0.1");

@@ -11,7 +11,7 @@ const loadCheck = () => import("../../../../src/diagram/check.ts");
 type Laid = MdmarkFlowDefinition & { width: number; height: number };
 type Box = { id: string; x: number; y: number; w: number; h: number };
 
-/** 配置した定義からノードを `id` で引く */
+/** 配置した定義からノードを `id` で参照する */
 function node(definition: MdmarkFlowDefinition, id: string): Box {
   const found = definition.nodes.find((item) => item.id === id) as
     | Box
@@ -77,7 +77,7 @@ test("test_layout_flowchart", async () => {
   expect(definition.nodes[0]).not.toHaveProperty("x");
 });
 
-// 両方の先が結果なら NO を下、YES を右に置く（正常系）
+// 両方の先が結果なら NO を下、YES を右に配置する（正常系）
 test("test_layout_flowchart_when_both_results", async () => {
   // 準備
   const { layoutFlowchart } = await loadLayout();
@@ -87,7 +87,7 @@ test("test_layout_flowchart_when_both_results", async () => {
     updated: "2026-11-05",
     nodes: [
       { id: "start", kind: "start", name: "始める" },
-      { id: "q", kind: "question", name: "答えられるか" },
+      { id: "q", kind: "question", name: "回答できるか" },
       { id: "yes", kind: "result", name: "返信する" },
       { id: "no", kind: "result", name: "起票する" },
     ],
@@ -109,7 +109,7 @@ test("test_layout_flowchart_when_both_results", async () => {
   expect(no.x + no.w / 2).toBe(q.x + q.w / 2);
 });
 
-// 名前が収まらないノードの高さを足し、配置のずれを出さない（正常系）
+// 名前が収まらないノードの高さを追加し、配置のずれを出さない（正常系）
 test("test_layout_flowchart_when_long_name", async () => {
   // 準備
   const { layoutFlowchart } = await loadLayout();
@@ -156,7 +156,7 @@ test("test_layout_flowchart_when_shared_result", async () => {
     nodes: [
       { id: "start", kind: "start", name: "始める" },
       { id: "q1", kind: "question", name: "よくある質問か" },
-      { id: "q2", kind: "question", name: "担当者が答えられるか" },
+      { id: "q2", kind: "question", name: "担当者が回答できるか" },
       { id: "ok", kind: "result", name: "返信する" },
       { id: "ng", kind: "result", name: "起票する" },
     ],

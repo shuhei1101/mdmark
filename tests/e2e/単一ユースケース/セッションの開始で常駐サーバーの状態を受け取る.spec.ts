@@ -13,7 +13,7 @@ import {
   test,
 } from "../setup-skill.ts";
 
-// ブラウザを使わないため、1 つのブラウザのプロジェクトだけで流す
+// ブラウザを使用しないため、1 つのブラウザのプロジェクトだけで実行する
 test.skip(
   ({ browserName }) => browserName !== "chromium",
   "ブラウザを使わないシナリオなので chromium のプロジェクトだけで流す",
@@ -49,7 +49,7 @@ test("test_normal", async ({ builtRoot, terminal }) => {
   expect(instructions).toContain("/mdmark:global-setup");
 });
 
-// 常駐サーバーが待ち受けていなければ、フックが起動の仕方を 1 行で渡し、接続は拒否される（異常シナリオ（起動していない））
+// 常駐サーバーが待ち受けていなければ、フックが起動の仕方を 1 行で指定し、接続は拒否される（異常シナリオ（起動していない））
 test("test_error_when_server_not_running", async ({ builtRoot, terminal }) => {
   // 準備
   const pluginDir = pluginOf(builtRoot);

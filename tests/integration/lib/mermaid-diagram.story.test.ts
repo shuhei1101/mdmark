@@ -32,7 +32,7 @@ function resolvedColor(page: Page, value: string): Promise<string> {
   }, value);
 }
 
-/** 画面に出ている mermaid の SVG の中の、セレクタに当たる最初の要素の計算済みのスタイルの値 */
+/** 画面に出ている mermaid の SVG の中の、セレクタに該当する最初の要素の計算済みのスタイルの値 */
 function shapeStyle(
   page: Page,
   selector: string,
@@ -50,7 +50,7 @@ function shapeStyle(
   );
 }
 
-// flowchart の題を図に重ねず、ノードを CSS 変数の色でグラデーションと影なく描く（Flowchart）
+// flowchart のタイトルを図に重ねず、ノードを CSS 変数の色でグラデーションと影なく描く（Flowchart）
 test("test_flowchart", async () => {
   // 準備・実行
   const page = await openMermaid("flowchart");
@@ -72,7 +72,7 @@ test("test_flowchart", async () => {
   await expect(pageOverflows(page)).resolves.toBe(false);
 });
 
-// actor を lucide の人のアイコンで本文の色の線にし、参加者の箱に影を付けない（Sequence）
+// actor を lucide の人のアイコンで本文の色の線にし、参加者のノードに影を付けない（Sequence）
 test("test_sequence", async () => {
   // 準備・実行
   const page = await openMermaid("sequence");
@@ -102,7 +102,7 @@ test("test_class", async () => {
   await expect(page.locator(".mdmark-mermaid svg").count()).resolves.toBe(1);
 });
 
-// 状態遷移図の開始と終了の印を本文の色にする（State）
+// 状態遷移図の開始と終了のマーカーを本文の色にする（State）
 test("test_state", async () => {
   // 準備・実行
   const page = await openMermaid("state");

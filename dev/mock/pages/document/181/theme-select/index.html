@@ -13,7 +13,7 @@
   <link rel="stylesheet" href="../../../../refs/80/assets/parts.css">
   <!-- 採用スタイル本体の変数の値（既定のテーマ dev-swiss） -->
   <link rel="stylesheet" href="../../../../assets/style.css">
-  <!-- [data-color-theme-css]: theme.js が {theme} を選んだテーマの名前にして読む（既定のテーマでは読まない） -->
+  <!-- [data-color-theme-css]: theme.js が {theme} を選んだテーマの名前にして読み込む（既定のテーマでは読み込まない） -->
   <link rel="stylesheet" data-color-theme-css="../../../../assets/themes/{theme}.css">
   <!-- 印刷の見え方（この案だけの規則） -->
   <link rel="stylesheet" href="style.css">
@@ -23,7 +23,7 @@
 <body>
   <!-- モック専用の操作列: 設定で選ぶテーマの名前と、明暗・印刷 -->
   <div class="mock-bar">
-    <!-- [data-color-theme-value]: theme.js が行き先の URL（?colorTheme=）と今の値の aria-current を当てる -->
+    <!-- [data-color-theme-value]: theme.js が行き先の URL（?colorTheme=）と今の値の aria-current を適用する -->
     <div class="mock-bar-group" role="group" aria-label="設定で選ぶテーマ">
       <a class="mock-bar-item" data-color-theme-value="">選ばない</a>
       <a class="mock-bar-item" data-color-theme-value="theme-paper">theme-paper</a>
@@ -33,7 +33,7 @@
       <!-- [data-color-theme-applied]: theme.js が描いたテーマの名前を入れる -->
       <span>描いたテーマ: <output data-color-theme-applied></output></span>
     </div>
-    <!-- [data-scheme-value]: theme.js が行き先の URL（?scheme=）と今の配色の aria-current を当てる -->
+    <!-- [data-scheme-value]: theme.js が行き先の URL（?scheme=）と今の配色の aria-current を適用する -->
     <div class="mock-bar-group" role="group" aria-label="配色">
       <a class="mock-bar-item" data-scheme-value="light">明るい配色</a>
       <a class="mock-bar-item" data-scheme-value="dark">ダーク</a>
@@ -42,7 +42,7 @@
     </div>
   </div>
 
-  <!-- 使う側のページの本文の領域。[data-mount-parent]: theme.js が「親の class」の配色で mdmark-theme-light を付ける -->
+  <!-- 利用側のページの本文の領域。[data-mount-parent]: theme.js が「親の class」の配色で mdmark-theme-light を付ける -->
   <main class="host" data-mount-parent>
     <!-- パンくず -->
     <nav class="mock-breadcrumb" aria-label="パンくず">
@@ -52,14 +52,14 @@
     <!-- mdmark が描いた文書 -->
     <article class="mdmark" id="top">
       <h1>配布物を読み込んで文書を描く</h1>
-      <p>mdmark は、使う側のページが渡した Markdown をブラウザで文書として描きます。見た目の値は <code>--mdmark-</code> で始まる CSS 変数で配り、<a href="#theme">テーマの上書き</a>で変えられます。<span class="mdmark-term" tabindex="0">配布物</span>の版は <span class="mdmark-badge">v0.6.0</span> です。</p>
+      <p>mdmark は、利用側のページが指定した Markdown をブラウザで文書として描きます。外観の値は <code>--mdmark-</code> で始まる CSS 変数で配り、<a href="#theme">テーマの上書き</a>で変えられます。<span class="mdmark-term" tabindex="0">配布物</span>のバージョンは <span class="mdmark-badge">v0.6.0</span> です。</p>
 
       <!-- リスト -->
       <h2>導入の流れ</h2>
       <ol>
         <li>配布物の <code>index.js</code> と <code>index.css</code> をページで読み込む</li>
         <li>描く先の要素を用意する</li>
-        <li><code>mount</code> に要素と Markdown を渡す
+        <li><code>mount</code> に要素と Markdown を指定する
           <ul>
             <li>本文だけを差し替えるときは <code>update</code> を呼ぶ</li>
             <li>片付けるときは <code>destroy</code> を呼ぶ</li>
@@ -69,16 +69,16 @@
 
       <!-- コードブロック: 強調した行を含む -->
       <h2>文書を描く</h2>
-      <p>描く先の要素と、Markdown と設定を渡します。</p>
+      <p>描く先の要素と、Markdown と設定を指定します。</p>
       <pre tabindex="0"><code class="language-ts">import { mount } from "./mdmark/index.js";
 
-<span class="mdmark-code-highlight">const view = mount(document.querySelector("#doc"), {</span>  markdown: "# はじめに\n\n本文を書きます。",
+<span class="mdmark-code-highlight">const view = mount(document.querySelector("#doc"), {</span>  markdown: "# はじめに\n\n本文を記載します。",
   config: { features: { table: true } },
 });</code></pre>
 
       <!-- 表 -->
       <h2 id="theme">テーマの上書き</h2>
-      <p>使う側のページの CSS で変数の値を書き換えます。</p>
+      <p>利用側のページの CSS で変数の値を書き換えます。</p>
       <table tabindex="0">
         <thead>
           <tr>
@@ -115,33 +115,33 @@
       <h2>注意書き</h2>
       <div class="markdown-alert markdown-alert-note">
         <p class="markdown-alert-title">補足</p>
-        <p>変数の名前は変わらないため、使う側の上書きはそのまま効きます。</p>
+        <p>変数の名前は変わらないため、利用側の上書きはそのまま有効になります。</p>
       </div>
       <div class="markdown-alert markdown-alert-tip">
         <p class="markdown-alert-title">ヒント</p>
-        <p>層の外に書いた CSS は、詳細度によらず mdmark の CSS に勝ちます。</p>
+        <p>層の外に記載した CSS は、詳細度によらず mdmark の CSS に勝ちます。</p>
       </div>
       <div class="markdown-alert markdown-alert-important">
         <p class="markdown-alert-title">重要</p>
-        <p>書き出した HTML は外のファイルを読みに行きません。</p>
+        <p>書き出した HTML は外のファイルを読み込みに行きません。</p>
       </div>
       <div class="markdown-alert markdown-alert-warning">
         <p class="markdown-alert-title">警告</p>
-        <p>版を上げる前に <code>mdmark check</code> を通してください。</p>
+        <p>バージョンを上げる前に <code>mdmark check</code> を経由してください。</p>
       </div>
       <div class="markdown-alert markdown-alert-caution">
         <p class="markdown-alert-title">注意</p>
-        <p>設定の版を手で書き換えると、移行の手順が当たりません。</p>
+        <p>設定のバージョンを手で書き換えると、移行の手順が該当しません。</p>
       </div>
 
       <!-- 引用 -->
       <blockquote>
-        <p>印の無い引用は、面の色と字下げで本文と分けます。</p>
+        <p>マーカーの無い引用は、面の色と字下げで本文と分けます。</p>
       </blockquote>
 
-      <!-- 差分: 行と語の色分け、コメントを付けた範囲 -->
+      <!-- 差分: 行と単語の色分け、コメントを付けた範囲 -->
       <h2>文書の差分</h2>
-      <p>2 つの版の間で変わった行と語を色で分けます。<span class="mdmark-comment-mark">コメントを付けた範囲</span>は面と下線で示します。</p>
+      <p>2 つのバージョンの間で変わった行と単語を色で分けます。<span class="mdmark-comment-mark">コメントを付けた範囲</span>は面と下線で示します。</p>
       <div class="mdmark-diff-lines">
         <div class="mdmark-diff-line"><span class="mdmark-diff-sign"> </span><span>## テーマの上書き</span></div>
         <div class="mdmark-diff-line" data-kind="del"><span class="mdmark-diff-sign">-</span><span>リンクの色は <del class="mdmark-diff-word">#0969da</del> です。</span></div>
@@ -149,13 +149,13 @@
         <div class="mdmark-diff-line"><span class="mdmark-diff-sign"> </span><span>変数の名前は変わりません。</span></div>
       </div>
 
-      <!-- 図: 層と箱 -->
+      <!-- 図: 層とノード -->
       <h2>構成図</h2>
-      <div class="mdmark-diagram" role="img" aria-label="使う側のページから mdmark を通して文書と索引へ至る構成図">
+      <div class="mdmark-diagram" role="img" aria-label="利用側のページから mdmark を経由して文書と索引へ至る構成図">
         <div class="mdmark-diagram-lane" data-kind="external">
           <span class="mdmark-diagram-lane-label">外部</span>
           <div class="mdmark-diagram-row">
-            <div class="mdmark-diagram-node" data-kind="external"><span class="mdmark-diagram-node-kind">外部</span><span class="mdmark-diagram-node-name">使う側のページ</span></div>
+            <div class="mdmark-diagram-node" data-kind="external"><span class="mdmark-diagram-node-kind">外部</span><span class="mdmark-diagram-node-name">利用側のページ</span></div>
             <span class="mdmark-diagram-arrow" aria-hidden="true">→</span>
             <div class="mdmark-diagram-node" data-kind="mcp"><span class="mdmark-diagram-node-kind">MCP</span><span class="mdmark-diagram-node-name">read_guide</span></div>
           </div>
@@ -195,7 +195,7 @@
       <!-- 折り畳み -->
       <h3>対応ブラウザ</h3>
       <details>
-        <summary>下限の版を見る</summary>
+        <summary>下限のバージョンを確認する</summary>
         <ul>
           <li>Chrome 99</li>
           <li>Firefox 97</li>
@@ -205,12 +205,12 @@
 
       <hr>
 
-      <!-- 知らせの枠: 外部ライブラリを読めなかった箇所 -->
+      <!-- 通知ブロック: 外部ライブラリを読み込めなかった箇所 -->
       <h2>売上の推移</h2>
-      <p>図は、文書が使うときだけ外部ライブラリを読み込んで描きます。</p>
+      <p>図は、文書が使用するときだけ外部ライブラリを読み込んで描きます。</p>
       <div class="mdmark-notice" role="status">
         <strong class="mdmark-notice-title">この箇所を表示できません</strong>
-        図を描くライブラリを読み込めませんでした。通信の状態を確かめて、ページを読み込み直してください。
+        図を描くライブラリを読み込めませんでした。通信の状態を確認して、ページを再読み込みしてください。
       </div>
       <p>読み込めなかった箇所のほかは、そのまま描かれます。詳しくは <a href="https://www.jsdelivr.com/">jsDelivr</a> の案内を参照してください。</p>
     </article>

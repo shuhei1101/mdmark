@@ -1,6 +1,6 @@
 import { expect, test, vi } from "vitest";
 
-/** 読むバージョンの処理を読み込む（実装が無い間は各テストが個別に失敗する） */
+/** 読み込むバージョンの処理を読み込む（実装が無い間は各テストが個別に失敗する） */
 const loadVersion = () => import("../../../../vscode/src/version.ts");
 
 /** 呼ばれたものを記録するログの出力先の代役 */
@@ -26,7 +26,7 @@ function tagsResponse(
 const FIRST_URL = "https://api.github.com/repositories/1/tags?per_page=100";
 const SECOND_URL = `${FIRST_URL}&page=2`;
 
-// 文字の並びでなく数で比べ、拡張機能のタグを拾わない（正常系）
+// 文字の並びでなく数で比べ、拡張機能のタグを取得しない（正常系）
 test("test_pick_latest_version", async () => {
   // 準備
   const { pickLatestVersion } = await loadVersion();
@@ -73,7 +73,7 @@ test("test_next_page_url_when_last_page", async () => {
   expect(results).toEqual([undefined, undefined]);
 });
 
-// 全てのページを読んで最新を選ぶ（正常系）
+// 全てのページを読み込んで最新を選ぶ（正常系）
 test("test_fetch_latest_version", async () => {
   // 準備
   const { fetchLatestVersion } = await loadVersion();
@@ -161,7 +161,7 @@ test("test_fetch_latest_version_when_no_tag", async () => {
   expect(latest).toBeUndefined();
 });
 
-// latest はタグ一覧の最新を使う（正常系）
+// latest はタグ一覧の最新を使用する（正常系）
 test("test_decide_version", async () => {
   // 準備
   const { decideVersion } = await loadVersion();
@@ -181,7 +181,7 @@ test("test_decide_version", async () => {
   });
 });
 
-// 書いたバージョンはそのまま使い、タグ一覧を取らない（正常系）
+// 記載したバージョンはそのまま使用し、タグ一覧を取らない（正常系）
 test("test_decide_version_when_pinned", async () => {
   // 準備
   const { decideVersion } = await loadVersion();
@@ -202,7 +202,7 @@ test("test_decide_version_when_pinned", async () => {
   expect(fetchLatest).not.toHaveBeenCalled();
 });
 
-// タグ一覧を取れなければ前回のバージョンを使う（正常系）
+// タグ一覧を取れなければ前回のバージョンを使用する（正常系）
 test("test_decide_version_when_fetch_failed", async () => {
   // 準備
   const { decideVersion } = await loadVersion();

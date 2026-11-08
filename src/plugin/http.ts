@@ -38,14 +38,14 @@ export const LISTEN_HOST = "127.0.0.1";
 /** MCP の要求を受けるパス */
 export const MCP_PATH = "/mcp";
 
-/** 待ち受けるポートを別のプロセスが使っているときに標準エラーに書く文。`{port}` をポートに置き換える */
+/** 待ち受けるポートを別のプロセスが使用しているときに標準エラーに書き込む文。`{port}` をポートに置き換える */
 export const PORT_IN_USE_MESSAGE =
-  "ポート {port} は別のプロセスが使っています。mdmark serve が既に起動しているなら、そのまま使えます。別のポートで動かすときは、~/.claude/settings.json の env と mdmark serve を起動する環境の両方に同じ MDMARK_PORT を設定してください。";
+  "ポート {port} は別のプロセスが使用しています。mdmark serve が既に起動しているなら、そのまま使用できます。別のポートで動かすときは、~/.claude/settings.json の env と mdmark serve を起動する環境の両方に同じ MDMARK_PORT を設定してください。";
 
 /** 本文を持たない HTTP のメソッド */
 const BODYLESS_METHODS = ["GET", "HEAD"];
 
-/** 端末の設定の tmux のセッション名を読む。端末の設定を読めなければ `DEFAULT_SESSION_NAME` にする（読めないことは `mdmark check` が知らせる） */
+/** 端末の設定の tmux のセッション名を読み込む。端末の設定を読み込めなければ `DEFAULT_SESSION_NAME` にする（読み込めないことは `mdmark check` が通知する） */
 async function readServeSessionName(env: NodeJS.ProcessEnv): Promise<string> {
   try {
     const settings = await readYamlFile({
@@ -61,11 +61,11 @@ async function readServeSessionName(env: NodeJS.ProcessEnv): Promise<string> {
   }
 }
 
-/** パス・Host・Origin を確かめ、通った要求だけを MCP のハンドラーへ渡す。パスが違えば 404、Host か Origin が localhost でなければ 403 を返す */
+/** パス・Host・Origin を確認し、通った要求だけを MCP のハンドラーへ指定する。パスが違えば 404、Host か Origin が localhost でなければ 403 を返却する */
 export async function routeRequest(options: {
   /** 組み込みの `Request` にした要求 */
   request: Request;
-  /** `createMcpHandler` が返したハンドラー */
+  /** `createMcpHandler` が返却したハンドラー */
   handler: McpHttpHandler;
 }): Promise<Response> {
   const { request, handler } = options;
@@ -102,7 +102,7 @@ export function toRequest(options: {
   if (BODYLESS_METHODS.includes(method)) {
     return new Request(url, { method, headers });
   }
-  // 本文のストリームを渡すには `duplex: "half"` が要るが、DOM の型には無い
+  // 本文のストリームを指定するには `duplex: "half"` が要るが、DOM の型には無い
   const init: RequestInit & { duplex: "half" } = {
     method,
     headers,
@@ -112,15 +112,15 @@ export function toRequest(options: {
   return new Request(url, init);
 }
 
-/** 組み込みの `Response` のステータスとヘッダーを書き、本文を読みながら `res` に流して閉じる。流している間に相手が切れたら本文を読むのをやめる */
+/** 組み込みの `Response` のステータスとヘッダーを記載し、本文を読み込みながら `res` に実行して閉じる。実行している間に相手が切れたら本文を読み込むのをやめる */
 export async function writeResponse(options: {
-  /** 返す応答 */
+  /** 返却する応答 */
   response: Response;
   /** 書き込む先 */
   res: ServerResponse;
 }): Promise<void> {
   const { response, res } = options;
-  // 同じ名前のヘッダー（set-cookie）を別々の行で書くため、名前と値の並びで渡す
+  // 同じ名前のヘッダー（set-cookie）を別々の行で記載するため、名前と値の並びで指定する
   res.writeHead(response.status, [...response.headers].flat());
   if (response.body === null) {
     res.end();
@@ -138,7 +138,7 @@ export async function writeResponse(options: {
   res.end();
 }
 
-/** 要求を変換して振り分け、応答を書く。想定しない例外は標準エラーに書き、その要求だけを 500 にする */
+/** 要求を変換して振り分け、応答を記載する。想定しない例外は標準エラーに書き込み、その要求だけを 500 にする */
 async function respond(options: {
   handler: McpHttpHandler;
   req: IncomingMessage;
@@ -164,7 +164,7 @@ async function respond(options: {
   }
 }
 
-/** `mdmark serve` の本体。`LISTEN_HOST` の `MCP_PATH` で待ち受け、`signal` が止める合図になったら閉じて 0 を返す。ポートが使われていれば理由を標準エラーに書いて 1 を返す */
+/** `mdmark serve` の本体。`LISTEN_HOST` の `MCP_PATH` で待ち受け、`signal` が止める合図になったら閉じて 0 を返却する。ポートが使用されていれば理由を標準エラーに書き込んで 1 を返却する */
 export async function runServe(options: {
   /** 環境変数 */
   env: NodeJS.ProcessEnv;

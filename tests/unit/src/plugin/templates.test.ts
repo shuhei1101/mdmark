@@ -22,7 +22,7 @@ const createTempDir = useTempDirs();
 /** 索引の行 */
 type Row = { name: string; file: string; description: string; tags?: string[] };
 
-/** テンプレートのフォルダに CSS と索引を書く */
+/** テンプレートのフォルダに CSS と索引を書き込む */
 async function writeTemplates(
   dir: string,
   rows: Row[],
@@ -34,7 +34,7 @@ async function writeTemplates(
   });
 }
 
-/** テンプレートのフォルダの索引を読む */
+/** テンプレートのフォルダの索引を読み込む */
 async function readIndex(dir: string): Promise<{ templates: Row[] }> {
   return parse(await readFile(join(dir, "templates.yaml"), "utf8"));
 }
@@ -133,7 +133,7 @@ test("test_validate_templates_index_when_name_duplicated", async () => {
   expect(message).toContain("templates[1].name");
 });
 
-// 索引を読み、省いた `tags` を空の並びにする（正常系）
+// 索引を読み込み、省いた `tags` を空の並びにする（正常系）
 test("test_read_templates_index", async () => {
   // 準備
   const { readTemplatesIndex } = await loadTemplates();
@@ -147,7 +147,7 @@ test("test_read_templates_index", async () => {
   expect(index.templates[0]?.tags).toEqual([]);
 });
 
-// フォルダが無ければ空の索引を返し、フォルダを作らない（正常系）
+// フォルダが無ければ空の索引を返却し、フォルダを作らない（正常系）
 test("test_read_templates_index_when_missing", async () => {
   // 準備
   const { readTemplatesIndex } = await loadTemplates();
@@ -159,7 +159,7 @@ test("test_read_templates_index_when_missing", async () => {
   expect(existsSync(dir)).toBe(false);
 });
 
-// YAML として読めない索引（異常系）
+// YAML として読み込めない索引（異常系）
 test("test_read_templates_index_when_unreadable", async () => {
   // 準備
   const { readTemplatesIndex } = await loadTemplates();
@@ -176,7 +176,7 @@ test("test_read_templates_index_when_unreadable", async () => {
   await expect(reading).rejects.toThrow("3");
 });
 
-// 索引の順に `path` を付けて返す（正常系）
+// 索引の順に `path` を付けて返却する（正常系）
 test("test_list_templates", async () => {
   // 準備
   const { listTemplates } = await loadTemplates();
@@ -204,7 +204,7 @@ test("test_list_templates", async () => {
   ]);
 });
 
-// 書いた索引を読み直せ、一時ファイルが残らない（正常系）
+// 記載した索引を再読み込みでき、一時ファイルが残らない（正常系）
 test("test_write_templates_index", async () => {
   // 準備
   const { addTemplate, readTemplatesIndex } = await loadTemplates();
@@ -417,7 +417,7 @@ test("test_add_template_when_source_missing", async () => {
   expect(existsSync(dir)).toBe(false);
 });
 
-// 索引を書けなければ CSS を戻す（異常系）
+// 索引を書き込めなければ CSS を戻す（異常系）
 test("test_add_template_when_index_write_fails", async () => {
   // 準備
   const { addTemplate } = await loadTemplates();
@@ -504,7 +504,7 @@ test("test_apply_template_when_target_given", async () => {
   expect(existsSync(join(work, "brand.css"))).toBe(false);
 });
 
-// `target` から上に設定ファイルが無ければ、配置して `theme` を返さない（正常系）
+// `target` から上に設定ファイルが無ければ、配置して `theme` を返却しない（正常系）
 test("test_apply_template_when_target_without_config", async () => {
   // 準備
   const { applyTemplate } = await loadTemplates();
@@ -543,7 +543,7 @@ test("test_apply_template_when_same_content", async () => {
   expect((await stat(join(work, "brand.css"))).mtimeMs).toBe(before);
 });
 
-// 索引の `file` が名前と違う行は、`file` から読んで `{name}.css` に配置する（正常系）
+// 索引の `file` が名前と違う行は、`file` から読み込んで `{name}.css` に配置する（正常系）
 test("test_apply_template_when_file_differs_from_name", async () => {
   // 準備
   const { applyTemplate } = await loadTemplates();

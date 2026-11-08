@@ -13,7 +13,7 @@ functions:
     usecase: 作業のフォルダを引数に入れる
     role: 入口
     summary: 標準入力の `tool_input` に `project_dir` を入れた `updatedInput` を標準出力に 1 行書く
-    description: 束ねた `plugin/scripts/pre-tool-use.js` を入口として実行したときだけ、標準入力を読み切って流し、戻り値を終了コードにする（`import.meta.main`）。`permissionDecision` は書かない
+    description: まとめた `plugin/scripts/pre-tool-use.js` を入口として実行したときだけ、標準入力を読み込み切って実行し、戻り値を終了コードにする（`import.meta.main`）。`permissionDecision` は記載しない
     scope: public
     is_async: false
     args:
@@ -25,32 +25,32 @@ functions:
       type: '0'
       description: 常に 0
     process: |-
-      1. `PROJECT_DIR_ENV` が無いか空なら、何も書かず 0 を返す
-      2. 標準入力を JSON として読み、`tool_input` の引数に `project_dir` を環境変数の値で入れる（既にあれば上書きする）
-      3. `{ hookSpecificOutput: { hookEventName: "PreToolUse", updatedInput } }` を JSON の 1 行で標準出力に書いて 0 を返す
+      1. `PROJECT_DIR_ENV` が無いか空なら、何も書き込まず 0 を返却する
+      2. 標準入力を JSON として読み込み、`tool_input` の引数に `project_dir` を環境変数の値で入れる（既にあれば上書きする）
+      3. `{ hookSpecificOutput: { hookEventName: "PreToolUse", updatedInput } }` を JSON の 1 行で標準出力に書き込んで 0 を返却する
     unit_tests:
       - name: test_run_pre_tool_use
         case: 正常
-        summary: project_dir を入れた updatedInput を書く
+        summary: project_dir を入れた updatedInput を記載する
         condition: '`CLAUDE_PROJECT_DIR=/work`、`tool_input` が `{ "config": "a.yaml" }`'
         mock: 行を配列に貯める `stdout`
-        expected: '0 を返し、`stdout` の 1 行を JSON として読むと `hookEventName` が `PreToolUse`、`updatedInput` が `{ "config": "a.yaml", "project_dir": "/work" }`、`permissionDecision` が無い'
+        expected: '0 を返却し、`stdout` の 1 行を JSON として読み込むと `hookEventName` が `PreToolUse`、`updatedInput` が `{ "config": "a.yaml", "project_dir": "/work" }`、`permissionDecision` が無い'
       - name: test_run_pre_tool_use_when_project_dir_given
         case: 正常
-        summary: エージェントが書いた project_dir を上書きする
+        summary: エージェントが記載した project_dir を上書きする
         condition: '`CLAUDE_PROJECT_DIR=/work`、`tool_input` が `{ "project_dir": "/other" }`'
         mock: 行を配列に貯める `stdout`
         expected: '`updatedInput.project_dir` が `/work`'
       - name: test_run_pre_tool_use_when_project_dir_unknown
         case: 正常
-        summary: 環境変数が無ければ何も書かない
+        summary: 環境変数が無ければ何も書き込まない
         condition: '`env` に `CLAUDE_PROJECT_DIR` が無い'
         mock: 行を配列に貯める `stdout`
-        expected: 0 を返し、`stdout` が空
+        expected: 0 を返却し、`stdout` が空
       - name: test_run_pre_tool_use_when_matcher
         case: 正常
-        summary: hooks.json の matcher が `PROJECT_DIR_TOOLS` のツールだけに当たる
-        condition: '`plugin/hooks/hooks.json` の PreToolUse の `matcher` を読む'
+        summary: hooks.json の matcher が `PROJECT_DIR_TOOLS` のツールだけに該当する
+        condition: '`plugin/hooks/hooks.json` の PreToolUse の `matcher` を読み込む'
         mock: なし
         expected: '`PROJECT_DIR_TOOLS` に `TOOL_NAME_PREFIX` を付けて `|` でつないだ文字列と等しく、`PROJECT_DIR_TOOLS` が `TOOLS` の名前と一致し、並べ替えると `add_template`・`apply_template`・`build_site`・`check`・`export_html`・`list_templates` になる'
     refs:
@@ -65,7 +65,7 @@ constants:
     title: 作業のフォルダの環境変数
     container: src/plugin/pre-tool-use.ts
     usecase: 作業のフォルダを引数に入れる
-    summary: Claude Code がフックに渡す、セッションの作業のフォルダの絶対パスの環境変数
+    summary: Claude Code がフックに指定する、セッションの作業のフォルダの絶対パスの環境変数
     value: CLAUDE_PROJECT_DIR
     refs:
       - dev/設計書/インターフェース定義/ClaudeCodeプラグイン/作業のフォルダを引数に入れる.ts#
@@ -82,7 +82,7 @@ constants:
     introduced:
       pr: 141
   - name: PROJECT_DIR_TOOLS
-    title: 作業のフォルダを使うツール
+    title: 作業のフォルダを使用するツール
     container: src/plugin/pre-tool-use.ts
     usecase: 作業のフォルダを引数に入れる
     summary: '`project_dir` を入れるツールの名前。`TOOLS` のツールの名前と一致させ、`plugin/hooks/hooks.json` の PreToolUse の `matcher` はこの名前に `TOOL_NAME_PREFIX` を付けて `|` でつないだもの'

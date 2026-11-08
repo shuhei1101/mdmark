@@ -46,7 +46,7 @@ suite("設定ファイルを開く", () => {
     );
   });
 
-  // 設定ファイルが無いとき、作成と答えると雛形を書いて開く
+  // 設定ファイルが無いとき、作成と回答すると雛形を書き込んで開く
   test("test_normal_when_template_created", async () => {
     // 準備
     await writeFixture("guide.md", "# 見出し\n");
@@ -65,7 +65,7 @@ suite("設定ファイルを開く", () => {
     assert.deepStrictEqual(messages.infoOptions[0], {
       modal: true,
       detail:
-        "features・libraries・theme・extensions の書き方をコメントで添えたファイルを作ります。作った直後は、プレビューの見た目は変わりません。",
+        "features・libraries・theme・extensions の記載方法をコメントで添えたファイルを作ります。作った直後は、プレビューの外観は変わりません。",
     });
     const path = join(workspaceDir(), "mdmark.config.yaml");
     assert.ok(existsSync(path));
@@ -81,7 +81,7 @@ suite("設定ファイルを開く", () => {
     );
   });
 
-  // 作らないを選ぶとファイルを書かない
+  // 作らないを選ぶとファイルを書き込まない
   test("test_error_when_template_declined", async () => {
     // 準備
     await writeFixture("guide.md", "# 見出し\n");

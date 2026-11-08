@@ -11,7 +11,7 @@ import { renderDoc } from "../../../helpers/render.ts";
 /** 表の処理を読み込む（実装が無い間は各テストが個別に失敗する） */
 const loadTables = () => import("../../../../../src/render/syntax/tables.ts");
 
-// 種類・機能・絞り込み・折り畳みを読む（正常系）
+// 種類・機能・絞り込み・折り畳みを読み込む（正常系）
 test("test_read_table_spec", async () => {
   // 準備
   const { readTableSpec } = await loadTables();
@@ -41,7 +41,7 @@ test("test_read_table_spec", async () => {
   });
 });
 
-// 読めない値と組み合わせを警告にし、知らない種類・機能・キーを読み飛ばす（正常系）
+// 読み込めない値と組み合わせを警告にし、知らない種類・機能・キーをスキップする（正常系）
 test("test_read_table_spec_when_unknown", async () => {
   // 準備
   const { readTableSpec } = await loadTables();
@@ -63,7 +63,7 @@ test("test_read_table_spec_when_unknown", async () => {
   );
 });
 
-// title= の値の空白の後ろの単語を警告にし、読み飛ばさない（異常系）
+// title= の値の空白の後ろの単語を警告にし、スキップしない（異常系）
 test("test_read_table_spec_when_title_has_space", async () => {
   // 準備
   const { readTableSpec } = await loadTables();
@@ -91,7 +91,7 @@ test("test_read_table_spec_when_title_followed_by_known", async () => {
   expect(spec.skipped).toEqual([]);
 });
 
-// 5 つの機能と hide=・total= を読む（正常系）
+// 5 つの機能と hide=・total= を読み込む（正常系）
 test("test_read_table_spec_when_features", async () => {
   // 準備
   const { readTableSpec } = await loadTables();
@@ -120,7 +120,7 @@ test("test_read_table_spec_when_features", async () => {
   expect(spec.warnings).toEqual([]);
 });
 
-// 読めない集計・隠す列と機能の無い表のキーを警告にして当てない（正常系）
+// 読み込めない集計・隠す列と機能の無い表のキーを警告にして適用しない（正常系）
 test("test_read_table_spec_when_feature_keys_invalid", async () => {
   // 準備
   const { readTableSpec } = await loadTables();
@@ -136,7 +136,7 @@ test("test_read_table_spec_when_feature_keys_invalid", async () => {
   // 実行
   const first = readTableSpec(invalid, headers, 10);
   const second = readTableSpec(withoutFeatures, headers, 10);
-  // 検証: 読めない集計と隠す列
+  // 検証: 読み込めない集計と隠す列
   expect(first.totals).toEqual([{ column: 2, calc: "avg" }]);
   expect(first.hide).toEqual([]);
   const firstLabels = first.warnings.map((warning) => warning.label);
@@ -155,7 +155,7 @@ test("test_read_table_spec_when_feature_keys_invalid", async () => {
   expect(secondLabels).toEqual(expect.arrayContaining(["total=", "hide="]));
 });
 
-// pin=・wide=・check= の列名を列の位置に読み替える（正常系）
+// pin=・wide=・check= の列名を列の位置として解釈する（正常系）
 test("test_read_table_spec_when_columns", async () => {
   // 準備
   const { readTableSpec } = await loadTables();
@@ -176,7 +176,7 @@ test("test_read_table_spec_when_columns", async () => {
   expect(spec.warnings).toEqual([]);
 });
 
-// 表に無い列名と pin の無い表の pin= を警告にして当てない（正常系）
+// 表に無い列名と pin の無い表の pin= を警告にして適用しない（正常系）
 test("test_read_table_spec_when_column_keys_invalid", async () => {
   // 準備
   const { readTableSpec } = await loadTables();
@@ -228,7 +228,7 @@ test("test_row_id_of_when_empty", async () => {
   expect(ids).toEqual(["row", "row-1"]);
 });
 
-// 表の印の表を指定どおりに囲み、囲まない表を default にする（正常系）
+// 表のマーカーの表を指定どおりに囲み、囲まない表を default にする（正常系）
 test("test_decorate_tables", () => {
   // 準備
   const markdown = [
@@ -255,7 +255,7 @@ test("test_decorate_tables", () => {
   expect(html).toContain('data-kind="default" data-features="pin"');
 });
 
-// 閉じの印が無いときは文書の終わりまでの表に当て、警告を差し込む（正常系）
+// 閉じのマーカーが無いときは文書の終わりまでの表に当て、警告を差し込む（正常系）
 test("test_decorate_tables_when_range_not_closed", () => {
   // 準備
   const markdown = [
@@ -278,7 +278,7 @@ test("test_decorate_tables_when_range_not_closed", () => {
   expect(html).toContain("&lt;!-- /table --&gt;");
 });
 
-// 5 つの機能と hide=・total= を属性に写し、行に ID とリンクを付ける（正常系）
+// 5 つの機能と hide=・total= を属性にコピーし、行に ID とリンクを付ける（正常系）
 test("test_decorate_tables_when_features", () => {
   // 準備
   const markdown = [
@@ -289,8 +289,8 @@ test("test_decorate_tables_when_features", () => {
     "| 名前 | 説明 | 数量 |",
     "| --- | --- | --- |",
     "| りんご | 描画を速くする | 1 |",
-    "| みかん | 印刷を直す | 2 |",
-    "| みかん | 描画の崩れを直す | 3 |",
+    "| みかん | 印刷を修正する | 2 |",
+    "| みかん | 描画の崩れを修正する | 3 |",
     "",
     "<!-- /table -->",
     "",
@@ -315,7 +315,7 @@ test("test_decorate_tables_when_features", () => {
   expect(hrefs).toEqual(["#りんご", "#みかん-1", "#みかん-2"]);
 });
 
-// 集計する列の数として読めないセルを、列と計算ごとの警告にして表の上に差し込む（異常系）
+// 集計する列の数として読み込めないセルを、列と計算ごとの警告にして表の上に差し込む（異常系）
 test("test_decorate_tables_when_total_unreadable", () => {
   // 準備
   const markdown = [
@@ -338,16 +338,16 @@ test("test_decorate_tables_when_total_unreadable", () => {
   const table = html.indexOf('<div class="mdmark-table"');
   expect(table).toBeGreaterThan(0);
   expect(html.lastIndexOf("mdmark-syntax-warning")).toBeLessThan(table);
-  // 検証: 読めない値は行内のコードで並び、計算の名前を書く
+  // 検証: 読み込めない値は行内のコードで並び、計算の名前を記載する
   const message = (calc: string): string =>
-    `「数量」の列に数として読めない値 <code>約3</code>・<code>-</code> があるため、${calc}を出していません。数を書くか、セルを空にしてください。`;
+    `「数量」の列に数として読み込めない値 <code>約3</code>・<code>-</code> があるため、${calc}を出していません。数を記載するか、セルを空にしてください。`;
   expect(html).toContain(message("合計"));
   expect(html).toContain(message("平均"));
   // 検証: count の警告は無い
   expect(html).not.toContain("件数を出していません");
 });
 
-// 数として読めないセルが無ければ警告を差し込まない（正常系）
+// 数として読み込めないセルが無ければ警告を差し込まない（正常系）
 test("test_decorate_tables_when_total_readable", () => {
   // 準備
   const markdown = [
@@ -378,7 +378,7 @@ test("test_decorate_tables_when_feature_off", () => {
   expect(html).not.toContain("mdmark-table");
 });
 
-// 折り畳みの見出しを読み、closed も open も無い title= を警告にする（正常系）
+// 折り畳みの見出しを読み込み、closed も open も無い title= を警告にする（正常系）
 test("test_read_table_spec_when_title", async () => {
   // 準備
   const { readTableSpec } = await loadTables();
@@ -438,7 +438,7 @@ test("test_decorate_tables_when_collapse_title", () => {
   expect(html).not.toContain("mdmark-syntax-warning");
 });
 
-// 行の詳細の中に表を置いても、親の表の行を全て親の表の囲みに残し、列名・行の数・行へのリンク・集計を親の表の行だけで付ける（正常系）
+// 行の詳細の中に表を配置しても、親の表の行を全て親の表の囲みに残し、列名・行の数・行へのリンク・集計を親の表の行だけで付ける（正常系）
 test("test_decorate_tables_when_row_detail_has_table", () => {
   // 準備
   const markdown = [
@@ -480,11 +480,11 @@ test("test_decorate_tables_when_row_detail_has_table", () => {
   expect(findTags(nested, "<tr").filter((tag) => tag.includes(" id="))).toEqual(
     [],
   );
-  // 検証: 数として読めない値の警告が無い
+  // 検証: 数として読み込めない値の警告が無い
   expect(html).not.toContain("mdmark-syntax-warning");
 });
 
-// 表の印の外の表でも、行の詳細の中の表の後ろの親の行を親の表の囲みに残す（正常系）
+// 表のマーカーの外の表でも、行の詳細の中の表の後ろの親の行を親の表の囲みに残す（正常系）
 test("test_decorate_tables_when_row_detail_has_table_without_mark", () => {
   // 準備
   const markdown = [
@@ -513,7 +513,7 @@ test("test_decorate_tables_when_row_detail_has_table_without_mark", () => {
   expect(matches(parentTable, /data-label="説明"/g)).toHaveLength(2);
 });
 
-// 行の詳細の中の表には、その表を囲む表の印だけを当て、外の表の印の指定を当てない（正常系）
+// 行の詳細の中の表には、その表を囲む表のマーカーだけを当て、外の表のマーカーの指定を適用しない（正常系）
 test("test_decorate_tables_when_row_detail_has_marked_table", () => {
   // 準備
   const markdown = [
@@ -549,7 +549,7 @@ test("test_decorate_tables_when_row_detail_has_marked_table", () => {
   ].join("\n");
   // 実行
   const { html } = renderDoc(markdown);
-  // 検証: 親の表は外の表の印、1 つ目の中の表は中の印、2 つ目の中の表は既定の種類になる
+  // 検証: 親の表は外の表のマーカー、1 つ目の中の表は中のマーカー、2 つ目の中の表は既定の種類になる
   const wrappers = findTags(html, 'class="mdmark-table"');
   expect(wrappers).toHaveLength(3);
   expect(wrappers[0]).toContain('data-kind="data"');
@@ -557,7 +557,7 @@ test("test_decorate_tables_when_row_detail_has_marked_table", () => {
   expect(wrappers[1]).toContain('data-kind="plain"');
   expect(wrappers[2]).toContain('data-kind="default"');
   expect(wrappers[2]).not.toContain("data-filter");
-  // 検証: 書き方の警告が無く、表の印のコメントが出力に残らない
+  // 検証: 記載の警告が無く、表のマーカーのコメントが出力に残らない
   expect(html).not.toContain("mdmark-syntax-warning");
   expect(html).not.toContain("<!-- table");
   expect(html).not.toContain("<!-- /table");
@@ -595,7 +595,7 @@ test("test_decorate_tables_when_colors", () => {
   expect(html).not.toContain("mdmark-syntax-warning");
 });
 
-// pin=・check= を属性に写し、広く取る列と真偽値の列のセルに class を付け、真偽値を ✓ と空欄にする（正常系）
+// pin=・check= を属性にコピーし、広く取る列と真偽値の列のセルに class を付け、真偽値を ✓ と空欄にする（正常系）
 test("test_decorate_tables_when_columns_specified", () => {
   // 準備
   const markdown = [
@@ -641,7 +641,7 @@ test("test_decorate_tables_when_columns_specified", () => {
   expect(html).not.toContain("mdmark-syntax-warning");
 });
 
-// 列の強調と、値と位置の行の色を読む（正常系）
+// 列の強調と、値と位置の行の色を読み込む（正常系）
 test("test_read_table_colors", async () => {
   // 準備
   const { readTableColors } = await loadTables();
@@ -666,7 +666,7 @@ test("test_read_table_colors", async () => {
   expect(colors.warnings).toEqual([]);
 });
 
-// 両方が当たる行は row-at= の色にし、範囲を読む（正常系）
+// 両方が該当する行は row-at= の色にし、範囲を読み込む（正常系）
 test("test_read_table_colors_when_overlap", async () => {
   // 準備
   const { readTableColors } = await loadTables();
@@ -693,7 +693,7 @@ test("test_read_table_colors_when_overlap", async () => {
   expect(colors.rows).toEqual(["gray", "gray", "green"]);
 });
 
-// 読めない指定を警告にして当てない（異常系）
+// 読み込めない指定を警告にして適用しない（異常系）
 test("test_read_table_colors_when_unreadable", async () => {
   // 準備
   const { readTableColors } = await loadTables();
@@ -816,7 +816,7 @@ test("test_decorate_tables_when_cells_merged", () => {
   expect(html).not.toContain("mdmark-syntax-warning");
 });
 
-// 読めない header-rows= と結合する相手の無いセルを 1 つの警告にまとめ、文字のまま出す（異常系）
+// 読み込めない header-rows= と結合する相手の無いセルを 1 つの警告にまとめ、文字のまま出す（異常系）
 test("test_decorate_tables_when_merge_invalid", () => {
   // 準備
   const markdown = [

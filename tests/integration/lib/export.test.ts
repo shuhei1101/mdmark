@@ -27,7 +27,7 @@ const HIGHLIGHT_ES_ROOT = fileURLToPath(
   new URL("../../../node_modules/@highlightjs/cdn-assets/es/", import.meta.url),
 );
 
-/** 色分けのライブラリの本体と、書き出しの試験で使う言語のモジュール（`typescript`・`python` を文書が使い、`yaml` は使わない） */
+/** 色分けのライブラリの本体と、書き出しの試験で使用する言語のモジュール（`typescript`・`python` を文書が使用し、`yaml` は使用しない） */
 const HIGHLIGHT_FILES = [
   "core.min.js",
   "languages/typescript.min.js",
@@ -38,7 +38,7 @@ const HIGHLIGHT_FILES = [
 const createTempDir = useTempDirs();
 const browser = useBrowser(createTempDir);
 
-// 表・用語集の表・外部ライブラリの印・拡張の印・相対パスの画像・api.md へのリンク・script 要素を持つ文書
+// 表・用語集の表・外部ライブラリのマーカー・拡張のマーカー・相対パスの画像・api.md へのリンク・script 要素を持つ文書
 const GUIDE = [
   "# ガイド",
   "",
@@ -55,11 +55,11 @@ const GUIDE = [
   "",
   "| 用語 | 意味 |",
   "| --- | --- |",
-  "| 印 | HTML コメントで書く指定 |",
+  "| マーカー | HTML コメントで記載する指定 |",
   "",
   "<!-- /glossary -->",
   "",
-  "本文に印を書く。",
+  "本文にマーカーを記載する。",
   "",
   "<!-- test-lib: a b -->",
   "",
@@ -130,7 +130,7 @@ test("test_normal", async () => {
   expect(await page.locator("button.mdmark-sort").count()).toBeGreaterThan(0);
   await expect(
     page.locator(".mdmark-term").first().textContent(),
-  ).resolves.toBe("印");
+  ).resolves.toBe("マーカー");
   await expect(
     page.locator("article [data-mdmark-slot]").allTextContents(),
   ).resolves.toEqual(["drawn:a,b", "greet:世界"]);
@@ -157,7 +157,7 @@ test("test_normal", async () => {
   await page.close();
 });
 
-// 読めないものを警告に出し、読めたものだけを埋めて書き出す（正常系（読めない画像とモジュールがある））
+// 読み込めないものを警告に出し、読み込めたものだけを埋めて書き出す（正常系（読み込めない画像とモジュールがある））
 test("test_normal_when_unreadable_assets", async () => {
   // 準備
   const dir = await createTempDir();
@@ -182,7 +182,7 @@ test("test_normal_when_unreadable_assets", async () => {
   await expect(page.locator("article p").allTextContents()).resolves.toContain(
     "本文のほかの部分",
   );
-  // 読めない画像のパスへの要求のほかは、外への要求が無い
+  // 読み込めない画像のパスへの要求のほかは、外への要求が無い
   expect(
     externalRequests().filter((url) => !url.endsWith("/img/missing.png")),
   ).toEqual([]);
@@ -206,7 +206,7 @@ test("test_error_when_config_invalid", async () => {
   expect(existsSync(join(dir, "guide.html"))).toBe(false);
 });
 
-// 無い文書を渡すと、パスを示して終わる（異常系（文書が無い））
+// 無い文書を指定すると、パスを示して終わる（異常系（文書が無い））
 test("test_error_when_document_missing", async () => {
   // 準備
   const dir = await createSampleDir();
@@ -218,7 +218,7 @@ test("test_error_when_document_missing", async () => {
   expect(existsSync(join(dir, "missing.html"))).toBe(false);
 });
 
-// 出力のパスへ書けないと、パスと直し方を示して終わる（異常系（出力先へ書けない））
+// 出力のパスへ記載できないと、パスと修正方法を示して終わる（異常系（出力先へ書き込めない））
 test("test_error_when_output_unwritable", async () => {
   // 準備
   const dir = await createSampleDir();
@@ -231,12 +231,12 @@ test("test_error_when_output_unwritable", async () => {
   // 検証
   expect(result.code).toBe(1);
   expect(result.stderr).toContain("blocked/guide.html");
-  expect(result.stderr).toContain("確かめて");
+  expect(result.stderr).toContain("確認して");
   expect(await readFile(join(dir, "blocked"), "utf8")).toBe("ファイル\n");
   expect(existsSync(join(dir, "guide.html"))).toBe(false);
 });
 
-// 設定の tooltips を埋める設定に写し、開いた HTML で用語のツールチップを下に出す（正常系（ツールチップを下に出す設定））
+// 設定の tooltips を埋める設定にコピーし、開いた HTML で用語のツールチップを下に出す（正常系（ツールチップを下に出す設定））
 test("test_normal_when_tooltip_placement", async () => {
   // 準備
   const dir = await createTempDir();
@@ -264,9 +264,9 @@ test("test_normal_when_tooltip_placement", async () => {
       "# ガイド",
       "",
       ...filler,
-      "## 2 つ目の節",
+      "## 2 つ目のセクション",
       "",
-      "索引を読む。",
+      "索引を読み込む。",
       "",
       ...filler,
     ].join("\n"),
@@ -277,7 +277,7 @@ test("test_normal_when_tooltip_placement", async () => {
   expect(result.code).toBe(0);
   const { page } = await browser.openHtml(join(dir, "guide.html"));
   await page.waitForSelector(".mdmark-term");
-  // 持ち主を画面の中ほどへ送り、ポインターを乗せる
+  // 持ち主を画面の中ほどへスクロールし、ポインターを乗せる
   const term = page.locator(".mdmark-term");
   await term.evaluate((element) => element.scrollIntoView({ block: "center" }));
   await term.hover();
@@ -293,7 +293,7 @@ test("test_normal_when_tooltip_placement", async () => {
   await page.close();
 });
 
-// 文書が使う言語の分だけ色分けのモジュールを埋め、開いたときに外へ要求せずに色分けする（正常系（色分けするコードブロック））
+// 文書が使用する言語の分だけ色分けのモジュールを埋め、開いたときに外へ要求せずに色分けする（正常系（色分けするコードブロック））
 test("test_normal_when_syntax_highlighted", async () => {
   // 準備
   const dir = await createTempDir();
@@ -304,7 +304,7 @@ test("test_normal_when_syntax_highlighted", async () => {
       "utf8",
     );
   }
-  // 使わない言語のモジュールを見分けられる文字が、手元のモジュールにあること
+  // 使用しない言語のモジュールを見分けられる文字が、手元のモジュールにあること
   expect(vendor["vendor/highlightjs/es/languages/yaml.min.js"]).toContain(
     'name:"YAML"',
   );
@@ -344,7 +344,7 @@ test("test_normal_when_syntax_highlighted", async () => {
   await page.close();
 });
 
-/** エイリアスを読む試験の設定の行: 種類ごとの行で `aliases/` の YAML を読む */
+/** エイリアスを読み込む試験の設定の行: 種類ごとの行で `aliases/` の YAML を読み込む */
 const ALIAS_CONFIG_LINES = [
   "aliases:",
   "  - id: commands",
@@ -358,11 +358,11 @@ const ALIAS_CONFIG_LINES = [
   "    alias_type: term",
 ];
 
-/** エイリアスを読む試験のレコード: 使える `command`・値に URL を持つ `env`・説明が空の `term` */
+/** エイリアスを読み込む試験のレコード: 使用できる `command`・値に URL を持つ `env`・説明が空の `term` */
 const ALIAS_RECORD_FILES: Record<string, string> = {
   "aliases/commands.yaml": [
     "id: run-test",
-    "name: テストを流す",
+    "name: テストを実行する",
     "command: npm test",
     "",
   ].join("\n"),
@@ -380,7 +380,7 @@ const ALIAS_RECORD_FILES: Record<string, string> = {
   ].join("\n"),
 };
 
-/** 書き出した HTML に埋めたエイリアスの `id` を並べて返す */
+/** 書き出した HTML に埋めたエイリアスの `id` を並べて返却する */
 function embeddedAliasIds(html: string): string[] {
   const payload =
     /<script[^>]*id="mdmark-payload"[^>]*>([\s\S]*?)<\/script>/.exec(html)?.[1];
@@ -390,13 +390,13 @@ function embeddedAliasIds(html: string): string[] {
   return (parsed.aliases ?? []).map((alias) => alias.id);
 }
 
-// 設定の aliases の YAML から作ったエイリアスを埋め、env を埋めずに書き出す（正常系（エイリアスを読む））
+// 設定の aliases の YAML から作ったエイリアスを埋め、env を埋めずに書き出す（正常系（エイリアスを読み込む））
 test("test_normal_when_aliases", async () => {
   // 準備
   const dir = await createTempDir();
   await writeFiles(dir, {
     "mdmark.config.yaml": `${ALIAS_CONFIG_LINES.join("\n")}\n`,
-    "guide.md": "# ガイド\n\nテストを流す、開発サーバーを使う。\n",
+    "guide.md": "# ガイド\n\nテストを実行する、開発サーバーを使用する。\n",
     ...ALIAS_RECORD_FILES,
   });
   // 実行
@@ -418,7 +418,7 @@ test("test_normal_when_aliases", async () => {
   );
   await page.waitForSelector(".mdmark-term");
   await expect(page.locator(".mdmark-term").allTextContents()).resolves.toEqual(
-    ["テストを流す"],
+    ["テストを実行する"],
   );
   const tip = page.locator(".mdmark-term-tip");
   await expect(tip.locator("code").textContent()).resolves.toBe("npm test");
@@ -429,7 +429,7 @@ test("test_normal_when_aliases", async () => {
   await page.close();
 });
 
-// 設定の colorTheme を埋める設定に写し、開いた HTML を選んだテーマで描く（正常系（テーマを選ぶ設定））
+// 設定の colorTheme を埋める設定にコピーし、開いた HTML を選んだテーマで描く（正常系（テーマを選ぶ設定））
 test("test_normal_when_color_theme", async () => {
   // 準備
   const dir = await createTempDir();
@@ -452,7 +452,7 @@ test("test_normal_when_color_theme", async () => {
   await page.close();
 });
 
-// 設定の labels を埋める設定に写し、開いた HTML で操作できる部品のボタンを設定の文言で描く（正常系（部品の文言を替える設定））
+// 設定の labels を埋める設定にコピーし、開いた HTML で操作できる部品のボタンを設定の文言で描く（正常系（部品の文言を替える設定））
 test("test_normal_when_param_copy_label", async () => {
   // 準備
   const dir = await createTempDir();
@@ -489,7 +489,7 @@ test("test_normal_when_media_embedded", async () => {
       "",
       "![操作](media/demo.mp4){poster=images/poster.png}",
       "",
-      "![読み上げ](media/voice.mp3)",
+      "![スクリーンリーダー](media/voice.mp3)",
       "",
       "![ロゴ](images/logo.png)",
       "",
@@ -560,7 +560,7 @@ test("test_normal_when_media_embedded", async () => {
   await page.close();
 });
 
-// 動画・音声のコピー先の _files/ へ書けないと、HTML を書かずにパスと直し方を示して終わる（異常系（動画・音声のコピー先へ書けない））
+// 動画・音声のコピー先の _files/ へ書き込めないと、HTML を書き込まずにパスと修正方法を示して終わる（異常系（動画・音声のコピー先へ書き込めない））
 test("test_error_when_media_copy_unwritable", async () => {
   // 準備
   const dir = await createTempDir();
@@ -576,7 +576,7 @@ test("test_error_when_media_copy_unwritable", async () => {
   // 検証
   expect(result.code).toBe(1);
   expect(result.stderr).toContain("guide_files");
-  expect(result.stderr).toContain("確かめて");
+  expect(result.stderr).toContain("確認して");
   expect(await readFile(join(dir, "guide_files"), "utf8")).toBe("ファイル\n");
   expect(existsSync(join(dir, "guide.html"))).toBe(false);
 });
@@ -585,7 +585,7 @@ test("test_error_when_media_copy_unwritable", async () => {
 const BROKEN_SOURCE =
   'throw new Error("broken の評価で失敗");\nexport default {};\n';
 
-// 起動の処理・拡張・部品・色分け・外部ライブラリを 1 つのスクリプトに束ね、blob: と動的 import を許さない環境でも描く（正常系（blob: と動的 import を許さない環境で開く））
+// 起動の処理・拡張・部品・色分け・外部ライブラリを 1 つのスクリプトにまとめ、blob: と動的 import を許さない環境でも描く（正常系（blob: と動的 import を許さない環境で開く））
 test("test_normal_when_blob_and_dynamic_import_blocked", async () => {
   // 準備
   const dir = await createTempDir();
@@ -600,7 +600,7 @@ test("test_normal_when_blob_and_dynamic_import_blocked", async () => {
       "",
     ].join("\n"),
     "extensions/greet.js": GREET_WITH_IMPORT_SOURCE,
-    "extensions/greet-text.js": 'export const TEXT = "読んだ";\n',
+    "extensions/greet-text.js": 'export const TEXT = "読み込んだ";\n',
     "extensions/broken.js": BROKEN_SOURCE,
     "lib/test-lib.js": TEST_LIB_SOURCE,
     "guide.md": [
@@ -641,7 +641,7 @@ test("test_normal_when_blob_and_dynamic_import_blocked", async () => {
   await page.waitForSelector("article .mdmark-notice");
   await expect(
     page.locator("article [data-mdmark-slot]").allTextContents(),
-  ).resolves.toContain("greet:読んだ:世界");
+  ).resolves.toContain("greet:読み込んだ:世界");
   await expect(
     page.locator("article [data-mdmark-slot]").allTextContents(),
   ).resolves.toContain("drawn:a");
@@ -661,7 +661,7 @@ const APP_TS = Array.from(
   (_, index) => `const v${index + 1} = ${index + 1};`,
 ).join("\n");
 
-// 取り込む文書と束ねていない名前のアイコンの形を埋め、開いたときに外へ要求せずに描く（正常系（取り込みとアイコンを埋める））
+// 取り込む文書とまとめていない名前のアイコンの形状を埋め、開いたときに外へ要求せずに描く（正常系（取り込みとアイコンを埋める））
 test("test_normal_when_includes_and_icons", async () => {
   // 準備
   const dir = await createTempDir();
@@ -732,12 +732,12 @@ test("test_normal_when_includes_and_icons", async () => {
   expect(source).not.toContain('"anchor"');
 });
 
-/** 型の注釈を持ち、箱を押すと根の要素に class `is-open` を付け外しし、`destroy` で `window.__mdmarkDestroyed` を 1 増やす範囲の文書 */
+/** 型の注釈を持ち、ノードを押すと根の要素に class `is-open` を付与・解除し、`destroy` で `window.__mdmarkDestroyed` を 1 増やす範囲の文書 */
 const RANGE_SCRIPT_DOC = [
   "<!-- html -->",
   "",
   "```html",
-  '<div class="box">箱</div>',
+  '<div class="box">ノード</div>',
   "```",
   "",
   "```css",
@@ -762,7 +762,7 @@ const RANGE_SCRIPT_DOC = [
   "",
 ].join("\n");
 
-// 範囲の ts を変換して束ねたスクリプトに加え、blob: と動的 import を許さない環境でも動かす（正常系（範囲のスクリプトと CSS））
+// 範囲の ts を変換してまとめたスクリプトに加え、blob: と動的 import を許さない環境でも動かす（正常系（範囲のスクリプトと CSS））
 test("test_normal_when_range_scripts", async () => {
   // 準備
   const dir = await createTempDir();
@@ -798,7 +798,7 @@ test("test_normal_when_range_scripts", async () => {
   await opened.close();
 });
 
-// 端末の設定と上のフォルダの設定を重ねて書き出し、theme と extensions は書いた設定ファイルのフォルダから読む（正常系（設定を重ねる））
+// 端末の設定と上のフォルダの設定を重ねて書き出し、theme と extensions は記載した設定ファイルのフォルダから読み込む（正常系（設定を重ねる））
 test("test_normal_when_cascaded", async () => {
   // 準備
   const dir = await createTempDir();
@@ -879,7 +879,7 @@ test("test_normal_when_cascaded", async () => {
   expect(after).toEqual(before);
 });
 
-// 端末の設定を YAML として読めないとき、そのパスと行を示して書き出さずに終わる（異常系（端末の設定を読めない・終了コード 1））
+// 端末の設定を YAML として読み込めないとき、そのパスと行を示して書き出さずに終わる（異常系（端末の設定を読み込めない・終了コード 1））
 test("test_error_when_settings_unreadable", async () => {
   // 準備
   const dir = await createSampleDir();
@@ -896,7 +896,7 @@ test("test_error_when_settings_unreadable", async () => {
   expect(result.code).toBe(1);
   expect(result.stderr).toContain("settings.yaml");
   expect(result.stderr).toContain("3 行目");
-  expect(result.stderr).toContain("字下げと書き方を直してください");
+  expect(result.stderr).toContain("字下げと記載方法を修正してください");
   expect(existsSync(join(dir, "guide.html"))).toBe(false);
 });
 

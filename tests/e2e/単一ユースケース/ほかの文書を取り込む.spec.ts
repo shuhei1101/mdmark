@@ -6,7 +6,7 @@ import {
   removeDistRoot,
 } from "../dist-page.ts";
 
-// ビルドした配布物を置いた作業ツリー
+// ビルドした配布物を配置した作業ツリー
 let builtRoot = "";
 
 test.beforeAll(async () => {
@@ -101,7 +101,7 @@ test("test_normal", async ({ page }) => {
   await expect(page.locator("#doc .mdmark-syntax-warning")).toHaveCount(0);
 });
 
-// 取り込み先が無いマーカーの場所に、無いものを書いた書き方の警告を置く（異常シナリオ（取り込み先が無い））
+// 取り込み先が無いマーカーの場所に、無いものを記載した記載の警告を配置する（異常シナリオ（取り込み先が無い））
 test("test_error_when_target_missing", async ({ page }) => {
   // 準備
   await openPage(page, builtRoot);
@@ -131,7 +131,7 @@ test("test_error_when_target_missing", async ({ page }) => {
   await expect(page.locator("#doc")).toContainText("後ろの段落");
 });
 
-// 循環する取り込みを止め、循環の順を書いた書き方の警告を置く（異常シナリオ（取り込みが循環する））
+// 循環する取り込みを止め、循環の順を記載した記載の警告を配置する（異常シナリオ（取り込みが循環する））
 test("test_error_when_circular", async ({ page }) => {
   // 準備
   await openPage(page, builtRoot);

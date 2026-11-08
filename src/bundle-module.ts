@@ -2,21 +2,21 @@ import { readFile } from "node:fs/promises";
 import { dirname, extname, isAbsolute, resolve } from "node:path";
 import type { BuildOptions, Plugin } from "esbuild";
 
-/** URL を読む関数 */
+/** URL を読み込む関数 */
 export type FetchText = (url: string) => Promise<string>;
 
-/** esbuild の `build`。CLI はネイティブの esbuild の、VS Code 拡張機能は esbuild-wasm の `build` を渡す */
+/** esbuild の `build`。CLI はネイティブの esbuild の、VS Code 拡張機能は esbuild-wasm の `build` を指定する */
 export type BuildFunction = (
   options: BuildOptions,
 ) => Promise<{ outputFiles?: Array<{ text: string }> | undefined }>;
 
-/** 束ねたモジュールの target に渡すブラウザの版（対応ブラウザの下限） */
+/** まとめたモジュールの target に指定するブラウザのバージョン（対応ブラウザの下限） */
 export const BROWSER_TARGETS = ["chrome99", "firefox98", "safari16.4"];
 
-/** esbuild が URL の import を読む名前空間 */
+/** esbuild が URL の import を読み込む名前空間 */
 const URL_NAMESPACE = "http-url";
 
-/** esbuild がファイルを読む名前空間（esbuild-wasm はファイルシステムを持たず、`file` の名前空間は Windows のパスを拒む） */
+/** esbuild がファイルを読み込む名前空間（esbuild-wasm はファイルシステムを持たず、`file` の名前空間は Windows のパスを拒む） */
 const LOCAL_NAMESPACE = "local";
 
 /** `http:`・`https:` の URL か */
@@ -25,7 +25,7 @@ const HTTP_PATTERN = /^https?:\/\//i;
 /** ファイルのパスを指す import か（相対パス・絶対パス） */
 const PATH_PATTERN = /^(?:\.{1,2}[\\/]|[\\/]|[A-Za-z]:[\\/])/;
 
-/** TypeScript として読む拡張子 */
+/** TypeScript として読み込む拡張子 */
 const TS_LOADERS: Readonly<Record<string, "ts" | "tsx">> = {
   ".ts": "ts",
   ".mts": "ts",
@@ -33,16 +33,16 @@ const TS_LOADERS: Readonly<Record<string, "ts" | "tsx">> = {
   ".tsx": "tsx",
 };
 
-/** `fetch` で URL の本文を読む。読めなければ例外を投げる */
+/** `fetch` で URL の本文を読み込む。読み込めなければ例外を投げる */
 const fetchByUrl: FetchText = async (url) => {
   const response = await fetch(url);
   if (!response.ok) {
-    throw new Error(`${url} は ${response.status} を返しました`);
+    throw new Error(`${url} は ${response.status} を返却しました`);
   }
   return response.text();
 };
 
-/** URL の import を `fetchText` で読んで束ねる esbuild のプラグイン。取得したモジュールの中の import は、そのモジュールの URL を基準に解く */
+/** URL の import を `fetchText` で読み込んでまとめる esbuild のプラグイン。取得したモジュールの中の import は、そのモジュールの URL を基準に解く */
 export function urlPlugin(fetchText: FetchText): Plugin {
   return {
     name: URL_NAMESPACE,
@@ -69,7 +69,7 @@ export function urlPlugin(fetchText: FetchText): Plugin {
   };
 }
 
-/** 入口とファイルのパスの import を `node:fs/promises` で読む esbuild のプラグイン */
+/** 入口とファイルのパスの import を `node:fs/promises` で読み込む esbuild のプラグイン */
 const localPlugin: Plugin = {
   name: LOCAL_NAMESPACE,
   setup(pluginBuild) {
@@ -91,7 +91,7 @@ const localPlugin: Plugin = {
   },
 };
 
-/** URL かファイルのモジュールを、import する先も含めて渡した esbuild の `build` で 1 つの ES モジュールのコードに束ねる。届かない・束ねられないときは例外を投げずに理由を返す */
+/** URL かファイルのモジュールを、import する先も含めて指定した esbuild の `build` で 1 つの ES モジュールのコードにまとめる。届かない・まとめられないときは例外を投げずに理由を返却する */
 export async function bundleModule(
   entry: string,
   baseDir: string,
@@ -114,7 +114,7 @@ export async function bundleModule(
     });
     const code = result.outputFiles?.[0]?.text;
     if (code === undefined) {
-      return { error: `${entry}: 束ねた結果がありません` };
+      return { error: `${entry}: まとめた結果がありません` };
     }
     return { code };
   } catch (error) {
@@ -124,7 +124,7 @@ export async function bundleModule(
   }
 }
 
-/** 同じ URL を 1 回だけ読む `FetchText` を返す。拒否した読み込みも控え、読み直さない */
+/** 同じ URL を 1 回だけ読み込む `FetchText` を返却する。拒否した読み込みも記録し、再読み込みしない */
 export function cacheFetchText(fetchText: FetchText = fetchByUrl): FetchText {
   const cache = new Map<string, Promise<string>>();
   return (url) => {

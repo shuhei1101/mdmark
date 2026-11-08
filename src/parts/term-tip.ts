@@ -23,7 +23,7 @@ export const COMMAND_COPY_STATES = {
   failed: { text: "コピーできませんでした", icon: "circle-alert" },
 } as const;
 
-/** コピーのボタンの中に置く、状態のアイコンと文言の HTML を返す */
+/** コピーのボタンの中に配置する、状態のアイコンと文言の HTML を返却する */
 export function renderTermTipCopy(state: TermTipCopyState): string {
   const { text, icon } = COMMAND_COPY_STATES[state];
   return `${iconSvg(icon)}${text}`;
@@ -36,9 +36,9 @@ function isHttpUrl(url: string): boolean {
 
 /** ツールチップの「関連文書」に並べる文書 1 つ */
 export type TermTipDoc = {
-  /** 文書の題 */
+  /** 文書のタイトル */
   title: string;
-  /** 描く文書から見た相対パス */
+  /** 描く文書を基準にした相対パス */
   href: string;
   /** 索引の `description` */
   description?: string;
@@ -49,9 +49,9 @@ function renderSection(heading: string, body: string): string {
   return `<span class="mdmark-term-tip-section"><span class="mdmark-term-tip-heading">${heading}</span>${body}</span>`;
 }
 
-/** 本文の語に破線の下線を引き、直後に「用語」の意味と「関連文書」のツールチップを置く HTML を返す。意味も関連文書も無ければ語をそのまま返す。`replacement` を渡すと、語に波線のマーカーを引き、「代わりの用語」だけのツールチップを置く（`meaning`・`docs` は使わない） */
+/** 本文の単語に破線の下線を付け、直後に「用語」の意味と「関連文書」のツールチップを配置する HTML を返却する。意味も関連文書も無ければ単語をそのまま返却する。`replacement` を指定すると、単語に波線のマーカーを引き、「代わりの用語」だけのツールチップを配置する（`meaning`・`docs` は使用しない） */
 export function renderTermTip(props: {
-  /** 下線を引く本文の語 */
+  /** 下線を付ける本文の単語 */
   text: string;
   /** ツールチップの要素の `id` */
   id: string;
@@ -59,13 +59,13 @@ export function renderTermTip(props: {
   meaning?: string;
   /** 「関連文書」に並べる文書。空なら「関連文書」の区分を出さない */
   docs?: TermTipDoc[];
-  /** `text` がやめた言い方のときの代わりの用語。`meaning` が無ければ意味を置かない */
+  /** `text` がやめた言い方のときの代わりの用語。`meaning` が無ければ意味を配置しない */
   replacement?: { term: string; meaning?: string };
-  /** `text` が一致したエイリアス。渡すと種類ごとの区分を出し、`meaning`・`docs` は使わない */
+  /** `text` が一致したエイリアス。指定すると種類ごとの区分を出し、`meaning`・`docs` は使用しない */
   alias?: MdmarkAlias;
   /** コマンドのコピーのボタンの状態（`mount` が付けた状態）。省くと `idle` */
   copy?: TermTipCopyState;
-  /** 語の下に開いた見た目にするか。ストーリーが下に開いた状態を出すために使い、`render` は渡さない */
+  /** 単語の下に開いた外観にするか。ストーリーが下に開いた状態を出すために使用し、`render` は指定しない */
   below?: boolean;
 }): string {
   const {
@@ -97,7 +97,7 @@ export function renderTermTip(props: {
     );
   } else {
     if (meaning !== "") {
-      // 関連文書もあるときだけ、意味の要素に `id` を付けて語の説明にする
+      // 関連文書もあるときだけ、意味の要素に `id` を付けて単語の説明にする
       const idAttribute = docs.length > 0 ? ` id="${meaningId}"` : "";
       sections.push(
         renderSection(
@@ -139,7 +139,7 @@ export function renderTermTip(props: {
   return `<span class="${wrapClass}"><span class="mdmark-term${termClass}" tabindex="0"${described}${details}>${word}</span><span class="mdmark-term-tip" id="${tipId}" role="${role}"${label}>${sections.join("")}</span></span>`;
 }
 
-/** エイリアスの種類ごとの区分の中身（名前・説明・種類の項目）と、ツールチップの役割・語に付ける属性を返す */
+/** エイリアスの種類ごとの区分の中身（名前・説明・種類の項目）と、ツールチップの役割・単語に付ける属性を返却する */
 function renderAliasTip(options: {
   text: string;
   id: string;

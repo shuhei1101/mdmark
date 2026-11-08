@@ -3,7 +3,7 @@ import { join } from "node:path";
 import { expect, test } from "vitest";
 import { useTempDirs, writeFiles } from "../cli.ts";
 
-/** 設定を重ねて読む処理を読み込む（実装が無い間は各テストが個別に失敗する） */
+/** 設定を重ねて読み込む処理を読み込む（実装が無い間は各テストが個別に失敗する） */
 const loadModule = () => import("../../../src/config-files.ts");
 
 const createTempDir = useTempDirs();
@@ -56,7 +56,7 @@ const load = async (options: {
 const CASCADE_SETTINGS =
   "config:\n  cascade: true\nfeatures:\n  callout: false\n";
 
-// 端末の設定と上のフォルダの設定と近いフォルダの設定を重ね、相対パスを書いた設定ファイルから解決する（正常系）
+// 端末の設定と上のフォルダの設定と近いフォルダの設定を重ね、相対パスを記載した設定ファイルから解決する（正常系）
 test("test_normal", async () => {
   // 準備
   const { work, settings } = await createWork(CASCADE_SETTINGS);
@@ -74,7 +74,7 @@ test("test_normal", async () => {
   expect(layered.issues).toEqual([]);
 });
 
-// config.cascade が false のとき、近いフォルダの設定と端末の設定だけを重ねる（正常系（最初の 1 つだけを読む））
+// config.cascade が false のとき、近いフォルダの設定と端末の設定だけを重ねる（正常系（最初の 1 つだけを読み込む））
 test("test_normal_when_first_only", async () => {
   // 準備
   const { work, settings } = await createWork(
@@ -120,7 +120,7 @@ test("test_normal_when_settings_missing", async () => {
   expect(layered.issues).toEqual([]);
 });
 
-// YAML として読めない端末の設定を重ねずに、ずれとして返す（正常系（読めない設定ファイルがある））
+// YAML として読み込めない端末の設定を重ねずに、ずれとして返却する（正常系（読み込めない設定ファイルがある））
 test("test_normal_when_unreadable_file", async () => {
   // 準備
   const { work, settings } = await createWork(

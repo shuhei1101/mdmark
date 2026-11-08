@@ -4,10 +4,10 @@ import { relativeHref } from "../../knowledge/paths.ts";
 import { renderBacklinks } from "../../parts/backlinks.ts";
 import { envOf, featureOn, ownBlock } from "./tokens.ts";
 
-/** 関連文書の一覧の題の `id`（ページで一意にするのは `attachTermTips`） */
+/** 関連文書の一覧のタイトルの `id`（ページで一意にするのは `attachTermTips`） */
 const TITLE_ID = "mdmark-backlinks-title";
 
-/** `backlinks` がオンで描く文書を参照している文書があれば、本文の末尾に関連文書の一覧を足す */
+/** `backlinks` がオンで描く文書を参照している文書があれば、本文の末尾に関連文書の一覧を追加する */
 export function backlinksRule(state: StateCore): void {
   const env = envOf(state);
   const { index, docId } = env;

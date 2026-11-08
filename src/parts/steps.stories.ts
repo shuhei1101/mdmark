@@ -3,7 +3,7 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 const meta = { title: "Parts/Steps" } satisfies Meta<Record<string, unknown>>;
 export default meta;
 
-/** ストーリー: 描画の口（`parameters.server.id`）の部品を `args` で描く */
+/** ストーリー: 描画のインターフェース（`parameters.server.id`）の部品を `args` で描く */
 type Story = StoryObj<Record<string, unknown>>;
 
 export const Basic: Story = {
@@ -19,7 +19,7 @@ export const Rich: Story = {
   parameters: { server: { id: "steps" } },
   args: {
     items:
-      '["<p>依存を入れる</p><pre><code>npm ci</code></pre>","<p>確かめる</p><ol><li>lint</li><li>型検査</li></ol>"]',
+      '["<p>依存を入れる</p><pre><code>npm ci</code></pre>","<p>確認する</p><ol><li>lint</li><li>型検査</li></ol>"]',
   },
 };
 
@@ -28,7 +28,7 @@ export const Long: Story = {
   parameters: { server: { id: "steps" } },
   args: {
     items:
-      '["とても長い手順の説明で、画面の幅を超えて何行かに折り返すときに、番号と線の位置がずれないことを確かめる","短い手順"]',
+      '["とても長い手順の説明で、画面の幅を超えて何行かに折り返すときに、番号と線の位置がずれないことを確認する","短い手順"]',
   },
 };
 

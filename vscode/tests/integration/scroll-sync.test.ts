@@ -18,16 +18,16 @@ import {
   writeFixture,
 } from "./helpers.ts";
 
-/** 節の数 */
+/** セクションの数 */
 const SECTIONS = 10;
-/** 1 つの節の行数（見出し 1 行・空行 1 行・40 段落 × 2 行） */
+/** 1 つのセクションの行数（見出し 1 行・空行 1 行・40 段落 × 2 行） */
 const SECTION_LINES = 82;
 
-/** 見出しで区切った 10 の節を持ち、画面の高さの 3 倍を超える Markdown */
+/** 見出しで区切った 10 のセクションを持ち、画面の高さの 3 倍を超える Markdown */
 function longDocument(): string {
   return Array.from({ length: SECTIONS }, (_, section) =>
     [
-      `## 節 ${section + 1}`,
+      `## セクション ${section + 1}`,
       "",
       ...Array.from({ length: 40 }, (_, paragraph) => [
         `${section + 1}-${paragraph + 1} 段落の本文です。`,
@@ -40,7 +40,7 @@ function longDocument(): string {
 /** 狭い幅の帯とみなす右側の目次の高さの上限（px） */
 const BAND_MAX_HEIGHT = 120;
 
-/** `n` 番目の節（1 始まり）の見出しの行（0 始まり） */
+/** `n` 番目のセクション（1 始まり）の見出しの行（0 始まり） */
 function headingLine(n: number): number {
   return (n - 1) * SECTION_LINES;
 }
@@ -65,7 +65,7 @@ function visibleStart(editor: vscode.TextEditor): number {
   return editor.visibleRanges[0]?.start.line ?? 0;
 }
 
-/** 最後に送った `scrollToLine` の行 */
+/** 最後に送信した `scrollToLine` の行 */
 function lastScrollLine(record: RecordedPanel): number | undefined {
   const sent = record.sent
     .filter((message) => message.type === "scrollToLine")
@@ -93,7 +93,7 @@ async function bandBottom(): Promise<number> {
     : 0;
 }
 
-/** `scrollToLine` を送った数 */
+/** `scrollToLine` を送信した数 */
 function scrollCount(record: RecordedPanel): number {
   return record.sent.filter((message) => message.type === "scrollToLine")
     .length;
@@ -107,12 +107,12 @@ suite("エディタとプレビューのスクロールを合わせる", () => {
   });
   teardown(resetEnvironment);
 
-  // エディタを動かすと、その行のブロックをプレビューの先頭に置き、エディタを動かし直さない
+  // エディタを動かすと、その行のブロックをプレビューの先頭に配置し、エディタをもう一度動かさない
   test("test_normal", async () => {
     // 準備
     const { editor, record } = await openLong();
     const before = scrollCount(record);
-    // 実行: 8 番目の節の見出しの行をエディタの先頭にする
+    // 実行: 8 番目のセクションの見出しの行をエディタの先頭にする
     const line = headingLine(8);
     editor.revealRange(
       new vscode.Range(line, 0, line, 0),
@@ -120,11 +120,11 @@ suite("エディタとプレビューのスクロールを合わせる", () => {
     );
     // 検証
     await waitFor(() => scrollCount(record) > before, {
-      message: "scrollToLine が送られない",
+      message: "scrollToLine が送信されない",
     });
     const start = await settledStart(editor);
     await waitFor(() => lastScrollLine(record) === start, {
-      message: "止まった先頭の行を送っていない",
+      message: "止まった先頭の行を送信していない",
     });
     // 先頭の行を含むブロックが、プレビューの先頭（狭い幅の帯があればその下端）に来る
     await waitFor(
@@ -149,7 +149,7 @@ suite("エディタとプレビューのスクロールを合わせる", () => {
     const { editor, record } = await openLong();
     const selection = editor.selection;
     const before = scrollCount(record);
-    // 実行: 5 番目の節の見出しを先頭までスクロールしたことにする
+    // 実行: 5 番目のセクションの見出しを先頭までスクロールしたことにする
     const line = headingLine(5);
     deliver(record, { type: "revealLine", line });
     // 検証
@@ -175,7 +175,7 @@ suite("エディタとプレビューのスクロールを合わせる", () => {
     const { editor, record } = await openLong();
     await sleep(1000);
     const top = (await inspect("h2")).find((item) =>
-      item.text.includes("節 1"),
+      item.text.includes("セクション 1"),
     )?.top;
     const line = headingLine(8);
     // 実行
@@ -190,13 +190,14 @@ suite("エディタとプレビューのスクロールを合わせる", () => {
     // 検証
     assert.strictEqual(scrollCount(record), 0);
     assert.strictEqual(
-      (await inspect("h2")).find((item) => item.text.includes("節 1"))?.top,
+      (await inspect("h2")).find((item) => item.text.includes("セクション 1"))
+        ?.top,
       top,
     );
     assert.strictEqual(visibleStart(editor), start);
   });
 
-  // 同じ列に開いてエディタが隠れているときは、エディタを開き直さない
+  // 同じ列に開いてエディタが隠れているときは、エディタをもう一度開かない
   test("test_error_when_editor_hidden", async () => {
     // 準備: 長い文書を同じ列に開く
     await writeFixture("long.md", longDocument());

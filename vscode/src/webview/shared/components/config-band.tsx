@@ -7,26 +7,26 @@ import {
 } from "./ui/alert.tsx";
 import { Button } from "./ui/button.tsx";
 
-/** 設定ファイルを読めない帯の props。YAML として読めないときは `line`、形に合わないときは `settingKey` を持つ */
+/** 設定ファイルを読み込めない帯の props。YAML として読み込めないときは `line`、構造に合わないときは `settingKey` を持つ */
 export type ConfigBandProps = {
-  /** 読めない設定ファイルのパス（ワークスペースの中はワークスペースのフォルダからの相対パス、外はホームを `~` にしたパス） */
+  /** 読み込めない設定ファイルのパス（ワークスペースの中はワークスペースのフォルダからの相対パス、外はホームを `~` にしたパス） */
   path: string;
   /** 「設定ファイルを開く」を押したとき */
   onOpenConfig: () => void;
 } & (
   | {
-      /** YAML として読めない行（1 始まり） */
+      /** YAML として読み込めない行（1 始まり） */
       line: number;
       settingKey?: never;
     }
   | {
-      /** 設定の形に合わない最初のキー（`features.callout` のように `.` でつなぐ） */
+      /** 設定の構造に合わない最初のキー（`features.callout` のように `.` でつなぐ） */
       settingKey: string;
       line?: never;
     }
 );
 
-/** 文書の先頭に置く、設定ファイルを読めない帯と「設定ファイルを開く」。帯の幅が 30rem 以上ではボタンを文の右に置く */
+/** 文書の先頭に配置する、設定ファイルを読み込めない帯と「設定ファイルを開く」。帯の幅が 30rem 以上ではボタンを文の右に配置する */
 export const ConfigBand = ({
   path,
   line,
@@ -46,12 +46,12 @@ export const ConfigBand = ({
       <AlertDescription>
         {settingKey === undefined ? (
           <>
-            <code>{path}</code> の {line} 行目を YAML として読めないため、
+            <code>{path}</code> の {line} 行目を YAML として読み込めないため、
           </>
         ) : (
           <>
             <code>{path}</code> の <code>{settingKey}</code>{" "}
-            が設定の形に合わないため、
+            が設定の構造に合わないため、
           </>
         )}
         この設定ファイルを重ねずに表示しています。

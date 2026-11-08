@@ -13,10 +13,10 @@ let treeCounter = 0;
 /** 注釈の左端の手前に空ける幅（名前の後ろの点線の最小の幅と、その前後の余白。単位は文字の高さ） */
 const NOTE_GAP_EM = 2;
 
-/** コピーできたことの読み上げ */
+/** コピーできたことのスクリーンリーダー */
 const COPIED_ANNOUNCEMENT = "ツリーのテキストをコピーしました";
 
-/** コピーできなかったことの読み上げ */
+/** コピーできなかったことのスクリーンリーダー */
 const COPY_FAILED_ANNOUNCEMENT =
   "クリップボードにコピーできませんでした。選択したツリーのテキストを手動でコピーできます";
 
@@ -26,7 +26,7 @@ const measureContext =
     ? undefined
     : document.createElement("canvas").getContext("2d");
 
-/** 開閉のボタンが開閉する入れ子の `ul` を返す */
+/** 開閉のボタンが開閉する入れ子の `ul` を返却する */
 function controlledList(toggle: Element): HTMLElement | null {
   return (
     toggle.closest("li")?.querySelector<HTMLElement>(":scope > ul") ?? null
@@ -58,7 +58,7 @@ function toggleFolder(toggle: Element, deep: boolean): void {
   }
 }
 
-/** リストの中の要素の、ルートを 0 とした深さ（入れ子の `ul` の数）を返す */
+/** リストの中の要素の、ルートを 0 とした深さ（入れ子の `ul` の数）を返却する */
 function depthOf(element: Element, list: Element): number {
   let depth = 0;
   for (
@@ -73,7 +73,7 @@ function depthOf(element: Element, list: Element): number {
   return depth;
 }
 
-/** 注釈の左端を、注釈を持つ全ての行で同じ位置にそろえる値（`--mdmark-tree-note-start`・`--mdmark-tree-indent` と各行の `--mdmark-tree-depth`）を `tree` に入れ、取り除く関数を返す */
+/** 注釈の左端を、注釈を持つ全ての行で同じ位置にそろえる値（`--mdmark-tree-note-start`・`--mdmark-tree-indent` と各行の `--mdmark-tree-depth`）を `tree` に入れ、取り除く関数を返却する */
 function alignNotes(tree: HTMLElement, list: HTMLElement): () => void {
   const rows = [...list.querySelectorAll<HTMLElement>(".mdmark-tree-row")];
   const noted = rows.filter((row) =>
@@ -99,14 +99,14 @@ function alignNotes(tree: HTMLElement, list: HTMLElement): () => void {
       Number.parseFloat(nestedStyle.borderInlineStartWidth) +
       Number.parseFloat(nestedStyle.paddingInlineStart)
     : 0;
-  /** 行の名前の文字の幅（「ほかにもある」は読み上げの文だけなので 0） */
+  /** 行の名前の文字の幅（「ほかにもある」はスクリーンリーダーの文だけなので 0） */
   const textWidth = (row: HTMLElement): number =>
     row.closest(".mdmark-tree-more")
       ? 0
       : measureContext.measureText(
           row.querySelector(".mdmark-tree-name")?.textContent?.trim() ?? "",
         ).width;
-  // 注釈の列の最小の幅を外してから、見えている行の名前の塊の幅（山形・アイコンを含む）から文字の幅を引いて、名前の塊の種類ごとに文字の前の幅を求める
+  // 注釈の列の最小の幅を削除してから、見えている行の名前の塊の幅（山形・アイコンを含む）から文字の幅を参照して、名前の塊の種類ごとに文字の前の幅を求める
   tree.style.removeProperty("--mdmark-tree-note-start");
   const leads = new Map<string, number>();
   for (const row of rows) {
@@ -149,7 +149,7 @@ function alignNotes(tree: HTMLElement, list: HTMLElement): () => void {
   return reset;
 }
 
-/** `render` が出したファイルツリーの注釈の列の位置を測って入れる（Storybook が帯と開閉のボタンを描いたツリーに使う） */
+/** `render` が出したファイルツリーの注釈の列の位置を測って入れる（Storybook が帯と開閉のボタンを描いたツリーに使用する） */
 export function alignFileTreeNotes(tree: HTMLElement): void {
   const list = tree.querySelector<HTMLElement>(":scope > .mdmark-tree-list");
   if (list) {
@@ -157,7 +157,7 @@ export function alignFileTreeNotes(tree: HTMLElement): void {
   }
 }
 
-/** ファイルツリー 1 つに、帯・開閉のボタン・コピーを付け、取り除く関数を返す */
+/** ファイルツリー 1 つに、帯・開閉のボタン・コピーを付け、取り除く関数を返却する */
 function attachTree(tree: HTMLElement): () => void {
   const list = tree.querySelector<HTMLElement>(":scope > .mdmark-tree-list");
   if (!list) {
@@ -219,7 +219,7 @@ function attachTree(tree: HTMLElement): () => void {
   list.addEventListener("click", onClick);
   cleanups.push(() => list.removeEventListener("click", onClick));
 
-  // ページ内検索が閉じたフォルダの中に当たったとき、そのフォルダと外のフォルダを開いた状態にする
+  // ページ内検索が閉じたフォルダの中に該当したとき、そのフォルダと外のフォルダを開いた状態にする
   const onBeforeMatch = (event: Event): void => {
     for (
       let element = event.target instanceof Element ? event.target : null;
@@ -240,7 +240,7 @@ function attachTree(tree: HTMLElement): () => void {
   list.addEventListener("beforematch", onBeforeMatch);
   cleanups.push(() => list.removeEventListener("beforematch", onBeforeMatch));
 
-  // コピー: 元の罫線のテキストを書き、書けなければ手でコピーさせるパネルを出す
+  // コピー: 元の罫線のテキストを書き込み、書き込めなければ手でコピーさせるパネルを出す
   let copyTimer: ReturnType<typeof setTimeout> | undefined;
   const setCopyState = (state: TreeCopyState): void => {
     if (copyButton) {
@@ -314,7 +314,7 @@ function attachTree(tree: HTMLElement): () => void {
     closePanel(false);
   });
 
-  // 注釈の列: 書体を読み終えてからも測り直す
+  // 注釈の列: 書体を読み込み終えてからももう一度測る
   let resetNotes = alignNotes(tree, list);
   void document.fonts?.ready.then(() => {
     if (!detached) {
@@ -332,7 +332,7 @@ function attachTree(tree: HTMLElement): () => void {
   };
 }
 
-/** 描いた要素の中のファイルツリーに、帯とコピーのボタン・フォルダの開閉・注釈の列の位置を付け、まとめて外して `render` の出した状態に戻す関数を返す */
+/** 描いた要素の中のファイルツリーに、帯とコピーのボタン・フォルダの開閉・注釈の列の位置を付け、まとめて削除して `render` の出した状態に戻す関数を返却する */
 export function attachFileTrees(root: HTMLElement): () => void {
   const detachers = [
     ...root.querySelectorAll<HTMLElement>("div.mdmark-tree"),

@@ -7,13 +7,13 @@ import {
 import { COPIED_NOTICE_MS, copyText } from "./clipboard.ts";
 import { chooseTipSide } from "./placement.ts";
 
-// ポインターが語とツールチップの間を移る間、閉じるのを待つ時間（ミリ秒）
+// ポインターが単語とツールチップの間を移る間、閉じるのを待つ時間（ミリ秒）
 const CLOSE_DELAY_MS = 150;
 
 // ツールチップと画面の端との間に空ける幅（px）
 const VIEWPORT_MARGIN_PX = 16;
 
-// 開いているツールチップを持つ語の枠に付ける class
+// 開いているツールチップを持つ単語の枠に付ける class
 const OPEN_CLASS = "is-open";
 const BELOW_CLASS = "is-below";
 const DISMISSED_CLASS = "is-dismissed";
@@ -21,7 +21,7 @@ const DISMISSED_CLASS = "is-dismissed";
 // `id` を重ならせないための、操作を付けた回数の通し番号
 let attachCounter = 0;
 
-/** 語に付けた `aria-describedby`・`aria-details` を、振り直した `id` に合わせる */
+/** 単語に付けた `aria-describedby`・`aria-details` を、もう一度振った `id` に合わせる */
 function renameReferences(options: {
   term: Element;
   oldId: string;
@@ -38,7 +38,7 @@ function renameReferences(options: {
   }
 }
 
-/** ツールチップと関連文書の一覧の題の `id` を、ページの中で一意な値に振り直す */
+/** ツールチップと関連文書の一覧のタイトルの `id` を、ページの中で一意な値にもう一度振る */
 function renumberIds(root: HTMLElement, base: number): void {
   root.querySelectorAll<HTMLElement>(".mdmark-term-wrap").forEach((wrap, i) => {
     const tip = wrap.querySelector<HTMLElement>(".mdmark-term-tip");
@@ -66,7 +66,7 @@ function renumberIds(root: HTMLElement, base: number): void {
   });
 }
 
-/** ツールチップを語の上か下（`placement` の側を先に、収まらなければ反対側）に、画面からはみ出さないよう置く。行をまたぐ語は、下なら最後の行、上なら最初の行に付ける */
+/** ツールチップを単語の上か下（`placement` の側を先に、収まらなければ反対側）に、画面からはみ出さないよう配置する。行をまたぐ単語は、下なら最後の行、上なら最初の行に付ける */
 function place(options: {
   wrap: HTMLElement;
   placement: TooltipPlacement;
@@ -101,7 +101,7 @@ function place(options: {
   tip.style.left = `${Math.max(left, VIEWPORT_MARGIN_PX)}px`;
 }
 
-/** ツールチップの置いた位置を外す */
+/** ツールチップの配置した位置を削除する */
 function clearPlace(wrap: HTMLElement): void {
   const tip = wrap.querySelector<HTMLElement>(".mdmark-term-tip");
   if (tip) {
@@ -112,7 +112,7 @@ function clearPlace(wrap: HTMLElement): void {
   }
 }
 
-/** コピーのボタンの状態・中身と、同じ区分の読み上げの要素の文字を当てる */
+/** コピーのボタンの状態・中身と、同じ区分のスクリーンリーダー向けの要素の文字を適用する */
 function setCopyState(button: HTMLElement, state: TermTipCopyState): void {
   button.dataset.state = state;
   button.innerHTML = renderTermTipCopy(state);
@@ -125,7 +125,7 @@ function setCopyState(button: HTMLElement, state: TermTipCopyState): void {
   }
 }
 
-/** mount が描いた用語の下線に、ツールチップを開閉する操作を付け、外す関数を返す */
+/** mount が描いた用語の下線に、ツールチップを開閉する操作を付け、削除する関数を返却する */
 export function attachTermTips(options: {
   /** 描いた文書の要素 */
   root: HTMLElement;
@@ -138,13 +138,13 @@ export function attachTermTips(options: {
   const wraps = [...root.querySelectorAll<HTMLElement>(".mdmark-term-wrap")];
   const timers = new Map<HTMLElement, ReturnType<typeof setTimeout>>();
 
-  /** ツールチップを閉じ、置いた位置を外す */
+  /** ツールチップを閉じ、配置した位置を削除する */
   const close = (wrap: HTMLElement): void => {
     clearTimeout(timers.get(wrap));
     wrap.classList.remove(OPEN_CLASS, BELOW_CLASS);
     clearPlace(wrap);
   };
-  /** ほかのツールチップを閉じてから開く。Esc で閉じた後は、語を離れるまで開き直さない */
+  /** ほかのツールチップを閉じてから開く。Esc で閉じた後は、単語を離れるまでもう一度開かない */
   const open = (wrap: HTMLElement): void => {
     clearTimeout(timers.get(wrap));
     if (wrap.classList.contains(DISMISSED_CLASS)) {
@@ -158,7 +158,7 @@ export function attachTermTips(options: {
     wrap.classList.add(OPEN_CLASS);
     place({ wrap, placement });
   };
-  /** ポインターもフォーカスも語とツールチップを離れたら、少し待って閉じる */
+  /** ポインターもフォーカスも単語とツールチップを離れたら、少し待って閉じる */
   const closeLater = (wrap: HTMLElement): void => {
     clearTimeout(timers.get(wrap));
     timers.set(
@@ -173,7 +173,7 @@ export function attachTermTips(options: {
     );
   };
 
-  /** 語のタッチの `pointerdown`: 開閉を切り替える。閉じたときは `is-dismissed` を付け、続く `focusin` と、iOS の Safari が残す `:hover` の間の `pointerenter` で開き直さない */
+  /** 単語のタッチの `pointerdown`: 開閉を切り替える。閉じたときは `is-dismissed` を付け、続く `focusin` と、iOS の Safari が残す `:hover` の間の `pointerenter` でもう一度開かない */
   const toggleByTouch = (wrap: HTMLElement, event: PointerEvent): void => {
     if (
       event.pointerType !== "touch" ||
@@ -192,7 +192,7 @@ export function attachTermTips(options: {
   };
 
   const listeners = wraps.map((wrap) => {
-    // タッチは `pointerenter`・`pointerleave` で開閉せず、語の `pointerdown` で切り替える
+    // タッチは `pointerenter`・`pointerleave` で開閉せず、単語の `pointerdown` で切り替える
     const handlers: Array<[string, (event: Event) => void]> = [
       [
         "pointerenter",
@@ -220,7 +220,7 @@ export function attachTermTips(options: {
     return { wrap, handlers };
   });
 
-  /** Esc: 開いているツールチップを閉じる。フォーカスは語に残し、ツールチップの中のリンクにあったときは語へ戻す */
+  /** Esc: 開いているツールチップを閉じる。フォーカスは単語に残し、ツールチップの中のリンクにあったときは単語へ戻す */
   const onKeydown = (event: KeyboardEvent): void => {
     if (event.key !== "Escape") {
       return;
@@ -237,7 +237,7 @@ export function attachTermTips(options: {
       wrap.classList.add(DISMISSED_CLASS);
     }
   };
-  /** 開いている語の枠（語とツールチップ）の外の `pointerdown`: 閉じて `is-dismissed` を付ける。iOS の Safari はタップした語に `:hover` を残し、`pointerleave`・`focusout` だけでは閉じず、語に残る `:hover`・`:focus-within` では CSS がツールチップを出し続けるため。語の `pointerdown` より先に受けるため、捕捉の段で受ける */
+  /** 開いている単語の枠（単語とツールチップ）の外の `pointerdown`: 閉じて `is-dismissed` を付ける。iOS の Safari はタップした単語に `:hover` を残し、`pointerleave`・`focusout` だけでは閉じず、単語に残る `:hover`・`:focus-within` では CSS がツールチップを出し続けるため。単語の `pointerdown` より先に受けるため、キャプチャーフェーズで受ける */
   const onPointerdown = (event: PointerEvent): void => {
     if (!(event.target instanceof Node)) {
       return;
@@ -249,7 +249,7 @@ export function attachTermTips(options: {
       }
     }
   };
-  /** 画面のスクロールと幅の変化: 開いているツールチップを語に付いて動かす */
+  /** 画面のスクロールと幅の変化: 開いているツールチップを単語に付いて動かす */
   const placeOpen = (): void => {
     for (const wrap of wraps) {
       if (wrap.classList.contains(OPEN_CLASS)) {
@@ -263,7 +263,7 @@ export function attachTermTips(options: {
       close(wrap);
     }
   };
-  /** コマンドのコピーのボタン: 同じ区分のコマンドをクリップボードへ書き、ボタンと読み上げの要素で知らせる */
+  /** コマンドのコピーのボタン: 同じ区分のコマンドをクリップボードへ書き込み、ボタンとスクリーンリーダー向けの要素で通知する */
   const copyTimers = new Map<HTMLElement, ReturnType<typeof setTimeout>>();
   const onCopyClick = async (event: Event): Promise<void> => {
     const button =

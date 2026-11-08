@@ -59,7 +59,7 @@ test("test_wide", async () => {
   expect(listStyle).toBe("none");
   expect(cards.map((card) => card.tag)).toEqual(["A", "A", "A", "A"]);
   expect(cards.map((card) => card.title)).toEqual([
-    "使い方",
+    "使用方法",
     "リファレンス",
     "example.com/docs",
     "始める",
@@ -72,8 +72,8 @@ test("test_wide", async () => {
   ]);
   expect(cards[0]?.iconHidden).toBe("true");
   expect(cards.map((card) => card.description)).toEqual([
-    "導入と使い方の手順",
-    "名前から引く一覧",
+    "導入と使用方法の手順",
+    "名前から参照する一覧",
     null,
     null,
   ]);
@@ -82,7 +82,7 @@ test("test_wide", async () => {
     expect(card.underline).toBe("underline");
   }
   expect(new Set(cards.map((card) => card.top)).size).toBe(1);
-  // Tab で書いた順にリンクのカードへフォーカスが移る
+  // Tab で記載した順にリンクのカードへフォーカスが移る
   const focused: string[] = [];
   for (let index = 0; index < cards.length; index++) {
     await page.keyboard.press("Tab");
@@ -98,7 +98,7 @@ test("test_wide", async () => {
   await page.close();
 });
 
-// リンクの無い項目は div のカードにし、タイトルに下線を引かず Tab で止まらない（NoLink）
+// リンクの無い項目は div のカードにし、タイトルに下線を付けず Tab で止まらない（NoLink）
 test("test_no_link", async () => {
   // 準備・実行
   const page = await open("no-link");
@@ -107,7 +107,7 @@ test("test_no_link", async () => {
   expect(cards.map((card) => card.tag)).toEqual(["DIV", "A"]);
   expect(cards[0]?.href).toBeNull();
   expect(cards[0]?.icon).toBe("clock");
-  expect(cards[0]?.description).toBe("次の版で追加する");
+  expect(cards[0]?.description).toBe("次のバージョンで追加する");
   expect(cards[0]?.underline).toBe("none");
   expect(cards[1]?.underline).toBe("underline");
   await page.keyboard.press("Tab");
@@ -117,7 +117,7 @@ test("test_no_link", async () => {
   await page.close();
 });
 
-// 長いタイトルと説明は折り返し、同じ行のカードの高さを揃える（Long）
+// 長いタイトルと説明は折り返し、同じ行のカードの高さを統一する（Long）
 test("test_long", async () => {
   // 準備・実行
   const page = await open("long");
@@ -139,7 +139,7 @@ test("test_long", async () => {
   await page.close();
 });
 
-// 描く先の要素が 390px のときは 1 列に積む（Narrow）
+// 描く先の要素が 390px のときは 1 列に追加する（Narrow）
 test("test_narrow", async () => {
   // 準備・実行
   const page = await open("narrow");

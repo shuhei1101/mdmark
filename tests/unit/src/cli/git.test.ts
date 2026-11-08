@@ -15,7 +15,7 @@ const createTempDir = useTempDirs();
 /**
  * `docs/a.md`・`docs/b.md`・`docs/c.md` と `.gitignore`（`*.log`）をコミットしてタグ `base` を付け、
  * `docs/a.md` を書き換えてコミットし、`docs/b.md` をコミットせずに書き換え、
- * `docs/d.md` と `docs/x.log` を新しく置いた git のフォルダを作る
+ * `docs/d.md` と `docs/x.log` を新しく配置した git のフォルダを作る
  */
 async function createChangedRepository(): Promise<string> {
   const dir = await createTempDir();
@@ -38,7 +38,7 @@ async function createChangedRepository(): Promise<string> {
   return dir;
 }
 
-// merge-base からのコミット済み・未コミットの変更と新しいファイルを、索引のフォルダからのパスで返す（正常系）
+// merge-base からのコミット済み・未コミットの変更と新しいファイルを、索引のフォルダからのパスで返却する（正常系）
 test("test_changed_paths_since", async () => {
   // 準備
   const { changedPathsSince } = await loadGit();
@@ -53,7 +53,7 @@ test("test_changed_paths_since", async () => {
   expect([...paths].sort()).toEqual(["a.md", "b.md", "d.md"]);
 });
 
-// merge-base を引けない ref は、ref と履歴の取得を案内して CliError にする（異常系）
+// merge-base を参照できない ref は、ref と履歴の取得を案内して CliError にする（異常系）
 test("test_changed_paths_since_when_ref_unknown", async () => {
   // 準備
   const { changedPathsSince } = await loadGit();
@@ -88,7 +88,7 @@ test("test_changed_paths_since_when_not_repository", async () => {
   expect((error as Error).message).toContain("main");
 });
 
-// `-` で始まる ref を git の引数に渡さない（異常系）
+// `-` で始まる ref を git の引数に指定しない（異常系）
 test("test_changed_paths_since_when_ref_starts_with_dash", async () => {
   // 準備
   const { changedPathsSince } = await loadGit();

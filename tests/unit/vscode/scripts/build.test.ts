@@ -20,7 +20,7 @@ afterEach(async () => {
   );
 });
 
-/** 作業ツリーの `vscode/` を、依存と生成物・取得物を除外して一時フォルダに複製し、依存とライブラリ本体は作業ツリーのものを読む */
+/** 作業ツリーの `vscode/` を、依存と生成物・取得物を除外して一時フォルダに複製し、依存とライブラリ本体は作業ツリーのものを読み込む */
 const copyExtension = async (): Promise<string> => {
   const temp = await mkdtemp(join(tmpdir(), "mdmark-vscode-build-"));
   roots.push(temp);
@@ -39,14 +39,14 @@ const copyExtension = async (): Promise<string> => {
     ? join(REPO_ROOT, "vscode", "node_modules")
     : join(REPO_ROOT, "node_modules");
   await symlink(dependencies, join(root, "node_modules"), "dir");
-  // 拡張機能はライブラリ本体の設定を重ねて読む処理（`src/`）を束ねるため、`src/`・`schemas/` と、その依存を読めるようにする
+  // 拡張機能はライブラリ本体の設定を重ねて読み込む処理（`src/`）をまとめるため、`src/`・`schemas/` と、その依存を読み込めるようにする
   for (const name of ["src", "schemas", "node_modules"]) {
     await symlink(join(REPO_ROOT, name), join(temp, name), "dir");
   }
   return root;
 };
 
-// 拡張機能と Webview を書き出し、vscode と axe を束ねない（正常系）
+// 拡張機能と Webview を書き出し、vscode と axe をまとめない（正常系）
 test(
   "test_build_extension",
   async () => {

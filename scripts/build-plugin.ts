@@ -15,32 +15,32 @@ import {
   readLicenseBlock,
 } from "./bundle.ts";
 
-/** プラグインに束ねるソースと書く先 */
+/** プラグインにまとめるソースと記載する先 */
 const PLUGIN_ENTRY_POINTS = [
   { in: "src/plugin/pre-tool-use.ts", out: "scripts/pre-tool-use" },
   { in: "src/plugin/session-start.ts", out: "scripts/session-start" },
   { in: "src/plugin/setup/main.ts", out: "bin/setup" },
 ];
-/** ビルドの最初と失敗したときに消す、`plugin/` の中の生成物 */
+/** ビルドの最初と失敗したときに削除する、`plugin/` の中の生成物 */
 const PLUGIN_OUTPUTS = [
   "plugin/scripts",
   "plugin/bin",
   "plugin/templates",
   "plugin/THIRD_PARTY_LICENSES.txt",
 ];
-/** `setup` のスキルが使う `mdmark.config.yaml` の雛形の正本と、プラグインに写す先 */
+/** `setup` のスキルが使用する `mdmark.config.yaml` の雛形の原本と、プラグインに写す先 */
 const CONFIG_TEMPLATE = {
   from: "templates/mdmark.config.yaml",
   to: "plugin/templates/mdmark.config.yaml",
 };
-/** リポジトリの直下からの使い方集の索引のパス */
+/** リポジトリの直下からのガイドの索引のパス */
 const GUIDE_SOURCE = "guide/index.yaml";
-/** バージョンを書くプラグインの定義のパス */
+/** バージョンを記載するプラグインの定義のパス */
 const PLUGIN_MANIFEST = "plugin/.claude-plugin/plugin.json";
-/** 束ねたプラグインのライセンスを書く、プラグインの直下のファイル名 */
+/** まとめたプラグインのライセンスを記載する、プラグインの直下のファイル名 */
 const PLUGIN_LICENSES_FILE = "plugin/THIRD_PARTY_LICENSES.txt";
 
-/** 使い方集の索引を読んで形と指すページの有無を検査する。合う行と、標準エラーに出す問題の行を返す */
+/** ガイドの索引を読み込んで構造と指すページの有無を検査する。合う行と、標準エラーに出す問題の行を返却する */
 export async function checkGuideSource(options: {
   /** 作業ツリーの場所 */
   root: string;
@@ -56,7 +56,7 @@ export async function checkGuideSource(options: {
         : String(error);
     return {
       entries: [],
-      problems: [`使い方集の索引を読めない: ${GUIDE_SOURCE}（${reason}）`],
+      problems: [`ガイドの索引を読み込めない: ${GUIDE_SOURCE}（${reason}）`],
     };
   }
   const { entries, problems: shapeProblems } = parseGuideIndex(raw);
@@ -65,7 +65,7 @@ export async function checkGuideSource(options: {
       problem.where === "" ? GUIDE_SOURCE : `${GUIDE_SOURCE}:${problem.where}`;
     return `${place}: ${problem.message}`;
   });
-  // 行ごとに、指すページが作業ツリーにあるかを確かめる
+  // 行ごとに、指すページが作業ツリーにあるかを確認する
   const guides = (raw as { guides?: unknown } | null)?.guides;
   if (Array.isArray(guides)) {
     guides.forEach((item: { page?: unknown } | null, position) => {
@@ -80,7 +80,7 @@ export async function checkGuideSource(options: {
   return { entries, problems };
 }
 
-/** 束ねた入力のソースマップの `sources` から、パッケージの配布物に取り込まれた別のパッケージの名前を、名前の順に返す。束ねたパッケージ自身は含めない */
+/** まとめた入力のソースマップの `sources` から、パッケージの配布物に取り込まれた別のパッケージの名前を、名前の順に返却する。まとめたパッケージ自身は含めない */
 export function listEmbeddedPackages(options: {
   /** esbuild の出力 */
   metafile: Metafile;
@@ -117,7 +117,7 @@ export function listEmbeddedPackages(options: {
   return [...embedded].sort();
 }
 
-/** 束ねたパッケージと、その中に取り込まれたパッケージのライセンスの本文を `plugin/THIRD_PARTY_LICENSES.txt` に書く */
+/** まとめたパッケージと、その中に取り込まれたパッケージのライセンスの本文を `plugin/THIRD_PARTY_LICENSES.txt` に書き込む */
 export async function writePluginLicenses(options: {
   /** esbuild の出力 */
   metafile: Metafile;
@@ -148,14 +148,14 @@ export async function writePluginManifest(options: {
   await writeFile(path, `${JSON.stringify(manifest, null, 2)}\n`);
 }
 
-/** `PLUGIN_OUTPUTS` を消す。無いものは飛ばす */
+/** `PLUGIN_OUTPUTS` を削除する。無いものは飛ばす */
 export function removePluginOutputs(root: string): void {
   for (const path of PLUGIN_OUTPUTS) {
     rmSync(join(root, path), { recursive: true, force: true });
   }
 }
 
-/** 使い方集の索引を検査し、合えばフックを束ね、バージョン・ライセンスを `plugin/` に書く。問題があれば `plugin/` に何も書かずに問題の行を返す。`src/plugin/pre-tool-use.ts` が無ければ何もしない */
+/** ガイドの索引を検査し、合えばフックをまとめ、バージョン・ライセンスを `plugin/` に書き込む。問題があれば `plugin/` に何も書き込まずに問題の行を返却する。`src/plugin/pre-tool-use.ts` が無ければ何もしない */
 export async function buildPlugin(options: {
   /** 埋めるバージョン */
   version: string;

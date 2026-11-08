@@ -7,7 +7,7 @@ const holder = createBrowserHolder();
 beforeAll(holder.launch);
 afterAll(holder.close);
 
-/** GIF のストーリーを開き、ボタン・画像・canvas の状態を返す */
+/** GIF のストーリーを開き、ボタン・画像・canvas の状態を返却する */
 async function open(id: string) {
   const page = await holder.openStory(`parts-gif--${id}`);
   await page
@@ -61,7 +61,7 @@ test("test_playing", async () => {
   expect(state.canvasDisplay).toBe("none");
   expect(state.canvasAriaHidden).toBe("true");
   expect(state.openButton).toBe(true);
-  // 画像の右上の内側に置く
+  // 画像の右上の内側に配置する
   expect(state.toggleRightGap).toBeGreaterThanOrEqual(0);
   expect(state.toggleRightGap).toBeLessThan(16);
   expect(state.toggleTopGap).toBeGreaterThanOrEqual(0);

@@ -5,20 +5,20 @@ import { callTool, type ServerRoots, TOOLS } from "./tools.ts";
 /** MCP サーバーの名前（`serverInfo.name`） */
 export const SERVER_NAME = "mdmark";
 
-/** MCP の `instructions` に渡す、使う場面と順序の事実の文。`{session}` を tmux のセッション名に置き換える */
+/** MCP の `instructions` に指定する、使用する場面と順序の事実の文。`{session}` を tmux のセッション名に置き換える */
 export const INSTRUCTIONS =
-  "mdmark は Markdown 文書の記法・部品・図を描くライブラリで、この MCP サーバーは mdmark の文書の点検（check）・HTML への書き出し（export_html）・1 枚へのまとめ（build_site）と、使う側の CSS のテンプレートの一覧（list_templates）・登録（add_template）・配置（apply_template）を持つ。\n" +
-  "mdmark の記法・部品・図の書き方は、使い方集として dev-docs の配信元 mdmark にある。\n" +
-  'mdmark の文書を書く前に、dev-docs の search_docs で source: "mdmark" の kind が docs の文書をタグ topic:使い方集 で絞って一覧を引き、当てはまるページを view: "full" で読む。作業場所が mdmark のリポジトリの外なら outside_scope: true を付ける。\n' +
+  "mdmark は Markdown 文書の記法・部品・図を描くライブラリで、この MCP サーバーは mdmark の文書の点検（check）・HTML への書き出し（export_html）・1 枚へのまとめ（build_site）と、利用側の CSS のテンプレートの一覧（list_templates）・登録（add_template）・配置（apply_template）を持つ。\n" +
+  "mdmark の記法・部品・図の記載方法は、ガイドとして dev-docs の配信元 mdmark にある。\n" +
+  'mdmark の文書を記載する前に、dev-docs の search_docs で source: "mdmark" の kind が docs の文書をタグ topic:ガイド で絞って一覧を引き、当てはまるページを view: "full" で読み込む。作業場所が mdmark のリポジトリの外なら outside_scope: true を付ける。\n' +
   "dev-docs が無い、または配信元 mdmark が登録されていないときは、dev-docs が無いので見つかりません。\n" +
-  "書いた後は check で点検し、図は使い方集の『描いた図を確かめる』の手順で確かめる。\n" +
-  "使う側の CSS を探すときは list_templates で一覧を引き、選んだテンプレートを apply_template で配置して、返った theme の値を設定の theme に記載する。作った CSS を使い回すときは add_template で登録する。\n" +
-  "記法を使わない Markdown の編集とコードの調査には、この MCP サーバーと使い方集は要らない。\n" +
-  "この常駐サーバーは tmux のセッション {session} で動く。止まったときは /mdmark:global-setup で起動し直せる。";
+  "記載した後は check で点検し、図はガイドの『描いた図を確認する』の手順で確認する。\n" +
+  "利用側の CSS を探すときは list_templates で一覧を引き、選んだテンプレートを apply_template で配置して、返った theme の値を設定の theme に記載する。作った CSS を使い回すときは add_template で登録する。\n" +
+  "記法を使用しない Markdown の編集とコードの調査には、この MCP サーバーとガイドは要らない。\n" +
+  "この常駐サーバーは tmux のセッション {session} で動く。止まったときは /mdmark:global-setup でもう一度起動できる。";
 
 /** `instructions` を持ち、`TOOLS` のツールを登録した `McpServer` を作る */
 export function createMcpServer(options: {
-  /** サーバーの読む場所 */
+  /** サーバーの読み込む場所 */
   roots: ServerRoots;
   /** サーバーのバージョン（mdmark のバージョン） */
   version: string;
@@ -36,7 +36,7 @@ export function createMcpServer(options: {
     },
   );
   for (const tool of TOOLS) {
-    // SDK の検査は英語の文を返すため素通しにし、`callTool` が日本語の文で検査する
+    // SDK の検査は英語の文を返却するため素通しにし、`callTool` が日本語の文で検査する
     server.registerTool(
       tool.name,
       {

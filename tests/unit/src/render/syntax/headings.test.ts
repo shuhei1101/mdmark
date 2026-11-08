@@ -12,10 +12,10 @@ test("test_slugify", async () => {
   const used = new Map<string, number>();
   // 実行
   const english = slugify("Hello, World!", used);
-  const japanese = slugify("使い方", used);
+  const japanese = slugify("使用方法", used);
   // 検証
   expect(english).toBe("hello-world");
-  expect(japanese).toBe("使い方");
+  expect(japanese).toBe("使用方法");
 });
 
 // 同じ ID の 2 つ目から番号を付ける（正常系）
@@ -25,12 +25,12 @@ test("test_slugify_when_duplicated", async () => {
   const used = new Map<string, number>();
   // 実行
   const ids = [
-    slugify("使い方", used),
-    slugify("使い方", used),
-    slugify("使い方", used),
+    slugify("使用方法", used),
+    slugify("使用方法", used),
+    slugify("使用方法", used),
   ];
   // 検証
-  expect(ids).toEqual(["使い方", "使い方-1", "使い方-2"]);
+  expect(ids).toEqual(["使用方法", "使用方法-1", "使用方法-2"]);
 });
 
 // 見出しと同じ規則で ID の元にする（正常系）
@@ -39,25 +39,25 @@ test("test_slug_base", async () => {
   const { slugBase } = await loadHeadings();
   // 実行
   const english = slugBase("Hello, World!");
-  const japanese = slugBase("使い方");
+  const japanese = slugBase("使用方法");
   const symbols = slugBase("!!!");
   // 検証
   expect(english).toBe("hello-world");
-  expect(japanese).toBe("使い方");
+  expect(japanese).toBe("使用方法");
   expect(symbols).toBe("");
 });
 
 // 見出しに ID とアンカーを付ける（正常系）
 test("test_assign_heading_ids", () => {
   // 準備
-  const markdown = "# Hello, World!\n\n## 使い方\n\n## 使い方\n";
+  const markdown = "# Hello, World!\n\n## 使用方法\n\n## 使用方法\n";
   // 実行
   const { html } = renderDoc(markdown, { sections: false });
   // 検証
   for (const [id, text] of [
     ["hello-world", "Hello, World!"],
-    ["使い方", "使い方"],
-    ["使い方-1", "使い方"],
+    ["使用方法", "使用方法"],
+    ["使用方法-1", "使用方法"],
   ]) {
     expect(html).toContain(`id="${id}"`);
     expect(html).toContain(
@@ -69,10 +69,10 @@ test("test_assign_heading_ids", () => {
 // anchors がオフでも ID は付け、アンカーは付けない（正常系）
 test("test_assign_heading_ids_when_anchors_off", () => {
   // 準備
-  const markdown = "## 使い方\n";
+  const markdown = "## 使用方法\n";
   // 実行
   const { html } = renderDoc(markdown, { sections: false, anchors: false });
   // 検証
-  expect(html).toContain('id="使い方"');
+  expect(html).toContain('id="使用方法"');
   expect(html).not.toContain("mdmark-anchor");
 });

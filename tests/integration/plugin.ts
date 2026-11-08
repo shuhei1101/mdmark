@@ -17,7 +17,7 @@ export type ToolResult = {
   texts: string[];
 };
 
-/** 子プロセスを流して終わった結果 */
+/** 子プロセスを実行して終わった結果 */
 export type HookResult = {
   /** 終了コード */
   code: number;
@@ -37,7 +37,7 @@ export type ServeProcess = {
   stderr: () => string;
   /** 動いているか */
   isRunning: () => boolean;
-  /** SIGINT を送り、終わった終了コードを返す */
+  /** SIGINT を送信し、終わった終了コードを返却する */
   interrupt: () => Promise<number>;
 };
 
@@ -66,20 +66,20 @@ type Spawned = {
   exited: Promise<number>;
 };
 
-// 子プロセスの環境から外す、テストを流す Claude Code や実機の設定が漏れる環境変数
-// `TMUX`・`TMUX_PANE` があると tmux は `TMUX_TMPDIR` を見ず、テストを流している手元の tmux サーバーにつなぐ
+// 子プロセスの環境から除外する、テストを実行する Claude Code や実機の設定が漏れる環境変数
+// `TMUX`・`TMUX_PANE` があると tmux は `TMUX_TMPDIR` を確認せず、テストを実行している手元の tmux サーバーにつなぐ
 const LEAKING_ENV = ["CLAUDE_PROJECT_DIR", "MDMARK_PORT", "TMUX", "TMUX_PANE"];
 // `mdmark serve` が待ち受けを始めたときに標準出力へ出す URL
 const LISTENING_URL_PATTERN = /http:\/\/127\.0\.0\.1:\d+\/mcp/;
 // 待ち受けるアドレス
 const LISTEN_HOST = "127.0.0.1";
-// 待ち受けの URL が出たかを確かめる間隔（ミリ秒）
+// 待ち受けの URL が出たかを確認する間隔（ミリ秒）
 const POLL_INTERVAL_MS = 20;
-// 空きを確かめたポートを別のプロセスに取られたときの、起動し直す回数の上限
+// 空きを確認したポートを別のプロセスに取られたときの、もう一度起動する回数の上限
 const MAX_START_ATTEMPTS = 5;
-// ポートが使われているときに `mdmark serve` が標準エラーに出す文に含まれる語
-const PORT_IN_USE_WORD = "別のプロセスが使っています";
-// 依存の置き場所
+// ポートが使用されているときに `mdmark serve` が標準エラーに出す文に含まれる単語
+const PORT_IN_USE_WORD = "別のプロセスが使用しています";
+// 依存の配置場所
 const REPO_NODE_MODULES = resolve(import.meta.dirname, "../../node_modules");
 
 // `connectHttp` で作ったクライアントごとの、`project_dir` として入れる作業のフォルダ
@@ -95,7 +95,7 @@ export async function copyBuiltPlugin(destination: string): Promise<void> {
   await cp(builtPluginDir(), destination, { recursive: true });
 }
 
-/** ビルドしたパッケージ（`dist/`・`plugin/`・`package.json`）を別の場所へコピーし、依存の置き場所をつなぐ。コピー先の `dist/cli.js` を `mdmark serve` として起動できる */
+/** ビルドしたパッケージ（`dist/`・`plugin/`・`package.json`）を別の場所へコピーし、依存の配置場所をつなぐ。コピー先の `dist/cli.js` を `mdmark serve` として起動できる */
 export async function copyBuiltPackage(destination: string): Promise<void> {
   const root = inject("builtRoot");
   for (const name of ["dist", "plugin", "package.json"]) {
@@ -113,7 +113,7 @@ function childEnv(overrides: Record<string, string>): Record<string, string> {
   return { ...env, MDMARK_CONFIG: NO_SETTINGS, ...overrides };
 }
 
-/** 空いているポートを 1 つ返す */
+/** 空いているポートを 1 つ返却する */
 export async function findFreePort(): Promise<number> {
   const server = createServer();
   await new Promise<void>((resolve) =>
@@ -150,7 +150,7 @@ function launch(options: {
   return { child, stdout: () => stdout, stderr: () => stderr, exited };
 }
 
-/** `hooks/hooks.json` の `event` のコマンドを、`CLAUDE_PLUGIN_ROOT` を `pluginDir` にして子プロセスで流す。`input` を標準入力に渡す。終了コードが 0 以外でも例外を投げず、結果を返す */
+/** `hooks/hooks.json` の `event` のコマンドを、`CLAUDE_PLUGIN_ROOT` を `pluginDir` にして子プロセスで実行する。`input` を標準入力に指定する。終了コードが 0 以外でも例外を投げず、結果を返却する */
 async function runHook(options: {
   pluginDir: string;
   event: "PreToolUse" | "SessionStart";
@@ -166,7 +166,7 @@ async function runHook(options: {
     args: string[];
   };
   const expanded = args.map((arg) =>
-    // biome-ignore lint/suspicious/noTemplateCurlyInString: プラグインの定義に書かれたプレースホルダそのもの
+    // biome-ignore lint/suspicious/noTemplateCurlyInString: プラグインの定義に記載されたプレースホルダそのもの
     arg.replaceAll("${CLAUDE_PLUGIN_ROOT}", pluginDir),
   );
   const run = launch({
@@ -180,7 +180,7 @@ async function runHook(options: {
   return { code, stdout: run.stdout(), stderr: run.stderr() };
 }
 
-/** `hooks/hooks.json` の PreToolUse のコマンドを、標準入力に `input` を渡して流す。`env` は子プロセスの環境変数に重ねる（`CLAUDE_PROJECT_DIR` はここで渡したものだけが届く） */
+/** `hooks/hooks.json` の PreToolUse のコマンドを、標準入力に `input` を指定して実行する。`env` は子プロセスの環境変数に重ねる（`CLAUDE_PROJECT_DIR` はここで指定したものだけが届く） */
 export async function runPreToolUseHook(options: {
   pluginDir: string;
   env: Record<string, string>;
@@ -189,7 +189,7 @@ export async function runPreToolUseHook(options: {
   return runHook({ ...options, event: "PreToolUse" });
 }
 
-/** `hooks/hooks.json` の SessionStart のコマンドを流す。`env` は子プロセスの環境変数に重ねる */
+/** `hooks/hooks.json` の SessionStart のコマンドを実行する。`env` は子プロセスの環境変数に重ねる */
 export async function runSessionStartHook(options: {
   pluginDir: string;
   env: Record<string, string>;
@@ -197,7 +197,7 @@ export async function runSessionStartHook(options: {
   return runHook({ ...options, event: "SessionStart", input: "{}" });
 }
 
-/** ビルドした `plugin/bin/setup.js` を `args` で子プロセスとして流す。`env` は子プロセスの環境変数に重ねる。終了コードが 0 以外でも例外を投げず、結果を返す */
+/** ビルドした `plugin/bin/setup.js` を `args` で子プロセスとして実行する。`env` は子プロセスの環境変数に重ねる。終了コードが 0 以外でも例外を投げず、結果を返却する */
 export async function runSetupScript(options: {
   args: string[];
   env: Record<string, string>;
@@ -214,18 +214,18 @@ export async function runSetupScript(options: {
   return { code, stdout: run.stdout(), stderr: run.stderr() };
 }
 
-/** テストごとに起動した `mdmark serve` と作った MCP のクライアントを閉じる。起動・接続する関数を返す */
+/** テストごとに起動した `mdmark serve` と作った MCP のクライアントを閉じる。起動・接続する関数を返却する */
 export function useMcpServers(): {
-  /** ビルドした `dist/cli.js serve` を起動し、待ち受けの URL が標準出力に出るまで待つ。`env` は子プロセスの環境変数に重ねる（`MDMARK_PORT` はここで渡したものだけが届く） */
+  /** ビルドした `dist/cli.js serve` を起動し、待ち受けの URL が標準出力に出るまで待つ。`env` は子プロセスの環境変数に重ねる（`MDMARK_PORT` はここで指定したものだけが届く） */
   startServe: (options: {
     env: Record<string, string>;
     packageDir?: string;
   }) => Promise<ServeProcess>;
-  /** ビルドした `dist/cli.js serve` を起動し、終わるまで待つ。終了コードが 0 以外でも例外を投げず、結果を返す */
+  /** ビルドした `dist/cli.js serve` を起動し、終わるまで待つ。終了コードが 0 以外でも例外を投げず、結果を返却する */
   runServeToExit: (options: {
     env: Record<string, string>;
   }) => Promise<HookResult>;
-  /** 空いているポートで `mdmark serve` を起動し、HTTP でつなぐ。`projectDir` を渡すと、`callTool` が `project_dir` として入れる（PreToolUse のフックの代わり）。`env` は子プロセスの環境変数に重ねる */
+  /** 空いているポートで `mdmark serve` を起動し、HTTP でつなぐ。`projectDir` を指定すると、`callTool` が `project_dir` として入れる（PreToolUse のフックの代わり）。`env` は子プロセスの環境変数に重ねる */
   connectHttp: (options?: {
     projectDir?: string;
     packageDir?: string;
@@ -316,7 +316,7 @@ export function useMcpServers(): {
       env?: Record<string, string>;
     } = {},
   ): Promise<Client> => {
-    // 空きを確かめてから起動するまでに別のプロセスにポートを取られたときは、ポートを選び直す
+    // 空きを確認してから起動するまでに別のプロセスにポートを取られたときは、ポートをもう一度選ぶ
     for (let attempt = 1; ; attempt++) {
       const port = await findFreePort();
       try {
@@ -343,7 +343,7 @@ export function useMcpServers(): {
   return { startServe, runServeToExit, connectHttp, connectUrl };
 }
 
-/** ツールを呼び、内容のテキストと `isError` を返す。`connectHttp` に作業のフォルダを渡したクライアントでは、`project_dir` にそのフォルダを入れる */
+/** ツールを呼び、内容のテキストと `isError` を返却する。`connectHttp` に作業のフォルダを指定したクライアントでは、`project_dir` にそのフォルダを入れる */
 export async function callTool(
   client: Client,
   name: string,

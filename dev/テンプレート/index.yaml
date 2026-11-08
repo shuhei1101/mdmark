@@ -8,7 +8,7 @@ columns:
     title: 対象実体ファイル
 items:
   - page: 共通.schema.yaml
-    summary: 種別をまたいで使う型（本文・参照・共通の項目・状態遷移・フローチャート・ER 図）
+    summary: 種別をまたいで使用する型（本文・参照・共通の項目・状態遷移・フローチャート・ER 図）
     target: 各 Schema の `$ref` の先
   - page: index.schema.yaml
     summary: フォルダの直下の目次（README はここから生成する）
@@ -41,7 +41,7 @@ items:
     summary: 1 画面ごとの要素仕様と入力チェック
     target: '`設計書/画面設計/{画面名}.{lang}.yaml`'
   - page: 部品設計.schema.yaml
-    summary: 画面の要素が使う部品 1 つの引数・スロット・イベント・状態（= Storybook のストーリー）
+    summary: 画面の要素が使用する部品 1 つの引数・スロット・イベント・状態（= Storybook のストーリー）
     target: '`設計書/部品設計/{分類}/{部品名}.{lang}.yaml`'
   - page: シナリオ.schema.yaml
     summary: 単一 / 複合ユースケースの正常・異常シナリオ
@@ -50,11 +50,11 @@ items:
     summary: 各種テストの実行コマンドと前提条件
     target: '`設計書/テスト/テスト実行方法.yaml`'
   - page: 開発コマンド.schema.yaml
-    summary: 開発で使うコマンドの分類ごとの前提・順序・コマンド・料金や副作用・確かめた記録
+    summary: 開発で使用するコマンドの分類ごとの前提・順序・コマンド・料金や副作用・確認した記録
     target: '`設計書/開発コマンド/開発コマンド.yaml`'
   - page: 外部API.schema.yaml
     summary: 外部 API の詳細（認証・エンドポイント・調査した不具合と対処法）
     target: '`設計書/外部API/{API名}.yaml`'
   - page: 外部ライブラリ.schema.yaml
-    summary: ライブラリの詳細（版・動作確認・API・調査した不具合と対処法）
+    summary: ライブラリの詳細（バージョン・動作確認・API・調査した不具合と対処法）
     target: '`設計書/外部ライブラリ/{lib名}.yaml`'

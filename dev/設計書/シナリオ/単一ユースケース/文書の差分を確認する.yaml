@@ -1,0 +1,182 @@
+title: "文書の差分を確認する"
+scenarios:
+  - name: 正常シナリオ
+    setup:
+      - name: 取り出し元を指定して文書を描いたページ
+        description: 単一ユースケース『差分の取り出し元を指定する』の正常シナリオで文書を描いた後のページ
+      - name: 見本の文書の 2 つのリビジョン
+        description: '`r1` から `r2` で、段落の 1 行の単語を 1 つ書き換え、行を 1 つ追加し、別の行を 1 つ削除する。書き換える単語は日本語の単語（例: `差分` を `変更` に）'
+      - name: Mock
+        description: 取り出し元は、見本の 2 つのリビジョンをメモリーから返却するページの中の `DiffSource`。jsDelivr を、ビルドした `dist/` を同じパスで返却する手元の応答に差し替える
+    flow: |-
+      ```mermaid
+      sequenceDiagram
+        actor U as 読者
+        participant M as mdmark
+        participant S as 取り出し元
+        U->>M: 差分を開く
+        M->>S: r1 と r2 の本文を求める
+        S-->>M: 2 つの Markdown
+        M->>M: 行で比べ、削除した行と追加した行の対を単語で比べる
+        M-->>U: 行と文字を色分けした差分を出す
+      ```
+    expected:
+      - 削除した行が、赤の背景と行頭の `-` で出て、スクリーンリーダー向けの名前で削除した行と分かる
+      - 追加した行が、緑の背景と行頭の `+` で出て、スクリーンリーダー向けの名前で追加した行と分かる
+      - 変えていない行は、色とマーカーを持たずに出る
+      - 単語を書き換えた行の対で、削除した側は `差分` だけが濃い赤、追加した側は `変更` だけが濃い緑で出る
+      - 差分の行は、Markdown のソースの行の文字のまま出る
+      - 画面の右端のミニマップに、削除した行・追加した行の位置が色のマーカーで並ぶ
+    test: test_normal
+  - name: 正常シナリオ（リビジョンをもう一度選ぶ）
+    setup:
+      - name: 取り出し元を指定して文書を描いたページ
+        description: 正常シナリオと同じ
+      - name: 見本の文書の 3 つのリビジョン
+        description: 正常シナリオの `r1`・`r2` に、`r2` から見出しを 1 つ書き換えた `r3` を追加したもの
+      - name: Mock
+        description: 取り出し元は、見本の 3 つのリビジョンを返却する。ほかは正常シナリオと同じ
+    flow: |-
+      ```mermaid
+      sequenceDiagram
+        actor U as 読者
+        participant M as mdmark
+        participant S as 取り出し元
+        U->>M: 差分を開く
+        M-->>U: r2 と r3 の差分を出す
+        U->>M: 前に r1、後に r2 を選ぶ
+        M->>S: r1 の本文を求める
+        S-->>M: Markdown
+        M-->>U: r1 と r2 の差分に再描画する
+      ```
+    expected:
+      - 開いた時点では、前に `r2`、後に `r3` が選ばれ、書き換えた見出しの行だけが差分に出る
+      - 前に `r1`、後に `r2` を選ぶと、正常シナリオと同じ差分に再描画される
+      - 後の欄では、前の欄で選んだリビジョンより古いリビジョンを選べない
+    test: test_normal_when_revisions_changed
+  - name: 正常シナリオ（変更が無い）
+    setup:
+      - name: 取り出し元を指定して文書を描いたページ
+        description: 正常シナリオと同じ
+      - name: 本文が同じ 2 つのリビジョン
+        description: '`label` だけが違い、本文が同じ `r1`・`r2`'
+      - name: Mock
+        description: 取り出し元は、本文が同じ 2 つのリビジョンを返却する。ほかは正常シナリオと同じ
+    flow: |-
+      ```mermaid
+      sequenceDiagram
+        actor U as 読者
+        participant M as mdmark
+        participant S as 取り出し元
+        U->>M: 差分を開く
+        M->>S: r1 と r2 の本文を求める
+        S-->>M: 同じ Markdown
+        M-->>U: 変更が無いことを通知する
+      ```
+    expected:
+      - 差分の場所に、比べた 2 つのリビジョンに変更が無いことを通知する文がある
+      - 赤と緑の行が無い
+    test: test_normal_when_no_change
+  - name: 正常シナリオ（単語の区切りを持たないブラウザ）
+    setup:
+      - name: 取り出し元を指定して文書を描いたページ
+        description: 正常シナリオと同じ
+      - name: 見本の文書の 2 つのリビジョン
+        description: 正常シナリオと同じ
+      - name: Mock
+        description: ページを開く前に `Intl.Segmenter` を削除する（対応ブラウザの Firefox 98〜124 の代わり）。ほかは正常シナリオと同じ
+        notes: '配布物の読み込みが例外になる不具合（#50）で修正されていることが前提。#7 は #50 に依存し、#50 が develop に入ってからマージする'
+    flow: |-
+      ```mermaid
+      sequenceDiagram
+        actor U as 読者
+        participant M as mdmark
+        participant S as 取り出し元
+        U->>M: 差分を開く
+        M->>S: r1 と r2 の本文を求める
+        S-->>M: 2 つの Markdown
+        M->>M: 行で比べ、対の行を文字ごとに比べる
+        M-->>U: 行と文字を色分けした差分を出す
+      ```
+    expected:
+      - 削除した行と追加した行は、正常シナリオと同じ色とマーカーで出る
+      - 単語を書き換えた行の対で、変わった文字が濃い赤・濃い緑で出る（区切りは 1 文字ずつ）
+    test: test_normal_when_no_segmenter
+  - name: 正常シナリオ（差分を閉じる）
+    setup:
+      - name: 差分を開いたページ
+        description: 正常シナリオで差分を出した後のページ
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      ```mermaid
+      sequenceDiagram
+        actor U as 読者
+        participant M as mdmark
+        U->>M: 差分を閉じる
+        M-->>U: 差分を片付け、文書の表示に戻す
+      ```
+    expected:
+      - 差分の行が無くなり、文書の本文が開く前と同じように出る
+      - 差分を開く UI にフォーカスが戻る
+    test: test_normal_when_closed
+  - name: 正常シナリオ（長い文書をミニマップでスクロールする）
+    setup:
+      - name: 長い文書の 2 つのリビジョン
+        description: 変えていない行が多く画面に収まらない長さで、前半と後半にそれぞれ変えた行がある `r1` と `r2`
+      - name: 差分を開いたページ
+        description: 長い文書の `r1` と `r2` の差分を出し、差分の先頭が画面に入っているページ
+      - name: Mock
+        description: 取り出し元は、長い文書の 2 つのリビジョンをメモリーから返却するページの中の `DiffSource`。jsDelivr を、ビルドした `dist/` を同じパスで返却する手元の応答に差し替える
+    flow: |-
+      ```mermaid
+      sequenceDiagram
+        actor U as 読者
+        participant M as mdmark
+        U->>M: ミニマップの後半のマーカーの位置を押す
+        M-->>U: 後半の変えた行が画面に入るまで差分をスクロールする
+        U->>M: ミニマップの帯を押したまま上へ動かす
+        M-->>U: 動かした位置に合わせて差分をスクロールする
+      ```
+    expected:
+      - 後半のマーカーの位置を押すと、後半の変えた行が画面に入る
+      - 帯を押したまま上へ動かすと、前半の変えた行が画面に入る
+      - ミニマップの今見えている範囲の枠が、差分のスクロールに合わせて動く
+    test: test_normal_when_scrolled_by_minimap
+  - name: 正常シナリオ（描いた結果の上で色分けする）
+    setup:
+      - name: 開いた状態で描いたページ
+        description: 単一ユースケース『差分の取り出し元を指定する』の正常シナリオ（開いた状態で描く）で、描いた結果の上で色分けする指定も指定して文書を描いたページ
+      - name: 見本の文書の 2 つのリビジョン
+        description: '`r1` から `r2` で、段落の単語を 1 つ書き換え、表の後に段落を 1 つ追加し、別の段落を 1 つ削除する。見出しと表は変えない'
+      - name: Mock
+        description: 取り出し元は、見本の 2 つのリビジョンをメモリーから返却するページの中の `DiffSource`。jsDelivr を、ビルドした `dist/` を同じパスで返却する手元の応答に差し替える
+    flow: |-
+      ```mermaid
+      sequenceDiagram
+        actor U as 読者
+        participant M as mdmark
+        participant S as 取り出し元
+        M->>S: r1 と r2 の本文を求める
+        S-->>M: 2 つの Markdown
+        M->>M: r2 を描き、描いたブロックごとに r1 と比べる
+        M-->>U: ブロックを色分けした文書を出す
+      ```
+    expected:
+      - '`r2` の文書が描かれ、見出し・表は Markdown のソースではなく描いた構造で出る'
+      - 単語を書き換えた段落と追加した段落が、緑の背景とマーカーで出て、スクリーンリーダー向けの名前で追加と分かる
+      - 削除した段落が、`r1` での位置に赤の背景とマーカーで描いた構造のまま差し込まれ、スクリーンリーダー向けの名前で削除と分かる
+      - 変えていない見出し・表は、色とマーカーを持たずに出る
+    test: test_normal_when_rendered
+lead: 読者が、文書の 2 つのリビジョンの Markdown を行で比べた差分を、削除した行は赤・追加した行は緑・行の中で変わった文字は濃い色で確認する。前と後のリビジョンはもう一度選べる。利用側のページが描いた結果の上で色分けする指定を指定したときは、描いた文書のブロックごとに比べた差分を確認する。
+issue: 7
+primary_actor: 読者
+stakeholders:
+  - name: 読者
+    interest: どの行を削除してどの行を追加したかと、書き換えた行のどの単語が変わったかを、色を見分けられなくても読み取れる
+trigger: 読者が差分を開くか、比べるリビジョンをもう一度選ぶ。または、利用側のページが差分を開いた状態で文書を描かせる
+preconditions:
+  - 利用側のページが取り出し元を指定して文書を描いている
+success_guarantee: 前のリビジョンにだけある行が赤と行頭の `-`、後のリビジョンにだけある行が緑と行頭の `+` で出て、同じ行は色なしで出る。削除した行と追加した行が対になるときは、変わった文字だけが濃い赤・濃い緑で出る。描いた結果の上で色分けする指定を指定したときは、後のリビジョンを描いた文書の上で、追加・変更したブロックが緑の背景とマーカー、削除したブロックが前のリビジョンでの位置に赤の背景とマーカーで描いた構造のまま出て、変えていないブロックは色なしで出る。
+minimal_guarantee: 差分を出せないときも、文書の本文は読み込める。
+test_file: tests/e2e/単一ユースケース/文書の差分を確認する.spec.ts

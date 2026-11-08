@@ -19,7 +19,7 @@ test("test_closed", async () => {
   ).resolves.toBe(true);
 });
 
-// 線の入力の詳細を開いた状態は、題と詳細を出し、横にはみ出さない（Wire）
+// 線の入力の詳細を開いた状態は、タイトルと詳細を出し、横にはみ出さない（Wire）
 test("test_wire", async () => {
   // 準備・実行
   const page = await holder.openStory("parts-diagramtooltip--wire");
@@ -30,7 +30,7 @@ test("test_wire", async () => {
   await expect(pageOverflows(page)).resolves.toBe(false);
 });
 
-// 箱の入力・処理・出力を開いた状態は、3 行を見出しつきで出し、横にはみ出さない（Io）
+// ノードの入力・処理・出力を開いた状態は、3 行を見出しつきで出し、横にはみ出さない（Io）
 test("test_io", async () => {
   // 準備・実行
   const page = await holder.openStory("parts-diagramtooltip--io");
@@ -60,7 +60,7 @@ test("test_term", async () => {
   await expect(pageOverflows(page)).resolves.toBe(false);
 });
 
-// 箱の hint を開いた状態は、見出しを持たず文だけを出し、横にはみ出さない（Hint）
+// ノードの hint を開いた状態は、見出しを持たず文だけを出し、横にはみ出さない（Hint）
 test("test_hint", async () => {
   // 準備・実行
   const page = await holder.openStory("parts-diagramtooltip--hint");
@@ -74,12 +74,12 @@ test("test_hint", async () => {
     0,
   );
   await expect(tip.locator("dt").count()).resolves.toBe(0);
-  // 箱の印の上に出る
+  // ノードのマーカーの上に出る
   const rects = await page.evaluate(() => {
     const owner = document.querySelector(".mdmark-diagram-info");
     const tooltip = document.querySelector('[role="tooltip"]');
     if (!owner || !tooltip) {
-      throw new Error("印かツールチップが無い");
+      throw new Error("マーカーかツールチップが無い");
     }
     return {
       ownerTop: owner.getBoundingClientRect().top,
@@ -90,7 +90,7 @@ test("test_hint", async () => {
   await expect(pageOverflows(page)).resolves.toBe(false);
 });
 
-// ER 図のテーブルを開いた状態は、論理名と物理名の題・概要・列の説明を出し、横にはみ出さない（Table）
+// ER 図のテーブルを開いた状態は、論理名と物理名のタイトル・概要・列の説明を出し、横にはみ出さない（Table）
 test("test_table", async () => {
   // 準備・実行
   const page = await holder.openStory("parts-diagramtooltip--table");
@@ -130,7 +130,7 @@ test("test_item", async () => {
   await expect(pageOverflows(page)).resolves.toBe(false);
 });
 
-// システムの枠のタイトルの印で hint を開いた状態は、印の下に文だけを出す（GroupHint）
+// システムの枠のタイトルのマーカーで hint を開いた状態は、マーカーの下に文だけを出す（GroupHint）
 test("test_group_hint", async () => {
   // 準備・実行
   const page = await holder.openStory("parts-diagramtooltip--group-hint");

@@ -12,22 +12,22 @@ function open(id: string): Promise<Page> {
   return holder.openStory(`parts-commentform--${id}`);
 }
 
-/** 入力欄の枠が `role="dialog"` で、題に選んだ文字を出すことを確かめる */
+/** 入力欄の枠が `role="dialog"` で、タイトルに選んだ文字を出すことを確認する */
 async function expectFrame(page: Page, quote: string): Promise<void> {
   const form = page.locator(".mdmark-comment-form");
   await expect(form.getAttribute("role")).resolves.toBe("dialog");
-  await expect(form.getAttribute("aria-label")).resolves.toBe("コメントを書く");
+  await expect(form.getAttribute("aria-label")).resolves.toBe("コメント追加");
   await expect(page.locator(".mdmark-comment-quote").innerText()).resolves.toBe(
     `「${quote}」へのコメント`,
   );
 }
 
-/** 知らせが見えているか */
+/** 通知が見えているか */
 function alertVisible(page: Page): Promise<boolean> {
   return page.locator(".mdmark-comment-error").isVisible();
 }
 
-// 開いた直後は、本文の欄が空で知らせを出さない（Idle）
+// 開いた直後は、本文の欄が空で通知を出さない（Idle）
 test("test_idle", async () => {
   // 準備・実行
   const page = await open("idle");
@@ -59,7 +59,7 @@ test("test_idle", async () => {
   await expect(pageOverflows(page)).resolves.toBe(false);
 });
 
-// 本文を書いた状態では、本文の欄に書いた文字が入っている（Typed）
+// 本文を記載した状態では、本文の欄に記載した文字が入っている（Typed）
 test("test_typed", async () => {
   // 準備・実行
   const page = await open("typed");
@@ -84,7 +84,7 @@ test("test_saving", async () => {
   ).resolves.toBe("true");
 });
 
-// 本文が空のまま保存したときは、書くよう知らせる（Empty）
+// 本文が空のまま保存したときは、記載するよう通知する（Empty）
 test("test_empty", async () => {
   // 準備・実行
   const page = await open("empty");
@@ -93,7 +93,7 @@ test("test_empty", async () => {
   const alert = page.locator(".mdmark-comment-error");
   await expect(alert.getAttribute("role")).resolves.toBe("alert");
   await expect(alert.innerText()).resolves.toBe(
-    "コメントを書いてから保存してください。",
+    "コメントを記載してから保存してください。",
   );
   await expect(alert.locator("svg").count()).resolves.toBe(1);
   await expect(
@@ -104,14 +104,14 @@ test("test_empty", async () => {
   ).resolves.toBe("story-comment-error");
 });
 
-// 保存できなかったときは、本文を残したまま、もう一度押すよう知らせる（Failed）
+// 保存できなかったときは、本文を残したまま、もう一度押すよう通知する（Failed）
 test("test_failed", async () => {
   // 準備・実行
   const page = await open("failed");
   // 検証
   await expect(alertVisible(page)).resolves.toBe(true);
   await expect(page.locator(".mdmark-comment-error").innerText()).resolves.toBe(
-    "コメントを保存できませんでした。書いたコメントは残っています。もう一度「コメントを保存」を押してください。",
+    "コメントを保存できませんでした。記載したコメントは残っています。もう一度「コメントを保存」を押してください。",
   );
   await expect(page.locator("textarea").inputValue()).resolves.toBe(
     "変数の名前を一覧にしてほしい",
@@ -122,14 +122,14 @@ test("test_failed", async () => {
   await expect(pageOverflows(page)).resolves.toBe(false);
 });
 
-// 長い文字を選んだときは、題が折り返して横にはみ出さない（LongQuote）
+// 長い文字を選んだときは、タイトルが折り返して横にはみ出さない（LongQuote）
 test("test_long_quote", async () => {
   // 準備・実行
   const page = await open("long-quote");
   // 検証
   await expect(
     page.locator(".mdmark-comment-quote").innerText(),
-  ).resolves.toContain("使う側のページが自分の JavaScript");
+  ).resolves.toContain("利用側のページが自分の JavaScript");
   await expect(pageOverflows(page)).resolves.toBe(false);
   await expect(
     page.locator(".mdmark-comment-quote").evaluate((quote) => {

@@ -1,7 +1,7 @@
 import type { MdmarkFlowDefinition } from "../../src/diagram/definition.ts";
 import { sampleBlock, wrapDirective } from "./diagram.ts";
 
-/** 棒のグラフの定義: 系列 2 つ・項目 4 つ。縦の軸の範囲を書かない */
+/** 棒のグラフの定義: 系列 2 つ・項目 4 つ。縦の軸の範囲を記載しない */
 export const BAR_TEXT: string = JSON.stringify(
   {
     type: "bar",
@@ -37,7 +37,7 @@ export const PIE_TEXT: string = JSON.stringify(
   2,
 );
 
-/** 散布図の定義: 系列 1 つ・点 6 つ（横と縦がどちらも数値）。軸の範囲を書かない */
+/** 散布図の定義: 系列 1 つ・点 6 つ（横と縦がどちらも数値）。軸の範囲を記載しない */
 export const SCATTER_TEXT: string = JSON.stringify(
   {
     type: "scatter",
@@ -64,11 +64,11 @@ export const SCATTER_TEXT: string = JSON.stringify(
   2,
 );
 
-/** フロー図の箱 `mcp`（名前は `窓口の MCP`）に足す `hint` */
+/** フロー図のノード `mcp`（名前は `窓口の MCP`）に追加する `hint` */
 export const NODE_HINT =
   "保存と送信のツールだけを持つ MCP サーバー。メールの本文は読まず、下書きの ID で頼まれた操作をする";
 
-/** `<!-- html -->` の範囲に、`html` のコードブロック 1 つを置いた文書にする。`head` は文書の先頭に置く行（印など） */
+/** `<!-- html -->` の範囲に、`html` のコードブロック 1 つを配置した文書にする。`head` は文書の先頭に配置する行（マーカーなど） */
 export function wrapHtml(html: string, head = ""): string {
   return [
     ...(head === "" ? [] : [head, ""]),
@@ -88,7 +88,7 @@ export function chartElement(json: string): string {
   return `<mdmark-chart>\n${json}\n</mdmark-chart>`;
 }
 
-/** 見本のフロー図の箱 `mcp` に `io` を持たない `hint` だけを足した、フロー図の部品の文書 */
+/** 見本のフロー図のノード `mcp` に `io` を持たない `hint` だけを追加した、フロー図の部品の文書 */
 export async function hintFlowMarkdown(): Promise<string> {
   const definition = JSON.parse(
     await sampleBlock("inquiry"),
@@ -101,7 +101,7 @@ export async function hintFlowMarkdown(): Promise<string> {
   return wrapDirective("flow", JSON.stringify(definition, null, 2));
 }
 
-/** 見本の HTML: 文字に色を付けた箱 2 つを横に並べる `div`、`data-hint` を付けた箱、用語を含む文、`script` 要素、`onclick` を持つボタン、チャート 1 つを持つ */
+/** 見本の HTML: 文字に色を付けたノード 2 つを横に並べる `div`、`data-hint` を付けたノード、用語を含む文、`script` 要素、`onclick` を持つボタン、チャート 1 つを持つ */
 export function sampleHtml(options: { script?: boolean } = {}): string {
   return [
     "<h2>問い合わせの集計</h2>",

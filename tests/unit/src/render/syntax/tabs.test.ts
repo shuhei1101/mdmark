@@ -8,7 +8,7 @@ import { renderDoc } from "../../../helpers/render.ts";
 /** タブの処理を読み込む（実装が無い間は各テストが個別に失敗する） */
 const loadTabs = () => import("../../../../../src/render/syntax/tabs.ts");
 
-/** `<!-- tabs: {rest} -->` の開きの印（引数が無ければ `<!-- tabs -->`） */
+/** `<!-- tabs: {rest} -->` の開きのマーカー（引数が無ければ `<!-- tabs -->`） */
 function tabsMark(rest?: string): Mark {
   return {
     name: "tabs",
@@ -19,7 +19,7 @@ function tabsMark(rest?: string): Mark {
   };
 }
 
-/** 印の開きを `open` にして `### macOS`・`### Windows` を囲んだ Markdown */
+/** マーカーの開きを `open` にして `### macOS`・`### Windows` を囲んだ Markdown */
 function tabsMarkdown(open: string): string {
   return [
     open,
@@ -90,7 +90,7 @@ test("test_build_tabs_when_group", () => {
   expect(html).not.toContain("mdmark-syntax-warning");
 });
 
-// 値の無い group= は警告にし、知らないキーと指定は読み飛ばしてタブにする（異常系）
+// 値の無い group= は警告にし、知らないキーと指定はスキップしてタブにする（異常系）
 test("test_build_tabs_when_unreadable_options", () => {
   // 準備
   const markdown = tabsMarkdown("<!-- tabs: group= grop=os fold -->");
@@ -115,7 +115,7 @@ test("test_build_tabs_when_unreadable_options", () => {
   expect(matches(html, /mdmark-tab-title/g)).toHaveLength(2);
 });
 
-// group を読む（正常系）
+// group を読み込む（正常系）
 test("test_read_tabs_options", async () => {
   // 準備
   const { readTabsOptions } = await loadTabs();
@@ -137,7 +137,7 @@ test("test_read_tabs_options_when_none", async () => {
   expect(options.warning).toBeUndefined();
 });
 
-// 値の無い group= を警告にし、知らないキーと指定を読み飛ばす（異常系）
+// 値の無い group= を警告にし、知らないキーと指定をスキップする（異常系）
 test("test_read_tabs_options_when_unreadable", async () => {
   // 準備
   const { readTabsOptions } = await loadTabs();
@@ -146,7 +146,7 @@ test("test_read_tabs_options_when_unreadable", async () => {
   // 検証
   expect(options.group).toBeUndefined();
   expect(options.warning?.message).toBe(
-    "の読めない指定を当てずに描いています。",
+    "の読み込めない指定を当てずに描いています。",
   );
   expect(options.warning?.mark).toBe("<!-- tabs: group= grop=os fold -->");
   const items = options.warning?.items ?? [];
@@ -158,7 +158,7 @@ test("test_read_tabs_options_when_unreadable", async () => {
   );
 });
 
-// title= の値の空白の後ろの単語を警告にし、読み飛ばさない（異常系）
+// title= の値の空白の後ろの単語を警告にし、スキップしない（異常系）
 test("test_read_tabs_options_when_title_has_space", async () => {
   // 準備
   const { readTabsOptions } = await loadTabs();
@@ -198,7 +198,7 @@ test("test_build_tabs_when_collapsed", () => {
   expect(html).not.toContain("mdmark-syntax-warning");
 });
 
-// 折り畳みの指定を group と一緒に読む（正常系）
+// 折り畳みの指定を group と一緒に読み込む（正常系）
 test("test_read_tabs_options_when_collapse", async () => {
   // 準備
   const { readTabsOptions } = await loadTabs();
@@ -216,7 +216,7 @@ test("test_read_tabs_options_when_collapse", async () => {
   ]);
 });
 
-/** 外側のタブで `### macOS`・`### **Windows**` を囲み、`macOS` の中に `#### zsh`・`#### bash` の内側のタブを置いた Markdown（`innerClose` が偽なら内側の閉じを書かない） */
+/** 外側のタブで `### macOS`・`### **Windows**` を囲み、`macOS` の中に `#### zsh`・`#### bash` の内側のタブを配置した Markdown（`innerClose` が偽なら内側の閉じを記載しない） */
 function nestedTabsMarkdown(innerClose: boolean): string {
   return [
     "<!-- tabs -->",
@@ -243,7 +243,7 @@ function nestedTabsMarkdown(innerClose: boolean): string {
   ].join("\n");
 }
 
-/** Markdown の中のタブの印のトークンの位置 */
+/** Markdown の中のタブのマーカーのトークンの位置 */
 function tabsMarkIndexes(markdown: string): number[] {
   const tokens = parseWithRules(markdown, []);
   return tokens.flatMap((token, index) =>
@@ -297,7 +297,7 @@ test("test_build_tabs_when_strong_title", () => {
   expect(html).not.toContain("**");
 });
 
-// 閉じの足りない入れ子は外側の開きに警告を置き、タブにしない（異常系）
+// 閉じの足りない入れ子は外側の開きに警告を配置し、タブにしない（異常系）
 test("test_build_tabs_when_nested_unclosed", () => {
   // 準備
   const markdown = nestedTabsMarkdown(false);
@@ -324,7 +324,7 @@ test("test_build_tabs_when_nested_unclosed", () => {
   }
 });
 
-// 入れ子の閉じを飛ばして外側の閉じを返す（正常系）
+// 入れ子の閉じを飛ばして外側の閉じを返却する（正常系）
 test("test_find_tabs_close", async () => {
   // 準備
   const { findTabsClose } = await loadTabs();
@@ -338,7 +338,7 @@ test("test_find_tabs_close", async () => {
   expect(found).toEqual({ close: marks[3], nested: true });
 });
 
-// 閉じが足りなければ -1 を返す（異常系）
+// 閉じが足りなければ -1 を返却する（異常系）
 test("test_find_tabs_close_when_unclosed", async () => {
   // 準備
   const { findTabsClose } = await loadTabs();

@@ -15,7 +15,7 @@ type FigureKind = "image" | "table";
 /** 番号を付けた図表 */
 type Numbered = { kind: FigureKind; number: number };
 
-/** `start` の開きに対応する閉じの位置を、入れ子の数を数えて返す（無ければ -1） */
+/** `start` の開きに対応する閉じの位置を、入れ子の数を数えて返却する（無ければ -1） */
 function matchingClose(
   tokens: Token[],
   start: number,
@@ -39,7 +39,7 @@ function matchingClose(
   return -1;
 }
 
-/** 印の直後の図か表の範囲 */
+/** マーカーの直後の図か表の範囲 */
 type FigureTarget = {
   /** 図表の種類 */
   kind: FigureKind;
@@ -53,7 +53,7 @@ type FigureTarget = {
   gallery?: Token;
 };
 
-/** 印の直後の図か表（画像だけの段落、ギャラリーの開きのマーカー、表の囲み、囲まない表）の範囲を読む */
+/** マーカーの直後の図か表（画像だけの段落、ギャラリーの開きのマーカー、表の囲み、囲まない表）の範囲を読み込む */
 function figureTarget(
   state: StateCore,
   start: number,
@@ -121,7 +121,7 @@ function referencedId(value: unknown): string | undefined {
   }
 }
 
-/** 段落などの行内の `#fig-{ID}` へのリンクの文字を番号に替え、切れた参照の ID を返す */
+/** 段落などの行内の `#fig-{ID}` へのリンクの文字を番号に替え、切れた参照の ID を返却する */
 function rewriteReferences(
   state: StateCore,
   inline: Token,
@@ -156,7 +156,7 @@ function rewriteReferences(
   return broken;
 }
 
-/** `figures` がオンなら、`fig` の印の直後の画像の段落と表を図表の番号の部品で囲み、`#fig-{ID}` へのリンクの文字を番号に替える。切れた参照と重なった ID は警告を差し込む */
+/** `figures` がオンなら、`fig` のマーカーの直後の画像の段落と表を図表の番号の部品で囲み、`#fig-{ID}` へのリンクの文字を番号に替える。切れた参照と重なった ID は警告を差し込む */
 export function numberFigures(state: StateCore): void {
   if (!featureOn(state, "figures")) {
     return;
@@ -197,7 +197,7 @@ export function numberFigures(state: StateCore): void {
       figures.set(id, { kind: target.kind, number });
     }
     const figureId = duplicated ? undefined : id;
-    // ギャラリーは番号だけを渡し、囲むのはギャラリーの処理に任せる
+    // ギャラリーは番号だけを指定し、囲むのはギャラリーの処理に任せる
     if (target.gallery) {
       target.gallery.meta = {
         ...target.gallery.meta,
@@ -232,7 +232,7 @@ export function numberFigures(state: StateCore): void {
     out.push(ownBlock(state, tail));
     index = target.end;
   }
-  // 参照は、後ろで定義した図表も指せるよう、全ての図表に番号を付けた後で直す
+  // 参照は、後ろで定義した図表も指せるよう、全ての図表に番号を付けた後で修正する
   const result: Token[] = [];
   let blockStart = 0;
   for (const token of out) {
@@ -245,7 +245,7 @@ export function numberFigures(state: StateCore): void {
         token,
         figures,
       ).map((id) => ({
-        message: `リンク先の \`#fig-${id}\` の図表がありません。\`<!-- fig: ${id} -->\` を図か表の直前に書くか、リンク先を直してください。`,
+        message: `リンク先の \`#fig-${id}\` の図表がありません。\`<!-- fig: ${id} -->\` を図か表の直前に記載するか、リンク先を修正してください。`,
       }));
       result.splice(
         blockStart,

@@ -27,7 +27,7 @@ test("test_single", async () => {
   await expect(pageOverflows(page)).resolves.toBe(false);
 });
 
-/** 読み込み中の枠の線の種類と、読み上げの属性 */
+/** 読み込み中のブロックの線の種類と、スクリーンリーダーの属性 */
 async function readLoading(id: string) {
   const page = await holder.openStory(id);
   const info = await page.evaluate(() => {
@@ -49,7 +49,7 @@ async function readLoading(id: string) {
   return { page, info };
 }
 
-// 待ちが 1 秒を過ぎたとき、破線の枠に文を出し、読み上げの対象にしない（Loading）
+// 待ちが 1 秒を過ぎたとき、破線の枠に文を出し、スクリーンリーダーの対象にしない（Loading）
 test("test_loading", async () => {
   // 準備・実行
   const { info } = await readLoading("parts-diffmessage--loading");
@@ -61,7 +61,7 @@ test("test_loading", async () => {
   expect(info.spinner).toBeNull();
 });
 
-// 待ちが 2 秒を過ぎたとき、回る表示を足す。動きを減らす設定では回さない（LoadingSpinner）
+// 待ちが 2 秒を過ぎたとき、回る表示を追加する。動きを減らす設定では回さない（LoadingSpinner）
 test("test_loading_spinner", async () => {
   // 準備・実行
   const { page, info } = await readLoading(

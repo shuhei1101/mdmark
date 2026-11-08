@@ -25,14 +25,14 @@ const execFileAsync = promisify(execFile);
 // リポジトリの直下
 const REPO_ROOT = resolve(import.meta.dirname, "../../..");
 
-// ビルド（型定義を書く `tsc` を含む）を子プロセスで流すテストの待つ上限（ミリ秒）。
-// WSL2 の /mnt/c 上で、このファイル単独 5 回と integration-node 全件 3 回を流した所要時間の最大は 128.6 秒（test_normal_when_schema_change_listed）。
+// ビルド（型定義を記載する `tsc` を含む）を子プロセスで実行するテストの待つ上限（ミリ秒）。
+// WSL2 の /mnt/c 上で、このファイル単独 5 回と integration-node 全件 3 回を実行した所要時間の最大は 128.6 秒（test_normal_when_schema_change_listed）。
 // 128.6 秒 × 1.5 = 192.9 秒を 10 秒単位で切り上げて 200 秒にした
 const BUILD_TIMEOUT_MS = 200_000;
 
 const createdRoots: string[] = [];
 
-/** 一時フォルダに作業ツリー（scripts・src・version.ini・依存）を作り、そのパスを返す */
+/** 一時フォルダに作業ツリー（scripts・src・version.ini・依存）を作り、そのパスを返却する */
 async function createWorkTree(versionIni: string): Promise<string> {
   const root = await mkdtemp(join(tmpdir(), "mdmark-integration-build-"));
   createdRoots.push(root);
@@ -40,18 +40,18 @@ async function createWorkTree(versionIni: string): Promise<string> {
     recursive: true,
   });
   await cp(join(REPO_ROOT, "src"), join(root, "src"), { recursive: true });
-  // CLI が束ねる設定の Schema と取り込んだ alias-inject の Schema
+  // CLI がまとめる設定の Schema と取り込んだ alias-inject の Schema
   await cp(join(REPO_ROOT, "schemas"), join(root, "schemas"), {
     recursive: true,
   });
-  // CLI の `init` が写す雛形の正本
+  // CLI の `init` が写す雛形の原本
   await cp(join(REPO_ROOT, "templates"), join(root, "templates"), {
     recursive: true,
   });
   await writeRootPackageJson(root);
   await copyPluginInputs(root);
   await writeFile(join(root, "version.ini"), versionIni);
-  // 型定義を書く `tsc` が読む設定
+  // 型定義を記載する `tsc` が読み込む設定
   for (const name of ["tsconfig.json", "tsconfig.dist.json"]) {
     await copyFile(join(REPO_ROOT, name), join(root, name));
   }
@@ -63,7 +63,7 @@ async function createWorkTree(versionIni: string): Promise<string> {
   return root;
 }
 
-/** 一時フォルダの git で、署名なしに git を流す */
+/** 一時フォルダの git で、署名なしに git を実行する */
 async function git(root: string, args: string[]): Promise<void> {
   await execFileAsync(
     "git",
@@ -80,7 +80,7 @@ async function git(root: string, args: string[]): Promise<void> {
   );
 }
 
-/** 手順を 1 つ持つ `steps.yaml` の本文（`to` を省いて形の誤りにもできる） */
+/** 手順を 1 つ持つ `steps.yaml` の本文（`to` を省いて構造の誤りにもできる） */
 function stepsYaml(options?: { withoutTo?: boolean }): string {
   return [
     "steps:",
@@ -120,12 +120,12 @@ function noStepsYaml(schema: string, hash: string): string {
     "  - version: next",
     `    schema: ${schema}`,
     `    sha256: ${hash}`,
-    "    reason: 省いてよいキーを足しただけで、古い設定もそのまま合う",
+    "    reason: 省いてよいキーを追加しただけで、古い設定もそのまま合う",
     "",
   ].join("\n");
 }
 
-/** 入口 `node scripts/build.ts` を子プロセスとして流し、終了コードと標準エラーを返す */
+/** 入口 `node scripts/build.ts` を子プロセスとして実行し、終了コードと標準エラーを返却する */
 async function runBuild(
   root: string,
   args: string[],
@@ -143,7 +143,7 @@ async function runBuild(
   }
 }
 
-/** ビルドした dist/index.js を読み込み、version() の戻り値を返す */
+/** ビルドした dist/index.js を読み込み、version() の戻り値を返却する */
 async function readBuiltVersion(root: string): Promise<string> {
   const url = pathToFileURL(join(root, "dist", "index.js")).href;
   const built: { version: () => string } = await import(url);
@@ -159,7 +159,7 @@ afterEach(async () => {
   );
 });
 
-// version.ini の版を埋めてビルドする（正常系）
+// version.ini のバージョンを埋めてビルドする（正常系）
 test("test_normal", { timeout: BUILD_TIMEOUT_MS }, async () => {
   // 準備
   const root = await createWorkTree("v0.0.0\n");
@@ -177,7 +177,7 @@ test("test_normal", { timeout: BUILD_TIMEOUT_MS }, async () => {
   for (const name of ["markdown-it", "sanitize-html"]) {
     expect(licenses).toContain(name);
   }
-  // `dist/cli.js` に束ねた MCP の SDK と、その配布物に取り込まれた依存
+  // `dist/cli.js` にまとめた MCP の SDK と、その配布物に取り込まれた依存
   for (const name of ["@modelcontextprotocol/server", "ajv"]) {
     expect(licenses).toContain(name);
   }
@@ -195,11 +195,11 @@ test("test_normal", { timeout: BUILD_TIMEOUT_MS }, async () => {
   ]) {
     expect(declarations).toMatch(new RegExp(`export[^;]*\\b${name}\\b`));
   }
-  // CLI と、書き出した HTML の起動の処理と画面の規則を書く
+  // CLI と、書き出した HTML の起動の処理と画面の規則を記載する
   for (const name of ["cli.js", "viewer.js", "viewer.css"]) {
     expect(existsSync(join(root, "dist", name))).toBe(true);
   }
-  // Claude Code のプラグインの生成物と、バージョン。MCP サーバーは束ねない
+  // Claude Code のプラグインの生成物と、バージョン。MCP サーバーはまとめない
   for (const path of ["scripts/pre-tool-use.js", "scripts/session-start.js"]) {
     expect(existsSync(join(root, "plugin", path))).toBe(true);
   }
@@ -220,7 +220,7 @@ test("test_normal", { timeout: BUILD_TIMEOUT_MS }, async () => {
     [join(root, "dist", "cli.js"), "init", initTarget],
     { cwd: root },
   );
-  expect(init.stdout).toContain("置いた: mdmark.config.yaml");
+  expect(init.stdout).toContain("配置した: mdmark.config.yaml");
   expect(existsSync(join(initTarget, "mdmark.config.yaml"))).toBe(true);
   await writeFile(
     join(root, "consumer.ts"),
@@ -248,7 +248,7 @@ test("test_normal", { timeout: BUILD_TIMEOUT_MS }, async () => {
   );
 });
 
-// --version で渡した版を埋めてビルドする（正常系）
+// --version で指定したバージョンを埋めてビルドする（正常系）
 test("test_normal_when_version_given", {
   timeout: BUILD_TIMEOUT_MS,
 }, async () => {
@@ -268,7 +268,7 @@ test("test_normal_when_version_given", {
   expect(manifest.version).toBe("v0.0.1");
 });
 
-// 書式に合わない版を渡すと、配布物を書かずに終わる（異常系）
+// 書式に合わないバージョンを指定すると、配布物を書き込まずに終わる（異常系）
 test("test_error_when_version_format_invalid", async () => {
   // 準備
   const root = await createWorkTree("v0.0.0\n");
@@ -280,8 +280,8 @@ test("test_error_when_version_format_invalid", async () => {
   expect(stderr).toContain("v{MAJOR}.{MINOR}.{PATCH}");
 });
 
-// 上限を超えた配布ファイルがあると、書いた配布物を消して終わる（異常系）
-// コマンドに上限を差し替える口が無いため、main に maxBytes: 1 を渡す
+// 上限を超えた配布ファイルがあると、記載した配布物を削除して終わる（異常系）
+// コマンドに上限を差し替えるインターフェースが無いため、main に maxBytes: 1 を指定する
 test("test_error_when_dist_file_too_large", {
   timeout: BUILD_TIMEOUT_MS,
 }, async () => {
@@ -299,12 +299,12 @@ test("test_error_when_dist_file_too_large", {
   expect(errors.join("\n")).toMatch(/index\.js[^\n]*\d/);
 });
 
-/** 作業ツリーの `src/index.ts` の末尾（最上位）に、コードを足す */
+/** 作業ツリーの `src/index.ts` の末尾（最上位）に、コードを追加する */
 async function appendToEntry(root: string, code: string): Promise<void> {
   await appendFile(join(root, "src", "index.ts"), `\n${code}\n`);
 }
 
-// 有無を確かめてから下限に無い API を使うと、止めずにビルドする（正常系）
+// 有無を確認してから下限に無い API を使用すると、止めずにビルドする（正常系）
 test("test_normal_when_api_checked_before_use", {
   timeout: BUILD_TIMEOUT_MS,
 }, async () => {
@@ -322,7 +322,7 @@ test("test_normal_when_api_checked_before_use", {
   expect(stderr).not.toContain("Intl.Segmenter");
 });
 
-// 下限に無い API を確かめずに使うと、書いた配布物を消して終わる（異常系）
+// 下限に無い API を確認せずに使用すると、記載した配布物を削除して終わる（異常系）
 test("test_error_when_api_missing_in_baseline_browser", {
   timeout: BUILD_TIMEOUT_MS,
 }, async () => {
@@ -339,7 +339,7 @@ test("test_error_when_api_missing_in_baseline_browser", {
   }
 });
 
-// スキーマを変えても migrations/next/steps.yaml があれば通す（正常系）
+// スキーマを変えても migrations/next/steps.yaml があれば合格にする（正常系）
 test("test_normal_when_schema_changed_with_steps", {
   timeout: BUILD_TIMEOUT_MS,
 }, async () => {
@@ -358,7 +358,7 @@ test("test_normal_when_schema_changed_with_steps", {
   expect(existsSync(join(root, "dist", "index.js"))).toBe(true);
 });
 
-// 手順なしの一覧に今の Schema の SHA-256 の行があれば通す（正常系）
+// 手順なしの一覧に今の Schema の SHA-256 の行があれば合格にする（正常系）
 test("test_normal_when_schema_change_listed", {
   timeout: BUILD_TIMEOUT_MS,
 }, async () => {
@@ -378,7 +378,7 @@ test("test_normal_when_schema_change_listed", {
   expect(existsSync(join(root, "dist", "index.js"))).toBe(true);
 });
 
-// スキーマを変えたのに手順も一覧の合う行も無ければ、配布物を書かずに終わる（異常系）
+// スキーマを変えたのに手順も一覧の合う行も無ければ、配布物を書き込まずに終わる（異常系）
 test("test_error_when_schema_changed_without_steps", async () => {
   // 準備
   const root = await createTaggedWorkTree("v0.3.0\n");
@@ -421,7 +421,7 @@ test("test_error_when_next_steps_left_in_release", async () => {
   expect(stderr).toContain("no-steps.yaml");
 });
 
-// steps.yaml が Schema に合わなければ、配布物を書かずに終わる（異常系）
+// steps.yaml が Schema に合わなければ、配布物を書き込まずに終わる（異常系）
 test("test_error_when_steps_invalid", async () => {
   // 準備
   const root = await createTaggedWorkTree("v0.3.0\n");

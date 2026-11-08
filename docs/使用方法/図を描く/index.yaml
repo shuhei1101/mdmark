@@ -1,0 +1,16 @@
+summary: 図・部品を文書に部品の定義で描き、確認し、利用側に固有の部品と CSS を追加する手順
+items:
+  - page: 図を描く.md
+    summary: HTML の用途と、文書に部品の定義を記載してフロー図・シーケンス図・グラフ・ER 図を描く手順
+  - page: 操作できる部品を作る.md
+    summary: スライダー・グラフ・今の値を写すボタンの部品の定義を記載する手順
+  - page: mermaidの図を描く.md
+    summary: mermaid のコードブロックを記載して mdmark の外観の図にし、テーマを変える手順
+  - page: コードブロックのHTMLを描く.md
+    summary: コードブロックの HTML を描かせるマーカー・チャートの custom element の配置方法・`data-hint` の記載方法の手順
+  - page: 描いた図を確認する.md
+    summary: 配置した部品を Playwright で動かし、スクリーンショットを撮って確認する手順
+  - page: 固有の部品とCSSを適用する.md
+    summary: 利用側に固有の部品と CSS を、その場所の文書にだけ適用する手順
+  - page: 見本.md
+    summary: フロー図・シーケンス図・グラフ・操作できる部品を組み合わせた見本の文書

@@ -5,7 +5,7 @@ const meta = { title: "Parts/CodeBlock" } satisfies Meta<
 >;
 export default meta;
 
-/** ストーリー: 描画の口（`parameters.server.id`）の部品を `args` で描く */
+/** ストーリー: 描画のインターフェース（`parameters.server.id`）の部品を `args` で描く */
 type Story = StoryObj<Record<string, unknown>>;
 
 export const TitleAndLineNumbers: Story = {
@@ -111,7 +111,7 @@ export const SyntaxPython: Story = {
     lineNumbers: "true",
     highlight: "true",
     lines:
-      '[{"text":"@dataclass"},{"text":"class Doc:"},{"text":"    # 文書の題"},{"text":"    title: str = \\"README\\""},{"text":"    lines: int = 300"},{"text":""},{"text":"print(len(Doc().title))"}]',
+      '[{"text":"@dataclass"},{"text":"class Doc:"},{"text":"    # 文書のタイトル"},{"text":"    title: str = \\"README\\""},{"text":"    lines: int = 300"},{"text":""},{"text":"print(len(Doc().title))"}]',
   },
 };
 
@@ -238,7 +238,7 @@ export const FoldNoLineNumbers: Story = {
   args: {
     language: "yaml",
     lines:
-      '[{"text":"version: \\"0.9\\""},{"text":"features:","foldLines":2},{"text":"  table: true","indent":1},{"text":"  diagram: true","indent":1},{"text":"libraries:","foldLines":3},{"text":"  highlight:","indent":1,"foldLines":2,"folded":true},{"text":"    url: https://cdn.jsdelivr.net/npm/highlight.js","indent":2},{"text":"    version: 11.11.1","indent":2},{"text":"build:","foldLines":1},{"text":"  - docs/使い方/導入/README.md","indent":1}]',
+      '[{"text":"version: \\"0.9\\""},{"text":"features:","foldLines":2},{"text":"  table: true","indent":1},{"text":"  diagram: true","indent":1},{"text":"libraries:","foldLines":3},{"text":"  highlight:","indent":1,"foldLines":2,"folded":true},{"text":"    url: https://cdn.jsdelivr.net/npm/highlight.js","indent":2},{"text":"    version: 11.11.1","indent":2},{"text":"build:","foldLines":1},{"text":"  - docs/使用方法/導入/README.md","indent":1}]',
   },
 };
 
@@ -251,6 +251,6 @@ export const Wrap: Story = {
     lineNumbers: true,
     wrap: true,
     lines:
-      '[{"text":"import { mount } from \\"mdmark\\";"},{"text":"const url = \\"https://cdn.jsdelivr.net/gh/shuhei1101/mdmark@v0.10.0/dist/index.js\\"; // バージョンを固定した URL から配布物を読み、描く先の要素に文書を描く"},{"text":"mount(document.querySelector(\\"#doc\\"), markdown);"}]',
+      '[{"text":"import { mount } from \\"mdmark\\";"},{"text":"const url = \\"https://cdn.jsdelivr.net/gh/shuhei1101/mdmark@v0.10.0/dist/index.js\\"; // バージョンを固定した URL から配布物を読み込み、描く先の要素に文書を描く"},{"text":"mount(document.querySelector(\\"#doc\\"), markdown);"}]',
   },
 };

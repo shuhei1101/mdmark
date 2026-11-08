@@ -50,7 +50,7 @@ test("test_three", async () => {
   expect(new Set(columns.map((column) => column.top)).size).toBe(1);
 });
 
-// 描く先の要素が 390px のときは縦に積む（Narrow）
+// 描く先の要素が 390px のときは縦に並べる（Narrow）
 test("test_narrow", async () => {
   // 準備・実行
   const page = await holder.openStory("parts-layoutcolumns--narrow", {

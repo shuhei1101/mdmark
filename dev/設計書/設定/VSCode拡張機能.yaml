@@ -1,23 +1,23 @@
 title: "設定: VS Code 拡張機能"
-lead: VS Code 拡張機能が読む設定のキー。VS Code の設定（`settings.json`）の `mdmark.*` と、`mdmark.config.yaml` のうち拡張機能が取り出すキーを持つ。`settings.json` のキーの形の正は `vscode/package.json` の `contributes.configuration` に置く。
+lead: VS Code 拡張機能が読み込む設定のキー。VS Code の設定（`settings.json`）の `mdmark.*` と、`mdmark.config.yaml` のうち拡張機能が取り出すキーを持つ。`settings.json` のキーの構造の正は `vscode/package.json` の `contributes.configuration` に配置する。
 files:
   - file: settings.json
-    manages: 読む mdmark の版・設定ファイルの場所・プレビューの描き直しとスクロールの同期と配色・書き出す先
+    manages: 読み込む mdmark のバージョン・設定ファイルの場所・プレビューの再描画とスクロールの同期と配色・書き出す先
     notes: VS Code の利用者の設定とワークスペースの設定（`.vscode/settings.json`）。後者が前者に勝つ
   - file: mdmark.config.yaml
-    manages: ライブラリ本体と同じキー。端末の設定と上のフォルダの設定と重ねて読み、`mount` の `opts.config` が読むキーと `theme`・`extensions`・`assets.root` を使う
-    notes: 場所は `mdmark.configPath`（空のときは Markdown のフォルダから上へ探す）。重ね方はインターフェース定義『設定を重ねて読む』。キーの意味は設定『ライブラリ本体』
+    manages: ライブラリ本体と同じキー。端末の設定と上のフォルダの設定と重ねて読み込み、`mount` の `opts.config` が読み込むキーと `theme`・`extensions`・`assets.root` を使用する
+    notes: 場所は `mdmark.configPath`（空のときは Markdown のフォルダから上へ探す）。重ね方はインターフェース定義『設定を重ねて読み込む』。キーの意味は設定『ライブラリ本体』
   - file: 環境変数
     manages: 結合テストのときだけ差し替える配布物の配信元とタグ一覧の取得先
-    notes: 拡張機能が `ExtensionMode.Test` で動くときだけ読む。利用者の設定には出さない
+    notes: 拡張機能が `ExtensionMode.Test` で動くときだけ読み込む。利用者の設定には出さない
 settings:
   - key: mdmark.version
-    title: 読む mdmark の版
+    title: 読み込む mdmark のバージョン
     file: settings.json
     type: string
     required: false
     default: latest
-    description: '`latest` のときはプレビューを開くときとリロードしたときに GitHub のタグ一覧から `v{X}.{Y}.{Z}` の最新を選ぶ。版を書くとその版に固定する'
+    description: '`latest` のときはプレビューを開くときとリロードしたときに GitHub のタグ一覧から `v{X}.{Y}.{Z}` の最新を選ぶ。バージョンを記載するとそのバージョンに固定する'
     reload: reload
     allowed: '`latest` か `v{X}.{Y}.{Z}`（`package.json` の `pattern`）'
     refs:
@@ -32,7 +32,7 @@ settings:
     type: string
     required: false
     default: 空（Markdown のフォルダから上へ `mdmark.config.yaml` を探して重ねる）
-    description: 拡張機能が読む YAML のパス。書いたときは上へ探さず、このファイルと端末の設定だけを重ねる。相対パスは Markdown を含むワークスペースのフォルダから（ワークスペースの外の Markdown は Markdown のフォルダから）解決する
+    description: 拡張機能が読み込む YAML のパス。記載したときは上へ探さず、このファイルと端末の設定だけを重ねる。相対パスは Markdown を含むワークスペースのフォルダから（ワークスペースの外の Markdown は Markdown のフォルダから）解決する
     reload: immediate
     allowed: 相対パスか絶対パス
     status: planned
@@ -40,28 +40,28 @@ settings:
     introduced:
       pr: 69
   - key: mdmark.preview.liveUpdate
-    title: 打つたびに描き直すか
+    title: 打つたびに再描画するか
     file: settings.json
     type: boolean
     required: false
     default: 'true'
-    description: '`true` のときは Markdown の変更から `mdmark.preview.updateDelayMs` 待って描き直す。`false` のときは保存したときだけ描き直す'
+    description: '`true` のときは Markdown の変更から `mdmark.preview.updateDelayMs` 待って再描画する。`false` のときは保存したときだけ再描画する'
     reload: immediate
     status: planned
     visibility: user
     introduced:
       pr: 69
   - key: mdmark.preview.updateDelayMs
-    title: 描き直すまでの待ち
+    title: 再描画するまでの待ち
     file: settings.json
     type: integer
     required: false
     default: '300'
-    description: 最後に打ってから描き直すまでのミリ秒
+    description: 最後に打ってから再描画するまでのミリ秒
     reload: immediate
     allowed: 0〜5000
     refs:
-      - dev/設計書/非機能要件/非機能要件#requirements[描き直すまでの待ち]
+      - dev/設計書/非機能要件/非機能要件#requirements[再描画するまでの待ち]
     status: planned
     visibility: user
     introduced:
@@ -110,7 +110,7 @@ settings:
     type: string
     required: false
     default: '""'
-    description: '`mdmark.exportHtml`・`mdmark.openInBrowser`・`mdmark.printToPdf` が HTML を書くフォルダ。空のときは Markdown と同じフォルダ。相対パスは Markdown を含むワークスペースのフォルダから解決する'
+    description: '`mdmark.exportHtml`・`mdmark.openInBrowser`・`mdmark.printToPdf` が HTML を書き込むフォルダ。空のときは Markdown と同じフォルダ。相対パスは Markdown を含むワークスペースのフォルダから解決する'
     reload: immediate
     allowed: 空・相対パス・絶対パス
     refs:
@@ -120,12 +120,12 @@ settings:
     introduced:
       pr: 69
   - key: features
-    title: 機能のオン・オフ（拡張機能が渡す）
+    title: 機能のオン・オフ（拡張機能が指定する）
     file: mdmark.config.yaml
     type: Record<string, boolean>
     required: false
-    default: なし（`mount` に渡さず mdmark の既定で描く）
-    description: 拡張機能は書いた値をそのまま `mount` の `opts.config.features` に渡す
+    default: なし（`mount` に指定せず mdmark の既定で描く）
+    description: 拡張機能は記載した値をそのまま `mount` の `opts.config.features` に指定する
     reload: immediate
     refs:
       - dev/設計書/設定/ライブラリ本体#settings[features]
@@ -134,16 +134,16 @@ settings:
     introduced:
       pr: 69
   - key: libraries
-    title: 外部ライブラリの対応表（拡張機能が渡す）
+    title: 外部ライブラリの対応表（拡張機能が指定する）
     file: mdmark.config.yaml
     type: Record<string, string>
     required: false
-    default: なし（`mount` に渡さない）
-    description: 相対 URL は設定ファイルのあるフォルダを基準に解決し、プレビューでは Webview で読める URL、書き出した HTML では文書にマーカーがあるモジュールをまとめた `data:` の URL にして `mount` の `opts.config.libraries` に渡す。`http:`・`https:` の URL はそのまま渡す
+    default: なし（`mount` に指定しない）
+    description: 相対 URL は設定ファイルのあるフォルダを基準に解決し、プレビューでは Webview で読み込める URL、書き出した HTML では文書にマーカーがあるモジュールをまとめた `data:` の URL にして `mount` の `opts.config.libraries` に指定する。`http:`・`https:` の URL はそのまま指定する
     reload: immediate
     refs:
       - dev/設計書/設定/ライブラリ本体#settings[libraries]
-    reason: Webview で読める URL への直し方（`asWebviewUri`）は拡張機能にしかできず、mdmark に基準を渡す口を足しても拡張機能が URL を直す処理を持つことは変わらないため（要件.md の推奨案 B）
+    reason: Webview で読み込める URL への修正方法（`asWebviewUri`）は拡張機能にしかできず、mdmark に基準を指定するインターフェースを追加しても拡張機能が URL を修正する処理を持つことは変わらないため（要件.md の推奨案 B）
     status: planned
     visibility: user
     introduced:
@@ -153,8 +153,8 @@ settings:
     file: 環境変数
     type: string
     required: false
-    default: なし（`https://cdn.jsdelivr.net/gh/shuhei1101/mdmark` を使う）
-    description: 配布物の URL `{配信元}@{版}/dist/{ファイル}` の `{配信元}` を置き換える。CSP の配布物の配信元もこの origin にする
+    default: なし（`https://cdn.jsdelivr.net/gh/shuhei1101/mdmark` を使用する）
+    description: 配布物の URL `{配信元}@{バージョン}/dist/{ファイル}` の `{配信元}` を置き換える。CSP の配布物の配信元もこの origin にする
     env_var: MDMARK_VSCODE_DIST_BASE
     reload: restart
     allowed: '`http:` か `https:` の URL（末尾の `/` を持たない）'
@@ -167,7 +167,7 @@ settings:
     file: 環境変数
     type: string
     required: false
-    default: なし（`https://api.github.com/repos/shuhei1101/mdmark/tags?per_page=100` を使う）
+    default: なし（`https://api.github.com/repos/shuhei1101/mdmark/tags?per_page=100` を使用する）
     description: タグ一覧を取る URL を置き換える
     env_var: MDMARK_VSCODE_TAGS_URL
     reload: restart
@@ -177,12 +177,12 @@ settings:
     introduced:
       pr: 69
   - key: side-toc
-    title: 右側の目次の出し方（拡張機能が渡す）
+    title: 右側の目次の出し方（拡張機能が指定する）
     file: mdmark.config.yaml
     type: Record<string, unknown>
     required: false
-    default: なし（`mount` に渡さず mdmark の既定の `hover` で描く）
-    description: 拡張機能は書いた値をそのまま `mount` の `opts.config["side-toc"]` に渡す。プレビューと書き出した HTML の右側の目次の出し方になる
+    default: なし（`mount` に指定せず mdmark の既定の `hover` で描く）
+    description: 拡張機能は記載した値をそのまま `mount` の `opts.config["side-toc"]` に指定する。プレビューと書き出した HTML の右側の目次の出し方になる
     reload: immediate
     refs:
       - dev/設計書/設定/ライブラリ本体#settings[side-toc.mode]
@@ -191,12 +191,12 @@ settings:
     introduced:
       pr: 166
   - key: labels
-    title: 部品の文言（拡張機能が渡す）
+    title: 部品の文言（拡張機能が指定する）
     file: mdmark.config.yaml
     type: Record<string, unknown>
     required: false
-    default: なし（`mount` に渡さず mdmark の既定の文言で描く）
-    description: 拡張機能は値がマップのときだけ、書いた値をそのまま `mount` の `opts.config.labels` に渡す。プレビューと書き出した HTML の操作できる部品の今の値をコピーするボタンの文言になる
+    default: なし（`mount` に指定せず mdmark の既定の文言で描く）
+    description: 拡張機能は値がマップのときだけ、記載した値をそのまま `mount` の `opts.config.labels` に指定する。プレビューと書き出した HTML の操作できる部品の今の値をコピーするボタンの文言になる
     reload: immediate
     refs:
       - dev/設計書/設定/ライブラリ本体#settings[labels.paramCopy]
@@ -214,20 +214,20 @@ settings:
     reload: immediate
     allowed: '`package.json` の `enum` の値だけ'
     refs:
-      - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを描き直す.ts#constraints[設定の取り出し方]
+      - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを再描画する.ts#constraints[設定の取り出し方]
       - dev/設計書/設定/ライブラリ本体#settings[colorTheme]
-    reason: 選んだテーマは書き出す HTML にも当たるため、`mdmark.preview.*` の下に置かない（確認ログ「テーマの設定のキーと設定画面の表示名」）
+    reason: 選んだテーマは書き出す HTML にも該当するため、`mdmark.preview.*` の下に配置しない（確認ログ「テーマの設定のキーと設定画面の表示名」）
     status: planned
     visibility: user
     introduced:
       pr: 181
   - key: colorTheme
-    title: 選ぶテーマ（拡張機能が渡す）
+    title: 選ぶテーマ（拡張機能が指定する）
     file: mdmark.config.yaml
     type: string
     required: false
-    default: なし（`mount` に渡さず mdmark の既定の dev-swiss で描く）
-    description: '`mdmark.colorTheme` が空のときだけ、拡張機能は書いた値をそのまま `mount` の `opts.config.colorTheme` に渡す。`mdmark.colorTheme` が空でないときはその値で置き換える'
+    default: なし（`mount` に指定せず mdmark の既定の dev-swiss で描く）
+    description: '`mdmark.colorTheme` が空のときだけ、拡張機能は記載した値をそのまま `mount` の `opts.config.colorTheme` に指定する。`mdmark.colorTheme` が空でないときはその値で置き換える'
     reload: immediate
     refs:
       - dev/設計書/設定/ライブラリ本体#settings[colorTheme]
@@ -236,24 +236,24 @@ settings:
     introduced:
       pr: 181
   - key: colorScheme
-    title: 配色の明暗（拡張機能が渡す）
+    title: 配色の明暗（拡張機能が指定する）
     file: mdmark.config.yaml
     type: string
     required: false
-    default: なし（`mount` に渡さず、VS Code のテーマの明暗で描く）
-    description: '`mdmark.preview.theme` が `auto` のときだけ、拡張機能は書いた値をそのまま `mount` の `opts.config.colorScheme` に渡す。`light`・`dark` のときは渡さない'
+    default: なし（`mount` に指定せず、VS Code のテーマの明暗で描く）
+    description: '`mdmark.preview.theme` が `auto` のときだけ、拡張機能は記載した値をそのまま `mount` の `opts.config.colorScheme` に指定する。`light`・`dark` のときは指定しない'
     reload: immediate
     refs:
       - dev/設計書/設定/ライブラリ本体#settings[colorScheme]
     status: planned
     visibility: user
   - key: assets.root
-    title: アセットのルート（拡張機能が読む）
+    title: アセットのルート（拡張機能が読み込む）
     file: mdmark.config.yaml
     type: string
     required: false
     default: なし（Markdown のフォルダからの相対パスだけで探す）
-    description: プレビューで、Markdown のフォルダからの相対パスに無い画像・動画・音声を、設定ファイルのあるフォルダからのこのフォルダを基準に同じ相対パスで探す。`mount` には渡さない
+    description: プレビューで、Markdown のフォルダからの相対パスに無い画像・動画・音声を、設定ファイルのあるフォルダからのこのフォルダを基準に同じ相対パスで探す。`mount` には指定しない
     reload: immediate
     refs:
       - dev/設計書/設定/ライブラリ本体#settings[assets.root]
@@ -261,12 +261,12 @@ settings:
     status: planned
     visibility: user
   - key: html-scripts.url
-    title: 範囲の TypeScript の変換のライブラリの読み込み先（拡張機能が渡す）
+    title: 範囲の TypeScript の変換のライブラリの読み込み先（拡張機能が指定する）
     file: mdmark.config.yaml
     type: string
     required: false
-    default: なし（`mount` に渡さず、ライブラリ本体の既定を当てる）
-    description: '`libraries` と同じく、相対 URL は設定ファイルのあるフォルダを基準に解決し、プレビューでは Webview で読める URL、書き出した HTML では変換のライブラリをまとめた `data:` の URL にして `mount` の `opts.config.html-scripts.url` に渡す。`http:`・`https:` の URL はそのまま渡し、その origin を CSP の `script-src` に含める'
+    default: なし（`mount` に指定せず、ライブラリ本体の既定を適用する）
+    description: '`libraries` と同じく、相対 URL は設定ファイルのあるフォルダを基準に解決し、プレビューでは Webview で読み込める URL、書き出した HTML では変換のライブラリをまとめた `data:` の URL にして `mount` の `opts.config.html-scripts.url` に指定する。`http:`・`https:` の URL はそのまま指定し、その origin を CSP の `script-src` に含める'
     reload: immediate
     refs:
       - dev/設計書/設定/ライブラリ本体#settings[html-scripts.url]
@@ -276,12 +276,12 @@ settings:
     introduced:
       pr: 303
   - key: mermaid
-    title: mermaid の設定（拡張機能が渡す）
+    title: mermaid の設定（拡張機能が指定する）
     file: mdmark.config.yaml
     type: map
     required: false
-    default: なし（`mount` に渡さず、ライブラリ本体の既定を当てる）
-    description: '`url`・`theme`・`themeVariables` を `mount` の `opts.config.mermaid` に渡す。相対の `url` は `html-scripts.url` と同じく、設定ファイルのあるフォルダを基準に解決し、プレビューでは Webview で読める URL、書き出した HTML では本体と chunk をまとめた `data:` の URL にする。`http:`・`https:` の `url` はそのまま渡し、その origin（`url` が無いときは既定の jsDelivr の origin）を CSP の `script-src` に含める'
+    default: なし（`mount` に指定せず、ライブラリ本体の既定を適用する）
+    description: '`url`・`theme`・`themeVariables` を `mount` の `opts.config.mermaid` に指定する。相対の `url` は `html-scripts.url` と同じく、設定ファイルのあるフォルダを基準に解決し、プレビューでは Webview で読み込める URL、書き出した HTML では本体と chunk をまとめた `data:` の URL にする。`http:`・`https:` の `url` はそのまま指定し、その origin（`url` が無いときは既定の jsDelivr の origin）を CSP の `script-src` に含める'
     reload: immediate
     refs:
       - dev/設計書/設定/ライブラリ本体#settings[mermaid.url]
@@ -291,12 +291,12 @@ settings:
     introduced:
       pr: 382
   - key: aliases
-    title: エイリアスの元の行（拡張機能が読む）
+    title: エイリアスの元の行（拡張機能が読み込む）
     file: mdmark.config.yaml
     type: object[]
     required: false
-    default: なし（エイリアスを渡さない）
-    description: プレビューで、重ねた設定の行の `paths` の YAML を CLI と同じく読んでエイリアスを作り、`mount` の `opts.aliases` に渡す。行の `paths` はその値を書いた設定ファイルのフォルダから解決する。使えない行・レコードは除き、出力チャネルに警告を書く。行の `paths` に当たった YAML を保存すると描き直す。書き出した HTML には渡さない
+    default: なし（エイリアスを指定しない）
+    description: プレビューで、重ねた設定の行の `paths` の YAML を CLI と同じく読み込んでエイリアスを作り、`mount` の `opts.aliases` に指定する。行の `paths` はその値を記載した設定ファイルのフォルダから解決する。使用できない行・レコードは除き、出力チャネルに警告を記載する。行の `paths` に該当した YAML を保存すると再描画する。書き出した HTML には指定しない
     reload: immediate
     refs:
       - dev/設計書/設定/ライブラリ本体#settings[aliases]

@@ -22,7 +22,7 @@
 <body>
   <!-- モック専用の操作列: 配色の切り替え -->
   <div class="mock-bar">
-    <!-- [data-scheme-set]: sample.js が押されたボタンの値を html の data-scheme に当てる -->
+    <!-- [data-scheme-set]: sample.js が押されたボタンの値を html の data-scheme に適用する -->
     <div class="mock-bar-group" role="group" aria-label="配色">
       <button class="mock-bar-item" type="button" data-scheme-set="light" aria-pressed="false">明るい配色</button>
       <button class="mock-bar-item" type="button" data-scheme-set="dark" aria-pressed="false">ダーク</button>
@@ -33,16 +33,16 @@
     <div class="catalog">
       <h1 class="catalog-title">被参照の一覧</h1>
 
-      <!-- 文書の末尾の節（2 件） -->
+      <!-- 文書の末尾のセクション（2 件） -->
       <section aria-labelledby="state-end">
-        <h2 class="catalog-label" id="state-end">文書の末尾の節（2 件）</h2>
+        <h2 class="catalog-label" id="state-end">文書の末尾のセクション（2 件）</h2>
         <article class="mdmark">
 <p>本文の最後の段落です。</p>
 <nav class="mdmark-backlinks" aria-labelledby="backlinks-end-title">
   <p class="mdmark-backlinks-title" id="backlinks-end-title">関連文書</p>
   <ul>
     <li><a href="../api.md">API</a></li>
-    <li><a href="../使い方/guide.md">使い方</a></li>
+    <li><a href="../使い方/guide.md">使用方法</a></li>
   </ul>
 </nav>
         </article>
@@ -50,7 +50,7 @@
 
       <!-- 1 件 -->
       <section aria-labelledby="state-end-one">
-        <h2 class="catalog-label" id="state-end-one">文書の末尾の節（1 件）</h2>
+        <h2 class="catalog-label" id="state-end-one">文書の末尾のセクション（1 件）</h2>
         <article class="mdmark">
 <p>本文の最後の段落です。</p>
 <nav class="mdmark-backlinks" aria-labelledby="backlinks-one-title">
@@ -62,17 +62,17 @@
         </article>
       </section>
 
-      <!-- 長文（長い題と多くの文書） -->
+      <!-- 長文（長いタイトルと多くの文書） -->
       <section aria-labelledby="state-end-long">
-        <h2 class="catalog-label" id="state-end-long">長文（長い題と多くの文書）</h2>
+        <h2 class="catalog-label" id="state-end-long">長文（長いタイトルと多くの文書）</h2>
         <article class="mdmark">
 <p>本文の最後の段落です。</p>
 <nav class="mdmark-backlinks" aria-labelledby="backlinks-long-title">
   <p class="mdmark-backlinks-title" id="backlinks-long-title">関連文書</p>
   <ul>
     <li><a href="../api.md">API</a></li>
-    <li><a href="../使い方/guide.md">使い方</a></li>
-    <li><a href="../使い方/カスタマイズ/テーマを上書きする.md">CSS 変数と層の外の CSS で、描いた文書の見た目を変える手順と、印刷のときの見え方の違い</a></li>
+    <li><a href="../使い方/guide.md">使用方法</a></li>
+    <li><a href="../使い方/カスタマイズ/テーマを上書きする.md">CSS 変数と層の外の CSS で、描いた文書の外観を変える手順と、印刷のときの見え方の違い</a></li>
     <li><a href="../リファレンス/設定.md">設定の一覧</a></li>
     <li><a href="../非機能要件.md">非機能要件</a></li>
   </ul>
@@ -80,9 +80,9 @@
         </article>
       </section>
 
-      <!-- 参照されていない文書: 一覧を置かない -->
+      <!-- 参照されていない文書: 一覧を配置しない -->
       <section aria-labelledby="state-none">
-        <h2 class="catalog-label" id="state-none">参照されていない文書（一覧を置かない）</h2>
+        <h2 class="catalog-label" id="state-none">参照されていない文書（一覧を配置しない）</h2>
         <article class="mdmark">
 <p>本文の最後の段落です。</p>
         </article>

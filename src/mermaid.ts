@@ -15,7 +15,7 @@ import { renderMermaidDiagram } from "./parts/mermaid.ts";
 import { renderNotice } from "./parts/notice.ts";
 import { renderSyntaxWarning } from "./parts/syntax-warning.ts";
 
-/** `import()` で読んだ mermaid の ES モジュールが既定のエクスポートで持つ形 */
+/** `import()` で読み込んだ mermaid の ES モジュールが既定のエクスポートで持つ構造 */
 export type MermaidModule = {
   /** ページの中で 1 つの mermaid の設定を置き換える */
   initialize: (config: Record<string, unknown>) => void;
@@ -26,7 +26,7 @@ export type MermaidModule = {
 /** ガントチャートを描く幅の下限（px）。目盛りの日付が重ならない幅 */
 export const MERMAID_GANTT_MIN_WIDTH = 720;
 
-/** mermaid の図を開いたときの倍率の下限。これより縮めると小さい文字が読めないため、収まらない分は枠の中で動かす */
+/** mermaid の図を開いたときの倍率の下限。これより縮めると小さい文字が読み込めないため、収まらない分は枠の中で動かす */
 export const MERMAID_MIN_FIT = 0.75;
 
 /** 暗い配色とみなす地の色の明るさの上限（0〜1） */
@@ -36,26 +36,26 @@ const DARK_LUMINANCE = 0.5;
 const DARK_CLASS = "mdmark-theme-dark";
 const LIGHT_CLASS = "mdmark-theme-light";
 
-/** `setEmbeddedMermaid` が入れる、同じスクリプトに束ねた mermaid のモジュール。`undefined` なら `mermaid.url` から読む。ページの中の全ての `mount` に効く */
+/** `setEmbeddedMermaid` が入れる、同じスクリプトにまとめた mermaid のモジュール。`undefined` なら `mermaid.url` から読み込む。ページの中の全ての `mount` に有効になる */
 export let embeddedMermaid: { default?: unknown } | undefined;
 
-/** 埋めた mermaid のモジュールを置き換える。`undefined` で `mermaid.url` から読む形に戻す */
+/** 埋めた mermaid のモジュールを置き換える。`undefined` で `mermaid.url` から読み込む構造に戻す */
 export const setEmbeddedMermaid = (
   module: { default?: unknown } | undefined,
 ): void => {
   embeddedMermaid = module;
 };
 
-/** `initialize` と `render` の組を 1 つずつ流す鎖。mermaid の設定はページの中で 1 つのため、描画を重ねない */
+/** `initialize` と `render` の組を 1 つずつ実行する鎖。mermaid の設定はページの中で 1 つのため、描画を重ねない */
 let renderQueue: Promise<unknown> = Promise.resolve();
 
-/** `render` に渡す id の通し番号 */
+/** `render` に指定する id の通し番号 */
 let drawCount = 0;
 
 /** 既定の読み込み: 動的 `import()` */
 const importByUrl: SyntaxImport = (url) => import(/* @vite-ignore */ url);
 
-/** 既定のエクスポートが mermaid の形か */
+/** 既定のエクスポートが mermaid の構造か */
 const isMermaidModule = (value: unknown): value is MermaidModule =>
   typeof value === "object" &&
   value !== null &&
@@ -76,7 +76,7 @@ const elementFromHtml = (html: string): HTMLElement => {
 /** 計算済みの色の rgb()・rgba() */
 const RGB = /^rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?\)$/;
 
-/** 1×1 の canvas の描画の文脈（色の書き方を sRGB に変える） */
+/** 1×1 の canvas の描画の文脈（色の記載方法を sRGB に変える） */
 let canvasContext: CanvasRenderingContext2D | null | undefined;
 
 /** 色の値を canvas に塗って RGBA の並びにする */
@@ -103,7 +103,7 @@ const paintedChannels = (color: string): number[] => {
 const hex2 = (value: number): string =>
   Math.round(value).toString(16).padStart(2, "0");
 
-/** `scope` の中に試しの要素を置いて CSS 変数の計算済みの色を読み、sRGB の hex にする。`rgb()`・`rgba()` は値を読み、ほかの書き方は canvas で変換する */
+/** `scope` の中に試しの要素を配置して CSS 変数の計算済みの色を読み込み、sRGB の hex にする。`rgb()`・`rgba()` は値を読み込み、ほかの記載方法は canvas で変換する */
 export const cssColorToHex = (options: {
   scope: HTMLElement;
   name: string;
@@ -190,7 +190,7 @@ const enqueue = <T>(task: () => Promise<T>): Promise<T> => {
   return next;
 };
 
-/** 属性の数を読む（無ければ `undefined`） */
+/** 属性の数を読み込む（無ければ `undefined`） */
 const numberAttribute = (
   element: Element,
   name: string,
@@ -203,11 +203,11 @@ const numberAttribute = (
   return Number.isNaN(parsed) ? undefined : parsed;
 };
 
-/** SVG の `g.actor-man` の棒人間を、子の属性から求めた箱の中央の lucide の `user` のアイコンに替える */
+/** SVG の `g.actor-man` の棒人間を、子の属性から求めたノードの中央の lucide の `user` のアイコンに替える */
 export const replaceMermaidActors = (svg: SVGSVGElement): void => {
   const node = bundledIconNode("user");
   if (!node) {
-    throw new Error("lucide の user のアイコンを束ねていません");
+    throw new Error("lucide の user のアイコンをまとめていません");
   }
   const icon = node
     .map(([tag, attributes]) => {
@@ -260,7 +260,7 @@ export const replaceMermaidActors = (svg: SVGSVGElement): void => {
   }
 };
 
-/** mermaid が返した SVG の文字を、actor のアイコンを替え、大きさを `viewBox` にそろえた SVG の文字にする */
+/** mermaid が返却した SVG の文字を、actor のアイコンを替え、大きさを `viewBox` にそろえた SVG の文字にする */
 const finishSvg = (
   svg: string,
 ): { svg: string; width: number; height: number } => {
@@ -268,7 +268,7 @@ const finishSvg = (
   holder.innerHTML = svg;
   const element = holder.querySelector("svg");
   if (!element) {
-    throw new Error("mermaid が SVG を返しませんでした");
+    throw new Error("mermaid が SVG を返却しませんでした");
   }
   replaceMermaidActors(element);
   const box = element.viewBox.baseVal;
@@ -286,7 +286,7 @@ const firstLine = (error: unknown): string =>
     .split("\n")[0]
     ?.trim() ?? "";
 
-/** 1 つのソースを、今の配色と（暗い配色なら）明るい配色のテーマで描き、図の枠の HTML を返す。解釈できなければ例外のメッセージの 1 行目を返す */
+/** 1 つのソースを、今の配色と（暗い配色なら）明るい配色のテーマで描き、図の枠の HTML を返却する。解釈できなければ例外のメッセージの 1 行目を返却する */
 export const drawMermaidDiagram = async (options: {
   mermaid: MermaidModule;
   source: string;
@@ -295,7 +295,7 @@ export const drawMermaidDiagram = async (options: {
   config: ResolvedConfig["mermaid"];
   id: string;
   frameId: string;
-  /** 表示する枠の右下にリサイズハンドルを置くか（既定 `true`） */
+  /** 表示する枠の右下にリサイズハンドルを配置するか（既定 `true`） */
   resizable?: boolean;
 }): Promise<{ html: string } | { error: string }> => {
   const { mermaid, source, root, scope, config, id, frameId } = options;
@@ -345,21 +345,21 @@ export const drawMermaidDiagram = async (options: {
     );
     return { html };
   } catch (error) {
-    // mermaid が文書に残すエラーの図を消す
+    // mermaid が文書に残すエラーの図を削除する
     document.getElementById(`d${id}`)?.remove();
     document.getElementById(`d${id}-print`)?.remove();
     return { error: firstLine(error) };
   }
 };
 
-/** 描く対象の 1 つ: 元のコードブロック・ソース・今その場所に置いている要素 */
+/** 描く対象の 1 つ: 元のコードブロック・ソース・今その場所に配置している要素 */
 type MermaidTarget = {
   block: HTMLElement;
   source: string;
   current: HTMLElement;
 };
 
-/** `root` の中の mermaid のコードブロックを読み込み中の枠に替えて mermaid を読み、図の枠に置き換えて図の操作を付ける。配色の明暗が変わったら描き直す */
+/** `root` の中の mermaid のコードブロックを読み込み中のブロックに替えて mermaid を読み込み、図の枠に置き換えて図の操作を付ける。配色の明暗が変わったら再描画する */
 export const attachMermaid = (options: {
   root: HTMLElement;
   scope: HTMLElement;
@@ -400,7 +400,7 @@ export const attachMermaid = (options: {
   let detachWatch = (): void => {};
   const live = (): boolean => !detached && isCurrent();
 
-  /** mermaid のモジュールを決める。読めなければ `undefined` */
+  /** mermaid のモジュールを決める。読み込めなければ `undefined` */
   const loadMermaid = async (): Promise<MermaidModule | undefined> => {
     if (embeddedMermaid !== undefined) {
       const embedded = embeddedMermaid.default;
@@ -418,12 +418,12 @@ export const attachMermaid = (options: {
         return loaded;
       }
       console.error(
-        "mermaid を読めません:",
+        "mermaid を読み込めません:",
         url,
         new Error("既定のエクスポートが initialize と render を持ちません"),
       );
     } catch (error) {
-      console.error("mermaid を読めません:", url, error);
+      console.error("mermaid を読み込めません:", url, error);
     }
     return undefined;
   };
@@ -485,7 +485,7 @@ export const attachMermaid = (options: {
         : () => {};
   };
 
-  /** 配色の明暗の変化を見て、テーマの変数が変わったら描き直す */
+  /** 配色の明暗の変化を確認して、テーマの変数が変わったら再描画する */
   const watch = (mermaid: MermaidModule): void => {
     let last = JSON.stringify(
       mermaidThemeVariables({ scope, config: config.mermaid }),

@@ -32,7 +32,7 @@ properties:
       kind:
         type: string
         title: 種類
-        description: '`endpoint`（HTTP を返す。値はメソッド + パス）/ `mcp_tool`（MCP ツール名）/ `operation`（呼び出す識別子 + 境界の種別）/ `trigger`（起動契機 + 周期）/ `screen`（画面の実装ファイル）。'
+        description: '`endpoint`（HTTP を返却する。値はメソッド + パス）/ `mcp_tool`（MCP ツール名）/ `operation`（呼び出す識別子 + 境界の種別）/ `trigger`（起動契機 + 周期）/ `screen`（画面の実装ファイル）。'
         enum:
         - endpoint
         - mcp_tool
@@ -52,7 +52,7 @@ properties:
     title: 冒頭リード
     description: |-
       対象を 1〜3 行で説明する。
-      初回に書いた内容のまま保ち、後から情報を足さない（仕様は各項目に書く）。
+      初回に記載した内容のまま保ち、後から情報を追加しない（仕様は各項目に記載する）。
       対象そのものが変わったときだけ書き換える。
   test_file:
     type: string
@@ -62,7 +62,7 @@ properties:
   identifier:
     type: string
     title: 識別子
-    description: 操作の識別子（OpenAPI の operationId に当たる）。
+    description: 操作の識別子（OpenAPI の operationId に該当する）。
   permissions:
     type: string
     title: 必要な権限
@@ -116,8 +116,8 @@ properties:
           description: 省略時の値。省略できて既定の値が無いときは `なし（{省略時の挙動}）`。
         location:
           type: string
-          title: 置き場所
-          description: HTTP のパラメータの置き場所。MCP ツール・関数の引数は `argument`。
+          title: 配置場所
+          description: HTTP のパラメータの配置場所。MCP ツール・関数の引数は `argument`。
           enum:
           - path
           - query
@@ -201,7 +201,7 @@ properties:
   status_codes:
     type: array
     title: ステータスコード
-    description: HTTP を返す操作の出口。`exceptions` とどちらか片方だけを持つ。異常の行は異常系のフローと 1:1。
+    description: HTTP を返却する操作の出口。`exceptions` とどちらか片方だけを持つ。異常の行は異常系のフローと 1:1。
     x-heading: ステータスコード
     x-shape: table
     x-key: code
@@ -224,7 +224,7 @@ properties:
   exceptions:
     type: array
     title: 例外
-    description: HTTP を返さない操作の出口。異常の行は異常系のフローと 1:1。
+    description: HTTP を返却しない操作の出口。異常の行は異常系のフローと 1:1。
     x-heading: 例外
     x-shape: table
     x-key: name
@@ -248,11 +248,11 @@ properties:
   error_format:
     $ref: 共通.schema.yaml#/$defs/markdown
     title: エラーの形式
-    description: エラー応答の形（RFC 9457 の type・title・status・detail 等）。
+    description: エラー応答の構造（RFC 9457 の type・title・status・detail 等）。
   constraints:
     type: array
     title: 制約
-    description: 操作全体にかかる制約。関連する項目は制限を設けないときも行を置く。
+    description: 操作全体にかかる制約。関連する項目は制限を設けないときも行を配置する。
     x-heading: 制約
     x-shape: table
     x-key: item
@@ -270,7 +270,7 @@ properties:
         constraint:
           type: string
           title: 制約
-          description: 設けないときも `制限なし` と書く。
+          description: 設けないときも `制限なし` と記載する。
         decided_by:
           $ref: 共通.schema.yaml#/$defs/ref
           title: 決定値
@@ -312,7 +312,7 @@ properties:
           title: セットアップ
           description: |-
             事前に要るデータ・状態と、分岐・異常を決定的に誘発する入力。
-            `Mock` の行（差し替える依存。差し替えないときも `なし（…）`）を必ず置く。
+            `Mock` の行（差し替える依存。差し替えないときも `なし（…）`）を必ず配置する。
           x-heading: セットアップ
           x-shape: table
           minItems: 1
@@ -326,7 +326,7 @@ properties:
               name:
                 type: string
                 title: セットアップ
-                description: 前提を作る Factory 関数名か状態の名前。`Mock` の行を必ず置く。
+                description: 前提を作る Factory 関数名か状態の名前。`Mock` の行を必ず配置する。
               description:
                 type: string
                 title: 説明
@@ -346,7 +346,7 @@ properties:
         expected:
           type: array
           title: 期待値
-          description: フローの終了時点で外部から観測できる状態・戻り値。1 要素 = 1 つの確かめ。
+          description: フローの終了時点で外部から観測できる状態・戻り値。1 要素 = 1 つの確認。
           x-heading: 期待値
           x-shape: list
           minItems: 1
@@ -377,7 +377,7 @@ examples:
   entry:
     kind: operation
     value: '`create_task`（サービス層の公開関数）'
-  lead: タイトルとサブタスクを受け取ってタスクを永続化し、採番済みのタスクを返す。
+  lead: タイトルとサブタスクを受け取ってタスクを永続化し、採番済みのタスクを返却する。
   test_file: tests/integration/task/test_create_task.py
   request:
   - name: title

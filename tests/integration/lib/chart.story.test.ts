@@ -7,7 +7,7 @@ const holder = createBrowserHolder();
 beforeAll(holder.launch);
 afterAll(holder.close);
 
-// 系列 2 つ・点 5 つずつを、色と線の模様と点の形の組で描く（TwoSeries）
+// 系列 2 つ・点 5 つずつを、色と線の模様と点の形状の組で描く（TwoSeries）
 test("test_two_series", async () => {
   // 準備・実行
   const page = await holder.openStory("parts-chart--two-series");
@@ -38,25 +38,25 @@ test("test_four_series", async () => {
   expect(new Set(styles).size).toBe(4);
 });
 
-// 定義を読めないときは、図の代わりに書き方の警告を出す（Invalid）
+// 定義を読み込めないときは、図の代わりに記載の警告を出す（Invalid）
 test("test_invalid", async () => {
   // 準備・実行
   const page = await holder.openStory("parts-chart--invalid");
   // 検証
   await expect(
     page.locator(".mdmark-syntax-warning").innerText(),
-  ).resolves.toContain("グラフの部品の定義を JSON として読めません");
+  ).resolves.toContain("グラフの部品の定義を JSON として読み込めません");
   await expect(page.locator("svg[role=img]").count()).resolves.toBe(0);
 });
 
-/** svg の文字（`innerText` を持たない）を、現れた順に返す */
+/** svg の文字（`innerText` を持たない）を、現れた順に返却する */
 function svgTexts(page: Page, selector: string): Promise<string[]> {
   return page
     .locator(selector)
     .evaluateAll((texts) => texts.map((text) => text.textContent ?? ""));
 }
 
-/** 系列ごとの塗りの模様の `pattern` の中身（要素の名前を並べた文字）を、系列の順に返す */
+/** 系列ごとの塗りの模様の `pattern` の中身（要素の名前を並べた文字）を、系列の順に返却する */
 function patternKinds(page: Page): Promise<string[]> {
   return page
     .locator("svg[role=img] pattern")
@@ -97,7 +97,7 @@ test("test_bar_four", async () => {
   // 準備・実行
   const page = await holder.openStory("parts-chart--bar-four");
   // 検証
-  // 塗りの模様は系列の上限の 6 つ分を定義に置き、描いた 4 つの系列は先頭の 4 つを使う
+  // 塗りの模様は系列の上限の 6 つ分を定義に配置し、描いた 4 つの系列は先頭の 4 つを使用する
   const kinds = (await patternKinds(page)).slice(0, 4);
   expect(kinds).toEqual(["rect", "rect,path", "rect,circle", "rect,path"]);
   const inks = await page
@@ -127,7 +127,7 @@ test("test_pie", async () => {
     .locator(".mdmark-diagram-legend-item span")
     .allInnerTexts();
   expect(legend).toEqual([
-    "よくある質問で答えた（186 件）",
+    "よくある質問で回答した（186 件）",
     "担当者へ回した（92 件）",
     "返信しなかった（22 件）",
   ]);
@@ -148,7 +148,7 @@ test("test_pie", async () => {
   await expect(pageOverflows(page)).resolves.toBe(false);
 });
 
-// 散布図は、横と縦の両方を数値の軸にし、系列を色と点の形（丸・四角）で分ける（Scatter）
+// 散布図は、横と縦の両方を数値の軸にし、系列を色と点の形状（丸・四角）で分ける（Scatter）
 test("test_scatter", async () => {
   // 準備・実行
   const page = await holder.openStory("parts-chart--scatter");
@@ -173,12 +173,12 @@ test("test_scatter", async () => {
   await expect(pageOverflows(page)).resolves.toBe(false);
 });
 
-/** 凡例の項目の文字を、並んだ順に返す */
+/** 凡例の項目の文字を、並んだ順に返却する */
 function legendTexts(page: Page): Promise<string[]> {
   return page.locator(".mdmark-diagram-legend-item > span").allTextContents();
 }
 
-/** 図の中の `selector` の要素の `fill` の属性を、現れた順に返す */
+/** 図の中の `selector` の要素の `fill` の属性を、現れた順に返却する */
 function fillsOf(page: Page, selector: string): Promise<Array<string | null>> {
   return page
     .locator(`svg[role=img] ${selector}`)
@@ -248,7 +248,7 @@ test("test_area", async () => {
   ).resolves.toBe(10);
 });
 
-// 積み上げの面は、系列の面を下の系列の上端に積み、系列ごとの塗りの模様で分ける（StackedArea）
+// 積み上げの面は、系列の面を下の系列の上端に重ね、系列ごとの塗りの模様で分ける（StackedArea）
 test("test_stacked_area", async () => {
   // 準備・実行
   const page = await holder.openStory("parts-chart--stacked-area");
@@ -271,7 +271,7 @@ test("test_stacked_area", async () => {
   expect(bottomReversed(shapes[2] ?? "")).toBe(top(shapes[1] ?? ""));
 });
 
-// 積み上げの棒は、項目ごとに系列を 1 本に積み、棒の上に合計を出す（StackedBar）
+// 積み上げの棒は、項目ごとに系列を 1 本に追加し、棒の上に合計を出す（StackedBar）
 test("test_stacked_bar", async () => {
   // 準備・実行
   const page = await holder.openStory("parts-chart--stacked-bar");
@@ -362,7 +362,7 @@ test("test_donut", async () => {
   await expect(
     svgTexts(page, "svg[role=img] .mdmark-diagram-axis-text"),
   ).resolves.toEqual(["合計 件"]);
-  // 扇形は中を空けた形（外の弧と内の弧の 2 つの弧）で描く
+  // 扇形は中を空けた構造（外の弧と内の弧の 2 つの弧）で描く
   const arcs = await page
     .locator("svg[role=img] .mdmark-diagram-slice")
     .first()
@@ -447,7 +447,7 @@ test("test_combo", async () => {
   ]);
 });
 
-// 系列が 7 つの定義は、図の代わりに系列の数と上限を書いた書き方の警告を出す（TooManySeries）
+// 系列が 7 つの定義は、図の代わりに系列の数と上限を記載した記載の警告を出す（TooManySeries）
 test("test_too_many_series", async () => {
   // 準備・実行
   const page = await holder.openStory("parts-chart--too-many-series");

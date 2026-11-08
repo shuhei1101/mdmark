@@ -42,7 +42,7 @@ test("test_normal", async () => {
   expect(after.value).toBe("r3");
   expect(before.disabled).toEqual(["r3"]);
   expect(after.disabled).toEqual(["r2", "r1"]);
-  expect(before.texts[1]).toBe("2026/10/19 16:40 件数を直す（鈴木）");
+  expect(before.texts[1]).toBe("2026/10/19 16:40 件数を修正する（鈴木）");
   await expect(page.locator(".mdmark-diff-summary").innerText()).resolves.toBe(
     "削除した行 1・追加した行 8",
   );

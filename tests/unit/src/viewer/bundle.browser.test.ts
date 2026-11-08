@@ -3,7 +3,7 @@ import { afterEach, expect, test } from "vitest";
 /** まとめた HTML の起動の処理を読み込む（実装が無い間は各テストが個別に失敗する） */
 const loadBundle = () => import("../../../../src/viewer/bundle.ts");
 
-/** 画面の骨組みを作る処理を読み込む（骨組みは書き出す HTML の `body` を使う） */
+/** 画面の骨組みを作る処理を読み込む（骨組みは書き出す HTML の `body` を使用する） */
 const loadHtml = () => import("../../../../src/cli/html.ts");
 
 // 文書 a.md（entry）と b.md をまとめた中身
@@ -24,7 +24,7 @@ afterEach(() => {
   history.replaceState(null, "", ORIGINAL_URL);
 });
 
-/** 書き出す HTML と同じ画面の骨組みをページに置く */
+/** 書き出す HTML と同じ画面の骨組みをページに配置する */
 async function placeSkeleton(): Promise<void> {
   const { assembleHtml } = await loadHtml();
   const html = assembleHtml({ payload: PAYLOAD, distCss: "", script: "" });
@@ -71,7 +71,7 @@ test("test_start_bundle_when_missing_document", async () => {
   expect(location.hash).toBe("#/a.md");
 });
 
-// 右側の目次の項目を押すと、閉じた節を開いて見出しへ移る（正常系）
+// 右側の目次の項目を押すと、閉じたセクションを開いて見出しへ移る（正常系）
 test("test_start_bundle_when_side_toc_link_into_closed_section", async () => {
   // 準備
   const { startBundle } = await loadBundle();
@@ -94,7 +94,7 @@ test("test_start_bundle_when_side_toc_link_into_closed_section", async () => {
     '.mdmark-side-toc a[data-heading-id="注意"]',
   );
   if (body === null || link === null) {
-    throw new Error("節の中身か右側の目次の項目が無い");
+    throw new Error("セクションの中身か右側の目次の項目が無い");
   }
   expect(body.hasAttribute("hidden")).toBe(true);
   // 実行

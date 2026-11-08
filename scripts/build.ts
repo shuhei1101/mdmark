@@ -28,27 +28,27 @@ import {
 } from "./bundle.ts";
 import { checkMigrations } from "./migrations.ts";
 
-// 埋める版が合うべき書式
+// 埋めるバージョンが合うべき書式
 const VERSION_PATTERN = /^v\d+\.\d+\.\d+$/;
 // 配布ファイル 1 つの上限（非機能要件の 624KB）
 const MAX_DIST_FILE_BYTES = 624 * 1024;
-// 配布物に束ねた依存のライセンスを書く、`dist/` の中のファイル名
+// 配布物にまとめた依存のライセンスを記載する、`dist/` の中のファイル名
 const LICENSES_FILE = "THIRD_PARTY_LICENSES.txt";
-// サイズを検めない配布ファイル（使う側のページが jsDelivr から読まない出力）
+// サイズを検めない配布ファイル（利用側のページが jsDelivr から読み込まない出力）
 const UNSIZED_OUTPUTS = ["dist/cli.js", "dist/viewer.js", "dist/viewer.css"];
-// CLI の実行時の依存: 束ねずに `package.json` の `dependencies` から読む
+// CLI の実行時の依存: まとめずに `package.json` の `dependencies` から読み込む
 const CLI_EXTERNALS = ["yaml", "esbuild"];
-// 版を渡す引数の名前
+// バージョンを指定する引数の名前
 const VERSION_OPTION = "--version";
-// 型定義を書く tsc の設定
+// 型定義を記載する tsc の設定
 const DECLARATION_TSCONFIG = "tsconfig.dist.json";
 
 const execFileAsync = promisify(execFile);
 
-/** 版の書式が違うときに投げる */
+/** バージョンの書式が違うときに投げる */
 export class VersionFormatError extends Error {}
 
-/** `--version` があればその値、無ければ `version.ini` の先頭行を返し、書式を検査する */
+/** `--version` があればその値、無ければ `version.ini` の先頭行を返却し、書式を検査する */
 export function resolveVersion(argv: string[], root: string): string {
   const index = argv.indexOf(VERSION_OPTION);
   const version =
@@ -59,13 +59,13 @@ export function resolveVersion(argv: string[], root: string): string {
         ).trim();
   if (!VERSION_PATTERN.test(version)) {
     throw new VersionFormatError(
-      `版の書式が違う: ${version}（v{MAJOR}.{MINOR}.{PATCH}）`,
+      `バージョンの書式が違う: ${version}（v{MAJOR}.{MINOR}.{PATCH}）`,
     );
   }
   return version;
 }
 
-/** 束ねたパッケージと、その中に取り込まれたパッケージの名前・版・ライセンス・ライセンスの本文を、名前の順に `dist/` の `LICENSES_FILE` に書く。複数の `metafile` で同じパッケージは 1 回だけ書く */
+/** まとめたパッケージと、その中に取り込まれたパッケージの名前・バージョン・ライセンス・ライセンスの本文を、名前の順に `dist/` の `LICENSES_FILE` に書き込む。複数の `metafile` で同じパッケージは 1 回だけ記載する */
 export async function writeThirdPartyLicenses(options: {
   /** 配布物と CLI の esbuild の出力 */
   metafiles: Metafile[];
@@ -86,7 +86,7 @@ export async function writeThirdPartyLicenses(options: {
   writeFileSync(join(root, "dist", LICENSES_FILE), blocks.join("\n\n"));
 }
 
-/** 作業ツリーの `tsc` を流し、`src/index.ts` から辿れる型定義を `dist/` に書く。`tsc` が失敗したら、その出力を含む例外を投げる */
+/** 作業ツリーの `tsc` を実行し、`src/index.ts` から辿れる型定義を `dist/` に書き込む。`tsc` が失敗したら、その出力を含む例外を投げる */
 export async function emitDeclarations(root: string): Promise<void> {
   try {
     await execFileAsync(
@@ -103,7 +103,7 @@ export async function emitDeclarations(root: string): Promise<void> {
   }
 }
 
-/** ビューとコメントの部品のモジュール `src/views/index.ts` と `src/comments/index.ts` を `dist/view.js` と `dist/comments.js` に束ねる。使う関数はそれぞれのファイルに束ね、`dist/index.js` は読み込まない。ソースが無ければ何も書かない */
+/** ビューとコメントの部品のモジュール `src/views/index.ts` と `src/comments/index.ts` を `dist/view.js` と `dist/comments.js` にまとめる。使用する関数はそれぞれのファイルにまとめ、`dist/index.js` は読み込まない。ソースが無ければ何も書き込まない */
 async function buildParts(
   version: string,
   root: string,
@@ -136,7 +136,7 @@ async function buildParts(
   );
 }
 
-/** 書き出した HTML の起動の処理 `src/viewer/index.ts` と `src/viewer/viewer.css` を `dist/viewer.js` と `dist/viewer.css` に束ねる。ソースが無ければ何も書かない */
+/** 書き出した HTML の起動の処理 `src/viewer/index.ts` と `src/viewer/viewer.css` を `dist/viewer.js` と `dist/viewer.css` にまとめる。ソースが無ければ何も書き込まない */
 async function buildViewer(
   version: string,
   root: string,
@@ -169,7 +169,7 @@ async function buildViewer(
   );
 }
 
-/** CLI の `src/cli/main.ts` を Node で動く `dist/cli.js` に束ねる（`yaml` と `esbuild` は束ねない）。出力のパスとバイト数と、ライセンスを書くための esbuild の出力を返す。ソースが無ければ何も書かず、出力を持たない */
+/** CLI の `src/cli/main.ts` を Node で動く `dist/cli.js` にまとめる（`yaml` と `esbuild` はまとめない）。出力のパスとバイト数と、ライセンスを記載するための esbuild の出力を返却する。ソースが無ければ何も書き込まず、出力を持たない */
 async function buildCli(
   version: string,
   root: string,
@@ -205,7 +205,7 @@ async function buildCli(
   };
 }
 
-/** esbuild で `src/index.ts` と `src/index.css` を、版を埋めた `dist/` に束ね、型定義を書き、配布物と CLI に束ねた依存のライセンスを書く */
+/** esbuild で `src/index.ts` と `src/index.css` を、バージョンを埋めた `dist/` にまとめ、型定義を書き込み、配布物と CLI にまとめた依存のライセンスを書き込む */
 export async function buildDist(
   version: string,
   root: string,
@@ -246,7 +246,7 @@ export async function buildDist(
   return outputs;
 }
 
-/** 出力ファイルのうち `UNSIZED_OUTPUTS` に無く上限を超えたものを返す */
+/** 出力ファイルのうち `UNSIZED_OUTPUTS` に無く上限を超えたものを返却する */
 export function findTooLargeOutputs(
   outputs: Record<string, number>,
   maxBytes: number,
@@ -258,7 +258,7 @@ export function findTooLargeOutputs(
     .map(([path, bytes]) => ({ path, bytes }));
 }
 
-/** 前回の `dist/` とプラグインの生成物を消してから、版を決めて検査し、移行の手順を点検し、`dist/` を書いてサイズと対応ブラウザの下限を検査し、プラグインをビルドし、終了コードを返す */
+/** 前回の `dist/` とプラグインの生成物を削除してから、バージョンを決めて検査し、移行の手順を点検し、`dist/` を書き込んでサイズと対応ブラウザの下限を検査し、プラグインをビルドし、終了コードを返却する */
 export async function main(
   argv: string[],
   options: {
@@ -271,12 +271,12 @@ export async function main(
 ): Promise<0 | 1> {
   const { root, maxBytes } = options;
   const distDir = join(root, "dist");
-  // 失敗したときに前回の配布物が残らないよう、最初に消す
+  // 失敗したときに前回の配布物が残らないよう、最初に削除する
   rmSync(distDir, { recursive: true, force: true });
   removePluginOutputs(root);
   try {
     const version = resolveVersion(argv, root);
-    // 移行の手順の置き忘れは、配布物を書く前に止める
+    // 移行の手順の配置漏れは、配布物を書き込む前に止める
     const migrationProblems = await checkMigrations({ root, version });
     for (const problem of migrationProblems) {
       console.error(problem);
@@ -289,7 +289,7 @@ export async function main(
           `配布ファイルが上限 ${maxBytes} バイトを超えた: ${path} ${bytes} バイト`,
         );
       }
-      // 配布ファイルのサイズが上限内のときだけ、下限のブラウザに無い API を確かめる
+      // 配布ファイルのサイズが上限内のときだけ、下限のブラウザに無い API を確認する
       const violations =
         tooLarge.length === 0
           ? await findBaselineViolations({ root, version })
@@ -315,7 +315,7 @@ export async function main(
   return 1;
 }
 
-// `node scripts/build.ts` で入口として実行されたときだけ流す
+// `node scripts/build.ts` で入口として実行されたときだけ実行する
 if (import.meta.main) {
   process.exitCode = await main(process.argv.slice(2));
 }

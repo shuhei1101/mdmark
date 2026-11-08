@@ -7,7 +7,7 @@
   <title>document / a-mdmark-theme（mermaid の図を mdmark のテーマで描く） | mdmark のモック</title>
   <!-- 配布物の CSS（ライブラリ本体） -->
   <link rel="stylesheet" href="../../../../../../dist/index.css">
-  <!-- 使う側のページの見た目と、モック専用の操作列（#287 で共有するアセット） -->
+  <!-- 利用側のページの外観と、モック専用の操作列（#287 で共有するアセット） -->
   <link rel="stylesheet" href="../../../../refs/287/assets/scene.css">
   <!-- mermaid の図の枠のモックの規則（#382 で共有するアセット） -->
   <link rel="stylesheet" href="../../../../refs/382/assets/mermaid.css">
@@ -15,7 +15,7 @@
   <script type="module" src="../../../../refs/382/assets/scene.js"></script>
 </head>
 <body>
-  <!-- モック専用の操作列: 明暗の切り替え。[data-scene-scheme]: scene.js が行き先の URL と今の明暗の aria-current を当てる -->
+  <!-- モック専用の操作列: 明暗の切り替え。[data-scene-scheme]: scene.js が行き先の URL と今の明暗の aria-current を適用する -->
   <div class="mock-bar" data-mock-bar>
     <div class="mock-bar-group" role="group" aria-label="明暗">
       <span class="mock-bar-label">明暗</span>
@@ -24,8 +24,8 @@
     </div>
   </div>
 
-  <!-- 使う側のページのトップバー（mdmark の外） -->
-  <header class="host-bar">使う側のアプリ</header>
+  <!-- 利用側のページのトップバー（mdmark の外） -->
+  <header class="host-bar">利用側のアプリ</header>
 
   <nav class="crumbs" aria-label="パンくずリスト">
     <a href="../../../index.md">pages</a> / <a href="../../index.md">document</a> / <a href="../index.md">382</a> / a-mdmark-theme

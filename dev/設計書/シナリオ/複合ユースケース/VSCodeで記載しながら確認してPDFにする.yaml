@@ -1,0 +1,67 @@
+title: "VSCodeで記載しながら確認してPDFにする"
+scenarios:
+  - name: 正常シナリオ
+    setup:
+      - name: 見本のワークスペース
+        description: 見出し・表・注意書き・フロー図を持ち、画面の高さを超える長さの Markdown を 1 つと、`features`・`libraries`・`theme` を記載した `mdmark.config.yaml` と、`theme` が指す CSS を配置したフォルダ
+      - name: Mock
+        description: jsDelivr の代わりに、このブランチでビルドした配布物を版付きの構造の URL で配る手元のサーバー。GitHub のタグ一覧は、そのバージョンを最新の `vX.Y.Z` として返却する代役。既定のブラウザで開く操作は、開いた URL を記録する代役
+    flow: |-
+      flowchart TD
+        A[VSCodeでプレビューを開く:正常シナリオ] --> B[記載した内容をプレビューに映す:正常シナリオ]
+        B --> C[エディタとプレビューのスクロールを合わせる:正常シナリオ]
+        C --> D[HTMLに書き出す:正常シナリオ]
+        D --> E[PDFに印刷する:正常シナリオ]
+        click A "../単一ユースケース/VSCodeでプレビューを開く.yaml#正常シナリオ"
+        click B "../単一ユースケース/記載した内容をプレビューに映す.yaml#正常シナリオ"
+        click C "../単一ユースケース/エディタとプレビューのスクロールを合わせる.yaml#正常シナリオ"
+        click D "../単一ユースケース/HTMLに書き出す.yaml#正常シナリオ"
+        click E "../単一ユースケース/PDFに印刷する.yaml#正常シナリオ"
+    expected:
+      - プレビューが Markdown の横の列に開き、見出し・表・注意書き・フロー図が mdmark で描かれる
+      - エディタで見出しを書き換えると、保存せずにプレビューの見出しが書き換えた文字になる
+      - エディタを文書の終わりのセクションまで動かすと、プレビューにそのセクションの見出しが出る
+      - 書き出し先に HTML が 1 つ書き込まれ、ブラウザで開く代役にその HTML の URL が渡る
+      - 書き出した HTML を開くと、プレビューと同じ見出し・表・注意書き・フロー図が描かれ、プレビューと同じ要素に `theme` の CSS の規則が該当する
+      - PDF に印刷すると、もう一度書き出した HTML がブラウザで開き、印刷のダイアログが呼ばれる
+    test: test_normal
+    uses:
+      - dev/設計書/シナリオ/単一ユースケース/VSCodeでプレビューを開く#scenarios[正常シナリオ]
+      - dev/設計書/シナリオ/単一ユースケース/記載した内容をプレビューに映す#scenarios[正常シナリオ]
+      - dev/設計書/シナリオ/単一ユースケース/エディタとプレビューのスクロールを合わせる#scenarios[正常シナリオ]
+      - dev/設計書/シナリオ/単一ユースケース/HTMLに書き出す#scenarios[正常シナリオ]
+      - dev/設計書/シナリオ/単一ユースケース/PDFに印刷する#scenarios[正常シナリオ]
+  - name: 異常シナリオ（配布物を読み込めない）
+    setup:
+      - name: 見本のワークスペース
+        description: 正常シナリオと同じ
+      - name: Mock
+        description: 配布物を配る手元のサーバーは、初めは配布物の要求に応えず（オフラインの代わり）、再描画する前に配る状態へ戻す。GitHub のタグ一覧は正常シナリオと同じ代役
+    flow: |-
+      flowchart TD
+        A[VSCodeでプレビューを開く:異常シナリオ（配布物を読み込めない）] --> B[記載した内容をプレビューに映す:正常シナリオ（リロードする）]
+        click A "../単一ユースケース/VSCodeでプレビューを開く.yaml#異常シナリオ配布物を読み込めない"
+        click B "../単一ユースケース/記載した内容をプレビューに映す.yaml#正常シナリオリロードする"
+    expected:
+      - プレビューに、配布物を読み込めず描けない理由と、再描画する操作が出る
+      - Markdown と `mdmark.config.yaml` は書き換わらない
+      - 配布物を配る状態へ戻して再描画すると、見出し・表・注意書き・フロー図が描かれる
+    test: test_error_when_distribution_unreachable
+    uses:
+      - dev/設計書/シナリオ/単一ユースケース/VSCodeでプレビューを開く#scenarios[異常シナリオ（配布物を読み込めない）]
+      - dev/設計書/シナリオ/単一ユースケース/記載した内容をプレビューに映す#scenarios[正常シナリオ（リロードする）]
+lead: 文書の作成者が、VS Code で Markdown を記載しながら横に出した mdmark のプレビューで描いた外観を確認し、書き込み終えた文書を HTML に書き出してブラウザの印刷で PDF にする。
+issue: 22
+primary_actor: 文書の作成者
+stakeholders:
+  - name: 文書の作成者
+    interest: 記載しながら mdmark の拡張記法・図・部品を描いた外観で確認し、そのまま PDF にできる
+  - name: mdmark の開発者
+    interest: mdmark にタグを打つと、拡張機能をもう一度上げなくてもプレビューに届く
+trigger: 文書の作成者が VS Code で Markdown を開き、mdmark で描いた外観を確認したくなる
+preconditions:
+  - VS Code に mdmark の拡張機能を入れている
+  - 文書の作成者の手元から jsDelivr と GitHub のタグ一覧の API に届く
+success_guarantee: 記載した内容がプレビューに mdmark で描かれ、エディタの位置とプレビューの位置が合い、書き出した HTML をブラウザで開くとプレビューと同じ文書が描かれて印刷のダイアログが出る。
+minimal_guarantee: 配布物を読み込めないときは、プレビューに描けない理由を出し、Markdown と設定ファイルを書き換えない。
+test_file: tests/e2e/複合ユースケース/VSCodeで記載しながら確認してPDFにする.spec.ts

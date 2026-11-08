@@ -6,7 +6,7 @@ export type Anchor = {
   top: number;
 };
 
-/** 描いた文書の `data-source-line` を持つ要素を、位置の順に `Anchor` にして返す。同じ行は最初の要素だけ、見えていない要素（高さ 0）と、行や位置が戻る要素は除く */
+/** 描いた文書の `data-source-line` を持つ要素を、位置の順に `Anchor` にして返却する。同じ行は最初の要素だけ、見えていない要素（高さ 0）と、行や位置が戻る要素は除く */
 export const collectAnchors = (options: {
   /** 描いた文書の要素 */
   root: HTMLElement;
@@ -14,7 +14,7 @@ export const collectAnchors = (options: {
   scroller: Element;
 }): Anchor[] => {
   const { root, scroller } = options;
-  // 画面がスクロールするときは、文書の先頭からの位置は `getBoundingClientRect().top` に `scrollTop` を足した値
+  // 画面がスクロールするときは、文書の先頭からの位置は `getBoundingClientRect().top` に `scrollTop` を加算した値
   const page =
     scroller === document.scrollingElement ||
     scroller === document.documentElement;
@@ -39,7 +39,7 @@ export const collectAnchors = (options: {
   return anchors;
 };
 
-/** `matches` を満たす最後の印の位置。無ければ `-1` */
+/** `matches` を満たす最後のマーカーの位置。無ければ `-1` */
 const lastIndexOf = (
   anchors: Anchor[],
   matches: (anchor: Anchor) => boolean,
@@ -52,7 +52,7 @@ const lastIndexOf = (
   return -1;
 };
 
-/** 行以下の最後の印と次の印の間を、行の割合で内分した位置を返す。印が無いか最初の印より前は 0、最後の印より後は最後の印の位置 */
+/** 行以下の最後のマーカーと次のマーカーの間を、行の割合で内分した位置を返却する。マーカーが無いか最初のマーカーより前は 0、最後のマーカーより後は最後のマーカーの位置 */
 export const topForLine = (anchors: Anchor[], line: number): number => {
   const first = anchors[0];
   if (first === undefined || line < first.line) {
@@ -68,7 +68,7 @@ export const topForLine = (anchors: Anchor[], line: number): number => {
   return before.top + ratio * (after.top - before.top);
 };
 
-/** 位置の前後の印の間で内分した行番号を、切り捨てずに返す。印が無いか最初の印より前は 0、最後の印より後は最後の印の行 */
+/** 位置の前後のマーカーの間で内分した行番号を、切り捨てずに返却する。マーカーが無いか最初のマーカーより前は 0、最後のマーカーより後は最後のマーカーの行 */
 export const fractionalLineForTop = (
   anchors: Anchor[],
   top: number,
@@ -87,12 +87,12 @@ export const fractionalLineForTop = (
   return before.line + ratio * (after.line - before.line);
 };
 
-/** 位置の前後の印の間で内分した行番号を、整数に切り捨てて返す。印が無いか最初の印より前は 0、最後の印より後は最後の印の行 */
+/** 位置の前後のマーカーの間で内分した行番号を、整数に切り捨てて返却する。マーカーが無いか最初のマーカーより前は 0、最後のマーカーより後は最後のマーカーの行 */
 export const lineForTop = (anchors: Anchor[], top: number): number => {
   return Math.floor(fractionalLineForTop(anchors, top));
 };
 
-/** 狭い幅で右側の目次を文書の上端の帯にしているとき、帯の下端からスクロールする要素の上端までの高さを返す。帯が無い（右側の目次が無い・広い幅の右の列）ときは 0 */
+/** 狭い幅で右側の目次を文書の上端の帯にしているとき、帯の下端からスクロールする要素の上端までの高さを返却する。帯が無い（右側の目次が無い・広い幅の右の列）ときは 0 */
 export const topInset = (options: {
   /** 描いた文書の要素 */
   root: HTMLElement;

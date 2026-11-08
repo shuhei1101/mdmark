@@ -48,7 +48,7 @@ export const ServerHtml = ({
   return <div ref={ref} />;
 };
 
-/** `parameters.server.id` があれば、ストーリーの代わりに描画の口の HTML を描く。無ければストーリーをそのまま描く */
+/** `parameters.server.id` があれば、ストーリーの代わりに描画のインターフェースの HTML を描く。無ければストーリーをそのまま描く */
 export const withServerHtml: Decorator = (Story, context) => {
   const server = (context.parameters as { server?: { id?: string } }).server;
   if (server?.id === undefined) {

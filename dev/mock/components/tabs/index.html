@@ -30,7 +30,7 @@
 <body>
   <!-- モック専用の操作列: 配色の切り替え -->
   <div class="mock-bar">
-    <!-- [data-scheme-set]: sample.js が押されたボタンの値を html の data-scheme に当てる -->
+    <!-- [data-scheme-set]: sample.js が押されたボタンの値を html の data-scheme に適用する -->
     <div class="mock-bar-group" role="group" aria-label="配色">
       <button class="mock-bar-item" type="button" data-scheme-set="light" aria-pressed="false">明るい配色</button>
       <button class="mock-bar-item" type="button" data-scheme-set="dark" aria-pressed="false">ダーク</button>
@@ -123,7 +123,7 @@
   </div>
   <div role="tabpanel" id="t3-panel-6" aria-labelledby="t3-tab-6" tabindex="0" hidden>
     <p class="mdmark-tab-title">Docker</p>
-    <p>イメージを使います。</p>
+    <p>イメージを使用します。</p>
   </div>
 </div>
         </article>
@@ -140,12 +140,12 @@
   </div>
   <div role="tabpanel" id="t4-panel-0" aria-labelledby="t4-tab-0" tabindex="0">
     <p class="mdmark-tab-title">npm</p>
-    <p>依存に足します。</p>
+    <p>依存に追加します。</p>
     <pre tabindex="0" aria-label="コード: sh"><code>npm install @shuhei1101/mdmark</code></pre>
   </div>
   <div role="tabpanel" id="t4-panel-1" aria-labelledby="t4-tab-1" tabindex="0" hidden>
     <p class="mdmark-tab-title">CDN</p>
-    <p>版を固定した URL で読みます。</p>
+    <p>バージョンを固定した URL で読み込みます。</p>
     <pre tabindex="0" aria-label="コード: html"><code>&lt;script type="module" src="https://cdn.jsdelivr.net/gh/shuhei1101/mdmark@v0.2.0/dist/index.js"&gt;&lt;/script&gt;</code></pre>
   </div>
 </div>
@@ -157,8 +157,8 @@
         <h2 class="catalog-label" id="state-no-heading">タブ名にする見出しが無い（異常シナリオ）</h2>
         <article class="mdmark">
 <div class="mdmark-syntax-warning">
-  <p class="mdmark-syntax-warning-title"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg>書き方の警告</p>
-  <p><code>&lt;!-- tabs --&gt;</code> の範囲に、タブ名にする見出しがありません。タブにしたい中身ごとに見出し（<code>### macOS</code> など）を書いてください。範囲の中身はそのまま描いています。</p>
+  <p class="mdmark-syntax-warning-title"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg>記載の警告</p>
+  <p><code>&lt;!-- tabs --&gt;</code> の範囲に、タブ名にする見出しがありません。タブにしたい中身ごとに見出し（<code>### macOS</code> など）を記載してください。範囲の中身はそのまま描いています。</p>
 </div>
 <p>macOS では Homebrew、Windows では winget で入れます。</p>
         </article>
@@ -237,13 +237,13 @@
         </article>
       </section>
 
-      <!-- closed open: 書き方の警告を出し、closed として描く -->
+      <!-- closed open: 記載の警告を出し、closed として描く -->
       <section aria-labelledby="state-closed-open">
         <h2 class="catalog-label" id="state-closed-open">closed と open を両方書いた（異常シナリオ）</h2>
         <article class="mdmark">
 <div class="mdmark-syntax-warning">
-  <p class="mdmark-syntax-warning-title"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg>書き方の警告</p>
-  <p><code>&lt;!-- tabs: closed open --&gt;</code> の <code>closed</code> と <code>open</code> は同時に書けません。<code>closed</code> として描いています。</p>
+  <p class="mdmark-syntax-warning-title"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg>記載の警告</p>
+  <p><code>&lt;!-- tabs: closed open --&gt;</code> の <code>closed</code> と <code>open</code> は同時に記載できません。<code>closed</code> として描いています。</p>
 </div>
 <details class="mdmark-collapsible">
 <summary>タブ（macOS・Windows）</summary>
@@ -264,7 +264,7 @@
 </details>
         </article>
       </section>
-      <!-- #275 入れ子のタブ: 外側のタブ（h2 で区切る）の中身に、内側のタブ（h3 で区切る）を置く。内側のタブも矢印キーで選び、外側のタブの選択は変えない -->
+      <!-- #275 入れ子のタブ: 外側のタブ（h2 で区切る）の中身に、内側のタブ（h3 で区切る）を配置する。内側のタブも矢印キーで選び、外側のタブの選択は変えない -->
       <section aria-labelledby="state-nested">
         <h2 class="catalog-label" id="state-nested">入れ子のタブ（外側は OS、内側はシェル）</h2>
         <article class="mdmark">
@@ -279,7 +279,7 @@
   </div>
   <div role="tabpanel" id="t275n-panel-1" aria-labelledby="t275n-tab-1" tabindex="0">
     <p class="mdmark-tab-title">Windows</p>
-    <p>使うシェルに合わせて入れます。</p>
+    <p>使用するシェルに合わせて入れます。</p>
     <div class="mdmark-tabs">
       <div class="mdmark-tablist" role="tablist" aria-label="Windows のシェル">
         <button class="mdmark-tab" type="button" role="tab" id="t275n-in-tab-0" aria-selected="true" aria-controls="t275n-in-panel-0" tabindex="0">PowerShell</button>
@@ -314,18 +314,18 @@
   </div>
   <div role="tabpanel" id="t275s-panel-1" aria-labelledby="t275s-tab-1" tabindex="0" hidden>
     <p class="mdmark-tab-title"><strong>案 B</strong> Chart.js</p>
-    <p>グラフのある文書でだけ Chart.js を読みます。</p>
+    <p>グラフのある文書でだけ Chart.js を読み込みます。</p>
   </div>
 </div>
         </article>
       </section>
 
-      <!-- #275 入れ子の閉じが足りない: 外側の開きの位置に書き方の警告を出し、外側の範囲の中はタブにせず見出しのまま描く -->
+      <!-- #275 入れ子の閉じが足りない: 外側の開きの位置に記載の警告を出し、外側の範囲の中はタブにせず見出しのまま描く -->
       <section aria-labelledby="state-unclosed">
         <h2 class="catalog-label" id="state-unclosed">入れ子の閉じが足りない（異常シナリオ）</h2>
         <article class="mdmark">
 <div class="mdmark-syntax-warning">
-  <p class="mdmark-syntax-warning-title"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg>書き方の警告</p>
+  <p class="mdmark-syntax-warning-title"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg>記載の警告</p>
   <p>4 行目の <code>&lt;!-- tabs --&gt;</code> に対応する <code>&lt;!-- /tabs --&gt;</code> がありません。入れ子のタブは、内側と外側の両方を <code>&lt;!-- /tabs --&gt;</code> で閉じてください。この範囲はタブにせず、見出しのまま描いています。</p>
 </div>
 <h2>macOS</h2>

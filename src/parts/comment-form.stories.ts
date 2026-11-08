@@ -5,7 +5,7 @@ const meta = { title: "Parts/CommentForm" } satisfies Meta<
 >;
 export default meta;
 
-/** ストーリー: 描画の口（`parameters.server.id`）の部品を `args` で描く */
+/** ストーリー: 描画のインターフェース（`parameters.server.id`）の部品を `args` で描く */
 type Story = StoryObj<Record<string, unknown>>;
 
 export const Idle: Story = {
@@ -57,7 +57,7 @@ export const LongQuote: Story = {
   parameters: { server: { id: "comment-form" } },
   args: {
     quote:
-      "使う側のページが自分の JavaScript からビューを描き、拡張のモジュールからも同じ関数を呼べるようにして、文書の印と同じ見た目で出す",
+      "利用側のページが自分の JavaScript からビューを描き、拡張のモジュールからも同じ関数を呼べるようにして、文書のマーカーと同じ外観で出す",
     id: "story-comment",
   },
 };

@@ -1,70 +1,70 @@
 title: "文書をHTMLに書き出す"
 entry:
   kind: operation
-  value: '`mdmark export {文書} [--out {出力}] [--config {設定ファイル}]`（CLI。`npx github:shuhei1101/mdmark#v{版} export` で呼ぶ）'
+  value: '`mdmark export {文書} [--out {出力}] [--config {設定ファイル}]`（CLI。`npx github:shuhei1101/mdmark#v{バージョン} export` で呼ぶ）'
 flows:
   - name: 正常系
     summary: 設定・索引・外部ライブラリ・拡張・画像を埋めた HTML を書き出す
     setup:
       - name: 見本のフォルダ
-        description: '`theme`・`index`・`extensions`（印 `greet` の拡張）・`libraries`（`test-lib` に相対パスの手元のモジュール）を書いた設定と、文書 `guide.md` と `api.md` を載せた索引。`guide.md` は表・用語集の表・`test-lib` の印・`greet` の印・相対パスの画像・`api.md` へのリンク・`script` 要素を持ち、`api.md` は `guide.md` へリンクする'
+        description: '`theme`・`index`・`extensions`（マーカー `greet` の拡張）・`libraries`（`test-lib` に相対パスの手元のモジュール）を記載した設定と、文書 `guide.md` と `api.md` を記載した索引。`guide.md` は表・用語集の表・`test-lib` のマーカー・`greet` のマーカー・相対パスの画像・`api.md` へのリンク・`script` 要素を持ち、`api.md` は `guide.md` へリンクする'
       - name: Mock
-        description: 外部ライブラリは相対パスの手元のモジュール（書き出しがネットワークを読まない）。書き出した HTML は Playwright の Chromium で file:// で開く
+        description: 外部ライブラリは相対パスの手元のモジュール（書き出しがネットワークを読み込まない）。書き出した HTML は Playwright の Chromium で file:// で開く
     flow: |-
       sequenceDiagram
-        actor W as 文書を書く人
+        actor W as 文書の作成者
         participant C as mdmark CLI
         participant M as collectReferences
         participant H as 出力の HTML
         W->>C: mdmark export guide.md
-        C->>C: 設定・索引・索引の文書を読む
+        C->>C: 設定・索引・索引の文書を読み込む
         C->>M: 索引・文書
         M-->>C: 参照の表
-        C->>C: test-lib と greet を束ね、画像を data: URL に替える
-        C->>H: guide.html を書く
+        C->>C: test-lib と greet をまとめ、画像を data: URL に替える
+        C->>H: guide.html を書き込む
         C-->>W: 書き出した: guide.html・終了コード 0
     expected:
       - '終了コードが 0 で、標準出力が `書き出した: guide.html`、標準エラーが空'
-      - '`guide.html` だけを空のフォルダへ写して file:// で開くと、描き終えるまでにページ自身と画像の `data:` のほかの要求が 0 件'
+      - '`guide.html` だけを空のフォルダへコピーして file:// で開くと、描き終えるまでにページ自身と画像の `data:` のほかの要求が 0 件'
       - 表に並べ替えのボタンが付き、用語集の表の用語にツールチップが出る
-      - '`test-lib` と `greet` の印が描かれ、知らせの枠が出ない'
+      - '`test-lib` と `greet` のマーカーが描かれ、通知ブロックが出ない'
       - 画像の `naturalWidth` が 0 より大きい
-      - '`theme` の CSS の上書きが当たっている'
-      - 末尾の関連文書に `api.md` が出て、`api.md` へのリンクが書いたままの `href`
+      - '`theme` の CSS の上書きが該当している'
+      - 末尾の関連文書に `api.md` が出て、`api.md` へのリンクが記載したままの `href`
       - '`script` 要素が実行されていない'
     test: test_normal
-  - name: 正常系（読めない画像とモジュールがある）
-    summary: 読めないものを警告に出し、読めたものだけを埋めて書き出す
+  - name: 正常系（読み込めない画像とモジュールがある）
+    summary: 読み込めないものを警告に出し、読み込めたものだけを埋めて書き出す
     setup:
-      - name: 読めないものを指すフォルダ
-        description: '`libraries` の `test-lib` に無いファイルを書いた設定と、`test-lib` の印と無い画像 `img/missing.png` を持つ文書'
+      - name: 読み込めないものを指すフォルダ
+        description: '`libraries` の `test-lib` に無いファイルを書き込んだ設定と、`test-lib` のマーカーと無い画像 `img/missing.png` を持つ文書'
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
       sequenceDiagram
-        actor W as 文書を書く人
+        actor W as 文書の作成者
         participant C as mdmark CLI
         participant H as 出力の HTML
         W->>C: mdmark export {文書}
-        C->>C: test-lib と画像を読めない
-        C->>H: 読めたものだけを埋めて書く
+        C->>C: test-lib と画像を読み込めない
+        C->>H: 読み込めたものだけを埋めて記載する
         C-->>W: 警告 2 行・終了コード 0
     expected:
-      - 終了コードが 0 で HTML が書かれている
+      - 終了コードが 0 で HTML が記載されている
       - 標準エラーに `img/missing.png` と `test-lib` の警告の行が出る
-      - file:// で開くと `test-lib` の印の場所に知らせの枠が出て、本文のほかの部分は描かれる
+      - file:// で開くと `test-lib` のマーカーの場所に通知ブロックが出て、本文のほかの部分は描かれる
       - 描き終えるまでに `img/missing.png` のほかの外への要求が 0 件
     test: test_normal_when_unreadable_assets
   - name: 異常系（設定ファイルが Schema に合わない・終了コード 1）
     summary: 設定ファイルの誤りは、原因と `mdmark check` を示して終わる
     setup:
-      - name: 形の違う設定
+      - name: 構造の違う設定
         description: '`libraries` が文字列の設定を持つフォルダ'
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
       sequenceDiagram
-        actor W as 文書を書く人
+        actor W as 文書の作成者
         participant C as mdmark CLI
         W->>C: mdmark export {文書}
         C->>C: 設定が Schema に合わない
@@ -72,10 +72,10 @@ flows:
     expected:
       - 終了コードが 1
       - 標準エラーに `libraries` と `mdmark check` が出る
-      - HTML が書かれていない
+      - HTML が記載されていない
     test: test_error_when_config_invalid
   - name: 異常系（文書が無い・終了コード 1）
-    summary: 無い文書を渡すと、パスを示して終わる
+    summary: 無い文書を指定すると、パスを示して終わる
     setup:
       - name: 見本のフォルダ
         description: 正常系と同じ
@@ -84,126 +84,126 @@ flows:
         description: 差し替える依存は無い
     flow: |-
       sequenceDiagram
-        actor W as 文書を書く人
+        actor W as 文書の作成者
         participant C as mdmark CLI
         W->>C: mdmark export missing.md
         C-->>W: 文書が無いこと・終了コード 1
     expected:
       - 終了コードが 1
       - 標準エラーに `missing.md` が出る
-      - HTML が書かれていない
+      - HTML が記載されていない
     test: test_error_when_document_missing
-  - name: 異常系（出力先へ書けない・終了コード 1）
-    summary: 出力のパスへ書けないと、パスと直し方を示して終わる
+  - name: 異常系（出力先へ書き込めない・終了コード 1）
+    summary: 出力のパスへ記載できないと、パスと修正方法を示して終わる
     setup:
       - name: 見本のフォルダ
-        description: 正常系と同じフォルダに、ファイル `blocked` を置く
+        description: 正常系と同じフォルダに、ファイル `blocked` を配置する
         notes: '`--out blocked/guide.html`'
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
       sequenceDiagram
-        actor W as 文書を書く人
+        actor W as 文書の作成者
         participant C as mdmark CLI
         W->>C: mdmark export guide.md --out blocked/guide.html
-        C-->>W: 書けないパスと直し方・終了コード 1
+        C-->>W: 書き込めないパスと修正方法・終了コード 1
     expected:
       - 終了コードが 1
-      - 標準エラーに `blocked/guide.html` と直し方が出る
-      - '`blocked` が変わっておらず、HTML がどこにも書かれていない'
+      - 標準エラーに `blocked/guide.html` と修正方法が出る
+      - '`blocked` が変わっておらず、HTML がどこにも記載されていない'
     test: test_error_when_output_unwritable
-  - name: 異常系（動画・音声のコピー先へ書けない・終了コード 1）
-    summary: 動画・音声のコピー先の `_files/` へ書けないと、HTML を書かずにパスと直し方を示して終わる
+  - name: 異常系（動画・音声のコピー先へ書き込めない・終了コード 1）
+    summary: 動画・音声のコピー先の `_files/` へ書き込めないと、HTML を書き込まずにパスと修正方法を示して終わる
     setup:
       - name: 見本のフォルダ
-        description: '`guide.md` が相対パスで `media/demo.mp4` を指し、`guide.md` と同じフォルダにファイル `guide_files` を置く'
+        description: '`guide.md` が相対パスで `media/demo.mp4` を指し、`guide.md` と同じフォルダにファイル `guide_files` を配置する'
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
       sequenceDiagram
-        actor W as 文書を書く人
+        actor W as 文書の作成者
         participant C as mdmark CLI
         W->>C: mdmark export guide.md
         C->>C: 動画・音声を guide_files/ へコピーする（作れない）
-        C-->>W: 書けないパスと直し方・終了コード 1
+        C-->>W: 書き込めないパスと修正方法・終了コード 1
     expected:
       - 終了コードが 1
-      - 標準エラーに `guide_files` と直し方が出る
-      - ファイル `guide_files` が変わっておらず、`guide.html` が書かれていない
+      - 標準エラーに `guide_files` と修正方法が出る
+      - ファイル `guide_files` が変わっておらず、`guide.html` が記載されていない
     test: test_error_when_media_copy_unwritable
   - name: 正常系（ツールチップを下に出す設定）
-    summary: 設定の `tooltips.placement` と `tooltips.diagramPlacement` を埋める設定に写し、開いた HTML で用語のツールチップを下に、図の線のツールチップを上に出す
+    summary: 設定の `tooltips.placement` と `tooltips.diagramPlacement` を埋める設定にコピーし、開いた HTML で用語のツールチップを下に、図の線のツールチップを上に出す
     setup:
       - name: 下に出す設定
-        description: '`tooltips.placement: bottom`・`tooltips.diagramPlacement: top` と、用語を 1 つ持つ `index` を持つ設定と、その用語が 2 つ目の節の段落に出て、その後ろに `tip` を持つ線 1 本のフロー図を持つ文書を持つフォルダ'
+        description: '`tooltips.placement: bottom`・`tooltips.diagramPlacement: top` と、用語を 1 つ持つ `index` を持つ設定と、その用語が 2 つ目のセクションの段落に出て、その後ろに `tip` を持つ線 1 本のフロー図を持つ文書を持つフォルダ'
       - name: Mock
         description: 差し替える依存は無い。書き出した HTML は Playwright で file:// として開く
     flow: |-
       sequenceDiagram
-        actor W as 文書を書く人
+        actor W as 文書の作成者
         participant C as mdmark CLI
         participant H as 書き出した HTML
         W->>C: mdmark export {文書}
-        C->>H: tooltips を写した設定を埋めて書く
+        C->>H: tooltips をコピーした設定を埋めて記載する
         W->>H: 開いて用語にポインターを乗せる
-        H-->>W: 語の下にツールチップを出す
+        H-->>W: 単語の下にツールチップを出す
         W->>H: 線のラベルにポインターを乗せる
         H-->>W: ラベルの上にツールチップを出す
     expected:
       - 終了コードが 0
-      - 開いた HTML で、用語のツールチップの `top` が語の `bottom` 以上
+      - 開いた HTML で、用語のツールチップの `top` が単語の `bottom` 以上
       - 開いた HTML で、線のラベルのツールチップの `bottom` がラベルの `top` 以下
     test: test_normal_when_tooltip_placement
   - name: 正常系（色分けするコードブロック）
-    summary: 文書が使う言語の分だけ色分けのモジュールを埋め、開いたときに外へ要求せずに色分けする
+    summary: 文書が使用する言語の分だけ色分けのモジュールを埋め、開いたときに外へ要求せずに色分けする
     setup:
       - name: 色分けするコードブロックを持つフォルダ
-        description: 言語 `ts` と `python` のコードブロックを 1 つずつ持つ文書と、`syntax.url` に手元の `vendor/highlightjs/es/` を書いた設定
-        notes: '`vendor/highlightjs/es/` には `@highlightjs/cdn-assets@11.12.0` の `es/` を置き、`languages/yaml.min.js` も含める'
+        description: 言語 `ts` と `python` のコードブロックを 1 つずつ持つ文書と、`syntax.url` に手元の `vendor/highlightjs/es/` を書き込んだ設定
+        notes: '`vendor/highlightjs/es/` には `@highlightjs/cdn-assets@11.12.0` の `es/` を配置し、`languages/yaml.min.js` も含める'
       - name: Mock
-        description: 差し替える依存は無い（`syntax.url` を手元のフォルダに向け、書き出しがネットワークを読まない）
+        description: 差し替える依存は無い（`syntax.url` を手元のフォルダに向け、書き出しがネットワークを読み込まない）
     flow: |-
       sequenceDiagram
-        actor W as 文書を書く人
+        actor W as 文書の作成者
         participant C as mdmark CLI
         participant H as 出力の HTML
         W->>C: mdmark export {文書}
-        C->>C: コードブロックの言語から typescript と python を拾い、本体と 2 言語のモジュールを読む
-        C->>H: 色分けのモジュールを埋めて書く
+        C->>C: コードブロックの言語から typescript と python を取得し、本体と 2 言語のモジュールを読み込む
+        C->>H: 色分けのモジュールを埋めて記載する
         C-->>W: 出力のパス・終了コード 0
     expected:
       - 終了コードが 0 で、標準エラーに警告が無い
-      - HTML だけを空のフォルダへ写して file:// で開くと、描き終えるまでにページ自身と画像の `data:` のほかの要求が 0 件
+      - HTML だけを空のフォルダへコピーして file:// で開くと、描き終えるまでにページ自身と画像の `data:` のほかの要求が 0 件
       - '`ts` と `python` の `code` の中に class が `hljs-` で始まる `span` がある'
       - 書き出した HTML に `yaml` の言語のモジュールが埋まっていない（`name:"YAML"` を含まない）
     test: test_normal_when_syntax_highlighted
-  - name: 正常系（エイリアスを読む）
+  - name: 正常系（エイリアスを読み込む）
     summary: 設定の aliases の YAML から作ったエイリアスを埋め、env を埋めずに書き出す
     setup:
       - name: エイリアスを持つフォルダ
-        description: '設定に `aliases` の 3 行（`alias_type` が `command` で `paths: aliases/commands.yaml`、`env` で `paths: aliases/servers.yaml`、`term` で `paths: aliases/terms.yaml`）を記載し、`aliases/commands.yaml` にレコード（`id: run-test`・`name: テストを流す`・`command: npm test`）、`aliases/servers.yaml` にレコード（`id: dev-server`・`name: 開発サーバー`・`url: http://127.0.0.1:8767/`）、`aliases/terms.yaml` に `id`・`name` を持ち `description` が空のレコードを置いたフォルダ。文書 `guide.md` の本文に `テストを流す` と `開発サーバー` がある'
+        description: '設定に `aliases` の 3 行（`alias_type` が `command` で `paths: aliases/commands.yaml`、`env` で `paths: aliases/servers.yaml`、`term` で `paths: aliases/terms.yaml`）を記載し、`aliases/commands.yaml` にレコード（`id: run-test`・`name: テストを実行する`・`command: npm test`）、`aliases/servers.yaml` にレコード（`id: dev-server`・`name: 開発サーバー`・`url: http://127.0.0.1:8767/`）、`aliases/terms.yaml` に `id`・`name` を持ち `description` が空のレコードを配置したフォルダ。文書 `guide.md` の本文に `テストを実行する` と `開発サーバー` がある'
       - name: Mock
         description: 差し替える依存は無い。書き出した HTML は Playwright の Chromium で file:// で開く
     flow: |-
       sequenceDiagram
-        actor W as 文書を書く人
+        actor W as 文書の作成者
         participant C as mdmark CLI
         participant B as buildAliases
         participant H as 出力の HTML
         W->>C: mdmark export guide.md
-        C->>C: 設定の aliases の YAML を読む
-        C->>B: 行・読んだ中身
+        C->>C: 設定の aliases の YAML を読み込む
+        C->>B: 行・読み込んだ中身
         B-->>C: エイリアス・alias_required_empty のずれ
-        C->>H: エイリアスを埋めた guide.html を書く
+        C->>H: エイリアスを埋めた guide.html を書き込む
         C-->>W: 書き出した: guide.html・警告 1 行・終了コード 0
     expected:
       - 終了コードが 0 で、標準エラーに `alias_required_empty` の警告が 1 行ある
-      - 開いた文書の `テストを流す` に下線が付き、ツールチップに `npm test` とコピーのボタンが出る
+      - 開いた文書の `テストを実行する` に下線が付き、ツールチップに `npm test` とコピーのボタンが出る
       - '`開発サーバー` に下線が付かない'
       - '`guide.html` のソースに `env` のレコードの `dev-server`・`http://127.0.0.1:8767/` が入っておらず、埋めたエイリアスが `run-test` だけ'
     test: test_normal_when_aliases
   - name: 正常系（テーマを選ぶ設定）
-    summary: 設定の `colorTheme` を埋める設定に写し、開いた HTML を選んだテーマで描く
+    summary: 設定の `colorTheme` を埋める設定にコピーし、開いた HTML を選んだテーマで描く
     setup:
       - name: テーマを選ぶ設定
         description: '`colorTheme: theme-slate` を持つ設定と、リンクを持つ段落の文書を持つフォルダ'
@@ -211,11 +211,11 @@ flows:
         description: '差し替える依存は無い。書き出した HTML は Playwright で file:// として開き、OS の配色はライト（`prefers-color-scheme: light`）にする'
     flow: |-
       sequenceDiagram
-        actor W as 文書を書く人
+        actor W as 文書の作成者
         participant C as mdmark CLI
         participant H as 書き出した HTML
         W->>C: mdmark export {文書}
-        C->>H: colorTheme を写した設定を埋めて書く
+        C->>H: colorTheme をコピーした設定を埋めて記載する
         W->>H: 開く
         H-->>W: theme-slate で描く
     expected:
@@ -223,19 +223,19 @@ flows:
       - 開いた HTML で、文書の地の色の計算値が theme-slate の明るい配色の `--mdmark-color-bg` の値
     test: test_normal_when_color_theme
   - name: 正常系（部品の文言を替える設定）
-    summary: 設定の `labels` を埋める設定に写し、開いた HTML で操作できる部品のボタンを設定の文言で描く
+    summary: 設定の `labels` を埋める設定にコピーし、開いた HTML で操作できる部品のボタンを設定の文言で描く
     setup:
       - name: 部品の文言を替える設定
-        description: '`labels.paramCopy: コピー` を持つ設定と、`<!-- param -->` の印で操作できる部品を 1 つ持つ文書を持つフォルダ'
+        description: '`labels.paramCopy: コピー` を持つ設定と、`<!-- param -->` のマーカーで操作できる部品を 1 つ持つ文書を持つフォルダ'
       - name: Mock
         description: 差し替える依存は無い。書き出した HTML は Playwright で file:// として開く
     flow: |-
       sequenceDiagram
-        actor W as 文書を書く人
+        actor W as 文書の作成者
         participant C as mdmark CLI
         participant H as 書き出した HTML
         W->>C: mdmark export {文書}
-        C->>H: labels を写した設定を埋めて書く
+        C->>H: labels をコピーした設定を埋めて記載する
         W->>H: 開く
         H-->>W: ボタンを「コピー」で描く
     expected:
@@ -254,137 +254,137 @@ flows:
         description: 差し替える依存は無い。書き出した HTML は Playwright の Chromium で file:// で開き、要求を記録する
     flow: |-
       sequenceDiagram
-        actor W as 文書を書く人
+        actor W as 文書の作成者
         participant C as mdmark CLI
         participant H as 出力の HTML
         W->>C: mdmark export docs/guide.md
         C->>C: 画像・動画・音声を文書からの相対パス、無ければアセットのルートで探す
         C->>C: 画像を data URL に替え、動画・音声のパスを guide_files/ の相対パスに替える
-        C->>H: guide.html と guide_files/ を書く
+        C->>H: guide.html と guide_files/ を書き込む
         C-->>W: 書き出した: docs/guide.html・終了コード 0
     expected:
       - 終了コードが 0 で、標準エラーが空
       - '`chart.png`・`dark.png`・`build.gif`・`poster.png`・`logo.png` が `data:` URL で埋まり、`dark.png` の `src` が `#only-dark` を持つ'
       - '`docs/guide_files/docs/media/demo.mp4` と `docs/guide_files/docs/media/voice.mp3` があり、HTML の `video`・`audio` の `src` が `guide_files/docs/media/demo.mp4`・`guide_files/docs/media/voice.mp3`'
       - '`files/spec.pdf` はコピーされず、カードの `href` が `files/spec.pdf` のまま'
-      - '`guide.html` と `guide_files/` だけを空のフォルダへ写して file:// で開くと、描き終えるまでにページ自身・`guide_files/` の下のファイルと画像の `data:` のほかの要求が 0 件'
+      - '`guide.html` と `guide_files/` だけを空のフォルダへコピーして file:// で開くと、描き終えるまでにページ自身・`guide_files/` の下のファイルと画像の `data:` のほかの要求が 0 件'
     test: test_normal_when_media_embedded
     refs:
       - dev/設計書/シナリオ/単一ユースケース/文書をHTMLに書き出す#scenarios[正常シナリオ（画像・動画・音声を埋める）]
   - name: '正常系（blob: と動的 import を許さない環境で開く）'
-    summary: '起動の処理・拡張・部品・色分け・外部ライブラリを 1 つのスクリプトに束ねて埋め、blob: と動的 import を許さない環境でも描く'
+    summary: '起動の処理・拡張・部品・色分け・外部ライブラリを 1 つのスクリプトにまとめて埋め、blob: と動的 import を許さない環境でも描く'
     setup:
-      - name: 埋めるモジュールを使うフォルダ
-        description: '`extensions`（印 `greet` の拡張と、最上位で例外を投げる拡張 `broken`）・`libraries`（`test-lib` に相対パスの手元のモジュールと、`missing-lib` に無いファイル）・`syntax.url`（手元の `vendor/highlightjs/es/`）を書いた設定と、`greet` の印・ビューの印・`test-lib` の印・`missing-lib` の印・言語 `ts` のコードブロックを持つ文書'
-        notes: '`greet` の拡張は `load` の中で同じフォルダの別のファイルを動的 `import()` で読む'
+      - name: 埋めるモジュールを使用するフォルダ
+        description: '`extensions`（マーカー `greet` の拡張と、最上位で例外を投げる拡張 `broken`）・`libraries`（`test-lib` に相対パスの手元のモジュールと、`missing-lib` に無いファイル）・`syntax.url`（手元の `vendor/highlightjs/es/`）を記載した設定と、`greet` のマーカー・ビューのマーカー・`test-lib` のマーカー・`missing-lib` のマーカー・言語 `ts` のコードブロックを持つ文書'
+        notes: '`greet` の拡張は `load` の中で同じフォルダの別のファイルを動的 `import()` で読み込む'
       - name: Mock
-        description: "外部ライブラリと色分けのライブラリは手元のモジュール。書き出した HTML を、`Content-Security-Policy: script-src 'unsafe-inline'` のヘッダーを付けて返す手元のサーバーから Playwright の Chromium で開く（`blob:` と `data:` のスクリプトと、動的 `import()` で読むスクリプトを許さない）"
+        description: "外部ライブラリと色分けのライブラリは手元のモジュール。書き出した HTML を、`Content-Security-Policy: script-src 'unsafe-inline'` のヘッダーを付けて返却する手元のサーバーから Playwright の Chromium で開く（`blob:` と `data:` のスクリプトと、動的 `import()` で読み込むスクリプトを許さない）"
     flow: |-
       sequenceDiagram
-        actor W as 文書を書く人
+        actor W as 文書の作成者
         participant C as mdmark CLI
         participant H as 出力の HTML
         W->>C: mdmark export {文書}
-        C->>C: 起動の処理・greet・ビューの部品・色分けの本体と ts・test-lib を 1 つのスクリプトに束ねる
-        C->>H: 束ねたスクリプトを script 要素に入れて書く
+        C->>C: 起動の処理・greet・ビューの部品・色分けの本体と ts・test-lib を 1 つのスクリプトにまとめる
+        C->>H: まとめたスクリプトを script 要素に入れて記載する
         C-->>W: missing-lib の警告・終了コード 0
         W->>H: blob: と動的 import を許さない環境で開く
-        H-->>W: broken を飛ばして印・ビュー・色分けを描き、missing-lib の印の場所に知らせの枠を出す
+        H-->>W: broken を飛ばしてマーカー・ビュー・色分けを描き、missing-lib のマーカーの場所に通知ブロックを出す
     expected:
       - 終了コードが 0 で、標準エラーに `missing-lib` の警告の行が出る
       - HTML の中の `script` 要素が `src` を持たない
-      - '`greet` の印の場所に拡張が描いた要素があり、拡張が動的 `import()` で読んだファイルの中身も描かれている'
-      - ビューが描かれ、`test-lib` の印が描かれて知らせの枠が出ない
+      - '`greet` のマーカーの場所に拡張が描いた要素があり、拡張が動的 `import()` で読み込んだファイルの中身も描かれている'
+      - ビューが描かれ、`test-lib` のマーカーが描かれて通知ブロックが出ない
       - '`ts` の `code` の中に class が `hljs-` で始まる `span` がある'
-      - '`missing-lib` の印の場所に知らせの枠が出る'
+      - '`missing-lib` のマーカーの場所に通知ブロックが出る'
       - '`broken` の例外がコンソールのエラーに出て、`greet` の登録と文書の描画は続いている'
       - 描き終えるまでに、CSP の違反（`securitypolicyviolation`）が 0 件で、`blob:`・`data:` の URL のスクリプトへの要求が 0 件
     test: test_normal_when_blob_and_dynamic_import_blocked
     refs:
       - 'dev/設計書/シナリオ/単一ユースケース/文書をHTMLに書き出す#scenarios[正常シナリオ（blob: と動的 import を許さない環境で開く）]'
   - name: 正常系（範囲のスクリプトと CSS）
-    summary: '範囲の `ts` を変換して束ねたスクリプトに加え、blob: と動的 import を許さない環境でも動かす'
+    summary: '範囲の `ts` を変換してまとめたスクリプトに加え、blob: と動的 import を許さない環境でも動かす'
     setup:
       - name: 範囲のスクリプトを持つフォルダ
-        description: '`features.html-scripts` を `true` にした設定と、`<!-- html -->` の範囲に `html`・`css`・`ts` のコードブロックを 1 つずつ置いた文書'
-        notes: '`ts` は型の注釈を持つ既定のエクスポートの関数で、箱を押すと根の要素に class `is-open` を付け外しする'
+        description: '`features.html-scripts` を `true` にした設定と、`<!-- html -->` の範囲に `html`・`css`・`ts` のコードブロックを 1 つずつ配置した文書'
+        notes: '`ts` は型の注釈を持つ既定のエクスポートの関数で、ノードを押すと根の要素に class `is-open` を付与・解除する'
       - name: Mock
         description: '正常系（blob: と動的 import を許さない環境で開く）と同じ。外への要求を全て止める'
     flow: |-
       sequenceDiagram
-        actor W as 文書を書く人
+        actor W as 文書の作成者
         participant C as mdmark CLI
         participant H as 出力の HTML
         W->>C: mdmark export {文書}
-        C->>C: 範囲の ts を esbuild で変え、束ねるスクリプトに加える
-        C->>H: 束ねたスクリプトを script 要素に入れて書く
+        C->>C: 範囲の ts を esbuild で変え、まとめるスクリプトに加える
+        C->>H: まとめたスクリプトを script 要素に入れて記載する
         C-->>W: 終了コード 0
         W->>H: blob: と動的 import を許さない環境で開く
-        H-->>W: 範囲の css と ts を当てた文書
+        H-->>W: 範囲の css と ts を適用した文書
     expected:
       - 終了コードが 0 で、HTML の中の `script` 要素が `src` を持たない
-      - 範囲の箱の背景が `css` の色で、押すと根の要素が class `is-open` を持つ
+      - 範囲のノードの背景が `css` の色で、押すと根の要素が class `is-open` を持つ
       - 描き終えるまでに、CSP の違反が 0 件で、`blob:` の URL への要求と外への要求（変換のライブラリを含む）が 0 件
     test: test_normal_when_range_scripts
     refs:
       - dev/設計書/シナリオ/単一ユースケース/文書をHTMLに書き出す#scenarios[正常シナリオ（範囲のスクリプトと CSS）]
   - name: 正常系（取り込みとアイコンを埋める）
-    summary: 取り込む文書と束ねていない名前のアイコンの形を埋め、開いたときに外へ要求せずに描く
+    summary: 取り込む文書とまとめていない名前のアイコンの形状を埋め、開いたときに外へ要求せずに描く
     setup:
       - name: 取り込みとアイコンを持つフォルダ
         description: '`guide.md` が `<!-- include: 共通/手順.md#実行 -->`・`<!-- include: ../src/app.ts#L3-L5 -->`・`<!-- include: missing.md -->`・見出しの `` `icon:sailboat` `` と `` `icon:no-such-icon` `` を持つ。`共通/手順.md` は `## 実行` の下に `<!-- include: ../../src/app.ts#L1 -->` を持ち、`src/app.ts` は 12 行'
-        notes: '`sailboat` は配布物に束ねていない Lucide の名前'
+        notes: '`sailboat` は配布物にまとめていない Lucide の名前'
       - name: Mock
         description: 差し替える依存は無い。書き出した HTML は Playwright の Chromium で file:// で開き、要求を記録する
     flow: |-
       sequenceDiagram
-        actor W as 文書を書く人
+        actor W as 文書の作成者
         participant C as mdmark CLI
         participant H as 出力の HTML
         W->>C: mdmark export guide.md
-        C->>C: include の取り込み先を読み、使う名前のアイコンの形を lucide から取り出す
-        C->>H: includes と icons を埋めて書く
+        C->>C: include の取り込み先を読み込み、使用する名前のアイコンの形状を lucide から取り出す
+        C->>H: includes と icons を埋めて記載する
         C-->>W: 書き出した: guide.html・警告 2 行・終了コード 0
     expected:
       - 終了コードが 0 で、標準エラーに `missing.md` と `no-such-icon` の警告の行が出る
-      - '`guide.html` だけを空のフォルダへ写して file:// で開くと、描き終えるまでにページ自身と画像の `data:` のほかの要求が 0 件'
+      - '`guide.html` だけを空のフォルダへコピーして file:// で開くと、描き終えるまでにページ自身と画像の `data:` のほかの要求が 0 件'
       - '`実行` の見出しの下の中身と、`src/app.ts` の 1 行目と 3〜5 行目の言語 `ts` のコードブロックが描かれている'
-      - '`missing.md` のマーカーの場所に書き方の警告がある'
+      - '`missing.md` のマーカーの場所に記載の警告がある'
       - '`sailboat` の場所に `svg` があり、`no-such-icon` の場所が `<code>icon:no-such-icon</code>`'
-      - '`guide.html` のソースに、文書が使わない Lucide のアイコンの形が入っていない'
+      - '`guide.html` のソースに、文書が使用しない Lucide のアイコンの形状が入っていない'
     test: test_normal_when_includes_and_icons
     refs:
       - dev/設計書/シナリオ/単一ユースケース/文書をHTMLに書き出す#scenarios[正常シナリオ（取り込みとアイコンを埋める）]
   - name: 正常系（設定を重ねる）
-    summary: 端末の設定と上のフォルダの設定を重ねて書き出し、`theme` と `extensions` は書いた設定ファイルのフォルダから読む
+    summary: 端末の設定と上のフォルダの設定を重ねて書き出し、`theme` と `extensions` は記載した設定ファイルのフォルダから読み込む
     setup:
       - name: 端末の設定
         description: '`MDMARK_CONFIG` で指す一時フォルダの `settings.yaml`。`config.cascade: true`・`features.callout: false`'
       - name: 重ねる設定を持つフォルダ
-        description: '`mdmark.config.yaml` に `theme: ./theme.css` と `extensions: [./ext/greet.js]` を書き、その下の `docs/mdmark.config.yaml` に `features.table: false` を書く。`docs/guide.md` は注意書き・表・`greet` の印を持つ'
-        notes: '`docs/` で `mdmark export guide.md` を流す'
+        description: '`mdmark.config.yaml` に `theme: ./theme.css` と `extensions: [./ext/greet.js]` を記載し、その下の `docs/mdmark.config.yaml` に `features.table: false` を記載する。`docs/guide.md` は注意書き・表・`greet` のマーカーを持つ'
+        notes: '`docs/` で `mdmark export guide.md` を実行する'
       - name: Mock
         description: 差し替える依存は無い。書き出した HTML は Playwright の Chromium で file:// で開く
     flow: |-
       sequenceDiagram
-        actor W as 文書を書く人
+        actor W as 文書の作成者
         participant C as mdmark CLI
         participant L as loadLayeredConfig
         participant H as 出力の HTML
         W->>C: docs/ で mdmark export guide.md
         C->>L: cwd・purpose=export
         L-->>C: 重ねた設定・重ねた設定ファイルの一覧
-        C->>C: 上のフォルダの theme.css と ext/greet.js を読む
-        C->>H: guide.html を書く
+        C->>C: 上のフォルダの theme.css と ext/greet.js を読み込む
+        C->>H: guide.html を書き込む
         C-->>W: 書き出した: guide.html・終了コード 0
     expected:
       - 終了コードが 0
       - 開いた HTML で、注意書きが引用として、表が機能を付けない表として描かれる
-      - '`greet` の印が描かれ、`theme.css` の規則が当たっている'
+      - '`greet` のマーカーが描かれ、`theme.css` の規則が該当している'
       - 端末の設定と 2 つの `mdmark.config.yaml` が変わっていない
     test: test_normal_when_cascaded
-  - name: 異常系（端末の設定を読めない・終了コード 1）
-    summary: 端末の設定を YAML として読めないとき、そのパスと行を示して書き出さずに終わる
+  - name: 異常系（端末の設定を読み込めない・終了コード 1）
+    summary: 端末の設定を YAML として読み込めないとき、そのパスと行を示して書き出さずに終わる
     setup:
       - name: 端末の設定
         description: '`MDMARK_CONFIG` で指す `settings.yaml` の 3 行目に閉じていない括弧を持つもの'
@@ -394,7 +394,7 @@ flows:
         description: 差し替える依存は無い
     flow: |-
       sequenceDiagram
-        actor W as 文書を書く人
+        actor W as 文書の作成者
         participant C as mdmark CLI
         participant L as loadLayeredConfig
         W->>C: mdmark export guide.md
@@ -403,33 +403,33 @@ flows:
         C-->>W: 端末の設定のパスと 3 行目・終了コード 1
     expected:
       - 終了コードが 1
-      - 標準エラーに端末の設定のパスと `3` 行目と直し方が出る
-      - HTML が書かれていない
+      - 標準エラーに端末の設定のパスと `3` 行目と修正方法が出る
+      - HTML が記載されていない
     test: test_error_when_settings_unreadable
   - name: 正常系（mermaid のコードブロック）
     summary: mermaid のコードブロックがある文書のときだけ mermaid をまとめて埋め、開いたときに外へ要求せずに図にする
     setup:
       - name: mermaid のコードブロックを持つフォルダ
-        description: 言語 `mermaid` の flowchart のコードブロックを 1 つ持つ文書と、`mermaid.url` に手元の `vendor/mermaid/mermaid.esm.min.mjs` を書いた設定。同じフォルダに段落だけの文書も置く
+        description: 言語 `mermaid` の flowchart のコードブロックを 1 つ持つ文書と、`mermaid.url` に手元の `vendor/mermaid/mermaid.esm.min.mjs` を記載した設定。同じフォルダに段落だけの文書も配置する
       - name: Mock
-        description: 差し替える依存は無い（`mermaid.url` を手元のフォルダに向け、書き出しがネットワークを読まない）
+        description: 差し替える依存は無い（`mermaid.url` を手元のフォルダに向け、書き出しがネットワークを読み込まない）
     flow: |-
       sequenceDiagram
-        actor W as 文書を書く人
+        actor W as 文書の作成者
         participant C as mdmark CLI
         participant H as 出力の HTML
         W->>C: mdmark export 文書のパス
         C->>C: mermaid のコードブロックがあるので、mermaid を起動の処理と 1 つのスクリプトにまとめる
-        C->>H: mermaid を埋めて書く
+        C->>H: mermaid を埋めて記載する
         C-->>W: 出力のパス・終了コード 0
     expected:
       - 終了コードが 0 で、書き出した HTML を file:// で開くと外への要求が 0 件で、mermaid のコードブロックの場所に `figure.mdmark-diagram[data-diagram="mermaid"]` がある
-      - 書き出した HTML のスクリプトの動的 `import()` の数が、段落だけの文書を書き出した HTML と同じ（mermaid の chunk を動的 `import()` で読まない）
+      - 書き出した HTML のスクリプトの動的 `import()` の数が、段落だけの文書を書き出した HTML と同じ（mermaid の chunk を動的 `import()` で読み込まない）
       - 段落だけの文書を書き出した HTML には mermaid が埋められていない
     test: test_normal_when_mermaid_embedded
-lead: 文書を書く人が Markdown を 1 つ、配布物・使う側の CSS・外部ライブラリのモジュール・拡張・画像を埋めた 1 枚の HTML に書き出す。開いた HTML は `mount` で文書を描き、外へ要求しない。
+lead: 文書の作成者が Markdown を 1 つ、配布物・利用側の CSS・外部ライブラリのモジュール・拡張・画像を埋めた 1 枚の HTML に書き出す。開いた HTML は `mount` で文書を描き、外へ要求しない。
 idempotent: true
-side_effects: 出力のパスに HTML を書く（既にあれば上書きする）。文書が指す動画・音声を、出力の隣の `_files/` のフォルダへコピーする（同じ名前のファイルは上書きする）。文書が使う外部ライブラリの設定の `libraries` の URL の先と、そのモジュールが import する先を読む。色分けの対象のコードブロックがあるとき、`syntax.url` の先の core と、使う言語のモジュールを読む
+side_effects: 出力のパスに HTML を書き込む（既にあれば上書きする）。文書が指す動画・音声を、出力の隣の `_files/` のフォルダへコピーする（同じ名前のファイルは上書きする）。文書が使用する外部ライブラリの設定の `libraries` の URL の先と、そのモジュールが import する先を読み込む。色分けの対象のコードブロックがあるとき、`syntax.url` の先の core と、使用する言語のモジュールを読み込む
 callers:
   - dev/設計書/シナリオ/単一ユースケース/文書をHTMLに書き出す#
 request:
@@ -438,7 +438,7 @@ request:
     required: true
     location: argument
     description: 書き出す Markdown のパス
-    example: docs/使い方/guide.md
+    example: docs/使用方法/guide.md
   - name: --out
     type: string
     required: false
@@ -449,9 +449,9 @@ request:
   - name: --config
     type: string
     required: false
-    default: 'なし（端末の設定と、今のフォルダから上のフォルダの `mdmark.config.yaml` を重ねる。インターフェース定義『設定を重ねて読む』を `purpose: export` で呼ぶ）'
+    default: 'なし（端末の設定と、今のフォルダから上のフォルダの `mdmark.config.yaml` を重ねる。インターフェース定義『設定を重ねて読み込む』を `purpose: export` で呼ぶ）'
     location: argument
-    description: 使う設定ファイルのパス
+    description: 使用する設定ファイルのパス
     notes: 探し方はインターフェース定義『設定と索引を点検する』と同じ
 response:
   - name: 標準出力
@@ -460,98 +460,98 @@ response:
   - name: 標準エラー
     type: string
     description: '警告 1 つを 1 行（`警告: {ファイル}: {内容}`）で並べる'
-    notes: 読めない画像・動画・音声・モジュール・拡張・`theme`、知らない `colorTheme` の名前、埋めずに残した絶対 URL の画像・動画・音声
+    notes: 読み込めない画像・動画・音声・モジュール・拡張・`theme`、知らない `colorTheme` の名前、埋めずに残した絶対 URL の画像・動画・音声
   - name: 終了コード
     type: 0 | 1
     description: 書き出したら（警告があっても）0、書き出せなかったら 1
   - name: 出力の HTML
     type: ファイル
-    description: 配布物の CSS・`theme` の CSS・配布物の JavaScript・束ねたモジュールと拡張・画像を替えた文書の Markdown・設定・索引・参照の表を埋めた 1 枚の HTML。起動の処理と埋めるモジュール・拡張を束ねた 1 つのスクリプトを `script` 要素で直接動かす。開くと、読み込み済みのモジュールを外部ライブラリ・部品・色分けの読み込みに渡し、埋めた拡張を `registerExtension` で登録してから `mount` で文書を描く。`blob:` URL と動的 `import()` を使わない
+    description: 配布物の CSS・`theme` の CSS・配布物の JavaScript・まとめたモジュールと拡張・画像を替えた文書の Markdown・設定・索引・参照の表を埋めた 1 枚の HTML。起動の処理と埋めるモジュール・拡張をまとめた 1 つのスクリプトを `script` 要素で直接動かす。開くと、読み込み済みのモジュールを外部ライブラリ・部品・色分けの読み込みに指定し、埋めた拡張を `registerExtension` で登録してから `mount` で文書を描く。`blob:` URL と動的 `import()` を使用しない
 response_example: |-
   ```text
-  書き出した: docs/使い方/guide.html
+  書き出した: docs/使用方法/guide.html
   ```
 
   ```text
-  警告: docs/使い方/guide.md: 画像 `img/missing.png` を読めません。パスを直すか画像を置いてください。
+  警告: docs/使用方法/guide.md: 画像 `img/missing.png` を読み込めません。パスを修正するか画像を配置してください。
   ```
 exceptions:
   - name: なし（正常終了）
-    condition: HTML を書いた（読めなかったものは警告に出す）。終了コード 0
+    condition: HTML を書き込んだ（読み込めなかったものは警告に出す）。終了コード 0
   - name: 設定ファイルの誤り（終了コード 1）
-    condition: 設定ファイルが無い・読めない・Schema に合わない（空の設定ファイルを含む）。重ねた設定ファイル（端末の設定を含む）のどれかが読めない・Schema に合わないときも同じ
-    notes: 標準エラーに原因と直し方の 1 文を出す。Schema に合わないときは `mdmark check` でどこが合わないかを確かめられることを書く
-  - name: 文書を読めない（終了コード 1）
-    condition: '`{文書}` のファイルが無い・読めない'
-    notes: 標準エラーにパスと直し方を出す
-  - name: 出力先へ書けない（終了コード 1）
-    condition: 出力のパスか、動画・音声のコピー先の `_files/` へ書けない（親がファイル・同じ名前のファイルがある・権限が無い）
-    notes: 標準エラーに書けなかったパスと直し方を出す。HTML はどこにも書かない
+    condition: 設定ファイルが無い・読み込めない・Schema に合わない（空の設定ファイルを含む）。重ねた設定ファイル（端末の設定を含む）のどれかが読み込めない・Schema に合わないときも同じ
+    notes: 標準エラーに原因と修正方法の 1 文を出す。Schema に合わないときは `mdmark check` でどこが合わないかを確認できることを記載する
+  - name: 文書を読み込めない（終了コード 1）
+    condition: '`{文書}` のファイルが無い・読み込めない'
+    notes: 標準エラーにパスと修正方法を出す
+  - name: 出力先へ書き込めない（終了コード 1）
+    condition: 出力のパスか、動画・音声のコピー先の `_files/` へ書き込めない（親がファイル・同じ名前のファイルがある・権限が無い）
+    notes: 標準エラーに書き込めなかったパスと修正方法を出す。HTML はどこにも記載しない
 constraints:
   - item: 外部への要求
     constraint: 開いてから描き終えるまでに、ページ自身・`_files/` の下にコピーした動画と音声と画像の `data:` のほかへ要求しない
     decided_by: dev/設計書/非機能要件/非機能要件#requirements[書き出した HTML の外部への要求]
-  - item: 束ねるスクリプト
-    constraint: 起動の処理を入口にし、ビューの部品・色分けの本体と言語は静的な `import` で、拡張と外部ライブラリのモジュールはリテラルの動的 `import()` を返す関数で取り込み、分割せずに 1 つの ES モジュールに束ね（リテラルとパターンの動的 `import()` は同じスクリプトに取り込む）、`src` を持たない `<script type="module">` に入れる。文書に印が無い部品・外部ライブラリと、届かない・束ねられないモジュールは取り込まず、開いたときその印の場所に知らせの枠を出す。起動の処理は拡張と外部ライブラリを 1 つずつ `try` で囲んで評価し、評価で例外を投げたものは飛ばして、ほかの拡張の登録と描画を続ける。束ねた後に動的 `import()` が残る拡張・外部ライブラリ（変数を渡す `import()` を含む）は埋めたうえで警告に出す
+  - item: まとめるスクリプト
+    constraint: 起動の処理を入口にし、ビューの部品・色分けの本体と言語は静的な `import` で、拡張と外部ライブラリのモジュールはリテラルの動的 `import()` を返却する関数で取り込み、分割せずに 1 つの ES モジュールにまとめ（リテラルとパターンの動的 `import()` は同じスクリプトに取り込む）、`src` を持たない `<script type="module">` に入れる。文書にマーカーが無い部品・外部ライブラリと、届かない・まとめられないモジュールは取り込まず、開いたときそのマーカーの場所に通知ブロックを出す。起動の処理は拡張と外部ライブラリを 1 つずつ `try` で囲んで評価し、評価で例外を投げたものは飛ばして、ほかの拡張の登録と描画を続ける。まとめた後に動的 `import()` が残る拡張・外部ライブラリ（変数を指定する `import()` を含む）は埋めたうえで警告に出す
   - item: 埋める外部ライブラリ
-    constraint: 文書に印がある外部ライブラリだけを、既定の対応表に設定の `libraries` を重ねた URL から読む。そのモジュールが import する先も含めて、制約「束ねるスクリプト」の 1 つのスクリプトに束ねる。相対パスの URL は、その値を書いた設定ファイルのフォルダを基準に読む。届かない・束ねられないものは埋めず警告に出し、開いたときその印の場所に知らせの枠を出す
+    constraint: 文書にマーカーがある外部ライブラリだけを、既定の対応表に設定の `libraries` を重ねた URL から読み込む。そのモジュールが import する先も含めて、制約「まとめるスクリプト」の 1 つのスクリプトにまとめる。相対パスの URL は、その値を記載した設定ファイルのフォルダを基準に読み込む。届かない・まとめられないものは埋めず警告に出し、開いたときそのマーカーの場所に通知ブロックを出す
   - item: 埋める拡張
-    constraint: 設定の `extensions` のモジュールを、`load` の中で動的 `import()` で読む先も含めて制約「束ねるスクリプト」の 1 つのスクリプトに束ねて埋める（TypeScript は JavaScript に変える）。読めない・束ねられないものは埋めず警告に出す
+    constraint: 設定の `extensions` のモジュールを、`load` の中で動的 `import()` で読み込む先も含めて制約「まとめるスクリプト」の 1 つのスクリプトにまとめて埋める（TypeScript は JavaScript に変える）。読み込めない・まとめられないものは埋めず警告に出す
   - item: 埋める画像
-    constraint: 文書が相対パスで指す画像（GIF・テーマごとの画像・動画の `poster` を含む）を、制約「アセットのルート」のとおりに探して読み、`data:` URL に替える（フラグメントは `data:` URL の後ろに残す）。読めない画像は書いたまま残して警告に出す。絶対 URL の画像は読まずに書いたまま残し、開いたときに外へ要求することを警告に出す
-  - item: 使う側の CSS
-    constraint: 設定の `theme` の CSS を配布物の CSS の後に埋める。読めないときは埋めず警告に出す
+    constraint: 文書が相対パスで指す画像（GIF・テーマごとの画像・動画の `poster` を含む）を、制約「アセットのルート」のとおりに探して読み込み、`data:` URL に替える（フラグメントは `data:` URL の後ろに残す）。読み込めない画像は記載したまま残して警告に出す。絶対 URL の画像は読み込まずに記載したまま残し、開いたときに外へ要求することを警告に出す
+  - item: 利用側の CSS
+    constraint: 設定の `theme` の CSS を配布物の CSS の後に埋める。読み込めないときは埋めず警告に出す
   - item: 索引と参照の表
-    constraint: 設定に `index` があるとき、索引と、索引の `docs` の文書を読んで `collectReferences` で作った参照の表を埋め、索引に書き出す文書があればその `id` を `mount` の `docId` に渡す。読めない索引の文書は飛ばして警告に出す
+    constraint: 設定に `index` があるとき、索引と、索引の `docs` の文書を読み込んで `collectReferences` で作った参照の表を埋め、索引に書き出す文書があればその `id` を `mount` の `docId` に指定する。読み込めない索引の文書は飛ばして警告に出す
     decided_by: dev/設計書/インターフェース定義/ライブラリ本体/参照の表を作る.ts#
   - item: 文書間のリンク
-    constraint: 書いたままの `href` で残す。警告には出さない
+    constraint: 記載したままの `href` で残す。警告には出さない
   - item: スクリプト
-    constraint: 文書に書いたスクリプトは `mount` のサニタイズで落とし、実行しない（`html-scripts` がオンの文書の範囲の `ts`・`js` は制約「範囲のスクリプト」のとおり動かす）。埋める文字列は `</script>` を含んでも HTML の `script` 要素を閉じないように書く
+    constraint: 文書に記載したスクリプトは `mount` のサニタイズで落とし、実行しない（`html-scripts` がオンの文書の範囲の `ts`・`js` は制約「範囲のスクリプト」のとおり動かす）。埋める文字列は `</script>` を含んでも HTML の `script` 要素を閉じないように記載する
   - item: 書き出した HTML のサイズ
     constraint: 制限なし
-    notes: 'PoC #35 の見本（Chart.js を 1 つ埋めた文書）で 548,910 バイト。配布ファイル 1 つのサイズの上限は jsDelivr が配る `dist/` が対象で、書き出した HTML には当てない'
-  - item: 動く Node の版
+    notes: 'PoC #35 の見本（Chart.js を 1 つ埋めた文書）で 548,910 バイト。配布ファイル 1 つのサイズの上限は jsDelivr が配る `dist/` が対象で、書き出した HTML には適用しない'
+  - item: 動く Node のバージョン
     constraint: Node 24 以降
-    decided_by: dev/設計書/非機能要件/非機能要件#requirements[CLI が動く Node の版]
+    decided_by: dev/設計書/非機能要件/非機能要件#requirements[CLI が動く Node のバージョン]
   - item: 開くブラウザ
     constraint: Chrome 99・Firefox 98・Safari 16.4 以降
     decided_by: dev/設計書/非機能要件/非機能要件#requirements[対応ブラウザ]
   - item: ツールチップを出す場所
-    constraint: 設定の `tooltips.placement` と `tooltips.diagramPlacement` を、`features` と同じく埋める設定に写して `mount` の `opts.config` に渡す。無いキーは写さず、`mount` の既定（`placement` は `top`、`diagramPlacement` は `bottom`）に任せる。`top`・`bottom` 以外の値は設定ファイルの誤り（終了コード 1）にする
+    constraint: 設定の `tooltips.placement` と `tooltips.diagramPlacement` を、`features` と同じく埋める設定にコピーして `mount` の `opts.config` に指定する。無いキーは写さず、`mount` の既定（`placement` は `top`、`diagramPlacement` は `bottom`）に任せる。`top`・`bottom` 以外の値は設定ファイルの誤り（終了コード 1）にする
     decided_by: dev/設計書/設定/ライブラリ本体#settings[tooltips.placement]
   - item: 埋める色分け
-    constraint: '機能 `syntax` がオンのとき、文書のコードブロックの情報文字列から色分けの対象の言語を拾い（`mount` と同じ対応表で、`dockerfile`・`diff` とその別名を含む。言語は情報文字列の最初の `:` の前。文書の `<!-- features: -syntax -->` の文書は拾わない）、設定の `syntax.url`（無ければ既定の jsDelivr の URL）の本体と使う言語のモジュールだけを制約「束ねるスクリプト」の 1 つのスクリプトに束ねて埋める。開いたときは `mount` が埋めたモジュールから色分けし、埋めなかった言語は読みに行かず色分けせずに残す。相対パスの `syntax.url` は、その値を書いた設定ファイルのフォルダを基準に読む。届かないモジュールは埋めず警告に出す（書き出しは止めない）'
-    notes: 'PoC #98 で、core と 3 言語を埋めた HTML を外への要求 0 件で色分けできることを確かめた（約 35KB）。埋めるモジュールは頭の BSD-3-Clause の著作権表示を残す'
+    constraint: '機能 `syntax` がオンのとき、文書のコードブロックの情報文字列から色分けの対象の言語を取得し（`mount` と同じ対応表で、`dockerfile`・`diff` とその別名を含む。言語は情報文字列の最初の `:` の前。文書の `<!-- features: -syntax -->` の文書は取得しない）、設定の `syntax.url`（無ければ既定の jsDelivr の URL）の本体と使用する言語のモジュールだけを制約「まとめるスクリプト」の 1 つのスクリプトにまとめて埋める。開いたときは `mount` が埋めたモジュールから色分けし、埋めなかった言語は読み込みに行かず色分けせずに残す。相対パスの `syntax.url` は、その値を記載した設定ファイルのフォルダを基準に読み込む。届かないモジュールは埋めず警告に出す（書き出しは止めない）'
+    notes: 'PoC #98 で、core と 3 言語を埋めた HTML を外への要求 0 件で色分けできることを確認した（約 35KB）。埋めるモジュールは頭の BSD-3-Clause の著作権表示を残す'
   - item: 埋める mermaid
-    constraint: 機能 `mermaid` がオンで、文書に mermaid のコードブロック（文書をHTML文字列にする.ts の制約『mermaid のコードブロック』）があるときだけ、設定の `mermaid.url`（無ければ既定の jsDelivr の URL）のモジュールを、それが読む chunk ごと制約「束ねるスクリプト」の 1 つのスクリプトにまとめて埋める。開いたときは `mount` が埋めたモジュールで図にし、URL を読まない。相対パスの `mermaid.url` は、その値を書いた設定ファイルのフォルダを基準に読む。届かないときは埋めず警告に出す（書き出しは止めない）。設定の `mermaid.theme`・`mermaid.themeVariables` は `features` と同じく埋める設定に写す
+    constraint: 機能 `mermaid` がオンで、文書に mermaid のコードブロック（文書をHTML文字列にする.ts の制約『mermaid のコードブロック』）があるときだけ、設定の `mermaid.url`（無ければ既定の jsDelivr の URL）のモジュールを、それが読み込む chunk ごと制約「まとめるスクリプト」の 1 つのスクリプトにまとめて埋める。開いたときは `mount` が埋めたモジュールで図にし、URL を読み込まない。相対パスの `mermaid.url` は、その値を記載した設定ファイルのフォルダを基準に読み込む。届かないときは埋めず警告に出す（書き出しは止めない）。設定の `mermaid.theme`・`mermaid.themeVariables` は `features` と同じく埋める設定に写す
     decided_by: dev/設計書/非機能要件/非機能要件#requirements[mermaid を埋めた書き出しの HTML のサイズ]
-    notes: PoC #384 で、CLI の `bundleViewer` が mermaid 12.3.0 の本体と chunk を動的 `import()` を残さずにまとめられることを確かめた
+    notes: PoC #384 で、CLI の `bundleViewer` が mermaid 12.3.0 の本体と chunk を動的 `import()` を残さずにまとめられることを確認した
   - item: 右側の目次の出し方
-    constraint: 設定の `side-toc` を、`features` と同じく埋める設定に写して `mount` の `opts.config` に渡す。無いときは写さず、`mount` の既定（`hover`）に任せる。`mode` が `hover`・`fixed` 以外の値は設定ファイルの誤り（終了コード 1）にする
+    constraint: 設定の `side-toc` を、`features` と同じく埋める設定にコピーして `mount` の `opts.config` に指定する。無いときは写さず、`mount` の既定（`hover`）に任せる。`mode` が `hover`・`fixed` 以外の値は設定ファイルの誤り（終了コード 1）にする
     decided_by: dev/設計書/設定/ライブラリ本体#settings[side-toc.mode]
   - item: エイリアス
-    constraint: 設定に `aliases` があるとき、インターフェース定義『設定と索引を点検する』のエイリアスの点検と同じく行の `paths` の YAML を読んで `buildAliases` に渡し、返った `aliases`（`env` を含まない）を埋めて `mount` の `opts.aliases` に渡す。返った `problems` と、当たるファイルが無い行・読めないファイルは警告に出し、終了コードは 0 のまま
+    constraint: 設定に `aliases` があるとき、インターフェース定義『設定と索引を点検する』のエイリアスの点検と同じく行の `paths` の YAML を読み込んで `buildAliases` に指定し、返った `aliases`（`env` を含まない）を埋めて `mount` の `opts.aliases` に指定する。返った `problems` と、該当するファイルが無い行・読み込めないファイルは警告に出し、終了コードは 0 のまま
     decided_by: dev/設計書/インターフェース定義/ライブラリ本体/エイリアスを作る.ts#
   - item: 選ぶテーマ
-    constraint: 設定の `colorTheme` と `colorScheme` を、`tooltips.placement` と同じく埋める設定に写して `mount` の `opts.config` に渡す。無いときは写さず、`mount` の既定（`dev-swiss`）に任せる。知らないテーマの名前も写したうえで、標準エラーに知らないテーマの名前である旨を出す（終了コードは 0 のまま）
+    constraint: 設定の `colorTheme` と `colorScheme` を、`tooltips.placement` と同じく埋める設定にコピーして `mount` の `opts.config` に指定する。無いときは写さず、`mount` の既定（`dev-swiss`）に任せる。知らないテーマの名前もコピーしたうえで、標準エラーに知らないテーマの名前である旨を出す（終了コードは 0 のまま）
     decided_by: dev/設計書/設定/ライブラリ本体#settings[colorTheme]
   - item: 部品の文言
-    constraint: 設定の `labels` を、`tooltips.placement` と同じく埋める設定に写して `mount` の `opts.config` に渡す。無いときは写さず、`mount` の既定に任せる。`labels` がマップでない、または `labels.paramCopy` が空でない文字列でないときは設定ファイルの誤り（終了コード 1）にする
+    constraint: 設定の `labels` を、`tooltips.placement` と同じく埋める設定にコピーして `mount` の `opts.config` に指定する。無いときは写さず、`mount` の既定に任せる。`labels` がマップでない、または `labels.paramCopy` が空でない文字列でないときは設定ファイルの誤り（終了コード 1）にする
     decided_by: dev/設計書/設定/ライブラリ本体#settings[labels.paramCopy]
   - item: アセットのルート
-    constraint: '文書が相対パスで指す画像・動画・音声・`poster` は、文書のフォルダを基準に探し、無ければ設定の `assets.root` を基準に同じ相対パスで探す。`src` のクエリとフラグメントは探すときに外し、書き出す値に残す'
+    constraint: '文書が相対パスで指す画像・動画・音声・`poster` は、文書のフォルダを基準に探し、無ければ設定の `assets.root` を基準に同じ相対パスで探す。`src` のクエリとフラグメントは探すときに除外し、書き出す値に残す'
     decided_by: dev/設計書/設定/ライブラリ本体#settings[assets.root]
   - item: コピーする動画と音声
-    constraint: '文書が相対パスで指す動画・音声（拡張子の一覧はインターフェース定義『文書をHTML文字列にする』の制約「動画と音声」）を、出力の HTML と同じフォルダの `{出力のファイル名から拡張子を除いた名前}_files/` へコピーし、文書の Markdown の `src` をそのコピーへの HTML からの相対パスに替える。コピー先の中のパスは、設定ファイルのフォルダ（設定ファイルが無ければ文書のフォルダ）からの相対パスにする。そのフォルダの外にあるファイルは `_files/external/{ファイル名}` にし、名前が重なれば `-1`・`-2` を付ける。同じファイルは 1 回だけコピーする。コピーは HTML を書く前に行い、`_files/` を作れない・書けないときは「出力先へ書けない」で終え、HTML を書かない。前の書き出しが残した `_files/` の中の、今回コピーしないファイルは消さない。読めない動画・音声は書いたまま残して警告に出す。添付のファイルはコピーせず、書いたままのリンクで残す'
+    constraint: '文書が相対パスで指す動画・音声（拡張子の一覧はインターフェース定義『文書をHTML文字列にする』の制約「動画と音声」）を、出力の HTML と同じフォルダの `{出力のファイル名から拡張子を除いた名前}_files/` へコピーし、文書の Markdown の `src` をそのコピーへの HTML からの相対パスに替える。コピー先の中のパスは、設定ファイルのフォルダ（設定ファイルが無ければ文書のフォルダ）からの相対パスにする。そのフォルダの外にあるファイルは `_files/external/{ファイル名}` にし、名前が重なれば `-1`・`-2` を付ける。同じファイルは 1 回だけコピーする。コピーは HTML を書き込む前に行い、`_files/` を作れない・記載できないときは「出力先へ書き込めない」で終え、HTML を書き込まない。前の書き出しが残した `_files/` の中の、今回コピーしないファイルは削除しない。読み込めない動画・音声は記載したまま残して警告に出す。添付のファイルはコピーせず、記載したままのリンクで残す'
   - item: 書き出しの機能のオン・オフ
     constraint: 設定の `features` で `images` か `media` をオフにした文書も、画像の埋め込みと動画・音声のコピーは同じく行う
   - item: 範囲のスクリプト
-    constraint: 設定と文書の印で `html-scripts` がオンの文書の、`<!-- html -->` の範囲の `ts`・`js` を esbuild で CommonJS に変え（`ts` は型を外す）、範囲のコードの文字から既定のエクスポートの関数を引く表として制約「束ねるスクリプト」の 1 つのスクリプトに加える。開くと起動の処理がその表を `mount` の範囲のスクリプトの処理に渡し、変換のライブラリ（`html-scripts.url`）を読まずに動かす。esbuild が変換できない範囲は束ねずに警告に出し、開いたときその範囲の前に書き方の警告を出す。`blob:` URL と動的 `import()` は使わない
-    notes: 変換は CLI の今の依存の esbuild。PoC 検証（#306）で束ねた 1 つのスクリプトから呼ぶ経路を確かめた
+    constraint: 設定と文書のマーカーで `html-scripts` がオンの文書の、`<!-- html -->` の範囲の `ts`・`js` を esbuild で CommonJS に変え（`ts` は型を削除する）、範囲のコードの文字から既定のエクスポートの関数を参照する表として制約「まとめるスクリプト」の 1 つのスクリプトに加える。開くと起動の処理がその表を `mount` の範囲のスクリプトの処理に指定し、変換のライブラリ（`html-scripts.url`）を読み込まずに動かす。esbuild が変換できない範囲はまとめずに警告に出し、開いたときその範囲の前に記載の警告を出す。`blob:` URL と動的 `import()` は使用しない
+    notes: 変換は CLI の今の依存の esbuild。PoC 検証（#306）でまとめた 1 つのスクリプトから呼ぶ経路を確認した
   - item: 埋める取り込み
-    constraint: '文書の include のマーカーの取り込み先を、インターフェース定義『文書をHTML文字列にする』の制約「取り込み」と同じパスの解き方でファイルから読み（取り込んだ文書の中のマーカーもたどり、同じファイルは 1 回だけ読む）、キーを書き出す文書のフォルダからのパスにした取り込む文書の表を `opts.includes` として埋める。読むのは設定ファイルのフォルダ（設定ファイルが無ければ文書のフォルダ）の中のファイルだけで、その外を指すパスと読めないファイルは表に入れず、警告に出す（書き出しは止めない。開いたときはそのマーカーの場所に書き方の警告が出る）。文書の `<!-- features: -include -->` の文書は読まない'
+    constraint: '文書の include のマーカーの取り込み先を、インターフェース定義『文書をHTML文字列にする』の制約「取り込み」と同じパスの解き方でファイルから読み込み（取り込んだ文書の中のマーカーもたどり、同じファイルは 1 回だけ読み込む）、キーを書き出す文書のフォルダからのパスにした取り込む文書の表を `opts.includes` として埋める。読み込むのは設定ファイルのフォルダ（設定ファイルが無ければ文書のフォルダ）の中のファイルだけで、その外を指すパスと読み込めないファイルは表に入れず、警告に出す（書き出しは止めない。開いたときはそのマーカーの場所に記載の警告が出る）。文書の `<!-- features: -include -->` の文書は読み込まない'
   - item: 埋めるアイコン
-    constraint: 文書（取り込む文書を含む）の `icon:` のうち配布物に束ねていない名前の IconNode を、依存の lucide から取り出して `opts.icons` として埋め、開いたとき jsDelivr を読まない。lucide に無い名前は埋めず警告に出し（書き出しは止めない）、開いたときはその場所を行内のコードのままにして書き方の警告を置く。`opts.icons` を埋める `script` の直前に、注釈 `<!-- lucide {バージョン} - ISC License (c) Lucide Contributors / MIT License (c) 2013-present Cole Bemis -->` を 1 行置く（埋める名前が無いときは置かない）
+    constraint: 文書（取り込む文書を含む）の `icon:` のうち配布物にまとめていない名前の IconNode を、依存の lucide から取り出して `opts.icons` として埋め、開いたとき jsDelivr を読み込まない。lucide に無い名前は埋めず警告に出し（書き出しは止めない）、開いたときはその場所を行内のコードのままにして記載の警告を配置する。`opts.icons` を埋める `script` の直前に、注釈 `<!-- lucide {バージョン} - ISC License (c) Lucide Contributors / MIT License (c) 2013-present Cole Bemis -->` を 1 行置く（埋める名前が無いときは配置しない）
     notes: ライセンスの表示を残すことは外部ライブラリ『lucide』の `license`
 test_file: tests/integration/lib/export.test.ts

@@ -37,7 +37,7 @@
       <button class="mock-bar-item" type="button" data-theme-set="theme-slate" aria-pressed="false">theme-slate</button>
       <button class="mock-bar-item" type="button" data-theme-set="theme-contrast" aria-pressed="false">theme-contrast</button>
     </div>
-    <!-- [data-scheme-set]: sample.js が押されたボタンの値を html の data-scheme に当てる -->
+    <!-- [data-scheme-set]: sample.js が押されたボタンの値を html の data-scheme に適用する -->
     <div class="mock-bar-group" role="group" aria-label="配色">
       <button class="mock-bar-item" type="button" data-scheme-set="light" aria-pressed="false">明るい配色</button>
       <button class="mock-bar-item" type="button" data-scheme-set="dark" aria-pressed="false">ダーク</button>
@@ -52,7 +52,7 @@
       <section aria-labelledby="state-inline">
         <h2 class="catalog-label" id="state-inline">文中</h2>
         <article class="mdmark">
-<p>対象の版は <span class="mdmark-badge">v0.2.0</span> で、状態は <span class="mdmark-badge">実装中</span> です。</p>
+<p>対象のバージョンは <span class="mdmark-badge">v0.2.0</span> で、状態は <span class="mdmark-badge">実装中</span> です。</p>
         </article>
       </section>
 
@@ -76,15 +76,15 @@
       <section aria-labelledby="state-long">
         <h2 class="catalog-label" id="state-long">長い文言</h2>
         <article class="mdmark">
-<p><span class="mdmark-badge">非推奨（v1.0.0 で外す予定）</span> の機能は使わないでください。</p>
+<p><span class="mdmark-badge">非推奨（v1.0.0 で削除する予定）</span> の機能は使用しないでください。</p>
         </article>
       </section>
 
-      <!-- 打ち消したバッジ（書き方を見せる） -->
+      <!-- 打ち消したバッジ（記載方法を見せる） -->
       <section aria-labelledby="state-escaped">
-        <h2 class="catalog-label" id="state-escaped">打ち消したバッジ（書き方を見せる）</h2>
+        <h2 class="catalog-label" id="state-escaped">打ち消したバッジ（記載方法を見せる）</h2>
         <article class="mdmark">
-<p>バッジは <code>badge:v0.1.0</code> のように書きます。</p>
+<p>バッジは <code>badge:v0.1.0</code> のように記載します。</p>
         </article>
       </section>
 
@@ -92,7 +92,7 @@
       <section aria-labelledby="state-empty">
         <h2 class="catalog-label" id="state-empty">頭の後ろが空の badge:（バッジにせず、インラインコードのまま出す）</h2>
         <article class="mdmark">
-<p>状態は <span class="mdmark-badge">点検済み</span> のように書きます。<code>badge:</code> と <code>badge: </code> はバッジになりません。</p>
+<p>状態は <span class="mdmark-badge">点検済み</span> のように記載します。<code>badge:</code> と <code>badge: </code> はバッジになりません。</p>
         </article>
       </section>
 
@@ -114,7 +114,7 @@
     <thead><tr><th>確認事項</th><th>状態</th></tr></thead>
     <tbody>
       <tr><td data-label="確認事項">色の名前の一覧</td><td data-label="状態"><span class="mdmark-badge" data-color="red">要確認</span></td></tr>
-      <tr><td data-label="確認事項">本文の文字の色の書き方</td><td data-label="状態"><span class="mdmark-badge" data-color="green">決定</span></td></tr>
+      <tr><td data-label="確認事項">本文の文字の色の記載方法</td><td data-label="状態"><span class="mdmark-badge" data-color="green">決定</span></td></tr>
       <tr><td data-label="確認事項">プレビューで再生できない形式</td><td data-label="状態"><span class="mdmark-badge" data-color="green">決定</span></td></tr>
       <tr><td data-label="確認事項">PDF をページの中に表示する</td><td data-label="状態"><span class="mdmark-badge" data-color="gray">対象外</span></td></tr>
     </tbody>
@@ -123,7 +123,7 @@
         </article>
       </section>
 
-      <!-- 色の名前でない頭: 今のまま全てをラベルにする（書き方の警告は出さない） -->
+      <!-- 色の名前でない頭: 今のまま全てをラベルにする（記載の警告は出さない） -->
       <section aria-labelledby="state-color-unknown">
         <h2 class="catalog-label" id="state-color-unknown">色の名前でない頭（<code>badge:pink:要確認</code> と <code>badge:v1:beta</code>。全てをラベルにする）</h2>
         <article class="mdmark">

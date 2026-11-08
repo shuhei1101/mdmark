@@ -28,7 +28,7 @@ const REORDER_TABLE = [
   "",
 ].join("\n");
 
-/** 2 段の見出しで `設定` が 3 列にまたがり、名前をピン止めした表 */
+/** 2 行の見出しで `設定` が 3 列にまたがり、名前をピン止めした表 */
 const GROUPED_TABLE = [
   "<!-- table: data +reorder header-rows=2 pin=名前 -->",
   "",
@@ -42,7 +42,7 @@ const GROUPED_TABLE = [
   "",
 ].join("\n");
 
-/** 表を描いて操作を付け、テーブル設定のパネルを開いて返す */
+/** 表を描いて操作を付け、テーブル設定のパネルを開いて返却する */
 async function openSettings(markdown: string, onColumnsChange?: () => void) {
   addStyles();
   const { attachTables } = await loadTables();
@@ -60,7 +60,7 @@ async function openSettings(markdown: string, onColumnsChange?: () => void) {
   return { root, toggle };
 }
 
-/** 見出しの最下段の行と、本文の各行の、セルの `data-col` を並んだ順に返す */
+/** 見出しの最下段の行と、本文の各行の、セルの `data-col` を並んだ順に返却する */
 function rowOrders(root: HTMLElement): string[][] {
   const head = [...root.querySelectorAll<HTMLTableRowElement>("thead tr")].at(
     -1,
@@ -75,12 +75,12 @@ function rowOrders(root: HTMLElement): string[][] {
   );
 }
 
-/** パネルの一覧の項目を、並んだ順に返す */
+/** パネルの一覧の項目を、並んだ順に返却する */
 function items(root: HTMLElement): HTMLElement[] {
   return [...root.querySelectorAll<HTMLElement>(".mdmark-table-settings-item")];
 }
 
-/** 列名の項目のつまみを返す */
+/** 列名の項目のつまみを返却する */
 function gripOf(root: HTMLElement, name: string): HTMLButtonElement {
   const grip = items(root)
     .find((item) => item.dataset.name === name)
@@ -91,7 +91,7 @@ function gripOf(root: HTMLElement, name: string): HTMLButtonElement {
   return grip;
 }
 
-/** 列名の項目の上半分の位置で、ドラッグの受け取りを送る */
+/** 列名の項目の上半分の位置で、ドラッグの受け取りを送信する */
 function dropOn(options: {
   root: HTMLElement;
   from: string;
@@ -126,7 +126,7 @@ function dropOn(options: {
   );
 }
 
-// ドラッグ＆ドロップで列を動かし、全ての行のセルを並べ直す（正常系）
+// ドラッグ＆ドロップで列を動かし、全ての行のセルをもう一度並べる（正常系）
 test("test_attach_table_settings_when_dragged", async () => {
   // 準備
   const { root } = await openSettings(REORDER_TABLE);
@@ -175,7 +175,7 @@ test("test_attach_table_settings_when_group_boundary", async () => {
   expect(gripOf(root, "型").disabled).toBe(false);
 });
 
-// 目のアイコンで列を隠し、バッジと読み上げの名前を書き換えて知らせる（正常系）
+// 目のアイコンで列を隠し、バッジとスクリーンリーダー向けの名前を書き換えて通知する（正常系）
 test("test_attach_table_settings_when_hidden", async () => {
   // 準備
   const onColumnsChange = vi.fn();

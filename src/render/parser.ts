@@ -67,25 +67,25 @@ import {
 } from "./syntax/warnings.ts";
 import { buildWideRanges } from "./syntax/wide.ts";
 
-/** markdown-it の `env` としてコアルールに渡す値と、コアルールが拾った印 */
+/** markdown-it の `env` としてコアルールに指定する値と、コアルールが取得したマーカー */
 export type RenderEnv = {
-  /** 対応表（どの印を印の場所の要素にするか） */
+  /** 対応表（どのマーカーをマーカーの場所の要素にするか） */
   libraries: Record<string, LibraryEntry>;
   /** 設定の `features` */
   defaults: Record<string, boolean>;
-  /** 既定を当てた設定の `labels`（部品の文言） */
+  /** 既定を適用した設定の `labels`（部品の文言） */
   labels?: { paramCopy: string };
-  /** `features` の印の引数を書いた順に並べたもの */
+  /** `features` のマーカーの引数を記載した順に並べたもの */
   featureArgs: string[];
   /** `defaults` に `featureArgs` を重ねたもの */
   features: Record<string, boolean>;
-  /** 文書の先頭の page の印を書いた順に並べたもの（`takeMarks` が足す） */
+  /** 文書の先頭の page のマーカーを記載した順に並べたもの（`takeMarks` が追加する） */
   pageMarks?: Array<{ raw: string; args: MdmarkMarkArgs }>;
-  /** `pageMarks` を読んだページの設定（`resolvePageSettings` が入れる） */
+  /** `pageMarks` を読み込んだページの設定（`resolvePageSettings` が入れる） */
   page?: PageSettings;
   /** 見出しの ID と文字 */
   headings: Array<{ level: number; id: string; text: string }>;
-  /** 描くごとに作る、mdmark が出した要素の印の値 */
+  /** 描くごとに作る、mdmark が出した要素のマーカーの値 */
   nonce: string;
   /** `normalizeIndex` で合う要素だけにした索引 */
   index?: MdmarkIndex | undefined;
@@ -93,31 +93,31 @@ export type RenderEnv = {
   docId?: string | undefined;
   /** 参照の表（markdown-it が `env.references` にリンク参照定義を入れるため、別の名前にする） */
   mdmarkReferences?: MdmarkReferences | undefined;
-  /** 使う側が渡したエイリアス（`render`・`mount` の `aliases`）。`termsRule`・`buildEmbeddedHtml` が `buildDictionary` に渡す */
+  /** 利用側が指定したエイリアス（`render`・`mount` の `aliases`）。`termsRule`・`buildEmbeddedHtml` が `buildDictionary` に指定する */
   aliases?: readonly unknown[] | undefined;
-  /** 描く文書の用語集の表から読んだ用語（`glossaryRule` が足す） */
+  /** 描く文書の用語集の表から読み込んだ用語（`glossaryRule` が追加する） */
   ownGlossary: MdmarkGlossaryEntry[];
-  /** `ownGlossary` の各用語の行番号。点検が行を示すために渡したときだけ、`glossaryRule` が足す */
+  /** `ownGlossary` の各用語の行番号。点検が行を示すために指定したときだけ、`glossaryRule` が追加する */
   glossaryLines?: number[] | undefined;
-  /** 拡張の印の範囲から読んだ部品の定義（印の場所の `data-mdmark-definition` の番号で引く） */
+  /** 拡張のマーカーの範囲から読み込んだ部品の定義（マーカーの場所の `data-mdmark-definition` の番号で参照する） */
   extensionDefinitions?: unknown[];
   /** 描いた操作できる部品の定義（文書の中の並びの順） */
   paramDefinitions?: MdmarkParamDefinition[];
-  /** 描いた図と操作できる部品の数（`id` の通し番号。範囲の印と埋め込んだ HTML で共有する） */
+  /** 描いた図と操作できる部品の数（`id` の通し番号。範囲のマーカーと埋め込んだ HTML で共有する） */
   diagramCount?: number;
   /** 用語のツールチップの数（`id` の通し番号。埋め込んだ HTML と本文で共有する） */
   termTipCount?: number;
-  /** 読んだ脚注の定義と参照（定義の block のルールが作り、機能がオフなら `collectFootnotes` が消す） */
+  /** 読み込んだ脚注の定義と参照（定義の block のルールが作り、機能がオフなら `collectFootnotes` が削除する） */
   mdmarkFootnotes?: FootnoteState | undefined;
   /** ヒントのツールチップの数（`id` の通し番号） */
   hintCount?: number;
-  /** ビューの書き方の警告の数（`id` の通し番号） */
+  /** ビューの記載の警告の数（`id` の通し番号） */
   viewCount?: number;
   /** 取り込む文書の表（`render`・`mount` の `includes`） */
   includes?: Record<string, string> | undefined;
-  /** 束ねていない名前のアイコンの形の表（`render`・`mount` の `icons`） */
+  /** まとめていない名前のアイコンの形状の表（`render`・`mount` の `icons`） */
   icons?: Record<string, MdmarkIconNode> | undefined;
-  /** 描いた書き方の警告（最後のコアルール `collectWarningsRule` が入れる） */
+  /** 描いた記載の警告（最後のコアルール `collectWarningsRule` が入れる） */
   warnings?: CollectedWarning[];
 };
 
@@ -133,7 +133,7 @@ function taskList(state: StateCore): void {
   for (let index = 2; index < tokens.length; index++) {
     const inline = tokens[index];
     const item = tokens[index - 2];
-    // 項目の最初の段落の行内だけを見る
+    // 項目の最初の段落の行内だけを確認する
     if (
       inline?.type !== "inline" ||
       tokens[index - 1]?.type !== "paragraph_open" ||
@@ -207,7 +207,7 @@ export function markSourceLines(state: StateCore): void {
     }
     const line = token.map[0];
     if (token.type === "html_block") {
-      // 記法が出した HTML だけに差し込む（文書に書いた生の HTML は変えない）
+      // 記法が出した HTML だけに差し込む（文書に記載した生の HTML は変えない）
       const start = OWN_START_TAG.exec(token.content);
       if (
         start &&
@@ -221,7 +221,7 @@ export function markSourceLines(state: StateCore): void {
   }
 }
 
-/** 解析器の設定。印を拾う `findMarks` も同じ設定で解析する */
+/** 解析器の設定。マーカーを取得する `findMarks` も同じ設定で解析する */
 const PARSER_OPTIONS = { html: true, linkify: true };
 
 /** `s` の中の改行の数 */
@@ -240,7 +240,7 @@ function inlineStartLine(tokens: Token[], position: number): number {
   return 0;
 }
 
-/** Markdown の生の HTML のブロックと行内の HTML から印の名前と行の番号（1 から）を、書いた順に返す。閉じの印も 1 つの印として返す */
+/** Markdown の生の HTML のブロックと行内の HTML からマーカーの名前と行の番号（1 から）を、記載した順に返却する。閉じのマーカーも 1 つのマーカーとして返却する */
 export function findMarks(
   markdown: string,
 ): Array<{ name: string; line: number }> {
@@ -257,7 +257,7 @@ export function findMarks(
         });
       }
     } else if (token.type === "inline") {
-      // 印より前の子が持つ改行の数を足しながら、行内の HTML の印を拾う
+      // マーカーより前の子が持つ改行の数を追加しながら、行内の HTML のマーカーを取得する
       let offset = inlineStartLine(tokens, position) + 1;
       for (const child of token.children ?? []) {
         if (child.type === "softbreak" || child.type === "hardbreak") {
@@ -278,21 +278,21 @@ export function findMarks(
   return found;
 }
 
-/** `html: true`・`linkify: true` の解析器に、足すコアルールを登録して返す */
+/** `html: true`・`linkify: true` の解析器に、追加するコアルールを登録して返却する */
 export function createParser(): MarkdownItParser {
   const parser = new MarkdownIt(PARSER_OPTIONS);
-  // スキームを持たないドメインも拾わせ、後で文字に戻すものを選ぶ
+  // スキームを持たないドメインも取得させ、後で文字に戻すものを選ぶ
   parser.linkify.set({ fuzzyLink: true });
-  // 印 → 機能の重ね合わせ → 取り込み → 蛍光ペン（`useHighlight` が取り込みの後に足す）→ 脚注の機能のオン・オフ → 記法（アイコン → 見出し → 用語集の表 → 行の詳細 → ビュー → CSV の表 → 表 → タブ → ステップ → 注意書き → ファイルツリー → バッジ → キー → 本文の文字の色 → 図の部品 → 埋め込んだ HTML → コードブロックの飾り → 画像の属性と種類 → 図表の番号 → ギャラリー → 画像と動画と音声の図 → カード → 段組み → details の範囲 → wide の範囲 → 改ページ → 用語の下線 → 節 → 目次 → 脚注の一覧 → 関連文書の一覧）→ タスクリスト → www の自動リンク → 残った印 → 元の行番号 → 脚注の定義の取り出し
+  // マーカー → 機能の重ね合わせ → 取り込み → 蛍光ペン（`useHighlight` が取り込みの後に追加する）→ 脚注の機能のオン・オフ → 記法（アイコン → 見出し → 用語集の表 → 行の詳細 → ビュー → CSV の表 → 表 → タブ → ステップ → 注意書き → ファイルツリー → バッジ → キー → 本文の文字の色 → 図の部品 → 埋め込んだ HTML → コードブロックの飾り → 画像の属性と種類 → 図表の番号 → ギャラリー → 画像と動画と音声の図 → カード → 段組み → details の範囲 → wide の範囲 → 改ページ → 用語の下線 → セクション → 目次 → 脚注の一覧 → 関連文書の一覧）→ タスクリスト → www の自動リンク → 残ったマーカー → 元の行番号 → 脚注の定義の取り出し
   const rules: Array<[string, (state: StateCore) => void]> = [
     ["mdmark_take_marks", takeMarks],
     ["mdmark_resolve_features", resolveDocumentFeatures],
     ["mdmark_resolve_page_settings", resolvePageSettings],
     ["mdmark_expand_includes", expandIncludes],
     ["mdmark_collect_footnotes", collectFootnotes],
-    // 項目の `icon:` の行内のコードを読むため、行内のアイコンより前に置く
+    // 項目の `icon:` の行内のコードを読み込むため、行内のアイコンより前に配置する
     ["mdmark_build_card_grid", buildCardGrid],
-    // 見出しの ID と文字から、アイコンにした行内のコードを外すため、見出しの ID より前に置く
+    // 見出しの ID と文字から、アイコンにした行内のコードを削除するため、見出しの ID より前に配置する
     ["mdmark_build_inline_icons", buildInlineIcons],
     ["mdmark_assign_heading_ids", assignHeadingIds],
     ["mdmark_glossary", glossaryRule],
@@ -337,12 +337,12 @@ export function createParser(): MarkdownItParser {
   }
   useFootnotes(parser);
   useHighlight(parser);
-  // 印のトークンは、残っていても何も出さない
+  // マーカーのトークンは、残っていても何も出さない
   parser.renderer.rules[MARK_TOKEN] = () => "";
   // 取り消し線: markdown-it の `<s>` を GitHub と同じ `<del>` にする
   parser.renderer.rules.s_open = () => "<del>";
   parser.renderer.rules.s_close = () => "</del>";
-  // コードブロック: `pre` に読み上げの名前と tabindex を付ける
+  // コードブロック: `pre` にスクリーンリーダー向けの名前と tabindex を付ける
   const renderFence = parser.renderer.rules.fence;
   parser.renderer.rules.fence = (tokens, index, options, env, self) => {
     const language = tokens[index]?.info.trim().split(/\s+/)[0] ?? "";

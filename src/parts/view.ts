@@ -29,7 +29,7 @@ import { escapeHtml } from "./escape.ts";
 import { iconNodeBody, iconSvgOf } from "./icon-node.ts";
 import { renderTable, type TableFilter } from "./table.ts";
 
-/** アイコンの名前から lucide のアイコンの形を引く */
+/** アイコンの名前から lucide のアイコンの形状を参照する */
 const ICON_NODES: Record<ViewIconName | "board" | "table", IconNode> = {
   circle: Circle,
   "circle-dashed": CircleDashed,
@@ -51,7 +51,7 @@ const ICON_NODES: Record<ViewIconName | "board" | "table", IconNode> = {
   table: Table,
 };
 
-/** 使えるアイコンと切り替えの `board`・`table` の、24 の格子の lucide の svg の中身 */
+/** 使用できるアイコンと切り替えの `board`・`table` の、24 の格子の lucide の svg の中身 */
 export const VIEW_ICON_PATHS: Readonly<Record<string, string>> =
   Object.fromEntries(
     Object.entries(ICON_NODES).map(([name, node]) => [
@@ -60,7 +60,7 @@ export const VIEW_ICON_PATHS: Readonly<Record<string, string>> =
     ]),
   );
 
-/** 名前のアイコンの svg を返す。知らない名前は既定のアイコンにする */
+/** 名前のアイコンの svg を返却する。知らない名前は既定のアイコンにする */
 function viewIcon(name: string): string {
   const body = Object.hasOwn(VIEW_ICON_PATHS, name)
     ? VIEW_ICON_PATHS[name]
@@ -68,7 +68,7 @@ function viewIcon(name: string): string {
   return iconSvgOf(body ?? "");
 }
 
-/** 切り替えのボタン 1 つの HTML を返す */
+/** 切り替えのボタン 1 つの HTML を返却する */
 function switchButton(options: {
   mode: "board" | "table";
   label: string;
@@ -82,18 +82,18 @@ function switchButton(options: {
   return `<button class="mdmark-view-switch-item" type="button" data-mode="${mode}" aria-pressed="${mode === current}"${disabled}>${viewIcon(mode)}${label}</button>`;
 }
 
-/** 「ボード」「表」の切り替えの HTML を返す */
+/** 「ボード」「表」の切り替えの HTML を返却する */
 export function renderViewSwitch(props: {
   /** 出すビュー */
   mode: "board" | "table";
-  /** ボードにできない理由の書き方の警告の `id` */
+  /** ボードにできない理由の記載の警告の `id` */
   boardDisabled?: string | undefined;
 }): string {
   const { mode, boardDisabled } = props;
   return `<div class="mdmark-view-switch" role="group" aria-label="ビューの表示">${switchButton({ mode: "board", label: "ボード", current: mode, disabledBy: boardDisabled })}${switchButton({ mode: "table", label: "表", current: mode })}</div>`;
 }
 
-/** ボードの項目 1 つの HTML を返す: 先頭の列の値を題にし、`group` の列と空の値を除いた列を列名と値の組で並べる */
+/** ボードの項目 1 つの HTML を返却する: 先頭の列の値をタイトルにし、`group` の列と空の値を除いた列を列名と値の組で並べる */
 function renderCard(options: {
   columns: string[];
   row: string[];
@@ -114,7 +114,7 @@ function renderCard(options: {
   return `<li class="mdmark-view-card"><p class="mdmark-view-card-title">${escapeHtml(row[0] ?? "")}</p>${list}</li>`;
 }
 
-/** 値ごとの列に項目を並べたボードの HTML を返す。`group` が列の位置でなければ空のボード */
+/** 値ごとの列に項目を並べたボードの HTML を返却する。`group` が列の位置でなければ空のボード */
 export function renderViewBoard(props: {
   /** 列名 */
   columns: string[];
@@ -122,7 +122,7 @@ export function renderViewBoard(props: {
   items: string[][];
   /** 分ける列の位置 */
   group: number;
-  /** 値からアイコンの名前を引く上書きの対応 */
+  /** 値からアイコンの名前を参照する上書きの対応 */
   icons: Record<string, string>;
   /** 隠すか（既定 `false`） */
   hidden?: boolean;
@@ -150,25 +150,25 @@ export function renderViewBoard(props: {
   return `${open}${columnsHtml.join("")}</div>`;
 }
 
-/** 項目の表を、`group` の列の値ごとに並べたボードと、表形式で切り替えて出す HTML を返す */
+/** 項目の表を、`group` の列の値ごとに並べたボードと、表形式で切り替えて出す HTML を返却する */
 export function renderView(props: {
   /** 列名 */
   columns: string[];
   /** 項目ごとの値（`columns` と同じ並び） */
   items: string[][];
-  /** ボードで分ける列名。無ければ切り替えを置かず、表形式だけを出す */
+  /** ボードで分ける列名。無ければ切り替えを配置せず、表形式だけを出す */
   group?: string | undefined;
   /** 出しているビュー（既定は `group` があればボード） */
   mode?: "board" | "table" | undefined;
   /** 表形式で絞り込みを付ける列 */
   filters?: TableFilter[] | undefined;
-  /** 表形式に当てている絞り込み */
+  /** 表形式に適用している絞り込み */
   filterValues?: FilterValue[] | undefined;
   /** 開いた絞り込みのドロワーの列の位置 */
   openFilter?: number | undefined;
   /** ボードの列の見出しのアイコンの上書き */
   icons?: Record<string, string> | undefined;
-  /** ボードにできない理由の書き方の警告の `id` */
+  /** ボードにできない理由の記載の警告の `id` */
   boardDisabled?: string | undefined;
   /** ビューの要素の `id` の頭 */
   id: string;

@@ -15,7 +15,7 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
-// コマンド名で init を呼び、その終了コードを返す（正常系）
+// コマンド名で init を呼び、その終了コードを返却する（正常系）
 test("test_main", async () => {
   // 準備
   const { main } = await loadMain();
@@ -26,10 +26,10 @@ test("test_main", async () => {
   const code = await main(["init", dir], io, failingAsk);
   // 検証
   expect(code).toBe(0);
-  expect(stdout.some((line) => line.startsWith("置いた:"))).toBe(true);
+  expect(stdout.some((line) => line.startsWith("配置した:"))).toBe(true);
 });
 
-// 知らないコマンドは一覧を出して 1 を返す（異常系）
+// 知らないコマンドは一覧を出して 1 を返却する（異常系）
 test("test_main_when_command_unknown", async () => {
   // 準備
   const { main } = await loadMain();
@@ -45,7 +45,7 @@ test("test_main_when_command_unknown", async () => {
   }
 });
 
-// コマンドが投げた CliError の文を出して 1 を返す（異常系）
+// コマンドが投げた CliError の文を出して 1 を返却する（異常系）
 test("test_main_when_cli_error", async () => {
   // 準備
   const { main } = await loadMain();
@@ -58,7 +58,7 @@ test("test_main_when_cli_error", async () => {
   expect(stderr.join("\n")).toContain("mdmark init");
 });
 
-// upgrade を呼び、--plan を runUpgrade に渡す（正常系）
+// upgrade を呼び、--plan を runUpgrade に指定する（正常系）
 test("test_main_when_upgrade", async () => {
   // 準備
   const { main } = await loadMain();
@@ -70,5 +70,5 @@ test("test_main_when_upgrade", async () => {
   const code = await main(["upgrade", "--plan"], io, failingAsk);
   // 検証
   expect(code).toBe(0);
-  expect(stdout.join("\n")).toContain("当てる手順はありません");
+  expect(stdout.join("\n")).toContain("適用する手順はありません");
 });

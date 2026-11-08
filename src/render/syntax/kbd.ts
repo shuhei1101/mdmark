@@ -6,10 +6,10 @@ import { envOf, featureOn } from "./tokens.ts";
 /** キーにする行内のコードの頭 */
 const KBD_PREFIX = "kbd:";
 
-/** キーにしない印: 頭の `\` を外した `<code>` に戻す */
+/** キーにしないマーカー: 頭の `\` を削除した `<code>` に戻す */
 const ESCAPED_PREFIX = "kbd\\:";
 
-/** `+` で区切り、`++` を `+` のキーとして読む。キーの前後の空白を外し、空のキーを捨てる */
+/** `+` で区切り、`++` を `+` のキーとして読み込む。キーの前後の空白を削除し、空のキーを捨てる */
 export const splitKeys = (text: string): string[] => {
   const keys: string[] = [];
   let current = "";
@@ -33,7 +33,7 @@ export const splitKeys = (text: string): string[] => {
   return keys.map((key) => key.trim()).filter((key) => key !== "");
 };
 
-/** `kbd` がオンなら、頭が `kbd:` で後ろに空白以外の文字を持つ行内のコードをキーにし、`kbd\:` のものは `\` を外したコードにする */
+/** `kbd` がオンなら、頭が `kbd:` で後ろに空白以外の文字を持つ行内のコードをキーにし、`kbd\:` のものは `\` を削除したコードにする */
 export const buildKbds = (state: StateCore): void => {
   if (!featureOn(state, "kbd")) {
     return;

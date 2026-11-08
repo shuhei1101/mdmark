@@ -1,7 +1,7 @@
 import { type RefCallback, useState } from "react";
 import { createDocumentView, type DocumentView } from "../document-view.ts";
 
-/** `DocumentView` と、描く先の要素の ref のコールバック（`attach`・後始末で `detach`）を 1 回だけ作る。ref が描画ごとに変わると React が後始末を呼び、描いた文書を消すため */
+/** `DocumentView` と、描く先の要素の ref のコールバック（`attach`・後始末で `detach`）を 1 回だけ作る。ref が描画ごとに変わると React が後始末を呼び、描いた文書を削除するため */
 export const useDocumentView = (options: {
   /** 描く先を包む要素 */
   root: HTMLElement;

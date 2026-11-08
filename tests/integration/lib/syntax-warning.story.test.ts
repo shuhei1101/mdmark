@@ -6,26 +6,26 @@ const holder = createBrowserHolder();
 beforeAll(holder.launch);
 afterAll(holder.close);
 
-/** 書き方の警告のストーリーを開く */
+/** 記載の警告のストーリーを開く */
 async function open(id: string) {
   const page = await holder.openStory(`parts-syntaxwarning--${id}`);
   return { page, warning: page.locator(".mdmark-syntax-warning") };
 }
 
-/** 枠が `role="note"` で題が「書き方の警告」、枠が破線であることを確かめる */
+/** 枠が `role="note"` でタイトルが「記載の警告」、枠が破線であることを確認する */
 async function expectFrame(
   warning: import("playwright").Locator,
 ): Promise<void> {
   await expect(warning.getAttribute("role")).resolves.toBe("note");
   await expect(
     warning.locator(".mdmark-syntax-warning-title").innerText(),
-  ).resolves.toBe("書き方の警告");
+  ).resolves.toBe("記載の警告");
   await expect(
     warning.evaluate((el) => getComputedStyle(el).borderTopStyle),
   ).resolves.toBe("dashed");
 }
 
-// 表の印に closed と open を両方書いたときは、印と本文だけを出す（ClosedAndOpen）
+// 表のマーカーに closed と open を両方書いたときは、マーカーと本文だけを出す（ClosedAndOpen）
 test("test_closed_and_open", async () => {
   // 準備・実行
   const { warning } = await open("closed-and-open");
@@ -37,7 +37,7 @@ test("test_closed_and_open", async () => {
   await expect(warning.locator("ul").count()).resolves.toBe(0);
 });
 
-// 機能を足していない表でだけ使えないキーを書いたときは、本文の後に項目を並べる（Items）
+// 機能を追加していない表でだけ使用できないキーを記載したときは、本文の後に項目を並べる（Items）
 test("test_items", async () => {
   // 準備・実行
   const { warning } = await open("items");
@@ -47,7 +47,7 @@ test("test_items", async () => {
   expect(labels).toEqual(["hide=", "total="]);
 });
 
-// 切れた図表の参照は、印を持たず本文だけを出す（BrokenReference）
+// 切れた図表の参照は、マーカーを持たず本文だけを出す（BrokenReference）
 test("test_broken_reference", async () => {
   // 準備・実行
   const { warning } = await open("broken-reference");
@@ -71,7 +71,7 @@ test("test_extension_schema", async () => {
   expect(items[1]?.startsWith("2 つ目の 2:")).toBe(true);
 });
 
-// 印が長く枠の幅を超えても、印が枠の中で折り返し、横スクロールを出さない（LongMark）
+// マーカーが長く枠の幅を超えても、マーカーが枠の中で折り返し、横スクロールを出さない（LongMark）
 test("test_long_mark", async () => {
   // 準備・実行
   const { page, warning } = await open("long-mark");
@@ -84,7 +84,7 @@ test("test_long_mark", async () => {
   await expect(pageOverflows(page)).resolves.toBe(false);
 });
 
-// 用語集の表の印に表に無い列名を書いたときは、列名と表の列を出す（GlossaryColumn）
+// 用語集の表のマーカーに表に無い列名を記載したときは、列名と表の列を出す（GlossaryColumn）
 test("test_glossary_column", async () => {
   // 準備・実行
   const { page, warning } = await open("glossary-column");
@@ -100,7 +100,7 @@ test("test_glossary_column", async () => {
   await expect(pageOverflows(page)).resolves.toBe(false);
 });
 
-// 用語集の表の印に必須の meaning= を書いていないときは、指し方を出す（GlossaryMissingArg）
+// 用語集の表のマーカーに必須の meaning= を記載していないときは、指し方を出す（GlossaryMissingArg）
 test("test_glossary_missing_arg", async () => {
   // 準備・実行
   const { page, warning } = await open("glossary-missing-arg");
@@ -115,7 +115,7 @@ test("test_glossary_missing_arg", async () => {
   await expect(pageOverflows(page)).resolves.toBe(false);
 });
 
-// ビューの印の group= が表に無い列を指すときは、表の列を並べて表で描くことを伝える（ViewGroupColumn）
+// ビューのマーカーの group= が表に無い列を指すときは、表の列を並べて表で描くことを伝える（ViewGroupColumn）
 test("test_view_group_column", async () => {
   // 準備・実行
   const { page, warning } = await open("view-group-column");
@@ -130,7 +130,7 @@ test("test_view_group_column", async () => {
   await expect(pageOverflows(page)).resolves.toBe(false);
 });
 
-// ビューの印の範囲に表が無いときは、表を書くよう伝える（ViewNoTable）
+// ビューのマーカーの範囲に表が無いときは、表を記載するよう伝える（ViewNoTable）
 test("test_view_no_table", async () => {
   // 準備・実行
   const { page, warning } = await open("view-no-table");
@@ -145,7 +145,7 @@ test("test_view_no_table", async () => {
   await expect(pageOverflows(page)).resolves.toBe(false);
 });
 
-// ビューの印の icons= に使えないアイコンを書いたときは、使えるアイコンを並べる（ViewUnknownIcon）
+// ビューのマーカーの icons= に使用できないアイコンを記載したときは、使用できるアイコンを並べる（ViewUnknownIcon）
 test("test_view_unknown_icon", async () => {
   // 準備・実行
   const { page, warning } = await open("view-unknown-icon");
@@ -162,7 +162,7 @@ test("test_view_unknown_icon", async () => {
   await expect(pageOverflows(page)).resolves.toBe(false);
 });
 
-// 新しい記法の書き方の警告を、ほかの警告と同じ枠で出す（IconName・IconNotInLucide・ColumnsCount・IncludeMissing・IncludeCircular・CsvColumns）
+// 新しい記法の記載の警告を、ほかの警告と同じ枠で出す（IconName・IconNotInLucide・ColumnsCount・IncludeMissing・IncludeCircular・CsvColumns）
 test("test_new_syntax_warnings", async () => {
   for (const [id, words] of [
     ["icon-name", ["icon:Rocket!", "Rocket!", "rocket"]],

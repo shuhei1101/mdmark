@@ -7,7 +7,7 @@ import {
   routeLucide,
 } from "../dist-page.ts";
 
-// ビルドした配布物を置いた作業ツリー
+// ビルドした配布物を配置した作業ツリー
 let builtRoot = "";
 
 /** 正常シナリオの 4 項目を囲んだ cards の範囲 */
@@ -130,7 +130,7 @@ test("test_normal", async ({ page }) => {
   expect(exampleRequests()).toBe(0);
 });
 
-// 狭い画面では、カードを書いた順に 1 列に積む（正常シナリオ（狭い画面））
+// 狭い画面では、カードを記載した順に 1 列に追加する（正常シナリオ（狭い画面））
 test("test_normal_when_narrow", async ({ page }) => {
   // 準備
   await page.setViewportSize({ width: 390, height: 844 });
@@ -189,7 +189,7 @@ test("test_normal_when_item_without_link", async ({ page }) => {
   expect(await tabTitles(page, 1)).toEqual(["使い方"]);
 });
 
-// 機能を外した文書は、囲んだリストをリストのまま描く（正常シナリオ（機能を外す））
+// 機能を解除した文書は、囲んだリストをリストのまま描く（正常シナリオ（機能を解除する））
 test("test_normal_when_disabled", async ({ page }) => {
   // 準備
   await routeLucide(page);
@@ -207,7 +207,7 @@ test("test_normal_when_disabled", async ({ page }) => {
   await expect(page.locator("#doc .mdmark-syntax-warning")).toHaveCount(0);
 });
 
-// 範囲の中身がリスト 1 つでないときは、書き方の警告を置いて書いたとおりに描く（異常シナリオ（リスト以外の中身））
+// 範囲の中身がリスト 1 つでないときは、記載の警告を配置して記載したとおりに描く（異常シナリオ（リスト以外の中身））
 test("test_error_when_not_list", async ({ page }) => {
   // 準備
   await openPage(page, builtRoot);

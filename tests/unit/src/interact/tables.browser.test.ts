@@ -7,7 +7,7 @@ const loadTables = () => import("../../../../src/interact/tables.ts");
 
 const detachers: Array<() => void> = [];
 
-/** 名前と値の 3 行の data の表。`filter` を渡すと絞り込みの列を指定する */
+/** 名前と値の 3 行の data の表。`filter` を指定すると絞り込みの列を指定する */
 function dataTable(options: { filter?: string; values: string[] }): string {
   const mark = options.filter
     ? `<!-- table: data filter=${options.filter} -->`
@@ -24,7 +24,7 @@ function dataTable(options: { filter?: string; values: string[] }): string {
   ].join("\n");
 }
 
-/** 表の本文の行（詳細の行と知らせの行を除く） */
+/** 表の本文の行（詳細の行と通知の行を除く） */
 function bodyRows(root: HTMLElement): HTMLTableRowElement[] {
   return [
     ...root.querySelectorAll<HTMLTableRowElement>(
@@ -33,12 +33,12 @@ function bodyRows(root: HTMLElement): HTMLTableRowElement[] {
   ];
 }
 
-/** 表の本文の行の指定した列の文字を、並んだ順に返す */
+/** 表の本文の行の指定した列の文字を、並んだ順に返却する */
 function columnTexts(root: HTMLElement, column: number): string[] {
   return bodyRows(root).map((row) => row.cells[column]?.textContent ?? "");
 }
 
-/** 絞り込みのドロワーの中の、ラベルの文字に合う入力欄を返す */
+/** 絞り込みのドロワーの中の、ラベルの文字に合う入力欄を返却する */
 function findCheckbox(drawer: HTMLElement, text: string): HTMLInputElement {
   const label = [...drawer.querySelectorAll("label")].find((candidate) =>
     candidate.textContent?.includes(text),
@@ -50,7 +50,7 @@ function findCheckbox(drawer: HTMLElement, text: string): HTMLInputElement {
   return control;
 }
 
-/** 絞り込みのボタンを押してドロワーを開き、ボタンとドロワーを返す */
+/** 絞り込みのボタンを押してドロワーを開き、ボタンとドロワーを返却する */
 function openDrawer(root: HTMLElement): {
   button: HTMLButtonElement;
   drawer: HTMLElement;
@@ -80,7 +80,7 @@ function inputFilterText(table: HTMLElement, text: string): void {
   input.dispatchEvent(new Event("input", { bubbles: true }));
 }
 
-/** 表のその列の見出し・本文のセル・集計のセルを返す */
+/** 表のその列の見出し・本文のセル・集計のセルを返却する */
 function columnCells(root: HTMLElement, column: number): HTMLElement[] {
   const head = root.querySelectorAll<HTMLElement>("thead th")[column];
   const cells = bodyRows(root).map((row) => row.cells[column]);
@@ -88,7 +88,7 @@ function columnCells(root: HTMLElement, column: number): HTMLElement[] {
   return [head, ...cells, ...(total ? [total] : [])];
 }
 
-/** 集計の行ごとに、セルの文字を空白を除いてつないだものを、行の順に返す */
+/** 集計の行ごとに、セルの文字を空白を除いてつないだものを、行の順に返却する */
 function totalRowTexts(root: HTMLElement): string[] {
   return [...root.querySelectorAll<HTMLTableRowElement>("tfoot tr")].map(
     (row) =>
@@ -98,14 +98,14 @@ function totalRowTexts(root: HTMLElement): string[] {
   );
 }
 
-/** 集計の行ごとに、セルの文字を空白を除いて返す */
+/** 集計の行ごとに、セルの文字を空白を除いて返却する */
 function totalRowCells(root: HTMLElement): string[][] {
   return [...root.querySelectorAll<HTMLTableRowElement>("tfoot tr")].map(
     (row) => [...row.cells].map((cell) => (cell.textContent ?? "").trim()),
   );
 }
 
-/** `+copy` の data の表（名前 `a`・`b`・`c`、値は渡した順） */
+/** `+copy` の data の表（名前 `a`・`b`・`c`、値は指定した順） */
 function dataTableWithCopy(values: string[]): string {
   return [
     "<!-- table: data +copy -->",
@@ -119,12 +119,12 @@ function dataTableWithCopy(values: string[]): string {
   ].join("\n");
 }
 
-/** 件数の要素の文字を返す */
+/** 件数の要素の文字を返却する */
 function countText(root: HTMLElement): string {
   return root.querySelector(".mdmark-table-count")?.textContent ?? "";
 }
 
-/** 描いた要素から、クラスで探したボタンを返す（無ければ例外） */
+/** 描いた要素から、クラスで探したボタンを返却する（無ければ例外） */
 function findButton(root: HTMLElement, selector: string): HTMLButtonElement {
   const button = root.querySelector<HTMLButtonElement>(selector);
   if (!button) {
@@ -133,7 +133,7 @@ function findButton(root: HTMLElement, selector: string): HTMLButtonElement {
   return button;
 }
 
-/** 要素の中のセレクタに合う要素を返す（無ければ例外） */
+/** 要素の中のセレクタに合う要素を返却する（無ければ例外） */
 function findButtonLike(parent: HTMLElement, selector: string): HTMLElement {
   const element = parent.querySelector<HTMLElement>(selector);
   if (!element) {
@@ -259,7 +259,7 @@ test("test_table_to_tsv_when_cell_has_tab", async () => {
   expect(tsv).toBe("a b\tc d");
 });
 
-// 桁区切りと小数と負の数を読み、空と読めない文字を読まない（正常系）
+// 桁区切りと小数と負の数を読み込み、空と読み込めない文字を読み込まない（正常系）
 test("test_parse_number_cell", async () => {
   // 準備
   const { parseNumberCell } = await loadLogic();
@@ -271,7 +271,7 @@ test("test_parse_number_cell", async () => {
   expect(result).toEqual([1000, 2.5, -3, undefined, undefined, undefined]);
 });
 
-// sum・avg の列の読めない値を重なりを除いて返し、count と空のセルは数えない（正常系）
+// sum・avg の列の読み込めない値を重なりを除いて返却し、count と空のセルは数えない（正常系）
 test("test_find_unreadable_totals", async () => {
   // 準備
   const { findUnreadableTotals } = await loadLogic();
@@ -298,7 +298,7 @@ test("test_find_unreadable_totals", async () => {
   ]);
 });
 
-// 全て読めれば空を返す（正常系）
+// 全て読み込めれば空を返却する（正常系）
 test("test_find_unreadable_totals_when_all_readable", async () => {
   // 準備
   const { findUnreadableTotals } = await loadLogic();
@@ -416,7 +416,7 @@ test("test_sticky_shift_when_no_foot", async () => {
   expect(result).toEqual({ head: 300, foot: 0 });
 });
 
-// 見出し行と集計の行が動ける範囲を返す（正常系）
+// 見出し行と集計の行が動ける範囲を返却する（正常系）
 test("test_sticky_range", async () => {
   // 準備
   const { stickyRange } = await loadLogic();
@@ -446,7 +446,7 @@ test("test_sticky_range", async () => {
   });
 });
 
-// 最後の # の後ろを戻した文字を返す（正常系）
+// 最後の # の後ろを戻した文字を返却する（正常系）
 test("test_row_id_from_hash", async () => {
   // 準備
   const { rowIdFromHash } = await loadLogic();
@@ -481,7 +481,7 @@ test("test_attach_tables_when_sorted", async () => {
   expect(header?.hasAttribute("aria-sort")).toBe(false);
 });
 
-// ドロワーで絞って外し、外の押下で閉じる（正常系）
+// ドロワーで絞って除外し、外の押下で閉じる（正常系）
 test("test_attach_tables_when_filtered", async () => {
   // 準備
   const { attachTables } = await loadTables();
@@ -539,7 +539,7 @@ test("test_attach_tables_when_escape", async () => {
   expect(document.activeElement).toBe(button);
 });
 
-/** 表の本文の最初の行のセルが `position: sticky` かを、列の順に返す */
+/** 表の本文の最初の行のセルが `position: sticky` かを、列の順に返却する */
 function stickyColumns(table: HTMLElement): boolean[] {
   const row = table.querySelector<HTMLTableRowElement>("tbody tr");
   return [...(row?.cells ?? [])].map(
@@ -547,7 +547,7 @@ function stickyColumns(table: HTMLElement): boolean[] {
   );
 }
 
-/** `count` 列の表の Markdown。`mark` を渡すと表の印で囲む */
+/** `count` 列の表の Markdown。`mark` を指定すると表のマーカーで囲む */
 function wideTable(count: number, mark?: string): string[] {
   const headers = Array.from(
     { length: count },
@@ -594,12 +594,12 @@ test("test_attach_tables_when_pinned", async () => {
   // 実行・検証: 2 列目のボタンで 2 列目までを留める
   widePins[1].click();
   expect(stickyColumns(wide).slice(0, 3)).toEqual([true, true, false]);
-  // 実行・検証: もう一度押すと外す
+  // 実行・検証: もう一度押すと削除する
   widePins[1].click();
   expect(stickyColumns(wide).some(Boolean)).toBe(false);
 });
 
-// data-pin の列までを留め、pin の無い表は留めず、幅が広がると留めを外す（正常系）
+// data-pin の列までを留め、pin の無い表は留めず、幅が広がると留めを解除する（正常系）
 test("test_attach_tables_when_pin_specified", async () => {
   // 準備
   addStyles();
@@ -623,7 +623,7 @@ test("test_attach_tables_when_pin_specified", async () => {
   expect(pins[1].getAttribute("aria-pressed")).toBe("true");
   expect(plain.querySelector("button.mdmark-pin")).toBeNull();
   expect(stickyColumns(plain).some(Boolean)).toBe(false);
-  // 実行・検証: 幅が広がると留めを外す
+  // 実行・検証: 幅が広がると留めを解除する
   root.style.width = "2000px";
   await vi.waitFor(() => {
     expect(stickyColumns(pinned).some(Boolean)).toBe(false);
@@ -678,7 +678,7 @@ test("test_attach_tables_when_check_column", async () => {
   expect(writeText).toHaveBeenCalledWith("名前\t必須\na\ttrue\nc\ttrue");
 });
 
-// 外すと document の受け取りが残らない（正常系）
+// 削除すると document の受け取りが残らない（正常系）
 test("test_attach_tables_when_detached", async () => {
   // 準備
   const { attachTables } = await loadTables();
@@ -705,7 +705,7 @@ test("test_attach_tables_when_cell_has_term", async () => {
     "",
     "| 名前 | 値 |",
     "| --- | --- |",
-    "| 印 | 1 |",
+    "| マーカー | 1 |",
     "| 表 | 2 |",
     "",
     "<!-- /table -->",
@@ -714,7 +714,7 @@ test("test_attach_tables_when_cell_has_term", async () => {
     "",
     "| 用語 | 意味 |",
     "| --- | --- |",
-    "| 印 | HTML コメントで書く指定 |",
+    "| マーカー | HTML コメントで記載する指定 |",
     "| 名前 | 見出しの文字 |",
     "",
     "<!-- /glossary -->",
@@ -734,21 +734,23 @@ test("test_attach_tables_when_cell_has_term", async () => {
           label.control.type === "checkbox",
       )
       .map((label) => label.textContent);
-    expect(candidates).toEqual(["印", "表"]);
+    expect(candidates).toEqual(["マーカー", "表"]);
     const buttons = [
       ...root.querySelectorAll<HTMLElement>("thead th button.mdmark-filter"),
     ];
     expect(buttons.map((button) => button.getAttribute("aria-label"))).toEqual([
       "「名前」で絞り込む",
     ]);
-    expect(root.querySelector("tbody td .mdmark-term")?.textContent).toBe("印");
+    expect(root.querySelector("tbody td .mdmark-term")?.textContent).toBe(
+      "マーカー",
+    );
   } finally {
     handle.destroy();
     root.remove();
   }
 });
 
-// 絞り込みに合わせて件数と計算ごとの集計の行を作り直す（正常系）
+// 絞り込みに合わせて件数と計算ごとの集計の行を再作成する（正常系）
 test("test_attach_tables_when_counted", async () => {
   // 準備
   const { attachTables } = await loadTables();
@@ -796,8 +798,8 @@ test("test_attach_tables_when_columns_toggled", async () => {
       "| 名前 | 説明 | 数量 |",
       "| --- | --- | --- |",
       "| りんご | 描画を速くする | 10 |",
-      "| みかん | 印刷を直す | 2 |",
-      "| ぶどう | 描画の崩れを直す | 33 |",
+      "| みかん | 印刷を修正する | 2 |",
+      "| ぶどう | 描画の崩れを修正する | 33 |",
       "",
       "<!-- /table -->",
       "",
@@ -850,12 +852,12 @@ function chooseCopyFormat(root: HTMLElement, format: "markdown" | "tsv"): void {
   ).click();
 }
 
-/** 帯の読み上げの要素の文字を返す */
+/** 帯のスクリーンリーダー向けの要素の文字を返却する */
 function statusText(root: HTMLElement): string {
   return root.querySelector(".mdmark-table-status")?.textContent ?? "";
 }
 
-// 形式のメニューで TSV を選び、表示している行と列を写して 2 秒でボタンを戻す（正常系）
+// 形式のメニューで TSV を選び、表示している行と列をコピーして 2 秒でボタンを戻す（正常系）
 test("test_attach_tables_when_copied", async () => {
   // 準備
   vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] });
@@ -871,8 +873,8 @@ test("test_attach_tables_when_copied", async () => {
       "| 名前 | 説明 | 更新日 |",
       "| --- | --- | --- |",
       "| りんご | 描画を速くする | 2026-10-01 |",
-      "| みかん | 印刷を直す | 2026-10-10 |",
-      "| りんご飴 | 描画の崩れを直す | 2026-10-20 |",
+      "| みかん | 印刷を修正する | 2026-10-10 |",
+      "| りんご飴 | 描画の崩れを修正する | 2026-10-20 |",
       "",
       "<!-- /table -->",
       "",
@@ -892,7 +894,7 @@ test("test_attach_tables_when_copied", async () => {
   // 実行: TSV を選ぶ
   findButton(root, 'button.mdmark-copy-format[data-format="tsv"]').click();
   await vi.advanceTimersByTimeAsync(0);
-  // 検証: メニューを閉じてフォーカスを戻し、写した中身と、写したことの知らせ
+  // 検証: メニューを閉じてフォーカスを戻し、コピーした中身と、コピーしたことの通知
   expect(menu?.hasAttribute("hidden")).toBe(true);
   expect(document.activeElement).toBe(button);
   expect(writeText).toHaveBeenCalledTimes(1);
@@ -1077,7 +1079,7 @@ test("test_attach_tables_when_row_linked", async () => {
   detachers.push(attachTables(root));
   expect(first.querySelector("details")?.hasAttribute("open")).toBe(true);
   expect(targets()).toEqual(["みかん"]);
-  // 実行・検証: 2 つ目の表を絞り込んで #ID を変えると、絞り込みを外して行を強調する
+  // 実行・検証: 2 つ目の表を絞り込んで #ID を変えると、絞り込みを解除して行を強調する
   inputFilterText(second, "ぶどう");
   expect(rowOf(second, "もも").hasAttribute("hidden")).toBe(true);
   location.hash = "#もも";
@@ -1087,14 +1089,14 @@ test("test_attach_tables_when_row_linked", async () => {
   for (const id of ["ぶどう", "もも", "なし"]) {
     expect(rowOf(second, id).hasAttribute("hidden")).toBe(false);
   }
-  // 実行・検証: まとめた HTML の # の形でも行を指す
+  // 実行・検証: まとめた HTML の # の構造でも行を指す
   location.hash = "#/a.md#%E3%81%BF%E3%81%8B%E3%82%93";
   await vi.waitFor(() => {
     expect(targets()).toEqual(["みかん"]);
   });
 });
 
-// 数として読めないセルを持つ列の合計と平均は、絞り込んでも空のままにする（正常系）
+// 数として読み込めないセルを持つ列の合計と平均は、絞り込んでも空のままにする（正常系）
 test("test_attach_tables_when_totals_unreadable", async () => {
   // 準備
   const { attachTables } = await loadTables();
@@ -1122,7 +1124,7 @@ test("test_attach_tables_when_totals_unreadable", async () => {
     ["平均", ""],
     ["件数", "2"],
   ]);
-  // 実行・検証: 読めないセルを隠す絞り込みの後も、合計と平均は空のまま
+  // 実行・検証: 読み込めないセルを隠す絞り込みの後も、合計と平均は空のまま
   inputFilterText(table, "りんご");
   expect(totalRowCells(root)).toEqual([
     ["合計", ""],
@@ -1131,7 +1133,7 @@ test("test_attach_tables_when_totals_unreadable", async () => {
   ]);
 });
 
-// 集計のメニューで計算の行を隠して出し、読み上げで知らせる（正常系）
+// 集計のメニューで計算の行を隠して出し、スクリーンリーダーで通知する（正常系）
 test("test_attach_tables_when_totals_toggled", async () => {
   // 準備
   const { attachTables } = await loadTables();
@@ -1166,13 +1168,13 @@ test("test_attach_tables_when_totals_toggled", async () => {
   toggle.click();
   expect(menu?.hasAttribute("hidden")).toBe(false);
   expect(document.activeElement).toBe(checkbox("sum"));
-  // 実行・検証: 平均のチェックを外すと平均の行が隠れる
+  // 実行・検証: 平均のチェックを解除すると平均の行が隠れる
   checkbox("avg").click();
   expect(avgRow()?.hasAttribute("hidden")).toBe(true);
   expect(toggle.classList.contains("is-active")).toBe(true);
   expect(toggle.textContent).toContain("（1 件を非表示にしています）");
   expect(statusText(root)).toBe("平均の行を隠しました");
-  // 実行・検証: 入れ直すと戻る
+  // 実行・検証: もう一度入れると戻る
   checkbox("avg").click();
   expect(avgRow()?.hasAttribute("hidden")).toBe(false);
   expect(statusText(root)).toBe("平均の行を出しました");
@@ -1184,7 +1186,7 @@ test("test_attach_tables_when_totals_toggled", async () => {
   expect(document.activeElement).toBe(toggle);
 });
 
-// 行へのリンクの印を押すと行の絶対 URL を写し、知らせを 2 秒出す（正常系）
+// 行へのリンクのマーカーを押すと行の絶対 URL をコピーし、通知を 2 秒出す（正常系）
 test("test_attach_tables_when_row_link_copied", async () => {
   // 準備
   vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] });
@@ -1230,14 +1232,14 @@ test("test_attach_tables_when_row_link_copied", async () => {
       ".mdmark-row-link-notice",
     );
     if (!notice) {
-      throw new Error(`知らせの要素が無い: ${id}`);
+      throw new Error(`通知の要素が無い: ${id}`);
     }
     return notice;
   };
-  // 実行: 1 つ目の表の行のリンクを押す（書ける）
+  // 実行: 1 つ目の表の行のリンクを押す（記載できる）
   findButtonLike(rowOf("みかん"), "a.mdmark-row-anchor").click();
   await vi.advanceTimersByTimeAsync(0);
-  // 検証: 解決済みの絶対 URL を写し、知らせを出す
+  // 検証: 解決済みの絶対 URL をコピーし、通知を出す
   expect(writeText).toHaveBeenNthCalledWith(
     1,
     `${base}#${encodeURIComponent("みかん")}`,
@@ -1248,11 +1250,11 @@ test("test_attach_tables_when_row_link_copied", async () => {
   // 実行: 2 つ目の表の行のリンクを押す（拒まれる）
   findButtonLike(rowOf("もも"), "a.mdmark-row-anchor").click();
   await vi.advanceTimersByTimeAsync(0);
-  // 検証: 書けなかったことを知らせ、行へは移る
+  // 検証: 書き込めなかったことを通知し、行へは移る
   expect(noticeOf("もも").dataset.state).toBe("failed");
   expect(noticeOf("もも").textContent).toBe("リンクをコピーできませんでした");
   expect(rowOf("もも").hasAttribute("data-target")).toBe(true);
-  // 実行・検証: 2 秒たつと知らせが空になり、状態も外れる
+  // 実行・検証: 2 秒たつと通知が空になり、状態も削除される
   await vi.advanceTimersByTimeAsync(2000);
   for (const id of ["みかん", "もも"]) {
     expect(noticeOf(id).textContent).toBe("");
@@ -1266,7 +1268,7 @@ const FOLDABLE_TABLE = [
   "| --- | --- | --- |",
   "| りんご | 新規 | 描画を速くするために、見出しの ID を作る処理を 1 回にまとめる改善の説明 |",
   "| みかん | 進行 | 印刷で折り畳みを開き、リンクの URL を併記して紙に収める変更の説明 |",
-  "| ぶどう | 完了 | 表の見出し行を画面の上端に留めて、縦に長い表を読みやすくする変更の説明 |",
+  "| ぶどう | 完了 | 表の見出し行を画面の上端に留めて、縦に長い表を読み込みやすくする変更の説明 |",
   "",
 ].join("\n");
 
@@ -1276,7 +1278,7 @@ function setRootWidth(root: HTMLElement, width: number): void {
   root.style.width = `${width}px`;
 }
 
-// 狭い幅で折り返す最終列を畳み、開閉し、広げると畳みを外す（正常系）
+// 狭い幅で折り返す最終列を畳み、開閉し、広げると畳みを削除する（正常系）
 test("test_attach_tables_when_folded", async () => {
   // 準備
   addStyles();
@@ -1309,7 +1311,7 @@ test("test_attach_tables_when_folded", async () => {
   expect(detail?.classList.contains("mdmark-fold-detail")).toBe(true);
   expect(detail?.hasAttribute("hidden")).toBe(false);
   expect(detail?.querySelector(".mdmark-fold-name")?.textContent).toBe("説明");
-  // 実行・検証: 幅を広げると畳みを外す
+  // 実行・検証: 幅を広げると畳みを削除する
   setRootWidth(root, 800);
   await vi.waitFor(() => {
     expect(folded.classList.contains("is-folded")).toBe(false);
@@ -1318,7 +1320,7 @@ test("test_attach_tables_when_folded", async () => {
   expect(folded.querySelector(".mdmark-fold-detail")).toBeNull();
 });
 
-// 行の詳細を持つ行は、詳細の中身の上に最終列を置いて詳細のボタンだけで開閉する（正常系）
+// 行の詳細を持つ行は、詳細の中身の上に最終列を配置して詳細のボタンだけで開閉する（正常系）
 test("test_attach_tables_when_folded_with_row_detail", async () => {
   // 準備
   addStyles();
@@ -1351,7 +1353,7 @@ test("test_attach_tables_when_folded_with_row_detail", async () => {
   expect(detail?.hasAttribute("hidden")).toBe(false);
 });
 
-// テーブル設定で最終列を隠すと畳みを外し、前の列を最終列として決め直す（正常系）
+// テーブル設定で最終列を隠すと畳みを削除し、前の列を最終列としてもう一度決める（正常系）
 test("test_attach_tables_when_fold_column_hidden", async () => {
   // 準備
   addStyles();
@@ -1367,7 +1369,7 @@ test("test_attach_tables_when_fold_column_hidden", async () => {
   });
   // 実行: テーブル設定で説明を目のアイコンで隠す
   columnEyes(root)[2]?.click();
-  // 検証: 畳みを外し、説明の列を隠す
+  // 検証: 畳みを削除し、説明の列を隠す
   await vi.waitFor(() => {
     expect(table?.classList.contains("is-folded")).toBe(false);
   });
@@ -1385,7 +1387,7 @@ function nextFrames(): Promise<void> {
   });
 }
 
-// 行の詳細の中の表の要素を、親の表の操作が拾わない（正常系）
+// 行の詳細の中の表の要素を、親の表の操作が取得しない（正常系）
 test("test_attach_tables_when_nested_table", async () => {
   // 準備
   addStyles();
@@ -1431,7 +1433,7 @@ test("test_attach_tables_when_nested_table", async () => {
   if (!parent || !nested || !parentHead) {
     throw new Error("親の表か中の表が無い");
   }
-  // 実行: 付けた後に描く先の要素の幅を変え、続けて親の表の囲みの幅だけを変えて、親の表の `ResizeObserver` にピン止めのボタンの表示を最後に決め直させる
+  // 実行: 付けた後に描く先の要素の幅を変え、続けて親の表の囲みの幅だけを変えて、親の表の `ResizeObserver` にピン止めのボタンの表示を最後にもう一度決めせる
   setRootWidth(root, 300);
   await nextFrames();
   parent.style.width = "250px";
@@ -1468,7 +1470,7 @@ test("test_attach_tables_when_nested_table", async () => {
   );
   expect(nestedDrawers).toHaveLength(1);
   expect(nestedDrawers[0].hasAttribute("hidden")).toBe(true);
-  // 検証: 中の表の囲みに親の表のドロワーが置かれない
+  // 検証: 中の表の囲みに親の表のドロワーが配置されない
   expect(nested.querySelector(`[id="${controls}"]`)).toBeNull();
 });
 
@@ -1530,7 +1532,7 @@ test("test_attach_tables_when_nested_table_sorted", async () => {
   }
 });
 
-/** 見出しが 2 段で、分類の列を `^^` で結合した表（数値は上から `3`・`1`・`4`・`2`） */
+/** 見出しが 2 行で、分類の列を `^^` で結合した表（数値は上から `3`・`1`・`4`・`2`） */
 const MERGED_TABLE = [
   "<!-- table: data header-rows=2 filter=分類 +copy -->",
   "",
@@ -1546,7 +1548,7 @@ const MERGED_TABLE = [
   "",
 ].join("\n");
 
-// 最下段の見出しにボタンを置き、並べ替え・絞り込みの後に結合し直す（正常系）
+// 最下段の見出しにボタンを配置し、並べ替え・絞り込みの後にもう一度結合する（正常系）
 test("test_attach_tables_when_merged_sorted", async () => {
   // 準備
   const writeText = vi.fn<(text: string) => Promise<void>>(() =>
@@ -1561,7 +1563,7 @@ test("test_attach_tables_when_merged_sorted", async () => {
     headRows[1]?.cells[1]?.querySelector<HTMLButtonElement>(
       "button.mdmark-sort",
     );
-  // 検証: ボタンは 2 段目の th にだけある
+  // 検証: ボタンは 2 行目の th にだけある
   expect(headRows[0]?.querySelector("button")).toBeNull();
   expect(sortButton).toBeTruthy();
   // 実行: 数値の列を降順に並べ替える
@@ -1575,7 +1577,7 @@ test("test_attach_tables_when_merged_sorted", async () => {
   // 実行: 分類を A に絞り込む
   const { drawer } = openDrawer(root);
   findCheckbox(drawer, "A").click();
-  // 検証: A の 2 行を出し、1 行目の分類のセルを結合し直す
+  // 検証: A の 2 行を出し、1 行目の分類のセルをもう一度結合する
   const visible = bodyRows(root).filter((row) => !row.hidden);
   expect(visible).toHaveLength(2);
   expect(visible[0]?.cells[0]?.getAttribute("rowspan")).toBe("2");
@@ -1675,7 +1677,7 @@ test("test_move_column", async () => {
   expect(order).toEqual([0, 1, 2, 3]);
 });
 
-// 縦に結合したセルと 2 段目のセルを選ぶ（正常系）
+// 縦に結合したセルと 2 行目のセルを選ぶ（正常系）
 test("test_bottom_head_cells", async () => {
   // 準備
   const { bottomHeadCells } = await loadLogic();
@@ -1749,7 +1751,7 @@ test("test_merge_spans_when_left_breaks", async () => {
   ]);
 });
 
-/** `+columns` の表の Markdown（列 `名前`・`状態`・`説明`）。`hide` を渡すと最初から隠す列を指定する */
+/** `+columns` の表の Markdown（列 `名前`・`状態`・`説明`）。`hide` を指定すると最初から隠す列を指定する */
 function columnsTable(hide?: string): string {
   return [
     hide
@@ -1766,7 +1768,7 @@ function columnsTable(hide?: string): string {
   ].join("\n");
 }
 
-/** テーブル設定のパネルを開き、列ごとの目のアイコンを返す */
+/** テーブル設定のパネルを開き、列ごとの目のアイコンを返却する */
 function columnEyes(wrapper: HTMLElement): HTMLButtonElement[] {
   findButton(wrapper, "button.mdmark-table-settings-toggle").click();
   return [
@@ -1776,7 +1778,7 @@ function columnEyes(wrapper: HTMLElement): HTMLButtonElement[] {
   ];
 }
 
-// 階層の表のコピーに畳んだ行を含め、キーを全体のパスで書き、補った行を含めない（正常系）
+// 階層の表のコピーに畳んだ行を含め、キーを全体のパスで記載し、補った行を含めない（正常系）
 test("test_attach_tables_when_tree_copied", async () => {
   // 準備
   const writeText = vi.fn<(text: string) => Promise<void>>(() =>
@@ -1813,7 +1815,7 @@ test("test_attach_tables_when_tree_copied", async () => {
   );
 });
 
-// 列の表示を切り替えるたびに、表の番号と隠している列の見出しで知らせる（正常系）
+// 列の表示を切り替えるたびに、表の番号と隠している列の見出しで通知する（正常系）
 test("test_attach_tables_when_columns_notified", async () => {
   // 準備: 1 つ目は削除したブロックの中、2 つ目は 3 列目を隠した表、3 つ目は隠していない表
   const { attachTables } = await loadTables();
@@ -1831,7 +1833,7 @@ test("test_attach_tables_when_columns_notified", async () => {
     throw new Error("3 つ目の表が無い");
   }
   const onColumnsChange = vi.fn();
-  // 実行・検証: 付けた時点では知らせない
+  // 実行・検証: 付けた時点では通知しない
   detachers.push(attachTables(root, { onColumnsChange }));
   expect(onColumnsChange).not.toHaveBeenCalled();
   // 実行・検証: 3 つ目の表のテーブル設定で `状態` を目のアイコンで隠す
@@ -1850,12 +1852,12 @@ test("test_attach_tables_when_columns_notified", async () => {
   expect(onColumnsChange).toHaveBeenCalledTimes(2);
 });
 
-// 知らせが例外を投げても列の表示を切り替える（異常系）
+// 通知が例外を投げても列の表示を切り替える（異常系）
 test("test_attach_tables_when_columns_callback_throws", async () => {
   // 準備
   const { attachTables } = await loadTables();
   const { root } = createRoot(columnsTable());
-  const error = new Error("知らせの失敗");
+  const error = new Error("通知の失敗");
   const onColumnsChange = vi.fn(() => {
     throw error;
   });
@@ -1883,7 +1885,7 @@ function badgeText(root: HTMLElement): string | null {
   return badge && !badge.hidden ? (badge.textContent ?? "") : null;
 }
 
-/** テーブル設定のボタンの読み上げの名前 */
+/** テーブル設定のボタンのスクリーンリーダー向けの名前 */
 function toggleName(root: HTMLElement): string {
   return (
     root
@@ -1900,7 +1902,7 @@ function clickEye(root: HTMLElement, column: number): void {
   ).click();
 }
 
-// 列の表示を切り替えるたびにバッジと読み上げの名前を書き換える（正常系）
+// 列の表示を切り替えるたびにバッジとスクリーンリーダー向けの名前を書き換える（正常系）
 test("test_attach_tables_when_columns_badge", async () => {
   // 準備
   const { attachTables } = await loadTables();
@@ -1911,7 +1913,7 @@ test("test_attach_tables_when_columns_badge", async () => {
       "| 名前 | 説明 | 更新日 |",
       "| --- | --- | --- |",
       "| りんご | 描画を速くする | 2026-10-01 |",
-      "| みかん | 印刷を直す | 2026-10-10 |",
+      "| みかん | 印刷を修正する | 2026-10-10 |",
       "",
       "<!-- /table -->",
       "",
@@ -1937,7 +1939,7 @@ test("test_attach_tables_when_columns_badge", async () => {
   expect(badgeText(root)).toBe("1");
 });
 
-// 包む要素がはみ出す間だけピン止めを当てる（正常系）
+// 包む要素がはみ出す間だけピン止めを適用する（正常系）
 test("test_attach_tables_when_scroll_wrapper", async () => {
   // 準備
   addStyles();

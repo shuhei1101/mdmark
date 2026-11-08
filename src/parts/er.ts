@@ -39,7 +39,7 @@ export function erRestText(hidden: number): string {
   return `非表示 ${hidden} 列`;
 }
 
-/** 定義の文字から `{{`・`}}` を除く（読み上げの名前とツールチップの題に使う） */
+/** 定義の文字から `{{`・`}}` を除く（スクリーンリーダー向けの名前とツールチップのタイトルに使用する） */
 export function plainDefinitionText(value: string): string {
   return value.replace(/\{\{(.+?)\}\}/g, "$1");
 }

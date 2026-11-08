@@ -1,7 +1,7 @@
 import { setupWorker } from "msw/browser";
 import { test as base } from "vitest";
 
-/** MSW の Service Worker（ハンドラは各テストが `worker.use` で足す） */
+/** MSW の Service Worker（ハンドラは各テストが `worker.use` で追加する） */
 const worker = setupWorker();
 
 /** MSW の Service Worker をテストの間だけ動かす `test`（MSW の Vitest Browser Mode の構成） */

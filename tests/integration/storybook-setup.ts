@@ -14,16 +14,16 @@ declare module "vitest" {
 const REPO_ROOT = resolve(import.meta.dirname, "../..");
 // 待受の host
 const HOST = "127.0.0.1";
-// Storybook が応答するまで待つ上限（ミリ秒）と、確かめる間隔
+// Storybook が応答するまで待つ上限（ミリ秒）と、確認する間隔
 const READY_TIMEOUT_MS = 180_000;
 const POLL_INTERVAL_MS = 1_000;
-// 立てる試行の上限
+// 起動する試行の上限
 const START_ATTEMPTS = 3;
 
 /** 空いているポートを、互いに違うものとして count 個返す */
 async function findFreePorts(count: number): Promise<number[]> {
   const servers = Array.from({ length: count }, () => createServer());
-  // 全て待ち受けてから閉じ、同じポートを返さない
+  // 全て待ち受けてから閉じ、同じポートを返却しない
   await Promise.all(
     servers.map(
       (server) => new Promise<void>((done) => server.listen(0, HOST, done)),
@@ -44,7 +44,7 @@ async function findFreePorts(count: number): Promise<number[]> {
   return ports;
 }
 
-/** 子プロセスを自分のプロセスグループで起こし、出力を集める */
+/** 子プロセスを自分のプロセスグループで発生させ、出力を集める */
 function start(
   command: string,
   args: string[],
@@ -69,7 +69,7 @@ function stop(child: ChildProcess): void {
   }
 }
 
-/** Storybook の索引が 200 を返すまで待つ。子プロセスが先に終わったら出力を添えて失敗する */
+/** Storybook の索引が 200 を返却するまで待つ。子プロセスが先に終わったら出力を添えて失敗する */
 async function waitUntilReady(
   url: string,
   storybook: { child: ChildProcess; output: () => string },
@@ -91,7 +91,7 @@ async function waitUntilReady(
   throw new Error(`Storybook が時間内に立たなかった:\n${storybook.output()}`);
 }
 
-/** 部品の描画の口と Storybook を空きポートで立て、立った Storybook の URL と止める関数を返す */
+/** 部品の描画のインターフェースと Storybook を空きポートで起動し、立った Storybook の URL と止める関数を返却する */
 async function startOnce(): Promise<{ url: string; stopAll: () => void }> {
   const [renderPort, storybookPort] = await findFreePorts(2);
   const url = `http://${HOST}:${storybookPort}`;
@@ -126,9 +126,9 @@ async function startOnce(): Promise<{ url: string; stopAll: () => void }> {
   return { url, stopAll };
 }
 
-/** 部品の描画の口と Storybook の開発サーバーを立て、閲覧 URL をテストへ渡す */
+/** 部品の描画のインターフェースと Storybook の開発サーバーを起動し、閲覧 URL をテストへ指定する */
 export default async function setup(project: TestProject) {
-  // 起動に時間がかかる間に他のプロセスがポートを取ることがあるため、立たなければポートを選び直す
+  // 起動に時間がかかる間に他のプロセスがポートを取ることがあるため、立たなければポートをもう一度選ぶ
   for (let attempt = 1; ; attempt++) {
     try {
       const { url, stopAll } = await startOnce();

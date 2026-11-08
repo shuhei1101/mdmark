@@ -11,7 +11,7 @@
   <link rel="stylesheet" href="../../refs/16/assets/sample.css">
   <!-- 採用スタイル本体の変数の値 -->
   <link rel="stylesheet" href="../../assets/style.css">
-  <!-- 拡張記法の規則（書き方の警告）とカタログの並べ方（#19 で共有するアセット） -->
+  <!-- 拡張記法の規則（記載の警告）とカタログの並べ方（#19 で共有するアセット） -->
   <link rel="stylesheet" href="../../refs/19/assets/syntax.css">
   <link rel="stylesheet" href="../../refs/19/assets/catalog.css">
   <!-- 用語のツールチップの規則（#27 で共有するアセット） -->
@@ -24,14 +24,14 @@
   <link rel="stylesheet" href="./style.css">
   <!-- 図の定義の見本と、図を描いて操作を付けるスクリプト（#42 で共有するアセット） -->
   <script src="../../refs/42/assets/samples.js" defer></script>
-  <!-- #308 で追加するグループの hint・縦に長い図・種類が 1 つずつの図の定義の見本（diagram.js の前に読む） -->
+  <!-- #308 で追加するグループの hint・縦に長い図・種類が 1 つずつの図の定義の見本（diagram.js の前に読み込む） -->
   <script src="../../refs/308/assets/samples.js" defer></script>
   <script src="../../refs/42/assets/diagram.js" defer></script>
 </head>
 <body>
   <!-- モック専用の操作列: 配色の切り替え -->
   <div class="mock-bar">
-    <!-- [data-scheme-set]: sample.js が押されたボタンの値を html の data-scheme に当てる -->
+    <!-- [data-scheme-set]: sample.js が押されたボタンの値を html の data-scheme に適用する -->
     <div class="mock-bar-group" role="group" aria-label="配色">
       <button class="mock-bar-item" type="button" data-scheme-set="light" aria-pressed="false">明るい配色</button>
       <button class="mock-bar-item" type="button" data-scheme-set="dark" aria-pressed="false">ダーク</button>
@@ -46,20 +46,20 @@
       <section aria-labelledby="state-default">
         <h2 class="catalog-label" id="state-default">通常（枠と 3 層・外部のシステム・線の種類・線の交差・ループの戻り）</h2>
         <article class="mdmark">
-          <!-- [data-mock-diagram]: diagram.js が samples.js の同じ名前の定義から図を描く（実装では文書に書いた部品の定義を mount が読む） -->
+          <!-- [data-mock-diagram]: diagram.js が samples.js の同じ名前の定義から図を描く（実装では文書に記載した部品の定義を mount が読み込む） -->
           <figure data-mock-diagram="inquiry"></figure>
         </article>
       </section>
 
-      <!-- 長文: 題・箱の名前・補足が長いとき。題は折り返し、箱の中の文字は箱の幅で折り返す -->
+      <!-- 長文: タイトル・ノードの名前・補足が長いとき。タイトルは折り返し、ノードの中の文字はノードの幅で折り返す -->
       <section aria-labelledby="state-long">
-        <h2 class="catalog-label" id="state-long">長い題と箱の名前（折り返す）</h2>
+        <h2 class="catalog-label" id="state-long">長いタイトルとノードの名前（折り返す）</h2>
         <article class="mdmark">
           <figure data-mock-diagram="long-names"></figure>
         </article>
       </section>
 
-      <!-- 判定フローチャート: 開始は円・質問は菱形・アクションは角の丸くない四角・結果は両端の丸いノード。上から下へ置き、質問から出る線に YES・NO。凡例には図に出る 4 種類だけ -->
+      <!-- 判定フローチャート: 開始は円・質問は菱形・アクションは角の丸くない四角・結果は両端の丸いノード。上から下へ配置し、質問から出る線に YES・NO。凡例には図に出る 4 種類だけ -->
       <section aria-labelledby="state-judgement">
         <h2 class="catalog-label" id="state-judgement">判定フローチャート（開始・質問・アクション・結果と YES / NO の線）</h2>
         <article class="mdmark">
@@ -69,13 +69,13 @@
 
       <!-- 判定フローチャートの長い文: 質問の菱形を大きくし、文字は菱形に内接する中央の四角で文節ごとに折り返す -->
       <section aria-labelledby="state-judgement-long">
-        <h2 class="catalog-label" id="state-judgement-long">判定フローチャートの長い題と文（菱形を大きくして折り返す）</h2>
+        <h2 class="catalog-label" id="state-judgement-long">判定フローチャートの長いタイトルと文（菱形を大きくして折り返す）</h2>
         <article class="mdmark">
           <figure data-mock-diagram="judgement-long"></figure>
         </article>
       </section>
 
-      <!-- 判定フローチャートの説明: hint を持つ質問のノードは、菱形の右の端の中の印でツールチップを開く -->
+      <!-- 判定フローチャートの説明: hint を持つ質問のノードは、菱形の右の端の中のマーカーでツールチップを開く -->
       <section aria-labelledby="state-judgement-tip">
         <h2 class="catalog-label" id="state-judgement-tip">質問のノードの説明のツールチップ（開いた状態）</h2>
         <article class="mdmark">
@@ -83,17 +83,17 @@
         </article>
       </section>
 
-      <!-- 座標を省いた判定フローチャート（#272）: 定義に x・y・w・h と線の points・図の width・height を書かず、mdmark が配置した結果。
-           開始から上から下へ質問を並べ、次の質問へ続く側を下、アクションと結果へ進む側を右へ置く。両方が結果なら NO を下、YES を右へ置く -->
+      <!-- 座標を省いた判定フローチャート（#272）: 定義に x・y・w・h と線の points・図の width・height を記載せず、mdmark が配置した結果。
+           開始から上から下へ質問を並べ、次の質問へ続く側を下、アクションと結果へ進む側を右へ配置する。両方が結果なら NO を下、YES を右へ配置する -->
       <section aria-labelledby="state-judgement-auto">
         <h2 class="catalog-label" id="state-judgement-auto">座標を省いた判定フローチャート（自動で配置した結果）</h2>
         <article class="mdmark">
 <pre tabindex="0" aria-label="座標を省いた判定フローチャートの定義"><code>{ "title": "問い合わせの返信の判定", "scope": "問い合わせを受け取ったとき", "updated": "2026-11-04",
   "nodes": [
     { "id": "start", "kind": "start", "name": "問い合わせを受け取る" },
-    { "id": "q1", "kind": "question", "name": "よくある質問で答えられるか" },
+    { "id": "q1", "kind": "question", "name": "よくある質問で回答できるか" },
     { "id": "a1", "kind": "action", "name": "よくある質問のリンクを添える" },
-    { "id": "q2", "kind": "question", "name": "担当者が答えられるか" },
+    { "id": "q2", "kind": "question", "name": "担当者が回答できるか" },
     { "id": "r1", "kind": "result", "name": "返信を送信する" },
     { "id": "r2", "kind": "result", "name": "開発に起票する" } ],
   "wires": [
@@ -107,7 +107,7 @@
         </article>
       </section>
 
-      <!-- リンク先を持つノード（#310）: 箱の全体がリンク。名前は本文のリンクと同じ色と下線、文字の上も押せる形のカーソル。リンク先を持たない箱は今のまま -->
+      <!-- リンク先を持つノード（#310）: ノードの全体がリンク。名前は本文のリンクと同じ色と下線、文字の上も押せる構造のカーソル。リンク先を持たないノードは今のまま -->
       <section aria-labelledby="state-link">
         <h2 class="catalog-label" id="state-link">リンク先を持つノード（受け取る・分類するがリンク。記録するはリンク先を持たない）</h2>
         <article class="mdmark">
@@ -115,7 +115,7 @@
         </article>
       </section>
 
-      <!-- リンク先を持つノードのホバーとフォーカス: ホバーは箱の地に種類の色をうっすら敷く。フォーカスは箱の外側に枠 -->
+      <!-- リンク先を持つノードのホバーとフォーカス: ホバーはノードの地に種類の色をうっすら敷く。フォーカスはノードの外側に枠 -->
       <section aria-labelledby="state-link-hover">
         <h2 class="catalog-label" id="state-link-hover">リンク先を持つノードのホバー（受け取る）とフォーカス（分類する）</h2>
         <article class="mdmark">
@@ -123,30 +123,30 @@
         </article>
       </section>
 
-      <!-- 許可しないリンク先（#310）: javascript: と id: のリンク先は本文のリンクと同じ許可で落とし、箱をリンクにせず書き方の警告を出す -->
+      <!-- 許可しないリンク先（#310）: javascript: と id: のリンク先は本文のリンクと同じ許可で落とし、ノードをリンクにせず記載の警告を出す -->
       <section aria-labelledby="state-link-blocked">
-        <h2 class="catalog-label" id="state-link-blocked">許可しないリンク先（書き方の警告。箱はリンクにしない）</h2>
+        <h2 class="catalog-label" id="state-link-blocked">許可しないリンク先（記載の警告。ノードはリンクにしない）</h2>
         <article class="mdmark">
 <div class="mdmark-syntax-warning">
-  <p class="mdmark-syntax-warning-title"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg>書き方の警告</p>
-  <p>フロー図の部品の定義のリンク先を使えません。箱 <code>recv</code> のリンク先 <code>javascript:alert(1)</code>、箱 <code>classify</code> のリンク先 <code>id:spec#items</code> は、<code>http</code>・<code>https</code>・<code>mailto</code>・相対パスではありません。この 2 つの箱はリンクにせずに描いています。</p>
+  <p class="mdmark-syntax-warning-title"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg>記載の警告</p>
+  <p>フロー図の部品の定義のリンク先を使用できません。ノード <code>recv</code> のリンク先 <code>javascript:alert(1)</code>、ノード <code>classify</code> のリンク先 <code>id:spec#items</code> は、<code>http</code>・<code>https</code>・<code>mailto</code>・相対パスではありません。この 2 つのノードはリンクにせずに描いています。</p>
 </div>
           <figure data-mock-diagram="linked-blocked"></figure>
         </article>
       </section>
 
-      <!-- 知らない種類: 書き方の警告の「使える種類」に、追加した 4 種類が並ぶ -->
+      <!-- 知らない種類: 記載の警告の「使用できる種類」に、追加した 4 種類が並ぶ -->
       <section aria-labelledby="state-unknown-kind">
-        <h2 class="catalog-label" id="state-unknown-kind">知らない種類（書き方の警告の使える種類に追加した種類が並ぶ）</h2>
+        <h2 class="catalog-label" id="state-unknown-kind">知らない種類（記載の警告の使用できる種類に追加した種類が並ぶ）</h2>
         <article class="mdmark">
 <div class="mdmark-syntax-warning">
-  <p class="mdmark-syntax-warning-title"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg>書き方の警告</p>
-  <p>フロー図の部品の定義を読めません。箱「全ての使う側の既定を変える見た目か」の種類 decision は使えません。使える種類は llm・dm・script・mcp・data・external・start・question・action・result です。この図は描いていません。</p>
+  <p class="mdmark-syntax-warning-title"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg>記載の警告</p>
+  <p>フロー図の部品の定義を読み込めません。ノード「全ての利用側の既定を変える外観か」の種類 decision は使用できません。使用できる種類は llm・dm・script・mcp・data・external・start・question・action・result です。この図は描いていません。</p>
 </div>
         </article>
       </section>
 
-      <!-- 種類の色: 全テーマのライト・ダークの値。既存の種類の色と同じ値を使い、テーマの地に対して 4.5:1 以上 -->
+      <!-- 種類の色: 全テーマのライト・ダークの値。既存の種類の色と同じ値を使用し、テーマの地に対して 4.5:1 以上 -->
       <section aria-labelledby="state-kind-colors">
         <h2 class="catalog-label" id="state-kind-colors">判定フローチャートの種類の色（全テーマのライト・ダーク）</h2>
           <div class="kind-colors-scroll" tabindex="0" role="region" aria-label="判定フローチャートの種類の色">
@@ -166,13 +166,13 @@
           </div>
       </section>
 
-      <!-- 定義を読めない: JSON として読めない部品の定義の場所に書き方の警告を出し、ほかの図と段落は描く -->
+      <!-- 定義を読み込めない: JSON として読み込めない部品の定義の場所に記載の警告を出し、ほかの図と段落は描く -->
       <section aria-labelledby="state-invalid">
-        <h2 class="catalog-label" id="state-invalid">定義を読めない（書き方の警告。ほかの図と段落は描く）</h2>
+        <h2 class="catalog-label" id="state-invalid">定義を読み込めない（記載の警告。ほかの図と段落は描く）</h2>
         <article class="mdmark">
 <div class="mdmark-syntax-warning">
-  <p class="mdmark-syntax-warning-title"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg>書き方の警告</p>
-  <p>フロー図の部品の定義を JSON として読めません（12 行目の <code>"label": "本文",</code> の後に閉じの <code>}</code> がありません）。この図は描いていません。</p>
+  <p class="mdmark-syntax-warning-title"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg>記載の警告</p>
+  <p>フロー図の部品の定義を JSON として読み込めません（12 行目の <code>"label": "本文",</code> の後に閉じの <code>}</code> がありません）。この図は描いていません。</p>
 </div>
 <p>受け取った問い合わせは、分類で返信の種類を決めてから下書きに回します。</p>
           <figure data-mock-diagram="long-names"></figure>

@@ -32,7 +32,7 @@ function glossaryDocument(rows: Array<[string, string]>): string {
   ].join("\n");
 }
 
-// ずれの無い索引と文書で空の一覧を返す（正常系）
+// ずれの無い索引と文書で空の一覧を返却する（正常系）
 test("test_normal", async () => {
   // 準備
   const { checkIndex } = await loadBuilt();
@@ -48,13 +48,13 @@ test("test_normal", async () => {
           {
             to: "arch",
             type: "requires",
-            when: "API の前提の構成を確かめるとき",
+            when: "API の前提の構成を確認するとき",
           },
         ],
       },
     ],
     terms: [
-      { id: "ws", term: "ワークスペース", meaning: "記録を置くフォルダ" },
+      { id: "ws", term: "ワークスペース", meaning: "記録を配置するフォルダ" },
     ],
   };
   const documents = { "arch.md": "# アーキテクチャ\n", "api.md": "# API\n" };
@@ -64,7 +64,7 @@ test("test_normal", async () => {
   expect(issues).toEqual([]);
 });
 
-// 正規化すると同じになる用語の語・別名を用語の重複に、表記の違うやめた言い方を本文のずれにする（正常系）
+// 正規化すると同じになる用語の単語・別名を用語の重複に、表記の違うやめた言い方を本文のずれにする（正常系）
 test("test_normal_when_normalized_words", async () => {
   // 準備
   const { checkIndex } = await loadBuilt();
@@ -77,12 +77,12 @@ test("test_normal_when_normalized_words", async () => {
         id: "mcp-kana",
         term: "エムシーピー",
         aliases: ["ｍｃｐ"],
-        meaning: "MCP の読み",
+        meaning: "MCP の読み込み",
       },
       {
         id: "ws",
         term: "ワークスペース",
-        meaning: "記録を置くフォルダ",
+        meaning: "記録を配置するフォルダ",
         avoid: ["workplace"],
       },
     ],
@@ -107,7 +107,7 @@ test("test_normal_when_normalized_words", async () => {
   expect(issues[1]?.message).toContain("ワークスペース");
 });
 
-// 消えた文書・索引に無い文書・切れた id・用語の重複を返す（正常系）
+// 消えた文書・索引に無い文書・切れた id・用語の重複を返却する（正常系）
 test("test_normal_when_drift", async () => {
   // 準備
   const { checkIndex } = await loadBuilt();
@@ -119,11 +119,11 @@ test("test_normal_when_drift", async () => {
         path: "api.md",
         title: "API",
         related: [
-          { to: "gone", type: "references", when: "使い方を確かめるとき" },
+          { to: "gone", type: "references", when: "使用方法を確認するとき" },
         ],
       },
       { id: "old", path: "old.md", title: "旧" },
-      { id: "guide", path: "guide.md", title: "使い方" },
+      { id: "guide", path: "guide.md", title: "使用方法" },
     ],
     terms: [
       { id: "ws1", term: "ワークスペース", meaning: "一つ目" },
@@ -133,9 +133,9 @@ test("test_normal_when_drift", async () => {
   const documents = {
     "api.md": glossaryDocument([
       ["ワークスペース", "索引と重なる"],
-      ["印", "HTML コメントで書く指定"],
+      ["マーカー", "HTML コメントで記載する指定"],
     ]),
-    "guide.md": glossaryDocument([["印", "api.md と重なる"]]),
+    "guide.md": glossaryDocument([["マーカー", "api.md と重なる"]]),
     "new.md": "# 新しい文書\n",
   };
   // 実行
@@ -170,7 +170,7 @@ test("test_normal_when_drift", async () => {
   expect(ranks).toEqual([...ranks].sort((a, b) => a - b));
 });
 
-// 本文に出た用語のやめた言い方を、行とやめた言い方の組ごとに avoided_term で返す（正常系）
+// 本文に出た用語のやめた言い方を、行とやめた言い方の組ごとに avoided_term で返却する（正常系）
 test("test_normal_when_avoided_term", async () => {
   // 準備
   const { checkIndex } = await loadBuilt();
@@ -181,7 +181,7 @@ test("test_normal_when_avoided_term", async () => {
       {
         id: "ws",
         term: "ワークスペース",
-        meaning: "話し合いの記録を置くフォルダ",
+        meaning: "話し合いの記録を配置するフォルダ",
         avoid: ["作業場"],
       },
     ],
@@ -190,12 +190,12 @@ test("test_normal_when_avoided_term", async () => {
   const guide = [
     "# 作業場の手引き",
     "",
-    "作業場を開き、作業場に記録を置く。",
+    "作業場を開き、作業場に記録を配置する。",
     "",
     "`作業場`",
     "",
     "ワークスペースを閉じる前に",
-    "作業場の記録を確かめる。",
+    "作業場の記録を確認する。",
     "",
     "| 項目 | 内容 |",
     "| --- | --- |",
@@ -218,7 +218,7 @@ test("test_normal_when_avoided_term", async () => {
   }
 });
 
-// 用語集の表のやめた言い方を、表を持たない文書の本文からも avoided_term で返す（正常系）
+// 用語集の表のやめた言い方を、表を持たない文書の本文からも avoided_term で返却する（正常系）
 test("test_normal_when_glossary_avoided_term", async () => {
   // 準備
   const { checkIndex } = await loadBuilt();
@@ -235,7 +235,7 @@ test("test_normal_when_glossary_avoided_term", async () => {
     "",
     "| 用語 | 意味 | やめた言い方 |",
     "| --- | --- | --- |",
-    "| ワークスペース | 作業の置き場所 | 作業場、ワーク場 |",
+    "| ワークスペース | 作業の配置場所 | 作業場、ワーク場 |",
     "",
     "<!-- /glossary -->",
     "",
@@ -245,7 +245,7 @@ test("test_normal_when_glossary_avoided_term", async () => {
     "",
     "ワーク場を閉じる。",
     "",
-    "ワークスペースを使う。",
+    "ワークスペースを使用する。",
     "",
   ].join("\n");
   // 実行
@@ -266,7 +266,7 @@ test("test_normal_when_glossary_avoided_term", async () => {
   expect(issues[1]?.message).toContain("ワークスペース");
 });
 
-// 合わないところごとに schema のずれを返し、例外を投げない（異常系）
+// 合わないところごとに schema のずれを返却し、例外を投げない（異常系）
 test("test_normal_when_invalid_schema", async () => {
   // 準備
   const { checkIndex } = await loadBuilt();
@@ -297,7 +297,7 @@ test("test_normal_when_invalid_schema", async () => {
   expect(issues.every((issue) => issue.kind === "schema")).toBe(true);
 });
 
-// `schema` が `1` で最上位にタグの語彙 `tags` を持つ索引で、`schema` のずれを返す（正常系（v0.9.0 までの索引））
+// `schema` が `1` で最上位にタグの語彙 `tags` を持つ索引で、`schema` のずれを返却する（正常系（v0.9.0 までの索引））
 test("test_normal_when_old_schema", async () => {
   // 準備
   const { checkIndex } = await loadBuilt();
@@ -319,7 +319,7 @@ test("test_normal_when_old_schema", async () => {
   expect(issues[0]?.message).toContain("mdmark upgrade");
 });
 
-// 片側だけの change_together・本文のリンクと重なる関連・文字列の関連を、関連の場所ごとに返す（正常系（関連がずれる））
+// 片側だけの change_together・本文のリンクと重なる関連・文字列の関連を、関連の場所ごとに返却する（正常系（関連がずれる））
 test("test_normal_when_related_drift", async () => {
   // 準備
   const { checkIndex } = await loadBuilt();
@@ -336,7 +336,7 @@ test("test_normal_when_related_drift", async () => {
             type: "change_together",
             when: "索引の Schema を変えるとき",
           },
-          { to: "c", type: "references", when: "使い方を確かめるとき" },
+          { to: "c", type: "references", when: "使用方法を確認するとき" },
         ],
       },
       { id: "b", path: "b.md", title: "B" },
@@ -378,7 +378,7 @@ test("test_normal_when_related_drift", async () => {
   expect(issues[0]?.message).toContain("when");
 });
 
-// changedPaths で組の片方だけが変わったときだけ、変わっていない側の文書を指す missed_change_together を返す（正常系（change_together の直し忘れ））
+// changedPaths で組の片方だけが変わったときだけ、変わっていない側の文書を指す missed_change_together を返却する（正常系（change_together の修正漏れ））
 test("test_normal_when_change_together_missed", async () => {
   // 準備
   const { checkIndex } = await loadBuilt();
@@ -394,7 +394,7 @@ test("test_normal_when_change_together_missed", async () => {
         id: "c",
         path: "c.md",
         title: "C",
-        related: [{ to: "a", type: "references", when: "前提を確かめるとき" }],
+        related: [{ to: "a", type: "references", when: "前提を確認するとき" }],
       },
     ],
   };

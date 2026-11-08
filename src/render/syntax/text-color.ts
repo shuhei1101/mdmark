@@ -8,7 +8,7 @@ import { warningBlock } from "./warnings.ts";
 /** 角括弧の開きと、閉じの直後の色の属性を探す正規表現 */
 const BRACKET_PATTERN = /\[|\]\{color=([^}]*)\}/g;
 
-/** 書き方の警告に並べる色の名前の一覧 */
+/** 記載の警告に並べる色の名前の一覧 */
 const COLOR_LIST = COLOR_NAMES.map((name) => `\`${name}\``).join("・");
 
 /** 子のトークンを分けた後の 1 つ。角括弧の開き・閉じは位置を覚えて後で置き換える */
@@ -61,7 +61,7 @@ function splitPieces(state: StateCore, children: Token[]): Piece[] {
   return pieces;
 }
 
-/** 開きと閉じを、同じ入れ子の深さで近いものどうし組にし、開きの位置から閉じの位置を引く表を返す */
+/** 開きと閉じを、同じ入れ子の深さで近いものどうし組にし、開きの位置から閉じの位置を参照する表を返却する */
 function pairBrackets(pieces: Piece[]): Map<number, number> {
   const pairs = new Map<number, number>();
   const opens: number[] = [];
@@ -86,7 +86,7 @@ function pairBrackets(pieces: Piece[]): Map<number, number> {
   return pairs;
 }
 
-/** `text-color` がオンなら、角括弧の文字の直後の `{color=色}` を本文の文字の色の部品にし、知らない色は角括弧と属性だけを外して段落の前に警告を置く */
+/** `text-color` がオンなら、角括弧の文字の直後の `{color=色}` を本文の文字の色の部品にし、知らない色は角括弧と属性だけを削除して段落の前に警告を配置する */
 export function buildTextColors(state: StateCore): void {
   if (!featureOn(state, "text-color")) {
     return;
@@ -114,7 +114,7 @@ export function buildTextColors(state: StateCore): void {
       const closeAt = piece.kind === "close" ? at : pairs.get(at);
       const close = closeAt === undefined ? undefined : pieces[closeAt];
       if (openAt === undefined || close?.kind !== "close") {
-        // 組にならない開き・閉じは書いた文字のまま残す
+        // 組にならない開き・閉じは記載した文字のまま残す
         children.push(
           textToken(state, piece.kind === "open" ? "[" : piece.raw),
         );
@@ -147,13 +147,13 @@ export function buildTextColors(state: StateCore): void {
       blockStartOf(state.tokens, index),
       0,
       warningBlock(state, {
-        message: `${names} は色の名前ではありません。使える色の名前は ${COLOR_LIST} です。色を付けずに描いています。`,
+        message: `${names} は色の名前ではありません。使用できる色の名前は ${COLOR_LIST} です。色を付けずに描いています。`,
       }),
     );
   }
 }
 
-/** `index` のトークンを含む、入れ子の深さ 0 のブロックの開きの位置を返す */
+/** `index` のトークンを含む、入れ子の深さ 0 のブロックの開きの位置を返却する */
 function blockStartOf(tokens: Token[], index: number): number {
   let at = index;
   while (at > 0 && (tokens[at]?.level ?? 0) > 0) {
@@ -162,7 +162,7 @@ function blockStartOf(tokens: Token[], index: number): number {
   return at;
 }
 
-/** 中身を渡した `text` のトークンを作る */
+/** 中身を指定した `text` のトークンを作る */
 function textToken(state: StateCore, content: string): Token {
   const token = new state.Token("text", "", 0);
   token.content = content;

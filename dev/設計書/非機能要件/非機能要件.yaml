@@ -8,16 +8,16 @@ requirements:
     source: https://github.com/jsdelivr/jsdelivr#restrictions
     value: '624'
     unit: KB 以下（638976 バイト）
-    rationale: '外部の上限は 20MB。使う側のページが開くたびに読むため、束ねた後の実測から目標を置く。markdown-it 15.0.2 と sanitize-html 2.18.0（postcss を空の部品に差し替えたもの）を、対応ブラウザの target で束ねて minify すると 178,594 バイトだった（2026-10-13、作業ツリーの外で実測。minify しないと 388,091 バイト）。mdmark 自身のコードと、後続の Issue が足す機能の余地を見て 256KB にした。後続の Issue が超えるときは、その Issue が実測を添えて上げる。図の部品（定義の読み取り・図と操作できる部品の HTML・拡大などの操作）と lucide のアイコンを足した #42 で、束ねた dist/index.js が 293,909 バイトになった（2026-10-20）ため、余地を見て 320KB に上げた。差分の表示（jsdiff の 3 つの関数と差分の処理・部品）を足した #49 で、束ねた dist/index.js が 336,305 バイトになった（2026-10-22、#45 を入れた develop は 312,423 バイト）ため、余地を見て 352KB に上げた。ビュー・コメントの部品を追加した #55 で、表の機能を追加した #57 を取り込んだ後の束ねた dist/index.js が 360,299 バイトになった（2026-10-23。ビューとコメントの本体は dist/view.js・dist/comments.js に分けている）ため、余地を見て 368KB に上げた。元の行番号と配色の class を追加した #69 で、#72・#74・#78 を取り込んだ後の束ねた dist/index.js が 376,991 バイトになった（2026-10-24）ため、余地を見て 384KB に上げた。コードブロックの色分け（色分けのライブラリの本体と言語のモジュールは配布物に束ねず、使うときだけ読む）を追加した #97 で、#109 を取り込んだ後の束ねた dist/index.js が 382,101 バイトになった（2026-10-24）。上限の内に収まるため変えていない。表の見出し行と集計の行を留める処理・集計とコピーの形式のメニュー・最終列を畳む処理・コードブロックのラベルとコピーを追加した #150 で、束ねた dist/index.js が 408,445 バイトになった（2026-10-27、develop は 391,395 バイト）ため、余地を見て 416KB に上げた。右側の目次と、H1 の節・すべて展開・すべて折りたたむ・Shift でのまとめての開閉を追加した #166 で、#151 を取り込んだ後の束ねた dist/index.js が 415,123 バイトになった（2026-10-28、develop は 391,395 バイト）。上限の内に収まるため変えていない。エイリアスの作成（`buildAliases`）と、種類ごとのツールチップ・コマンドのコピーを追加した #176 で、束ねた dist/index.js が 425,127 バイトになった（2026-10-28、#166 を取り込んだ develop は 415,123 バイト）。上限（425,984 バイト）の内に収まるため変えていない。描いた文書のブロックの色分け（ブロックの分け方・書き換えと入れ替えの見分け・削除したブロックの差し込みと、差分のブロックの部品・スタイル）を追加した #196 で、束ねた dist/index.js が 433,348 バイトになった（2026-10-30、develop は 425,336 バイト）ため、余地を見て 440KB に上げた。検証に使う ajv は dist/cli.js とプラグインにだけ束ね、dist/index.js には入れない。名前の色・画像の図・ギャラリー・ライトボックス・動画と音声・GIF・リンクと添付のカードを追加した #263 で、束ねた dist/index.js が 472,675 バイトになった（2026-11-02、develop は 446,474 バイト）ため、余地を見て 480KB に上げた。表のセルの結合と行見出し・コードブロックの行の種類と開閉・グラフの種類を追加した #275 で、束ねた dist/index.js が 503,918 バイト（#287 を取り込んだ後は 506,704 バイト）になった（2026-11-03、develop は 478,882 バイト）ため、余地を見て 512KB に上げた。脚注（定義・参照・行内の脚注の読み取り、番号と一覧の部品、ツールチップと一覧への移動の操作）を追加した #215 で、束ねた dist/index.js が 532,216 バイトになった（2026-11-04、develop は 520,634 バイト）ため、余地を見て 544KB に上げた。表の列の並べ替え（テーブル設定のパネルと操作）・キーの列の階層と YAML の見本・埋め込んだ HTML の範囲の css・ts・js（変換のライブラリは配布物に束ねず、使うときだけ読む）を追加した #303 で、#329 を取り込んだ後の束ねた dist/index.js が 580,912 バイトになった（2026-11-05、develop は 542,773 バイト）ため、余地を見て 592KB に上げた。新しい記法 8 件（アイコン・キー・蛍光ペン・段組み・details・改ページ・取り込み・wide・CSV の表）と束ねていないアイコンの読み込みを追加した #307 で、#328 を取り込んだ後の束ねた dist/index.js が 565,186 バイトになった（2026-11-05、develop は 542,267 バイト）ため、余地を見て 576KB に上げた。#303 に #307 を取り込んだ後の束ねた dist/index.js が 604,146 バイトになった（2026-11-05）ため、余地を見て 624KB に上げた'
-    overflow: ビルドの後に配布ファイルのサイズを数え、超えていればビルドを失敗させる。確かめる時点はビルドの直後で、版のタグを打つ前。
+    rationale: '外部の上限は 20MB。利用側のページが開くたびに読み込むため、まとめた後の実測から目標を配置する。markdown-it 15.0.2 と sanitize-html 2.18.0（postcss を空の部品に差し替えたもの）を、対応ブラウザの target でまとめて minify すると 178,594 バイトだった（2026-10-13、作業ツリーの外で実測。minify しないと 388,091 バイト）。mdmark 自身のコードと、後続の Issue が追加する機能の余地を確認して 256KB にした。後続の Issue が超えるときは、その Issue が実測を添えて上げる。図の部品（定義の読み取り・図と操作できる部品の HTML・拡大などの操作）と lucide のアイコンを追加した #42 で、まとめた dist/index.js が 293,909 バイトになった（2026-10-20）ため、余地を確認して 320KB に上げた。差分の表示（jsdiff の 3 つの関数と差分の処理・部品）を追加した #49 で、まとめた dist/index.js が 336,305 バイトになった（2026-10-22、#45 を入れた develop は 312,423 バイト）ため、余地を確認して 352KB に上げた。ビュー・コメントの部品を追加した #55 で、表の機能を追加した #57 を取り込んだ後のまとめた dist/index.js が 360,299 バイトになった（2026-10-23。ビューとコメントの本体は dist/view.js・dist/comments.js に分けている）ため、余地を確認して 368KB に上げた。元の行番号と配色の class を追加した #69 で、#72・#74・#78 を取り込んだ後のまとめた dist/index.js が 376,991 バイトになった（2026-10-24）ため、余地を確認して 384KB に上げた。コードブロックの色分け（色分けのライブラリの本体と言語のモジュールは配布物にまとめず、使用するときだけ読み込む）を追加した #97 で、#109 を取り込んだ後のまとめた dist/index.js が 382,101 バイトになった（2026-10-24）。上限の内に収まるため変えていない。表の見出し行と集計の行を留める処理・集計とコピーの形式のメニュー・最終列を畳む処理・コードブロックのラベルとコピーを追加した #150 で、まとめた dist/index.js が 408,445 バイトになった（2026-10-27、develop は 391,395 バイト）ため、余地を確認して 416KB に上げた。右側の目次と、H1 のセクション・すべて展開・すべて折りたたむ・Shift でのまとめての開閉を追加した #166 で、#151 を取り込んだ後のまとめた dist/index.js が 415,123 バイトになった（2026-10-28、develop は 391,395 バイト）。上限の内に収まるため変えていない。エイリアスの作成（`buildAliases`）と、種類ごとのツールチップ・コマンドのコピーを追加した #176 で、まとめた dist/index.js が 425,127 バイトになった（2026-10-28、#166 を取り込んだ develop は 415,123 バイト）。上限（425,984 バイト）の内に収まるため変えていない。描いた文書のブロックの色分け（ブロックの分け方・書き換えと入れ替えの見分け・削除したブロックの差し込みと、差分のブロックの部品・スタイル）を追加した #196 で、まとめた dist/index.js が 433,348 バイトになった（2026-10-30、develop は 425,336 バイト）ため、余地を確認して 440KB に上げた。検証に使用する ajv は dist/cli.js とプラグインにだけまとめ、dist/index.js には入れない。名前の色・画像の図・ギャラリー・ライトボックス・動画と音声・GIF・リンクと添付のカードを追加した #263 で、まとめた dist/index.js が 472,675 バイトになった（2026-11-02、develop は 446,474 バイト）ため、余地を確認して 480KB に上げた。表のセルの結合と行見出し・コードブロックの行の種類と開閉・グラフの種類を追加した #275 で、まとめた dist/index.js が 503,918 バイト（#287 を取り込んだ後は 506,704 バイト）になった（2026-11-03、develop は 478,882 バイト）ため、余地を確認して 512KB に上げた。脚注（定義・参照・行内の脚注の読み取り、番号と一覧の部品、ツールチップと一覧への移動の操作）を追加した #215 で、まとめた dist/index.js が 532,216 バイトになった（2026-11-04、develop は 520,634 バイト）ため、余地を確認して 544KB に上げた。表の列の並べ替え（テーブル設定のパネルと操作）・キーの列の階層と YAML の見本・埋め込んだ HTML の範囲の css・ts・js（変換のライブラリは配布物にまとめず、使用するときだけ読み込む）を追加した #303 で、#329 を取り込んだ後のまとめた dist/index.js が 580,912 バイトになった（2026-11-05、develop は 542,773 バイト）ため、余地を確認して 592KB に上げた。新しい記法 8 件（アイコン・キー・蛍光ペン・段組み・details・改ページ・取り込み・wide・CSV の表）とまとめていないアイコンの読み込みを追加した #307 で、#328 を取り込んだ後のまとめた dist/index.js が 565,186 バイトになった（2026-11-05、develop は 542,267 バイト）ため、余地を確認して 576KB に上げた。#303 に #307 を取り込んだ後のまとめた dist/index.js が 604,146 バイトになった（2026-11-05）ため、余地を確認して 624KB に上げた'
+    overflow: ビルドの後に配布ファイルのサイズを数え、超えていればビルドを失敗させる。確認する時点はビルドの直後で、バージョンのタグを打つ前。
   - name: 対応ブラウザ
     english_name: supported_browsers
     category: 動作環境
     external_constraint: 制限なし
     source_kind: 制限なし
-    value: Chrome 99 以降・Firefox 98 以降・Safari 16.4 以降（この版をビルドの target に書く）
-    rationale: 使う側の CSS が詳細度によらず mdmark の CSS に勝つために `@layer` を使う。`@layer` を持つ最初の版（Chrome 99・Firefox 97・Safari 15.4）と、ES2022 のクラスの構文を書き換えずに出すための静的初期化ブロック（Safari 16.4）と、まとめた HTML の狭い幅の文書の一覧のパネルに使う `<dialog>`（Chrome 37・Firefox 98・Safari 15.4）のうち、新しい方を各ブラウザの下限にする。外部ライブラリの読み込みは動的 `import()`（どの下限でも使える）で行い、import map は使わない。CSS の入れ子は下限で効かないため、ビルドが展開する。トップレベル await は Safari 16.4 で部分対応のため使わない
-    measurement: E2E を Playwright 同梱の Chromium・Firefox で流す。加えて `npm run build` が、使う側のブラウザが読む JS を minify せずに束ね、eslint-plugin-compat（MDN の browser-compat-data）でこの版と照らして、無い API を同じ API の `typeof` で確かめずに使うと止まる（インターフェース定義『配布物をビルドする』の制約『対応ブラウザの下限の確かめ』）。Safari 16.4 の実機での動作は確かめていない
+    value: Chrome 99 以降・Firefox 98 以降・Safari 16.4 以降（このバージョンをビルドの target に記載する）
+    rationale: 利用側の CSS が詳細度によらず mdmark の CSS に勝つために `@layer` を使用する。`@layer` を持つ最初のバージョン（Chrome 99・Firefox 97・Safari 15.4）と、ES2022 のクラスの構文を書き換えずに出すための静的初期化ブロック（Safari 16.4）と、まとめた HTML の狭い幅の文書の一覧のパネルに使用する `<dialog>`（Chrome 37・Firefox 98・Safari 15.4）のうち、新しい方を各ブラウザの下限にする。外部ライブラリの読み込みは動的 `import()`（どの下限でも使用できる）で行い、import map は使用しない。CSS の入れ子は下限で有効にならないため、ビルドが展開する。トップレベル await は Safari 16.4 で部分対応のため使用しない
+    measurement: E2E を Playwright 同梱の Chromium・Firefox で実行する。加えて `npm run build` が、利用側のブラウザが読み込む JS を minify せずにまとめ、eslint-plugin-compat（MDN の browser-compat-data）でこのバージョンと照らして、無い API を同じ API の `typeof` で確認せずに使用すると止まる（インターフェース定義『配布物をビルドする』の制約『対応ブラウザの下限の確認』）。Safari 16.4 の実機での動作は確認していない
     verification:
       device: WSL2 上の Playwright 同梱の Chromium・Firefox
       version: Playwright 1.64.0（Chromium 156.0.8078.4・Firefox 157.0）
@@ -26,22 +26,22 @@ requirements:
   - name: 通信
     english_name: network
     category: 動作環境
-    external_constraint: 配布物を jsDelivr から HTTPS で読む
+    external_constraint: 配布物を jsDelivr から HTTPS で読み込む
     source_kind: 実行基盤の制限
-    value: 使う側のページでは jsDelivr へ HTTPS で届くことを前提にする。CLI が書き出した HTML は外へ要求せず、オフラインでも開ける（『書き出した HTML の外部への要求』）
-    rationale: 使う側のページへは配布物を CDN から読む形で配る。CDN を読めない環境へは CLI で書き出した 1 枚の HTML を配る（#9）
-    overflow: 読めないときはページの本文だけを表示し、ブラウザが読めなかった旨をコンソールに出す
+    value: 利用側のページでは jsDelivr へ HTTPS で届くことを前提にする。CLI が書き出した HTML は外へ要求せず、オフラインでも開ける（『書き出した HTML の外部への要求』）
+    rationale: 利用側のページへは配布物を CDN から読み込む構造で配る。CDN を読み込めない環境へは CLI で書き出した 1 枚の HTML を配る（#9）
+    overflow: 読み込めないときはページの本文だけを表示し、ブラウザが読み込めなかった旨をコンソールに出す
   - name: 書き出した HTML の外部への要求
     english_name: exported_html_requests
     category: 動作環境
-    external_constraint: Microsoft の環境（OneDrive など）では CDN を読めない
+    external_constraint: Microsoft の環境（OneDrive など）では CDN を読み込めない
     source_kind: 実行基盤の制限
     source: https://github.com/shuhei1101/mdmark/pull/16#discussion_r4258211591
     value: '0'
     unit: 件
-    rationale: 開いてから描き終えるまでに、ページ自身・書き出しが隣の `_files/` へコピーした動画と音声と画像の `data:` のほかへ要求しない。配布物・使う側の CSS・外部ライブラリのモジュール・拡張・画像を HTML に埋め、起動の処理・部品・色分け・外部ライブラリ・拡張を 1 つの `<script type="module">` に束ねて、`blob:` URL と動的 `import()` を使わない
-    measurement: E2E で書き出した HTML と隣の `_files/` だけを空のフォルダへ写して file:// で開き、描き終えるまでの要求を数える
-    overflow: 読めない画像とモジュールは埋めずに書き出しの警告に出し、開いたときはその印の場所に知らせの枠を出す（要求はしない）
+    rationale: 開いてから描き終えるまでに、ページ自身・書き出しが隣の `_files/` へコピーした動画と音声と画像の `data:` のほかへ要求しない。配布物・利用側の CSS・外部ライブラリのモジュール・拡張・画像を HTML に埋め、起動の処理・部品・色分け・外部ライブラリ・拡張を 1 つの `<script type="module">` にまとめて、`blob:` URL と動的 `import()` を使用しない
+    measurement: E2E で書き出した HTML と隣の `_files/` だけを空のフォルダへコピーして file:// で開き、描き終えるまでの要求を数える
+    overflow: 読み込めない画像とモジュールは埋めずに書き出しの警告に出し、開いたときはそのマーカーの場所に通知ブロックを出す（要求はしない）
     status: planned
     introduced:
       pr: 32
@@ -53,23 +53,23 @@ requirements:
   - name: mermaid を埋めた書き出しの HTML のサイズ
     english_name: exported_html_mermaid_size
     category: 性能
-    external_constraint: 制限なし（書き出した HTML は 1 枚のファイルとして配り、jsDelivr の 1 ファイル 20MB の上限は当たらない）
+    external_constraint: 制限なし（書き出した HTML は 1 枚のファイルとして配り、jsDelivr の 1 ファイル 20MB の上限は該当しない）
     source_kind: 制限なし
     value: mermaid の本体と全ての図の種類の chunk を埋める（mermaid 12.3.0 で約 5.3MB 増える）
-    rationale: '使う側の利用者が file:// で開くたびに読む大きさ。PoC #384 で、mermaid 12.3.0 の本体と全ての chunk をまとめた script は 5,489,182 バイトだった。文書が使う図の種類の chunk だけをまとめ、ほかを空のモジュールに差し替えると、flowchart だけで 4,342,441 バイト、flowchart と sequenceDiagram で 4,462,681 バイト、種類なし（本体と共通の chunk だけ）で 4,276,727 バイト（2026-11-08、作業ツリーの外で実測）。図の種類を絞っても本体と共通の chunk の約 4.3MB は残り、減るのは最大で約 1.2MB'
+    rationale: '利用側の利用者が file:// で開くたびに読み込む大きさ。PoC #384 で、mermaid 12.3.0 の本体と全ての chunk をまとめた script は 5,489,182 バイトだった。文書が使用する図の種類の chunk だけをまとめ、ほかを空のモジュールに差し替えると、flowchart だけで 4,342,441 バイト、flowchart と sequenceDiagram で 4,462,681 バイト、種類なし（本体と共通の chunk だけ）で 4,276,727 バイト（2026-11-08、作業ツリーの外で実測）。図の種類を絞っても本体と共通の chunk の約 4.3MB は残り、減るのは最大で約 1.2MB'
     overflow: mermaid のコードブロックを持たない文書の書き出しには埋めない（インターフェース定義『文書をHTMLに書き出す』の制約「埋める mermaid」）
     status: planned
     introduced:
       pr: 382
-  - name: CLI が動く Node の版
+  - name: CLI が動く Node のバージョン
     english_name: cli_node_version
     category: 動作環境
     external_constraint: Node.js の保守の期限（Node 22 は 2027-04-30 まで、Node 24 は 2028-04-30 まで）
     source_kind: 実行基盤の制限
     source: https://github.com/nodejs/release#release-schedule
-    value: Node 24 以降（`package.json` の `engines.node` に `>=24` を書く）
-    rationale: 今の Active LTS の版を下限にし、標準の `fs.glob` と `fetch` を使う。開発の `package.json` の `engines.node` も `>=24` で、開発のスクリプトを Node 24 の型の剥ぎ取りで動かしている
-    measurement: 結合テストを Node 24 で流す
+    value: Node 24 以降（`package.json` の `engines.node` に `>=24` を記載する）
+    rationale: 今の Active LTS のバージョンを下限にし、標準の `fs.glob` と `fetch` を使用する。開発の `package.json` の `engines.node` も `>=24` で、開発のスクリプトを Node 24 の型の剥ぎ取りで動かしている
+    measurement: 結合テストを Node 24 で実行する
     status: planned
     introduced:
       pr: 32
@@ -78,22 +78,22 @@ requirements:
       version: Node v24.14.0
       date: '2026-10-31'
       result: 合格
-  - name: 対応する VS Code の版
+  - name: 対応する VS Code のバージョン
     english_name: vscode_version
     category: 動作環境
     external_constraint: 拡張機能は `package.json` の `engines.vscode` より古い VS Code に入らない
     source_kind: 実行基盤の制限
     source: https://code.visualstudio.com/api/working-with-extensions/publishing-extension#visual-studio-code-compatibility
-    value: VS Code 1.141.0 以降（`vscode/package.json` の `engines.vscode` に `^1.141.0` を書く）
-    rationale: PoC（#70）で Webview の CSP・動的 `import()`・`ready` を受けた送り直しを確かめた最も古い版（Windows の 1.141.0。Linux 版は 1.143.1）を下限にする。それより古い版は確かめていない
-    measurement: 拡張機能の結合テストを VS Code 1.141.0 とその時点の stable の 2 つで流す
+    value: VS Code 1.141.0 以降（`vscode/package.json` の `engines.vscode` に `^1.141.0` を記載する）
+    rationale: PoC（#70）で Webview の CSP・動的 `import()`・`ready` を受けた再送信を確認した最も古いバージョン（Windows の 1.141.0。Linux バージョンは 1.143.1）を下限にする。それより古いバージョンは確認していない
+    measurement: 拡張機能の結合テストを VS Code 1.141.0 とその時点の stable の 2 つで実行する
     overflow: 下限より古い VS Code には Marketplace と Open VSX が入れさせない
     status: planned
     introduced:
       pr: 69
     verification:
       device: WSL2 上の VS Code（xvfb-run）
-      version: VS Code 1.141.0・1.145.1（stable）。React（Vite でビルドした `media/preview.js`）にした Webview で、CSP・動的 `import()`・`ready` を受けた送り直しの結合テストが 69 件 pass した
+      version: VS Code 1.141.0・1.145.1（stable）。React（Vite でビルドした `media/preview.js`）にした Webview で、CSP・動的 `import()`・`ready` を受けた再送信の結合テストが 69 件 pass した
       date: '2026-11-06'
       result: 合格
   - name: タグ一覧を取る待ちの上限
@@ -104,20 +104,20 @@ requirements:
     source: dev/設計書/外部API/GitHub#
     value: '3'
     unit: 秒
-    rationale: 取れないときは前回の版で描けるため、長く待たずに描き始める。プレビューは開いてから 1 秒経っても描けないときだけ読み込み中を出し、PoC（#70）の配布物の読み込みは 641〜1,400 ms だった。タグ一覧の待ちを足しても、前回の版で描き始めるまでを 5 秒前後に収める
-    overflow: 上限を超えたら要求を打ち切り、取れなかったときと同じく前回の版を使う。前回の版も無ければ、プレビューにバージョンを決められない理由を出す（書き出しは書き出せない通知を出す）
+    rationale: 取れないときは前回のバージョンで描けるため、長く待たずに描き始める。プレビューは開いてから 1 秒経っても描けないときだけ読み込み中を出し、PoC（#70）の配布物の読み込みは 641〜1,400 ms だった。タグ一覧の待ちを追加しても、前回のバージョンで描き始めるまでを 5 秒前後に収める
+    overflow: 上限を超えたら要求を打ち切り、取れなかったときと同じく前回のバージョンを使用する。前回のバージョンも無ければ、プレビューにバージョンを決められない理由を出す（書き出しは書き出せない通知を出す）
     status: planned
     introduced:
       pr: 69
-  - name: 描き直すまでの待ち
+  - name: 再描画するまでの待ち
     english_name: preview_update_delay
     category: 性能
     external_constraint: 制限なし
     source_kind: 制限なし
     value: 300（既定。設定 `mdmark.preview.updateDelayMs` で 0〜5000 に変えられる）
     unit: ミリ秒
-    rationale: '打つたびに描き直すと、図と外部ライブラリの印を持つ文書でちらつく。続けて打つ間は描き直さず、手を止めてから待ちが目立たない長さにする。上限の 5000 は、保存したときだけ描き直す設定（`mdmark.preview.liveUpdate: false`）が別にあるため、それより長い待ちを許さない'
-    overflow: 範囲の外の値は VS Code の設定の画面が受け付けない（`package.json` の `minimum`・`maximum`）。`settings.json` に直に書いた範囲の外の値は既定の 300 として扱う
+    rationale: '打つたびに再描画すると、図と外部ライブラリのマーカーを持つ文書でちらつく。続けて打つ間は再描画せず、手を止めてから待ちが目立たない長さにする。上限の 5000 は、保存したときだけ再描画する設定（`mdmark.preview.liveUpdate: false`）が別にあるため、それより長い待ちを許さない'
+    overflow: 範囲の外の値は VS Code の設定の画面が受け付けない（`package.json` の `minimum`・`maximum`）。`settings.json` に直に書き込んだ範囲の外の値は既定の 300 として扱う
     status: planned
     introduced:
       pr: 69
@@ -128,20 +128,20 @@ requirements:
     source_kind: 制限なし
     value: '10'
     unit: 秒
-    rationale: 書き出した HTML は jsDelivr から配布物と外部ライブラリを読むため、描き終えるまで待ってから印刷する。PoC（#70）の jsDelivr のキャッシュが冷えた初回の読み込みは 5,045 ms だったため、その倍に近い値を上限にする
-    overflow: 上限までに外部ライブラリの印の読み込みが終わらなければ、そのまま印刷のダイアログを出す（読み込み中の印の場所は読み込み中の枠のまま印刷される）
+    rationale: 書き出した HTML は jsDelivr から配布物と外部ライブラリを読み込むため、描き終えるまで待ってから印刷する。PoC（#70）の jsDelivr のキャッシュが冷えた初回の読み込みは 5,045 ms だったため、その倍に近い値を上限にする
+    overflow: 上限までに外部ライブラリのマーカーの読み込みが終わらなければ、そのまま印刷のダイアログを出す（読み込み中のマーカーの場所は読み込み中のブロックのまま印刷される）
     status: planned
     introduced:
       pr: 69
-  - name: 確かめた Claude Code のバージョン
+  - name: 確認した Claude Code のバージョン
     english_name: claude_code_version
     category: 動作環境
-    external_constraint: プラグイン・フック・MCP の挙動は Claude Code のバージョンで変わる。バージョンは使う側の手元のものを使い、mdmark は固定しない
+    external_constraint: プラグイン・フック・MCP の挙動は Claude Code のバージョンで変わる。バージョンは利用側の手元のものを使用し、mdmark は固定しない
     source_kind: 外部ライブラリの制限
     source: dev/設計書/外部ライブラリ/ClaudeCode#version
     value: 2.1.309
-    rationale: PoC（#73）でマーケットプレイスの追加と導入・索引の注入・MCP サーバーの接続・ツールの呼び出しを確かめたバージョン。これより新しいバージョンと古いバージョンは確かめていない
-    measurement: Claude Code の実機で、プラグインを入れ、セッションの開始で索引を受け取り、ツールを呼べるかを確かめる
+    rationale: PoC（#73）でマーケットプレイスの追加と導入・索引の注入・MCP サーバーの接続・ツールの呼び出しを確認したバージョン。これより新しいバージョンと古いバージョンは確認していない
+    measurement: Claude Code の実機で、プラグインを入れ、セッションの開始で索引を受け取り、ツールを呼べるかを確認する
     status: planned
     introduced:
       pr: 72
@@ -153,14 +153,14 @@ requirements:
   - name: MCP サーバーの接続の待ち
     english_name: mcp_connect_wait
     category: 性能
-    external_constraint: MCP サーバーの接続を待つ上限は MCP_TIMEOUT の既定で 30 秒。超えるとサーバーを使えない
+    external_constraint: MCP サーバーの接続を待つ上限は MCP_TIMEOUT の既定で 30 秒。超えるとサーバーを使用できない
     source_kind: 外部ライブラリの制限
     source: dev/設計書/外部ライブラリ/ClaudeCode#limitations[MCP サーバーの接続の待ち]
     value: '30'
     unit: 秒 以内
     rationale: 'MCP サーバーの起動で CLI を取得すると、空の npm のキャッシュから 53 秒かかった（PoC #73）。`mdmark serve` を先に常駐させ、Claude Code は起動済みのサーバーへ HTTP でつなぐだけにする'
     measurement: 起動済みの `mdmark serve` へ Streamable HTTP でつないだ MCP のクライアントが tools/list を受け取るまでの時間を測る
-    overflow: Claude Code が接続を諦め、プラグインの MCP のツールが使えない。起動で外へ要求する処理を足さない
+    overflow: Claude Code が接続を諦め、プラグインの MCP のツールが使用できない。起動で外へ要求する処理を追加しない
     status: planned
     introduced:
       pr: 72

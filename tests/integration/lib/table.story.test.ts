@@ -20,7 +20,7 @@ function open(id: string): Promise<Page> {
   return holder.openStory(`parts-table--${id}`);
 }
 
-/** 表の本文の行の指定した列の文字を、上から並べて返す（隠れた行も含む） */
+/** 表の本文の行の指定した列の文字を、上から並べて返却する（隠れた行も含む） */
 function columnTexts(page: Page, column: number): Promise<string[]> {
   return page.evaluate((index) => {
     return [
@@ -31,7 +31,7 @@ function columnTexts(page: Page, column: number): Promise<string[]> {
   }, column);
 }
 
-/** 表の本文の最初の行のうち、`position` の計算値が `sticky` のセルの列の位置を返す */
+/** 表の本文の最初の行のうち、`position` の計算値が `sticky` のセルの列の位置を返却する */
 function pinnedColumns(page: Page): Promise<number[]> {
   return page.evaluate(() =>
     [
@@ -56,14 +56,14 @@ function visibleRows(page: Page): Promise<number> {
   );
 }
 
-/** 表の外側の枠の色を返す */
+/** 表の外側の枠の色を返却する */
 function frameColor(page: Page): Promise<string> {
   return page
     .locator(".mdmark-table table")
     .evaluate((el) => getComputedStyle(el).borderTopColor);
 }
 
-/** 表の右端から 10px 内側（右の角の丸みと、右端のセルの文字の間）の x と、表の下端の y を返す */
+/** 表の右端から 10px 内側（右の角の丸みと、右端のセルの文字の間）の x と、表の下端の y を返却する */
 function tableBottom(page: Page): Promise<{ x: number; y: number }> {
   return page.locator(".mdmark-table table").evaluate((el) => {
     const rect = el.getBoundingClientRect();
@@ -74,7 +74,7 @@ function tableBottom(page: Page): Promise<{ x: number; y: number }> {
   });
 }
 
-/** 表の下端の線の太さ（枠の色の画素の数）を返す。見えている最後の行の下の線と重なって 2px になっていないかを見る */
+/** 表の下端の線の太さ（枠の色の画素の数）を返却する。見えている最後の行の下の線と重なって 2px になっていないかを確認する */
 async function bottomLineWidth(page: Page): Promise<number> {
   const { x, y } = await tableBottom(page);
   return countColorPixels({
@@ -84,7 +84,7 @@ async function bottomLineWidth(page: Page): Promise<number> {
   });
 }
 
-/** 集計の行の上の線の太さ（枠の色の画素の数）を返す */
+/** 集計の行の上の線の太さ（枠の色の画素の数）を返却する */
 async function footerTopLineWidth(page: Page): Promise<number> {
   const { x } = await tableBottom(page);
   const top = await page
@@ -100,7 +100,7 @@ async function footerTopLineWidth(page: Page): Promise<number> {
   });
 }
 
-/** 指定した行（見出し・本文・集計）の高さの真ん中で、表の右端の線の太さ（枠の色の画素の数）を返す */
+/** 指定した行（見出し・本文・集計）の高さの真ん中で、表の右端の線の太さ（枠の色の画素の数）を返却する */
 async function rightEdgeWidth(page: Page, row: string): Promise<number> {
   const { right, y } = await page
     .locator(row)
@@ -120,7 +120,7 @@ async function rightEdgeWidth(page: Page, row: string): Promise<number> {
   });
 }
 
-/** 見出し行・本文の行・集計の行の右端の線の太さを、上から並べて返す */
+/** 見出し行・本文の行・集計の行の右端の線の太さを、上から並べて返却する */
 async function rightEdgeWidths(page: Page, rows: string[]): Promise<number[]> {
   const widths: number[] = [];
   for (const row of rows) {
@@ -244,7 +244,7 @@ test("test_filter_date_open", async () => {
   );
 });
 
-// 名前の列を絞り込むと、ボタンが絞り込み中の見た目になる（Filtered）
+// 名前の列を絞り込むと、ボタンが絞り込み中の外観になる（Filtered）
 test("test_filtered", async () => {
   // 準備・実行
   const page = await open("filtered");
@@ -376,7 +376,7 @@ test("test_check", async () => {
     spoken: "いいえ",
     align: "center",
   });
-  // 検証: 空欄のセルは見た目に文字が無い（いいえは読み上げだけで、大きさを持たない）
+  // 検証: 空欄のセルは外観に文字が無い（いいえはスクリーンリーダーだけで、大きさを持たない）
   const spokenBox = await page
     .locator("#storybook-root tbody tr")
     .nth(1)
@@ -441,7 +441,7 @@ test("test_default_fits", async () => {
   ).resolves.toBe("pin");
 });
 
-// plain の種類は、機能を付けず、縦の罫線と面を外す（Plain）
+// plain の種類は、機能を付けず、縦の罫線と面を削除する（Plain）
 test("test_plain", async () => {
   // 準備・実行
   const page = await open("plain");
@@ -531,7 +531,7 @@ test("test_long_cells", async () => {
   await expect(pageOverflows(page)).resolves.toBe(false);
 });
 
-/** 表の本文の行の隠れた列を含む、指定した列のセルが `hidden` かを上から並べて返す */
+/** 表の本文の行の隠れた列を含む、指定した列のセルが `hidden` かを上から並べて返却する */
 function hiddenCells(page: Page, column: number): Promise<boolean[]> {
   return page.evaluate((index) => {
     const cells = [
@@ -549,7 +549,7 @@ function hiddenCells(page: Page, column: number): Promise<boolean[]> {
   }, column);
 }
 
-/** 集計の行ごとに、セルの文字を空白を除いて左から並べて返す */
+/** 集計の行ごとに、セルの文字を空白を除いて左から並べて返却する */
 function totalRows(page: Page): Promise<string[][]> {
   return page.evaluate(() =>
     [...document.querySelectorAll("#storybook-root tfoot tr")].map((row) =>
@@ -560,7 +560,7 @@ function totalRows(page: Page): Promise<string[][]> {
   );
 }
 
-/** 件数の要素の、画面に出る文字を返す（読み上げだけの文字は含めない） */
+/** 件数の要素の、画面に出る文字を返却する（スクリーンリーダー向けの文字は含めない） */
 function countText(page: Page): Promise<string> {
   return page.locator(".mdmark-table-count [aria-hidden='true']").innerText();
 }
@@ -686,7 +686,7 @@ test("test_totals_empty", async () => {
   await expect(countText(page)).resolves.toBe("0 / 4 件");
 });
 
-// コピーしたことを知らせる（Copied）
+// コピーしたことを通知する（Copied）
 test("test_copied", async () => {
   // 準備・実行
   const page = await open("copied");
@@ -699,7 +699,7 @@ test("test_copied", async () => {
   );
 });
 
-// コピーできなかったことを知らせる（CopyFailed）
+// コピーできなかったことを通知する（CopyFailed）
 test("test_copy_failed", async () => {
   // 準備・実行
   const page = await open("copy-failed");
@@ -741,7 +741,7 @@ test("test_all_features", async () => {
   await expect(pageOverflows(page)).resolves.toBe(false);
 });
 
-// 数として読めないセルを持つ列は、合計の行のセルを空にし、平均の行のセルは読めた値で出す（TotalsUnreadable）
+// 数として読み込めないセルを持つ列は、合計の行のセルを空にし、平均の行のセルは読み込めた値で出す（TotalsUnreadable）
 test("test_totals_unreadable", async () => {
   // 準備・実行
   const page = await open("totals-unreadable");
@@ -782,7 +782,7 @@ test("test_totals_menu_open", async () => {
   await expect(pageOverflows(page)).resolves.toBe(false);
 });
 
-// 平均と件数のチェックを外すと、合計の行だけを出し、集計のボタンが隠していることを示す（TotalsHidden）
+// 平均と件数のチェックを解除すると、合計の行だけを出し、集計のボタンが隠していることを示す（TotalsHidden）
 test("test_totals_hidden", async () => {
   // 準備・実行
   const page = await open("totals-hidden");
@@ -810,7 +810,7 @@ test("test_totals_hidden", async () => {
   ).resolves.toBe("（2 件を非表示にしています）");
 });
 
-// コピーの形式のメニューを開くと、Markdown の表と TSV の 2 つを使いどころと並べて出す（CopyMenuOpen）
+// コピーの形式のメニューを開くと、Markdown の表と TSV の 2 つを用途と並べて出す（CopyMenuOpen）
 test("test_copy_menu_open", async () => {
   // 準備・実行
   const page = await open("copy-menu-open");
@@ -843,7 +843,7 @@ test("test_copy_menu_open", async () => {
   await expect(pageOverflows(page)).resolves.toBe(false);
 });
 
-// クリップボードに書けないときは、手動でコピーするパネルを帯の直後に出し、中身を読み取り専用で並べる（CopyFallback）
+// クリップボードに書き込めないときは、手動でコピーするパネルを帯の直後に出し、中身を読み取り専用で並べる（CopyFallback）
 test("test_copy_fallback", async () => {
   // 準備・実行
   const page = await open("copy-fallback");
@@ -874,13 +874,13 @@ test("test_copy_fallback", async () => {
       "| 名前 | 説明 | 更新日 |",
       "| --- | --- | --- |",
       "| りんご | 描画を速くする | 2026-10-01 |",
-      "| みかん | 印刷を直す | 2026-10-10 |",
+      "| みかん | 印刷を修正する | 2026-10-10 |",
     ].join("\n"),
   );
   await expect(pageOverflows(page)).resolves.toBe(false);
 });
 
-/** 行へのリンクの知らせの、行の ID・状態・文字・画面に出ているかを返す */
+/** 行へのリンクの通知の、行の ID・状態・文字・画面に出ているかを返却する */
 function rowLinkNotice(page: Page): Promise<{
   row: string | undefined;
   state: string | null;
@@ -901,7 +901,7 @@ function rowLinkNotice(page: Page): Promise<{
   });
 }
 
-// 2 行目の行へのリンクの URL をコピーすると、印の横に「リンクをコピーしました」を出す（RowLinkCopied）
+// 2 行目の行へのリンクの URL をコピーすると、マーカーの横に「リンクをコピーしました」を出す（RowLinkCopied）
 test("test_row_link_copied", async () => {
   // 準備・実行
   const page = await open("row-link-copied");
@@ -915,7 +915,7 @@ test("test_row_link_copied", async () => {
   await expect(pageOverflows(page)).resolves.toBe(false);
 });
 
-// 2 行目の行へのリンクの URL をコピーできないと、印の横に「リンクをコピーできませんでした」を出す（RowLinkFailed）
+// 2 行目の行へのリンクの URL をコピーできないと、マーカーの横に「リンクをコピーできませんでした」を出す（RowLinkFailed）
 test("test_row_link_failed", async () => {
   // 準備・実行
   const page = await open("row-link-failed");
@@ -929,7 +929,7 @@ test("test_row_link_failed", async () => {
   await expect(pageOverflows(page)).resolves.toBe(false);
 });
 
-/** 畳んだ表の最終列の見出しとセルが画面に出ているかを、見出し・本文の行の順に返す */
+/** 畳んだ表の最終列の見出しとセルが画面に出ているかを、見出し・本文の行の順に返却する */
 function lastColumnShown(page: Page): Promise<boolean[]> {
   return page.evaluate(() => {
     const cells = [
@@ -1211,7 +1211,7 @@ test("test_row_colors_dark", async () => {
   expect(green.bg).not.toBe(light);
 });
 
-/** 表の本文の行の行見出し（`th`）について、文字・隠れているか・`rowspan` を上から並べて返す（隠れた行も含む） */
+/** 表の本文の行の行見出し（`th`）について、文字・隠れているか・`rowspan` を上から並べて返却する（隠れた行も含む） */
 function rowHeaders(
   page: Page,
 ): Promise<Array<{ text: string; hidden: boolean; rowSpan: number }>> {
@@ -1231,7 +1231,7 @@ function rowHeaders(
   );
 }
 
-// 多段の見出しと行見出しは、上期・下期を 2 列にまたいで中央に寄せ、同じ地域を縦に結合して上に寄せる（Merged）
+// 多段の見出しと行見出しは、上期・下期を 2 列にまたいで中央に配置し、同じ地域を縦に結合して上に配置する（Merged）
 test("test_merged", async () => {
   // 準備・実行
   const page = await open("merged");
@@ -1269,7 +1269,7 @@ test("test_merged", async () => {
   await expect(pageOverflows(page)).resolves.toBe(false);
 });
 
-// 降順に並べ替えた後は、隣り合う同じ地域だけを結合し直す（MergedSorted）
+// 降順に並べ替えた後は、隣り合う同じ地域だけをもう一度結合する（MergedSorted）
 test("test_merged_sorted", async () => {
   // 準備・実行
   const page = await open("merged-sorted");
@@ -1293,7 +1293,7 @@ test("test_merged_sorted", async () => {
   ]);
 });
 
-// 東日本で絞り込んだ後は、表示している 3 行の地域を結合し直す（MergedFiltered）
+// 東日本で絞り込んだ後は、表示している 3 行の地域をもう一度結合する（MergedFiltered）
 test("test_merged_filtered", async () => {
   // 準備・実行
   const page = await open("merged-filtered");
@@ -1347,7 +1347,7 @@ test("test_row_header_pinned", async () => {
   ).resolves.toBe(true);
 });
 
-// 結合する相手の無い ^^・<< は、表の前に書き方の警告を置き、セルを書いた文字のまま描く（MergeInvalid）
+// 結合する相手の無い ^^・<< は、表の前に記載の警告を配置し、セルを記載した文字のまま描く（MergeInvalid）
 test("test_merge_invalid", async () => {
   // 準備・実行
   const page = await open("merge-invalid");
@@ -1371,7 +1371,7 @@ test("test_merge_invalid", async () => {
   expect(order).toBeGreaterThan(0);
 });
 
-// CSV の表は、帯の右端に押していない RAW のボタンを置き、元の CSV を隠す（CsvTable）
+// CSV の表は、帯の右端に押していない RAW のボタンを配置し、元の CSV を隠す（CsvTable）
 test("test_csv_table", async () => {
   // 準備・実行
   const page = await open("csv-table");
@@ -1395,7 +1395,7 @@ test("test_csv_table", async () => {
   ).resolves.toBe("hidden");
 });
 
-// RAW のボタンを押した状態は、表を隠して書いたとおりの CSV を出し、ボタンを青の面にする（CsvRaw）
+// RAW のボタンを押した状態は、表を隠して記載したとおりの CSV を出し、ボタンを青の面にする（CsvRaw）
 test("test_csv_raw", async () => {
   // 準備・実行
   const page = await open("csv-raw");
@@ -1419,7 +1419,7 @@ test("test_csv_raw", async () => {
   );
 });
 
-/** テーブル設定の一覧の項目の列名を、並んだ順に返す */
+/** テーブル設定の一覧の項目の列名を、並んだ順に返却する */
 function settingsNames(page: Page): Promise<string[]> {
   return page
     .locator(".mdmark-table-settings-item")
@@ -1458,7 +1458,7 @@ test("test_settings_open_reorder", async () => {
   await expect(pageOverflows(page)).resolves.toBe(false);
 });
 
-// `+reorder` だけの表のパネルは題が `並び順` で、目のアイコンを出さない（SettingsReorderOnly）
+// `+reorder` だけの表のパネルはタイトルが `並び順` で、目のアイコンを出さない（SettingsReorderOnly）
 test("test_settings_reorder_only", async () => {
   // 準備・実行
   const page = await open("settings-reorder-only");
@@ -1526,7 +1526,7 @@ test("test_reordered", async () => {
   ).resolves.toBe("1");
 });
 
-// 2 段の見出しで名前をピン止めした表のパネルを、ピン止めの列・設定の範囲・範囲の外の列に分ける（ReorderGroups）
+// 2 行の見出しで名前をピン止めした表のパネルを、ピン止めの列・設定の範囲・範囲の外の列に分ける（ReorderGroups）
 test("test_reorder_groups", async () => {
   // 準備・実行
   const page = await open("reorder-groups");
@@ -1544,7 +1544,7 @@ test("test_reorder_groups", async () => {
   await expect(pinnedColumns(page)).resolves.toEqual([0]);
 });
 
-/** 階層の表の行の `data-path` を、表示しているものだけ上から並べて返す */
+/** 階層の表の行の `data-path` を、表示しているものだけ上から並べて返却する */
 function shownTreePaths(page: Page): Promise<string[]> {
   return page
     .locator("#storybook-root tr.mdmark-tree-row")
@@ -1708,7 +1708,7 @@ test("test_tree_example_hidden", async () => {
   );
 });
 
-/** 帯のボタンの見えている文字（読み上げだけの文字を除く）と、幅・高さ */
+/** 帯のボタンの見えている文字（スクリーンリーダー向けの文字を除く）と、幅・高さ */
 function toolBoxes(page: Page) {
   return page
     .locator("#storybook-root .mdmark-table-tools > button")

@@ -37,14 +37,14 @@
           },
           "description": {
             "title": "説明",
-            "description": "どんな見た目にする CSS か・どんな文書に向くか。",
+            "description": "どんな外観にする CSS か・どんな文書に向くか。",
             "type": "string",
             "minLength": 1,
             "examples": ["見出しを社の色にする"]
           },
           "tags": {
             "title": "タグ",
-            "description": "探すときの語。省くと空の並び。",
+            "description": "探すときの単語。省くと空の並び。",
             "type": "array",
             "items": { "type": "string", "minLength": 1 },
             "examples": [["見出し", "色"]]

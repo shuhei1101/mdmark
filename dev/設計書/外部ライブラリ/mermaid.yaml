@@ -5,7 +5,7 @@ version:
   latest: 12.3.0
   checked_on: '2026-11-08'
   source: 既定の jsDelivr の URL（`https://cdn.jsdelivr.net/npm/mermaid@12.3.0/dist/mermaid.esm.min.mjs`）
-  pinning: 完全一致。上げるときは、テーマの変数の名前（`rowOdd`・`useGradient` など）と図の SVG の作り（`actor-man`・状態遷移図の終了の印）が変わっていないかを、mermaid の図の結合テストとスクリーンショットで確かめる
+  pinning: 完全一致。上げるときは、テーマの変数の名前（`rowOdd`・`useGradient` など）と図の SVG の作り（`actor-man`・状態遷移図の終了のマーカー）が変わっていないかを、mermaid の図の結合テストとスクリーンショットで確認する
 catalogs:
   - name: API
     version: 12.3.0
@@ -15,13 +15,13 @@ catalogs:
         purpose: '`startOnLoad`・`securityLevel`・`theme`・`themeVariables`・図の種類ごとの設定（`gantt.useWidth` など）を設定する'
       - name: render
         kind: 関数
-        purpose: id とソースから SVG の文字列を返す Promise。解釈できないソースは reject し、文書に `#d{id}` のエラーの図を残す
+        purpose: id とソースから SVG の文字列を返却する Promise。解釈できないソースは reject し、文書に `#d{id}` のエラーの図を残す
   - name: ファイル
     version: 12.3.0
     entries:
       - name: dist/mermaid.esm.min.mjs
         kind: ES モジュール
-        purpose: 本体（30,936 バイト）。図の種類ごとの chunk（`dist/chunks/mermaid.esm.min/*.mjs`）を literal の `import()` で読む
+        purpose: 本体（30,936 バイト）。図の種類ごとの chunk（`dist/chunks/mermaid.esm.min/*.mjs`）を literal の `import()` で読み込む
   - name: テーマの変数
     version: 12.3.0
     entries:
@@ -30,10 +30,10 @@ catalogs:
         purpose: '`base` テーマでは既定 `true`。ノードの枠線を `primaryBorderColor` から派生色へのグラデーションにする'
       - name: dropShadow
         kind: 変数
-        purpose: ノードの影。シーケンス図の参加者の箱の SVG の filter の影は、この変数では外れない
+        purpose: ノードの影。シーケンス図の参加者のノードの SVG の filter の影は、この変数では削除されない
       - name: rowOdd・rowEven
         kind: 変数
-        purpose: ER 図の属性の行の地の色（`attributeBackgroundColorOdd`・`attributeBackgroundColorEven` ではなく、こちらが当たる）
+        purpose: ER 図の属性の行の地の色（`attributeBackgroundColorOdd`・`attributeBackgroundColorEven` ではなく、こちらが該当する）
 lead: テキストの記法から flowchart・シーケンス図・クラス図・状態遷移図・ER 図・ガントチャート・円グラフなどの SVG を描く図のライブラリ。ES モジュールの本体と、図の種類ごとの chunk に分けて配る。
 purl: pkg:npm/mermaid@12.3.0
 supplier: mermaid の保守者（Knut Sveidqvist ほか）
@@ -41,11 +41,11 @@ upstream: mermaid-js/mermaid
 verification:
   state: 済
   date: '2026-11-08'
-  detail: PoC（#384）で、jsDelivr の `mermaid.esm.min.mjs` と chunk を CLI の `bundleViewer` で動的 `import()` を残さずに 1 つのスクリプトにまとめ、file:// で開いて外への要求 0 件で 7 種類の図を描いた。CSS 変数から作った hex を `base` テーマの `themeVariables` に渡し、ライトとダークで SVG の色が一致した。VS Code のプレビューと同じ規則の CSP のページで、CSP 違反 0 件で描いた（Chromium）
+  detail: PoC（#384）で、jsDelivr の `mermaid.esm.min.mjs` と chunk を CLI の `bundleViewer` で動的 `import()` を残さずに 1 つのスクリプトにまとめ、file:// で開いて外への要求 0 件で 7 種類の図を描いた。CSS 変数から作った hex を `base` テーマの `themeVariables` に指定し、ライトとダークで SVG の色が一致した。VS Code のプレビューと同じ規則の CSP のページで、CSP 違反 0 件で描いた（Chromium）
 license: MIT。商用利用できる。書き出した HTML に埋めるときは、モジュールの頭の著作権表示を残す
 official_url: https://mermaid.js.org/
 docs_url: https://mermaid.js.org/intro/
 selection:
   candidates: 要望が「言語 `mermaid` のコードブロックを描く」ため、mermaid 本体の 1 つ
   decision: 話し合いの決定（mermaid のコードブロックを描く）で採用が決まっている
-  consequences: 配布物に束ねず、使う文書のときだけ jsDelivr から読む。書き出しでは本体と chunk をまとめて埋める。テーマは `base` に CSS 変数から作った値を渡し、グラデーションと影を止める
+  consequences: 配布物にまとめず、使用する文書のときだけ jsDelivr から読み込む。書き出しでは本体と chunk をまとめて埋める。テーマは `base` に CSS 変数から作った値を指定し、グラデーションと影を止める

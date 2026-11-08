@@ -5,7 +5,7 @@ const meta = { title: "Parts/TextColor" } satisfies Meta<
 >;
 export default meta;
 
-/** ストーリー: 描画の口（`parameters.server.id`）の部品を `args` で描く */
+/** ストーリー: 描画のインターフェース（`parameters.server.id`）の部品を `args` で描く */
 type Story = StoryObj<Record<string, unknown>>;
 
 export const Blue: Story = {
@@ -13,7 +13,7 @@ export const Blue: Story = {
   parameters: { server: { id: "text-color" } },
   args: {
     color: "blue",
-    text: "版を固定すると、使う側のページの見た目が mdmark の更新で勝手に変わりません。",
+    text: "バージョンを固定すると、利用側のページの外観が mdmark の更新で勝手に変わりません。",
   },
 };
 
@@ -22,7 +22,7 @@ export const Red: Story = {
   parameters: { server: { id: "text-color" } },
   args: {
     color: "red",
-    text: "最新の版を指す URL は、更新のたびに見た目が変わります。",
+    text: "最新のバージョンを指す URL は、更新のたびに外観が変わります。",
   },
 };
 
@@ -31,7 +31,7 @@ export const WithLink: Story = {
   parameters: { server: { id: "text-color" } },
   args: {
     color: "green",
-    text: "詳しくは [配布物を読み込む](#) を見てください。",
+    text: "詳しくは [配布物を読み込む](#) を確認してください。",
   },
 };
 

@@ -33,7 +33,7 @@ function createParamRoot(): {
   return { root, definitions: [parsed<MdmarkParamDefinition>(STRENGTH_TEXT)] };
 }
 
-/** スライダーを値にして `input` を送る */
+/** スライダーを値にして `input` を送信する */
 function setSlider(root: HTMLElement, value: number): void {
   const slider = root.querySelector<HTMLInputElement>('input[type="range"]');
   if (!slider) {
@@ -47,8 +47,8 @@ function setSlider(root: HTMLElement, value: number): void {
 async function copy(root: HTMLElement): Promise<void> {
   const copyButton = [...root.querySelectorAll("button")].find(
     (candidate) =>
-      candidate.getAttribute("aria-label")?.includes("写す") ||
-      candidate.textContent?.includes("写す"),
+      candidate.getAttribute("aria-label")?.includes("コピーする") ||
+      candidate.textContent?.includes("コピーする"),
   );
   if (!copyButton) {
     throw new Error("今の値を写すボタンが無い");
@@ -74,7 +74,7 @@ test("test_attach_params", async () => {
   await copy(root);
   // 検証
   await vi.waitFor(() => {
-    expect(root.textContent).toContain("クリップボードに写しました");
+    expect(root.textContent).toContain("クリップボードにコピーしました");
   });
   expect(root.querySelector("output")?.textContent).toBe("8");
   expect(JSON.parse(written[0] ?? "{}").strength.value).toBe(8);

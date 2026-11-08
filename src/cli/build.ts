@@ -12,11 +12,11 @@ import { CliError, type CliIo } from "./errors.ts";
 import { prepareEmbeds, readDistAssets, writeHtml } from "./export.ts";
 import { assembleHtml } from "./html.ts";
 
-/** `build` の対象の文書を `kind: bundle` の中身にして `build.out` に HTML を書き、書いた絶対パス・`build.out` のままのパス・文書の数・警告を返す。標準出力・標準エラーには書かない */
+/** `build` の対象の文書を `kind: bundle` の中身にして `build.out` に HTML を書き込み、書き込んだ絶対パス・`build.out` のままのパス・文書の数・警告を返却する。標準出力・標準エラーには書き込まない */
 export async function buildSite(options: {
   /** 今のフォルダ */
   cwd: string;
-  /** 使う設定ファイルのパス */
+  /** 使用する設定ファイルのパス */
   config?: string | undefined;
   /** `dist/` の場所 */
   distDir: string;
@@ -30,20 +30,20 @@ export async function buildSite(options: {
   const build = loaded.config.build;
   if (!build) {
     throw new CliError(
-      "build が無い: 設定に build がありません。build.include と build.out を書いてください。",
+      "build が無い: 設定に build がありません。build.include と build.out を記載してください。",
     );
   }
   const paths = await collectBuildDocuments(loaded.dir, build);
   const first = paths[0];
   if (first === undefined) {
     throw new CliError(
-      "0 件: build.include に当たる文書がありません。build.include を直してください。",
+      "0 件: build.include に該当する文書がありません。build.include を修正してください。",
     );
   }
   const included = new Set(paths);
   const warnings: string[] = [];
 
-  // 最初に開く文書: 無いか、まとめる文書に当たらないときは、まとめる文書の最初の 1 つ
+  // 最初に開く文書: 無いか、まとめる文書に該当しないときは、まとめる文書の最初の 1 つ
   const wantedEntry =
     build.entry === undefined ? undefined : normalizePath(build.entry);
   let entry = first;
@@ -52,14 +52,14 @@ export async function buildSite(options: {
       entry = wantedEntry;
     } else {
       warnings.push(
-        `${build.entry}: build.entry がまとめる文書に当たりません。まとめる文書の最初の 1 つ（${first}）を開きます。`,
+        `${build.entry}: build.entry がまとめる文書に該当しません。まとめる文書の最初の 1 つ（${first}）を開きます。`,
       );
     }
   }
   for (const glossary of build.glossary ?? []) {
     if (!included.has(normalizePath(glossary))) {
       warnings.push(
-        `${glossary}: build.glossary がまとめる文書に当たりません。用語集の表を飛ばします。`,
+        `${glossary}: build.glossary がまとめる文書に該当しません。用語集の表を飛ばします。`,
       );
     }
   }
@@ -84,7 +84,7 @@ export async function buildSite(options: {
   for (const doc of payload.docs) {
     for (const href of findOutsideLinks(doc.markdown, doc.path, included)) {
       warnings.push(
-        `${doc.path}: \`${href}\` へのリンクはまとめた HTML に含まれません。書いたままのリンクで残します。まとめるなら \`build.include\` に足してください。`,
+        `${doc.path}: \`${href}\` へのリンクはまとめた HTML に含まれません。記載したままのリンクで残します。まとめるなら \`build.include\` に追加してください。`,
       );
     }
   }
@@ -106,10 +106,10 @@ export async function buildSite(options: {
   return { out, display: build.out, docs: paths.length, warnings };
 }
 
-/** `build` の対象の文書を `build.out` に HTML として書き、警告と `書き出した: {build.out}（文書 {件数} 件）` を出す */
+/** `build` の対象の文書を `build.out` に HTML として記載し、警告と `書き出した: {build.out}（文書 {件数} 件）` を出す */
 export async function runBuild(
   options: {
-    /** 使う設定ファイルのパス */
+    /** 使用する設定ファイルのパス */
     config?: string | undefined;
     /** `dist/` の場所 */
     distDir: string;

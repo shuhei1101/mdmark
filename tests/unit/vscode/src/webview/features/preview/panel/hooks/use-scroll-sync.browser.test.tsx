@@ -34,9 +34,9 @@ afterEach(() => {
   }
 });
 
-// スクロールするたびに見えている先頭の行を送って保存し、描く前は保存しない（正常系）
+// スクロールするたびに見えている先頭の行を送信して保存し、描く前は保存しない（正常系）
 test("test_use_scroll_sync", async () => {
-  // 準備: 縦に 40 個のブロックを描く代役（元の行番号 30 を先頭に置けるよう下に余白を足す）
+  // 準備: 縦に 40 個のブロックを描く代役（元の行番号 30 を先頭に配置できるよう下に余白を加算する）
   const { useScrollSync } = await loadHook();
   const { createDocumentView } = await loadDocumentView();
   const api = createFakeVsCodeApi();
@@ -51,7 +51,7 @@ test("test_use_scroll_sync", async () => {
   const view = createDocumentView({ root, mdmark: mdmark as never });
   view.attach(element);
   renderHook(() => useScrollSync({ view, api }));
-  // 実行: 描く前のスクロールの知らせ
+  // 実行: 描く前のスクロールの通知
   window.dispatchEvent(new Event("scroll"));
   await nextFrames();
   const statesBeforeRender = api.states.length;

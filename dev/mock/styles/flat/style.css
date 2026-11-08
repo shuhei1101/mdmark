@@ -1,4 +1,4 @@
-/* フラット: mindstella の色で、線を減らし面の明るさの差で区切る。見出しの下の線と表の縦の罫線を引かず、注意書きは種類の色の薄い面だけ */
+/* フラット: mindstella の色で、線を減らし面の明るさの差で区切る。見出しの下の線と表の縦の罫線を描かず、注意書きは種類の色の薄い面だけ */
 
 /* 明るい配色の値と、配色によらない値 */
 :root {
@@ -108,7 +108,7 @@
   }
 }
 
-/* 注意書き: 線を引かず、種類の色の薄い面だけで囲む */
+/* 注意書き: 線を描かず、種類の色の薄い面だけで囲む */
 .mdmark .markdown-alert {
   --mdmark-callout-bg: color-mix(in oklab, var(--mdmark-callout-color) 6%, var(--mdmark-color-bg));
   --mdmark-callout-border: transparent;

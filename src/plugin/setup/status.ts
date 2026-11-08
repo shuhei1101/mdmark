@@ -34,7 +34,7 @@ export const hasSession = async (options: {
   (await options.run("tmux", ["has-session", "-t", `=${options.session}`]))
     .code === 0;
 
-/** 端末の設定のパスとバージョン・tmux のセッション名・待ち受けているか・ログの場所を返す。何も書き換えない */
+/** 端末の設定のパスとバージョン・tmux のセッション名・待ち受けているか・ログの場所を返却する。何も書き換えない */
 export const readTerminalStatus = async (options: {
   env: NodeJS.ProcessEnv;
   pluginRoot: string;

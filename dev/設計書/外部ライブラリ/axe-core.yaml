@@ -1,7 +1,7 @@
 title: axe-core
 kind: ライブラリ
 version:
-  current: '`axe-core==4.14.0`（`@storybook/addon-a11y==10.6.2` が使う版とは別に、Webview のテストのビルドに入れる）'
+  current: '`axe-core==4.14.0`（`@storybook/addon-a11y==10.6.2` が使用するバージョンとは別に、Webview のテストのビルドに入れる）'
   latest: 4.14.0
   checked_on: '2026-11-06'
   source: vscode/package.json
@@ -12,7 +12,7 @@ catalogs:
   entries:
   - name: axe.run
     kind: 関数
-    purpose: 要素の範囲をアクセシビリティの規則で検査し、違反を返す
+    purpose: 要素の範囲をアクセシビリティの規則で検査し、違反を返却する
     params:
     - name: context.include
       type: Element[] | string[][]
@@ -21,11 +21,11 @@ catalogs:
     - name: context.exclude
       type: Element[] | string[][]
       required: false
-      description: 検査から外す範囲
+      description: 検査から除外する範囲
     - name: options.resultTypes
       type: string[]
       required: false
-      description: '`["violations"]` で違反だけを詳しく返す'
+      description: '`["violations"]` で違反だけを詳しく返却する'
     returns:
     - name: violations[].id
       type: string
@@ -47,7 +47,7 @@ used_in:
 verification:
   state: 済
   date: '2026-11-06'
-  detail: 'Playwright の Chromium で `axe.min.js` を読み、`axe.run({ include: [["#root"]], exclude: [["#ex"]] }, { resultTypes: ["violations"] })` が名前の無い `button` の `button-name`（`critical`）だけを返し、外した `img` の `image-alt` を返さないことを確かめた'
+  detail: 'Playwright の Chromium で `axe.min.js` を読み込み、`axe.run({ include: [["#root"]], exclude: [["#ex"]] }, { resultTypes: ["violations"] })` が名前の無い `button` の `button-name`（`critical`）だけを返却し、削除した `img` の `image-alt` を返却しないことを確認した'
 license: MPL-2.0（商用利用可。ファイルを改変して配るときは改変したファイルのソースを公開する）
 official_url: https://www.deque.com/axe/
 docs_url: https://github.com/dequelabs/axe-core/blob/develop/doc/API.md
@@ -58,4 +58,4 @@ install: '```bash
   ```
 
 
-  テストのビルドのときだけ `axe.min.js` を `media/test/axe.js` に写し、.vsix には入れない。'
+  テストのビルドのときだけ `axe.min.js` を `media/test/axe.js` にコピーし、.vsix には入れない。'

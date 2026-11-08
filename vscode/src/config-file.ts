@@ -13,7 +13,7 @@ import type { Logger } from "./log.ts";
 /** 雛形を作るかの確認のボタン */
 const CREATE_LABEL = "作成";
 
-/** 開くファイル（無ければ最も近い設定ファイル）をエディタで開く。無ければ雛形を作るかを尋ね、「作成」を選んだときだけ、フォルダを作って雛形を書いて開く */
+/** 開くファイル（無ければ最も近い設定ファイル）をエディタで開く。無ければ雛形を作るかを尋ね、「作成」を選んだときだけ、フォルダを作って雛形を書き込んで開く */
 export async function openConfigFile(options: {
   /** 開くファイル（帯から呼んだときは帯に出したファイル） */
   path?: string | undefined;
@@ -53,7 +53,7 @@ export async function openConfigFile(options: {
     {
       modal: true,
       detail:
-        "features・libraries・theme・extensions の書き方をコメントで添えたファイルを作ります。作った直後は、プレビューの見た目は変わりません。",
+        "features・libraries・theme・extensions の記載方法をコメントで添えたファイルを作ります。作った直後は、プレビューの外観は変わりません。",
     },
     CREATE_LABEL,
   );
@@ -68,9 +68,9 @@ export async function openConfigFile(options: {
   } catch (error) {
     if ((error as NodeJS.ErrnoException).code !== "EEXIST") {
       const reason = error instanceof Error ? error : new Error(String(error));
-      log.error("設定ファイルの雛形を書けない", path, reason);
+      log.error("設定ファイルの雛形を書き込めない", path, reason);
       await window.showErrorMessage(
-        `設定ファイルの雛形を書けませんでした: ${path}（${reason.message}）`,
+        `設定ファイルの雛形を書き込めませんでした: ${path}（${reason.message}）`,
       );
       return;
     }

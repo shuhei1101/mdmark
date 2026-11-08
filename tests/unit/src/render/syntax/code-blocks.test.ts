@@ -17,7 +17,7 @@ const loadCodeBlocks = () =>
 const warningText = (warnings: WarningItem[]): string =>
   warnings.map((item) => `${item.label} ${item.message}`).join("\n");
 
-// 題・行番号・行と範囲の強調を読む（正常系）
+// タイトル・行番号・行と範囲の強調を読み込む（正常系）
 test("test_read_code_spec", async () => {
   // 準備
   const { readCodeSpec } = await loadCodeBlocks();
@@ -31,7 +31,7 @@ test("test_read_code_spec", async () => {
   expect(spec.warnings).toEqual([]);
 });
 
-// 空白の後ろの指定を警告にし、知らないキーを読み飛ばして、読めた題を当てる（異常系）
+// 空白の後ろの指定を警告にし、知らないキーをスキップして、読み込めたタイトルを適用する（異常系）
 test("test_read_code_spec_when_unknown_key", async () => {
   // 準備
   const { readCodeSpec } = await loadCodeBlocks();
@@ -46,7 +46,7 @@ test("test_read_code_spec_when_unknown_key", async () => {
   );
 });
 
-// 行の数を超える番号と読めない番号を外して警告にする（異常系）
+// 行の数を超える番号と読み込めない番号を削除して警告にする（異常系）
 test("test_read_code_spec_when_line_missing", async () => {
   // 準備
   const { readCodeSpec } = await loadCodeBlocks();
@@ -61,13 +61,13 @@ test("test_read_code_spec_when_line_missing", async () => {
   expect(text).toContain("3-1");
 });
 
-// 印と印だけの行コメントの頭と行末の空白を外す（正常系）
+// マーカーとマーカーだけの行コメントの頭と行末の空白を削除する（正常系）
 test("test_read_line_marks", async () => {
   // 準備
   const { readLineMarks } = await loadCodeBlocks();
   const source = [
     "let count = 1; // [!code ++]",
-    "foo(); // 消す [!code --]",
+    "foo(); // 削除する [!code --]",
     "x = 1  # [!code highlight]",
     "<p>a</p> <!-- [!code ++] -->",
     "a; /* [!code --] */",
@@ -79,7 +79,7 @@ test("test_read_line_marks", async () => {
   // 検証
   expect(lines).toEqual([
     { text: "let count = 1;", kind: "add" },
-    { text: "foo(); // 消す", kind: "del" },
+    { text: "foo(); // 削除する", kind: "del" },
     { text: "x = 1", kind: "highlight" },
     { text: "<p>a</p>", kind: "add" },
     { text: "a;", kind: "del" },
@@ -89,7 +89,7 @@ test("test_read_line_marks", async () => {
   expect(warnings).toEqual([]);
 });
 
-// 打ち消した印は `\` を外した文字にして当てない（正常系）
+// 打ち消したマーカーは `\` を削除した文字にして適用しない（正常系）
 test("test_read_line_marks_when_escaped", async () => {
   // 準備
   const { readLineMarks } = await loadCodeBlocks();
@@ -102,7 +102,7 @@ test("test_read_line_marks_when_escaped", async () => {
   expect(warnings).toEqual([]);
 });
 
-// 知らない印は当てずに警告にする（異常系）
+// 知らないマーカーは当てずに警告にする（異常系）
 test("test_read_line_marks_when_unknown", async () => {
   // 準備
   const { readLineMarks } = await loadCodeBlocks();
@@ -116,7 +116,7 @@ test("test_read_line_marks_when_unknown", async () => {
   expect(warningText(warnings)).toContain("[!code blink]");
 });
 
-// 印と行の印を持つコードブロックも何も持たないコードブロックも帯を持つ部品にする（正常系）
+// マーカーと行のマーカーを持つコードブロックも何も持たないコードブロックも帯を持つ部品にする（正常系）
 test("test_build_code_blocks", () => {
   // 準備
   const markdown = [
@@ -134,7 +134,7 @@ test("test_build_code_blocks", () => {
   ].join("\n");
   // 実行
   const { html } = renderDoc(markdown, { syntax: false });
-  // 検証: 題を持つ 1 つ目は figure と figcaption の帯で、言語のラベルが題の前にある
+  // 検証: タイトルを持つ 1 つ目は figure と figcaption の帯で、言語のラベルがタイトルの前にある
   expect(html).toContain('<figure class="mdmark-code"');
   expect(html).toContain(
     '<figcaption class="mdmark-code-title mdmark-code-bar">',
@@ -146,7 +146,7 @@ test("test_build_code_blocks", () => {
   expect(caption.indexOf("mdmark-code-lang")).toBeLessThan(
     caption.indexOf("app.ts"),
   );
-  // 検証: 題を持たない 2 つ目は div の帯で、言語のラベルが text
+  // 検証: タイトルを持たない 2 つ目は div の帯で、言語のラベルが text
   expect(html).toContain(
     '<div class="mdmark-code"><div class="mdmark-code-bar">',
   );
@@ -161,7 +161,7 @@ test("test_build_code_blocks", () => {
   expect(html).not.toContain("<!--");
 });
 
-// 情報文字列の `言語:ファイル名` を言語のラベルとファイル名と読み上げの名前に分ける（正常系）
+// 情報文字列の `言語:ファイル名` を言語のラベルとファイル名とスクリーンリーダー向けの名前に分ける（正常系）
 test("test_build_code_blocks_when_file_name", () => {
   // 準備
   const markdown = [
@@ -176,7 +176,7 @@ test("test_build_code_blocks_when_file_name", () => {
   ].join("\n");
   // 実行
   const { html } = renderDoc(markdown);
-  // 検証: 1 つ目は言語とファイル名のラベル、`code` の class、ファイル名の読み上げの名前を持つ
+  // 検証: 1 つ目は言語とファイル名のラベル、`code` の class、ファイル名のスクリーンリーダー向けの名前を持つ
   const [firstPre, secondPre] = findTags(html, "<pre");
   const [firstCode, secondCode] = findTags(html, "<code");
   expect(html).toContain(
@@ -185,7 +185,7 @@ test("test_build_code_blocks_when_file_name", () => {
   expect(html).toContain('<span class="mdmark-code-file">hoge.py</span>');
   expect(firstCode).toContain('class="language-python"');
   expect(firstPre).toContain('aria-label="コード: hoge.py"');
-  // 検証: 2 つ目は言語のラベルを持たず、`code` が class を持たず、読み上げの名前が `コード`
+  // 検証: 2 つ目は言語のラベルを持たず、`code` が class を持たず、スクリーンリーダー向けの名前が `コード`
   expect(matches(html, /class="mdmark-code-lang"/g)).toHaveLength(1);
   expect(secondCode).not.toContain("class=");
   expect(secondPre).toContain('aria-label="コード"');
@@ -212,7 +212,7 @@ test("test_build_code_blocks_when_tree_with_file_name", () => {
   expect(html).toContain('<span class="mdmark-code-file">src</span>');
 });
 
-// 打ち消した印は `\` を外した文字の行にする（正常系）
+// 打ち消したマーカーは `\` を削除した文字の行にする（正常系）
 test("test_build_code_blocks_when_escaped", () => {
   // 準備
   const markdown = ["```ts", "let count = 1; // [\\!code ++]", "```", ""].join(
@@ -229,7 +229,7 @@ test("test_build_code_blocks_when_escaped", () => {
   expect(html).not.toContain("mdmark-syntax-warning");
 });
 
-// 知らない印だけのコードブロックの前に警告を差し込む（異常系）
+// 知らないマーカーだけのコードブロックの前に警告を差し込む（異常系）
 test("test_build_code_blocks_when_unknown_line_mark", () => {
   // 準備
   const markdown = ["```ts", "foo(); // [!code blink]", "```", ""].join("\n");
@@ -246,7 +246,7 @@ test("test_build_code_blocks_when_unknown_line_mark", () => {
   expect(html).not.toContain("mdmark-code-lines");
 });
 
-// 後ろにコードブロックの無い印を警告にする（異常系）
+// 後ろにコードブロックの無いマーカーを警告にする（異常系）
 test("test_build_code_blocks_when_no_fence", () => {
   // 準備
   const markdown = ["<!-- code: title=app.ts -->", "", "段落", ""].join("\n");
@@ -332,7 +332,7 @@ test("test_build_code_blocks_when_syntax_disabled", () => {
   expect(matches(html, /mdmark-code-lines/g)).toHaveLength(1);
 });
 
-// `code` がオフでも `syntax` がオンなら、行の印を外さず帯を持たない部品で色分けの属性を付ける（正常系）
+// `code` がオフでも `syntax` がオンなら、行のマーカーを削除せず帯を持たない部品で色分けの属性を付ける（正常系）
 test("test_build_code_blocks_when_code_disabled_with_syntax", () => {
   // 準備
   const markdown = [
@@ -352,7 +352,7 @@ test("test_build_code_blocks_when_code_disabled_with_syntax", () => {
   expect(html).toContain("let count = 1; // [!code ++]");
 });
 
-// dockerfile・diff と別名を色分けの言語に引く（正常系）
+// dockerfile・diff と別名を色分けの言語に参照する（正常系）
 test("test_build_code_blocks_when_dockerfile_and_diff", () => {
   // 準備
   const markdown = ["dockerfile", "docker", "diff", "patch"]
@@ -431,7 +431,7 @@ test("test_syntax_language_of", async () => {
   expect(result).toEqual(["typescript", "yaml", "xml"]);
 });
 
-// dockerfile・diff と別名を引く（正常系）
+// dockerfile・diff と別名を参照する（正常系）
 test("test_syntax_language_of_when_dockerfile_and_diff", async () => {
   // 準備
   const { syntaxLanguageOf } = await loadCodeBlocks();
@@ -443,7 +443,7 @@ test("test_syntax_language_of_when_dockerfile_and_diff", async () => {
   expect(result).toEqual(["dockerfile", "dockerfile", "diff", "diff"]);
 });
 
-// 表に無い語と継承した名前は引かない（正常系）
+// 表に無い単語と継承した名前は参照しない（正常系）
 test("test_syntax_language_of_when_unknown", async () => {
   // 準備
   const { syntaxLanguageOf } = await loadCodeBlocks();
@@ -565,7 +565,7 @@ test("test_read_folds_when_not_foldable", async () => {
   expect(text).toContain("3");
 });
 
-/** `code` の HTML の中の `mdmark-code-line` の開始タグを、コードブロックごとに返す */
+/** `code` の HTML の中の `mdmark-code-line` の開始タグを、コードブロックごとに返却する */
 function codeLineTags(html: string): string[][] {
   return html
     .split("<pre")
@@ -687,7 +687,7 @@ test("test_build_code_blocks_when_focus", () => {
   expect(innerHtml(html, "<pre")).not.toContain("//");
 });
 
-// wrap を読み、値を持つ wrap= を警告にする（正常系）
+// wrap を読み込み、値を持つ wrap= を警告にする（正常系）
 test("test_read_code_spec_when_wrap", async () => {
   // 準備
   const { readCodeSpec } = await loadCodeBlocks();
@@ -709,5 +709,5 @@ test("test_read_code_spec_when_wrap", async () => {
   expect(valued.wrap).toBe(false);
   const text = warningText(valued.warnings);
   expect(text).toContain("wrap=yes");
-  expect(text).toContain("wrap と書いて");
+  expect(text).toContain("wrap と記載して");
 });

@@ -3,7 +3,7 @@ implementation: "src/parts/diff-blocks.ts#renderDiffBlock"
 story: "Parts/DiffBlocks"
 states:
   - name: AddParagraph
-    description: 語を書き換えた段落と足した段落。追加の地の色と左の余白の `+`
+    description: 単語を書き換えた段落と追加した段落。追加の地の色と左の余白の `+`
     args:
       - name: kind
         value: add
@@ -21,7 +21,7 @@ states:
       - name: html
         value: <p data-source-line="4">リリースの前日までに、変更履歴の下書きを用意しておきます。</p>
   - name: AddHeading
-    description: 足した見出し。見出しの文字の大きさのまま追加の色を当てる
+    description: 追加した見出し。見出しの文字の大きさのまま追加の色を適用する
     args:
       - name: kind
         value: add
@@ -30,7 +30,7 @@ states:
       - name: html
         value: <h2 id="リリースの後">リリースの後</h2>
   - name: TableRowDel
-    description: 表の削除した行。1 つ目のセルの先頭に読み上げの `削除:` と `−`
+    description: 表の削除した行。1 つ目のセルの先頭にスクリーンリーダーの `削除:` と `−`
     args:
       - name: kind
         value: del
@@ -46,9 +46,9 @@ states:
       - name: unit
         value: item
       - name: html
-        value: <li>release ブランチを消す</li>
+        value: <li>release ブランチを削除する</li>
   - name: CodeBlock
-    description: 足したコードブロック。コードブロックの地の色は変えず、外側に追加の色を当てる
+    description: 追加したコードブロック。コードブロックの地の色は変えず、外側に追加の色を適用する
     args:
       - name: kind
         value: add
@@ -57,7 +57,7 @@ states:
       - name: html
         value: <pre><code>npm run build</code></pre>
   - name: Callout
-    description: 削除した注意書き。注意書きの種類の色は変えず、外側に削除の色を当てる
+    description: 削除した注意書き。注意書きの種類の色は変えず、外側に削除の色を適用する
     args:
       - name: kind
         value: del
@@ -74,7 +74,7 @@ states:
         value: block
       - name: html
         value: <p>https://cdn.jsdelivr.net/gh/shuhei1101/mdmark@v0.9.0/dist/index.js?cache-bust=20261030-feature-vscode-diff-view-preview</p>
-lead: 描いた文書の上で、追加・変更したブロックと削除したブロックを面の色と左の余白の + / − で示す。本文のブロック・リストの項目・表の行の HTML を受け、色を当てた HTML 文字列を返す。
+lead: 描いた文書の上で、追加・変更したブロックと削除したブロックを面の色と左の余白の + / − で示す。本文のブロック・リストの項目・表の行の HTML を受け、色を適用した HTML 文字列を返却する。
 args:
   - name: kind
     type: 列挙
@@ -89,7 +89,7 @@ args:
   - name: html
     type: 文字列
     required: true
-    description: 色を当てるブロックの描いた HTML。`unit` が `item` なら 1 つの `li`、`row` なら 1 つの `tr`。`kind` が `del` のときは、中の要素の `data-source-line` と `id` を外して返す
+    description: 色を適用するブロックの描いた HTML。`unit` が `item` なら 1 つの `li`、`row` なら 1 つの `tr`。`kind` が `del` のときは、中の要素の `data-source-line` と `id` を削除して返却する
 css_properties:
   - name: --mdmark-color-diff-add-bg
     syntax: <color>
@@ -108,13 +108,13 @@ css_properties:
     default: 差分の行と同じ
     description: 削除したブロックの `−` の色
 accessibility:
-  - 色を当てたブロックは、先頭（表の行は 1 つ目のセルの先頭）に読み上げにだけ出す `追加:`・`削除:`（class `mdmark-visually-hidden`）を持ち、色に頼らず伝える（WCAG 1.4.1）
+  - 色を適用したブロックは、先頭（表の行は 1 つ目のセルの先頭）にスクリーンリーダーにだけ出す `追加:`・`削除:`（class `mdmark-visually-hidden`）を持ち、色に頼らず伝える（WCAG 1.4.1）
   - 左の余白の `+`・`−` は `aria-hidden` にする
-  - 番号付きリストの削除した項目は番号を使わず、読み上げの番号と画面の番号を変更後の文書と揃える
+  - 番号付きリストの削除した項目は番号を使用せず、スクリーンリーダーの番号と画面の番号を変更後の文書と統一する
   - 地の色と文字のコントラストはライト・ダークとも 4.5:1 以上、`+`・`−` と地の色は 3:1 以上
 refs:
-  - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[色を当てたブロックの要素]
+  - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[色を適用したブロックの要素]
 status: planned
 notes:
-  補足: 見た目は確認ログの決定（面の色と左の余白の + / −、リストと表は項目・行の単位）。モックは `dev/mock/components/diff-blocks/` の案 A。対応テストファイルはテスト作成で `tests/integration/lib/diff-blocks.story.test.ts` を作った後に `test_file` へ書く
+  補足: 外観は確認ログの決定（面の色と左の余白の + / −、リストと表は項目・行の単位）。モックは `dev/mock/components/diff-blocks/` の案 A。対応テストファイルはテスト作成で `tests/integration/lib/diff-blocks.story.test.ts` を作った後に `test_file` へ記載する
 test_file: tests/integration/lib/diff-blocks.story.test.ts

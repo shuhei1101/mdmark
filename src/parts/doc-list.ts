@@ -4,11 +4,11 @@ import { escapeHtml } from "./escape.ts";
 export type DocListItem = {
   /** 文書のパス（設定ファイルのあるフォルダからの相対パス。区切りは `/`） */
   path: string;
-  /** 文書の題 */
+  /** 文書のタイトル */
   title: string;
 };
 
-/** 文書の一覧の題（読み上げの名前） */
+/** 文書の一覧のタイトル（スクリーンリーダー向けの名前） */
 const DOC_LIST_LABEL = "文書の一覧";
 
 /** 文書のパスのフォルダ（最後の `/` より前）。フォルダの無い文書は空文字 */
@@ -17,14 +17,14 @@ function folderOf(path: string): string {
   return index < 0 ? "" : path.slice(0, index);
 }
 
-/** 文書へのリンク 1 行の HTML を返す。開いている文書には `aria-current` を付ける */
+/** 文書へのリンク 1 行の HTML を返却する。開いている文書には `aria-current` を付ける */
 function renderItem(item: DocListItem, current: string | undefined): string {
   const path = escapeHtml(item.path);
   const currentAttribute = item.path === current ? ' aria-current="page"' : "";
   return `<li><a href="#/${path}" data-doc-path="${path}"${currentAttribute}>${escapeHtml(item.title)}</a></li>`;
 }
 
-/** まとめた文書を、フォルダの無い文書を先に、続けてフォルダごとに 1 段の見出しでまとめたリンクの一覧の HTML を返す */
+/** まとめた文書を、フォルダの無い文書を先に、続けてフォルダごとに 1 階層の見出しでまとめたリンクの一覧の HTML を返却する */
 export function renderDocList(options: {
   /** まとめた文書（並びの順に出す） */
   docs: DocListItem[];
@@ -40,7 +40,7 @@ export function renderDocList(options: {
     items.push(doc);
     groups.set(folder, items);
   }
-  // フォルダの無い文書を先に置く
+  // フォルダの無い文書を先に配置する
   const ordered = [...groups.entries()].sort(
     ([left], [right]) => Number(right === "") - Number(left === ""),
   );

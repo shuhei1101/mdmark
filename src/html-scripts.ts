@@ -5,13 +5,13 @@ export type Transpiler = {
   transform: (code: string, options: object) => { code: string };
 };
 
-/** モジュールを読む関数 */
+/** モジュールを読み込む関数 */
 export type ImportModule = (url: string) => Promise<unknown>;
 
 /** 範囲のスクリプトの言語 */
 type ScriptLanguage = "ts" | "js";
 
-/** `script` 要素が包んだ関数を渡す、`window` の鍵の名前。動かす間だけ置き、終えたら削除する */
+/** `script` 要素が包んだ関数を指定する、`window` の鍵の名前。動かす間だけ配置し、終えたら削除する */
 export const HTML_SCRIPTS_REGISTRY = "__mdmarkHtmlScript";
 
 /** 言語ごとの `transform` の設定 */
@@ -33,24 +33,24 @@ export const TRANSPILE_OPTIONS: Readonly<Record<ScriptLanguage, object>> = {
   },
 };
 
-/** 変換のライブラリを読めないときに範囲の前に置く知らせの枠 */
+/** 変換のライブラリを読み込めないときに範囲の前に配置する通知ブロック */
 const TRANSPILER_NOTICE =
   '<div class="mdmark-notice" role="status"><strong class="mdmark-notice-title">スクリプトを動かせません</strong><p>範囲のスクリプトを変換するライブラリを読み込めませんでした。動きを付けずに表示しています。</p></div>';
 
-/** 書き出した HTML の起動の処理が入れる、範囲のコードの文字から既定のエクスポートを返す関数を引く表。既定は `undefined` */
+/** 書き出した HTML の起動の処理が入れる、範囲のコードの文字から既定のエクスポートを返却する関数を参照する表。既定は `undefined` */
 export let embeddedHtmlScripts: Map<string, () => unknown> | undefined;
 
-/** `embeddedHtmlScripts` を置き換える。`undefined` で変換のライブラリを読む形に戻す */
+/** `embeddedHtmlScripts` を置き換える。`undefined` で変換のライブラリを読み込む構造に戻す */
 export function setEmbeddedHtmlScripts(
   scripts: Map<string, () => unknown> | undefined,
 ): void {
   embeddedHtmlScripts = scripts;
 }
 
-/** 既定の `importModule`: URL のモジュールを動的 `import()` で読む */
+/** 既定の `importModule`: URL のモジュールを動的 `import()` で読み込む */
 const importByUrl: ImportModule = (url) => import(/* @vite-ignore */ url);
 
-/** `url` を `document.baseURI` を基準に解決して読み、`disableScriptTags` を呼んで、`transform` を持つ変換のライブラリを返す。同じ `cache` では同じ URL を 1 回だけ読む */
+/** `url` を `document.baseURI` を基準に解決して読み込み、`disableScriptTags` を呼んで、`transform` を持つ変換のライブラリを返却する。同じ `cache` では同じ URL を 1 回だけ読み込む */
 export function loadTranspiler(options: {
   url: string;
   cache: Map<string, Promise<Transpiler>>;
@@ -77,7 +77,7 @@ export function loadTranspiler(options: {
   return loading;
 }
 
-/** CommonJS に変えたコードを `(module, exports, require)` を受け取る関数で包み、`window[HTML_SCRIPTS_REGISTRY](通し番号, 関数)` を呼ぶ `script` 要素の中身を返す */
+/** CommonJS に変えたコードを `(module, exports, require)` を受け取る関数で包み、`window[HTML_SCRIPTS_REGISTRY](通し番号, 関数)` を呼ぶ `script` 要素の中身を返却する */
 export function wrapRangeScript(options: {
   code: string;
   index: number;
@@ -86,17 +86,17 @@ export function wrapRangeScript(options: {
   return `window[${JSON.stringify(HTML_SCRIPTS_REGISTRY)}](${options.index}, function (module, exports, require) {\n${code}\n});\n`;
 }
 
-/** 範囲の根の要素の前に書き方の警告を置く */
+/** 範囲の根の要素の前に記載の警告を配置する */
 function warnBefore(scope: Element, message: string): void {
   scope.insertAdjacentHTML("beforebegin", renderSyntaxWarning({ message }));
 }
 
 /** 呼ぶと例外を投げる `require` */
 function rejectRequire(name: string): never {
-  throw new Error(`範囲のスクリプトでは require を使えません: ${name}`);
+  throw new Error(`範囲のスクリプトでは require を使用できません: ${name}`);
 }
 
-/** 変えたコードを `script` 要素で動かし、登録された関数を返す（構文エラーで登録が無いときは `undefined`） */
+/** 変えたコードを `script` 要素で動かし、登録された関数を返却する（構文エラーで登録が無いときは `undefined`） */
 function evaluateScript(options: {
   code: string;
   index: number;
@@ -140,7 +140,7 @@ function inDiff(template: Element): boolean {
   );
 }
 
-/** 描いた要素の中の `template.mdmark-html-script` を文書の順に変換して動かし、既定のエクスポートの関数を範囲の根の要素で呼ぶ。範囲が返した `destroy` をまとめて呼ぶ関数を返す */
+/** 描いた要素の中の `template.mdmark-html-script` を文書の順に変換して動かし、既定のエクスポートの関数を範囲の根の要素で呼ぶ。範囲が返却した `destroy` をまとめて呼ぶ関数を返却する */
 export async function runHtmlScripts(options: {
   root: HTMLElement;
   url: string;
@@ -201,7 +201,7 @@ export async function runHtmlScripts(options: {
       const load = embedded.get(code);
       if (!load) {
         fail(
-          `範囲の \`${lang}\` をスクリプトとして読めません（構文エラー）。内容はブラウザのコンソールに出しています。`,
+          `範囲の \`${lang}\` をスクリプトとして読み込めません（構文エラー）。内容はブラウザのコンソールに出しています。`,
           new Error("書き出した HTML に範囲のスクリプトがありません"),
         );
         continue;
@@ -224,7 +224,7 @@ export async function runHtmlScripts(options: {
         ).code;
       } catch (error) {
         fail(
-          `範囲の \`${lang}\` をスクリプトとして読めません（構文エラー）。内容はブラウザのコンソールに出しています。`,
+          `範囲の \`${lang}\` をスクリプトとして読み込めません（構文エラー）。内容はブラウザのコンソールに出しています。`,
           error,
         );
         continue;
@@ -239,7 +239,7 @@ export async function runHtmlScripts(options: {
       });
       if (!run) {
         fail(
-          `範囲の \`${lang}\` をスクリプトとして読めません（構文エラー）。内容はブラウザのコンソールに出しています。`,
+          `範囲の \`${lang}\` をスクリプトとして読み込めません（構文エラー）。内容はブラウザのコンソールに出しています。`,
           scriptError,
         );
         continue;
@@ -258,7 +258,7 @@ export async function runHtmlScripts(options: {
     }
     if (typeof exported !== "function") {
       fail(
-        `範囲の \`${lang}\` の既定のエクスポートが関数ではありません。\`export default\` で、範囲の根の要素を受け取る関数を書いてください。`,
+        `範囲の \`${lang}\` の既定のエクスポートが関数ではありません。\`export default\` で、範囲の根の要素を受け取る関数を記載してください。`,
         new TypeError("既定のエクスポートが関数ではありません"),
       );
       continue;

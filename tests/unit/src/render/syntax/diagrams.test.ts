@@ -58,7 +58,7 @@ test("test_build_diagrams_when_extension_registered", async () => {
   expect(html).toContain('data-mdmark-slot="flow"');
 });
 
-// 読めない定義は書き方の警告にする（異常系）
+// 読み込めない定義は記載の警告にする（異常系）
 test("test_build_diagrams_when_invalid", () => {
   // 準備
   const unclosed = INQUIRY_TEXT.slice(0, INQUIRY_TEXT.lastIndexOf("}"));
@@ -69,7 +69,7 @@ test("test_build_diagrams_when_invalid", () => {
   const { html } = renderDoc(markdown);
   // 検証
   expect(html).toContain("mdmark-syntax-warning");
-  expect(html).toContain("フロー図の部品の定義を JSON として読めません");
+  expect(html).toContain("フロー図の部品の定義を JSON として読み込めません");
   expect(html).toContain("<p>後ろの段落</p>");
   expect(html).not.toContain('mdmark-diagram"');
 });
@@ -90,7 +90,7 @@ test("test_build_diagrams_when_param_copy_label", async () => {
 const loadDiagrams = () =>
   import("../../../../../src/render/syntax/diagrams.ts");
 
-// 図の部品の範囲だけを返す（正常系）
+// 図の部品の範囲だけを返却する（正常系）
 test("test_find_diagram_blocks", async () => {
   // 準備
   const { findDiagramBlocks } = await loadDiagrams();

@@ -4,7 +4,7 @@ entry:
   value: add_template
 lead: 作業のフォルダの CSS を端末の設定のフォルダのテンプレートにコピーし、名前・説明・タグを索引に記載する。
 idempotent: false
-side_effects: テンプレートのフォルダに CSS を書き、索引に行を追加する（`overwrite` のときは同じ名前の CSS と行を置き換える）。フォルダと索引が無ければ作る
+side_effects: テンプレートのフォルダに CSS を書き込み、索引に行を追加する（`overwrite` のときは同じ名前の CSS と行を置き換える）。フォルダと索引が無ければ作る
 request:
   - name: file
     type: string
@@ -22,14 +22,14 @@ request:
     type: string
     required: true
     location: argument
-    description: どんな見た目にする CSS か・どんな文書に向くかの説明
+    description: どんな外観にする CSS か・どんな文書に向くかの説明
     constraints: 空でない
   - name: tags
     type: string[]
     required: false
     default: '[]'
     location: argument
-    description: 探すときの語
+    description: 探すときの単語
     constraints: 要素は空でない文字列
   - name: overwrite
     type: boolean
@@ -67,28 +67,28 @@ exceptions:
     condition: 登録できた
   - name: ツールのエラー（同じ名前のテンプレートがある）
     condition: 索引に同じ `name` の行があり、`overwrite` が `true` でない
-    notes: 内容の文に、同じ名前があることと、`overwrite` を `true` にすれば置き換えられることを書く。CSS と索引を書き換えない
+    notes: 内容の文に、同じ名前があることと、`overwrite` を `true` にすれば置き換えられることを記載する。CSS と索引を書き換えない
   - name: ツールのエラー（CSS が無い）
     condition: '`file` のファイルが無い、または拡張子が `.css` でない'
-    notes: 内容の文に、無いパスか拡張子を書く。何も書き換えない
+    notes: 内容の文に、無いパスか拡張子を記載する。何も書き換えない
   - name: ツールのエラー（引数が合わない）
     condition: '`name` の文字・`description`・`tags` が制約に合わない'
-    notes: 内容の文に、合わない引数の名前と許す値を書く。索引を読まず、何も書き換えない
-  - name: ツールのエラー（索引を読めない）
-    condition: 既にある索引が YAML として読めない、またはスキーマに合わない
+    notes: 内容の文に、合わない引数の名前と許す値を記載する。索引を読み込まず、何も書き換えない
+  - name: ツールのエラー（索引を読み込めない）
+    condition: 既にある索引が YAML として読み込めない、またはスキーマに合わない
     notes: '`list_templates` と同じ文。何も書き換えない'
   - name: ツールのエラー（作業のフォルダが無い）
     condition: '`project_dir` が無い、絶対パスでない、またはそのフォルダが無い'
     notes: ほかのツールと同じ文
-error_format: 'ツールの結果を `isError: true` にし、内容のテキストに、何が合わないかと直し方を日本語の 1 文で書く。'
+error_format: 'ツールの結果を `isError: true` にし、内容のテキストに、何が合わないかと修正方法を日本語の 1 文で記載する。'
 constraints:
   - item: テンプレートのフォルダと索引
     constraint: '`list_templates` と同じ'
-    decided_by: dev/設計書/インターフェース定義/ClaudeCodeプラグイン/CSSのテンプレートの一覧を返す.ts#constraints[テンプレートのフォルダ]
+    decided_by: dev/設計書/インターフェース定義/ClaudeCodeプラグイン/CSSのテンプレートの一覧を返却する.ts#constraints[テンプレートのフォルダ]
   - item: CSS のファイル名
     constraint: テンプレートのフォルダの CSS は `{name}.css`。索引の `file` にこの名前を記載する
   - item: 書き込みの順
-    constraint: 書き込む索引をスキーマで検査してから、CSS を書き、索引を書く。検査に通らなければ何も書かない。索引は同じフォルダの一時ファイルに書いてから rename で置き換える。索引の書き込みに失敗したら、書いた CSS を消し（`overwrite` のときは元の中身に戻し）、エラーにする
+    constraint: 書き込む索引をスキーマで検査してから、CSS を書き込み、索引を書き込む。検査に通らなければ何も書き込まない。索引は同じフォルダの一時ファイルに書き込んでから rename で置き換える。索引の書き込みに失敗したら、記載した CSS を削除し（`overwrite` のときは元の中身に戻し）、エラーにする
   - item: 索引の並び
     constraint: 新しい名前は末尾に追加する。`overwrite` で置き換える行は元の位置のまま
 flows:
@@ -108,12 +108,12 @@ flows:
         participant F as 作業のフォルダ
         participant T as テンプレートのフォルダ
         C->>S: add_template（file・name・description・tags）
-        S->>F: brand.css を読む
-        S->>T: brand.css を書き、索引を書く
+        S->>F: brand.css を読み込む
+        S->>T: brand.css を書き込み、索引を書き込む
         S-->>C: name・path・replaced
     expected:
       - テンプレートのフォルダに作業のフォルダの `brand.css` と同じ中身の `brand.css` がある
-      - '索引が `schema: 1` と、渡した `name`・`description`・`tags` と `file: brand.css` の行 1 つを持つ'
+      - '索引が `schema: 1` と、指定した `name`・`description`・`tags` と `file: brand.css` の行 1 つを持つ'
       - '`replaced` が `false`'
     test: test_normal
   - name: 正常系（上書きする）
@@ -135,7 +135,7 @@ flows:
         S-->>C: replaced: true
     expected:
       - テンプレートのフォルダの `brand.css` が書き換えた中身になる
-      - 索引の行は 1 つのままで、`description`・`tags` が渡した値になる
+      - 索引の行は 1 つのままで、`description`・`tags` が指定した値になる
       - '`replaced` が `true`'
     test: test_normal_when_overwriting
   - name: 異常系（同じ名前のテンプレートがある・ツールのエラー）
@@ -153,7 +153,7 @@ flows:
         participant S as MCP サーバー
         participant T as テンプレートのフォルダ
         C->>S: add_template（同じ name）
-        S->>T: 索引を読む
+        S->>T: 索引を読み込む
         S-->>C: isError（同じ名前があることと overwrite）
     expected:
       - '`isError` が立つ'

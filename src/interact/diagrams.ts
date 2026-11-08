@@ -19,7 +19,7 @@ const ZOOM_EPSILON = 0.001;
 const TEXT_SELECTOR =
   ".mdmark-diagram-er-head, .mdmark-diagram-er-columns, .mdmark-diagram-node-kind, .mdmark-diagram-node-name, .mdmark-diagram-node-sub, .mdmark-diagram-label, .mdmark-diagram-frame-title, .mdmark-diagram-lane-label, .mdmark-diagram-axis-text, .mdmark-diagram-value-text, .mdmark-term";
 
-// 操作を付けた回数の通し番号。`id` を重ならせないために使う
+// 操作を付けた回数の通し番号。`id` を重ならせないために使用する
 let attachCounter = 0;
 
 // 上端に留めるグループのタイトルの間と、表示する枠の上端との余白（定義の座標の px）
@@ -28,10 +28,10 @@ const STICKY_GAP_PX = 4;
 // 上端に留めているタイトルに付ける class
 const STUCK_CLASS = "is-stuck";
 
-/** 図の中身を描き直したときに `figure` へ送るイベント（ツールチップを付け直す） */
+/** 図の中身を再描画したときに `figure` へ送信するイベント（ツールチップをもう一度付ける） */
 export const DIAGRAM_REDRAW_EVENT = "mdmark-diagram-redraw";
 
-/** 高さを保つ先（sessionStorage）。使えない環境では `null` */
+/** 高さを保つ先（sessionStorage）。使用できない環境では `null` */
 const defaultStorage = (): Storage | null => {
   try {
     return window.sessionStorage;
@@ -40,7 +40,7 @@ const defaultStorage = (): Storage | null => {
   }
 };
 
-/** 図の `id` の頭 `from` を `to` に振り直し、それを指す属性も合わせて直す */
+/** 図の `id` の頭 `from` を `to` にもう一度振り、それを指す属性も合わせて修正する */
 export function renumberIds(
   scope: HTMLElement,
   from: string,
@@ -75,7 +75,7 @@ export function renumberIds(
   }
 }
 
-/** 図 1 つの倍率と位置の操作（右上のボタン・キー・ドラッグ・リサイズハンドル）と、グループのタイトルを上端に留める処理を付け、操作と監視を外す関数を返す */
+/** 図 1 つの倍率と位置の操作（右上のボタン・キー・ドラッグ・リサイズハンドル）と、グループのタイトルを上端に留める処理を付け、操作と監視を解除する関数を返却する */
 function attachView(
   figure: HTMLElement,
   options: {
@@ -145,7 +145,7 @@ function attachView(
     heads.classList.toggle("is-stuck", viewport.scrollTop > 0);
   };
 
-  /** 倍率が変わったとき: 文書の中では表示する枠の高さを合わせ、相手の名前の行を留め直す */
+  /** 倍率が変わったとき: 文書の中では表示する枠の高さを合わせ、相手の名前の行をもう一度留める */
   const onChange = (zoom: number, fit: number): void => {
     scale = zoom;
     if (!modal) {
@@ -156,7 +156,7 @@ function attachView(
         const height = content.height * fit;
         viewport.style.height = `${Number.isNaN(cap) ? height : Math.min(height, cap)}px`;
       }
-      // 使う側が高さを変えたときに図の全体が収まる高さまで広げられるよう、上限を今の倍率の図の高さにする
+      // 利用側が高さを変えたときに図の全体が収まる高さまで広げられるよう、上限を今の倍率の図の高さにする
       viewport.style.maxHeight = `${content.height * zoom}px`;
     }
     stickHeads();
@@ -224,7 +224,7 @@ function attachView(
   };
 }
 
-/** 全画面の枠に写した図を、モーダルの図にする: 開いている状態を外し、`id` を写しと重ならない値にし、全画面のボタンを閉じるボタンにする */
+/** 全画面の枠にコピーした図を、モーダルの図にする: 開いている状態を削除し、`id` をコピーと重ならない値にし、全画面のボタンを閉じるボタンにする */
 function prepareModalFigure(figure: HTMLElement): HTMLElement {
   const copy = figure.cloneNode(true) as HTMLElement;
   // 全画面の中では高さを変えない
@@ -256,7 +256,7 @@ function prepareModalFigure(figure: HTMLElement): HTMLElement {
   return copy;
 }
 
-/** 図を全画面のモーダルで開き、開いた全画面を閉じる関数を返す。閉じるボタンか Esc で閉じたら、付けた操作と監視を外して `dialog` を消し、フォーカスを全画面のボタンへ戻す */
+/** 図を全画面のモーダルで開き、開いた全画面を閉じる関数を返却する。閉じるボタンか Esc で閉じたら、付けた操作と監視を解除して `dialog` を削除し、フォーカスを全画面のボタンへ戻す */
 export function openDiagramDialog(options: {
   /** 開く図 */
   figure: HTMLElement;
@@ -278,7 +278,7 @@ export function openDiagramDialog(options: {
     modal: true,
     onPanStart: () => tips.closeOpen(),
   });
-  // 写した ER 図は、開いたときの列の開閉の状態のまま開閉できる
+  // コピーした ER 図は、開いたときの列の開閉の状態のまま開閉できる
   const detachFolds = attachErFolds(modalFigure);
   const heading = modalFigure.querySelector(".mdmark-diagram-head");
   if (heading) {
@@ -288,7 +288,7 @@ export function openDiagramDialog(options: {
     '[data-tool="close"]',
   );
   closeButton?.addEventListener("click", () => dialog.close());
-  // ツールチップを開いている間の Esc は、ツールチップだけを閉じる（close request を起こさない）
+  // ツールチップを開いている間の Esc は、ツールチップだけを閉じる（close request を発生させない）
   dialog.addEventListener("keydown", (event) => {
     if (event.key === "Escape" && tips.closeOpen()) {
       event.preventDefault();
@@ -313,11 +313,11 @@ export function openDiagramDialog(options: {
   };
 }
 
-/** `root` の中の図ごとに、開いたときの倍率を当て、拡大・縮小・移動・全画面のボタンとキー・ドラッグ、ツールチップを付ける。付けた操作と監視を外し、開いている全画面を閉じる関数を返す */
+/** `root` の中の図ごとに、開いたときの倍率を当て、拡大・縮小・移動・全画面のボタンとキー・ドラッグ、ツールチップを付ける。付けた操作と監視を解除し、開いている全画面を閉じる関数を返却する */
 export function attachDiagrams(options: {
   /** 描いた要素 */
   root: HTMLElement;
-  /** 図のツールチップを先に出す側（`attachDiagramTips` と `openDiagramDialog` へ渡す） */
+  /** 図のツールチップを先に出す側（`attachDiagramTips` と `openDiagramDialog` へ指定する） */
   placement: TooltipPlacement;
   /** リサイズハンドルで変えた高さを保つ先（既定は sessionStorage） */
   storage?: Storage | null;
@@ -336,14 +336,14 @@ export function attachDiagrams(options: {
       return;
     }
     const title = figure.querySelector(".mdmark-diagram-head")?.id ?? "";
-    // 同じページに文書を 2 つ以上描いても `id` が重ならないよう振り直す
+    // 同じページに文書を 2 つ以上描いても `id` が重ならないようもう一度振る
     renumberIds(
       figure,
       title.replace(/-title$/, ""),
       `mdmark-diagram-${attachCounter}-${index}`,
     );
     let tips = attachDiagramTips({ figure, placement });
-    // 中身を描き直したとき（操作できる部品のグラフ）は、ツールチップを付け直す
+    // 中身を再描画したとき（操作できる部品のグラフ）は、ツールチップをもう一度付ける
     const onRedraw = (): void => {
       tips.detach();
       tips = attachDiagramTips({ figure, placement });

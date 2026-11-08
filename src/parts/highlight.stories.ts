@@ -5,7 +5,7 @@ const meta = { title: "Parts/Highlight" } satisfies Meta<
 >;
 export default meta;
 
-/** ストーリー: 描画の口（`parameters.server.id`）の部品を `args` で描く */
+/** ストーリー: 描画のインターフェース（`parameters.server.id`）の部品を `args` で描く */
 type Story = StoryObj<Record<string, unknown>>;
 
 export const Default: Story = {
@@ -24,7 +24,7 @@ export const Long: Story = {
   name: "Long",
   parameters: { server: { id: "highlight" } },
   args: {
-    html: "とても長い強調の文字で行の幅を超えて次の行へ折り返すときの見え方を確かめる",
+    html: "とても長い強調の文字で行の幅を超えて次の行へ折り返すときの見え方を確認する",
     frameWidth: "320px",
   },
 };

@@ -11,7 +11,7 @@ const VIEWPORT = { width: 1280, height: 800 };
 /** 描いた文書の高さ（画面の高さより十分に長い） */
 const DOCUMENT_HEIGHT = 3000;
 
-/** 置き直しの基準の位置（スクロールする場所の端からの距離が 0 のとき） */
+/** 再配置の基準の位置（スクロールする場所の端からの距離が 0 のとき） */
 const BASE_POSITION = "calc(0px + var(--mdmark-back-to-top-gap))";
 
 const originalMatchMedia = window.matchMedia;
@@ -19,7 +19,7 @@ const originalBodyMargin = document.body.style.margin;
 const elements: HTMLElement[] = [];
 const detachers: Array<() => void> = [];
 
-/** 高さ DOCUMENT_HEIGHT の段落を持つ、描く先の要素をページの先頭に置く */
+/** 高さ DOCUMENT_HEIGHT の段落を持つ、描く先の要素をページの先頭に配置する */
 function createElement(): HTMLElement {
   const el = document.createElement("div");
   el.className = "mdmark";
@@ -32,7 +32,7 @@ function createElement(): HTMLElement {
   return el;
 }
 
-/** 描く先の要素に先頭へ戻るボタンを付け、後始末のために外す関数を控える */
+/** 描く先の要素に先頭へ戻るボタンを付け、後始末のために削除する関数を記録する */
 async function attach(el: HTMLElement, content: HTMLElement = el) {
   const { attachBackToTop } = await loadBackToTop();
   const detach = attachBackToTop({ el, content });
@@ -40,7 +40,7 @@ async function attach(el: HTMLElement, content: HTMLElement = el) {
   return detach;
 }
 
-/** 描く先の要素の中のボタンを返す（無ければ例外） */
+/** 描く先の要素の中のボタンを返却する（無ければ例外） */
 function findButton(el: HTMLElement): HTMLButtonElement {
   const button = el.querySelector<HTMLButtonElement>(
     ":scope > button.mdmark-back-to-top",
@@ -51,27 +51,27 @@ function findButton(el: HTMLElement): HTMLButtonElement {
   return button;
 }
 
-/** 次の 2 フレームを待つ（スクロールの受け取りと、予約した置き直しのフレーム） */
+/** 次の 2 フレームを待つ（スクロールの受け取りと、予約した再配置のフレーム） */
 async function nextFrames(): Promise<void> {
   for (let count = 0; count < 2; count += 1) {
     await new Promise((resolve) => requestAnimationFrame(resolve));
   }
 }
 
-/** ページを指定の量までスクロールし、置き直しを待つ */
+/** ページを指定の量までスクロールし、再配置を待つ */
 async function scrollPage(top: number): Promise<void> {
   document.documentElement.scrollTop = top;
   window.dispatchEvent(new Event("scroll"));
   await nextFrames();
 }
 
-/** 部品の左端から、ボタンをずらした先の右の位置（画面の右端からの px）を返す */
+/** 部品の左端から、ボタンをずらした先の右の位置（画面の右端からの px）を返却する */
 function avoidedRight(obstacle: HTMLElement): string {
   const { left } = obstacle.getBoundingClientRect();
   return `${document.documentElement.clientWidth - left + 8}px`;
 }
 
-/** `matchMedia` を、動きを減らす設定に当たるかを決めた偽物に替える */
+/** `matchMedia` を、動きを減らす設定に該当するかを決めた偽物に替える */
 function fakeReducedMotion(reduce: boolean): void {
   window.matchMedia = vi.fn(
     (query: string) =>
@@ -128,7 +128,7 @@ test("test_attach_back_to_top", async () => {
   );
 });
 
-// 余白の列と横の範囲が重なれば、その左から間を空けて置く（正常系）
+// 余白の列と横の範囲が重なれば、その左から間を空けて配置する（正常系）
 test("test_attach_back_to_top_when_obstacle", async () => {
   // 準備
   const el = createElement();
@@ -199,7 +199,7 @@ test("test_attach_back_to_top_when_pressed", async () => {
   expect(document.activeElement).toBe(content);
 });
 
-// 外す関数でボタンと受け取りを外す（正常系）
+// 削除する関数でボタンと受け取りを解除する（正常系）
 test("test_attach_back_to_top_when_detached", async () => {
   // 準備
   const el = createElement();

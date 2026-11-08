@@ -16,7 +16,7 @@ export const useLinkClicks = (api: VsCodeApi): void => {
   useEffect(() => {
     const onCapture = (event: MouseEvent): void => {
       const target = targetOf(event);
-      // 再生できない動画・音声の「既定のアプリで開く」は、`href` を見ずに書いたパスで開く
+      // 再生できない動画・音声の「既定のアプリで開く」は、`href` を確認せずに記載したパスで開く
       const opener = target?.closest<HTMLElement>('[data-action="openAsset"]');
       if (opener) {
         stop(event);
@@ -39,7 +39,7 @@ export const useLinkClicks = (api: VsCodeApi): void => {
       }
       api.postMessage({ type: "openLink", href });
     };
-    // 右側の目次の操作が節を開いて移った後に、リンクの既定の動きと window への伝播を止める
+    // 右側の目次の操作がセクションを開いて移った後に、リンクの既定の動きと window への伝播を止める
     const onBubble = (event: MouseEvent): void => {
       if (targetOf(event)?.closest(".mdmark-side-toc a[href]")) {
         stop(event);

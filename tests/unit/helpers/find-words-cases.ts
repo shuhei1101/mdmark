@@ -1,15 +1,15 @@
 import { expect } from "vitest";
 
-/** 語の区切りで語を照合する関数（`findWords` と同じ形） */
+/** 単語の区切りで単語を照合する関数（`findWords` と同じ構造） */
 type FindWords = (
   text: string,
   words: string[],
 ) => Array<{ start: number; end: number; word: string }>;
 
-/** 区切りに揃う語だけを返すことを確かめる。区切り方は実行環境の辞書に依るため、Node とブラウザの両方で呼ぶ */
+/** 区切りに一致する単語だけを返却することを確認する。区切り方は実行環境の辞書に依るため、Node とブラウザの両方で呼ぶ */
 export function expectFindWords(findWords: FindWords): void {
   const words = ["印", "ワークスペース", "WS"];
-  // `印刷` の `印` は入らない
+  // `印刷` の `マーカー` は入らない
   expect(findWords("本文の印は印刷でも使う", words)).toEqual([
     { start: 3, end: 4, word: "印" },
   ]);
@@ -19,7 +19,7 @@ export function expectFindWords(findWords: FindWords): void {
   ]);
 }
 
-/** 全角と半角・英字の大文字と小文字だけが違う語を、元の文字列の位置で返すことを確かめる。区切り方は実行環境の辞書に依るため、Node とブラウザの両方で呼ぶ */
+/** 全角と半角・英字の大文字と小文字だけが違う単語を、元の文字列の位置で返却することを確認する。区切り方は実行環境の辞書に依るため、Node とブラウザの両方で呼ぶ */
 export function expectFindWordsWhenNotationDiffers(findWords: FindWords): void {
   const words = ["ワークスペース", "ws", "MCP"];
   // 半角カナの `ﾜｰｸｽﾍﾟｰｽ`（8 文字）は正規化すると 7 文字になるが、位置は元の文字列のまま

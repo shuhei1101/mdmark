@@ -22,7 +22,7 @@
   <!-- 折り返しの規則（#328 で共有するアセット） -->
   <link rel="stylesheet" href="../../refs/328/assets/wrap.css">
   <script src="../../refs/16/assets/sample.js" defer></script>
-  <!-- 案の切り替え（モックだけの仕組み。ツリーを組み立てる前に html の data-* を当てる） -->
+  <!-- 案の切り替え（モックだけの仕組み。ツリーを組み立てる前に html の data-* を適用する） -->
   <script src="../../refs/225/assets/scene.js" defer></script>
   <!-- 拡張記法の操作（並べ替え・絞り込み・ピン止め・タブ・開閉） -->
   <script src="../../refs/19/assets/syntax.js" defer></script>
@@ -32,13 +32,13 @@
 <body>
   <!-- モック専用の操作列: 配色の切り替え -->
   <div class="mock-bar">
-    <!-- [data-scheme-set]: sample.js が押されたボタンの値を html の data-scheme に当てる -->
+    <!-- [data-scheme-set]: sample.js が押されたボタンの値を html の data-scheme に適用する -->
     <div class="mock-bar-group" role="group" aria-label="配色">
       <button class="mock-bar-item" type="button" data-scheme-set="light" aria-pressed="false">明るい配色</button>
       <button class="mock-bar-item" type="button" data-scheme-set="dark" aria-pressed="false">ダーク</button>
     </div>
-    <!-- [data-scene-axis] [data-scene-value]: scene.js が行き先の URL（?{軸}=）と今の案の aria-current を当てる -->
-    <div class="mock-bar-group" role="group" aria-label="注釈の列の見た目">
+    <!-- [data-scene-axis] [data-scene-value]: scene.js が行き先の URL（?{軸}=）と今の案の aria-current を適用する -->
+    <div class="mock-bar-group" role="group" aria-label="注釈の列の外観">
       <a class="mock-bar-item" data-scene-axis="note" data-scene-value="a">注釈 A: 点線でつなぐ</a>
       <a class="mock-bar-item" data-scene-axis="note" data-scene-value="b">注釈 B: # を残して色を付ける</a>
     </div>
@@ -94,13 +94,13 @@
 ├── src/ # ソース
 │   └── index.ts # 入口の `mount`
 ├── README.md # **必読** `badge:新規`
-├── docs/ # [使い方](https://example.com/docs)
+├── docs/ # [使用方法](https://example.com/docs)
 ├── C#/
 └── #notes.md</pre>
         </article>
       </section>
 
-      <!-- 拡張子・名前ごとのアイコン。当たらないものは汎用のファイルのアイコン -->
+      <!-- 拡張子・名前ごとのアイコン。該当しないものは汎用のファイルのアイコン -->
       <section aria-labelledby="state-icons">
         <h2 class="catalog-label" id="state-icons">拡張子ごとのアイコン</h2>
         <article class="mdmark">
@@ -120,7 +120,7 @@
         </article>
       </section>
 
-      <!-- ... の行: 「ほかにもある」の項目として薄く描き、読み上げでもそう伝える -->
+      <!-- ... の行: 「ほかにもある」の項目として薄く描き、スクリーンリーダーでもそう伝える -->
       <section aria-labelledby="state-more">
         <h2 class="catalog-label" id="state-more">ほかにもある項目（...）</h2>
         <article class="mdmark">
@@ -133,7 +133,7 @@
         </article>
       </section>
 
-      <!-- |-- ・`-- ・|   で書いたツリー -->
+      <!-- |-- ・`-- ・|   で記載したツリー -->
       <section aria-labelledby="state-ascii">
         <h2 class="catalog-label" id="state-ascii">ASCII の罫線</h2>
         <article class="mdmark">
@@ -168,7 +168,7 @@
         </article>
       </section>
 
-      <!-- 折り返す（#294）: tree の印の wrap。長い名前と注釈を項目の中で折り返し、続きは名前の頭に揃える。罫線と入れ子の位置は変えない -->
+      <!-- 折り返す（#294）: tree のマーカーの wrap。長い名前と注釈を項目の中で折り返し、続きは名前の頭に統一する。罫線と入れ子の位置は変えない -->
       <section aria-labelledby="state-wrap">
         <h2 class="catalog-label" id="state-wrap">折り返す（tree: open=all wrap）</h2>
         <article class="mdmark">
@@ -177,7 +177,7 @@
         </article>
       </section>
 
-      <!-- [data-mock-copy="copied"]: コピーのボタンを押して元の罫線のテキストを写した直後の知らせ -->
+      <!-- [data-mock-copy="copied"]: コピーのボタンを押して元の罫線のテキストをコピーした直後の通知 -->
       <section aria-labelledby="state-copied">
         <h2 class="catalog-label" id="state-copied">コピーした</h2>
         <article class="mdmark">
@@ -188,7 +188,7 @@
         </article>
       </section>
 
-      <!-- [data-mock-copy="failed"]: クリップボードに書けないとき、元の罫線のテキストを選んだ欄を開く。Esc か閉じるボタンで閉じ、フォーカスをコピーのボタンへ戻す -->
+      <!-- [data-mock-copy="failed"]: クリップボードに書き込めないとき、元の罫線のテキストを選んだ欄を開く。Esc か閉じるボタンで閉じ、フォーカスをコピーのボタンへ戻す -->
       <section aria-labelledby="state-copy-failed">
         <h2 class="catalog-label" id="state-copy-failed">コピーできない（異常シナリオ）</h2>
         <article class="mdmark">
@@ -199,13 +199,13 @@
         </article>
       </section>
 
-      <!-- open=deep: 書き方の警告を出し、ルートだけを開く -->
+      <!-- open=deep: 記載の警告を出し、ルートだけを開く -->
       <section aria-labelledby="state-open-invalid">
-        <h2 class="catalog-label" id="state-open-invalid">読めない open=（異常シナリオ）</h2>
+        <h2 class="catalog-label" id="state-open-invalid">読み込めない open=（異常シナリオ）</h2>
         <article class="mdmark">
 <div class="mdmark-syntax-warning">
-  <p class="mdmark-syntax-warning-title"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg>書き方の警告</p>
-  <p><code>&lt;!-- tree: open=deep --&gt;</code> の <code>open=</code> には <code>all</code> か階層の数を書きます。ルートだけを開いて描いています。</p>
+  <p class="mdmark-syntax-warning-title"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg>記載の警告</p>
+  <p><code>&lt;!-- tree: open=deep --&gt;</code> の <code>open=</code> には <code>all</code> か階層の数を記載します。ルートだけを開いて描いています。</p>
 </div>
 <pre data-mock-tree data-open="deep">docs/
 └── guide/
@@ -213,13 +213,13 @@
         </article>
       </section>
 
-      <!-- 読めない行がある（異常シナリオ） -->
+      <!-- 読み込めない行がある（異常シナリオ） -->
       <section aria-labelledby="state-error">
-        <h2 class="catalog-label" id="state-error">読めない行がある（異常シナリオ）</h2>
+        <h2 class="catalog-label" id="state-error">読み込めない行がある（異常シナリオ）</h2>
         <article class="mdmark">
 <div class="mdmark-syntax-warning">
-  <p class="mdmark-syntax-warning-title"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg>書き方の警告</p>
-  <p>ファイルツリーの 3 行目が、上の行より 2 段深く書かれていて読めません。罫線の段を 1 段ずつ深くしてください。コードブロックのまま描いています。</p>
+  <p class="mdmark-syntax-warning-title"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg>記載の警告</p>
+  <p>ファイルツリーの 3 行目が、上の行より 2 階層深く記載されていて読み込めません。罫線の階層を 1 階層ずつ深くしてください。コードブロックのまま描いています。</p>
 </div>
 <pre tabindex="0" aria-label="コード: tree"><code class="language-tree">src/
 ├── index.ts

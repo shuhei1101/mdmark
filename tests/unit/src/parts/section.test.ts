@@ -1,10 +1,10 @@
 import { expect, test } from "vitest";
 import { findTag, innerHtml } from "../../helpers/html.ts";
 
-/** 節の処理を読み込む（実装が無い間は各テストが個別に失敗する） */
+/** セクションの処理を読み込む（実装が無い間は各テストが個別に失敗する） */
 const loadSection = () => import("../../../../src/parts/section.ts");
 
-// 閉じた節はボタンを aria-expanded=false にし、中身を hidden=until-found にする（正常系）
+// 閉じたセクションはボタンを aria-expanded=false にし、中身を hidden=until-found にする（正常系）
 test("test_render_section", async () => {
   // 準備
   const { renderSection } = await loadSection();
@@ -41,7 +41,7 @@ test("test_render_section_when_unmounted", async () => {
   expect(html).not.toMatch(/\shidden\b/);
 });
 
-// h1 の節も見出しと開閉のボタンを描く（正常系）
+// h1 のセクションも見出しと開閉のボタンを描く（正常系）
 test("test_render_section_when_h1", async () => {
   // 準備
   const { renderSection } = await loadSection();

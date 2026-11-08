@@ -7,7 +7,7 @@ import type { VscodeSession } from "./vscode.ts";
 
 const execFileAsync = promisify(execFile);
 
-// Git のコミットに付ける書いた人
+// Git のコミットに付ける記載した人
 const GIT_IDENTITY = [
   "-c",
   "user.name=佐藤",
@@ -18,7 +18,7 @@ const GIT_IDENTITY = [
 // 変更の一覧とタイムラインのコミットの件名
 const COMMIT_MESSAGE = "変更を反映する";
 
-/** `workspaceDir` で Git を流す */
+/** `workspaceDir` で Git を実行する */
 async function git(workspaceDir: string, args: string[]): Promise<void> {
   await execFileAsync("git", [...GIT_IDENTITY, ...args], { cwd: workspaceDir });
 }
@@ -33,7 +33,7 @@ export type DiffRepoOptions = {
   commit?: boolean;
 };
 
-/** `before` の `a.md` をコミットし、作業ツリーを `after` にしたリポジトリを `workspaceDir` に作る。`commit` なら作業ツリーの変更もコミットする。`LaunchOptions.prepare` に渡す */
+/** `before` の `a.md` をコミットし、作業ツリーを `after` にしたリポジトリを `workspaceDir` に作る。`commit` なら作業ツリーの変更もコミットする。`LaunchOptions.prepare` に指定する */
 export function prepareDiffRepo(
   options: DiffRepoOptions,
 ): (workspaceDir: string) => Promise<void> {
@@ -84,12 +84,12 @@ export async function openCommitDiff(session: VscodeSession): Promise<void> {
   await waitForDiffView(session);
 }
 
-/** 差分ビューの変更後の側にフォーカスを置く */
+/** 差分ビューの変更後の側にフォーカスを配置する */
 export async function focusModifiedSide(session: VscodeSession): Promise<void> {
   await session.win.locator(MODIFIED_LINES).first().click();
 }
 
-/** 変更後の側にフォーカスを置いて、プレビューを横に開く */
+/** 変更後の側にフォーカスを配置して、プレビューを横に開く */
 export async function openDiffPreview(session: VscodeSession): Promise<void> {
   await focusModifiedSide(session);
   await session.openPreviewWithShortcut();
@@ -114,7 +114,7 @@ export function modifiedTopLine(session: VscodeSession): Promise<number> {
   });
 }
 
-/** 変更後の側の先頭の行が `line` 以降になるまで 1 行ずつ下へ動かし、止まった先頭の行を返す */
+/** 変更後の側の先頭の行が `line` 以降になるまで 1 行ずつ下へ動かし、止まった先頭の行を返却する */
 export async function scrollModifiedTo(
   session: VscodeSession,
   line: number,
@@ -147,7 +147,7 @@ export function diffPreviewTab(session: VscodeSession) {
   return session.win.locator('.tab[aria-label*="差分プレビュー a.md"]');
 }
 
-/** 差分のプレビューのタブが 1 つだけあることを確かめる */
+/** 差分のプレビューのタブが 1 つだけあることを確認する */
 export async function expectOneDiffPreviewTab(
   session: VscodeSession,
 ): Promise<void> {

@@ -8,20 +8,20 @@ scenarios:
         description: VSCodeでプレビューを開くの正常シナリオと同じ。既定のブラウザで開く操作は、開いた URL を記録する代役
     flow: |-
       sequenceDiagram
-        actor W as 文書を書く人
+        actor W as 文書の作成者
         participant ED as エディタ（VS Code）
         participant EX as 拡張機能
         participant BR as 既定のブラウザ
         W->>ED: mdmark: HTML に書き出す
         ED->>EX: mdmark.exportHtml
-        EX->>EX: 決めた版の配布物を読んで mount で描く HTML を組む
+        EX->>EX: 決めたバージョンの配布物を読み込んで mount で描く HTML を組む
         EX->>EX: Markdown と同じフォルダに書き出す
         EX-->>W: 書き出したパスと「ブラウザで開く」の通知
         W->>EX: 通知の「ブラウザで開く」を押す
         EX->>BR: 書き出した HTML を開く
         BR-->>W: 文書を表示
     expected:
-      - Markdown と同じフォルダに、Markdown と同じ名前の `.html` が 1 つ書かれる
+      - Markdown と同じフォルダに、Markdown と同じ名前の `.html` が 1 つ記載される
       - 通知に書き出したパスと「ブラウザで開く」が出る
       - ブラウザで開く代役に、書き出した HTML の URL が渡る
       - 書き出した HTML をブラウザで開くと、プレビューと同じ見出し・表・注意書き・フロー図が描かれる
@@ -34,15 +34,15 @@ scenarios:
         description: 正常シナリオと同じ
     flow: |-
       sequenceDiagram
-        actor W as 文書を書く人
+        actor W as 文書の作成者
         participant EX as 拡張機能
         participant BR as 既定のブラウザ
         W->>EX: mdmark: ブラウザで開く
-        EX->>EX: 開いている Markdown を書き出し直す
+        EX->>EX: 開いている Markdown をもう一度書き出す
         EX->>BR: 書き出した HTML を開く
         BR-->>W: 文書を表示
     expected:
-      - 書き出した HTML が無くても、1 回のコマンドで HTML が書かれてブラウザで開く代役に URL が渡る
+      - 書き出した HTML が無くても、1 回のコマンドで HTML が記載されてブラウザで開く代役に URL が渡る
       - 保存していない書き換えも、書き出した HTML に出る
     test: test_normal_when_open_in_browser
   - name: 異常シナリオ（書き出せない）
@@ -53,10 +53,10 @@ scenarios:
         description: 正常シナリオと同じ
     flow: |-
       sequenceDiagram
-        actor W as 文書を書く人
+        actor W as 文書の作成者
         participant EX as 拡張機能
         W->>EX: mdmark: HTML に書き出す
-        EX->>EX: 書き出し先に書けない
+        EX->>EX: 書き出し先に書き込めない
         EX-->>W: 書き出せない理由の通知
     expected:
       - 通知に、書き出し先のパスと書き込めない理由が出る
@@ -72,11 +72,11 @@ scenarios:
         description: 正常シナリオと同じ
     flow: |-
       sequenceDiagram
-        actor W as 文書を書く人
+        actor W as 文書の作成者
         participant EX as 拡張機能
         participant B as ブラウザ
         W->>EX: HTML に書き出す
-        EX->>EX: プレビューと同じ優先の順でテーマを決めて HTML に書く
+        EX->>EX: プレビューと同じ優先の順でテーマを決めて HTML に書き込む
         W->>B: 書き出した HTML を開く
         B-->>W: theme-slate の明るい配色で表示
     expected:
@@ -84,35 +84,35 @@ scenarios:
     test: test_normal_when_theme_selected
     refs:
       - dev/設計書/シナリオ/単一ユースケース/プレビューをVSCodeのテーマに合わせる#scenarios[正常シナリオ（VS Code の設定でテーマを選ぶ）]
-  - name: 正常シナリオ（theme と extensions を当てる）
+  - name: 正常シナリオ（theme と extensions を適用する）
     setup:
       - name: 固有の部品と CSS を指すワークスペース
-        description: 『固有の部品とCSSを当てる』の正常シナリオ（書き出す）と同じ `mdmark.config.yaml` と Markdown を置いたワークスペース
+        description: 『固有の部品とCSSを適用する』の正常シナリオ（書き出す）と同じ `mdmark.config.yaml` と Markdown を配置したワークスペース
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
       sequenceDiagram
-        actor W as 文書を書く人
+        actor W as 文書の作成者
         participant EX as 拡張機能
         participant B as ブラウザ
         W->>EX: mdmark: HTML に書き出す
-        EX->>EX: 重ねた設定の theme の CSS と extensions を入れた HTML を書く
+        EX->>EX: 重ねた設定の theme の CSS と extensions を入れた HTML を書き込む
         W->>B: 書き出した HTML を開く
-        B-->>W: 固有の部品と固有の CSS を当てた文書
+        B-->>W: 固有の部品と固有の CSS を適用した文書
     expected:
-      - 書き出した HTML をブラウザで開くと、固有の部品の場所に定義の題が描かれ、固有の CSS が変えた色が計算値に出ている
+      - 書き出した HTML をブラウザで開くと、固有の部品の場所に定義のタイトルが描かれ、固有の CSS が変えた色が計算値に出ている
       - プレビューの同じ要素の計算値と同じ
     test: test_normal_when_theme_and_extensions
-  - name: 正常シナリオ（相対パスの外部ライブラリを Chromium で読む）
+  - name: 正常シナリオ（相対パスの外部ライブラリを Chromium で読み込む）
     setup:
       - name: 手元のライブラリを指すワークスペース
-        description: '`mdmark.config.yaml` の `libraries` に、同じフォルダの別のファイルを import する手元のモジュールを相対パスで書き、`html-scripts.url` に変換のライブラリの手元のコピーを相対パスで書く。Markdown はその外部ライブラリのマーカーと、`features.html-scripts` をオンにした `ts` の範囲を持つ'
-        notes: '`libraries` には文書にマーカーの無いライブラリの行も 1 つ書く。そのモジュールは、他のファイルに出ない目印の文字列を持つ'
+        description: '`mdmark.config.yaml` の `libraries` に、同じフォルダの別のファイルを import する手元のモジュールを相対パスで記載し、`html-scripts.url` に変換のライブラリの手元のコピーを相対パスで記載する。Markdown はその外部ライブラリのマーカーと、`features.html-scripts` をオンにした `ts` の範囲を持つ'
+        notes: '`libraries` には文書にマーカーの無いライブラリの行も 1 つ記載する。そのモジュールは、他のファイルに出ない目印の文字列を持つ'
       - name: Mock
         description: 正常シナリオと同じ。書き出した HTML は Chromium で file:// で開く
     flow: |-
       sequenceDiagram
-        actor W as 文書を書く人
+        actor W as 文書の作成者
         participant EX as 拡張機能
         participant B as ブラウザ（Chromium）
         W->>EX: mdmark: HTML に書き出す
@@ -120,20 +120,20 @@ scenarios:
         W->>B: 書き出した HTML を file:// で開く
         B-->>W: 外部ライブラリのマーカーと範囲のスクリプトを描いた文書
     expected:
-      - 書き出した HTML を Chromium で開くと、外部ライブラリのマーカーの場所がそのライブラリで描かれ、知らせの枠が出ない
-      - 範囲の `ts` が動き、範囲の要素にスクリプトが書いた結果が出る
+      - 書き出した HTML を Chromium で開くと、外部ライブラリのマーカーの場所がそのライブラリで描かれ、通知ブロックが出ない
+      - 範囲の `ts` が動き、範囲の要素にスクリプトが記載した結果が出る
       - 書き出した HTML の `data:` の URL を復号した中に、文書にマーカーの無いライブラリの目印の文字列が無い
       - 開いている間に、書き出した HTML 以外の `file:` の URL への要求が出ない
     test: test_normal_when_relative_libraries
-  - name: 正常シナリオ（相対パスの mermaid を読む）
+  - name: 正常シナリオ（相対パスの mermaid を読み込む）
     setup:
       - name: 手元の mermaid を指すワークスペース
-        description: '`mdmark.config.yaml` の `mermaid` の読み込み先に、mermaid の本体と chunk の手元のコピーを相対パスで書き、Markdown は言語 `mermaid` の flowchart のコードブロックを 1 つ持つ'
+        description: '`mdmark.config.yaml` の `mermaid` の読み込み先に、mermaid の本体と chunk の手元のコピーを相対パスで記載し、Markdown は言語 `mermaid` の flowchart のコードブロックを 1 つ持つ'
       - name: Mock
         description: 正常シナリオと同じ。書き出した HTML は Chromium で file:// で開く
     flow: |-
       sequenceDiagram
-        actor W as 文書を書く人
+        actor W as 文書の作成者
         participant EX as 拡張機能
         participant B as ブラウザ（Chromium）
         W->>EX: mdmark: HTML に書き出す
@@ -141,19 +141,19 @@ scenarios:
         W->>B: 書き出した HTML を file:// で開く
         B-->>W: 図の枠に入った mermaid の図
     expected:
-      - 書き出した HTML を Chromium で開くと、mermaid のコードブロックの場所に図の枠と SVG の図があり、知らせの枠が出ない
+      - 書き出した HTML を Chromium で開くと、mermaid のコードブロックの場所に図の枠と SVG の図があり、通知ブロックが出ない
       - 開いている間に、書き出した HTML 以外の `file:` の URL への要求が出ない
     test: test_normal_when_relative_mermaid
-lead: 文書を書く人が、開いている Markdown をコマンドパレットから HTML に書き出し、既定のブラウザで開く。
+lead: 文書の作成者が、開いている Markdown をコマンドパレットから HTML に書き出し、既定のブラウザで開く。
 issue: 22
-primary_actor: 文書を書く人
+primary_actor: 文書の作成者
 stakeholders:
-  - name: 文書を書く人
-    interest: プレビューと同じ見た目の HTML と PDF を、外部のツールを入れずに作れる
-trigger: '文書を書く人がコマンドパレットから「mdmark: HTML に書き出す」か「mdmark: ブラウザで開く」を選ぶ'
+  - name: 文書の作成者
+    interest: プレビューと同じ外観の HTML と PDF を、外部のツールを入れずに作れる
+trigger: '文書の作成者がコマンドパレットから「mdmark: HTML に書き出す」か「mdmark: ブラウザで開く」を選ぶ'
 preconditions:
   - Markdown のファイルをエディタで開いている
   - 既定のブラウザから jsDelivr に届く
-success_guarantee: 書き出し先に HTML が 1 つ書かれ、ブラウザで開くとプレビューと同じ文書が描かれる。
-minimal_guarantee: 書き出せないときは理由を通知に出し、書きかけのファイルを残さない。Markdown は書き換えない。
+success_guarantee: 書き出し先に HTML が 1 つ書き込まれ、ブラウザで開くとプレビューと同じ文書が描かれる。
+minimal_guarantee: 書き出せないときは理由を通知に出し、書き込みかけのファイルを残さない。Markdown は書き換えない。
 test_file: tests/e2e/単一ユースケース/HTMLに書き出す.spec.ts

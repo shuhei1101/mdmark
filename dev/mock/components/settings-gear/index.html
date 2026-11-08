@@ -11,7 +11,7 @@
   <link rel="stylesheet" href="../../refs/16/assets/sample.css">
   <!-- 採用スタイル本体の変数の値 -->
   <link rel="stylesheet" href="../../assets/style.css">
-  <!-- [data-color-theme-css]: theme.js が {theme} を選んだテーマの名前にして読む（既定のテーマでは読まない） -->
+  <!-- [data-color-theme-css]: theme.js が {theme} を選んだテーマの名前にして読み込む（既定のテーマでは読み込まない） -->
   <link rel="stylesheet" data-color-theme-css="../../assets/themes/{theme}.css">
   <!-- モックの VS Code の枠（#69 で共有するアセット） -->
   <link rel="stylesheet" href="../../refs/69/assets/preview.css">
@@ -27,12 +27,12 @@
 <body>
   <!-- モック専用の操作列: VS Code のテーマと文書のテーマ -->
   <div class="mock-bar">
-    <!-- [data-theme-value]: preview.js が行き先の URL（?theme=）と今のテーマの aria-current を当てる -->
+    <!-- [data-theme-value]: preview.js が行き先の URL（?theme=）と今のテーマの aria-current を適用する -->
     <div class="mock-bar-group" role="group" aria-label="VS Code のテーマ">
       <a class="mock-bar-item" data-theme-value="light">ライト</a>
       <a class="mock-bar-item" data-theme-value="dark">ダーク</a>
     </div>
-    <!-- [data-color-theme-value]: theme.js が行き先の URL（?colorTheme=）と今の値の aria-current を当てる -->
+    <!-- [data-color-theme-value]: theme.js が行き先の URL（?colorTheme=）と今の値の aria-current を適用する -->
     <div class="mock-bar-group" role="group" aria-label="mdmark のテーマ">
       <a class="mock-bar-item" data-color-theme-value="">選ばない</a>
       <a class="mock-bar-item" data-color-theme-value="theme-paper">theme-paper</a>
@@ -136,7 +136,7 @@
               <button class="preview-gear is-open" type="button" aria-label="テーマと設定" aria-expanded="true">
                 <svg class="vsc-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
               </button>
-              <!-- 開いた状態のメニュー: カタログでは浮かせずにその場へ置く -->
+              <!-- 開いた状態のメニュー: カタログでは浮かせずにその場へ配置する -->
               <div class="preview-theme-menu is-static">
                 <p class="preview-theme-menu-title" id="catalog-menu-title">テーマ</p>
                 <ul class="preview-theme-menu-list" aria-labelledby="catalog-menu-title">

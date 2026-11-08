@@ -1,14 +1,14 @@
-/** 使う側が `opts.config` に渡す設定。他のキーを持っていても読まない */
+/** 利用側が `opts.config` に指定する設定。他のキーを持っていても読み込まない */
 export type MdmarkConfig = {
   /** 機能のオン・オフの既定 */
   features?: Record<string, boolean>;
-  /** 印の名前からモジュールの URL を引く対応表 */
+  /** マーカーの名前からモジュールの URL を参照する対応表 */
   libraries?: Record<string, string>;
   /** ツールチップの設定。`placement` は本文の用語などのツールチップ、`diagramPlacement` は図・ヒント・グラフの項目のツールチップを、持ち主の上と下のどちらに先に出すか（`top` / `bottom`）。知らない値も受けて `resolveConfig` が既定にするため、型は `string` */
   tooltips?: { placement?: string; diagramPlacement?: string };
   /** 色分けのライブラリの設定。`url` は highlight.js の `es/` フォルダの URL（末尾 `/`） */
   syntax?: { url?: string };
-  /** 文書が指すファイルの探し方（CLI と VS Code 拡張機能だけが読む） */
+  /** 文書が指すファイルの探し方（CLI と VS Code 拡張機能だけが読み込む） */
   assets?: { root?: string };
   /** 右側の目次の設定。`mode` は出し方（`hover` / `fixed`）。知らない値も受けて `resolveConfig` が `hover` にするため、型は `string` */
   "side-toc"?: { mode?: string };
@@ -28,7 +28,7 @@ export type MdmarkConfig = {
   };
 };
 
-/** mermaid の図のテーマの名前。`mdmark` は描く先の要素の CSS 変数から作る mdmark の見た目のテーマ、ほかは mermaid のテーマの名前 */
+/** mermaid の図のテーマの名前。`mdmark` は描く先の要素の CSS 変数から作る mdmark の外観のテーマ、ほかは mermaid のテーマの名前 */
 export type MermaidTheme =
   | "mdmark"
   | "default"
@@ -53,7 +53,7 @@ export type ColorTheme =
 /** 描いた文書の配色の明暗。`light`・`dark` は描く先の要素の class で祖先の class と OS の設定に勝たせ、`auto` は class を付けずに任せる */
 export type ColorScheme = "light" | "dark" | "auto";
 
-/** 文書の page の印から読んだ、設定より優先する値。書かなかったキーは持たない */
+/** 文書の page のマーカーから読み込んだ、設定より優先する値。記載しなかったキーは持たない */
 export type PageSettings = {
   /** `scheme=` の値 */
   scheme?: ColorScheme;
@@ -63,17 +63,17 @@ export type PageSettings = {
   toc?: SideTocMode;
 };
 
-/** 対応表の行: 印 1 つのモジュールの URL と、図の印か */
+/** 対応表の行: マーカー 1 つのモジュールの URL と、図のマーカーか */
 export type LibraryEntry = {
   /** モジュールの URL */
   url: string;
-  /** 図の印か。知らせの枠の題を分ける */
+  /** 図のマーカーか。通知ブロックのタイトルを分ける */
   figure: boolean;
 };
 
-/** 全てのキーに値を持つ、内部で使う設定 */
+/** 全てのキーに値を持つ、内部で使用する設定 */
 export type ResolvedConfig = {
-  /** 機能のオン・オフ（キーはこの版が知っている機能だけ） */
+  /** 機能のオン・オフ（キーはこのバージョンが知っている機能だけ） */
   features: Record<string, boolean>;
   /** 既定の対応表に設定の `libraries` を重ねたもの */
   libraries: Record<string, LibraryEntry>;
@@ -110,7 +110,7 @@ export const COLOR_THEMES: readonly ColorTheme[] = [
 /** 設定に `colorTheme` が無いか知らない名前のときのテーマ。配色の値は `src/index.css` の `:root` の既定のまま */
 export const DEFAULT_COLOR_THEME: ColorTheme = "dev-swiss";
 
-/** 配色の明暗の値の並び。`resolveConfig`・page の印の読み取り・CLI の点検が照らす */
+/** 配色の明暗の値の並び。`resolveConfig`・page のマーカーの読み取り・CLI の点検が照らす */
 export const COLOR_SCHEMES: readonly ColorScheme[] = ["light", "dark", "auto"];
 
 /** 設定に `colorScheme` が無いか知らない値のときの明暗 */
@@ -118,10 +118,10 @@ export const DEFAULT_COLOR_SCHEME: ColorScheme = "auto";
 
 /** 設定の `labels.paramCopy` が空でない文字列でないときの部品の文言 */
 export const DEFAULT_LABELS: { paramCopy: string } = {
-  paramCopy: "今の値を写す",
+  paramCopy: "今の値をコピーする",
 };
 
-/** この版が知っている機能とその既定 */
+/** このバージョンが知っている機能とその既定 */
 export const DEFAULT_FEATURES: Record<string, boolean> = {
   print: true,
   table: true,
@@ -169,15 +169,15 @@ export const DEFAULT_FEATURES: Record<string, boolean> = {
   "card-grid": true,
 };
 
-/** 設定の `syntax.url` が無いときに読む highlight.js の `es/` フォルダの URL。バージョンを固定する */
+/** 設定の `syntax.url` が無いときに読み込む highlight.js の `es/` フォルダの URL。バージョンを固定する */
 export const DEFAULT_SYNTAX_URL =
   "https://cdn.jsdelivr.net/npm/@highlightjs/cdn-assets@11.12.0/es/";
 
-/** 設定の `html-scripts.url` が無いときに読む @babel/standalone の ES モジュールの URL。バージョンを固定する */
+/** 設定の `html-scripts.url` が無いときに読み込む @babel/standalone の ES モジュールの URL。バージョンを固定する */
 export const DEFAULT_HTML_SCRIPTS_URL =
   "https://cdn.jsdelivr.net/npm/@babel/standalone@8.1.1/+esm";
 
-/** 設定の `mermaid.url` が無いときに読む mermaid の ES モジュールの URL。バージョンを固定する */
+/** 設定の `mermaid.url` が無いときに読み込む mermaid の ES モジュールの URL。バージョンを固定する */
 export const DEFAULT_MERMAID_URL =
   "https://cdn.jsdelivr.net/npm/mermaid@12.3.0/dist/mermaid.esm.min.mjs";
 
@@ -194,7 +194,7 @@ export const MERMAID_THEMES: readonly MermaidTheme[] = [
 /** 設定の `themeVariables` でも変えさせない mermaid のテーマの変数 */
 const FIXED_MERMAID_VARIABLES = new Set(["useGradient", "dropShadow"]);
 
-/** 設定の `mermaid` に既定を当てる */
+/** 設定の `mermaid` に既定を適用する */
 const resolveMermaid = (
   mermaid: MdmarkConfig["mermaid"],
 ): ResolvedConfig["mermaid"] => {
@@ -215,15 +215,15 @@ const resolveMermaid = (
   return { url, theme, themeVariables };
 };
 
-/** 印の名前から `LibraryEntry` を引く既定の対応表 */
+/** マーカーの名前から `LibraryEntry` を参照する既定の対応表 */
 export const DEFAULT_LIBRARIES: Record<string, LibraryEntry> = {};
 
-/** 印の名前と設定の `libraries` のキーが合うべき書式 */
+/** マーカーの名前と設定の `libraries` のキーが合うべき書式 */
 export const MARK_NAME_PATTERN = /^[a-z][a-z0-9-]*$/;
 
-/** 使う側の設定に既定を当て、型の合わない値を落とした設定を返す */
+/** 利用側の設定に既定を当て、型の合わない値を落とした設定を返却する */
 export function resolveConfig(options: {
-  /** 使う側の設定 */
+  /** 利用側の設定 */
   config?: MdmarkConfig;
   /** 既定の対応表（単体テストで差し替える） */
   defaultLibraries?: Record<string, LibraryEntry>;
@@ -237,7 +237,7 @@ export function resolveConfig(options: {
       features[name] = value;
     }
   }
-  // 対応表は、既定の行を写してから設定の行を重ねる
+  // 対応表は、既定の行をコピーしてから設定の行を重ねる
   const libraries: Record<string, LibraryEntry> = {};
   for (const [name, entry] of Object.entries(defaultLibraries)) {
     libraries[name] = { ...entry };
@@ -246,7 +246,7 @@ export function resolveConfig(options: {
     if (!MARK_NAME_PATTERN.test(name) || typeof url !== "string") {
       continue;
     }
-    // 既定にある名前は URL だけを置き換え、無い名前は図の印として足す
+    // 既定にある名前は URL だけを置き換え、無い名前は図のマーカーとして追加する
     const existing = Object.hasOwn(libraries, name)
       ? libraries[name]
       : undefined;
@@ -301,11 +301,11 @@ export function resolveConfig(options: {
   };
 }
 
-/** 既定を当てた設定に、文書の page の印の値を重ねた設定を返す（渡された設定は書き換えない） */
+/** 既定を適用した設定に、文書の page のマーカーの値を重ねた設定を返却する（指定された設定は書き換えない） */
 export const applyPageSettings = (options: {
-  /** 既定を当てた設定 */
+  /** 既定を適用した設定 */
   config: ResolvedConfig;
-  /** `renderDocument` が返したページの設定 */
+  /** `renderDocument` が返却したページの設定 */
   page: PageSettings;
 }): ResolvedConfig => {
   const { config, page } = options;

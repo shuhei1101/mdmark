@@ -1,6 +1,6 @@
 $schema: https://json-schema.org/draft/2020-12/schema
 title: 外部API
-description: 利用する外部 API 1 つにつき 1 ファイル。そのプロジェクトで使うエンドポイントだけを公式ドキュメントから抜き出す。
+description: 利用する外部 API 1 つにつき 1 ファイル。そのプロジェクトで使用するエンドポイントだけを公式ドキュメントから抜き出す。
 x-kind: external_api
 x-folder: dev/設計書/外部API
 x-cross: endpoints
@@ -20,8 +20,8 @@ properties:
     $ref: 共通.schema.yaml#/$defs/markdown
     title: 冒頭リード
     description: |-
-      API が何をするものかを 1〜3 行で要約する。自プロジェクトでの用途は書かない。
-      初回に書いた内容のまま保ち、後から情報を足さない。
+      API が何をするものかを 1〜3 行で要約する。自プロジェクトでの用途は記載しない。
+      初回に記載した内容のまま保ち、後から情報を追加しない。
   used_in:
     type: array
     title: 使用箇所
@@ -31,7 +31,7 @@ properties:
   verification:
     type: object
     title: 動作確認
-    description: 動かして確かめたか。
+    description: 動かして確認したか。
     x-shape: attributes
     additionalProperties: false
     required:
@@ -51,7 +51,7 @@ properties:
       detail:
         type: string
         title: 確認内容
-        description: 確かめた内容か、確かめられない理由。
+        description: 確認した内容か、確認できない理由。
   version:
     type: object
     title: 現在のバージョン情報
@@ -188,7 +188,7 @@ properties:
   pricing_url:
     type: string
     title: 課金の公式ページ
-    description: 課金単価を書くときは必ず持つ。
+    description: 課金単価を記載するときは必ず持つ。
   error_format:
     $ref: 共通.schema.yaml#/$defs/markdown
     title: エラー応答の形式
@@ -201,7 +201,7 @@ properties:
   endpoints:
     type: array
     title: エンドポイント
-    description: このプロジェクトで使うエンドポイント。一覧の表は各エンドポイントのメソッド・パス・用途から生成する。
+    description: このプロジェクトで使用するエンドポイント。一覧の表は各エンドポイントのメソッド・パス・用途から生成する。
     x-heading: エンドポイント
     x-shape: sections
     x-key: name
@@ -277,7 +277,7 @@ properties:
               type:
                 type: string
                 title: 型
-                description: 取りうる値が限られるときは列挙し、各値の意味は補足に書く。
+                description: 取りうる値が限られるときは列挙し、各値の意味は補足に記載する。
               required:
                 type: boolean
                 title: 必須
@@ -296,7 +296,7 @@ properties:
                 title: 補足
               location:
                 type: string
-                title: 置き場所
+                title: 配置場所
                 enum:
                 - path
                 - query
@@ -321,7 +321,7 @@ properties:
         response:
           type: array
           title: レスポンス
-          description: 別のエンドポイントと同形のときは持たず、`same_as` に書く。
+          description: 別のエンドポイントと同形のときは持たず、`same_as` に記載する。
           x-heading: レスポンス
           x-shape: table
           x-key: name
@@ -336,7 +336,7 @@ properties:
               name:
                 type: string
                 title: フィールド
-                description: 返らないことがあるフィールドは `field?` と書き、条件を補足に書く。
+                description: 返らないことがあるフィールドは `field?` と記載し、条件を補足に記載する。
               type:
                 type: string
                 title: 型
@@ -425,7 +425,7 @@ properties:
   issues:
     type: array
     title: 不具合一覧
-    description: 仕様どおりに使っても期待どおり動かない事象。こちらの使い方の誤りだったものは書かない。解消を確かめたら消す。
+    description: 仕様どおりに使用しても期待どおり動かない事象。こちらの使用方法の誤りだったものは記載しない。解消を確認したら削除する。
     x-heading: 不具合一覧
     x-shape: sections
     x-key: title
@@ -461,7 +461,7 @@ properties:
         description:
           $ref: 共通.schema.yaml#/$defs/markdown
           title: 概要
-          description: 何が起きるかを事実だけで書く。
+          description: 何が起きるかを事実だけで記載する。
         conditions:
           type: array
           title: 条件
@@ -502,7 +502,7 @@ properties:
         fixed_in:
           type: string
           title: 解消版
-          description: 解消した版。達したら回避策を外す候補になる。
+          description: 解消したバージョン。達したら回避策を削除する候補になる。
         refs:
           type: array
           title: 関連
@@ -541,14 +541,14 @@ examples:
     steps: |-
       1. https://platform.openai.com/api-keys を開く
       2. `Create new secret key` で API キーを作る
-      3. 作ったキーを控える（再表示できない）
+      3. 作ったキーを記録する（再表示できない）
     env_vars:
     - OPENAI_API_KEY
   rate_limits:
   - target: gpt-4o-mini
     limit: 500 RPM / 200,000 TPM
     notes: tier 1
-  retry: 超過すると 429 を返す。Exponential Backoff（1 秒 → 2 秒 → 4 秒）で最大 3 回再試行する。
+  retry: 超過すると 429 を返却する。Exponential Backoff（1 秒 → 2 秒 → 4 秒）で最大 3 回再試行する。
   pricing:
   - target: gpt-4o-mini
     price: 入力 $0.150 / 出力 $0.600（1M トークン）

@@ -2,7 +2,7 @@ import type { StateCore, Token } from "markdown-it";
 import { markOf } from "./tokens.ts";
 import { type SyntaxWarning, warningBlock } from "./warnings.ts";
 
-/** `index` のトークンを含む、入れ子の深さ 0 のブロックの開きの位置を返す */
+/** `index` のトークンを含む、入れ子の深さ 0 のブロックの開きの位置を返却する */
 export const blockStartOf = (tokens: Token[], index: number): number => {
   let at = index;
   while (at > 0 && (tokens[at]?.level ?? 0) > 0) {
@@ -11,7 +11,7 @@ export const blockStartOf = (tokens: Token[], index: number): number => {
   return at;
 };
 
-/** 行内のトークンの位置ごとに控えた警告を、それを含むブロックの前に差し込む（後ろから差し込んで位置をずらさない） */
+/** 行内のトークンの位置ごとに記録した警告を、それを含むブロックの前に差し込む（後ろから差し込んで位置をずらさない） */
 export const insertWarningsBeforeBlocks = (
   state: StateCore,
   warnings: Array<{ index: number; warning: SyntaxWarning }>,
@@ -25,7 +25,7 @@ export const insertWarningsBeforeBlocks = (
   }
 };
 
-/** 名前の範囲の印を、入れ子を数えて開きと閉じの組にする。閉じの無い開きは `-1` に対応させる */
+/** 名前の範囲のマーカーを、入れ子を数えて開きと閉じの組にする。閉じの無い開きは `-1` に対応させる */
 export const pairRanges = (
   tokens: Token[],
   name: string,
@@ -52,7 +52,7 @@ export const pairRanges = (
   return pairs;
 };
 
-/** `pairRanges` の組のうち、ほかの組の中に入っていない組だけを開きの順に返す */
+/** `pairRanges` の組のうち、ほかの組の中に入っていない組だけを開きの順に返却する */
 export const outermostRanges = (
   pairs: Map<number, number>,
   length: number,

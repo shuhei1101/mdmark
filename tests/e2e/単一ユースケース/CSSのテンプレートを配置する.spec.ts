@@ -4,7 +4,7 @@ import { join } from "node:path";
 import { expect, test, writeFiles } from "../cli.ts";
 import { callTool, withMcpClient } from "../plugin.ts";
 
-// ブラウザを使わないため、1 つのブラウザのプロジェクトだけで流す
+// ブラウザを使用しないため、1 つのブラウザのプロジェクトだけで実行する
 test.skip(
   ({ browserName }) => browserName !== "chromium",
   "ブラウザを使わないシナリオなので chromium のプロジェクトだけで流す",
@@ -75,7 +75,7 @@ test("test_normal_when_applying_from_list", async ({ builtRoot, tempDir }) => {
   );
 });
 
-// テンプレートのフォルダが無い端末で、空の一覧を返しフォルダを作らない（正常シナリオ（テンプレートが無い））
+// テンプレートのフォルダが無い端末で、空の一覧を返却しフォルダを作らない（正常シナリオ（テンプレートが無い））
 test("test_normal_when_no_templates", async ({ builtRoot, tempDir }) => {
   // 準備
   const { env, templatesDir, work } = await createFixture(tempDir, {

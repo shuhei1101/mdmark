@@ -20,7 +20,7 @@ export const FLOWCHART_LAYOUT = {
   lineStep: 20,
 };
 
-/** 名前が収まらないときに高さを足す回数の上限 */
+/** 名前が収まらないときに高さを追加する回数の上限 */
 const MAX_GROW = 20;
 
 /** 格子の位置（行と列。列は 0 が左、1 が右） */
@@ -28,7 +28,7 @@ type Cell = { row: number; col: number };
 
 type Point = [number, number];
 
-/** ノードの既定の大きさに、名前が収まるまで高さを足す */
+/** ノードの既定の大きさに、名前が収まるまで高さを追加する */
 function sizeOf(node: MdmarkDiagramNode): { w: number; h: number } {
   const base = FLOWCHART_LAYOUT.sizes[node.kind] ?? { w: 200, h: 72 };
   let h = base.h;
@@ -60,7 +60,7 @@ function splitQuestion(
   return { down: no, right: outgoing.filter((wire) => wire !== no) };
 }
 
-/** 座標を省いた判定フローチャートの定義に、ノードの座標・線の点・図の大きさを入れた定義を返す */
+/** 座標を省いた判定フローチャートの定義に、ノードの座標・線の点・図の大きさを入れた定義を返却する */
 export function layoutFlowchart(
   definition: MdmarkFlowDefinition,
 ): MdmarkFlowDefinition {
@@ -80,7 +80,7 @@ export function layoutFlowchart(
     }
   };
 
-  // 左の列: 開始から質問を上から下へ並べ、右へ出す線の先を控える
+  // 左の列: 開始から質問を上から下へ並べ、右へ出す線の先を記録する
   const rightAt: Array<{ id: string; row: number }> = [];
   const start =
     definition.nodes.find((node) => node.kind === "start") ??
@@ -111,7 +111,7 @@ export function layoutFlowchart(
     current = down.to;
   }
 
-  // 右の列: 質問から右へ出す線の先をその質問と同じ行に置き（複数の線が入るノードはこの位置を優先する）、アクションの先を下へ続ける
+  // 右の列: 質問から右へ出す線の先をその質問と同じ行に配置し（複数の線が入るノードはこの位置を優先する）、アクションの先を下へ続ける
   for (const { id, row: at } of rightAt) {
     place(id, { row: at, col: 1 });
   }
@@ -141,7 +141,7 @@ export function layoutFlowchart(
     }
   }
 
-  // 列の幅と行の高さを決め、ノードを列と行の中央に置く
+  // 列の幅と行の高さを決め、ノードを列と行の中央に配置する
   const sizes = new Map(
     definition.nodes.map((node) => [node.id, sizeOf(node)]),
   );

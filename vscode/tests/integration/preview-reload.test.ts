@@ -29,9 +29,9 @@ suite("プレビューをリロードする", () => {
   });
   teardown(resetEnvironment);
 
-  // 描けないときの「リロード」から、配布物を読み直して描く
+  // 描けないときの「リロード」から、配布物を再読み込みして描く
   test("test_normal", async () => {
-    // 準備: 配布物を読めずにオフラインの理由を出している
+    // 準備: 配布物を読み込めずにオフラインの理由を出している
     await writeFixture("guide.md", await guideMarkdown());
     await stub.setMode({ tags: "ok", dist: "drop" });
     await openMarkdown("guide.md");
@@ -45,7 +45,7 @@ suite("プレビューをリロードする", () => {
     );
     await stub.setMode({ tags: "ok", dist: "ok" });
     await stub.clear();
-    // 実行: 「リロード」のボタンが送る reload を、Webview から届いたことにする
+    // 実行: 「リロード」のボタンが送信する reload を、Webview から届いたことにする
     deliver(record, { type: "reload" });
     // 検証
     await waitForRendered(record);
@@ -59,7 +59,7 @@ suite("プレビューをリロードする", () => {
     );
   });
 
-  // mdmark.refreshPreview で、新しく打たれたバージョンを読む
+  // mdmark.refreshPreview で、新しく打たれたバージョンを読み込む
   test("test_normal_when_from_command", async () => {
     // 準備
     await writeFixture("guide.md", await guideMarkdown());

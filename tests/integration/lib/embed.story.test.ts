@@ -3,7 +3,7 @@ import { createBrowserHolder } from "../story.ts";
 
 const holder = createBrowserHolder();
 
-// 読み込み中の枠が先に取る高さ（12rem。ルートの文字の大きさ 16px のとき 192px）
+// 読み込み中のブロックが先に取る高さ（12rem。ルートの文字の大きさ 16px のとき 192px）
 const MIN_HEIGHT_PX = 192;
 
 beforeAll(holder.launch);

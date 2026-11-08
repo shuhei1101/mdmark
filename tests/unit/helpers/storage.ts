@@ -1,4 +1,4 @@
-/** `Map` で包んだ `Storage` の形のオブジェクト（sessionStorage の代わりに渡す） */
+/** `Map` で包んだ `Storage` の構造のオブジェクト（sessionStorage の代わりに指定する） */
 export function memoryStorage(initial: Record<string, string> = {}): Storage {
   const map = new Map<string, string>(Object.entries(initial));
   return {
@@ -17,7 +17,7 @@ export function memoryStorage(initial: Record<string, string> = {}): Storage {
   };
 }
 
-/** 読み書きのたびに例外を投げる `Storage` の形のオブジェクト */
+/** 読み込みと保存のたびに例外を投げる `Storage` の構造のオブジェクト */
 export function throwingStorage(): Storage {
   const fail = (): never => {
     throw new Error("storage is not available");

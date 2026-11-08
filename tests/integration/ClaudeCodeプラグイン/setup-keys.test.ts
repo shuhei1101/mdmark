@@ -7,7 +7,7 @@ import { useTerminals } from "../terminal.ts";
 const { createTerminal } = useTerminals();
 const createTempDir = useTempDirs();
 
-/** keys の結果を、キーから行を引く表にする */
+/** keys の結果を、キーから行を参照する表にする */
 const byKey = (stdout: string) =>
   new Map(
     (JSON.parse(stdout).keys as Array<{ key: string }>).map((entry) => [
@@ -16,7 +16,7 @@ const byKey = (stdout: string) =>
     ]),
   );
 
-// 端末の設定のキーごとに、今の値・既定・説明を返す（正常系）
+// 端末の設定のキーごとに、今の値・既定・説明を返却する（正常系）
 test("test_normal", async () => {
   // 準備
   const terminal = await createTerminal();
@@ -38,7 +38,7 @@ test("test_normal", async () => {
   }
 });
 
-// mdmark.config.yaml のキーを、端末の設定で重なる値つきで返し、端末の設定だけのキーを含めない（正常系（文書のフォルダの設定））
+// mdmark.config.yaml のキーを、端末の設定で重なる値つきで返却し、端末の設定だけのキーを含めない（正常系（文書のフォルダの設定））
 test("test_normal_when_config", async () => {
   // 準備
   const terminal = await createTerminal();

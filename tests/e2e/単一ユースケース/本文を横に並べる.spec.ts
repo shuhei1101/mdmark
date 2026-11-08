@@ -6,7 +6,7 @@ import {
   removeDistRoot,
 } from "../dist-page.ts";
 
-// ビルドした配布物を置いた作業ツリー
+// ビルドした配布物を配置した作業ツリー
 let builtRoot = "";
 
 test.beforeAll(async () => {
@@ -82,7 +82,7 @@ test("test_normal", async ({ page }) => {
   await expect(page.locator("#doc .mdmark-syntax-warning")).toHaveCount(0);
 });
 
-// 狭い画面では、列を書いた順に縦に積む（正常シナリオ（狭い画面））
+// 狭い画面では、列を記載した順に縦に並べる（正常シナリオ（狭い画面））
 test("test_normal_when_narrow", async ({ page }) => {
   // 準備
   await page.setViewportSize({ width: 390, height: 844 });
@@ -111,7 +111,7 @@ test("test_normal_when_narrow", async ({ page }) => {
   ).toBe(true);
 });
 
-// 列の数が 2〜3 でない範囲は、警告を置いて横に並べない（異常シナリオ（列の数が 2〜3 でない））
+// 列の数が 2〜3 でない範囲は、警告を配置して横に並べない（異常シナリオ（列の数が 2〜3 でない））
 test("test_error_when_column_count_invalid", async ({ page }) => {
   // 準備
   await openPage(page, builtRoot);
@@ -158,7 +158,7 @@ test("test_error_when_column_count_invalid", async ({ page }) => {
   }
 });
 
-// 入れ子の内側は警告を置いて並べず、外側の 2 列は横に並べる（異常シナリオ（columns の入れ子））
+// 入れ子の内側は警告を配置して並べず、外側の 2 列は横に並べる（異常シナリオ（columns の入れ子））
 test("test_error_when_nested", async ({ page }) => {
   // 準備
   await page.setViewportSize({ width: 1280, height: 800 });

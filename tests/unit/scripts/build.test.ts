@@ -23,8 +23,8 @@ const loadBuild = () => import("../../../scripts/build.ts");
 // 配布ファイル 1 つの上限（jsDelivr の 20MB）
 const MAX_BYTES = 20 * 1024 * 1024;
 
-// ビルドを丸ごと流すテスト 1 件の待つ上限（ミリ秒）。
-// WSL2 の /mnt/c 上で、このファイル単独 5 回と test:unit 全件 6 回を流した所要時間の最大は 40.8 秒（test_main）。
+// ビルドを丸ごと実行するテスト 1 件の待つ上限（ミリ秒）。
+// WSL2 の /mnt/c 上で、このファイル単独 5 回と test:unit 全件 6 回を実行した所要時間の最大は 40.8 秒（test_main）。
 // 40.8 秒 × 1.5 = 61.2 秒を 10 秒単位で切り上げて 70 秒にした
 const MAIN_BUILD_TIMEOUT_MS = 70_000;
 
@@ -39,7 +39,7 @@ const entryScript = [
 
 const createdRoots: string[] = [];
 
-/** 一時フォルダに src/ と version.ini を置き、そのパスを返す */
+/** 一時フォルダに src/ と version.ini を配置し、そのパスを返却する */
 async function createRoot(versionIni: string): Promise<string> {
   const root = await mkdtemp(join(tmpdir(), "mdmark-build-"));
   createdRoots.push(root);
@@ -50,7 +50,7 @@ async function createRoot(versionIni: string): Promise<string> {
   return root;
 }
 
-/** 作業ツリーの node_modules へのリンクと tsconfig を一時フォルダに置く（型定義を書く tsc を流せるようにする）。`entriesOnly` なら、中身を 1 つずつリンクした node_modules を置き、一時フォルダにだけパッケージを足せるようにする */
+/** 作業ツリーの node_modules へのリンクと tsconfig を一時フォルダに配置する（型定義を記載する tsc を実行できるようにする）。`entriesOnly` なら、中身を 1 つずつリンクした node_modules を配置し、一時フォルダにだけパッケージを追加できるようにする */
 async function linkTooling(
   root: string,
   options: { entriesOnly?: boolean } = {},
@@ -71,14 +71,14 @@ async function linkTooling(
   }
 }
 
-/** 型定義まで書けるビルドの一時フォルダを作る（src/ と version.ini に加えて tsc の道具を置く） */
+/** 型定義まで記載できるビルドの一時フォルダを作る（src/ と version.ini に加えて tsc の道具を配置する） */
 async function createBuildRoot(versionIni: string): Promise<string> {
   const root = await createRoot(versionIni);
   await linkTooling(root);
   return root;
 }
 
-/** src/ を持たず tsc の道具だけを置いた一時フォルダを作る */
+/** src/ を持たず tsc の道具だけを配置した一時フォルダを作る */
 async function createToolingRoot(): Promise<string> {
   const root = await mkdtemp(join(tmpdir(), "mdmark-tooling-"));
   createdRoots.push(root);
@@ -86,7 +86,7 @@ async function createToolingRoot(): Promise<string> {
   return root;
 }
 
-/** 一時フォルダの node_modules にパッケージを置く（licenseText があれば直下の LICENSE に書く） */
+/** 一時フォルダの node_modules にパッケージを配置する（licenseText があれば直下の LICENSE に記載する） */
 async function createPackage(
   root: string,
   name: string,
@@ -117,13 +117,13 @@ function createMetafile(inputPaths: string[]): Metafile {
   };
 }
 
-/** 前回のビルドの dist/index.js を置く */
+/** 前回のビルドの dist/index.js を配置する */
 async function createPreviousDist(root: string): Promise<void> {
   await mkdir(join(root, "dist"));
   await writeFile(join(root, "dist", "index.js"), "// 前回のビルド\n");
 }
 
-/** 標準エラーへの出力を集め、集めた文字列を返す関数を返す */
+/** 標準エラーへの出力を集め、集めた文字列を返却する関数を返却する */
 function captureStderr(): () => string {
   const chunks: string[] = [];
   vi.spyOn(process.stderr, "write").mockImplementation((chunk: unknown) => {
@@ -145,7 +145,7 @@ afterEach(async () => {
   );
 });
 
-// version.ini の版でビルドする（正常系）
+// version.ini のバージョンでビルドする（正常系）
 test("test_main", { timeout: MAIN_BUILD_TIMEOUT_MS }, async () => {
   // 準備
   const { main } = await loadBuild();
@@ -159,7 +159,7 @@ test("test_main", { timeout: MAIN_BUILD_TIMEOUT_MS }, async () => {
   );
 });
 
-// 渡した版でビルドする（正常系）
+// 指定したバージョンでビルドする（正常系）
 test("test_main_when_version_given", {
   timeout: MAIN_BUILD_TIMEOUT_MS,
 }, async () => {
@@ -178,7 +178,7 @@ test("test_main_when_version_given", {
   );
 });
 
-// 版の書式が違うと前回の dist/ を残さずに終わる（異常系）
+// バージョンの書式が違うと前回の dist/ を残さずに終わる（異常系）
 test("test_main_when_version_format_invalid", async () => {
   // 準備
   const { main } = await loadBuild();
@@ -193,7 +193,7 @@ test("test_main_when_version_format_invalid", async () => {
   expect(stderr()).toContain("v{MAJOR}.{MINOR}.{PATCH}");
 });
 
-// version.ini を読めないと前回の dist/ を残さずに終わる（異常系）
+// version.ini を読み込めないと前回の dist/ を残さずに終わる（異常系）
 test("test_main_when_version_ini_missing", async () => {
   // 準備
   const { main } = await loadBuild();
@@ -225,7 +225,7 @@ test("test_main_when_build_fails", async () => {
   expect(stderr()).toContain("src/index.ts");
 });
 
-// 上限を超えると dist/ を消して終わる（異常系）
+// 上限を超えると dist/ を削除して終わる（異常系）
 test("test_main_when_dist_file_too_large", {
   timeout: MAIN_BUILD_TIMEOUT_MS,
 }, async () => {
@@ -241,7 +241,7 @@ test("test_main_when_dist_file_too_large", {
   expect(stderr()).toMatch(/index\.js[^\n]*\d/);
 });
 
-// 移行の手順の点検に誤りがあれば dist/ を書かずに終わる（異常系）
+// 移行の手順の点検に誤りがあれば dist/ を書き込まずに終わる（異常系）
 test("test_main_when_migrations_invalid", {
   timeout: MAIN_BUILD_TIMEOUT_MS,
 }, async () => {
@@ -269,7 +269,7 @@ test("test_main_when_migrations_invalid", {
   expect(stderr()).toContain("migrations/next/steps.yaml");
 });
 
-// 使い方集の索引が無いページを指すと dist/ とプラグインの生成物を残さずに終わる（異常系）
+// ガイドの索引が無いページを指すと dist/ とプラグインの生成物を残さずに終わる（異常系）
 test("test_main_when_guide_index_invalid", {
   timeout: MAIN_BUILD_TIMEOUT_MS,
 }, async () => {
@@ -282,7 +282,7 @@ test("test_main_when_guide_index_invalid", {
       "schema: 1",
       "guides:",
       "  - name: a",
-      "    when: a を書くとき",
+      "    when: a を記載するとき",
       "    summary: a の概要",
       "    page: docs/a.md",
       "",
@@ -304,7 +304,7 @@ test("test_main_when_guide_index_invalid", {
   expect(stderr()).toContain("guide/index.yaml:guides[0].page");
 });
 
-// 対応ブラウザの下限に無い API を確かめずに使うと dist/ を消して終わる（異常系）
+// 対応ブラウザの下限に無い API を確認せずに使用すると dist/ を削除して終わる（異常系）
 test("test_main_when_api_missing_in_baseline_browser", {
   timeout: MAIN_BUILD_TIMEOUT_MS,
 }, async () => {
@@ -326,7 +326,7 @@ test("test_main_when_api_missing_in_baseline_browser", {
   }
 });
 
-// version.ini の先頭行を返す（正常系）
+// version.ini の先頭行を返却する（正常系）
 test("test_resolve_version", async () => {
   // 準備
   const { resolveVersion } = await loadBuild();
@@ -337,7 +337,7 @@ test("test_resolve_version", async () => {
   expect(version).toBe("v0.0.0");
 });
 
-// 渡した版を version.ini より優先する（正常系）
+// 指定したバージョンを version.ini より優先する（正常系）
 test("test_resolve_version_when_version_given", async () => {
   // 準備
   const { resolveVersion } = await loadBuild();
@@ -348,7 +348,7 @@ test("test_resolve_version_when_version_given", async () => {
   expect(version).toBe("v0.0.1");
 });
 
-// 書式の違う版を拒む（異常系）
+// 書式の違うバージョンを拒む（異常系）
 test("test_resolve_version_when_format_invalid", async () => {
   // 準備
   const { resolveVersion, VersionFormatError } = await loadBuild();
@@ -358,7 +358,7 @@ test("test_resolve_version_when_format_invalid", async () => {
   );
 });
 
-// 版を埋めた JS と CSS とライセンスのファイルを 1 つずつ書く（正常系）
+// バージョンを埋めた JS と CSS とライセンスのファイルを 1 つずつ記載する（正常系）
 test("test_build_dist", async () => {
   // 準備
   const { buildDist } = await loadBuild();
@@ -408,7 +408,7 @@ test("test_build_dist_when_postcss_imported", async () => {
   expect(js).not.toContain("CssSyntaxError");
 });
 
-// CLI と起動の処理を束ねる（正常系）
+// CLI と起動の処理をまとめる（正常系）
 test("test_build_dist_when_cli_and_viewer", async () => {
   // 準備
   const { buildDist } = await loadBuild();
@@ -449,7 +449,7 @@ test("test_build_dist_when_cli_and_viewer", async () => {
   expect(viewer).not.toContain("</script>");
 });
 
-// CLI に束ねたパッケージのライセンスも書く（正常系）
+// CLI にまとめたパッケージのライセンスも記載する（正常系）
 test("test_build_dist_when_cli_bundles_package", async () => {
   // 準備
   const { buildDist } = await loadBuild();
@@ -488,7 +488,7 @@ test("test_build_dist_when_cli_bundles_package", async () => {
   expect(text).toContain("Copyright CLI holder");
 });
 
-// 束ねたパッケージごとに名前・版・ライセンス・本文を書く（正常系）
+// まとめたパッケージごとに名前・バージョン・ライセンス・本文を記載する（正常系）
 test("test_write_third_party_licenses", async () => {
   // 準備
   const { writeThirdPartyLicenses } = await loadBuild();
@@ -541,7 +541,7 @@ test("test_write_third_party_licenses_when_license_missing", async () => {
   ).rejects.toThrow("ライセンスの本文が無い: b");
 });
 
-// 複数の metafile をまとめ、取り込まれたパッケージの本文も書く（正常系）
+// 複数の metafile をまとめ、取り込まれたパッケージの本文も記載する（正常系）
 test("test_write_third_party_licenses_when_embedded", async () => {
   // 準備
   const { writeThirdPartyLicenses } = await loadBuild();
@@ -597,7 +597,7 @@ test("test_write_third_party_licenses_when_embedded", async () => {
   );
 });
 
-// 上限以下なら空を返す（正常系）
+// 上限以下なら空を返却する（正常系）
 test("test_find_too_large_outputs", async () => {
   // 準備
   const { findTooLargeOutputs } = await loadBuild();
@@ -610,7 +610,7 @@ test("test_find_too_large_outputs", async () => {
   expect(tooLarge).toEqual([]);
 });
 
-// 上限を超えたファイルだけを返す（正常系）
+// 上限を超えたファイルだけを返却する（正常系）
 test("test_find_too_large_outputs_when_over_limit", async () => {
   // 準備
   const { findTooLargeOutputs } = await loadBuild();
@@ -623,7 +623,7 @@ test("test_find_too_large_outputs_when_over_limit", async () => {
   expect(tooLarge).toEqual([{ path: "dist/index.css", bytes: 201 }]);
 });
 
-// CLI と起動の処理は上限を超えても返さない（正常系）
+// CLI と起動の処理は上限を超えても返却しない（正常系）
 test("test_find_too_large_outputs_when_unsized", async () => {
   // 準備
   const { findTooLargeOutputs } = await loadBuild();
@@ -638,7 +638,7 @@ test("test_find_too_large_outputs_when_unsized", async () => {
 
 const execFileAsync = promisify(execFile);
 
-// 公開の型を使う側のファイル
+// 公開の型を利用側のファイル
 const CONSUMER = [
   'import { mount, registerExtension, render, version } from "./dist/index.js";',
   'import type { MdmarkExtension, MdmarkMarkArgs, StandardSchemaV1 } from "./dist/index.js";',
@@ -662,7 +662,7 @@ const CONSUMER = [
   "",
 ].join("\n");
 
-// 公開関数と拡張の型を持つ dist/index.d.ts を書き、使う側の型検査が通る（正常系）
+// 公開関数と拡張の型を持つ dist/index.d.ts を書き込み、利用側の型検査が通る（正常系）
 test("test_emit_declarations", async () => {
   // 準備
   const { emitDeclarations } = await loadBuild();

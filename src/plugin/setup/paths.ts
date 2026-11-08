@@ -7,7 +7,7 @@ import { readPort } from "../port.ts";
 /** 端末の設定に `serve.tmuxSession` が無いときのセッション名 */
 export const DEFAULT_SESSION_NAME = "mdmark-mcp";
 
-/** 状態の置き場所の下の常駐サーバーのログのファイル名 */
+/** 状態の配置場所の下の常駐サーバーのログのファイル名 */
 export const SERVE_LOG_FILE = "serve.log";
 
 /** `setup.js` のサブコマンドの誤り。`exitCode` を `setup.js` の終了コードにする */
@@ -21,7 +21,7 @@ export class SetupError extends Error {
   }
 }
 
-/** 端末の設定・状態の置き場所・ログ・settings.json のパスとポート */
+/** 端末の設定・状態の配置場所・ログ・settings.json のパスとポート */
 export type SetupPaths = {
   settingsPath: string;
   defaultPath: boolean;
@@ -35,7 +35,7 @@ export type SetupPaths = {
 const expandHome = (value: string, home: string): string =>
   value === "~" || value.startsWith("~/") ? join(home, value.slice(1)) : value;
 
-/** 環境変数から、端末の設定・状態の置き場所・ログ・settings.json のパスとポートを決める */
+/** 環境変数から、端末の設定・状態の配置場所・ログ・settings.json のパスとポートを決める */
 export const resolveSetupPaths = (env: NodeJS.ProcessEnv): SetupPaths => {
   const home = env.HOME || homedir();
   const expanded = (name: string) => {
@@ -61,7 +61,7 @@ export const resolveSetupPaths = (env: NodeJS.ProcessEnv): SetupPaths => {
   };
 };
 
-/** 端末の設定の `serve.tmuxSession` が文字列ならそれを、ほかは `DEFAULT_SESSION_NAME` を返す */
+/** 端末の設定の `serve.tmuxSession` が文字列ならそれを、ほかは `DEFAULT_SESSION_NAME` を返却する */
 export const readSessionName = (
   settings: Record<string, unknown> | undefined,
 ): string => {
@@ -75,12 +75,12 @@ export const readSessionName = (
   return DEFAULT_SESSION_NAME;
 };
 
-/** YAML のファイルを読んだ結果。無ければ `undefined` */
+/** YAML のファイルを読み込んだ結果。無ければ `undefined` */
 export type ReadYaml =
   | { text: string; raw: Record<string, unknown> }
   | undefined;
 
-/** YAML のファイルを読む。無ければ `undefined`、YAML として読めないかキーと値の形でなければ、パスと行を添えて `SetupError`（1）を投げる */
+/** YAML のファイルを読み込む。無ければ `undefined`、YAML として読み込めないかキーと値の構造でなければ、パスと行を添えて `SetupError`（1）を投げる */
 export const readYamlFile = async (options: {
   path: string;
   readFile: (path: string) => Promise<string>;
@@ -101,7 +101,7 @@ export const readYamlFile = async (options: {
     if (error instanceof YAMLParseError) {
       const line = error.linePos?.[0].line ?? 1;
       throw new SetupError(
-        `${options.path} の ${line} 行目を YAML として読めません。${error.message.split("\n")[0] ?? ""}`,
+        `${options.path} の ${line} 行目を YAML として読み込めません。${error.message.split("\n")[0] ?? ""}`,
       );
     }
     throw error;
@@ -110,7 +110,7 @@ export const readYamlFile = async (options: {
     return { text, raw: {} };
   }
   if (typeof raw !== "object" || Array.isArray(raw)) {
-    throw new SetupError(`${options.path} がキーと値の形ではありません。`);
+    throw new SetupError(`${options.path} がキーと値の構造ではありません。`);
   }
   return { text, raw: raw as Record<string, unknown> };
 };

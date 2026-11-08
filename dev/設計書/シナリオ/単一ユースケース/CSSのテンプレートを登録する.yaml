@@ -7,7 +7,7 @@ scenarios:
       - name: 登録する CSS を持つ作業のフォルダ
         description: '`mdmark.config.yaml` と、見出しの色を変える規則を持つ CSS `brand.css`'
       - name: Mock
-        description: Claude Code の代わりに、起動した常駐サーバーへ HTTP でつなぐ MCP のクライアントを使う。ツールの引数には、プラグインの PreToolUse のフックを通して作業のフォルダの絶対パスを入れる
+        description: Claude Code の代わりに、起動した常駐サーバーへ HTTP でつなぐ MCP のクライアントを使用する。ツールの引数には、プラグインの PreToolUse のフックを経由して作業のフォルダの絶対パスを入れる
     flow: |-
       sequenceDiagram
         participant C as Claude Code
@@ -15,15 +15,15 @@ scenarios:
         participant F as 作業のフォルダ
         participant T as テンプレートのフォルダ
         C->>S: add_template（brand.css・名前・説明・タグ）
-        S->>F: brand.css を読む
+        S->>F: brand.css を読み込む
         S->>T: フォルダと索引を作り、CSS をコピーして索引に行を追加する
         S-->>C: 登録した名前と CSS のパス
         C->>S: list_templates
-        S->>T: 索引を読む
+        S->>T: 索引を読み込む
         S-->>C: 名前・説明・タグの一覧
     expected:
-      - テンプレートのフォルダに `brand.css` と同じ中身の CSS があり、索引に渡した名前・説明・タグの行が 1 つある
-      - '`list_templates` が、登録した名前・説明・タグを返す'
+      - テンプレートのフォルダに `brand.css` と同じ中身の CSS があり、索引に指定した名前・説明・タグの行が 1 つある
+      - '`list_templates` が、登録した名前・説明・タグを返却する'
       - 作業のフォルダの `brand.css` と `mdmark.config.yaml` は書き換わらない
     test: test_normal_when_registering
   - name: 正常シナリオ（上書きして登録する）
@@ -44,7 +44,7 @@ scenarios:
         S-->>C: 登録した名前と CSS のパス
     expected:
       - テンプレートのフォルダの CSS が書き換えた `brand.css` と同じ中身になる
-      - 索引の同じ名前の行は 1 つのままで、説明とタグが渡した値になる
+      - 索引の同じ名前の行は 1 つのままで、説明とタグが指定した値になる
     test: test_normal_when_overwriting
   - name: 異常シナリオ（同じ名前のテンプレートがある）
     setup:
@@ -60,7 +60,7 @@ scenarios:
         participant S as MCP サーバー
         participant T as テンプレートのフォルダ
         C->>S: add_template（同じ名前・上書きしない）
-        S->>T: 索引を読み、同じ名前の行を見つける
+        S->>T: 索引を読み込み、同じ名前の行を見つける
         S-->>C: エラー（同じ名前があることと、上書きの指定で置き換えられること）
     expected:
       - ツールの結果がエラーになる
@@ -71,11 +71,11 @@ lead: Claude Code が MCP のツールで、作業のフォルダの CSS を、�
 issue: 164
 primary_actor: Claude Code
 stakeholders:
-  - name: 文書を書く人
+  - name: 文書の作成者
     interest: 作った CSS を説明つきで残し、ほかのリポジトリでも使い回せる
   - name: Claude Code
     interest: 登録した CSS を、後で説明とタグから探せる
-trigger: 文書を書く人が Claude Code に、作った CSS をテンプレートに登録するよう頼む
+trigger: 文書の作成者が Claude Code に、作った CSS をテンプレートに登録するよう頼む
 preconditions:
   - Claude Code に mdmark のプラグインを入れ、MCP の常駐サーバーを起動している
 success_guarantee: 登録した CSS と名前・説明・タグが端末の設定のフォルダに残り、一覧に出る。

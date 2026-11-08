@@ -2,7 +2,7 @@ import { expect, test } from "vitest";
 import { findTag, findTags, innerHtml } from "../../../helpers/html.ts";
 import { renderDoc } from "../../../helpers/render.ts";
 
-// h2 と h3 の節を入れ子に囲み、closed の節も中身を隠さない（正常系）
+// h2 と h3 のセクションを入れ子に囲み、closed のセクションも中身を隠さない（正常系）
 test("test_wrap_sections", () => {
   // 準備
   const markdown = [
@@ -31,7 +31,7 @@ test("test_wrap_sections", () => {
   expect(closed).not.toMatch(/\shidden\b/);
 });
 
-// h1 の節も囲み、h2 の節をその入れ子にする（正常系）
+// h1 のセクションも囲み、h2 のセクションをその入れ子にする（正常系）
 test("test_wrap_sections_when_h1", () => {
   // 準備
   const markdown = [
@@ -59,7 +59,7 @@ test("test_wrap_sections_when_h1", () => {
   expect(html).toContain('id="section-付録"');
 });
 
-// 知らない開閉の指定は読み飛ばし、開いた節にする（正常系）
+// 知らない開閉の指定はスキップし、開いたセクションにする（正常系）
 test("test_wrap_sections_when_unknown_value", () => {
   // 準備
   const markdown = "## A\n\n<!-- section: hidden -->\n\n本文A\n";
@@ -84,7 +84,7 @@ test("test_wrap_sections_when_feature_off", () => {
   expect(html).toContain('id="a"');
 });
 
-// タブの中身の中で開いた節を、その中身の終わりで閉じる（正常系）
+// タブの中身の中で開いたセクションを、その中身の終わりで閉じる（正常系）
 test("test_wrap_sections_when_in_tab", () => {
   // 準備
   const markdown = [

@@ -7,7 +7,7 @@ import { renderDoc } from "../../../helpers/render.ts";
 /** ギャラリーの処理を読み込む（実装が無い間は各テストが個別に失敗する） */
 const loadGallery = () => import("../../../../../src/render/syntax/gallery.ts");
 
-/** 文書の最初のギャラリーのマーカーを返す */
+/** 文書の最初のギャラリーのマーカーを返却する */
 async function galleryMark(markdown: string) {
   const mark = parseWithRules(markdown, []).find(
     (token) => token.type === "mdmark_mark" && token.meta?.name === "gallery",
@@ -18,7 +18,7 @@ async function galleryMark(markdown: string) {
   return mark.meta as Mark;
 }
 
-/** `count` 枚の画像だけの段落を並べた Markdown を返す */
+/** `count` 枚の画像だけの段落を並べた Markdown を返却する */
 function imageParagraphs(count: number): string[] {
   return Array.from({ length: count }, (_, index) => [
     `![画像 ${index + 1}](img-${index + 1}.png "画像 ${index + 1}")`,
@@ -26,7 +26,7 @@ function imageParagraphs(count: number): string[] {
   ]).flat();
 }
 
-// 列の数を読み、省けば既定にする（正常系）
+// 列の数を読み込み、省けば既定にする（正常系）
 test("test_read_gallery_options", async () => {
   // 準備
   const { readGalleryOptions } = await loadGallery();
@@ -40,7 +40,7 @@ test("test_read_gallery_options", async () => {
   expect(second).toEqual({ cols: 2, items: [], skipped: [] });
 });
 
-// 読めない列の数と指定を項目にする（異常系）
+// 読み込めない列の数と指定を項目にする（異常系）
 test("test_read_gallery_options_when_unreadable", async () => {
   // 準備
   const { readGalleryOptions } = await loadGallery();
@@ -61,7 +61,7 @@ test("test_build_gallery", () => {
     "",
     '![開く](open.png "開く")',
     "",
-    '![書く](write.png "書く")',
+    '![記載する](write.png "記載する")',
     "",
     "範囲の中の文",
     "",
@@ -81,7 +81,7 @@ test("test_build_gallery", () => {
 
 // 番号を付けたギャラリーの画像にサブ図の番号を付ける（正常系）
 test("test_build_gallery_when_numbered", () => {
-  // 準備（fig のマーカーが開きのマーカーに { id: "shots", number: 1 } を置く）
+  // 準備（fig のマーカーが開きのマーカーに { id: "shots", number: 1 } を配置する）
   const markdown = [
     "<!-- fig: shots -->",
     "",
@@ -89,7 +89,7 @@ test("test_build_gallery_when_numbered", () => {
     "",
     '![開く](open.png "開く")',
     "",
-    '![書く](write.png "書く")',
+    '![記載する](write.png "記載する")',
     "",
     "<!-- /gallery -->",
     "",
@@ -103,7 +103,7 @@ test("test_build_gallery_when_numbered", () => {
   expect(findTag(html, 'id="fig-shots-a"')).toMatch(/^<figure/);
   expect(findTag(html, 'id="fig-shots-b"')).toMatch(/^<figure/);
   expect(html).toContain("<b>図 1a</b>開く");
-  expect(html).toContain("<b>図 1b</b>書く");
+  expect(html).toContain("<b>図 1b</b>記載する");
 });
 
 // 画像が 0 枚と 27 枚以上を警告にする（異常系）

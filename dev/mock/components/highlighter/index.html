@@ -28,7 +28,7 @@
 <body>
   <!-- モック専用の操作列: 配色の切り替え -->
   <div class="mock-bar">
-    <!-- [data-scheme-set]: sample.js が押されたボタンの値を html の data-scheme に当てる -->
+    <!-- [data-scheme-set]: sample.js が押されたボタンの値を html の data-scheme に適用する -->
     <div class="mock-bar-group" role="group" aria-label="配色">
       <button class="mock-bar-item" type="button" data-scheme-set="light" aria-pressed="false">明るい配色</button>
       <button class="mock-bar-item" type="button" data-scheme-set="dark" aria-pressed="false">ダーク</button>
@@ -73,8 +73,8 @@
         <h2 class="catalog-label" id="state-unknown">知らない色の名前</h2>
         <article class="mdmark">
 <div class="mdmark-syntax-warning">
-  <p class="mdmark-syntax-warning-title"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg>書き方の警告</p>
-  <p><code>{color=pink}</code> の <code>pink</code> は使えない色の名前です。使える色の名前は <code>blue</code>・<code>red</code>・<code>green</code>・<code>yellow</code>・<code>orange</code>・<code>purple</code>・<code>gray</code> です。既定の色で描いています。</p>
+  <p class="mdmark-syntax-warning-title"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg>記載の警告</p>
+  <p><code>{color=pink}</code> の <code>pink</code> は使用できない色の名前です。使用できる色の名前は <code>blue</code>・<code>red</code>・<code>green</code>・<code>yellow</code>・<code>orange</code>・<code>purple</code>・<code>gray</code> です。既定の色で描いています。</p>
 </div>
 <p><mark class="mdmark-highlight">決め手</mark>を強調します。</p>
         </article>

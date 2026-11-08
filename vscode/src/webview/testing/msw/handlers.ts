@@ -7,10 +7,10 @@ export const DIST_JS_PATTERN =
 /** 応答の種類 */
 export type DistHeadKind = "ok" | "versionMissing" | "offline" | "slow";
 
-/** `slow` で応答を返すまで待つミリ秒 */
+/** `slow` で応答を返却するまで待つミリ秒 */
 const SLOW_DELAY_MS = 3000;
 
-/** 読めなかった配布物の `HEAD` に、応答の種類どおりに答えるハンドラを返す */
+/** 読み込めなかった配布物の `HEAD` に、応答の種類どおりに回答するハンドラを返却する */
 export const handlers = (kind: DistHeadKind): HttpHandler[] => [
   http.head(DIST_JS_PATTERN, async () => {
     switch (kind) {

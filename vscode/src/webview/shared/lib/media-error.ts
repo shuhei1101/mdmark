@@ -6,13 +6,13 @@ const TITLES: Readonly<Record<"video" | "audio", string>> = {
   audio: "この音声をプレビューで再生できません",
 };
 
-/** 再生できない動画・音声の知らせの枠の HTML を返す。「既定のアプリで開く」は `data-action="openAsset"` と `data-path` を持つ */
+/** 再生できない動画・音声の通知ブロックの HTML を返却する。「既定のアプリで開く」は `data-action="openAsset"` と `data-path` を持つ */
 export const renderMediaError = (options: {
   /** 再生できなかった要素 */
   kind: "video" | "audio";
   /** 拡張子 */
   format: string;
-  /** 文書に書いたパス */
+  /** 文書に記載したパス */
   path: string;
 }): string => {
   const format = escapeHtml(options.format);

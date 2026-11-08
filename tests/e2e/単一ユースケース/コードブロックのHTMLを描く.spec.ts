@@ -14,10 +14,10 @@ import {
   updateDocument,
 } from "../dist-page.ts";
 
-// ビルドした配布物を置いた作業ツリー
+// ビルドした配布物を配置した作業ツリー
 let builtRoot = "";
 
-// 範囲の HTML: 文字に色を付けた箱 2 つを横に並べる `div`、動くと `window.__mdmarkScriptRan` を `true` にする `script`、`onclick` を持つボタン
+// 範囲の HTML: 文字に色を付けたノード 2 つを横に並べる `div`、動くと `window.__mdmarkScriptRan` を `true` にする `script`、`onclick` を持つボタン
 const HTML = [
   '<div style="display: flex; gap: 12px">',
   '  <div style="color: rgb(200, 0, 0)">一つ目の箱</div>',
@@ -27,7 +27,7 @@ const HTML = [
   '<button onclick="window.__mdmarkScriptRan = true">押す</button>',
 ].join("\n");
 
-// 範囲の外に置く `html` のコードブロック
+// 範囲の外に配置する `html` のコードブロック
 const OUTSIDE = ["```html", "<p>範囲の外</p>", "```", ""].join("\n");
 
 test.beforeAll(async () => {
@@ -38,14 +38,14 @@ test.afterAll(async () => {
   await removeDistRoot(builtRoot);
 });
 
-// 印で囲んだ html のコードブロックをその場の HTML として描き、スクリプトとイベントの属性を落とし、範囲の外のコードブロックはコードのまま出す（正常シナリオ）
+// マーカーで囲んだ html のコードブロックをその場の HTML として描き、スクリプトとイベントの属性を落とし、範囲の外のコードブロックはコードのまま出す（正常シナリオ）
 test("test_normal", async ({ page }) => {
   // 準備
   const syntaxRequests = await routeSyntax(page);
   await openPage(page, builtRoot);
   // 実行
   await mountDocument(page, { markdown: `${wrapHtml(HTML)}\n${OUTSIDE}` });
-  // 検証: 色を付けた箱 2 つが横に並び、範囲の中にコードの pre が無い
+  // 検証: 色を付けたノード 2 つが横に並び、範囲の中にコードの pre が無い
   const html = page.locator("#doc .mdmark-html");
   await expect(html).toHaveCount(1);
   await expect(html.locator(":scope > div")).toHaveCSS("display", "flex");
@@ -65,7 +65,7 @@ test("test_normal", async ({ page }) => {
   const code = page.locator("#doc pre");
   await expect(code).toHaveCount(1);
   await expect(code).toContainText("<p>範囲の外</p>");
-  // 範囲の外の html のコードブロックだけが色分けされ、読むのは本体と html の言語のモジュール
+  // 範囲の外の html のコードブロックだけが色分けされ、読み込むのは本体と html の言語のモジュール
   await expect(code.locator('span[class*="hljs-"]').first()).toBeVisible();
   expect(syntaxRequests()).toEqual(["core.min.js", "languages/xml.min.js"]);
   // script 要素が無く、動いていない
@@ -77,14 +77,14 @@ test("test_normal", async ({ page }) => {
   await expect(button).not.toHaveAttribute("onclick", /.*/);
   await button.click();
   expect(await page.evaluate(() => "__mdmarkScriptRan" in window)).toBe(false);
-  // 印のコメントは残らない
+  // マーカーのコメントは残らない
   expect(await page.locator("#doc").innerHTML()).not.toContain("<!--");
   // 描いた HTML の周りに拡大・縮小のボタンが無い
   await expect(html.locator("button")).toHaveCount(1);
   await expect(page.getByRole("button", { name: "拡大" })).toHaveCount(0);
 });
 
-// html の機能をオフにすると、範囲のコードブロックもコードのまま出し、印のコメントを残さない（正常シナリオ（機能がオフ））
+// html の機能をオフにすると、範囲のコードブロックもコードのまま出し、マーカーのコメントを残さない（正常シナリオ（機能がオフ））
 test("test_normal_when_feature_off", async ({ page }) => {
   // 準備
   await openPage(page, builtRoot);
@@ -102,7 +102,7 @@ test("test_normal_when_feature_off", async ({ page }) => {
   expect(await page.locator("#doc").innerHTML()).not.toContain("<!--");
 });
 
-// 範囲のコードブロックが 1 つでないときは、範囲の上に書き方の警告を出し、コードブロックはコードのまま、後ろの本文を描く（異常シナリオ（範囲にコードブロックが 1 つでない））
+// 範囲のコードブロックが 1 つでないときは、範囲の上に記載の警告を出し、コードブロックはコードのまま、後ろの本文を描く（異常シナリオ（範囲にコードブロックが 1 つでない））
 test("test_error_when_block_count_invalid", async ({ page }) => {
   // 準備
   const markdown = [
@@ -124,11 +124,11 @@ test("test_error_when_block_count_invalid", async ({ page }) => {
   await openPage(page, builtRoot);
   // 実行
   await mountDocument(page, { markdown });
-  // 検証: 範囲の上に、コードブロックを 1 つだけ置くように促す警告がある
+  // 検証: 範囲の上に、コードブロックを 1 つだけ配置するように促す警告がある
   const warning = page.locator("#doc .mdmark-syntax-warning");
   await expect(warning).toHaveCount(1);
   await expect(warning).toContainText(
-    "のコードブロックを 1 つだけ置いてください",
+    "のコードブロックを 1 つだけ配置してください",
   );
   const code = page.locator("#doc pre");
   await expect(code).toHaveCount(2);
@@ -145,13 +145,13 @@ test("test_error_when_block_count_invalid", async ({ page }) => {
   await expect(page.locator("#doc .mdmark-html")).toHaveCount(0);
 });
 
-/** 範囲の html: 箱 1 つと、動くと `window.__mdmarkScriptRan` を `true` にする `script` */
+/** 範囲の html: ノード 1 つと、動くと `window.__mdmarkScriptRan` を `true` にする `script` */
 const RANGE_HTML = [
   '<div class="box">箱</div>',
   "<script>window.__mdmarkScriptRan = true</script>",
 ].join("\n");
 
-/** 範囲の外に置く、範囲の箱と同じ class の箱の範囲 */
+/** 範囲の外に配置する、範囲のノードと同じ class のノードの範囲 */
 const OUTSIDE_BOX = rangeMarkdown({}, '<div class="box">範囲の外の箱</div>');
 
 /** `html-scripts` をオンにした設定 */
@@ -168,7 +168,7 @@ test("test_normal_when_range_scripts", async ({ page }) => {
   ].join("\n");
   // 実行
   await mountDocument(page, { markdown, config: SCRIPTS_ON });
-  // 検証: 範囲の箱だけに css が当たる
+  // 検証: 範囲のノードだけに css が該当する
   const scope = page.locator('#doc .mdmark-html[data-html-scope="0"]');
   const box = scope.locator(".box");
   await expect(box).toHaveCSS("background-color", RANGE_COLOR);
@@ -176,7 +176,7 @@ test("test_normal_when_range_scripts", async ({ page }) => {
     "background-color",
     RANGE_COLOR,
   );
-  // 検証: 押すと根の要素に class が付き、もう一度押すと外れる
+  // 検証: 押すと根の要素に class が付き、もう一度押すと削除される
   await expect(async () => {
     await box.click();
     await expect(scope).toHaveClass(/\bis-open\b/, { timeout: 500 });
@@ -195,7 +195,7 @@ test("test_normal_when_range_scripts", async ({ page }) => {
   ).toBe(1);
 });
 
-// html-scripts がオフのとき、範囲の html だけを描き、css・ts をコードのまま出し、変換のライブラリを読まない（正常シナリオ（範囲のスクリプトの機能がオフ））
+// html-scripts がオフのとき、範囲の html だけを描き、css・ts をコードのまま出し、変換のライブラリを読み込まない（正常シナリオ（範囲のスクリプトの機能がオフ））
 test("test_normal_when_range_scripts_off", async ({ page }) => {
   // 準備
   const transpilerRequests = await routeTranspiler(page);
@@ -216,7 +216,7 @@ test("test_normal_when_range_scripts_off", async ({ page }) => {
   expect(transpilerRequests()).toBe(0);
 });
 
-// 既定のエクスポートが関数でない範囲・例外を投げる範囲・ts と js を両方置いた範囲の上に書き方の警告を置き、範囲の HTML と本文は描く（異常シナリオ（範囲のスクリプトを動かせない））
+// 既定のエクスポートが関数でない範囲・例外を投げる範囲・ts と js を両方置いた範囲の上に記載の警告を配置し、範囲の HTML と本文は描く（異常シナリオ（範囲のスクリプトを動かせない））
 test("test_error_when_range_script_invalid", async ({ page }) => {
   // 準備
   await routeTranspiler(page);
@@ -254,7 +254,7 @@ test("test_error_when_range_script_invalid", async ({ page }) => {
   );
 });
 
-// 変換のライブラリを読めないとき、ts と js の範囲に知らせの枠を置き、範囲の html・css と本文は描く（異常シナリオ（変換のライブラリを読めない））
+// 変換のライブラリを読み込めないとき、ts と js の範囲に通知ブロックを配置し、範囲の html・css と本文は描く（異常シナリオ（変換のライブラリを読み込めない））
 test("test_error_when_transpiler_unavailable", async ({ page }) => {
   // 準備
   await routeTranspiler(page, 404);

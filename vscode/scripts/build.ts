@@ -18,11 +18,11 @@ const esbuildWasmSelfPlugin: Plugin = {
   },
 };
 
-/** 拡張機能と Webview のスクリプトを束ね、`tests` が `true` のときは結合テストも `out/test/` に束ねる */
+/** 拡張機能と Webview のスクリプトをまとめ、`tests` が `true` のときは結合テストも `out/test/` にまとめる */
 export const buildExtension = async (options: {
   /** `vscode/` の場所 */
   root: string;
-  /** 結合テストも束ねるか */
+  /** 結合テストもまとめるか */
   tests: boolean;
 }): Promise<void> => {
   const { root, tests } = options;
@@ -31,7 +31,7 @@ export const buildExtension = async (options: {
     bundle: true,
     logLevel: "silent",
   } as const;
-  // 拡張機能ホストで動く本体: `vscode` は束ねない
+  // 拡張機能ホストで動く本体: `vscode` はまとめない
   await build({
     ...common,
     entryPoints: ["src/extension.ts"],
@@ -42,13 +42,13 @@ export const buildExtension = async (options: {
     external: ["vscode"],
     plugins: [esbuildWasmSelfPlugin],
   });
-  // 拡張機能ホストの esbuild-wasm が読む WebAssembly
+  // 拡張機能ホストの esbuild-wasm が読み込む WebAssembly
   const require = createRequire(join(root, "package.json"));
   await copyFile(
     require.resolve("esbuild-wasm/esbuild.wasm"),
     join(root, "dist", "esbuild.wasm"),
   );
-  // Webview の中で動く React の画面と CSS: mdmark の配布物は束ねず、実行時に読む
+  // Webview の中で動く React の画面と CSS: mdmark の配布物はまとめず、実行時に読み込む
   await buildWebview({ root, logLevel: "silent" });
   if (!tests) {
     return;
@@ -67,7 +67,7 @@ export const buildExtension = async (options: {
     target: "node22",
     external: ["vscode", "mocha", "playwright", "yaml"],
   });
-  // 結合テストの axe: Webview が `axe` を受けたときだけ読む（本番の `preview.js` には束ねない）
+  // 結合テストの axe: Webview が `axe` を受けたときだけ読み込む（本番の `preview.js` にはまとめない）
   await mkdir(join(root, "media", "test"), { recursive: true });
   await copyFile(
     require.resolve("axe-core/axe.min.js"),
@@ -75,7 +75,7 @@ export const buildExtension = async (options: {
   );
 };
 
-// `node scripts/build.ts [--tests]` で入口として実行されたときだけ流す
+// `node scripts/build.ts [--tests]` で入口として実行されたときだけ実行する
 if (import.meta.main) {
   buildExtension({
     root: join(import.meta.dirname, ".."),

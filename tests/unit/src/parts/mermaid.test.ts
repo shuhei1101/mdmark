@@ -1,7 +1,7 @@
 import { expect, test } from "vitest";
 import { findTag } from "../../helpers/html.ts";
 
-/** mermaid の図の部品を読み込む（実装が無い間は各テストが個別に失敗する。ファイルが無いと Vite の解決が失敗してテストファイルごと落ちるため、URL を組んで読む） */
+/** mermaid の図の部品を読み込む（実装が無い間は各テストが個別に失敗する。ファイルが無いと Vite の解決が失敗してテストファイルごと落ちるため、URL を組んで読み込む） */
 const loadPart = (): Promise<
   typeof import("../../../../src/parts/mermaid.ts")
 > =>

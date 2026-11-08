@@ -11,7 +11,7 @@ const RANGE = [
   "<!-- html -->",
   "",
   "```html",
-  '<div class="box">箱</div>',
+  '<div class="box">ノード</div>',
   "```",
   "",
   "```ts",
@@ -22,14 +22,14 @@ const RANGE = [
   "",
 ].join("\n");
 
-/** パスごとに `export default "{パス}"` を返し、渡されたパスを記録する `bundle` */
+/** パスごとに `export default "{パス}"` を返却し、指定されたパスを記録する `bundle` */
 function recordingBundle(failing: string[] = []) {
   const calls: string[] = [];
   const bundle = async (paths: string[]) => {
     calls.push(...paths);
     return paths.map((path) =>
       failing.includes(path)
-        ? { path, error: "読めない" }
+        ? { path, error: "読み込めない" }
         : { path, code: `export default ${JSON.stringify(path)};` },
     );
   };
@@ -73,7 +73,7 @@ test("test_embed_local_libraries", async () => {
   expect(result.failures).toEqual([]);
 });
 
-// まとめられないものは外して誤りを返し、範囲が無ければ変換のライブラリをまとめない（異常系）
+// まとめられないものは削除して誤りを返却し、範囲が無ければ変換のライブラリをまとめない（異常系）
 test("test_embed_local_libraries_when_bundle_fails", async () => {
   // 準備
   const { embedLocalLibraries } = await loadEmbed();
@@ -90,7 +90,7 @@ test("test_embed_local_libraries_when_bundle_fails", async () => {
   expect(result.libraries).toEqual({});
   expect(result.htmlScripts).toEqual({});
   expect(result.failures).toEqual([
-    { path: "/ws/libs/test.js", error: "読めない" },
+    { path: "/ws/libs/test.js", error: "読み込めない" },
   ]);
   expect(calls).not.toContain("/ws/libs/babel.js");
 });
@@ -117,7 +117,7 @@ test("test_embed_local_libraries_when_mermaid", async () => {
   });
   const withoutBlock = await embedLocalLibraries({
     ...options,
-    markdown: "# 題\n",
+    markdown: "# タイトル\n",
     bundle: unused.bundle,
   });
   // 検証

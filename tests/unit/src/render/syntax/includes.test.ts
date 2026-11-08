@@ -128,7 +128,7 @@ test("test_select_heading_section", async () => {
   expect(missing).toBeNull();
 });
 
-// 範囲の行を返し、越えたら行の数を返す（正常系）
+// 範囲の行を返却し、越えたら行の数を返却する（正常系）
 test("test_select_lines", async () => {
   // 準備
   const { selectLines } = await loadIncludes();

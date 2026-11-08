@@ -6,7 +6,7 @@ import { renderDoc } from "../../../helpers/render.ts";
 /** ファイルツリーの処理を読み込む（実装が無い間は各テストが個別に失敗する） */
 const loadTree = () => import("../../../../../src/render/syntax/tree.ts");
 
-/** `<!-- tree: {rest} -->` の印 */
+/** `<!-- tree: {rest} -->` のマーカー */
 function treeMark(rest: string): Mark {
   return {
     name: "tree",
@@ -17,7 +17,7 @@ function treeMark(rest: string): Mark {
   };
 }
 
-/** 読めるツリーの行 */
+/** 読み込めるツリーの行 */
 const VALID_TREE = [
   "mdmark/",
   "├── src/",
@@ -28,7 +28,7 @@ const VALID_TREE = [
 /** 3 行目が上の行より 2 段深いツリーの行 */
 const TOO_DEEP_TREE = ["mdmark/", "├── src/", "│   │   └── deep.ts"];
 
-// 入れ子を読む（正常系）
+// 入れ子を読み込む（正常系）
 test("test_parse_tree", async () => {
   // 準備
   const { parseTree } = await loadTree();
@@ -48,7 +48,7 @@ test("test_parse_tree", async () => {
   });
 });
 
-// 2 段深い行を返す（異常系）
+// 2 段深い行を返却する（異常系）
 test("test_parse_tree_when_too_deep", async () => {
   // 準備
   const { parseTree } = await loadTree();
@@ -58,7 +58,7 @@ test("test_parse_tree_when_too_deep", async () => {
   expect(result).toEqual({ line: 3, depth: 2 });
 });
 
-// 読めるツリーを部品にし、読めないツリーは警告とコードブロックにする（正常系）
+// 読み込めるツリーを部品にし、読み込めないツリーは警告とコードブロックにする（正常系）
 test("test_build_file_trees", () => {
   // 準備
   const markdown = [
@@ -114,7 +114,7 @@ test("test_parse_tree_when_notes", async () => {
   });
 });
 
-// ASCII の罫線を今の罫線と同じ段の数え方で読む（正常系）
+// ASCII の罫線を今の罫線と同じ階層の数え方で読み込む（正常系）
 test("test_parse_tree_when_ascii", async () => {
   // 準備
   const { parseTree } = await loadTree();
@@ -144,7 +144,7 @@ test("test_parse_tree_when_ascii", async () => {
   });
 });
 
-// 印の open= を部品へ渡し、注釈のインラインを描く（正常系）
+// マーカーの open= を部品へ指定し、注釈のインラインを描く（正常系）
 test("test_build_file_trees_when_mark", () => {
   // 準備
   const markdown = [
@@ -166,7 +166,7 @@ test("test_build_file_trees_when_mark", () => {
   expect(html).not.toContain("<!-- tree");
 });
 
-// 読めない open= は警告にして既定の開き方のツリーにする（異常系）
+// 読み込めない open= は警告にして既定の開き方のツリーにする（異常系）
 test("test_build_file_trees_when_mark_unreadable", () => {
   // 準備
   const markdown = [
@@ -188,7 +188,7 @@ test("test_build_file_trees_when_mark_unreadable", () => {
   expect(html).not.toContain("data-open");
 });
 
-// all と階層の数を読む（正常系）
+// all と階層の数を読み込む（正常系）
 test("test_read_tree_options", async () => {
   // 準備
   const { readTreeOptions } = await loadTree();
@@ -202,7 +202,7 @@ test("test_read_tree_options", async () => {
   expect(levels.warning).toBeUndefined();
 });
 
-// 読めない値を警告にし、知らないキーと指定を読み飛ばす（異常系）
+// 読み込めない値を警告にし、知らないキーと指定をスキップする（異常系）
 test("test_read_tree_options_when_unreadable", async () => {
   // 準備
   const { readTreeOptions } = await loadTree();
@@ -224,7 +224,7 @@ test("test_read_tree_options_when_unreadable", async () => {
   ]);
 });
 
-// open= と並べた wrap を読む（正常系）
+// open= と並べた wrap を読み込む（正常系）
 test("test_read_tree_options_when_wrap", async () => {
   // 準備
   const { readTreeOptions } = await loadTree();

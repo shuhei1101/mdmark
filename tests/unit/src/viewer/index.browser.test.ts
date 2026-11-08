@@ -3,7 +3,7 @@ import { afterEach, expect, test } from "vitest";
 /** 書き出した HTML の起動の処理を読み込む（実装が無い間は各テストが個別に失敗する） */
 const loadViewer = () => import("../../../../src/viewer/index.ts");
 
-/** 埋めたモジュールが無い書き出しの起動に渡す値 */
+/** 埋めたモジュールが無い書き出しの起動に指定する値 */
 const EMBEDDED = { parts: {}, libraries: {}, extensions: [] };
 
 afterEach(() => {
@@ -16,7 +16,7 @@ test("test_start_viewer", async () => {
   const payload = {
     kind: "document",
     config: {},
-    docs: [{ path: "a.md", title: "題", markdown: "# 題\n" }],
+    docs: [{ path: "a.md", title: "タイトル", markdown: "# タイトル\n" }],
     entry: "a.md",
   };
   const script = document.createElement("script");
@@ -30,7 +30,7 @@ test("test_start_viewer", async () => {
   const { startViewer } = await loadViewer();
   await startViewer(document, EMBEDDED);
   // 検証
-  expect(article.querySelector("h1")?.textContent).toContain("題");
+  expect(article.querySelector("h1")?.textContent).toContain("タイトル");
 });
 
 // 埋めたエイリアスで下線を付ける（正常系）
@@ -39,7 +39,9 @@ test("test_start_viewer_when_aliases", async () => {
   const payload = {
     kind: "document",
     config: {},
-    docs: [{ path: "a.md", title: "題", markdown: "単体テストを流す。\n" }],
+    docs: [
+      { path: "a.md", title: "タイトル", markdown: "単体テストを実行する。\n" },
+    ],
     entry: "a.md",
     aliases: [
       {
@@ -47,7 +49,7 @@ test("test_start_viewer_when_aliases", async () => {
         id: "unit-test",
         name: "単体テスト",
         aliases: [],
-        description: "ライブラリ本体の単体テストを流す",
+        description: "ライブラリ本体の単体テストを実行する",
         command: "npm run test:unit",
       },
     ],

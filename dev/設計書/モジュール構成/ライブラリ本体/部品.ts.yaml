@@ -1,15 +1,15 @@
 title: ライブラリ本体 / 部品
-lead: 文書の中に mdmark が置く UI の部品を HTML 文字列で返す関数と、Storybook のストーリー。DOM に頼らず、ブラウザと Node で同じ出力になる。
+lead: 文書の中に mdmark が配置する UI の部品を HTML 文字列で返却する関数と、Storybook のストーリー。DOM に頼らず、ブラウザと Node で同じ出力になる。
 directory: |-
   ```tree
   src/parts/
   ├── escape.ts                    # HTML の特別な文字をエスケープする escapeHtml
-  ├── own.ts                       # mdmark が出した要素の印を付ける markOwn と SLOT_MARKER
-  ├── notice.ts                    # 知らせの枠の renderNotice
-  ├── notice.stories.yaml          # 知らせの枠のストーリー（Figure・Block・LongName・Extension）
-  ├── embed.ts                     # 読み込み中の枠の renderEmbed
-  ├── embed.stories.yaml           # 読み込み中の枠のストーリー（Loading）
-  ├── syntax-warning.ts            # 書き方の警告の renderSyntaxWarning
+  ├── own.ts                       # mdmark が出した要素のマーカーを付ける markOwn と SLOT_MARKER
+  ├── notice.ts                    # 通知ブロックの renderNotice
+  ├── notice.stories.yaml          # 通知ブロックのストーリー（Figure・Block・LongName・Extension）
+  ├── embed.ts                     # 読み込み中のブロックの renderEmbed
+  ├── embed.stories.yaml           # 読み込み中のブロックのストーリー（Loading）
+  ├── syntax-warning.ts            # 記載の警告の renderSyntaxWarning
   ├── table.ts                     # 表の renderTable・renderTableTools・renderTableBar・renderTableSettings・renderTreeKeyCell・renderTypeCell・renderTreeTools・renderTotalRows・renderCopyPanel・renderFoldedColumn・renderCheckCell
   ├── callout.ts                   # 注意書きの renderCallout
   ├── tabs.ts                      # タブの renderTabs
@@ -26,7 +26,7 @@ directory: |-
   ├── footnote.ts                  # 脚注の番号の renderFootnoteRef と脚注の一覧の renderFootnotes
   ├── code-block.ts                # コードブロックの renderCodeBlock と renderCodeCopy と、行の開閉のボタンの renderCodeFoldToggle・renderCodeFoldMore
   ├── toc.ts                       # 目次の renderToc
-  ├── section.ts                   # 節の renderSection
+  ├── section.ts                   # セクションの renderSection
   ├── side-toc.ts                  # 右側の目次の renderSideToc
   ├── back-to-top.ts               # 先頭へ戻るボタンの renderBackToTop
   ├── row-detail.ts                # 行の詳細の renderRowDetail
@@ -46,22 +46,22 @@ constants:
   - name: LOADING_TEXT
     title: 読み込み中の文言
     container: src/parts/embed.ts
-    summary: 読み込み中の枠に出す文字
+    summary: 読み込み中のブロックに出す文字
     value: '"図を読み込んでいます"'
   - name: NOTICE_TITLES
-    title: 知らせの枠の題
+    title: 通知ブロックのタイトル
     container: src/parts/notice.ts
-    summary: 図の印かどうかで分ける題
+    summary: 図のマーカーかどうかで分けるタイトル
     value: '{ figure: "この図を表示できません", block: "この箇所を表示できません", icons: "アイコンを表示できません" }'
   - name: SLOT_MARKER
-    title: 中身の差し込み口
+    title: 中身の差し込みインターフェース
     container: src/parts/own.ts
-    summary: 中身を持つ部品に中身の代わりに渡し、記法がこの前後で HTML を分ける文字列。Markdown に現れない制御文字だけで作る
+    summary: 中身を持つ部品に中身の代わりに指定し、記法がこの前後で HTML を分ける文字列。Markdown に現れない制御文字だけで作る
     value: '"\u0000mdmark-slot\u0000"'
   - name: SYNTAX_ATTRIBUTE
     title: 色分けの対象の属性
     container: src/parts/code-block.ts
-    summary: 色分けするコードブロックの `code` に付け、値に言語のモジュール名を持つ属性。mdmark が出した要素だけが sanitize を通って持ち続けるため、文書に書いた生の HTML の `code` は色分けの対象にならない
+    summary: 色分けするコードブロックの `code` に付け、値に言語のモジュール名を持つ属性。mdmark が出した要素だけが sanitize を通って持ち続けるため、文書に記載した生の HTML の `code` は色分けの対象にならない
     value: '"data-mdmark-syntax"'
     status: planned
     introduced:
@@ -69,7 +69,7 @@ constants:
   - name: MERMAID_ATTRIBUTE
     title: mermaid の対象の属性
     container: src/parts/code-block.ts
-    summary: mermaid のコードブロックの一番外の要素に付ける属性。`mount` が図にする対象を見つけるのに使う。`SYNTAX_ATTRIBUTE` と同じく mdmark が出した要素だけが持ち続ける
+    summary: mermaid のコードブロックの一番外の要素に付ける属性。`mount` が図にする対象を見つけるのに使用する。`SYNTAX_ATTRIBUTE` と同じく mdmark が出した要素だけが持ち続ける
     value: '"data-mdmark-mermaid"'
     refs:
       - dev/設計書/インターフェース定義/ライブラリ本体/文書をHTML文字列にする.ts#constraints[mermaid のコードブロック]
@@ -79,7 +79,7 @@ constants:
   - name: COLOR_NAMES
     title: 色の名前
     container: src/parts/colors.ts
-    summary: 表の列と行・バッジ・本文の文字に書ける色の名前。型 `ColorName` はこの要素の和。書き方の警告の本文に並べる
+    summary: 表の列と行・バッジ・本文の文字に記載できる色の名前。型 `ColorName` はこの要素の和。記載の警告の本文に並べる
     value: '["blue", "red", "green", "yellow", "orange", "purple", "gray"]'
     refs:
       - dev/設計書/インターフェース定義/ライブラリ本体/文書をHTML文字列にする.ts#constraints[色の名前]
@@ -100,7 +100,7 @@ functions:
         description: エスケープする文字列
     returns:
       type: string
-      description: 要素の中身にも属性の値にも置ける文字列
+      description: 要素の中身にも属性の値にも配置できる文字列
     unit_tests:
       - name: test_escape_html
         case: 正常
@@ -109,82 +109,82 @@ functions:
         mock: なし
         expected: '`&lt;a href=&quot;x&quot;&gt;&#39;&amp;&#39;&lt;/a&gt;`'
   - name: renderNotice
-    title: 知らせの枠を描く
+    title: 通知ブロックを描く
     container: src/parts/notice.ts
     kind: 関数
     scope: public
-    summary: 部品設計『知らせの枠』の HTML を返す
+    summary: 部品設計『通知ブロック』の HTML を返却する
     args:
       - name: options
         type: '{ name: string; figure?: boolean; source?: "library" | "extension" | "part" | "diff-revisions" | "diff-content" }'
         required: true
-        description: 印の名前、図の印か（既定 `true`）、読めなかったもの（既定 `library`。`extension` は本文を `表示に使う拡張（…）` にする。`part` は本文を `表示に使う部品（…）` にする。`diff-revisions`・`diff-content` は部品設計の題と本文にし、`figure` を使わない）
+        description: マーカーの名前、図のマーカーか（既定 `true`）、読み込めなかったもの（既定 `library`。`extension` は本文を `表示に使用する拡張（…）` にする。`part` は本文を `表示に使用する部品（…）` にする。`diff-revisions`・`diff-content` は部品設計のタイトルと本文にし、`figure` を使用しない）
     returns:
       type: string
       description: '`<div class="mdmark-notice" role="status">` で始まる HTML'
     callees:
       - '#functions[escapeHtml]'
     refs:
-      - dev/設計書/部品設計/知らせの枠.ts#
+      - dev/設計書/部品設計/通知ブロック.ts#
     unit_tests:
       - name: test_render_notice
         case: 正常
-        summary: 図の印の題と、印の名前を入れた本文を返す
+        summary: 図のマーカーのタイトルと、マーカーの名前を入れた本文を返却する
         condition: '`{ name: "chart" }`'
         mock: なし
-        expected: 題が `この図を表示できません`、本文に `<code>chart</code>` と直し方が入る
+        expected: タイトルが `この図を表示できません`、本文に `<code>chart</code>` と修正方法が入る
       - name: test_render_notice_when_block
         case: 正常
-        summary: 図でない印の題を返す
+        summary: 図でないマーカーのタイトルを返却する
         condition: '`{ name: "tabs", figure: false }`'
         mock: なし
-        expected: 題が `この箇所を表示できません`
+        expected: タイトルが `この箇所を表示できません`
       - name: test_render_notice_when_name_has_html
         case: 正常
-        summary: 印の名前をエスケープする
+        summary: マーカーの名前をエスケープする
         condition: '`{ name: "<b>x</b>" }`'
         mock: なし
         expected: '`<code>&lt;b&gt;x&lt;/b&gt;</code>`'
       - name: test_render_notice_when_extension
         case: 正常
-        summary: 拡張を読めないときの本文を返す
+        summary: 拡張を読み込めないときの本文を返却する
         condition: '`{ name: "greet", source: "extension" }`'
         mock: なし
-        expected: 本文が `表示に使う拡張（<code>greet</code>）を読み込めませんでした。` で始まる
+        expected: 本文が `表示に使用する拡張（<code>greet</code>）を読み込めませんでした。` で始まる
       - name: test_render_notice_when_diff
         case: 正常
-        summary: 差分の取り出し元を読めないときの題と本文を返す
-        condition: '`{ name: "guide", source: "diff-revisions" }` と `{ name: "2026/10/19 16:40 件数を直す", source: "diff-content" }`'
+        summary: 差分の取り出し元を読み込めないときのタイトルと本文を返却する
+        condition: '`{ name: "guide", source: "diff-revisions" }` と `{ name: "2026/10/19 16:40 件数を修正する", source: "diff-content" }`'
         mock: なし
-        expected: 前者の題が `変更の履歴を表示できません`、後者の本文が `「2026/10/19 16:40 件数を直す」の本文を取り出せませんでした。` で始まる
+        expected: 前者のタイトルが `変更の履歴を表示できません`、後者の本文が `「2026/10/19 16:40 件数を修正する」の本文を取り出せませんでした。` で始まる
       - name: test_render_notice_when_part
         case: 正常
-        summary: 部品のモジュールを読めないときの本文を返す
+        summary: 部品のモジュールを読み込めないときの本文を返却する
         condition: '`{ name: "view", figure: false, source: "part" }`'
         mock: なし
-        expected: 題が `この箇所を表示できません`、本文が `表示に使う部品（<code>view</code>）を読み込めませんでした。` で始まる
+        expected: タイトルが `この箇所を表示できません`、本文が `表示に使用する部品（<code>view</code>）を読み込めませんでした。` で始まる
   - name: renderEmbed
-    title: 読み込み中の枠を描く
+    title: 読み込み中のブロックを描く
     container: src/parts/embed.ts
     kind: 関数
     scope: public
-    summary: 部品設計『読み込み中の枠』の HTML を返す
+    summary: 部品設計『読み込み中のブロック』の HTML を返却する
     args:
       - name: options
         type: '{ name: string; args?: string[] }'
         required: true
-        description: 印の名前と引数（既定 `[]`）
+        description: マーカーの名前と引数（既定 `[]`）
     returns:
       type: string
       description: '`<div class="mdmark-embed" data-mdmark-slot="{name}" data-mdmark-args="{args}" role="status">図を読み込んでいます</div>`'
     callees:
       - '#functions[escapeHtml]'
     refs:
-      - dev/設計書/部品設計/読み込み中の枠.ts#
+      - dev/設計書/部品設計/読み込み中のブロック.ts#
     unit_tests:
       - name: test_render_embed
         case: 正常
-        summary: 印の名前と引数を属性に持つ枠を返す
+        summary: マーカーの名前と引数を属性に持つ枠を返却する
         condition: '`{ name: "chart", args: ["a", "b"] }`'
         mock: なし
         expected: '`data-mdmark-slot="chart"`・`data-mdmark-args="a b"`・`role="status"`・文字 `図を読み込んでいます`'
@@ -195,11 +195,11 @@ functions:
         mock: なし
         expected: '`data-mdmark-args="&quot;&gt;&lt;script&gt;"`'
   - name: markOwn
-    title: mdmark が出した要素に印を付ける
+    title: mdmark が出した要素にマーカーを付ける
     container: src/parts/own.ts
     kind: 関数
     scope: internal
-    summary: 部品の HTML の全ての開始タグに `data-mdmark-own="{nonce}"` を足す。描画の `sanitize` は、この属性を持つ要素にだけ記法の class・`data-*`・`id` を残し、属性は外す
+    summary: 部品の HTML の全ての開始タグに `data-mdmark-own="{nonce}"` を追加する。描画の `sanitize` は、この属性を持つ要素にだけ記法の class・`data-*`・`id` を残し、属性は削除する
     description: 部品の HTML は文字をエスケープ済みで、文書の中身（`SLOT_MARKER` の位置）を含まないため、開始タグを `<{名前}` で見分けられる
     args:
       - name: html
@@ -209,23 +209,23 @@ functions:
       - name: nonce
         type: string
         required: true
-        description: 描くごとに作る印の値
+        description: 描くごとに作るマーカーの値
     returns:
       type: string
-      description: 印を付けた HTML
+      description: マーカーを付けた HTML
     unit_tests:
       - name: test_mark_own
         case: 正常
-        summary: 全ての開始タグに印を付け、閉じタグと文字はそのまま
+        summary: 全ての開始タグにマーカーを付け、閉じタグと文字はそのまま
         condition: '`<div class="a"><p>x &lt;y&gt;</p></div>` と nonce `n1`'
         mock: なし
         expected: '`<div data-mdmark-own="n1" class="a"><p data-mdmark-own="n1">x &lt;y&gt;</p></div>`'
   - name: renderSyntaxWarning
-    title: 書き方の警告を描く
+    title: 記載の警告を描く
     container: src/parts/syntax-warning.ts
     kind: 関数
     scope: internal
-    summary: 部品設計『書き方の警告』の HTML を返す。`message`・項目の `` ` `` で囲んだ箇所を `code` にし、それ以外はエスケープする
+    summary: 部品設計『記載の警告』の HTML を返却する。`message`・項目の `` ` `` で囲んだ箇所を `code` にし、それ以外はエスケープする
     args:
       - name: options
         type: '{ mark?: string; message: string; items?: WarningItem[] }'
@@ -239,13 +239,13 @@ functions:
     unit_tests:
       - name: test_render_syntax_warning
         case: 正常
-        summary: 題・印・本文・項目を出し、印をエスケープする
+        summary: タイトル・マーカー・本文・項目を出し、マーカーをエスケープする
         condition: '`mark` が `<!-- table: data +x -->`、項目が 1 つ'
         mock: なし
-        expected: '題 `書き方の警告`、`<code>&lt;!-- table: data +x --&gt;</code>`、`<ul>` に 1 項目'
+        expected: 'タイトル `記載の警告`、`<code>&lt;!-- table: data +x --&gt;</code>`、`<ul>` に 1 項目'
       - name: test_render_syntax_warning_without_mark
         case: 正常
-        summary: 印と項目が無ければ本文だけ
+        summary: マーカーと項目が無ければ本文だけ
         condition: '`message` だけ'
         mock: なし
         expected: '`<code>` で始まらず、`<ul>` が無い'
@@ -254,12 +254,12 @@ functions:
     container: src/parts/table.ts
     kind: 関数
     scope: internal
-    summary: 部品設計『表』の HTML を返す。`render` は表を `SLOT_MARKER` にして囲みだけを使い、Storybook は `columns`・`rows` と状態の引数（`sort`・`overflow`・`pinned`・`openFilter`・`filterValues`・`hiddenColumns`・`openColumns`・`copyState`・`targetRow`・`shownTotals`・`openTotals`・`openCopy`・`copyFallback`・`rowLinkNotice`・`folded`・`unfoldedRows`）で操作を付けた後の見た目を作る。折り畳みの見出しは `title` か `表（{`rows` の数か `rowCount`} 行）`。表（と `SLOT_MARKER`）は横にスクロールさせる `div.mdmark-table-scroll` で包む（計画書の案 A。表の `tabindex="0"` と `aria-label` は `table` に残す）。囲みには `hide`・`totals` を `data-hide`・`data-total` で持たせ、`rows` を渡したときは `renderTableBar` の帯とメニュー、`copyFallback` のときは `renderCopyPanel` のパネル、`renderTotalRows` の集計の行、`rowIds` の行の `id` と行へのリンクと知らせの要素、`folded` のときは `renderFoldedColumn` の開閉のボタンと開閉の行（最終列のセルに `mdmark-fold-col`、囲みに `is-folded`）も描く。集計の値は `filterValues` に合う行から `computeTotal` で出し、全ての行で `findUnreadableTotals` が返した列と計算のセルは空にする。`highlight` の列の `th`・`td` に class `mdmark-col-highlight` と `data-color`、`rowColors` の行の `tr` に `data-color` を付ける（`render` はこれらを記法のコアルールがトークンに付けるため、Storybook の見た目にだけ使う）。`headRows` を渡すと `thead` を段ごとのセル（`rowspan`・`colspan`・`scope`）で描き、`bottomHeadCells` で決めた最下段のセルにだけ `renderTableTools` のボタンを置く。`rowHeader` の列のセルは `<th scope="row">`、`mergeColumns` の列は表示する行から `mergeSpans` で結合を決めて始まりのセルに `rowspan` と `is-merged`、続くセルに `hidden` を付ける。`pinned` を省いたときは `rowHeader` の数を留める。囲みには `pin`・`check` を `data-pin`・`data-check` で持たせる。`rows` を渡したときは、`wide` の列の `th`・`td` に class `mdmark-wide`、`check` の列の `th`・`td` に class `mdmark-align-center` を付け、`check` の列の `true`・`false` のセルを `data-value` と `renderCheckCell` の中身にする
+    summary: 部品設計『表』の HTML を返却する。`render` は表を `SLOT_MARKER` にして囲みだけを使用し、Storybook は `columns`・`rows` と状態の引数（`sort`・`overflow`・`pinned`・`openFilter`・`filterValues`・`hiddenColumns`・`openColumns`・`copyState`・`targetRow`・`shownTotals`・`openTotals`・`openCopy`・`copyFallback`・`rowLinkNotice`・`folded`・`unfoldedRows`）で操作を付けた後の外観を作る。折り畳みの見出しは `title` か `表（{`rows` の数か `rowCount`} 行）`。表（と `SLOT_MARKER`）は横にスクロールさせる `div.mdmark-table-scroll` で包む（計画書の案 A。表の `tabindex="0"` と `aria-label` は `table` に残す）。囲みには `hide`・`totals` を `data-hide`・`data-total` で持たせ、`rows` を指定したときは `renderTableBar` の帯とメニュー、`copyFallback` のときは `renderCopyPanel` のパネル、`renderTotalRows` の集計の行、`rowIds` の行の `id` と行へのリンクと通知の要素、`folded` のときは `renderFoldedColumn` の開閉のボタンと開閉の行（最終列のセルに `mdmark-fold-col`、囲みに `is-folded`）も描く。集計の値は `filterValues` に合う行から `computeTotal` で出し、全ての行で `findUnreadableTotals` が返却した列と計算のセルは空にする。`highlight` の列の `th`・`td` に class `mdmark-col-highlight` と `data-color`、`rowColors` の行の `tr` に `data-color` を付ける（`render` はこれらを記法のコアルールがトークンに付けるため、Storybook の外観にだけ使用する）。`headRows` を指定すると `thead` を行ごとのセル（`rowspan`・`colspan`・`scope`）で描き、`bottomHeadCells` で決めた最下段のセルにだけ `renderTableTools` のボタンを配置する。`rowHeader` の列のセルは `<th scope="row">`、`mergeColumns` の列は表示する行から `mergeSpans` で結合を決めて始まりのセルに `rowspan` と `is-merged`、続くセルに `hidden` を付ける。`pinned` を省いたときは `rowHeader` の数を留める。囲みには `pin`・`check` を `data-pin`・`data-check` で持たせる。`rows` を指定したときは、`wide` の列の `th`・`td` に class `mdmark-wide`、`check` の列の `th`・`td` に class `mdmark-align-center` を付け、`check` の列の `true`・`false` のセルを `data-value` と `renderCheckCell` の中身にする
     args:
       - name: options
         type: TableOptions
         required: true
-        description: 部品設計の引数（`kind`・`features`・`columns`・`rows`・`filters`・`collapse`・`title`・`rowCount`（`rows` を省いたときの本文の行の数）・`hide`・`totals`・`rowIds`・`highlight`・`rowColors`・`pin`（`data-pin` に写す列の位置）・`wide`・`check`・`headRows`・`rowHeader`・`mergeColumns`・状態の引数）。`rows` を省いて `body` に `SLOT_MARKER` を渡すと囲みだけを作る
+        description: 部品設計の引数（`kind`・`features`・`columns`・`rows`・`filters`・`collapse`・`title`・`rowCount`（`rows` を省いたときの本文の行の数）・`hide`・`totals`・`rowIds`・`highlight`・`rowColors`・`pin`（`data-pin` に写す列の位置）・`wide`・`check`・`headRows`・`rowHeader`・`mergeColumns`・状態の引数）。`rows` を省いて `body` に `SLOT_MARKER` を指定すると囲みだけを作る
     returns:
       type: string
       description: '`<div class="mdmark-table"` で始まる HTML'
@@ -288,7 +288,7 @@ functions:
         expected: '`<details class="mdmark-table-details"><summary>表（3 行）</summary>` を持ち、`open` を持たない'
       - name: test_render_table_when_filtered
         case: 正常
-        summary: 当てた絞り込みに合わない行を隠し、一致する行が無ければ知らせの行を出す
+        summary: 適用した絞り込みに合わない行を隠し、一致する行が無ければ通知の行を出す
         condition: '`filterValues: [{ column: 1, text: "存在しない" }]`'
         mock: なし
         expected: 本文の行が全て `hidden` で、`一致する行がありません` の行が `hidden` を持たない
@@ -306,7 +306,7 @@ functions:
         expected: 帯に `3 / 3 件`・テーブル設定のボタン・`表をコピー`、説明の列の見出し・セル・集計のセルが `hidden`、`tfoot` に `合計 25`、各行に `id` と `mdmark-row-anchor`、2 行目だけ `data-target`
       - name: test_render_table_when_totals_unreadable
         case: 正常
-        summary: 数として読めないセルを持つ列の合計と平均を空にし、計算ごとの行を出す
+        summary: 数として読み込めないセルを持つ列の合計と平均を空にし、計算ごとの行を出す
         condition: 部品設計の `TotalsUnreadable`（数量の列に `-`・`約 3`）
         mock: なし
         expected: '`tfoot` に `data-total-kind` が `sum`・`avg` の 2 行がこの順にあり、合計の行の数量のセルが空、平均の行の単価のセルが `250`'
@@ -318,13 +318,13 @@ functions:
         expected: 平均と件数の行が `hidden`、合計の行が `hidden` を持たず、`集計` のボタンが `is-active`
       - name: test_render_table_when_copy_fallback
         case: 正常
-        summary: クリップボードに書けなかったときのパネルを帯の直後に出す
+        summary: クリップボードに書き込めなかったときのパネルを帯の直後に出す
         condition: '部品設計の `CopyFallback`（`copyFallback: { format: tsv, text: "名前\t数量" }`、`copyState: failed`）'
         mock: なし
         expected: '`mdmark-table-bar` の直後に `role="group"` の `mdmark-copy-panel` があり、案内が `「TSV」の中身を選択しています。` で始まり、`textarea` が `readonly` で中身が `名前\t数量`'
       - name: test_render_table_when_row_link_notice
         case: 正常
-        summary: 行の URL をコピーした結果を印の横の知らせに出す
+        summary: 行の URL をコピーした結果をマーカーの横の通知に出す
         condition: '部品設計の `RowLinkCopied`（`targetRow: 1`、`rowLinkNotice: copied`）'
         mock: なし
         expected: どの行にも `role="status"` の `mdmark-row-link-notice` があり、2 行目だけが `data-state="copied"` と `リンクをコピーしました` を持つ
@@ -348,10 +348,10 @@ functions:
         expected: 強調する列の見出しと各セルが class `mdmark-col-highlight` と `data-color` を持ち、色を付けた行の `tr` だけが `data-color` を持つ
       - name: test_render_table_when_merged
         case: 正常
-        summary: 多段の見出しと行見出しと結合したセルを描き、ボタンを最下段に置く
+        summary: 多段の見出しと行見出しと結合したセルを描き、ボタンを最下段に配置する
         condition: 部品設計『表』の `Merged` の引数
         mock: なし
-        expected: '`thead` の `tr` が 2 つで、`上期` の `th` が `colspan="2"`・`scope="colgroup"` を持ちボタンを持たない。2 段目の `th` が並べ替えのボタンを持つ。本文の 1 列目が `<th scope="row">` で、`東日本` の始まりのセルが `rowspan="3"`・`is-merged`、続く 2 つが `hidden`'
+        expected: '`thead` の `tr` が 2 つで、`上期` の `th` が `colspan="2"`・`scope="colgroup"` を持ちボタンを持たない。2 行目の `th` が並べ替えのボタンを持つ。本文の 1 列目が `<th scope="row">` で、`東日本` の始まりのセルが `rowspan="3"`・`is-merged`、続く 2 つが `hidden`'
       - name: test_render_table_when_merged_sorted
         case: 正常
         summary: 並べ替えた順で隣り合う同じ値だけを結合する
@@ -369,7 +369,7 @@ functions:
     container: src/parts/table.ts
     kind: 関数
     scope: internal
-    summary: '`true` は `<span class="mdmark-check" role="img" aria-label="はい">` に lucide の `check` の SVG を入れた HTML、`false` は `<span class="mdmark-visually-hidden">いいえ</span>` を返す'
+    summary: '`true` は `<span class="mdmark-check" role="img" aria-label="はい">` に lucide の `check` の SVG を入れた HTML、`false` は `<span class="mdmark-visually-hidden">いいえ</span>` を返却する'
     args:
       - name: value
         type: '"true" | "false"'
@@ -381,8 +381,8 @@ functions:
     unit_tests:
       - name: test_render_check_cell
         case: 正常
-        summary: true を ✓、false を読み上げだけのいいえにする
-        condition: '`true` と `false` をそれぞれ渡す'
+        summary: true を ✓、false をスクリーンリーダー向けのいいえにする
+        condition: '`true` と `false` をそれぞれ指定する'
         mock: なし
         expected: 1 つ目が `role="img"`・`aria-label="はい"` の `mdmark-check` で `<svg` を持ち、2 つ目が `いいえ` だけを持つ `mdmark-visually-hidden`
   - name: renderTableTools
@@ -390,12 +390,12 @@ functions:
     container: src/parts/table.ts
     kind: 関数
     scope: internal
-    summary: 列 1 つの見出しの中身（並べ替え・絞り込み・ピン止めのボタン）と、その列の絞り込みのドロワーの HTML を返す。`mount` が描いた表に足すのにも使う
+    summary: 列 1 つの見出しの中身（並べ替え・絞り込み・ピン止めのボタン）と、その列の絞り込みのドロワーの HTML を返却する。`mount` が描いた表に追加するのにも使用する
     args:
       - name: options
         type: '{ id: string; column: number; label: string; features: string[]; filter?: { kind: "select" | "text" | "date"; values: string[] }; active?: boolean; open?: boolean; value?: FilterValue; pinVisible?: boolean; pinPressed?: boolean }'
         required: true
-        description: ドロワーの id の頭、列の位置、列名、機能、絞り込み（`select` は候補の値）、絞り込み中か、ドロワーを開いているか、当てている絞り込み、ピン止めのボタンを出すか（既定 `false`。`mount` が幅を測って決め、Storybook は `overflow` で出す）、この列までを留めているか
+        description: ドロワーの id の頭、列の位置、列名、機能、絞り込み（`select` は候補の値）、絞り込み中か、ドロワーを開いているか、適用している絞り込み、ピン止めのボタンを出すか（既定 `false`。`mount` が幅を測って決め、Storybook は `overflow` で出す）、この列までを留めているか
     returns:
       type: '{ header: string; drawer: string }'
       description: 見出しの中身とドロワー（絞り込みが無ければ空）
@@ -404,7 +404,7 @@ functions:
     unit_tests:
       - name: test_render_table_tools
         case: 正常
-        summary: 値を選ぶドロワーとボタンを返す
+        summary: 値を選ぶドロワーとボタンを返却する
         condition: '`features: [sort, pin, filter]`、`filter: { kind: select, values: ["りんご", "みかん"] }`、列名 `名前`'
         mock: なし
         expected: '`header` に `mdmark-sort`・`mdmark-filter`（`aria-label="「名前」で絞り込む"`）・`mdmark-pin`（`hidden`）、`drawer` に `hidden` の `mdmark-filter-drawer`・候補の検索欄・2 つのチェックボックス・`絞り込みを解除`'
@@ -419,19 +419,19 @@ functions:
     container: src/parts/callout.ts
     kind: 関数
     scope: internal
-    summary: '部品設計『注意書き』の HTML を返す。`title` を渡すと、タイトルを `<span class="mdmark-visually-hidden">{種類の名前}: </span>{title}` にする'
+    summary: '部品設計『注意書き』の HTML を返却する。`title` を指定すると、タイトルを `<span class="mdmark-visually-hidden">{種類の名前}: </span>{title}` にする'
     args:
       - name: options
         type: '{ kind: CalloutKind; collapsed?: boolean; open?: boolean; title?: string; body: string }'
         required: true
-        description: 種類・折り畳み・開閉・タイトルの行内の HTML（エスケープ済み）・本文の HTML（`SLOT_MARKER` を渡せる）
+        description: 種類・折り畳み・開閉・タイトルの行内の HTML（エスケープ済み）・本文の HTML（`SLOT_MARKER` を指定できる）
     returns:
       type: string
       description: 注意書きの HTML
     unit_tests:
       - name: test_render_callout
         case: 正常
-        summary: 種類の class と題を出す
+        summary: 種類の class とタイトルを出す
         condition: '`kind: warning`'
         mock: なし
         expected: '`<div class="markdown-alert markdown-alert-warning"><p class="markdown-alert-title">警告</p>`'
@@ -443,7 +443,7 @@ functions:
         expected: '`<details class="markdown-alert markdown-alert-note"><summary class="markdown-alert-title">補足</summary>`'
       - name: test_render_callout_when_titled
         case: 正常
-        summary: タイトルの頭に読み上げだけの種類の名前を置く
+        summary: タイトルの頭にスクリーンリーダー向けの種類の名前を配置する
         condition: '`kind` が `tip`、`title` が `設定を先に確認する`'
         mock: なし
         expected: '`<p class="markdown-alert-title"><span class="mdmark-visually-hidden">ヒント: </span>設定を先に確認する</p>`'
@@ -458,12 +458,12 @@ functions:
     container: src/parts/tabs.ts
     kind: 関数
     scope: internal
-    summary: 部品設計『タブ』の HTML を返す。`group` を渡すと `mdmark-tabs` に `data-group` を付ける。`selected` を渡すとタブの並びを付け、選んだもの以外の中身を `hidden` にする。`collapse` が `closed`・`open` なら、`mdmark-tabs` を `renderCollapsible` の折り畳み（見出しは `title` か `タブ（{タブ名を・で並べたもの}）`）に入れる。タブ名は行内の HTML（エスケープ済み）としてそのまま置き、折り畳みの見出しの既定にはタグを除いた文字を使う
+    summary: 部品設計『タブ』の HTML を返却する。`group` を指定すると `mdmark-tabs` に `data-group` を付ける。`selected` を指定するとタブの並びを付け、選んだもの以外の中身を `hidden` にする。`collapse` が `closed`・`open` なら、`mdmark-tabs` を `renderCollapsible` の折り畳み（見出しは `title` か `タブ（{タブ名を・で並べたもの}）`）に入れる。タブ名は行内の HTML（エスケープ済み）としてそのまま配置し、折り畳みの見出しの既定にはタグを除いた文字を使用する
     args:
       - name: options
         type: '{ id: string; titles: string[]; panels: string[]; selected?: number; group?: string; collapse?: "none" | "closed" | "open"; title?: string }'
         required: true
-        description: id の頭、タブ名、タブごとの中身の HTML（`SLOT_MARKER` を渡せる）、選んだタブ、組の名前、折り畳み（既定 `none`）、折り畳みの見出し
+        description: id の頭、タブ名、タブごとの中身の HTML（`SLOT_MARKER` を指定できる）、選んだタブ、組の名前、折り畳み（既定 `none`）、折り畳みの見出し
     returns:
       type: string
       description: '`<div class="mdmark-tabs">` で始まる HTML'
@@ -494,7 +494,7 @@ functions:
         expected: 1 つ目が `<details class="mdmark-collapsible"><summary>タブ（uv・pip）</summary><div class="mdmark-tabs"` で始まり、2 つ目が `<details class="mdmark-collapsible" open><summary>入れ方</summary>` で始まる
       - name: test_render_tabs_when_strong_title
         case: 正常
-        summary: タブ名の strong をそのまま置く
+        summary: タブ名の strong をそのまま配置する
         condition: '`titles` が `["<strong>案 A</strong> SVG のまま","案 B"]`、`selected` が 0、`collapse` が `closed`'
         mock: なし
         expected: 1 つ目のタブのボタンとタブ名の `p` が `<strong>案 A</strong>` を持ち、折り畳みの見出しが `タブ（案 A SVG のまま・案 B）`
@@ -505,7 +505,7 @@ functions:
     container: src/parts/steps.ts
     kind: 関数
     scope: internal
-    summary: 部品設計『ステップ』の HTML を返す（Storybook 用。`render` は `ol` に class を付けるだけ）。`collapse` が `closed`・`open` なら、`ol` を `renderCollapsible` の折り畳み（見出しは `title` か `手順（{項目の数} ステップ）`）に入れる
+    summary: 部品設計『ステップ』の HTML を返却する（Storybook 用。`render` は `ol` に class を付けるだけ）。`collapse` が `closed`・`open` なら、`ol` を `renderCollapsible` の折り畳み（見出しは `title` か `手順（{項目の数} ステップ）`）に入れる
     args:
       - name: options
         type: '{ items: string[]; start?: number; collapse?: "none" | "closed" | "open"; title?: string }'
@@ -534,12 +534,12 @@ functions:
     container: src/parts/tree.ts
     kind: 関数
     scope: internal
-    summary: 部品設計『ファイルツリー』の HTML を返す。`div.mdmark-tree` に `open` を `data-open`、`source` を `data-source` で持たせ、名前が `...` の項目を `mdmark-tree-more`、ファイルを `fileIconOf` の `data-file-icon` で描き、`note` を `mdmark-tree-note` に入れる。`interactive` のときは `renderTreeBar` の帯を置き、子を持つフォルダの名前を開閉のボタンにし、`folderOpenByDefault` で開かないフォルダの入れ子の `ul` を `hidden="until-found"` にし、`copyFallback` ならツリーの下に `renderCopyPanel` のパネルを置く
+    summary: 部品設計『ファイルツリー』の HTML を返却する。`div.mdmark-tree` に `open` を `data-open`、`source` を `data-source` で持たせ、名前が `...` の項目を `mdmark-tree-more`、ファイルを `fileIconOf` の `data-file-icon` で描き、`note` を `mdmark-tree-note` に入れる。`interactive` のときは `renderTreeBar` の帯を配置し、子を持つフォルダの名前を開閉のボタンにし、`folderOpenByDefault` で開かないフォルダの入れ子の `ul` を `hidden="until-found"` にし、`copyFallback` ならツリーの下に `renderCopyPanel` のパネルを配置する
     args:
       - name: options
         type: '{ nodes: TreeNode[]; source: string; open?: string; wrap?: boolean; interactive?: boolean; copyState?: "idle" | "copied"; copyFallback?: boolean; id?: string }'
         required: true
-        description: 部品設計の引数と、`aria-controls` の id の頭（既定 `mdmark-tree`。`interactive` のときだけ使う）
+        description: 部品設計の引数と、`aria-controls` の id の頭（既定 `mdmark-tree`。`interactive` のときだけ使用する）
     returns:
       type: string
       description: '`<div class="mdmark-tree"` で始まる HTML'
@@ -564,13 +564,13 @@ functions:
         expected: '`src/` と `index.ts` の行の `mdmark-tree-note` が注釈の HTML をそのまま持ち、`mdmark/` の行は `mdmark-tree-note` を持たない。`index.ts` の `li` が `data-file-icon="file-code"`。`...` が `<li class="mdmark-tree-more">` で `ほかにもあります` を持つ'
       - name: test_render_tree_when_interactive
         case: 正常
-        summary: 帯と開閉のボタンを置き、開く階層より深いフォルダを閉じる
+        summary: 帯と開閉のボタンを配置し、開く階層より深いフォルダを閉じる
         condition: '部品設計の `Interactive` と `OpenLevels`（`open: 2`）'
         mock: なし
         expected: どちらも `ul` の前に `mdmark-tree-bar`（`tree` と `data-state="idle"` の `mdmark-tree-copy`）がある。1 つ目は `mdmark/` の `mdmark-tree-toggle` が `aria-expanded="true"`、`src/` が `aria-expanded="false"` でその入れ子の `ul` が `hidden="until-found"`、`aria-controls` がその `ul` の id。2 つ目は `app/`・`src/` が `aria-expanded="true"`、`parts/` が `aria-expanded="false"`
       - name: test_render_tree_when_copy_fallback
         case: 正常
-        summary: コピーできないときのパネルをツリーの下に置く
+        summary: コピーできないときのパネルをツリーの下に配置する
         condition: 部品設計の `CopyFailed`
         mock: なし
         expected: '`mdmark-tree-list` の後ろに `mdmark-copy-panel` があり、案内が `ツリーのテキストを選択しています。` で始まり、`textarea` の中身が `source`'
@@ -579,13 +579,13 @@ functions:
         summary: wrap のツリーに折り返す class を付ける
         condition: 部品設計『ファイルツリー』の状態 `Wrap` の引数
         mock: なし
-        expected: '`div.mdmark-tree` が `mdmark-tree-wrap` と `data-open="all"` を持ち、`wrap` を渡さないと `mdmark-tree-wrap` を持たない'
+        expected: '`div.mdmark-tree` が `mdmark-tree-wrap` と `data-open="all"` を持ち、`wrap` を指定しないと `mdmark-tree-wrap` を持たない'
   - name: renderBadge
     title: バッジを描く
     container: src/parts/badge.ts
     kind: 関数
     scope: internal
-    summary: 部品設計『バッジ』の HTML を返す。`color` を渡したときは `data-color` を付ける
+    summary: 部品設計『バッジ』の HTML を返却する。`color` を指定したときは `data-color` を付ける
     args:
       - name: options
         type: '{ label: string; color?: ColorName }'
@@ -614,7 +614,7 @@ functions:
     container: src/parts/toc.ts
     kind: 関数
     scope: internal
-    summary: 部品設計『目次』の HTML を返す。h3 は直前の h2 の入れ子にする
+    summary: 部品設計『目次』の HTML を返却する。h3 は直前の h2 の入れ子にする
     args:
       - name: options
         type: '{ headings: Array<{ level: 2 | 3; id: string; text: string }> }'
@@ -629,27 +629,27 @@ functions:
       - name: test_render_toc
         case: 正常
         summary: h3 を直前の h2 の入れ子にする
-        condition: '`導入`（h2）・`前提`（h3）・`使い方`（h2）'
+        condition: '`導入`（h2）・`前提`（h3）・`使用方法`（h2）'
         mock: なし
         expected: '`導入` の `li` の中の `ul` に `#前提` のリンク'
   - name: renderSection
-    title: 節を描く
+    title: セクションを描く
     container: src/parts/section.ts
     kind: 関数
     scope: internal
-    summary: 部品設計『節』の HTML を返す。`toggle` が `false` のときは開閉のボタンを置かず中身を隠さない
+    summary: 部品設計『セクション』の HTML を返却する。`toggle` が `false` のときは開閉のボタンを配置せず中身を隠さない
     args:
       - name: options
         type: '{ level: 1 | 2 | 3 | 4; id: string; title: string; open?: boolean; toggle?: boolean; anchor?: boolean; body: string }'
         required: true
-        description: 部品設計の引数と中身の HTML（`SLOT_MARKER` を渡せる）
+        description: 部品設計の引数と中身の HTML（`SLOT_MARKER` を指定できる）
     returns:
       type: string
       description: 見出しと `mdmark-section-body` の HTML
     unit_tests:
       - name: test_render_section
         case: 正常
-        summary: 閉じた節はボタンを aria-expanded=false にし、中身を hidden=until-found にする
+        summary: 閉じたセクションはボタンを aria-expanded=false にし、中身を hidden=until-found にする
         condition: '`open: false`、`toggle: true`'
         mock: なし
         expected: '`aria-expanded="false"`、`data-section="closed" hidden="until-found"`'
@@ -661,7 +661,7 @@ functions:
         expected: '`<button` が無く、`data-section="closed"` で `hidden` が無い'
       - name: test_render_section_when_h1
         case: 正常
-        summary: h1 の節も見出しと開閉のボタンを描く
+        summary: h1 のセクションも見出しと開閉のボタンを描く
         condition: '`level: 1`、`open: true`、`toggle: true`'
         mock: なし
         expected: '`<h1 id="{id}"` の中に `mdmark-section-toggle` のボタンが `aria-expanded="true"` であり、中身が `data-section="open"`'
@@ -670,25 +670,25 @@ functions:
     container: src/parts/row-detail.ts
     kind: 関数
     scope: internal
-    summary: 部品設計『行の詳細』の詳細の行と、`toggle` のときは行の先頭のセルの開閉のボタンの HTML を返す。`foldedColumn` を渡すと、詳細の中身の上に `mdmark-fold-part`（`mdmark-fold-name` と `mdmark-fold-value`）を置く
+    summary: 部品設計『行の詳細』の詳細の行と、`toggle` のときは行の先頭のセルの開閉のボタンの HTML を返却する。`foldedColumn` を指定すると、詳細の中身の上に `mdmark-fold-part`（`mdmark-fold-name` と `mdmark-fold-value`）を配置する
     args:
       - name: options
         type: '{ id: string; row: number; columns: number; label: string; open?: boolean; toggle?: boolean; foldedColumn?: { name: string; html: string }; body: string }'
         required: true
-        description: 部品設計の引数と中身の HTML（`SLOT_MARKER` を渡せる）
+        description: 部品設計の引数と中身の HTML（`SLOT_MARKER` を指定できる）
     returns:
       type: '{ row: string; toggle: string }'
       description: 詳細の行と、開閉のボタン（`toggle` が `false` なら空）
     unit_tests:
       - name: test_render_row_detail
         case: 正常
-        summary: 閉じた詳細の行とボタンを返す
+        summary: 閉じた詳細の行とボタンを返却する
         condition: '`row: 1`、`columns: 3`、`label: table`'
         mock: なし
         expected: '`row` が `<tr class="mdmark-row-detail" data-row="1" … hidden><td colspan="3">`、`toggle` が `aria-expanded="false"` と `aria-label="「table」の詳細"`'
       - name: test_render_row_detail_when_folded_column
         case: 正常
-        summary: 畳んだ最終列を詳細の中身の上に置く
+        summary: 畳んだ最終列を詳細の中身の上に配置する
         condition: '`foldedColumn: { name: "説明", html: "描画を速くする" }`、`body: "<p>詳細</p>"`'
         mock: なし
         expected: '`row` の中で `mdmark-fold-part`（`mdmark-fold-name` が `説明`）が `<p>詳細</p>` より前にある'
@@ -697,12 +697,12 @@ functions:
     container: src/parts/figure.ts
     kind: 関数
     scope: internal
-    summary: 部品設計『図表の番号』の HTML を返す。画像は題を下、表は上に置く
+    summary: 部品設計『図表の番号』の HTML を返却する。画像はタイトルを下、表は上に配置する
     args:
       - name: options
         type: '{ kind: "image" | "table"; id?: string; number: number; caption?: string; body: string }'
         required: true
-        description: 部品設計の引数と中身の HTML（`SLOT_MARKER` を渡せる）。`id` を省くと `id` を付けない（重なった ID）
+        description: 部品設計の引数と中身の HTML（`SLOT_MARKER` を指定できる）。`id` を省くと `id` を付けない（重なった ID）
     returns:
       type: string
       description: '`<figure class="mdmark-figure"` で始まる HTML'
@@ -711,7 +711,7 @@ functions:
     unit_tests:
       - name: test_render_figure
         case: 正常
-        summary: 画像は題を下、表は題を上に置く
+        summary: 画像はタイトルを下、表はタイトルを上に配置する
         condition: '`kind: image`、`number: 1`、`caption: 全体の構成` と、`kind: table`、`number: 1`'
         mock: なし
         expected: 1 つ目は中身の後に `<figcaption class="mdmark-figure-caption"><b>図 1</b>全体の構成</figcaption>`、2 つ目は中身の前に `<b>表 1</b>`
@@ -719,7 +719,7 @@ functions:
     title: 文書の一覧を描く
     container: src/parts/doc-list.ts
     usecase: まとめたHTMLで文書を行き来する
-    summary: 部品設計『文書の一覧』の HTML を返す。フォルダの無い文書を先に、フォルダごとに 1 段の見出しでまとめ、`current` の行に `aria-current="page"` を付ける
+    summary: 部品設計『文書の一覧』の HTML を返却する。フォルダの無い文書を先に、フォルダごとに 1 階層の見出しでまとめ、`current` の行に `aria-current="page"` を付ける
     kind: 関数
     scope: internal
     args:
@@ -739,10 +739,10 @@ functions:
         expected: まとまりが見出しなし（`README.md`）・`a`（`x.md`・`z.md`）・`b` の順で、`b/y.md` のリンクだけが `aria-current="page"` を持つ
       - name: test_render_doc_list_when_escaped
         case: 正常
-        summary: 題とパスの HTML の特殊文字を替える
-        condition: 題が `<b>&` の文書
+        summary: タイトルとパスの HTML の特殊文字を替える
+        condition: タイトルが `<b>&` の文書
         mock: なし
-        expected: 題が `&lt;b&gt;&amp;` で出る
+        expected: タイトルが `&lt;b&gt;&amp;` で出る
     callees:
       - '#functions[escapeHtml]'
     refs:
@@ -755,7 +755,7 @@ functions:
     container: src/parts/table.ts
     kind: 関数
     scope: internal
-    summary: '`count`・`columns`・`reorder`・`total`・`copy` のうち付けた機能の帯（件数・テーブル設定のアイコンだけのボタン（`settings-2`。隠した列の数のバッジと、隠した列があるとき `テーブル設定（{数} 列を非表示）` の `aria-label`）・`集計`・`表をコピー` と、読み上げに使う `role="status"` の `mdmark-table-status`）と、テーブル設定のパネル（`renderTableSettings`）・集計のメニュー（題 `表示する集計` と、集計する計算の `value` を持つチェックボックス）・コピーの形式のメニュー（`Markdown の表`・`TSV` の形式の名前と使いどころ）の HTML を返す。`集計` のボタンは出さない計算があれば `is-active` にし、読み上げの名前に `（{隠している数} 件を非表示にしています）` を加える。テーブル設定と `表をコピー` のボタンは class `is-icon-only` でアイコンだけを見せ、`title` を持つ。`表をコピー` は `mdmark-visually-hidden` の読み上げの名前（`copyState` の文言）を持つ。列を隠しているときはテーブル設定のボタンに `is-active` を付ける。アイコンは lucide の `settings-2`・`sigma`・`copy`・`check`・`circle-alert`・`chevron-down`（`sigma` は `src/parts/icons.ts` に足す）。`mount` が描いた表に足すのにも使う'
+    summary: '`count`・`columns`・`reorder`・`total`・`copy` のうち付けた機能の帯（件数・テーブル設定のアイコンだけのボタン（`settings-2`。隠した列の数のバッジと、隠した列があるとき `テーブル設定（{数} 列を非表示）` の `aria-label`）・`集計`・`表をコピー` と、スクリーンリーダーに使用する `role="status"` の `mdmark-table-status`）と、テーブル設定のパネル（`renderTableSettings`）・集計のメニュー（タイトル `表示する集計` と、集計する計算の `value` を持つチェックボックス）・コピーの形式のメニュー（`Markdown の表`・`TSV` の形式の名前と用途）の HTML を返却する。`集計` のボタンは出さない計算があれば `is-active` にし、スクリーンリーダー向けの名前に `（{隠している数} 件を非表示にしています）` を加える。テーブル設定と `表をコピー` のボタンは class `is-icon-only` でアイコンだけを見せ、`title` を持つ。`表をコピー` は `mdmark-visually-hidden` のスクリーンリーダー向けの名前（`copyState` の文言）を持つ。列を隠しているときはテーブル設定のボタンに `is-active` を付ける。アイコンは lucide の `settings-2`・`sigma`・`copy`・`check`・`circle-alert`・`chevron-down`（`sigma` は `src/parts/icons.ts` に追加する）。`mount` が描いた表に追加するのにも使用する'
     args:
       - name: options
         type: '{ id: string; features: string[]; labels: string[]; shown: number; total: number; hiddenColumns: number[]; openColumns?: boolean; copyState?: "idle" | "copied" | "failed"; totals?: TotalCalc[]; shownTotals?: TotalCalc[]; openTotals?: boolean; openCopy?: boolean }'
@@ -767,25 +767,25 @@ functions:
     unit_tests:
       - name: test_render_table_bar
         case: 正常
-        summary: 件数とテーブル設定とコピーの帯を返す
+        summary: 件数とテーブル設定とコピーの帯を返却する
         condition: '`features: [count, columns, copy]`、列名 `名前`・`説明`・`更新日`、`shown: 2`、`total: 3`、`hiddenColumns: [1]`'
         mock: なし
-        expected: '`bar` に `aria-live="polite"` の `2 / 3 件` と読み上げ `3 件中 2 件を表示`、`aria-expanded="false"`・`is-icon-only`・`is-active`・`title="テーブル設定"` で、見える文字を持たず、`aria-label` が `テーブル設定（1 列を非表示）` のテーブル設定のボタン（バッジ `1`）、`data-state="idle"`・`is-icon-only`・`title="表をコピー"` で `chevron-down` を持たないコピーのボタン、`role="status"` の `mdmark-table-status`。`menus` のテーブル設定のパネルが `hidden` で、名前の目のアイコンが `disabled`、案内に `先頭の列は隠せません` があり、コピーの形式のメニューが `hidden` で `data-format` が `markdown`・`tsv` のボタンを持つ'
+        expected: '`bar` に `aria-live="polite"` の `2 / 3 件` とスクリーンリーダー `3 件中 2 件を表示`、`aria-expanded="false"`・`is-icon-only`・`is-active`・`title="テーブル設定"` で、見える文字を持たず、`aria-label` が `テーブル設定（1 列を非表示）` のテーブル設定のボタン（バッジ `1`）、`data-state="idle"`・`is-icon-only`・`title="表をコピー"` で `chevron-down` を持たないコピーのボタン、`role="status"` の `mdmark-table-status`。`menus` のテーブル設定のパネルが `hidden` で、名前の目のアイコンが `disabled`、案内に `先頭の列は隠せません` があり、コピーの形式のメニューが `hidden` で `data-format` が `markdown`・`tsv` のボタンを持つ'
       - name: test_render_table_bar_when_copy_failed
         case: 正常
-        summary: コピーできなかったボタンを返す
+        summary: コピーできなかったボタンを返却する
         condition: '`features: [copy]`、`copyState: failed`'
         mock: なし
         expected: '`bar` のボタンが `data-state="failed"` と `コピーできませんでした` を持ち、件数とテーブル設定のボタンが無く、`menus` にテーブル設定のパネルが無い'
       - name: test_render_table_bar_when_totals
         case: 正常
-        summary: 集計のボタンとメニューを返し、隠している計算の数を読み上げの名前に加える
+        summary: 集計のボタンとメニューを返却し、隠している計算の数をスクリーンリーダー向けの名前に加える
         condition: '`features: [total]`、`totals: [sum, avg, count]`、`shownTotals: [sum]`、`openTotals: true`'
         mock: なし
         expected: '`bar` の `mdmark-totals-toggle` が `is-active` と `aria-expanded="true"` と `（2 件を非表示にしています）` を持つ。`menus` の `aria-label="表示する集計"` のメニューが `hidden` を持たず、`合計`・`平均`・`件数` のチェックボックスのうち `合計` だけ `checked`'
       - name: test_render_table_bar_when_copy_menu_open
         case: 正常
-        summary: コピーの形式のメニューを開いた帯を返す
+        summary: コピーの形式のメニューを開いた帯を返却する
         condition: '`features: [copy]`、`openCopy: true`'
         mock: なし
         expected: '`表をコピー` が `aria-expanded="true"`、`menus` の `aria-label="コピーの形式"` のメニューが `hidden` を持たず、`Markdown の表`（`文書に貼るとそのまま表になる`）・`TSV`（`表計算ソフトに貼るとセルに分かれる`）の順'
@@ -796,12 +796,12 @@ functions:
     container: src/parts/table.ts
     kind: 関数
     scope: internal
-    summary: '`totals` が持つ計算ごとに 1 行（`sum`・`avg`・`count` の順）の `<tr class="mdmark-table-total" data-total-kind="{計算}">` を、`<tfoot>` に入れて返す。行は列の数だけセルを持ち、先頭のセルに計算の名前（`TOTAL_LABELS` の `合計`・`平均`・`件数`）の `mdmark-total-name` を置き、その計算を持つ列のセルは `data-total="{計算}"` と値の `mdmark-total-value` を持つ（先頭の列を集計する行は名前と値を同じセルに置く）。隠している列のセルと、`shown` に含まない計算の行は `hidden` を持つ。`mount` が集計し直すときにも使う'
+    summary: '`totals` が持つ計算ごとに 1 行（`sum`・`avg`・`count` の順）の `<tr class="mdmark-table-total" data-total-kind="{計算}">` を、`<tfoot>` に入れて返却する。行は列の数だけセルを持ち、先頭のセルに計算の名前（`TOTAL_LABELS` の `合計`・`平均`・`件数`）の `mdmark-total-name` を配置し、その計算を持つ列のセルは `data-total="{計算}"` と値の `mdmark-total-value` を持つ（先頭の列を集計する行は名前と値を同じセルに配置する）。隠している列のセルと、`shown` に含まない計算の行は `hidden` を持つ。`mount` がもう一度集計するときにも使用する'
     args:
       - name: options
         type: '{ columns: number; totals: Array<{ column: number; calc: TotalCalc; value: string }>; shown?: TotalCalc[]; hiddenColumns: number[]; labels: string[] }'
         required: true
-        description: 列の数、集計する列と計算と整えた値（`computeTotal` の戻り値。数として読めないセルを持つ列の `sum`・`avg` は空）、出している計算（既定は `totals` の全ての計算）、隠している列、列名（`data-label`）
+        description: 列の数、集計する列と計算と整えた値（`computeTotal` の戻り値。数として読み込めないセルを持つ列の `sum`・`avg` は空）、出している計算（既定は `totals` の全ての計算）、隠している列、列名（`data-label`）
     returns:
       type: string
       description: '`<tfoot>` の HTML'
@@ -825,12 +825,12 @@ functions:
     container: src/parts/code-block.ts
     kind: 関数
     scope: internal
-    summary: '部品設計『コードブロック』の HTML を返す。行番号か行の種類かインデントのある行を持つときは行ごとの `mdmark-code-line` に分け、行に `data-indent`・`data-fold-lines`・`data-folded` を付け、`focus` の行を持てば `pre` に `mdmark-code-has-focus` を付ける。`foldButtons` が `true` なら、畳める行を持つとき `pre` に `mdmark-code-foldable` を付け、畳める行に `renderCodeFoldToggle` を置き、`folded` の行の後ろの行を `hidden` にして行の末尾に `renderCodeFoldMore` を置く（`mount` の操作の後の見た目。`hiddenLinesOf` で隠す行を決める）。`bar` が `true` なら、題を持てば `<figure class="mdmark-code">` と `<figcaption class="mdmark-code-title mdmark-code-bar">`、無ければ `<div class="mdmark-code">` と `<div class="mdmark-code-bar">` で包み、帯の左端に言語を持つとき `<span class="mdmark-code-lang"><span class="mdmark-code-lang-name" aria-hidden="true">{言語}</span><span class="mdmark-code-file">{ファイル名}</span></span>`（`mdmark-code-file` はファイル名を持つときだけ）、その後ろに題の文字、`copyState` を渡したときは右端に `renderCodeCopy` を置く。`bar` が `false` なら今の `pre` だけを返す。`pre` には `tabindex="0"` と読み上げの名前（`コード: {題}`、題が無ければ `コード: {ファイル名}`、ファイル名も無ければ `コード: {言語}`、言語も無ければ `コード`）を付ける'
+    summary: '部品設計『コードブロック』の HTML を返却する。行番号か行の種類かインデントのある行を持つときは行ごとの `mdmark-code-line` に分け、行に `data-indent`・`data-fold-lines`・`data-folded` を付け、`focus` の行を持てば `pre` に `mdmark-code-has-focus` を付ける。`foldButtons` が `true` なら、畳める行を持つとき `pre` に `mdmark-code-foldable` を付け、畳める行に `renderCodeFoldToggle` を配置し、`folded` の行の後ろの行を `hidden` にして行の末尾に `renderCodeFoldMore` を配置する（`mount` の操作の後の外観。`hiddenLinesOf` で隠す行を決める）。`bar` が `true` なら、タイトルを持てば `<figure class="mdmark-code">` と `<figcaption class="mdmark-code-title mdmark-code-bar">`、無ければ `<div class="mdmark-code">` と `<div class="mdmark-code-bar">` で包み、帯の左端に言語を持つとき `<span class="mdmark-code-lang"><span class="mdmark-code-lang-name" aria-hidden="true">{言語}</span><span class="mdmark-code-file">{ファイル名}</span></span>`（`mdmark-code-file` はファイル名を持つときだけ）、その後ろにタイトルの文字、`copyState` を指定したときは右端に `renderCodeCopy` を配置する。`bar` が `false` なら今の `pre` だけを返却する。`pre` には `tabindex="0"` とスクリーンリーダー向けの名前（`コード: {タイトル}`、タイトルが無ければ `コード: {ファイル名}`、ファイル名も無ければ `コード: {言語}`、言語も無ければ `コード`）を付ける'
     args:
       - name: options
         type: '{ language: string; fileName?: string; title: string; lineNumbers: boolean; wrap?: boolean; lines: CodeLine[]; syntax?: string; mermaid?: boolean; bar?: boolean; copyState?: "idle" | "copied" | "failed"; foldButtons?: boolean }'
         required: true
-        description: 部品設計の引数。`language`・`title`・`fileName` は無ければ空。`syntax` は色分けする言語のモジュール名（`SYNTAX_LANGUAGES` の値）で、渡すと `code` に `SYNTAX_ATTRIBUTE` を付ける。`mermaid` が `true` なら、一番外の要素（`bar` が `true` なら `figure`・`div`、`false` なら `pre`）に `MERMAID_ATTRIBUTE` を付ける。`bar` は帯で包むか（既定 `true`。`code` がオフの色分けだけのコードブロックは `false`）。`copyState` は省くとコピーのボタンを置かない（`render` は渡さず、Storybook が渡す）。`foldButtons` は行の開閉のボタンを置くか（既定 `false`。`render` は渡さず、Storybook が渡す）
+        description: 部品設計の引数。`language`・`title`・`fileName` は無ければ空。`syntax` は色分けする言語のモジュール名（`SYNTAX_LANGUAGES` の値）で、指定すると `code` に `SYNTAX_ATTRIBUTE` を付ける。`mermaid` が `true` なら、一番外の要素（`bar` が `true` なら `figure`・`div`、`false` なら `pre`）に `MERMAID_ATTRIBUTE` を付ける。`bar` は帯で包むか（既定 `true`。`code` がオフの色分けだけのコードブロックは `false`）。`copyState` は省くとコピーのボタンを配置しない（`render` は指定せず、Storybook が指定する）。`foldButtons` は行の開閉のボタンを配置するか（既定 `false`。`render` は指定せず、Storybook が指定する）
     returns:
       type: string
       description: '`bar` が `true` なら `<figure class="mdmark-code">` か `<div class="mdmark-code">`、`false` なら `<pre` で始まる HTML。行番号を持つときは `code` に `style="--mdmark-code-digits: {行の数の桁の数}"`'
@@ -843,26 +843,26 @@ functions:
     unit_tests:
       - name: test_render_code_block
         case: 正常
-        summary: 題・行番号・行の種類を付け、文字をエスケープする
+        summary: タイトル・行番号・行の種類を付け、文字をエスケープする
         condition: '`language` が `ts`、`title` が `a<b>.ts`、`lineNumbers` が `true`、`lines` が `{ text: "x < 1", kind: "add" }` と `{ text: "y" }`'
         mock: なし
         expected: '`<figure class="mdmark-code"><figcaption class="mdmark-code-title mdmark-code-bar">` の中に `mdmark-code-lang-name` の `ts` と `a&lt;b&gt;.ts` がこの順にあり、`pre` が `mdmark-code-lines mdmark-code-numbered mdmark-code-signs` と `aria-label="コード: a&lt;b&gt;.ts"`、1 行目が `data-line="1" data-kind="add"` で文字が `x &lt; 1`、2 行目が `data-kind` を持たない。`mdmark-code-copy` が無い'
       - name: test_render_code_block_when_title_only
         case: 正常
-        summary: 題だけなら行に分けない
+        summary: タイトルだけなら行に分けない
         condition: '`title` が `a.yaml`、`lineNumbers` が `false`、種類の無い 2 行'
         mock: なし
         expected: '`figure` の中の `pre` が class を持たず、`mdmark-code-line` が無い'
       - name: test_render_code_block_when_two_digits
         case: 正常
-        summary: 行の数の桁の数を渡す
+        summary: 行の数の桁の数を指定する
         condition: '`lineNumbers` が `true` で 13 行'
         mock: なし
         expected: '`code` が `style="--mdmark-code-digits: 2"`、最後の行が `data-line="13"`'
       - name: test_render_code_block_when_syntax
         case: 正常
-        summary: 色分けする言語を渡すと `code` に色分けの対象の属性を付ける
-        condition: '`language` が `yml`、`syntax` が `yaml`、題・行番号・行の種類が無い 1 行。もう 1 つは `syntax` を省く'
+        summary: 色分けする言語を指定すると `code` に色分けの対象の属性を付ける
+        condition: '`language` が `yml`、`syntax` が `yaml`、タイトル・行番号・行の種類が無い 1 行。もう 1 つは `syntax` を省く'
         mock: なし
         expected: '前者が `<div class="mdmark-code"><div class="mdmark-code-bar">` で始まり、`<pre tabindex="0" aria-label="コード: yml"><code class="language-yml" data-mdmark-syntax="yaml">` を持ち、後者の `code` は `data-mdmark-syntax` を持たない'
       - name: test_render_code_block_when_mermaid
@@ -873,25 +873,25 @@ functions:
         expected: '前者が `<div class="mdmark-code" data-mdmark-mermaid>` で始まり、後者が `<pre data-mdmark-mermaid` で始まる。どちらも `data-mdmark-syntax` を持たない'
       - name: test_render_code_block_when_file_name
         case: 正常
-        summary: ファイル名を言語の後ろに出し、読み上げの名前に使う
-        condition: '`language` が `python`、`fileName` が `hoge.py`、題が空'
+        summary: ファイル名を言語の後ろに出し、スクリーンリーダー向けの名前に使用する
+        condition: '`language` が `python`、`fileName` が `hoge.py`、タイトルが空'
         mock: なし
         expected: '`mdmark-code-lang-name` が `aria-hidden="true"` で `python`、`mdmark-code-file` が `hoge.py`、`pre` の `aria-label` が `コード: hoge.py`'
       - name: test_render_code_block_when_no_language
         case: 正常
         summary: 言語が無ければ帯に言語のラベルを出さない
-        condition: '`language` が空、題が空'
+        condition: '`language` が空、タイトルが空'
         mock: なし
         expected: '`mdmark-code-bar` を持ち、`mdmark-code-lang` が無く、`pre` の `aria-label` が `コード`'
       - name: test_render_code_block_when_bar_off
         case: 正常
-        summary: 帯を付けないときは `pre` だけを返す
+        summary: 帯を付けないときは `pre` だけを返却する
         condition: '`language` が `ts`、`syntax` が `typescript`、`bar` が `false`'
         mock: なし
         expected: '`<pre tabindex="0" aria-label="コード: ts">` で始まり、`mdmark-code-bar` が無い'
       - name: test_render_code_block_when_copy_state
         case: 正常
-        summary: コピーの状態を渡すと帯の右端にボタンを置く
+        summary: コピーの状態を指定すると帯の右端にボタンを配置する
         condition: '`language` が `ts`、`copyState` が `copied`'
         mock: なし
         expected: 帯の最後に `mdmark-code-meta` があり、ボタンが `data-state="copied"` と `コピーしました`
@@ -909,37 +909,37 @@ functions:
         expected: 2 行目が `data-indent="1"`、1 行目が `data-fold-lines="10"`、3 行目が `data-fold-lines="4"` を持ち、開閉のボタンが無い
       - name: test_render_code_block_when_fold_buttons
         case: 正常
-        summary: 畳んだ行の後ろを隠し、開閉のボタンと ⋯ を置く
+        summary: 畳んだ行の後ろを隠し、開閉のボタンと ⋯ を配置する
         condition: 部品設計『コードブロック』の `Folded` の引数と、`foldButtons` が `true`
         mock: なし
         expected: '`pre` が `mdmark-code-foldable` を持ち、3 行目の開閉のボタンが `aria-expanded="false"`、4〜7 行目が `hidden`、8 行目が `hidden` を持たず、3 行目の末尾に `mdmark-code-fold-more` がある。ほかの畳める行のボタンが `aria-expanded="true"`'
       - name: test_render_code_block_when_wrap
         case: 正常
         summary: wrap のコードブロックを行に分け、折り返す class を付ける
-        condition: 部品設計『コードブロック』の状態 `Wrap` の引数と、そこから `lineNumbers` を外した引数
+        condition: 部品設計『コードブロック』の状態 `Wrap` の引数と、そこから `lineNumbers` を削除した引数
         mock: なし
         expected: 1 つ目の `pre` が `mdmark-code-lines mdmark-code-numbered mdmark-code-wrap` を持ち、2 つ目の `pre` が `mdmark-code-lines mdmark-code-wrap` を持って `mdmark-code-numbered` を持たず、どちらも `mdmark-code-line` が 3 つ
   - name: renderCopyPanel
     title: 表のコピーできないときのパネルを描く
     container: src/parts/table.ts
-    summary: クリップボードに書けなかったときに帯の直後へ置く `<div class="mdmark-copy-panel" role="group" aria-labelledby>` を返す。題 `クリップボードにコピーできませんでした`（`circle-alert` のアイコン付き）・閉じるボタン（`x` のアイコン、`aria-label="閉じる"`）・案内 `「{形式の名前}」の中身を選択しています。Ctrl+C（Mac は ⌘C）でコピーしてください。`（`tree` は `ツリーのテキストを選択しています。Ctrl+C（Mac は ⌘C）でコピーしてください。`）・`text` を入れた `<textarea class="mdmark-copy-panel-text" readonly rows="6">` を持つ。形式の名前は `markdown` が `Markdown の表`、`tsv` が `TSV`
+    summary: クリップボードに書き込めなかったときに帯の直後へ配置する `<div class="mdmark-copy-panel" role="group" aria-labelledby>` を返却する。タイトル `クリップボードにコピーできませんでした`（`circle-alert` のアイコン付き）・閉じるボタン（`x` のアイコン、`aria-label="閉じる"`）・案内 `「{形式の名前}」の中身を選択しています。Ctrl+C（Mac は ⌘C）でコピーしてください。`（`tree` は `ツリーのテキストを選択しています。Ctrl+C（Mac は ⌘C）でコピーしてください。`）・`text` を入れた `<textarea class="mdmark-copy-panel-text" readonly rows="6">` を持つ。形式の名前は `markdown` が `Markdown の表`、`tsv` が `TSV`
     kind: 関数
     scope: internal
     args:
       - name: options
         type: '{ id: string; format: "markdown" | "tsv" | "tree"; text: string }'
         required: true
-        description: 題の id の頭、コピーする形式（`tree` はファイルツリーの元の罫線のテキスト）、コピーする文字
+        description: タイトルの id の頭、コピーする形式（`tree` はファイルツリーの元の罫線のテキスト）、コピーする文字
     returns:
       type: string
       description: '`<div class="mdmark-copy-panel"` で始まる HTML'
     unit_tests:
       - name: test_render_copy_panel
         case: 正常
-        summary: 題・案内・エスケープした中身を持つパネルを返す
+        summary: タイトル・案内・エスケープした中身を持つパネルを返却する
         condition: '`format: markdown`、`text: "| a<b |\n| --- |"`'
         mock: なし
-        expected: '`role="group"` で `aria-labelledby` が題の id、案内が `「Markdown の表」の中身を選択しています。` で始まり、`textarea` の中身が `| a&lt;b |` を含み、`aria-label="閉じる"` のボタンがある'
+        expected: '`role="group"` で `aria-labelledby` がタイトルの id、案内が `「Markdown の表」の中身を選択しています。` で始まり、`textarea` の中身が `| a&lt;b |` を含み、`aria-label="閉じる"` のボタンがある'
       - name: test_render_copy_panel_when_tree
         case: 正常
         summary: ツリーのパネルはツリーの案内を出す
@@ -954,7 +954,7 @@ functions:
   - name: renderFoldedColumn
     title: 畳んだ最終列を描く
     container: src/parts/table.ts
-    summary: 最終列を畳んだ表の本文の行 1 つについて、先頭のセルに置く開閉のボタン `<button class="mdmark-row-toggle mdmark-fold-toggle" type="button" aria-expanded aria-controls aria-label="「{先頭のセルの文字}」の{最終列の見出しの文字}">` と、行の直後に置く `<tr class="mdmark-row-detail mdmark-fold-detail">`（`mdmark-fold-part` の中に `mdmark-fold-name` と `mdmark-fold-value`）を返す。開いていなければ行は `hidden` を持つ。先頭のセルはボタンと元の中身を `mdmark-row-head` で包む（包むのは呼ぶ側）。`mount` が畳むときにも使う
+    summary: 最終列を畳んだ表の本文の行 1 つについて、先頭のセルに配置する開閉のボタン `<button class="mdmark-row-toggle mdmark-fold-toggle" type="button" aria-expanded aria-controls aria-label="「{先頭のセルの文字}」の{最終列の見出しの文字}">` と、行の直後に配置する `<tr class="mdmark-row-detail mdmark-fold-detail">`（`mdmark-fold-part` の中に `mdmark-fold-name` と `mdmark-fold-value`）を返却する。開いていなければ行は `hidden` を持つ。先頭のセルはボタンと元の中身を `mdmark-row-head` で包む（包むのは呼ぶ側）。`mount` が畳むときにも使用する
     kind: 関数
     scope: internal
     args:
@@ -968,7 +968,7 @@ functions:
     unit_tests:
       - name: test_render_folded_column
         case: 正常
-        summary: 閉じた開閉の行とボタンを返す
+        summary: 閉じた開閉の行とボタンを返却する
         condition: '`id: t1-fold-0`、`columns: 3`、`label: りんご`、`name: 説明`、`html: "描画を速くする"`'
         mock: なし
         expected: '`toggle` が `aria-expanded="false"`・`aria-controls="t1-fold-0"`・`aria-label="「りんご」の説明"`、`row` が `<tr class="mdmark-row-detail mdmark-fold-detail" id="t1-fold-0" hidden><td colspan="3">` で `mdmark-fold-name` が `説明`、`mdmark-fold-value` が `描画を速くする`'
@@ -986,7 +986,7 @@ functions:
   - name: renderCodeCopy
     title: コードのコピーのボタンを描く
     container: src/parts/code-block.ts
-    summary: コードブロックの帯の右端に置く `<span class="mdmark-code-meta"><button class="mdmark-code-copy" type="button" data-state="{状態}">{アイコン}{文言}</button><span class="mdmark-visually-hidden mdmark-code-status" role="status"></span></span>` を返す。文言とアイコンは `idle` が `コピー`（`copy`）、`copied` が `コピーしました`（`check`）、`failed` が `コピーできませんでした`（`circle-alert`）。`copied`・`failed` のときは `role="status"` の要素に `コードを{文言}` を入れる。`mount` が帯に付けるときと状態を切り替えるときにも使う
+    summary: コードブロックの帯の右端に配置する `<span class="mdmark-code-meta"><button class="mdmark-code-copy" type="button" data-state="{状態}">{アイコン}{文言}</button><span class="mdmark-visually-hidden mdmark-code-status" role="status"></span></span>` を返却する。文言とアイコンは `idle` が `コピー`（`copy`）、`copied` が `コピーしました`（`check`）、`failed` が `コピーできませんでした`（`circle-alert`）。`copied`・`failed` のときは `role="status"` の要素に `コードを{文言}` を入れる。`mount` が帯に付けるときと状態を切り替えるときにも使用する
     kind: 関数
     scope: internal
     args:
@@ -1000,7 +1000,7 @@ functions:
     unit_tests:
       - name: test_render_code_copy
         case: 正常
-        summary: 状態ごとの文言と読み上げを返す
+        summary: 状態ごとの文言とスクリーンリーダーを返却する
         condition: '`idle`・`copied`・`failed`'
         mock: なし
         expected: '`idle` は `コピー` で `role="status"` が空、`copied` は `コピーしました` と `コードをコピーしました`、`failed` は `コピーできませんでした` と `コードをコピーできませんでした`。どれも `type="button"` と `data-state` を持つ'
@@ -1010,7 +1010,7 @@ functions:
   - name: renderBackToTop
     title: 先頭へ戻るボタンを描く
     container: src/parts/back-to-top.ts
-    summary: 部品設計『先頭へ戻るボタン』の HTML を返す。アイコンは lucide の arrow-up-to-line（`src/parts/icons.ts` に ArrowUpToLine を追加する）
+    summary: 部品設計『先頭へ戻るボタン』の HTML を返却する。アイコンは lucide の arrow-up-to-line（`src/parts/icons.ts` に ArrowUpToLine を追加する）
     kind: 関数
     scope: internal
     args:
@@ -1024,8 +1024,8 @@ functions:
     unit_tests:
       - name: test_render_back_to_top
         case: 正常
-        summary: 読み上げの名前とアイコンを持つボタンを返す
-        condition: 引数を渡さない
+        summary: スクリーンリーダー向けの名前とアイコンを持つボタンを返却する
+        condition: 引数を指定しない
         mock: なし
         expected: '`type="button"`・`aria-label="先頭へ戻る"`・`title="先頭へ戻る"` を持ち、`hidden` を持たない。中の `svg` が `aria-hidden="true"`'
       - name: test_render_back_to_top_when_hidden
@@ -1042,7 +1042,7 @@ functions:
   - name: renderSideToc
     title: 右側の目次を描く
     container: src/parts/side-toc.ts
-    summary: 部品設計『右側の目次』の HTML を返す。深いレベルの見出しは直前の浅いレベルの入れ子にし、右端の線を見出しの数だけ並べる。項目のリンクは `href="#{id}"` と、見出しの ID を持つ `data-heading-id` を持つ。`sections` が `false` ならすべて展開・すべて折りたたむを置かない。目次の頭にはタイトルを置かず、まとめて開閉するボタンの並び（`sections` が `true` のとき）とピン止めのボタンをこの順に置く。ピン止めのボタンには押す前のアイコン（`panel-right-dashed`、`mdmark-side-toc-pin-off`）と押した後のアイコン（`panel-right`、`mdmark-side-toc-pin-on`）を両方置き、CSS が `aria-pressed` で片方を出す。アイコンは lucide の ellipsis・panel-right-dashed・panel-right・chevrons-up-down・chevrons-down-up（`src/parts/icons.ts` に PanelRightDashed と PanelRight を追加する。`pin` は表のピン止めで使うため残す）
+    summary: 部品設計『右側の目次』の HTML を返却する。深いレベルの見出しは直前の浅いレベルの入れ子にし、右端の線を見出しの数だけ並べる。項目のリンクは `href="#{id}"` と、見出しの ID を持つ `data-heading-id` を持つ。`sections` が `false` ならすべて展開・すべて折りたたむを配置しない。目次の頭にはタイトルを配置せず、まとめて開閉するボタンの並び（`sections` が `true` のとき）とピン止めのボタンをこの順に配置する。ピン止めのボタンには押す前のアイコン（`panel-right-dashed`、`mdmark-side-toc-pin-off`）と押した後のアイコン（`panel-right`、`mdmark-side-toc-pin-on`）を両方置き、CSS が `aria-pressed` で片方を出す。アイコンは lucide の ellipsis・panel-right-dashed・panel-right・chevrons-up-down・chevrons-down-up（`src/parts/icons.ts` に PanelRightDashed と PanelRight を追加する。`pin` は表のピン止めで使用するため残す）
     kind: 関数
     scope: internal
     args:
@@ -1058,10 +1058,10 @@ functions:
     unit_tests:
       - name: test_render_side_toc
         case: 正常
-        summary: 見出しを入れ子にし、右端の線と読み上げ名を付ける
-        condition: '`手引き`（h1）・`導入`（h2）・`前提`（h3）・`使い方`（h2）を既定の引数で渡す'
+        summary: 見出しを入れ子にし、右端の線とスクリーンリーダー向けの名前を付ける
+        condition: '`手引き`（h1）・`導入`（h2）・`前提`（h3）・`使用方法`（h2）を既定の引数で指定する'
         mock: なし
-        expected: '`data-mode="hover"`、`nav` が `aria-label="右側の目次"`、`手引き` の `li` の中に `導入`・`使い方`、`導入` の `li` の中に `#前提` のリンクがあり、`data-heading-id="前提"` を持つ。右端の線が 4 本で `aria-hidden="true"`。目次を出すボタンが `aria-expanded="false"` で `aria-controls="mdmark-side-toc-panel"`、ピン止めが `aria-pressed="false"` で `mdmark-side-toc-pin-off` と `mdmark-side-toc-pin-on` の 2 つのアイコンを持ち、`data-fold-all="open"` と `data-fold-all="close"` のボタンがある。`mdmark-side-toc-head` の子が `mdmark-side-toc-actions` と `mdmark-side-toc-pin` の順で、`mdmark-side-toc-title` と「目次」の文字が無い'
+        expected: '`data-mode="hover"`、`nav` が `aria-label="右側の目次"`、`手引き` の `li` の中に `導入`・`使用方法`、`導入` の `li` の中に `#前提` のリンクがあり、`data-heading-id="前提"` を持つ。右端の線が 4 本で `aria-hidden="true"`。目次を出すボタンが `aria-expanded="false"` で `aria-controls="mdmark-side-toc-panel"`、ピン止めが `aria-pressed="false"` で `mdmark-side-toc-pin-off` と `mdmark-side-toc-pin-on` の 2 つのアイコンを持ち、`data-fold-all="open"` と `data-fold-all="close"` のボタンがある。`mdmark-side-toc-head` の子が `mdmark-side-toc-actions` と `mdmark-side-toc-pin` の順で、`mdmark-side-toc-title` と「目次」の文字が無い'
       - name: test_render_side_toc_when_fixed_open
         case: 正常
         summary: 出し方と出している状態を属性に写す
@@ -1070,13 +1070,13 @@ functions:
         expected: '`data-mode="fixed"`・`data-open`・`data-pinned` を持ち、ボタンが `aria-expanded="true"` と `aria-pressed="true"`'
       - name: test_render_side_toc_when_without_sections
         case: 正常
-        summary: sections が false ならすべて展開・すべて折りたたむを置かない
+        summary: sections が false ならすべて展開・すべて折りたたむを配置しない
         condition: '`sections: false`'
         mock: なし
         expected: '`data-fold-all` を持つボタンが無く、`mdmark-side-toc-head` の子が `mdmark-side-toc-pin` だけ'
       - name: test_render_side_toc_when_current
         case: 正常
-        summary: 今いる節の項目・線・狭い幅の帯の文字を付ける
+        summary: 今いるセクションの項目・線・狭い幅の帯の文字を付ける
         condition: '`test_render_side_toc` の見出しに `current: "前提"`'
         mock: なし
         expected: '`#前提` のリンクだけが `aria-current="location"`、3 本目の線だけが `data-current`、`mdmark-side-toc-current` が `前提`'
@@ -1094,14 +1094,14 @@ functions:
   - name: renderCollapsible
     title: 折り畳みを描く
     container: src/parts/collapsible.ts
-    summary: タブとステップを入れる `<details class="mdmark-collapsible">` と、エスケープした見出しの `<summary>` を返す。`open` のときは `details` に `open` を付ける
+    summary: タブとステップを入れる `<details class="mdmark-collapsible">` と、エスケープした見出しの `<summary>` を返却する。`open` のときは `details` に `open` を付ける
     kind: 関数
     scope: internal
     args:
       - name: options
         type: '{ title: string; open: boolean; body: string }'
         required: true
-        description: 見出しの文字、既定で開くか、中身の HTML（`SLOT_MARKER` を渡せる）
+        description: 見出しの文字、既定で開くか、中身の HTML（`SLOT_MARKER` を指定できる）
     returns:
       type: string
       description: '`<details class="mdmark-collapsible"` で始まる HTML'
@@ -1126,7 +1126,7 @@ functions:
   - name: fileIconOf
     title: ファイルのアイコンの種類を決める
     container: src/parts/tree.ts
-    summary: ファイル名から、部品設計『ファイルツリー』のアイコンの種類（lucide の名前）を返す。名前そのもの（`LICENSE`・`Dockerfile`・`Makefile`）を先に引き、次に最後の `.` の後ろを小文字にした拡張子で引く。どれにも当たらなければ `file`
+    summary: ファイル名から、部品設計『ファイルツリー』のアイコンの種類（lucide の名前）を返却する。名前そのもの（`LICENSE`・`Dockerfile`・`Makefile`）を先に引き、次に最後の `.` の後ろを小文字にした拡張子で参照する。どれにも該当しなければ `file`
     kind: 関数
     scope: internal
     args:
@@ -1150,7 +1150,7 @@ functions:
   - name: renderTreeBar
     title: ファイルツリーの帯を描く
     container: src/parts/tree.ts
-    summary: ツリーの上に置く `<div class="mdmark-tree-bar">`（種類 `tree`・`mdmark-tree-copy` のボタン・`role="status"` の `mdmark-tree-status`）を返す。ボタンは `copyState` を `data-state` に持ち、`idle` は `copy` のアイコンと `コピー`、`copied` は `check` のアイコンと `コピーしました`。`mount` が描いたツリーに足すのにも使う
+    summary: ツリーの上に配置する `<div class="mdmark-tree-bar">`（種類 `tree`・`mdmark-tree-copy` のボタン・`role="status"` の `mdmark-tree-status`）を返却する。ボタンは `copyState` を `data-state` に持ち、`idle` は `copy` のアイコンと `コピー`、`copied` は `check` のアイコンと `コピーしました`。`mount` が描いたツリーに追加するのにも使用する
     kind: 関数
     scope: internal
     args:
@@ -1174,7 +1174,7 @@ functions:
   - name: folderOpenByDefault
     title: フォルダを既定で開くかを決める
     container: src/parts/tree.ts
-    summary: ルートを 0 としたフォルダの深さと `data-open` の値から、既定で開くかを返す。`all` は常に開き、数は深さがその数より浅いとき、値が無ければルートだけを開く。部品のツリーと操作が使う
+    summary: ルートを 0 としたフォルダの深さと `data-open` の値から、既定で開くかを返却する。`all` は常に開き、数は深さがその数より浅いとき、値が無ければルートだけを開く。部品のツリーと操作が使用する
     kind: 関数
     scope: internal
     args:
@@ -1193,7 +1193,7 @@ functions:
       - name: test_folder_open_by_default
         case: 正常
         summary: 指定ごとに開く深さを決める
-        condition: 深さ 0・1・2 を、`open` が無い・`all`・`2` のそれぞれで渡す
+        condition: 深さ 0・1・2 を、`open` が無い・`all`・`2` のそれぞれで指定する
         mock: なし
         expected: 無いときは `true`・`false`・`false`、`all` は全て `true`、`2` は `true`・`true`・`false`
     status: planned
@@ -1202,7 +1202,7 @@ functions:
   - name: renderTreeCopyContent
     title: ツリーのコピーボタンの中身を描く
     container: src/parts/tree.ts
-    summary: コピーボタンの中身を状態ごとに返す（`idle` は `copy` のアイコンと `コピー`、`copied` は `check` のアイコンと `コピーしました`）。`renderTreeBar` と、コピーの後にボタンを書き換える `attachFileTrees` が使う
+    summary: コピーボタンの中身を状態ごとに返却する（`idle` は `copy` のアイコンと `コピー`、`copied` は `check` のアイコンと `コピーしました`）。`renderTreeBar` と、コピーの後にボタンを書き換える `attachFileTrees` が使用する
     kind: 関数
     scope: internal
     args:
@@ -1221,12 +1221,12 @@ functions:
     container: src/parts/colors.ts
     kind: 関数
     scope: internal
-    summary: 文字が `COLOR_NAMES` のどれかと一致するか（大文字と小文字を区別する）を返す
+    summary: 文字が `COLOR_NAMES` のどれかと一致するか（大文字と小文字を区別する）を返却する
     args:
       - name: value
         type: string
         required: true
-        description: 読んだ文字
+        description: 読み込んだ文字
     returns:
       type: value is ColorName
       description: 色の名前なら `true`
@@ -1245,7 +1245,7 @@ functions:
     container: src/parts/text-color.ts
     kind: 関数
     scope: internal
-    summary: 部品設計『文字の色』の HTML を返す。`text` は描いた行内の HTML（`SLOT_MARKER` を渡せる）
+    summary: 部品設計『文字の色』の HTML を返却する。`text` は描いた行内の HTML（`SLOT_MARKER` を指定できる）
     args:
       - name: options
         type: '{ color: ColorName; text: string }'
@@ -1271,12 +1271,12 @@ functions:
     container: src/parts/image.ts
     kind: 関数
     scope: internal
-    summary: '`img` の HTML を、読み上げの名前 `画像を拡大: {alt}` の `button.mdmark-image-open` と、右上の `maximize-2` のアイコン（`aria-hidden`）で包む。`icon` が `false` のとき（GIF の画像。右上に止める・再生するボタンを置くため）はアイコンを置かない。`mount` が描いた `img` を包むときと、Storybook の部品が使う'
+    summary: '`img` の HTML を、スクリーンリーダー向けの名前 `画像を拡大: {alt}` の `button.mdmark-image-open` と、右上の `maximize-2` のアイコン（`aria-hidden`）で包む。`icon` が `false` のとき（GIF の画像。右上に止める・再生するボタンを配置するため）はアイコンを配置しない。`mount` が描いた `img` を包むときと、Storybook の部品が使用する'
     args:
       - name: options
         type: '{ alt: string; img: string; icon?: boolean }'
         required: true
-        description: 画像の代わりの文字と、`img` の HTML と、アイコンを置くか（既定 `true`）
+        description: 画像の代わりの文字と、`img` の HTML と、アイコンを配置するか（既定 `true`）
     returns:
       type: string
       description: '`<button class="mdmark-image-open" type="button"` で始まる HTML'
@@ -1288,13 +1288,13 @@ functions:
     unit_tests:
       - name: test_render_image_opener
         case: 正常
-        summary: 読み上げの名前を alt から作り、アイコンを置く
+        summary: スクリーンリーダー向けの名前を alt から作り、アイコンを配置する
         condition: '`alt: "売上<推移>"`、`img: "<img src=\"a.png\" alt=\"売上\">"`'
         mock: なし
         expected: '`aria-label="画像を拡大: 売上&lt;推移&gt;"` の `button` の中に `img` と `<span class="mdmark-image-open-icon" aria-hidden="true">` の `svg`'
       - name: test_render_image_opener_when_no_icon
         case: 正常
-        summary: icon が false ならアイコンを置かない
+        summary: icon が false ならアイコンを配置しない
         condition: '`alt: "ビルド"`、`img: "<img src=\"a.gif\" alt=\"ビルド\">"`、`icon: false`'
         mock: なし
         expected: '`button.mdmark-image-open` の中に `img` だけがあり、`mdmark-image-open-icon` が無い'
@@ -1306,12 +1306,12 @@ functions:
     container: src/parts/image.ts
     kind: 関数
     scope: internal
-    summary: 部品設計『画像の図』の HTML を返す。`width` を `style` の `--mdmark-image-width`、`align` を `data-align`、`only` を class `mdmark-only-{only}` にし、`caption` か `label` があれば `figcaption` を置く（`label` は頭の `b`）。`lightbox` が `false` のときは `img` に `data-nolightbox` を付ける。`opener` が `false` のとき（`render`）は拡大のボタンを付けず `img` だけを置き、`true` のとき（Storybook）は `lightbox` が `false` でなければ `renderImageOpener` で包む。`gif` が `true` のときは `img` に `data-gif` を付ける
+    summary: 部品設計『画像の図』の HTML を返却する。`width` を `style` の `--mdmark-image-width`、`align` を `data-align`、`only` を class `mdmark-only-{only}` にし、`caption` か `label` があれば `figcaption` を配置する（`label` は頭の `b`）。`lightbox` が `false` のときは `img` に `data-nolightbox` を付ける。`opener` が `false` のとき（`render`）は拡大のボタンを付けず `img` だけを配置し、`true` のとき（Storybook）は `lightbox` が `false` でなければ `renderImageOpener` で包む。`gif` が `true` のときは `img` に `data-gif` を付ける
     args:
       - name: options
         type: '{ src: string; alt: string; caption?: string; width?: string; align?: "left" | "center" | "right"; lightbox?: boolean; only?: "light" | "dark"; id?: string; label?: string; opener?: boolean; gif?: boolean }'
         required: true
-        description: 部品設計の引数と、内部で使う `opener`（既定 `true`）・`gif`（既定 `false`）
+        description: 部品設計の引数と、内部で使用する `opener`（既定 `true`）・`gif`（既定 `false`）
     returns:
       type: string
       description: '`<figure class="mdmark-figure mdmark-image"` で始まる HTML'
@@ -1329,7 +1329,7 @@ functions:
         expected: '`<figure class="mdmark-figure mdmark-image" data-align="center" style="--mdmark-image-width: 300px">` の中に `button.mdmark-image-open` と `figcaption`'
       - name: test_render_image_figure_when_render
         case: 正常
-        summary: opener が false なら img だけを置く
+        summary: opener が false なら img だけを配置する
         condition: '`opener: false`、`gif: true`、`only: dark`'
         mock: なし
         expected: '`button` が無く、`figure` が class `mdmark-only-dark`、`img` が `data-gif` を持つ'
@@ -1353,7 +1353,7 @@ functions:
     container: src/parts/gallery.ts
     kind: 関数
     scope: internal
-    summary: 部品設計『ギャラリー』の HTML を返す。`cols` を `style` の `--mdmark-gallery-cols` にし、`body`（画像の図の並び。`SLOT_MARKER` を渡せる）を格子の `div` に入れる
+    summary: 部品設計『ギャラリー』の HTML を返却する。`cols` を `style` の `--mdmark-gallery-cols` にし、`body`（画像の図の並び。`SLOT_MARKER` を指定できる）を格子の `div` に入れる
     args:
       - name: options
         type: '{ cols?: number; body: string }'
@@ -1367,7 +1367,7 @@ functions:
     unit_tests:
       - name: test_render_gallery
         case: 正常
-        summary: 列の数を style に置き、中身を格子に入れる
+        summary: 列の数を style に配置し、中身を格子に入れる
         condition: '`cols: 3`、`body: SLOT_MARKER`'
         mock: なし
         expected: '`<div class="mdmark-gallery" style="--mdmark-gallery-cols: 3"><div class="mdmark-gallery-grid">` の中に `SLOT_MARKER`'
@@ -1379,7 +1379,7 @@ functions:
     container: src/parts/lightbox.ts
     kind: 関数
     scope: internal
-    summary: 部品設計『ライトボックス』の `dialog` の HTML を返す。`total` が `1` のときは送りのボタンと枚数を出さず、`index` が端のときは端の送りのボタンを `disabled` にする。`zoom` が全体の収まる倍率（`fit`）のときは縮小を、`ZOOM.max` のときは拡大を `disabled` にし、`fit` より大きいときだけ移動のボタンのまとまりの `hidden` を外す。アイコンは `iconSvg`（`chevron-left`・`chevron-right`・`minus`・`plus`・`x` と移動の矢印）
+    summary: 部品設計『ライトボックス』の `dialog` の HTML を返却する。`total` が `1` のときは切り替えのボタンと枚数を出さず、`index` が端のときは端の切り替えのボタンを `disabled` にする。`zoom` が全体の収まる倍率（`fit`）のときは縮小を、`ZOOM.max` のときは拡大を `disabled` にし、`fit` より大きいときだけ移動のボタンのまとまりの `hidden` を削除する。アイコンは `iconSvg`（`chevron-left`・`chevron-right`・`minus`・`plus`・`x` と移動の矢印）
     args:
       - name: options
         type: '{ src: string; alt: string; caption?: string; index: number; total: number; zoom?: number; fit?: number }'
@@ -1396,19 +1396,19 @@ functions:
     unit_tests:
       - name: test_render_lightbox
         case: 正常
-        summary: 途中の画像は前後に送れ、枚数を出す
+        summary: 途中の画像は前後に送信でき、枚数を出す
         condition: 部品設計の `Middle`
         mock: なし
         expected: '`前の画像`・`次の画像` のボタンが `disabled` を持たず、`mdmark-lightbox-count` が `3 / 15`、移動のまとまりが `hidden`'
       - name: test_render_lightbox_when_edge
         case: 正常
-        summary: 端の送りのボタンを押せなくする
+        summary: 端の切り替えのボタンを押せなくする
         condition: 部品設計の `First` と `Last`
         mock: なし
         expected: 1 つ目は `前の画像` だけ、2 つ目は `次の画像` だけが `disabled`
       - name: test_render_lightbox_when_single
         case: 正常
-        summary: 1 枚なら送りのボタンと枚数を出さない
+        summary: 1 枚なら切り替えのボタンと枚数を出さない
         condition: 部品設計の `Single`
         mock: なし
         expected: '`mdmark-lightbox-nav` が無い'
@@ -1426,7 +1426,7 @@ functions:
     container: src/parts/media.ts
     kind: 関数
     scope: internal
-    summary: 部品設計『動画と音声』の HTML を返す。`video`・`audio` に `controls`・`preload="metadata"`・`aria-label`（`alt`）を付け、`video` には `playsinline` も付ける。`autoplay` のときは `muted` も付ける。`poster` を渡したときは `video` の `poster` と、印刷用の `img.mdmark-media-print`（`alt=""`）を置く
+    summary: 部品設計『動画と音声』の HTML を返却する。`video`・`audio` に `controls`・`preload="metadata"`・`aria-label`（`alt`）を付け、`video` には `playsinline` も付ける。`autoplay` のときは `muted` も付ける。`poster` を指定したときは `video` の `poster` と、印刷用の `img.mdmark-media-print`（`alt=""`）を配置する
     args:
       - name: options
         type: '{ kind: "video" | "audio"; src: string; alt: string; caption?: string; width?: string; poster?: string; autoplay?: boolean; muted?: boolean; loop?: boolean }'
@@ -1466,7 +1466,7 @@ functions:
     container: src/parts/gif.ts
     kind: 関数
     scope: internal
-    summary: '`button.mdmark-gif-toggle` の HTML を返す。`paused` に合わせて `aria-pressed`・読み上げの名前と `title`（`GIF を停止`・`GIF を再生`）を出し、`pause` と `play` のアイコンを両方置く（出す側は CSS が `aria-pressed` で決める）'
+    summary: '`button.mdmark-gif-toggle` の HTML を返却する。`paused` に合わせて `aria-pressed`・スクリーンリーダー向けの名前と `title`（`GIF を停止`・`GIF を再生`）を出し、`pause` と `play` のアイコンを両方置く（出す側は CSS が `aria-pressed` で決める）'
     args:
       - name: options
         type: '{ paused: boolean }'
@@ -1494,7 +1494,7 @@ functions:
     container: src/parts/gif.ts
     kind: 関数
     scope: internal
-    summary: '部品設計『GIF』の HTML を返す（Storybook が使う。`mount` は描いた `img` を `span.mdmark-gif` で包み、`renderGifToggle` のボタンを追加する）。`lightbox` が `false` でなければ `img` を `renderImageOpener`（`icon: false`）で包む。`paused` のときは `canvas` の `hidden` を外し、`img` を `visibility: hidden` にする'
+    summary: '部品設計『GIF』の HTML を返却する（Storybook が使用する。`mount` は描いた `img` を `span.mdmark-gif` で包み、`renderGifToggle` のボタンを追加する）。`lightbox` が `false` でなければ `img` を `renderImageOpener`（`icon: false`）で包む。`paused` のときは `canvas` の `hidden` を削除し、`img` を `visibility: hidden` にする'
     args:
       - name: options
         type: '{ src: string; alt: string; paused?: boolean; lightbox?: boolean }'
@@ -1512,7 +1512,7 @@ functions:
     unit_tests:
       - name: test_render_gif
         case: 正常
-        summary: 再生中は canvas を隠し、停止のボタンを置く
+        summary: 再生中は canvas を隠し、停止のボタンを配置する
         condition: 部品設計の `Playing`
         mock: なし
         expected: '`canvas` が `hidden`・`aria-hidden="true"` を持ち、`button.mdmark-image-open` の中に `img`、`button.mdmark-gif-toggle` が `aria-pressed="false"`'
@@ -1530,7 +1530,7 @@ functions:
     container: src/parts/card.ts
     kind: 関数
     scope: internal
-    summary: 部品設計『カード』の HTML を返す。`link` はドメインに URL のホスト、URL に `href` を出し、`file` はドメインに拡張子の大文字、URL にファイル名を出す。アイコンの `span` は中身を持たず、CSS が `data-card`・`data-file-kind` ごとに付ける
+    summary: 部品設計『カード』の HTML を返却する。`link` はドメインに URL のホスト、URL に `href` を出し、`file` はドメインに拡張子の大文字、URL にファイル名を出す。アイコンの `span` は中身を持たず、CSS が `data-card`・`data-file-kind` ごとに付ける
     args:
       - name: options
         type: '{ kind: "link" | "file"; href: string; title: string; fileKind?: AttachmentKind }'
@@ -1570,7 +1570,7 @@ functions:
     container: src/parts/code-block.ts
     kind: 関数
     scope: internal
-    summary: 畳める行の行番号の右に置く開閉のボタン（`type="button"`・class `mdmark-code-fold`・`aria-expanded`・`aria-controls`・読み上げの名前 `{開始} 行目から {終了} 行目`・`chevron-down` か `chevron-right` のアイコン）の HTML を返す
+    summary: 畳める行の行番号の右に配置する開閉のボタン（`type="button"`・class `mdmark-code-fold`・`aria-expanded`・`aria-controls`・スクリーンリーダー向けの名前 `{開始} 行目から {終了} 行目`・`chevron-down` か `chevron-right` のアイコン）の HTML を返却する
     args:
       - name: options
         type: '{ expanded: boolean; from: number; to: number; controls: string }'
@@ -1584,7 +1584,7 @@ functions:
     unit_tests:
       - name: test_render_code_fold_toggle
         case: 正常
-        summary: 開閉の状態と範囲を読み上げの名前に持つ
+        summary: 開閉の状態と範囲をスクリーンリーダー向けの名前に持つ
         condition: '`expanded` が `false`、`from` が 4、`to` が 7'
         mock: なし
         expected: '`aria-expanded="false"`・`aria-label="4 行目から 7 行目"` と `chevron-right` の svg を持つ'
@@ -1596,7 +1596,7 @@ functions:
     container: src/parts/code-block.ts
     kind: 関数
     scope: internal
-    summary: 畳んだ行の末尾に置く `⋯` のボタン（`type="button"`・class `mdmark-code-fold-more`・読み上げの名前 `{開始} 行目から {終了} 行目を展開`）の HTML を返す
+    summary: 畳んだ行の末尾に配置する `⋯` のボタン（`type="button"`・class `mdmark-code-fold-more`・スクリーンリーダー向けの名前 `{開始} 行目から {終了} 行目を展開`）の HTML を返却する
     args:
       - name: options
         type: '{ from: number; to: number }'
@@ -1608,7 +1608,7 @@ functions:
     unit_tests:
       - name: test_render_code_fold_more
         case: 正常
-        summary: 開く範囲を読み上げの名前に持つ
+        summary: 開く範囲をスクリーンリーダー向けの名前に持つ
         condition: '`from` が 4、`to` が 7'
         mock: なし
         expected: '`aria-label="4 行目から 7 行目を展開"` と文字 `⋯` を持つ'
@@ -1620,7 +1620,7 @@ functions:
     container: src/parts/footnote.ts
     kind: 関数
     scope: internal
-    summary: 部品設計『脚注の番号』の HTML を返す。`bodies` のどれかが `<a ` を持つときはツールチップを `role="group"`・`aria-label="脚注 {number}"` にして番号のリンクから `aria-details` で指し、持たないときは `role="tooltip"` にして `aria-describedby` で指す。`bodies` は描いた HTML なのでエスケープしない
+    summary: 部品設計『脚注の番号』の HTML を返却する。`bodies` のどれかが `<a ` を持つときはツールチップを `role="group"`・`aria-label="脚注 {number}"` にして番号のリンクから `aria-details` で指し、持たないときは `role="tooltip"` にして `aria-describedby` で指す。`bodies` は描いた HTML なのでエスケープしない
     args:
       - name: options
         type: '{ number: number; refIndex?: number; bodies: string[]; below?: boolean }'
@@ -1644,7 +1644,7 @@ functions:
         expected: ツールチップが `role="group"`・`aria-label="脚注 1"` で、番号のリンクが `aria-details="mdmark-fn-tip-1-0"` を持ち `aria-describedby` を持たない
       - name: test_render_footnote_ref_when_below
         case: 正常
-        summary: below で is-below を付け、refIndex を id に使う
+        summary: below で is-below を付け、refIndex を id に使用する
         condition: '`number: 12`・`refIndex: 1`・`below: true`'
         mock: なし
         expected: '`sup` が class `is-below` を持ち、`id="mdmark-fnref-12-1"`・`id="mdmark-fn-tip-12-1"`'
@@ -1653,7 +1653,7 @@ functions:
     container: src/parts/footnote.ts
     kind: 関数
     scope: internal
-    summary: 部品設計『脚注の一覧』の HTML を返す。`items` が空なら空文字。項目の最後の `</p>` の前（`p` が無ければ末尾）に、`refCount` の数の戻るリンクを置く。`html` は描いた HTML なのでエスケープしない
+    summary: 部品設計『脚注の一覧』の HTML を返却する。`items` が空なら空文字。項目の最後の `</p>` の前（`p` が無ければ末尾）に、`refCount` の数の戻るリンクを配置する。`html` は描いた HTML なのでエスケープしない
     args:
       - name: options
         type: '{ items: Array<{ number: number; html: string; refCount: number }>; open?: boolean }'
@@ -1671,23 +1671,23 @@ functions:
         expected: '`details` が `open` を持たず、`summary` が `脚注（2 件）`。`ol.mdmark-footnotes-list` に `li#mdmark-fn-1`・`li#mdmark-fn-2` が並び、それぞれ `</p>` の前に `href="#mdmark-fnref-{番号}-0"` の `a.mdmark-fn-back` を 1 つ持つ'
       - name: test_render_footnotes_when_referenced_twice
         case: 正常
-        summary: 2 回参照した脚注に a・b の戻るリンクを置く
+        summary: 2 回参照した脚注に a・b の戻るリンクを配置する
         condition: 部品設計の `ReferencedTwice`
         mock: なし
         expected: 戻るリンクが 2 つで、`href` が `#mdmark-fnref-1-0`・`#mdmark-fnref-1-1`、文字に `a`・`b` を持つ
       - name: test_render_footnotes_when_empty
         case: 正常
-        summary: 項目が無ければ一覧を置かない
+        summary: 項目が無ければ一覧を配置しない
         condition: '`items: []`'
         mock: なし
         expected: 空文字
   - name: renderTableSettings
-    title: テーブル設定のパネルを返す
+    title: テーブル設定のパネルを返却する
     container: src/parts/table.ts
     kind: 関数
     scope: internal
-    summary: 部品設計『表』のテーブル設定のパネル（題・列名の一覧・案内）の HTML を返す
-    description: 題は `columns` があれば `表示と並び順`、`reorder` だけなら `並び順`。一覧は `order` の順に並べ、`pin=` で留めた列・結合した見出しの範囲ごと・範囲の外の列に分け、分けたまとまりが 2 つ以上あるときだけまとまりの見出しを置く。各行は `reorder` のときつまみ（どちらの向きにも動かせないとき `disabled`）、`columns` のとき目のアイコン（Markdown に記載した先頭の列は `disabled`）を持つ。ストーリーと `mount` が同じ HTML を使う
+    summary: 部品設計『表』のテーブル設定のパネル（タイトル・列名の一覧・案内）の HTML を返却する
+    description: タイトルは `columns` があれば `表示と並び順`、`reorder` だけなら `並び順`。一覧は `order` の順に並べ、`pin=` で留めた列・結合した見出しの範囲ごと・範囲の外の列に分け、分けたまとまりが 2 つ以上あるときだけまとまりの見出しを配置する。各行は `reorder` のときつまみ（どちらの向きにも動かせないとき `disabled`）、`columns` のとき目のアイコン（Markdown に記載した先頭の列は `disabled`）を持つ。ストーリーと `mount` が同じ HTML を使用する
     args:
       - name: options
         type: '{ id: string; columns: string[]; order: number[]; hidden: number[]; features: TableFeature[]; groups: Array<string | undefined>; pinned: number; dragging?: { column: number; target: number; side: "before" | "after" } }'
@@ -1699,16 +1699,16 @@ functions:
     unit_tests:
       - name: test_render_table_settings
         case: 正常
-        summary: つまみと目のアイコンを持つ一覧を今の列の順で返す
+        summary: つまみと目のアイコンを持つ一覧を今の列の順で返却する
         condition: '`columns` が `["名前","型","既定","説明"]`、`order` が `[3,0,2,1]`、`hidden` が `[3]`、`features` に `columns`・`reorder`'
         mock: なし
-        expected: 題が `表示と並び順`、行の `data-column` が `3,0,2,1` の順で、説明の目のアイコンが `aria-pressed="true"`・`aria-label="「説明」を表示"`、名前の目のアイコンが `disabled`
+        expected: タイトルが `表示と並び順`、行の `data-column` が `3,0,2,1` の順で、説明の目のアイコンが `aria-pressed="true"`・`aria-label="「説明」を表示"`、名前の目のアイコンが `disabled`
       - name: test_render_table_settings_when_reorder_only
         case: 正常
-        summary: '`reorder` だけのときは題が `並び順` で目のアイコンを置かない'
+        summary: '`reorder` だけのときはタイトルが `並び順` で目のアイコンを配置しない'
         condition: '`features` に `reorder` だけ'
         mock: なし
-        expected: 題が `並び順`、`mdmark-table-settings-eye` が無い
+        expected: タイトルが `並び順`、`mdmark-table-settings-eye` が無い
       - name: test_render_table_settings_when_groups
         case: 正常
         summary: ピン止めと結合した見出しの範囲で一覧を分け、動かせないつまみを `disabled` にする
@@ -1719,12 +1719,12 @@ functions:
     introduced:
       pr: 303
   - name: renderTreeKeyCell
-    title: 階層の表のキーのセルを返す
+    title: 階層の表のキーのセルを返却する
     container: src/parts/table.ts
     kind: 関数
     scope: internal
-    summary: キーのセルの中身（深さの数の縦線・末尾の名前・配列の `[]`・必須の *）の HTML を返す
-    description: 開閉のボタンとコピーのボタンは含めない（`renderTreeTools` が `mount` で足す）。名前はエスケープする
+    summary: キーのセルの中身（深さの数の縦線・末尾の名前・配列の `[]`・必須の *）の HTML を返却する
+    description: 開閉のボタンとコピーのボタンは含めない（`renderTreeTools` が `mount` で追加する）。名前はエスケープする
     args:
       - name: options
         type: '{ name: string; depth: number; required: boolean }'
@@ -1736,7 +1736,7 @@ functions:
     unit_tests:
       - name: test_render_tree_key_cell
         case: 正常
-        summary: 深さの数の縦線と、配列の `[]`・必須の * を置く
+        summary: 深さの数の縦線と、配列の `[]`・必須の * を配置する
         condition: '`{ name: "aliases[]", depth: 1, required: true }`'
         mock: なし
         expected: '`mdmark-tree-guide` が 1 つ、`mdmark-tree-name` の文字が `aliases`、`mdmark-tree-array` が `[]`、`mdmark-tree-required` がある'
@@ -1744,11 +1744,11 @@ functions:
     introduced:
       pr: 303
   - name: renderTypeCell
-    title: 型のセルを返す
+    title: 型のセルを返却する
     container: src/parts/table.ts
     kind: 関数
     scope: internal
-    summary: '`a \| b` の形なら値ごとの `span.mdmark-type-chip`、それ以外は `span.mdmark-type-badge`（`data-type`）の HTML を返す。空の文字は空を返す'
+    summary: '`a \| b` の構造なら値ごとの `span.mdmark-type-chip`、それ以外は `span.mdmark-type-badge`（`data-type`）の HTML を返却する。空の文字は空を返却する'
     args:
       - name: text
         type: string
@@ -1768,23 +1768,23 @@ functions:
     introduced:
       pr: 303
   - name: renderTreeTools
-    title: 階層の表のボタンを返す
+    title: 階層の表のボタンを返却する
     container: src/parts/table.ts
     kind: 関数
     scope: internal
-    summary: 階層の行の開閉のボタン（`chevron-down`。`aria-expanded`・`{パス} を畳む`）・パスのコピーのボタン（`全体のパスをコピー`）・見本の表示を切り替えるボタン（`見本を隠す` / `見本を表示`）の HTML を返す
+    summary: 階層の行の開閉のボタン（`chevron-down`。`aria-expanded`・`{パス} を畳む`）・パスのコピーのボタン（`全体のパスをコピー`）・見本の表示を切り替えるボタン（`見本を隠す` / `見本を表示`）の HTML を返却する
     args:
       - name: options
         type: '{ kind: "toggle" | "copy" | "example"; path?: string; expanded?: boolean; controls?: string }'
         required: true
-        description: '`kind` で返すボタンを選ぶ。`path` は行のパス、`expanded` は開いているか、`controls` は見本の `id`'
+        description: '`kind` で返却するボタンを選ぶ。`path` は行のパス、`expanded` は開いているか、`controls` は見本の `id`'
     returns:
       type: string
       description: '`button` の HTML'
     unit_tests:
       - name: test_render_tree_tools
         case: 正常
-        summary: 開閉・コピー・見本のボタンを返す
+        summary: 開閉・コピー・見本のボタンを返却する
         condition: '`{ kind: "toggle", path: "aliases[]", expanded: false }`・`{ kind: "copy" }`・`{ kind: "example", expanded: true, controls: "t-example" }`'
         mock: なし
         expected: '`aria-expanded="false"`・`aria-label="aliases[] を開く"` のボタン、`aria-label="全体のパスをコピー"` のボタン、`aria-controls="t-example"` で文字が `見本を隠す` のボタン'
@@ -1794,14 +1794,14 @@ functions:
   - name: renderInlineIcon
     title: 行内のアイコンを描く
     container: src/parts/inline-icon.ts
-    summary: 部品設計『アイコン』の HTML を返す。`node` があれば `iconNodeSvg` の svg を中に入れ、無ければ中を空にする
+    summary: 部品設計『アイコン』の HTML を返却する。`node` があれば `iconNodeSvg` の svg を中に入れ、無ければ中を空にする
     kind: 関数
     scope: internal
     args:
     - name: options
       type: '{ name: string; node?: MdmarkIconNode }'
       required: true
-      description: アイコンの名前と形
+      description: アイコンの名前と構造
     returns:
       type: string
       description: 部品の HTML
@@ -1811,7 +1811,7 @@ functions:
       condition: '`{ name: "check", node: [["path",{d:"M20 6 9 17l-5-5"}]] }` と `{ name: "sailboat" }`'
       expected: '`<span class="mdmark-inline-icon" data-icon="check" aria-hidden="true"><svg class="mdmark-icon" viewBox="0 0 24 24">…</svg></span>` と中が空の `span`'
       mock: なし
-      summary: 形があれば svg を入れる
+      summary: 構造があれば svg を入れる
   - name: iconNodeSvg
     title: IconNode を svg にする
     container: src/parts/inline-icon.ts
@@ -1836,7 +1836,7 @@ functions:
   - name: renderKbd
     title: キーを描く
     container: src/parts/kbd.ts
-    summary: 部品設計『キー』の HTML を返す。キーごとの `kbd.mdmark-kbd` を `span.mdmark-kbd-join` の `+` でつなぐ
+    summary: 部品設計『キー』の HTML を返却する。キーごとの `kbd.mdmark-kbd` を `span.mdmark-kbd-join` の `+` でつなぐ
     kind: 関数
     scope: internal
     args:
@@ -1857,7 +1857,7 @@ functions:
   - name: renderHighlight
     title: 蛍光ペンを描く
     container: src/parts/highlight.ts
-    summary: 部品設計『蛍光ペン』の HTML を返す。ストーリーの描画で使い、`render` は `useHighlight` のトークンから同じ HTML を出す
+    summary: 部品設計『蛍光ペン』の HTML を返却する。ストーリーの描画で使用し、`render` は `useHighlight` のトークンから同じ HTML を出す
     kind: 関数
     scope: internal
     args:
@@ -1878,14 +1878,14 @@ functions:
   - name: renderLayoutColumns
     title: 段組みを描く
     container: src/parts/layout-columns.ts
-    summary: 部品設計『段組み』の HTML を返す
+    summary: 部品設計『段組み』の HTML を返却する
     kind: 関数
     scope: internal
     args:
     - name: options
       type: '{ columns: string[] }'
       required: true
-      description: 列ごとの中身の HTML（`SLOT_MARKER` を渡せる）
+      description: 列ごとの中身の HTML（`SLOT_MARKER` を指定できる）
     returns:
       type: string
       description: 部品の HTML
@@ -1899,14 +1899,14 @@ functions:
   - name: renderCardGrid
     title: カードの格子を描く
     container: src/parts/card-grid.ts
-    summary: 部品設計『カードの格子』の HTML を返す。アイコンは `renderInlineIcon` の要素に class `mdmark-card-grid-icon` を足して組み立てる
+    summary: 部品設計『カードの格子』の HTML を返却する。アイコンは `renderInlineIcon` の要素に class `mdmark-card-grid-icon` を追加して組み立てる
     kind: 関数
     scope: internal
     args:
       - name: options
         type: '{ items: CardGridItem[]; icons?: Record<string, MdmarkIconNode> }'
         required: true
-        description: 項目ごとのカードの中身と、束ねていない名前のアイコンの形の表
+        description: 項目ごとのカードの中身と、まとめていない名前のアイコンの形状の表
     returns:
       type: string
       description: 部品の HTML
@@ -1929,14 +1929,14 @@ functions:
   - name: renderWide
     title: wide の範囲を描く
     container: src/parts/wide.ts
-    summary: 部品設計『wide の範囲』の HTML を返す。`toggle` のときは直前に帯と切り替えのボタンを置く。2 つのアイコンは `src/parts/icons.ts` の `ICONS` に Lucide と同じ IconNode の形で追加する `WideExpand`（`|←→|`）・`WideShrink`（`→|←`）
+    summary: 部品設計『wide の範囲』の HTML を返却する。`toggle` のときは直前に帯と切り替えのボタンを配置する。2 つのアイコンは `src/parts/icons.ts` の `ICONS` に Lucide と同じ IconNode の構造で追加する `WideExpand`（`|←→|`）・`WideShrink`（`→|←`）
     kind: 関数
     scope: internal
     args:
     - name: options
       type: '{ body: string; state: "wide" | "narrow"; toggle: boolean }'
       required: true
-      description: 中身・状態・ボタンを置くか
+      description: 中身・状態・ボタンを配置するか
     returns:
       type: string
       description: 部品の HTML
@@ -1950,7 +1950,7 @@ functions:
   - name: renderRawToggle
     title: RAW のボタンを描く
     container: src/parts/table.ts
-    summary: 部品設計『表』の RAW のボタンの HTML を返す。`renderTable` は `rawCsv` を受けると `data-source="csv"` と `pre.mdmark-raw` を出し、帯の右端にこのボタンを置く
+    summary: 部品設計『表』の RAW のボタンの HTML を返却する。`renderTable` は `rawCsv` を受けると `data-source="csv"` と `pre.mdmark-raw` を出し、帯の右端にこのボタンを配置する
     kind: 関数
     scope: internal
     args:
@@ -1969,8 +1969,8 @@ functions:
       mock: なし
       summary: 押した状態を `aria-pressed` に入れる
 notes:
-  ストーリー: '`*.stories.yaml` は `title`（部品設計の `story`）と、部品設計の `states` ごとの `stories[].name`・`stories[].parameters.server.id`（部品の id。ファイル名の頭）・`stories[].args` を持つ。`embed` の配列の引数は `a,b` の 1 つの文字列で書く。この PR で足す部品の配列・オブジェクトの引数は JSON の文字列で書く（戻し方は『部品の描画』）。中身を持つ部品のストーリーは、中身に部品ごとの見本の HTML を渡す'
-  印の付け方: 部品の関数は `markOwn` を掛けない。記法のコアルールと `mount` の操作が、差し込む前に掛ける
+  ストーリー: '`*.stories.yaml` は `title`（部品設計の `story`）と、部品設計の `states` ごとの `stories[].name`・`stories[].parameters.server.id`（部品の id。ファイル名の頭）・`stories[].args` を持つ。`embed` の配列の引数は `a,b` の 1 つの文字列で記載する。この PR で追加する部品の配列・オブジェクトの引数は JSON の文字列で記載する（戻し方は『部品の描画』）。中身を持つ部品のストーリーは、中身に部品ごとの見本の HTML を指定する'
+  マーカーの付け方: 部品の関数は `markOwn` を掛けない。記法のコアルールと `mount` の操作が、差し込む前に掛ける
 test_files:
   - tests/unit/src/parts/escape.test.ts
   - tests/unit/src/parts/notice.test.ts
@@ -2015,7 +2015,7 @@ data_models:
     properties:
       - name: text
         type: string
-        description: コードの行の印を外した行の文字（エスケープ前）
+        description: コードの行のマーカーを削除した行の文字（エスケープ前）
       - name: kind
         type: '"add" | "del" | "highlight" | "focus" | "error" | "warning" | undefined'
         description: 行の種類。無ければ飾らない行

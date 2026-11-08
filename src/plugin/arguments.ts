@@ -4,7 +4,7 @@ import type {
   jsonSchemaValidator,
 } from "@modelcontextprotocol/server";
 
-/** ツールの引数 1 つの形（JSON Schema 2020-12 のうち使う範囲） */
+/** ツールの引数 1 つの構造（JSON Schema 2020-12 のうち使用する範囲） */
 export type ArgumentSchema = {
   /** `string`・`integer`・`boolean`・`array`・`object`・`null` かその並び */
   type:
@@ -15,7 +15,7 @@ export type ArgumentSchema = {
     | "object"
     | "null"
     | ("object" | "null")[];
-  /** 配列の要素の形。要素が選べる値を `enum` で持てる */
+  /** 配列の要素の構造。要素が選べる値を `enum` で持てる */
   items?: { type: "string"; enum?: string[] };
   /** 選べる値 */
   enum?: string[];
@@ -31,7 +31,7 @@ export type ArgumentSchema = {
   description?: string;
 };
 
-/** ツールの引数の形（JSON Schema 2020-12 のうち使う範囲） */
+/** ツールの引数の構造（JSON Schema 2020-12 のうち使用する範囲） */
 export type ToolInputSchema = {
   type: "object";
   properties: Record<string, ArgumentSchema>;
@@ -39,7 +39,7 @@ export type ToolInputSchema = {
   additionalProperties: false;
 };
 
-/** SDK の `fromJsonSchema` に渡す、どの入力も通す検証器。SDK の検査は英語の文を頭に付けるため、ツールを呼ぶときに引数を検査する */
+/** SDK の `fromJsonSchema` に指定する、どの入力も経由する検証器。SDK の検査は英語の文を頭に付けるため、ツールを呼ぶときに引数を検査する */
 export const ACCEPT_ALL_VALIDATOR: jsonSchemaValidator = {
   getValidator: <T>(): JsonSchemaValidator<T> => {
     return (input: unknown): JsonSchemaValidatorResult<T> => ({
@@ -55,7 +55,7 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
-/** 値の型が、引数の形の型のどれかに当たるか */
+/** 値の型が、引数の構造の型のどれかに該当するか */
 function matchesType(schema: ArgumentSchema, value: unknown): boolean {
   const types = Array.isArray(schema.type) ? schema.type : [schema.type];
   return types.some((type) => {
@@ -82,7 +82,7 @@ function matchesType(schema: ArgumentSchema, value: unknown): boolean {
   });
 }
 
-/** 型が合わないときに「〜で渡してください」へ入れる、合う値の説明 */
+/** 型が合わないときに「〜で指定してください」へ入れる、合う値の説明 */
 function describeType(schema: ArgumentSchema): string {
   if (schema.enum !== undefined) {
     return schema.enum.join(" か ");
@@ -111,7 +111,7 @@ function describeType(schema: ArgumentSchema): string {
   return types.includes("object") ? "オブジェクト" : "null";
 }
 
-/** 引数 1 つを検査し、合わなければ合う値の説明を返す */
+/** 引数 1 つを検査し、合わなければ合う値の説明を返却する */
 function describeMismatch(
   schema: ArgumentSchema,
   value: unknown,
@@ -153,33 +153,33 @@ function describeMismatch(
   return undefined;
 }
 
-/** 引数をツールの引数の形で検査し、最初に合わないところを、何が合わないかと直し方の日本語の 1 文で返す。合えば `undefined` */
+/** 引数をツールの引数の構造で検査し、最初に合わないところを、何が合わないかと修正方法の日本語の 1 文で返却する。合えば `undefined` */
 export function checkArguments(options: {
-  /** 引数の形 */
+  /** 引数の構造 */
   schema: ToolInputSchema;
-  /** 渡された引数 */
+  /** 指定された引数 */
   args: unknown;
 }): string | undefined {
   const { schema, args } = options;
   if (!isRecord(args)) {
-    return "引数はオブジェクトで渡してください。";
+    return "引数はオブジェクトで指定してください。";
   }
   for (const name of schema.required) {
     if (!(name in args)) {
-      return `引数 ${name} がありません。${name} を渡してください。`;
+      return `引数 ${name} がありません。${name} を指定してください。`;
     }
   }
   const allowed = Object.keys(schema.properties);
   for (const name of Object.keys(args)) {
     if (!allowed.includes(name)) {
-      return `引数 ${name} は使えません。使える引数は ${allowed.join("・")} です。`;
+      return `引数 ${name} は使用できません。使用できる引数は ${allowed.join("・")} です。`;
     }
   }
   for (const [name, value] of Object.entries(args)) {
     const argument = schema.properties[name];
     const expected = argument && describeMismatch(argument, value);
     if (expected !== undefined) {
-      return `引数 ${name} は ${expected} で渡してください。`;
+      return `引数 ${name} は ${expected} で指定してください。`;
     }
   }
   return undefined;

@@ -2,13 +2,13 @@ import { rowIdFromHash } from "../table-logic.ts";
 import { revealTabTarget } from "./tabs.ts";
 import { visibleText } from "./text.ts";
 
-/** 節の開閉を切り替える関数 */
+/** セクションの開閉を切り替える関数 */
 type SetOpen = (open: boolean) => void;
 
-/** 節の開閉の関数の控え。`attachSections` が操作を付けた節の中身から、その節を開くか閉じる関数を引く。外す関数が取り除く */
+/** セクションの開閉の関数の記録。`attachSections` が操作を付けたセクションの中身から、そのセクションを開くか閉じる関数を参照する。削除する関数が取り除く */
 const sectionSetters = new WeakMap<HTMLElement, SetOpen>();
 
-/** 節の中身に入っている、操作を付けた入れ子の節の中身 */
+/** セクションの中身に入っている、操作を付けた入れ子のセクションの中身 */
 function nestedBodies(body: HTMLElement): HTMLElement[] {
   return [...body.querySelectorAll<HTMLElement>(".mdmark-section-body")];
 }
@@ -16,7 +16,7 @@ function nestedBodies(body: HTMLElement): HTMLElement[] {
 /** 差分のブロック（見出しを包む `div`） */
 const DIFF_BLOCK = ".mdmark-diff-block";
 
-/** 節の中身の見出しを返す。見出しと中身の間に差分を開くボタンなどが入っていても、手前の見出しをたどる。見出しが差分のブロックに包まれているときは、そのブロックの中の見出しを返す */
+/** セクションの中身の見出しを返却する。見出しと中身の間に差分を開くボタンなどが入っていても、手前の見出しをたどる。見出しが差分のブロックに包まれているときは、そのブロックの中の見出しを返却する */
 function headingOf(body: HTMLElement): Element | null {
   let sibling = body.previousElementSibling;
   while (sibling && !sibling.classList.contains("mdmark-heading")) {
@@ -31,7 +31,7 @@ function headingOf(body: HTMLElement): Element | null {
   return sibling;
 }
 
-/** 見出しの節の中身を返す。見出しが差分のブロックに包まれているときは、そのブロックの次の兄弟を見る */
+/** 見出しのセクションの中身を返却する。見出しが差分のブロックに包まれているときは、そのブロックの次の兄弟を確認する */
 function bodyOf(heading: HTMLElement): HTMLElement | null {
   const wrapper = heading.parentElement?.matches(DIFF_BLOCK)
     ? heading.parentElement
@@ -43,7 +43,7 @@ function bodyOf(heading: HTMLElement): HTMLElement | null {
     : null;
 }
 
-/** 節の見出し 1 つを開閉のボタンにし、閉じた節の中身を隠す。外す関数を返す */
+/** セクションの見出し 1 つを開閉のボタンにし、閉じたセクションの中身を隠す。削除する関数を返却する */
 function attachSection(heading: HTMLElement, body: HTMLElement): () => void {
   const anchor = heading.querySelector(":scope > .mdmark-anchor");
   const button = document.createElement("button");
@@ -62,7 +62,7 @@ function attachSection(heading: HTMLElement, body: HTMLElement): () => void {
   };
   sectionSetters.set(body, setOpen);
   setOpen(body.dataset.section !== "closed");
-  /** その節を今と逆の状態にし、中の入れ子の全ての節を同じ状態にする */
+  /** そのセクションを今と逆の状態にし、中の入れ子の全てのセクションを同じ状態にする */
   const toggleNested = (): void => {
     const open = button.getAttribute("aria-expanded") !== "true";
     setOpen(open);
@@ -84,7 +84,7 @@ function attachSection(heading: HTMLElement, body: HTMLElement): () => void {
       toggleNested();
     }
   };
-  // ページ内検索が閉じた中身に当たったとき: ブラウザが開く前にボタンの状態を合わせる
+  // ページ内検索が閉じた中身に該当したとき: ブラウザが開く前にボタンの状態を合わせる
   const onBeforeMatch = (): void =>
     button.setAttribute("aria-expanded", "true");
   button.addEventListener("click", onClick);
@@ -99,7 +99,7 @@ function attachSection(heading: HTMLElement, body: HTMLElement): () => void {
   };
 }
 
-/** 要素を囲む閉じた節を外側から開き、選ばれていないタブの中ならそのタブも選ぶ */
+/** 要素を囲む閉じたセクションを外側から開き、選ばれていないタブの中ならそのタブも選ぶ */
 function openSectionsAndTabs(target: HTMLElement): void {
   const bodies: HTMLElement[] = [];
   for (
@@ -117,16 +117,16 @@ function openSectionsAndTabs(target: HTMLElement): void {
   revealTabTarget(target);
 }
 
-/** 要素を囲む閉じた節を外側から開き、選ばれていないタブの中ならそのタブも選び、表の行（`tr`）でなければ `scrollIntoView` する。URL の `#ID` で移るときと右側の目次の項目で移るときに使う */
+/** 要素を囲む閉じたセクションを外側から開き、選ばれていないタブの中ならそのタブも選び、表の行（`tr`）でなければ `scrollIntoView` する。URL の `#ID` で移るときと右側の目次の項目で移るときに使用する */
 export function revealTarget(target: HTMLElement): void {
   openSectionsAndTabs(target);
-  // 表の行へは、`attachTables` が絞り込みを外してから送る
+  // 表の行へは、`attachTables` が絞り込みを解除してから送信する
   if (target.tagName !== "TR") {
     target.scrollIntoView();
   }
 }
 
-/** 要素を囲む閉じた節とタブを開き、閉じた行の詳細の中なら、その行の開閉のボタンを押した状態にして詳細の行を出す。スクロールしない。コメントの印へ移るときに使う */
+/** 要素を囲む閉じたセクションとタブを開き、閉じた行の詳細の中なら、その行の開閉のボタンを押した状態にして詳細の行を出す。スクロールしない。コメントのマーカーへ移るときに使用する */
 export function openEnclosing(target: HTMLElement): void {
   openSectionsAndTabs(target);
   const detail = target.closest<HTMLTableRowElement>("tr.mdmark-row-detail");
@@ -152,7 +152,7 @@ export function openEnclosing(target: HTMLElement): void {
   }
 }
 
-/** `root` の中の、操作を付けた全ての節を、`open` が `true` なら開く。`false` なら、見出しが h1 の節を開き、h2〜h4 の節を閉じる */
+/** `root` の中の、操作を付けた全てのセクションを、`open` が `true` なら開く。`false` なら、見出しが h1 のセクションを開き、h2〜h4 のセクションを閉じる */
 export function foldAllSections(options: {
   /** 描いた本文 */
   root: HTMLElement;
@@ -180,7 +180,7 @@ function revealHashTarget(root: HTMLElement): void {
   }
 }
 
-/** 行の詳細を持つ行の先頭のセルに開閉のボタンを置き、詳細の行を閉じる。外す関数を返す */
+/** 行の詳細を持つ行の先頭のセルに開閉のボタンを配置し、詳細の行を閉じる。削除する関数を返却する */
 function attachRowDetails(root: HTMLElement): () => void {
   const owners = new Map<HTMLTableRowElement, HTMLTableRowElement[]>();
   for (const detail of root.querySelectorAll<HTMLTableRowElement>(
@@ -240,11 +240,11 @@ function attachRowDetails(root: HTMLElement): () => void {
   };
 }
 
-/** `sections` がオンなら節の見出しを開閉のボタンにして閉じた節の中身を隠し、`row-details` がオンなら詳細を持つ行に開閉のボタンを置いて詳細の行を閉じる。URL の `#ID` が閉じた節の中を指すとき（付けたときと `hashchange`）にその節を開く */
+/** `sections` がオンならセクションの見出しを開閉のボタンにして閉じたセクションの中身を隠し、`row-details` がオンなら詳細を持つ行に開閉のボタンを配置して詳細の行を閉じる。URL の `#ID` が閉じたセクションの中を指すとき（付けたときと `hashchange`）にそのセクションを開く */
 export function attachSections(options: {
   /** 描いた要素 */
   root: HTMLElement;
-  /** 節の開閉の機能 */
+  /** セクションの開閉の機能 */
   sections: boolean;
   /** 行の詳細の機能 */
   rowDetails: boolean;

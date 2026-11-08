@@ -13,7 +13,7 @@ const loadDocumentView = () =>
     "../../../../../../../../vscode/src/webview/features/preview/panel/document-view.ts"
   );
 
-/** 画面に収まらない高さの本文を入れるために使う、幅 1 の画像 */
+/** 画面に収まらない高さの本文を入れるために使用する、幅 1 の画像 */
 const PNG_1X1 =
   "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==";
 
@@ -25,7 +25,7 @@ const SHORT_WEBM = new URL(
 
 const placed: HTMLElement[] = [];
 
-/** 描く先を包む要素と描く先の要素を置き、描いた文書を作る。`mdmark` を渡すと配布物を受けた後の view にする */
+/** 描く先を包む要素と描く先の要素を配置し、描いた文書を作る。`mdmark` を指定すると配布物を受けた後の view にする */
 const createView = async (
   mdmark: unknown,
   options: { savedLine?: number } = {},
@@ -76,7 +76,7 @@ test("test_render", async () => {
   expect(record.destroy).not.toHaveBeenCalled();
 });
 
-// 設定が変わったら destroy してから mount し直し、スクロールの位置を保つ（正常系）
+// 設定が変わったら destroy してから もう一度 mount し、スクロールの位置を保つ（正常系）
 test("test_render_when_config_changed", async () => {
   // 準備
   const { mdmark, record } = createMdmark();
@@ -98,7 +98,7 @@ test("test_render_when_config_changed", async () => {
   expect(scroller().scrollTop).toBe(200);
 });
 
-// aliases が変わったら destroy してから mount し直し、mount に aliases を渡す（正常系）
+// aliases が変わったら destroy してから もう一度 mount し、mount に aliases を指定する（正常系）
 test("test_render_when_aliases_changed", async () => {
   // 準備
   const { mdmark, record } = createMdmark();
@@ -142,7 +142,7 @@ test("test_render_when_theme", async () => {
   );
 });
 
-// previous を持つ render では取り出し元を渡して blocks で描き、次の render では取り出し元の全文を書き換えてから update する（正常系）
+// previous を持つ render では取り出し元を指定して blocks で描き、次の render では取り出し元の全文を書き換えてから update する（正常系）
 test("test_render_when_diff", async () => {
   // 準備
   const { mdmark, record } = createMdmark();
@@ -181,7 +181,7 @@ test("test_render_when_diff", async () => {
   expect(await contentsAtUpdate).toEqual(["A3", "A1"]);
 });
 
-// 保存した行を持つ view は、最初の render の後だけその行へ戻し、自分が起こしたスクロールとして捨てる（正常系）
+// 保存した行を持つ view は、最初の render の後だけその行へ戻し、自分が発生させたスクロールとして捨てる（正常系）
 test("test_render_when_saved_line", async () => {
   // 準備
   const { mdmark } = createMdmark();
@@ -190,7 +190,7 @@ test("test_render_when_saved_line", async () => {
   view.render(renderMessage("# 1 回目"));
   const restored = scroller().scrollTop;
   const own = view.takeScroll();
-  // scrollToLine(20) で置く位置と比べる（同じ位置なら動かない）
+  // scrollToLine(20) で配置する位置と比べる（同じ位置なら動かない）
   view.scrollToLine(20);
   const placedAt = scroller().scrollTop;
   // 実行: 2 回目（設定は同じ）
@@ -209,11 +209,11 @@ test("test_render_when_not_loaded", async () => {
   const { view } = await createView(undefined);
   // 実行・検証
   expect(() => view.render(renderMessage("# 本文"))).toThrow(
-    "mdmark の配布物を読む前に render を受けた",
+    "mdmark の配布物を読み込む前に render を受けた",
   );
 });
 
-// 外すと描画を destroy し、次の render で mount し直す（正常系）
+// 削除すると描画を destroy し、次の render で もう一度 mount する（正常系）
 test("test_detach", async () => {
   // 準備
   const { mdmark, record } = createMdmark();
@@ -228,7 +228,7 @@ test("test_detach", async () => {
   expect(record.mount).toHaveBeenCalledTimes(2);
 });
 
-// 自分が動かしたスクロールの知らせだけを捨てる（正常系）
+// 自分が動かしたスクロールの通知だけを捨てる（正常系）
 test("test_take_scroll_when_own_scroll", async () => {
   // 準備
   const { mdmark, record } = createMdmark();
@@ -247,7 +247,7 @@ test("test_take_scroll_when_own_scroll", async () => {
   expect(moved).toBe(10);
 });
 
-// 描く前は行を返さず、描いた後は先頭の行を返す（正常系）
+// 描く前は行を返却せず、描いた後は先頭の行を返却する（正常系）
 test("test_current_line", async () => {
   // 準備
   const { mdmark } = createMdmark();
@@ -262,7 +262,7 @@ test("test_current_line", async () => {
   expect(afterRender).toBe(20);
 });
 
-// 描く前は位置を返さず、描いた後は行の途中の位置を切り捨てずに返す（正常系）
+// 描く前は位置を返却せず、描いた後は行の途中の位置を切り捨てずに返却する（正常系）
 test("test_current_position", async () => {
   // 準備
   const { mdmark } = createMdmark();
@@ -280,13 +280,13 @@ test("test_current_position", async () => {
   expect(line).toBe(20);
 });
 
-// 属性・文字・画像の幅・位置を返す（正常系）
+// 属性・文字・画像の幅・位置を返却する（正常系）
 test("test_inspect", async () => {
   // 準備
   const { mdmark } = createMdmark();
   const { view } = await createView(mdmark);
   const holder = document.createElement("div");
-  holder.innerHTML = `<h1 id="a" class="x">題</h1><img alt="図" src="${PNG_1X1}">`;
+  holder.innerHTML = `<h1 id="a" class="x">タイトル</h1><img alt="図" src="${PNG_1X1}">`;
   document.body.append(holder);
   placed.push(holder);
   await (holder.querySelector("img") as HTMLImageElement).decode();
@@ -296,7 +296,7 @@ test("test_inspect", async () => {
   expect(heading?.tagName).toBe("h1");
   expect(heading?.className).toBe("x");
   expect(heading?.attributes.id).toBe("a");
-  expect(heading?.text).toBe("題");
+  expect(heading?.text).toBe("タイトル");
   expect(heading?.naturalWidth).toBeUndefined();
   expect(image?.tagName).toBe("img");
   expect(image?.naturalWidth).toBe(1);
@@ -322,9 +322,9 @@ test("test_inspect_when_play", async () => {
   expect(video?.currentTime).toBeGreaterThanOrEqual(0.5);
 });
 
-// axe の違反を ID・影響度・セレクタにして返す（正常系）
+// axe の違反を ID・影響度・セレクタにして返却する（正常系）
 test("test_audit", async () => {
-  // 準備: `fixtures/preview.js` の script を置き、隣の `fixtures/test/axe.js` を axe-core の代役にする
+  // 準備: `fixtures/preview.js` の script を配置し、隣の `fixtures/test/axe.js` を axe-core の代役にする
   const { mdmark } = createMdmark();
   const { view, root, element } = await createView(mdmark);
   const script = document.createElement("script");

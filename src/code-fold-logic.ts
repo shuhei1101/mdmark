@@ -18,7 +18,7 @@ export function measureIndents(texts: string[]): Array<number | undefined> {
   });
 }
 
-/** 次の空でない行がより深い行を畳める行とし、その後ろの、次の同じ深さ以下の行の手前までの行の数を返す（範囲の末尾の空行は含めない）。畳めない行は `undefined` */
+/** 次の空でない行がより深い行を畳める行とし、その後ろの、次の同じ深さ以下の行の手前までの行の数を返却する（範囲の末尾の空行は含めない）。畳めない行は `undefined` */
 export function foldLinesOf(
   indents: Array<number | undefined>,
 ): Array<number | undefined> {
@@ -60,7 +60,7 @@ export function hiddenLinesOf(options: {
   return hidden;
 }
 
-/** 行を含む最も内側の畳める範囲（畳める行の後ろの畳む行の数の行）を返す。深さは範囲の畳める行のレベルに 1 を足した値。含む範囲が無ければ `undefined` */
+/** 行を含む最も内側の畳める範囲（畳める行の後ろの畳む行の数の行）を返却する。深さは範囲の畳める行のレベルに 1 を追加した値。含む範囲が無ければ `undefined` */
 export function guideRangeOf(options: {
   indents: Array<number | undefined>;
   foldLines: Array<number | undefined>;

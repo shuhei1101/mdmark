@@ -20,7 +20,7 @@ function textsOf(result: { content: unknown[] }): string[] {
   );
 }
 
-/** 引数を持たないツールを作る（`run` はテストごとに渡す） */
+/** 引数を持たないツールを作る（`run` はテストごとに指定する） */
 function createTool(run: ToolDefinition["run"]): ToolDefinition {
   return {
     name: "check",
@@ -35,7 +35,7 @@ function createTool(run: ToolDefinition["run"]): ToolDefinition {
   };
 }
 
-/** サーバーの読む場所（配布物のフォルダ）を作る。配布物のフォルダの親は `packageDir` */
+/** サーバーの読み込む場所（配布物のフォルダ）を作る。配布物のフォルダの親は `packageDir` */
 async function createRoots(): Promise<{
   packageDir: string;
   distDir: string;
@@ -44,7 +44,7 @@ async function createRoots(): Promise<{
   return { packageDir, distDir: join(packageDir, "dist") };
 }
 
-/** 作業のフォルダと、サーバーの読む場所を一時フォルダに作る */
+/** 作業のフォルダと、サーバーの読み込む場所を一時フォルダに作る */
 async function createContext(): Promise<{
   projectDir: string;
   packageDir: string;
@@ -100,13 +100,13 @@ test("test_call_tool_when_arguments_invalid", async () => {
   expect(run).not.toHaveBeenCalled();
 });
 
-// CliError はその文を返し、ログを書かない（正常系）
+// CliError はその文を返却し、ログを書き込まない（正常系）
 test("test_call_tool_when_cli_error", async () => {
   // 準備
   const { callTool } = await loadTools();
   const { CliError } = await loadErrors();
   const tool = createTool(async () => {
-    throw new CliError("直し方の文");
+    throw new CliError("修正方法の文");
   });
   const roots = await createRoots();
   const stderr: string[] = [];
@@ -119,11 +119,11 @@ test("test_call_tool_when_cli_error", async () => {
   });
   // 検証
   expect(result.isError).toBe(true);
-  expect(textsOf(result)).toEqual(["直し方の文"]);
+  expect(textsOf(result)).toEqual(["修正方法の文"]);
   expect(stderr).toEqual([]);
 });
 
-// 想定しない例外は標準エラーに書いて返す（正常系）
+// 想定しない例外は標準エラーに書き込んで返却する（正常系）
 test("test_call_tool_when_unexpected_error", async () => {
   // 準備
   const { callTool } = await loadTools();
@@ -239,7 +239,7 @@ test("test_run_export_html", async () => {
   const context = await createContext();
   await writeFiles(context.projectDir, {
     "mdmark.config.yaml": "features:\n  print: true\n",
-    "guide.md": "# 題\n",
+    "guide.md": "# タイトル\n",
   });
   await writeDist(context.packageDir);
   // 実行
@@ -256,7 +256,7 @@ test("test_run_export_html_when_cwd_differs", async () => {
   const context = await createContext();
   await writeFiles(context.projectDir, {
     "conf/mdmark.config.yaml": "features:\n  print: true\n",
-    "guide.md": "# 題\n",
+    "guide.md": "# タイトル\n",
   });
   await writeDist(context.packageDir);
   const strayOut = join(process.cwd(), "out", "a.html");
@@ -272,7 +272,7 @@ test("test_run_export_html_when_cwd_differs", async () => {
   expect(existsSync(strayOut)).toBe(false);
 });
 
-// まとめて絶対パスと文書の数を返す（正常系）
+// まとめて絶対パスと文書の数を返却する（正常系）
 test("test_run_build_site", async () => {
   // 準備
   const { runBuildSite } = await loadTools();
@@ -295,7 +295,7 @@ test("test_run_build_site", async () => {
   expect(result.json?.docs).toBe(2);
 });
 
-// サーバーの cwd が作業のフォルダと違っても、作業のフォルダの設定と build.out で書く（正常系）
+// サーバーの cwd が作業のフォルダと違っても、作業のフォルダの設定と build.out で記載する（正常系）
 test("test_run_build_site_when_cwd_differs", async () => {
   // 準備
   const { runBuildSite } = await loadTools();
@@ -320,7 +320,7 @@ test("test_run_build_site_when_cwd_differs", async () => {
   expect(existsSync(strayOut)).toBe(false);
 });
 
-// ずれを一覧で返す（正常系）
+// ずれを一覧で返却する（正常系）
 test("test_run_check_tool", async () => {
   // 準備
   const { runCheckTool } = await loadTools();
@@ -345,7 +345,7 @@ test("test_run_check_tool", async () => {
   );
 });
 
-// `base` から片方だけが変わった change_together の組を返す（正常系）
+// `base` から片方だけが変わった change_together の組を返却する（正常系）
 test("test_run_check_tool_when_base_given", async () => {
   // 準備
   const { runCheckTool } = await loadTools();
@@ -360,7 +360,7 @@ test("test_run_check_tool_when_base_given", async () => {
   expect(result.json?.issues).toHaveLength(1);
 });
 
-// 引けない `base` は CliError にする（異常系）
+// 参照できない `base` は CliError にする（異常系）
 test("test_run_check_tool_when_base_unknown", async () => {
   // 準備
   const { runCheckTool } = await loadTools();
@@ -381,7 +381,7 @@ test("test_run_check_tool_when_base_unknown", async () => {
   expect((error as Error).message).toBe((cli as Error).message);
 });
 
-// text と file・key で mdmark check と同じずれを返す（正常系）
+// text と file・key で mdmark check と同じずれを返却する（正常系）
 test("test_run_check_tool_when_text_and_key", async () => {
   // 準備
   const { runCheckTool } = await loadTools();
@@ -424,14 +424,14 @@ test("test_run_check_tool_when_text_and_key", async () => {
   ]);
 });
 
-/** 一時フォルダを端末の設定のフォルダにし、そのテンプレートのフォルダを返す */
+/** 一時フォルダを端末の設定のフォルダにし、そのテンプレートのフォルダを返却する */
 async function stubSettingsDir(): Promise<string> {
   const settingsDir = await createTempDir();
   vi.stubEnv("MDMARK_CONFIG", join(settingsDir, "settings.yaml"));
   return join(settingsDir, "templates", "css");
 }
 
-// `MDMARK_CONFIG` のフォルダのテンプレートを返す（正常系）
+// `MDMARK_CONFIG` のフォルダのテンプレートを返却する（正常系）
 test("test_run_list_templates", async () => {
   // 準備
   const { runListTemplates } = await loadTools();

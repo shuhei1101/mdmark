@@ -11,7 +11,7 @@
   <link rel="stylesheet" href="../../refs/16/assets/sample.css">
   <!-- 採用スタイル本体の変数の値 -->
   <link rel="stylesheet" href="../../assets/style.css">
-  <!-- 拡張記法の規則（書き方の警告）とカタログの並べ方（#19 で共有するアセット） -->
+  <!-- 拡張記法の規則（記載の警告）とカタログの並べ方（#19 で共有するアセット） -->
   <link rel="stylesheet" href="../../refs/19/assets/syntax.css">
   <link rel="stylesheet" href="../../refs/19/assets/catalog.css">
   <!-- 用語のツールチップの規則（#27 で共有するアセット） -->
@@ -22,16 +22,16 @@
   <script src="../../refs/16/assets/sample.js" defer></script>
   <!-- 図の定義の見本と、図を描いて操作を付けるスクリプト（#42 で共有するアセット） -->
   <script src="../../refs/42/assets/samples.js" defer></script>
-  <!-- 棒・円・散布図の定義の見本（#45 で共有するアセット。diagram.js の前に読む） -->
+  <!-- 棒・円・散布図の定義の見本（#45 で共有するアセット。diagram.js の前に読み込む） -->
   <script src="../../refs/45/assets/samples.js" defer></script>
-  <!-- #275 で追加するグラフの種類と 6 つの系列の定義の見本（diagram.js の前に読む） -->
+  <!-- #275 で追加するグラフの種類と 6 つの系列の定義の見本（diagram.js の前に読み込む） -->
   <script src="../../refs/275/assets/samples.js" defer></script>
   <script src="../../refs/42/assets/diagram.js" defer></script>
 </head>
 <body>
   <!-- モック専用の操作列: 配色の切り替え -->
   <div class="mock-bar">
-    <!-- [data-scheme-set]: sample.js が押されたボタンの値を html の data-scheme に当てる -->
+    <!-- [data-scheme-set]: sample.js が押されたボタンの値を html の data-scheme に適用する -->
     <div class="mock-bar-group" role="group" aria-label="配色">
       <button class="mock-bar-item" type="button" data-scheme-set="light" aria-pressed="false">明るい配色</button>
       <button class="mock-bar-item" type="button" data-scheme-set="dark" aria-pressed="false">ダーク</button>
@@ -42,16 +42,16 @@
     <div class="catalog">
       <h1 class="catalog-title">グラフ</h1>
 
-      <!-- 系列 2 つ: 色と線の模様（実線・破線）と点の印（丸・四角）の組で分け、凡例に系列の名前を載せる -->
+      <!-- 系列 2 つ: 色と線の模様（実線・破線）と点のマーカー（丸・四角）の組で分け、凡例に系列の名前を記載する -->
       <section aria-labelledby="state-two">
-        <h2 class="catalog-label" id="state-two">系列 2 つ（色と線の模様・点の印の組で分ける）</h2>
+        <h2 class="catalog-label" id="state-two">系列 2 つ（色と線の模様・点のマーカーの組で分ける）</h2>
         <article class="mdmark">
           <!-- [data-mock-diagram]: diagram.js が samples.js の同じ名前の定義から図を描く -->
           <figure data-mock-diagram="reply-time"></figure>
         </article>
       </section>
 
-      <!-- 系列 4 つ: 4 つ目までの色と模様（実線・破線・点線・一点鎖線）と点の印（丸・四角・三角・菱形） -->
+      <!-- 系列 4 つ: 4 つ目までの色と模様（実線・破線・点線・一点鎖線）と点のマーカー（丸・四角・三角・菱形） -->
       <section aria-labelledby="state-four">
         <h2 class="catalog-label" id="state-four">系列 4 つ（色と模様の組の全て）</h2>
         <article class="mdmark">
@@ -59,7 +59,7 @@
         </article>
       </section>
 
-      <!-- 棒 系列 2 つ: 項目ごとに系列の棒を並べ、色と塗りの模様（塗りつぶし・斜線）の組で分ける。縦の軸の範囲を書かず、データから 1・2・5×10 のべき乗の刻みで切る -->
+      <!-- 棒 系列 2 つ: 項目ごとに系列の棒を並べ、色と塗りの模様（塗りつぶし・斜線）の組で分ける。縦の軸の範囲を記載せず、データから 1・2・5×10 のべき乗の刻みで切る -->
       <section aria-labelledby="state-bar">
         <h2 class="catalog-label" id="state-bar">棒 系列 2 つ（色と塗りの模様の組で分ける。縦の軸はデータから切る）</h2>
         <article class="mdmark">
@@ -83,9 +83,9 @@
         </article>
       </section>
 
-      <!-- 散布図 系列 2 つ: 横と縦の両方を数値の軸にし、系列の点の印（丸・四角）だけを置く -->
+      <!-- 散布図 系列 2 つ: 横と縦の両方を数値の軸にし、系列の点のマーカー（丸・四角）だけを配置する -->
       <section aria-labelledby="state-scatter">
-        <h2 class="catalog-label" id="state-scatter">散布図 系列 2 つ（横と縦の両方が数値の軸。点の印で分ける）</h2>
+        <h2 class="catalog-label" id="state-scatter">散布図 系列 2 つ（横と縦の両方が数値の軸。点のマーカーで分ける）</h2>
         <article class="mdmark">
           <figure data-mock-diagram="length-time"></figure>
         </article>
@@ -115,7 +115,7 @@
         </article>
       </section>
 
-      <!-- #275 積み上げの棒: 項目ごとに 1 本の棒に系列を積み、棒の上に合計を出す -->
+      <!-- #275 積み上げの棒: 項目ごとに 1 本の棒に系列を積み重ね、棒の上に合計を出す -->
       <section aria-labelledby="state-stacked-bar">
         <h2 class="catalog-label" id="state-stacked-bar">積み上げの棒 系列 3 つ（棒の上に合計）</h2>
         <article class="mdmark">
@@ -139,7 +139,7 @@
         </article>
       </section>
 
-      <!-- #275 レーダー: 観点を放射状の軸にし、系列を色と線の模様・点のマーカーの多角形で引く -->
+      <!-- #275 レーダー: 観点を放射状の軸にし、系列を色と線の模様・点のマーカーの多角形で描く -->
       <section aria-labelledby="state-radar">
         <h2 class="catalog-label" id="state-radar">レーダー 系列 2 つ・軸 5 つ</h2>
         <article class="mdmark">
@@ -155,7 +155,7 @@
         </article>
       </section>
 
-      <!-- #275 折れ線と棒の組み合わせ: 棒は左の軸、折れ線は右の軸で読む。凡例にどちらの軸かを出す -->
+      <!-- #275 折れ線と棒の組み合わせ: 棒は左の軸、折れ線は右の軸で示す。凡例にどちらの軸かを出す -->
       <section aria-labelledby="state-combo">
         <h2 class="catalog-label" id="state-combo">折れ線と棒の組み合わせ（右の縦の軸）</h2>
         <article class="mdmark">
@@ -163,13 +163,13 @@
         </article>
       </section>
 
-      <!-- 定義を読めない: 系列の点の数が目盛りの数と合わない。書き方の警告を出し、このグラフは描かない -->
+      <!-- 定義を読み込めない: 系列の点の数が目盛りの数と合わない。記載の警告を出し、このグラフは描かない -->
       <section aria-labelledby="state-invalid">
-        <h2 class="catalog-label" id="state-invalid">定義を読めない（書き方の警告）</h2>
+        <h2 class="catalog-label" id="state-invalid">定義を読み込めない（記載の警告）</h2>
         <article class="mdmark">
 <div class="mdmark-syntax-warning">
-  <p class="mdmark-syntax-warning-title"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg>書き方の警告</p>
-  <p>グラフの部品の定義を読めません。系列「担当者」の点が 4 つで、横の目盛り（<code>x.ticks</code>）の 5 つと合いません。このグラフは描いていません。</p>
+  <p class="mdmark-syntax-warning-title"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg>記載の警告</p>
+  <p>グラフの部品の定義を読み込めません。系列「担当者」の点が 4 つで、横の目盛り（<code>x.ticks</code>）の 5 つと合いません。このグラフは描いていません。</p>
 </div>
         </article>
       </section>

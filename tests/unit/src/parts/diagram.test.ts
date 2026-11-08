@@ -28,7 +28,7 @@ import { findTag, matches, outerHtml, plainText } from "../../helpers/html.ts";
 /** 図の部品を読み込む（実装が無い間は各テストが個別に失敗する） */
 const loadDiagram = () => import("../../../../src/parts/diagram.ts");
 
-/** グラフの部品を読み込む（`renderChart` はモジュール構成『図』で `src/parts/chart.ts` に置く） */
+/** グラフの部品を読み込む（`renderChart` はモジュール構成『図』で `src/parts/chart.ts` に配置する） */
 const loadChart = () => import("../../../../src/parts/chart.ts");
 
 /** 図の枠を描くときの本体 */
@@ -39,7 +39,7 @@ const BODY = {
   tips: "",
 };
 
-/** `html` の中で `needles` が書いた順に現れるか */
+/** `html` の中で `needles` が記載した順に現れるか */
 function inOrder(html: string, needles: string[]): boolean {
   let from = 0;
   for (const needle of needles) {
@@ -52,7 +52,7 @@ function inOrder(html: string, needles: string[]): boolean {
   return true;
 }
 
-/** `data-wire` を持つ線のパスの最初の点の y を、現れた順に返す（`loop` の線を除く） */
+/** `data-wire` を持つ線のパスの最初の点の y を、現れた順に返却する（`loop` の線を除く） */
 function wireStartYs(html: string): number[] {
   return matches(html, /<path[^>]*class="mdmark-diagram-wire"[^>]*>/g)
     .filter((tag) => !tag.includes('data-line="loop"'))
@@ -63,7 +63,7 @@ function wireStartYs(html: string): number[] {
     });
 }
 
-/** 塗りの模様 `id` の `pattern` 要素の中身を返す（無ければ空） */
+/** 塗りの模様 `id` の `pattern` 要素の中身を返却する（無ければ空） */
 function patternOf(html: string, id: string): string {
   const pattern = new RegExp(
     `<pattern[^>]*id="${id}"[^>]*>([\\s\\S]*?)</pattern>`,
@@ -71,7 +71,7 @@ function patternOf(html: string, id: string): string {
   return pattern.exec(html)?.[1] ?? "";
 }
 
-/** 軸の目盛りの文字のうち数だけを、現れた順に返す */
+/** 軸の目盛りの文字のうち数だけを、現れた順に返却する */
 function axisNumbers(html: string): number[] {
   return matches(
     html,
@@ -79,13 +79,13 @@ function axisNumbers(html: string): number[] {
   ).map((text) => Number(plainText(text)));
 }
 
-/** 箱 `id` の `left` を返す */
+/** ノード `id` の `left` を返却する */
 function leftOf(html: string, id: string): number {
   const tag = findTag(html, `data-node="${id}"`);
   return Number(/left:\s*(-?\d+(?:\.\d+)?)px/.exec(tag)?.[1] ?? Number.NaN);
 }
 
-// 題・ボタンの帯・凡例をこの順に出す（正常系）
+// タイトル・ボタンの帯・凡例をこの順に出す（正常系）
 test("test_render_diagram_frame", async () => {
   // 準備
   const { renderDiagramFrame } = await loadDiagram();
@@ -120,13 +120,13 @@ test("test_render_diagram_frame", async () => {
   expect(html).toContain("2026-10-17");
 });
 
-// モーダルでは閉じるボタンを置き、全画面で開くボタンを置かない（正常系）
+// モーダルでは閉じるボタンを配置し、全画面で開くボタンを配置しない（正常系）
 test("test_render_diagram_frame_when_modal", async () => {
   // 準備
   const { renderDiagramFrame } = await loadDiagram();
   const frame = {
     kind: "flow" as const,
-    title: "題",
+    title: "タイトル",
     scope: "範囲",
     updated: "2026-10-17",
     legend: [],
@@ -140,7 +140,7 @@ test("test_render_diagram_frame_when_modal", async () => {
   expect(html).not.toContain('aria-label="全画面で開く"');
 });
 
-// 枠・層・箱・線・ツールチップを出す（正常系）
+// 枠・層・ノード・線・ツールチップを出す（正常系）
 test("test_render_flow", async () => {
   // 準備
   const { renderFlow } = await loadDiagram();
@@ -159,7 +159,7 @@ test("test_render_flow", async () => {
   );
 });
 
-// 判定フローチャートのノードを種類ごとの形と余白で描く（正常系）
+// 判定フローチャートのノードを種類ごとの構造と余白で描く（正常系）
 test("test_render_flow_when_judgement", async () => {
   // 準備
   const { renderFlow } = await loadDiagram();
@@ -201,7 +201,7 @@ test("test_render_flow_when_text_escaped", async () => {
   const definition = parsed<MdmarkFlowDefinition>(INQUIRY_TEXT);
   const first = definition.nodes[0];
   if (first === undefined) {
-    throw new Error("見本の箱が無い");
+    throw new Error("見本のノードが無い");
   }
   first.name = "<img src=x onerror=alert(1)>";
   // 実行
@@ -211,7 +211,7 @@ test("test_render_flow_when_text_escaped", async () => {
   expect(html).toContain("&lt;img");
 });
 
-// 相手とメッセージを順に置く（正常系）
+// 相手とメッセージを順に配置する（正常系）
 test("test_render_sequence", async () => {
   // 準備
   const { renderSequence } = await loadDiagram();
@@ -231,7 +231,7 @@ test("test_render_sequence", async () => {
   expect(html).toContain(definition.loop?.label ?? "");
 });
 
-// 系列ごとに線と点を描き、読み上げに値を載せる（正常系）
+// 系列ごとに線と点を描き、スクリーンリーダーに値を記載する（正常系）
 test("test_render_chart", async () => {
   // 準備
   const { renderChart } = await loadChart();
@@ -248,13 +248,13 @@ test("test_render_chart", async () => {
   expect(matches(tips, /role="tooltip"/g)).toHaveLength(10);
 });
 
-// 出るものだけを載せる（正常系）
+// 出るものだけを記載する（正常系）
 test("test_legend_for", async () => {
   // 準備
   const { legendFor } = await loadDiagram();
   const definition: MdmarkFlowDefinition = {
     title: "小さな図",
-    scope: "確かめ",
+    scope: "確認",
     updated: "2026-10-18",
     width: 400,
     height: 200,
@@ -290,9 +290,11 @@ test("test_legend_for", async () => {
   // 検証
   const labels = items.map((item) => item.label);
   expect(labels).toContain("処理の流れ");
-  expect(labels).toContain("読む");
+  expect(labels).toContain("読み込む");
   expect(
-    labels.filter((label) => /処理の流れ|読む|書く|返す|戻る/.test(label)),
+    labels.filter((label) =>
+      /処理の流れ|読み込む|書き込む|返却する|戻る/.test(label),
+    ),
   ).toHaveLength(2);
   expect(labels.some((label) => label.includes("システムの枠"))).toBe(false);
   expect(labels.some((label) => label.includes("交差"))).toBe(false);
@@ -353,13 +355,13 @@ test("test_render_diagram_tip_when_hint", async () => {
   expect(html).toMatch(/\bhidden\b/);
 });
 
-// 戻すのボタンを置かず、倍率をボタンにする（正常系）
+// 戻すのボタンを配置せず、倍率をボタンにする（正常系）
 test("test_render_diagram_frame_when_zoom_button", async () => {
   // 準備
   const { renderDiagramFrame } = await loadDiagram();
   const frame = {
     kind: "flow" as const,
-    title: "題",
+    title: "タイトル",
     scope: "範囲",
     updated: "2026-10-17",
     legend: [],
@@ -400,7 +402,7 @@ test("test_render_chart_when_bar", async () => {
   expect(axisNumbers(html)).toEqual([0, 50, 100, 150]);
 });
 
-// 扇形の外に合計 100 の整数の割合を置き、凡例に名前と値を出す（正常系）
+// 扇形の外に合計 100 の整数の割合を配置し、凡例に名前と値を出す（正常系）
 test("test_render_chart_when_pie", async () => {
   // 準備
   const { renderChart } = await loadChart();
@@ -416,10 +418,10 @@ test("test_render_chart_when_pie", async () => {
     /<text[^>]*class="mdmark-diagram-value-text"[^>]*>[^<]*<\/text>/g,
   ).map((text) => plainText(text));
   expect(percents).toEqual(["62%", "31%", "7%"]);
-  expect(html).toContain("よくある質問で答えた: 186 件");
+  expect(html).toContain("よくある質問で回答した: 186 件");
 });
 
-// 横と縦を数値の軸にして系列ごとの形の点を置く（正常系）
+// 横と縦を数値の軸にして系列ごとの構造の点を配置する（正常系）
 test("test_render_chart_when_scatter", async () => {
   // 準備
   const { renderChart } = await loadChart();
@@ -444,7 +446,7 @@ test("test_render_chart_when_scatter", async () => {
   expect(axisNumbers(html).length).toBeGreaterThan(horizontal.length);
 });
 
-// hint だけを持つ箱にも印を置き、hints がオフなら印もツールチップも置かない（正常系）
+// hint だけを持つノードにもマーカーを配置し、hints がオフならマーカーもツールチップも配置しない（正常系）
 test("test_render_flow_when_hint", async () => {
   // 準備
   const { renderFlow } = await loadDiagram();
@@ -470,7 +472,7 @@ test("test_render_flow_when_hint", async () => {
 test("test_legend_for_when_chart_types_added", async () => {
   // 準備
   const { legendFor } = await loadDiagram();
-  const base = { title: "題", scope: "範囲", updated: "2026-11-03" };
+  const base = { title: "タイトル", scope: "範囲", updated: "2026-11-03" };
   const combo = {
     ...base,
     type: "combo",
@@ -495,7 +497,7 @@ test("test_legend_for_when_chart_types_added", async () => {
     type: "donut",
     unit: " 件",
     items: [
-      { name: "答えた", value: 186 },
+      { name: "回答した", value: 186 },
       { name: "回した", value: 92 },
     ],
   } as MdmarkChartDefinition;
@@ -507,7 +509,7 @@ test("test_legend_for_when_chart_types_added", async () => {
   expect(comboLabels).toContain("件数（左の軸）");
   expect(comboLabels).toContain("割合（右の軸）");
   expect(bubbleLabels).toContain("円の面積: 件数");
-  expect(donutLabels).toContain("答えた: 186 件");
+  expect(donutLabels).toContain("回答した: 186 件");
   expect(donutLabels).toContain("回した: 92 件");
 });
 
@@ -539,7 +541,7 @@ test("test_render_er", async () => {
   expect(plainText(tips)).toContain("注文（orders）");
 });
 
-// hints がオフなら説明のボタンとツールチップを置かない（正常系）
+// hints がオフなら説明のボタンとツールチップを配置しない（正常系）
 test("test_render_er_when_hints_off", async () => {
   // 準備
   const { renderEr } = await loadDiagram();
@@ -556,7 +558,7 @@ test("test_legend_for_when_er", async () => {
   const { legendFor } = await loadDiagram();
   const definition: MdmarkErDefinition = {
     title: "マスターだけ",
-    scope: "確かめ",
+    scope: "確認",
     updated: "2026-11-03",
     width: 600,
     tables: [
@@ -640,7 +642,7 @@ test("test_render_diagram_tip_when_table", async () => {
   expect(html).toMatch(/\bhidden\b/);
 });
 
-// 定義の文字の {{語}} を用語の下線にする（正常系）
+// 定義の文字の {{単語}} を用語の下線にする（正常系）
 test("test_render_er_when_terms", async () => {
   // 準備
   const { renderEr } = await loadDiagram();
@@ -675,7 +677,7 @@ test("test_render_er_when_terms", async () => {
   expect(html).toContain('aria-label="「顧客」の主キーと外部キー以外の列"');
 });
 
-// href を持つノードをリンクにし、印をリンクの外に置く（正常系）
+// href を持つノードをリンクにし、マーカーをリンクの外に配置する（正常系）
 test("test_render_flow_when_node_link", async () => {
   // 準備
   const { renderFlow } = await loadDiagram();
@@ -706,7 +708,7 @@ test("test_render_flow_when_node_link", async () => {
   expect(store).not.toContain("<a ");
 });
 
-// リサイズハンドルを置き、モーダルと `resizable: false` では置かない（正常系）
+// リサイズハンドルを配置し、モーダルと `resizable: false` では配置しない（正常系）
 test("test_render_diagram_frame_when_resizable", async () => {
   // 準備
   const { renderDiagramFrame } = await loadDiagram();
@@ -735,13 +737,13 @@ test("test_render_diagram_frame_when_resizable", async () => {
   expect(modal).not.toContain("mdmark-diagram-resize");
 });
 
-// 凡例の項目が空なら凡例を隠し、タイトルを留めない図に印を付ける（正常系）
+// 凡例の項目が空なら凡例を隠し、タイトルを留めない図にマーカーを付ける（正常系）
 test("test_render_diagram_frame_when_no_legend", async () => {
   // 準備
   const { renderDiagramFrame } = await loadDiagram();
   const frame = {
     kind: "flow" as const,
-    title: "題",
+    title: "タイトル",
     scope: "範囲",
     updated: "2026-11-05",
     legend: [],
@@ -778,7 +780,7 @@ test("test_render_diagram_frame_when_mermaid", async () => {
   expect(caption).not.toContain("<time");
 });
 
-// 枠と層の hint の印と留める範囲を置く（正常系）
+// 枠と層の hint のマーカーと留める範囲を配置する（正常系）
 test("test_render_flow_when_group_hint", async () => {
   // 準備
   const { renderFlow } = await loadDiagram();
@@ -806,7 +808,7 @@ test("test_render_flow_when_group_hint", async () => {
   expect(off.html).not.toContain("mdmark-diagram-group-info");
 });
 
-// 1 種類だけのノードと線を載せない（正常系）
+// 1 種類だけのノードと線を記載しない（正常系）
 test("test_legend_for_when_single_kinds", async () => {
   // 準備
   const { legendFor } = await loadDiagram();

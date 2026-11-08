@@ -4,12 +4,12 @@ scenarios:
     setup:
       - name: 開いたプレビュー
         description: Markdown のプレビューを横に開いた状態（VSCodeでプレビューを開くの正常シナリオ）
-        notes: 歯車のボタンはエディタのタイトルの帯（`editor/title`）に置き、押すとコマンド `mdmark.openSettings` を呼ぶ（インターフェース定義『設定を開く』）
+        notes: 歯車のボタンはエディタのタイトルの帯（`editor/title`）に配置し、押すとコマンド `mdmark.openSettings` を呼ぶ（インターフェース定義『設定を開く』）
       - name: Mock
         description: VSCodeでプレビューを開くの正常シナリオと同じ
     flow: |-
       sequenceDiagram
-        actor W as 文書を書く人
+        actor W as 文書の作成者
         participant PV as プレビュー
         participant EX as 拡張機能
         participant VS as VS Code
@@ -29,7 +29,7 @@ scenarios:
         description: 正常シナリオと同じ
     flow: |-
       sequenceDiagram
-        actor W as 文書を書く人
+        actor W as 文書の作成者
         participant EX as 拡張機能
         participant VS as VS Code
         W->>EX: コマンドパレットから設定を開くコマンドを実行する
@@ -48,26 +48,26 @@ scenarios:
         description: 正常シナリオと同じ
     flow: |-
       sequenceDiagram
-        actor W as 文書を書く人
+        actor W as 文書の作成者
         participant VS as VS Code
         participant EX as 拡張機能
         participant PV as プレビュー
         W->>VS: 設定画面でテーマを theme-slate にする
-        VS->>EX: 設定の変更を知らせる
-        EX->>PV: theme-slate で描き直させる
+        VS->>EX: 設定の変更を通知する
+        EX->>PV: theme-slate で再描画させる
         PV-->>W: theme-slate の明るい配色で表示
     expected:
       - リロードせずに、プレビューの描く先の要素の地の色の計算値が theme-slate の明るい配色の `--mdmark-color-bg` の値になる
     test: test_normal_when_setting_changed
     refs:
       - dev/設計書/シナリオ/単一ユースケース/プレビューをVSCodeのテーマに合わせる#scenarios[正常シナリオ（VS Code の設定でテーマを選ぶ）]
-lead: 文書を書く人が、プレビューの歯車のボタンかコマンドパレットから VS Code の設定画面を mdmark の項目に絞って開き、変えた設定をプレビューで確かめる。
+lead: 文書の作成者が、プレビューの歯車のボタンかコマンドパレットから VS Code の設定画面を mdmark の項目に絞って開き、変えた設定をプレビューで確認する。
 issue: 120
-primary_actor: 文書を書く人
+primary_actor: 文書の作成者
 stakeholders:
-  - name: 文書を書く人
+  - name: 文書の作成者
     interest: プレビューを見ながら、mdmark の設定を探さずに変えられる
-trigger: 文書を書く人がプレビューの歯車のボタンを押すか、コマンドパレットから設定を開くコマンドを実行する
+trigger: 文書の作成者がプレビューの歯車のボタンを押すか、コマンドパレットから設定を開くコマンドを実行する
 preconditions:
   - VS Code に mdmark の拡張機能を入れている
 success_guarantee: VS Code の設定画面が mdmark の拡張機能の項目に絞って開き、そこで変えた設定がリロードせずにプレビューに映る。

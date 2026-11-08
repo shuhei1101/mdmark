@@ -1,6 +1,6 @@
 import type { IconNode } from "lucide";
 
-/** lucide のアイコンの形（要素の並び）を、24 の格子の svg の中身の文字にする */
+/** lucide のアイコンの形状（要素の並び）を、24 の格子の svg の中身の文字にする */
 export function iconNodeBody(node: IconNode): string {
   return node
     .map(([tag, attributes]) => {

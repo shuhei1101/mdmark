@@ -25,7 +25,7 @@ function rangeScriptDoc(lang: string, code: string): string {
 const ESCAPED_SCRIPT =
   "export default (root: HTMLElement): void => { if (1 < 2) root.title = 'a'; };";
 
-// 対応表にある印だけを拾う（正常系）
+// 対応表にあるマーカーだけを取得する（正常系）
 test("test_used_library_marks", async () => {
   // 準備
   const { usedLibraryMarks } = await loadUsed();
@@ -43,7 +43,7 @@ test("test_used_library_marks", async () => {
   expect([...marks]).toEqual(["chart"]);
 });
 
-// 設定か文書のマーカーでオンの文書の範囲の `ts` を、エスケープを戻して返す（正常系）
+// 設定か文書のマーカーでオンの文書の範囲の `ts` を、エスケープを戻して返却する（正常系）
 test("test_collect_range_scripts", async () => {
   // 準備
   const { collectRangeScripts } = await loadUsed();

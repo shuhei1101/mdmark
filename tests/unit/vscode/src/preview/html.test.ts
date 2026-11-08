@@ -14,12 +14,12 @@ function unescapeAttribute(value: string): string {
     .replaceAll("&amp;", "&");
 }
 
-/** 開始タグの文字列のうち、`selector` の属性を持つものを返す */
+/** 開始タグの文字列のうち、`selector` の属性を持つものを返却する */
 function findTag(html: string, pattern: RegExp): string | undefined {
   return html.match(pattern)?.[0];
 }
 
-/** 全ての `script` の開始タグを返す */
+/** 全ての `script` の開始タグを返却する */
 function scriptTags(html: string): string[] {
   return html.match(/<script\b[^>]*>/g) ?? [];
 }
@@ -50,7 +50,7 @@ test("test_dist_url", async () => {
   );
 });
 
-// スクリプトは nonce と配信元だけ、スタイルに unsafe-inline を足す（正常系）
+// スクリプトは nonce と配信元だけ、スタイルに unsafe-inline を追加する（正常系）
 test("test_build_csp", async () => {
   // 準備
   const { buildCsp } = await loadHtml();
@@ -112,7 +112,7 @@ test("test_build_preview_html", async () => {
   }
 });
 
-// バージョンを決められないときは配布物を読まない（正常系）
+// バージョンを決められないときは配布物を読み込まない（正常系）
 test("test_build_preview_html_when_undecidable", async () => {
   // 準備
   const { buildPreviewHtml } = await loadHtml();
@@ -148,7 +148,7 @@ test("test_build_preview_html_when_special_chars", async () => {
   }
 });
 
-// theme の CSS を配布物の CSS の後に読み、extensions を data-extensions に入れる（正常系）
+// theme の CSS を配布物の CSS の後に読み込み、extensions を data-extensions に入れる（正常系）
 test("test_build_preview_html_when_theme_and_extensions", async () => {
   // 準備
   const { buildPreviewHtml } = await loadHtml();
@@ -177,7 +177,7 @@ test("test_build_preview_html_when_theme_and_extensions", async () => {
   expect(plain).not.toContain('id="mdmark-theme"');
 });
 
-// 呼ぶたびに違う base64url の文字列を返す（正常系）
+// 呼ぶたびに違う base64url の文字列を返却する（正常系）
 test("test_create_nonce", async () => {
   // 準備
   const { createNonce } = await loadHtml();

@@ -45,7 +45,7 @@ import {
   MERMAID_WAIT_MS,
 } from "../mermaid.ts";
 
-// 色分けのライブラリの本体と、手元に置く言語のモジュール（文書が使うのは `typescript` と `python`、`yaml` は使わない）
+// 色分けのライブラリの本体と、手元に配置する言語のモジュール（文書が使用するのは `typescript` と `python`、`yaml` は使用しない）
 const SYNTAX_FILES = [
   "core.min.js",
   "languages/typescript.min.js",
@@ -53,7 +53,7 @@ const SYNTAX_FILES = [
   "languages/yaml.min.js",
 ];
 
-// 表の印・用語集の表・Chart.js の印・相対パスで指す画像・他の文書へのリンク・script 要素を持つ文書
+// 表のマーカー・用語集の表・Chart.js のマーカー・相対パスで指す画像・他の文書へのリンク・script 要素を持つ文書
 const GUIDE = [
   "# ガイド",
   "",
@@ -86,7 +86,7 @@ const GUIDE = [
   "",
 ].join("\n");
 
-// 設定・見本の文書と、手元のモジュール・画像・CSS を書く
+// 設定・見本の文書と、手元のモジュール・画像・CSS を書き込む
 async function writeSample(dir: string): Promise<void> {
   await writeFiles(dir, {
     "mdmark.config.yaml": [
@@ -103,7 +103,7 @@ async function writeSample(dir: string): Promise<void> {
   });
 }
 
-// 設定・外部ライブラリ・画像を埋めた HTML を書き出し、空のフォルダへ写して file:// で開いて読む（正常シナリオ）
+// 設定・外部ライブラリ・画像を埋めた HTML を書き出し、空のフォルダへコピーして file:// で開いて読み込む（正常シナリオ）
 test("test_normal", async ({ builtRoot, tempDir, page }) => {
   // 準備
   const dir = await tempDir();
@@ -149,7 +149,7 @@ test("test_normal", async ({ builtRoot, tempDir, page }) => {
   expect(await page.evaluate(() => "__ran" in window)).toBe(false);
 });
 
-// 読めない画像とモジュールを警告に出し、読めたものだけを埋めて書き出す（正常シナリオ（読めない画像とモジュールがある））
+// 読み込めない画像とモジュールを警告に出し、読み込めたものだけを埋めて書き出す（正常シナリオ（読み込めない画像とモジュールがある））
 test("test_normal_when_unreadable_assets", async ({
   builtRoot,
   tempDir,
@@ -178,7 +178,7 @@ test("test_normal_when_unreadable_assets", async ({
   await expect(
     page.locator("article p", { hasText: "本文のほかの部分" }),
   ).toHaveCount(1);
-  // 読めない画像のパスへの要求のほかは、外への要求が無い
+  // 読み込めない画像のパスへの要求のほかは、外への要求が無い
   expect(
     opened
       .externalRequests()
@@ -186,7 +186,7 @@ test("test_normal_when_unreadable_assets", async ({
   ).toEqual([]);
 });
 
-// 出力のパスの親がファイルのとき、書けないパスと直し方を示して終わる（異常シナリオ（出力先へ書けない））
+// 出力のパスの親がファイルのとき、書き込めないパスと修正方法を示して終わる（異常シナリオ（出力先へ書き込めない））
 test("test_error_when_output_unwritable", async ({ builtRoot, tempDir }) => {
   // 準備
   const dir = await tempDir();
@@ -201,12 +201,12 @@ test("test_error_when_output_unwritable", async ({ builtRoot, tempDir }) => {
   // 検証
   expect(result.code).not.toBe(0);
   expect(result.stderr).toContain("blocked/guide.html");
-  expect(result.stderr).toContain("確かめて");
+  expect(result.stderr).toContain("確認して");
   expect(await readFile(join(dir, "blocked"), "utf8")).toBe("ファイル\n");
   expect(existsSync(join(dir, "guide.html"))).toBe(false);
 });
 
-// 文書が使う言語の分だけ色分けのモジュールを埋めた HTML を書き出し、外へ要求せずに色分けする（正常シナリオ（色分けするコードブロック））
+// 文書が使用する言語の分だけ色分けのモジュールを埋めた HTML を書き出し、外へ要求せずに色分けする（正常シナリオ（色分けするコードブロック））
 test("test_normal_when_code_highlighted", async ({
   builtRoot,
   tempDir,
@@ -221,7 +221,7 @@ test("test_normal_when_code_highlighted", async ({
       "utf8",
     );
   }
-  // 使わない言語のモジュールを見分けられる文字が、手元のモジュールにある
+  // 使用しない言語のモジュールを見分けられる文字が、手元のモジュールにある
   expect(vendor["vendor/highlightjs/es/languages/yaml.min.js"]).toContain(
     'name:"YAML"',
   );
@@ -264,7 +264,7 @@ test("test_normal_when_code_highlighted", async ({
   expect(opened.externalRequests()).toEqual([]);
 });
 
-// エイリアスを読む設定の行: `term` の YAML を指す行・`env` の YAML を指す行・無いファイルを指す行
+// エイリアスを読み込む設定の行: `term` の YAML を指す行・`env` の YAML を指す行・無いファイルを指す行
 const ALIAS_CONFIG_LINES = [
   "aliases:",
   "  - id: terms",
@@ -300,7 +300,7 @@ const ALIAS_SERVERS = [
   "",
 ].join("\n");
 
-// 設定の aliases の YAML から読めたエイリアスだけを埋めて書き出し、読めない行は警告にして終了コード 0 で終わり、env は HTML に入れない（正常シナリオ（エイリアスを読む））
+// 設定の aliases の YAML から読み込めたエイリアスだけを埋めて書き出し、読み込めない行は警告にして終了コード 0 で終わり、env は HTML に入れない（正常シナリオ（エイリアスを読み込む））
 test("test_normal_when_aliases", async ({ builtRoot, tempDir, page }) => {
   // 準備
   const dir = await tempDir();
@@ -315,7 +315,7 @@ test("test_normal_when_aliases", async ({ builtRoot, tempDir, page }) => {
   // 検証
   expect(result.code).toBe(0);
   expect(existsSync(join(dir, "guide.html"))).toBe(true);
-  // 読めなかった行のパスが警告に出る
+  // 読み込めなかった行のパスが警告に出る
   const warnings = linesOf(result.stderr);
   expect(warnings).toHaveLength(1);
   expect(warnings[0]).toContain("aliases/missing.yaml");
@@ -338,7 +338,7 @@ test("test_normal_when_aliases", async ({ builtRoot, tempDir, page }) => {
   expect(opened.externalRequests()).toEqual([]);
 });
 
-// 設定のテーマを描く先に当てた HTML を書き出し、file:// で開いて選んだテーマの配色で読む（正常シナリオ（テーマを選ぶ））
+// 設定のテーマを描く先に適用した HTML を書き出し、file:// で開いて選んだテーマの配色で読み込む（正常シナリオ（テーマを選ぶ））
 test("test_normal_when_theme_selected", async ({
   builtRoot,
   tempDir,
@@ -473,7 +473,7 @@ test("test_normal_when_media_embedded", async ({
     media.mp3,
   );
   expect(existsSync(join(filesDir, "docs", "files"))).toBe(false);
-  // 検証: 開いた HTML の画像は data URL、動画・音声はコピーを相対パスで指し、添付は書いたパスのまま
+  // 検証: 開いた HTML の画像は data URL、動画・音声はコピーを相対パスで指し、添付は記載したパスのまま
   const opened = await openStandaloneWithFiles(page, {
     tempDir,
     htmlFile: join(dir, "docs", "guide.html"),
@@ -503,7 +503,7 @@ test("test_normal_when_media_embedded", async ({
   expect(opened.externalRequests()).toEqual([]);
 });
 
-// 起動の処理・拡張・部品・色分け・外部ライブラリを 1 つのスクリプトに束ね、blob: と動的 import を許さない環境で開いて読む（正常シナリオ（blob: と動的 import を許さない環境で開く））
+// 起動の処理・拡張・部品・色分け・外部ライブラリを 1 つのスクリプトにまとめ、blob: と動的 import を許さない環境で開いて読み込む（正常シナリオ（blob: と動的 import を許さない環境で開く））
 test("test_normal_when_blob_and_dynamic_import_blocked", async ({
   builtRoot,
   tempDir,
@@ -576,7 +576,7 @@ test("test_normal_when_blob_and_dynamic_import_blocked", async ({
   await opened.close();
 });
 
-// 脚注を持つ文書を書き出し、file:// で開いて番号のツールチップと末尾の一覧を読む（正常シナリオ（脚注を持つ文書））
+// 脚注を持つ文書を書き出し、file:// で開いて番号のツールチップと末尾の一覧を読み込む（正常シナリオ（脚注を持つ文書））
 test("test_normal_when_footnotes", async ({ builtRoot, tempDir, page }) => {
   // 準備
   const dir = await tempDir();
@@ -611,7 +611,7 @@ test("test_normal_when_footnotes", async ({ builtRoot, tempDir, page }) => {
   expect(opened.externalRequests()).toEqual([]);
 });
 
-// 取り込む文書と束ねていない名前のアイコンを埋め、開いたときに外へ要求せずに描く（正常シナリオ（取り込みとアイコンを埋める））
+// 取り込む文書とまとめていない名前のアイコンを埋め、開いたときに外へ要求せずに描く（正常シナリオ（取り込みとアイコンを埋める））
 test("test_normal_when_includes_and_icons_embedded", async ({
   builtRoot,
   tempDir,
@@ -655,7 +655,7 @@ test("test_normal_when_includes_and_icons_embedded", async ({
   expect(opened.externalRequests()).toEqual([]);
 });
 
-// 範囲の ts の型を外して束ねたスクリプトに加え、blob: と動的 import を許さない環境で開いても、範囲の css と ts が効く（正常シナリオ（範囲のスクリプトと CSS））
+// 範囲の ts の型を削除してまとめたスクリプトに加え、blob: と動的 import を許さない環境で開いても、範囲の css と ts が有効になる（正常シナリオ（範囲のスクリプトと CSS））
 test("test_normal_when_range_scripts", async ({ builtRoot, tempDir, page }) => {
   // 準備
   const dir = await tempDir();
@@ -696,7 +696,7 @@ test("test_normal_when_range_scripts", async ({ builtRoot, tempDir, page }) => {
   await opened.close();
 });
 
-/** 重ねる設定を持つフォルダと端末の設定を作り、`docs/` で `mdmark export guide.md` を流す */
+/** 重ねる設定を持つフォルダと端末の設定を作り、`docs/` で `mdmark export guide.md` を実行する */
 async function exportCascaded(
   builtRoot: string,
   tempDir: () => Promise<string>,
@@ -722,7 +722,7 @@ async function exportCascaded(
   };
 }
 
-// 端末の設定・上のフォルダ・近いフォルダの設定を重ねて書き出し、上のフォルダの theme と extensions が当たる（正常シナリオ（設定を重ねる））
+// 端末の設定・上のフォルダ・近いフォルダの設定を重ねて書き出し、上のフォルダの theme と extensions が該当する（正常シナリオ（設定を重ねる））
 test("test_normal_when_cascaded", async ({ builtRoot, tempDir, page }) => {
   // 準備・実行
   const exported = await exportCascaded(
@@ -743,7 +743,7 @@ test("test_normal_when_cascaded", async ({ builtRoot, tempDir, page }) => {
   await exported.unchanged();
 });
 
-// config.cascade が false のとき、近いフォルダの設定と端末の設定だけで書き出す（正常シナリオ（最初の 1 つだけを読む））
+// config.cascade が false のとき、近いフォルダの設定と端末の設定だけで書き出す（正常シナリオ（最初の 1 つだけを読み込む））
 test("test_normal_when_first_only", async ({ builtRoot, tempDir, page }) => {
   // 準備・実行
   const exported = await exportCascaded(
@@ -779,7 +779,7 @@ test("test_normal_when_settings_not_applied_to_export", async ({
   await expect.poll(() => themeValue(page)).toBe("rgb(1, 2, 3)");
 });
 
-// 端末の設定を YAML として読めないとき、パスと行と直し方を出して書き出さない（異常シナリオ（設定ファイルを読めない））
+// 端末の設定を YAML として読み込めないとき、パスと行と修正方法を出して書き出さない（異常シナリオ（設定ファイルを読み込めない））
 test("test_error_when_config_unreadable", async ({ builtRoot, tempDir }) => {
   // 準備・実行
   const exported = await exportCascaded(
@@ -791,7 +791,9 @@ test("test_error_when_config_unreadable", async ({ builtRoot, tempDir }) => {
   expect(exported.result.code).toBe(1);
   expect(exported.result.stderr).toContain("settings.yaml");
   expect(exported.result.stderr).toContain("3 行目");
-  expect(exported.result.stderr).toContain("字下げと書き方を直してください");
+  expect(exported.result.stderr).toContain(
+    "字下げと記載方法を修正してください",
+  );
   expect(existsSync(exported.html)).toBe(false);
   await exported.unchanged();
 });

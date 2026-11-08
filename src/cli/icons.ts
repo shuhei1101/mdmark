@@ -13,7 +13,7 @@ const pascalName = (name: string): string =>
     .map((part) => (part ? `${part[0]?.toUpperCase()}${part.slice(1)}` : ""))
     .join("");
 
-/** 文書と取り込む文書の `icon:` のうち、配布物に束ねていない名前の IconNode を依存の lucide から取り出す。lucide に無い名前は別に返す */
+/** 文書と取り込む文書の `icon:` のうち、配布物にまとめていない名前の IconNode を依存の lucide から取り出す。lucide に無い名前は別に返却する */
 export const collectIconNodes = (
   markdowns: string[],
 ): { icons: Record<string, MdmarkIconNode>; missing: string[] } => {

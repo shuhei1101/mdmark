@@ -11,13 +11,13 @@ import {
 } from "../cli.ts";
 import { renderInNode } from "../dist-page.ts";
 
-// ブラウザを使わないため、1 つのブラウザのプロジェクトだけで流す
+// ブラウザを使用しないため、1 つのブラウザのプロジェクトだけで実行する
 test.skip(
   ({ browserName }) => browserName !== "chromium",
   "ブラウザを使わないシナリオなので chromium のプロジェクトだけで流す",
 );
 
-/** 書き方の警告を持つ文字列: 1 行目からノードの種類 `begin` のフロー図の定義、20 行目に `<!-- tabz -->`、22 行目に `<!-- code: highlight=9 -->` と 3 行のコードブロック */
+/** 記載の警告を持つ文字列: 1 行目からノードの種類 `begin` のフロー図の定義、20 行目に `<!-- tabz -->`、22 行目に `<!-- code: highlight=9 -->` と 3 行のコードブロック */
 const WARNINGS_MARKDOWN = (() => {
   const lines = flowLines({
     title: "判定",
@@ -57,7 +57,7 @@ const RECORDS_YAML = [
   "",
 ].join("\n");
 
-/** `mdmark init` を流したフォルダを作る */
+/** `mdmark init` を実行したフォルダを作る */
 async function createInitDir(
   builtRoot: string,
   tempDir: () => Promise<string>,
@@ -67,7 +67,7 @@ async function createInitDir(
   return dir;
 }
 
-/** フォルダの下のファイルのパスと中身を、パスの順に並べて読む */
+/** フォルダの下のファイルのパスと中身を、パスの順に並べて読み込む */
 async function snapshot(dir: string): Promise<string[]> {
   const files = (await readdir(dir, { recursive: true, withFileTypes: true }))
     .filter((entry) => entry.isFile())
@@ -78,7 +78,7 @@ async function snapshot(dir: string): Promise<string[]> {
   );
 }
 
-// 書き方の警告を持たない Markdown の文字列で、ずれ 0 件を出して終了コード 0 で終わる（正常シナリオ）
+// 記載の警告を持たない Markdown の文字列で、ずれ 0 件を出して終了コード 0 で終わる（正常シナリオ）
 test("test_normal", async ({ builtRoot, tempDir }) => {
   // 準備
   const dir = await createInitDir(builtRoot, tempDir);
@@ -103,11 +103,11 @@ test("test_normal", async ({ builtRoot, tempDir }) => {
   expect(await snapshot(dir)).toEqual(before);
 });
 
-// 文字列を描いたときの書き方の警告を、文字列の行を指すずれにする（正常シナリオ（書き方の警告がある））
+// 文字列を描いたときの記載の警告を、文字列の行を指すずれにする（正常シナリオ（記載の警告がある））
 test("test_normal_when_warnings", async ({ builtRoot, tempDir }) => {
   // 準備
   const dir = await createInitDir(builtRoot, tempDir);
-  // 実行: 標準入力から渡す
+  // 実行: 標準入力から指定する
   const result = await runCli(
     builtRoot,
     ["check", "--text", "-"],
@@ -123,7 +123,7 @@ test("test_normal_when_warnings", async ({ builtRoot, tempDir }) => {
     "-:22",
   ]);
   expect(lines.at(-1)).toBe("ずれ 3 件");
-  // 書き方の警告の行の内容が、同じ文字列を描いたときの警告の文言と同じ
+  // 記載の警告の行の内容が、同じ文字列を描いたときの警告の文言と同じ
   const html = await renderInNode(builtRoot, WARNINGS_MARKDOWN);
   const rendered = html
     .replace(/<[^>]+>/g, "")
@@ -135,7 +135,7 @@ test("test_normal_when_warnings", async ({ builtRoot, tempDir }) => {
   }
 });
 
-// 描くときに読み飛ばすマーカーの知らないキー・機能・指定を、知らないキー・機能・指定の種類のずれにする（正常シナリオ（知らないキー・機能・指定））
+// 描くときにスキップするマーカーの知らないキー・機能・指定を、知らないキー・機能・指定の種類のずれにする（正常シナリオ（知らないキー・機能・指定））
 test("test_normal_when_unknown_mark_args", async ({ builtRoot, tempDir }) => {
   // 準備
   const dir = await createInitDir(builtRoot, tempDir);
@@ -172,7 +172,7 @@ test("test_normal_when_unknown_mark_args", async ({ builtRoot, tempDir }) => {
   const lines = linesOf(result.stdout);
   const issues = lines.slice(0, -1);
   expect(issues).toHaveLength(3);
-  // 種類は書き方の警告でも知らないマーカーでもない
+  // 種類は記載の警告でも知らないマーカーでもない
   for (const line of issues) {
     expect(line).toMatch(/^-:\d+: unknown_mark_arg: /);
   }
@@ -186,7 +186,7 @@ test("test_normal_when_unknown_mark_args", async ({ builtRoot, tempDir }) => {
   expect(tabs).toHaveLength(1);
   expect(tabs[0]).toContain("grop=");
   expect(tabs[0]).toContain("group=");
-  // 同じ文字列を描いたときは、書き方の警告が出ない
+  // 同じ文字列を描いたときは、記載の警告が出ない
   const html = await renderInNode(builtRoot, markdown);
   expect(html).not.toContain("mdmark-syntax-warning");
   expect(lines.at(-1)).toBe("ずれ 3 件");

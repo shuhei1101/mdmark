@@ -89,9 +89,9 @@ suite("プレビューのリンクを開く", () => {
     assert.deepStrictEqual(opened, []);
   });
 
-  // `#` で始まるリンクはプレビューの中で移り、拡張機能へは送らない
+  // `#` で始まるリンクはプレビューの中で移り、拡張機能へは送信しない
   test("test_normal_when_anchor_link", async () => {
-    // 準備: リンク先の見出しが画面の外にある長い文書。スクロールの同期は切り、リンクの移動だけを見る
+    // 準備: リンク先の見出しが画面の外にある長い文書。スクロールの同期は切り、リンクの移動だけを確認する
     await setSetting("preview.scrollPreviewWithEditor", false);
     await setSetting("preview.scrollEditorWithPreview", false);
     await writeFixture(
@@ -145,9 +145,9 @@ suite("プレビューのリンクを開く", () => {
     assert.deepStrictEqual(opened, []);
   });
 
-  // 右側の目次の項目を押すと、閉じた節を開いて見出しへ移り、拡張機能へは送らない
+  // 右側の目次の項目を押すと、閉じたセクションを開いて見出しへ移り、拡張機能へは送信しない
   test("test_normal_when_side_toc_link", async () => {
-    // 準備: 閉じた節の中の見出しが画面の外にある長い文書。スクロールの同期は切り、リンクの移動だけを見る
+    // 準備: 閉じたセクションの中の見出しが画面の外にある長い文書。スクロールの同期は切り、リンクの移動だけを確認する
     await setSetting("preview.scrollPreviewWithEditor", false);
     await setSetting("preview.scrollEditorWithPreview", false);
     const filler = (label: string) =>
@@ -177,11 +177,11 @@ suite("プレビューのリンクを開く", () => {
     const sectionBody = async () => (await inspect('[id="section-導入"]'))[0];
     assert.ok(
       "hidden" in ((await sectionBody())?.attributes ?? {}),
-      "導入の節が閉じていない",
+      "導入のセクションが閉じていない",
     );
     // 実行: 右側の目次の「注意」を押す
     clickInPreview(record, 'aside.mdmark-side-toc a[data-heading-id="注意"]');
-    // 検証: 導入の節が開き、注意の見出しが見えている範囲に入る
+    // 検証: 導入のセクションが開き、注意の見出しが見えている範囲に入る
     await waitFor(
       async () => {
         const top = (await inspect("h3")).find((item) =>

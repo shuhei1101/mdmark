@@ -5,7 +5,7 @@ const meta = { title: "Parts/ImageFigure" } satisfies Meta<
 >;
 export default meta;
 
-/** ストーリー: 描画の口（`parameters.server.id`）の部品を `args` で描く */
+/** ストーリー: 描画のインターフェース（`parameters.server.id`）の部品を `args` で描く */
 type Story = StoryObj<Record<string, unknown>>;
 
 export const Caption: Story = {
@@ -51,8 +51,8 @@ export const AlignLeft: Story = {
   parameters: { server: { id: "image-figure" } },
   args: {
     src: "step-1.svg",
-    alt: "左に置いた画面",
-    caption: "左に置いた画面",
+    alt: "左に配置した画面",
+    caption: "左に配置した画面",
     width: "200px",
     align: "left",
   },
@@ -63,8 +63,8 @@ export const AlignRight: Story = {
   parameters: { server: { id: "image-figure" } },
   args: {
     src: "step-2.svg",
-    alt: "右に置いた画面",
-    caption: "右に置いた画面",
+    alt: "右に配置した画面",
+    caption: "右に配置した画面",
     width: "200px",
     align: "right",
   },
@@ -75,8 +75,8 @@ export const AlignCenter: Story = {
   parameters: { server: { id: "image-figure" } },
   args: {
     src: "step-3.svg",
-    alt: "中央に置いた画面",
-    caption: "中央に置いた画面",
+    alt: "中央に配置した画面",
+    caption: "中央に配置した画面",
     width: "240px",
     align: "center",
   },
@@ -135,7 +135,7 @@ export const LongCaption: Story = {
     src: "step-2.svg",
     alt: "手順 2 の画面",
     caption:
-      "設定ファイルを読めないときに文書の先頭へ帯を出し、設定ファイルを開くボタンから直せることを示す画面",
+      "設定ファイルを読み込めないときに文書の先頭へ帯を出し、設定ファイルを開くボタンから修正できることを示す画面",
     width: "240px",
   },
 };

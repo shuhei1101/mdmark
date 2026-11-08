@@ -21,7 +21,7 @@ let viewCounter = 0;
 /** 何もしない片付けの関数 */
 const noop = (): void => {};
 
-/** 切り替えのボタンを押すとボードと表形式を出し分け、`aria-pressed` を直す。受け取りを外す関数を返す */
+/** 切り替えのボタンを押すとボードと表形式を出し分け、`aria-pressed` を修正する。受け取りを解除する関数を返却する */
 function attachSwitch(options: {
   /** ビューの要素 */
   view: HTMLElement;
@@ -59,7 +59,7 @@ function attachSwitch(options: {
   return () => bar?.removeEventListener("click", onClick);
 }
 
-/** `mountView` の指定から、`el` の中に class `mdmark` の要素を置いてビューを描き、表の操作と切り替えを付ける */
+/** `mountView` の指定から、`el` の中に class `mdmark` の要素を配置してビューを描き、表の操作と切り替えを付ける */
 export function drawView(el: HTMLElement, opts: MdmarkViewOptions): () => void {
   const { columns, group, filter = {}, icons } = opts;
   const items = opts.items.map((item) =>
@@ -81,7 +81,7 @@ export function drawView(el: HTMLElement, opts: MdmarkViewOptions): () => void {
     icons,
     id: `mdmark-view-${viewCounter}`,
   });
-  // 部品の HTML は操作を付けた後の見た目（絞り込みのドロワーと一致なしの行）を持つため、操作が自分で足す分と重ならないよう取り除く
+  // 部品の HTML は操作を付けた後の外観（絞り込みのドロワーと一致なしの行）を持つため、操作が自分で追加する分と重ならないよう取り除く
   for (const part of root.querySelectorAll(
     ".mdmark-filter-drawer, .mdmark-table-empty",
   )) {
@@ -98,7 +98,7 @@ export function drawView(el: HTMLElement, opts: MdmarkViewOptions): () => void {
   };
 }
 
-/** `data-view` を `ViewSpec` として読む。読めなければ `undefined` */
+/** `data-view` を `ViewSpec` として読み込む。読み込めなければ `undefined` */
 function readSpec(view: HTMLElement): ViewSpec | undefined {
   try {
     return JSON.parse(view.dataset.view ?? "") as ViewSpec;
@@ -118,7 +118,7 @@ function readRows(table: HTMLTableElement): string[][] {
     .map((row) => [...row.cells].map((cell) => visibleText(cell)));
 }
 
-/** `render` が描いた `div.mdmark-view` の `data-view` と中の表から、切り替えとボードを置いて付ける。足した要素を取り除き、表を元に戻す関数を返す */
+/** `render` が描いた `div.mdmark-view` の `data-view` と中の表から、切り替えとボードを配置して付ける。追加した要素を取り除き、表を元に戻す関数を返却する */
 export function attachView(view: HTMLElement): () => void {
   const spec = readSpec(view);
   const table = view.querySelector("table");

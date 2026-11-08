@@ -7,7 +7,7 @@ states:
     notes:
       定義: モックの「通常（flowchart）」（`dev/mock/components/mermaid-diagram/`）
   - name: Sequence
-    description: シーケンス図。actor が lucide の人のアイコンで、本文の色の線で描かれ、参加者の箱に影が無い
+    description: シーケンス図。actor が lucide の人のアイコンで、本文の色の線で描かれ、参加者のノードに影が無い
     notes:
       定義: モックの「シーケンス図・案 A」
   - name: Class
@@ -15,7 +15,7 @@ states:
     notes:
       定義: モックの「タイトルが無い」
   - name: State
-    description: 状態遷移図。開始と終了の印が本文の色
+    description: 状態遷移図。開始と終了のマーカーが本文の色
     notes:
       定義: モックの「そのほかの種類」の stateDiagram-v2
   - name: Er
@@ -42,24 +42,24 @@ args:
   - name: svg
     type: 文字列
     required: true
-    description: '`mount` が mermaid の `render` で描き、actor のアイコンを替えて SVG の filter の影を外した SVG。今の配色の図として表示する枠に置く'
+    description: '`mount` が mermaid の `render` で描き、actor のアイコンを替えて SVG の filter の影を削除した SVG。今の配色の図として表示する枠に配置する'
   - name: printSvg
     type: 文字列
     required: false
-    description: 暗い配色で描くときに、明るい配色のテーマでも描いた SVG。`svg` の後ろに置き、画面では隠して `@media print` でだけ出す（`svg` は `@media print` で隠す）。明るい配色で描くときは渡さない
+    description: 暗い配色で描くときに、明るい配色のテーマでも描いた SVG。`svg` の後ろに配置し、画面では隠して `@media print` でだけ出す（`svg` は `@media print` で隠す）。明るい配色で描くときは指定しない
   - name: width
     type: 数値
     required: false
-    description: SVG を描いた幅（px）。ガントチャートは描く先の幅と 720 の大きいほう。渡さないときは SVG の `viewBox` の幅
+    description: SVG を描いた幅（px）。ガントチャートは描く先の幅と 720 の大きいほう。指定しないときは SVG の `viewBox` の幅
 css_properties:
   - name: --mdmark-color-text
     syntax: <color>
     default: '#18181b（ダーク #ececef）'
-    description: actor の人のアイコンの線と、状態遷移図の開始・終了の印の色
+    description: actor の人のアイコンの線と、状態遷移図の開始・終了のマーカーの色
 accessibility:
   - SVG は mermaid が付ける `role="graphics-document document"`・`aria-roledescription`（図の種類）を持ち、`accTitle`・`accDescr` を `title`・`desc` で持つ
-  - '`printSvg` は `aria-hidden="true"` を持ち、同じ図を 2 回読み上げない'
-  - ノード・ラベルの文字は SVG の文字のまま選べ、読み上げに出る
+  - '`printSvg` は `aria-hidden="true"` を持ち、同じ図を 2 回スクリーンリーダーに伝えない'
+  - ノード・ラベルの文字は SVG の文字のまま選べ、スクリーンリーダーに出る
   - 色だけで意味を伝える図（円グラフ）は、mermaid が描く凡例とラベルに名前と値を出す
 status: planned
 introduced:
@@ -68,5 +68,5 @@ refs:
   - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[mermaid の描き方]
   - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[mermaid のテーマ]
 notes:
-  ストーリーの SVG: Storybook のストーリーは Node で HTML を返すため、mermaid をストーリーの中で動かさない。モックと同じソースを `mount` が描いた SVG を、テストの準備で書き出したファイルとして渡す。ストーリーは図の枠（種類 `mermaid`）で包んで出し、題名はモックの場面のタイトル（front matter の `title` か図の種類の名前）にする
+  ストーリーの SVG: Storybook のストーリーは Node で HTML を返却するため、mermaid をストーリーの中で動かさない。モックと同じソースを `mount` が描いた SVG を、テストの準備で書き出したファイルとして指定する。ストーリーは図の枠（種類 `mermaid`）で包んで出し、題名はモックの場面のタイトル（front matter の `title` か図の種類の名前）にする
 test_file: tests/integration/lib/mermaid-diagram.story.test.ts

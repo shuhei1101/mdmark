@@ -4,16 +4,16 @@ import { VIEW_ICON_PATHS } from "../../../src/parts/view.ts";
 
 type Built = typeof import("../../../src/index.ts");
 
-/** 題・状態・担当の列名 */
-const COLUMNS = ["題", "状態", "担当"];
+/** タイトル・状態・担当の列名 */
+const COLUMNS = ["タイトル", "状態", "担当"];
 
-/** 状態が上から未着手・進行中・未着手・完了・進行中、担当が佐藤・鈴木・佐藤・田中・鈴木の 5 件。1 件目の題は `script` を含む */
+/** 状態が上から未着手・進行中・未着手・完了・進行中、担当が佐藤・鈴木・佐藤・田中・鈴木の 5 件。1 件目のタイトルは `script` を含む */
 const ITEMS = [
-  { 題: "<script>alert(1)</script>設計", 状態: "未着手", 担当: "佐藤" },
-  { 題: "余白の変数を決める", 状態: "進行中", 担当: "鈴木" },
-  { 題: "印刷の見え方を確かめる", 状態: "未着手", 担当: "佐藤" },
-  { 題: "配色を直す", 状態: "完了", 担当: "田中" },
-  { 題: "表を絞り込む", 状態: "進行中", 担当: "鈴木" },
+  { タイトル: "<script>alert(1)</script>設計", 状態: "未着手", 担当: "佐藤" },
+  { タイトル: "余白の変数を決める", 状態: "進行中", 担当: "鈴木" },
+  { タイトル: "印刷の見え方を確認する", 状態: "未着手", 担当: "佐藤" },
+  { タイトル: "配色を修正する", 状態: "完了", 担当: "田中" },
+  { タイトル: "表を絞り込む", 状態: "進行中", 担当: "鈴木" },
 ];
 
 const elements: HTMLElement[] = [];
@@ -44,14 +44,14 @@ function loadStylesheet(): Promise<void> {
   return stylesheetLoaded;
 }
 
-/** ビルドした JS を 1 度だけ読み込み、CSS と合わせて使える状態にする */
+/** ビルドした JS を 1 度だけ読み込み、CSS と合わせて使用できる状態にする */
 async function loadBuilt(): Promise<Built> {
   await loadStylesheet();
   built ??= import(/* @vite-ignore */ distUrl("index.js"));
   return built;
 }
 
-/** 描く先の要素を作り、ページに置く */
+/** 描く先の要素を作り、ページに配置する */
 function createElement(): HTMLElement {
   const el = document.createElement("div");
   document.body.append(el);
@@ -59,7 +59,7 @@ function createElement(): HTMLElement {
   return el;
 }
 
-/** ビューを描き、後始末のために戻り値を控える */
+/** ビューを描き、後始末のために戻り値を記録する */
 async function mountViewTracked(
   el: HTMLElement,
   opts: Parameters<Built["mountView"]>[1],
@@ -70,28 +70,28 @@ async function mountViewTracked(
   return handle;
 }
 
-/** ボードの列の見出しの値を、並びの順に返す */
+/** ボードの列の見出しの値を、並びの順に返却する */
 function columnNames(el: Element): string[] {
   return [...el.querySelectorAll(".mdmark-view-column-name")].map(
     (name) => name.textContent ?? "",
   );
 }
 
-/** ボードの列の見出しの項目の数を、並びの順に返す */
+/** ボードの列の見出しの項目の数を、並びの順に返却する */
 function columnCounts(el: Element): string[] {
   return [...el.querySelectorAll(".mdmark-view-column-count")].map(
     (count) => count.textContent ?? "",
   );
 }
 
-/** ボードの列の見出しのアイコンの形を、並びの順に返す */
+/** ボードの列の見出しのアイコンの形状を、並びの順に返却する */
 function columnIcons(el: Element): string[] {
   return [...el.querySelectorAll(".mdmark-view-column-head svg")].map(
     (icon) => icon.innerHTML,
   );
 }
 
-/** 切り替えのボタンを返す */
+/** 切り替えのボタンを返却する */
 function switchButton(el: Element, mode: "board" | "table"): HTMLButtonElement {
   const button = el.querySelector<HTMLButtonElement>(
     `.mdmark-view-switch button[data-mode="${mode}"]`,
@@ -118,7 +118,7 @@ function chooseOption(el: Element, text: string): void {
   (label?.control as HTMLInputElement | null)?.click();
 }
 
-/** `document` に付けた受け取りの数（付けた数から外した数を引いた値）を、種類ごとに数える */
+/** `document` に付けた受け取りの数（付けた数から解除した数を減算した値）を、種類ごとに数える */
 function trackDocumentListeners(): { balance: (type: string) => number } {
   const counts = new Map<string, number>();
   const add = document.addEventListener.bind(document);
@@ -189,7 +189,7 @@ test("test_normal", async () => {
   expect(el.childNodes).toHaveLength(0);
 });
 
-// filter で指定した列にだけ絞り込みを付け、ボードには当てない（正常系）
+// filter で指定した列にだけ絞り込みを付け、ボードには適用しない（正常系）
 test("test_normal_when_filtered", async () => {
   // 準備
   const el = createElement();
@@ -229,7 +229,7 @@ test("test_normal_when_icons_overridden", async () => {
   // 実行
   await mountViewTracked(el, {
     columns: COLUMNS,
-    items: [...ITEMS, { 題: "受付の確認", 状態: "受付", 担当: "佐藤" }],
+    items: [...ITEMS, { タイトル: "受付の確認", 状態: "受付", 担当: "佐藤" }],
     group: "状態",
     icons: { 未着手: "inbox", 完了: "archive" },
   });
@@ -250,7 +250,7 @@ test("test_normal_when_icons_overridden", async () => {
   expect(heads).toEqual(["未着手2", "進行中2", "完了1", "受付1"]);
 });
 
-// 拡張の draw から mountView を呼び、印の場所に描いて、mount の destroy で片付く（正常系）
+// 拡張の draw から mountView を呼び、マーカーの場所に描いて、mount の destroy で片付く（正常系）
 test("test_normal_when_called_from_extension", async () => {
   // 準備
   const built = await loadBuilt();
@@ -329,7 +329,7 @@ test("test_error_when_arguments_invalid", async () => {
   expect(el.textContent).toBe("前の中身");
 });
 
-// ビューの部品のモジュールを読めないと、el に知らせの枠を置いて reject する（異常系）
+// ビューの部品のモジュールを読み込めないと、el に通知ブロックを配置して reject する（異常系）
 test("test_error_when_module_unavailable", async () => {
   // 準備
   await loadStylesheet();

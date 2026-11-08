@@ -26,7 +26,7 @@ test("test_plan_cell_merges", async () => {
   expect(plan.warnings).toEqual([]);
 });
 
-// 続けて書いた ^^ を同じ始まりのセルにまとめる（正常系）
+// 続けて記載した ^^ を同じ始まりのセルにまとめる（正常系）
 test("test_plan_cell_merges_when_chained", async () => {
   // 準備
   const { planCellMerges } = await loadTableCells();
@@ -78,7 +78,7 @@ test("test_plan_cell_merges_when_not_rectangle", async () => {
   expect(plan.warnings.some((item) => item.label === "^^")).toBe(true);
 });
 
-// 上の段の結合した見出しが覆う列だけに範囲を返す（正常系）
+// 上の行の結合した見出しが覆う列だけに範囲を返却する（正常系）
 test("test_header_groups_of", async () => {
   // 準備
   const { planCellMerges, headerGroupsOf } = await loadTableCells();

@@ -1,12 +1,12 @@
 import { expect, test } from "vitest";
 
-/** URL の # を読む処理を読み込む（実装が無い間は各テストが個別に失敗する） */
+/** URL の # を読み込む処理を読み込む（実装が無い間は各テストが個別に失敗する） */
 const loadRoute = () => import("../../../../src/viewer/route.ts");
 
 const ENTRY = "README.md";
 const PATHS: ReadonlySet<string> = new Set([ENTRY, "使い方/guide.md"]);
 
-// 文書と見出しを読む（正常系）
+// 文書と見出しを読み込む（正常系）
 test("test_resolve_route", async () => {
   // 準備
   const { resolveRoute } = await loadRoute();

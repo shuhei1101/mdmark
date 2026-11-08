@@ -21,7 +21,7 @@
 <body>
   <!-- モック専用の操作列: VS Code のテーマ -->
   <div class="mock-bar">
-    <!-- [data-theme-value]: preview.js が行き先の URL（?theme=）と今のテーマの aria-current を当てる -->
+    <!-- [data-theme-value]: preview.js が行き先の URL（?theme=）と今のテーマの aria-current を適用する -->
     <div class="mock-bar-group" role="group" aria-label="VS Code のテーマ">
       <a class="mock-bar-item" data-theme-value="light">ライト</a>
       <a class="mock-bar-item" data-theme-value="dark">ダーク</a>
@@ -32,7 +32,7 @@
     <div class="catalog">
       <h1 class="catalog-title">プレビューの状態の表示</h1>
 
-      <!-- 読み込み中: 配布物を読み終えるまで -->
+      <!-- 読み込み中: 配布物を読み込み終えるまで -->
       <section aria-labelledby="state-loading">
         <h2 class="catalog-label" id="state-loading">読み込み中</h2>
         <div class="preview">
@@ -52,7 +52,7 @@
           <div class="preview-state">
             <div class="preview-notice" role="status">
               <h1>プレビューを表示できません</h1>
-              <p>mdmark（<code>v0.7.0</code>）を jsDelivr から読み込めませんでした。ネットワークにつながっているかを確かめてから、リロードしてください。</p>
+              <p>mdmark（<code>v0.7.0</code>）を jsDelivr から読み込めませんでした。ネットワークにつながっているかを確認してから、リロードしてください。</p>
               <button class="preview-button" type="button">リロード</button>
             </div>
           </div>
@@ -66,14 +66,14 @@
           <div class="preview-state">
             <div class="preview-notice" role="status">
               <h1>プレビューを表示できません</h1>
-              <p>設定 <code>mdmark.version</code> に指定したバージョン <code>v0.7.0-rc.1+build.20261023.feature-vscode-preview-extension</code> の mdmark が見つかりませんでした。存在するバージョンか <code>latest</code> に直してから、リロードしてください。</p>
+              <p>設定 <code>mdmark.version</code> に指定したバージョン <code>v0.7.0-rc.1+build.20261023.feature-vscode-preview-extension</code> の mdmark が見つかりませんでした。存在するバージョンか <code>latest</code> に修正してから、リロードしてください。</p>
               <button class="preview-button" type="button">リロード</button>
             </div>
           </div>
         </div>
       </section>
 
-      <!-- 描けない（差分に対応しないバージョン）: 差分ビューから開いたプレビューで、読んだ配布物が差分で描く指定を持たない -->
+      <!-- 描けない（差分に対応しないバージョン）: 差分ビューから開いたプレビューで、読み込んだ配布物が差分で描く指定を持たない -->
       <section aria-labelledby="state-error-diff-unsupported">
         <h2 class="catalog-label" id="state-error-diff-unsupported">描けない（差分に対応しないバージョン）</h2>
         <div class="preview">
@@ -87,14 +87,14 @@
         </div>
       </section>
 
-      <!-- 設定ファイルを読めない帯: 文書の上に置く -->
+      <!-- 設定ファイルを読み込めない帯: 文書の上に配置する -->
       <section aria-labelledby="state-band">
-        <h2 class="catalog-label" id="state-band">設定ファイルを読めない帯</h2>
+        <h2 class="catalog-label" id="state-band">設定ファイルを読み込めない帯</h2>
         <div class="preview">
           <div class="preview-notice is-band" role="status">
             <div class="preview-notice-text">
               <h2>設定ファイルを読み込めません</h2>
-              <p><code>mdmark.config.yaml</code> の 4 行目を YAML として読めないため、<code>features</code> と <code>libraries</code> を当てずに表示しています。</p>
+              <p><code>mdmark.config.yaml</code> の 4 行目を YAML として読み込めないため、<code>features</code> と <code>libraries</code> を当てずに表示しています。</p>
             </div>
             <button class="preview-button" type="button">設定ファイルを開く</button>
           </div>
@@ -102,14 +102,14 @@
         </div>
       </section>
 
-      <!-- 設定ファイルを読めない帯（狭い列・長いパス）: ボタンを文の下へ回す -->
+      <!-- 設定ファイルを読み込めない帯（狭い列・長いパス）: ボタンを文の下へ回す -->
       <section aria-labelledby="state-band-narrow">
-        <h2 class="catalog-label" id="state-band-narrow">設定ファイルを読めない帯（狭い列・長いパス）</h2>
+        <h2 class="catalog-label" id="state-band-narrow">設定ファイルを読み込めない帯（狭い列・長いパス）</h2>
         <div class="preview is-narrow">
           <div class="preview-notice is-band" role="status">
             <div class="preview-notice-text">
               <h2>設定ファイルを読み込めません</h2>
-              <p><code>docs/settings/mdmark/mdmark.config.workspace-shared.yaml</code> の 12 行目を YAML として読めないため、<code>features</code> と <code>libraries</code> を当てずに表示しています。</p>
+              <p><code>docs/settings/mdmark/mdmark.config.workspace-shared.yaml</code> の 12 行目を YAML として読み込めないため、<code>features</code> と <code>libraries</code> を当てずに表示しています。</p>
             </div>
             <button class="preview-button" type="button">設定ファイルを開く</button>
           </div>

@@ -25,12 +25,12 @@ states:
       - name: selected
         value: '0'
   - name: Unmounted
-    description: '`render` が出した状態。全ての中身がタブ名を題にして縦に並ぶ（印刷もこの見え方）'
+    description: '`render` が出した状態。全ての中身がタブ名をタイトルにして縦に並ぶ（印刷もこの見え方）'
     args:
       - name: titles
         value: '["macOS","Windows"]'
   - name: Grouped
-    description: 組 `os` を持ち、1 つ目のタブを選んだ。見た目は First と同じで、`data-group` を持つ
+    description: 組 `os` を持ち、1 つ目のタブを選んだ。外観は First と同じで、`data-group` を持つ
     screenshot: false
     args:
       - name: titles
@@ -60,14 +60,14 @@ states:
       - name: title
         value: 入れ方
   - name: Nested
-    description: 入れ子のタブ。外側（macOS・Windows）は Windows を選び、その中身に内側のタブ（PowerShell・WSL）を置いて PowerShell を選んだ。内側も外側と同じ見た目で、外側の中身の上と間を空ける
+    description: 入れ子のタブ。外側（macOS・Windows）は Windows を選び、その中身に内側のタブ（PowerShell・WSL）を配置して PowerShell を選んだ。内側も外側と同じ外観で、外側の中身の上と間を空ける
     args:
       - name: titles
         value: '["macOS","Windows"]'
       - name: selected
         value: '1'
     notes:
-      中身: 2 つ目の中身に、`titles` が `["PowerShell","WSL"]`・`selected` が `0` のタブを置く
+      中身: 2 つ目の中身に、`titles` が `["PowerShell","WSL"]`・`selected` が `0` のタブを配置する
   - name: StrongTitle
     description: 見出しの `**` の強調を持つタブ名。選んでいないタブでも `strong` を `--mdmark-tab-strong-color` と `--mdmark-tab-strong-weight` で強調する
     args:
@@ -85,12 +85,12 @@ args:
     type: 整数
     required: false
     default: なし（タブの並びを付けず、全ての中身を順に出す）
-    description: 選んだタブの位置（0 から）。渡すと `role="tablist"` の並びを付け、選んだタブの中身だけを出す（`mount` が付けた状態）
+    description: 選んだタブの位置（0 から）。指定すると `role="tablist"` の並びを付け、選んだタブの中身だけを出す（`mount` が付けた状態）
   - name: group
     type: 文字列
     required: false
-    default: なし（組を持たず、他のタブと揃えない）
-    description: タブの組の名前。渡すと `mdmark-tabs` に `data-group` を付ける。同じ組のタブの選択を揃え、選んだタブ名を覚えるのは `mount` の操作
+    default: なし（組を持たず、他のタブと統一しない）
+    description: タブの組の名前。指定すると `mdmark-tabs` に `data-group` を付ける。同じ組のタブの選択を統一し、選んだタブ名を覚えるのは `mount` の操作
   - name: collapse
     type: 列挙
     required: false
@@ -107,7 +107,7 @@ args:
     status: planned
 slots:
   - name: default
-    description: タブごとの中身（区切りの見出しから次の見出しの前までの HTML）。入れ子のタブの `mdmark-tabs` も置ける
+    description: タブごとの中身（区切りの見出しから次の見出しの前までの HTML）。入れ子のタブの `mdmark-tabs` も配置できる
     passes: タブの位置
 events:
   - name: タブを選ぶ
@@ -117,7 +117,7 @@ events:
   - name: URL の ID でタブを選ぶ
     when: URL の `#ID` が選ばれていないタブの中身（入れ子のタブを含む）の中の要素を指す（描いたときと `hashchange`）
     value: URL の `#ID`
-    description: '`mount` が外側のタブから順にその要素を含むタブを選び、外側の閉じた節を開いてから要素へスクロールする。描いたときは localStorage に残したタブ名より URL の ID を優先し、URL の ID で選んだタブは localStorage に残さず、同じ `data-group` のほかのタブも切り替えない'
+    description: '`mount` が外側のタブから順にその要素を含むタブを選び、外側の閉じたセクションを開いてから要素へスクロールする。描いたときは localStorage に残したタブ名より URL の ID を優先し、URL の ID で選んだタブは localStorage に残さず、同じ `data-group` のほかのタブも切り替えない'
 css_properties:
   - name: --mdmark-color-border
     syntax: <color>
@@ -142,10 +142,10 @@ css_properties:
 accessibility:
   - WAI-ARIA のタブの作法に従う。並びは `role="tablist"`、タブは `role="tab"` と `aria-selected`・`aria-controls`、中身は `role="tabpanel"` と `aria-labelledby`
   - 選んだタブだけが `tabindex="0"`、ほかは `-1`。左右の矢印・Home・End で移って選ぶ。入れ子のタブはそれぞれ別の `tablist` で、矢印・Home・End はフォーカスのある並びの中だけで移り、内側を選んでも外側の選択を変えない
-  - 選んだタブは線で囲んで中身の地とつなぎ、形と地の色でも示し、色だけに頼らない
+  - 選んだタブは線で囲んで中身の地とつなぎ、形状と地の色でも示し、色だけに頼らない
 refs:
   - dev/設計書/インターフェース定義/ライブラリ本体/文書をHTML文字列にする.ts#constraints[タブ]
   - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[タブの操作]
 status: planned
 notes:
-  HTML: '`render` は `<div class="mdmark-tabs"><div class="mdmark-tab-panel"><p class="mdmark-tab-title">{タブ名}</p>{中身}</div>…</div>` を出し、`group` を渡すと外側の `div` に `data-group="{group}"` を付ける。`selected` を渡すと頭に `<div class="mdmark-tablist" role="tablist"><button class="mdmark-tab" type="button" role="tab">{タブ名}</button>…</div>` を置き、中身を `role="tabpanel"` にして選んだもの以外に `hidden` を付ける。`collapse` が `closed`・`open` のときは `mdmark-tabs` を `<details class="mdmark-collapsible"><summary>{title}</summary>` に入れる（`open` のときは `details` に `open` を付ける）。見出しの見た目は表の `mdmark-table-details` と同じ。モックは `dev/mock/components/tabs/`'
+  HTML: '`render` は `<div class="mdmark-tabs"><div class="mdmark-tab-panel"><p class="mdmark-tab-title">{タブ名}</p>{中身}</div>…</div>` を出し、`group` を指定すると外側の `div` に `data-group="{group}"` を付ける。`selected` を指定すると頭に `<div class="mdmark-tablist" role="tablist"><button class="mdmark-tab" type="button" role="tab">{タブ名}</button>…</div>` を配置し、中身を `role="tabpanel"` にして選んだもの以外に `hidden` を付ける。`collapse` が `closed`・`open` のときは `mdmark-tabs` を `<details class="mdmark-collapsible"><summary>{title}</summary>` に入れる（`open` のときは `details` に `open` を付ける）。見出しの外観は表の `mdmark-table-details` と同じ。モックは `dev/mock/components/tabs/`'

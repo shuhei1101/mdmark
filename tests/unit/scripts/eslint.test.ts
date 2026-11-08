@@ -6,10 +6,10 @@ const loadModule = () => import("../../../scripts/eslint.ts");
 
 const createTempDir = useTempDirs();
 
-/** `run` に渡された 1 回分の呼び出し */
+/** `run` に指定された 1 回分の呼び出し */
 type RunCall = { command: string; args: string[]; cwd: string };
 
-/** 呼び出しを記録し、`exitCodeOf` が返す終了コードを返す `run` を作る */
+/** 呼び出しを記録し、`exitCodeOf` が返却する終了コードを返却する `run` を作る */
 const createRun = (exitCodeOf: (command: string) => number) => {
   const calls: RunCall[] = [];
   const run = async (

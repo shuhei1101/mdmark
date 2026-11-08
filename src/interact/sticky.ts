@@ -1,6 +1,6 @@
 import { stickyRange, stickyShift } from "../table-logic.ts";
 
-/** `attachStickyRows` が描く先の要素に付ける属性。値は `timeline`（`animation-timeline` でずらす）か `script`（JS でずらす量を入れる）で、CSS はこの属性で当てる規則を分ける */
+/** `attachStickyRows` が描く先の要素に付ける属性。値は `timeline`（`animation-timeline` でずらす）か `script`（JS でずらす量を入れる）で、CSS はこの属性で適用する規則を分ける */
 export const STICKY_MODE_ATTRIBUTE = "data-mdmark-sticky";
 
 /** スクロール連動のアニメーションと、その範囲の指定を持つブラウザか */
@@ -20,7 +20,7 @@ const SCRIPT_VARIABLES = [
   "--mdmark-sticky-foot-reach",
 ] as const;
 
-/** 見出し行を留める位置の、画面の上端からのずれ（px）。使う側が渡した `--mdmark-sticky-top` を読む */
+/** 見出し行を留める位置の、画面の上端からのずれ（px）。利用側が指定した `--mdmark-sticky-top` を読み込む */
 function stickyTopOf(table: HTMLElement): number {
   const value = getComputedStyle(table).getPropertyValue("--mdmark-sticky-top");
   return Number.parseFloat(value) || 0;
@@ -107,7 +107,7 @@ function updateShift(table: HTMLTableElement): void {
   }
 }
 
-/** 各 `mdmark-table` の見出し行を画面の上端（`--mdmark-sticky-top`）に、集計の行を画面の下端に、表が画面にかかっている間だけ留める。受け取りと `ResizeObserver` を外し、属性と CSS 変数を取り除く関数を返す */
+/** 各 `mdmark-table` の見出し行を画面の上端（`--mdmark-sticky-top`）に、集計の行を画面の下端に、表が画面にかかっている間だけ留める。受け取りと `ResizeObserver` を削除し、属性と CSS 変数を取り除く関数を返却する */
 export function attachStickyRows(root: HTMLElement): () => void {
   const timeline = CSS.supports(TIMELINE_SUPPORT);
   const update = timeline ? updateTimelineRange : updateShift;
@@ -126,7 +126,7 @@ export function attachStickyRows(root: HTMLElement): () => void {
     observer.observe(table);
   }
   updateAll();
-  // 動かすのが JS のときは、スクロールのたびに 1 フレームに 1 回だけ求め直す
+  // 動かすのが JS のときは、スクロールのたびに 1 フレームに 1 回だけもう一度求める
   let frame: number | undefined;
   const onScroll = (): void => {
     if (frame !== undefined) {

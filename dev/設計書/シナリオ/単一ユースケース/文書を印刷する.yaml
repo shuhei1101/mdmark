@@ -3,12 +3,12 @@ scenarios:
   - name: 正常シナリオ
     setup:
       - name: 文書を描いたページ
-        description: 版を固定した URL で mdmark を読み、文書を描いた HTML
+        description: バージョンを固定した URL で mdmark を読み込み、文書を描いた HTML
         notes: '配色はダーク（`prefers-color-scheme: dark`）'
       - name: 見本の Markdown
         description: 閉じた折り畳み（`details`）とリンクと表を持つ文書
       - name: Mock
-        description: jsDelivr を、ビルドした `dist/` を同じパスで返す手元の応答に差し替える。印刷は、媒体を `print` にして印刷の前のイベントを送ることで代える
+        description: jsDelivr を、ビルドした `dist/` を同じパスで返却する手元の応答に差し替える。印刷は、媒体を `print` にして印刷の前のイベントを送信することで代える
     flow: |-
       sequenceDiagram
         actor U as 利用者
@@ -17,21 +17,21 @@ scenarios:
         U->>B: 印刷を始める
         B->>M: 印刷の前のイベント
         M->>M: 折り畳みを全て開く
-        B->>B: 印刷向けの CSS を当てる
+        B->>B: 印刷向けの CSS を適用する
         B-->>U: 印刷の出力
     expected:
       - 折り畳み（`details`）が開いている
-      - 描く先の要素の `--mdmark-color-bg` の計算値が明るい配色の値（ダークの配色が解除される）で、地の色は外れる
+      - 描く先の要素の `--mdmark-color-bg` の計算値が明るい配色の値（ダークの配色が解除される）で、地の色は削除される
       - リンクの後ろに URL の文字が出ている
-      - '表に改ページを避ける指定（`break-inside: avoid`）が当たっている'
+      - '表に改ページを回避する指定（`break-inside: avoid`）が該当している'
     test: test_normal
   - name: 正常シナリオ（印刷を終える）
     setup:
       - name: 印刷中のページ
-        description: 正常シナリオで印刷の前のイベントを送った後のページ
+        description: 正常シナリオで印刷の前のイベントを送信した後のページ
         notes: 印刷の前に開いていた折り畳みを 1 つ、閉じていた折り畳みを 1 つ持つ
       - name: Mock
-        description: 正常シナリオと同じ。印刷の終わりは、媒体を `screen` に戻して印刷の後のイベントを送ることで代える
+        description: 正常シナリオと同じ。印刷の終わりは、媒体を `screen` に戻して印刷の後のイベントを送信することで代える
     flow: |-
       sequenceDiagram
         actor U as 利用者
@@ -47,11 +47,11 @@ scenarios:
   - name: 正常シナリオ（記法を開いて出す）
     setup:
       - name: 文書を描いたページ
-        description: 版を固定した URL で mdmark を読み、文書を描いた HTML
+        description: バージョンを固定した URL で mdmark を読み込み、文書を描いた HTML
       - name: 閉じた記法を持つ Markdown
-        description: '2 つの中身を持つタブの範囲、`<!-- section: closed -->` の節、`<!-- row-detail: 1 -->` の行の詳細、`<!-- table: data closed -->` の表、`> [!NOTE]-` の注意書き、`<!-- tabs: closed -->` のタブの範囲、`<!-- steps: closed -->` のステップの範囲、ルートの下に 2 階層の入れ子のフォルダを持つ言語 `tree` のコードブロックを持つ文書'
+        description: '2 つの中身を持つタブの範囲、`<!-- section: closed -->` のセクション、`<!-- row-detail: 1 -->` の行の詳細、`<!-- table: data closed -->` の表、`> [!NOTE]-` の注意書き、`<!-- tabs: closed -->` のタブの範囲、`<!-- steps: closed -->` のステップの範囲、ルートの下に 2 階層の入れ子のフォルダを持つ言語 `tree` のコードブロックを持つ文書'
       - name: Mock
-        description: 正常シナリオと同じ。印刷の終わりは、媒体を `screen` に戻して印刷の後のイベントを送ることで代える
+        description: 正常シナリオと同じ。印刷の終わりは、媒体を `screen` に戻して印刷の後のイベントを送信することで代える
     flow: |-
       sequenceDiagram
         actor U as 利用者
@@ -65,17 +65,17 @@ scenarios:
         M->>M: 印刷の前の表示に戻す
         B-->>U: 画面の表示に戻る
     expected:
-      - 印刷の前のイベントの後、タブの 2 つの中身がタブ名を題にして縦に並んで表示されている
-      - 印刷の前のイベントの後、閉じた節・行の詳細・閉じた表・閉じた注意書きの中身が表示されている
+      - 印刷の前のイベントの後、タブの 2 つの中身がタブ名をタイトルにして縦に並んで表示されている
+      - 印刷の前のイベントの後、閉じたセクション・行の詳細・閉じた表・閉じた注意書きの中身が表示されている
       - 印刷の前のイベントの後、閉じたタブとステップの折りたたみの中身と、ファイルツリーの全ての入れ子が表示され、ファイルツリーのコピーボタンが印刷に出ていない
       - 印刷の後のイベントの後、印刷の前に選んでいたタブだけが表示され、閉じていた記法とファイルツリーのフォルダが閉じている
     test: test_normal_when_syntax_expanded
   - name: 正常シナリオ（用語と被参照）
     setup:
       - name: 文書を描いたページ
-        description: 版を固定した URL で mdmark を読み、索引・描く文書の `id`・ほかの文書から算出した参照を渡して文書を描いた HTML
+        description: バージョンを固定した URL で mdmark を読み込み、索引・描く文書の `id`・ほかの文書から算出した参照を指定して文書を描いた HTML
       - name: 用語と被参照を持つ索引
-        description: 用語 `ワークスペース`（`avoid` に `作業場`）を持ち、文書 `api`（題 `API`）の `related` が描く文書を指す索引
+        description: 用語 `ワークスペース`（`avoid` に `作業場`）を持ち、文書 `api`（タイトル `API`）の `related` が描く文書を指す索引
       - name: 用語が出る Markdown
         description: 段落に `ワークスペース` と、やめた言い方 `作業場` が出る文書
       - name: Mock
@@ -85,21 +85,21 @@ scenarios:
         actor U as 利用者
         participant B as ブラウザ
         participant M as mdmark
-        U->>B: 下線の付いた語とマーカーの付いた語にフォーカスしてツールチップを出す
+        U->>B: 下線の付いた単語とマーカーの付いた単語にフォーカスしてツールチップを出す
         U->>B: 印刷を始める
-        B->>B: 印刷向けの CSS を当てる
+        B->>B: 印刷向けの CSS を適用する
         B-->>U: 印刷の出力
     expected:
-      - '`ワークスペース` の下線が外れ、語は本文の文字として出ている'
+      - '`ワークスペース` の下線が削除され、単語は本文の文字として出ている'
       - ツールチップが出ていない
-      - '`作業場` のやめた言い方のマーカーが外れ、語は本文の文字として出ている'
-      - '`作業場` の語にフォーカスして出したツールチップが出ていない'
+      - '`作業場` のやめた言い方のマーカーが削除され、単語は本文の文字として出ている'
+      - '`作業場` の単語にフォーカスして出したツールチップが出ていない'
       - 被参照の一覧が出ていて、`API` のリンクの後ろに URL の文字が出ている
     test: test_normal_when_glossary_and_backlinks
   - name: 正常シナリオ（表の機能を印刷に出す）
     setup:
       - name: 文書を描いたページ
-        description: 版を固定した URL で mdmark を読み、文書を描いた HTML
+        description: バージョンを固定した URL で mdmark を読み込み、文書を描いた HTML
       - name: 表の機能を持つ Markdown
         description: '`<!-- table: data +count +columns +total +copy +rowlink total=数量:sum hide=説明 -->` 〜 `<!-- /table -->` で、名前・説明・数量の 3 列 3 行の表を囲んだ文書'
       - name: Mock
@@ -111,23 +111,23 @@ scenarios:
         participant M as mdmark
         U->>B: 印刷を始める
         B->>M: 印刷の前のイベント
-        B->>B: 印刷向けの CSS を当てる
+        B->>B: 印刷向けの CSS を適用する
         B-->>U: 印刷の出力
     expected:
       - 表の上の列のボタン（隠した列の数のバッジを含む）・コピー・「集計」のボタンが出ていない
-      - 行へのリンクの印が出ていない
+      - 行へのリンクのマーカーが出ていない
       - 表の上の件数と、表の末尾の `合計` の集計の行が出ている
-      - 見出し行は表の先頭に 1 組だけ出ていて、画面の上端に留めるずれが当たっていない
+      - 見出し行は表の先頭に 1 組だけ出ていて、画面の上端に留めるずれが該当していない
       - 隠した説明の列は隠したまま出ていない
     test: test_normal_when_table_features_printed
-  - name: 正常シナリオ（コードブロックの題と行を印刷に出す）
+  - name: 正常シナリオ（コードブロックのタイトルと行を印刷に出す）
     setup:
       - name: 文書を描いたページ
-        description: 版を固定した URL で mdmark を読み、文書を描いた HTML
+        description: バージョンを固定した URL で mdmark を読み込み、文書を描いた HTML
       - name: 飾ったコードブロックを持つ Markdown
-        description: '`<!-- code: title=app.ts lines highlight=1 -->` の直後に、行末に `// [!code ++]` を付けた行と `// [!code --]` を付けた行を持つ 3 行の言語 `ts` のコードブロックを置いた文書'
+        description: '`<!-- code: title=app.ts lines highlight=1 -->` の直後に、行末に `// [!code ++]` を付けた行と `// [!code --]` を付けた行を持つ 3 行の言語 `ts` のコードブロックを配置した文書'
       - name: Mock
-        description: 正常シナリオと同じ。色分けのライブラリの本体と `typescript` のモジュールも、jsDelivr と同じパスで返す手元の応答に差し替え、色分けし終えてから印刷を始める
+        description: 正常シナリオと同じ。色分けのライブラリの本体と `typescript` のモジュールも、jsDelivr と同じパスで返却する手元の応答に差し替え、色分けし終えてから印刷を始める
     flow: |-
       sequenceDiagram
         actor U as 利用者
@@ -135,25 +135,25 @@ scenarios:
         participant M as mdmark
         U->>B: 印刷を始める
         B->>M: 印刷の前のイベント
-        B->>B: 印刷向けの CSS を当てる
+        B->>B: 印刷向けの CSS を適用する
         B-->>U: 印刷の出力
     expected:
-      - コードブロックの上に題 `app.ts` が出ている
+      - コードブロックの上にタイトル `app.ts` が出ている
       - 3 つの行の左に 1〜3 の行番号が出ている
-      - 1 行目が強調の背景で、足した行と消した行がそれぞれの色と行頭の `+`・`-` で出ている
+      - 1 行目が強調の背景で、追加した行と削除した行がそれぞれの色と行頭の `+`・`-` で出ている
       - 行の中のキーワード・文字列などが、画面と同じ色分けの色で出ている
       - 言語のラベル `ts` が出ていて、コピーボタンが出ていない
     test: test_normal_when_code_block_printed
   - name: 正常シナリオ（畳んだ最終列を開いて出す）
     setup:
       - name: 文書を描いたページ
-        description: 版を固定した URL で mdmark を読み、文書を描いた HTML
+        description: バージョンを固定した URL で mdmark を読み込み、文書を描いた HTML
         notes: 画面と描く先の要素の幅は 390px
       - name: 最終列の長い表を持つ Markdown
         description: 『表を操作する』の正常シナリオ（狭い幅で最終列を畳む）と同じ文書
         notes: '-'
       - name: Mock
-        description: 正常シナリオと同じ。印刷の終わりは、媒体を `screen` に戻して印刷の後のイベントを送ることで代える
+        description: 正常シナリオと同じ。印刷の終わりは、媒体を `screen` に戻して印刷の後のイベントを送信することで代える
         notes: '-'
     flow: |-
       sequenceDiagram
@@ -162,7 +162,7 @@ scenarios:
         participant M as mdmark
         U->>B: 印刷を始める
         B->>M: 印刷の前のイベント
-        B->>B: 印刷向けの CSS を当てる
+        B->>B: 印刷向けの CSS を適用する
         B-->>U: 最終列を畳まない印刷の出力
         B->>M: 印刷の後のイベント
         B-->>U: 最終列を畳んだ画面の表示に戻る
@@ -171,15 +171,15 @@ scenarios:
       - 行の開閉のボタンが出ていない
       - 印刷の後のイベントの後、説明の列が畳まれ、行に開閉のボタンがある
     test: test_normal_when_collapsed_column_printed
-  - name: 正常シナリオ（右側の目次と節のボタンを印刷に出さない）
+  - name: 正常シナリオ（右側の目次とセクションのボタンを印刷に出さない）
     setup:
       - name: 文書を描いたページ
-        description: 版を固定した URL で mdmark を読み、文書を描いた HTML
+        description: バージョンを固定した URL で mdmark を読み込み、文書を描いた HTML
         notes: 設定の `side-toc.mode` は `fixed`。描いた後に目次を出すボタンを押し、右側の目次を出しておく
-      - name: H1 の閉じた節を持つ Markdown
+      - name: H1 の閉じたセクションを持つ Markdown
         description: '`# 手引き` と段落、`# 付録` とその直後の `<!-- section: closed -->` と段落を持つ文書'
       - name: Mock
-        description: 正常シナリオと同じ。印刷の終わりは、媒体を `screen` に戻して印刷の後のイベントを送ることで代える
+        description: 正常シナリオと同じ。印刷の終わりは、媒体を `screen` に戻して印刷の後のイベントを送信することで代える
     flow: |-
       sequenceDiagram
         actor U as 利用者
@@ -187,25 +187,25 @@ scenarios:
         participant M as mdmark
         U->>B: 印刷を始める
         B->>M: 印刷の前のイベント
-        M->>M: 閉じた H1 の節を開く
-        B->>B: 印刷向けの CSS を当てる
+        M->>M: 閉じた H1 のセクションを開く
+        B->>B: 印刷向けの CSS を適用する
         B-->>U: 右側の目次とボタンの無い印刷の出力
         B->>M: 印刷の後のイベント
         B-->>U: 画面の表示に戻る
     expected:
       - 印刷の前のイベントの後、右側の目次・目次を出すボタン・すべて展開とすべて折りたたむのボタンが出ていない
       - 印刷の前のイベントの後、`付録` の段落が表示されている
-      - 印刷の後のイベントの後、右側の目次が表示され、`付録` の節が閉じている
+      - 印刷の後のイベントの後、右側の目次が表示され、`付録` のセクションが閉じている
     test: test_normal_when_side_toc_hidden_in_print
   - name: 正常シナリオ（先頭へ戻るボタンを印刷に出さない）
     setup:
       - name: 文書を描いたページ
-        description: 版を固定した URL で mdmark を読み、文書を描いた HTML
+        description: バージョンを固定した URL で mdmark を読み込み、文書を描いた HTML
         notes: 描いた後に文書の末尾までスクロールし、先頭へ戻るボタンを出しておく
       - name: 長い Markdown
         description: 『文書の先頭へ戻る』の正常シナリオと同じ文書
       - name: Mock
-        description: 正常シナリオと同じ。印刷の終わりは、媒体を `screen` に戻して印刷の後のイベントを送ることで代える
+        description: 正常シナリオと同じ。印刷の終わりは、媒体を `screen` に戻して印刷の後のイベントを送信することで代える
     flow: |-
       sequenceDiagram
         actor U as 利用者
@@ -213,7 +213,7 @@ scenarios:
         participant M as mdmark
         U->>B: 印刷を始める
         B->>M: 印刷の前のイベント
-        B->>B: 印刷向けの CSS を当てる
+        B->>B: 印刷向けの CSS を適用する
         B-->>U: 先頭へ戻るボタンの無い印刷の出力
         B->>M: 印刷の後のイベント
         B-->>U: 画面の表示に戻る
@@ -226,7 +226,7 @@ scenarios:
   - name: 正常シナリオ（テーマを選んだ文書）
     setup:
       - name: テーマを選んで描いたページ
-        description: テーマを選ぶキーに theme-slate を書いた設定で、正常シナリオと同じ文書を描いたページ
+        description: テーマを選ぶキーに theme-slate を記載した設定で、正常シナリオと同じ文書を描いたページ
         notes: 'OS の配色はダーク（`prefers-color-scheme: dark`）'
       - name: Mock
         description: 正常シナリオと同じ
@@ -241,14 +241,14 @@ scenarios:
         B-->>U: theme-slate の明るい配色で印刷
     expected:
       - 描く先の要素のリンクの色の計算値が、theme-slate の明るい配色の `--mdmark-color-link` の値（既定のテーマに戻らない）
-      - 地の色は正常シナリオと同じく外れる
+      - 地の色は正常シナリオと同じく削除される
     test: test_normal_when_theme_selected
     refs:
       - dev/設計書/シナリオ/単一ユースケース/テーマを選ぶ#scenarios[正常シナリオ（ダークの配色）]
   - name: 正常シナリオ（色・画像・動画・カードを印刷に出す）
     setup:
       - name: 文書を描いたページ
-        description: 版を固定した URL で mdmark を読み、文書を描いた HTML。OS の配色はダーク
+        description: バージョンを固定した URL で mdmark を読み込み、文書を描いた HTML。OS の配色はダーク
       - name: 色・画像・動画・カードを持つ Markdown
         description: 行に色を付けた表・色の名前を付けたバッジ・色を付けた本文、`#only-dark` と `#only-light` の画像、GIF、`poster` を持つ動画、URL だけの段落、ファイルへのリンクだけの段落を持つ文書
       - name: Mock
@@ -260,7 +260,7 @@ scenarios:
         participant M as mdmark
         U->>B: 印刷を始める
         B->>M: 印刷の前のイベント
-        B->>B: 印刷向けの CSS を当てる
+        B->>B: 印刷向けの CSS を適用する
         B-->>U: 印刷の出力
     expected:
       - 表の行・バッジ・本文の文字の色が、ライトの色のプリセットの値で残っている
@@ -301,7 +301,7 @@ scenarios:
       - name: 脚注を持つ Markdown
         description: '段落に `[^src]` と定義 `[^src]: 出典の説明` を持つ文書'
       - name: Mock
-        description: 正常シナリオと同じ。印刷の終わりは、媒体を `screen` に戻して印刷の後のイベントを送ることで代える
+        description: 正常シナリオと同じ。印刷の終わりは、媒体を `screen` に戻して印刷の後のイベントを送信することで代える
     flow: |-
       sequenceDiagram
         actor U as 利用者
@@ -312,7 +312,7 @@ scenarios:
         M->>M: 閉じた脚注の一覧を開く
         B-->>U: 印刷の出力
         B->>M: 印刷の後のイベント
-        M->>M: 脚注の一覧を閉じ直す
+        M->>M: 脚注の一覧をもう一度閉じる
         B-->>U: 画面の表示に戻る
     expected:
       - 印刷の前のイベントの後、文書の末尾の脚注の一覧が開いていて、`1` と `出典の説明` が表示されている
@@ -320,7 +320,7 @@ scenarios:
       - 印刷の後のイベントの後、脚注の一覧が閉じている
     test: test_normal_when_footnotes_printed
     refs:
-      - dev/設計書/シナリオ/単一ユースケース/脚注を見る#scenarios[正常シナリオ]
+      - dev/設計書/シナリオ/単一ユースケース/脚注を確認する#scenarios[正常シナリオ]
   - name: 正常シナリオ（畳んだ階層の行と隠した見本を開いて出す）
     setup:
       - name: 文書を描いたページ
@@ -350,12 +350,12 @@ scenarios:
   - name: 正常シナリオ（改ページと details の範囲と wide の範囲）
     setup:
       - name: 文書を描いたページ
-        description: 版を固定した URL で mdmark を読み、文書を描いた HTML
-        notes: 使う側が `--mdmark-content-width` を `640px` にしている
+        description: バージョンを固定した URL で mdmark を読み込み、文書を描いた HTML
+        notes: 利用側が `--mdmark-content-width` を `640px` にしている
       - name: 改ページと範囲を持つ Markdown
         description: '段落の間に `<!-- pagebreak -->`、`<!-- details: 補足 -->` 〜 `<!-- /details -->` で閉じた範囲、`<!-- wide -->` 〜 `<!-- /wide -->` で 8 列の表を囲んだ範囲を持つ文書'
       - name: Mock
-        description: 正常シナリオと同じ。印刷の終わりは、媒体を `screen` に戻して印刷の後のイベントを送ることで代える
+        description: 正常シナリオと同じ。印刷の終わりは、媒体を `screen` に戻して印刷の後のイベントを送信することで代える
     flow: |-
       sequenceDiagram
         actor U as 利用者
@@ -364,27 +364,27 @@ scenarios:
         U->>B: 印刷を始める
         B->>M: 印刷の前のイベント
         M->>M: details の範囲を開く
-        B->>B: 印刷向けの CSS を当てる
+        B->>B: 印刷向けの CSS を適用する
         B-->>U: 印刷の出力
         B->>M: 印刷の後のイベント
         B-->>U: 画面の表示に戻る
     expected:
       - 画面では `pagebreak` の場所に何も表示されず、高さも取っていない
-      - '印刷の前のイベントの後、`pagebreak` の場所の要素に改ページの指定（`break-before: page`）が当たっている'
+      - '印刷の前のイベントの後、`pagebreak` の場所の要素に改ページの指定（`break-before: page`）が該当している'
       - 印刷の前のイベントの後、`補足` の範囲の中身が表示されている
       - 印刷の前のイベントの後、wide の範囲が印刷の用紙の幅を越えていない
       - 印刷の後のイベントの後、`補足` の範囲が閉じている
     test: test_normal_when_pagebreak_details_wide
-lead: 読む人が mdmark の描いた文書を印刷・PDF にすると、折り畳みを全て開き、図表を改ページで切らず、ダークの配色を解除し、リンクの URL を併記して出す。印刷を終えると画面の表示に戻る。
+lead: 読者が mdmark の描いた文書を印刷・PDF にすると、折り畳みを全て開き、図表を改ページで切らず、ダークの配色を解除し、リンクの URL を併記して出す。印刷を終えると画面の表示に戻る。
 issue: 3
-primary_actor: 文書を読む人
+primary_actor: 読者
 stakeholders:
   - name: 印刷・PDF を受け取る人
-    interest: 紙・PDF でも、畳まれた中身とリンクの行き先が読める
-trigger: 読む人が、mdmark の描いた文書を開いたページでブラウザの印刷を始める
+    interest: 紙・PDF でも、畳まれた中身とリンクの行き先が読み込める
+trigger: 読者が、mdmark の描いた文書を開いたページでブラウザの印刷を始める
 preconditions:
   - ページが mdmark で文書を描いている
   - 設定の `features.print` が `true`（既定）
-success_guarantee: 印刷の出力で、折り畳みの中身・リンクの URL が読め、配色は明るい配色になる。
+success_guarantee: 印刷の出力で、折り畳みの中身・リンクの URL が読み込め、配色は明るい配色になる。
 minimal_guarantee: 印刷を終えた後、画面の折り畳みは印刷の前の開閉に戻る。
 test_file: tests/e2e/単一ユースケース/文書を印刷する.spec.ts

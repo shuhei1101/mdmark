@@ -1,9 +1,9 @@
-/* Tailwind の既定の層だけを使う。Preflight は読まず、描いた文書（mdmark の @layer mdmark）の要素の既定を変えない */
+/* Tailwind の既定の層だけを使用する。Preflight は読み込まず、描いた文書（mdmark の @layer mdmark）の要素の既定を変えない */
 @layer theme, base, components, utilities;
 @import "tailwindcss/theme.css" layer(theme);
 @import "tailwindcss/utilities.css" layer(utilities);
 
-/* トークン: プリミティブは VS Code が html に渡す --vscode-*。セマンティックは shadcn/ui の名前に割り当て、派生は color-mix で作る */
+/* トークン: プリミティブは VS Code が html に指定する --vscode-*。セマンティックは shadcn/ui の名前に割り当て、派生は color-mix で作る */
 :root {
   --background: var(--vscode-editor-background);
   --foreground: var(--vscode-editor-foreground);
@@ -18,11 +18,11 @@
   --border: var(--vscode-widget-border);
   --ring: var(--vscode-focusBorder);
   --radius: 0.375rem;
-  /* 警告の色は線とアイコンだけに使い、文字の地にしない（地と文字はエディタの色） */
+  /* 警告の色は線とアイコンだけに使用し、文字の地にしない（地と文字はエディタの色） */
   --warning-border: var(--vscode-inputValidation-warningBorder);
 }
 
-/* Tailwind に自前のトークンだけを割り当て、標準のパレットを外す */
+/* Tailwind に自前のトークンだけを割り当て、標準のパレットを削除する */
 @theme inline {
   --color-*: initial;
   --color-background: var(--background);
@@ -70,7 +70,7 @@
   }
 }
 
-/* Alert の格子: アイコンの列と本文の列。帯の広い列では操作の列を足す */
+/* Alert の格子: アイコンの列と本文の列。帯の広い列では操作の列を追加する */
 @utility grid-cols-alert {
   grid-template-columns: 1rem 1fr;
 }

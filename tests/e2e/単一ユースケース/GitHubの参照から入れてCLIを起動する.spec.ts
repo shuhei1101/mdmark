@@ -13,9 +13,9 @@ const execFileAsync = promisify(execFile);
 const REPO_ROOT = resolve(import.meta.dirname, "../../..");
 // コマンドの出力が大きくなっても切れないようにする
 const MAX_BUFFER = 64 * 1024 * 1024;
-// 一時のリポジトリに打つ版のタグ
+// 一時のリポジトリに打つバージョンのタグ
 const TAG = "v0.0.1";
-// 版のタグの中身に含めない、作業ツリーにだけあるもの（`dist/` はビルドした作業ツリーのものに替える）
+// バージョンのタグの中身に含めない、作業ツリーにだけあるもの（`dist/` はビルドした作業ツリーのものに替える）
 const NOT_IN_TAG = [
   "node_modules/",
   "dist/",
@@ -25,16 +25,16 @@ const NOT_IN_TAG = [
 ];
 // `mdmark serve` が待ち受けを始めたときに標準出力へ出す URL
 const LISTENING_URL_PATTERN = /http:\/\/127\.0\.0\.1:\d+\/mcp/;
-// 待ち受けの URL が出たかを確かめる間隔（ミリ秒）
+// 待ち受けの URL が出たかを確認する間隔（ミリ秒）
 const POLL_INTERVAL_MS = 500;
 // 依存を npm レジストリから入れてから起動するまで待つ上限（ミリ秒）。`prepare` が残っていると devDependencies も入れるため、その時間（実測で約 3 分）を含める
 const INSTALL_TIMEOUT_MS = 480_000;
-// テスト 1 件の上限（ミリ秒）。導入の待ちの上限に、一時のリポジトリの用意とツールの一覧の取得の分を足す
+// テスト 1 件の上限（ミリ秒）。導入の待ちの上限に、一時のリポジトリの用意とツールの一覧の取得の分を加算する
 const TEST_TIMEOUT_MS = 600_000;
 // `npm ci --prefix tools/eslint` が出す導入の集計の行
 const ESLINT_INSTALL_OUTPUT = /added \d+ packages/;
 
-// ブラウザを使わないため、1 つのブラウザのプロジェクトだけで流す
+// ブラウザを使用しないため、1 つのブラウザのプロジェクトだけで実行する
 test.skip(
   ({ browserName }) => browserName !== "chromium",
   "ブラウザを使わないシナリオなので chromium のプロジェクトだけで流す",
@@ -47,7 +47,7 @@ type Exec = {
   exited: Promise<number>;
 };
 
-/** Git のリポジトリの場所を指す環境変数（`GIT_DIR` など）を外した環境に、`overrides` を重ねる */
+/** Git のリポジトリの場所を指す環境変数（`GIT_DIR` など）を削除した環境に、`overrides` を重ねる */
 function childEnv(overrides: Record<string, string>): Record<string, string> {
   const env = { ...(process.env as Record<string, string>) };
   for (const name of Object.keys(env)) {
@@ -59,7 +59,7 @@ function childEnv(overrides: Record<string, string>): Record<string, string> {
   return { ...env, ...overrides };
 }
 
-/** 作業ツリーのファイルに、ビルドした作業ツリーの `dist/` を重ねて commit し、版のタグを打った Git のリポジトリを作る */
+/** 作業ツリーのファイルに、ビルドした作業ツリーの `dist/` を重ねて commit し、バージョンのタグを打った Git のリポジトリを作る */
 async function createTaggedRepo(options: {
   builtRoot: string;
   repo: string;
@@ -125,7 +125,7 @@ function launchExec(options: {
   return { child, output: () => output, exited };
 }
 
-/** 待ち受けの URL が出るまで待って返す。先に終わったか上限を過ぎたときは、出力を添えて投げる */
+/** 待ち受けの URL が出るまで待って返却する。先に終わったか上限を過ぎたときは、出力を添えて投げる */
 async function waitListening(exec: Exec): Promise<string> {
   return new Promise<string>((resolve, reject) => {
     const timer = setInterval(() => {
@@ -165,7 +165,7 @@ async function stopExec(exec: Exec): Promise<void> {
   await exec.exited;
 }
 
-// 版のタグを指す参照から入れて serve を起動し、開発用の処理を実行せずにツールの一覧を返す（正常シナリオ）
+// バージョンのタグを指す参照から入れて serve を起動し、開発用の処理を実行せずにツールの一覧を返却する（正常シナリオ）
 test("test_normal", async ({ builtRoot, tempDir }) => {
   test.setTimeout(TEST_TIMEOUT_MS);
   // 準備

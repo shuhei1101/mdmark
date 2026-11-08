@@ -41,20 +41,20 @@ const GLOSSARY_MARKDOWN = [
   "",
   "| 用語 | 別名 | 意味 |",
   "| --- | --- | --- |",
-  "| 印 | マーク、オン・オフの印 | HTML コメントで書く指定 |",
+  "| マーカー | マーク、オン・オフのマーカー | HTML コメントで記載する指定 |",
   "",
   "<!-- /glossary -->",
   "",
-  "マークを書く。",
+  "マークを記載する。",
   "",
 ].join("\n");
 
-// 列を読み、別名を「、」「,」で区切る（「・」では区切らない）（正常系）
+// 列を読み込み、別名を「、」「,」で区切る（「・」では区切らない）（正常系）
 test("test_read_glossary_table", async () => {
   // 準備
   const { readGlossaryTable } = await loadGlossary();
   const tokens = await tableTokens([
-    "| 印 | マーク、オン・オフの印 | HTML コメントで書く指定 |",
+    "| マーカー | マーク、オン・オフのマーカー | HTML コメントで記載する指定 |",
     "| 型 | 種類, タイプ | 値の分類 |",
   ]);
   // 実行
@@ -70,9 +70,9 @@ test("test_read_glossary_table", async () => {
   expect(warning).toBeUndefined();
   expect(entries).toEqual([
     {
-      term: "印",
-      aliases: ["マーク", "オン・オフの印"],
-      meaning: "HTML コメントで書く指定",
+      term: "マーカー",
+      aliases: ["マーク", "オン・オフのマーカー"],
+      meaning: "HTML コメントで記載する指定",
       docId: "glossary",
       avoid: [],
     },
@@ -86,12 +86,12 @@ test("test_read_glossary_table", async () => {
   ]);
 });
 
-// 表に無い列名では用語を返さず警告を返す（異常系）
+// 表に無い列名では用語を返却せず警告を返却する（異常系）
 test("test_read_glossary_table_when_unknown_column", async () => {
   // 準備
   const { readGlossaryTable } = await loadGlossary();
   const tokens = await tableTokens([
-    "| 印 | マーク | HTML コメントで書く指定 |",
+    "| マーカー | マーク | HTML コメントで記載する指定 |",
   ]);
   // 実行
   const { entries, warning } = readGlossaryTable({
@@ -106,12 +106,12 @@ test("test_read_glossary_table_when_unknown_column", async () => {
   expect(warning).toContain("意味");
 });
 
-// 必須の meaning= が無ければ警告を返す（異常系）
+// 必須の meaning= が無ければ警告を返却する（異常系）
 test("test_read_glossary_table_when_missing_arg", async () => {
   // 準備
   const { readGlossaryTable } = await loadGlossary();
   const tokens = await tableTokens([
-    "| 印 | マーク | HTML コメントで書く指定 |",
+    "| マーカー | マーク | HTML コメントで記載する指定 |",
   ]);
   // 実行
   const { entries, warning } = readGlossaryTable({
@@ -124,7 +124,7 @@ test("test_read_glossary_table_when_missing_arg", async () => {
   expect(warning).toContain("meaning=");
 });
 
-// 印を取り除き表を残し、用語を env に足す（正常系）
+// マーカーを取り除き表を残し、用語を env に追加する（正常系）
 test("test_glossary_rule", async () => {
   // 準備
   const { createParser } = await loadParser();
@@ -134,10 +134,10 @@ test("test_glossary_rule", async () => {
   // 検証
   expect(html).toContain("<table");
   expect(html).not.toContain("<!--");
-  expect(env.ownGlossary.map((entry) => entry.term)).toEqual(["印"]);
+  expect(env.ownGlossary.map((entry) => entry.term)).toEqual(["マーカー"]);
 });
 
-// glossary がオフなら用語を足さない（正常系）
+// glossary がオフなら用語を追加しない（正常系）
 test("test_glossary_rule_when_disabled", async () => {
   // 準備
   const { createParser } = await loadParser();
@@ -149,7 +149,7 @@ test("test_glossary_rule_when_disabled", async () => {
   parser.render(GLOSSARY_MARKDOWN, onEnv);
   const html = parser.render(markdown, offEnv);
   // 検証
-  // 印が無ければ用語を足す同じ表で、印があると足さない
+  // マーカーが無ければ用語を追加する同じ表で、マーカーがあると追加しない
   expect(onEnv.ownGlossary).toHaveLength(1);
   expect(html).toContain("<table");
   expect(html).not.toContain("<!--");
@@ -162,15 +162,15 @@ const AVOID_GLOSSARY_MARKDOWN = [
   "",
   "| 用語 | 意味 | やめた言い方 |",
   "| --- | --- | --- |",
-  "| ワークスペース | 作業の置き場所 | 作業場、ワーク場 |",
+  "| ワークスペース | 作業の配置場所 | 作業場、ワーク場 |",
   "",
   "<!-- /glossary -->",
   "",
-  "ワークスペースと作業場を書く。",
+  "ワークスペースと作業場を記載する。",
   "",
 ].join("\n");
 
-// やめた言い方の列を用語の `avoid` に持たせて env に足す（正常系）
+// やめた言い方の列を用語の `avoid` に持たせて env に追加する（正常系）
 test("test_glossary_rule_keeps_avoid", async () => {
   // 準備
   const { createParser } = await loadParser();
@@ -183,13 +183,13 @@ test("test_glossary_rule_keeps_avoid", async () => {
   expect(env.ownGlossary[0]?.avoid).toEqual(["作業場", "ワーク場"]);
 });
 
-// やめた言い方の列を「、」「,」で区切って読み、用語の別名には入れない（正常系）
+// やめた言い方の列を「、」「,」で区切って読み込み、用語の別名には入れない（正常系）
 test("test_read_glossary_rows_with_avoid", async () => {
   // 準備
   const { readGlossaryRows } = await loadGlossary();
   const tokens = await avoidTableTokens(
     ["用語", "意味", "やめた言い方"],
-    ["| ワークスペース | 作業の置き場所 | 作業場、ワーク場, |"],
+    ["| ワークスペース | 作業の配置場所 | 作業場、ワーク場, |"],
   );
   // 実行
   const { rows, warning } = readGlossaryRows({
@@ -212,7 +212,7 @@ test("test_read_glossary_rows_without_avoid", async () => {
   // 準備
   const { readGlossaryRows, readGlossaryTable } = await loadGlossary();
   const tokens = await tableTokens([
-    "| 印 | マーク | HTML コメントで書く指定 |",
+    "| マーカー | マーク | HTML コメントで記載する指定 |",
   ]);
   const args = {
     args: [],
@@ -227,12 +227,12 @@ test("test_read_glossary_rows_without_avoid", async () => {
   expect(rows[0]?.entry).toEqual(entries[0]);
 });
 
-// avoid= が表に無い列名なら行を返さず警告を返す（異常系）
+// avoid= が表に無い列名なら行を返却せず警告を返却する（異常系）
 test("test_read_glossary_rows_when_unknown_avoid_column", async () => {
   // 準備
   const { readGlossaryRows } = await loadGlossary();
   const tokens = await tableTokens([
-    "| 印 | マーク | HTML コメントで書く指定 |",
+    "| マーカー | マーク | HTML コメントで記載する指定 |",
   ]);
   // 列は 用語・別名・意味 の並びで、旧称 は無い
   // 実行

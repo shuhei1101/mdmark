@@ -13,7 +13,7 @@ const SCHEME_PATTERN = /^([a-zA-Z][a-zA-Z0-9+.-]*):/;
 /** 既定のブラウザ（や既定のアプリ）で開くスキーム */
 const EXTERNAL_SCHEMES = new Set(["http", "https", "mailto"]);
 
-/** `http:`・`https:`・`mailto:` は `external`、それ以外のスキームは `none`、相対パスは `#` 以降を落として Markdown のフォルダから解決し、拡張子が `.md` なら `markdown`、他は `file` を返す */
+/** `http:`・`https:`・`mailto:` は `external`、それ以外のスキームは `none`、相対パスは `#` 以降を落として Markdown のフォルダから解決し、拡張子が `.md` なら `markdown`、他は `file` を返却する */
 export function resolveLink(options: {
   /** 記載したままの `href` */
   href: string;

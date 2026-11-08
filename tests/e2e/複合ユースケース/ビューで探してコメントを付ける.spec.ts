@@ -22,15 +22,15 @@ import { VIEW_COLUMNS, VIEW_ITEMS, viewMarkdown } from "../view-samples.ts";
 // 本文の段落の文字
 const PARAGRAPH = "描いた文書の見た目はテーマの変数で変える。";
 
-// 読む人が入力欄に書く本文
+// 読者が入力欄に記載する本文
 const COMMENT_BODY = "ここは <b>太字</b> にしたい";
 
-/** 描いた文書の中のビューの、ボードの列の見出しの値を、並びの順に返す */
+/** 描いた文書の中のビューの、ボードの列の見出しの値を、並びの順に返却する */
 function columnNames(page: Page): Promise<string[]> {
   return page.locator(".mdmark-view-column-name").allTextContents();
 }
 
-/** 表形式のビューの隠れていない本文の行の、指定した列（1 から）の文字を上から並べて返す */
+/** 表形式のビューの隠れていない本文の行の、指定した列（1 から）の文字を上から並べて返却する */
 function tableColumn(page: Page, column: number): Promise<string[]> {
   return page
     .locator(
@@ -73,7 +73,7 @@ test("test_normal", async ({ page, builtRoot }) => {
   // 実行・検証: 担当の列を絞り込む
   await filterByAssignee(page, "佐藤");
   expect(await tableColumn(page, 3)).toEqual(["佐藤", "佐藤"]);
-  // 実行: 本文の段落の文字を選んでコメントを書き、保存する
+  // 実行: 本文の段落の文字を選んでコメントを記載し、保存する
   await expect
     .poll(async () => (await readCommentCalls(page)).load.length)
     .toBe(1);
@@ -89,7 +89,7 @@ test("test_normal", async ({ page, builtRoot }) => {
   expect(saved).toHaveLength(1);
   expect(saved[0]?.comment.quote).toBe("テーマの変数");
   expect(saved[0]?.comment.body).toBe(COMMENT_BODY);
-  // 実行: 印からコメントを開く
+  // 実行: マーカーからコメントを開く
   await mark.click();
   // 検証
   await expect(
@@ -132,7 +132,7 @@ test("test_normal_when_exported", async ({ page, builtRoot, tempDir }) => {
   expect(opened.pageErrors()).toEqual([]);
 });
 
-// 使う側の JavaScript から描いたビューを列で絞り込み、片付けの関数で要素を空にする（正常シナリオ（使う側の JavaScript から描く））
+// 利用側の JavaScript から描いたビューを列で絞り込み、片付けの関数で要素を空にする（正常シナリオ（利用側の JavaScript から描く））
 test("test_normal_when_called_from_javascript", async ({ page, builtRoot }) => {
   // 準備
   await openPage(page, builtRoot);

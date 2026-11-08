@@ -1,9 +1,9 @@
 import { expect, test } from "vitest";
 
-/** アイコンの形を集める処理を読み込む（実装が無い間は各テストが個別に失敗する） */
+/** アイコンの形状を集める処理を読み込む（実装が無い間は各テストが個別に失敗する） */
 const loadIcons = () => import("../../../../src/cli/icons.ts");
 
-// 束ねていない名前の形だけを取り出す（正常系）
+// まとめていない名前の構造だけを取り出す（正常系）
 test("test_collect_icon_nodes", async () => {
   // 準備
   const { collectIconNodes } = await loadIcons();

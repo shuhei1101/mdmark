@@ -1,0 +1,99 @@
+title: "設定ファイルを読み込めない帯"
+implementation: "vscode/src/webview/shared/components/config-band.tsx#ConfigBand"
+story: "VSCode/ConfigBand"
+states:
+  - name: Default
+    description: タイトル「設定ファイルを読み込めません」、本文「mdmark.config.yaml の 4 行目を YAML として読み込めないため、この設定ファイルを重ねずに表示しています。」と「設定ファイルを開く」が横に並ぶ
+    args:
+      - name: path
+        value: mdmark.config.yaml
+      - name: line
+        value: '4'
+  - name: NarrowLongPath
+    description: 列の幅が 480px 未満でパスが長い。ボタンが文の下へ回り、パスが帯の中で折り返す
+    args:
+      - name: path
+        value: docs/settings/mdmark/mdmark.config.workspace-shared.yaml
+      - name: line
+        value: '12'
+    notes:
+      幅: ストーリーは幅 390px の画面で撃つ
+  - name: SettingsUnreadable
+    description: 端末の設定を読み込めない。本文「~/.config/mdmark/settings.yaml の 3 行目を YAML として読み込めないため、この設定ファイルを重ねずに表示しています。」
+    args:
+      - name: path
+        value: ~/.config/mdmark/settings.yaml
+      - name: line
+        value: '3'
+  - name: NestedConfigUnreadable
+    description: 近いフォルダの設定を読み込めない。本文「docs/mdmark.config.yaml の 7 行目を YAML として読み込めないため、この設定ファイルを重ねずに表示しています。」
+    args:
+      - name: path
+        value: docs/mdmark.config.yaml
+      - name: line
+        value: '7'
+  - name: SettingsInvalid
+    description: 端末の設定が設定の構造に合わない。本文「~/.config/mdmark/settings.yaml の features.callout が設定の構造に合わないため、この設定ファイルを重ねずに表示しています。」
+    args:
+      - name: path
+        value: ~/.config/mdmark/settings.yaml
+      - name: settingKey
+        value: features.callout
+    notes:
+      2 つ以上読めないとき: 画面は端末の設定 → 上 → 近いの順で最初に読み込めなかった 1 つだけを帯に指定し、修正して保存すると次を指定する
+lead: VS Code 拡張機能のプレビューで、重ねた設定ファイルを YAML として読み込めないとき・設定の構造に合わないときに文書の先頭に配置する帯と「設定ファイルを開く」。文書は描いたまま残す。
+args:
+  - name: path
+    type: 文字列
+    required: true
+    description: 読み込めない設定ファイルのパス（インターフェース定義『設定を重ねて読み込む』の制約「パスの表示」で書き換えた、ワークスペースからの相対パスか `~` のパス）。本文の `code` に入れる
+  - name: line
+    type: 整数
+    required: false
+    description: YAML として読み込めない行（1 始まり）。`settingKey` とどちらか一方だけを指定する
+  - name: settingKey
+    type: 文字列
+    required: false
+    description: 設定の構造に合わない最初のキー（`features.callout` のように `.` でつなぐ）。`line` とどちらか一方だけを指定する。React の予約の名前 `key` を回避した名前
+events:
+  - name: 設定ファイルを開く
+    when: 「設定ファイルを開く」のボタンを押したとき
+    value: props の `onOpenConfig()` を引数なしで呼ぶ
+    description: '画面が `{ type: "openConfig" }` を拡張機能へ送信する（設定ファイルを開く.ts）'
+css_properties:
+  - name: --warning-border
+    syntax: <color>
+    default: var(--vscode-inputValidation-warningBorder)
+    description: 帯と「設定ファイルを開く」の線と、警告のアイコンの色
+  - name: --secondary
+    syntax: <color>
+    default: var(--vscode-button-secondaryBackground)
+    description: 「設定ファイルを開く」のホバーの地の色
+  - name: --background
+    syntax: <color>
+    default: var(--vscode-editor-background)
+    description: 帯と「設定ファイルを開く」の地の色
+  - name: --foreground
+    syntax: <color>
+    default: var(--vscode-editor-foreground)
+    description: 帯と「設定ファイルを開く」の文字の色
+  - name: --ring
+    syntax: <color>
+    default: var(--vscode-focusBorder)
+    description: 「設定ファイルを開く」のフォーカスの輪郭の色
+accessibility:
+  - 帯は `role="status"` を持ち、出たときにスクリーンリーダーがタイトルと本文を伝達する
+  - タイトルは `h2`（文書の `h1` より下の階層）、本文は `p`。警告のアイコンは `aria-hidden="true"`
+  - 「設定ファイルを開く」は `button`（`outline` の variant）で、Tab で届き Enter・Space で押せる。フォーカスの輪郭を `--ring` の 2px で出す
+  - 帯の地と文字は、エディタの本文の地（`--background`）と文字（`--foreground`）の色にし、警告の色は線とアイコンだけに使用する（対比はテーマが本文に持たせる対比のまま）
+  - 帯は文書の先頭に配置し、固定せずスクロールに合わせて動かす。帯の幅が 30rem 以上ではボタンを文の右に、未満では文の下に配置する
+refs:
+  - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを再描画する.ts#constraints[設定ファイルを読み込めないとき]
+status: planned
+introduced:
+  pr: 69
+notes:
+  出典: '文言と帯の配置方法（文書の先頭に配置しスクロールに合わせて動かす）は確認ログの決定。外観と配色は #342 の確認ログ（モックへの合意・描けない理由と帯の配色を VS Code のテーマの色にする）。モックは `dev/mock/pages/vscode-preview/342/shadcn/` の帯の場面と `dev/mock/components/panel-alert/`'
+  使用する部品: shadcn/ui の `Alert`（`warning` の variant）・`Button`（`outline`）
+  配置場所: プレビューの状態の表示と同じく `shared/components/` に配置し、ストーリーの `title` は `VSCode/ConfigBand` のまま。描いた文書の要素は React の外の DOM のため、帯は文書を子に持たず、画面が帯と文書の要素を並べる
+test_file: tests/integration/vscode/config-band.story.test.ts

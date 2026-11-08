@@ -22,7 +22,7 @@ test("test_render_comment_button", async () => {
   expect(html).toContain('aria-hidden="true"');
 });
 
-// 題に選んだ文字をエスケープして出す（正常系）
+// タイトルに選んだ文字をエスケープして出す（正常系）
 test("test_render_comment_form", async () => {
   // 準備
   const { renderCommentForm } = await loadComment();
@@ -54,7 +54,7 @@ test("test_render_comment_form_when_saving", async () => {
   expect(findTag(html, "mdmark-comment-form")).toContain('aria-busy="true"');
 });
 
-// 保存できない知らせと本文を出す（正常系）
+// 保存できない通知と本文を出す（正常系）
 test("test_render_comment_form_when_failed", async () => {
   // 準備
   const { renderCommentForm, COMMENT_MESSAGES } = await loadComment();
@@ -75,7 +75,7 @@ test("test_render_comment_form_when_failed", async () => {
   expect(innerHtml(html, "<textarea")).toBe("変数の名前を一覧にしてほしい");
 });
 
-// 押せる印の属性を持つ（正常系）
+// 押せるマーカーの属性を持つ（正常系）
 test("test_render_comment_mark", async () => {
   // 準備
   const { renderCommentMark } = await loadComment();
@@ -146,11 +146,11 @@ test("test_render_comment_bubble_when_editable", async () => {
   expect(buttons[1]).toContain('title="削除"');
 });
 
-// 入力欄の状態ごとに知らせと保存のボタンを変える（正常系）
+// 入力欄の状態ごとに通知と保存のボタンを変える（正常系）
 test("test_render_comment_item_when_editing", async () => {
   // 準備
   const { renderCommentItem, COMMENT_MESSAGES } = await loadComment();
-  /** 状態を変えて入力欄の `li` を返す */
+  /** 状態を変えて入力欄の `li` を返却する */
   const render = (state: "idle" | "saving" | "empty" | "failed"): string =>
     renderCommentItem({
       body: "元の本文",
@@ -180,11 +180,11 @@ test("test_render_comment_item_when_editing", async () => {
   }
 });
 
-// 削除の確認の状態ごとに知らせと削除のボタンを変える（正常系）
+// 削除の確認の状態ごとに通知と削除のボタンを変える（正常系）
 test("test_render_comment_item_when_confirming", async () => {
   // 準備
   const { renderCommentItem } = await loadComment();
-  /** 状態を変えて削除の確認の `li` を返す */
+  /** 状態を変えて削除の確認の `li` を返却する */
   const render = (state: "idle" | "removing" | "failed"): string =>
     renderCommentItem({
       body: "元の本文",
@@ -214,7 +214,7 @@ test("test_render_comment_item_when_confirming", async () => {
   expect(render("idle")).not.toContain('role="alert"');
 });
 
-// canRemove だけなら削除のボタンだけを置く（正常系）
+// canRemove だけなら削除のボタンだけを配置する（正常系）
 test("test_render_comment_item_when_remove_only", async () => {
   // 準備
   const { renderCommentItem } = await loadComment();
@@ -226,7 +226,7 @@ test("test_render_comment_item_when_remove_only", async () => {
   expect(buttons[0]).toContain('data-action="remove"');
 });
 
-// 空なら何も返さない（正常系）
+// 空なら何も返却しない（正常系）
 test("test_render_comment_orphans_when_empty", async () => {
   // 準備
   const { renderCommentOrphans } = await loadComment();
@@ -236,7 +236,7 @@ test("test_render_comment_orphans_when_empty", async () => {
   expect(html).toBe("");
 });
 
-// 読み上げ名に選んだ文字をエスケープして入れる（正常系）
+// スクリーンリーダー向けの名前に選んだ文字をエスケープして入れる（正常系）
 test("test_render_comment_marker", async () => {
   // 準備
   const { renderCommentMarker } = await loadComment();

@@ -14,7 +14,7 @@ import {
   removeDistRoot,
 } from "../dist-page.ts";
 
-// ビルドした配布物を置いた作業ツリー
+// ビルドした配布物を配置した作業ツリー
 let builtRoot = "";
 
 test.beforeAll(async () => {
@@ -57,7 +57,7 @@ const TABLE_CONTENTS = {
 test("test_normal", async ({ page }) => {
   // 準備・実行
   await openRevisions(page, TABLE_CONTENTS);
-  // 検証: 開いた時点では、ソースの行が色分けで出て、変えたセルの語が濃い色
+  // 検証: 開いた時点では、ソースの行が色分けで出て、変えたセルの単語が濃い色
   const range = page.locator("#doc .mdmark-diff-html");
   await expect(range).toHaveCount(1);
   await expect(range.locator(".mdmark-diff-html-label")).toHaveText("HTML");
@@ -73,7 +73,7 @@ test("test_normal", async ({ page }) => {
   // 実行: 描いた結果に切り替える（キーで操作する）
   await previewButton.focus();
   await previewButton.press("Enter");
-  // 検証: 前と後の表が並び、前・後のどちらかを題で示す
+  // 検証: 前と後の表が並び、前・後のどちらかをタイトルで示す
   await expect(previewButton).toHaveAttribute("aria-pressed", "true");
   const sides = range.locator(".mdmark-diff-side");
   await expect(sides).toHaveCount(2);
@@ -91,7 +91,7 @@ test("test_normal", async ({ page }) => {
   await expect(sides.first()).toBeHidden();
 });
 
-// 後にだけある範囲は、足した行が全て緑と `+` で出て、プレビューでは前の側に範囲が無いことを示す（正常シナリオ（片側にだけある範囲））
+// 後にだけある範囲は、追加した行が全て緑と `+` で出て、プレビューでは前の側に範囲が無いことを示す（正常シナリオ（片側にだけある範囲））
 test("test_normal_when_range_only_on_one_side", async ({ page }) => {
   // 準備・実行
   await openRevisions(page, {
@@ -101,7 +101,7 @@ test("test_normal_when_range_only_on_one_side", async ({ page }) => {
       range: htmlRange(tableHtml(150)),
     }),
   });
-  // 検証: 足した範囲の行が全て緑と行頭の +
+  // 検証: 追加した範囲の行が全て緑と行頭の +
   const range = page.locator("#doc .mdmark-diff-html");
   const lines = range.locator(".mdmark-diff-line");
   const count = await lines.count();
@@ -119,7 +119,7 @@ test("test_normal_when_range_only_on_one_side", async ({ page }) => {
   await expect(range.locator(".mdmark-diff-side table")).toHaveCount(1);
 });
 
-// 変えていない範囲は、色と印を持たずに出て、切り替えを持たない（正常シナリオ（変えていない範囲））
+// 変えていない範囲は、色とマーカーを持たずに出て、切り替えを持たない（正常シナリオ（変えていない範囲））
 test("test_normal_when_range_unchanged", async ({ page }) => {
   // 準備・実行
   await openRevisions(page, {
@@ -148,7 +148,7 @@ test("test_normal_when_range_unchanged", async ({ page }) => {
   await expect(range.locator(".mdmark-diff-view")).toHaveCount(0);
 });
 
-// スクリプトとイベントの属性を書いた範囲は、描いた結果で落とし、ページの値を書き換えない（正常シナリオ（スクリプトを書いた範囲））
+// スクリプトとイベントの属性を記載した範囲は、描いた結果で落とし、ページの値を書き換えない（正常シナリオ（スクリプトを記載した範囲））
 test("test_normal_when_script_in_range", async ({ page }) => {
   // 準備
   const withScript = (mail: number) =>

@@ -1,5 +1,5 @@
 title: "ER 図: エイリアス"
-lead: 使う側が設定の `aliases` に並べるエイリアスの元の行と、その行と元の YAML から作ったエイリアス。元の行の構造は alias-inject v0.3.0 の `schemas/aliases.schema.yaml` を取り込んで縛り、作ったエイリアスを `mount`・`render`・`collectMatches` に渡す。
+lead: 利用側が設定の `aliases` に並べるエイリアスの元の行と、その行と元の YAML から作ったエイリアス。元の行の構造は alias-inject v0.3.0 の `schemas/aliases.schema.yaml` を取り込んで縛り、作ったエイリアスを `mount`・`render`・`collectMatches` に指定する。
 er:
   entities:
     - name: エイリアスの元の行
@@ -34,11 +34,11 @@ tables:
         description: '`false` のとき、この行からエイリアスを作らない'
         example: 'true'
       - name: paths
-        title: 読む YAML
+        title: 読み込む YAML
         type: array
         not_null: true
         check: 要素が 1 つ以上で、どれも空でない文字列
-        description: 読む YAML のパスか glob。設定ファイルのあるフォルダからの相対パスで、ファイルと glob を混ぜてよい。並びは書いた順、glob の中はパスの順
+        description: 読み込む YAML のパスか glob。設定ファイルのあるフォルダからの相対パスで、ファイルと glob を混ぜてよい。並びは記載した順、glob の中はパスの順
         example: '[terms/*.yaml]'
       - name: alias_type
         title: 引用の種類
@@ -51,27 +51,27 @@ tables:
         title: 文書の並びのキー
         type: string
         check: 空でない
-        description: ファイルの中のこのキーの配列の要素ごとに 1 件のエイリアスを作る。書かないとき、各ファイルを 1 件にする
+        description: ファイルの中のこのキーの配列の要素ごとに 1 件のエイリアスを作る。記載しないとき、各ファイルを 1 件にする
         example: terms
       - name: body_file
         title: 本文のファイルの列
         type: string
         check: 空でない
-        description: レコードの本文のファイルのパスを持つ列の名前。`name` が空のレコードの名前に、その列の値のファイル名から拡張子を除いたものを使う
+        description: レコードの本文のファイルのパスを持つ列の名前。`name` が空のレコードの名前に、その列の値のファイル名から拡張子を除いたものを使用する
         example: path
       - name: metadata
         title: エイリアスのキーの列
         type: object
-        description: エイリアスのキーごとに、値を取るレコードの列の名前を文字列で置く。入れ子の列は `meta.summary` のように `.` でつなぐ。書かないキーは同じ名前の列から取る
+        description: エイリアスのキーごとに、値を取るレコードの列の名前を文字列で配置する。入れ子の列は `meta.summary` のように `.` でつなぐ。記載しないキーは同じ名前の列から取る
         example: '{name: term, description: meta.meaning}'
-        notes: キーは `id`・`name`・`aliases`・`description`・`related`・`command`・`cwd`・`url`・`avoid`・`skill`・`tool`・`path`・`port`・`replacement`。行と `metadata` のほかのキーは拒まず使わない
+        notes: キーは `id`・`name`・`aliases`・`description`・`related`・`command`・`cwd`・`url`・`avoid`・`skill`・`tool`・`path`・`port`・`replacement`。行と `metadata` のほかのキーは拒まず使用しない
     refs:
       - dev/設計書/設定/ライブラリ本体#settings[aliases]
-    reason: 構造の正は alias-inject が持つ（D-120）。mdmark は取り込んだタグのスキーマで検証し、この表は読む側の使い方を書く
+    reason: 構造の正は alias-inject が持つ（D-120）。mdmark は取り込んだタグのスキーマで検証し、この表は読み込む側の使用方法を記載する
   - name: MdmarkAlias
     title: エイリアス
     datastore: JSON
-    summary: 元の行の `metadata` を当てて作ったエイリアス 1 件。`buildAliases` が返し、`mount`・`render`・`collectMatches` の `aliases` に並べて渡す
+    summary: 元の行の `metadata` を適用して作ったエイリアス 1 件。`buildAliases` が返却し、`mount`・`render`・`collectMatches` の `aliases` に並べて指定する
     primary_key: id
     scale: ~1000
     access: 全件
@@ -89,33 +89,33 @@ tables:
         not_null: true
         unique: true
         check: 空でない
-        description: エイリアスの ID。渡したエイリアスの中で一意。節ごとに最初の 1 回を数える単位
+        description: エイリアスの ID。指定したエイリアスの中で一意。セクションごとに最初の 1 回を数える単位
         example: unit-test
       - name: name
         title: 名前
         type: string
         not_null: true
         check: 空でない
-        description: 照合する語で、ツールチップに太字で出す名前。`avoid` の種類ではやめた言い方
+        description: 照合する単語で、ツールチップに太字で出す名前。`avoid` の種類ではやめた言い方
         example: 単体テスト
       - name: aliases
         title: 別名
         type: array
         default: '`[]`'
-        description: 名前と同じく照合する語
+        description: 名前と同じく照合する単語
         example: '[ユニットテスト]'
         notes: 要素は空でない文字列
       - name: description
         title: 説明
         type: string
         description: ツールチップの説明。`term`・`doc` では必須
-        example: ライブラリ本体の単体テストを流す
+        example: ライブラリ本体の単体テストを実行する
       - name: related
         title: 関連
         type: array
         default: '`[]`'
-        description: '`term` の関連する語。ツールチップには出さない'
-        notes: alias-inject の任意のキーを受け取るだけで使わない
+        description: '`term` の関連する単語。ツールチップには出さない'
+        notes: alias-inject の任意のキーを受け取るだけで使用しない
       - name: command
         title: コマンド
         type: string
@@ -150,12 +150,12 @@ tables:
         title: やめた言い方
         type: array
         default: '`[]`'
-        description: '`term` の種類の、使わないことにした言い方。索引の `terms[].avoid` と同じく、代わりの用語としてこのエイリアスを出す'
+        description: '`term` の種類の、使用しないことにした言い方。索引の `terms[].avoid` と同じく、代わりの用語としてこのエイリアスを出す'
         example: '[枝]'
       - name: replacement
         title: 置き換え先
         type: string
-        description: '`avoid` の種類の置き換え先の語'
+        description: '`avoid` の種類の置き換え先の単語'
         example: ワークスペース
     refs:
       - dev/設計書/インターフェース定義/ライブラリ本体/エイリアスを作る.ts#response[aliases]

@@ -44,7 +44,7 @@ export function fitScale(
   return Math.min(1, box.width / content.width, box.height / content.height);
 }
 
-/** 点 `from` から `to` への区間を読む */
+/** 点 `from` から `to` への区間を読み込む */
 function segmentOf(from: Point, to: Point): Segment {
   const horizontal = from[1] === to[1];
   const start = horizontal ? from[0] : from[1];
@@ -68,7 +68,7 @@ function overlaps(a: Segment, b: Segment): boolean {
   );
 }
 
-/** 先に置いた線と同じ向きで重なる区間を、重なる数 × `OVERLAP_OFFSET` だけ線に直角にずらした点を返す */
+/** 先に配置した線と同じ向きで重なる区間を、重なる数 × `OVERLAP_OFFSET` だけ線に直角にずらした点を返却する */
 function offsetOverlaps(wires: MdmarkDiagramWire[]): Map<string, Point[]> {
   const placed: Segment[] = [];
   const result = new Map<string, Point[]>();
@@ -131,7 +131,7 @@ function crossings(
   return xs;
 }
 
-/** 全ての線の横の区間が、ほかの線の縦の区間と交わる点に半円の弧を入れた svg のパスを、線の `id` から引ける形で返す。同じ向きで重なる区間はずらす */
+/** 全ての線の横の区間が、ほかの線の縦の区間と交わる点に半円の弧を入れた svg のパスを、線の `id` から参照できる構造で返却する。同じ向きで重なる区間はずらす */
 export function jumpPaths(wires: MdmarkDiagramWire[]): Map<string, string> {
   const shifted = offsetOverlaps(wires);
   const paths = new Map<string, string>();
@@ -198,7 +198,7 @@ export function niceTicks(values: number[]): {
   return { min, max: max > min ? max : tidy(min + step), step: tidy(step) };
 }
 
-/** 目盛りごとに、0 以上の値は 0 から上へ、負の値は 0 から下へ、系列の順に積み上げた下端と上端を返す */
+/** 目盛りごとに、0 以上の値は 0 から上へ、負の値は 0 から下へ、系列の順に積み上げた下端と上端を返却する */
 export function stackSeries(
   series: number[][],
 ): Array<Array<{ from: number; to: number }>> {

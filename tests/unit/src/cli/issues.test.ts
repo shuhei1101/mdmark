@@ -1,6 +1,6 @@
 import { expect, test } from "vitest";
 
-/** ずれを 1 行にする処理を読み込む（ファイルが無いと Vite の解決が失敗してテストファイルごと落ちるため、URL を組んで読む。実装が無い間は各テストが個別に失敗する） */
+/** ずれを 1 行にする処理を読み込む（ファイルが無いと Vite の解決が失敗してテストファイルごと落ちるため、URL を組んで読み込む。実装が無い間は各テストが個別に失敗する） */
 const loadIssues = (): Promise<
   typeof import("../../../../src/cli/issues.ts")
 > =>
@@ -24,7 +24,7 @@ test("test_format_check_issue", async () => {
   expect(line).toBe("mdmark.config.yaml:aliases[1].paths: alias_no_files: m");
 });
 
-// where が空のずれは file だけを置く（正常系）
+// where が空のずれは file だけを配置する（正常系）
 test("test_format_check_issue_when_no_where", async () => {
   // 準備
   const { formatCheckIssue } = await loadIssues();

@@ -16,7 +16,7 @@ afterEach(() => {
   removeRoots();
 });
 
-/** 幅 600px の描く先の要素に、幅 900px の中身と幅 300px の中身の `div.mdmark-html` を置く */
+/** 幅 600px の描く先の要素に、幅 900px の中身と幅 300px の中身の `div.mdmark-html` を配置する */
 function createEmbeddedRoot(): {
   root: HTMLElement;
   wide: HTMLElement;
@@ -32,12 +32,12 @@ function createEmbeddedRoot(): {
   root.style.setProperty("--mdmark-padding", "0");
   const [wide, narrow] = root.querySelectorAll<HTMLElement>("div.mdmark-html");
   if (wide === undefined || narrow === undefined) {
-    throw new Error("埋め込んだ HTML が置かれていない");
+    throw new Error("埋め込んだ HTML が配置されていない");
   }
   return { root, wide, narrow };
 }
 
-/** 横にスクロールさせている印（class `is-wide` と `tabindex="0"`）を持つか */
+/** 横にスクロールさせているマーカー（class `is-wide` と `tabindex="0"`）を持つか */
 function isScrolling(element: HTMLElement): boolean {
   return (
     element.classList.contains("is-wide") &&
@@ -45,7 +45,7 @@ function isScrolling(element: HTMLElement): boolean {
   );
 }
 
-/** 横にスクロールさせる印を何も持たないか */
+/** 横にスクロールさせるマーカーを何も持たないか */
 function isPlain(element: HTMLElement): boolean {
   return (
     !element.classList.contains("is-wide") && !element.hasAttribute("tabindex")
@@ -67,7 +67,7 @@ test("test_attach_embedded_html", async () => {
   // 検証
   await vi.waitFor(() => expect(isPlain(wide)).toBe(true));
   expect(isPlain(narrow)).toBe(true);
-  // 実行: 幅を戻して広い中身がはみ出してから、外す
+  // 実行: 幅を戻して広い中身がはみ出してから、削除する
   root.style.width = "600px";
   await vi.waitFor(() => expect(isScrolling(wide)).toBe(true));
   detach();

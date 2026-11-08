@@ -28,11 +28,11 @@ export type MdmarkGlossaryEntry = {
   meaning: string;
   /** 表を持つ文書の `id` */
   docId: string;
-  /** やめた言い方の列を「、」「,」で区切ったもの。やめた言い方の列が無いときは空。使う側が組み立てた参照の表で無いときは、やめた言い方を持たない用語として扱う */
+  /** やめた言い方の列を「、」「,」で区切ったもの。やめた言い方の列が無いときは空。利用側が組み立てた参照の表で無いときは、やめた言い方を持たない用語として扱う */
   avoid?: string[] | undefined;
 };
 
-/** `collectReferences` が返し、`mount`・`render` の `opts.references` が受け取る参照の表 */
+/** `collectReferences` が返却し、`mount`・`render` の `opts.references` が受け取る参照の表 */
 export type MdmarkReferences = {
   /** 文書の `id` から、その文書を参照している文書の `id` の並び */
   backlinks: Record<string, string[]>;
@@ -40,11 +40,11 @@ export type MdmarkReferences = {
   glossary: MdmarkGlossaryEntry[];
 };
 
-/** 文書の本文を読んだ結果 */
+/** 文書の本文を読み込んだ結果 */
 export type ParsedDocument = {
   /** 解析器のトークン */
   tokens: Token[];
-  /** 文書の印を重ねて決まった機能のオン・オフ */
+  /** 文書のマーカーを重ねて決まった機能のオン・オフ */
   features: Record<string, boolean>;
   /** 用語集の表の 1 行ごとの用語と、その行の行番号（1 から） */
   glossary: Array<{
@@ -53,10 +53,10 @@ export type ParsedDocument = {
   }>;
 };
 
-/** 参照の表と点検が本文を読む解析器: 印を拾い、機能を決め、用語集の表を読むところまでのコアルールだけを持つ */
+/** 参照の表と点検が本文を読み込む解析器: マーカーを取得し、機能を決め、用語集の表を読み込むところまでのコアルールだけを持つ */
 let parser: MarkdownItParser | undefined;
 
-/** 文書の本文を、印・機能・用語集の表を読んだトークンにする */
+/** 文書の本文を、マーカー・機能・用語集の表を読み込んだトークンにする */
 export function parseDocument(options: {
   /** 本文の Markdown */
   body: string;
@@ -90,7 +90,7 @@ export function parseDocument(options: {
   return { tokens, features: env.features, glossary };
 }
 
-/** 文書の本文を読んだ結果と、索引の文書 */
+/** 文書の本文を読み込んだ結果と、索引の文書 */
 type ScannedDocument = {
   doc: MdmarkIndexDoc;
   parsed: ParsedDocument | undefined;
@@ -112,7 +112,7 @@ export function linkedPaths(doc: MdmarkIndexDoc, tokens: Token[]): Set<string> {
   return paths;
 }
 
-/** 本文の中の、文書の別名に当たる語の集まり（コード・リンク・見出し・用語集の表の中は除く） */
+/** 本文の中の、文書の別名に該当する単語の集まり（コード・リンク・見出し・用語集の表の中は除く） */
 function matchedAliases(tokens: Token[], aliases: string[]): Set<string> {
   const matched = new Set<string>();
   if (aliases.length === 0) {
@@ -129,11 +129,11 @@ function matchedAliases(tokens: Token[], aliases: string[]): Set<string> {
   return matched;
 }
 
-/** 索引と全ての文書の本文から、文書ごとの被参照と、各文書の用語集の表から入れた用語を返す */
+/** 索引と全ての文書の本文から、文書ごとの被参照と、各文書の用語集の表から入れた用語を返却する */
 export function collectReferences(input: {
   /** 索引 */
   index: MdmarkIndex;
-  /** 文書のパスから本文を引く表 */
+  /** 文書のパスから本文を参照する表 */
   documents: Record<string, string>;
   /** 設定 */
   config?: MdmarkConfig;
@@ -160,7 +160,7 @@ export function collectReferences(input: {
   const featureOn = (item: ScannedDocument, name: string): boolean =>
     (item.parsed?.features ?? defaults)[name] !== false;
 
-  // 正規化した文書の別名から、その別名を持つ文書を引く
+  // 正規化した文書の別名から、その別名を持つ文書を参照する
   const aliasOwners = new Map<string, MdmarkIndexDoc[]>();
   for (const { doc } of scanned) {
     for (const alias of doc.aliases ?? []) {

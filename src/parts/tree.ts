@@ -2,7 +2,7 @@ import { escapeHtml } from "./escape.ts";
 import { iconSvg } from "./icons.ts";
 import { renderCopyPanel } from "./table.ts";
 
-/** 罫線を読んだ 1 項目 */
+/** 罫線を読み込んだ 1 項目 */
 export type TreeNode = {
   /** 項目の名前 */
   name: string;
@@ -83,7 +83,7 @@ const EXTENSIONS_BY_ICON = {
   "file-terminal": ["sh", "bash", "zsh", "ps1", "bat"],
 } satisfies Record<Exclude<FileIcon, "file">, string[]>;
 
-/** 拡張子から種類を引く表 */
+/** 拡張子から種類を参照する表 */
 const ICON_BY_EXTENSION = new Map<string, FileIcon>(
   Object.entries(EXTENSIONS_BY_ICON).flatMap(([icon, extensions]) =>
     extensions.map((extension): [string, FileIcon] => [
@@ -99,7 +99,7 @@ const COPY_LABELS = {
   copied: { icon: "check", text: "コピーしました" },
 } as const;
 
-/** ファイル名から、アイコンの種類を返す。名前そのものを先に引き、次に最後の `.` の後ろを小文字にした拡張子で引く。どれにも当たらなければ `file` */
+/** ファイル名から、アイコンの種類を返却する。名前そのものを先に引き、次に最後の `.` の後ろを小文字にした拡張子で参照する。どれにも該当しなければ `file` */
 export function fileIconOf(name: string): FileIcon {
   const byName = ICON_BY_NAME[name];
   if (byName) {
@@ -110,7 +110,7 @@ export function fileIconOf(name: string): FileIcon {
   return ICON_BY_EXTENSION.get(extension) ?? "file";
 }
 
-/** ルートを 0 としたフォルダの深さと `data-open` の値から、既定で開くかを返す。`all` は常に開き、数は深さがその数より浅いとき、値が無ければルートだけを開く */
+/** ルートを 0 としたフォルダの深さと `data-open` の値から、既定で開くかを返却する。`all` は常に開き、数は深さがその数より浅いとき、値が無ければルートだけを開く */
 export function folderOpenByDefault(
   depth: number,
   open: string | undefined,
@@ -121,13 +121,13 @@ export function folderOpenByDefault(
   return depth < (open === undefined ? 1 : Number(open));
 }
 
-/** コピーのボタンの中身（アイコンと文言）の HTML を返す */
+/** コピーのボタンの中身（アイコンと文言）の HTML を返却する */
 export function renderTreeCopyContent(state: TreeCopyState): string {
   const label = COPY_LABELS[state];
   return `${iconSvg(label.icon)}${label.text}`;
 }
 
-/** ツリーの上に置く帯（種類 `tree`・コピーのボタン・読み上げの知らせ）の HTML を返す */
+/** ツリーの上に配置する帯（種類 `tree`・コピーのボタン・スクリーンリーダーの通知）の HTML を返却する */
 export function renderTreeBar(options: { copyState?: TreeCopyState }): string {
   const state = options.copyState ?? "idle";
   return `<div class="mdmark-tree-bar"><span class="mdmark-tree-kind" aria-hidden="true">tree</span><span class="mdmark-tree-meta"><button class="mdmark-tree-copy" type="button" data-state="${state}">${renderTreeCopyContent(state)}</button><span class="mdmark-visually-hidden mdmark-tree-status" role="status"></span></span></div>`;
@@ -177,11 +177,11 @@ function renderNode(
   return `<li class="mdmark-tree-folder"><span class="mdmark-tree-row"><button class="mdmark-tree-toggle" type="button" aria-expanded="${open}" aria-controls="${escapeHtml(listId)}">${name}</button>${note}</span><ul id="${escapeHtml(listId)}"${open ? "" : ' hidden="until-found"'}>${nested}</ul></li>`;
 }
 
-/** ファイルツリーの HTML を返す。`render` は全てのフォルダを開いて出し、`interactive` のときは `mount` が付けた後の帯と開閉のボタンも描く */
+/** ファイルツリーの HTML を返却する。`render` は全てのフォルダを開いて出し、`interactive` のときは `mount` が付けた後の帯と開閉のボタンも描く */
 export function renderTree(options: {
   /** 項目 */
   nodes: TreeNode[];
-  /** コードブロックに書いた罫線のテキスト（コピーするテキスト） */
+  /** コードブロックに記載した罫線のテキスト（コピーするテキスト） */
   source: string;
   /** 既定で開く階層（`open=` の値。`all` か 1 以上の整数の文字） */
   open?: string | undefined;
@@ -191,7 +191,7 @@ export function renderTree(options: {
   wrap?: boolean | undefined;
   /** コピーのボタンの状態（既定 `idle`） */
   copyState?: TreeCopyState;
-  /** クリップボードに書けなかったときのパネルを出すか（既定 `false`） */
+  /** クリップボードに書き込めなかったときのパネルを出すか（既定 `false`） */
   copyFallback?: boolean;
   /** `aria-controls` の id の頭（既定 `mdmark-tree`） */
   id?: string;

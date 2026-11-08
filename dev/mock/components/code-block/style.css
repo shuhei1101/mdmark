@@ -1,4 +1,4 @@
-/* コードブロックのモックだけの規則: 使う側が層の外に書いた pre への汎用の CSS の見本（MindStella のプレビューと同じ規則） */
+/* コードブロックのモックだけの規則: 利用側が層の外に記載した pre への汎用の CSS の見本（MindStella のプレビューと同じ規則） */
 .mock-host-pre pre {
   white-space: pre-wrap;
   overflow-wrap: anywhere;

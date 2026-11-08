@@ -13,7 +13,7 @@ const EXTENSION_DIR = join(REPO_ROOT, "vscode");
 /** .vsix を作るのにかかる時間の上限（ミリ秒） */
 const PACKAGE_TIMEOUT_MS = 180000;
 
-/** `npm --prefix vscode run {script}` を流し、終了コードと出力を返す */
+/** `npm --prefix vscode run {script}` を実行し、終了コードと出力を返却する */
 async function runScript(
   script: string,
   args: string[] = [],
@@ -55,7 +55,7 @@ async function listVsix(path: string): Promise<string[]> {
   return stdout.split("\n").filter((line) => line !== "");
 }
 
-/** .vsix の中のファイルを読む */
+/** .vsix の中のファイルを読み込む */
 async function readVsix(path: string, name: string): Promise<string> {
   const { stdout } = await execFileAsync("unzip", ["-p", path, name]);
   return stdout;
@@ -102,7 +102,7 @@ suite("拡張機能の配布物を作る", () => {
     assert.strictEqual(workflow.permissions.contents, "write");
   });
 
-  // タグと package.json のバージョンが違うとき、版の比較で止める
+  // タグと package.json のバージョンが違うとき、バージョンの比較で止める
   test("test_error_when_version_mismatch", async () => {
     // 実行
     const mismatch = await runScript("release:check", ["vscode-v0.2.0"]);

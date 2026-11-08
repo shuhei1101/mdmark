@@ -8,7 +8,7 @@ import {
   routeSyntax,
 } from "../dist-page.ts";
 
-// ビルドした配布物を置いた作業ツリー
+// ビルドした配布物を配置した作業ツリー
 let builtRoot = "";
 
 // 3 行の言語 `ts` のコードブロック
@@ -20,7 +20,7 @@ const THREE_LINES = [
   "```",
 ];
 
-// 色分けする言語（`ts`・`yaml`・`python`）のコードブロックを 1 つずつ置いた文書
+// 色分けする言語（`ts`・`yaml`・`python`）のコードブロックを 1 つずつ配置した文書
 const HIGHLIGHT_BLOCKS = [
   "```ts",
   'const greeting: string = "hello"; // 挨拶',
@@ -45,7 +45,7 @@ const HIGHLIGHT_TEXTS = [
   'def greet(name):\n    return "hi"  # 挨拶',
 ];
 
-// 色分けのライブラリを読み終えるのを待つ時間の上限、読まないことを確かめるために待つ時間（ミリ秒）
+// 色分けのライブラリを読み込み終えるのを待つ時間の上限、読み込まないことを確認するために待つ時間（ミリ秒）
 const SETTLE_MS = 500;
 
 test.beforeAll(async () => {
@@ -56,7 +56,7 @@ test.afterAll(async () => {
   await removeDistRoot(builtRoot);
 });
 
-/** コードブロックの文字を全て選び、選んだ文字を返す */
+/** コードブロックの文字を全て選び、選んだ文字を返却する */
 async function selectedCode(page: Page): Promise<string> {
   return await page
     .locator("#doc pre")
@@ -78,7 +78,7 @@ async function hasBackground(
   return color !== "rgba(0, 0, 0, 0)" && color !== "transparent";
 }
 
-// 題・行番号・行の強調を付け、行番号は選んで写す文字に入らない（正常シナリオ）
+// タイトル・行番号・行の強調を付け、行番号は選んで写す文字に入らない（正常シナリオ）
 test("test_normal", async ({ page }) => {
   // 準備
   await openPage(page, builtRoot);
@@ -112,7 +112,7 @@ test("test_normal", async ({ page }) => {
   expect(copied).toContain("const a = 1;");
 });
 
-// 行末の印で行に種類を付け、印と印だけの行コメントの頭を外す（正常シナリオ（コードの行の印））
+// 行末のマーカーで行に種類を付け、マーカーとマーカーだけの行コメントの頭を削除する（正常シナリオ（コードの行のマーカー））
 test("test_normal_when_line_marks", async ({ page }) => {
   // 準備
   await openPage(page, builtRoot);
@@ -154,7 +154,7 @@ test("test_normal_when_line_marks", async ({ page }) => {
   expect(copied).not.toMatch(/^[+-]/m);
 });
 
-// 打ち消した印は、`\` を外した文字のまま出す（正常シナリオ（印の書き方を見せる））
+// 打ち消したマーカーは、`\` を削除した文字のまま出す（正常シナリオ（マーカーの記載方法を見せる））
 test("test_normal_when_line_mark_escaped", async ({ page }) => {
   // 準備
   await openPage(page, builtRoot);
@@ -175,7 +175,7 @@ test("test_normal_when_line_mark_escaped", async ({ page }) => {
   expect(after).not.toContain("+");
 });
 
-// 機能をオフにした文書は、題・行番号・行の強調を付けず、行の印を書いた文字のまま出す（正常シナリオ（機能をオフにした文書））
+// 機能をオフにした文書は、タイトル・行番号・行の強調を付けず、行のマーカーを記載した文字のまま出す（正常シナリオ（機能をオフにした文書））
 test("test_normal_when_feature_off", async ({ page }) => {
   // 準備
   await openPage(page, builtRoot);
@@ -204,7 +204,7 @@ test("test_normal_when_feature_off", async ({ page }) => {
   await expect(doc.locator("pre").nth(1)).toContainText("// [!code ++]");
 });
 
-// 知らないキーは読み飛ばし、書き方の警告を出さずに読めた題を付ける（正常シナリオ（知らないキー））
+// 知らないキーはスキップし、記載の警告を出さずに読み込めたタイトルを付ける（正常シナリオ（知らないキー））
 test("test_normal_when_unknown_key", async ({ page }) => {
   // 準備
   await openPage(page, builtRoot);
@@ -248,7 +248,7 @@ test("test_error_when_highlight_line_missing", async ({ page }) => {
   ).toHaveCount(1);
 });
 
-// 知らないコードの行の印は当てずに警告にし、書いた文字のまま出す（異常シナリオ（知らないコードの行の印））
+// 知らないコードの行のマーカーは当てずに警告にし、記載した文字のまま出す（異常シナリオ（知らないコードの行のマーカー））
 test("test_error_when_unknown_line_mark", async ({ page }) => {
   // 準備
   await openPage(page, builtRoot);
@@ -268,7 +268,7 @@ test("test_error_when_unknown_line_mark", async ({ page }) => {
   await expect(doc.locator(".mdmark-code-line")).toHaveCount(0);
 });
 
-// 印の後にコードブロックが無いときは警告にし、段落をそのまま出す（異常シナリオ（印の後にコードブロックが無い））
+// マーカーの後にコードブロックが無いときは警告にし、段落をそのまま出す（異常シナリオ（マーカーの後にコードブロックが無い））
 test("test_error_when_no_code_block", async ({ page }) => {
   // 準備
   await openPage(page, builtRoot);
@@ -285,7 +285,7 @@ test("test_error_when_no_code_block", async ({ page }) => {
   await expect(doc.locator(".mdmark-code-title")).toHaveCount(0);
 });
 
-/** 開いたページの `console.error` の文字を控え、控えた文字を返す関数を返す */
+/** 開いたページの `console.error` の文字を記録し、記録した文字を返却する関数を返却する */
 function collectConsoleErrors(page: Page): () => string[] {
   const errors: string[] = [];
   page.on("console", (message) => {
@@ -296,7 +296,7 @@ function collectConsoleErrors(page: Page): () => string[] {
   return () => errors;
 }
 
-/** `#doc` の色の変数 `name` が今の配色で指す色（`rgb(…)`）を返す */
+/** `#doc` の色の変数 `name` が今の配色で指す色（`rgb(…)`）を返却する */
 async function themeColor(page: Page, name: string): Promise<string> {
   return await page.locator("#doc").evaluate((doc, variable) => {
     const probe = document.createElement("span");
@@ -308,7 +308,7 @@ async function themeColor(page: Page, name: string): Promise<string> {
   }, name);
 }
 
-/** コードブロックごとに、`hljs-` で始まる class の `span` の数を返す */
+/** コードブロックごとに、`hljs-` で始まる class の `span` の数を返却する */
 async function coloredSpanCounts(page: Page): Promise<number[]> {
   return await page
     .locator("#doc pre code")
@@ -317,7 +317,7 @@ async function coloredSpanCounts(page: Page): Promise<number[]> {
     );
 }
 
-/** コードブロックごとに、文字を全て選んだときの選んだ文字を返す */
+/** コードブロックごとに、文字を全て選んだときの選んだ文字を返却する */
 async function selectedTexts(page: Page): Promise<string[]> {
   return await page.locator("#doc pre").evaluateAll((pres) =>
     pres.map((pre) => {
@@ -328,7 +328,7 @@ async function selectedTexts(page: Page): Promise<string[]> {
   );
 }
 
-// 言語に応じてコードブロックを色分けし、文字は書いたとおりで、本体と使う言語のモジュールだけを読む（正常シナリオ（言語に応じて色分けする））
+// 言語に応じてコードブロックを色分けし、文字は記載したとおりで、本体と使用する言語のモジュールだけを読み込む（正常シナリオ（言語に応じて色分けする））
 test("test_normal_when_syntax_highlighted", async ({ page }) => {
   // 準備
   const requests = await routeSyntax(page);
@@ -361,9 +361,9 @@ test("test_normal_when_syntax_highlighted", async ({ page }) => {
     "color",
     await themeColor(page, "--mdmark-color-syntax-comment"),
   );
-  // 文字は書いたとおりで、全て選んで写した文字が色分けの前と同じ
+  // 文字は記載したとおりで、全て選んでコピーした文字が色分けの前と同じ
   expect(await selectedTexts(page)).toEqual(HIGHLIGHT_TEXTS);
-  // 本体と、文書が使う言語のモジュールを 1 件ずつ読む
+  // 本体と、文書が使用する言語のモジュールを 1 件ずつ読み込む
   expect(requests()).toEqual([
     "core.min.js",
     "languages/python.min.js",
@@ -372,7 +372,7 @@ test("test_normal_when_syntax_highlighted", async ({ page }) => {
   ]);
 });
 
-// 題・行番号・コードの行の印を保ったまま、行ごとに中身を色分けする（正常シナリオ（題・行番号・コードの行の印と色分けする））
+// タイトル・行番号・コードの行のマーカーを保ったまま、行ごとに中身を色分けする（正常シナリオ（タイトル・行番号・コードの行のマーカーと色分けする））
 test("test_normal_when_highlighted_with_line_marks", async ({ page }) => {
   // 準備
   const requests = await routeSyntax(page);
@@ -414,7 +414,7 @@ test("test_normal_when_highlighted_with_line_marks", async ({ page }) => {
       comment,
     );
   }
-  // 消した行・足した行が、それぞれの地の色と行頭の印で出ていて、行の中の文字は色分けされている
+  // 削除した行・追加した行が、それぞれの地の色と行頭のマーカーで出ていて、行の中の文字は色分けされている
   await expect(lines.nth(4)).toHaveAttribute("data-kind", "del");
   await expect(lines.nth(5)).toHaveAttribute("data-kind", "add");
   const signs = await lines.evaluateAll((elements) =>
@@ -429,14 +429,14 @@ test("test_normal_when_highlighted_with_line_marks", async ({ page }) => {
   // 4 行目が強調の背景になっている
   await expect(lines.nth(3)).toHaveAttribute("data-kind", "highlight");
   expect(await hasBackground(lines.nth(3))).toBe(true);
-  // 全て選んだ文字に、行番号と行頭の印が入らず、印の文字も出ない
+  // 全て選んだ文字に、行番号と行頭のマーカーが入らず、マーカーの文字も出ない
   const copied = (await selectedTexts(page))[0] ?? "";
   expect(copied).not.toMatch(/^\d/m);
   expect(copied).not.toMatch(/^[+-]/m);
   expect(copied).not.toContain("[!code");
 });
 
-// 言語の無いコードブロックと、色分けしない言語のコードブロックは、書いたとおりに出し、ライブラリを読まない（正常シナリオ（色分けしない言語））
+// 言語の無いコードブロックと、色分けしない言語のコードブロックは、記載したとおりに出し、ライブラリを読み込まない（正常シナリオ（色分けしない言語））
 test("test_normal_when_language_not_highlighted", async ({ page }) => {
   // 準備
   const requests = await routeSyntax(page);
@@ -461,7 +461,7 @@ test("test_normal_when_language_not_highlighted", async ({ page }) => {
   expect(requests()).toEqual([]);
 });
 
-// 色分けの機能をオフにした文書は、色分けせず、行の印を付けたコードブロックをそのまま描く（正常シナリオ（色分けの機能をオフにした文書））
+// 色分けの機能をオフにした文書は、色分けせず、行のマーカーを付けたコードブロックをそのまま描く（正常シナリオ（色分けの機能をオフにした文書））
 test("test_normal_when_syntax_feature_off", async ({ page }) => {
   // 準備
   const requests = await routeSyntax(page);
@@ -492,7 +492,7 @@ test("test_normal_when_syntax_feature_off", async ({ page }) => {
   expect(requests()).toEqual([]);
 });
 
-// 色分けのライブラリの本体を読めないとき、コードブロックを色分けせずに欠けずに出し、知らせの枠は出さずにコンソールへ出す（異常シナリオ（色分けのライブラリを読めない））
+// 色分けのライブラリの本体を読み込めないとき、コードブロックを色分けせずに欠けずに出し、通知ブロックは出さずにコンソールへ出す（異常シナリオ（色分けのライブラリを読み込めない））
 test("test_error_when_highlighter_not_found", async ({ page }) => {
   // 準備
   const requests = await routeSyntax(page, { missing: ["core.min.js"] });
@@ -510,7 +510,7 @@ test("test_error_when_highlighter_not_found", async ({ page }) => {
   await expect(page.locator("#doc .mdmark-notice")).toHaveCount(0);
 });
 
-// 言語のモジュールの一部を読めないとき、読めた言語のコードブロックだけを色分けし、読めなかった言語はコンソールへ出す（異常シナリオ（言語のモジュールの一部を読めない））
+// 言語のモジュールの一部を読み込めないとき、読み込めた言語のコードブロックだけを色分けし、読み込めなかった言語はコンソールへ出す（異常シナリオ（言語のモジュールの一部を読み込めない））
 test("test_error_when_language_module_not_found", async ({ page }) => {
   // 準備
   await routeSyntax(page, { missing: ["languages/python.min.js"] });
@@ -531,7 +531,7 @@ test("test_error_when_language_module_not_found", async ({ page }) => {
   await expect(page.locator("#doc .mdmark-notice")).toHaveCount(0);
 });
 
-// 言語の指定があるコードブロックの上の帯の左端に言語のラベルを出し、選んだ文字に入れず、読み上げの名前は変えない（正常シナリオ（言語のラベルを出す））
+// 言語の指定があるコードブロックの上の帯の左端に言語のラベルを出し、選んだ文字に入れず、スクリーンリーダー向けの名前は変えない（正常シナリオ（言語のラベルを出す））
 test("test_normal_when_language_label_shown", async ({ page }) => {
   // 準備
   await openPage(page, builtRoot);
@@ -584,7 +584,7 @@ test("test_normal_when_language_label_shown", async ({ page }) => {
   });
   expect(selected).toContain("echo hi");
   expect(selected).not.toContain("bash");
-  // 検証: 読み上げの名前は今のまま
+  // 検証: スクリーンリーダー向けの名前は今のまま
   await expect(blocks.nth(0).locator("pre")).toHaveAttribute(
     "aria-label",
     "コード: ts",
@@ -599,7 +599,7 @@ test("test_normal_when_language_label_shown", async ({ page }) => {
   );
 });
 
-// コピーボタンで、消した行を含めない変更後のコードをコピーし、ボタンで知らせ、しばらくすると元に戻す（正常シナリオ（変更後のコードをコピーする））
+// コピーボタンで、削除した行を含めない変更後のコードをコピーし、ボタンで通知し、しばらくすると元に戻す（正常シナリオ（変更後のコードをコピーする））
 test("test_normal_when_code_copied", async ({ page }) => {
   // 準備
   await stubClipboard(page, "allow");
@@ -632,7 +632,7 @@ test("test_normal_when_code_copied", async ({ page }) => {
   await page.keyboard.press("Tab");
   await expect(buttons).toBeFocused();
   await page.keyboard.press("Enter");
-  // 検証: 消した行と印、行番号と行頭の `+`・`-` を含まない変更後のコードをコピーする
+  // 検証: 削除した行とマーカー、行番号と行頭の `+`・`-` を含まない変更後のコードをコピーする
   await expect(buttons).toContainText("コピーしました");
   expect(await writtenTexts(page)).toEqual([
     "const a = 2;\ncount += 1; // 数える\nreturn a;",
@@ -644,7 +644,7 @@ test("test_normal_when_code_copied", async ({ page }) => {
   await expect(buttons).toHaveText("コピー");
 });
 
-// 色分けのライブラリを `dockerfile`・`diff` の言語のモジュールまで読み、別名のコードブロックも色分けし、足した行の印と両立する（正常シナリオ（Dockerfile と diff を色分けする））
+// 色分けのライブラリを `dockerfile`・`diff` の言語のモジュールまで読み込み、別名のコードブロックも色分けし、追加した行のマーカーと両立する（正常シナリオ（Dockerfile と diff を色分けする））
 test("test_normal_when_dockerfile_and_diff_highlighted", async ({ page }) => {
   // 準備
   const requests = await routeSyntax(page);
@@ -710,7 +710,7 @@ test("test_normal_when_dockerfile_and_diff_highlighted", async ({ page }) => {
       .evaluate((el) => getComputedStyle(el).color);
     expect(new Set([base, added, deleted]).size).toBe(3);
   }
-  // `[!code ++]` を付けた行が足した行の地の色と行頭の `+` で出ていて、行の中の文字は色分けされている
+  // `[!code ++]` を付けた行が追加した行の地の色と行頭の `+` で出ていて、行の中の文字は色分けされている
   const marked = page.locator(
     '#doc code.language-diff .mdmark-code-line[data-kind="add"]',
   );
@@ -720,7 +720,7 @@ test("test_normal_when_dockerfile_and_diff_highlighted", async ({ page }) => {
     await marked.evaluate((el) => getComputedStyle(el, "::after").content),
   ).toContain("+");
   await expect(marked.locator("span[class*='hljs-']")).not.toHaveCount(0);
-  // 各コードブロックのラベルは書いた情報文字列のとおり
+  // 各コードブロックのラベルは記載した情報文字列のとおり
   await expect(page.locator("#doc .mdmark-code-lang-name")).toHaveText([
     "dockerfile",
     "docker",
@@ -729,7 +729,7 @@ test("test_normal_when_dockerfile_and_diff_highlighted", async ({ page }) => {
   ]);
 });
 
-// クリップボードへの書き込みが拒まれたら、ボタンで知らせ、コードブロックの文字は選んで手でコピーできる（異常シナリオ（クリップボードに書けない））
+// クリップボードへの書き込みが拒まれたら、ボタンで通知し、コードブロックの文字は選んで手でコピーできる（異常シナリオ（クリップボードに書き込めない））
 test("test_error_when_clipboard_denied", async ({ page }) => {
   // 準備
   await stubClipboard(page, "deny");
@@ -741,7 +741,7 @@ test("test_error_when_clipboard_denied", async ({ page }) => {
   const button = page.locator("#doc button.mdmark-code-copy");
   // 実行
   await button.click();
-  // 検証: ボタンと読み上げで、コピーできなかったことが知らされる
+  // 検証: ボタンとスクリーンリーダーで、コピーできなかったことが知らされる
   await expect(button).toContainText("コピーできませんでした");
   await expect(button).toHaveAttribute("data-state", "failed");
   await expect(page.locator("#doc .mdmark-code-status")).toContainText(
@@ -817,7 +817,7 @@ async function afterContent(
   );
 }
 
-// focus の行のほかを薄くし、error と warning の行を色と読み上げで分け、マーカーを除いた全ての行をコピーする（正常シナリオ（focus・error・warning の行））
+// focus の行のほかを薄くし、error と warning の行を色とスクリーンリーダーで分け、マーカーを除いた全ての行をコピーする（正常シナリオ（focus・error・warning の行））
 test("test_normal_when_focus_error_warning", async ({ page }) => {
   // 準備
   await stubClipboard(page, "allow");
@@ -843,7 +843,7 @@ test("test_normal_when_focus_error_warning", async ({ page }) => {
   for (const index of [1, 2, 3]) {
     await expect.poll(() => opacityOf(lines.nth(index))).toBeLessThan(1);
   }
-  // 検証: error と warning の行の背景色が互いに異なり、色以外に読み上げの文字を持つ
+  // 検証: error と warning の行の背景色が互いに異なり、色以外にスクリーンリーダーの文字を持つ
   const backgrounds = await Promise.all(
     [1, 2, 3].map((index) =>
       lines
@@ -868,7 +868,7 @@ test("test_normal_when_focus_error_warning", async ({ page }) => {
     .toEqual(["foo();\nbar();\nbaz();\nqux();"]);
 });
 
-/** 3 段の入れ子のキーを持つ yaml・閉じ括弧の行で終わる json・tree のコードブロックを持つ文書 */
+/** 3 階層の入れ子のキーを持つ yaml・閉じ括弧の行で終わる json・tree のコードブロックを持つ文書 */
 const FOLD_MARKDOWN = [
   "```yaml",
   "a:",
@@ -908,7 +908,7 @@ function foldButton(
   return line.locator(":scope > .mdmark-code-fold");
 }
 
-/** 行ごとに表示しているかを並べて返す */
+/** 行ごとに表示しているかを並べて返却する */
 async function visibleLines(
   lines: ReturnType<Page["locator"]>,
 ): Promise<boolean[]> {
@@ -984,7 +984,7 @@ test("test_normal_when_folded_by_indent", async ({ page }) => {
   );
 });
 
-// インデントの 1 レベルごとに縦線を引き、ポインターを乗せた行のブロックの縦線だけを濃くする（正常シナリオ（インデントの縦線））
+// インデントの 1 レベルごとに縦線を描き、ポインターを乗せた行のブロックの縦線だけを濃くする（正常シナリオ（インデントの縦線））
 test("test_normal_when_indent_guides", async ({ page }) => {
   // 準備
   await openPage(page, builtRoot);
@@ -1002,7 +1002,7 @@ test("test_normal_when_indent_guides", async ({ page }) => {
     expect(level).toBe(await line.getAttribute("data-indent"));
     expect(Number(level)).toBeGreaterThan(0);
   }
-  // 実行: 2 段目のブロックの行にポインターを乗せる
+  // 実行: 2 行目のブロックの行にポインターを乗せる
   await yaml.nth(2).locator(".mdmark-code-text").hover();
   // 検証: そのブロックの縦線だけが濃い
   const active = await yaml.evaluateAll((elements) =>
@@ -1033,7 +1033,7 @@ const FOLD_OPTION_MARKDOWN = [
   "",
 ].join("\n");
 
-// `fold=` の行を畳んで描き、畳んだ行を含めてコピーし、読み直すと `fold=` のとおりに畳む（正常シナリオ（最初から畳む行を指定する））
+// `fold=` の行を畳んで描き、畳んだ行を含めてコピーし、再読み込みすると `fold=` のとおりに畳む（正常シナリオ（最初から畳む行を指定する））
 test("test_normal_when_fold_option", async ({ page }) => {
   // 準備
   await stubClipboard(page, "allow");
@@ -1074,7 +1074,7 @@ test("test_normal_when_fold_option", async ({ page }) => {
   await expect
     .poll(() => writtenTexts(page))
     .toEqual(["root:\n  a:\n    b: 1\n  c: 2\nother:\n  d:\n    e: 3\n  f: 4"]);
-  // 実行: 2 行目を開き、ページを読み直す
+  // 実行: 2 行目を開き、ページを再読み込みする
   await foldButton(lines.nth(1)).click();
   await expect(foldButton(lines.nth(1))).toHaveAttribute(
     "aria-expanded",
@@ -1087,7 +1087,7 @@ test("test_normal_when_fold_option", async ({ page }) => {
   await expectFolded();
 });
 
-// 畳めない行とコードブロックに無い行の `fold=` は書き方の警告にし、畳める行だけを畳む（異常シナリオ（畳めない行の fold=））
+// 畳めない行とコードブロックに無い行の `fold=` は記載の警告にし、畳める行だけを畳む（異常シナリオ（畳めない行の fold=））
 test("test_error_when_fold_line_invalid", async ({ page }) => {
   // 準備
   await openPage(page, builtRoot);

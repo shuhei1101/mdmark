@@ -1,5 +1,5 @@
 title: ClaudeCodeプラグイン / セットアップ / パス
-lead: 端末の設定・状態の置き場所・`settings.json` のパスと tmux のセッション名。
+lead: 端末の設定・状態の配置場所・`settings.json` のパスと tmux のセッション名。
 constants:
   - name: DEFAULT_SESSION_NAME
     title: 既定の tmux のセッション名
@@ -16,7 +16,7 @@ constants:
     title: 常駐サーバーのログのファイル名
     container: src/plugin/setup/paths.ts
     usecase: 常駐サーバーを起動する
-    summary: 状態の置き場所の下のログのファイル名
+    summary: 状態の配置場所の下のログのファイル名
     value: serve.log
     status: planned
     introduced:
@@ -28,7 +28,7 @@ functions:
     container: src/plugin/setup/paths.ts
     usecase: 端末の状態を調べる
     role: 処理
-    summary: 端末の設定・状態の置き場所・ログ・settings.json のパスとポートを返す
+    summary: 端末の設定・状態の配置場所・ログ・settings.json のパスとポートを返却する
     scope: public
     is_async: false
     args:
@@ -40,12 +40,12 @@ functions:
       type: SetupPaths
       description: '`settingsPath`・`defaultPath`（既定のパスか）・`stateDir`・`logPath`・`claudeSettingsPath`・`port`'
     process: |-
-      1. 端末の設定のパスは `resolveSettingsPath`（設定を重ねて読む）と同じ決め方にし、`MDMARK_CONFIG` が無いか既定のパスと同じなら `defaultPath` を真にする
-      2. 状態の置き場所は `MDMARK_STATE_DIR`、無ければ `${XDG_STATE_HOME:-~/.local/state}/mdmark`
+      1. 端末の設定のパスは `resolveSettingsPath`（設定を重ねて読み込む）と同じ決め方にし、`MDMARK_CONFIG` が無いか既定のパスと同じなら `defaultPath` を真にする
+      2. 状態の配置場所は `MDMARK_STATE_DIR`、無ければ `${XDG_STATE_HOME:-~/.local/state}/mdmark`
       3. `settings.json` は `${CLAUDE_CONFIG_DIR:-~/.claude}/settings.json`
       4. ポートは `readPort`（MCP サーバーと同じ）。値の先頭の `~` はホームに展開する
     callees:
-      - dev/設計書/モジュール構成/ライブラリ本体/設定を重ねて読む.ts#functions[resolveSettingsPath]
+      - dev/設計書/モジュール構成/ライブラリ本体/設定を重ねて読み込む.ts#functions[resolveSettingsPath]
       - dev/設計書/モジュール構成/ClaudeCodeプラグイン/ポート.ts#functions[readPort]
     unit_tests:
       - name: test_resolve_setup_paths
@@ -67,7 +67,7 @@ functions:
     introduced:
       pr: 354
   - name: readSessionName
-    title: セッション名を読む
+    title: セッション名を読み込む
     kind: 関数
     container: src/plugin/setup/paths.ts
     usecase: 常駐サーバーを起動する
@@ -79,11 +79,11 @@ functions:
       - name: settings
         type: Record<string, unknown> | undefined
         required: true
-        description: 読んだ端末の設定。無ければ `undefined`
+        description: 読み込んだ端末の設定。無ければ `undefined`
     returns:
       type: string
       description: セッション名
-    process: 1. `serve.tmuxSession` が文字列ならそれを、ほかは `DEFAULT_SESSION_NAME` を返す
+    process: 1. `serve.tmuxSession` が文字列ならそれを、ほかは `DEFAULT_SESSION_NAME` を返却する
     unit_tests:
       - name: test_read_session_name
         case: 正常
@@ -103,26 +103,26 @@ functions:
     introduced:
       pr: 354
   - name: readYamlFile
-    title: YAML のファイルを読む
+    title: YAML のファイルを読み込む
     kind: 関数
     container: src/plugin/setup/paths.ts
     usecase: 端末の状態を調べる
     role: 処理
-    summary: YAML のファイルを読む。無ければ `undefined`、読めないかキーと値の形でなければパスと行を添えて `SetupError`（1）
+    summary: YAML のファイルを読み込む。無ければ `undefined`、読み込めないかキーと値の構造でなければパスと行を添えて `SetupError`（1）
     scope: public
     is_async: true
     args:
       - name: options
         type: '{ path: string; readFile: (path: string) => Promise<string> }'
         required: true
-        description: パスと読む関数
+        description: パスと読み込む関数
     returns:
       type: 'Promise<{ text: string; raw: Record<string, unknown> } | undefined>'
-      description: 本文と読んだ値
+      description: 本文と読み込んだ値
     process: |-
-      1. 読む。`ENOENT` なら `undefined`
-      2. YAML として読めなければ、パスと行を添えて `SetupError`（1）
-      3. 空なら `{}`、キーと値の形でなければ `SetupError`（1）
+      1. 読み込む。`ENOENT` なら `undefined`
+      2. YAML として読み込めなければ、パスと行を添えて `SetupError`（1）
+      3. 空なら `{}`、キーと値の構造でなければ `SetupError`（1）
     unit_tests: []
     refs:
       - dev/設計書/インターフェース定義/ClaudeCodeプラグイン/端末の状態を調べる.ts#exceptions

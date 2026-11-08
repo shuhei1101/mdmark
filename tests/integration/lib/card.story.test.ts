@@ -7,13 +7,13 @@ const holder = createBrowserHolder();
 beforeAll(holder.launch);
 afterAll(holder.close);
 
-/** カードのストーリーを開き、カードの中身を返す */
+/** カードのストーリーを開き、カードの中身を返却する */
 async function open(id: string) {
   const page = await holder.openStory(`parts-card--${id}`);
   return { page, card: await readCard(page) };
 }
 
-/** カードの種類・文字・アイコンの形 */
+/** カードの種類・文字・アイコンの形状 */
 function readCard(page: Page) {
   return page.evaluate(() => {
     const card = document.querySelector("a.mdmark-card") as HTMLElement;
@@ -30,7 +30,7 @@ function readCard(page: Page) {
       url: text(".mdmark-card-url"),
       iconHidden: icon.getAttribute("aria-hidden"),
       icon: getComputedStyle(icon).getPropertyValue("--mdmark-icon"),
-      // 読み上げの順（タイトル・ドメイン・URL）
+      // スクリーンリーダーの順（タイトル・ドメイン・URL）
       order: [
         ...card.querySelectorAll(
           ".mdmark-card-title, .mdmark-card-domain, .mdmark-card-url",
@@ -40,7 +40,7 @@ function readCard(page: Page) {
   });
 }
 
-// リンクのカードは、書いた文字・ドメイン・URL を出す（Link）
+// リンクのカードは、記載した文字・ドメイン・URL を出す（Link）
 test("test_link", async () => {
   // 準備・実行
   const { card } = await open("link");
@@ -60,7 +60,7 @@ test("test_link", async () => {
   ]);
 });
 
-// URL をそのまま書いたリンクのカードは、タイトルにスキームを除いた URL を出す（BareUrl）
+// URL をそのまま記載したリンクのカードは、タイトルにスキームを除いた URL を出す（BareUrl）
 test("test_bare_url", async () => {
   // 準備・実行
   const { card } = await open("bare-url");
@@ -172,7 +172,7 @@ test("test_print", async () => {
     display: getComputedStyle(element, "::after").display,
     href: element.getAttribute("href"),
   }));
-  // ブラウザは attr() を解決せずに返すため、href を出す content と href の値を見る
+  // ブラウザは attr() を解決せずに返却するため、href を出す content と href の値を確認する
   expect(after.content).toMatch(/attr\(href\)|https:\/\/github\.com/);
   expect(after.display).not.toBe("none");
   expect(after.href).toBe("https://github.com/shuhei1101/mdmark");

@@ -1,5 +1,5 @@
-// mermaid の見本の SVG を書く: Playwright の Chromium で、mermaid の図のモックと同じソースを mermaid で描き、`tests/fixtures/mermaid-svg/` に書く。
-// mermaid のバージョンを変えたときに `npm run fixtures:mermaid` で流し、書いたファイルを commit する。
+// mermaid の見本の SVG を記載する: Playwright の Chromium で、mermaid の図のモックと同じソースを mermaid で描き、`tests/fixtures/mermaid-svg/` に書き込む。
+// mermaid のバージョンを変えたときに `npm run fixtures:mermaid` で実行し、記載したファイルを commit する。
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { join, resolve } from "node:path";
 import { build } from "esbuild";
@@ -8,16 +8,16 @@ import { chromium } from "playwright";
 /** リポジトリの直下 */
 const REPO_ROOT = resolve(import.meta.dirname, "..");
 
-/** 見本の SVG を書くフォルダ（リポジトリの直下から） */
+/** 見本の SVG を記載するフォルダ（リポジトリの直下から） */
 const FIXTURES_DIR = "tests/fixtures/mermaid-svg";
 
 /** ソースを取るモック（リポジトリの直下から） */
 const MOCK_FILE = "dev/mock/components/mermaid-diagram/index.html";
 
-/** ページを開く名前（`page.route` が中身を返す） */
+/** ページを開く名前（`page.route` が中身を返却する） */
 const ORIGIN = "http://mermaid-fixtures.local";
 
-/** モックの `pre[data-mock-mermaid]` の順番から、見本の名前を引く（案 B のシーケンス図と解釈できないソースは使わない） */
+/** モックの `pre[data-mock-mermaid]` の順番から、見本の名前を参照する（案 B のシーケンス図と解釈できないソースは使用しない） */
 const FIXTURE_NAMES: Record<number, string> = {
   0: "flowchart",
   1: "sequence",
@@ -28,7 +28,7 @@ const FIXTURE_NAMES: Record<number, string> = {
   7: "pie",
 };
 
-/** 暗い配色で描き、印刷のための明るい配色の SVG も書く見本の名前 */
+/** 暗い配色で描き、印刷のための明るい配色の SVG も記載する見本の名前 */
 const DARK_FIXTURE = "flowchart";
 
 /** HTML の文字参照を戻す */
@@ -39,7 +39,7 @@ const unescapeHtml = (text: string): string =>
     .replaceAll("&quot;", '"')
     .replaceAll("&amp;", "&");
 
-/** モックの `pre[data-mock-mermaid]` のソースを書いた順に読む */
+/** モックの `pre[data-mock-mermaid]` のソースを記載した順に読み込む */
 const readMockSources = async (root: string): Promise<string[]> => {
   const html = await readFile(join(root, MOCK_FILE), "utf8");
   return [
@@ -47,7 +47,7 @@ const readMockSources = async (root: string): Promise<string[]> => {
   ].map((match) => unescapeHtml(match[1] ?? ""));
 };
 
-/** ページで描く処理（`drawMermaidDiagram`）を 1 つの IIFE に束ねる */
+/** ページで描く処理（`drawMermaidDiagram`）を 1 つの IIFE にまとめる */
 const bundleDrawer = async (root: string): Promise<string> => {
   const result = await build({
     stdin: {
@@ -64,7 +64,7 @@ const bundleDrawer = async (root: string): Promise<string> => {
   return result.outputFiles[0]?.text ?? "";
 };
 
-/** Playwright の Chromium で見本の SVG を描き、`tests/fixtures/mermaid-svg/{名前}.svg` に書いて、書いたファイルのパスを返す */
+/** Playwright の Chromium で見本の SVG を描き、`tests/fixtures/mermaid-svg/{名前}.svg` に書き込んで、書き込んだファイルのパスを返却する */
 export const writeMermaidFixtures = async (options: {
   root: string;
 }): Promise<string[]> => {
@@ -86,7 +86,7 @@ export const writeMermaidFixtures = async (options: {
         });
         return;
       }
-      // mermaid の dist の中だけを返す
+      // mermaid の dist の中だけを返却する
       const file = resolve(mermaidDir, `.${path}`);
       if (!file.startsWith(`${mermaidDir}/`)) {
         await route.fulfill({ status: 404, body: "" });
@@ -98,7 +98,7 @@ export const writeMermaidFixtures = async (options: {
       });
     });
     await page.goto(`${ORIGIN}/`);
-    /** 1 つのソースを描き、今の配色と印刷のための SVG を返す */
+    /** 1 つのソースを描き、今の配色と印刷のための SVG を返却する */
     const draw = (source: string, dark: boolean) =>
       page.evaluate(
         async ({ source, dark }) => {
@@ -166,7 +166,7 @@ export const writeMermaidFixtures = async (options: {
   return written;
 };
 
-// 入口として実行されたときだけ書く
+// 入口として実行されたときだけ記載する
 if (import.meta.main) {
   const written = await writeMermaidFixtures({ root: REPO_ROOT });
   for (const file of written) {

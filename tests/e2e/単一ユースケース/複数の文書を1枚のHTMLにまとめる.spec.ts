@@ -38,7 +38,7 @@ import {
   MERMAID_WAIT_MS,
 } from "../mermaid.ts";
 
-// 3 つの文書を、文書をまたぐ用語と被参照が効く 1 枚にまとめる（正常シナリオ）
+// 3 つの文書を、文書をまたぐ用語と被参照が有効になる 1 枚にまとめる（正常シナリオ）
 test("test_normal", async ({ builtRoot, tempDir, page }) => {
   // 準備
   const dir = await tempDir();
@@ -74,7 +74,7 @@ test("test_normal", async ({ builtRoot, tempDir, page }) => {
   expect(opened.externalRequests()).toEqual([]);
 });
 
-// 外した文書へのリンクを書いたまま残し、警告に出す（正常シナリオ（1 枚に含まれない文書へのリンクがある））
+// 除外した文書へのリンクを記載したまま残し、警告に出す（正常シナリオ（1 枚に含まれない文書へのリンクがある））
 test("test_normal_when_link_outside_bundle", async ({
   builtRoot,
   tempDir,
@@ -116,7 +116,7 @@ test("test_normal_when_link_outside_bundle", async ({
   ).toHaveCount(0);
 });
 
-// build.include がどの文書にも当たらないと、HTML を書かずに終わる（異常シナリオ（対象の文書が 0 件））
+// build.include がどの文書にも該当しないと、HTML を書き込まずに終わる（異常シナリオ（対象の文書が 0 件））
 test("test_error_when_no_documents", async ({ builtRoot, tempDir }) => {
   // 準備
   const dir = await tempDir();
@@ -132,7 +132,7 @@ test("test_error_when_no_documents", async ({ builtRoot, tempDir }) => {
   expect(existsSync(join(dir, "dist", "docs.html"))).toBe(false);
 });
 
-// 設定の aliases の YAML から読んだエイリアスを、どの文書にも効かせて 1 枚にまとめ、env は HTML に入れない（正常シナリオ（エイリアスを読む））
+// 設定の aliases の YAML から読み込んだエイリアスを、どの文書にも有効にして 1 枚にまとめ、env は HTML に入れない（正常シナリオ（エイリアスを読み込む））
 test("test_normal_when_aliases", async ({ builtRoot, tempDir, page }) => {
   // 準備
   const dir = await tempDir();
@@ -204,7 +204,7 @@ test("test_normal_when_aliases", async ({ builtRoot, tempDir, page }) => {
   expect(opened.externalRequests()).toEqual([]);
 });
 
-// 設定のテーマを描く先に当てた 1 枚を書き出し、ダークのブラウザで入口の文書と一覧から開いた文書を選んだテーマの暗い配色で読む（正常シナリオ（テーマを選ぶ））
+// 設定のテーマを描く先に適用した 1 枚を書き出し、ダークのブラウザで入口の文書と一覧から開いた文書を選んだテーマの暗い配色で読み込む（正常シナリオ（テーマを選ぶ））
 test("test_normal_when_theme_selected", async ({
   builtRoot,
   tempDir,
@@ -319,7 +319,7 @@ test("test_normal_when_media_embedded", async ({
   expect(opened.externalRequests()).toEqual([]);
 });
 
-// 全ての文書が使うモジュールを 1 つのスクリプトに束ね、blob: と動的 import を許さない環境で開いて文書を移る（正常シナリオ（blob: と動的 import を許さない環境で開く））
+// 全ての文書が使用するモジュールを 1 つのスクリプトにまとめ、blob: と動的 import を許さない環境で開いて文書を移る（正常シナリオ（blob: と動的 import を許さない環境で開く））
 test("test_normal_when_blob_and_dynamic_import_blocked", async ({
   builtRoot,
   tempDir,
@@ -391,7 +391,7 @@ test("test_normal_when_blob_and_dynamic_import_blocked", async ({
   await opened.close();
 });
 
-// 同じラベルの脚注を持つ 2 つの文書をまとめ、移った文書の脚注のツールチップと戻るリンクがその文書の中で効く（正常シナリオ（脚注を持つ文書））
+// 同じラベルの脚注を持つ 2 つの文書をまとめ、移った文書の脚注のツールチップと戻るリンクがその文書の中で有効になる（正常シナリオ（脚注を持つ文書））
 test("test_normal_when_footnotes", async ({ builtRoot, tempDir, page }) => {
   // 準備
   const dir = await tempDir();
@@ -431,7 +431,7 @@ test("test_normal_when_footnotes", async ({ builtRoot, tempDir, page }) => {
   expect(opened.externalRequests()).toEqual([]);
 });
 
-// まとめる文書の取り込み先と束ねていない名前のアイコンを埋め、外へ要求せずに描く（正常シナリオ（取り込みとアイコンを埋める））
+// まとめる文書の取り込み先とまとめていない名前のアイコンを埋め、外へ要求せずに描く（正常シナリオ（取り込みとアイコンを埋める））
 test("test_normal_when_includes_and_icons_embedded", async ({
   builtRoot,
   tempDir,
@@ -471,7 +471,7 @@ test("test_normal_when_includes_and_icons_embedded", async ({
   expect(opened.externalRequests()).toEqual([]);
 });
 
-// 範囲の ts の型を外して束ね、範囲を持たない文書へ移ると範囲の destroy を呼び、移った先に範囲の css を当てない（正常シナリオ（範囲のスクリプトと CSS））
+// 範囲の ts の型を削除してまとめ、範囲を持たない文書へ移ると範囲の destroy を呼び、移った先に範囲の css を適用しない（正常シナリオ（範囲のスクリプトと CSS））
 test("test_normal_when_range_scripts", async ({ builtRoot, tempDir, page }) => {
   // 準備
   const dir = await tempDir();

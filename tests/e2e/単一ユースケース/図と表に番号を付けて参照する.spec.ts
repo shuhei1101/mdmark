@@ -6,7 +6,7 @@ import {
   removeDistRoot,
 } from "../dist-page.ts";
 
-// ビルドした配布物を置いた作業ツリー
+// ビルドした配布物を配置した作業ツリー
 let builtRoot = "";
 
 // 画像の代役の SVG（画面より高い）
@@ -67,7 +67,7 @@ test("test_normal", async ({ page }) => {
   await expect(page.locator('#doc figure[id="fig-flow"] img')).toBeInViewport();
 });
 
-// 無い ID を指す参照は、リンクの文字をそのままにして書き方の警告を出す（異常シナリオ（切れた参照））
+// 無い ID を指す参照は、リンクの文字をそのままにして記載の警告を出す（異常シナリオ（切れた参照））
 test("test_error_when_reference_missing", async ({ page }) => {
   // 準備
   await openPage(page, builtRoot);

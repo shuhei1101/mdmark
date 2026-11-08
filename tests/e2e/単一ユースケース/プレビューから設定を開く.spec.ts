@@ -37,7 +37,7 @@ async function openGuidePreview(session: VscodeSession): Promise<void> {
 
 // プレビューの歯車のボタンを押すと、VS Code の設定画面が mdmark の項目に絞って開き、プレビューは閉じず、本文とスクロールの位置は押す前と同じ（正常シナリオ）
 test("test_normal", async () => {
-  // 準備: プレビューを途中までスクロールし、本文とスクロールの位置を控える
+  // 準備: プレビューを途中までスクロールし、本文とスクロールの位置を記録する
   const session = await e2e.launch({
     files: { "long.md": longDocument() },
   });
@@ -96,7 +96,7 @@ test("test_normal_when_setting_changed", async () => {
   await openGuidePreview(session);
   await gearButton(session).click();
   await expectSettingsFiltered(session);
-  // 実行: テーマを theme-slate にする（設定画面で値を変えたときと同じ変更が、設定ファイルを通して届く）
+  // 実行: テーマを theme-slate にする（設定画面で値を変えたときと同じ変更が、設定ファイルを経由して届く）
   await updateWorkspaceSettings(session, {
     "mdmark.colorTheme": "theme-slate",
   });

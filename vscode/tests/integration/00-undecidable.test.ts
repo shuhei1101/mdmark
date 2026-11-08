@@ -21,7 +21,7 @@ import {
   writeFixture,
 } from "./helpers.ts";
 
-// 前回のバージョン（globalState）が空の状態で流す。このファイルより前に、タグ一覧から選んだバージョンを書くテストを流さない
+// 前回のバージョン（globalState）が空の状態で実行する。このファイルより前に、タグ一覧から選んだバージョンを記載するテストを実行しない
 
 suite("バージョンを決められない（前回のバージョンが空）", () => {
   suiteSetup(() => {
@@ -41,7 +41,7 @@ suite("バージョンを決められない（前回のバージョンが空）"
     await vscode.commands.executeCommand("mdmark.openPreviewToSide");
     const record = lastPanel();
     // 検証
-    // Webview のスクリプトが読み終わる前の inspect は応答が来ないため、空として待ち直す
+    // Webview のスクリプトが読み込み終わる前の inspect は応答が来ないため、空としてもう一度待つ
     await waitFor(
       async () =>
         (await inspect(".mdmark-preview-notice").catch(() => [])).length === 1,
@@ -61,7 +61,7 @@ suite("バージョンを決められない（前回のバージョンが空）"
     );
   });
 
-  // 書き出すときも、バージョンを決められなければ書かずに通知する
+  // 書き出すときも、バージョンを決められなければ記載せずに通知する
   test("test_error_when_version_undecidable_on_export", async () => {
     // 準備
     await writeFixture("guide.md", await guideMarkdown());
@@ -74,7 +74,7 @@ suite("バージョンを決められない（前回のバージョンが空）"
     assert.strictEqual(messages.error.length, 1);
     assert.strictEqual(
       messages.error[0],
-      "HTML を書き出せませんでした。読む mdmark のバージョンを決められません。ネットワークにつながっているかを確かめてから、もう一度実行してください。",
+      "HTML を書き出せませんでした。読み込む mdmark のバージョンを決められません。ネットワークにつながっているかを確認してから、もう一度実行してください。",
     );
     assert.deepStrictEqual(opened, []);
     assert.ok(!existsSync(join(workspaceDir(), "guide.html")));

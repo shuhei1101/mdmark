@@ -9,16 +9,16 @@ export const TAB_CHOICE_KEY_PREFIX = "mdmark-tabs:";
 // タブの id を文書の中で重ならせないための通し番号
 let tabsCounter = 0;
 
-/** 操作を付けた `mdmark-tabs` から、タブ名でタブを選ぶ関数を引く控え。別の `mount` のタブも同じ控えから引いて揃える */
+/** 操作を付けた `mdmark-tabs` から、タブ名でタブを選ぶ関数を参照する記録し。別の `mount` のタブも同じ記録しから参照して統一する */
 const tabSelectors = new WeakMap<HTMLElement, (name: string) => void>();
 
-/** 操作を付けた `mdmark-tabs` から、中身（`mdmark-tab-panel`）を渡してそのタブを選ぶ関数を引く控え。選んだタブ名は残さず、同じ組のほかのタブ群も切り替えない */
+/** 操作を付けた `mdmark-tabs` から、中身（`mdmark-tab-panel`）を指定してそのタブを選ぶ関数を参照する記録し。選んだタブ名は残さず、同じ組のほかのタブ群も切り替えない */
 const tabPanelSelectors = new WeakMap<
   HTMLElement,
   (panel: HTMLElement) => void
 >();
 
-/** localStorage に残したタブ名を読む。取り出しと読み出しで例外が出たら `console.warn` に出して `undefined` を返す */
+/** localStorage に残したタブ名を読み込む。取り出しと読み込み出しで例外が出たら `console.warn` に出して `undefined` を返却する */
 export function loadTabChoice(group: string): string | undefined {
   try {
     return (
@@ -26,7 +26,7 @@ export function loadTabChoice(group: string): string | undefined {
       undefined
     );
   } catch (error) {
-    console.warn("選んだタブを読めませんでした", error);
+    console.warn("選んだタブを読み込めませんでした", error);
     return undefined;
   }
 }
@@ -60,7 +60,7 @@ function syncTabGroup(options: {
   }
 }
 
-/** タブ 1 組に、タブの並びと切り替えを付け、外す関数を返す */
+/** タブ 1 組に、タブの並びと切り替えを付け、削除する関数を返却する */
 function attachTabGroup(tabs: HTMLElement): () => void {
   tabsCounter += 1;
   const base = `mdmark-tabs-${tabsCounter}`;
@@ -78,7 +78,7 @@ function attachTabGroup(tabs: HTMLElement): () => void {
     button.id = `${base}-tab-${index}`;
     button.setAttribute("role", "tab");
     button.setAttribute("aria-controls", `${base}-panel-${index}`);
-    // タブ名の強調（`strong`）を残すよう、タブ名の要素の子のノードのコピーを入れる。ボタンの中に対話的な要素を置かないよう、リンクは中身の文字にする
+    // タブ名の強調（`strong`）を残すよう、タブ名の要素の子のノードのコピーを入れる。ボタンの中に対話的な要素を配置しないよう、リンクは中身の文字にする
     button.append(
       ...[...(title?.childNodes ?? [])].map((node) => node.cloneNode(true)),
     );
@@ -106,7 +106,7 @@ function attachTabGroup(tabs: HTMLElement): () => void {
       buttons[selected]?.focus();
     }
   };
-  /** 読む人が選んだタブを選び、組を持つなら同じ組のタブを揃えて、タブ名を残す */
+  /** 読者が選んだタブを選び、組を持つなら同じ組のタブを統一して、タブ名を残す */
   const choose = (selected: number): void => {
     select(selected, true);
     const name = titles[selected];
@@ -162,7 +162,7 @@ function attachTabGroup(tabs: HTMLElement): () => void {
     }
   });
   if (group !== undefined) {
-    // 揃えて切り替えるときは、フォーカスを動かさず残しもしない
+    // 統一して切り替えるときは、フォーカスを動かさず残しもしない
     tabSelectors.set(tabs, (name) => {
       const position = titles.indexOf(name);
       if (position >= 0) {
@@ -183,7 +183,7 @@ function attachTabGroup(tabs: HTMLElement): () => void {
   };
 }
 
-/** 要素を含む `role="tabpanel"` を外側から順にたどり、その中身のタブを選ぶ。選んだタブ名は残さず、同じ組のタブも揃えない。タブの中に無ければ何もしない */
+/** 要素を含む `role="tabpanel"` を外側から順にたどり、その中身のタブを選ぶ。選んだタブ名は残さず、同じ組のタブも統一しない。タブの中に無ければ何もしない */
 export function revealTabTarget(target: Element): void {
   const panels: HTMLElement[] = [];
   for (
@@ -202,7 +202,7 @@ export function revealTabTarget(target: Element): void {
   }
 }
 
-/** 各 `mdmark-tabs` の頭にタブの並びを置き、中身を `role="tabpanel"` にして 1 つ目（組を持つなら残したタブ名のタブ）を選ぶ。URL の `#ID` が選ばれていない中身の中を指すときは、残したタブ名より先にそのタブを選んで要素へ移る。タブの並びを取り除き、中身を `render` の形に戻す関数を返す */
+/** 各 `mdmark-tabs` の頭にタブの並びを配置し、中身を `role="tabpanel"` にして 1 つ目（組を持つなら残したタブ名のタブ）を選ぶ。URL の `#ID` が選ばれていない中身の中を指すときは、残したタブ名より先にそのタブを選んで要素へ移る。タブの並びを取り除き、中身を `render` の構造に戻す関数を返却する */
 export function attachTabs(root: HTMLElement): () => void {
   const detachers = [...root.querySelectorAll<HTMLElement>(".mdmark-tabs")].map(
     attachTabGroup,

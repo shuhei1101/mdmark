@@ -9,7 +9,7 @@ import {
 import { parse } from "yaml";
 import { findFreePort, isListening } from "./plugin.ts";
 
-/** `search_docs` が返した文書の 1 件 */
+/** `search_docs` が返却した文書の 1 件 */
 export type DevDocsItem = {
   /** 文書の ID（配信元のリポジトリの直下からのパス） */
   id: string;
@@ -21,10 +21,10 @@ export type DevDocsItem = {
 export const REPO_ROOT = resolve(import.meta.dirname, "..", "..");
 /** このリポジトリを登録する配信元の ID */
 export const DEV_DOCS_SOURCE = "mdmark";
-/** 使い方集のページを `docs` の行とタグで絞る条件 */
+/** ガイドのページを `docs` の行とタグで絞る条件 */
 export const GUIDE_FILTER = {
   and: [
-    { field: "tags", op: "eq", values: ["topic:使い方集"] },
+    { field: "tags", op: "eq", values: ["topic:ガイド"] },
     { field: "kind", op: "eq", values: ["docs"] },
   ],
 };
@@ -42,16 +42,16 @@ const DEFAULT_SETTINGS = join(
 const LISTEN_HOST = "127.0.0.1";
 // MCP のエンドポイントのパス
 const MCP_PATH = "/mcp";
-// 待ち受けを始めたかを確かめる間隔（ミリ秒）
+// 待ち受けを始めたかを確認する間隔（ミリ秒）
 const POLL_INTERVAL_MS = 200;
 // ポートが使用中のときの dev-docs の終了コード
 const PORT_IN_USE_CODE = 3;
-// 空きを確かめたポートを別のプロセスに取られたときの、起動し直す回数の上限
+// 空きを確認したポートを別のプロセスに取られたときの、もう一度起動する回数の上限
 const MAX_START_ATTEMPTS = 5;
-// 1 回の検索で返す件数の上限
+// 1 回の検索で返却する件数の上限
 const SEARCH_LIMIT = 100;
 
-/** dev-docs のクローンの場所。`DEV_DOCS_CLONE` が無ければ、端末の設定の `clone` を使う */
+/** dev-docs のクローンの場所。`DEV_DOCS_CLONE` が無ければ、端末の設定の `clone` を使用する */
 async function findClone(): Promise<string> {
   const fromEnv = process.env[CLONE_ENV];
   if (fromEnv !== undefined && fromEnv !== "") {
@@ -66,7 +66,7 @@ async function findClone(): Promise<string> {
   return settings.clone;
 }
 
-/** このリポジトリだけを配信元 `mdmark` として登録した端末の設定を `dir` に書き、そのパスを返す */
+/** このリポジトリだけを配信元 `mdmark` として登録した端末の設定を `dir` に書き込み、そのパスを返却する */
 async function writeSettings(options: {
   dir: string;
   clone: string;
@@ -94,7 +94,7 @@ function isAlive(child: ChildProcess): boolean {
   return child.exitCode === null && child.signalCode === null;
 }
 
-/** dev-docs を `port` で起動し、待ち受けを始めるまで待つ。先に終わったときは終了コードを返す */
+/** dev-docs を `port` で起動し、待ち受けを始めるまで待つ。先に終わったときは終了コードを返却する */
 async function startDevDocs(options: {
   clone: string;
   settings: string;
@@ -117,7 +117,7 @@ async function startDevDocs(options: {
   const exited = new Promise<number>((resolve) => {
     child.once("close", (code) => resolve(code ?? -1));
   });
-  // 待ち受けを始めるか、先に終わるまで確かめ続ける
+  // 待ち受けを始めるか、先に終わるまで確認し続ける
   while (isAlive(child)) {
     if (await isListening(port)) {
       return { child, exited };
@@ -127,7 +127,7 @@ async function startDevDocs(options: {
   return exited;
 }
 
-/** 一時フォルダ `dir` の端末の設定でこのリポジトリを登録した dev-docs を空きポートで起動し、つないだクライアントを `use` に渡す。終わったら閉じて止める */
+/** 一時フォルダ `dir` の端末の設定でこのリポジトリを登録した dev-docs を空きポートで起動し、つないだクライアントを `use` に指定する。終わったら閉じて止める */
 export async function withDevDocs<T>(
   dir: string,
   use: (client: Client) => Promise<T>,
@@ -136,7 +136,7 @@ export async function withDevDocs<T>(
   const settings = await writeSettings({ dir, clone });
   let started: { child: ChildProcess; exited: Promise<number> } | undefined;
   let port = 0;
-  // 空きを確かめてから起動するまでに別のプロセスにポートを取られたときは、ポートを選び直す
+  // 空きを確認してから起動するまでに別のプロセスにポートを取られたときは、ポートをもう一度選ぶ
   for (let attempt = 1; started === undefined; attempt++) {
     port = await findFreePort();
     const result = await startDevDocs({ clone, settings, port });
@@ -165,7 +165,7 @@ export async function withDevDocs<T>(
   }
 }
 
-/** 配信元 `mdmark` を、作業場所をこのリポジトリにして `search_docs` で検索し、文書の一覧を返す */
+/** 配信元 `mdmark` を、作業場所をこのリポジトリにして `search_docs` で検索し、文書の一覧を返却する */
 export async function searchDocs(
   client: Client,
   args: Record<string, unknown>,

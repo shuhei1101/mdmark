@@ -36,7 +36,7 @@ function createDiagramRoot(): HTMLElement {
 /** 幅 600・高さ 1200 のフロー図の定義（全体が収まる倍率が 1 になる縦長の図） */
 const TALL_TEXT = JSON.stringify({
   title: "縦長の図",
-  scope: "表示する枠の高さを確かめる",
+  scope: "表示する枠の高さを確認する",
   updated: "2026-10-31",
   width: 600,
   height: 1200,
@@ -54,7 +54,7 @@ function createTallDiagramRoot(): HTMLElement {
   return root;
 }
 
-/** 読み上げの名前でボタンを探す */
+/** スクリーンリーダー向けの名前でボタンを探す */
 function button(root: ParentNode, name: string): HTMLButtonElement {
   const found = root.querySelector<HTMLButtonElement>(
     `button[aria-label="${name}"]`,
@@ -65,7 +65,7 @@ function button(root: ParentNode, name: string): HTMLButtonElement {
   return found;
 }
 
-/** 倍率のボタン（読み上げの名前が `倍率 {今の倍率}。全体が収まる倍率に戻す`） */
+/** 倍率のボタン（スクリーンリーダー向けの名前が `倍率 {今の倍率}。全体が収まる倍率に戻す`） */
 function zoomButton(root: ParentNode): HTMLButtonElement {
   const found = root.querySelector<HTMLButtonElement>(
     'button[aria-label^="倍率"]',
@@ -206,7 +206,7 @@ test("test_attach_diagrams_when_tall", async () => {
   expect(viewport.style.maxHeight).toBe("1200px");
 });
 
-// 使う側が高さを変えると、36rem を超えて図の全体が収まる高さまで広がり、倍率に合わせて上限を付け替える（正常系）
+// 利用側が高さを変えると、36rem を超えて図の全体が収まる高さまで広がり、倍率に合わせて上限を付け替える（正常系）
 test("test_attach_diagrams_when_resized", async () => {
   // 準備
   const { attachDiagrams } = await loadDiagrams();
@@ -233,7 +233,7 @@ test("test_attach_diagrams_when_resized", async () => {
   expect(viewport.style.maxHeight).toBe("1200px");
 });
 
-// 外すと監視も外れる（正常系）
+// 削除すると監視も削除される（正常系）
 test("test_attach_diagrams_when_cleaned_up", async () => {
   // 準備
   const { attachDiagrams } = await loadDiagrams();
@@ -295,7 +295,7 @@ test("test_open_diagram_dialog_when_tip_open", async () => {
 /** 幅 500・高さ 1600 のフロー図の定義（全体が収まる倍率は幅で決まり 1 になる縦長の図） */
 const LONG_TEXT = JSON.stringify({
   title: "縦に長い図",
-  scope: "リサイズハンドルを確かめる",
+  scope: "リサイズハンドルを確認する",
   updated: "2026-11-05",
   width: 500,
   height: 1600,
@@ -314,7 +314,7 @@ function handleOf(root: ParentNode): HTMLElement {
   return found;
 }
 
-// リサイズハンドルで高さを変えると、全体が収まる倍率を幅と高さで求め直し、付け直しても保つ（正常系）
+// リサイズハンドルで高さを変えると、全体が収まる倍率を幅と高さでもう一度求め、もう一度付けても保つ（正常系）
 test("test_attach_diagrams_when_handle_resized", async () => {
   // 準備
   vi.spyOn(Element.prototype, "setPointerCapture").mockImplementation(() => {});
@@ -346,14 +346,14 @@ test("test_attach_diagrams_when_handle_resized", async () => {
   // 検証
   expect(zoomText(root)).toBe("100%");
   expect(viewport.scrollHeight).toBeLessThanOrEqual(viewport.clientHeight + 1);
-  // 実行: 外して付け直す
+  // 実行: 削除してもう一度付ける
   detach();
   detachers.push(attachDiagrams({ root, placement: "bottom", storage }));
   // 検証
   expect(viewportOf(root).clientHeight).toBe(776);
 });
 
-// 渡した図だけに付け、倍率の下限を守る（正常系）
+// 指定した図だけに付け、倍率の下限を守る（正常系）
 test("test_attach_diagrams_when_figures_given", async () => {
   // 準備
   const { attachDiagrams } = await loadDiagrams();

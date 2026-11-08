@@ -6,14 +6,14 @@ const holder = createBrowserHolder();
 beforeAll(holder.launch);
 afterAll(holder.close);
 
-/** 見出しの開閉のボタンの `::after`（開閉の印）の変形を返す */
+/** 見出しの開閉のボタンの `::after`（開閉のマーカー）の変形を返却する */
 function markTransform(page: import("playwright").Page): Promise<string> {
   return page
     .locator(".mdmark-section-toggle")
     .evaluate((element) => getComputedStyle(element, "::after").transform);
 }
 
-// 開いた節は、開いた向きの印を持ち、見出しを指すとアンカーが出る（Open）
+// 開いたセクションは、開いた向きのマーカーを持ち、見出しを指すとアンカーが出る（Open）
 test("test_open", async () => {
   // 準備・実行
   const page = await holder.openStory("parts-section--open");
@@ -34,7 +34,7 @@ test("test_open", async () => {
   ).resolves.toBe("1");
 });
 
-// 閉じた節は、中身が隠れ、開閉の印が閉じた向きになる（Closed）
+// 閉じたセクションは、中身が隠れ、開閉のマーカーが閉じた向きになる（Closed）
 test("test_closed", async () => {
   // 準備・実行
   const page = await holder.openStory("parts-section--closed");
@@ -50,7 +50,7 @@ test("test_closed", async () => {
   await expect(markTransform(page)).resolves.not.toBe("none");
 });
 
-// h4 の節は、h4 の見出しを持つ（Level4）
+// h4 のセクションは、h4 の見出しを持つ（Level4）
 test("test_level_4", async () => {
   // 準備・実行
   const page = await holder.openStory("parts-section--level-4");
@@ -58,7 +58,7 @@ test("test_level_4", async () => {
   await expect(page.locator("h4.mdmark-heading").count()).resolves.toBe(1);
 });
 
-// h1 の節は、h2 の節と同じ開閉のボタンとアンカーを持つ（Level1）
+// h1 のセクションは、h2 のセクションと同じ開閉のボタンとアンカーを持つ（Level1）
 test("test_level_1", async () => {
   // 準備・実行
   const page = await holder.openStory("parts-section--level-1");
@@ -71,7 +71,7 @@ test("test_level_1", async () => {
   await expect(markTransform(page)).resolves.toBe("none");
 });
 
-// 見出しが長く折り返しても、開閉の印とアンカーが見出しの文字に重ならない（LongTitle）
+// 見出しが長く折り返しても、開閉のマーカーとアンカーが見出しの文字に重ならない（LongTitle）
 test("test_long_title", async () => {
   // 準備・実行
   const page = await holder.openStory("parts-section--long-title");
@@ -97,7 +97,7 @@ test("test_long_title", async () => {
   await expect(pageOverflows(page)).resolves.toBe(false);
 });
 
-// render が出した状態は、開閉のボタンが無く、閉じた節の中身も読める（Unmounted）
+// render が出した状態は、開閉のボタンが無く、閉じたセクションの中身も読み込める（Unmounted）
 test("test_unmounted", async () => {
   // 準備・実行
   const page = await holder.openStory("parts-section--unmounted");

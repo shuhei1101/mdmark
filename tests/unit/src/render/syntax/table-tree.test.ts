@@ -7,7 +7,7 @@ import {
 } from "../../../helpers/html.ts";
 import { renderDoc } from "../../../helpers/render.ts";
 
-/** 表の印と見出し・行から、印で囲んだ表の Markdown を作る */
+/** 表のマーカーと見出し・行から、マーカーで囲んだ表の Markdown を作る */
 function treeTable(mark: string, rows: string[]): string {
   return [
     `<!-- table: ${mark} -->`,
@@ -19,14 +19,14 @@ function treeTable(mark: string, rows: string[]): string {
   ].join("\n");
 }
 
-/** 階層の表の行の開始タグを、並んだ順に返す */
+/** 階層の表の行の開始タグを、並んだ順に返却する */
 function treeRows(html: string): string[] {
   return findTags(html, "mdmark-tree-row").filter((tag) =>
     tag.startsWith("<tr"),
   );
 }
 
-/** 開始タグの属性の値を返す（無ければ `undefined`） */
+/** 開始タグの属性の値を返却する（無ければ `undefined`） */
 function attr(tag: string, name: string): string | undefined {
   return new RegExp(`\\s${name}="([^"]*)"`).exec(tag)?.[1];
 }
@@ -146,7 +146,7 @@ test("test_link_tree_examples", () => {
   expect(idLine).toBeDefined();
 });
 
-// 見出しが無い `example=` は書き方の警告にし、見本を置かない（異常系）
+// 見出しが無い `example=` は記載の警告にし、見本を配置しない（異常系）
 test("test_link_tree_examples_when_heading_missing", () => {
   // 準備
   const markdown = treeTable("data tree=キー example=見本", [

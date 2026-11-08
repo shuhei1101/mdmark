@@ -38,14 +38,14 @@ function figureHtml(
   return `<figure class="mdmark-figure mdmark-image${className}"><img src="${src}" alt="${alt}"><figcaption class="mdmark-figure-caption">${caption}</figcaption></figure>`;
 }
 
-/** 拡大のボタンを全て返す */
+/** 拡大のボタンを全て返却する */
 function openers(root: ParentNode): HTMLButtonElement[] {
   return [
     ...root.querySelectorAll<HTMLButtonElement>("button.mdmark-image-open"),
   ];
 }
 
-/** 開いているライトボックスを返す */
+/** 開いているライトボックスを返却する */
 function openDialog(root: ParentNode): HTMLDialogElement {
   const dialog = root.querySelector<HTMLDialogElement>(
     "dialog.mdmark-lightbox[open]",
@@ -56,7 +56,7 @@ function openDialog(root: ParentNode): HTMLDialogElement {
   return dialog;
 }
 
-/** 読み上げの名前でボタンを探す */
+/** スクリーンリーダー向けの名前でボタンを探す */
 function button(root: ParentNode, name: string): HTMLButtonElement {
   const found = root.querySelector<HTMLButtonElement>(
     `button[aria-label="${name}"]`,
@@ -99,7 +99,7 @@ test("test_collect_lightbox_images", async () => {
   ]);
 });
 
-// 画像を包み、押すと開いて送る（正常系）
+// 画像を包み、押すと開いて送信する（正常系）
 test("test_attach_lightbox", async () => {
   // 準備
   const { attachLightbox } = await loadLightbox();
@@ -117,14 +117,14 @@ test("test_attach_lightbox", async () => {
   // 検証
   const dialog = openDialog(root);
   expect(countText(dialog)).toBe("2 / 3");
-  // 実行: 次へ送る
+  // 実行: 次へ送信する
   await userEvent.keyboard("{ArrowRight}");
   // 検証
   expect(countText(dialog)).toBe("3 / 3");
   expect(button(dialog, "次の画像").disabled).toBe(true);
 });
 
-// 拡大中の矢印キーは送らず動かし、送ると倍率を戻す（正常系）
+// 拡大中の矢印キーは送信せず動かし、送信すると倍率を戻す（正常系）
 test("test_attach_lightbox_when_zoomed", async () => {
   // 準備
   const { attachLightbox } = await loadLightbox();
@@ -155,7 +155,7 @@ test("test_attach_lightbox_when_zoomed", async () => {
   // 検証
   expect(countText(dialog)).toBe("1 / 2");
   expect(stage.scrollLeft - before).toBe(80);
-  // 実行: 次の画像へ送る
+  // 実行: 次の画像へ送信する
   button(dialog, "次の画像").click();
   // 検証
   expect(countText(dialog)).toBe("2 / 2");
@@ -213,7 +213,7 @@ test("test_attach_lightbox_when_not_wrapped", async () => {
     [
       `<figure class="mdmark-figure mdmark-image"><img src="${src}" alt="拡大しない" data-nolightbox></figure>`,
       `<p><a href="https://example.com"><img src="${src}" alt="ロゴ"></a></p>`,
-      `<p>押す前に <img src="${src}" alt="アイコン"> を確かめる。</p>`,
+      `<p>押す前に <img src="${src}" alt="アイコン"> を確認する。</p>`,
     ].join(""),
   );
   // 実行
@@ -222,7 +222,7 @@ test("test_attach_lightbox_when_not_wrapped", async () => {
   expect(openers(root)).toHaveLength(0);
 });
 
-// 外すと元に戻る（正常系）
+// 削除すると元に戻る（正常系）
 test("test_attach_lightbox_when_cleaned_up", async () => {
   // 準備
   const { attachLightbox } = await loadLightbox();
@@ -242,7 +242,7 @@ test("test_attach_lightbox_when_cleaned_up", async () => {
   }
 });
 
-// GIF の画像の拡大のボタンにはアイコンを置かない（正常系）
+// GIF の画像の拡大のボタンにはアイコンを配置しない（正常系）
 test("test_attach_lightbox_when_gif", async () => {
   // 準備
   const { attachLightbox } = await loadLightbox();

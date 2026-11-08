@@ -50,7 +50,7 @@ function endY(figure: HTMLElement): number {
       ?.getAttribute("d") ?? "";
   const y = /V([\d.]+) H[\d.]+$/.exec(d)?.[1];
   if (y === undefined) {
-    throw new Error(`線の経路が読めない: ${d}`);
+    throw new Error(`線の経路が読み込めない: ${d}`);
   }
   return Number(y);
 }
@@ -64,7 +64,7 @@ function otherRows(table: HTMLElement): HTMLElement[] {
   );
 }
 
-// 開閉のボタンで列を畳み、関係の線を結び直す（正常系）
+// 開閉のボタンで列を畳み、関係の線をもう一度結ぶ（正常系）
 test("test_attach_er_folds", async () => {
   // 準備
   const { attachErFolds } = await loadFolds();
@@ -102,7 +102,7 @@ test("test_attach_er_folds", async () => {
   expect(document.activeElement).toBe(button);
 });
 
-// 畳んだテーブルを開き、畳み直す（正常系）
+// 畳んだテーブルを開き、もう一度畳む（正常系）
 test("test_set_er_table_folded", async () => {
   // 準備
   const { setErTableFolded } = await loadFolds();

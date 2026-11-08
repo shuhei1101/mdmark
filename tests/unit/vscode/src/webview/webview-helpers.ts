@@ -1,10 +1,10 @@
 import { vi } from "vitest";
 
-/** 縦に積んだブロックの高さ（px） */
+/** 縦に追加したブロックの高さ（px） */
 export const BLOCK_HEIGHT = 100;
-/** `createMdmark` の代役が縦に積むブロックの数 */
+/** `createMdmark` の代役が縦に並べるブロックの数 */
 const BLOCK_COUNT = 40;
-/** `createMdmarkModuleUrl` の代役が縦に積むブロックの数（元の行番号 30 を先頭に置けるだけの高さにする） */
+/** `createMdmarkModuleUrl` の代役が縦に並べるブロックの数（元の行番号 30 を先頭に配置できるだけの高さにする） */
 const MODULE_BLOCK_COUNT = 80;
 
 /** `mount` の代役が描いた先の要素と戻り値の記録 */
@@ -15,7 +15,7 @@ export type MountRecord = {
   elements: HTMLElement[];
 };
 
-/** 元の行番号を持つブロックを縦に積んだ `mount` と、戻り値の `update`・`destroy` を記録する mdmark の代役を作る */
+/** 元の行番号を持つブロックを縦に追加した `mount` と、戻り値の `update`・`destroy` を記録する mdmark の代役を作る */
 export const createMdmark = (
   options: { diffModes?: unknown } = {},
 ): { mdmark: { mount: never; diffModes?: unknown }; record: MountRecord } => {
@@ -45,7 +45,7 @@ export const createMdmark = (
   };
 };
 
-/** 元の行番号を持つブロックを縦に積んで描く `mount` を持つ配布物の代役のモジュールの URL を作る */
+/** 元の行番号を持つブロックを縦に追加して描く `mount` を持つ配布物の代役のモジュールの URL を作る */
 export const createMdmarkModuleUrl = (): string =>
   URL.createObjectURL(
     new Blob(
@@ -85,7 +85,7 @@ export const renderMessage = (
 export const scroller = (): Element =>
   document.scrollingElement ?? document.documentElement;
 
-/** 描画の次のフレームまで待つ（`scroll` の知らせを 1 フレームにまとめる処理を通す） */
+/** 描画の次のフレームまで待つ（`scroll` の通知を 1 フレームにまとめる処理を経由する） */
 export const nextFrames = async (count = 2): Promise<void> => {
   for (let frame = 0; frame < count; frame += 1) {
     await new Promise((resolve) => requestAnimationFrame(resolve));
@@ -98,12 +98,12 @@ export const topOfLine = (line: number): number => {
   return (block?.getBoundingClientRect().top ?? 0) + scroller().scrollTop;
 };
 
-/** 拡張機能からのメッセージを `window` に送る */
+/** 拡張機能からのメッセージを `window` に送信する */
 export const sendHostMessage = (data: unknown): void => {
   window.dispatchEvent(new MessageEvent("message", { data }));
 };
 
-/** 描く先を包む要素（`#mdmark-preview`）を作ってページに置く。後で外すため `placed` に控える */
+/** 描く先を包む要素（`#mdmark-preview`）を作ってページに配置する。後で削除するため `placed` に記録する */
 export const createRoot = (
   placed: HTMLElement[],
   dataset: Record<string, string> = {},

@@ -3,7 +3,7 @@ import { join } from "node:path";
 import { expect, test } from "vitest";
 import { useTempDirs, writeFiles } from "../../helpers/cli.ts";
 
-/** 設定を読む処理を読み込む（実装が無い間は各テストが個別に失敗する） */
+/** 設定を読み込む処理を読み込む（実装が無い間は各テストが個別に失敗する） */
 const loadModule = () => import("../../../../src/cli/config.ts");
 
 /** CLI の誤りを読み込む */
@@ -53,7 +53,7 @@ test("test_find_config_file_when_missing", async () => {
   await expect(result).rejects.toThrow("mdmark init");
 });
 
-// 読んだ値とフォルダを返す（正常系）
+// 読み込んだ値とフォルダを返却する（正常系）
 test("test_load_config", async () => {
   // 準備
   const { loadConfig } = await loadModule();
@@ -68,7 +68,7 @@ test("test_load_config", async () => {
   expect(loaded.raw).toMatchObject({ build: { out: "a.html" } });
 });
 
-// 読めない行を示す CliError を投げる（異常系）
+// 読み込めない行を示す CliError を投げる（異常系）
 test("test_load_config_when_yaml_broken", async () => {
   // 準備
   const { loadConfig } = await loadModule();
@@ -84,7 +84,7 @@ test("test_load_config_when_yaml_broken", async () => {
   await expect(result).rejects.toThrow("3 行目");
 });
 
-// 形の合う設定はずれ 0 件（正常系）
+// 構造の合う設定はずれ 0 件（正常系）
 test("test_validate_config", async () => {
   // 準備
   const { validateConfig } = await loadModule();
@@ -101,7 +101,7 @@ test("test_validate_config", async () => {
   expect(issues).toEqual([]);
 });
 
-// build.out が無いと schema のずれを返す（正常系）
+// build.out が無いと schema のずれを返却する（正常系）
 test("test_validate_config_when_build_out_missing", async () => {
   // 準備
   const { validateConfig } = await loadModule();
@@ -125,7 +125,7 @@ test("test_validate_config_when_empty", async () => {
   expect(issues[0]).toMatchObject({ where: "", kind: "schema" });
 });
 
-// 形の違う libraries を schema のずれにし、設定から落とす（正常系）
+// 構造の違う libraries を schema のずれにし、設定から落とす（正常系）
 test("test_validate_config_when_libraries_not_object", async () => {
   // 準備
   const { validateConfig } = await loadModule();
@@ -150,7 +150,7 @@ test("test_validate_config_when_version_invalid", async () => {
   expect(issues[0]).toMatchObject({ where: "version", kind: "schema" });
 });
 
-// 印の名前の書式に合わない check.ignore の値を schema のずれにし、設定から落とす（正常系）
+// マーカーの名前の書式に合わない check.ignore の値を schema のずれにし、設定から落とす（正常系）
 test("test_validate_config_when_check_ignore_invalid", async () => {
   // 準備
   const { validateConfig } = await loadModule();
@@ -163,7 +163,7 @@ test("test_validate_config_when_check_ignore_invalid", async () => {
   expect(config.check?.ignore).toEqual(["prettier-ignore"]);
 });
 
-// 形が合わないと mdmark check を添えた CliError を投げる（異常系）
+// 構造が合わないと mdmark check を添えた CliError を投げる（異常系）
 test("test_require_config_when_invalid", async () => {
   // 準備
   const { requireConfig } = await loadModule();
@@ -251,7 +251,7 @@ test("test_validate_config_when_html_scripts_url_invalid", async () => {
   expect(valid.config["html-scripts"]?.url).toBe("/vendor/babel.mjs");
 });
 
-// 形の合わない mermaid を schema のずれにし、設定から落とす（正常系）
+// 構造の合わない mermaid を schema のずれにし、設定から落とす（正常系）
 test("test_validate_config_when_mermaid_invalid", async () => {
   // 準備
   const { validateConfig } = await loadModule();
@@ -397,7 +397,7 @@ test("test_validate_config_when_aliases_invalid", async () => {
   expect(config.aliases?.[1]).toBeNull();
 });
 
-// 形の違う assets.root を schema のずれにする（正常系）
+// 構造の違う assets.root を schema のずれにする（正常系）
 test("test_validate_config_when_assets_not_string", async () => {
   // 準備
   const { validateConfig } = await loadModule();

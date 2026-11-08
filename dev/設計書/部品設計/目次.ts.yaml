@@ -7,18 +7,18 @@ states:
     description: h2 と h3 を入れ子にした目次
     args:
       - name: headings
-        value: '[{"level":2,"id":"導入","text":"導入"},{"level":3,"id":"前提","text":"前提"},{"level":2,"id":"使い方","text":"使い方"}]'
+        value: '[{"level":2,"id":"導入","text":"導入"},{"level":3,"id":"前提","text":"前提"},{"level":2,"id":"使用方法","text":"使用方法"}]'
   - name: Flat
     description: h2 だけの目次
     args:
       - name: headings
-        value: '[{"level":2,"id":"導入","text":"導入"},{"level":2,"id":"使い方","text":"使い方"}]'
+        value: '[{"level":2,"id":"導入","text":"導入"},{"level":2,"id":"使用方法","text":"使用方法"}]'
   - name: LongHeading
     description: 見出しが長く折り返す
     args:
       - name: headings
-        value: '[{"level":2,"id":"long","text":"とても長い見出しで目次の幅を超えて折り返すときの見え方を確かめるための見出し"}]'
-lead: '`<!-- toc -->` の場所に置き、文書の h2〜h3 を階層どおりに入れ子にした、各見出しへのリンクを並べる。'
+        value: '[{"level":2,"id":"long","text":"とても長い見出しで目次の幅を超えて折り返すときの見え方を確認するための見出し"}]'
+lead: '`<!-- toc -->` の場所に配置し、文書の h2〜h3 を階層どおりに入れ子にした、各見出しへのリンクを並べる。'
 args:
   - name: headings
     type: オブジェクトの配列

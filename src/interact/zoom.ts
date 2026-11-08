@@ -33,15 +33,15 @@ const PAN_ACTIONS = new Set<ZoomAction>(["left", "right", "up", "down"]);
 /** 倍率が変わったときに呼ぶ関数 */
 export type ZoomChange = (zoom: number, fit: number) => void;
 
-/** `attachZoom` が返す操作 */
+/** `attachZoom` が返却する操作 */
 export type ZoomControl = {
   /** 全体が収まる倍率と位置に戻す */
   reset(): void;
-  /** 今の全体が収まる倍率を返す */
+  /** 今の全体が収まる倍率を返却する */
   fit(): number;
-  /** 今の倍率と位置を保ったまま、全体が収まる倍率とボタンの状態を求め直す */
+  /** 今の倍率と位置を保ったまま、全体が収まる倍率とボタンの状態をもう一度求める */
   refit(): void;
-  /** 付けた操作と監視を外す */
+  /** 付けた操作と監視を解除する */
   detach(): void;
 };
 
@@ -49,7 +49,7 @@ export type ZoomControl = {
 export function attachZoom(options: {
   /** 表示する枠 */
   viewport: HTMLElement;
-  /** 倍率を掛ける中身（親の要素を倍率を掛けた大きさの箱にする） */
+  /** 倍率を掛ける中身（親の要素を倍率を掛けた大きさのノードにする） */
   content: HTMLElement;
   /** 中身の大きさ */
   size: { width: number; height: number };
@@ -97,7 +97,7 @@ export function attachZoom(options: {
 
   /** 枠に中身の全体が収まる倍率 */
   const computeFit = (): number =>
-    // 隠れた場所（閉じた節・選んでいないタブ）では枠の幅が 0 なので、表示されて大きさが変わるまで等倍にする
+    // 隠れた場所（閉じたセクション・選んでいないタブ）では枠の幅が 0 なので、表示されて大きさが変わるまで等倍にする
     viewport.clientWidth === 0
       ? 1
       : Math.max(
@@ -308,7 +308,7 @@ export function attachZoom(options: {
   viewport.addEventListener("pointerup", endDrag, { signal });
   viewport.addEventListener("pointercancel", endDrag, { signal });
 
-  // スクロール: Shift＋ホイールなどで動いたときも、全体が収まる位置から外れたことにする
+  // スクロール: Shift＋ホイールなどで動いたときも、全体が収まる位置から削除されたことにする
   viewport.addEventListener(
     "scroll",
     () => {
@@ -319,7 +319,7 @@ export function attachZoom(options: {
     { passive: true, signal },
   );
 
-  // 表示する枠の大きさが変わったとき: 全体が収まる倍率で見ていたなら、新しい大きさで収まる倍率に合わせ直す
+  // 表示する枠の大きさが変わったとき: 全体が収まる倍率で確認していたなら、新しい大きさで収まる倍率にもう一度合わせる
   const sizeOf = (): string =>
     `${viewport.clientWidth}x${useHeight() ? viewport.clientHeight : 0}`;
   let lastSize = sizeOf();
@@ -340,7 +340,7 @@ export function attachZoom(options: {
 
   reset();
 
-  /** 今の倍率と位置を保ったまま、全体が収まる倍率を求め直す（倍率が新しい下限より小さいときは下限にする） */
+  /** 今の倍率と位置を保ったまま、全体が収まる倍率をもう一度求める（倍率が新しい下限より小さいときは下限にする） */
   const refit = (): void => {
     state.fit = computeFit();
     const scale = Math.max(state.fit, state.scale);

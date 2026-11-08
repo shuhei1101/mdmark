@@ -4,7 +4,7 @@ import { findScrollContainer, type ScrollContainer } from "./scroller.ts";
 import { foldAllSections, revealTarget } from "./sections.ts";
 import { visibleText } from "./text.ts";
 
-/** `mount` ごとに 1 つ作り、`update` で描き直しても保つ右側の目次の状態 */
+/** `mount` ごとに 1 つ作り、`update` で再描画しても保つ右側の目次の状態 */
 export type SideTocState = {
   /** 目次を出すボタンで目次を出しているか */
   open: boolean;
@@ -12,7 +12,7 @@ export type SideTocState = {
   pinned: boolean;
 };
 
-/** 画面の上端から、今いる節を決める線までの高さの、画面の高さに対する割合 */
+/** 画面の上端から、今いるセクションを決める線までの高さの、画面の高さに対する割合 */
 const CURRENT_LINE_RATIO = 0.25;
 
 /** 描く先の要素の幅がこの値（rem）未満のとき、右側の目次を狭い幅の帯で出す。CSS のコンテナクエリと同じ値 */
@@ -33,7 +33,7 @@ const SIDE_TOC_EDGE_GAP_REM = 1;
 /** 差分のミニマップの帯と横の範囲が重なるとき、帯の左端から右端の線と目次の枠の右端までに空ける幅（px）。`BACK_TO_TOP_AVOID_GAP_PX` と同じ値 */
 const SIDE_TOC_AVOID_GAP_PX = 8;
 
-/** 右側の目次が避ける、ページに置く差分のミニマップの帯 */
+/** 右側の目次が回避する、ページに配置する差分のミニマップの帯 */
 const MINIMAP_SELECTOR = "body > .mdmark-diff-minimap";
 
 /** hover で開く目次の枠の上端の、見えている枠の上端からのずれ（CSS の長さ） */
@@ -43,13 +43,13 @@ const PANEL_OFFSET =
 /** 右端の線の下端と、見えている枠・描く先の要素の下端との間（CSS の長さ） */
 const RAIL_GAP = "var(--mdmark-space)";
 
-/** 今いる節を決める線の帯だけを見る `IntersectionObserver` の余白（画面の上から線までを帯にする） */
+/** 今いるセクションを決める線の帯だけを確認する `IntersectionObserver` の余白（画面の上から線までを帯にする） */
 const LINE_BAND_MARGIN = `0px 0px -${(1 - CURRENT_LINE_RATIO) * 100}% 0px`;
 
 /** パネルの ID に続ける通し番号 */
 let serial = 0;
 
-/** 本文の中の h1〜h3 の見出しの要素を文書の順に返す。埋め込んだ HTML の中の見出しは除く */
+/** 本文の中の h1〜h3 の見出しの要素を文書の順に返却する。埋め込んだ HTML の中の見出しは除く */
 function headingElements(content: HTMLElement): HTMLElement[] {
   return [
     ...content.querySelectorAll<HTMLElement>(SIDE_TOC_HEADING_SELECTOR),
@@ -65,9 +65,9 @@ export function collectSideTocHeadings(content: HTMLElement): SideTocHeading[] {
   }));
 }
 
-/** 画面に出ている見出しの位置から今いる節の見出しの ID を決める。上端が線以下の見出しのうち最後のものを返し、無ければ画面の中にある最初の見出しを返す */
+/** 画面に出ている見出しの位置から今いるセクションの見出しの ID を決める。上端が線以下の見出しのうち最後のものを返却し、無ければ画面の中にある最初の見出しを返却する */
 export function pickCurrentHeading(options: {
-  /** 閉じた節と選ばれていないタブの中に無い見出しの ID と、画面の上端からの位置（文書の順） */
+  /** 閉じたセクションと選ばれていないタブの中に無い見出しの ID と、画面の上端からの位置（文書の順） */
   headings: { id: string; top: number }[];
   /** 線の位置 */
   line: number;
@@ -82,7 +82,7 @@ export function pickCurrentHeading(options: {
   return picked?.id;
 }
 
-/** 右端の線と目次の枠の右端の、画面の右端（スクロールバーを除く）からの距離（px）を返す。スクロールする場所の右端から 1rem 離し、横の範囲が重なる差分のミニマップの帯があればその左へずらす */
+/** 右端の線と目次の枠の右端の、画面の右端（スクロールバーを除く）からの距離（px）を返却する。スクロールする場所の右端から 1rem 離し、横の範囲が重なる差分のミニマップの帯があればその左へずらす */
 function edgeEnd(options: {
   /** スクロールする場所 */
   scroll: ScrollContainer;
@@ -121,7 +121,7 @@ function edgeEnd(options: {
   return clientWidth - right;
 }
 
-/** hover で開く目次の枠と右端の線の位置を、スクロールする場所の上端・下端・右端と、aside・描く先の要素・差分のミニマップの帯から決めて aside の CSS 変数に入れる。外す関数は受け取りを外す */
+/** hover で開く目次の枠と右端の線の位置を、スクロールする場所の上端・下端・右端と、aside・描く先の要素・差分のミニマップの帯から決めて aside の CSS 変数に入れる。削除する関数は受け取りを解除する */
 function followPanelPosition(el: HTMLElement, aside: HTMLElement): () => void {
   const scroll = findScrollContainer(el);
   const panel = aside.querySelector(".mdmark-side-toc-panel") as HTMLElement;
@@ -159,7 +159,7 @@ function followPanelPosition(el: HTMLElement, aside: HTMLElement): () => void {
       panelWidth: panel.getBoundingClientRect().width,
       rem,
     });
-    // 位置を全て読んでから書く（書いた後に読み直してレイアウトを計算し直さない）
+    // 位置を全て読み込んでから記載する（記載した後に再読み込みしてレイアウトをもう一度計算しない）
     aside.style.setProperty("--mdmark-side-toc-panel-top", `${top}px`);
     aside.style.setProperty("--mdmark-side-toc-panel-end", `${end}px`);
     aside.style.setProperty(
@@ -172,13 +172,13 @@ function followPanelPosition(el: HTMLElement, aside: HTMLElement): () => void {
   };
 
   update();
-  // スクロールする要素の中でも、画面全体のスクロールで要素の位置が変わるため両方で決め直す
+  // スクロールする要素の中でも、画面全体のスクロールで要素の位置が変わるため両方でもう一度決める
   if (!scroll.page) {
     scroll.target.addEventListener("scroll", update, { passive: true });
   }
   window.addEventListener("scroll", update, { passive: true });
   window.addEventListener("resize", update);
-  // 差分のミニマップの帯の出し入れ（document.body の子の追加・削除）でも、スクロールを待たずに決め直す
+  // 差分のミニマップの帯の出し入れ（document.body の子の追加・削除）でも、スクロールを待たずにもう一度決める
   const bodyObserver = new MutationObserver(update);
   bodyObserver.observe(document.body, { childList: true });
   return () => {
@@ -192,7 +192,7 @@ function followPanelPosition(el: HTMLElement, aside: HTMLElement): () => void {
   };
 }
 
-/** 描く先の要素の子を本文の列に包み、その後ろに右側の目次を置いて操作を付ける。見出しが無ければ何も置かない。外す関数は包む前の子の並びへ戻す */
+/** 描く先の要素の子を本文の列に包み、その後ろに右側の目次を配置して操作を付ける。見出しが無ければ何も配置しない。削除する関数は包む前の子の並びへ戻す */
 export function attachSideToc(options: {
   /** 描く先の要素 */
   el: HTMLElement;
@@ -246,14 +246,14 @@ export function attachSideToc(options: {
     toggle.setAttribute("aria-expanded", String(open));
   };
 
-  /** ピン止めするか外すかを、状態と属性に写す */
+  /** ピン止めするか削除するかを、状態と属性に写す */
   const setPinned = (pinned: boolean): void => {
     state.pinned = pinned;
     aside.toggleAttribute("data-pinned", pinned);
     pin.setAttribute("aria-pressed", String(pinned));
   };
 
-  /** 閉じた節と選ばれていないタブの中に無い見出しから今いる節を決め、項目・線・狭い幅の帯の文字に写す */
+  /** 閉じたセクションと選ばれていないタブの中に無い見出しから今いるセクションを決め、項目・線・狭い幅の帯の文字に写す */
   const updateCurrent = (): void => {
     const visible = targets
       .map((heading, index) => ({ heading, index }))
@@ -279,7 +279,7 @@ export function attachSideToc(options: {
       current === undefined ? "" : (links[current]?.textContent ?? "");
   };
 
-  // 今いる節は、次の描画のタイミングに 1 回だけ決め直す
+  // 今いるセクションは、次の描画のタイミングに 1 回だけもう一度決める
   let frame = 0;
   const requestUpdate = (): void => {
     if (frame === 0) {
@@ -309,10 +309,10 @@ export function attachSideToc(options: {
       });
       requestUpdate();
     } else if (link) {
-      // 呼ぶ側が href を書き換えても引けるよう、見出しは data-heading-id で引く
+      // 呼ぶ側が href を書き換えても参照できるよう、見出しは data-heading-id で参照する
       const id = link.dataset.headingId;
       const target = targets.find((heading) => heading.id === id);
-      // 既定の動き（URL の # を変える）は止めず、URL が同じでも節を開いて移る
+      // 既定の動き（URL の # を変える）は止めず、URL が同じでもセクションを開いて移る
       if (target) {
         revealTarget(target);
       }
@@ -337,7 +337,7 @@ export function attachSideToc(options: {
   content.addEventListener("click", requestUpdate);
   content.addEventListener("keyup", requestUpdate);
   window.addEventListener("hashchange", requestUpdate);
-  // 見出しが画面に出入りしたときと、線の帯に出入りしたときに決め直す
+  // 見出しが画面に出入りしたときと、線の帯に出入りしたときにもう一度決める
   const observers = [
     new IntersectionObserver(requestUpdate),
     new IntersectionObserver(requestUpdate, { rootMargin: LINE_BAND_MARGIN }),

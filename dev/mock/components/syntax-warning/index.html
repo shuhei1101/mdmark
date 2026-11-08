@@ -22,7 +22,7 @@
 <body>
   <!-- モック専用の操作列: 配色の切り替え -->
   <div class="mock-bar">
-    <!-- [data-scheme-set]: sample.js が押されたボタンの値を html の data-scheme に当てる -->
+    <!-- [data-scheme-set]: sample.js が押されたボタンの値を html の data-scheme に適用する -->
     <div class="mock-bar-group" role="group" aria-label="配色">
       <button class="mock-bar-item" type="button" data-scheme-set="light" aria-pressed="false">明るい配色</button>
       <button class="mock-bar-item" type="button" data-scheme-set="dark" aria-pressed="false">ダーク</button>
@@ -31,15 +31,15 @@
 
   <main class="host">
     <div class="catalog">
-      <h1 class="catalog-title">書き方の警告</h1>
+      <h1 class="catalog-title">記載の警告</h1>
 
       <!-- closed と open の同時指定（表） -->
       <section aria-labelledby="state-closed-open">
         <h2 class="catalog-label" id="state-closed-open">closed と open の同時指定（表）</h2>
         <article class="mdmark">
 <div class="mdmark-syntax-warning">
-  <p class="mdmark-syntax-warning-title"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg>書き方の警告</p>
-  <p><code>&lt;!-- table: data closed open --&gt;</code> の <code>closed</code> と <code>open</code> は同時に書けません。どちらか 1 つにしてください。<code>closed</code> を当てて描いています。</p>
+  <p class="mdmark-syntax-warning-title"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg>記載の警告</p>
+  <p><code>&lt;!-- table: data closed open --&gt;</code> の <code>closed</code> と <code>open</code> は同時に記載できません。どちらか 1 つにしてください。<code>closed</code> を適用して描いています。</p>
 </div>
         </article>
       </section>
@@ -49,11 +49,11 @@
         <h2 class="catalog-label" id="state-key-without-feature">機能の無い表のキー（表）</h2>
         <article class="mdmark">
 <div class="mdmark-syntax-warning">
-  <p class="mdmark-syntax-warning-title"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg>書き方の警告</p>
-  <p><code>&lt;!-- table: data hide=備考 total=価格:sum --&gt;</code> の読めない指定を当てずに描いています。</p>
+  <p class="mdmark-syntax-warning-title"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg>記載の警告</p>
+  <p><code>&lt;!-- table: data hide=備考 total=価格:sum --&gt;</code> の読み込めない指定を当てずに描いています。</p>
   <ul>
-    <li><code>hide=</code>: <code>+columns</code> を書いた表でだけ使えます。当てずに描いています</li>
-    <li><code>total=</code>: <code>+total</code> を書いた表でだけ使えます。当てずに描いています</li>
+    <li><code>hide=</code>: <code>+columns</code> を記載した表でだけ使用できます。当てずに描いています</li>
+    <li><code>total=</code>: <code>+total</code> を記載した表でだけ使用できます。当てずに描いています</li>
   </ul>
 </div>
         </article>
@@ -64,19 +64,19 @@
         <h2 class="catalog-label" id="state-unknown-filter">知らない絞り込みの種類（表）</h2>
         <article class="mdmark">
 <div class="mdmark-syntax-warning">
-  <p class="mdmark-syntax-warning-title"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg>書き方の警告</p>
-  <p><code>&lt;!-- table: data filter=名前:range,説明:text --&gt;</code> の絞り込みの種類 <code>range</code> は使えません。使える種類は <code>select</code>・<code>text</code>・<code>date</code> です。名前の列には絞り込みを付けずに描いています。</p>
+  <p class="mdmark-syntax-warning-title"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg>記載の警告</p>
+  <p><code>&lt;!-- table: data filter=名前:range,説明:text --&gt;</code> の絞り込みの種類 <code>range</code> は使用できません。使用できる種類は <code>select</code>・<code>text</code>・<code>date</code> です。名前の列には絞り込みを付けずに描いています。</p>
 </div>
         </article>
       </section>
 
-      <!-- 閉じの印が無い -->
+      <!-- 閉じのマーカーが無い -->
       <section aria-labelledby="state-range-end">
-        <h2 class="catalog-label" id="state-range-end">閉じの印が無い</h2>
+        <h2 class="catalog-label" id="state-range-end">閉じのマーカーが無い</h2>
         <article class="mdmark">
 <div class="mdmark-syntax-warning">
-  <p class="mdmark-syntax-warning-title"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg>書き方の警告</p>
-  <p><code>&lt;!-- table: data --&gt;</code> の閉じの印 <code>&lt;!-- /table --&gt;</code> がありません。範囲の終わりに閉じの印を書いてください。印から文書の終わりまでを範囲にして描いています。</p>
+  <p class="mdmark-syntax-warning-title"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg>記載の警告</p>
+  <p><code>&lt;!-- table: data --&gt;</code> の閉じのマーカー <code>&lt;!-- /table --&gt;</code> がありません。範囲の終わりに閉じのマーカーを記載してください。マーカーから文書の終わりまでを範囲にして描いています。</p>
 </div>
         </article>
       </section>
@@ -86,8 +86,8 @@
         <h2 class="catalog-label" id="state-no-heading">タブ名にする見出しが無い</h2>
         <article class="mdmark">
 <div class="mdmark-syntax-warning">
-  <p class="mdmark-syntax-warning-title"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg>書き方の警告</p>
-  <p><code>&lt;!-- tabs --&gt;</code> の範囲に、タブ名にする見出しがありません。タブにしたい中身ごとに見出し（<code>### macOS</code> など）を書いてください。範囲の中身はそのまま描いています。</p>
+  <p class="mdmark-syntax-warning-title"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg>記載の警告</p>
+  <p><code>&lt;!-- tabs --&gt;</code> の範囲に、タブ名にする見出しがありません。タブにしたい中身ごとに見出し（<code>### macOS</code> など）を記載してください。範囲の中身はそのまま描いています。</p>
 </div>
         </article>
       </section>
@@ -97,8 +97,8 @@
         <h2 class="catalog-label" id="state-no-list">番号付きリストが無い</h2>
         <article class="mdmark">
 <div class="mdmark-syntax-warning">
-  <p class="mdmark-syntax-warning-title"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg>書き方の警告</p>
-  <p><code>&lt;!-- steps --&gt;</code> の範囲に、手順にする番号付きリストがありません。手順を <code>1.</code> から始まる番号付きリストで書いてください。範囲の中身はそのまま描いています。</p>
+  <p class="mdmark-syntax-warning-title"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg>記載の警告</p>
+  <p><code>&lt;!-- steps --&gt;</code> の範囲に、手順にする番号付きリストがありません。手順を <code>1.</code> から始まる番号付きリストで記載してください。範囲の中身はそのまま描いています。</p>
 </div>
         </article>
       </section>
@@ -108,8 +108,8 @@
         <h2 class="catalog-label" id="state-page-value">ページの設定の知らない値</h2>
         <article class="mdmark">
 <div class="mdmark-syntax-warning">
-  <p class="mdmark-syntax-warning-title"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg>書き方の警告</p>
-  <p><code>&lt;!-- page: scheme=sepia --&gt;</code> の <code>scheme=sepia</code> は使えません。書けるのは <code>scheme</code>（<code>light</code>・<code>dark</code>・<code>auto</code>）・<code>theme</code>（<code>dev-swiss</code>・<code>theme-paper</code>・<code>theme-slate</code>・<code>theme-contrast</code>）・<code>toc</code>（<code>hover</code>・<code>fixed</code>）です。残りの指定で描いています。</p>
+  <p class="mdmark-syntax-warning-title"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg>記載の警告</p>
+  <p><code>&lt;!-- page: scheme=sepia --&gt;</code> の <code>scheme=sepia</code> は使用できません。記載できるのは <code>scheme</code>（<code>light</code>・<code>dark</code>・<code>auto</code>）・<code>theme</code>（<code>dev-swiss</code>・<code>theme-paper</code>・<code>theme-slate</code>・<code>theme-contrast</code>）・<code>toc</code>（<code>hover</code>・<code>fixed</code>）です。残りの指定で描いています。</p>
 </div>
         </article>
       </section>
@@ -119,8 +119,8 @@
         <h2 class="catalog-label" id="state-row">表に無い行を指す行の詳細</h2>
         <article class="mdmark">
 <div class="mdmark-syntax-warning">
-  <p class="mdmark-syntax-warning-title"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg>書き方の警告</p>
-  <p><code>&lt;!-- row-detail: 5 --&gt;</code> の 5 行目がありません。表は 3 行です。行の位置を 1〜3 で書いてください。詳細は表の後の本文として描いています。</p>
+  <p class="mdmark-syntax-warning-title"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg>記載の警告</p>
+  <p><code>&lt;!-- row-detail: 5 --&gt;</code> の 5 行目がありません。表は 3 行です。行の位置を 1〜3 で記載してください。詳細は表の後の本文として描いています。</p>
 </div>
         </article>
       </section>
@@ -130,8 +130,8 @@
         <h2 class="catalog-label" id="state-broken-ref">切れた参照</h2>
         <article class="mdmark">
 <div class="mdmark-syntax-warning">
-  <p class="mdmark-syntax-warning-title"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg>書き方の警告</p>
-  <p>リンク先の <code>#fig-missing</code> の図表がありません。<code>&lt;!-- fig: missing --&gt;</code> を図か表の直前に書くか、リンク先を直してください。</p>
+  <p class="mdmark-syntax-warning-title"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg>記載の警告</p>
+  <p>リンク先の <code>#fig-missing</code> の図表がありません。<code>&lt;!-- fig: missing --&gt;</code> を図か表の直前に記載するか、リンク先を修正してください。</p>
 </div>
         </article>
       </section>
@@ -141,19 +141,19 @@
         <h2 class="catalog-label" id="state-duplicate">重なった ID</h2>
         <article class="mdmark">
 <div class="mdmark-syntax-warning">
-  <p class="mdmark-syntax-warning-title"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg>書き方の警告</p>
+  <p class="mdmark-syntax-warning-title"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg>記載の警告</p>
   <p><code>&lt;!-- fig: arch --&gt;</code> の ID <code>arch</code> は、前の図表と重なっています。別の ID にしてください。この図には番号だけを付け、ID を付けていません。</p>
 </div>
         </article>
       </section>
 
-      <!-- 読めないファイルツリー -->
+      <!-- 読み込めないファイルツリー -->
       <section aria-labelledby="state-tree">
-        <h2 class="catalog-label" id="state-tree">読めないファイルツリー</h2>
+        <h2 class="catalog-label" id="state-tree">読み込めないファイルツリー</h2>
         <article class="mdmark">
 <div class="mdmark-syntax-warning">
-  <p class="mdmark-syntax-warning-title"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg>書き方の警告</p>
-  <p>ファイルツリーの 3 行目が、上の行より 2 段深く書かれていて読めません。罫線の段を 1 段ずつ深くしてください。コードブロックのまま描いています。</p>
+  <p class="mdmark-syntax-warning-title"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg>記載の警告</p>
+  <p>ファイルツリーの 3 行目が、上の行より 2 階層深く記載されていて読み込めません。罫線の階層を 1 階層ずつ深くしてください。コードブロックのまま描いています。</p>
 </div>
         </article>
       </section>
@@ -163,11 +163,11 @@
         <h2 class="catalog-label" id="state-schema">拡張の引数が Schema に合わない</h2>
         <article class="mdmark">
 <div class="mdmark-syntax-warning">
-  <p class="mdmark-syntax-warning-title"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg>書き方の警告</p>
-  <p><code>&lt;!-- greet: World 2 --&gt;</code> の引数が、拡張 <code>greet</code> の決まりに合いません。直してから読み込み直してください。</p>
+  <p class="mdmark-syntax-warning-title"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg>記載の警告</p>
+  <p><code>&lt;!-- greet: World 2 --&gt;</code> の引数が、拡張 <code>greet</code> の決まりに合いません。修正してから再読み込みしてください。</p>
   <ul>
-    <li>1 つ目の <code>World</code>: 英小文字だけで書いてください</li>
-    <li>2 つ目の <code>2</code>: 引数は 1 つだけ書けます</li>
+    <li>1 つ目の <code>World</code>: 英小文字だけで記載してください</li>
+    <li>2 つ目の <code>2</code>: 引数は 1 つだけ記載できます</li>
   </ul>
 </div>
         </article>
@@ -178,41 +178,41 @@
         <h2 class="catalog-label" id="state-glossary-column">用語集の表に無い列名</h2>
         <article class="mdmark">
 <div class="mdmark-syntax-warning">
-  <p class="mdmark-syntax-warning-title"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg>書き方の警告</p>
-  <p><code>&lt;!-- glossary: term=用語 meaning=説明 --&gt;</code> の <code>meaning=</code> の列 <code>説明</code> が表にありません。表の列は <code>用語</code>・<code>意味</code> です。列名を直してください。この表からは用語を入れずに描いています。</p>
+  <p class="mdmark-syntax-warning-title"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg>記載の警告</p>
+  <p><code>&lt;!-- glossary: term=用語 meaning=説明 --&gt;</code> の <code>meaning=</code> の列 <code>説明</code> が表にありません。表の列は <code>用語</code>・<code>意味</code> です。列名を修正してください。この表からは用語を入れずに描いています。</p>
 </div>
         </article>
       </section>
 
-      <!-- 用語集の印に必須の指定が無い -->
+      <!-- 用語集のマーカーに必須の指定が無い -->
       <section aria-labelledby="state-glossary-required">
-        <h2 class="catalog-label" id="state-glossary-required">用語集の印に必須の指定が無い</h2>
+        <h2 class="catalog-label" id="state-glossary-required">用語集のマーカーに必須の指定が無い</h2>
         <article class="mdmark">
 <div class="mdmark-syntax-warning">
-  <p class="mdmark-syntax-warning-title"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg>書き方の警告</p>
-  <p><code>&lt;!-- glossary: term=用語 --&gt;</code> に意味の列の指定 <code>meaning=</code> がありません。<code>meaning=列名</code> を書き足してください。この表からは用語を入れずに描いています。</p>
+  <p class="mdmark-syntax-warning-title"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg>記載の警告</p>
+  <p><code>&lt;!-- glossary: term=用語 --&gt;</code> に意味の列の指定 <code>meaning=</code> がありません。<code>meaning=列名</code> を追記してください。この表からは用語を入れずに描いています。</p>
 </div>
         </article>
       </section>
 
-      <!-- 長文（長い印） -->
+      <!-- 長文（長いマーカー） -->
       <section aria-labelledby="state-long">
-        <h2 class="catalog-label" id="state-long">長文（長い印）</h2>
+        <h2 class="catalog-label" id="state-long">長文（長いマーカー）</h2>
         <article class="mdmark">
 <div class="mdmark-syntax-warning">
-  <p class="mdmark-syntax-warning-title"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg>書き方の警告</p>
-  <p><code>&lt;!-- table: data +sort +filter +pin +unknown-feature-with-a-very-long-name closed open --&gt;</code> の <code>closed</code> と <code>open</code> は同時に書けません。どちらか 1 つにしてください。<code>closed</code> を当てて描いています。</p>
+  <p class="mdmark-syntax-warning-title"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg>記載の警告</p>
+  <p><code>&lt;!-- table: data +sort +filter +pin +unknown-feature-with-a-very-long-name closed open --&gt;</code> の <code>closed</code> と <code>open</code> は同時に記載できません。どちらか 1 つにしてください。<code>closed</code> を適用して描いています。</p>
 </div>
         </article>
       </section>
 
-      <!-- 比べる: 知らせの枠（外部ライブラリ・拡張を読めない。読む人へ向けた枠） -->
+      <!-- 比べる: 通知ブロック（外部ライブラリ・拡張を読み込めない。読者へ向けた枠） -->
       <section aria-labelledby="state-notice">
-        <h2 class="catalog-label" id="state-notice">比べる: 知らせの枠（外部ライブラリ・拡張を読めない。読む人へ向けた枠）</h2>
+        <h2 class="catalog-label" id="state-notice">比べる: 通知ブロック（外部ライブラリ・拡張を読み込めない。読者へ向けた枠）</h2>
         <article class="mdmark">
 <div class="mdmark-notice" role="status">
   <strong class="mdmark-notice-title">この図を表示できません</strong>
-  <p>表示に使う拡張（<code>greet</code>）を読み込めませんでした。ネットワークにつながっているかを確かめて、ページを読み込み直してください。</p>
+  <p>表示に使用する拡張（<code>greet</code>）を読み込めませんでした。ネットワークにつながっているかを確認して、ページを再読み込みしてください。</p>
 </div>
         </article>
       </section>

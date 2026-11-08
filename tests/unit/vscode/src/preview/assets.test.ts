@@ -3,7 +3,7 @@ import { expect, test } from "vitest";
 /** 探す場所の候補の処理を読み込む（実装が無い間は各テストが個別に失敗する） */
 const loadAssets = () => import("../../../../../vscode/src/preview/assets.ts");
 
-// Markdown のフォルダ、次にアセットのルートを返す（正常系）
+// Markdown のフォルダ、次にアセットのルートを返却する（正常系）
 test("test_asset_candidates", async () => {
   // 準備
   const { assetCandidates } = await loadAssets();

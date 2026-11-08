@@ -1,9 +1,9 @@
 import { expect, test, vi } from "vitest";
 
-/** 部品のモジュールを読む処理を読み込む（実装が無い間は各テストが個別に失敗する） */
+/** 部品のモジュールを読み込む処理を読み込む（実装が無い間は各テストが個別に失敗する） */
 const loadPartModules = () => import("../../../src/part-modules.ts");
 
-/** 読んだ控えと読み込みの差し替えを空にした、部品のモジュールを読む処理を返す */
+/** 読み込んだ記録と読み込みの差し替えを空にした、部品のモジュールを読み込む処理を返却する */
 async function freshPartModules() {
   const partModules = await loadPartModules();
   partModules.partModules.clear();
@@ -11,10 +11,10 @@ async function freshPartModules() {
   return partModules;
 }
 
-/** ビューの部品のモジュールの形 */
+/** ビューの部品のモジュールの構造 */
 const VIEW_MODULE = { drawView: () => () => {}, attachView: () => () => {} };
 
-// 隣の配布ファイルを読み、同じ名前は 1 回だけ読む（正常系）
+// 隣の配布ファイルを読み込み、同じ名前は 1 回だけ読み込む（正常系）
 test("test_load_part_module", async () => {
   // 準備
   const { loadPartModule } = await freshPartModules();
@@ -29,7 +29,7 @@ test("test_load_part_module", async () => {
   expect(first.module).toBe(VIEW_MODULE);
 });
 
-// 差し替えた関数で読み、URL を読まない（正常系）
+// 差し替えた関数で読み込み、URL を読み込まない（正常系）
 test("test_load_part_module_when_loader", async () => {
   // 準備
   const { loadPartModule, setPartModuleLoader } = await freshPartModules();
@@ -60,7 +60,7 @@ test("test_load_part_module_when_shape_mismatch", async () => {
   expect((error as Error).cause).toBe(importModule.mock.calls[0]?.[0]);
 });
 
-// 読めないモジュールは元のエラーで reject し、次も読み直さない（異常系）
+// 読み込めないモジュールは元のエラーで reject し、次も再読み込みしない（異常系）
 test("test_load_part_module_when_rejected", async () => {
   // 準備
   const { loadPartModule } = await freshPartModules();

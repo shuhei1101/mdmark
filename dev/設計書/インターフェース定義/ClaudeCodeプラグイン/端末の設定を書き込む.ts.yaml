@@ -1,0 +1,139 @@
+title: 端末の設定を書き込む
+entry:
+  kind: operation
+  value: '`node ${CLAUDE_PLUGIN_ROOT}/bin/setup.js write-settings [--set {キー}={値}]...`（スキルが Bash で呼ぶ）'
+flows:
+  - name: 正常系
+    summary: 端末の設定を雛形から作り、`settings.json` の `env` に `MDMARK_CONFIG` を書き込む
+    setup:
+      - name: 一時の端末
+        description: '`MDMARK_CONFIG`・`MDMARK_STATE_DIR`・`CLAUDE_CONFIG_DIR`・`TMUX_TMPDIR` を、それぞれ空の一時フォルダの下にする'
+      - name: Mock
+        description: ビルドした `plugin/bin/setup.js` を子プロセスで実行する。差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        participant K as スキル（global-setup・setup）
+        participant P as setup.js
+        participant F as 端末の設定と settings.json
+        K->>P: write-settings --set features.table=false
+        P->>P: Schema で検める
+        P->>F: 雛形に値と version を入れて書き込み、env に MDMARK_CONFIG を書き込む
+        P-->>K: 書き込んだパスとキー・終了コード 0
+    expected:
+      - 終了コードが 0
+      - '`MDMARK_CONFIG` のパスの端末の設定が `version`（プラグインのバージョン）と `features.table: false` を持つ'
+      - '`CLAUDE_CONFIG_DIR` の `settings.json` の `env.MDMARK_CONFIG` が端末の設定のパス'
+      - 標準出力の JSON の `written` に端末の設定のパスと `settings.json` のパスがある
+    test: test_normal
+  - name: 正常系（既にある設定のキーを変える）
+    summary: 指定したキーだけを書き換え、コメントとほかのキーを残す
+    setup:
+      - name: 一時の端末
+        description: '`MDMARK_CONFIG`・`MDMARK_STATE_DIR`・`CLAUDE_CONFIG_DIR`・`TMUX_TMPDIR` を、それぞれ空の一時フォルダの下にする'
+      - name: 既にある端末の設定
+        description: 'コメントの行と `features.callout: false` を持つ端末の設定'
+      - name: Mock
+        description: ビルドした `plugin/bin/setup.js` を子プロセスで実行する。差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        participant K as スキル（global-setup・setup）
+        participant P as setup.js
+        participant F as 端末の設定
+        K->>P: write-settings --set serve.tmuxSession=mdmark-test
+        P->>F: serve.tmuxSession だけを書き換える
+        P-->>K: 書き込んだキー・終了コード 0
+    expected:
+      - '`serve.tmuxSession` が `mdmark-test`'
+      - 'コメントの行と `features.callout: false` が残っている'
+    test: test_normal_when_settings_exist
+  - name: 正常系（既定のパス）
+    summary: 端末の設定が既定のパスなら `settings.json` を書き込まない
+    setup:
+      - name: 既定のパスの端末
+        description: '`MDMARK_CONFIG` を削除し、`XDG_CONFIG_HOME` と `CLAUDE_CONFIG_DIR` を空の一時フォルダにする'
+      - name: Mock
+        description: ビルドした `plugin/bin/setup.js` を子プロセスで実行する。差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        participant K as スキル（global-setup・setup）
+        participant P as setup.js
+        K->>P: write-settings
+        P-->>K: 書き込んだパス・終了コード 0
+    expected:
+      - '`${XDG_CONFIG_HOME}/mdmark/settings.yaml` がある'
+      - '`CLAUDE_CONFIG_DIR` に `settings.json` が無い'
+    test: test_normal_when_default_path
+  - name: 異常系（Schema に合わない値・終了コード 1）
+    summary: Schema に合わない値は何も書き込まずに終わる
+    setup:
+      - name: 一時の端末
+        description: '`MDMARK_CONFIG`・`MDMARK_STATE_DIR`・`CLAUDE_CONFIG_DIR`・`TMUX_TMPDIR` を、それぞれ空の一時フォルダの下にする'
+      - name: Mock
+        description: ビルドした `plugin/bin/setup.js` を子プロセスで実行する。差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        participant K as スキル（global-setup・setup）
+        participant P as setup.js
+        K->>P: write-settings --set config.cascade=yes
+        P->>P: Schema で検める（合わない）
+        P-->>K: キーと許す値・終了コード 1
+    expected:
+      - 終了コードが 1
+      - 標準エラーに `config.cascade` と真偽値を記載することが出る
+      - 端末の設定と `settings.json` が作られていない
+    test: test_error_when_value_invalid
+lead: '`global-setup` が利用者の回答した値で端末の設定を作る・書き換え、端末の設定が既定のパスでなければ `settings.json` の `env` に `MDMARK_CONFIG` を書き込む。'
+test_file: tests/integration/ClaudeCodeプラグイン/setup-write-settings.test.ts
+idempotent: true
+side_effects: 端末の設定と `${CLAUDE_CONFIG_DIR:-~/.claude}/settings.json` を書き換える
+callers:
+  - dev/設計書/シナリオ/単一ユースケース/端末にmdmarkをセットアップする#
+request:
+  - name: --set
+    type: string
+    required: false
+    default: なし（値を変えず、無ければ雛形と `version` だけで作る）
+    location: argument
+    description: 書き込むキーと値。キーはドットで区切る。値は YAML として読み込む。繰り返して指定できる
+    example: features.table=false
+  - name: MDMARK_CONFIG
+    type: string
+    required: false
+    default: なし（既定のパス）
+    location: argument
+    description: 端末の設定のパス（環境変数）
+  - name: CLAUDE_CONFIG_DIR
+    type: string
+    required: false
+    default: なし（`~/.claude`）
+    location: argument
+    description: '`settings.json` のフォルダ（環境変数）'
+response:
+  - name: written[]
+    type: string
+    description: 書き換えたファイルの絶対パス
+  - name: keys[]
+    type: string
+    description: 書き換えたキー
+exceptions:
+  - name: なし（正常終了）
+    condition: 書き込んだ。終了コード 0
+  - name: なし（Schema に合わない値・終了コード 1）
+    condition: 書き込んだ後の端末の設定が `schemas/mdmark.settings.schema.json` に合わない
+    notes: 何も書き込まない
+constraints:
+  - item: Schema
+    constraint: 書き込む前に、書き込んだ後の端末の設定を `schemas/mdmark.settings.schema.json` で検める
+    decided_by: dev/設計書/設定/ライブラリ本体#settings[serve.tmuxSession]
+  - item: YAML の書き換え
+    constraint: コメント・キーの並び・触らないキーの記載方法を残す
+    decided_by: dev/設計書/外部ライブラリ/yaml#
+  - item: version
+    constraint: 端末の設定を新しく作るときだけ `version` をプラグインのバージョンにする。既にある `version` は書き換えない（移行は `mdmark upgrade --settings`）
+  - item: settings.json
+    constraint: '`env.MDMARK_CONFIG` だけを書き込み、ほかのキーと記載方法を残す。端末の設定が既定のパスなら書き込まない'
+  - item: 出力
+    constraint: 結果は標準出力に JSON の 1 行で出す。誤りは標準エラーに理由と修正方法を出す
+  - item: 動く Node のバージョン
+    constraint: Node 24 以降
+    decided_by: dev/設計書/非機能要件/非機能要件#requirements[CLI が動く Node のバージョン]

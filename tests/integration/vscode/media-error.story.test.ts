@@ -6,7 +6,7 @@ const holder = createBrowserHolder();
 beforeAll(holder.launch);
 afterAll(holder.close);
 
-/** 再生できない動画・音声の知らせのストーリーを開く */
+/** 再生できない動画・音声の通知のストーリーを開く */
 async function open(id: string) {
   const page = await holder.openStory(`vscode-mediaerror--${id}`);
   return { page, notice: page.locator(".mdmark-notice") };

@@ -7,7 +7,7 @@ import { envOf, featureOn } from "./tokens.ts";
 /** バッジにする行内のコードの頭 */
 const BADGE_PREFIX = "badge:";
 
-/** バッジにしない印: 頭の `\` を外した `<code>` に戻す */
+/** バッジにしないマーカー: 頭の `\` を削除した `<code>` に戻す */
 const ESCAPED_PREFIX = "badge\\:";
 
 /** 最初の `:` の前が色の名前なら色とラベルに分け、そうでなければ全てをラベルにする */
@@ -23,7 +23,7 @@ export function splitBadgeColor(text: string): {
   return { color: head, label: text.slice(at + 1) };
 }
 
-/** `badge` がオンなら、頭が `badge:` で後ろに空白以外の文字を持つ行内のコードをバッジにし、`badge\:` のものは `\` を外したコードにする */
+/** `badge` がオンなら、頭が `badge:` で後ろに空白以外の文字を持つ行内のコードをバッジにし、`badge\:` のものは `\` を削除したコードにする */
 export function buildBadges(state: StateCore): void {
   if (!featureOn(state, "badge")) {
     return;

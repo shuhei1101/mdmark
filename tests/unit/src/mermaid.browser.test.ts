@@ -3,7 +3,7 @@ import { resolveConfig } from "../../../src/config.ts";
 import type { SyntaxImport } from "../../../src/highlight.ts";
 import { addStyles, createRootFromHtml, removeRoots } from "../helpers/dom.ts";
 
-/** mermaid の処理を読み込む（実装が無い間は各テストが個別に失敗する。ファイルが無いと Vite の解決が失敗してテストファイルごと落ちるため、URL を組んで読む） */
+/** mermaid の処理を読み込む（実装が無い間は各テストが個別に失敗する。ファイルが無いと Vite の解決が失敗してテストファイルごと落ちるため、URL を組んで読み込む） */
 const loadMermaid = (): Promise<typeof import("../../../src/mermaid.ts")> =>
   import(
     /* @vite-ignore */ new URL("../../../src/mermaid.ts", import.meta.url).href
@@ -12,7 +12,7 @@ const loadMermaid = (): Promise<typeof import("../../../src/mermaid.ts")> =>
 /** 手元の mermaid 12.3.0 の ES モジュール（依存の mermaid の dist） */
 const MERMAID_MODULE_URL = "/node_modules/mermaid/dist/mermaid.esm.min.mjs";
 
-/** mermaid のモジュールを読む */
+/** mermaid のモジュールを読み込む */
 const importMermaid = (): Promise<{ default?: unknown }> =>
   import(/* @vite-ignore */ MERMAID_MODULE_URL);
 
@@ -29,7 +29,7 @@ const FLOWCHART = [
 /** actor を持つ sequenceDiagram のソース */
 const SEQUENCE = [
   "sequenceDiagram",
-  "  actor U as 読む人",
+  "  actor U as 読者",
   "  participant M as mdmark",
   "  U->>M: ページを開く",
 ].join("\n");
@@ -49,11 +49,11 @@ const INVALID = "問い合わせを受ける --> 担当へ回す";
 const escapeHtml = (text: string): string =>
   text.replace(/[&<>"]/g, (c) => `&#${c.charCodeAt(0)};`);
 
-/** `render` が出す形の mermaid のコードブロックの HTML */
+/** `render` が出す構造の mermaid のコードブロックの HTML */
 const codeBlock = (source: string): string =>
   `<div class="mdmark-code" data-mdmark-mermaid><div class="mdmark-code-bar"></div><pre tabindex="0" aria-label="コード: mermaid"><code class="language-mermaid">${escapeHtml(source)}</code></pre></div>`;
 
-/** mermaid のコードブロックを並べた描く先の要素を置く */
+/** mermaid のコードブロックを並べた描く先の要素を配置する */
 const createMermaidRoot = (
   sources: string[] = [FLOWCHART, SEQUENCE],
 ): HTMLElement => createRootFromHtml(sources.map(codeBlock).join(""));
@@ -74,7 +74,7 @@ const rgbToHex = (rgb: string): string => {
   return `#${[r, g, b].map((n) => (n ?? 0).toString(16).padStart(2, "0")).join("")}`;
 };
 
-/** attachMermaid に渡す引数を作る */
+/** attachMermaid に指定する引数を作る */
 const attachOptions = (
   root: HTMLElement,
   overrides: { importModule?: SyntaxImport; isCurrent?: () => boolean } = {},
@@ -91,7 +91,7 @@ const attachOptions = (
 
 const detachers: Array<() => void> = [];
 
-// 全件を並べて流すと、5MB の mermaid のモジュールの読み込みに既定の 15 秒を超えることがある
+// 全件を並べて実行すると、5MB の mermaid のモジュールの読み込みに既定の 15 秒を超えることがある
 vi.setConfig({ testTimeout: 60_000 });
 
 beforeAll(() => {
@@ -109,7 +109,7 @@ afterEach(async () => {
   vi.restoreAllMocks();
 });
 
-// 読み込みの間は読み込み中の枠を置き、描いたら図の枠に置き換えて操作を付ける（正常系）
+// 読み込みの間は読み込み中のブロックを配置し、描いたら図の枠に置き換えて操作を付ける（正常系）
 test("test_attach_mermaid", async () => {
   // 準備
   const { attachMermaid } = await loadMermaid();
@@ -157,7 +157,7 @@ test("test_attach_mermaid", async () => {
   expect(importModule).toHaveBeenCalledTimes(1);
 });
 
-// 対象が無ければ何も読まない（正常系）
+// 対象が無ければ何も読み込まない（正常系）
 test("test_attach_mermaid_when_no_target", async () => {
   // 準備
   const { attachMermaid } = await loadMermaid();
@@ -173,7 +173,7 @@ test("test_attach_mermaid_when_no_target", async () => {
   expect(importModule).not.toHaveBeenCalled();
 });
 
-// 読めないときは知らせの枠に替えてコードブロックを出す（異常系）
+// 読み込めないときは通知ブロックに替えてコードブロックを出す（異常系）
 test("test_attach_mermaid_when_unavailable", async () => {
   // 準備
   const { attachMermaid } = await loadMermaid();
@@ -204,7 +204,7 @@ test("test_attach_mermaid_when_unavailable", async () => {
   expect(logged).toContain(error);
 });
 
-// 解釈できないソースは書き方の警告に替え、ほかは描く（異常系）
+// 解釈できないソースは記載の警告に替え、ほかは描く（異常系）
 test("test_attach_mermaid_when_syntax_invalid", async () => {
   // 準備
   const { attachMermaid } = await loadMermaid();
@@ -224,7 +224,7 @@ test("test_attach_mermaid_when_syntax_invalid", async () => {
   expect(document.querySelector('[id^="dmdmark-mermaid"]')).toBeNull();
 });
 
-// 読み終えたときに描き直していたら何もしない（正常系）
+// 読み込み終えたときに再描画していたら何もしない（正常系）
 test("test_attach_mermaid_when_stale", async () => {
   // 準備
   const { attachMermaid } = await loadMermaid();
@@ -242,7 +242,7 @@ test("test_attach_mermaid_when_stale", async () => {
   expect(render).not.toHaveBeenCalled();
 });
 
-// 埋めたモジュールがあれば URL を読まない（正常系）
+// 埋めたモジュールがあれば URL を読み込まない（正常系）
 test("test_attach_mermaid_when_embedded", async () => {
   // 準備
   const { attachMermaid, setEmbeddedMermaid } = await loadMermaid();
@@ -260,7 +260,7 @@ test("test_attach_mermaid_when_embedded", async () => {
   ).toHaveLength(2);
 });
 
-// 埋めたモジュールが mermaid を持たなければ、外へ読まずに知らせの枠にする（異常系）
+// 埋めたモジュールが mermaid を持たなければ、外へ読み込まずに通知ブロックにする（異常系）
 test("test_attach_mermaid_when_embedded_without_module", async () => {
   // 準備
   const { attachMermaid, setEmbeddedMermaid } = await loadMermaid();
@@ -284,7 +284,7 @@ test("test_attach_mermaid_when_embedded_without_module", async () => {
   }
 });
 
-// 祖先の明暗の class が変わったら描き直し、変わらなければ描き直さない（正常系）
+// 祖先の明暗の class が変わったら再描画し、変わらなければ再描画しない（正常系）
 test("test_attach_mermaid_when_scheme_changed", async () => {
   // 準備
   const { attachMermaid } = await loadMermaid();
@@ -319,7 +319,7 @@ test("test_attach_mermaid_when_scheme_changed", async () => {
   expect(render.mock.calls.length).toBe(afterDark);
 });
 
-// 外すと明暗が変わっても描き直さない（正常系）
+// 削除すると明暗が変わっても再描画しない（正常系）
 test("test_attach_mermaid_when_detached", async () => {
   // 準備
   const { attachMermaid } = await loadMermaid();
@@ -345,7 +345,7 @@ test("test_attach_mermaid_when_detached", async () => {
   expect(zoom?.textContent).toBe(zoomTextBefore);
 });
 
-/** drawMermaidDiagram に渡す引数を作る */
+/** drawMermaidDiagram に指定する引数を作る */
 const drawOptions = async (
   scope: HTMLElement,
   source: string,
@@ -366,7 +366,7 @@ const place = (scope: HTMLElement, html: string): void => {
   scope.innerHTML = html;
 };
 
-// 明るい配色では SVG を 1 つだけ置き、固定の初期化の設定で描く（正常系）
+// 明るい配色では SVG を 1 つだけ配置し、固定の初期化の設定で描く（正常系）
 test("test_draw_mermaid_diagram", async () => {
   // 準備
   const { drawMermaidDiagram } = await loadMermaid();
@@ -457,7 +457,7 @@ test("test_draw_mermaid_diagram_when_theme_configured", async () => {
   });
 });
 
-// 解釈できないソースはエラーの 1 行目を返し、エラーの図を消す（異常系）
+// 解釈できないソースはエラーの 1 行目を返却し、エラーの図を削除する（異常系）
 test("test_draw_mermaid_diagram_when_invalid", async () => {
   // 準備
   const { drawMermaidDiagram } = await loadMermaid();
@@ -497,7 +497,7 @@ test("test_draw_mermaid_diagram_when_gantt", async () => {
   );
 });
 
-/** ページの CSS から、セレクタに `_end` を含む規則のセレクタを、入れ子の親のセレクタを重ねた形で集める */
+/** ページの CSS から、セレクタに `_end` を含む規則のセレクタを、入れ子の親のセレクタを重ねた構造で集める */
 const endMarkerSelectors = (): string[] => {
   const found: string[] = [];
   /** 入れ子の規則のセレクタに親のセレクタを重ねる（`&` があれば置き換え、無ければ子孫にする） */
@@ -525,7 +525,7 @@ const endMarkerSelectors = (): string[] => {
   return found;
 };
 
-// 名前に _end を含むノードと状態は本文の色にせず、状態遷移図の終了の印だけを本文の色にする（正常系）
+// 名前に _end を含むノードと状態は本文の色にせず、状態遷移図の終了のマーカーだけを本文の色にする（正常系）
 test("test_draw_mermaid_diagram_when_end_in_name", async () => {
   // 準備
   const { drawMermaidDiagram } = await loadMermaid();
@@ -562,7 +562,7 @@ test("test_draw_mermaid_diagram_when_end_in_name", async () => {
     ...shapes('g.node.statediagram-state[id*="受付_end"]'),
   ];
   expect(named.length).toBeGreaterThan(0);
-  // 終了の印の規則（セレクタに `_end` を含む規則）が、名前に _end を含むノードと状態の形に当たらない
+  // 終了のマーカーの規則（セレクタに `_end` を含む規則）が、名前に _end を含むノードと状態の構造に該当しない
   const endRules = endMarkerSelectors();
   expect(endRules.length).toBeGreaterThan(0);
   for (const shape of named) {
@@ -578,7 +578,7 @@ test("test_draw_mermaid_diagram_when_end_in_name", async () => {
   expect(getComputedStyle(endMarker as SVGElement).fill).toBe(text);
 });
 
-// 表示する枠より小さい図を、枠の中で横の中央に置く（正常系）
+// 表示する枠より小さい図を、枠の中で横の中央に配置する（正常系）
 test("test_attach_mermaid_when_small", async () => {
   // 準備
   const { attachMermaid } = await loadMermaid();
@@ -634,7 +634,7 @@ test("test_mermaid_theme_variables", async () => {
   );
 });
 
-// mermaid のテーマでは CSS 変数を使わず、設定の文字列の値と固定の値だけにする（正常系）
+// mermaid のテーマでは CSS 変数を使用せず、設定の文字列の値と固定の値だけにする（正常系）
 test("test_mermaid_theme_variables_when_other_theme", async () => {
   // 準備
   const { mermaidThemeVariables } = await loadMermaid();
@@ -657,7 +657,7 @@ test("test_mermaid_theme_variables_when_other_theme", async () => {
   });
 });
 
-// rgb・rgba は丸めずに読み、color-mix の値も hex にする（正常系）
+// rgb・rgba は丸めずに読み込み、color-mix の値も hex にする（正常系）
 test("test_css_color_to_hex", async () => {
   // 準備
   const { cssColorToHex } = await loadMermaid();
@@ -689,7 +689,7 @@ test("test_replace_mermaid_actors", async () => {
       '<line x1="75" y1="45" x2="60" y2="60"></line>',
       '<line x1="75" y1="45" x2="90" y2="60"></line>',
       '<circle cx="75" cy="20" r="10"></circle>',
-      "<text>読む人</text>",
+      "<text>読者</text>",
       "</g>",
       "</svg>",
     ].join(""),
@@ -710,5 +710,5 @@ test("test_replace_mermaid_actors", async () => {
   expect(icon?.getAttribute("height")).toBe("30");
   expect(icon?.getAttribute("x")).toBe("60");
   expect(icon?.getAttribute("y")).toBe("10");
-  expect(children[1]?.textContent).toBe("読む人");
+  expect(children[1]?.textContent).toBe("読者");
 });

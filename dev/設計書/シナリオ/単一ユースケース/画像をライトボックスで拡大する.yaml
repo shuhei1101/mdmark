@@ -3,14 +3,14 @@ scenarios:
   - name: 正常シナリオ
     setup:
       - name: 文書を描いたページ
-        description: 版を固定した URL で mdmark を読み、文書を描いた HTML
+        description: バージョンを固定した URL で mdmark を読み込み、文書を描いた HTML
       - name: 3 つの画像の Markdown
         description: '`a.png`・`b.png`・`c.png` の 3 つの画像を、本文の段落を挟んで並べた文書'
       - name: Mock
-        description: jsDelivr を、ビルドした `dist/` を同じパスで返す手元の応答に差し替える。画像は手元の応答で返す
+        description: jsDelivr を、ビルドした `dist/` を同じパスで返却する手元の応答に差し替える。画像は手元の応答で返却する
     flow: |-
       sequenceDiagram
-        actor U as 読む人
+        actor U as 読者
         participant P as 描いた文書
         participant M as mdmark
         U->>P: 2 つ目の画像を押す
@@ -38,14 +38,14 @@ scenarios:
         description: 正常シナリオと同じ
     flow: |-
       sequenceDiagram
-        actor U as 読む人
+        actor U as 読者
         participant P as 描いた文書
         participant M as mdmark
         U->>P: Tab で 1 つ目の画像にフォーカスする
         U->>P: Enter を押す
         M-->>U: 1 つ目の画像を拡大した全画面のダイアログ
     expected:
-      - 画像が Tab でフォーカスでき、拡大できることが読み上げで知らされる
+      - 画像が Tab でフォーカスでき、拡大できることがスクリーンリーダーで知らされる
       - Enter の後、全画面のダイアログで `a.png` が表示されている
     test: test_normal_when_opened_by_key
   - name: 正常シナリオ（拡大しない画像）
@@ -58,7 +58,7 @@ scenarios:
         description: 正常シナリオと同じ
     flow: |-
       sequenceDiagram
-        actor U as 読む人
+        actor U as 読者
         participant P as 描いた文書
         participant M as mdmark
         U->>P: 2 つ目の画像を押す
@@ -69,19 +69,19 @@ scenarios:
         M-->>U: 3 つ目の画像
     expected:
       - 2 つ目の画像を押してもダイアログが開かず、2 つ目の画像は Tab でフォーカスされない
-      - 1 つ目から右の矢印キーで送ると `c.png` が表示され、`b.png` は飛ばされる
+      - 1 つ目から右の矢印キーで送信すると `c.png` が表示され、`b.png` は飛ばされる
       - ダイアログの枚数が 2 枚になっている
     test: test_normal_when_nolightbox
-lead: 読む人が文書の画像を押すと、全画面のダイアログで拡大し、同じ文書の画像を前後に送る。キー・ボタン・閉じ方は図の全画面と揃える。`nolightbox` の属性を付けた画像は拡大しない。
+lead: 読者が文書の画像を押すと、全画面のダイアログで拡大し、同じ文書の画像を前後に切り替える。キー・ボタン・閉じ方は図の全画面と統一する。`nolightbox` の属性を付けた画像は拡大しない。
 issue: 199
-primary_actor: 文書を読む人
+primary_actor: 読者
 stakeholders:
-  - name: 文書を書く人
-    interest: 細かい画像を本文では小さく置き、読む人に拡大して見せられる
-trigger: 読む人が、描いた文書の画像を押す
+  - name: 文書の作成者
+    interest: 細かい画像を本文では小さく配置し、読者に拡大して見せられる
+trigger: 読者が、描いた文書の画像を押す
 preconditions:
-  - 使う側のページが、画像を持つ文書を描いている
+  - 利用側のページが、画像を持つ文書を描いている
   - ライトボックスの機能がオン（既定）
-success_guarantee: 押した画像が全画面で拡大され、前後の画像へ送れて、閉じると押した画像へフォーカスが戻る。
+success_guarantee: 押した画像が全画面で拡大され、前後の画像へ送信できて、閉じると押した画像へフォーカスが戻る。
 minimal_guarantee: 拡大を閉じた後の文書は、押す前と同じスクロールの位置にある。
 test_file: tests/e2e/単一ユースケース/画像をライトボックスで拡大する.spec.ts

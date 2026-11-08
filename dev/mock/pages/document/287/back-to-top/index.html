@@ -13,13 +13,13 @@
   <link rel="stylesheet" href="../../../../refs/277/assets/margin.css">
   <!-- この PR で追加する先頭へ戻るボタンの規則（番号で共有するアセット） -->
   <link rel="stylesheet" href="../../../../refs/287/assets/back-to-top.css">
-  <!-- 使う側のページの見た目と、モック専用の操作列 -->
+  <!-- 利用側のページの外観と、モック専用の操作列 -->
   <link rel="stylesheet" href="../../../../refs/287/assets/scene.css">
   <!-- 配布物の mount で長い文書を描き、先頭へ戻るボタンのモックを付ける -->
   <script type="module" src="../../../../refs/287/assets/scene.js"></script>
 </head>
 <body>
-  <!-- モック専用の操作列: 未確定の論点の案と、重ねる部品・描く場所の切り替え。[data-scene-axis] [data-scene-value]: scene.js が行き先の URL と今の案の aria-current を当てる -->
+  <!-- モック専用の操作列: 未確定の論点の案と、重ねる部品・描く場所の切り替え。[data-scene-axis] [data-scene-value]: scene.js が行き先の URL と今の案の aria-current を適用する -->
   <div class="mock-bar">
     <div class="mock-bar-group" role="group" aria-label="出し始める量">
       <span class="mock-bar-label">出し始める量</span>
@@ -45,8 +45,8 @@
     </div>
   </div>
 
-  <!-- 使う側のページのトップバー（mdmark の外） -->
-  <header class="host-bar">使う側のアプリ</header>
+  <!-- 利用側のページのトップバー（mdmark の外） -->
+  <header class="host-bar">利用側のアプリ</header>
 
   <nav class="crumbs" aria-label="パンくずリスト">
     <a href="../../../index.md">pages</a> / <a href="../../index.md">document</a> / <a href="../index.md">287</a> / back-to-top

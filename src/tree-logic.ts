@@ -1,12 +1,12 @@
 /** 階層の表の 1 行の計画 */
 export type TreeRowPlan = {
-  /** 全体のパス（`aliases[].id` の形） */
+  /** 全体のパス（`aliases[].id` の構造） */
   path: string;
   /** 親の全体のパス。最上位は空 */
   parent: string;
   /** 深さ（0 から） */
   depth: number;
-  /** 末尾の名前（`aliases[]` の形を含む） */
+  /** 末尾の名前（`aliases[]` の構造を含む） */
   name: string;
   /** 表に無い親を補った行か */
   virtual: boolean;
@@ -16,7 +16,7 @@ export type TreeRowPlan = {
   source: number | undefined;
 };
 
-/** `aliases[].metadata.type` の形のパスを `.` で分け、名前の並びと根からの親の全体のパスの並びを返す */
+/** `aliases[].metadata.type` の構造のパスを `.` で分け、名前の並びと根からの親の全体のパスの並びを返却する */
 export function splitKeyPath(path: string): {
   names: string[];
   parents: string[];
@@ -28,7 +28,7 @@ export function splitKeyPath(path: string): {
   return { names, parents };
 }
 
-/** 表の行のキーの並びから、表に無い親を子の最初の行の前に補った行の並びを返す */
+/** 表の行のキーの並びから、表に無い親を子の最初の行の前に補った行の並びを返却する */
 export function planTreeRows(keys: string[]): TreeRowPlan[] {
   const positions = new Map<string, number>();
   for (const [index, key] of keys.entries()) {
@@ -64,7 +64,7 @@ export function planTreeRows(keys: string[]): TreeRowPlan[] {
     }
     for (const parent of splitKeyPath(path).parents) {
       if (!placed.has(parent)) {
-        // 後ろに書いた親の行は、その子の前の場所で親にする
+        // 後ろに記載した親の行は、その子の前の場所で親にする
         place(parent, positions.get(parent));
       }
     }
@@ -77,11 +77,11 @@ export function planTreeRows(keys: string[]): TreeRowPlan[] {
   return rows;
 }
 
-/** YAML のキーの行の頭（キーと `:`）に合う形 */
+/** YAML のキーの行の頭（キーと `:`）に合う構造 */
 const YAML_KEY =
   /^("(?:[^"\\]|\\.)*"|'[^']*'|[^\s#'"-][^:#]*?|-[^\s:#][^:#]*?):(?:\s|$)/;
 
-/** 複数行の文字列を始める値（`|`・`>` と、その印） */
+/** 複数行の文字列を始める値（`|`・`>` と、そのマーカー） */
 const BLOCK_SCALAR = /^[|>][+-]?\d*\s*(?:#.*)?$/;
 
 /** 行の先頭の空白の数 */
@@ -89,7 +89,7 @@ function indentOf(line: string): number {
   return line.length - line.trimStart().length;
 }
 
-/** キーの文字の引用符を外す */
+/** キーの文字の引用符を削除する */
 function unquote(key: string): string {
   if (
     (key.startsWith('"') && key.endsWith('"')) ||
@@ -106,7 +106,7 @@ function isContent(line: string): boolean {
   return trimmed !== "" && !trimmed.startsWith("#");
 }
 
-/** YAML の行ごとに、インデントと `- ` から求めたキーのパスを返す（キーを持たない行は `undefined`） */
+/** YAML の行ごとに、インデントと `- ` から求めたキーのパスを返却する（キーを持たない行は `undefined`） */
 export function yamlLinePaths(lines: string[]): Array<string | undefined> {
   const stack: Array<{ indent: number; path: string }> = [];
   const paths: Array<string | undefined> = [];
@@ -134,7 +134,7 @@ export function yamlLinePaths(lines: string[]): Array<string | undefined> {
     let rest = line.slice(indent);
     let path: string | undefined;
     if (rest === "-" || rest.startsWith("- ")) {
-      // 配列の要素は、親のキーのパス（`[]` 付き）の下に置く
+      // 配列の要素は、親のキーのパス（`[]` 付き）の下に配置する
       const parent = parentPath(column);
       const item = parent.endsWith("[]") ? parent : `${parent}[]`;
       stack.push({ indent: column, path: item });
@@ -170,7 +170,7 @@ export function yamlLinePaths(lines: string[]): Array<string | undefined> {
   return paths;
 }
 
-/** 末尾の名前に単語を含む行とその祖先の行のパスの集まりと、当たった行のうち補った行でないものの数を返す */
+/** 末尾の名前に単語を含む行とその祖先の行のパスの集まりと、該当した行のうち補った行でないものの数を返却する */
 export function filterTreeRows(options: {
   /** `planTreeRows` の行 */
   rows: TreeRowPlan[];

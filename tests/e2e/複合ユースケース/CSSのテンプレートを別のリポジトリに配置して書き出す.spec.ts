@@ -4,7 +4,7 @@ import { parse } from "yaml";
 import { expect, test, writeFiles } from "../cli.ts";
 import { callTool, withMcpClient } from "../plugin.ts";
 
-// ブラウザを使わないため、1 つのブラウザのプロジェクトだけで流す
+// ブラウザを使用しないため、1 つのブラウザのプロジェクトだけで実行する
 test.skip(
   ({ browserName }) => browserName !== "chromium",
   "ブラウザを使わないシナリオなので chromium のプロジェクトだけで流す",

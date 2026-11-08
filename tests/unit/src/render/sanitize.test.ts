@@ -4,7 +4,7 @@ import { expect, test } from "vitest";
 const loadSanitize = async () => {
   const { sanitize } = await import("../../../../src/render/sanitize.ts");
   return {
-    /** この描画の印の値を決めて落とす */
+    /** この描画のマーカーの値を決めて落とす */
     sanitize: (html: string) => sanitize(html, "test-nonce"),
   };
 };
@@ -30,7 +30,7 @@ test("test_sanitize", async () => {
   expect(sanitized).toContain("<summary>");
 });
 
-// 列の揃えを class に移す（正常系）
+// 列の配置を class に移す（正常系）
 test("test_sanitize_when_align", async () => {
   // 準備
   const { sanitize } = await loadSanitize();
@@ -42,7 +42,7 @@ test("test_sanitize_when_align", async () => {
   expect(sanitized).toBe('<td class="mdmark-align-right">a</td><td>b</td>');
 });
 
-// 入力欄を無効のチェックボックスに付け直す（正常系）
+// 入力欄を無効のチェックボックスにもう一度付ける（正常系）
 test("test_sanitize_when_input", async () => {
   // 準備
   const { sanitize } = await loadSanitize();
@@ -78,7 +78,7 @@ test("test_sanitize_when_classes", async () => {
   expect(sanitized).not.toContain('role="alert"');
 });
 
-// 文書に書いた tabindex を 0 にする（正常系）
+// 文書に記載した tabindex を 0 にする（正常系）
 test("test_sanitize_when_tabindex", async () => {
   // 準備
   const { sanitize } = await loadSanitize();
@@ -88,7 +88,7 @@ test("test_sanitize_when_tabindex", async () => {
   expect(sanitized).toContain('<table tabindex="0">');
 });
 
-// 画像の種類と base64 の形の data: URL だけを画像の src に残す（正常系）
+// 画像の種類と base64 の構造の data: URL だけを画像の src に残す（正常系）
 test("test_sanitize_when_data_image", async () => {
   // 準備
   const { sanitize } = await loadSanitize();
@@ -109,7 +109,7 @@ test("test_sanitize_when_data_image", async () => {
   expect(sanitized).not.toContain("href=");
 });
 
-// 図の部品の属性は、文書に書いた生の HTML から落とす（異常系）
+// 図の部品の属性は、文書に記載した生の HTML から落とす（異常系）
 test("test_sanitize_when_raw_html_has_diagram_attributes", async () => {
   // 準備
   const { sanitize } = await loadSanitize();
@@ -140,7 +140,7 @@ test("test_sanitize_when_raw_html_has_diagram_attributes", async () => {
   expect(sanitized).toContain("raw");
 });
 
-// 図の部品の要素は、文書に書いたものを中身ごと落とす（異常系）
+// 図の部品の要素は、文書に記載したものを中身ごと落とす（異常系）
 test("test_sanitize_when_raw_html_has_diagram_elements", async () => {
   // 準備
   const { sanitize } = await loadSanitize();
@@ -186,15 +186,15 @@ test("test_sanitize_when_own_diagram_attributes", async () => {
   expect(sanitized).toContain('d="M0,0"');
 });
 
-// 自分が出した要素の style は図の部品と埋め込んだ HTML の許した宣言だけ残し、書いた要素の style は落とす（正常系）
+// 自分が出した要素の style は図の部品と埋め込んだ HTML の許した宣言だけ残し、記載した要素の style は落とす（正常系）
 test("test_sanitize_when_own_style", async () => {
   // 準備
   const { sanitize } = await loadSanitize();
   const own = 'data-mdmark-own="test-nonce"';
   const html = [
-    `<div class="mdmark-diagram-node" ${own} style="left:10px;top:20px">図の箱</div>`,
+    `<div class="mdmark-diagram-node" ${own} style="left:10px;top:20px">図のノード</div>`,
     `<div class="mdmark-html" ${own}><div ${own} style="display:flex;position:fixed">埋め込み</div></div>`,
-    '<div style="display:flex">書いた要素</div>',
+    '<div style="display:flex">記載した要素</div>',
   ].join("");
   // 実行
   const sanitized = sanitize(html);
@@ -203,7 +203,7 @@ test("test_sanitize_when_own_style", async () => {
   expect(sanitized).toContain('style="display:flex"');
   expect(sanitized).not.toContain("position");
   expect(sanitized.match(/style=/g) ?? []).toHaveLength(2);
-  expect(sanitized).toContain("<div>書いた要素</div>");
+  expect(sanitized).toContain("<div>記載した要素</div>");
 });
 
 // 自分が出した図のノードの余白の style を位置と大きさと一緒に残し、負の余白の style は図の部品の宣言として扱わない（正常系）
@@ -265,7 +265,7 @@ test("test_sanitize_when_source_line", async () => {
   expect(sanitized.match(/data-source-line/g) ?? []).toHaveLength(2);
 });
 
-// 記法の動画を残し、文書に書いた動画を落とす（正常系）
+// 記法の動画を残し、文書に記載した動画を落とす（正常系）
 test("test_sanitize_when_media", async () => {
   // 準備
   const { sanitize } = await loadSanitize();
@@ -320,7 +320,7 @@ const loadEmbedded = async () => {
     "../../../../src/render/sanitize.ts"
   );
   return {
-    /** 文字をそのまま返す `onText` で落とす */
+    /** 文字をそのまま返却する `onText` で落とす */
     sanitizeEmbedded: (html: string) =>
       sanitizeEmbedded(html, (text: string) => text),
     sanitizeEmbeddedWith: sanitizeEmbedded,
@@ -361,7 +361,7 @@ test("test_sanitize_embedded_when_style", async () => {
   expect(sanitized).toBe('<div style="display:flex">a</div><div>b</div>');
 });
 
-// 本文の文字だけを onText に渡す（正常系）
+// 本文の文字だけを onText に指定する（正常系）
 test("test_sanitize_embedded_when_text", async () => {
   // 準備
   const { sanitizeEmbeddedWith } = await loadEmbedded();
@@ -376,19 +376,19 @@ test("test_sanitize_embedded_when_text", async () => {
   expect(sanitized).toContain("<code>索引</code>");
 });
 
-// keepClasses が真なら、記法の class を除いて書いた人の class を残す（正常系）
+// keepClasses が真なら、記法の class を除いて記載した人の class を残す（正常系）
 test("test_sanitize_embedded_when_keep_classes", async () => {
   // 準備
   const { sanitizeEmbeddedWith } = await loadEmbedded();
   const html =
-    '<div class="box mdmark-table has-tip" data-mdmark-keep-class="x">箱</div>';
+    '<div class="box mdmark-table has-tip" data-mdmark-keep-class="x">ノード</div>';
   const keepText = (text: string) => text;
   // 実行
   const kept = sanitizeEmbeddedWith(html, keepText, true);
   const dropped = sanitizeEmbeddedWith(html, keepText);
   // 検証
-  expect(kept).toBe('<div class="box" data-mdmark-keep-class>箱</div>');
-  expect(dropped).toBe("<div>箱</div>");
+  expect(kept).toBe('<div class="box" data-mdmark-keep-class>ノード</div>');
+  expect(dropped).toBe("<div>ノード</div>");
 });
 
 // 許した宣言だけを残す（正常系）

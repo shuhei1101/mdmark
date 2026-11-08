@@ -17,7 +17,7 @@ async function readMark(page: Page) {
   }));
 }
 
-// 色を指定しない蛍光ペンは、本文の文字の色のまま黄色の面を引く（Default）
+// 色を指定しない蛍光ペンは、本文の文字の色のまま黄色の面を敷く（Default）
 test("test_default", async () => {
   // 準備・実行
   const page = await holder.openStory("parts-highlight--default");
@@ -43,7 +43,7 @@ test("test_colored", async () => {
   ).toBeGreaterThanOrEqual(4.5);
 });
 
-// 行をまたぐ長い中身は、行ごとに面を引く（Long）
+// 行をまたぐ長い中身は、行ごとに面を敷く（Long）
 test("test_long", async () => {
   // 準備・実行
   const page = await holder.openStory("parts-highlight--long");

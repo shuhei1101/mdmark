@@ -13,17 +13,17 @@ import {
   type MdmarkViewOptions,
 } from "./views/spec.ts";
 
-/** `mountView` と `mountComments` が呼んだ要素から、まだ片付けていない戻り値を引く。同じ要素への 2 回目の呼び出しが前を片付けるのに使う */
+/** `mountView` と `mountComments` が呼んだ要素から、まだ片付けていない戻り値を参照する。同じ要素への 2 回目の呼び出しが前を片付けるのに使用する */
 const mountedViews = new WeakMap<HTMLElement, MdmarkViewHandle>();
 const mountedComments = new WeakMap<HTMLElement, MdmarkCommentsHandle>();
 
-/** 部品の読み込みの失敗を `console.error` に出した URL（部品ごとにページの中で 1 回だけ出すのに使う） */
+/** 部品の読み込みの失敗を `console.error` に出した URL（部品ごとにページの中で 1 回だけ出すのに使用する） */
 const reportedFailures = new Set<string>();
 
-/** 読めなかった部品の名前・URL・元のエラーを `console.error` に出す */
+/** 読み込めなかった部品の名前・URL・元のエラーを `console.error` に出す */
 function reportLoadFailure(name: PartName, error: unknown): void {
   const url = error instanceof Error ? String(error.cause ?? "") : "";
-  console.error("[mdmark] 部品のモジュールを読めません", name, url, error);
+  console.error("[mdmark] 部品のモジュールを読み込めません", name, url, error);
 }
 
 /** 呼び出しの戻り値の片付けの関数を、2 回目以降は何もしない関数に包む */
@@ -37,7 +37,7 @@ function once(detach: () => void): () => void {
   };
 }
 
-/** 要素の中にビューを描く。引数を同期で検め、ビューの部品のモジュールを読んで描く */
+/** 要素の中にビューを描く。引数を同期で検め、ビューの部品のモジュールを読み込んで描く */
 export function mountView(
   el: HTMLElement,
   opts: MdmarkViewOptions,
@@ -85,7 +85,7 @@ export function mountView(
   );
 }
 
-/** 要素の中の選んだ箇所にコメントを付けられるようにする。引数を同期で検め、コメントの部品のモジュールを読んで付ける */
+/** 要素の中の選んだ箇所にコメントを付けられるようにする。引数を同期で検め、コメントの部品のモジュールを読み込んで付ける */
 export function mountComments(
   el: HTMLElement,
   opts: { store: MdmarkCommentStore; docId: string },
@@ -118,7 +118,7 @@ export function mountComments(
         docId: opts.docId,
       });
       const detach = once(detachComments);
-      // 読み込みを待つ間に片付けたら、付けた印をすぐ外す
+      // 読み込みを待つ間に片付けたら、付けたマーカーをすぐ削除する
       if (destroyed) {
         detach();
       } else {
@@ -134,45 +134,45 @@ export function mountComments(
   );
 }
 
-/** `attachParts` に渡す、`mount` ごとに 1 つ作る控え */
+/** `attachParts` に指定する、`mount` ごとに 1 つ作る記録 */
 export type PartsWarned = {
-  /** コメントの機能に読み書きの関数が要ることを出したか */
+  /** コメントの機能に読み込みと保存の関数が要ることを出したか */
   missingStore: boolean;
 };
 
 /** `attachParts` の戻り値 */
 export type PartsHandle = {
-  /** 付けた部品を外す。読み込みを待っている間に呼ぶと、読めた後に付けない */
+  /** 付けた部品を削除する。読み込みを待っている間に呼ぶと、読み込めた後に付けない */
   detach: () => void;
-  /** 付けたコメントの `reload` を呼ぶ。コメントを付けていないときは解決した Promise を返す */
+  /** 付けたコメントの `reload` を呼ぶ。コメントを付けていないときは解決した Promise を返却する */
   reloadComments: () => Promise<void>;
   /** 付けたコメントの `focus` を呼ぶ。コメントを付けていないときは何もしない */
   focusComment: (id: string) => void;
 };
 
-/** `mount` が描くたびに呼ぶ。ビューの印とコメントの機能があるときだけ部品のモジュールを読んで付け、外す関数と付けたコメントの操作を返す */
+/** `mount` が描くたびに呼ぶ。ビューのマーカーとコメントの機能があるときだけ部品のモジュールを読み込んで付け、削除する関数と付けたコメントの操作を返却する */
 export function attachParts(options: {
   /** 描いた要素 */
   root: HTMLElement;
   /** 文書で決まった機能のオン・オフ */
   features: Record<string, boolean>;
-  /** `mount` に渡されたコメントの読み書きの関数 */
+  /** `mount` に指定されたコメントの読み込みと保存の関数 */
   commentStore?: MdmarkCommentStore | undefined;
-  /** `mount` に渡された文書の ID */
+  /** `mount` に指定された文書の ID */
   docId?: string | undefined;
   /** 描いた文書がまだ今のものか */
   isCurrent: () => boolean;
-  /** `mount` ごとに控える、読み書きの関数が無いことを出したか */
+  /** `mount` ごとに記録する、読み込みと保存の関数が無いことを出したか */
   warned: PartsWarned;
 }): PartsHandle {
   const { root, features, commentStore, docId, isCurrent, warned } = options;
   const detachers: Array<() => void> = [];
   let detached = false;
-  // 付けたコメントの操作と、それを得るまでの待ち（読めない・外したときは `undefined` で解決する）
+  // 付けたコメントの操作と、それを得るまでの待ち（読み込めない・削除したときは `undefined` で解決する）
   let comments: CommentsController | undefined;
   let commentsReady: Promise<CommentsController | undefined> | undefined;
   const active = (): boolean => !detached && isCurrent();
-  /** 読めなかった部品を、ページの中で部品と URL ごとに 1 回だけ `console.error` に出す */
+  /** 読み込めなかった部品を、ページの中で部品と URL ごとに 1 回だけ `console.error` に出す */
   const report = (name: PartName, error: unknown): void => {
     const key = `${name}:${error instanceof Error ? String(error.cause ?? "") : ""}`;
     if (!reportedFailures.has(key)) {
@@ -200,7 +200,7 @@ export function attachParts(options: {
       if (!warned.missingStore) {
         warned.missingStore = true;
         console.error(
-          "[mdmark] コメントの機能には、mount に commentStore（コメントの読み書きの関数）を渡す必要があります",
+          "[mdmark] コメントの機能には、mount に commentStore（コメントの読み込みと保存の関数）を指定する必要があります",
         );
       }
     } else {
@@ -216,7 +216,7 @@ export function attachParts(options: {
             reveal: openEnclosing,
             margin: true,
           });
-          // 待つ間に外したら、得た外す関数をすぐ呼ぶ
+          // 待つ間に削除したら、得た削除する関数をすぐ呼ぶ
           if (!active()) {
             controller.detach();
             return undefined;

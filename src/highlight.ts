@@ -2,24 +2,24 @@ import type { HLJSApi, LanguageFn } from "highlight.js";
 import { highlightLines } from "./highlight-lines.ts";
 import { SYNTAX_ATTRIBUTE } from "./parts/code-block.ts";
 
-/** 読んだモジュール。本体の `default` は `HLJSApi`、言語の `default` は `LanguageFn` */
+/** 読み込んだモジュール。本体の `default` は `HLJSApi`、言語の `default` は `LanguageFn` */
 type SyntaxModule = { default?: unknown };
 
-/** URL の色分けのモジュールを読む関数。既定は動的 `import()` で、単体テストで差し替える */
+/** URL の色分けのモジュールを読み込む関数。既定は動的 `import()` で、単体テストで差し替える */
 export type SyntaxImport = (url: string) => Promise<SyntaxModule>;
 
-/** 書き出した HTML の起動の処理が渡す、同じスクリプトに束ねた色分けのモジュール */
+/** 書き出した HTML の起動の処理が指定する、同じスクリプトにまとめた色分けのモジュール */
 export type EmbeddedSyntax = {
   /** 本体（`core.min.js`）のモジュール。埋めなかったときは持たない */
   core?: SyntaxModule | undefined;
-  /** 言語のモジュール名からモジュールを引く表。埋めなかった言語は持たない */
+  /** 言語のモジュール名からモジュールを参照する表。埋めなかった言語は持たない */
   languages: Record<string, SyntaxModule>;
 };
 
-/** `setEmbeddedSyntax` が入れる、埋めたモジュール。無ければ `syntax.url` から読む。ページの中の全ての `mount` に効く */
+/** `setEmbeddedSyntax` が入れる、埋めたモジュール。無ければ `syntax.url` から読み込む。ページの中の全ての `mount` に有効になる */
 export let embeddedSyntax: EmbeddedSyntax | undefined;
 
-/** 埋めた色分けのモジュールを置き換える。`undefined` で `syntax.url` から読む形に戻す */
+/** 埋めた色分けのモジュールを置き換える。`undefined` で `syntax.url` から読み込む構造に戻す */
 export function setEmbeddedSyntax(modules: EmbeddedSyntax | undefined): void {
   embeddedSyntax = modules;
 }
@@ -29,20 +29,20 @@ const importByUrl: SyntaxImport = (url) => import(/* @vite-ignore */ url);
 
 /** 読み込みの失敗を `console.error` に出す */
 function reportFailure(what: string, url: string, error: unknown): void {
-  console.error(`${what}を読めません:`, url, error);
+  console.error(`${what}を読み込めません:`, url, error);
 }
 
-/** 要素の中の `code[data-mdmark-syntax]` が 1 つ以上あれば、色分けのライブラリの本体と使う言語のモジュールを読み、読めた言語の `code` の中身を色分けした HTML に置き換える。読めないモジュールは `console.error` に出して色分けせずに残し、例外は投げない */
+/** 要素の中の `code[data-mdmark-syntax]` が 1 つ以上あれば、色分けのライブラリの本体と使用する言語のモジュールを読み込み、読み込めた言語の `code` の中身を色分けした HTML に置き換える。読み込めないモジュールは `console.error` に出して色分けせずに残し、例外は投げない */
 export async function highlightCodeBlocks(options: {
   /** 描いた要素 */
   root: HTMLElement;
-  /** 既定を当てた設定の `syntax.url` */
+  /** 既定を適用した設定の `syntax.url` */
   url: string;
   /** 描いた文書がまだ今のものか */
   isCurrent: () => boolean;
-  /** `mount` ごとに 1 つの、読んだモジュールの控え（URL → 読み込みの Promise） */
+  /** `mount` ごとに 1 つの、読み込んだモジュールの記録（URL → 読み込みの Promise） */
   modules: Map<string, Promise<SyntaxModule>>;
-  /** モジュールを読む関数 */
+  /** モジュールを読み込む関数 */
   importModule?: SyntaxImport;
 }): Promise<void> {
   const { root, url, isCurrent, modules, importModule = importByUrl } = options;
@@ -52,7 +52,7 @@ export async function highlightCodeBlocks(options: {
   if (codes.length === 0) {
     return;
   }
-  /** 同じ `mount` の中で同じモジュールは 1 回だけ読む */
+  /** 同じ `mount` の中で同じモジュールは 1 回だけ読み込む */
   const load = (target: string): Promise<SyntaxModule> => {
     let pending = modules.get(target);
     if (!pending) {
@@ -62,7 +62,7 @@ export async function highlightCodeBlocks(options: {
     return pending;
   };
   const folder = new URL(url, document.baseURI);
-  // 埋めたモジュールがあれば URL を読まない。埋めていない本体・言語は色分けせずに残す
+  // 埋めたモジュールがあれば URL を読み込まない。埋めていない本体・言語は色分けせずに残す
   const embedded = embeddedSyntax;
   let hljs: HLJSApi;
   if (embedded) {
@@ -112,7 +112,7 @@ export async function highlightCodeBlocks(options: {
     }
     ready.add(target.name);
   }
-  // 読んでいる間に描き直した文書には、色を当てない
+  // 読み込んでいる間に再描画した文書には、色を適用しない
   if (!isCurrent()) {
     return;
   }

@@ -1,0 +1,538 @@
+use_cases:
+  - kind: composite
+    scenario: dev/設計書/シナリオ/複合ユースケース/CSSのテンプレートを別のリポジトリに配置して書き出す.yaml
+    impact: changed
+    detail: シナリオの文の単語と、画面・CLI に出る文言を修正する
+    depends_on: []
+  - kind: composite
+    scenario: dev/設計書/シナリオ/複合ユースケース/ClaudeCodeで使い方集を参照して書き点検する.yaml
+    impact: changed
+    detail: シナリオの文の単語と、画面・CLI に出る文言を修正する。ファイル名の単語（使う・書く）も修正し、E2E のテストファイル名を合わせる
+    depends_on: []
+  - kind: composite
+    scenario: dev/設計書/シナリオ/複合ユースケース/MCPサーバーを起動してプラグインからつなぐ.yaml
+    impact: changed
+    detail: シナリオの文の単語と、画面・CLI に出る文言を修正する
+    depends_on: []
+  - kind: composite
+    scenario: dev/設計書/シナリオ/複合ユースケース/VSCodeで書きながら確かめてPDFにする.yaml
+    impact: changed
+    detail: シナリオの文の単語と、画面・CLI に出る文言を修正する。ファイル名の単語（書く・確かめる）も修正し、E2E のテストファイル名を合わせる
+    depends_on: []
+  - kind: composite
+    scenario: dev/設計書/シナリオ/複合ユースケース/コードブロックのHTMLでチャートとヒントを読む.yaml
+    impact: changed
+    detail: シナリオの文の単語と、画面・CLI に出る文言を修正する。ファイル名の単語（読む）も修正し、E2E のテストファイル名を合わせる
+    depends_on: []
+  - kind: composite
+    scenario: dev/設計書/シナリオ/複合ユースケース/ビューで探してコメントを付ける.yaml
+    impact: changed
+    detail: シナリオの文の単語と、画面・CLI に出る文言を修正する
+    depends_on: []
+  - kind: composite
+    scenario: dev/設計書/シナリオ/複合ユースケース/プラグインを入れて端末と文書のフォルダをセットアップする.yaml
+    impact: changed
+    detail: シナリオの文の単語と、画面・CLI に出る文言を修正する
+    depends_on: []
+  - kind: composite
+    scenario: dev/設計書/シナリオ/複合ユースケース/取り出し元を渡して文書の差分を読む.yaml
+    impact: changed
+    detail: シナリオの文の単語と、画面・CLI に出る文言を修正する。ファイル名の単語（渡す・読む）も修正し、E2E のテストファイル名を合わせる
+    depends_on: []
+  - kind: composite
+    scenario: dev/設計書/シナリオ/複合ユースケース/固有の部品で図の文書を描いて確かめる.yaml
+    impact: changed
+    detail: シナリオの文の単語と、画面・CLI に出る文言を修正する。ファイル名の単語（確かめる）も修正し、E2E のテストファイル名を合わせる
+    depends_on: []
+  - kind: composite
+    scenario: dev/設計書/シナリオ/複合ユースケース/端末の設定を重ねてプレビューと書き出しをそろえる.yaml
+    impact: changed
+    detail: シナリオの文の単語と、画面・CLI に出る文言を修正する
+    depends_on: []
+  - kind: composite
+    scenario: dev/設計書/シナリオ/複合ユースケース/雛形から1枚のHTMLを配る.yaml
+    impact: changed
+    detail: シナリオの文の単語と、画面・CLI に出る文言を修正する
+    depends_on: []
+  - kind: single
+    scenario: dev/設計書/シナリオ/単一ユースケース/CSSのテンプレートを登録する.yaml
+    impact: changed
+    detail: シナリオの文の単語と、画面・CLI に出る文言を修正する
+    depends_on: []
+  - kind: single
+    scenario: dev/設計書/シナリオ/単一ユースケース/CSSのテンプレートを配置する.yaml
+    impact: changed
+    detail: シナリオの文の単語と、画面・CLI に出る文言を修正する
+    depends_on: []
+  - kind: single
+    scenario: dev/設計書/シナリオ/単一ユースケース/ClaudeCodeから点検と書き出しを呼ぶ.yaml
+    impact: changed
+    detail: シナリオの文の単語と、画面・CLI に出る文言を修正する
+    depends_on: []
+  - kind: single
+    scenario: dev/設計書/シナリオ/単一ユースケース/ClaudeCodeにプラグインを入れる.yaml
+    impact: changed
+    detail: シナリオの文の単語と、画面・CLI に出る文言を修正する
+    depends_on: []
+  - kind: single
+    scenario: dev/設計書/シナリオ/単一ユースケース/GitHubの参照から入れてCLIを起動する.yaml
+    impact: changed
+    detail: シナリオの文の単語と、画面・CLI に出る文言を修正する
+    depends_on: []
+  - kind: single
+    scenario: dev/設計書/シナリオ/単一ユースケース/HTMLに書き出す.yaml
+    impact: changed
+    detail: シナリオの文の単語と、画面・CLI に出る文言を修正する
+    depends_on: []
+  - kind: single
+    scenario: dev/設計書/シナリオ/単一ユースケース/MCPサーバーを起動・停止する.yaml
+    impact: changed
+    detail: シナリオの文の単語と、画面・CLI に出る文言を修正する
+    depends_on: []
+  - kind: single
+    scenario: dev/設計書/シナリオ/単一ユースケース/PDFに印刷する.yaml
+    impact: changed
+    detail: シナリオの文の単語と、画面・CLI に出る文言を修正する
+    depends_on: []
+  - kind: single
+    scenario: dev/設計書/シナリオ/単一ユースケース/VSCodeでプレビューを開く.yaml
+    impact: changed
+    detail: シナリオの文の単語と、画面・CLI に出る文言を修正する
+    depends_on: []
+  - kind: single
+    scenario: dev/設計書/シナリオ/単一ユースケース/mermaidの図を描く.yaml
+    impact: changed
+    detail: シナリオの文の単語と、画面・CLI に出る文言を修正する
+    depends_on: []
+  - kind: single
+    scenario: dev/設計書/シナリオ/単一ユースケース/ほかの文書を取り込む.yaml
+    impact: changed
+    detail: シナリオの文の単語と、画面・CLI に出る文言を修正する
+    depends_on: []
+  - kind: single
+    scenario: dev/設計書/シナリオ/単一ユースケース/まとめたHTMLで文書を行き来する.yaml
+    impact: changed
+    detail: シナリオの文の単語と、画面・CLI に出る文言を修正する
+    depends_on: []
+  - kind: single
+    scenario: dev/設計書/シナリオ/単一ユースケース/エディタとプレビューのスクロールを合わせる.yaml
+    impact: changed
+    detail: シナリオの文の単語と、画面・CLI に出る文言を修正する
+    depends_on: []
+  - kind: single
+    scenario: dev/設計書/シナリオ/単一ユースケース/コードブロックのHTMLを描く.yaml
+    impact: changed
+    detail: シナリオの文の単語と、画面・CLI に出る文言を修正する
+    depends_on: []
+  - kind: single
+    scenario: dev/設計書/シナリオ/単一ユースケース/コードブロックを飾る.yaml
+    impact: changed
+    detail: シナリオの文の単語と、画面・CLI に出る文言を修正する
+    depends_on: []
+  - kind: single
+    scenario: dev/設計書/シナリオ/単一ユースケース/ステップ・ファイルツリー・バッジで本文を組む.yaml
+    impact: changed
+    detail: シナリオの文の単語と、画面・CLI に出る文言を修正する
+    depends_on: []
+  - kind: single
+    scenario: dev/設計書/シナリオ/単一ユースケース/セッションの開始で常駐サーバーの状態を受け取る.yaml
+    impact: changed
+    detail: シナリオの文の単語と、画面・CLI に出る文言を修正する
+    depends_on: []
+  - kind: single
+    scenario: dev/設計書/シナリオ/単一ユースケース/タブを切り替える.yaml
+    impact: changed
+    detail: シナリオの文の単語と、画面・CLI に出る文言を修正する
+    depends_on: []
+  - kind: single
+    scenario: dev/設計書/シナリオ/単一ユースケース/チャートを描く.yaml
+    impact: changed
+    detail: シナリオの文の単語と、画面・CLI に出る文言を修正する
+    depends_on: []
+  - kind: single
+    scenario: dev/設計書/シナリオ/単一ユースケース/テーマを上書きする.yaml
+    impact: changed
+    detail: シナリオの文の単語と、画面・CLI に出る文言を修正する
+    depends_on: []
+  - kind: single
+    scenario: dev/設計書/シナリオ/単一ユースケース/テーマを選ぶ.yaml
+    impact: changed
+    detail: シナリオの文の単語と、画面・CLI に出る文言を修正する
+    depends_on: []
+  - kind: single
+    scenario: dev/設計書/シナリオ/単一ユースケース/ビューで項目を見る.yaml
+    impact: changed
+    detail: シナリオの文の単語と、画面・CLI に出る文言を修正する。ファイル名の単語（見る）も修正し、E2E のテストファイル名を合わせる
+    depends_on: []
+  - kind: single
+    scenario: dev/設計書/シナリオ/単一ユースケース/プレビューから設定を開く.yaml
+    impact: changed
+    detail: シナリオの文の単語と、画面・CLI に出る文言を修正する
+    depends_on: []
+  - kind: single
+    scenario: dev/設計書/シナリオ/単一ユースケース/プレビューのリンクと画像を開く.yaml
+    impact: changed
+    detail: シナリオの文の単語と、画面・CLI に出る文言を修正する
+    depends_on: []
+  - kind: single
+    scenario: dev/設計書/シナリオ/単一ユースケース/プレビューをVSCodeのテーマに合わせる.yaml
+    impact: changed
+    detail: シナリオの文の単語と、画面・CLI に出る文言を修正する
+    depends_on: []
+  - kind: single
+    scenario: dev/設計書/シナリオ/単一ユースケース/ページの設定を文書で指定する.yaml
+    impact: changed
+    detail: シナリオの文の単語と、画面・CLI に出る文言を修正する
+    depends_on: []
+  - kind: single
+    scenario: dev/設計書/シナリオ/単一ユースケース/リンクと添付のカードを置く.yaml
+    impact: changed
+    detail: シナリオの文の単語と、画面・CLI に出る文言を修正する。ファイル名の単語（置く）も修正し、E2E のテストファイル名を合わせる
+    depends_on: []
+  - kind: single
+    scenario: dev/設計書/シナリオ/単一ユースケース/リンクをカードの格子に並べる.yaml
+    impact: changed
+    detail: シナリオの文の単語と、画面・CLI に出る文言を修正する
+    depends_on: []
+  - kind: single
+    scenario: dev/設計書/シナリオ/単一ユースケース/使い方集を読む.yaml
+    impact: changed
+    detail: シナリオの文の単語と、画面・CLI に出る文言を修正する。ファイル名の単語（使う・読む）も修正し、E2E のテストファイル名を合わせる
+    depends_on: []
+  - kind: single
+    scenario: dev/設計書/シナリオ/単一ユースケース/名前の色で表・バッジ・本文を強調する.yaml
+    impact: changed
+    detail: シナリオの文の単語と、画面・CLI に出る文言を修正する
+    depends_on: []
+  - kind: single
+    scenario: dev/設計書/シナリオ/単一ユースケース/図と表に番号を付けて参照する.yaml
+    impact: changed
+    detail: シナリオの文の単語と、画面・CLI に出る文言を修正する
+    depends_on: []
+  - kind: single
+    scenario: dev/設計書/シナリオ/単一ユースケース/図と表を本文の幅より広げる.yaml
+    impact: changed
+    detail: シナリオの文の単語と、画面・CLI に出る文言を修正する
+    depends_on: []
+  - kind: single
+    scenario: dev/設計書/シナリオ/単一ユースケース/図の要素のツールチップを見る.yaml
+    impact: changed
+    detail: シナリオの文の単語と、画面・CLI に出る文言を修正する。ファイル名の単語（見る）も修正し、E2E のテストファイル名を合わせる
+    depends_on: []
+  - kind: single
+    scenario: dev/設計書/シナリオ/単一ユースケース/図を拡大・縮小・移動する.yaml
+    impact: changed
+    detail: シナリオの文の単語と、画面・CLI に出る文言を修正する
+    depends_on: []
+  - kind: single
+    scenario: dev/設計書/シナリオ/単一ユースケース/図を描く.yaml
+    impact: changed
+    detail: シナリオの文の単語と、画面・CLI に出る文言を修正する
+    depends_on: []
+  - kind: single
+    scenario: dev/設計書/シナリオ/単一ユースケース/固有の部品とCSSを当てる.yaml
+    impact: changed
+    detail: シナリオの文の単語と、画面・CLI に出る文言を修正する。ファイル名の単語（当てる）も修正し、E2E のテストファイル名を合わせる
+    depends_on: []
+  - kind: single
+    scenario: dev/設計書/シナリオ/単一ユースケース/埋め込んだHTMLの差分を切り替える.yaml
+    impact: changed
+    detail: シナリオの文の単語と、画面・CLI に出る文言を修正する
+    depends_on: []
+  - kind: single
+    scenario: dev/設計書/シナリオ/単一ユースケース/外部ライブラリを使うときだけ読み込む.yaml
+    impact: changed
+    detail: シナリオの文の単語と、画面・CLI に出る文言を修正する。ファイル名の単語（使う）も修正し、E2E のテストファイル名を合わせる
+    depends_on: []
+  - kind: single
+    scenario: dev/設計書/シナリオ/単一ユースケース/差分の取り出し元を渡す.yaml
+    impact: changed
+    detail: シナリオの文の単語と、画面・CLI に出る文言を修正する。ファイル名の単語（渡す）も修正し、E2E のテストファイル名を合わせる
+    depends_on: []
+  - kind: single
+    scenario: dev/設計書/シナリオ/単一ユースケース/差分ビューの変更をプレビューで見る.yaml
+    impact: changed
+    detail: シナリオの文の単語と、画面・CLI に出る文言を修正する。ファイル名の単語（見る）も修正し、E2E のテストファイル名を合わせる
+    depends_on: []
+  - kind: single
+    scenario: dev/設計書/シナリオ/単一ユースケース/拡張を登録して印を足す.yaml
+    impact: changed
+    detail: シナリオの文の単語と、画面・CLI に出る文言を修正する。ファイル名の単語（印・足す）も修正し、E2E のテストファイル名を合わせる
+    depends_on: []
+  - kind: single
+    scenario: dev/設計書/シナリオ/単一ユースケース/拡張機能の配布物を作る.yaml
+    impact: changed
+    detail: シナリオの文の単語と、画面・CLI に出る文言を修正する
+    depends_on: []
+  - kind: single
+    scenario: dev/設計書/シナリオ/単一ユースケース/操作できる部品で値を変えて写す.yaml
+    impact: changed
+    detail: シナリオの文の単語と、画面・CLI に出る文言を修正する
+    depends_on: []
+  - kind: single
+    scenario: dev/設計書/シナリオ/単一ユースケース/文字列とYAMLのキーの記法を点検する.yaml
+    impact: changed
+    detail: シナリオの文の単語と、画面・CLI に出る文言を修正する
+    depends_on: []
+  - kind: single
+    scenario: dev/設計書/シナリオ/単一ユースケース/文書のフォルダに設定を作る.yaml
+    impact: changed
+    detail: シナリオの文の単語と、画面・CLI に出る文言を修正する
+    depends_on: []
+  - kind: single
+    scenario: dev/設計書/シナリオ/単一ユースケース/文書の先頭へ戻る.yaml
+    impact: changed
+    detail: シナリオの文の単語と、画面・CLI に出る文言を修正する
+    depends_on: []
+  - kind: single
+    scenario: dev/設計書/シナリオ/単一ユースケース/文書の差分を見る.yaml
+    impact: changed
+    detail: シナリオの文の単語と、画面・CLI に出る文言を修正する。ファイル名の単語（見る）も修正し、E2E のテストファイル名を合わせる
+    depends_on: []
+  - kind: single
+    scenario: dev/設計書/シナリオ/単一ユースケース/文書をHTMLに書き出す.yaml
+    impact: changed
+    detail: シナリオの文の単語と、画面・CLI に出る文言を修正する
+    depends_on: []
+  - kind: single
+    scenario: dev/設計書/シナリオ/単一ユースケース/文書をHTML文字列にする.yaml
+    impact: changed
+    detail: シナリオの文の単語と、画面・CLI に出る文言を修正する
+    depends_on: []
+  - kind: single
+    scenario: dev/設計書/シナリオ/単一ユースケース/文書を印刷する.yaml
+    impact: changed
+    detail: シナリオの文の単語と、画面・CLI に出る文言を修正する
+    depends_on: []
+  - kind: single
+    scenario: dev/設計書/シナリオ/単一ユースケース/文書を描く.yaml
+    impact: changed
+    detail: シナリオの文の単語と、画面・CLI に出る文言を修正する
+    depends_on: []
+  - kind: single
+    scenario: dev/設計書/シナリオ/単一ユースケース/書いた内容をプレビューに映す.yaml
+    impact: changed
+    detail: シナリオの文の単語と、画面・CLI に出る文言を修正する。ファイル名の単語（書く）も修正し、E2E のテストファイル名を合わせる
+    depends_on: []
+  - kind: single
+    scenario: dev/設計書/シナリオ/単一ユースケース/本文に出た用語と文書の参照を取り出す.yaml
+    impact: changed
+    detail: シナリオの文の単語と、画面・CLI に出る文言を修正する
+    depends_on: []
+  - kind: single
+    scenario: dev/設計書/シナリオ/単一ユースケース/本文を横に並べる.yaml
+    impact: changed
+    detail: シナリオの文の単語と、画面・CLI に出る文言を修正する
+    depends_on: []
+  - kind: single
+    scenario: dev/設計書/シナリオ/単一ユースケース/機能のオン・オフを文書で上書きする.yaml
+    impact: changed
+    detail: シナリオの文の単語と、画面・CLI に出る文言を修正する
+    depends_on: []
+  - kind: single
+    scenario: dev/設計書/シナリオ/単一ユースケース/比較元のMarkdownを渡して変更を強調する.yaml
+    impact: changed
+    detail: シナリオの文の単語と、画面・CLI に出る文言を修正する。ファイル名の単語（渡す）も修正し、E2E のテストファイル名を合わせる
+    depends_on: []
+  - kind: single
+    scenario: dev/設計書/シナリオ/単一ユースケース/注意書きを書く.yaml
+    impact: changed
+    detail: シナリオの文の単語と、画面・CLI に出る文言を修正する。ファイル名の単語（書く）も修正し、E2E のテストファイル名を合わせる
+    depends_on: []
+  - kind: single
+    scenario: dev/設計書/シナリオ/単一ユースケース/版を上げる.yaml
+    impact: changed
+    detail: シナリオの文の単語と、画面・CLI に出る文言を修正する。ファイル名の単語（版）も修正し、E2E のテストファイル名を合わせる
+    depends_on: []
+  - kind: single
+    scenario: dev/設計書/シナリオ/単一ユースケース/版を固定して配布物を読み込む.yaml
+    impact: changed
+    detail: シナリオの文の単語と、画面・CLI に出る文言を修正する。ファイル名の単語（版）も修正し、E2E のテストファイル名を合わせる
+    depends_on: []
+  - kind: single
+    scenario: dev/設計書/シナリオ/単一ユースケース/用語の意味をツールチップで見る.yaml
+    impact: changed
+    detail: シナリオの文の単語と、画面・CLI に出る文言を修正する。ファイル名の単語（見る）も修正し、E2E のテストファイル名を合わせる
+    depends_on: []
+  - kind: single
+    scenario: dev/設計書/シナリオ/単一ユースケース/画像をライトボックスで拡大する.yaml
+    impact: changed
+    detail: シナリオの文の単語と、画面・CLI に出る文言を修正する
+    depends_on: []
+  - kind: single
+    scenario: dev/設計書/シナリオ/単一ユースケース/画像・動画・音声を置く.yaml
+    impact: changed
+    detail: シナリオの文の単語と、画面・CLI に出る文言を修正する。ファイル名の単語（置く）も修正し、E2E のテストファイル名を合わせる
+    depends_on: []
+  - kind: single
+    scenario: dev/設計書/シナリオ/単一ユースケース/目次と見出しのアンカーで節へ移る.yaml
+    impact: changed
+    detail: シナリオの文の単語と、画面・CLI に出る文言を修正する。ファイル名の単語（節）も修正し、E2E のテストファイル名を合わせる
+    depends_on: []
+  - kind: single
+    scenario: dev/設計書/シナリオ/単一ユースケース/端末にmdmarkをセットアップする.yaml
+    impact: changed
+    detail: シナリオの文の単語と、画面・CLI に出る文言を修正する
+    depends_on: []
+  - kind: single
+    scenario: dev/設計書/シナリオ/単一ユースケース/節と行の詳細を開閉する.yaml
+    impact: changed
+    detail: シナリオの文の単語と、画面・CLI に出る文言を修正する。ファイル名の単語（節）も修正し、E2E のテストファイル名を合わせる
+    depends_on: []
+  - kind: single
+    scenario: dev/設計書/シナリオ/単一ユースケース/索引と文書のずれを点検する.yaml
+    impact: changed
+    detail: シナリオの文の単語と、画面・CLI に出る文言を修正する
+    depends_on: []
+  - kind: single
+    scenario: dev/設計書/シナリオ/単一ユースケース/脚注を見る.yaml
+    impact: changed
+    detail: シナリオの文の単語と、画面・CLI に出る文言を修正する。ファイル名の単語（見る）も修正し、E2E のテストファイル名を合わせる
+    depends_on: []
+  - kind: single
+    scenario: dev/設計書/シナリオ/単一ユースケース/表から用語集に用語を入れる.yaml
+    impact: changed
+    detail: シナリオの文の単語と、画面・CLI に出る文言を修正する
+    depends_on: []
+  - kind: single
+    scenario: dev/設計書/シナリオ/単一ユースケース/表を操作する.yaml
+    impact: changed
+    detail: シナリオの文の単語と、画面・CLI に出る文言を修正する
+    depends_on: []
+  - kind: single
+    scenario: dev/設計書/シナリオ/単一ユースケース/表形式のビューを列で絞り込む.yaml
+    impact: changed
+    detail: シナリオの文の単語と、画面・CLI に出る文言を修正する
+    depends_on: []
+  - kind: single
+    scenario: dev/設計書/シナリオ/単一ユースケース/被参照を見る.yaml
+    impact: changed
+    detail: シナリオの文の単語と、画面・CLI に出る文言を修正する。ファイル名の単語（見る）も修正し、E2E のテストファイル名を合わせる
+    depends_on: []
+  - kind: single
+    scenario: dev/設計書/シナリオ/単一ユースケース/複数の文書を1枚のHTMLにまとめる.yaml
+    impact: changed
+    detail: シナリオの文の単語と、画面・CLI に出る文言を修正する
+    depends_on: []
+  - kind: single
+    scenario: dev/設計書/シナリオ/単一ユースケース/設定と索引を点検する.yaml
+    impact: changed
+    detail: シナリオの文の単語と、画面・CLI に出る文言を修正する
+    depends_on: []
+  - kind: single
+    scenario: dev/設計書/シナリオ/単一ユースケース/足すJavaScriptを型で点検する.yaml
+    impact: changed
+    detail: シナリオの文の単語と、画面・CLI に出る文言を修正する。ファイル名の単語（足す）も修正し、E2E のテストファイル名を合わせる
+    depends_on: []
+  - kind: single
+    scenario: dev/設計書/シナリオ/単一ユースケース/選んだ箇所にコメントする.yaml
+    impact: changed
+    detail: シナリオの文の単語と、画面・CLI に出る文言を修正する
+    depends_on: []
+  - kind: single
+    scenario: dev/設計書/シナリオ/単一ユースケース/部品をJavaScriptから使う.yaml
+    impact: changed
+    detail: シナリオの文の単語と、画面・CLI に出る文言を修正する。ファイル名の単語（使う）も修正し、E2E のテストファイル名を合わせる
+    depends_on: []
+  - kind: single
+    scenario: dev/設計書/シナリオ/単一ユースケース/配布物をビルドして検査する.yaml
+    impact: changed
+    detail: シナリオの文の単語と、画面・CLI に出る文言を修正する
+    depends_on: []
+  - kind: single
+    scenario: dev/設計書/シナリオ/単一ユースケース/雛形を置く.yaml
+    impact: changed
+    detail: シナリオの文の単語と、画面・CLI に出る文言を修正する。ファイル名の単語（置く）も修正し、E2E のテストファイル名を合わせる
+    depends_on: []
+docs:
+  - page: README.md
+    new: false
+    change: NG の単語を対応表の単語に修正する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-08T09:06:26.478174+00:00'
+  - page: CLAUDE.md
+    new: false
+    change: NG の単語を対応表の単語に修正する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-08T09:06:26.478174+00:00'
+  - page: dev-docs.yaml
+    new: false
+    change: 配信元の説明の NG の単語を修正する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-08T09:06:26.478174+00:00'
+  - page: docs/リファレンス/用語集.md
+    new: false
+    change: 用語（印・題・版・箱・知らせの枠 など）の置き換え先を決め、用語の名前と意味を修正する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-08T09:06:26.478174+00:00'
+  - page: dev/設計書/デザイン方針.md
+    new: false
+    change: NG の単語（箱 など）を修正する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-08T09:06:26.478174+00:00'
+  - page: dev/設計書/アーキテクチャ図/アーキテクチャ図.yaml
+    new: false
+    change: サブシステムの役割の NG の単語（版 など）を修正する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-08T09:06:26.478174+00:00'
+  - page: dev/設計書/非機能要件/非機能要件.yaml
+    new: false
+    change: NG の単語を修正する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-08T09:06:26.478174+00:00'
+  - page: dev/設計書/開発コマンド/開発コマンド.yaml
+    new: false
+    change: NG の単語を修正する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-08T09:06:26.478174+00:00'
+  - page: dev/設計書/テスト/テスト実行方法.yaml
+    new: false
+    change: NG の単語を修正する。改名した E2E のテストファイルの参照を合わせる
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-08T09:06:26.478174+00:00'
+  - page: migrations/no-steps.yaml
+    new: false
+    change: JSON Schema の説明だけの変更の行を追加する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-08T11:00:24.653060+00:00'
+scope_out:
+  - item: コードの識別子・Enum の値・定数・設定と索引のキー・CLI のサブコマンドとオプション名・MCP のツール名
+    reason: Issue の対象外。英語のまま維持する
+    plan: none
+  - item: dev/pr/ のマージ済みの PR ドキュメント
+    reason: Issue の対象外。マージ済みで今後参照されない記録
+    plan: none
+  - item: 外部の文書から原文のまま記載している引用
+    reason: Issue の対象外
+    plan: none
+  - item: dev/mock/refs/ の Issue / PR ごとのモック
+    reason: マージ済みの PR のモックの記録で、dev/pr/ と同じく今後参照されない。要件.md の対象の表で初めから除いている
+    plan: none
+  - item: docs/_theme/ と ai-monitor-theme.yaml
+    reason: AI Monitor の配布物を取り込んだファイル（#230）で、このリポジトリで修正すると次の追従で上書きされる。修正は配布元の ai-monitor で行う
+    plan: none
+  - item: docs/はじめに/変更履歴.md・CHANGELOG.md の公開済みのバージョンの行
+    reason: 公開済みのバージョンの記録で、当時の文言のまま維持する（確認ログ「変更履歴の公開済みのバージョンの行の単語」）
+    plan: none
+  - item: dist/・plugin/ のうちビルドで生成するファイル
+    reason: 修正した元からビルドで生成し直すため、直接は修正しない
+    plan: none
+  - item: '`src/parts/lightbox.stories.ts` のストーリー `Narrow` が 390x844 で横にスクロールする（`scrollWidth 430 > clientWidth 390`）'
+    reason: 画面の検査（横スクロール）から外れているが、この PR の変更は文言だけで幅に関わらず、今回の要望に含まれない
+    plan: '#367'
+  - item: schemas/alias-inject/v0.3.0/ の Schema
+    reason: alias-inject の配布物を取り込んだファイル（#360）で、このリポジトリで修正すると次の取り込みで上書きされる。修正は配布元の alias-inject で行う
+    plan: none
+  - item: migrations/no-steps.yaml の公開済みのバージョンの行
+    reason: 公開済みのバージョンで変えた Schema の記録で、当時の文言のまま維持する（確認ログ「migrations/no-steps.yaml の公開済みのバージョンの行の単語」）
+    plan: none

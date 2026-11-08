@@ -1,7 +1,7 @@
 import { type CodeCopyState, renderCodeCopy } from "../parts/code-block.ts";
 import { COPIED_NOTICE_MS, copyText } from "./clipboard.ts";
 
-/** コードブロックのコピーのボタンを返す。ボタンの外のクリックは `undefined` */
+/** コードブロックのコピーのボタンを返却する。ボタンの外のクリックは `undefined` */
 function findCopyButton(target: EventTarget | null): HTMLElement | undefined {
   if (!(target instanceof Element)) {
     return undefined;
@@ -9,7 +9,7 @@ function findCopyButton(target: EventTarget | null): HTMLElement | undefined {
   return target.closest<HTMLElement>(".mdmark-code-copy") ?? undefined;
 }
 
-/** コピーする文字: 行の印を持つブロックは `data-kind="del"` の行を除いた各行の文字を改行でつなぎ、それ以外は `code` の文字から末尾の改行を 1 つ除く */
+/** コピーする文字: 行のマーカーを持つブロックは `data-kind="del"` の行を除いた各行の文字を改行でつなぎ、それ以外は `code` の文字から末尾の改行を 1 つ除く */
 function codeToCopy(block: Element): string {
   const code = block.querySelector("pre > code");
   if (!code) {
@@ -25,7 +25,7 @@ function codeToCopy(block: Element): string {
   return (code.textContent ?? "").replace(/\n$/, "");
 }
 
-/** ボタンの状態・文言・アイコンと、読み上げの要素の文字を当てる */
+/** ボタンの状態・文言・アイコンと、スクリーンリーダー向けの要素の文字を適用する */
 function setState(meta: Element, state: CodeCopyState): void {
   const template = document.createElement("template");
   template.innerHTML = renderCodeCopy({ state });
@@ -42,7 +42,7 @@ function setState(meta: Element, state: CodeCopyState): void {
   }
 }
 
-/** 各 `mdmark-code-bar` の右端にコピーのボタンを置き、押すとコードをクリップボードへ書く。ボタンとタイマーを取り除く関数を返す */
+/** 各 `mdmark-code-bar` の右端にコピーのボタンを配置し、押すとコードをクリップボードへ書き込む。ボタンとタイマーを取り除く関数を返却する */
 export function attachCodeCopy(root: HTMLElement): () => void {
   const added: HTMLElement[] = [];
   for (const bar of root.querySelectorAll<HTMLElement>(".mdmark-code-bar")) {

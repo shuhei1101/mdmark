@@ -20,7 +20,7 @@ const PROJECT_FILES = {
   "b.md": "# B\n",
 };
 
-// 文書 2 つを 1 枚にまとめてパスと文書の数を返す（正常系）
+// 文書 2 つを 1 枚にまとめてパスと文書の数を返却する（正常系）
 test("test_normal", async () => {
   // 準備
   const dir = await createTempDir();
@@ -36,14 +36,14 @@ test("test_normal", async () => {
   expect(json.out).toBe(join(dir, "dist", "docs.html"));
   expect(json.docs).toBe(2);
   expect(json.warnings).toEqual([]);
-  // 同じフォルダで流した mdmark build の HTML と中身が同じ
+  // 同じフォルダで実行した mdmark build の HTML と中身が同じ
   await runCli(["build"], cliDir);
   expect(await readFile(json.out, "utf8")).toBe(
     await readFile(join(cliDir, "dist", "docs.html"), "utf8"),
   );
 });
 
-// build の無い設定では何も書かずにエラーにする（異常系）
+// build の無い設定では何も書き込まずにエラーにする（異常系）
 test("test_error_when_build_missing", async () => {
   // 準備
   const dir = await createTempDir();
@@ -62,7 +62,7 @@ test("test_error_when_build_missing", async () => {
   expect(existsSync(join(dir, "dist"))).toBe(false);
 });
 
-// project_dir を持たない呼び出しを、作業のフォルダを読まずにエラーにする（異常系）
+// project_dir を持たない呼び出しを、作業のフォルダを読み込まずにエラーにする（異常系）
 test("test_error_when_project_dir_missing", async () => {
   // 準備
   const client = await connectHttp();

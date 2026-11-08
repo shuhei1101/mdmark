@@ -3,7 +3,7 @@ import { expect, test } from "vitest";
 /** 図表の番号の処理を読み込む（実装が無い間は各テストが個別に失敗する） */
 const loadFigure = () => import("../../../../src/parts/figure.ts");
 
-// 画像は題を下、表は題を上に置く（正常系）
+// 画像はタイトルを下、表はタイトルを上に配置する（正常系）
 test("test_render_figure", async () => {
   // 準備
   const { renderFigure } = await loadFigure();

@@ -1,4 +1,4 @@
-/* 洗い出しのキャンバスの並べ方: 部品ごとの節に、今の値の列と dev-swiss の列を並べる。色はモック専用の値で、文書の値と混ぜない */
+/* 洗い出しのキャンバスの並べ方: 部品ごとのセクションに、今の値の列と dev-swiss の列を並べる。色はモック専用の値で、文書の値と混ぜない */
 
 /* キャンバスの地と文字: 列の文書の地と見分ける */
 :root {
@@ -35,7 +35,7 @@ body {
   padding: 16px 16px 64px;
   line-height: 1.6;
 
-  /* キャンバスの題 */
+  /* キャンバスのタイトル */
   h1 {
     margin: 8px 0 4px;
     font-size: 1.5rem;
@@ -59,7 +59,7 @@ body {
   }
 }
 
-/* 部品の目次: 部品の節へ移るリンクを折り返して並べる */
+/* 部品の目次: 部品のセクションへ移るリンクを折り返して並べる */
 .canvas-toc {
   display: flex;
   flex-wrap: wrap;
@@ -91,7 +91,7 @@ body {
   }
 }
 
-/* 部品の節: 節ごとに上の余白で区切る */
+/* 部品のセクション: セクションごとに上の余白で区切る */
 .canvas-section {
   margin-block-start: 32px;
 
@@ -109,7 +109,7 @@ body {
   }
 }
 
-/* 部品の CSS を変える箇所の印: 面と枠の全体で示す。文字は面の上で読める濃さにする */
+/* 部品の CSS を変える箇所のマーカー: 面と枠の全体で示す。文字は面の上で読み込める濃さにする */
 .canvas-section > .canvas-change {
   padding: 6px 10px;
   border: 1px solid var(--canvas-change-line);
@@ -163,7 +163,7 @@ body {
     min-height: 0;
   }
 
-  /* 横の文書の一覧: 留めずに列の中に置く */
+  /* 横の文書の一覧: 留めずに列の中に配置する */
   .mdmark-bundle-side {
     position: static;
     height: auto;
@@ -187,7 +187,7 @@ body {
     display: flex;
   }
 
-  /* パネル: 重ねずに列の中に置く */
+  /* パネル: 重ねずに列の中に配置する */
   .mdmark-bundle-panel {
     position: static;
     display: block;

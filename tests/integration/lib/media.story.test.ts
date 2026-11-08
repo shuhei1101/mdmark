@@ -59,7 +59,7 @@ test("test_video", async () => {
   expect(media.printDisplay).toBe("none");
 });
 
-// autoplay・loop の動画は、muted を足し、幅 320px で出す（VideoAutoplay）
+// autoplay・loop の動画は、muted を追加し、幅 320px で出す（VideoAutoplay）
 test("test_video_autoplay", async () => {
   // 準備・実行
   const page = await open("video-autoplay");

@@ -31,7 +31,7 @@ const startOtherSession = async (terminal: Terminal) => {
   ).toBe(0);
 };
 
-// tmux のセッションで mdmark serve を起動し、待ち受けを待って tools/list を確かめる（正常系）
+// tmux のセッションで mdmark serve を起動し、待ち受けを待って tools/list を確認する（正常系）
 test.skipIf(!HAS_TMUX)(
   "test_normal",
   async () => {
@@ -62,7 +62,7 @@ test.skipIf(!HAS_TMUX)(
   START_TIMEOUT_MS,
 );
 
-// セッションがあり待ち受けていれば、起動し直さない（正常系（既に起動している））
+// セッションがあり待ち受けていれば、もう一度起動しない（正常系（既に起動している））
 test.skipIf(!HAS_TMUX)(
   "test_normal_when_already_running",
   async () => {
@@ -103,7 +103,7 @@ test.skipIf(!HAS_TMUX)(
   START_TIMEOUT_MS,
 );
 
-// 応答しないセッションを閉じてから起動し直す（正常系（セッションはあるが待ち受けていない））
+// 応答しないセッションを閉じてからもう一度起動する（正常系（セッションはあるが待ち受けていない））
 test.skipIf(!HAS_TMUX)(
   "test_normal_when_session_stale",
   async () => {
@@ -135,7 +135,7 @@ test.skipIf(!HAS_TMUX)(
   START_TIMEOUT_MS,
 );
 
-// tmux が無ければ起動せず、端末で動かすコマンドを返す（異常系（tmux が無い・終了コード 2））
+// tmux が無ければ起動せず、端末で動かすコマンドを返却する（異常系（tmux が無い・終了コード 2））
 test("test_error_when_tmux_missing", async () => {
   // 準備
   const terminal = await createTerminal({ MDMARK_SERVE_COMMAND: "" });
@@ -154,7 +154,7 @@ test("test_error_when_tmux_missing", async () => {
   );
 });
 
-// ほかのプロセスがポートを待ち受けていれば起動せず、修正方法を返す（異常系（ポートが使われている・終了コード 1））
+// ほかのプロセスがポートを待ち受けていれば起動せず、修正方法を返却する（異常系（ポートが使用されている・終了コード 1））
 test.skipIf(!HAS_TMUX)("test_error_when_port_in_use", async () => {
   // 準備
   const terminal = await createTerminal();
@@ -178,7 +178,7 @@ test.skipIf(!HAS_TMUX)("test_error_when_port_in_use", async () => {
   expect(other.listening).toBe(true);
 });
 
-// 上限の間に待ち受けなければ、セッションを閉じてログの末尾と呼び直すことを返す（異常系（待ちを超えた・終了コード 3））
+// 上限の間に待ち受けなければ、セッションを閉じてログの末尾ともう一度呼ぶことを返却する（異常系（待ちを超えた・終了コード 3））
 test.skipIf(!HAS_TMUX)(
   "test_error_when_start_timed_out",
   async () => {

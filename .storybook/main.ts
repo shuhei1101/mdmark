@@ -4,13 +4,15 @@ import type { StorybookConfig } from "@storybook/react-vite";
 // 環境変数 `STORYBOOK_ALLOWED_HOSTS` をカンマで区切ったもの（無ければ持たない）
 const allowedHosts = process.env.STORYBOOK_ALLOWED_HOSTS?.split(",");
 
-/** 部品の HTML を返す描画の口（scripts/storybook-render.ts）の origin */
+/** 部品の HTML を返却する描画のインターフェース（scripts/storybook-render.ts）の origin */
 const renderOrigin = process.env.RENDER_ORIGIN;
 if (renderOrigin === undefined) {
-  throw new Error("RENDER_ORIGIN が無い（描画の口の origin を渡す）");
+  throw new Error(
+    "RENDER_ORIGIN が無い（描画のインターフェースの origin を指定する）",
+  );
 }
 
-/** vscode/ の部品が vscode/node_modules を引かないよう、直下の 1 つにする依存 */
+/** vscode/ の部品が vscode/node_modules を参照しないよう、直下の 1 つにする依存 */
 const WEBVIEW_DEPENDENCIES = [
   "react",
   "react-dom",
@@ -28,7 +30,7 @@ const config: StorybookConfig = {
   framework: { name: "@storybook/react-vite", options: {} },
   stories: ["../src/**/*.stories.ts", "../vscode/src/**/*.stories.@(ts|tsx)"],
   addons: ["@storybook/addon-a11y"],
-  // パネルのストーリーが読むこのブランチの配布物は、ビルドしてあるときだけ配る
+  // パネルのストーリーが読み込むこのブランチの配布物は、ビルドしてあるときだけ配る
   staticDirs: [
     "./public",
     ...(existsSync(new URL("../dist/index.js", import.meta.url))
@@ -51,7 +53,7 @@ const config: StorybookConfig = {
         },
         dedupe: WEBVIEW_DEPENDENCIES,
       },
-      // ストーリーを開く途中で依存を見つけて読み直さないよう、先に束ねる
+      // ストーリーを開く途中で依存を見つけて再読み込みしないよう、先にまとめる
       optimizeDeps: {
         include: [
           ...WEBVIEW_DEPENDENCIES,

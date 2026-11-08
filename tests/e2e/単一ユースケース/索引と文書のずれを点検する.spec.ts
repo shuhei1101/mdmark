@@ -1,7 +1,7 @@
 import { expect, test } from "@playwright/test";
 import { buildDistRoot, checkInNode, removeDistRoot } from "../dist-page.ts";
 
-// ビルドした配布物を置いた作業ツリー
+// ビルドした配布物を配置した作業ツリー
 let builtRoot = "";
 
 /** 用語集の表を 1 つ持つ本文。`rows` は `[用語, 意味]` の並びで、最初の行が 5 行目になる */
@@ -26,7 +26,7 @@ test.afterAll(async () => {
   await removeDistRoot(builtRoot);
 });
 
-// ずれの無い索引と文書では、空のずれの一覧を返す（正常シナリオ）
+// ずれの無い索引と文書では、空のずれの一覧を返却する（正常シナリオ）
 test("test_normal", async () => {
   // 準備
   const index = {
@@ -63,7 +63,7 @@ test("test_normal", async () => {
   expect(issues).toEqual([]);
 });
 
-// 消えた文書・索引に無い文書・切れた id・用語の重複を、場所と種類つきで返す（正常シナリオ（ずれがある））
+// 消えた文書・索引に無い文書・切れた id・用語の重複を、場所と種類つきで返却する（正常シナリオ（ずれがある））
 test("test_normal_when_drift", async () => {
   // 準備
   const index = {
@@ -127,13 +127,13 @@ test("test_normal_when_drift", async () => {
     "api.md",
     "guide.md",
   ]);
-  // 各行が、ずれの種類と直す場所が分かる内容を持つ
+  // 各行が、ずれの種類と修正する場所が分かる内容を持つ
   for (const issue of issues) {
     expect(issue.message.length).toBeGreaterThan(0);
   }
 });
 
-// Schema に合わない索引でも例外で止まらず、Schema のずれの行を返す（正常シナリオ（Schema に合わない索引））
+// Schema に合わない索引でも例外で止まらず、Schema のずれの行を返却する（正常シナリオ（Schema に合わない索引））
 test("test_normal_when_invalid_schema", async () => {
   // 準備
   const index = {
@@ -162,7 +162,7 @@ test("test_normal_when_invalid_schema", async () => {
   );
 });
 
-// 本文に出た用語のやめた言い方を、行とやめた言い方の組ごとに返す（正常シナリオ（やめた言い方が本文に出る））
+// 本文に出た用語のやめた言い方を、行とやめた言い方の組ごとに返却する（正常シナリオ（やめた言い方が本文に出る））
 test("test_normal_when_avoided_term", async () => {
   // 準備
   const index = {
@@ -199,14 +199,14 @@ test("test_normal_when_avoided_term", async () => {
     { file: "guide.md", where: "1 行目", kind: "avoided_term" },
     { file: "guide.md", where: "3 行目", kind: "avoided_term" },
   ]);
-  // 各行の内容が、やめた言い方と代わりに使う用語を示す
+  // 各行の内容が、やめた言い方と代わりに使用する用語を示す
   for (const issue of issues) {
     expect(issue.message).toContain("作業場");
     expect(issue.message).toContain("ワークスペース");
   }
 });
 
-// 用語集の表のやめた言い方を、表を持たない文書の本文からも返す（正常シナリオ（用語集の表のやめた言い方が本文に出る））
+// 用語集の表のやめた言い方を、表を持たない文書の本文からも返却する（正常シナリオ（用語集の表のやめた言い方が本文に出る））
 test("test_normal_when_glossary_avoided_term", async () => {
   // 準備
   const index = {
@@ -241,21 +241,21 @@ test("test_normal_when_glossary_avoided_term", async () => {
     documents: { "glossary.md": glossary, "guide.md": guide },
   });
   // 検証
-  // guide の 2 件だけを返し、glossary の表の中の言い方と、ワークスペースだけの 5 行目と、ほかの種類のずれは返さない
+  // guide の 2 件だけを返却し、glossary の表の中の言い方と、ワークスペースだけの 5 行目と、ほかの種類のずれは返却しない
   expect(
     issues.map(({ file, where, kind }) => ({ file, where, kind })),
   ).toEqual([
     { file: "guide.md", where: "1 行目", kind: "avoided_term" },
     { file: "guide.md", where: "3 行目", kind: "avoided_term" },
   ]);
-  // 各行の内容が、やめた言い方と代わりに使う用語を示す
+  // 各行の内容が、やめた言い方と代わりに使用する用語を示す
   expect(issues[0]?.message).toContain("作業場");
   expect(issues[0]?.message).toContain("ワークスペース");
   expect(issues[1]?.message).toContain("ワーク場");
   expect(issues[1]?.message).toContain("ワークスペース");
 });
 
-// 正規化すると同じになる用語の語・別名を用語の重複に、表記の違うやめた言い方を本文のずれにする（正常シナリオ（正規化すると同じになる語））
+// 正規化すると同じになる用語の単語・別名を用語の重複に、表記の違うやめた言い方を本文のずれにする（正常シナリオ（正規化すると同じになる単語））
 test("test_normal_when_normalized_words", async () => {
   // 準備
   const index = {
@@ -300,7 +300,7 @@ test("test_normal_when_normalized_words", async () => {
   expect(issues[1]?.message).toContain("ワークスペース");
 });
 
-// 片側だけの change_together・本文のリンクと重なる関連・文字列の関連を、関連の場所ごとに返す（正常シナリオ（関連がずれる））
+// 片側だけの change_together・本文のリンクと重なる関連・文字列の関連を、関連の場所ごとに返却する（正常シナリオ（関連がずれる））
 test("test_normal_when_related_drift", async () => {
   // 準備
   const index = {
@@ -353,18 +353,18 @@ test("test_normal_when_related_drift", async () => {
   ]);
   const message = (kind: string) =>
     issues.find((issue) => issue.kind === kind)?.message ?? "";
-  // 片側だけの change_together は、相手の b にも a への change_together を記載する直し方を示す
+  // 片側だけの change_together は、相手の b にも a への change_together を記載する修正方法を示す
   expect(message("one_sided_change_together")).toContain("b");
   expect(message("one_sided_change_together")).toContain("a");
   // 本文でリンクしている相手 c を示す
   expect(message("related_link_overlap")).toContain("c");
-  // 文字列の関連は、to・type・when を持つ関連へ書き換える直し方を示す
+  // 文字列の関連は、to・type・when を持つ関連へ書き換える修正方法を示す
   for (const key of ["to", "type", "when"]) {
     expect(message("untyped_related")).toContain(key);
   }
 });
 
-// changedPaths で組の片方だけが変わったときだけ、変わっていない側の文書を指す直し忘れの行を返す（正常シナリオ（change_together の組の片方だけが変わる））
+// changedPaths で組の片方だけが変わったときだけ、変わっていない側の文書を指す修正漏れの行を返却する（正常シナリオ（change_together の組の片方だけが変わる））
 test("test_normal_when_change_together_missed", async () => {
   // 準備
   const together = (to: string) => [

@@ -3,7 +3,7 @@ import { expect, test } from "vitest";
 /** 取り出し元の値の検査を読み込む（実装が無い間は各テストが個別に失敗する） */
 const loadSource = () => import("../../../../src/diff/source.ts");
 
-// 形が合う一覧をそのまま返す（正常系）
+// 構造が合う一覧をそのまま返却する（正常系）
 test("test_check_revisions", async () => {
   // 準備
   const { checkRevisions } = await loadSource();
@@ -11,7 +11,7 @@ test("test_check_revisions", async () => {
     {
       id: "r2",
       at: "2026-10-19T07:40:00Z",
-      label: "件数を直す",
+      label: "件数を修正する",
       author: "鈴木",
     },
     { id: "r1", at: "2026-10-18T00:12:00Z" },
@@ -53,7 +53,7 @@ test("test_check_revisions_when_id_duplicated", async () => {
   expect(() => checkRevisions(revisions)).toThrow(TypeError);
 });
 
-// 対応する値をそのまま返す（正常系）
+// 対応する値をそのまま返却する（正常系）
 test("test_normalize_diff_mode", async () => {
   // 準備
   const { normalizeDiffMode } = await loadSource();

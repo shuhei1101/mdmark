@@ -9,7 +9,7 @@ import { warningBlock } from "./warnings.ts";
 /** アイコンにする行内のコードの頭 */
 const ICON_PREFIX = "icon:";
 
-/** URL をそのまま書いたリンクのマークアップ */
+/** URL をそのまま記載したリンクのマークアップ */
 const AUTOLINK_MARKUPS = ["linkify", "autolink"];
 
 /** URL のスキーム */
@@ -41,7 +41,7 @@ const trimStart = (children: Token[]): Token[] => {
   return rest;
 };
 
-/** 項目の行内の子の並びから、カードの中身を読む */
+/** 項目の行内の子の並びから、カードの中身を読み込む */
 const readItem = (state: StateCore, children: Token[]): CardGridItem => {
   let rest = trimStart(children);
   // 頭の `icon:名前` の行内のコードをアイコンにする
@@ -94,7 +94,7 @@ const readItem = (state: StateCore, children: Token[]): CardGridItem => {
   };
 };
 
-/** カードの格子の枠だけに mdmark が出した要素の印を付け、書いた人のタイトルと説明の HTML を印の後に差し込んだトークン */
+/** カードの格子の枠だけに mdmark が出した要素のマーカーを付け、記載した人のタイトルと説明の HTML をマーカーの後に差し込んだトークン */
 const cardGridBlock = (
   state: StateCore,
   items: CardGridItem[],
@@ -166,7 +166,7 @@ const isSingleList = (inner: Token[]): boolean => {
   return inner.filter((token) => token.level === first.level).length === 2;
 };
 
-/** `card-grid` がオンなら、`<!-- cards -->` 〜 `<!-- /cards -->` の中身のリスト 1 つをカードの格子にする。中身がリスト 1 つでないときは警告を差し込み、オフのときは何もしない（印は後で取り除く） */
+/** `card-grid` がオンなら、`<!-- cards -->` 〜 `<!-- /cards -->` の中身のリスト 1 つをカードの格子にする。中身がリスト 1 つでないときは警告を差し込み、オフのときは何もしない（マーカーは後で取り除く） */
 export const buildCardGrid = (state: StateCore): void => {
   if (!featureOn(state, "card-grid")) {
     return;
@@ -189,7 +189,7 @@ export const buildCardGrid = (state: StateCore): void => {
           {
             mark: (mark as Mark).raw,
             message:
-              "で囲めるのはリスト 1 つです。カードの格子にせずに、中身を書いたとおりに表示しています。",
+              "で囲めるのはリスト 1 つです。カードの格子にせずに、中身を記載したとおりに表示しています。",
           },
           token,
         ),

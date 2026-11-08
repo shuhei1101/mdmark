@@ -13,10 +13,10 @@ import {
   routeMermaid,
 } from "../mermaid.ts";
 
-// ビルドした配布物を置いた作業ツリー
+// ビルドした配布物を配置した作業ツリー
 let builtRoot = "";
 
-// 段落とリンクと mermaid の flowchart を持つ見本の Markdown（リンク 1 つだけの段落はカードにするため、文の中にリンクを置く）
+// 段落とリンクと mermaid の flowchart を持つ見本の Markdown（リンク 1 つだけの段落はカードにするため、文の中にリンクを配置する）
 const MARKDOWN =
   "段落\n\n詳しくは [リンク](https://example.com/page) を見る。\n\n```mermaid\nflowchart LR\n  A[受付] --> B[回答]\n```\n";
 

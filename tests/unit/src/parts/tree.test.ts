@@ -28,7 +28,7 @@ const NESTED_NODES = [
   },
 ];
 
-/** `button.mdmark-tree-toggle` の開始タグを現れた順に返す */
+/** `button.mdmark-tree-toggle` の開始タグを現れた順に返却する */
 function togglesOf(html: string): string[] {
   return findTags(html, "mdmark-tree-toggle");
 }
@@ -109,7 +109,7 @@ test("test_render_tree_when_items", async () => {
   expect(more).toContain("ほかにもあります");
 });
 
-// 帯と開閉のボタンを置き、開く階層より深いフォルダを閉じる（正常系）
+// 帯と開閉のボタンを配置し、開く階層より深いフォルダを閉じる（正常系）
 test("test_render_tree_when_interactive", async () => {
   // 準備
   const { renderTree } = await loadTree();
@@ -151,7 +151,7 @@ test("test_render_tree_when_interactive", async () => {
   ).toEqual(["true", "true", "false"]);
 });
 
-// コピーできないときのパネルをツリーの下に置く（正常系）
+// コピーできないときのパネルをツリーの下に配置する（正常系）
 test("test_render_tree_when_copy_fallback", async () => {
   // 準備
   const { renderTree } = await loadTree();

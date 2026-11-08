@@ -1,5 +1,5 @@
 title: キー
-lead: 頭に `kbd:` を付けた行内のコードを、`+` で区切ったキーの見た目の並びにする。
+lead: 頭に `kbd:` を付けた行内のコードを、`+` で区切ったキーの外観の並びにする。
 implementation: src/parts/kbd.ts#renderKbd
 story: Parts/Kbd
 test_file: tests/integration/lib/kbd.story.test.ts
@@ -41,7 +41,7 @@ css_properties:
   default: '#e4e4e7（ダーク #26262b）'
   description: キーの線と下の影の色
 accessibility:
-- キーは `kbd` 要素で、区切りの `+` も文字として読み上げる
+- キーは `kbd` 要素で、区切りの `+` も文字としてスクリーンリーダーに伝える
 refs:
 - dev/設計書/インターフェース定義/ライブラリ本体/文書をHTML文字列にする.ts#constraints[キー]
 status: planned

@@ -10,7 +10,7 @@ const loadMargin = () =>
     ),
   );
 
-/** 印の行どうしが重ならないように空ける段落の上下の余白 */
+/** マーカーの行どうしが重ならないように空ける段落の上下の余白 */
 const PARAGRAPH_STYLE = "margin: 80px 0";
 
 const roots: HTMLElement[] = [];
@@ -25,7 +25,7 @@ afterEach(() => {
   }
 });
 
-/** HTML を本文の列に入れた描く先の要素をページに置き、本文の列を返す */
+/** HTML を本文の列に入れた描く先の要素をページに配置し、本文の列を返却する */
 const createContent = (html: string): HTMLElement => {
   addStyles();
   const root = document.createElement("div");
@@ -39,7 +39,7 @@ const createContent = (html: string): HTMLElement => {
   return content;
 };
 
-/** 余白のマーカーを付け、後始末のために外す関数を控える */
+/** 余白のマーカーを付け、後始末のために削除する関数を記録する */
 const attachTracked = async (content: HTMLElement): Promise<() => void> => {
   const { attachMarginMarkers } = await loadMargin();
   const detach = attachMarginMarkers({ content });
@@ -51,21 +51,21 @@ const attachTracked = async (content: HTMLElement): Promise<() => void> => {
 const nextFrame = (): Promise<void> =>
   new Promise((resolve) => requestAnimationFrame(() => resolve()));
 
-/** 余白の列の中のマーカーを返す */
+/** 余白の列の中のマーカーを返却する */
 const markersOf = (content: HTMLElement): HTMLButtonElement[] => [
   ...(content.parentElement?.querySelectorAll<HTMLButtonElement>(
     ".mdmark-comment-margin .mdmark-comment-marker",
   ) ?? []),
 ];
 
-/** 要素の最初の行の縦の中ほどを、余白の列の上端からの位置で返す */
+/** 要素の最初の行の縦の中ほどを、余白の列の上端からの位置で返却する */
 const lineCenter = (target: Element, content: HTMLElement): number => {
   const margin = content.nextElementSibling as HTMLElement;
   const rect = target.getClientRects()[0] as DOMRect;
   return rect.top - margin.getBoundingClientRect().top + rect.height / 2;
 };
 
-/** 印の `click` が呼ばれた回数を控える */
+/** マーカーの `click` が呼ばれた回数を記録する */
 const countClicks = (mark: Element): { count: number } => {
   const record = { count: 0 };
   mark.addEventListener("click", () => {
@@ -74,13 +74,13 @@ const countClicks = (mark: Element): { count: number } => {
   return record;
 };
 
-// 印の行の縦の中ほどにマーカーを置き、押すと吹き出しを開く（正常系）
+// マーカーの行の縦の中ほどにマーカーを配置し、押すと吹き出しを開く（正常系）
 test("test_attach_margin_markers", async () => {
   // 準備
   const content = createContent(
     [
       `<p style="${PARAGRAPH_STYLE}">導入の<mark class="mdmark-comment-mark">手順</mark>を整える。</p>`,
-      `<p style="${PARAGRAPH_STYLE}">テーマの<mark class="mdmark-comment-mark">変数</mark>を書く。</p>`,
+      `<p style="${PARAGRAPH_STYLE}">テーマの<mark class="mdmark-comment-mark">変数</mark>を記載する。</p>`,
     ].join(""),
   );
   const marks = [...content.querySelectorAll(".mdmark-comment-mark")];
@@ -106,7 +106,7 @@ test("test_attach_margin_markers", async () => {
   expect(clicks[1]?.count).toBe(0);
 });
 
-// 閉じた中の印は開くボタンの行に置き、押すと開いてから印を押す（正常系）
+// 閉じた中のマーカーは開くボタンの行に配置し、押すと開いてからマーカーを押す（正常系）
 test("test_attach_margin_markers_when_closed", async () => {
   // 準備
   const content = createContent(
@@ -143,7 +143,7 @@ test("test_attach_margin_markers_when_closed", async () => {
   expect(clicks.count).toBe(1);
 });
 
-// 開くボタンが無い閉じた中の印にはマーカーを置かない（正常系）
+// 開くボタンが無い閉じた中のマーカーにはマーカーを配置しない（正常系）
 test("test_attach_margin_markers_when_no_opener", async () => {
   // 準備
   const content = createContent(
@@ -157,7 +157,7 @@ test("test_attach_margin_markers_when_no_opener", async () => {
   expect(markersOf(content)).toHaveLength(0);
 });
 
-// 中の変化で次のフレームに置き直す（正常系）
+// 中の変化で次のフレームにもう一度配置する（正常系）
 test("test_attach_margin_markers_when_changed", async () => {
   // 準備
   const content = createContent(
@@ -181,7 +181,7 @@ test("test_attach_margin_markers_when_changed", async () => {
   expect(markersOf(content)[0]).toBe(first);
 });
 
-// 外すと余白の列を取り除く（正常系）
+// 削除すると余白の列を取り除く（正常系）
 test("test_attach_margin_markers_when_detached", async () => {
   // 準備
   const content = createContent(

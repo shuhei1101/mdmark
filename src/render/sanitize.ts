@@ -6,20 +6,20 @@ const ALIGN_VALUES = ["left", "center", "right"];
 /** `style` 属性の `text-align` の値を取り出す正規表現 */
 const TEXT_ALIGN_PATTERN = /(?:^|;)\s*text-align\s*:\s*([a-z]+)/;
 
-/** mdmark が出した要素に付ける印の属性 */
+/** mdmark が出した要素に付けるマーカーの属性 */
 const OWN_ATTRIBUTE = "data-mdmark-own";
 
-/** `sanitizeEmbedded` が書いた人の class を残した要素に付ける印。mdmark が出した要素のうち印を持つものは、`sanitize` が class を絞らない */
+/** `sanitizeEmbedded` が記載した人の class を残した要素に付けるマーカー。mdmark が出した要素のうちマーカーを持つものは、`sanitize` が class を絞らない */
 const KEEP_CLASS_ATTRIBUTE = "data-mdmark-keep-class";
 
-/** 文書に書いた生の HTML が持ってよい記法の class: 列の揃えと、外部ライブラリの印の場所 */
+/** 文書に記載した生の HTML が持ってよい記法の class: 列の配置と、外部ライブラリのマーカーの場所 */
 const RAW_CLASS_PATTERN = /^(?:mdmark-align-|mdmark-embed$)/;
 
 /** 記法の class（`mdmark-` で始まるものと `markdown-alert*`、図のツールチップを持つ要素の `has-tip`、リンク先を持つノードの `has-link`） */
 const SYNTAX_CLASS_PATTERN =
   /^(?:mdmark-|markdown-alert|has-tip$|has-link$|has-children$|is-virtual$)/;
 
-/** 図の部品が定義から出した要素だけが持てる要素。文書に書いたものは取り除く */
+/** 図の部品が定義から出した要素だけが持てる要素。文書に記載したものは取り除く */
 export const DIAGRAM_ONLY_TAGS = new Set([
   "svg",
   "defs",
@@ -39,7 +39,7 @@ export const DIAGRAM_ONLY_TAGS = new Set([
   "label",
 ]);
 
-/** 取り除く要素に付ける印の属性 */
+/** 取り除く要素に付けるマーカーの属性 */
 const DROP_ATTRIBUTE = "data-mdmark-drop";
 
 /** 図の部品が出した要素の `style` に許す宣言: 位置と大きさ（px）と、名前を内接させる余白（0 以上の px の値 1 つか 2 つ）と、拡大の倍率だけ */
@@ -59,7 +59,7 @@ const GALLERY_COLS_PATTERN = /^\s*--mdmark-gallery-cols\s*:\s*([1-6])\s*;?\s*$/;
 /** 記法が出したものだけを残す動画と音声の要素 */
 const MEDIA_TAGS = new Set(["video", "audio"]);
 
-/** 元の行番号の属性と、その値に許す形（0 以上の整数） */
+/** 元の行番号の属性と、その値に許す構造（0 以上の整数） */
 const SOURCE_LINE_ATTRIBUTE = "data-source-line";
 const SOURCE_LINE_PATTERN = /^\d+$/;
 
@@ -67,7 +67,7 @@ const SOURCE_LINE_PATTERN = /^\d+$/;
 const DATA_IMAGE_PATTERN =
   /^data:image\/(?:png|jpeg|gif|webp|svg\+xml);base64,[A-Za-z0-9+/=]*(?:#only-(?:light|dark))?$/;
 
-/** 許さない形の `data:` URL を消す: `img` の `src` と `video` の `poster` は画像の形だけを残し、`video`・`audio` の `src` は消す */
+/** 許さない構造の `data:` URL を削除する: `img` の `src` と `video` の `poster` は画像の構造だけを残し、`video`・`audio` の `src` は削除する */
 function dropDataUrls(tagName: string, attribs: Record<string, string>): void {
   const imageAttribute =
     tagName === "img" ? "src" : tagName === "video" ? "poster" : undefined;
@@ -97,7 +97,7 @@ function fixTabindex(
   return { tagName, attribs: next };
 }
 
-/** 文書に書いた生の HTML から、記法の class・`data-*`・`id`・`role`・`aria-*` などを落とす */
+/** 文書に記載した生の HTML から、記法の class・`data-*`・`id`・`role`・`aria-*` などを落とす */
 function dropSyntaxAttributes(
   tagName: string,
   attribs: Record<string, string>,
@@ -115,7 +115,7 @@ function dropSyntaxAttributes(
         next.class = classes.join(" ");
       }
     } else if (name === "role") {
-      // 外部ライブラリの印の場所の `status` だけを残す
+      // 外部ライブラリのマーカーの場所の `status` だけを残す
       if (tagName === "div" && value === "status") {
         next[name] = value;
       }
@@ -124,7 +124,7 @@ function dropSyntaxAttributes(
         next[name] = value;
       }
     } else if (name === "tabindex") {
-      // 語の `tabindex` は mdmark が出した要素だけが持つ
+      // 単語の `tabindex` は mdmark が出した要素だけが持つ
       if (tagName === "pre" || tagName === "table") {
         next[name] = value;
       }
@@ -146,7 +146,7 @@ function dropSyntaxAttributes(
       name !== "rowspan" &&
       name !== "scope" &&
       !name.startsWith("aria-") &&
-      // 図の部品の属性は、図の部品が出した要素だけが持つ（`input` の `type`・`disabled` は、描くときに付け直した値）
+      // 図の部品の属性は、図の部品が出した要素だけが持つ（`input` の `type`・`disabled` は、描くときにもう一度付けた値）
       (!DIAGRAM_ATTRIBUTE_SET.has(name) ||
         (tagName === "input" && (name === "type" || name === "disabled")))
     ) {
@@ -156,7 +156,7 @@ function dropSyntaxAttributes(
   return next;
 }
 
-/** 図の部品の要素が持つ属性。名前は sanitize-html が読む小文字で書く（ブラウザが svg の属性の大文字を戻す）。文書に書いた要素は `dropSyntaxAttributes` が属性を絞る */
+/** 図の部品の要素が持つ属性。名前は sanitize-html が読み込む小文字で記載する（ブラウザが svg の属性の大文字を戻す）。文書に記載した要素は `dropSyntaxAttributes` が属性を絞る */
 const DIAGRAM_ATTRIBUTES = [
   "tabindex",
   "style",
@@ -208,7 +208,7 @@ const RANGE_SCRIPT_TAGS = new Set(["style", "template"]);
 /** `DIAGRAM_ATTRIBUTES` の集合 */
 const DIAGRAM_ATTRIBUTE_SET = new Set(DIAGRAM_ATTRIBUTES);
 
-/** sanitize-html に渡す、描くごとに変わらない設定: 許可していない要素・属性・URL を落とす */
+/** sanitize-html に指定する、描くごとに変わらない設定: 許可していない要素・属性・URL を落とす */
 const SANITIZE_OPTIONS: sanitizeHtml.IOptions = {
   allowedTags: [
     ...sanitizeHtml.defaults.allowedTags,
@@ -239,7 +239,7 @@ const SANITIZE_OPTIONS: sanitizeHtml.IOptions = {
     ],
     a: ["href", "title"],
     img: ["src", "alt", "title"],
-    // ER 図の列のマーカーの名前（文書に書いた `abbr` の `title` は `dropSyntaxAttributes` が落とす）
+    // ER 図の列のマーカーの名前（文書に記載した `abbr` の `title` は `dropSyntaxAttributes` が落とす）
     abbr: ["title"],
     details: ["open"],
     input: ["type", "disabled", "checked"],
@@ -258,7 +258,7 @@ const SANITIZE_OPTIONS: sanitizeHtml.IOptions = {
     ],
     audio: ["src", "controls", "autoplay", "muted", "loop", "preload"],
   },
-  // 図の部品の要素以外から取り除く要素は、印を付けた要素を中身ごと消す
+  // 図の部品の要素以外から取り除く要素は、マーカーを付けた要素を中身ごと削除する
   exclusiveFilter: (frame) => frame.attribs[DROP_ATTRIBUTE] !== undefined,
   // 記法の class は、mdmark が出した要素だけが持つ（生の HTML のものは `transformTags` が先に落とす）
   allowedClasses: {
@@ -274,17 +274,17 @@ const SANITIZE_OPTIONS: sanitizeHtml.IOptions = {
     li: ["task-list-item"],
   },
   allowedSchemes: ["http", "https", "mailto"],
-  // 画像の `src` と動画の `poster` は `data:` URL も許す（残す形は `transformTags` が絞る）
+  // 画像の `src` と動画の `poster` は `data:` URL も許す（残す構造は `transformTags` が絞る）
   allowedSchemesByTag: {
     img: ["http", "https", "data"],
     video: ["http", "https", "data"],
     audio: ["http", "https", "data"],
   },
-  // postcss を呼ばない。`style` 属性は許可せず、列の揃えだけを class に移す
+  // postcss を呼ばない。`style` 属性は許可せず、列の配置だけを class に移す
   parseStyleAttributes: false,
-  // 範囲の `style` は mdmark が根の要素の中に限って出したものだけを残す（文書に書いたものは `transformTags` が落とす）
+  // 範囲の `style` は mdmark が根の要素の中に限って出したものだけを残す（文書に記載したものは `transformTags` が落とす）
   allowVulnerableTags: true,
-  // 値の無い `hidden`（CSV の表の元の CSV）を残す。文書に書いた `hidden` は `dropSyntaxAttributes` が先に落とす
+  // 値の無い `hidden`（CSV の表の元の CSV）を残す。文書に記載した `hidden` は `dropSyntaxAttributes` が先に落とす
   nonBooleanAttributes: sanitizeHtml.defaults.nonBooleanAttributes.filter(
     (name) => name !== "hidden",
   ),
@@ -293,7 +293,7 @@ const SANITIZE_OPTIONS: sanitizeHtml.IOptions = {
 /** スキームを見分ける前に除く、制御文字と空白の文字コードの上限（U+0000〜U+0020） */
 const CONTROL_OR_SPACE_MAX = 0x20;
 
-/** 本文のリンクと同じ許可（`SANITIZE_OPTIONS` の `allowedSchemes` のスキームか、スキームを持たない相対 URL）に当たる URL か */
+/** 本文のリンクと同じ許可（`SANITIZE_OPTIONS` の `allowedSchemes` のスキームか、スキームを持たない相対 URL）に該当する URL か */
 export function isAllowedUrl(url: string): boolean {
   // sanitize-html と同じく、前後の空白と制御文字を除いてスキームを見分ける
   const trimmed = Array.from(url)
@@ -307,16 +307,16 @@ export function isAllowedUrl(url: string): boolean {
   return Array.isArray(allowed) && allowed.includes(scheme.toLowerCase());
 }
 
-/** 埋め込んだ HTML の `style` に残す宣言: 名前と、値の許可の正規表現。値に `url(`・`expression(`・単位 `vw`・`vh` を含むものは、ここに当たっても落とす */
+/** 埋め込んだ HTML の `style` に残す宣言: 名前と、値の許可の正規表現。値に `url(`・`expression(`・単位 `vw`・`vh` を含むものは、ここに該当しても落とす */
 export const EMBED_STYLES: ReadonlyArray<{ name: RegExp; value: RegExp }> =
   (() => {
     const length = String.raw`-?(?:\d+|\d*\.\d+)(?:px|rem|em|%|ch|pt|fr)?`;
-    // 負の値を持たない長さ（`margin`・`padding` が使う。負の値は他の要素の上へはみ出させるため落とす）
+    // 負の値を持たない長さ（`margin`・`padding` が使用する。負の値は他の要素の上へはみ出させるため落とす）
     const unsigned = String.raw`(?:\d+|\d*\.\d+)(?:px|rem|em|%|ch|pt|fr)?`;
     const keyword = "[a-z]+(?:-[a-z]+)*";
     const color = String.raw`#[0-9a-f]{3,8}|[a-z]+|(?:rgb|hsl)a?\(\s*[0-9.%\s,/-]+\)|var\(--mdmark-[a-z0-9-]+\)`;
     const fn = String.raw`(?:repeat|minmax)\([a-z0-9\s,.%-]*\)`;
-    /** 空白で区切った 1 つ以上の語が、どれも `tokens` のどれかに当たる値の正規表現 */
+    /** 空白で区切った 1 つ以上の単語が、どれも `tokens` のどれかに該当する値の正規表現 */
     const words = (tokens: string): RegExp =>
       new RegExp(`^(?:${tokens})(?:\\s+(?:${tokens}))*$`, "i");
     return [
@@ -357,7 +357,7 @@ export const EMBED_STYLES: ReadonlyArray<{ name: RegExp; value: RegExp }> =
 const EMBED_STYLE_FORBIDDEN =
   /\/\*|["'\\]|url\(|expression\(|\d\s*(?:dvw|dvh|svw|svh|lvw|lvh|vmin|vmax|vw|vh)\b/i;
 
-/** 埋め込んだ HTML の要素の `style` から、`EMBED_STYLES` の宣言だけを残して `名前:値` を `;` でつないだ値にする。残る宣言が無ければ空の文字。postcss を使わない */
+/** 埋め込んだ HTML の要素の `style` から、`EMBED_STYLES` の宣言だけを残して `名前:値` を `;` でつないだ値にする。残る宣言が無ければ空の文字。postcss を使用しない */
 export function filterEmbeddedStyle(style: string): string {
   const kept: string[] = [];
   for (const declaration of style.split(";")) {
@@ -388,7 +388,7 @@ function ownStyle(style: string): string {
   if (DIAGRAM_STYLE_PATTERN.test(style)) {
     return style;
   }
-  // 画像の幅とギャラリーの列の数: ほかの宣言を重ねたものと読めない値は、全て落とす
+  // 画像の幅とギャラリーの列の数: ほかの宣言を重ねたものと読み込めない値は、全て落とす
   if (style.includes("--mdmark-image-width")) {
     const width = IMAGE_WIDTH_PATTERN.exec(style)?.[1];
     return width === undefined ? "" : `--mdmark-image-width: ${width}`;
@@ -405,11 +405,11 @@ function ownStyle(style: string): string {
   return filterEmbeddedStyle(style);
 }
 
-/** 埋め込んだ HTML の中の、図の部品の置き場所を預ける要素と、その印の属性。`sanitizeEmbedded` が残し、呼ぶ側が図の部品の HTML に戻す */
+/** 埋め込んだ HTML の中の、図の部品の配置場所を預ける要素と、そのマーカーの属性。`sanitizeEmbedded` が残し、呼ぶ側が図の部品の HTML に戻す */
 export const EMBED_PART_TAG = "mdmark-part";
 export const EMBED_PART_ATTRIBUTE = "data-part";
 
-/** 文字を `onText` に渡さない要素（用語の下線を引かない場所） */
+/** 文字を `onText` に指定しない要素（用語の下線を付けない場所） */
 export const TEXT_FILTER_SKIP_TAGS = new Set([
   "a",
   "code",
@@ -432,7 +432,7 @@ export const EMBEDDED_NON_TEXT_TAGS = [
   "xmp",
 ];
 
-/** 埋め込んだ HTML の `sanitize-html` の設定。文書に書いた生の HTML と同じ要素・URL の許可に `button` を足し、書いた人の class・`id`・`data-hint` 以外の `data-*`・`role`・`aria-*` は持たせない */
+/** 埋め込んだ HTML の `sanitize-html` の設定。文書に記載した生の HTML と同じ要素・URL の許可に `button` を追加し、記載した人の class・`id`・`data-hint` 以外の `data-*`・`role`・`aria-*` は持たせない */
 const EMBEDDED_OPTIONS: sanitizeHtml.IOptions = {
   ...SANITIZE_OPTIONS,
   allowedTags: [
@@ -453,7 +453,7 @@ const EMBEDDED_OPTIONS: sanitizeHtml.IOptions = {
   nonTextTags: EMBEDDED_NON_TEXT_TAGS,
 };
 
-/** 埋め込んだ HTML の中身を落とす: `script` 要素・`on` で始まる属性・`javascript:` の URL・許していない `style` の宣言を落とし、`button` は `type="button"` で残す。`onText` は本文の文字（エスケープ済み。`a`・`code`・`pre`・`button`・見出しの中を除く）を受け、置き換える HTML を返す。`keepClasses` が真なら、書いた人の class を記法の class を除いて残す */
+/** 埋め込んだ HTML の中身を落とす: `script` 要素・`on` で始まる属性・`javascript:` の URL・許していない `style` の宣言を落とし、`button` は `type="button"` で残す。`onText` は本文の文字（エスケープ済み。`a`・`code`・`pre`・`button`・見出しの中を除く）を受け、置き換える HTML を返却する。`keepClasses` が真なら、記載した人の class を記法の class を除いて残す */
 export function sanitizeEmbedded(
   html: string,
   onText: (text: string) => string,
@@ -514,7 +514,7 @@ export function sanitizeEmbedded(
           }
         }
         dropDataUrls(tagName, next);
-        // 図の部品の要素は、書いたものを中身ごと落とす（`button` だけは残す）
+        // 図の部品の要素は、記載したものを中身ごと落とす（`button` だけは残す）
         if (DIAGRAM_ONLY_TAGS.has(tagName) && tagName !== "button") {
           next[DROP_ATTRIBUTE] = "1";
         }
@@ -535,14 +535,14 @@ function isAllowedClass(tagName: string, name: string): boolean {
   );
 }
 
-/** 許可していないものを落とした HTML を返す。`nonce` と同じ印を持つ要素は mdmark が記法から出したものとして、記法の class・`data-*`・`id` などを残す。そのうち `sanitizeEmbedded` が書いた人の class を残した要素は、class を絞らない */
+/** 許可していないものを落とした HTML を返却する。`nonce` と同じマーカーを持つ要素は mdmark が記法から出したものとして、記法の class・`data-*`・`id` などを残す。そのうち `sanitizeEmbedded` が記載した人の class を残した要素は、class を絞らない */
 export function sanitize(html: string, nonce: string): string {
   return sanitizeHtml(html, {
     ...SANITIZE_OPTIONS,
     // class は `transformTags` で `SANITIZE_OPTIONS` の `allowedClasses` のとおりに絞る
     allowedClasses: { "*": [/^\S+$/] },
     transformTags: {
-      // 全ての要素: mdmark が出した要素以外から記法の属性を落とし、`text-align` の値を class に移し、`style` は常に消す
+      // 全ての要素: mdmark が出した要素以外から記法の属性を落とし、`text-align` の値を class に移し、`style` は常に削除する
       "*": (tagName, attribs) => {
         const own = attribs[OWN_ATTRIBUTE] === nonce;
         const next = own
@@ -568,7 +568,7 @@ export function sanitize(html: string, nonce: string): string {
         ) {
           delete next[SOURCE_LINE_ATTRIBUTE];
         }
-        // `data:` URL は、画像の形のものだけ残す
+        // `data:` URL は、画像の構造のものだけ残す
         dropDataUrls(tagName, next);
         const align = TEXT_ALIGN_PATTERN.exec(attribs.style ?? "")?.[1];
         if (align && ALIGN_VALUES.includes(align)) {
@@ -584,7 +584,7 @@ export function sanitize(html: string, nonce: string): string {
         } else {
           next.style = kept;
         }
-        // 図の部品・動画と音声・範囲の `style` と `template` の要素は、文書に書いたものを中身ごと取り除く
+        // 図の部品・動画と音声・範囲の `style` と `template` の要素は、文書に記載したものを中身ごと取り除く
         if (
           !own &&
           (DIAGRAM_ONLY_TAGS.has(tagName) ||

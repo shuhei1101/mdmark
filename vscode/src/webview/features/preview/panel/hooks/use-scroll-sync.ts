@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import type { VsCodeApi } from "../../../../shared/adapters/vscode-api.ts";
 import type { DocumentView } from "../document-view.ts";
 
-/** 見えている先頭の位置を、作り直した Webview が読めるように保存する */
+/** 見えている先頭の位置を、再作成した Webview が読み込めるように保存する */
 export const saveLine = (view: DocumentView, api: VsCodeApi): void => {
   const line = view.currentPosition();
   if (line !== undefined) {
@@ -10,7 +10,7 @@ export const saveLine = (view: DocumentView, api: VsCodeApi): void => {
   }
 };
 
-/** `scroll` を描画の 1 フレームごとに 1 回にまとめ、行が返ったときだけ `revealLine` を送り、見えている先頭の位置を保存する */
+/** `scroll` を描画の 1 フレームごとに 1 回にまとめ、行が返ったときだけ `revealLine` を送信し、見えている先頭の位置を保存する */
 export const useScrollSync = (options: {
   /** 描いた文書 */
   view: DocumentView;

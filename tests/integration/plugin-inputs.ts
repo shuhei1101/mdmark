@@ -4,7 +4,7 @@ import { join, relative, resolve, sep } from "node:path";
 // リポジトリの直下
 const REPO_ROOT = resolve(import.meta.dirname, "../..");
 
-// `plugin/` の中の、ビルドが書く生成物（写さない）
+// `plugin/` の中の、ビルドが記載する生成物（写さない）
 const PLUGIN_GENERATED = [
   "scripts",
   "bin",
@@ -13,7 +13,7 @@ const PLUGIN_GENERATED = [
   "THIRD_PARTY_LICENSES.txt",
 ];
 
-/** 一時の作業ツリーの `package.json` を書く。CLI がパッケージの直下を見つける目印になる */
+/** 一時の作業ツリーの `package.json` を書き込む。CLI がパッケージの直下を見つける目印になる */
 export async function writeRootPackageJson(root: string): Promise<void> {
   await writeFile(
     join(root, "package.json"),
@@ -21,7 +21,7 @@ export async function writeRootPackageJson(root: string): Promise<void> {
   );
 }
 
-/** プラグインのビルドが読む入力（使い方集の索引・指す `docs/` のページ・`plugin/` の定義・取り込まれたパッケージのライセンスの本文）を、一時の作業ツリーへ写す */
+/** プラグインのビルドが読み込む入力（ガイドの索引・指す `docs/` のページ・`plugin/` の定義・取り込まれたパッケージのライセンスの本文）を、一時の作業ツリーへ写す */
 export async function copyPluginInputs(root: string): Promise<void> {
   await cp(join(REPO_ROOT, "guide"), join(root, "guide"), { recursive: true });
   await cp(join(REPO_ROOT, "docs"), join(root, "docs"), { recursive: true });

@@ -6,7 +6,7 @@ const holder = createBrowserHolder();
 beforeAll(holder.launch);
 afterAll(holder.close);
 
-/** 注意書きのストーリーを開き、種類の class・題の文字・題と面と枠の線の色を確かめる */
+/** 注意書きのストーリーを開き、種類の class・タイトルの文字・タイトルと面と枠の線の色を確認する */
 async function expectKind(
   id: string,
   kind: string,
@@ -25,7 +25,7 @@ async function expectKind(
       title: heading ? getComputedStyle(heading).color : "",
     };
   });
-  // 題は種類の色、面は種類の色を地の色に 7%、枠の線は 40% 混ぜた色
+  // タイトルは種類の色、面は種類の色を地の色に 7%、枠の線は 40% 混ぜた色
   const kindColor = `var(--mdmark-color-callout-${kind})`;
   expect(colors.title).toBe(await resolveColor(page, kindColor));
   expect(colors.border).toBe(
@@ -47,22 +47,22 @@ async function expectKind(
   expect(icon).toContain("data:image/svg+xml");
 }
 
-// 補足の注意書きは、題「補足」を種類の色で出す（Note）
+// 補足の注意書きは、タイトル「補足」を種類の色で出す（Note）
 test("test_note", () => expectKind("note", "note", "補足"));
 
-// ヒントの注意書きは、題「ヒント」を種類の色で出す（Tip）
+// ヒントの注意書きは、タイトル「ヒント」を種類の色で出す（Tip）
 test("test_tip", () => expectKind("tip", "tip", "ヒント"));
 
-// 重要の注意書きは、題「重要」を種類の色で出す（Important）
+// 重要の注意書きは、タイトル「重要」を種類の色で出す（Important）
 test("test_important", () => expectKind("important", "important", "重要"));
 
-// 警告の注意書きは、題「警告」を種類の色で出す（Warning）
+// 警告の注意書きは、タイトル「警告」を種類の色で出す（Warning）
 test("test_warning", () => expectKind("warning", "warning", "警告"));
 
-// 注意の注意書きは、題「注意」を種類の色で出す（Caution）
+// 注意の注意書きは、タイトル「注意」を種類の色で出す（Caution）
 test("test_caution", () => expectKind("caution", "caution", "注意"));
 
-// 閉じた注意書きは、題だけが出て、題の末尾に開閉の印がある（Collapsed）
+// 閉じた注意書きは、タイトルだけが出て、タイトルの末尾に開閉のマーカーがある（Collapsed）
 test("test_collapsed", async () => {
   // 準備・実行
   const page = await holder.openStory("parts-callout--collapsed");
@@ -110,13 +110,13 @@ test("test_long", async () => {
   await expect(pageOverflows(page)).resolves.toBe(false);
 });
 
-// タイトルを持つ注意書きは、種類の名前の代わりにタイトルを出し、種類は読み上げの文字とアイコンで示す（Titled）
+// タイトルを持つ注意書きは、種類の名前の代わりにタイトルを出し、種類はスクリーンリーダーの文字とアイコンで示す（Titled）
 test("test_titled", async () => {
   // 準備・実行
   const page = await holder.openStory("parts-callout--titled");
   // 検証
   const heading = page.locator(".markdown-alert-tip .markdown-alert-title");
-  // 種類の名前は読み上げにだけ残し、見える文字はタイトル
+  // 種類の名前はスクリーンリーダーにだけ残し、見える文字はタイトル
   await expect(
     heading.locator(".mdmark-visually-hidden").textContent(),
   ).resolves.toBe("ヒント: ");
@@ -170,7 +170,7 @@ test("test_open_plus", async () => {
   ).resolves.toBe(false);
 });
 
-// 入れ子の注意書きは、外側の本文の中に同じ見た目の枠で収まる（Nested）
+// 入れ子の注意書きは、外側の本文の中に同じ外観の枠で収まる（Nested）
 test("test_nested", async () => {
   // 準備・実行
   const page = await holder.openStory("parts-callout--nested");

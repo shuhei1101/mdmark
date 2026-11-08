@@ -1,0 +1,107 @@
+title: 文書のフォルダの設定を書き込む
+entry:
+  kind: operation
+  value: '`node ${CLAUDE_PLUGIN_ROOT}/bin/setup.js write-config --dir {文書のフォルダ} [--set {キー}={値}]...`（スキルが Bash で呼ぶ）'
+flows:
+  - name: 正常系
+    summary: '`mdmark.config.yaml` を雛形から作り、回答した値を入れる'
+    setup:
+      - name: 文書のフォルダ
+        description: '`mdmark.config.yaml` の無い一時フォルダ'
+      - name: Mock
+        description: ビルドした `plugin/bin/setup.js` を子プロセスで実行する。差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        participant K as スキル（global-setup・setup）
+        participant P as setup.js
+        participant F as mdmark.config.yaml
+        K->>P: write-config --dir {フォルダ} --set features.callout=false
+        P->>P: Schema で検める
+        P->>F: 雛形に値と version を入れて書き込む
+        P-->>K: 書き込んだパスとキー・終了コード 0
+    expected:
+      - 終了コードが 0
+      - '`mdmark.config.yaml` が `version`（プラグインのバージョン）と `features.callout: false` を持ち、ほかのキーは雛形のまま'
+    test: test_normal
+  - name: 正常系（設定がある）
+    summary: 指定したキーだけを書き換える
+    setup:
+      - name: 設定のあるフォルダ
+        description: 'コメントの行と `features.table: false` を持つ `mdmark.config.yaml` を配置したフォルダ'
+      - name: Mock
+        description: ビルドした `plugin/bin/setup.js` を子プロセスで実行する。差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        participant K as スキル（global-setup・setup）
+        participant P as setup.js
+        participant F as mdmark.config.yaml
+        K->>P: write-config --dir {フォルダ} --set features.callout=false
+        P->>F: features.callout だけを書き換える
+        P-->>K: 書き込んだキー・終了コード 0
+    expected:
+      - '`features.callout: false` と `features.table: false` を持つ'
+      - コメントの行が残り、`version` が呼ぶ前と同じ
+    test: test_normal_when_config_exists
+  - name: 異常系（Schema に合わない値・終了コード 1）
+    summary: Schema に合わない値は何も書き込まずに終わる
+    setup:
+      - name: 文書のフォルダ
+        description: 正常系と同じ
+      - name: Mock
+        description: ビルドした `plugin/bin/setup.js` を子プロセスで実行する。差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        participant K as スキル（global-setup・setup）
+        participant P as setup.js
+        K->>P: write-config --dir {フォルダ} --set config.cascade=true
+        P-->>K: 端末の設定だけのキーであること・終了コード 1
+    expected:
+      - 終了コードが 1
+      - 標準エラーに `config.cascade` は端末の設定だけが持つことが出る
+      - '`mdmark.config.yaml` が作られていない'
+    test: test_error_when_value_invalid
+lead: '`setup` が利用者の回答した値で、文書のフォルダの `mdmark.config.yaml` を作る・書き換える。'
+test_file: tests/integration/ClaudeCodeプラグイン/setup-write-config.test.ts
+idempotent: true
+side_effects: 文書のフォルダの `mdmark.config.yaml` を書き換える
+callers:
+  - dev/設計書/シナリオ/単一ユースケース/文書のフォルダに設定を作る#
+request:
+  - name: --dir
+    type: string
+    required: true
+    location: argument
+    description: 文書のフォルダ
+  - name: --set
+    type: string
+    required: false
+    default: なし（値を変えず、無ければ雛形と `version` だけで作る）
+    location: argument
+    description: 書き込むキーと値。端末の設定を書き込むと同じ構造
+    example: features.callout=false
+response:
+  - name: written[]
+    type: string
+    description: 書き換えたファイルの絶対パス
+  - name: keys[]
+    type: string
+    description: 書き換えたキー
+exceptions:
+  - name: なし（正常終了）
+    condition: 書き込んだ。終了コード 0
+  - name: なし（Schema に合わない値・終了コード 1）
+    condition: 書き込んだ後の設定が `schemas/mdmark.config.schema.json` に合わないか、端末の設定だけが持つキーを書き込もうとした
+constraints:
+  - item: 雛形
+    constraint: '`mdmark init` が配置する `templates/mdmark.config.yaml` と同じ中身'
+    decided_by: dev/設計書/インターフェース定義/ライブラリ本体/雛形を配置する.ts#
+  - item: YAML の書き換え
+    constraint: コメント・キーの並び・触らないキーの記載方法を残す
+    decided_by: dev/設計書/外部ライブラリ/yaml#
+  - item: version
+    constraint: 新しく作るときだけ `version` をプラグインのバージョンにする
+  - item: 出力
+    constraint: 結果は標準出力に JSON の 1 行で出す。誤りは標準エラーに理由と修正方法を出す
+  - item: 動く Node のバージョン
+    constraint: Node 24 以降
+    decided_by: dev/設計書/非機能要件/非機能要件#requirements[CLI が動く Node のバージョン]

@@ -2,7 +2,7 @@ import { afterEach, expect, test, vi } from "vitest";
 import { dependencies } from "../../../package.json";
 import { createRootFromHtml, removeRoots } from "../helpers/dom.ts";
 
-/** 束ねていないアイコンの読み込みを読み込む（実装が無い間は各テストが個別に失敗する） */
+/** まとめていないアイコンの読み込みを読み込む（実装が無い間は各テストが個別に失敗する） */
 const loadInlineIcons = () => import("../../../src/inline-icons.ts");
 
 /** 中が空の行内のアイコンを段落に入れた HTML */
@@ -15,7 +15,7 @@ function emptyIcons(names: string[]): string {
     .join("");
 }
 
-/** 形を 1 つ持つ Lucide のアイコンのモジュール */
+/** 構造を 1 つ持つ Lucide のアイコンのモジュール */
 const ICON_MODULE = { default: [["path", { d: "M1 1" }]] };
 
 afterEach(() => {
@@ -23,7 +23,7 @@ afterEach(() => {
   removeRoots();
 });
 
-// 名前ごとに 1 回だけ読む（正常系）
+// 名前ごとに 1 回だけ読み込む（正常系）
 test("test_load_inline_icons", async () => {
   // 準備
   const { loadInlineIcons: load } = await loadInlineIcons();
@@ -49,7 +49,7 @@ test("test_load_inline_icons", async () => {
   expect(fetchHead).not.toHaveBeenCalled();
 });
 
-// 404 は書き方の警告にする（異常系）
+// 404 は記載の警告にする（異常系）
 test("test_load_inline_icons_when_not_found", async () => {
   // 準備
   const { loadInlineIcons: load } = await loadInlineIcons();
@@ -76,7 +76,7 @@ test("test_load_inline_icons_when_not_found", async () => {
   expect(root.querySelector(".mdmark-notice")).toBeNull();
 });
 
-// 読めないときは知らせの枠を 1 つ置く（異常系）
+// 読み込めないときは通知ブロックを 1 つ配置する（異常系）
 test("test_load_inline_icons_when_offline", async () => {
   // 準備
   const { loadInlineIcons: load } = await loadInlineIcons();
@@ -133,7 +133,7 @@ test("test_load_inline_icons_when_stale", async () => {
   expect(root.querySelectorAll(".mdmark-inline-icon")).toHaveLength(2);
 });
 
-// 束ねたバージョンの URL にする（正常系）
+// まとめたバージョンの URL にする（正常系）
 test("test_lucide_icon_url", async () => {
   // 準備
   const { lucideIconUrl } = await loadInlineIcons();

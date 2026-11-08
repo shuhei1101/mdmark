@@ -17,7 +17,7 @@
     height: 14rem;
   }
 
-  /* ポインターを置いたときの見え方を出し続ける見本（モックだけの属性） */
+  /* ポインターを配置したときの見え方を出し続ける見本（モックだけの属性） */
   &[data-mode="hover"][data-mock-shown] .mdmark-side-toc-panel {
     opacity: 1;
     pointer-events: auto;

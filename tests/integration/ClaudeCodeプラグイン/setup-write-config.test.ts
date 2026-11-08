@@ -10,7 +10,7 @@ import { useTerminals } from "../terminal.ts";
 const { createTerminal } = useTerminals();
 const createTempDir = useTempDirs();
 
-// mdmark.config.yaml を雛形から作り、答えた値を入れる（正常系）
+// mdmark.config.yaml を雛形から作り、回答した値を入れる（正常系）
 test("test_normal", async () => {
   // 準備
   const terminal = await createTerminal();
@@ -57,7 +57,7 @@ test("test_normal_when_config_exists", async () => {
   expect(config.version).toBe("v0.0.1");
 });
 
-// 端末の設定だけのキーは何も書かずに終わる（異常系（Schema に合わない値・終了コード 1））
+// 端末の設定だけのキーは何も書き込まずに終わる（異常系（Schema に合わない値・終了コード 1））
 test("test_error_when_value_invalid", async () => {
   // 準備
   const terminal = await createTerminal();

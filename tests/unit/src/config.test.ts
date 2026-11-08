@@ -16,7 +16,7 @@ const DEFAULT_MERMAID_URL =
 const DEFAULT_HTML_SCRIPTS_URL =
   "https://cdn.jsdelivr.net/npm/@babel/standalone@8.1.1/+esm";
 
-/** この版が知っている機能の既定（`comments`・`html-scripts` を除いて全てオン） */
+/** このバージョンが知っている機能の既定（`comments`・`html-scripts` を除いて全てオン） */
 const DEFAULT_FEATURES = {
   print: true,
   table: true,
@@ -64,7 +64,7 @@ const DEFAULT_FEATURES = {
   "card-grid": true,
 };
 
-// 設定が無ければ既定を返す（正常系）
+// 設定が無ければ既定を返却する（正常系）
 test("test_resolve_config", async () => {
   // 準備
   const { resolveConfig } = await loadConfig();
@@ -81,7 +81,7 @@ test("test_resolve_config", async () => {
     sideToc: { mode: "hover" },
     colorTheme: "dev-swiss",
     colorScheme: "auto",
-    labels: { paramCopy: "今の値を写す" },
+    labels: { paramCopy: "今の値をコピーする" },
   });
 });
 
@@ -137,7 +137,7 @@ test("test_resolve_config_when_features_given", async () => {
   expect(resolved.features).toEqual({ ...DEFAULT_FEATURES, print: false });
 });
 
-// 書式に合う名前と文字列の URL だけを足す（正常系）
+// 書式に合う名前と文字列の URL だけを追加する（正常系）
 test("test_resolve_config_when_libraries_given", async () => {
   // 準備
   const { resolveConfig } = await loadConfig();
@@ -275,9 +275,9 @@ test("test_resolve_config_when_labels_given", async () => {
   // 検証
   expect(labels).toEqual([
     { paramCopy: "コピー" },
-    { paramCopy: "今の値を写す" },
-    { paramCopy: "今の値を写す" },
-    { paramCopy: "今の値を写す" },
+    { paramCopy: "今の値をコピーする" },
+    { paramCopy: "今の値をコピーする" },
+    { paramCopy: "今の値をコピーする" },
   ]);
 });
 
@@ -323,7 +323,7 @@ test("test_resolve_config_when_diagram_placement_given", async () => {
   expect(resolved[2]?.tooltips.placement).toBe("bottom");
 });
 
-// マーカーに書いたキーだけを置き換える（正常系）
+// マーカーに記載したキーだけを置き換える（正常系）
 test("test_apply_page_settings", async () => {
   // 準備
   const { resolveConfig, applyPageSettings } = await loadConfig();

@@ -66,7 +66,7 @@ test("test_build_cards", () => {
 // 文の中のリンクはカードにしない（正常系）
 test("test_build_cards_when_inline", () => {
   // 準備
-  const markdown = "詳しくは https://example.com/docs を見る。\n";
+  const markdown = "詳しくは https://example.com/docs を確認する。\n";
   // 実行
   const { html } = renderDoc(markdown);
   // 検証

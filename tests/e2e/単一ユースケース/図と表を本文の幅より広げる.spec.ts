@@ -6,7 +6,7 @@ import {
   removeDistRoot,
 } from "../dist-page.ts";
 
-// ビルドした配布物を置いた作業ツリー
+// ビルドした配布物を配置した作業ツリー
 let builtRoot = "";
 
 test.beforeAll(async () => {
@@ -24,7 +24,7 @@ const WIDE_TABLE = [
   "| 売上 | 1,200,000 | 1,350,000 | 1,410,000 | 1,280,000 | 1,520,000 | 1,610,000 | 前年比で増加した |",
 ].join("\n");
 
-/** 本文の幅を 640px にする使う側の CSS */
+/** 本文の幅を 640px にする利用側の CSS */
 const HOST_CSS = "#doc { --mdmark-content-width: 640px; margin-inline: auto; }";
 
 /** 段落の前後に wide の範囲を持つ文書 */
@@ -146,7 +146,7 @@ test("test_normal_when_narrow", async ({ page }) => {
   expect(await noPageScroll(page)).toBe(true);
 });
 
-// 閉じのマーカーが無いときは、警告を置いて本文の幅で描く（異常シナリオ（wide の閉じのマーカーが無い））
+// 閉じのマーカーが無いときは、警告を配置して本文の幅で描く（異常シナリオ（wide の閉じのマーカーが無い））
 test("test_error_when_unclosed", async ({ page }) => {
   // 準備
   await page.setViewportSize({ width: 1280, height: 800 });

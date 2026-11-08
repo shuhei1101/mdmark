@@ -1,6 +1,6 @@
 import { clampDiagramHeight, RESIZE } from "../diagram/geometry.ts";
 
-/** リサイズハンドルで変えた高さを sessionStorage に書くキーの頭 */
+/** リサイズハンドルで変えた高さを sessionStorage に記載するキーの頭 */
 export const DIAGRAM_HEIGHT_KEY_PREFIX = "mdmark-diagram-height:";
 
 // ドラッグの間にリサイズハンドルに付ける class
@@ -12,7 +12,7 @@ const KEY_STEPS: Record<string, number> = {
   ArrowDown: RESIZE.step,
 };
 
-/** 同じページの同じ順の同じ題名の図だけが同じ高さを読む、sessionStorage のキー */
+/** 同じページの同じ順の同じ題名の図だけが同じ高さを読み込む、sessionStorage のキー */
 export const diagramHeightKey = (options: {
   pathname: string;
   index: number;
@@ -20,7 +20,7 @@ export const diagramHeightKey = (options: {
 }): string =>
   `${DIAGRAM_HEIGHT_KEY_PREFIX}${options.pathname}#${options.index}:${options.title}`;
 
-/** 保った高さを読む。読めない・正の整数でないときは `null`（保つ先の例外は外へ出さない） */
+/** 保った高さを読み込む。読み込めない・正の整数でないときは `null`（保つ先の例外は外へ出さない） */
 const readHeight = (storage: Storage | null, key: string): number | null => {
   try {
     const value = storage?.getItem(key);
@@ -51,7 +51,7 @@ const writeHeight = (
   }
 };
 
-/** リサイズハンドルのドラッグと上下キーで表示する枠の高さを変え、ダブルクリックで戻し、変えた高さを保つ。付けたときに保った高さを当て、その高さと操作を外す関数を返す */
+/** リサイズハンドルのドラッグと上下キーで表示する枠の高さを変え、ダブルクリックで戻し、変えた高さを保つ。付けたときに保った高さを当て、その高さと操作を削除する関数を返却する */
 export const attachDiagramResize = (options: {
   /** 表示する枠 */
   viewport: HTMLElement;
@@ -59,11 +59,11 @@ export const attachDiagramResize = (options: {
   handle: HTMLElement;
   /** 高さを保つキー（`diagramHeightKey`） */
   key: string;
-  /** 高さを保つ先（sessionStorage。使えないときは `null`） */
+  /** 高さを保つ先（sessionStorage。使用できないときは `null`） */
   storage: Storage | null;
   /** 今の上限（定義の高さ × 今の倍率） */
   max: () => number;
-  /** 定義から決まる高さを当て、その高さを返す */
+  /** 定義から決まる高さを当て、その高さを返却する */
   reset: () => number;
   /** 高さを変えたとき（戻したときは `null`）に呼ぶ */
   onResize: (height: number | null) => void;
@@ -72,7 +72,7 @@ export const attachDiagramResize = (options: {
   const controller = new AbortController();
   const { signal } = controller;
 
-  /** 読み上げの値（今の高さと、変えられる範囲）を書き換える */
+  /** スクリーンリーダーの値（今の高さと、変えられる範囲）を書き換える */
   const updateValues = (height: number): void => {
     handle.setAttribute("aria-valuenow", String(Math.round(height)));
     handle.setAttribute("aria-valuemin", String(RESIZE.min));
@@ -82,7 +82,7 @@ export const attachDiagramResize = (options: {
     );
   };
 
-  /** 高さを範囲に収めて当て、保って知らせる */
+  /** 高さを範囲に収めて当て、保って通知する */
   const setHeight = (height: number): void => {
     const next = clampDiagramHeight(height, max());
     viewport.style.height = `${next}px`;
@@ -153,7 +153,7 @@ export const attachDiagramResize = (options: {
     { signal },
   );
 
-  // 保った高さは、操作で変えるときと同じく範囲に収めて当てる
+  // 保った高さは、操作で変えるときと同じく範囲に収めて適用する
   const kept = readHeight(storage, key);
   const restored = kept === null ? null : clampDiagramHeight(kept, max());
   if (restored === null) {

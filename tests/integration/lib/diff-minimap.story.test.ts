@@ -6,7 +6,7 @@ const holder = createBrowserHolder();
 beforeAll(holder.launch);
 afterAll(holder.close);
 
-/** 帯と印と枠の位置 */
+/** 帯とマーカーと枠の位置 */
 async function readBand(id: string) {
   const page = await holder.openStory(id);
   const info = await page.evaluate(() => {
@@ -44,7 +44,7 @@ async function readBand(id: string) {
   return { page, info };
 }
 
-// 長い文書を開いた直後は、枠が帯の上端にあり、前半と後半に印が並ぶ（Top）
+// 長い文書を開いた直後は、枠が帯の上端にあり、前半と後半にマーカーが並ぶ（Top）
 test("test_top", async () => {
   // 準備・実行
   const { page, info } = await readBand("parts-diffminimap--top");
@@ -68,7 +68,7 @@ test("test_top", async () => {
   await expect(pageOverflows(page)).resolves.toBe(false);
 });
 
-// 帯を押して中ほどへ送った後は、枠が中ほどにある（Middle）
+// 帯を押して中ほどへスクロールした後は、枠が中ほどにある（Middle）
 test("test_middle", async () => {
   // 準備・実行
   const { info } = await readBand("parts-diffminimap--middle");

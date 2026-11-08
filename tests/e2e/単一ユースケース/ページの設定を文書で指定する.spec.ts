@@ -8,10 +8,10 @@ import {
   updateDocument,
 } from "../dist-page.ts";
 
-// ビルドした配布物を置いた作業ツリー
+// ビルドした配布物を配置した作業ツリー
 let builtRoot = "";
 
-// 段落とリンクを持つ本文（リンク 1 つだけの段落はカードにするため、文の中にリンクを置く）
+// 段落とリンクを持つ本文（リンク 1 つだけの段落はカードにするため、文の中にリンクを配置する）
 const BODY = "段落\n\n詳しくは [リンク](https://example.com/page) を見る。\n";
 
 // h2 を 3 つと段落を持つ本文
@@ -59,7 +59,7 @@ async function setBodyClass(page: Page, name: string): Promise<void> {
   }, name);
 }
 
-/** 目次を出すボタンが閉じていて、右端にポインターを置いても右側の目次が表示されないことを確かめる（`side-toc.mode` の `fixed`） */
+/** 目次を出すボタンが閉じていて、右端にポインターを配置しても右側の目次が表示されないことを確認する（`side-toc.mode` の `fixed`） */
 async function expectFixedSideToc(page: Page): Promise<void> {
   const toggle = page.locator("#doc .mdmark-side-toc-toggle");
   await expect(toggle).toBeVisible();
@@ -119,7 +119,7 @@ test("test_normal_when_marker_overrides_config", async ({ page }) => {
   await expectFixedSideToc(page);
 });
 
-// マーカーの scheme=auto は設定の明暗を外し、祖先の class で決める（正常シナリオ（OS の設定に合わせる））
+// マーカーの scheme=auto は設定の明暗を解除し、祖先の class で決める（正常シナリオ（OS の設定に合わせる））
 test("test_normal_when_auto", async ({ page }) => {
   // 準備
   await page.emulateMedia({ colorScheme: "light" });
@@ -167,7 +167,7 @@ test("test_normal_when_printed", async ({ page }) => {
   await expect.poll(() => readBackground(page)).toBe(SWISS_LIGHT_BG);
 });
 
-// 知らない値は書き方の警告にして使わず、知らないキーは読み飛ばし、残りの指定と設定で描く（異常シナリオ（知らないキーと値））
+// 知らない値は記載の警告にして使用せず、知らないキーはスキップし、残りの指定と設定で描く（異常シナリオ（知らないキーと値））
 test("test_error_when_unknown_key_or_value", async ({ page }) => {
   // 準備
   await page.setViewportSize({ width: 1280, height: 800 });
@@ -181,7 +181,7 @@ test("test_error_when_unknown_key_or_value", async ({ page }) => {
   // 検証
   const warnings = page.locator("#doc .mdmark-syntax-warning");
   await expect(warnings).toHaveCount(1);
-  // 本文の頭は印の文字のため、印の後ろの挙げた指定を見る
+  // 本文の頭はマーカーの文字のため、マーカーの後ろの挙げた指定を確認する
   const listed = (await warnings.innerText()).replace(
     "<!-- page: scheme=sepia theme=theme-unknown size=wide toc=fixed -->",
     "",
@@ -209,7 +209,7 @@ test("test_error_when_unknown_key_or_value", async ({ page }) => {
   await expectFixedSideToc(page);
 });
 
-// 文書の先頭に無い page のマーカーは書き方の警告にして使わない（異常シナリオ（文書の先頭に無いマーカー））
+// 文書の先頭に無い page のマーカーは記載の警告にして使用しない（異常シナリオ（文書の先頭に無いマーカー））
 test("test_error_when_not_at_top", async ({ page }) => {
   // 準備
   await page.emulateMedia({ colorScheme: "light" });

@@ -12,7 +12,7 @@ import {
   viewMarkdown,
 } from "../view-samples.ts";
 
-// ビルドした配布物を置いた作業ツリー
+// ビルドした配布物を配置した作業ツリー
 let builtRoot = "";
 
 test.beforeAll(async () => {
@@ -23,7 +23,7 @@ test.afterAll(async () => {
   await removeDistRoot(builtRoot);
 });
 
-/** 見出しの文字で、表形式のビューの列の `th` を引く */
+/** 見出しの文字で、表形式のビューの列の `th` を参照する */
 function head(page: import("@playwright/test").Page, name: string) {
   return page.locator("#doc .mdmark-view-table th", { hasText: name });
 }
@@ -76,7 +76,7 @@ test("test_normal", async ({ page }) => {
   await expect(filter).toHaveClass(/is-active/);
 });
 
-// 題の列に文字を入れて絞り込む（正常シナリオ（文字で絞り込む））
+// タイトルの列に文字を入れて絞り込む（正常シナリオ（文字で絞り込む））
 test("test_normal_when_filtered_by_text", async ({ page }) => {
   // 準備
   await openPage(page, builtRoot);
@@ -98,7 +98,7 @@ test("test_normal_when_filtered_by_text", async ({ page }) => {
   ]);
 });
 
-// 知らない絞り込みの種類は書き方の警告にして、絞り込みのボタンを付けない（異常シナリオ（知らない絞り込みの種類））
+// 知らない絞り込みの種類は記載の警告にして、絞り込みのボタンを付けない（異常シナリオ（知らない絞り込みの種類））
 test("test_error_when_filter_kind_unknown", async ({ page }) => {
   // 準備
   await openPage(page, builtRoot);

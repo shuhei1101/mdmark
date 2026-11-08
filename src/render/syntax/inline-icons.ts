@@ -9,16 +9,16 @@ import { insertWarningsBeforeBlocks } from "./blocks.ts";
 import { envOf, featureOn } from "./tokens.ts";
 import type { SyntaxWarning } from "./warnings.ts";
 
-/** Lucide のアイコンの名前の書き方 */
+/** Lucide のアイコンの名前の記載方法 */
 export const ICON_NAME_PATTERN = /^[a-z0-9][a-z0-9-]*$/;
 
 /** アイコンにする行内のコードの頭 */
 const ICON_PREFIX = "icon:";
 
-/** アイコンにしない印: 頭の `\` を外した `<code>` に戻す */
+/** アイコンにしないマーカー: 頭の `\` を削除した `<code>` に戻す */
 const ESCAPED_PREFIX = "icon\\:";
 
-/** `icon` がオンなら、頭が `icon:` の行内のコードのうち名前の書き方に合うものを行内のアイコンにし、合わないものは段落の前に警告を置く */
+/** `icon` がオンなら、頭が `icon:` の行内のコードのうち名前の記載方法に合うものを行内のアイコンにし、合わないものは段落の前に警告を配置する */
 export const buildInlineIcons = (state: StateCore): void => {
   if (!featureOn(state, "icon")) {
     return;
@@ -47,7 +47,7 @@ export const buildInlineIcons = (state: StateCore): void => {
           index,
           warning: {
             mark: child.content,
-            message: `の \`${name}\` は Lucide のアイコンの名前になりません。名前は英小文字・数字・\`-\` で書きます（例: \`rocket\`）。書いた文字のまま表示しています。`,
+            message: `の \`${name}\` は Lucide のアイコンの名前になりません。名前は英小文字・数字・\`-\` で記載します（例: \`rocket\`）。記載した文字のまま表示しています。`,
           },
         });
         continue;

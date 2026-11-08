@@ -4,7 +4,7 @@ import { findTag, findTags, innerHtml, plainText } from "../../helpers/html.ts";
 /** ライトボックスの処理を読み込む（実装が無い間は各テストが個別に失敗する） */
 const loadLightbox = () => import("../../../../src/parts/lightbox.ts");
 
-/** 読み上げの名前が `label` のボタンの開始タグを返す */
+/** スクリーンリーダー向けの名前が `label` のボタンの開始タグを返却する */
 function toolTag(html: string, label: string): string {
   return findTag(html, `aria-label="${label}"`);
 }
@@ -14,7 +14,7 @@ function isDisabled(tag: string): boolean {
   return /\sdisabled\b/.test(tag);
 }
 
-// 途中の画像は前後に送れ、枚数を出す（正常系）
+// 途中の画像は前後に送信でき、枚数を出す（正常系）
 test("test_render_lightbox", async () => {
   // 準備
   const { renderLightbox } = await loadLightbox();
@@ -38,7 +38,7 @@ test("test_render_lightbox", async () => {
   expect(findTag(html, 'data-group="pan"')).toMatch(/\shidden\b/);
 });
 
-// 端の送りのボタンを押せなくする（正常系）
+// 端の切り替えのボタンを押せなくする（正常系）
 test("test_render_lightbox_when_edge", async () => {
   // 準備
   const { renderLightbox } = await loadLightbox();
@@ -62,7 +62,7 @@ test("test_render_lightbox_when_edge", async () => {
   expect(isDisabled(toolTag(last, "次の画像"))).toBe(true);
 });
 
-// 1 枚なら送りのボタンと枚数を出さない（正常系）
+// 1 枚なら切り替えのボタンと枚数を出さない（正常系）
 test("test_render_lightbox_when_single", async () => {
   // 準備
   const { renderLightbox } = await loadLightbox();
@@ -70,7 +70,7 @@ test("test_render_lightbox_when_single", async () => {
   const html = renderLightbox({
     src: "step-3.svg",
     alt: "手順 3 の画面",
-    caption: "中央に置いた画面",
+    caption: "中央に配置した画面",
     index: 1,
     total: 1,
   });

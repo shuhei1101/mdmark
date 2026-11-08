@@ -6,7 +6,7 @@ const holder = createBrowserHolder();
 beforeAll(holder.launch);
 afterAll(holder.close);
 
-// 開いたときは既定の値 5 で、今の値と既定の値の 2 つの系列を描き、グラフの表示する箱は部品の枠の中で線を持たない（Default）
+// 開いたときは既定の値 5 で、今の値と既定の値の 2 つの系列を描き、グラフの表示するノードは部品の枠の中で線を持たない（Default）
 test("test_default", async () => {
   // 準備・実行
   const page = await holder.openStory("parts-paramcontrol--default");
@@ -18,7 +18,7 @@ test("test_default", async () => {
     page.locator("svg[role=img]").getAttribute("aria-label"),
   ).resolves.toContain("今の値（5）");
   await expect(pageOverflows(page)).resolves.toBe(false);
-  // 部品の枠の中のグラフの表示する箱は線を持たず、部品の枠（border）は残る
+  // 部品の枠の中のグラフの表示するノードは線を持たず、部品の枠（border）は残る
   await expect(
     page
       .locator(".mdmark-param .mdmark-diagram-box")
@@ -44,26 +44,26 @@ test("test_changed", async () => {
   ).resolves.toContain("今の値（8）: 0・55・80・91・96・98");
 });
 
-// 写した状態は、ボタンのそばに写したことを出す（Copied）
+// コピーした状態は、ボタンのそばにコピーしたことを出す（Copied）
 test("test_copied", async () => {
   // 準備・実行
   const page = await holder.openStory("parts-paramcontrol--copied");
   // 検証
   await expect(page.locator('[role="status"]').innerText()).resolves.toContain(
-    "クリップボードに写しました",
+    "クリップボードにコピーしました",
   );
   await expect(
     page.locator("pre.mdmark-param-fallback").isVisible(),
   ).resolves.toBe(false);
 });
 
-// 写せなかった状態は、書けなかったことと、選んで写せる JSON を出す（Failed）
+// 写せなかった状態は、記載できなかったことと、選んで写せる JSON を出す（Failed）
 test("test_failed", async () => {
   // 準備・実行
   const page = await holder.openStory("parts-paramcontrol--failed");
   // 検証
   await expect(page.locator('[role="status"]').innerText()).resolves.toContain(
-    "クリップボードへ書けませんでした",
+    "クリップボードへ書き込めませんでした",
   );
   const fallback = page.locator("pre.mdmark-param-fallback");
   await expect(fallback.isVisible()).resolves.toBe(true);
@@ -72,7 +72,7 @@ test("test_failed", async () => {
   await expect(pageOverflows(page)).resolves.toBe(false);
 });
 
-// 写すボタンの文言を替えると、アイコンの後ろの文字と読み上げの名前が替えた文言になる（CustomCopyLabel）
+// 写すボタンの文言を替えると、アイコンの後ろの文字とスクリーンリーダー向けの名前が替えた文言になる（CustomCopyLabel）
 test("test_custom_copy_label", async () => {
   // 準備・実行
   const page = await holder.openStory("parts-paramcontrol--custom-copy-label");

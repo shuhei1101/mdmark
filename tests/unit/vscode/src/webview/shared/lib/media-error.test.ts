@@ -1,7 +1,7 @@
 import { expect, test } from "vitest";
 import { findTag } from "../../../../../helpers/html.ts";
 
-/** 再生できない動画・音声の知らせを読み込む（実装が無い間は各テストが個別に失敗する） */
+/** 再生できない動画・音声の通知を読み込む（実装が無い間は各テストが個別に失敗する） */
 const loadPart = () =>
   import("../../../../../../../vscode/src/webview/shared/lib/media-error.ts");
 

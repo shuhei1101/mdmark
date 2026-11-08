@@ -17,7 +17,7 @@ import { openCascadedPreview } from "../vscode-cascade.ts";
 
 const e2e = useVscodeE2E();
 
-/** 重ねた設定で決まる見た目（`theme.css` の CSS 変数・固有の部品の文字・注意書きの枠と表の並べ替えのボタンの数）。本文の色は VS Code とブラウザの明暗で変わるため比べない */
+/** 重ねた設定で決まる外観（`theme.css` の CSS 変数・固有の部品の文字・注意書きの枠と表の並べ替えのボタンの数）。本文の色は VS Code とブラウザの明暗で変わるため比べない */
 async function cascadedLook(
   root: import("@playwright/test").Page | import("@playwright/test").Frame,
 ): Promise<Record<string, string | number>> {
@@ -36,7 +36,7 @@ async function cascadedLook(
   }, CASCADE_THEME_VARIABLE);
 }
 
-// 端末の設定と上のフォルダの設定を重ね、プレビュー・theme の CSS の保存・mdmark export・export_html を同じ見た目にそろえる（正常シナリオ）
+// 端末の設定と上のフォルダの設定を重ね、プレビュー・theme の CSS の保存・mdmark export・export_html を同じ外観にそろえる（正常シナリオ）
 test("test_normal", async ({ builtRoot, tempDir, page }) => {
   // 準備: VS Code のプレビューを開く（設定を重ねる）
   const opened = await openCascadedPreview(
@@ -52,7 +52,7 @@ test("test_normal", async ({ builtRoot, tempDir, page }) => {
   );
   await expect.poll(() => themeValue(opened.frame)).toBe("rgb(7, 8, 9)");
   const preview = await cascadedLook(opened.frame);
-  // 実行: 下のフォルダで mdmark export を流す
+  // 実行: 下のフォルダで mdmark export を実行する
   const docs = join(opened.session.workspaceDir, "docs");
   const exported = await runCli(
     builtRoot,
@@ -100,7 +100,7 @@ test("test_normal", async ({ builtRoot, tempDir, page }) => {
   expect(await opened.configs()).toEqual(opened.before);
 });
 
-// 重ねて読む切り替えがオフのとき、プレビューと書き出した HTML の両方で、上のフォルダの設定を当てない（正常シナリオ（最初の 1 つだけを読む））
+// 重ねて読み込む切り替えがオフのとき、プレビューと書き出した HTML の両方で、上のフォルダの設定を適用しない（正常シナリオ（最初の 1 つだけを読み込む））
 test("test_normal_when_first_only", async ({ builtRoot, tempDir, page }) => {
   // 準備・実行: VS Code のプレビューを開く
   const opened = await openCascadedPreview(
@@ -129,7 +129,7 @@ test("test_normal_when_first_only", async ({ builtRoot, tempDir, page }) => {
   await expectUpperNotApplied(page);
 });
 
-// 端末の設定を読めないとき、プレビューは帯で知らせ、mdmark export は書き出さず、直した後は書き出す（異常シナリオ（端末の設定を読めない））
+// 端末の設定を読み込めないとき、プレビューは帯で通知し、mdmark export は書き出さず、修正した後は書き出す（異常シナリオ（端末の設定を読み込めない））
 test("test_error_when_settings_unreadable", async ({
   builtRoot,
   tempDir,
@@ -158,10 +158,10 @@ test("test_error_when_settings_unreadable", async ({
   expect(failed.code).toBe(1);
   expect(failed.stderr).toContain("settings.yaml");
   expect(failed.stderr).toContain("3 行目");
-  expect(failed.stderr).toContain("字下げと書き方を直してください");
+  expect(failed.stderr).toContain("字下げと記載方法を修正してください");
   expect(existsSync(html)).toBe(false);
   expect(await opened.configs()).toEqual(opened.before);
-  // 実行: 端末の設定の読めない行を直して、もう一度書き出す
+  // 実行: 端末の設定の読み込めない行を修正して、もう一度書き出す
   const fixed = cascadeSettings({ cascade: true, applyToExport: true });
   await writeFile(opened.settings, fixed);
   const succeeded = await runCli(

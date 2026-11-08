@@ -2,12 +2,12 @@ import { expect, test } from "vitest";
 import { useTempDirs, writeFiles } from "../../helpers/cli.ts";
 import { WARNINGS_MARKDOWN } from "../../helpers/diagrams.ts";
 
-/** 渡した Markdown の点検を読み込む（実装が無い間は各テストが個別に失敗する） */
+/** 指定した Markdown の点検を読み込む（実装が無い間は各テストが個別に失敗する） */
 const loadMarkdownCheck = () => import("../../../../src/cli/markdown-check.ts");
 
 const createTempDir = useTempDirs();
 
-/** 束ねた拡張のコードをモジュールとして読み込む */
+/** まとめた拡張のコードをモジュールとして読み込む */
 const importCode = (code: string): Promise<unknown> =>
   import(/* @vite-ignore */ `data:text/javascript,${encodeURIComponent(code)}`);
 
@@ -27,7 +27,7 @@ const RECORDS_YAML = [
   "",
 ].join("\n");
 
-/** 設定ファイルを置いたフォルダを作る */
+/** 設定ファイルを配置したフォルダを作る */
 async function createConfigDir(extra: Record<string, string> = {}) {
   const dir = await createTempDir();
   await writeFiles(dir, {
@@ -37,7 +37,7 @@ async function createConfigDir(extra: Record<string, string> = {}) {
   return dir;
 }
 
-// 警告・知らない印を行の順に返し、図の定義の誤りを 1 件にする（正常系）
+// 警告・知らないマーカーを行の順に返却し、図の定義の誤りを 1 件にする（正常系）
 test("test_check_markdown_source", async () => {
   // 準備
   const { checkMarkdownSource } = await loadMarkdownCheck();
@@ -58,7 +58,7 @@ test("test_check_markdown_source", async () => {
   ]);
 });
 
-// YAML のキーの値のずれを YAML のファイルの行で返す（正常系）
+// YAML のキーの値のずれを YAML のファイルの行で返却する（正常系）
 test("test_check_markdown_source_when_yaml_key", async () => {
   // 準備
   const { checkMarkdownSource } = await loadMarkdownCheck();
@@ -76,7 +76,7 @@ test("test_check_markdown_source_when_yaml_key", async () => {
   ).toEqual([{ file: "records.yaml", where: "8", kind: "unknown_mark" }]);
 });
 
-// 設定の拡張の印を知っている印にする（正常系）
+// 設定の拡張のマーカーを知っているマーカーにする（正常系）
 test("test_check_markdown_source_when_extension", async () => {
   // 準備
   const { checkMarkdownSource } = await loadMarkdownCheck();
@@ -137,7 +137,7 @@ test("test_check_markdown_source_when_include", async () => {
   );
 });
 
-// ブロックスカラーの値と行を返す（正常系）
+// ブロックスカラーの値と行を返却する（正常系）
 test("test_read_yaml_key", async () => {
   // 準備
   const { readYamlKey } = await loadMarkdownCheck();
@@ -153,7 +153,7 @@ test("test_read_yaml_key", async () => {
   expect(lineOf(3)).toBe(8);
 });
 
-// ブロックスカラーでない値はキーの行を返す（正常系）
+// ブロックスカラーでない値はキーの行を返却する（正常系）
 test("test_read_yaml_key_when_plain", async () => {
   // 準備
   const { readYamlKey } = await loadMarkdownCheck();
@@ -190,7 +190,7 @@ test("test_read_yaml_key_when_missing", async () => {
   await expect(notString).rejects.toThrow(/文字列/);
 });
 
-// 描くときに読み飛ばす印の引数を unknown_mark_arg にする（正常系）
+// 描くときにスキップするマーカーの引数を unknown_mark_arg にする（正常系）
 test("test_check_markdown_source_when_unknown_mark_args", async () => {
   // 準備
   const { checkMarkdownSource } = await loadMarkdownCheck();

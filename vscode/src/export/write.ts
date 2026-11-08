@@ -2,7 +2,7 @@ import { randomBytes } from "node:crypto";
 import { mkdir, rename, rm, writeFile } from "node:fs/promises";
 import { basename, dirname, join } from "node:path";
 
-/** フォルダが無ければ作り、同じフォルダの `.{名前}.{乱数}.tmp` に書いてから `rename` で置き換える。失敗したら一時ファイルを消して投げ直す */
+/** フォルダが無ければ作り、同じフォルダの `.{名前}.{乱数}.tmp` に記載してから `rename` で置き換える。失敗したら一時ファイルを削除してもう一度投げる */
 export async function writeFileAtomically(options: {
   /** 書き出す先 */
   path: string;

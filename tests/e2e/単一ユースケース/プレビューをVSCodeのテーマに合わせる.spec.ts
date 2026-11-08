@@ -21,7 +21,7 @@ function background(frame: Frame): Promise<string> {
     .evaluate((element) => getComputedStyle(element).backgroundColor);
 }
 
-// VS Code のテーマをダークに切り替えると、プレビューを開き直さずにダークの配色になり、本文とスクロールの位置は変わらない（正常シナリオ）
+// VS Code のテーマをダークに切り替えると、プレビューをもう一度開かずにダークの配色になり、本文とスクロールの位置は変わらない（正常シナリオ）
 test("test_normal", async () => {
   // 準備
   const session = await e2e.launch({

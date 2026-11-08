@@ -5,15 +5,15 @@ import { expect, test } from "vitest";
 import { parse } from "yaml";
 import { createIo, useTempDirs, writeFiles } from "../../helpers/cli.ts";
 
-/** 雛形を置く処理を読み込む（実装が無い間は各テストが個別に失敗する） */
+/** 雛形を配置する処理を読み込む（実装が無い間は各テストが個別に失敗する） */
 const loadInit = () => import("../../../../src/cli/init.ts");
 
-// 雛形の正本は作業ツリーの templates/
+// 雛形の原本は作業ツリーの templates/
 const TEMPLATES_DIR = join(process.cwd(), "templates");
 
 const createTempDir = useTempDirs();
 
-// 空のフォルダに 6 つの雛形を置く（正常系）
+// 空のフォルダに 6 つの雛形を配置する（正常系）
 test("test_run_init", async () => {
   // 準備
   const { runInit } = await loadInit();
@@ -37,10 +37,10 @@ test("test_run_init", async () => {
   for (const path of placed) {
     expect(existsSync(join(dir, path))).toBe(true);
   }
-  expect(stdout).toEqual(placed.map((path) => `置いた: ${path}`));
+  expect(stdout).toEqual(placed.map((path) => `配置した: ${path}`));
 });
 
-// --js では JavaScript の拡張と、JavaScript を点検する tsconfig.json を置く（正常系）
+// --js では JavaScript の拡張と、JavaScript を点検する tsconfig.json を配置する（正常系）
 test("test_run_init_when_javascript", async () => {
   // 準備
   const { runInit } = await loadInit();
@@ -76,10 +76,10 @@ test("test_run_init_when_file_exists", async () => {
   expect(await readFile(join(dir, "mdmark.config.yaml"), "utf8")).toBe(
     "x: 1\n",
   );
-  expect(stdout).toContain("置かなかった（既にある）: mdmark.config.yaml");
+  expect(stdout).toContain("配置しなかった（既にある）: mdmark.config.yaml");
 });
 
-// 置く設定の version を呼んだ CLI の版にする（正常系）
+// 配置する設定の version を呼んだ CLI のバージョンにする（正常系）
 test("test_run_init_writes_version", async () => {
   // 準備
   const { runInit } = await loadInit();
@@ -100,7 +100,7 @@ test("test_run_init_writes_version", async () => {
   expect(placed).toBe(template.replace(/^version: .*$/m, "version: v0.5.0"));
 });
 
-// 置く設定の先頭のコメントで、端末の設定に重ねて読むことと切り替えの場所を示す（正常系）
+// 配置する設定の先頭のコメントで、端末の設定に重ねて読み込むことと切り替えの場所を示す（正常系）
 test("test_run_init_config_comment_on_cascade", async () => {
   // 準備
   const { runInit } = await loadInit();
@@ -114,7 +114,7 @@ test("test_run_init_config_comment_on_cascade", async () => {
   // 検証
   const placed = await readFile(join(dir, "mdmark.config.yaml"), "utf8");
   expect(placed.split("\n").slice(0, 2)).toEqual([
-    "# mdmark の設定。パスと glob は、このファイルのあるフォルダからの相対パスで書く",
-    "# 端末の設定（~/.config/mdmark/settings.yaml）に重ねて読む。端末の設定の config.cascade を true にすると、上のフォルダの mdmark.config.yaml も重ねる",
+    "# mdmark の設定。パスと glob は、このファイルのあるフォルダからの相対パスで記載する",
+    "# 端末の設定（~/.config/mdmark/settings.yaml）に重ねて読み込む。端末の設定の config.cascade を true にすると、上のフォルダの mdmark.config.yaml も重ねる",
   ]);
 });

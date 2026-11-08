@@ -13,7 +13,7 @@ import {
 import { CliError } from "./errors.ts";
 import { compareVersions, VERSION_PATTERN } from "./versions.ts";
 
-/** 移行の手順の置き場所と、その中の名前 */
+/** 移行の手順の配置場所と、その中の名前 */
 export const MIGRATIONS_DIR = {
   root: "migrations",
   next: "next",
@@ -21,7 +21,7 @@ export const MIGRATIONS_DIR = {
   noSteps: "no-steps.yaml",
 } as const;
 
-/** `call` のスクリプトに許す拡張子（`node_modules` の下で流せるものだけ） */
+/** `call` のスクリプトに許す拡張子（`node_modules` の下で実行できるものだけ） */
 export const SCRIPT_EXTENSIONS = [".js", ".mjs"];
 
 /** 手順が書き換える YAML: `config` は設定ファイル、`index` は設定の `index` が指す索引 */
@@ -34,7 +34,7 @@ export type CallFile = StepFile | "documents";
 type StepBase = {
   /** 何をどう変えるかの 1 文 */
   description: string;
-  /** 当てると値が失われる手順か */
+  /** 適用すると値が失われる手順か */
   destructive?: boolean;
 };
 
@@ -48,18 +48,18 @@ export type RenameKeyStep = StepBase & {
   to: string;
 };
 
-/** 無いキーを足す手順 */
+/** 無いキーを追加する手順 */
 export type SetDefaultStep = StepBase & {
   op: "set_default";
   file: StepFile;
   key: string;
-  /** 足す値。`ask` とどちらか 1 つ */
+  /** 追加する値。`ask` とどちらか 1 つ */
   value?: unknown;
-  /** 利用者に値を聞く問いの文 */
+  /** 利用者に値を聞く質問の文 */
   ask?: string;
 };
 
-/** 値を読み替える手順 */
+/** 値を解釈する手順 */
 export type MapValuesStep = StepBase & {
   op: "map_values";
   file: StepFile;
@@ -68,16 +68,16 @@ export type MapValuesStep = StepBase & {
   mapping: Record<string, unknown>;
 };
 
-/** 文書の印を書き換える手順 */
+/** 文書のマーカーを書き換える手順 */
 export type ReplaceMarkStep = StepBase & {
   op: "replace_mark";
-  /** 書き換える前の印 */
+  /** 書き換える前のマーカー */
   from: string;
-  /** 書き換えた後の印 */
+  /** 書き換えた後のマーカー */
   to: string;
 };
 
-/** スクリプトで当てる手順 */
+/** スクリプトで適用する手順 */
 export type CallStep = StepBase & {
   op: "call";
   /** `steps.yaml` のあるフォルダからのスクリプトのパス */
@@ -93,17 +93,17 @@ export type MigrationStep =
   | ReplaceMarkStep
   | CallStep;
 
-/** 当てる 1 つの版と、その版の検めた手順 */
+/** 適用する 1 つのバージョンと、そのバージョンの検めた手順 */
 export type MigrationVersion = {
-  /** 版（`v{MAJOR}.{MINOR}.{PATCH}`） */
+  /** バージョン（`v{MAJOR}.{MINOR}.{PATCH}`） */
   version: string;
-  /** その版のフォルダの絶対パス（`call` のスクリプトの基準） */
+  /** そのバージョンのフォルダの絶対パス（`call` のスクリプトの基準） */
   dir: string;
-  /** 書いた順の手順 */
+  /** 記載した順の手順 */
   steps: MigrationStep[];
 };
 
-/** 手順を当てる設定・索引・文書の場所と、当てる前に聞いた答え */
+/** 手順を適用する設定・索引・文書の場所と、適用する前に聞いた回答 */
 export type MigrationTarget = {
   /** 設定ファイルの絶対パス */
   configPath: string;
@@ -111,7 +111,7 @@ export type MigrationTarget = {
   indexPath: string | undefined;
   /** `build` の対象と索引の文書の絶対パス（重なりなし） */
   documents: string[];
-  /** `ask` を持つ `set_default` に答えた値 */
+  /** `ask` を持つ `set_default` に回答した値 */
   answers: Map<MigrationStep, string>;
 };
 
@@ -129,10 +129,10 @@ const STEP_KEYS = {
 /** 手順の共通のプロパティ */
 const COMMON_KEYS = ["op", "description", "destructive"];
 
-/** `file` に書ける値 */
+/** `file` に記載できる値 */
 const STEP_FILES: string[] = ["config", "index"];
 
-/** `files` に書ける値 */
+/** `files` に記載できる値 */
 const CALL_FILES: string[] = ["config", "index", "documents"];
 
 /** 値が連想配列（`null`・配列を除くオブジェクト）か */
@@ -151,21 +151,21 @@ function isFilled(value: unknown): value is string {
   return typeof value === "string" && value !== "";
 }
 
-/** 手順 1 つの形を検め、合わないところを `problem` に渡す */
+/** 手順 1 つの構造を検め、合わないところを `problem` に指定する */
 function validateStep(
   item: unknown,
   where: string,
   problem: (where: string, message: string) => void,
 ): void {
   if (!isRecord(item)) {
-    problem(where, "手順はキーと値で書いてください。");
+    problem(where, "手順はキーと値で記載してください。");
     return;
   }
   const op = item.op;
   if (typeof op !== "string" || !(op in STEP_KEYS)) {
     problem(
       `${where}.op`,
-      "op は rename_key・set_default・map_values・replace_mark・call のどれかで書いてください。",
+      "op は rename_key・set_default・map_values・replace_mark・call のどれかで記載してください。",
     );
     return;
   }
@@ -173,31 +173,34 @@ function validateStep(
   if (!isFilled(item.description)) {
     problem(
       `${where}.description`,
-      "description は空でない文字列で書いてください。",
+      "description は空でない文字列で記載してください。",
     );
   }
   if (item.destructive !== undefined && typeof item.destructive !== "boolean") {
     problem(
       `${where}.destructive`,
-      "destructive は true か false で書いてください。",
+      "destructive は true か false で記載してください。",
     );
   }
   const allowed: string[] = [...COMMON_KEYS, ...STEP_KEYS[kind]];
   for (const key of Object.keys(item)) {
     if (!allowed.includes(key)) {
-      problem(`${where}.${key}`, `${op} が持たないキーです。消してください。`);
+      problem(
+        `${where}.${key}`,
+        `${op} が持たないキーです。削除してください。`,
+      );
     }
   }
   /** 空でない文字列の必須のプロパティを検める */
   const requireString = (key: string) => {
     if (!isFilled(item[key])) {
-      problem(`${where}.${key}`, `${key} は空でない文字列で書いてください。`);
+      problem(`${where}.${key}`, `${key} は空でない文字列で記載してください。`);
     }
   };
   /** `file` が設定か索引を指すことを検める */
   const requireStepFile = () => {
     if (typeof item.file !== "string" || !STEP_FILES.includes(item.file)) {
-      problem(`${where}.file`, "file は config か index で書いてください。");
+      problem(`${where}.file`, "file は config か index で記載してください。");
     }
   };
   switch (kind) {
@@ -214,7 +217,7 @@ function validateStep(
       if (hasValue === hasAsk) {
         problem(
           `${where}.value`,
-          "value か ask のどちらか 1 つだけを書いてください。",
+          "value か ask のどちらか 1 つだけを記載してください。",
         );
       }
       if (hasAsk) {
@@ -229,16 +232,16 @@ function validateStep(
       if (!isRecord(mapping)) {
         problem(
           `${where}.mapping`,
-          "mapping は元の値と新しい値の表で書いてください。",
+          "mapping は元の値と新しい値の表で記載してください。",
         );
         break;
       }
       for (const [from, to] of Object.entries(mapping)) {
-        // 新しい値が元の値にあると、当て直すたびに値が変わる
+        // 新しい値が元の値にあると、もう一度適用するたびに値が変わる
         if (typeof to === "string" && Object.hasOwn(mapping, to)) {
           problem(
             `${where}.mapping`,
-            `${from} の新しい値 ${to} が元の値にもあります。当て直しても変わらないよう、新しい値は元の値にしないでください。`,
+            `${from} の新しい値 ${to} が元の値にもあります。もう一度適用しても変わらないよう、新しい値は元の値にしないでください。`,
           );
         }
       }
@@ -254,7 +257,7 @@ function validateStep(
       ) {
         problem(
           `${where}.to`,
-          "to が from を含みます。当て直しても変わらないよう、to は from を含まないようにしてください。",
+          "to が from を含みます。もう一度適用しても変わらないよう、to は from を含まないようにしてください。",
         );
       }
       break;
@@ -268,7 +271,7 @@ function validateStep(
       ) {
         problem(
           `${where}.script`,
-          `script の拡張子は ${SCRIPT_EXTENSIONS.join(" か ")} で書いてください。TypeScript は JavaScript にしたものを置きます。`,
+          `script の拡張子は ${SCRIPT_EXTENSIONS.join(" か ")} で記載してください。TypeScript は JavaScript にしたものを配置します。`,
         );
       }
       const files = item.files;
@@ -281,7 +284,7 @@ function validateStep(
       ) {
         problem(
           `${where}.files`,
-          "files は config・index・documents のうち 1 つ以上の並びで書いてください。",
+          "files は config・index・documents のうち 1 つ以上の並びで記載してください。",
         );
       }
       break;
@@ -289,7 +292,7 @@ function validateStep(
   }
 }
 
-/** 読んだ `steps.yaml` を `schemas/mdmark.steps.schema.json` と同じ形で検め、形の合う手順と、合わないところ 1 つ 1 文を返す */
+/** 読み込んだ `steps.yaml` を `schemas/mdmark.steps.schema.json` と同じ構造で検め、構造の合う手順と、合わないところ 1 つ 1 文を返却する */
 export function validateSteps(
   raw: unknown,
   file: string,
@@ -299,17 +302,17 @@ export function validateSteps(
     problems.push(`${file}: ${where}: ${message}`);
   };
   if (!isRecord(raw)) {
-    problem("steps", "steps の並びを書いてください。");
+    problem("steps", "steps の並びを記載してください。");
     return { steps: [], problems };
   }
   for (const key of Object.keys(raw)) {
     if (key !== "steps") {
-      problem(key, "steps 以外のキーは書けません。消してください。");
+      problem(key, "steps 以外のキーは記載できません。削除してください。");
     }
   }
   const steps = raw.steps;
   if (!Array.isArray(steps)) {
-    problem("steps", "steps は手順の並びで書いてください。");
+    problem("steps", "steps は手順の並びで記載してください。");
     return { steps: [], problems };
   }
   for (const [index, item] of steps.entries()) {
@@ -330,7 +333,7 @@ async function isFile(path: string): Promise<boolean> {
   }
 }
 
-/** 版のフォルダの `steps.yaml` を読んで形を検め、`call` のスクリプトが版のフォルダの中にあることを確かめる。`label` は合わないところに出すファイルの名前 */
+/** バージョンのフォルダの `steps.yaml` を読み込んで構造を検め、`call` のスクリプトがバージョンのフォルダの中にあることを確認する。`label` は合わないところに出すファイルの名前 */
 export async function readStepsFile(
   dir: string,
   label: string,
@@ -341,7 +344,7 @@ export async function readStepsFile(
   } catch (error) {
     return {
       steps: [],
-      problems: [`${label}: 読めません（${reasonOf(error)}）`],
+      problems: [`${label}: 読み込めません（${reasonOf(error)}）`],
     };
   }
   const result = validateSteps(raw, label);
@@ -356,7 +359,7 @@ export async function readStepsFile(
     const path = relative(dir, script);
     if (path.startsWith("..") || isAbsolute(path)) {
       result.problems.push(
-        `${label}: steps[${index}].script: 版のフォルダの外を指しています。`,
+        `${label}: steps[${index}].script: バージョンのフォルダの外を指しています。`,
       );
     } else if (!(await isFile(script))) {
       result.problems.push(
@@ -367,7 +370,7 @@ export async function readStepsFile(
   return result;
 }
 
-/** パッケージの `migrations/` から手元の版より新しく目標の版以下の `v{版}` を版の昇順に読み、形を検めて返す */
+/** パッケージの `migrations/` から手元のバージョンより新しく目標のバージョン以下の `v{バージョン}` をバージョンの昇順に読み込み、構造を検めて返却する */
 export async function loadMigrationVersions(options: {
   packageDir: string;
   from: string;
@@ -403,7 +406,7 @@ export async function loadMigrationVersions(options: {
   }
   if (problems.length > 0) {
     throw new CliError(
-      `移行の手順に誤りがあります（${problems.join("、")}）。mdmark を入れ直してください。`,
+      `移行の手順に誤りがあります（${problems.join("、")}）。mdmark をもう一度入れてください。`,
     );
   }
   return loaded;
@@ -441,7 +444,7 @@ export function renameKey(doc: Document, from: string, to: string): boolean {
   return true;
 }
 
-/** キーが無いときだけ値を足す */
+/** キーが無いときだけ値を追加する */
 export function setDefault(
   doc: Document,
   key: string,
@@ -455,7 +458,7 @@ export function setDefault(
   return true;
 }
 
-/** スカラーが読み替えの表の元の値なら新しい値に替える */
+/** スカラーが解釈しの表の元の値なら新しい値に替える */
 function mapScalar(node: unknown, mapping: Record<string, unknown>): boolean {
   if (!isScalar(node)) {
     return false;
@@ -474,7 +477,7 @@ function mapScalar(node: unknown, mapping: Record<string, unknown>): boolean {
   return true;
 }
 
-/** キーの値が読み替えの表の元の値のときだけ新しい値に替える。値が配列のときは要素ごとに替える */
+/** キーの値が解釈しの表の元の値のときだけ新しい値に替える。値が配列のときは要素ごとに替える */
 export function mapValues(
   doc: Document,
   key: string,
@@ -496,12 +499,12 @@ export function replaceMark(text: string, from: string, to: string): string {
   return text.split(from).join(to);
 }
 
-/** 当てる全ての手順が書き換えうるファイルを、設定ファイルを先頭に重なりなく返す */
+/** 適用する全ての手順が書き換えうるファイルを、設定ファイルを先頭に重なりなく返却する */
 export function stepFiles(
   versions: MigrationVersion[],
   target: MigrationTarget,
 ): string[] {
-  // 設定ファイルは版を書き換えるため、手順に関わらず含める
+  // 設定ファイルはバージョンを書き換えるため、手順に関わらず含める
   const files = new Set<string>([target.configPath]);
   const addIndex = () => {
     if (target.indexPath !== undefined) {
@@ -537,7 +540,7 @@ export function stepFiles(
   return [...files];
 }
 
-/** YAML のファイルを Document で読み、`edit` が書き換えたときだけ書き戻す */
+/** YAML のファイルを Document で読み込み、`edit` が書き換えたときだけ書き込んで戻す */
 async function editYaml(
   path: string,
   edit: (doc: Document) => boolean,
@@ -545,7 +548,9 @@ async function editYaml(
   const doc = parseDocument(await readFile(path, "utf8"));
   const [first] = doc.errors;
   if (first) {
-    throw new Error(`${path} を YAML として読めません（${reasonOf(first)}）`);
+    throw new Error(
+      `${path} を YAML として読み込めません（${reasonOf(first)}）`,
+    );
   }
   if (edit(doc)) {
     await writeFile(path, doc.toString({ flowCollectionPadding: false }));
@@ -559,14 +564,14 @@ function outputLines(output: unknown): string[] {
     : [];
 }
 
-/** 手順 1 つを当て先へ当て、`call` のスクリプトが標準出力に書いた行を返す */
+/** 手順 1 つを当て先へ当て、`call` のスクリプトが標準出力に書き込んだ行を返却する */
 export async function applyStep(options: {
   step: MigrationStep;
   version: MigrationVersion;
   target: MigrationTarget;
 }): Promise<string[]> {
   const { step, version, target } = options;
-  // `call` のスクリプトが失敗したときに標準エラーへ書いた行
+  // `call` のスクリプトが失敗したときに標準エラーへ書き込んだ行
   let stderrLines: string[] = [];
   try {
     switch (step.op) {
@@ -615,7 +620,7 @@ export async function applyStep(options: {
                 return setDefault(doc, step.key, step.value);
               }
               const answer = target.answers.get(step);
-              // 値を聞かなかった（キーが既にあった）ときは足さない
+              // 値を聞かなかった（キーが既にあった）ときは追加しない
               return answer === undefined
                 ? false
                 : setDefault(doc, step.key, parse(answer));

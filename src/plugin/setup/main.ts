@@ -26,26 +26,26 @@ export const SETUP_EXIT = {
   timedOut: 3,
 } as const;
 
-/** 知らないサブコマンドのときの使い方 */
+/** 知らないサブコマンドのときの使用方法 */
 const USAGE =
-  "使い方: setup.js status | keys --target settings|config [--dir {文書のフォルダ}] | write-settings [--set {キー}={値}]... | start-server | write-config --dir {文書のフォルダ} [--set {キー}={値}]...";
+  "使用方法: setup.js status | keys --target settings|config [--dir {文書のフォルダ}] | write-settings [--set {キー}={値}]... | start-server | write-config --dir {文書のフォルダ} [--set {キー}={値}]...";
 
-/** `$ref` のファイル名から、束ねた Schema を返す */
+/** `$ref` のファイル名から、まとめた Schema を返却する */
 const SCHEMAS: Record<string, JsonSchema> = {
   "mdmark.config.schema.json": configSchema as JsonSchema,
   "mdmark.settings.schema.json": settingsSchema as JsonSchema,
 };
 
-/** `$ref` を束ねた Schema に解決する */
+/** `$ref` をまとめた Schema に解決する */
 const resolveRef = (ref: string): JsonSchema => {
   const schema = SCHEMAS[ref];
   if (schema === undefined) {
-    throw new SetupError(`Schema ${ref} を読めません。`);
+    throw new SetupError(`Schema ${ref} を読み込めません。`);
   }
   return schema;
 };
 
-/** サブコマンドを流し、結果の値を返す */
+/** サブコマンドを実行し、結果の値を返却する */
 const runCommand = async (options: {
   argv: string[];
   env: NodeJS.ProcessEnv;
@@ -123,7 +123,7 @@ const runCommand = async (options: {
   }
 };
 
-/** サブコマンドを振り分け、結果の JSON を標準出力に 1 行書き、終了コードを返す */
+/** サブコマンドを振り分け、結果の JSON を標準出力に 1 行書き、終了コードを返却する */
 export const runSetup = async (options: {
   argv: string[];
   env: NodeJS.ProcessEnv;
@@ -149,7 +149,7 @@ export const runSetup = async (options: {
   }
 };
 
-/** 外部のコマンドを流し、終了コードと標準出力を返す。見つからないコマンドは 127 */
+/** 外部のコマンドを実行し、終了コードと標準出力を返却する。見つからないコマンドは 127 */
 const runExternal: RunCommand = (command, args) =>
   new Promise((resolve) => {
     execFile(command, args, (error, stdout) => {
@@ -164,7 +164,7 @@ const runExternal: RunCommand = (command, args) =>
     });
   });
 
-// 束ねた `plugin/bin/setup.js` を入口として実行されたときだけ流す
+// まとめた `plugin/bin/setup.js` を入口として実行されたときだけ実行する
 if (import.meta.main) {
   process.exitCode = await runSetup({
     argv: process.argv.slice(2),

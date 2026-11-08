@@ -3,13 +3,13 @@ import { afterEach, expect, vi } from "vitest";
 import { handlers } from "../../../../../../../../../vscode/src/webview/testing/msw/handlers.ts";
 import { test } from "../../../../msw-test.ts";
 
-/** 配布物を読む hook を読み込む（実装が無い間は各テストが個別に失敗する） */
+/** 配布物を読み込む hook を読み込む（実装が無い間は各テストが個別に失敗する） */
 const loadHook = () =>
   import(
     "../../../../../../../../../vscode/src/webview/features/preview/panel/hooks/use-load-mdmark.ts"
   );
 
-/** 配布物の URL（MSW の HEAD のハンドラが当たる） */
+/** 配布物の URL（MSW の HEAD のハンドラが該当する） */
 const DIST_JS =
   "https://cdn.jsdelivr.net/gh/shuhei1101/mdmark@v9.9.9/dist/index.js";
 /** 読み込み中を出すまでの待ち（設計書の `LOADING_DELAY_MS`） */
@@ -27,7 +27,7 @@ const callbacks = () => ({
   onSlow: vi.fn(),
 });
 
-// 読めたら onLoaded を呼ぶ（正常系）
+// 読み込めたら onLoaded を呼ぶ（正常系）
 test("test_use_load_mdmark_when_loaded", async () => {
   // 準備
   const { useLoadMdmark } = await loadHook();
@@ -45,7 +45,7 @@ test("test_use_load_mdmark_when_loaded", async () => {
   expect(handlersOf.onFailed).not.toHaveBeenCalled();
 });
 
-// 読めなければ理由を見分けて onFailed を呼ぶ（異常系）
+// 読み込めなければ理由を見分けて onFailed を呼ぶ（異常系）
 test("test_use_load_mdmark_when_failed", async ({ worker }) => {
   // 準備
   worker.use(...handlers("versionMissing"));
@@ -66,7 +66,7 @@ test("test_use_load_mdmark_when_failed", async ({ worker }) => {
   expect(handlersOf.onFailed).toHaveBeenCalledTimes(1);
 });
 
-// 外した後の結果とタイマーを捨てる（正常系）
+// 削除した後の結果とタイマーを捨てる（正常系）
 test("test_use_load_mdmark_when_unmounted", async () => {
   // 準備
   const { useLoadMdmark } = await loadHook();

@@ -12,7 +12,7 @@ function open(id: string): Promise<Page> {
   return holder.openStory(`parts-view--${id}`);
 }
 
-/** ボードの列の見出しの値を、並びの順に返す */
+/** ボードの列の見出しの値を、並びの順に返却する */
 function columnNames(page: Page): Promise<string[]> {
   return page
     .locator(".mdmark-view-column-name")
@@ -20,7 +20,7 @@ function columnNames(page: Page): Promise<string[]> {
     .then((names) => names.map((name) => name.trim()));
 }
 
-/** ボードの列の見出しの項目の数を、並びの順に返す */
+/** ボードの列の見出しの項目の数を、並びの順に返却する */
 function columnCounts(page: Page): Promise<string[]> {
   return page.locator(".mdmark-view-column-count").allInnerTexts();
 }
@@ -37,14 +37,14 @@ function visibleRows(page: Page): Promise<number> {
   );
 }
 
-/** 切り替えのボタンの `aria-pressed` を返す */
+/** 切り替えのボタンの `aria-pressed` を返却する */
 function pressed(page: Page, mode: "board" | "table"): Promise<string | null> {
   return page
     .locator(`.mdmark-view-switch-item[data-mode="${mode}"]`)
     .getAttribute("aria-pressed");
 }
 
-/** ボードと表形式のうち、隠れているほうを返す */
+/** ボードと表形式のうち、隠れているほうを返却する */
 function hiddenView(page: Page): Promise<string[]> {
   return page.evaluate(() =>
     [
@@ -57,7 +57,7 @@ function hiddenView(page: Page): Promise<string[]> {
   );
 }
 
-/** ボードの列の見出しのアイコンの形を、並びの順に返す */
+/** ボードの列の見出しのアイコンの形状を、並びの順に返却する */
 function columnIcons(page: Page): Promise<string[]> {
   return page.evaluate(() =>
     [...document.querySelectorAll(".mdmark-view-column-head svg")].map(
@@ -66,7 +66,7 @@ function columnIcons(page: Page): Promise<string[]> {
   );
 }
 
-// 状態の列の値ごとの列に、題と残りの列を並べたボードで開く（Board）
+// 状態の列の値ごとの列に、タイトルと残りの列を並べたボードで開く（Board）
 test("test_board", async () => {
   // 準備・実行
   const page = await open("board");
@@ -130,7 +130,7 @@ test("test_board_after_filter", async () => {
   ).resolves.toBe(true);
 });
 
-// 題を文字 `表` で絞り込み、ドロワーを開く（TableFilteredText）
+// タイトルを文字 `表` で絞り込み、ドロワーを開く（TableFilteredText）
 test("test_table_filtered_text", async () => {
   // 準備・実行
   const page = await open("table-filtered-text");
@@ -143,7 +143,7 @@ test("test_table_filtered_text", async () => {
   ).resolves.toBe("表");
 });
 
-// 題を文字 `山田` で絞り込み、一致する行が無い（TableNoMatch）
+// タイトルを文字 `山田` で絞り込み、一致する行が無い（TableNoMatch）
 test("test_table_no_match", async () => {
   // 準備・実行
   const page = await open("table-no-match");
@@ -213,7 +213,7 @@ test("test_many_columns", async () => {
   expect(new Set(icons).size).toBe(1);
 });
 
-// 長い題は折り返し、空の値は項目に出さない（LongTitleEmptyValue）
+// 長いタイトルは折り返し、空の値は項目に出さない（LongTitleEmptyValue）
 test("test_long_title_empty_value", async () => {
   // 準備・実行
   const page = await open("long-title-empty-value");
@@ -241,7 +241,7 @@ test("test_board_disabled", async () => {
   await expect(visibleRows(page)).resolves.toBe(2);
 });
 
-// group が無いときは、切り替えを置かずに表形式だけを出す（TableOnly）
+// group が無いときは、切り替えを配置せずに表形式だけを出す（TableOnly）
 test("test_table_only", async () => {
   // 準備・実行
   const page = await open("table-only");

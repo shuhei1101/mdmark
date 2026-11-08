@@ -16,7 +16,7 @@ const NORMAL = {
     {
       id: "r2",
       at: "2026-10-19T07:40:00Z",
-      label: "件数を直す",
+      label: "件数を修正する",
       author: "鈴木",
     },
     {
@@ -35,7 +35,7 @@ const NORMAL = {
 /** 選択肢 1 つ分の属性と文字 */
 type Option = { attributes: string; text: string };
 
-/** `ラベルの文字` を持つ label が指す select の選択肢を返す */
+/** `ラベルの文字` を持つ label が指す select の選択肢を返却する */
 function optionsOf(html: string, labelText: string): Map<string, Option> {
   const label = /<label[^>]*for="([^"]+)"[^>]*>([^<]*)<\/label>/g;
   let id: string | undefined;
@@ -79,7 +79,9 @@ test("test_render_revision_picker", async () => {
   expect(has(after.get("r1"), "disabled")).toBe(true);
   expect(has(before.get("r1"), "disabled")).toBe(false);
   expect(has(after.get("r3"), "disabled")).toBe(false);
-  expect(before.get("r2")?.text).toBe("2026/10/19 16:40 件数を直す（鈴木）");
+  expect(before.get("r2")?.text).toBe(
+    "2026/10/19 16:40 件数を修正する（鈴木）",
+  );
   const status = plainText(outerHtml(html, 'role="status"'));
   expect(status).toContain("削除した行 1・追加した行 8");
 });

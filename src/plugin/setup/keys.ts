@@ -1,4 +1,4 @@
-/** JSON Schema の 1 つの節（使うキーだけ） */
+/** JSON Schema の 1 つのセクション（使用するキーだけ） */
 export type JsonSchema = {
   $ref?: string;
   allOf?: JsonSchema[];
@@ -49,7 +49,7 @@ const mergeProperties = (
   return { ...merged, ...schema.properties };
 };
 
-/** 葉のキーまで展開して一覧に足す。`additionalProperties` で受けるキーは今の値にあるものだけ足す */
+/** 葉のキーまで展開して一覧に追加する。`additionalProperties` で受けるキーは今の値にあるものだけ追加する */
 const collectKeys = (options: {
   properties: Record<string, JsonSchema>;
   prefix: string[];
@@ -101,7 +101,7 @@ const collectKeys = (options: {
   }
 };
 
-/** Schema の葉のキーごとに、今の値・端末の設定の値・既定・説明を Schema の並びで返す */
+/** Schema の葉のキーごとに、今の値・端末の設定の値・既定・説明を Schema の並びで返却する */
 export const listConfigKeys = (options: {
   target: "settings" | "config";
   schema: JsonSchema;

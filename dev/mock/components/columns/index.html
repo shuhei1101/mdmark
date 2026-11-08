@@ -28,7 +28,7 @@
 <body>
   <!-- モック専用の操作列: 配色の切り替え -->
   <div class="mock-bar">
-    <!-- [data-scheme-set]: sample.js が押されたボタンの値を html の data-scheme に当てる -->
+    <!-- [data-scheme-set]: sample.js が押されたボタンの値を html の data-scheme に適用する -->
     <div class="mock-bar-group" role="group" aria-label="配色">
       <button class="mock-bar-item" type="button" data-scheme-set="light" aria-pressed="false">明るい配色</button>
       <button class="mock-bar-item" type="button" data-scheme-set="dark" aria-pressed="false">ダーク</button>
@@ -73,9 +73,9 @@
         </article>
       </section>
 
-      <!-- 狭い画面（縦に積む） -->
+      <!-- 狭い画面（縦に並べる） -->
       <section aria-labelledby="state-narrow">
-        <h2 class="catalog-label" id="state-narrow">狭い画面（縦に積む）</h2>
+        <h2 class="catalog-label" id="state-narrow">狭い画面（縦に並べる）</h2>
         <article class="mdmark">
 <div class="demo-narrow">
 <div class="mdmark-layout-columns" style="--mdmark-layout-count: 2">
@@ -97,8 +97,8 @@
         <h2 class="catalog-label" id="state-count">列の数が 2〜3 でない</h2>
         <article class="mdmark">
 <div class="mdmark-syntax-warning">
-  <p class="mdmark-syntax-warning-title"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg>書き方の警告</p>
-  <p><code>&lt;!-- columns --&gt;</code> の範囲が 4 列です。並べられるのは 2〜3 列です。中身を書いた順に描いています。</p>
+  <p class="mdmark-syntax-warning-title"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg>記載の警告</p>
+  <p><code>&lt;!-- columns --&gt;</code> の範囲が 4 列です。並べられるのは 2〜3 列です。中身を記載した順に描いています。</p>
 </div>
 <p>1 列目の中身。</p><p>2 列目の中身。</p><p>3 列目の中身。</p><p>4 列目の中身。</p>
         </article>
@@ -111,8 +111,8 @@
 <div class="mdmark-layout-columns" style="--mdmark-layout-count: 2">
   <div class="mdmark-layout-column">
 <div class="mdmark-syntax-warning">
-  <p class="mdmark-syntax-warning-title"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg>書き方の警告</p>
-  <p><code>&lt;!-- columns --&gt;</code> は入れ子にできません。内側の範囲の中身を書いた順に描いています。</p>
+  <p class="mdmark-syntax-warning-title"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg>記載の警告</p>
+  <p><code>&lt;!-- columns --&gt;</code> は入れ子にできません。内側の範囲の中身を記載した順に描いています。</p>
 </div>
 <p>内側の 1 列目。</p><p>内側の 2 列目。</p>
   </div>

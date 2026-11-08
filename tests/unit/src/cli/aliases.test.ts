@@ -3,7 +3,7 @@ import { expect, test } from "vitest";
 import type { LoadedConfig } from "../../../../src/cli/config.ts";
 import { useTempDirs, writeFiles } from "../../helpers/cli.ts";
 
-/** 設定の aliases の YAML を読む処理を読み込む（ファイルが無いと Vite の解決が失敗してテストファイルごと落ちるため、URL を組んで読む。実装が無い間は各テストが個別に失敗する） */
+/** 設定の aliases の YAML を読み込む処理を読み込む（ファイルが無いと Vite の解決が失敗してテストファイルごと落ちるため、URL を組んで読み込む。実装が無い間は各テストが個別に失敗する） */
 const loadAliasesModule = (): Promise<
   typeof import("../../../../src/cli/aliases.ts")
 > =>
@@ -29,7 +29,7 @@ function row(
   };
 }
 
-/** 読んだ設定を作る */
+/** 読み込んだ設定を作る */
 function createLoaded(dir: string, config: Record<string, unknown>) {
   return {
     path: join(dir, "mdmark.config.yaml"),
@@ -38,7 +38,7 @@ function createLoaded(dir: string, config: Record<string, unknown>) {
   } as unknown as LoadedConfig;
 }
 
-// 行の paths の YAML を読んでエイリアスを作る（正常系）
+// 行の paths の YAML を読み込んでエイリアスを作る（正常系）
 test("test_load_aliases", async () => {
   // 準備
   const { loadAliases } = await loadAliasesModule();
@@ -47,7 +47,7 @@ test("test_load_aliases", async () => {
     "aliases/commands.yaml": [
       "items:",
       "  - id: run-test",
-      "    name: テストを流す",
+      "    name: テストを実行する",
       "    command: npm test",
       "",
     ].join("\n"),
@@ -84,7 +84,7 @@ test("test_load_aliases", async () => {
   ]);
 });
 
-// 当たるファイルが無い行を alias_no_files にする（異常系）
+// 該当するファイルが無い行を alias_no_files にする（異常系）
 test("test_load_aliases_when_no_files", async () => {
   // 準備
   const { loadAliases } = await loadAliasesModule();
@@ -99,7 +99,7 @@ test("test_load_aliases_when_no_files", async () => {
   expect(result.issues[0]?.message).toContain("missing/*.yaml");
 });
 
-// YAML として読めないファイルを alias_unreadable にして使わない（異常系）
+// YAML として読み込めないファイルを alias_unreadable にして使用しない（異常系）
 test("test_load_aliases_when_unreadable", async () => {
   // 準備
   const { loadAliases } = await loadAliasesModule();
@@ -124,7 +124,7 @@ test("test_load_aliases_when_unreadable", async () => {
   ]);
 });
 
-// enabled が false の行と null の行は読まない（正常系）
+// enabled が false の行と null の行は読み込まない（正常系）
 test("test_load_aliases_when_disabled_or_null", async () => {
   // 準備
   const { loadAliases } = await loadAliasesModule();
@@ -139,7 +139,7 @@ test("test_load_aliases_when_disabled_or_null", async () => {
   expect(result.aliases).toEqual([]);
 });
 
-// 設定に aliases が無ければ何も読まない（正常系）
+// 設定に aliases が無ければ何も読み込まない（正常系）
 test("test_load_aliases_when_no_aliases", async () => {
   // 準備
   const { loadAliases } = await loadAliasesModule();

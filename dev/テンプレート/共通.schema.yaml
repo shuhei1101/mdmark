@@ -1,15 +1,15 @@
 $schema: https://json-schema.org/draft/2020-12/schema
 title: 共通の型
 description: |-
-  種別をまたいで使う型。各種別の Schema から `共通.schema.yaml#/$defs/{名前}` の `$ref` で使う。
-  項目のキーは英語で書き、画面に出す日本語の名前は `title` で持つ。
+  種別をまたいで使用する型。各種別の Schema から `共通.schema.yaml#/$defs/{名前}` の `$ref` で使用する。
+  項目のキーは英語で記載し、画面に出す日本語の名前は `title` で持つ。
 $defs:
   markdown:
     type: string
     title: 本文
     description: |-
-      Markdown で書く本文。
-      他の設計書を指すときは説明文の中にリンクを書かず、参照は `refs`（`ref` の配列）に持つ。
+      Markdown で記載する本文。
+      他の設計書を指すときは説明文の中にリンクを記載せず、参照は `refs`（`ref` の配列）に持つ。
       定数は `!{名前}` で埋め込める。
   summary:
     type: string
@@ -21,12 +21,12 @@ $defs:
     type: string
     title: 参照
     description: |-
-      設計書の項目を指す。`{設計書のパス}#{項目のパス}` で書く。
-      設計書のパスはリポジトリの直下から、拡張子 `.yaml` を落とした形。同じ設計書の中は `#{項目のパス}` だけでよい。
+      設計書の項目を指す。`{設計書のパス}#{項目のパス}` で記載する。
+      設計書のパスはリポジトリの直下から、拡張子 `.yaml` を落とした構造。同じ設計書の中は `#{項目のパス}` だけでよい。
       リストの項目は、その Schema の `x-key` で宣言したキーの値で `[{値}]` と指す（番号で指さない）。
       設計書全体を指すときは `#` の後を空にする。
-      辞書のキーも `[{キー}]` で指し、`.` や空白を含むキーも 1 段になる（`notes[main.py の補足]`）。
-      同じ `x-key` の値の要素の 2 つ目以降は `[{値}#{順番}]` と指す（`functions[main#3]`）。同じ値の要素が無く末尾が `#{整数}` のときだけ、`[...]` の中の `#` を順番として読む。
+      辞書のキーも `[{キー}]` で指し、`.` や空白を含むキーも 1 階層になる（`notes[main.py の補足]`）。
+      同じ `x-key` の値の要素の 2 つ目以降は `[{値}#{順番}]` と指す（`functions[main#3]`）。同じ値の要素が無く末尾が `#{整数}` のときだけ、`[...]` の中の `#` を順番として読み込む。
     pattern: "^[^#\\s]*#(?:[^\\s\\[]|\\[[^\\]]*\\])*$"
     examples:
       - "dev/設計書/インターフェース定義/バックエンド/設計書書き込み.py#flows[正常系]"
@@ -37,18 +37,18 @@ $defs:
   reason:
     $ref: "#/$defs/markdown"
     title: 理由
-    description: そうしている理由。読み手の判断が変わるものだけを書く。
+    description: そうしている理由。読み込み手の判断が変わるものだけを記載する。
   status:
     type: string
     title: 状態
-    description: 項目の状態。`planned`（予定）/ `implemented`（実装済み）/ `deprecated`（非推奨）/ `removed`（廃止）。書かなければ実装済みとして扱う。
+    description: 項目の状態。`planned`（予定）/ `implemented`（実装済み）/ `deprecated`（非推奨）/ `removed`（廃止）。記載しなければ実装済みとして扱う。
     enum: [planned, implemented, deprecated, removed]
   visibility:
     type: string
     title: 公開
     description: |-
       Pages に出すか。`user`（ユーザー向け。Pages に出す）/ `developer`（開発者向け。開発ドキュメントサーバーだけで出す）。
-      書かなければ親の値を引き継ぎ、最上位の既定は `developer`。
+      記載しなければ親の値を引き継ぎ、最上位の既定は `developer`。
     enum: [user, developer]
   implementation:
     type: string
@@ -79,23 +79,23 @@ $defs:
   aliases:
     type: array
     title: 別名
-    description: 検索で当てたい言い換え。
+    description: 検索で適用したい言い換え。
     items:
       type: string
   notes:
     type: object
     title: 補足
     description: |-
-      項目に分けられない残り。節の名前 → 本文。
-      同じ名前の節が多くの設計書に出たら、標準の項目へ格上げする候補になる。
+      項目に分けられない残り。セクションの名前 → 本文。
+      同じ名前のセクションが多くの設計書に出たら、標準の項目へ格上げする候補になる。
     additionalProperties:
       $ref: "#/$defs/markdown"
   mermaid:
     $ref: "#/$defs/markdown"
     title: 図
     description: |-
-      手で書く Mermaid の図。```mermaid のコードブロックで書く。
-      図の構文は検証で `mermaid.parse()` に通す。
+      手で記載する Mermaid の図。```mermaid のコードブロックで記載する。
+      図の構文は検証で `mermaid.parse()` に経由する。
   glossary:
     type: array
     title: 用語
@@ -108,8 +108,8 @@ $defs:
       properties:
         mark:
           type: string
-          title: 印
-          description: "`※1` の形。"
+          title: マーカー
+          description: "`※1` の構造。"
           pattern: "^※[0-9]+$"
         term:
           type: string
@@ -123,14 +123,14 @@ $defs:
     title: フローチャート
     description: |-
       `flowchart` の元のデータ。図はこのノード・辺・枠・リンクから生成する。
-      使う項目の `x-shape: diagram` と `x-diagram` で図の種類を決める。
+      使用する項目の `x-shape: diagram` と `x-diagram` で図の種類を決める。
     additionalProperties: false
     required: [nodes, edges]
     properties:
       direction:
         type: string
         title: 向き
-        description: 図の向き。書かなければ図の種類の既定（判定は `TD`、データフロー・アーキテクチャは `LR`）。
+        description: 図の向き。記載しなければ図の種類の既定（判定は `TD`、データフロー・アーキテクチャは `LR`）。
         enum: [TD, TB, LR, RL, BT]
       nodes:
         type: array
@@ -162,7 +162,7 @@ $defs:
             line:
               type: string
               title: 線
-              description: 線の種類。書かなければ `solid`（`-->`）。`dotted`（`-.->`）/ `thick`（`==>`）/ `open`（`---`）。
+              description: 線の種類。記載しなければ `solid`（`-->`）。`dotted`（`-.->`）/ `thick`（`==>`）/ `open`（`---`）。
               enum: [solid, dotted, thick, open]
       subgraphs:
         type: array
@@ -183,7 +183,7 @@ $defs:
             nodes:
               type: array
               title: 中のノード
-              description: 枠の中に置くノードの `id`。
+              description: 枠の中に配置するノードの `id`。
               items:
                 type: string
       clicks:
@@ -217,12 +217,12 @@ $defs:
       label:
         type: string
         title: 表示
-        description: ノードに出す文言。半角の括弧は描画を崩すので全角で書く。
+        description: ノードに出す文言。半角の括弧は描画を崩すので全角で記載する。
       shape:
         type: string
-        title: 形
+        title: 構造
         description: |-
-          ノードの形。書かなければ `rect`。
+          ノードの構造。記載しなければ `rect`。
           `rect`（四角）/ `round`（角丸）/ `stadium`（開始・終端 `([…])`）/ `diamond`（判定）/ `circle`（処理）/ `cylinder`（データストア）/ `hexagon` / `parallelogram`（入出力ポート）/ `subroutine`。
         enum: [rect, round, stadium, diamond, circle, cylinder, hexagon, parallelogram, subroutine]
       kind:
@@ -235,7 +235,7 @@ $defs:
     title: 状態遷移
     description: |-
       状態の一覧と遷移の表。`stateDiagram-v2` の図はここから生成する。
-      状態の名前は図のノードになるので、空白と記号を含めない。含める場合は `node` に図のノード名を書く。
+      状態の名前は図のノードになるので、空白と記号を含めない。含める場合は `node` に図のノード名を記載する。
     additionalProperties: false
     required: [states, initial, transitions]
     properties:
@@ -279,7 +279,7 @@ $defs:
             node:
               type: string
               title: 図のノード
-              description: 図のノード名が状態名と違うときだけ書く。
+              description: 図のノード名が状態名と違うときだけ記載する。
               pattern: "^[^\\s\\[\\]:（）()]+$"
             notes:
               $ref: "#/$defs/markdown"
@@ -316,7 +316,7 @@ $defs:
             trigger:
               type: string
               title: きっかけ
-              description: 遷移を起こす操作や出来事。
+              description: 遷移を発生させる操作や出来事。
             condition:
               type: string
               title: 条件
@@ -327,7 +327,7 @@ $defs:
             self:
               type: boolean
               title: 状態を出ない
-              description: 状態を出ずに処理だけを行う遷移（元と先が同じ）。
+              description: 状態を出ずに処理だけをする遷移（元と先が同じ）。
             representative:
               type: string
               title: 代表
@@ -370,12 +370,12 @@ $defs:
             name:
               type: string
               title: 名前
-              description: 図に出すテーブルの論理名（空白なし）。他の分類のテーブルは名前だけで置く。
+              description: 図に出すテーブルの論理名（空白なし）。他の分類のテーブルは名前だけで配置する。
               pattern: "^\\S+$"
             columns:
               type: array
               title: カラム
-              description: 図に描くカラム。書かなければ、同じ設計書のテーブルのカラムから作る。
+              description: 図に描くカラム。記載しなければ、同じ設計書のテーブルのカラムから作る。
               items:
                 type: object
                 additionalProperties: false

@@ -15,7 +15,7 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
-/** 設定の `aliases` の行の `paths` を設定ファイルのフォルダから引いて YAML を読み、`buildAliases` に渡して、エイリアスとずれと、当たった YAML の絶対パスを返す。設定に `aliases` が無ければファイルを読まず `undefined` を返す */
+/** 設定の `aliases` の行の `paths` を設定ファイルのフォルダから参照して YAML を読み込み、`buildAliases` に指定して、エイリアスとずれと、該当した YAML の絶対パスを返却する。設定に `aliases` が無ければファイルを読み込まず `undefined` を返却する */
 export async function loadAliases(loaded: LoadedConfig): Promise<{
   aliases: MdmarkAlias[] | undefined;
   issues: CheckIssue[];
@@ -31,7 +31,7 @@ export async function loadAliases(loaded: LoadedConfig): Promise<{
   const rowIds = new Set<string>();
   const matched: string[] = [];
   for (const [position, row] of rows.entries()) {
-    // 読まない行と、`buildAliases` が使わない行・前の行と同じ `id` の行は、ファイルも読まない
+    // 読み込まない行と、`buildAliases` が使用しない行・前の行と同じ `id` の行は、ファイルも読み込まない
     if (
       !isRecord(row) ||
       row.enabled === false ||
@@ -63,7 +63,7 @@ export async function loadAliases(loaded: LoadedConfig): Promise<{
         file: configName,
         where: `aliases[${position}].paths`,
         kind: "alias_no_files",
-        message: `\`${patterns.join("`・`")}\` に当たるファイルがありません。\`paths\` を直してください。`,
+        message: `\`${patterns.join("`・`")}\` に該当するファイルがありません。\`paths\` を修正してください。`,
       });
       continue;
     }
@@ -85,7 +85,7 @@ export async function loadAliases(loaded: LoadedConfig): Promise<{
           file,
           where: "",
           kind: "alias_unreadable",
-          message: `${line ?? "?"} 行目を YAML として読めません（${reason}）。字下げと書き方を直してください。`,
+          message: `${line ?? "?"} 行目を YAML として読み込めません（${reason}）。字下げと記載方法を修正してください。`,
         });
       }
     }

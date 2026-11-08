@@ -1,12 +1,12 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "title": "migrations/{版}/steps.yaml",
-  "description": "1 つの版で当てる移行の手順の並び。`mdmark upgrade` が読み、配布物のビルドが検める。",
+  "title": "migrations/{バージョン}/steps.yaml",
+  "description": "1 つのバージョンで適用する移行の手順の並び。`mdmark upgrade` が読み込み、配布物のビルドが検める。",
   "type": "object",
   "properties": {
     "steps": {
       "title": "手順",
-      "description": "書いた順に当てる手順の並び。",
+      "description": "記載した順に適用する手順の並び。",
       "type": "array",
       "items": {
         "oneOf": [
@@ -24,13 +24,13 @@
   "$defs": {
     "description": {
       "title": "説明",
-      "description": "何をどう変えるかの 1 文。`--plan` と当てた手順の出力に出す。",
+      "description": "何をどう変えるかの 1 文。`--plan` と適用した手順の出力に出す。",
       "type": "string",
       "minLength": 1
     },
     "destructive": {
-      "title": "壊す印",
-      "description": "当てると値が失われる手順か。`true` の手順が 1 つでもあれば、`--yes` が無いとき当てる前に確かめる。",
+      "title": "壊すマーカー",
+      "description": "適用すると値が失われる手順か。`true` の手順が 1 つでもあれば、`--yes` が無いとき適用する前に確認する。",
       "type": "boolean",
       "default": false
     },
@@ -61,8 +61,8 @@
       "additionalProperties": false
     },
     "set_default": {
-      "title": "無いキーを足す",
-      "description": "キーが無いときだけ値を足す。値は `value` に書くか、`ask` で利用者に聞く。",
+      "title": "無いキーを追加する",
+      "description": "キーが無いときだけ値を追加する。値は `value` に記載するか、`ask` で利用者に聞く。",
       "type": "object",
       "properties": {
         "op": { "const": "set_default" },
@@ -71,12 +71,12 @@
         "file": { "$ref": "#/$defs/file" },
         "key": { "$ref": "#/$defs/path" },
         "value": {
-          "title": "足す値",
-          "description": "YAML の値としてそのまま書く。"
+          "title": "追加する値",
+          "description": "YAML の値としてそのまま記載する。"
         },
         "ask": {
-          "title": "聞く問い",
-          "description": "利用者に値を聞くときの問いの文。答えた 1 行を YAML の値として足す。",
+          "title": "聞く質問",
+          "description": "利用者に値を聞くときの質問の文。回答した 1 行を YAML の値として追加する。",
           "type": "string",
           "minLength": 1
         }
@@ -86,7 +86,7 @@
       "additionalProperties": false
     },
     "map_values": {
-      "title": "値を読み替える",
+      "title": "値を解釈する",
       "description": "キーの値が表の元の値のときだけ新しい値に替える。表に無い値は変えない。",
       "type": "object",
       "properties": {
@@ -96,8 +96,8 @@
         "file": { "$ref": "#/$defs/file" },
         "key": { "$ref": "#/$defs/path" },
         "mapping": {
-          "title": "読み替えの表",
-          "description": "元の値から新しい値への表。新しい値に元の値を置かない（当て直しても変わらないようにする）。",
+          "title": "解釈しの表",
+          "description": "元の値から新しい値への表。新しい値に元の値を配置しない（もう一度適用しても変わらないようにする）。",
           "type": "object"
         }
       },
@@ -105,7 +105,7 @@
       "additionalProperties": false
     },
     "replace_mark": {
-      "title": "文書の印を書き換える",
+      "title": "文書のマーカーを書き換える",
       "description": "文書の本文の `from` を全て `to` にする。",
       "type": "object",
       "properties": {
@@ -113,12 +113,12 @@
         "description": { "$ref": "#/$defs/description" },
         "destructive": { "$ref": "#/$defs/destructive" },
         "from": {
-          "title": "書き換える前の印",
+          "title": "書き換える前のマーカー",
           "type": "string",
           "minLength": 1
         },
         "to": {
-          "title": "書き換えた後の印",
+          "title": "書き換えた後のマーカー",
           "description": "`from` を含まない文字列。",
           "type": "string",
           "minLength": 1
@@ -128,8 +128,8 @@
       "additionalProperties": false
     },
     "call": {
-      "title": "スクリプトで当てる",
-      "description": "宣言で書けない移行を、同じ版のフォルダに置いたスクリプトで当てる。`node {スクリプト} --config {設定ファイル}` で流す。",
+      "title": "スクリプトで適用する",
+      "description": "宣言で記載できない移行を、同じバージョンのフォルダに配置したスクリプトで適用する。`node {スクリプト} --config {設定ファイル}` で実行する。",
       "type": "object",
       "properties": {
         "op": { "const": "call" },
@@ -143,7 +143,7 @@
         },
         "files": {
           "title": "書き換えるもの",
-          "description": "スクリプトが書き換えうるもの。当てる前に写しを取る対象になる。",
+          "description": "スクリプトが書き換えうるもの。適用する前にコピーを取る対象になる。",
           "type": "array",
           "items": { "enum": ["config", "index", "documents"] },
           "minItems": 1

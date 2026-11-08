@@ -5,7 +5,7 @@ import { renderDoc } from "../helpers/render.ts";
 /** 範囲のスクリプトの処理を読み込む（実装が無い間は各テストが個別に失敗する） */
 const loadHtmlScripts = () => import("../../../src/html-scripts.ts");
 
-/** 手元の @babel/standalone を読む `importModule` */
+/** 手元の @babel/standalone を読み込む `importModule` */
 const importBabel = () => import("@babel/standalone");
 
 afterEach(async () => {
@@ -15,7 +15,7 @@ afterEach(async () => {
   vi.restoreAllMocks();
 });
 
-/** 範囲に `html` と、言語 `lang` のコードブロックを置いた Markdown */
+/** 範囲に `html` と、言語 `lang` のコードブロックを配置した Markdown */
 function range(lang: "ts" | "js", code: string): string {
   return [
     "<!-- html -->",
@@ -33,7 +33,7 @@ function range(lang: "ts" | "js", code: string): string {
   ].join("\n");
 }
 
-/** `html-scripts` をオンにして範囲を描いた要素と、範囲の根の要素を返す */
+/** `html-scripts` をオンにして範囲を描いた要素と、範囲の根の要素を返却する */
 function mountRanges(ranges: string[]): {
   root: HTMLElement;
   scopes: HTMLElement[];
@@ -53,7 +53,7 @@ const TYPED_TS = [
   "};",
 ].join("\n");
 
-// `ts` を変換して根の要素で呼び、`destroy` を返す（正常系）
+// `ts` を変換して根の要素で呼び、`destroy` を返却する（正常系）
 test("test_run_html_scripts", async () => {
   // 準備
   const { runHtmlScripts, HTML_SCRIPTS_REGISTRY } = await loadHtmlScripts();
@@ -98,7 +98,7 @@ test("test_run_html_scripts_when_js", async () => {
   expect(scopes[0]?.dataset.x).toBe("1");
 });
 
-// 関数でない既定のエクスポート・例外・構文エラーの範囲の前に書き方の警告を置き、次の範囲を動かす（異常系）
+// 関数でない既定のエクスポート・例外・構文エラーの範囲の前に記載の警告を配置し、次の範囲を動かす（異常系）
 test("test_run_html_scripts_when_invalid", async () => {
   // 準備
   const { runHtmlScripts } = await loadHtmlScripts();
@@ -133,7 +133,7 @@ test("test_run_html_scripts_when_invalid", async () => {
   expect(consoleError).toHaveBeenCalledTimes(3);
 });
 
-// 変換のライブラリを読めないとき、全ての範囲の前に知らせの枠を置く（異常系）
+// 変換のライブラリを読み込めないとき、全ての範囲の前に通知ブロックを配置する（異常系）
 test("test_run_html_scripts_when_transpiler_unavailable", async () => {
   // 準備
   const { runHtmlScripts } = await loadHtmlScripts();
@@ -151,7 +151,7 @@ test("test_run_html_scripts_when_transpiler_unavailable", async () => {
     url: "/babel.mjs",
     isCurrent: () => true,
     cache: new Map(),
-    importModule: () => Promise.reject(new Error("読めない")),
+    importModule: () => Promise.reject(new Error("読み込めない")),
   });
   // 検証
   await expect(run).resolves.toBeTypeOf("function");
@@ -164,10 +164,10 @@ test("test_run_html_scripts_when_transpiler_unavailable", async () => {
   expect(root.querySelectorAll(".mdmark-notice")).toHaveLength(2);
 });
 
-/** 埋めた関数の表で引く `js` の範囲のコード */
+/** 埋めた関数の表で参照する `js` の範囲のコード */
 const EMBEDDED_CODE = 'export default (root) => { root.dataset.ran = "1"; };';
 
-// 埋めた関数の表があるときは、変換のライブラリも `script` 要素も使わない（正常系）
+// 埋めた関数の表があるときは、変換のライブラリも `script` 要素も使用しない（正常系）
 test("test_run_html_scripts_when_embedded", async () => {
   // 準備
   const { runHtmlScripts, setEmbeddedHtmlScripts } = await loadHtmlScripts();
@@ -194,7 +194,7 @@ test("test_run_html_scripts_when_embedded", async () => {
   expect(append).not.toHaveBeenCalled();
 });
 
-// 読み終える前に描き直したら動かさない（正常系）
+// 読み込み終える前に再描画したら動かさない（正常系）
 test("test_run_html_scripts_when_stale", async () => {
   // 準備
   const { runHtmlScripts } = await loadHtmlScripts();
@@ -211,7 +211,7 @@ test("test_run_html_scripts_when_stale", async () => {
   expect(scopes[0]?.dataset.ran).toBeUndefined();
 });
 
-// 1 回だけ読み、`disableScriptTags` を呼ぶ（正常系）
+// 1 回だけ読み込み、`disableScriptTags` を呼ぶ（正常系）
 test("test_load_transpiler", async () => {
   // 準備
   const { loadTranspiler } = await loadHtmlScripts();
@@ -285,7 +285,7 @@ test("test_wrap_range_script", async () => {
     r: unknown,
   ) => void;
   run({ exports }, exports, () => {
-    throw new Error("require は使えない");
+    throw new Error("require は使用できない");
   });
   expect(exports.default?.()).toBe("</script>");
 });

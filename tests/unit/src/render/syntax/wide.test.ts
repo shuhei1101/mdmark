@@ -32,7 +32,7 @@ test("test_build_wide_ranges", () => {
   expect(html).not.toContain("<!--");
 });
 
-// 閉じの印が無いと囲まずに警告する（異常系）
+// 閉じのマーカーが無いと囲まずに警告する（異常系）
 test("test_build_wide_ranges_when_unclosed", () => {
   // 準備
   const markdown = `<!-- wide -->\n\n${TABLE}`;
@@ -45,7 +45,7 @@ test("test_build_wide_ranges_when_unclosed", () => {
   );
 });
 
-// closed 以外の引数は警告にせず読み飛ばす（正常系）
+// closed 以外の引数は警告にせずスキップする（正常系）
 test("test_build_wide_ranges_when_unknown_args", () => {
   // 準備
   const markdown = `<!-- wide: narrow size=2 -->\n\n${TABLE}\n<!-- /wide -->\n`;

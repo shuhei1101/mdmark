@@ -1,0 +1,107 @@
+title: "通知ブロック"
+implementation: "src/parts/notice.ts#renderNotice"
+story: "Parts/Notice"
+states:
+  - name: Figure
+    description: 図のマーカーの外部ライブラリを読み込めない。タイトルが `この図を表示できません`
+    args:
+      - name: name
+        value: chart
+      - name: figure
+        value: 'true'
+  - name: Block
+    description: 図でないマーカーの外部ライブラリを読み込めない。タイトルが `この箇所を表示できません`
+    args:
+      - name: name
+        value: tabs
+      - name: figure
+        value: 'false'
+  - name: LongName
+    description: マーカーの名前が長く、枠の幅を超える。名前が枠の中で折り返す
+    args:
+      - name: name
+        value: sequence-diagram-with-very-long-component-name
+      - name: figure
+        value: 'true'
+  - name: Extension
+    description: 拡張のモジュールを読み込めない。本文が `表示に使用する拡張（greet）を読み込めませんでした。…`
+    args:
+      - name: name
+        value: greet
+      - name: figure
+        value: 'true'
+      - name: source
+        value: extension
+  - name: DiffRevisions
+    description: 差分の取り出し元がリビジョンの一覧を返却できない。タイトルが `変更の履歴を表示できません`
+    args:
+      - name: name
+        value: guide
+      - name: source
+        value: diff-revisions
+  - name: DiffContent
+    description: 差分の取り出し元が 1 つのリビジョンの本文を返却できない。タイトルが `このリビジョンの本文を表示できません`
+    args:
+      - name: name
+        value: 2026/10/18 09:12 初版（佐藤）
+      - name: source
+        value: diff-content
+  - name: DiffBlocks
+    description: 描いた文書のブロックの色分けに使用するリビジョンを取り出せない。タイトル `変更を表示できません`・本文 `比べるリビジョンの本文を取り出せませんでした。色分けせずに表示しています。`
+    args:
+      - name: name
+        value: guide
+      - name: source
+        value: diff-blocks
+  - name: Icons
+    description: まとめていない名前の Lucide のアイコンを読み込めない。文書に 1 つだけ配置する
+    args:
+      - name: name
+        value: lucide
+      - name: source
+        value: icons
+lead: 外部ライブラリを読み込めないマーカーの場所に配置する枠。何が起きたかをタイトルに、マーカーの名前と修正方法を本文に出す。HTML 文字列を返却し、ブラウザと Node で同じ出力になる。
+args:
+  - name: name
+    type: 文字列
+    required: true
+    description: 読み込めなかったマーカーの名前。本文の `code` に入れる（HTML として特別な文字はエスケープする）
+  - name: figure
+    type: 真偽値
+    required: false
+    default: 'true'
+    description: 図のマーカーか。タイトルを `この図を表示できません`（true）か `この箇所を表示できません`（false）にする
+  - name: source
+    type: 列挙
+    required: false
+    default: library
+    choices: '`library`（本文 `表示に使用するライブラリ（{name}）を…`）・`extension`（本文 `表示に使用する拡張（{name}）を…`）・`diff-revisions`（タイトル `変更の履歴を表示できません`・本文 `リビジョンの一覧を取り出せませんでした。時間をおいて、変更をもう一度開いてください。`）・`diff-content`（タイトル `このリビジョンの本文を表示できません`・本文 `「{name}」の本文を取り出せませんでした。別のリビジョンを選んでください。`）・`diff-blocks`（タイトル `変更を表示できません`・本文 `比べるリビジョンの本文を取り出せませんでした。色分けせずに表示しています。`）・`icons`（タイトル `アイコンを表示できません`・本文 `Lucide のアイコンを読み込めませんでした。アイコンの場所は記載した文字で表示しています。通信を確認してもう一度開いてください。`。`name` と `figure` を使用しない）'
+    description: 読み込めなかったものが外部ライブラリか、`registerExtension` で登録した拡張か、差分の取り出し元のリビジョンの一覧か本文か、描いた文書のブロックの色分けに使用するリビジョンか。`diff-blocks` は `name` と `figure` を使用しない。`diff-revisions` は `name` と `figure` を使用せず、`diff-content` は `name` に取り出せなかったリビジョンの説明（複数なら `「…」と「…」` の中身）を指定し `figure` を使用しない
+    status: planned
+css_properties:
+  - name: --mdmark-color-notice-bg
+    syntax: <color>
+    default: '#f9eee8（ダーク #2a251d）'
+    description: 枠の地の色
+  - name: --mdmark-color-notice-border
+    syntax: <color>
+    default: '#b45309（ダーク #fbbf24）'
+    description: 枠の線の色
+  - name: --mdmark-color-notice-text
+    syntax: <color>
+    default: '#18181b（ダーク #ededef）'
+    description: 枠の文字の色
+  - name: --mdmark-radius
+    syntax: <length>
+    default: 4px
+    description: 枠の角丸
+accessibility:
+  - 枠は `role="status"` を持ち、スクリーンリーダーがタイトルと本文を伝達する
+  - タイトルは `strong`（class `mdmark-notice-title`）、本文は `p` で、色に頼らず文言で伝える
+  - マーカーの名前は長くても枠の中で折り返し、横スクロールを出さない
+refs:
+  - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[通知ブロック]
+  - dev/設計書/インターフェース定義/ライブラリ本体/拡張を登録する.ts#constraints[読み込み]
+notes:
+  出力: '`<div class="mdmark-notice" role="status"><strong class="mdmark-notice-title">{タイトル}</strong><p>表示に使用するライブラリ（<code>{name}</code>）を読み込めませんでした。ネットワークにつながっているかを確認して、ページを再読み込みしてください。</p></div>`。文言は確認ログの決定（通知ブロックの文言）。モックは `dev/mock/components/notice/`'
+test_file: tests/integration/lib/notice.story.test.ts

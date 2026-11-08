@@ -3,12 +3,12 @@ import { expect, test } from "vitest";
 /** 設定の処理を読み込む（実装が無い間は各テストが個別に失敗する） */
 const loadSettings = () => import("../../../../vscode/src/settings.ts");
 
-/** キーごとの値を返す `get` の代役を作る（無いキーは `undefined`） */
+/** キーごとの値を返却する `get` の代役を作る（無いキーは `undefined`） */
 function createGet(values: Record<string, unknown>) {
   return (key: string) => values[key];
 }
 
-// 書いた値をそのまま読む（正常系）
+// 記載した値をそのまま読み込む（正常系）
 test("test_read_settings", async () => {
   // 準備
   const { readSettings, SETTING_DEFAULTS } = await loadSettings();
@@ -28,7 +28,7 @@ test("test_read_settings", async () => {
   });
 });
 
-// 入っているテーマの名前だけを読み、他の値は空に戻す（正常系）
+// 入っているテーマの名前だけを読み込み、他の値は空に戻す（正常系）
 test("test_read_settings_when_color_theme", async () => {
   // 準備
   const { readSettings } = await loadSettings();

@@ -1,8 +1,8 @@
 $schema: https://json-schema.org/draft/2020-12/schema
 title: 非機能要件
 description: |-
-  外部コンポーネントの制約を踏まえてアプリとして守る値（コンポーネントをまたいで効く要件だけ）。1 プロジェクト 1 ファイル。
-  1 コンポーネント内で閉じる要件は作業 PR の非機能要件に書く（判定フローチャート『非機能要件のレイヤー』）。
+  外部コンポーネントの制約を踏まえてアプリとして守る値（コンポーネントをまたいで有効になる要件だけ）。1 プロジェクト 1 ファイル。
+  1 コンポーネント内で閉じる要件は作業 PR の非機能要件に記載する（判定フローチャート『非機能要件のレイヤー』）。
 x-kind: nonfunctional
 x-folder: dev/設計書/非機能要件
 x-cross: requirements
@@ -21,13 +21,13 @@ properties:
     title: 冒頭リード
     description: |-
       対象を 1〜3 行で説明する。
-      初回に書いた内容のまま保ち、後から情報を足さない（仕様は各項目に書く）。
+      初回に記載した内容のまま保ち、後から情報を追加しない（仕様は各項目に記載する）。
       対象そのものが変わったときだけ書き換える。
   requirements:
     type: array
     title: 一覧
     description: |-
-      外部の制約から逆算したアプリの値。決まっていない項目も同じ一覧に置き、決定値を `未確定` にする。
+      外部の制約から逆算したアプリの値。決まっていない項目も同じ一覧に配置し、決定値を `未確定` にする。
       未確定だった項目が決まったら同じ要素を書き換える。一覧の表は各要素から生成する。
     x-heading: 一覧
     x-shape: sections
@@ -52,14 +52,14 @@ properties:
         english_name:
           type: string
           title: 英語名
-          description: テスト関数・ファイルの名前に使う。
+          description: テスト関数・ファイルの名前に使用する。
           pattern: ^[a-z0-9_]+$
         category:
           type: string
           title: カテゴリ
           description: |-
             性能 / レート制限 / 可用性 / 耐障害 / セキュリティ / コスト / 保守性 / 動作環境 等。
-            動作環境は対応端末・OS・ブラウザ・画面サイズ・入力方式・通信を 1 項目ずつ置く。
+            動作環境は対応端末・OS・ブラウザ・画面サイズ・入力方式・通信を 1 項目ずつ配置する。
         external_constraint:
           type: string
           title: 外部の制約
@@ -67,7 +67,7 @@ properties:
         source_kind:
           type: string
           title: 出所種別
-          description: 6 種類を 1 つずつ突き合わせ、どれにも当たらないときだけ `制限なし`。
+          description: 6 種類を 1 つずつ突き合わせ、どれにも該当しないときだけ `制限なし`。
           enum:
           - 外部 API の制限
           - 外部ライブラリの制限
@@ -79,7 +79,7 @@ properties:
         source:
           type: string
           title: 出所
-          description: 外部の制約を書いた設計書の参照・資料の URL・ユーザーの回答コメントの URL。
+          description: 外部の制約を記載した設計書の参照・資料の URL・ユーザーの回答コメントの URL。
         value:
           type: string
           title: 決定値
@@ -94,7 +94,7 @@ properties:
         measurement:
           type: string
           title: 測り方
-          description: 実機での確認に回す項目は、確かめる端末と操作を書く。
+          description: 実機での確認に回す項目は、確認する端末と操作を記載する。
         test_file:
           type: string
           title: 対応テスト
@@ -104,8 +104,8 @@ properties:
           type: object
           title: 確認の記録
           description: |-
-            実機での確認に回した項目だけが持つ、確かめた結果。確かめた側（tester かユーザー）が release ブランチの行へ書く。
-            修正の後に合格の記録を持たない項目は、確かめ直して書き換える。
+            実機での確認に回した項目だけが持つ、確認した結果。確認した側（tester かユーザー）が release ブランチの行へ記載する。
+            修正の後に合格の記録を持たない項目は、もう一度確認して書き換える。
           x-heading: 確認の記録
           x-shape: attributes
           additionalProperties: false
@@ -118,11 +118,11 @@ properties:
             device:
               type: string
               title: 端末
-              description: 確かめた端末（OS・ブラウザなど）。
+              description: 確認した端末（OS・ブラウザなど）。
             version:
               type: string
-              title: 版
-              description: 確かめた端末の版（OS・ブラウザの版）。
+              title: バージョン
+              description: 確認した端末のバージョン（OS・ブラウザのバージョン）。
             date:
               type: string
               title: 確認日
@@ -252,12 +252,12 @@ examples:
     source: dev/設計書/外部API/OpenAI#
     value: 10 万
     unit: トークン
-    rationale: 内部のシステムプロンプトと出力枠を差し引く
+    rationale: 内部のシステムプロンプトと出力枠を差し参照する
     measurement: API へ渡ったトークン数を数える
     test_file: tests/nfr/test_input_limit.py
     overflow: |-
       上限を超える入力は送信の前に分割する。
-      分割できない単一のメッセージが超えたときは古い履歴から切り詰め、それでも収まらなければエラーにして呼び出し元へ返す。
+      分割できない単一のメッセージが超えたときは古い履歴から切り詰め、それでも収まらなければエラーにして呼び出し元へ返却する。
     breakdown:
     - part: 外部の上限
       value: 1,000,000
@@ -273,7 +273,7 @@ examples:
       summary: 上限ちょうどの入力
       condition: 100,000 トークンの入力を 1 回送る
       measurement: API へ渡ったトークン数
-      expected: 分割されずに 1 回で送られる
+      expected: 分割されずに 1 回で送信される
     - name: test_input_limit_when_over
       summary: 上限を超えた入力
       condition: 100,001 トークンの入力を 1 回送る
@@ -286,9 +286,9 @@ examples:
     source_kind: 制限なし
     value: "30"
     unit: 秒
-    rationale: 内側の待ち 2 つの合計に余裕を足す（規約『資源の値の決め方』の入れ子の待ち）
+    rationale: 内側の待ち 2 つの合計に余裕を追加する（規約『資源の値の決め方』の入れ子の待ち）
     measurement: 内側の待ちを両方とも上限まで遅らせた要求を 1 回送り、応答までの時間を測る
-    overflow: 上限を超えたら呼び出し元へタイムアウトのエラーを返す。回復は呼び出し元のリトライで待つ
+    overflow: 上限を超えたら呼び出し元へタイムアウトのエラーを返却する。回復は呼び出し元のリトライで待つ
     breakdown:
     - part: 内側の待ち（外部 API の呼び出し）
       value: "10"
@@ -298,7 +298,7 @@ examples:
       notes: 保存の実測 p99.9 + 余裕
     - part: 余裕
       value: "10"
-      notes: 実測が無いため内側の待ちの合計の 50% を仮に置く
+      notes: 実測が無いため内側の待ちの合計の 50% を仮に配置する
     - part: アプリの決定値
       value: "30"
       notes: 内側の待ちの合計 + 余裕
@@ -314,8 +314,8 @@ examples:
     source_kind: ユーザー要望
     source: https://github.com/{owner}/{repo}/issues/{番号}#issuecomment-{ID}
     value: Chrome と Edge の最新版
-    rationale: 利用者が社内の PC だけで使うため
-    measurement: Chrome と Edge の実機で、全ての画面の操作を最後まで完了できるかを確かめる
+    rationale: 利用者が社内の PC だけで使用するため
+    measurement: Chrome と Edge の実機で、全ての画面の操作を最後まで完了できるかを確認する
     verification:
       device: Windows 11 の PC の Edge
       version: Edge 140
@@ -330,7 +330,7 @@ examples:
     value: "360"
     unit: px
     rationale: スマホでは閲覧できれば足りる
-    measurement: ブラウザの表示幅を変えて全ての画面を開き、横スクロールの有無を見る
+    measurement: ブラウザの表示幅を変えて全ての画面を開き、横スクロールの有無を確認する
     test_file: tests/nfr/test_min_viewport_width.py
     tests:
     - name: test_min_viewport_width
@@ -347,8 +347,8 @@ examples:
     source_kind: ユーザー要望
     source: https://github.com/{owner}/{repo}/issues/{番号}#issuecomment-{ID}
     value: Windows の PC と Nintendo Switch
-    rationale: 企画の段で決めた販売先
-    measurement: 各端末の実機で、タイトル画面から 1 ステージを最後まで遊べるかを確かめる
+    rationale: 企画の工程で決めた販売先
+    measurement: 各端末の実機で、タイトル画面から 1 ステージを最後まで遊べるかを確認する
     verification:
       device: Nintendo Switch の実機
       version: システムソフトウェア 19.0.0
@@ -361,13 +361,13 @@ examples:
     source_kind: ユーザー要望
     source: https://github.com/{owner}/{repo}/issues/{番号}#issuecomment-{ID}
     value: キーボードとゲームパッド
-    rationale: 対応端末の標準の入力に揃える
-    measurement: 論理操作ごとに、割り当てたキーとボタンの入力を送る
+    rationale: 対応端末の標準の入力に統一する
+    measurement: 論理操作ごとに、割り当てたキーとボタンの入力を送信する
     test_file: tests/nfr/test_input_devices.py
     tests:
     - name: test_input_devices
       summary: 全ての論理操作の割り当て
-      condition: 論理操作ごとに、キーボードとゲームパッドの割り当てを 1 回ずつ送る
+      condition: 論理操作ごとに、キーボードとゲームパッドの割り当てを 1 回ずつ送信する
       measurement: ゲームが受け取った論理操作
       expected: 全ての論理操作を、どちらの入力からも受け取る
   - name: 通信
@@ -375,4 +375,4 @@ examples:
     external_constraint: 未確定
     source_kind: 未確定
     value: 未確定
-    rationale: オンラインで遊ぶ機能を持つかが企画の段で決まってから決める
+    rationale: オンラインで遊ぶ機能を持つかが企画の工程で決まってから決める

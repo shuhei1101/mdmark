@@ -1,5 +1,5 @@
 title: details の範囲
-lead: details の範囲を、タイトルから開閉する折りたたみにする。見た目は表・タブ・ステップの折り畳みと同じ `details.mdmark-collapsible`。
+lead: details の範囲を、タイトルから開閉する折りたたみにする。外観は表・タブ・ステップの折り畳みと同じ `details.mdmark-collapsible`。
 implementation: src/parts/collapsible.ts#renderCollapsible
 story: Parts/DetailsRange
 test_file: tests/integration/lib/details-range.story.test.ts
@@ -35,9 +35,9 @@ states:
   - name: open
     value: 'true'
 accessibility:
-- '`details` と `summary` の既定の開閉の操作（Enter・Space）と開閉の状態の読み上げを使う'
+- '`details` と `summary` の既定の開閉の操作（Enter・Space）と開閉の状態のスクリーンリーダーを使用する'
 refs:
 - dev/設計書/インターフェース定義/ライブラリ本体/文書をHTML文字列にする.ts#constraints[details の範囲]
 status: planned
 notes:
-  HTML: '`<details class="mdmark-collapsible"><summary>{title}</summary>{html}</details>`。タブ・ステップの `collapse` と同じ部品を使う。モックは `dev/mock/components/details-range/`'
+  HTML: '`<details class="mdmark-collapsible"><summary>{title}</summary>{html}</details>`。タブ・ステップの `collapse` と同じ部品を使用する。モックは `dev/mock/components/details-range/`'

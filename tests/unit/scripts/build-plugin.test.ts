@@ -10,11 +10,11 @@ const loadBuildPlugin = () => import("../../../scripts/build-plugin.ts");
 
 const createTempDir = useTempDirs();
 
-/** 使い方集の索引の行を作る（`page` は `docs/{名前}.md`） */
+/** ガイドの索引の行を作る（`page` は `docs/{名前}.md`） */
 function createEntry(name: string, page = `docs/${name}.md`) {
   return {
     name,
-    when: `${name} を書くとき`,
+    when: `${name} を記載するとき`,
     summary: `${name} の概要`,
     page,
   };
@@ -80,7 +80,7 @@ test("test_check_guide_source_when_page_missing", async () => {
   );
 });
 
-// 形に合わない索引（正常系）
+// 構造に合わない索引（正常系）
 test("test_check_guide_source_when_invalid", async () => {
   // 準備
   const { checkGuideSource } = await loadBuildPlugin();
@@ -119,7 +119,7 @@ test("test_check_guide_source_when_unreadable", async () => {
   ).toBe(true);
 });
 
-// ソースマップの sources から取り込まれたパッケージの名前を引く（正常系）
+// ソースマップの sources から取り込まれたパッケージの名前を参照する（正常系）
 test("test_list_embedded_packages", async () => {
   // 準備
   const { listEmbeddedPackages } = await loadBuildPlugin();
@@ -154,7 +154,7 @@ test("test_list_embedded_packages_when_no_map", async () => {
   expect(result).toEqual([]);
 });
 
-/** 束ねたパッケージ `pkg`（ソースマップが `ajv` を指す）を一時フォルダに置く */
+/** まとめたパッケージ `pkg`（ソースマップが `ajv` を指す）を一時フォルダに配置する */
 async function writeBundledPackage(root: string): Promise<Metafile> {
   await writeFiles(root, {
     "node_modules/pkg/package.json": JSON.stringify({
@@ -173,7 +173,7 @@ async function writeBundledPackage(root: string): Promise<Metafile> {
   return createMetafile(["node_modules/pkg/dist/a.mjs"]);
 }
 
-// 束ねたパッケージと取り込まれたパッケージの本文を書く（正常系）
+// まとめたパッケージと取り込まれたパッケージの本文を記載する（正常系）
 test("test_write_plugin_licenses", async () => {
   // 準備
   const { writePluginLicenses } = await loadBuildPlugin();
@@ -235,7 +235,7 @@ test("test_write_plugin_manifest", async () => {
   expect(Object.keys(JSON.parse(text))).toEqual(Object.keys(before));
 });
 
-// 生成物だけを消す（正常系）
+// 生成物だけを削除する（正常系）
 test("test_remove_plugin_outputs", async () => {
   // 準備
   const { removePluginOutputs } = await loadBuildPlugin();
@@ -251,7 +251,7 @@ test("test_remove_plugin_outputs", async () => {
   expect(existsSync(join(root, "plugin", ".mcp.json"))).toBe(true);
 });
 
-// プラグインのソースが無ければ何も書かない（正常系）
+// プラグインのソースが無ければ何も書き込まない（正常系）
 test("test_build_plugin_when_source_missing", async () => {
   // 準備
   const { buildPlugin } = await loadBuildPlugin();
@@ -266,7 +266,7 @@ test("test_build_plugin_when_source_missing", async () => {
   expect(existsSync(join(root, "plugin", "scripts"))).toBe(false);
 });
 
-// 索引に問題があれば書かずに問題を返す（正常系）
+// 索引に問題があれば記載せずに問題を返却する（正常系）
 test("test_build_plugin_when_guide_invalid", async () => {
   // 準備
   const { buildPlugin } = await loadBuildPlugin();

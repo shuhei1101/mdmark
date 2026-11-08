@@ -16,7 +16,7 @@ const normalizePath = (path: string): string => {
   return parts.join("/");
 };
 
-/** ライブラリ本体の `resolveIncludePath` と同じ解き方で、マーカーを書いた文書のフォルダを基準に、取り込み先を開いている Markdown のフォルダからのパスにする（拡張機能は単独で束ねるため、ライブラリ本体を読み込まない） */
+/** ライブラリ本体の `resolveIncludePath` と同じ解き方で、マーカーを記載した文書のフォルダを基準に、取り込み先を開いている Markdown のフォルダからのパスにする（拡張機能は単独でまとめるため、ライブラリ本体を読み込まない） */
 const includeKey = (from: string, written: string): string => {
   const hash = written.indexOf("#");
   const path = hash < 0 ? written : written.slice(0, hash);
@@ -25,13 +25,13 @@ const includeKey = (from: string, written: string): string => {
   return normalizePath(dir ? `${dir}/${path}` : path);
 };
 
-/** 行頭から書いた include のマーカー */
+/** 行頭から記載した include のマーカー */
 const MARKER_PATTERN = /^\s{0,3}<!--\s*include:\s*(.*?)\s*-->/;
 
 /** コードブロックの開きと閉じの行 */
 const FENCE_PATTERN = /^\s{0,3}(`{3,}|~{3,})/;
 
-/** 本文の include のマーカー（コードブロックの中を除く）に書いた取り込み先を返す */
+/** 本文の include のマーカー（コードブロックの中を除く）に記載した取り込み先を返却する */
 const findMarkers = (markdown: string): string[] => {
   const found: string[] = [];
   let fence: string | undefined;
@@ -63,7 +63,7 @@ const isInside = (root: string, inner: string): boolean => {
   );
 };
 
-/** 開いている Markdown の include のマーカーを解き、根のフォルダの中の読めるファイルだけを `readFile` で読んで、取り込む文書の表と読んだファイルのパスを返す。取り込んだ Markdown の中のマーカーもたどり、同じファイルは 1 回だけ読む */
+/** 開いている Markdown の include のマーカーを解き、根のフォルダの中の読み込めるファイルだけを `readFile` で読み込んで、取り込む文書の表と読み込んだファイルのパスを返却する。取り込んだ Markdown の中のマーカーもたどり、同じファイルは 1 回だけ読み込む */
 export const readIncludes = async (options: {
   /** 開いている Markdown の絶対パス */
   markdownPath: string;
@@ -71,7 +71,7 @@ export const readIncludes = async (options: {
   markdown: string;
   /** 根のフォルダの絶対パス */
   root: string;
-  /** ファイルを読む関数（読めないとき `undefined`） */
+  /** ファイルを読み込む関数（読み込めないとき `undefined`） */
   readFile: (path: string) => Promise<string | undefined>;
 }): Promise<{ includes: Record<string, string>; paths: string[] }> => {
   const { markdownPath, markdown, root, readFile } = options;

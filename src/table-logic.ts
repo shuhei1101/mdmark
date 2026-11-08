@@ -1,10 +1,10 @@
 /** 絞り込みの種類 */
 export type FilterKind = "select" | "text" | "date";
 
-/** `filter=` に書ける絞り込みの種類。省いたときは先頭 */
+/** `filter=` に記載できる絞り込みの種類。省いたときは先頭 */
 export const FILTER_KINDS: readonly FilterKind[] = ["select", "text", "date"];
 
-/** 列 1 つに当てた絞り込み */
+/** 列 1 つに適用した絞り込み */
 export type FilterValue = {
   /** 列の位置 */
   column: number;
@@ -18,7 +18,7 @@ export type FilterValue = {
   to?: string | undefined;
 };
 
-/** セルの文字の前後の空白と `,` を除いて数にする。空か数として読めなければ `undefined` */
+/** セルの文字の前後の空白と `,` を除いて数にする。空か数として読み込めなければ `undefined` */
 export function parseNumberCell(text: string): number | undefined {
   const normalized = text.replaceAll(",", "").trim();
   if (normalized === "" || !Number.isFinite(Number(normalized))) {
@@ -40,7 +40,7 @@ export function compareCells(a: string, b: string): number {
   return collator.compare(a, b);
 }
 
-/** 日付として読めるセルの文字を `YYYY-MM-DD` にする。読めなければ `undefined` */
+/** 日付として読み込めるセルの文字を `YYYY-MM-DD` にする。読み込めなければ `undefined` */
 function toIsoDate(text: string): string | undefined {
   const match = /^(\d{4})[-/](\d{1,2})[-/](\d{1,2})$/.exec(text.trim());
   if (!match) {
@@ -75,10 +75,10 @@ export function matchesFilter(
 /** 集計の計算 */
 export type TotalCalc = "sum" | "avg" | "count";
 
-/** `total=列名:計算` に書ける計算。集計の行の題は `TOTAL_LABELS` */
+/** `total=列名:計算` に記載できる計算。集計の行のタイトルは `TOTAL_LABELS` */
 export const TOTAL_CALCS: readonly TotalCalc[] = ["sum", "avg", "count"];
 
-/** 集計の行に出す題 */
+/** 集計の行に出すタイトル */
 export const TOTAL_LABELS: Readonly<Record<TotalCalc, string>> = {
   sum: "合計",
   avg: "平均",
@@ -91,7 +91,7 @@ const NO_VALUE = "—";
 /** 集計の値の書式: 桁区切りを付け、小数は 2 桁までにする */
 const totalFormat = new Intl.NumberFormat("ja", { maximumFractionDigits: 2 });
 
-/** セルの文字を集計して表示する文字にする。`sum`・`avg` は数として読めるセルだけ、`count` は空でないセルを数える */
+/** セルの文字を集計して表示する文字にする。`sum`・`avg` は数として読み込めるセルだけ、`count` は空でないセルを数える */
 export function computeTotal(cells: string[], calc: TotalCalc): string {
   if (calc === "count") {
     return totalFormat.format(
@@ -113,15 +113,15 @@ export function computeTotal(cells: string[], calc: TotalCalc): string {
 /** 集計する列と計算 */
 export type TotalSpec = { column: number; calc: TotalCalc };
 
-/** 数として読めない値を持つ、集計する列と計算 */
+/** 数として読み込めない値を持つ、集計する列と計算 */
 export type UnreadableTotal = {
   column: number;
   calc: "sum" | "avg";
-  /** 読めないセルの文字（重なりを除いて現れた順） */
+  /** 読み込めないセルの文字（重なりを除いて現れた順） */
   values: string[];
 };
 
-/** `sum`・`avg` の列ごとに、空でなく数として読めないセルの文字を集める。読めないセルが無い列と計算、`count` は返さない */
+/** `sum`・`avg` の列ごとに、空でなく数として読み込めないセルの文字を集める。読み込めないセルが無い列と計算、`count` は返却しない */
 export function findUnreadableTotals(options: {
   rows: string[][];
   totals: TotalSpec[];
@@ -201,7 +201,7 @@ export function stickyShift(options: {
   return { head, foot };
 }
 
-/** `animation-timeline` を持つブラウザで、CSS のアニメーションが使う動く範囲（px）を求める。集計の行が無ければ `footMax`・`footEnd` は 0 */
+/** `animation-timeline` を持つブラウザで、CSS のアニメーションが使用する動く範囲（px）を求める。集計の行が無ければ `footMax`・`footEnd` は 0 */
 export function stickyRange(options: {
   tableTop: number;
   tableBottom: number;
@@ -227,7 +227,7 @@ export function stickyRange(options: {
   };
 }
 
-/** `location.hash` の最後の `#` の後ろを戻した文字を返す。戻せないときはそのまま、`#` が無ければ空文字 */
+/** `location.hash` の最後の `#` の後ろを戻した文字を返却する。戻せないときはそのまま、`#` が無ければ空文字 */
 export function rowIdFromHash(hash: string): string {
   const position = hash.lastIndexOf("#");
   if (position < 0) {
@@ -241,11 +241,11 @@ export function rowIdFromHash(hash: string): string {
   }
 }
 
-/** 見出しの行ごとのセルの `rowspan`・`colspan` から、列ごとに、その列だけを覆い最下段まで届くセルの位置を返す。複数の列をまたぐセルしか無い列は `undefined` */
+/** 見出しの行ごとのセルの `rowspan`・`colspan` から、列ごとに、その列だけを覆い最下段まで届くセルの位置を返却する。複数の列をまたぐセルしか無い列は `undefined` */
 export function bottomHeadCells(
   rows: Array<Array<{ rowSpan: number; colSpan: number }>>,
 ): Array<{ row: number; cell: number } | undefined> {
-  // 格子の行ごとに、上の段から縦に結合したセルが覆う列を控える
+  // 格子の行ごとに、上の行から縦に結合したセルが覆う列を記録する
   const grid: Array<Array<{ row: number; cell: number; colSpan: number }>> =
     rows.map(() => []);
   for (const [row, cells] of rows.entries()) {
@@ -303,13 +303,13 @@ export function mergeSpans(options: {
 
 /** 列が属する結合した見出しの範囲とピン止めの側 */
 export type ColumnPlace = {
-  /** 結合した見出しの範囲（`{段}:{位置}`。範囲の外は `undefined`） */
+  /** 結合した見出しの範囲（`{行}:{位置}`。範囲の外は `undefined`） */
   group: string | undefined;
   /** ピン止めした列か */
   pinned: boolean;
 };
 
-/** 動かす列と動かす先の列が同じ結合した見出しの範囲で、ピン止めの同じ側にあるときだけ `true` を返す */
+/** 動かす列と動かす先の列が同じ結合した見出しの範囲で、ピン止めの同じ側にあるときだけ `true` を返却する */
 export function canMoveColumn(options: {
   from: ColumnPlace;
   to: ColumnPlace;
@@ -318,7 +318,7 @@ export function canMoveColumn(options: {
   return from.group === to.group && from.pinned === to.pinned;
 }
 
-/** 列の順（元の列の位置の並び）の `column` を `target` の前か後ろへ動かした新しい並びを返す */
+/** 列の順（元の列の位置の並び）の `column` を `target` の前か後ろへ動かした新しい並びを返却する */
 export function moveColumn(options: {
   /** 今の列の順 */
   order: number[];

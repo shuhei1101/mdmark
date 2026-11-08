@@ -12,7 +12,7 @@ import {
 } from "./paths.ts";
 import { hasSession, hasTmux } from "./status.ts";
 
-/** コマンドと引数を受け、終了コードと標準出力を返す */
+/** コマンドと引数を受け、終了コードと標準出力を返却する */
 export type RunCommand = (
   command: string,
   args: string[],
@@ -21,7 +21,7 @@ export type RunCommand = (
 /** `MDMARK_START_TIMEOUT_SEC` が無いときの、待ち受けを待つ上限の秒数 */
 export const START_TIMEOUT_SEC = 120;
 
-/** 待ち受けを確かめる間隔（ミリ秒） */
+/** 待ち受けを確認する間隔（ミリ秒） */
 export const POLL_INTERVAL_MS = 1000;
 
 /** 失敗したときに添えるログの末尾の行数 */
@@ -40,7 +40,7 @@ export type StartResult = {
 /** 一重引用符で囲み、中の一重引用符を `'\''` にする */
 const quote = (value: string): string => `'${value.replaceAll("'", "'\\''")}'`;
 
-/** `tmux new-session` の引数を作る。環境変数は `-e` で渡し、コマンドは `sh -c` の引数にする */
+/** `tmux new-session` の引数を作る。環境変数は `-e` で指定し、コマンドは `sh -c` の引数にする */
 export const buildTmuxArgs = (options: {
   session: string;
   port: number;
@@ -64,7 +64,7 @@ export const buildTmuxArgs = (options: {
   `${options.command} 2>&1 | tee -a ${quote(options.logPath)}`,
 ];
 
-/** 常駐サーバーへ `initialize` と `tools/list` を送り、ツールの名前を返す */
+/** 常駐サーバーへ `initialize` と `tools/list` を送信し、ツールの名前を返却する */
 export const listToolNames = async (options: {
   port: number;
 }): Promise<string[]> => {
@@ -81,7 +81,7 @@ export const listToolNames = async (options: {
   }
 };
 
-/** ログの末尾を読む。無ければ空 */
+/** ログの末尾を読み込む。無ければ空 */
 const readLogTail = async (path: string): Promise<string> => {
   try {
     return (await readFile(path, "utf8"))
@@ -97,7 +97,7 @@ const readLogTail = async (path: string): Promise<string> => {
   }
 };
 
-/** 待ち受けを待つ上限の秒数を読む */
+/** 待ち受けを待つ上限の秒数を読み込む */
 const readTimeoutSec = (env: NodeJS.ProcessEnv): number => {
   const value = env.MDMARK_START_TIMEOUT_SEC;
   if (value === undefined || value === "") {
@@ -105,13 +105,13 @@ const readTimeoutSec = (env: NodeJS.ProcessEnv): number => {
   }
   if (!/^\d+$/.test(value)) {
     throw new SetupError(
-      `MDMARK_START_TIMEOUT_SEC の値 ${value} は 0 以上の整数で書いてください。`,
+      `MDMARK_START_TIMEOUT_SEC の値 ${value} は 0 以上の整数で記載してください。`,
     );
   }
   return Number(value);
 };
 
-/** `start-server`: tmux のセッションで `mdmark serve` を起動し、待ち受けと `tools/list` を確かめる */
+/** `start-server`: tmux のセッションで `mdmark serve` を起動し、待ち受けと `tools/list` を確認する */
 export const startServer = async (options: {
   env: NodeJS.ProcessEnv;
   pluginRoot: string;
@@ -139,7 +139,7 @@ export const startServer = async (options: {
     isPortListening({ port: paths.port, timeoutMs: CONNECT_TIMEOUT_MS });
   const portInUse = (detail: string) =>
     new SetupError(
-      `ポート ${paths.port} で ${detail}。ほかのプロセスが使っているときは、~/.claude/settings.json の env の MDMARK_PORT を空いたポートに変え、セッションを開き直して /mdmark:global-setup を呼び直してください。`,
+      `ポート ${paths.port} で ${detail}。ほかのプロセスが使用しているときは、~/.claude/settings.json の env の MDMARK_PORT を空いたポートに変え、セッションをもう一度開いて /mdmark:global-setup をもう一度呼んでください。`,
     );
   const done = async (result: StartResult["result"]): Promise<StartResult> => {
     let tools: string[];
@@ -188,7 +188,7 @@ export const startServer = async (options: {
   for (;;) {
     if (!(await hasSession({ run, session }))) {
       throw new SetupError(
-        `mdmark serve が終わりました。${paths.logPath} の末尾:\n${await readLogTail(paths.logPath)}\nポートが使われているときは、~/.claude/settings.json の env の MDMARK_PORT を空いたポートに変え、セッションを開き直して /mdmark:global-setup を呼び直してください。`,
+        `mdmark serve が終わりました。${paths.logPath} の末尾:\n${await readLogTail(paths.logPath)}\nポートが使用されているときは、~/.claude/settings.json の env の MDMARK_PORT を空いたポートに変え、セッションをもう一度開いて /mdmark:global-setup をもう一度呼んでください。`,
       );
     }
     if (await listening()) {

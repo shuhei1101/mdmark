@@ -11,12 +11,12 @@ import {
 /** 表の処理を読み込む（実装が無い間は各テストが個別に失敗する） */
 const loadTable = () => import("../../../../src/parts/table.ts");
 
-/** 部品の HTML の `tr` を、現れた順に返す */
+/** 部品の HTML の `tr` を、現れた順に返却する */
 function rowsOf(html: string): string[] {
   return html.match(/<tr\b[\s\S]*?<\/tr>/g) ?? [];
 }
 
-/** 中身の差し込み口の処理を読み込む */
+/** 中身の差し込みインターフェースの処理を読み込む */
 const loadOwn = () => import("../../../../src/parts/own.ts");
 
 // 囲みに種類・機能・絞り込みを属性で持たせる（正常系）
@@ -59,7 +59,7 @@ test("test_render_table_when_closed", async () => {
   expect(findTag(html, "<details")).not.toMatch(/\sopen\b/);
 });
 
-// 当てた絞り込みに合わない行を隠し、一致する行が無ければ知らせの行を出す（正常系）
+// 適用した絞り込みに合わない行を隠し、一致する行が無ければ通知の行を出す（正常系）
 test("test_render_table_when_filtered", async () => {
   // 準備
   const { renderTable } = await loadTable();
@@ -130,8 +130,8 @@ test("test_render_table_when_all_features", async () => {
     columns: ["名前", "説明", "数量"],
     rows: [
       ["なつめ", "描画を速くする", "12"],
-      ["かりん", "印刷を直す", "8"],
-      ["ざくろ", "描画の崩れを直す", "5"],
+      ["かりん", "印刷を修正する", "8"],
+      ["ざくろ", "描画の崩れを修正する", "5"],
     ],
     hide: [1],
     totals: [{ column: 2, calc: "sum" }],
@@ -172,7 +172,7 @@ test("test_render_table_when_all_features", async () => {
   }
 });
 
-// 件数とテーブル設定とコピーの帯を返す（正常系）
+// 件数とテーブル設定とコピーの帯を返却する（正常系）
 test("test_render_table_bar", async () => {
   // 準備
   const { renderTableBar } = await loadTable();
@@ -219,7 +219,7 @@ test("test_render_table_bar", async () => {
   ]);
 });
 
-// コピーできなかったボタンを返す（正常系）
+// コピーできなかったボタンを返却する（正常系）
 test("test_render_table_bar_when_copy_failed", async () => {
   // 準備
   const { renderTableBar } = await loadTable();
@@ -241,7 +241,7 @@ test("test_render_table_bar_when_copy_failed", async () => {
   expect(menus).not.toContain("mdmark-table-settings");
 });
 
-// 集計のボタンとメニューを返し、隠している計算の数を読み上げの名前に加える（正常系）
+// 集計のボタンとメニューを返却し、隠している計算の数をスクリーンリーダー向けの名前に加える（正常系）
 test("test_render_table_bar_when_totals", async () => {
   // 準備
   const { renderTableBar } = await loadTable();
@@ -284,7 +284,7 @@ test("test_render_table_bar_when_totals", async () => {
   }
 });
 
-// コピーの形式のメニューを開いた帯を返す（正常系）
+// コピーの形式のメニューを開いた帯を返却する（正常系）
 test("test_render_table_bar_when_copy_menu_open", async () => {
   // 準備
   const { renderTableBar } = await loadTable();
@@ -340,7 +340,7 @@ test("test_render_total_rows", async () => {
   expect(avgCells[2]).toContain('data-total="avg"');
   expect(avgCells[2]).toMatch(/\shidden\b/);
   expect(plainText(rows[1])).toContain("250");
-  // 検証: 先頭の列を集計する件数の行は、名前と値を同じセルに置く
+  // 検証: 先頭の列を集計する件数の行は、名前と値を同じセルに配置する
   const countCells = findTags(rows[2], "<td");
   expect(countCells[0]).toContain('data-total="count"');
   expect(plainText(rows[2])).toContain("件数");
@@ -368,7 +368,7 @@ test("test_render_total_rows_when_shown", async () => {
   expect(avgRow).not.toMatch(/\shidden\b/);
 });
 
-// 題・案内・エスケープした中身を持つパネルを返す（正常系）
+// タイトル・案内・エスケープした中身を持つパネルを返却する（正常系）
 test("test_render_copy_panel", async () => {
   // 準備
   const { renderCopyPanel } = await loadTable();
@@ -394,7 +394,7 @@ test("test_render_copy_panel", async () => {
   expect(findTag(html, 'aria-label="閉じる"')).toContain("<button");
 });
 
-// 閉じた開閉の行とボタンを返す（正常系）
+// 閉じた開閉の行とボタンを返却する（正常系）
 test("test_render_folded_column", async () => {
   // 準備
   const { renderFoldedColumn } = await loadTable();
@@ -435,7 +435,7 @@ test("test_render_folded_column_when_open", async () => {
   expect(findTag(row, "<tr")).not.toMatch(/\shidden\b/);
 });
 
-// 値を選ぶドロワーとボタンを返す（正常系）
+// 値を選ぶドロワーとボタンを返却する（正常系）
 test("test_render_table_tools", async () => {
   // 準備
   const { renderTableTools } = await loadTable();
@@ -477,7 +477,7 @@ test("test_render_table_tools_when_date", async () => {
   expect(findTags(drawer, 'type="date"')).toHaveLength(2);
 });
 
-// 数として読めないセルを持つ列の合計と平均を空にし、計算ごとの行を出す（正常系）
+// 数として読み込めないセルを持つ列の合計と平均を空にし、計算ごとの行を出す（正常系）
 test("test_render_table_when_totals_unreadable", async () => {
   // 準備
   const { renderTable } = await loadTable();
@@ -544,7 +544,7 @@ test("test_render_table_when_totals_hidden", async () => {
   expect(findTag(html, "mdmark-totals-toggle")).toContain("is-active");
 });
 
-// クリップボードに書けなかったときのパネルを帯の直後に出す（正常系）
+// クリップボードに書き込めなかったときのパネルを帯の直後に出す（正常系）
 test("test_render_table_when_copy_fallback", async () => {
   // 準備
   const { renderTable } = await loadTable();
@@ -555,7 +555,7 @@ test("test_render_table_when_copy_fallback", async () => {
     columns: ["名前", "説明", "更新日"],
     rows: [
       ["りんご", "描画を速くする", "2026-10-01"],
-      ["みかん", "印刷を直す", "2026-10-10"],
+      ["みかん", "印刷を修正する", "2026-10-10"],
     ],
     copyState: "failed",
     copyFallback: { format: "tsv", text: "名前\t数量" },
@@ -570,7 +570,7 @@ test("test_render_table_when_copy_fallback", async () => {
   expect(innerHtml(afterBar, "<textarea")).toBe("名前\t数量");
 });
 
-// 行の URL をコピーした結果を印の横の知らせに出す（正常系）
+// 行の URL をコピーした結果をマーカーの横の通知に出す（正常系）
 test("test_render_table_when_row_link_notice", async () => {
   // 準備
   const { renderTable } = await loadTable();
@@ -581,8 +581,8 @@ test("test_render_table_when_row_link_notice", async () => {
     columns: ["名前", "説明", "更新日"],
     rows: [
       ["りんご", "描画を速くする", "2026-10-01"],
-      ["みかん", "印刷を直す", "2026-10-10"],
-      ["りんご飴", "描画の崩れを直す", "2026-10-20"],
+      ["みかん", "印刷を修正する", "2026-10-10"],
+      ["りんご飴", "描画の崩れを修正する", "2026-10-20"],
     ],
     rowIds: ["りんご", "みかん", "りんご飴"],
     targetRow: 1,
@@ -764,7 +764,7 @@ function rowHeadsOf(html: string): Array<{ tag: string; text: string }> {
     });
 }
 
-// 多段の見出しと行見出しと結合したセルを描き、ボタンを最下段に置く（正常系）
+// 多段の見出しと行見出しと結合したセルを描き、ボタンを最下段に配置する（正常系）
 test("test_render_table_when_merged", async () => {
   // 準備
   const { renderTable } = await loadTable();
@@ -827,7 +827,7 @@ test("test_render_table_when_columns_specified", async () => {
       [
         "#245",
         "表",
-        "はみ出す表で先頭の列を既定でピン止めし、pin= と wide= と check= を使えるようにする",
+        "はみ出す表で先頭の列を既定でピン止めし、pin= と wide= と check= を使用できるようにする",
         "未着手",
         "2026-11-21",
       ],
@@ -891,7 +891,7 @@ test("test_render_table_when_columns_specified", async () => {
   ]);
 });
 
-// true を ✓、false を読み上げだけのいいえにする（正常系）
+// true を ✓、false をスクリーンリーダー向けのいいえにする（正常系）
 test("test_render_check_cell", async () => {
   // 準備
   const { renderCheckCell } = await loadTable();
@@ -907,7 +907,7 @@ test("test_render_check_cell", async () => {
   expect(plainText(no)).toBe("いいえ");
 });
 
-// つまみと目のアイコンを持つ一覧を今の列の順で返す（正常系）
+// つまみと目のアイコンを持つ一覧を今の列の順で返却する（正常系）
 test("test_render_table_settings", async () => {
   // 準備
   const { renderTableSettings } = await loadTable();
@@ -942,7 +942,7 @@ test("test_render_table_settings", async () => {
   expect(html).not.toMatch(/<div class="mdmark-table-settings"[^>]*\shidden\b/);
 });
 
-// `reorder` だけのときは題が `並び順` で目のアイコンを置かない（正常系）
+// `reorder` だけのときはタイトルが `並び順` で目のアイコンを配置しない（正常系）
 test("test_render_table_settings_when_reorder_only", async () => {
   // 準備
   const { renderTableSettings } = await loadTable();
@@ -991,7 +991,7 @@ test("test_render_table_settings_when_groups", async () => {
   ]);
 });
 
-// 深さの数の縦線と、配列の `[]`・必須の * を置く（正常系）
+// 深さの数の縦線と、配列の `[]`・必須の * を配置する（正常系）
 test("test_render_tree_key_cell", async () => {
   // 準備
   const { renderTreeKeyCell } = await loadTable();
@@ -1029,7 +1029,7 @@ test("test_render_type_cell", async () => {
   expect(empty).toBe("");
 });
 
-// 開閉・コピー・見本のボタンを返す（正常系）
+// 開閉・コピー・見本のボタンを返却する（正常系）
 test("test_render_tree_tools", async () => {
   // 準備
   const { renderTreeTools } = await loadTable();

@@ -36,7 +36,7 @@ states:
         value: 'true'
       - name: foldedColumn
         value: '{"name":"説明","html":"並べ替え・ピン止め・絞り込みを付けた表を描く"}'
-lead: '表の直後の `<!-- row-detail: 行の位置 -->` の中身を、その行の下に開閉して出す行。詳細を持つ行の先頭のセルに開閉のボタンを置く。'
+lead: '表の直後の `<!-- row-detail: 行の位置 -->` の中身を、その行の下に開閉して出す行。詳細を持つ行の先頭のセルに開閉のボタンを配置する。'
 args:
   - name: row
     type: 整数
@@ -49,7 +49,7 @@ args:
   - name: label
     type: 文字列
     required: true
-    description: 行の先頭のセルの文字。開閉のボタンの読み上げの名前 `「{label}」の詳細` に使う
+    description: 行の先頭のセルの文字。開閉のボタンのスクリーンリーダー向けの名前 `「{label}」の詳細` に使用する
   - name: open
     type: 真偽値
     required: false
@@ -62,8 +62,8 @@ args:
     description: 開閉のボタンを付けるか（`render` は `false` で出し、`mount` が付ける）
   - name: foldedColumn
     type: オブジェクト
-    default: なし（最終列を置かない）
-    description: 表が最終列を畳んだときの、その行の最終列（`{ name, html }`。`name` は最終列の見出しの文字、`html` はその行のセルの中身）。渡すと詳細の中身の上に `mdmark-fold-part` で見出しと中身を置き、行の詳細の開閉のボタンだけで両方を開閉する（表はこの行に最終列の開閉のボタンを置かない）
+    default: なし（最終列を配置しない）
+    description: 表が最終列を畳んだときの、その行の最終列（`{ name, html }`。`name` は最終列の見出しの文字、`html` はその行のセルの中身）。指定すると詳細の中身の上に `mdmark-fold-part` で見出しと中身を配置し、行の詳細の開閉のボタンだけで両方を開閉する（表はこの行に最終列の開閉のボタンを配置しない）
 slots:
   - name: default
     description: 詳細の中身の HTML
@@ -71,17 +71,17 @@ events:
   - name: 開閉する
     when: 開閉のボタンを押す
     value: ボタンの `aria-expanded`
-    description: '`mount` が詳細の行の `hidden` を付け外しする'
+    description: '`mount` が詳細の行の `hidden` を付与・解除する'
 css_properties:
   - name: --mdmark-color-surface
     syntax: <color>
     default: '#f4f4f5（ダーク #1b1b1f）'
     description: 詳細の行の地の色
 accessibility:
-  - 開閉のボタンは `「{label}」の詳細` を読み上げの名前に持ち、`aria-expanded`・`aria-controls` で開閉の状態を示す
+  - 開閉のボタンは `「{label}」の詳細` をスクリーンリーダー向けの名前に持ち、`aria-expanded`・`aria-controls` で開閉の状態を示す
 refs:
   - dev/設計書/インターフェース定義/ライブラリ本体/文書をHTML文字列にする.ts#constraints[行の詳細]
-  - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[節と行の詳細の開閉]
+  - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[セクションと行の詳細の開閉]
 status: planned
 notes:
   HTML: 詳細の行は `<tr class="mdmark-row-detail" data-row="{row}"><td colspan="{columns}">{中身}</td></tr>`。`toggle` のときは行の先頭のセルを `<span class="mdmark-row-head"><button class="mdmark-row-toggle" type="button" aria-expanded="{open}" aria-controls="…" aria-label="「{label}」の詳細"></button>{セルの中身}</span>` にし、閉じた詳細の行に `hidden` を付ける。モックは `dev/mock/components/row-detail/`

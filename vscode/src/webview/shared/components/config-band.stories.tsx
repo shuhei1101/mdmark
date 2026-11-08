@@ -9,7 +9,7 @@ const meta = {
 } satisfies Meta<typeof ConfigBand>;
 export default meta;
 
-/** ストーリー: 部品設計『設定ファイルを読めない帯』の状態 */
+/** ストーリー: 部品設計『設定ファイルを読み込めない帯』の状態 */
 type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {

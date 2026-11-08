@@ -12,7 +12,7 @@ const API_DOC = {
   description: "mount・render などの公開関数と引数の一覧",
 };
 
-// 部品設計の状態ごとに HTML を返す（正常系）
+// 部品設計の状態ごとに HTML を返却する（正常系）
 test("test_render_term_tip", async () => {
   // 準備
   const { renderTermTip } = await loadTermTip();
@@ -20,7 +20,7 @@ test("test_render_term_tip", async () => {
   const termOnly = renderTermTip({
     text: "ワークスペース",
     id: "tip-term",
-    meaning: "話し合いの記録を置くフォルダ",
+    meaning: "話し合いの記録を配置するフォルダ",
   });
   const docsOnly = renderTermTip({
     text: "公開関数",
@@ -36,7 +36,7 @@ test("test_render_term_tip", async () => {
   // 検証
   // 意味だけ: role="tooltip" で、見出し「用語」だけを持つ
   expect(findTag(termOnly, 'id="tip-term"')).toContain('role="tooltip"');
-  expect(termOnly).toContain("話し合いの記録を置くフォルダ");
+  expect(termOnly).toContain("話し合いの記録を配置するフォルダ");
   expect(termOnly).toContain(">用語<");
   expect(termOnly).not.toContain("関連文書");
   // 関連文書だけ: role="group" で、見出し「関連文書」とリンクを持ち、「用語」の見出しを持たない
@@ -56,44 +56,44 @@ test("test_render_term_tip", async () => {
   }
 });
 
-// 意味と題をエスケープする（正常系）
+// 意味とタイトルをエスケープする（正常系）
 test("test_render_term_tip_escapes", async () => {
   // 準備
   const { renderTermTip } = await loadTermTip();
   // 実行
   const html = renderTermTip({
-    text: "語",
+    text: "単語",
     id: "tip-escape",
     meaning: "<script>alert(1)</script>",
-    docs: [{ title: "<b>題</b>", href: "../a.md" }],
+    docs: [{ title: "<b>タイトル</b>", href: "../a.md" }],
   });
   // 検証
   expect(html).toContain("&lt;script&gt;");
   expect(html).not.toContain("<script>");
-  expect(html).toContain("&lt;b&gt;題&lt;/b&gt;");
+  expect(html).toContain("&lt;b&gt;タイトル&lt;/b&gt;");
 });
 
-// `replacement` を渡すと、やめた言い方のマーカーと代わりの用語のツールチップを返す（正常系）
+// `replacement` を指定すると、やめた言い方のマーカーと代わりの用語のツールチップを返却する（正常系）
 test("test_render_term_tip_avoided", async () => {
   // 準備
   const { renderTermTip } = await loadTermTip();
   // 実行
-  // 部品設計の `Avoided` の引数に、使われないはずの `meaning`・`docs` も渡す
+  // 部品設計の `Avoided` の引数に、使用されないはずの `meaning`・`docs` も指定する
   const html = renderTermTip({
     text: "作業場",
     id: "tip-avoided",
-    meaning: "渡しても出ない意味",
+    meaning: "指定しても出ない意味",
     docs: [API_DOC],
     replacement: {
       term: "ワークスペース",
-      meaning: "話し合いの記録を置くフォルダ",
+      meaning: "話し合いの記録を配置するフォルダ",
     },
   });
   const escaped = renderTermTip({
     text: "作業場",
     id: "tip-avoided-escape",
     replacement: {
-      term: "<script>語</script>",
+      term: "<script>単語</script>",
       meaning: "<script>意味</script>",
     },
   });
@@ -102,23 +102,23 @@ test("test_render_term_tip_avoided", async () => {
   expect(word).toContain('class="mdmark-term mdmark-term-avoided"');
   expect(word).toContain('aria-describedby="tip-avoided"');
   expect(findTag(html, 'id="tip-avoided"')).toContain('role="tooltip"');
-  // 見出しは「代わりの用語」だけで、代わりの用語の語と意味が出る
+  // 見出しは「代わりの用語」だけで、代わりの用語の単語と意味が出る
   expect(html).toContain(">代わりの用語<");
   expect(html).not.toContain(">用語<");
   expect(html).not.toContain("関連文書");
   expect(findTag(html, "mdmark-term-tip-replacement")).toBeDefined();
   expect(html).toContain("ワークスペース");
-  expect(html).toContain("話し合いの記録を置くフォルダ");
-  // 渡した `meaning`・`docs` は出ない
-  expect(html).not.toContain("渡しても出ない意味");
+  expect(html).toContain("話し合いの記録を配置するフォルダ");
+  // 指定した `meaning`・`docs` は出ない
+  expect(html).not.toContain("指定しても出ない意味");
   expect(html).not.toContain("../api.md");
-  // 代わりの用語の語と意味をエスケープする
-  expect(escaped).toContain("&lt;script&gt;語&lt;/script&gt;");
+  // 代わりの用語の単語と意味をエスケープする
+  expect(escaped).toContain("&lt;script&gt;単語&lt;/script&gt;");
   expect(escaped).toContain("&lt;script&gt;意味&lt;/script&gt;");
   expect(escaped).not.toContain("<script>");
 });
 
-// `below` を渡すと、語を包む要素に is-below を付ける（正常系）
+// `below` を指定すると、単語を包む要素に is-below を付ける（正常系）
 test("test_render_term_tip_below", async () => {
   // 準備
   const { renderTermTip } = await loadTermTip();
@@ -127,13 +127,13 @@ test("test_render_term_tip_below", async () => {
   const below = renderTermTip({
     text: "ワークスペース",
     id: "tip-below",
-    meaning: "話し合いの記録を置くフォルダ",
+    meaning: "話し合いの記録を配置するフォルダ",
     below: true,
   });
   const termOnly = renderTermTip({
     text: "ワークスペース",
     id: "tip-term",
-    meaning: "話し合いの記録を置くフォルダ",
+    meaning: "話し合いの記録を配置するフォルダ",
   });
   // 検証
   expect(findTag(below, "mdmark-term-wrap")).toContain("is-below");
@@ -146,7 +146,7 @@ const COMMAND_ALIAS: MdmarkAlias = {
   id: "unit-test",
   name: "単体テスト",
   aliases: [],
-  description: "ライブラリ本体の単体テストを流す",
+  description: "ライブラリ本体の単体テストを実行する",
   command: "npm run test:unit",
   cwd: "リポジトリの直下",
 };
@@ -161,14 +161,14 @@ const URL_ALIAS: MdmarkAlias = {
   url: "https://github.com/shuhei1101/mdmark/issues",
 };
 
-/** HTML の見出し（`mdmark-term-tip-heading`）の文字を、現れた順に返す */
+/** HTML の見出し（`mdmark-term-tip-heading`）の文字を、現れた順に返却する */
 function headings(html: string): string[] {
   return [...html.matchAll(/class="mdmark-term-tip-heading">([^<]*)</g)].map(
     (found) => found[1] ?? "",
   );
 }
 
-// エイリアスの種類ごとの区分と role を返す（正常系）
+// エイリアスの種類ごとの区分と role を返却する（正常系）
 test("test_render_term_tip_alias", async () => {
   // 準備
   const { renderTermTip } = await loadTermTip();
@@ -189,7 +189,7 @@ test("test_render_term_tip_alias", async () => {
         id: "review",
         name: "レビュー",
         aliases: ["査読"],
-        description: "変更を別の人が確かめること",
+        description: "変更を別の人が確認すること",
       },
     },
     {
@@ -242,7 +242,7 @@ test("test_render_term_tip_alias", async () => {
         id: "check-tool",
         name: "点検のツール",
         aliases: [],
-        description: "設定と索引のずれを返す",
+        description: "設定と索引のずれを返却する",
         tool: "check",
       },
     },
@@ -256,7 +256,7 @@ test("test_render_term_tip_alias", async () => {
         id: "config-file",
         name: "設定ファイル",
         aliases: [],
-        description: "機能のオン・オフと読む文書を記載する",
+        description: "機能のオン・オフと読み込む文書を記載する",
         path: "mdmark.config.yaml",
       },
     },
@@ -267,16 +267,16 @@ test("test_render_term_tip_alias", async () => {
     html: renderTermTip({
       text: item.text,
       id: item.id,
-      meaning: "渡した意味",
+      meaning: "指定した意味",
       docs: [API_DOC],
       alias: item.alias,
     }),
   }));
   // 検証
   for (const { item, html } of results) {
-    // 区分は種類の見出し 1 つだけで、渡した meaning と docs は出ない
+    // 区分は種類の見出し 1 つだけで、指定した meaning と docs は出ない
     expect(headings(html)).toEqual([item.heading]);
-    expect(html).not.toContain("渡した意味");
+    expect(html).not.toContain("指定した意味");
     expect(html).not.toContain("../api.md");
     expect(findTag(html, `id="${item.id}"`)).toContain(`role="${item.role}"`);
   }
@@ -291,7 +291,7 @@ test("test_render_term_tip_alias", async () => {
   expect(skill?.html).not.toContain("mdmark-term-tip-meaning");
 });
 
-// copy の状態をボタンと読み上げの要素に出す（正常系）
+// copy の状態をボタンとスクリーンリーダー向けの要素に出す（正常系）
 test("test_render_term_tip_alias_copy", async () => {
   // 準備
   const { renderTermTip } = await loadTermTip();
@@ -350,7 +350,7 @@ test("test_render_term_tip_alias_escapes", async () => {
   const danger = '<script>"';
   // 実行
   const command = renderTermTip({
-    text: "語",
+    text: "単語",
     id: "tip-escape-command",
     alias: {
       alias_type: "command",
@@ -363,7 +363,7 @@ test("test_render_term_tip_alias_escapes", async () => {
     },
   });
   const url = renderTermTip({
-    text: "語",
+    text: "単語",
     id: "tip-escape-url",
     alias: {
       alias_type: "url",
@@ -381,7 +381,7 @@ test("test_render_term_tip_alias_escapes", async () => {
   expect(findTag(url, "href=")).toContain("&quot;");
 });
 
-// replacement の meaning が無ければ代わりの用語の語だけを出す（正常系）
+// replacement の meaning が無ければ代わりの用語の単語だけを出す（正常系）
 test("test_render_term_tip_avoided_without_meaning", async () => {
   // 準備
   const { renderTermTip } = await loadTermTip();
@@ -397,7 +397,7 @@ test("test_render_term_tip_avoided_without_meaning", async () => {
   expect(html).not.toContain("mdmark-term-tip-meaning");
 });
 
-// 状態ごとのアイコンと文言を返す（正常系）
+// 状態ごとのアイコンと文言を返却する（正常系）
 test("test_render_term_tip_copy", async () => {
   // 準備
   const { renderTermTipCopy } = await loadTermTip();

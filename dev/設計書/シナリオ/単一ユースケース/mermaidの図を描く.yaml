@@ -1,46 +1,46 @@
 title: mermaidの図を描く
-lead: mdmark が、言語 `mermaid` のコードブロックを、mdmark の見た目のテーマで図にして図の枠に入れて描く。mermaid のライブラリは、mermaid のコードブロックがある文書のときだけ読み込む。
+lead: mdmark が、言語 `mermaid` のコードブロックを、mdmark の外観のテーマで図にして図の枠に入れて描く。mermaid のライブラリは、mermaid のコードブロックがある文書のときだけ読み込む。
 issue: 190
 test_file: tests/e2e/単一ユースケース/mermaidの図を描く.spec.ts
-primary_actor: mdmark を使うアプリのページ
+primary_actor: mdmark を使用するアプリのページ
 stakeholders:
-- name: 文書を読む人
-  interest: ほかのツールで記載した mermaid の図を、mdmark のほかの図と同じ見た目と操作で読める
-- name: 文書を書く人
-  interest: mermaid のコードブロックを書き直さずに、そのまま図にできる
-- name: 使う側のアプリの開発者
-  interest: mermaid を使わない文書では、mermaid を読み込む時間と通信が増えない
-trigger: 使う側のページが、言語 `mermaid` のコードブロックを持つ文書を描かせる
+- name: 読者
+  interest: ほかのツールで記載した mermaid の図を、mdmark のほかの図と同じ外観と操作で読み込める
+- name: 文書の作成者
+  interest: mermaid のコードブロックを修正せずに、そのまま図にできる
+- name: 利用側のアプリの開発者
+  interest: mermaid を使用しない文書では、mermaid を読み込む時間と通信が増えない
+trigger: 利用側のページが、言語 `mermaid` のコードブロックを持つ文書を描かせる
 preconditions:
-- ページが版を固定した URL で mdmark の JavaScript と CSS を読んでいる
-success_guarantee: mermaid のコードブロックが、mdmark の見た目のテーマで図の枠に入った図として描かれる。
+- ページがバージョンを固定した URL で mdmark の JavaScript と CSS を読み込んでいる
+success_guarantee: mermaid のコードブロックが、mdmark の外観のテーマで図の枠に入った図として描かれる。
 minimal_guarantee: mermaid を読み込めない・記法を解釈できないコードブロックは、コードブロックのまま残り、ほかの本文と図は描かれる。
 scenarios:
 - name: 正常シナリオ
   setup:
-  - name: mdmark を読むページ
-    description: 版を固定した URL で `dist/index.js` と `dist/index.css` を読み、設定を渡して文書を描く HTML
-    notes: 設定の `mermaid` の読み込み先は既定（jsDelivr の版を固定した URL）のまま
+  - name: mdmark を読み込むページ
+    description: バージョンを固定した URL で `dist/index.js` と `dist/index.css` を読み込み、設定を指定して文書を描く HTML
+    notes: 設定の `mermaid` の読み込み先は既定（jsDelivr のバージョンを固定した URL）のまま
   - name: mermaid のコードブロックを持つ Markdown
     description: 段落の間に、言語 `mermaid` の flowchart と sequenceDiagram のコードブロックを 1 つずつ持つ文書
     notes: flowchart は front matter の `title` を持ち、sequenceDiagram は `actor` を持つ
   - name: Mock
-    description: jsDelivr を、ビルドした `dist/` と mermaid の本体と chunk を jsDelivr と同じパスで返す手元の応答に差し替える。mermaid への要求を数える
+    description: jsDelivr を、ビルドした `dist/` と mermaid の本体と chunk を jsDelivr と同じパスで返却する手元の応答に差し替える。mermaid への要求を数える
   flow: |-
     sequenceDiagram
-      actor U as 読む人
-      participant P as 使う側のページ
+      actor U as 読者
+      participant P as 利用側のページ
       participant M as mdmark
       participant X as mermaid
-      P->>M: 設定と Markdown を渡して描かせる
+      P->>M: 設定と Markdown を指定して描かせる
       M->>M: 言語 mermaid のコードブロックを集める
       M->>X: 本体を要求
-      X-->>M: 本体と、使う図の種類の chunk
+      X-->>M: 本体と、使用する図の種類の chunk
       M->>M: 描く先の要素の CSS 変数からテーマを作る
       M-->>P: コードブロックの場所に、図の枠に入れた図を描く
       P-->>U: 文書を表示
   expected:
-  - mermaid の本体への要求が 1 件（コードブロックが 2 つでも 1 回だけ読む）
+  - mermaid の本体への要求が 1 件（コードブロックが 2 つでも 1 回だけ読み込む）
   - 2 つのコードブロックの場所に、それぞれ図の枠と SVG の図があり、コードブロックの文字が出ていない
   - flowchart の図の枠のタイトルが front matter の `title` の文字
   - flowchart のノードの塗り・枠線・文字の色と線の色が、描く先の要素の CSS 変数の値と一致し、枠線にグラデーションが無い
@@ -50,7 +50,7 @@ scenarios:
   test: test_normal
 - name: 正常シナリオ（mermaid のコードブロックが無い）
   setup:
-  - name: mdmark を読むページ
+  - name: mdmark を読み込むページ
     description: 正常シナリオと同じ
   - name: mermaid のコードブロックを持たない Markdown
     description: 言語 `ts` のコードブロックと段落だけを持つ文書
@@ -58,11 +58,11 @@ scenarios:
     description: 正常シナリオと同じ
   flow: |-
     sequenceDiagram
-      actor U as 読む人
-      participant P as 使う側のページ
+      actor U as 読者
+      participant P as 利用側のページ
       participant M as mdmark
-      P->>M: 設定と Markdown を渡して描かせる
-      M-->>P: mermaid を読まずに本文を描く
+      P->>M: 設定と Markdown を指定して描かせる
+      M-->>P: mermaid を読み込まずに本文を描く
       P-->>U: 文書を表示
   expected:
   - mermaid への要求が 0 件
@@ -70,7 +70,7 @@ scenarios:
   test: test_normal_when_no_mermaid
 - name: 正常シナリオ（ダークの配色）
   setup:
-  - name: mdmark を読むページ
+  - name: mdmark を読み込むページ
     description: 正常シナリオと同じ
     notes: 'OS の配色はダーク（`prefers-color-scheme: dark`）'
   - name: mermaid のコードブロックを持つ Markdown
@@ -79,25 +79,25 @@ scenarios:
     description: 正常シナリオと同じ
   flow: |-
     sequenceDiagram
-      actor U as 読む人
-      participant P as 使う側のページ
+      actor U as 読者
+      participant P as 利用側のページ
       participant M as mdmark
-      P->>M: 設定と Markdown を渡して描かせる
+      P->>M: 設定と Markdown を指定して描かせる
       M->>M: 暗い配色の CSS 変数からテーマを作る
       M-->>P: 暗い配色の図を描く
       P-->>U: 文書を表示
       U->>P: OS の配色を明るいに切り替える
       P->>M: 配色の変化
-      M-->>P: 明るい配色の CSS 変数で図を描き直す
+      M-->>P: 明るい配色の CSS 変数で図を再描画する
       P-->>U: 明るい配色の図を表示
   expected:
   - 開いたとき、flowchart のノードの塗りと文字の色が、暗い配色の CSS 変数の値と一致する
   - OS の配色を明るいに切り替えると、ノードの塗りと文字の色が明るい配色の CSS 変数の値になる
-  - 描き直しても、mermaid の本体への要求が増えない
+  - 再描画しても、mermaid の本体への要求が増えない
   test: test_normal_when_dark
 - name: 正常シナリオ（テーマを設定で変える）
   setup:
-  - name: mdmark を読むページ
+  - name: mdmark を読み込むページ
     description: 正常シナリオと同じ
     notes: 設定の `mermaid` で、テーマを mermaid の `neutral` にし、ノードの塗り `mainBkg` を上書きする（`neutral` はノードの塗りを `primaryColor` から作らない）。キーの構造はインターフェース定義で決める
   - name: mermaid のコードブロックを持つ Markdown
@@ -106,10 +106,10 @@ scenarios:
     description: 正常シナリオと同じ
   flow: |-
     sequenceDiagram
-      actor U as 読む人
-      participant P as 使う側のページ
+      actor U as 読者
+      participant P as 利用側のページ
       participant M as mdmark
-      P->>M: テーマを変えた設定と Markdown を渡して描かせる
+      P->>M: テーマを変えた設定と Markdown を指定して描かせる
       M-->>P: 設定のテーマと上書きした変数で図を描く
       P-->>U: 文書を表示
   expected:
@@ -118,53 +118,53 @@ scenarios:
   test: test_normal_when_theme_configured
 - name: 正常シナリオ（機能をオフにする）
   setup:
-  - name: mdmark を読むページ
+  - name: mdmark を読み込むページ
     description: 正常シナリオと同じ
-  - name: mermaid の機能を外す Markdown
+  - name: mermaid の機能を解除する Markdown
     description: '先頭に `<!-- features: -mermaid -->` を持ち、言語 `mermaid` のコードブロックを 1 つ持つ文書'
   - name: Mock
     description: 正常シナリオと同じ
   flow: |-
     sequenceDiagram
-      actor U as 読む人
-      participant P as 使う側のページ
+      actor U as 読者
+      participant P as 利用側のページ
       participant M as mdmark
-      P->>M: 設定と Markdown を渡して描かせる
+      P->>M: 設定と Markdown を指定して描かせる
       M->>M: 設定の features に文書のマーカーを重ねる
-      M-->>P: mermaid を読まず、コードブロックのまま描く
+      M-->>P: mermaid を読み込まず、コードブロックのまま描く
       P-->>U: 文書を表示
   expected:
   - mermaid への要求が 0 件
   - mermaid のソースが、ほかの言語と同じコードブロックとして出ている
   - 本文にマーカーの文字が出ていない
   test: test_normal_when_disabled
-- name: 異常シナリオ（mermaid を読めない）
+- name: 異常シナリオ（mermaid を読み込めない）
   setup:
-  - name: mdmark を読むページ
+  - name: mdmark を読み込むページ
     description: 正常シナリオと同じ
   - name: mermaid のコードブロックを持つ Markdown
     description: 正常シナリオと同じ文書
   - name: Mock
-    description: mermaid の本体への要求が 404 を返す。ほかは正常シナリオと同じ
+    description: mermaid の本体への要求が 404 を返却する。ほかは正常シナリオと同じ
   flow: |-
     sequenceDiagram
-      actor U as 読む人
-      participant P as 使う側のページ
+      actor U as 読者
+      participant P as 利用側のページ
       participant M as mdmark
       participant X as mermaid
-      P->>M: 設定と Markdown を渡して描かせる
+      P->>M: 設定と Markdown を指定して描かせる
       M->>X: 本体を要求
       X-->>M: 404
-      M-->>P: コードブロックの前に知らせの枠を配置し、コードブロックのまま描く
-      P-->>U: 知らせの枠と本文を表示
+      M-->>P: コードブロックの前に通知ブロックを配置し、コードブロックのまま描く
+      P-->>U: 通知ブロックと本文を表示
   expected:
-  - 2 つのコードブロックの前に、mermaid を読み込めないことを記載した知らせの枠がある
+  - 2 つのコードブロックの前に、mermaid を読み込めないことを記載した通知ブロックがある
   - mermaid のソースが、コードブロックのまま出ている
   - コードブロックの前後の段落が描かれている
   test: test_error_when_mermaid_not_found
 - name: 異常シナリオ（記法を解釈できない）
   setup:
-  - name: mdmark を読むページ
+  - name: mdmark を読み込むページ
     description: 正常シナリオと同じ
   - name: 解釈できない mermaid を持つ Markdown
     description: 言語 `mermaid` のコードブロックを 2 つ持ち、1 つ目は図の種類の行が無い（mermaid が解釈できない）、2 つ目は正常シナリオの flowchart
@@ -172,21 +172,21 @@ scenarios:
     description: 正常シナリオと同じ
   flow: |-
     sequenceDiagram
-      actor U as 読む人
-      participant P as 使う側のページ
+      actor U as 読者
+      participant P as 利用側のページ
       participant M as mdmark
       participant X as mermaid
-      P->>M: 設定と Markdown を渡して描かせる
+      P->>M: 設定と Markdown を指定して描かせる
       M->>X: 本体を要求
       X-->>M: 本体
       M->>X: 1 つ目のソースを描かせる
       X-->>M: 解釈できないエラー
       M->>X: 2 つ目のソースを描かせる
       X-->>M: SVG
-      M-->>P: 1 つ目は書き方の警告とコードブロック、2 つ目は図を描く
+      M-->>P: 1 つ目は記載の警告とコードブロック、2 つ目は図を描く
       P-->>U: 文書を表示
   expected:
-  - 1 つ目のコードブロックの前に、mermaid が解釈できなかった理由を記載した書き方の警告があり、ソースがコードブロックのまま出ている
+  - 1 つ目のコードブロックの前に、mermaid が解釈できなかった理由を記載した記載の警告があり、ソースがコードブロックのまま出ている
   - 2 つ目のコードブロックの場所に、図の枠と SVG の図がある
   - mermaid が文書の中に出すエラーの図が無い
   test: test_error_when_syntax_invalid

@@ -19,7 +19,7 @@ afterEach(() => {
 /** 高さを保つキー */
 const KEY = "mdmark-diagram-height:/a.html#0:図";
 
-/** 高さ 300px の表示する枠とリサイズハンドルを置き、リサイズハンドルを付ける */
+/** 高さ 300px の表示する枠とリサイズハンドルを配置し、リサイズハンドルを付ける */
 async function setUp(storage: Storage | null) {
   const { attachDiagramResize } = await loadResize();
   const root = createRootFromHtml(
@@ -99,7 +99,7 @@ test("test_attach_diagram_resize_when_reset", async () => {
   expect(resized.at(-1)).toBeNull();
 });
 
-// 保った高さで開き、読めない値は使わない（正常系）
+// 保った高さで開き、読み込めない値は使用しない（正常系）
 test("test_attach_diagram_resize_when_restored", async () => {
   // 準備・実行
   const kept = await setUp(memoryStorage({ [KEY]: "420" }));
@@ -115,7 +115,7 @@ test("test_attach_diagram_resize_when_restored", async () => {
   // 準備・実行: 保った高さが今の上限（1000px）を超える
   removeRoots();
   const tall = await setUp(memoryStorage({ [KEY]: "1500" }));
-  // 検証: 上限に収めて当て、読み上げの値も収めた高さにする
+  // 検証: 上限に収めて当て、スクリーンリーダーの値も収めた高さにする
   expect(tall.result.restored).toBe(1000);
   expect(tall.viewport.style.height).toBe("1000px");
   expect(tall.handle.getAttribute("aria-valuenow")).toBe("1000");

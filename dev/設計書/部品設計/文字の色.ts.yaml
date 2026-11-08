@@ -9,21 +9,21 @@ states:
       - name: color
         value: blue
       - name: text
-        value: 版を固定すると、使う側のページの見た目が mdmark の更新で勝手に変わりません。
+        value: バージョンを固定すると、利用側のページの外観が mdmark の更新で勝手に変わりません。
   - name: Red
     description: 見送った案のデメリットを赤で強調する
     args:
       - name: color
         value: red
       - name: text
-        value: 最新の版を指す URL は、更新のたびに見た目が変わります。
+        value: 最新のバージョンを指す URL は、更新のたびに外観が変わります。
   - name: WithLink
     description: 強調した文字の中にリンクを持つ。リンクは下線で見分ける
     args:
       - name: color
         value: green
       - name: text
-        value: 詳しくは [配布物を読み込む](#) を見てください。
+        value: 詳しくは [配布物を読み込む](#) を確認してください。
   - name: Dark
     description: 暗い配色の文字の色
     args:

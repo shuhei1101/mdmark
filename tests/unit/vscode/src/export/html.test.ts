@@ -42,7 +42,7 @@ test("test_module_data_url", async () => {
   expect(decodeURIComponent(url.slice(prefix.length))).toBe(code);
 });
 
-// 本文の script の閉じを含んでも `<` を残さず、読み戻すと同じ値（正常系）
+// 本文の script の閉じを含んでも `<` を残さず、読み込み戻すと同じ値（正常系）
 test("test_escape_script_json", async () => {
   // 準備
   const { escapeScriptJson } = await loadHtml();
@@ -61,7 +61,7 @@ test("test_build_export_html", async () => {
   // 実行
   const html = buildExportHtml({
     ...BUILD_OPTIONS,
-    markdown: "# 題\n</script>",
+    markdown: "# タイトル\n</script>",
     print: false,
   });
   // 検証
@@ -72,7 +72,7 @@ test("test_build_export_html", async () => {
   );
   expect(json).not.toBeNull();
   expect(json?.[1]).not.toContain("<");
-  expect(JSON.parse(json?.[1] ?? "").markdown).toBe("# 題\n</script>");
+  expect(JSON.parse(json?.[1] ?? "").markdown).toBe("# タイトル\n</script>");
   const module = html.match(
     /<script\b[^>]*type="module"[^>]*>([\s\S]*?)<\/script>/,
   );
@@ -81,14 +81,14 @@ test("test_build_export_html", async () => {
   expect(html).not.toContain("window.print");
 });
 
-// 印刷を待つ処理を足す（正常系）
+// 印刷を待つ処理を追加する（正常系）
 test("test_build_export_html_when_print", async () => {
   // 準備
   const { buildExportHtml, PRINT_WAIT_MS } = await loadHtml();
   // 実行
   const html = buildExportHtml({
     ...BUILD_OPTIONS,
-    markdown: "# 題",
+    markdown: "# タイトル",
     print: true,
   });
   // 検証
@@ -105,14 +105,14 @@ test("test_build_export_html_when_theme_and_extensions", async () => {
   // 実行
   const html = buildExportHtml({
     ...BUILD_OPTIONS,
-    markdown: "# 題",
+    markdown: "# タイトル",
     print: false,
     themeCss: ".a{color:red}</style>",
     extensions: ["export default {name:'x'}"],
   });
   const plain = buildExportHtml({
     ...BUILD_OPTIONS,
-    markdown: "# 題",
+    markdown: "# タイトル",
     print: false,
   });
   // 検証

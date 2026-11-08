@@ -1,32 +1,32 @@
 # yaml-language-server: $schema=../dev/テンプレート/files.schema.yaml
 files:
   - path: no-steps.yaml
-    description: モジュール構成『ライブラリ本体 / 版を上げる』のうち「移行の手順が要らないスキーマの変更の一覧」を受け持つ。mdmark upgrade の移行の流れを変えるときに読む。
+    description: モジュール構成『ライブラリ本体 / バージョンを上げる』のうち「移行の手順が要らないスキーマの変更の一覧」を受け持つ。mdmark upgrade の移行の流れを変えるときに参照する。
     tags: [topic:バージョン, topic:移行, topic:cli, topic:ステップ]
     related:
-      - to: dev/設計書/モジュール構成/ライブラリ本体/版を上げる.ts
+      - to: dev/設計書/モジュール構成/ライブラリ本体/バージョンを上げる.ts
         type: implements
   - path: next/steps.yaml
-    description: モジュール構成『ライブラリ本体 / 版を上げる』のうち「出していない版の移行の手順」を受け持つ。mdmark upgrade で当てる手順を足す・変えるときに読む。
+    description: モジュール構成『ライブラリ本体 / バージョンを上げる』のうち「出していないバージョンの移行の手順」を受け持つ。mdmark upgrade で適用する手順を追加する・変えるときに参照する。
     tags: [topic:バージョン, topic:移行, topic:cli, topic:ステップ]
     related:
-      - to: dev/設計書/モジュール構成/ライブラリ本体/版を上げる.ts
+      - to: dev/設計書/モジュール構成/ライブラリ本体/バージョンを上げる.ts
         type: implements
   - path: next/drop-tag-vocabulary.mjs
-    description: モジュール構成『ライブラリ本体 / 版を上げる』のうち「索引からタグの語彙を外す移行のスクリプト」を受け持つ。索引のタグの移行を変えるときに読む。
+    description: モジュール構成『ライブラリ本体 / バージョンを上げる』のうち「索引からタグの語彙を削除する移行のスクリプト」を受け持つ。索引のタグの移行を変えるときに参照する。
     tags: [topic:バージョン, topic:移行, topic:索引, topic:タグ]
     related:
-      - to: dev/設計書/モジュール構成/ライブラリ本体/版を上げる.ts
+      - to: dev/設計書/モジュール構成/ライブラリ本体/バージョンを上げる.ts
         type: implements
   - path: next/drop-tag-vocabulary.d.mts
-    description: 索引からタグの語彙を外す移行のスクリプトの型定義。drop-tag-vocabulary.mjs の公開する関数を変えるときに読む。
+    description: 索引からタグの語彙を削除する移行のスクリプトの型定義。drop-tag-vocabulary.mjs の公開する関数を変えるときに参照する。
     tags: [topic:バージョン, topic:移行, topic:型]
     related:
-      - to: dev/設計書/モジュール構成/ライブラリ本体/版を上げる.ts
+      - to: dev/設計書/モジュール構成/ライブラリ本体/バージョンを上げる.ts
         type: implements
   - path: next/alias-rows.mjs
-    description: モジュール構成『ライブラリ本体 / 版を上げる』のうち「設定の aliases の行を alias-inject v0.3.0 の構造へ書き換える移行のスクリプト（migrateAliasRows）」を受け持つ。エイリアスの元の行の移行を変えるときに読む。
+    description: モジュール構成『ライブラリ本体 / バージョンを上げる』のうち「設定の aliases の行を alias-inject v0.3.0 の構造へ書き換える移行のスクリプト（migrateAliasRows）」を受け持つ。エイリアスの元の行の移行を変えるときに参照する。
     tags: [topic:バージョン, topic:移行, topic:エイリアス]
     related:
-      - to: dev/設計書/モジュール構成/ライブラリ本体/版を上げる.ts
+      - to: dev/設計書/モジュール構成/ライブラリ本体/バージョンを上げる.ts
         type: implements

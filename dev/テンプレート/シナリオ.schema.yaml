@@ -23,7 +23,7 @@ properties:
     title: 冒頭リード
     description: |-
       対象を 1〜3 行で説明する。
-      初回に書いた内容のまま保ち、後から情報を足さない（仕様は各項目に書く）。
+      初回に記載した内容のまま保ち、後から情報を追加しない（仕様は各項目に記載する）。
       対象そのものが変わったときだけ書き換える。
   issue:
     type: integer
@@ -79,9 +79,9 @@ properties:
     title: 優先度
   reading:
     $ref: 共通.schema.yaml#/$defs/markdown
-    title: 読み替え
-    description: 1 ファイルで複数のレイヤー・役割を代表するときの読み替えの表。
-    x-heading: 読み替え
+    title: 解釈し
+    description: 1 ファイルで複数のレイヤー・役割を代表するときの解釈しの表。
+    x-heading: 解釈し
   scenarios:
     type: array
     title: シナリオ
@@ -109,7 +109,7 @@ properties:
           title: セットアップ
           description: |-
             事前に要るデータ・状態と、分岐・異常を決定的に誘発する入力。
-            `Mock` の行（差し替える依存。差し替えないときも `なし（…）`）を必ず置く。
+            `Mock` の行（差し替える依存。差し替えないときも `なし（…）`）を必ず配置する。
           x-heading: セットアップ
           x-shape: table
           minItems: 1
@@ -123,7 +123,7 @@ properties:
               name:
                 type: string
                 title: セットアップ
-                description: 前提を作る Factory 関数名か状態の名前。`Mock` の行を必ず置く。
+                description: 前提を作る Factory 関数名か状態の名前。`Mock` の行を必ず配置する。
               description:
                 type: string
                 title: 説明
@@ -136,14 +136,14 @@ properties:
           $ref: 共通.schema.yaml#/$defs/mermaid
           title: フロー
           description: |-
-            単一ユースケースは `sequenceDiagram`、複合ユースケースは単一ユースケースを箱として連鎖させる `flowchart TD`。
-            1 図 = 結末 1 本の一本道。ユーザー視点で観測できる境界まで書く。
-            複合ユースケースの箱のノード名は `{UC名}:{シナリオ名}` にし、`click` で単一ユースケースの節へリンクする。
+            単一ユースケースは `sequenceDiagram`、複合ユースケースは単一ユースケースをノードとして連鎖させる `flowchart TD`。
+            1 図 = 結末 1 本の一本道。ユーザー視点で観測できる境界まで記載する。
+            複合ユースケースのノードのノード名は `{UC名}:{シナリオ名}` にし、`click` で単一ユースケースのセクションへリンクする。
           x-heading: フロー
         expected:
           type: array
           title: 期待値
-          description: フローの終了時点で外部から観測できる状態・戻り値。1 要素 = 1 つの確かめ。
+          description: フローの終了時点で外部から観測できる状態・戻り値。1 要素 = 1 つの確認。
           x-heading: 期待値
           x-shape: list
           minItems: 1
@@ -155,8 +155,8 @@ properties:
           x-test-function: true
         uses:
           type: array
-          title: 使う単一ユースケース
-          description: 複合ユースケースの箱が指す単一ユースケースのシナリオ。
+          title: 使用する単一ユースケース
+          description: 複合ユースケースのノードが指す単一ユースケースのシナリオ。
           items:
             $ref: 共通.schema.yaml#/$defs/ref
         refs:

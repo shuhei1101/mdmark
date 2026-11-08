@@ -28,7 +28,7 @@ import { type SeenTerms, termSegments } from "./terms.ts";
 import { envOf, featureOn, findClose, markOf } from "./tokens.ts";
 import { unclosedWarning, type WarningMeta, warningBlock } from "./warnings.ts";
 
-/** 埋め込んだ HTML の中の図の部品の `id` の頭（範囲の印の図と通し番号を共有する） */
+/** 埋め込んだ HTML の中の図の部品の `id` の頭（範囲のマーカーの図と通し番号を共有する） */
 const DIAGRAM_ID_PREFIX = "mdmark-diagram";
 
 /** 埋め込んだ HTML の中の操作できる部品の `id` の頭 */
@@ -44,7 +44,7 @@ export const PART_PATTERN =
 /** 中身を持たない要素 */
 const VOID_TAGS = new Set(["img", "br", "hr", "input", "wbr"]);
 
-/** 範囲に置ける、見た目と動きを足すコードブロックの言語 */
+/** 範囲に配置できる、外観と動きを追加するコードブロックの言語 */
 const RANGE_SCRIPT_LANGUAGES = ["css", "ts", "js"] as const;
 
 /** 範囲のスクリプトの言語 */
@@ -64,7 +64,7 @@ function isRangeScriptFence(token: Token): boolean {
   );
 }
 
-/** `<!-- html -->` の範囲の `fence` を言語ごとに数え、`html`・`css`・スクリプトと読めない組み合わせの警告を返す */
+/** `<!-- html -->` の範囲の `fence` を言語ごとに数え、`html`・`css`・スクリプトと読み込めない組み合わせの警告を返却する */
 export function readRangeScripts(tokens: Token[]): {
   html: Token | undefined;
   css: string | undefined;
@@ -119,15 +119,15 @@ export function unescapeHtml(text: string): string {
     .replaceAll("&amp;", "&");
 }
 
-/** 範囲の書き方の警告。範囲の中身はそのまま描く */
+/** 範囲の記載の警告。範囲の中身はそのまま描く */
 function blockCountWarning(): { message: string } {
   return {
     message:
-      "`<!-- html -->` の範囲に `html` のコードブロックを 1 つだけ置いてください。範囲の中身はそのまま描いています。",
+      "`<!-- html -->` の範囲に `html` のコードブロックを 1 つだけ配置してください。範囲の中身はそのまま描いています。",
   };
 }
 
-/** コードブロックの HTML の中の図の部品の custom element を、図の部品の HTML に置き換える準備: 要素の場所に印の要素を置き、図の部品の HTML を並べて返す */
+/** コードブロックの HTML の中の図の部品の custom element を、図の部品の HTML に置き換える準備: 要素の場所にマーカーの要素を配置し、図の部品の HTML を並べて返却する */
 function takeParts(options: {
   source: string;
   state: StateCore;
@@ -196,13 +196,13 @@ function takeParts(options: {
       return `<${EMBED_PART_TAG} ${EMBED_PART_ATTRIBUTE}="${env.nonce}:${parts.length - 1}"></${EMBED_PART_TAG}>`;
     },
   );
-  // 操作できる部品の定義は、文書の中の並びの位置へ差し込む（`attachParams` が並びで引く）
+  // 操作できる部品の定義は、文書の中の並びの位置へ差し込む（`attachParams` が並びで参照する）
   env.paramDefinitions ??= [];
   env.paramDefinitions.splice(paramsBefore, 0, ...definitions);
   return { html, parts, params: definitions.length, warnings };
 }
 
-/** 預けた印の要素を、図の部品の HTML に戻す。戻せなかった印の要素（書いた人が似せて書いたもの）は取り除く */
+/** 預けたマーカーの要素を、図の部品の HTML に戻す。戻せなかったマーカーの要素（記載した人が似せて記載したもの）は取り除く */
 function restoreParts(html: string, parts: string[], nonce: string): string {
   const tag = EMBED_PART_TAG;
   let restored = html;
@@ -215,7 +215,7 @@ function restoreParts(html: string, parts: string[], nonce: string): string {
   return restored.replace(new RegExp(`</?${tag}[^>]*>`, "g"), "");
 }
 
-/** `data-hint` を持つ要素に印・下線・ツールチップの中身を付ける。`hints` がオフなら `data-hint` を消す。入力は `sanitizeEmbedded` の出力で、タグは閉じてある */
+/** `data-hint` を持つ要素にマーカー・下線・ツールチップの中身を付ける。`hints` がオフなら `data-hint` を削除する。入力は `sanitizeEmbedded` の出力で、タグは閉じてある */
 function applyHints(options: {
   html: string;
   env: RenderEnv;
@@ -224,7 +224,7 @@ function applyHints(options: {
   const { html, env, hints } = options;
   const tag = /<(\/?)([a-z][a-z0-9-]*)\b([^>]*?)(\/?)>/gi;
   const hintAttribute = /\sdata-hint="([^"]*)"/;
-  /** 閉じタグの前と後ろに置く HTML を持った、開いている要素 */
+  /** 閉じタグの前と後ろに配置する HTML を持った、開いている要素 */
   type Open = { name: string; inside: string; after: string };
   const stack: Open[] = [];
   let out = "";
@@ -275,7 +275,7 @@ function applyHints(options: {
   return out + html.slice(last);
 }
 
-/** 中の文字の用語に下線を引く関数を作る。`glossary` と `backlinks` が両方オフ・辞書が空なら、文字のままにする */
+/** 中の文字の用語に下線を付ける関数を作る。`glossary` と `backlinks` が両方オフ・辞書が空なら、文字のままにする */
 function termsFilter(state: StateCore): (text: string) => string {
   const env = envOf(state);
   if (env.features.glossary !== true && env.features.backlinks !== true) {
@@ -318,7 +318,7 @@ function termsFilter(state: StateCore): (text: string) => string {
       .join("");
 }
 
-/** コードブロックの HTML を、許可の検査を通し、図の部品・ヒント・用語の下線を足した、枠で包んだ HTML にする */
+/** コードブロックの HTML を、許可の検査にかけ、図の部品・ヒント・用語の下線を追加した、枠で包んだ HTML にする */
 function buildHtml(options: {
   state: StateCore;
   source: string;
@@ -333,7 +333,7 @@ function buildHtml(options: {
 }): { html: string; params: number; warnings: WarningMeta[] } {
   const { state, source, paramsBefore, scripts } = options;
   const env = envOf(state);
-  // 箱の中の `{{語}}` の意味は、本文の用語と同じ辞書から引く
+  // ノードの中の `{{単語}}` の意味は、本文の用語と同じ辞書から参照する
   const dictionary = buildDictionary({
     index: env.index,
     docId: env.docId,
@@ -364,7 +364,7 @@ function buildHtml(options: {
       warnings: taken.warnings,
     };
   }
-  // 範囲の通し番号を根の要素に付け、`css` を根の要素の中に限った `style` を先頭、スクリプトを実行しない `template` を末尾に置く
+  // 範囲の通し番号を根の要素に付け、`css` を根の要素の中に限った `style` を先頭、スクリプトを実行しない `template` を末尾に配置する
   const open = rawOpen.replace(
     /^<div class="mdmark-html"/,
     `<div class="mdmark-html" data-html-scope="${scripts.scope}"`,
@@ -383,7 +383,7 @@ function buildHtml(options: {
   };
 }
 
-/** `html` がオンなら、`<!-- html -->` の範囲の `html` のコードブロックを、コードでなく生の HTML として描く。範囲のコードブロックが 1 つでないときは書き方の警告を置き、範囲の中身はそのまま残す。オフのときは何もしない（印は `dropMarks` が取り除く） */
+/** `html` がオンなら、`<!-- html -->` の範囲の `html` のコードブロックを、コードでなく生の HTML として描く。範囲のコードブロックが 1 つでないときは記載の警告を配置し、範囲の中身はそのまま残す。オフのときは何もしない（マーカーは `dropMarks` が取り除く） */
 export function buildEmbeddedHtml(state: StateCore): void {
   if (!featureOn(state, "html")) {
     return;
@@ -393,7 +393,7 @@ export function buildEmbeddedHtml(state: StateCore): void {
   // 出力の中の操作できる部品の数: 次の範囲の定義を差し込む位置になる
   let params = 0;
   const scripting = featureOn(state, "html-scripts");
-  // 範囲のスクリプトを当てる範囲の、文書の中の通し番号
+  // 範囲のスクリプトを適用する範囲の、文書の中の通し番号
   let scope = 0;
   for (let index = 0; index < tokens.length; index++) {
     const token = tokens[index];
@@ -413,7 +413,7 @@ export function buildEmbeddedHtml(state: StateCore): void {
     const fences = tokens.slice(index + 1, end).filter(isHtmlFence);
     const [fence] = fences;
     if (fences.length !== 1 || fence === undefined) {
-      // 書き方の警告を置き、範囲の中身はそのまま残す
+      // 記載の警告を配置し、範囲の中身はそのまま残す
       out.push(warningBlock(state, blockCountWarning(), token), token);
       continue;
     }

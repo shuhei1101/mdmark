@@ -36,7 +36,7 @@
   <link rel="stylesheet" href="../../refs/303/assets/table.css">
   <!-- 本文の幅に広げる表と、列のボタンの案 A・B・C の規則（#308 の追加分） -->
   <link rel="stylesheet" href="../../refs/308/assets/table.css">
-  <!-- 印刷の規則: 紙に出すときだけ当てる。[data-print-styles]: モックの「印刷の見え方」で preview.js が media を all に切り替える -->
+  <!-- 印刷の規則: 紙に出すときだけ適用する。[data-print-styles]: モックの「印刷の見え方」で preview.js が media を all に切り替える -->
   <link rel="stylesheet" href="../../refs/19/assets/syntax-print.css" media="print" data-print-styles>
   <link rel="stylesheet" href="../../refs/57/assets/table-tools-print.css" media="print" data-print-styles>
   <link rel="stylesheet" href="../../refs/151/assets/table-print.css" media="print" data-print-styles>
@@ -52,13 +52,13 @@
   <script src="../../refs/19/assets/syntax.js" defer></script>
   <!-- 表の機能の追加分の操作（件数・列の表示・集計・コピー・行へのリンク・見出し行と集計の行の留め方・最終列の畳み方） -->
   <script src="../../refs/151/assets/table.js" defer></script>
-  <!-- 既定のピン止め・-pin・pin=・wide=・check= の見本の定義と操作（#283。syntax.js の後に読む） -->
+  <!-- 既定のピン止め・-pin・pin=・wide=・check= の見本の定義と操作（#283。syntax.js の後に読み込む） -->
   <script src="../../refs/283/assets/table-samples.js" defer></script>
   <script src="../../refs/283/assets/table-pin.js" defer></script>
-  <!-- 多段の見出し・セルの結合と結合し直し・行見出しの列までのピン止めの見本の定義と操作（#275。syntax.js の後に読む） -->
+  <!-- 多段の見出し・セルの結合と再結合・行見出しの列までのピン止めの見本の定義と操作（#275。syntax.js の後に読み込む） -->
   <script src="../../refs/275/assets/table-samples.js" defer></script>
   <script src="../../refs/275/assets/table-merge.js" defer></script>
-  <!-- 列の並べ替え・キーの階層の開閉と選択と絞り込み・見本との連動の操作（#303。syntax.js の後に読む） -->
+  <!-- 列の並べ替え・キーの階層の開閉と選択と絞り込み・見本との連動の操作（#303。syntax.js の後に読み込む） -->
   <script src="../../refs/303/assets/table.js" defer></script>
   <!-- モックの「印刷の見え方」の切り替え -->
   <script src="../../refs/151/assets/preview.js" defer></script>
@@ -75,7 +75,7 @@
       <button class="mock-bar-item" type="button" data-theme-set="theme-slate" aria-pressed="false">theme-slate</button>
       <button class="mock-bar-item" type="button" data-theme-set="theme-contrast" aria-pressed="false">theme-contrast</button>
     </div>
-    <!-- [data-scheme-set]: sample.js が押されたボタンの値を html の data-scheme に当てる -->
+    <!-- [data-scheme-set]: sample.js が押されたボタンの値を html の data-scheme に適用する -->
     <div class="mock-bar-group" role="group" aria-label="配色">
       <button class="mock-bar-item" type="button" data-scheme-set="light" aria-pressed="false">明るい配色</button>
       <button class="mock-bar-item" type="button" data-scheme-set="dark" aria-pressed="false">ダーク</button>
@@ -150,9 +150,9 @@
     <thead><tr><th><span class="mdmark-th"><button class="mdmark-sort" type="button">名前<svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg></button><span class="mdmark-th-tools"><button class="mdmark-filter" type="button" aria-expanded="false" aria-controls="t-filter-filter-0" aria-label="「名前」で絞り込む" title="「名前」で絞り込む"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 20a1 1 0 0 0 .553.895l2 1A1 1 0 0 0 14 21v-7a2 2 0 0 1 .517-1.341L21.74 4.67A1 1 0 0 0 21 3H3a1 1 0 0 0-.742 1.67l7.225 7.989A2 2 0 0 1 10 14z"/></svg><span class="mdmark-visually-hidden"></span></button><button class="mdmark-pin" type="button" aria-pressed="false" aria-label="「名前」の列までピン止め" title="「名前」の列までピン止め" hidden><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17v5"/><path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/></svg></button></span></span></th><th><span class="mdmark-th"><button class="mdmark-sort" type="button">説明<svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg></button><span class="mdmark-th-tools"><button class="mdmark-filter" type="button" aria-expanded="false" aria-controls="t-filter-filter-1" aria-label="「説明」で絞り込む" title="「説明」で絞り込む"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 20a1 1 0 0 0 .553.895l2 1A1 1 0 0 0 14 21v-7a2 2 0 0 1 .517-1.341L21.74 4.67A1 1 0 0 0 21 3H3a1 1 0 0 0-.742 1.67l7.225 7.989A2 2 0 0 1 10 14z"/></svg><span class="mdmark-visually-hidden"></span></button><button class="mdmark-pin" type="button" aria-pressed="false" aria-label="「説明」の列までピン止め" title="「説明」の列までピン止め" hidden><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17v5"/><path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/></svg></button></span></span></th><th><span class="mdmark-th"><button class="mdmark-sort" type="button">更新日<svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg></button><span class="mdmark-th-tools"><button class="mdmark-filter" type="button" aria-expanded="false" aria-controls="t-filter-filter-2" aria-label="「更新日」で絞り込む" title="「更新日」で絞り込む"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 20a1 1 0 0 0 .553.895l2 1A1 1 0 0 0 14 21v-7a2 2 0 0 1 .517-1.341L21.74 4.67A1 1 0 0 0 21 3H3a1 1 0 0 0-.742 1.67l7.225 7.989A2 2 0 0 1 10 14z"/></svg><span class="mdmark-visually-hidden"></span></button><button class="mdmark-pin" type="button" aria-pressed="false" aria-label="「更新日」の列までピン止め" title="「更新日」の列までピン止め" hidden><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17v5"/><path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/></svg></button></span></span></th></tr></thead>
     <tbody>
       <tr><td data-label="名前">りんご</td><td data-label="説明">描画を速くする</td><td data-label="更新日">2026-10-01</td></tr>
-      <tr><td data-label="名前">みかん</td><td data-label="説明">印刷を直す</td><td data-label="更新日">2026-10-10</td></tr>
-      <tr><td data-label="名前">りんご飴</td><td data-label="説明">描画の崩れを直す</td><td data-label="更新日">2026-10-20</td></tr>
-      <tr><td data-label="名前">ぶどう</td><td data-label="説明">タブの並びを直す</td><td data-label="更新日">2026-11-02</td></tr>
+      <tr><td data-label="名前">みかん</td><td data-label="説明">印刷を修正する</td><td data-label="更新日">2026-10-10</td></tr>
+      <tr><td data-label="名前">りんご飴</td><td data-label="説明">描画の崩れを修正する</td><td data-label="更新日">2026-10-20</td></tr>
+      <tr><td data-label="名前">ぶどう</td><td data-label="説明">タブの並びを修正する</td><td data-label="更新日">2026-11-02</td></tr>
       <tr class="mdmark-table-empty" hidden><td colspan="3">一致する行がありません</td></tr>
     </tbody>
   </table>
@@ -282,16 +282,16 @@
         </article>
       </section>
 
-      <!-- plain の種類（機能を付けず、縦の罫線と面を外す） -->
+      <!-- plain の種類（機能を付けず、縦の罫線と面を削除する） -->
       <section aria-labelledby="state-plain">
-        <h2 class="catalog-label" id="state-plain">plain の種類（機能を付けず、縦の罫線と面を外す）</h2>
+        <h2 class="catalog-label" id="state-plain">plain の種類（機能を付けず、縦の罫線と面を削除する）</h2>
         <article class="mdmark">
 <div class="mdmark-table" data-kind="plain">
   <table tabindex="0" aria-label="表: plain の種類">
     <thead><tr><th>用語</th><th>意味</th></tr></thead>
     <tbody>
-      <tr><td data-label="用語">印</td><td data-label="意味">HTML コメントで書く記法の目印</td></tr>
-      <tr><td data-label="用語">範囲の印</td><td data-label="意味">閉じの印と対で、間の Markdown を囲む印</td></tr>
+      <tr><td data-label="用語">マーカー</td><td data-label="意味">HTML コメントで記載する記法の目印</td></tr>
+      <tr><td data-label="用語">範囲のマーカー</td><td data-label="意味">閉じのマーカーと対で、間の Markdown を囲むマーカー</td></tr>
     </tbody>
   </table>
 </div>
@@ -306,11 +306,11 @@
   <details class="mdmark-table-details">
     <summary>表（3 行）</summary>
   <table tabindex="0" aria-label="表: 閉じた表">
-    <thead><tr><th><span class="mdmark-th"><button class="mdmark-sort" type="button">版<svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg></button><span class="mdmark-th-tools"><button class="mdmark-pin" type="button" aria-pressed="false" aria-label="「版」の列までピン止め" title="「版」の列までピン止め" hidden><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17v5"/><path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/></svg></button></span></span></th><th><span class="mdmark-th"><button class="mdmark-sort" type="button">日付<svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg></button><span class="mdmark-th-tools"><button class="mdmark-pin" type="button" aria-pressed="false" aria-label="「日付」の列までピン止め" title="「日付」の列までピン止め" hidden><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17v5"/><path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/></svg></button></span></span></th></tr></thead>
+    <thead><tr><th><span class="mdmark-th"><button class="mdmark-sort" type="button">バージョン<svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg></button><span class="mdmark-th-tools"><button class="mdmark-pin" type="button" aria-pressed="false" aria-label="「バージョン」の列までピン止め" title="「バージョン」の列までピン止め" hidden><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17v5"/><path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/></svg></button></span></span></th><th><span class="mdmark-th"><button class="mdmark-sort" type="button">日付<svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg></button><span class="mdmark-th-tools"><button class="mdmark-pin" type="button" aria-pressed="false" aria-label="「日付」の列までピン止め" title="「日付」の列までピン止め" hidden><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17v5"/><path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/></svg></button></span></span></th></tr></thead>
     <tbody>
-      <tr><td data-label="版">v0.1.0</td><td data-label="日付">2026-10-10</td></tr>
-      <tr><td data-label="版">v0.2.0</td><td data-label="日付">2026-11-04</td></tr>
-      <tr><td data-label="版">v0.2.1</td><td data-label="日付">2026-11-12</td></tr>
+      <tr><td data-label="バージョン">v0.1.0</td><td data-label="日付">2026-10-10</td></tr>
+      <tr><td data-label="バージョン">v0.2.0</td><td data-label="日付">2026-11-04</td></tr>
+      <tr><td data-label="バージョン">v0.2.1</td><td data-label="日付">2026-11-12</td></tr>
     </tbody>
   </table>
   </details>
@@ -318,12 +318,12 @@
         </article>
       </section>
 
-      <!-- 機能を外した表（data -sort） -->
+      <!-- 機能を解除した表（data -sort） -->
       <section aria-labelledby="state-removed">
-        <h2 class="catalog-label" id="state-removed">機能を外した表（data -sort）</h2>
+        <h2 class="catalog-label" id="state-removed">機能を解除した表（data -sort）</h2>
         <article class="mdmark">
 <div class="mdmark-table" data-kind="default">
-  <table tabindex="0" aria-label="表: 機能を外した表">
+  <table tabindex="0" aria-label="表: 機能を解除した表">
     <thead><tr><th><span class="mdmark-th"><span>文書</span><span class="mdmark-th-tools"><button class="mdmark-pin" type="button" aria-pressed="false" aria-label="「文書」の列までピン止め" title="「文書」の列までピン止め" hidden><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17v5"/><path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/></svg></button></span></span></th><th class="mdmark-align-right"><span class="mdmark-th"><span>行数</span><span class="mdmark-th-tools"><button class="mdmark-pin" type="button" aria-pressed="false" aria-label="「行数」の列までピン止め" title="「行数」の列までピン止め" hidden><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17v5"/><path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/></svg></button></span></span></th><th class="mdmark-align-right"><span class="mdmark-th"><span>表</span><span class="mdmark-th-tools"><button class="mdmark-pin" type="button" aria-pressed="false" aria-label="「表」の列までピン止め" title="「表」の列までピン止め" hidden><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17v5"/><path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/></svg></button></span></span></th><th class="mdmark-align-right"><span class="mdmark-th"><span>図</span><span class="mdmark-th-tools"><button class="mdmark-pin" type="button" aria-pressed="false" aria-label="「図」の列までピン止め" title="「図」の列までピン止め" hidden><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17v5"/><path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/></svg></button></span></span></th><th class="mdmark-align-right"><span class="mdmark-th"><span>Chrome</span><span class="mdmark-th-tools"><button class="mdmark-pin" type="button" aria-pressed="false" aria-label="「Chrome」の列までピン止め" title="「Chrome」の列までピン止め" hidden><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17v5"/><path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/></svg></button></span></span></th><th class="mdmark-align-right"><span class="mdmark-th"><span>Edge</span><span class="mdmark-th-tools"><button class="mdmark-pin" type="button" aria-pressed="false" aria-label="「Edge」の列までピン止め" title="「Edge」の列までピン止め" hidden><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17v5"/><path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/></svg></button></span></span></th><th class="mdmark-align-right"><span class="mdmark-th"><span>Firefox</span><span class="mdmark-th-tools"><button class="mdmark-pin" type="button" aria-pressed="false" aria-label="「Firefox」の列までピン止め" title="「Firefox」の列までピン止め" hidden><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17v5"/><path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/></svg></button></span></span></th><th class="mdmark-align-right"><span class="mdmark-th"><span>Safari</span><span class="mdmark-th-tools"><button class="mdmark-pin" type="button" aria-pressed="false" aria-label="「Safari」の列までピン止め" title="「Safari」の列までピン止め" hidden><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17v5"/><path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/></svg></button></span></span></th><th class="mdmark-align-right"><span class="mdmark-th"><span>iOS Safari</span><span class="mdmark-th-tools"><button class="mdmark-pin" type="button" aria-pressed="false" aria-label="「iOS Safari」の列までピン止め" title="「iOS Safari」の列までピン止め" hidden><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17v5"/><path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/></svg></button></span></span></th><th class="mdmark-align-right"><span class="mdmark-th"><span>Android Chrome</span><span class="mdmark-th-tools"><button class="mdmark-pin" type="button" aria-pressed="false" aria-label="「Android Chrome」の列までピン止め" title="「Android Chrome」の列までピン止め" hidden><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17v5"/><path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/></svg></button></span></span></th></tr></thead>
     <tbody>
       <tr><td data-label="文書">導入の手順 1</td><td class="mdmark-align-right" data-label="行数">128</td><td class="mdmark-align-right" data-label="表">8</td><td class="mdmark-align-right" data-label="図">0</td><td class="mdmark-align-right" data-label="Chrome">18</td><td class="mdmark-align-right" data-label="Edge">17</td><td class="mdmark-align-right" data-label="Firefox">23</td><td class="mdmark-align-right" data-label="Safari">16</td><td class="mdmark-align-right" data-label="iOS Safari">15</td><td class="mdmark-align-right" data-label="Android Chrome">16</td></tr>
@@ -368,16 +368,16 @@
         <article class="mdmark">
 <div class="mdmark-table" data-kind="data">
   <div class="mdmark-syntax-warning">
-  <p class="mdmark-syntax-warning-title"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg>書き方の警告</p>
-  <p><code>&lt;!-- table: data filter=名前:range,説明:text --&gt;</code> の絞り込みの種類 <code>range</code> は使えません。使える種類は <code>select</code>・<code>text</code>・<code>date</code> です。名前の列には絞り込みを付けずに描いています。</p>
+  <p class="mdmark-syntax-warning-title"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg>記載の警告</p>
+  <p><code>&lt;!-- table: data filter=名前:range,説明:text --&gt;</code> の絞り込みの種類 <code>range</code> は使用できません。使用できる種類は <code>select</code>・<code>text</code>・<code>date</code> です。名前の列には絞り込みを付けずに描いています。</p>
 </div>
   <table tabindex="0" aria-label="表: 知らない絞り込みの種類">
     <thead><tr><th><span class="mdmark-th"><button class="mdmark-sort" type="button">名前<svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg></button><span class="mdmark-th-tools"><button class="mdmark-pin" type="button" aria-pressed="false" aria-label="「名前」の列までピン止め" title="「名前」の列までピン止め" hidden><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17v5"/><path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/></svg></button></span></span></th><th><span class="mdmark-th"><button class="mdmark-sort" type="button">説明<svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg></button><span class="mdmark-th-tools"><button class="mdmark-filter" type="button" aria-expanded="false" aria-controls="t-unknown-filter-1" aria-label="「説明」で絞り込む" title="「説明」で絞り込む"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 20a1 1 0 0 0 .553.895l2 1A1 1 0 0 0 14 21v-7a2 2 0 0 1 .517-1.341L21.74 4.67A1 1 0 0 0 21 3H3a1 1 0 0 0-.742 1.67l7.225 7.989A2 2 0 0 1 10 14z"/></svg><span class="mdmark-visually-hidden"></span></button><button class="mdmark-pin" type="button" aria-pressed="false" aria-label="「説明」の列までピン止め" title="「説明」の列までピン止め" hidden><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17v5"/><path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/></svg></button></span></span></th><th><span class="mdmark-th"><button class="mdmark-sort" type="button">更新日<svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg></button><span class="mdmark-th-tools"><button class="mdmark-pin" type="button" aria-pressed="false" aria-label="「更新日」の列までピン止め" title="「更新日」の列までピン止め" hidden><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17v5"/><path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/></svg></button></span></span></th></tr></thead>
     <tbody>
       <tr><td data-label="名前">りんご</td><td data-label="説明">描画を速くする</td><td data-label="更新日">2026-10-01</td></tr>
-      <tr><td data-label="名前">みかん</td><td data-label="説明">印刷を直す</td><td data-label="更新日">2026-10-10</td></tr>
-      <tr><td data-label="名前">りんご飴</td><td data-label="説明">描画の崩れを直す</td><td data-label="更新日">2026-10-20</td></tr>
-      <tr><td data-label="名前">ぶどう</td><td data-label="説明">タブの並びを直す</td><td data-label="更新日">2026-11-02</td></tr>
+      <tr><td data-label="名前">みかん</td><td data-label="説明">印刷を修正する</td><td data-label="更新日">2026-10-10</td></tr>
+      <tr><td data-label="名前">りんご飴</td><td data-label="説明">描画の崩れを修正する</td><td data-label="更新日">2026-10-20</td></tr>
+      <tr><td data-label="名前">ぶどう</td><td data-label="説明">タブの並びを修正する</td><td data-label="更新日">2026-11-02</td></tr>
       <tr class="mdmark-table-empty" hidden><td colspan="3">一致する行がありません</td></tr>
     </tbody>
   </table>
@@ -419,7 +419,7 @@
         <h2 class="catalog-label" id="state-count">件数の表示（+count filter=説明:text）</h2>
         <article class="mdmark">
 <div class="mdmark-table" data-kind="data">
-  <!-- 表の上の道具の帯: 件数（aria-live で書き換えを知らせる）と、列設定・コピーのボタン -->
+  <!-- 表の上の道具の帯: 件数（aria-live で書き換えを通知する）と、列設定・コピーのボタン -->
   <div class="mdmark-table-bar">
     <p class="mdmark-table-count" aria-live="polite"><span aria-hidden="true">3 / 3 件</span><span class="mdmark-visually-hidden">3 件中 3 件を表示</span></p>
   </div>
@@ -427,8 +427,8 @@
     <thead><tr><th><span class="mdmark-th"><button class="mdmark-sort" type="button">名前<svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg></button><span class="mdmark-th-tools"><button class="mdmark-pin" type="button" aria-pressed="false" aria-label="「名前」の列までピン止め" title="「名前」の列までピン止め" hidden><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17v5"/><path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/></svg></button></span></span></th><th><span class="mdmark-th"><button class="mdmark-sort" type="button">説明<svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg></button><span class="mdmark-th-tools"><button class="mdmark-filter" type="button" aria-expanded="false" aria-controls="t-count-filter-1" aria-label="「説明」で絞り込む" title="「説明」で絞り込む"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 20a1 1 0 0 0 .553.895l2 1A1 1 0 0 0 14 21v-7a2 2 0 0 1 .517-1.341L21.74 4.67A1 1 0 0 0 21 3H3a1 1 0 0 0-.742 1.67l7.225 7.989A2 2 0 0 1 10 14z"/></svg><span class="mdmark-visually-hidden"></span></button><button class="mdmark-pin" type="button" aria-pressed="false" aria-label="「説明」の列までピン止め" title="「説明」の列までピン止め" hidden><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17v5"/><path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/></svg></button></span></span></th><th><span class="mdmark-th"><button class="mdmark-sort" type="button">更新日<svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg></button><span class="mdmark-th-tools"><button class="mdmark-pin" type="button" aria-pressed="false" aria-label="「更新日」の列までピン止め" title="「更新日」の列までピン止め" hidden><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17v5"/><path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/></svg></button></span></span></th></tr></thead>
     <tbody>
       <tr><td data-label="名前">りんご</td><td data-label="説明">描画を速くする</td><td data-label="更新日">2026-10-01</td></tr>
-      <tr><td data-label="名前">みかん</td><td data-label="説明">印刷を直す</td><td data-label="更新日">2026-10-10</td></tr>
-      <tr><td data-label="名前">りんご飴</td><td data-label="説明">描画の崩れを直す</td><td data-label="更新日">2026-10-20</td></tr>
+      <tr><td data-label="名前">みかん</td><td data-label="説明">印刷を修正する</td><td data-label="更新日">2026-10-10</td></tr>
+      <tr><td data-label="名前">りんご飴</td><td data-label="説明">描画の崩れを修正する</td><td data-label="更新日">2026-10-20</td></tr>
       <tr class="mdmark-table-empty" hidden><td colspan="3">一致する行がありません</td></tr>
     </tbody>
   </table>
@@ -447,7 +447,7 @@
         <h2 class="catalog-label" id="state-count-filtered">件数の表示（説明を「描画」で絞り込んだ後）</h2>
         <article class="mdmark">
 <div class="mdmark-table" data-kind="data">
-  <!-- 表の上の道具の帯: 件数（aria-live で書き換えを知らせる）と、列設定・コピーのボタン -->
+  <!-- 表の上の道具の帯: 件数（aria-live で書き換えを通知する）と、列設定・コピーのボタン -->
   <div class="mdmark-table-bar">
     <p class="mdmark-table-count" aria-live="polite"><span aria-hidden="true">3 / 3 件</span><span class="mdmark-visually-hidden">3 件中 3 件を表示</span></p>
   </div>
@@ -455,8 +455,8 @@
     <thead><tr><th><span class="mdmark-th"><button class="mdmark-sort" type="button">名前<svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg></button><span class="mdmark-th-tools"><button class="mdmark-pin" type="button" aria-pressed="false" aria-label="「名前」の列までピン止め" title="「名前」の列までピン止め" hidden><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17v5"/><path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/></svg></button></span></span></th><th><span class="mdmark-th"><button class="mdmark-sort" type="button">説明<svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg></button><span class="mdmark-th-tools"><button class="mdmark-filter" type="button" aria-expanded="false" aria-controls="t-count-filtered-filter-1" aria-label="「説明」で絞り込む" title="「説明」で絞り込む"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 20a1 1 0 0 0 .553.895l2 1A1 1 0 0 0 14 21v-7a2 2 0 0 1 .517-1.341L21.74 4.67A1 1 0 0 0 21 3H3a1 1 0 0 0-.742 1.67l7.225 7.989A2 2 0 0 1 10 14z"/></svg><span class="mdmark-visually-hidden"></span></button><button class="mdmark-pin" type="button" aria-pressed="false" aria-label="「説明」の列までピン止め" title="「説明」の列までピン止め" hidden><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17v5"/><path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/></svg></button></span></span></th><th><span class="mdmark-th"><button class="mdmark-sort" type="button">更新日<svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg></button><span class="mdmark-th-tools"><button class="mdmark-pin" type="button" aria-pressed="false" aria-label="「更新日」の列までピン止め" title="「更新日」の列までピン止め" hidden><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17v5"/><path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/></svg></button></span></span></th></tr></thead>
     <tbody>
       <tr><td data-label="名前">りんご</td><td data-label="説明">描画を速くする</td><td data-label="更新日">2026-10-01</td></tr>
-      <tr><td data-label="名前">みかん</td><td data-label="説明">印刷を直す</td><td data-label="更新日">2026-10-10</td></tr>
-      <tr><td data-label="名前">りんご飴</td><td data-label="説明">描画の崩れを直す</td><td data-label="更新日">2026-10-20</td></tr>
+      <tr><td data-label="名前">みかん</td><td data-label="説明">印刷を修正する</td><td data-label="更新日">2026-10-10</td></tr>
+      <tr><td data-label="名前">りんご飴</td><td data-label="説明">描画の崩れを修正する</td><td data-label="更新日">2026-10-20</td></tr>
       <tr class="mdmark-table-empty" hidden><td colspan="3">一致する行がありません</td></tr>
     </tbody>
   </table>
@@ -475,7 +475,7 @@
         <h2 class="catalog-label" id="state-columns">列設定（+columns hide=説明。説明の列を最初から隠す）</h2>
         <article class="mdmark">
 <div class="mdmark-table" data-kind="data" data-hidden-columns="1">
-  <!-- 表の上の道具の帯: 件数（aria-live で書き換えを知らせる）と、列設定・コピーのボタン -->
+  <!-- 表の上の道具の帯: 件数（aria-live で書き換えを通知する）と、列設定・コピーのボタン -->
   <div class="mdmark-table-bar">
     <div class="mdmark-table-tools">
       <button class="mdmark-table-tool mdmark-columns-toggle" type="button" aria-expanded="false" aria-controls="t-columns-columns"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M9 3v18"/><path d="M15 3v18"/></svg>列設定<span class="mdmark-visually-hidden"></span></button>
@@ -485,8 +485,8 @@
     <thead><tr><th><span class="mdmark-th"><button class="mdmark-sort" type="button">名前<svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg></button><span class="mdmark-th-tools"><button class="mdmark-pin" type="button" aria-pressed="false" aria-label="「名前」の列までピン止め" title="「名前」の列までピン止め" hidden><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17v5"/><path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/></svg></button></span></span></th><th><span class="mdmark-th"><button class="mdmark-sort" type="button">説明<svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg></button><span class="mdmark-th-tools"><button class="mdmark-pin" type="button" aria-pressed="false" aria-label="「説明」の列までピン止め" title="「説明」の列までピン止め" hidden><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17v5"/><path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/></svg></button></span></span></th><th><span class="mdmark-th"><button class="mdmark-sort" type="button">更新日<svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg></button><span class="mdmark-th-tools"><button class="mdmark-pin" type="button" aria-pressed="false" aria-label="「更新日」の列までピン止め" title="「更新日」の列までピン止め" hidden><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17v5"/><path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/></svg></button></span></span></th></tr></thead>
     <tbody>
       <tr><td data-label="名前">りんご</td><td data-label="説明">描画を速くする</td><td data-label="更新日">2026-10-01</td></tr>
-      <tr><td data-label="名前">みかん</td><td data-label="説明">印刷を直す</td><td data-label="更新日">2026-10-10</td></tr>
-      <tr><td data-label="名前">りんご飴</td><td data-label="説明">描画の崩れを直す</td><td data-label="更新日">2026-10-20</td></tr>
+      <tr><td data-label="名前">みかん</td><td data-label="説明">印刷を修正する</td><td data-label="更新日">2026-10-10</td></tr>
+      <tr><td data-label="名前">りんご飴</td><td data-label="説明">描画の崩れを修正する</td><td data-label="更新日">2026-10-20</td></tr>
     </tbody>
   </table>
   <!-- 列設定のメニュー: 道具の帯の列の表示のボタン（aria-controls）で開閉する。初めは閉じている -->
@@ -500,12 +500,12 @@
         </article>
       </section>
 
-      <!-- 列設定のメニューを開いた（説明だけチェックが外れている） -->
+      <!-- 列設定のメニューを開いた（説明だけチェックが解除されている） -->
       <section aria-labelledby="state-columns-open">
-        <h2 class="catalog-label" id="state-columns-open">列設定のメニューを開いた（説明だけチェックが外れている）</h2>
+        <h2 class="catalog-label" id="state-columns-open">列設定のメニューを開いた（説明だけチェックが解除されている）</h2>
         <article class="mdmark">
 <div class="mdmark-table" data-kind="data" data-hidden-columns="1" data-mock-open="columns">
-  <!-- 表の上の道具の帯: 件数（aria-live で書き換えを知らせる）と、列設定・コピーのボタン -->
+  <!-- 表の上の道具の帯: 件数（aria-live で書き換えを通知する）と、列設定・コピーのボタン -->
   <div class="mdmark-table-bar">
     <div class="mdmark-table-tools">
       <button class="mdmark-table-tool mdmark-columns-toggle" type="button" aria-expanded="false" aria-controls="t-columns-open-columns"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M9 3v18"/><path d="M15 3v18"/></svg>列設定<span class="mdmark-visually-hidden"></span></button>
@@ -515,8 +515,8 @@
     <thead><tr><th><span class="mdmark-th"><button class="mdmark-sort" type="button">名前<svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg></button><span class="mdmark-th-tools"><button class="mdmark-pin" type="button" aria-pressed="false" aria-label="「名前」の列までピン止め" title="「名前」の列までピン止め" hidden><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17v5"/><path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/></svg></button></span></span></th><th><span class="mdmark-th"><button class="mdmark-sort" type="button">説明<svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg></button><span class="mdmark-th-tools"><button class="mdmark-pin" type="button" aria-pressed="false" aria-label="「説明」の列までピン止め" title="「説明」の列までピン止め" hidden><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17v5"/><path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/></svg></button></span></span></th><th><span class="mdmark-th"><button class="mdmark-sort" type="button">更新日<svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg></button><span class="mdmark-th-tools"><button class="mdmark-pin" type="button" aria-pressed="false" aria-label="「更新日」の列までピン止め" title="「更新日」の列までピン止め" hidden><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17v5"/><path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/></svg></button></span></span></th></tr></thead>
     <tbody>
       <tr><td data-label="名前">りんご</td><td data-label="説明">描画を速くする</td><td data-label="更新日">2026-10-01</td></tr>
-      <tr><td data-label="名前">みかん</td><td data-label="説明">印刷を直す</td><td data-label="更新日">2026-10-10</td></tr>
-      <tr><td data-label="名前">りんご飴</td><td data-label="説明">描画の崩れを直す</td><td data-label="更新日">2026-10-20</td></tr>
+      <tr><td data-label="名前">みかん</td><td data-label="説明">印刷を修正する</td><td data-label="更新日">2026-10-10</td></tr>
+      <tr><td data-label="名前">りんご飴</td><td data-label="説明">描画の崩れを修正する</td><td data-label="更新日">2026-10-20</td></tr>
     </tbody>
   </table>
   <!-- 列設定のメニュー: 道具の帯の列の表示のボタン（aria-controls）で開閉する。初めは閉じている -->
@@ -532,12 +532,12 @@
         <div class="catalog-spacer" aria-hidden="true"></div>
       </section>
 
-      <!-- 先頭の列は隠せない（説明を出し、更新日を外した。名前のチェックは外せない） -->
+      <!-- 先頭の列は隠せない（説明を出し、更新日を削除した。名前のチェックは解除できない） -->
       <section aria-labelledby="state-columns-first">
-        <h2 class="catalog-label" id="state-columns-first">先頭の列は隠せない（説明を出し、更新日を外した。名前のチェックは外せない）</h2>
+        <h2 class="catalog-label" id="state-columns-first">先頭の列は隠せない（説明を出し、更新日を削除した。名前のチェックは解除できない）</h2>
         <article class="mdmark">
 <div class="mdmark-table" data-kind="data" data-hidden-columns="2" data-mock-open="columns">
-  <!-- 表の上の道具の帯: 件数（aria-live で書き換えを知らせる）と、列設定・コピーのボタン -->
+  <!-- 表の上の道具の帯: 件数（aria-live で書き換えを通知する）と、列設定・コピーのボタン -->
   <div class="mdmark-table-bar">
     <div class="mdmark-table-tools">
       <button class="mdmark-table-tool mdmark-columns-toggle" type="button" aria-expanded="false" aria-controls="t-columns-first-columns"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M9 3v18"/><path d="M15 3v18"/></svg>列設定<span class="mdmark-visually-hidden"></span></button>
@@ -547,8 +547,8 @@
     <thead><tr><th><span class="mdmark-th"><button class="mdmark-sort" type="button">名前<svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg></button><span class="mdmark-th-tools"><button class="mdmark-pin" type="button" aria-pressed="false" aria-label="「名前」の列までピン止め" title="「名前」の列までピン止め" hidden><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17v5"/><path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/></svg></button></span></span></th><th><span class="mdmark-th"><button class="mdmark-sort" type="button">説明<svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg></button><span class="mdmark-th-tools"><button class="mdmark-pin" type="button" aria-pressed="false" aria-label="「説明」の列までピン止め" title="「説明」の列までピン止め" hidden><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17v5"/><path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/></svg></button></span></span></th><th><span class="mdmark-th"><button class="mdmark-sort" type="button">更新日<svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg></button><span class="mdmark-th-tools"><button class="mdmark-pin" type="button" aria-pressed="false" aria-label="「更新日」の列までピン止め" title="「更新日」の列までピン止め" hidden><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17v5"/><path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/></svg></button></span></span></th></tr></thead>
     <tbody>
       <tr><td data-label="名前">りんご</td><td data-label="説明">描画を速くする</td><td data-label="更新日">2026-10-01</td></tr>
-      <tr><td data-label="名前">みかん</td><td data-label="説明">印刷を直す</td><td data-label="更新日">2026-10-10</td></tr>
-      <tr><td data-label="名前">りんご飴</td><td data-label="説明">描画の崩れを直す</td><td data-label="更新日">2026-10-20</td></tr>
+      <tr><td data-label="名前">みかん</td><td data-label="説明">印刷を修正する</td><td data-label="更新日">2026-10-10</td></tr>
+      <tr><td data-label="名前">りんご飴</td><td data-label="説明">描画の崩れを修正する</td><td data-label="更新日">2026-10-20</td></tr>
     </tbody>
   </table>
   <!-- 列設定のメニュー: 道具の帯の列の表示のボタン（aria-controls）で開閉する。初めは閉じている -->
@@ -578,7 +578,7 @@
       <tr><td data-label="名前">ぶどう</td><td class="mdmark-align-right" data-label="数量">-</td><td class="mdmark-align-right" data-label="単価">400</td></tr>
       <tr class="mdmark-table-empty" hidden><td colspan="3">一致する行がありません</td></tr>
     </tbody>
-    <!-- 集計の行: td[data-total] の列を表示している行で集計する（値は描く処理が絞り込み・列の表示に合わせて入れ直す） -->
+    <!-- 集計の行: td[data-total] の列を表示している行で集計する（値は描く処理が絞り込み・列の表示に合わせてもう一度入れる） -->
     <tfoot><tr class="mdmark-table-total"><td data-label="名前" data-total="count"></td><td class="mdmark-align-right" data-label="数量" data-total="sum"></td><td class="mdmark-align-right" data-label="単価" data-total="avg"></td></tr></tfoot>
   </table>
   <!-- 絞り込みのドロワー: 見出しの絞り込みのボタン（aria-controls）で開閉する。初めは閉じている -->
@@ -591,9 +591,9 @@
         </article>
       </section>
 
-      <!-- 集計の行（名前を「りんご」で絞り込んだ後。表示している行で計算し直す） -->
+      <!-- 集計の行（名前を「りんご」で絞り込んだ後。表示している行でもう一度計算する） -->
       <section aria-labelledby="state-total-filtered">
-        <h2 class="catalog-label" id="state-total-filtered">集計の行（名前を「りんご」で絞り込んだ後。表示している行で計算し直す）</h2>
+        <h2 class="catalog-label" id="state-total-filtered">集計の行（名前を「りんご」で絞り込んだ後。表示している行でもう一度計算する）</h2>
         <article class="mdmark">
 <div class="mdmark-table" data-kind="data">
   <table tabindex="0" aria-label="表: 集計の行（絞り込んだ後）">
@@ -605,7 +605,7 @@
       <tr><td data-label="名前">ぶどう</td><td class="mdmark-align-right" data-label="数量">-</td><td class="mdmark-align-right" data-label="単価">400</td></tr>
       <tr class="mdmark-table-empty" hidden><td colspan="3">一致する行がありません</td></tr>
     </tbody>
-    <!-- 集計の行: td[data-total] の列を表示している行で集計する（値は描く処理が絞り込み・列の表示に合わせて入れ直す） -->
+    <!-- 集計の行: td[data-total] の列を表示している行で集計する（値は描く処理が絞り込み・列の表示に合わせてもう一度入れる） -->
     <tfoot><tr class="mdmark-table-total"><td data-label="名前" data-total="count"></td><td class="mdmark-align-right" data-label="数量" data-total="sum"></td><td class="mdmark-align-right" data-label="単価" data-total="avg"></td></tr></tfoot>
   </table>
   <!-- 絞り込みのドロワー: 見出しの絞り込みのボタン（aria-controls）で開閉する。初めは閉じている -->
@@ -623,7 +623,7 @@
         <h2 class="catalog-label" id="state-total-empty">集計の行（一致する行が無いとき。平均は値が無い）</h2>
         <article class="mdmark">
 <div class="mdmark-table" data-kind="data">
-  <!-- 表の上の道具の帯: 件数（aria-live で書き換えを知らせる）と、列設定・コピーのボタン -->
+  <!-- 表の上の道具の帯: 件数（aria-live で書き換えを通知する）と、列設定・コピーのボタン -->
   <div class="mdmark-table-bar">
     <p class="mdmark-table-count" aria-live="polite"><span aria-hidden="true">4 / 4 件</span><span class="mdmark-visually-hidden">4 件中 4 件を表示</span></p>
   </div>
@@ -636,7 +636,7 @@
       <tr><td data-label="名前">ぶどう</td><td class="mdmark-align-right" data-label="数量">-</td><td class="mdmark-align-right" data-label="単価">400</td></tr>
       <tr class="mdmark-table-empty" hidden><td colspan="3">一致する行がありません</td></tr>
     </tbody>
-    <!-- 集計の行: td[data-total] の列を表示している行で集計する（値は描く処理が絞り込み・列の表示に合わせて入れ直す） -->
+    <!-- 集計の行: td[data-total] の列を表示している行で集計する（値は描く処理が絞り込み・列の表示に合わせてもう一度入れる） -->
     <tfoot><tr class="mdmark-table-total"><td data-label="名前" data-total="count"></td><td class="mdmark-align-right" data-label="数量" data-total="sum"></td><td class="mdmark-align-right" data-label="単価" data-total="avg"></td></tr></tfoot>
   </table>
   <!-- 絞り込みのドロワー: 見出しの絞り込みのボタン（aria-controls）で開閉する。初めは閉じている -->
@@ -654,21 +654,21 @@
         <h2 class="catalog-label" id="state-copy">表のコピー（+copy +columns hide=説明 filter=名前:text）</h2>
         <article class="mdmark">
 <div class="mdmark-table" data-kind="data" data-hidden-columns="1">
-  <!-- 表の上の道具の帯: 件数（aria-live で書き換えを知らせる）と、列設定・コピーのボタン -->
+  <!-- 表の上の道具の帯: 件数（aria-live で書き換えを通知する）と、列設定・コピーのボタン -->
   <div class="mdmark-table-bar">
     <div class="mdmark-table-tools">
       <button class="mdmark-table-tool mdmark-columns-toggle" type="button" aria-expanded="false" aria-controls="t-copy-columns"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M9 3v18"/><path d="M15 3v18"/></svg>列設定<span class="mdmark-visually-hidden"></span></button>
       <button class="mdmark-table-tool mdmark-copy" type="button" data-state="idle"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>表をコピー</button>
     </div>
-    <!-- コピーした・できなかったの読み上げ: ボタンの文言の書き換えと一緒に入れる -->
+    <!-- コピーした・できなかったのスクリーンリーダー: ボタンの文言の書き換えと一緒に入れる -->
     <span class="mdmark-visually-hidden mdmark-copy-status" role="status"></span>
   </div>
   <table tabindex="0" aria-label="表: 表のコピー">
     <thead><tr><th><span class="mdmark-th"><button class="mdmark-sort" type="button">名前<svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg></button><span class="mdmark-th-tools"><button class="mdmark-filter" type="button" aria-expanded="false" aria-controls="t-copy-filter-0" aria-label="「名前」で絞り込む" title="「名前」で絞り込む"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 20a1 1 0 0 0 .553.895l2 1A1 1 0 0 0 14 21v-7a2 2 0 0 1 .517-1.341L21.74 4.67A1 1 0 0 0 21 3H3a1 1 0 0 0-.742 1.67l7.225 7.989A2 2 0 0 1 10 14z"/></svg><span class="mdmark-visually-hidden"></span></button><button class="mdmark-pin" type="button" aria-pressed="false" aria-label="「名前」の列までピン止め" title="「名前」の列までピン止め" hidden><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17v5"/><path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/></svg></button></span></span></th><th><span class="mdmark-th"><button class="mdmark-sort" type="button">説明<svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg></button><span class="mdmark-th-tools"><button class="mdmark-pin" type="button" aria-pressed="false" aria-label="「説明」の列までピン止め" title="「説明」の列までピン止め" hidden><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17v5"/><path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/></svg></button></span></span></th><th><span class="mdmark-th"><button class="mdmark-sort" type="button">更新日<svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg></button><span class="mdmark-th-tools"><button class="mdmark-pin" type="button" aria-pressed="false" aria-label="「更新日」の列までピン止め" title="「更新日」の列までピン止め" hidden><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17v5"/><path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/></svg></button></span></span></th></tr></thead>
     <tbody>
       <tr><td data-label="名前">りんご</td><td data-label="説明">描画を速くする</td><td data-label="更新日">2026-10-01</td></tr>
-      <tr><td data-label="名前">みかん</td><td data-label="説明">印刷を直す</td><td data-label="更新日">2026-10-10</td></tr>
-      <tr><td data-label="名前">りんご飴</td><td data-label="説明">描画の崩れを直す</td><td data-label="更新日">2026-10-20</td></tr>
+      <tr><td data-label="名前">みかん</td><td data-label="説明">印刷を修正する</td><td data-label="更新日">2026-10-10</td></tr>
+      <tr><td data-label="名前">りんご飴</td><td data-label="説明">描画の崩れを修正する</td><td data-label="更新日">2026-10-20</td></tr>
       <tr class="mdmark-table-empty" hidden><td colspan="3">一致する行がありません</td></tr>
     </tbody>
   </table>
@@ -689,67 +689,67 @@
         </article>
       </section>
 
-      <!-- コピーした（ボタンの中で知らせ、2 秒で元の文言に戻す） -->
+      <!-- コピーした（ボタンの中で通知し、2 秒で元の文言に戻す） -->
       <section aria-labelledby="state-copied">
-        <h2 class="catalog-label" id="state-copied">コピーした（ボタンの中で知らせ、2 秒で元の文言に戻す）</h2>
+        <h2 class="catalog-label" id="state-copied">コピーした（ボタンの中で通知し、2 秒で元の文言に戻す）</h2>
         <article class="mdmark">
 <div class="mdmark-table" data-kind="data" data-mock-copy="copied">
-  <!-- 表の上の道具の帯: 件数（aria-live で書き換えを知らせる）と、列設定・コピーのボタン -->
+  <!-- 表の上の道具の帯: 件数（aria-live で書き換えを通知する）と、列設定・コピーのボタン -->
   <div class="mdmark-table-bar">
     <div class="mdmark-table-tools">
       <button class="mdmark-table-tool mdmark-copy" type="button" data-state="idle"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>表をコピー</button>
     </div>
-    <!-- コピーした・できなかったの読み上げ: ボタンの文言の書き換えと一緒に入れる -->
+    <!-- コピーした・できなかったのスクリーンリーダー: ボタンの文言の書き換えと一緒に入れる -->
     <span class="mdmark-visually-hidden mdmark-copy-status" role="status"></span>
   </div>
   <table tabindex="0" aria-label="表: コピーした">
     <thead><tr><th><span class="mdmark-th"><button class="mdmark-sort" type="button">名前<svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg></button><span class="mdmark-th-tools"><button class="mdmark-pin" type="button" aria-pressed="false" aria-label="「名前」の列までピン止め" title="「名前」の列までピン止め" hidden><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17v5"/><path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/></svg></button></span></span></th><th><span class="mdmark-th"><button class="mdmark-sort" type="button">説明<svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg></button><span class="mdmark-th-tools"><button class="mdmark-pin" type="button" aria-pressed="false" aria-label="「説明」の列までピン止め" title="「説明」の列までピン止め" hidden><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17v5"/><path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/></svg></button></span></span></th><th><span class="mdmark-th"><button class="mdmark-sort" type="button">更新日<svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg></button><span class="mdmark-th-tools"><button class="mdmark-pin" type="button" aria-pressed="false" aria-label="「更新日」の列までピン止め" title="「更新日」の列までピン止め" hidden><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17v5"/><path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/></svg></button></span></span></th></tr></thead>
     <tbody>
       <tr><td data-label="名前">りんご</td><td data-label="説明">描画を速くする</td><td data-label="更新日">2026-10-01</td></tr>
-      <tr><td data-label="名前">みかん</td><td data-label="説明">印刷を直す</td><td data-label="更新日">2026-10-10</td></tr>
-      <tr><td data-label="名前">りんご飴</td><td data-label="説明">描画の崩れを直す</td><td data-label="更新日">2026-10-20</td></tr>
+      <tr><td data-label="名前">みかん</td><td data-label="説明">印刷を修正する</td><td data-label="更新日">2026-10-10</td></tr>
+      <tr><td data-label="名前">りんご飴</td><td data-label="説明">描画の崩れを修正する</td><td data-label="更新日">2026-10-20</td></tr>
     </tbody>
   </table>
 </div>
         </article>
       </section>
 
-      <!-- コピーできなかった（クリップボードに書けない。異常シナリオ。次に押すまで知らせを残す） -->
+      <!-- コピーできなかった（クリップボードに書き込めない。異常シナリオ。次に押すまで通知を残す） -->
       <section aria-labelledby="state-copy-failed">
-        <h2 class="catalog-label" id="state-copy-failed">コピーできなかった（クリップボードに書けない。異常シナリオ。次に押すまで知らせを残す）</h2>
+        <h2 class="catalog-label" id="state-copy-failed">コピーできなかった（クリップボードに書き込めない。異常シナリオ。次に押すまで通知を残す）</h2>
         <article class="mdmark">
 <div class="mdmark-table" data-kind="data" data-mock-copy="failed">
-  <!-- 表の上の道具の帯: 件数（aria-live で書き換えを知らせる）と、列設定・コピーのボタン -->
+  <!-- 表の上の道具の帯: 件数（aria-live で書き換えを通知する）と、列設定・コピーのボタン -->
   <div class="mdmark-table-bar">
     <div class="mdmark-table-tools">
       <button class="mdmark-table-tool mdmark-copy" type="button" data-state="idle"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>表をコピー</button>
     </div>
-    <!-- コピーした・できなかったの読み上げ: ボタンの文言の書き換えと一緒に入れる -->
+    <!-- コピーした・できなかったのスクリーンリーダー: ボタンの文言の書き換えと一緒に入れる -->
     <span class="mdmark-visually-hidden mdmark-copy-status" role="status"></span>
   </div>
   <table tabindex="0" aria-label="表: コピーできなかった">
     <thead><tr><th><span class="mdmark-th"><button class="mdmark-sort" type="button">名前<svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg></button><span class="mdmark-th-tools"><button class="mdmark-pin" type="button" aria-pressed="false" aria-label="「名前」の列までピン止め" title="「名前」の列までピン止め" hidden><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17v5"/><path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/></svg></button></span></span></th><th><span class="mdmark-th"><button class="mdmark-sort" type="button">説明<svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg></button><span class="mdmark-th-tools"><button class="mdmark-pin" type="button" aria-pressed="false" aria-label="「説明」の列までピン止め" title="「説明」の列までピン止め" hidden><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17v5"/><path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/></svg></button></span></span></th><th><span class="mdmark-th"><button class="mdmark-sort" type="button">更新日<svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg></button><span class="mdmark-th-tools"><button class="mdmark-pin" type="button" aria-pressed="false" aria-label="「更新日」の列までピン止め" title="「更新日」の列までピン止め" hidden><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17v5"/><path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/></svg></button></span></span></th></tr></thead>
     <tbody>
       <tr><td data-label="名前">りんご</td><td data-label="説明">描画を速くする</td><td data-label="更新日">2026-10-01</td></tr>
-      <tr><td data-label="名前">みかん</td><td data-label="説明">印刷を直す</td><td data-label="更新日">2026-10-10</td></tr>
-      <tr><td data-label="名前">りんご飴</td><td data-label="説明">描画の崩れを直す</td><td data-label="更新日">2026-10-20</td></tr>
+      <tr><td data-label="名前">みかん</td><td data-label="説明">印刷を修正する</td><td data-label="更新日">2026-10-10</td></tr>
+      <tr><td data-label="名前">りんご飴</td><td data-label="説明">描画の崩れを修正する</td><td data-label="更新日">2026-10-20</td></tr>
     </tbody>
   </table>
 </div>
         </article>
       </section>
 
-      <!-- 行へのリンク（+rowlink。行を指すと先頭のセルにリンクの印を出す） -->
+      <!-- 行へのリンク（+rowlink。行を指すと先頭のセルにリンクのマーカーを出す） -->
       <section aria-labelledby="state-rowlink">
-        <h2 class="catalog-label" id="state-rowlink">行へのリンク（+rowlink。行を指すと先頭のセルにリンクの印を出す）</h2>
+        <h2 class="catalog-label" id="state-rowlink">行へのリンク（+rowlink。行を指すと先頭のセルにリンクのマーカーを出す）</h2>
         <article class="mdmark">
 <div class="mdmark-table" data-kind="data">
   <table tabindex="0" aria-label="表: 行へのリンク">
     <thead><tr><th><span class="mdmark-th"><button class="mdmark-sort" type="button">名前<svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg></button><span class="mdmark-th-tools"><button class="mdmark-pin" type="button" aria-pressed="false" aria-label="「名前」の列までピン止め" title="「名前」の列までピン止め" hidden><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17v5"/><path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/></svg></button></span></span></th><th><span class="mdmark-th"><button class="mdmark-sort" type="button">説明<svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg></button><span class="mdmark-th-tools"><button class="mdmark-pin" type="button" aria-pressed="false" aria-label="「説明」の列までピン止め" title="「説明」の列までピン止め" hidden><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17v5"/><path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/></svg></button></span></span></th><th><span class="mdmark-th"><button class="mdmark-sort" type="button">更新日<svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg></button><span class="mdmark-th-tools"><button class="mdmark-pin" type="button" aria-pressed="false" aria-label="「更新日」の列までピン止め" title="「更新日」の列までピン止め" hidden><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17v5"/><path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/></svg></button></span></span></th></tr></thead>
     <tbody>
       <tr id="すもも"><td data-label="名前"><span class="mdmark-row-link-cell">すもも<a class="mdmark-row-anchor" href="#すもも" aria-label="「すもも」の行へのリンク"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></a></span></td><td data-label="説明">描画を速くする</td><td data-label="更新日">2026-10-01</td></tr>
-      <tr id="いちご"><td data-label="名前"><span class="mdmark-row-link-cell">いちご<a class="mdmark-row-anchor" href="#いちご" aria-label="「いちご」の行へのリンク"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></a></span></td><td data-label="説明">印刷を直す</td><td data-label="更新日">2026-10-10</td></tr>
-      <tr id="かき"><td data-label="名前"><span class="mdmark-row-link-cell">かき<a class="mdmark-row-anchor" href="#かき" aria-label="「かき」の行へのリンク"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></a></span></td><td data-label="説明">描画の崩れを直す</td><td data-label="更新日">2026-10-20</td></tr>
+      <tr id="いちご"><td data-label="名前"><span class="mdmark-row-link-cell">いちご<a class="mdmark-row-anchor" href="#いちご" aria-label="「いちご」の行へのリンク"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></a></span></td><td data-label="説明">印刷を修正する</td><td data-label="更新日">2026-10-10</td></tr>
+      <tr id="かき"><td data-label="名前"><span class="mdmark-row-link-cell">かき<a class="mdmark-row-anchor" href="#かき" aria-label="「かき」の行へのリンク"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></a></span></td><td data-label="説明">描画の崩れを修正する</td><td data-label="更新日">2026-10-20</td></tr>
     </tbody>
   </table>
 </div>
@@ -765,18 +765,18 @@
     <thead><tr><th><span class="mdmark-th"><button class="mdmark-sort" type="button">名前<svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg></button><span class="mdmark-th-tools"><button class="mdmark-pin" type="button" aria-pressed="false" aria-label="「名前」の列までピン止め" title="「名前」の列までピン止め" hidden><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17v5"/><path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/></svg></button></span></span></th><th><span class="mdmark-th"><button class="mdmark-sort" type="button">説明<svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg></button><span class="mdmark-th-tools"><button class="mdmark-pin" type="button" aria-pressed="false" aria-label="「説明」の列までピン止め" title="「説明」の列までピン止め" hidden><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17v5"/><path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/></svg></button></span></span></th><th><span class="mdmark-th"><button class="mdmark-sort" type="button">更新日<svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg></button><span class="mdmark-th-tools"><button class="mdmark-pin" type="button" aria-pressed="false" aria-label="「更新日」の列までピン止め" title="「更新日」の列までピン止め" hidden><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17v5"/><path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/></svg></button></span></span></th></tr></thead>
     <tbody>
       <tr id="うめ"><td data-label="名前"><span class="mdmark-row-link-cell">うめ<a class="mdmark-row-anchor" href="#うめ" aria-label="「うめ」の行へのリンク"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></a></span></td><td data-label="説明">描画を速くする</td><td data-label="更新日">2026-10-01</td></tr>
-      <tr id="びわ" class="is-target"><td data-label="名前"><span class="mdmark-row-link-cell">びわ<a class="mdmark-row-anchor" href="#びわ" aria-label="「びわ」の行へのリンク"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></a></span></td><td data-label="説明">印刷を直す</td><td data-label="更新日">2026-10-10</td></tr>
-      <tr id="あんず"><td data-label="名前"><span class="mdmark-row-link-cell">あんず<a class="mdmark-row-anchor" href="#あんず" aria-label="「あんず」の行へのリンク"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></a></span></td><td data-label="説明">描画の崩れを直す</td><td data-label="更新日">2026-10-20</td></tr>
+      <tr id="びわ" class="is-target"><td data-label="名前"><span class="mdmark-row-link-cell">びわ<a class="mdmark-row-anchor" href="#びわ" aria-label="「びわ」の行へのリンク"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></a></span></td><td data-label="説明">印刷を修正する</td><td data-label="更新日">2026-10-10</td></tr>
+      <tr id="あんず"><td data-label="名前"><span class="mdmark-row-link-cell">あんず<a class="mdmark-row-anchor" href="#あんず" aria-label="「あんず」の行へのリンク"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></a></span></td><td data-label="説明">描画の崩れを修正する</td><td data-label="更新日">2026-10-20</td></tr>
     </tbody>
   </table>
 </div>
         </article>
       </section>
 
-      <!-- 閉じた表・閉じた節・絞り込みで隠れた行へ移る（下のリンクで #ID を変える） -->
+      <!-- 閉じた表・閉じたセクション・絞り込みで隠れた行へ移る（下のリンクで #ID を変える） -->
       <section aria-labelledby="state-rowlink-reveal">
-        <h2 class="catalog-label" id="state-rowlink-reveal">閉じた表・閉じた節・絞り込みで隠れた行へ移る（下のリンクで #ID を変える）</h2>
-        <!-- モック専用の移る先: URL の #ID を書き換える。閉じた表・閉じた節を開き、絞り込みを外してから行へ移る -->
+        <h2 class="catalog-label" id="state-rowlink-reveal">閉じた表・閉じたセクション・絞り込みで隠れた行へ移る（下のリンクで #ID を変える）</h2>
+        <!-- モック専用の移る先: URL の #ID を書き換える。閉じた表・閉じたセクションを開き、絞り込みを解除してから行へ移る -->
         <p class="catalog-links">移る先: <a href="#みかん">表 A の みかん</a> / <a href="#もも">表 B の もも</a></p>
         <article class="mdmark">
 <p>表 A（closed）:</p>
@@ -787,22 +787,22 @@
     <thead><tr><th><span class="mdmark-th"><button class="mdmark-sort" type="button">名前<svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg></button><span class="mdmark-th-tools"><button class="mdmark-pin" type="button" aria-pressed="false" aria-label="「名前」の列までピン止め" title="「名前」の列までピン止め" hidden><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17v5"/><path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/></svg></button></span></span></th><th><span class="mdmark-th"><button class="mdmark-sort" type="button">説明<svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg></button><span class="mdmark-th-tools"><button class="mdmark-pin" type="button" aria-pressed="false" aria-label="「説明」の列までピン止め" title="「説明」の列までピン止め" hidden><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17v5"/><path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/></svg></button></span></span></th><th><span class="mdmark-th"><button class="mdmark-sort" type="button">更新日<svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg></button><span class="mdmark-th-tools"><button class="mdmark-pin" type="button" aria-pressed="false" aria-label="「更新日」の列までピン止め" title="「更新日」の列までピン止め" hidden><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17v5"/><path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/></svg></button></span></span></th></tr></thead>
     <tbody>
       <tr id="りんご"><td data-label="名前"><span class="mdmark-row-link-cell">りんご<a class="mdmark-row-anchor" href="#りんご" aria-label="「りんご」の行へのリンク"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></a></span></td><td data-label="説明">描画を速くする</td><td data-label="更新日">2026-10-01</td></tr>
-      <tr id="みかん"><td data-label="名前"><span class="mdmark-row-link-cell">みかん<a class="mdmark-row-anchor" href="#みかん" aria-label="「みかん」の行へのリンク"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></a></span></td><td data-label="説明">印刷を直す</td><td data-label="更新日">2026-10-10</td></tr>
-      <tr id="りんご飴"><td data-label="名前"><span class="mdmark-row-link-cell">りんご飴<a class="mdmark-row-anchor" href="#りんご飴" aria-label="「りんご飴」の行へのリンク"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></a></span></td><td data-label="説明">描画の崩れを直す</td><td data-label="更新日">2026-10-20</td></tr>
+      <tr id="みかん"><td data-label="名前"><span class="mdmark-row-link-cell">みかん<a class="mdmark-row-anchor" href="#みかん" aria-label="「みかん」の行へのリンク"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></a></span></td><td data-label="説明">印刷を修正する</td><td data-label="更新日">2026-10-10</td></tr>
+      <tr id="りんご飴"><td data-label="名前"><span class="mdmark-row-link-cell">りんご飴<a class="mdmark-row-anchor" href="#りんご飴" aria-label="「りんご飴」の行へのリンク"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></a></span></td><td data-label="説明">描画の崩れを修正する</td><td data-label="更新日">2026-10-20</td></tr>
     </tbody>
   </table>
   </details>
 </div>
-<h2 class="mdmark-heading" id="節-closed"><button class="mdmark-section-toggle" type="button" aria-expanded="false" aria-controls="section-節-closed">閉じた節<svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button></h2>
-<div class="mdmark-section-body" id="section-節-closed" hidden="until-found">
+<h2 class="mdmark-heading" id="セクション-closed"><button class="mdmark-section-toggle" type="button" aria-expanded="false" aria-controls="section-セクション-closed">閉じたセクション<svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button></h2>
+<div class="mdmark-section-body" id="section-セクション-closed" hidden="until-found">
 <p>表 B（名前を「ぶどう」で絞り込んである）:</p>
 <div class="mdmark-table" data-kind="data">
   <table tabindex="0" aria-label="表: 表 B">
     <thead><tr><th><span class="mdmark-th"><button class="mdmark-sort" type="button">名前<svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg></button><span class="mdmark-th-tools"><button class="mdmark-filter" type="button" aria-expanded="false" aria-controls="t-rowlink-b-filter-0" aria-label="「名前」で絞り込む" title="「名前」で絞り込む"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 20a1 1 0 0 0 .553.895l2 1A1 1 0 0 0 14 21v-7a2 2 0 0 1 .517-1.341L21.74 4.67A1 1 0 0 0 21 3H3a1 1 0 0 0-.742 1.67l7.225 7.989A2 2 0 0 1 10 14z"/></svg><span class="mdmark-visually-hidden"></span></button><button class="mdmark-pin" type="button" aria-pressed="false" aria-label="「名前」の列までピン止め" title="「名前」の列までピン止め" hidden><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17v5"/><path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/></svg></button></span></span></th><th><span class="mdmark-th"><button class="mdmark-sort" type="button">説明<svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg></button><span class="mdmark-th-tools"><button class="mdmark-pin" type="button" aria-pressed="false" aria-label="「説明」の列までピン止め" title="「説明」の列までピン止め" hidden><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17v5"/><path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/></svg></button></span></span></th><th><span class="mdmark-th"><button class="mdmark-sort" type="button">更新日<svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg></button><span class="mdmark-th-tools"><button class="mdmark-pin" type="button" aria-pressed="false" aria-label="「更新日」の列までピン止め" title="「更新日」の列までピン止め" hidden><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17v5"/><path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/></svg></button></span></span></th></tr></thead>
     <tbody>
       <tr id="ぶどう"><td data-label="名前"><span class="mdmark-row-link-cell">ぶどう<a class="mdmark-row-anchor" href="#ぶどう" aria-label="「ぶどう」の行へのリンク"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></a></span></td><td data-label="説明">描画を速くする</td><td data-label="更新日">2026-10-01</td></tr>
-      <tr id="もも"><td data-label="名前"><span class="mdmark-row-link-cell">もも<a class="mdmark-row-anchor" href="#もも" aria-label="「もも」の行へのリンク"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></a></span></td><td data-label="説明">印刷を直す</td><td data-label="更新日">2026-10-10</td></tr>
-      <tr id="なし"><td data-label="名前"><span class="mdmark-row-link-cell">なし<a class="mdmark-row-anchor" href="#なし" aria-label="「なし」の行へのリンク"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></a></span></td><td data-label="説明">描画の崩れを直す</td><td data-label="更新日">2026-10-20</td></tr>
+      <tr id="もも"><td data-label="名前"><span class="mdmark-row-link-cell">もも<a class="mdmark-row-anchor" href="#もも" aria-label="「もも」の行へのリンク"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></a></span></td><td data-label="説明">印刷を修正する</td><td data-label="更新日">2026-10-10</td></tr>
+      <tr id="なし"><td data-label="名前"><span class="mdmark-row-link-cell">なし<a class="mdmark-row-anchor" href="#なし" aria-label="「なし」の行へのリンク"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></a></span></td><td data-label="説明">描画の崩れを修正する</td><td data-label="更新日">2026-10-20</td></tr>
       <tr class="mdmark-table-empty" hidden><td colspan="3">一致する行がありません</td></tr>
     </tbody>
   </table>
@@ -822,24 +822,24 @@
         <h2 class="catalog-label" id="state-all">5 つの機能を全て付けた表（+count +columns +total +copy +rowlink total=数量:sum hide=説明）</h2>
         <article class="mdmark">
 <div class="mdmark-table" data-kind="data" data-hidden-columns="1">
-  <!-- 表の上の道具の帯: 件数（aria-live で書き換えを知らせる）と、列設定・コピーのボタン -->
+  <!-- 表の上の道具の帯: 件数（aria-live で書き換えを通知する）と、列設定・コピーのボタン -->
   <div class="mdmark-table-bar">
     <p class="mdmark-table-count" aria-live="polite"><span aria-hidden="true">3 / 3 件</span><span class="mdmark-visually-hidden">3 件中 3 件を表示</span></p>
     <div class="mdmark-table-tools">
       <button class="mdmark-table-tool mdmark-columns-toggle" type="button" aria-expanded="false" aria-controls="t-all-columns"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M9 3v18"/><path d="M15 3v18"/></svg>列設定<span class="mdmark-visually-hidden"></span></button>
       <button class="mdmark-table-tool mdmark-copy" type="button" data-state="idle"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>表をコピー</button>
     </div>
-    <!-- コピーした・できなかったの読み上げ: ボタンの文言の書き換えと一緒に入れる -->
+    <!-- コピーした・できなかったのスクリーンリーダー: ボタンの文言の書き換えと一緒に入れる -->
     <span class="mdmark-visually-hidden mdmark-copy-status" role="status"></span>
   </div>
   <table tabindex="0" aria-label="表: 5 つの機能">
     <thead><tr><th><span class="mdmark-th"><button class="mdmark-sort" type="button">名前<svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg></button><span class="mdmark-th-tools"><button class="mdmark-pin" type="button" aria-pressed="false" aria-label="「名前」の列までピン止め" title="「名前」の列までピン止め" hidden><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17v5"/><path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/></svg></button></span></span></th><th><span class="mdmark-th"><button class="mdmark-sort" type="button">説明<svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg></button><span class="mdmark-th-tools"><button class="mdmark-pin" type="button" aria-pressed="false" aria-label="「説明」の列までピン止め" title="「説明」の列までピン止め" hidden><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17v5"/><path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/></svg></button></span></span></th><th class="mdmark-align-right"><span class="mdmark-th"><button class="mdmark-sort" type="button">数量<svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg></button><span class="mdmark-th-tools"><button class="mdmark-pin" type="button" aria-pressed="false" aria-label="「数量」の列までピン止め" title="「数量」の列までピン止め" hidden><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17v5"/><path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/></svg></button></span></span></th></tr></thead>
     <tbody>
       <tr id="なつめ"><td data-label="名前"><span class="mdmark-row-link-cell">なつめ<a class="mdmark-row-anchor" href="#なつめ" aria-label="「なつめ」の行へのリンク"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></a></span></td><td data-label="説明">描画を速くする</td><td class="mdmark-align-right" data-label="数量">12</td></tr>
-      <tr id="かりん"><td data-label="名前"><span class="mdmark-row-link-cell">かりん<a class="mdmark-row-anchor" href="#かりん" aria-label="「かりん」の行へのリンク"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></a></span></td><td data-label="説明">印刷を直す</td><td class="mdmark-align-right" data-label="数量">8</td></tr>
-      <tr id="ざくろ"><td data-label="名前"><span class="mdmark-row-link-cell">ざくろ<a class="mdmark-row-anchor" href="#ざくろ" aria-label="「ざくろ」の行へのリンク"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></a></span></td><td data-label="説明">描画の崩れを直す</td><td class="mdmark-align-right" data-label="数量">5</td></tr>
+      <tr id="かりん"><td data-label="名前"><span class="mdmark-row-link-cell">かりん<a class="mdmark-row-anchor" href="#かりん" aria-label="「かりん」の行へのリンク"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></a></span></td><td data-label="説明">印刷を修正する</td><td class="mdmark-align-right" data-label="数量">8</td></tr>
+      <tr id="ざくろ"><td data-label="名前"><span class="mdmark-row-link-cell">ざくろ<a class="mdmark-row-anchor" href="#ざくろ" aria-label="「ざくろ」の行へのリンク"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></a></span></td><td data-label="説明">描画の崩れを修正する</td><td class="mdmark-align-right" data-label="数量">5</td></tr>
     </tbody>
-    <!-- 集計の行: td[data-total] の列を表示している行で集計する（値は描く処理が絞り込み・列の表示に合わせて入れ直す） -->
+    <!-- 集計の行: td[data-total] の列を表示している行で集計する（値は描く処理が絞り込み・列の表示に合わせてもう一度入れる） -->
     <tfoot><tr class="mdmark-table-total"><td data-label="名前"></td><td data-label="説明"></td><td class="mdmark-align-right" data-label="数量" data-total="sum"></td></tr></tfoot>
   </table>
   <!-- 列設定のメニュー: 道具の帯の列の表示のボタン（aria-controls）で開閉する。初めは閉じている -->
@@ -853,23 +853,23 @@
         </article>
       </section>
 
-      <!-- 読めない集計・隠す列（+total +columns total=数量:max,価格:sum,単価:avg hide=備考,名前。異常シナリオ） -->
+      <!-- 読み込めない集計・隠す列（+total +columns total=数量:max,価格:sum,単価:avg hide=備考,名前。異常シナリオ） -->
       <section aria-labelledby="state-total-warning">
-        <h2 class="catalog-label" id="state-total-warning">読めない集計・隠す列（+total +columns total=数量:max,価格:sum,単価:avg hide=備考,名前。異常シナリオ）</h2>
+        <h2 class="catalog-label" id="state-total-warning">読み込めない集計・隠す列（+total +columns total=数量:max,価格:sum,単価:avg hide=備考,名前。異常シナリオ）</h2>
         <article class="mdmark">
 <div class="mdmark-table" data-kind="data">
   <div class="mdmark-syntax-warning">
-  <p class="mdmark-syntax-warning-title"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg>書き方の警告</p>
-  <p><code>&lt;!-- table: data +total +columns total=数量:max,価格:sum,単価:avg hide=備考,名前 --&gt;</code>の読めない指定を当てずに描いています。</p>
-  <ul><li><code>total=</code>: <code>数量:max</code> の計算 <code>max</code> は使えません。使える計算は <code>sum</code>・<code>avg</code>・<code>count</code> です</li><li><code>total=</code>: <code>価格</code> は表に無い列名です</li><li><code>hide=</code>: <code>備考</code> は表に無い列名です</li><li><code>hide=</code>: <code>名前</code> は先頭の列のため隠せません</li></ul>
+  <p class="mdmark-syntax-warning-title"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg>記載の警告</p>
+  <p><code>&lt;!-- table: data +total +columns total=数量:max,価格:sum,単価:avg hide=備考,名前 --&gt;</code>の読み込めない指定を当てずに描いています。</p>
+  <ul><li><code>total=</code>: <code>数量:max</code> の計算 <code>max</code> は使用できません。使用できる計算は <code>sum</code>・<code>avg</code>・<code>count</code> です</li><li><code>total=</code>: <code>価格</code> は表に無い列名です</li><li><code>hide=</code>: <code>備考</code> は表に無い列名です</li><li><code>hide=</code>: <code>名前</code> は先頭の列のため隠せません</li></ul>
 </div>
-  <!-- 表の上の道具の帯: 件数（aria-live で書き換えを知らせる）と、列設定・コピーのボタン -->
+  <!-- 表の上の道具の帯: 件数（aria-live で書き換えを通知する）と、列設定・コピーのボタン -->
   <div class="mdmark-table-bar">
     <div class="mdmark-table-tools">
       <button class="mdmark-table-tool mdmark-columns-toggle" type="button" aria-expanded="false" aria-controls="t-total-warning-columns"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M9 3v18"/><path d="M15 3v18"/></svg>列設定<span class="mdmark-visually-hidden"></span></button>
     </div>
   </div>
-  <table tabindex="0" aria-label="表: 読めない集計・隠す列">
+  <table tabindex="0" aria-label="表: 読み込めない集計・隠す列">
     <thead><tr><th><span class="mdmark-th"><button class="mdmark-sort" type="button">名前<svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg></button><span class="mdmark-th-tools"><button class="mdmark-pin" type="button" aria-pressed="false" aria-label="「名前」の列までピン止め" title="「名前」の列までピン止め" hidden><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17v5"/><path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/></svg></button></span></span></th><th class="mdmark-align-right"><span class="mdmark-th"><button class="mdmark-sort" type="button">数量<svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg></button><span class="mdmark-th-tools"><button class="mdmark-pin" type="button" aria-pressed="false" aria-label="「数量」の列までピン止め" title="「数量」の列までピン止め" hidden><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17v5"/><path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/></svg></button></span></span></th><th class="mdmark-align-right"><span class="mdmark-th"><button class="mdmark-sort" type="button">単価<svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg></button><span class="mdmark-th-tools"><button class="mdmark-pin" type="button" aria-pressed="false" aria-label="「単価」の列までピン止め" title="「単価」の列までピン止め" hidden><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17v5"/><path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/></svg></button></span></span></th></tr></thead>
     <tbody>
       <tr><td data-label="名前">りんご</td><td class="mdmark-align-right" data-label="数量">10</td><td class="mdmark-align-right" data-label="単価">100</td></tr>
@@ -877,7 +877,7 @@
       <tr><td data-label="名前">りんご飴</td><td class="mdmark-align-right" data-label="数量">33</td><td class="mdmark-align-right" data-label="単価">300</td></tr>
       <tr><td data-label="名前">ぶどう</td><td class="mdmark-align-right" data-label="数量">-</td><td class="mdmark-align-right" data-label="単価">400</td></tr>
     </tbody>
-    <!-- 集計の行: td[data-total] の列を表示している行で集計する（値は描く処理が絞り込み・列の表示に合わせて入れ直す） -->
+    <!-- 集計の行: td[data-total] の列を表示している行で集計する（値は描く処理が絞り込み・列の表示に合わせてもう一度入れる） -->
     <tfoot><tr class="mdmark-table-total"><td data-label="名前"></td><td class="mdmark-align-right" data-label="数量"></td><td class="mdmark-align-right" data-label="単価" data-total="avg"></td></tr></tfoot>
   </table>
   <!-- 列設定のメニュー: 道具の帯の列の表示のボタン（aria-controls）で開閉する。初めは閉じている -->
@@ -897,9 +897,9 @@
         <article class="mdmark">
 <div class="mdmark-table" data-kind="data">
   <div class="mdmark-syntax-warning">
-  <p class="mdmark-syntax-warning-title"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg>書き方の警告</p>
-  <p><code>&lt;!-- table: data total=数量:sum hide=名前 --&gt;</code>の読めない指定を当てずに描いています。</p>
-  <ul><li><code>total=</code>: <code>+total</code> を書いた表でだけ使えるキーです</li><li><code>hide=</code>: <code>+columns</code> を書いた表でだけ使えるキーです</li></ul>
+  <p class="mdmark-syntax-warning-title"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg>記載の警告</p>
+  <p><code>&lt;!-- table: data total=数量:sum hide=名前 --&gt;</code>の読み込めない指定を当てずに描いています。</p>
+  <ul><li><code>total=</code>: <code>+total</code> を記載した表でだけ使用できるキーです</li><li><code>hide=</code>: <code>+columns</code> を記載した表でだけ使用できるキーです</li></ul>
 </div>
   <table tabindex="0" aria-label="表: 機能を付けていない表のキー">
     <thead><tr><th><span class="mdmark-th"><button class="mdmark-sort" type="button">名前<svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg></button><span class="mdmark-th-tools"><button class="mdmark-pin" type="button" aria-pressed="false" aria-label="「名前」の列までピン止め" title="「名前」の列までピン止め" hidden><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17v5"/><path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/></svg></button></span></span></th><th class="mdmark-align-right"><span class="mdmark-th"><button class="mdmark-sort" type="button">数量<svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg></button><span class="mdmark-th-tools"><button class="mdmark-pin" type="button" aria-pressed="false" aria-label="「数量」の列までピン止め" title="「数量」の列までピン止め" hidden><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17v5"/><path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/></svg></button></span></span></th><th class="mdmark-align-right"><span class="mdmark-th"><button class="mdmark-sort" type="button">単価<svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg></button><span class="mdmark-th-tools"><button class="mdmark-pin" type="button" aria-pressed="false" aria-label="「単価」の列までピン止め" title="「単価」の列までピン止め" hidden><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17v5"/><path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/></svg></button></span></span></th></tr></thead>
@@ -920,9 +920,9 @@
         <article class="mdmark">
 <div class="mdmark-table" data-kind="data">
   <div class="mdmark-syntax-warning">
-  <p class="mdmark-syntax-warning-title"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg>書き方の警告</p>
-  <p><code>&lt;!-- table: data +unknown size=2 --&gt;</code>の読めない指定を当てずに描いています。</p>
-  <ul><li><code>+unknown</code>: 使えない機能です。使える機能は <code>sort</code>・<code>pin</code>・<code>filter</code>・<code>count</code>・<code>columns</code>・<code>total</code>・<code>copy</code>・<code>rowlink</code> です</li><li><code>size=</code>: 使えないキーです。使えるキーは <code>filter=</code>・<code>hide=</code>・<code>total=</code> です</li></ul>
+  <p class="mdmark-syntax-warning-title"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg>記載の警告</p>
+  <p><code>&lt;!-- table: data +unknown size=2 --&gt;</code>の読み込めない指定を当てずに描いています。</p>
+  <ul><li><code>+unknown</code>: 使用できない機能です。使用できる機能は <code>sort</code>・<code>pin</code>・<code>filter</code>・<code>count</code>・<code>columns</code>・<code>total</code>・<code>copy</code>・<code>rowlink</code> です</li><li><code>size=</code>: 使用できないキーです。使用できるキーは <code>filter=</code>・<code>hide=</code>・<code>total=</code> です</li></ul>
 </div>
   <table tabindex="0" aria-label="表: 知らない機能・キー">
     <thead><tr><th><span class="mdmark-th"><button class="mdmark-sort" type="button">名前<svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg></button><span class="mdmark-th-tools"><button class="mdmark-pin" type="button" aria-pressed="false" aria-label="「名前」の列までピン止め" title="「名前」の列までピン止め" hidden><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17v5"/><path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/></svg></button></span></span></th><th class="mdmark-align-right"><span class="mdmark-th"><button class="mdmark-sort" type="button">数量<svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg></button><span class="mdmark-th-tools"><button class="mdmark-pin" type="button" aria-pressed="false" aria-label="「数量」の列までピン止め" title="「数量」の列までピン止め" hidden><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17v5"/><path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/></svg></button></span></span></th><th class="mdmark-align-right"><span class="mdmark-th"><button class="mdmark-sort" type="button">単価<svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg></button><span class="mdmark-th-tools"><button class="mdmark-pin" type="button" aria-pressed="false" aria-label="「単価」の列までピン止め" title="「単価」の列までピン止め" hidden><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17v5"/><path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/></svg></button></span></span></th></tr></thead>
@@ -945,34 +945,34 @@
         </article>
       </section>
 
-      <!-- 集計のメニューを開いた（total= に書いた計算を 1 行ずつ出し、出す計算を選ぶ） -->
+      <!-- 集計のメニューを開いた（total= に記載した計算を 1 行ずつ出し、出す計算を選ぶ） -->
       <section aria-labelledby="state-totals-open">
-        <h2 class="catalog-label" id="state-totals-open">集計のメニューを開いた（total= に書いた計算を 1 行ずつ出し、出す計算を選ぶ）</h2>
+        <h2 class="catalog-label" id="state-totals-open">集計のメニューを開いた（total= に記載した計算を 1 行ずつ出し、出す計算を選ぶ）</h2>
         <article class="mdmark">
 <div data-mock-table="fruits-totals-open" data-mock-open="totals"></div>
         </article>
         <div class="catalog-spacer" aria-hidden="true"></div>
       </section>
 
-      <!-- 平均を外した（外した計算の行を出さない） -->
+      <!-- 平均を削除した（削除した計算の行を出さない） -->
       <section aria-labelledby="state-totals-unchecked">
-        <h2 class="catalog-label" id="state-totals-unchecked">平均を外した（外した計算の行を出さない）</h2>
+        <h2 class="catalog-label" id="state-totals-unchecked">平均を削除した（削除した計算の行を出さない）</h2>
         <article class="mdmark">
 <div data-mock-table="fruits-uncheck" data-mock-uncheck="avg"></div>
         </article>
       </section>
 
-      <!-- 数として読めないセルを持つ列（案 A: 表の上の書き方の警告で知らせ、その列の合計を出さない。異常シナリオ） -->
+      <!-- 数として読み込めないセルを持つ列（案 A: 表の上の記載の警告で通知し、その列の合計を出さない。異常シナリオ） -->
       <section aria-labelledby="state-unreadable-box">
-        <h2 class="catalog-label" id="state-unreadable-box">数として読めないセルを持つ列（案 A: 表の上の書き方の警告で知らせ、その列の合計を出さない。異常シナリオ）</h2>
+        <h2 class="catalog-label" id="state-unreadable-box">数として読み込めないセルを持つ列（案 A: 表の上の記載の警告で通知し、その列の合計を出さない。異常シナリオ）</h2>
         <article class="mdmark">
 <div data-mock-table="shipment"></div>
         </article>
       </section>
 
-      <!-- 数として読めないセルを持つ列（案 B: 集計の行のセルで知らせる。異常シナリオ） -->
+      <!-- 数として読み込めないセルを持つ列（案 B: 集計の行のセルで通知する。異常シナリオ） -->
       <section aria-labelledby="state-unreadable-cell">
-        <h2 class="catalog-label" id="state-unreadable-cell">数として読めないセルを持つ列（案 B: 集計の行のセルで知らせる。異常シナリオ）</h2>
+        <h2 class="catalog-label" id="state-unreadable-cell">数として読み込めないセルを持つ列（案 B: 集計の行のセルで通知する。異常シナリオ）</h2>
         <article class="mdmark">
 <div data-mock-table="shipment-cell" data-mock-unreadable="cell"></div>
         </article>
@@ -987,9 +987,9 @@
         <div class="catalog-spacer" aria-hidden="true"></div>
       </section>
 
-      <!-- 形式を選んでコピーした（ボタンの中で知らせ、2 秒で元の文言に戻す） -->
+      <!-- 形式を選んでコピーした（ボタンの中で通知し、2 秒で元の文言に戻す） -->
       <section aria-labelledby="state-copy-done">
-        <h2 class="catalog-label" id="state-copy-done">形式を選んでコピーした（ボタンの中で知らせ、2 秒で元の文言に戻す）</h2>
+        <h2 class="catalog-label" id="state-copy-done">形式を選んでコピーした（ボタンの中で通知し、2 秒で元の文言に戻す）</h2>
         <article class="mdmark">
 <div data-mock-table="fruits-copied" data-mock-copy="copied"></div>
         </article>
@@ -1043,7 +1043,7 @@
         </article>
       </section>
 
-      <!-- 列の強調: 列のセルを面の薄い色にし、見出しの下端に色の線を引く -->
+      <!-- 列の強調: 列のセルを面の薄い色にし、見出しの下端に色の線を描く -->
       <section aria-labelledby="state-col-highlight">
         <h2 class="catalog-label" id="state-col-highlight">列の強調（<code>highlight=金額（円）</code>。既定の色は blue。見出しの下端の線でも示す）</h2>
         <article class="mdmark">
@@ -1157,13 +1157,13 @@
         </article>
       </section>
 
-      <!-- 知らない色の名前（異常シナリオ）: 色を付けず、書き方の警告の枠で知らせる -->
+      <!-- 知らない色の名前（異常シナリオ）: 色を付けず、記載の警告の枠で通知する -->
       <section aria-labelledby="state-row-unknown">
-        <h2 class="catalog-label" id="state-row-unknown">知らない色の名前を書いた（<code>row-color=状態:完了=pink</code>。異常シナリオ）</h2>
+        <h2 class="catalog-label" id="state-row-unknown">知らない色の名前を記載した（<code>row-color=状態:完了=pink</code>。異常シナリオ）</h2>
         <article class="mdmark">
 <div class="mdmark-syntax-warning">
-  <p class="mdmark-syntax-warning-title"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg>書き方の警告</p>
-  <p><code>row-color=状態:完了=pink</code> の色の名前 <code>pink</code> はありません。<code>blue</code>・<code>red</code>・<code>green</code>・<code>yellow</code>・<code>orange</code>・<code>purple</code>・<code>gray</code> のどれかを書いてください。この行には色を付けていません。</p>
+  <p class="mdmark-syntax-warning-title"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg>記載の警告</p>
+  <p><code>row-color=状態:完了=pink</code> の色の名前 <code>pink</code> はありません。<code>blue</code>・<code>red</code>・<code>green</code>・<code>yellow</code>・<code>orange</code>・<code>purple</code>・<code>gray</code> のどれかを記載してください。この行には色を付けていません。</p>
 </div>
 <div class="mdmark-table" data-kind="data">
   <table tabindex="0" aria-label="表: 知らない色の名前">
@@ -1180,7 +1180,7 @@
         </article>
       </section>
 
-      <!-- #283 既定のピン止め: 表が幅からはみ出すとき、先頭の列を最初から留める。ボタンを押し直すと外す -->
+      <!-- #283 既定のピン止め: 表が幅からはみ出すとき、先頭の列を最初から留める。ボタンをもう一度押すと解除する -->
       <section aria-labelledby="state-283-default-pin">
         <h2 class="catalog-label" id="state-283-default-pin">はみ出す表は先頭の列を既定でピン止めする</h2>
         <article class="mdmark">
@@ -1189,9 +1189,9 @@
         </article>
       </section>
 
-      <!-- #283 -pin: 既定のピン止めとピン止めのボタンを外す -->
+      <!-- #283 -pin: 既定のピン止めとピン止めのボタンを削除する -->
       <section aria-labelledby="state-283-no-pin">
-        <h2 class="catalog-label" id="state-283-no-pin">-pin でピン止めを外した表（留めず、ピン止めのボタンも出さない）</h2>
+        <h2 class="catalog-label" id="state-283-no-pin">-pin でピン止めを解除した表（留めず、ピン止めのボタンも出さない）</h2>
         <article class="mdmark">
           <!-- [data-mock-table283]: table-pin.js が table-samples.js の同じ名前の定義から表を描く -->
           <div data-mock-table283="no-pin"></div>
@@ -1216,7 +1216,7 @@
         </article>
       </section>
 
-      <!-- #283 知らない列名: 書き方の警告を出し、その指定を外して描く -->
+      <!-- #283 知らない列名: 記載の警告を出し、その指定を削除して描く -->
       <section aria-labelledby="state-283-unknown-column">
         <h2 class="catalog-label" id="state-283-unknown-column">知らない列名（check=必要 wide=説明。異常シナリオ）</h2>
         <article class="mdmark">
@@ -1224,27 +1224,27 @@
           <div data-mock-table283="unknown-column"></div>
         </article>
       </section>
-      <!-- #275 多段の見出しと行見出し: 上期・下期は << で 2 列にまたがり、地域は ^^ で縦に結合する。並べ替え・ピン止めのボタンは列ごとに分かれた最下段の見出しに置く -->
+      <!-- #275 多段の見出しと行見出し: 上期・下期は << で 2 列にまたがり、地域は ^^ で縦に結合する。並べ替え・ピン止めのボタンは列ごとに分かれた最下段の見出しに配置する -->
       <section aria-labelledby="state-275-merge">
-        <h2 class="catalog-label" id="state-275-merge">多段の見出しと行見出し（header-rows=2 row-header=1。^^ で縦、&lt;&lt; で横に結合し、ボタンは最下段の見出しに置く）</h2>
+        <h2 class="catalog-label" id="state-275-merge">多段の見出しと行見出し（header-rows=2 row-header=1。^^ で縦、&lt;&lt; で横に結合し、ボタンは最下段の見出しに配置する）</h2>
         <article class="mdmark">
           <!-- [data-mock-table275]: table-merge.js が table-samples.js の同じ名前の定義から表を描く -->
           <div data-mock-table275="merge"></div>
         </article>
       </section>
 
-      <!-- #275 並べ替えの後: 隣り合う同じ値だけを結合し直す。離れた同じ地域は別々のセルになる -->
+      <!-- #275 並べ替えの後: 隣り合う同じ値だけをもう一度結合する。離れた同じ地域は別々のセルになる -->
       <section aria-labelledby="state-275-merge-sorted">
-        <h2 class="catalog-label" id="state-275-merge-sorted">並べ替えた後に結合し直す（下期の売上で降順。隣り合う同じ地域だけを結合する）</h2>
+        <h2 class="catalog-label" id="state-275-merge-sorted">並べ替えた後にもう一度結合する（下期の売上で降順。隣り合う同じ地域だけを結合する）</h2>
         <article class="mdmark">
           <!-- [data-mock-table275]: table-merge.js が table-samples.js の同じ名前の定義から表を描く -->
           <div data-mock-table275="merge-sorted"></div>
         </article>
       </section>
 
-      <!-- #275 絞り込みの後: 残った行の隣り合う同じ値を結合し直す -->
+      <!-- #275 絞り込みの後: 残った行の隣り合う同じ値をもう一度結合する -->
       <section aria-labelledby="state-275-merge-filtered">
-        <h2 class="catalog-label" id="state-275-merge-filtered">絞り込んだ後に結合し直す（地域を東日本で絞り込んだ後）</h2>
+        <h2 class="catalog-label" id="state-275-merge-filtered">絞り込んだ後にもう一度結合する（地域を東日本で絞り込んだ後）</h2>
         <article class="mdmark">
           <!-- [data-mock-table275]: table-merge.js が table-samples.js の同じ名前の定義から表を描く -->
           <div data-mock-table275="merge-filtered"></div>
@@ -1260,18 +1260,18 @@
         </article>
       </section>
 
-      <!-- #275 読めないセルの結合: 書き方の警告を出し、結合せず書いた文字のまま描く -->
+      <!-- #275 読み込めないセルの結合: 記載の警告を出し、結合せず記載した文字のまま描く -->
       <section aria-labelledby="state-275-merge-warning">
-        <h2 class="catalog-label" id="state-275-merge-warning">読めないセルの結合（1 行目の ^^・先頭の列の &lt;&lt;。異常シナリオ）</h2>
+        <h2 class="catalog-label" id="state-275-merge-warning">読み込めないセルの結合（1 行目の ^^・先頭の列の &lt;&lt;。異常シナリオ）</h2>
         <article class="mdmark">
           <!-- [data-mock-table275]: table-merge.js が table-samples.js の同じ名前の定義から表を描く -->
           <div data-mock-table275="merge-warning"></div>
         </article>
       </section>
 
-      <!-- #184 列の並べ替え: 見出しに列の操作を置かず、帯の「列設定」を「テーブル設定」に変えて、表示・非表示と並べ替えをまとめる -->
+      <!-- #184 列の並べ替え: 見出しに列の操作を配置せず、帯の「列設定」を「テーブル設定」に変えて、表示・非表示と並べ替えをまとめる -->
       <section aria-labelledby="state-303-reorder">
-        <h2 class="catalog-label" id="state-303-reorder">テーブル設定（+reorder +columns。見出しには並べ替えのボタンだけを置き、列の操作は表の上の帯のアイコンだけのボタン（ツールチップ「テーブル設定」）にまとめる）</h2>
+        <h2 class="catalog-label" id="state-303-reorder">テーブル設定（+reorder +columns。見出しには並べ替えのボタンだけを配置し、列の操作は表の上の帯のアイコンだけのボタン（ツールチップ「テーブル設定」）にまとめる）</h2>
         <article class="mdmark">
 <div class="mdmark-table" data-kind="data" data-settings>
   <div class="mdmark-table-bar">
@@ -1354,7 +1354,7 @@
         <div class="catalog-spacer" aria-hidden="true"></div>
       </section>
 
-      <!-- #184 動かした後: 見出しと全ての行のセルが一覧と同じ順に動く。ページを開き直すと記載した順に戻る -->
+      <!-- #184 動かした後: 見出しと全ての行のセルが一覧と同じ順に動く。ページをもう一度開くと記載した順に戻る -->
       <section aria-labelledby="state-303-reorder-moved">
         <h2 class="catalog-label" id="state-303-reorder-moved">並べ替えて説明の列を隠した後（説明・名前・既定・型の順。説明は隠している。ボタンに隠した列の数のバッジ）</h2>
         <article class="mdmark">
@@ -1436,7 +1436,7 @@
     </tbody>
   </table>
 </div>
-<p>一覧は、ピン止めの列・結合した見出し「設定」の範囲・範囲の外の列に分けて並べる。型・既定・必須は「設定」の中だけで並べ替えられ、名前（ピン止めの側の唯一の列）と備考（左隣が範囲）はつまみが使えない。名前は先頭の列のため隠せない。</p>
+<p>一覧は、ピン止めの列・結合した見出し「設定」の範囲・範囲の外の列に分けて並べる。型・既定・必須は「設定」の中だけで並べ替えられ、名前（ピン止めの側の唯一の列）と備考（左隣が範囲）はつまみが使用できない。名前は先頭の列のため隠せない。</p>
         </article>
         <!-- 開いたまま見せるパネルの分の余白（モック専用） -->
         <div class="catalog-spacer" aria-hidden="true"></div>
@@ -1457,7 +1457,7 @@
       <tr class="mdmark-tree-row" data-path="aliases[].id" data-parent="aliases[]" data-depth="1" aria-selected="false"><td class="mdmark-tree-key"><span class="mdmark-tree-cell"><span class="mdmark-tree-guide" aria-hidden="true"></span><span class="mdmark-tree-spacer" aria-hidden="true"></span><span class="mdmark-tree-name" tabindex="0" title="aliases[].id">id</span><button class="mdmark-tree-copy" type="button" aria-label="全体のパスをコピー" title="全体のパスをコピー">⧉</button></span></td><td><span class="mdmark-type-badge" data-type="string">string</span></td><td></td><td>行の ID。aliases の中で一意にする</td></tr>
       <tr class="mdmark-tree-row is-virtual has-children" data-path="aliases[].metadata" data-parent="aliases[]" data-depth="1" aria-selected="false"><td class="mdmark-tree-key"><span class="mdmark-tree-cell"><span class="mdmark-tree-guide" aria-hidden="true"></span><button class="mdmark-tree-toggle" type="button" aria-expanded="true" aria-label="aliases[].metadata を畳む"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button><span class="mdmark-tree-name" tabindex="0" title="aliases[].metadata">metadata</span><button class="mdmark-tree-copy" type="button" aria-label="全体のパスをコピー" title="全体のパスをコピー">⧉</button></span></td><td></td><td></td><td></td></tr>
       <tr class="mdmark-tree-row is-virtual has-children" data-path="aliases[].metadata.alias_type" data-parent="aliases[].metadata" data-depth="2" aria-selected="false"><td class="mdmark-tree-key"><span class="mdmark-tree-cell"><span class="mdmark-tree-guide" aria-hidden="true"></span><span class="mdmark-tree-guide" aria-hidden="true"></span><button class="mdmark-tree-toggle" type="button" aria-expanded="true" aria-label="aliases[].metadata.alias_type を畳む"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button><span class="mdmark-tree-name" tabindex="0" title="aliases[].metadata.alias_type">alias_type</span><button class="mdmark-tree-copy" type="button" aria-label="全体のパスをコピー" title="全体のパスをコピー">⧉</button></span></td><td></td><td></td><td></td></tr>
-      <tr class="mdmark-tree-row" data-path="aliases[].metadata.alias_type.type" data-parent="aliases[].metadata.alias_type" data-depth="3" aria-selected="false"><td class="mdmark-tree-key"><span class="mdmark-tree-cell"><span class="mdmark-tree-guide" aria-hidden="true"></span><span class="mdmark-tree-guide" aria-hidden="true"></span><span class="mdmark-tree-guide" aria-hidden="true"></span><span class="mdmark-tree-spacer" aria-hidden="true"></span><span class="mdmark-tree-name" tabindex="0" title="aliases[].metadata.alias_type.type">type</span><button class="mdmark-tree-copy" type="button" aria-label="全体のパスをコピー" title="全体のパスをコピー">⧉</button></span></td><td><span class="mdmark-type-chip">ref</span><span class="mdmark-type-chip">custom</span></td><td></td><td>値の取り方。ref はレコードの列の値、custom は全てのレコードに同じ値を当てる</td></tr>
+      <tr class="mdmark-tree-row" data-path="aliases[].metadata.alias_type.type" data-parent="aliases[].metadata.alias_type" data-depth="3" aria-selected="false"><td class="mdmark-tree-key"><span class="mdmark-tree-cell"><span class="mdmark-tree-guide" aria-hidden="true"></span><span class="mdmark-tree-guide" aria-hidden="true"></span><span class="mdmark-tree-guide" aria-hidden="true"></span><span class="mdmark-tree-spacer" aria-hidden="true"></span><span class="mdmark-tree-name" tabindex="0" title="aliases[].metadata.alias_type.type">type</span><button class="mdmark-tree-copy" type="button" aria-label="全体のパスをコピー" title="全体のパスをコピー">⧉</button></span></td><td><span class="mdmark-type-chip">ref</span><span class="mdmark-type-chip">custom</span></td><td></td><td>値の取り方。ref はレコードの列の値、custom は全てのレコードに同じ値を適用する</td></tr>
     </tbody>
   </table>
 </div>
@@ -1479,16 +1479,16 @@
       <tr class="mdmark-tree-row" data-path="aliases[].id" data-parent="aliases[]" data-depth="1" aria-selected="false"><td class="mdmark-tree-key"><span class="mdmark-tree-cell"><span class="mdmark-tree-guide" aria-hidden="true"></span><span class="mdmark-tree-spacer" aria-hidden="true"></span><span class="mdmark-tree-name" tabindex="0" title="aliases[].id">id</span><button class="mdmark-tree-copy" type="button" aria-label="全体のパスをコピー" title="全体のパスをコピー">⧉</button></span></td><td><span class="mdmark-type-badge" data-type="string">string</span></td><td></td><td>行の ID。aliases の中で一意にする</td></tr>
       <tr class="mdmark-tree-row is-virtual has-children" data-path="aliases[].metadata" data-parent="aliases[]" data-depth="1" aria-selected="false"><td class="mdmark-tree-key"><span class="mdmark-tree-cell"><span class="mdmark-tree-guide" aria-hidden="true"></span><button class="mdmark-tree-toggle" type="button" aria-expanded="true" aria-label="aliases[].metadata を畳む"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button><span class="mdmark-tree-name" tabindex="0" title="aliases[].metadata">metadata</span><button class="mdmark-tree-copy" type="button" aria-label="全体のパスをコピー" title="全体のパスをコピー">⧉</button></span></td><td></td><td></td><td></td></tr>
       <tr class="mdmark-tree-row is-virtual has-children" data-path="aliases[].metadata.alias_type" data-parent="aliases[].metadata" data-depth="2" aria-selected="false"><td class="mdmark-tree-key"><span class="mdmark-tree-cell"><span class="mdmark-tree-guide" aria-hidden="true"></span><span class="mdmark-tree-guide" aria-hidden="true"></span><button class="mdmark-tree-toggle" type="button" aria-expanded="true" aria-label="aliases[].metadata.alias_type を畳む"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button><span class="mdmark-tree-name" tabindex="0" title="aliases[].metadata.alias_type">alias_type</span><button class="mdmark-tree-copy" type="button" aria-label="全体のパスをコピー" title="全体のパスをコピー">⧉</button></span></td><td></td><td></td><td></td></tr>
-      <tr class="mdmark-tree-row" data-path="aliases[].metadata.alias_type.type" data-parent="aliases[].metadata.alias_type" data-depth="3" aria-selected="false"><td class="mdmark-tree-key"><span class="mdmark-tree-cell"><span class="mdmark-tree-guide" aria-hidden="true"></span><span class="mdmark-tree-guide" aria-hidden="true"></span><span class="mdmark-tree-guide" aria-hidden="true"></span><span class="mdmark-tree-spacer" aria-hidden="true"></span><span class="mdmark-tree-name" tabindex="0" title="aliases[].metadata.alias_type.type">type</span><button class="mdmark-tree-copy" type="button" aria-label="全体のパスをコピー" title="全体のパスをコピー">⧉</button><span class="mdmark-tree-tip" role="tooltip">aliases[].metadata.alias_type.type</span></span></td><td><span class="mdmark-type-chip">ref</span><span class="mdmark-type-chip">custom</span></td><td></td><td>値の取り方。ref はレコードの列の値、custom は全てのレコードに同じ値を当てる</td></tr>
+      <tr class="mdmark-tree-row" data-path="aliases[].metadata.alias_type.type" data-parent="aliases[].metadata.alias_type" data-depth="3" aria-selected="false"><td class="mdmark-tree-key"><span class="mdmark-tree-cell"><span class="mdmark-tree-guide" aria-hidden="true"></span><span class="mdmark-tree-guide" aria-hidden="true"></span><span class="mdmark-tree-guide" aria-hidden="true"></span><span class="mdmark-tree-spacer" aria-hidden="true"></span><span class="mdmark-tree-name" tabindex="0" title="aliases[].metadata.alias_type.type">type</span><button class="mdmark-tree-copy" type="button" aria-label="全体のパスをコピー" title="全体のパスをコピー">⧉</button><span class="mdmark-tree-tip" role="tooltip">aliases[].metadata.alias_type.type</span></span></td><td><span class="mdmark-type-chip">ref</span><span class="mdmark-type-chip">custom</span></td><td></td><td>値の取り方。ref はレコードの列の値、custom は全てのレコードに同じ値を適用する</td></tr>
     </tbody>
   </table>
 </div>
         </article>
       </section>
 
-      <!-- #250 コピーした: ⧉ の場所で知らせる -->
+      <!-- #250 コピーした: ⧉ の場所で通知する -->
       <section aria-labelledby="state-303-tree-copied">
-        <h2 class="catalog-label" id="state-303-tree-copied">全体のパスをコピーした（⧉ の場所で知らせ、2 秒で戻す）</h2>
+        <h2 class="catalog-label" id="state-303-tree-copied">全体のパスをコピーした（⧉ の場所で通知し、2 秒で戻す）</h2>
         <article class="mdmark">
 <div class="mdmark-table" data-kind="data" data-tree>
   <table tabindex="0" aria-label="表: コピーした行">
@@ -1501,7 +1501,7 @@
       <tr class="mdmark-tree-row" data-path="aliases[].id" data-parent="aliases[]" data-depth="1" aria-selected="false"><td class="mdmark-tree-key"><span class="mdmark-tree-cell"><span class="mdmark-tree-guide" aria-hidden="true"></span><span class="mdmark-tree-spacer" aria-hidden="true"></span><span class="mdmark-tree-name" tabindex="0" title="aliases[].id">id</span><button class="mdmark-tree-copy is-copied" type="button" aria-label="全体のパスをコピー">コピーしました</button></span></td><td><span class="mdmark-type-badge" data-type="string">string</span></td><td></td><td>行の ID。aliases の中で一意にする</td></tr>
       <tr class="mdmark-tree-row is-virtual has-children" data-path="aliases[].metadata" data-parent="aliases[]" data-depth="1" aria-selected="false"><td class="mdmark-tree-key"><span class="mdmark-tree-cell"><span class="mdmark-tree-guide" aria-hidden="true"></span><button class="mdmark-tree-toggle" type="button" aria-expanded="true" aria-label="aliases[].metadata を畳む"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button><span class="mdmark-tree-name" tabindex="0" title="aliases[].metadata">metadata</span><button class="mdmark-tree-copy" type="button" aria-label="全体のパスをコピー" title="全体のパスをコピー">⧉</button></span></td><td></td><td></td><td></td></tr>
       <tr class="mdmark-tree-row is-virtual has-children" data-path="aliases[].metadata.alias_type" data-parent="aliases[].metadata" data-depth="2" aria-selected="false"><td class="mdmark-tree-key"><span class="mdmark-tree-cell"><span class="mdmark-tree-guide" aria-hidden="true"></span><span class="mdmark-tree-guide" aria-hidden="true"></span><button class="mdmark-tree-toggle" type="button" aria-expanded="true" aria-label="aliases[].metadata.alias_type を畳む"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button><span class="mdmark-tree-name" tabindex="0" title="aliases[].metadata.alias_type">alias_type</span><button class="mdmark-tree-copy" type="button" aria-label="全体のパスをコピー" title="全体のパスをコピー">⧉</button></span></td><td></td><td></td><td></td></tr>
-      <tr class="mdmark-tree-row" data-path="aliases[].metadata.alias_type.type" data-parent="aliases[].metadata.alias_type" data-depth="3" aria-selected="false"><td class="mdmark-tree-key"><span class="mdmark-tree-cell"><span class="mdmark-tree-guide" aria-hidden="true"></span><span class="mdmark-tree-guide" aria-hidden="true"></span><span class="mdmark-tree-guide" aria-hidden="true"></span><span class="mdmark-tree-spacer" aria-hidden="true"></span><span class="mdmark-tree-name" tabindex="0" title="aliases[].metadata.alias_type.type">type</span><button class="mdmark-tree-copy" type="button" aria-label="全体のパスをコピー" title="全体のパスをコピー">⧉</button></span></td><td><span class="mdmark-type-chip">ref</span><span class="mdmark-type-chip">custom</span></td><td></td><td>値の取り方。ref はレコードの列の値、custom は全てのレコードに同じ値を当てる</td></tr>
+      <tr class="mdmark-tree-row" data-path="aliases[].metadata.alias_type.type" data-parent="aliases[].metadata.alias_type" data-depth="3" aria-selected="false"><td class="mdmark-tree-key"><span class="mdmark-tree-cell"><span class="mdmark-tree-guide" aria-hidden="true"></span><span class="mdmark-tree-guide" aria-hidden="true"></span><span class="mdmark-tree-guide" aria-hidden="true"></span><span class="mdmark-tree-spacer" aria-hidden="true"></span><span class="mdmark-tree-name" tabindex="0" title="aliases[].metadata.alias_type.type">type</span><button class="mdmark-tree-copy" type="button" aria-label="全体のパスをコピー" title="全体のパスをコピー">⧉</button></span></td><td><span class="mdmark-type-chip">ref</span><span class="mdmark-type-chip">custom</span></td><td></td><td>値の取り方。ref はレコードの列の値、custom は全てのレコードに同じ値を適用する</td></tr>
     </tbody>
   </table>
 </div>
@@ -1523,16 +1523,16 @@
       <tr class="mdmark-tree-row" data-path="aliases[].id" data-parent="aliases[]" data-depth="1" aria-selected="false" hidden><td class="mdmark-tree-key"><span class="mdmark-tree-cell"><span class="mdmark-tree-guide" aria-hidden="true"></span><span class="mdmark-tree-spacer" aria-hidden="true"></span><span class="mdmark-tree-name" tabindex="0" title="aliases[].id">id</span><button class="mdmark-tree-copy" type="button" aria-label="全体のパスをコピー" title="全体のパスをコピー">⧉</button></span></td><td><span class="mdmark-type-badge" data-type="string">string</span></td><td></td><td>行の ID。aliases の中で一意にする</td></tr>
       <tr class="mdmark-tree-row is-virtual has-children" data-path="aliases[].metadata" data-parent="aliases[]" data-depth="1" aria-selected="false" hidden><td class="mdmark-tree-key"><span class="mdmark-tree-cell"><span class="mdmark-tree-guide" aria-hidden="true"></span><button class="mdmark-tree-toggle" type="button" aria-expanded="true" aria-label="aliases[].metadata を畳む"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button><span class="mdmark-tree-name" tabindex="0" title="aliases[].metadata">metadata</span><button class="mdmark-tree-copy" type="button" aria-label="全体のパスをコピー" title="全体のパスをコピー">⧉</button></span></td><td></td><td></td><td></td></tr>
       <tr class="mdmark-tree-row is-virtual has-children" data-path="aliases[].metadata.alias_type" data-parent="aliases[].metadata" data-depth="2" aria-selected="false" hidden><td class="mdmark-tree-key"><span class="mdmark-tree-cell"><span class="mdmark-tree-guide" aria-hidden="true"></span><span class="mdmark-tree-guide" aria-hidden="true"></span><button class="mdmark-tree-toggle" type="button" aria-expanded="true" aria-label="aliases[].metadata.alias_type を畳む"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button><span class="mdmark-tree-name" tabindex="0" title="aliases[].metadata.alias_type">alias_type</span><button class="mdmark-tree-copy" type="button" aria-label="全体のパスをコピー" title="全体のパスをコピー">⧉</button></span></td><td></td><td></td><td></td></tr>
-      <tr class="mdmark-tree-row" data-path="aliases[].metadata.alias_type.type" data-parent="aliases[].metadata.alias_type" data-depth="3" aria-selected="false" hidden><td class="mdmark-tree-key"><span class="mdmark-tree-cell"><span class="mdmark-tree-guide" aria-hidden="true"></span><span class="mdmark-tree-guide" aria-hidden="true"></span><span class="mdmark-tree-guide" aria-hidden="true"></span><span class="mdmark-tree-spacer" aria-hidden="true"></span><span class="mdmark-tree-name" tabindex="0" title="aliases[].metadata.alias_type.type">type</span><button class="mdmark-tree-copy" type="button" aria-label="全体のパスをコピー" title="全体のパスをコピー">⧉</button></span></td><td><span class="mdmark-type-chip">ref</span><span class="mdmark-type-chip">custom</span></td><td></td><td>値の取り方。ref はレコードの列の値、custom は全てのレコードに同じ値を当てる</td></tr>
+      <tr class="mdmark-tree-row" data-path="aliases[].metadata.alias_type.type" data-parent="aliases[].metadata.alias_type" data-depth="3" aria-selected="false" hidden><td class="mdmark-tree-key"><span class="mdmark-tree-cell"><span class="mdmark-tree-guide" aria-hidden="true"></span><span class="mdmark-tree-guide" aria-hidden="true"></span><span class="mdmark-tree-guide" aria-hidden="true"></span><span class="mdmark-tree-spacer" aria-hidden="true"></span><span class="mdmark-tree-name" tabindex="0" title="aliases[].metadata.alias_type.type">type</span><button class="mdmark-tree-copy" type="button" aria-label="全体のパスをコピー" title="全体のパスをコピー">⧉</button></span></td><td><span class="mdmark-type-chip">ref</span><span class="mdmark-type-chip">custom</span></td><td></td><td>値の取り方。ref はレコードの列の値、custom は全てのレコードに同じ値を適用する</td></tr>
     </tbody>
   </table>
 </div>
         </article>
       </section>
 
-      <!-- #250 絞り込み: 末尾の名前で照合し、当たった単語に色を付ける -->
+      <!-- #250 絞り込み: 末尾の名前で照合し、該当した単語に色を付ける -->
       <section aria-labelledby="state-303-tree-filter">
-        <h2 class="catalog-label" id="state-303-tree-filter">絞り込んだ（キーを id で絞り込む。当たった行と親の行を残し、件数は当たった行だけを数える）</h2>
+        <h2 class="catalog-label" id="state-303-tree-filter">絞り込んだ（キーを id で絞り込む。該当した行と親の行を残し、件数は該当した行だけを数える）</h2>
         <article class="mdmark">
 <div class="mdmark-table" data-kind="data" data-tree>
   <div class="mdmark-table-bar"><label>キー <input type="search" data-tree-filter value="id" placeholder="キーワード"></label> <span class="mdmark-table-count" data-tree-count>1 件</span></div>
@@ -1546,20 +1546,20 @@
       <tr class="mdmark-tree-row" data-path="aliases[].id" data-parent="aliases[]" data-depth="1" aria-selected="false"><td class="mdmark-tree-key"><span class="mdmark-tree-cell"><span class="mdmark-tree-guide" aria-hidden="true"></span><span class="mdmark-tree-spacer" aria-hidden="true"></span><span class="mdmark-tree-name" tabindex="0" title="aliases[].id"><mark class="mdmark-tree-hit">id</mark></span><button class="mdmark-tree-copy" type="button" aria-label="全体のパスをコピー" title="全体のパスをコピー">⧉</button></span></td><td><span class="mdmark-type-badge" data-type="string">string</span></td><td></td><td>行の ID。aliases の中で一意にする</td></tr>
       <tr class="mdmark-tree-row is-virtual has-children" data-path="aliases[].metadata" data-parent="aliases[]" data-depth="1" aria-selected="false" hidden><td class="mdmark-tree-key"><span class="mdmark-tree-cell"><span class="mdmark-tree-guide" aria-hidden="true"></span><button class="mdmark-tree-toggle" type="button" aria-expanded="true" aria-label="aliases[].metadata を畳む"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button><span class="mdmark-tree-name" tabindex="0" title="aliases[].metadata">metadata</span><button class="mdmark-tree-copy" type="button" aria-label="全体のパスをコピー" title="全体のパスをコピー">⧉</button></span></td><td></td><td></td><td></td></tr>
       <tr class="mdmark-tree-row is-virtual has-children" data-path="aliases[].metadata.alias_type" data-parent="aliases[].metadata" data-depth="2" aria-selected="false" hidden><td class="mdmark-tree-key"><span class="mdmark-tree-cell"><span class="mdmark-tree-guide" aria-hidden="true"></span><span class="mdmark-tree-guide" aria-hidden="true"></span><button class="mdmark-tree-toggle" type="button" aria-expanded="true" aria-label="aliases[].metadata.alias_type を畳む"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button><span class="mdmark-tree-name" tabindex="0" title="aliases[].metadata.alias_type">alias_type</span><button class="mdmark-tree-copy" type="button" aria-label="全体のパスをコピー" title="全体のパスをコピー">⧉</button></span></td><td></td><td></td><td></td></tr>
-      <tr class="mdmark-tree-row" data-path="aliases[].metadata.alias_type.type" data-parent="aliases[].metadata.alias_type" data-depth="3" aria-selected="false" hidden><td class="mdmark-tree-key"><span class="mdmark-tree-cell"><span class="mdmark-tree-guide" aria-hidden="true"></span><span class="mdmark-tree-guide" aria-hidden="true"></span><span class="mdmark-tree-guide" aria-hidden="true"></span><span class="mdmark-tree-spacer" aria-hidden="true"></span><span class="mdmark-tree-name" tabindex="0" title="aliases[].metadata.alias_type.type">type</span><button class="mdmark-tree-copy" type="button" aria-label="全体のパスをコピー" title="全体のパスをコピー">⧉</button></span></td><td><span class="mdmark-type-chip">ref</span><span class="mdmark-type-chip">custom</span></td><td></td><td>値の取り方。ref はレコードの列の値、custom は全てのレコードに同じ値を当てる</td></tr>
+      <tr class="mdmark-tree-row" data-path="aliases[].metadata.alias_type.type" data-parent="aliases[].metadata.alias_type" data-depth="3" aria-selected="false" hidden><td class="mdmark-tree-key"><span class="mdmark-tree-cell"><span class="mdmark-tree-guide" aria-hidden="true"></span><span class="mdmark-tree-guide" aria-hidden="true"></span><span class="mdmark-tree-guide" aria-hidden="true"></span><span class="mdmark-tree-spacer" aria-hidden="true"></span><span class="mdmark-tree-name" tabindex="0" title="aliases[].metadata.alias_type.type">type</span><button class="mdmark-tree-copy" type="button" aria-label="全体のパスをコピー" title="全体のパスをコピー">⧉</button></span></td><td><span class="mdmark-type-chip">ref</span><span class="mdmark-type-chip">custom</span></td><td></td><td>値の取り方。ref はレコードの列の値、custom は全てのレコードに同じ値を適用する</td></tr>
     </tbody>
   </table>
 </div>
         </article>
       </section>
 
-      <!-- #250 絞り込み: 補った親の行が当たったときは色を付けて残し、子は残さない -->
+      <!-- #250 絞り込み: 補った親の行が該当したときは色を付けて残し、子は残さない -->
       <section aria-labelledby="state-303-tree-filter-virtual">
-        <h2 class="catalog-label" id="state-303-tree-filter-virtual">補った親の行が当たった（metadata で絞り込む。補った行は件数に数えない）</h2>
+        <h2 class="catalog-label" id="state-303-tree-filter-virtual">補った親の行が該当した（metadata で絞り込む。補った行は件数に数えない）</h2>
         <article class="mdmark">
 <div class="mdmark-table" data-kind="data" data-tree>
   <div class="mdmark-table-bar"><label>キー <input type="search" data-tree-filter value="metadata" placeholder="キーワード"></label> <span class="mdmark-table-count" data-tree-count>0 件</span></div>
-  <table tabindex="0" aria-label="表: 補った親の行が当たった階層">
+  <table tabindex="0" aria-label="表: 補った親の行が該当した階層">
     <thead><tr><th>キー</th><th>型</th><th>既定</th><th>説明</th></tr></thead>
     <tbody>
       <tr class="mdmark-tree-row is-virtual has-children" data-path="features" data-parent="" data-depth="0" aria-selected="false" hidden><td class="mdmark-tree-key"><span class="mdmark-tree-cell"><button class="mdmark-tree-toggle" type="button" aria-expanded="true" aria-label="features を畳む"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button><span class="mdmark-tree-name" tabindex="0" title="features">features</span><button class="mdmark-tree-copy" type="button" aria-label="全体のパスをコピー" title="全体のパスをコピー">⧉</button></span></td><td></td><td></td><td></td></tr>
@@ -1569,7 +1569,7 @@
       <tr class="mdmark-tree-row" data-path="aliases[].id" data-parent="aliases[]" data-depth="1" aria-selected="false" hidden><td class="mdmark-tree-key"><span class="mdmark-tree-cell"><span class="mdmark-tree-guide" aria-hidden="true"></span><span class="mdmark-tree-spacer" aria-hidden="true"></span><span class="mdmark-tree-name" tabindex="0" title="aliases[].id">id</span><button class="mdmark-tree-copy" type="button" aria-label="全体のパスをコピー" title="全体のパスをコピー">⧉</button></span></td><td><span class="mdmark-type-badge" data-type="string">string</span></td><td></td><td>行の ID。aliases の中で一意にする</td></tr>
       <tr class="mdmark-tree-row is-virtual has-children" data-path="aliases[].metadata" data-parent="aliases[]" data-depth="1" aria-selected="false"><td class="mdmark-tree-key"><span class="mdmark-tree-cell"><span class="mdmark-tree-guide" aria-hidden="true"></span><button class="mdmark-tree-toggle" type="button" aria-expanded="true" aria-label="aliases[].metadata を畳む"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button><span class="mdmark-tree-name" tabindex="0" title="aliases[].metadata"><mark class="mdmark-tree-hit">metadata</mark></span><button class="mdmark-tree-copy" type="button" aria-label="全体のパスをコピー" title="全体のパスをコピー">⧉</button></span></td><td></td><td></td><td></td></tr>
       <tr class="mdmark-tree-row is-virtual has-children" data-path="aliases[].metadata.alias_type" data-parent="aliases[].metadata" data-depth="2" aria-selected="false" hidden><td class="mdmark-tree-key"><span class="mdmark-tree-cell"><span class="mdmark-tree-guide" aria-hidden="true"></span><span class="mdmark-tree-guide" aria-hidden="true"></span><button class="mdmark-tree-toggle" type="button" aria-expanded="true" aria-label="aliases[].metadata.alias_type を畳む"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button><span class="mdmark-tree-name" tabindex="0" title="aliases[].metadata.alias_type">alias_type</span><button class="mdmark-tree-copy" type="button" aria-label="全体のパスをコピー" title="全体のパスをコピー">⧉</button></span></td><td></td><td></td><td></td></tr>
-      <tr class="mdmark-tree-row" data-path="aliases[].metadata.alias_type.type" data-parent="aliases[].metadata.alias_type" data-depth="3" aria-selected="false" hidden><td class="mdmark-tree-key"><span class="mdmark-tree-cell"><span class="mdmark-tree-guide" aria-hidden="true"></span><span class="mdmark-tree-guide" aria-hidden="true"></span><span class="mdmark-tree-guide" aria-hidden="true"></span><span class="mdmark-tree-spacer" aria-hidden="true"></span><span class="mdmark-tree-name" tabindex="0" title="aliases[].metadata.alias_type.type">type</span><button class="mdmark-tree-copy" type="button" aria-label="全体のパスをコピー" title="全体のパスをコピー">⧉</button></span></td><td><span class="mdmark-type-chip">ref</span><span class="mdmark-type-chip">custom</span></td><td></td><td>値の取り方。ref はレコードの列の値、custom は全てのレコードに同じ値を当てる</td></tr>
+      <tr class="mdmark-tree-row" data-path="aliases[].metadata.alias_type.type" data-parent="aliases[].metadata.alias_type" data-depth="3" aria-selected="false" hidden><td class="mdmark-tree-key"><span class="mdmark-tree-cell"><span class="mdmark-tree-guide" aria-hidden="true"></span><span class="mdmark-tree-guide" aria-hidden="true"></span><span class="mdmark-tree-guide" aria-hidden="true"></span><span class="mdmark-tree-spacer" aria-hidden="true"></span><span class="mdmark-tree-name" tabindex="0" title="aliases[].metadata.alias_type.type">type</span><button class="mdmark-tree-copy" type="button" aria-label="全体のパスをコピー" title="全体のパスをコピー">⧉</button></span></td><td><span class="mdmark-type-chip">ref</span><span class="mdmark-type-chip">custom</span></td><td></td><td>値の取り方。ref はレコードの列の値、custom は全てのレコードに同じ値を適用する</td></tr>
     </tbody>
   </table>
 </div>
@@ -1591,7 +1591,7 @@
       <tr class="mdmark-tree-row" data-path="aliases[].id" data-parent="aliases[]" data-depth="1" aria-selected="false"><td class="mdmark-tree-key"><span class="mdmark-tree-cell"><span class="mdmark-tree-guide" aria-hidden="true"></span><span class="mdmark-tree-spacer" aria-hidden="true"></span><span class="mdmark-tree-name" tabindex="0" title="aliases[].id">id</span><button class="mdmark-tree-copy" type="button" aria-label="全体のパスをコピー" title="全体のパスをコピー">⧉</button></span></td><td><span class="mdmark-type-badge" data-type="string">string</span></td><td></td><td>行の ID。aliases の中で一意にする</td></tr>
       <tr class="mdmark-tree-row is-virtual has-children" data-path="aliases[].metadata" data-parent="aliases[]" data-depth="1" aria-selected="false"><td class="mdmark-tree-key"><span class="mdmark-tree-cell"><span class="mdmark-tree-guide" aria-hidden="true"></span><button class="mdmark-tree-toggle" type="button" aria-expanded="true" aria-label="aliases[].metadata を畳む"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button><span class="mdmark-tree-name" tabindex="0" title="aliases[].metadata">metadata</span><button class="mdmark-tree-copy" type="button" aria-label="全体のパスをコピー" title="全体のパスをコピー">⧉</button></span></td><td></td><td></td><td></td></tr>
       <tr class="mdmark-tree-row is-virtual has-children" data-path="aliases[].metadata.alias_type" data-parent="aliases[].metadata" data-depth="2" aria-selected="false"><td class="mdmark-tree-key"><span class="mdmark-tree-cell"><span class="mdmark-tree-guide" aria-hidden="true"></span><span class="mdmark-tree-guide" aria-hidden="true"></span><button class="mdmark-tree-toggle" type="button" aria-expanded="true" aria-label="aliases[].metadata.alias_type を畳む"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button><span class="mdmark-tree-name" tabindex="0" title="aliases[].metadata.alias_type">alias_type</span><button class="mdmark-tree-copy" type="button" aria-label="全体のパスをコピー" title="全体のパスをコピー">⧉</button></span></td><td></td><td></td><td></td></tr>
-      <tr class="mdmark-tree-row" data-path="aliases[].metadata.alias_type.type" data-parent="aliases[].metadata.alias_type" data-depth="3" aria-selected="false"><td class="mdmark-tree-key"><span class="mdmark-tree-cell"><span class="mdmark-tree-guide" aria-hidden="true"></span><span class="mdmark-tree-guide" aria-hidden="true"></span><span class="mdmark-tree-guide" aria-hidden="true"></span><span class="mdmark-tree-spacer" aria-hidden="true"></span><span class="mdmark-tree-name" tabindex="0" title="aliases[].metadata.alias_type.type">type</span><button class="mdmark-tree-copy" type="button" aria-label="全体のパスをコピー" title="全体のパスをコピー">⧉</button></span></td><td><span class="mdmark-type-chip">ref</span><span class="mdmark-type-chip">custom</span></td><td></td><td>値の取り方。ref はレコードの列の値、custom は全てのレコードに同じ値を当てる</td></tr>
+      <tr class="mdmark-tree-row" data-path="aliases[].metadata.alias_type.type" data-parent="aliases[].metadata.alias_type" data-depth="3" aria-selected="false"><td class="mdmark-tree-key"><span class="mdmark-tree-cell"><span class="mdmark-tree-guide" aria-hidden="true"></span><span class="mdmark-tree-guide" aria-hidden="true"></span><span class="mdmark-tree-guide" aria-hidden="true"></span><span class="mdmark-tree-spacer" aria-hidden="true"></span><span class="mdmark-tree-name" tabindex="0" title="aliases[].metadata.alias_type.type">type</span><button class="mdmark-tree-copy" type="button" aria-label="全体のパスをコピー" title="全体のパスをコピー">⧉</button></span></td><td><span class="mdmark-type-chip">ref</span><span class="mdmark-type-chip">custom</span></td><td></td><td>値の取り方。ref はレコードの列の値、custom は全てのレコードに同じ値を適用する</td></tr>
     </tbody>
   </table>
 </div>
@@ -1600,7 +1600,7 @@
 
       <!-- #250 見本: 見出しの下のタブを見本にし、既定で表示する（要件の推奨 A） -->
       <section aria-labelledby="state-303-tree-example">
-        <h2 class="catalog-label" id="state-303-tree-example">YAML の見本と連動する（example=設定の見本。見本は表の下に置く。表の行を押すと見本の行に色を付け、見本の行を押すと表の行を選ぶ）</h2>
+        <h2 class="catalog-label" id="state-303-tree-example">YAML の見本と連動する（example=設定の見本。見本は表の下に配置する。表の行を押すと見本の行に色を付け、見本の行を押すと表の行を選ぶ）</h2>
         <article class="mdmark">
 <div class="mdmark-tree-bar"><button class="mdmark-tree-example-toggle" type="button" aria-expanded="true" aria-controls="t303a-example">見本を隠す</button></div>
 <div class="mdmark-tree-layout">
@@ -1615,7 +1615,7 @@
       <tr class="mdmark-tree-row" data-path="aliases[].id" data-parent="aliases[]" data-depth="1" aria-selected="false"><td class="mdmark-tree-key"><span class="mdmark-tree-cell"><span class="mdmark-tree-guide" aria-hidden="true"></span><span class="mdmark-tree-spacer" aria-hidden="true"></span><span class="mdmark-tree-name" tabindex="0" title="aliases[].id">id</span><button class="mdmark-tree-copy" type="button" aria-label="全体のパスをコピー" title="全体のパスをコピー">⧉</button></span></td><td><span class="mdmark-type-badge" data-type="string">string</span></td><td></td><td>行の ID。aliases の中で一意にする</td></tr>
       <tr class="mdmark-tree-row is-virtual has-children" data-path="aliases[].metadata" data-parent="aliases[]" data-depth="1" aria-selected="false"><td class="mdmark-tree-key"><span class="mdmark-tree-cell"><span class="mdmark-tree-guide" aria-hidden="true"></span><button class="mdmark-tree-toggle" type="button" aria-expanded="true" aria-label="aliases[].metadata を畳む"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button><span class="mdmark-tree-name" tabindex="0" title="aliases[].metadata">metadata</span><button class="mdmark-tree-copy" type="button" aria-label="全体のパスをコピー" title="全体のパスをコピー">⧉</button></span></td><td></td><td></td><td></td></tr>
       <tr class="mdmark-tree-row is-virtual has-children" data-path="aliases[].metadata.alias_type" data-parent="aliases[].metadata" data-depth="2" aria-selected="false"><td class="mdmark-tree-key"><span class="mdmark-tree-cell"><span class="mdmark-tree-guide" aria-hidden="true"></span><span class="mdmark-tree-guide" aria-hidden="true"></span><button class="mdmark-tree-toggle" type="button" aria-expanded="true" aria-label="aliases[].metadata.alias_type を畳む"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button><span class="mdmark-tree-name" tabindex="0" title="aliases[].metadata.alias_type">alias_type</span><button class="mdmark-tree-copy" type="button" aria-label="全体のパスをコピー" title="全体のパスをコピー">⧉</button></span></td><td></td><td></td><td></td></tr>
-      <tr class="mdmark-tree-row" data-path="aliases[].metadata.alias_type.type" data-parent="aliases[].metadata.alias_type" data-depth="3" aria-selected="true"><td class="mdmark-tree-key"><span class="mdmark-tree-cell"><span class="mdmark-tree-guide" aria-hidden="true"></span><span class="mdmark-tree-guide" aria-hidden="true"></span><span class="mdmark-tree-guide is-active" aria-hidden="true"></span><span class="mdmark-tree-spacer" aria-hidden="true"></span><span class="mdmark-tree-name" tabindex="0" title="aliases[].metadata.alias_type.type">type</span><button class="mdmark-tree-copy" type="button" aria-label="全体のパスをコピー" title="全体のパスをコピー">⧉</button></span></td><td><span class="mdmark-type-chip">ref</span><span class="mdmark-type-chip">custom</span></td><td></td><td>値の取り方。ref はレコードの列の値、custom は全てのレコードに同じ値を当てる</td></tr>
+      <tr class="mdmark-tree-row" data-path="aliases[].metadata.alias_type.type" data-parent="aliases[].metadata.alias_type" data-depth="3" aria-selected="true"><td class="mdmark-tree-key"><span class="mdmark-tree-cell"><span class="mdmark-tree-guide" aria-hidden="true"></span><span class="mdmark-tree-guide" aria-hidden="true"></span><span class="mdmark-tree-guide is-active" aria-hidden="true"></span><span class="mdmark-tree-spacer" aria-hidden="true"></span><span class="mdmark-tree-name" tabindex="0" title="aliases[].metadata.alias_type.type">type</span><button class="mdmark-tree-copy" type="button" aria-label="全体のパスをコピー" title="全体のパスをコピー">⧉</button></span></td><td><span class="mdmark-type-chip">ref</span><span class="mdmark-type-chip">custom</span></td><td></td><td>値の取り方。ref はレコードの列の値、custom は全てのレコードに同じ値を適用する</td></tr>
     </tbody>
   </table>
 </div>
@@ -1654,7 +1654,7 @@
       <tr class="mdmark-tree-row" data-path="aliases[].id" data-parent="aliases[]" data-depth="1" aria-selected="false"><td class="mdmark-tree-key"><span class="mdmark-tree-cell"><span class="mdmark-tree-guide" aria-hidden="true"></span><span class="mdmark-tree-spacer" aria-hidden="true"></span><span class="mdmark-tree-name" tabindex="0" title="aliases[].id">id</span><button class="mdmark-tree-copy" type="button" aria-label="全体のパスをコピー" title="全体のパスをコピー">⧉</button></span></td><td><span class="mdmark-type-badge" data-type="string">string</span></td><td></td><td>行の ID。aliases の中で一意にする</td></tr>
       <tr class="mdmark-tree-row is-virtual has-children" data-path="aliases[].metadata" data-parent="aliases[]" data-depth="1" aria-selected="false"><td class="mdmark-tree-key"><span class="mdmark-tree-cell"><span class="mdmark-tree-guide" aria-hidden="true"></span><button class="mdmark-tree-toggle" type="button" aria-expanded="true" aria-label="aliases[].metadata を畳む"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button><span class="mdmark-tree-name" tabindex="0" title="aliases[].metadata">metadata</span><button class="mdmark-tree-copy" type="button" aria-label="全体のパスをコピー" title="全体のパスをコピー">⧉</button></span></td><td></td><td></td><td></td></tr>
       <tr class="mdmark-tree-row is-virtual has-children" data-path="aliases[].metadata.alias_type" data-parent="aliases[].metadata" data-depth="2" aria-selected="false"><td class="mdmark-tree-key"><span class="mdmark-tree-cell"><span class="mdmark-tree-guide" aria-hidden="true"></span><span class="mdmark-tree-guide" aria-hidden="true"></span><button class="mdmark-tree-toggle" type="button" aria-expanded="true" aria-label="aliases[].metadata.alias_type を畳む"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button><span class="mdmark-tree-name" tabindex="0" title="aliases[].metadata.alias_type">alias_type</span><button class="mdmark-tree-copy" type="button" aria-label="全体のパスをコピー" title="全体のパスをコピー">⧉</button></span></td><td></td><td></td><td></td></tr>
-      <tr class="mdmark-tree-row" data-path="aliases[].metadata.alias_type.type" data-parent="aliases[].metadata.alias_type" data-depth="3" aria-selected="true"><td class="mdmark-tree-key"><span class="mdmark-tree-cell"><span class="mdmark-tree-guide" aria-hidden="true"></span><span class="mdmark-tree-guide" aria-hidden="true"></span><span class="mdmark-tree-guide is-active" aria-hidden="true"></span><span class="mdmark-tree-spacer" aria-hidden="true"></span><span class="mdmark-tree-name" tabindex="0" title="aliases[].metadata.alias_type.type">type</span><button class="mdmark-tree-copy" type="button" aria-label="全体のパスをコピー" title="全体のパスをコピー">⧉</button></span></td><td><span class="mdmark-type-chip">ref</span><span class="mdmark-type-chip">custom</span></td><td></td><td>値の取り方。ref はレコードの列の値、custom は全てのレコードに同じ値を当てる</td></tr>
+      <tr class="mdmark-tree-row" data-path="aliases[].metadata.alias_type.type" data-parent="aliases[].metadata.alias_type" data-depth="3" aria-selected="true"><td class="mdmark-tree-key"><span class="mdmark-tree-cell"><span class="mdmark-tree-guide" aria-hidden="true"></span><span class="mdmark-tree-guide" aria-hidden="true"></span><span class="mdmark-tree-guide is-active" aria-hidden="true"></span><span class="mdmark-tree-spacer" aria-hidden="true"></span><span class="mdmark-tree-name" tabindex="0" title="aliases[].metadata.alias_type.type">type</span><button class="mdmark-tree-copy" type="button" aria-label="全体のパスをコピー" title="全体のパスをコピー">⧉</button></span></td><td><span class="mdmark-type-chip">ref</span><span class="mdmark-type-chip">custom</span></td><td></td><td>値の取り方。ref はレコードの列の値、custom は全てのレコードに同じ値を適用する</td></tr>
     </tbody>
   </table>
 </div>
@@ -1693,7 +1693,7 @@
       <tr class="mdmark-tree-row" data-path="aliases[].id" data-parent="aliases[]" data-depth="1" aria-selected="false"><td class="mdmark-tree-key"><span class="mdmark-tree-cell"><span class="mdmark-tree-guide" aria-hidden="true"></span><span class="mdmark-tree-spacer" aria-hidden="true"></span><span class="mdmark-tree-name" tabindex="0" title="aliases[].id">id</span><button class="mdmark-tree-copy" type="button" aria-label="全体のパスをコピー" title="全体のパスをコピー">⧉</button></span></td><td><span class="mdmark-type-badge" data-type="string">string</span></td><td></td><td>行の ID。aliases の中で一意にする</td></tr>
       <tr class="mdmark-tree-row is-virtual has-children" data-path="aliases[].metadata" data-parent="aliases[]" data-depth="1" aria-selected="false"><td class="mdmark-tree-key"><span class="mdmark-tree-cell"><span class="mdmark-tree-guide" aria-hidden="true"></span><button class="mdmark-tree-toggle" type="button" aria-expanded="true" aria-label="aliases[].metadata を畳む"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button><span class="mdmark-tree-name" tabindex="0" title="aliases[].metadata">metadata</span><button class="mdmark-tree-copy" type="button" aria-label="全体のパスをコピー" title="全体のパスをコピー">⧉</button></span></td><td></td><td></td><td></td></tr>
       <tr class="mdmark-tree-row is-virtual has-children" data-path="aliases[].metadata.alias_type" data-parent="aliases[].metadata" data-depth="2" aria-selected="false"><td class="mdmark-tree-key"><span class="mdmark-tree-cell"><span class="mdmark-tree-guide" aria-hidden="true"></span><span class="mdmark-tree-guide" aria-hidden="true"></span><button class="mdmark-tree-toggle" type="button" aria-expanded="true" aria-label="aliases[].metadata.alias_type を畳む"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button><span class="mdmark-tree-name" tabindex="0" title="aliases[].metadata.alias_type">alias_type</span><button class="mdmark-tree-copy" type="button" aria-label="全体のパスをコピー" title="全体のパスをコピー">⧉</button></span></td><td></td><td></td><td></td></tr>
-      <tr class="mdmark-tree-row" data-path="aliases[].metadata.alias_type.type" data-parent="aliases[].metadata.alias_type" data-depth="3" aria-selected="false"><td class="mdmark-tree-key"><span class="mdmark-tree-cell"><span class="mdmark-tree-guide" aria-hidden="true"></span><span class="mdmark-tree-guide" aria-hidden="true"></span><span class="mdmark-tree-guide" aria-hidden="true"></span><span class="mdmark-tree-spacer" aria-hidden="true"></span><span class="mdmark-tree-name" tabindex="0" title="aliases[].metadata.alias_type.type">type</span><button class="mdmark-tree-copy" type="button" aria-label="全体のパスをコピー" title="全体のパスをコピー">⧉</button></span></td><td><span class="mdmark-type-chip">ref</span><span class="mdmark-type-chip">custom</span></td><td></td><td>値の取り方。ref はレコードの列の値、custom は全てのレコードに同じ値を当てる</td></tr>
+      <tr class="mdmark-tree-row" data-path="aliases[].metadata.alias_type.type" data-parent="aliases[].metadata.alias_type" data-depth="3" aria-selected="false"><td class="mdmark-tree-key"><span class="mdmark-tree-cell"><span class="mdmark-tree-guide" aria-hidden="true"></span><span class="mdmark-tree-guide" aria-hidden="true"></span><span class="mdmark-tree-guide" aria-hidden="true"></span><span class="mdmark-tree-spacer" aria-hidden="true"></span><span class="mdmark-tree-name" tabindex="0" title="aliases[].metadata.alias_type.type">type</span><button class="mdmark-tree-copy" type="button" aria-label="全体のパスをコピー" title="全体のパスをコピー">⧉</button></span></td><td><span class="mdmark-type-chip">ref</span><span class="mdmark-type-chip">custom</span></td><td></td><td>値の取り方。ref はレコードの列の値、custom は全てのレコードに同じ値を適用する</td></tr>
     </tbody>
   </table>
 </div>
@@ -1715,16 +1715,16 @@
         </article>
       </section>
 
-      <!-- #250 異常: 書き方の警告を出し、読めた指定だけで描く -->
+      <!-- #250 異常: 記載の警告を出し、読み込めた指定だけで描く -->
       <section aria-labelledby="state-303-tree-warning">
-        <h2 class="catalog-label" id="state-303-tree-warning">読めない階層の指定（表に無い列名の tree=。異常シナリオ）</h2>
+        <h2 class="catalog-label" id="state-303-tree-warning">読み込めない階層の指定（表に無い列名の tree=。異常シナリオ）</h2>
         <article class="mdmark">
 <div class="mdmark-syntax-warning">
-  <p class="mdmark-syntax-warning-title"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg>書き方の警告</p>
+  <p class="mdmark-syntax-warning-title"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg>記載の警告</p>
   <p><code>tree=</code> に指定した列 <code>キー名</code> が表にありません。この表は階層にせずに描いています。</p>
 </div>
 <div class="mdmark-table" data-kind="data">
-  <table tabindex="0" aria-label="表: 読めない階層の指定">
+  <table tabindex="0" aria-label="表: 読み込めない階層の指定">
     <thead><tr><th>キー</th><th>型</th><th>説明</th></tr></thead>
     <tbody>
       <tr><td><code>features.table</code></td><td>bool</td><td>表の機能のオン・オフ</td></tr>
@@ -1765,7 +1765,7 @@
         </article>
       </section>
 
-      <!-- #308 列のボタンの案 A: アイコンだけ。ツールチップと読み上げは「列設定」。隠した列の数をバッジで出し、読み上げに「（N 列を隠しています）」を残す。コピーのボタンは文字を持つ -->
+      <!-- #308 列のボタンの案 A: アイコンだけ。ツールチップとスクリーンリーダーは「列設定」。隠した列の数をバッジで出し、スクリーンリーダーに「（N 列を隠しています）」を残す。コピーのボタンは文字を持つ -->
       <section aria-labelledby="state-308-a">
         <h2 class="catalog-label" id="state-308-a">列のボタン 案 A（アイコンだけ・隠した列の数のバッジ。コピーは文字あり）</h2>
         <article class="mdmark">
@@ -1781,8 +1781,8 @@
     <thead><tr><th>名前</th><th>説明</th><th>更新日</th></tr></thead>
     <tbody>
       <tr><td>りんご</td><td>描画を速くする</td><td>2026-10-01</td></tr>
-      <tr><td>みかん</td><td>印刷を直す</td><td>2026-10-10</td></tr>
-      <tr><td>りんご飴</td><td>描画の崩れを直す</td><td>2026-10-20</td></tr>
+      <tr><td>みかん</td><td>印刷を修正する</td><td>2026-10-10</td></tr>
+      <tr><td>りんご飴</td><td>描画の崩れを修正する</td><td>2026-10-20</td></tr>
     </tbody>
   </table>
   </div>
@@ -1790,9 +1790,9 @@
         </article>
       </section>
 
-      <!-- #308 案 A で、コピーのボタンもアイコンだけにして帯の文字の有無を揃えた -->
+      <!-- #308 案 A で、コピーのボタンもアイコンだけにして帯の文字の有無を統一した -->
       <section aria-labelledby="state-308-a-icons">
-        <h2 class="catalog-label" id="state-308-a-icons">列のボタン 案 A（コピーもアイコンだけにして揃えた）</h2>
+        <h2 class="catalog-label" id="state-308-a-icons">列のボタン 案 A（コピーもアイコンだけにして統一した）</h2>
         <article class="mdmark">
 <div class="mdmark-table" data-kind="data" data-hidden-columns="1">
   <div class="mdmark-table-bar">
@@ -1802,12 +1802,12 @@
     </div>
   </div>
   <div class="mdmark-table-scroll">
-  <table tabindex="0" aria-label="表: 列のボタン 案 A（揃えた）">
+  <table tabindex="0" aria-label="表: 列のボタン 案 A（統一した）">
     <thead><tr><th>名前</th><th>説明</th><th>更新日</th></tr></thead>
     <tbody>
       <tr><td>りんご</td><td>描画を速くする</td><td>2026-10-01</td></tr>
-      <tr><td>みかん</td><td>印刷を直す</td><td>2026-10-10</td></tr>
-      <tr><td>りんご飴</td><td>描画の崩れを直す</td><td>2026-10-20</td></tr>
+      <tr><td>みかん</td><td>印刷を修正する</td><td>2026-10-10</td></tr>
+      <tr><td>りんご飴</td><td>描画の崩れを修正する</td><td>2026-10-20</td></tr>
     </tbody>
   </table>
   </div>
@@ -1831,8 +1831,8 @@
     <thead><tr><th>名前</th><th>説明</th><th>更新日</th></tr></thead>
     <tbody>
       <tr><td>りんご</td><td>描画を速くする</td><td>2026-10-01</td></tr>
-      <tr><td>みかん</td><td>印刷を直す</td><td>2026-10-10</td></tr>
-      <tr><td>りんご飴</td><td>描画の崩れを直す</td><td>2026-10-20</td></tr>
+      <tr><td>みかん</td><td>印刷を修正する</td><td>2026-10-10</td></tr>
+      <tr><td>りんご飴</td><td>描画の崩れを修正する</td><td>2026-10-20</td></tr>
     </tbody>
   </table>
   </div>
@@ -1840,9 +1840,9 @@
         </article>
       </section>
 
-      <!-- #308 列のボタンの案 B: アイコンと「列」の 1 語 -->
+      <!-- #308 列のボタンの案 B: アイコンと「列」の 1 単語 -->
       <section aria-labelledby="state-308-b">
-        <h2 class="catalog-label" id="state-308-b">列のボタン 案 B（アイコンと「列」の 1 語）</h2>
+        <h2 class="catalog-label" id="state-308-b">列のボタン 案 B（アイコンと「列」の 1 単語）</h2>
         <article class="mdmark">
 <div class="mdmark-table" data-kind="data" data-hidden-columns="1">
   <div class="mdmark-table-bar">
@@ -1856,8 +1856,8 @@
     <thead><tr><th>名前</th><th>説明</th><th>更新日</th></tr></thead>
     <tbody>
       <tr><td>りんご</td><td>描画を速くする</td><td>2026-10-01</td></tr>
-      <tr><td>みかん</td><td>印刷を直す</td><td>2026-10-10</td></tr>
-      <tr><td>りんご飴</td><td>描画の崩れを直す</td><td>2026-10-20</td></tr>
+      <tr><td>みかん</td><td>印刷を修正する</td><td>2026-10-10</td></tr>
+      <tr><td>りんご飴</td><td>描画の崩れを修正する</td><td>2026-10-20</td></tr>
     </tbody>
   </table>
   </div>
@@ -1867,7 +1867,7 @@
 
       <!-- #308 案 A のメニューを開いた: メニューの見出しと aria-label をボタンのツールチップと同じ「列設定」にする -->
       <section aria-labelledby="state-308-a-open">
-        <h2 class="catalog-label" id="state-308-a-open">列のボタン 案 A でメニューを開いた（見出しと読み上げはボタンと同じ「列設定」）</h2>
+        <h2 class="catalog-label" id="state-308-a-open">列のボタン 案 A でメニューを開いた（見出しとスクリーンリーダーはボタンと同じ「列設定」）</h2>
         <article class="mdmark">
 <div class="mdmark-table" data-kind="data" data-hidden-columns="1" data-mock-open="columns">
   <div class="mdmark-table-bar">
@@ -1877,12 +1877,12 @@
     </div>
   </div>
   <div class="mdmark-table-scroll">
-  <table tabindex="0" aria-label="表: 列のボタン 案 A でメニューを開いた（見出しと読み上げはボタンと同じ「列設定」）">
+  <table tabindex="0" aria-label="表: 列のボタン 案 A でメニューを開いた（見出しとスクリーンリーダーはボタンと同じ「列設定」）">
     <thead><tr><th>名前</th><th>説明</th><th>更新日</th></tr></thead>
     <tbody>
       <tr><td>りんご</td><td>描画を速くする</td><td>2026-10-01</td></tr>
-      <tr><td>みかん</td><td>印刷を直す</td><td>2026-10-10</td></tr>
-      <tr><td>りんご飴</td><td>描画の崩れを直す</td><td>2026-10-20</td></tr>
+      <tr><td>みかん</td><td>印刷を修正する</td><td>2026-10-10</td></tr>
+      <tr><td>りんご飴</td><td>描画の崩れを修正する</td><td>2026-10-20</td></tr>
     </tbody>
   </table>
   </div>
@@ -1896,9 +1896,9 @@
         </article>
       </section>
 
-      <!-- #308 案 B のメニューを開いた: メニューの見出しと aria-label をボタンの語と同じ「列」にする -->
+      <!-- #308 案 B のメニューを開いた: メニューの見出しと aria-label をボタンの単語と同じ「列」にする -->
       <section aria-labelledby="state-308-b-open">
-        <h2 class="catalog-label" id="state-308-b-open">列のボタン 案 B でメニューを開いた（見出しと読み上げはボタンと同じ「列」）</h2>
+        <h2 class="catalog-label" id="state-308-b-open">列のボタン 案 B でメニューを開いた（見出しとスクリーンリーダーはボタンと同じ「列」）</h2>
         <article class="mdmark">
 <div class="mdmark-table" data-kind="data" data-hidden-columns="1" data-mock-open="columns">
   <div class="mdmark-table-bar">
@@ -1908,12 +1908,12 @@
     </div>
   </div>
   <div class="mdmark-table-scroll">
-  <table tabindex="0" aria-label="表: 列のボタン 案 B でメニューを開いた（見出しと読み上げはボタンと同じ「列」）">
+  <table tabindex="0" aria-label="表: 列のボタン 案 B でメニューを開いた（見出しとスクリーンリーダーはボタンと同じ「列」）">
     <thead><tr><th>名前</th><th>説明</th><th>更新日</th></tr></thead>
     <tbody>
       <tr><td>りんご</td><td>描画を速くする</td><td>2026-10-01</td></tr>
-      <tr><td>みかん</td><td>印刷を直す</td><td>2026-10-10</td></tr>
-      <tr><td>りんご飴</td><td>描画の崩れを直す</td><td>2026-10-20</td></tr>
+      <tr><td>みかん</td><td>印刷を修正する</td><td>2026-10-10</td></tr>
+      <tr><td>りんご飴</td><td>描画の崩れを修正する</td><td>2026-10-20</td></tr>
     </tbody>
   </table>
   </div>
@@ -1942,8 +1942,8 @@
     <thead><tr><th>名前</th><th>説明</th><th>更新日</th></tr></thead>
     <tbody>
       <tr><td>りんご</td><td>描画を速くする</td><td>2026-10-01</td></tr>
-      <tr><td>みかん</td><td>印刷を直す</td><td>2026-10-10</td></tr>
-      <tr><td>りんご飴</td><td>描画の崩れを直す</td><td>2026-10-20</td></tr>
+      <tr><td>みかん</td><td>印刷を修正する</td><td>2026-10-10</td></tr>
+      <tr><td>りんご飴</td><td>描画の崩れを修正する</td><td>2026-10-20</td></tr>
     </tbody>
   </table>
   </div>

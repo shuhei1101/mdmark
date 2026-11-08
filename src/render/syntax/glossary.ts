@@ -4,7 +4,7 @@ import type { MdmarkGlossaryEntry } from "../../knowledge/references.ts";
 import { envOf, featureOn, findClose, markOf, textOf } from "./tokens.ts";
 import { unclosedWarning, warningBlock } from "./warnings.ts";
 
-/** 用語集の表の 1 行から読んだ用語と、その行の文書の中の行番号（1 から） */
+/** 用語集の表の 1 行から読み込んだ用語と、その行の文書の中の行番号（1 から） */
 export type GlossaryRow = {
   entry: MdmarkGlossaryEntry;
   line: number;
@@ -21,13 +21,13 @@ function splitCell(cell: string): string[] {
     .filter(Boolean);
 }
 
-/** 表のトークンから読んだ、見出しのセルの文字と本文の行 */
+/** 表のトークンから読み込んだ、見出しのセルの文字と本文の行 */
 type ReadTable = {
   columns: string[];
   rows: Array<{ cells: string[]; line: number }>;
 };
 
-/** トークンの並びの中の表を、見出しのセルの文字と本文の行（セルの文字と行番号）に読む */
+/** トークンの並びの中の表を、見出しのセルの文字と本文の行（セルの文字と行番号）に読み込む */
 function readTables(tokens: Token[]): ReadTable[] {
   const tables: ReadTable[] = [];
   let table: ReadTable | undefined;
@@ -57,23 +57,23 @@ function readTables(tokens: Token[]): ReadTable[] {
   return tables;
 }
 
-/** 表に無い列名を指したときの書き方の警告の本文 */
+/** 表に無い列名を指したときの記載の警告の本文 */
 function unknownColumnMessage(
   argName: string,
   name: string,
   columns: string[],
 ): string {
   const list = columns.map((column) => `\`${column}\``).join("・");
-  return `の \`${argName}=\` の列 \`${name}\` が表にありません。表の列は ${list} です。列名を直してください。この表からは用語を入れずに描いています。`;
+  return `の \`${argName}=\` の列 \`${name}\` が表にありません。表の列は ${list} です。列名を修正してください。この表からは用語を入れずに描いています。`;
 }
 
-/** 必須の指定が無いときの書き方の警告の本文 */
+/** 必須の指定が無いときの記載の警告の本文 */
 function missingArgMessage(argName: string): string {
   const column = argName === "term" ? "用語" : "意味";
   return `に \`${argName}=\` がありません。${column}の列を \`${argName}=列名\` で指してください。この表からは用語を入れずに描いています。`;
 }
 
-/** 範囲の中のトークンの表から、用語・意味・別名・やめた言い方の列を読んで行ごとの用語を返す。誤りがあれば表ごとに用語を入れず、最初の誤りを警告にする */
+/** 範囲の中のトークンの表から、用語・意味・別名・やめた言い方の列を読み込んで行ごとの用語を返却する。誤りがあれば表ごとに用語を入れず、最初の誤りを警告にする */
 export function readGlossaryRows(options: {
   args: MdmarkMarkArgs;
   tokens: Token[];
@@ -131,13 +131,13 @@ export function readGlossaryRows(options: {
   return warning === undefined ? { rows } : { rows, warning };
 }
 
-/** 用語集の表を読んで用語を返す。表に無い列名と必須の指定の欠けは、用語を返さず書き方の警告の本文を返す */
+/** 用語集の表を読み込んで用語を返却する。表に無い列名と必須の指定の欠けは、用語を返却せず記載の警告の本文を返却する */
 export function readGlossaryTable(options: {
-  /** 印の引数 */
+  /** マーカーの引数 */
   args: MdmarkMarkArgs;
   /** 範囲の中のトークン */
   tokens: Token[];
-  /** 表を持つ文書の `id`（索引を渡さないときは空文字） */
+  /** 表を持つ文書の `id`（索引を指定しないときは空文字） */
   docId: string;
 }): { entries: MdmarkGlossaryEntry[]; warning?: string } {
   const { rows, warning } = readGlossaryRows(options);
@@ -145,7 +145,7 @@ export function readGlossaryTable(options: {
   return warning === undefined ? { entries } : { entries, warning };
 }
 
-/** `glossary` の印の範囲を取り除き、中の表を普通の表として残し、読んだ用語を `env.ownGlossary` に足す（行番号は `env.glossaryLines` に同じ並びで足す） */
+/** `glossary` のマーカーの範囲を取り除き、中の表を普通の表として残し、読み込んだ用語を `env.ownGlossary` に追加する（行番号は `env.glossaryLines` に同じ並びで追加する） */
 export function glossaryRule(state: StateCore): void {
   const env = envOf(state);
   const enabled = featureOn(state, "glossary");
@@ -184,7 +184,7 @@ export function glossaryRule(state: StateCore): void {
         env.ownGlossary.push(row.entry);
         env.glossaryLines?.push(row.line);
       }
-      // 表の中の語には、下線を引かない
+      // 表の中の単語には、下線を付けない
       for (const inline of range) {
         for (const child of inline.children ?? []) {
           child.meta = { ...child.meta, mdmarkNoTerms: true };

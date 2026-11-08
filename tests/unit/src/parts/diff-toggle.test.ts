@@ -14,6 +14,6 @@ test("test_render_diff_toggle", async () => {
   const button = findTag(html, "mdmark-diff-toggle");
   expect(button).toContain('aria-expanded="true"');
   expect(button).toContain('aria-controls="p1"');
-  expect(plainText(html)).toContain("変更を見る");
+  expect(plainText(html)).toContain("変更表示");
   expect(findTag(html, "<svg")).toContain('aria-hidden="true"');
 });

@@ -1,0 +1,51 @@
+$ npm run test:unit
+
+> test:unit
+> vitest run --project 'unit*'
+
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/docs-wording-word-choice
+
+ ❯ |unit| tests/unit/src/cli/export.test.ts (23 tests | 2 failed) 35583ms
+   × test_prepare_embeds 30294ms
+   × test_prepare_embeds_when_unreadable 417ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit| tests/unit/src/cli/export.test.ts > test_prepare_embeds
+Error: Test timed out in 30000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/unit/src/cli/export.test.ts:31:1
+     29|
+     30| // マーカーのあるモジュールだけをまとめ、拡張と theme を読み込む（正常系）
+     31| test("test_prepare_embeds", async () => {
+       | ^
+     32|   // 準備
+     33|   const { prepareEmbeds } = await loadExport();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  |unit| tests/unit/src/cli/export.test.ts > test_prepare_embeds_when_unreadable
+Error: ENOTEMPTY: directory not empty, rmdir '/tmp/mdmark-cli-kCOd5X'
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed | 257 passed (258)
+      Tests  2 failed | 1814 passed (1816)
+   Start at  21:14:11
+   Duration  128.84s (worker 62%, tests 25%, import 12%, transform 1%)
+
+exit=1
+
+# 全件の実行で端末の負荷（load average 18）によりタイムアウトした export.test.ts を、単独で実行し直した結果
+$ npx vitest run --project "unit*" tests/unit/src/cli/export.test.ts
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/docs-wording-word-choice
+
+
+ Test Files  1 passed (1)
+      Tests  23 passed (23)
+   Start at  21:19:02
+   Duration  10.83s (tests 96%, import 2%, transform 1%, worker 1%)
+
+exit=0

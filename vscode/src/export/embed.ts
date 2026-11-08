@@ -21,7 +21,7 @@ export type BundleModules = (paths: string[]) => Promise<BundleResult[]>;
 const isLocal = (value: unknown): value is string =>
   typeof value === "string" && !HTTP_URL_PATTERN.test(value);
 
-/** 文書が使う相対パスの `libraries` と `html-scripts.url`・`mermaid.url` を `bundle` でまとめ、`data:` の URL に替える。使わない・まとめられない相対パスの値は外し、`http:`・`https:` の値と文字列でない値はそのまま返す */
+/** 文書が使用する相対パスの `libraries` と `html-scripts.url`・`mermaid.url` を `bundle` でまとめ、`data:` の URL に替える。使用しない・まとめられない相対パスの値は削除し、`http:`・`https:` の値と文字列でない値はそのまま返却する */
 export async function embedLocalLibraries(options: {
   /** 書き出す全文 */
   markdown: string;
@@ -60,7 +60,7 @@ export async function embedLocalLibraries(options: {
   if (embedScript) {
     paths.add(scriptUrl);
   }
-  // mermaid が中で読む chunk の動的 `import()` も、`bundle` が同じモジュールに取り込む
+  // mermaid が中で読み込む chunk の動的 `import()` も、`bundle` が同じモジュールに取り込む
   const mermaidUrl = mermaid?.url;
   const embedMermaid =
     isLocal(mermaidUrl) && usesMermaid({ markdowns: [markdown], config });

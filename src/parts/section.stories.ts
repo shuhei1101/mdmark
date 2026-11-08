@@ -3,7 +3,7 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 const meta = { title: "Parts/Section" } satisfies Meta<Record<string, unknown>>;
 export default meta;
 
-/** ストーリー: 描画の口（`parameters.server.id`）の部品を `args` で描く */
+/** ストーリー: 描画のインターフェース（`parameters.server.id`）の部品を `args` で描く */
 type Story = StoryObj<Record<string, unknown>>;
 
 export const Open: Story = {
@@ -31,7 +31,7 @@ export const LongTitle: Story = {
     level: 2,
     id: "long",
     title:
-      "とても長い見出しで文書の幅を超えて折り返すときの開閉の印とアンカーの位置を確かめる",
+      "とても長い見出しで文書の幅を超えて折り返すときの開閉のマーカーとアンカーの位置を確認する",
   },
 };
 

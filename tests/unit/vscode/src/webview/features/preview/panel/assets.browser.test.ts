@@ -14,7 +14,7 @@ afterEach(() => {
   }
 });
 
-/** HTML を入れた描いた文書の要素をページに置く */
+/** HTML を入れた描いた文書の要素をページに配置する */
 function createRoot(html: string): HTMLElement {
   const root = document.createElement("div");
   root.innerHTML = html;
@@ -64,7 +64,7 @@ test("test_apply_asset_urls", async () => {
   expect(root.querySelector("img")?.getAttribute("src")).toBe("none.png");
 });
 
-// error の動画を枠に替え、書いたパスをリンクに持たせる（正常系）
+// error の動画を枠に替え、記載したパスをリンクに持たせる（正常系）
 test("test_attach_media_errors", async () => {
   // 準備
   const { attachMediaErrors } = await loadAssets();

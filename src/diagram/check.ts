@@ -37,7 +37,7 @@ function isWide(char: string): boolean {
   return !(code <= 0x7e || (code >= 0xff61 && code <= 0xff9f));
 }
 
-/** 全角の文字を文字の大きさ、半角の文字を 0.6 倍の幅とみなし、幅で折り返した行の数を返す（空の文字は 0） */
+/** 全角の文字を文字の大きさ、半角の文字を 0.6 倍の幅とみなし、幅で折り返した行の数を返却する（空の文字は 0） */
 export function labelLineCount(options: {
   text: string;
   fontSize: number;
@@ -51,7 +51,7 @@ export function labelLineCount(options: {
   let used = 0;
   for (const char of text) {
     const advance = isWide(char) ? fontSize : fontSize * HALF_WIDTH;
-    // 行に 1 文字も無いときは、幅を超えても同じ行に置く
+    // 行に 1 文字も無いときは、幅を超えても同じ行に配置する
     if (used > 0 && used + advance > width) {
       lines += 1;
       used = 0;
@@ -78,7 +78,7 @@ function inside(rect: Rect, outer: Rect): boolean {
   );
 }
 
-/** 線分が矩形の内側を通るか（辺をなぞる・角に触れるだけは通らない）。Liang–Barsky で矩形に切り取って確かめる */
+/** 線分が矩形の内側を通るか（辺をなぞる・角に触れるだけは通らない）。Liang–Barsky で矩形に切り取って確認する */
 function crosses(
   from: [number, number],
   to: [number, number],
@@ -113,7 +113,7 @@ function crosses(
   return enter < leave;
 }
 
-/** 描いたときの文字（`{{語}}` は語だけ） */
+/** 描いたときの文字（`{{単語}}` は単語だけ） */
 function drawnText(text: string): string {
   return text.replace(/\{\{(.+?)\}\}/g, "$1");
 }
@@ -137,7 +137,7 @@ export function labelTooLong(node: MdmarkDiagramNode): boolean {
   return height > node.h;
 }
 
-/** フロー図の定義の、ノードの重なり・はみ出し・線のノードの横切り・収まらないラベルを、ずれ 1 つにつき 1 件にして返す */
+/** フロー図の定義の、ノードの重なり・はみ出し・線のノードの横切り・収まらないラベルを、ずれ 1 つにつき 1 件にして返却する */
 export function checkFlowLayout(
   definition: MdmarkFlowDefinition,
 ): FlowLayoutIssue[] {

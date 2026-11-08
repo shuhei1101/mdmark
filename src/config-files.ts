@@ -5,11 +5,11 @@ import type { CheckIssue } from "./cli/check.ts";
 import { VERSION_PATTERN } from "./cli/versions.ts";
 import { MARK_NAME_PATTERN, type MdmarkConfig } from "./config.ts";
 
-/** `mdmark build` が読む設定の `build` */
+/** `mdmark build` が読み込む設定の `build` */
 export type BuildConfig = {
   /** まとめる Markdown の glob */
   include: string[];
-  /** `include` に当たった文書から外す glob */
+  /** `include` に該当した文書から除外する glob */
   exclude?: string[];
   /** 用語集の表を持つ文書のパス */
   glossary?: string[];
@@ -19,13 +19,13 @@ export type BuildConfig = {
   out: string;
 };
 
-/** `MdmarkConfig` に CLI だけが読むキーを足した設定 */
+/** `MdmarkConfig` に CLI だけが読み込むキーを追加した設定 */
 export type CliConfig = MdmarkConfig & {
-  /** この設定・索引・文書が合わせてある mdmark の版 */
+  /** この設定・索引・文書が合わせてある mdmark のバージョン */
   version?: string;
   /** 索引の YAML のパス */
   index?: string;
-  /** 書き出しに埋める使う側の CSS のパス */
+  /** 書き出しに埋める利用側の CSS のパス */
   theme?: string;
   /** 書き出しに埋める拡張のモジュールのパス */
   extensions?: string[];
@@ -37,9 +37,9 @@ export type CliConfig = MdmarkConfig & {
   aliases?: unknown[];
 };
 
-/** `mdmark check` が読む設定の `check` */
+/** `mdmark check` が読み込む設定の `check` */
 export type CheckConfig = {
-  /** 知らない印として知らせない印の名前の並び */
+  /** 知らないマーカーとして通知しないマーカーの名前の並び */
   ignore?: string[];
 };
 
@@ -60,7 +60,7 @@ function schemaIssue(file: string, where: string, message: string): CheckIssue {
   return { file, where, kind: "schema", message };
 }
 
-/** `build` の形を検め、合うときだけ `build` を返す。合わないところは `issues` に足す */
+/** `build` の構造を検め、合うときだけ `build` を返却する。合わないところは `issues` に追加する */
 function validateBuild(
   value: unknown,
   file: string,
@@ -68,7 +68,7 @@ function validateBuild(
 ): BuildConfig | undefined {
   if (!isRecord(value)) {
     issues.push(
-      schemaIssue(file, "build", "`build` はキーと値で書いてください。"),
+      schemaIssue(file, "build", "`build` はキーと値で記載してください。"),
     );
     return undefined;
   }
@@ -78,7 +78,7 @@ function validateBuild(
       schemaIssue(
         file,
         "build",
-        "`build.include` がありません。まとめる Markdown の glob を書いてください。",
+        "`build.include` がありません。まとめる Markdown の glob を記載してください。",
       ),
     );
   } else if (!isStringArray(value.include) || value.include.length === 0) {
@@ -86,7 +86,7 @@ function validateBuild(
       schemaIssue(
         file,
         "build.include",
-        "`build.include` は 1 つ以上の glob の並びで書いてください。",
+        "`build.include` は 1 つ以上の glob の並びで記載してください。",
       ),
     );
   }
@@ -95,7 +95,7 @@ function validateBuild(
       schemaIssue(
         file,
         "build",
-        "`build.out` がありません。書き出す HTML のパスを書いてください。",
+        "`build.out` がありません。書き出す HTML のパスを記載してください。",
       ),
     );
   } else if (typeof value.out !== "string" || !value.out.endsWith(".html")) {
@@ -103,7 +103,7 @@ function validateBuild(
       schemaIssue(
         file,
         "build.out",
-        "`build.out` は拡張子 `.html` のパスで書いてください。",
+        "`build.out` は拡張子 `.html` のパスで記載してください。",
       ),
     );
   }
@@ -113,7 +113,7 @@ function validateBuild(
         schemaIssue(
           file,
           `build.${key}`,
-          `\`build.${key}\` は文字列の並びで書いてください。`,
+          `\`build.${key}\` は文字列の並びで記載してください。`,
         ),
       );
     }
@@ -123,14 +123,14 @@ function validateBuild(
       schemaIssue(
         file,
         "build.entry",
-        "`build.entry` は文書のパスの文字列で書いてください。",
+        "`build.entry` は文書のパスの文字列で記載してください。",
       ),
     );
   }
   return issues.length === before ? (value as BuildConfig) : undefined;
 }
 
-/** 読んだ値を `schemas/mdmark.config.schema.json` と同じ形で検め、合うところだけを残した設定と、合わないところごとの `schema` のずれを返す */
+/** 読み込んだ値を `schemas/mdmark.config.schema.json` と同じ構造で検め、合うところだけを残した設定と、合わないところごとの `schema` のずれを返却する */
 export function validateConfig(
   raw: unknown,
   file: string,
@@ -141,7 +141,7 @@ export function validateConfig(
       schemaIssue(
         file,
         "",
-        `${file} が空か、キーと値の形ではありません。設定のキーを書いてください。`,
+        `${file} が空か、キーと値の構造ではありません。設定のキーを記載してください。`,
       ),
     );
     return { config: {}, issues };
@@ -160,7 +160,7 @@ export function validateConfig(
             schemaIssue(
               file,
               `features.${name}`,
-              `\`features.${name}\` は true か false で書いてください。`,
+              `\`features.${name}\` は true か false で記載してください。`,
             ),
           );
         }
@@ -171,7 +171,7 @@ export function validateConfig(
         schemaIssue(
           file,
           "features",
-          "`features` は機能名と true / false で書いてください。",
+          "`features` は機能名と true / false で記載してください。",
         ),
       );
       delete config.features;
@@ -187,7 +187,7 @@ export function validateConfig(
             schemaIssue(
               file,
               `libraries.${name}`,
-              `\`libraries.${name}\` は、英小文字で始まる印の名前と URL の文字列で書いてください。`,
+              `\`libraries.${name}\` は、英小文字で始まるマーカーの名前と URL の文字列で記載してください。`,
             ),
           );
         } else {
@@ -200,7 +200,7 @@ export function validateConfig(
         schemaIssue(
           file,
           "libraries",
-          "`libraries` は印の名前と URL で書いてください。",
+          "`libraries` はマーカーの名前と URL で記載してください。",
         ),
       );
       delete config.libraries;
@@ -213,7 +213,7 @@ export function validateConfig(
         schemaIssue(
           file,
           "version",
-          "`version` は v{MAJOR}.{MINOR}.{PATCH} の形で書いてください。",
+          "`version` は v{MAJOR}.{MINOR}.{PATCH} の構造で記載してください。",
         ),
       );
       delete config.version;
@@ -226,32 +226,32 @@ export function validateConfig(
         schemaIssue(
           file,
           key,
-          `\`${key}\` はファイルのパスの文字列で書いてください。`,
+          `\`${key}\` はファイルのパスの文字列で記載してください。`,
         ),
       );
       delete config[key];
     }
   }
 
-  // 知らない名前はここでは拒まず、設定に残す（`mdmark check` と書き出しの警告が知らせる）
+  // 知らない名前はここでは拒まず、設定に残す（`mdmark check` と書き出しの警告が通知する）
   if (raw.colorTheme !== undefined && typeof raw.colorTheme !== "string") {
     issues.push(
       schemaIssue(
         file,
         "colorTheme",
-        "`colorTheme` はテーマの名前の文字列で書いてください。",
+        "`colorTheme` はテーマの名前の文字列で記載してください。",
       ),
     );
     delete config.colorTheme;
   }
 
-  // 知らない値はここでは拒まず、設定に残す（`mdmark check` が知らせる）
+  // 知らない値はここでは拒まず、設定に残す（`mdmark check` が通知する）
   if (raw.colorScheme !== undefined && typeof raw.colorScheme !== "string") {
     issues.push(
       schemaIssue(
         file,
         "colorScheme",
-        "`colorScheme` は `light`・`dark`・`auto` のどれかの文字列で書いてください。",
+        "`colorScheme` は `light`・`dark`・`auto` のどれかの文字列で記載してください。",
       ),
     );
     delete config.colorScheme;
@@ -262,7 +262,7 @@ export function validateConfig(
       schemaIssue(
         file,
         "extensions",
-        "`extensions` は拡張のモジュールのパスの並びで書いてください。",
+        "`extensions` は拡張のモジュールのパスの並びで記載してください。",
       ),
     );
     delete config.extensions;
@@ -324,7 +324,7 @@ export function validateConfig(
         schemaIssue(
           file,
           "aliases",
-          "`aliases` はエイリアスの元の行の並びで書いてください。",
+          "`aliases` はエイリアスの元の行の並びで記載してください。",
         ),
       );
       delete config.aliases;
@@ -343,7 +343,7 @@ export function validateConfig(
   return { config: config as CliConfig, issues };
 }
 
-/** 設定の `tooltips` を検める。キーと値の形でなければ、`placement`・`diagramPlacement` が `top` と `bottom` のどちらでもなければ、`schema` のずれを積んで `false` を返す */
+/** 設定の `tooltips` を検める。キーと値の構造でなければ、`placement`・`diagramPlacement` が `top` と `bottom` のどちらでもなければ、`schema` のずれを追加して `false` を返却する */
 function isValidTooltips(
   value: unknown,
   file: string,
@@ -354,7 +354,7 @@ function isValidTooltips(
       schemaIssue(
         file,
         "tooltips",
-        "`tooltips` は `placement`・`diagramPlacement` を持つキーと値で書いてください。",
+        "`tooltips` は `placement`・`diagramPlacement` を持つキーと値で記載してください。",
       ),
     );
     return false;
@@ -371,7 +371,7 @@ function isValidTooltips(
         schemaIssue(
           file,
           `tooltips.${key}`,
-          `\`tooltips.${key}\` は \`top\` か \`bottom\` で書いてください。`,
+          `\`tooltips.${key}\` は \`top\` か \`bottom\` で記載してください。`,
         ),
       );
       valid = false;
@@ -380,7 +380,7 @@ function isValidTooltips(
   return valid;
 }
 
-/** 設定の `labels` を検める。キーと値の形でなければ、`paramCopy` が空でない文字列でなければ、`schema` のずれを積んで `false` を返す（知らないキーは拒まない） */
+/** 設定の `labels` を検める。キーと値の構造でなければ、`paramCopy` が空でない文字列でなければ、`schema` のずれを追加して `false` を返却する（知らないキーは拒まない） */
 function isValidLabels(
   value: unknown,
   file: string,
@@ -391,7 +391,7 @@ function isValidLabels(
       schemaIssue(
         file,
         "labels",
-        "`labels` は部品の文言のキーと値で書いてください。",
+        "`labels` は部品の文言のキーと値で記載してください。",
       ),
     );
     return false;
@@ -404,7 +404,7 @@ function isValidLabels(
       schemaIssue(
         file,
         "labels.paramCopy",
-        "`labels.paramCopy` は空でない文字列で書いてください。",
+        "`labels.paramCopy` は空でない文字列で記載してください。",
       ),
     );
     return false;
@@ -412,7 +412,7 @@ function isValidLabels(
   return true;
 }
 
-/** 設定の `side-toc` を検める。キーと値の形でなければ、`mode` が `hover` と `fixed` のどちらでもなければ、`schema` のずれを積んで `false` を返す */
+/** 設定の `side-toc` を検める。キーと値の構造でなければ、`mode` が `hover` と `fixed` のどちらでもなければ、`schema` のずれを追加して `false` を返却する */
 function isValidSideToc(
   value: unknown,
   file: string,
@@ -423,7 +423,7 @@ function isValidSideToc(
       schemaIssue(
         file,
         "side-toc",
-        "`side-toc` は `mode` を持つキーと値で書いてください。",
+        "`side-toc` は `mode` を持つキーと値で記載してください。",
       ),
     );
     return false;
@@ -437,7 +437,7 @@ function isValidSideToc(
       schemaIssue(
         file,
         "side-toc.mode",
-        "`side-toc.mode` は `hover` か `fixed` で書いてください。",
+        "`side-toc.mode` は `hover` か `fixed` で記載してください。",
       ),
     );
     return false;
@@ -445,7 +445,7 @@ function isValidSideToc(
   return true;
 }
 
-/** 設定の `assets` を検める。キーと値の形でなければ、`root` が文字列でなければ、`schema` のずれを積んで `false` を返す */
+/** 設定の `assets` を検める。キーと値の構造でなければ、`root` が文字列でなければ、`schema` のずれを追加して `false` を返却する */
 function isValidAssets(
   value: unknown,
   file: string,
@@ -456,7 +456,7 @@ function isValidAssets(
       schemaIssue(
         file,
         "assets",
-        "`assets` は `root` を持つキーと値で書いてください。",
+        "`assets` は `root` を持つキーと値で記載してください。",
       ),
     );
     return false;
@@ -466,7 +466,7 @@ function isValidAssets(
       schemaIssue(
         file,
         "assets.root",
-        "`assets.root` は設定ファイルのフォルダからのフォルダのパスの文字列で書いてください。",
+        "`assets.root` は設定ファイルのフォルダからのフォルダのパスの文字列で記載してください。",
       ),
     );
     return false;
@@ -474,7 +474,7 @@ function isValidAssets(
   return true;
 }
 
-/** 設定の `syntax` を検める。キーと値の形でなければ、`url` が文字列でなければ、`schema` のずれを積んで `false` を返す */
+/** 設定の `syntax` を検める。キーと値の構造でなければ、`url` が文字列でなければ、`schema` のずれを追加して `false` を返却する */
 function isValidSyntax(
   value: unknown,
   file: string,
@@ -485,7 +485,7 @@ function isValidSyntax(
       schemaIssue(
         file,
         "syntax",
-        "`syntax` は `url` を持つキーと値で書いてください。",
+        "`syntax` は `url` を持つキーと値で記載してください。",
       ),
     );
     return false;
@@ -495,7 +495,7 @@ function isValidSyntax(
       schemaIssue(
         file,
         "syntax.url",
-        "`syntax.url` は色分けのライブラリの `es/` フォルダの URL かパスの文字列で書いてください。",
+        "`syntax.url` は色分けのライブラリの `es/` フォルダの URL かパスの文字列で記載してください。",
       ),
     );
     return false;
@@ -503,7 +503,7 @@ function isValidSyntax(
   return true;
 }
 
-/** 設定の `html-scripts` を検める。キーと値の形でなければ、`url` が文字列でなければ、`schema` のずれを積んで `false` を返す */
+/** 設定の `html-scripts` を検める。キーと値の構造でなければ、`url` が文字列でなければ、`schema` のずれを追加して `false` を返却する */
 function isValidHtmlScripts(
   value: unknown,
   file: string,
@@ -514,7 +514,7 @@ function isValidHtmlScripts(
       schemaIssue(
         file,
         "html-scripts",
-        "`html-scripts` は `url` を持つキーと値で書いてください。",
+        "`html-scripts` は `url` を持つキーと値で記載してください。",
       ),
     );
     return false;
@@ -524,7 +524,7 @@ function isValidHtmlScripts(
       schemaIssue(
         file,
         "html-scripts.url",
-        "`html-scripts.url` は変換のライブラリの ES モジュールの URL かパスの文字列で書いてください。",
+        "`html-scripts.url` は変換のライブラリの ES モジュールの URL かパスの文字列で記載してください。",
       ),
     );
     return false;
@@ -532,7 +532,7 @@ function isValidHtmlScripts(
   return true;
 }
 
-/** 設定の `mermaid` を検める。キーと値の形でなければ、`url`・`theme` が文字列でなければ、`themeVariables` がキーと値の形でなければ、`schema` のずれを積んで `false` を返す。`theme` の知らない名前は拒まない */
+/** 設定の `mermaid` を検める。キーと値の構造でなければ、`url`・`theme` が文字列でなければ、`themeVariables` がキーと値の構造でなければ、`schema` のずれを追加して `false` を返却する。`theme` の知らない名前は拒まない */
 function isValidMermaid(
   value: unknown,
   file: string,
@@ -543,7 +543,7 @@ function isValidMermaid(
       schemaIssue(
         file,
         "mermaid",
-        "`mermaid` は `url`・`theme`・`themeVariables` を持つキーと値で書いてください。",
+        "`mermaid` は `url`・`theme`・`themeVariables` を持つキーと値で記載してください。",
       ),
     );
     return false;
@@ -553,7 +553,7 @@ function isValidMermaid(
       schemaIssue(
         file,
         "mermaid.url",
-        "`mermaid.url` は mermaid の ES モジュールの URL かパスの文字列で書いてください。",
+        "`mermaid.url` は mermaid の ES モジュールの URL かパスの文字列で記載してください。",
       ),
     );
     return false;
@@ -563,7 +563,7 @@ function isValidMermaid(
       schemaIssue(
         file,
         "mermaid.theme",
-        "`mermaid.theme` は `mdmark` か mermaid のテーマの名前の文字列で書いてください。",
+        "`mermaid.theme` は `mdmark` か mermaid のテーマの名前の文字列で記載してください。",
       ),
     );
     return false;
@@ -573,7 +573,7 @@ function isValidMermaid(
       schemaIssue(
         file,
         "mermaid.themeVariables",
-        "`mermaid.themeVariables` は、mermaid のテーマの変数の名前と値のキーと値で書いてください。",
+        "`mermaid.themeVariables` は、mermaid のテーマの変数の名前と値のキーと値で記載してください。",
       ),
     );
     return false;
@@ -581,7 +581,7 @@ function isValidMermaid(
   return true;
 }
 
-/** 設定の `check` を検める。オブジェクトでなければ `schema` のずれにして `undefined` を返し、`ignore` は印の名前の書式に合う値だけを残す */
+/** 設定の `check` を検める。オブジェクトでなければ `schema` のずれにして `undefined` を返却し、`ignore` はマーカーの名前の書式に合う値だけを残す */
 function validateCheck(
   value: unknown,
   file: string,
@@ -592,7 +592,7 @@ function validateCheck(
       schemaIssue(
         file,
         "check",
-        "`check` は `ignore` を持つキーと値で書いてください。",
+        "`check` は `ignore` を持つキーと値で記載してください。",
       ),
     );
     return undefined;
@@ -605,7 +605,7 @@ function validateCheck(
       schemaIssue(
         file,
         "check.ignore",
-        "`check.ignore` は印の名前の並びで書いてください。",
+        "`check.ignore` はマーカーの名前の並びで記載してください。",
       ),
     );
     const rest = { ...value };
@@ -621,7 +621,7 @@ function validateCheck(
         schemaIssue(
           file,
           `check.ignore[${position}]`,
-          `\`check.ignore[${position}]\` は、英小文字で始まり、英小文字・数字・\`-\` が続く印の名前で書いてください。`,
+          `\`check.ignore[${position}]\` は、英小文字で始まり、英小文字・数字・\`-\` が続くマーカーの名前で記載してください。`,
         ),
       );
     }
@@ -648,13 +648,13 @@ export type ConfigFile = {
 
 /** `loadLayeredConfig` の戻り値 */
 export type LayeredConfig = {
-  /** 重ねた設定。相対パスの値はその値を書いた設定ファイルのフォルダから解決した絶対パス */
+  /** 重ねた設定。相対パスの値はその値を記載した設定ファイルのフォルダから解決した絶対パス */
   config: CliConfig;
   /** 重ねた設定ファイルを重ねた順（端末の設定 → 上 → 近い）に並べたもの */
   files: ConfigFile[];
   /** 最も近い `mdmark.config.yaml` の絶対パス（`explicit` のときはそのパス） */
   nearest: string | undefined;
-  /** YAML として読めなかった最初の設定ファイル */
+  /** YAML として読み込めなかった最初の設定ファイル */
   unreadable: { path: string; line: number; message: string } | undefined;
   /** 重ねた設定ファイルごとの `schema` のずれ（`file` は絶対パス） */
   issues: CheckIssue[];
@@ -665,7 +665,7 @@ export class ConfigNotFoundError extends Error {
   override name = "ConfigNotFoundError";
 }
 
-/** `MDMARK_CONFIG`、無ければ `${XDG_CONFIG_HOME:-{home}/.config}/mdmark/settings.yaml` を返す */
+/** `MDMARK_CONFIG`、無ければ `${XDG_CONFIG_HOME:-{home}/.config}/mdmark/settings.yaml` を返却する */
 export const resolveSettingsPath = (options: {
   env: Record<string, string | undefined>;
   home: string;
@@ -678,7 +678,7 @@ export const resolveSettingsPath = (options: {
   return join(base, "mdmark", SETTINGS_FILE);
 };
 
-/** `cwd` から上へ `mdmark.config.yaml` を探し、上 → 近いの順に返す */
+/** `cwd` から上へ `mdmark.config.yaml` を探し、上 → 近いの順に返却する */
 export const findConfigChain = async (options: {
   cwd: string;
   cascade: boolean;
@@ -713,7 +713,7 @@ const relativize = (value: string, dir: string): string =>
     ? relative(dir, value).split(sep).join("/")
     : value;
 
-/** 設定のパスの値（`theme`・`index`・`assets.root`・`build`・`extensions`・`libraries`・`html-scripts.url`・`mermaid.url`・`syntax.url`・`aliases` の `paths`）を `map` で替えた設定を返す（渡した設定は書き換えない） */
+/** 設定のパスの値（`theme`・`index`・`assets.root`・`build`・`extensions`・`libraries`・`html-scripts.url`・`mermaid.url`・`syntax.url`・`aliases` の `paths`）を `map` で替えた設定を返却する（指定した設定は書き換えない） */
 const mapConfigPaths = (
   config: CliConfig,
   map: (value: string) => string,
@@ -781,14 +781,14 @@ const mapConfigPaths = (
   return result;
 };
 
-/** 1 つの層の設定の相対パスの値を、その層のファイルのフォルダから絶対パスにする（渡した設定は書き換えない） */
+/** 1 つの層の設定の相対パスの値を、その層のファイルのフォルダから絶対パスにする（指定した設定は書き換えない） */
 export const absolutizeConfigPaths = (options: {
   config: CliConfig;
   dir: string;
 }): CliConfig =>
   mapConfigPaths(options.config, (value) => absolutize(value, options.dir));
 
-/** 重ねた設定のパスの値のうち `dir` の下のものを `dir` からの相対パスに戻す（CLI が最も近い設定ファイルのフォルダを基準に読むため） */
+/** 重ねた設定のパスの値のうち `dir` の下のものを `dir` からの相対パスに戻す（CLI が最も近い設定ファイルのフォルダを基準に読み込むため） */
 export const relativizeConfigPaths = (options: {
   config: CliConfig;
   dir: string;
@@ -820,7 +820,7 @@ function isInside(path: string, dir: string): boolean {
   return rel !== "" && !rel.startsWith("..") && !isAbsolute(rel);
 }
 
-/** 基準のフォルダの中なら相対パス、外ならホームを `~` にしたパスを返す（区切りは `/`） */
+/** 基準のフォルダの中なら相対パス、外ならホームを `~` にしたパスを返却する（区切りは `/`） */
 export const displayConfigPath = (options: {
   path: string;
   base: string;
@@ -836,7 +836,7 @@ export const displayConfigPath = (options: {
   return path.split(sep).join("/");
 };
 
-/** 端末の設定の `serve.tmuxSession` に使える文字 */
+/** 端末の設定の `serve.tmuxSession` に使用できる文字 */
 const TMUX_SESSION_PATTERN = /^[A-Za-z0-9_-]+$/;
 
 /** 端末の設定の `serve` がマップで、`serve.tmuxSession` が英数字・`_`・`-` の文字列かを検める */
@@ -852,7 +852,7 @@ const validateServeKeys = (
       schemaIssue(
         file,
         "serve",
-        "`serve` は `tmuxSession` を持つキーと値で書いてください。",
+        "`serve` は `tmuxSession` を持つキーと値で記載してください。",
       ),
     ];
   }
@@ -865,14 +865,14 @@ const validateServeKeys = (
       schemaIssue(
         file,
         "serve.tmuxSession",
-        "`serve.tmuxSession` は英数字・`_`・`-` の文字列で書いてください。",
+        "`serve.tmuxSession` は英数字・`_`・`-` の文字列で記載してください。",
       ),
     ];
   }
   return [];
 };
 
-/** 端末の設定の `config` がマップで、`config.cascade`・`config.applyToExport` が真偽値か、`serve.tmuxSession` が使える名前かを検める */
+/** 端末の設定の `config` がマップで、`config.cascade`・`config.applyToExport` が真偽値か、`serve.tmuxSession` が使用できる名前かを検める */
 export const validateSettingsKeys = (
   raw: unknown,
   file: string,
@@ -890,7 +890,7 @@ export const validateSettingsKeys = (
       schemaIssue(
         file,
         "config",
-        "`config` は `cascade`・`applyToExport` を持つキーと値で書いてください。",
+        "`config` は `cascade`・`applyToExport` を持つキーと値で記載してください。",
       ),
     ];
   }
@@ -902,7 +902,7 @@ export const validateSettingsKeys = (
         schemaIssue(
           file,
           `config.${key}`,
-          `\`config.${key}\` は true か false で書いてください。`,
+          `\`config.${key}\` は true か false で記載してください。`,
         ),
       );
     }
@@ -910,13 +910,13 @@ export const validateSettingsKeys = (
   return issues;
 };
 
-/** 読んだ 1 つの層 */
+/** 読み込んだ 1 つの層 */
 type ReadLayer =
   | { kind: "missing" }
   | { kind: "unreadable"; line: number; message: string }
   | { kind: "read"; raw: unknown };
 
-/** 設定ファイルを読み、YAML として読む。`ENOENT` は `missing` */
+/** 設定ファイルを読み込み、YAML として読み込む。`ENOENT` は `missing` */
 const readLayer = async (
   path: string,
   readFile: (path: string) => Promise<string>,
@@ -944,7 +944,7 @@ const readLayer = async (
   }
 };
 
-/** 端末の設定と上のフォルダの設定ファイルを読み、形を検めて、相対パスを絶対パスにしてから重ねる */
+/** 端末の設定と上のフォルダの設定ファイルを読み込み、構造を検めて、相対パスを絶対パスにしてから重ねる */
 export const loadLayeredConfig = async (options: {
   cwd: string;
   explicit?: string | undefined;
@@ -954,14 +954,14 @@ export const loadLayeredConfig = async (options: {
   readFile: (path: string) => Promise<string>;
   isFile: (path: string) => Promise<boolean>;
   explicitName: string;
-  /** 形の合わない設定ファイルも、合うところだけを重ねるか（`mdmark check` が残りを点検するため） */
+  /** 構造の合わない設定ファイルも、合うところだけを重ねるか（`mdmark check` が残りを点検するため） */
   keepInvalid?: boolean;
 }): Promise<LayeredConfig> => {
   const issues: CheckIssue[] = [];
   let unreadable: LayeredConfig["unreadable"];
   const layers: Array<{ file: ConfigFile; config: CliConfig }> = [];
 
-  // 1 つの層を読んで検める。読めて形が合えば検めた設定を返す
+  // 1 つの層を読み込んで検める。読み込めて構造が合えば検めた設定を返却する
   const take = async (
     path: string,
     layer: ConfigFile["layer"],
@@ -1012,7 +1012,7 @@ export const loadLayeredConfig = async (options: {
     const path = resolve(options.cwd, options.explicit);
     if (!(await options.isFile(path))) {
       throw new ConfigNotFoundError(
-        `${options.explicit} が見つかりません（${options.explicitName}）。パスを直すか、mdmark init で置いてください。`,
+        `${options.explicit} が見つかりません（${options.explicitName}）。パスを修正するか、mdmark init で配置してください。`,
       );
     }
     paths = [path];

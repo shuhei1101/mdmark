@@ -1,7 +1,7 @@
 import { afterEach, expect, test, vi } from "vitest";
 import { createRoot, removeRoots } from "../../helpers/dom.ts";
 
-/** コードの行の畳みの操作を読み込む（実装が無い間は各テストが個別に失敗する。ファイルが無いと Vite の解決が失敗してテストファイルごと落ちるため、URL を組んで読む） */
+/** コードの行の畳みの操作を読み込む（実装が無い間は各テストが個別に失敗する。ファイルが無いと Vite の解決が失敗してテストファイルごと落ちるため、URL を組んで読み込む） */
 const loadCodeFolds = (): Promise<
   typeof import("../../../../src/interact/code-folds.ts")
 > =>
@@ -14,7 +14,7 @@ const loadCodeFolds = (): Promise<
 
 const detachers: Array<() => void> = [];
 
-/** 3 段の入れ子のキーを持つ yaml のコードブロック */
+/** 3 階層の入れ子のキーを持つ yaml のコードブロック */
 const NESTED_YAML = [
   "```yaml",
   "a:",
@@ -43,12 +43,12 @@ const FOLDED_YAML = [
   "",
 ].join("\n");
 
-/** 描いたコードブロックの行の要素を、上から返す */
+/** 描いたコードブロックの行の要素を、上から返却する */
 function codeLines(root: HTMLElement): HTMLElement[] {
   return [...root.querySelectorAll<HTMLElement>(".mdmark-code-line")];
 }
 
-/** 行の開閉のボタンを返す（無ければ例外） */
+/** 行の開閉のボタンを返却する（無ければ例外） */
 function foldToggle(line: HTMLElement | undefined): HTMLButtonElement {
   const button = line?.querySelector<HTMLButtonElement>(
     "button.mdmark-code-fold",
@@ -59,7 +59,7 @@ function foldToggle(line: HTMLElement | undefined): HTMLButtonElement {
   return button;
 }
 
-/** 行のうち `hidden` を持つ行の番号（1 から）を返す */
+/** 行のうち `hidden` を持つ行の番号（1 から）を返却する */
 function hiddenLineNumbers(lines: HTMLElement[]): number[] {
   return lines.flatMap((line, index) => (line.hidden ? [index + 1] : []));
 }
@@ -90,7 +90,7 @@ test("test_attach_code_folds", async () => {
   const { root } = createRoot(NESTED_YAML);
   detachers.push(attachCodeFolds(root));
   const lines = codeLines(root);
-  // 検証: 1・2 行目にだけ開いた状態のボタンを置く
+  // 検証: 1・2 行目にだけ開いた状態のボタンを配置する
   expect(foldToggle(lines[0]).getAttribute("aria-expanded")).toBe("true");
   expect(foldToggle(lines[1]).getAttribute("aria-expanded")).toBe("true");
   for (const line of lines.slice(2)) {
@@ -134,7 +134,7 @@ test("test_attach_code_folds_when_shift", async () => {
   expect(hiddenLineNumbers(lines)).toEqual([]);
 });
 
-// fold= の行を畳んだ状態にし、外すと戻す（正常系）
+// fold= の行を畳んだ状態にし、削除すると戻す（正常系）
 test("test_attach_code_folds_when_initial", async () => {
   // 準備
   const { attachCodeFolds } = await loadCodeFolds();
@@ -146,7 +146,7 @@ test("test_attach_code_folds_when_initial", async () => {
   expect(foldToggle(lines[1]).getAttribute("aria-expanded")).toBe("false");
   expect(foldToggle(lines[5]).getAttribute("aria-expanded")).toBe("false");
   expect(hiddenLineNumbers(lines)).toEqual([3, 7]);
-  // 実行・検証: 外すとボタン・⋯・hidden が無い
+  // 実行・検証: 削除するとボタン・⋯・hidden が無い
   detach();
   expect(root.querySelector("button.mdmark-code-fold")).toBeNull();
   expect(root.querySelector("button.mdmark-code-fold-more")).toBeNull();
@@ -172,7 +172,7 @@ test("test_attach_code_folds_when_hovered", async () => {
   expect(activeLines()).toEqual([]);
 });
 
-// 畳んだ行を開き、畳み直す（正常系）
+// 畳んだ行を開き、もう一度畳む（正常系）
 test("test_set_code_fold_open", async () => {
   // 準備
   const { attachCodeFolds, setCodeFoldOpen } = await loadCodeFolds();
@@ -182,7 +182,7 @@ test("test_set_code_fold_open", async () => {
   detachers.push(attachCodeFolds(root));
   const lines = codeLines(root);
   const toggle = foldToggle(lines[1]);
-  // 実行・検証: 開くと後ろの行を出し ⋯ を外す
+  // 実行・検証: 開くと後ろの行を出し ⋯ を削除する
   setCodeFoldOpen(toggle, true);
   expect(lines[2]?.hidden).toBe(false);
   expect(lines[1]?.querySelector("button.mdmark-code-fold-more")).toBeNull();

@@ -4,7 +4,7 @@ entry:
   value: export_html
 flows:
   - name: 正常系
-    summary: 文書を 1 枚の HTML に書き出してパスを返す
+    summary: 文書を 1 枚の HTML に書き出してパスを返却する
     setup:
       - name: 作業のフォルダ
         description: 設定と、表と注意書きを持つ文書 `guide.md`
@@ -16,15 +16,15 @@ flows:
         participant S as MCP サーバー
         participant F as 作業のフォルダ
         C->>S: export_html（file: guide.md）
-        S->>F: 文書と設定を読む
-        S->>F: guide.html を書く
+        S->>F: 文書と設定を読み込む
+        S->>F: guide.html を書き込む
         S-->>C: out・warnings
     expected:
       - '`out` が `guide.html` の絶対パスで、そのファイルがある'
-      - 同じ文書で流した `mdmark export` の HTML と中身が同じ
+      - 同じ文書で実行した `mdmark export` の HTML と中身が同じ
     test: test_normal
   - name: 異常系（文書が無い・ツールのエラー）
-    summary: 無い文書は何も書かずにエラーにする
+    summary: 無い文書は何も書き込まずにエラーにする
     setup:
       - name: 作業のフォルダ
         description: 正常系と同じ
@@ -40,10 +40,10 @@ flows:
     expected:
       - '`isError` が立つ'
       - 内容に `missing.md` が出る
-      - '`.html` が書かれていない'
+      - '`.html` が記載されていない'
     test: test_error_when_file_missing
   - name: 異常系（作業のフォルダが無い・ツールのエラー）
-    summary: '`project_dir` を持たない呼び出しを、作業のフォルダを読まずにエラーにする'
+    summary: '`project_dir` を持たない呼び出しを、作業のフォルダを読み込まずにエラーにする'
     setup:
       - name: Mock
         description: 起動した常駐サーバーへ HTTP でつなぐ MCP のクライアント。`project_dir` を入れずに呼ぶ
@@ -58,9 +58,9 @@ flows:
       - '`isError` が立つ'
       - 内容の文に `project_dir` と、プラグインを入れたセッションから呼ぶことが出る
     test: test_error_when_project_dir_missing
-lead: '`mdmark export` と同じ処理で、Markdown を 1 つ、外へ要求しない 1 枚の HTML に書き出し、書き出したパスを返す。'
+lead: '`mdmark export` と同じ処理で、Markdown を 1 つ、外へ要求しない 1 枚の HTML に書き出し、書き出したパスを返却する。'
 idempotent: true
-side_effects: 書き出す先の HTML を書く（あれば上書きする）
+side_effects: 書き出す先の HTML を書き込む（あれば上書きする）
 request:
   - name: file
     type: string
@@ -78,7 +78,7 @@ request:
     required: false
     default: なし（端末の設定と、`project_dir` から上のフォルダの `mdmark.config.yaml` を重ねる。端末の設定は `mdmark serve` のプロセスの環境変数で決まる）
     location: argument
-    description: 使う設定ファイルのパス
+    description: 使用する設定ファイルのパス
   - name: project_dir
     type: string
     required: true
@@ -106,16 +106,16 @@ exceptions:
     condition: 書き出せた
   - name: ツールのエラー（文書が無い）
     condition: '`file` のファイルが無い'
-    notes: 設定ファイルが無い・読めないときと書き出せないときも、`mdmark export` が終了コード 1 で終わるときと同じ文でエラーにする
+    notes: 設定ファイルが無い・読み込めないときと書き出せないときも、`mdmark export` が終了コード 1 で終わるときと同じ文でエラーにする
   - name: ツールのエラー（作業のフォルダが無い）
     condition: '`project_dir` が無い、絶対パスでない、またはそのフォルダが無い'
-    notes: 内容の文に、`project_dir` が無いか違うことと、プラグインを入れたセッションから呼ぶことを書く
-error_format: 'ツールの結果を `isError: true` にし、内容のテキストに `mdmark export` が標準エラーに出すのと同じ文を書く。'
+    notes: 内容の文に、`project_dir` が無いか違うことと、プラグインを入れたセッションから呼ぶことを記載する
+error_format: 'ツールの結果を `isError: true` にし、内容のテキストに `mdmark export` が標準エラーに出すのと同じ文を書き込む。'
 constraints:
   - item: CLI との一致
-    constraint: 同じ文書・設定では、`mdmark export` と同じ中身の HTML を書く
+    constraint: 同じ文書・設定では、`mdmark export` と同じ中身の HTML を書き込む
   - item: 書き出す中身
-    constraint: プラグインに同梱した配布物を埋める。配布物の版はプラグインの版と同じ
+    constraint: プラグインに同梱した配布物を埋める。配布物のバージョンはプラグインのバージョンと同じ
 refs:
   - dev/設計書/インターフェース定義/ライブラリ本体/文書をHTMLに書き出す.ts#
 test_file: tests/integration/ClaudeCodeプラグイン/export-html.test.ts

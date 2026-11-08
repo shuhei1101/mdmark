@@ -20,7 +20,7 @@ import {
 import { ER_DEFINITION, erMarkdown, FOLD_DEFINITION } from "../er.ts";
 import { MERMAID_SVG, MERMAID_WAIT_MS, routeMermaid } from "../mermaid.ts";
 
-// ビルドした配布物を置いた作業ツリー
+// ビルドした配布物を配置した作業ツリー
 let builtRoot = "";
 
 // 拡大のボタンを押す回数
@@ -39,7 +39,7 @@ test.afterAll(async () => {
   await removeDistRoot(builtRoot);
 });
 
-/** 図を描いたページを開く。`paragraphs` を渡すと、図の下に段落を続けて文書を縦にスクロールできるようにする */
+/** 図を描いたページを開く。`paragraphs` を指定すると、図の下に段落を続けて文書を縦にスクロールできるようにする */
 async function openFlow(page: Page, paragraphs = 0): Promise<void> {
   await openPage(page, builtRoot);
   const tail = Array.from({ length: paragraphs }, (_, i) => `段落 ${i + 1}\n`);
@@ -75,7 +75,7 @@ test("test_normal", async ({ page }) => {
     (element) => element.getBoundingClientRect().width,
   );
   expect(sizerWidth).toBeLessThanOrEqual(frameWidth + 1);
-  // ボタンは右上にあり、それぞれ読み上げの名前を持つ。縮小は押せない。戻すための別のボタンは無く、倍率の表示がその役目を持つ
+  // ボタンは右上にあり、それぞれスクリーンリーダー向けの名前を持つ。縮小は押せない。戻すための別のボタンは無く、倍率の表示がその役目を持つ
   for (const name of [
     "縮小",
     "拡大",
@@ -175,7 +175,7 @@ test("test_normal_when_drag", async ({ page }) => {
   if (!box) {
     throw new Error("表示する枠の範囲を取れない");
   }
-  // 余白（図の上の端で、何も置いていない所）を 100px 左へドラッグする
+  // 余白（図の上の端で、何も配置していない所）を 100px 左へドラッグする
   const start = await viewport.evaluate((element) => element.scrollLeft);
   const margin = { x: box.x + box.width / 2, y: box.y + 4 };
   await expect(viewport).toHaveCSS("cursor", "grab");
@@ -188,7 +188,7 @@ test("test_normal_when_drag", async ({ page }) => {
   const moved = await viewport.evaluate((element) => element.scrollLeft);
   expect(moved - start).toBeGreaterThan(95);
   expect(moved - start).toBeLessThan(105);
-  // 実行: 箱の名前の上で押したまま動かす
+  // 実行: ノードの名前の上で押したまま動かす
   await viewport.evaluate((element) => {
     element.scrollLeft = 0;
   });
@@ -229,7 +229,7 @@ test("test_normal_when_keyboard", async ({ page }) => {
   // → で 80px 動き、右側が見える
   await page.keyboard.press("ArrowRight");
   expect(await viewport.evaluate((element) => element.scrollLeft)).toBe(80);
-  // 移動のボタンでも同じだけ動き、ボタンは読み上げの名前を持つ
+  // 移動のボタンでも同じだけ動き、ボタンはスクリーンリーダー向けの名前を持つ
   const down = page.getByRole("button", { name: "下へ動かす" });
   await expect(down).toBeVisible();
   const top = await viewport.evaluate((element) => element.scrollTop);
@@ -239,7 +239,7 @@ test("test_normal_when_keyboard", async ({ page }) => {
   );
 });
 
-// 埋め込んだ HTML の中のチャートを、ボタンとキーで拡大・縮小し、ドラッグで動かし、ホイールは文書のスクロールに使う。段落には拡大・縮小のボタンが無い（正常シナリオ（埋め込んだ HTML の中のチャート））
+// 埋め込んだ HTML の中のチャートを、ボタンとキーで拡大・縮小し、ドラッグで動かし、ホイールは文書のスクロールに使用する。段落には拡大・縮小のボタンが無い（正常シナリオ（埋め込んだ HTML の中のチャート））
 test("test_normal_when_embedded_chart", async ({ page }) => {
   // 準備: チャートを同じ HTML の段落と一緒に描き、文書が縦にスクロールできるようにする
   await openPage(page, builtRoot);
@@ -344,7 +344,7 @@ test("test_normal_when_er_diagram", async ({ page }) => {
     .locator("#doc .mdmark-diagram-sizer")
     .evaluate((element) => element.getBoundingClientRect().width);
   expect(sizerWidth).toBeLessThanOrEqual(frameWidth + 1);
-  // 右上のボタンは、フロー図と同じ並びと読み上げの名前を持つ
+  // 右上のボタンは、フロー図と同じ並びとスクリーンリーダー向けの名前を持つ
   const names = await page
     .locator("#doc .mdmark-diagram-tools button:visible")
     .evaluateAll((buttons) =>
@@ -389,7 +389,7 @@ test("test_normal_when_er_diagram", async ({ page }) => {
   await expect(dialog).toHaveCount(0);
 });
 
-// 列の多いテーブルを開閉のボタンで畳み、キーボードで開き直し、関係の線を結び直す（正常シナリオ（列の多いテーブルを畳む））
+// 列の多いテーブルを開閉のボタンで畳み、キーボードでもう一度開き、関係の線をもう一度結ぶ（正常シナリオ（列の多いテーブルを畳む））
 test("test_normal_when_er_columns_folded", async ({ page }) => {
   // 準備
   const figure = await openEr(page, FOLD_DEFINITION);
@@ -412,7 +412,7 @@ test("test_normal_when_er_columns_folded", async ({ page }) => {
   );
   await expect(button).toHaveAttribute("aria-expanded", "false");
   expect(await line.getAttribute("d")).not.toBe(before);
-  // 実行: キーボードで開き直す
+  // 実行: キーボードでもう一度開く
   await button.focus();
   await page.keyboard.press("Enter");
   // 検証
@@ -439,7 +439,7 @@ test("test_normal_when_drag_on_linked_node", async ({ page }) => {
     element.scrollTop = 0;
   });
   const name = page.locator('#doc [data-node="a"] .mdmark-diagram-node-name');
-  // 検証: 名前の文字の上も押せる形のカーソル
+  // 検証: 名前の文字の上も押せる構造のカーソル
   await expect(name).toHaveCSS("cursor", "pointer");
   const nameBox = await name.boundingBox();
   if (!nameBox) {
@@ -469,7 +469,7 @@ test("test_normal_when_drag_on_linked_node", async ({ page }) => {
   expect(opened()).toEqual(["https://example.com/spec"]);
 });
 
-/** 表示する枠の中で、文字・押せる所・グループのタイトルに当たらない位置（ドラッグを始められる所）を、画面の座標で返す */
+/** 表示する枠の中で、文字・押せる所・グループのタイトルに該当しない位置（ドラッグを始められる所）を、画面の座標で返却する */
 async function emptyPointIn(
   viewport: Locator,
 ): Promise<{ x: number; y: number }> {
@@ -524,7 +524,7 @@ async function rectOf(locator: Locator) {
   return { ...box, bottom: box.y + box.height };
 }
 
-/** グループのタイトルの見る位置: 処理の層とデータの層のタイトルと、システムの枠のタイトル */
+/** グループのタイトルの確認する位置: 処理の層とデータの層のタイトルと、システムの枠のタイトル */
 function groupTitles(page: Page) {
   return {
     frame: page.locator("#doc .mdmark-diagram-frame-title"),
@@ -602,7 +602,7 @@ test("test_normal_when_group_titles_stuck", async ({ page }) => {
     });
     expect(front).toBe(true);
   }
-  // 実行・検証: 留めたタイトルの hint の印にポインターを乗せると、ツールチップが出る
+  // 実行・検証: 留めたタイトルの hint のマーカーにポインターを乗せると、ツールチップが出る
   await frame.locator(".mdmark-diagram-group-info").hover();
   await expect(
     page.locator('[role="tooltip"]', { hasText: FRAME_HINT }),
@@ -674,7 +674,7 @@ const TALL_FLOW = JSON.stringify({
   ],
 });
 
-/** 縦に長い図を描く（読み直した後も同じ文書を描き直す） */
+/** 縦に長い図を描く（再読み込みした後も同じ文書を再描画する） */
 async function mountTall(page: Page): Promise<void> {
   await mountDocument(page, { markdown: wrapDirective("flow", TALL_FLOW) });
   await expect(page.locator("#doc figure.mdmark-diagram")).toHaveCount(1);
@@ -685,7 +685,7 @@ async function heightOf(page: Page): Promise<number> {
   return (await rectOf(viewportOf(page))).height;
 }
 
-// 右下のリサイズハンドルのドラッグと上下キーで表示する枠の高さを変え、読み直しても保ち、ダブルクリックで戻し、全画面には置かない（正常シナリオ（リサイズハンドルで高さを変える））
+// 右下のリサイズハンドルのドラッグと上下キーで表示する枠の高さを変え、再読み込みしても保ち、ダブルクリックで戻し、全画面には配置しない（正常シナリオ（リサイズハンドルで高さを変える））
 test("test_normal_when_resized", async ({ page }) => {
   // 準備
   await openPage(page, builtRoot);
@@ -693,7 +693,7 @@ test("test_normal_when_resized", async ({ page }) => {
   const handle = page.getByRole("separator", {
     name: "「縦に長い処理の流れ」の表示の高さ",
   });
-  // 検証: 右下にリサイズハンドルがあり、読み上げの名前を持ち、キーボードでフォーカスできる
+  // 検証: 右下にリサイズハンドルがあり、スクリーンリーダー向けの名前を持ち、キーボードでフォーカスできる
   await expect(handle).toBeVisible();
   const frame = await rectOf(viewportOf(page));
   const handleRect = await rectOf(handle);
@@ -741,12 +741,12 @@ test("test_normal_when_resized", async ({ page }) => {
   await page.keyboard.press("ArrowDown");
   const kept = await heightOf(page);
   expect(kept).toBeGreaterThan(lowered);
-  // 実行・検証: 読み直した後も、変えた高さで描く
+  // 実行・検証: 再読み込みした後も、変えた高さで描く
   await page.reload();
   await page.waitForFunction(() => "mdmark" in window);
   await mountTall(page);
   expect(Math.abs((await heightOf(page)) - kept)).toBeLessThanOrEqual(2);
-  // 実行・検証: ダブルクリックで定義から決まる高さに戻り、読み直しても戻した高さのまま
+  // 実行・検証: ダブルクリックで定義から決まる高さに戻り、再読み込みしても戻した高さのまま
   await handle.dblclick();
   expect(Math.abs((await heightOf(page)) - opened)).toBeLessThanOrEqual(2);
   await page.reload();
@@ -824,7 +824,7 @@ const WIDE_MERMAID = [
   "",
 ].join("\n");
 
-/** 図の枠の右上のボタンの読み上げの名前を、並んだ順に返す（倍率の数字は除く） */
+/** 図の枠の右上のボタンのスクリーンリーダー向けの名前を、並んだ順に返却する（倍率の数字は除く） */
 function toolNames(page: Page): Promise<string[]> {
   return page
     .locator("#doc figure.mdmark-diagram .mdmark-diagram-tools button")
@@ -837,7 +837,7 @@ function toolNames(page: Page): Promise<string[]> {
 
 // mermaid の図も、全体が収まる倍率で開き、ボタン・ドラッグ・リサイズハンドル・全画面・0 で操作できる（正常シナリオ（mermaid の図））
 test("test_normal_when_mermaid", async ({ page }) => {
-  // 準備: 図を描き、描く先の幅を図の幅より狭くして描き直す
+  // 準備: 図を描き、描く先の幅を図の幅より狭くして再描画する
   await routeMermaid(page);
   await openPage(page, builtRoot);
   const svg = page.locator(`#doc ${MERMAID_SVG}`);
@@ -910,7 +910,7 @@ test("test_normal_when_mermaid", async ({ page }) => {
   await expect(dialog.locator(".mdmark-mermaid > svg")).toHaveCount(1);
   await page.keyboard.press("Escape");
   await expect(dialog).toBeHidden();
-  // 検証: 右上のボタンが、フロー図と同じ並びと読み上げの名前を持つ（図のタイトルは除く）
+  // 検証: 右上のボタンが、フロー図と同じ並びとスクリーンリーダー向けの名前を持つ（図のタイトルは除く）
   await destroyDocument(page);
   await openFlow(page);
   const flowTools = await toolNames(page);

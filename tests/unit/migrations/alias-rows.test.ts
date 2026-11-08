@@ -13,7 +13,7 @@ type MigrateAliasRows = (options: {
   configDir: string;
 }) => Promise<{ changed: boolean; notices: string[]; problems: string[] }>;
 
-/** `migrations/*\/alias-rows.mjs` を探して読み込む（release で `next/` を版のフォルダへ移した後も同じテストで読む） */
+/** `migrations/*\/alias-rows.mjs` を探して読み込む（release で `next/` をバージョンのフォルダへ移した後も同じテストで読み込む） */
 const loadMigrateAliasRows = async (): Promise<MigrateAliasRows> => {
   const found: string[] = [];
   for await (const path of glob("migrations/*/alias-rows.mjs", {
@@ -30,7 +30,7 @@ const loadMigrateAliasRows = async (): Promise<MigrateAliasRows> => {
 
 const createTempDir = useTempDirs();
 
-/** 設定の本文と、設定のフォルダに置くファイルから、読んだ設定とフォルダを作る */
+/** 設定の本文と、設定のフォルダに配置するファイルから、読み込んだ設定とフォルダを作る */
 async function createConfig(
   lines: string[],
   files: Record<string, string> = {},
@@ -62,7 +62,7 @@ test("test_migrate_alias_rows", async () => {
     ],
     {
       "terms/a.yaml":
-        "terms:\n  - id: ws\n    term: ワークスペース\n    meaning: 話し合いの記録を置くフォルダ\n",
+        "terms:\n  - id: ws\n    term: ワークスペース\n    meaning: 話し合いの記録を配置するフォルダ\n",
       "commands/unit-test.yaml":
         "alias_type: command\nid: unit-test\ncommand: npm run test:unit\n",
       "commands/build.yaml":
@@ -185,7 +185,7 @@ test("test_migrate_alias_rows_when_already_migrated", async () => {
   expect(doc.toString()).toBe(before);
 });
 
-// YAML として読めないファイルを problems にし、例外を投げない（異常系）
+// YAML として読み込めないファイルを problems にし、例外を投げない（異常系）
 test("test_migrate_alias_rows_when_unreadable", async () => {
   // 準備
   const migrateAliasRows = await loadMigrateAliasRows();

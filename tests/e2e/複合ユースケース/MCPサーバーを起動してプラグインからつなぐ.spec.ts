@@ -13,13 +13,13 @@ import {
   withServe,
 } from "../plugin.ts";
 
-// ブラウザを使わないため、1 つのブラウザのプロジェクトだけで流す
+// ブラウザを使用しないため、1 つのブラウザのプロジェクトだけで実行する
 test.skip(
   ({ browserName }) => browserName !== "chromium",
   "ブラウザを使わないシナリオなので chromium のプロジェクトだけで流す",
 );
 
-/** 雛形を置いた後の設定・索引に、`ids` の文書だけを載せ、`documents` を書く */
+/** 雛形を配置した後の設定・索引に、`ids` の文書だけを記載し、`documents` を記載する */
 async function writeProject(
   builtRoot: string,
   dir: string,
@@ -87,7 +87,7 @@ test("test_normal", async ({ builtRoot, tempDir }) => {
   expect(result.sessionB.inputs).toHaveLength(1);
 });
 
-// 常駐サーバーが起動していなくてもセッションは開け、起動した後は接続し直してツールを呼べる（異常シナリオ（常駐サーバーが起動していない））
+// 常駐サーバーが起動していなくてもセッションは開け、起動した後はもう一度接続してツールを呼べる（異常シナリオ（常駐サーバーが起動していない））
 test("test_error_when_server_not_running", async ({ builtRoot, tempDir }) => {
   // 準備
   const dir = await tempDir();

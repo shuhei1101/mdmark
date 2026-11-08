@@ -6,7 +6,7 @@ const loadDiffSource = () =>
     "../../../../../../../../vscode/src/webview/features/preview/panel/diff-source.ts"
   );
 
-// 呼ばれた時点の全文を返す（正常系）
+// 呼ばれた時点の全文を返却する（正常系）
 test("test_create_diff_source", async () => {
   // 準備
   const { createDiffSource } = await loadDiffSource();

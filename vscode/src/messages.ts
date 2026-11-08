@@ -21,11 +21,11 @@ export type HostMessage =
   | { type: "scrollToLine"; line: number }
   | {
       type: "configError";
-      /** 読めない設定ファイルのパス（表示の形） */
+      /** 読み込めない設定ファイルのパス（表示の構造） */
       path: string;
-      /** YAML として読めない行（1 始まり）。`settingKey` とどちらか一方 */
+      /** YAML として読み込めない行（1 始まり）。`settingKey` とどちらか一方 */
       line?: number;
-      /** 設定の形に合わない最初のキー。`line` とどちらか一方 */
+      /** 設定の構造に合わない最初のキー。`line` とどちらか一方 */
       settingKey?: string;
     }
   | { type: "configOk" }
@@ -34,13 +34,13 @@ export type HostMessage =
   | {
       type: "assetsResolved";
       id: number;
-      /** 書いたパスから Webview の URL を引く表。見つからないパスは `null` */
+      /** 記載したパスから Webview の URL を参照する表。見つからないパスは `null` */
       urls: Record<string, string | null>;
     }
   | { type: "inspect"; id: number; selector: string; play?: boolean }
   | { type: "axe"; id: number };
 
-/** 調べた要素 1 つの様子（結合テストが Webview の DOM の期待値を確かめるために返す） */
+/** 調べた要素 1 つの様子（結合テストが Webview の DOM の期待値を確認するために返却する） */
 export type InspectedElement = {
   /** 小文字のタグ名 */
   tagName: string;
@@ -58,7 +58,7 @@ export type InspectedElement = {
   height: number;
   /** `video`・`audio` のときだけ。`play` を受けたときは、`play()` から 1 秒後の値 */
   currentTime?: number;
-  /** `video`・`audio` のときだけ。要素の `readyState`（4 は再生に足りるデータを読めた） */
+  /** `video`・`audio` のときだけ。要素の `readyState`（4 は再生に足りるデータを読み込めた） */
   readyState?: number;
 };
 
@@ -72,7 +72,7 @@ export type AxeViolation = {
   targets: string[];
 };
 
-/** 配布物を読めない理由 */
+/** 配布物を読み込めない理由 */
 export type LoadFailureReason =
   | "offline"
   | "versionMissing"

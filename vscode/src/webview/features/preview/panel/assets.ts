@@ -6,7 +6,7 @@ const SCHEME_PATTERN = /^[a-z][a-z0-9+.-]*:/i;
 /** パスを持つ要素と、パスを持つ属性 */
 const ASSET_SELECTOR = "img[src], video[src], video[poster], audio[src]";
 
-/** 書いたパスを控える属性 */
+/** 記載したパスを記録する属性 */
 const SOURCE_ATTRIBUTE = "data-mdmark-src";
 
 /** スキームも `/` も `#` も持たない相対パスか */
@@ -19,12 +19,12 @@ const isRelativePath = (value: string): boolean => {
   );
 };
 
-/** 要素がパスを持つ属性の名前を返す */
+/** 要素がパスを持つ属性の名前を返却する */
 const pathAttributesOf = (element: Element): string[] => {
   return element.localName === "video" ? ["src", "poster"] : ["src"];
 };
 
-/** 描いた文書の `img`・`video`・`audio` の相対パスを、重ねずに書いた順で返す */
+/** 描いた文書の `img`・`video`・`audio` の相対パスを、重ねずに記載した順で返却する */
 export const collectAssetPaths = (root: HTMLElement): string[] => {
   const paths: string[] = [];
   for (const element of root.querySelectorAll(ASSET_SELECTOR)) {
@@ -38,7 +38,7 @@ export const collectAssetPaths = (root: HTMLElement): string[] => {
   return paths;
 };
 
-/** 書いたパスが `urls` にある要素の `src`・`poster` を Webview の URL に替える。`null` のパスは替えない。動画・音声は替える前のパスを `data-mdmark-src` に控える */
+/** 記載したパスが `urls` にある要素の `src`・`poster` を Webview の URL に替える。`null` のパスは替えない。動画・音声は替える前のパスを `data-mdmark-src` に記録する */
 export const applyAssetUrls = (
   root: HTMLElement,
   urls: Record<string, string | null>,
@@ -65,7 +65,7 @@ const formatOf = (path: string): string => {
   return dot < 0 ? "" : bare.slice(dot + 1).toLowerCase();
 };
 
-/** 描いた文書の動画・音声が再生できないとき、その要素（`figure.mdmark-media` の中なら `figure`）を知らせの枠に替える。受け取りを外す関数を返す */
+/** 描いた文書の動画・音声が再生できないとき、その要素（`figure.mdmark-media` の中なら `figure`）を通知ブロックに替える。受け取りを解除する関数を返却する */
 export const attachMediaErrors = (root: HTMLElement): (() => void) => {
   const onError = (event: Event): void => {
     const media = event.target;

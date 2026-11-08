@@ -1,12 +1,12 @@
-/* 使う側の固有の CSS（ワークスペースの theme.css に当たる）: mdmark の層の外に書き、図の LLM の色を使う側の色に変え、固有の部品の見た目を持つ */
+/* 利用側の固有の CSS（ワークスペースの theme.css に該当する）: mdmark の層の外に記載し、図の LLM の色を利用側の色に変え、固有の部品の外観を持つ */
 
-/* 使う側の色: 図の LLM の箱・層の背景と、固有の部品の差し色に使う */
+/* 利用側の色: 図の LLM のノード・層の背景と、固有の部品の差し色に使用する */
 :root {
   --team-accent: #bf3989;
   --mdmark-color-diagram-llm: var(--team-accent);
 }
 
-/* 使う側の色のダーク: mdmark のダークの値より後に当てる */
+/* 利用側の色のダーク: mdmark のダークの値より後に適用する */
 :root[data-scheme="dark"] {
   --team-accent: #f778ba;
   --mdmark-color-diagram-llm: var(--team-accent);
@@ -18,7 +18,7 @@
   border: 1.5px solid var(--team-accent);
   border-radius: var(--mdmark-radius);
 
-  /* 段取りの並び: 日付と内容を 2 列に揃える */
+  /* 段取りの並び: 日付と内容を 2 列に統一する */
   ol {
     display: grid;
     grid-template-columns: auto minmax(0, 1fr) auto;
@@ -34,14 +34,14 @@
     display: contents;
   }
 
-  /* 段取りの日付: 桁を揃える */
+  /* 段取りの日付: 桁を統一する */
   time {
     color: var(--mdmark-color-muted);
     font-variant-numeric: tabular-nums;
   }
 }
 
-/* 固有の部品の題: 定義の題を差し色で */
+/* 固有の部品のタイトル: 定義のタイトルを差し色で */
 .team-milestones-title {
   margin: 0;
   color: var(--team-accent);

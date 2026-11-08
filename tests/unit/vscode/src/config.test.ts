@@ -82,7 +82,7 @@ test("test_load_config_when_missing", async () => {
   expect(result.problem).toBeUndefined();
 });
 
-// assets.root を書いた設定ファイルのフォルダから解決する（正常系）
+// assets.root を記載した設定ファイルのフォルダから解決する（正常系）
 test("test_load_config_when_assets_root", async () => {
   // 準備
   const { loadConfig: load } = await loadModule();
@@ -94,7 +94,7 @@ test("test_load_config_when_assets_root", async () => {
   expect("assets" in result.config).toBe(false);
 });
 
-// YAML として読めないファイルを problem にし、残りを重ねる（正常系）
+// YAML として読み込めないファイルを problem にし、残りを重ねる（正常系）
 test("test_load_config_when_unreadable", async () => {
   // 準備
   const { loadConfig: load } = await loadModule();
@@ -111,7 +111,7 @@ test("test_load_config_when_unreadable", async () => {
   expect(result.config).toEqual({ features: { callout: false } });
 });
 
-// 形の合わないファイルを problem にしてキーを返す（正常系）
+// 構造の合わないファイルを problem にしてキーを返却する（正常系）
 test("test_load_config_when_invalid", async () => {
   // 準備
   const { loadConfig: load } = await loadModule();
@@ -163,7 +163,7 @@ const GLOSSARY = [
   "",
 ].join("\n");
 
-/** 一時フォルダの実のファイルを読む `loadConfig` の引数 */
+/** 一時フォルダの実のファイルを読み込む `loadConfig` の引数 */
 const fsOptions = (options: {
   cwd: string;
   settings: string;
@@ -182,7 +182,7 @@ const fsOptions = (options: {
   },
 });
 
-// プレビューでは重ねた設定の aliases からエイリアスを作り、読んだ YAML を返す（正常系）
+// プレビューでは重ねた設定の aliases からエイリアスを作り、読み込んだ YAML を返却する（正常系）
 test("test_load_config_when_aliases", async () => {
   // 準備
   const { loadConfig: load } = await loadModule();
@@ -229,7 +229,7 @@ test("test_load_config_when_aliases_without_nearest", async () => {
   expect(result.aliasFiles).toEqual([join(dir, "settings/glossary.yaml")]);
 });
 
-// 当たるファイルの無い行はずれにして残りで作る（正常系）
+// 該当するファイルの無い行はずれにして残りで作る（正常系）
 test("test_load_config_when_aliases_missing_files", async () => {
   // 準備
   const { loadConfig: load } = await loadModule();
@@ -303,7 +303,7 @@ test("test_apply_color_theme", async () => {
   expect(config).toEqual(snapshot);
 });
 
-// 固定した配色のときだけ設定の明暗を外す（正常系）
+// 固定した配色のときだけ設定の明暗を解除する（正常系）
 test("test_apply_preview_theme", async () => {
   // 準備
   const { applyPreviewTheme } = await loadModule();
@@ -318,7 +318,7 @@ test("test_apply_preview_theme", async () => {
   expect(config).toEqual(snapshot);
 });
 
-// 相対パスだけを設定ファイルのフォルダから直す（正常系）
+// 相対パスだけを設定ファイルのフォルダから修正する（正常系）
 test("test_resolve_libraries", async () => {
   // 準備
   const { resolveLibraries } = await loadModule();
@@ -341,7 +341,7 @@ test("test_resolve_libraries", async () => {
   });
 });
 
-// http・https の origin だけを重なりなく拾う（正常系）
+// http・https の origin だけを重なりなく取得する（正常系）
 test("test_library_origins", async () => {
   // 準備
   const { libraryOrigins } = await loadModule();
@@ -360,7 +360,7 @@ test("test_library_origins", async () => {
   ]);
 });
 
-// 相対パスの url だけを設定ファイルのフォルダから直す（正常系）
+// 相対パスの url だけを設定ファイルのフォルダから修正する（正常系）
 test("test_resolve_html_scripts", async () => {
   // 準備
   const { resolveHtmlScripts } = await loadModule();
@@ -380,7 +380,7 @@ test("test_resolve_html_scripts", async () => {
   expect(number).toEqual({ url: 1 });
 });
 
-// html-scripts.url の http・https の origin を足し、それ以外の url では足さない（正常系）
+// html-scripts.url の http・https の origin を追加し、それ以外の url では追加しない（正常系）
 test("test_library_origins_when_html_scripts", async () => {
   // 準備
   const { libraryOrigins } = await loadModule();
@@ -403,7 +403,7 @@ test("test_library_origins_when_html_scripts", async () => {
   ]);
 });
 
-// 相対パスの url だけを設定ファイルのフォルダから直し、ほかのキーを残す（正常系）
+// 相対パスの url だけを設定ファイルのフォルダから修正し、ほかのキーを残す（正常系）
 test("test_resolve_mermaid", async () => {
   // 準備
   const { resolveMermaid } = await loadModule();
@@ -426,7 +426,7 @@ test("test_resolve_mermaid", async () => {
   expect(themeOnly).toEqual({ theme: "dark" });
 });
 
-// mermaid.url の http・https の origin を足し、相対パスでは足さない（正常系）
+// mermaid.url の http・https の origin を追加し、相対パスでは追加しない（正常系）
 test("test_library_origins_when_mermaid", async () => {
   // 準備
   const { libraryOrigins } = await loadModule();

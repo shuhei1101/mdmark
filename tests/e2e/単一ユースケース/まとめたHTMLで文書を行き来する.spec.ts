@@ -1,7 +1,7 @@
 import { join } from "node:path";
 import { expect, openStandalone, runCli, test, writeFiles } from "../cli.ts";
 
-// 文書 A（entry）・B・C をまとめる: A は文書間のリンクを持たず、B は C へリンクし、目次の印と h2 を 2 つ持つ
+// 文書 A（entry）・B・C をまとめる: A は文書間のリンクを持たず、B は C へリンクし、目次のマーカーと h2 を 2 つ持つ
 const DOCUMENTS = {
   "mdmark.config.yaml": [
     "build:",
@@ -30,7 +30,7 @@ const DOCUMENTS = {
   "C.md": "# 文書C\n\n三つ目の文書。\n",
 };
 
-/** 3 つの文書をまとめた HTML を作り、そのパスを返す */
+/** 3 つの文書をまとめた HTML を作り、そのパスを返却する */
 async function buildBundle(
   builtRoot: string,
   tempDir: () => Promise<string>,
@@ -71,7 +71,7 @@ test("test_normal", async ({ builtRoot, tempDir, page }) => {
   expect(opened.externalRequests()).toEqual([]);
 });
 
-// 文書の page のマーカーの明暗で開き、マーカーを持たない文書へ移ると明るい配色に、戻ると暗い配色に描き直す（正常シナリオ（文書ごとのページの設定））
+// 文書の page のマーカーの明暗で開き、マーカーを持たない文書へ移ると明るい配色に、戻ると暗い配色に再描画する（正常シナリオ（文書ごとのページの設定））
 test("test_normal_when_page_settings_per_document", async ({
   builtRoot,
   tempDir,
@@ -151,7 +151,7 @@ test("test_normal_when_narrow", async ({ builtRoot, tempDir, page }) => {
   await panel.locator('a[data-doc-path="B.md"]').click();
   await expect(h1).toContainText("文書B");
   await expect(panel).not.toHaveAttribute("open", "");
-  // 戻るでパネルではなく A が出る（パネルの開閉が履歴に積まれていない）
+  // 戻るでパネルではなく A が出る（パネルの開閉が履歴に追加されていない）
   await page.goBack();
   await expect(h1).toContainText("文書A");
   await expect(panel).not.toHaveAttribute("open", "");

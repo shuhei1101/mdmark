@@ -5,7 +5,7 @@ import { featureOn, markOf, ownBlock } from "./tokens.ts";
 const PAGEBREAK_HTML =
   '<div class="mdmark-pagebreak" aria-hidden="true"></div>';
 
-/** `pagebreak` がオンなら `<!-- pagebreak -->` を改ページの要素にする（オフの印は `dropMarks` が取り除く） */
+/** `pagebreak` がオンなら `<!-- pagebreak -->` を改ページの要素にする（オフのマーカーは `dropMarks` が取り除く） */
 export const buildPagebreaks = (state: StateCore): void => {
   if (!featureOn(state, "pagebreak")) {
     return;

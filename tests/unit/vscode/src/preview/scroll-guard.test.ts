@@ -17,7 +17,7 @@ test("test_should_reveal", async () => {
   expect(results).toEqual([false, true, true]);
 });
 
-// 動かした行を含む最初の知らせだけを捨てる（正常系）
+// 動かした行を含む最初の通知だけを捨てる（正常系）
 test("test_take_visible_range", async () => {
   // 準備
   const { EditorScrollGuard } = await loadGuard();
@@ -31,7 +31,7 @@ test("test_take_visible_range", async () => {
   expect(second).toBe(true);
 });
 
-// 動かした行を含まない知らせは送り、覚えを消す（正常系）
+// 動かした行を含まない通知は送信し、覚えを削除する（正常系）
 test("test_take_visible_range_when_not_containing", async () => {
   // 準備
   const { EditorScrollGuard } = await loadGuard();

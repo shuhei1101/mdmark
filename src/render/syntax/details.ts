@@ -10,7 +10,7 @@ const titleParser = new MarkdownIt();
 /** タイトルが空のときのタイトル */
 const DEFAULT_TITLE = "詳細";
 
-/** 印の引数の最後の語が `open` なら開いた状態にしてタイトルから外し、空のタイトルは `詳細` にする */
+/** マーカーの引数の最後の単語が `open` なら開いた状態にしてタイトルから除外し、空のタイトルは `詳細` にする */
 export const readDetailsOptions = (
   args: string,
 ): { title: string; open: boolean } => {
@@ -20,7 +20,7 @@ export const readDetailsOptions = (
   return { title: title || DEFAULT_TITLE, open };
 };
 
-/** `details` がオンなら、`<!-- details: … -->` 〜 `<!-- /details -->` を開閉する `details` にする。閉じの印が無いときは警告を差し込んで囲まない */
+/** `details` がオンなら、`<!-- details: … -->` 〜 `<!-- /details -->` を開閉する `details` にする。閉じのマーカーが無いときは警告を差し込んで囲まない */
 export const buildDetailsRanges = (state: StateCore): void => {
   if (!featureOn(state, "details")) {
     return;

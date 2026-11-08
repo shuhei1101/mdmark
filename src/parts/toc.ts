@@ -1,6 +1,6 @@
 import { escapeHtml } from "./escape.ts";
 
-/** 目次に載せる見出し */
+/** 目次に記載する見出し */
 export type TocHeading = {
   /** 見出しの階層 */
   level: 2 | 3;
@@ -15,7 +15,7 @@ function renderLink(heading: TocHeading): string {
   return `<a href="#${escapeHtml(heading.id)}">${escapeHtml(heading.text)}</a>`;
 }
 
-/** 目次の HTML を返す。h3 は直前の h2 の入れ子にする */
+/** 目次の HTML を返却する。h3 は直前の h2 の入れ子にする */
 export function renderToc(options: {
   /** 文書の h2・h3 */
   headings: TocHeading[];
@@ -39,7 +39,7 @@ export function renderToc(options: {
     } else if (current) {
       children.push(`<li>${renderLink(heading)}</li>`);
     } else {
-      // 直前に h2 が無い h3 は、1 段目に並べる
+      // 直前に h2 が無い h3 は、1 行目に並べる
       items.push(`<li>${renderLink(heading)}</li>`);
     }
   }

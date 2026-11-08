@@ -10,33 +10,33 @@ import {
 import type { MdmarkAlias } from "../../src/knowledge/aliases.ts";
 import type { PreviewSettings } from "./settings.ts";
 
-/** `mount` に渡す設定。設定ファイルから取り出した `features`・`libraries`・`html-scripts`・`side-toc`・`labels`・`mermaid`・`colorTheme`・`colorScheme` */
+/** `mount` に指定する設定。設定ファイルから取り出した `features`・`libraries`・`html-scripts`・`side-toc`・`labels`・`mermaid`・`colorTheme`・`colorScheme` */
 export type PreviewConfig = {
   /** 記載した値のまま（中の知らない名前と型の違う値は mdmark が無視する） */
   features?: Record<string, unknown>;
-  /** 記載した値のまま。URL は呼ぶ側が直す */
+  /** 記載した値のまま。URL は呼ぶ側が修正する */
   libraries?: Record<string, unknown>;
-  /** 記載した値のまま。`url` は呼ぶ側が直す */
+  /** 記載した値のまま。`url` は呼ぶ側が修正する */
   "html-scripts"?: Record<string, unknown>;
   /** 記載した値のまま（`mode` の知らない値は mdmark が `hover` で描く） */
   "side-toc"?: Record<string, unknown>;
   /** 記載した値のまま（中の知らないキーと、空文字・文字列でない値は mdmark が無視して既定の文言で描く） */
   labels?: Record<string, unknown>;
-  /** 書いた値のまま。`url` は呼ぶ側が直す（`theme` の知らない名前は mdmark が `mdmark` で描く） */
+  /** 記載した値のまま。`url` は呼ぶ側が修正する（`theme` の知らない名前は mdmark が `mdmark` で描く） */
   mermaid?: Record<string, unknown>;
-  /** 書いた値のまま。`mdmark.colorTheme` が空でないときは `applyColorTheme` がその値に置き換える（知らない名前は mdmark が dev-swiss で描く） */
+  /** 記載した値のまま。`mdmark.colorTheme` が空でないときは `applyColorTheme` がその値に置き換える（知らない名前は mdmark が dev-swiss で描く） */
   colorTheme?: string;
-  /** 書いた値のまま。プレビューでは `mdmark.preview.theme` が `light`・`dark` のとき `applyPreviewTheme` が除く（知らない値は mdmark が `auto` で描く） */
+  /** 記載した値のまま。プレビューでは `mdmark.preview.theme` が `light`・`dark` のとき `applyPreviewTheme` が除く（知らない値は mdmark が `auto` で描く） */
   colorScheme?: string;
 };
 
-/** 帯に出す、読めない・形の合わない設定ファイル 1 つ */
+/** 帯に出す、読み込めない・構造の合わない設定ファイル 1 つ */
 export type ConfigProblem = {
   /** 設定ファイルの絶対パス */
   path: string;
-  /** YAML として読めない行（1 始まり）。形に合わないときは無い */
+  /** YAML として読み込めない行（1 始まり）。構造に合わないときは無い */
   line?: number | undefined;
-  /** 設定の形に合わない最初のキー。YAML として読めないときは無い */
+  /** 設定の構造に合わない最初のキー。YAML として読み込めないときは無い */
   settingKey?: string | undefined;
   /** 誤りの文（ログに出す） */
   message: string;
@@ -44,7 +44,7 @@ export type ConfigProblem = {
 
 /** `loadConfig` の戻り値 */
 export type ConfigLoad = {
-  /** 重ねた設定のうち `mount` に渡すキー */
+  /** 重ねた設定のうち `mount` に指定するキー */
   config: PreviewConfig;
   /** 重ねた設定の `theme` の絶対パス */
   theme?: string | undefined;
@@ -52,17 +52,17 @@ export type ConfigLoad = {
   extensions: string[];
   /** 重ねた設定ファイルの絶対パス（端末の設定 → 上 → 近い） */
   files: string[];
-  /** 最も近い `mdmark.config.yaml`（`mdmark.configPath` を書いたときはそのファイル）の絶対パス */
+  /** 最も近い `mdmark.config.yaml`（`mdmark.configPath` を記載したときはそのファイル）の絶対パス */
   nearest?: string | undefined;
-  /** 重ねた設定の `assets.root` の絶対パス。`mount` には渡さない */
+  /** 重ねた設定の `assets.root` の絶対パス。`mount` には指定しない */
   assetsRoot?: string | undefined;
-  /** 読めない・形の合わない最初の設定ファイル */
+  /** 読み込めない・構造の合わない最初の設定ファイル */
   problem?: ConfigProblem | undefined;
   /** プレビューで、重ねた設定の `aliases` から作ったエイリアス。`aliases` が無いときは持たない */
   aliases?: MdmarkAlias[] | undefined;
   /** エイリアスを作ったときのずれ */
   aliasIssues: CheckIssue[];
-  /** `aliases` の行の `paths` に当たった YAML の絶対パス */
+  /** `aliases` の行の `paths` に該当した YAML の絶対パス */
   aliasFiles: string[];
 };
 
@@ -75,36 +75,36 @@ export async function isFile(path: string): Promise<boolean> {
   }
 }
 
-/** テキストのファイルを読む関数。ファイルが無ければ `code` が `ENOENT` の例外を投げる */
+/** テキストのファイルを読み込む関数。ファイルが無ければ `code` が `ENOENT` の例外を投げる */
 export type ReadTextFile = (path: string) => Promise<string>;
 
-/** `mdmark.openConfig` が「作成」で書く YAML。キーを書かず、書き方をコメントで示す */
-export const CONFIG_TEMPLATE = `# mdmark の設定。端末の設定（~/.config/mdmark/settings.yaml）に重ねて読みます。端末の設定の config.cascade を true にすると、上のフォルダの mdmark.config.yaml も重ねます
+/** `mdmark.openConfig` が「作成」で記載する YAML。キーを記載せず、記載方法をコメントで示す */
+export const CONFIG_TEMPLATE = `# mdmark の設定。端末の設定（~/.config/mdmark/settings.yaml）に重ねて読み込みます。端末の設定の config.cascade を true にすると、上のフォルダの mdmark.config.yaml も重ねます
 
-# 機能のオン・オフ（使うときは次の 2 行の # を外す）
+# 機能のオン・オフ（使用するときは次の 2 行の # を削除する）
 # features:
 #   callout: false
 
-# 外部ライブラリのモジュール。相対パスはこのファイルのあるフォルダから（使うときは次の 2 行の # を外す）
+# 外部ライブラリのモジュール。相対パスはこのファイルのあるフォルダから（使用するときは次の 2 行の # を削除する）
 # libraries:
 #   my-chart: ./libs/my-chart.js
 
-# 右側の目次の出し方。hover か fixed（使うときは次の 2 行の # を外す）
+# 右側の目次の出し方。hover か fixed（使用するときは次の 2 行の # を削除する）
 # side-toc:
 #   mode: fixed
 
-# 配色のテーマ。dev-swiss・theme-paper・theme-slate・theme-contrast のどれか。VS Code の設定 mdmark.colorTheme が空でないときはそちらが優先（使うときは次の 1 行の # を外す）
+# 配色のテーマ。dev-swiss・theme-paper・theme-slate・theme-contrast のどれか。VS Code の設定 mdmark.colorTheme が空でないときはそちらが優先（使用するときは次の 1 行の # を削除する）
 # colorTheme: theme-paper
 
-# 使う側の CSS。相対パスはこのファイルのあるフォルダから（使うときは次の 1 行の # を外す）
+# 利用側の CSS。相対パスはこのファイルのあるフォルダから（使用するときは次の 1 行の # を削除する）
 # theme: ./theme.css
 
-# 拡張のモジュール。相対パスはこのファイルのあるフォルダから（使うときは次の 2 行の # を外す）
+# 拡張のモジュール。相対パスはこのファイルのあるフォルダから（使用するときは次の 2 行の # を削除する）
 # extensions:
 #   - ./extensions/example.js
 `;
 
-/** ライブラリ本体が `html-scripts.url`・`mermaid.url` を省いたときに読む URL の origin */
+/** ライブラリ本体が `html-scripts.url`・`mermaid.url` を省いたときに読み込む URL の origin */
 const DEFAULT_HTML_SCRIPTS_ORIGIN = "https://cdn.jsdelivr.net";
 
 /** `http:`・`https:` の URL か */
@@ -115,7 +115,7 @@ function isMap(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
-/** `mdmark.configPath` が相対パスなら基準のフォルダから解決し、絶対パスならそのまま返す */
+/** `mdmark.configPath` が相対パスなら基準のフォルダから解決し、絶対パスならそのまま返却する */
 export function resolveConfigPath(options: {
   /** `mdmark.configPath` */
   configPath: string;
@@ -126,7 +126,7 @@ export function resolveConfigPath(options: {
   return isAbsolute(configPath) ? configPath : resolve(baseDir, configPath);
 }
 
-/** 重ねた設定から `mount` に渡すキー（マップの `features`・`libraries`・`html-scripts`・`side-toc`・`labels`・`mermaid` と文字列の `colorTheme`・`colorScheme`）だけを取り出す */
+/** 重ねた設定から `mount` に指定するキー（マップの `features`・`libraries`・`html-scripts`・`side-toc`・`labels`・`mermaid` と文字列の `colorTheme`・`colorScheme`）だけを取り出す */
 function pickPreviewConfig(config: Record<string, unknown>): PreviewConfig {
   const picked: PreviewConfig = {};
   if (isMap(config.features)) {
@@ -156,7 +156,7 @@ function pickPreviewConfig(config: Record<string, unknown>): PreviewConfig {
   return picked;
 }
 
-/** ライブラリ本体の `loadLayeredConfig` で設定を重ねて読み、`ConfigLoad` にする。設定ファイルが 1 つも無ければ端末の設定だけで返す */
+/** ライブラリ本体の `loadLayeredConfig` で設定を重ねて読み込み、`ConfigLoad` にする。設定ファイルが 1 つも無ければ端末の設定だけで返却する */
 export async function loadConfig(options: {
   /** Markdown のフォルダ */
   cwd: string;
@@ -170,9 +170,9 @@ export async function loadConfig(options: {
   env: Record<string, string | undefined>;
   /** ホームのフォルダ */
   home: string;
-  /** 読む関数 */
+  /** 読み込む関数 */
   readFile: ReadTextFile;
-  /** ファイルがあるかを確かめる関数 */
+  /** ファイルがあるかを確認する関数 */
   isFile: (path: string) => Promise<boolean>;
 }): Promise<ConfigLoad> {
   let explicit: string | undefined;
@@ -182,7 +182,7 @@ export async function loadConfig(options: {
     if (await options.isFile(path)) {
       explicit = path;
     } else {
-      // 書いたファイルが無いときは上へ探さず、端末の設定だけを重ねる
+      // 記載したファイルが無いときは上へ探さず、端末の設定だけを重ねる
       isFile = async () => false;
     }
   }
@@ -247,13 +247,13 @@ async function loadPreviewAliases(options: {
   });
 }
 
-/** `http:`・`https:` の URL はそのまま、それ以外の文字列は設定ファイルのフォルダから解決した絶対パスを `toUrl` で URL にして返す。文字列でない値はそのまま渡す */
+/** `http:`・`https:` の URL はそのまま、それ以外の文字列は設定ファイルのフォルダから解決した絶対パスを `toUrl` で URL にして返却する。文字列でない値はそのまま指定する */
 export function resolveLibraries(options: {
   /** 取り出した `libraries` */
   libraries: Record<string, unknown>;
   /** 設定ファイルのあるフォルダ */
   configDir: string;
-  /** 絶対パスを読める URL にする関数 */
+  /** 絶対パスを読み込める URL にする関数 */
   toUrl: (path: string) => string;
 }): Record<string, unknown> {
   const { libraries, configDir, toUrl } = options;
@@ -267,13 +267,13 @@ export function resolveLibraries(options: {
   );
 }
 
-/** `html-scripts.url` が `http:`・`https:` でない文字列なら、設定ファイルのフォルダから解決した絶対パスを `toUrl` で URL にして返す */
+/** `html-scripts.url` が `http:`・`https:` でない文字列なら、設定ファイルのフォルダから解決した絶対パスを `toUrl` で URL にして返却する */
 export function resolveHtmlScripts(options: {
   /** 取り出した `html-scripts` */
   htmlScripts: Record<string, unknown>;
   /** 設定ファイルのあるフォルダ */
   configDir: string;
-  /** 絶対パスを読める URL にする関数 */
+  /** 絶対パスを読み込める URL にする関数 */
   toUrl: (path: string) => string;
 }): Record<string, unknown> {
   const { htmlScripts, configDir, toUrl } = options;
@@ -284,20 +284,20 @@ export function resolveHtmlScripts(options: {
   return { ...htmlScripts, url: toUrl(resolve(configDir, url)) };
 }
 
-/** `mermaid.url` が `http:`・`https:` でない文字列なら、設定ファイルのフォルダから解決した絶対パスを `toUrl` で URL にして返す（`resolveHtmlScripts` と同じ直し方） */
+/** `mermaid.url` が `http:`・`https:` でない文字列なら、設定ファイルのフォルダから解決した絶対パスを `toUrl` で URL にして返却する（`resolveHtmlScripts` と同じ修正方法） */
 export function resolveMermaid(options: {
   /** 取り出した `mermaid` */
   mermaid: Record<string, unknown>;
   /** 設定ファイルのあるフォルダ */
   configDir: string;
-  /** 絶対パスを読める URL にする関数 */
+  /** 絶対パスを読み込める URL にする関数 */
   toUrl: (path: string) => string;
 }): Record<string, unknown> {
   const { mermaid, configDir, toUrl } = options;
   return resolveHtmlScripts({ htmlScripts: mermaid, configDir, toUrl });
 }
 
-/** `libraries` の値と `html-scripts.url`・`mermaid.url`（文字列でなければライブラリ本体の既定の URL）のうち `http:`・`https:` の URL の origin を、重なりを除いて返す */
+/** `libraries` の値と `html-scripts.url`・`mermaid.url`（文字列でなければライブラリ本体の既定の URL）のうち `http:`・`https:` の URL の origin を、重なりを除いて返却する */
 export function libraryOrigins(
   libraries: Record<string, unknown> | undefined,
   htmlScripts?: Record<string, unknown>,
@@ -314,7 +314,7 @@ export function libraryOrigins(
     urlOrDefault(mermaid),
   ]) {
     if (typeof value === "string" && HTTP_URL_PATTERN.test(value)) {
-      // 読めない URL は CSP に足さない（読み込みは mdmark が知らせの枠にする）
+      // 読み込めない URL は CSP に追加しない（読み込みは mdmark が通知ブロックにする）
       const origin = URL.canParse(value) ? new URL(value).origin : undefined;
       if (origin !== undefined && origin !== "null") {
         origins.add(origin);
@@ -324,7 +324,7 @@ export function libraryOrigins(
   return [...origins];
 }
 
-/** `mdmark.colorTheme` が空でなければ、設定ファイルから取り出した設定の `colorTheme` をその値に置き換えた設定を返す。空のときは `config` をそのまま返し、渡された `config` は書き換えない */
+/** `mdmark.colorTheme` が空でなければ、設定ファイルから取り出した設定の `colorTheme` をその値に置き換えた設定を返却する。空のときは `config` をそのまま返却し、指定された `config` は書き換えない */
 export function applyColorTheme(options: {
   /** 設定ファイルから取り出した設定 */
   config: PreviewConfig;
@@ -335,7 +335,7 @@ export function applyColorTheme(options: {
   return colorTheme === "" ? config : { ...config, colorTheme };
 }
 
-/** `mdmark.preview.theme` が `light`・`dark` なら、設定から `colorScheme` を除いた設定を返す。`auto` のときは `config` をそのまま返し、渡された `config` は書き換えない（プレビューだけが通し、書き出しは通さない） */
+/** `mdmark.preview.theme` が `light`・`dark` なら、設定から `colorScheme` を除いた設定を返却する。`auto` のときは `config` をそのまま返却し、指定された `config` は書き換えない（プレビューだけが経由し、書き出しは経由しない） */
 export function applyPreviewTheme(options: {
   /** `applyColorTheme` の後の設定 */
   config: PreviewConfig;

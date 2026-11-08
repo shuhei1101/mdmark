@@ -4,7 +4,7 @@ import "../vscode/src/webview/shared/styles/panel.css";
 /** 配色 */
 type Scheme = "light" | "dark";
 
-/** VS Code が Webview の html に渡す色の仮の値（Light Modern と Dark Modern） */
+/** VS Code が Webview の html に指定する色の仮の値（Light Modern と Dark Modern） */
 export const VSCODE_THEME_COLORS = {
   light: {
     "--vscode-font-family": "system-ui, sans-serif",

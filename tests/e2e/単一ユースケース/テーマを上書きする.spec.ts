@@ -11,10 +11,10 @@ import {
 } from "../dist-page.ts";
 import { useVscodeE2E } from "../vscode.ts";
 
-// ビルドした配布物を置いた作業ツリー
+// ビルドした配布物を配置した作業ツリー
 let builtRoot = "";
 
-// 段落とリンクを持つ見本の Markdown（リンク 1 つだけの段落はカードにするため、文の中にリンクを置く）
+// 段落とリンクを持つ見本の Markdown（リンク 1 つだけの段落はカードにするため、文の中にリンクを配置する）
 const MARKDOWN =
   "段落\n\n詳しくは [リンク](https://example.com/page) を見る。\n";
 
@@ -31,7 +31,7 @@ test.afterAll(async () => {
   await removeDistRoot(builtRoot);
 });
 
-// 使う側が層の外に書いた CSS と変数の上書きが、mdmark の CSS に勝つ（正常シナリオ）
+// 利用側が層の外に記載した CSS と変数の上書きが、mdmark の CSS に勝つ（正常シナリオ）
 test("test_normal", async ({ page }) => {
   // 準備
   const hostCss =
@@ -70,7 +70,7 @@ test("test_normal_when_dark", async ({ page }) => {
   );
 });
 
-// 使う側が図の層の色の変数を上書きすると、その層の箱の縁・層の背景・凡例の色が変わる（正常シナリオ（図の色を変える））
+// 利用側が図の層の色の変数を上書きすると、その層のノードの縁・層の背景・凡例の色が変わる（正常シナリオ（図の色を変える））
 test("test_normal_when_diagram", async ({ page }) => {
   // 準備
   await page.emulateMedia({ colorScheme: "light" });
@@ -78,7 +78,7 @@ test("test_normal_when_diagram", async ({ page }) => {
   await openPage(page, builtRoot, { hostCss });
   // 実行
   await mountDocument(page, { markdown: await flowMarkdown() });
-  // 検証: LLM の層の箱の縁が上書きした色になり、ほかの層は変わらない
+  // 検証: LLM の層のノードの縁が上書きした色になり、ほかの層は変わらない
   await expect(page.locator('#doc [data-node="draft"]')).toHaveCSS(
     "border-top-color",
     "rgb(255, 0, 0)",
@@ -98,7 +98,7 @@ test("test_normal_when_diagram", async ({ page }) => {
   expect(red).toBeGreaterThan(blue);
 });
 
-// OS の配色がライトでも、祖先の `vscode-dark` でダークの配色で描き、class を外すと戻す（正常シナリオ（親の class でダークにする））
+// OS の配色がライトでも、祖先の `vscode-dark` でダークの配色で描き、class を削除すると戻す（正常シナリオ（親の class でダークにする））
 test("test_normal_when_parent_class_dark", async ({ page }) => {
   // 準備
   await page.emulateMedia({ colorScheme: "light" });
@@ -139,7 +139,7 @@ test("test_normal_when_parent_class_light", async ({ page }) => {
   await expect(doc).toHaveCSS("background-color", LIGHT_BACKGROUND);
 });
 
-/** 3 列 60 行の表を、長い段落の間に置いた Markdown */
+/** 3 列 60 行の表を、長い段落の間に配置した Markdown */
 function layoutDocument(): string {
   const paragraph = `${"本文の長い段落です。".repeat(60)}\n`;
   const rows = Array.from(
@@ -156,7 +156,7 @@ function layoutDocument(): string {
   ].join("\n");
 }
 
-// 使う側が見出し行を留める位置のずれと本文の幅を上書きすると、固定のヘッダーの下に見出し行が留まり、本文の幅が上限を超えない（正常シナリオ（見出し行の位置と本文の幅を変える））
+// 利用側が見出し行を留める位置のずれと本文の幅を上書きすると、固定のヘッダーの下に見出し行が留まり、本文の幅が上限を超えない（正常シナリオ（見出し行の位置と本文の幅を変える））
 test("test_normal_when_layout_overridden", async ({ page }) => {
   // 準備
   await page.setViewportSize({ width: 1280, height: 800 });
@@ -192,7 +192,7 @@ test("test_normal_when_layout_overridden", async ({ page }) => {
     .toBeLessThanOrEqual(1);
 });
 
-// 何も上書きしないと、本文の幅に既定の上限が無く、画面を広げるとその幅を使う（正常シナリオ（既定の本文の幅））
+// 何も上書きしないと、本文の幅に既定の上限が無く、画面を広げるとその幅を使用する（正常シナリオ（既定の本文の幅））
 test("test_normal_when_content_width_default", async ({ page }) => {
   // 準備
   await page.setViewportSize({ width: 1280, height: 800 });
@@ -228,7 +228,7 @@ test("test_normal_when_content_width_default", async ({ page }) => {
   expect((await widths()).paragraph).toBeGreaterThan(narrow.paragraph);
 });
 
-// 選んだテーマの上から、使う側の CSS の上書きが勝ち、上書きしていない地の色は選んだテーマのまま（正常シナリオ（選んだテーマの上から上書きする））
+// 選んだテーマの上から、利用側の CSS の上書きが勝ち、上書きしていない地の色は選んだテーマのまま（正常シナリオ（選んだテーマの上から上書きする））
 test("test_normal_when_theme_selected", async ({ page }) => {
   // 準備
   await page.emulateMedia({ colorScheme: "light" });
@@ -247,7 +247,7 @@ test("test_normal_when_theme_selected", async ({ page }) => {
   );
 });
 
-// 使う側が層の外で上書きした色のプリセットの CSS 変数で、バッジと本文の文字の色を描く（正常シナリオ（色のプリセットを上書きする））
+// 利用側が層の外で上書きした色のプリセットの CSS 変数で、バッジと本文の文字の色を描く（正常シナリオ（色のプリセットを上書きする））
 test("test_normal_when_color_preset_overridden", async ({ page }) => {
   // 準備
   await page.emulateMedia({ colorScheme: "light" });
@@ -335,7 +335,7 @@ test("test_normal_when_bg_transparent_with_opaque_color", async ({ page }) => {
   );
 });
 
-// 使う側の pre への汎用の CSS があっても、マーカーの無いコードブロックとファイルツリーは折り返さず、wrap のブロックだけを折り返す（正常シナリオ（使う側の pre への汎用の CSS））
+// 利用側の pre への汎用の CSS があっても、マーカーの無いコードブロックとファイルツリーは折り返さず、wrap のブロックだけを折り返す（正常シナリオ（利用側の pre への汎用の CSS））
 test("test_normal_when_host_pre_wraps", async ({ page }) => {
   // 準備
   await page.setViewportSize({ width: 390, height: 844 });
@@ -404,7 +404,7 @@ test("test_normal_when_host_pre_wraps", async ({ page }) => {
 test.describe("VS Code のプレビュー", () => {
   const e2e = useVscodeE2E();
 
-  // theme の CSS で上書きしたリンクの色が、VS Code のプレビューと mdmark export の HTML の両方に当たる（正常シナリオ（VS Code のプレビューで上書きする））
+  // theme の CSS で上書きしたリンクの色が、VS Code のプレビューと mdmark export の HTML の両方に該当する（正常シナリオ（VS Code のプレビューで上書きする））
   test("test_normal_when_vscode_preview", async ({ browser }) => {
     // 準備
     const files = {

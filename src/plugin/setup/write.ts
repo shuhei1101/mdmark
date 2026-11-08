@@ -16,22 +16,22 @@ const CONFIG_FILE = "mdmark.config.yaml";
 /** 端末の設定だけが持つキーの頭 */
 const SETTINGS_ONLY_ROOTS = ["config", "serve"];
 
-/** `settings.json` に書く、端末の設定のパスの環境変数 */
+/** `settings.json` に書き込む、端末の設定のパスの環境変数 */
 const CONFIG_ENV = "MDMARK_CONFIG";
 
 /** `--set` の 1 つ: キーの区切りと値 */
 export type SetArg = { path: string[]; value: unknown };
 
-/** 書いたファイルとキー */
+/** 書き込んだファイルとキー */
 export type WriteResult = { written: string[]; keys: string[] };
 
-/** `{キー}={値}` の並びを、ドットで区切ったキーと YAML として読んだ値の組にする */
+/** `{キー}={値}` の並びを、ドットで区切ったキーと YAML として読み込んだ値の組にする */
 export const parseSetArgs = (args: string[]): SetArg[] =>
   args.map((arg) => {
     const index = arg.indexOf("=");
     if (index <= 0) {
       throw new SetupError(
-        `--set ${arg} は {キー}={値} の形で書いてください。`,
+        `--set ${arg} は {キー}={値} の構造で記載してください。`,
       );
     }
     return {
@@ -40,7 +40,7 @@ export const parseSetArgs = (args: string[]): SetArg[] =>
     };
   });
 
-/** ファイルを読む。無ければ `undefined` */
+/** ファイルを読み込む。無ければ `undefined` */
 const readIfExists = async (path: string): Promise<string | undefined> => {
   try {
     return await readFile(path, "utf8");
@@ -58,12 +58,12 @@ const assertNoIssues = (
 ): void => {
   if (issues.length > 0) {
     throw new SetupError(
-      `${issues.map((issue) => `${issue.where}: ${issue.message}`).join("\n")}\n何も書いていません。`,
+      `${issues.map((issue) => `${issue.where}: ${issue.message}`).join("\n")}\n何も書き込んでいません。`,
     );
   }
 };
 
-/** 既にあるファイルか雛形を読み、`--set` を当てた YAML の文書を作る。新しく作るときだけ `version` を入れる */
+/** 既にあるファイルか雛形を読み込み、`--set` を適用した YAML の文書を作る。新しく作るときだけ `version` を入れる */
 const applySets = async (options: {
   path: string;
   templatePath: string;
@@ -83,7 +83,7 @@ const applySets = async (options: {
   return doc;
 };
 
-/** `settings.json` の `env` の 1 つのキーだけを書き換える。同じ値なら書かずに偽を返す */
+/** `settings.json` の `env` の 1 つのキーだけを書き換える。同じ値なら書き込まずに偽を返却する */
 export const writeClaudeEnv = async (options: {
   path: string;
   key: string;
@@ -104,7 +104,7 @@ export const writeClaudeEnv = async (options: {
   return true;
 };
 
-/** `write-settings`: 端末の設定を作る・書き換え、既定のパスでなければ `settings.json` の `env` に `MDMARK_CONFIG` を書く */
+/** `write-settings`: 端末の設定を作る・書き換え、既定のパスでなければ `settings.json` の `env` に `MDMARK_CONFIG` を書き込む */
 export const writeSettings = async (options: {
   env: NodeJS.ProcessEnv;
   pluginRoot: string;
@@ -157,7 +157,7 @@ export const writeConfig = async (options: {
   );
   if (settingsOnly) {
     throw new SetupError(
-      `${settingsOnly.path.join(".")} は端末の設定だけが持つキーです。mdmark.config.yaml には書けません。`,
+      `${settingsOnly.path.join(".")} は端末の設定だけが持つキーです。mdmark.config.yaml には書き込めません。`,
     );
   }
   const path = join(options.dir, CONFIG_FILE);

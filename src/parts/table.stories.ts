@@ -3,7 +3,7 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 const meta = { title: "Parts/Table" } satisfies Meta<Record<string, unknown>>;
 export default meta;
 
-/** ストーリー: 描画の口（`parameters.server.id`）の部品を `args` で描く */
+/** ストーリー: 描画のインターフェース（`parameters.server.id`）の部品を `args` で描く */
 type Story = StoryObj<Record<string, unknown>>;
 
 export const Data: Story = {
@@ -48,7 +48,7 @@ export const FilterSelectOpen: Story = {
     kind: "data",
     features: '["sort","pin","filter"]',
     columns: '["名前","説明","更新日"]',
-    rows: '[["りんご","描画を速くする","2026-10-01"],["みかん","印刷を直す","2026-10-10"],["りんご飴","描画の崩れを直す","2026-10-20"]]',
+    rows: '[["りんご","描画を速くする","2026-10-01"],["みかん","印刷を修正する","2026-10-10"],["りんご飴","描画の崩れを修正する","2026-10-20"]]',
     filters:
       '[{"column":0,"kind":"select"},{"column":1,"kind":"text"},{"column":2,"kind":"date"}]',
     openFilter: 0,
@@ -62,7 +62,7 @@ export const FilterTextOpen: Story = {
     kind: "data",
     features: '["sort","pin","filter"]',
     columns: '["名前","説明","更新日"]',
-    rows: '[["りんご","描画を速くする","2026-10-01"],["みかん","印刷を直す","2026-10-10"],["りんご飴","描画の崩れを直す","2026-10-20"]]',
+    rows: '[["りんご","描画を速くする","2026-10-01"],["みかん","印刷を修正する","2026-10-10"],["りんご飴","描画の崩れを修正する","2026-10-20"]]',
     filters:
       '[{"column":0,"kind":"select"},{"column":1,"kind":"text"},{"column":2,"kind":"date"}]',
     openFilter: 1,
@@ -77,7 +77,7 @@ export const FilterDateOpen: Story = {
     kind: "data",
     features: '["sort","pin","filter"]',
     columns: '["名前","説明","更新日"]',
-    rows: '[["りんご","描画を速くする","2026-10-01"],["みかん","印刷を直す","2026-10-10"],["りんご飴","描画の崩れを直す","2026-10-20"]]',
+    rows: '[["りんご","描画を速くする","2026-10-01"],["みかん","印刷を修正する","2026-10-10"],["りんご飴","描画の崩れを修正する","2026-10-20"]]',
     filters:
       '[{"column":0,"kind":"select"},{"column":1,"kind":"text"},{"column":2,"kind":"date"}]',
     openFilter: 2,
@@ -91,7 +91,7 @@ export const Filtered: Story = {
     kind: "data",
     features: '["sort","pin","filter"]',
     columns: '["名前","説明","更新日"]',
-    rows: '[["りんご","描画を速くする","2026-10-01"],["みかん","印刷を直す","2026-10-10"],["りんご飴","描画の崩れを直す","2026-10-20"]]',
+    rows: '[["りんご","描画を速くする","2026-10-01"],["みかん","印刷を修正する","2026-10-10"],["りんご飴","描画の崩れを修正する","2026-10-20"]]',
     filters: '[{"column":0,"kind":"select"}]',
     filterValues: '[{"column":0,"values":["りんご"]}]',
   },
@@ -104,7 +104,7 @@ export const NoMatch: Story = {
     kind: "data",
     features: '["sort","pin","filter"]',
     columns: '["名前","説明"]',
-    rows: '[["りんご","描画を速くする"],["みかん","印刷を直す"]]',
+    rows: '[["りんご","描画を速くする"],["みかん","印刷を修正する"]]',
     filters: '[{"column":1,"kind":"text"}]',
     filterValues: '[{"column":1,"text":"存在しない"}]',
   },
@@ -154,7 +154,7 @@ export const PinAndWide: Story = {
   args: {
     features: '["pin"]',
     columns: '["ID","担当","概要","状態","期限"]',
-    rows: '[["#245","表","はみ出す表で先頭の列を既定でピン止めし、pin= と wide= と check= を使えるようにする","未着手","2026-11-21"],["#249","コード","tree を除く全てのコードブロックでインデントによる畳む・開くと縦線を付ける","未着手","2026-11-28"]]',
+    rows: '[["#245","表","はみ出す表で先頭の列を既定でピン止めし、pin= と wide= と check= を使用できるようにする","未着手","2026-11-21"],["#249","コード","tree を除く全てのコードブロックでインデントによる畳む・開くと縦線を付ける","未着手","2026-11-28"]]',
     overflow: true,
     pin: 1,
     pinned: 2,
@@ -180,7 +180,7 @@ export const DefaultFits: Story = {
   args: {
     features: '["pin"]',
     columns: '["用語","意味"]',
-    rows: '[["印","HTML コメントで書く目印"]]',
+    rows: '[["マーカー","HTML コメントで記載する目印"]]',
   },
 };
 
@@ -191,7 +191,7 @@ export const Plain: Story = {
     kind: "plain",
     features: "[]",
     columns: '["用語","意味"]',
-    rows: '[["印","HTML コメントで書く目印"],["書き方の警告","読めない指定を知らせる枠"]]',
+    rows: '[["マーカー","HTML コメントで記載する目印"],["記載の警告","読み込めない指定を通知する枠"]]',
   },
 };
 
@@ -201,7 +201,7 @@ export const Closed: Story = {
   args: {
     kind: "data",
     features: '["sort","pin","filter"]',
-    columns: '["版","日付","変更"]',
+    columns: '["バージョン","日付","変更"]',
     rows: '[["v0.1.0","2026-10-10","文書を描く土台を入れた"]]',
     collapse: "closed",
   },
@@ -213,8 +213,8 @@ export const ClosedTitle: Story = {
   args: {
     kind: "data",
     features: '["sort","pin","filter"]',
-    columns: '["版","日付","変更"]',
-    rows: '[["v0.1.0","2026-10-10","文書を描く土台を入れた"],["v0.2.0","2026-10-20","表の機能を足した"]]',
+    columns: '["バージョン","日付","変更"]',
+    rows: '[["v0.1.0","2026-10-10","文書を描く土台を入れた"],["v0.2.0","2026-10-20","表の機能を追加した"]]',
     collapse: "closed",
     title: "リリースの一覧",
   },
@@ -226,8 +226,8 @@ export const OpenTitle: Story = {
   args: {
     kind: "data",
     features: '["sort","pin","filter"]',
-    columns: '["版","日付","変更"]',
-    rows: '[["v0.1.0","2026-10-10","文書を描く土台を入れた"],["v0.2.0","2026-10-20","表の機能を足した"]]',
+    columns: '["バージョン","日付","変更"]',
+    rows: '[["v0.1.0","2026-10-10","文書を描く土台を入れた"],["v0.2.0","2026-10-20","表の機能を追加した"]]',
     collapse: "open",
     title: "リリースの一覧",
   },
@@ -240,7 +240,7 @@ export const LongCells: Story = {
     kind: "data",
     features: '["sort","pin","filter"]',
     columns: '["とても長い列の名前で見出しの幅を超えるもの","値"]',
-    rows: '[["とても長い値でセルの幅を超えて折り返すときの見え方を確かめる","1"]]',
+    rows: '[["とても長い値でセルの幅を超えて折り返すときの見え方を確認する","1"]]',
     filters: '[{"column":0,"kind":"select"}]',
   },
 };
@@ -252,7 +252,7 @@ export const Count: Story = {
     kind: "data",
     features: '["sort","pin","filter","count"]',
     columns: '["名前","説明","更新日"]',
-    rows: '[["りんご","描画を速くする","2026-10-01"],["みかん","印刷を直す","2026-10-10"],["りんご飴","描画の崩れを直す","2026-10-20"]]',
+    rows: '[["りんご","描画を速くする","2026-10-01"],["みかん","印刷を修正する","2026-10-10"],["りんご飴","描画の崩れを修正する","2026-10-20"]]',
     filters: '[{"column":1,"kind":"text"}]',
   },
 };
@@ -264,7 +264,7 @@ export const CountFiltered: Story = {
     kind: "data",
     features: '["sort","pin","filter","count"]',
     columns: '["名前","説明","更新日"]',
-    rows: '[["りんご","描画を速くする","2026-10-01"],["みかん","印刷を直す","2026-10-10"],["りんご飴","描画の崩れを直す","2026-10-20"]]',
+    rows: '[["りんご","描画を速くする","2026-10-01"],["みかん","印刷を修正する","2026-10-10"],["りんご飴","描画の崩れを修正する","2026-10-20"]]',
     filters: '[{"column":1,"kind":"text"}]',
     filterValues: '[{"column":1,"text":"描画"}]',
   },
@@ -277,7 +277,7 @@ export const ColumnsHidden: Story = {
     kind: "data",
     features: '["sort","pin","filter","columns"]',
     columns: '["名前","説明","更新日"]',
-    rows: '[["りんご","描画を速くする","2026-10-01"],["みかん","印刷を直す","2026-10-10"],["りんご飴","描画の崩れを直す","2026-10-20"]]',
+    rows: '[["りんご","描画を速くする","2026-10-01"],["みかん","印刷を修正する","2026-10-10"],["りんご飴","描画の崩れを修正する","2026-10-20"]]',
     hide: "[1]",
   },
 };
@@ -289,7 +289,7 @@ export const ColumnsMenuOpen: Story = {
     kind: "data",
     features: '["sort","pin","filter","columns"]',
     columns: '["名前","説明","更新日"]',
-    rows: '[["りんご","描画を速くする","2026-10-01"],["みかん","印刷を直す","2026-10-10"],["りんご飴","描画の崩れを直す","2026-10-20"]]',
+    rows: '[["りんご","描画を速くする","2026-10-01"],["みかん","印刷を修正する","2026-10-10"],["りんご飴","描画の崩れを修正する","2026-10-20"]]',
     hide: "[1]",
     hiddenColumns: "[2]",
     openColumns: true,
@@ -347,7 +347,7 @@ export const Copied: Story = {
     kind: "data",
     features: '["sort","pin","filter","copy"]',
     columns: '["名前","説明","更新日"]',
-    rows: '[["りんご","描画を速くする","2026-10-01"],["みかん","印刷を直す","2026-10-10"]]',
+    rows: '[["りんご","描画を速くする","2026-10-01"],["みかん","印刷を修正する","2026-10-10"]]',
     copyState: "copied",
   },
 };
@@ -359,7 +359,7 @@ export const CopyFailed: Story = {
     kind: "data",
     features: '["sort","pin","filter","copy"]',
     columns: '["名前","説明","更新日"]',
-    rows: '[["りんご","描画を速くする","2026-10-01"],["みかん","印刷を直す","2026-10-10"]]',
+    rows: '[["りんご","描画を速くする","2026-10-01"],["みかん","印刷を修正する","2026-10-10"]]',
     copyState: "failed",
   },
 };
@@ -371,7 +371,7 @@ export const RowLinkTarget: Story = {
     kind: "data",
     features: '["sort","pin","filter","rowlink"]',
     columns: '["名前","説明","更新日"]',
-    rows: '[["りんご","描画を速くする","2026-10-01"],["みかん","印刷を直す","2026-10-10"],["りんご飴","描画の崩れを直す","2026-10-20"]]',
+    rows: '[["りんご","描画を速くする","2026-10-01"],["みかん","印刷を修正する","2026-10-10"],["りんご飴","描画の崩れを修正する","2026-10-20"]]',
     rowIds: '["りんご","みかん","りんご飴"]',
     targetRow: 1,
   },
@@ -385,7 +385,7 @@ export const AllFeatures: Story = {
     features:
       '["sort","pin","filter","count","columns","total","copy","rowlink"]',
     columns: '["名前","説明","数量"]',
-    rows: '[["なつめ","描画を速くする","12"],["かりん","印刷を直す","8"],["ざくろ","描画の崩れを直す","5"]]',
+    rows: '[["なつめ","描画を速くする","12"],["かりん","印刷を修正する","8"],["ざくろ","描画の崩れを修正する","5"]]',
     hide: "[1]",
     totals: '[{"column":2,"calc":"sum"}]',
     rowIds: '["なつめ","かりん","ざくろ"]',
@@ -440,7 +440,7 @@ export const CopyMenuOpen: Story = {
     kind: "data",
     features: '["sort","pin","filter","copy"]',
     columns: '["名前","説明","更新日"]',
-    rows: '[["りんご","描画を速くする","2026-10-01"],["みかん","印刷を直す","2026-10-10"]]',
+    rows: '[["りんご","描画を速くする","2026-10-01"],["みかん","印刷を修正する","2026-10-10"]]',
     openCopy: "true",
   },
 };
@@ -452,10 +452,10 @@ export const CopyFallback: Story = {
     kind: "data",
     features: '["sort","pin","filter","copy"]',
     columns: '["名前","説明","更新日"]',
-    rows: '[["りんご","描画を速くする","2026-10-01"],["みかん","印刷を直す","2026-10-10"]]',
+    rows: '[["りんご","描画を速くする","2026-10-01"],["みかん","印刷を修正する","2026-10-10"]]',
     copyState: "failed",
     copyFallback:
-      '{"format":"markdown","text":"| 名前 | 説明 | 更新日 |\\n| --- | --- | --- |\\n| りんご | 描画を速くする | 2026-10-01 |\\n| みかん | 印刷を直す | 2026-10-10 |"}',
+      '{"format":"markdown","text":"| 名前 | 説明 | 更新日 |\\n| --- | --- | --- |\\n| りんご | 描画を速くする | 2026-10-01 |\\n| みかん | 印刷を修正する | 2026-10-10 |"}',
   },
 };
 
@@ -466,7 +466,7 @@ export const RowLinkCopied: Story = {
     kind: "data",
     features: '["sort","pin","filter","rowlink"]',
     columns: '["名前","説明","更新日"]',
-    rows: '[["りんご","描画を速くする","2026-10-01"],["みかん","印刷を直す","2026-10-10"],["りんご飴","描画の崩れを直す","2026-10-20"]]',
+    rows: '[["りんご","描画を速くする","2026-10-01"],["みかん","印刷を修正する","2026-10-10"],["りんご飴","描画の崩れを修正する","2026-10-20"]]',
     rowIds: '["りんご","みかん","りんご飴"]',
     targetRow: "1",
     rowLinkNotice: "copied",
@@ -480,7 +480,7 @@ export const RowLinkFailed: Story = {
     kind: "data",
     features: '["sort","pin","filter","rowlink"]',
     columns: '["名前","説明","更新日"]',
-    rows: '[["りんご","描画を速くする","2026-10-01"],["みかん","印刷を直す","2026-10-10"],["りんご飴","描画の崩れを直す","2026-10-20"]]',
+    rows: '[["りんご","描画を速くする","2026-10-01"],["みかん","印刷を修正する","2026-10-10"],["りんご飴","描画の崩れを修正する","2026-10-20"]]',
     rowIds: '["りんご","みかん","りんご飴"]',
     targetRow: "1",
     rowLinkNotice: "failed",
@@ -879,7 +879,7 @@ export const ColumnsButtonA: Story = {
     kind: "data",
     features: '["count","columns","copy"]',
     columns: '["名前","説明","更新日"]',
-    rows: '[["りんご","描画を速くする","2026-10-01"],["みかん","印刷を直す","2026-10-10"],["りんご飴","描画の崩れを直す","2026-10-20"]]',
+    rows: '[["りんご","描画を速くする","2026-10-01"],["みかん","印刷を修正する","2026-10-10"],["りんご飴","描画の崩れを修正する","2026-10-20"]]',
     hide: "[1]",
   },
 };

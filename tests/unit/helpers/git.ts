@@ -7,13 +7,13 @@ const execFileAsync = promisify(execFile);
 /** 最初のコミットに付けるタグの名前 */
 export const BASE_TAG = "base";
 
-/** フォルダで git を 1 回呼び、標準出力を返す */
+/** フォルダで git を 1 回呼び、標準出力を返却する */
 export async function git(cwd: string, ...args: string[]): Promise<string> {
   const { stdout } = await execFileAsync("git", args, { cwd });
   return stdout;
 }
 
-/** フォルダを git のリポジトリにする（コミットに要る名前・メールを、このリポジトリだけに置く） */
+/** フォルダを git のリポジトリにする（コミットに要る名前・メールを、このリポジトリだけに配置する） */
 export async function initRepository(dir: string): Promise<void> {
   await git(dir, "init", "-q");
   await git(dir, "config", "user.email", "test@example.com");

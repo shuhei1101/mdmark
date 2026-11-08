@@ -1,4 +1,4 @@
-/** Claude Code がフックに渡す、セッションの作業のフォルダの絶対パスの環境変数 */
+/** Claude Code がフックに指定する、セッションの作業のフォルダの絶対パスの環境変数 */
 export const PROJECT_DIR_ENV = "CLAUDE_PROJECT_DIR";
 
 /** Claude Code がプラグイン mdmark の MCP サーバー mdmark のツール名の前に付ける頭 */
@@ -17,7 +17,7 @@ export const PROJECT_DIR_TOOLS = [
 /** 作業のフォルダを入れるツールの引数の名前 */
 const PROJECT_DIR_ARG = "project_dir";
 
-/** 標準入力の `tool_input` に作業のフォルダを `project_dir` で入れた `updatedInput` を標準出力に 1 行書く。環境変数が無いか空なら何も書かない */
+/** 標準入力の `tool_input` に作業のフォルダを `project_dir` で入れた `updatedInput` を標準出力に 1 行書く。環境変数が無いか空なら何も書き込まない */
 export async function runPreToolUse(options: {
   /** 環境変数 */
   env: NodeJS.ProcessEnv;
@@ -45,7 +45,7 @@ export async function runPreToolUse(options: {
   return 0;
 }
 
-// 束ねた `plugin/scripts/pre-tool-use.js` を入口として実行されたときだけ、標準入力を読み切って流す
+// まとめた `plugin/scripts/pre-tool-use.js` を入口として実行されたときだけ、標準入力を読み込み切って実行する
 if (import.meta.main) {
   const chunks: Buffer[] = [];
   for await (const chunk of process.stdin) {

@@ -5,7 +5,7 @@ function plainText(html: string): string {
   return html.replace(/<[^>]*>/g, "");
 }
 
-/** 節（見出しとその中身）の HTML を返す。`toggle` が `false` のときは開閉のボタンを置かず中身を隠さない */
+/** セクション（見出しとその中身）の HTML を返却する。`toggle` が `false` のときは開閉のボタンを配置せず中身を隠さない */
 export function renderSection(options: {
   /** 見出しの階層 */
   level: 1 | 2 | 3 | 4;
@@ -19,7 +19,7 @@ export function renderSection(options: {
   toggle?: boolean;
   /** 見出しに ID へのアンカーを付けるか（既定 `true`） */
   anchor?: boolean;
-  /** 中身の HTML（`SLOT_MARKER` を渡せる） */
+  /** 中身の HTML（`SLOT_MARKER` を指定できる） */
   body: string;
 }): string {
   const {

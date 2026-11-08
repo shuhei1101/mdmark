@@ -22,32 +22,32 @@ states:
       - name: current
         value: 'true'
   - name: ClosedSection
-    description: 閉じたセクションの中の箇所。見出しの行に置く
+    description: 閉じたセクションの中の箇所。見出しの行に配置する
     args:
       - name: quote
         value: 閉じた箇所
       - name: closed
         value: section
   - name: ClosedTab
-    description: 選ばれていないタブの中の箇所。タブの行に置く
+    description: 選ばれていないタブの中の箇所。タブの行に配置する
     args:
       - name: quote
         value: タブの箇所
       - name: closed
         value: tab
   - name: ClosedRow
-    description: 閉じた行の詳細の中の箇所。行の詳細の開閉の行に置く
+    description: 閉じた行の詳細の中の箇所。行の詳細の開閉の行に配置する
     args:
       - name: quote
         value: 行の箇所
       - name: closed
         value: row
-lead: 本文の右の余白の列に、コメントの箇所の行の高さで置くボタン。押すと箇所までスクロールし、その箇所の吹き出しを開く。HTML 文字列を返す。
+lead: 本文の右の余白の列に、コメントの箇所の行の高さで配置するボタン。押すと箇所までスクロールし、その箇所の吹き出しを開く。HTML 文字列を返却する。
 args:
   - name: quote
     type: 文字列
     required: true
-    description: 行の最初の箇所の選んだ文字。読み上げ名に入れ、文字として出し、HTML として解釈しない
+    description: 行の最初の箇所の選んだ文字。スクリーンリーダー向けの名前に入れ、文字として出し、HTML として解釈しない
   - name: count
     type: 整数
     default: '1'
@@ -71,18 +71,18 @@ css_properties:
   - name: --mdmark-comment-margin-width
     syntax: <length>
     default: 2.25rem
-    description: 本文の列の右に置く余白の列の幅
+    description: 本文の列の右に配置する余白の列の幅
 accessibility:
   - '`button`（`type="button"`）で、`aria-label` と `title` に `コメント {count が 2 以上なら「{count} 件、」}「{quote}」{closed があれば（閉じたセクションの中・選ばれていないタブの中・閉じた行の詳細の中）}` を入れる'
   - アイコンの `svg` は `aria-hidden="true"` にする
   - 開いている箇所は地と文字の色の反転、閉じた中の箇所は破線で示し、色だけに頼らない
-  - 押せる範囲は見た目の 1.5rem の四方から 0.375rem ずつ広げる。`:focus-visible` でリンクの色の輪郭を出す
+  - 押せる範囲は外観の 1.5rem の四方から 0.375rem ずつ広げる。`:focus-visible` でリンクの色の輪郭を出す
 refs:
   - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[余白のマーカー]
   - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[余白のマーカーから移る]
 status: planned
 notes:
   HTML: '`<button class="mdmark-comment-marker" type="button" aria-label="…" title="…" data-closed="…" data-current>{アイコン}<span>{count}</span></button>`。縦の位置（`style` の `top`）は `mount` が入れる。モックは `dev/mock/components/comment-margin-marker/`'
-  色: 線・地・文字は `--mdmark-color-comment-line`・`--mdmark-color-comment-bg` を使い、新しい色の変数を持たない
+  色: 線・地・文字は `--mdmark-color-comment-line`・`--mdmark-color-comment-bg` を使用し、新しい色の変数を持たない
   印刷: 余白の列ごと出さない
 test_file: tests/integration/lib/comment-marker.story.test.ts

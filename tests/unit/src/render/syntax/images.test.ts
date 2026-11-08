@@ -12,7 +12,7 @@ import { renderDoc } from "../../../helpers/render.ts";
 /** 画像の属性と図の処理を読み込む（実装が無い間は各テストが個別に失敗する） */
 const loadImages = () => import("../../../../../src/render/syntax/images.ts");
 
-/** 画像の属性を読むコアルールだけを当てて、`image` のトークンを現れた順に返す */
+/** 画像の属性を読み込むコアルールだけを適用して、`image` のトークンを現れた順に返却する */
 async function imageTokens(
   markdown: string,
   features: Record<string, boolean> = {},
@@ -40,7 +40,7 @@ test("test_media_kind_of", async () => {
   expect(kinds).toEqual(["video", "audio", "gif", "image", "image"]);
 });
 
-// 幅・配置・nolightbox を読む（正常系）
+// 幅・配置・nolightbox を読み込む（正常系）
 test("test_read_image_attributes", async () => {
   // 準備
   const { readImageAttributes } = await loadImages();
@@ -61,7 +61,7 @@ test("test_read_image_attributes", async () => {
   expect(second).toMatchObject({ width: "40%", items: [] });
 });
 
-// 動画の属性を読み、autoplay に muted を足す（正常系）
+// 動画の属性を読み込み、autoplay に muted を追加する（正常系）
 test("test_read_image_attributes_when_media", async () => {
   // 準備
   const { readImageAttributes } = await loadImages();
@@ -81,7 +81,7 @@ test("test_read_image_attributes_when_media", async () => {
   });
 });
 
-// 読めない属性を項目にする（異常系）
+// 読み込めない属性を項目にする（異常系）
 test("test_read_image_attributes_when_unreadable", async () => {
   // 準備
   const { readImageAttributes } = await loadImages();
@@ -109,13 +109,13 @@ test("test_read_image_attributes_when_unreadable", async () => {
   expect(inline.items.map((item) => item.label)).toEqual(["align"]);
 });
 
-// 属性を読んで外し、種類を置く（正常系）
+// 属性を読み込んで削除し、種類を配置する（正常系）
 test("test_read_images", async () => {
   // 準備
   const markdown = [
     "![グラフ](chart.png){width=300 align=center}",
     "",
-    "押す前に ![アイコン](icon.png){width=16} を確かめる。",
+    "押す前に ![アイコン](icon.png){width=16} を確認する。",
     "",
   ].join("\n");
   // 実行
@@ -142,7 +142,7 @@ test("test_read_images_when_gif", () => {
   expect(findTag(html, "<img")).toContain("data-gif");
 });
 
-// 読めない属性を警告にする（異常系）
+// 読み込めない属性を警告にする（異常系）
 test("test_read_images_when_unreadable", async () => {
   // 準備
   const { IMAGE_ATTRIBUTE_NAMES } = await loadImages();
@@ -165,7 +165,7 @@ test("test_read_images_when_unreadable", async () => {
   ).toBe("center");
 });
 
-// images がオフなら属性を読まない（正常系）
+// images がオフなら属性を読み込まない（正常系）
 test("test_read_images_when_feature_off", () => {
   // 準備
   const markdown = "![グラフ](chart.png){width=300}\n";
@@ -228,7 +228,7 @@ test("test_build_image_figures_when_media", () => {
   const media = findTags(html, "mdmark-media");
   expect(media.filter((tag) => tag.startsWith("<figure"))).toHaveLength(2);
   expect(findTags(html, 'class="mdmark-media-print"')).toHaveLength(1);
-  // 検証: 文の中の音声は段落の後ろに置く
+  // 検証: 文の中の音声は段落の後ろに配置する
   const paragraph = /<p>読み上げは[\s\S]*?<\/p>/.exec(html)?.[0] ?? "";
   expect(paragraph).not.toContain("<img");
   expect(html.indexOf("<audio")).toBeGreaterThan(html.indexOf(paragraph));
@@ -240,7 +240,7 @@ test("test_build_image_figures_when_link", () => {
   const markdown = [
     "[![ロゴ](logo.png)](https://example.com)",
     "",
-    "押す前に ![アイコン](icon.png) を確かめる。",
+    "押す前に ![アイコン](icon.png) を確認する。",
     "",
   ].join("\n");
   // 実行

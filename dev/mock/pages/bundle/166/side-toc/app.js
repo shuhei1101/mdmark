@@ -1,7 +1,7 @@
-// まとめた HTML の右側の目次のモックの操作: URL の # で開く文書と見出しを決め、文書の一覧のパネルと節を開閉する。
-// URL の ?mode=（目次の出し方 hover・fixed）で案を選ぶ。右側の目次を組み立てる前（side-toc.js より先）に読む
+// まとめた HTML の右側の目次のモックの操作: URL の # で開く文書と見出しを決め、文書の一覧のパネルとセクションを開閉する。
+// URL の ?mode=（目次の出し方 hover・fixed）で案を選ぶ。右側の目次を組み立てる前（side-toc.js より先）に読み込む
 
-// sample.js と同じ大域に読むため、宣言をブロックに閉じる
+// sample.js と同じ大域に読み込むため、宣言をブロックに閉じる
 {
   // 開いたときに出す文書（設定の build.entry）
   const ENTRY = "README.md";
@@ -29,10 +29,10 @@
 
   // ---------- 文書の行き来 ----------
 
-  // 横の文書の一覧をパネルへ写す（実装では同じ一覧を 1 つだけ持ち、幅で置き場所を替える）
+  // 横の文書の一覧をパネルへ写す（実装では同じ一覧を 1 つだけ持ち、幅で配置場所を替える）
   document.querySelector("[data-panel-body]").append(document.querySelector("[data-doc-list]").cloneNode(true));
 
-  /** URL の # から、開く文書のパスと見出しの ID を読む。1 枚に無い文書を指すときは entry の文書にする。 */
+  /** URL の # から、開く文書のパスと見出しの ID を読み込む。1 枚に無い文書を指すときは entry の文書にする。 */
   const parse = () => {
     const hash = decodeURIComponent(location.hash);
     if (!hash.startsWith(DOC_PREFIX)) return { path: ENTRY, heading: null, missing: false };
@@ -47,7 +47,7 @@
   /** 文書を差し替え、右側の目次のリンクの頭・一覧の開いている文書・帯のタイトル・ページのタイトルを合わせる。 */
   const showDocument = (path) => {
     const template = docs.get(path);
-    // 右側の目次は本文の列の差し替えで組み直すため、リンクの頭を先に当てる
+    // 右側の目次は本文の列の差し替えでもう一度組むため、リンクの頭を先に適用する
     aside.dataset.hrefPrefix = `${DOC_PREFIX}${path}#`;
     view.replaceChildren(template.content.cloneNode(true));
     current = path;
@@ -60,7 +60,7 @@
     document.title = `${template.dataset.docTitle} | mdmark の文書`;
   };
 
-  /** 節の中身の開閉を切り替え、見出しのボタンの aria-expanded を合わせる（syntax.js の setSectionOpen と同じ）。 */
+  /** セクションの中身の開閉を切り替え、見出しのボタンの aria-expanded を合わせる（syntax.js の setSectionOpen と同じ）。 */
   const setSectionOpen = (toggle, open) => {
     toggle.setAttribute("aria-expanded", String(open));
     const body = document.getElementById(toggle.getAttribute("aria-controls"));
@@ -68,7 +68,7 @@
     else body.setAttribute("hidden", "until-found");
   };
 
-  /** 要素を囲む閉じた節を外側から開く。 */
+  /** 要素を囲む閉じたセクションを外側から開く。 */
   const openAncestors = (element) => {
     for (let body = element.closest(".mdmark-section-body"); body; body = body.parentElement.closest(".mdmark-section-body")) {
       const toggle = view.querySelector(`[aria-controls="${body.id}"]`);
@@ -76,10 +76,10 @@
     }
   };
 
-  /** URL の # のとおりに文書を出し、見出しを指していればその見出しを囲む節を開いてそこへ移る。 */
+  /** URL の # のとおりに文書を出し、見出しを指していればその見出しを囲むセクションを開いてそこへ移る。 */
   const route = (initial) => {
     const { path, heading, missing } = parse();
-    // 1 枚に無い文書を指す URL: entry の文書を出し、URL も entry に合わせる（履歴に積まない）
+    // 1 枚に無い文書を指す URL: entry の文書を出し、URL も entry に合わせる（履歴に追加しない）
     if (missing) history.replaceState(null, "", `${DOC_PREFIX}${ENTRY}`);
     const switched = path !== current;
     if (switched) showDocument(path);
@@ -90,7 +90,7 @@
     } else if (switched) {
       window.scrollTo(0, 0);
     }
-    // 文書を移ったら、読み上げとキーボードの位置を文書のタイトルへ移す（開いた直後は移さない）
+    // 文書を移ったら、スクリーンリーダーとキーボードの位置を文書のタイトルへ移す（開いた直後は移さない）
     if (switched && !initial) {
       const title = view.querySelector("h1");
       title.tabIndex = -1;
@@ -101,7 +101,7 @@
   window.addEventListener("hashchange", () => route(false));
   route(true);
 
-  // 節の開閉: 文書を差し替えるたびに見出しが替わるため、本文の列で受ける
+  // セクションの開閉: 文書を差し替えるたびに見出しが替わるため、本文の列で受ける
   view.addEventListener("click", (event) => {
     const toggle = event.target.closest(".mdmark-section-toggle");
     if (toggle) setSectionOpen(toggle, toggle.getAttribute("aria-expanded") !== "true");
@@ -109,7 +109,7 @@
 
   // ---------- 文書の一覧のパネル（狭い幅） ----------
 
-  // パネルを開き、開いている文書の行へフォーカスを置く（Tab と矢印で前後の文書へ移れる）
+  // パネルを開き、開いている文書の行へフォーカスを配置する（Tab と矢印で前後の文書へ移れる）
   openButton.addEventListener("click", () => {
     panel.showModal();
     openButton.setAttribute("aria-expanded", "true");

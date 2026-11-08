@@ -4,10 +4,10 @@ import { CliError } from "../cli/errors.ts";
 /** 1 回の TCP の接続を待つ上限（ミリ秒） */
 export const CONNECT_TIMEOUT_MS = 1000;
 
-/** 待ち受けているかを確かめるアドレス */
+/** 待ち受けているかを確認するアドレス */
 const PROBE_HOST = "127.0.0.1";
 
-/** `127.0.0.1:{port}` へ TCP でつなぎ、接続を受ければ真、拒まれるか待ちの上限を超えれば偽を返す */
+/** `127.0.0.1:{port}` へ TCP でつなぎ、接続を受ければ真、拒まれるか待ちの上限を超えれば偽を返却する */
 export const isPortListening = (options: {
   port: number;
   timeoutMs: number;
@@ -31,9 +31,9 @@ export const DEFAULT_PORT = 8782;
 
 /** `PORT_ENV` が 1〜65535 の整数でないときの `CliError` の文。`{value}` を受け取った値に置き換える */
 export const INVALID_PORT_MESSAGE =
-  "MDMARK_PORT の値 {value} はポートに使えません。1〜65535 の整数を設定してください。";
+  "MDMARK_PORT の値 {value} はポートに使用できません。1〜65535 の整数を設定してください。";
 
-/** ポートに使える最小の値と最大の値 */
+/** ポートに使用できる最小の値と最大の値 */
 const MIN_PORT = 1;
 const MAX_PORT = 65535;
 

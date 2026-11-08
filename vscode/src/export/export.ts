@@ -25,7 +25,7 @@ export type ExportMode = "export" | "browser" | "print";
 /** 書き出した通知のボタン */
 const OPEN_LABEL = "ブラウザで開く";
 
-/** 設定を重ねて読み、相対パスの `libraries`・`html-scripts.url`・`mermaid.url` を `data:` の URL で埋め、`theme` の CSS を読み、`extensions` を束ねる。読めない設定ファイルは重ねずに残りで書き出す */
+/** 設定を重ねて読み込み、相対パスの `libraries`・`html-scripts.url`・`mermaid.url` を `data:` の URL で埋め、`theme` の CSS を読み込み、`extensions` をまとめる。読み込めない設定ファイルは重ねずに残りで書き出す */
 async function readExportConfig(options: {
   document: TextDocument;
   configPath: string;
@@ -61,7 +61,7 @@ async function readExportConfig(options: {
   }
   if (load.problem) {
     log.warn(
-      "設定ファイルを読めないため、そのファイルを重ねずに書き出す",
+      "設定ファイルを読み込めないため、そのファイルを重ねずに書き出す",
       load.problem.path,
       load.problem.line ?? load.problem.settingKey ?? "",
       load.problem.message,
@@ -108,7 +108,7 @@ async function readExportConfig(options: {
       themeCss = await readFile(load.theme, "utf8");
     } catch (error) {
       log.warn(
-        "theme の CSS を読めない",
+        "theme の CSS を読み込めない",
         load.theme,
         error instanceof Error ? error.message : String(error),
       );
@@ -120,7 +120,7 @@ async function readExportConfig(options: {
     extensionPath: deps.context.extensionPath,
   })) {
     if ("error" in result) {
-      log.warn("拡張を束ねられない", result.path, result.error);
+      log.warn("拡張をまとめられない", result.path, result.error);
     } else {
       extensions.push(result.code);
     }
@@ -128,7 +128,7 @@ async function readExportConfig(options: {
   return { config, themeCss, extensions };
 }
 
-/** Markdown を HTML に書き出し、`mode` に合わせて知らせるか開く。書き出した HTML の `Uri` を返す。書き出せなかったときは `undefined` */
+/** Markdown を HTML に書き出し、`mode` に合わせて通知するか開く。書き出した HTML の `Uri` を返却する。書き出せなかったときは `undefined` */
 export async function exportMarkdown(options: {
   /** 書き出す Markdown */
   document: TextDocument;
@@ -141,7 +141,7 @@ export async function exportMarkdown(options: {
   const { log } = deps;
   const configuration = workspace.getConfiguration("mdmark", document.uri);
   const settings = readSettings((key) => configuration.get(key));
-  // 読むバージョンを決める
+  // 読み込むバージョンを決める
   const decision = await decideVersion({
     setting: settings.version,
     lastVersion: deps.context.globalState.get<string>(LAST_VERSION_KEY),
@@ -156,7 +156,7 @@ export async function exportMarkdown(options: {
   });
   if (decision.kind === "undecidable") {
     await window.showErrorMessage(
-      "HTML を書き出せませんでした。読む mdmark のバージョンを決められません。ネットワークにつながっているかを確かめてから、もう一度実行してください。",
+      "HTML を書き出せませんでした。読み込む mdmark のバージョンを決められません。ネットワークにつながっているかを確認してから、もう一度実行してください。",
     );
     return undefined;
   }
@@ -172,7 +172,7 @@ export async function exportMarkdown(options: {
     config: exported.config,
     colorTheme: settings.colorTheme,
   });
-  // 書き出す先を決め、全文（保存していない書き換えを含む）で HTML を組んで書く
+  // 書き出す先を決め、全文（保存していない書き換えを含む）で HTML を組んで記載する
   const markdownPath = document.uri.fsPath;
   const path = resolveExportPath({
     markdownPath,
@@ -204,14 +204,14 @@ export async function exportMarkdown(options: {
     const reason = error instanceof Error ? error : new Error(String(error));
     log.error("HTML を書き出せない", path, reason);
     await window.showErrorMessage(
-      `HTML を書き出せませんでした: ${path}（${reason.message}）。設定 mdmark.export.outputDir を書き込めるフォルダに直してください。`,
+      `HTML を書き出せませんでした: ${path}（${reason.message}）。設定 mdmark.export.outputDir を書き込めるフォルダに修正してください。`,
     );
     return undefined;
   }
   log.info("HTML を書き出した", path, decision.version, mode);
   const uri = Uri.file(path);
   if (mode === "export") {
-    // 通知の応答は待たずに返す
+    // 通知の応答は待たずに返却する
     void window
       .showInformationMessage(`HTML を書き出しました: ${path}`, OPEN_LABEL)
       .then((choice) => {

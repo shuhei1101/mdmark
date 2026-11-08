@@ -17,14 +17,14 @@ export type DiffPair =
   | { kind: "single" }
   | { kind: "failed" };
 
-/** 色を当てる単位。`block` は本文のブロック、`item` はリストの項目、`row` は表の行 */
+/** 色を適用する単位。`block` は本文のブロック、`item` はリストの項目、`row` は表の行 */
 type BlockUnit = "block" | "item" | "row";
 
 /** 色分けの単位のブロック 1 つと、その元の行の範囲 */
 export type BlockRange = {
-  /** ブロックの要素（本文か節の中身の直下の要素、いちばん外の `li`、`tbody` の `tr`） */
+  /** ブロックの要素（本文かセクションの中身の直下の要素、いちばん外の `li`、`tbody` の `tr`） */
   element: HTMLElement;
-  /** 部品『差分のブロック』の `unit` に渡す値 */
+  /** 部品『差分のブロック』の `unit` に指定する値 */
   unit: BlockUnit;
   /** ブロックの `data-source-line`（0 始まり） */
   start: number;
@@ -34,7 +34,7 @@ export type BlockRange = {
 
 /** 色分けの片側（前か後）の Markdown と、それを今の描き方で描いた中身 */
 type Side = {
-  /** 描いた中身（画面に置く前の `template` の中身） */
+  /** 描いた中身（画面に配置する前の `template` の中身） */
   root: ParentNode;
   /** 描いた Markdown */
   markdown: string;
@@ -42,33 +42,33 @@ type Side = {
 
 /** 削除したブロックとして差し込む前の文書の要素 */
 type Removal = {
-  /** 差し込む前の文書の要素（節ごと消したときは見出しと節の中身） */
+  /** 差し込む前の文書の要素（セクションごと削除したときは見出しとセクションの中身） */
   elements: HTMLElement[];
-  /** 部品『差分のブロック』の `unit` に渡す値 */
+  /** 部品『差分のブロック』の `unit` に指定する値 */
   unit: BlockUnit;
   /** 変えた塊の番号 */
   chunk: number;
-  /** 要素の文字（書き換えの見分けに使う） */
+  /** 要素の文字（書き換えの見分けに使用する） */
   text: string;
 };
 
-/** 行の比較の結果を行番号で引けるようにしたもの */
+/** 行の比較の結果を行番号で参照できるようにしたもの */
 type LineMap = {
   /** 前と後の行の文字 */
   texts: { before: string[]; after: string[] };
-  /** 消した前の行番号 */
+  /** 削除した前の行番号 */
   deleted: Set<number>;
-  /** 足した後の行番号 */
+  /** 追加した後の行番号 */
   added: Set<number>;
   /** 同じ行の、前の行番号から後の行番号 */
   same: Map<number, number>;
-  /** 消した前の行番号が属する変えた塊の番号 */
+  /** 削除した前の行番号が属する変えた塊の番号 */
   chunkBefore: Map<number, number>;
-  /** 足した後の行番号が属する変えた塊の番号 */
+  /** 追加した後の行番号が属する変えた塊の番号 */
   chunkAfter: Map<number, number>;
 };
 
-/** 節の中身 */
+/** セクションの中身 */
 const SECTION_BODY = ".mdmark-section-body";
 
 /** 表（表の記法の外側か、記法の外の表） */
@@ -99,9 +99,9 @@ function isBlank(text: string | undefined): boolean {
   return (text ?? "").trim() === "";
 }
 
-/** 取り出し元の一覧を 1 回、前と後の本文を 1 回ずつ呼び、ブロックの色分けに使う 2 つの Markdown を返す。取り出せないときは `console.error` に出し、`failed` を返す */
+/** 取り出し元の一覧を 1 回、前と後の本文を 1 回ずつ呼び、ブロックの色分けに使用する 2 つの Markdown を返却する。取り出せないときは `console.error` に出し、`failed` を返却する */
 export async function loadDiffPair(options: {
-  /** `mount` に渡された取り出し元 */
+  /** `mount` に指定された取り出し元 */
   source: DiffSource;
   /** 文書の `id` */
   docId: string;
@@ -154,7 +154,7 @@ export async function loadDiffPair(options: {
   };
 }
 
-/** 描いた文書の要素を色分けの単位のブロックに分け、元の行の範囲を付けて上から順に返す */
+/** 描いた文書の要素を色分けの単位のブロックに分け、元の行の範囲を付けて上から順に返却する */
 export function collectBlockRanges(options: {
   /** 描いた文書の中身 */
   root: ParentNode;
@@ -206,13 +206,13 @@ export function collectBlockRanges(options: {
   }));
 }
 
-/** 対の 2 つのブロックの文字を語ごとに比べ、同じ文字の数が長い方の文字の数の半分以上なら true（書き換え）を返す。どちらも空なら true */
+/** 対の 2 つのブロックの文字を単語ごとに比べ、同じ文字の数が長い方の文字の数の半分以上なら true（書き換え）を返却する。どちらも空なら true */
 export function isRewrite(options: {
   /** 削除の候補の文字 */
   before: string;
   /** 追加のブロックの文字 */
   after: string;
-  /** 語の区切り。持たないブラウザでは `undefined` */
+  /** 単語の区切り。持たないブラウザでは `undefined` */
   segmenter: Intl.Segmenter | undefined;
   /** 比較の計算 */
   engine: DiffEngine;
@@ -257,7 +257,7 @@ const toContentSource = (texts: string[]): ContentSource => {
   };
 };
 
-/** 空白だけの行を除いて比べた結果を、元の行番号で引ける形にする。`same` でない行が続くところを 1 つの変えた塊にする */
+/** 空白だけの行を除いて比べた結果を、元の行番号で参照できる構造にする。`same` でない行が続くところを 1 つの変えた塊にする */
 function classifyLines(options: {
   /** 空白だけの行を除いた前と後の比較の結果 */
   diff: DiffResult;
@@ -312,7 +312,7 @@ function classifyLines(options: {
 export function colorDiffBlocks(options: {
   before: Side;
   after: Side;
-  /** 語の区切り。持たないブラウザでは `undefined` */
+  /** 単語の区切り。持たないブラウザでは `undefined` */
   segmenter: Intl.Segmenter | undefined;
   /** 比較の計算。既定は `jsdiffEngine` */
   engine?: DiffEngine;
@@ -372,10 +372,10 @@ export function colorDiffBlocks(options: {
     }
     return result;
   };
-  /** 後のブロックの範囲に足した行があるか */
+  /** 後のブロックの範囲に追加した行があるか */
   const isAdded = (range: BlockRange): boolean =>
     contentLines(range, "after").some((line) => lines.added.has(line));
-  /** 前のブロックの範囲の行が全て消した行か */
+  /** 前のブロックの範囲の行が全て削除した行か */
   const isRemoved = (range: BlockRange): boolean => {
     const content = contentLines(range, "before");
     return content.length > 0 && content.every((l) => lines.deleted.has(l));
@@ -398,7 +398,7 @@ export function colorDiffBlocks(options: {
     chunkOf: (range) => chunkOf(range, "before"),
   });
 
-  // 追加のブロック: 外側のブロックが追加なら、その中の項目と行には重ねて色を当てない
+  // 追加のブロック: 外側のブロックが追加なら、その中の項目と行には重ねて色を適用しない
   const added = afterRanges.filter(isAdded);
   const outermostAdded = added.filter(
     (range) =>
@@ -438,7 +438,7 @@ export function colorDiffBlocks(options: {
     });
   }
 
-  // 追加のブロックに色を当てる。本文のブロックは元の要素を包みの中へ移し（中の項目・行の範囲が指す要素を保つ）、項目と行は要素そのものに色を当てる
+  // 追加のブロックに色を適用する。本文のブロックは元の要素を包みの中へ移し（中の項目・行の範囲が指す要素を保つ）、項目と行は要素そのものに色を適用する
   for (const range of outermostAdded) {
     if (range.unit === "block") {
       const wrapper = parseElement(
@@ -468,7 +468,7 @@ export function colorDiffBlocks(options: {
   });
 }
 
-/** 前の文書から、削除したブロックにする要素を文書の順に集める。節ごと・リストごと・表ごと消えたときは 1 つにまとめる */
+/** 前の文書から、削除したブロックにする要素を文書の順に集める。セクションごと・リストごと・表ごと消えたときは 1 つにまとめる */
 function collectRemovals(options: {
   root: ParentNode;
   ranges: BlockRange[];
@@ -560,7 +560,7 @@ function insertRemovals(options: {
   const lastAfter = new Map<Element, HTMLElement>();
   const lastFirst = new Map<ParentNode, HTMLElement>();
 
-  /** 後の文書で、行を範囲に持つブロックを引く */
+  /** 後の文書で、行を範囲に持つブロックを参照する */
   const rangeAt = (line: number, unit?: BlockUnit): BlockRange | undefined =>
     afterRanges.find(
       (range) =>
@@ -577,7 +577,7 @@ function insertRemovals(options: {
     const mapped = line === undefined ? undefined : same.get(line);
     return mapped === undefined ? undefined : rangeAt(mapped, unit);
   };
-  /** 節の中身の直下まで、要素の親をたどる */
+  /** セクションの中身の直下まで、要素の親をたどる */
   const topOf = (element: HTMLElement): HTMLElement => {
     let node = element;
     while (
@@ -588,7 +588,7 @@ function insertRemovals(options: {
     }
     return node;
   };
-  /** 見出しなら、その節の中身までを 1 つとして扱う */
+  /** 見出しなら、そのセクションの中身までを 1 つとして扱う */
   const withSection = (element: HTMLElement): HTMLElement => {
     const next = element.nextElementSibling;
     return HEADING.test(element.tagName) && next?.matches(SECTION_BODY)
@@ -665,7 +665,7 @@ function insertRemovals(options: {
       insertAfter(anchor, inserted);
       continue;
     }
-    // 直前に無ければ、前の文書で属していた節の中身の先頭。節に属さなければ本文の先頭
+    // 直前に無ければ、前の文書で属していたセクションの中身の先頭。セクションに属さなければ本文の先頭
     const parent = first.parentElement;
     const heading = parent?.matches(SECTION_BODY)
       ? parent.previousElementSibling

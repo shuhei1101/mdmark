@@ -30,7 +30,7 @@ import {
 /** 定義の処理を読み込む（実装が無い間は各テストが個別に失敗する） */
 const loadDefinition = () => import("../../../../src/diagram/definition.ts");
 
-// 読める JSON は値を返す（正常系）
+// 読み込める JSON は値を返却する（正常系）
 test("test_parse_definition_json", async () => {
   // 準備
   const { parseDefinitionJson } = await loadDefinition();
@@ -40,7 +40,7 @@ test("test_parse_definition_json", async () => {
   expect(result).toMatchObject({ ok: true, value: { title: "a" } });
 });
 
-// 閉じの } が無い JSON は読めない行・読めた最後の部分・足りない記号を返す（異常系）
+// 閉じの } が無い JSON は読み込めない行・読み込めた最後の部分・足りない記号を返却する（異常系）
 test("test_parse_definition_json_when_unclosed", async () => {
   // 準備
   const { parseDefinitionJson } = await loadDefinition();
@@ -60,7 +60,7 @@ test("test_parse_definition_json_when_unclosed", async () => {
   });
 });
 
-// モックの見本の定義を読める（正常系）
+// モックの見本の定義を読み込める（正常系）
 test("test_read_definition", async () => {
   // 準備
   const { readDefinition } = await loadDefinition();
@@ -78,7 +78,7 @@ test("test_read_definition", async () => {
   }
 });
 
-// ノードの種類が使えないときは使える種類を示す（異常系）
+// ノードの種類が使用できないときは使用できる種類を示す（異常系）
 test("test_read_definition_when_kind_unknown", async () => {
   // 準備
   const { readDefinition } = await loadDefinition();
@@ -93,11 +93,11 @@ test("test_read_definition_when_kind_unknown", async () => {
   // 検証
   expect(result.ok).toBe(false);
   expect(result.problems[0]).toBe(
-    "ノード「分類」の種類 robot は使えません。使える種類は llm・dm・script・mcp・data・external・start・question・action・result です",
+    "ノード「分類」の種類 robot は使用できません。使用できる種類は llm・dm・script・mcp・data・external・start・question・action・result です",
   );
 });
 
-// 判定フローチャートの種類のノードを読める（正常系）
+// 判定フローチャートの種類のノードを読み込める（正常系）
 test("test_read_definition_when_judgement", async () => {
   // 準備
   const { readDefinition } = await loadDefinition();
@@ -142,7 +142,7 @@ test("test_read_definition_when_wire_end_missing", async () => {
   // 検証
   expect(result.ok).toBe(false);
   expect(result.problems[0]).toBe(
-    "線 w-mail の端のノード recieve がありません。ノードの id で書いてください",
+    "線 w-mail の端のノード recieve がありません。ノードの id で記載してください",
   );
 });
 
@@ -153,7 +153,7 @@ test("test_read_definition_when_id_duplicated", async () => {
   const box = { kind: "script", x: 0, y: 0, w: 100, h: 60 };
   const definition = {
     title: "重なる id",
-    scope: "確かめ",
+    scope: "確認",
     updated: "2026-10-18",
     width: 300,
     height: 120,
@@ -172,7 +172,7 @@ test("test_read_definition_when_id_duplicated", async () => {
   );
 });
 
-// json のコードブロックが 0 つ・2 つのときは 1 つだけ置くよう示す（異常系）
+// json のコードブロックが 0 つ・2 つのときは 1 つだけ配置するよう示す（異常系）
 test("test_read_definition_when_blocks_count", async () => {
   // 準備
   const { readDefinition } = await loadDefinition();
@@ -183,12 +183,12 @@ test("test_read_definition_when_blocks_count", async () => {
   for (const result of [none, two]) {
     expect(result.ok).toBe(false);
     expect(result.problems[0]).toContain(
-      "印の範囲に json のコードブロックを 1 つだけ置いてください",
+      "マーカーの範囲に json のコードブロックを 1 つだけ配置してください",
     );
   }
 });
 
-// 棒・円・散布図のモックの見本を読める（正常系）
+// 棒・円・散布図のモックの見本を読み込める（正常系）
 test("test_read_definition_when_chart_types", async () => {
   // 準備
   const { readDefinition } = await loadDefinition();
@@ -206,11 +206,11 @@ test("test_read_definition_when_chart_types", async () => {
   }
 });
 
-// 種類に合わない項目を読めない箇所にする（異常系）
+// 種類に合わない項目を読み込めない箇所にする（異常系）
 test("test_read_definition_when_chart_shape_mismatch", async () => {
   // 準備
   const { readDefinition } = await loadDefinition();
-  const base = { title: "題", scope: "範囲", updated: "2026-10-17" };
+  const base = { title: "タイトル", scope: "範囲", updated: "2026-10-17" };
   const pieWithoutItems = { ...base, type: "pie" };
   const scatterWithNumbers = {
     ...base,
@@ -240,7 +240,7 @@ test("test_read_definition_when_chart_shape_mismatch", async () => {
   }
 });
 
-// 追加したグラフの種類の定義を読める（正常系）
+// 追加したグラフの種類の定義を読み込める（正常系）
 test("test_read_definition_when_chart_types_added", async () => {
   // 準備
   const { readDefinition } = await loadDefinition();
@@ -256,11 +256,11 @@ test("test_read_definition_when_chart_types_added", async () => {
   }
 });
 
-// 系列と項目の 7 つ以上を読めない箇所にする（異常系）
+// 系列と項目の 7 つ以上を読み込めない箇所にする（異常系）
 test("test_read_definition_when_chart_series_too_many", async () => {
   // 準備
   const { readDefinition } = await loadDefinition();
-  const base = { title: "題", scope: "範囲", updated: "2026-11-03" };
+  const base = { title: "タイトル", scope: "範囲", updated: "2026-11-03" };
   const sevenSeries = {
     ...base,
     type: "line",
@@ -291,12 +291,12 @@ test("test_read_definition_when_chart_series_too_many", async () => {
   }
 });
 
-// バブルの点の形を確かめる（異常系）
+// バブルの点の形状を確認する（異常系）
 test("test_read_definition_when_bubble_point", async () => {
   // 準備
   const { readDefinition } = await loadDefinition();
   const bubble = {
-    title: "題",
+    title: "タイトル",
     scope: "範囲",
     updated: "2026-11-03",
     type: "bubble",
@@ -312,7 +312,7 @@ test("test_read_definition_when_bubble_point", async () => {
   expect(result.problems[0]).toContain("[x, y, size]");
 });
 
-// ER 図のモックの見本を読める（正常系）
+// ER 図のモックの見本を読み込める（正常系）
 test("test_read_definition_when_er", async () => {
   // 準備
   const { readDefinition } = await loadDefinition();
@@ -344,7 +344,7 @@ test("test_read_definition_when_er_column_missing", async () => {
   );
 });
 
-// テーブルの id・列の名前の重なりと、使えない種類・色・多重度（異常系）
+// テーブルの id・列の名前の重なりと、使用できない種類・色・多重度（異常系）
 test("test_read_definition_when_er_invalid_values", async () => {
   // 準備
   const { readDefinition } = await loadDefinition();
@@ -399,7 +399,7 @@ test("test_read_definition_when_er_invalid_values", async () => {
   });
 });
 
-// 座標を全て省いた判定フローチャートを配置した定義で返す（正常系）
+// 座標を全て省いた判定フローチャートを配置した定義で返却する（正常系）
 test("test_read_definition_when_coordinates_omitted", async () => {
   // 準備
   const { readDefinition } = await loadDefinition();
@@ -426,7 +426,7 @@ test("test_read_definition_when_coordinates_omitted", async () => {
   }
 });
 
-// 座標を書いたものと省いたものが混ざる（異常系）
+// 座標を記載したものと省いたものが混ざる（異常系）
 test("test_read_definition_when_coordinates_mixed", async () => {
   // 準備
   const { readDefinition } = await loadDefinition();
@@ -442,7 +442,7 @@ test("test_read_definition_when_coordinates_mixed", async () => {
   // 検証
   expect(result.ok).toBe(false);
   expect(result.problems[0]).toBe(
-    "座標（x・y・w・h・points・width・height）を書いたものと省いたものが混ざっています。全て書くか、全て省いてください",
+    "座標（x・y・w・h・points・width・height）を記載したものと省いたものが混ざっています。全て記載するか、全て省いてください",
   );
 });
 
@@ -469,7 +469,7 @@ test("test_read_definition_when_coordinates_omitted_not_judgement", async () => 
   );
 });
 
-// 許さないリンク先だけを返す（正常系）
+// 許さないリンク先だけを返却する（正常系）
 test("test_node_link_problems", async () => {
   // 準備
   const { nodeLinkProblems } = await loadDefinition();
@@ -495,7 +495,7 @@ test("test_node_link_problems", async () => {
   ]);
 });
 
-// グループの hint と stickyTitles の型を確かめる（異常系）
+// グループの hint と stickyTitles の型を確認する（異常系）
 test("test_read_definition_when_group_options_invalid", async () => {
   // 準備
   const { readDefinition } = await loadDefinition();

@@ -1,6 +1,6 @@
 // まとめた HTML のモックの操作: URL の # で開く文書と見出しを決め、文書の一覧のパネルを開閉し、印刷の見え方を切り替える
 
-// sample.js と同じ大域に読むため、宣言をブロックに閉じる
+// sample.js と同じ大域に読み込むため、宣言をブロックに閉じる
 {
   // 開いたときに出す文書（設定の build.entry）
   const ENTRY = "README.md";
@@ -15,10 +15,10 @@
   const docs = new Map([...document.querySelectorAll("template[data-doc-path]")].map((template) => [template.dataset.docPath, template]));
   let current = null;
 
-  // 横の文書の一覧をパネルへ写す（実装では同じ一覧を 1 つだけ持ち、幅で置き場所を替える）
+  // 横の文書の一覧をパネルへ写す（実装では同じ一覧を 1 つだけ持ち、幅で配置場所を替える）
   document.querySelector("[data-panel-body]").append(document.querySelector("[data-doc-list]").cloneNode(true));
 
-  /** URL の # から、開く文書のパスと見出しの ID を読む。1 枚に無い文書を指すときは entry の文書にする。 */
+  /** URL の # から、開く文書のパスと見出しの ID を読み込む。1 枚に無い文書を指すときは entry の文書にする。 */
   const parse = () => {
     const hash = decodeURIComponent(location.hash);
     if (!hash.startsWith(DOC_PREFIX)) return { path: ENTRY, heading: null, missing: false };
@@ -30,7 +30,7 @@
     return { path, heading, missing: false };
   };
 
-  /** 文書を差し替え、一覧の開いている文書・帯の題・ページの題を合わせる。 */
+  /** 文書を差し替え、一覧の開いている文書・帯のタイトル・ページのタイトルを合わせる。 */
   const showDocument = (path) => {
     const template = docs.get(path);
     view.replaceChildren(template.content.cloneNode(true));
@@ -47,7 +47,7 @@
   /** URL の # のとおりに文書を出し、見出しを指していればそこへ移る。 */
   const route = (initial) => {
     const { path, heading, missing } = parse();
-    // 1 枚に無い文書を指す URL: entry の文書を出し、URL も entry に合わせる（履歴に積まない）
+    // 1 枚に無い文書を指す URL: entry の文書を出し、URL も entry に合わせる（履歴に追加しない）
     if (missing) history.replaceState(null, "", `${DOC_PREFIX}${ENTRY}`);
     const switched = path !== current;
     if (switched) showDocument(path);
@@ -57,7 +57,7 @@
     } else if (switched) {
       window.scrollTo(0, 0);
     }
-    // 文書を移ったら、読み上げとキーボードの位置を文書の題へ移す（開いた直後は移さない）
+    // 文書を移ったら、スクリーンリーダーとキーボードの位置を文書のタイトルへ移す（開いた直後は移さない）
     if (switched && !initial) {
       const title = view.querySelector("h1");
       title.tabIndex = -1;
@@ -70,7 +70,7 @@
 
   // ---------- 文書の一覧のパネル（狭い幅） ----------
 
-  // パネルを開き、開いている文書の行へフォーカスを置く（Tab と矢印で前後の文書へ移れる）
+  // パネルを開き、開いている文書の行へフォーカスを配置する（Tab と矢印で前後の文書へ移れる）
   openButton.addEventListener("click", () => {
     panel.showModal();
     openButton.setAttribute("aria-expanded", "true");

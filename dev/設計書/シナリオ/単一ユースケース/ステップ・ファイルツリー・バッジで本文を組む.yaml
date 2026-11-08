@@ -2,18 +2,18 @@ title: ステップ・ファイルツリー・バッジで本文を組む
 scenarios:
   - name: 正常シナリオ
     setup:
-      - name: mdmark を読むページ
-        description: 版を固定した URL で `dist/index.js` と `dist/index.css` を読み、設定を渡して文書を描く HTML
+      - name: mdmark を読み込むページ
+        description: バージョンを固定した URL で `dist/index.js` と `dist/index.css` を読み込み、設定を指定して文書を描く HTML
       - name: 3 つの部品を持つ Markdown
-        description: '`<!-- steps -->` 〜 `<!-- /steps -->` で囲んだ 3 項目の番号付きリスト、`src/` の下に `index.ts` と `parts/` を持つ罫線を書いた言語 `tree` のコードブロック、行内のコード `` `badge:v0.1.0` `` を持つ文書'
+        description: '`<!-- steps -->` 〜 `<!-- /steps -->` で囲んだ 3 項目の番号付きリスト、`src/` の下に `index.ts` と `parts/` を持つ罫線を記載した言語 `tree` のコードブロック、行内のコード `` `badge:v0.1.0` `` を持つ文書'
       - name: Mock
-        description: jsDelivr を、ビルドした `dist/` を同じパスで返す手元の応答に差し替える。色分けのライブラリへの要求を数える
+        description: jsDelivr を、ビルドした `dist/` を同じパスで返却する手元の応答に差し替える。色分けのライブラリへの要求を数える
     flow: |-
       sequenceDiagram
         actor U as 利用者
-        participant P as 使う側のページ
+        participant P as 利用側のページ
         participant M as mdmark
-        P->>M: 設定と Markdown を渡して描かせる
+        P->>M: 設定と Markdown を指定して描かせる
         M-->>P: 手順・ファイルツリー・バッジを描く
         P-->>U: 文書を表示
     expected:
@@ -22,9 +22,9 @@ scenarios:
       - 行内のコードが、文言 `v0.1.0` の札になっている（`badge:` の頭は出ていない）
       - 色分けのライブラリへの要求が 0 件（言語 `tree` のコードブロックは色分けの対象にならない）
     test: test_normal
-  - name: 正常シナリオ（バッジの書き方を見せる）
+  - name: 正常シナリオ（バッジの記載方法を見せる）
     setup:
-      - name: mdmark を読むページ
+      - name: mdmark を読み込むページ
         description: 正常シナリオと同じ
       - name: 打ち消したバッジを持つ Markdown
         description: 行内のコード `` `badge\:v0.1.0` `` を持つ文書
@@ -33,38 +33,38 @@ scenarios:
     flow: |-
       sequenceDiagram
         actor U as 利用者
-        participant P as 使う側のページ
+        participant P as 利用側のページ
         participant M as mdmark
-        P->>M: 設定と Markdown を渡して描かせる
-        M-->>P: 打ち消しの \ を外した行内のコードを描く
+        P->>M: 設定と Markdown を指定して描かせる
+        M-->>P: 打ち消しの \ を削除した行内のコードを描く
         P-->>U: 文書を表示
     expected:
       - 行内のコードが `badge:v0.1.0` の文字のまま出ていて、札になっていない
     test: test_normal_when_badge_escaped
-  - name: 異常シナリオ（ファイルツリーに読めない行がある）
+  - name: 異常シナリオ（ファイルツリーに読み込めない行がある）
     setup:
-      - name: mdmark を読むページ
+      - name: mdmark を読み込むページ
         description: 正常シナリオと同じ
-      - name: 読めない行を持つファイルツリーの Markdown
-        description: 上の行より 2 段深い項目を持つ言語 `tree` のコードブロックの文書
+      - name: 読み込めない行を持つファイルツリーの Markdown
+        description: 上の行より 2 階層深い項目を持つ言語 `tree` のコードブロックの文書
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
       sequenceDiagram
         actor U as 利用者
-        participant P as 使う側のページ
+        participant P as 利用側のページ
         participant M as mdmark
-        P->>M: 設定と Markdown を渡して描かせる
-        M->>M: 罫線の段を読めない行がある
-        M-->>P: 書き方の警告と、元のコードブロックを描く
-        P-->>U: 書き方の警告とコードブロックを表示
+        P->>M: 設定と Markdown を指定して描かせる
+        M->>M: 罫線の階層を読み込めない行がある
+        M-->>P: 記載の警告と、元のコードブロックを描く
+        P-->>U: 記載の警告とコードブロックを表示
     expected:
-      - コードブロックの上に、読めない行の行番号を書いた書き方の警告がある
+      - コードブロックの上に、読み込めない行の行番号を記載した記載の警告がある
       - コードブロックが元の罫線の文字のまま出ている
     test: test_error_when_tree_line_invalid
   - name: 異常シナリオ（番号付きリストの無いステップの範囲）
     setup:
-      - name: mdmark を読むページ
+      - name: mdmark を読み込むページ
         description: 正常シナリオと同じ
       - name: 番号付きリストの無いステップの範囲を持つ Markdown
         description: '`<!-- steps -->` 〜 `<!-- /steps -->` で、番号の無いリストだけを囲んだ文書'
@@ -73,19 +73,19 @@ scenarios:
     flow: |-
       sequenceDiagram
         actor U as 利用者
-        participant P as 使う側のページ
+        participant P as 利用側のページ
         participant M as mdmark
-        P->>M: 設定と Markdown を渡して描かせる
+        P->>M: 設定と Markdown を指定して描かせる
         M->>M: 手順にする番号付きリストが無い
-        M-->>P: 書き方の警告と、範囲の中身をそのまま描く
-        P-->>U: 書き方の警告とリストを表示
+        M-->>P: 記載の警告と、範囲の中身をそのまま描く
+        P-->>U: 記載の警告とリストを表示
     expected:
-      - 範囲の上に、手順にする番号付きリストが無いことを書いた書き方の警告がある
-      - 範囲の中のリストが、書いたとおりの番号の無いリストで表示されている
+      - 範囲の上に、手順にする番号付きリストが無いことを記載した記載の警告がある
+      - 範囲の中のリストが、記載したとおりの番号の無いリストで表示されている
     test: test_error_when_steps_without_ordered_list
   - name: 正常シナリオ（中身の無い badge:）
     setup:
-      - name: mdmark を読むページ
+      - name: mdmark を読み込むページ
         description: 正常シナリオと同じ
       - name: '中身の無い badge: を持つ Markdown'
         description: 行内のコード `` `badge:` `` と、`badge:` の後ろが空白だけの行内のコードを持つ文書
@@ -94,19 +94,19 @@ scenarios:
     flow: |-
       sequenceDiagram
         actor U as 利用者
-        participant P as 使う側のページ
+        participant P as 利用側のページ
         participant M as mdmark
-        P->>M: 設定と Markdown を渡して描かせる
+        P->>M: 設定と Markdown を指定して描かせる
         M->>M: badge: の後ろが空か空白だけのためバッジにしない
         M-->>P: 行内のコードをそのまま描く
         P-->>U: 文書を表示
     expected:
-      - 2 つの行内のコードが札にならず、書いたとおりの文字（`badge:` とその後ろの空白）の行内のコードで出ている
-      - 中身の無い札が無く、書き方の警告も出ていない
+      - 2 つの行内のコードが札にならず、記載したとおりの文字（`badge:` とその後ろの空白）の行内のコードで出ている
+      - 中身の無い札が無く、記載の警告も出ていない
     test: test_normal_when_badge_empty
   - name: 正常シナリオ（折りたたみに入れたステップ）
     setup:
-      - name: mdmark を読むページ
+      - name: mdmark を読み込むページ
         description: 正常シナリオと同じ
       - name: 折りたたみのステップを持つ Markdown
         description: '`<!-- steps: closed -->` で 2 項目の番号付きリストを囲んだ範囲と、`<!-- steps: open title=準備 -->` で 3 項目の番号付きリストを囲んだ範囲を並べた文書'
@@ -115,9 +115,9 @@ scenarios:
     flow: |-
       sequenceDiagram
         actor U as 利用者
-        participant P as 使う側のページ
+        participant P as 利用側のページ
         participant M as mdmark
-        P->>M: 設定と Markdown を渡して描かせる
+        P->>M: 設定と Markdown を指定して描かせる
         M-->>P: 1 つ目の手順を閉じた折りたたみ、2 つ目を開いた折りたたみに入れて描く
         U->>P: 1 つ目の折りたたみの見出しを押す
         P-->>U: 開いた手順
@@ -126,57 +126,57 @@ scenarios:
       - 2 つ目の折りたたみの見出しが `title=` の「準備」で、描いた直後から 3 つの手順が表示されている
       - 1 つ目の見出しを押した後、手順に 1・2 の番号が出ている
     test: test_normal_when_steps_folded
-  - name: 異常シナリオ（ステップの読めない指定）
+  - name: 異常シナリオ（ステップの読み込めない指定）
     setup:
-      - name: mdmark を読むページ
+      - name: mdmark を読み込むページ
         description: 正常シナリオと同じ
-      - name: 読めない指定のステップを持つ Markdown
+      - name: 読み込めない指定のステップを持つ Markdown
         description: '`<!-- steps: closed open -->`・`<!-- steps: fold -->`・`<!-- steps: title=準備 -->` で、それぞれ 2 項目の番号付きリストを囲んだ範囲を並べた文書'
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
       sequenceDiagram
         actor U as 利用者
-        participant P as 使う側のページ
+        participant P as 利用側のページ
         participant M as mdmark
-        P->>M: 設定と Markdown を渡して描かせる
-        M->>M: closed と open の両方・closed も open も無い title= があり、知らない指定を読み飛ばす
-        M-->>P: 書き方の警告と、読めた指定だけを当てた手順を描く
-        P-->>U: 書き方の警告と手順を表示
+        P->>M: 設定と Markdown を指定して描かせる
+        M->>M: closed と open の両方・closed も open も無い title= があり、知らない指定をスキップする
+        M-->>P: 記載の警告と、読み込めた指定だけを適用した手順を描く
+        P-->>U: 記載の警告と手順を表示
     expected:
-      - 1 つ目の範囲の上に `closed` と `open` を同時に書けないこと、3 つ目の範囲の上に `title=` は `closed` か `open` と一緒に書くことを書いた書き方の警告がある
-      - 2 つ目の範囲の上に書き方の警告が無い（知らない指定 `fold` は読み飛ばす）
-      - 1 つ目の手順は `closed` を当てた閉じた折りたたみに入り、2 つ目と 3 つ目の手順は折りたたみに入らずに描かれている
+      - 1 つ目の範囲の上に `closed` と `open` を同時に記載できないこと、3 つ目の範囲の上に `title=` は `closed` か `open` と一緒に記載することを記載した記載の警告がある
+      - 2 つ目の範囲の上に記載の警告が無い（知らない指定 `fold` はスキップする）
+      - 1 つ目の手順は `closed` を適用した閉じた折りたたみに入り、2 つ目と 3 つ目の手順は折りたたみに入らずに描かれている
     test: test_error_when_steps_option_invalid
-  - name: 正常シナリオ（ファイルツリーに注釈を書く）
+  - name: 正常シナリオ（ファイルツリーに注釈を記載する）
     setup:
-      - name: mdmark を読むページ
+      - name: mdmark を読み込むページ
         description: 正常シナリオと同じ
       - name: 注釈を持つファイルツリーの Markdown
-        description: '`<!-- tree: open=all -->` の後ろに、`mdmark/` の下へ `src/ #ソース`・`` index.ts # 入口の `mount` ``・`` README.md # **必読** `badge:新規` ``・`C#/`・`#notes.md`・`...` を罫線で書いた言語 `tree` のコードブロックを持つ文書'
+        description: '`<!-- tree: open=all -->` の後ろに、`mdmark/` の下へ `src/ #ソース`・`` index.ts # 入口の `mount` ``・`` README.md # **必読** `badge:新規` ``・`C#/`・`#notes.md`・`...` を罫線で記載した言語 `tree` のコードブロックを持つ文書'
         notes: '`index.ts` は `src/` の下。そのほかは `mdmark/` の直下'
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
       sequenceDiagram
         actor U as 利用者
-        participant P as 使う側のページ
+        participant P as 利用側のページ
         participant M as mdmark
-        P->>M: 設定と Markdown を渡して描かせる
+        P->>M: 設定と Markdown を指定して描かせる
         M->>M: 項目の名前と注釈を分ける
-        M-->>P: 注釈を列に揃え、拡張子ごとのアイコンを付けたツリーを描く
+        M-->>P: 注釈を列に統一し、拡張子ごとのアイコンを付けたツリーを描く
         P-->>U: 文書を表示
     expected:
       - '`src/`・`index.ts`・`README.md` の項目の名前に `#` とその後ろが含まれず、注釈が項目の右に出ている'
-      - 3 つの注釈の左端が、階層の深さによらず同じ位置に揃っている
+      - 3 つの注釈の左端が、階層の深さによらず同じ位置に一致している
       - 注釈の中の `mount` が行内のコード、`必読` が太字、`badge:新規` が文言 `新規` の札で描かれている
       - '`C#/` が名前 `C#/` のフォルダ、`#notes.md` が名前 `#notes.md` のファイルとして出ていて、注釈を持たない'
       - '`index.ts` と `README.md` のアイコンが、拡張子ごとに違うアイコンになっている'
-      - '`...` の項目が、ファイルでもフォルダでもない「ほかにもある」の項目として出ていて、読み上げでもそう知らされる'
+      - '`...` の項目が、ファイルでもフォルダでもない「ほかにもある」の項目として出ていて、スクリーンリーダーでもそう知らされる'
     test: test_normal_when_tree_annotated
   - name: 正常シナリオ（ファイルツリーのフォルダを開閉する）
     setup:
-      - name: mdmark を読むページ
+      - name: mdmark を読み込むページ
         description: 正常シナリオと同じ
       - name: 入れ子の深いファイルツリーの Markdown
         description: 'マーカーの無い言語 `tree` のコードブロックと、`<!-- tree: open=2 -->` の後ろの言語 `tree` のコードブロックを並べた文書。どちらも `app/` の下に `src/`、その下に `parts/`、その下に `tree.ts` を持つ'
@@ -185,9 +185,9 @@ scenarios:
     flow: |-
       sequenceDiagram
         actor U as 利用者
-        participant P as 使う側のページ
+        participant P as 利用側のページ
         participant M as mdmark
-        P->>M: 設定と Markdown を渡して描かせる
+        P->>M: 設定と Markdown を指定して描かせる
         M-->>P: 1 つ目はルートだけ、2 つ目は 2 階層まで開いたツリーを描く
         U->>P: 1 つ目のツリーの src/ の名前を押す
         P-->>U: src/ を開いたツリー
@@ -204,32 +204,32 @@ scenarios:
     test: test_normal_when_tree_folders_toggled
   - name: 正常シナリオ（ASCII の罫線のファイルツリー）
     setup:
-      - name: mdmark を読むページ
+      - name: mdmark を読み込むページ
         description: 正常シナリオと同じ
       - name: ASCII の罫線の Markdown
-        description: '`tree --charset=ascii` の出力のように、`|-- `・`` `-- ``・`|   ` で `src/` の下に `index.ts` と `parts/` を書いた言語 `tree` のコードブロックを持つ文書'
+        description: '`tree --charset=ascii` の出力のように、`|-- `・`` `-- ``・`|   ` で `src/` の下に `index.ts` と `parts/` を書き込んだ言語 `tree` のコードブロックを持つ文書'
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
       sequenceDiagram
         actor U as 利用者
-        participant P as 使う側のページ
+        participant P as 利用側のページ
         participant M as mdmark
-        P->>M: 設定と Markdown を渡して描かせる
-        M->>M: ASCII の罫線を今の罫線と同じ段で読む
+        P->>M: 設定と Markdown を指定して描かせる
+        M->>M: ASCII の罫線を今の罫線と同じ階層で読み込む
         M-->>P: 入れ子のツリーを描く
         P-->>U: 文書を表示
     expected:
       - コードブロックが入れ子のツリーになり、`src/` と `parts/` がフォルダ、`index.ts` がファイルとして出ている
       - 項目の名前に `|`・`` ` ``・`--` が含まれていない
-      - 書き方の警告は出ていない
+      - 記載の警告は出ていない
     test: test_normal_when_tree_ascii
   - name: 正常シナリオ（ファイルツリーをコピーする）
     setup:
-      - name: mdmark を読むページ
+      - name: mdmark を読み込むページ
         description: 正常シナリオと同じ
       - name: 注釈を持つファイルツリーの Markdown
-        description: 正常シナリオ（ファイルツリーに注釈を書く）のコードブロックを、マーカーを付けずに持つ文書
+        description: 正常シナリオ（ファイルツリーに注釈を記載する）のコードブロックを、マーカーを付けずに持つ文書
       - name: クリップボードの権限
         description: ページにクリップボードへの書き込みと読み取りを許す
       - name: Mock
@@ -237,20 +237,20 @@ scenarios:
     flow: |-
       sequenceDiagram
         actor U as 利用者
-        participant P as 使う側のページ
+        participant P as 利用側のページ
         participant M as mdmark
-        P->>M: 設定と Markdown を渡して描かせる
+        P->>M: 設定と Markdown を指定して描かせる
         M-->>P: コピーボタンを持つツリーを描く
         U->>P: コピーボタンを押す
-        M->>M: 元の罫線のテキストをクリップボードへ書く
-        P-->>U: コピーしたことを知らせる
+        M->>M: 元の罫線のテキストをクリップボードへ書き込む
+        P-->>U: コピーしたことを通知する
     expected:
-      - クリップボードの中身が、コードブロックに書いた罫線・注釈を含むテキストと一致する（閉じたフォルダの中の行も含む）
-      - コピーしたことがボタンの表示と読み上げで知らされる
+      - クリップボードの中身が、コードブロックに書き込んだ罫線・注釈を含むテキストと一致する（閉じたフォルダの中の行も含む）
+      - コピーしたことがボタンの表示とスクリーンリーダーで知らされる
     test: test_normal_when_tree_copied
-  - name: 異常シナリオ（ファイルツリーをクリップボードに書けない）
+  - name: 異常シナリオ（ファイルツリーをクリップボードに書き込めない）
     setup:
-      - name: mdmark を読むページ
+      - name: mdmark を読み込むページ
         description: 正常シナリオと同じ
       - name: ファイルツリーの Markdown
         description: 正常シナリオと同じ言語 `tree` のコードブロックを持つ文書
@@ -261,67 +261,67 @@ scenarios:
     flow: |-
       sequenceDiagram
         actor U as 利用者
-        participant P as 使う側のページ
+        participant P as 利用側のページ
         participant M as mdmark
-        P->>M: 設定と Markdown を渡して描かせる
+        P->>M: 設定と Markdown を指定して描かせる
         M-->>P: コピーボタンを持つツリーを描く
         U->>P: コピーボタンを押す
         M->>M: クリップボードへの書き込みが拒まれる
         P-->>U: コピーする中身を選択したパネル
     expected:
-      - コピーできなかったことと手でコピーできることが知らされ、読み上げでも知らされる
+      - コピーできなかったことと手でコピーできることが知らされ、スクリーンリーダーでも知らされる
       - パネルの中に、元の罫線のテキストが全て選択された状態で出ている
       - パネルは閉じるボタンと Esc で閉じ、フォーカスがコピーボタンへ戻る
     test: test_error_when_tree_clipboard_denied
-  - name: 異常シナリオ（ファイルツリーの読めない open=）
+  - name: 異常シナリオ（ファイルツリーの読み込めない open=）
     setup:
-      - name: mdmark を読むページ
+      - name: mdmark を読み込むページ
         description: 正常シナリオと同じ
-      - name: 読めない open= の Markdown
+      - name: 読み込めない open= の Markdown
         description: '`<!-- tree: open=deep -->` の後ろに、正常シナリオ（ファイルツリーのフォルダを開閉する）と同じコードブロックを持つ文書'
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
       sequenceDiagram
         actor U as 利用者
-        participant P as 使う側のページ
+        participant P as 利用側のページ
         participant M as mdmark
-        P->>M: 設定と Markdown を渡して描かせる
-        M->>M: open= の値を読めない
-        M-->>P: 書き方の警告と、既定の開閉のツリーを描く
-        P-->>U: 書き方の警告とツリーを表示
+        P->>M: 設定と Markdown を指定して描かせる
+        M->>M: open= の値を読み込めない
+        M-->>P: 記載の警告と、既定の開閉のツリーを描く
+        P-->>U: 記載の警告とツリーを表示
     expected:
-      - ツリーの上に、`open=` の値には `all` か階層の数を書くことを書いた書き方の警告がある
+      - ツリーの上に、`open=` の値には `all` か階層の数を記載することを記載した記載の警告がある
       - ツリーは既定のとおり `app/` だけを開いて描かれている
     test: test_error_when_tree_open_invalid
   - name: 正常シナリオ（アイコン・キー・ルビ）
     setup:
-      - name: mdmark を読むページ
+      - name: mdmark を読み込むページ
         description: 正常シナリオと同じ
       - name: アイコン・キー・ルビを持つ Markdown
         description: 見出し ``## `icon:flag` はじめに``、段落の行内のコード `` `icon:check` ``・`` `kbd:Ctrl+C` ``、文書の HTML の `<ruby>漢字<rt>かんじ</rt></ruby>` を持つ文書
-        notes: '`flag`・`check` は配布物に束ねたアイコンの名前。`kbd:` の `+` の区切り方はインターフェース定義で決める'
+        notes: '`flag`・`check` は配布物にまとめたアイコンの名前。`kbd:` の `+` の区切り方はインターフェース定義で決める'
       - name: Mock
         description: 正常シナリオと同じ。Lucide のアイコンへの要求を数える
     flow: |-
       sequenceDiagram
         actor U as 利用者
-        participant P as 使う側のページ
+        participant P as 利用側のページ
         participant M as mdmark
-        P->>M: 設定と Markdown を渡して描かせる
+        P->>M: 設定と Markdown を指定して描かせる
         M-->>P: アイコン・キー・ルビを描く
         P-->>U: 文書を表示
     expected:
       - 見出しの `はじめに` の前と段落に、`flag`・`check` のアイコンが描かれ、`icon:` の文字は出ていない
-      - アイコンは読み上げの対象から外れ、見出しの読み上げ名が `はじめに` になっている
-      - '`Ctrl+C` が `Ctrl` と `C` のキーの見た目で描かれ、`kbd:` の文字は出ていない'
+      - アイコンはスクリーンリーダーの対象から削除され、見出しのスクリーンリーダー向けの名前が `はじめに` になっている
+      - '`Ctrl+C` が `Ctrl` と `C` のキーの外観で描かれ、`kbd:` の文字は出ていない'
       - '`漢字` の上に `かんじ` のルビが描かれている'
       - Lucide のアイコンへの要求が 0 件
-      - 書き方の警告が出ていない
+      - 記載の警告が出ていない
     test: test_normal_when_icon_kbd_ruby
-  - name: 正常シナリオ（アイコンとキーの書き方を見せる）
+  - name: 正常シナリオ（アイコンとキーの記載方法を見せる）
     setup:
-      - name: mdmark を読むページ
+      - name: mdmark を読み込むページ
         description: 正常シナリオと同じ
       - name: 打ち消したアイコンとキーを持つ Markdown
         description: 行内のコード `` `icon\:check` `` と `` `kbd\:Ctrl+C` `` を持つ文書
@@ -330,17 +330,17 @@ scenarios:
     flow: |-
       sequenceDiagram
         actor U as 利用者
-        participant P as 使う側のページ
+        participant P as 利用側のページ
         participant M as mdmark
-        P->>M: 設定と Markdown を渡して描かせる
-        M-->>P: 打ち消しの \ を外した行内のコードを描く
+        P->>M: 設定と Markdown を指定して描かせる
+        M-->>P: 打ち消しの \ を削除した行内のコードを描く
         P-->>U: 文書を表示
     expected:
-      - 行内のコードが `icon:check`・`kbd:Ctrl+C` の文字のまま出ていて、アイコンとキーの見た目になっていない
+      - 行内のコードが `icon:check`・`kbd:Ctrl+C` の文字のまま出ていて、アイコンとキーの外観になっていない
     test: test_normal_when_icon_kbd_escaped
-  - name: 異常シナリオ（アイコンの名前の書き方が誤っている）
+  - name: 異常シナリオ（アイコンの名前の記載方法が誤っている）
     setup:
-      - name: mdmark を読むページ
+      - name: mdmark を読み込むページ
         description: 正常シナリオと同じ
       - name: 誤った名前のアイコンを持つ Markdown
         description: 行内のコード `` `icon:Rocket!` `` と `` `icon:` `` を持つ文書
@@ -350,52 +350,52 @@ scenarios:
     flow: |-
       sequenceDiagram
         actor U as 利用者
-        participant P as 使う側のページ
+        participant P as 利用側のページ
         participant M as mdmark
-        P->>M: 設定と Markdown を渡して描かせる
-        M->>M: icon: の後ろが Lucide の名前の書き方に合わない
-        M-->>P: 書き方の警告と、元の行内のコードを描く
-        P-->>U: 書き方の警告と行内のコードを表示
+        P->>M: 設定と Markdown を指定して描かせる
+        M->>M: icon: の後ろが Lucide の名前の記載方法に合わない
+        M-->>P: 記載の警告と、元の行内のコードを描く
+        P-->>U: 記載の警告と行内のコードを表示
     expected:
-      - '`icon:Rocket!` の段落の上に、名前が Lucide の名前の書き方に合わないことを書いた書き方の警告がある'
-      - '`icon:Rocket!` が書いたとおりの文字の行内のコードで出ている'
-      - 中身の無い `icon:` は `badge:` と同じく書いたとおりの行内のコードで出て、書き方の警告は出ていない
+      - '`icon:Rocket!` の段落の上に、名前が Lucide の名前の記載方法に合わないことを記載した記載の警告がある'
+      - '`icon:Rocket!` が記載したとおりの文字の行内のコードで出ている'
+      - 中身の無い `icon:` は `badge:` と同じく記載したとおりの行内のコードで出て、記載の警告は出ていない
       - Lucide のアイコンへの要求が 0 件
     test: test_error_when_icon_name_invalid
   - name: 正常シナリオ（ファイルツリーを折り返す）
     setup:
-      - name: mdmark を読むページ
+      - name: mdmark を読み込むページ
         description: 正常シナリオと同じ
         notes: 画面の幅は 390px
       - name: 折り返すマーカーを持つファイルツリーの Markdown
-        description: '`<!-- tree: open=all wrap -->` の直後に、表示の幅より長い名前のファイルを入れ子の中に持つ言語 `tree` のコードブロックと、`<!-- tree: open=all -->` の直後の同じコードブロックを置いた文書'
+        description: '`<!-- tree: open=all wrap -->` の直後に、表示の幅より長い名前のファイルを入れ子の中に持つ言語 `tree` のコードブロックと、`<!-- tree: open=all -->` の直後の同じコードブロックを配置した文書'
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
       sequenceDiagram
         actor U as 利用者
-        participant P as 使う側のページ
+        participant P as 利用側のページ
         participant M as mdmark
-        P->>M: 設定と Markdown を渡して描かせる
+        P->>M: 設定と Markdown を指定して描かせる
         M-->>P: wrap を持つツリーだけを折り返して描く
         P-->>U: 文書を表示
     expected:
       - '`wrap` のツリーの長い名前が項目の中で折り返され、ツリーに横スクロールが出ない'
-      - 折り返した名前の続きが、その項目のアイコンの右の名前の頭に揃い、罫線と入れ子の位置が `wrap` の無いツリーと同じ
+      - 折り返した名前の続きが、その項目のアイコンの右の名前の頭に一致し、罫線と入れ子の位置が `wrap` の無いツリーと同じ
       - '`wrap` の無いツリーは折り返さず、横にスクロールできる'
     test: test_normal_when_tree_wrap
-lead: 文書を書く人が、`<!-- steps -->` 〜 `<!-- /steps -->` で囲んだ番号付きリスト・言語 `tree` のコードブロック・頭に `badge:` を付けた行内のコードを書くと、mdmark がそれぞれ手順・ファイルツリー・バッジに描く。手順は `closed`・`open` で見出し付きの折りたたみに入れられ、ファイルツリーは `#` の後ろの注釈を列に揃え、読む人がフォルダを開閉して元の罫線のテキストをコピーできる。
+lead: 文書の作成者が、`<!-- steps -->` 〜 `<!-- /steps -->` で囲んだ番号付きリスト・言語 `tree` のコードブロック・頭に `badge:` を付けた行内のコードを記載すると、mdmark がそれぞれ手順・ファイルツリー・バッジに描く。手順は `closed`・`open` で見出し付きの折りたたみに入れられ、ファイルツリーは `#` の後ろの注釈を列に統一し、読者がフォルダを開閉して元の罫線のテキストをコピーできる。
 issue: 4
-primary_actor: 文書を書く人
+primary_actor: 文書の作成者
 stakeholders:
-  - name: 文書を読む人
-    interest: 手順の順番・フォルダの入れ子・状態や版の札を見て取れる
-trigger: 使う側のページが、ステップ・ファイルツリー・バッジを持つ文書を描かせる
+  - name: 読者
+    interest: 手順の順番・フォルダの入れ子・状態やバージョンの札を確認して取れる
+trigger: 利用側のページが、ステップ・ファイルツリー・バッジを持つ文書を描かせる
 preconditions:
-  - ページが版を固定した URL で mdmark の JavaScript と CSS を読んでいる
+  - ページがバージョンを固定した URL で mdmark の JavaScript と CSS を読み込んでいる
   - ステップ・ファイルツリー・バッジの機能（`steps`・`tree`・`badge`）がオン（既定）
-success_guarantee: 番号付きリストが番号と線でつないだ手順に、罫線のフォルダ構成が入れ子のツリーに、`badge:` の行内のコードが札になる。GitHub ではリスト・コードブロック・行内のコードとして読める。
-minimal_guarantee: 読めない書き方の部品は、書いたとおりのリスト・コードブロックで描かれ、上に書き方の警告が出る。
+success_guarantee: 番号付きリストが番号と線でつないだ手順に、罫線のフォルダ構成が入れ子のツリーに、`badge:` の行内のコードが札になる。GitHub ではリスト・コードブロック・行内のコードとして読み込める。
+minimal_guarantee: 読み込めない記載方法の部品は、記載したとおりのリスト・コードブロックで描かれ、上に記載の警告が出る。
 test_file: tests/e2e/単一ユースケース/ステップ・ファイルツリー・バッジで本文を組む.spec.ts
 refs:
   - dev/設計書/シナリオ/単一ユースケース/名前の色で表・バッジ・本文を強調する#

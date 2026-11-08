@@ -6,7 +6,7 @@ const holder = createBrowserHolder();
 beforeAll(holder.launch);
 afterAll(holder.close);
 
-// 色を付けた箱 2 つを横に並べ、押しても何も起きないボタンを持つ。拡大・縮小のボタンは無い（Default）
+// 色を付けたノード 2 つを横に並べ、押しても何も起きないボタンを持つ。拡大・縮小のボタンは無い（Default）
 test("test_default", async () => {
   // 準備・実行
   const page = await holder.openStory("parts-embeddedhtml--default");
@@ -28,7 +28,7 @@ test("test_default", async () => {
   await expect(pageOverflows(page)).resolves.toBe(false);
 });
 
-// 見出しと段落の間にグラフを置き、グラフだけに図の枠のボタンがある（WithChart）
+// 見出しと段落の間にグラフを配置し、グラフだけに図の枠のボタンがある（WithChart）
 test("test_with_chart", async () => {
   // 準備・実行
   const page = await holder.openStory("parts-embeddedhtml--with-chart");
@@ -64,7 +64,7 @@ test("test_wide", async () => {
   await expect(pageOverflows(page)).resolves.toBe(false);
 });
 
-// 範囲の css で範囲の箱だけの背景を変え、ts を実行しない template に入れる（WithRangeCss）
+// 範囲の css で範囲のノードだけの背景を変え、ts を実行しない template に入れる（WithRangeCss）
 test("test_with_range_css", async () => {
   // 準備・実行
   const page = await holder.openStory("parts-embeddedhtml--with-range-css");
@@ -96,7 +96,7 @@ test("test_with_range_css", async () => {
   await expect(pageOverflows(page)).resolves.toBe(false);
 });
 
-// 根の要素が class is-open を持つと、範囲の css が箱を出す（RangeScriptOpened）
+// 根の要素が class is-open を持つと、範囲の css がノードを出す（RangeScriptOpened）
 test("test_range_script_opened", async () => {
   // 準備・実行
   const page = await holder.openStory(

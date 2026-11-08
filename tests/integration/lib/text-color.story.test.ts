@@ -11,7 +11,7 @@ const holder = createBrowserHolder();
 beforeAll(holder.launch);
 afterAll(holder.close);
 
-/** 文字の色のストーリーを開き、文字の色・太さ・地の色と色のプリセットの値を返す */
+/** 文字の色のストーリーを開き、文字の色・太さ・地の色と色のプリセットの値を返却する */
 async function open(id: string, color: string) {
   const page = await holder.openStory(`parts-textcolor--${id}`);
   const span = page.locator("span.mdmark-color");
@@ -42,7 +42,7 @@ test("test_blue", async () => {
   const { span, style, preset } = await open("blue", "blue");
   // 検証
   await expect(span.innerText()).resolves.toBe(
-    "版を固定すると、使う側のページの見た目が mdmark の更新で勝手に変わりません。",
+    "バージョンを固定すると、利用側のページの外観が mdmark の更新で勝手に変わりません。",
   );
   expect(style.dataColor).toBe("blue");
   expect(style.color).toBe(preset);

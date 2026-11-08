@@ -3,7 +3,7 @@ import { escapeHtml } from "../escape.ts";
 /** テストで差し替えないときの jsDelivr の配信元（末尾の `/` を持たない） */
 export const DIST_BASE = "https://cdn.jsdelivr.net/gh/shuhei1101/mdmark";
 
-/** `{配信元}@{バージョン}/dist/{ファイル}` を返す */
+/** `{配信元}@{バージョン}/dist/{ファイル}` を返却する */
 export function distUrl(options: {
   /** 配信元（`DIST_BASE` か `MDMARK_VSCODE_DIST_BASE`） */
   base: string;
@@ -17,7 +17,7 @@ export function distUrl(options: {
 }
 
 /** インターフェース定義の制約「CSP」のとおりの `Content-Security-Policy` の値を組む */
-/** 束ねていない名前のアイコンを読む jsDelivr の origin */
+/** まとめていない名前のアイコンを読み込む jsDelivr の origin */
 const ICONS_ORIGIN = "https://cdn.jsdelivr.net";
 
 export function buildCsp(options: {
@@ -54,7 +54,7 @@ export function buildPreviewHtml(options: {
   distJs?: string;
   /** 配布物の `index.css` の URL */
   distCss?: string;
-  /** 読むバージョン */
+  /** 読み込むバージョン */
   version?: string;
   /** `media/preview.js` の `asWebviewUri` */
   scriptUri: string;
@@ -64,7 +64,7 @@ export function buildPreviewHtml(options: {
   configPath: string;
   /** 重ねた設定の `theme` の `asWebviewUri` */
   themeHref?: string | undefined;
-  /** 束ねた `extensions` のファイルの `asWebviewUri` */
+  /** まとめた `extensions` のファイルの `asWebviewUri` */
   extensions: string[];
   /** テストのときだけ `data-test` を持つ */
   test: boolean;
@@ -107,7 +107,7 @@ ${distLink}${themeLink}<link rel="stylesheet" href="${escapeHtml(options.styleUr
 `;
 }
 
-/** `crypto.getRandomValues` の 16 バイトを base64url にした文字列を返す（HTML を入れるたびに作り直す） */
+/** `crypto.getRandomValues` の 16 バイトを base64url にした文字列を返却する（HTML を入れるたびに再作成する） */
 export function createNonce(): string {
   const bytes = crypto.getRandomValues(new Uint8Array(16));
   return Buffer.from(bytes).toString("base64url");

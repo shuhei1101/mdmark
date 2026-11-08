@@ -4,7 +4,7 @@ import { addStyles } from "../../helpers/dom.ts";
 /** ミニマップを付ける処理を読み込む（実装が無い間は各テストが個別に失敗する） */
 const loadMinimap = () => import("../../../../src/diff/minimap.ts");
 
-// 1 行の高さ（px）。画面に収まらない長さにするために使う
+// 1 行の高さ（px）。画面に収まらない長さにするために使用する
 const LINE_HEIGHT = 30;
 
 const elements: HTMLElement[] = [];
@@ -29,14 +29,14 @@ function createLines(
   return lines;
 }
 
-/** 要素をページの末尾に置く */
+/** 要素をページの末尾に配置する */
 function place<T extends HTMLElement>(element: T, parent?: HTMLElement): T {
   (parent ?? document.body).append(element);
   elements.push(element);
   return element;
 }
 
-/** ミニマップを付け、後始末のために外す関数を控える */
+/** ミニマップを付け、後始末のために削除する関数を記録する */
 async function attachTracked(lines: HTMLElement): Promise<() => void> {
   const { attachMinimap } = await loadMinimap();
   const detach = attachMinimap(lines);
@@ -44,7 +44,7 @@ async function attachTracked(lines: HTMLElement): Promise<() => void> {
   return detach;
 }
 
-/** `document.body` の直下にある帯を返す */
+/** `document.body` の直下にある帯を返却する */
 function findBands(): HTMLElement[] {
   return [
     ...document.body.querySelectorAll<HTMLElement>(
@@ -53,7 +53,7 @@ function findBands(): HTMLElement[] {
   ];
 }
 
-/** 帯の印を種類ごとに数える */
+/** 帯のマーカーを種類ごとに数える */
 function countMarks(band: HTMLElement, kind: "del" | "add"): number {
   return band.querySelectorAll(`.mdmark-diff-minimap-mark[data-kind="${kind}"]`)
     .length;
@@ -95,7 +95,7 @@ afterEach(() => {
   }
 });
 
-// 画面の右端に帯を置き、削除した行と追加した行の印を並べる（正常系）
+// 画面の右端に帯を配置し、削除した行と追加した行のマーカーを並べる（正常系）
 test("test_attach_minimap", async () => {
   // 準備
   const lines = place(createLines(200, { 10: "del", 150: "add" }));
@@ -113,7 +113,7 @@ test("test_attach_minimap", async () => {
   expect(getComputedStyle(band as HTMLElement).position).toBe("fixed");
 });
 
-// 帯を押すとその位置へ送る（正常系）
+// 帯を押すとその位置へスクロールする（正常系）
 test("test_attach_minimap_when_pressed", async () => {
   // 準備
   const scrollTo = vi.spyOn(window, "scrollTo").mockImplementation(() => {});
@@ -133,7 +133,7 @@ test("test_attach_minimap_when_pressed", async () => {
   expect(options.top).toBeLessThan(total);
 });
 
-// 同じ送り先の 2 つの差分で帯を 1 本にまとめる（正常系）
+// 同じスクロール先の 2 つの差分で帯を 1 本にまとめる（正常系）
 test("test_attach_minimap_when_two_diffs", async () => {
   // 準備
   const first = place(createLines(100, { 10: "del" }));
@@ -159,7 +159,7 @@ test("test_attach_minimap_when_two_diffs", async () => {
   expect(findBands()).toHaveLength(0);
 });
 
-// スクロールする枠の中の差分は、枠の右端に置き枠を送る（正常系）
+// スクロールする枠の中の差分は、枠の右端に配置し、枠をスクロールする（正常系）
 test("test_attach_minimap_when_scroll_container", async () => {
   // 準備
   const container = place(document.createElement("div"));
@@ -171,14 +171,14 @@ test("test_attach_minimap_when_scroll_container", async () => {
     expect(findBands()).toHaveLength(1);
   });
   const [band] = findBands();
-  // 検証: 枠の右端に、枠の高さで置く
+  // 検証: 枠の右端に、枠の高さで配置する
   const bandRect = (band as HTMLElement).getBoundingClientRect();
   const containerRect = container.getBoundingClientRect();
   expect(Math.abs(bandRect.right - containerRect.right)).toBeLessThanOrEqual(1);
   expect(Math.abs(bandRect.height - containerRect.height)).toBeLessThanOrEqual(
     1,
   );
-  // 実行: 帯の下寄りを押すと枠が送られる
+  // 実行: 帯の下寄りを押すと枠が送信される
   expect(container.scrollTop).toBe(0);
   pressBand(band as HTMLElement, 0.9);
   // 検証
@@ -187,7 +187,7 @@ test("test_attach_minimap_when_scroll_container", async () => {
   });
 });
 
-// 使う側が `.mdmark` に書いた変数の上書きを帯に写し、配色が切り替わると写し直す（正常系）
+// 利用側が `.mdmark` に記載した変数の上書きを帯にコピーし、配色が切り替わるともう一度コピーする（正常系）
 test("test_attach_minimap_when_theme_overridden", async () => {
   // 準備
   const listeners = new Set<EventListener>();
@@ -224,7 +224,7 @@ test("test_attach_minimap_when_theme_overridden", async () => {
     expect(read("--mdmark-color-diff-del-sign")).toBe("#000");
   });
   expect(read("--mdmark-diff-minimap-z-index")).toBe("50");
-  // 実行: 上書きを変えて、配色の切り替えを送る
+  // 実行: 上書きを変えて、配色の切り替えを送信する
   style.textContent =
     ".mdmark { --mdmark-color-diff-del-sign: #111; --mdmark-diff-minimap-z-index: 50; }";
   for (const listener of listeners) {
@@ -236,7 +236,7 @@ test("test_attach_minimap_when_theme_overridden", async () => {
   });
 });
 
-// 祖先の class で配色が切り替わると帯に写し直す（正常系）
+// 祖先の class で配色が切り替わると帯にもう一度コピーする（正常系）
 test("test_attach_minimap_when_class_changed", async () => {
   // 準備
   document.body.classList.add("vscode-light");
@@ -265,7 +265,7 @@ test("test_attach_minimap_when_class_changed", async () => {
   }
 });
 
-// スクロールする枠の外で画面がスクロールすると、帯を枠の右端に置き直す（正常系）
+// スクロールする枠の外で画面がスクロールすると、帯を枠の右端にもう一度配置する（正常系）
 test("test_attach_minimap_when_page_scrolled", async () => {
   // 準備
   const spacer = place(document.createElement("div"));
@@ -279,7 +279,7 @@ test("test_attach_minimap_when_page_scrolled", async () => {
     expect(findBands()).toHaveLength(1);
   });
   const [band] = findBands();
-  // 大きさの監視の最初の通知が来て、帯が枠の位置に置かれるのを待つ
+  // 大きさの監視の最初の通知が来て、帯が枠の位置に配置されるのを待つ
   await new Promise((resolve) => {
     requestAnimationFrame(() => requestAnimationFrame(resolve));
   });

@@ -9,22 +9,22 @@ import {
 import { escapeHtml } from "./escape.ts";
 import { iconNodeBody, iconSvgOf } from "./icon-node.ts";
 
-/** 入力欄に出す知らせ。`empty` は本文が空のまま保存したとき、`failed` は保存できなかったとき。`updateFailed`・`removeFailed` は吹き出しで修正・削除できなかったとき、`removeConfirm` は削除の確認の文 */
+/** 入力欄に出す通知し。`empty` は本文が空のまま保存したとき、`failed` は保存できなかったとき。`updateFailed`・`removeFailed` は吹き出しで修正・削除できなかったとき、`removeConfirm` は削除の確認の文 */
 export const COMMENT_MESSAGES = {
-  empty: "コメントを書いてから保存してください。",
+  empty: "コメントを記載してから保存してください。",
   failed:
-    "コメントを保存できませんでした。書いたコメントは残っています。もう一度「コメントを保存」を押してください。",
+    "コメントを保存できませんでした。記載したコメントは残っています。もう一度「コメントを保存」を押してください。",
   updateFailed:
-    "コメントを保存できませんでした。書いたコメントは残っています。もう一度「保存」を押してください。",
+    "コメントを保存できませんでした。記載したコメントは残っています。もう一度「保存」を押してください。",
   removeFailed:
     "コメントを削除できませんでした。もう一度「削除」を押してください。",
   removeConfirm: "このコメントを削除しますか? 削除すると元に戻せません。",
 };
 
-/** コメントの印を指す読み上げの説明の `id` */
+/** コメントのマーカーを指すスクリーンリーダーの説明の `id` */
 export const COMMENT_HINT_ID = "mdmark-comment-hint";
 
-/** 余白のマーカーの読み上げ名に添える、閉じた中の種類ごとの文言 */
+/** 余白のマーカーのスクリーンリーダー向けの名前に添える、閉じた中の種類ごとの文言 */
 export const CLOSED_LABELS = {
   section: "閉じたセクションの中",
   tab: "選ばれていないタブの中",
@@ -40,16 +40,16 @@ export type CommentFormState = "idle" | "saving" | "empty" | "failed";
 /** 削除の確認の状態 */
 export type CommentRemoveState = "idle" | "removing" | "failed";
 
-/** 吹き出しの本文の欄の知らせを指す `id` の頭の既定 */
+/** 吹き出しの本文の欄の通知を指す `id` の頭の既定 */
 const EDIT_FIELD_ID = "mdmark-comment-edit";
 
-/** 「コメント」のボタンの HTML を返す */
+/** 「コメント」のボタンの HTML を返却する */
 export function renderCommentButton(): string {
   const icon = iconSvgOf(iconNodeBody(MessageSquarePlus));
   return `<button class="mdmark-comment-add" type="button">${icon}コメント</button>`;
 }
 
-/** コメントを書いて保存する入力欄の HTML を返す */
+/** コメントを記載して保存する入力欄の HTML を返却する */
 export function renderCommentForm(props: {
   /** 選んだ文字 */
   quote: string;
@@ -67,40 +67,40 @@ export function renderCommentForm(props: {
   const saving = state === "saving";
   const errorId = `${escapeHtml(id)}-error`;
   const icon = iconSvgOf(iconNodeBody(CircleAlert));
-  return `<div class="mdmark-comment-popover mdmark-comment-form" role="dialog" aria-label="コメントを書く"${saving ? ' aria-busy="true"' : ""}><form novalidate><p class="mdmark-comment-quote">「${escapeHtml(quote)}」へのコメント</p><label class="mdmark-comment-field">コメント<textarea name="body" rows="3" aria-describedby="${errorId}"${invalid ? ' aria-invalid="true"' : ""}>${escapeHtml(body)}</textarea></label><p class="mdmark-comment-error" id="${errorId}" role="alert"${invalid ? "" : " hidden"}>${icon}<span>${escapeHtml(message)}</span></p><div class="mdmark-comment-actions"><button class="mdmark-comment-button" type="button" data-action="cancel">キャンセル</button><button class="mdmark-comment-button is-primary" type="submit"${saving ? " disabled" : ""}>${saving ? "保存しています…" : "コメントを保存"}</button></div></form></div>`;
+  return `<div class="mdmark-comment-popover mdmark-comment-form" role="dialog" aria-label="コメント追加"${saving ? ' aria-busy="true"' : ""}><form novalidate><p class="mdmark-comment-quote">「${escapeHtml(quote)}」へのコメント</p><label class="mdmark-comment-field">コメント<textarea name="body" rows="3" aria-describedby="${errorId}"${invalid ? ' aria-invalid="true"' : ""}>${escapeHtml(body)}</textarea></label><p class="mdmark-comment-error" id="${errorId}" role="alert"${invalid ? "" : " hidden"}>${icon}<span>${escapeHtml(message)}</span></p><div class="mdmark-comment-actions"><button class="mdmark-comment-button" type="button" data-action="cancel">キャンセル</button><button class="mdmark-comment-button is-primary" type="submit"${saving ? " disabled" : ""}>${saving ? "保存しています…" : "コメントを保存"}</button></div></form></div>`;
 }
 
-/** コメントが付いた本文の文字を包む印の HTML を返す */
+/** コメントが付いた本文の文字を包むマーカーの HTML を返却する */
 export function renderCommentMark(props: {
   /** 包む本文の文字 */
   text: string;
   /** 吹き出しを開いているか（既定 `false`） */
   expanded?: boolean;
-  /** `focusComment` で移った印か（既定 `false`） */
+  /** `focusComment` で移ったマーカーか（既定 `false`） */
   focused?: boolean;
 }): string {
   const { text, expanded = false, focused = false } = props;
   return `<mark class="mdmark-comment-mark" tabindex="0" role="button" aria-haspopup="dialog" aria-expanded="${expanded}" aria-describedby="${COMMENT_HINT_ID}"${focused ? " data-focused" : ""}>${escapeHtml(text)}</mark>`;
 }
 
-/** 本文の欄の知らせの HTML を返す。`message` が空なら隠す */
+/** 本文の欄の通知の HTML を返却する。`message` が空なら隠す */
 function renderError(message: string, id?: string): string {
   const icon = iconSvgOf(iconNodeBody(CircleAlert));
   const idAttribute = id === undefined ? "" : ` id="${escapeHtml(id)}"`;
   return `<p class="mdmark-comment-error"${idAttribute} role="alert"${message === "" ? " hidden" : ""}>${icon}<span>${escapeHtml(message)}</span></p>`;
 }
 
-/** 吹き出しのコメント 1 件の `li` の HTML を、本文の表示・入力欄・削除の確認のどれかで返す */
+/** 吹き出しのコメント 1 件の `li` の HTML を、本文の表示・入力欄・削除の確認のどれかで返却する */
 export function renderCommentItem(props: {
   /** コメントの本文 */
   body: string;
   /** コメントの `id` */
   id?: string;
-  /** 「編集」を置くか */
+  /** 「編集」を配置するか */
   canEdit?: boolean;
-  /** 「削除」を置くか */
+  /** 「削除」を配置するか */
   canRemove?: boolean;
-  /** 入力欄にするときの本文の欄の文字・状態・知らせを指す `id` */
+  /** 入力欄にするときの本文の欄の文字・状態・通知を指す `id` */
   edit?: { draft: string; state: CommentFormState; fieldId: string };
   /** 削除の確認を出すときの状態 */
   confirm?: { state: CommentRemoveState };
@@ -142,17 +142,17 @@ export function renderCommentItem(props: {
   return `<li class="mdmark-comment-item is-icon-actions"${idAttribute}>${text}<div class="mdmark-comment-icon-actions">${buttons}</div></li>`;
 }
 
-/** 印の下に開く、その箇所に付いたコメントの本文を並べた吹き出しの HTML を返す */
+/** マーカーの下に開く、その箇所に付いたコメントの本文を並べた吹き出しの HTML を返却する */
 export function renderCommentBubble(props: {
-  /** 印の文字 */
+  /** マーカーの文字 */
   quote: string;
   /** 付いたコメントの本文（保存した順） */
   bodies: string[];
   /** コメントの `id`（`bodies` と同じ順） */
   ids?: string[];
-  /** 「編集」を置くか */
+  /** 「編集」を配置するか */
   canEdit?: boolean;
-  /** 「削除」を置くか */
+  /** 「削除」を配置するか */
   canRemove?: boolean;
   /** 入力欄にするコメントの位置 */
   editIndex?: number;
@@ -164,7 +164,7 @@ export function renderCommentBubble(props: {
   confirmIndex?: number;
   /** 削除の確認の状態（既定 `idle`） */
   removeState?: CommentRemoveState;
-  /** 本文の欄の知らせを指す `id` の頭（既定 `mdmark-comment-edit`） */
+  /** 本文の欄の通知を指す `id` の頭（既定 `mdmark-comment-edit`） */
   id?: string;
 }): string {
   const {
@@ -203,11 +203,11 @@ export function renderCommentBubble(props: {
   return `<div class="mdmark-comment-popover mdmark-comment-bubble" role="dialog" aria-label="コメント" tabindex="-1"><div class="mdmark-comment-head"><p class="mdmark-comment-quote">「${escapeHtml(quote)}」へのコメント</p><button class="mdmark-comment-close" type="button" aria-label="閉じる" title="閉じる">${close}</button></div><ul class="mdmark-comment-list">${items}</ul></div>`;
 }
 
-/** 箇所が見つからないコメントを、選んだ文字と本文の組で並べた一覧の HTML を返す。空なら空の文字 */
+/** 箇所が見つからないコメントを、選んだ文字と本文の組で並べた一覧の HTML を返却する。空なら空の文字 */
 export function renderCommentOrphans(props: {
   /** 箇所が見つからないコメント */
   comments: Array<{ quote: string; body: string }>;
-  /** 題の `id` */
+  /** タイトルの `id` */
   id: string;
 }): string {
   const { comments, id } = props;
@@ -224,7 +224,7 @@ export function renderCommentOrphans(props: {
   return `<section class="mdmark-comment-orphans" aria-labelledby="${label}"><h2 id="${label}">箇所が見つからないコメント</h2><p class="mdmark-comment-orphans-lead">本文が書き換わり、コメントを付けた文字が見つかりません。</p><ul>${items}</ul></section>`;
 }
 
-/** 本文の右の余白の列に、コメントの箇所の行の高さで置くボタンの HTML を返す */
+/** 本文の右の余白の列に、コメントの箇所の行の高さで配置するボタンの HTML を返却する */
 export function renderCommentMarker(props: {
   /** 行の最初の箇所の選んだ文字 */
   quote: string;
