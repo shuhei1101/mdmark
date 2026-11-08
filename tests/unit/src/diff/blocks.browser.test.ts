@@ -427,6 +427,76 @@ test("test_color_diff_blocks_when_one_line_paragraphs", async () => {
   }
 });
 
+// 空行だけを追加して段落を 2 つに分けた変更で、分けた後の段落に追加の色を適用する（正常系）
+test("test_color_diff_blocks_when_paragraph_split", async () => {
+  // 準備
+  const before = "段落 X\n段落 Y\n";
+  const after = "段落 X\n\n段落 Y\n";
+  // 実行
+  const colored = await colorBlocks({ before, after });
+  // 検証: 分けた後の 2 つの段落が追加の色に包まれる
+  const adds = [
+    ...colored.querySelectorAll('div.mdmark-diff-block[data-kind="add"]'),
+  ];
+  expect(adds.map(paragraphText)).toEqual(["段落 X", "段落 Y"]);
+  // 検証: 削除のブロックは無い
+  expect(colored.querySelectorAll('[data-kind="del"]')).toHaveLength(0);
+});
+
+// 空行だけを削除して 2 つの段落を 1 つにつないだ変更で、つないだ段落に追加の色を適用する（正常系）
+test("test_color_diff_blocks_when_paragraphs_joined", async () => {
+  // 準備
+  const before = "段落 X\n\n段落 Y\n";
+  const after = "段落 X\n段落 Y\n";
+  // 実行
+  const colored = await colorBlocks({ before, after });
+  // 検証: つないだ段落が追加の色に包まれる
+  const adds = [
+    ...colored.querySelectorAll('div.mdmark-diff-block[data-kind="add"]'),
+  ];
+  expect(adds.map(paragraphText)).toEqual(["段落 X\n段落 Y"]);
+  // 検証: 削除のブロックは無い
+  expect(colored.querySelectorAll('[data-kind="del"]')).toHaveLength(0);
+});
+
+// 描いた結果に要素を出さない行が範囲の末尾にあっても、手前に追加した段落だけに色を適用する（正常系）
+test("test_color_diff_blocks_when_unrendered_line_follows", async () => {
+  // 準備: リンクの参照の定義は描いた結果に要素を出さず、直前のブロックの範囲に入る
+  const before = "段落 P\n\n[ref]: https://example.com\n";
+  const after = "段落 P\n\n段落 N\n\n[ref]: https://example.com\n";
+  // 実行
+  const colored = await colorBlocks({ before, after });
+  // 検証: 段落 N だけが追加の色に包まれる
+  const adds = [
+    ...colored.querySelectorAll('div.mdmark-diff-block[data-kind="add"]'),
+  ];
+  expect(adds.map(paragraphText)).toEqual(["段落 N"]);
+  // 検証: 段落 P は包まれない
+  const p = [...colored.querySelectorAll("p")].find(
+    (element) => element.textContent === "段落 P",
+  );
+  expect(p?.closest(".mdmark-diff-block")).toBeNull();
+});
+
+// 段落の間の空行の数だけを変えた変更では、色を適用しない（正常系）
+test("test_color_diff_blocks_when_blank_lines_only", async () => {
+  // 準備
+  const before = "段落 A\n\n段落 B\n";
+  const after = "段落 A\n\n\n段落 B\n";
+  const { colorDiffBlocks } = await loadBlocks();
+  const beforeRoot = renderFragment(before);
+  const afterRoot = renderFragment(after);
+  const htmlBefore = htmlOf(afterRoot);
+  // 実行
+  colorDiffBlocks({
+    before: { root: beforeRoot, markdown: before },
+    after: { root: afterRoot, markdown: after },
+    segmenter: createSegmenter(),
+  });
+  // 検証
+  expect(htmlOf(afterRoot)).toBe(htmlBefore);
+});
+
 // 同じ本文なら何も変えない（正常系）
 test("test_color_diff_blocks_when_same", async () => {
   // 準備

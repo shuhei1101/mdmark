@@ -1,0 +1,144 @@
+$ npx vitest run --project 'unit*' tests/unit/src/diff/compute.test.ts tests/unit/src/diff/blocks.browser.test.ts
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/fix-diff-blank-line-matching
+
+ ❯ |unit| tests/unit/src/diff/compute.test.ts (10 tests | 2 failed) 4866ms
+   × test_compute_diff_when_one_line_paragraphs 7ms
+   × test_compute_diff_when_last_newline_missing 1ms
+ ❯ |unit-browser (chromium)| tests/unit/src/diff/blocks.browser.test.ts (17 tests | 2 failed) 618ms
+   × test_color_diff_blocks_when_paragraph_split 218ms
+   × test_color_diff_blocks_when_paragraphs_joined 171ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit| tests/unit/src/diff/compute.test.ts > test_compute_diff_when_one_line_paragraphs
+AssertionError: expected [ [ 'same', 'A' ], …(6) ] to deeply equal [ [ 'same', 'A' ], …(6) ]
+
+- Expected
++ Received
+
+@@ -6,25 +6,25 @@
+    [
+      "same",
+      "",
+    ],
+    [
+-     "add",
+-     "B",
++     "del",
++     "C",
+    ],
+    [
+      "add",
+-     "",
++     "B",
+    ],
+    [
+      "same",
+-     "C",
++     "",
+    ],
+    [
+      "del",
+-     "",
++     "D",
+    ],
+    [
+-     "del",
+-     "D",
++     "add",
++     "C",
+    ],
+  ]
+
+ ❯ tests/unit/src/diff/compute.test.ts:192:34
+    190|   });
+    191|   // 検証
+    192|   expect(kindsOf(result.blocks)).toEqual([
+       |                                  ^
+    193|     ["same", "A"],
+    194|     ["same", ""],
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/4]⎯
+
+ FAIL  |unit| tests/unit/src/diff/compute.test.ts > test_compute_diff_when_last_newline_missing
+AssertionError: expected { del: 1, add: 1 } to deeply equal { del: +0, add: +0 }
+
+- Expected
++ Received
+
+  {
+-   "add": 0,
+-   "del": 0,
++   "add": 1,
++   "del": 1,
+  }
+
+ ❯ tests/unit/src/diff/compute.test.ts:271:25
+    269|   });
+    270|   // 検証
+    271|   expect(result.counts).toEqual({ del: 0, add: 0 });
+       |                         ^
+    272|   const lines = allLines(result.blocks);
+    273|   expect(lines.map(textOf)).toEqual(["A", "B"]);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/4]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/diff/blocks.browser.test.ts > test_color_diff_blocks_when_paragraph_split
+AssertionError: expected [] to deeply equal [ '段落 X', '段落 Y' ]
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/blocks.browser.test.ts/test_color_diff_blocks_when_paragraph_split.png
+
+- Expected
++ Received
+
+- [
+-   "段落 X",
+-   "段落 Y",
+- ]
++ []
+
+ ❯ tests/unit/src/diff/blocks.browser.test.ts:441:35
+    439|     ...colored.querySelectorAll('div.mdmark-diff-block[data-kind="add"…
+    440|   ];
+    441|   expect(adds.map(paragraphText)).toEqual(["段落 X", "段落 Y"]);
+       |                                   ^
+    442|   // 検証: 削除のブロックは無い
+    443|   expect(colored.querySelectorAll('[data-kind="del"]')).toHaveLength(0…
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=ebe0f76f:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/4]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/diff/blocks.browser.test.ts > test_color_diff_blocks_when_paragraphs_joined
+AssertionError: expected [] to deeply equal [ '段落 X\n段落 Y' ]
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/blocks.browser.test.ts/test_color_diff_blocks_when_paragraphs_joined.png
+
+- Expected
++ Received
+
+- [
+-   "段落 X
+- 段落 Y",
+- ]
++ []
+
+ ❯ tests/unit/src/diff/blocks.browser.test.ts:457:35
+    455|     ...colored.querySelectorAll('div.mdmark-diff-block[data-kind="add"…
+    456|   ];
+    457|   expect(adds.map(paragraphText)).toEqual(["段落 X\n段落 Y"]);
+       |                                   ^
+    458|   // 検証: 削除のブロックは無い
+    459|   expect(colored.querySelectorAll('[data-kind="del"]')).toHaveLength(0…
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=ebe0f76f:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/4]⎯
+
+
+ Test Files  2 failed (2)
+      Tests  4 failed | 23 passed (27)
+   Start at  04:51:28
+   Duration  36.35s (worker 71%, import 14%, tests 14%, transform 1%)
+
