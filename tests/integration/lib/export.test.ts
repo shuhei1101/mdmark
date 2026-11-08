@@ -6,9 +6,9 @@ import { expect, test } from "vitest";
 import { STRENGTH_TEXT, wrapDirective } from "../../unit/helpers/diagrams.ts";
 import {
   copyMermaidVendor,
+  countDynamicImportsInScripts,
   GREET_SOURCE,
   GREET_WITH_IMPORT_SOURCE,
-  countDynamicImportsInScripts,
   linesOf,
   PNG_BYTES,
   readHighlightVendor,
@@ -936,7 +936,7 @@ test("test_normal_when_mermaid_embedded", async () => {
     join(dir, "guide.html"),
   );
   await page.waitForSelector(
-    'article figure.mdmark-diagram[data-diagram="mermaid"] svg',
+    'article figure.mdmark-diagram[data-diagram="mermaid"] .mdmark-mermaid > svg',
     {
       timeout: 60_000,
     },

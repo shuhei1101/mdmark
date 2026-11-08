@@ -247,7 +247,9 @@ suite("プレビューを開く", () => {
   });
 
   // CSP を広げずに、範囲の ts をページの nonce を付けた script 要素で動かす（正常系（範囲のスクリプトと CSS））
-  test("test_normal_when_mermaid", async () => {
+  test("test_normal_when_mermaid", async function () {
+    // 5MB の mermaid の読み込みと描画を最大 60 秒待つ
+    this.timeout(90000);
     // 準備
     const mermaid = await startMermaidServer();
     try {

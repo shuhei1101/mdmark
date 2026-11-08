@@ -717,7 +717,7 @@ test("test_normal_when_mermaid_embedded", async () => {
   await page.waitForSelector("article.mdmark h1");
   await page.locator('article p a[href="#/b.md"]').click();
   await page.waitForSelector(
-    'article figure.mdmark-diagram[data-diagram="mermaid"] svg',
+    'article figure.mdmark-diagram[data-diagram="mermaid"] .mdmark-mermaid > svg',
     {
       timeout: 60_000,
     },

@@ -294,7 +294,9 @@ suite("HTML に書き出す", () => {
   });
 
   // 相対パスの mermaid.url を、本体と chunk をまとめた data: の URL で埋め、Chromium で file:// で開いて描く
-  test("test_normal_when_relative_mermaid", async () => {
+  test("test_normal_when_relative_mermaid", async function () {
+    // 5MB の mermaid を esbuild-wasm で束ねる書き出しを最大 120 秒待つ
+    this.timeout(150000);
     // 準備
     const dist = join(REPO_ROOT, "node_modules", "mermaid", "dist");
     await cp(
