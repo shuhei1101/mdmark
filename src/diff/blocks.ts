@@ -309,8 +309,6 @@ export function colorDiffBlocks(options: {
     return;
   }
   const lines = classifyLines({ diff, texts });
-  /** `same` の前の行番号 */
-  const sameBefore = new Set(lines.same.keys());
   /** `same` の後の行番号から前の行番号 */
   const sameAfter = new Map(
     [...lines.same].map(([beforeLine, afterLine]) => [afterLine, beforeLine]),
@@ -344,25 +342,18 @@ export function colorDiffBlocks(options: {
     }
     return result;
   };
-  /** 前のブロックの範囲の空白だけでない `same` の行 */
-  const sameLinesBefore = (range: BlockRange): number[] =>
-    contentLines(range, "before").filter((line) => sameBefore.has(line));
-  /** 後のブロックの範囲の空白だけでない `same` の行を前の行番号にした並びが、それを含む前の同じ単位のブロックの `same` の行の並びと一致しないか */
-  const isRegrouped = (range: BlockRange): boolean => {
-    const mapped = contentLines(range, "after").flatMap((line) => {
-      const beforeLine = sameAfter.get(line);
-      return beforeLine === undefined ? [] : [beforeLine];
-    });
-    const first = mapped[0];
-    if (first === undefined) {
-      return false;
-    }
-    const owner = beforeRanges
+  /** 同じ単位のブロックのうち、行を範囲に含む最も狭いもの */
+  const ownerOf = (
+    ranges: BlockRange[],
+    unit: BlockUnit,
+    line: number,
+  ): BlockRange | undefined =>
+    ranges
       .filter(
         (candidate) =>
-          candidate.unit === range.unit &&
-          candidate.start <= first &&
-          first <= candidate.end,
+          candidate.unit === unit &&
+          candidate.start <= line &&
+          line <= candidate.end,
       )
       .reduce<BlockRange | undefined>(
         (narrowest, candidate) =>
@@ -372,19 +363,41 @@ export function colorDiffBlocks(options: {
             : narrowest,
         undefined,
       );
-    if (owner === undefined) {
-      return false;
+  /** ブロックの開始の行が動いた（空行で分けた・つないだ）後のブロック */
+  const regrouped = new Set<BlockRange>();
+  for (const range of afterRanges) {
+    const beforeLine = sameAfter.get(range.start);
+    if (beforeLine === undefined) {
+      continue;
     }
-    const expected = sameLinesBefore(owner);
-    return (
-      expected.length !== mapped.length ||
-      expected.some((line, position) => line !== mapped[position])
-    );
-  };
+    const owner = ownerOf(beforeRanges, range.unit, beforeLine);
+    if (owner === undefined || owner.start === beforeLine) {
+      continue;
+    }
+    // 前の 1 つのブロックの途中から始まる後のブロックと、そのブロックの頭から始まる後のブロック
+    regrouped.add(range);
+    const head = lines.same.get(owner.start);
+    const headRange =
+      head === undefined ? undefined : ownerOf(afterRanges, range.unit, head);
+    if (headRange !== undefined) {
+      regrouped.add(headRange);
+    }
+  }
+  for (const range of beforeRanges) {
+    const afterLine = lines.same.get(range.start);
+    if (afterLine === undefined) {
+      continue;
+    }
+    // 前のブロックの開始の行を途中に含む後のブロック
+    const owner = ownerOf(afterRanges, range.unit, afterLine);
+    if (owner !== undefined && owner.start !== afterLine) {
+      regrouped.add(owner);
+    }
+  }
   /** 後のブロックの範囲に空白だけでない追加した行があるか、分け直したブロックか */
   const isAdded = (range: BlockRange): boolean =>
     contentLines(range, "after").some((line) => lines.added.has(line)) ||
-    isRegrouped(range);
+    regrouped.has(range);
   /** 前のブロックの範囲の行が全て削除した行か */
   const isRemoved = (range: BlockRange): boolean => {
     const content = contentLines(range, "before");
