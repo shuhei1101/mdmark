@@ -712,12 +712,12 @@ functions:
     container: src/parts/diagram.ts
     kind: 関数
     scope: internal
-    summary: 部品設計『図の枠』の HTML。題・ボタンの帯（縮小・倍率・拡大・全画面。倍率のボタンは全体が収まる倍率を 100% とした等幅の数字の `{倍率}%` と読み上げの名前 `倍率 {倍率}%。全体が収まる倍率に戻す`。`zoom` は定義の大きさを 1 とする倍率で、大きさの箱と中身の `scale()` に使う。倍率のボタンの文字は `zoom / fit`、縮小の `disabled` と移動のボタンの有無は `zoom <= fit`、拡大の `disabled` は `zoom >= ZOOM.max` で決める。`fit` は省くと 1）・表示する枠・ツールチップの中身・凡例を並べ、表示する枠に `body` を差す。`resizable` が `true`（既定。`modal` のときは置かない）なら表示する箱の右下に部品設計『図の枠』のリサイズハンドル（`div.mdmark-diagram-resize`。`aria-valuenow` などは `mount` が付ける）を置き、`legend` が空なら凡例の `ul` に `hidden` を付ける。`stickyTitles` が `false` のときは `figure` に `data-sticky-titles="off"` を付ける。`id` は `render` の中の通し番号で文書の中で一意にする
+    summary: 部品設計『図の枠』の HTML。題・ボタンの帯（縮小・倍率・拡大・全画面。倍率のボタンは全体が収まる倍率を 100% とした等幅の数字の `{倍率}%` と読み上げの名前 `倍率 {倍率}%。全体が収まる倍率に戻す`。`zoom` は定義の大きさを 1 とする倍率で、大きさの箱と中身の `scale()` に使う。倍率のボタンの文字は `zoom / fit`、縮小の `disabled` と移動のボタンの有無は `zoom <= fit`、拡大の `disabled` は `zoom >= ZOOM.max` で決める。`fit` は省くと 1）・表示する枠・ツールチップの中身・凡例を並べ、表示する枠に `body` を差す。`resizable` が `true`（既定。`modal` のときは置かない）なら表示する箱の右下に部品設計『図の枠』のリサイズハンドル（`div.mdmark-diagram-resize`。`aria-valuenow` などは `mount` が付ける）を置き、`legend` が空なら凡例の `ul` に `hidden` を付ける。`stickyTitles` が `false` のときは `figure` に `data-sticky-titles="off"` を付ける。`scope`・`updated` を持たない（種類 `mermaid`）ときは、題に範囲と更新日を出さない。`fitMin` を渡したときは `figure` に `data-fit-min` を付ける。`id` は `render` の中の通し番号で文書の中で一意にする
     args:
       - name: frame
-        type: '{ kind; title; scope; updated; legend; zoom?; fit?; modal?; resizable?: boolean; stickyTitles?: boolean; id: string }'
+        type: '{ kind; title; scope?; updated?; legend; zoom?; fit?; fitMin?: number; modal?; resizable?: boolean; stickyTitles?: boolean; id: string }'
         required: true
-        description: 部品設計の引数と、題・ツールチップに使う `id` の頭
+        description: 部品設計の引数と、開いたときの倍率の下限（`fitMin`。mermaid の図が渡す）と、題・ツールチップに使う `id` の頭
       - name: body
         type: '{ html: string; width: number; height: number; tips: string }'
         required: true
@@ -756,6 +756,12 @@ functions:
         condition: '`legend: []`、`stickyTitles: false`'
         mock: なし
         expected: '`aria-label="凡例"` の `ul` が `hidden` を持ち、`figure` が `data-sticky-titles="off"` を持つ'
+      - name: test_render_diagram_frame_when_mermaid
+        case: 正常
+        summary: 種類 mermaid は範囲と更新日を出さず、倍率の下限を付ける
+        condition: '`kind` が `mermaid`、`title` が `問い合わせの受付`、`scope`・`updated` を省き、`legend: []`、`fitMin: 0.75`'
+        mock: なし
+        expected: '`figure` が `data-diagram="mermaid"`・`data-fit-min="0.75"` を持ち、`figcaption` の文字が `問い合わせの受付` だけで `time` 要素が無い'
   - name: renderFlow
     title: フロー図を描く
     container: src/parts/diagram.ts
@@ -1145,12 +1151,12 @@ functions:
     container: src/interact/diagrams.ts
     kind: 関数
     scope: internal
-    summary: '`root` の中の `figure.mdmark-diagram` ごとに、`fitScale` で開いたときの倍率を当て、縮小・拡大・倍率のボタン（倍率のボタンは `0` と同じく開いたときの倍率と位置に戻し、倍率が変わるたびに文字と読み上げの名前を書き換える）・`+`・`-`・`0`・矢印キー・余白のドラッグ・全画面のボタンを付ける。倍率は図の中身に `transform: scale()` を掛け、大きさの箱を倍率を掛けた大きさにしてスクロールさせる。文書の中の表示する枠は、開いたときと開いたときの倍率に戻したときに `style.height` を定義の高さ × 全体が収まる倍率と `--mdmark-diagram-max-height` の計算値（`style.maxHeight` を外して読む `getComputedStyle` の `maxHeight`）の小さいほうにし、倍率を当てるたびに `style.maxHeight` を定義の高さ × 今の倍率にする（使う側が高さを変えたとき、36rem で止めず図の全体が収まる高さまで広げられる）。全画面に写す枠は `style.height` と `style.maxHeight` を外す。印刷では CSS（`@media print .mdmark`）がインラインの高さと上限を外す。表示する枠の大きさを `ResizeObserver` で見て、開いたときの倍率のままなら求め直す。ER 図の図には `attachErFolds` を付ける。ホイールは受け取らない。倍率と移動の操作（ボタン・`+`・`-`・`0`・矢印キー・ドラッグ）は `attachZoom` に `percentBase: "fit"` で任せ、表示する枠の高さの付け替えだけをこの関数が持つ。`fitHeight` は関数で渡し、リサイズハンドルで高さを変えた後だけ `true` を返す。図ごとに `attachDiagramTips` を付け、`attachZoom` の `onPanStart` でその `closeOpen` を呼ぶ。`div.mdmark-diagram-resize` を持つ図には `attachDiagramResize` を付け（キーは `diagramHeightKey` に `location.pathname`・`root` の中の `figure.mdmark-diagram` の順・題名を渡す。保った高さがあればその高さで開く）、高さを変えたら `attachZoom` の `refit()` を呼ぶ。`data-sticky-titles` が `off` でないフロー図は、表示する枠の `scroll` ごとに `data-sticky-top` を持つタイトルを `stickyTitleShifts` の量で `transform: translateY()` し、留めたものに class `is-stuck` を付ける'
+    summary: '`root` の中の `figure.mdmark-diagram` ごとに、`fitScale` で開いたときの倍率を当て（`data-fit-min` を持つ図は、その値より小さくしない）、縮小・拡大・倍率のボタン（倍率のボタンは `0` と同じく開いたときの倍率と位置に戻し、倍率が変わるたびに文字と読み上げの名前を書き換える）・`+`・`-`・`0`・矢印キー・余白のドラッグ・全画面のボタンを付ける。倍率は図の中身に `transform: scale()` を掛け、大きさの箱を倍率を掛けた大きさにしてスクロールさせる。文書の中の表示する枠は、開いたときと開いたときの倍率に戻したときに `style.height` を定義の高さ × 全体が収まる倍率と `--mdmark-diagram-max-height` の計算値（`style.maxHeight` を外して読む `getComputedStyle` の `maxHeight`）の小さいほうにし、倍率を当てるたびに `style.maxHeight` を定義の高さ × 今の倍率にする（使う側が高さを変えたとき、36rem で止めず図の全体が収まる高さまで広げられる）。全画面に写す枠は `style.height` と `style.maxHeight` を外す。印刷では CSS（`@media print .mdmark`）がインラインの高さと上限を外す。表示する枠の大きさを `ResizeObserver` で見て、開いたときの倍率のままなら求め直す。ER 図の図には `attachErFolds` を付ける。ホイールは受け取らない。倍率と移動の操作（ボタン・`+`・`-`・`0`・矢印キー・ドラッグ）は `attachZoom` に `percentBase: "fit"` で任せ、表示する枠の高さの付け替えだけをこの関数が持つ。`fitHeight` は関数で渡し、リサイズハンドルで高さを変えた後だけ `true` を返す。図ごとに `attachDiagramTips` を付け、`attachZoom` の `onPanStart` でその `closeOpen` を呼ぶ。`div.mdmark-diagram-resize` を持つ図には `attachDiagramResize` を付け（キーは `diagramHeightKey` に `location.pathname`・`root` の中の `figure.mdmark-diagram` の順・題名を渡す。保った高さがあればその高さで開く）、高さを変えたら `attachZoom` の `refit()` を呼ぶ。`data-sticky-titles` が `off` でないフロー図は、表示する枠の `scroll` ごとに `data-sticky-top` を持つタイトルを `stickyTitleShifts` の量で `transform: translateY()` し、留めたものに class `is-stuck` を付ける'
     args:
       - name: options
-        type: '{ root: HTMLElement; placement: TooltipPlacement; storage?: Storage | null }'
+        type: '{ root: HTMLElement; placement: TooltipPlacement; storage?: Storage | null; figures?: HTMLElement[] }'
         required: true
-        description: 描いた要素と、図のツールチップを先に出す側（設定の `tooltips.diagramPlacement`。`attachDiagramTips` と `openDiagramDialog` へ渡す）と、高さを保つ先（既定は `sessionStorage`。読めないときは `null`。単体テストで差し替える）
+        description: 描いた要素と、図のツールチップを先に出す側（設定の `tooltips.diagramPlacement`。`attachDiagramTips` と `openDiagramDialog` へ渡す）と、高さを保つ先（既定は `sessionStorage`。読めないときは `null`。単体テストで差し替える）と、付ける図（省くと `root` の中の全ての `figure.mdmark-diagram`。mermaid の図は描いた後に渡す。高さのキーの通し番号は `figures` を渡しても `root` の中の順）
     returns:
       type: () => void
       description: 付けた操作と監視を外し、開いている全画面を閉じる関数
@@ -1220,6 +1226,12 @@ functions:
         condition: モックの `inquiry-groups` の図と、`data-sticky-titles="off"` の同じ図。どちらも拡大を 2 回押し、表示する枠の `scrollTop` を処理の層の途中まで増やす
         mock: なし
         expected: 1 つ目の図の枠と処理の層のタイトルが `is-stuck` と `translateY` を持ち、2 つ目の図のタイトルは `transform` を持たない
+      - name: test_attach_diagrams_when_figures_given
+        case: 正常
+        summary: 渡した図だけに付け、倍率の下限を守る
+        condition: 幅 300px の要素に、幅 1100 のフロー図と、`data-fit-min="0.75"` を持つ幅 1100 の図。`figures` に後者だけを渡す
+        mock: なし
+        expected: 後者の中身の `transform` が `scale(0.75)` で、拡大のボタンで倍率が変わる。前者の拡大のボタンを押しても倍率が変わらない
   - name: openDiagramDialog
     title: 図を全画面で開く
     container: src/interact/diagrams.ts

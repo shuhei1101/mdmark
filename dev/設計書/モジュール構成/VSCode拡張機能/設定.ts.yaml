@@ -48,7 +48,7 @@ data_models:
     title: mount に渡す設定
     container: vscode/src/config.ts
     usecase: 共通
-    summary: 設定ファイルから取り出した `features`・`libraries`・`html-scripts`・`side-toc`・`labels`・`colorTheme`・`colorScheme`。`render` の `config` と書き出す HTML の `config` になる
+    summary: 設定ファイルから取り出した `features`・`libraries`・`html-scripts`・`side-toc`・`labels`・`mermaid`・`colorTheme`・`colorScheme`。`render` の `config` と書き出す HTML の `config` になる
     properties:
       - name: features
         type: Record<string, unknown> | undefined
@@ -62,6 +62,9 @@ data_models:
       - name: labels
         type: Record<string, unknown> | undefined
         description: 書いた値のまま（中の知らないキーと、空文字・文字列でない値は mdmark が無視して既定の文言で描く）
+      - name: mermaid
+        type: Record<string, unknown> | undefined
+        description: 書いた値のまま。`url` は呼ぶ側が直す（mermaid の URL を直す）。`theme` の知らない名前は mdmark が `mdmark` で描く
       - name: colorTheme
         type: string | undefined
         description: 設定ファイルに書いた値のまま。`mdmark.colorTheme` が空でないときは `applyColorTheme` がその値に置き換える（知らない名前は mdmark が dev-swiss で描く）
@@ -77,7 +80,7 @@ data_models:
     properties:
       - name: config
         type: PreviewConfig
-        description: 重ねた設定のうち、マップの `features`・`libraries`・`html-scripts`・`side-toc`・`labels` と文字列の `colorTheme`・`colorScheme`。読めない・形の合わないファイルは重ねずに残りを重ねた値。相対パスはその値を書いた設定ファイルのフォルダから解決した絶対パス
+        description: 重ねた設定のうち、マップの `features`・`libraries`・`html-scripts`・`side-toc`・`labels`・`mermaid` と文字列の `colorTheme`・`colorScheme`。読めない・形の合わないファイルは重ねずに残りを重ねた値。相対パスはその値を書いた設定ファイルのフォルダから解決した絶対パス
       - name: theme
         type: string | undefined
         description: 重ねた設定の `theme` の絶対パス
@@ -298,7 +301,7 @@ functions:
          - そのファイルが無い（`isFile` が `false`）場合、`explicit` を渡さず、`isFile` を常に `false` を返す関数にして呼ぶ（上へ探さず、端末の設定だけを重ねる）
       2. 設定を重ねて読む（設定を重ねて読む。`explicitName` は `mdmark.configPath`）
       3. 結果を `ConfigLoad` にする
-         - `config` は重ねた設定のうち、値がマップの `features`・`libraries`・`html-scripts`・`side-toc`・`labels` と、値が文字列の `colorTheme`・`colorScheme` だけ
+         - `config` は重ねた設定のうち、値がマップの `features`・`libraries`・`html-scripts`・`side-toc`・`labels`・`mermaid` と、値が文字列の `colorTheme`・`colorScheme` だけ
          - `files` は重ねた設定ファイルの `path`、`theme`・`extensions`・`assetsRoot` は重ねた設定の `theme`・`extensions`・`assets.root`
          - `unreadable` がある場合、`problem` は `{ path, line, message }`。無く `issues` がある場合、`problem` は `{ path: issues[0].file, settingKey: issues[0].where, message: issues[0].message }`
       4. `purpose` が `preview` で重ねた設定に `aliases` がある場合、エイリアスを読む（エイリアスを読む）
@@ -436,12 +439,40 @@ functions:
     status: planned
     introduced:
       pr: 303
+  - name: resolveMermaid
+    title: mermaid の URL を直す
+    kind: 関数
+    container: vscode/src/config.ts
+    usecase: 共通
+    summary: '`mermaid.url` が `http:`・`https:` でない文字列なら、設定ファイルのフォルダから解決した絶対パスを `toUrl` で URL にした `mermaid` を返す。それ以外はそのまま返す（`resolveHtmlScripts` と同じ直し方）'
+    scope: public
+    args:
+      - name: options
+        type: '{ mermaid: Record<string, unknown>; configDir: string; toUrl: (path: string) => string }'
+        required: true
+        description: 取り出した `mermaid`、設定ファイルのあるフォルダ、絶対パスを読める URL にする関数
+    returns:
+      type: Record<string, unknown>
+      description: '`url` を直した `mermaid`。`theme`・`themeVariables` はそのまま'
+    unit_tests:
+      - name: test_resolve_mermaid
+        case: 正常
+        summary: 相対パスの url だけを設定ファイルのフォルダから直し、ほかのキーを残す
+        condition: '`{ url: "./libs/mermaid.mjs", theme: "neutral" }`・`{ url: "https://cdn.example.com/mermaid.mjs" }`・`{ theme: "dark" }`、`configDir` が `/ws/docs`、`toUrl` が頭に `web:` を付ける'
+        mock: なし
+        expected: '`{ url: "web:/ws/docs/libs/mermaid.mjs", theme: "neutral" }`・`{ url: "https://cdn.example.com/mermaid.mjs" }`・`{ theme: "dark" }`'
+    refs:
+      - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを描き直す.ts#constraints[libraries の URL]
+      - dev/設計書/インターフェース定義/VSCode拡張機能/HTMLに書き出す.ts#constraints[設定と相対パス]
+    status: planned
+    introduced:
+      pr: 382
   - name: libraryOrigins
     title: libraries の配信元を拾う
     kind: 関数
     container: vscode/src/config.ts
     usecase: VSCodeでプレビューを開く
-    summary: '`libraries` の値と `html-scripts.url`（無ければライブラリ本体の既定の URL）のうち `http:`・`https:` の URL の origin を、重なりを除いて返す（CSP の `script-src` に使う）'
+    summary: '`libraries` の値と `html-scripts.url`・`mermaid.url`（どちらも無ければライブラリ本体の既定の URL）のうち `http:`・`https:` の URL の origin を、重なりを除いて返す（CSP の `script-src` に使う）'
     scope: public
     args:
       - name: libraries
@@ -452,6 +483,10 @@ functions:
         type: Record<string, unknown> | undefined
         required: false
         description: 取り出した `html-scripts`
+      - name: mermaid
+        type: Record<string, unknown> | undefined
+        required: false
+        description: 取り出した `mermaid`
     returns:
       type: string[]
       description: origin の並び
@@ -468,6 +503,12 @@ functions:
         condition: '`libraries` が `{ a: "https://cdn.example.com/a.js" }` で、`htmlScripts` が `{ url: "https://babel.example.com/b.mjs" }` のときと `{ url: "./babel.mjs" }` のとき'
         mock: なし
         expected: '前者は `["https://cdn.example.com", "https://babel.example.com"]`、後者は `["https://cdn.example.com"]`'
+      - name: test_library_origins_when_mermaid
+        case: 正常
+        summary: mermaid.url の http・https の origin を足し、相対パスでは足さない
+        condition: '`libraries` が `{}`、`htmlScripts` が `{ url: "./babel.mjs" }` で、`mermaid` が `{ url: "https://mermaid.example.com/m.mjs" }` のときと `{ url: "./m.mjs" }` のとき'
+        mock: なし
+        expected: '前者は `["https://mermaid.example.com"]`、後者は `[]`'
     refs:
       - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを開く.ts#constraints[CSP]
     status: planned

@@ -1,0 +1,592 @@
+title: "ライブラリ本体 / mermaid"
+lead: '`mount` が描いた mermaid のコードブロックを、mermaid で描いた SVG の図の枠に置き換える処理。描く先の CSS 変数から mermaid のテーマの変数を作り、配色の明暗が変わったら描き直す。ソースの読み取りと図の部品の HTML は DOM を使わず、読み込みと描画はブラウザでだけ動く。'
+directory: |-
+  ```tree
+  src/
+  ├── mermaid.ts          # mermaid を読んで図にする attachMermaid と、埋めたモジュールの控え・テーマの変数の解決・actor のアイコンの置き換え
+  ├── mermaid-source.ts   # ソースのタイトルの取り出し・図の種類の名前・テーマの変数の対応表（DOM を使わない）
+  └── parts/
+      └── mermaid.ts      # 部品『mermaid の図』の renderMermaidDiagram
+  ```
+diagrams:
+  - name: 全体
+    diagram: |-
+      ```mermaid
+      classDiagram
+        direction LR
+        class mermaidの図を付ける
+        class テーマの変数を作る
+        class 色をhexにする
+        class タイトルを取り出す
+        class 図の種類の名前を引く
+        class actorのアイコンを替える
+        class mermaidの図を描く
+        class 図の枠を描く
+        mermaidの図を付ける --> テーマの変数を作る : 描くたびに呼ぶ
+        テーマの変数を作る --> 色をhexにする
+        mermaidの図を付ける --> タイトルを取り出す
+        mermaidの図を付ける --> 図の種類の名前を引く : タイトルが無いとき
+        mermaidの図を付ける --> actorのアイコンを替える
+        mermaidの図を付ける --> mermaidの図を描く
+        mermaidの図を付ける --> 図の枠を描く
+      ```
+data_models:
+  - name: MermaidModule
+    title: mermaid のモジュール
+    container: src/mermaid.ts
+    usecase: mermaidの図を描く
+    summary: '`import()` で読んだ mermaid の ES モジュールが既定のエクスポートで持つ形'
+    properties:
+      - name: initialize
+        type: '(config: Record<string, unknown>) => void'
+        description: ページの中で 1 つの mermaid の設定を置き換える
+      - name: render
+        type: '(id: string, source: string) => Promise<{ svg: string }>'
+        description: ソースを SVG の文字列にする。解釈できないソースは例外で拒否し、文書の `#d{id}` にエラーの図を残す
+    refs:
+      - dev/設計書/外部ライブラリ/mermaid#
+  - name: MermaidSource
+    title: mermaid のソースの読み取り
+    container: src/mermaid-source.ts
+    usecase: mermaidの図を描く
+    summary: '`splitMermaidTitle` の戻り値'
+    properties:
+      - name: title
+        type: string | undefined
+        description: front matter の `title`、無ければ `accTitle` の値。どちらも無ければ持たない
+      - name: body
+        type: string
+        description: mermaid の `render` に渡すソース。front matter から `title` の行を除き、ほかの行が無ければ front matter ごと除く
+      - name: kind
+        type: string
+        description: 図の種類の行の最初の語（`flowchart`・`sequenceDiagram` など）。無ければ空
+constants:
+  - name: embeddedMermaid
+    title: 埋めた mermaid のモジュールの控え
+    container: src/mermaid.ts
+    summary: '`setEmbeddedMermaid` が入れる、同じスクリプトに束ねた mermaid のモジュール（`{ default?: MermaidModule }`）。`undefined` なら `mermaid.url` から読む。モジュールの中の `let` で持ち、ページの中の全ての `mount` に効く'
+    value: undefined
+  - name: renderQueue
+    title: mermaid の描画の順番
+    container: src/mermaid.ts
+    summary: '`initialize` と `render` の組を 1 つずつ流す Promise の鎖。mermaid の設定はページの中で 1 つのため、別の `mount` や描き直しの描画を重ねない'
+    value: Promise.resolve()
+  - name: MERMAID_KIND_NAMES
+    title: 図の種類の名前
+    container: src/mermaid-source.ts
+    summary: タイトルが無いときに図の枠のタイトルにする、図の種類の行の最初の語から引く名前。表に無い語は `図`
+    entries:
+      - key: flowchart
+        value: フローチャート
+      - key: graph
+        value: フローチャート
+      - key: sequenceDiagram
+        value: シーケンス図
+      - key: classDiagram
+        value: クラス図
+      - key: stateDiagram
+        value: 状態遷移図
+      - key: stateDiagram-v2
+        value: 状態遷移図
+      - key: erDiagram
+        value: ER 図
+      - key: gantt
+        value: ガントチャート
+      - key: pie
+        value: 円グラフ
+    refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[mermaid の描き方]
+  - name: MERMAID_THEME_COLORS
+    title: テーマの変数と CSS 変数の対応表
+    container: src/mermaid-source.ts
+    summary: テーマ `mdmark` で、mermaid の `base` テーマの変数ごとに元にする mdmark の CSS 変数。値はモック `dev/mock/refs/382/assets/mermaid.js` の `COLOR_VARIABLES`（確認ログのモックへの合意）
+    entries:
+      - key: background
+        value: --mdmark-color-bg
+      - key: primaryColor
+        value: --mdmark-color-surface
+      - key: primaryTextColor
+        value: --mdmark-color-text
+      - key: primaryBorderColor
+        value: --mdmark-color-border
+      - key: secondaryColor
+        value: --mdmark-color-surface
+      - key: tertiaryColor
+        value: --mdmark-color-bg
+      - key: lineColor
+        value: --mdmark-color-diagram-line
+      - key: textColor
+        value: --mdmark-color-text
+      - key: noteBkgColor
+        value: --mdmark-color-surface
+      - key: noteTextColor
+        value: --mdmark-color-text
+      - key: noteBorderColor
+        value: --mdmark-color-border
+      - key: actorBkg
+        value: --mdmark-color-surface
+      - key: actorBorder
+        value: --mdmark-color-border
+      - key: actorTextColor
+        value: --mdmark-color-text
+      - key: actorLineColor
+        value: --mdmark-color-border
+      - key: signalColor
+        value: --mdmark-color-text
+      - key: signalTextColor
+        value: --mdmark-color-text
+      - key: edgeLabelBackground
+        value: --mdmark-color-bg
+      - key: titleColor
+        value: --mdmark-color-heading
+      - key: pie1〜pie6
+        value: --mdmark-color-series-1〜--mdmark-color-series-6
+        description: 円グラフの扇形をグラフの系列の色で分ける
+      - key: pieStrokeColor
+        value: --mdmark-color-bg
+      - key: pieOuterStrokeColor
+        value: --mdmark-color-border
+      - key: pieTitleTextColor
+        value: --mdmark-color-heading
+      - key: pieSectionTextColor
+        value: --mdmark-color-bg
+      - key: pieLegendTextColor
+        value: --mdmark-color-text
+      - key: mainBkg
+        value: --mdmark-color-surface
+      - key: nodeBorder
+        value: --mdmark-color-border
+      - key: clusterBkg
+        value: --mdmark-color-surface
+      - key: clusterBorder
+        value: --mdmark-color-border
+      - key: stateBkg
+        value: --mdmark-color-surface
+      - key: stateBorder
+        value: --mdmark-color-border
+      - key: stateLabelColor
+        value: --mdmark-color-text
+      - key: transitionColor
+        value: --mdmark-color-diagram-line
+      - key: specialStateColor
+        value: --mdmark-color-text
+        description: 状態遷移図の開始と終了の印を本文の色にする
+      - key: innerEndBackground
+        value: --mdmark-color-text
+      - key: labelBackgroundColor
+        value: --mdmark-color-bg
+      - key: compositeBackground
+        value: --mdmark-color-bg
+      - key: attributeBackgroundColorOdd
+        value: --mdmark-color-bg
+      - key: attributeBackgroundColorEven
+        value: --mdmark-color-surface
+      - key: rowOdd
+        value: --mdmark-color-bg
+        description: ER 図の属性の行を地と面の色で交互に塗る
+      - key: rowEven
+        value: --mdmark-color-surface
+      - key: relationColor
+        value: --mdmark-color-diagram-line
+      - key: relationLabelBackground
+        value: --mdmark-color-bg
+      - key: relationLabelColor
+        value: --mdmark-color-text
+      - key: todayLineColor
+        value: --mdmark-color-link
+        description: ガントチャートの今日の線は、リンクと同じ強い色の 1 色
+      - key: gridColor
+        value: --mdmark-color-border
+      - key: sectionBkgColor
+        value: --mdmark-color-surface
+      - key: sectionBkgColor2
+        value: --mdmark-color-bg
+      - key: altSectionBkgColor
+        value: --mdmark-color-bg
+      - key: taskBkgColor
+        value: --mdmark-color-surface
+      - key: taskBorderColor
+        value: --mdmark-color-border
+      - key: taskTextColor・taskTextDarkColor・taskTextLightColor・taskTextOutsideColor
+        value: --mdmark-color-text
+      - key: activeTaskBkgColor
+        value: --mdmark-color-bg
+      - key: activeTaskBorderColor
+        value: --mdmark-color-link
+      - key: doneTaskBkgColor
+        value: --mdmark-color-border
+      - key: doneTaskBorderColor
+        value: --mdmark-color-border
+      - key: critBkgColor
+        value: --mdmark-color-bg
+      - key: critBorderColor
+        value: --mdmark-color-callout-caution
+    refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[mermaid のテーマ]
+  - name: MERMAID_FIXED_THEME_VARIABLES
+    title: どのテーマでも固定する変数
+    container: src/mermaid-source.ts
+    summary: 'どのテーマでも `themeVariables` の最後に重ね、設定の `themeVariables` でも変えさせない値。`{ useGradient: false, dropShadow: "none" }`。テーマ `mdmark` だけはさらに `pieOpacity: "1"`（円グラフの扇形を凡例と同じ不透明な色で塗る）を対応表の値に足す'
+    value: '{ useGradient: false, dropShadow: "none" }'
+    reason: デザイン方針の「使わないもの」（影・グラデーション）
+  - name: MERMAID_GANTT_MIN_WIDTH
+    title: ガントチャートを描く幅の下限
+    container: src/mermaid.ts
+    summary: ガントチャートを描く幅の下限（px）。目盛りの日付が重ならない幅。描く先の幅とこの値の大きいほうを `gantt.useWidth` に渡す
+    value: '720'
+  - name: MERMAID_MIN_FIT
+    title: 開いたときの倍率の下限
+    container: src/mermaid.ts
+    summary: mermaid の図を開いたときの倍率の下限。図の枠の `fitMin` に渡す。これより縮めると小さい文字（ガントチャートの目盛り）が読めないため、収まらない分は枠の中で動かす
+    value: '0.75'
+functions:
+  - name: attachMermaid
+    title: mermaid の図を付ける
+    container: src/mermaid.ts
+    kind: 関数
+    scope: internal
+    usecase: mermaidの図を描く
+    summary: '`root` の中の `[data-mdmark-mermaid]` のコードブロックが 1 つ以上あれば、読み込み中の枠に替えて mermaid を読み、ソースを SVG にして図の枠に置き換え、図の操作を付ける。配色の明暗が変わったら描き直す'
+    description: 読み先は、`embeddedMermaid` があればそのモジュール（URL を読まない。`default` に `render` が無ければ読めないときと同じ扱いにし、`console.error` に出さない）、無ければ `url` を `document.baseURI` を基準に解決した URL。読み込みの Promise は `modules` に控え、同じ `mount` の描き直しでは読み直さない。待ちに時間の上限は置かない
+    is_async: false
+    side_effects: '`root` の中の mermaid のコードブロックに `hidden` を付けて前後に要素を置く。mermaid の `initialize` を呼ぶ。読めないモジュールを `console.error` に出す。祖先の `class` を `MutationObserver` で、OS の配色を `matchMedia("(prefers-color-scheme: dark)")` の `change` で見る'
+    args:
+      - name: options
+        type: '{ root: HTMLElement; scope: HTMLElement; config: ResolvedConfig; mountId: number; isCurrent: () => boolean; modules: Map<string, Promise<{ default?: unknown }>>; placement: TooltipPlacement; importModule?: SyntaxImport }'
+        required: true
+        description: '`root` は描いた要素（本文の列）、`scope` は描く先の要素（`mount` の `el`。明暗の class を持つ）、`config` はこの描画の設定（`mermaid` を使う）、`mountId` は `mount` の通し番号（`render` の `id` に使う）、`isCurrent` は描いた文書がまだ今のものか、`modules` は `mount` ごとに 1 つの読んだモジュールの控え、`placement` は図のツールチップを先に出す側、`importModule` はモジュールを読む関数（既定 `(url) => import(url)`）'
+    returns:
+      type: '{ ready: Promise<void>; detach: () => void }'
+      description: '`ready` は全ての対象を図か知らせの枠か書き方の警告にし終えたら解決する（失敗しても拒否しない）。`detach` は監視と付けた図の操作を外す'
+    process: |-
+      1. `root` の中の `[data-mdmark-mermaid]` を拾う。無ければ何も読まず、解決した `ready` と何もしない `detach` を返す
+      2. 拾った要素ごとに、中の `code` の `textContent` をソースとして控え、要素に `hidden` を付け、前に `renderEmbed({ name: "mermaid" })` の読み込み中の枠を置く（部品設計『読み込み中の枠』）。印の場所の外部ライブラリを拾う処理（印の場所に外部ライブラリを描かせる）は先に呼び終えているため、この枠を拾わない
+      3. モジュールを決め、`modules` に無ければ読み始めて控え、待つ
+         - `[error]` mermaid を読めない（URL と元のエラーを `console.error` に出す）。待った後に `isCurrent()` が `false` なら何もせずに終える。そうでなければ、各読み込み中の枠を `renderNotice({ name: "mermaid", figure: true })` の知らせの枠に替え、要素の `hidden` を外して終える
+      4. 待った後に `isCurrent()` が `false` なら何もせずに終える
+      5. 対象を文書の順に描く（mermaid の図を描く）。描けた対象は、読み込み中の枠と要素を図の枠に置き換える。解釈できない対象は、読み込み中の枠を `renderSyntaxWarning` の書き方の警告（本文は画面設計『文書』の mermaid の行。`{mermaid のエラーの 1 行目}` は例外の `message` の 1 行目）に替え、要素の `hidden` を外す
+      6. 置き換えた図の枠に図の操作を付ける（図の拡大・縮小・移動・全画面を付ける。`root` と、置き換えた `figure` の並びを `figures` に渡す）。外す関数を控える
+      7. 描き終えたときのテーマの変数を控え、明暗の監視を付ける。`scope` の祖先の要素の `class` の変更（`scope` 自身は見ない）と `prefers-color-scheme` の `change` で、テーマの変数を作り直し（テーマの変数を作る）、控えた値と違えば、控えたソースから手順 5・6 をやり直す（前の図の操作を外し、図の枠を新しい図の枠に置き換える）
+      8. `detach` は監視と図の操作を外す。`mount` は描き直す前・`destroy`・同じ要素への 2 回目の `mount` で呼ぶ
+    callees:
+      - '#functions[drawMermaidDiagram]'
+      - '#functions[mermaidThemeVariables]'
+      - dev/設計書/モジュール構成/ライブラリ本体/部品.ts#functions[renderEmbed]
+      - dev/設計書/モジュール構成/ライブラリ本体/部品.ts#functions[renderNotice]
+      - dev/設計書/モジュール構成/ライブラリ本体/部品.ts#functions[renderSyntaxWarning]
+      - dev/設計書/モジュール構成/ライブラリ本体/図.ts#functions[attachDiagrams]
+    refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[mermaid の対象]
+      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[mermaid の読み込み]
+      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[mermaid を読めないとき]
+    test_setup:
+      - name: mermaid のコードブロック
+        description: '`render` で、front matter の `title` を持つ flowchart と `actor` を持つ sequenceDiagram の 2 つの mermaid のコードブロックを描いた要素（`src/index.css` を当てた Chromium のページ）'
+      - name: mermaid のモジュール
+        description: npm の `mermaid@12.3.0` の `dist/mermaid.esm.min.mjs` を、`importModule` が返す
+    unit_tests:
+      - name: test_attach_mermaid
+        case: 正常
+        summary: 読み込みの間は読み込み中の枠を置き、描いたら図の枠に置き換えて操作を付ける
+        condition: 'mermaid のコードブロックの要素。`config.mermaid` は既定'
+        mock: '`importModule` が mermaid のモジュールを返す。返す前に 1 回止める'
+        expected: '止めている間、`div.mdmark-embed[data-mdmark-slot="mermaid"]` が 2 つあり、コードブロックが `hidden`。`ready` の後は `figure.mdmark-diagram[data-diagram="mermaid"]` が 2 つで、1 つ目の題名が front matter の `title`、2 つ目が `シーケンス図`。読み込み中の枠とコードブロックが無く、倍率のボタンがある。`importModule` が 1 回'
+      - name: test_attach_mermaid_when_no_target
+        case: 正常
+        summary: 対象が無ければ何も読まない
+        condition: '`data-mdmark-mermaid` を持たない `ts` のコードブロックだけの要素'
+        mock: '`importModule` を見張る'
+        expected: '`importModule` が呼ばれず、`ready` が解決する'
+      - name: test_attach_mermaid_when_unavailable
+        case: 異常
+        summary: 読めないときは知らせの枠に替えてコードブロックを出す
+        condition: mermaid のコードブロックの要素
+        mock: '`importModule` が `new Error("404")` で拒否する。`console.error` を見張る'
+        expected: '`ready` が解決し、各コードブロックの前に `mdmark-notice` があり、コードブロックの `hidden` が無く、読み込み中の枠が無い。`console.error` が URL と `Error("404")` を含めて呼ばれる'
+      - name: test_attach_mermaid_when_syntax_invalid
+        case: 異常
+        summary: 解釈できないソースは書き方の警告に替え、ほかは描く
+        condition: '1 つ目が図の種類の行を持たないソース、2 つ目が flowchart の要素'
+        mock: mermaid のモジュール
+        expected: 1 つ目のコードブロックの前に `mdmark-syntax-warning` があり、本文が `mermaid の図を描けません（` で始まる。2 つ目は図の枠。文書に `#d` で始まる id のエラーの図が無い
+      - name: test_attach_mermaid_when_stale
+        case: 正常
+        summary: 読み終えたときに描き直していたら何もしない
+        condition: mermaid のコードブロックの要素。`isCurrent` が `false` を返す
+        mock: mermaid のモジュール
+        expected: 図の枠が無く、`render` を呼ばない
+      - name: test_attach_mermaid_when_embedded
+        case: 正常
+        summary: 埋めたモジュールがあれば URL を読まない
+        condition: '`setEmbeddedMermaid({ default: mermaid })` の後に mermaid のコードブロックの要素。終えたら `setEmbeddedMermaid(undefined)`'
+        mock: '`importModule` を見張る'
+        expected: '`importModule` が呼ばれず、図の枠が 2 つ'
+      - name: test_attach_mermaid_when_embedded_without_module
+        case: 異常
+        summary: 埋めたモジュールが mermaid を持たなければ、外へ読まずに知らせの枠にする
+        condition: '`setEmbeddedMermaid({})` の後に mermaid のコードブロックの要素。終えたら `setEmbeddedMermaid(undefined)`'
+        mock: '`importModule` と `console.error` を見張る'
+        expected: '`importModule` と `console.error` が呼ばれず、各コードブロックの前に `mdmark-notice` がある'
+      - name: test_attach_mermaid_when_scheme_changed
+        case: 正常
+        summary: 祖先の明暗の class が変わったら描き直し、変わらなければ描き直さない
+        condition: '描いた後に `document.body` へ `mdmark-theme-dark` を付け、次に明暗に関わらない class `x` を付ける'
+        mock: mermaid のモジュール。`render` の回数を数える
+        expected: '`mdmark-theme-dark` の後に `render` が 2 回増え、flowchart のノードの塗りの計算済みの色が暗い配色の `--mdmark-color-surface` と一致する。`x` の後は増えない'
+      - name: test_attach_mermaid_when_detached
+        case: 正常
+        summary: 外すと明暗が変わっても描き直さない
+        condition: 描いた後に `detach()` を呼び、`document.body` へ `mdmark-theme-dark` を付ける
+        mock: mermaid のモジュール。`render` の回数を数える
+        expected: '`render` の回数が増えず、倍率のボタンを押しても倍率が変わらない'
+  - name: drawMermaidDiagram
+    title: mermaid の図を描く
+    container: src/mermaid.ts
+    kind: 関数
+    scope: internal
+    is_async: true
+    usecase: mermaidの図を描く
+    summary: '1 つのソースを、今の配色のテーマと、暗い配色のときは明るい配色のテーマでも `render` し、図の枠の HTML を返す。解釈できなければ例外のメッセージを返す'
+    side_effects: '`renderQueue` に `initialize` と `render` の組をつなぐ。暗い配色のときは `scope` の明暗の class を同じタスクの中で一時的に明るい配色の class に替えて戻す。mermaid が文書に残すエラーの図を消す'
+    args:
+      - name: options
+        type: '{ mermaid: MermaidModule; source: string; root: HTMLElement; scope: HTMLElement; config: ResolvedConfig["mermaid"]; id: string; frameId: string }'
+        required: true
+        description: '読んだ mermaid・ソース・描いた要素・描く先の要素・設定の `mermaid`・`render` に渡す id（`mdmark-mermaid-{mountId}-{通し番号}`）・図の枠の `id` の頭'
+    returns:
+      type: 'Promise<{ html: string } | { error: string }>'
+      description: '`html` は図の枠の HTML、`error` は mermaid の例外の `message` の 1 行目'
+    process: |-
+      1. ソースのタイトルを取り出す（タイトルを取り出す）。タイトルが無ければ図の種類の名前を引く（図の種類の名前を引く）
+      2. 今の配色のテーマの変数を作る（テーマの変数を作る。`scope` を渡す）
+      3. 描く先が暗い配色か（`--mdmark-color-bg` の明るさが 0.5 未満か）を見る。暗い配色なら、同じタスクの中で `scope` の `mdmark-theme-dark` を外して `mdmark-theme-light` を付け、明るい配色のテーマの変数を作り、`scope` の class を元に戻す（`:root` に当たる配色の値は描く先の明暗の class で決まり、描画を挟まないため画面は変わらない）
+      4. `renderQueue` につないで、`initialize({ startOnLoad: false, securityLevel: "strict", theme, themeVariables, gantt: { useWidth: max(root.clientWidth, MERMAID_GANTT_MIN_WIDTH) } })` と `render(id, body)` を順に呼ぶ。`theme` は設定の `theme` が `mdmark` なら `base`、それ以外はその名前。暗い配色なら明るい配色のテーマの変数でも `initialize` と `render(id + "-print", body)` を呼ぶ
+         - `render` が例外を投げた場合、`document.getElementById("d" + id)` を消し、`{ error }` を返す
+      5. SVG を要素にして、actor のアイコンを替え（actor のアイコンを替える）、`width`・`height` の属性を `viewBox` の幅と高さにし、`style` を外す
+      6. 図の部品の HTML（mermaid の図を描く部品。`svg`・`printSvg`・`width`）を中身に、図の枠の HTML（図の枠を描く。`kind: "mermaid"`・`title`・`legend: []`・`fitMin: MERMAID_MIN_FIT`・`resizable` は機能 `diagram-resize`）を返す
+    callees:
+      - '#functions[splitMermaidTitle]'
+      - '#functions[mermaidKindName]'
+      - '#functions[mermaidThemeVariables]'
+      - '#functions[replaceMermaidActors]'
+      - '#functions[renderMermaidDiagram]'
+      - dev/設計書/モジュール構成/ライブラリ本体/図.ts#functions[renderDiagramFrame]
+    refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[mermaid の描き方]
+      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[mermaid のテーマ]
+    unit_tests:
+      - name: test_draw_mermaid_diagram
+        case: 正常
+        summary: 明るい配色では SVG を 1 つだけ置き、固定の初期化の設定で描く
+        condition: '`attachMermaid` のセットアップの flowchart のソース。描く先は明るい配色'
+        mock: mermaid のモジュールの `initialize` を見張る
+        expected: '`html` の `svg` が 1 つで、`mdmark-mermaid-print` が無い。`initialize` が `startOnLoad: false`・`securityLevel: "strict"`・`theme: "base"`・`themeVariables.useGradient: false`・`themeVariables.dropShadow: "none"` で 1 回呼ばれる。ノードの枠線の `stroke` が `url(` で始まらない'
+      - name: test_draw_mermaid_diagram_when_dark
+        case: 正常
+        summary: 暗い配色では明るい配色の図も描いて並べ、描く先の class を戻す
+        condition: 'flowchart のソース。`scope` が class `mdmark-theme-dark` を持つ'
+        mock: mermaid のモジュールの `initialize` を見張る
+        expected: '`html` の `svg` が 2 つで、2 つ目が `mdmark-mermaid-print` の中にあり `aria-hidden="true"`。`initialize` が 2 回で、2 回目の `themeVariables.primaryColor` が明るい配色の `--mdmark-color-surface` の hex。終えた後の `scope` の class が `mdmark-theme-dark` だけ'
+      - name: test_draw_mermaid_diagram_when_theme_configured
+        case: 正常
+        summary: 'mermaid のテーマを選び、変数を重ね、固定の値は変えさせない'
+        condition: '`config` が `{ theme: "neutral", themeVariables: { primaryColor: "#e0f2f1", useGradient: "true" } }`'
+        mock: mermaid のモジュールの `initialize` を見張る
+        expected: '`initialize` が `theme: "neutral"`・`themeVariables` が `{ primaryColor: "#e0f2f1", useGradient: false, dropShadow: "none" }` で呼ばれる'
+      - name: test_draw_mermaid_diagram_when_invalid
+        case: 異常
+        summary: 解釈できないソースはエラーの 1 行目を返し、エラーの図を消す
+        condition: 図の種類の行を持たないソース
+        mock: mermaid のモジュール
+        expected: '`{ error }` の `error` が改行を含まず、文書に `id` が `d` + `id` の要素が無い'
+      - name: test_draw_mermaid_diagram_when_gantt
+        case: 正常
+        summary: ガントチャートは 720px より狭い描く先でも 720px で描く
+        condition: 幅 400px の描く先と gantt のソース
+        mock: mermaid のモジュールの `initialize` を見張る
+        expected: '`initialize` の `gantt.useWidth` が `720`、図の枠の `figure` が `data-fit-min="0.75"`'
+  - name: mermaidThemeVariables
+    title: テーマの変数を作る
+    container: src/mermaid.ts
+    kind: 関数
+    scope: internal
+    usecase: mermaidの図を描く
+    summary: 'テーマ `mdmark` なら、描く先の要素の計算済みの CSS 変数から `MERMAID_THEME_COLORS` の変数を hex で作り、`fontFamily`（`--mdmark-font-body`）・`fontSize`（描く先の `font-size`）・`pieOpacity: "1"` を足す。ほかのテーマは空から始める。設定の `themeVariables` の値が文字列のキーを重ね、最後に `MERMAID_FIXED_THEME_VARIABLES` を重ねる'
+    side_effects: 試しの要素を `scope` に置いて消す
+    args:
+      - name: options
+        type: '{ scope: HTMLElement; config: ResolvedConfig["mermaid"] }'
+        required: true
+        description: CSS 変数を解決する要素と、設定の `mermaid`
+    returns:
+      type: Record<string, string | boolean>
+      description: '`initialize` の `themeVariables`'
+    callees:
+      - '#functions[cssColorToHex]'
+    unit_tests:
+      - name: test_mermaid_theme_variables
+        case: 正常
+        summary: 対応表の変数を全て hex にし、固定の値を重ねる
+        condition: '`src/index.css` を当てた描く先と、既定の `config`'
+        mock: なし
+        expected: '`MERMAID_THEME_COLORS` の全てのキーが `#` で始まる 7 桁か 9 桁の値で、`primaryColor` が `--mdmark-color-surface` の hex。`useGradient` が `false`、`dropShadow` が `none`、`pieOpacity` が `1`、`fontFamily` が `--mdmark-font-body` の値'
+      - name: test_mermaid_theme_variables_when_other_theme
+        case: 正常
+        summary: mermaid のテーマでは CSS 変数を使わず、設定の文字列の値と固定の値だけにする
+        condition: '`config` が `{ theme: "dark", themeVariables: { lineColor: "#ff0000", fontSize: 14 } }`'
+        mock: なし
+        expected: '`{ lineColor: "#ff0000", useGradient: false, dropShadow: "none" }`'
+  - name: cssColorToHex
+    title: 色を hex にする
+    container: src/mermaid.ts
+    kind: 関数
+    scope: internal
+    usecase: mermaidの図を描く
+    summary: '`scope` の中に `color: var({name})` の試しの要素を置いて計算済みの `color` を読み、sRGB の hex にして試しの要素を消す。`rgb()`・`rgba()` は値を読み、ほかの書き方（`oklab()`・`color()`）は 1×1 の canvas（`colorSpace: "srgb"`）に塗って `getImageData` で読む。透明度が 1 なら `#rrggbb`、それ以外は `#rrggbbaa`'
+    args:
+      - name: options
+        type: '{ scope: HTMLElement; name: string }'
+        required: true
+        description: 解決する要素と CSS 変数の名前
+    returns:
+      type: string
+      description: hex の色
+    reason: PoC #384 で、canvas で `#rrggbbaa` にすると透明度の低い色の RGB が丸めでずれたため、`rgb()`・`rgba()` は canvas を通さない
+    unit_tests:
+      - name: test_css_color_to_hex
+        case: 正常
+        summary: rgb・rgba は丸めずに読み、color-mix の値も hex にする
+        condition: '`--a: rgb(24 24 27)`・`--b: rgba(24, 24, 27, 0.14)`・`--c: color-mix(in oklab, #0f766e 50%, #ffffff)` を持つ要素'
+        mock: なし
+        expected: '`#18181b`・`#18181b24`・`#` で始まる 7 桁の値'
+  - name: replaceMermaidActors
+    title: actor のアイコンを替える
+    container: src/mermaid.ts
+    kind: 関数
+    scope: internal
+    usecase: mermaidの図を描く
+    summary: 'SVG の `g.actor-man` ごとに、子の `circle`（`cx`・`cy`・`r`）と `line`（`x1`・`y1`・`x2`・`y2`）の属性から包む箱を求め、`text` 以外の子を消し、箱の幅と高さの小さいほうを辺にした lucide の `user` の `svg`（class `mdmark-mermaid-actor`）を箱の中央に置く'
+    description: '`getBBox` を使わず属性から求め、画面に出していない印刷用の SVG にも同じく当てる。`circle` を持たない `g.actor-man` は替えない'
+    side_effects: '`svg` を書き換える'
+    args:
+      - name: svg
+        type: SVGSVGElement
+        required: true
+        description: mermaid が描いた SVG
+    returns:
+      type: void
+      description: なし
+    callees:
+      - dev/設計書/モジュール構成/ライブラリ本体/図.ts#functions[iconSvg]
+    reason: 確認ログの「シーケンス図の actor のアイコン」（推奨案 A）
+    unit_tests:
+      - name: test_replace_mermaid_actors
+        case: 正常
+        summary: 棒人間を lucide の人のアイコンに替え、名前の文字は残す
+        condition: '`circle cx="75" cy="20" r="10"` と `line` 4 本（x 60〜90・y 30〜60）と `text` を持つ `g.actor-man`'
+        mock: なし
+        expected: '`g.actor-man` の子が `svg.mdmark-mermaid-actor` と `text` だけで、`svg` の `width`・`height` が `30`・`x` が `60`・`y` が `10`'
+  - name: setEmbeddedMermaid
+    title: 埋めた mermaid のモジュールを入れる
+    container: src/mermaid.ts
+    kind: 関数
+    scope: internal
+    summary: '`embeddedMermaid` を置き換える。`undefined` で `mermaid.url` から読む形に戻す'
+    side_effects: '`embeddedMermaid` を書き換える'
+    args:
+      - name: module
+        type: '{ default?: unknown } | undefined'
+        required: true
+        description: 埋めた mermaid のモジュール。書き出しで埋めなかったときは `{}`
+    returns:
+      type: void
+      description: なし
+  - name: splitMermaidTitle
+    title: タイトルを取り出す
+    container: src/mermaid-source.ts
+    kind: 関数
+    scope: internal
+    usecase: mermaidの図を描く
+    summary: 'ソースの先頭の front matter（`---` の行で囲んだ範囲）の `title:` の値を取り出してその行を除く。front matter に `title` が無ければ、`accTitle:` の行の値を取る（`accTitle` の行は残す）。図の種類の行の最初の語を `kind` にする'
+    args:
+      - name: source
+        type: string
+        required: true
+        description: mermaid のコードブロックの中身
+    returns:
+      type: MermaidSource
+      description: タイトル・`render` に渡すソース・図の種類の語
+    unit_tests:
+      - name: test_split_mermaid_title
+        case: 正常
+        summary: front matter の title を取り出し、ほかの行が無ければ front matter ごと除く
+        condition: "`---\\ntitle: 問い合わせの受付\\n---\\nflowchart LR\\n  A --> B`"
+        mock: なし
+        expected: "`{ title: \"問い合わせの受付\", body: \"flowchart LR\\n  A --> B\", kind: \"flowchart\" }`"
+      - name: test_split_mermaid_title_when_other_keys
+        case: 正常
+        summary: title のほかの front matter の行は残す
+        condition: "`---\\ntitle: 受付\\nconfig:\\n  look: classic\\n---\\nflowchart LR`"
+        mock: なし
+        expected: "`body` が `---\\nconfig:\\n  look: classic\\n---\\nflowchart LR`"
+      - name: test_split_mermaid_title_when_acc_title
+        case: 正常
+        summary: front matter が無ければ accTitle の値を取り、行は残す
+        condition: "`sequenceDiagram\\n  accTitle: 文書を描く\\n  A->>B: x`"
+        mock: なし
+        expected: '`title` が `文書を描く`、`body` が渡したソースのまま、`kind` が `sequenceDiagram`'
+      - name: test_split_mermaid_title_when_none
+        case: 正常
+        summary: どちらも無ければ title を持たない
+        condition: "`classDiagram\\n  class A`"
+        mock: なし
+        expected: '`title` が `undefined`、`kind` が `classDiagram`'
+  - name: mermaidKindName
+    title: 図の種類の名前を引く
+    container: src/mermaid-source.ts
+    kind: 関数
+    scope: internal
+    usecase: mermaidの図を描く
+    summary: '`MERMAID_KIND_NAMES` を `Object.hasOwn` で引き、無ければ `図` を返す'
+    args:
+      - name: kind
+        type: string
+        required: true
+        description: '`splitMermaidTitle` の `kind`'
+    returns:
+      type: string
+      description: 図の種類の名前
+    unit_tests:
+      - name: test_mermaid_kind_name
+        case: 正常
+        summary: 表の語は名前に、表に無い語と継承した名前は `図` にする
+        condition: '`stateDiagram-v2`・`journey`・`constructor`'
+        mock: なし
+        expected: '`状態遷移図`・`図`・`図`'
+  - name: renderMermaidDiagram
+    title: mermaid の図を描く部品
+    container: src/parts/mermaid.ts
+    kind: 関数
+    scope: internal
+    usecase: mermaidの図を描く
+    summary: '部品設計『mermaid の図』の HTML。`<div class="mdmark-mermaid">` に `svg` を入れ、`printSvg` があれば `<div class="mdmark-mermaid-print" aria-hidden="true">` に入れて後ろに置き、包む要素に `mdmark-mermaid-has-print` を付ける。図の枠の `body` に渡す大きさも返す'
+    args:
+      - name: options
+        type: '{ svg: string; printSvg?: string; width: number; height: number }'
+        required: true
+        description: '部品設計の引数と、SVG の `viewBox` の高さ'
+    returns:
+      type: '{ html: string; width: number; height: number; tips: string }'
+      description: 図の枠の `body`。`tips` は空
+    refs:
+      - dev/設計書/部品設計/mermaidの図.ts#
+    unit_tests:
+      - name: test_render_mermaid_diagram
+        case: 正常
+        summary: 印刷用の SVG があるときだけ並べる
+        condition: '`printSvg` を渡した呼び出しと渡さない呼び出し'
+        mock: なし
+        expected: '前者は `mdmark-mermaid mdmark-mermaid-has-print` の中に `svg` と `div.mdmark-mermaid-print[aria-hidden="true"]` がこの順にある。後者は `mdmark-mermaid-print` が無い。どちらも `width`・`height` が渡した値'
+notes:
+  単体テストのファイル: '`tests/unit/src/mermaid-source.test.ts`・`tests/unit/src/mermaid.browser.test.ts`・`tests/unit/src/parts/mermaid.test.ts` を置き、単体テスト作成の段で `test_files` に載せる'
+  他の分類への変更: '`mount` は記法の操作と外部ライブラリの後に `attachMermaid` を呼ぶ（分類『描く』）。`render` は機能 `mermaid` がオンなら言語 `mermaid` のコードブロックに `data-mdmark-mermaid` を付ける（分類『記法』『部品』）。図の枠は種類 `mermaid` と倍率の下限を持ち、`attachDiagrams` は渡した図だけに付けられる（分類『図』）。書き出しは mermaid を束ね、起動の処理が `setEmbeddedMermaid` で渡す（分類『CLI』『書き出したHTMLの起動』）'

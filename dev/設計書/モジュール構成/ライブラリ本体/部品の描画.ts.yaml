@@ -65,7 +65,7 @@ functions:
     kind: 関数
     scope: internal
     summary: ストーリーの `server.id` の部品を、問い合わせの引数で描き、描く先の要素（class `mdmark`）で包んで返す
-    description: '部品の id から部品の関数を引く表（`notice`・`embed`・`syntax-warning`・`table`・`callout`・`tabs`・`steps`・`tree`・`badge`・`footnote-ref`・`footnotes`・`toc`・`section`・`row-detail`・`figure`・`doc-list`・`text-color`・`image-figure`・`gallery`・`lightbox`・`media`・`gif`・`card`と、VS Code 拡張機能の `media-error`）で描く。ストーリーの引数は問い合わせの文字列で届くため戻す: `notice` の `figure` は `"false"` のときだけ `false`、`embed` の `args` はカンマで区切った配列（空の文字列は `[]`）。それ以外の部品は、JSON として読める値（配列・オブジェクト・数・真偽値）は JSON として読み、読めなければ文字列のまま渡す。`code-block` の `highlight` が `true` のときは、npm の `highlight.js/lib/core` に `language` の言語（`syntaxLanguageOf` で引いた `highlight.js/lib/languages/{モジュール名}`）を登録し、`highlightLines` の行ごとの HTML で、部品の HTML の `mdmark-code-text` の中身（行に分けないときは `code` の中身）を順に置き換える。中身を持つ部品には部品ごとの見本の HTML を中身として渡す（ストーリーの引数 `body` があれば、見本の代わりにそれを渡す）。ストーリーの引数 `scheme` が `dark` のときは描く先の要素に class `mdmark-theme-dark` を加え、`frameWidth` があるときは部品の HTML をその幅の `div` で包む。`comment-button`・`comment-form`・`comment-bubble` は、`document.body` に `position: fixed` で配置する部品を描く先の要素の中に描くため、部品の HTML の前に `.mdmark-comment-add,.mdmark-comment-popover{position:static;max-width:100%}` の `style` を付ける（`max-width` は、描く先の要素の `padding` の内側に枠の幅を収める）。画像・動画・音声の部品の `src` と `poster` に書いた見本のファイル名は、`dev/mock/refs/263/assets/media/` のファイルを読んだ `data:` URL にする（見本に無い名前はそのまま渡す）'
+    description: '部品の id から部品の関数を引く表（`notice`・`embed`・`syntax-warning`・`table`・`callout`・`tabs`・`steps`・`tree`・`badge`・`footnote-ref`・`footnotes`・`toc`・`section`・`row-detail`・`figure`・`doc-list`・`text-color`・`image-figure`・`gallery`・`lightbox`・`media`・`gif`・`card`と、VS Code 拡張機能の `media-error`）で描く。ストーリーの引数は問い合わせの文字列で届くため戻す: `notice` の `figure` は `"false"` のときだけ `false`、`embed` の `args` はカンマで区切った配列（空の文字列は `[]`）。それ以外の部品は、JSON として読める値（配列・オブジェクト・数・真偽値）は JSON として読み、読めなければ文字列のまま渡す。`code-block` の `highlight` が `true` のときは、npm の `highlight.js/lib/core` に `language` の言語（`syntaxLanguageOf` で引いた `highlight.js/lib/languages/{モジュール名}`）を登録し、`highlightLines` の行ごとの HTML で、部品の HTML の `mdmark-code-text` の中身（行に分けないときは `code` の中身）を順に置き換える。中身を持つ部品には部品ごとの見本の HTML を中身として渡す（ストーリーの引数 `body` があれば、見本の代わりにそれを渡す）。ストーリーの引数 `scheme` が `dark` のときは描く先の要素に class `mdmark-theme-dark` を加え、`frameWidth` があるときは部品の HTML をその幅の `div` で包む。`comment-button`・`comment-form`・`comment-bubble` は、`document.body` に `position: fixed` で配置する部品を描く先の要素の中に描くため、部品の HTML の前に `.mdmark-comment-add,.mdmark-comment-popover{position:static;max-width:100%}` の `style` を付ける（`max-width` は、描く先の要素の `padding` の内側に枠の幅を収める）。画像・動画・音声の部品の `src` と `poster` に書いた見本のファイル名は、`dev/mock/refs/263/assets/media/` のファイルを読んだ `data:` URL にする（見本に無い名前はそのまま渡す）。`mermaid-diagram` の `svg`・`printSvg` に書いた名前は `tests/fixtures/mermaid-svg/{名前}.svg` の中身にし（無い名前は 404 と同じく返さない）、`renderMermaidDiagram` の HTML を `renderDiagramFrame`（`kind: "mermaid"`・ストーリーの引数 `title`・`legend: []`・`fitMin: 0.75`）で包む'
     args:
       - name: options
         type: '{ component: string; params: URLSearchParams }'
@@ -100,6 +100,7 @@ functions:
       - dev/設計書/モジュール構成/ライブラリ本体/描く.ts#functions[highlightLines]
       - dev/設計書/モジュール構成/ライブラリ本体/部品.ts#functions[renderFootnoteRef]
       - dev/設計書/モジュール構成/ライブラリ本体/部品.ts#functions[renderFootnotes]
+      - dev/設計書/モジュール構成/ライブラリ本体/mermaid.ts#functions[renderMermaidDiagram]
     unit_tests:
       - name: test_render_part_when_notice
         case: 正常
@@ -149,6 +150,33 @@ functions:
         condition: '`component` が `comment-bubble`、`params` が `quote=テーマの変数&bodies=["本文"]`'
         mock: なし
         expected: '`<div class="mdmark">` で包んだ、`<style>.mdmark-comment-add,.mdmark-comment-popover{position:static;max-width:100%}</style>` に続く `renderCommentBubble({ quote: "テーマの変数", bodies: ["本文"] })`'
+      - name: test_render_part_when_mermaid_diagram
+        case: 正常
+        summary: 見本の SVG のファイルを読み、図の枠で包んで描く
+        condition: '`component` が `mermaid-diagram`、`params` が `svg=flowchart&title=問い合わせの受付`。もう 1 つは `svg=missing`'
+        mock: なし
+        expected: '前者が `figure.mdmark-diagram[data-diagram="mermaid"]` の中に `tests/fixtures/mermaid-svg/flowchart.svg` の `svg` を持つ HTML。後者は `undefined`'
+  - name: writeMermaidFixtures
+    title: mermaid の見本の SVG を書く
+    container: scripts/mermaid-fixtures.ts
+    kind: 関数
+    scope: internal
+    is_async: true
+    summary: Playwright の Chromium で、`dev/mock/components/mermaid-diagram/` の場面と同じソースを `mount` で描き、図の `svg`（暗い配色の場面は印刷用の `svg` も）を `tests/fixtures/mermaid-svg/{名前}.svg` に書く。mermaid の版を変えたときに `npm run fixtures:mermaid` で流し、書いたファイルを commit する
+    side_effects: '`tests/fixtures/mermaid-svg/` のファイルを書き換える'
+    args:
+      - name: options
+        type: '{ root: string }'
+        required: true
+        description: 作業ツリーの場所
+    returns:
+      type: Promise<string[]>
+      description: 書いたファイルのパス
+    refs:
+      - dev/設計書/部品設計/mermaidの図.ts#
+    status: planned
+    introduced:
+      pr: 382
   - name: createRenderServer
     title: 描画の口を作る
     container: scripts/storybook-render.ts

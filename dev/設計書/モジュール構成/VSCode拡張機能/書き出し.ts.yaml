@@ -5,7 +5,7 @@ directory: |-
   vscode/src/export/
   ├── html.ts    # 書き出す先のパスと HTML の組み立て（vscode を import しない）
   ├── write.ts   # 一時ファイルからの置き換え（vscode を import しない）
-  ├── embed.ts   # 相対パスの libraries と html-scripts.url を埋める処理（vscode を import しない）
+  ├── embed.ts   # 相対パスの libraries と html-scripts.url・mermaid.url を埋める処理（vscode を import しない）
   └── export.ts  # mdmark.exportHtml・mdmark.openInBrowser・mdmark.printToPdf の本体
   ```
 enums:
@@ -184,7 +184,7 @@ functions:
       1. 読むバージョンを決める（読むバージョンを決める）
          - `undecidable` の場合、画面設計の「バージョンを決められない通知」を `showErrorMessage` で出し、`undefined` を返す
          - `fetched` が `true` の場合、`mdmark.lastVersion` に書く
-      2. 設定ファイルを読み（設定ファイルを読む。`purpose: export`、`cwd` は Markdown のフォルダ、`baseDir` は Markdown を含むワークスペースのフォルダ、`env` は `process.env`、`home` は `os.homedir()`）、相対パスの `libraries`・`html-scripts.url` を `getText()` の全文で判定して埋め（相対パスのライブラリを埋める。`bundle` は拡張を束ねる。まとめられないものは `[warn]` を出す）、`theme` の CSS を読んで `<style>` に、`extensions` を拡張を束ねる（拡張を束ねる）で束ねて、それぞれを描く前に登録するスクリプトとして埋める（束ねられない拡張は `[warn]` を出して飛ばす）。`problem` があるときはそのファイルを重ねずに書き出す。続けて `mdmark.colorTheme` で上書きする（テーマの設定で上書きする）
+      2. 設定ファイルを読み（設定ファイルを読む。`purpose: export`、`cwd` は Markdown のフォルダ、`baseDir` は Markdown を含むワークスペースのフォルダ、`env` は `process.env`、`home` は `os.homedir()`）、相対パスの `libraries`・`html-scripts.url`・`mermaid.url` を `getText()` の全文で判定して埋め（相対パスのライブラリを埋める。`bundle` は拡張を束ねる。まとめられないものは `[warn]` を出す）、`theme` の CSS を読んで `<style>` に、`extensions` を拡張を束ねる（拡張を束ねる）で束ねて、それぞれを描く前に登録するスクリプトとして埋める（束ねられない拡張は `[warn]` を出して飛ばす）。`problem` があるときはそのファイルを重ねずに書き出す。続けて `mdmark.colorTheme` で上書きする（テーマの設定で上書きする）
          - `[warn]` 設定ファイルを読めないため設定なしで書き出す（パス・行・`message`）
          - `[warn]` ライブラリをまとめられない（パス・誤り）
       3. 書き出す先を決め（書き出す先を決める）、`getText()` の全文で HTML を組み（書き出す HTML を組む。`print` は `mode` が `print` のとき）、書く（一時ファイルから置き換える）
@@ -242,18 +242,18 @@ functions:
     kind: 関数
     container: vscode/src/export/embed.ts
     usecase: HTMLに書き出す
-    summary: '`http:`・`https:` でない `libraries` の値のうちライブラリ本体の `usedLibraryMarks` が返す名前と、ライブラリ本体の `collectRangeScripts` が 1 件以上返すときの `html-scripts.url` を `bundle` でまとめ、`moduleDataUrl` の URL に替えて返す'
-    description: 拾わなかった・まとめられなかった相対パスの `libraries` の値は返す `libraries` から外し、`html-scripts.url` は返す `htmlScripts` から `url` を外す。`http:`・`https:` の値と文字列でない値はそのまま返す。同じパスは 1 回だけまとめる
+    summary: '`http:`・`https:` でない `libraries` の値のうちライブラリ本体の `usedLibraryMarks` が返す名前と、ライブラリ本体の `collectRangeScripts` が 1 件以上返すときの `html-scripts.url` と、ライブラリ本体の `usesMermaid` が `true` を返すときの `mermaid.url` を `bundle` でまとめ、`moduleDataUrl` の URL に替えて返す'
+    description: 拾わなかった・まとめられなかった相対パスの `libraries` の値は返す `libraries` から外し、`html-scripts.url` は返す `htmlScripts` から、`mermaid.url` は返す `mermaid` から `url` を外す（`url` を外した mermaid のコードブロックは、開いたときに既定の jsDelivr の URL から読む）。`bundle` は mermaid が中で読む chunk の動的 `import()` を同じモジュールに取り込む。`http:`・`https:` の値と文字列でない値はそのまま返す。同じパスは 1 回だけまとめる
     scope: public
     is_async: true
     args:
       - name: options
-        type: '{ markdown: string; libraries: Record<string, unknown> | undefined; htmlScripts: Record<string, unknown> | undefined; config: MdmarkConfig; bundle: (paths: string[]) => Promise<Array<{ path: string; code: string } | { path: string; error: string }>> }'
+        type: '{ markdown: string; libraries: Record<string, unknown> | undefined; htmlScripts: Record<string, unknown> | undefined; mermaid: Record<string, unknown> | undefined; config: MdmarkConfig; bundle: (paths: string[]) => Promise<Array<{ path: string; code: string } | { path: string; error: string }>> }'
         required: true
-        description: 書き出す全文・重ねた設定の `libraries`・`html-scripts`（相対パスは設定を重ねる処理が絶対パスにした値）・`collectRangeScripts` に渡す重ねた設定・絶対パスを ES モジュールにまとめる関数（拡張機能では `bundleExtensions`）
+        description: 書き出す全文・重ねた設定の `libraries`・`html-scripts`・`mermaid`（相対パスは設定を重ねる処理が絶対パスにした値）・`collectRangeScripts` に渡す重ねた設定・絶対パスを ES モジュールにまとめる関数（拡張機能では `bundleExtensions`）
     returns:
-      type: 'Promise<{ libraries: Record<string, unknown> | undefined; htmlScripts: Record<string, unknown> | undefined; failures: Array<{ path: string; error: string }> }>'
-      description: 埋めた値に替えた `libraries`・`html-scripts` と、まとめられなかったパスと誤り
+      type: 'Promise<{ libraries: Record<string, unknown> | undefined; htmlScripts: Record<string, unknown> | undefined; mermaid: Record<string, unknown> | undefined; failures: Array<{ path: string; error: string }> }>'
+      description: 埋めた値に替えた `libraries`・`html-scripts`・`mermaid` と、まとめられなかったパスと誤り
     unit_tests:
       - name: test_embed_local_libraries
         case: 正常
@@ -268,10 +268,17 @@ functions:
         mock: '`bundle` は `/ws/libs/test.js` に `{ path, error: "読めない" }` を返す'
         expected: '`libraries` に `test-lib` が無く、`htmlScripts` が `url` を持たず、`failures` が `/ws/libs/test.js` と誤りの 1 件。`bundle` に `html-scripts.url` のパスが渡らない'
         exception: まとめられない
+      - name: test_embed_local_libraries_when_mermaid
+        case: 正常
+        summary: mermaid のコードブロックがある文書のときだけ、相対パスの mermaid.url を data の URL に替える
+        condition: '`mermaid` が `{ url: "/ws/libs/mermaid.mjs", theme: "neutral" }`。文書が `mermaid` のコードブロックを持つときと持たないとき'
+        mock: '`bundle` はパスごとに `export default "{パス}"` を返し、渡されたパスを記録する'
+        expected: '前者の `mermaid` が `{ url: moduleDataUrl の値, theme: "neutral" }` で、`bundle` に `/ws/libs/mermaid.mjs` が渡る。後者は `bundle` に渡らず、`mermaid` が渡した値のまま'
     callees:
       - '#functions[moduleDataUrl]'
       - dev/設計書/モジュール構成/ライブラリ本体/CLI.ts#functions[usedLibraryMarks]
       - dev/設計書/モジュール構成/ライブラリ本体/CLI.ts#functions[collectRangeScripts]
+      - dev/設計書/モジュール構成/ライブラリ本体/CLI.ts#functions[usesMermaid]
     refs:
       - dev/設計書/インターフェース定義/VSCode拡張機能/HTMLに書き出す.ts#constraints[埋めるライブラリ]
       - dev/設計書/インターフェース定義/VSCode拡張機能/HTMLに書き出す.ts#constraints[設定と相対パス]

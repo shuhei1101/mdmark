@@ -66,6 +66,16 @@ constants:
     status: planned
     introduced:
       pr: 97
+  - name: MERMAID_ATTRIBUTE
+    title: mermaid の対象の属性
+    container: src/parts/code-block.ts
+    summary: mermaid のコードブロックの一番外の要素に付ける属性。`mount` が図にする対象を見つけるのに使う。`SYNTAX_ATTRIBUTE` と同じく mdmark が出した要素だけが持ち続ける
+    value: '"data-mdmark-mermaid"'
+    refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/文書をHTML文字列にする.ts#constraints[mermaid のコードブロック]
+    status: planned
+    introduced:
+      pr: 382
   - name: COLOR_NAMES
     title: 色の名前
     container: src/parts/colors.ts
@@ -818,9 +828,9 @@ functions:
     summary: '部品設計『コードブロック』の HTML を返す。行番号か行の種類かインデントのある行を持つときは行ごとの `mdmark-code-line` に分け、行に `data-indent`・`data-fold-lines`・`data-folded` を付け、`focus` の行を持てば `pre` に `mdmark-code-has-focus` を付ける。`foldButtons` が `true` なら、畳める行を持つとき `pre` に `mdmark-code-foldable` を付け、畳める行に `renderCodeFoldToggle` を置き、`folded` の行の後ろの行を `hidden` にして行の末尾に `renderCodeFoldMore` を置く（`mount` の操作の後の見た目。`hiddenLinesOf` で隠す行を決める）。`bar` が `true` なら、題を持てば `<figure class="mdmark-code">` と `<figcaption class="mdmark-code-title mdmark-code-bar">`、無ければ `<div class="mdmark-code">` と `<div class="mdmark-code-bar">` で包み、帯の左端に言語を持つとき `<span class="mdmark-code-lang"><span class="mdmark-code-lang-name" aria-hidden="true">{言語}</span><span class="mdmark-code-file">{ファイル名}</span></span>`（`mdmark-code-file` はファイル名を持つときだけ）、その後ろに題の文字、`copyState` を渡したときは右端に `renderCodeCopy` を置く。`bar` が `false` なら今の `pre` だけを返す。`pre` には `tabindex="0"` と読み上げの名前（`コード: {題}`、題が無ければ `コード: {ファイル名}`、ファイル名も無ければ `コード: {言語}`、言語も無ければ `コード`）を付ける'
     args:
       - name: options
-        type: '{ language: string; fileName?: string; title: string; lineNumbers: boolean; wrap?: boolean; lines: CodeLine[]; syntax?: string; bar?: boolean; copyState?: "idle" | "copied" | "failed"; foldButtons?: boolean }'
+        type: '{ language: string; fileName?: string; title: string; lineNumbers: boolean; wrap?: boolean; lines: CodeLine[]; syntax?: string; mermaid?: boolean; bar?: boolean; copyState?: "idle" | "copied" | "failed"; foldButtons?: boolean }'
         required: true
-        description: 部品設計の引数。`language`・`title`・`fileName` は無ければ空。`syntax` は色分けする言語のモジュール名（`SYNTAX_LANGUAGES` の値）で、渡すと `code` に `SYNTAX_ATTRIBUTE` を付ける。`bar` は帯で包むか（既定 `true`。`code` がオフの色分けだけのコードブロックは `false`）。`copyState` は省くとコピーのボタンを置かない（`render` は渡さず、Storybook が渡す）。`foldButtons` は行の開閉のボタンを置くか（既定 `false`。`render` は渡さず、Storybook が渡す）
+        description: 部品設計の引数。`language`・`title`・`fileName` は無ければ空。`syntax` は色分けする言語のモジュール名（`SYNTAX_LANGUAGES` の値）で、渡すと `code` に `SYNTAX_ATTRIBUTE` を付ける。`mermaid` が `true` なら、一番外の要素（`bar` が `true` なら `figure`・`div`、`false` なら `pre`）に `MERMAID_ATTRIBUTE` を付ける。`bar` は帯で包むか（既定 `true`。`code` がオフの色分けだけのコードブロックは `false`）。`copyState` は省くとコピーのボタンを置かない（`render` は渡さず、Storybook が渡す）。`foldButtons` は行の開閉のボタンを置くか（既定 `false`。`render` は渡さず、Storybook が渡す）
     returns:
       type: string
       description: '`bar` が `true` なら `<figure class="mdmark-code">` か `<div class="mdmark-code">`、`false` なら `<pre` で始まる HTML。行番号を持つときは `code` に `style="--mdmark-code-digits: {行の数の桁の数}"`'
@@ -855,6 +865,12 @@ functions:
         condition: '`language` が `yml`、`syntax` が `yaml`、題・行番号・行の種類が無い 1 行。もう 1 つは `syntax` を省く'
         mock: なし
         expected: '前者が `<div class="mdmark-code"><div class="mdmark-code-bar">` で始まり、`<pre tabindex="0" aria-label="コード: yml"><code class="language-yml" data-mdmark-syntax="yaml">` を持ち、後者の `code` は `data-mdmark-syntax` を持たない'
+      - name: test_render_code_block_when_mermaid
+        case: 正常
+        summary: mermaid の対象は一番外の要素に属性を付ける
+        condition: '`language` が `mermaid`、`mermaid` が `true` の 1 行。もう 1 つは同じ引数に `bar: false`'
+        mock: なし
+        expected: '前者が `<div class="mdmark-code" data-mdmark-mermaid>` で始まり、後者が `<pre data-mdmark-mermaid` で始まる。どちらも `data-mdmark-syntax` を持たない'
       - name: test_render_code_block_when_file_name
         case: 正常
         summary: ファイル名を言語の後ろに出し、読み上げの名前に使う

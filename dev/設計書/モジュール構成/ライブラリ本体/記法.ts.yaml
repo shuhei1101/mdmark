@@ -1360,7 +1360,7 @@ functions:
     container: src/render/syntax/code-blocks.ts
     kind: 関数
     scope: internal
-    summary: 'コアルール。残っている `fence` のトークンごとに、情報文字列を `splitInfoString` で言語とファイル名に分けてから次を行う。`code` がオンのときは `readLineMarks` で行を読み、直前のトークンが `code` の印なら `readCodeSpec` で指定を読み、全てのコードブロックを部品『コードブロック』（言語・ファイル名・題・行番号・`wrap`・行と、`syntax` がオンなら言語を `syntaxLanguageOf` で引いた色分けの言語。`copyState` は渡さない）の `ownBlock` に置き換える。帯の右端のコピーのボタンは `mount` が付ける。`code` がオフのときは行の印を外さず中身の行をそのまま使い、`syntax` がオンで色分けの言語を持つコードブロックだけを帯を持たない部品（`bar: false`）に置き換え、それ以外は `fence` のまま情報文字列の最初の語を言語に書き換える（`ts:app.ts` の `code` の class を `language-ts` にし、`:` の前が空なら最初の語を外す）。`code` がオンのときは、`readFolds` で行にインデントのレベル・畳む行の数・`fold=` の畳んだ状態を付けてから部品へ渡す。`readCodeSpec` と `readLineMarks` と `readFolds` の読めない指定はコードブロックの前に警告を差し込む。後ろが `fence` でない `code` の印の場所にも警告を差し込む（`code` がオンのときだけ）。言語 `tree`・図の部品・埋め込んだ HTML のコードブロックは、先のコアルールが最初の語との一致で `fence` でなくしているため当たらず、`tree:src` のように `:ファイル名` を付けたものはここで普通のコードブロックとして描く'
+    summary: 'コアルール。残っている `fence` のトークンごとに、情報文字列を `splitInfoString` で言語とファイル名に分けてから次を行う。`code` がオンのときは `readLineMarks` で行を読み、直前のトークンが `code` の印なら `readCodeSpec` で指定を読み、全てのコードブロックを部品『コードブロック』（言語・ファイル名・題・行番号・`wrap`・行と、`syntax` がオンなら言語を `syntaxLanguageOf` で引いた色分けの言語。`copyState` は渡さない）の `ownBlock` に置き換える。帯の右端のコピーのボタンは `mount` が付ける。`code` がオフのときは行の印を外さず中身の行をそのまま使い、`syntax` がオンで色分けの言語を持つコードブロックだけを帯を持たない部品（`bar: false`）に置き換え、それ以外は `fence` のまま情報文字列の最初の語を言語に書き換える（`ts:app.ts` の `code` の class を `language-ts` にし、`:` の前が空なら最初の語を外す）。`mermaid` がオンで情報文字列の最初の語がちょうど `mermaid` のコードブロックは、`code` のオン・オフによらず部品に置き換え（`code` がオフなら `bar: false`）、`mermaid: true` を渡し、色分けの言語を渡さない。`code` がオンのときは、`readFolds` で行にインデントのレベル・畳む行の数・`fold=` の畳んだ状態を付けてから部品へ渡す。`readCodeSpec` と `readLineMarks` と `readFolds` の読めない指定はコードブロックの前に警告を差し込む。後ろが `fence` でない `code` の印の場所にも警告を差し込む（`code` がオンのときだけ）。言語 `tree`・図の部品・埋め込んだ HTML のコードブロックは、先のコアルールが最初の語との一致で `fence` でなくしているため当たらず、`tree:src` のように `:ファイル名` を付けたものはここで普通のコードブロックとして描く'
     args:
       - name: state
         type: StateCore
@@ -1442,6 +1442,24 @@ functions:
         condition: 言語 `dockerfile`・`docker`・`diff`・`patch` のコードブロック。`syntax` はオン
         mock: なし
         expected: '`data-mdmark-syntax` が順に `dockerfile`・`dockerfile`・`diff`・`diff`'
+      - name: test_build_code_blocks_when_mermaid
+        case: 正常
+        summary: mermaid のコードブロックに mermaid の対象の属性を付け、色分けの対象にしない
+        condition: '言語 `mermaid` のコードブロックと、言語 `mermaid:a.mmd` のコードブロック。`syntax`・`mermaid` はオン'
+        mock: なし
+        expected: '1 つ目が `data-mdmark-mermaid` を持つ帯を持つ部品で `data-mdmark-syntax` が無く、`code` が `language-mermaid`。2 つ目は `data-mdmark-mermaid` を持たない'
+      - name: test_build_code_blocks_when_mermaid_disabled
+        case: 正常
+        summary: '`mermaid` がオフなら、ほかの言語と同じコードブロックにする'
+        condition: '`<!-- features: -mermaid -->` と言語 `mermaid` のコードブロック。`code` はオン'
+        mock: なし
+        expected: 帯を持つ部品で、`data-mdmark-mermaid` が無い
+      - name: test_build_code_blocks_when_mermaid_without_code
+        case: 正常
+        summary: '`code` がオフでも mermaid のコードブロックは帯を持たない部品にして属性を付ける'
+        condition: '`features.code` が `false` で、言語 `mermaid` のコードブロック'
+        mock: なし
+        expected: '`<pre data-mdmark-mermaid` で始まる `html_block` で、`mdmark-code-bar` が無い'
       - name: test_build_code_blocks_when_foldable
         case: 正常
         summary: インデントのある行と畳める行を行に分け、fold= の行を畳んだ状態にする
