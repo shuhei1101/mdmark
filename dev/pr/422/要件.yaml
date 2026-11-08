@@ -43,7 +43,7 @@ use_cases:
       - dev/設計書/シナリオ/単一ユースケース/文書をHTML文字列にする.yaml
   - kind: single
     scenario: dev/設計書/シナリオ/単一ユースケース/記載した内容をプレビューに映す.yaml
-    impact: following
+    impact: changed
     detail: VS Code のプレビューで、先頭にフロントマターを持つ文書のフロントマターが本文に出ない
     depends_on:
       - dev/設計書/シナリオ/単一ユースケース/文書を描く.yaml
