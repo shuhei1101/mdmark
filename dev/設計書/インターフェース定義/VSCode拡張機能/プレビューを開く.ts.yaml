@@ -525,12 +525,12 @@ flows:
     refs:
       - dev/設計書/シナリオ/単一ユースケース/VSCodeでプレビューを開く#scenarios[異常シナリオ（aliases の YAML が無い）]
   - name: 正常系（mermaid のコードブロック）
-    summary: CSP を広げずに、jsDelivr から mermaid の本体と chunk を読んで、プレビューで mermaid の図を描く
+    summary: CSP を `mermaid.url` の配信元だけ広げ、mermaid の本体と chunk を読んで、プレビューで mermaid の図を描く
     setup:
       - name: 見本のワークスペース
-        description: 言語 `mermaid` の flowchart のコードブロックを 1 つ持つ Markdown を置いたフォルダ。設定ファイルは置かない
+        description: 言語 `mermaid` の flowchart のコードブロックを 1 つ持つ Markdown と、`mermaid.url` に手元の配信の URL を書いた設定ファイルを置いたフォルダ
       - name: Mock
-        description: 正常系と同じ。加えて、mermaid の本体と chunk を、配布物と同じ手元のサーバーから jsDelivr と同じパスで配る
+        description: 正常系と同じ。加えて、mermaid の本体と chunk を、手元の配信が jsDelivr と同じパス（`/npm/mermaid@12.3.0/dist/`）で配る（既定の URL は jsDelivr の origin のため、手元の代役に差し替えられない）
     flow: |-
       sequenceDiagram
         actor W as 文書を書く人
@@ -543,8 +543,8 @@ flows:
         PV->>PV: mount で描く
         PV-->>W: 図の枠に入った mermaid の図
     expected:
-      - パネルの mermaid のコードブロックの場所に `figure.mdmark-diagram[data-diagram="mermaid"]` があり、SVG を持つ
-      - Webview の HTML の CSP の `script-src` に既定の mermaid の URL の origin があり、CSP の違反が 0 件
+      - パネルの mermaid のコードブロックの場所に `figure.mdmark-diagram[data-diagram="mermaid"]` があり、SVG を持ち、知らせの枠が無い
+      - Webview の HTML の CSP の `script-src` に `mermaid.url` の origin があり、`blob:`・`'unsafe-inline'`・`'unsafe-eval'` が無い
     test: test_normal_when_mermaid
 lead: 文書を書く人が、開いている Markdown の横の列か同じ列に、mdmark で描くプレビューのパネルを開く。拡張機能は読む mdmark の版を決め、Webview に jsDelivr の配布物を読ませて描かせる。差分ビューから開いたときは、変更前と変更後の Markdown を読み、変更後の文書のブロックを色分けして描かせる。
 idempotent: true
