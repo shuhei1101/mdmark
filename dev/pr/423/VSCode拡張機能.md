@@ -44,4 +44,9 @@ lint: 全 pass（Biome の警告 2 件は作業 PR が触っていないファ�
 
 ### 結合
 
-なし（結合テスト作成の工程で記入する）
+| ファイル | メソッド | 変更種別 | 結果 | 補足 |
+| --- | --- | --- | --- | --- |
+| `vscode/tests/integration/scroll-sync.test.ts` | `test_normal_when_in_closed_section` | 変更 | ✅ | VS Code 1.141.0・1.145.2 の両方で pass<br>`テスト結果/20261109065321_467bb5e5_結合テスト.log` |
+| `npm --prefix vscode run test:integration` のほかのテスト | 全実行 | 実行のみ | ✅ | 80 テスト pass（両方の版）<br>`テスト結果/20261109065321_467bb5e5_結合テスト.log` |
+
+lint: 全 pass（Biome の警告 2 件は作業 PR が触っていないファイル）。`テスト結果/20261109065545_467bb5e5_lint.log`

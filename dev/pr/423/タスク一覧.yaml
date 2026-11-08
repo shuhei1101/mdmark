@@ -80,8 +80,10 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-08T19:16:03.669848+00:00'
   - process: 結合テスト作成
-    status: todo
+    status: done
     note: vscode/tests/integration/scroll-sync.test.ts に、折りたたんだセクションの中の行へ合わせるケースを追加する
+    updated_by: planner
+    updated_at: '2026-11-08T21:56:28.616001+00:00'
   - process: E2E テスト作成
     status: todo
     note: tests/e2e/単一ユースケース/エディタとプレビューのスクロールを合わせる.spec.ts に、追加したシナリオのケースを追加する
