@@ -513,7 +513,7 @@ constraints:
     notes: 'PoC #35 の見本（Chart.js を 1 つ埋めた文書）で 548,910 バイト。配布ファイル 1 つのサイズの上限は jsDelivr が配る `dist/` が対象で、書き出した HTML には適用しない'
   - item: 動く Node のバージョン
     constraint: Node 24 以降
-    decided_by: dev/設計書/非機能要件/非機能要件#requirements[CLI が動く Node の版]
+    decided_by: dev/設計書/非機能要件/非機能要件#requirements[CLI が動く Node のバージョン]
   - item: 開くブラウザ
     constraint: Chrome 99・Firefox 98・Safari 16.4 以降
     decided_by: dev/設計書/非機能要件/非機能要件#requirements[対応ブラウザ]
@@ -548,7 +548,7 @@ constraints:
     constraint: 設定の `features` で `images` か `media` をオフにした文書も、画像の埋め込みと動画・音声のコピーは同じく行う
   - item: 範囲のスクリプト
     constraint: 設定と文書のマーカーで `html-scripts` がオンの文書の、`<!-- html -->` の範囲の `ts`・`js` を esbuild で CommonJS に変え（`ts` は型を削除する）、範囲のコードの文字から既定のエクスポートの関数を参照する表として制約「まとめるスクリプト」の 1 つのスクリプトに加える。開くと起動の処理がその表を `mount` の範囲のスクリプトの処理に指定し、変換のライブラリ（`html-scripts.url`）を読み込まずに動かす。esbuild が変換できない範囲はまとめずに警告に出し、開いたときその範囲の前に記載の警告を出す。`blob:` URL と動的 `import()` は使用しない
-    notes: 変換は CLI の今の依存の esbuild。PoC 検証（#306）で束ねた 1 つのスクリプトから呼ぶ経路を確認した
+    notes: 変換は CLI の今の依存の esbuild。PoC 検証（#306）でまとめた 1 つのスクリプトから呼ぶ経路を確認した
   - item: 埋める取り込み
     constraint: '文書の include のマーカーの取り込み先を、インターフェース定義『文書をHTML文字列にする』の制約「取り込み」と同じパスの解き方でファイルから読み込み（取り込んだ文書の中のマーカーもたどり、同じファイルは 1 回だけ読み込む）、キーを書き出す文書のフォルダからのパスにした取り込む文書の表を `opts.includes` として埋める。読み込むのは設定ファイルのフォルダ（設定ファイルが無ければ文書のフォルダ）の中のファイルだけで、その外を指すパスと読み込めないファイルは表に入れず、警告に出す（書き出しは止めない。開いたときはそのマーカーの場所に記載の警告が出る）。文書の `<!-- features: -include -->` の文書は読み込まない'
   - item: 埋めるアイコン

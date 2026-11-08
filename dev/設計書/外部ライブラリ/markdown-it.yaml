@@ -99,7 +99,7 @@ verification:
   detail: 'PoC #17 で `new MarkdownIt({ html: true })` の `parse()` と `renderer.render()` を Chromium・Firefox・Node で実行し、出力が一致した。`html_block` / `html_inline` のトークンから HTML コメントのマーカーを取得して取り除けた。ライブラリ選定の調査で、`core.ruler.after("inline", …)` に追加したルールで `td_open` に `attrSet("data-label", …)` を付けられること、タスクリストと www の自動リンクを自前のルールで追加できること、取り消し線が `<s>` で出ることを Node 24 で確認した'
 selection:
   candidates: markdown-it 15.0.2・marked 18.1.1・micromark 4.0.x + micromark-extension-gfm・remark（unified 一式）を比べた。
-  decision: '実ブラウザと Node で同じ出力を返却することを PoC #17 で確認したのは markdown-it だけで、マーカーをトークンの段で取得できる。marked は最も小さいが実ブラウザでの確認が無く、patch のバージョンでも出力が変わる。micromark と remark は `browser` 条件で DOM バージョンの文字参照のデコーダが入り、拡張も記載しにくい。'
+  decision: '実ブラウザと Node で同じ出力を返却することを PoC #17 で確認したのは markdown-it だけで、マーカーをトークンの段階で取得できる。marked は最も小さいが実ブラウザでの確認が無く、patch のバージョンでも出力が変わる。micromark と remark は `browser` 条件で DOM バージョンの文字参照のデコーダが入り、拡張も記載しにくい。'
   consequences: 'タスクリスト・www の自動リンク・取り消し線の `<del>` は自前のコアルールで追加する。生の HTML を経由する（`html: true`）ため、出力は sanitize-html にかけてから描く。'
 install: |-
   ```bash

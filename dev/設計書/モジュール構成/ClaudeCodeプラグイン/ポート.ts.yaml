@@ -42,7 +42,7 @@ constants:
     summary: '`PORT_ENV` が 1〜65535 の整数でないときの `CliError` の文。`{value}` を受け取った値に置き換える'
     value: MDMARK_PORT の値 {value} はポートに使用できません。1〜65535 の整数を設定してください。
     refs:
-      - dev/設計書/インターフェース定義/ClaudeCodeプラグイン/MCPサーバーを起動・停止する.ts#exceptions[なし（MDMARK_PORT が使えない値・終了コード 1）]
+      - dev/設計書/インターフェース定義/ClaudeCodeプラグイン/MCPサーバーを起動・停止する.ts#exceptions[なし（MDMARK_PORT が使用できない値・終了コード 1）]
     status: planned
     introduced:
       pr: 141

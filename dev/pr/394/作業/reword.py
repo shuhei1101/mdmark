@@ -382,7 +382,7 @@ def build_context():
 
 CONTEXT_RULES = build_context()
 CLIP_RULE = re.compile(NK + '(?<!読み)(?P<stem>書)(?P<form>[かきくけこい])(?P<rest>[ぁ-ん]{0,3})')
-PROTECT = re.compile(r'(?:[^\s\'"`（）、。<>]*/[^\s\'"`（）、。<>]*\.(?:md|yaml|yml|ts|html|css|json|js|png|svg|mp4|mp3|vsix))|(?:(?<![\w])(?:dev|docs|src|tests|vscode|plugin|scripts|schemas|guide|templates|migrations)/[^\s\'"`）)、。,]+)|(?:#[\w\[\]（）一-鿿ぁ-んァ-ヶー・]+)')
+PROTECT = re.compile(r'(?:[^\s\'"`（）、。<>\[\]()|]*/[^\s\'"`（）、。<>\[\]()|]*\.(?:md|yaml|yml|ts|html|css|json|js|png|svg|mp4|mp3|vsix))|(?:(?<![\w])(?:dev|docs|src|tests|vscode|plugin|scripts|schemas|guide|templates|migrations)/[^\s\'"`）)、。,]+)|(?:(?<![\s（(「『、。])#[\w\[\]（）一-鿿ぁ-んァ-ヶー・\-]+)')
 SKIP_KEYS = re.compile(r'^\s*-?\s*(?:callers|decided_by|refs|test|tests|test_file|test_files|path|page|id|kind|ref|source_path|related)\s*:')
 
 def allowed(text, s):
@@ -422,12 +422,17 @@ def reword_segment(t):
 def reword_line(line):
     if SKIP_KEYS.match(line):
         return line
+    def protected():
+        ps = set()
+        for pm in PROTECT.finditer(line):
+            ps.update(range(pm.start(), pm.end()))
+        return ps
     if 'クリップボード' in line:
-        hits = hit_positions(line)
-        line = CLIP_RULE.sub(lambda m: m.group(0) if allowed(m.string, m.start('stem')) or m.start('stem') not in hits else conj_godan(m, '書き込'), line)
+        hits = hit_positions(line); prot = protected()
+        line = CLIP_RULE.sub(lambda m: m.group(0) if allowed(m.string, m.start('stem')) or m.start('stem') not in hits or m.start('stem') in prot else conj_godan(m, '書き込'), line)
     for pat, new in CONTEXT_RULES:
-        hits = hit_positions(line)
-        line = pat.sub(lambda m: m.group(0) if allowed(m.string, m.start('stem')) or m.start('stem') not in hits or m.string[m.end():m.end() + 1] == '先' or m.string[m.end('form'):m.end('form') + 1] == '先' else new(m), line)
+        hits = hit_positions(line); prot = protected()
+        line = pat.sub(lambda m: m.group(0) if allowed(m.string, m.start('stem')) or m.start('stem') not in hits or m.start('stem') in prot or m.string[m.end():m.end() + 1] == '先' or m.string[m.end('form'):m.end('form') + 1] == '先' else new(m), line)
     parts, last = [], 0
     for m in PROTECT.finditer(line):
         parts.append(reword_segment(line[last:m.start()])); parts.append(m.group(0)); last = m.end()

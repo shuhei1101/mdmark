@@ -278,7 +278,7 @@ flows:
       - 設定・索引・文書が適用する前と同じ中身で、設定の `version` が `v0.3.0` のまま
     test: test_error_when_diagram_drift
     refs:
-      - dev/設計書/シナリオ/単一ユースケース/バージョンを上げる#scenarios[異常シナリオ（当てた後の点検で図の定義にずれがある）]
+      - dev/設計書/シナリオ/単一ユースケース/バージョンを上げる#scenarios[異常シナリオ（適用した後の点検で図の定義にずれがある）]
   - name: 異常系（手元のバージョンが新しい・終了コード 1）
     summary: 手元のバージョンが呼んだ CLI のバージョンより新しいと、もう一度呼ぶ方法を示して終わる
     setup:
@@ -540,5 +540,5 @@ constraints:
     constraint: パッケージの `docs/はじめに/変更履歴.md` の表のうち、バージョンの列が手元のバージョンより新しく目標のバージョン以下の行を、表の並びで出す。PR の列はリンクの文字（`#40`）だけを出す
   - item: 動く Node のバージョン
     constraint: Node 24 以降
-    decided_by: dev/設計書/非機能要件/非機能要件#requirements[CLI が動く Node の版]
+    decided_by: dev/設計書/非機能要件/非機能要件#requirements[CLI が動く Node のバージョン]
 test_file: tests/integration/lib/upgrade.test.ts

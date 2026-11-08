@@ -23,7 +23,7 @@ npx github:shuhei1101/mdmark#v{バージョン} init --js
 
 `extensions/example.js` と、JavaScript も点検する `tsconfig.json` が配置される。
 `package.json` は配置されない。
-詳細は [雛形を置く](../書き出す/雛形を配置する.md)。
+詳細は [雛形を配置する](../書き出す/雛形を配置する.md)。
 
 ### 固有の部品を記載する
 

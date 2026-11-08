@@ -10,10 +10,10 @@
 
 | 名前 | 呼び出し | 説明 |
 | --- | --- | --- |
-| [バージョンを返却する](#版を返す) | `version()` | 読み込んだ配布物のバージョンを返却する |
-| [バージョンを CSS 変数で読み込む](#版を-css-変数で読み込む) | `--mdmark-version` | 読み込んだ CSS のバージョンを持つ |
+| [バージョンを返却する](#バージョンを返却する) | `version()` | 読み込んだ配布物のバージョンを返却する |
+| [バージョンを CSS 変数で読み込む](#バージョンを-css-変数で読み込む) | `--mdmark-version` | 読み込んだ CSS のバージョンを持つ |
 | [文書を描く](#文書を描く) | `mount(el, opts)` | 要素の中に Markdown を HTML として描く |
-| [差分の出し方を読み込む](#差分の出し方を読む) | `diffModes` | `mount` の `opts.diffMode` に指定できる差分の出し方の一覧を持つ |
+| [差分の出し方を読み込む](#差分の出し方を読み込む) | `diffModes` | `mount` の `opts.diffMode` に指定できる差分の出し方の一覧を持つ |
 | [文書を HTML 文字列にする](#文書を-html-文字列にする) | `render(markdown, opts)` | 画面を持たずに Markdown を HTML 文字列にする |
 | [参照の表を作る](#参照の表を作る) | `collectReferences(input)` | 索引と全ての文書の本文から、文書ごとの被参照と、用語集の表の用語をまとめた参照の表を返却する |
 | [本文の参照を取り出す](#本文の参照を取り出す) | `collectMatches(input)` | 索引と文書の本文から、本文に出た用語・文書の別名の一致を、参照先と本文の位置つきで返却する |
@@ -82,7 +82,7 @@ getComputedStyle(document.documentElement).getPropertyValue("--mdmark-version");
 `opts.aliases` に指定したエイリアス（[`buildAliases`](#エイリアスを作る) が作る）の名前と別名にも同じ下線を付け、種類ごとのツールチップを出す（`glossary` がオンのときだけ）。
 コマンドのエイリアスのツールチップには、コマンドをコピーするボタンを付ける。
 ツールチップの操作は `mount` が付け、`update` でもう一度付け、`destroy` で削除する。
-記載方法は [索引と用語集を書く](../使用方法/記載する/索引と用語集を記載する.md)。
+記載方法は [索引と用語集を記載する](../使用方法/記載する/索引と用語集を記載する.md)。
 図の部品の定義（[図の部品](./記法.md#図の部品)）があると、図の拡大・縮小・移動・全画面とツールチップ、操作できる部品の値の変更と写す操作も付ける。
 `opts.diffSource` を指定すると、文書のタイトルの後ろに「変更表示」のボタンを付け、押すと 2 つのリビジョンの差分を出す。
 `opts.diffMode` で差分の出し方を選べる。`open` はボタンを押した状態で描き、`blocks` はボタンを付けず、描いた文書のブロックを追加と削除の色で塗り分ける。
@@ -93,7 +93,7 @@ getComputedStyle(document.documentElement).getPropertyValue("--mdmark-version");
 `opts.commentStore` と `opts.docId` を指定して機能 `comments` をオンにすると、本文の選んだ箇所にコメントを付けられる。
 コメントのボタン・入力欄・マーカー・吹き出しの操作は `mount` が付け、`update` でもう一度付け、`destroy` で削除する。
 読み込みと保存の関数が `update`・`remove` を持つと、吹き出しのコメントごとに「編集」「削除」のボタンを出す。
-記載方法は [ビューとコメントを使う](../使用方法/記載する/ビューとコメントを使用する.md)。
+記載方法は [ビューとコメントを使用する](../使用方法/記載する/ビューとコメントを使用する.md)。
 ビューとコメントの部品のモジュール（`dist/view.js`・`dist/comments.js`）は、ビューのマーカーのある文書とコメントの機能がオンのときにだけ、`dist/index.js` の隣から読み込む。
 
 ### リクエスト
@@ -195,9 +195,9 @@ mdmark はコメントを保存せず、保存先は利用側の関数に任せ�
 メッセージに `docId`・`commentStore`・`baseMarkdown`・`onColumnsChange` のどれかを含める。
 `update` の `options.baseMarkdown` が文字列でも `null` でもないときは、前の本文を残して `TypeError` を投げる。
 それ以外は例外を投げない。
-取り出し元の `revisions`・`content` が reject するか、構造に合わない値を返却したときは、差分の場所を [知らせの枠](./用語集.md) に替え、文書の本文は描いたまま残す。
+取り出し元の `revisions`・`content` が reject するか、構造に合わない値を返却したときは、差分の場所を [通知ブロック](./用語集.md) に替え、文書の本文は描いたまま残す。
 取り出し元の関数の名前・文書の `id`・リビジョンの `id`・元のエラーが `console.error` に出る。
-`opts.diffMode` が `blocks` のときに取り出し元が同じように失敗したときは、`opts.markdown` を色を当てずに描いた本文を残し、本文の先頭に `変更を表示できません` の [知らせの枠](./用語集.md) を配置する。
+`opts.diffMode` が `blocks` のときに取り出し元が同じように失敗したときは、`opts.markdown` を色を当てずに描いた本文を残し、本文の先頭に `変更を表示できません` の [通知ブロック](./用語集.md) を配置する。
 `console.error` に出す内容は同じ。
 コメントの `save` が reject するか、構造に合わない値を返却したときは、入力欄に記載した本文を残して `role="alert"` の通知を出し、マーカーを付けない。
 `load` が reject するか、構造に合わない値を返却したときは、マーカーを付けずに続け、新しいコメントは付けられる。
@@ -208,9 +208,9 @@ mdmark はコメントを保存せず、保存先は利用側の関数に任せ�
 `comments` がオンで `opts.commentStore` を指定しないときは、コメントのボタンを出さず、読み込みと保存の関数が要ることを `mount` ごとに 1 回だけ `console.error` に出す。
 ビューかコメントの部品のモジュールを読み込めないときは、ビューのマーカーの場所を `render` が出した表のまま残し、コメントはボタンを出さず `load` も呼ばない。
 読み込めなかった部品の名前（`view` か `comments`）・モジュールの URL・元のエラーが `console.error` に出る。
-外部ライブラリを読み込めないマーカーの場所は、その場所だけを [知らせの枠](./用語集.md) に替え、ほかは描く。
+外部ライブラリを読み込めないマーカーの場所は、その場所だけを [通知ブロック](./用語集.md) に替え、ほかは描く。
 読み込めなかったマーカーの名前・URL・元のエラーが `console.error` に出る。
-記法のマーカーに読み込めない指定がある箇所は、読み込めた指定で描き、その箇所の前に [書き方の警告](./記法.md#書き方の警告) を配置する。
+記法のマーカーに読み込めない指定がある箇所は、読み込めた指定で描き、その箇所の前に [記載の警告](./記法.md#記載の警告) を配置する。
 索引が Schema に合わないときも、用語集の表の列名が表に無いときも、本文の描画を止めない。
 合わない文書・用語の項目は除いて使用し、用語集の表の誤りは、その箇所の記載の警告で通知する。
 1 つのページに文書を 2 つ以上描いても、ツールチップと被参照の一覧の `id` はページの中で重ならない。
@@ -297,7 +297,7 @@ VS Code のエディタの行番号（0 始まり）とそのまま比べられ�
 なし。常に文字列を返却する。
 未知のマーカーと、許可していない要素・属性は落とす。
 外部ライブラリは読み込まず、対応表にあるマーカーと登録した拡張のマーカーは読み込み中のブロックに置き換えて返却する。
-記法のマーカーに読み込めない指定がある箇所には、[書き方の警告](./記法.md#書き方の警告) を配置する。
+記法のマーカーに読み込めない指定がある箇所には、[記載の警告](./記法.md#記載の警告) を配置する。
 索引が Schema に合わないときも、合わない文書・用語の項目を除いて文字列を返却する。
 
 ## 参照の表を作る
@@ -517,7 +517,7 @@ const issues = checkIndex({ index, documents, indexFile: "docs/index.yaml" });
 | --- | --- | --- |
 | `file` | `string` | ずれのあるファイル。索引のずれは `indexFile`、文書のずれはその文書のパス |
 | `where` | `string` | 索引のキーのパス（`docs[3].path`）か、文書の行。ファイル全体のずれは空文字 |
-| `kind` | `'schema' \| 'missing_doc' \| 'orphan_doc' \| 'broken_ref' \| 'untyped_related' \| 'one_sided_change_together' \| 'related_link_overlap' \| 'missed_change_together' \| 'duplicate_term' \| 'avoided_term'` | ずれの種類。意味は [索引](./索引.md#点検が返すずれ) |
+| `kind` | `'schema' \| 'missing_doc' \| 'orphan_doc' \| 'broken_ref' \| 'untyped_related' \| 'one_sided_change_together' \| 'related_link_overlap' \| 'missed_change_together' \| 'duplicate_term' \| 'avoided_term'` | ずれの種類。意味は [索引](./索引.md#点検が返却するずれ) |
 | `message` | `string` | ずれの内容と修正方法を記載した日本語の 1 文 |
 
 並びは `schema` → `missing_doc` → `orphan_doc` → `broken_ref` → `untyped_related` → `one_sided_change_together` → `related_link_overlap` → `missed_change_together` → `duplicate_term` → `avoided_term` の順で、同じ種類の中は索引の並びとパスの順。
@@ -665,10 +665,10 @@ registerExtension({
 `draw` の中で、配布物が出す [`mountView`](#ビューを描く) と [`mountComments`](#コメントを付ける) を `slot` に対して呼んで、マーカーの場所に mdmark の部品を描ける。
 `draw` が部品の `Promise` を待つと、`mount` はその後にマーカーの場所を描き終えたものとして扱う。
 `update`・`destroy` でマーカーの場所を片付けるとき、その中の部品の `destroy` も行う。
-手順は [部品をJavaScriptから使う](../使用方法/カスタマイズ/部品をJavaScriptから使用する.md)。
+手順は [部品をJavaScriptから使用する](../使用方法/カスタマイズ/部品をJavaScriptから使用する.md)。
 
 `registerExtension` と、型 `MdmarkExtension`・`MdmarkExtensionModule`・`MdmarkMarkArgs`・`StandardSchemaV1` と、図の部品の定義の型 `MdmarkFlowDefinition`・`MdmarkSequenceDefinition`・`MdmarkChartDefinition`・`MdmarkParamDefinition` は、型定義 `dist/index.d.ts` に書き出して配布物と一緒に配る。
-JavaScript で記載する拡張は、この型定義に対して `tsc --noEmit` で点検できる（[固有の部品とCSSを当てる](../使用方法/図を描く/固有の部品とCSSを適用する.md)）。
+JavaScript で記載する拡張は、この型定義に対して `tsc --noEmit` で点検できる（[固有の部品とCSSを適用する](../使用方法/図を描く/固有の部品とCSSを適用する.md)）。
 `StandardSchemaV1` は Standard Schema の仕様の型を複製したもので、mdmark は検査ライブラリに依存しない。
 
 ### レスポンス
@@ -690,9 +690,9 @@ JavaScript で記載する拡張は、この型定義に対して `tsc --noEmit`
 
 | 起きたこと | マーカーの場所 |
 | --- | --- |
-| 引数が `schema` に合わない | [書き方の警告](./記法.md#書き方の警告)。モジュールを読み込まない。issue ごとに項目を並べる。引数の位置まで届く指摘は `{位置} つ目の {値}: {message}`、キーまで届く指摘は `{キー}=: {message}`、届かない指摘は `{message}` だけの項目にする |
-| `load` が拒否される、または `draw` が例外を投げる | [知らせの枠](./用語集.md)。拡張の名前と元のエラーが `console.error` に出る |
-| `schema` の `validate` が例外を投げるか拒否される | [知らせの枠](./用語集.md)。`load` を呼ばない。拡張の名前と元のエラーが `console.error` に出る |
+| 引数が `schema` に合わない | [記載の警告](./記法.md#記載の警告)。モジュールを読み込まない。issue ごとに項目を並べる。引数の位置まで届く指摘は `{位置} つ目の {値}: {message}`、キーまで届く指摘は `{キー}=: {message}`、届かない指摘は `{message}` だけの項目にする |
+| `load` が拒否される、または `draw` が例外を投げる | [通知ブロック](./用語集.md)。拡張の名前と元のエラーが `console.error` に出る |
+| `schema` の `validate` が例外を投げるか拒否される | [通知ブロック](./用語集.md)。`load` を呼ばない。拡張の名前と元のエラーが `console.error` に出る |
 
 `render` は拡張のマーカーを読み込み中のブロックに置き換えるだけで、`load` も検査も呼ばない。
 
@@ -700,7 +700,7 @@ JavaScript で記載する拡張は、この型定義に対して `tsc --noEmit`
 
 利用側のページと拡張のモジュールが、列名と項目の値を指定し、要素の中にボード表示と表形式のビューを描く。
 文書のビューのマーカー（[ビュー](./記法.md#ビュー)）で描くものと同じ外観と操作になる。
-手順は [部品をJavaScriptから使う](../使用方法/カスタマイズ/部品をJavaScriptから使用する.md)。
+手順は [部品をJavaScriptから使用する](../使用方法/カスタマイズ/部品をJavaScriptから使用する.md)。
 
 ### リクエスト
 
@@ -746,13 +746,13 @@ handle.destroy();
 | 起きたこと | 動き |
 | --- | --- |
 | `el` が要素でない、`opts.columns` が空か文字列の配列でないか重なりを持つ、`opts.items` が配列でないか要素がオブジェクトでない、`opts.group`・`opts.filter` の列名が `opts.columns` に無い、`opts.filter` の種類が `select`・`text`・`date` でない、`opts.default` が `board`・`table` でないか `opts.group` が無いのに `board`、`opts.icons` に使用できないアイコンの名前がある | `TypeError` を同期で投げる（`Promise` は返却しない）。`el` は書き換えず、メッセージに誤った引数の名前を含める |
-| ビューの部品のモジュールを読み込めない | `el` の中にタイトル `この箇所を表示できません` の [知らせの枠](./用語集.md) を配置し、`Promise` を元のエラーで reject する |
+| ビューの部品のモジュールを読み込めない | `el` の中にタイトル `この箇所を表示できません` の [通知ブロック](./用語集.md) を配置し、`Promise` を元のエラーで reject する |
 
 ## コメントを付ける
 
 利用側のページが、自分で記載した要素とコメントの読み込みと保存の関数を指定し、要素の中の選んだ箇所にコメントを付けられるようにする。
 `mount` で描いた文書のコメントと同じ外観と操作になる。
-手順は [部品をJavaScriptから使う](../使用方法/カスタマイズ/部品をJavaScriptから使用する.md)。
+手順は [部品をJavaScriptから使用する](../使用方法/カスタマイズ/部品をJavaScriptから使用する.md)。
 
 ### リクエスト
 

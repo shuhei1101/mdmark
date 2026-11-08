@@ -141,7 +141,7 @@ constraints:
     constraint: 配置した `mdmark.config.yaml` と `index.yaml` は、`schemas/mdmark.config.schema.json` と `schemas/mdmark.index.schema.json` に合う
   - item: 動く Node のバージョン
     constraint: Node 24 以降
-    decided_by: dev/設計書/非機能要件/非機能要件#requirements[CLI が動く Node の版]
+    decided_by: dev/設計書/非機能要件/非機能要件#requirements[CLI が動く Node のバージョン]
   - item: 設定のバージョン
     constraint: 配置する `mdmark.config.yaml` の `version` は、ビルドが呼んだ CLI に埋めたバージョン。`templates/mdmark.config.yaml` の `version` の値を配置するときに置き換える
     decided_by: dev/設計書/設定/ライブラリ本体#settings[version]

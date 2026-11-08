@@ -236,7 +236,7 @@ constants:
     summary: 待ち受けるポートを別のプロセスが使用しているときに標準エラーに書き込む文。`{port}` をポートに置き換える
     value: ポート {port} は別のプロセスが使用しています。mdmark serve が既に起動しているなら、そのまま使用できます。別のポートで動かすときは、~/.claude/settings.json の env と mdmark serve を起動する環境の両方に同じ MDMARK_PORT を設定してください。
     refs:
-      - dev/設計書/インターフェース定義/ClaudeCodeプラグイン/MCPサーバーを起動・停止する.ts#exceptions[なし（ポートが使われている・終了コード 1）]
+      - dev/設計書/インターフェース定義/ClaudeCodeプラグイン/MCPサーバーを起動・停止する.ts#exceptions[なし（ポートが使用されている・終了コード 1）]
     status: planned
     introduced:
       pr: 141

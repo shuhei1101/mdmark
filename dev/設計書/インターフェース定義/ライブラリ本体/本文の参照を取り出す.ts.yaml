@@ -134,7 +134,7 @@ flows:
       - '`avoided.guide` と `avoided.memo` が空の並び'
     test: test_normal_when_feature_off
     refs:
-      - dev/設計書/シナリオ/単一ユースケース/本文に出た用語と文書の参照を取り出す#scenarios[正常シナリオ（文書の印で機能がオフ）]
+      - dev/設計書/シナリオ/単一ユースケース/本文に出た用語と文書の参照を取り出す#scenarios[正常シナリオ（文書のマーカーで機能がオフ）]
   - name: 正常系（Schema に合わない索引）
     summary: 合わない項目を除いて照合し、例外を投げない
     setup:
@@ -215,7 +215,7 @@ flows:
       - '`avoided.guide` が 3 行目の `WorkPlace` の 1 件を持ち、`text` が `workplace`'
     test: test_normal_when_notation_differs
     refs:
-      - dev/設計書/シナリオ/単一ユースケース/本文に出た用語と文書の参照を取り出す#scenarios[正常シナリオ（全角と半角・大文字と小文字だけが違う語）]
+      - dev/設計書/シナリオ/単一ユースケース/本文に出た用語と文書の参照を取り出す#scenarios[正常シナリオ（全角と半角・大文字と小文字だけが違う単語）]
   - name: 正常系（エイリアス）
     summary: 指定したエイリアスの一致を alias の参照先として返却し、avoid の種類を avoided に返却する
     setup:
@@ -244,7 +244,7 @@ flows:
       - 引数の `index`・`documents`・`aliases` が書き換わっていない
     test: test_normal_when_aliases
     refs:
-      - dev/設計書/シナリオ/単一ユースケース/本文に出た用語と文書の参照を取り出す#scenarios[正常シナリオ（エイリアスを渡す）]
+      - dev/設計書/シナリオ/単一ユースケース/本文に出た用語と文書の参照を取り出す#scenarios[正常シナリオ（エイリアスを指定する）]
 lead: 利用側の処理（AI へ本文を返却する MCP・サーバー）が、索引と文書の本文を指定し、画面を出さずに、本文に出た用語・文書の別名の一致とその参照先を受け取る。一致の規則は描いた文書の用語の下線とツールチップと同じ。
 identifier: collectMatches
 idempotent: true

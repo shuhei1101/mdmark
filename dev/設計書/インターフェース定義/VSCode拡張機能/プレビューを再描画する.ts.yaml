@@ -347,7 +347,7 @@ constraints:
     constraint: '`mdmark.preview.liveUpdate` が `true` のときは Markdown の変更から、`false` のときは Markdown の保存から再描画する。重ねた設定ファイル（ワークスペースの外の端末の設定を含む）・`theme` の CSS・`extensions` のファイル・前回 `aliases` を作るときに読み込んだ YAML のファイル（`paths` の glob に該当する新しいファイルは、設定を再読み込みするまで取得しない）の作成・変更・削除、前回送った `includes` のファイルの保存・削除、`mdmark.configPath`・`mdmark.preview.theme`・`mdmark.colorTheme` の変更でも再描画する。保存と設定ファイルは待たずに送信する'
   - item: 再描画するまでの待ち
     constraint: Markdown の最後の変更から `mdmark.preview.updateDelayMs` 待って送信する。範囲の外の値は既定の値として扱う
-    decided_by: dev/設計書/非機能要件/非機能要件#requirements[描き直すまでの待ち]
+    decided_by: dev/設計書/非機能要件/非機能要件#requirements[再描画するまでの待ち]
   - item: 送信する中身
     constraint: '`TextDocument.getText()` の全文（保存していない書き換えを含む）と、インターフェース定義『設定を重ねて読み込む』を `purpose: preview` で呼んで重ねた設定のうち `mount` の `opts.config` が読み込むキー（`mdmark.colorTheme` が空でないときは `colorTheme` をその値で上書きする）、`mdmark.preview.theme`、インターフェース定義『プレビューを開く』の制約「取り込む文書」のとおり再描画するたびに再読み込みした `includes`、プレビューを開く.ts の制約「エイリアス」のとおり作った `aliases`（設定に `aliases` が無いときは持たない）。差分のパネルは、変更後の文書の全文を `markdown`、その時点の変更前の文書の全文を `previous` に入れる。それ以外のパネルは `previous` を送信しない'
   - item: 背面のパネル

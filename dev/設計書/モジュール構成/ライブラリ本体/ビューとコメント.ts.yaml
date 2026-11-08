@@ -568,7 +568,7 @@ functions:
         mock: 合図で解決する `attachComments`
         expected: '`reloadComments()` が解決し、`reload` は呼ばれず、得た `detach` が 1 回呼ばれる'
     refs:
-      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#exceptions[なし（ビュー・コメントの部品のモジュールを読めない）]
+      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#exceptions[なし（ビュー・コメントの部品のモジュールを読み込めない）]
       - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[コメントの読み直し]
   - name: checkViewOptions
     title: ビューの引数を検める

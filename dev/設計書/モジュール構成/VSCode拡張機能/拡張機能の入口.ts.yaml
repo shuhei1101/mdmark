@@ -43,7 +43,7 @@ constants:
     refs:
       - dev/設計書/画面設計/VSCodeのコマンドと通知.ts#
       - dev/設計書/設定/VSCode拡張機能#
-      - dev/設計書/非機能要件/非機能要件#requirements[対応する VS Code の版]
+      - dev/設計書/非機能要件/非機能要件#requirements[対応する VS Code のバージョン]
       - dev/設計書/モジュール構成/VSCode拡張機能/設定.ts#constants[SETTING_DEFAULTS]
     status: planned
 data_models:

@@ -164,7 +164,7 @@ constants:
     summary: '`mdmark.preview.updateDelayMs` に許すミリ秒の最小と最大'
     value: '{ min: 0, max: 5000 }'
     refs:
-      - dev/設計書/非機能要件/非機能要件#requirements[描き直すまでの待ち]
+      - dev/設計書/非機能要件/非機能要件#requirements[再描画するまでの待ち]
     status: planned
   - name: CONFIG_TEMPLATE
     title: 設定ファイルの雛形

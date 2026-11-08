@@ -15,7 +15,7 @@ scenarios:
         C --> D[ClaudeCodeから点検と書き出しを呼ぶ:正常シナリオ（ずれがある）]
         D --> E[ClaudeCodeから点検と書き出しを呼ぶ:正常シナリオ]
         click A "../単一ユースケース/ClaudeCodeにプラグインを入れる.yaml#正常シナリオ"
-        click C "../単一ユースケース/使い方集を参照する.yaml#正常シナリオ"
+        click C "../単一ユースケース/ガイドを参照する.yaml#正常シナリオ"
         click D "../単一ユースケース/ClaudeCodeから点検と書き出しを呼ぶ.yaml#正常シナリオずれがある"
         click E "../単一ユースケース/ClaudeCodeから点検と書き出しを呼ぶ.yaml#正常シナリオ"
     expected:
@@ -26,7 +26,7 @@ scenarios:
     test: test_normal
     uses:
       - dev/設計書/シナリオ/単一ユースケース/ClaudeCodeにプラグインを入れる#scenarios[正常シナリオ]
-      - dev/設計書/シナリオ/単一ユースケース/使い方集を参照する#scenarios[正常シナリオ]
+      - dev/設計書/シナリオ/単一ユースケース/ガイドを参照する#scenarios[正常シナリオ]
       - dev/設計書/シナリオ/単一ユースケース/ClaudeCodeから点検と書き出しを呼ぶ#scenarios[正常シナリオ（ずれがある）]
       - dev/設計書/シナリオ/単一ユースケース/ClaudeCodeから点検と書き出しを呼ぶ#scenarios[正常シナリオ]
   - name: 異常シナリオ（dev-docs が無い）
@@ -42,7 +42,7 @@ scenarios:
         A[ClaudeCodeにプラグインを入れる:正常シナリオ] --> B[ガイドを参照する:異常シナリオ（dev-docs が無い）]
         B --> C[ClaudeCodeから点検と書き出しを呼ぶ:正常シナリオ（ずれがある）]
         click A "../単一ユースケース/ClaudeCodeにプラグインを入れる.yaml#正常シナリオ"
-        click B "../単一ユースケース/使い方集を参照する.yaml#異常シナリオdev-docs-が無い"
+        click B "../単一ユースケース/ガイドを参照する.yaml#異常シナリオdev-docs-が無い"
         click C "../単一ユースケース/ClaudeCodeから点検と書き出しを呼ぶ.yaml#正常シナリオずれがある"
     expected:
       - mdmark の MCP の instructions に、dev-docs が無い、または mdmark の配信元が登録されていないときは「dev-docs が無いので見つかりません」とある
@@ -51,7 +51,7 @@ scenarios:
     test: test_error_when_dev_docs_missing
     uses:
       - dev/設計書/シナリオ/単一ユースケース/ClaudeCodeにプラグインを入れる#scenarios[正常シナリオ]
-      - dev/設計書/シナリオ/単一ユースケース/使い方集を参照する#scenarios[異常シナリオ（dev-docs が無い）]
+      - dev/設計書/シナリオ/単一ユースケース/ガイドを参照する#scenarios[異常シナリオ（dev-docs が無い）]
       - dev/設計書/シナリオ/単一ユースケース/ClaudeCodeから点検と書き出しを呼ぶ#scenarios[正常シナリオ（ずれがある）]
 lead: 文書の作成者が mdmark のプラグインを入れ、Claude Code が記載する前に dev-docs でガイドを参照し、記載した後に mdmark の `check` で点検する。
 issue: 186

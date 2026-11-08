@@ -391,7 +391,7 @@ constraints:
     constraint: 制限なし
   - item: 動く Node のバージョン
     constraint: Node 24 以降
-    decided_by: dev/設計書/非機能要件/非機能要件#requirements[CLI が動く Node の版]
+    decided_by: dev/設計書/非機能要件/非機能要件#requirements[CLI が動く Node のバージョン]
   - item: 取り込みとアイコン
     constraint: インターフェース定義『文書をHTMLに書き出す』の制約「埋める取り込み」「埋めるアイコン」と同じ。取り込む文書の表はまとめる文書ごとに、その文書のフォルダからのパスをキーにして作る。取り込み先が `build` の対象外のファイルでも、設定ファイルのフォルダの中なら読み込んで埋め、文書の一覧には出さない。同じファイルの本文と同じ名前のアイコンの形状は 1 回だけ埋める
   - item: 文書ごとのページの設定

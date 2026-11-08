@@ -6,7 +6,7 @@ scenarios:
         description: バージョンを固定した URL で `dist/index.js` と `dist/index.css` を読み込み、設定を指定して文書を描く HTML
         notes: 画面と描く先の要素の幅は 1280px
       - name: cards の範囲を持つ Markdown
-        description: '`<!-- cards -->` 〜 `<!-- /cards -->` で、4 つの項目のリストを囲んだ文書。1 つ目は `` `icon:book` [使い方](使い方/README.md) `` の次の行に説明 `導入と使用方法の手順`、2 つ目は `[リファレンス](リファレンス/README.md) 名前から参照する一覧`、3 つ目は `https://example.com/docs` だけ、4 つ目は `` `icon:rocket` [始める](はじめに/README.md) ``'
+        description: '`<!-- cards -->` 〜 `<!-- /cards -->` で、4 つの項目のリストを囲んだ文書。1 つ目は `` `icon:book` [使用方法](使い方/README.md) `` の次の行に説明 `導入と使用方法の手順`、2 つ目は `[リファレンス](リファレンス/README.md) 名前から参照する一覧`、3 つ目は `https://example.com/docs` だけ、4 つ目は `` `icon:rocket` [始める](はじめに/README.md) ``'
       - name: Mock
         description: jsDelivr を、ビルドした `dist/` を同じパスで返却する手元の応答に差し替える。`example.com` への要求を数える
     flow: |-

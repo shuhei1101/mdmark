@@ -160,7 +160,7 @@ constants:
   - name: DEFAULT_LIBRARIES
     title: 既定の対応表
     container: src/config.ts
-    summary: マーカーの名前から `LibraryEntry` を参照する既定の対応表。この Issue では空で、外部ライブラリを使用する機能を作る Issue（#6）が版を固定した URL の行を追加する
+    summary: マーカーの名前から `LibraryEntry` を参照する既定の対応表。この Issue では空で、外部ライブラリを使用する機能を作る Issue（#6）がバージョンを固定した URL の行を追加する
     value: '{}'
   - name: MARK_NAME_PATTERN
     title: マーカーの名前の書式

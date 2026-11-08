@@ -285,7 +285,7 @@ constraints:
     decided_by: dev/設計書/非機能要件/非機能要件#requirements[対応ブラウザ]
   - item: CLI の配布物
     constraint: '`dist/cli.js` は Node 24 を target にし、先頭に `#!/usr/bin/env node` を配置する。esbuild と YAML を読み込むライブラリはまとめず、`package.json` の `dependencies` から読み込む。`mdmark serve` が使用する MCP の SDK はまとめ、まとめた依存のライセンスを `dist/THIRD_PARTY_LICENSES.txt` に並べる。`package.json` の `bin` の `mdmark` が `dist/cli.js` を指す'
-    decided_by: dev/設計書/非機能要件/非機能要件#requirements[CLI が動く Node の版]
+    decided_by: dev/設計書/非機能要件/非機能要件#requirements[CLI が動く Node のバージョン]
     notes: 書き出しに埋める `dist/index.css`・`dist/viewer.js`・`dist/viewer.css` は、同じバージョンのものを `dist/cli.js` と同じフォルダから読み込む。`dist/viewer.js` はライブラリ本体を含めてまとめる
   - item: 移行の手順の点検
     constraint: '配布物を書き込む前に実行する。比べるバージョンは `--version` があればそのバージョン、無ければ `version.ini` のバージョン。最新のバージョンのタグは `git tag` の `v{MAJOR}.{MINOR}.{PATCH}` のうち最も新しいバージョン。比べるバージョンがタグと同じなら `migrations/next/` と `version: next` の行を、新しければ `migrations/v{比べる版}/` と `version: v{比べるバージョン}` の行を確認する。`schemas/mdmark.config.schema.json` と `schemas/mdmark.index.schema.json` の中身がタグのものと違うとき、確認するフォルダに `steps.yaml` があるか、確認する行のうち `schema` がそのファイルで `sha256` が今の中身と合う行があれば合格にする'

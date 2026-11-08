@@ -48,7 +48,7 @@ scenarios:
       - 配布物を配る状態へ戻して再描画すると、見出し・表・注意書き・フロー図が描かれる
     test: test_error_when_distribution_unreachable
     uses:
-      - dev/設計書/シナリオ/単一ユースケース/VSCodeでプレビューを開く#scenarios[異常シナリオ（配布物を読めない）]
+      - dev/設計書/シナリオ/単一ユースケース/VSCodeでプレビューを開く#scenarios[異常シナリオ（配布物を読み込めない）]
       - dev/設計書/シナリオ/単一ユースケース/記載した内容をプレビューに映す#scenarios[正常シナリオ（リロードする）]
 lead: 文書の作成者が、VS Code で Markdown を記載しながら横に出した mdmark のプレビューで描いた外観を確認し、書き込み終えた文書を HTML に書き出してブラウザの印刷で PDF にする。
 issue: 22

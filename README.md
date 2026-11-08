@@ -8,8 +8,8 @@ CDN を読み込めない環境へは、CLI で Markdown を 1 枚で完結す�
 
 図・部品を文書に部品の定義で描く: [図を描く](./docs/使用方法/図を描く/README.md)
 
-VS Code で Markdown のプレビューを出し、HTML・PDF にする拡張機能: [VS Code で見る](./docs/使用方法/VSCodeで確認する/README.md)
+VS Code で Markdown のプレビューを出し、HTML・PDF にする拡張機能: [VS Code で確認する](./docs/使用方法/VSCodeで確認する/README.md)
 
-バージョンを上げるときは、CLI で移行の手順を適用する: [版を上げる](./docs/使用方法/導入/バージョンを上げる.md)
+バージョンを上げるときは、CLI で移行の手順を適用する: [バージョンを上げる](./docs/使用方法/導入/バージョンを上げる.md)
 
-Claude Code にガイドへの動線と書き出し・点検のツールを指定する: [Claude Code で使う](./docs/使用方法/ClaudeCodeで使用する/README.md)
+Claude Code にガイドへの動線と書き出し・点検のツールを指定する: [Claude Code で使用する](./docs/使用方法/ClaudeCodeで使用する/README.md)

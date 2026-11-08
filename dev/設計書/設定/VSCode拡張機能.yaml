@@ -61,7 +61,7 @@ settings:
     reload: immediate
     allowed: 0〜5000
     refs:
-      - dev/設計書/非機能要件/非機能要件#requirements[描き直すまでの待ち]
+      - dev/設計書/非機能要件/非機能要件#requirements[再描画するまでの待ち]
     status: planned
     visibility: user
     introduced:

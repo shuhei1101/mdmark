@@ -73,8 +73,8 @@ scenarios:
       - 端末の設定と 2 つの `mdmark.config.yaml` は書き換わらない
     test: test_error_when_settings_unreadable
     uses:
-      - dev/設計書/シナリオ/単一ユースケース/VSCodeでプレビューを開く#scenarios[異常シナリオ（設定ファイルを読めない）]
-      - dev/設計書/シナリオ/単一ユースケース/文書をHTMLに書き出す#scenarios[異常シナリオ（設定ファイルを読めない）]
+      - dev/設計書/シナリオ/単一ユースケース/VSCodeでプレビューを開く#scenarios[異常シナリオ（設定ファイルを読み込めない）]
+      - dev/設計書/シナリオ/単一ユースケース/文書をHTMLに書き出す#scenarios[異常シナリオ（設定ファイルを読み込めない）]
       - dev/設計書/シナリオ/単一ユースケース/文書をHTMLに書き出す#scenarios[正常シナリオ（設定を重ねる）]
 lead: 文書の作成者が、端末の設定と、文書のフォルダから上のフォルダの `mdmark.config.yaml` を重ねた設定で、VS Code のプレビュー・CLI の書き出し・Claude Code から呼んだ書き出しを同じ外観にそろえる。
 issue: 163

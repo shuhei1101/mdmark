@@ -838,7 +838,7 @@ flows:
       - Node とブラウザで同じ文字列を返却する
     test: test_normal_when_aliases
     refs:
-      - dev/設計書/シナリオ/単一ユースケース/文書をHTML文字列にする#scenarios[正常シナリオ（エイリアスを渡す）]
+      - dev/設計書/シナリオ/単一ユースケース/文書をHTML文字列にする#scenarios[正常シナリオ（エイリアスを指定する）]
   - name: 正常系（表・タブ・ステップの折りたたみ）
     summary: '`closed`・`open` の表・タブ・ステップを、`title=` か中身から作った見出しの `details` に入れる'
     setup:
@@ -1018,7 +1018,7 @@ flows:
       - 文字列に `{width=big` と `{align=left}` が無い
     test: test_normal_when_image_attribute_invalid
     refs:
-      - dev/設計書/シナリオ/単一ユースケース/画像・動画・音声を配置する#scenarios[異常シナリオ（読めない属性）]
+      - dev/設計書/シナリオ/単一ユースケース/画像・動画・音声を配置する#scenarios[異常シナリオ（読み込めない属性）]
   - name: 正常系（ギャラリー）
     summary: ギャラリーのマーカーの範囲の画像を格子に並べ、`fig` のマーカーの番号にサブ図の番号を付ける
     setup:
@@ -1117,7 +1117,7 @@ flows:
       - '`mdmark-card` が無く、URL がリンクとして描かれている'
     test: test_normal_when_media_features_disabled
     refs:
-      - dev/設計書/シナリオ/単一ユースケース/機能のオン・オフを文書で上書きする#scenarios[正常シナリオ（色・画像・カードの機能を外す）]
+      - dev/設計書/シナリオ/単一ユースケース/機能のオン・オフを文書で上書きする#scenarios[正常シナリオ（色・画像・カードの機能を解除する）]
   - name: 正常系（表のセルの結合と多段の見出し）
     summary: '`header-rows=`・`row-header=` と `^^`・`<<` を、多段の見出し・行見出し・結合したセルの HTML にする'
     setup:
@@ -1168,7 +1168,7 @@ flows:
       - 表が `data-features="sort pin filter"` を持つ
     test: test_normal_when_table_merge_invalid
     refs:
-      - dev/設計書/シナリオ/単一ユースケース/表を操作する#scenarios[異常シナリオ（読めないセルの結合）]
+      - dev/設計書/シナリオ/単一ユースケース/表を操作する#scenarios[異常シナリオ（読み込めないセルの結合）]
   - name: 正常系（注意書きのタイトルと入れ子）
     summary: 種類の後ろの文字をタイトルにし、`+` を開いた折りたたみにし、注意書きの中の注意書きを入れ子にする
     setup:
@@ -1290,7 +1290,7 @@ flows:
       - '`figure.mdmark-diagram` が 1 つだけあり、段落がある'
     test: test_normal_when_chart_series_too_many
     refs:
-      - dev/設計書/シナリオ/単一ユースケース/図を描く#scenarios[異常シナリオ（定義を読めない）]
+      - dev/設計書/シナリオ/単一ユースケース/図を描く#scenarios[異常シナリオ（定義を読み込めない）]
   - name: 正常系（埋め込んだ HTML の中の追加したグラフの種類）
     summary: '`<mdmark-chart>` に記載した追加した種類の定義を、`<!-- chart -->` と同じグラフに置き換える'
     setup:
@@ -1460,7 +1460,7 @@ flows:
       - 文字列に class `mdmark-fn-` で始まる要素と `details.mdmark-footnotes` が無い
     test: test_normal_when_footnotes_disabled
     refs:
-      - dev/設計書/シナリオ/単一ユースケース/機能のオン・オフを文書で上書きする#scenarios[正常シナリオ（脚注の機能を外す）]
+      - dev/設計書/シナリオ/単一ユースケース/機能のオン・オフを文書で上書きする#scenarios[正常シナリオ（脚注の機能を解除する）]
   - name: 正常系（列の並べ替えのマーカー）
     summary: '`+reorder` を `data-features` に設定し、結合した見出しの範囲を列ごとに写す'
     setup:
@@ -1557,7 +1557,7 @@ flows:
       - '`example=見本` の表は `mdmark-tree-row` を持ち、`mdmark-tree-example` が無い'
     test: test_normal_when_table_tree_invalid
     refs:
-      - dev/設計書/シナリオ/単一ユースケース/表を操作する#scenarios[異常シナリオ（読めない階層の指定）]
+      - dev/設計書/シナリオ/単一ユースケース/表を操作する#scenarios[異常シナリオ（読み込めない階層の指定）]
   - name: 正常系（範囲のスクリプトと CSS）
     summary: '`html-scripts` がオンのとき、範囲の `css` を根の要素に限った `style` にし、`ts` を実行しない `template` に入れる'
     setup:
@@ -1735,7 +1735,7 @@ flows:
       - 文字列に `<!--` と `mdmark-syntax-warning` が無い
     test: test_normal_when_includes
     refs:
-      - dev/設計書/シナリオ/単一ユースケース/文書をHTML文字列にする#scenarios[正常シナリオ（取り込む文書を渡す）]
+      - dev/設計書/シナリオ/単一ユースケース/文書をHTML文字列にする#scenarios[正常シナリオ（取り込む文書を指定する）]
       - dev/設計書/シナリオ/単一ユースケース/ほかの文書を取り込む#scenarios[正常シナリオ]
   - name: 正常系（取り込み先が無い・循環する）
     summary: 取り込めないマーカーの場所に記載の警告を配置し、循環する取り込みを止める
@@ -1799,7 +1799,7 @@ flows:
       - name: 配布物を読み込んだ Node の処理
         description: 正常系と同じ
       - name: page のマーカーと cards の範囲を持つ Markdown
-        description: '先頭の行に `<!-- page: scheme=dark toc=fixed -->` を持ち、`<!-- cards -->` 〜 `<!-- /cards -->` で `` `icon:book` [使い方](使い方/README.md) `` の次の行に説明 `導入と使用方法の手順`・`https://example.com/docs` だけ・`準備中` だけの 3 項目のリストを囲んだ文書'
+        description: '先頭の行に `<!-- page: scheme=dark toc=fixed -->` を持ち、`<!-- cards -->` 〜 `<!-- /cards -->` で `` `icon:book` [使用方法](使い方/README.md) `` の次の行に説明 `導入と使用方法の手順`・`https://example.com/docs` だけ・`準備中` だけの 3 項目のリストを囲んだ文書'
       - name: 途中に page のマーカーを持つ Markdown
         description: '最初の段落の後に `<!-- page: scheme=dark -->` を記載した文書'
       - name: Mock
@@ -1848,7 +1848,7 @@ flows:
       - 表が `mdmark-wide-range` に入らず、警告の本文に `<!-- /wide -->` がある
     test: test_normal_when_new_syntax_errors
     refs:
-      - dev/設計書/シナリオ/単一ユースケース/ステップ・ファイルツリー・バッジで本文を組む#scenarios[異常シナリオ（アイコンの名前の書き方が誤っている）]
+      - dev/設計書/シナリオ/単一ユースケース/ステップ・ファイルツリー・バッジで本文を組む#scenarios[異常シナリオ（アイコンの名前の記載方法が誤っている）]
       - dev/設計書/シナリオ/単一ユースケース/名前の色で表・バッジ・本文を強調する#scenarios[異常シナリオ（蛍光ペンの知らない色の名前）]
       - dev/設計書/シナリオ/単一ユースケース/本文を横に並べる#scenarios[異常シナリオ（列の数が 2〜3 でない）]
       - dev/設計書/シナリオ/単一ユースケース/本文を横に並べる#scenarios[異常シナリオ（columns の入れ子）]
@@ -1882,7 +1882,7 @@ flows:
       - 文字列に `<!--` が無い
     test: test_normal_when_new_syntax_disabled
     refs:
-      - dev/設計書/シナリオ/単一ユースケース/機能のオン・オフを文書で上書きする#scenarios[正常シナリオ（新しい記法の機能を外す）]
+      - dev/設計書/シナリオ/単一ユースケース/機能のオン・オフを文書で上書きする#scenarios[正常シナリオ（新しい記法の機能を解除する）]
   - name: 正常系（座標を省いた判定フローチャート）
     summary: 座標を省いた判定フローチャートを配置して描き、座標を省けない定義を記載の警告にする
     setup:

@@ -2926,7 +2926,7 @@ flows:
       - '`課題の一覧` から Tab でツールチップのリンクへフォーカスが移り、Esc でツールチップが消えてフォーカスが `課題の一覧` に戻る'
     test: test_normal_when_aliases
     refs:
-      - dev/設計書/シナリオ/単一ユースケース/用語の意味をツールチップで確認する#scenarios[正常シナリオ（エイリアスを渡す）]
+      - dev/設計書/シナリオ/単一ユースケース/用語の意味をツールチップで確認する#scenarios[正常シナリオ（エイリアスを指定する）]
   - name: 正常系（エイリアスのコマンドをコピーする）
     summary: コマンドのツールチップのコピーのボタンで、コマンドをクリップボードへ書き込み、ボタンで通知する
     setup:
@@ -3031,7 +3031,7 @@ flows:
       - 段落の `オン・オフのマーカー` のツールチップが `HTML コメントで記載する指定`
     test: test_normal_when_aliases_have_same_term
     refs:
-      - dev/設計書/シナリオ/単一ユースケース/表から用語集に用語を入れる#scenarios[正常シナリオ（索引とエイリアスと表に同じ語がある）]
+      - dev/設計書/シナリオ/単一ユースケース/表から用語集に用語を入れる#scenarios[正常シナリオ（索引とエイリアスと表に同じ単語がある）]
   - name: 正常系（文書のマーカーでエイリアスを削除する）
     summary: 文書のマーカーで glossary をオフにした文書では、指定したエイリアスを照合しない
     setup:
@@ -3055,7 +3055,7 @@ flows:
       - '`el` の中に `role="tooltip"` の要素が無く、`npm run test:unit` の文字が段落の外に無い'
     test: test_normal_when_aliases_glossary_disabled
     refs:
-      - dev/設計書/シナリオ/単一ユースケース/機能のオン・オフを文書で上書きする#scenarios[正常シナリオ（用語と被参照の機能を外す）]
+      - dev/設計書/シナリオ/単一ユースケース/機能のオン・オフを文書で上書きする#scenarios[正常シナリオ（用語と被参照の機能を解除する）]
   - name: 正常系（エイリアスを指定して本文を差し替える）
     summary: update で本文を差し替えても、描いたときのエイリアスでもう一度照合する
     setup:
@@ -3080,7 +3080,7 @@ flows:
       - '`update` の後、差し替え先の段落の `ワークスペース` が class `mdmark-term` の要素で、ツールチップが同じ説明を持つ'
     test: test_normal_when_aliases_updated
     refs:
-      - dev/設計書/シナリオ/単一ユースケース/文書を描く#scenarios[正常シナリオ（エイリアスを渡す）]
+      - dev/設計書/シナリオ/単一ユースケース/文書を描く#scenarios[正常シナリオ（エイリアスを指定する）]
   - name: 異常系（使用できないエイリアス・照合しない）
     summary: 必須のキーが空・知らない種類・重なった ID のエイリアスを除いて描き、http・https でない URL はリンクにしない
     setup:
@@ -3107,7 +3107,7 @@ flows:
       - '`危ないリンク` のツールチップに `javascript:alert(1)` が文字で出て、ツールチップの中に `a` 要素が無い'
     test: test_error_when_invalid_alias
     refs:
-      - dev/設計書/シナリオ/単一ユースケース/用語の意味をツールチップで確認する#scenarios[異常シナリオ（使えないエイリアス）]
+      - dev/設計書/シナリオ/単一ユースケース/用語の意味をツールチップで確認する#scenarios[異常シナリオ（使用できないエイリアス）]
   - name: 正常系（テーマを選ぶ）
     summary: '`opts.config.colorTheme` で選んだテーマの明るい配色で描き、`destroy` でテーマを解除する'
     setup:
@@ -3338,7 +3338,7 @@ flows:
       - マーカーの文字と記載の警告が無い
     test: test_normal_when_card_grid_disabled
     refs:
-      - dev/設計書/シナリオ/単一ユースケース/リンクをカードの格子に並べる#scenarios[正常シナリオ（機能を外す）]
+      - dev/設計書/シナリオ/単一ユースケース/リンクをカードの格子に並べる#scenarios[正常シナリオ（機能を解除する）]
   - name: 正常系（カードの格子にリスト以外の中身）
     summary: cards の範囲の中身がリスト 1 つでないときは、記載の警告を配置して中身を記載したとおりに描く
     setup:
@@ -3998,7 +3998,7 @@ flows:
     test: test_normal_when_merged_table_sorted
     refs:
       - dev/設計書/シナリオ/単一ユースケース/表を操作する#scenarios[正常シナリオ（多段の見出しと行見出し）]
-      - dev/設計書/シナリオ/単一ユースケース/表を操作する#scenarios[正常シナリオ（並べ替えの後に結合し直す）]
+      - dev/設計書/シナリオ/単一ユースケース/表を操作する#scenarios[正常シナリオ（並べ替えの後にもう一度結合する）]
   - name: 正常系（行見出しの列までを留める）
     summary: '`row-header=` を持つはみ出す表を、描いた直後に最後の行見出しの列まで留めた状態にする'
     setup:
@@ -4546,7 +4546,7 @@ flows:
     test: test_normal_when_footnote_tooltip
     refs:
       - dev/設計書/シナリオ/単一ユースケース/脚注を確認する#scenarios[正常シナリオ]
-      - dev/設計書/シナリオ/単一ユースケース/脚注を確認する#scenarios[正常シナリオ（キーボードで読む）]
+      - dev/設計書/シナリオ/単一ユースケース/脚注を確認する#scenarios[正常シナリオ（キーボードで読み込む）]
   - name: 正常系（脚注の番号と一覧を行き来する）
     summary: 番号を押すと閉じた一覧を開いて項目へ移り、戻るリンクで番号へ戻る
     setup:
@@ -5030,7 +5030,7 @@ flows:
       - 段落があり、`console.error` に URL が出る
     test: test_error_when_transpiler_unavailable
     refs:
-      - dev/設計書/シナリオ/単一ユースケース/コードブロックのHTMLを描く#scenarios[異常シナリオ（変換のライブラリを読めない）]
+      - dev/設計書/シナリオ/単一ユースケース/コードブロックのHTMLを描く#scenarios[異常シナリオ（変換のライブラリを読み込めない）]
   - name: 正常系（まとめていない名前のアイコンを読み込む）
     summary: まとめていない名前のアイコンだけを、使用する名前の分だけ jsDelivr から読み込んで描く
     setup:
@@ -5058,7 +5058,7 @@ flows:
       - まとめていない名前の `icon:` を持たない文書では、Lucide への要求が 0 件
     test: test_normal_when_unbundled_icons
     refs:
-      - dev/設計書/シナリオ/単一ユースケース/外部ライブラリを使用するときだけ読み込む#scenarios[正常シナリオ（束ねていない名前のアイコン）]
+      - dev/設計書/シナリオ/単一ユースケース/外部ライブラリを使用するときだけ読み込む#scenarios[正常シナリオ（まとめていない名前のアイコン）]
   - name: 異常系（Lucide に無いアイコンの名前）
     summary: Lucide に無い名前の場所を行内のコードに戻し、記載の警告を配置する
     setup:
@@ -5113,7 +5113,7 @@ flows:
       - '`console.error` に URL が出る'
     test: test_error_when_icons_unreachable
     refs:
-      - dev/設計書/シナリオ/単一ユースケース/外部ライブラリを使用するときだけ読み込む#scenarios[異常シナリオ（Lucide を読めない）]
+      - dev/設計書/シナリオ/単一ユースケース/外部ライブラリを使用するときだけ読み込む#scenarios[異常シナリオ（Lucide を読み込めない）]
   - name: 正常系（wide の範囲の幅を切り替える）
     summary: wide の範囲を広げて描き、範囲の上のボタンで本文の幅と切り替える
     setup:
@@ -6338,7 +6338,7 @@ constraints:
     notes: '#285。スクロールする場所は、描く先の要素に最も近い縦にスクロールする祖先の要素か、無ければ画面。重なりの順を CSS 変数で持つかと、右端の線の留め方はモジュール構成設計。横の位置は #270。右端からの間隔とミニマップの避け方は先頭へ戻るボタンと同じで、モックへの合意（dev/pr/323/確認ログ.md）'
   - item: 範囲のスクリプト
     constraint: '`html-scripts` がオンのとき、描いた後に `template.mdmark-html-script` を持つ範囲を文書の順に動かす。変換のライブラリの `transform` で、`ts` は preset `typescript`・plugin `transform-modules-commonjs`・`filename` `range.ts`、`js` は plugin `transform-modules-commonjs`・`filename` `range.js` で CommonJS に変える（`export`・`build` の esbuild と同じく、`import` と全ての `export` の文を変える）。変えたコードを `module`・`exports`・`require` を受け取る関数で包み、その関数を mdmark の受け取りの関数へ範囲の通し番号で登録させるコードを、ページの `script[nonce]` の `nonce`（無ければ付けない）を付けた `script` 要素で動かす。`transform` が例外を投げたときと、要素を削除した後に登録が無いときは構文エラーとして、その範囲の前に記載の警告を配置し、要素を配置している間に受けた `window` の `error` の内容か `transform` の例外を `console.error` に出す。登録された関数を呼んで得た既定のエクスポートの関数を、範囲の根の要素（`div.mdmark-html`）を引数に 1 回呼ぶ。`require` は呼ぶと例外を投げる関数にする。関数が関数を返却したときはそれを範囲の `destroy` として持ち、`update`・`destroy`・同じ要素への 2 回目の `mount` で再描画する前に 1 回呼ぶ（例外は `console.error` に出して続ける）。書き出した HTML の起動の処理が、範囲のコードの文字ごとに関数を指定したときは、変換も `script` 要素も使用せずにその関数を呼ぶ。差分の中の範囲は動かさない'
-    notes: 実行の経路は PoC 検証（#306）で成立を確かめた。変換のライブラリは外部ライブラリ『@babel/standalone』
+    notes: 実行の経路は PoC 検証（#306）で成立を確認した。変換のライブラリは外部ライブラリ『@babel/standalone』
   - item: 変換のライブラリの読み込み
     constraint: 描いた後に `ts`・`js` の範囲が 1 つ以上あるときだけ、`html-scripts.url` を `import()` で読み込み、既定のエクスポート（無ければモジュール）の `disableScriptTags` を呼んでから `transform` を使用する。同じ `mount` の中では 1 回だけ読み込む。読み込み終わる前に `update`・`destroy` したときは、前の描画の範囲を動かさない。読み込みの完了は待たずに `mount` を返却する。読み込めないときは `ts`・`js` の範囲の前に通知ブロック（本文の文言は画面設計『文書』）を配置する
     decided_by: dev/設計書/外部ライブラリ/babel-standalone#
@@ -6359,7 +6359,7 @@ constraints:
     notes: 外観は確認ログの案 C。モック `dev/mock/components/csv-table/`
   - item: コードブロックとファイルツリーの折り返し
     constraint: '配布物の CSS は、コードブロック（`.mdmark-code` の中の `pre`）とファイルツリーのリストを既定で折り返さず（`white-space` が `pre`・`nowrap`）、枠の中で横にスクロールさせる。この既定は mdmark の層の外に `.mdmark .mdmark-code pre` 以上の詳細度で配置し、利用側の要素名だけ・クラス 1 つの `pre` への汎用の CSS（`white-space: pre-wrap` など）で変えない。`mdmark-code-wrap` の `pre` は行を枠の幅で折り返し、行番号と行頭の `+`・`-` は折り返した行の 1 行目にだけ出し、インデントの縦線と折りたたみのボタンをずらさない。コピーの文字に折り返しの改行を入れない。`mdmark-tree-wrap` のツリーは、長い名前をアイコンの右の名前の列の中で折り返し、注釈は名前の下の行に名前の頭から出す。罫線と入れ子の位置は `wrap` の無いツリーと同じにする'
-    decided_by: dev/設計書/シナリオ/単一ユースケース/テーマを上書きする#scenarios[正常シナリオ（使う側の pre への汎用の CSS）]
+    decided_by: dev/設計書/シナリオ/単一ユースケース/テーマを上書きする#scenarios[正常シナリオ（利用側の pre への汎用の CSS）]
     notes: 優先のさせ方は確認ログの決定（層の外に詳細度の高いセレクタ、推奨案 A）。外観はモック `dev/mock/refs/328/assets/wrap.css`
   - item: 図の高さのリサイズハンドル
     constraint: '`diagram-resize` がオンのとき、文書の中の図の部品（埋め込んだ HTML の中のチャートを含む）の表示する枠の右下に、`role="separator"`・`aria-orientation="horizontal"`・`tabindex="0"`・スクリーンリーダー向けの名前 `「{図の題名}」の表示の高さ` と、`aria-valuenow`・`aria-valuemin`・`aria-valuemax`（表示する枠の高さの px）を持つリサイズハンドルを配置する。ドラッグした分だけ表示する枠の高さを変え（幅は変えない）、フォーカスの間は `↑` で 32px 低く、`↓` で 32px 高くする。高さは 120px 以上、図の全体が今の倍率で収まる高さ以下にする。高さを変えたら今の倍率と位置は保ち、全体が収まる倍率（下限と倍率のボタンの戻し先）をもう一度求める。文書の中の図のこの倍率は、高さを変える前は幅だけ、変えた後は幅と変えた高さで決める。ダブルクリックで定義と `--mdmark-diagram-max-height` から決まる高さに戻す。変えた高さを図ごとのキーで sessionStorage に記載し、描くときに読み込んでその高さで開き、戻したらキーを削除する。sessionStorage を使用できないときは例外を外へ出さず、高さを保たない。全画面のモーダルの中と印刷では出さない。`update` でもう一度付け、`destroy` で受け取りを解除する'

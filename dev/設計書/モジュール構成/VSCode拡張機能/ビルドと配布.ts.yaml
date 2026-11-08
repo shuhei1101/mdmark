@@ -25,7 +25,7 @@ constants:
     summary: 非機能要件の下限と、その時点の stable
     value: '["1.141.0", "stable"]'
     refs:
-      - dev/設計書/非機能要件/非機能要件#requirements[対応する VS Code の版]
+      - dev/設計書/非機能要件/非機能要件#requirements[対応する VS Code のバージョン]
     status: planned
   - name: RELEASE_TAG_PATTERN
     title: 拡張機能のタグの構造
