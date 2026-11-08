@@ -31,7 +31,7 @@ window.mdmarkMockTables438 = {};
     mode: "each",
     pin: ["物理名", "無い列"],
     scroll: "end",
-    warning: "<code>pin=</code> の列名 <code>無い列</code> が見出しにありません。見出しの列名を記載してください。",
+    warning: "<code>&lt;!-- table: pin=物理名,無い列 --&gt;</code> の列名 <code>無い列</code> は、この表にありません。列名は No・物理名・論理名・型・必須・既定・説明・例です。この列名を無視して描いています。",
   };
 
   T.merged = {
@@ -41,8 +41,8 @@ window.mdmarkMockTables438 = {};
       ["名前", "型", "既定", "必須", "備考"],
     ],
     body: [
-      ["table.pin", "string", "each", "false", "each は押した列だけを留め、through は押した列までを留める。既定は each"],
-      ["side-toc.mode", "string", "hover", "false", "hover は右端の線を出し、fixed は目次を出すボタンでサイドバーを開閉する"],
+      ["table.pin", "string", "each", "false", "each は押した列だけを留め、through は押した列までを留める。既定は each で、mount は他の値を無視して each にし、CLI は他の値を設定ファイルの誤りにする"],
+      ["side-toc.mode", "string", "hover", "false", "hover は右端の線を出し、fixed は目次を出すボタンでサイドバーを開閉する。描く先の要素の幅が 48rem 未満のときはどちらも狭い幅の帯で出す"],
     ],
     mode: "each",
     wide: "備考",
