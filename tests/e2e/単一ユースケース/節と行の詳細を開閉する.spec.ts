@@ -91,8 +91,8 @@ test("test_normal_when_row_detail", async ({ page }) => {
   await expect(page.locator("#doc > p")).toHaveCount(0);
 });
 
-// 知らない開閉の指定は、開いた節として描き、書き方の警告を出す（異常シナリオ（知らない開閉の指定））
-test("test_error_when_unknown_section_value", async ({ page }) => {
+// 知らない開閉の指定は読み飛ばし、書き方の警告を出さずに開いた節として描く（正常シナリオ（知らない開閉の指定））
+test("test_normal_when_unknown_section_value", async ({ page }) => {
   // 準備
   await openPage(page, builtRoot);
   // 実行
@@ -100,10 +100,7 @@ test("test_error_when_unknown_section_value", async ({ page }) => {
     markdown: "## 補足\n<!-- section: hidden -->\n\n補足の段落\n",
   });
   // 検証
-  const warning = page.locator("#doc .mdmark-syntax-warning");
-  await expect(warning).toContainText("hidden");
-  await expect(warning).toContainText("closed");
-  await expect(warning).toContainText("open");
+  await expect(page.locator("#doc .mdmark-syntax-warning")).toHaveCount(0);
   await expect(page.getByText("補足の段落")).toBeVisible();
 });
 

@@ -273,8 +273,8 @@ test("test_normal_when_feature_removed", async ({ page }) => {
   await expect(page.locator("#doc button.mdmark-sort")).toHaveCount(0);
 });
 
-// 知らない種類は既定の種類に読み替え、書き方の警告を出して +sort を当てる（異常シナリオ（知らない種類））
-test("test_error_when_unknown_kind", async ({ page }) => {
+// 知らない種類は読み飛ばして既定の種類にし、書き方の警告を出さずに +sort を当てる（正常シナリオ（知らない種類））
+test("test_normal_when_unknown_kind", async ({ page }) => {
   // 準備
   await openPage(page, builtRoot, { hostCss: NARROW_HOST_CSS });
   // 実行
@@ -282,10 +282,7 @@ test("test_error_when_unknown_kind", async ({ page }) => {
     markdown: `<!-- table: unknown +sort -->\n\n${wideTable()}\n<!-- /table -->\n\n表の後の段落\n`,
   });
   // 検証
-  const warning = page.locator("#doc .mdmark-syntax-warning");
-  await expect(warning).toContainText("unknown");
-  await expect(warning).toContainText("data");
-  await expect(warning).toContainText("plain");
+  await expect(page.locator("#doc .mdmark-syntax-warning")).toHaveCount(0);
   await expect(
     page.locator("#doc button.mdmark-pin:not([hidden])"),
   ).toHaveCount(10);
@@ -310,8 +307,8 @@ test("test_error_when_range_end_missing", async ({ page }) => {
   await expect(page.locator("#doc button.mdmark-sort")).toHaveCount(2);
 });
 
-// 知らない機能とキーは当てず、使えるものを並べた書き方の警告を出す（異常シナリオ（知らない機能・キー））
-test("test_error_when_unknown_feature_or_key", async ({ page }) => {
+// 知らない機能とキーは読み飛ばし、書き方の警告を出さずに data の機能を付ける（正常シナリオ（知らない機能・キー））
+test("test_normal_when_unknown_feature_or_key", async ({ page }) => {
   // 準備
   await openPage(page, builtRoot, { hostCss: NARROW_HOST_CSS });
   // 実行
@@ -319,11 +316,7 @@ test("test_error_when_unknown_feature_or_key", async ({ page }) => {
     markdown: `<!-- table: data +unknown size=2 -->\n\n${wideTable()}\n<!-- /table -->\n`,
   });
   // 検証
-  const warning = page.locator("#doc .mdmark-syntax-warning");
-  await expect(warning).toContainText("+unknown");
-  await expect(warning).toContainText("size=");
-  await expect(warning).toContainText("sort");
-  await expect(warning).toContainText("filter=");
+  await expect(page.locator("#doc .mdmark-syntax-warning")).toHaveCount(0);
   await expect(
     page.locator("#doc button.mdmark-pin:not([hidden])"),
   ).toHaveCount(10);

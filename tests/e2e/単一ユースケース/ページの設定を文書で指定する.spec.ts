@@ -167,7 +167,7 @@ test("test_normal_when_printed", async ({ page }) => {
   await expect.poll(() => readBackground(page)).toBe(SWISS_LIGHT_BG);
 });
 
-// 知らないキーと値は書き方の警告にして使わず、残りの指定と設定で描く（異常シナリオ（知らないキーと値））
+// 知らない値は書き方の警告にして使わず、知らないキーは読み飛ばし、残りの指定と設定で描く（異常シナリオ（知らないキーと値））
 test("test_error_when_unknown_key_or_value", async ({ page }) => {
   // 準備
   await page.setViewportSize({ width: 1280, height: 800 });
@@ -181,10 +181,15 @@ test("test_error_when_unknown_key_or_value", async ({ page }) => {
   // 検証
   const warnings = page.locator("#doc .mdmark-syntax-warning");
   await expect(warnings).toHaveCount(1);
+  // 本文の頭は印の文字のため、印の後ろの挙げた指定を見る
+  const listed = (await warnings.innerText()).replace(
+    "<!-- page: scheme=sepia theme=theme-unknown size=wide toc=fixed -->",
+    "",
+  );
+  expect(listed).not.toContain("size=wide");
   for (const text of [
     "scheme=sepia",
     "theme=theme-unknown",
-    "size=wide",
     "light",
     "dark",
     "auto",

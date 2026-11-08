@@ -135,6 +135,63 @@ test("test_normal_when_warnings", async ({ builtRoot, tempDir }) => {
   }
 });
 
+// 描くときに読み飛ばすマーカーの知らないキー・機能・指定を、知らないキー・機能・指定の種類のずれにする（正常シナリオ（知らないキー・機能・指定））
+test("test_normal_when_unknown_mark_args", async ({ builtRoot, tempDir }) => {
+  // 準備
+  const dir = await createInitDir(builtRoot, tempDir);
+  const markdown = [
+    "<!-- table: data +unknown widht=説明 -->",
+    "",
+    "| 名前 | 説明 |",
+    "| --- | --- |",
+    "| a | 1 |",
+    "",
+    "<!-- /table -->",
+    "<!-- tabs: grop=os -->",
+    "",
+    "### macOS",
+    "",
+    "本文",
+    "",
+    "### Windows",
+    "",
+    "本文",
+    "",
+    "<!-- /tabs -->",
+    "",
+  ].join("\n");
+  // 実行
+  const result = await runCli(
+    builtRoot,
+    ["check", "--text", "-"],
+    dir,
+    markdown,
+  );
+  // 検証
+  expect(result.code).not.toBe(0);
+  const lines = linesOf(result.stdout);
+  const issues = lines.slice(0, -1);
+  expect(issues).toHaveLength(3);
+  // 種類は書き方の警告でも知らないマーカーでもない
+  for (const line of issues) {
+    expect(line).toMatch(/^-:\d+: unknown_mark_arg: /);
+  }
+  const table = issues.filter((line) => line.startsWith("-:1: "));
+  expect(table).toHaveLength(2);
+  expect(table.join("\n")).toContain("+unknown");
+  expect(table.join("\n")).toContain("sort");
+  expect(table.join("\n")).toContain("widht=");
+  expect(table.join("\n")).toContain("filter=");
+  const tabs = issues.filter((line) => line.startsWith("-:8: "));
+  expect(tabs).toHaveLength(1);
+  expect(tabs[0]).toContain("grop=");
+  expect(tabs[0]).toContain("group=");
+  // 同じ文字列を描いたときは、書き方の警告が出ない
+  const html = await renderInNode(builtRoot, markdown);
+  expect(html).not.toContain("mdmark-syntax-warning");
+  expect(lines.at(-1)).toBe("ずれ 3 件");
+});
+
 // YAML のキーの値の Markdown を点検し、YAML のファイルの行を指すずれにする（正常シナリオ（ファイルとYAMLのキー））
 test("test_normal_when_yaml_key", async ({ builtRoot, tempDir }) => {
   // 準備
