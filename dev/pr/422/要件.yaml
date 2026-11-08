@@ -66,10 +66,12 @@ docs:
   - page: dev/設計書/設定/ライブラリ本体.yaml
     new: false
     change: features.frontmatter（既定 false）の行を追加する
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-08T19:27:08.083357+00:00'
   - page: dev/設計書/設定/VSCode拡張機能.yaml
     new: false
-    change: features の行にフロントマターの切り替えが含まれることを残す（settings.json のキーは未確定）
+    change: features の行の説明に、フロントマターの表示の切り替え（frontmatter）も設定ファイルから指定することを追加する（settings.json にキーは追加しない）
     status: todo
   - page: schemas/mdmark.config.schema.json
     new: false

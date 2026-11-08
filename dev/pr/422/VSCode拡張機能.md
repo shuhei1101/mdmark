@@ -13,7 +13,7 @@
 
 | 対象 | 方針 | 補足 |
 | --- | --- | --- |
-| 切り替え | `mdmark.config.yaml` と端末の設定の `features.frontmatter` を、今と同じく `features` として `mount` に指定する | `settings.json` にキーを追加するかは `未確定`（[要件](./要件.md)） |
+| 切り替え | `mdmark.config.yaml` と端末の設定の `features.frontmatter` を、今と同じく `features` として `mount` に指定する | `settings.json` にキーを追加しない（[要件](./要件.md)） |
 | スクロールの同期 | フロントマターを除外した文書でも、元の行番号でエディタとプレビューのスクロールを合わせる | フロントマターの範囲のエディタの行は、本文の先頭に合わせる |
 
 ## 設計書の確定コミット
