@@ -60,8 +60,10 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-08T17:50:29.706352+00:00'
   - process: モジュール構成設計
-    status: todo
+    status: done
     note: モジュール構成『VS Code 拡張機能 / Webview』の scroll.ts の関数に、閉じたセクションの中の要素を目印から外し、その中の行を見出しへ配置する振る舞いを追加する
+    updated_by: planner
+    updated_at: '2026-11-08T18:38:12.445385+00:00'
   - process: ドキュメント修正
     status: skipped
     reason: 利用者の操作・設定は変わらず、公開ドキュメントに直す記述が無いため対象外
