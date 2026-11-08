@@ -8,7 +8,7 @@ export type FilterValue = {
     column: number;
     /** `select` の選んだ値 */
     values?: string[] | undefined;
-    /** `text` の含む文字 */
+    /** `text` のキーワード */
     text?: string | undefined;
     /** `date` の開始日（`YYYY-MM-DD`） */
     from?: string | undefined;
@@ -90,3 +90,39 @@ export declare function stickyRange(options: {
 };
 /** `location.hash` の最後の `#` の後ろを戻した文字を返す。戻せないときはそのまま、`#` が無ければ空文字 */
 export declare function rowIdFromHash(hash: string): string;
+/** 見出しの行ごとのセルの `rowspan`・`colspan` から、列ごとに、その列だけを覆い最下段まで届くセルの位置を返す。複数の列をまたぐセルしか無い列は `undefined` */
+export declare function bottomHeadCells(rows: Array<Array<{
+    rowSpan: number;
+    colSpan: number;
+}>>): Array<{
+    row: number;
+    cell: number;
+} | undefined>;
+/** 表示している行の結合する列の値から、列ごとに隣り合う同じ値の範囲の `rowspan` を決める。範囲の始まりは覆う行の数、続く行は 0。左にある結合する列の範囲の切れ目でも切る */
+export declare function mergeSpans(options: {
+    values: string[][];
+    columns: number[];
+}): number[][];
+/** 列が属する結合した見出しの範囲とピン止めの側 */
+export type ColumnPlace = {
+    /** 結合した見出しの範囲（`{段}:{位置}`。範囲の外は `undefined`） */
+    group: string | undefined;
+    /** ピン止めした列か */
+    pinned: boolean;
+};
+/** 動かす列と動かす先の列が同じ結合した見出しの範囲で、ピン止めの同じ側にあるときだけ `true` を返す */
+export declare function canMoveColumn(options: {
+    from: ColumnPlace;
+    to: ColumnPlace;
+}): boolean;
+/** 列の順（元の列の位置の並び）の `column` を `target` の前か後ろへ動かした新しい並びを返す */
+export declare function moveColumn(options: {
+    /** 今の列の順 */
+    order: number[];
+    /** 動かす列（元の列の位置） */
+    column: number;
+    /** 動かす先の列（元の列の位置） */
+    target: number;
+    /** `target` の前か後ろか */
+    side: "before" | "after";
+}): number[];

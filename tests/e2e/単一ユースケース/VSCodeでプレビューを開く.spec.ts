@@ -364,7 +364,24 @@ test("test_normal_when_range_scripts", async () => {
   for (const word of ["blob:", "'unsafe-inline'", "'unsafe-eval'"]) {
     expect(scriptSrc).not.toContain(word);
   }
-  expect(scriptSrc).toHaveLength(4);
+  // 残りは配布物の origin（style-src の先頭）と Webview.cspSource（img-src の https: より前）だけ
+  const words = (name: string) =>
+    csp
+      .split("; ")
+      .find((directive) => directive.startsWith(`${name} `))
+      ?.split(" ")
+      .slice(1) ?? [];
+  const imgSrc = words("img-src");
+  const cspSource = imgSrc.slice(0, imgSrc.indexOf("https:"));
+  const expected = new Set([
+    scriptSrc[0],
+    words("style-src")[0],
+    stub.origin,
+    "https://cdn.jsdelivr.net",
+    ...cspSource,
+  ]);
+  expect([...new Set(scriptSrc)].sort()).toEqual([...expected].sort());
+  expect(scriptSrc).toHaveLength(new Set(scriptSrc).size);
 });
 
 // 端末の設定・上のフォルダ・近いフォルダの設定を重ね、上のフォルダの theme と extensions をプレビューに適用する（正常シナリオ（設定を重ねる））

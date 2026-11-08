@@ -1,6 +1,17 @@
 import type { StateCore, Token } from "markdown-it";
+import type { WarningItem } from "../../extensions.ts";
 /** 埋め込んだ HTML の中の図の部品の custom element と、その中の定義の文字 */
 export declare const PART_PATTERN: RegExp;
+/** `<!-- html -->` の範囲の `fence` を言語ごとに数え、`html`・`css`・スクリプトと読めない組み合わせの警告を返す */
+export declare function readRangeScripts(tokens: Token[]): {
+    html: Token | undefined;
+    css: string | undefined;
+    script: {
+        lang: "ts" | "js";
+        code: string;
+    } | undefined;
+    warnings: WarningItem[];
+};
 /** 範囲の言語 `html` のコードブロックか */
 export declare function isHtmlFence(token: Token): boolean;
 /** sanitize-html が逃がした文字（`&amp;`・`&lt;`・`&gt;`・`&quot;`）を文字に戻す */

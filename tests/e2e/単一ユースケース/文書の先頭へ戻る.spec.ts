@@ -14,6 +14,9 @@ import { colorSvg, routePageFiles } from "../media.ts";
 // ビルドした配布物を配置した作業ツリー
 let builtRoot = "";
 
+// 操作が要素に届かないときに、ケースの上限まで待たずに落とす（expect の待ちと同じ 30 秒）
+test.use({ actionTimeout: 30_000 });
+
 /** 長い Markdown の見出し（`## 導入` から `## 付録` までの 10 個） */
 const HEADINGS = [
   "導入",
@@ -98,12 +101,16 @@ function overlaps(
   );
 }
 
-/** Tab を押してボタンへフォーカスを移す */
+/** Tab を押してボタンへフォーカスを移す。押す間にスクロールしてボタンが隠れても待たないよう、ボタンの要素は押す前に一度だけ取る */
 async function tabTo(page: Page, target: Locator): Promise<void> {
+  const element = await target.elementHandle();
   for (let count = 0; count < MAX_TABS; count += 1) {
     await page.keyboard.press("Tab");
     if (
-      await target.evaluate((element) => element === document.activeElement)
+      await page.evaluate(
+        (button) => button === document.activeElement,
+        element,
+      )
     ) {
       return;
     }

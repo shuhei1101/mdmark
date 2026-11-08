@@ -1,0 +1,11 @@
+$ npx playwright test "tests/e2e/単一ユースケース/図を拡大・縮小・移動する.spec.ts" -g test_normal_when_resized
+- Resolving version...
+✔ Validated version: 1.141.0
+✔ Found existing install in /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/fix-interact-firefox-diagram-resize-chart-focus/vscode/.vscode-test/vscode-linux-x64-1.141.0
+
+Running 2 tests using 2 workers
+
+  ✓  2 [chromium] › tests/e2e/単一ユースケース/図を拡大・縮小・移動する.spec.ts:757:1 › test_normal_when_resized (820ms)
+  ✓  1 [firefox] › tests/e2e/単一ユースケース/図を拡大・縮小・移動する.spec.ts:757:1 › test_normal_when_resized (2.0s)
+
+  2 passed (52.4s)

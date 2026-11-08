@@ -1,0 +1,14 @@
+use_cases:
+  - kind: single
+    scenario: dev/設計書/シナリオ/単一ユースケース/表を操作する.yaml
+    impact: changed
+    detail: 多段の見出し・並べ替えの後の結合・読めないセルの結合・列の並べ替えの文書で、絞り込む列をマーカーで指定する。並べ替え・ピン止め・表の幅のシナリオを設計どおりに通す
+    depends_on: []
+docs: []
+scope_out:
+  - item: '表のキーの階層の E2E 3 件（ファイルツリーの .mdmark-tree-row の display: flex）'
+    reason: '別の原因で起票済みで、作業 PR #408 が修正する'
+    plan: '#396'
+  - item: 表のピン止めを選んだ列だけにする変更
+    reason: 要望に含まれない。この PR の後に着手する計画の行
+    plan: '#358'

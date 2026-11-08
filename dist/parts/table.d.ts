@@ -1,8 +1,9 @@
 import { type FilterKind, type FilterValue, type TotalCalc } from "../table-logic.ts";
+import type { ColorName } from "./colors.ts";
 /** 表の種類 */
 export type TableKind = "default" | "data" | "plain";
 /** 表の機能 */
-export type TableFeature = "sort" | "pin" | "filter" | "count" | "columns" | "total" | "copy" | "rowlink";
+export type TableFeature = "sort" | "pin" | "filter" | "count" | "columns" | "reorder" | "total" | "copy" | "rowlink";
 /** 集計する列 */
 export type TableTotal = {
     /** 列の位置 */
@@ -87,6 +88,79 @@ export type TableOptions = {
     body?: string;
     /** ドロワーの `id` の頭（既定 `mdmark-table`）。ビューの中の表のように、文書の中に表が 2 つ以上あるときに重ならない値を渡す */
     id?: string;
+    /** 強調する列の位置と色 */
+    highlight?: Array<{
+        column: number;
+        color: ColorName;
+    }>;
+    /** 本文の行ごとの色（色を付けない行は `null`） */
+    rowColors?: Array<ColorName | null>;
+    /** `pin=` で留める最後の列の位置（`data-pin`） */
+    pin?: number | undefined;
+    /** 折り返さずに広く取る列の位置 */
+    wide?: number[];
+    /** 真偽値を ✓ と空欄で出す列の位置（`data-check`） */
+    check?: number[];
+    /** 階層にするキーの列の位置（`data-tree`） */
+    tree?: number | undefined;
+    /** 今の列の順（元の列の位置の並び。ストーリーで使う） */
+    order?: number[];
+    /** ドラッグしている列と、落とす先の列と向き（ストーリーで使う） */
+    dragging?: {
+        column: number;
+        target: number;
+        side: "before" | "after";
+    };
+    /** 階層の表の型の列の位置 */
+    treeType?: number;
+    /** 階層の表の必須の列の位置 */
+    treeRequired?: number;
+    /** 階層の表の既定の列の位置 */
+    treeDefault?: number;
+    /** 畳んだ行のパス（ストーリーで使う） */
+    collapsedPaths?: string[];
+    /** キーの列の絞り込みの単語（ストーリーで使う） */
+    treeFilter?: string;
+    /** 選んだ行のパス（ストーリーで使う） */
+    selectedPath?: string;
+    /** 表の下に置く YAML の見本（ストーリーで使う） */
+    example?: {
+        heading: string;
+        tabs: Array<{
+            name: string;
+            lines?: Array<{
+                text: string;
+                path?: string;
+            }>;
+        }>;
+        active?: number;
+        hidden?: boolean;
+    };
+    /** 見出しの段ごとのセル。渡すと `columns` の代わりに見出しの行をこの段で描く */
+    headRows?: TableHeadCell[][];
+    /** 本文の各行で `<th scope="row">` にする先頭の列の数（既定 0） */
+    rowHeader?: number;
+    /** 表示している行の隣り合う同じ値を結合する列の位置（小さい順） */
+    mergeColumns?: number[];
+    /** 言語 `csv` のコードブロックから作った表の、書いたとおりの CSV */
+    rawCsv?: string | undefined;
+    /** 元の CSV を出しているか（既定 `false`） */
+    rawShown?: boolean;
+};
+/** CSV の表の RAW のボタンを右端に置く帯の HTML を返す */
+export declare const renderRawBar: (pressed: boolean) => string;
+/** CSV の表の RAW のボタンの HTML を返す */
+export declare const renderRawToggle: (pressed: boolean) => string;
+/** 多段の見出しのセル */
+export type TableHeadCell = {
+    /** セルの HTML */
+    html: string;
+    /** セルの左端の列の位置 */
+    column: number;
+    /** 覆う行の数（既定 1） */
+    rowspan?: number;
+    /** 覆う列の数（既定 1） */
+    colspan?: number;
 };
 /** 見出しのボタンとドロワーを作る引数 */
 export type TableToolsOptions = {
@@ -134,7 +208,7 @@ export declare const COPY_STATES: {
         readonly icon: "circle-alert";
     };
 };
-/** コピーのボタンの中身（状態のアイコン・文言・形式のメニューを開くことを示す下向きの矢印）の HTML */
+/** コピーのボタンの中身（アイコンと読み上げの名前）の HTML */
 export declare function renderCopyButtonContent(state: CopyState): string;
 /** コピーの形式の名前と使いどころ */
 export declare const COPY_FORMATS: {
@@ -147,7 +221,7 @@ export declare const COPY_FORMATS: {
         readonly note: "表計算ソフトに貼るとセルに分かれる";
     };
 };
-/** 表の上の帯（件数・列の表示・集計・コピーのボタン）と、列の表示・集計・コピーの形式のメニューの HTML を返す。付けた機能が無ければ空 */
+/** 表の上の帯（件数・テーブル設定・集計・コピーのボタン）と、テーブル設定のパネル・集計・コピーの形式のメニューの HTML を返す。付けた機能が無ければ空 */
 export declare function renderTableBar(options: {
     /** メニューの id の頭 */
     id: string;
@@ -161,8 +235,22 @@ export declare function renderTableBar(options: {
     total: number;
     /** 隠している列の位置 */
     hiddenColumns: number[];
-    /** 列の表示のメニューを開いているか（既定 `false`） */
+    /** テーブル設定のパネルを開いているか（既定 `false`） */
     openColumns?: boolean;
+    /** 今の列の順（既定は元の列の順） */
+    order?: number[];
+    /** 列ごとの結合した見出しの範囲（既定は全て範囲の外） */
+    groups?: Array<string | undefined>;
+    /** 結合した見出しの範囲ごとの見出しの文字 */
+    groupLabels?: Record<string, string>;
+    /** 留めている列の数（既定 0） */
+    pinned?: number;
+    /** ドラッグしている列と、落とす先の列と向き */
+    dragging?: {
+        column: number;
+        target: number;
+        side: "before" | "after";
+    };
     /** コピーのボタンの状態（既定 `idle`） */
     copyState?: CopyState;
     /** 集計する計算 */
@@ -177,6 +265,64 @@ export declare function renderTableBar(options: {
     bar: string;
     menus: string;
 };
+/** 表の帯に置く、テーブル設定のアイコンだけのボタンの HTML を返す */
+export declare function renderSettingsToggle(options: {
+    /** パネルの id の頭 */
+    id: string;
+    /** 隠している列の数 */
+    hidden: number;
+    /** パネルを開いているか */
+    open: boolean;
+}): string;
+/** テーブル設定のボタンの隠した列の数と読み上げの名前を書き換える */
+export declare function updateSettingsToggle(toggle: HTMLElement, hidden: number): void;
+/** テーブル設定のパネル（題・列名の一覧・案内）の HTML を返す。`hidden` は付けない */
+export declare function renderTableSettings(options: {
+    /** パネルの id の頭 */
+    id: string;
+    /** 元の列の順の列名 */
+    columns: string[];
+    /** 今の列の順（元の列の位置の並び） */
+    order: number[];
+    /** 隠している列の位置 */
+    hidden: number[];
+    /** `columns`・`reorder` のうち付けた機能 */
+    features: TableFeature[];
+    /** 列ごとの結合した見出しの範囲 */
+    groups: Array<string | undefined>;
+    /** 結合した見出しの範囲ごとの見出しの文字 */
+    groupLabels?: Record<string, string>;
+    /** 留めている列の数 */
+    pinned: number;
+    /** ドラッグしている列と、落とす先の列と向き */
+    dragging?: {
+        column: number;
+        target: number;
+        side: "before" | "after";
+    };
+}): string;
+/** 階層の表のキーのセルの中身（深さの数の縦線・末尾の名前・配列の `[]`・必須の *）の HTML を返す */
+export declare function renderTreeKeyCell(options: {
+    /** `splitKeyPath` の末尾の名前 */
+    name: string;
+    /** 深さ */
+    depth: number;
+    /** 必須か */
+    required: boolean;
+}): string;
+/** 型のセルの文字を、`a | b` の形なら値ごとのチップ、それ以外はバッジにした HTML を返す */
+export declare function renderTypeCell(text: string): string;
+/** 階層の行の開閉・パスのコピー・見本の表示を切り替えるボタンの HTML を返す */
+export declare function renderTreeTools(options: {
+    /** 返すボタン */
+    kind: "toggle" | "copy" | "example";
+    /** 行のパス */
+    path?: string;
+    /** 開いているか */
+    expanded?: boolean;
+    /** 見本の `id` */
+    controls?: string;
+}): string;
 /** 集計の行（`<tfoot>`）の HTML を返す。計算ごとに 1 行（`sum`・`avg`・`count` の順）で、列の数だけセルを持つ。先頭のセルに計算の名前、集計する列のセルに値を出し、隠している列のセルと出さない計算の行は隠す */
 export declare function renderTotalRows(options: {
     /** 列の数 */
@@ -223,5 +369,9 @@ export declare function renderFoldedColumn(options: {
 };
 /** 行へのリンクの印を持つ先頭のセルの HTML を返す。`content` は先頭のセルの中身（`SLOT_MARKER` を渡して前後に分けられる）。`notice` を渡すと、URL をコピーした結果を印の横の知らせに出す */
 export declare function renderRowLink(content: string, id: string, label: string, notice?: "copied" | "failed"): string;
+/** 真偽値のセルの中身の HTML を返す。`true` は ✓ のアイコン、`false` は読み上げだけの `いいえ` */
+export declare function renderCheckCell(value: "true" | "false"): string;
+/** セルの文字が真偽値か */
+export declare function isCheckValue(text: string): text is "true" | "false";
 /** 表を囲む HTML を返す。`body` を渡すと囲みだけを作り、渡さなければ `columns`・`rows` から表を作る */
 export declare function renderTable(options: TableOptions): string;

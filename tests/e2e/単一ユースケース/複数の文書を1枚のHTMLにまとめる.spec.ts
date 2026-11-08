@@ -38,6 +38,9 @@ import {
   MERMAID_WAIT_MS,
 } from "../mermaid.ts";
 
+// 操作が要素に届かないときに、ケースの上限まで待たずに落とす（expect の待ちと同じ 30 秒）
+test.use({ actionTimeout: 30_000 });
+
 // 3 つの文書を、文書をまたぐ用語と被参照が有効になる 1 枚にまとめる（正常シナリオ）
 test("test_normal", async ({ builtRoot, tempDir, page }) => {
   // 準備

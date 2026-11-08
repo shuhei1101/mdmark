@@ -297,7 +297,7 @@ test("test_normal_when_range_scripts", async ({ builtRoot, tempDir, page }) => {
   await openPage(page, builtRoot);
   // 実行
   await mountDocument(page, {
-    markdown: rangeScriptsMarkdown(),
+    markdown: [rangeScriptsMarkdown(), await hintFlowMarkdown()].join("\n"),
     index: TERM_INDEX,
     config: { features: { "html-scripts": true } },
   });
@@ -320,7 +320,10 @@ test("test_normal_when_range_scripts", async ({ builtRoot, tempDir, page }) => {
       "",
     ].join("\n"),
     "index.yaml": EXPORT_INDEX,
-    "guide.md": rangeScriptsMarkdown({ script: false }),
+    "guide.md": [
+      rangeScriptsMarkdown({ script: false }),
+      await hintFlowMarkdown(),
+    ].join("\n"),
   });
   const exported = await runCli(
     builtRoot,
