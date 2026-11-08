@@ -6,8 +6,8 @@ use_cases:
     depends_on: []
   - kind: single
     scenario: dev/設計書/シナリオ/単一ユースケース/セクションと行の詳細を開閉する.yaml
-    impact: changed
-    detail: 要件の未確定の案 B のとき、戻る・進むで文書に戻ると開いていたセクションと行の詳細を開いて表示する（案 A なら none）
+    impact: run_only
+    detail: 開閉の振る舞いは変えない。戻る・進むで開閉を戻す処理が、マーカーのとおりの既定の開閉を壊しうる（戻す振る舞いはまとめたHTMLで文書を行き来するのシナリオが持つ）
     depends_on: []
   - kind: single
     scenario: dev/設計書/シナリオ/単一ユースケース/タブを切り替える.yaml
