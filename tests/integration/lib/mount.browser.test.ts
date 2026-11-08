@@ -12761,7 +12761,9 @@ const spacingBlocks = (parent: Element): HTMLElement[] =>
       return spacingBlocks(child);
     }
     return child.hasAttribute("data-source-line") ||
-      child.matches(".mdmark-tree, .mdmark-heading, .mdmark-table, .mdmark-html")
+      child.matches(
+        ".mdmark-tree, .mdmark-heading, .mdmark-table, .mdmark-html",
+      )
       ? [child]
       : [];
   });
