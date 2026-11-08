@@ -272,6 +272,16 @@ export function attachZoom(options: {
     },
     { signal },
   );
+  // ノードのリンクの上の押下で、ブラウザのリンクのドラッグを始めない（図のドラッグを `pointercancel` で止めさせない）
+  viewport.addEventListener(
+    "dragstart",
+    (event) => {
+      if ((event.target as Element).closest?.(NODE_LINK_SELECTOR)) {
+        event.preventDefault();
+      }
+    },
+    { signal },
+  );
   viewport.addEventListener(
     "pointermove",
     (event) => {
