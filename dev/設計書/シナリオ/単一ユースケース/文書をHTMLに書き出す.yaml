@@ -119,7 +119,7 @@ scenarios:
       - 終了コードが 0 で、指定した出力に HTML が 1 つある
       - HTML だけを空のフォルダへ写して file:// で開くと、描き終えるまでにページ自身と画像の `data:` のほかの要求が 0 件
       - mermaid のコードブロックの場所に、図の枠と SVG の図がある
-      - 書き出した HTML のスクリプトに動的 `import()` が無い
+      - 書き出した HTML のスクリプトの動的 `import()` の数が、mermaid のコードブロックを持たない文書の書き出しと同じ（mermaid の chunk を動的 `import()` で読まない）
       - mermaid のコードブロックを持たない文書の書き出しには、mermaid が埋められていない
     test: test_normal_when_mermaid
   - name: 正常シナリオ（エイリアスを読む）

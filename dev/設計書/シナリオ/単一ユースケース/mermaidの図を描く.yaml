@@ -99,7 +99,7 @@ scenarios:
   setup:
   - name: mdmark を読むページ
     description: 正常シナリオと同じ
-    notes: 設定の `mermaid` で、テーマを mermaid の `neutral` にし、`primaryColor` を上書きする。キーの構造はインターフェース定義で決める
+    notes: 設定の `mermaid` で、テーマを mermaid の `neutral` にし、ノードの塗り `mainBkg` を上書きする（`neutral` はノードの塗りを `primaryColor` から作らない）。キーの構造はインターフェース定義で決める
   - name: mermaid のコードブロックを持つ Markdown
     description: 正常シナリオと同じ文書
   - name: Mock
@@ -113,7 +113,7 @@ scenarios:
       M-->>P: 設定のテーマと上書きした変数で図を描く
       P-->>U: 文書を表示
   expected:
-  - flowchart のノードの塗りが、設定で上書きした `primaryColor` の色
+  - flowchart のノードの塗りが、設定で上書きした `mainBkg` の色
   - ノードの枠線の色が、mermaid の `neutral` テーマの値で、描く先の要素の CSS 変数の値ではない
   test: test_normal_when_theme_configured
 - name: 正常シナリオ（機能をオフにする）
