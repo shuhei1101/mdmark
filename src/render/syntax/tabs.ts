@@ -6,7 +6,9 @@ import type { Mark } from "../marks.ts";
 import { type CollapseMode, readCollapse } from "./collapse.ts";
 import { envOf, featureOn, markOf, tabBoundaryBlock } from "./tokens.ts";
 import {
+  type SkippedArg,
   type SyntaxWarning,
+  skippedArgBlocks,
   unclosedWarning,
   warningBlock,
 } from "./warnings.ts";
@@ -17,27 +19,26 @@ const GROUP_KEY = "group";
 /** タブの印で読める指定を、書き方の警告の案内に並べる文 */
 const USABLE_ARGS = "`group=名前`・`closed`・`open`・`title=見出し`";
 
-/** タブの印の引数から `group` と折り畳みの指定を読む。値の無い `group=`・読めないキー・`キー=値` の形でない指定は、1 つの書き方の警告にまとめる */
+/** タブの印の引数から `group` と折り畳みの指定を読む。値の無い `group=` は 1 つの書き方の警告にまとめ、知らないキーと `キー=値` の形でない指定は読み飛ばした引数にする */
 export function readTabsOptions(mark: Mark): {
   group?: string;
   collapse: CollapseMode;
   title?: string | undefined;
   warning?: SyntaxWarning;
+  skipped: SkippedArg[];
 } {
   const {
     collapse,
     title,
     items: collapseItems,
     rest,
-  } = readCollapse(mark.args);
+  } = readCollapse(mark.args, mark.rest);
   const items: WarningItem[] = [...collapseItems];
+  const skipped: SkippedArg[] = [];
   let group: string | undefined;
   for (const [key, value] of Object.entries(rest.keys)) {
     if (key !== GROUP_KEY) {
-      items.push({
-        label: `${key}=`,
-        message: `使えないキーです。使えるキーは \`${GROUP_KEY}=\`・\`title=\` です`,
-      });
+      skipped.push({ arg: `${key}=`, usable: USABLE_ARGS });
     } else if (value === "") {
       items.push({
         label: `${GROUP_KEY}=`,
@@ -49,18 +50,16 @@ export function readTabsOptions(mark: Mark): {
   }
   // `キー=値` の形でない指定
   for (const arg of rest.args) {
-    items.push({
-      label: arg,
-      message: `使えない指定です。使える指定は ${USABLE_ARGS} です`,
-    });
+    skipped.push({ arg, usable: USABLE_ARGS });
   }
   if (items.length === 0) {
-    return { group, collapse, title };
+    return { group, collapse, title, skipped };
   }
   return {
     group,
     collapse,
     title,
+    skipped,
     warning: {
       mark: mark.raw,
       message: "の読めない指定を当てずに描いています。",
@@ -114,10 +113,11 @@ function buildTabsIn(state: StateCore, tokens: Token[]): Token[] {
       }
       continue;
     }
-    const { group, collapse, title, warning } = readTabsOptions(mark);
+    const { group, collapse, title, warning, skipped } = readTabsOptions(mark);
     if (warning) {
       out.push(warningBlock(state, warning, token));
     }
+    out.push(...skippedArgBlocks(state, { mark: mark.raw, skipped }, token));
     const { close: closeIndex, nested } = findTabsClose(tokens, index);
     if (closeIndex < 0) {
       out.push(warningBlock(state, unclosedWarning(mark), token));

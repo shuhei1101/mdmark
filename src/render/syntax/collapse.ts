@@ -9,9 +9,9 @@ export type CollapseSpec = {
   collapse: CollapseMode;
   /** 折り畳みの見出し（`title=` の値）。`collapse` が `none` のときと、値の無い `title=` では入れない */
   title?: string | undefined;
-  /** 読めなかった指定 */
+  /** 読めなかった指定（`title=` の値の空白の後ろの単語を含む） */
   items: WarningItem[];
-  /** `closed`・`open`・`title=` を除いた残りの引数 */
+  /** `closed`・`open`・`title=` と、`title=` の値の空白の後ろの単語を除いた残りの引数 */
   rest: MdmarkMarkArgs;
 };
 
@@ -21,8 +21,14 @@ const COLLAPSE_ARGS = ["closed", "open"];
 /** 折り畳みの見出しの引数のキー */
 const TITLE_KEY = "title";
 
-/** 表・タブ・ステップの印の引数から `closed`・`open`・`title=` を読む */
-export function readCollapse(args: MdmarkMarkArgs): CollapseSpec {
+/** 印の引数の文字から、`title=値` の直後に空白を挟んで続く `キー=値` でない単語（空白を含む題の続き）を返す */
+export function titleTailOf(text: string): string | undefined {
+  const tail = /(?:^|\s)title=\S*\s+(\S+)/.exec(text)?.[1];
+  return tail === undefined || tail.includes("=") ? undefined : tail;
+}
+
+/** 表・タブ・ステップの印の引数から `closed`・`open`・`title=` を読む。`text` は印の引数の文字で、`title=` の値の空白の後ろの単語を項目にする */
+export function readCollapse(args: MdmarkMarkArgs, text = ""): CollapseSpec {
   const closed = args.args.includes("closed");
   const open = args.args.includes("open");
   const collapse: CollapseMode = closed ? "closed" : open ? "open" : "none";
@@ -53,12 +59,30 @@ export function readCollapse(args: MdmarkMarkArgs): CollapseSpec {
       title = titleValue;
     }
   }
+  const tail = titleValue === undefined ? undefined : titleTailOf(text);
+  if (tail !== undefined) {
+    items.push({
+      label: tail,
+      message:
+        "使えない指定です。印の引数は空白で区切るため、`title=` の値に空白は書けません。",
+    });
+  }
+  let tailTaken = false;
   return {
     collapse,
     title,
     items,
     rest: {
-      args: args.args.filter((arg) => !COLLAPSE_ARGS.includes(arg)),
+      args: args.args.filter((arg) => {
+        if (COLLAPSE_ARGS.includes(arg)) {
+          return false;
+        }
+        if (arg === tail && !tailTaken) {
+          tailTaken = true;
+          return false;
+        }
+        return true;
+      }),
       keys,
     },
   };

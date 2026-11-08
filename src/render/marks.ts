@@ -6,7 +6,7 @@ import { renderEmbed } from "../parts/embed.ts";
 import { markOwn } from "../parts/own.ts";
 import { readPageSettings } from "./page.ts";
 import type { RenderEnv } from "./parser.ts";
-import { warningBlock } from "./syntax/warnings.ts";
+import { skippedArgBlocks, warningBlock } from "./syntax/warnings.ts";
 
 /** 生の HTML の中の印（`<!-- 名前: 引数 -->`・`<!-- 名前 -->`・`<!-- /名前 -->`）を拾う正規表現 */
 export const MARK_PATTERN =
@@ -349,7 +349,7 @@ export function resolveDocumentFeatures(state: StateCore): void {
   });
 }
 
-/** `takeMarks` が拾った先頭の page の印を読んで `env.page` に入れ、知らないキー・値があれば文書の先頭に書き方の警告を差し込む */
+/** `takeMarks` が拾った先頭の page の印を読んで `env.page` に入れ、書けるキーの知らない値があれば文書の先頭に書き方の警告を差し込み、知らないキーと指定は読み飛ばした引数にする */
 export function resolvePageSettings(state: StateCore): void {
   const env = state.env as RenderEnv;
   const marks = env.pageMarks ?? [];
@@ -363,10 +363,22 @@ export function resolvePageSettings(state: StateCore): void {
       keys[key] = value;
     }
   }
-  const { settings, unknown } = readPageSettings({ args, keys });
+  const { settings, unknown, skipped } = readPageSettings({ args, keys });
   env.page = settings;
   const [first] = marks;
-  if (!first || unknown.length === 0) {
+  if (!first) {
+    return;
+  }
+  state.tokens.unshift(
+    ...skippedArgBlocks(state, {
+      mark: first.raw,
+      skipped: skipped.map((arg) => ({
+        arg,
+        usable: "`scheme=`・`theme=`・`toc=`",
+      })),
+    }),
+  );
+  if (unknown.length === 0) {
     return;
   }
   const listed = unknown.map((arg) => `\`${arg}\``).join("・");

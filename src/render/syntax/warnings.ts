@@ -4,6 +4,17 @@ import { renderSyntaxWarning } from "../../parts/syntax-warning.ts";
 import type { Mark } from "../marks.ts";
 import { envOf, ownBlock } from "./tokens.ts";
 
+/** 集める警告の種類。`unknown_mark_arg` は画面に出さず、点検だけが返す */
+export type WarningKind = "diagram_invalid" | "syntax_warning" | "unknown_mark_arg";
+
+/** 記法の印の知らない種類・`+機能`・`-機能`・キー・指定の単語 1 つと、その印で使えるもの */
+export type SkippedArg = {
+  /** 書いた引数の文字。キーは `{キー}=` */
+  arg: string;
+  /** その印で使える種類・機能・キー・指定を行内のコードにして `・` でつないだ文字 */
+  usable: string;
+};
+
 /** 書き方の警告に渡す値 */
 export type SyntaxWarning = {
   /** 読めない指定を書いた印の文字 */
@@ -24,7 +35,7 @@ export type SyntaxWarning = {
 
 /** トークンの `meta.warning` に入れる、集める警告の種類・文・マーカーの行 */
 export type WarningMeta = {
-  kind: "diagram_invalid" | "syntax_warning";
+  kind: WarningKind;
   message: string;
   line?: number;
   includeTarget?: boolean;
@@ -83,7 +94,7 @@ export function warningBlock(
 /** 集めた書き方の警告 1 つ（元の行番号は 1 から） */
 export type CollectedWarning = {
   line: number;
-  kind: "diagram_invalid" | "syntax_warning";
+  kind: WarningKind;
   message: string;
   /** include のマーカーの取り込み先が無い警告か */
   includeTarget?: boolean;
@@ -127,6 +138,36 @@ export function collectWarningsRule(state: StateCore): void {
     }
   });
   envOf(state).warnings = warnings;
+}
+
+/** 読み飛ばした引数 1 つにつき、画面に何も出さない `html_block` を作り、`meta.warning` に `unknown_mark_arg` の文と印の行を入れて書いた順に返す（差し込む位置を呼ぶ側が決めるとき） */
+export function skippedArgBlocks(
+  state: StateCore,
+  options: { mark: string; skipped: SkippedArg[] },
+  source?: Token,
+): Token[] {
+  const line = source?.map?.[0];
+  return options.skipped.map((skipped) => {
+    const token = new state.Token("html_block", "", 0);
+    token.block = true;
+    const meta: WarningMeta = {
+      kind: "unknown_mark_arg",
+      message: `${options.mark} の ${skipped.arg} はこの版の mdmark が知らない指定で、描くときは読み飛ばしています。使えるのは ${skipped.usable.replaceAll("`", "")} です。書き誤りなら名前を直し、新しい版の指定なら mdmark の版を上げてください。`,
+      ...(line === undefined ? {} : { line }),
+    };
+    token.meta = { warning: meta };
+    return token;
+  });
+}
+
+/** `skippedArgBlocks` のトークンを `index` の位置に差し込む */
+export function pushSkippedArgs(
+  state: StateCore,
+  index: number,
+  options: { mark: string; skipped: SkippedArg[] },
+  source?: Token,
+): void {
+  state.tokens.splice(index, 0, ...skippedArgBlocks(state, options, source));
 }
 
 /** 範囲の印に閉じの印が無いときの警告 */
