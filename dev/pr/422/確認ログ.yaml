@@ -1,0 +1,19 @@
+confirmations:
+  - topic: フロントマターの表示をオンにしたときの表示の形式
+    decision: 言語 yaml のコードブロックのまま、本文の先頭の閉じた折りたたみに入れる（別案 B。表にすると入れ子のオブジェクトで表示が崩れるため）
+    decided_by: reply
+    approver: shuhei1101
+    commit:
+    thread: https://github.com/shuhei1101/mdmark/pull/422#discussion_r4507405779
+  - topic: フロントマターの表示の折りたたみの見出しの文言
+    decision: フロントマター（推奨案 A）
+    decided_by: thumbs_up
+    approver: shuhei1101
+    commit:
+    thread: https://github.com/shuhei1101/mdmark/pull/422#discussion_r4507406140
+  - topic: フロントマターの除外と表示のモックへの合意
+    decision: モックのとおり進める（推奨案 A。表示の形式は別の確認事項で案 B）
+    decided_by: thumbs_up
+    approver: shuhei1101
+    commit:
+    thread: https://github.com/shuhei1101/mdmark/pull/422#discussion_r4507406476
