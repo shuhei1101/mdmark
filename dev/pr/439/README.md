@@ -1,8 +1,8 @@
-# src/cli/embed.ts の使用していない定数 HTTP_PATTERN を削除する
+# src/cli/embed.ts の使用していない定数 HTTP_PATTERN と import の resolve を削除する
 
 ## 概要
 
-`src/cli/embed.ts` の使用していない定数 `HTTP_PATTERN` を削除し、`npx biome check .` の警告を 0 件にする。
+`src/cli/embed.ts` の使用していない定数 `HTTP_PATTERN` と import の `resolve` を削除し、`npx biome check .` の警告を 0 件にする。
 
 ## 背景
 
