@@ -293,7 +293,7 @@ functions:
     container: src/viewer/bundle.ts
     usecase: まとめたHTMLで文書を行き来する
     summary: 横の一覧とパネルに `renderDocList` を配置し、URL の `#` が指す文書を `mount` で描いて、`hashchange` で文書を行き来する
-    description: '`mount` の `opts.aliases` にはどの文書も `payload.aliases` を指定する。文書を替えるときは前の `mount` の返り値で片付けてから再描画し、描いた後に `rewriteLinks` を呼ぶ。後は画面設計『まとめたHTML』のとおり: 一覧の `aria-current` と帯のタイトルとページのタイトルを合わせ、見出しを指していればそこへ、無ければ文書の頭へ移り、移ったときは h1 へフォーカスを移す（開いた直後は移さない）。`missing` のときは `history.replaceState` で URL を `entry` に合わせる。開いている文書の中の見出しへ移るリンク（`href` が `#/{今の文書のパス}#` で始まるもの）を修飾キーなしで押したときは、既定の動きを止めて `history.replaceState` で URL を置き換えてから移る。パネルは `showModal` で開き、文書を選ぶ・閉じるボタン・背景・Esc・`WIDE_QUERY` に合う幅になったときに閉じる（`closedby` を持たないブラウザでは背景の押下を座標で判定する）。文書を描く前に `restoreAssets` で `payload.assets` の画像を戻す。表示の状態: 起動したとき `history.scrollRestoration` を `manual` にし、`ensureEntryId` で今の項目の ID をメモリに持つ。`popstate`・文書の一覧と描いた文書のリンクの `click`・`pagehide`・`SCROLL_SAVE_INTERVAL_MS` ごとに間引いた `scroll` のときに、メモリの ID へ `captureViewState` の値を `writeViewState` で保存する。`hashchange` のときと起動したとき（再読み込み）は、移り先の項目の ID を `ensureEntryId` で取り（リンクで新しく積んだ項目には新しい ID が振られる）、その ID の `readViewState` の値が描いた文書と同じパスを持つかで分ける。持つときは、描いた後に `applyViewState` で開閉とタブと位置を戻す（`hashchange` のときはフォーカスを h1 へ `preventScroll` で移し、起動したときは `keepFocus: true` で移さない）。持たないときは見出しか文書の頭へ移る。`popstate` の有無では分けない。`history.replaceState` で URL を置き換えるとき（`missing` と見出しへ移るリンク）は、今の `history.state` を引き継ぐ'
+    description: '`mount` の `opts.aliases` にはどの文書も `payload.aliases` を指定する。文書を替えるときは前の `mount` の返り値で片付けてから再描画し、描いた後に `rewriteLinks` を呼ぶ。後は画面設計『まとめたHTML』のとおり: 一覧の `aria-current` と帯のタイトルとページのタイトルを合わせ、見出しを指していればそこへ、無ければ文書の頭へ移り、移ったときは h1 へフォーカスを移す（開いた直後は移さない）。`missing` のときは `history.replaceState` で URL を `entry` に合わせる。開いている文書の中の見出しへ移るリンク（`href` が `#/{今の文書のパス}#` で始まるもの）を修飾キーなしで押したときは、既定の動きを止めて `history.replaceState` で URL を置き換えてから移る。パネルは `showModal` で開き、文書を選ぶ・閉じるボタン・背景・Esc・`WIDE_QUERY` に合う幅になったときに閉じる（`closedby` を持たないブラウザでは背景の押下を座標で判定する）。文書を描く前に `restoreAssets` で `payload.assets` の画像を戻す。表示の状態: 起動したとき `history.scrollRestoration` を `manual` にし、`ensureEntryId` で今の項目の ID をメモリに持つ。`popstate`・文書の一覧と描いた文書のリンクの `click`・`pagehide`・`SCROLL_SAVE_INTERVAL_MS` ごとに間引いた `scroll` のときに、メモリの ID へ `captureViewState` の値を `writeViewState` で保存する。`hashchange` のときと起動したとき（再読み込み）は、移り先の項目の ID を `ensureEntryId` で取り（リンクで新しく積んだ項目には新しい ID が振られる）、その ID の `readViewState` の値が描いた文書と同じパスを持つかで分ける。持つときは、描いた後に `applyViewState`（`keepFocus: true`）で開閉とタブと位置を戻し、その後に `hashchange` のときだけフォーカスを h1 へ `preventScroll` で移す（起動したときは移さない）。持たないときは見出しか文書の頭へ移る。`popstate` の有無では分けない。`history.replaceState` で URL を置き換えるとき（`missing` と見出しへ移るリンク）は、今の `history.state` を引き継ぐ'
     kind: 関数
     scope: public
     side_effects: 画面と履歴を書き換え、`history.scrollRestoration` を `manual` にし、sessionStorage に表示の状態を記載する
@@ -338,6 +338,12 @@ functions:
         condition: '`#/a.md`（段落 200 個と `b.md` へのリンク）で 3000px スクロールしてリンクを押し、`history.back()` する'
         mock: Chromium の `document`（`.browser.test.ts` で実行する）に画面の骨組みを配置する。sessionStorage は描く前に空にする
         expected: '`b.md` へ移った直後の `scrollY` が 0、戻った後に `a.md` が描かれ `scrollY` が 3000（±1px）、`history.scrollRestoration` が `manual`'
+      - name: test_start_bundle_when_back_focuses_title
+        case: 正常
+        summary: 戻るで開閉とタブを戻した後、フォーカスを h1 へ移す
+        condition: '`a.md` の `group=` の無いタブで 2 つ目を選び、その中の `b.md` へのリンクを押してから `history.back()` する'
+        mock: Chromium の `document`（`.browser.test.ts` で実行する）に画面の骨組みを配置する
+        expected: 2 つ目のタブの `aria-selected` が `true` で、`document.activeElement` が `a.md` の h1
       - name: test_start_bundle_when_heading_link_keeps_entry_id
         case: 正常
         summary: 見出しへ移るリンクで URL を置き換えても、履歴の項目の ID を引き継ぐ
@@ -464,7 +470,7 @@ functions:
       - name: target
         type: '{ view: HTMLElement; state: ViewState; keepFocus: boolean }'
         required: true
-        description: 描く先の要素・戻す表示の状態・開閉を戻した後にフォーカスを元の要素へ戻すか（再読み込みで戻すときは `true`）
+        description: 描く先の要素・戻す表示の状態・開閉を戻した後にフォーカスを元の要素へ戻すか（`startBundle` は、部品のボタンへ移ったフォーカスを残さないよう常に `true` で呼ぶ）
     returns:
       type: () => void
       description: 合わせ直しを止める関数（文書を差し替える前に呼ぶ）
