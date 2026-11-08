@@ -125,6 +125,25 @@ scenarios:
       - 書き出した HTML の `data:` の URL を復号した中に、文書にマーカーの無いライブラリの目印の文字列が無い
       - 開いている間に、書き出した HTML 以外の `file:` の URL への要求が出ない
     test: test_normal_when_relative_libraries
+  - name: 正常シナリオ（相対パスの mermaid を読む）
+    setup:
+      - name: 手元の mermaid を指すワークスペース
+        description: '`mdmark.config.yaml` の `mermaid` の読み込み先に、mermaid の本体と chunk の手元のコピーを相対パスで書き、Markdown は言語 `mermaid` の flowchart のコードブロックを 1 つ持つ'
+      - name: Mock
+        description: 正常シナリオと同じ。書き出した HTML は Chromium で file:// で開く
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant EX as 拡張機能
+        participant B as ブラウザ（Chromium）
+        W->>EX: mdmark: HTML に書き出す
+        EX->>EX: 相対パスの mermaid をまとめて HTML に埋める
+        W->>B: 書き出した HTML を file:// で開く
+        B-->>W: 図の枠に入った mermaid の図
+    expected:
+      - 書き出した HTML を Chromium で開くと、mermaid のコードブロックの場所に図の枠と SVG の図があり、知らせの枠が出ない
+      - 開いている間に、書き出した HTML 以外の `file:` の URL への要求が出ない
+    test: test_normal_when_relative_mermaid
 lead: 文書を書く人が、開いている Markdown をコマンドパレットから HTML に書き出し、既定のブラウザで開く。
 issue: 22
 primary_actor: 文書を書く人

@@ -3,6 +3,7 @@ import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { expect, test } from "vitest";
 import {
+  copyMermaidVendor,
   GREET_WITH_IMPORT_SOURCE,
   linesOf,
   PNG_BYTES,
@@ -676,3 +677,58 @@ test("test_normal_when_range_scripts", async () => {
   expect(opened.inlineUrlScripts()).toEqual([]);
   await opened.close();
 });
+
+// まとめる文書のどれかに mermaid のコードブロックがあるときだけ mermaid を 1 回まとめて埋める（正常系（mermaid のコードブロック））
+test("test_normal_when_mermaid_embedded", async () => {
+  // 準備
+  const dir = await createTempDir();
+  await copyMermaidVendor(dir);
+  const config = (include: string) =>
+    [
+      "mermaid:",
+      "  url: vendor/mermaid/mermaid.esm.min.mjs",
+      "build:",
+      `  include: [${include}]`,
+      "  out: dist/docs.html",
+      "  entry: a.md",
+      "",
+    ].join("\n");
+  await writeFiles(dir, {
+    "mdmark.config.yaml": config('"*.md"'),
+    "a.md": "# A\n\n[B へ](b.md)\n",
+    "b.md": [
+      "# B",
+      "",
+      "```mermaid",
+      "flowchart LR",
+      "  A[受付] --> B[回答]",
+      "```",
+      "",
+    ].join("\n"),
+  });
+  // 実行
+  const result = await runCli(["build"], dir);
+  // 検証
+  expect(result.code).toBe(0);
+  const html = await readFile(join(dir, "dist", "docs.html"), "utf8");
+  const { page, externalRequests } = await browser.openHtml(
+    join(dir, "dist", "docs.html"),
+  );
+  await page.waitForSelector("article.mdmark h1");
+  await page.locator('article p a[href="#/b.md"]').click();
+  await page.waitForSelector(
+    'article figure.mdmark-diagram[data-diagram="mermaid"] .mdmark-mermaid > svg',
+    {
+      timeout: 60_000,
+    },
+  );
+  expect(externalRequests()).toEqual([]);
+  await page.close();
+  // mermaid のコードブロックを持たない文書だけをまとめたときは埋めない
+  await writeFiles(dir, { "mdmark.config.yaml": config('"a.md"') });
+  const onlyPlain = await runCli(["build"], dir);
+  expect(onlyPlain.code).toBe(0);
+  const plainHtml = await readFile(join(dir, "dist", "docs.html"), "utf8");
+  expect(plainHtml).not.toContain("mermaidModule");
+  expect(plainHtml.length).toBeLessThan(html.length - 1_000_000);
+}, 240_000);

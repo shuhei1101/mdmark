@@ -360,10 +360,11 @@ function plainLines(source: string): CodeLine[] {
   return body.split("\n").map((text): CodeLine => ({ text }));
 }
 
-/** 残っている `fence` のトークンごとに、情報文字列を `splitInfoString` で言語とファイル名に分けてから次を行う。`code` がオンのときは `readLineMarks` で行を読み、直前のトークンが `code` の印なら `readCodeSpec` で指定を読み、全てのコードブロックを部品『コードブロック』（言語・ファイル名・題・行番号・行と、`syntax` がオンなら言語を `syntaxLanguageOf` で引いた色分けの言語）に置き換える。帯の右端のコピーのボタンは `mount` が付ける。`code` がオフのときは行の印を外さず中身の行をそのまま使い、`syntax` がオンで色分けの言語を持つコードブロックだけを帯を持たない部品に置き換え、それ以外は `fence` のまま情報文字列の最初の語を言語に書き換える。読めない指定は、コードブロックの前に警告を差し込む。後ろが `fence` でない `code` の印の場所にも警告を差し込む（`code` がオンのときだけ） */
+/** 残っている `fence` のトークンごとに、情報文字列を `splitInfoString` で言語とファイル名に分けてから次を行う。`code` がオンのときは `readLineMarks` で行を読み、直前のトークンが `code` の印なら `readCodeSpec` で指定を読み、全てのコードブロックを部品『コードブロック』（言語・ファイル名・題・行番号・行と、`syntax` がオンなら言語を `syntaxLanguageOf` で引いた色分けの言語）に置き換える。帯の右端のコピーのボタンは `mount` が付ける。`code` がオフのときは行の印を外さず中身の行をそのまま使い、`syntax` がオンで色分けの言語を持つコードブロックだけを帯を持たない部品に置き換え、それ以外は `fence` のまま情報文字列の最初の語を言語に書き換える。読めない指定は、コードブロックの前に警告を差し込む。後ろが `fence` でない `code` の印の場所にも警告を差し込む（`code` がオンのときだけ）。`mermaid` がオンで情報文字列の最初の語がちょうど `mermaid` のコードブロックは、`code` のオン・オフによらず mermaid の対象の部品に置き換え、色分けしない */
 export function buildCodeBlocks(state: StateCore): void {
   const codeOn = featureOn(state, "code");
   const syntaxOn = featureOn(state, "syntax");
+  const mermaidOn = featureOn(state, "mermaid");
   const tokens = state.tokens;
   const out: Token[] = [];
   for (let index = 0; index < tokens.length; index++) {
@@ -441,8 +442,11 @@ export function buildCodeBlocks(state: StateCore): void {
     const title = options?.title ?? "";
     const lineNumbers = options?.lineNumbers ?? false;
     const { language, fileName } = splitInfoString(token.info);
-    const syntax = syntaxOn ? syntaxLanguageOf(language) : undefined;
-    if (codeOn || syntax !== undefined) {
+    const mermaid =
+      mermaidOn && token.info.trim().split(/\s+/)[0] === "mermaid";
+    const syntax =
+      syntaxOn && !mermaid ? syntaxLanguageOf(language) : undefined;
+    if (codeOn || syntax !== undefined || mermaid) {
       out.push(
         ownBlock(
           state,
@@ -454,6 +458,7 @@ export function buildCodeBlocks(state: StateCore): void {
             wrap: options?.wrap ?? false,
             lines,
             syntax,
+            mermaid,
             bar: codeOn,
           }),
           token,

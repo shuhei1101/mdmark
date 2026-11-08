@@ -5576,9 +5576,179 @@ flows:
     test: test_normal_when_footnote_touch
     refs:
       - dev/設計書/シナリオ/単一ユースケース/脚注を見る#scenarios[正常シナリオ（タッチ）]
+  - name: 正常系（mermaid のコードブロックを描く）
+    summary: mermaid のコードブロックがあるときだけ mermaid を読み、描く先の要素の CSS 変数から作ったテーマで図にして図の枠に入れる
+    setup:
+      - name: 配布物を読んだページ
+        description: 正常系と同じ
+      - name: mermaid のコードブロックを持つ Markdown
+        description: 言語 `mermaid` の flowchart（front matter の `title` を持つ）と sequenceDiagram（`actor` を持つ）のコードブロックを 1 つずつ持つ文書
+      - name: 設定
+        description: '`opts.config.mermaid.url` に `/fixtures/mermaid/{名前}/mermaid.esm.min.mjs`'
+      - name: Mock
+        description: mermaid の代わりに、mermaid 12.3.0 の `dist/` を手元の開発サーバーが `/fixtures/mermaid/{名前}/` で配る。`{名前}` はテストごとに変え、読み込み済みのモジュールを再利用させない。要求の件数は `performance.getEntriesByType("resource")` で数える
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        participant X as mermaid
+        P->>M: mount(el, { markdown, config })
+        M->>P: mermaid のコードブロックを隠し、その場所に読み込み中の枠を描く
+        M->>X: import(mermaid.url)
+        X-->>M: モジュール
+        M->>M: 描く先の要素の CSS 変数から base テーマの変数を作る
+        M->>X: render(ソース) をコードブロックの順に呼ぶ
+        X-->>M: SVG
+        M->>P: 読み込み中の枠とコードブロックを、SVG を入れた図の枠に置き換える
+    expected:
+      - '`mermaid.url` の本体への要求が 1 件'
+      - '`import()` が終わる前は、各 mermaid のコードブロックの場所に読み込み中の枠（`div.mdmark-embed[data-mdmark-slot="mermaid"]`）があり、コードブロックが見えていない'
+      - '`figure.mdmark-diagram[data-diagram="mermaid"]` が 2 つあり、それぞれの表示する枠に SVG があり、`div.mdmark-code` と読み込み中の枠が残っていない'
+      - flowchart の図の枠のタイトルが front matter の `title` の文字で、sequenceDiagram の図の枠のタイトルが `シーケンス図`
+      - flowchart のノードの塗り・枠線・文字の計算済みの色が、`--mdmark-color-surface`・`--mdmark-color-border`・`--mdmark-color-text` の計算済みの色と一致し、枠線の `stroke` が `url(` で始まらない
+      - sequenceDiagram の `actor` の場所に、lucide の人のアイコンの `svg` がある
+      - 図の枠の右上に拡大・縮小・全画面のボタン、右下にリサイズハンドルがある
+    test: test_normal_when_mermaid_drawn
+  - name: 正常系（明暗が変わったら mermaid の図を描き直す）
+    summary: 描く先の配色の明暗が変わったら、変わった後の CSS 変数で mermaid の図を描き直す
+    setup:
+      - name: 配布物を読んだページ
+        description: 'OS の配色はライト（`prefers-color-scheme: light`）。ほかは正常系（mermaid のコードブロックを描く）と同じ'
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        participant X as mermaid
+        P->>M: mount(el, { markdown, config })
+        M->>P: 明るい配色の図を描く
+        P->>P: OS の配色をダークに切り替える
+        M->>X: render(ソース) を呼び直す
+        M->>P: 暗い配色の図に置き換える
+    expected:
+      - 切り替えた後、flowchart のノードの塗りの計算済みの色が、暗い配色の `--mdmark-color-surface` の計算済みの色と一致する
+      - '`mermaid.url` の本体への要求が 1 件のまま'
+    test: test_normal_when_mermaid_scheme_changed
+  - name: 正常系（印刷で mermaid の図を明るい配色にする）
+    summary: ダークで開いた文書では明るい配色の SVG も先に描いて並べ、印刷のメディアでは明るい配色の SVG だけを出す
+    setup:
+      - name: 配布物を読んだページ
+        description: 'OS の配色はダーク（`prefers-color-scheme: dark`）。ほかは正常系（mermaid のコードブロックを描く）と同じ'
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        participant X as mermaid
+        P->>M: mount(el, { markdown, config })
+        M->>X: 暗い配色と明るい配色のテーマで render を呼ぶ
+        M->>P: 2 つの SVG を表示する枠に並べ、画面では暗い配色の SVG を出す
+        P->>P: 印刷のメディアにする
+        P-->>P: 明るい配色の SVG だけが見える
+    expected:
+      - 画面のメディアでは、見えている SVG の flowchart のノードの塗りの計算済みの色が、暗い配色の `--mdmark-color-surface` の計算済みの色と一致する
+      - '`page.emulateMedia({ media: "print" })` の間は、見えている SVG が 1 つで、ノードの塗りの計算済みの色が明るい配色の `--mdmark-color-surface` の値と一致する'
+      - OS の配色がライトの文書では、表示する枠の SVG が 1 つ
+    test: test_normal_when_mermaid_printed
+  - name: 正常系（mermaid のテーマを設定で変える）
+    summary: 設定で mermaid のテーマの名前を選び、変数を上書きする。`useGradient`・`dropShadow` は上書きできず、知らないテーマの名前は `mdmark` にする
+    setup:
+      - name: 配布物を読んだページ
+        description: 正常系と同じ
+      - name: mermaid のコードブロックを持つ Markdown
+        description: 正常系（mermaid のコードブロックを描く）と同じ文書を、設定を変えて 2 つの `mount` で描く
+      - name: 設定
+        description: '1 つ目は `opts.config.mermaid` に `theme: "neutral"`・`themeVariables: { mainBkg: "#e0f2f1", useGradient: "true" }`（neutral はノードの塗りの `mainBkg` を `primaryColor` から作らない）。2 つ目は `theme: "no-such-theme"`'
+      - name: Mock
+        description: 正常系（mermaid のコードブロックを描く）と同じ
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        participant X as mermaid
+        P->>M: mount(el, { markdown, config })
+        M->>X: initialize（neutral に変数を重ね、useGradient・dropShadow は mdmark の値）
+        M->>P: 図を描く
+    expected:
+      - 1 つ目の flowchart のノードの塗りの計算済みの色が `#e0f2f1`（rgb(224, 242, 241)）で、枠線の `stroke` が `url(` で始まらない
+      - 2 つ目の flowchart のノードの塗りの計算済みの色が `--mdmark-color-surface` の計算済みの色と一致する（`mdmark` のテーマで描く）
+    test: test_normal_when_mermaid_theme_configured
+  - name: 正常系（mermaid のコードブロックが無い・機能 mermaid を外した）
+    summary: mermaid のコードブロックが無い文書と、機能 `mermaid` を外した文書では、mermaid を読まない
+    setup:
+      - name: 配布物を読んだページ
+        description: 正常系と同じ
+      - name: 2 つの Markdown
+        description: '言語 `ts` のコードブロックだけを持つ文書と、`<!-- features: -mermaid -->` を書いて言語 `mermaid` のコードブロックを持つ文書の 2 つ'
+        notes: 2 つの文書をそれぞれ別の `mount` で描く
+      - name: 設定
+        description: 正常系（mermaid のコードブロックを描く）と同じ
+      - name: Mock
+        description: 正常系（mermaid のコードブロックを描く）と同じ
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: mount(el, { markdown, config })
+        M->>P: mermaid を読まずに本文を描く
+    expected:
+      - どちらの文書でも、mermaid への要求が 0 件
+      - 機能を外した文書の mermaid のソースが `div.mdmark-code` のコードブロックのまま出ている
+    test: test_normal_when_no_mermaid_target
+  - name: 異常系（mermaid を読めない）
+    summary: mermaid を読めないとき、mermaid のコードブロックの前に知らせの枠を置き、コードブロックのまま残す
+    setup:
+      - name: 配布物を読んだページ
+        description: 正常系と同じ
+      - name: mermaid のコードブロックを持つ Markdown
+        description: 正常系（mermaid のコードブロックを描く）と同じ文書
+      - name: 設定
+        description: '`opts.config.mermaid.url` に `/fixtures/missing/mermaid.esm.min.mjs`'
+      - name: Mock
+        description: 手元の開発サーバーが 404 を返す。`console.error` を記録する
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        participant X as mermaid
+        P->>M: mount(el, { markdown, config })
+        M->>P: mermaid のコードブロックを隠し、その場所に読み込み中の枠を描く
+        M->>X: import(mermaid.url)
+        X-->>M: 404
+        M->>P: 読み込み中の枠を知らせの枠に替え、コードブロックを出す
+    expected:
+      - '`mount` が例外を投げない'
+      - 2 つの `div.mdmark-code` が見えていて、その前にそれぞれ知らせの枠（`mdmark-notice`）があり、読み込み中の枠が残っていない
+      - '`console.error` に `/fixtures/missing/mermaid.esm.min.mjs` を含む記録が 1 件以上ある'
+    test: test_error_when_mermaid_not_found
+  - name: 異常系（mermaid の記法を解釈できない）
+    summary: mermaid が解釈できないソースは、書き方の警告を前に置いてコードブロックのまま残し、ほかの mermaid のコードブロックは描く
+    setup:
+      - name: 配布物を読んだページ
+        description: 正常系と同じ
+      - name: 解釈できない mermaid を持つ Markdown
+        description: 言語 `mermaid` のコードブロックを 2 つ持ち、1 つ目は図の種類の行を持たず、2 つ目は正常系（mermaid のコードブロックを描く）の flowchart
+      - name: 設定
+        description: 正常系（mermaid のコードブロックを描く）と同じ
+      - name: Mock
+        description: 正常系（mermaid のコードブロックを描く）と同じ
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        participant X as mermaid
+        P->>M: mount(el, { markdown, config })
+        M->>X: render(1 つ目のソース)
+        X-->>M: 解釈できないエラー
+        M->>X: render(2 つ目のソース)
+        X-->>M: SVG
+        M->>P: 1 つ目は読み込み中の枠を書き方の警告に替えてコードブロックを出し、2 つ目は図の枠
+    expected:
+      - 1 つ目の `div.mdmark-code` が見えていて、その前に `mdmark-syntax-warning` があり、本文に mermaid のエラーの 1 行目がある
+      - 2 つ目のコードブロックの場所に `figure.mdmark-diagram[data-diagram="mermaid"]` がある
+      - mermaid が文書に出すエラーの図（`#d{id}` の要素）が文書に残っていない
+    test: test_error_when_mermaid_syntax_invalid
 lead: 使う側のページが、要素と Markdown と設定を渡し、要素の中に文書を描く。戻り値で本文の差し替えと片付けができる。
 idempotent: false
-side_effects: '`el` の中身と class を書き換え、記法の操作のイベントを `el` の中に付ける。束ねていない名前の `icon:` があるとき、jsDelivr の Lucide のアイコンのモジュールを名前ごとに `import()` し、読めなかった名前だけ同じ URL へ `HEAD` の `fetch` を送る。`side-toc` がオンで見出しがあるとき、`el` の中を本文の列と右側の目次に分け、見出しの位置を `IntersectionObserver` で見る。出し方が `hover` のときは、右端の線とパネルの位置を決めるため、`window` の `scroll`・`resize` と、`el` に最も近いスクロールする祖先の要素があればその `scroll` を受け取り、`document.body` の子の追加・削除を `MutationObserver` で見る。`back-to-top` がオンのとき、`el` の子に先頭へ戻るボタンを置き、スクロールする場所が画面全体なら `window` の `scroll`、`el` に最も近いスクロールする祖先の要素なら `document` の `scroll`（捕捉の段）と、`window` の `resize` を受け取り、`document.body` と `el` の子の追加・削除を `MutationObserver` で見る。`window` の `beforeprint`・`afterprint`・`hashchange` と、絞り込みのドロワーを開いている間だけ `document` の `pointerdown`・`keydown` を受け取る。図の部品か埋め込んだ HTML があるとき、図の表示する枠と埋め込んだ HTML の大きさを `ResizeObserver` で見、ツールチップを開いている間だけ `document` の `keydown`・`pointerdown` と `window` の `scroll`・`resize` を受け取り、全画面の間だけ `el` の中に `dialog` を置く。リンク先を持つフロー図のノードの上から図を動かしたとき、次の 1 回の `click` まで `window` の `click`（キャプチャの段）を受け取る。`diagram-resize` がオンのとき、リサイズハンドルで変えた図の高さを sessionStorage に書き、描くたびに読み、ダブルクリックで戻すと削除する。操作できる部品の写すボタン・表のコピー・行の URL のコピー・コードブロックのコピー・ファイルツリーのコピーでクリップボードに書く。表があるとき、表の大きさと描く先の要素の幅を `ResizeObserver` で見、`animation-timeline` を持たないブラウザでは `window` と文書の中の `scroll` と `window` の `resize` を受け取る。`data-group` を持つタブがあるとき、localStorage の `mdmark-tabs:{group}` を描くたびに読み、読む人がタブを選ぶと書く。そのとき、ページの中の `el` の外にある同じ `group` のタブ群の選択も書き換える。文書に外部ライブラリか拡張の印があるとき、そのモジュールを読む。色分けの対象のコードブロックがあるとき、`syntax.url` の先の core と、使う言語のモジュールを読む。`html-scripts` がオンの文書に範囲の `ts`・`js` があるとき、`html-scripts.url` の先の変換のライブラリを読み、範囲ごとに `document.head` へ `script` 要素を 1 つ置いてすぐ外し、範囲の関数を呼ぶ。`opts.diffSource` を渡したとき、読む人が差分を開くと（`opts.diffMode` が `open` なら描いた時点、`blocks` なら描くたびに）取り出し元の `revisions`・`content` を呼び、差分の行を出している間だけミニマップの帯を置き、送り先のスクロールの `scroll` と `window` の `resize` を受け取る。文書にビューの印があるとき、ビューの部品のモジュールを読む。`comments` がオンで `opts.commentStore` を渡したとき、コメントの部品のモジュールを読み、`load` を描くたびに 1 回呼び、保存で `save`、読み書きの関数が持つときは吹き出しの修正で `update`・削除で `remove`、`reloadComments` で `load` を呼ぶ。その間は `document` の `selectionchange` を受け取り、コメントのボタン・入力欄・吹き出しを `document.body` に置く。あわせて本文の列の右に余白の列を置き、描く先の要素の大きさを `ResizeObserver`、描く先の要素の中の開閉・切り替えを `MutationObserver` で見る'
+side_effects: '`el` の中身と class を書き換え、記法の操作のイベントを `el` の中に付ける。束ねていない名前の `icon:` があるとき、jsDelivr の Lucide のアイコンのモジュールを名前ごとに `import()` し、読めなかった名前だけ同じ URL へ `HEAD` の `fetch` を送る。`side-toc` がオンで見出しがあるとき、`el` の中を本文の列と右側の目次に分け、見出しの位置を `IntersectionObserver` で見る。出し方が `hover` のときは、右端の線とパネルの位置を決めるため、`window` の `scroll`・`resize` と、`el` に最も近いスクロールする祖先の要素があればその `scroll` を受け取り、`document.body` の子の追加・削除を `MutationObserver` で見る。`back-to-top` がオンのとき、`el` の子に先頭へ戻るボタンを置き、スクロールする場所が画面全体なら `window` の `scroll`、`el` に最も近いスクロールする祖先の要素なら `document` の `scroll`（捕捉の段）と、`window` の `resize` を受け取り、`document.body` と `el` の子の追加・削除を `MutationObserver` で見る。`window` の `beforeprint`・`afterprint`・`hashchange` と、絞り込みのドロワーを開いている間だけ `document` の `pointerdown`・`keydown` を受け取る。図の部品か埋め込んだ HTML があるとき、図の表示する枠と埋め込んだ HTML の大きさを `ResizeObserver` で見、ツールチップを開いている間だけ `document` の `keydown`・`pointerdown` と `window` の `scroll`・`resize` を受け取り、全画面の間だけ `el` の中に `dialog` を置く。リンク先を持つフロー図のノードの上から図を動かしたとき、次の 1 回の `click` まで `window` の `click`（キャプチャの段）を受け取る。`diagram-resize` がオンのとき、リサイズハンドルで変えた図の高さを sessionStorage に書き、描くたびに読み、ダブルクリックで戻すと削除する。操作できる部品の写すボタン・表のコピー・行の URL のコピー・コードブロックのコピー・ファイルツリーのコピーでクリップボードに書く。表があるとき、表の大きさと描く先の要素の幅を `ResizeObserver` で見、`animation-timeline` を持たないブラウザでは `window` と文書の中の `scroll` と `window` の `resize` を受け取る。`data-group` を持つタブがあるとき、localStorage の `mdmark-tabs:{group}` を描くたびに読み、読む人がタブを選ぶと書く。そのとき、ページの中の `el` の外にある同じ `group` のタブ群の選択も書き換える。文書に外部ライブラリか拡張の印があるとき、そのモジュールを読む。色分けの対象のコードブロックがあるとき、`syntax.url` の先の core と、使う言語のモジュールを読む。`mermaid` がオンの文書に mermaid のコードブロックがあるとき、`mermaid.url` の先のモジュールを読み、描く先の配色の明暗の変化を見て描き直す。`html-scripts` がオンの文書に範囲の `ts`・`js` があるとき、`html-scripts.url` の先の変換のライブラリを読み、範囲ごとに `document.head` へ `script` 要素を 1 つ置いてすぐ外し、範囲の関数を呼ぶ。`opts.diffSource` を渡したとき、読む人が差分を開くと（`opts.diffMode` が `open` なら描いた時点、`blocks` なら描くたびに）取り出し元の `revisions`・`content` を呼び、差分の行を出している間だけミニマップの帯を置き、送り先のスクロールの `scroll` と `window` の `resize` を受け取る。文書にビューの印があるとき、ビューの部品のモジュールを読む。`comments` がオンで `opts.commentStore` を渡したとき、コメントの部品のモジュールを読み、`load` を描くたびに 1 回呼び、保存で `save`、読み書きの関数が持つときは吹き出しの修正で `update`・削除で `remove`、`reloadComments` で `load` を呼ぶ。その間は `document` の `selectionchange` を受け取り、コメントのボタン・入力欄・吹き出しを `document.body` に置く。あわせて本文の列の右に余白の列を置き、描く先の要素の大きさを `ResizeObserver`、描く先の要素の中の開閉・切り替えを `MutationObserver` で見る'
 callers:
   - dev/設計書/シナリオ/単一ユースケース/文書を描く#
   - dev/設計書/シナリオ/単一ユースケース/テーマを上書きする#
@@ -5631,7 +5801,7 @@ request:
     default: '`comments`・`html-scripts` を除く全ての機能が `true`'
     location: argument
     description: '機能のオン・オフの既定。文書の `<!-- features: +機能 -機能 -->` がその文書だけ上書きする'
-    notes: 知らない機能名は無視する。機能は `print`（印刷の前に折り畳みと記法を開く）と、記法ごとの `table`・`callout`・`tabs`・`steps`・`tree`・`badge`・`code`・`toc`・`side-toc`（右側の目次）・`anchors`・`sections`・`row-details`・`figures`、先頭へ戻るボタンの `back-to-top`、図の部品の `diagrams`、図の表示する枠の高さを変えるリサイズハンドルの `diagram-resize`、埋め込んだ HTML の `html`、図と埋め込んだ HTML のヒント（`data-hint`・`hint`・`io`・線の `tip`・`frame` と `lanes` の `hint`）のツールチップの `hints`、用語のツールチップの `glossary`、被参照の一覧と文書の別名の `backlinks`、ビューの印の `views`、脚注の `footnotes`、選んだ箇所へのコメントの `comments`、埋め込んだ HTML の範囲の `css`・`ts`・`js` の `html-scripts`（`comments` と `html-scripts` だけ既定は `false`）、アイコンの `icon`・段組みの `columns`・蛍光ペンの `highlight`・キーの `kbd`・details の範囲の `details`・改ページの `pagebreak`・取り込みの `include`・wide の範囲の `wide`・CSV の表の `csv`・カードの格子の `card-grid`
+    notes: 知らない機能名は無視する。機能は `print`（印刷の前に折り畳みと記法を開く）と、記法ごとの `table`・`callout`・`tabs`・`steps`・`tree`・`badge`・`code`・`toc`・`side-toc`（右側の目次）・`anchors`・`sections`・`row-details`・`figures`、先頭へ戻るボタンの `back-to-top`、図の部品の `diagrams`、図の表示する枠の高さを変えるリサイズハンドルの `diagram-resize`、埋め込んだ HTML の `html`、図と埋め込んだ HTML のヒント（`data-hint`・`hint`・`io`・線の `tip`・`frame` と `lanes` の `hint`）のツールチップの `hints`、用語のツールチップの `glossary`、被参照の一覧と文書の別名の `backlinks`、ビューの印の `views`、脚注の `footnotes`、選んだ箇所へのコメントの `comments`、埋め込んだ HTML の範囲の `css`・`ts`・`js` の `html-scripts`（`comments` と `html-scripts` だけ既定は `false`）、アイコンの `icon`・段組みの `columns`・蛍光ペンの `highlight`・キーの `kbd`・details の範囲の `details`・改ページの `pagebreak`・取り込みの `include`・wide の範囲の `wide`・CSV の表の `csv`・カードの格子の `card-grid`・mermaid のコードブロックを図にする `mermaid`
   - name: opts.config.libraries
     type: Record<string, string>
     required: false
@@ -5768,6 +5938,31 @@ request:
     constraints: URL はページの `document.baseURI` を基準に解決する。文字列でない値は無視して既定を当てる
     example: '"/vendor/babel-standalone/standalone.mjs"'
     notes: '`syntax.url` と同じく、印の名前の対応表 `libraries` とは分ける。`html-scripts` がオフのときと、範囲に `ts`・`js` が無いときは使わない'
+  - name: opts.config.mermaid.url
+    type: string
+    required: false
+    default: '`https://cdn.jsdelivr.net/npm/mermaid@12.3.0/dist/mermaid.esm.min.mjs`'
+    location: argument
+    description: mermaid の ES モジュールの URL。mermaid のコードブロックがある文書でだけ `import()` で読む
+    constraints: URL はページの `document.baseURI` を基準に解決する。文字列でない値は無視して既定を当てる
+    example: '"/vendor/mermaid/mermaid.esm.min.mjs"'
+    notes: '`syntax.url`・`html-scripts.url` と同じく、印の名前の対応表 `libraries` とは分ける。機能 `mermaid` がオフのときと、mermaid のコードブロックが無いときは使わない'
+  - name: opts.config.mermaid.theme
+    type: '"mdmark" | "default" | "neutral" | "dark" | "forest" | "base"'
+    required: false
+    default: '`mdmark`'
+    location: argument
+    description: mermaid の図のテーマ。`mdmark` は描く先の要素の CSS 変数から作る mdmark の見た目のテーマ（制約「mermaid のテーマ」）、ほかは mermaid のテーマの名前をそのまま使う
+    constraints: 知らない値は無視して `mdmark` にする
+    example: '"neutral"'
+  - name: opts.config.mermaid.themeVariables
+    type: Record<string, string>
+    required: false
+    location: argument
+    description: mermaid のテーマの変数（`primaryColor` など）を上書きする値。`theme` で選んだテーマの変数に重ねる
+    constraints: 値が文字列のキーだけを受け、ほかは無視する。`useGradient`・`dropShadow` は上書きできない（制約「mermaid のテーマ」）
+    example: '{ "primaryColor": "#e0f2f1" }'
+    notes: mermaid の初期化の設定のうち、テーマ以外（`securityLevel`・`startOnLoad` など）は使う側に開けない（要件.md の推奨案 A）
   - name: opts.includes
     type: Record<string, string>
     required: false
@@ -5873,6 +6068,12 @@ exceptions:
   - name: なし（変換のライブラリを読めない）
     condition: '`html-scripts.url` のモジュールを読めないか、`transform` を持たない'
     notes: 例外を投げず、`ts`・`js` の範囲の前に知らせの枠を置き、範囲の `html`・`css` は描いたまま残す。URL と元のエラーを `console.error` に出す
+  - name: なし（mermaid を読めない）
+    condition: '`mermaid.url` のモジュールを読めないか、`render` を持たない'
+    notes: 例外を投げず、mermaid のコードブロックごとに読み込み中の枠を知らせの枠に替え、コードブロックを出して残す。URL と元のエラーを `console.error` に出す
+  - name: なし（mermaid の記法を解釈できない）
+    condition: mermaid の `render` がそのソースで例外を投げる
+    notes: 例外を投げず、そのコードブロックの読み込み中の枠を書き方の警告（mermaid のエラーの 1 行目）に替え、コードブロックを出して残す。mermaid が文書に出すエラーの図は消す。ほかの mermaid のコードブロックは描く
   - name: なし（Lucide に無いアイコンの名前）
     condition: 束ねていない名前のアイコンのモジュールを読めず、同じ URL の `HEAD` が 404 を返す
     notes: 例外を投げず、その名前の場所を書いたとおりの行内のコードに戻し、段落の前に書き方の警告（Lucide に無い名前であること）を置く
@@ -6166,4 +6367,18 @@ constraints:
   - item: ブロックの間隔
     constraint: 本文の直下・節の中身（`.mdmark-section-body`）・タブの中身（`.mdmark-tab-panel`）のブロック同士の縦の間を `--mdmark-space`、リストの項目・引用・`details`・行の詳細（`.mdmark-row-detail > td`）の中のブロック同士の間を `calc(var(--mdmark-space) / 2)` にする。後のブロックがコードブロック（`.mdmark-code`）・ファイルツリー（`.mdmark-tree`）・記法の部品のときも同じ間を空ける。見出しは上の余白に、区切り線は上下の余白に、自分の規則の値を使用する。先頭のブロックの上には間を空けない
     notes: '#326'
+  - item: mermaid の対象
+    constraint: 機能 `mermaid` がオンの文書で、`render` が属性 `data-mdmark-mermaid` を付けた mermaid のコードブロック（文書をHTML文字列にする.ts の制約『mermaid のコードブロック』）
+    notes: 文書に書いた生の HTML のこの属性は sanitize が落とす
+  - item: mermaid の読み込み
+    constraint: 描いた後に mermaid の対象が 1 つ以上あるときだけ、`mermaid.url` を `import()` で読み、既定のエクスポートの `initialize`・`render` を使う。同じ `mount` の中では 1 回だけ読む。読み込んで描き終えるまで、各対象を隠し、その場所に読み込み中の枠（部品設計『読み込み中の枠』の名前 `mermaid`）を置く。読み終わる前に `update`・`destroy` したときは、前の描画の対象を図にしない。読み込みの完了は待たずに `mount` を返す。書き出した HTML の起動の処理が、まとめた mermaid のモジュールを渡したときは URL を読まない
+    notes: 配布物 `dist/index.js` に mermaid を束ねない（非機能要件『配布ファイル 1 つのサイズ』）
+  - item: mermaid の描き方
+    constraint: '`initialize` には `startOnLoad: false`・`securityLevel: "strict"`・`theme`・`themeVariables` を渡し、使う側の設定でこの 2 つ（`startOnLoad`・`securityLevel`）を変えさせない。対象を文書の順に `render` し、返った SVG を図の枠（部品設計『図の枠』の種類 `mermaid`）の表示する枠に入れて、対象のコードブロックと置き換える。図の枠のタイトルは front matter の `title`、無ければ `accTitle`、どちらも無ければ図の種類の名前（`flowchart`・`graph` → フローチャート／`sequenceDiagram` → シーケンス図／`classDiagram` → クラス図／`stateDiagram`・`stateDiagram-v2` → 状態遷移図／`erDiagram` → ER 図／`gantt` → ガントチャート／`pie` → 円グラフ／ほか → 図）にし、front matter の `title` は図の中に重ねて描かない。範囲・更新日は出さない。シーケンス図の `actor` は lucide の人のアイコンに替え、本文の色の線で描く。開いたときの倍率は全体が収まる倍率で、0.75 より小さくしない（収まらない分は枠の中で動かす）。ガントチャートは描く先の幅と 720px の大きいほうの幅で描く'
+    notes: 見た目はモック `dev/mock/components/mermaid-diagram/`（確認ログ）。倍率の下限とガントチャートの幅はモックで描いて決めた
+  - item: mermaid のテーマ
+    constraint: '`theme` が `mdmark` のとき、描く先の要素の計算済みの CSS 変数（色は試しの要素の `color` で解決して sRGB の hex。`rgb()`・`rgba()` は値を読み、ほかの書き方は canvas で変換する）から mermaid の `base` テーマの変数を作る。対応はモジュール構成で表にする。どのテーマでも `useGradient: false`・`dropShadow: "none"` にし、SVG の filter の影も外す。描く先の配色の明暗（`colorScheme`・page のマーカー・祖先の class・OS の設定）が変わったら、変わった後の値で描き直す。印刷では明るい配色の図を出す。暗い配色で描くときは、明るい配色の CSS 変数（同じタスクの中で描く先の要素の明暗の class を一時的に `mdmark-theme-light` に替えて解決し、元に戻す。配色の値は描く先の明暗の class から `:root` に当たるため、描く先の中の要素の class では変わらない）から作ったテーマでも先に `render` し、2 つの SVG を表示する枠に並べて、画面では今の配色の SVG、`@media print` では明るい配色の SVG だけを出す。明るい配色で描くときは SVG を 1 つだけ置く（制約「配色の切り替え」の印刷で明るい配色にするのと揃える。`render` は非同期で、`beforeprint` の中で描き直しても印刷のレイアウトに間に合わないため、印刷のきっかけを待たない）'
+    notes: PoC #384 で、`color-mix()` を含む CSS 変数を hex にして `base` テーマへ渡せることを確かめた。デザイン方針の「使わないもの」（影・グラデーション）
+  - item: mermaid を読めないとき
+    constraint: mermaid を読めないときは、各 mermaid の対象の読み込み中の枠を知らせの枠（本文の文言は画面設計『文書』）に替え、コードブロックを出して残す。解釈できないソースは読み込み中の枠を書き方の警告に替え、コードブロックを出して残す
 test_file: tests/integration/lib/mount.browser.test.ts

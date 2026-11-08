@@ -40,6 +40,10 @@ guides:
     when: スライダーや今の値をコピーするボタンなど、操作できる部品を付けるとき
     summary: スライダー・グラフ・コピーするボタンの部品の定義
     page: docs/使い方/図を描く/操作できる部品を作る.md
+  - name: mermaid
+    when: mermaid のコードブロックで図を描くとき
+    summary: mermaid のコードブロックの記載、図の枠のタイトル、テーマの変え方
+    page: docs/使い方/図を描く/mermaidの図を描く.md
   - name: html-blocks
     when: コードブロックの HTML でチャートやヒントを描くとき
     summary: HTML を描かせるマーカー、チャートの custom element、data-hint の記載

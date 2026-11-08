@@ -47,3 +47,7 @@ entries:
     schema: mdmark.settings.schema.json
     sha256: 30bbfde60c9894a23f231648f820ed2b7bf30958f75705ea926ea61dbd38f6aa
     reason: 端末の設定に省いてよい serve.tmuxSession を足しただけで、古い端末の設定もそのまま新しい Schema に合う
+  - version: next
+    schema: mdmark.config.schema.json
+    sha256: fb56336a681e886c8b5e676b2cebe58c939edfa72fa349d651187dbfe5b6bf9f
+    reason: features に省いてよい mermaid と、省いてよい mermaid を足しただけで、古い設定もそのまま新しい Schema に合う

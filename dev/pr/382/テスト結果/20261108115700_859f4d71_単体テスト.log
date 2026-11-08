@@ -1,0 +1,91 @@
+
+> test:unit
+> vitest run --project 'unit*'
+
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-render-mermaid-code-blocks
+
+ ❯ |unit-browser (chromium)| tests/unit/vscode/src/webview/features/preview/panel/panel-screen.browser.test.tsx (15 tests | 1 failed) 9519ms
+   × test_panel_screen_when_csp_violation 2093ms
+ ❯ |unit| tests/unit/src/cli/backup.test.ts (4 tests | 1 failed) 31468ms
+   × test_take_backup_when_outside 30004ms
+ ❯ |unit| tests/unit/src/cli/documents.test.ts (8 tests | 1 failed) 32935ms
+   × test_read_index_with_documents_when_missing 30017ms
+ ❯ |unit| tests/unit/src/cli/export.test.ts (23 tests | 1 failed) 40344ms
+   × test_prepare_embeds 30005ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit| tests/unit/src/cli/backup.test.ts > test_take_backup_when_outside
+Error: Test timed out in 30000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/unit/src/cli/backup.test.ts:59:1
+     57|
+     58| // 設定ファイルのフォルダの外のファイルは拒む（異常系）
+     59| test("test_take_backup_when_outside", async () => {
+       | ^
+     60|   // 準備
+     61|   const { takeBackup } = await loadModule();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/4]⎯
+
+ FAIL  |unit| tests/unit/src/cli/documents.test.ts > test_read_index_with_documents_when_missing
+Error: Test timed out in 30000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/unit/src/cli/documents.test.ts:86:1
+     84|
+     85| // 索引のファイルが無いと CliError（異常系）
+     86| test("test_read_index_with_documents_when_missing", async () => {
+       | ^
+     87|   // 準備
+     88|   const { readIndexWithDocuments } = await loadDocuments();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/4]⎯
+
+ FAIL  |unit| tests/unit/src/cli/export.test.ts > test_prepare_embeds
+Error: Test timed out in 30000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/unit/src/cli/export.test.ts:31:1
+     29|
+     30| // 印のあるモジュールだけを束ね、拡張と theme を読む（正常系）
+     31| test("test_prepare_embeds", async () => {
+       | ^
+     32|   // 準備
+     33|   const { prepareEmbeds } = await loadExport();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/4]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/vscode/src/webview/features/preview/panel/panel-screen.browser.test.tsx > test_panel_screen_when_csp_violation
+AssertionError: expected [ undefined, undefined ] to deeply equal [ '0', '2' ]
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/panel-screen.browser.test.tsx/test_panel_screen_when_csp_violation.png
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[2m  [[22m
+[32m-   "0",[39m
+[32m-   "2",[39m
+[31m+   undefined,[39m
+[31m+   undefined,[39m
+[2m  ][22m
+
+ ❯ tests/unit/vscode/src/webview/features/preview/panel/panel-screen.browser.test.tsx:511:24
+    509|   }
+    510|   // 検証
+    511|   expect(results.true).toEqual(["0", "2"]);
+       |                        ^
+    512|   expect(results.false).toEqual([undefined, undefined]);
+    513| });
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=a0c8387d:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/4]⎯
+
+
+ Test Files  4 failed | 254 passed (258)
+      Tests  4 failed | 1812 passed (1816)
+   Start at  11:57:05
+   Duration  107.78s (worker 61%, tests 26%, import 11%, transform 2%)
+
+rc=1

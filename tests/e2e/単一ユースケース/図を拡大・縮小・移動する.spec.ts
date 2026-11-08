@@ -12,11 +12,13 @@ import {
 } from "../diagram.ts";
 import {
   buildDistRoot,
+  destroyDocument,
   mountDocument,
   openPage,
   removeDistRoot,
 } from "../dist-page.ts";
 import { ER_DEFINITION, erMarkdown, FOLD_DEFINITION } from "../er.ts";
+import { MERMAID_SVG, MERMAID_WAIT_MS, routeMermaid } from "../mermaid.ts";
 
 // ビルドした配布物を置いた作業ツリー
 let builtRoot = "";
@@ -810,4 +812,109 @@ test("test_normal_when_drag_on_chart_item", async ({ page }) => {
   expect(moved - before).toBeGreaterThan(110);
   await expect(tip).toBeHidden();
   await page.mouse.up();
+});
+
+/** 横に並べた 6 つのノードを持つ mermaid の flowchart */
+const WIDE_MERMAID = [
+  "```mermaid",
+  "flowchart LR",
+  "  A[問い合わせを受ける] --> B[担当を探す] --> C[担当へ回す]",
+  "  C --> D[回答を書く] --> E[回答を確かめる] --> F[回答を送る]",
+  "```",
+  "",
+].join("\n");
+
+/** 図の枠の右上のボタンの読み上げの名前を、並んだ順に返す（倍率の数字は除く） */
+function toolNames(page: Page): Promise<string[]> {
+  return page
+    .locator("#doc figure.mdmark-diagram .mdmark-diagram-tools button")
+    .evaluateAll((buttons) =>
+      buttons.map((button) =>
+        (button.getAttribute("aria-label") ?? "").replace(/\d+%/, "N%"),
+      ),
+    );
+}
+
+// mermaid の図も、全体が収まる倍率で開き、ボタン・ドラッグ・リサイズハンドル・全画面・0 で操作できる（正常シナリオ（mermaid の図））
+test("test_normal_when_mermaid", async ({ page }) => {
+  // 準備: 図を描き、描く先の幅を図の幅より狭くして描き直す
+  await routeMermaid(page);
+  await openPage(page, builtRoot);
+  const svg = page.locator(`#doc ${MERMAID_SVG}`);
+  await mountDocument(page, { markdown: WIDE_MERMAID });
+  await expect(svg).toHaveCount(1, { timeout: MERMAID_WAIT_MS });
+  const natural = await svg.evaluate(
+    (element) => (element as SVGSVGElement).viewBox.baseVal.width,
+  );
+  await destroyDocument(page);
+  await page.locator("#doc").evaluate(
+    (element, width) => {
+      element.style.width = `${width}px`;
+    },
+    Math.round(natural * 0.85),
+  );
+  // 実行
+  await mountDocument(page, { markdown: WIDE_MERMAID });
+  await expect(svg).toHaveCount(1, { timeout: MERMAID_WAIT_MS });
+  // 検証: 開いたとき、図の全体が表示する枠の中に収まる
+  const viewport = viewportOf(page);
+  const fit = await zoomPercent(page);
+  expect(fit).toBeLessThan(100);
+  const sizer = page.locator("#doc .mdmark-diagram-sizer");
+  const frameWidth = await viewport.evaluate((element) => element.clientWidth);
+  expect(
+    await sizer.evaluate((element) => element.getBoundingClientRect().width),
+  ).toBeLessThanOrEqual(frameWidth + 1);
+  // 検証: 拡大のボタンで倍率が上がり、ドラッグで図が動く
+  await zoomIn(page);
+  expect(await zoomPercent(page)).toBeGreaterThan(fit);
+  const box = await rectOf(viewport);
+  const start = await viewport.evaluate((element) => element.scrollLeft);
+  const margin = { x: box.x + box.width / 2, y: box.y + 4 };
+  await page.mouse.move(margin.x, margin.y);
+  await page.mouse.down();
+  await page.mouse.move(margin.x - 100, margin.y, { steps: 5 });
+  await page.mouse.up();
+  expect(
+    (await viewport.evaluate((element) => element.scrollLeft)) - start,
+  ).toBeGreaterThan(50);
+  // 検証: 拡大しても SVG のまま描かれる
+  await expect(svg).toHaveCount(1);
+  await expect(
+    page.locator("#doc figure.mdmark-diagram").locator("img, canvas"),
+  ).toHaveCount(0);
+  // 検証: リサイズハンドルのドラッグで表示する枠の高さが変わる
+  const handle = page.locator("#doc .mdmark-diagram-resize");
+  const opened = await heightOf(page);
+  const handleRect = await rectOf(handle);
+  const center = {
+    x: handleRect.x + handleRect.width / 2,
+    y: handleRect.y + handleRect.height / 2,
+  };
+  await page.mouse.move(center.x, center.y);
+  await page.mouse.down();
+  await page.mouse.move(center.x, center.y + 100, { steps: 8 });
+  await page.mouse.up();
+  expect(await heightOf(page)).toBeGreaterThan(opened);
+  // 検証: 0 で開いたときの倍率と位置に戻る
+  await viewport.focus();
+  await page.keyboard.press("0");
+  expect(await zoomPercent(page)).toBe(fit);
+  expect(await viewport.evaluate((element) => element.scrollLeft)).toBe(0);
+  expect(await viewport.evaluate((element) => element.scrollTop)).toBe(0);
+  // 検証: 全画面のボタンで mermaid の図を全画面で開く
+  const mermaidTools = await toolNames(page);
+  await page.getByRole("button", { name: "全画面で開く" }).click();
+  const dialog = page.locator("#doc dialog.mdmark-diagram-dialog");
+  await expect(dialog).toBeVisible();
+  await expect(dialog.locator(".mdmark-mermaid > svg")).toHaveCount(1);
+  await page.keyboard.press("Escape");
+  await expect(dialog).toBeHidden();
+  // 検証: 右上のボタンが、フロー図と同じ並びと読み上げの名前を持つ（図のタイトルは除く）
+  await destroyDocument(page);
+  await openFlow(page);
+  const flowTools = await toolNames(page);
+  expect(
+    mermaidTools.map((name) => name.replace(/「[^」]*」/, "「」")),
+  ).toEqual(flowTools.map((name) => name.replace(/「[^」]*」/, "「」")));
 });

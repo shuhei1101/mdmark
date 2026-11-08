@@ -8,6 +8,14 @@ import {
   expectUpperNotApplied,
 } from "../cascade.ts";
 import {
+  MERMAID_ENTRY,
+  MERMAID_FLOWCHART,
+  MERMAID_STUB_PATH,
+  MERMAID_SVG,
+  MERMAID_WAIT_MS,
+  mermaidColors,
+} from "../mermaid.ts";
+import {
   expectGuideRendered,
   guideMarkdown,
   replaceAllText,
@@ -469,4 +477,67 @@ test("test_error_when_aliases_missing", async () => {
     )
     .toBe(true);
   await expect(frame.locator(".mdmark-config-band")).toHaveCount(0);
+});
+
+// mermaid のコードブロックを図の枠に入れて描き、VS Code の配色をダークに切り替えると暗い配色で描き直す（正常シナリオ（mermaid のコードブロック））
+test("test_normal_when_mermaid", async () => {
+  // 準備
+  const stub = e2e.stub();
+  const session = await e2e.launch({
+    files: {
+      "flow.md": MERMAID_FLOWCHART,
+      "mdmark.config.yaml": `mermaid:\n  url: ${stub.origin}${MERMAID_STUB_PATH}${MERMAID_ENTRY}\n`,
+    },
+    userSettings: { "workbench.colorTheme": "Default Light Modern" },
+  });
+  await session.openFile("flow.md");
+  // 実行
+  await session.openPreviewWithShortcut();
+  // 検証: 図の枠に入った mermaid の図
+  const frame = await session.frameWith(MERMAID_SVG);
+  await expect(frame.locator(MERMAID_SVG)).toHaveCount(1, {
+    timeout: MERMAID_WAIT_MS,
+  });
+  await expect(frame.locator(".mdmark-notice")).toHaveCount(0);
+  expect(stub.requests()).toContain(`${MERMAID_STUB_PATH}${MERMAID_ENTRY}`);
+  // 検証: CSP の script-src に mermaid の読み込み先の origin が入り、違反が 0 件
+  const csp =
+    (await frame
+      .locator('meta[http-equiv="Content-Security-Policy"]')
+      .getAttribute("content")) ?? "";
+  const scriptSrc =
+    csp
+      .split("; ")
+      .find((directive) => directive.startsWith("script-src "))
+      ?.split(" ")
+      .slice(1) ?? [];
+  expect(scriptSrc).toContain(stub.origin);
+  for (const word of ["blob:", "'unsafe-inline'", "'unsafe-eval'"]) {
+    expect(scriptSrc).not.toContain(word);
+  }
+  await expect(frame.locator("html")).toHaveAttribute(
+    "data-mdmark-csp-violations",
+    "0",
+  );
+  const light = await mermaidColors(frame, { scope: "#mdmark-preview" });
+  expect(light.fill).toBe(light.surface);
+  // 実行: コマンドパレットでダークのテーマを選ぶ
+  await session.runCommand("Preferences: Color Theme");
+  await session.win.keyboard.type("Dark Modern");
+  await session.win.waitForTimeout(500);
+  await session.win.keyboard.press("Enter");
+  // 検証: 暗い配色の CSS 変数で描き直す
+  await expect
+    .poll(
+      async () => {
+        const dark = await mermaidColors(frame, { scope: "#mdmark-preview" });
+        return dark.fill === dark.surface && dark.surface !== light.surface;
+      },
+      { timeout: MERMAID_WAIT_MS },
+    )
+    .toBe(true);
+  await expect(frame.locator("html")).toHaveAttribute(
+    "data-mdmark-csp-violations",
+    "0",
+  );
 });

@@ -367,6 +367,58 @@ test("test_build_code_blocks_when_dockerfile_and_diff", () => {
   expect(languages).toEqual(["dockerfile", "dockerfile", "diff", "diff"]);
 });
 
+// mermaid のコードブロックに mermaid の対象の属性を付け、色分けの対象にしない（正常系）
+test("test_build_code_blocks_when_mermaid", () => {
+  // 準備
+  const markdown = [
+    "```mermaid",
+    "flowchart LR",
+    "```",
+    "",
+    "```mermaid:a.mmd",
+    "flowchart LR",
+    "```",
+    "",
+  ].join("\n");
+  // 実行
+  const { html } = renderDoc(markdown);
+  // 検証: 1 つ目だけが mermaid の対象で、どちらも色分けの対象でない
+  expect(matches(html, /data-mdmark-mermaid/g)).toHaveLength(1);
+  expect(findTag(html, "data-mdmark-mermaid")).toContain('class="mdmark-code"');
+  expect(html).toContain('<code class="language-mermaid">');
+  expect(html).not.toContain("data-mdmark-syntax");
+  expect(matches(html, /<div class="mdmark-code-bar">/g)).toHaveLength(2);
+});
+
+// mermaid がオフなら、ほかの言語と同じコードブロックにする（正常系）
+test("test_build_code_blocks_when_mermaid_disabled", () => {
+  // 準備
+  const markdown = [
+    "<!-- features: -mermaid -->",
+    "",
+    "```mermaid",
+    "flowchart LR",
+    "```",
+    "",
+  ].join("\n");
+  // 実行
+  const { html } = renderDoc(markdown);
+  // 検証
+  expect(html).toContain('<div class="mdmark-code-bar">');
+  expect(html).not.toContain("data-mdmark-mermaid");
+});
+
+// code がオフでも mermaid のコードブロックは帯を持たない部品にして属性を付ける（正常系）
+test("test_build_code_blocks_when_mermaid_without_code", () => {
+  // 準備
+  const markdown = ["```mermaid", "flowchart LR", "```", ""].join("\n");
+  // 実行
+  const { html } = renderDoc(markdown, { code: false });
+  // 検証
+  expect(html).toContain("<pre data-mdmark-mermaid");
+  expect(html).not.toContain("mdmark-code-bar");
+});
+
 // 別名と大文字を表のモジュール名にする（正常系）
 test("test_syntax_language_of", async () => {
   // 準備

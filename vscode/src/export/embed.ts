@@ -2,6 +2,7 @@ import type { MdmarkConfig } from "../../../src/config.ts";
 import {
   collectRangeScripts,
   usedLibraryMarks,
+  usesMermaid,
 } from "../../../src/render/used.ts";
 import { moduleDataUrl } from "./html.ts";
 
@@ -20,7 +21,7 @@ export type BundleModules = (paths: string[]) => Promise<BundleResult[]>;
 const isLocal = (value: unknown): value is string =>
   typeof value === "string" && !HTTP_URL_PATTERN.test(value);
 
-/** 文書が使う相対パスの `libraries` と `html-scripts.url` を `bundle` でまとめ、`data:` の URL に替える。使わない・まとめられない相対パスの値は外し、`http:`・`https:` の値と文字列でない値はそのまま返す */
+/** 文書が使う相対パスの `libraries` と `html-scripts.url`・`mermaid.url` を `bundle` でまとめ、`data:` の URL に替える。使わない・まとめられない相対パスの値は外し、`http:`・`https:` の値と文字列でない値はそのまま返す */
 export async function embedLocalLibraries(options: {
   /** 書き出す全文 */
   markdown: string;
@@ -28,6 +29,8 @@ export async function embedLocalLibraries(options: {
   libraries: Record<string, unknown> | undefined;
   /** 重ねた設定の `html-scripts`（相対パスの `url` は絶対パスにした値） */
   htmlScripts: Record<string, unknown> | undefined;
+  /** 重ねた設定の `mermaid`（相対パスの `url` は絶対パスにした値） */
+  mermaid?: Record<string, unknown> | undefined;
   /** 範囲のスクリプトを集めるときの重ねた設定 */
   config: MdmarkConfig;
   /** 絶対パスのモジュールをまとめる関数 */
@@ -35,9 +38,10 @@ export async function embedLocalLibraries(options: {
 }): Promise<{
   libraries: Record<string, unknown> | undefined;
   htmlScripts: Record<string, unknown> | undefined;
+  mermaid: Record<string, unknown> | undefined;
   failures: Array<{ path: string; error: string }>;
 }> {
-  const { markdown, libraries, htmlScripts, config, bundle } = options;
+  const { markdown, libraries, htmlScripts, mermaid, config, bundle } = options;
   const localLibraries = Object.fromEntries(
     Object.entries(libraries ?? {}).filter((entry): entry is [string, string] =>
       isLocal(entry[1]),
@@ -55,6 +59,13 @@ export async function embedLocalLibraries(options: {
   );
   if (embedScript) {
     paths.add(scriptUrl);
+  }
+  // mermaid が中で読む chunk の動的 `import()` も、`bundle` が同じモジュールに取り込む
+  const mermaidUrl = mermaid?.url;
+  const embedMermaid =
+    isLocal(mermaidUrl) && usesMermaid({ markdowns: [markdown], config });
+  if (embedMermaid) {
+    paths.add(mermaidUrl);
   }
   const urls = new Map<string, string>();
   const failures: Array<{ path: string; error: string }> = [];
@@ -83,9 +94,16 @@ export async function embedLocalLibraries(options: {
     const url = embedScript ? urls.get(scriptUrl) : undefined;
     embeddedScripts = url === undefined ? rest : { ...rest, url };
   }
+  let embeddedMermaid = mermaid;
+  if (mermaid !== undefined && embedMermaid) {
+    const { url: _, ...rest } = mermaid;
+    const url = urls.get(mermaidUrl);
+    embeddedMermaid = url === undefined ? rest : { ...rest, url };
+  }
   return {
     libraries: embeddedLibraries,
     htmlScripts: embeddedScripts,
+    mermaid: embeddedMermaid,
     failures,
   };
 }

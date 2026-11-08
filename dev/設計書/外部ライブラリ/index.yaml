@@ -44,6 +44,8 @@ items:
     summary: 対応ブラウザの下限の版に無い API の使用を報告する
   - page: highlight.js.yaml
     summary: コードブロックを言語に応じて色分けする（配布物に束ねず jsDelivr から読む）
+  - page: mermaid.yaml
+    summary: 言語 mermaid のコードブロックを図にする（配布物に束ねず jsDelivr から読む）
   - page: babel-standalone.yaml
     summary: 範囲の TypeScript の型を外して JavaScript にする（配布物に束ねず jsDelivr から読む）
   - page: ajv.yaml

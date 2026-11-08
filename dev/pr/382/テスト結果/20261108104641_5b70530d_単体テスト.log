@@ -1,0 +1,15 @@
+$ npm run test:unit
+
+> test:unit
+> vitest run --project 'unit*'
+
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-render-mermaid-code-blocks
+
+
+ Test Files  258 passed (258)
+      Tests  1796 passed (1796)
+   Start at  10:46:51
+   Duration  116.67s (worker 62%, tests 24%, import 12%, transform 1%)
+
+exit=0

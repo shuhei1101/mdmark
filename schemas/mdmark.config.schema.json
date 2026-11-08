@@ -141,6 +141,12 @@
           "type": "boolean",
           "default": false
         },
+        "mermaid": {
+          "title": "mermaid のコードブロックの機能",
+          "description": "言語 `mermaid` のコードブロックを図にする。オフのときはコードブロックのまま描き、mermaid を読まない。文書の `<!-- features: -mermaid -->` がその文書だけ上書きする。",
+          "type": "boolean",
+          "default": true
+        },
         "hints": {
           "title": "ヒントの機能",
           "description": "埋め込んだ HTML の `data-hint`、図の箱の `hint`・`io`、線の `tip` のツールチップを出す。オフのときは印とツールチップの中身を出さず、線のラベルと箱の名前は出す。",
@@ -357,6 +363,31 @@
           "description": "範囲の `ts`・`js` を変換するライブラリ（@babel/standalone）の ES モジュールの URL。`mount` はページの `document.baseURI` を基準に解決する。文字列でない値は無視して既定を当てる。",
           "type": "string",
           "default": "https://cdn.jsdelivr.net/npm/@babel/standalone@8.1.1/+esm"
+        }
+      }
+    },
+    "mermaid": {
+      "title": "mermaid の設定",
+      "description": "言語 `mermaid` のコードブロックを図にするライブラリ（mermaid）の読み込み先と、図のテーマ。",
+      "type": "object",
+      "properties": {
+        "url": {
+          "title": "mermaid の読み込み先",
+          "description": "mermaid の ES モジュールの URL かパス。`mount` はページの `document.baseURI` を基準に解決する。CLI の `export`・`build` は、mermaid のコードブロックがある文書のときだけ、このモジュールを 1 枚の HTML に埋める。",
+          "type": "string",
+          "default": "https://cdn.jsdelivr.net/npm/mermaid@12.3.0/dist/mermaid.esm.min.mjs"
+        },
+        "theme": {
+          "title": "mermaid の図のテーマ",
+          "description": "`mdmark`（描いた文書の配色から作る mdmark の見た目のテーマ）か、mermaid のテーマの名前（`default`・`neutral`・`dark`・`forest`・`base`）。知らない名前は `mdmark` にする。",
+          "type": "string",
+          "default": "mdmark"
+        },
+        "themeVariables": {
+          "title": "mermaid のテーマの変数の上書き",
+          "description": "mermaid のテーマの変数（`primaryColor` など）を上書きする値。`theme` で選んだテーマの変数に重ねる。値が文字列のキーだけを受け、`useGradient`・`dropShadow` は上書きできない。",
+          "type": "object",
+          "additionalProperties": true
         }
       }
     },

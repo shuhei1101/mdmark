@@ -230,7 +230,7 @@ classes:
       - name: config
         type: PreviewConfig
         access: private
-        description: 最後に使った設定（`libraries`・`html-scripts.url` は Webview で読める URL に直した値）。読めない設定ファイルがあるときは前に使った設定を残し、使ったことが無ければ残りを重ねた設定
+        description: 最後に使った設定（`libraries`・`html-scripts.url`・`mermaid.url` は Webview で読める URL に直した値）。読めない設定ファイルがあるときは前に使った設定を残し、使ったことが無ければ残りを重ねた設定
       - name: timer
         type: NodeJS.Timeout | undefined
         access: private
@@ -344,7 +344,7 @@ classes:
                - `[error]` 設定ファイルを開けない（パス・誤り）
           2. `files`・`theme`・`extensions`・`aliasFiles` と、`configPath` を書いたときはそのファイルを `watched` に入れ、`nearest` を控える
           3. `problem` で分ける
-             - 無い場合、`libraries`・`html-scripts` を `asWebviewUri` で直して（libraries の URL を直す・html-scripts の URL を直す）`config` を替え、`aliases` を `loadConfig` の `aliases` に替え、`configProblem` があったときだけ消して `configOk` を送る
+             - 無い場合、`libraries`・`html-scripts`・`mermaid` を `asWebviewUri` で直して（libraries の URL を直す・html-scripts の URL を直す・mermaid の URL を直す）`config` を替え、`aliases` を `loadConfig` の `aliases` に替え、`configProblem` があったときだけ消して `configOk` を送る
                - `[warn]` エイリアスのずれ（`aliasIssues` の 1 件ずつ、ずれを 1 行にした値）
              - ある場合、前に使った `config` が無ければ同じく直して使い、あれば残す。`configProblem` に入れ、`{ type: "configError", path, line, settingKey }` を送る（`path` は設定ファイルのパスを表示の形にする。`base` はワークスペースのフォルダ、`home` は `os.homedir()`）
                - `[warn]` 設定ファイルを読めない（パス・行かキー・`message`）
@@ -567,7 +567,7 @@ functions:
     kind: 関数
     container: vscode/src/preview/html.ts
     usecase: VSCodeでプレビューを開く
-    summary: 'インターフェース定義の制約「CSP」のとおりの `Content-Security-Policy` の値を組む。`script-src` には `libraryOrigins` が返す `libraries` と `html-scripts.url` の origin を含め、`blob:`・`''unsafe-inline''`・`''unsafe-eval''` は含めない。`media-src` は `img-src` と同じ `{cspSource} https: data:`'
+    summary: 'インターフェース定義の制約「CSP」のとおりの `Content-Security-Policy` の値を組む。`script-src` には `libraryOrigins` が返す `libraries` と `html-scripts.url`・`mermaid.url` の origin を含め、`blob:`・`''unsafe-inline''`・`''unsafe-eval''` は含めない。`media-src` は `img-src` と同じ `{cspSource} https: data:`'
     scope: public
     args:
       - name: options

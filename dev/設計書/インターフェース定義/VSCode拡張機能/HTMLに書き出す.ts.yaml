@@ -172,6 +172,26 @@ flows:
     test: test_normal_when_param_copy_label
     refs:
       - dev/設計書/シナリオ/単一ユースケース/HTMLに書き出す#
+  - name: 正常系（相対パスの mermaid を読む）
+    summary: 相対パスの `mermaid.url` を、本体と chunk をまとめた `data:` の URL で埋め、Chromium で file:// で開いて描く
+    setup:
+      - name: 手元の mermaid を指すワークスペース
+        description: '`mdmark.config.yaml` の `mermaid.url` に、mermaid の本体と chunk の手元のコピーを相対パスで書き、Markdown は言語 `mermaid` の flowchart のコードブロックを 1 つ持つ'
+      - name: Mock
+        description: 正常系と同じ
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant EX as 拡張機能
+        participant B as ブラウザ（Chromium）
+        W->>EX: mdmark: HTML に書き出す
+        EX->>EX: 相対パスの mermaid をまとめて data: の URL で埋める
+        W->>B: 書き出した HTML を file:// で開く
+        B-->>W: 図の枠に入った mermaid の図
+    expected:
+      - 書き出した HTML に埋めた `config.mermaid.url` が `data:text/javascript` で始まる
+      - Chromium で開くと、mermaid のコードブロックの場所に `figure.mdmark-diagram[data-diagram="mermaid"]` があり、知らせの枠が出ない
+    test: test_normal_when_relative_mermaid
 lead: 開いている Markdown を、jsDelivr の配布物を読んで `mount` で描く 1 つの HTML に書き出し、書き出したパスを通知で知らせる。
 idempotent: true
 side_effects: 書き出す先に `{Markdown の名前}.html` を書く（あれば上書きする）。`mdmark.version` が `latest` のときはタグ一覧を 1 回取る。Markdown は書き換えない
@@ -206,7 +226,7 @@ constraints:
     constraint: '`TextDocument.getText()` の全文（保存していない書き換えを含む）を、`<script type="application/json">` に JSON で埋める（JSON の中の `<` は、JSON の Unicode エスケープであるバックスラッシュ・`u`・`003c` の 6 文字に置き換え、本文の `</script>` で `script` 要素が閉じないようにする）。版はプレビューを開く.ts の制約「バージョンの決め方」で決め、`<link>` と `<script type="module">` でその版の jsDelivr の `dist/index.css`・`dist/index.js` を読み、`mount(document.querySelector("main"), { markdown, config })` を呼ぶ'
   - item: 設定と相対パス
     constraint: '`config` はプレビューを描き直す.ts の制約「設定の取り出し方」と同じ。`colorScheme` は `mdmark.preview.theme` によらず設定ファイルの値を渡す（`mdmark.preview.theme` はプレビューのパネルだけの配色）。`colorTheme` は `mdmark.colorTheme` が空でないときはその値で上書きする（プレビューを描き直す.ts の制約「送る中身」と同じ）。重ねた設定はインターフェース定義『設定を重ねて読む』を `purpose: export` で呼んで得る。`libraries` と `html-scripts.url` の相対パスは、その値を書いた設定ファイルのフォルダから解決し、制約「埋めるライブラリ」のとおり HTML に埋める。`theme` の CSS は HTML の `<style>` に埋め、`extensions` のモジュールは、インターフェース定義『文書をHTMLに書き出す』の制約「束ねるスクリプト」と同じ引数で、拡張機能の中では esbuild-wasm で束ねて HTML に埋め（`.ts` も読む。束ねられない拡張は飛ばして書き出す）、`mount` の前に登録する（`file:` のページから `file:` のモジュールを `import()` すると Chromium 系のブラウザが読まないため）。HTML に `<base href="{Markdown のフォルダの file: の URL}/">` を置き、本文の相対パスの画像とリンクを Markdown のフォルダから解決する'
-    notes: '`http:`・`https:` の `libraries` と `html-scripts.url` は URL のまま読む'
+    notes: '`http:`・`https:` の `libraries`・`html-scripts.url`・`mermaid.url` は URL のまま読む。相対パスの `mermaid.url` は、`html-scripts.url` と同じく本体と chunk をまとめた `data:` の URL で埋める'
   - item: 通信
     constraint: 書き出した HTML は、開くときに jsDelivr へ届く必要がある。配布物を HTML に埋めない
     notes: 要件.md の確認ログ「書き出す HTML の作り方」。外へ要求しない 1 枚の HTML は CLI の `mdmark export` が作る

@@ -52,6 +52,8 @@ const LOADING_TEXT = "図を読み込んでいます";
 // ダークとライトの `--mdmark-color-bg` の値
 const DARK_BG = "#131316";
 const LIGHT_BG = "#ffffff";
+// ライトの `--mdmark-color-surface` の値
+const LIGHT_SURFACE = "#f4f4f5";
 
 const elements: HTMLElement[] = [];
 const handles: MountHandle[] = [];
@@ -12993,3 +12995,393 @@ test("test_normal_when_block_spacing", async () => {
     ).toBeLessThanOrEqual(1);
   }
 });
+
+/** mermaid の図を描き終えるまでの待ちの上限（5MB の mermaid のモジュールを読む） */
+const MERMAID_WAIT_MS = 60_000;
+
+/** mermaid（`mermaid@12.3.0` の `dist/`）を `name` の名前で配る ES モジュールの URL（`mermaid.url` に渡す） */
+function mermaidUrl(name: string): string {
+  return `/fixtures/mermaid/${name}/mermaid.esm.min.mjs`;
+}
+
+/** front matter の `title` を持つ flowchart と、`actor` を持つ sequenceDiagram の mermaid のコードブロックを持つ文書 */
+const MERMAID_MARKDOWN = [
+  "```mermaid",
+  "---",
+  "title: 問い合わせの受付",
+  "---",
+  "flowchart LR",
+  "  A[問い合わせを受ける] --> B{担当がいるか}",
+  "  B -->|いる| C[担当へ回す]",
+  "```",
+  "",
+  "```mermaid",
+  "sequenceDiagram",
+  "  actor U as 読む人",
+  "  participant M as mdmark",
+  "  U->>M: ページを開く",
+  "```",
+  "",
+].join("\n");
+
+/** flowchart の mermaid のコードブロックを 1 つ持つ文書 */
+const MERMAID_FLOWCHART = [
+  "```mermaid",
+  "flowchart LR",
+  "  A[受付] --> B[回答]",
+  "```",
+  "",
+].join("\n");
+
+/** 描く先の中で `value` の色を計算済みの色（`rgb(…)`）にする */
+function mermaidColor(el: HTMLElement, value: string): string {
+  const probe = document.createElement("span");
+  probe.style.color = value;
+  el.append(probe);
+  const color = getComputedStyle(probe).color;
+  probe.remove();
+  return color;
+}
+
+/** 描いた mermaid の図の枠を、文書の順に並べて返す */
+function mermaidFigures(el: Element): HTMLElement[] {
+  return [
+    ...el.querySelectorAll<HTMLElement>(
+      'figure.mdmark-diagram[data-diagram="mermaid"]',
+    ),
+  ];
+}
+
+/** 図の枠の中の、画面に出ている mermaid の SVG を返す */
+function visibleMermaidSvgs(figure: Element): SVGSVGElement[] {
+  return [
+    ...figure.querySelectorAll<SVGSVGElement>(".mdmark-mermaid svg[id]"),
+  ].filter((svg) => svg.checkVisibility());
+}
+
+/** SVG の中の flowchart の最初のノードの形 */
+function firstNodeShape(svg: Element): SVGElement {
+  const shape = svg.querySelector<SVGElement>(
+    "g.node rect.label-container, g.node path.label-container, g.node rect, g.node path",
+  );
+  if (!shape) {
+    throw new Error("flowchart のノードが無い");
+  }
+  return shape;
+}
+
+/** OS の配色をエミュレートする */
+async function emulateMermaidMedia(
+  scheme: "light" | "dark",
+  media = "",
+): Promise<void> {
+  await cdp().send("Emulation.setEmulatedMedia", {
+    media,
+    features: [{ name: "prefers-color-scheme", value: scheme }],
+  });
+}
+
+// mermaid のコードブロックがあるときだけ mermaid を読み、描く先の要素の CSS 変数から作ったテーマで図にして図の枠に入れる（正常系）
+test(
+  "test_normal_when_mermaid_drawn",
+  async () => {
+    // 準備
+    const el = createElement();
+    const name = "drawn";
+    // 実行
+    await mountTracked(el, {
+      markdown: MERMAID_MARKDOWN,
+      config: { mermaid: { url: mermaidUrl(name) } },
+    });
+    // 検証: import() が終わる前
+    expect(
+      el.querySelectorAll('div.mdmark-embed[data-mdmark-slot="mermaid"]'),
+    ).toHaveLength(2);
+    for (const block of el.querySelectorAll<HTMLElement>("div.mdmark-code")) {
+      expect(block.hidden).toBe(true);
+    }
+    // 検証: 描いた後
+    await vi.waitFor(() => expect(mermaidFigures(el)).toHaveLength(2), {
+      timeout: MERMAID_WAIT_MS,
+    });
+    expect(countRequests(mermaidUrl(name))).toBe(1);
+    expect(el.querySelector("div.mdmark-code")).toBeNull();
+    expect(el.querySelector(".mdmark-embed")).toBeNull();
+    const [flowchart, sequence] = mermaidFigures(el);
+    expect(flowchart?.querySelector("figcaption")?.textContent?.trim()).toBe(
+      "問い合わせの受付",
+    );
+    expect(sequence?.querySelector("figcaption")?.textContent?.trim()).toBe(
+      "シーケンス図",
+    );
+    const svg = visibleMermaidSvgs(flowchart as HTMLElement)[0];
+    const shape = firstNodeShape(svg as SVGSVGElement);
+    const style = getComputedStyle(shape);
+    expect(style.fill).toBe(mermaidColor(el, "var(--mdmark-color-surface)"));
+    expect(style.stroke).toBe(mermaidColor(el, "var(--mdmark-color-border)"));
+    expect(style.stroke.startsWith("url(")).toBe(false);
+    const label = (svg as SVGSVGElement).querySelector(".nodeLabel, text");
+    expect(label && getComputedStyle(label).color).toBe(
+      mermaidColor(el, "var(--mdmark-color-text)"),
+    );
+    expect(sequence?.querySelector("svg.mdmark-mermaid-actor")).not.toBeNull();
+    for (const figure of mermaidFigures(el)) {
+      expect(figure.querySelector('button[aria-label="拡大"]')).not.toBeNull();
+      expect(figure.querySelector('button[aria-label="縮小"]')).not.toBeNull();
+      expect(
+        figure.querySelector('button[aria-label="全画面で開く"]'),
+      ).not.toBeNull();
+      expect(figure.querySelector(".mdmark-diagram-resize")).not.toBeNull();
+    }
+  },
+  MERMAID_WAIT_MS + 30_000,
+);
+
+// 描く先の配色の明暗が変わったら、変わった後の CSS 変数で mermaid の図を描き直す（正常系）
+test(
+  "test_normal_when_mermaid_scheme_changed",
+  async () => {
+    // 準備
+    await loadStylesheet();
+    await emulateMermaidMedia("light");
+    const el = createElement();
+    const name = "scheme";
+    try {
+      await mountTracked(el, {
+        markdown: MERMAID_FLOWCHART,
+        config: { mermaid: { url: mermaidUrl(name) } },
+      });
+      await vi.waitFor(() => expect(mermaidFigures(el)).toHaveLength(1), {
+        timeout: MERMAID_WAIT_MS,
+      });
+      // 実行
+      await emulateMermaidMedia("dark");
+      // 検証
+      await vi.waitFor(
+        () => {
+          const figure = mermaidFigures(el)[0] as HTMLElement;
+          const svg = visibleMermaidSvgs(figure)[0] as SVGSVGElement;
+          expect(getComputedStyle(firstNodeShape(svg)).fill).toBe(
+            mermaidColor(el, "var(--mdmark-color-surface)"),
+          );
+          expect(mermaidColor(el, "var(--mdmark-color-bg)")).toBe(
+            mermaidColor(el, DARK_BG),
+          );
+        },
+        { timeout: MERMAID_WAIT_MS },
+      );
+      expect(countRequests(mermaidUrl(name))).toBe(1);
+    } finally {
+      await cdp().send("Emulation.setEmulatedMedia", {
+        media: "",
+        features: [],
+      });
+    }
+  },
+  MERMAID_WAIT_MS * 2,
+);
+
+// ダークで開いた文書では明るい配色の SVG も先に描いて並べ、印刷のメディアでは明るい配色の SVG だけを出す（正常系）
+test(
+  "test_normal_when_mermaid_printed",
+  async () => {
+    // 準備
+    await loadStylesheet();
+    await emulateMermaidMedia("dark");
+    const el = createElement();
+    try {
+      // 実行
+      await mountTracked(el, {
+        markdown: MERMAID_FLOWCHART,
+        config: { mermaid: { url: mermaidUrl("printed") } },
+      });
+      await vi.waitFor(() => expect(mermaidFigures(el)).toHaveLength(1), {
+        timeout: MERMAID_WAIT_MS,
+      });
+      const figure = mermaidFigures(el)[0] as HTMLElement;
+      // 検証: 画面のメディア
+      const screen = visibleMermaidSvgs(figure);
+      expect(screen).toHaveLength(1);
+      expect(
+        getComputedStyle(firstNodeShape(screen[0] as SVGSVGElement)).fill,
+      ).toBe(mermaidColor(el, "var(--mdmark-color-surface)"));
+      expect(figure.querySelectorAll(".mdmark-mermaid svg[id]")).toHaveLength(
+        2,
+      );
+      // 検証: 印刷のメディア
+      await emulateMermaidMedia("dark", "print");
+      await vi.waitFor(() => {
+        const printed = visibleMermaidSvgs(figure);
+        expect(printed).toHaveLength(1);
+        expect(printed[0]?.closest(".mdmark-mermaid-print")).not.toBeNull();
+        expect(
+          getComputedStyle(firstNodeShape(printed[0] as SVGSVGElement)).fill,
+        ).toBe(mermaidColor(el, LIGHT_SURFACE));
+      });
+      // 検証: OS の配色がライトの文書では SVG が 1 つ
+      await emulateMermaidMedia("light");
+      const light = createElement();
+      await mountTracked(light, {
+        markdown: MERMAID_FLOWCHART,
+        config: { mermaid: { url: mermaidUrl("printed-light") } },
+      });
+      await vi.waitFor(() => expect(mermaidFigures(light)).toHaveLength(1), {
+        timeout: MERMAID_WAIT_MS,
+      });
+      expect(
+        mermaidFigures(light)[0]?.querySelectorAll(".mdmark-mermaid svg[id]"),
+      ).toHaveLength(1);
+    } finally {
+      await cdp().send("Emulation.setEmulatedMedia", {
+        media: "",
+        features: [],
+      });
+    }
+  },
+  MERMAID_WAIT_MS * 3,
+);
+
+// 設定で mermaid のテーマの名前を選び、変数を上書きする。useGradient・dropShadow は上書きできず、知らないテーマの名前は mdmark にする（正常系）
+test(
+  "test_normal_when_mermaid_theme_configured",
+  async () => {
+    // 準備
+    const neutral = createElement();
+    const unknown = createElement();
+    // 実行
+    await mountTracked(neutral, {
+      markdown: MERMAID_FLOWCHART,
+      config: {
+        mermaid: {
+          url: mermaidUrl("theme"),
+          theme: "neutral",
+          themeVariables: { mainBkg: "#e0f2f1", useGradient: "true" },
+        },
+      },
+    });
+    await mountTracked(unknown, {
+      markdown: MERMAID_FLOWCHART,
+      config: { mermaid: { url: mermaidUrl("theme"), theme: "no-such-theme" } },
+    });
+    await vi.waitFor(
+      () => {
+        expect(mermaidFigures(neutral)).toHaveLength(1);
+        expect(mermaidFigures(unknown)).toHaveLength(1);
+      },
+      { timeout: MERMAID_WAIT_MS },
+    );
+    // 検証
+    const first = firstNodeShape(
+      visibleMermaidSvgs(
+        mermaidFigures(neutral)[0] as HTMLElement,
+      )[0] as SVGSVGElement,
+    );
+    expect(getComputedStyle(first).fill).toBe("rgb(224, 242, 241)");
+    expect(getComputedStyle(first).stroke.startsWith("url(")).toBe(false);
+    const second = firstNodeShape(
+      visibleMermaidSvgs(
+        mermaidFigures(unknown)[0] as HTMLElement,
+      )[0] as SVGSVGElement,
+    );
+    expect(getComputedStyle(second).fill).toBe(
+      mermaidColor(unknown, "var(--mdmark-color-surface)"),
+    );
+  },
+  MERMAID_WAIT_MS + 30_000,
+);
+
+// mermaid のコードブロックが無い文書と、機能 mermaid を外した文書では、mermaid を読まない（正常系）
+test("test_normal_when_no_mermaid_target", async () => {
+  // 準備
+  const plain = createElement();
+  const disabled = createElement();
+  const name = "no-target";
+  // 実行
+  await mountTracked(plain, {
+    markdown: "```ts\nconst a = 1;\n```\n",
+    config: { mermaid: { url: mermaidUrl(name) } },
+  });
+  await mountTracked(disabled, {
+    markdown: `<!-- features: -mermaid -->\n\n${MERMAID_FLOWCHART}`,
+    config: { mermaid: { url: mermaidUrl(name) } },
+  });
+  await new Promise((resolve) => setTimeout(resolve, 300));
+  // 検証
+  expect(countRequests(mermaidUrl(name))).toBe(0);
+  const block = find<HTMLElement>(disabled, "div.mdmark-code");
+  expect(block.hidden).toBe(false);
+  expect(block.querySelector("code.language-mermaid")).not.toBeNull();
+});
+
+// mermaid を読めないとき、mermaid のコードブロックの前に知らせの枠を置き、コードブロックのまま残す（異常系）
+test("test_error_when_mermaid_not_found", async () => {
+  // 準備
+  const el = createElement();
+  const consoleError = vi.spyOn(console, "error").mockImplementation(() => {});
+  try {
+    // 実行
+    const handle = await mountTracked(el, {
+      markdown: MERMAID_MARKDOWN,
+      config: { mermaid: { url: "/fixtures/missing/mermaid.esm.min.mjs" } },
+    });
+    // 検証
+    expect(handle).toBeDefined();
+    await vi.waitFor(() =>
+      expect(el.querySelectorAll(".mdmark-notice")).toHaveLength(2),
+    );
+    const blocks = [...el.querySelectorAll<HTMLElement>("div.mdmark-code")];
+    expect(blocks).toHaveLength(2);
+    for (const block of blocks) {
+      expect(block.hidden).toBe(false);
+      expect(
+        block.previousElementSibling?.classList.contains("mdmark-notice"),
+      ).toBe(true);
+    }
+    expect(el.querySelector(".mdmark-embed")).toBeNull();
+    expect(
+      consoleError.mock.calls
+        .flat()
+        .some((value) =>
+          String(value).includes("/fixtures/missing/mermaid.esm.min.mjs"),
+        ),
+    ).toBe(true);
+  } finally {
+    consoleError.mockRestore();
+  }
+});
+
+// mermaid が解釈できないソースは、書き方の警告を前に置いてコードブロックのまま残し、ほかの mermaid のコードブロックは描く（異常系）
+test(
+  "test_error_when_mermaid_syntax_invalid",
+  async () => {
+    // 準備
+    const el = createElement();
+    const markdown = [
+      "```mermaid",
+      "問い合わせを受ける --> 担当へ回す",
+      "```",
+      "",
+      MERMAID_FLOWCHART,
+    ].join("\n");
+    // 実行
+    await mountTracked(el, {
+      markdown,
+      config: { mermaid: { url: mermaidUrl("invalid") } },
+    });
+    // 検証
+    await vi.waitFor(
+      () => {
+        expect(mermaidFigures(el)).toHaveLength(1);
+        expect(el.querySelector(".mdmark-syntax-warning")).not.toBeNull();
+      },
+      { timeout: MERMAID_WAIT_MS },
+    );
+    const block = find<HTMLElement>(el, "div.mdmark-code");
+    const warning = block.previousElementSibling;
+    expect(warning?.classList.contains("mdmark-syntax-warning")).toBe(true);
+    expect(warning?.textContent).toContain("mermaid の図を描けません（");
+    expect(block.hidden).toBe(false);
+    expect(document.querySelector('[id^="dmdmark-mermaid"]')).toBeNull();
+  },
+  MERMAID_WAIT_MS + 30_000,
+);

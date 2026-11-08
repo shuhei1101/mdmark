@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <!-- viewport: スマホ幅で等倍に表示する -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- color-scheme: 明るい配色とダークの両方を持つことをブラウザへ伝える -->
+  <meta name="color-scheme" content="light dark">
+  <title>mermaid-diagram | mdmark の部品のモック</title>
+  <!-- 本文の規則とモック専用の操作列（#16 で共有するアセット） -->
+  <link rel="stylesheet" href="../../refs/16/assets/sample.css">
+  <!-- 採用スタイル本体の変数の値 -->
+  <link rel="stylesheet" href="../../assets/style.css">
+  <!-- 拡張記法の規則（書き方の警告）とカタログの並べ方（#19 で共有するアセット） -->
+  <link rel="stylesheet" href="../../refs/19/assets/syntax.css">
+  <link rel="stylesheet" href="../../refs/19/assets/catalog.css">
+  <!-- 図の枠の規則（#42 で共有するアセット） -->
+  <link rel="stylesheet" href="../../refs/42/assets/diagram.css">
+  <!-- mermaid の図の枠のモックの規則（#382 で共有するアセット） -->
+  <link rel="stylesheet" href="../../refs/382/assets/mermaid.css">
+  <!-- 配色の切り替え -->
+  <script src="../../refs/16/assets/sample.js" defer></script>
+  <!-- mermaid を jsDelivr から読み込み、CSS 変数から作ったテーマで描いて図の枠に入れる（#382 で共有するアセット） -->
+  <script type="module" src="../../refs/382/assets/mermaid.js"></script>
+</head>
+<body>
+  <!-- モック専用の操作列: 配色の切り替え。切り替えると mermaid の図を描き直す -->
+  <div class="mock-bar" data-mock-bar>
+    <!-- [data-scheme-set]: sample.js が押されたボタンの値を html の data-scheme に当てる -->
+    <div class="mock-bar-group" role="group" aria-label="配色">
+      <button class="mock-bar-item" type="button" data-scheme-set="light" aria-pressed="false">明るい配色</button>
+      <button class="mock-bar-item" type="button" data-scheme-set="dark" aria-pressed="false">ダーク</button>
+    </div>
+  </div>
+
+  <main class="host">
+    <div class="catalog">
+      <h1 class="catalog-title">mermaid の図</h1>
+
+      <!-- 通常: front matter の title を図の枠のタイトルにし、図の中には重ねない。ノードの塗り・枠線・文字・線の色は CSS 変数から作り、グラデーションと影を付けない -->
+      <section aria-labelledby="state-flowchart">
+        <h2 class="catalog-label" id="state-flowchart">通常（flowchart。front matter の title を図の枠のタイトルにする）</h2>
+        <article class="mdmark">
+          <!-- [data-mock-mermaid]: mermaid.js が中のソースを描き、図の枠に入れる -->
+<pre data-mock-mermaid>
+---
+title: 問い合わせの受付
+---
+flowchart LR
+  A[問い合わせを受ける] --> B{担当がいるか}
+  B -->|いる| C[担当へ回す]
+  B -->|いない| D[一次回答を返す]
+  C --> E[(記録)]
+  D --> E
+</pre>
+        </article>
+      </section>
+
+      <!-- 案 A: actor の人のアイコンを mdmark の図と同じ lucide の user にする -->
+      <section aria-labelledby="state-sequence-lucide">
+        <h2 class="catalog-label" id="state-sequence-lucide">シーケンス図・案 A（actor を lucide の人のアイコンにする。推奨）</h2>
+        <article class="mdmark">
+<pre data-mock-mermaid>
+---
+title: 文書を描く
+---
+sequenceDiagram
+  actor U as 読む人
+  participant P as 使う側のページ
+  participant M as mdmark
+  U->>P: ページを開く
+  P->>M: 設定と Markdown を渡す
+  Note right of M: mermaid のコードブロックを図にする
+  M-->>U: 文書を表示
+</pre>
+        </article>
+      </section>
+
+      <!-- 案 B: actor は mermaid の棒人間のまま、色だけ CSS 変数から作る -->
+      <section aria-labelledby="state-sequence-mermaid">
+        <h2 class="catalog-label" id="state-sequence-mermaid">シーケンス図・案 B（actor は mermaid の棒人間のまま、色だけ合わせる）</h2>
+        <article class="mdmark">
+          <!-- [data-mock-actor="mermaid"]: actor のアイコンを替えない -->
+<pre data-mock-mermaid data-mock-actor="mermaid">
+---
+title: 文書を描く
+---
+sequenceDiagram
+  actor U as 読む人
+  participant P as 使う側のページ
+  participant M as mdmark
+  U->>P: ページを開く
+  P->>M: 設定と Markdown を渡す
+  Note right of M: mermaid のコードブロックを図にする
+  M-->>U: 文書を表示
+</pre>
+        </article>
+      </section>
+
+      <!-- タイトルが無い: front matter の title も accTitle も無いときは、図の種類の名前をタイトルにする -->
+      <section aria-labelledby="state-no-title">
+        <h2 class="catalog-label" id="state-no-title">タイトルが無い（図の種類の名前をタイトルにする）</h2>
+        <article class="mdmark">
+<pre data-mock-mermaid>
+classDiagram
+  class Document {
+    +title: string
+    +render() string
+  }
+  class Page
+  Document <|-- Page
+</pre>
+        </article>
+      </section>
+
+      <!-- そのほかの種類: 状態遷移図・ER 図・ガントチャート・円グラフ。円グラフの扇形はグラフの系列の色で分ける -->
+      <section aria-labelledby="state-kinds">
+        <h2 class="catalog-label" id="state-kinds">そのほかの種類（状態遷移図・ER 図・ガントチャート・円グラフ）</h2>
+        <article class="mdmark">
+<pre data-mock-mermaid>
+stateDiagram-v2
+  [*] --> 下書き
+  下書き --> レビュー中
+  レビュー中 --> 公開
+  レビュー中 --> 下書き
+  公開 --> [*]
+</pre>
+<pre data-mock-mermaid>
+erDiagram
+  DOCUMENT ||--o{ TERM : 持つ
+  DOCUMENT {
+    string id
+    string title
+  }
+  TERM {
+    string name
+    string meaning
+  }
+</pre>
+<pre data-mock-mermaid>
+gantt
+  dateFormat YYYY-MM-DD
+  section 設計
+  単一ユースケース :done, a1, 2026-11-01, 3d
+  モック          :active, a2, after a1, 2d
+  section 実装
+  描画            :a3, after a2, 4d
+</pre>
+<pre data-mock-mermaid>
+pie title 図の種類の内訳
+  "フローチャート" : 42
+  "シーケンス図" : 28
+  "ER 図" : 15
+  "そのほか" : 15
+</pre>
+        </article>
+      </section>
+
+      <!-- 読み込み中: mermaid を読み込んでいる間は、コードブロックの場所に既存の読み込み中の枠を配置して図の高さを取っておく -->
+      <section aria-labelledby="state-loading">
+        <h2 class="catalog-label" id="state-loading">mermaid を読み込んでいる（読み込み中の枠）</h2>
+        <article class="mdmark">
+          <div class="mdmark-embed" data-mdmark-slot="mermaid" role="status">図を読み込んでいます</div>
+        </article>
+      </section>
+
+      <!-- 読み込めない: mermaid を読み込めないときは、コードブロックの前に知らせの枠を配置し、コードブロックのまま残す -->
+      <section aria-labelledby="state-unavailable">
+        <h2 class="catalog-label" id="state-unavailable">mermaid を読み込めない（知らせの枠とコードブロック）</h2>
+        <article class="mdmark">
+          <div class="mdmark-notice" role="status">
+            <strong class="mdmark-notice-title">この図を表示できません</strong>
+            <p>表示に使うライブラリ（<code>mermaid</code>）を読み込めませんでした。ネットワークにつながっているかを確かめて、ページを読み込み直してください。</p>
+          </div>
+<pre tabindex="0" aria-label="コード: mermaid"><code class="language-mermaid">flowchart LR
+  A[問い合わせを受ける] --&gt; B{担当がいるか}</code></pre>
+        </article>
+      </section>
+
+      <!-- 解釈できない: mermaid が記法を解釈できないときは、書き方の警告とコードブロックにする。mermaid が文書に出すエラーの図は残さない -->
+      <section aria-labelledby="state-invalid">
+        <h2 class="catalog-label" id="state-invalid">記法を解釈できない（書き方の警告とコードブロック）</h2>
+        <article class="mdmark">
+<pre data-mock-mermaid>
+問い合わせを受ける --> 担当へ回す
+</pre>
+        </article>
+      </section>
+
+      <!-- 機能をオフにした: 文書の features のマーカーで mermaid を外した文書は、ほかの言語と同じコードブロックのまま描く -->
+      <section aria-labelledby="state-disabled">
+        <h2 class="catalog-label" id="state-disabled">機能をオフにした（コードブロックのまま）</h2>
+        <article class="mdmark">
+<pre tabindex="0" aria-label="コード: mermaid"><code class="language-mermaid">flowchart LR
+  A[問い合わせを受ける] --&gt; B{担当がいるか}</code></pre>
+        </article>
+      </section>
+    </div>
+  </main>
+</body>
+</html>

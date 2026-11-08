@@ -38,6 +38,7 @@
 | [kbd](./kbd/index.html) | `kbd:` のキーと組み合わせ・表の中のキー・文書の HTML のルビ |
 | [link-card](./link-card/index.html) | URL だけの行のリンクのカードと、ファイルへのリンクだけの行の添付のカード |
 | [media](./media/index.html) | 動画・音声の再生バーとキャプション・幅と autoplay・loop、GIF の止める・再生するボタン |
+| [mermaid-diagram](./mermaid-diagram/index.html) | 言語 mermaid のコードブロックを図の枠に入れて描いた図（front matter の title のタイトル・タイトルが無いときの図の種類の名前・actor のアイコンの案・種類ごとの見本）と、mermaid を読み込めない知らせの枠・記法を解釈できない書き方の警告・機能をオフにしたコードブロック |
 | [notice](./notice/index.html) | 外部ライブラリを読めない箇所に出す知らせの枠と、読み込み中の印の場所、VS Code のプレビューで再生できない動画・音声の知らせの枠 |
 | [panel-alert](./panel-alert/index.html) | VS Code のプレビューのパネルに出す shadcn/ui の Alert（warning）・Button（default・outline）・Spinner と、その状態（通常・ホバー・フォーカス・狭い列・長いパス） |
 | [param-control](./param-control/index.html) | スライダー・グラフ・今の値を写すボタンを組み合わせた操作できる部品と、写した・写せなかったの知らせ |

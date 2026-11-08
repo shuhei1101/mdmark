@@ -398,3 +398,26 @@ export async function openWithCsp(
     },
   };
 }
+
+/** mermaid（`mermaid@12.3.0` の `dist/` の ES モジュールと chunk）を `dir` の `vendor/mermaid/` に写す */
+export async function copyMermaidVendor(dir: string): Promise<void> {
+  const source = fileURLToPath(
+    new URL("../../node_modules/mermaid/dist/", import.meta.url),
+  );
+  await cp(
+    join(source, "mermaid.esm.min.mjs"),
+    join(dir, "vendor", "mermaid", "mermaid.esm.min.mjs"),
+  );
+  await cp(
+    join(source, "chunks", "mermaid.esm.min"),
+    join(dir, "vendor", "mermaid", "chunks", "mermaid.esm.min"),
+    { recursive: true },
+  );
+}
+
+/** HTML の script 要素の中の動的 `import()` の呼び出しの数 */
+export function countDynamicImportsInScripts(html: string): number {
+  return [...html.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/g)]
+    .map((match) => (match[1] ?? "").match(/\bimport\s*\(/g)?.length ?? 0)
+    .reduce((sum, count) => sum + count, 0);
+}

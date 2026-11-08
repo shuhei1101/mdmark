@@ -5,6 +5,8 @@ import { fileURLToPath } from "node:url";
 import { expect, test } from "vitest";
 import { STRENGTH_TEXT, wrapDirective } from "../../unit/helpers/diagrams.ts";
 import {
+  copyMermaidVendor,
+  countDynamicImportsInScripts,
   GREET_SOURCE,
   GREET_WITH_IMPORT_SOURCE,
   linesOf,
@@ -897,3 +899,48 @@ test("test_error_when_settings_unreadable", async () => {
   expect(result.stderr).toContain("字下げと書き方を直してください");
   expect(existsSync(join(dir, "guide.html"))).toBe(false);
 });
+
+// mermaid のコードブロックがある文書のときだけ mermaid をまとめて埋め、開いたときに外へ要求せずに図にする（正常系（mermaid のコードブロック））
+test("test_normal_when_mermaid_embedded", async () => {
+  // 準備
+  const dir = await createTempDir();
+  await copyMermaidVendor(dir);
+  await writeFiles(dir, {
+    "mdmark.config.yaml":
+      "mermaid:\n  url: vendor/mermaid/mermaid.esm.min.mjs\n",
+    "guide.md": [
+      "# ガイド",
+      "",
+      "```mermaid",
+      "flowchart LR",
+      "  A[受付] --> B[回答]",
+      "```",
+      "",
+    ].join("\n"),
+    "plain.md": "# 段落\n\n本文だけ。\n",
+  });
+  // 実行
+  const result = await runCli(["export", "guide.md"], dir);
+  const plain = await runCli(["export", "plain.md"], dir);
+  // 検証
+  expect(result.code).toBe(0);
+  expect(plain.code).toBe(0);
+  const html = await readFile(join(dir, "guide.html"), "utf8");
+  const plainHtml = await readFile(join(dir, "plain.html"), "utf8");
+  expect(countDynamicImportsInScripts(html)).toBe(
+    countDynamicImportsInScripts(plainHtml),
+  );
+  expect(plainHtml.length).toBeLessThan(html.length - 1_000_000);
+  expect(plainHtml).not.toContain("mermaidModule");
+  const { page, externalRequests } = await browser.openHtml(
+    join(dir, "guide.html"),
+  );
+  await page.waitForSelector(
+    'article figure.mdmark-diagram[data-diagram="mermaid"] .mdmark-mermaid > svg',
+    {
+      timeout: 60_000,
+    },
+  );
+  expect(externalRequests()).toEqual([]);
+  await page.close();
+}, 180_000);

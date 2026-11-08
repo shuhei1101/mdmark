@@ -477,6 +477,18 @@ files:
     related:
       - to: dev/設計書/モジュール構成/ライブラリ本体/描く.ts
         type: implements
+  - path: mermaid-source.ts
+    description: モジュール構成『ライブラリ本体 / mermaid』のうち「ソースのタイトルの取り出し・図の種類の名前・テーマの変数と CSS 変数の対応表（DOM を使わない）」を受け持つ。mermaid の図のタイトルやテーマを変えるときに読む。
+    tags: [topic:図, topic:テーマ]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/mermaid.ts
+        type: implements
+  - path: mermaid.ts
+    description: モジュール構成『ライブラリ本体 / mermaid』のうち「mermaid を読んで図にする attachMermaid と、埋めたモジュールの控え・テーマの変数の解決・actor のアイコンの置き換え」を受け持つ。mount の描く流れや mermaid の描き方を変えるときに読む。
+    tags: [topic:dom, topic:図, topic:テーマ]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/mermaid.ts
+        type: implements
   - path: mount-parts.ts
     description: モジュール構成『ライブラリ本体 / ビューとコメント』のうち「公開関数 mountView・mountComments と、mount が呼ぶ attachParts（dist/index.js）」を受け持つ。ビューやコメントの部品を変えるときに読む。
     tags: [topic:ビュー, topic:コメント]
@@ -1010,6 +1022,20 @@ files:
     tags: [topic:ストーリー, tool:storybook, topic:部品]
     related:
       - to: dev/設計書/部品設計/知らせの枠.ts
+        type: implements
+  - path: parts/mermaid-diagram.stories.ts
+    description: 部品設計『mermaid の図』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに読む。
+    tags: [topic:ストーリー, tool:storybook, topic:部品, topic:図]
+    related:
+      - to: dev/設計書/部品設計/mermaidの図.ts
+        type: implements
+  - path: parts/mermaid.ts
+    description: モジュール構成『ライブラリ本体 / mermaid』のうち「部品『mermaid の図』の renderMermaidDiagram」を受け持つ。mermaid の図の部品の HTML を変えるときに読む。
+    tags: [topic:図, tool:svg]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/mermaid.ts
+        type: implements
+      - to: dev/設計書/部品設計/mermaidの図.ts
         type: implements
   - path: parts/notice.ts
     description: モジュール構成『ライブラリ本体 / 部品』のうち「知らせの枠の renderNotice」を受け持つ。部品が返す HTML を変えるときに読む。

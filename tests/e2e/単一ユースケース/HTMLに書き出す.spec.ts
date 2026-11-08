@@ -1,5 +1,5 @@
 import { existsSync } from "node:fs";
-import { readdir, readFile } from "node:fs/promises";
+import { readdir, readFile, writeFile } from "node:fs/promises";
 import { join, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 import { expect, type Page, test } from "@playwright/test";
@@ -9,6 +9,12 @@ import {
   flowMarkdown,
   HOST_CSS,
 } from "../diagram.ts";
+import {
+  copyMermaidDist,
+  MERMAID_FLOWCHART,
+  MERMAID_SVG,
+  MERMAID_WAIT_MS,
+} from "../mermaid.ts";
 import { guideMarkdown, replaceFirstLine, useVscodeE2E } from "../vscode.ts";
 
 const e2e = useVscodeE2E();
@@ -293,6 +299,45 @@ test("test_normal_when_relative_libraries", async ({ browser }) => {
   await page.goto(pathToFileURL(path).href);
   await expect(page.locator(".mdmark-embed")).toHaveText("drawn-local");
   await expect(page.locator(".box")).toHaveText("ran-ts");
+  await expect(page.locator(".mdmark-notice")).toHaveCount(0);
+  expect(
+    fileRequests.filter((url) => url !== pathToFileURL(path).href),
+  ).toEqual([]);
+  await page.close();
+});
+
+// 相対パスの mermaid を埋めた HTML を Chromium で開き、図の枠に入った mermaid の図を描く（正常シナリオ（相対パスの mermaid を読む））
+test("test_normal_when_relative_mermaid", async ({ browser }) => {
+  // 準備
+  const session = await e2e.launch({
+    files: { "docs/flow.md": MERMAID_FLOWCHART },
+    prepare: async (workspaceDir) => {
+      const url = await copyMermaidDist(workspaceDir);
+      await writeFile(
+        join(workspaceDir, "mdmark.config.yaml"),
+        `mermaid:\n  url: ${url}\n`,
+      );
+    },
+  });
+  await session.openFile("docs/flow.md");
+  const path = join(session.workspaceDir, "docs", "flow.html");
+  // 実行
+  await session.runCommand("mdmark: HTML に書き出す");
+  // 検証
+  await expect
+    .poll(() => session.notifications(), { timeout: 120_000 })
+    .toContain(`HTML を書き出しました: ${path}`);
+  const page = await browser.newPage();
+  const fileRequests: string[] = [];
+  page.on("request", (request) => {
+    if (request.url().startsWith("file:")) {
+      fileRequests.push(request.url());
+    }
+  });
+  await page.goto(pathToFileURL(path).href);
+  await expect(page.locator(MERMAID_SVG)).toHaveCount(1, {
+    timeout: MERMAID_WAIT_MS,
+  });
   await expect(page.locator(".mdmark-notice")).toHaveCount(0);
   expect(
     fileRequests.filter((url) => url !== pathToFileURL(path).href),

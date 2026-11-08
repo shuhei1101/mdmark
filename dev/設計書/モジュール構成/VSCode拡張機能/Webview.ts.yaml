@@ -710,6 +710,7 @@ components:
       - `configError`・`configOk`: `configError` を受けた `path`・`line`・`settingKey` にする・消す
       - `theme`: `#mdmark-theme` の `link` の `href` を替える（描き直さない）
       - `inspect`・`axe`: `boot.test` のときだけ `view.inspect`・`view.audit` の結果を `inspected`・`axed` で同じ `id` で送る
+      - `boot.test` のときだけ、描き始める前から `document` の `securitypolicyviolation` を数え、`document.documentElement` の `data-mdmark-csp-violations` に件数（最初は `0`）を書く（結合テストが `inspect` で読む）
       - 上の `type` 以外: 処理しない（`window` の `message` には、MSW の Service Worker など拡張機能以外が送るものも届く）
 
       メッセージの処理と配布物の読み込みの結果の処理で投げた例外（`view.render` の例外など）は、state に入れて次の描画で投げ、`App` の Error Boundary に描画の失敗（`unexpected`）を出させる（`useErrorBoundary` は Error Boundary の外で描くと例外を投げ、画面を単独で描く単体テストとストーリーで使えない）
@@ -809,6 +810,12 @@ components:
         condition: '`test` が `true` と `false` の `boot` で、それぞれ `inspect` を送る'
         mock: '`api` を代役にする'
         expected: '`true` のときだけ同じ `id` の `inspected` が送られる'
+      - name: test_panel_screen_when_csp_violation
+        case: 正常
+        summary: テストのときだけ CSP の違反の件数を html 要素に書く
+        condition: '`test` が `true` と `false` の `boot` で描き、それぞれ `document` に `securitypolicyviolation` を 2 回送る'
+        mock: '`api` を代役にする'
+        expected: '`true` のときだけ `document.documentElement` の `data-mdmark-csp-violations` が `2`（描いた直後は `0`）。`false` のときは属性を持たない'
       - name: test_panel_screen_when_unknown_message
         case: 正常
         summary: 拡張機能のメッセージでない `message` を処理しない

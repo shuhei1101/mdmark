@@ -412,6 +412,67 @@ test("test_prepare_embeds_when_syntax_unreadable", async () => {
   expect(result.warnings[0]).toContain("syntax.url");
 });
 
+// mermaid のコードブロックがある文書だけ mermaid を束ね、埋める設定に url を写さない（正常系）
+test("test_prepare_embeds_when_mermaid", async () => {
+  // 準備
+  const { prepareEmbeds } = await loadExport();
+  const dir = await createTempDir();
+  await writeFiles(dir, {
+    "guide.md": "```mermaid\nflowchart LR\n```\n",
+    "plain.md": "# 題\n",
+    "vendor/mermaid.mjs": "export default { initialize() {}, render() {} };\n",
+  });
+  const loaded = createLoaded(dir, {
+    mermaid: { url: "vendor/mermaid.mjs", theme: "neutral" },
+  });
+  const options = {
+    fetchText: NO_FETCH,
+    loaded,
+    kind: "document" as const,
+  };
+  // 実行
+  const used = await prepareEmbeds({
+    ...options,
+    docs: [{ path: "guide.md", file: join(dir, "guide.md") }],
+    entry: "guide.md",
+    out: join(dir, "guide.html"),
+  });
+  const unused = await prepareEmbeds({
+    ...options,
+    docs: [{ path: "plain.md", file: join(dir, "plain.md") }],
+    entry: "plain.md",
+    out: join(dir, "plain.html"),
+  });
+  // 検証
+  expect(used.embeds.mermaid).toBe(join(dir, "vendor/mermaid.mjs"));
+  expect(used.payload.config.mermaid).toEqual({ theme: "neutral" });
+  expect(used.warnings).toEqual([]);
+  expect(unused.embeds.mermaid).toBeUndefined();
+});
+
+// mermaid を束ねられなければ警告にして埋めずに続ける（正常系）
+test("test_prepare_embeds_when_mermaid_unreadable", async () => {
+  // 準備
+  const { prepareEmbeds } = await loadExport();
+  const dir = await createTempDir();
+  await writeFiles(dir, { "guide.md": "```mermaid\nflowchart LR\n```\n" });
+  const loaded = createLoaded(dir, { mermaid: { url: "missing/mermaid.mjs" } });
+  // 実行
+  const result = await prepareEmbeds({
+    fetchText: NO_FETCH,
+    loaded,
+    docs: [{ path: "guide.md", file: join(dir, "guide.md") }],
+    kind: "document",
+    entry: "guide.md",
+    out: join(dir, "guide.html"),
+  });
+  // 検証
+  expect(result.embeds.mermaid).toBeUndefined();
+  expect(result.warnings).toHaveLength(1);
+  expect(result.warnings[0]).toContain("missing/mermaid.mjs");
+  expect(result.warnings[0]).toContain("mermaid.url");
+});
+
 // 束ねられない言語だけ埋めずに警告にし、他の言語は埋める（正常系）
 test("test_prepare_embeds_when_syntax_language_unreadable", async () => {
   // 準備

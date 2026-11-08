@@ -111,6 +111,29 @@ test("test_render_code_block_when_syntax", async () => {
   expect(findTag(withoutSyntax, "<code")).not.toContain("data-mdmark-syntax");
 });
 
+// mermaid の対象は一番外の要素に属性を付ける（正常系）
+test("test_render_code_block_when_mermaid", async () => {
+  // 準備
+  const { renderCodeBlock } = await loadCodeBlock();
+  const options = {
+    language: "mermaid",
+    title: "",
+    lineNumbers: false,
+    lines: [{ text: "flowchart LR" }],
+    mermaid: true,
+  };
+  // 実行
+  const withBar = renderCodeBlock(options);
+  const withoutBar = renderCodeBlock({ ...options, bar: false });
+  // 検証
+  expect(
+    withBar.startsWith('<div class="mdmark-code" data-mdmark-mermaid>'),
+  ).toBe(true);
+  expect(withoutBar.startsWith("<pre data-mdmark-mermaid")).toBe(true);
+  expect(withBar).not.toContain("data-mdmark-syntax");
+  expect(withoutBar).not.toContain("data-mdmark-syntax");
+});
+
 // ファイル名を言語の後ろに出し、読み上げの名前に使う（正常系）
 test("test_render_code_block_when_file_name", async () => {
   // 準備

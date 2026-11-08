@@ -22,6 +22,11 @@ function resolvedConfig(
     tooltips: { placement: "top", diagramPlacement: "bottom" },
     syntax: { url: "https://example.test/hl/" },
     htmlScripts: { url: "https://example.test/babel.mjs" },
+    mermaid: {
+      url: "https://example.test/mermaid.mjs",
+      theme: "mdmark",
+      themeVariables: {},
+    },
     sideToc: { mode: "hover" },
     colorTheme: "dev-swiss",
     colorScheme: "auto",

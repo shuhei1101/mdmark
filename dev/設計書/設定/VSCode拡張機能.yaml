@@ -275,6 +275,21 @@ settings:
     visibility: user
     introduced:
       pr: 303
+  - key: mermaid
+    title: mermaid の設定（拡張機能が渡す）
+    file: mdmark.config.yaml
+    type: map
+    required: false
+    default: なし（`mount` に渡さず、ライブラリ本体の既定を当てる）
+    description: '`url`・`theme`・`themeVariables` を `mount` の `opts.config.mermaid` に渡す。相対の `url` は `html-scripts.url` と同じく、設定ファイルのあるフォルダを基準に解決し、プレビューでは Webview で読める URL、書き出した HTML では本体と chunk をまとめた `data:` の URL にする。`http:`・`https:` の `url` はそのまま渡し、その origin（`url` が無いときは既定の jsDelivr の origin）を CSP の `script-src` に含める'
+    reload: immediate
+    refs:
+      - dev/設計書/設定/ライブラリ本体#settings[mermaid.url]
+      - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを開く.ts#constraints[CSP]
+    status: planned
+    visibility: user
+    introduced:
+      pr: 382
   - key: aliases
     title: エイリアスの元の行（拡張機能が読む）
     file: mdmark.config.yaml

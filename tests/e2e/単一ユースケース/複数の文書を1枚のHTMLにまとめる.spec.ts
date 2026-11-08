@@ -30,6 +30,13 @@ import {
   SYNTAX_ES_ROOT,
 } from "../dist-page.ts";
 import { openStandaloneWithFiles, readMediaSamples } from "../media.ts";
+import {
+  copyMermaidDist,
+  MERMAID_EMBED_MIN_BYTES,
+  MERMAID_FLOWCHART,
+  MERMAID_SVG,
+  MERMAID_WAIT_MS,
+} from "../mermaid.ts";
 
 // 3 つの文書を、文書をまたぐ用語と被参照が効く 1 枚にまとめる（正常シナリオ）
 test("test_normal", async ({ builtRoot, tempDir, page }) => {
@@ -557,4 +564,59 @@ test("test_normal_when_cascaded", async ({ builtRoot, tempDir, page }) => {
     await expect(article.locator("blockquote")).toHaveCount(1);
   }
   await expect.poll(() => themeValue(page)).toBe("rgb(1, 2, 3)");
+});
+
+// mermaid のコードブロックを持つ文書があるときだけ mermaid を埋めてまとめ、開いたときに外へ要求せずに図を描く（正常シナリオ（mermaid のコードブロック））
+test("test_normal_when_mermaid", async ({ builtRoot, tempDir, page }) => {
+  // 準備
+  const dir = await tempDir();
+  const url = await copyMermaidDist(dir);
+  const config = (include: string) =>
+    [
+      `mermaid:\n  url: ${url}`,
+      "index: index.yaml",
+      "build:",
+      `  include: [${include}]`,
+      "  entry: README.md",
+      "  out: dist/docs.html",
+      "",
+    ].join("\n");
+  await writeFiles(dir, {
+    "mdmark.config.yaml": config('"*.md"'),
+    "index.yaml": [
+      "schema: 2",
+      "docs:",
+      "  - id: top",
+      "    path: README.md",
+      "    title: 入口",
+      "  - id: flow",
+      "    path: flow.md",
+      "    title: 図",
+      "",
+    ].join("\n"),
+    "README.md": "# 入口\n\n[図へ](flow.md)\n",
+    "flow.md": MERMAID_FLOWCHART,
+  });
+  // 実行
+  const result = await runCli(builtRoot, ["build"], dir);
+  // 検証
+  expect(result.code).toBe(0);
+  expect(existsSync(join(dir, "dist", "docs.html"))).toBe(true);
+  const html = await readFile(join(dir, "dist", "docs.html"), "utf8");
+  const opened = await openStandalone(page, {
+    tempDir,
+    htmlFile: join(dir, "dist", "docs.html"),
+  });
+  await expect(page.locator("article.mdmark h1")).toContainText("入口");
+  await page.locator('article p a[href="#/flow.md"]').click();
+  await expect(page.locator(`article.mdmark ${MERMAID_SVG}`)).toHaveCount(1, {
+    timeout: MERMAID_WAIT_MS,
+  });
+  expect(opened.externalRequests()).toEqual([]);
+  // 実行・検証: mermaid のコードブロックを持たない文書だけをまとめたときは埋めない
+  await writeFiles(dir, { "mdmark.config.yaml": config('"README.md"') });
+  const onlyPlain = await runCli(builtRoot, ["build"], dir);
+  expect(onlyPlain.code).toBe(0);
+  const plainHtml = await readFile(join(dir, "dist", "docs.html"), "utf8");
+  expect(plainHtml.length).toBeLessThan(html.length - MERMAID_EMBED_MIN_BYTES);
 });

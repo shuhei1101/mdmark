@@ -20,7 +20,22 @@ export type MdmarkConfig = {
   labels?: { paramCopy?: string };
   /** 範囲のスクリプトの設定。`url` は範囲の `ts`・`js` を変換する @babel/standalone の ES モジュールの URL */
   "html-scripts"?: { url?: string };
+  /** mermaid の設定。`url` は mermaid の ES モジュールの URL、`theme` はテーマの名前（知らない値も受けて `resolveConfig` が `mdmark` にするため、型は `string`）、`themeVariables` はテーマの変数の上書き */
+  mermaid?: {
+    url?: string;
+    theme?: string;
+    themeVariables?: Record<string, unknown>;
+  };
 };
+
+/** mermaid の図のテーマの名前。`mdmark` は描く先の要素の CSS 変数から作る mdmark の見た目のテーマ、ほかは mermaid のテーマの名前 */
+export type MermaidTheme =
+  | "mdmark"
+  | "default"
+  | "neutral"
+  | "dark"
+  | "forest"
+  | "base";
 
 /** ツールチップを持ち主の上と下のどちらに先に出すか。`top` は上に出し、上に収まらないときだけ下に出す。`bottom` は下に出し、下に収まらず上に収まるときだけ上に出す */
 export type TooltipPlacement = "top" | "bottom";
@@ -76,6 +91,12 @@ export type ResolvedConfig = {
   labels: { paramCopy: string };
   /** 範囲のスクリプトの変換のライブラリの URL（既定 `DEFAULT_HTML_SCRIPTS_URL`） */
   htmlScripts: { url: string };
+  /** mermaid の読み込み先・テーマ・値が文字列のテーマの変数の上書き */
+  mermaid: {
+    url: string;
+    theme: MermaidTheme;
+    themeVariables: Record<string, string>;
+  };
 };
 
 /** mdmark に入れた配色のテーマの名前の並び。`resolveConfig`・CLI の点検と書き出しの警告が照らす */
@@ -123,6 +144,7 @@ export const DEFAULT_FEATURES: Record<string, boolean> = {
   backlinks: true,
   html: true,
   hints: true,
+  mermaid: true,
   views: true,
   comments: false,
   "html-scripts": false,
@@ -154,6 +176,44 @@ export const DEFAULT_SYNTAX_URL =
 /** 設定の `html-scripts.url` が無いときに読む @babel/standalone の ES モジュールの URL。バージョンを固定する */
 export const DEFAULT_HTML_SCRIPTS_URL =
   "https://cdn.jsdelivr.net/npm/@babel/standalone@8.1.1/+esm";
+
+/** 設定の `mermaid.url` が無いときに読む mermaid の ES モジュールの URL。バージョンを固定する */
+export const DEFAULT_MERMAID_URL =
+  "https://cdn.jsdelivr.net/npm/mermaid@12.3.0/dist/mermaid.esm.min.mjs";
+
+/** `MermaidTheme` の値の並び。`resolveConfig` が照らす */
+export const MERMAID_THEMES: readonly MermaidTheme[] = [
+  "mdmark",
+  "default",
+  "neutral",
+  "dark",
+  "forest",
+  "base",
+];
+
+/** 設定の `themeVariables` でも変えさせない mermaid のテーマの変数 */
+const FIXED_MERMAID_VARIABLES = new Set(["useGradient", "dropShadow"]);
+
+/** 設定の `mermaid` に既定を当てる */
+const resolveMermaid = (
+  mermaid: MdmarkConfig["mermaid"],
+): ResolvedConfig["mermaid"] => {
+  const url =
+    typeof mermaid?.url === "string" ? mermaid.url : DEFAULT_MERMAID_URL;
+  const theme =
+    MERMAID_THEMES.find((name) => name === mermaid?.theme) ?? "mdmark";
+  // テーマの変数は、マップのときだけ値が文字列のキーを取り、固定の変数は取らない
+  const given = mermaid?.themeVariables;
+  const themeVariables: Record<string, string> = {};
+  if (given !== null && typeof given === "object" && !Array.isArray(given)) {
+    for (const [key, value] of Object.entries(given)) {
+      if (typeof value === "string" && !FIXED_MERMAID_VARIABLES.has(key)) {
+        themeVariables[key] = value;
+      }
+    }
+  }
+  return { url, theme, themeVariables };
+};
 
 /** 印の名前から `LibraryEntry` を引く既定の対応表 */
 export const DEFAULT_LIBRARIES: Record<string, LibraryEntry> = {};
@@ -233,6 +293,7 @@ export function resolveConfig(options: {
     tooltips: { placement, diagramPlacement },
     syntax,
     htmlScripts,
+    mermaid: resolveMermaid(config?.mermaid),
     sideToc: { mode },
     colorTheme,
     colorScheme,

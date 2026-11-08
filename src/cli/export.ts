@@ -32,6 +32,7 @@ import {
   inlineImages,
   usedParts,
   usedSyntaxLanguages,
+  usesMermaid,
   type ViewerEmbeds,
 } from "./embed.ts";
 import { CliError, type CliIo } from "./errors.ts";
@@ -366,6 +367,33 @@ export async function prepareEmbeds(options: EmbedOptions): Promise<{
     fetchText,
   });
 
+  // 文書に mermaid のコードブロックがあれば、mermaid を束ねてみる
+  let mermaid: string | undefined;
+  const mermaidConfig = resolveConfig({ config: loaded.config }).mermaid;
+  if (
+    usesMermaid({
+      markdowns: [...originals.values()],
+      includes: docs.map((doc) => includesOf(doc.path)),
+      config: loaded.config,
+    })
+  ) {
+    const result = await bundleModule(
+      mermaidConfig.url,
+      loaded.dir,
+      fetchText,
+      build,
+    );
+    if ("code" in result) {
+      mermaid = moduleSource(mermaidConfig.url, loaded.dir);
+    } else {
+      warnings.push(
+        `${configName}: mermaid \`${mermaidConfig.url}\` を束ねられません（${result.error}）。\`mermaid.url\` を直してください。`,
+      );
+    }
+  }
+  // 埋める設定には、mermaid の url を除いて写す（開いたときに外へ要求しない）
+  const { url: _mermaidUrl, ...mermaidPayload } = loaded.config.mermaid ?? {};
+
   // 設定の `aliases` の YAML を読み、使えない行・レコードを警告にする
   const aliasResult = await loadAliases(loaded);
   for (const issue of aliasResult.issues) {
@@ -394,6 +422,9 @@ export async function prepareEmbeds(options: EmbedOptions): Promise<{
         ? { colorScheme: loaded.config.colorScheme }
         : {}),
       ...(loaded.config.labels ? { labels: loaded.config.labels } : {}),
+      ...(Object.keys(mermaidPayload).length > 0
+        ? { mermaid: mermaidPayload }
+        : {}),
       // 埋めたモジュールは開いたときに束ねたモジュールを渡すため、値は印の名前にする（埋められなかった印が外へ要求しない）
       libraries: Object.fromEntries(
         Object.keys(libraries).map((name) => [name, name]),
@@ -444,6 +475,7 @@ export async function prepareEmbeds(options: EmbedOptions): Promise<{
     libraries: modules,
     extensions,
     ...(syntax ? { syntax } : {}),
+    ...(mermaid ? { mermaid } : {}),
     view: usedParts({ markdowns: [...originals.values()] }),
     ...(compiled.scripts.length > 0 ? { htmlScripts: compiled.scripts } : {}),
   };

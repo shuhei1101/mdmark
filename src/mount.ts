@@ -26,6 +26,7 @@ import type { MdmarkAlias } from "./knowledge/aliases.ts";
 import type { MdmarkIndex } from "./knowledge/index-shape.ts";
 import type { MdmarkReferences } from "./knowledge/references.ts";
 import { embeddedLibraries, loadLibraries } from "./libraries.ts";
+import { attachMermaid } from "./mermaid.ts";
 import { attachParts, type PartsHandle } from "./mount-parts.ts";
 import type { MdmarkIconNode } from "./parts/inline-icon.ts";
 import { renderNotice } from "./parts/notice.ts";
@@ -105,6 +106,9 @@ const PRINT_FEATURE = "print";
 
 /** 描いた要素から、その `MountHandle` を引く。同じ要素への `mount` が前の描画を片付けるのに使う */
 const mounted = new WeakMap<HTMLElement, MountHandle>();
+
+/** `mount` の通し番号（mermaid の `render` の id を、ページの中で重ねない） */
+let mountCount = 0;
 
 /** 差分のプレビューに出す埋め込んだ HTML の範囲を、文書に描くときと同じ描き方で描く関数を作る: 範囲の HTML を `html` のコードブロックに入れ `<!-- html -->` で囲んだ Markdown を文書を描く処理に通し、得た枠の中身と、置いた要素にその描画の機能のオン・オフと操作できる部品の定義で記法の操作を付ける関数を返す。`html` の機能がオフのときは枠が無く、空の文字と何もしない関数を返す */
 function createDiffHtmlRenderer(options: {
@@ -217,6 +221,8 @@ export function mount(el: HTMLElement, opts: MountOptions): MountHandle {
   let includes = opts.includes;
   // 同じ要素へ 2 回目の mount を呼ぶと、前の描画を先に片付ける
   mounted.get(el)?.destroy();
+  mountCount += 1;
+  const mountId = mountCount;
   const diffMode = normalizeDiffMode(opts.diffMode);
   const config = resolveConfig({ config: opts.config });
   const renderDiffHtml = createDiffHtmlRenderer({ config, opts });
@@ -243,6 +249,10 @@ export function mount(el: HTMLElement, opts: MountOptions): MountHandle {
   let lastTocMode: ResolvedConfig["sideToc"]["mode"] | undefined;
   // 色分けのライブラリのモジュールの控え（`mount` ごとに 1 つ。描き直しでは読み直さない）
   const syntaxModules = new Map<string, Promise<{ default?: unknown }>>();
+  // mermaid のモジュールの控え（`mount` ごとに 1 つ。描き直しでは読み直さない）
+  const mermaidModules = new Map<string, Promise<{ default?: unknown }>>();
+  // 今の文書の mermaid の図を外す関数
+  let detachMermaid: (() => void) | undefined;
   // 範囲のスクリプトの変換のライブラリの読み込みの控え（`mount` ごとに 1 つ）
   const transpilers = new Map<string, Promise<Transpiler>>();
   // 今の文書の範囲のスクリプトが返した `destroy` をまとめて呼ぶ関数
@@ -256,6 +266,8 @@ export function mount(el: HTMLElement, opts: MountOptions): MountHandle {
     const current = generation;
     destroyScripts?.();
     destroyScripts = undefined;
+    detachMermaid?.();
+    detachMermaid = undefined;
     detachBackToTop?.();
     detachBackToTop = undefined;
     detachInteractions?.();
@@ -379,6 +391,18 @@ export function mount(el: HTMLElement, opts: MountOptions): MountHandle {
       isCurrent: () => !destroyed && generation === current,
       modules: syntaxModules,
     });
+    // mermaid のコードブロックがあるときだけ読む。印の場所を拾った後に読み込み中の枠を置く。描き終えるのは待たない
+    if (features.mermaid === true) {
+      detachMermaid = attachMermaid({
+        root: body,
+        scope: el,
+        config: drawn,
+        mountId,
+        isCurrent: () => !destroyed && generation === current,
+        modules: mermaidModules,
+        placement: config.tooltips.diagramPlacement,
+      }).detach;
+    }
     if (features["html-scripts"] === true) {
       // 読み込みの完了は待たない。解決する前に描き直したときは、解決したときに片付ける
       void runHtmlScripts({
@@ -464,6 +488,7 @@ export function mount(el: HTMLElement, opts: MountOptions): MountHandle {
       destroyed = true;
       destroyScripts?.();
       destroyScripts = undefined;
+      detachMermaid?.();
       detachBackToTop?.();
       detachInteractions?.();
       detachSideToc?.();

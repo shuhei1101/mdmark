@@ -58,6 +58,17 @@ states:
         value: "'[]'"
     notes:
       定義: モックの `single-kinds`（`dev/mock/refs/308/assets/samples.js`）
+  - name: Mermaid
+    description: 種類 `mermaid`。題は題名だけで範囲と更新日を出さず、凡例の場所を取らない
+    args:
+      - name: kind
+        value: mermaid
+      - name: title
+        value: 問い合わせの受付
+      - name: legend
+        value: "'[]'"
+    notes:
+      定義: 部品設計『mermaid の図』の Flowchart と同じ SVG
 lead: |-
   図の部品（フロー図・シーケンス図・グラフ・ER 図）を囲む枠。題（題名・範囲・更新日）・右上のボタンの帯・図を出す表示する枠・凡例をこの順に置き、拡大・縮小・移動・全画面のモーダルと、表示する枠の高さを変える右下のリサイズハンドルを持つ。
   右上のボタンの帯と表示する枠は、表示する箱（`.mdmark-diagram-box`）にまとめる。ボタンは 1.75rem 四方、帯の余白は 0.25rem。
@@ -65,7 +76,7 @@ args:
   - name: kind
     type: 列挙
     required: true
-    choices: '`flow`・`sequence`・`chart`・`er`'
+    choices: '`flow`・`sequence`・`chart`・`er`・`mermaid`'
     description: 中の図の種類。`data-diagram` に入れる
   - name: title
     type: 文字列
@@ -73,12 +84,12 @@ args:
     description: 図の題名
   - name: scope
     type: 文字列
-    required: true
-    description: '図の範囲。題の後ろに `範囲: {scope}` で出す'
+    required: false
+    description: '図の範囲。題の後ろに `範囲: {scope}` で出す。種類 `mermaid` では渡さず、範囲を出さない'
   - name: updated
     type: 文字列
-    required: true
-    description: 更新日（`YYYY-MM-DD`）。`time` 要素で出す
+    required: false
+    description: 更新日（`YYYY-MM-DD`）。`time` 要素で出す。種類 `mermaid` では渡さず、更新日を出さない
   - name: legend
     type: オブジェクトの配列
     required: true
@@ -112,6 +123,7 @@ slots:
       - dev/設計書/部品設計/シーケンス図.ts#
       - dev/設計書/部品設計/グラフ.ts#
       - dev/設計書/部品設計/ER図.ts#
+      - dev/設計書/部品設計/mermaidの図.ts#
 events:
   - name: 拡大・縮小する
     when: 拡大・縮小・倍率のボタンを押すか、表示する枠にフォーカスして `+`・`-`・`0` を押す

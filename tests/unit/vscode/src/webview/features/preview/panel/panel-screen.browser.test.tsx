@@ -481,6 +481,37 @@ test("test_panel_screen_when_inspect", async () => {
   expect(results.false).toEqual([]);
 });
 
+// テストのときだけ CSP の違反の件数を html 要素に書く（正常系）
+test("test_panel_screen_when_csp_violation", async () => {
+  // 準備
+  const { PanelScreen } = await loadScreen();
+  const { mdmark } = createMdmark();
+  const results: Record<string, (string | undefined)[]> = {};
+  for (const testMode of [true, false]) {
+    const api = createFakeVsCodeApi();
+    const boot = createBoot({ test: testMode });
+    const { unmount } = render(
+      <PanelScreen boot={boot} api={api} load={async () => mdmark as never} />,
+      { container: boot.root },
+    );
+    await waitReady(api.posted);
+    const drawn = document.documentElement.dataset.mdmarkCspViolations;
+    // 実行
+    for (let count = 0; count < 2; count += 1) {
+      document.dispatchEvent(new Event("securitypolicyviolation"));
+    }
+    results[String(testMode)] = [
+      drawn,
+      document.documentElement.dataset.mdmarkCspViolations,
+    ];
+    unmount();
+    delete document.documentElement.dataset.mdmarkCspViolations;
+  }
+  // 検証
+  expect(results.true).toEqual(["0", "2"]);
+  expect(results.false).toEqual([undefined, undefined]);
+});
+
 // 拡張機能のメッセージでない message を処理しない（正常系）
 test("test_panel_screen_when_unknown_message", async () => {
   // 準備

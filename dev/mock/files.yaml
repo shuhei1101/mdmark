@@ -96,6 +96,9 @@ files:
   - path: components/kbd/index.html
     description: '部品『kbd』のモック: `kbd:` のキーと組み合わせ・表の中のキー・文書の HTML のルビ。部品の見た目や状態を決めるときに読む。'
     tags: [topic:モック, topic:記法]
+  - path: components/mermaid-diagram/index.html
+    description: '部品『mermaid-diagram』のモック: 言語 mermaid のコードブロックを図の枠に入れて描いた図（front matter の title のタイトル・図の種類の名前のタイトル・actor のアイコンの案 A と B・状態遷移図・ER 図・ガントチャート・円グラフ）と、mermaid を読み込めない知らせの枠・記法を解釈できない書き方の警告・機能をオフにしたコードブロック。部品の見た目や状態を決めるときに読む。'
+    tags: [topic:モック, topic:図]
   - path: components/wide/index.html
     description: '部品『wide』のモック: `wide` のマーカーで本文の幅を越えて広げた表と、右の目次と並ぶ・狭い画面・閉じのマーカーが無い書き方の警告。部品の見た目や状態を決めるときに読む。'
     tags: [topic:モック, topic:記法]
@@ -378,6 +381,12 @@ files:
   - path: pages/document/323/viewport-edge/index.html
     description: '#323 の画面のモックの案『viewport-edge』: 配布物の mount で描いた長い文書で、ピン止めしていない右側の目次の右端の線と目次の枠をスクロールする場所の右端に置く。右端の置き方の案と、差分のミニマップの有無・描く場所を操作列で切り替える。画面の見た目や振る舞いを決めるときに読む。'
     tags: [topic:モック, topic:目次]
+  - path: pages/document/382/a-mdmark-theme/index.html
+    description: '#382 の画面のモックの案『a-mdmark-theme』: 配布物の mount で描いた文書の mermaid のコードブロックを、CSS 変数から作ったテーマで図の枠に入れて描く。明暗を操作列で切り替える。画面の見た目や振る舞いを決めるときに読む。'
+    tags: [topic:モック, topic:図]
+  - path: pages/document/382/index.md
+    description: '#382（mermaid のコードブロックを VS Code 拡張機能と HTML の書き出しで描く）の画面のモックの案の一覧。案ごとの違いを見比べるときに読む。'
+    tags: [topic:モック]
   - path: pages/document/42/diagram-doc/app.js
     description: 'モック『diagram-doc』の動き: 使う側の固有の部品のモックと、モックの「固有の定義を当てる場所」の切り替え。このモックの動きを変えるときに読む。'
     tags: [topic:モック, topic:図, tool:javascript]
@@ -847,6 +856,18 @@ files:
     tags: [topic:モック, topic:コードブロック, tool:css]
   - path: refs/328/index.md
     description: '#328（既存の記法・点検への項目の追加 4 件）の PR のモックへのリンク集。この PR で作ったモックを探すときに読む。'
+    tags: [topic:モック]
+  - path: refs/382/assets/mermaid.css
+    description: '#382 のモックの mermaid の図の枠の規則: 表示する枠に全体が収まる倍率・actor のアイコンの線・mermaid が付ける影の除外。このモックの見た目を変えるときに読む。'
+    tags: [topic:モック, topic:図]
+  - path: refs/382/assets/mermaid.js
+    description: '#382 のモックの mermaid の描画: jsDelivr の mermaid を、描く先の要素の CSS 変数から作った base テーマで描き、図の枠に入れる。解釈できないソースは書き方の警告にし、配色が変わったら描き直す。このモックの振る舞いを変えるときに読む。'
+    tags: [topic:モック, topic:図]
+  - path: refs/382/assets/scene.js
+    description: '#382 の画面のモックの場面: 配布物の mount で文書を描き、mermaid のコードブロックを mermaid.js が描く図に替える。明暗を URL で選ぶ。このモックの振る舞いを変えるときに読む。'
+    tags: [topic:モック]
+  - path: refs/382/index.md
+    description: '#382（mermaid のコードブロックを VS Code 拡張機能と HTML の書き出しで描く）の PR のモックへのリンク集。この PR で作ったモックを探すときに読む。'
     tags: [topic:モック]
   - path: refs/42/assets/diagram.css
     id: dev/mock/refs/42/assets/diagram.css

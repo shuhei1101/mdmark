@@ -8,6 +8,10 @@ const loadConfig = () => import("../../../src/config.ts");
 const DEFAULT_SYNTAX_URL =
   "https://cdn.jsdelivr.net/npm/@highlightjs/cdn-assets@11.12.0/es/";
 
+/** mermaid の既定の読み込み先 */
+const DEFAULT_MERMAID_URL =
+  "https://cdn.jsdelivr.net/npm/mermaid@12.3.0/dist/mermaid.esm.min.mjs";
+
 /** 範囲のスクリプトの変換のライブラリの既定の読み込み先 */
 const DEFAULT_HTML_SCRIPTS_URL =
   "https://cdn.jsdelivr.net/npm/@babel/standalone@8.1.1/+esm";
@@ -35,6 +39,7 @@ const DEFAULT_FEATURES = {
   backlinks: true,
   html: true,
   hints: true,
+  mermaid: true,
   views: true,
   comments: false,
   "html-scripts": false,
@@ -72,11 +77,51 @@ test("test_resolve_config", async () => {
     tooltips: { placement: "top", diagramPlacement: "bottom" },
     syntax: { url: DEFAULT_SYNTAX_URL },
     htmlScripts: { url: DEFAULT_HTML_SCRIPTS_URL },
+    mermaid: { url: DEFAULT_MERMAID_URL, theme: "mdmark", themeVariables: {} },
     sideToc: { mode: "hover" },
     colorTheme: "dev-swiss",
     colorScheme: "auto",
     labels: { paramCopy: "今の値を写す" },
   });
+});
+
+// mermaid の url・theme・themeVariables の型の合う値だけを受ける（正常系）
+test("test_resolve_config_when_mermaid_given", async () => {
+  // 準備
+  const { resolveConfig } = await loadConfig();
+  const given = {
+    mermaid: {
+      url: "/vendor/mermaid.mjs",
+      theme: "neutral",
+      themeVariables: {
+        primaryColor: "#e0f2f1",
+        useGradient: "true",
+        dropShadow: "x",
+        fontSize: 14,
+      },
+    },
+  } as unknown as MdmarkConfig;
+  const invalid = {
+    mermaid: { url: 1, theme: "no-such-theme", themeVariables: "x" },
+  } as unknown as MdmarkConfig;
+  // 実行
+  const results = [given, invalid, {}].map((config) =>
+    resolveConfig({ config }),
+  );
+  // 検証
+  expect(results[0]?.mermaid).toEqual({
+    url: "/vendor/mermaid.mjs",
+    theme: "neutral",
+    themeVariables: { primaryColor: "#e0f2f1" },
+  });
+  const fallback = {
+    url: DEFAULT_MERMAID_URL,
+    theme: "mdmark",
+    themeVariables: {},
+  };
+  expect(results[1]?.mermaid).toEqual(fallback);
+  expect(results[2]?.mermaid).toEqual(fallback);
+  expect(results[2]?.features.mermaid).toBe(true);
 });
 
 // 知っている機能の真偽値だけを置き換える（正常系）

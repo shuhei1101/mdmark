@@ -18,6 +18,7 @@
     "test:e2e": "playwright test",
     "test": "npm run test:unit && npm run test:integration",
     "storybook:render": "node scripts/storybook-render.ts",
+    "fixtures:mermaid": "node scripts/mermaid-fixtures.ts",
     "storybook": "storybook dev --ci --no-open"
   },
   "devDependencies": {
@@ -45,6 +46,7 @@
     "eslint-plugin-compat": "7.0.2",
     "highlight.js": "11.12.0",
     "lucide-react": "1.69.0",
+    "mermaid": "12.3.0",
     "msw": "3.0.4",
     "msw-storybook-addon": "3.0.3",
     "playwright": "1.64.0",

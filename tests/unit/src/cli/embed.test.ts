@@ -241,6 +241,26 @@ test("test_used_syntax_languages_when_disabled", async () => {
   expect(languages).toEqual([]);
 });
 
+// mermaid のコードブロックがある文書があれば true、機能を外した文書だけなら false（正常系）
+test("test_uses_mermaid", async () => {
+  // 準備
+  const { usesMermaid } = await loadEmbed();
+  const mermaid = ["```mermaid", "flowchart LR", "```", ""].join("\n");
+  const ts = ["```ts", "const a = 1;", "```", ""].join("\n");
+  const disabled = `<!-- features: -mermaid -->\n\n${mermaid}`;
+  // 実行
+  const results = [
+    usesMermaid({ markdowns: [mermaid, ts], config: {} }),
+    usesMermaid({ markdowns: [disabled], config: {} }),
+    usesMermaid({
+      markdowns: [mermaid],
+      config: { features: { mermaid: false } },
+    }),
+  ];
+  // 検証
+  expect(results).toEqual([true, false, false]);
+});
+
 // アセットのルートの画像とフラグメントと poster を替える（正常系）
 test("test_inline_images_when_assets_root", async () => {
   // 準備
@@ -376,6 +396,30 @@ test("test_create_viewer_entry_when_nothing_embedded", async () => {
   );
   expect(source).toContain("parts: {}");
   expect(source).not.toContain("syntax");
+});
+
+// mermaid を名前空間で静的に取り込む（正常系）
+test("test_create_viewer_entry_when_mermaid", async () => {
+  // 準備
+  const { createViewerEntry } = await loadEmbed();
+  const url =
+    "https://cdn.jsdelivr.net/npm/mermaid@12.3.0/dist/mermaid.esm.min.mjs";
+  // 実行
+  const source = createViewerEntry({
+    viewer: "/w/dist/viewer.js",
+    view: "/w/dist/view.js",
+    embeds: { view: false, libraries: {}, extensions: [], mermaid: url },
+  });
+  // 検証
+  const mermaidImports = source
+    .split("\n")
+    .filter(
+      (line) =>
+        /^import \* as \w+ from /.test(line) &&
+        line.includes(JSON.stringify(url)),
+    );
+  expect(mermaidImports).toHaveLength(1);
+  expect(source).toMatch(/startViewer\(document,[\s\S]*\bmermaid\b/);
 });
 
 /** startViewer を export する起動の処理と、load の中で ./part.js を動的 import で読む拡張を置く */

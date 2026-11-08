@@ -5,6 +5,9 @@ import { iconSvg } from "./icons.ts";
 /** 色分けの対象の `code` に付ける属性。値は色分けの言語のモジュール名。mdmark が出した要素だけが sanitize を通って持ち続けるため、文書に書いた生の HTML の `code` は色分けの対象にならない */
 export const SYNTAX_ATTRIBUTE = "data-mdmark-syntax";
 
+/** mermaid のコードブロックの一番外の要素に付ける属性。`mount` が図にする対象を見つけるのに使う */
+export const MERMAID_ATTRIBUTE = "data-mdmark-mermaid";
+
 /** コードの行 1 つ */
 export type CodeLine = {
   /** コードの行の印を外した行の文字（エスケープ前） */
@@ -137,6 +140,8 @@ export function renderCodeBlock(options: {
   lines: CodeLine[];
   /** 色分けする言語のモジュール名。渡すと `code` に `SYNTAX_ATTRIBUTE` を付ける */
   syntax?: string | undefined;
+  /** mermaid の対象か。`true` なら一番外の要素に `MERMAID_ATTRIBUTE` を付ける */
+  mermaid?: boolean | undefined;
   /** 帯を付けるか（既定 `true`） */
   bar?: boolean | undefined;
   /** 渡すと帯の右端にコピーのボタンを置く */
@@ -147,6 +152,8 @@ export function renderCodeBlock(options: {
   const { language, title, lineNumbers, lines, syntax } = options;
   const { fileName = "", bar = true, copyState, foldButtons } = options;
   const wrap = options.wrap === true;
+  const mermaidAttribute =
+    options.mermaid === true ? ` ${MERMAID_ATTRIBUTE}` : "";
   const split =
     lineNumbers ||
     wrap ||
@@ -229,14 +236,14 @@ export function renderCodeBlock(options: {
       (lines.length > 0 ? "\n" : "");
   const pre = `<pre${preClass} tabindex="0" aria-label="${label}"><code${codeAttributes}>${body}</code></pre>`;
   if (!bar) {
-    return pre;
+    return `<pre${mermaidAttribute}${pre.slice("<pre".length)}`;
   }
   const barContent =
     renderLanguageLabel({ language, fileName }) +
     (title ? escapeHtml(title) : "") +
     (copyState === undefined ? "" : renderCodeCopy({ state: copyState }));
   if (title) {
-    return `<figure class="mdmark-code"><figcaption class="mdmark-code-title mdmark-code-bar">${barContent}</figcaption>${pre}</figure>`;
+    return `<figure class="mdmark-code"${mermaidAttribute}><figcaption class="mdmark-code-title mdmark-code-bar">${barContent}</figcaption>${pre}</figure>`;
   }
-  return `<div class="mdmark-code"><div class="mdmark-code-bar">${barContent}</div>${pre}</div>`;
+  return `<div class="mdmark-code"${mermaidAttribute}><div class="mdmark-code-bar">${barContent}</div>${pre}</div>`;
 }

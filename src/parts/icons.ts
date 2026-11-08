@@ -54,6 +54,7 @@ import {
   Split,
   Table,
   TriangleAlert,
+  User,
   Wrench,
   X,
 } from "lucide";
@@ -108,6 +109,7 @@ const ICONS = {
   lightbulb: Lightbulb,
   "message-square-warning": MessageSquareWarning,
   "triangle-alert": TriangleAlert,
+  user: User,
   "octagon-alert": OctagonAlert,
   pencil: Pencil,
   pin: Pin,

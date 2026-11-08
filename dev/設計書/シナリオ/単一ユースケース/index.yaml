@@ -68,6 +68,8 @@ items:
     summary: 文書を書く人が `mdmark upgrade` で移行の手順を版の順に当て、点検を通してから設定の版を書き換える
   - page: 図を描く.yaml
     summary: 文書に部品の定義を書き、共通の部品にフロー図・シーケンス図・グラフを図の決まりのとおりに描かせる
+  - page: mermaidの図を描く.yaml
+    summary: 言語 mermaid のコードブロックを、mdmark の見た目のテーマで図の枠に入れて描く
   - page: 図を拡大・縮小・移動する.yaml
     summary: 読む人が図を右上のボタンとキーで拡大・縮小し、ドラッグ・矢印キー・ボタンで動かす
   - page: 図の要素のツールチップを見る.yaml

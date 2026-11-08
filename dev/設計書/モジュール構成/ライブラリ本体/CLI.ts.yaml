@@ -153,6 +153,9 @@ data_models:
       - name: view
         type: boolean
         description: ビューの部品を束ねるか。文書にビューの印があるときだけ `true`（書き出した HTML はコメントの読み書きの関数を持たないため、コメントの部品は束ねない）
+      - name: mermaid
+        type: string | undefined
+        description: 束ねられた mermaid の読み先。文書に mermaid のコードブロックがあり、束ねられたときだけ持つ
       - name: htmlScripts
         type: 'Array<{ source: string; code: string }> | undefined'
         description: '`compileHtmlScripts` の結果。`source` は範囲のコードの文字（開いたときに `mount` が引く鍵）、`code` は CommonJS のコード。範囲が無ければ入れない'
@@ -322,7 +325,7 @@ functions:
     container: src/config-files.ts
     usecase: 共通
     summary: 読んだ値を `schemas/mdmark.config.schema.json` と同じ形で検め、合わないところを `schema` のずれで返す
-    description: 検めるのは、最上位がオブジェクトであること・`version` が `VERSION_PATTERN` に合う文字列・`features` の値が真偽値・`libraries` の値が文字列でキーが印の名前・`index`・`theme`・`colorTheme`・`colorScheme` が文字列（`colorTheme` の知らない名前と `colorScheme` の知らない値はここでは拒まず、設定に残す）・`extensions` が文字列の配列・`build` があれば `include`（1 つ以上の文字列）と `out`（`.html` の文字列）を持ち `exclude`・`glossary` が文字列の配列で `entry` が文字列であること・`check` があれば `ignore` が印の名前（`MARK_NAME_PATTERN`）の文字列の配列であること・`tooltips` があれば `placement` と `diagramPlacement` がどちらも（あれば）`top` か `bottom` であること・`labels` があればオブジェクトで `paramCopy` があれば空でない文字列であること（合わなければ `labels` を設定から落とす。知らないキーは拒まない）・`side-toc` があればオブジェクトで `mode` が `hover` か `fixed` であること・`syntax` があればオブジェクトで `url` が文字列であること・`html-scripts` があればオブジェクトで `url` が文字列であること（合わなければ `html-scripts` を設定から落とす）・`assets` があればオブジェクトで `root` が文字列であること。`aliases` があれば配列であることを確かめ、行は `validateAliasRows` で検める（ずれをそのまま `schema` のずれに加え、返った行を `config.aliases` に入れる）。知らない最上位のキーは拒まない。`aliases` の行のほかの形の検査は手書きで、ライブラリを足さない（索引の `normalizeIndex` と同じやり方）。検める形は `schemas/mdmark.config.schema.json` と揃える
+    description: 検めるのは、最上位がオブジェクトであること・`version` が `VERSION_PATTERN` に合う文字列・`features` の値が真偽値・`libraries` の値が文字列でキーが印の名前・`index`・`theme`・`colorTheme`・`colorScheme` が文字列（`colorTheme` の知らない名前と `colorScheme` の知らない値はここでは拒まず、設定に残す）・`extensions` が文字列の配列・`build` があれば `include`（1 つ以上の文字列）と `out`（`.html` の文字列）を持ち `exclude`・`glossary` が文字列の配列で `entry` が文字列であること・`check` があれば `ignore` が印の名前（`MARK_NAME_PATTERN`）の文字列の配列であること・`tooltips` があれば `placement` と `diagramPlacement` がどちらも（あれば）`top` か `bottom` であること・`labels` があればオブジェクトで `paramCopy` があれば空でない文字列であること（合わなければ `labels` を設定から落とす。知らないキーは拒まない）・`side-toc` があればオブジェクトで `mode` が `hover` か `fixed` であること・`syntax` があればオブジェクトで `url` が文字列であること・`html-scripts` があればオブジェクトで `url` が文字列であること（合わなければ `html-scripts` を設定から落とす）・`mermaid` があればオブジェクトで、`url`・`theme` が（あれば）文字列、`themeVariables` が（あれば）オブジェクトであること（合わなければ `mermaid` を設定から落とす。`theme` の知らない名前はここでは拒まず、設定に残す）・`assets` があればオブジェクトで `root` が文字列であること。`aliases` があれば配列であることを確かめ、行は `validateAliasRows` で検める（ずれをそのまま `schema` のずれに加え、返った行を `config.aliases` に入れる）。知らない最上位のキーは拒まない。`aliases` の行のほかの形の検査は手書きで、ライブラリを足さない（索引の `normalizeIndex` と同じやり方）。検める形は `schemas/mdmark.config.schema.json` と揃える
     kind: 関数
     scope: public
     args:
@@ -392,6 +395,12 @@ functions:
         condition: '`html-scripts.url` が `1` の値と、`/vendor/babel.mjs` の値'
         mock: なし
         expected: '`1` は `where` が `html-scripts.url` の `schema` のずれが 1 件で `config["html-scripts"]` が無い。`/vendor/babel.mjs` は `issues` が空で `config["html-scripts"].url` が `/vendor/babel.mjs`'
+      - name: test_validate_config_when_mermaid_invalid
+        case: 正常
+        summary: 形の合わない `mermaid` を schema のずれにし、設定から落とす
+        condition: '`mermaid.url` が `1` の値、`mermaid.themeVariables` が `"x"` の値、`{ url: "/vendor/mermaid.mjs", theme: "no-such-theme" }` の値'
+        mock: なし
+        expected: 1 つ目は `where` が `mermaid.url`、2 つ目は `mermaid.themeVariables` の `schema` のずれが 1 件で、どちらも `config.mermaid` が無い。3 つ目は `issues` が空で `config.mermaid` が書いた値のまま
       - name: test_validate_config_when_syntax_url_invalid
         case: 正常
         summary: 文字列でない `syntax.url` を schema のずれにし、設定から落とす
@@ -760,9 +769,9 @@ functions:
     process: |-
       1. `viewer` から `startViewer` を import する行を置く
       2. `embeds.view` が `true` なら `view` を名前空間で import する行を置く
-      3. `embeds.syntax` があれば、本体と言語ごとに `default` を import する行を置く
+      3. `embeds.syntax` があれば、本体と言語ごとに `default` を import する行を置く。`embeds.mermaid` があれば、mermaid を名前空間で import する行を置く（mermaid が中で読む chunk の動的 `import()` は同じスクリプトに取り込まれる）
       4. `embeds.htmlScripts` があれば、範囲ごとに `compileHtmlScripts` の CommonJS のコードを `(module, exports, require) => { … }` で包んだ関数を、範囲のコードの文字を鍵にした `htmlScripts` の表に置く行を置く
-      5. `startViewer(document, { parts, syntax, libraries, extensions, htmlScripts })` を呼ぶ行を置く。`libraries` は印の名前ごとの `() => import("{読み先}")`、`extensions` は `embeds.extensions` の順の `() => import("{読み先}")`
+      5. `startViewer(document, { parts, syntax, mermaid, libraries, extensions, htmlScripts })` を呼ぶ行を置く。`mermaid` は `embeds.mermaid` があれば import した名前空間、無ければ持たない。`libraries` は印の名前ごとの `() => import("{読み先}")`、`extensions` は `embeds.extensions` の順の `() => import("{読み先}")`
     unit_tests:
       - name: test_create_viewer_entry
         case: 正常
@@ -776,6 +785,12 @@ functions:
         condition: '`embeds` が `{ view: false, libraries: {}, extensions: [] }`'
         mock: なし
         expected: '`import` は `startViewer` の 1 行だけで、`parts` が `{}`、`syntax` を持たない'
+      - name: test_create_viewer_entry_when_mermaid
+        case: 正常
+        summary: mermaid を名前空間で静的に取り込む
+        condition: '`embeds` が `{ view: false, libraries: {}, extensions: [], mermaid: "https://cdn.jsdelivr.net/npm/mermaid@12.3.0/dist/mermaid.esm.min.mjs" }`'
+        mock: なし
+        expected: ソースに `import * as` と mermaid の URL の静的な `import` が 1 行あり、`startViewer(document,` に `mermaid` を渡す
     status: planned
     introduced:
       pr: 296
@@ -1108,7 +1123,7 @@ functions:
     container: src/cli/export.ts
     usecase: 共通
     summary: 文書の画像を埋め、印のある外部ライブラリと設定の拡張と色分けのモジュールが束ねられることを確かめて読み先を集め、`html-scripts` がオンの文書の範囲の `ts`・`js` を `compileHtmlScripts` で変えて `embeds.htmlScripts` に入れ、`theme` を読み、索引があれば参照の表を作って、書き出しの中身と警告を返す。設定に `assets.root` があれば設定ファイルのフォルダから解決し、文書ごとに `copyMedia`（書き出しの中で共有する `copied` を渡す）の後に `inlineImages` を呼ぶ。`bundle` では `inlineImages` に共有の表を渡し、埋めた画像を `payload.assets` に入れる。設定の `features` で `images`・`media` をオフにした文書も同じく扱う
-    description: '`export` と `build` に共通の処理。埋める設定には、設定の `features`・`tooltips`・`side-toc`・`colorTheme`・`colorScheme`・`labels` をあるときだけ写す。`colorTheme` が `COLOR_THEMES` に無い名前のときも写したうえで、警告 `{設定ファイル}: 不明なテーマ名 {名前} です。既定の dev-swiss で描画します。` を 1 件出す。外部ライブラリ・拡張・色分けのモジュールは 1 つずつ `bundleModule` で束ねてみて、束ねられたものだけの読み先（URL はそのまま、パスは設定ファイルのあるフォルダを基準にした絶対パス）を `embeds` に入れる。同じ URL のモジュールは 1 回だけ束ねる。外部ライブラリと拡張で、束ねたコードに `hasDynamicImport` が当たるものは `embeds` に入れたうえで、警告 `{設定ファイル}: 拡張 \`{パス}\` は束ねた後も動的 import() が残り、blob: と動的 import を許さない環境では読み込めません。読む先をリテラルの文字列にしてください。`（外部ライブラリは `外部ライブラリ \`{印の名前}\``）を 1 件出す。文書の色分けの言語を `usedSyntaxLanguages` で拾い、1 つ以上あれば設定の `syntax.url`（無ければ `DEFAULT_SYNTAX_URL`）の `core.min.js` と言語ごとの `languages/{モジュール名}.min.js` を確かめて `embeds.syntax` に入れる（束ねたコードは esbuild の既定で頭の著作権表示を残す）。本体を束ねられなければ言語も確かめず `embeds.syntax` を持たない。言語のモジュールだけ束ねられなければ、その言語を `embeds.syntax.languages` に入れず、警告を 1 件出す（その言語のコードブロックは色分けせずに描く）。埋める設定には `syntax` を写さない（開いたときに外へ要求しない）。設定に `aliases` があれば `loadAliases` の `aliases` を `payload.aliases` に入れ、`issues` は 1 件ずつずれを 1 行にした（`formatCheckIssue`）警告にする（終了コードは変えない）。警告は `{ファイル}: {内容}` の文字列で、読めない画像・絶対 URL の画像・束ねられないモジュールと拡張・束ねられない色分けのライブラリ（`{設定ファイル}: 色分けのライブラリ \`{URL}\` を束ねられません（{理由}）。\`syntax.url\` を直してください。`）・読めない `theme`・読めない索引の文書を出す'
+    description: '`export` と `build` に共通の処理。埋める設定には、設定の `features`・`tooltips`・`side-toc`・`colorTheme`・`colorScheme`・`labels` をあるときだけ写す。`colorTheme` が `COLOR_THEMES` に無い名前のときも写したうえで、警告 `{設定ファイル}: 不明なテーマ名 {名前} です。既定の dev-swiss で描画します。` を 1 件出す。外部ライブラリ・拡張・色分けのモジュールは 1 つずつ `bundleModule` で束ねてみて、束ねられたものだけの読み先（URL はそのまま、パスは設定ファイルのあるフォルダを基準にした絶対パス）を `embeds` に入れる。同じ URL のモジュールは 1 回だけ束ねる。外部ライブラリと拡張で、束ねたコードに `hasDynamicImport` が当たるものは `embeds` に入れたうえで、警告 `{設定ファイル}: 拡張 \`{パス}\` は束ねた後も動的 import() が残り、blob: と動的 import を許さない環境では読み込めません。読む先をリテラルの文字列にしてください。`（外部ライブラリは `外部ライブラリ \`{印の名前}\``）を 1 件出す。文書の色分けの言語を `usedSyntaxLanguages` で拾い、1 つ以上あれば設定の `syntax.url`（無ければ `DEFAULT_SYNTAX_URL`）の `core.min.js` と言語ごとの `languages/{モジュール名}.min.js` を確かめて `embeds.syntax` に入れる（束ねたコードは esbuild の既定で頭の著作権表示を残す）。本体を束ねられなければ言語も確かめず `embeds.syntax` を持たない。言語のモジュールだけ束ねられなければ、その言語を `embeds.syntax.languages` に入れず、警告を 1 件出す（その言語のコードブロックは色分けせずに描く）。埋める設定には `syntax` を写さない（開いたときに外へ要求しない）。文書に mermaid のコードブロックがあるかを `usesMermaid` で見て、あれば設定の `mermaid.url`（無ければ `DEFAULT_MERMAID_URL`。パスは設定ファイルのあるフォルダを基準にした絶対パス）を束ねてみて `embeds.mermaid` に入れる。束ねられなければ `embeds.mermaid` を持たず、警告 `{設定ファイル}: mermaid \`{URL}\` を束ねられません（{理由}）。\`mermaid.url\` を直してください。` を 1 件出す（mermaid のコードブロックは開いたときに知らせの枠とコードブロックになる）。埋める設定には `mermaid` の `theme`・`themeVariables` だけを写し、`url` を写さない。設定に `aliases` があれば `loadAliases` の `aliases` を `payload.aliases` に入れ、`issues` は 1 件ずつずれを 1 行にした（`formatCheckIssue`）警告にする（終了コードは変えない）。警告は `{ファイル}: {内容}` の文字列で、読めない画像・絶対 URL の画像・束ねられないモジュールと拡張・束ねられない色分けのライブラリ（`{設定ファイル}: 色分けのライブラリ \`{URL}\` を束ねられません（{理由}）。\`syntax.url\` を直してください。`）・読めない `theme`・読めない索引の文書を出す'
     kind: 関数
     scope: internal
     is_async: true
@@ -1164,6 +1179,18 @@ functions:
         condition: 文書に `ts` のコードブロック。設定の `syntax.url` が無いフォルダ `missing/`
         mock: 一時フォルダ
         expected: '`embeds.syntax` が無く、`warnings` に `missing/core.min.js` と `syntax.url` を含む 1 件'
+      - name: test_prepare_embeds_when_mermaid
+        case: 正常
+        summary: mermaid のコードブロックがある文書だけ mermaid を束ね、埋める設定に url を写さない
+        condition: '文書に `mermaid` のコードブロック。設定の `mermaid` が `{ url: "vendor/mermaid.mjs", theme: "neutral" }`。もう 1 つは同じ設定で mermaid のコードブロックを持たない文書'
+        mock: 一時フォルダの `vendor/mermaid.mjs` に既定のエクスポートを持つ手元のモジュールを置く
+        expected: '前者の `embeds.mermaid` が `vendor/mermaid.mjs` の絶対パスで、`payload.config.mermaid` が `{ theme: "neutral" }`、`warnings` が空。後者は `embeds.mermaid` を持たない'
+      - name: test_prepare_embeds_when_mermaid_unreadable
+        case: 正常
+        summary: mermaid を束ねられなければ警告にして埋めずに続ける
+        condition: 文書に `mermaid` のコードブロック。設定の `mermaid.url` が無いファイル `missing/mermaid.mjs`
+        mock: 一時フォルダ
+        expected: '`embeds.mermaid` が無く、`warnings` に `missing/mermaid.mjs` と `mermaid.url` を含む 1 件'
       - name: test_prepare_embeds_when_syntax_language_unreadable
         case: 正常
         summary: 束ねられない言語だけ埋めずに警告にし、他の言語は埋める
@@ -1827,6 +1854,35 @@ functions:
     status: planned
     introduced:
       pr: 97
+  - name: usesMermaid
+    title: 文書が mermaid を使うかを見る
+    container: src/render/used.ts
+    kind: 関数
+    scope: public
+    summary: 文書ごとに `render` を設定と一緒に呼び、返った HTML に `data-mdmark-mermaid` があれば `true` を返す
+    description: '`mount` と同じ mermaid の対象（機能 `mermaid` と文書の `<!-- features: -mermaid -->` を含む）を、同じ処理から得るために `render` を通す。VS Code 拡張機能の書き出しも呼ぶため、`collectRangeScripts` と同じく `src/render/used.ts` に置き、`src/cli/embed.ts` から同じ名前で export する'
+    args:
+      - name: options
+        type: '{ markdowns: string[]; config: MdmarkConfig }'
+        required: true
+        description: 文書の Markdown と読んだ設定
+    returns:
+      type: boolean
+      description: どれかの文書に mermaid の対象があるか
+    callees:
+      - dev/設計書/モジュール構成/ライブラリ本体/描画.ts#functions[render]
+    refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/文書をHTMLに書き出す.ts#constraints[埋める mermaid]
+    unit_tests:
+      - name: test_uses_mermaid
+        case: 正常
+        summary: mermaid のコードブロックがある文書があれば true、機能を外した文書だけなら false
+        condition: '`mermaid` のコードブロックを持つ文書と `ts` だけの文書の組、`<!-- features: -mermaid -->` と `mermaid` のコードブロックを持つ文書だけの組、`features.mermaid: false` の設定と `mermaid` のコードブロックを持つ文書の組'
+        mock: なし
+        expected: 順に `true`・`false`・`false`
+    status: planned
+    introduced:
+      pr: 382
   - name: changedPathsSince
     title: 比べる基準から変わったファイルを引く
     kind: 関数

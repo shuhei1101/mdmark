@@ -31,6 +31,13 @@ const HIGHLIGHT_ES_ROOT = fileURLToPath(
   new URL("../../node_modules/@highlightjs/cdn-assets/es/", import.meta.url),
 );
 
+// mermaid（`mermaid@12.3.0` の `dist/`）を配る経路の頭。`/fixtures/mermaid/{名前}/{ファイル}` で引く。名前ごとに別の URL にして、ページの中のモジュールの読み込み済みを分ける
+const MERMAID_PREFIX = "/fixtures/mermaid/";
+// mermaid の `dist/` のある場所
+const MERMAID_DIST_ROOT = fileURLToPath(
+  new URL("../../node_modules/mermaid/dist/", import.meta.url),
+);
+
 // 範囲の `ts`・`js` の変換のライブラリ（`@babel/standalone` の UMD）のある場所。`/fixtures/babel.mjs` で、既定のエクスポートを持つ ES モジュールに包んで配る
 const BABEL_UMD_PATH = fileURLToPath(
   new URL("../../node_modules/@babel/standalone/babel.min.js", import.meta.url),
@@ -49,7 +56,7 @@ const CONTENT_TYPES: Record<string, string> = {
   ".css": "text/css; charset=utf-8",
 };
 
-/** 結合テストの開発サーバーに、色分けのライブラリを `/fixtures/highlightjs/{名前}/es/` で配る経路（名前が `no-yaml` のときは `languages/yaml.min.js` を 404 にする）と、404 を返す `/fixtures/missing/` を足す。ほかに、外部ライブラリの代役 `/fixtures/test-lib.js`・拡張の代役 `/fixtures/greet.js`・部品の定義を受ける拡張の代役 `/fixtures/definition.js` と、404 を返す `/fixtures/missing.js` を足す。範囲の `ts`・`js` の変換のライブラリは `/fixtures/babel.mjs` で配る（クエリが違えば別のモジュールとして読ませられる）。ビルドした配布物は `/fixtures/dist/{名前}{絶対パス}` でも配り、名前ごとに別の URL にして、ページの中のモジュールの読み込み済みを分ける（名前が `blocked` のときは部品のモジュール `view.js`・`comments.js` を 404 にする） */
+/** 結合テストの開発サーバーに、色分けのライブラリを `/fixtures/highlightjs/{名前}/es/` で配る経路（名前が `no-yaml` のときは `languages/yaml.min.js` を 404 にする）と、404 を返す `/fixtures/missing/` を足す。ほかに、外部ライブラリの代役 `/fixtures/test-lib.js`・拡張の代役 `/fixtures/greet.js`・部品の定義を受ける拡張の代役 `/fixtures/definition.js` と、404 を返す `/fixtures/missing.js` を足す。mermaid の `dist/` は `/fixtures/mermaid/{名前}/` で配る。範囲の `ts`・`js` の変換のライブラリは `/fixtures/babel.mjs` で配る（クエリが違えば別のモジュールとして読ませられる）。ビルドした配布物は `/fixtures/dist/{名前}{絶対パス}` でも配り、名前ごとに別の URL にして、ページの中のモジュールの読み込み済みを分ける（名前が `blocked` のときは部品のモジュール `view.js`・`comments.js` を 404 にする） */
 export function fixturesPlugin(): Plugin {
   return {
     name: "mdmark-fixtures",
@@ -81,6 +88,29 @@ export function fixturesPlugin(): Plugin {
           !file.startsWith(HIGHLIGHT_ES_ROOT) ||
           extname(file) !== ".js"
         ) {
+          response.statusCode = 404;
+          response.end();
+          return;
+        }
+        readFile(file).then(
+          (body) => {
+            response.setHeader(
+              "Content-Type",
+              "text/javascript; charset=utf-8",
+            );
+            response.end(body);
+          },
+          () => {
+            response.statusCode = 404;
+            response.end();
+          },
+        );
+      });
+      server.middlewares.use(MERMAID_PREFIX, (request, response) => {
+        const [, , ...rest] =
+          (request.url ?? "").split("?")[0]?.split("/") ?? [];
+        const file = resolve(MERMAID_DIST_ROOT, ...rest);
+        if (!file.startsWith(MERMAID_DIST_ROOT) || extname(file) !== ".mjs") {
           response.statusCode = 404;
           response.end();
           return;

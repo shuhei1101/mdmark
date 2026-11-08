@@ -391,11 +391,54 @@ test("test_library_origins_when_html_scripts", async () => {
   });
   const local = libraryOrigins(libraries, { url: "./babel.mjs" });
   // 検証
+  // mermaid.url を省いたので、ライブラリ本体の既定の mermaid の URL の origin も入る
   expect(remote).toEqual([
     "https://cdn.example.com",
     "https://babel.example.com",
+    "https://cdn.jsdelivr.net",
   ]);
-  expect(local).toEqual(["https://cdn.example.com"]);
+  expect(local).toEqual([
+    "https://cdn.example.com",
+    "https://cdn.jsdelivr.net",
+  ]);
+});
+
+// 相対パスの url だけを設定ファイルのフォルダから直し、ほかのキーを残す（正常系）
+test("test_resolve_mermaid", async () => {
+  // 準備
+  const { resolveMermaid } = await loadModule();
+  const resolve = (mermaid: Record<string, unknown>) =>
+    resolveMermaid({
+      mermaid,
+      configDir: "/ws/docs",
+      toUrl: (path: string) => `web:${path}`,
+    });
+  // 実行
+  const relative = resolve({ url: "./libs/mermaid.mjs", theme: "neutral" });
+  const absolute = resolve({ url: "https://cdn.example.com/mermaid.mjs" });
+  const themeOnly = resolve({ theme: "dark" });
+  // 検証
+  expect(relative).toEqual({
+    url: "web:/ws/docs/libs/mermaid.mjs",
+    theme: "neutral",
+  });
+  expect(absolute).toEqual({ url: "https://cdn.example.com/mermaid.mjs" });
+  expect(themeOnly).toEqual({ theme: "dark" });
+});
+
+// mermaid.url の http・https の origin を足し、相対パスでは足さない（正常系）
+test("test_library_origins_when_mermaid", async () => {
+  // 準備
+  const { libraryOrigins } = await loadModule();
+  const htmlScripts = { url: "./babel.mjs" };
+  // 実行
+  const remote = libraryOrigins({}, htmlScripts, {
+    url: "https://mermaid.example.com/m.mjs",
+  });
+  const local = libraryOrigins({}, htmlScripts, { url: "./m.mjs" });
+  // 検証
+  expect(remote).toEqual(["https://mermaid.example.com"]);
+  expect(local).toEqual([]);
 });
 
 // labels を config に入れ、labels がマップでない設定ファイルは重ねない（正常系）

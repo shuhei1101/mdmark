@@ -1,4 +1,5 @@
 import { type MdmarkConfig, resolveConfig } from "../config.ts";
+import { MERMAID_ATTRIBUTE } from "../parts/code-block.ts";
 import { renderDocument } from "./index.ts";
 import { MARK_PATTERN } from "./marks.ts";
 import { unescapeHtml } from "./syntax/html.ts";
@@ -37,4 +38,28 @@ export function collectRangeScripts(options: {
     lang: match[1] === "js" ? "js" : "ts",
     source: unescapeHtml((match[2] ?? "").replaceAll("&#39;", "'")),
   }));
+}
+
+/** mermaid の対象のコードブロックの一番外の要素の属性 */
+const MERMAID_PATTERN = new RegExp(`<[a-z]+\\b[^>]*\\s${MERMAID_ATTRIBUTE}\\b`);
+
+/** 文書ごとに `render` を設定と一緒に呼び、返った HTML に mermaid の対象があれば `true` を返す。`mount` と同じ mermaid の対象（機能 `mermaid` と文書の `<!-- features: -mermaid -->` を含む）を、同じ処理から得る */
+export function usesMermaid(options: {
+  /** 文書の Markdown */
+  markdowns: string[];
+  /** 文書ごとの取り込む文書の表（`markdowns` と同じ順） */
+  includes?: Array<Record<string, string>>;
+  /** 読んだ設定 */
+  config: MdmarkConfig;
+}): boolean {
+  const config = resolveConfig({ config: options.config });
+  return options.markdowns.some((markdown, position) =>
+    MERMAID_PATTERN.test(
+      renderDocument({
+        markdown,
+        config,
+        includes: options.includes?.[position],
+      }).html,
+    ),
+  );
 }
