@@ -668,7 +668,7 @@ scenarios:
       - name: mdmark を読むページ
         description: 正常シナリオと同じ
       - name: セルを結合した表を持つ Markdown
-        description: '`<!-- table: data header-rows=2 row-header=1 filter=分類,件数,時間,メモ -->` 〜 `<!-- /table -->` で囲んだ表と、マーカーで囲まない表を 1 つずつ持つ文書'
+        description: '`<!-- table: data +copy header-rows=2 row-header=1 filter=分類,件数,時間,メモ -->` 〜 `<!-- /table -->` で囲んだ表と、マーカーで囲まない表を 1 つずつ持つ文書'
         notes: 囲んだ表は、見出しの 1 段目の 3 列目に `<<`、データの 2 行目と 3 行目の 1 列目に `^^` を持つ。囲まない表は、データのセルに `^^` と `<<` を持つ
       - name: Mock
         description: 正常シナリオと同じ
