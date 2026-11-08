@@ -299,6 +299,10 @@ export function validateConfig(
     delete config["html-scripts"];
   }
 
+  if (raw.mermaid !== undefined && !isValidMermaid(raw.mermaid, file, issues)) {
+    delete config.mermaid;
+  }
+
   if (raw.assets !== undefined && !isValidAssets(raw.assets, file, issues)) {
     delete config.assets;
   }
@@ -528,6 +532,55 @@ function isValidHtmlScripts(
   return true;
 }
 
+/** 設定の `mermaid` を検める。キーと値の形でなければ、`url`・`theme` が文字列でなければ、`themeVariables` がキーと値の形でなければ、`schema` のずれを積んで `false` を返す。`theme` の知らない名前は拒まない */
+function isValidMermaid(
+  value: unknown,
+  file: string,
+  issues: CheckIssue[],
+): boolean {
+  if (!isRecord(value)) {
+    issues.push(
+      schemaIssue(
+        file,
+        "mermaid",
+        "`mermaid` は `url`・`theme`・`themeVariables` を持つキーと値で書いてください。",
+      ),
+    );
+    return false;
+  }
+  if (value.url !== undefined && typeof value.url !== "string") {
+    issues.push(
+      schemaIssue(
+        file,
+        "mermaid.url",
+        "`mermaid.url` は mermaid の ES モジュールの URL かパスの文字列で書いてください。",
+      ),
+    );
+    return false;
+  }
+  if (value.theme !== undefined && typeof value.theme !== "string") {
+    issues.push(
+      schemaIssue(
+        file,
+        "mermaid.theme",
+        "`mermaid.theme` は `mdmark` か mermaid のテーマの名前の文字列で書いてください。",
+      ),
+    );
+    return false;
+  }
+  if (value.themeVariables !== undefined && !isRecord(value.themeVariables)) {
+    issues.push(
+      schemaIssue(
+        file,
+        "mermaid.themeVariables",
+        "`mermaid.themeVariables` は、mermaid のテーマの変数の名前と値のキーと値で書いてください。",
+      ),
+    );
+    return false;
+  }
+  return true;
+}
+
 /** 設定の `check` を検める。オブジェクトでなければ `schema` のずれにして `undefined` を返し、`ignore` は印の名前の書式に合う値だけを残す */
 function validateCheck(
   value: unknown,
@@ -660,7 +713,7 @@ const relativize = (value: string, dir: string): string =>
     ? relative(dir, value).split(sep).join("/")
     : value;
 
-/** 設定のパスの値（`theme`・`index`・`assets.root`・`build`・`extensions`・`libraries`・`html-scripts.url`・`syntax.url`・`aliases` の `paths`）を `map` で替えた設定を返す（渡した設定は書き換えない） */
+/** 設定のパスの値（`theme`・`index`・`assets.root`・`build`・`extensions`・`libraries`・`html-scripts.url`・`mermaid.url`・`syntax.url`・`aliases` の `paths`）を `map` で替えた設定を返す（渡した設定は書き換えない） */
 const mapConfigPaths = (
   config: CliConfig,
   map: (value: string) => string,
@@ -687,6 +740,10 @@ const mapConfigPaths = (
   const htmlScripts = config["html-scripts"];
   if (isRecord(htmlScripts) && typeof htmlScripts.url === "string") {
     result["html-scripts"] = { ...htmlScripts, url: map(htmlScripts.url) };
+  }
+  const mermaid = config.mermaid;
+  if (isRecord(mermaid) && typeof mermaid.url === "string") {
+    result.mermaid = { ...mermaid, url: map(mermaid.url) };
   }
   if (isRecord(config.syntax) && typeof config.syntax.url === "string") {
     result.syntax = { ...config.syntax, url: map(config.syntax.url) };

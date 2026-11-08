@@ -184,6 +184,9 @@ function attachView(
     dragIgnore: TEXT_SELECTOR,
     keyTargets: [box],
     percentBase: "fit",
+    ...(figure.dataset.fitMin === undefined
+      ? {}
+      : { fitMin: Number(figure.dataset.fitMin) }),
   });
 
   const handle = figure.querySelector<HTMLElement>(".mdmark-diagram-resize");
@@ -318,6 +321,8 @@ export function attachDiagrams(options: {
   placement: TooltipPlacement;
   /** リサイズハンドルで変えた高さを保つ先（既定は sessionStorage） */
   storage?: Storage | null;
+  /** 付ける図（省くと `root` の中の全ての図。高さのキーの通し番号は `root` の中の順） */
+  figures?: HTMLElement[];
 }): () => void {
   const { root, placement, storage = defaultStorage() } = options;
   attachCounter += 1;
@@ -325,7 +330,11 @@ export function attachDiagrams(options: {
   const figures = [
     ...root.querySelectorAll<HTMLElement>("figure.mdmark-diagram"),
   ].filter((figure) => !figure.closest("dialog"));
+  const targets = options.figures ? new Set(options.figures) : undefined;
   figures.forEach((figure, index) => {
+    if (targets && !targets.has(figure)) {
+      return;
+    }
     const title = figure.querySelector(".mdmark-diagram-head")?.id ?? "";
     // 同じページに文書を 2 つ以上描いても `id` が重ならないよう振り直す
     renumberIds(

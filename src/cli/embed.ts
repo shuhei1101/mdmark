@@ -21,6 +21,8 @@ import { collectRangeScripts } from "../render/used.ts";
 import { findAssetRefs, resolveAssetFile } from "./assets.ts";
 import { ASSET_SCHEME } from "./html.ts";
 
+export { usesMermaid } from "../render/used.ts";
+
 /** 画像の拡張子から MIME を引く表 */
 const IMAGE_MIME: Readonly<Record<string, string>> = {
   ".png": "image/png",
@@ -97,6 +99,8 @@ export type ViewerEmbeds = {
   extensions: string[];
   /** 束ねられた色分けの本体の読み先と、言語のモジュール名から読み先を引く表。文書に色分けの対象があり本体を束ねられたときだけ持つ */
   syntax?: { core: string; languages: Record<string, string> } | undefined;
+  /** 束ねられた mermaid の読み先。文書に mermaid のコードブロックがあり、束ねられたときだけ持つ */
+  mermaid?: string | undefined;
   /** ビューの部品を束ねるか */
   view: boolean;
   /** `compileHtmlScripts` の結果。`source` は範囲のコードの文字、`code` は CommonJS のコード。範囲が無ければ入れない */
@@ -166,6 +170,10 @@ export function createViewerEntry(options: {
       lines.push(`import syntaxLanguage${position} from ${literal(path)};`);
     });
   }
+  if (embeds.mermaid) {
+    // mermaid が中で読む chunk の動的 `import()` も、同じスクリプトに取り込まれる
+    lines.push(`import * as mermaidModule from ${literal(embeds.mermaid)};`);
+  }
   const lazy = (path: string): string => `() => import(${literal(path)})`;
   const libraries = Object.entries(embeds.libraries)
     .map(([name, path]) => `${literal(name)}: ${lazy(path)}`)
@@ -189,7 +197,7 @@ export function createViewerEntry(options: {
         .join(", ")}])`
     : "";
   lines.push(
-    `startViewer(document, { parts: ${embeds.view ? "{ view: viewPart }" : "{}"}${syntax}, libraries: { ${libraries} }, extensions: [${extensions}]${htmlScripts} });`,
+    `startViewer(document, { parts: ${embeds.view ? "{ view: viewPart }" : "{}"}${syntax}${embeds.mermaid ? ", mermaid: mermaidModule" : ""}, libraries: { ${libraries} }, extensions: [${extensions}]${htmlScripts} });`,
   );
   return `${lines.join("\n")}\n`;
 }

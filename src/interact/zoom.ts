@@ -67,6 +67,8 @@ export function attachZoom(options: {
   keyTargets?: HTMLElement[];
   /** 倍率の文字の基準（`fit` は全体が収まる倍率、`content` は中身の大きさを 100% とする。既定 `content`） */
   percentBase?: "fit" | "content";
+  /** 全体が収まる倍率の下限（既定は下限なし） */
+  fitMin?: number;
 }): ZoomControl {
   const {
     viewport,
@@ -79,6 +81,7 @@ export function attachZoom(options: {
     dragIgnore,
     keyTargets = [viewport, tools],
     percentBase = "content",
+    fitMin = 0,
   } = options;
   const sizer = content.parentElement ?? content;
   const zoomText = tools.querySelector<HTMLElement>('[data-tool="fit"]');
@@ -97,12 +100,15 @@ export function attachZoom(options: {
     // 隠れた場所（閉じた節・選んでいないタブ）では枠の幅が 0 なので、表示されて大きさが変わるまで等倍にする
     viewport.clientWidth === 0
       ? 1
-      : fitScale(size, {
-          width: viewport.clientWidth,
-          height: useHeight()
-            ? viewport.clientHeight
-            : Number.POSITIVE_INFINITY,
-        });
+      : Math.max(
+          fitMin,
+          fitScale(size, {
+            width: viewport.clientWidth,
+            height: useHeight()
+              ? viewport.clientHeight
+              : Number.POSITIVE_INFINITY,
+          }),
+        );
 
   /** 中身が表示する枠からはみ出しているか */
   const overflows = (): boolean =>

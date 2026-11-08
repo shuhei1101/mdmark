@@ -501,6 +501,33 @@ files:
   - path: integration/cli.ts
     description: 結合テストで CLI を子プロセスで流し、終了コードと出力を受け取る処理を受け持つ。結合テストの準備や確かめ方を変えるときに読む。
     tags: [topic:結合テスト, tool:vitest, topic:cli]
+  - path: fixtures/mermaid-svg/class.svg
+    description: scripts/mermaid-fixtures.ts が mermaid 12.3.0 で描いた、mermaid の図のストーリーの見本の SVG（class）。mermaid の図のストーリーや、mermaid のバージョンを変えるときに読む。
+    tags: [topic:ストーリー, tool:storybook, topic:図]
+  - path: fixtures/mermaid-svg/er.svg
+    description: scripts/mermaid-fixtures.ts が mermaid 12.3.0 で描いた、mermaid の図のストーリーの見本の SVG（er）。mermaid の図のストーリーや、mermaid のバージョンを変えるときに読む。
+    tags: [topic:ストーリー, tool:storybook, topic:図]
+  - path: fixtures/mermaid-svg/flowchart.svg
+    description: scripts/mermaid-fixtures.ts が mermaid 12.3.0 で描いた、mermaid の図のストーリーの見本の SVG（flowchart）。mermaid の図のストーリーや、mermaid のバージョンを変えるときに読む。
+    tags: [topic:ストーリー, tool:storybook, topic:図]
+  - path: fixtures/mermaid-svg/flowchart-dark.svg
+    description: scripts/mermaid-fixtures.ts が mermaid 12.3.0 で描いた、mermaid の図のストーリーの見本の SVG（flowchart-dark）。mermaid の図のストーリーや、mermaid のバージョンを変えるときに読む。
+    tags: [topic:ストーリー, tool:storybook, topic:図]
+  - path: fixtures/mermaid-svg/flowchart-print.svg
+    description: scripts/mermaid-fixtures.ts が mermaid 12.3.0 で描いた、mermaid の図のストーリーの見本の SVG（flowchart-print）。mermaid の図のストーリーや、mermaid のバージョンを変えるときに読む。
+    tags: [topic:ストーリー, tool:storybook, topic:図]
+  - path: fixtures/mermaid-svg/gantt.svg
+    description: scripts/mermaid-fixtures.ts が mermaid 12.3.0 で描いた、mermaid の図のストーリーの見本の SVG（gantt）。mermaid の図のストーリーや、mermaid のバージョンを変えるときに読む。
+    tags: [topic:ストーリー, tool:storybook, topic:図]
+  - path: fixtures/mermaid-svg/pie.svg
+    description: scripts/mermaid-fixtures.ts が mermaid 12.3.0 で描いた、mermaid の図のストーリーの見本の SVG（pie）。mermaid の図のストーリーや、mermaid のバージョンを変えるときに読む。
+    tags: [topic:ストーリー, tool:storybook, topic:図]
+  - path: fixtures/mermaid-svg/sequence.svg
+    description: scripts/mermaid-fixtures.ts が mermaid 12.3.0 で描いた、mermaid の図のストーリーの見本の SVG（sequence）。mermaid の図のストーリーや、mermaid のバージョンを変えるときに読む。
+    tags: [topic:ストーリー, tool:storybook, topic:図]
+  - path: fixtures/mermaid-svg/state.svg
+    description: scripts/mermaid-fixtures.ts が mermaid 12.3.0 で描いた、mermaid の図のストーリーの見本の SVG（state）。mermaid の図のストーリーや、mermaid のバージョンを変えるときに読む。
+    tags: [topic:ストーリー, tool:storybook, topic:図]
   - path: integration/fixtures-plugin.ts
     description: 結合テストが使う外部ライブラリと拡張のモジュールの代役を受け持つ。結合テストの準備や確かめ方を変えるときに読む。
     tags: [topic:結合テスト, tool:vitest, topic:拡張, topic:モック]
@@ -1507,6 +1534,18 @@ files:
     related:
       - to: src/libraries
         type: tests
+  - path: unit/src/mermaid-source.test.ts
+    description: src/mermaid-source.ts（「ソースのタイトルの取り出し・図の種類の名前・テーマの変数と CSS 変数の対応表」）を確かめる単体テスト。mermaid-source.ts を変えたときに、合わせて修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, topic:図]
+    related:
+      - to: src/mermaid-source
+        type: tests
+  - path: unit/src/mermaid.browser.test.ts
+    description: src/mermaid.ts（「mermaid を読んで図にする attachMermaid と、テーマの変数の解決・actor のアイコンの置き換え」）を確かめるブラウザで流す単体テスト。mermaid.ts を変えたときに、合わせて修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, topic:dom, topic:図]
+    related:
+      - to: src/mermaid
+        type: tests
   - path: unit/src/mount-parts.browser.test.ts
     description: src/mount-parts.ts（「公開関数 mountView・mountComments と、mount が呼ぶ attachParts（dist/index.js）」）を確かめるブラウザで流す単体テスト。mount-parts.ts を変えたときに、合わせて見修正するケースを探すときに読む。
     tags: [topic:単体テスト, tool:vitest, topic:ビュー, topic:コメント]
@@ -1724,6 +1763,12 @@ files:
     tags: [topic:単体テスト, tool:vitest, topic:部品, tool:html, topic:動画]
     related:
       - to: src/parts/media
+        type: tests
+  - path: unit/src/parts/mermaid.test.ts
+    description: src/parts/mermaid.ts（「部品『mermaid の図』の renderMermaidDiagram」）を確かめる単体テスト。parts/mermaid.ts を変えたときに、合わせて修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, topic:図]
+    related:
+      - to: src/parts/mermaid
         type: tests
   - path: unit/src/parts/notice.test.ts
     description: src/parts/notice.ts（「知らせの枠の renderNotice」）を確かめる単体テスト。notice.ts を変えたときに、合わせて見修正するケースを探すときに読む。

@@ -1,4 +1,4 @@
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { createServer, type Server } from "node:http";
 import { createRequire } from "node:module";
 import { join, resolve } from "node:path";
@@ -41,7 +41,11 @@ import {
   renderCommentMarker,
   renderCommentOrphans,
 } from "../src/parts/comment.ts";
-import { renderDiagram, renderDiagramTip } from "../src/parts/diagram.ts";
+import {
+  renderDiagram,
+  renderDiagramFrame,
+  renderDiagramTip,
+} from "../src/parts/diagram.ts";
 import { renderDiffBlock } from "../src/parts/diff-blocks.ts";
 import { renderDiffHtml } from "../src/parts/diff-html.ts";
 import { renderDiffLines } from "../src/parts/diff-lines.ts";
@@ -70,6 +74,7 @@ import { renderKbd } from "../src/parts/kbd.ts";
 import { renderLayoutColumns } from "../src/parts/layout-columns.ts";
 import { renderLightbox } from "../src/parts/lightbox.ts";
 import { renderMedia } from "../src/parts/media.ts";
+import { renderMermaidDiagram } from "../src/parts/mermaid.ts";
 import { renderNotice } from "../src/parts/notice.ts";
 import { type CopyState, renderParam } from "../src/parts/param.ts";
 import { renderRevisionPicker } from "../src/parts/revision-picker.ts";
@@ -113,6 +118,63 @@ const SCRIPT_SOURCES: Record<string, string> = {
   "/render/sticky.js": "src/interact/sticky.ts",
   "/render/trees.js": "src/interact/trees.ts",
 };
+
+/** mermaid の図の見本の SVG のフォルダ（`npm run fixtures:mermaid` が書く） */
+const MERMAID_FIXTURES_DIR = join(
+  REPO_ROOT,
+  "tests",
+  "fixtures",
+  "mermaid-svg",
+);
+
+/** mermaid の図の見本の名前の書式 */
+const MERMAID_FIXTURE_NAME = /^[a-z0-9-]+$/;
+
+/** mermaid の図を開いたときの倍率の下限（`src/mermaid.ts` の `MERMAID_MIN_FIT` と同じ値） */
+const MERMAID_STORY_MIN_FIT = 0.75;
+
+/** mermaid の図の見本の SVG を読む。書式に合わない名前と無い名前は `undefined` */
+function readMermaidFixture(name: string): string | undefined {
+  if (!MERMAID_FIXTURE_NAME.test(name)) {
+    return undefined;
+  }
+  const file = join(MERMAID_FIXTURES_DIR, `${name}.svg`);
+  return existsSync(file) ? readFileSync(file, "utf8").trim() : undefined;
+}
+
+/** 見本の SVG を種類 `mermaid` の図の枠に入れた HTML を返す。見本が無ければ `undefined` */
+function renderMermaidStory(options: {
+  svg: string;
+  printSvg?: string | undefined;
+  title: string;
+}): string | undefined {
+  const svg = readMermaidFixture(options.svg);
+  if (svg === undefined) {
+    return undefined;
+  }
+  const printSvg =
+    options.printSvg === undefined
+      ? undefined
+      : readMermaidFixture(options.printSvg);
+  const box = /viewBox="[\d.-]+ [\d.-]+ ([\d.]+) ([\d.]+)"/.exec(svg);
+  const part = renderMermaidDiagram({
+    svg,
+    printSvg,
+    width: Number(box?.[1] ?? 0),
+    height: Number(box?.[2] ?? 0),
+  });
+  return renderDiagramFrame(
+    {
+      kind: "mermaid",
+      title: options.title,
+      legend: [],
+      fitMin: MERMAID_STORY_MIN_FIT,
+      id: "story-mermaid",
+    },
+    part,
+  );
+}
+
 // 図のストーリーに足す印: Storybook の `preview.js` が見つけ、描いた直後の倍率（全体が収まる倍率）にする操作を付ける
 const DIAGRAM_FIT_MARKER = "<span hidden data-story-fit></span>";
 
@@ -1335,6 +1397,15 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
       current: args.current as string | undefined,
     }),
   "diagram-frame": (args) => {
+    if (args.kind === "mermaid") {
+      return fitted(
+        renderMermaidStory({
+          svg: "flowchart",
+          title: typeof args.title === "string" ? args.title : "",
+        }) ?? "",
+        args,
+      );
+    }
     const html = renderDiagram({
       kind: "flow",
       definition: Array.isArray(args.legend)
@@ -1738,6 +1809,20 @@ export function renderPart(options: {
     const joined = params.get("args") ?? "";
     const args = joined === "" ? [] : joined.split(",");
     return `<div class="mdmark">${renderEmbed({ name, args })}</div>`;
+  }
+  if (component === "mermaid-diagram") {
+    // 見本の SVG はファイルの名前で届く
+    const html = renderMermaidStory({
+      svg: params.get("svg") ?? "",
+      printSvg: params.get("printSvg") ?? undefined,
+      title: params.get("title") ?? "",
+    });
+    if (html === undefined) {
+      return undefined;
+    }
+    const className =
+      params.get("scheme") === "dark" ? "mdmark mdmark-theme-dark" : "mdmark";
+    return `<div class="${className}">${html}${DIAGRAM_FIT_MARKER}</div>`;
   }
   const renderer = Object.hasOwn(PART_RENDERERS, component)
     ? PART_RENDERERS[component]

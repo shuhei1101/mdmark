@@ -108,13 +108,13 @@ export type DiagramLegendItem = {
 /** 図の枠の引数 */
 export type DiagramFrame = {
   /** 中の図の種類 */
-  kind: "flow" | "sequence" | "chart" | "er";
+  kind: "flow" | "sequence" | "chart" | "er" | "mermaid";
   /** 題名 */
   title: string;
-  /** 範囲 */
-  scope: string;
-  /** 更新日 */
-  updated: string;
+  /** 範囲（種類 `mermaid` では持たず、題に出さない） */
+  scope?: string;
+  /** 更新日（種類 `mermaid` では持たず、題に出さない） */
+  updated?: string;
   /** 凡例の項目 */
   legend: DiagramLegendItem[];
   /** 今の倍率（定義の大きさを 1 とする） */
@@ -127,6 +127,8 @@ export type DiagramFrame = {
   resizable?: boolean;
   /** 拡大して動かしたときにグループのタイトルを上端に留めるか（既定 `true`） */
   stickyTitles?: boolean;
+  /** 開いたときの倍率の下限（`figure` の `data-fit-min` に入れる） */
+  fitMin?: number;
   /** ツールチップと矢じりの `id` の頭 */
   id: string;
 };
@@ -976,11 +978,17 @@ export function renderDiagramFrame(
       : "";
   const sticky =
     frame.stickyTitles === false ? ' data-sticky-titles="off"' : "";
-  return `<figure class="mdmark-diagram" data-diagram="${frame.kind}"${sticky}><figcaption class="mdmark-diagram-head" id="${id}-title"><span class="mdmark-diagram-title">${escapeHtml(frame.title)}</span><span class="mdmark-diagram-meta">範囲: ${escapeHtml(frame.scope)}・更新日: <time datetime="${escapeHtml(frame.updated)}">${escapeHtml(frame.updated)}</time></span></figcaption><div class="mdmark-diagram-box">${renderTools(frame)}<div class="mdmark-diagram-viewport" tabindex="0" role="group" aria-roledescription="図" aria-labelledby="${id}-title" aria-keyshortcuts="${VIEWPORT_KEYS}"><div class="mdmark-diagram-sizer" style="${sizer}"><div class="mdmark-diagram-stage" style="${stage}">${body.html}</div></div></div>${resize}${body.tips}</div><ul class="mdmark-diagram-legend" aria-label="凡例"${frame.legend.length === 0 ? ' hidden="hidden"' : ""}>${legend}</ul><svg class="mdmark-diagram-defs" width="0" height="0" aria-hidden="true"><defs>${markerDefs(id)}</defs></svg></figure>`;
+  const fitMin =
+    frame.fitMin === undefined ? "" : ` data-fit-min="${num(frame.fitMin)}"`;
+  const meta =
+    frame.scope === undefined || frame.updated === undefined
+      ? ""
+      : `<span class="mdmark-diagram-meta">範囲: ${escapeHtml(frame.scope)}・更新日: <time datetime="${escapeHtml(frame.updated)}">${escapeHtml(frame.updated)}</time></span>`;
+  return `<figure class="mdmark-diagram" data-diagram="${frame.kind}"${sticky}${fitMin}><figcaption class="mdmark-diagram-head" id="${id}-title"><span class="mdmark-diagram-title">${escapeHtml(frame.title)}</span>${meta}</figcaption><div class="mdmark-diagram-box">${renderTools(frame)}<div class="mdmark-diagram-viewport" tabindex="0" role="group" aria-roledescription="図" aria-labelledby="${id}-title" aria-keyshortcuts="${VIEWPORT_KEYS}"><div class="mdmark-diagram-sizer" style="${sizer}"><div class="mdmark-diagram-stage" style="${stage}">${body.html}</div></div></div>${resize}${body.tips}</div><ul class="mdmark-diagram-legend" aria-label="凡例"${frame.legend.length === 0 ? ' hidden="hidden"' : ""}>${legend}</ul><svg class="mdmark-diagram-defs" width="0" height="0" aria-hidden="true"><defs>${markerDefs(id)}</defs></svg></figure>`;
 }
 
 /** 図の種類 */
-export type DiagramKind = DiagramFrame["kind"];
+export type DiagramKind = Exclude<DiagramFrame["kind"], "mermaid">;
 
 /** 図を描く: 種類ごとの中身を描き、凡例を決めて枠に差す。`hints` がオフ（既定はオン）なら、線の詳細・ノードの説明と入力・処理・出力のツールチップと印を置かない */
 export function renderDiagram(options: {

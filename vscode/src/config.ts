@@ -10,7 +10,7 @@ import {
 import type { MdmarkAlias } from "../../src/knowledge/aliases.ts";
 import type { PreviewSettings } from "./settings.ts";
 
-/** `mount` に渡す設定。設定ファイルから取り出した `features`・`libraries`・`html-scripts`・`side-toc`・`labels`・`colorTheme`・`colorScheme` */
+/** `mount` に渡す設定。設定ファイルから取り出した `features`・`libraries`・`html-scripts`・`side-toc`・`labels`・`mermaid`・`colorTheme`・`colorScheme` */
 export type PreviewConfig = {
   /** 記載した値のまま（中の知らない名前と型の違う値は mdmark が無視する） */
   features?: Record<string, unknown>;
@@ -22,6 +22,8 @@ export type PreviewConfig = {
   "side-toc"?: Record<string, unknown>;
   /** 記載した値のまま（中の知らないキーと、空文字・文字列でない値は mdmark が無視して既定の文言で描く） */
   labels?: Record<string, unknown>;
+  /** 書いた値のまま。`url` は呼ぶ側が直す（`theme` の知らない名前は mdmark が `mdmark` で描く） */
+  mermaid?: Record<string, unknown>;
   /** 書いた値のまま。`mdmark.colorTheme` が空でないときは `applyColorTheme` がその値に置き換える（知らない名前は mdmark が dev-swiss で描く） */
   colorTheme?: string;
   /** 書いた値のまま。プレビューでは `mdmark.preview.theme` が `light`・`dark` のとき `applyPreviewTheme` が除く（知らない値は mdmark が `auto` で描く） */
@@ -102,7 +104,7 @@ export const CONFIG_TEMPLATE = `# mdmark の設定。端末の設定（~/.config
 #   - ./extensions/example.js
 `;
 
-/** ライブラリ本体が `html-scripts.url` を省いたときに読む URL の origin */
+/** ライブラリ本体が `html-scripts.url`・`mermaid.url` を省いたときに読む URL の origin */
 const DEFAULT_HTML_SCRIPTS_ORIGIN = "https://cdn.jsdelivr.net";
 
 /** `http:`・`https:` の URL か */
@@ -124,7 +126,7 @@ export function resolveConfigPath(options: {
   return isAbsolute(configPath) ? configPath : resolve(baseDir, configPath);
 }
 
-/** 重ねた設定から `mount` に渡すキー（マップの `features`・`libraries`・`html-scripts`・`side-toc`・`labels` と文字列の `colorTheme`・`colorScheme`）だけを取り出す */
+/** 重ねた設定から `mount` に渡すキー（マップの `features`・`libraries`・`html-scripts`・`side-toc`・`labels`・`mermaid` と文字列の `colorTheme`・`colorScheme`）だけを取り出す */
 function pickPreviewConfig(config: Record<string, unknown>): PreviewConfig {
   const picked: PreviewConfig = {};
   if (isMap(config.features)) {
@@ -141,6 +143,9 @@ function pickPreviewConfig(config: Record<string, unknown>): PreviewConfig {
   }
   if (isMap(config.labels)) {
     picked.labels = config.labels;
+  }
+  if (isMap(config.mermaid)) {
+    picked.mermaid = config.mermaid;
   }
   if (typeof config.colorTheme === "string") {
     picked.colorTheme = config.colorTheme;
@@ -279,17 +284,35 @@ export function resolveHtmlScripts(options: {
   return { ...htmlScripts, url: toUrl(resolve(configDir, url)) };
 }
 
-/** `libraries` の値と `html-scripts.url`（文字列でなければライブラリ本体の既定の URL）のうち `http:`・`https:` の URL の origin を、重なりを除いて返す */
+/** `mermaid.url` が `http:`・`https:` でない文字列なら、設定ファイルのフォルダから解決した絶対パスを `toUrl` で URL にして返す（`resolveHtmlScripts` と同じ直し方） */
+export function resolveMermaid(options: {
+  /** 取り出した `mermaid` */
+  mermaid: Record<string, unknown>;
+  /** 設定ファイルのあるフォルダ */
+  configDir: string;
+  /** 絶対パスを読める URL にする関数 */
+  toUrl: (path: string) => string;
+}): Record<string, unknown> {
+  const { mermaid, configDir, toUrl } = options;
+  return resolveHtmlScripts({ htmlScripts: mermaid, configDir, toUrl });
+}
+
+/** `libraries` の値と `html-scripts.url`・`mermaid.url`（文字列でなければライブラリ本体の既定の URL）のうち `http:`・`https:` の URL の origin を、重なりを除いて返す */
 export function libraryOrigins(
   libraries: Record<string, unknown> | undefined,
   htmlScripts?: Record<string, unknown>,
+  mermaid?: Record<string, unknown>,
 ): string[] {
   const origins = new Set<string>();
-  const htmlScriptsUrl =
-    typeof htmlScripts?.url === "string"
-      ? htmlScripts.url
+  const urlOrDefault = (setting?: Record<string, unknown>): string =>
+    typeof setting?.url === "string"
+      ? setting.url
       : DEFAULT_HTML_SCRIPTS_ORIGIN;
-  for (const value of [...Object.values(libraries ?? {}), htmlScriptsUrl]) {
+  for (const value of [
+    ...Object.values(libraries ?? {}),
+    urlOrDefault(htmlScripts),
+    urlOrDefault(mermaid),
+  ]) {
     if (typeof value === "string" && HTTP_URL_PATTERN.test(value)) {
       // 読めない URL は CSP に足さない（読み込みは mdmark が知らせの枠にする）
       const origin = URL.canParse(value) ? new URL(value).origin : undefined;

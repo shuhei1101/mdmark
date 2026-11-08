@@ -27,6 +27,7 @@ import {
   resolveConfigPath,
   resolveHtmlScripts,
   resolveLibraries,
+  resolveMermaid,
 } from "../config.ts";
 import { openConfigFile } from "../config-file.ts";
 import { type ExtensionDeps, LAST_VERSION_KEY } from "../deps.ts";
@@ -75,6 +76,8 @@ export class PreviewPanel {
   private rawLibraries: Record<string, unknown> | undefined;
   /** 設定ファイルに書いたままの `html-scripts`（CSP の origin に使う） */
   private rawHtmlScripts: Record<string, unknown> | undefined;
+  /** 設定ファイルに書いたままの `mermaid`（CSP の origin に使う） */
+  private rawMermaid: Record<string, unknown> | undefined;
   /** 今の HTML の CSP に入れた `libraries` の origin（`load` が書く）。設定ファイルを読み直した後の origin と比べ、違えば HTML を入れ直す */
   private cspLibraryOrigins: string[] = [];
   /** 設定ファイルを読めていないときの読めない行 */
@@ -212,6 +215,7 @@ export class PreviewPanel {
     this.cspLibraryOrigins = libraryOrigins(
       this.rawLibraries,
       this.rawHtmlScripts,
+      this.rawMermaid,
     );
     const webview = this.webviewPanel.webview;
     this.updateResourceRoots();
@@ -323,9 +327,15 @@ export class PreviewPanel {
       this.reportProblem(load.problem);
       return false;
     }
-    const { libraries, "html-scripts": htmlScripts, ...rest } = load.config;
+    const {
+      libraries,
+      "html-scripts": htmlScripts,
+      mermaid,
+      ...rest
+    } = load.config;
     this.rawLibraries = libraries;
     this.rawHtmlScripts = htmlScripts;
+    this.rawMermaid = mermaid;
     this.assetsRoot = load.assetsRoot;
     this.wanted = { theme: load.theme, extensions: load.extensions };
     // 相対パスは重ねる前に絶対パスにしてある
@@ -346,6 +356,9 @@ export class PreviewPanel {
               toUrl,
             }),
           }),
+      ...(mermaid === undefined
+        ? {}
+        : { mermaid: resolveMermaid({ mermaid, configDir, toUrl }) }),
     };
     this.aliases = load.aliases;
     for (const issue of load.aliasIssues) {
@@ -441,7 +454,11 @@ export class PreviewPanel {
     if (!(await this.reloadConfig())) {
       return;
     }
-    const next = libraryOrigins(this.rawLibraries, this.rawHtmlScripts);
+    const next = libraryOrigins(
+      this.rawLibraries,
+      this.rawHtmlScripts,
+      this.rawMermaid,
+    );
     const sameOrigins =
       next.length === this.cspLibraryOrigins.length &&
       next.every((origin) => this.cspLibraryOrigins.includes(origin));

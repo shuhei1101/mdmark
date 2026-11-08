@@ -2,6 +2,7 @@ import { type MdmarkExtension, registerExtension } from "../extensions.ts";
 import { type EmbeddedSyntax, setEmbeddedSyntax } from "../highlight.ts";
 import { setEmbeddedHtmlScripts } from "../html-scripts.ts";
 import { type LibraryModule, setEmbeddedLibraries } from "../libraries.ts";
+import { setEmbeddedMermaid } from "../mermaid.ts";
 import { type PartName, setPartModuleLoader } from "../part-modules.ts";
 
 /** CLI が束ねる入口のモジュールが `startViewer` に渡す、同じスクリプトに束ねた部品・色分け・外部ライブラリ・拡張のモジュール */
@@ -10,6 +11,8 @@ export type EmbeddedModules = {
   parts: Partial<Record<PartName, Record<string, unknown>>>;
   /** 静的な `import` で取り込んだ色分けの本体と言語のモジュール。文書に色分けの対象があり本体を束ねられたときだけ持つ */
   syntax?: EmbeddedSyntax | undefined;
+  /** 静的な `import` で取り込んだ mermaid のモジュールの名前空間。文書に mermaid のコードブロックがあり束ねられたときだけ持つ */
+  mermaid?: { default?: unknown } | undefined;
   /** 印の名前から、外部ライブラリのモジュールをリテラルの動的 `import()` で読む関数を引く表 */
   libraries: Record<string, () => Promise<LibraryModule>>;
   /** 拡張のモジュールをリテラルの動的 `import()` で読む関数。設定の `extensions` の順 */
@@ -45,6 +48,8 @@ export async function prepareModules(
   }
   // 色分けを埋めていないときは本体を持たない値を入れ、jsDelivr へ要求しない（色分けせずに描く）
   setEmbeddedSyntax(embedded.syntax ?? { languages: {} });
+  // 埋めなかったときも外へ読まず、mermaid のコードブロックは知らせの枠とコードブロックにする
+  setEmbeddedMermaid(embedded.mermaid ?? {});
   setEmbeddedLibraries(embedded.libraries);
   // 範囲のスクリプトは束ねた関数だけを使い、変換のライブラリを外へ要求しない（表に無い範囲は書き方の警告になる）
   setEmbeddedHtmlScripts(embedded.htmlScripts ?? new Map());

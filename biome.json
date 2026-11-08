@@ -9,6 +9,7 @@
       "!vscode/dist",
       "!vscode/media",
       "!.storybook/public",
+      "!tests/fixtures/mermaid-svg",
       "!vscode/out",
       "!vscode/node_modules",
       "!vscode/.vscode-test",

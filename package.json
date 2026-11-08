@@ -18,6 +18,7 @@
     "test:e2e": "playwright test",
     "test": "npm run test:unit && npm run test:integration",
     "storybook:render": "node scripts/storybook-render.ts",
+    "fixtures:mermaid": "node scripts/mermaid-fixtures.ts",
     "storybook": "storybook dev --ci --no-open"
   },
   "devDependencies": {

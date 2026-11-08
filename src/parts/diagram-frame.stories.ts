@@ -72,3 +72,9 @@ export const NoLegendItems: Story = {
   parameters: { server: { id: "diagram-frame" } },
   args: { legend: "[]" },
 };
+
+export const Mermaid: Story = {
+  name: "Mermaid",
+  parameters: { server: { id: "diagram-frame" } },
+  args: { kind: "mermaid", title: "問い合わせの受付", legend: "[]" },
+};

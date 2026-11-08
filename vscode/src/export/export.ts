@@ -25,7 +25,7 @@ export type ExportMode = "export" | "browser" | "print";
 /** 書き出した通知のボタン */
 const OPEN_LABEL = "ブラウザで開く";
 
-/** 設定を重ねて読み、相対パスの `libraries`・`html-scripts.url` を `data:` の URL で埋め、`theme` の CSS を読み、`extensions` を束ねる。読めない設定ファイルは重ねずに残りで書き出す */
+/** 設定を重ねて読み、相対パスの `libraries`・`html-scripts.url`・`mermaid.url` を `data:` の URL で埋め、`theme` の CSS を読み、`extensions` を束ねる。読めない設定ファイルは重ねずに残りで書き出す */
 async function readExportConfig(options: {
   document: TextDocument;
   configPath: string;
@@ -67,12 +67,18 @@ async function readExportConfig(options: {
       load.problem.message,
     );
   }
-  const { libraries, "html-scripts": htmlScripts, ...rest } = load.config;
+  const {
+    libraries,
+    "html-scripts": htmlScripts,
+    mermaid,
+    ...rest
+  } = load.config;
   // 相対パスは重ねる前に絶対パスにしてある
   const embedded = await embedLocalLibraries({
     markdown: document.getText(),
     libraries,
     htmlScripts,
+    mermaid,
     config: {
       features: Object.fromEntries(
         Object.entries(rest.features ?? {}).filter(
@@ -94,6 +100,7 @@ async function readExportConfig(options: {
     ...(embedded.htmlScripts === undefined
       ? {}
       : { "html-scripts": embedded.htmlScripts }),
+    ...(embedded.mermaid === undefined ? {} : { mermaid: embedded.mermaid }),
   };
   let themeCss: string | undefined;
   if (load.theme !== undefined) {

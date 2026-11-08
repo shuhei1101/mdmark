@@ -8367,6 +8367,55 @@
       background: none;
     }
   }
+
+  /* mermaid の図: `dev/mock/refs/382/assets/mermaid.css` から取る */
+  .mdmark .mdmark-mermaid {
+    /* 影: mermaid が SVG の filter で付ける影（シーケンス図の参加者の箱など）を外す。テーマの変数の dropShadow では外れない */
+    svg [filter],
+    svg .actor {
+      filter: none;
+    }
+
+    /* 状態遷移図の終了の印: 外側の線と内側の塗りを本文の色にし、開始の印（本文の色の塗り）とそろえる */
+    svg g.node[id*="_end"] path {
+      stroke: var(--mdmark-color-text);
+    }
+
+    svg g.node[id*="_end"] > g:last-child path {
+      fill: var(--mdmark-color-text);
+    }
+
+    > svg,
+    .mdmark-mermaid-print > svg {
+      display: block;
+    }
+  }
+
+  /* actor の人のアイコン（lucide の user）: 図のほかの線と同じ太さで、本文の色の線にする */
+  .mdmark .mdmark-mermaid-actor {
+    fill: none;
+    stroke: var(--mdmark-color-text);
+    stroke-width: 1.5;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  /* 印刷のための明るい配色の図: 画面では隠し、印刷では今の配色の図の代わりに出す */
+  .mdmark .mdmark-mermaid-print {
+    display: none;
+  }
+
+  @media print {
+    .mdmark .mdmark-mermaid-has-print {
+      > svg {
+        display: none;
+      }
+
+      .mdmark-mermaid-print {
+        display: block;
+      }
+    }
+  }
 }
 
 /* 右側の目次とまとめて開閉するボタン: `dev/mock/refs/166/assets/side-toc.css` から取る */

@@ -30,6 +30,12 @@ files:
     related:
       - to: dev/設計書/モジュール構成/ライブラリ本体/検査.ts
         type: implements
+  - path: mermaid-fixtures.ts
+    description: モジュール構成『ライブラリ本体 / 部品の描画』のうち「mermaid の見本の SVG を書く writeMermaidFixtures」を受け持つ。mermaid のバージョンを変えたときや、mermaid の図のストーリーの見本を変えるときに読む。
+    tags: [tool:storybook, tool:playwright, topic:図]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/部品の描画.ts
+        type: implements
   - path: migrations.ts
     description: モジュール構成『ライブラリ本体 / ビルド』のうち「スキーマを変えたバージョンに移行の手順があるかの点検」を受け持つ。配布物のビルドや検査を変えるときに読む。
     tags: [topic:バンドル, tool:esbuild]
