@@ -755,7 +755,7 @@ async function heightOf(page: Page): Promise<number> {
 
 // 右下のリサイズハンドルのドラッグと上下キーで表示する枠の高さを変え、読み直しても保ち、ダブルクリックで戻し、全画面には置かない（正常シナリオ（リサイズハンドルで高さを変える））
 test("test_normal_when_resized", async ({ page }) => {
-  // 準備: 下へ 200px のドラッグを画面の中で終える高さにする（Firefox は画面の外へのマウスの移動を配らない）
+  // 準備: 下へ 200px のドラッグを画面の中で終える高さにする（Firefox は画面の外へのマウスの移動を正しい座標で配らない）
   await page.setViewportSize({ width: 1280, height: RESIZE_VIEWPORT_HEIGHT });
   await openPage(page, builtRoot);
   await mountTall(page);
