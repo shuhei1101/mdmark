@@ -497,6 +497,112 @@ test("test_draw_mermaid_diagram_when_gantt", async () => {
   );
 });
 
+/** ページの CSS から、セレクタに `_end` を含む規則のセレクタを、入れ子の親のセレクタを重ねた形で集める */
+const endMarkerSelectors = (): string[] => {
+  const found: string[] = [];
+  /** 入れ子の規則のセレクタに親のセレクタを重ねる（`&` があれば置き換え、無ければ子孫にする） */
+  const nest = (parent: string, child: string): string =>
+    parent === ""
+      ? child
+      : child.includes("&")
+        ? child.replaceAll("&", `:is(${parent})`)
+        : `:is(${parent}) ${child}`;
+  const walk = (rules: CSSRuleList, parent: string): void => {
+    for (const rule of rules) {
+      const selector =
+        rule instanceof CSSStyleRule ? nest(parent, rule.selectorText) : parent;
+      if (rule instanceof CSSStyleRule && rule.selectorText.includes("_end")) {
+        found.push(selector);
+      }
+      if ("cssRules" in rule) {
+        walk((rule as CSSGroupingRule).cssRules, selector);
+      }
+    }
+  };
+  for (const sheet of document.styleSheets) {
+    walk(sheet.cssRules, "");
+  }
+  return found;
+};
+
+// 名前に _end を含むノードと状態は本文の色にせず、状態遷移図の終了の印だけを本文の色にする（正常系）
+test("test_draw_mermaid_diagram_when_end_in_name", async () => {
+  // 準備
+  const { drawMermaidDiagram } = await loadMermaid();
+  const scope = createRootFromHtml("");
+  const text = computedColor(scope, "var(--mdmark-color-text)");
+  const flowchart = await drawOptions(
+    scope,
+    "flowchart LR\n  job_end[(記録)] --> B[次]",
+  );
+  const state = await drawOptions(
+    scope,
+    "stateDiagram-v2\n  [*] --> 受付_end\n  受付_end --> [*]",
+  );
+  // 実行
+  const results = [
+    await drawMermaidDiagram(flowchart),
+    await drawMermaidDiagram(state),
+  ];
+  // 検証
+  const html = results.map((result) => {
+    if (!("html" in result)) {
+      throw new Error(`描けなかった: ${result.error}`);
+    }
+    return result.html;
+  });
+  place(scope, html.join(""));
+  const shapes = (selector: string) => [
+    ...scope.querySelectorAll<SVGElement>(
+      `${selector} :is(rect, path, polygon)`,
+    ),
+  ];
+  const named = [
+    ...shapes('g.node[id*="-flowchart-job_end-"]'),
+    ...shapes('g.node.statediagram-state[id*="受付_end"]'),
+  ];
+  expect(named.length).toBeGreaterThan(0);
+  // 終了の印の規則（セレクタに `_end` を含む規則）が、名前に _end を含むノードと状態の形に当たらない
+  const endRules = endMarkerSelectors();
+  expect(endRules.length).toBeGreaterThan(0);
+  for (const shape of named) {
+    for (const selector of endRules) {
+      expect(shape.matches(selector)).toBe(false);
+    }
+    expect(getComputedStyle(shape).fill).not.toBe(text);
+  }
+  const endMarker = scope.querySelector<SVGElement>(
+    'g.node.default[id*="_end-"] > g:last-child path',
+  );
+  expect(endMarker).not.toBeNull();
+  expect(getComputedStyle(endMarker as SVGElement).fill).toBe(text);
+});
+
+// 表示する枠より小さい図を、枠の中で横の中央に置く（正常系）
+test("test_attach_mermaid_when_small", async () => {
+  // 準備
+  const { attachMermaid } = await loadMermaid();
+  const root = createMermaidRoot(["flowchart LR\n  A --> B"]);
+  root.style.width = "1000px";
+  // 実行
+  const handle = attachMermaid(attachOptions(root));
+  detachers.push(handle.detach);
+  await handle.ready;
+  // 検証
+  const viewport = root.querySelector<HTMLElement>(".mdmark-diagram-viewport");
+  const sizer = root.querySelector<HTMLElement>(".mdmark-diagram-sizer");
+  if (!viewport || !sizer) {
+    throw new Error("図の枠が無い");
+  }
+  const left =
+    sizer.getBoundingClientRect().left - viewport.getBoundingClientRect().left;
+  const right =
+    viewport.getBoundingClientRect().right -
+    sizer.getBoundingClientRect().right;
+  expect(sizer.offsetWidth).toBeLessThan(viewport.clientWidth);
+  expect(Math.abs(left - right)).toBeLessThanOrEqual(2);
+});
+
 // 対応表の変数を全て hex にし、固定の値を重ねる（正常系）
 test("test_mermaid_theme_variables", async () => {
   // 準備
