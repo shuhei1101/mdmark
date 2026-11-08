@@ -1,0 +1,1 @@
+# 結合テスト test_normal_when_range_scripts を通しで実行しても範囲のスクリプトの読み込みを数えられるようにする
