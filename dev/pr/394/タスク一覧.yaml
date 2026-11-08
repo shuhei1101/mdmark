@@ -82,8 +82,10 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-08T11:28:58.433906+00:00'
   - process: 結合テスト作成
-    status: todo
+    status: done
     note: 修正した文言を期待値に持つ結合テストの更新と、コメント・テストの名前の修正
+    updated_by: planner
+    updated_at: '2026-11-08T16:27:45.269186+00:00'
   - process: E2E テスト作成
     status: todo
     note: 改名したシナリオに合わせた E2E のテストファイルの改名と、文言の期待値・コメントの修正

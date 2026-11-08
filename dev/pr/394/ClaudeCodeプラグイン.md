@@ -50,3 +50,11 @@
 | [tests/unit/src/plugin/](https://github.com/shuhei1101/mdmark/tree/docs/wording/word-choice/tests/unit/src/plugin) | 全実行 | 変更 | ✅ | 全 1816 テスト pass（3 システム合計。タイムアウトしたテストは単独で再実行して pass）<br>`テスト結果/20261108212026_6cbc8b77_単体テスト.log` |
 
 コメント・テストの名前・文言の期待値を変えた。実装を変える前の Red（49 件 fail）は `テスト結果/20261108195022_86928303_単体テスト.log`。lint は `テスト結果/20261108212026_6cbc8b77_lint.log`（Biome の警告 2 件は base から残る `src/cli/embed.ts` の未使用）。
+
+### 結合
+
+| ファイル | メソッド | 変更種別 | 結果 | 補足 |
+| --- | --- | --- | --- | --- |
+| [tests/integration/ClaudeCodeプラグイン/](https://github.com/shuhei1101/mdmark/tree/docs/wording/word-choice/tests/integration/ClaudeCodeプラグイン) | 全実行 | 変更 | ✅ | ルートの全 947 テスト pass（`--maxWorkers=4`）<br>`テスト結果/20261109012550_98b59d61_結合テスト.log` |
+
+コメント・テストの名前・ツールの文言の期待値を変えた。

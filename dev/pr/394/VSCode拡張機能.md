@@ -52,3 +52,11 @@
 | [tests/unit/vscode/](https://github.com/shuhei1101/mdmark/tree/docs/wording/word-choice/tests/unit/vscode) | 全実行 | 変更 | ✅ | 全 1816 テスト pass（3 システム合計。タイムアウトしたテストは単独で再実行して pass）<br>`テスト結果/20261108212026_6cbc8b77_単体テスト.log` |
 
 コメント・テストの名前・文言の期待値を変えた。実装を変える前の Red（49 件 fail）は `テスト結果/20261108195022_86928303_単体テスト.log`。lint は `テスト結果/20261108212026_6cbc8b77_lint.log`（Biome の警告 2 件は base から残る `src/cli/embed.ts` の未使用）。
+
+### 結合
+
+| ファイル | メソッド | 変更種別 | 結果 | 補足 |
+| --- | --- | --- | --- | --- |
+| [vscode/tests/integration/](https://github.com/shuhei1101/mdmark/tree/docs/wording/word-choice/vscode/tests/integration) | 全実行 | 変更 | ✅ | 全 79 テスト pass（2 バージョン）<br>`テスト結果/20261108215738_cb94096e_結合テスト.log` |
+
+コメントとテストの名前を変えた。プレビューの状態の表示のストーリーの結合テストは、ルートの全件（`テスト結果/20261109012550_98b59d61_結合テスト.log`）で pass。
