@@ -3188,8 +3188,8 @@
       }
     }
 
-    /* 項目の行: 名前の塊と注釈を横に並べる */
-    .mdmark-tree-row {
+    /* 項目の行: 名前の塊と注釈を横に並べる。表のキーの階層の tr も同じクラスを持つため、ファイルツリーのリストの中に限る */
+    .mdmark-tree-list .mdmark-tree-row {
       display: flex;
       align-items: center;
       min-height: 1.5rem;
