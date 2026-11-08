@@ -43,3 +43,6 @@ scope_out:
   - item: 変更履歴（docs/はじめに/変更履歴.md）への記載
     reason: release を master へ入れるときに tester が書く
     plan: none
+  - item: モック ui-canvas/80/side-by-side のランドマークの名前の重複（axe の landmark-unique）
+    reason: axe の landmark-unique に当たる既存の逸脱で、dm の表示名の変更という今回の要望に含まれない
+    plan: '#425'
