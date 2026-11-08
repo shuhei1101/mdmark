@@ -9,3 +9,6 @@ scope_out:
   - item: src/files.yaml に行が無い render/syntax/card-grid.ts・render/page.ts・plugin/ の 8 ファイルの行の追加
     reason: '子 Issue #345・#346 の範囲（#345 は src/parts/、#346 は本文が挙げる 13 ファイル）の外で、今回の作業 PR がマージされなくても同じ内容で成り立つ横展開の残り'
     plan: '#436'
+  - item: モジュール構成『ライブラリ本体 / CLI』のフォルダ構成に markdown-check.ts・issues.ts が無い
+    reason: 要素の container が指すファイルがフォルダ構成に無く、設計書の中で食い違う。今回の要望（src/files.yaml の行の追加）に含まれない
+    plan: '#437'
