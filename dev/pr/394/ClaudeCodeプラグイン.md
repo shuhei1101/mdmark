@@ -58,3 +58,7 @@
 | [tests/integration/ClaudeCodeプラグイン/](https://github.com/shuhei1101/mdmark/tree/docs/wording/word-choice/tests/integration/ClaudeCodeプラグイン) | 全実行 | 変更 | ✅ | ルートの全 947 テスト pass（`--maxWorkers=4`）<br>`テスト結果/20261109012550_98b59d61_結合テスト.log` |
 
 コメント・テストの名前・ツールの文言の期待値を変えた。
+
+### E2E
+
+E2E は tester が実行する。コメントと、製品の文言・改名した文書（`docs/使用方法/`）のパスを期待値に持つ箇所を変え、fixture の入力の文字列は変えていない（判定は `作業/e2elit.py`）。lint は `テスト結果/20261109014833_24f2c285_lint.log`。

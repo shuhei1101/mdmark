@@ -60,3 +60,7 @@
 | [vscode/tests/integration/](https://github.com/shuhei1101/mdmark/tree/docs/wording/word-choice/vscode/tests/integration) | 全実行 | 変更 | ✅ | 全 79 テスト pass（2 バージョン）<br>`テスト結果/20261108215738_cb94096e_結合テスト.log` |
 
 コメントとテストの名前を変えた。プレビューの状態の表示のストーリーの結合テストは、ルートの全件（`テスト結果/20261109012550_98b59d61_結合テスト.log`）で pass。
+
+### E2E
+
+E2E は tester が実行する。コメントと、製品の文言・改名した文書（`docs/使用方法/`）のパスを期待値に持つ箇所を変え、fixture の入力の文字列は変えていない（判定は `作業/e2elit.py`）。lint は `テスト結果/20261109014833_24f2c285_lint.log`。
