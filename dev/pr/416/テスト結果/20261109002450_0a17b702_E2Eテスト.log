@@ -1,0 +1,66 @@
+$ npx playwright test "tests/e2e/単一ユースケース/脚注を見る.spec.ts" "tests/e2e/単一ユースケース/文書の先頭へ戻る.spec.ts" "tests/e2e/単一ユースケース/複数の文書を1枚のHTMLにまとめる.spec.ts" --reporter=line --workers=2
+- Resolving version...
+✔ Validated version: 1.141.0
+✔ Found existing install in /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/fix-interact-footnote-back-to-top-e2e/vscode/.vscode-test/vscode-linux-x64-1.141.0
+
+Running 58 tests using 2 workers
+
+[1/58] [chromium] › tests/e2e/単一ユースケース/脚注を見る.spec.ts:62:1 › test_normal
+[2/58] [chromium] › tests/e2e/単一ユースケース/文書の先頭へ戻る.spec.ts:131:1 › test_normal
+[3/58] [chromium] › tests/e2e/単一ユースケース/脚注を見る.spec.ts:96:1 › test_normal_when_keyboard
+[4/58] [chromium] › tests/e2e/単一ユースケース/脚注を見る.spec.ts:118:1 › test_normal_when_back_from_list
+[5/58] [chromium] › tests/e2e/単一ユースケース/脚注を見る.spec.ts:139:1 › test_normal_when_referenced_twice
+[6/58] [chromium] › tests/e2e/単一ユースケース/文書の先頭へ戻る.spec.ts:162:1 › test_normal_when_near_top
+[7/58] [chromium] › tests/e2e/単一ユースケース/文書の先頭へ戻る.spec.ts:187:1 › test_normal_when_pressed_by_keyboard
+[8/58] [chromium] › tests/e2e/単一ユースケース/脚注を見る.spec.ts:162:1 › test_normal_when_with_terms
+[9/58] [chromium] › tests/e2e/単一ユースケース/脚注を見る.spec.ts:190:1 › test_error_when_definition_missing
+[10/58] [chromium] › tests/e2e/単一ユースケース/脚注を見る.spec.ts:204:1 › test_normal_when_jump_to_list
+[11/58] [chromium] › tests/e2e/単一ユースケース/脚注を見る.spec.ts:242:3 › タッチの端末 › test_normal_when_touch
+[12/58] [chromium] › tests/e2e/単一ユースケース/文書の先頭へ戻る.spec.ts:215:1 › test_normal_when_scroll_container
+[13/58] [chromium] › tests/e2e/単一ユースケース/複数の文書を1枚のHTMLにまとめる.spec.ts:45:1 › test_normal
+[14/58] [chromium] › tests/e2e/単一ユースケース/文書の先頭へ戻る.spec.ts:255:1 › test_normal_when_side_toc_shown
+[15/58] [chromium] › tests/e2e/単一ユースケース/文書の先頭へ戻る.spec.ts:281:1 › test_normal_when_diff_minimap_shown
+[16/58] [chromium] › tests/e2e/単一ユースケース/文書の先頭へ戻る.spec.ts:326:1 › test_normal_when_comment_margin_shown
+[17/58] [chromium] › tests/e2e/単一ユースケース/文書の先頭へ戻る.spec.ts:365:1 › test_normal_when_lightbox_open
+[18/58] [chromium] › tests/e2e/単一ユースケース/文書の先頭へ戻る.spec.ts:403:3 › 狭い幅のタッチの端末 › test_normal_when_narrow_width
+[19/58] [firefox] › tests/e2e/単一ユースケース/文書の先頭へ戻る.spec.ts:131:1 › test_normal
+[20/58] [chromium] › tests/e2e/単一ユースケース/複数の文書を1枚のHTMLにまとめる.spec.ts:81:1 › test_normal_when_link_outside_bundle
+[21/58] [chromium] › tests/e2e/単一ユースケース/複数の文書を1枚のHTMLにまとめる.spec.ts:123:1 › test_error_when_no_documents
+[22/58] [firefox] › tests/e2e/単一ユースケース/文書の先頭へ戻る.spec.ts:162:1 › test_normal_when_near_top
+[23/58] [firefox] › tests/e2e/単一ユースケース/文書の先頭へ戻る.spec.ts:187:1 › test_normal_when_pressed_by_keyboard
+[24/58] [chromium] › tests/e2e/単一ユースケース/複数の文書を1枚のHTMLにまとめる.spec.ts:139:1 › test_normal_when_aliases
+[25/58] [firefox] › tests/e2e/単一ユースケース/文書の先頭へ戻る.spec.ts:215:1 › test_normal_when_scroll_container
+[26/58] [chromium] › tests/e2e/単一ユースケース/複数の文書を1枚のHTMLにまとめる.spec.ts:211:1 › test_normal_when_theme_selected
+[27/58] [firefox] › tests/e2e/単一ユースケース/文書の先頭へ戻る.spec.ts:255:1 › test_normal_when_side_toc_shown
+[28/58] [firefox] › tests/e2e/単一ユースケース/文書の先頭へ戻る.spec.ts:281:1 › test_normal_when_diff_minimap_shown
+[29/58] [firefox] › tests/e2e/単一ユースケース/文書の先頭へ戻る.spec.ts:326:1 › test_normal_when_comment_margin_shown
+[30/58] [firefox] › tests/e2e/単一ユースケース/文書の先頭へ戻る.spec.ts:365:1 › test_normal_when_lightbox_open
+[31/58] [chromium] › tests/e2e/単一ユースケース/複数の文書を1枚のHTMLにまとめる.spec.ts:247:1 › test_normal_when_media_embedded
+[32/58] [firefox] › tests/e2e/単一ユースケース/文書の先頭へ戻る.spec.ts:403:3 › 狭い幅のタッチの端末 › test_normal_when_narrow_width
+[33/58] [firefox] › tests/e2e/単一ユースケース/脚注を見る.spec.ts:62:1 › test_normal
+[34/58] [chromium] › tests/e2e/単一ユースケース/複数の文書を1枚のHTMLにまとめる.spec.ts:326:1 › test_normal_when_blob_and_dynamic_import_blocked
+[35/58] [chromium] › tests/e2e/単一ユースケース/複数の文書を1枚のHTMLにまとめる.spec.ts:398:1 › test_normal_when_footnotes
+[36/58] [chromium] › tests/e2e/単一ユースケース/複数の文書を1枚のHTMLにまとめる.spec.ts:438:1 › test_normal_when_includes_and_icons_embedded
+[37/58] [chromium] › tests/e2e/単一ユースケース/複数の文書を1枚のHTMLにまとめる.spec.ts:478:1 › test_normal_when_range_scripts
+[38/58] [chromium] › tests/e2e/単一ユースケース/複数の文書を1枚のHTMLにまとめる.spec.ts:535:1 › test_normal_when_cascaded
+[39/58] [chromium] › tests/e2e/単一ユースケース/複数の文書を1枚のHTMLにまとめる.spec.ts:573:1 › test_normal_when_mermaid
+[40/58] [firefox] › tests/e2e/単一ユースケース/複数の文書を1枚のHTMLにまとめる.spec.ts:45:1 › test_normal
+[41/58] [firefox] › tests/e2e/単一ユースケース/脚注を見る.spec.ts:96:1 › test_normal_when_keyboard
+[42/58] [firefox] › tests/e2e/単一ユースケース/脚注を見る.spec.ts:118:1 › test_normal_when_back_from_list
+[43/58] [firefox] › tests/e2e/単一ユースケース/脚注を見る.spec.ts:139:1 › test_normal_when_referenced_twice
+[44/58] [firefox] › tests/e2e/単一ユースケース/脚注を見る.spec.ts:162:1 › test_normal_when_with_terms
+[45/58] [firefox] › tests/e2e/単一ユースケース/脚注を見る.spec.ts:190:1 › test_error_when_definition_missing
+[46/58] [firefox] › tests/e2e/単一ユースケース/脚注を見る.spec.ts:204:1 › test_normal_when_jump_to_list
+[47/58] [firefox] › tests/e2e/単一ユースケース/脚注を見る.spec.ts:242:3 › タッチの端末 › test_normal_when_touch
+[48/58] [firefox] › tests/e2e/単一ユースケース/複数の文書を1枚のHTMLにまとめる.spec.ts:81:1 › test_normal_when_link_outside_bundle
+[49/58] [firefox] › tests/e2e/単一ユースケース/複数の文書を1枚のHTMLにまとめる.spec.ts:123:1 › test_error_when_no_documents
+[50/58] [firefox] › tests/e2e/単一ユースケース/複数の文書を1枚のHTMLにまとめる.spec.ts:139:1 › test_normal_when_aliases
+[51/58] [firefox] › tests/e2e/単一ユースケース/複数の文書を1枚のHTMLにまとめる.spec.ts:211:1 › test_normal_when_theme_selected
+[52/58] [firefox] › tests/e2e/単一ユースケース/複数の文書を1枚のHTMLにまとめる.spec.ts:247:1 › test_normal_when_media_embedded
+[53/58] [firefox] › tests/e2e/単一ユースケース/複数の文書を1枚のHTMLにまとめる.spec.ts:326:1 › test_normal_when_blob_and_dynamic_import_blocked
+[54/58] [firefox] › tests/e2e/単一ユースケース/複数の文書を1枚のHTMLにまとめる.spec.ts:398:1 › test_normal_when_footnotes
+[55/58] [firefox] › tests/e2e/単一ユースケース/複数の文書を1枚のHTMLにまとめる.spec.ts:438:1 › test_normal_when_includes_and_icons_embedded
+[56/58] [firefox] › tests/e2e/単一ユースケース/複数の文書を1枚のHTMLにまとめる.spec.ts:478:1 › test_normal_when_range_scripts
+[57/58] [firefox] › tests/e2e/単一ユースケース/複数の文書を1枚のHTMLにまとめる.spec.ts:535:1 › test_normal_when_cascaded
+[58/58] [firefox] › tests/e2e/単一ユースケース/複数の文書を1枚のHTMLにまとめる.spec.ts:573:1 › test_normal_when_mermaid
+  58 passed (4.0m)
