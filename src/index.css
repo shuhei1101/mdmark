@@ -10061,10 +10061,10 @@
     color: var(--mdmark-color-link);
   }
 
-  /* 全体のパスのツールチップ: キーのセルの下に出し、名前に重ねない */
+  /* 全体のパスのツールチップ: キーのセルの上に出し、名前に重ねず、最後の行でもスクロールの包みの下端で切らない */
   .mdmark-table[data-tree] .mdmark-tree-tip {
     position: absolute;
-    inset-block-start: 100%;
+    inset-block-end: 100%;
     inset-inline-start: 0;
     z-index: 3;
     pointer-events: none;
