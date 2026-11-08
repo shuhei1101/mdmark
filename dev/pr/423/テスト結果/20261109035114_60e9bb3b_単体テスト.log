@@ -1,0 +1,78 @@
+$ npm run test:unit
+
+> test:unit
+> vitest run --project 'unit*'
+
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/test-vscode-collapsed-section-scroll-sync
+
+ ❯ |unit-browser (chromium)| tests/unit/vscode/src/webview/features/preview/panel/scroll.browser.test.ts (11 tests | 2 failed) 571ms
+   × test_collect_anchors_when_closed_section 295ms
+   × test_top_for_line_when_collapsed 211ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/vscode/src/webview/features/preview/panel/scroll.browser.test.ts > test_collect_anchors_when_closed_section
+AssertionError: expected [ +0, 2, 4, 6, 8, 10 ] to deeply equal [ +0, 2, 4, 12 ]
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/scroll.browser.test.ts/test_collect_anchors_when_closed_section.png
+
+- Expected
++ Received
+
+  [
+    0,
+    2,
+    4,
+-   12,
++   6,
++   8,
++   10,
+  ]
+
+ ❯ tests/unit/vscode/src/webview/features/preview/panel/scroll.browser.test.ts:115:56
+    113|   const anchors = collectAnchors({ root, scroller });
+    114|   // 検証
+    115|   expect(anchors.map((anchor: Anchor) => anchor.line)).toEqual([0, 2, …
+       |                                                        ^
+    116|   expect(
+    117|     anchors.map((anchor: Anchor & { collapsed?: boolean }) =>
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=ec2e3008:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/vscode/src/webview/features/preview/panel/scroll.browser.test.ts > test_top_for_line_when_collapsed
+AssertionError: expected [ 100, 135, 140 ] to deeply equal [ 100, 100, 140 ]
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/scroll.browser.test.ts/test_top_for_line_when_collapsed.png
+
+- Expected
++ Received
+
+  [
+    100,
+-   100,
++   135,
+    140,
+  ]
+
+ ❯ tests/unit/vscode/src/webview/features/preview/panel/scroll.browser.test.ts:159:16
+    157|   const tops = [4, 11, 12].map((line) => topForLine(anchors, line));
+    158|   // 検証
+    159|   expect(tops).toEqual([100, 100, 140]);
+       |                ^
+    160| });
+    161|
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=ec2e3008:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed | 257 passed (258)
+      Tests  2 failed | 1816 passed (1818)
+   Start at  03:47:59
+   Duration  180.39s (worker 77%, tests 12%, import 7%, transform 3%)
+
+exit:1

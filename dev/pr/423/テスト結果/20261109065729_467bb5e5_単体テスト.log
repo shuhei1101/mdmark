@@ -1,0 +1,10 @@
+$ npx vitest run --project "unit*" tests/unit/vscode/src/webview/features/preview/panel/scroll.browser.test.ts
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/test-vscode-collapsed-section-scroll-sync
+
+
+ Test Files  1 passed (1)
+      Tests  12 passed (12)
+   Start at  06:57:33
+   Duration  3.55s (import 90%, worker 6%, tests 3%)
+
