@@ -1,0 +1,29 @@
+# Claude Code プラグイン
+
+## 現状
+
+<!-- table: data -->
+
+| 分類 | ページ / ファイル | 概要 | 補足 |
+| --- | --- | --- | --- |
+| ドキュメント | [dev/設計書/インターフェース定義/ClaudeCodeプラグイン/](https://github.com/shuhei1101/mdmark/tree/7a9367dd/dev/%E8%A8%AD%E8%A8%88%E6%9B%B8/%E3%82%A4%E3%83%B3%E3%82%BF%E3%83%BC%E3%83%95%E3%82%A7%E3%83%BC%E3%82%B9%E5%AE%9A%E7%BE%A9/ClaudeCode%E3%83%97%E3%83%A9%E3%82%B0%E3%82%A4%E3%83%B3) | フックと MCP のツールの入出力 | 文の単語の修正。`CSSのテンプレートの一覧を返す`・`設定のキーの一覧を返す`・`文書のフォルダの設定を書く`・`端末の設定を書く` の改名 |
+| ドキュメント | [dev/設計書/モジュール構成/ClaudeCodeプラグイン/](https://github.com/shuhei1101/mdmark/tree/7a9367dd/dev/%E8%A8%AD%E8%A8%88%E6%9B%B8/%E3%83%A2%E3%82%B8%E3%83%A5%E3%83%BC%E3%83%AB%E6%A7%8B%E6%88%90/ClaudeCode%E3%83%97%E3%83%A9%E3%82%B0%E3%82%A4%E3%83%B3) | モジュールの構成 | 文の単語の修正。`使い方集` の改名 |
+| ドキュメント | [dev/設計書/設定/ClaudeCodeプラグイン.yaml](https://github.com/shuhei1101/mdmark/blob/7a9367dd/dev/%E8%A8%AD%E8%A8%88%E6%9B%B8/%E8%A8%AD%E5%AE%9A/ClaudeCode%E3%83%97%E3%83%A9%E3%82%B0%E3%82%A4%E3%83%B3.yaml) | MCP サーバーのポートとつなぐ先の説明 | 説明の単語の修正 |
+| 実装 | [src/plugin/](https://github.com/shuhei1101/mdmark/tree/7a9367dd/src/plugin) | MCP サーバーとフック | コメントと、ツールのエラー・説明の文言の修正 |
+| 実装 | [guide/](https://github.com/shuhei1101/mdmark/tree/7a9367dd/guide) | 使い方集の索引 | 索引の文の単語の修正 |
+| 実装 | [plugin/](https://github.com/shuhei1101/mdmark/tree/7a9367dd/plugin) | プラグインの配布物・スキル・雛形 | スキル・雛形の単語の修正（ビルドで生成するファイルはビルドし直す） |
+| テスト | [tests/integration/ClaudeCodeプラグイン/](https://github.com/shuhei1101/mdmark/tree/7a9367dd/tests/integration/ClaudeCode%E3%83%97%E3%83%A9%E3%82%B0%E3%82%A4%E3%83%B3) | プラグインの結合テスト | コメント・テストの名前・文言の期待値の修正 |
+
+<!-- /table -->
+
+## 変更方針
+
+| 対象 | 方針 | 補足 |
+| --- | --- | --- |
+| 単語の置き換え | [ライブラリ本体](./ライブラリ本体.md) と同じ決まりで置き換える | - |
+| MCP のツール | ツールの説明とエラーの文言を修正する | ツール名と引数のキーは変えない |
+| 配布物 | `plugin/` のうちビルドで生成するファイルは、修正した元からビルドし直す | - |
+
+## テスト結果
+
+未実施。

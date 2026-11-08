@@ -1,0 +1,75 @@
+tasks:
+  - process: 初期構築
+    status: skipped
+    reason: 既存リポジトリのため対象外
+    updated_by: planner
+    updated_at: '2026-11-08T06:49:59.531091+00:00'
+  - process: リバースエンジニアリング
+    status: skipped
+    reason: 現状の設計書が揃っている
+    updated_by: planner
+    updated_at: '2026-11-08T06:49:59.531091+00:00'
+  - process: 方針決め
+    status: skipped
+    reason: 方針決めを依頼する Issue ではない
+    updated_by: planner
+    updated_at: '2026-11-08T06:49:59.531091+00:00'
+  - process: PoC 検証
+    status: skipped
+    reason: 未検証の技術機構に依存しない
+    updated_by: planner
+    updated_at: '2026-11-08T06:49:59.531091+00:00'
+  - process: 複合ユースケース設計
+    status: skipped
+    reason: 業務の流れを変えない。シナリオの文の単語とファイル名の修正はドキュメント修正で行う
+    updated_by: planner
+    updated_at: '2026-11-08T06:49:59.531091+00:00'
+  - process: デザインスタイル選定
+    status: skipped
+    reason: デザイン方針があり、見た目の方向を変えない
+    updated_by: planner
+    updated_at: '2026-11-08T06:49:59.531091+00:00'
+  - process: 画面一覧・画面遷移
+    status: skipped
+    reason: 画面の追加・削除と画面遷移の変更を含まない
+    updated_by: planner
+    updated_at: '2026-11-08T06:49:59.531091+00:00'
+  - process: 単一ユースケース設計
+    status: skipped
+    reason: 利用者の操作と振る舞いを変えない。シナリオの文の単語とファイル名の修正はドキュメント修正で行う
+    updated_by: planner
+    updated_at: '2026-11-08T06:49:59.531091+00:00'
+  - process: モック作成
+    status: skipped
+    reason: 見た目の結果が対応表で決まっている（置き換える単語と置き換え先）。モックの文言の修正はドキュメント修正で行う
+    updated_by: planner
+    updated_at: '2026-11-08T06:49:59.531091+00:00'
+  - process: インターフェース定義設計
+    status: todo
+    note: CLI・MCP のツール・VS Code のコマンドのエラーと出力の文言を、対応表と規約『入力と文言』の書式で修正する
+  - process: 部品設計
+    status: todo
+    note: 部品の表示の文言と、部品設計のファイル名（コメントの印・節・知らせの枠 など）を修正する
+  - process: 画面設計
+    status: todo
+    note: ボタン・ラベル・通知の文言を修正し、用語集の用語の置き換え先を決める
+  - process: モジュール構成設計
+    status: skipped
+    reason: クラス・関数の構成を変えない。モジュール構成の文の単語とファイル名の修正はドキュメント修正で行う
+    updated_by: planner
+    updated_at: '2026-11-08T06:49:59.531091+00:00'
+  - process: ドキュメント修正
+    status: todo
+    note: 要件.yaml の docs と、シナリオ・モジュール構成・ER 図・設定・テンプレート・モック・docs/ の単語とファイル名の修正
+  - process: 単体テスト作成
+    status: todo
+    note: 修正した文言を期待値に持つテストの更新と、コメント・テストの名前の修正
+  - process: 実装
+    status: todo
+    note: src/・scripts/・schemas/・vscode/・plugin/・guide/ のコメントと文言の修正
+  - process: 結合テスト作成
+    status: todo
+    note: 修正した文言を期待値に持つ結合テストの更新と、コメント・テストの名前の修正
+  - process: E2E テスト作成
+    status: todo
+    note: 改名したシナリオに合わせた E2E のテストファイルの改名と、文言の期待値・コメントの修正
