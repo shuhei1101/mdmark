@@ -34,6 +34,9 @@ const DRAG_EDGE = 8;
 // 表示する枠を下限の高さまで低くするときに、リサイズハンドルで ↑ を押す回数
 const RESIZE_UP_PRESSES = 20;
 
+// リサイズハンドルを下へドラッグするときの画面の高さ（px）
+const RESIZE_VIEWPORT_HEIGHT = 1000;
+
 // 文書を縦にスクロールできるようにする、末尾の段落の数
 const TAIL_PARAGRAPHS = 40;
 
@@ -752,7 +755,8 @@ async function heightOf(page: Page): Promise<number> {
 
 // 右下のリサイズハンドルのドラッグと上下キーで表示する枠の高さを変え、読み直しても保ち、ダブルクリックで戻し、全画面には置かない（正常シナリオ（リサイズハンドルで高さを変える））
 test("test_normal_when_resized", async ({ page }) => {
-  // 準備
+  // 準備: 下へ 200px のドラッグを画面の中で終える高さにする（Firefox は画面の外へのマウスの移動を配らない）
+  await page.setViewportSize({ width: 1280, height: RESIZE_VIEWPORT_HEIGHT });
   await openPage(page, builtRoot);
   await mountTall(page);
   const handle = page.getByRole("separator", {
@@ -775,6 +779,7 @@ test("test_normal_when_resized", async ({ page }) => {
     x: handleRect.x + handleRect.width / 2,
     y: handleRect.y + handleRect.height / 2,
   };
+  expect(center.y + 200).toBeLessThan(RESIZE_VIEWPORT_HEIGHT);
   await page.mouse.move(center.x, center.y);
   await page.mouse.down();
   await page.mouse.move(center.x, center.y + 200, { steps: 8 });
