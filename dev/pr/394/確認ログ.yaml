@@ -11,3 +11,13 @@ confirmations:
     approver: shuhei1101
     commit:
     thread: https://github.com/shuhei1101/mdmark/pull/394#discussion_r4505603696
+  - topic: 変更履歴（docs/はじめに/変更履歴.md・CHANGELOG.md）の公開済みのバージョンの行の単語
+    decision: 公開済みのバージョンの行は当時の文言のまま変えず、スコープ外にする（推奨案 A）
+    decided_by: thumbs_up
+    approver: shuhei1101
+    thread: https://github.com/shuhei1101/mdmark/pull/394#discussion_r4507099069
+  - topic: migrations/no-steps.yaml の公開済みのバージョンの行の単語
+    decision: 公開済みのバージョンの行の理由は当時の文言のまま変えず、スコープ外にする（推奨案 A）
+    decided_by: thumbs_up
+    approver: shuhei1101
+    thread: https://github.com/shuhei1101/mdmark/pull/394#discussion_r4507098543
