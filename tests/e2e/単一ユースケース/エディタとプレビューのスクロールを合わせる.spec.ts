@@ -173,3 +173,116 @@ test("test_normal_when_diff_preview", async () => {
     frame.locator('div.mdmark-diff-block[data-kind="del"] [data-source-line]'),
   ).toHaveCount(0);
 });
+
+/** 閉じるセクションの番号（1 始まり） */
+const CLOSED_SECTION = 8;
+
+/** 長い文書の `CLOSED_SECTION` 番目のセクションを `<!-- section: closed -->` で閉じ、3 つの段落にした Markdown と、その見出し・最後の段落・次の見出しの行（エディタの行番号。1 始まり） */
+function closedDocument(): {
+  markdown: string;
+  heading: number;
+  lastParagraph: number;
+  nextHeading: number;
+} {
+  const lines: string[] = [];
+  let heading = 0;
+  let lastParagraph = 0;
+  let nextHeading = 0;
+  for (let section = 1; section <= SECTIONS; section += 1) {
+    if (section === CLOSED_SECTION) {
+      heading = lines.length + 1;
+    }
+    if (section === CLOSED_SECTION + 1) {
+      nextHeading = lines.length + 1;
+    }
+    lines.push(`## 節 ${section}`);
+    if (section === CLOSED_SECTION) {
+      lines.push("<!-- section: closed -->");
+    }
+    lines.push("");
+    const paragraphs = section === CLOSED_SECTION ? 3 : 40;
+    for (let paragraph = 1; paragraph <= paragraphs; paragraph += 1) {
+      if (section === CLOSED_SECTION) {
+        lastParagraph = lines.length + 1;
+      }
+      lines.push(`${section}-${paragraph} 段落の本文です。`, "");
+    }
+  }
+  return { markdown: lines.join("\n"), heading, lastParagraph, nextHeading };
+}
+
+/** 閉じたセクションの見出しが見えている先頭にかかり、本文 1 行分（最初の段落の高さ）より下へ離れておらず、次の見出しが先頭より下にあるか */
+function closedHeadingPlaced(
+  frame: Frame,
+  heading: number,
+  nextHeading: number,
+): Promise<boolean> {
+  return frame.evaluate(
+    ([closedLine, nextLine]) => {
+      const closed = document.querySelector(
+        `h2[data-source-line="${closedLine}"]`,
+      );
+      const next = document.querySelector(`h2[data-source-line="${nextLine}"]`);
+      const paragraph = document.querySelector("p[data-source-line]");
+      if (!closed || !next || !paragraph) {
+        return false;
+      }
+      const aside = document.querySelector(".mdmark-side-toc");
+      const content = document.querySelector(".mdmark-content");
+      const inset =
+        aside &&
+        content &&
+        aside.getBoundingClientRect().width >=
+          content.getBoundingClientRect().width
+          ? aside.getBoundingClientRect().bottom
+          : 0;
+      const rect = closed.getBoundingClientRect();
+      return (
+        rect.bottom > inset &&
+        rect.top <= inset + paragraph.getBoundingClientRect().height &&
+        next.getBoundingClientRect().top > inset
+      );
+    },
+    [heading - 1, nextHeading - 1],
+  );
+}
+
+// 閉じたセクションの中を編集しても、プレビューはそのセクションの見出しの辺りに追従し、セクションを開かない（正常シナリオ（折りたたんだセクションの中を編集する））
+test("test_normal_when_in_closed_section", async () => {
+  // 準備: 8 番目のセクションを閉じた長い文書をエディタと横の列のプレビューで開く
+  const { markdown, heading, lastParagraph, nextHeading } = closedDocument();
+  const session = await e2e.launch({ files: { "closed.md": markdown } });
+  await session.openFile("closed.md");
+  await session.openPreviewWithShortcut();
+  const frame = await session.frameWith("h2");
+  await expect(frame.locator("h2")).toHaveCount(SECTIONS);
+  // 開いた直後の位置合わせが落ち着くまで待つ
+  await session.win.waitForTimeout(500);
+  await session.focusEditor();
+  // 実行: 8 番目のセクションの 3 つ目の段落の行までエディタをスクロールする
+  const top = await scrollEditorTo(session, lastParagraph);
+  expect(top).toBeGreaterThan(heading);
+  expect(top).toBeLessThan(nextHeading);
+  // 検証: 8 番目の見出しが見えている先頭の辺りに来て、セクションは閉じたまま
+  await expect
+    .poll(() => closedHeadingPlaced(frame, heading, nextHeading))
+    .toBe(true);
+  const toggle = frame.locator(
+    `h2[data-source-line="${heading - 1}"] .mdmark-section-toggle`,
+  );
+  await expect(toggle).toHaveAttribute("aria-expanded", "false");
+  // 実行: 3 つ目の段落の行の先頭に文字を入力する
+  await session.win.keyboard.press("Control+G");
+  await session.win.keyboard.type(String(lastParagraph));
+  await session.win.keyboard.press("Enter");
+  await session.win.keyboard.press("Home");
+  await session.win.keyboard.type("追記");
+  // 検証: 描き直した後も同じ位置の関係で、セクションは閉じたまま、エディタは動かない
+  await expect(
+    frame.locator(`p[data-source-line="${lastParagraph - 1}"]`),
+  ).toContainText("追記");
+  await session.win.waitForTimeout(500);
+  expect(await closedHeadingPlaced(frame, heading, nextHeading)).toBe(true);
+  await expect(toggle).toHaveAttribute("aria-expanded", "false");
+  expect(await session.editorTopLine()).toBe(top);
+});
