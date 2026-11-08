@@ -7,7 +7,7 @@ use_cases:
   - kind: single
     scenario: dev/設計書/シナリオ/単一ユースケース/図を描く.yaml
     impact: run_only
-    detail: フロー図の凡例に「処理の流れ」を出す動作を、シナリオどおりに戻す
+    detail: フロー図の凡例に、図に 2 種類以上ある線の種類だけが出ることを確かめる
     depends_on: []
   - kind: single
     scenario: dev/設計書/シナリオ/単一ユースケース/図の要素のツールチップを見る.yaml
@@ -17,12 +17,12 @@ use_cases:
   - kind: composite
     scenario: dev/設計書/シナリオ/複合ユースケース/固有の部品で図の文書を描いて確かめる.yaml
     impact: run_only
-    detail: レーンにポインターを載せてツールチップを出す動作を、シナリオどおりに戻す
+    detail: 箱の印にフォーカスして、その箱の入力・処理・出力のツールチップが箱の下に出ることを確かめる
     depends_on: []
   - kind: composite
     scenario: dev/設計書/シナリオ/複合ユースケース/コードブロックのHTMLでチャートとヒントを読む.yaml
     impact: run_only
-    detail: 埋め込んだ HTML のフロー図のノードの名前にポインターを載せられる動作を、シナリオどおりに戻す
+    detail: 範囲の css と ts を当てた文書と書き出した HTML でも、フロー図の箱の hint が名前の上では出ず右上の印の上で出ることを確かめる
     depends_on: []
 scope_out:
   - item: タッチでフロー図・シーケンス図をドラッグで動かす
