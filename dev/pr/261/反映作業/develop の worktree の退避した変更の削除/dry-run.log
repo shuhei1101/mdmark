@@ -1,0 +1,7 @@
+前提確認（origin/chore/vscode/fix-extension-id に同じ変更がある）: ok
+対象: stash@{0} 145766c3c02eb6a7407fd99ccfbbb2a178cdb1e4
+ vscode/package-lock.json            | 4 ++--
+ vscode/package.json                 | 4 ++--
+ vscode/tests/integration/helpers.ts | 2 +-
+ 3 files changed, 5 insertions(+), 5 deletions(-)
+stash の削除: changed

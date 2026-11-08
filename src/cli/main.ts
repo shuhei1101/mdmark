@@ -19,11 +19,25 @@ const USAGE = [
   "使えるコマンド:",
   "  init [{置く先のフォルダ}] [--js]",
   "  check [--config {設定ファイル}] [--base {git の ref}]",
+  "  check --text {Markdown か -} [--config {設定ファイル}]",
+  "  check --file {YAML のファイル} --key {キーのパス} [--config {設定ファイル}]",
   "  export {文書} [--out {出力}] [--config {設定ファイル}]",
   "  build [--config {設定ファイル}]",
-  "  upgrade [--plan] [--yes] [--config {設定ファイル}]",
+  "  upgrade [--plan] [--yes] [--config {設定ファイル} | --settings]",
   "  serve",
 ];
+
+/** `check --text` に渡すと標準入力から読む値 */
+const STDIN_TEXT = "-";
+
+/** 標準入力を終わりまで読む */
+async function readStdin(): Promise<string> {
+  const chunks: Buffer[] = [];
+  for await (const chunk of process.stdin) {
+    chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(String(chunk)));
+  }
+  return Buffer.concat(chunks).toString("utf8");
+}
 
 /** 雛形と配布物を置いたパッケージの直下を探す印のファイル */
 const PACKAGE_FILE = "package.json";
@@ -66,9 +80,13 @@ export async function main(
         out: { type: "string" },
         config: { type: "string" },
         base: { type: "string" },
+        text: { type: "string" },
+        file: { type: "string" },
+        key: { type: "string" },
         js: { type: "boolean" },
         plan: { type: "boolean" },
         yes: { type: "boolean" },
+        settings: { type: "boolean" },
       },
       allowPositionals: true,
     });
@@ -86,7 +104,16 @@ export async function main(
           io,
         );
       case "check":
-        return await runCheck({ config: values.config, base: values.base }, io);
+        return await runCheck(
+          {
+            config: values.config,
+            base: values.base,
+            text: values.text === STDIN_TEXT ? await readStdin() : values.text,
+            file: values.file,
+            key: values.key,
+          },
+          io,
+        );
       case "export": {
         const file = rest[0];
         if (file === undefined) {
@@ -111,6 +138,7 @@ export async function main(
         return await runUpgrade(
           {
             config: values.config,
+            settings: values.settings === true,
             plan: values.plan === true,
             yes: values.yes === true,
             packageDir: root,

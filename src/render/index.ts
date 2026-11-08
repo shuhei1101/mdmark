@@ -1,6 +1,7 @@
 import type { MarkdownIt } from "markdown-it";
 import {
   type MdmarkConfig,
+  type PageSettings,
   type ResolvedConfig,
   resolveConfig,
 } from "../config.ts";
@@ -8,8 +9,12 @@ import type { MdmarkParamDefinition } from "../diagram/definition.ts";
 import type { MdmarkAlias } from "../knowledge/aliases.ts";
 import { type MdmarkIndex, normalizeIndex } from "../knowledge/index-shape.ts";
 import type { MdmarkReferences } from "../knowledge/references.ts";
+import type { MdmarkIconNode } from "../parts/inline-icon.ts";
 import { createParser, type RenderEnv } from "./parser.ts";
 import { sanitize } from "./sanitize.ts";
+import type { CollectedWarning } from "./syntax/warnings.ts";
+
+export type { CollectedWarning } from "./syntax/warnings.ts";
 
 /** 本文の HTML と、文書の印で決まった機能のオン・オフ */
 export type RenderedDocument = {
@@ -21,6 +26,10 @@ export type RenderedDocument = {
   extensionDefinitions: unknown[];
   /** 描いた操作できる部品の定義。文書の中の並びの順。出力の HTML には残さない */
   paramDefinitions: MdmarkParamDefinition[];
+  /** 本文に置いた書き方の警告を、警告を置いた順に並べたもの */
+  warnings: CollectedWarning[];
+  /** 文書の先頭の page の印から読んだページの設定 */
+  page: PageSettings;
 };
 
 /** 描くごとに作る、mdmark が出した要素の印の値（乱数 16 バイトの 16 進） */
@@ -48,6 +57,10 @@ export function renderDocument(options: {
   references?: MdmarkReferences | undefined;
   /** エイリアス。そのまま入れ、使えるものへの絞り込みは `buildDictionary` が行う */
   aliases?: MdmarkAlias[] | undefined;
+  /** 取り込む文書の表。キーは描く文書のフォルダからのパス */
+  includes?: Record<string, string> | undefined;
+  /** 束ねていない名前のアイコンの形の表 */
+  icons?: Record<string, MdmarkIconNode> | undefined;
 }): RenderedDocument {
   parser ??= createParser();
   const index =
@@ -58,6 +71,7 @@ export function renderDocument(options: {
   const env: RenderEnv = {
     libraries: options.config.libraries,
     defaults: options.config.features,
+    labels: options.config.labels,
     featureArgs: [],
     features: {},
     headings: [],
@@ -68,6 +82,8 @@ export function renderDocument(options: {
       : undefined,
     mdmarkReferences: options.references,
     aliases: options.aliases,
+    includes: options.includes,
+    icons: options.icons,
     ownGlossary: [],
     extensionDefinitions: [],
     paramDefinitions: [],
@@ -78,7 +94,18 @@ export function renderDocument(options: {
     features: env.features,
     extensionDefinitions: env.extensionDefinitions ?? [],
     paramDefinitions: env.paramDefinitions ?? [],
+    warnings: env.warnings ?? [],
+    page: env.page ?? {},
   };
+}
+
+/** `render` と同じ設定の当て方で描き、描いたときに置く書き方の警告を HTML にせずに返す */
+export function collectWarnings(
+  markdown: string,
+  opts: { config?: MdmarkConfig } = {},
+): CollectedWarning[] {
+  const config = resolveConfig({ config: opts.config });
+  return renderDocument({ markdown, config }).warnings;
 }
 
 /** 画面を持たずに Markdown を本文の HTML 文字列にする */
@@ -92,6 +119,10 @@ export function render(
     references?: MdmarkReferences;
     /** `buildAliases` が作ったエイリアス。省くと、エイリアスを照合しない */
     aliases?: MdmarkAlias[];
+    /** 取り込む文書の表。省くと、include のマーカーを取り込み先が無い警告にする */
+    includes?: Record<string, string>;
+    /** 束ねていない名前のアイコンの形の表。省くと、そのアイコンは中が空の要素にする */
+    icons?: Record<string, MdmarkIconNode>;
   } = {},
 ): string {
   const config = resolveConfig({ config: opts.config });
@@ -102,5 +133,7 @@ export function render(
     docId: opts.docId,
     references: opts.references,
     aliases: opts.aliases,
+    includes: opts.includes,
+    icons: opts.icons,
   }).html;
 }

@@ -117,7 +117,7 @@ test("test_normal_when_syntax", async () => {
 
 // 用語と被参照を持つ索引
 const INDEX: MdmarkIndex = {
-  schema: 1,
+  schema: 2,
   docs: [
     { id: "arch", path: "設計/arch.md", title: "アーキテクチャ" },
     { id: "api", path: "api.md", title: "API", related: ["arch"] },
@@ -188,4 +188,51 @@ test("test_normal_when_aliases", async () => {
   expect(html).toContain("mdmark-term-tip-copy");
   expect(html).not.toContain("<script");
   expect(html).not.toContain("<!--");
+});
+
+// 脚注を持つ文書を、番号・ツールチップの中身・末尾の閉じた一覧を持つ HTML 文字列にする（正常シナリオ（脚注を持つ文書））
+test("test_normal_when_footnotes", async () => {
+  // 準備・実行
+  const html = await renderInNode(
+    builtRoot,
+    "出典がある[^src] と行内^[行内の補足]。\n\n[^src]: 出典の説明\n",
+  );
+  // 検証
+  expect(matchAll(html, /<sup class="mdmark-fn-ref">/g)).toHaveLength(2);
+  expect(html).toMatch(
+    /<span class="mdmark-visually-hidden">脚注 <\/span>1<\/a>/,
+  );
+  expect(html).toMatch(
+    /<span class="mdmark-visually-hidden">脚注 <\/span>2<\/a>/,
+  );
+  expect(html).toMatch(/class="mdmark-fn-tip-body">出典の説明</);
+  expect(html).toMatch(/class="mdmark-fn-tip-body">行内の補足</);
+  expect(html.trimEnd()).toMatch(
+    /<details class="mdmark-footnotes">[\s\S]*<\/details>$/,
+  );
+  expect(html).not.toContain("[^src]");
+});
+
+/** 正規表現（`g` 付き）に合う文字列を全て返す */
+function matchAll(text: string, pattern: RegExp): string[] {
+  return text.match(pattern) ?? [];
+}
+
+// 取り込む文書の表を渡すと、マーカーの場所に見出しの中を描く（正常シナリオ（取り込む文書を渡す））
+test("test_normal_when_includes_given", async () => {
+  // 準備
+  const markdown = "# 案内\n\n<!-- include: 共通/手順.md#実行 -->\n";
+  const includes = {
+    "共通/手順.md": "## 準備\n\n準備の段落\n\n## 実行\n\n実行の段落\n",
+  };
+  // 実行
+  const html = await renderInNode(builtRoot, markdown, { includes });
+  const without = await renderInNode(builtRoot, markdown);
+  // 検証
+  expect(html).toMatch(/<div [^>]*class="mdmark-include"/);
+  expect(html).toMatch(/<h2[^>]*>実行/);
+  expect(html).toContain("実行の段落");
+  expect(html).not.toContain("準備の段落");
+  expect(without).toContain("mdmark-syntax-warning");
+  expect(without).toContain("共通/手順.md");
 });

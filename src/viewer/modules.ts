@@ -1,81 +1,65 @@
-import type { ExportPayload } from "../cli/html.ts";
-import type { MdmarkConfig } from "../config.ts";
 import { type MdmarkExtension, registerExtension } from "../extensions.ts";
-import { setSyntaxModuleUrls } from "../highlight.ts";
-import { type PartName, setPartModuleUrl } from "../part-modules.ts";
+import { type EmbeddedSyntax, setEmbeddedSyntax } from "../highlight.ts";
+import { setEmbeddedHtmlScripts } from "../html-scripts.ts";
+import { type LibraryModule, setEmbeddedLibraries } from "../libraries.ts";
+import { setEmbeddedMermaid } from "../mermaid.ts";
+import { type PartName, setPartModuleLoader } from "../part-modules.ts";
+
+/** CLI が束ねる入口のモジュールが `startViewer` に渡す、同じスクリプトに束ねた部品・色分け・外部ライブラリ・拡張のモジュール */
+export type EmbeddedModules = {
+  /** 静的な `import` で取り込んだ部品のモジュール。文書にビューの印があるときだけ `view` を持つ */
+  parts: Partial<Record<PartName, Record<string, unknown>>>;
+  /** 静的な `import` で取り込んだ色分けの本体と言語のモジュール。文書に色分けの対象があり本体を束ねられたときだけ持つ */
+  syntax?: EmbeddedSyntax | undefined;
+  /** 静的な `import` で取り込んだ mermaid のモジュールの名前空間。文書に mermaid のコードブロックがあり束ねられたときだけ持つ */
+  mermaid?: { default?: unknown } | undefined;
+  /** 印の名前から、外部ライブラリのモジュールをリテラルの動的 `import()` で読む関数を引く表 */
+  libraries: Record<string, () => Promise<LibraryModule>>;
+  /** 拡張のモジュールをリテラルの動的 `import()` で読む関数。設定の `extensions` の順 */
+  extensions: Array<() => Promise<{ default?: unknown }>>;
+  /** 範囲のコードの文字から、既定のエクスポートを返す関数を引く表（CLI が esbuild で変えて束ねたもの） */
+  htmlScripts?: Map<string, () => unknown> | undefined;
+};
 
 /** 差し替えられる依存（単体テスト用） */
 type ModuleDeps = {
-  /** モジュールのコードから `blob:` URL を作る */
-  createUrl: (code: string) => string;
-  /** URL のモジュールを読む */
-  importModule: (url: string) => Promise<{ default?: unknown }>;
   /** 拡張を登録する */
   register: (extension: MdmarkExtension) => void;
 };
 
-/** 埋めたコードのモジュールの種類 */
-const MODULE_TYPE = "text/javascript";
-
-/** 埋められなかった外部ライブラリの印の URL: 読むと例外を投げ、印の場所を知らせの枠にする（ページの隣のファイルへ要求を出さない） */
-const UNAVAILABLE_MODULE =
-  "data:text/javascript,throw%20new%20Error(%22not%20embedded%22)";
-
-/** 部品のモジュールの名前。埋められなかった部品は、ページの隣の配布ファイルへ要求しないよう、読むと例外を投げる URL に替える */
+/** 部品のモジュールの名前。埋めなかった部品は、ページの隣の配布ファイルへ要求しないよう、呼ぶと拒否する関数を入れる */
 const PART_NAMES: readonly PartName[] = ["view", "comments"];
 
-/** 既定の依存: `URL.createObjectURL`・動的 `import()`・`registerExtension` */
-const defaultDeps: ModuleDeps = {
-  createUrl: (code) =>
-    URL.createObjectURL(new Blob([code], { type: MODULE_TYPE })),
-  importModule: (url) => import(/* @vite-ignore */ url),
-  register: registerExtension,
-};
+/** 既定の依存: `registerExtension` */
+const defaultDeps: ModuleDeps = { register: registerExtension };
 
-/** 埋めた外部ライブラリのコードを `blob:` URL に替えて設定の `libraries` に入れ、埋めた部品のコードを `blob:` URL に替えて部品の読み込みに渡し（埋めなかった部品は読むと例外を投げる URL にする）、埋めた色分けのライブラリのコードを `blob:` URL に替えて色分けの読み込みに渡し、埋めた拡張を読んで `registerExtension` で登録し、`libraries` を替えた設定を返す */
+/** 埋めた部品・色分け・外部ライブラリを読み込みに渡し、拡張を 1 つずつ読んで `registerExtension` で登録する。`URL.createObjectURL` と URL を読む動的 `import()` を使わない */
 export async function prepareModules(
-  payload: Pick<
-    ExportPayload,
-    "config" | "modules" | "extensions" | "parts" | "syntax"
-  >,
+  embedded: EmbeddedModules,
   deps: ModuleDeps = defaultDeps,
-): Promise<MdmarkConfig> {
-  const libraries: Record<string, string> = {};
-  for (const name of Object.keys(payload.config.libraries ?? {})) {
-    libraries[name] = UNAVAILABLE_MODULE;
-  }
-  for (const [name, code] of Object.entries(payload.modules)) {
-    libraries[name] = deps.createUrl(code);
-  }
+): Promise<void> {
   for (const name of PART_NAMES) {
-    const code = name === "view" ? payload.parts?.view : undefined;
-    setPartModuleUrl(
-      name,
-      code === undefined ? UNAVAILABLE_MODULE : deps.createUrl(code),
+    const module = embedded.parts[name];
+    setPartModuleLoader(name, () =>
+      module === undefined
+        ? Promise.reject(new Error(`埋めていない部品: ${name}`))
+        : Promise.resolve(module),
     );
   }
-  // 埋めた色分けのモジュール。無いときは読むと例外を投げる URL にして、jsDelivr へ要求しない（色分けせずに描く）
-  setSyntaxModuleUrls(
-    payload.syntax
-      ? {
-          core: deps.createUrl(payload.syntax.core),
-          languages: Object.fromEntries(
-            Object.entries(payload.syntax.languages).map(([name, code]) => [
-              name,
-              deps.createUrl(code),
-            ]),
-          ),
-        }
-      : { core: UNAVAILABLE_MODULE, languages: {} },
-  );
-  for (const code of payload.extensions) {
-    // 読めない・登録できない拡張は飛ばし、ほかの拡張と描画は続ける（印は知らない印として取り除かれる）
+  // 色分けを埋めていないときは本体を持たない値を入れ、jsDelivr へ要求しない（色分けせずに描く）
+  setEmbeddedSyntax(embedded.syntax ?? { languages: {} });
+  // 埋めなかったときも外へ読まず、mermaid のコードブロックは知らせの枠とコードブロックにする
+  setEmbeddedMermaid(embedded.mermaid ?? {});
+  setEmbeddedLibraries(embedded.libraries);
+  // 範囲のスクリプトは束ねた関数だけを使い、変換のライブラリを外へ要求しない（表に無い範囲は書き方の警告になる）
+  setEmbeddedHtmlScripts(embedded.htmlScripts ?? new Map());
+  for (const load of embedded.extensions) {
+    // 評価で例外を投げる・登録できない拡張は飛ばし、ほかの拡張と描画は続ける（印は知らない印として取り除かれる）
     try {
-      const module = await deps.importModule(deps.createUrl(code));
+      const module = await load();
       deps.register(module.default as MdmarkExtension);
     } catch (error) {
       console.error("拡張を登録できません:", error);
     }
   }
-  return { ...payload.config, libraries };
 }

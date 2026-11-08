@@ -4,6 +4,14 @@ import { inject } from "vitest";
 // ストーリーを開く画面の大きさ（狭い幅で折り返しを見る）
 const VIEWPORT = { width: 420, height: 360 };
 
+/** 最初のストーリーを開いて、Vite が依存を束ね終えるまで待つ上限（ミリ秒。測った起動の直後の読み込み 56 秒の約 5 倍） */
+export const WARM_UP_TIMEOUT_MS = 300_000;
+// 温めに開くストーリー（React の部品と、部品の HTML の描画の口の両方を通す）
+const WARM_UP_STORIES = [
+  "vscode-previewstatus--offline",
+  "parts-notice--block",
+];
+
 /** ストーリーを開く画面の大きさ */
 export type Viewport = { width: number; height: number };
 
@@ -16,8 +24,22 @@ export function createBrowserHolder(): {
   let browser: Browser | undefined;
   const pages: Page[] = [];
   return {
+    // Chromium を起こし、ストーリーを開いて Vite が依存を束ね終えるまで待つ
     launch: async () => {
       browser = await chromium.launch();
+      const page = await browser.newPage();
+      for (const id of WARM_UP_STORIES) {
+        await page.goto(
+          `${inject("storybookUrl")}/iframe.html?id=${id}&viewMode=story`,
+          { timeout: WARM_UP_TIMEOUT_MS },
+        );
+        await page.waitForFunction(
+          () => document.body.classList.contains("sb-show-main"),
+          undefined,
+          { timeout: WARM_UP_TIMEOUT_MS },
+        );
+      }
+      await page.close();
     },
     close: async () => {
       await browser?.close();
@@ -32,7 +54,10 @@ export function createBrowserHolder(): {
       await page.goto(
         `${inject("storybookUrl")}/iframe.html?id=${id}&viewMode=story`,
       );
-      await page.waitForSelector("#storybook-root .mdmark");
+      // 部品の HTML のストーリーは `.mdmark`、VS Code の React の部品は `.mdmark-panel-part` を根に持つ
+      await page.waitForSelector(
+        "#storybook-root .mdmark, #storybook-root .mdmark-panel-part",
+      );
       return page;
     },
   };
@@ -96,4 +121,61 @@ export function pageOverflows(page: Page): Promise<boolean> {
       document.documentElement.scrollWidth >
       document.documentElement.clientWidth,
   );
+}
+
+/** 色の式を、`selector` に当たる要素の中で解決した computed の色の文字列にする（`.mdmark` の中だけで決まる CSS 変数を解決する） */
+export function resolveColorIn(
+  page: Page,
+  selector: string,
+  expression: string,
+): Promise<string> {
+  return page.evaluate(
+    ({ selector, value }) => {
+      const host = document.querySelector(selector) ?? document.body;
+      const probe = document.createElement("span");
+      probe.style.color = value;
+      host.append(probe);
+      const resolved = getComputedStyle(probe).color;
+      probe.remove();
+      return resolved;
+    },
+    { selector, value: expression },
+  );
+}
+
+/** 2 つの `rgb(r, g, b)` の色のコントラスト比（WCAG 2） */
+export function contrastRatio(first: string, second: string): number {
+  const luminance = (color: string) => {
+    const [r, g, b] = (color.match(/[\d.]+/g) ?? [])
+      .slice(0, 3)
+      .map((value) => {
+        const channel = Number(value) / 255;
+        return channel <= 0.03928
+          ? channel / 12.92
+          : ((channel + 0.055) / 1.055) ** 2.4;
+      });
+    return 0.2126 * (r ?? 0) + 0.7152 * (g ?? 0) + 0.0722 * (b ?? 0);
+  };
+  const [light, dark] = [luminance(first), luminance(second)].sort(
+    (a, b) => b - a,
+  );
+  return ((light ?? 0) + 0.05) / ((dark ?? 0) + 0.05);
+}
+
+/** 色の式を、明るい配色の `.mdmark` の中で解決した computed の色の文字列にする */
+export function resolveLightColor(
+  page: Page,
+  expression: string,
+): Promise<string> {
+  return page.evaluate((value) => {
+    const host = document.createElement("div");
+    host.className = "mdmark mdmark-theme-light";
+    const probe = document.createElement("span");
+    probe.style.color = value;
+    host.append(probe);
+    document.body.append(host);
+    const resolved = getComputedStyle(probe).color;
+    host.remove();
+    return resolved;
+  }, expression);
 }

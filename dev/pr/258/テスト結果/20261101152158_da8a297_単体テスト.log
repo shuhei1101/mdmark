@@ -1,0 +1,15 @@
+$ npm run test:unit
+
+> test:unit
+> vitest run --project 'unit*'
+
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/design-param-copy-label-config
+
+
+ Test Files  161 passed (161)
+      Tests  1195 passed (1195)
+   Start at  15:22:02
+   Duration  59.88s (tests 43%, worker 35%, import 19%, transform 3%)
+
+exit: 0

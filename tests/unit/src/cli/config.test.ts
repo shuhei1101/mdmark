@@ -202,6 +202,89 @@ test("test_validate_config_when_tooltip_placement_invalid", async () => {
   expect(valid.config.tooltips?.placement).toBe("bottom");
 });
 
+// オブジェクトでない labels と、空でない文字列でない labels.paramCopy を schema のずれにし、設定から落とす（正常系）
+test("test_validate_config_when_labels_invalid", async () => {
+  // 準備
+  const { validateConfig } = await loadModule();
+  const validate = (labels: unknown) =>
+    validateConfig({ labels }, "mdmark.config.yaml");
+  // 実行
+  const notMap = validate("コピー");
+  const empty = validate({ paramCopy: "" });
+  const notString = validate({ paramCopy: 1 });
+  const valid = validate({ paramCopy: "コピー" });
+  // 検証
+  for (const [result, where] of [
+    [notMap, "labels"],
+    [empty, "labels.paramCopy"],
+    [notString, "labels.paramCopy"],
+  ] as const) {
+    expect(result.issues).toHaveLength(1);
+    expect(result.issues[0]).toMatchObject({ where, kind: "schema" });
+    expect(result.config.labels).toBeUndefined();
+  }
+  expect(valid.issues).toEqual([]);
+  expect(valid.config.labels?.paramCopy).toBe("コピー");
+});
+
+// 文字列でない html-scripts.url を schema のずれにし、設定から落とす（正常系）
+test("test_validate_config_when_html_scripts_url_invalid", async () => {
+  // 準備
+  const { validateConfig } = await loadModule();
+  // 実行
+  const invalid = validateConfig(
+    { "html-scripts": { url: 1 } },
+    "mdmark.config.yaml",
+  );
+  const valid = validateConfig(
+    { "html-scripts": { url: "/vendor/babel.mjs" } },
+    "mdmark.config.yaml",
+  );
+  // 検証
+  expect(invalid.issues).toHaveLength(1);
+  expect(invalid.issues[0]).toMatchObject({
+    where: "html-scripts.url",
+    kind: "schema",
+  });
+  expect(invalid.config["html-scripts"]).toBeUndefined();
+  expect(valid.issues).toEqual([]);
+  expect(valid.config["html-scripts"]?.url).toBe("/vendor/babel.mjs");
+});
+
+// 形の合わない mermaid を schema のずれにし、設定から落とす（正常系）
+test("test_validate_config_when_mermaid_invalid", async () => {
+  // 準備
+  const { validateConfig } = await loadModule();
+  // 実行
+  const badUrl = validateConfig({ mermaid: { url: 1 } }, "mdmark.config.yaml");
+  const badVariables = validateConfig(
+    { mermaid: { themeVariables: "x" } },
+    "mdmark.config.yaml",
+  );
+  const valid = validateConfig(
+    { mermaid: { url: "/vendor/mermaid.mjs", theme: "no-such-theme" } },
+    "mdmark.config.yaml",
+  );
+  // 検証
+  expect(badUrl.issues).toHaveLength(1);
+  expect(badUrl.issues[0]).toMatchObject({
+    where: "mermaid.url",
+    kind: "schema",
+  });
+  expect(badUrl.config.mermaid).toBeUndefined();
+  expect(badVariables.issues).toHaveLength(1);
+  expect(badVariables.issues[0]).toMatchObject({
+    where: "mermaid.themeVariables",
+    kind: "schema",
+  });
+  expect(badVariables.config.mermaid).toBeUndefined();
+  expect(valid.issues).toEqual([]);
+  expect(valid.config.mermaid).toEqual({
+    url: "/vendor/mermaid.mjs",
+    theme: "no-such-theme",
+  });
+});
+
 // 文字列でない syntax.url を schema のずれにし、設定から落とす（正常系）
 test("test_validate_config_when_syntax_url_invalid", async () => {
   // 準備
@@ -265,6 +348,27 @@ test("test_validate_config_when_color_theme_invalid", async () => {
   expect(unknown.config.colorTheme).toBe("sepia");
 });
 
+// 文字列でない colorScheme を schema のずれにして落とし、知らない値はそのまま残す（異常系）
+test("test_validate_config_when_color_scheme_invalid", async () => {
+  // 準備
+  const { validateConfig } = await loadModule();
+  // 実行
+  const invalid = validateConfig({ colorScheme: 1 }, "mdmark.config.yaml");
+  const unknown = validateConfig(
+    { colorScheme: "sepia" },
+    "mdmark.config.yaml",
+  );
+  // 検証
+  expect(invalid.issues).toHaveLength(1);
+  expect(invalid.issues[0]).toMatchObject({
+    where: "colorScheme",
+    kind: "schema",
+  });
+  expect(invalid.config.colorScheme).toBeUndefined();
+  expect(unknown.issues).toEqual([]);
+  expect(unknown.config.colorScheme).toBe("sepia");
+});
+
 // aliases の Schema に合わない行を schema のずれにし、行の位置を保つ（異常系）
 test("test_validate_config_when_aliases_invalid", async () => {
   // 準備
@@ -272,12 +376,12 @@ test("test_validate_config_when_aliases_invalid", async () => {
   const valid = {
     id: "terms",
     paths: ["terms/*.yaml"],
-    metadata: { alias_type: { type: "custom", value: "term" } },
+    alias_type: "term",
   };
   const invalid = {
     id: "memos",
     paths: ["memos/*.yaml"],
-    metadata: { alias_type: { type: "custom", value: "memo" } },
+    alias_type: "memo",
   };
   // 実行
   const { config, issues } = validateConfig(
@@ -287,8 +391,48 @@ test("test_validate_config_when_aliases_invalid", async () => {
   // 検証
   expect(issues).toHaveLength(1);
   expect(issues[0]?.kind).toBe("schema");
-  expect(issues[0]?.where).toBe("aliases[1].metadata.alias_type.value");
+  expect(issues[0]?.where).toBe("aliases[1].alias_type");
   expect(config.aliases).toHaveLength(2);
   expect(config.aliases?.[0]).toEqual(valid);
   expect(config.aliases?.[1]).toBeNull();
+});
+
+// 形の違う assets.root を schema のずれにする（正常系）
+test("test_validate_config_when_assets_not_string", async () => {
+  // 準備
+  const { validateConfig } = await loadModule();
+  // 実行
+  const result = validateConfig({ assets: { root: 1 } }, "mdmark.config.yaml");
+  // 検証
+  expect(result.issues).toHaveLength(1);
+  expect(result.issues[0]).toMatchObject({
+    where: "assets.root",
+    kind: "schema",
+  });
+});
+
+// top・bottom 以外の tooltips.diagramPlacement を schema のずれにし、設定から落とす（異常系）
+test("test_validate_config_when_diagram_placement_invalid", async () => {
+  // 準備
+  const { validateConfig } = await loadModule();
+  // 実行
+  const invalid = validateConfig(
+    { tooltips: { diagramPlacement: "left" } },
+    "mdmark.config.yaml",
+  );
+  const valid = validateConfig(
+    { tooltips: { diagramPlacement: "top" } },
+    "mdmark.config.yaml",
+  );
+  // 検証
+  expect(invalid.issues).toHaveLength(1);
+  expect(invalid.issues[0]).toMatchObject({
+    where: "tooltips.diagramPlacement",
+    kind: "schema",
+  });
+  expect(invalid.issues[0]?.message).toContain("top");
+  expect(invalid.issues[0]?.message).toContain("bottom");
+  expect(invalid.config.tooltips).toBeUndefined();
+  expect(valid.issues).toEqual([]);
+  expect(valid.config.tooltips?.diagramPlacement).toBe("top");
 });

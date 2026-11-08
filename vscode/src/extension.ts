@@ -1,21 +1,20 @@
-import { basename, dirname } from "node:path";
+import { dirname } from "node:path";
 import {
   commands,
   type ExtensionContext,
   ExtensionMode,
   type FileSystemWatcher,
-  RelativePattern,
   type Uri,
   ViewColumn,
   window,
   workspace,
 } from "vscode";
-import { resolveConfigPath } from "./config.ts";
+import { CONFIG_FILE } from "../../src/config-files.ts";
 import { openConfigFile } from "./config-file.ts";
 import type { ExtensionDeps } from "./deps.ts";
 import { type ExportMode, exportMarkdown } from "./export/export.ts";
 import type { Logger } from "./log.ts";
-import type { InspectedElement } from "./messages.ts";
+import type { AxeViolation, InspectedElement } from "./messages.ts";
 import { DIST_BASE } from "./preview/html.ts";
 import { PreviewManager } from "./preview/manager.ts";
 import { readSettings } from "./settings.ts";
@@ -25,7 +24,12 @@ import { baseDirOf } from "./workspace.ts";
 /** テストのときの戻り値: 結合テストが Webview の DOM を確かめる口 */
 export type TestApi = {
   /** 最後に表に出たパネルの要素を調べる */
-  inspectPreview: (selector: string) => Promise<InspectedElement[]>;
+  inspectPreview: (
+    selector: string,
+    play?: boolean,
+  ) => Promise<InspectedElement[]>;
+  /** 最後に表に出たパネルを axe で検査する */
+  auditPreview: () => Promise<AxeViolation[]>;
 };
 
 /** パネルが 1 つ以上開いているかを書くコンテキストキー */
@@ -42,50 +46,16 @@ function uriArgument(value: unknown): Uri | undefined {
     : undefined;
 }
 
-/** 設定ファイルの作成・変更・削除を見張る。ワークスペースのフォルダごとに、`mdmark.configPath` の場所を見る */
-function watchConfigFiles(onChange: (path: string) => void): {
-  dispose: () => void;
-} {
-  const watchers: FileSystemWatcher[] = [];
-  const create = () => {
-    for (const watcher of watchers.splice(0)) {
-      watcher.dispose();
-    }
-    for (const folder of workspace.workspaceFolders ?? []) {
-      const configuration = workspace.getConfiguration("mdmark", folder.uri);
-      const settings = readSettings((key) => configuration.get(key));
-      const path = resolveConfigPath({
-        configPath: settings.configPath,
-        baseDir: folder.uri.fsPath,
-      });
-      const watcher = workspace.createFileSystemWatcher(
-        new RelativePattern(dirname(path), basename(path)),
-      );
-      const notify = (uri: Uri) => {
-        onChange(uri.fsPath);
-      };
-      watcher.onDidCreate(notify);
-      watcher.onDidChange(notify);
-      watcher.onDidDelete(notify);
-      watchers.push(watcher);
-    }
+/** ワークスペースの全ての `mdmark.config.yaml` の作成・変更・削除を見張る（パネルごとの見張るファイルは `PreviewManager` が張る） */
+function watchConfigFiles(onChange: (path: string) => void): FileSystemWatcher {
+  const watcher = workspace.createFileSystemWatcher(`**/${CONFIG_FILE}`);
+  const notify = (uri: Uri) => {
+    onChange(uri.fsPath);
   };
-  create();
-  const configurationListener = workspace.onDidChangeConfiguration((event) => {
-    if (event.affectsConfiguration("mdmark.configPath")) {
-      create();
-    }
-  });
-  const foldersListener = workspace.onDidChangeWorkspaceFolders(create);
-  return {
-    dispose: () => {
-      for (const watcher of watchers.splice(0)) {
-        watcher.dispose();
-      }
-      configurationListener.dispose();
-      foldersListener.dispose();
-    },
-  };
+  watcher.onDidCreate(notify);
+  watcher.onDidChange(notify);
+  watcher.onDidDelete(notify);
+  return watcher;
 }
 
 /** コマンドと VS Code の知らせを登録し、テストのときだけ `TestApi` を返す */
@@ -142,7 +112,12 @@ export function activate(context: ExtensionContext): TestApi | undefined {
         target !== undefined
           ? baseDirOf(target)
           : (workspace.workspaceFolders?.[0]?.uri.fsPath ?? process.cwd());
-      await openConfigFile({ configPath: settings.configPath, baseDir, log });
+      await openConfigFile({
+        cwd: target !== undefined ? dirname(target.fsPath) : baseDir,
+        configPath: settings.configPath,
+        baseDir,
+        log,
+      });
     }),
     commands.registerCommand("mdmark.openSettings", () =>
       commands.executeCommand(
@@ -175,5 +150,8 @@ export function activate(context: ExtensionContext): TestApi | undefined {
   if (!test) {
     return undefined;
   }
-  return { inspectPreview: (selector) => manager.inspectPreview(selector) };
+  return {
+    inspectPreview: (selector, play) => manager.inspectPreview(selector, play),
+    auditPreview: () => manager.auditPreview(),
+  };
 }

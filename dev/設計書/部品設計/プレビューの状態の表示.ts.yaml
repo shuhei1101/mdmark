@@ -1,5 +1,5 @@
 title: "プレビューの状態の表示"
-implementation: "vscode/src/webview/parts/preview-status.ts#renderPreviewStatus"
+implementation: "vscode/src/webview/shared/components/preview-status.tsx#PreviewStatus"
 story: "VSCode/PreviewStatus"
 states:
   - name: Loading
@@ -40,47 +40,75 @@ states:
         value: diffUnsupported
       - name: version
         value: v0.8.0
+  - name: Unexpected
+    description: Webview の描画中に例外が出た（Error Boundary が受けた）。本文「プレビューの表示中にエラーが発生しました。リロードしてください。」
+    args:
+      - name: state
+        value: unexpected
 lead: VS Code 拡張機能のプレビューのパネルで、文書の代わりに出す読み込み中の表示と、描けない理由と「リロード」。mdmark の配布物を読む前にも出すため、拡張機能が HTML を作る。
 args:
   - name: state
     type: 列挙
     required: true
-    choices: '`loading`・`offline`・`versionMissing`・`versionUndecidable`・`diffUnsupported`'
-    description: 出す状態。`loading` は題「mdmark を読み込んでいます」だけを出し、他は題「プレビューを表示できません」と理由と「リロード」を出す
+    choices: '`loading`・`offline`・`versionMissing`・`versionUndecidable`・`diffUnsupported`・`unexpected`'
+    description: 出す状態。`loading` は Spinner と題「mdmark を読み込んでいます」だけを出し、他は Alert の warning で題「プレビューを表示できません」と理由と「リロード」を出す
   - name: version
     type: 文字列
     required: false
     default: なし
     enabled_when: '`state` が `offline` か `versionMissing`・`diffUnsupported` のとき'
-    description: 読もうとした mdmark の版。理由の `code` に入れる（HTML として特別な文字はエスケープする）
+    description: 読もうとした mdmark の版。理由の文の中の `code` に入れる
 events:
   - name: リロード
     when: 「リロード」のボタンを押したとき
-    value: ボタンの `data-action="reload"`
-    description: 'Webview のスクリプトが `{ type: "reload" }` を拡張機能へ送る（プレビューをリロードする.ts）'
+    value: props の `onReload()` を引数なしで呼ぶ
+    description: '画面が `{ type: "reload" }` を拡張機能へ送る（プレビューをリロードする.ts）'
 css_properties:
-  - name: --mdmark-color-notice-bg
+  - name: --background
     syntax: <color>
-    default: 知らせの枠と同じ
+    default: var(--vscode-editor-background)
     description: 描けない理由の枠の地の色
-  - name: --mdmark-color-notice-border
+  - name: --foreground
     syntax: <color>
-    default: 知らせの枠と同じ
-    description: 描けない理由の枠とボタンの線の色
-  - name: --mdmark-color-notice-text
-    syntax: <color>
-    default: 知らせの枠と同じ
+    default: var(--vscode-editor-foreground)
     description: 描けない理由の枠の文字の色
+  - name: --warning-border
+    syntax: <color>
+    default: var(--vscode-inputValidation-warningBorder)
+    description: 描けない理由の枠の線と警告のアイコンの色
+  - name: --primary
+    syntax: <color>
+    default: var(--vscode-button-background)
+    description: 「リロード」の地の色
+  - name: --muted-foreground
+    syntax: <color>
+    default: var(--vscode-descriptionForeground)
+    description: 読み込み中の Spinner と文の色
+  - name: --primary-foreground
+    syntax: <color>
+    default: var(--vscode-button-foreground)
+    description: 「リロード」の文字の色
+  - name: --primary-hover
+    syntax: <color>
+    default: var(--vscode-button-hoverBackground)
+    description: 「リロード」のホバーの地の色
+  - name: --ring
+    syntax: <color>
+    default: var(--vscode-focusBorder)
+    description: 「リロード」のフォーカスの輪郭の色
 accessibility:
-  - 表示の外側は `role="status"` を持ち、状態が変わると読み上げが題と本文を読む
-  - 題は `h1`、理由は `p`。色に頼らず文言で伝える
-  - '回る印は `progress`（`aria-label="読み込み中"`）で、`prefers-reduced-motion: reduce` のときは 6 秒で 1 回転にゆっくり回す'
-  - 「リロード」は `button` で、Tab で届き Enter・Space で押せる。フォーカスの輪郭を出す
+  - 読み込み中も描けない理由も、外側は `role="status"` を持ち、状態が変わると読み上げが題と本文を読む（Alert の既定の `role="alert"` を `status` に替える）
+  - 題は `h1`、理由は `p`。警告のアイコンは `aria-hidden="true"` で、色とアイコンに頼らず文言で伝える
+  - 'Spinner は lucide の `loader-circle` の `svg`（`role="img"`・`aria-label="読み込み中"`）で、`prefers-reduced-motion: reduce` のときは 6 秒で 1 回転にゆっくり回す'
+  - 「リロード」は `button` で、Tab で届き Enter・Space で押せる。フォーカスの輪郭を `--ring` の 2px で出す
+  - 描けない理由の文字と地は、エディタの本文の文字と地の色にする（対比はテーマが本文に持たせる対比のまま）。警告の色（`inputValidation.warningBorder`）は線とアイコンだけに使い、文字の地にしない。ボタンの文字と地（ホバーを含む）はテーマのボタンの色にする
 refs:
   - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを開く.ts#constraints[描けない理由の見分け方]
 status: planned
 introduced:
   pr: 69
 notes:
-  出典: 文言は確認ログの決定（描けないとき・読み込み中の文言、ボタンは「リロード」）。モックは `dev/mock/components/preview-status/`。見た目は知らせの枠の状態色と同じ値に揃える
+  出典: '文言は確認ログの決定（描けないとき・読み込み中の文言、ボタンは「リロード」）。見た目と配色は #342 の確認ログ（モックへの合意・描けない理由と帯の配色を VS Code のテーマの色にする）。モックは `dev/mock/pages/vscode-preview/342/shadcn/` と `dev/mock/components/panel-alert/`'
+  使う部品: shadcn/ui の `Alert`（`warning` の variant を足す）・`Button`（`default`）・`Spinner`（`shared/components/ui/`）
+  置き場所: Webview の部品のストーリーを横に置くため、画面の `components/` でなく `shared/components/` に置く。ストーリーの `title` は今の ID を保つため `VSCode/PreviewStatus` のまま
 test_file: tests/integration/vscode/preview-status.story.test.ts

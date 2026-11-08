@@ -3,12 +3,17 @@ import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { expect, test } from "vitest";
 import {
+  copyMermaidVendor,
+  GREET_WITH_IMPORT_SOURCE,
   linesOf,
   PNG_BYTES,
+  readHighlightVendor,
+  readMediaSamples,
   runCli,
   TEST_LIB_SOURCE,
   useBrowser,
   useTempDirs,
+  VIEW_SOURCE,
   writeFiles,
 } from "../cli.ts";
 
@@ -45,7 +50,7 @@ async function createSampleDir(options?: {
   await writeFiles(dir, {
     "mdmark.config.yaml": createConfig(options?.buildLines ?? BUILD_BASE),
     "index.yaml": [
-      "schema: 1",
+      "schema: 2",
       "docs:",
       "  - id: top",
       "    path: README.md",
@@ -217,10 +222,12 @@ test("test_normal_when_aliases", async () => {
   await writeFiles(dir, {
     "mdmark.config.yaml": [
       "aliases:",
-      "  - id: records",
-      "    paths: [aliases/*.yaml]",
-      "    metadata:",
-      "      alias_type: { type: ref, field: alias_type }",
+      "  - id: commands",
+      "    paths: [aliases/commands.yaml]",
+      "    alias_type: command",
+      "  - id: servers",
+      "    paths: [aliases/servers.yaml]",
+      "    alias_type: env",
       "build:",
       '  include: ["*.md"]',
       "  out: dist/docs.html",
@@ -228,15 +235,13 @@ test("test_normal_when_aliases", async () => {
     ].join("\n"),
     "a.md": "# A\n\nテストを流す、開発サーバーを使う。\n\n[B へ](b.md)\n",
     "b.md": "# B\n\nここでもテストを流す、開発サーバーを使う。\n",
-    "aliases/command.yaml": [
-      "alias_type: command",
+    "aliases/commands.yaml": [
       "id: run-test",
       "name: テストを流す",
       "command: npm test",
       "",
     ].join("\n"),
-    "aliases/env.yaml": [
-      "alias_type: env",
+    "aliases/servers.yaml": [
       "id: dev-server",
       "name: 開発サーバー",
       "url: http://127.0.0.1:8767/",
@@ -320,3 +325,410 @@ test("test_normal_when_color_theme", async () => {
   await expect(readBackground()).resolves.toBe("rgb(248, 250, 252)");
   await page.close();
 });
+
+// page のマーカーを持つ文書と持たない文書を行き来すると、開いた文書の明暗とテーマで描き直す（正常系（文書ごとのページの設定））
+test("test_normal_when_page_settings_per_document", async () => {
+  // 準備
+  const dir = await createTempDir();
+  await writeFiles(dir, {
+    "mdmark.config.yaml": [
+      "build:",
+      '  include: ["*.md"]',
+      "  entry: a.md",
+      "  out: dist/docs.html",
+      "",
+    ].join("\n"),
+    "a.md":
+      "<!-- page: scheme=dark theme=theme-slate -->\n\n# A\n\n[B へ](b.md)\n",
+    "b.md": "# B\n\nもう 1 つの文書。\n",
+  });
+  // 実行
+  const result = await runCli(["build"], dir);
+  // 検証
+  expect(result.code).toBe(0);
+  const { page, externalRequests } = await browser.openHtml(
+    join(dir, "dist", "docs.html"),
+  );
+  await page.emulateMedia({ colorScheme: "light" });
+  const readRoot = () =>
+    page.evaluate(() => {
+      const root = document.querySelector("article.mdmark");
+      return {
+        dark: root?.classList.contains("mdmark-theme-dark") ?? false,
+        light: root?.classList.contains("mdmark-theme-light") ?? false,
+        theme: root?.getAttribute("data-mdmark-color-theme") ?? null,
+      };
+    });
+  // 最初に開いた文書
+  await page.waitForFunction(() =>
+    document.querySelector("article.mdmark h1")?.textContent?.includes("A"),
+  );
+  await expect(readRoot()).resolves.toEqual({
+    dark: true,
+    light: false,
+    theme: "theme-slate",
+  });
+  // マーカーを持たない文書
+  await page.locator('article p a[href="#/b.md"]').click();
+  await page.waitForFunction(() =>
+    document.querySelector("article.mdmark h1")?.textContent?.includes("B"),
+  );
+  await expect(readRoot()).resolves.toEqual({
+    dark: false,
+    light: false,
+    theme: "dev-swiss",
+  });
+  expect(externalRequests()).toEqual([]);
+  await page.close();
+});
+
+/** 2 つの文書が同じ画像と別々の動画・音声を指すフォルダを作る */
+async function createMediaDir(): Promise<string> {
+  const dir = await createTempDir();
+  const media = await readMediaSamples();
+  await writeFiles(dir, {
+    "mdmark.config.yaml": [
+      "build:",
+      '  include: ["**/*.md"]',
+      '  exclude: ["dist/**"]',
+      "  entry: a.md",
+      "  out: dist/docs.html",
+      "",
+    ].join("\n"),
+    "a.md": [
+      "# A",
+      "",
+      "![グラフ](images/chart.png)",
+      "",
+      "![操作](media/demo.mp4)",
+      "",
+      "続きは [B](sub/b.md) を読む。",
+      "",
+    ].join("\n"),
+    "sub/b.md": [
+      "# B",
+      "",
+      "![グラフ](../images/chart.png)",
+      "",
+      "![読み上げ](media/voice.mp3)",
+      "",
+    ].join("\n"),
+    "images/chart.png": PNG_BYTES,
+    "media/demo.mp4": media.mp4,
+    "sub/media/voice.mp3": media.mp3,
+  });
+  return dir;
+}
+
+// 2 つの文書が指す同じ画像を 1 回だけ埋め、動画・音声を出力の隣のフォルダへコピーする（正常系（画像・動画・音声を埋める））
+test("test_normal_when_media_embedded", async () => {
+  // 準備
+  const dir = await createMediaDir();
+  // 実行
+  const result = await runCli(["build"], dir);
+  // 検証
+  expect(result.code).toBe(0);
+  expect(linesOf(result.stdout)).toEqual([
+    "書き出した: dist/docs.html（文書 2 件）",
+  ]);
+  const html = await readFile(join(dir, "dist", "docs.html"), "utf8");
+  const pngData = `data:image/png;base64,${PNG_BYTES.toString("base64")}`;
+  expect(html.split(pngData)).toHaveLength(2);
+  expect(existsSync(join(dir, "dist", "docs_files", "media", "demo.mp4"))).toBe(
+    true,
+  );
+  expect(
+    existsSync(join(dir, "dist", "docs_files", "sub", "media", "voice.mp3")),
+  ).toBe(true);
+  const { page, externalRequests } = await browser.openWithFiles(
+    join(dir, "dist", "docs.html"),
+    join(dir, "dist", "docs_files"),
+  );
+  const ready = async (selector: string) => {
+    await page.waitForSelector(`article ${selector}`);
+    await page.waitForFunction(
+      (target) =>
+        ((document.querySelector(`article ${target}`) as HTMLMediaElement)
+          ?.readyState ?? 0) >= 1,
+      selector,
+    );
+    return page.locator(`article ${selector}`).getAttribute("src");
+  };
+  await expect(ready("video")).resolves.toBe("docs_files/media/demo.mp4");
+  await page.locator('article p a[href="#/sub/b.md"]').click();
+  await page.waitForFunction(() =>
+    document.querySelector("article.mdmark h1")?.textContent?.includes("B"),
+  );
+  await expect(ready("audio")).resolves.toBe("docs_files/sub/media/voice.mp3");
+  expect(externalRequests()).toEqual([]);
+  await page.close();
+});
+
+// 動画・音声のコピー先の _files/ へ書けないと、HTML を書かずにパスと直し方を示して終わる（異常系（動画・音声のコピー先へ書けない））
+test("test_error_when_media_copy_unwritable", async () => {
+  // 準備
+  const dir = await createMediaDir();
+  await writeFiles(dir, { "dist/docs_files": "ファイル\n" });
+  // 実行
+  const result = await runCli(["build"], dir);
+  // 検証
+  expect(result.code).toBe(1);
+  expect(result.stderr).toContain("dist/docs_files");
+  expect(result.stderr).toContain("確かめて");
+  expect(await readFile(join(dir, "dist", "docs_files"), "utf8")).toBe(
+    "ファイル\n",
+  );
+  expect(existsSync(join(dir, "dist", "docs.html"))).toBe(false);
+});
+
+// 全ての文書が使うモジュールを 1 つのスクリプトに束ね、blob: と動的 import を許さない環境でも文書を移って描く（正常系（blob: と動的 import を許さない環境で開く））
+test("test_normal_when_blob_and_dynamic_import_blocked", async () => {
+  // 準備
+  const dir = await createTempDir();
+  await writeFiles(dir, {
+    "mdmark.config.yaml": [
+      "extensions: [extensions/greet.js]",
+      "libraries:",
+      "  test-lib: lib/test-lib.js",
+      "syntax:",
+      "  url: vendor/highlightjs/es/",
+      "build:",
+      '  include: ["*.md"]',
+      "  entry: README.md",
+      "  out: dist/docs.html",
+      "",
+    ].join("\n"),
+    "extensions/greet.js": GREET_WITH_IMPORT_SOURCE,
+    "extensions/greet-text.js": 'export const TEXT = "読んだ";\n',
+    "lib/test-lib.js": TEST_LIB_SOURCE,
+    "README.md": [
+      "# 入口",
+      "",
+      "[ガイド](guide.md) を読む。",
+      "",
+      "<!-- greet: 世界 -->",
+      "",
+      "```ts",
+      "const count: number = 1;",
+      "```",
+      "",
+    ].join("\n"),
+    "guide.md": [
+      "# ガイド",
+      "",
+      VIEW_SOURCE,
+      "",
+      "<!-- test-lib: a -->",
+      "",
+    ].join("\n"),
+    ...(await readHighlightVendor()),
+  });
+  // 実行
+  const result = await runCli(["build"], dir);
+  // 検証
+  expect(result.code).toBe(0);
+  expect(result.stderr).toBe("");
+  const opened = await browser.openWithCsp(join(dir, "dist", "docs.html"));
+  const { page } = opened;
+  await page.waitForFunction(
+    () =>
+      document.querySelector("article [data-mdmark-slot]")?.textContent ===
+      "greet:読んだ:世界",
+  );
+  await page.waitForSelector('article code.language-ts span[class^="hljs-"]');
+  await page.locator('article p a[href="#/guide.md"]').click();
+  await page.waitForSelector("article .mdmark-view");
+  await page.waitForFunction(() =>
+    [...document.querySelectorAll("article [data-mdmark-slot]")].some(
+      (slot) => slot.textContent === "drawn:a",
+    ),
+  );
+  await expect(page.locator("article .mdmark-notice").count()).resolves.toBe(0);
+  await expect(opened.violations()).resolves.toEqual([]);
+  expect(opened.inlineUrlScripts()).toEqual([]);
+  await opened.close();
+});
+
+// まとめる文書の取り込み先と束ねていない名前のアイコンの形を埋め、外へ要求せずに描く（正常系（取り込みとアイコンを埋める））
+test("test_normal_when_includes_and_icons", async () => {
+  // 準備
+  const dir = await createTempDir();
+  await writeFiles(dir, {
+    "mdmark.config.yaml": [
+      "build:",
+      '  include: ["docs/*.md"]',
+      "  out: dist/docs.html",
+      "",
+    ].join("\n"),
+    "docs/a.md": [
+      "# A",
+      "",
+      "<!-- include: b.md#使い方 -->",
+      "",
+      "<!-- include: ../共通/手順.md -->",
+      "",
+      "`icon:sailboat` の段落",
+      "",
+    ].join("\n"),
+    "docs/b.md": "# B\n\n## 使い方\n\n使い方の段落\n",
+    "共通/手順.md": "手順の段落\n",
+  });
+  // 実行
+  const result = await runCli(["build"], dir);
+  // 検証
+  expect(result.code).toBe(0);
+  const { page, externalRequests } = await browser.openHtml(
+    join(dir, "dist", "docs.html"),
+  );
+  await page.waitForSelector("article.mdmark h1");
+  await page.waitForSelector('.mdmark-inline-icon[data-icon="sailboat"] svg');
+  const includes = await page
+    .locator("article .mdmark-include")
+    .allTextContents();
+  expect(includes.some((text) => text.includes("使い方の段落"))).toBe(true);
+  expect(includes.some((text) => text.includes("手順の段落"))).toBe(true);
+  const listed = await page
+    .locator(".mdmark-bundle-side .mdmark-doc-list a")
+    .allTextContents();
+  expect(listed.some((text) => text.includes("手順"))).toBe(false);
+  expect(externalRequests()).toEqual([]);
+});
+
+// 範囲の ts を変換して束ね、文書を移るときに範囲の destroy を呼ぶ（正常系（範囲のスクリプトと CSS））
+test("test_normal_when_range_scripts", async () => {
+  // 準備
+  const dir = await createTempDir();
+  await writeFiles(dir, {
+    "mdmark.config.yaml": [
+      "features:",
+      "  html-scripts: true",
+      "build:",
+      '  include: ["*.md"]',
+      "  entry: README.md",
+      "  out: dist/docs.html",
+      "",
+    ].join("\n"),
+    "README.md": [
+      "# 入口",
+      "",
+      "[ガイド](guide.md) を読む。",
+      "",
+      "<!-- html -->",
+      "",
+      "```html",
+      '<div class="box">箱</div>',
+      "```",
+      "",
+      "```css",
+      ".box { background-color: rgb(255, 0, 0); }",
+      "```",
+      "",
+      "```ts",
+      "export default (root: HTMLElement): (() => void) => {",
+      '  const box = root.querySelector<HTMLElement>(".box");',
+      "  const onClick = (): void => {",
+      '    root.classList.toggle("is-open");',
+      "  };",
+      '  box?.addEventListener("click", onClick);',
+      "  return () => {",
+      "    const w = window as unknown as { __mdmarkDestroyed?: number };",
+      "    w.__mdmarkDestroyed = (w.__mdmarkDestroyed ?? 0) + 1;",
+      "  };",
+      "};",
+      "```",
+      "",
+      "<!-- /html -->",
+      "",
+    ].join("\n"),
+    "guide.md": ["# ガイド", "", "範囲を持たない文書。", ""].join("\n"),
+  });
+  // 実行
+  const result = await runCli(["build"], dir);
+  // 検証
+  expect(result.code).toBe(0);
+  const opened = await browser.openWithCsp(join(dir, "dist", "docs.html"));
+  const { page } = opened;
+  const box = page.locator("article div.mdmark-html .box");
+  await box.waitFor();
+  await expect(
+    box.evaluate((el) => getComputedStyle(el).backgroundColor),
+  ).resolves.toBe("rgb(255, 0, 0)");
+  await page.waitForFunction(() => {
+    document
+      .querySelector<HTMLElement>("article div.mdmark-html .box")
+      ?.click();
+    return (
+      document
+        .querySelector("article div.mdmark-html")
+        ?.classList.contains("is-open") === true
+    );
+  });
+  await page.locator('article p a[href="#/guide.md"]').click();
+  await page.waitForFunction(() =>
+    document.querySelector("article h1")?.textContent?.includes("ガイド"),
+  );
+  await expect(
+    page.evaluate(() => Reflect.get(window, "__mdmarkDestroyed")),
+  ).resolves.toBe(1);
+  await expect(
+    page.locator("article style.mdmark-html-style").count(),
+  ).resolves.toBe(0);
+  await expect(opened.violations()).resolves.toEqual([]);
+  expect(opened.inlineUrlScripts()).toEqual([]);
+  await opened.close();
+});
+
+// まとめる文書のどれかに mermaid のコードブロックがあるときだけ mermaid を 1 回まとめて埋める（正常系（mermaid のコードブロック））
+test("test_normal_when_mermaid_embedded", async () => {
+  // 準備
+  const dir = await createTempDir();
+  await copyMermaidVendor(dir);
+  const config = (include: string) =>
+    [
+      "mermaid:",
+      "  url: vendor/mermaid/mermaid.esm.min.mjs",
+      "build:",
+      `  include: [${include}]`,
+      "  out: dist/docs.html",
+      "  entry: a.md",
+      "",
+    ].join("\n");
+  await writeFiles(dir, {
+    "mdmark.config.yaml": config('"*.md"'),
+    "a.md": "# A\n\n[B へ](b.md)\n",
+    "b.md": [
+      "# B",
+      "",
+      "```mermaid",
+      "flowchart LR",
+      "  A[受付] --> B[回答]",
+      "```",
+      "",
+    ].join("\n"),
+  });
+  // 実行
+  const result = await runCli(["build"], dir);
+  // 検証
+  expect(result.code).toBe(0);
+  const html = await readFile(join(dir, "dist", "docs.html"), "utf8");
+  const { page, externalRequests } = await browser.openHtml(
+    join(dir, "dist", "docs.html"),
+  );
+  await page.waitForSelector("article.mdmark h1");
+  await page.locator('article p a[href="#/b.md"]').click();
+  await page.waitForSelector(
+    'article figure.mdmark-diagram[data-diagram="mermaid"] .mdmark-mermaid > svg',
+    {
+      timeout: 60_000,
+    },
+  );
+  expect(externalRequests()).toEqual([]);
+  await page.close();
+  // mermaid のコードブロックを持たない文書だけをまとめたときは埋めない
+  await writeFiles(dir, { "mdmark.config.yaml": config('"a.md"') });
+  const onlyPlain = await runCli(["build"], dir);
+  expect(onlyPlain.code).toBe(0);
+  const plainHtml = await readFile(join(dir, "dist", "docs.html"), "utf8");
+  expect(plainHtml).not.toContain("mermaidModule");
+  expect(plainHtml.length).toBeLessThan(html.length - 1_000_000);
+}, 240_000);

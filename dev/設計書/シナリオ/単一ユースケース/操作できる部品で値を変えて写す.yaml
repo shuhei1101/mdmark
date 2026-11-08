@@ -44,6 +44,28 @@ scenarios:
       - 写すはずだった JSON が、選んで写せる文字として出る
       - スライダーとグラフは操作できるまま
     test: test_error_when_clipboard_denied
+  - name: 正常シナリオ（設定でボタンの文言を替えたとき）
+    setup:
+      - name: 文言を替えた設定で操作できる部品を描いたページ
+        description: 正常シナリオと同じ部品の定義の文書を、設定 `labels.paramCopy` に `コピー` を渡して描いたページ
+        notes: '`labels.paramCopy: "コピー"`'
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 読む人
+        participant C as 操作できる部品
+        participant B as クリップボード
+        U->>C: スライダーを 7 に動かす
+        C-->>U: グラフを 7 で描き直す
+        U->>C: 「コピー」のボタンを押す
+        C->>B: 今の値を JSON で書く
+        C-->>U: 写したことを知らせる
+    expected:
+      - 今の値をコピーするボタンの文字と読み上げの名前が、設定で渡した `コピー` になる
+      - スライダーで部品を描き直した後も、ボタンの文字と読み上げの名前は `コピー` のまま
+      - クリップボードの中身が、スライダーの名前と今の値 7 を持つ JSON として読める
+    test: test_normal_when_label_configured
 lead: 読む人が、文書のスライダーで値を変えてグラフの変わり方を見、「今の値を写す」ボタンで値を JSON にしてクリップボードへ写す。
 issue: 21
 primary_actor: 読む人

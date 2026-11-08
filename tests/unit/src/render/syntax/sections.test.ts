@@ -59,19 +59,17 @@ test("test_wrap_sections_when_h1", () => {
   expect(html).toContain('id="section-付録"');
 });
 
-// 知らない開閉の指定は警告を差し込み、開いた節にする（正常系）
+// 知らない開閉の指定は読み飛ばし、開いた節にする（正常系）
 test("test_wrap_sections_when_unknown_value", () => {
   // 準備
   const markdown = "## A\n\n<!-- section: hidden -->\n\n本文A\n";
   // 実行
-  const { html } = renderDoc(markdown);
+  const { html, warnings } = renderDoc(markdown);
   // 検証
   expect(findTag(html, 'id="section-a"')).toContain('data-section="open"');
-  expect(
-    innerHtml(html, 'id="section-a"')
-      .trimStart()
-      .startsWith('<div class="mdmark-syntax-warning"'),
-  ).toBe(true);
+  expect(html).not.toContain("mdmark-syntax-warning");
+  expect(warnings.map((warning) => warning.kind)).toEqual(["unknown_mark_arg"]);
+  expect(warnings[0]?.message).toContain("hidden");
 });
 
 // sections がオフなら見出しに class を付けず、囲まない（正常系）

@@ -1,0 +1,38 @@
+$ npx vitest run --project unit tests/unit/src/cli/init.test.ts
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-config-cascade-global-settings
+
+ ❯ |unit| tests/unit/src/cli/init.test.ts (5 tests | 1 failed) 151ms
+   × test_run_init_config_comment_on_cascade 23ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit| tests/unit/src/cli/init.test.ts > test_run_init_config_comment_on_cascade
+AssertionError: expected [ …(2) ] to deeply equal [ …(2) ]
+
+- Expected
++ Received
+
+  [
+    "# mdmark の設定。パスと glob は、このファイルのあるフォルダからの相対パスで書く",
+-   "# 端末の設定（~/.config/mdmark/settings.yaml）に重ねて読む。端末の設定の config.cascade を true にすると、上のフォルダの mdmark.config.yaml も重ねる",
++   "",
+  ]
+
+ ❯ tests/unit/src/cli/init.test.ts:116:42
+    114|   // 検証
+    115|   const placed = await readFile(join(dir, "mdmark.config.yaml"), "utf8…
+    116|   expect(placed.split("\n").slice(0, 2)).toEqual([
+       |                                          ^
+    117|     "# mdmark の設定。パスと glob は、このファイルのあるフォルダからの相対パスで書く",
+    118|     "# 端末の設定（~/.config/mdmark/settings.yaml）に重ねて読む。端末の設定の config.casca…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 4 passed (5)
+   Start at  11:41:41
+   Duration  1.92s (import 71%, tests 14%, transform 11%, worker 3%)
+
+exit=1

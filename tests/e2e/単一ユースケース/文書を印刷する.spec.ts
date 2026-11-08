@@ -7,16 +7,19 @@ import {
   removeDistRoot,
   routeSyntax,
   sendPrintEvent,
+  TREE_EXAMPLE_MARKDOWN,
+  treeRow,
 } from "../dist-page.ts";
+import { colorSvg, readMediaSamples, routePageFiles } from "../media.ts";
 
 // ビルドした配布物を置いた作業ツリー
 let builtRoot = "";
 
-// 閉じた折り畳みとリンクと表を持つ見本の Markdown
+// 閉じた折り畳みとリンクと表を持つ見本の Markdown（リンク 1 つだけの段落はカードにするため、文の中にリンクを置く）
 const MARKDOWN = [
   "<details><summary>閉</summary>x</details>",
   "",
-  "[リンク](https://example.com/page)",
+  "詳しくは [リンク](https://example.com/page) を見る。",
   "",
   "| 列A | 列B |",
   "| --- | --- |",
@@ -202,7 +205,7 @@ test("test_normal_when_syntax_expanded", async ({ page }) => {
 
 // 用語 `ワークスペース`（やめた言い方 `作業場`）を持ち、文書 `api`（題 `API`）の `related` が描く文書 `arch` を指す索引
 const INDEX: MdmarkIndex = {
-  schema: 1,
+  schema: 2,
   docs: [
     { id: "arch", path: "設計/arch.md", title: "アーキテクチャ" },
     { id: "api", path: "api.md", title: "API", related: ["arch"] },
@@ -275,7 +278,7 @@ test("test_normal_when_table_features_printed", async ({ page }) => {
   await sendPrintEvent(page, "beforeprint");
   // 検証
   const doc = page.locator("#doc");
-  await expect(doc.locator("button.mdmark-columns-toggle")).toBeHidden();
+  await expect(doc.locator("button.mdmark-table-settings-toggle")).toBeHidden();
   await expect(doc.locator("button.mdmark-copy")).toBeHidden();
   await expect(doc.locator("button.mdmark-totals-toggle")).toBeHidden();
   await expect(doc.locator(".mdmark-row-anchor").first()).toBeHidden();
@@ -462,4 +465,322 @@ test("test_normal_when_theme_selected", async ({ page }) => {
   // 検証: 既定のテーマに戻らず、theme-slate の明るい配色のリンクの色になり、地の色は外れる
   await expect(doc.locator("a")).toHaveCSS("color", "rgb(29, 78, 216)");
   await expect(doc).toHaveCSS("background-color", "rgba(0, 0, 0, 0)");
+});
+
+// デザイン方針の dev-swiss の明るい配色の、色のプリセットの green の面・文字と red の文字の色
+const LIGHT_PRESET = {
+  greenBg: "rgb(203, 242, 210)",
+  greenText: "rgb(22, 101, 52)",
+  redText: "rgb(185, 28, 28)",
+};
+
+// ダークのページを印刷すると、色を明るい配色の色のプリセットで残し、明るい配色の画像・動画の poster・カードの URL を出し、操作のボタンを出さない（正常シナリオ（色・画像・動画・カードを印刷に出す））
+test("test_normal_when_colors_and_media_printed", async ({ page }) => {
+  // 準備
+  const media = await readMediaSamples();
+  await page.emulateMedia({ colorScheme: "dark" });
+  await openPage(page, builtRoot);
+  await routePageFiles(page, {
+    "dark.png": colorSvg({ width: 300, height: 160, color: "#111113" }),
+    "light.png": colorSvg({ width: 300, height: 160, color: "#f4f4f5" }),
+    "anim.gif": { body: media.gif, contentType: "image/gif" },
+    "demo.mp4": { body: media.mp4, contentType: "video/mp4" },
+    "demo.png": { body: media.poster, contentType: "image/png" },
+  });
+  await mountDocument(page, {
+    markdown: [
+      "<!-- table: data row-color=状態:完了=green -->",
+      "",
+      "| 案件 | 状態 |",
+      "| --- | --- |",
+      "| 見積もり | 完了 |",
+      "",
+      "<!-- /table -->",
+      "",
+      "`badge:green:完了` と [決め手の 1 文]{color=red}",
+      "",
+      "![暗い構成](dark.png#only-dark)",
+      "",
+      "![明るい構成](light.png#only-light)",
+      "",
+      "![ビルド](anim.gif)",
+      "",
+      '![操作](demo.mp4 "操作の動画"){poster=demo.png}',
+      "",
+      "https://example.com/docs",
+      "",
+      "[仕様書](files/spec.pdf)",
+      "",
+    ].join("\n"),
+  });
+  await expect(page.locator("#doc button.mdmark-gif-toggle")).toHaveCount(1);
+  // 実行
+  await page.emulateMedia({ colorScheme: "dark", media: "print" });
+  await sendPrintEvent(page, "beforeprint");
+  // 検証: 表の行・バッジ・本文の文字の色が、明るい配色の色のプリセットの値
+  const doc = page.locator("#doc");
+  await expect(doc.locator("tr[data-color] td").first()).toHaveCSS(
+    "background-color",
+    LIGHT_PRESET.greenBg,
+  );
+  await expect(doc.locator(".mdmark-badge[data-color]")).toHaveCSS(
+    "color",
+    LIGHT_PRESET.greenText,
+  );
+  await expect(doc.locator(".mdmark-color[data-color]")).toHaveCSS(
+    "color",
+    LIGHT_PRESET.redText,
+  );
+  // 検証: 明るい配色の画像を出し、暗い配色の画像を出さない
+  await expect(doc.locator('img[alt="明るい構成"]')).toBeVisible();
+  await expect(doc.locator('img[alt="暗い構成"]')).toBeHidden();
+  // 検証: GIF の止める・再生するボタンと、拡大できることを示す表示を出さない
+  await expect(doc.locator("button.mdmark-gif-toggle")).toBeHidden();
+  for (const icon of await doc.locator(".mdmark-image-open-icon").all()) {
+    await expect(icon).toBeHidden();
+  }
+  // 検証: 動画の場所に poster の画像とキャプションを出し、再生バーを出さない
+  await expect(doc.locator("video")).toBeHidden();
+  const printed = doc.locator("img.mdmark-media-print");
+  await expect(printed).toBeVisible();
+  await expect(printed).toHaveAttribute("src", "demo.png");
+  await expect(doc.locator(".mdmark-media figcaption")).toBeVisible();
+  await expect(doc.locator(".mdmark-media figcaption")).toHaveText(
+    "操作の動画",
+  );
+  // 検証: リンクと添付のカードに、リンク先の URL を文字で出す
+  for (const [kind, url] of [
+    ["link", "https://example.com/docs"],
+    ["file", "spec.pdf"],
+  ]) {
+    const text = doc.locator(
+      `a.mdmark-card[data-card="${kind}"] .mdmark-card-url`,
+    );
+    await expect(text).toBeVisible();
+    await expect(text).toHaveText(url ?? "");
+  }
+});
+
+/** 画面の高さの 3 倍を超える段落を持つ文書（『文書の先頭へ戻る』の正常シナリオと同じ） */
+const LONG_MARKDOWN = [
+  "導入",
+  "前提",
+  "準備",
+  "設定",
+  "使い方",
+  "応用",
+  "運用",
+  "確認",
+  "参考",
+  "付録",
+]
+  .flatMap((heading) => [
+    `## ${heading}`,
+    "",
+    ...Array.from({ length: 10 }, (_, i) => [
+      `${heading}の段落 ${i + 1} は、画面の高さの 3 倍を超えるまで並べる本文。`,
+      "",
+    ]).flat(),
+  ])
+  .join("\n");
+
+// 印刷では先頭へ戻るボタンを出さず、印刷が終わると画面の右下に戻す（正常シナリオ（先頭へ戻るボタンを印刷に出さない））
+test("test_normal_when_back_to_top_hidden_in_print", async ({ page }) => {
+  // 準備: 文書の末尾までスクロールし、先頭へ戻るボタンを出しておく
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await openPage(page, builtRoot);
+  await mountDocument(page, { markdown: LONG_MARKDOWN });
+  await page.evaluate(() =>
+    window.scrollTo(0, document.documentElement.scrollHeight),
+  );
+  const button = page.getByRole("button", { name: "先頭へ戻る" });
+  await expect(button).toBeVisible();
+  // 実行: 印刷を始める
+  await page.emulateMedia({ media: "print" });
+  await sendPrintEvent(page, "beforeprint");
+  // 検証
+  await expect(page.locator("#doc > button.mdmark-back-to-top")).toHaveCSS(
+    "display",
+    "none",
+  );
+  // 実行: 印刷を終える
+  await page.emulateMedia({ media: "screen" });
+  await sendPrintEvent(page, "afterprint");
+  // 検証
+  await expect(button).toBeVisible();
+  const box = await button.boundingBox();
+  expect(box).not.toBeNull();
+  expect((box?.x ?? 0) + (box?.width ?? 0)).toBeGreaterThan(1280 / 2);
+  expect((box?.y ?? 0) + (box?.height ?? 0)).toBeGreaterThan(800 / 2);
+});
+
+// 印刷の前に畳んだコードの行と入れ子の閉じた注意書きを開き、開閉のボタンを出さず、印刷の後に戻す（正常シナリオ（畳んだコードと入れ子の注意書きを開いて出す））
+test("test_normal_when_code_folded", async ({ page }) => {
+  // 準備
+  await openPage(page, builtRoot);
+  await mountDocument(page, {
+    markdown: [
+      "<!-- code: fold=2 -->",
+      "",
+      "```yaml",
+      "a:",
+      "  b:",
+      "    c: 1",
+      "  d: 2",
+      "```",
+      "",
+      "> [!NOTE]+ 外側",
+      "> 外側の本文",
+      ">",
+      "> > [!TIP]- 内側",
+      "> > 内側の本文",
+      "",
+    ].join("\n"),
+    config: { features: { syntax: false } },
+  });
+  const lines = page.locator("#doc .mdmark-code-line");
+  const inner = page.locator("#doc details.markdown-alert-tip");
+  await expect(lines.nth(2)).toBeHidden();
+  await expect(inner).not.toHaveAttribute("open", "");
+  // 実行: 印刷の前
+  await page.emulateMedia({ media: "print" });
+  await sendPrintEvent(page, "beforeprint");
+  // 検証: 全ての行と入れ子の注意書きの本文が出て、開閉のボタンと ⋯ が出ていない
+  for (const index of [0, 1, 2, 3]) {
+    await expect(lines.nth(index)).toBeVisible();
+  }
+  await expect(page.getByText("内側の本文")).toBeVisible();
+  for (const button of await page
+    .locator("#doc :is(.mdmark-code-fold, .mdmark-code-fold-more)")
+    .all()) {
+    await expect(button).toBeHidden();
+  }
+  // 実行: 印刷の後
+  await page.emulateMedia({ media: "screen" });
+  await sendPrintEvent(page, "afterprint");
+  // 検証: 2 行目を畳み、入れ子の注意書きを閉じる
+  await expect(lines.nth(2)).toBeHidden();
+  await expect(
+    lines.nth(1).locator(":scope > .mdmark-code-fold"),
+  ).toHaveAttribute("aria-expanded", "false");
+  await expect(inner).not.toHaveAttribute("open", "");
+  await expect(page.getByText("内側の本文")).toBeHidden();
+});
+
+// 印刷の前に閉じた脚注の一覧を開き、ツールチップを出さず、印刷の後に閉じ直す（正常シナリオ（脚注の一覧を開いて出す））
+test("test_normal_when_footnotes_printed", async ({ page }) => {
+  // 準備
+  await openPage(page, builtRoot);
+  await mountDocument(page, {
+    markdown: "出典がある[^src]。\n\n[^src]: 出典の説明\n",
+  });
+  const doc = page.locator("#doc");
+  const list = doc.locator("details.mdmark-footnotes");
+  // 実行
+  await page.emulateMedia({ media: "print" });
+  await sendPrintEvent(page, "beforeprint");
+  // 検証
+  await expect(list).toHaveAttribute("open", "");
+  await expect(list.locator(".mdmark-fn-item")).toContainText("出典の説明");
+  await expect(doc.locator(".mdmark-fn-ref")).toHaveCSS(
+    "vertical-align",
+    "super",
+  );
+  await doc.locator(".mdmark-fn-link").hover();
+  await expect(doc.locator(".mdmark-fn-tip")).toBeHidden();
+  // 実行
+  await page.emulateMedia({ media: "screen" });
+  await sendPrintEvent(page, "afterprint");
+  // 検証
+  await expect(list).not.toHaveAttribute("open", "");
+});
+
+// 印刷で、改ページの場所で用紙を分け、details の範囲を開き、wide の範囲を用紙の幅に収める（正常シナリオ（改ページと details の範囲と wide の範囲））
+test("test_normal_when_pagebreak_details_wide", async ({ page }) => {
+  // 準備
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await openPage(page, builtRoot, {
+    hostCss: "#doc { --mdmark-content-width: 640px; margin-inline: auto; }",
+  });
+  await mountDocument(page, {
+    markdown: [
+      "前の段落",
+      "",
+      "<!-- pagebreak -->",
+      "",
+      "<!-- details: 補足 -->",
+      "",
+      "補足の段落",
+      "",
+      "<!-- /details -->",
+      "",
+      "<!-- wide -->",
+      "",
+      "| 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 |",
+      "| --- | --- | --- | --- | --- | --- | --- | --- |",
+      "| 項目の長い名前 | 1,200,000 | 1,350,000 | 1,410,000 | 1,280,000 | 1,520,000 | 1,610,000 | 前年比で増加した |",
+      "",
+      "<!-- /wide -->",
+      "",
+    ].join("\n"),
+  });
+  const pagebreak = page.locator("#doc .mdmark-pagebreak");
+  // 検証: 画面
+  await expect(pagebreak).toHaveText("");
+  expect((await pagebreak.boundingBox())?.height ?? 0).toBe(0);
+  // 実行
+  await page.emulateMedia({ media: "print" });
+  await sendPrintEvent(page, "beforeprint");
+  // 検証
+  expect(
+    await pagebreak.evaluate((el) => getComputedStyle(el).breakBefore),
+  ).toBe("page");
+  await expect(page.getByText("補足の段落")).toBeVisible();
+  const widths = await page.evaluate(() => ({
+    range:
+      document.querySelector("#doc .mdmark-wide-range")?.getBoundingClientRect()
+        .width ?? 0,
+    paper: document.documentElement.clientWidth,
+  }));
+  expect(widths.range).toBeLessThanOrEqual(widths.paper);
+  // 実行
+  await page.emulateMedia({ media: "screen" });
+  await sendPrintEvent(page, "afterprint");
+  // 検証
+  await expect(page.getByText("補足の段落")).toBeHidden();
+});
+
+// 畳んだ階層の行と隠した見本を、印刷の前に開いて出し、印刷の後に戻す（正常シナリオ（畳んだ階層の行と隠した見本を開いて出す））
+test("test_normal_when_tree_folded", async ({ page }) => {
+  // 準備
+  await openPage(page, builtRoot);
+  await mountDocument(page, { markdown: TREE_EXAMPLE_MARKDOWN });
+  const doc = page.locator("#doc");
+  const example = doc.locator("aside.mdmark-tree-example");
+  await treeRow(page, "aliases[]").locator("button.mdmark-tree-toggle").click();
+  await doc.locator("button.mdmark-tree-example-toggle").click();
+  await expect(treeRow(page, "aliases[].id")).toBeHidden();
+  await expect(example).toBeHidden();
+  // 実行: 印刷の前
+  await page.emulateMedia({ media: "print" });
+  await sendPrintEvent(page, "beforeprint");
+  // 検証: 全ての行と見本の全てのタブの中身が出て、ボタンは出ない
+  for (const row of await doc.locator("tr.mdmark-tree-row").all()) {
+    await expect(row).toBeVisible();
+  }
+  await expect(example).toBeVisible();
+  for (const line of ["table: true", "type: custom"]) {
+    await expect(example.getByText(line)).toBeVisible();
+  }
+  await expect(doc.locator("button.mdmark-tree-toggle").first()).toBeHidden();
+  await expect(doc.locator("button.mdmark-tree-copy").first()).toBeHidden();
+  await expect(doc.locator("button.mdmark-tree-example-toggle")).toBeHidden();
+  // 実行・検証: 印刷の後
+  await sendPrintEvent(page, "afterprint");
+  await page.emulateMedia({ media: "screen" });
+  await expect(treeRow(page, "aliases[].id")).toBeHidden();
+  await expect(
+    treeRow(page, "aliases[].metadata.alias_type.type"),
+  ).toBeHidden();
+  await expect(example).toBeHidden();
 });

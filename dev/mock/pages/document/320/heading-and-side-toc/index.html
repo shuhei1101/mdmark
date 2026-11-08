@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <!-- viewport: スマホ幅で等倍に表示する -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- color-scheme: 明るい配色とダークの両方を持つことをブラウザへ伝える -->
+  <meta name="color-scheme" content="light dark">
+  <title>document / heading-and-side-toc（見出しの線と右側の目次の上端・位置） | mdmark のモック</title>
+  <!-- 配布物の CSS（ライブラリ本体） -->
+  <link rel="stylesheet" href="../../../../../../dist/index.css">
+  <!-- この PR の案: 見出しの線・区切り線・右側の目次の上端・hover で開く位置（番号で共有するアセット） -->
+  <link rel="stylesheet" href="../../../../refs/320/assets/proposal.css">
+  <!-- 使う側のページの見た目と、モック専用の操作列（#287 で共有するアセット） -->
+  <link rel="stylesheet" href="../../../../refs/287/assets/scene.css">
+  <!-- 配布物の mount で長い文書を描き、この PR の案を当てる -->
+  <script type="module" src="../../../../refs/320/assets/scene.js"></script>
+</head>
+<body>
+  <!-- モック専用の操作列: 未確定の論点の案と、配色・目次の出し方・描く場所の切り替え。[data-scene-axis] [data-scene-value]: scene.js が行き先の URL と今の案の aria-current を当てる -->
+  <div class="mock-bar">
+    <div class="mock-bar-group" role="group" aria-label="見出しの線の色">
+      <span class="mock-bar-label">見出しの線の色</span>
+      <a class="mock-bar-item" data-scene-axis="rule" data-scene-value="muted">A: 枠線の色 70%（推奨）</a>
+      <a class="mock-bar-item" data-scene-axis="rule" data-scene-value="half">B: 枠線の色 50%</a>
+      <a class="mock-bar-item" data-scene-axis="rule" data-scene-value="border">比較: 区切り線と同じ色</a>
+      <a class="mock-bar-item" data-scene-axis="rule" data-scene-value="none">太さ 0 を当てた使う側</a>
+    </div>
+    <div class="mock-bar-group" role="group" aria-label="ピン止めのアイコン">
+      <span class="mock-bar-label">ピン止めのアイコン</span>
+      <a class="mock-bar-item" data-scene-axis="icon" data-scene-value="panel">A: 右の列（推奨）</a>
+      <a class="mock-bar-item" data-scene-axis="icon" data-scene-value="arrow">B: 右の列と矢印</a>
+      <a class="mock-bar-item" data-scene-axis="icon" data-scene-value="pin">C: ピンと外すピン</a>
+    </div>
+    <div class="mock-bar-group" role="group" aria-label="hover で開く位置">
+      <span class="mock-bar-label">hover で開く位置</span>
+      <a class="mock-bar-item" data-scene-axis="position" data-scene-value="viewport">A: 画面の上端寄り（推奨）</a>
+      <a class="mock-bar-item" data-scene-axis="position" data-scene-value="rail">B: 右端の線の上端（今）</a>
+    </div>
+    <div class="mock-bar-group" role="group" aria-label="配色">
+      <span class="mock-bar-label">配色</span>
+      <a class="mock-bar-item" data-scene-axis="scheme" data-scene-value="light">ライト</a>
+      <a class="mock-bar-item" data-scene-axis="scheme" data-scene-value="dark">ダーク</a>
+    </div>
+    <div class="mock-bar-group" role="group" aria-label="目次の出し方">
+      <span class="mock-bar-label">目次の出し方</span>
+      <a class="mock-bar-item" data-scene-axis="mode" data-scene-value="hover">hover（既定）</a>
+      <a class="mock-bar-item" data-scene-axis="mode" data-scene-value="fixed">fixed</a>
+    </div>
+    <div class="mock-bar-group" role="group" aria-label="描く場所">
+      <span class="mock-bar-label">描く場所</span>
+      <a class="mock-bar-item" data-scene-axis="host" data-scene-value="window">画面全体がスクロール</a>
+      <a class="mock-bar-item" data-scene-axis="host" data-scene-value="box">スクロールする要素の中</a>
+      <a class="mock-bar-item" data-scene-axis="host" data-scene-value="clip">横のはみ出しを隠す祖先の中</a>
+    </div>
+  </div>
+
+  <!-- 使う側のページのトップバー（mdmark の外） -->
+  <header class="host-bar">使う側のアプリ</header>
+
+  <nav class="crumbs" aria-label="パンくずリスト">
+    <a href="../../../index.md">pages</a> / <a href="../../index.md">document</a> / <a href="../index.md">320</a> / heading-and-side-toc
+  </nav>
+
+  <main class="host">
+    <!-- スクロールする要素: 描く場所が「スクロールする要素の中」のときだけ高さ 600px で縦にスクロールする -->
+    <div class="scroll-box">
+      <!-- mount で描く先の要素 -->
+      <div id="doc"></div>
+    </div>
+  </main>
+</body>
+</html>

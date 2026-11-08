@@ -1,4 +1,8 @@
 import { expect, test } from "vitest";
+import type {
+  ArgumentSchema,
+  ToolInputSchema,
+} from "../../../../src/plugin/arguments.ts";
 
 /** 引数の検査を読み込む（実装が無い間は各テストが個別に失敗する） */
 const loadArguments = () => import("../../../../src/plugin/arguments.ts");
@@ -16,15 +20,25 @@ async function schemaOf(name: string) {
   return tool.inputSchema;
 }
 
+/** テストの中で作る、引数 1 つの形 */
+function schemaWith(name: string, argument: ArgumentSchema): ToolInputSchema {
+  return {
+    type: "object",
+    properties: { [name]: argument },
+    required: [],
+    additionalProperties: false,
+  };
+}
+
 // 合う引数は undefined（正常系）
 test("test_check_arguments", async () => {
   // 準備
   const { checkArguments } = await loadArguments();
-  const schema = await schemaOf("update_index");
+  const schema = await schemaOf("export_html");
   // 実行
   const result = checkArguments({
     schema,
-    args: { kind: "doc", id: "b", item: { path: "b.md" } },
+    args: { file: "a.md", out: "a.html" },
   });
   // 検証
   expect(result).toBeUndefined();
@@ -34,11 +48,11 @@ test("test_check_arguments", async () => {
 test("test_check_arguments_when_required_missing", async () => {
   // 準備
   const { checkArguments } = await loadArguments();
-  const schema = await schemaOf("read_guide");
+  const schema = await schemaOf("export_html");
   // 実行
   const result = checkArguments({ schema, args: {} });
   // 検証
-  expect(result).toContain("names");
+  expect(result).toContain("file");
 });
 
 // 知らない引数（正常系）
@@ -57,7 +71,10 @@ test("test_check_arguments_when_unknown_key", async () => {
 test("test_check_arguments_when_type_mismatch", async () => {
   // 準備
   const { checkArguments } = await loadArguments();
-  const schema = await schemaOf("read_guide");
+  const schema = schemaWith("names", {
+    type: "array",
+    items: { type: "string" },
+  });
   // 実行
   const result = checkArguments({ schema, args: { names: "notation" } });
   // 検証
@@ -69,7 +86,11 @@ test("test_check_arguments_when_type_mismatch", async () => {
 test("test_check_arguments_when_empty_array", async () => {
   // 準備
   const { checkArguments } = await loadArguments();
-  const schema = await schemaOf("read_guide");
+  const schema = schemaWith("names", {
+    type: "array",
+    items: { type: "string" },
+    minItems: 1,
+  });
   // 実行
   const result = checkArguments({ schema, args: { names: [] } });
   // 検証
@@ -81,27 +102,24 @@ test("test_check_arguments_when_empty_array", async () => {
 test("test_check_arguments_when_enum_mismatch", async () => {
   // 準備
   const { checkArguments } = await loadArguments();
-  const schema = await schemaOf("update_index");
-  // 実行
-  const result = checkArguments({
-    schema,
-    args: { kind: "docs", id: "b", item: { path: "b.md" } },
+  const schema = schemaWith("kind", {
+    type: "string",
+    enum: ["doc", "term"],
   });
+  // 実行
+  const result = checkArguments({ schema, args: { kind: "docs" } });
   // 検証
   expect(result).toContain("kind");
-  expect(result).toContain("doc か term か tag");
+  expect(result).toContain("doc か term");
 });
 
 // null を許す引数（正常系）
 test("test_check_arguments_when_null_allowed", async () => {
   // 準備
   const { checkArguments } = await loadArguments();
-  const schema = await schemaOf("update_index");
+  const schema = schemaWith("item", { type: ["object", "null"] });
   // 実行
-  const result = checkArguments({
-    schema,
-    args: { kind: "doc", id: "b", item: null },
-  });
+  const result = checkArguments({ schema, args: { item: null } });
   // 検証
   expect(result).toBeUndefined();
 });
@@ -121,7 +139,11 @@ test("test_check_arguments_when_not_object", async () => {
 test("test_check_arguments_when_integer_out_of_range", async () => {
   // 準備
   const { checkArguments } = await loadArguments();
-  const schema = await schemaOf("find_docs");
+  const schema = schemaWith("limit", {
+    type: "integer",
+    minimum: 1,
+    maximum: 100,
+  });
   // 実行
   const results = [101, 1.5].map((limit) =>
     checkArguments({ schema, args: { limit } }),
@@ -137,11 +159,11 @@ test("test_check_arguments_when_integer_out_of_range", async () => {
 test("test_check_arguments_when_boolean_mismatch", async () => {
   // 準備
   const { checkArguments } = await loadArguments();
-  const schema = await schemaOf("find_docs");
+  const schema = schemaWith("flag", { type: "boolean" });
   // 実行
-  const result = checkArguments({ schema, args: { count_only: "true" } });
+  const result = checkArguments({ schema, args: { flag: "true" } });
   // 検証
-  expect(result).toContain("count_only");
+  expect(result).toContain("flag");
   expect(result).toContain("真偽値");
 });
 
@@ -149,12 +171,13 @@ test("test_check_arguments_when_boolean_mismatch", async () => {
 test("test_check_arguments_when_item_enum_mismatch", async () => {
   // 準備
   const { checkArguments } = await loadArguments();
-  const schema = await schemaOf("find_docs");
+  const schema = schemaWith("fields", {
+    type: "array",
+    items: { type: "string", enum: ["path", "aliases"] },
+  });
   // 実行
-  const result = checkArguments({ schema, args: { include: ["body"] } });
+  const result = checkArguments({ schema, args: { fields: ["body"] } });
   // 検証
-  expect(result).toContain("include");
-  expect(result).toContain(
-    "path か aliases か related か referenced_by の配列",
-  );
+  expect(result).toContain("fields");
+  expect(result).toContain("path か aliases の配列");
 });

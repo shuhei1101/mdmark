@@ -1,0 +1,11 @@
+$ npx vitest run --project "integration*" tests/integration/ClaudeCodeプラグイン/read-guide.test.ts
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/docs-guide-writing-style-and-writing-page
+
+
+ Test Files  1 passed (1)
+      Tests  3 passed (3)
+   Start at  02:22:18
+   Duration  65.42s (tests 68%, import 30%, transform 2%)
+
+exit 0

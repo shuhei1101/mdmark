@@ -12,6 +12,9 @@ const REPO_ROOT = resolve(import.meta.dirname, "../..");
 // 見本の文書（見本のページはこの文書を描く）
 const SAMPLE_PATH = join(REPO_ROOT, "docs", "使い方", "図を描く", "見本.md");
 
+// 使い方『図を描く』（判定フローチャートの定義の例を持つ）
+const GUIDE_PATH = join(REPO_ROOT, "docs", "使い方", "図を描く", "図を描く.md");
+
 // 固有の部品のモジュールを返す架空の URL
 export const CARD_URL = "https://libs.example.test/card.js";
 
@@ -49,6 +52,18 @@ export function wrapDirective(directive: string, json: string): string {
   ].join("\n");
 }
 
+/** 使い方『図を描く』の判定フローチャートの定義を書いた文書 */
+export async function judgementMarkdown(): Promise<string> {
+  const guide = await readFile(GUIDE_PATH, "utf8");
+  const text = [...guide.matchAll(/```json\n([\s\S]*?)\n```/g)]
+    .map((match) => match[1] ?? "")
+    .find((block) => block.includes('"kind": "question"'));
+  if (text === undefined) {
+    throw new Error("使い方『図を描く』に判定フローチャートの定義が無い");
+  }
+  return wrapDirective("flow", text);
+}
+
 /** 見本のフロー図の部品の定義を書いた文書 */
 export async function flowMarkdown(): Promise<string> {
   return wrapDirective("flow", await sampleBlock("inquiry"));
@@ -56,7 +71,7 @@ export async function flowMarkdown(): Promise<string> {
 
 /** 用語 `意思決定モデル` を持つ索引（見本のフロー図の箱の `{{意思決定モデル}}` の意味になる） */
 export const TERM_INDEX: MdmarkIndex = {
-  schema: 1,
+  schema: 2,
   docs: [],
   terms: [
     {
@@ -243,4 +258,106 @@ export async function zoomPercent(page: Page): Promise<number> {
     .first()
     .innerText();
   return Number.parseInt(text, 10);
+}
+
+/** 座標を省いた判定フローチャートの定義（開始 1・質問 2・アクション 1・結果 2 のノードと 6 本の線。ノードの座標・線の `points`・図の `width`・`height` を書かない） */
+export const JUDGEMENT_AUTO_TEXT: string = JSON.stringify({
+  title: "問い合わせの返信の判定",
+  scope: "問い合わせを受け取ったとき",
+  updated: "2026-11-04",
+  nodes: [
+    { id: "start", kind: "start", name: "問い合わせを受け取る" },
+    { id: "q1", kind: "question", name: "よくある質問で答えられるか" },
+    { id: "a1", kind: "action", name: "よくある質問のリンクを添える" },
+    { id: "q2", kind: "question", name: "担当者が答えられるか" },
+    { id: "r1", kind: "result", name: "返信を送信する" },
+    { id: "r2", kind: "result", name: "開発に起票する" },
+  ],
+  wires: [
+    { id: "j-start", from: "start", to: "q1", line: "flow" },
+    { id: "j-q1-yes", from: "q1", to: "a1", line: "flow", label: "YES" },
+    { id: "j-q1-no", from: "q1", to: "q2", line: "flow", label: "NO" },
+    { id: "j-a1", from: "a1", to: "r1", line: "flow" },
+    { id: "j-q2-yes", from: "q2", to: "r1", line: "flow", label: "YES" },
+    { id: "j-q2-no", from: "q2", to: "r2", line: "flow", label: "NO" },
+  ],
+});
+
+/** リンク先を持つノードのフロー図の定義。`hrefs` はノード `a`・`b` のリンク先で、ノード `c` はリンク先を持たない。`io` を渡すとノード `a` に入力・処理・出力を持たせる */
+export function linkedFlowText(options: {
+  hrefs: [string, string];
+  io?: boolean;
+}): string {
+  const node = (id: string, x: number, href?: string) => ({
+    id,
+    kind: "script",
+    x,
+    y: 40,
+    w: 200,
+    h: 72,
+    name: `ノード ${id}`,
+    ...(href === undefined ? {} : { href }),
+  });
+  const [first, second] = options.hrefs;
+  return JSON.stringify({
+    title: "リンク",
+    scope: "点検",
+    updated: "2026-11-05",
+    width: 760,
+    height: 152,
+    nodes: [
+      {
+        ...node("a", 20, first),
+        ...(options.io
+          ? { io: { in: "本文", do: "種類を 1 つ選ぶ", out: "種類" } }
+          : {}),
+      },
+      node("b", 280, second),
+      node("c", 540),
+    ],
+    wires: [],
+  });
+}
+
+/** ページの中のリンク先への遷移を手元の応答で受け、開いた URL を返す関数を返す（`urls` に当たる要求だけを受ける） */
+export async function routeLinkTargets(
+  page: Page,
+  urls: string[],
+): Promise<() => string[]> {
+  const opened: string[] = [];
+  for (const url of urls) {
+    await page.route(url, (route) => {
+      opened.push(route.request().url());
+      return route.fulfill({
+        contentType: "text/html",
+        body: "<!doctype html><title>開いた</title>",
+      });
+    });
+  }
+  return () => [...opened];
+}
+
+/** 見本のフロー図のシステムの枠の `hint` */
+export const FRAME_HINT = "メールの受け取りから返信までを受け持つ範囲";
+
+/** 見本のフロー図の LLM の層の `hint` */
+export const LANE_HINT = "返信の種類を選び、下書きを書く";
+
+/** 見本のフロー図に、システムの枠と LLM の層の `hint` を足した定義の JSON。`stickyTitles` を渡すとその値も書く */
+export async function groupFlowText(
+  options: { stickyTitles?: boolean } = {},
+): Promise<string> {
+  const definition = JSON.parse(await sampleBlock("inquiry")) as {
+    frame: Record<string, unknown>;
+    lanes: Array<Record<string, unknown>>;
+    stickyTitles?: boolean;
+  };
+  definition.frame = { ...definition.frame, hint: FRAME_HINT };
+  definition.lanes = definition.lanes.map((lane) =>
+    lane.kind === "llm" ? { ...lane, hint: LANE_HINT } : lane,
+  );
+  if (options.stickyTitles !== undefined) {
+    definition.stickyTitles = options.stickyTitles;
+  }
+  return JSON.stringify(definition, null, 2);
 }

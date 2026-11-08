@@ -95,7 +95,7 @@
       columns: [{ name: "名前" }, { name: "状態" }, { name: "説明" }],
       rows: [
         ["見出し行の固定", '<span class="mdmark-badge">実装中</span>', "表が画面の中にある間、見出し行と集計の行を画面の上端と下端に留める。表の中では縦にスクロールさせない"],
-        ["表のコピー", '<span class="mdmark-badge">実装中</span>', "Markdown の表か TSV を選んで、絞り込みと列の表示を反映した表をコピーする"],
+        ["表のコピー", '<span class="mdmark-badge">実装中</span>', "Markdown の表か TSV を選んで、絞り込みと列設定を反映した表をコピーする"],
         ["コードブロックのコピー", '<span class="mdmark-badge">予定</span>', "言語のラベルの横のボタンで、行のマーカーと消した行を除いたコードをコピーする"],
       ],
       details: {

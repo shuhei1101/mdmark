@@ -1,0 +1,12 @@
+# mdmark の端末の設定（MDMARK_CONFIG、無ければ ${XDG_CONFIG_HOME:-~/.config}/mdmark/settings.yaml）
+# mdmark.config.yaml と同じキーと、端末の設定だけが持つ config・serve を書く
+
+config:
+  # true のとき、文書のフォルダから上の mdmark.config.yaml を全て重ねる
+  cascade: false
+  # false のとき、書き出しで端末の設定を重ねない
+  applyToExport: true
+
+serve:
+  # /mdmark:global-setup が常駐サーバーを起動する tmux のセッション名
+  tmuxSession: mdmark-mcp

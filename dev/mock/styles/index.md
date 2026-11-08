@@ -2,6 +2,8 @@
 
 mdmark が描いた文書の既定の見た目（テーマの既定の値）の採用案と候補。
 
+<!-- table: data -->
+
 | スタイル | 説明 |
 | --- | --- |
 | [dev-swiss](./dev-swiss/index.html) `badge:採用` | 開発者ツール × スイス。mindstella と同じ色・行間・角丸で、文字は mindstella の本文（13px）より 1 段大きい 14px にし、見出しの下の線を引かず、注意書きを種類の色の薄い面と淡い線で囲む |
@@ -13,3 +15,5 @@ mdmark が描いた文書の既定の見た目（テーマの既定の値）の�
 | [theme-contrast](./theme-contrast/index.html) `badge:採用` | 選べるテーマ（#181）。高コントラスト: 白と黒の地に、黒の文字・濃い罫線・濃い青のリンク。書体・余白は dev-swiss のまま |
 | [theme-paper](./theme-paper/index.html) `badge:採用` | 選べるテーマ（#181）。紙: 生成りの地に墨色の文字と臙脂のリンク、暗い配色は焦げ茶の地に生成りの文字。書体・余白は dev-swiss のまま |
 | [theme-slate](./theme-slate/index.html) `badge:採用` | 選べるテーマ（#181）。青灰: 青みの灰の地と面に青のリンク、暗い配色は紺の地。書体・余白は dev-swiss のまま |
+
+<!-- /table -->

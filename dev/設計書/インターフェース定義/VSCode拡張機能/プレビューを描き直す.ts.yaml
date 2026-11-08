@@ -64,6 +64,27 @@ flows:
       - '`render` の `config.features` が `{ callout: false }`'
       - Webview の注意書きが `markdown-alert` の枠でなく `blockquote` で描かれる
     test: test_normal_when_config_saved
+  - name: 正常系（設定ファイルの部品の文言で描く）
+    summary: 設定ファイルの `labels` を `config` に入れ、操作できる部品の今の値をコピーするボタンを設定の文言で描き直す
+    setup:
+      - name: プレビューを開いたワークスペース
+        description: 正常系と同じ。`mdmark.config.yaml` は `labels` を持たず、`guide.md` は `<!-- param -->` の印で操作できる部品の定義を 1 つ持つ
+      - name: Mock
+        description: 正常系と同じ
+    flow: |-
+      sequenceDiagram
+        participant U as 文書を書く人
+        participant EX as 拡張機能
+        participant PV as Webview
+        U->>EX: mdmark.config.yaml に labels.paramCopy: コピー を書いて保存
+        EX->>EX: features・libraries・labels などを取り出す
+        EX->>PV: render（新しい config）
+        PV->>PV: destroy して mount
+        PV->>EX: rendered
+    expected:
+      - '`render` の `config.labels` が `{ paramCopy: "コピー" }`'
+      - Webview の `button.mdmark-param-copy` の `textContent` が `コピー`
+    test: test_normal_when_param_copy_label_configured
   - name: 正常系（設定ファイルが無い）
     summary: 設定ファイルが無ければ設定なしで描き、知らせを出さない
     setup:
@@ -162,10 +183,11 @@ flows:
         participant PV as Webview
         U->>EX: 壊れた mdmark.config.yaml を保存
         EX->>EX: YAMLParseError
-        EX->>PV: configError（line: 4）
+        EX->>PV: configError（path: mdmark.config.yaml, line: 4）
     expected:
-      - '`configError` の `line` が `4` で、`render` は送られない'
+      - '`configError` の `path` が `mdmark.config.yaml`・`line` が `4` で、`render` は送られない'
       - Webview の文書は描いたまま（注意書きは `blockquote` のまま）で、文書の先頭に設定ファイルを読めない帯と「設定ファイルを開く」がある
+      - 帯を出したパネルの `auditPreview()` の axe の違反が 0 件
     test: test_error_when_config_unreadable
   - name: 正常系（設定ファイルに新しい配信元の libraries を足す）
     summary: 開いたまま設定ファイルにまだ CSP に無い origin の `libraries` を足して保存すると、HTML を入れ直してそのモジュールを読む
@@ -261,6 +283,53 @@ flows:
       - 表に戻した後の `ready` を受けて送った `render` が `previous` を持つ
       - 表に戻した後の Webview で、見出し A の見えている範囲の先頭からの位置が、背面に回す前に控えた値と 1 px 以内で同じ
     test: test_normal_when_diff_revealed
+  - name: 正常系（取り込み先を保存する）
+    summary: 取り込んでいるファイルを保存すると、読み直した取り込む文書で描き直す
+    setup:
+      - name: 取り込みを持つプレビュー
+        description: プレビューを開く.ts の正常系（取り込む文書を描く）の後
+      - name: Mock
+        description: プレビューを開く.ts の正常系と同じ。Webview へ送ったメッセージを記録する
+    flow: |-
+      sequenceDiagram
+        participant U as 文書を書く人
+        participant EX as 拡張機能
+        participant PV as Webview
+        U->>EX: 共通/手順.md の実行の段落を書き換えて保存する
+        EX->>EX: includes を読み直す
+        EX->>PV: render（guide.md の全文・includes）
+        PV->>EX: rendered
+    expected:
+      - 保存の後に送った `render` が 1 回で、`includes` の `共通/手順.md` が書き換えた後の中身
+      - Webview の取り込んだ段落が書き換えた後の文
+      - 取り込んでいないワークスペースのファイルを保存しても `render` を送らない
+    test: test_normal_when_include_target_saved
+    refs:
+      - dev/設計書/シナリオ/単一ユースケース/VSCodeでプレビューを開く#scenarios[正常シナリオ（取り込む文書を描く）]
+  - name: 正常系（aliases の YAML を保存する）
+    summary: '`aliases` の行が指す YAML を保存すると、作り直したエイリアスで描き直す'
+    setup:
+      - name: エイリアスを持つプレビュー
+        description: プレビューを開く.ts の正常系（設定の aliases のエイリアス）の後
+      - name: Mock
+        description: プレビューを開く.ts の正常系と同じ。Webview へ送ったメッセージを記録する
+    flow: |-
+      sequenceDiagram
+        participant U as 文書を書く人
+        participant EX as 拡張機能
+        participant PV as Webview
+        U->>EX: glossary.yaml の描画の意味を書き換えて保存する
+        EX->>EX: エイリアスを作り直す
+        EX->>PV: render（guide.md の全文・新しい aliases）
+        PV->>PV: destroy して mount
+        PV->>EX: rendered
+    expected:
+      - 保存の後に送った `render` が 1 回で、`aliases` の `描画` の `description` が書き換えた後の意味
+      - Webview のツールチップの「用語」の区分に書き換えた後の意味が出る
+      - Webview のスクロールの位置が保存する前と同じ
+    test: test_normal_when_aliases_yaml_saved
+    refs:
+      - dev/設計書/シナリオ/単一ユースケース/書いた内容をプレビューに映す#scenarios[正常シナリオ（aliases の YAML を書き換える）]
 lead: 開いているプレビューを、Markdown と設定ファイルの最後の内容で描き直す。
 idempotent: true
 side_effects: Webview へ `render`・`configError`・`configOk` を送る。Markdown と設定ファイルは書き換えない
@@ -271,32 +340,34 @@ exceptions:
   - name: なし（正常終了）
     condition: 最後の全文と設定で描き直す
   - name: なし（設定ファイルを読めない）
-    condition: 設定ファイルが YAML として読めない
-    notes: 例外を投げず、前に読めた設定（無ければ設定なし）で描いたまま、`configError` で読めない行を知らせる
+    condition: 重ねた設定ファイルのどれかが YAML として読めない・設定の形に合わない
+    notes: 例外を投げず、前に使った設定（無ければそのファイルを除いた残りの設定）で描いたまま、`configError` で読めないファイルと行かキーを知らせる
 constraints:
   - item: 描き直すきっかけ
-    constraint: '`mdmark.preview.liveUpdate` が `true` のときは Markdown の変更から、`false` のときは Markdown の保存から描き直す。設定ファイルの作成・変更・削除、`mdmark.configPath`・`mdmark.preview.theme`・`mdmark.colorTheme` の変更でも描き直す。保存と設定ファイルは待たずに送る'
+    constraint: '`mdmark.preview.liveUpdate` が `true` のときは Markdown の変更から、`false` のときは Markdown の保存から描き直す。重ねた設定ファイル（ワークスペースの外の端末の設定を含む）・`theme` の CSS・`extensions` のファイル・前回 `aliases` を作るときに読んだ YAML のファイル（`paths` の glob に当たる新しいファイルは、設定を読み直すまで拾わない）の作成・変更・削除、前回送った `includes` のファイルの保存・削除、`mdmark.configPath`・`mdmark.preview.theme`・`mdmark.colorTheme` の変更でも描き直す。保存と設定ファイルは待たずに送る'
   - item: 描き直すまでの待ち
     constraint: Markdown の最後の変更から `mdmark.preview.updateDelayMs` 待って送る。範囲の外の値は既定の値として扱う
     decided_by: dev/設計書/非機能要件/非機能要件#requirements[描き直すまでの待ち]
   - item: 送る中身
-    constraint: '`TextDocument.getText()` の全文（保存していない書き換えを含む）と、設定ファイルから取り出した `features`・`libraries`・`side-toc`・`colorTheme`（`mdmark.colorTheme` が空でないときはその値で上書きする）、`mdmark.preview.theme`。差分のパネルは、変更後の文書の全文を `markdown`、その時点の変更前の文書の全文を `previous` に入れる。それ以外のパネルは `previous` を送らない'
+    constraint: '`TextDocument.getText()` の全文（保存していない書き換えを含む）と、インターフェース定義『設定を重ねて読む』を `purpose: preview` で呼んで重ねた設定のうち `mount` の `opts.config` が読むキー（`mdmark.colorTheme` が空でないときは `colorTheme` をその値で上書きする）、`mdmark.preview.theme`、インターフェース定義『プレビューを開く』の制約「取り込む文書」のとおり描き直すたびに読み直した `includes`、プレビューを開く.ts の制約「エイリアス」のとおり作った `aliases`（設定に `aliases` が無いときは持たない）。差分のパネルは、変更後の文書の全文を `markdown`、その時点の変更前の文書の全文を `previous` に入れる。それ以外のパネルは `previous` を送らない'
   - item: 背面のパネル
     constraint: パネルが見えていない間は送らず、最後の全文だけを持つ。Webview の `ready` を受けたら、その時点の全文と設定で `render` を送る。Webview は見えている先頭の元の行番号（スクロールを合わせる.ts の制約「プレビューから合わせる」と同じ内分で求め、整数に切り捨てない）を、スクロールの知らせと `render` を描いた後に Webview の状態（`setState`）へ保存する。作り直した Webview（HTML を入れ直したときを含む）は、起動したときに `getState` の行を読んでおき、最初の `render` を描いた後にその行を `scrollToLine` と同じ位置に置いてから保存する。その行へ戻すまでは、スクロールの知らせでも `render` を描いた後でも保存しない。戻したスクロールでは `revealLine` を送らない。保存した行が無いとき（開いた直後）は先頭から描く
     notes: '背面の間の `postMessage` は届かない（PoC #70）。`retainContextWhenHidden` は `false` のままで、背面に回ると Webview が作り直される。位置を元の行番号で持つのは、背面の間の書き換えで文書の高さが変わっても同じ箇所へ戻すため'
   - item: 設定ファイルの場所
-    constraint: '`mdmark.configPath` を Markdown を含むワークスペースのフォルダ（ワークスペースの外の Markdown は Markdown のフォルダ）から解決する。無ければ設定なしで描き、知らせは出さない'
+    constraint: '`mdmark.configPath` が空（既定）のときは、Markdown のフォルダを起点にインターフェース定義『設定を重ねて読む』で探して重ねる。値を書いたときは Markdown を含むワークスペースのフォルダ（ワークスペースの外の Markdown は Markdown のフォルダ）から解決したそのファイルと端末の設定だけを重ねる。設定ファイルが 1 つも無ければ端末の設定だけで描き、知らせは出さない。重ねた設定ファイルのどれかを読めない・設定の形に合わないときは、端末の設定 → 上 → 近いの順で最初の 1 つを帯に出す'
     notes: dev/設計書/設定/VSCode拡張機能
   - item: 設定の取り出し方
-    constraint: YAML を `yaml` の `parse` で読み、最上位がマップのときだけ `features`・`libraries`・`side-toc`・`colorTheme` を取り出す（マップでない値のキーは渡さない）。他のキーは読まない。空のファイル・最上位がマップでないファイルは設定なしとして扱う。キーの中の知らない名前と型の違う値は mdmark が無視する
+    constraint: インターフェース定義『設定を重ねて読む』で重ねた設定から、値がマップの `features`・`libraries`・`html-scripts`・`side-toc`・`labels`・`mermaid` と値が文字列の `colorTheme`・`colorScheme` だけを `config` にする（プレビューでは、`colorScheme` は `mdmark.preview.theme` が `auto` のときだけ渡す。プレビューを開く.ts の制約「配色」。HTML への書き出しは `mdmark.preview.theme` によらず渡す）（マップでない値のキーは渡さない）。`theme` と `extensions` は制約「theme と extensions」のとおり当てる。他のキーは渡さない。キーの中の知らない名前と型の違う値は mdmark が無視する
     notes: dev/設計書/設定/ライブラリ本体
   - item: libraries の URL
-    constraint: '`http:`・`https:` の URL はそのまま渡す。それ以外は設定ファイルのあるフォルダを基準に解決したファイルを `asWebviewUri` で Webview で読める URL にして渡す。`localResourceRoots` の外のファイルは Webview が読めず、mdmark がその印の場所に知らせの枠を出す。読み直した `libraries` の `http:`・`https:` の origin の集まりが今の HTML の CSP に入れた集まりと違うときは、`render` でなく Webview の HTML を入れ直す（`ready` を受けて全文を送る）'
+    constraint: '`libraries` の各 URL と `html-scripts.url` に当てる。`http:`・`https:` の URL はそのまま渡す。それ以外は、その値を書いた設定ファイルのフォルダを基準に解決したファイルを `asWebviewUri` で Webview で読める URL にして渡す。`localResourceRoots` の外のファイルは Webview が読めず、mdmark がその印の場所に知らせの枠を出す。読み直した `libraries` と `html-scripts.url`（書かないときは既定の jsDelivr）の `http:`・`https:` の origin の集まりが今の HTML の CSP に入れた集まりと違うときは、`render` でなく Webview の HTML を入れ直す（`ready` を受けて全文を送る）'
   - item: 設定ファイルを読めないとき
-    constraint: '`yaml` の `YAMLParseError` の `linePos[0].line`（1 始まり）を `configError` の `line` に入れて送る。読めるようになったら、新しい設定の `render` と `configOk` を送る'
+    constraint: '重ねた設定ファイルのどれかを YAML として読めないときは `YAMLParseError` の `linePos[0].line`（1 始まり）を `line` に、設定の形に合わないときは最初のずれのキーを `settingKey` に入れ、そのファイルのパス（『設定を重ねて読む』の制約「パスの表示」）を `path` に入れて `configError` を送る。前に使った設定があれば残し、無ければそのファイルを除いた残りの設定で描く。読めるようになったら、新しい設定の `render` と `configOk` を送る'
   - item: 設定が変わったときの描き方
-    constraint: Webview は `config` が前と同じときは `update`、違うときは `destroy` してから `mount` で描く。スクロールの位置は描き直す前の位置を保つ
+    constraint: Webview は `config` と `aliases` が前と同じときは `update`、どちらかが違うときは `destroy` してから `mount` で描く。スクロールの位置は描き直す前の位置を保つ
     notes: '`update` は `mount` に渡した設定を使う（文書を描く.ts のレスポンス）'
   - item: 差分のパネルを描き直すきっかけ
     constraint: 差分のパネルは、変更後の文書の変更・保存だけを制約「描き直すきっかけ」のとおり受け、変更前の文書の変更では描き直さない。設定ファイルと設定の変更は他のパネルと同じ
     notes: 変更前の側は `git:` の読み取り専用の文書か、要件のスコープ外（変更前の側の書き換え）
+  - item: theme と extensions
+    constraint: '重ねた設定の `theme` の CSS を Webview の URI にした `link` で配布物の CSS の後に読み、`extensions` のモジュールを拡張機能の中で esbuild-wasm で 1 つずつ束ね（`.ts` も読み、URL の import は束ねに取り込む。引数は CLI の書き出しと同じ）、拡張機能の保存場所（`globalStorageUri`）のファイルに書いて、`mount` の前に `import()` して `registerExtension` で登録する（CLI の書き出しと同じ順）。CSP には `extensions` のための origin を足さない。`localResourceRoots` に `theme` のファイルのフォルダと束ねたファイルのフォルダを足し、設定を読み直したときは前に足したフォルダを外して足し直す。`theme` の CSS だけが変わったときは HTML を入れ直さず、`{ type: "theme", href }`（変えた回数の `?v={回数}` を付けた URL）を送って `link` の `href` を替えさせる。`extensions` の並びかそのファイル、`theme` のパスが変わったときは HTML を入れ直す。束ねるのは `extensions` の並びかそのファイルが変わったときだけで、Markdown の書き換えでは束ねない。束ねられない・登録できない拡張は飛ばして描く'

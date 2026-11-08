@@ -31,3 +31,23 @@ entries:
     schema: mdmark.config.schema.json
     sha256: 261633f2eeaf589d9a30cdabb41533f56be078f7c9839925304b31155497483f
     reason: features に省いてよい side-toc と、省いてよい side-toc と、省いてよい aliases と、省いてよい colorTheme を足しただけで、古い設定もそのまま新しい Schema に合う
+  - version: v0.10.0
+    schema: mdmark.index.schema.json
+    sha256: 1cf45f581478557deb004716f1465256615411b9cb89f16f4a2819ec776cf700
+    reason: 説明文から MCP の find_docs・list_tags の記述を外しただけで、キーと型は変えないので、古い索引もそのまま新しい Schema に合う
+  - version: v0.10.0
+    schema: mdmark.settings.schema.json
+    sha256: 2384ad0f6b2df88c4179f7bf3bfe0a9bbbb36776567af2ba36d31d849e5664fe
+    reason: 端末の設定の Schema を新しく足しただけで、既にある設定ファイルと索引の形は変えないので、古い設定もそのまま読める
+  - version: v0.10.0
+    schema: mdmark.templates.schema.json
+    sha256: 58186ebbfb3bccf91bd00545b0d6121f80ffc3e8dccfb497441d7375e67d475d
+    reason: CSS のテンプレートの索引の Schema を新しく足しただけで、既にある設定ファイルと索引の形は変えないので、古い設定もそのまま読める
+  - version: v0.10.0
+    schema: mdmark.settings.schema.json
+    sha256: 30bbfde60c9894a23f231648f820ed2b7bf30958f75705ea926ea61dbd38f6aa
+    reason: 端末の設定に省いてよい serve.tmuxSession を足しただけで、古い端末の設定もそのまま新しい Schema に合う
+  - version: v0.10.0
+    schema: mdmark.config.schema.json
+    sha256: fb56336a681e886c8b5e676b2cebe58c939edfa72fa349d651187dbfe5b6bf9f
+    reason: features に省いてよい mermaid と、省いてよい mermaid を足しただけで、古い設定もそのまま新しい Schema に合う

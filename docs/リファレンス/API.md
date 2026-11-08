@@ -6,6 +6,8 @@
 
 ## 一覧
 
+<!-- table: data -->
+
 | 名前 | 呼び出し | 説明 |
 | --- | --- | --- |
 | [版を返す](#版を返す) | `version()` | 読み込んだ配布物の版を返す |
@@ -21,6 +23,8 @@
 | [ビューを描く](#ビューを描く) | `mountView(el, opts)` | 列名と項目の値から、要素の中にボード表示と表形式のビューを描く |
 | [コメントを付ける](#コメントを付ける) | `mountComments(el, opts)` | 使う側の要素の中の選んだ箇所に、コメントを付けられるようにする |
 | [テーマの CSS 変数](#テーマの-css-変数) | `--mdmark-*` | 見た目の値を持つ変数。使う側が上書きする |
+
+<!-- /table -->
 
 ## 版を返す
 
@@ -83,10 +87,12 @@ getComputedStyle(document.documentElement).getPropertyValue("--mdmark-version");
 `opts.diffSource` を渡すと、文書の題の後ろに「変更を見る」のボタンを付け、押すと 2 つのリビジョンの差分を出す。
 `opts.diffMode` で差分の出し方を選べる。`open` はボタンを押した状態で描き、`blocks` はボタンを付けず、描いた文書のブロックを追加と削除の色で塗り分ける。
 差分の操作は `mount` が付け、`update` で閉じ、`destroy` で外す。
+`opts.baseMarkdown` に比較元の Markdown を渡すと、取り出し元なしで、本文の中の比較元から変えたブロックを `blocks` と同じ色で塗り分ける。
 仕組みは [差分を表示する仕組み](../はじめに/コアコンセプト/差分を表示する仕組み.md)、書き方は [差分を表示する](../使い方/導入/差分を表示する.md)。
 ビューの印（[ビュー](./記法.md#ビュー)）があると、ボード表示と表形式の切り替えと、表形式の列の絞り込みも付ける。
 `opts.commentStore` と `opts.docId` を渡して機能 `comments` をオンにすると、本文の選んだ箇所にコメントを付けられる。
 コメントのボタン・入力欄・印・吹き出しの操作は `mount` が付け、`update` で付け直し、`destroy` で外す。
+読み書きの関数が `update`・`remove` を持つと、吹き出しのコメントごとに「編集」「削除」のボタンを出す。
 書き方は [ビューとコメントを使う](../使い方/書く/ビューとコメントを使う.md)。
 ビューとコメントの部品のモジュール（`dist/view.js`・`dist/comments.js`）は、ビューの印のある文書とコメントの機能がオンのときにだけ、`dist/index.js` の隣から読む。
 
@@ -100,6 +106,8 @@ handle.update("# 次の見出し");
 handle.destroy();
 ```
 
+<!-- table: data -->
+
 | 引数 | 必須 / 任意 | 説明 |
 | --- | --- | --- |
 | `el` | 必須 | 描く先の要素。class `mdmark` が付く |
@@ -109,9 +117,15 @@ handle.destroy();
 | `opts.docId` | 任意 | 描く文書の索引の `id`。被参照の一覧を引き、関連文書から自分を除き、リンクの相対パスを求めるのに使う。省くと、被参照の一覧を出さず、関連文書のリンクは索引の `path` のままにする。索引に無い `id` は、省いたときと同じに扱う。`opts.commentStore` を渡すときは必須で、コメントの読み書きの関数に渡す対象の ID にもなる |
 | `opts.references` | 任意 | [`collectReferences`](#参照の表を作る) が返した参照の表。被参照の一覧と、ほかの文書の用語集の表の用語とそのやめた言い方に使う。用語の `avoid` は任意で、無い用語はやめた言い方を持たないものとして扱う。省くと、被参照は索引の `related` だけから出し、ほかの文書の用語集の表の用語を照合しない |
 | `opts.aliases` | 任意 | [`buildAliases`](#エイリアスを作る) が作ったエイリアスの並び（`MdmarkAlias[]`）。使えないエイリアス（必須のキーが空・知らない種類・重なった `id`）は除いて使い、`env` の種類は直接渡されても照合しない。`update` は描いたときのエイリアスを使う。省くと、エイリアスを照合しない |
+| `opts.includes` | 任意 | 取り込む文書の表（`Record<string, string>`）。キーは描く文書のフォルダからのパス（区切りは `/`。`./`・`../` を解いた形）、値はそのファイルの本文。[取り込み](./記法.md#取り込み) のマーカーはこの表から引く。mdmark はファイルを読まない。省くと、取り込みのマーカーの場所に書き方の警告を出す |
+| `opts.icons` | 任意 | 配布物に入っていない名前の Lucide のアイコンの形の表（`Record<string, IconNode>`）。表にある名前は jsDelivr から読まずにこの形で描く。省くと、使う名前だけを jsDelivr から読む |
 | `opts.diffSource` | 任意 | 文書のリビジョンの一覧と、リビジョンごとの本文を返す取り出し元（`DiffSource`）。渡すと、描いた文書に差分を開く UI が付く。`opts.docId` と一緒に渡す。省くと、差分の UI を付けない |
 | `opts.diffMode` | 任意 | 差分の出し方。`button`・`open`・`blocks` のどれか。省くと `button`。`opts.diffSource` を渡さないときは使わない。知らない値は `button` として扱う |
 | `opts.commentStore` | 任意 | コメントを読み込み、保存する関数（`MdmarkCommentStore`）。機能 `comments` がオンのときだけ使う。`opts.docId` と一緒に渡す。省くと、コメントを付けられない |
+| `opts.baseMarkdown` | 任意 | 比較元の Markdown（文字列か `null`）。渡すと、本文の中で比較元から追加・変更したブロックと削除したブロックを、`opts.diffMode` が `blocks` のときと同じ色で塗り分ける。`opts.diffSource` は要らない。`opts.diffSource` も渡したときは、色分けに比較元を使い、取り出し元は「変更を見る」の差分にだけ使う（`blocks` では取り出し元を呼ばない）。`null` と省いたときは色分けしない。`update` の第 2 引数で差し替える |
+| `opts.onColumnsChange` | 任意 | `+columns` の表で列の表示を切り替えるたびに呼ぶ関数。`{ tableIndex, hidden }`（`MdmarkColumnsChange`）を受け取る。`tableIndex` は本文の中の `+columns` の表の出現順（0 から。削除したブロックの中の表は数えない）、`hidden` は隠している列の見出しの文字を列の順に並べた配列。描いたときの `hide=` の状態と、`update` で描き直したときは呼ばない |
+
+<!-- /table -->
 
 `opts.diffMode` の値。
 
@@ -146,6 +160,8 @@ handle.destroy();
 | --- | --- | --- |
 | `load({ docId })` | `(target: { docId: string }) => Promise<MdmarkComment[]>` | その文書に付いたコメントを返す。描くたび（`mount`・`update`）に 1 回呼ぶ |
 | `save({ docId, comment })` | `(target: { docId: string; comment: MdmarkCommentDraft }) => Promise<MdmarkComment>` | 下書きのコメントを保存し、`id` を加えたコメントを返す。読む人が「コメントを保存」を押すたびに呼ぶ |
+| `update({ docId, id, body })` | `(target: { docId: string; id: string; body: string }) => Promise<void>` | 任意。コメントの本文を書き換える。持つと吹き出しに「編集」を出し、読む人が入力欄の「保存」を押すたびに呼ぶ |
+| `remove({ docId, id })` | `(target: { docId: string; id: string }) => Promise<void>` | 任意。コメントを削除する。持つと吹き出しに「削除」を出し、読む人が削除の確認の「削除」を押すたびに呼ぶ |
 
 `MdmarkCommentDraft` の形。
 
@@ -157,7 +173,7 @@ handle.destroy();
 | `body` | `string` | コメントの本文 |
 
 `MdmarkComment` は、`MdmarkCommentDraft` に空でない文字列の `id` を加えたもの。
-型 `MdmarkCommentStore`・`MdmarkComment`・`MdmarkCommentDraft` は、型定義 `dist/index.d.ts` に書き出して配布物と一緒に配る。
+型 `MdmarkCommentStore`・`MdmarkComment`・`MdmarkCommentDraft`・`MdmarkColumnsChange` は、型定義 `dist/index.d.ts` に書き出して配布物と一緒に配る。
 `load` が配列でない・要素の形が合わないとき、`save` が形の合わない値を返すときは、reject と同じに扱う。
 mdmark はコメントを保存せず、保存先は使う側の関数に任せる。
 
@@ -168,13 +184,16 @@ mdmark はコメントを保存せず、保存先は使う側の関数に任せ�
 
 | フィールド | 型 | 説明 |
 | --- | --- | --- |
-| `update` | `(markdown: string) => void` | 本文だけを描き直し、記法の操作を付け直す。設定は `mount` に渡したものを使う。`destroy` の後は何もしない |
+| `update` | `(markdown: string, options?: { baseMarkdown?: string \| null; includes?: Record<string, string> }) => void` | 本文だけを描き直し、記法の操作を付け直す。設定は `mount` に渡したものを使う。`options.baseMarkdown` を渡すと比較元を差し替え、`null` で比較元を外す。省くと前の比較元のまま描く。`options.includes` を渡すと取り込む文書の表を差し替え、省くと前の表のまま描く。`destroy` の後は何もしない |
+| `reloadComments` | `() => Promise<void>` | 本文を描き直さずに `opts.commentStore.load` を呼び直し、コメントの印と「箇所が見つからないコメント」の一覧を付け直してから解決する。記法の操作の状態（並べ替え・絞り込み・開閉）は変えない。開いている吹き出しは閉じ、書いている入力欄は残す。コメントを付けていないとき（`comments` がオフ・`opts.commentStore` が無い・コメントの部品のモジュールを読めない）と `destroy` の後は、`load` を呼ばずに解決する |
+| `focusComment` | `(id: string) => void` | その `id` のコメントの印を、閉じた節・行の詳細の中なら開いてから画面に入れ、フォーカスを移して強調する（背景を濃くし、線で囲む）。強調は次の `focusComment` と、印を付け直す（描き直し・読み直し）まで残す。吹き出しは開かない。印が無い `id` と `destroy` の後は何もしない |
 | `destroy` | `() => void` | `el` の中を空にして class `mdmark` を外し、記法の操作と、印刷・`hashchange`・`document` の受け取りを外す。コメントのボタン・入力欄・吹き出しも外す。2 回目以降は何もしない |
 
 ### エラー
 
-`opts.diffSource` を渡して `opts.docId` を渡さないとき、`opts.commentStore` を渡して `opts.docId` を渡さないか `opts.commentStore` が `load`・`save` の関数を持たないときだけ、何も描かずに `TypeError` を投げる。
-メッセージに `docId` か `commentStore` を含める。
+`opts.diffSource` を渡して `opts.docId` を渡さないとき、`opts.commentStore` を渡して `opts.docId` を渡さないか `opts.commentStore` が `load`・`save` の関数を持たないか `update`・`remove` を関数でない値で持つとき、`opts.baseMarkdown` が文字列でも `null` でもないとき、`opts.onColumnsChange` が関数でないときだけ、何も描かずに `TypeError` を投げる。
+メッセージに `docId`・`commentStore`・`baseMarkdown`・`onColumnsChange` のどれかを含める。
+`update` の `options.baseMarkdown` が文字列でも `null` でもないときは、前の本文を残して `TypeError` を投げる。
 それ以外は例外を投げない。
 取り出し元の `revisions`・`content` が reject するか、形に合わない値を返したときは、差分の場所を [知らせの枠](./用語集.md) に替え、文書の本文は描いたまま残す。
 取り出し元の関数の名前・文書の `id`・リビジョンの `id`・元のエラーが `console.error` に出る。
@@ -183,6 +202,9 @@ mdmark はコメントを保存せず、保存先は使う側の関数に任せ�
 コメントの `save` が reject するか、形に合わない値を返したときは、入力欄に書いた本文を残して `role="alert"` の知らせを出し、印を付けない。
 `load` が reject するか、形に合わない値を返したときは、印を付けずに続け、新しいコメントは付けられる。
 どちらも読み書きの関数の名前・文書の `id`・元のエラーが `console.error` に出る。
+コメントの `update`・`remove` が reject したときは、修正は入力欄と書き換えた本文を残し、削除はコメントと印を残して削除の確認を開いたまま、`role="alert"` の知らせを出す。関数の名前・文書の `id`・コメントの `id`・元のエラーが `console.error` に出る。
+`reloadComments` の `load` が reject するか、形に合わない値を返したときは、今の印を残し、`reloadComments` の `Promise` を元のエラーで reject する。
+`opts.onColumnsChange` が例外を投げたときは、列の表示の切り替えは済ませ、`onColumnsChange` と元のエラーが `console.error` に出る。
 `comments` がオンで `opts.commentStore` を渡さないときは、コメントのボタンを出さず、読み書きの関数が要ることを `mount` ごとに 1 回だけ `console.error` に出す。
 ビューかコメントの部品のモジュールを読めないときは、ビューの印の場所を `render` が出した表のまま残し、コメントはボタンを出さず `load` も呼ばない。
 読めなかった部品の名前（`view` か `comments`）・モジュールの URL・元のエラーが `console.error` に出る。
@@ -235,6 +257,8 @@ import { render } from "https://cdn.jsdelivr.net/gh/shuhei1101/mdmark@{タグ}/d
 const html = render("# 見出し\n\n本文");
 ```
 
+<!-- table: data -->
+
 | 引数 | 必須 / 任意 | 説明 |
 | --- | --- | --- |
 | `markdown` | 必須 | HTML にする Markdown |
@@ -243,6 +267,10 @@ const html = render("# 見出し\n\n本文");
 | `opts.docId` | 任意 | `mount` の `opts.docId` と同じ |
 | `opts.references` | 任意 | `mount` の `opts.references` と同じ |
 | `opts.aliases` | 任意 | `mount` の `opts.aliases` と同じ |
+| `opts.includes` | 任意 | `mount` の `opts.includes` と同じ |
+| `opts.icons` | 任意 | `mount` の `opts.icons` と同じ。表に無い束ねていない名前は中が空の要素にする |
+
+<!-- /table -->
 
 ### レスポンス
 
@@ -360,6 +388,8 @@ const { byDocument, avoided, targets } = collectMatches({
 
 `byDocument` の要素（`MdmarkMatch`）は、次のキーを持つ。
 
+<!-- table: data -->
+
 | フィールド | 型 | 説明 |
 | --- | --- | --- |
 | `kind` | `'term' \| 'glossary' \| 'doc' \| 'alias'` | 参照先の種類。`term` は索引の用語、`glossary` は用語集の表の用語、`doc` は別名が一致した文書、`alias` は `input.aliases` のエイリアス |
@@ -372,7 +402,11 @@ const { byDocument, avoided, targets } = collectMatches({
 | `start` | `number` | その行の中の始まりの位置。0 から数える UTF-16 の位置 |
 | `end` | `number` | その行の中の終わりの位置（含まない）。UTF-16 の位置 |
 
+<!-- /table -->
+
 `avoided` の要素（`MdmarkAvoidedMatch`）は、次のキーを持つ。
+
+<!-- table: data -->
 
 | フィールド | 型 | 説明 |
 | --- | --- | --- |
@@ -385,6 +419,8 @@ const { byDocument, avoided, targets } = collectMatches({
 | `line` | `number` | `byDocument` の要素の `line` と同じ |
 | `start` | `number` | `byDocument` の要素の `start` と同じ |
 | `end` | `number` | `byDocument` の要素の `end` と同じ |
+
+<!-- /table -->
 
 `targets` の要素（`MdmarkMatchTarget`）は、`kind`・`aliasType`・`id`・`title`・`description` を `byDocument` の要素と同じ値で持つ。
 
@@ -481,11 +517,10 @@ const issues = checkIndex({ index, documents, indexFile: "docs/index.yaml" });
 | --- | --- | --- |
 | `file` | `string` | ずれのあるファイル。索引のずれは `indexFile`、文書のずれはその文書のパス |
 | `where` | `string` | 索引のキーのパス（`docs[3].path`）か、文書の行。ファイル全体のずれは空文字 |
-| `kind` | `'schema' \| 'missing_doc' \| 'orphan_doc' \| 'broken_ref' \| 'untyped_related' \| 'one_sided_change_together' \| 'related_link_overlap' \| 'missed_change_together' \| 'duplicate_term' \| 'avoided_term' \| 'duplicate_tag' \| 'tag_alias_conflict' \| 'broken_tag_replacement' \| 'unregistered_tag' \| 'deprecated_tag'` | ずれの種類。意味は [索引](./索引.md#点検が返すずれ) |
+| `kind` | `'schema' \| 'missing_doc' \| 'orphan_doc' \| 'broken_ref' \| 'untyped_related' \| 'one_sided_change_together' \| 'related_link_overlap' \| 'missed_change_together' \| 'duplicate_term' \| 'avoided_term'` | ずれの種類。意味は [索引](./索引.md#点検が返すずれ) |
 | `message` | `string` | ずれの内容と直し方を書いた日本語の 1 文 |
 
-並びは `schema` → `missing_doc` → `orphan_doc` → `broken_ref` → `untyped_related` → `one_sided_change_together` → `related_link_overlap` → `missed_change_together` → `duplicate_term` → `avoided_term` → `duplicate_tag` → `tag_alias_conflict` → `broken_tag_replacement` → `unregistered_tag` → `deprecated_tag` の順で、同じ種類の中は索引の並びとパスの順。
-タグの 5 種類は、索引がタグの語彙（`tags`）を記載しているときだけ返す。
+並びは `schema` → `missing_doc` → `orphan_doc` → `broken_ref` → `untyped_related` → `one_sided_change_together` → `related_link_overlap` → `missed_change_together` → `duplicate_term` → `avoided_term` の順で、同じ種類の中は索引の並びとパスの順。
 
 ```json
 [
@@ -517,14 +552,14 @@ DOM に頼らず、Node とブラウザのどちらでも同じ結果を返す�
 import { buildAliases } from "https://cdn.jsdelivr.net/gh/shuhei1101/mdmark@{タグ}/dist/index.js";
 
 const { aliases, problems } = buildAliases({
-  rows: [{ id: "terms", paths: ["terms/*.yaml"], records: "terms", metadata: { alias_type: { type: "custom", value: "term" }, name: { type: "ref", field: "term" } } }],
+  rows: [{ id: "terms", paths: ["terms/*.yaml"], alias_type: "term", records: "terms", metadata: { name: "term" } }],
   sources: [{ rowId: "terms", path: "terms/glossary.yaml", data: { terms: [{ id: "ws", term: "ワークスペース", description: "話し合いの記録を置くフォルダ" }] } }],
 });
 ```
 
 | 引数 | 必須 / 任意 | 説明 |
 | --- | --- | --- |
-| `input.rows` | 必須 | 使う側が設定の `aliases` を読んだ配列。行の形は [設定](./設定.md#エイリアスの元の行)。`id`・`paths`・`metadata.alias_type` を持たない行は使わず、ずれにもしない（形は `mdmark check` が `schema` のずれで返す）。`enabled` が `false` の行は読まない |
+| `input.rows` | 必須 | 使う側が設定の `aliases` を読んだ配列。行の形は [設定](./設定.md#エイリアスの元の行)。`id`・`paths`・`alias_type` を持たない行は使わず、ずれにもしない（形は `mdmark check` が `schema` のずれで返す）。`enabled` が `false` の行は読まない |
 | `input.sources` | 必須 | 行の `paths` に当たったファイルを YAML として読んだ中身（`MdmarkAliasSource`）の並び。行ごとに `paths` に記載した順、glob の中はパスの順に並べる。読めなかったファイルと、どのファイルにも当たらなかった `paths` は呼ぶ側が扱い、ここには入れない |
 | `input.configFile` | 任意 | 行のずれの `file` に出す設定ファイルの名前。既定は `mdmark.config.yaml` |
 
@@ -548,6 +583,8 @@ const { aliases, problems } = buildAliases({
 
 `MdmarkAlias` は、次のキーを持つ。
 
+<!-- table: data -->
+
 | フィールド | 型 | 説明 |
 | --- | --- | --- |
 | `alias_type` | `MdmarkAliasType` | 種類。`'term' \| 'doc' \| 'command' \| 'url' \| 'skill' \| 'tool' \| 'path' \| 'avoid'`。`env` は含めない |
@@ -564,6 +601,8 @@ const { aliases, problems } = buildAliases({
 | `avoid` | `string[]` | `term` の種類の、使わないことにした言い方 |
 | `replacement` | `string` | `avoid` の種類の置き換え先の語 |
 | `related` | `string[]` | `term` の関連する語。受け取るだけで、使わない |
+
+<!-- /table -->
 
 `MdmarkAliasProblem` は、次のキーを持つ。
 
@@ -677,6 +716,8 @@ const handle = await mountView(document.querySelector("#tasks"), {
 handle.destroy();
 ```
 
+<!-- table: data -->
+
 | 引数 | 必須 / 任意 | 説明 |
 | --- | --- | --- |
 | `el` | 必須 | 描く先の要素。中身を空にして、class `mdmark` の要素を 1 つ置き、その中に描く |
@@ -686,6 +727,8 @@ handle.destroy();
 | `opts.default` | 任意 | 描いた直後に出すビュー（`"board"` か `"table"`）。省くと、`opts.group` があれば `"board"`、無ければ `"table"`。`opts.group` が無いときは `"table"` だけ。印の `default=` に当たる |
 | `opts.filter` | 任意 | 表形式のビューで絞り込みを付ける列と種類（`select`・`text`・`date`）のオブジェクト。キーは `opts.columns` のどれか。省くと、どの列にも付けない。印の `filter=` に当たる |
 | `opts.icons` | 任意 | ボードの列の見出しの値からアイコンの名前を引くオブジェクト。既定のアイコンに重ね、同じ値は上書きする。使えるアイコンは [ビュー](./記法.md#ビュー) のとおり。印の `icons=` に当たる |
+
+<!-- /table -->
 
 列名と項目の値は文字として出し、HTML として解釈しない。
 同じ要素へもう一度 `mountView` を呼ぶと、前の `mountView` の `destroy` を先に行う。
@@ -745,9 +788,10 @@ handle.destroy();
 
 | 起きたこと | 動き |
 | --- | --- |
-| `el` が要素でない、`opts.store` が `load`・`save` の関数を持たない、`opts.docId` が空か文字列でない | `TypeError` を同期で投げる（`Promise` は返さない）。`el` は書き換えず、メッセージに誤った引数の名前を含める |
+| `el` が要素でない、`opts.store` が `load`・`save` の関数を持たないか `update`・`remove` を関数でない値で持つ、`opts.docId` が空か文字列でない | `TypeError` を同期で投げる（`Promise` は返さない）。`el` は書き換えず、メッセージに誤った引数の名前を含める |
 | `load` が reject する、または返した値がコメントの形に合わない | 例外を投げず、印を付けずに解決する。新しいコメントは付けられる。`load`・`docId`・元のエラーか合わなかった値を `console.error` に出す |
 | `save` が reject する、または返した値がコメントの形に合わない | 例外を投げず、入力欄に書いた本文を残して知らせを出し、印を付けない。`save`・`docId`・元のエラーを `console.error` に出す |
+| `update`・`remove` が reject する | 例外を投げず、修正は入力欄と書き換えた本文を残し、削除はコメントと印を残して削除の確認を開いたまま知らせを出す。関数の名前・`docId`・コメントの `id`・元のエラーを `console.error` に出す |
 | コメントの部品のモジュールを読めない | `el` を書き換えず、`load` を呼ばずに、`Promise` を元のエラーで reject する |
 
 ## テーマの CSS 変数
@@ -783,18 +827,28 @@ handle.destroy();
 | `--mdmark-padding` | `1.5rem` | 描く先の要素の内側の余白 |
 | `--mdmark-radius` | `4px` | 角丸の大きさ（描く先の要素・コードブロック・引用・折り畳み・読み込み中の枠・知らせの枠・書き方の警告・注意書き）。表の外側の枠は 2 倍 |
 | `--mdmark-heading-weight` | `700` | 見出しの太さ |
-| `--mdmark-heading-rule-width` | `0px` | 見出し 1・見出し 2 の下の線の太さ。`0` のままだと線が出ない |
+| `--mdmark-heading-rule-width` | `1px` | 見出し 1・見出し 2 の下の線の太さ。線を出したくないときは `0` を指定する |
 | `--mdmark-table-rule-inline` | `1px` | 表のセルの左右の線の太さ（`plain` の種類は `0`） |
-| `--mdmark-sticky-top` | `0px` | 表の見出し行と、右側の目次・狭い幅の帯を留める位置の、画面の上端からのずれ。ページの上端に固定したヘッダーを持つ使う側は、その高さを渡す |
+| `--mdmark-back-to-top-size` | `2.75rem` | 先頭へ戻るボタンの幅と高さ |
+| `--mdmark-back-to-top-gap` | `1rem` | 先頭へ戻るボタンと、スクロールする場所の右端・下端の間 |
+| `--mdmark-sticky-top` | `0px` | 表の見出し行と、右側の目次・狭い幅の帯を留める位置と、hover で開く右側の目次の枠の上端の、画面の上端からのずれ。ページの上端に固定したヘッダーを持つ使う側は、その高さを渡す |
+| `--mdmark-icon-inline-size` | `1em` | 行内のアイコン（`icon\:`）の幅と高さ |
+| `--mdmark-highlight-bg` | `var(--mdmark-color-accent-yellow-bg)` | 色を指定しない蛍光ペンの面の色 |
+| `--mdmark-color-footnote-ref` | `var(--mdmark-color-link)` | 本文の脚注の番号（`[1]`）の色 |
 | `--mdmark-color-term-underline` | `var(--mdmark-color-muted)` | 用語の語と文書の別名の、破線の下線の色 |
 | `--mdmark-color-avoided-underline` | `var(--mdmark-color-notice-border)` | やめた言い方の語の、波線の下線の色 |
 | `--mdmark-tooltip-max-width` | `22rem` | ツールチップの幅の上限。画面の幅から `2rem` を引いた幅を超えない |
 | `--mdmark-tooltip-max-height` | `18rem` | ツールチップの高さの上限。画面の高さの 60% を超えない。超える分はツールチップの中でスクロールする |
-| `--mdmark-diagram-lane-tint` | `8%` | 図の層の背景に敷く、箱の色の濃さ |
-| `--mdmark-diagram-max-height` | `36rem` | 文書の中の図の表示する枠の高さの上限。全体が収まる倍率はこの高さと枠の幅に収める |
+| `--mdmark-diagram-lane-tint` | `8%` | 図の層の背景に敷く、ノードの色の濃さ |
+| `--mdmark-diagram-max-height` | `36rem` | 文書の中の図の表示する枠の最初の高さの上限。開いたときと全体が収まる倍率に戻したときは、図の高さ × 全体が収まる倍率とこの値の小さいほうにする（全体が収まる倍率は枠の幅で決める）。使う側が高さを変えたときはこの値で止めず、図の高さ × 今の倍率まで広げられる |
+| `--mdmark-diagram-box-shadow` | `inset 0 0 0 1px var(--mdmark-color-border)` | 図の表示する箱（右上のボタンの帯と表示する枠をまとめた箱）の線（`box-shadow` の値）。枠を持つ面に文書を描く使う側は、面で `none` を指定して線を外す。操作できる部品の中の図は線を引かず、全画面のモーダルの中の図はこの値を受け継がず既定の線で描く |
 | `--mdmark-diff-minimap-width` | `14px` | 差分のミニマップの帯の幅 |
 | `--mdmark-diff-minimap-z-index` | `10` | 差分のミニマップの帯の重なり順。使う側のページの固定のヘッダーなどに隠れるときに上げる |
+| `--mdmark-code-fold-width` | `2.75ch` | 畳める行を持つコードブロックで、行番号の右に取る開閉のボタンの列の幅 |
+| `--mdmark-tab-strong-weight` | `700` | タブ名の強調（`**`）の太さ |
+| `--mdmark-tab-strong-color` | `var(--mdmark-color-heading)` | タブ名の強調（`**`）の色。選んでいないタブでもこの色にする |
 | `--mdmark-view-column-width` | `12rem` | ビューのボードの列の最小の幅。描く先の幅に収まらない列はボードの中で横にスクロールする |
+| `--mdmark-comment-margin-width` | `2.25rem` | `mount` でコメントを付けた文書の、本文の列の右に置く余白の列の幅。余白のマーカーをこの列に並べる |
 | `--mdmark-h1-marker` | なし（記号を出さない） | 見出し 1 の前に置く記号。引用符で囲んだ文字列で書く |
 | `--mdmark-h2-marker` | なし（記号を出さない） | 見出し 2 の前に置く記号。引用符で囲んだ文字列で書く |
 | `--mdmark-h3-marker` | なし（記号を出さない） | 見出し 3 の前に置く記号。引用符で囲んだ文字列で書く |
@@ -807,12 +861,14 @@ handle.destroy();
 
 | 変数 | 明るい配色 | ダークの配色 | 使う場所 |
 | --- | --- | --- | --- |
-| `--mdmark-color-bg` | `#ffffff` | `#131316` | 描く先の要素の地と、表の本文の行の地。「コメントを保存」のボタンの文字 |
+| `--mdmark-color-bg` | `#ffffff` | `#131316` | 描く先の要素とまとめた HTML の地 |
+| `--mdmark-color-bg-opaque` | `var(--mdmark-color-bg)` | `var(--mdmark-color-bg)` | ツールチップ・メニュー・全画面の図などの浮く部品、表の本文の行と横スクロールの影を隠す覆い・留める見出し・選んだタブの地、注意書き・図・バッジで色を混ぜる先の色、「コメントを保存」のボタンの文字。`--mdmark-color-bg` を透明にするときは、周りの面の色を指定する |
 | `--mdmark-color-text` | `#18181b` | `#ededef` | 本文の文字と、コメントの入力欄の「コメントを保存」のボタンの地と線 |
 | `--mdmark-color-heading` | `#18181b` | `#ededef` | 見出しの文字 |
 | `--mdmark-color-muted` | `#52525b` | `#b4b4bc` | 引用・読み込み中の枠の文字 |
 | `--mdmark-color-link` | `#0f766e` | `#2dd4bf` | リンクとフォーカスの枠 |
 | `--mdmark-color-border` | `#e4e4e7` | `#26262b` | 枠・罫線・読み込み中の枠の破線 |
+| `--mdmark-color-border-muted` | `color-mix(in oklab, var(--mdmark-color-border) 70%, var(--mdmark-color-bg))` | 同じ | 見出し 1・見出し 2 の下の線。テーマの `--mdmark-color-border` と `--mdmark-color-bg` から作るため、テーマごとの値を持たない。`.mdmark` で宣言するため、上書きは `:root` ではなく `.mdmark` に記載する |
 | `--mdmark-color-surface` | `#f4f4f5` | `#1b1b1f` | コード・引用の面 |
 | `--mdmark-color-scroll-shadow` | `rgb(24 24 27 / 0.14)` | `rgb(0 0 0 / 0.6)` | 表とコードブロックに横の続きがあることを示す影 |
 | `--mdmark-color-notice-bg` | `#f9eee8` | `#2a251d` | 知らせの枠の地 |
@@ -822,20 +878,26 @@ handle.destroy();
 | `--mdmark-color-callout-note` | `#1d4ed8` | `#7aa2ff` | 補足の注意書きの題・アイコンの色と、面・枠の線のもとの色 |
 | `--mdmark-color-callout-tip` | `#15803d` | `#4ade80` | ヒントの注意書きの題・アイコンの色と、面・枠の線のもとの色 |
 | `--mdmark-color-callout-important` | `#6d28d9` | `#c4a7ff` | 重要の注意書きの題・アイコンの色と、面・枠の線のもとの色 |
-| `--mdmark-color-callout-warning` | `#b45309` | `#fbbf24` | 警告の注意書きの題・アイコンの色と、面・枠の線のもとの色 |
+| `--mdmark-color-callout-warning` | `#b45309` | `#fbbf24` | 警告の注意書きの題・アイコンの色と、面・枠の線のもとの色。コードブロックの警告の行の左端の線と行頭の `!` の色 |
 | `--mdmark-color-callout-caution` | `#b91c1c` | `#f87171` | 注意の注意書きの題・アイコンの色と、面・枠の線のもとの色 |
 | `--mdmark-color-current-bg` | `#e6f3f1` | `#10302c` | [まとめた HTML](./用語集.md) の文書の一覧の、開いている文書の行の背景。右側の目次の、今いる節の項目と、目次を出しているときの目次を出すボタンの背景 |
-| `--mdmark-color-diagram-llm` | `#6d28d9` | `#c4a7ff` | 図の LLM の箱と LLM の層の色 |
-| `--mdmark-color-diagram-dm` | `#1d4ed8` | `#7aa2ff` | 図の意思決定モデルの箱の色 |
-| `--mdmark-color-diagram-script` | `#52525b` | `#b4b4bc` | 図のスクリプトの箱の色 |
-| `--mdmark-color-diagram-mcp` | `#b45309` | `#fbbf24` | 図の MCP の箱と処理の層の色 |
-| `--mdmark-color-diagram-data` | `#0f766e` | `#2dd4bf` | 図のデータの箱とデータの層の色 |
-| `--mdmark-color-diagram-external` | `#15803d` | `#4ade80` | 図の外部のシステムの箱の色 |
+| `--mdmark-color-diagram-llm` | `#6d28d9` | `#c4a7ff` | 図の LLM のノードと LLM の層の色 |
+| `--mdmark-color-diagram-dm` | `#1d4ed8` | `#7aa2ff` | 図の意思決定モデルのノードの色 |
+| `--mdmark-color-diagram-script` | `#52525b` | `#b4b4bc` | 図のスクリプトのノードの色 |
+| `--mdmark-color-diagram-mcp` | `#b45309` | `#fbbf24` | 図の MCP のノードと処理の層の色 |
+| `--mdmark-color-diagram-data` | `#0f766e` | `#2dd4bf` | 図のデータのノードとデータの層の色 |
+| `--mdmark-color-diagram-external` | `#15803d` | `#4ade80` | 図の外部のシステムのノードの色 |
+| `--mdmark-color-diagram-start` | `#52525b` | `#b4b4bc` | 図の判定フローチャートの開始のノードの色 |
+| `--mdmark-color-diagram-question` | `#1d4ed8` | `#7aa2ff` | 図の判定フローチャートの質問のノードの色 |
+| `--mdmark-color-diagram-action` | `#b45309` | `#fbbf24` | 図の判定フローチャートのアクションのノードの色 |
+| `--mdmark-color-diagram-result` | `#15803d` | `#4ade80` | 図の判定フローチャートの結果のノードの色 |
 | `--mdmark-color-diagram-line` | `#71717a` | `#8f8f99` | 図の処理の流れ・戻る線の色 |
 | `--mdmark-color-series-1` | `#0f766e` | `#2dd4bf` | グラフの 1 つ目の系列の色（実線・丸の点） |
 | `--mdmark-color-series-2` | `#b45309` | `#fbbf24` | グラフの 2 つ目の系列の色 |
 | `--mdmark-color-series-3` | `#6d28d9` | `#c4a7ff` | グラフの 3 つ目の系列の色 |
 | `--mdmark-color-series-4` | `#1d4ed8` | `#7aa2ff` | グラフの 4 つ目の系列の色 |
+| `--mdmark-color-series-5` | `#be185d` | `#f472b6` | グラフの 5 つ目の系列の色（一点鎖線・逆三角の点・縦線の塗りの模様） |
+| `--mdmark-color-series-6` | `#4d7c0f` | `#a3e635` | グラフの 6 つ目の系列の色（細かい破線・十字の点・横線の塗りの模様） |
 | `--mdmark-color-code-highlight-bg` | `#fef3c7` | `#5c4a12` | コードブロックの強調した行の背景 |
 | `--mdmark-color-code-highlight-line` | `#b45309` | `#fbbf24` | コードブロックの強調した行の左端の線 |
 | `--mdmark-color-file-text` | `#1d4ed8` | `#7aa2ff` | ファイルツリーの文書（`md`・`txt` など）のファイルのアイコンの色 |
@@ -859,11 +921,27 @@ handle.destroy();
 | `--mdmark-color-diff-add-sign` | `#15803d` | `#4ade80` | 追加した行の行頭の `+` と、ミニマップの追加した行の印の色。コードの行の印の足した行の行頭の `+` と左端の線にも使う |
 | `--mdmark-color-comment-bg` | `#f2effe` | `#25222d` | コメントの印の地の色と、入力欄を開いている間の選んだ文字の色 |
 | `--mdmark-color-comment-line` | `#6d28d9` | `#c4a7ff` | コメントの印の下線の色 |
-| `--mdmark-color-error` | `#b91c1c` | `#f87171` | コメントの入力欄の知らせの文字とアイコン、誤りのある本文の欄の枠の色 |
+| `--mdmark-color-error` | `#b91c1c` | `#f87171` | コメントの入力欄の知らせの文字とアイコン、誤りのある本文の欄の枠の色。コードブロックのエラーの行の左端の線と行頭の `×` の色 |
+| `--mdmark-color-accent-blue-bg` | `#cce2fe` | `#1a314e` | 色の名前 `blue` の面の薄い色。強調した列・色を付けた行・バッジの地 |
+| `--mdmark-color-accent-blue-text` | `#1d4ed8` | `#7aa2ff` | 色の名前 `blue` の文字の色。バッジと本文の文字の色 |
+| `--mdmark-color-accent-red-bg` | `#ffd4d1` | `#472020` | 色の名前 `red` の面の薄い色。強調した列・色を付けた行・バッジの地 |
+| `--mdmark-color-accent-red-text` | `#b91c1c` | `#f87171` | 色の名前 `red` の文字の色。バッジと本文の文字の色 |
+| `--mdmark-color-accent-green-bg` | `#cbf2d2` | `#1a3821` | 色の名前 `green` の面の薄い色。強調した列・色を付けた行・バッジの地 |
+| `--mdmark-color-accent-green-text` | `#166534` | `#4ade80` | 色の名前 `green` の文字の色。バッジと本文の文字の色 |
+| `--mdmark-color-accent-yellow-bg` | `#fff2af` | `#40380e` | 色の名前 `yellow` の面の薄い色。強調した列・色を付けた行・バッジの地 |
+| `--mdmark-color-accent-yellow-text` | `#854d0e` | `#facc15` | 色の名前 `yellow` の文字の色。バッジと本文の文字の色 |
+| `--mdmark-color-accent-orange-bg` | `#fedbc4` | `#4a2a12` | 色の名前 `orange` の面の薄い色。強調した列・色を付けた行・バッジの地 |
+| `--mdmark-color-accent-orange-text` | `#b53a0a` | `#fb923c` | 色の名前 `orange` の文字の色。バッジと本文の文字の色 |
+| `--mdmark-color-accent-purple-bg` | `#edd8fd` | `#382446` | 色の名前 `purple` の面の薄い色。強調した列・色を付けた行・バッジの地 |
+| `--mdmark-color-accent-purple-text` | `#6d28d9` | `#c4a7ff` | 色の名前 `purple` の文字の色。バッジと本文の文字の色 |
+| `--mdmark-color-accent-gray-bg` | `#e4e6ea` | `#303033` | 色の名前 `gray` の面の薄い色。強調した列・色を付けた行・バッジの地 |
+| `--mdmark-color-accent-gray-text` | `#52525b` | `#b4b4bc` | 色の名前 `gray` の文字の色。バッジと本文の文字の色 |
 
 <!-- /table -->
 
 注意書きの面は種類の色を地の色に 7%、枠の線は 40% 混ぜた色で、混ぜる割合の変数は持たない。
+色のプリセット（`--mdmark-color-accent-*`）は、どの組も文字と面のコントラストを 4.5:1 以上にしている。
+色の名前の書き方は [記法](./記法.md#色の名前)。
 
 #### 配色を切り替える class
 
@@ -874,8 +952,8 @@ handle.destroy();
 
 | 優先 | class | 配色 | 付けるもの |
 | --- | --- | --- | --- |
-| 1 | `mdmark-theme-dark` | ダーク | 使う側が、OS やホストの配色によらず固定するとき。VS Code 拡張機能は `mdmark.preview.theme` が `dark` のときに付ける |
-| 1 | `mdmark-theme-light` | ライト | 同上。`mdmark.preview.theme` が `light` のとき |
+| 1 | `mdmark-theme-dark` | ダーク | 使う側が、OS やホストの配色によらず固定するとき。VS Code 拡張機能は `mdmark.preview.theme` が `dark` のときに付ける。`mount` は、文書の [ページの設定](./記法.md#ページの設定) の `scheme` か設定の [配色の明暗](./設定.md#配色の明暗) が `dark` のとき、描く先の要素に付ける（最も近い class なので祖先の class に勝つ） |
+| 1 | `mdmark-theme-light` | ライト | 同上。`mdmark.preview.theme` が `light` のとき。`mount` は `scheme` か配色の明暗が `light` のとき |
 | 2 | `vscode-high-contrast-light`・`vscode-light` | ライト | VS Code が Webview の `body` に付ける |
 | 2 | `vscode-dark`・`vscode-high-contrast`（`vscode-high-contrast-light` を一緒に持たないとき） | ダーク | 同上 |
 
@@ -946,11 +1024,17 @@ handle.destroy();
 | `--mdmark-color-diagram-mcp` | `#94540a` | `#e8b04a` |
 | `--mdmark-color-diagram-data` | `#9b2c2c` | `#f0a39a` |
 | `--mdmark-color-diagram-external` | `#3f6b2a` | `#a3c98a` |
+| `--mdmark-color-diagram-start` | `#5c5247` | `#b8ad9c` |
+| `--mdmark-color-diagram-question` | `#1e4f8c` | `#8fb4e8` |
+| `--mdmark-color-diagram-action` | `#94540a` | `#e8b04a` |
+| `--mdmark-color-diagram-result` | `#3f6b2a` | `#a3c98a` |
 | `--mdmark-color-diagram-line` | `#857a6c` | `#9a8f80` |
 | `--mdmark-color-series-1` | `#9b2c2c` | `#f0a39a` |
 | `--mdmark-color-series-2` | `#1e4f8c` | `#8fb4e8` |
 | `--mdmark-color-series-3` | `#3f6b2a` | `#a3c98a` |
 | `--mdmark-color-series-4` | `#94540a` | `#e8b04a` |
+| `--mdmark-color-series-5` | `#8a3577` | `#d9a6e0` |
+| `--mdmark-color-series-6` | `#1f6b66` | `#7fd1c7` |
 | `--mdmark-color-code-highlight-bg` | `#f7ecc8` | `#4d3d16` |
 | `--mdmark-color-code-highlight-line` | `#94540a` | `#e8b04a` |
 | `--mdmark-color-diff-del-bg` | `#f6e1dc` | `#33211e` |
@@ -1002,11 +1086,17 @@ handle.destroy();
 | `--mdmark-color-diagram-mcp` | `#a24a06` | `#fbbf24` |
 | `--mdmark-color-diagram-data` | `#0e7490` | `#7dd3fc` |
 | `--mdmark-color-diagram-external` | `#047857` | `#5eead4` |
+| `--mdmark-color-diagram-start` | `#475569` | `#a3b1c6` |
+| `--mdmark-color-diagram-question` | `#1d4ed8` | `#f9a8d4` |
+| `--mdmark-color-diagram-action` | `#a24a06` | `#fbbf24` |
+| `--mdmark-color-diagram-result` | `#047857` | `#5eead4` |
 | `--mdmark-color-diagram-line` | `#64748b` | `#8391a7` |
 | `--mdmark-color-series-1` | `#1d4ed8` | `#7dd3fc` |
 | `--mdmark-color-series-2` | `#047857` | `#6ee7b7` |
 | `--mdmark-color-series-3` | `#6d28d9` | `#c4b5fd` |
 | `--mdmark-color-series-4` | `#a24a06` | `#fdba74` |
+| `--mdmark-color-series-5` | `#be185d` | `#f9a8d4` |
+| `--mdmark-color-series-6` | `#0e7490` | `#bef264` |
 | `--mdmark-color-code-highlight-bg` | `#fdf2c4` | `#4d3f12` |
 | `--mdmark-color-code-highlight-line` | `#a24a06` | `#fbbf24` |
 | `--mdmark-color-diff-del-bg` | `#fbe4e4` | `#2e1c24` |
@@ -1058,11 +1148,17 @@ handle.destroy();
 | `--mdmark-color-diagram-mcp` | `#8a4b00` | `#ffd23f` |
 | `--mdmark-color-diagram-data` | `#006a6a` | `#4fd1c5` |
 | `--mdmark-color-diagram-external` | `#1a5e1a` | `#7ee07e` |
+| `--mdmark-color-diagram-start` | `#333333` | `#d6d6d6` |
+| `--mdmark-color-diagram-question` | `#0037a8` | `#9cc0ff` |
+| `--mdmark-color-diagram-action` | `#8a4b00` | `#ffd23f` |
+| `--mdmark-color-diagram-result` | `#1a5e1a` | `#7ee07e` |
 | `--mdmark-color-diagram-line` | `#4d4d4d` | `#a6a6a6` |
 | `--mdmark-color-series-1` | `#0037a8` | `#9cc0ff` |
 | `--mdmark-color-series-2` | `#8a4b00` | `#ffd23f` |
 | `--mdmark-color-series-3` | `#5b21b6` | `#d0b3ff` |
 | `--mdmark-color-series-4` | `#1a5e1a` | `#7ee07e` |
+| `--mdmark-color-series-5` | `#a3003c` | `#ff8fb8` |
+| `--mdmark-color-series-6` | `#005f6b` | `#5fe0e0` |
 | `--mdmark-color-code-highlight-bg` | `#fff1b8` | `#4a3d00` |
 | `--mdmark-color-code-highlight-line` | `#8a4b00` | `#ffd23f` |
 | `--mdmark-color-diff-del-bg` | `#ffe0e0` | `#3a0d0d` |

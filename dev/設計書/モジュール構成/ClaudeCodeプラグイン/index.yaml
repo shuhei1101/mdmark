@@ -2,10 +2,18 @@ summary: "Claude Code プラグインの MCP サーバー・フック・使い�
 docs_index: true
 items:
   - page: MCPサーバー.ts.yaml
-    summary: MCP サーバーの入口・6 つのツールの処理・ツールの引数の検査
+    summary: MCP サーバーの入口・ツールの処理・ツールの引数の検査
   - page: 使い方集.ts.yaml
-    summary: 使い方集の索引の検査と読み取り・セッションに渡す索引の文・本文の読み取り
+    summary: 使い方集の索引の検査
   - page: フック.ts.yaml
-    summary: SessionStart のフックで使い方集の索引を渡す
+    summary: PreToolUse のフックで作業のフォルダを project_dir に入れる
   - page: プラグインのビルド.ts.yaml
-    summary: MCP サーバーとフックを束ね、配布物・使い方集・バージョン・ライセンスを plugin/ に書く
+    summary: 使い方集の索引を検査し、フックを束ね、バージョン・ライセンスを plugin/ に書く
+  - page: セットアップ/
+    summary: global-setup・setup のスキルが呼ぶ setup.js のサブコマンド
+  - page: ポート.ts.yaml
+    summary: 127.0.0.1 のポートが待ち受けているかの確かめ
+  - page: SessionStartのフック.ts.yaml
+    summary: SessionStart のフックで常駐サーバーが待ち受けていないことを伝える
+  - page: CSSのテンプレート.ts.yaml
+    summary: CSS のテンプレートの索引の読み取り・検査・書き込みと、一覧・登録・配置

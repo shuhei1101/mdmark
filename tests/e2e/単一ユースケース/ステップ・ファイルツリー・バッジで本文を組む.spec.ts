@@ -5,6 +5,7 @@ import {
   mountDocument,
   openPage,
   removeDistRoot,
+  routeLucide,
   routeSyntax,
 } from "../dist-page.ts";
 
@@ -237,7 +238,7 @@ test("test_normal_when_steps_folded", async ({ page }) => {
   expect(markers).toEqual(["counter(mdmark-step)", "counter(mdmark-step)"]);
 });
 
-// closed と open の両方・知らない指定・closed も open も無い title= は書き方の警告を出し、読めた指定だけを当てる（異常シナリオ（ステップの読めない指定））
+// closed と open の両方・closed も open も無い title= は書き方の警告を出し、知らない指定は読み飛ばして、読めた指定だけを当てる（異常シナリオ（ステップの読めない指定））
 test("test_error_when_steps_option_invalid", async ({ page }) => {
   // 準備
   await openPage(page, builtRoot);
@@ -260,12 +261,14 @@ test("test_error_when_steps_option_invalid", async ({ page }) => {
   });
   // 検証
   const warnings = page.locator("#doc .mdmark-syntax-warning");
-  await expect(warnings).toHaveCount(3);
+  await expect(warnings).toHaveCount(2);
   await expect(warnings.nth(0)).toContainText("closed");
   await expect(warnings.nth(0)).toContainText("open");
-  await expect(warnings.nth(1)).toContainText("fold");
-  await expect(warnings.nth(2)).toContainText("title=");
-  await expect(warnings.nth(2)).toContainText("closed");
+  // 知らない指定 fold は読み飛ばす
+  await expect(warnings.nth(0)).not.toContainText("fold");
+  await expect(warnings.nth(1)).not.toContainText("fold");
+  await expect(warnings.nth(1)).toContainText("title=");
+  await expect(warnings.nth(1)).toContainText("closed");
   const lists = page.locator("#doc ol.mdmark-steps");
   await expect(lists).toHaveCount(3);
   await expect(lists.nth(0).locator("xpath=ancestor::details")).toHaveCount(1);
@@ -507,7 +510,7 @@ test("test_error_when_tree_clipboard_denied", async ({ page }) => {
   const panel = tree.locator(".mdmark-copy-panel");
   await expect(panel).toBeVisible();
   await expect(panel).toContainText("クリップボードにコピーできませんでした");
-  await expect(tree.locator('[role="status"]')).toContainText("手でコピー");
+  await expect(tree.locator('[role="status"]')).toContainText("手動でコピー");
   const textarea = panel.locator("textarea");
   await expect(textarea).toHaveValue(NOTE_TREE.join("\n"));
   const selection = await textarea.evaluate((element) => {
@@ -560,4 +563,143 @@ test("test_error_when_tree_open_invalid", async ({ page }) => {
     "false",
   );
   await expect(nameOf(tree, "parts/")).toBeHidden();
+});
+
+/** 画面の幅 390px で表示の幅より長い名前と注釈を入れ子の中に持つファイルツリー */
+const WRAP_TREE = [
+  "```tree",
+  "very-long-folder-name-for-the-generated-design-documents/",
+  "└── a-file-name-that-is-much-longer-than-the-box-width-on-phones.config.ts # 狭い幅では注釈も項目の中で折り返す",
+  "```",
+];
+
+/** ツリーのリストの横のはみ出し・入れ子の線の左端の位置・ファイルの名前と注釈の行の左端 */
+function treeLayout(tree: Locator) {
+  return tree.locator(".mdmark-tree-list").evaluate((list) => {
+    const lefts = (element: Element | null) => {
+      const text = element
+        ? document.createTreeWalker(element, NodeFilter.SHOW_TEXT).nextNode()
+        : null;
+      if (!text) {
+        return [];
+      }
+      const range = document.createRange();
+      range.selectNodeContents(text);
+      return [...range.getClientRects()].map((rect) => Math.round(rect.left));
+    };
+    const nested = list.querySelector("ul ul");
+    return {
+      overflows: list.scrollWidth > list.clientWidth,
+      nestedLeft: nested
+        ? Math.round(
+            nested.getBoundingClientRect().left -
+              list.getBoundingClientRect().left,
+          )
+        : -1,
+      name: lefts(list.querySelector(".mdmark-tree-file .mdmark-tree-name")),
+      note: lefts(list.querySelector(".mdmark-tree-file .mdmark-tree-note")),
+    };
+  });
+}
+
+// wrap のツリーだけを、名前の頭に揃えて項目の中で折り返す（正常シナリオ（ファイルツリーを折り返す））
+test("test_normal_when_tree_wrap", async ({ page }) => {
+  // 準備
+  await page.setViewportSize({ width: 390, height: 844 });
+  await openPage(page, builtRoot);
+  // 実行
+  await mountDocument(page, {
+    markdown: [
+      "<!-- tree: open=all wrap -->",
+      "",
+      ...WRAP_TREE,
+      "",
+      "<!-- tree: open=all -->",
+      "",
+      ...WRAP_TREE,
+      "",
+    ].join("\n"),
+  });
+  // 検証
+  const wrapped = await treeLayout(page.locator("#doc .mdmark-tree").nth(0));
+  const plain = await treeLayout(page.locator("#doc .mdmark-tree").nth(1));
+  expect(wrapped.overflows).toBe(false);
+  expect(wrapped.name.length).toBeGreaterThanOrEqual(2);
+  expect(new Set(wrapped.name).size).toBe(1);
+  expect(wrapped.note[0]).toBe(wrapped.name[0]);
+  expect(wrapped.nestedLeft).toBe(plain.nestedLeft);
+  expect(plain.overflows).toBe(true);
+  expect(plain.name).toHaveLength(1);
+});
+
+// 見出しと段落のアイコン・キー・ルビを、スクリプト無しの見た目で描く（正常シナリオ（アイコン・キー・ルビ））
+test("test_normal_when_icon_kbd_ruby", async ({ page }) => {
+  // 準備
+  await openPage(page, builtRoot);
+  const requests = await routeLucide(page);
+  // 実行
+  await mountDocument(page, {
+    markdown:
+      "## `icon:flag` はじめに\n\n`icon:check` 保存したら `kbd:Ctrl+C` で写し、<ruby>漢字<rt>かんじ</rt></ruby>を読む。\n",
+  });
+  // 検証
+  const doc = page.locator("#doc");
+  await expect(
+    doc.locator('h2 .mdmark-inline-icon[data-icon="flag"] svg'),
+  ).toHaveCount(1);
+  await expect(
+    doc.locator('p .mdmark-inline-icon[data-icon="check"] svg'),
+  ).toHaveCount(1);
+  await expect(doc).not.toContainText("icon:");
+  await expect(doc.locator(".mdmark-inline-icon").first()).toHaveAttribute(
+    "aria-hidden",
+    "true",
+  );
+  await expect(doc.getByRole("heading", { level: 2 })).toHaveAccessibleName(
+    /^はじめに/,
+  );
+  await expect(doc.locator(".mdmark-kbd")).toHaveText(["Ctrl", "C"]);
+  await expect(doc).not.toContainText("kbd:");
+  await expect(doc.locator("ruby rt")).toHaveText("かんじ");
+  await page.waitForTimeout(SETTLE_MS);
+  expect(requests).toEqual([]);
+  await expect(doc.locator(".mdmark-syntax-warning")).toHaveCount(0);
+});
+
+// 頭の : の前に \ を書いた行内のコードは、書いたとおりの文字で出す（正常シナリオ（アイコンとキーの書き方を見せる））
+test("test_normal_when_icon_kbd_escaped", async ({ page }) => {
+  // 準備
+  await openPage(page, builtRoot);
+  // 実行
+  await mountDocument(page, { markdown: "`icon\\:check` と `kbd\\:Ctrl+C`\n" });
+  // 検証
+  await expect(page.locator("#doc code")).toHaveText([
+    "icon:check",
+    "kbd:Ctrl+C",
+  ]);
+  await expect(
+    page.locator("#doc .mdmark-inline-icon, #doc .mdmark-kbd"),
+  ).toHaveCount(0);
+});
+
+// 名前の書き方に合わないアイコンは、警告を置いて書いたとおりの文字で出す（異常シナリオ（アイコンの名前の書き方が誤っている））
+test("test_error_when_icon_name_invalid", async ({ page }) => {
+  // 準備
+  await openPage(page, builtRoot);
+  const requests = await routeLucide(page);
+  // 実行
+  await mountDocument(page, {
+    markdown: "`icon:Rocket!` の段落\n\n`icon:` の段落\n",
+  });
+  // 検証
+  const warning = page.locator("#doc .mdmark-syntax-warning");
+  await expect(warning).toHaveCount(1);
+  await expect(warning).toContainText("Rocket!");
+  const next = warning.locator("xpath=following-sibling::p[1]");
+  await expect(next.locator("code")).toHaveText("icon:Rocket!");
+  await expect(page.locator("#doc code", { hasText: /^icon:$/ })).toHaveCount(
+    1,
+  );
+  await page.waitForTimeout(SETTLE_MS);
+  expect(requests).toEqual([]);
 });

@@ -1,10 +1,18 @@
 import { afterEach, expect, test } from "vitest";
-import { INQUIRY_TEXT, wrapDirective } from "../../../helpers/diagrams.ts";
-import { matches } from "../../../helpers/html.ts";
+import {
+  INQUIRY_TEXT,
+  STRENGTH_TEXT,
+  wrapDirective,
+} from "../../../helpers/diagrams.ts";
+import { createEnv } from "../../../helpers/env.ts";
+import { innerHtml, matches, plainText } from "../../../helpers/html.ts";
 import { renderDoc } from "../../../helpers/render.ts";
 
 /** 拡張の処理を読み込む（実装が無い間は各テストが個別に失敗する） */
 const loadExtensions = () => import("../../../../../src/extensions.ts");
+
+/** 解析の処理を読み込む（実装が無い間は各テストが個別に失敗する） */
+const loadParser = () => import("../../../../../src/render/parser.ts");
 
 afterEach(async () => {
   const { resetExtensions } = await loadExtensions();
@@ -64,4 +72,53 @@ test("test_build_diagrams_when_invalid", () => {
   expect(html).toContain("フロー図の部品の定義を JSON として読めません");
   expect(html).toContain("<p>後ろの段落</p>");
   expect(html).not.toContain('mdmark-diagram"');
+});
+
+// 操作できる部品のボタンを `env.labels.paramCopy` の文言で描く（正常系）
+test("test_build_diagrams_when_param_copy_label", async () => {
+  // 準備
+  const { createParser } = await loadParser();
+  const markdown = wrapDirective("param", STRENGTH_TEXT);
+  const env = createEnv({ labels: { paramCopy: "コピー" } });
+  // 実行
+  const html = createParser().render(markdown, env);
+  // 検証
+  expect(plainText(innerHtml(html, "mdmark-param-copy"))).toBe("コピー");
+});
+
+/** 図の部品の範囲を探す処理を読み込む（実装が無い間は各テストが個別に失敗する） */
+const loadDiagrams = () =>
+  import("../../../../../src/render/syntax/diagrams.ts");
+
+// 図の部品の範囲だけを返す（正常系）
+test("test_find_diagram_blocks", async () => {
+  // 準備
+  const { findDiagramBlocks } = await loadDiagrams();
+  const markdown = [
+    "# 図",
+    "",
+    wrapDirective("flow", INQUIRY_TEXT),
+    wrapDirective("chart", '{ "type": "bar" }'),
+    "<!-- html -->",
+    "",
+    "```html",
+    "<mdmark-chart>",
+    '{ "type": "pie" }',
+    "</mdmark-chart>",
+    "```",
+    "",
+    "<!-- /html -->",
+    "",
+  ].join("\n");
+  // 実行
+  const found = findDiagramBlocks(markdown);
+  // 検証
+  expect(found).toHaveLength(2);
+  expect(found[0]).toEqual({
+    directive: "flow",
+    line: 3,
+    blocks: [INQUIRY_TEXT],
+  });
+  expect(found[1]?.directive).toBe("chart");
+  expect(found[1]?.blocks).toEqual(['{ "type": "bar" }']);
 });

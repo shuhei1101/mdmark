@@ -3,8 +3,14 @@ import type { WarningItem } from "../../extensions.ts";
 import { escapeHtml } from "../../parts/escape.ts";
 import { renderTree, type TreeNode } from "../../parts/tree.ts";
 import type { Mark } from "../marks.ts";
+import { WRAP_VALUE_MESSAGE } from "./code-blocks.ts";
 import { envOf, featureOn, markOf, ownBlock } from "./tokens.ts";
-import { type SyntaxWarning, warningBlock } from "./warnings.ts";
+import {
+  type SkippedArg,
+  type SyntaxWarning,
+  skippedArgBlocks,
+  warningBlock,
+} from "./warnings.ts";
 
 export type { TreeNode };
 
@@ -22,6 +28,9 @@ const NOTE_SEPARATOR = /\s#/;
 
 /** ファイルツリーの印で読めるキー */
 const OPEN_KEY = "open";
+
+/** 項目を折り返すフラグ */
+const WRAP_FLAG = "wrap";
 
 /** `open=` に書ける、階層の数（1 以上の整数） */
 const LEVELS_PATTERN = /^[1-9]\d*$/;
@@ -84,19 +93,22 @@ export function parseTree(
   return { nodes };
 }
 
-/** ファイルツリーの印の引数から `open=` を読み、読めない指定を 1 つの書き方の警告にまとめる */
+/** ファイルツリーの印の引数から `open=` を読み、読めない指定を 1 つの書き方の警告にまとめ、知らないキーと指定を読み飛ばした引数にする */
 export function readTreeOptions(mark: Mark): {
   open?: string;
+  wrap: boolean;
   warning?: SyntaxWarning;
+  skipped: SkippedArg[];
 } {
+  const usable = `\`${OPEN_KEY}=all\`・\`${OPEN_KEY}=階層の数\`・\`${WRAP_FLAG}\``;
   const items: WarningItem[] = [];
+  const skipped: SkippedArg[] = [];
   let open: string | undefined;
   for (const [key, value] of Object.entries(mark.args.keys)) {
-    if (key !== OPEN_KEY) {
-      items.push({
-        label: `${key}=`,
-        message: `使えないキーです。使えるキーは \`${OPEN_KEY}=\` です`,
-      });
+    if (key === WRAP_FLAG) {
+      items.push({ label: `${key}=${value}`, message: WRAP_VALUE_MESSAGE });
+    } else if (key !== OPEN_KEY) {
+      skipped.push({ arg: `${key}=`, usable });
     } else if (value === "all" || LEVELS_PATTERN.test(value)) {
       open = value;
     } else {
@@ -107,17 +119,17 @@ export function readTreeOptions(mark: Mark): {
     }
   }
   // `キー=値` の形でない指定
-  for (const arg of mark.args.args) {
-    items.push({
-      label: arg,
-      message: `使えない指定です。使える指定は \`${OPEN_KEY}=all\` と \`${OPEN_KEY}=階層の数\` です`,
-    });
+  const wrap = mark.args.args.includes(WRAP_FLAG);
+  for (const arg of mark.args.args.filter((arg) => arg !== WRAP_FLAG)) {
+    skipped.push({ arg, usable });
   }
   if (items.length === 0) {
-    return open === undefined ? {} : { open };
+    return open === undefined ? { wrap, skipped } : { open, wrap, skipped };
   }
   return {
     ...(open === undefined ? {} : { open }),
+    wrap,
+    skipped,
     warning: {
       mark: mark.raw,
       message: "の読めない指定を当てずに描いています。",
@@ -167,9 +179,20 @@ export function buildFileTrees(state: StateCore): void {
     }
     const mark = markOf(state.tokens[index - 1]);
     const options =
-      mark?.name === "tree" && !mark.closing ? readTreeOptions(mark) : {};
-    if (options.warning) {
-      out.push(warningBlock(state, options.warning));
+      mark?.name === "tree" && !mark.closing
+        ? readTreeOptions(mark)
+        : { wrap: false, skipped: [] };
+    if ("warning" in options && options.warning) {
+      out.push(warningBlock(state, options.warning, state.tokens[index - 1]));
+    }
+    if (mark && options.skipped.length) {
+      out.push(
+        ...skippedArgBlocks(
+          state,
+          { mark: mark.raw, skipped: options.skipped },
+          state.tokens[index - 1],
+        ),
+      );
     }
     out.push(
       ownBlock(
@@ -178,6 +201,7 @@ export function buildFileTrees(state: StateCore): void {
           nodes: result.nodes,
           source: token.content.replace(/\n+$/, ""),
           open: options.open,
+          wrap: options.wrap,
         }),
       ),
     );

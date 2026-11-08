@@ -1,4 +1,4 @@
-title: "文書をHTMLに書き出す"
+title: 文書をHTMLに書き出す
 scenarios:
   - name: 正常シナリオ
     setup:
@@ -20,7 +20,7 @@ scenarios:
         F-->>R: 文書・表のボタン・用語のツールチップ・図・画像
     expected:
       - 終了コードが 0 で、指定した出力に HTML が 1 つある
-      - HTML だけを空のフォルダへ写して file:// で開くと、描き終えるまでにページ自身と `blob:`・`data:` のほかの要求が 0 件
+      - HTML だけを空のフォルダへ写して file:// で開くと、描き終えるまでにページ自身と画像の `data:` のほかの要求が 0 件
       - 表に並べ替え・ピン止めのボタンが付き、用語集の表の用語にツールチップが出る
       - Chart.js の印の場所に `canvas` が描かれ、知らせの枠が出ない
       - 相対パスで指した画像が描かれる（`naturalWidth` が 0 より大きい）
@@ -91,14 +91,41 @@ scenarios:
       ```
     expected:
       - 終了コードが 0 で、指定した出力に HTML が 1 つある
-      - HTML だけを空のフォルダへ写して file:// で開くと、描き終えるまでにページ自身と `blob:`・`data:` のほかの要求が 0 件
+      - HTML だけを空のフォルダへ写して file:// で開くと、描き終えるまでにページ自身と画像の `data:` のほかの要求が 0 件
       - '`ts` と `python` のコードブロックが色分けされている'
       - 手元のフォルダにある言語のモジュールのうち、文書が使わない言語（`yaml`）のモジュールは埋められていない
     test: test_normal_when_code_highlighted
+  - name: 正常シナリオ（mermaid のコードブロック）
+    setup:
+      - name: mermaid のコードブロックを持つ文書
+        description: 言語 `mermaid` の flowchart のコードブロックを 1 つ持つ文書 1 つと、設定
+      - name: mermaid のコードブロックを持たない文書
+        description: 段落だけを持つ文書 1 つ（同じ設定で別に書き出す）
+      - name: Mock
+        description: mermaid は、設定の `mermaid` の読み込み先を、mermaid の本体と chunk を置いた手元のフォルダの相対パスにする（書き出しがネットワークを読まない）
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant C as mdmark CLI
+        participant F as 出力の HTML
+        actor R as 読む人
+        W->>C: mdmark export 文書のパス
+        C->>C: mermaid のコードブロックがあるので、mermaid の本体と chunk を 1 つのスクリプトにまとめる
+        C->>F: mermaid を埋めた HTML を書く
+        C-->>W: 出力のパス・終了コード 0
+        R->>F: HTML だけを空のフォルダへ写して file:// で開く
+        F-->>R: 図の枠に入った mermaid の図
+    expected:
+      - 終了コードが 0 で、指定した出力に HTML が 1 つある
+      - HTML だけを空のフォルダへ写して file:// で開くと、描き終えるまでにページ自身と画像の `data:` のほかの要求が 0 件
+      - mermaid のコードブロックの場所に、図の枠と SVG の図がある
+      - 書き出した HTML のスクリプトの動的 `import()` の数が、mermaid のコードブロックを持たない文書の書き出しと同じ（mermaid の chunk を動的 `import()` で読まない）
+      - mermaid のコードブロックを持たない文書の書き出しには、mermaid が埋められていない
+    test: test_normal_when_mermaid
   - name: 正常シナリオ（エイリアスを読む）
     setup:
       - name: エイリアスを読む設定
-        description: '`aliases` に、`term` の `ワークスペース`（説明 `話し合いの記録を置くフォルダ`）と、`env` の `開発サーバー`（URL `http://127.0.0.1:8767/`、ポート `8767`）を持つ YAML を指す行と、無いファイルを指す行を持つ設定'
+        description: '`aliases` に、`alias_type` が `term` で `ワークスペース`（説明 `話し合いの記録を置くフォルダ`）を持つ YAML を指す行と、`alias_type` が `env` で `開発サーバー`（URL `http://127.0.0.1:8767/`、ポート `8767`）を持つ YAML を指す行と、無いファイルを指す行を持つ設定'
       - name: エイリアスが出る文書
         description: 段落に `ワークスペース` が出る文書
       - name: Mock
@@ -146,6 +173,249 @@ scenarios:
     test: test_normal_when_theme_selected
     refs:
       - dev/設計書/シナリオ/単一ユースケース/テーマを選ぶ#scenarios[正常シナリオ]
+  - name: 正常シナリオ（画像・動画・音声を埋める）
+    setup:
+      - name: 書き出す文書と画像・動画・音声のファイル
+        description: '`docs/guide.md` が相対パスで `images/chart.png`・`media/demo.mp4`・`media/voice.mp3`・`images/logo.png` を指し、リンクだけの段落 `[仕様書](files/spec.pdf)`、`#only-dark` の画像、GIF を持つ'
+        notes: '`images/logo.png` は `docs/` の下には無く、`assets/images/logo.png` にだけある。そのほかのファイルは `docs/` からの相対パスにある'
+      - name: 設定
+        description: '`mdmark.config.yaml` のアセットのルートが `assets` を指す'
+        notes: 'キー名は設定の設計書で決める（参考: `assets.root`）'
+      - name: Mock
+        description: なし（実ファイルを使う）。外へのネットワークの要求を記録する
+    flow: |-
+      sequenceDiagram
+        actor U as 文書を書く人
+        participant C as mdmark CLI
+        participant F as ファイル
+        U->>C: mdmark export docs/guide.md
+        C->>F: 文書を読み、画像・動画・音声を文書からの相対パス、無ければアセットのルートで探して読む
+        C->>C: 画像を data URL で埋め、動画・音声を出力先のフォルダへコピーする
+        C->>F: 1 枚の HTML と、コピーしたファイルを書く
+        C-->>U: 終了コード 0
+    expected:
+      - 終了コードが 0
+      - 書き出した HTML の画像（`#only-dark` の画像、GIF、アセットのルートにだけある `images/logo.png` を含む）が data URL で埋まっている
+      - 動画・音声が出力先のフォルダへコピーされ、HTML がそのコピーを相対パスで指している
+      - '`files/spec.pdf` はコピーされず、HTML のリンクは書いたパスのまま'
+      - 書き出した HTML を file:// で開いたとき、外へのネットワークの要求が 0 件
+    test: test_normal_when_media_embedded
+  - name: '正常シナリオ（blob: と動的 import を許さない環境で開く）'
+    setup:
+      - name: 埋めるモジュールを使う文書
+        description: '`extensions` の拡張の印・ビューの印・Chart.js の印・言語 `ts` のコードブロック・`libraries` に無いファイルのモジュールを書いた印を持つ文書 1 つと、`extensions` に印を描く拡張のモジュールを書いた設定'
+        notes: 拡張のモジュールは `load` の中で同じフォルダの別のファイルを動的 `import()` で読む
+      - name: Mock
+        description: "外部ライブラリと色分けのライブラリは手元のモジュール。書き出した HTML を、`Content-Security-Policy: script-src 'unsafe-inline'` のヘッダーを付けて返す手元のサーバーから開く（`blob:` と `data:` のスクリプトと、動的 `import()` で読むスクリプトを許さない）"
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant C as mdmark CLI
+        participant F as 出力の HTML
+        actor R as 読む人
+        W->>C: mdmark export 文書のパス
+        C->>C: 起動の処理・拡張・部品・色分け・外部ライブラリを 1 つのスクリプトに束ねる
+        C->>F: 束ねたスクリプトを script 要素に入れた HTML を書く
+        C-->>W: 出力のパス・終了コード 0
+        R->>F: blob: と動的 import を許さない環境で開く
+        F-->>R: 拡張の印・ビュー・図・色分けしたコードブロック
+    expected:
+      - 終了コードが 0 で、指定した出力に HTML が 1 つある
+      - 拡張の印の場所に拡張が描いた要素があり、知らせの枠が出ない
+      - ビューの印の場所にビューが描かれる
+      - Chart.js の印の場所に `canvas` が描かれ、知らせの枠が出ない
+      - '`ts` のコードブロックが色分けされている'
+      - '`libraries` に無いファイルのモジュールを書いた印の場所に知らせの枠が出る'
+      - 開いてから描き終えるまでに、CSP の違反（`securitypolicyviolation`）が 0 件で、`blob:` の URL への要求が 0 件
+    test: test_normal_when_blob_and_dynamic_import_blocked
+  - name: 正常シナリオ（脚注を持つ文書）
+    setup:
+      - name: 脚注を持つ文書
+        description: '段落に `[^src]` と定義 `[^src]: 出典の説明` を持つ文書 1 つと、設定'
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant C as mdmark CLI
+        participant F as 出力の HTML
+        actor R as 読む人
+        W->>C: mdmark export 文書のパス
+        C->>F: 配布物と本文を埋めた HTML を書く
+        C-->>W: 出力のパス・終了コード 0
+        R->>F: file:// で開き、番号にポインターを乗せ、末尾の一覧を開く
+        F-->>R: 脚注のツールチップと開いた一覧
+    expected:
+      - 終了コードが 0 で、指定した出力に HTML が 1 つある
+      - file:// で開くと、番号 `1` にポインターを乗せたとき `出典の説明` のツールチップが出る
+      - 末尾の脚注の一覧は閉じていて、見出しを押すと `1` と `出典の説明` が出る
+      - 外への要求が 0 件
+    test: test_normal_when_footnotes
+    refs:
+      - dev/設計書/シナリオ/単一ユースケース/脚注を見る#scenarios[正常シナリオ]
+  - name: 正常シナリオ（範囲のスクリプトと CSS）
+    setup:
+      - name: 範囲のスクリプトを持つ文書
+        description: '`<!-- html -->` の範囲に `html`・`css`・`ts` のコードブロックを 1 つずつ置いた文書 1 つと、`features.html-scripts` を `true` にした設定'
+        notes: '`ts` は型の注釈を持つ既定のエクスポートの関数で、箱を押すと根の要素に class `is-open` を付け外しする'
+      - name: Mock
+        description: "書き出した HTML を、`Content-Security-Policy: script-src 'unsafe-inline'` のヘッダーを付けて返す手元のサーバーから開き、外への要求を全て止める（`blob:` と `data:` のスクリプトと、動的 `import()` で読むスクリプトを許さない）"
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant C as mdmark CLI
+        participant F as 出力の HTML
+        actor R as 読む人
+        W->>C: mdmark export 文書のパス
+        C->>C: 範囲の ts の型を外し、既定のエクスポートを範囲ごとに登録する形にする
+        C->>F: 範囲の関数を束ねたスクリプトに加えた HTML を書く
+        C-->>W: 出力のパス・終了コード 0
+        R->>F: 外への要求を止めて開く
+        F-->>R: 範囲の css と ts を当てた文書
+        R->>F: 範囲の箱を押す
+        F-->>R: 根の要素に class が付いた表示
+    expected:
+      - 終了コードが 0 で、指定した出力に HTML が 1 つある
+      - 範囲の箱の背景が `css` の色で描かれる
+      - 範囲の箱を押すと根の要素に class `is-open` が付く
+      - 開いてから描き終えるまでに、CSP の違反（`securitypolicyviolation`）が 0 件で、`blob:` の URL への要求と外への要求が 0 件
+    test: test_normal_when_range_scripts
+  - name: 正常シナリオ（取り込みとアイコンを埋める）
+    setup:
+      - name: 取り込みとアイコンを持つ文書
+        description: '`<!-- include: 共通/手順.md#実行 -->` と、作業のフォルダの `src/app.ts` の 3〜5 行目を指す include のマーカーと、配布物に束ねていない名前の `icon:` を持つ文書 1 つ'
+        notes: '`共通/手順.md` と `src/app.ts` は作業のフォルダにある'
+      - name: Mock
+        description: 正常シナリオと同じく、書き出しがネットワークを読まない
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant C as mdmark CLI
+        participant F as 出力の HTML
+        actor R as 読む人
+        W->>C: mdmark export 文書のパス（出力を指定）
+        C->>C: 取り込むファイルと、文書が使う Lucide のアイコンを読む
+        C->>F: 取り込んだ中身とアイコンを埋めた HTML を書く
+        C-->>W: 出力のパス・終了コード 0
+        R->>F: HTML だけを空のフォルダへ写して file:// で開く
+        F-->>R: 取り込んだ中身とアイコンを持つ文書
+    expected:
+      - 終了コードが 0 で、指定した出力に HTML が 1 つある
+      - 開いた文書のマーカーの場所に、`実行` の見出しの下の中身と、`src/app.ts` の 3〜5 行目の言語 `ts` のコードブロックが描かれている
+      - 束ねていない名前のアイコンが描かれている
+      - 描き終えるまでに、ページ自身と画像の `data:` のほかの要求が 0 件
+    test: test_normal_when_includes_and_icons_embedded
+  - name: 正常シナリオ（設定を重ねる）
+    setup:
+      - name: 端末の設定
+        description: '`MDMARK_CONFIG` で指す一時フォルダの `settings.yaml`。`config.cascade: true`・`config.applyToExport: true`・`features.callout: false` を書く'
+      - name: 重ねる設定を持つフォルダ
+        description: '上のフォルダの `mdmark.config.yaml` に `theme: ./theme.css` と `extensions` の固有の部品 1 つを書き、その下の `docs/` の `mdmark.config.yaml` に `features.table: false` を書く。`docs/` に注意書き・表・固有の部品の印を持つ文書を 1 つ置く'
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant C as mdmark CLI
+        participant F as 出力の HTML
+        actor R as 読む人
+        W->>C: docs/ で mdmark export 文書のパス
+        C->>C: 端末の設定と docs/ から上の mdmark.config.yaml を読んで重ね、theme と extensions は書いた設定ファイルのフォルダから読む
+        C->>F: 重ねた設定・theme の CSS・extensions を埋めた HTML を書く
+        C-->>W: 出力のパス・終了コード 0
+        R->>F: file:// で開く
+        F-->>R: 文書
+    expected:
+      - 終了コードが 0 で、指定した出力に HTML が 1 つある
+      - file:// で開くと、注意書きと表の機能がオフで描かれ、固有の部品が描かれ、`theme.css` の規則が当たる
+      - 外への要求が 0 件
+      - 端末の設定と 2 つの `mdmark.config.yaml` は書き換わらない
+    test: test_normal_when_cascaded
+  - name: 正常シナリオ（最初の 1 つだけを読む）
+    setup:
+      - name: 端末の設定
+        description: '正常シナリオ（設定を重ねる）の端末の設定のうち、`config.cascade: false` にしたもの'
+      - name: 重ねる設定を持つフォルダ
+        description: 正常シナリオ（設定を重ねる）と同じ
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant C as mdmark CLI
+        participant F as 出力の HTML
+        W->>C: docs/ で mdmark export 文書のパス
+        C->>C: 端末の設定と、docs/ から上へ最初に見つかった mdmark.config.yaml を重ねる
+        C->>F: HTML を書く
+        C-->>W: 出力のパス・終了コード 0
+    expected:
+      - 終了コードが 0 で HTML が書かれている
+      - file:// で開くと注意書きと表の機能がオフで描かれ、固有の部品の印の場所には何も描かれず、`theme.css` の規則は当たらない
+    test: test_normal_when_first_only
+  - name: 正常シナリオ（書き出しに端末の設定を重ねない）
+    setup:
+      - name: 端末の設定
+        description: '正常シナリオ（設定を重ねる）の端末の設定のうち、`config.applyToExport: false` にしたもの'
+      - name: 重ねる設定を持つフォルダ
+        description: 正常シナリオ（設定を重ねる）と同じ
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant C as mdmark CLI
+        participant F as 出力の HTML
+        W->>C: docs/ で mdmark export 文書のパス
+        C->>C: docs/ から上の mdmark.config.yaml だけを重ねる（端末の設定は重ねない）
+        C->>F: HTML を書く
+        C-->>W: 出力のパス・終了コード 0
+    expected:
+      - 終了コードが 0 で HTML が書かれている
+      - file:// で開くと、注意書きは注意書きの枠で描かれ、表の機能はオフで描かれ、`theme.css` の規則が当たる
+    test: test_normal_when_settings_not_applied_to_export
+  - name: 異常シナリオ（設定ファイルを読めない）
+    setup:
+      - name: 端末の設定
+        description: 正常シナリオ（設定を重ねる）の端末の設定のうち、YAML として読めない行を 1 つ持つもの
+      - name: 重ねる設定を持つフォルダ
+        description: 正常シナリオ（設定を重ねる）と同じ
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant C as mdmark CLI
+        W->>C: docs/ で mdmark export 文書のパス
+        C->>C: 端末の設定を YAML として読めない
+        C-->>W: 読めないファイルのパスと行と直し方・終了コード 1
+    expected:
+      - 終了コードが 1
+      - 標準エラーに、端末の設定のパスと読めない行と直し方が出る
+      - HTML がどこにも書かれていない
+    test: test_error_when_config_unreadable
+  - name: 正常シナリオ（文書のマーカーで明暗を指定する）
+    setup:
+      - name: 明暗を指定した文書のフォルダ
+        description: '正常シナリオと同じフォルダで、書き出す文書の先頭の行に `<!-- page: scheme=dark theme=theme-paper -->` を書く'
+        notes: 書き出した HTML を開くブラウザの配色はライト
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant C as mdmark export
+        participant B as ブラウザ
+        W->>C: mdmark export を流す
+        C-->>W: HTML を書く
+        W->>B: file:// で開く
+        B-->>W: theme-paper の暗い配色で表示
+    expected:
+      - 終了コードが 0 で、指定した出力に HTML が 1 つある
+      - file:// で開くと、ブラウザの配色がライトでも、描く先の要素の地の色の計算値が theme-paper の暗い配色の `--mdmark-color-bg` の値
+      - 外への要求が 0 件
+    test: test_normal_when_page_marker
+    refs:
+      - dev/設計書/シナリオ/単一ユースケース/ページの設定を文書で指定する#scenarios[正常シナリオ]
 lead: 文書を書く人が `mdmark export` で Markdown を 1 つ、配布物・使う側の CSS・外部ライブラリのモジュール・画像を埋めた 1 枚の HTML に書き出し、読む人は file:// で開いて外を読まずに読む。
 issue: 9
 primary_actor: 文書を書く人
@@ -158,6 +428,6 @@ trigger: 文書を書く人が、1 つの文書をサーバー無しで渡した
 preconditions:
   - 文書を書く人の手元に Node 24 以降がある
   - 文書を書く人の手元から、設定の `libraries` に書いた URL の先へ届く
-success_guarantee: 指定した出力に 1 枚の HTML ができ、file:// で開くと外への要求 0 件で、`mount` と同じ本文・記法の操作・用語のツールチップ・外部ライブラリの図・画像が描かれる。他の文書へのリンクは書いたままの `href` で残る（文書間のリンクは全て 1 枚に含まれないため、警告には出さない）。
+success_guarantee: 指定した出力に 1 枚の HTML ができ、file:// で開くと外への要求 0 件で、`mount` と同じ本文・記法の操作・用語のツールチップ・外部ライブラリの図・画像が描かれる。埋めた拡張・部品・色分け・外部ライブラリは 1 つのスクリプトで動き、`blob:` URL と動的 `import()` を許さない環境でも同じに描かれる。他の文書へのリンクは書いたままの `href` で残る（文書間のリンクは全て 1 枚に含まれないため、警告には出さない）。
 minimal_guarantee: 読めない画像とモジュールは書き出しを止めず警告に出す。出力先へ書けないときは、原因と直し方の 1 文を出して 0 以外で終わる。文書に書いたスクリプトは書き出した HTML でも実行しない。
 test_file: tests/e2e/単一ユースケース/文書をHTMLに書き出す.spec.ts

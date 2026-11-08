@@ -267,7 +267,7 @@
       if (clipboardFails || !navigator.clipboard) throw new Error("クリップボードに書けない");
       await navigator.clipboard.writeText(holder.dataset.source);
     } catch {
-      setCopyState(holder, "idle", "クリップボードにコピーできませんでした。選択したツリーのテキストを手でコピーできます");
+      setCopyState(holder, "idle", "クリップボードにコピーできませんでした。選択したツリーのテキストを手動でコピーできます");
       openCopyPanel(holder, true);
       return;
     }
@@ -284,6 +284,8 @@
     // 元の罫線のテキスト: 先頭と末尾の改行を落とす
     const holder = buildTree(pre.textContent.replace(/^\n+|\n+$/g, ""), pre.dataset.open);
     pre.replaceWith(holder);
+    // data-wrap: tree の印の wrap。名前と注釈を折り返す
+    if (pre.dataset.wrap !== undefined) holder.classList.add("mdmark-tree-wrap");
     setCopyState(holder, "idle");
     holder.querySelector(".mdmark-tree-copy").addEventListener("click", () => copyTree(holder));
     holder.querySelector(".mdmark-tree-list").addEventListener("click", (event) => {

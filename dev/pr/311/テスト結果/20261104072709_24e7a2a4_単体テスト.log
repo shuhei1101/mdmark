@@ -1,0 +1,14 @@
+$ npm run test:unit
+
+> test:unit
+> vitest run --project 'unit*'
+
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-syntax-footnotes
+
+
+ Test Files  193 passed (193)
+      Tests  1419 passed (1419)
+   Start at  07:26:00
+   Duration  66.69s (worker 48%, tests 33%, import 18%, transform 2%)
+

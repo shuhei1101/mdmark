@@ -1,0 +1,103 @@
+$ npm run test:unit
+
+> test:unit
+> vitest run --project 'unit*'
+
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/design-document-heading-rule-and-side-toc-head
+
+ ❯ |unit-browser (chromium)| tests/unit/src/interact/side-toc.browser.test.ts (18 tests | 2 failed) 1866ms
+   × test_attach_side_toc_when_hover_panel_placed 245ms
+   × test_attach_side_toc_when_hover_panel_reaches_rail 211ms
+ ❯ |unit| tests/unit/src/parts/side-toc.test.ts (5 tests | 2 failed) 122ms
+   × test_render_side_toc 118ms
+   × test_render_side_toc_when_without_sections 1ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit| tests/unit/src/parts/side-toc.test.ts > test_render_side_toc
+AssertionError: expected '<svg class="mdmark-diagram-icon" view…' to contain 'mdmark-side-toc-pin-off'
+
+Expected: "mdmark-side-toc-pin-off"
+Received: "<svg class="mdmark-diagram-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 17v5"></path><path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"></path></svg>"
+
+ ❯ tests/unit/src/parts/side-toc.test.ts:41:15
+     39|   );
+     40|   const pin = innerHtml(html, "mdmark-side-toc-pin");
+     41|   expect(pin).toContain("mdmark-side-toc-pin-off");
+       |               ^
+     42|   expect(pin).toContain("mdmark-side-toc-pin-on");
+     43|   expect(html).toContain('data-fold-all="open"');
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/4]⎯
+
+ FAIL  |unit| tests/unit/src/parts/side-toc.test.ts > test_render_side_toc_when_without_sections
+AssertionError: expected '<p class="mdmark-side-toc-title">目次</…' to match /^<button class="mdmark-side-t…/button>$
+
+- Expected:
+/^<button class="mdmark-side-toc-pin"[\s\S]*<\/button>$/
+
++ Received:
+"<p class=\"mdmark-side-toc-title\">目次</p><button class=\"mdmark-side-toc-pin\" type=\"button\" aria-pressed=\"false\" aria-label=\"目次をピン止め\" title=\"目次をピン止め\"><svg class=\"mdmark-diagram-icon\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M12 17v5\"></path><path d=\"M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z\"></path></svg></button>"
+
+ ❯ tests/unit/src/parts/side-toc.test.ts:83:51
+     81|   // 検証
+     82|   expect(html).not.toContain("data-fold-all");
+     83|   expect(innerHtml(html, "mdmark-side-toc-head")).toMatch(
+       |                                                   ^
+     84|     /^<button class="mdmark-side-toc-pin"[\s\S]*<\/button>$/,
+     85|   );
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/4]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/side-toc.browser.test.ts > test_attach_side_toc_when_hover_panel_placed
+AssertionError: expected '' to be '122px' // Object.is equality
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/side-toc.browser.test.ts/test_attach_side_toc_when_hover_panel_placed.png
+
+- Expected
++ Received
+
+- 122px
+
+ ❯ tests/unit/src/interact/side-toc.browser.test.ts:576:63
+    574|     `${document.documentElement.clientWidth - aside.getBoundingClientR…
+    575|   // 実行・検証: 付けた直後
+    576|   expect(panelVariable(aside, "--mdmark-side-toc-panel-top")).toBe(
+       |                                                               ^
+    577|     expectedTop,
+    578|   );
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=f637f04a:5235:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/4]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/side-toc.browser.test.ts > test_attach_side_toc_when_hover_panel_reaches_rail
+AssertionError: expected '' to be 'NaNpx' // Object.is equality
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/side-toc.browser.test.ts/test_attach_side_toc_when_hover_panel_reaches_rail.png
+
+- Expected
++ Received
+
+- NaNpx
+
+ ❯ tests/unit/src/interact/side-toc.browser.test.ts:628:70
+    626|   );
+    627|   // 検証: 文書の先頭では、右端の線の上端から 2rem の位置まで届く高さ
+    628|   expect(panelVariable(aside, "--mdmark-side-toc-panel-min-height")).t…
+       |                                                                      ^
+    629|     `${rail.getBoundingClientRect().top + 2 * rootFontSize() - top}px`,
+    630|   );
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=f637f04a:5235:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/4]⎯
+
+
+ Test Files  2 failed | 191 passed (193)
+      Tests  4 failed | 1420 passed (1424)
+   Start at  13:00:37
+   Duration  73.27s (worker 73%, tests 16%, import 8%, transform 3%)
+
+exit=1

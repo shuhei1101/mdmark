@@ -71,6 +71,51 @@ test("test_normal", async ({ builtRoot, tempDir, page }) => {
   expect(opened.externalRequests()).toEqual([]);
 });
 
+// 文書の page のマーカーの明暗で開き、マーカーを持たない文書へ移ると明るい配色に、戻ると暗い配色に描き直す（正常シナリオ（文書ごとのページの設定））
+test("test_normal_when_page_settings_per_document", async ({
+  builtRoot,
+  tempDir,
+  page,
+}) => {
+  // 準備
+  const dir = await tempDir();
+  await writeFiles(dir, {
+    "mdmark.config.yaml": [
+      "build:",
+      '  include: ["A.md", "B.md"]',
+      "  entry: A.md",
+      "  out: dist/docs.html",
+      "",
+    ].join("\n"),
+    "A.md": "<!-- page: scheme=dark -->\n\n# 文書A\n\n入口の文書。\n",
+    "B.md": "# 文書B\n\nマーカーを持たない文書。\n",
+  });
+  const result = await runCli(builtRoot, ["build"], dir);
+  expect(result.code).toBe(0);
+  await page.emulateMedia({ colorScheme: "light" });
+  const h1 = page.locator("article.mdmark h1");
+  const background = () =>
+    page
+      .locator("article.mdmark")
+      .evaluate((el) =>
+        getComputedStyle(el).getPropertyValue("--mdmark-color-bg").trim(),
+      );
+  // 実行・検証
+  const opened = await openStandalone(page, {
+    tempDir,
+    htmlFile: join(dir, "dist", "docs.html"),
+  });
+  await expect(h1).toContainText("文書A");
+  await expect.poll(background).toBe("#131316");
+  await page.locator('.mdmark-bundle-side a[data-doc-path="B.md"]').click();
+  await expect(h1).toContainText("文書B");
+  await expect.poll(background).toBe("#ffffff");
+  await page.goBack();
+  await expect(h1).toContainText("文書A");
+  await expect.poll(background).toBe("#131316");
+  expect(opened.externalRequests()).toEqual([]);
+});
+
 // URL の # が文書と見出しを指すと、その見出しが画面に入る（正常シナリオ（URL が文書と見出しを指す））
 test("test_normal_when_url_points_heading", async ({
   builtRoot,
@@ -139,4 +184,110 @@ test("test_error_when_url_points_missing_document", async ({
     page.locator('.mdmark-bundle-side a[aria-current="page"]'),
   ).toHaveText("文書A");
   expect(opened.pageErrors()).toEqual([]);
+});
+
+// B のフロー図の C を指すノードを押すと C へ移り、戻るで B へ戻る（正常シナリオ（フロー図のノードのリンク））
+test("test_normal_when_flow_node_link", async ({
+  builtRoot,
+  tempDir,
+  page,
+}) => {
+  // 準備
+  const dir = await tempDir();
+  const flow = {
+    title: "行き先",
+    scope: "文書の行き来",
+    updated: "2026-11-05",
+    width: 260,
+    height: 152,
+    nodes: [
+      {
+        id: "to-c",
+        kind: "script",
+        x: 30,
+        y: 40,
+        w: 200,
+        h: 72,
+        name: "文書C を開く",
+        href: "C.md",
+      },
+    ],
+    wires: [],
+  };
+  await writeFiles(dir, {
+    ...DOCUMENTS,
+    "B.md": [
+      DOCUMENTS["B.md"],
+      "<!-- flow -->",
+      "",
+      "```json",
+      JSON.stringify(flow),
+      "```",
+      "",
+      "<!-- /flow -->",
+      "",
+    ].join("\n"),
+  });
+  expect((await runCli(builtRoot, ["build"], dir)).code).toBe(0);
+  const h1 = page.locator("article.mdmark h1");
+  const opened = await openStandalone(page, {
+    tempDir,
+    htmlFile: join(dir, "dist", "docs.html"),
+  });
+  // 実行・検証: 文書の一覧で B を選ぶ
+  await page.locator('.mdmark-bundle-side a[data-doc-path="B.md"]').click();
+  await expect(h1).toContainText("文書B");
+  // 実行・検証: B のフロー図の C を指すノードを押すと C が出る
+  await page
+    .locator('article [data-node="to-c"] a.mdmark-diagram-node-link')
+    .click();
+  await expect(h1).toContainText("文書C");
+  await expect(page).toHaveURL(/#\/C\.md$/);
+  // 実行・検証: 戻るで B が出る
+  await page.goBack();
+  await expect(h1).toContainText("文書B");
+  expect(opened.externalRequests()).toEqual([]);
+});
+
+// wide の範囲を、左の文書の一覧の列に重ねずに広げる（正常シナリオ（wide の範囲を持つ文書））
+test("test_normal_when_wide_range", async ({ builtRoot, tempDir, page }) => {
+  // 準備
+  const dir = await tempDir();
+  const table = [
+    "| 項目 | 1 月 | 2 月 | 3 月 | 4 月 | 5 月 | 6 月 | 備考 |",
+    "| --- | --- | --- | --- | --- | --- | --- | --- |",
+    "| 売上 | 1,200,000 | 1,350,000 | 1,410,000 | 1,280,000 | 1,520,000 | 1,610,000 | 前年比で増加した |",
+  ].join("\n");
+  await writeFiles(dir, {
+    "mdmark.config.yaml": [
+      "build:",
+      '  include: ["A.md", "B.md"]',
+      "  entry: A.md",
+      "  out: dist/docs.html",
+      "theme: mdmark-theme.css",
+      "",
+    ].join("\n"),
+    "mdmark-theme.css": ".mdmark { --mdmark-content-width: 640px; }\n",
+    "A.md": `# 文書A\n\n段落\n\n<!-- wide -->\n\n${table}\n\n<!-- /wide -->\n`,
+    "B.md": "# 文書B\n\nB の段落\n",
+  });
+  expect((await runCli(builtRoot, ["build"], dir)).code).toBe(0);
+  await page.setViewportSize({ width: 1280, height: 800 });
+  // 実行
+  await openStandalone(page, {
+    tempDir,
+    htmlFile: join(dir, "dist", "docs.html"),
+  });
+  // 検証
+  const range = page.locator("article .mdmark-wide-range");
+  const paragraph = page.locator("article p").first();
+  await expect
+    .poll(async () => (await range.boundingBox())?.width ?? 0)
+    .toBeGreaterThan((await paragraph.boundingBox())?.width ?? 0);
+  const side = await page.locator(".mdmark-bundle-side").boundingBox();
+  expect((await range.boundingBox())?.x ?? 0).toBeGreaterThanOrEqual(
+    (side?.x ?? 0) + (side?.width ?? 0) - 1,
+  );
+  await page.locator('.mdmark-bundle-side a[data-doc-path="B.md"]').click();
+  await expect(page.locator("article.mdmark h1")).toContainText("文書B");
 });

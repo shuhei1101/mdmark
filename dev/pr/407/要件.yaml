@@ -1,0 +1,16 @@
+use_cases:
+  - kind: single
+    scenario: dev/設計書/シナリオ/単一ユースケース/版を上げる.yaml
+    impact: run_only
+    detail: E2E が移行の手順を参照する場所を変えるため、release で流し直す
+    depends_on: []
+  - kind: single
+    scenario: dev/設計書/シナリオ/単一ユースケース/配布物をビルドして検査する.yaml
+    impact: run_only
+    detail: 型検査が単体テストの読み込み先を解決できずに落ちていたため、release で流し直す
+    depends_on: []
+scope_out:
+  - item: 一時フォルダに migrations/next/ を作るテスト（tests/integration/lib/build.test.ts・tests/unit/scripts/build.test.ts・tests/unit/scripts/migrations.test.ts・E2E『配布物をビルドして検査する』の異常シナリオ）
+    reason: リポジトリの migrations/ を参照しないため、release で移した後も影響を受けない
+    plan: none
+docs: []

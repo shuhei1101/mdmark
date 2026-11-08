@@ -1,9 +1,31 @@
 import { tmpdir } from "node:os";
 import { playwright } from "@vitest/browser-playwright";
 import { defineConfig } from "vitest/config";
+import manifest from "./package.json" with { type: "json" };
+import { clearGitLocalEnv } from "./tests/git-env.ts";
 import { fixturesPlugin } from "./tests/integration/fixtures-plugin.ts";
 
+/** Webview の部品（vscode/）とテストの道具（直下）が同じものを使う依存 */
+const WEBVIEW_DEPENDENCIES = [
+  "react",
+  "react-dom",
+  "msw",
+  "lucide-react",
+  "react-error-boundary",
+  "@radix-ui/react-slot",
+  "clsx",
+  "tailwind-merge",
+  "class-variance-authority",
+];
+
+// Git のフックなど GIT_DIR を持つ環境から呼んでも、一時のフォルダで git を呼ぶテストが作業中のリポジトリへ書き込まないようにする
+clearGitLocalEnv();
+
 export default defineConfig({
+  // 束ねていないアイコンを読む URL のバージョン（ビルドと同じく依存の lucide のバージョンを埋める）
+  define: {
+    __MDMARK_LUCIDE_VERSION__: JSON.stringify(manifest.dependencies.lucide),
+  },
   test: {
     projects: [
       {
@@ -17,10 +39,24 @@ export default defineConfig({
         },
       },
       {
-        // DOM を使う単体テストは Chromium の中で流す
+        // DOM を使う単体テストは Chromium の中で流す。MSW の Service Worker を Storybook と同じフォルダから配る
+        publicDir: ".storybook/public",
+        // Webview の部品（vscode/）とテストの道具（直下）が同じ React を使う
+        resolve: { dedupe: WEBVIEW_DEPENDENCIES },
+        // テストの途中で依存を見つけて読み直さないよう、Webview の依存を先に束ねる
+        optimizeDeps: {
+          include: [
+            ...WEBVIEW_DEPENDENCIES,
+            "react/jsx-runtime",
+            "react/jsx-dev-runtime",
+            "react-dom/client",
+            "msw/browser",
+            "@testing-library/react",
+          ],
+        },
         test: {
           name: "unit-browser",
-          include: ["tests/unit/**/*.browser.test.ts"],
+          include: ["tests/unit/**/*.browser.test.{ts,tsx}"],
           browser: {
             enabled: true,
             headless: true,
@@ -51,6 +87,8 @@ export default defineConfig({
           include: ["tests/integration/**/*.story.test.ts"],
           globalSetup: ["tests/integration/storybook-setup.ts"],
           testTimeout: 60_000,
+          // 各ファイルの beforeAll がストーリーを開いて Vite の依存の束ねを待つ（tests/integration/story.ts の WARM_UP_TIMEOUT_MS）
+          hookTimeout: 300_000,
         },
       },
       {

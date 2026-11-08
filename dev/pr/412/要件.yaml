@@ -1,0 +1,40 @@
+use_cases:
+  - kind: single
+    scenario: dev/設計書/シナリオ/単一ユースケース/図を拡大・縮小・移動する.yaml
+    impact: run_only
+    detail: リンクを持つノード・グラフの項目の上から始めたドラッグで図を動かし、グループのタイトルを上端に留めたまま手前に出し、mermaid の図を全体が収まる拡大率で出す動作を、シナリオどおりに戻す
+    depends_on: []
+  - kind: single
+    scenario: dev/設計書/シナリオ/単一ユースケース/図を描く.yaml
+    impact: run_only
+    detail: フロー図の凡例に、図に 2 種類以上ある線の種類だけが出ることを確かめる
+    depends_on: []
+  - kind: single
+    scenario: dev/設計書/シナリオ/単一ユースケース/図の要素のツールチップを見る.yaml
+    impact: run_only
+    detail: ER 図のテーブルのツールチップをテーブルの下に出す動作を、シナリオどおりに戻す
+    depends_on: []
+  - kind: composite
+    scenario: dev/設計書/シナリオ/複合ユースケース/固有の部品で図の文書を描いて確かめる.yaml
+    impact: run_only
+    detail: 箱の印にフォーカスして、その箱の入力・処理・出力のツールチップが箱の下に出ることを確かめる
+    depends_on: []
+  - kind: composite
+    scenario: dev/設計書/シナリオ/複合ユースケース/コードブロックのHTMLでチャートとヒントを読む.yaml
+    impact: run_only
+    detail: 範囲の css と ts を当てた文書で、フロー図の箱の hint が名前の上では出ず右上の印の上で出ることを確かめる（書き出した HTML では範囲の箱の色と開閉だけを確かめる）
+    depends_on: []
+scope_out:
+  - item: タッチでフロー図・シーケンス図をドラッグで動かす
+    reason: '要望に含まれない（ポインターのドラッグの退行だけを直す）。計画で #400 の後ろへ回した'
+    plan: '#357'
+  - item: フロー図の箱の種類 dm の表示名と凡例を汎用の名前にする
+    reason: '要望に含まれない（凡例の退行だけを直す）。計画で #400 の後ろへ回した'
+    plan: '#333'
+  - item: 脚注と先頭へ戻るボタンの E2E の fail
+    reason: 図の部品ではない別の事象
+    plan: '#402'
+  - item: Firefox の E2E の test_normal_when_resized（リサイズハンドルのドラッグ）と test_normal_when_chart_items（グラフの項目へのフォーカス）の fail
+    reason: '#400 の 8 件に含まれず、release/v0.10.0 でも Firefox だけで fail する別の事象'
+    plan: '#418'
+docs: []

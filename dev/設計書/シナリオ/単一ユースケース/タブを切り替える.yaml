@@ -177,7 +177,7 @@ scenarios:
       - 1 つ目のタブ群の上に、`group` の値が無いことを書いた書き方の警告がある
       - 1 つ目のタブ群は `Windows` を選び、2 つ目のタブ群は `macOS` を選んだまま
     test: test_error_when_empty_group
-  - name: 異常シナリオ（知らないタブの指定）
+  - name: 正常シナリオ（知らないタブの指定）
     setup:
       - name: mdmark を読むページ
         description: 正常シナリオと同じ
@@ -192,15 +192,15 @@ scenarios:
         participant P as 使う側のページ
         participant M as mdmark
         P->>M: 設定と Markdown を渡して描かせる
-        M->>M: 知らないキーと指定がある
-        M-->>P: 書き方の警告と、読めた指定だけを当てたタブ群を描く
+        M->>M: 知らないキーと指定を読み飛ばす
+        M-->>P: 読めた指定だけを当てたタブ群を描く
         U->>P: 1 つ目のタブ群の Windows のタブを押す
         P-->>U: 1 つ目のタブ群だけ Windows の中身を表示
     expected:
-      - 1 つ目のタブ群の上に `grop=` が使えないキーであること、2 つ目のタブ群の上に `fold` が使えない指定であることを書いた書き方の警告がある
+      - どちらのタブ群の上にも書き方の警告が無い
       - どちらのタブ群もタブに描かれている
       - 1 つ目のタブ群は `Windows` を選び、`group` を持つ 2 つ目のタブ群は `macOS` を選んだまま
-    test: test_error_when_unknown_option
+    test: test_normal_when_unknown_option
   - name: 正常シナリオ（折りたたみに入れたタブ）
     setup:
       - name: mdmark を読むページ
@@ -247,6 +247,74 @@ scenarios:
       - 範囲の上に、`closed` と `open` を同時に書けないことを書いた書き方の警告がある
       - タブ群は `closed` を当てた閉じた折りたたみに入り、見出しが `タブ（macOS・Windows）`
     test: test_error_when_closed_and_open
+  - name: 正常シナリオ（入れ子のタブ）
+    setup:
+      - name: mdmark を読むページ
+        description: 正常シナリオと同じ
+      - name: 入れ子のタブを持つ Markdown
+        description: '外側の `<!-- tabs -->` 〜 `<!-- /tabs -->` で `### macOS`・`### Windows` を囲み、`### macOS` の下に内側の `<!-- tabs -->` 〜 `<!-- /tabs -->` で `#### zsh`・`#### bash` を囲んだ文書'
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を渡して描かせる
+        M->>M: タブのマーカーの入れ子を数え、開きと閉じを対応させる
+        M-->>P: 外側のタブの中に内側のタブを描く
+        U->>P: 内側の bash のタブを押す
+        P-->>U: bash の中身を表示
+        U->>P: 外側の Windows のタブを押す
+        P-->>U: Windows の中身を表示
+    expected:
+      - 外側のタブが `macOS`・`Windows` の 2 つで、`macOS` の中に `zsh`・`bash` の 2 つのタブがある
+      - 内側の `bash` を押した後も、外側の `macOS` の `aria-selected` が `true` のまま
+      - 外側の `Windows` を押した後、`Windows` の段落だけが表示されている
+      - 書き方の警告が無く、タブのマーカーの文字が出ていない
+    test: test_normal_when_nested
+  - name: 正常シナリオ（太字のタブ名）
+    setup:
+      - name: mdmark を読むページ
+        description: 正常シナリオと同じ
+      - name: 太字の見出しを持つ Markdown
+        description: '`<!-- tabs -->` 〜 `<!-- /tabs -->` で `### **案 A**`・`### 案 B` の 2 つの見出しを囲んだ文書'
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を渡して描かせる
+        M-->>P: 見出しの太字を保ったタブ名のタブを描く
+        P-->>U: 文書を表示
+    expected:
+      - '`案 A` のタブのボタンの中のタブ名が `strong` で強調され、`案 B` のタブ名は強調されていない'
+      - タブ名に `**` の文字が出ていない
+      - 強調したタブ名の見た目が、デザイントークンの CSS 変数で上書きできる
+    test: test_normal_when_bold_tab_name
+  - name: 異常シナリオ（入れ子の閉じが足りない）
+    setup:
+      - name: mdmark を読むページ
+        description: 正常シナリオと同じ
+      - name: 閉じの足りない入れ子を持つ Markdown
+        description: 正常シナリオ（入れ子のタブ）の文書から、内側の `<!-- /tabs -->` を削除した文書
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を渡して描かせる
+        M->>M: 入れ子を数え、閉じの無い外側の開きを見つける
+        M-->>P: 書き方の警告と、外側の範囲の中身をタブにせずそのまま描く
+        P-->>U: 文書を表示
+    expected:
+      - 外側のタブの開きの位置に書き方の警告があり、閉じが無いことが記載されている
+      - 外側の範囲の中のタブのマーカーは全てタブにならず、4 つの見出しと中身の段落が全て表示されている
+    test: test_error_when_nested_unclosed
 lead: '文書を書く人が `<!-- tabs -->` 〜 `<!-- /tabs -->` で見出しごとの節を囲むと、mdmark が見出しの文字をタブ名にしたタブに描き、読む人がタブを切り替えて 1 つの中身を読む。`<!-- tabs: group=名前 -->` で同じ組にしたタブは選択が揃い、選んだタブ名を覚えて読み直しても同じタブで開く。`closed`・`open` を書いたタブは、見出し付きの折りたたみに入る。'
 issue: 4
 primary_actor: 文書を読む人
@@ -257,6 +325,6 @@ trigger: 読む人が、タブの印を持つ文書を描いたページでタ�
 preconditions:
   - ページが版を固定した URL で mdmark の JavaScript と CSS を読み、`mount` で文書を描いている
   - タブの機能（`tabs`）がオン（既定）
-success_guarantee: 範囲の中で最初に出る見出しの階層でタブに区切られ、選んだタブの中身だけが表示される。`group` を持つタブは、同じページの同じ `group` で同じタブ名を持つタブも同じタブ名に切り替わり、読み直しても選んだタブ名のタブで開く。
+success_guarantee: 範囲の中で最初に出る見出しの階層でタブに区切られ、選んだタブの中身だけが表示される。入れ子のタブは、マーカーの開きと閉じが対応して外側のタブの中に描かれる。`group` を持つタブは、同じページの同じ `group` で同じタブ名を持つタブも同じタブ名に切り替わり、読み直しても選んだタブ名のタブで開く。
 minimal_guarantee: タブにできない範囲は、中身をそのまま描き、範囲の上に書き方の警告が出る。選んだタブを覚えられないときも、揃える動きと切り替えは続く。
 test_file: tests/e2e/単一ユースケース/タブを切り替える.spec.ts

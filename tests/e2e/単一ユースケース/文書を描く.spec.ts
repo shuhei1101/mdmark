@@ -124,7 +124,7 @@ test("test_normal_when_script_in_markdown", async ({ page }) => {
 
 // 用語 `ワークスペース` を持ち、文書 `api`（題 `API`）の `related` が描く文書 `arch` を指す索引
 const INDEX: MdmarkIndex = {
-  schema: 1,
+  schema: 2,
   docs: [
     { id: "arch", path: "設計/arch.md", title: "アーキテクチャ" },
     { id: "api", path: "api.md", title: "API", related: ["arch"] },

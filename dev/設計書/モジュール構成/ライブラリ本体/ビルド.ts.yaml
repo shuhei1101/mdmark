@@ -1,4 +1,4 @@
-title: "ライブラリ本体 / ビルド"
+title: ライブラリ本体 / ビルド
 lead: '`npm run build` が実行するビルドのスクリプト。版を決めて検査し、esbuild で `dist/` を書き、配布ファイルのサイズを検査する。Node.js v24 が型を消して `node scripts/build.ts` で直接実行する。'
 directory: |-
   ```tree
@@ -17,8 +17,8 @@ constants:
   - name: MAX_DIST_FILE_BYTES
     title: 配布ファイル 1 つの上限
     container: scripts/build.ts
-    summary: 非機能要件の配布ファイル 1 つの上限（440KB）
-    value: 440 * 1024
+    summary: 非機能要件の配布ファイル 1 つの上限（624KB）
+    value: 624 * 1024
     refs:
       - dev/設計書/非機能要件/非機能要件#requirements[配布ファイル 1 つのサイズ]
   - name: LICENSES_FILE
@@ -29,7 +29,7 @@ constants:
   - name: postcssStubPlugin
     title: postcss の差し替え
     container: scripts/bundle.ts
-    summary: 'esbuild のプラグイン。`postcss` の import を、`parse` を呼ぶと例外を投げる空の部品に差し替える'
+    summary: esbuild のプラグイン。`postcss` の import を、`parse` を呼ぶと例外を投げる空の部品に差し替える
     value: '`{ name: "stub-postcss", setup }`。`setup` は `onResolve({ filter: /^postcss$/ })` で名前空間 `stub` に向け、`onLoad` で `module.exports = { parse() { throw new Error("postcss は配布物に含めない") } }` を返す'
     reason: 'sanitize-html は `parseStyleAttributes: false` のとき postcss を呼ばないが、import はするため、束ねると配布物が大きくなる'
   - name: BROWSER_TARGETS
@@ -53,7 +53,7 @@ constants:
     title: 点検する Schema
     container: scripts/migrations.ts
     summary: 変えたら移行の手順を求める `schemas/` のファイル
-    value: '`["mdmark.config.schema.json", "mdmark.index.schema.json"]`'
+    value: '`["mdmark.config.schema.json", "mdmark.index.schema.json", "mdmark.settings.schema.json", "mdmark.templates.schema.json"]`'
   - name: BASELINE_ENTRIES
     title: 下限と照らす入口
     container: scripts/baseline.ts
@@ -81,17 +81,17 @@ functions:
     scope: public
     is_async: true
     summary: 前回の `dist/` を消してから、版を決めて検査し、移行の手順を点検し、`dist/` を書いてサイズを検査し、プラグインをビルドし、終了コードを返す
-    side_effects: '最初に `dist/` を消してから書き直す。失敗したとき（版の書式の誤り・`version.ini` を読めない・esbuild の失敗・上限超過・対応ブラウザの下限に無い API）は `dist/` を残さず、標準エラーに理由を出す'
+    side_effects: 最初に `dist/` を消してから書き直す。失敗したとき（版の書式の誤り・`version.ini` を読めない・esbuild の失敗・上限超過・対応ブラウザの下限に無い API）は `dist/` を残さず、標準エラーに理由を出す
     args:
       - name: argv
         type: string[]
         required: false
         description: コマンドの引数（`--version v{版}` を持てる）
       - name: options
-        type: '{ root: string; maxBytes: number; guideContextLimit?: number }'
+        type: '{ root: string; maxBytes: number }'
         required: false
-        default: リポジトリの直下と `MAX_DIST_FILE_BYTES`。`guideContextLimit` は省くと `GUIDE_CONTEXT_LIMIT`
-        description: 作業ツリーの場所、配布ファイルの上限、使い方集の索引の文の文字数の上限（テストで差し替える）
+        default: リポジトリの直下と `MAX_DIST_FILE_BYTES`
+        description: 作業ツリーの場所と配布ファイルの上限（テストで差し替える）
     returns:
       type: Promise<0 | 1>
       description: 成功は 0、版の書式の誤り・`version.ini` を読めない・esbuild の失敗・上限超過・対応ブラウザの下限に無い API は 1
@@ -138,12 +138,12 @@ functions:
         condition: '`migrations/next/steps.yaml` の手順が `op` を持たない'
         mock: 一時フォルダに `src/` と `version.ini` と `migrations/` を置く
         expected: 1 を返し、`dist/` が無く、標準エラーに `migrations/next/steps.yaml` が出る
-      - name: test_main_when_guide_index_too_long
+      - name: test_main_when_guide_index_invalid
         case: 異常
-        summary: 使い方集の索引が上限を超えると dist/ とプラグインの生成物を残さずに終わる
-        condition: '`guideContextLimit` が 1'
-        mock: 一時フォルダに `src/`（`src/plugin/` を含む）・`version.ini`・`guide/index.yaml` と指すページ・`plugin/` の定義を置き、作業ツリーの `node_modules` へのリンクと `tsconfig.json`・`tsconfig.dist.json` を置く
-        expected: 1 を返し、`dist/` と `plugin/scripts` が無く、標準エラーに索引の文字数と上限が出る
+        summary: 使い方集の索引が無いページを指すと dist/ とプラグインの生成物を残さずに終わる
+        condition: '`guide/index.yaml` の行が無いページを指す'
+        mock: 一時フォルダに `src/`（`src/plugin/` を含む）・`version.ini`・`guide/index.yaml`・`plugin/` の定義を置き、作業ツリーの `node_modules` へのリンクと `tsconfig.json`・`tsconfig.dist.json` を置く
+        expected: 1 を返し、`dist/` と `plugin/scripts` が無く、標準エラーに `guide/index.yaml:guides[0].page` が出る
       - name: test_main_when_api_missing_in_baseline_browser
         case: 異常
         summary: 対応ブラウザの下限に無い API を確かめずに使うと dist/ を消して終わる
@@ -228,7 +228,6 @@ functions:
     callees:
       - '#functions[writeThirdPartyLicenses]'
       - '#functions[emitDeclarations]'
-      - '#functions[assertNoScriptClose]'
     unit_tests:
       - name: test_build_dist
         case: 正常
@@ -262,7 +261,7 @@ functions:
         expected: '`dist/THIRD_PARTY_LICENSES.txt` にそのパッケージの名前と本文がある'
     notes:
       CLI と起動の処理の束ね方: '`dist/viewer.js` は `dist/index.js` と同じ設定（対応ブラウザの `target`・`postcssStubPlugin`・版の `define`）で、ライブラリ本体を含めて 1 つに束ねる。`dist/cli.js` は `platform: node`・`target: node24`・`format: esm`・`banner.js` に `#!/usr/bin/env node` で束ね、`yaml` と `esbuild` を `external` にして `package.json` の `dependencies` から読む。どちらも `UNSIZED_OUTPUTS` に入れ、サイズを検めない'
-      起動の処理の script の閉じ: '`dist/viewer.js` は書き出した HTML の `<script type="module">` にそのまま置くため、書いた後に `assertNoScriptClose` で検める。esbuild は文字列・テンプレート文字列の `</script` を大文字と小文字によらず `<\/script` に替えるため（外部ライブラリ『esbuild』の動作確認）、この検査は esbuild の振る舞いが変わったときの備え'
+      起動の処理の script の閉じ: '`dist/viewer.js` は `startViewer` を export する ES モジュールで、書き出した HTML にそのまま置かない。書き出しのとき CLI の `bundleViewer` が埋めるモジュールと束ね直し、`</script` と `<!--` の並びを替える'
   - name: writeThirdPartyLicenses
     title: 束ねた依存のライセンスを書く
     container: scripts/build.ts
@@ -368,45 +367,7 @@ functions:
         condition: '`src/index.ts` が `export const x: number = "a"` を持つ'
         mock: なし
         expected: メッセージに `tsc` のエラーを含む例外
-  - name: assertNoScriptClose
-    title: script を閉じる並びが無いことを検める
-    container: scripts/build.ts
-    summary: コードに `</script` の並び（大文字と小文字を区別しない）があれば例外を投げる
-    kind: 関数
-    scope: public
-    args:
-      - name: code
-        type: string
-        required: true
-        description: 検めるコード
-      - name: file
-        type: string
-        required: true
-        description: 例外のメッセージに出すファイル名
-    returns:
-      type: void
-      description: なし
-    exceptions:
-      - name: Error
-        condition: '`code` に `</script` の並び（大文字と小文字を区別しない）がある'
-        message: '{file} に </script の並びがあり、書き出した HTML の script 要素が閉じる'
-    unit_tests:
-      - name: test_assert_no_script_close
-        case: 正常
-        summary: esbuild が替えた形は通す
-        condition: '`code` が `const t="<\/SCRIPT>"`'
-        mock: なし
-        expected: 例外を投げない
-      - name: test_assert_no_script_close_when_found
-        case: 異常
-        summary: 大文字を含む </script の並びを拒む
-        condition: '`code` が `x</SCRIPT>y`、`file` が `dist/viewer.js`'
-        mock: なし
-        expected: '`Error` を投げ、メッセージに `dist/viewer.js` と `</script` が入る'
-        exception: Error
-    status: planned
-    introduced:
-      pr: 32
+
   - name: latestVersionTag
     title: 最新の版のタグを引く
     container: scripts/migrations.ts
@@ -445,7 +406,7 @@ functions:
     title: 移行の手順を点検する
     container: scripts/migrations.ts
     summary: スキーマを最新の版のタグから変えたのに移行の手順も手順なしの一覧の合う行も無いこと、release のビルドで出していない版の手順が残ること、手順の形の誤りを、直し方つきの文で返す
-    description: '順に、`migrations/` の全ての `steps.yaml`（`next` と `v{版}`）を `validateSteps` で検め、`call` のスクリプトがあることと `no-steps.yaml` の形を確かめる → `latestVersionTag` が `undefined` か、比べる版がタグより古ければそこで終える → 比べる版がタグと同じなら `next`、新しければ `v{比べる版}` を見る版にし、新しいときは `migrations/next/` と `version: next` の行が残っていれば誤りにする → `CHECKED_SCHEMAS` ごとに `git show {タグ}:schemas/{名前}` と今の中身を比べ、違うものは見る版の `steps.yaml` か、見る版・その Schema・今の中身の SHA-256（`node:crypto`）の合う行があれば通す。タグに無い Schema は比べない'
+    description: '順に、`migrations/` の全ての `steps.yaml`（`next` と `v{版}`）を `validateSteps` で検め、`call` のスクリプトがあることと `no-steps.yaml` の形を確かめる → `latestVersionTag` が `undefined` か、比べる版がタグより古ければそこで終える → 比べる版がタグと同じなら `next`、新しければ `v{比べる版}` を見る版にし、新しいときは `migrations/next/` と `version: next` の行が残っていれば誤りにする → `CHECKED_SCHEMAS` ごとに `git show {タグ}:schemas/{名前}` と今の中身を比べ、違うものは見る版の `steps.yaml` か、見る版・その Schema・今の中身の SHA-256（`node:crypto`）の合う行があれば通す。タグに無い Schema と作業ツリーに無い Schema は比べない'
     kind: 関数
     scope: public
     is_async: true

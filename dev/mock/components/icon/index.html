@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <!-- viewport: スマホ幅で等倍に表示する -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- color-scheme: 明るい配色とダークの両方を持つことをブラウザへ伝える -->
+  <meta name="color-scheme" content="light dark">
+  <title>アイコン | mdmark の部品のモック</title>
+  <!-- 本文の規則とモック専用の操作列（#16 で共有するアセット） -->
+  <link rel="stylesheet" href="../../refs/16/assets/sample.css">
+  <!-- 採用スタイル本体の変数の値 -->
+  <link rel="stylesheet" href="../../assets/style.css">
+  <!-- 拡張記法の規則とカタログの並べ方（番号で共有するアセット） -->
+  <link rel="stylesheet" href="../../refs/19/assets/syntax.css">
+  <link rel="stylesheet" href="../../refs/19/assets/catalog.css">
+  <!-- 色のプリセット（#263 で共有するアセット） -->
+  <link rel="stylesheet" href="../../refs/263/assets/colors.css">
+  <!-- 新しい記法の規則（#307 で共有するアセット） -->
+  <link rel="stylesheet" href="../../refs/307/assets/notations.css">
+  <!-- 配色の切り替え -->
+  <script src="../../refs/16/assets/sample.js" defer></script>
+  <!-- 拡張記法の操作（並べ替え・開閉） -->
+  <script src="../../refs/19/assets/syntax.js" defer></script>
+  <!-- RAW のボタンの切り替え（#307 で共有するアセット） -->
+  <script src="../../refs/307/assets/notations.js" defer></script>
+</head>
+<body>
+  <!-- モック専用の操作列: 配色の切り替え -->
+  <div class="mock-bar">
+    <!-- [data-scheme-set]: sample.js が押されたボタンの値を html の data-scheme に当てる -->
+    <div class="mock-bar-group" role="group" aria-label="配色">
+      <button class="mock-bar-item" type="button" data-scheme-set="light" aria-pressed="false">明るい配色</button>
+      <button class="mock-bar-item" type="button" data-scheme-set="dark" aria-pressed="false">ダーク</button>
+    </div>
+  </div>
+
+  <main class="host">
+    <div class="catalog">
+      <h1 class="catalog-title">アイコン</h1>
+      <!-- 見出しと本文（束ねたアイコン） -->
+      <section aria-labelledby="state-heading">
+        <h2 class="catalog-label" id="state-heading">見出しと本文（束ねたアイコン）</h2>
+        <article class="mdmark">
+<h2><svg class="mdmark-inline-icon" viewBox="0 0 24 24" aria-hidden="true" data-icon="flag"><path d="M4 22V4"/><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/></svg>はじめに</h2>
+<p><svg class="mdmark-inline-icon" viewBox="0 0 24 24" aria-hidden="true" data-icon="check"><path d="M20 6 9 17l-5-5"/></svg> の付いた項目は確認済みです。</p>
+        </article>
+      </section>
+
+      <!-- 束ねていない名前（使う文書でだけ読んで描いた後） -->
+      <section aria-labelledby="state-unbundled">
+        <h2 class="catalog-label" id="state-unbundled">束ねていない名前（使う文書でだけ読んで描いた後）</h2>
+        <article class="mdmark">
+<h3><svg class="mdmark-inline-icon" viewBox="0 0 24 24" aria-hidden="true" data-icon="sailboat"><path d="M22 18H2a4 4 0 0 0 4 4h12a4 4 0 0 0 4-4Z"/><path d="M21 14 10 2 3 14h18Z"/><path d="M10 2v16"/></svg>出航の準備</h3>
+<p>停泊のときは <svg class="mdmark-inline-icon" viewBox="0 0 24 24" aria-hidden="true" data-icon="anchor"><path d="M12 22V8"/><path d="M5 12H2a10 10 0 0 0 20 0h-3"/><circle cx="12" cy="5" r="3"/></svg> の手順に従います。</p>
+        </article>
+      </section>
+
+      <!-- 名前の書き方が誤っている -->
+      <section aria-labelledby="state-invalid">
+        <h2 class="catalog-label" id="state-invalid">名前の書き方が誤っている</h2>
+        <article class="mdmark">
+<div class="mdmark-syntax-warning">
+  <p class="mdmark-syntax-warning-title"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg>書き方の警告</p>
+  <p><code>icon:Rocket!</code> の名前は使えません。Lucide の名前は英小文字・数字・<code>-</code> で書きます。行内のコードのまま描いています。</p>
+</div>
+<p>完了したら <code>icon:Rocket!</code> を付けます。</p>
+        </article>
+      </section>
+
+      <!-- Lucide に無い名前 -->
+      <section aria-labelledby="state-missing">
+        <h2 class="catalog-label" id="state-missing">Lucide に無い名前</h2>
+        <article class="mdmark">
+<div class="mdmark-syntax-warning">
+  <p class="mdmark-syntax-warning-title"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg>書き方の警告</p>
+  <p><code>icon:no-such-icon</code> は Lucide に無いアイコンの名前です。行内のコードのまま描いています。</p>
+</div>
+<p><code>icon:no-such-icon</code> と <svg class="mdmark-inline-icon" viewBox="0 0 24 24" aria-hidden="true" data-icon="anchor"><path d="M12 22V8"/><path d="M5 12H2a10 10 0 0 0 20 0h-3"/><circle cx="12" cy="5" r="3"/></svg> を並べた段落です。</p>
+        </article>
+      </section>
+
+      <!-- Lucide を読めない（文書に知らせの枠を 1 つ） -->
+      <section aria-labelledby="state-unavailable">
+        <h2 class="catalog-label" id="state-unavailable">Lucide を読めない（文書に知らせの枠を 1 つ）</h2>
+        <article class="mdmark">
+<div class="mdmark-notice" role="status">
+  <strong class="mdmark-notice-title">アイコンを表示できません</strong>
+  <p>アイコンのライブラリ（Lucide）を読み込めませんでした。アイコンの場所は書いたとおりの文字で表示しています。</p>
+</div>
+<h3><code>icon:sailboat</code> 出航の準備</h3>
+<p>停泊のときは <code>icon:anchor</code> の手順に従います。</p>
+        </article>
+      </section>
+
+      <!-- 書き方を見せる（打ち消し） -->
+      <section aria-labelledby="state-escaped">
+        <h2 class="catalog-label" id="state-escaped">書き方を見せる（打ち消し）</h2>
+        <article class="mdmark">
+<p>アイコンは <code>icon:check</code> のように書きます。</p>
+        </article>
+      </section>
+
+    </div>
+  </main>
+</body>
+</html>

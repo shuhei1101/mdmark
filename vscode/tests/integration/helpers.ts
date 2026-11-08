@@ -1,16 +1,29 @@
 import * as assert from "node:assert";
 import { execFile } from "node:child_process";
-import { mkdir, readFile, rename, rm, writeFile } from "node:fs/promises";
+import {
+  mkdir,
+  readdir,
+  readFile,
+  rename,
+  rm,
+  stat,
+  writeFile,
+} from "node:fs/promises";
 import { createServer, type Server } from "node:http";
 import { createRequire } from "node:module";
 import type { AddressInfo } from "node:net";
 import { dirname, join, resolve } from "node:path";
 import { promisify } from "node:util";
 import * as vscode from "vscode";
-import type { HostMessage, WebviewMessage } from "../../src/messages.ts";
+import type {
+  AxeViolation,
+  HostMessage,
+  WebviewMessage,
+} from "../../src/messages.ts";
+import type { TagRequestTiming } from "./stub-server.ts";
 
 /** 拡張機能の ID */
-export const EXTENSION_ID = "ShuheiNishikawa.mdmark";
+export const EXTENSION_ID = "ShuheiNishikawa.mdmark-vscode";
 
 /** リポジトリの直下（`vscode/out/test/` の 3 つ上） */
 export const REPO_ROOT = resolve(import.meta.dirname, "..", "..", "..");
@@ -30,7 +43,11 @@ export function distPath(
 
 /** 拡張機能が `activate` で返す、テストのときだけの口 */
 type TestApi = {
-  inspectPreview: (selector: string) => Promise<InspectedElement[]>;
+  inspectPreview: (
+    selector: string,
+    play?: boolean,
+  ) => Promise<InspectedElement[]>;
+  auditPreview: () => Promise<AxeViolation[]>;
 };
 
 /** Webview の要素 1 つの様子 */
@@ -42,6 +59,8 @@ export type InspectedElement = {
   naturalWidth?: number;
   top: number;
   height: number;
+  currentTime?: number;
+  readyState?: number;
 };
 
 /** 開いたパネルと、拡張機能と Webview の間で行き来したメッセージ */
@@ -109,6 +128,27 @@ export function installRecorder(): void {
   };
 }
 
+/** Webview に足す、テストの操作の中継のスクリプト。`testClick` はセレクタに当たる最初の要素を押し、`testDrag` はその要素の中央で押して横に `dx` 動かして離し、続く `click` を送る（合成のポインターは捕捉できないため、`setPointerCapture` を何もしない関数にする） */
+const RELAY_SCRIPT = [
+  'window.addEventListener("message", (event) => {',
+  "  const data = event.data;",
+  '  if (data?.type === "testClick") { document.querySelector(data.selector)?.click(); }',
+  '  if (data?.type === "testDrag") {',
+  "    const element = document.querySelector(data.selector);",
+  "    if (!element) { return; }",
+  "    Element.prototype.setPointerCapture = () => {};",
+  "    const rect = element.getBoundingClientRect();",
+  "    const x = rect.left + rect.width / 2;",
+  "    const y = rect.top + rect.height / 2;",
+  "    const point = { bubbles: true, cancelable: true, pointerId: 1, button: 0, clientY: y };",
+  '    element.dispatchEvent(new PointerEvent("pointerdown", { ...point, clientX: x }));',
+  '    element.dispatchEvent(new PointerEvent("pointermove", { ...point, clientX: x + data.dx }));',
+  '    element.dispatchEvent(new PointerEvent("pointerup", { ...point, clientX: x + data.dx }));',
+  '    element.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true }));',
+  "  }",
+  "});",
+].join("");
+
 /** `testClick` のメッセージを受けたら、セレクタに当たる最初の要素を押す（クリックの代わり）スクリプトを、Webview の HTML に足す。HTML を入れるたびに、その HTML の nonce を付けて足す */
 function injectClickRelay(webview: vscode.Webview): void {
   let descriptor: PropertyDescriptor | undefined;
@@ -130,7 +170,7 @@ function injectClickRelay(webview: vscode.Webview): void {
     set: (value: string) => {
       const nonce = /<script[^>]*nonce="([^"]*)"/.exec(value)?.[1];
       const relay = nonce
-        ? `<script nonce="${nonce}">window.addEventListener("message", (event) => { if (event.data?.type === "testClick") { document.querySelector(event.data.selector)?.click(); } });</script>`
+        ? `<script nonce="${nonce}">${RELAY_SCRIPT}</script>`
         : "";
       set.call(
         webview,
@@ -145,6 +185,15 @@ function injectClickRelay(webview: vscode.Webview): void {
 /** Webview の要素を押す（`injectClickRelay` が足したスクリプトが受ける） */
 export function clickInPreview(record: RecordedPanel, selector: string): void {
   void record.postRaw({ type: "testClick", selector });
+}
+
+/** Webview の要素の中央で押したまま横に `dx` 動かして離す（`injectClickRelay` が足したスクリプトが受ける） */
+export function dragInPreview(
+  record: RecordedPanel,
+  selector: string,
+  dx: number,
+): void {
+  void record.postRaw({ type: "testDrag", selector, dx });
 }
 
 /** Webview から `message` が届いたことにして、拡張機能の受け取りを呼ぶ */
@@ -217,9 +266,17 @@ export async function api(): Promise<TestApi> {
   return (await extension.activate()) as TestApi;
 }
 
-/** Webview の要素を調べる */
-export async function inspect(selector: string): Promise<InspectedElement[]> {
-  return (await api()).inspectPreview(selector);
+/** Webview の要素を調べる。`play` のときは、当たった動画・音声を再生してから調べる */
+export async function inspect(
+  selector: string,
+  play = false,
+): Promise<InspectedElement[]> {
+  return (await api()).inspectPreview(selector, play);
+}
+
+/** パネルの部品（状態の表示・帯）を axe で検査し、違反を返す（描いた文書は検査しない） */
+export async function audit(): Promise<AxeViolation[]> {
+  return (await api()).auditPreview();
 }
 
 /** `rendered` を `count` 回受けるまで待つ */
@@ -326,7 +383,56 @@ export const stub = {
   async clear(): Promise<void> {
     await fetch(`${STUB_ORIGIN}/requests`, { method: "DELETE" });
   },
+  /** `/tags` の要求ごとの、受けた時刻と接続を閉じられた時刻 */
+  async tagRequests(): Promise<TagRequestTiming[]> {
+    return (await fetch(`${STUB_ORIGIN}/tag-requests`)).json() as Promise<
+      TagRequestTiming[]
+    >;
+  },
 };
+
+/** 拡張機能の出力チャネル `mdmark` を VS Code が書くログファイル（`{ユーザーデータ}/logs/{起動}/window*\/exthost/{拡張機能の ID}/mdmark.log`）のうち、最後に書かれたもの。見つからなければ `undefined` */
+async function extensionLogPath(): Promise<string | undefined> {
+  const userDataDir = process.env.MDMARK_TEST_USER_DATA_DIR;
+  if (userDataDir === undefined) {
+    return undefined;
+  }
+  const logsDir = join(userDataDir, "logs");
+  const entries = await readdir(logsDir, { recursive: true }).catch(
+    () => [] as string[],
+  );
+  let latest: { path: string; mtime: number } | undefined;
+  for (const entry of entries) {
+    if (!entry.endsWith(join("exthost", EXTENSION_ID, "mdmark.log"))) {
+      continue;
+    }
+    const path = join(logsDir, entry);
+    const { mtimeMs } = await stat(path);
+    if (latest === undefined || mtimeMs > latest.mtime) {
+      latest = { path, mtime: mtimeMs };
+    }
+  }
+  return latest?.path;
+}
+
+/** 拡張機能のログの今の長さ（バイト）。`extensionLogSince` に渡して、これより後に書かれた分を読む */
+export async function extensionLogSize(): Promise<number> {
+  const path = await extensionLogPath();
+  return path === undefined ? 0 : (await stat(path)).size;
+}
+
+/** 拡張機能のログのうち、`offset` バイトより後に書かれた行。ログファイルが無ければその旨を返す */
+export async function extensionLogSince(offset: number): Promise<string[]> {
+  const path = await extensionLogPath();
+  if (path === undefined) {
+    return ["（拡張機能のログファイルが見つからない）"];
+  }
+  return (await readFile(path))
+    .subarray(offset)
+    .toString("utf8")
+    .split("\n")
+    .filter((line) => line !== "");
+}
 
 /** 配布物の要求だけ（タグ一覧を除く） */
 export async function distRequests(): Promise<string[]> {
@@ -347,6 +453,17 @@ export async function sampleFlowJson(): Promise<string> {
   const match = /```json\n([\s\S]*?)\n```/.exec(sample);
   assert.ok(match?.[1], "見本の定義が無い");
   return match[1];
+}
+
+/** 見本の操作できる部品の範囲（`docs/使い方/図を描く/見本.md` の `<!-- param -->` から `<!-- /param -->` まで）を持つ Markdown */
+export async function paramMarkdown(): Promise<string> {
+  const sample = await readFile(
+    join(REPO_ROOT, "docs", "使い方", "図を描く", "見本.md"),
+    "utf8",
+  );
+  const range = /<!-- param -->[\s\S]*?<!-- \/param -->/.exec(sample)?.[0];
+  assert.ok(range, "見本に操作できる部品の範囲が無い");
+  return ["# 部品", "", range, ""].join("\n");
 }
 
 /** 見出し・表・注意書き・流れ図を持つ Markdown */

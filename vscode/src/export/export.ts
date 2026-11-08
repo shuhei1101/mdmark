@@ -1,15 +1,12 @@
 import { readFile } from "node:fs/promises";
+import { homedir } from "node:os";
 import { basename, dirname } from "node:path";
 import { pathToFileURL } from "node:url";
 import { env, type TextDocument, Uri, window, workspace } from "vscode";
 import type { PreviewConfig } from "../config.ts";
-import {
-  applyColorTheme,
-  loadConfig,
-  resolveConfigPath,
-  resolveLibraries,
-} from "../config.ts";
+import { applyColorTheme, isFile, loadConfig } from "../config.ts";
 import { type ExtensionDeps, LAST_VERSION_KEY } from "../deps.ts";
+import { bundleExtensions } from "../extensions-bundle.ts";
 import { distUrl } from "../preview/html.ts";
 import { readSettings } from "../settings.ts";
 import {
@@ -18,6 +15,7 @@ import {
   TAGS_TIMEOUT_MS,
 } from "../version.ts";
 import { baseDirOf } from "../workspace.ts";
+import { embedLocalLibraries } from "./embed.ts";
 import { buildExportHtml, resolveExportPath } from "./html.ts";
 import { writeFileAtomically } from "./write.ts";
 
@@ -27,56 +25,107 @@ export type ExportMode = "export" | "browser" | "print";
 /** 書き出した通知のボタン */
 const OPEN_LABEL = "ブラウザで開く";
 
-/** 設定ファイルを読み、`libraries` の相対パスを `file:` の URL に直す。読めない・無いときは設定なし */
+/** 設定を重ねて読み、相対パスの `libraries`・`html-scripts.url`・`mermaid.url` を `data:` の URL で埋め、`theme` の CSS を読み、`extensions` を束ねる。読めない設定ファイルは重ねずに残りで書き出す */
 async function readExportConfig(options: {
   document: TextDocument;
   configPath: string;
   deps: ExtensionDeps;
-}): Promise<PreviewConfig> {
+}): Promise<{
+  config: PreviewConfig;
+  themeCss: string | undefined;
+  extensions: string[];
+}> {
   const { document, configPath, deps } = options;
-  const path = resolveConfigPath({
-    configPath,
-    baseDir: baseDirOf(document.uri),
-  });
+  const { log } = deps;
+  const markdownPath = document.uri.fsPath;
   let load: Awaited<ReturnType<typeof loadConfig>>;
   try {
     load = await loadConfig({
-      path,
+      cwd: dirname(markdownPath),
+      configPath,
+      baseDir: baseDirOf(document.uri),
+      purpose: "export",
+      env: process.env,
+      home: homedir(),
       readFile: (target) => readFile(target, "utf8"),
+      isFile,
     });
   } catch (error) {
-    // 読めない設定ファイルでは、設定なしで書き出す
-    deps.log.error(
+    // 開けない設定ファイルでは、設定なしで書き出す
+    log.error(
       "設定ファイルを開けない",
-      path,
+      configPath,
       error instanceof Error ? error : String(error),
     );
-    return {};
+    return { config: {}, themeCss: undefined, extensions: [] };
   }
-  if (load.kind === "error") {
-    deps.log.warn(
-      "設定ファイルを読めないため設定なしで書き出す",
-      path,
-      load.line,
-      load.message,
+  if (load.problem) {
+    log.warn(
+      "設定ファイルを読めないため、そのファイルを重ねずに書き出す",
+      load.problem.path,
+      load.problem.line ?? load.problem.settingKey ?? "",
+      load.problem.message,
     );
-    return {};
   }
-  if (load.kind === "missing") {
-    return {};
+  const {
+    libraries,
+    "html-scripts": htmlScripts,
+    mermaid,
+    ...rest
+  } = load.config;
+  // 相対パスは重ねる前に絶対パスにしてある
+  const embedded = await embedLocalLibraries({
+    markdown: document.getText(),
+    libraries,
+    htmlScripts,
+    mermaid,
+    config: {
+      features: Object.fromEntries(
+        Object.entries(rest.features ?? {}).filter(
+          (entry): entry is [string, boolean] => typeof entry[1] === "boolean",
+        ),
+      ),
+    },
+    bundle: (paths) =>
+      bundleExtensions({ paths, extensionPath: deps.context.extensionPath }),
+  });
+  for (const failure of embedded.failures) {
+    log.warn("ライブラリをまとめられない", failure.path, failure.error);
   }
-  const { libraries, ...rest } = load.config;
-  if (libraries === undefined) {
-    return rest;
-  }
-  return {
+  const config: PreviewConfig = {
     ...rest,
-    libraries: resolveLibraries({
-      libraries,
-      configDir: dirname(path),
-      toUrl: (target) => pathToFileURL(target).href,
-    }),
+    ...(embedded.libraries === undefined
+      ? {}
+      : { libraries: embedded.libraries }),
+    ...(embedded.htmlScripts === undefined
+      ? {}
+      : { "html-scripts": embedded.htmlScripts }),
+    ...(embedded.mermaid === undefined ? {} : { mermaid: embedded.mermaid }),
   };
+  let themeCss: string | undefined;
+  if (load.theme !== undefined) {
+    try {
+      themeCss = await readFile(load.theme, "utf8");
+    } catch (error) {
+      log.warn(
+        "theme の CSS を読めない",
+        load.theme,
+        error instanceof Error ? error.message : String(error),
+      );
+    }
+  }
+  const extensions: string[] = [];
+  for (const result of await bundleExtensions({
+    paths: load.extensions,
+    extensionPath: deps.context.extensionPath,
+  })) {
+    if ("error" in result) {
+      log.warn("拡張を束ねられない", result.path, result.error);
+    } else {
+      extensions.push(result.code);
+    }
+  }
+  return { config, themeCss, extensions };
 }
 
 /** Markdown を HTML に書き出し、`mode` に合わせて知らせるか開く。書き出した HTML の `Uri` を返す。書き出せなかったときは `undefined` */
@@ -114,12 +163,13 @@ export async function exportMarkdown(options: {
   if (decision.fetched) {
     await deps.context.globalState.update(LAST_VERSION_KEY, decision.version);
   }
+  const exported = await readExportConfig({
+    document,
+    configPath: settings.configPath,
+    deps,
+  });
   const config = applyColorTheme({
-    config: await readExportConfig({
-      document,
-      configPath: settings.configPath,
-      deps,
-    }),
+    config: exported.config,
     colorTheme: settings.colorTheme,
   });
   // 書き出す先を決め、全文（保存していない書き換えを含む）で HTML を組んで書く
@@ -145,6 +195,8 @@ export async function exportMarkdown(options: {
     }),
     baseHref: `${pathToFileURL(dirname(markdownPath)).href}/`,
     print: mode === "print",
+    themeCss: exported.themeCss,
+    extensions: exported.extensions,
   });
   try {
     await writeFileAtomically({ path, content: html });

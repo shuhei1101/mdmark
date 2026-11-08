@@ -1,14 +1,21 @@
+import { existsSync } from "node:fs";
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
+import { writeSettings } from "../cascade.ts";
 import {
+  BROKEN_FLOW,
+  CLEAN_FLOW,
   createChangeTogetherDir,
   expect,
+  flowLines,
   git,
+  INCLUDE_MISSING_FILES,
   linesOf,
   runCli,
   test,
   writeFiles,
 } from "../cli.ts";
+import { groupFlowText, JUDGEMENT_AUTO_TEXT } from "../diagram.ts";
 
 // 雛形が置く設定の build.out の行
 const OUT_LINE = "  out: dist/docs.html\n";
@@ -24,7 +31,7 @@ async function createCleanDir(
     "a.md": "# A\n",
     "b.md": "# B\n",
     "index.yaml": [
-      "schema: 1",
+      "schema: 2",
       "docs:",
       "  - id: a",
       "    path: a.md",
@@ -172,14 +179,18 @@ test("test_error_when_base_unknown", async ({ builtRoot, tempDir }) => {
   expect(await snapshot(dir)).toEqual(before);
 });
 
-// エイリアスの元の行を 1 行ずつ作る設定の行: `metadata` は `alias_type` を列から取る
-function aliasRow(id: string, paths: string, extra: string[] = []): string[] {
+// エイリアスの元の行を 1 行ずつ作る設定の行: 種類は行の `alias_type` に記載する
+function aliasRow(
+  id: string,
+  paths: string,
+  aliasType = "term",
+  extra: string[] = [],
+): string[] {
   return [
     `  - id: ${id}`,
     `    paths: [${paths}]`,
+    `    alias_type: ${aliasType}`,
     ...extra,
-    "    metadata:",
-    "      alias_type: { type: ref, field: alias_type }",
   ];
 }
 
@@ -190,31 +201,21 @@ test("test_normal_when_alias_drift", async ({ builtRoot, tempDir }) => {
   const config = await readFile(join(dir, "mdmark.config.yaml"), "utf8");
   const aliasFiles: Record<string, string> = {
     "aliases/valid.yaml": [
-      "alias_type: term",
       "id: valid-term",
       "name: 正しい用語",
       "description: 説明",
       "",
     ].join("\n"),
-    "aliases/broken.yaml": "alias_type: [term\n",
+    "aliases/broken.yaml": "id: [term\n",
     "aliases/list.yaml": "title: 一覧\n",
     "aliases/refcol.yaml": "id: ref-col\nname: 列が無い\n",
     "aliases/cmd.yaml": [
-      "alias_type: command",
       "id: build-cmd",
       "name: ビルド",
       "command: ''",
       "",
     ].join("\n"),
-    "aliases/types.yaml": [
-      "records:",
-      "  - alias_type: memo",
-      "    id: memo-1",
-      "    name: メモ",
-      "",
-    ].join("\n"),
     "aliases/dup.yaml": [
-      "alias_type: term",
       "id: valid-term",
       "name: 重なる用語",
       "description: 説明",
@@ -225,20 +226,23 @@ test("test_normal_when_alias_drift", async ({ builtRoot, tempDir }) => {
     "mdmark.config.yaml": `${config}${[
       "aliases:",
       ...aliasRow("valid", "aliases/valid.yaml"),
-      // Schema に合わない行: `paths` が無い
-      "  - id: no-paths",
-      "    metadata:",
-      "      alias_type: { type: ref, field: alias_type }",
+      // Schema に合わない行: `alias_type` が 9 つの種類に無い
+      ...aliasRow("memo-type", "aliases/valid.yaml", "memo"),
+      // Schema に合わない行: `metadata` の値が v0.2.0 の構造
+      ...aliasRow("old-metadata", "aliases/valid.yaml", "term", [
+        "    metadata:",
+        "      name: { type: ref, field: term }",
+      ]),
       ...aliasRow("no-files", "missing/*.yaml"),
       ...aliasRow("broken", "aliases/broken.yaml"),
-      ...aliasRow("no-records", "aliases/list.yaml", ["    records: items"]),
-      ...aliasRow("no-column", "aliases/refcol.yaml").slice(0, 2),
-      "    metadata:",
-      "      alias_type: { type: ref, field: kind }",
-      ...aliasRow("empty-command", "aliases/cmd.yaml"),
-      ...aliasRow("unknown-type", "aliases/types.yaml", [
-        "    records: records",
+      ...aliasRow("no-records", "aliases/list.yaml", "term", [
+        "    records: items",
       ]),
+      ...aliasRow("no-column", "aliases/refcol.yaml", "term", [
+        "    metadata:",
+        "      description: summary",
+      ]),
+      ...aliasRow("empty-command", "aliases/cmd.yaml", "command"),
       ...aliasRow("valid", "aliases/valid.yaml"),
       ...aliasRow("same-alias-id", "aliases/dup.yaml"),
       "",
@@ -259,23 +263,23 @@ test("test_normal_when_alias_drift", async ({ builtRoot, tempDir }) => {
   const lines = linesOf(result.stdout);
   // 誤った行ごとに、その行か元のファイルを指すずれの行があり、内容に直し方がある
   const kinds: Array<[string, string]> = [
-    ["mdmark.config.yaml", "schema"],
+    ["mdmark.config.yaml:aliases[1].alias_type", "schema"],
+    ["mdmark.config.yaml:aliases[2].metadata.name", "schema"],
     ["mdmark.config.yaml", "alias_no_files"],
     ["aliases/broken.yaml", "alias_unreadable"],
     ["aliases/list.yaml", "alias_records_missing"],
     ["aliases/refcol.yaml", "alias_field_missing"],
     ["aliases/cmd.yaml", "alias_required_empty"],
-    ["aliases/types.yaml", "alias_unknown_type"],
     ["mdmark.config.yaml", "duplicate_alias_row_id"],
     ["aliases/dup.yaml", "duplicate_alias_id"],
   ];
-  for (const [file, kind] of kinds) {
+  for (const [place, kind] of kinds) {
     const line = lines.find(
       (candidate) =>
-        candidate.startsWith(file) && candidate.includes(`${kind}:`),
+        candidate.startsWith(place) && candidate.includes(`${kind}:`),
     );
-    expect(line, `${file} ${kind}`).toBeDefined();
-    expect(line, `${file} ${kind}`).toContain("ください");
+    expect(line, `${place} ${kind}`).toBeDefined();
+    expect(line, `${place} ${kind}`).toContain("ください");
   }
   // 正しい行は指さない
   expect(lines.some((line) => line.includes("aliases/valid.yaml"))).toBe(false);
@@ -326,4 +330,327 @@ test("test_normal_when_unknown_theme", async ({ builtRoot, tempDir }) => {
     expect(result.code).toBe(0);
     expect(result.stdout).not.toContain("unknown_color_theme");
   }
+});
+
+// 設定の明暗の知らない値を、書ける値を添えたずれにして終了コード 0 以外で終わる（正常シナリオ（知らない明暗の値がある））
+test("test_normal_when_unknown_color_scheme", async ({
+  builtRoot,
+  tempDir,
+}) => {
+  // 準備
+  const dir = await createCleanDir(builtRoot, tempDir);
+  const config = await readFile(join(dir, "mdmark.config.yaml"), "utf8");
+  await writeFiles(dir, {
+    "mdmark.config.yaml": `${config}colorScheme: sepia\n`,
+  });
+  const before = await snapshot(dir);
+  // 実行
+  const result = await runCli(builtRoot, ["check"], dir);
+  // 検証
+  expect(result.code).not.toBe(0);
+  const schemeLines = linesOf(result.stdout).filter((line) =>
+    line.startsWith("mdmark.config.yaml:colorScheme: unknown_color_scheme:"),
+  );
+  expect(schemeLines).toHaveLength(1);
+  for (const text of ["sepia", "light", "dark", "auto"]) {
+    expect(schemeLines[0]).toContain(text);
+  }
+  expect(await snapshot(dir)).toEqual(before);
+});
+
+// 文書からの相対パスにもアセットのルートにも無い画像・動画・音声・添付のファイルを、見つからないファイルのずれにする（正常シナリオ（見つからないファイルがある））
+test("test_normal_when_files_missing", async ({ builtRoot, tempDir }) => {
+  // 準備
+  const dir = await tempDir();
+  await writeFiles(dir, {
+    "mdmark.config.yaml": [
+      "assets:",
+      "  root: assets",
+      "build:",
+      '  include: ["docs/**/*.md"]',
+      "  out: dist/docs.html",
+      "",
+    ].join("\n"),
+    "docs/guide.md": [
+      "# ガイド",
+      "",
+      "![無い画像](images/missing.png)",
+      "",
+      "![無い動画](media/missing.mp4)",
+      "",
+      "![無い音声](media/missing.mp3)",
+      "",
+      "[仕様書](files/missing.pdf)",
+      "",
+      "![ロゴ](images/logo.png)",
+      "",
+    ].join("\n"),
+    "assets/images/logo.png": "png",
+  });
+  // 実行
+  const result = await runCli(builtRoot, ["check"], dir);
+  // 検証
+  expect(result.code).toBe(1);
+  const lines = linesOf(result.stdout);
+  for (const [line, path] of [
+    [3, "images/missing.png"],
+    [5, "media/missing.mp4"],
+    [7, "media/missing.mp3"],
+    [9, "files/missing.pdf"],
+  ] as const) {
+    const found = lines.find((text) =>
+      text.startsWith(`docs/guide.md:${line}: missing_file:`),
+    );
+    expect(found, path).toContain(path);
+  }
+  expect(lines.filter((text) => text.includes(": missing_file:"))).toHaveLength(
+    4,
+  );
+  expect(lines.some((text) => text.includes("images/logo.png"))).toBe(false);
+  expect(existsSync(join(dir, "dist"))).toBe(false);
+});
+
+// 図の定義の誤りと配置のずれを、図の定義の場所を指す行で出し、終了コード 0 以外で終わる（正常シナリオ（図の定義にずれがある））
+test("test_normal_when_diagram_drift", async ({ builtRoot, tempDir }) => {
+  // 準備
+  const dir = await createCleanDir(builtRoot, tempDir);
+  const duplicated = {
+    ...CLEAN_FLOW,
+    nodes: [
+      { id: "api", kind: "script", x: 20, y: 20, w: 100, h: 60, name: "API" },
+      { id: "api", kind: "script", x: 220, y: 20, w: 100, h: 60, name: "API" },
+    ],
+    wires: [],
+  };
+  const head = ["# A", "", ...flowLines(duplicated)];
+  const a = [
+    ...head,
+    ...Array.from({ length: 19 - head.length }, () => ""),
+    ...flowLines(BROKEN_FLOW),
+    "",
+  ];
+  await writeFiles(dir, {
+    "a.md": a.join("\n"),
+    "b.md": ["# B", "", ...flowLines(CLEAN_FLOW), ""].join("\n"),
+  });
+  const before = await snapshot(dir);
+  // 実行
+  const result = await runCli(builtRoot, ["check"], dir);
+  // 検証
+  expect(result.code).not.toBe(0);
+  const lines = linesOf(result.stdout);
+  // 定義の誤りは 1 行で、重なった id と修正の方法がある
+  const invalid = lines.filter((line) => line.startsWith("a.md:3: "));
+  expect(invalid).toHaveLength(1);
+  expect(invalid[0]).toMatch(/^a\.md:3: diagram_invalid: /);
+  expect(invalid[0]).toContain("api");
+  // 配置のずれは 4 つの種類で 1 行ずつあり、対象の id と修正の方法がある
+  const layout = lines.filter((line) => line.startsWith("a.md:20: "));
+  expect(layout).toHaveLength(4);
+  for (const [kind, ids] of [
+    ["diagram_node_overlap", ["web", "db"]],
+    ["diagram_node_overflow", ["queue"]],
+    ["diagram_wire_crosses_node", ["w1", "cache"]],
+    ["diagram_label_too_long", ["batch"]],
+  ] as const) {
+    const found = layout.filter((line) =>
+      line.startsWith(`a.md:20: ${kind}: `),
+    );
+    expect(found, kind).toHaveLength(1);
+    for (const id of ids) {
+      expect(found[0]).toContain(id);
+    }
+    expect(found[0]).toContain("ください");
+  }
+  // ずれの無い図の文書を指す行が無い
+  expect(lines.some((line) => line.startsWith("b.md"))).toBe(false);
+  expect(await snapshot(dir)).toEqual(before);
+});
+
+// 座標を省いた判定フローチャートを配置の後の座標で点検し、座標を省けない定義だけを定義の誤りにする（正常シナリオ（座標を省いた図の定義））
+test("test_normal_when_diagram_auto_layout", async ({ builtRoot, tempDir }) => {
+  // 準備
+  const dir = await createCleanDir(builtRoot, tempDir);
+  const auto = JSON.parse(JUDGEMENT_AUTO_TEXT) as {
+    nodes: Array<Record<string, unknown>>;
+  };
+  const notJudgement = structuredClone(auto);
+  Object.assign(notJudgement.nodes[2] ?? {}, { kind: "llm" });
+  const head = ["# A", "", ...flowLines(auto)];
+  const a = [
+    ...head,
+    ...Array.from({ length: 29 - head.length }, () => ""),
+    ...flowLines(notJudgement),
+    "",
+  ];
+  await writeFiles(dir, { "a.md": a.join("\n") });
+  const before = await snapshot(dir);
+  // 実行
+  const result = await runCli(builtRoot, ["check"], dir);
+  // 検証
+  expect(result.code).not.toBe(0);
+  const lines = linesOf(result.stdout);
+  expect(lines.some((line) => line.startsWith("a.md:3:"))).toBe(false);
+  const invalid = lines.filter((line) => line.startsWith("a.md:30: "));
+  expect(invalid).toHaveLength(1);
+  expect(invalid[0]).toMatch(/^a\.md:30: diagram_invalid: /);
+  expect(invalid[0]).toContain("llm");
+  expect(invalid[0]).toContain("判定フローチャート");
+  expect(invalid[0]).toContain("座標を書くか");
+  expect(await snapshot(dir)).toEqual(before);
+});
+
+// include のマーカーの取り込み先が無いものを、文書とマーカーの行のずれにする（正常シナリオ（取り込み先が無い））
+test("test_normal_when_include_missing", async ({ builtRoot, tempDir }) => {
+  // 準備
+  const dir = await tempDir();
+  await writeFiles(dir, INCLUDE_MISSING_FILES);
+  const paths = Object.keys(INCLUDE_MISSING_FILES);
+  const before = await Promise.all(
+    paths.map((path) => readFile(join(dir, path), "utf8")),
+  );
+  // 実行
+  const result = await runCli(builtRoot, ["check"], dir);
+  // 検証
+  expect(result.code).not.toBe(0);
+  const lines = linesOf(result.stdout);
+  const issues = lines.filter((line) =>
+    line.includes(": include_target_missing: "),
+  );
+  expect(issues.map((line) => line.split(": ")[0])).toEqual([
+    "docs/a.md:3",
+    "docs/b.md:2",
+    "docs/b.md:4",
+  ]);
+  expect(issues[0]).toContain("missing.md");
+  expect(issues[1]).toContain("無い見出し");
+  expect(issues[2]).toContain("5 行");
+  for (const issue of issues) {
+    expect(issue).toContain("修正してください");
+  }
+  expect(lines.some((line) => line.startsWith("docs/a.md:5"))).toBe(false);
+  expect(
+    await Promise.all(paths.map((path) => readFile(join(dir, path), "utf8"))),
+  ).toEqual(before);
+});
+
+/** 設定ファイルの末尾に行を書き足す */
+async function appendConfig(dir: string, lines: string[]): Promise<void> {
+  const config = await readFile(join(dir, "mdmark.config.yaml"), "utf8");
+  await writeFiles(dir, {
+    "mdmark.config.yaml": `${config}\n${lines.join("\n")}\n`,
+  });
+}
+
+// 設定の tooltips.diagramPlacement が top・bottom でないとき、その値を指す schema のずれを 1 行出す（正常シナリオ（図のツールチップの位置に誤った値がある））
+test("test_normal_when_diagram_placement_invalid", async ({
+  builtRoot,
+  tempDir,
+}) => {
+  // 準備
+  const invalidDir = await createCleanDir(builtRoot, tempDir);
+  await appendConfig(invalidDir, ["tooltips:", "  diagramPlacement: left"]);
+  const validDirs = [];
+  for (const value of ["top", "bottom", undefined]) {
+    const dir = await createCleanDir(builtRoot, tempDir);
+    if (value !== undefined) {
+      await appendConfig(dir, ["tooltips:", `  diagramPlacement: ${value}`]);
+    }
+    validDirs.push(dir);
+  }
+  const before = await snapshot(invalidDir);
+  // 実行
+  const result = await runCli(builtRoot, ["check"], invalidDir);
+  // 検証
+  expect(result.code).not.toBe(0);
+  const lines = linesOf(result.stdout).filter((line) =>
+    line.startsWith("mdmark.config.yaml:tooltips.diagramPlacement: schema:"),
+  );
+  expect(lines).toHaveLength(1);
+  expect(lines[0]).toContain("top");
+  expect(lines[0]).toContain("bottom");
+  expect(await snapshot(invalidDir)).toEqual(before);
+  // 実行・検証: top・bottom を書いた設定と、書かない設定では、このずれの行が出ない
+  for (const dir of validDirs) {
+    const valid = await runCli(builtRoot, ["check"], dir);
+    expect(valid.stdout).not.toContain("tooltips.diagramPlacement");
+  }
+});
+
+// フロー図の frame.hint が数で stickyTitles が文字のとき、その図を指す定義の誤りの行を 1 つだけ出す（正常シナリオ（グループの項目に誤った値がある））
+test("test_normal_when_group_options_invalid", async ({
+  builtRoot,
+  tempDir,
+}) => {
+  // 準備
+  const dir = await createCleanDir(builtRoot, tempDir);
+  const definition = JSON.parse(await groupFlowText()) as {
+    frame: Record<string, unknown>;
+    stickyTitles?: unknown;
+  };
+  definition.frame = { ...definition.frame, hint: 1 };
+  definition.stickyTitles = "no";
+  const a = ["# A", "", ...flowLines(definition), ""];
+  await writeFiles(dir, { "a.md": a.join("\n") });
+  const before = await snapshot(dir);
+  // 実行
+  const result = await runCli(builtRoot, ["check"], dir);
+  // 検証
+  expect(result.code).not.toBe(0);
+  const invalid = linesOf(result.stdout).filter((line) =>
+    line.startsWith("a.md:3: "),
+  );
+  expect(invalid).toHaveLength(1);
+  expect(invalid[0]).toMatch(/^a\.md:3: diagram_invalid: /);
+  expect(invalid[0]).toContain("frame.hint");
+  expect(invalid[0]).toContain("stickyTitles");
+  expect(await snapshot(dir)).toEqual(before);
+});
+
+// 端末の設定と上のフォルダの設定のずれを、それぞれのファイルを指して返す（正常シナリオ（重ねた設定ファイルにずれがある））
+test("test_normal_when_cascaded_config_drift", async ({
+  builtRoot,
+  tempDir,
+}) => {
+  // 準備
+  const dir = await tempDir();
+  const files = {
+    "mdmark.config.yaml": "side-toc:\n  mode: wide\n",
+    "docs/mdmark.config.yaml": "features:\n  table: false\n",
+    "docs/guide.md": "# ガイド\n",
+  };
+  await writeFiles(dir, files);
+  const settingsDir = await tempDir();
+  const settings = await writeSettings(
+    settingsDir,
+    "config:\n  cascade: true\nfeatures:\n  callout: maybe\n",
+  );
+  const before = await Promise.all(
+    [settings, ...Object.keys(files).map((file) => join(dir, file))].map(
+      (path) => readFile(path, "utf8"),
+    ),
+  );
+  // 実行
+  const result = await runCli(builtRoot, ["check"], join(dir, "docs"), "", {
+    MDMARK_CONFIG: settings,
+  });
+  // 検証
+  expect(result.code).toBe(1);
+  const lines = linesOf(result.stdout);
+  const callout = lines.filter((line) =>
+    line.includes("features.callout: schema:"),
+  );
+  const sideToc = lines.filter((line) =>
+    line.includes("side-toc.mode: schema:"),
+  );
+  expect(callout).toHaveLength(1);
+  expect(callout[0]).toContain("settings.yaml");
+  expect(sideToc).toHaveLength(1);
+  expect(sideToc[0]).toMatch(/^\.\.\/mdmark\.config\.yaml:/);
+  const after = await Promise.all(
+    [settings, ...Object.keys(files).map((file) => join(dir, file))].map(
+      (path) => readFile(path, "utf8"),
+    ),
+  );
+  expect(after).toEqual(before);
 });

@@ -23,7 +23,7 @@ test("test_read_code_spec", async () => {
   const { readCodeSpec } = await loadCodeBlocks();
   const args = parseMarkArgs("title=app.ts lines highlight=2,4-6");
   // 実行
-  const spec = readCodeSpec({ args, lineCount: 6 });
+  const spec = readCodeSpec({ args, text: "", lineCount: 6 });
   // 検証
   expect(spec.title).toBe("app.ts");
   expect(spec.lineNumbers).toBe(true);
@@ -31,18 +31,19 @@ test("test_read_code_spec", async () => {
   expect(spec.warnings).toEqual([]);
 });
 
-// 知らないキーと空白の後ろの指定を警告にし、読めた題を当てる（異常系）
+// 空白の後ろの指定を警告にし、知らないキーを読み飛ばして、読めた題を当てる（異常系）
 test("test_read_code_spec_when_unknown_key", async () => {
   // 準備
   const { readCodeSpec } = await loadCodeBlocks();
-  const args = parseMarkArgs("title=My App.ts color=red");
+  const text = "title=My App.ts color=red debug";
   // 実行
-  const spec = readCodeSpec({ args, lineCount: 3 });
+  const spec = readCodeSpec({ args: parseMarkArgs(text), text, lineCount: 3 });
   // 検証
   expect(spec.title).toBe("My");
-  const text = warningText(spec.warnings);
-  expect(text).toContain("App.ts");
-  expect(text).toContain("color=");
+  expect(spec.warnings.map((item) => item.label)).toEqual(["App.ts"]);
+  expect(spec.skipped.map((skipped) => skipped.arg).sort()).toEqual(
+    ["color=", "debug"].sort(),
+  );
 });
 
 // 行の数を超える番号と読めない番号を外して警告にする（異常系）
@@ -51,7 +52,7 @@ test("test_read_code_spec_when_line_missing", async () => {
   const { readCodeSpec } = await loadCodeBlocks();
   const args = parseMarkArgs("highlight=2,5,x,3-1");
   // 実行
-  const spec = readCodeSpec({ args, lineCount: 3 });
+  const spec = readCodeSpec({ args, text: "", lineCount: 3 });
   // 検証
   expect([...spec.highlights]).toEqual([2]);
   const text = warningText(spec.warnings);
@@ -105,14 +106,14 @@ test("test_read_line_marks_when_escaped", async () => {
 test("test_read_line_marks_when_unknown", async () => {
   // 準備
   const { readLineMarks } = await loadCodeBlocks();
-  const source = "foo(); // [!code focus]";
+  const source = "foo(); // [!code blink]";
   // 実行
   const { lines, warnings } = readLineMarks(source);
   // 検証
-  expect(lines).toEqual([{ text: "foo(); // [!code focus]" }]);
+  expect(lines).toEqual([{ text: "foo(); // [!code blink]" }]);
   expect(lines[0]).not.toHaveProperty("kind");
   expect(warnings).toHaveLength(1);
-  expect(warningText(warnings)).toContain("[!code focus]");
+  expect(warningText(warnings)).toContain("[!code blink]");
 });
 
 // 印と行の印を持つコードブロックも何も持たないコードブロックも帯を持つ部品にする（正常系）
@@ -231,17 +232,17 @@ test("test_build_code_blocks_when_escaped", () => {
 // 知らない印だけのコードブロックの前に警告を差し込む（異常系）
 test("test_build_code_blocks_when_unknown_line_mark", () => {
   // 準備
-  const markdown = ["```ts", "foo(); // [!code focus]", "```", ""].join("\n");
+  const markdown = ["```ts", "foo(); // [!code blink]", "```", ""].join("\n");
   // 実行
   const { html } = renderDoc(markdown);
   // 検証
   const warning = html.indexOf("mdmark-syntax-warning");
   expect(warning).toBeGreaterThanOrEqual(0);
-  expect(html.indexOf("[!code focus]")).toBeGreaterThan(warning);
+  expect(html.indexOf("[!code blink]")).toBeGreaterThan(warning);
   expect(html.indexOf("mdmark-code-bar")).toBeGreaterThan(warning);
   const pre = html.indexOf("<pre");
   expect(pre).toBeGreaterThan(warning);
-  expect(html.indexOf("foo(); // [!code focus]", pre)).toBeGreaterThan(pre);
+  expect(html.indexOf("foo(); // [!code blink]", pre)).toBeGreaterThan(pre);
   expect(html).not.toContain("mdmark-code-lines");
 });
 
@@ -366,6 +367,58 @@ test("test_build_code_blocks_when_dockerfile_and_diff", () => {
   expect(languages).toEqual(["dockerfile", "dockerfile", "diff", "diff"]);
 });
 
+// mermaid のコードブロックに mermaid の対象の属性を付け、色分けの対象にしない（正常系）
+test("test_build_code_blocks_when_mermaid", () => {
+  // 準備
+  const markdown = [
+    "```mermaid",
+    "flowchart LR",
+    "```",
+    "",
+    "```mermaid:a.mmd",
+    "flowchart LR",
+    "```",
+    "",
+  ].join("\n");
+  // 実行
+  const { html } = renderDoc(markdown);
+  // 検証: 1 つ目だけが mermaid の対象で、どちらも色分けの対象でない
+  expect(matches(html, /data-mdmark-mermaid/g)).toHaveLength(1);
+  expect(findTag(html, "data-mdmark-mermaid")).toContain('class="mdmark-code"');
+  expect(html).toContain('<code class="language-mermaid">');
+  expect(html).not.toContain("data-mdmark-syntax");
+  expect(matches(html, /<div class="mdmark-code-bar">/g)).toHaveLength(2);
+});
+
+// mermaid がオフなら、ほかの言語と同じコードブロックにする（正常系）
+test("test_build_code_blocks_when_mermaid_disabled", () => {
+  // 準備
+  const markdown = [
+    "<!-- features: -mermaid -->",
+    "",
+    "```mermaid",
+    "flowchart LR",
+    "```",
+    "",
+  ].join("\n");
+  // 実行
+  const { html } = renderDoc(markdown);
+  // 検証
+  expect(html).toContain('<div class="mdmark-code-bar">');
+  expect(html).not.toContain("data-mdmark-mermaid");
+});
+
+// code がオフでも mermaid のコードブロックは帯を持たない部品にして属性を付ける（正常系）
+test("test_build_code_blocks_when_mermaid_without_code", () => {
+  // 準備
+  const markdown = ["```mermaid", "flowchart LR", "```", ""].join("\n");
+  // 実行
+  const { html } = renderDoc(markdown, { code: false });
+  // 検証
+  expect(html).toContain("<pre data-mdmark-mermaid");
+  expect(html).not.toContain("mdmark-code-bar");
+});
+
 // 別名と大文字を表のモジュール名にする（正常系）
 test("test_syntax_language_of", async () => {
   // 準備
@@ -435,4 +488,226 @@ test("test_split_info_string_when_no_language", async () => {
     { language: "", fileName: "" },
     { language: "", fileName: "" },
   ]);
+});
+
+// 最初から畳む行を読み取り、無い行を警告にする（正常系）
+test("test_read_code_spec_when_fold", async () => {
+  // 準備
+  const { readCodeSpec } = await loadCodeBlocks();
+  const args = parseMarkArgs("fold=2,4-5,99");
+  // 実行
+  const spec = readCodeSpec({ args, text: "", lineCount: 6 });
+  // 検証
+  expect([...spec.folds]).toEqual([2, 4, 5]);
+  expect(warningText(spec.warnings)).toContain("99");
+});
+
+// focus・error・warning を行の種類にする（正常系）
+test("test_read_line_marks_when_focus_error_warning", async () => {
+  // 準備
+  const { readLineMarks } = await loadCodeBlocks();
+  const source = [
+    "a(); // [!code focus]",
+    "b(); # [!code error]",
+    "c(); /* [!code warning] */",
+  ].join("\n");
+  // 実行
+  const { lines, warnings } = readLineMarks(source);
+  // 検証
+  expect(lines).toEqual([
+    { text: "a();", kind: "focus" },
+    { text: "b();", kind: "error" },
+    { text: "c();", kind: "warning" },
+  ]);
+  expect(warnings).toEqual([]);
+});
+
+// インデントと畳む行を付け、指定の行を畳んだ状態にする（正常系）
+test("test_read_folds", async () => {
+  // 準備
+  const { readFolds } = await loadCodeBlocks();
+  const lines = [
+    { text: "a:" },
+    { text: "  b:" },
+    { text: "    c: 1" },
+    { text: "  d: 2" },
+  ];
+  // 実行
+  const read = readFolds({ lines, folds: new Set([2]) });
+  // 検証
+  expect(read.lines.map((line) => line.indent ?? 0)).toEqual([0, 1, 2, 1]);
+  expect(read.lines.map((line) => line.foldLines)).toEqual([
+    3,
+    1,
+    undefined,
+    undefined,
+  ]);
+  expect(read.lines.map((line) => line.folded === true)).toEqual([
+    false,
+    true,
+    false,
+    false,
+  ]);
+  expect(read.warnings).toEqual([]);
+});
+
+// 畳めない行を警告にする（異常系）
+test("test_read_folds_when_not_foldable", async () => {
+  // 準備
+  const { readFolds } = await loadCodeBlocks();
+  const lines = [{ text: "a:" }, { text: "  b: 1" }, { text: "c: 2" }];
+  // 実行
+  const read = readFolds({ lines, folds: new Set([2, 3]) });
+  // 検証
+  expect(read.lines.some((line) => line.folded === true)).toBe(false);
+  const text = warningText(read.warnings);
+  expect(text).toContain("2");
+  expect(text).toContain("3");
+});
+
+/** `code` の HTML の中の `mdmark-code-line` の開始タグを、コードブロックごとに返す */
+function codeLineTags(html: string): string[][] {
+  return html
+    .split("<pre")
+    .slice(1)
+    .map((block) =>
+      findTags(block.slice(0, block.indexOf("</pre>")), 'mdmark-code-line"'),
+    );
+}
+
+// インデントのある行と畳める行を行に分け、fold= の行を畳んだ状態にする（正常系）
+test("test_build_code_blocks_when_foldable", () => {
+  // 準備
+  const markdown = [
+    "<!-- code: fold=2 -->",
+    "",
+    "```yaml",
+    "a:",
+    "  b:",
+    "    c: 1",
+    "  d: 2",
+    "```",
+    "",
+    "```json",
+    "{",
+    '  "a": {',
+    '    "b": 1',
+    "  }",
+    "}",
+    "```",
+    "",
+    "```tree",
+    "src/",
+    "├── a.ts",
+    "```",
+    "",
+  ].join("\n");
+  // 実行
+  const { html } = renderDoc(markdown, { syntax: false });
+  // 検証
+  const [yaml = [], json = []] = codeLineTags(html);
+  expect(yaml).toHaveLength(4);
+  expect(yaml[0]).toContain('data-fold-lines="3"');
+  expect(yaml[1]).toContain('data-indent="1"');
+  expect(yaml[1]).toContain('data-fold-lines="1"');
+  expect(yaml[1]).toContain("data-folded");
+  expect(yaml[2]).toContain('data-indent="2"');
+  expect(yaml[3]).toContain('data-indent="1"');
+  expect(yaml[3]).not.toContain("data-fold-lines");
+  expect(json[0]).toContain('data-fold-lines="3"');
+  expect(json[1]).toContain('data-fold-lines="1"');
+  const tree = html.slice(html.indexOf("mdmark-tree"));
+  expect(tree).not.toContain("mdmark-code-line");
+  expect(tree).not.toContain("data-fold-lines");
+  expect(html).not.toContain("mdmark-syntax-warning");
+});
+
+// 畳めない fold= の行を警告にする（異常系）
+test("test_build_code_blocks_when_fold_invalid", () => {
+  // 準備
+  const markdown = [
+    "<!-- code: fold=1,3,99 -->",
+    "",
+    "```yaml",
+    "a:",
+    "  b: 1",
+    "  c: 2",
+    "  d: 3",
+    "  e: 4",
+    "```",
+    "",
+  ].join("\n");
+  // 実行
+  const { html } = renderDoc(markdown, { syntax: false });
+  // 検証
+  expect(findTags(html, 'class="mdmark-syntax-warning"')).toHaveLength(1);
+  const warning = html.slice(
+    html.indexOf("mdmark-syntax-warning"),
+    html.indexOf("<pre"),
+  );
+  expect(warning).toContain("3");
+  expect(warning).toContain("99");
+  const [lines = []] = codeLineTags(html);
+  expect(lines.map((tag) => tag.includes("data-folded"))).toEqual([
+    true,
+    false,
+    false,
+    false,
+    false,
+  ]);
+  for (const text of ["a:", "b: 1", "c: 2", "d: 3", "e: 4"]) {
+    expect(html).toContain(text);
+  }
+});
+
+// focus の行を持つ pre に mdmark-code-has-focus を付ける（正常系）
+test("test_build_code_blocks_when_focus", () => {
+  // 準備
+  const markdown = [
+    "```ts",
+    "a(); // [!code focus]",
+    "b(); // [!code error]",
+    "c(); // [!code warning]",
+    "d();",
+    "```",
+    "",
+  ].join("\n");
+  // 実行
+  const { html } = renderDoc(markdown, { syntax: false });
+  // 検証
+  const pre = findTag(html, "<pre");
+  expect(pre).toContain("mdmark-code-lines");
+  expect(pre).toContain("mdmark-code-has-focus");
+  const [lines = []] = codeLineTags(html);
+  expect(lines[0]).toContain('data-kind="focus"');
+  expect(lines[1]).toContain('data-kind="error"');
+  expect(lines[2]).toContain('data-kind="warning"');
+  expect(lines[3]).not.toContain("data-kind");
+  expect(html).not.toContain("[!code");
+  expect(innerHtml(html, "<pre")).not.toContain("//");
+});
+
+// wrap を読み、値を持つ wrap= を警告にする（正常系）
+test("test_read_code_spec_when_wrap", async () => {
+  // 準備
+  const { readCodeSpec } = await loadCodeBlocks();
+  // 実行
+  const wrapped = readCodeSpec({
+    args: parseMarkArgs("lines wrap"),
+    text: "lines wrap",
+    lineCount: 3,
+  });
+  const valued = readCodeSpec({
+    args: parseMarkArgs("wrap=yes"),
+    text: "wrap=yes",
+    lineCount: 3,
+  });
+  // 検証
+  expect(wrapped.wrap).toBe(true);
+  expect(wrapped.lineNumbers).toBe(true);
+  expect(wrapped.warnings).toEqual([]);
+  expect(valued.wrap).toBe(false);
+  const text = warningText(valued.warnings);
+  expect(text).toContain("wrap=yes");
+  expect(text).toContain("wrap と書いて");
 });

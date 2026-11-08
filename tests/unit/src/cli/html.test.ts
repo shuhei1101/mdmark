@@ -4,8 +4,8 @@ import { type PayloadView, readPayload } from "../../helpers/cli.ts";
 /** HTML の組み立てを読み込む（実装が無い間は各テストが個別に失敗する） */
 const loadHtml = () => import("../../../../src/cli/html.ts");
 
-// 起動の処理は `</script` を含まない
-const VIEWER = "console.log(1);";
+// 束ねたスクリプトは `</script` を含まない
+const SCRIPT = "console.log(1);";
 
 /** 書き出しの中身を作る */
 function createPayload(
@@ -17,8 +17,6 @@ function createPayload(
     config: {},
     docs: [{ path: "a.md", title: "題", markdown }],
     entry: "a.md",
-    modules: {},
-    extensions: [],
   };
 }
 
@@ -32,7 +30,7 @@ test("test_assemble_html", async () => {
     payload,
     distCss: "/* dist-css-marker */",
     themeCss: "/* theme-css-marker */",
-    viewer: VIEWER,
+    script: SCRIPT,
   });
   // 検証
   expect(html.indexOf("dist-css-marker")).toBeGreaterThanOrEqual(0);
@@ -49,7 +47,7 @@ test("test_assemble_html_when_script_in_markdown", async () => {
   const markdown = "</script><script>alert(1)</script>";
   const payload = createPayload("document", markdown);
   // 実行
-  const html = assembleHtml({ payload, distCss: "", viewer: VIEWER });
+  const html = assembleHtml({ payload, distCss: "", script: SCRIPT });
   // 検証
   expect(html.match(/<\/script>/gi)).toHaveLength(2);
   expect(readPayload(html).docs[0]?.markdown).toBe(markdown);
@@ -61,7 +59,7 @@ test("test_assemble_html_when_bundle", async () => {
   const { assembleHtml } = await loadHtml();
   const payload = createPayload("bundle", "# 題\n");
   // 実行
-  const html = assembleHtml({ payload, distCss: "", viewer: VIEWER });
+  const html = assembleHtml({ payload, distCss: "", script: SCRIPT });
   // 検証
   const hasClass = (name: string) =>
     new RegExp(`class="[^"]*(?<![\\w-])${name}(?![\\w-])[^"]*"`).test(html);

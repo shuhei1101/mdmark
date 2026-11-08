@@ -1,0 +1,76 @@
+/* #323 の案: ピン止めしていない右側の目次の右端の線と目次の枠を、スクロールする場所の右端に置く。
+   配布物 dist/index.css の後に読み、案の分だけを上書きする。位置の CSS 変数（--edge-*）は scene.js がスクロールのたびに入れる */
+
+/* 右側の目次: 表の見出し行・集計の行・ピン止めした列より手前に描く（読み込む配布物が持たない develop の規則を当てる） */
+.mdmark .mdmark-side-toc {
+  z-index: 5;
+}
+
+/* ポインターを置ける端末の広い幅でピン止めしていないとき: 右端の線と目次の枠を画面に固定し、横の位置は案ごとの --edge-right で決める */
+@media (hover: hover) {
+  @container mdmark (width >= 48rem) {
+    .mdmark .mdmark-side-toc[data-mode="hover"]:not([data-pinned]) {
+      min-width: 1.5rem;
+
+      .mdmark-side-toc-rail {
+        position: fixed;
+        inset-block-start: var(--edge-rail-top, 0px);
+        inset-inline-end: var(--edge-right, 0px);
+        height: var(--edge-rail-height, auto);
+      }
+
+      .mdmark-side-toc-panel {
+        position: fixed;
+        inset-block-start: var(--edge-panel-top, 0px);
+        inset-inline-end: var(--edge-right, 0px);
+        min-height: var(--edge-panel-min-height, auto);
+      }
+
+      /* 描く先の要素の下端が右端の線の上端より上に来たとき: 線を出さない */
+      &[data-rail-outside] .mdmark-side-toc-rail {
+        display: none;
+      }
+    }
+  }
+}
+
+/* 撮影用の URL の ?open=1: ポインターを置いたときと同じく目次の枠を出したままにする */
+:root[data-open] .mdmark .mdmark-side-toc[data-mode="hover"] .mdmark-side-toc-panel {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* 差分のミニマップの見立て（モックだけ）: 配布物のミニマップと同じ幅・重なりの順・色で、スクロールする場所の右端に高さいっぱいで貼り付ける */
+.mock-minimap {
+  position: fixed;
+  inset-block-start: var(--minimap-top, 0px);
+  inset-inline-end: var(--minimap-right, 0px);
+  z-index: 10;
+  width: 14px;
+  height: var(--minimap-height, 100dvh);
+  box-sizing: border-box;
+  border-inline-start: 1px solid var(--mdmark-color-border);
+  background: var(--mdmark-color-surface);
+
+  /* 削除した行（左半分の赤）と追加した行（右半分の緑）の印 */
+  span {
+    position: absolute;
+    width: 50%;
+    height: 4px;
+
+    &[data-kind="del"] {
+      inset-inline-start: 0;
+      background: #dc2626;
+    }
+
+    &[data-kind="add"] {
+      inset-inline-end: 0;
+      background: #16a34a;
+    }
+  }
+}
+
+/* 描く場所が「スクロールする要素の中」: スクロールする要素より狭い描く先の要素を左に寄せて置き、右端の基準が描く先の要素の右端と違うことを見せる */
+body[data-host="box"] #doc {
+  max-width: 52rem;
+}

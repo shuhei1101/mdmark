@@ -1,0 +1,47 @@
+$ npm run lint
+
+> lint
+> biome check .
+
+Checked 722 files in 4s. No fixes applied.
+exit: 0
+
+$ npm run typecheck
+
+> typecheck
+> tsc --noEmit
+
+tests/unit/scripts/storybook-render.test.ts(28,10): error TS2307: Cannot find module '../../../vscode/src/webview/shared/lib/media-error.ts' or its corresponding type declarations.
+tests/unit/vscode/src/webview/app/app.browser.test.tsx(18,10): error TS2307: Cannot find module '../../../../../../vscode/src/webview/app/app.tsx' or its corresponding type declarations.
+tests/unit/vscode/src/webview/features/preview/panel/assets.browser.test.ts(6,5): error TS2307: Cannot find module '../../../../../../../../vscode/src/webview/features/preview/panel/assets.ts' or its corresponding type declarations.
+tests/unit/vscode/src/webview/features/preview/panel/boot.browser.test.ts(6,5): error TS2307: Cannot find module '../../../../../../../../vscode/src/webview/features/preview/panel/boot.ts' or its corresponding type declarations.
+tests/unit/vscode/src/webview/features/preview/panel/diff-source.test.ts(6,5): error TS2307: Cannot find module '../../../../../../../../vscode/src/webview/features/preview/panel/diff-source.ts' or its corresponding type declarations.
+tests/unit/vscode/src/webview/features/preview/panel/diff-source.test.ts(33,25): error TS7006: Parameter 'revision' implicitly has an 'any' type.
+tests/unit/vscode/src/webview/features/preview/panel/diff-source.test.ts(38,22): error TS7006: Parameter 'revision' implicitly has an 'any' type.
+tests/unit/vscode/src/webview/features/preview/panel/document-view.browser.test.ts(13,5): error TS2307: Cannot find module '../../../../../../../../vscode/src/webview/features/preview/panel/document-view.ts' or its corresponding type declarations.
+tests/unit/vscode/src/webview/features/preview/panel/document-view.browser.test.ts(42,70): error TS2339: Property 'mdmark' does not exist on type 'unknown'.
+tests/unit/vscode/src/webview/features/preview/panel/hooks/use-document-view.browser.test.tsx(8,5): error TS2307: Cannot find module '../../../../../../../../../vscode/src/webview/features/preview/panel/hooks/use-document-view.ts' or its corresponding type declarations.
+tests/unit/vscode/src/webview/features/preview/panel/hooks/use-host-messages.browser.test.tsx(8,5): error TS2307: Cannot find module '../../../../../../../../../vscode/src/webview/features/preview/panel/hooks/use-host-messages.ts' or its corresponding type declarations.
+tests/unit/vscode/src/webview/features/preview/panel/hooks/use-link-clicks.browser.test.tsx(9,5): error TS2307: Cannot find module '../../../../../../../../../vscode/src/webview/features/preview/panel/hooks/use-link-clicks.ts' or its corresponding type declarations.
+tests/unit/vscode/src/webview/features/preview/panel/hooks/use-link-clicks.browser.test.tsx(52,29): error TS7006: Parameter 'message' implicitly has an 'any' type.
+tests/unit/vscode/src/webview/features/preview/panel/hooks/use-link-clicks.browser.test.tsx(81,29): error TS7006: Parameter 'message' implicitly has an 'any' type.
+tests/unit/vscode/src/webview/features/preview/panel/hooks/use-load-mdmark.browser.test.tsx(9,5): error TS2307: Cannot find module '../../../../../../../../../vscode/src/webview/features/preview/panel/hooks/use-load-mdmark.ts' or its corresponding type declarations.
+tests/unit/vscode/src/webview/features/preview/panel/hooks/use-scroll-sync.browser.test.tsx(15,5): error TS2307: Cannot find module '../../../../../../../../../vscode/src/webview/features/preview/panel/hooks/use-scroll-sync.ts' or its corresponding type declarations.
+tests/unit/vscode/src/webview/features/preview/panel/hooks/use-scroll-sync.browser.test.tsx(20,5): error TS2307: Cannot find module '../../../../../../../../../vscode/src/webview/features/preview/panel/document-view.ts' or its corresponding type declarations.
+tests/unit/vscode/src/webview/features/preview/panel/load-mdmark.test.ts(6,5): error TS2307: Cannot find module '../../../../../../../../vscode/src/webview/features/preview/panel/load-mdmark.ts' or its corresponding type declarations.
+tests/unit/vscode/src/webview/features/preview/panel/panel-screen.browser.test.tsx(20,5): error TS2307: Cannot find module '../../../../../../../../vscode/src/webview/features/preview/panel/panel-screen.tsx' or its corresponding type declarations.
+tests/unit/vscode/src/webview/features/preview/panel/panel-screen.browser.test.tsx(24,10): error TS2307: Cannot find module '../../../../../../../../vscode/src/webview/app/app.tsx' or its corresponding type declarations.
+tests/unit/vscode/src/webview/features/preview/panel/panel-screen.browser.test.tsx(98,33): error TS7006: Parameter 'message' implicitly has an 'any' type.
+tests/unit/vscode/src/webview/features/preview/panel/scroll.browser.test.ts(8,5): error TS2307: Cannot find module '../../../../../../../../vscode/src/webview/features/preview/panel/scroll.ts' or its corresponding type declarations.
+tests/unit/vscode/src/webview/main.browser.test.tsx(4,31): error TS2307: Cannot find module '../../../../../vscode/src/webview/main.tsx' or its corresponding type declarations.
+tests/unit/vscode/src/webview/shared/adapters/vscode-api.test.ts(6,5): error TS2307: Cannot find module '../../../../../../../vscode/src/webview/shared/adapters/vscode-api.ts' or its corresponding type declarations.
+tests/unit/vscode/src/webview/shared/components/config-band.browser.test.tsx(8,5): error TS2307: Cannot find module '../../../../../../../vscode/src/webview/shared/components/config-band.tsx' or its corresponding type declarations.
+tests/unit/vscode/src/webview/shared/components/preview-status.browser.test.tsx(8,5): error TS2307: Cannot find module '../../../../../../../vscode/src/webview/shared/components/preview-status.tsx' or its corresponding type declarations.
+tests/unit/vscode/src/webview/shared/lib/media-error.test.ts(6,10): error TS2307: Cannot find module '../../../../../../../vscode/src/webview/shared/lib/media-error.ts' or its corresponding type declarations.
+vscode/src/webview/testing/fake-vscode-api.ts(2,35): error TS2307: Cannot find module '../features/preview/panel/boot.ts' or its corresponding type declarations.
+vscode/src/webview/testing/fake-vscode-api.ts(3,32): error TS2307: Cannot find module '../shared/adapters/vscode-api.ts' or its corresponding type declarations.
+vscode/src/webview/testing/fake-vscode-api.ts(27,19): error TS7006: Parameter 'message' implicitly has an 'any' type.
+vscode/src/webview/testing/fake-vscode-api.ts(32,16): error TS7006: Parameter 'state' implicitly has an 'any' type.
+exit: 1
+
+# 型検査の違反は全て、実装が無いことによるもの（TS2307: 実装のモジュールが無い、TS7006・TS2339: 無いモジュールの型を引けない）

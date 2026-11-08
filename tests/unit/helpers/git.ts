@@ -29,7 +29,7 @@ export async function commitAll(dir: string, message: string): Promise<void> {
 
 /** 文書 `a`・`b` が互いを `change_together` で記載した索引の中身 */
 export const CHANGE_TOGETHER_INDEX_YAML = [
-  "schema: 1",
+  "schema: 2",
   "docs:",
   "  - id: a",
   "    path: a.md",

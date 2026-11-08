@@ -10,7 +10,11 @@
     "erasableSyntaxOnly": true,
     "verbatimModuleSyntax": true,
     "skipLibCheck": true,
+    "jsx": "react-jsx",
+    "paths": {
+      "@/*": ["./src/webview/*"]
+    },
     "types": ["node", "vscode", "mocha"]
   },
-  "include": ["scripts", "src", "tests"]
+  "include": ["scripts", "src", "tests", "vite.config.ts"]
 }

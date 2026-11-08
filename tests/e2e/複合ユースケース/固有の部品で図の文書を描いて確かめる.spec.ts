@@ -1,10 +1,11 @@
 import { readFile, writeFile } from "node:fs/promises";
 import { join } from "node:path";
-import { expect, runCli, test, writeFiles } from "../cli.ts";
+import { expect, linesOf, runCli, test, writeFiles } from "../cli.ts";
 import {
   CARD_MARKDOWN,
   CARD_SOURCE,
-  flowMarkdown,
+  FRAME_HINT,
+  groupFlowText,
   HOST_CSS,
   placeDeclarations,
   registerCard,
@@ -19,6 +20,7 @@ import {
   zoomPercent,
 } from "../diagram.ts";
 import { mountDocument, openPage } from "../dist-page.ts";
+import { expectBelow } from "../tooltip.ts";
 
 // 固有の部品の文字の色と、フロー図の LLM の色（固有の CSS が変える）
 const HOST_CARD_COLOR = "rgb(0, 0, 255)";
@@ -45,6 +47,29 @@ test("test_normal", async ({ builtRoot, tempDir, page }) => {
   expect(tsc.stdout).toBe("");
   expect(tsc.code).toBe(0);
   const theme = await readFile(join(dir, "theme.css"), "utf8");
+  // 準備: hint を持つシステムの枠と 3 層の見本の図の文書を書き、索引に載せ、設定の extensions に固有の部品を記載する
+  const sample = `${CARD_MARKDOWN}\n${wrapDirective("flow", await groupFlowText())}\n図の外の意思決定モデル。\n`;
+  const config = await readFile(join(dir, "mdmark.config.yaml"), "utf8");
+  await writeFiles(dir, {
+    "mdmark.config.yaml": `${config}\nextensions: [extensions/card.js]\n`,
+    "docs/sample.md": sample,
+    "index.yaml": [
+      "schema: 2",
+      "docs:",
+      "  - id: sample",
+      "    path: docs/sample.md",
+      "    title: 見本の図",
+      "terms:",
+      "  - id: dm",
+      "    term: 意思決定モデル",
+      "    meaning: 選択肢から選ぶだけの、速く安い判断用の AI",
+      "",
+    ].join("\n"),
+  });
+  // 実行・検証: 図の定義のずれを含めて、ずれ 0 件で終わる
+  const check = await runCli(builtRoot, ["check"], dir);
+  expect(linesOf(check.stdout)).toEqual(["ずれ 0 件"]);
+  expect(check.code).toBe(0);
   // 実行: 固有の部品と CSS を読むページで、見本の図の文書を描く
   await openPage(page, builtRoot, { hostCss: `${theme}\n${HOST_CSS}` });
   await routeCard(
@@ -52,10 +77,7 @@ test("test_normal", async ({ builtRoot, tempDir, page }) => {
     await readFile(join(dir, "extensions/card.js"), "utf8"),
   );
   await registerCard(page);
-  await mountDocument(page, {
-    markdown: `${CARD_MARKDOWN}\n${await flowMarkdown()}\n図の外の意思決定モデル。\n`,
-    index: TERM_INDEX,
-  });
+  await mountDocument(page, { markdown: sample, index: TERM_INDEX });
   // 検証: フロー図が枠・3 層・題と凡例つきで描かれ、残った交差は line jump になる
   const figure = page.locator("#doc figure.mdmark-diagram");
   await expect(figure).toHaveCount(1);
@@ -67,6 +89,16 @@ test("test_normal", async ({ builtRoot, tempDir, page }) => {
   await expect(
     figure.locator('ul[aria-label="凡例"] li').first(),
   ).toBeVisible();
+  // 凡例には、図に 2 種類以上あるノードの種類と線の種類だけが載る
+  const legend = await figure
+    .locator('ul[aria-label="凡例"] li')
+    .allInnerTexts();
+  for (const word of ["システムの枠", "層", "交差", "出る", "下線"]) {
+    expect(
+      legend.some((text) => text.includes(word)),
+      word,
+    ).toBe(false);
+  }
   const arcs = await figure
     .locator('.mdmark-diagram-wires > path[data-line="flow"]')
     .evaluateAll(
@@ -92,16 +124,32 @@ test("test_normal", async ({ builtRoot, tempDir, page }) => {
     hasText: "件名・本文・送り主のアドレス",
   });
   await expect(wireTip).toBeVisible();
+  await expectBelow({ tip: wireTip, owner: label });
   await page.keyboard.press("Escape");
   await expect(wireTip).toBeHidden();
   const info = page.getByRole("button", { name: "「分類」の入力・処理・出力" });
   await info.focus();
-  const ioTip = page
-    .locator('[role="tooltip"]')
-    .filter({ hasText: "返信の種類" });
-  await expect(ioTip.first()).toBeVisible();
+  // 層の hint にも同じ語があるため、印が指すツールチップで探す
+  const ioTip = page.locator(
+    `[role="tooltip"][id="${await info.getAttribute("aria-describedby")}"]`,
+  );
+  await expect(ioTip).toBeVisible();
+  await expectBelow({
+    tip: ioTip,
+    owner: page.locator('#doc [data-node="classify"]'),
+  });
   await page.keyboard.press("Escape");
-  await expect(ioTip.first()).toBeHidden();
+  await expect(ioTip).toBeHidden();
+  // システムの枠のタイトルの印にフォーカスすると、枠の hint が印の下に出て、Esc で消える
+  const frameInfo = figure.locator(
+    ".mdmark-diagram-frame-title .mdmark-diagram-group-info",
+  );
+  await frameInfo.focus();
+  const frameTip = page.locator('[role="tooltip"]', { hasText: FRAME_HINT });
+  await expect(frameTip).toBeVisible();
+  await expectBelow({ tip: frameTip, owner: frameInfo });
+  await page.keyboard.press("Escape");
+  await expect(frameTip).toBeHidden();
   const term = page.locator("#doc .mdmark-diagram-node .mdmark-term").first();
   await term.hover();
   await expect(
@@ -110,7 +158,7 @@ test("test_normal", async ({ builtRoot, tempDir, page }) => {
   await page.mouse.move(0, 0);
   // 図は全体が収まる倍率で開き、右上のボタンとキーの + - 0 で拡大・縮小でき、ドラッグと矢印キーで動かせる
   const fit = await zoomPercent(page);
-  expect(fit).toBeLessThan(100);
+  expect(fit).toBe(100);
   await page.getByRole("button", { name: "拡大" }).click();
   expect(await zoomPercent(page)).toBeGreaterThan(fit);
   await tabToViewport(page);
@@ -142,8 +190,50 @@ test("test_normal", async ({ builtRoot, tempDir, page }) => {
   expect(
     await viewport.evaluate((element) => element.scrollLeft),
   ).toBeGreaterThan(start);
+  // 拡大して下へ動かしても、表示する枠に見えているシステムの枠のタイトルが上端に留まる
+  await viewport.evaluate((element) => {
+    element.scrollTop = Math.min(
+      element.scrollHeight - element.clientHeight,
+      element.clientHeight / 2,
+    );
+  });
+  const frameTitle = figure.locator(".mdmark-diagram-frame-title");
+  const viewportTop = (await viewport.boundingBox())?.y ?? 0;
+  await expect(frameTitle).toHaveClass(/\bis-stuck\b/);
+  expect((await frameTitle.boundingBox())?.y ?? -1).toBeGreaterThanOrEqual(
+    viewportTop - 1,
+  );
   await page.keyboard.press("0");
   expect(await zoomPercent(page)).toBe(fit);
+  // 右下のリサイズハンドルを下へドラッグすると、表示する枠が高くなる
+  const handle = figure.getByRole("separator");
+  const handleBox = await handle.boundingBox();
+  const before = (await viewport.boundingBox())?.height ?? 0;
+  if (!handleBox) {
+    throw new Error("リサイズハンドルの範囲を取れない");
+  }
+  // 高くできる分（図の全体が収まる高さまで）を作るため、先に ↑ で低くする
+  await handle.focus();
+  for (let count = 0; count < 3; count += 1) {
+    await page.keyboard.press("ArrowUp");
+  }
+  const lowered = (await viewport.boundingBox())?.height ?? 0;
+  expect(lowered).toBeLessThan(before);
+  const grip = await handle.boundingBox();
+  if (!grip) {
+    throw new Error("リサイズハンドルの範囲を取れない");
+  }
+  await page.mouse.move(grip.x + grip.width / 2, grip.y + grip.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(
+    grip.x + grip.width / 2,
+    grip.y + grip.height / 2 + 40,
+    {
+      steps: 5,
+    },
+  );
+  await page.mouse.up();
+  expect((await viewport.boundingBox())?.height ?? 0).toBeGreaterThan(lowered);
 });
 
 // 雛形に足した操作できる部品の文書を描き、スライダーでグラフが描き直され、今の値を写す（正常シナリオ（操作できる部品を置く））
@@ -211,4 +301,109 @@ test("test_error_when_type_mismatch", async ({ builtRoot, tempDir, page }) => {
   await mountDocument(page, { markdown: `${CARD_MARKDOWN}\n本文の段落\n` });
   await expect(page.locator("#doc .host-card")).toHaveText("固有の題");
   await expect(page.locator("#doc > p")).toHaveText("本文の段落");
+});
+
+/** 2 つのノードが重なる座標と、ノードの幅に収まらない長さの名前を持つ（`broken` が true）か、修正した後のフロー図の文書 */
+function driftFlowMarkdown(broken: boolean): string {
+  return wrapDirective(
+    "flow",
+    JSON.stringify(
+      {
+        title: "受け付けの流れ",
+        scope: "点検",
+        updated: "2026-11-03",
+        width: 480,
+        height: 200,
+        nodes: [
+          {
+            id: "intake",
+            kind: "script",
+            x: 20,
+            y: 40,
+            w: 120,
+            h: 60,
+            name: "受け付け",
+          },
+          {
+            id: "store",
+            kind: "data",
+            x: broken ? 80 : 300,
+            y: 40,
+            w: 120,
+            h: 60,
+            name: broken
+              ? "問い合わせの本文と添付を保存する先".repeat(3)
+              : "保存先",
+          },
+        ],
+        wires: [],
+      },
+      null,
+      2,
+    ),
+  );
+}
+
+// 図の定義のずれを 1 回目の点検で見つけ、修正した後の 2 回目の点検を通し、箱が重ならず名前が収まる図を描く（異常シナリオ（図の定義にずれがある））
+test("test_error_when_diagram_drift", async ({ builtRoot, tempDir, page }) => {
+  // 準備: 雛形を置き、ずれを持つ図の文書を書いて索引に載せる
+  const dir = await tempDir();
+  const init = await runCli(builtRoot, ["init"], dir);
+  expect(init.code).toBe(0);
+  const file = join(dir, "docs", "flow.md");
+  const broken = `# 流れ\n\n${driftFlowMarkdown(true)}`;
+  await writeFiles(dir, {
+    "docs/flow.md": broken,
+    "index.yaml": [
+      "schema: 2",
+      "docs:",
+      "  - id: flow",
+      "    path: docs/flow.md",
+      "    title: 流れ",
+      "",
+    ].join("\n"),
+  });
+  const flowLine = broken.split("\n").indexOf("<!-- flow -->") + 1;
+  // 実行・検証: 1 回目の点検は、箱の重なりとラベルの長さのずれを出して終了コードが 0 以外
+  const first = await runCli(builtRoot, ["check"], dir);
+  expect(first.code).not.toBe(0);
+  const lines = linesOf(first.stdout);
+  const overlap = lines.find((line) =>
+    line.startsWith(`docs/flow.md:${flowLine}: diagram_node_overlap:`),
+  );
+  expect(overlap).toContain("intake");
+  expect(overlap).toContain("store");
+  const label = lines.find((line) =>
+    line.startsWith(`docs/flow.md:${flowLine}: diagram_label_too_long:`),
+  );
+  expect(label).toContain("store");
+  // 検証: 点検は文書を書き換えない
+  expect(await readFile(file, "utf8")).toBe(broken);
+  // 実行・検証: 修正した後の 2 回目の点検は、ずれ 0 件で終了コードが 0
+  const fixed = `# 流れ\n\n${driftFlowMarkdown(false)}`;
+  await writeFile(file, fixed);
+  const second = await runCli(builtRoot, ["check"], dir);
+  expect(linesOf(second.stdout)).toEqual(["ずれ 0 件"]);
+  expect(second.code).toBe(0);
+  // 実行: 修正した文書を描く
+  await openPage(page, builtRoot);
+  await mountDocument(page, { markdown: fixed });
+  // 検証: 箱が重ならず、名前が箱の中に収まる
+  const nodes = page.locator("#doc .mdmark-diagram-node");
+  await expect(nodes).toHaveCount(2);
+  const [a, b] = await Promise.all([
+    nodes.nth(0).boundingBox(),
+    nodes.nth(1).boundingBox(),
+  ]);
+  expect((a?.x ?? 0) + (a?.width ?? 0)).toBeLessThanOrEqual(b?.x ?? 0);
+  for (const index of [0, 1]) {
+    const fits = await nodes
+      .nth(index)
+      .evaluate(
+        (node) =>
+          node.scrollWidth <= node.clientWidth &&
+          node.scrollHeight <= node.clientHeight,
+      );
+    expect(fits).toBe(true);
+  }
 });

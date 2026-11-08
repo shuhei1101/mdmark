@@ -1,20 +1,32 @@
-title: "ライブラリ本体 / 操作"
+title: ライブラリ本体 / 操作
 lead: '`mount` が描いた記法に操作を付け、外す処理。表の並べ替え・ピン止め・絞り込み、タブ、節と行の詳細の開閉、表の見出し行と集計の行を留める処理、コードブロックのコピー、右側の目次を受け持ち、付ける関数はどれも外す関数を返す。ブラウザでだけ動く。'
 directory: |-
   ```tree
   src/
-  ├── table-logic.ts  # 表の並べ替えの比べ方・絞り込みの当てはめ・数の読み方・集計と読めないセル・TSV と Markdown の表・最終列を畳むか・行を留める量・URL の #ID の読み方（部品の表と操作が使う）
+  ├── code-fold-logic.ts # コードの行のインデントのレベル・畳む行の数・隠す行・縦線を濃くする範囲（render と部品と操作が使う）
+  ├── tree-logic.ts   # キーのパスの分け方・階層の行の計画・YAML の見本の行のパス・階層の絞り込み（render と操作が使う。DOM もトークンも使わない）
+  ├── table-logic.ts  # 列を動かせるかの判定と列の順の入れ替え・表の並べ替えの比べ方・最下段の見出しのセル・隣り合う同じ値の結合・絞り込みの当てはめ・数の読み方・集計と読めないセル・TSV と Markdown の表・最終列を畳むか・行を留める量・URL の #ID の読み方（部品の表と操作が使う）
   └── interact/
       ├── index.ts       # attachInteractions
       ├── placement.ts   # ツールチップを持ち主の上と下のどちらに置くかを決める
-      ├── tables.ts      # 表の並べ替え・ピン止め・絞り込み・件数・列の表示・集計・コピー・行へ移る・行の URL のコピー・最終列を畳む
+      ├── tables.ts      # 表の並べ替え・ピン止め・絞り込み・件数・集計・コピー・行へ移る・行の URL のコピー・最終列を畳む
+      ├── table-settings.ts # テーブル設定のパネルの開閉・列の表示の切り替え・列の並べ替え（ドラッグと ↑・↓ キー）
+      ├── table-tree.ts  # 階層の表の開閉・パスのツールチップとコピー・行の選択・絞り込み・見本との連動
       ├── sticky.ts      # 表の見出し行と集計の行を画面の端に留める
       ├── clipboard.ts   # クリップボードへ書く（表・行の URL・コードブロック・ファイルツリーが使う）
       ├── code-blocks.ts # コードブロックのコピー
+      ├── code-folds.ts  # コードの行の畳む・開く・Shift でまとめて開閉・インデントの縦線を濃くする
       ├── trees.ts       # ファイルツリーのフォルダの開閉とコピー
       ├── tabs.ts        # タブの切り替えと、URL の #ID の指すタブを選ぶ処理
+      ├── footnotes.ts   # 脚注のツールチップの開閉と、番号と末尾の一覧の行き来
       ├── sections.ts    # 節と行の詳細の開閉、Shift で入れ子をまとめて開閉、すべて開閉、URL の #ID で開く
-      └── side-toc.ts    # 右側の目次を置き、出し方・ピン止め・項目から移る・すべて開閉・今いる節を付ける
+      ├── side-toc.ts    # 右側の目次を置き、出し方・ピン止め・項目から移る・すべて開閉・今いる節を付ける
+      ├── back-to-top.ts # 先頭へ戻るボタンを置き、出し分け・置く位置・押したときの移動を付ける
+      ├── scroller.ts    # 要素をスクロールする一番近い祖先の要素を見つける（先頭へ戻るボタンと差分のミニマップが使う）
+      ├── lightbox.ts    # 画像を拡大のボタンで包み、ライトボックスで開いて送り・拡大・縮小・移動を付ける
+      ├── gif.ts         # GIF を止める・再生するボタンを付ける
+      ├── wide.ts        # wide の範囲の幅の切り替えのボタン
+      └── csv-raw.ts     # CSV の表と元の CSV の切り替え
   ```
 data_models:
   - name: FilterValue
@@ -30,7 +42,7 @@ data_models:
         description: '`select` の選んだ値'
       - name: text
         type: string | undefined
-        description: '`text` の含む文字'
+        description: '`text` のキーワード'
       - name: from
         type: string | undefined
         description: '`date` の開始日（`YYYY-MM-DD`）'
@@ -57,12 +69,12 @@ functions:
     container: src/interact/index.ts
     kind: 関数
     scope: internal
-    summary: 機能がオンの記法だけ `attachSections`・`attachTables`・`attachTabs` の順に呼び（付けたときも `hashchange` も、`attachTables` が行へ送る前に `attachSections` が URL の `#ID` の指す閉じた節を開くため）、`table` がオンなら `attachTables` の後に `attachStickyRows` を、`code` がオンなら `attachCodeCopy` を、`tree` がオンなら `attachFileTrees` を呼び、`glossary` か `backlinks` がオンなら `attachTermTips` を呼ぶ。`html` がオンなら `attachEmbeddedHtml` を、さらに `hints` がオンなら `div.mdmark-html` ごとに `attachDiagramTips` を呼ぶ。`attachDiagrams`・`attachTermTips`・`attachDiagramTips` には `placement` を渡す。まとめて外す関数を返す
+    summary: 機能がオンの記法だけ `attachSections`・`attachTables`・`attachTabs` の順に呼び（付けたときも `hashchange` も、`attachTables` が行へ送る前に `attachSections` が URL の `#ID` の指す閉じた節を開くため）、`table` がオンなら `attachTables` の後に `attachStickyRows` を、`code` がオンなら `attachCodeCopy` と `attachCodeFolds` を、`tree` がオンなら `attachFileTrees` を呼び、`footnotes` がオンなら `attachFootnotes` を呼び、`glossary` か `backlinks` がオンなら `attachTermTips` を呼ぶ。`html` がオンなら `attachEmbeddedHtml` を、さらに `hints` がオンなら `div.mdmark-html` ごとに `attachDiagramTips` を呼ぶ。`attachTermTips`・`attachFootnotes` には `placement` を、`attachDiagrams` と `div.mdmark-html` の `attachDiagramTips` には `diagramPlacement` を渡す。まとめて外す関数を返す。`lightbox` がオンなら `attachLightbox` を、`gif` がオンなら `attachLightbox` の後に `attachGifs` を呼ぶ（GIF の包みが拡大のボタンを含むため）
     args:
       - name: options
-        type: '{ root: HTMLElement; features: Record<string, boolean>; placement: TooltipPlacement }'
+        type: '{ root: HTMLElement; features: Record<string, boolean>; placement: TooltipPlacement; diagramPlacement: TooltipPlacement; onColumnsChange?: (event: MdmarkColumnsChange) => void }'
         required: true
-        description: 描いた要素と文書で決まった機能のオン・オフと、既定を当てた設定のツールチップを出す場所
+        description: 描いた要素と文書で決まった機能のオン・オフと、既定を当てた設定のツールチップを出す場所（本文の `placement` と図の `diagramPlacement`）と、`attachTables` に渡す列の表示の知らせ（`mount` の `opts.onColumnsChange`。`MdmarkColumnsChange` は `src/mount.ts` から型だけを読む）
     returns:
       type: () => void
       description: 付けた操作を外す関数
@@ -74,6 +86,10 @@ functions:
       - '#functions[attachStickyRows]'
       - '#functions[attachCodeCopy]'
       - '#functions[attachFileTrees]'
+      - '#functions[attachLightbox]'
+      - '#functions[attachGifs]'
+      - '#functions[attachCodeFolds]'
+      - '#functions[attachFootnotes]'
     unit_tests:
       - name: test_attach_interactions
         case: 正常
@@ -105,6 +121,12 @@ functions:
         condition: ファイルツリーを描いた要素と、`features` の `tree` が `false`
         mock: なし
         expected: '`mdmark-tree-bar` と `mdmark-tree-toggle` が無い'
+      - name: test_attach_interactions_when_lightbox_off
+        case: 正常
+        summary: lightbox がオフなら画像を包まず、gif がオフならボタンを付けない
+        condition: 画像と GIF を描いた要素と、`features` の `lightbox` と `gif` が `false`
+        mock: なし
+        expected: '`button.mdmark-image-open` と `button.mdmark-gif-toggle` が無い'
   - name: compareCells
     title: セルを比べる
     container: src/table-logic.ts
@@ -176,25 +198,26 @@ functions:
     container: src/interact/tables.ts
     kind: 関数
     scope: internal
-    summary: 各 `mdmark-table` の `data-features`・`data-filter`・`data-hide`・`data-total` を読み、見出しに `renderTableTools` のボタンとドロワーを置いて、並べ替え・ピン止め・絞り込みを付ける。`count`・`columns`・`total`・`copy` の表は `renderTableBar` の帯とメニューを、`total` の表は `renderTotalRows` の集計の行を置き、`rowlink` の表は行へ移る処理と行の URL のコピーを付ける。全ての表に、描く先の要素の幅で最終列を畳む処理を付ける。囲み・表から探す部品の要素（ピン止めのボタン・ドロワー・畳んだ列のセル・行の詳細の行など）は、`closest(".mdmark-table")` がその囲みのものだけにし、行の詳細の中の表の要素を拾わない。受け取り（`click`・`change`・`input`・`keydown`）は、対象の `closest(".mdmark-table")` がその囲みのときだけ処理する
-    description: '並べ替えは昇順 → 降順 → 元の並び（描いたときの順を行に控える）を繰り返し、`th` の `aria-sort` を付け外しする。行の詳細の行と畳んだ最終列の開閉の行はその行に付いて動かす。ピン止めのボタンは `ResizeObserver` で表がはみ出すときだけ出し、押した列までのセルに `position: sticky` と左端からの位置を当てる。絞り込みのドロワーは `hidden` と `aria-expanded` で開閉し、同時に 1 つだけ開く。開いたら最初の入力欄へフォーカスを移し（スマホでもボタンの押下の処理の中で移す）、開いている間だけ `document` の `pointerdown`（外を押す）と `keydown`（Esc）を受け取る。「絞り込みを外す」はその列の入力を空にして絞り込みを当て直す（ドロワーの中の押下を外の押下として扱わない）。列ごとの絞り込みは `matchesFilter` で重ねて当て、合わない行に `hidden` を付ける。
+    summary: 表を横にスクロールさせるのは表を包む `div.mdmark-table-scroll` で、ピン止めを当てるはみ出しはその要素の `scrollWidth` と `clientWidth` で決める。列の表示を切り替えるたびに、テーブル設定のボタンの隠した列の数のバッジ（`span.mdmark-table-tool-badge`。0 列なら `hidden` にする）・`is-active`・`aria-label` を書き換える。コピーの結果はボタンの `title` と読み上げの名前を書き換えて示す。各 `mdmark-table` の `data-features`・`data-filter`・`data-hide`・`data-total`・`data-pin` を読み、見出しに `renderTableTools` のボタンとドロワーを置いて、並べ替え・ピン止め・絞り込みを付ける。`count`・`columns`・`reorder`・`total`・`copy` の表は `renderTableBar` の帯とメニュー（テーブル設定の一覧を分ける留めた列の数は `data-pin` がある表だけ数え、無い表は 0）を、`columns`・`reorder` の表は `attachTableSettings` でテーブル設定を、`data-tree` の表は `attachTableTree` で階層の操作を、`total` の表は `renderTotalRows` の集計の行を置き、`rowlink` の表は行へ移る処理と行の URL のコピーを付ける。全ての表に、描く先の要素の幅で最終列を畳む処理を付ける。`thead` が複数の行を持つ表は `bottomHeadCells` で列ごとの最下段の見出しのセルを決め、ボタンをそのセルにだけ置き、列の位置はそのセルの列で数える（`cellIndex` を使わない）。`data-merge-columns` の表は、並べ替え・絞り込みのたびに、表示している本文の行のその列の値から `mergeSpans` で結合を決め、始まりのセルに `rowspan` と `is-merged`、続くセルに `hidden` を付け直す。結合で隠したセルも値を持つセルとして並べ替え・絞り込み・コピー・集計に使う。囲み・表から探す部品の要素（ピン止めのボタン・ドロワー・畳んだ列のセル・行の詳細の行など）は、`closest(".mdmark-table")` がその囲みのものだけにし、行の詳細の中の表の要素を拾わない。受け取り（`click`・`change`・`input`・`keydown`）は、対象の `closest(".mdmark-table")` がその囲みのときだけ処理する
+    description: |-
+      並べ替えは降順 → 昇順 → 元の並び（描いたときの順を行に控える）を繰り返し、`th` の `aria-sort` を付け外しする。行の詳細の行と畳んだ最終列の開閉の行はその行に付いて動かす。ピン止めのボタンは `ResizeObserver` で表がはみ出すときだけ出し、留める列の数（付けたときは `data-pin` の位置 + 1、無ければ `th scope="row"` の行見出しの列の数、行見出しも無ければ 1。ボタンを押すとその列まで、押し直すと 0）までのセルに、表がはみ出す間だけ `position: sticky` と左端からの位置を当てる（はみ出さない間は留めず、留める列の数は控えたまま）。`thead` が複数の行を持つ表の見出しのセルは、またぐ列が全て留める範囲のときだけ留める。セルの値は `cellValue` で読む（`data-check` の列は `data-value`）。絞り込みのドロワーは `hidden` と `aria-expanded` で開閉し、同時に 1 つだけ開く。開いたら最初の入力欄へフォーカスを移し（スマホでもボタンの押下の処理の中で移す）、開いている間だけ `document` の `pointerdown`（外を押す）と `keydown`（Esc）を受け取る。「絞り込みを解除」はその列の入力を空にして絞り込みを当て直す（ドロワーの中の押下を外の押下として扱わない）。列ごとの絞り込みは `matchesFilter` で重ねて当て、合わない行に `hidden` を付ける。
 
+      件数と集計の行は、絞り込みを当てるたびに、行の詳細・開閉の行・`一致する行がありません` の行を除く本文の行のうち `hidden` を持たない行から作り直す（集計は `computeTotal`）。集計の行は計算ごとの 1 行で、付けたときに全ての本文の行から `findUnreadableTotals` で数として読めないセルを持つ列と計算を控え、そのセルは作り直しても空にする。`集計` のボタンのメニュー（`表示する集計`）のチェックボックスに合わせて計算の行の `hidden` を切り替え、ボタンの `is-active` と読み上げの名前を書き換え、`{計算の名前}の行を出しました`・`{計算の名前}の行を隠しました` を帯の `mdmark-table-status` に入れる（選択は覚えない）。テーブル設定のパネル・集計のメニュー・コピーの形式のメニューは絞り込みのドロワーと同じ開閉の受け取りを使う（同時に開くのはドロワーとパネル・メニューを合わせて 1 つ）。列の表示と順の切り替え（テーブル設定のパネルの目のアイコンとつまみ）は `attachTableSettings` に任せ、切り替えるたびに最終列を畳むかを決め直す。ピン止めの左端からの位置は隠した列を除いて測り直す。`onColumnsChange` を渡したときは、`attachTableSettings` が目のアイコンで列の表示を切り替えた後に、`{ tableIndex, hidden }` で 1 回呼ぶ。`tableIndex` は付けたときに `root` の中の `columns` の表（`.mdmark-diff-block[data-kind="del"]` の中の表を除く）を文書の順に並べた位置、`hidden` は隠している列の見出しのセルの `visibleText` を列の順に並べた新しい配列。例外を投げたら、`onColumnsChange` と元のエラーを `console.error` に出して続ける。
 
-      件数と集計の行は、絞り込みを当てるたびに、行の詳細・開閉の行・`一致する行がありません` の行を除く本文の行のうち `hidden` を持たない行から作り直す（集計は `computeTotal`）。集計の行は計算ごとの 1 行で、付けたときに全ての本文の行から `findUnreadableTotals` で数として読めないセルを持つ列と計算を控え、そのセルは作り直しても空にする。`集計` のボタンのメニュー（`出す集計`）のチェックボックスに合わせて計算の行の `hidden` を切り替え、ボタンの `is-active` と読み上げの名前を書き換え、`{計算の名前}の行を出しました`・`{計算の名前}の行を隠しました` を帯の `mdmark-table-status` に入れる（選択は覚えない）。列の表示のメニュー・集計のメニュー・コピーの形式のメニューは絞り込みのドロワーと同じ開閉の受け取りを使う（同時に開くのはドロワーとメニューを合わせて 1 つ）。列の表示はチェックボックスに合わせて列の見出し・セル・集計のセルの `hidden` を切り替え、「既定に戻す」で `data-hide` の状態に戻し、切り替えるたびに最終列を畳むかを決め直す。ピン止めの左端からの位置は隠した列を除いて測り直す。
-
-
-      コピーは形式のボタンの `data-format` で、見出しの行と、行の詳細・開閉の行・`一致する行がありません` の行を除く本文の行のうち `hidden` を持たない行の、列の表示で隠していない列（畳んだ最終列は含める）の `visibleText` を `tableToMarkdown` か `tableToTsv` にして `copyText` で書く。書けたらボタンを `copied` にして 2 秒で `idle` に戻し、`{形式の名前}をコピーしました` を `mdmark-table-status` に入れる。書けなければボタンを `failed` にし、前のパネルを取り除いてから帯の直後に `renderCopyPanel` のパネルを置き、`textarea` へフォーカスを移して `select()` し、`クリップボードにコピーできませんでした。選択した{形式の名前}を手でコピーできます` を入れる。パネルは閉じるボタンか、パネルの中の Esc で取り除き、フォーカスを `表をコピー` に戻す。
-
+      コピーは形式のボタンの `data-format` で、見出しの行と、行の詳細・開閉の行・`一致する行がありません` の行を除く本文の行のうち `hidden` を持たない行と階層の表の畳んで隠した行（補った行 `is-virtual` を除く）の、テーブル設定で隠していない列（畳んだ最終列は含める）の `visibleText`（階層の表のキーの列は行の `data-path`）を `tableToMarkdown` か `tableToTsv` にして `copyText` で書く。書けたらボタンを `copied` にして 2 秒で `idle` に戻し、`{形式の名前}をコピーしました` を `mdmark-table-status` に入れる。書けなければボタンを `failed` にし、前のパネルを取り除いてから帯の直後に `renderCopyPanel` のパネルを置き、`textarea` へフォーカスを移して `select()` し、`クリップボードにコピーできませんでした。選択した{形式の名前}を手動でコピーできます` を入れる。パネルは閉じるボタンか、パネルの中の Esc で取り除き、フォーカスを `表をコピー` に戻す。
 
       行へ移る処理は、付けたときと `hashchange` で `rowIdFromHash` の ID を持つ行を探し、囲む閉じた `details` を開き（閉じた節は、`attachInteractions` が先に付けた `attachSections` が同じきっかけで開いている）、行が `hidden` ならその表の絞り込みを全て外し、`scrollIntoView` してその行だけに `data-target` を付ける。行へのリンクの印を押すと、移る動きはそのままに印の `href` プロパティ（解決済みの絶対 URL）を `copyText` で書き、描いたときに印の横へ置いた `mdmark-row-link-notice` に `data-state` と文言（`リンクをコピーしました`・`リンクをコピーできませんでした`）を入れて 2 秒後に空に戻す。
 
-
-      最終列を畳む処理は、描いた要素 `root` を `ResizeObserver` で見、幅が変わるたびと列の表示の切り替えのたびに、一度畳みを外して測り、`shouldFold` で決める。測るのは `root` の中身の幅と、表示している最終列（先頭の列を除く）のセルの中身の高さが、計算した `line-height` の 1.5 倍を超えるものがあるか。畳むときは最終列のセルに `mdmark-fold-col`、囲みに `is-folded` を付け、行の詳細を持たない行には `renderFoldedColumn` の開閉のボタンを先頭のセルに、開閉の行を行の直後に置き、行の詳細を持つ行には詳細の中身の先頭に同じ `mdmark-fold-part` を置く。畳まないときはこれらを取り除く。開閉のボタンは `aria-expanded` と開閉の行の `hidden` を切り替え、開閉の行はその行が隠れると隠す'
+      最終列を畳む処理は、描いた要素 `root` を `ResizeObserver` で見、幅が変わるたびと列の表示の切り替えのたびに、一度畳みを外して測り、`shouldFold` で決める。測るのは `root` の中身の幅と、表示している最終列（先頭の列を除く）のセルの中身の高さが、計算した `line-height` の 1.5 倍を超えるものがあるか。畳むときは最終列のセルに `mdmark-fold-col`、囲みに `is-folded` を付け、行の詳細を持たない行には `renderFoldedColumn` の開閉のボタンを先頭のセルに、開閉の行を行の直後に置き、行の詳細を持つ行には詳細の中身の先頭に同じ `mdmark-fold-part` を置く。畳まないときはこれらを取り除く。開閉のボタンは `aria-expanded` と開閉の行の `hidden` を切り替え、開閉の行はその行が隠れると隠す
     args:
       - name: root
         type: HTMLElement
         required: true
         description: 描いた要素
+      - name: options
+        type: '{ onColumnsChange?: (event: MdmarkColumnsChange) => void }'
+        required: false
+        description: 列の表示の知らせ
     returns:
       type: () => void
       description: ボタン・ドロワー・パネル・開閉の行・受け取り・`ResizeObserver`・タイマーを外す関数
@@ -204,23 +227,26 @@ functions:
       - '#functions[matchesFilter]'
       - dev/設計書/モジュール構成/ライブラリ本体/部品.ts#functions[renderTableTools]
       - '#functions[visibleText]'
+      - '#functions[cellValue]'
       - '#functions[findUnreadableTotals]'
       - '#functions[tableToMarkdown]'
       - '#functions[shouldFold]'
       - '#functions[copyText]'
       - dev/設計書/モジュール構成/ライブラリ本体/部品.ts#functions[renderCopyPanel]
       - dev/設計書/モジュール構成/ライブラリ本体/部品.ts#functions[renderFoldedColumn]
+      - '#functions[bottomHeadCells]'
+      - '#functions[mergeSpans]'
     unit_tests:
       - name: test_attach_tables_when_sorted
         case: 正常
-        summary: 3 回の押下で昇順・降順・元の並びになる
+        summary: 3 回の押下で降順・昇順・元の並びになる
         condition: '`data` の表（値の列が `10`・`2`・`33`）の値の列の見出しを 3 回押す'
         mock: なし
-        expected: '`2,10,33`・`33,10,2`・`10,2,33` の順で、`aria-sort` が `ascending`・`descending`・無し'
+        expected: '`33,10,2`・`2,10,33`・`10,2,33` の順で、`aria-sort` が `descending`・`ascending`・無し'
       - name: test_attach_tables_when_filtered
         case: 正常
         summary: ドロワーで絞って外し、外の押下で閉じる
-        condition: '`data-filter="0:select"` の表でボタンを押し、`りんご` を選び、「絞り込みを外す」を押し、表の外を押す'
+        condition: '`data-filter="0:select"` の表でボタンを押し、`りんご` を選び、「絞り込みを解除」を押し、表の外を押す'
         mock: なし
         expected: 開いた後に候補の検索欄にフォーカス、選んだ後に 1 行だけ、外した後に全ての行とドロワーが開いたまま、外を押した後にドロワーが `hidden`
       - name: test_attach_tables_when_escape
@@ -231,10 +257,22 @@ functions:
         expected: ドロワーが `hidden`、ボタンにフォーカス
       - name: test_attach_tables_when_pinned
         case: 正常
-        summary: はみ出す表だけピン止めのボタンを出し、押した列までを留める
-        condition: 幅 320px の要素に 10 列の表と 2 列の表、2 列目のピン止めを押す
+        summary: はみ出す表だけピン止めのボタンを出して先頭の列を既定で留め、押した列までを留める
+        condition: 幅 320px の要素に 10 列の表と 2 列の表、2 列目のピン止めを押し、もう一度押す
         mock: なし
-        expected: 10 列の表だけボタンが `hidden` を持たず、1・2 列目のセルが `sticky`
+        expected: 10 列の表だけボタンが `hidden` を持たない。付けた直後は 10 列の表の 1 列目のセルだけが `sticky` で 1 列目のボタンが `aria-pressed="true"`、2 列の表はどのセルも `sticky` でない。押した後は 1・2 列目のセルが `sticky`、もう一度押した後はどのセルも `sticky` でない
+      - name: test_attach_tables_when_pin_specified
+        case: 正常
+        summary: data-pin の列までを留め、pin の無い表は留めず、幅が広がると留めを外す
+        condition: 幅 320px の要素に、`data-features="pin"`・`data-pin="1"` の 8 列の表と `data-features=""` の 10 列の表を付け、要素の幅を 2000px にする
+        mock: なし
+        expected: 付けた直後は 1 つ目の表の 1・2 列目のセルが `sticky` で 2 列目のボタンが `aria-pressed="true"`、2 つ目の表はピン止めのボタンが無くどのセルも `sticky` でない。2000px にした後は 1 つ目の表のどのセルも `sticky` でない
+      - name: test_attach_tables_when_check_column
+        case: 正常
+        summary: 真偽値の列を data-value の値で並べ替え・絞り込み・コピーする
+        condition: '`data-features="sort filter copy"`・`data-filter="1:select"`・`data-check="1"` の表（名前 `a`・`b`・`c`、必須の `td` が `data-value` の `true`・`false`・`true` と ✓ か `いいえ` の中身）で、必須の列を昇順に並べ、`true` に絞り、TSV でコピーする'
+        mock: '`navigator.clipboard.writeText` を記録して解決する関数に差し替える'
+        expected: 並べた後の名前が `b`・`a`・`c`、絞り込みの候補が `true`・`false`、絞った後は `a`・`c` の 2 行、`名前\t必須\na\ttrue\nc\ttrue` で 1 回呼ばれる
       - name: test_attach_tables_when_detached
         case: 正常
         summary: 外すと document の受け取りが残らない
@@ -255,10 +293,10 @@ functions:
         expected: 絞り込む前は `4 / 4 件` と、`合計 45`・`平均 250`・`件数 4` の 3 行がこの順、後は `2 / 4 件` と `合計 43`・`平均 200`・`件数 2`、絞り込みを `存在しない` にした後は `0 / 4 件` と `合計 0`・`平均 —`・`件数 0`（`一致する行がありません` の行を数えない）
       - name: test_attach_tables_when_columns_toggled
         case: 正常
-        summary: 列を隠して既定に戻し、Esc でメニューを閉じる
-        condition: '`data-features="sort pin filter columns total"`・`data-hide="1"`・`data-total="2:sum"` の 3 列の表で、メニューを開き、2 列目を入れて 3 列目を外し、「既定に戻す」を押し、Esc'
+        summary: テーブル設定のパネルの目のアイコンで列を出し入れし、Esc でパネルを閉じる
+        condition: '`data-features="sort pin filter columns total"`・`data-hide="1"`・`data-total="2:sum"` の 3 列の表で、テーブル設定のパネルを開き、目のアイコンで 2 列目を表示して 3 列目を隠し、Esc'
         mock: なし
-        expected: 付けた直後は 2 列目の `th`・`td` が `hidden`、開いた後は 1 列目のチェックボックスが `disabled` で 2 つ目のチェックボックスにフォーカス、切り替えた後は 3 列目の `th`・`td`・集計のセルが `hidden`、戻した後は 2 列目だけが `hidden`、Esc の後はメニューが `hidden` で `列の表示` にフォーカス
+        expected: 付けた直後は 2 列目の `th`・`td` が `hidden`、開いた後は 1 列目の目のアイコンが `disabled` で 2 つ目の目のアイコンにフォーカス、切り替えた後は 3 列目の `th`・`td`・集計のセルが `hidden` で 2 列目は `hidden` を持たない、Esc の後はパネルが `hidden` でテーブル設定のボタンにフォーカス
       - name: test_attach_tables_when_copied
         case: 正常
         summary: 形式のメニューで TSV を選び、表示している行と列を写して 2 秒でボタンを戻す
@@ -267,10 +305,10 @@ functions:
         expected: '`表をコピー` を押した後に形式のメニューが `hidden` を持たず、`TSV` を押した後にメニューが `hidden` でフォーカスが `表をコピー`。`名前\t更新日\nりんご\t2026-10-01\nりんご飴\t2026-10-20` で 1 回呼ばれ、ボタンが `data-state="copied"`、`mdmark-table-status` が `TSVをコピーしました`、2 秒進めると `idle`'
       - name: test_attach_tables_when_copy_denied
         case: 正常
-        summary: 拒まれたら手でコピーするパネルを出し、Esc で閉じる
+        summary: 拒まれたら手動でコピーするパネルを出し、Esc で閉じる
         condition: '`data-features="copy"` の表で `表をコピー` を押して `Markdown の表` を押し、パネルの中で Esc'
         mock: '`navigator.clipboard.writeText` を `NotAllowedError` で拒む関数に、時計を偽の時計に差し替える'
-        expected: ボタンが `data-state="failed"` で 2 秒進めても変わらず、帯の直後に `mdmark-copy-panel` があり、`textarea` にフォーカスがあって中身が全て選ばれ、`mdmark-table-status` が `クリップボードにコピーできませんでした。選択したMarkdown の表を手でコピーできます`。Esc の後はパネルが無くフォーカスが `表をコピー`。`unhandledrejection` が起きない
+        expected: ボタンが `data-state="failed"` で 2 秒進めても変わらず、帯の直後に `mdmark-copy-panel` があり、`textarea` にフォーカスがあって中身が全て選ばれ、`mdmark-table-status` が `クリップボードにコピーできませんでした。選択したMarkdown の表を手動でコピーできます`。Esc の後はパネルが無くフォーカスが `表をコピー`。`unhandledrejection` が起きない
       - name: test_attach_tables_when_row_linked
         case: 正常
         summary: '#ID が指す行を開いて強調し、hashchange で移す'
@@ -294,7 +332,7 @@ functions:
         summary: 集計のメニューで計算の行を隠して出し、読み上げで知らせる
         condition: '`data-features="total"`・`data-total="1:sum 1:avg"` の表で `集計` を押し、`平均` のチェックを外し、入れ直し、Esc'
         mock: なし
-        expected: 開いた後はメニューが `hidden` を持たず最初のチェックボックスにフォーカス、外した後は平均の行が `hidden` でボタンが `is-active`・読み上げの名前に `（1 件を隠しています）`・`mdmark-table-status` が `平均の行を隠しました`、入れ直した後は平均の行が `hidden` を持たず `平均の行を出しました`、Esc の後はメニューが `hidden` で `集計` にフォーカス
+        expected: 開いた後はメニューが `hidden` を持たず最初のチェックボックスにフォーカス、外した後は平均の行が `hidden` でボタンが `is-active`・読み上げの名前に `（1 件を非表示にしています）`・`mdmark-table-status` が `平均の行を隠しました`、入れ直した後は平均の行が `hidden` を持たず `平均の行を出しました`、Esc の後はメニューが `hidden` で `集計` にフォーカス
       - name: test_attach_tables_when_row_link_copied
         case: 正常
         summary: 行へのリンクの印を押すと行の絶対 URL を写し、知らせを 2 秒出す
@@ -315,8 +353,8 @@ functions:
         expected: 2 行目は `mdmark-fold-toggle` を持たず、詳細の行の中身の先頭に `mdmark-fold-part` があり、押した後に詳細の行が `hidden` を持たない。1・3 行目は `mdmark-fold-toggle` を持つ
       - name: test_attach_tables_when_fold_column_hidden
         case: 正常
-        summary: 列の表示で最終列を隠すと畳みを外し、前の列を最終列として決め直す
-        condition: 幅 390px の要素に `data-features="columns"` の 3 列の表（状態は短く、説明は 1 行に収まらない）を付け、列の表示で説明のチェックを外す
+        summary: テーブル設定で最終列を隠すと畳みを外し、前の列を最終列として決め直す
+        condition: 幅 390px の要素に `data-features="columns"` の 3 列の表（状態は短く、説明は 1 行に収まらない）を付け、テーブル設定の説明の目のアイコンで隠す
         mock: なし
         expected: 付けた後は `is-folded`、外した後は `is-folded`・開閉のボタン・開閉の行が無く、説明の列が `hidden`
       - name: test_attach_tables_when_nested_table
@@ -330,8 +368,51 @@ functions:
         summary: 行の詳細の中の表の並べ替えのボタンを押しても、親の表を並べ替えない
         condition: '`data-features="sort pin"` の 2 列の親の表（1 列目の値が上から `a`・`b`）を付ける。1 行目の行の詳細の中に `data-features="sort pin"` の 2 列の表の囲みを置き、`attachSections` の後に付け、中の表の 1 列目の並べ替えのボタンを押す'
         mock: なし
-        expected: 親の表の本文の行の並びが `a`・`b` のままで、親の表の見出しのセルが `aria-sort` を持たない。中の表の 1 列目の見出しのセルの `aria-sort` が `ascending`
+        expected: 親の表の本文の行の並びが `a`・`b` のままで、親の表の見出しのセルが `aria-sort` を持たない。中の表の 1 列目の見出しのセルの `aria-sort` が `descending`
+      - name: test_attach_tables_when_merged_sorted
+        case: 正常
+        summary: 最下段の見出しにボタンを置き、並べ替え・絞り込みの後に結合し直す
+        condition: インターフェース定義『文書を描く』の「正常系（結合した表を並べ替えて絞り込む）」の表
+        mock: '`navigator.clipboard.writeText` を記録する関数'
+        expected: ボタンが 2 段目の `th` にだけある。降順の後に分類のセルがどれも `rowspan` と `hidden` を持たない。`A` に絞り込んだ後に 1 行目の分類のセルが `rowspan="2"`。TSV の各行の分類が `A`
+      - name: test_attach_tables_when_row_header_pinned
+        case: 正常
+        summary: 行見出しを持つはみ出す表を、描いた直後に行見出しの列まで留める
+        condition: 幅 320px の要素に、`row-header=2` の 10 列 5 行の表
+        mock: なし
+        expected: 2 列目のピン止めのボタンが `aria-pressed="true"`、1・2 列目のセルの `position` が `sticky`、3 列目は `sticky` でない
+      - name: test_attach_tables_when_tree_copied
+        case: 正常
+        summary: 階層の表のコピーに畳んだ行を含め、キーを全体のパスで書き、補った行を含めない
+        condition: '`data-tree="0"` の表（キーは `features.table`・`aliases[].id`）で `aliases[]` を畳み、Markdown の表でコピーする'
+        mock: '`navigator.clipboard.writeText` を代役にする'
+        expected: '書いた文字の本文の行が `features.table`・`aliases[].id` の 2 行で、キーのセルが全体のパスのまま。`features`・`aliases[]` の行が無い'
+      - name: test_attach_tables_when_columns_notified
+        case: 正常
+        summary: 列の表示を切り替えるたびに、表の番号と隠している列の見出しで知らせる
+        condition: '`data-features="columns"` の表を 3 つ（1 つ目は `div.mdmark-diff-block[data-kind="del"]` の中、2 つ目は `data-hide="2"`、3 つ目は列 `名前`・`状態`・`説明`）付け、3 つ目の表のテーブル設定のパネルで `状態` の目のアイコンを押して隠し、もう一度押して表示する'
+        mock: '`onColumnsChange` は引数を控える関数'
+        expected: '付けた時点では呼ばれない。隠した後に `{ tableIndex: 1, hidden: ["状態"] }`、戻した後に `{ tableIndex: 1, hidden: [] }` で、合わせて 2 回呼ばれる'
+      - name: test_attach_tables_when_columns_callback_throws
+        case: 異常
+        summary: 知らせが例外を投げても列の表示を切り替える
+        condition: '`data-features="columns"` の表で 2 列目のチェックを外す'
+        mock: '`onColumnsChange` は例外を投げる。`console.error` を控える'
+        expected: 2 列目の `th`・`td` が `hidden` を持ち、`console.error` に `onColumnsChange` と投げたエラー
+      - name: test_attach_tables_when_columns_badge
+        case: 正常
+        summary: 列の表示を切り替えるたびにバッジと読み上げの名前を書き換える
+        condition: '`data-features="columns"`・`data-hide="1"` の 3 列の表で、2 列目を表示し、次に 2 列目と 3 列目を隠し、3 列目を表示する'
+        mock: なし
+        expected: 付けた直後はバッジ `1` と `aria-label` が `テーブル設定（1 列を非表示）`。表示した後はバッジが `hidden` で `is-active` を持たず、`aria-label` が `テーブル設定`。隠した後はバッジ `2`。3 列目を表示した後はバッジ `1`
+      - name: test_attach_tables_when_scroll_wrapper
+        case: 正常
+        summary: 包む要素がはみ出す間だけピン止めを当てる
+        condition: 幅 1000px の要素に、`div.mdmark-table-scroll` で包んだ 2 列の `data` の表と 12 列の `data` の表
+        mock: なし（Chromium）
+        expected: 2 列の表はピン止めのボタンが `hidden` で `table` の幅が包む要素の幅と同じ。12 列の表はピン止めのボタンが `hidden` を持たず、包む要素の `scrollWidth` が `clientWidth` より大きい
     refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[列の表示の知らせ]
       - '#functions[computeTotal]'
       - '#functions[tableToTsv]'
       - '#functions[rowIdFromHash]'
@@ -342,7 +423,7 @@ functions:
     container: src/interact/tabs.ts
     kind: 関数
     scope: internal
-    summary: 各 `mdmark-tabs` の頭にタブの並びを置き、中身を `role="tabpanel"` にする。`data-group` を持つものは `loadTabChoice` のタブ名のタブ、無ければ 1 つ目を選ぶ。中身の選び方を `tabPanelSelectors` に登録し、付けたときに URL の `#ID`（`rowIdFromHash` で読む）が選ばれていない中身の中を指すなら、残したタブ名より先に `revealTabTarget` でそのタブを選んで要素を `scrollIntoView` する。押すと左右の矢印・Home・End で選び、`data-group` を持つときはページの `document.querySelectorAll(".mdmark-tabs[data-group]")` を `dataset.group === group` で絞った `mdmark-tabs` を、`tabSelectors` から引いた関数で同じタブ名へ切り替え（組の名前をセレクタに入れない。`tabSelectors` に無いものは飛ばす。フォーカスは動かさない。そのタブ名が無ければ変えない）、`saveTabChoice` で残す
+    summary: 各 `mdmark-tabs` の頭にタブの並びを置き、中身を `role="tabpanel"` にする。`data-group` を持つものは `loadTabChoice` のタブ名のタブ、無ければ 1 つ目を選ぶ。中身の選び方を `tabPanelSelectors` に登録し、付けたときに URL の `#ID`（`rowIdFromHash` で読む）が選ばれていない中身の中を指すなら、残したタブ名より先に `revealTabTarget` でそのタブを選んで要素を `scrollIntoView` する。押すと左右の矢印・Home・End で選び、`data-group` を持つときはページの `document.querySelectorAll(".mdmark-tabs[data-group]")` を `dataset.group === group` で絞った `mdmark-tabs` を、`tabSelectors` から引いた関数で同じタブ名へ切り替え（組の名前をセレクタに入れない。`tabSelectors` に無いものは飛ばす。フォーカスは動かさない。そのタブ名が無ければ変えない）、`saveTabChoice` で残す。タブのボタンにはタブ名の要素の子のノードのコピーを入れ（`strong` を残す）、組の揃えと残すタブ名にはその文字を使う。入れ子の `mdmark-tabs` はそれぞれ別の並びにし、キーの移動と選択はその並びの中だけで行う
     args:
       - name: root
         type: HTMLElement
@@ -395,6 +476,12 @@ functions:
         condition: localStorage の `mdmark-tabs:os` が `macOS`。`data-group="os"` の `macOS`・`Windows` のタブで、`Windows` の中身に `### 注意`。`location.hash` を `#注意` にしてから付ける
         mock: '`Element.prototype.scrollIntoView` を記録する関数に差し替える'
         expected: '`Windows` を選び、`### 注意` で `scrollIntoView` が 1 回呼ばれる。localStorage の `mdmark-tabs:os` は `macOS` のまま'
+      - name: test_attach_tabs_when_nested
+        case: 正常
+        summary: 入れ子のタブをそれぞれの並びで切り替え、強調したタブ名をボタンに残す
+        condition: インターフェース定義『文書を描く』の「正常系（入れ子のタブを切り替える）」の文書を描いた要素
+        mock: なし
+        expected: '`role="tablist"` が 2 つで、`Windows` のボタンが `strong` を持つ。`bash` を押した後も `macOS` が選ばれたまま。内側の `bash` で右の矢印を押すとフォーカスが `zsh` に移る'
   - name: attachSections
     title: 節と行の詳細に開閉を付ける
     container: src/interact/sections.ts
@@ -506,6 +593,30 @@ functions:
         condition: '`<td>本文の<span class="mdmark-term-wrap"><span class="mdmark-term">印</span><span class="mdmark-term-tip">用語HTML コメントで書く指定</span></span></td>`'
         mock: なし（Chromium）
         expected: '`本文の印`、`td` の中身が変わらない'
+  - name: cellValue
+    title: 表のセルの値を読む
+    container: src/interact/text.ts
+    kind: 関数
+    scope: internal
+    summary: セルが `data-value` を持てばその値を、持たなければ `visibleText` の文字を返す
+    description: 表の並べ替え・絞り込み（候補を含む）・コピー・集計のセルの値は、この関数で読む
+    args:
+      - name: cell
+        type: HTMLTableCellElement
+        required: true
+        description: 読むセル
+    returns:
+      type: string
+      description: セルの値
+    callees:
+      - '#functions[visibleText]'
+    unit_tests:
+      - name: test_cell_value
+        case: 正常
+        summary: data-value を優先し、無ければ見える文字を読む
+        condition: '`<td data-value="false"><span class="mdmark-visually-hidden">いいえ</span></td>` と `<td>未定</td>`'
+        mock: なし（Chromium）
+        expected: '`false` と `未定`'
   - name: attachEmbeddedHtml
     title: 埋め込んだ HTML の幅を見る
     container: src/interact/embedded-html.ts
@@ -947,7 +1058,7 @@ functions:
   - name: attachCodeCopy
     title: コードブロックにコピーを付ける
     container: src/interact/code-blocks.ts
-    summary: 各 `mdmark-code-bar` の末尾に `renderCodeCopy` のボタンを置き、押すと `copyText` でコードを写す。写す文字は、行の印を持つブロックでは `data-kind="del"` の行を除いた `mdmark-code-text` を改行でつないだもの、それ以外は `code` の文字から末尾の改行を 1 つ除いたもの。書けたら `data-state="copied"` にして 2 秒で `idle` に戻し、書けなければ `failed` にして次に押すまで残す
+    summary: 各 `mdmark-code-bar` の末尾に `renderCodeCopy` のボタンを置き、押すと `copyText` でコードを写す。写す文字は、行に分けたブロックでは `data-kind="del"` の行を除いた `mdmark-code-text` を改行でつないだもの（畳んで `hidden` を持つ行も含め、`⋯` のボタンの文字は含めない）、それ以外は `code` の文字から末尾の改行を 1 つ除いたもの。書けたら `data-state="copied"` にして 2 秒で `idle` に戻し、書けなければ `failed` にして次に押すまで残す
     kind: 関数
     scope: internal
     side_effects: コードブロックの帯にボタンを置き、クリップボードへ書く
@@ -984,6 +1095,12 @@ functions:
         condition: コードブロックのボタンを押してすぐ外し、2 秒進める
         mock: '`navigator.clipboard.writeText` を記録して解決する関数に、時計を偽の時計に差し替える'
         expected: 帯に `mdmark-code-meta` が無く、例外が出ない
+      - name: test_attach_code_copy_when_folded
+        case: 正常
+        summary: 畳んだ行もコピーに含める
+        condition: 2 行目と 6 行目を畳んだ 8 行のコードブロック
+        mock: '`navigator.clipboard.writeText` を記録する関数'
+        expected: 書いた文字が 8 行全てを持ち、`⋯` を含まない
     callees:
       - '#functions[copyText]'
       - dev/設計書/モジュール構成/ライブラリ本体/部品.ts#functions[renderCodeCopy]
@@ -1021,6 +1138,33 @@ functions:
     status: planned
     introduced:
       pr: 151
+  - name: openEnclosing
+    title: 要素を囲む閉じたものを開く
+    container: src/interact/sections.ts
+    summary: 要素を囲む閉じた節を外側から `sectionSetters` の関数で開き、選ばれていないタブの中なら `revealTabTarget` でそのタブを選び、閉じた行の詳細の中なら、その行の `mdmark-row-toggle` を押した状態にして詳細の行を出す。スクロールしない。`focusComment` で印へ移るときに使う
+    kind: 関数
+    scope: internal
+    side_effects: 節の中身の `hidden`・タブの選択・行の詳細の `hidden` と開閉のボタンの `aria-expanded` を書き換える
+    args:
+      - name: target
+        type: HTMLElement
+        required: true
+        description: 開いて見せる要素
+    returns:
+      type: void
+      description: なし
+    unit_tests:
+      - name: test_open_enclosing
+        case: 正常
+        summary: 閉じた節と閉じた行の詳細を開き、スクロールしない
+        condition: 閉じた `## A` の中の表の、閉じた行の詳細の中の段落を渡す
+        mock: '`Element.prototype.scrollIntoView` を記録する関数に差し替える'
+        expected: '`A` の中身と詳細の行が `hidden` を持たず、節の見出しのボタンと行の開閉のボタンが `aria-expanded="true"`。`scrollIntoView` は呼ばれない'
+    refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[コメントの箇所へ移る]
+    status: planned
+    introduced:
+      pr: 280
   - name: revealTarget
     title: 要素へ移る
     container: src/interact/sections.ts
@@ -1140,7 +1284,7 @@ functions:
   - name: attachSideToc
     title: 右側の目次を付ける
     container: src/interact/side-toc.ts
-    summary: 描く先の要素の子を本文の列（`div.mdmark-content`）に包み、その後ろに `renderSideToc` の右側の目次を置いて操作を付ける。見出しが無ければ何も置かず `content` に `el` を返す。目次を出すボタンで `data-open` と `aria-expanded`、ピン止めで `data-pinned` と `aria-pressed` を切り替えて `state` に控える。出したパネルで Esc を押すとパネルを隠して目次を出すボタンへフォーカスを戻す。すべて展開・すべて折りたたみで `foldAllSections` を呼ぶ。項目を押すと、リンクの `data-heading-id` の ID の見出しを `revealTarget` で開いて移り（`href` は読まない。まとめた HTML は `rewriteLinks` で `href` を書き換える）（既定の動きは止めない）、`el` の幅が `NARROW_WIDTH_REM` 未満ならパネルを隠す。IntersectionObserver・`hashchange`・本文の列の `click` と `keyup`・すべて展開とすべて折りたたむの押下を受けて、次の描画のタイミングに今いる節を決め直す。決め直すときは、祖先に `hidden` を持つ見出し（閉じた節の中身と選ばれていないタブの中身の中の見出し）を除いて `pickCurrentHeading` に渡し、決まった見出しの項目に `aria-current="location"`、右端の線のその見出しの線に `data-current` を付け、目次を出すボタンの `mdmark-side-toc-current`（狭い幅の帯に出る文字）に見出しの文字を置く。外す関数は包む前の子の並びへ戻す
+    summary: 描く先の要素の子を本文の列（`div.mdmark-content`）に包み、その後ろに `renderSideToc` の右側の目次を置いて操作を付ける。見出しが無ければ何も置かず `content` に `el` を返す。目次を出すボタンで `data-open` と `aria-expanded`、ピン止めで `data-pinned` と `aria-pressed` を切り替えて `state` に控える。出したパネルで Esc を押すとパネルを隠して目次を出すボタンへフォーカスを戻す。すべて展開・すべて折りたたみで `foldAllSections` を呼ぶ。項目を押すと、リンクの `data-heading-id` の ID の見出しを `revealTarget` で開いて移り（`href` は読まない。まとめた HTML は `rewriteLinks` で `href` を書き換える）（既定の動きは止めない）、`el` の幅が `NARROW_WIDTH_REM` 未満ならパネルを隠す。IntersectionObserver・`hashchange`・本文の列の `click` と `keyup`・すべて展開とすべて折りたたむの押下を受けて、次の描画のタイミングに今いる節を決め直す。決め直すときは、祖先に `hidden` を持つ見出し（閉じた節の中身と選ばれていないタブの中身の中の見出し）を除いて `pickCurrentHeading` に渡し、決まった見出しの項目に `aria-current="location"`、右端の線のその見出しの線に `data-current` を付け、目次を出すボタンの `mdmark-side-toc-current`（狭い幅の帯に出る文字）に見出しの文字を置く。hover の出し方では、付けたときと、`findScrollContainer` のスクロールする場所と画面の `scroll`・`resize` と、`document.body` の子の追加・削除（`MutationObserver`。差分のミニマップの帯の出し入れ）のたびに、hover で開く目次の枠の位置を aside の `--mdmark-side-toc-panel-top`（見えている枠の上端 = スクロールする場所が画面全体なら 0、要素ならその上端に、`--mdmark-sticky-top` と `--mdmark-space` を足した位置）・`--mdmark-side-toc-panel-end`（右端の線と枠の右端。画面の右端から、スクロールする場所のスクロールバーを除いた右端（画面全体なら `document.documentElement.clientWidth`、要素ならその左端に `clientLeft` と `clientWidth` を足した位置。画面からはみ出す分は画面の端）までの幅に `SIDE_TOC_EDGE_GAP_REM` を足した値。`document.body` の子の `.mdmark-diff-minimap` のうち、幅が 0 でなく、その右端から左へパネルの幅までの横の範囲と重なるものがあれば、画面の右端からその左端までの幅に `SIDE_TOC_AVOID_GAP_PX` を足した値。描く先の要素の位置は使わない。aside は CSS の `min-width` で線の幅を取ったままにし、ピン止めの有無で本文の列の幅を変えない）・`--mdmark-side-toc-panel-min-height`（右端の線の上端に `SIDE_TOC_RAIL_COVER_REM` を足した位置までの高さ。0 未満は 0）と、右端の線の位置を `--mdmark-side-toc-rail-top`（aside の上端と `--mdmark-side-toc-panel-top` の大きい方。右端の線の上端はこの値で決める）・`--mdmark-side-toc-rail-height`（画面の下端・スクロールする要素の下端・描く先の要素の下端のうち最も小さい位置から、`--mdmark-side-toc-rail-top` と `--mdmark-space` を引いた高さ。0 未満は 0）に px で入れる。その高さが 0 のとき（描く先の要素の下端が線の上端より上にある）は aside に `data-rail-outside` を付け、それ以外は外す。外す関数は包む前の子の並びへ戻し、位置を決める受け取りを外す
     kind: 関数
     scope: internal
     side_effects: '`el` の子を本文の列へ移し、右側の目次の要素を追加し、`state` を書き換える'
@@ -1157,6 +1301,7 @@ functions:
       - '#functions[pickCurrentHeading]'
       - '#functions[revealTarget]'
       - '#functions[foldAllSections]'
+      - '#functions[findScrollContainer]'
     unit_tests:
       - name: test_attach_side_toc
         case: 正常
@@ -1230,9 +1375,129 @@ functions:
         condition: '`attachSections` で閉じた `## 導入` の中の `### 注意` の項目の `href` を `#/a.md#注意` に書き換えてから押す'
         mock: '`Element.prototype.scrollIntoView` を記録する関数に差し替える'
         expected: '`導入` の中身が `hidden` を持たず、`注意` で `scrollIntoView` が呼ばれる'
+      - name: test_attach_side_toc_when_hover_panel_placed
+        summary: hover で開く目次の枠の位置を、見えている枠の上端と右端の線から決める
+        case: 正常
+        condition: '上端が画面の 100px の位置にある高さ 400px の縦にスクロールする要素の中に、見出しが 3 つの長い本文を描いた要素を置き、`--mdmark-sticky-top: 8px` で `mode: "hover"` で付け、要素を下へスクロールして次の描画を待つ'
+        expected: aside の `--mdmark-side-toc-panel-top` が、スクロールの前と後のどちらも `100 + 8 + --mdmark-space`（px）で、`--mdmark-side-toc-panel-end` が、画面の右端からスクロールする要素の左端に `clientLeft` と `clientWidth` を足した位置までの幅に `SIDE_TOC_EDGE_GAP_REM`（rem）を px にして足した値で、aside の右端の位置によらない（スクロールする要素より描く先の要素を狭くして左に寄せる）。外した後にスクロールしても値が変わらない
+        mock: なし
+      - name: test_attach_side_toc_when_hover_panel_reaches_rail
+        summary: hover で開く目次の枠に、右端の線の上端から線 3 本分まで届く高さの下限を入れる
+        case: 正常
+        condition: '画面全体がスクロールするページで、描く先の要素の上に高さ 200px の要素を置いて `mode: "hover"` で付ける（文書の先頭で右端の線が枠の上端より下にある）'
+        expected: '`--mdmark-side-toc-panel-min-height` が、右端の線の上端に `SIDE_TOC_RAIL_COVER_REM` を足した位置から `--mdmark-side-toc-panel-top` を引いた高さ（px）。文書の末尾までスクロールした後は、右端の線の上端が枠の上端に留まるため `SIDE_TOC_RAIL_COVER_REM`（rem）を px にした高さ'
+        mock: なし
+      - name: test_attach_side_toc_when_hover_rail_placed
+        summary: 右端の線の位置と高さを、aside の上端・見えている枠の上端と下端から決める
+        case: 正常
+        condition: '上端が画面の 100px の位置にある高さ 400px の縦にスクロールする要素の中に、描く先の要素の上に高さ 200px の要素と、下に高さ 450px の要素を置き（末尾までスクロールすると、描く先の要素の下端が線の上端より上に来る高さ）、見出しが 3 つの長い本文を `--mdmark-sticky-top: 8px` で `mode: "hover"` で付け、描く先の要素の下端が見えている枠の下端より下にある位置（文書の末尾の手前）と、描く先の要素の下の要素までスクロールした位置（要素の末尾）で、それぞれ次の描画を待つ'
+        mock: なし
+        expected: スクロールの前は `--mdmark-side-toc-rail-top` が aside の上端（`--mdmark-side-toc-panel-top` より大きい）。文書の末尾の手前では `100 + 8 + --mdmark-space`（px）で、`--mdmark-side-toc-rail-height` が `100 + 400 - --mdmark-side-toc-rail-top - --mdmark-space`（px）、aside が `data-rail-outside` を持たず、右端の線の `getBoundingClientRect().top` が `--mdmark-side-toc-rail-top` と等しい。要素の末尾では、描く先の要素の下端が線の上端より上にあるため `--mdmark-side-toc-rail-height` が `0px` で、aside が `data-rail-outside` を持ち、右端の線が表示されていない
+      - name: test_attach_side_toc_when_hover_edge_avoids_minimap
+        summary: 差分のミニマップの帯が出たときと消えたときに、スクロールせずに右端の位置を決め直す
+        case: 正常
+        condition: '画面全体がスクロールするページで、画面より狭い描く先の要素に `mode: "hover"` で付けた後、`document.body` に右端に貼り付けた幅 14px の `div.mdmark-diff-minimap` を追加して次の描画を待ち、続けてその要素を削除して次の描画を待つ'
+        mock: なし
+        expected: 追加した後の `--mdmark-side-toc-panel-end` が `14 + SIDE_TOC_AVOID_GAP_PX`（px）、削除した後は画面の右端から `document.documentElement.clientWidth` までの幅に `SIDE_TOC_EDGE_GAP_REM`（rem）を px にして足した値。どちらもスクロールと `resize` を起こさない。外した後に帯を追加しても値が変わらない
+      - name: test_attach_side_toc_when_hover_edge_clamped
+        summary: 画面の右端より右へはみ出すスクロールする要素では、画面の端から右端の位置を決める
+        case: 正常
+        condition: '左端を画面の左端に置き、幅を画面より 100px 広くした縦にスクロールする要素の中に、見出しが 3 つの長い本文を描いた要素を置いて `mode: "hover"` で付ける'
+        mock: なし
+        expected: '`--mdmark-side-toc-panel-end` が `SIDE_TOC_EDGE_GAP_REM`（rem）を px にした値（スクロールする要素の右端ではなく `document.documentElement.clientWidth` を右端にする）'
     status: planned
     introduced:
       pr: 166
+  - name: findScrollContainer
+    title: スクロールする場所を見つける
+    container: src/interact/scroller.ts
+    summary: 要素の祖先を `document.body` の手前までたどり、`overflow-y` が `auto` か `scroll` で `scrollHeight` が `clientHeight` より大きい一番近い要素を返す。無ければ `document.scrollingElement`（無ければ `document.documentElement`）を返し、`page` を `true` にする
+    kind: 関数
+    scope: internal
+    args:
+      - name: from
+        type: HTMLElement
+        required: true
+        description: たどり始める要素（この要素自身は見ない）
+    returns:
+      type: '{ target: HTMLElement; page: boolean }'
+      description: スクロールする要素と、それが画面全体か
+    unit_tests:
+      - name: test_find_scroll_container
+        case: 正常
+        summary: 中身がはみ出す一番近いスクロールする祖先の要素を返す
+        condition: '高さ 600px・`overflow-y: auto` の `div` の中に、高さ 2000px の要素を入れ、その中の要素から探す'
+        mock: なし
+        expected: '`target` が `div`、`page` が `false`'
+      - name: test_find_scroll_container_when_not_overflowing
+        case: 正常
+        summary: 中身がはみ出さない祖先の要素は飛ばして画面全体を返す
+        condition: '高さ 600px・`overflow-y: auto` の `div` の中に、高さ 100px の要素を入れ、その中の要素から探す'
+        mock: なし
+        expected: '`target` が `document.scrollingElement`、`page` が `true`'
+    status: planned
+    introduced:
+      pr: 287
+  - name: attachBackToTop
+    title: 先頭へ戻るボタンを付ける
+    container: src/interact/back-to-top.ts
+    summary: '`renderBackToTop({ hidden: true })` のボタンを `el` の子の末尾に置き、スクロールする場所を `findScrollContainer(el)` で決めて、出し分け・置く位置・押したときの移動を付ける'
+    kind: 関数
+    scope: internal
+    side_effects: '`el` にボタンを追加する。スクロールする場所が画面全体なら `window` の `scroll`、そうでなければ `document` の `scroll`（捕捉の段）と、`window` の `resize` を受け取る。`document.body` と `el` の子の追加・削除を `MutationObserver` で監視する'
+    args:
+      - name: options
+        type: '{ el: HTMLElement; content: HTMLElement }'
+        required: true
+        description: 描く先の要素と、押した後にフォーカスを移す本文の列（右側の目次も余白の列も置かないときは `el`）
+    returns:
+      type: () => void
+      description: ボタンと受け取りを外す関数
+    process: |-
+      1. ボタンを置き、スクロールする場所を決める
+      2. 置き直す処理: スクロールする場所の矩形（スクロールバーを除き、右端と下端は画面の中に収める）の上端から `el` の上端までの量が、スクロールする場所の `clientHeight` 未満ならボタンに `hidden` を付けて終える。そうでなければ `hidden` を外し、`--mdmark-back-to-top-right` に `calc({画面の右端からスクロールする場所の右端までの px} + var(--mdmark-back-to-top-gap))`、`--mdmark-back-to-top-bottom` に同じく下端の値を入れる。続けて、ページの差分のミニマップの帯（`document.body` の全ての `.mdmark-diff-minimap`）と `el` の子の余白の列（`div.mdmark-comment-margin`）の順に、ボタンの矩形と横の範囲（部品の左端から `BACK_TO_TOP_AVOID_GAP_PX` 左までを含む）が重なれば、`--mdmark-back-to-top-right` を `{画面の右端から部品の左端までの px + BACK_TO_TOP_AVOID_GAP_PX}px` にする。縦の位置は比べない
+      3. 手順 2 を、スクロールと `resize`、`document.body` の子の追加・削除（ミニマップの帯）と `el` の子の追加・削除（余白の列）のたびに `requestAnimationFrame` で 1 フレームに 1 回だけ行い、付けた直後にも 1 回行う
+      4. ボタンを押すと、`matchMedia("(prefers-reduced-motion: reduce)")` が当たれば `behavior: "auto"`、ほかは `smooth` で、スクロールする場所を `el` の上端へ `scrollTo` する（画面全体なら `window.scrollTo` で、`el` の `--mdmark-sticky-top` の px を引く）。続けて `content` に `tabindex="-1"` を付け、`focus({ preventScroll: true })` する
+      5. 外す関数は、受け取り・`MutationObserver` の監視・予約したフレームを外し、ボタンを取り除き、付けた `tabindex` を外す
+    callees:
+      - '#functions[findScrollContainer]'
+      - dev/設計書/モジュール構成/ライブラリ本体/部品.ts#functions[renderBackToTop]
+    refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[先頭へ戻るボタン]
+    unit_tests:
+      - name: test_attach_back_to_top
+        case: 正常
+        summary: 画面の高さ分スクロールするまで隠し、届いたら右下に出す
+        condition: 高さ 800px の画面で、高さ 3000px の段落を描いた要素に付け、799px と 800px スクロールする
+        mock: なし
+        expected: 799px の後はボタンが `hidden` を持ち、800px の後は持たず、`--mdmark-back-to-top-right` と `--mdmark-back-to-top-bottom` が `calc(0px + var(--mdmark-back-to-top-gap))`
+      - name: test_attach_back_to_top_when_obstacle
+        case: 正常
+        summary: 余白の列と横の範囲が重なれば、その左から間を空けて置く
+        condition: '`el` の右端に幅 40px の `div.mdmark-comment-margin` を置いて付け、800px スクロールする'
+        mock: なし
+        expected: '`--mdmark-back-to-top-right` が `{画面の右端から余白の列の左端までの px + 8}px`'
+      - name: test_attach_back_to_top_when_minimap_added
+        case: 正常
+        summary: ミニマップの帯が後から配置されると、スクロールせずに帯の左へずらす
+        condition: 800px スクロールしてボタンを出した後、`document.body` に画面の右端に接する幅 12px の `div.mdmark-diff-minimap` を配置し、次のフレームを待つ
+        mock: なし
+        expected: '`--mdmark-back-to-top-right` が `{画面の右端から帯の左端までの px + 8}px`'
+      - name: test_attach_back_to_top_when_pressed
+        case: 正常
+        summary: 押すと先頭へスクロールして本文の列へフォーカスを移す
+        condition: 800px スクロールしてからボタンを押す
+        mock: '`window.scrollTo` を引数を記録する関数に差し替え、`matchMedia` を `(prefers-reduced-motion: reduce)` に当たる関数とそうでない関数で差し替える'
+        expected: '動きを減らす設定では `behavior: "auto"`、そうでなければ `smooth` で、`top` が `el` の上端の位置。`content` が `tabindex="-1"` を持ち `document.activeElement`'
+      - name: test_attach_back_to_top_when_detached
+        case: 正常
+        summary: 外す関数でボタンと受け取りを外す
+        condition: 付けて外した後にスクロールする
+        mock: なし
+        expected: '`el` にボタンが無く、`content` が `tabindex` を持たず、例外が出ない'
+    status: planned
+    introduced:
+      pr: 287
   - name: attachFileTrees
     title: ファイルツリーに開閉とコピーを付ける
     container: src/interact/trees.ts
@@ -1341,12 +1606,788 @@ functions:
     status: planned
     introduced:
       pr: 225
+  - name: collectLightboxImages
+    title: 送りの並びを集める
+    container: src/interact/lightbox.ts
+    kind: 関数
+    scope: internal
+    summary: '`root` の中の `button.mdmark-image-open` を文書の順に並べ、今の配色で隠れているもの（`getComputedStyle` の `display` が `none` の `figure` の中）を除いて返す'
+    args:
+      - name: root
+        type: HTMLElement
+        required: true
+        description: 描いた要素
+    returns:
+      type: HTMLButtonElement[]
+      description: 送りの並びの拡大のボタン
+    unit_tests:
+      - name: test_collect_lightbox_images
+        case: 正常
+        summary: 隠れている配色の画像を除く
+        condition: 暗い配色で描いた要素に、画像 2 つと `#only-light` の画像 1 つ
+        mock: なし
+        expected: '`#only-light` 以外の 2 つのボタンを文書の順に返す'
+    status: planned
+    introduced:
+      pr: 263
+  - name: attachLightbox
+    title: 画像を拡大できるようにする
+    container: src/interact/lightbox.ts
+    kind: 関数
+    scope: internal
+    summary: '`LIGHTBOX_IMAGE_SELECTOR` の `img` を `renderImageOpener` のボタンで包む（`img[data-gif]` は `icon: false`）。押すと `collectLightboxImages` の並びで押した画像の位置を求め、`renderLightbox` の `dialog`（`closedby="any"`）を `root` の中に置いて `showModal()` で開き、`attachZoom` で拡大・縮小・移動を付ける。前後のボタンと、全体が収まる倍率のときの左右の矢印キーで送り（端では送らない）、送るたびに画像・キャプション・枚数・送りのボタンの `disabled` を書き換えて `attachZoom` の `reset()` で収まる倍率に戻す。`closedby` を持たないブラウザでは `dialog` 自身を押したときに閉じる。閉じたら `close` で受け取りと `attachZoom` を外して `dialog` を消し、フォーカスを押した画像のボタンへ戻し、スクロールの位置を開く前のままにする'
+    args:
+      - name: root
+        type: HTMLElement
+        required: true
+        description: 描いた要素
+    returns:
+      type: () => void
+      description: 包んだボタンを外して `img` を元に戻し、開いているライトボックスを閉じる関数
+    callees:
+      - '#functions[collectLightboxImages]'
+      - dev/設計書/モジュール構成/ライブラリ本体/部品.ts#functions[renderImageOpener]
+      - dev/設計書/モジュール構成/ライブラリ本体/部品.ts#functions[renderLightbox]
+      - dev/設計書/モジュール構成/ライブラリ本体/図.ts#functions[attachZoom]
+    refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[ライトボックス]
+      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[ライトボックスの拡大・縮小・移動]
+    unit_tests:
+      - name: test_attach_lightbox
+        case: 正常
+        summary: 画像を包み、押すと開いて送る
+        condition: 画像だけの段落 3 つを描いた要素で 2 つ目のボタンを押し、`ArrowRight` を押す
+        mock: なし
+        expected: '`img` が `button.mdmark-image-open` の中にあり、押した後に `dialog.mdmark-lightbox[open]` の枚数が `2 / 3`、`ArrowRight` の後に `3 / 3` で次の画像のボタンが `disabled`'
+      - name: test_attach_lightbox_when_zoomed
+        case: 正常
+        summary: 拡大中の矢印キーは送らず動かし、送ると倍率を戻す
+        condition: 幅 3000 の画像を開いて拡大を 2 回押し、`ArrowRight` を押してから次の画像のボタンを押す
+        mock: なし
+        expected: '`ArrowRight` の後も枚数が変わらず `scrollLeft` が 80 増え、次の画像の後に倍率が全体の収まる倍率'
+      - name: test_attach_lightbox_when_closed
+        case: 正常
+        summary: 閉じるとフォーカスを戻す
+        condition: 開いて Esc を押す（Playwright のキー操作）と、開いて背景を押す
+        mock: なし
+        expected: どちらも `dialog` が無く、フォーカスが押した画像のボタンで、`scrollY` が開く前と同じ
+      - name: test_attach_lightbox_when_not_wrapped
+        case: 正常
+        summary: 拡大しない画像は包まない
+        condition: '`{nolightbox}` の画像・リンクの中の画像・文の中の画像を描いた要素'
+        mock: なし
+        expected: '`button.mdmark-image-open` が無い'
+      - name: test_attach_lightbox_when_cleaned_up
+        case: 正常
+        summary: 外すと元に戻る
+        condition: 1 つ目を開いて戻り値を呼ぶ
+        mock: なし
+        expected: '`dialog` と `button.mdmark-image-open` が無く、`img` が `figure` の直下'
+      - name: test_attach_lightbox_when_gif
+        case: 正常
+        summary: GIF の画像の拡大のボタンにはアイコンを置かない
+        condition: GIF の画像を描いた要素
+        mock: なし
+        expected: '`img[data-gif]` を包む `button.mdmark-image-open` があり、その中に `mdmark-image-open-icon` が無い'
+    status: planned
+    introduced:
+      pr: 263
+  - name: attachGifs
+    title: GIF を止める・再生するボタンを付ける
+    container: src/interact/gif.ts
+    kind: 関数
+    scope: internal
+    summary: '`img[data-gif]` ごとに `span.mdmark-gif` で包み、`img.decode()` の後に最初のフレームを同じ大きさの `canvas`（`aria-hidden`・`hidden`）に描いて `img` の後ろに置き、`renderGifToggle` のボタンを付ける。押すと `canvas` の `hidden` と `img` の `visibility` とボタンの状態を切り替える。`prefers-reduced-motion: reduce` のときは止めた状態で始める。`decode()` が失敗した GIF は包まずボタンを付けない。ライトボックスの拡大のボタンで包んだ `img` は、ボタンごと包む'
+    args:
+      - name: root
+        type: HTMLElement
+        required: true
+        description: 描いた要素
+    returns:
+      type: () => void
+      description: 包みとボタンを外し、`img` を元に戻す関数
+    callees:
+      - dev/設計書/モジュール構成/ライブラリ本体/部品.ts#functions[renderGifToggle]
+    refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[GIF の止める・再生する]
+    unit_tests:
+      - name: test_attach_gifs
+        case: 正常
+        summary: 包んでボタンで止める・再生する
+        condition: GIF の画像を描いた要素で、ボタンを押して、もう一度押す
+        mock: なし
+        expected: '`span.mdmark-gif` の中に `img`・`canvas[hidden]`・`button[aria-pressed="false"]`、1 回目の後に `canvas` が `hidden` を持たず `img` が `visibility: hidden` で `aria-label` が `GIF を再生`、2 回目の後に元に戻る'
+      - name: test_attach_gifs_when_reduced_motion
+        case: 正常
+        summary: 動きを減らす設定では止めて始める
+        condition: '`prefers-reduced-motion: reduce` をエミュレートして描く'
+        mock: なし
+        expected: ボタンが `aria-pressed="true"` で `canvas` が `hidden` を持たない
+      - name: test_attach_gifs_when_decode_failed
+        case: 異常
+        summary: decode に失敗した GIF にはボタンを付けない
+        condition: '`src` が GIF として読めないファイルの `img[data-gif]`'
+        mock: なし
+        expected: '`span.mdmark-gif` と `button.mdmark-gif-toggle` が無い'
+    status: planned
+    introduced:
+      pr: 263
+  - name: bottomHeadCells
+    title: 列ごとの最下段の見出しのセルを決める
+    container: src/table-logic.ts
+    kind: 関数
+    scope: internal
+    summary: 見出しの行ごとのセルの `rowspan`・`colspan` から格子を作り、列ごとに、その列だけを覆い最下段まで届くセルの位置を返す（上の段から縦に結合したセルを含む）。複数の列をまたぐセルしか無い列は `undefined`
+    args:
+      - name: rows
+        type: 'Array<Array<{ rowSpan: number; colSpan: number }>>'
+        required: true
+        description: 見出しの行ごとのセル
+    returns:
+      type: 'Array<{ row: number; cell: number } | undefined>'
+      description: 列の位置ごとの、ボタンを置くセルの行と行の中の位置
+    unit_tests:
+      - name: test_bottom_head_cells
+        case: 正常
+        summary: 縦に結合したセルと 2 段目のセルを選ぶ
+        condition: 1 段目 `地域`（rowSpan 2）・`上期`（colSpan 2）、2 段目 `売上`・`件数`
+        mock: なし
+        expected: '`[{0, 0}, {1, 0}, {1, 1}]`'
+      - name: test_bottom_head_cells_when_spanning
+        case: 正常
+        summary: またぐセルしか無い列を undefined にする
+        condition: 1 段だけで、`名前`・`期間`（colSpan 2）
+        mock: なし
+        expected: '`[{0, 0}, undefined, undefined]`'
+    status: planned
+    introduced:
+      pr: 275
+  - name: mergeSpans
+    title: 隣り合う同じ値の結合を決める
+    container: src/table-logic.ts
+    kind: 関数
+    scope: internal
+    summary: 表示している行の結合する列の値から、列ごとに隣り合う同じ値の範囲を決める。左にある結合する列の範囲の切れ目でも切る
+    args:
+      - name: options
+        type: '{ values: string[][]; columns: number[] }'
+        required: true
+        description: '`values` は表示している行ごとの、`columns` の列の値（`columns` と同じ順）。`columns` は結合する列の位置（小さい順）'
+    returns:
+      type: number[][]
+      description: 行と `columns` の順ごとの `rowspan`。範囲の始まりは覆う行の数、続く行は 0
+    unit_tests:
+      - name: test_merge_spans
+        case: 正常
+        summary: 隣り合う同じ値だけを結合する
+        condition: 1 列の値 `A`・`A`・`B`・`A`
+        mock: なし
+        expected: '`[[2], [0], [1], [1]]`'
+      - name: test_merge_spans_when_left_breaks
+        case: 正常
+        summary: 左の列の切れ目で右の列も切る
+        condition: 2 列の値 `[東, 札幌]`・`[東, 札幌]`・`[西, 札幌]`
+        mock: なし
+        expected: '`[[2, 2], [0, 0], [1, 1]]`'
+    status: planned
+    introduced:
+      pr: 275
+  - name: measureIndents
+    title: 行のインデントのレベルを決める
+    container: src/code-fold-logic.ts
+    kind: 関数
+    scope: internal
+    summary: 行の頭の空白から、コードブロックの中で最も小さいインデントの幅（空白の数）を 1 レベル、タブを 1 レベルとしてレベルを決める。空白だけの行と空行は `undefined`
+    args:
+      - name: texts
+        type: string[]
+        required: true
+        description: 行の文字
+    returns:
+      type: Array<number | undefined>
+      description: 行ごとのレベル（インデントの無い行は 0）
+    unit_tests:
+      - name: test_measure_indents
+        case: 正常
+        summary: 最も小さい幅を 1 レベルにする
+        condition: '`a:`・`  b:`・`    c: 1`・空行・`\td`'
+        mock: なし
+        expected: '`[0, 1, 2, undefined, 1]`'
+      - name: test_measure_indents_when_four_spaces
+        case: 正常
+        summary: 4 つの空白を 1 レベルにする
+        condition: '`{`・`    a`・`        b`・`}`'
+        mock: なし
+        expected: '`[0, 1, 2, 0]`'
+    status: planned
+    introduced:
+      pr: 275
+  - name: foldLinesOf
+    title: 畳む行の数を決める
+    container: src/code-fold-logic.ts
+    kind: 関数
+    scope: internal
+    summary: 次の空でない行がより深い行を畳める行とし、その後ろの、次の同じ深さ以下の行の手前までの行の数を返す（範囲の末尾の空行は含めない）
+    args:
+      - name: indents
+        type: Array<number | undefined>
+        required: true
+        description: '`measureIndents` のレベル'
+    returns:
+      type: Array<number | undefined>
+      description: 行ごとの畳む行の数。畳めない行は `undefined`
+    unit_tests:
+      - name: test_fold_lines_of
+        case: 正常
+        summary: 入れ子の畳む行の数を決め、閉じ括弧の行を含めない
+        condition: '`[0, 1, 2, 1, 0]`'
+        mock: なし
+        expected: '`[3, 1, undefined, undefined, undefined]`'
+      - name: test_fold_lines_of_when_trailing_blank
+        case: 正常
+        summary: 範囲の末尾の空行を含めない
+        condition: '`[0, 1, undefined, 0]`'
+        mock: なし
+        expected: '`[1, undefined, undefined, undefined]`'
+    status: planned
+    introduced:
+      pr: 275
+  - name: hiddenLinesOf
+    title: 隠す行を決める
+    container: src/code-fold-logic.ts
+    kind: 関数
+    scope: internal
+    summary: 畳んだ行の後ろの畳む行の数の行を、隠す行にする。内側の畳んだ状態は外側を開いても残る
+    args:
+      - name: options
+        type: '{ foldLines: Array<number | undefined>; folded: boolean[] }'
+        required: true
+        description: 行ごとの畳む行の数と、畳んでいるか
+    returns:
+      type: Set<number>
+      description: 隠す行の位置（0 から）
+    unit_tests:
+      - name: test_hidden_lines_of
+        case: 正常
+        summary: 外側を開いても内側の畳んだ行を隠す
+        condition: '`foldLines` が `[3, 1, undefined, undefined]`、`folded` が `[false, true, false, false]`'
+        mock: なし
+        expected: '`{2}`'
+      - name: test_hidden_lines_of_when_outer_folded
+        case: 正常
+        summary: 外側を畳むと範囲の行を全て隠す
+        condition: 同じ `foldLines` と `folded` が `[true, true, false, false]`
+        mock: なし
+        expected: '`{1, 2, 3}`'
+    status: planned
+    introduced:
+      pr: 275
+  - name: guideRangeOf
+    title: 縦線を濃くする範囲を決める
+    container: src/code-fold-logic.ts
+    kind: 関数
+    scope: internal
+    summary: 行を含む最も内側の畳める範囲（畳める行の後ろの畳む行の数の行）を返す。深さは範囲の畳める行の `indents` のレベルに 1 を足した値
+    args:
+      - name: options
+        type: '{ indents: Array<number | undefined>; foldLines: Array<number | undefined>; index: number }'
+        required: true
+        description: 行ごとの `measureIndents` のレベルと畳む行の数、ポインターを乗せた行の位置（0 から）
+    returns:
+      type: '{ from: number; to: number; depth: number } | undefined'
+      description: 範囲の最初と最後の行の位置と深さ。含む範囲が無ければ `undefined`
+    unit_tests:
+      - name: test_guide_range_of
+        case: 正常
+        summary: 最も内側の範囲を返す
+        condition: '`indents` が `[0, 1, 2, 1]`、`foldLines` が `[3, 1, undefined, undefined]` で `index` が 2'
+        mock: なし
+        expected: '`{ from: 2, to: 2, depth: 2 }`'
+      - name: test_guide_range_of_when_level_skipped
+        case: 正常
+        summary: レベルを飛ばしたインデントでも深さをレベルから決める
+        condition: '`indents` が `[0, 2, 2]`、`foldLines` が `[2, undefined, undefined]` で `index` が 1'
+        mock: なし
+        expected: '`{ from: 1, to: 2, depth: 1 }`'
+      - name: test_guide_range_of_when_outside
+        case: 正常
+        summary: 範囲の外の行は undefined
+        condition: 同じ `indents`・`foldLines` で `index` が 0
+        mock: なし
+        expected: '`undefined`'
+    status: planned
+    introduced:
+      pr: 275
+  - name: attachCodeFolds
+    title: コードの行に畳む・開くを付ける
+    container: src/interact/code-folds.ts
+    kind: 関数
+    scope: internal
+    summary: '`data-fold-lines` の行に `renderCodeFoldToggle` のボタンを置き（`data-folded` の行は畳んだ状態）、押すと行の畳んだ状態を切り替えて `hiddenLinesOf` の行に `hidden` を付け外しし、畳んだ行の末尾に `renderCodeFoldMore` を置く。Shift を押しながらの押下（Enter・Space を含む）は範囲の中の畳める行も同じ状態にする。`⋯` を押すとその行を開く。`pointerover`・`pointerout` で `guideRangeOf` の範囲の行に `data-guide-active` を付け外しする。開閉を切り替える関数を `codeFoldSetters` に登録する'
+    args:
+      - name: root
+        type: HTMLElement
+        required: true
+        description: 描いた要素
+    returns:
+      type: () => void
+      description: ボタン・`⋯`・`hidden`・`data-guide-active`・受け取りを取り除き、`codeFoldSetters` から外す関数
+    side_effects: コードブロックの行に開閉のボタンを置き、行の `hidden` を書き換える
+    callees:
+      - '#functions[hiddenLinesOf]'
+      - '#functions[guideRangeOf]'
+      - dev/設計書/モジュール構成/ライブラリ本体/部品.ts#functions[renderCodeFoldToggle]
+      - dev/設計書/モジュール構成/ライブラリ本体/部品.ts#functions[renderCodeFoldMore]
+    unit_tests:
+      - name: test_attach_code_folds
+        case: 正常
+        summary: 畳む・⋯ で開く・入れ子の状態を残す
+        condition: インターフェース定義『文書を描く』の「正常系（コードの行を畳む・開く）」の yaml のコードブロック
+        mock: なし
+        expected: 1・2 行目にだけ `aria-expanded="true"` のボタン。1 行目を押すと 2〜4 行目が `hidden` で末尾に `⋯`、`⋯` を押すと戻る。2 行目を畳んでから 1 行目を畳んで開くと 3 行目が隠れたまま
+      - name: test_attach_code_folds_when_shift
+        case: 正常
+        summary: Shift を押しながらで入れ子もまとめて開閉する
+        condition: 同じコードブロックで、Shift を押しながら 1 行目のボタンを 2 回押す
+        mock: なし
+        expected: 1 回目の後に 1・2 行目のボタンが `false`、2 回目の後に両方が `true` で 2〜4 行目が `hidden` を持たない
+      - name: test_attach_code_folds_when_initial
+        case: 正常
+        summary: fold= の行を畳んだ状態にし、外すと戻す
+        condition: 2 行目と 6 行目が `data-folded` の 8 行のコードブロック
+        mock: なし
+        expected: 2・6 行目のボタンが `false` で後ろの行が `hidden`。外した後はボタンと `⋯` が無く、どの行も `hidden` を持たない
+      - name: test_attach_code_folds_when_hovered
+        case: 正常
+        summary: ポインターを乗せた行の範囲の縦線を濃くする
+        condition: 同じ yaml のコードブロックの 3 行目に `pointerover`、続けて `pointerout`
+        mock: なし
+        expected: '`pointerover` の後に 3 行目だけが `data-guide-active` を持ち、`pointerout` の後は持つ行が無い'
+    status: planned
+    introduced:
+      pr: 275
+  - name: setCodeFoldOpen
+    title: コードの行の開閉を切り替える
+    container: src/interact/code-folds.ts
+    kind: 関数
+    scope: internal
+    summary: 開閉のボタンから `codeFoldSetters` の関数を引いて、その行を開くか畳む。登録の無いボタンは何もしない。印刷の前後に使う
+    args:
+      - name: toggle
+        type: Element
+        required: true
+        description: 開閉のボタン
+      - name: open
+        type: boolean
+        required: true
+        description: 開くか
+    returns:
+      type: void
+      description: なし
+    unit_tests:
+      - name: test_set_code_fold_open
+        case: 正常
+        summary: 畳んだ行を開き、畳み直す
+        condition: '`attachCodeFolds` を付けた、2 行目を畳んだコードブロックの 2 行目のボタンで `true`、続けて `false`'
+        mock: なし
+        expected: '`true` の後に後ろの行が `hidden` を持たず `⋯` が無い。`false` の後に `hidden` と `⋯` が戻る'
+    status: planned
+    introduced:
+      pr: 275
+  - name: attachFootnotes
+    title: 脚注の操作を付ける
+    container: src/interact/footnotes.ts
+    kind: 関数
+    scope: internal
+    summary: mount が描いた脚注の番号にツールチップを開閉する操作を、番号と末尾の一覧の項目に行き来する操作を付ける
+    description: 'モック `dev/mock/refs/311/assets/footnote.js` のとおり。付ける前に、`root` の中の `mdmark-fnref-`・`mdmark-fn-tip-`・`mdmark-fn-` で始まる `id` をモジュールの通し番号を添えた値に振り直し、それを指す `href`・`aria-describedby`・`aria-details` も直す（`attachTermTips` と同じ）。開閉は `sup.mdmark-fn-ref` の class で表す: ポインターを載せたとき・フォーカスしたときにほかの脚注のツールチップを閉じて `is-open` を付け、画面に対して置く。置く側は `chooseTipSide`（`placement` を渡す）で決め、下なら `is-below` も付け、画面の端からはみ出さないよう左右を寄せる。ポインターもフォーカスも離れたら 150 ミリ秒待って `is-open`・`is-below`・`is-dismissed` を外す。`sup.mdmark-fn-ref` の `pointerenter`・`pointerleave` は `pointerType` が `touch` のとき無視する。番号のリンクの `pointerdown` ごとに、続く `click` で一覧へ移らない番号の控えを置き直す: `touch` で閉じた番号なら、`is-dismissed` を外してから開き（`attachTermTips` のタッチの切り替えと同じく、一覧へ移った後や外のタップで閉じた後も開き直す）、その番号を控える。開いた番号の `touch` と、`mouse`・`pen` では控えを消す。`document` の `keydown` でも控えを消す（タップの `click` が発火しなかった後の Enter で一覧へ移る）。控えた番号の `click` では既定の動作を止め、一覧へ移らずに控えを消す。`document` の捕捉の段の `pointerdown` で、開いている `sup.mdmark-fn-ref`（番号とツールチップ）の外が対象なら閉じて `is-dismissed` を付け、番号に残る `:hover`・`:focus-within` で CSS がツールチップを出し続けないようにする（`attachTermTips` と同じ。用語の語の枠と脚注の番号は互いの外になる）。開閉の処理は `attachTermTips`・`attachDiagramTips` と共通にしない（脚注はタップで閉じず一覧へ移るため、共通にすると分岐の引数が要る）。Esc では `is-open` を外して `is-dismissed` を付け、ツールチップの中にフォーカスがあれば番号へ戻す。番号を押すと（Enter を含む）、`href` の最後の `#` の後ろの `id` の項目を `root` の中で引き（まとめた HTML は同じ文書の中のアンカーを `#/{文書のパス}#{id}` に書き換える）、あれば既定の動作を止め、ツールチップを閉じて `is-dismissed` を付け、項目を含む `details` を開き、`openEnclosing` で囲む閉じた節・タブ・行の詳細を開いてから項目を `scrollIntoView({ block: "center" })` し、`tabindex="-1"` を付けてフォーカスを移す。戻るリンクを押すと、同じく `href` の最後の `#` の後ろの `id` の番号のリンクを `root` の中で引き、既定の動作を止め、`openEnclosing` で番号を囲む閉じた節・タブ・行の詳細を開き、番号を画面に入れてフォーカスを移す。どちらも URL の `#` を書き換えない。開いたツールチップはスクロールと画面の幅の変化で置き直す。印刷の前は開いたツールチップを閉じる（ツールチップと戻るリンクを隠すのは印刷の CSS、一覧を開くのは `attachPrint`）。返す関数で付けた操作と閉じる待ちを外し、付けた class と置いた位置を消す'
+    args:
+      - name: options
+        type: '{ root: HTMLElement; placement: TooltipPlacement }'
+        required: true
+        description: 描いた文書の要素と、ツールチップを先に出す側
+    returns:
+      type: () => void
+      description: 付けた操作を外す関数
+    side_effects: '`root` の中の要素の `id`・属性を書き換え、`root`・`document`・`window` にイベントを付ける'
+    callees:
+      - '#functions[chooseTipSide]'
+      - '#functions[openEnclosing]'
+    unit_tests:
+      - name: test_attach_footnotes
+        case: 正常
+        summary: フォーカスで開き Esc で閉じる
+        condition: 脚注 1 つの番号と一覧を描いた要素
+        mock: なし（Chromium）
+        expected: 付けた直後は `sup.mdmark-fn-ref` が `is-open` を持たず、番号のフォーカスで `is-open` を持ち、Esc で `is-open` が外れて `is-dismissed` を持ち、フォーカスは番号に残る。外す関数の後はどの class も残らない
+      - name: test_attach_footnotes_when_jump
+        case: 正常
+        summary: 番号で一覧の項目へ、戻るリンクで番号へ移る
+        condition: 脚注 1 つの番号と閉じた一覧を描いた要素。番号を押し、次に戻るリンクを押す
+        mock: なし（Chromium）
+        expected: 番号の後は `details` が `open` を持ち、項目が `tabindex="-1"` でフォーカスを持ち、`sup` が `is-open` を持たない。戻るリンクの後は番号のリンクがフォーカスを持つ。どちらの後も `location.hash` が変わらない
+      - name: test_attach_footnotes_unique_ids
+        case: 正常
+        summary: 同じページに 2 回描いても id が重ならない
+        condition: 同じ HTML を 2 つの要素に入れて両方に付ける
+        mock: なし（Chromium）
+        expected: ページの `id` が全て一意で、`href`・`aria-describedby` が同じ要素の中の要素を指す
+      - name: test_attach_footnotes_when_back_into_closed_section
+        case: 正常
+        summary: 閉じた節の中の番号へ、戻るリンクで節を開いて移る
+        condition: '`<!-- section: closed -->` の節の中に `[^a]` を持つ文書を描き、`attachSections` と一緒に付け、一覧を開いて戻るリンクを押す'
+        mock: なし（Chromium）
+        expected: 節の中身が `hidden` を持たず、番号のリンクがフォーカスを持つ
+      - name: test_attach_footnotes_when_touch_tapped
+        case: 正常
+        summary: タッチの 1 回目のタップで開いて一覧へ移らず、開いた番号のタップで一覧へ移る
+        condition: 脚注 1 つの番号と閉じた一覧を描いた要素。番号のリンクに `pointerType` が `touch` の `pointerenter`・`pointerdown`・`pointerup`・`pointerleave` をこの順に送ってリンクの `focus()` を呼び、`click` を送る。続けて同じタップをもう一度送る（既にフォーカスを持つリンクでは `focus` は発火しない）
+        mock: タイマーを `vi.useFakeTimers` で進める
+        expected: 1 回目の後に `sup.mdmark-fn-ref` が `is-open` を持ち、`details` が `open` を持たず、`click` の `defaultPrevented` が `true`。2 回目の後は `is-open` を持たず、`details` が `open` を持ち、項目がフォーカスを持つ
+      - name: test_attach_footnotes_when_touch_outside
+        case: 正常
+        summary: タッチで開いた後、外の `pointerdown` だけで閉じ、ツールチップの中のリンクでは閉じない
+        condition: 中身にリンクを持つ脚注の番号をタッチでタップして開き、ツールチップの中のリンクに `pointerType` が `touch` の `pointerdown` を送り、次に `root` の外の要素に `pointerType` が `touch` の `pointerdown` だけを送る（`pointerleave`・`focusout` は送らない）
+        mock: タイマーを `vi.useFakeTimers` で進める
+        expected: 中のリンクの後は `is-open` を持ち、外の後は `is-open` を持たず `is-dismissed` を持ち、番号にフォーカスが残ったままでもツールチップの `display` が `none`
+      - name: test_attach_footnotes_when_touch_reopened
+        case: 正常
+        summary: タップで一覧へ移った後も、同じ番号のタップで開き直す
+        condition: '`test_attach_footnotes_when_touch_tapped` と同じ 2 回のタップで一覧へ移った後、同じ番号にタッチのタップ（`pointerenter`・`pointerdown`・`pointerup`・`pointerleave`・`focus()`・`click`）をもう一度送る'
+        mock: タイマーを `vi.useFakeTimers` で進める
+        expected: '`sup.mdmark-fn-ref` が `is-dismissed` を持たず `is-open` を持ち、`click` の `defaultPrevented` が `true`'
+      - name: test_attach_footnotes_when_mouse_clicked
+        case: 正常
+        summary: マウスでは今のまま 1 回のクリックで一覧へ移る
+        condition: 脚注 1 つの番号と閉じた一覧を描いた要素。番号のリンクに `pointerType` が `mouse` の `pointerenter`・`pointerdown`・`pointerup` を送り、`click` を送る
+        mock: タイマーを `vi.useFakeTimers` で進める
+        expected: '`click` の後、`sup.mdmark-fn-ref` が `is-open` を持たず、`details` が `open` を持ち、項目がフォーカスを持つ'
+      - name: test_attach_footnotes_when_doc_path_in_href
+        case: 正常
+        summary: まとめた HTML が `href` に文書のパスを足しても、番号と戻るリンクで移る
+        condition: 脚注 1 つの番号と閉じた一覧を描いた要素に付けた後、番号のリンクと戻るリンクの `href` を `#/doc.md#{id}` に書き換え、番号を押し、次に戻るリンクを押す
+        mock: なし（Chromium）
+        expected: 番号の `click` の `defaultPrevented` が `true` で、`details` が `open` を持ち、項目がフォーカスを持つ。戻るリンクの `click` の `defaultPrevented` が `true` で、番号のリンクがフォーカスを持つ
+  - name: splitKeyPath
+    title: キーのパスを分ける
+    container: src/tree-logic.ts
+    kind: 関数
+    scope: internal
+    summary: '`aliases[].metadata.type` の形のパスを `.` で分け、`[]` を前の名前に付けたままの名前の並びと、親のパスの並びを返す'
+    args:
+      - name: path
+        type: string
+        required: true
+        description: キーの列の文字（前後の空白と行内のコードの `` ` `` は除いたもの）
+    returns:
+      type: '{ names: string[]; parents: string[] }'
+      description: '`names` は末尾までの名前（`aliases[]` の形を含む）、`parents` は根からの親の全体のパス'
+    unit_tests:
+      - name: test_split_key_path
+        case: 正常
+        summary: '`.` で分け、`[]` を名前に残す'
+        condition: '`aliases[].metadata.alias_type.type`'
+        mock: なし
+        expected: '`names` が `["aliases[]","metadata","alias_type","type"]`、`parents` が `["aliases[]","aliases[].metadata","aliases[].metadata.alias_type"]`'
+    status: planned
+    introduced:
+      pr: 303
+  - name: planTreeRows
+    title: 階層の行を計画する
+    container: src/tree-logic.ts
+    kind: 関数
+    scope: internal
+    summary: 表の行のキーの並びから、表に無い親を子の最初の行の前に補った行の並び（`{ path, parent, depth, name, virtual, hasChildren, source }`）を返す
+    description: '`source` は元の行の位置（補った行は `undefined`）。同じパスの行が後ろにあるときは補わず、その行の場所で親にする。空のキーの行は深さ 0 の行としてそのまま残す'
+    args:
+      - name: keys
+        type: string[]
+        required: true
+        description: 本文の行ごとのキーの列の文字
+    returns:
+      type: TreeRowPlan[]
+      description: 描く順の行
+    unit_tests:
+      - name: test_plan_tree_rows
+        case: 正常
+        summary: 表に無い親を補い、深さと子の有無を付ける
+        condition: '`["features.table","features.html","aliases[].id","aliases[].metadata.alias_type.type"]`'
+        mock: なし
+        expected: パスが `features`（virtual）・`features.table`・`features.html`・`aliases[]`（virtual）・`aliases[].id`・`aliases[].metadata`（virtual）・`aliases[].metadata.alias_type`（virtual）・`aliases[].metadata.alias_type.type` の順で、最後の `depth` が 3
+      - name: test_plan_tree_rows_when_parent_written_later
+        case: 正常
+        summary: 後ろに書いた親の行は補わず、その行を親にする
+        condition: '`["a.b","a"]`'
+        mock: なし
+        expected: パスが `a`（`source` 1、virtual でない）・`a.b`（`source` 0）の順
+    status: planned
+    introduced:
+      pr: 303
+  - name: yamlLinePaths
+    title: YAML の行のパスを求める
+    container: src/tree-logic.ts
+    kind: 関数
+    scope: internal
+    summary: YAML の行ごとに、インデントと `- ` から求めたキーのパス（表の `data-path` と同じ書き方。キーを持たない行は `undefined`）を返す
+    description: YAML を解析せず、行の先頭の空白と `- `・`キー:` だけを見る。配列の要素のキーは親のキーに `[]` を付けたパスの下にする。コメントと空の行、複数行の文字列の中はキーを持たない行にする
+    args:
+      - name: lines
+        type: string[]
+        required: true
+        description: 見本のコードブロックの行
+    returns:
+      type: Array<string | undefined>
+      description: 行ごとのパス
+    unit_tests:
+      - name: test_yaml_line_paths
+        case: 正常
+        summary: 入れ子のキーと配列の要素のキーにパスを付ける
+        condition: '`aliases:`・`  - id: terms`・`    paths:`・`      - dev/*.yaml`・`    metadata:`・`      alias_type:`・`        type: custom`'
+        mock: なし
+        expected: '`aliases[]`・`aliases[].id`・`aliases[].paths`・`undefined`・`aliases[].metadata`・`aliases[].metadata.alias_type`・`aliases[].metadata.alias_type.type`'
+      - name: test_yaml_line_paths_when_comments
+        case: 正常
+        summary: コメント・空の行・複数行の文字列の中はパスを持たない
+        condition: '`# 説明`・``・`note: |`・`  a: b`・`next: 1`'
+        mock: なし
+        expected: '`undefined`・`undefined`・`note`・`undefined`・`next`'
+    status: planned
+    introduced:
+      pr: 303
+  - name: filterTreeRows
+    title: 階層の行を絞り込む
+    container: src/tree-logic.ts
+    kind: 関数
+    scope: internal
+    summary: 末尾の名前に単語を含む行とその祖先の行のパスの集まりと、当たった行のうち補った行でないものの数を返す
+    description: 照合は大文字小文字を区別しない。単語が空なら全ての行を残し、数は補った行でない行の数
+    args:
+      - name: options
+        type: '{ rows: TreeRowPlan[]; word: string }'
+        required: true
+        description: '`rows` は `planTreeRows` の行、`word` は絞り込みの単語'
+    returns:
+      type: '{ keep: Set<string>; hits: Set<string>; count: number }'
+      description: '`keep` は残す行、`hits` は当たった行のパス、`count` は件数'
+    unit_tests:
+      - name: test_filter_tree_rows
+        case: 正常
+        summary: 当たった行の祖先を残し、補った行を数えない
+        condition: test_plan_tree_rows の行で `id` と `metadata`
+        mock: なし
+        expected: '`id` は `keep` が `aliases[]`・`aliases[].id`、`count` が 1。`metadata` は `keep` が `aliases[]`・`aliases[].metadata`、`count` が 0'
+    status: planned
+    introduced:
+      pr: 303
+  - name: canMoveColumn
+    title: 列を動かせるかを決める
+    container: src/table-logic.ts
+    kind: 関数
+    scope: internal
+    summary: 動かす列と動かす先の列が同じ結合した見出しの範囲で、ピン止めの同じ側にあるとき `true` を返す
+    args:
+      - name: options
+        type: '{ from: ColumnPlace; to: ColumnPlace }'
+        required: true
+        description: '`ColumnPlace` は `{ group: string | undefined; pinned: boolean }`'
+    returns:
+      type: boolean
+      description: 動かせるか
+    unit_tests:
+      - name: test_can_move_column
+        case: 正常
+        summary: 同じ範囲と同じピン止めの側だけを許す
+        condition: '`{ group: "0:1", pinned: false }` 同士、`"0:1"` と `undefined`、`pinned` が `true` と `false`'
+        mock: なし
+        expected: '`true`・`false`・`false`'
+    status: planned
+    introduced:
+      pr: 303
+  - name: moveColumn
+    title: 列の順を入れ替える
+    container: src/table-logic.ts
+    kind: 関数
+    scope: internal
+    summary: 列の順（元の列の位置の並び）の `column` を `target` の前か後ろへ動かした新しい並びを返す
+    args:
+      - name: options
+        type: '{ order: number[]; column: number; target: number; side: "before" | "after" }'
+        required: true
+        description: '`column`・`target` は元の列の位置'
+    returns:
+      type: number[]
+      description: 新しい列の順（渡した配列は書き換えない）
+    unit_tests:
+      - name: test_move_column
+        case: 正常
+        summary: 列を前と後ろへ動かす
+        condition: '`order` が `[0,1,2,3]`。`column: 3, target: 0, side: "before"` と `column: 1, target: 2, side: "after"`'
+        mock: なし
+        expected: '`[3,0,1,2]` と `[0,2,1,3]`'
+    status: planned
+    introduced:
+      pr: 303
+  - name: attachTableSettings
+    title: テーブル設定を付ける
+    container: src/interact/table-settings.ts
+    kind: 関数
+    scope: internal
+    summary: 表の帯のテーブル設定のボタンでパネルを開閉し、目のアイコンで列を隠し、つまみのドラッグ＆ドロップと ↑・↓ キーで列を動かす。列を動かしたら見出し・本文の行・集計の行のセルと一覧を並べ直し、隠したらバッジと `aria-label` を書き換えて `onColumnsChange` を呼ぶ
+    description: 並べ替えはセルの並びを DOM の上で入れ替え、列の位置は各セルに描いたときの `data-col` を持たせて数える（並べ替え・絞り込み・コピー・集計は `data-col` で列を引く）。動かせるかは `canMoveColumn`、新しい順は `moveColumn` で決める。`dragover` で動かせない行には `preventDefault` せず線も出さない。列の順は覚えない。受け取りはその表の囲みの中だけで処理する
+    side_effects: 表のセルと一覧の並び・`hidden`・ボタンの属性を書き換える。パネルを開いている間だけ `document` の `pointerdown`・`keydown` を受け取る
+    args:
+      - name: options
+        type: '{ wrapper: HTMLElement; onColumnsChange?: (change: { hidden: string[] }) => void }'
+        required: true
+        description: '`wrapper` は `div.mdmark-table`、`onColumnsChange` は `attachTables` が `tableIndex` を付けて渡す知らせ'
+    returns:
+      type: () => void
+      description: 受け取りを外す関数
+    callees:
+      - '#functions[canMoveColumn]'
+      - '#functions[moveColumn]'
+      - dev/設計書/モジュール構成/ライブラリ本体/部品.ts#functions[renderTableSettings]
+    unit_tests:
+      - name: test_attach_table_settings_when_dragged
+        case: 正常
+        summary: ドラッグ＆ドロップで列を動かし、全ての行のセルを並べ直す
+        condition: '`+reorder +columns` の 4 列 3 行の表。説明のつまみを名前の上へ `dragstart`・`dragover`・`drop`'
+        mock: '`DataTransfer` を作って渡す'
+        expected: 見出しと 3 行のセルの `data-col` が `3,0,1,2` の順で、一覧も同じ順
+      - name: test_attach_table_settings_when_arrow_key
+        case: 正常
+        summary: つまみの ↓ キーで 1 つ動かし、フォーカスを残す
+        condition: 同じ表で型のつまみにフォーカスして `ArrowDown`
+        mock: なし
+        expected: 列が `0,2,1,3` の順で、`document.activeElement` が型のつまみ
+      - name: test_attach_table_settings_when_group_boundary
+        case: 正常
+        summary: 結合した見出しの範囲の外とピン止めの境には動かさず、動かせないつまみを `disabled` にする
+        condition: '`header-rows=2 pin=名前` の表で、型を備考の下へ `drop`'
+        mock: なし
+        expected: 列の順が変わらず、名前と備考のつまみが `disabled`
+      - name: test_attach_table_settings_when_hidden
+        case: 正常
+        summary: 目のアイコンで列を隠し、バッジと読み上げの名前を書き換えて知らせる
+        condition: 説明の目のアイコンを押す
+        mock: '`onColumnsChange` を見張る'
+        expected: '説明のセルが `hidden`、ボタンのバッジが `1`・`aria-label` が `テーブル設定（1 列を非表示）`、`onColumnsChange` が `{ hidden: ["説明"] }` で 1 回'
+    status: planned
+    introduced:
+      pr: 303
+  - name: attachTableTree
+    title: 階層の表の操作を付ける
+    container: src/interact/table-tree.ts
+    kind: 関数
+    scope: internal
+    summary: '`data-tree` の表の子を持つ行に開閉のボタン、各行にパスのコピーのボタンと全体のパスのツールチップを置き、開閉・行の選択・キーの列の絞り込み・見本との連動と見本の表示の切り替えを付ける'
+    description: 開閉の作法はコードの折りたたみと同じ（Shift で子孫をまとめて開閉する）。ツールチップは用語のツールチップと同じ開閉の処理を使う。絞り込みは `attachTables` のキーの列の `text` の絞り込みの代わりに `filterTreeRows` で当て、件数を書き換える。絞り込む前の開閉を控え、解くと戻す。コピーは `writeClipboard` を使い、結果を 2 秒出す。印刷の前後の開閉は `attachPrint` が扱う
+    side_effects: 表の行の `hidden`・`aria-selected`・縦線の class・見本の行の class を書き換える。クリップボードに書く
+    args:
+      - name: options
+        type: '{ wrapper: HTMLElement; placement: TooltipPlacement }'
+        required: true
+        description: '`wrapper` は `div.mdmark-table[data-tree]`、`placement` はツールチップを出す場所'
+    returns:
+      type: () => void
+      description: 受け取りを外す関数
+    callees:
+      - '#functions[filterTreeRows]'
+      - dev/設計書/モジュール構成/ライブラリ本体/部品.ts#functions[renderTreeTools]
+    unit_tests:
+      - name: test_attach_table_tree_when_folded
+        case: 正常
+        summary: 開閉のボタンで子孫を畳み、Shift で入れ子もまとめて開閉する
+        condition: 階層の表で `aliases[]` のボタンを押し、次に Shift を押しながら押す
+        mock: なし
+        expected: 1 回目で子孫 4 行が `hidden`、2 回目で全ての行が出て入れ子のボタンも `aria-expanded="true"`
+      - name: test_attach_table_tree_when_selected
+        case: 正常
+        summary: 行を選ぶと同じ親の範囲の縦線を濃くし、見本の同じパスの行に色を付ける
+        condition: 見本を結んだ階層の表で `features.table` の行を押す
+        mock: なし
+        expected: 行が `aria-selected="true"`、`features.table`・`features.html` の 1 つ目の縦線が `is-active`、開いているタブの `data-path="features.table"` の行が `is-linked`
+      - name: test_attach_table_tree_when_filtered
+        case: 正常
+        summary: 末尾の名前で絞り込み、祖先を残して件数を書き換える
+        condition: '`+count filter=キー:text` の階層の表で、絞り込みの欄に `id`'
+        mock: なし
+        expected: '`aliases[]`・`aliases[].id` だけが出て、`mark.mdmark-tree-hit` が 1 つ、件数が `1 / 4 件`'
+      - name: test_attach_table_tree_when_copied
+        case: 正常
+        summary: コピーのボタンで全体のパスを書き、行の選択を変えない
+        condition: '`aliases[].id` の行のコピーのボタンを押す'
+        mock: '`navigator.clipboard.writeText` を見張る'
+        expected: '`writeText` が `aliases[].id` で 1 回、どの行も `aria-selected="true"` でない'
+      - name: test_attach_table_tree_when_example_hidden
+        case: 正常
+        summary: 見本の表示を切り替える
+        condition: '`見本を隠す` を押す'
+        mock: なし
+        expected: '`mdmark-tree-layout` が `is-example-hidden` を持ち、ボタンが `aria-expanded="false"`・文字 `見本を表示`'
+    status: planned
+    introduced:
+      pr: 303
+  - name: attachWideToggles
+    title: wide の範囲の切り替えを付ける
+    container: src/interact/wide.ts
+    summary: '`div.mdmark-wide-range` の直前に部品『wide の範囲』の帯とボタンを置き、押すたびに `data-state` と `aria-pressed` を入れ替える。広げられる幅（右側の目次が本文の右に並ぶときは描く先の要素の内側から目次を除いた幅、それ以外は描く先の要素の親の内側の幅。どちらも画面の幅まで）を描く先の要素と親の `ResizeObserver` で見て、本文の幅以下なら帯を隠す。広い幅の `hover` でピン止めしていない右側の目次があるときは、範囲の右端を右端の線の左までに収める CSS 変数を範囲に入れる'
+    kind: 関数
+    scope: internal
+    args:
+      - name: root
+        type: HTMLElement
+        required: true
+        description: 描く先の要素
+    returns:
+      type: () => void
+      description: 外す関数
+    side_effects: 描く先の要素の子を足し、`click` と `ResizeObserver` を付ける
+    callees:
+      - dev/設計書/モジュール構成/ライブラリ本体/部品.ts#functions[renderWide]
+    unit_tests:
+      - name: test_attach_wide_toggles
+        case: 正常
+        condition: '`data-state="wide"` と `narrow` の範囲を持つ要素'
+        expected: それぞれの直前に `aria-pressed` が `true`・`false` のボタンがあり、1 つ目を押すと `data-state="narrow"`・`aria-pressed="false"` になる
+        mock: なし（ブラウザ）
+        summary: ボタンを置いて状態を入れ替える
+      - name: test_attach_wide_toggles_when_narrow_host
+        case: 正常
+        condition: 描く先の要素の親の幅を本文の幅以下にする
+        expected: 帯が `hidden` を持つ
+        mock: なし（ブラウザ）
+        summary: 狭い幅では帯を隠す
+  - name: attachCsvRaw
+    title: CSV の表と元の CSV の切り替えを付ける
+    container: src/interact/csv-raw.ts
+    summary: '`data-source="csv"` の表の RAW のボタンを押すたびに、`aria-pressed` と囲みの `data-view="raw"` を入れ替え、表を包む横のスクロールの要素（`.mdmark-table-scroll`。無ければ表）と `pre.mdmark-raw` の `hidden` を入れ替える。並べ替え・絞り込み・ピン止めの状態は触らない'
+    kind: 関数
+    scope: internal
+    args:
+      - name: root
+        type: HTMLElement
+        required: true
+        description: 描く先の要素
+    returns:
+      type: () => void
+      description: 外す関数
+    side_effects: '`click` を付ける'
+    unit_tests:
+      - name: test_attach_csv_raw
+        case: 正常
+        condition: CSV の表を持つ要素で RAW のボタンを 2 回押す
+        expected: 1 回目の後は表を包む要素（`.mdmark-table-scroll`）が隠れ `pre.mdmark-raw` が出て `aria-pressed="true"`、2 回目の後は元に戻る
+        mock: なし（ブラウザ）
+        summary: 押すたびに表と元の CSV を入れ替える
 test_files:
   - tests/unit/src/interact/index.browser.test.ts
   - tests/unit/src/interact/tables.browser.test.ts
   - tests/unit/src/interact/tabs.browser.test.ts
   - tests/unit/src/interact/sections.browser.test.ts
   - tests/unit/src/interact/side-toc.browser.test.ts
+  - tests/unit/src/interact/back-to-top.browser.test.ts
+  - tests/unit/src/interact/scroller.browser.test.ts
   - tests/unit/src/interact/text.browser.test.ts
   - tests/unit/src/interact/embedded-html.browser.test.ts
   - tests/unit/src/interact/placement.test.ts
@@ -1354,6 +2395,16 @@ test_files:
   - tests/unit/src/interact/clipboard.browser.test.ts
   - tests/unit/src/interact/code-blocks.browser.test.ts
   - tests/unit/src/interact/trees.browser.test.ts
+  - tests/unit/src/interact/lightbox.browser.test.ts
+  - tests/unit/src/interact/gif.browser.test.ts
+  - tests/unit/src/interact/code-folds.browser.test.ts
+  - tests/unit/src/code-fold-logic.test.ts
+  - tests/unit/src/interact/footnotes.browser.test.ts
+  - tests/unit/src/tree-logic.test.ts
+  - tests/unit/src/interact/table-settings.browser.test.ts
+  - tests/unit/src/interact/table-tree.browser.test.ts
+  - tests/unit/src/interact/wide.browser.test.ts
+  - tests/unit/src/interact/csv-raw.browser.test.ts
 constants:
   - name: TAB_CHOICE_KEY_PREFIX
     title: 残したタブ名のキーの頭
@@ -1417,6 +2468,16 @@ constants:
     status: planned
     introduced:
       pr: 166
+  - name: BACK_TO_TOP_AVOID_GAP_PX
+    title: 避ける部品と先頭へ戻るボタンの間
+    container: src/interact/back-to-top.ts
+    summary: 差分のミニマップか余白の列と横の範囲が重なるとき、その部品の左端からボタンの右端までに空ける幅（px）
+    value: '8'
+    refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[先頭へ戻るボタン]
+    status: planned
+    introduced:
+      pr: 287
   - name: SIDE_TOC_HEADING_SELECTOR
     title: 右側の目次に並べる見出し
     container: src/interact/side-toc.ts
@@ -1425,3 +2486,48 @@ constants:
     status: planned
     introduced:
       pr: 166
+  - name: LIGHTBOX_IMAGE_SELECTOR
+    title: 拡大できる画像
+    container: src/interact/lightbox.ts
+    summary: ライトボックスで拡大のボタンで包む `img`。リンクの中の画像と文の中の画像は `figure.mdmark-image` の中に無いため当たらない
+    value: '"figure.mdmark-image img:not([data-nolightbox])"'
+    refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[ライトボックス]
+    status: planned
+    introduced:
+      pr: 263
+  - name: codeFoldSetters
+    title: コードの行の開閉の関数の控え
+    container: src/interact/code-folds.ts
+    summary: '`attachCodeFolds` が開閉のボタンごとに登録する、行を開くか畳む関数。外す関数が取り除く'
+    value: '`new WeakMap<Element, (open: boolean) => void>()`'
+    status: planned
+    introduced:
+      pr: 275
+  - name: SIDE_TOC_RAIL_COVER_REM
+    title: 右端の線を枠で覆う高さ
+    container: src/interact/side-toc.ts
+    summary: hover で開く目次の枠が、右端の線の上端から届かせる高さ（rem）。線 3 本分で、線から枠へポインターを動かしても右側の目次の外を通らず hover が切れない
+    value: '2'
+    introduced:
+      pr: 320
+  - name: SIDE_TOC_EDGE_GAP_REM
+    title: スクロールする場所の右端と右側の目次の間
+    container: src/interact/side-toc.ts
+    summary: hover でピン止めしていない右端の線と目次の枠の右端の、スクロールする場所の右端からの間（rem）。先頭へ戻るボタンの `--mdmark-back-to-top-gap` の既定と同じ
+    value: '1'
+    refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[右側の目次の重なりと留める位置]
+    status: planned
+    introduced:
+      pr: 323
+  - name: SIDE_TOC_AVOID_GAP_PX
+    title: 差分のミニマップと右側の目次の間
+    container: src/interact/side-toc.ts
+    summary: 差分のミニマップの帯と横の範囲が重なるとき、帯の左端から右端の線と目次の枠の右端までに空ける幅（px）。`BACK_TO_TOP_AVOID_GAP_PX` と同じ値
+    value: '8'
+    refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[右側の目次の重なりと留める位置]
+    status: planned
+    introduced:
+      pr: 323

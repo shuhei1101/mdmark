@@ -10,9 +10,19 @@
     "erasableSyntaxOnly": true,
     "verbatimModuleSyntax": true,
     "skipLibCheck": true,
+    "jsx": "react-jsx",
+    "paths": {
+      "msw": ["./node_modules/msw"],
+      "msw/*": ["./node_modules/msw/*"],
+      "react": ["./node_modules/@types/react"],
+      "react/*": ["./node_modules/@types/react/*"]
+    },
     "types": ["node"]
   },
   "include": [
+    ".storybook/*.ts",
+    ".storybook/*.tsx",
+    "vscode/src/webview/vite-env.d.ts",
     "playwright.config.ts",
     "scripts",
     "src",

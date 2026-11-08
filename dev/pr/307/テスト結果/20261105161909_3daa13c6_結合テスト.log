@@ -1,0 +1,639 @@
+$ npm run test:integration
+
+> test:integration
+> vitest run --project 'integration*'
+
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-syntax-icon-columns-highlight-kbd-details-include-wide-csv
+
+4:05:42 PM [vite] (client) warning: 
+/tmp/mdmark-integration-dist-8wSw4i/dist/index.js
+38 |  `):v(o.map(w=>w.text).join(`
+39 |  `))+(o.length>0?`
+40 |  ...ark-code-bar">${b}</div>${x}</div>`}var oS;var aS=e=>import(e);function hh(e,t,n){console.error(`${e}\u3092\u8AAD\...
+   |                                                                 ^
+41 |  `):(t.textContent??"").replace(/\n$/,"")}function Ed(e,t){let n=document.createElement("template");n.innerHTML=$a({st...
+42 |  `)return;let T=document.createElement("span");return T.className="mdmark-code-break",w.replaceWith(T),T.append(w),T})...
+The above dynamic import cannot be analyzed by Vite.
+See https://vite.dev/guide/features#dynamic-import for supported dynamic import formats. If this is intended to be left as-is, you can use the /* @vite-ignore */ comment inside the import() call to suppress this warning.
+
+  Plugin: vite:import-analysis
+  File: /tmp/mdmark-integration-dist-8wSw4i/dist/index.js
+4:05:42 PM [vite] (client) warning: 
+/tmp/mdmark-integration-dist-8wSw4i/dist/index.js
+38 |  `):v(o.map(w=>w.text).join(`
+39 |  `))+(o.length>0?`
+40 |  ...ia-hidden="true">${t}</span>`};var lS="1.59.0",dS=e=>import(e),cS=e=>fetch(e,{method:"HEAD"}),Cd=e=>`https://cdn.j...
+   |                                                                 ^
+41 |  `):(t.textContent??"").replace(/\n$/,"")}function Ed(e,t){let n=document.createElement("template");n.innerHTML=$a({st...
+42 |  `)return;let T=document.createElement("span");return T.className="mdmark-code-break",w.replaceWith(T),T.append(w),T})...
+The above dynamic import cannot be analyzed by Vite.
+See https://vite.dev/guide/features#dynamic-import for supported dynamic import formats. If this is intended to be left as-is, you can use the /* @vite-ignore */ comment inside the import() call to suppress this warning.
+
+  Plugin: vite:import-analysis
+  File: /tmp/mdmark-integration-dist-8wSw4i/dist/index.js
+4:05:42 PM [vite] (client) warning: 
+/tmp/mdmark-integration-dist-8wSw4i/dist/index.js
+42 |  `)return;let T=document.createElement("span");return T.className="mdmark-code-break",w.replaceWith(T),T.append(w),T})...
+43 |  `)}function Ah(e){let t=a=>`| ${a.map(s=>s.replace(/[\r\n]+/g," ").replaceAll("|","\\|")).join(" | ")} |`,[n,...r]=e;...
+44 |  ...l.remove()}}}var Xg="data-mdmark-drawn",nc;var d1=e=>import(e);async function Jg(e){let{root:t,libraries:n,isCurre...
+   |                                                                 ^
+45 |  `)?e.slice(0,-1):e;return n===""&&e===""?{lines:[],warnings:t}:{lines:n.split(`
+46 |  `).map((o,a)=>{let s=A1.exec(o);if(s?.index===void 0)return{text:sc(o)};let i=M1[s[1]??""];return i===void 0?(t.push(...
+The above dynamic import cannot be analyzed by Vite.
+See https://vite.dev/guide/features#dynamic-import for supported dynamic import formats. If this is intended to be left as-is, you can use the /* @vite-ignore */ comment inside the import() call to suppress this warning.
+
+  Plugin: vite:import-analysis
+  File: /tmp/mdmark-integration-dist-8wSw4i/dist/index.js
+4:05:42 PM [vite] (client) warning: 
+/tmp/mdmark-integration-dist-8wSw4i/dist/index.js
+42 |  `)return;let T=document.createElement("span");return T.className="mdmark-code-break",w.replaceWith(T),T.append(w),T})...
+43 |  `)}function Ah(e){let t=a=>`| ${a.map(s=>s.replace(/[\r\n]+/g," ").replaceAll("|","\\|")).join(" | ")} |`,[n,...r]=e;...
+44 |  ...ents:["attachComments"]},f1=new Map,Zg=new Map,u1=e=>import(e);function m1(e,t){return e instanceof Error?(e.cause...
+   |                                                                 ^
+45 |  `)?e.slice(0,-1):e;return n===""&&e===""?{lines:[],warnings:t}:{lines:n.split(`
+46 |  `).map((o,a)=>{let s=A1.exec(o);if(s?.index===void 0)return{text:sc(o)};let i=M1[s[1]??""];return i===void 0?(t.push(...
+The above dynamic import cannot be analyzed by Vite.
+See https://vite.dev/guide/features#dynamic-import for supported dynamic import formats. If this is intended to be left as-is, you can use the /* @vite-ignore */ comment inside the import() call to suppress this warning.
+
+  Plugin: vite:import-analysis
+  File: /tmp/mdmark-integration-dist-8wSw4i/dist/index.js
+4:05:43 PM [vite] (client) warning: 
+/tmp/mdmark-integration-dist-8wSw4i/dist/index.js
+38 |  `):v(o.map(w=>w.text).join(`
+39 |  `))+(o.length>0?`
+40 |  ...ark-code-bar">${b}</div>${x}</div>`}var oS;var aS=e=>import(e);function hh(e,t,n){console.error(`${e}\u3092\u8AAD\...
+   |                                                                 ^
+41 |  `):(t.textContent??"").replace(/\n$/,"")}function Ed(e,t){let n=document.createElement("template");n.innerHTML=$a({st...
+42 |  `)return;let T=document.createElement("span");return T.className="mdmark-code-break",w.replaceWith(T),T.append(w),T})...
+The above dynamic import cannot be analyzed by Vite.
+See https://vite.dev/guide/features#dynamic-import for supported dynamic import formats. If this is intended to be left as-is, you can use the /* @vite-ignore */ comment inside the import() call to suppress this warning.
+
+  Plugin: vite:import-analysis
+  File: /tmp/mdmark-integration-dist-8wSw4i/dist/index.js?test=1
+4:05:43 PM [vite] (client) warning: 
+/tmp/mdmark-integration-dist-8wSw4i/dist/index.js
+38 |  `):v(o.map(w=>w.text).join(`
+39 |  `))+(o.length>0?`
+40 |  ...ia-hidden="true">${t}</span>`};var lS="1.59.0",dS=e=>import(e),cS=e=>fetch(e,{method:"HEAD"}),Cd=e=>`https://cdn.j...
+   |                                                                 ^
+41 |  `):(t.textContent??"").replace(/\n$/,"")}function Ed(e,t){let n=document.createElement("template");n.innerHTML=$a({st...
+42 |  `)return;let T=document.createElement("span");return T.className="mdmark-code-break",w.replaceWith(T),T.append(w),T})...
+The above dynamic import cannot be analyzed by Vite.
+See https://vite.dev/guide/features#dynamic-import for supported dynamic import formats. If this is intended to be left as-is, you can use the /* @vite-ignore */ comment inside the import() call to suppress this warning.
+
+  Plugin: vite:import-analysis
+  File: /tmp/mdmark-integration-dist-8wSw4i/dist/index.js?test=1
+4:05:43 PM [vite] (client) warning: 
+/tmp/mdmark-integration-dist-8wSw4i/dist/index.js
+42 |  `)return;let T=document.createElement("span");return T.className="mdmark-code-break",w.replaceWith(T),T.append(w),T})...
+43 |  `)}function Ah(e){let t=a=>`| ${a.map(s=>s.replace(/[\r\n]+/g," ").replaceAll("|","\\|")).join(" | ")} |`,[n,...r]=e;...
+44 |  ...l.remove()}}}var Xg="data-mdmark-drawn",nc;var d1=e=>import(e);async function Jg(e){let{root:t,libraries:n,isCurre...
+   |                                                                 ^
+45 |  `)?e.slice(0,-1):e;return n===""&&e===""?{lines:[],warnings:t}:{lines:n.split(`
+46 |  `).map((o,a)=>{let s=A1.exec(o);if(s?.index===void 0)return{text:sc(o)};let i=M1[s[1]??""];return i===void 0?(t.push(...
+The above dynamic import cannot be analyzed by Vite.
+See https://vite.dev/guide/features#dynamic-import for supported dynamic import formats. If this is intended to be left as-is, you can use the /* @vite-ignore */ comment inside the import() call to suppress this warning.
+
+  Plugin: vite:import-analysis
+  File: /tmp/mdmark-integration-dist-8wSw4i/dist/index.js?test=1
+4:05:43 PM [vite] (client) warning: 
+/tmp/mdmark-integration-dist-8wSw4i/dist/index.js
+42 |  `)return;let T=document.createElement("span");return T.className="mdmark-code-break",w.replaceWith(T),T.append(w),T})...
+43 |  `)}function Ah(e){let t=a=>`| ${a.map(s=>s.replace(/[\r\n]+/g," ").replaceAll("|","\\|")).join(" | ")} |`,[n,...r]=e;...
+44 |  ...ents:["attachComments"]},f1=new Map,Zg=new Map,u1=e=>import(e);function m1(e,t){return e instanceof Error?(e.cause...
+   |                                                                 ^
+45 |  `)?e.slice(0,-1):e;return n===""&&e===""?{lines:[],warnings:t}:{lines:n.split(`
+46 |  `).map((o,a)=>{let s=A1.exec(o);if(s?.index===void 0)return{text:sc(o)};let i=M1[s[1]??""];return i===void 0?(t.push(...
+The above dynamic import cannot be analyzed by Vite.
+See https://vite.dev/guide/features#dynamic-import for supported dynamic import formats. If this is intended to be left as-is, you can use the /* @vite-ignore */ comment inside the import() call to suppress this warning.
+
+  Plugin: vite:import-analysis
+  File: /tmp/mdmark-integration-dist-8wSw4i/dist/index.js?test=1
+4:05:45 PM [vite] (client) warning: 
+/tmp/mdmark-integration-dist-8wSw4i/dist/index.js
+38 |  `):v(o.map(w=>w.text).join(`
+39 |  `))+(o.length>0?`
+40 |  ...ark-code-bar">${b}</div>${x}</div>`}var oS;var aS=e=>import(e);function hh(e,t,n){console.error(`${e}\u3092\u8AAD\...
+   |                                                                 ^
+41 |  `):(t.textContent??"").replace(/\n$/,"")}function Ed(e,t){let n=document.createElement("template");n.innerHTML=$a({st...
+42 |  `)return;let T=document.createElement("span");return T.className="mdmark-code-break",w.replaceWith(T),T.append(w),T})...
+The above dynamic import cannot be analyzed by Vite.
+See https://vite.dev/guide/features#dynamic-import for supported dynamic import formats. If this is intended to be left as-is, you can use the /* @vite-ignore */ comment inside the import() call to suppress this warning.
+
+  Plugin: vite:import-analysis
+  File: /tmp/mdmark-integration-dist-8wSw4i/dist/index.js?test=2
+4:05:45 PM [vite] (client) warning: 
+/tmp/mdmark-integration-dist-8wSw4i/dist/index.js
+38 |  `):v(o.map(w=>w.text).join(`
+39 |  `))+(o.length>0?`
+40 |  ...ia-hidden="true">${t}</span>`};var lS="1.59.0",dS=e=>import(e),cS=e=>fetch(e,{method:"HEAD"}),Cd=e=>`https://cdn.j...
+   |                                                                 ^
+41 |  `):(t.textContent??"").replace(/\n$/,"")}function Ed(e,t){let n=document.createElement("template");n.innerHTML=$a({st...
+42 |  `)return;let T=document.createElement("span");return T.className="mdmark-code-break",w.replaceWith(T),T.append(w),T})...
+The above dynamic import cannot be analyzed by Vite.
+See https://vite.dev/guide/features#dynamic-import for supported dynamic import formats. If this is intended to be left as-is, you can use the /* @vite-ignore */ comment inside the import() call to suppress this warning.
+
+  Plugin: vite:import-analysis
+  File: /tmp/mdmark-integration-dist-8wSw4i/dist/index.js?test=2
+4:05:45 PM [vite] (client) warning: 
+/tmp/mdmark-integration-dist-8wSw4i/dist/index.js
+42 |  `)return;let T=document.createElement("span");return T.className="mdmark-code-break",w.replaceWith(T),T.append(w),T})...
+43 |  `)}function Ah(e){let t=a=>`| ${a.map(s=>s.replace(/[\r\n]+/g," ").replaceAll("|","\\|")).join(" | ")} |`,[n,...r]=e;...
+44 |  ...l.remove()}}}var Xg="data-mdmark-drawn",nc;var d1=e=>import(e);async function Jg(e){let{root:t,libraries:n,isCurre...
+   |                                                                 ^
+45 |  `)?e.slice(0,-1):e;return n===""&&e===""?{lines:[],warnings:t}:{lines:n.split(`
+46 |  `).map((o,a)=>{let s=A1.exec(o);if(s?.index===void 0)return{text:sc(o)};let i=M1[s[1]??""];return i===void 0?(t.push(...
+The above dynamic import cannot be analyzed by Vite.
+See https://vite.dev/guide/features#dynamic-import for supported dynamic import formats. If this is intended to be left as-is, you can use the /* @vite-ignore */ comment inside the import() call to suppress this warning.
+
+  Plugin: vite:import-analysis
+  File: /tmp/mdmark-integration-dist-8wSw4i/dist/index.js?test=2
+4:05:45 PM [vite] (client) warning: 
+/tmp/mdmark-integration-dist-8wSw4i/dist/index.js
+42 |  `)return;let T=document.createElement("span");return T.className="mdmark-code-break",w.replaceWith(T),T.append(w),T})...
+43 |  `)}function Ah(e){let t=a=>`| ${a.map(s=>s.replace(/[\r\n]+/g," ").replaceAll("|","\\|")).join(" | ")} |`,[n,...r]=e;...
+44 |  ...ents:["attachComments"]},f1=new Map,Zg=new Map,u1=e=>import(e);function m1(e,t){return e instanceof Error?(e.cause...
+   |                                                                 ^
+45 |  `)?e.slice(0,-1):e;return n===""&&e===""?{lines:[],warnings:t}:{lines:n.split(`
+46 |  `).map((o,a)=>{let s=A1.exec(o);if(s?.index===void 0)return{text:sc(o)};let i=M1[s[1]??""];return i===void 0?(t.push(...
+The above dynamic import cannot be analyzed by Vite.
+See https://vite.dev/guide/features#dynamic-import for supported dynamic import formats. If this is intended to be left as-is, you can use the /* @vite-ignore */ comment inside the import() call to suppress this warning.
+
+  Plugin: vite:import-analysis
+  File: /tmp/mdmark-integration-dist-8wSw4i/dist/index.js?test=2
+4:05:47 PM [vite] (client) warning: 
+/tmp/mdmark-integration-dist-8wSw4i/dist/index.js
+38 |  `):v(o.map(w=>w.text).join(`
+39 |  `))+(o.length>0?`
+40 |  ...ark-code-bar">${b}</div>${x}</div>`}var oS;var aS=e=>import(e);function hh(e,t,n){console.error(`${e}\u3092\u8AAD\...
+   |                                                                 ^
+41 |  `):(t.textContent??"").replace(/\n$/,"")}function Ed(e,t){let n=document.createElement("template");n.innerHTML=$a({st...
+42 |  `)return;let T=document.createElement("span");return T.className="mdmark-code-break",w.replaceWith(T),T.append(w),T})...
+The above dynamic import cannot be analyzed by Vite.
+See https://vite.dev/guide/features#dynamic-import for supported dynamic import formats. If this is intended to be left as-is, you can use the /* @vite-ignore */ comment inside the import() call to suppress this warning.
+
+  Plugin: vite:import-analysis
+  File: /tmp/mdmark-integration-dist-8wSw4i/dist/index.js?test=3
+4:05:47 PM [vite] (client) warning: 
+/tmp/mdmark-integration-dist-8wSw4i/dist/index.js
+38 |  `):v(o.map(w=>w.text).join(`
+39 |  `))+(o.length>0?`
+40 |  ...ia-hidden="true">${t}</span>`};var lS="1.59.0",dS=e=>import(e),cS=e=>fetch(e,{method:"HEAD"}),Cd=e=>`https://cdn.j...
+   |                                                                 ^
+41 |  `):(t.textContent??"").replace(/\n$/,"")}function Ed(e,t){let n=document.createElement("template");n.innerHTML=$a({st...
+42 |  `)return;let T=document.createElement("span");return T.className="mdmark-code-break",w.replaceWith(T),T.append(w),T})...
+The above dynamic import cannot be analyzed by Vite.
+See https://vite.dev/guide/features#dynamic-import for supported dynamic import formats. If this is intended to be left as-is, you can use the /* @vite-ignore */ comment inside the import() call to suppress this warning.
+
+  Plugin: vite:import-analysis
+  File: /tmp/mdmark-integration-dist-8wSw4i/dist/index.js?test=3
+4:05:47 PM [vite] (client) warning: 
+/tmp/mdmark-integration-dist-8wSw4i/dist/index.js
+42 |  `)return;let T=document.createElement("span");return T.className="mdmark-code-break",w.replaceWith(T),T.append(w),T})...
+43 |  `)}function Ah(e){let t=a=>`| ${a.map(s=>s.replace(/[\r\n]+/g," ").replaceAll("|","\\|")).join(" | ")} |`,[n,...r]=e;...
+44 |  ...l.remove()}}}var Xg="data-mdmark-drawn",nc;var d1=e=>import(e);async function Jg(e){let{root:t,libraries:n,isCurre...
+   |                                                                 ^
+45 |  `)?e.slice(0,-1):e;return n===""&&e===""?{lines:[],warnings:t}:{lines:n.split(`
+46 |  `).map((o,a)=>{let s=A1.exec(o);if(s?.index===void 0)return{text:sc(o)};let i=M1[s[1]??""];return i===void 0?(t.push(...
+The above dynamic import cannot be analyzed by Vite.
+See https://vite.dev/guide/features#dynamic-import for supported dynamic import formats. If this is intended to be left as-is, you can use the /* @vite-ignore */ comment inside the import() call to suppress this warning.
+
+  Plugin: vite:import-analysis
+  File: /tmp/mdmark-integration-dist-8wSw4i/dist/index.js?test=3
+4:05:47 PM [vite] (client) warning: 
+/tmp/mdmark-integration-dist-8wSw4i/dist/index.js
+42 |  `)return;let T=document.createElement("span");return T.className="mdmark-code-break",w.replaceWith(T),T.append(w),T})...
+43 |  `)}function Ah(e){let t=a=>`| ${a.map(s=>s.replace(/[\r\n]+/g," ").replaceAll("|","\\|")).join(" | ")} |`,[n,...r]=e;...
+44 |  ...ents:["attachComments"]},f1=new Map,Zg=new Map,u1=e=>import(e);function m1(e,t){return e instanceof Error?(e.cause...
+   |                                                                 ^
+45 |  `)?e.slice(0,-1):e;return n===""&&e===""?{lines:[],warnings:t}:{lines:n.split(`
+46 |  `).map((o,a)=>{let s=A1.exec(o);if(s?.index===void 0)return{text:sc(o)};let i=M1[s[1]??""];return i===void 0?(t.push(...
+The above dynamic import cannot be analyzed by Vite.
+See https://vite.dev/guide/features#dynamic-import for supported dynamic import formats. If this is intended to be left as-is, you can use the /* @vite-ignore */ comment inside the import() call to suppress this warning.
+
+  Plugin: vite:import-analysis
+  File: /tmp/mdmark-integration-dist-8wSw4i/dist/index.js?test=3
+4:05:49 PM [vite] (client) warning: 
+/tmp/mdmark-integration-dist-8wSw4i/dist/index.js
+38 |  `):v(o.map(w=>w.text).join(`
+39 |  `))+(o.length>0?`
+40 |  ...ark-code-bar">${b}</div>${x}</div>`}var oS;var aS=e=>import(e);function hh(e,t,n){console.error(`${e}\u3092\u8AAD\...
+   |                                                                 ^
+41 |  `):(t.textContent??"").replace(/\n$/,"")}function Ed(e,t){let n=document.createElement("template");n.innerHTML=$a({st...
+42 |  `)return;let T=document.createElement("span");return T.className="mdmark-code-break",w.replaceWith(T),T.append(w),T})...
+The above dynamic import cannot be analyzed by Vite.
+See https://vite.dev/guide/features#dynamic-import for supported dynamic import formats. If this is intended to be left as-is, you can use the /* @vite-ignore */ comment inside the import() call to suppress this warning.
+
+  Plugin: vite:import-analysis
+  File: /tmp/mdmark-integration-dist-8wSw4i/dist/index.js?test=4
+4:05:49 PM [vite] (client) warning: 
+/tmp/mdmark-integration-dist-8wSw4i/dist/index.js
+38 |  `):v(o.map(w=>w.text).join(`
+39 |  `))+(o.length>0?`
+40 |  ...ia-hidden="true">${t}</span>`};var lS="1.59.0",dS=e=>import(e),cS=e=>fetch(e,{method:"HEAD"}),Cd=e=>`https://cdn.j...
+   |                                                                 ^
+41 |  `):(t.textContent??"").replace(/\n$/,"")}function Ed(e,t){let n=document.createElement("template");n.innerHTML=$a({st...
+42 |  `)return;let T=document.createElement("span");return T.className="mdmark-code-break",w.replaceWith(T),T.append(w),T})...
+The above dynamic import cannot be analyzed by Vite.
+See https://vite.dev/guide/features#dynamic-import for supported dynamic import formats. If this is intended to be left as-is, you can use the /* @vite-ignore */ comment inside the import() call to suppress this warning.
+
+  Plugin: vite:import-analysis
+  File: /tmp/mdmark-integration-dist-8wSw4i/dist/index.js?test=4
+4:05:49 PM [vite] (client) warning: 
+/tmp/mdmark-integration-dist-8wSw4i/dist/index.js
+42 |  `)return;let T=document.createElement("span");return T.className="mdmark-code-break",w.replaceWith(T),T.append(w),T})...
+43 |  `)}function Ah(e){let t=a=>`| ${a.map(s=>s.replace(/[\r\n]+/g," ").replaceAll("|","\\|")).join(" | ")} |`,[n,...r]=e;...
+44 |  ...l.remove()}}}var Xg="data-mdmark-drawn",nc;var d1=e=>import(e);async function Jg(e){let{root:t,libraries:n,isCurre...
+   |                                                                 ^
+45 |  `)?e.slice(0,-1):e;return n===""&&e===""?{lines:[],warnings:t}:{lines:n.split(`
+46 |  `).map((o,a)=>{let s=A1.exec(o);if(s?.index===void 0)return{text:sc(o)};let i=M1[s[1]??""];return i===void 0?(t.push(...
+The above dynamic import cannot be analyzed by Vite.
+See https://vite.dev/guide/features#dynamic-import for supported dynamic import formats. If this is intended to be left as-is, you can use the /* @vite-ignore */ comment inside the import() call to suppress this warning.
+
+  Plugin: vite:import-analysis
+  File: /tmp/mdmark-integration-dist-8wSw4i/dist/index.js?test=4
+4:05:49 PM [vite] (client) warning: 
+/tmp/mdmark-integration-dist-8wSw4i/dist/index.js
+42 |  `)return;let T=document.createElement("span");return T.className="mdmark-code-break",w.replaceWith(T),T.append(w),T})...
+43 |  `)}function Ah(e){let t=a=>`| ${a.map(s=>s.replace(/[\r\n]+/g," ").replaceAll("|","\\|")).join(" | ")} |`,[n,...r]=e;...
+44 |  ...ents:["attachComments"]},f1=new Map,Zg=new Map,u1=e=>import(e);function m1(e,t){return e instanceof Error?(e.cause...
+   |                                                                 ^
+45 |  `)?e.slice(0,-1):e;return n===""&&e===""?{lines:[],warnings:t}:{lines:n.split(`
+46 |  `).map((o,a)=>{let s=A1.exec(o);if(s?.index===void 0)return{text:sc(o)};let i=M1[s[1]??""];return i===void 0?(t.push(...
+The above dynamic import cannot be analyzed by Vite.
+See https://vite.dev/guide/features#dynamic-import for supported dynamic import formats. If this is intended to be left as-is, you can use the /* @vite-ignore */ comment inside the import() call to suppress this warning.
+
+  Plugin: vite:import-analysis
+  File: /tmp/mdmark-integration-dist-8wSw4i/dist/index.js?test=4
+4:05:50 PM [vite] (client) warning: 
+/tmp/mdmark-integration-dist-8wSw4i/dist/index.js
+38 |  `):v(o.map(w=>w.text).join(`
+39 |  `))+(o.length>0?`
+40 |  ...ark-code-bar">${b}</div>${x}</div>`}var oS;var aS=e=>import(e);function hh(e,t,n){console.error(`${e}\u3092\u8AAD\...
+   |                                                                 ^
+41 |  `):(t.textContent??"").replace(/\n$/,"")}function Ed(e,t){let n=document.createElement("template");n.innerHTML=$a({st...
+42 |  `)return;let T=document.createElement("span");return T.className="mdmark-code-break",w.replaceWith(T),T.append(w),T})...
+The above dynamic import cannot be analyzed by Vite.
+See https://vite.dev/guide/features#dynamic-import for supported dynamic import formats. If this is intended to be left as-is, you can use the /* @vite-ignore */ comment inside the import() call to suppress this warning.
+
+  Plugin: vite:import-analysis
+  File: /tmp/mdmark-integration-dist-8wSw4i/dist/index.js?test=5
+4:05:50 PM [vite] (client) warning: 
+/tmp/mdmark-integration-dist-8wSw4i/dist/index.js
+38 |  `):v(o.map(w=>w.text).join(`
+39 |  `))+(o.length>0?`
+40 |  ...ia-hidden="true">${t}</span>`};var lS="1.59.0",dS=e=>import(e),cS=e=>fetch(e,{method:"HEAD"}),Cd=e=>`https://cdn.j...
+   |                                                                 ^
+41 |  `):(t.textContent??"").replace(/\n$/,"")}function Ed(e,t){let n=document.createElement("template");n.innerHTML=$a({st...
+42 |  `)return;let T=document.createElement("span");return T.className="mdmark-code-break",w.replaceWith(T),T.append(w),T})...
+The above dynamic import cannot be analyzed by Vite.
+See https://vite.dev/guide/features#dynamic-import for supported dynamic import formats. If this is intended to be left as-is, you can use the /* @vite-ignore */ comment inside the import() call to suppress this warning.
+
+  Plugin: vite:import-analysis
+  File: /tmp/mdmark-integration-dist-8wSw4i/dist/index.js?test=5
+4:05:50 PM [vite] (client) warning: 
+/tmp/mdmark-integration-dist-8wSw4i/dist/index.js
+42 |  `)return;let T=document.createElement("span");return T.className="mdmark-code-break",w.replaceWith(T),T.append(w),T})...
+43 |  `)}function Ah(e){let t=a=>`| ${a.map(s=>s.replace(/[\r\n]+/g," ").replaceAll("|","\\|")).join(" | ")} |`,[n,...r]=e;...
+44 |  ...l.remove()}}}var Xg="data-mdmark-drawn",nc;var d1=e=>import(e);async function Jg(e){let{root:t,libraries:n,isCurre...
+   |                                                                 ^
+45 |  `)?e.slice(0,-1):e;return n===""&&e===""?{lines:[],warnings:t}:{lines:n.split(`
+46 |  `).map((o,a)=>{let s=A1.exec(o);if(s?.index===void 0)return{text:sc(o)};let i=M1[s[1]??""];return i===void 0?(t.push(...
+The above dynamic import cannot be analyzed by Vite.
+See https://vite.dev/guide/features#dynamic-import for supported dynamic import formats. If this is intended to be left as-is, you can use the /* @vite-ignore */ comment inside the import() call to suppress this warning.
+
+  Plugin: vite:import-analysis
+  File: /tmp/mdmark-integration-dist-8wSw4i/dist/index.js?test=5
+4:05:50 PM [vite] (client) warning: 
+/tmp/mdmark-integration-dist-8wSw4i/dist/index.js
+42 |  `)return;let T=document.createElement("span");return T.className="mdmark-code-break",w.replaceWith(T),T.append(w),T})...
+43 |  `)}function Ah(e){let t=a=>`| ${a.map(s=>s.replace(/[\r\n]+/g," ").replaceAll("|","\\|")).join(" | ")} |`,[n,...r]=e;...
+44 |  ...ents:["attachComments"]},f1=new Map,Zg=new Map,u1=e=>import(e);function m1(e,t){return e instanceof Error?(e.cause...
+   |                                                                 ^
+45 |  `)?e.slice(0,-1):e;return n===""&&e===""?{lines:[],warnings:t}:{lines:n.split(`
+46 |  `).map((o,a)=>{let s=A1.exec(o);if(s?.index===void 0)return{text:sc(o)};let i=M1[s[1]??""];return i===void 0?(t.push(...
+The above dynamic import cannot be analyzed by Vite.
+See https://vite.dev/guide/features#dynamic-import for supported dynamic import formats. If this is intended to be left as-is, you can use the /* @vite-ignore */ comment inside the import() call to suppress this warning.
+
+  Plugin: vite:import-analysis
+  File: /tmp/mdmark-integration-dist-8wSw4i/dist/index.js?test=5
+4:05:51 PM [vite] (client) warning: 
+/tmp/mdmark-integration-dist-8wSw4i/dist/index.js
+38 |  `):v(o.map(w=>w.text).join(`
+39 |  `))+(o.length>0?`
+40 |  ...ark-code-bar">${b}</div>${x}</div>`}var oS;var aS=e=>import(e);function hh(e,t,n){console.error(`${e}\u3092\u8AAD\...
+   |                                                                 ^
+41 |  `):(t.textContent??"").replace(/\n$/,"")}function Ed(e,t){let n=document.createElement("template");n.innerHTML=$a({st...
+42 |  `)return;let T=document.createElement("span");return T.className="mdmark-code-break",w.replaceWith(T),T.append(w),T})...
+The above dynamic import cannot be analyzed by Vite.
+See https://vite.dev/guide/features#dynamic-import for supported dynamic import formats. If this is intended to be left as-is, you can use the /* @vite-ignore */ comment inside the import() call to suppress this warning.
+
+  Plugin: vite:import-analysis
+  File: /tmp/mdmark-integration-dist-8wSw4i/dist/index.js?test=6
+4:05:51 PM [vite] (client) warning: 
+/tmp/mdmark-integration-dist-8wSw4i/dist/index.js
+38 |  `):v(o.map(w=>w.text).join(`
+39 |  `))+(o.length>0?`
+40 |  ...ia-hidden="true">${t}</span>`};var lS="1.59.0",dS=e=>import(e),cS=e=>fetch(e,{method:"HEAD"}),Cd=e=>`https://cdn.j...
+   |                                                                 ^
+41 |  `):(t.textContent??"").replace(/\n$/,"")}function Ed(e,t){let n=document.createElement("template");n.innerHTML=$a({st...
+42 |  `)return;let T=document.createElement("span");return T.className="mdmark-code-break",w.replaceWith(T),T.append(w),T})...
+The above dynamic import cannot be analyzed by Vite.
+See https://vite.dev/guide/features#dynamic-import for supported dynamic import formats. If this is intended to be left as-is, you can use the /* @vite-ignore */ comment inside the import() call to suppress this warning.
+
+  Plugin: vite:import-analysis
+  File: /tmp/mdmark-integration-dist-8wSw4i/dist/index.js?test=6
+4:05:51 PM [vite] (client) warning: 
+/tmp/mdmark-integration-dist-8wSw4i/dist/index.js
+42 |  `)return;let T=document.createElement("span");return T.className="mdmark-code-break",w.replaceWith(T),T.append(w),T})...
+43 |  `)}function Ah(e){let t=a=>`| ${a.map(s=>s.replace(/[\r\n]+/g," ").replaceAll("|","\\|")).join(" | ")} |`,[n,...r]=e;...
+44 |  ...l.remove()}}}var Xg="data-mdmark-drawn",nc;var d1=e=>import(e);async function Jg(e){let{root:t,libraries:n,isCurre...
+   |                                                                 ^
+45 |  `)?e.slice(0,-1):e;return n===""&&e===""?{lines:[],warnings:t}:{lines:n.split(`
+46 |  `).map((o,a)=>{let s=A1.exec(o);if(s?.index===void 0)return{text:sc(o)};let i=M1[s[1]??""];return i===void 0?(t.push(...
+The above dynamic import cannot be analyzed by Vite.
+See https://vite.dev/guide/features#dynamic-import for supported dynamic import formats. If this is intended to be left as-is, you can use the /* @vite-ignore */ comment inside the import() call to suppress this warning.
+
+  Plugin: vite:import-analysis
+  File: /tmp/mdmark-integration-dist-8wSw4i/dist/index.js?test=6
+4:05:51 PM [vite] (client) warning: 
+/tmp/mdmark-integration-dist-8wSw4i/dist/index.js
+42 |  `)return;let T=document.createElement("span");return T.className="mdmark-code-break",w.replaceWith(T),T.append(w),T})...
+43 |  `)}function Ah(e){let t=a=>`| ${a.map(s=>s.replace(/[\r\n]+/g," ").replaceAll("|","\\|")).join(" | ")} |`,[n,...r]=e;...
+44 |  ...ents:["attachComments"]},f1=new Map,Zg=new Map,u1=e=>import(e);function m1(e,t){return e instanceof Error?(e.cause...
+   |                                                                 ^
+45 |  `)?e.slice(0,-1):e;return n===""&&e===""?{lines:[],warnings:t}:{lines:n.split(`
+46 |  `).map((o,a)=>{let s=A1.exec(o);if(s?.index===void 0)return{text:sc(o)};let i=M1[s[1]??""];return i===void 0?(t.push(...
+The above dynamic import cannot be analyzed by Vite.
+See https://vite.dev/guide/features#dynamic-import for supported dynamic import formats. If this is intended to be left as-is, you can use the /* @vite-ignore */ comment inside the import() call to suppress this warning.
+
+  Plugin: vite:import-analysis
+  File: /tmp/mdmark-integration-dist-8wSw4i/dist/index.js?test=6
+4:05:52 PM [vite] (client) warning: 
+/tmp/mdmark-integration-dist-8wSw4i/dist/index.js
+38 |  `):v(o.map(w=>w.text).join(`
+39 |  `))+(o.length>0?`
+40 |  ...ark-code-bar">${b}</div>${x}</div>`}var oS;var aS=e=>import(e);function hh(e,t,n){console.error(`${e}\u3092\u8AAD\...
+   |                                                                 ^
+41 |  `):(t.textContent??"").replace(/\n$/,"")}function Ed(e,t){let n=document.createElement("template");n.innerHTML=$a({st...
+42 |  `)return;let T=document.createElement("span");return T.className="mdmark-code-break",w.replaceWith(T),T.append(w),T})...
+The above dynamic import cannot be analyzed by Vite.
+See https://vite.dev/guide/features#dynamic-import for supported dynamic import formats. If this is intended to be left as-is, you can use the /* @vite-ignore */ comment inside the import() call to suppress this warning.
+
+  Plugin: vite:import-analysis
+  File: /tmp/mdmark-integration-dist-8wSw4i/dist/index.js?test=7
+4:05:52 PM [vite] (client) warning: 
+/tmp/mdmark-integration-dist-8wSw4i/dist/index.js
+38 |  `):v(o.map(w=>w.text).join(`
+39 |  `))+(o.length>0?`
+40 |  ...ia-hidden="true">${t}</span>`};var lS="1.59.0",dS=e=>import(e),cS=e=>fetch(e,{method:"HEAD"}),Cd=e=>`https://cdn.j...
+   |                                                                 ^
+41 |  `):(t.textContent??"").replace(/\n$/,"")}function Ed(e,t){let n=document.createElement("template");n.innerHTML=$a({st...
+42 |  `)return;let T=document.createElement("span");return T.className="mdmark-code-break",w.replaceWith(T),T.append(w),T})...
+The above dynamic import cannot be analyzed by Vite.
+See https://vite.dev/guide/features#dynamic-import for supported dynamic import formats. If this is intended to be left as-is, you can use the /* @vite-ignore */ comment inside the import() call to suppress this warning.
+
+  Plugin: vite:import-analysis
+  File: /tmp/mdmark-integration-dist-8wSw4i/dist/index.js?test=7
+4:05:52 PM [vite] (client) warning: 
+/tmp/mdmark-integration-dist-8wSw4i/dist/index.js
+42 |  `)return;let T=document.createElement("span");return T.className="mdmark-code-break",w.replaceWith(T),T.append(w),T})...
+43 |  `)}function Ah(e){let t=a=>`| ${a.map(s=>s.replace(/[\r\n]+/g," ").replaceAll("|","\\|")).join(" | ")} |`,[n,...r]=e;...
+44 |  ...l.remove()}}}var Xg="data-mdmark-drawn",nc;var d1=e=>import(e);async function Jg(e){let{root:t,libraries:n,isCurre...
+   |                                                                 ^
+45 |  `)?e.slice(0,-1):e;return n===""&&e===""?{lines:[],warnings:t}:{lines:n.split(`
+46 |  `).map((o,a)=>{let s=A1.exec(o);if(s?.index===void 0)return{text:sc(o)};let i=M1[s[1]??""];return i===void 0?(t.push(...
+The above dynamic import cannot be analyzed by Vite.
+See https://vite.dev/guide/features#dynamic-import for supported dynamic import formats. If this is intended to be left as-is, you can use the /* @vite-ignore */ comment inside the import() call to suppress this warning.
+
+  Plugin: vite:import-analysis
+  File: /tmp/mdmark-integration-dist-8wSw4i/dist/index.js?test=7
+4:05:52 PM [vite] (client) warning: 
+/tmp/mdmark-integration-dist-8wSw4i/dist/index.js
+42 |  `)return;let T=document.createElement("span");return T.className="mdmark-code-break",w.replaceWith(T),T.append(w),T})...
+43 |  `)}function Ah(e){let t=a=>`| ${a.map(s=>s.replace(/[\r\n]+/g," ").replaceAll("|","\\|")).join(" | ")} |`,[n,...r]=e;...
+44 |  ...ents:["attachComments"]},f1=new Map,Zg=new Map,u1=e=>import(e);function m1(e,t){return e instanceof Error?(e.cause...
+   |                                                                 ^
+45 |  `)?e.slice(0,-1):e;return n===""&&e===""?{lines:[],warnings:t}:{lines:n.split(`
+46 |  `).map((o,a)=>{let s=A1.exec(o);if(s?.index===void 0)return{text:sc(o)};let i=M1[s[1]??""];return i===void 0?(t.push(...
+The above dynamic import cannot be analyzed by Vite.
+See https://vite.dev/guide/features#dynamic-import for supported dynamic import formats. If this is intended to be left as-is, you can use the /* @vite-ignore */ comment inside the import() call to suppress this warning.
+
+  Plugin: vite:import-analysis
+  File: /tmp/mdmark-integration-dist-8wSw4i/dist/index.js?test=7
+4:05:53 PM [vite] (client) warning: 
+/tmp/mdmark-integration-dist-8wSw4i/dist/index.js
+38 |  `):v(o.map(w=>w.text).join(`
+39 |  `))+(o.length>0?`
+40 |  ...ark-code-bar">${b}</div>${x}</div>`}var oS;var aS=e=>import(e);function hh(e,t,n){console.error(`${e}\u3092\u8AAD\...
+   |                                                                 ^
+41 |  `):(t.textContent??"").replace(/\n$/,"")}function Ed(e,t){let n=document.createElement("template");n.innerHTML=$a({st...
+42 |  `)return;let T=document.createElement("span");return T.className="mdmark-code-break",w.replaceWith(T),T.append(w),T})...
+The above dynamic import cannot be analyzed by Vite.
+See https://vite.dev/guide/features#dynamic-import for supported dynamic import formats. If this is intended to be left as-is, you can use the /* @vite-ignore */ comment inside the import() call to suppress this warning.
+
+  Plugin: vite:import-analysis
+  File: /tmp/mdmark-integration-dist-8wSw4i/dist/index.js?test=8
+4:05:53 PM [vite] (client) warning: 
+/tmp/mdmark-integration-dist-8wSw4i/dist/index.js
+38 |  `):v(o.map(w=>w.text).join(`
+39 |  `))+(o.length>0?`
+40 |  ...ia-hidden="true">${t}</span>`};var lS="1.59.0",dS=e=>import(e),cS=e=>fetch(e,{method:"HEAD"}),Cd=e=>`https://cdn.j...
+   |                                                                 ^
+41 |  `):(t.textContent??"").replace(/\n$/,"")}function Ed(e,t){let n=document.createElement("template");n.innerHTML=$a({st...
+42 |  `)return;let T=document.createElement("span");return T.className="mdmark-code-break",w.replaceWith(T),T.append(w),T})...
+The above dynamic import cannot be analyzed by Vite.
+See https://vite.dev/guide/features#dynamic-import for supported dynamic import formats. If this is intended to be left as-is, you can use the /* @vite-ignore */ comment inside the import() call to suppress this warning.
+
+  Plugin: vite:import-analysis
+  File: /tmp/mdmark-integration-dist-8wSw4i/dist/index.js?test=8
+4:05:53 PM [vite] (client) warning: 
+/tmp/mdmark-integration-dist-8wSw4i/dist/index.js
+42 |  `)return;let T=document.createElement("span");return T.className="mdmark-code-break",w.replaceWith(T),T.append(w),T})...
+43 |  `)}function Ah(e){let t=a=>`| ${a.map(s=>s.replace(/[\r\n]+/g," ").replaceAll("|","\\|")).join(" | ")} |`,[n,...r]=e;...
+44 |  ...l.remove()}}}var Xg="data-mdmark-drawn",nc;var d1=e=>import(e);async function Jg(e){let{root:t,libraries:n,isCurre...
+   |                                                                 ^
+45 |  `)?e.slice(0,-1):e;return n===""&&e===""?{lines:[],warnings:t}:{lines:n.split(`
+46 |  `).map((o,a)=>{let s=A1.exec(o);if(s?.index===void 0)return{text:sc(o)};let i=M1[s[1]??""];return i===void 0?(t.push(...
+The above dynamic import cannot be analyzed by Vite.
+See https://vite.dev/guide/features#dynamic-import for supported dynamic import formats. If this is intended to be left as-is, you can use the /* @vite-ignore */ comment inside the import() call to suppress this warning.
+
+  Plugin: vite:import-analysis
+  File: /tmp/mdmark-integration-dist-8wSw4i/dist/index.js?test=8
+4:05:53 PM [vite] (client) warning: 
+/tmp/mdmark-integration-dist-8wSw4i/dist/index.js
+42 |  `)return;let T=document.createElement("span");return T.className="mdmark-code-break",w.replaceWith(T),T.append(w),T})...
+43 |  `)}function Ah(e){let t=a=>`| ${a.map(s=>s.replace(/[\r\n]+/g," ").replaceAll("|","\\|")).join(" | ")} |`,[n,...r]=e;...
+44 |  ...ents:["attachComments"]},f1=new Map,Zg=new Map,u1=e=>import(e);function m1(e,t){return e instanceof Error?(e.cause...
+   |                                                                 ^
+45 |  `)?e.slice(0,-1):e;return n===""&&e===""?{lines:[],warnings:t}:{lines:n.split(`
+46 |  `).map((o,a)=>{let s=A1.exec(o);if(s?.index===void 0)return{text:sc(o)};let i=M1[s[1]??""];return i===void 0?(t.push(...
+The above dynamic import cannot be analyzed by Vite.
+See https://vite.dev/guide/features#dynamic-import for supported dynamic import formats. If this is intended to be left as-is, you can use the /* @vite-ignore */ comment inside the import() call to suppress this warning.
+
+  Plugin: vite:import-analysis
+  File: /tmp/mdmark-integration-dist-8wSw4i/dist/index.js?test=8
+4:05:55 PM [vite] (client) warning: 
+/tmp/mdmark-integration-dist-8wSw4i/dist/index.js
+38 |  `):v(o.map(w=>w.text).join(`
+39 |  `))+(o.length>0?`
+40 |  ...ark-code-bar">${b}</div>${x}</div>`}var oS;var aS=e=>import(e);function hh(e,t,n){console.error(`${e}\u3092\u8AAD\...
+   |                                                                 ^
+41 |  `):(t.textContent??"").replace(/\n$/,"")}function Ed(e,t){let n=document.createElement("template");n.innerHTML=$a({st...
+42 |  `)return;let T=document.createElement("span");return T.className="mdmark-code-break",w.replaceWith(T),T.append(w),T})...
+The above dynamic import cannot be analyzed by Vite.
+See https://vite.dev/guide/features#dynamic-import for supported dynamic import formats. If this is intended to be left as-is, you can use the /* @vite-ignore */ comment inside the import() call to suppress this warning.
+
+  Plugin: vite:import-analysis
+  File: /tmp/mdmark-integration-dist-8wSw4i/dist/index.js?test=9
+4:05:55 PM [vite] (client) warning: 
+/tmp/mdmark-integration-dist-8wSw4i/dist/index.js
+38 |  `):v(o.map(w=>w.text).join(`
+39 |  `))+(o.length>0?`
+40 |  ...ia-hidden="true">${t}</span>`};var lS="1.59.0",dS=e=>import(e),cS=e=>fetch(e,{method:"HEAD"}),Cd=e=>`https://cdn.j...
+   |                                                                 ^
+41 |  `):(t.textContent??"").replace(/\n$/,"")}function Ed(e,t){let n=document.createElement("template");n.innerHTML=$a({st...
+42 |  `)return;let T=document.createElement("span");return T.className="mdmark-code-break",w.replaceWith(T),T.append(w),T})...
+The above dynamic import cannot be analyzed by Vite.
+See https://vite.dev/guide/features#dynamic-import for supported dynamic import formats. If this is intended to be left as-is, you can use the /* @vite-ignore */ comment inside the import() call to suppress this warning.
+
+  Plugin: vite:import-analysis
+  File: /tmp/mdmark-integration-dist-8wSw4i/dist/index.js?test=9
+4:05:55 PM [vite] (client) warning: 
+/tmp/mdmark-integration-dist-8wSw4i/dist/index.js
+42 |  `)return;let T=document.createElement("span");return T.className="mdmark-code-break",w.replaceWith(T),T.append(w),T})...
+43 |  `)}function Ah(e){let t=a=>`| ${a.map(s=>s.replace(/[\r\n]+/g," ").replaceAll("|","\\|")).join(" | ")} |`,[n,...r]=e;...
+44 |  ...l.remove()}}}var Xg="data-mdmark-drawn",nc;var d1=e=>import(e);async function Jg(e){let{root:t,libraries:n,isCurre...
+   |                                                                 ^
+45 |  `)?e.slice(0,-1):e;return n===""&&e===""?{lines:[],warnings:t}:{lines:n.split(`
+46 |  `).map((o,a)=>{let s=A1.exec(o);if(s?.index===void 0)return{text:sc(o)};let i=M1[s[1]??""];return i===void 0?(t.push(...
+The above dynamic import cannot be analyzed by Vite.
+See https://vite.dev/guide/features#dynamic-import for supported dynamic import formats. If this is intended to be left as-is, you can use the /* @vite-ignore */ comment inside the import() call to suppress this warning.
+
+  Plugin: vite:import-analysis
+  File: /tmp/mdmark-integration-dist-8wSw4i/dist/index.js?test=9
+4:05:55 PM [vite] (client) warning: 
+/tmp/mdmark-integration-dist-8wSw4i/dist/index.js
+42 |  `)return;let T=document.createElement("span");return T.className="mdmark-code-break",w.replaceWith(T),T.append(w),T})...
+43 |  `)}function Ah(e){let t=a=>`| ${a.map(s=>s.replace(/[\r\n]+/g," ").replaceAll("|","\\|")).join(" | ")} |`,[n,...r]=e;...
+44 |  ...ents:["attachComments"]},f1=new Map,Zg=new Map,u1=e=>import(e);function m1(e,t){return e instanceof Error?(e.cause...
+   |                                                                 ^
+45 |  `)?e.slice(0,-1):e;return n===""&&e===""?{lines:[],warnings:t}:{lines:n.split(`
+46 |  `).map((o,a)=>{let s=A1.exec(o);if(s?.index===void 0)return{text:sc(o)};let i=M1[s[1]??""];return i===void 0?(t.push(...
+The above dynamic import cannot be analyzed by Vite.
+See https://vite.dev/guide/features#dynamic-import for supported dynamic import formats. If this is intended to be left as-is, you can use the /* @vite-ignore */ comment inside the import() call to suppress this warning.
+
+  Plugin: vite:import-analysis
+  File: /tmp/mdmark-integration-dist-8wSw4i/dist/index.js?test=9
+4:05:56 PM [vite] (client) warning: 
+/tmp/mdmark-integration-dist-8wSw4i/dist/index.js
+38 |  `):v(o.map(w=>w.text).join(`
+39 |  `))+(o.length>0?`
+40 |  ...ark-code-bar">${b}</div>${x}</div>`}var oS;var aS=e=>import(e);function hh(e,t,n){console.error(`${e}\u3092\u8AAD\...
+   |                                                                 ^
+41 |  `):(t.textContent??"").replace(/\n$/,"")}function Ed(e,t){let n=document.createElement("template");n.innerHTML=$a({st...
+42 |  `)return;let T=document.createElement("span");return T.className="mdmark-code-break",w.replaceWith(T),T.append(w),T})...
+The above dynamic import cannot be analyzed by Vite.
+See https://vite.dev/guide/features#dynamic-import for supported dynamic import formats. If this is intended to be left as-is, you can use the /* @vite-ignore */ comment inside the import() call to suppress this warning.
+
+  Plugin: vite:import-analysis
+  File: /tmp/mdmark-integration-dist-8wSw4i/dist/index.js?test=10
+4:05:56 PM [vite] (client) warning: 
+/tmp/mdmark-integration-dist-8wSw4i/dist/index.js
+38 |  `):v(o.map(w=>w.text).join(`
+39 |  `))+(o.length>0?`
+40 |  ...ia-hidden="true">${t}</span>`};var lS="1.59.0",dS=e=>import(e),cS=e=>fetch(e,{method:"HEAD"}),Cd=e=>`https://cdn.j...
+   |                                                                 ^
+41 |  `):(t.textContent??"").replace(/\n$/,"")}function Ed(e,t){let n=document.createElement("template");n.innerHTML=$a({st...
+42 |  `)return;let T=document.createElement("span");return T.className="mdmark-code-break",w.replaceWith(T),T.append(w),T})...
+The above dynamic import cannot be analyzed by Vite.
+See https://vite.dev/guide/features#dynamic-import for supported dynamic import formats. If this is intended to be left as-is, you can use the /* @vite-ignore */ comment inside the import() call to suppress this warning.
+
+  Plugin: vite:import-analysis
+  File: /tmp/mdmark-integration-dist-8wSw4i/dist/index.js?test=10
+4:05:56 PM [vite] (client) warning: 
+/tmp/mdmark-integration-dist-8wSw4i/dist/index.js
+42 |  `)return;let T=document.createElement("span");return T.className="mdmark-code-break",w.replaceWith(T),T.append(w),T})...
+43 |  `)}function Ah(e){let t=a=>`| ${a.map(s=>s.replace(/[\r\n]+/g," ").replaceAll("|","\\|")).join(" | ")} |`,[n,...r]=e;...
+44 |  ...l.remove()}}}var Xg="data-mdmark-drawn",nc;var d1=e=>import(e);async function Jg(e){let{root:t,libraries:n,isCurre...
+   |                                                                 ^
+45 |  `)?e.slice(0,-1):e;return n===""&&e===""?{lines:[],warnings:t}:{lines:n.split(`
+46 |  `).map((o,a)=>{let s=A1.exec(o);if(s?.index===void 0)return{text:sc(o)};let i=M1[s[1]??""];return i===void 0?(t.push(...
+The above dynamic import cannot be analyzed by Vite.
+See https://vite.dev/guide/features#dynamic-import for supported dynamic import formats. If this is intended to be left as-is, you can use the /* @vite-ignore */ comment inside the import() call to suppress this warning.
+
+  Plugin: vite:import-analysis
+  File: /tmp/mdmark-integration-dist-8wSw4i/dist/index.js?test=10
+4:05:56 PM [vite] (client) warning: 
+/tmp/mdmark-integration-dist-8wSw4i/dist/index.js
+42 |  `)return;let T=document.createElement("span");return T.className="mdmark-code-break",w.replaceWith(T),T.append(w),T})...
+43 |  `)}function Ah(e){let t=a=>`| ${a.map(s=>s.replace(/[\r\n]+/g," ").replaceAll("|","\\|")).join(" | ")} |`,[n,...r]=e;...
+44 |  ...ents:["attachComments"]},f1=new Map,Zg=new Map,u1=e=>import(e);function m1(e,t){return e instanceof Error?(e.cause...
+   |                                                                 ^
+45 |  `)?e.slice(0,-1):e;return n===""&&e===""?{lines:[],warnings:t}:{lines:n.split(`
+46 |  `).map((o,a)=>{let s=A1.exec(o);if(s?.index===void 0)return{text:sc(o)};let i=M1[s[1]??""];return i===void 0?(t.push(...
+The above dynamic import cannot be analyzed by Vite.
+See https://vite.dev/guide/features#dynamic-import for supported dynamic import formats. If this is intended to be left as-is, you can use the /* @vite-ignore */ comment inside the import() call to suppress this warning.
+
+  Plugin: vite:import-analysis
+  File: /tmp/mdmark-integration-dist-8wSw4i/dist/index.js?test=10
+4:05:57 PM [vite] (client) warning: 
+/tmp/mdmark-integration-dist-8wSw4i/dist/index.js
+38 |  `):v(o.map(w=>w.text).join(`
+39 |  `))+(o.length>0?`
+40 |  ...ark-code-bar">${b}</div>${x}</div>`}var oS;var aS=e=>import(e);function hh(e,t,n){console.error(`${e}\u3092\u8AAD\...
+   |                                                                 ^
+41 |  `):(t.textContent??"").replace(/\n$/,"")}function Ed(e,t){let n=document.createElement("template");n.innerHTML=$a({st...
+42 |  `)return;let T=document.createElement("span");return T.className="mdmark-code-break",w.replaceWith(T),T.append(w),T})...
+The above dynamic import cannot be analyzed by Vite.
+See https://vite.dev/guide/features#dynamic-import for supported dynamic import formats. If this is intended to be left as-is, you can use the /* @vite-ignore */ comment inside the import() call to suppress this warning.
+
+  Plugin: vite:import-analysis
+  File: /tmp/mdmark-integration-dist-8wSw4i/dist/index.js?test=11
+4:05:57 PM [vite] (client) warning: 
+/tmp/mdmark-integration-dist-8wSw4i/dist/index.js
+38 |  `):v(o.map(w=>w.text).join(`
+39 |  `))+(o.length>0?`
+40 |  ...ia-hidden="true">${t}</span>`};var lS="1.59.0",dS=e=>import(e),cS=e=>fetch(e,{method:"HEAD"}),Cd=e=>`https://cdn.j...
+   |                                                                 ^
+41 |  `):(t.textContent??"").replace(/\n$/,"")}function Ed(e,t){let n=document.createElement("template");n.innerHTML=$a({st...
+42 |  `)return;let T=document.createElement("span");return T.className="mdmark-code-break",w.replaceWith(T),T.append(w),T})...
+The above dynamic import cannot be analyzed by Vite.
+See https://vite.dev/guide/features#dynamic-import for supported dynamic import formats. If this is intended to be left as-is, you can use the /* @vite-ignore */ comment inside the import() call to suppress this warning.
+
+  Plugin: vite:import-analysis
+  File: /tmp/mdmark-integration-dist-8wSw4i/dist/index.js?test=11
+4:05:57 PM [vite] (client) warning: 
+/tmp/mdmark-integration-dist-8wSw4i/dist/index.js
+42 |  `)return;let T=document.createElement("span");return T.className="mdmark-code-break",w.replaceWith(T),T.append(w),T})...
+43 |  `)}function Ah(e){let t=a=>`| ${a.map(s=>s.replace(/[\r\n]+/g," ").replaceAll("|","\\|")).join(" | ")} |`,[n,...r]=e;...
+44 |  ...l.remove()}}}var Xg="data-mdmark-drawn",nc;var d1=e=>import(e);async function Jg(e){let{root:t,libraries:n,isCurre...
+   |                                                                 ^
+45 |  `)?e.slice(0,-1):e;return n===""&&e===""?{lines:[],warnings:t}:{lines:n.split(`
+46 |  `).map((o,a)=>{let s=A1.exec(o);if(s?.index===void 0)return{text:sc(o)};let i=M1[s[1]??""];return i===void 0?(t.push(...
+The above dynamic import cannot be analyzed by Vite.
+See https://vite.dev/guide/features#dynamic-import for supported dynamic import formats. If this is intended to be left as-is, you can use the /* @vite-ignore */ comment inside the import() call to suppress this warning.
+
+  Plugin: vite:import-analysis
+  File: /tmp/mdmark-integration-dist-8wSw4i/dist/index.js?test=11
+4:05:57 PM [vite] (client) warning: 
+/tmp/mdmark-integration-dist-8wSw4i/dist/index.js
+42 |  `)return;let T=document.createElement("span");return T.className="mdmark-code-break",w.replaceWith(T),T.append(w),T})...
+43 |  `)}function Ah(e){let t=a=>`| ${a.map(s=>s.replace(/[\r\n]+/g," ").replaceAll("|","\\|")).join(" | ")} |`,[n,...r]=e;...
+44 |  ...ents:["attachComments"]},f1=new Map,Zg=new Map,u1=e=>import(e);function m1(e,t){return e instanceof Error?(e.cause...
+   |                                                                 ^
+45 |  `)?e.slice(0,-1):e;return n===""&&e===""?{lines:[],warnings:t}:{lines:n.split(`
+46 |  `).map((o,a)=>{let s=A1.exec(o);if(s?.index===void 0)return{text:sc(o)};let i=M1[s[1]??""];return i===void 0?(t.push(...
+The above dynamic import cannot be analyzed by Vite.
+See https://vite.dev/guide/features#dynamic-import for supported dynamic import formats. If this is intended to be left as-is, you can use the /* @vite-ignore */ comment inside the import() call to suppress this warning.
+
+  Plugin: vite:import-analysis
+  File: /tmp/mdmark-integration-dist-8wSw4i/dist/index.js?test=11
+
+ Test Files  79 passed (79)
+      Tests  803 passed (803)
+   Start at  16:01:29
+   Duration  1148.60s (tests 89%, import 8%, transform 2%)
+
+exit=0

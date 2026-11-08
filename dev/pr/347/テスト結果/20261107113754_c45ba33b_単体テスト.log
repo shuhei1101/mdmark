@@ -1,0 +1,15 @@
+$ npm run test:unit
+
+> test:unit
+> vitest run --project 'unit*'
+
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-config-cascade-global-settings
+
+
+ Test Files  238 passed (238)
+      Tests  1650 passed (1650)
+   Start at  11:37:57
+   Duration  81.83s (worker 64%, tests 24%, import 11%, transform 1%)
+
+exit=0

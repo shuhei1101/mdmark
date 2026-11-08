@@ -9,8 +9,8 @@ flows:
       - name: 配布物を読む Node の処理
         description: ビルドした `dist/index.js` を読み、`buildAliases` を呼ぶ
       - name: 4 つの行とその中身
-        description: 'リクエスト例の 2 つの行に、`enabled: false` の行 `off` と、`alias_type` を `custom` の `env` にした行 `servers` を加えたもの。`sources` はリクエスト例の 2 つに、`servers` の `servers/dev.yaml`（`id` が `dev-server`、`url` が `http://127.0.0.1:8767/`、`port` が `8767`）と `off` の `off/memo.yaml` を加える'
-        notes: '`terms` のレコードの `aliases` を文字列 `WS` で書き、並びに直ることを確かめる。`commands` のレコードは `name` を持たない'
+        description: 'リクエスト例の 2 つの行に、`enabled: false` の行 `off` と、`alias_type` を `env` にした行 `servers` を加えたもの。`sources` はリクエスト例の 2 つに、`servers` の `servers/dev.yaml`（`id` が `dev-server`、`url` が `http://127.0.0.1:8767/`、`port` が `8767`）と `off` の `off/memo.yaml` を加える'
+        notes: '`terms` のレコードの `aliases` を文字列 `WS` で書き、並びに直ることを確かめる。`terms` の行の `description` は入れ子の列 `meta.meaning` から取る。`commands` のレコードは `name` を持たない'
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
@@ -35,7 +35,7 @@ flows:
       - name: 配布物を読む Node の処理
         description: 正常系と同じ
       - name: 使えない行とレコードを混ぜた中身
-        description: 正しい行 `terms`（リクエスト例と同じ）と、次の 6 行。`records` が `items` でファイルにそのキーが無い行（`alias_type` は `custom` の `term`）・`description` を `ref` の `missing_col` で取る行（`alias_type` は `custom` の `term`）・`alias_type` を `ref` の `alias_type` で取り値が `memo` のレコードを持つ行・`id`・`name` を持ち `command` が空のレコードを持つ行（`alias_type` は `custom` の `command`）・`id` が `terms` と同じ行（`alias_type` は `custom` の `term`）・`id` が `ws`（`terms` のレコードと同じ）で `name`・`description` を持つレコードを持つ行（`alias_type` は `custom` の `term`）
+        description: 正しい行 `terms`（リクエスト例と同じ）と、次の 6 行。`records` が `items` でファイルにそのキーが無い行（`alias_type` は `term`）・`metadata.description` を `missing_col` にした行（`alias_type` は `term`）・`alias_type` が `memo` の行・`id`・`name` を持ち `command` が空のレコードを持つ行（`alias_type` は `command`）・`id` が `terms` と同じ行（`alias_type` は `term`）・`id` が `ws`（`terms` のレコードと同じ）で `name`・`description` を持つレコードを持つ行（`alias_type` は `term`）
         notes: ずれの種類ごとに 1 つずつ置いて決定的に起こす。`missing_col` の行のレコードは `id`・`name` を持ち、`alias_field_missing` の 1 件だけを出す
       - name: Mock
         description: 差し替える依存は無い
@@ -67,7 +67,7 @@ request:
     required: true
     location: argument
     description: 使う側が設定の `aliases` を読んだ配列。形は ER 図『エイリアスの元の行』
-    notes: '`id`・`paths`・`metadata.alias_type` を持たない行は使わず、ずれにもしない（形は `mdmark check` の `schema` が確かめる）'
+    notes: '`id`・`paths`・`alias_type` を持たない行は使わず、ずれにもしない（形は `mdmark check` の `schema` が確かめる）'
   - name: input.sources
     type: MdmarkAliasSource[]
     required: true
@@ -105,21 +105,21 @@ request_example: |-
       {
         "id": "terms",
         "paths": ["terms/*.yaml"],
+        "alias_type": "term",
         "records": "terms",
         "metadata": {
-          "alias_type": { "type": "custom", "value": "term" },
-          "name": { "type": "ref", "field": "term" },
-          "description": { "type": "ref", "field": "meaning" }
+          "name": "term",
+          "description": "meta.meaning"
         }
       },
       {
         "id": "commands",
         "paths": ["commands/unit-test.yaml"],
-        "metadata": { "alias_type": { "type": "custom", "value": "command" } }
+        "alias_type": "command"
       }
     ],
     "sources": [
-      { "rowId": "terms", "path": "terms/glossary.yaml", "data": { "terms": [{ "id": "ws", "term": "ワークスペース", "aliases": "WS", "meaning": "話し合いの記録を置くフォルダ" }] } },
+      { "rowId": "terms", "path": "terms/glossary.yaml", "data": { "terms": [{ "id": "ws", "term": "ワークスペース", "aliases": "WS", "meta": { "meaning": "話し合いの記録を置くフォルダ" } }] } },
       { "rowId": "commands", "path": "commands/unit-test.yaml", "data": { "id": "unit-test", "description": "ライブラリ本体の単体テストを流す", "command": "npm run test:unit" } }
     ]
   }
@@ -145,7 +145,7 @@ response:
   - name: problems[].kind
     type: "'duplicate_alias_row_id' | 'alias_records_missing' | 'alias_field_missing' | 'alias_unknown_type' | 'alias_required_empty' | 'duplicate_alias_id'"
     description: ずれの種類
-    notes: '`duplicate_alias_row_id` は 2 つ目以降に出た行の `id`、`alias_records_missing` はファイルに `records` のキーの配列が無い、`alias_field_missing` は `ref` の `field` の列がレコードに無い、`alias_unknown_type` は `alias_type` が 9 つの種類に無い、`alias_required_empty` は種類の必須のキーが空、`duplicate_alias_id` は 2 つ目以降に出たエイリアスの `id`'
+    notes: '`duplicate_alias_row_id` は 2 つ目以降に出た行の `id`、`alias_records_missing` はファイルに `records` のキーの配列が無い、`alias_field_missing` は `metadata` に記載した列がレコードに無い、`alias_unknown_type` は行の `alias_type` が 9 つの種類に無い（`file` は `configFile`、`where` は `aliases[{行}].alias_type`）、`alias_required_empty` は種類の必須のキーが空、`duplicate_alias_id` は 2 つ目以降に出たエイリアスの `id`'
   - name: problems[].message
     type: string
     description: ずれの内容と直し方。日本語の 1 文
@@ -175,14 +175,14 @@ constraints:
     constraint: '`records` を持つ行は、ファイルの値のそのキーの配列の要素ごとに 1 件、持たない行はファイルの値を 1 件にする。配列の要素とファイルの値がオブジェクトでないものは使わない'
     notes: キーが無いか配列でないファイルは `alias_records_missing`
   - item: metadata の当て方
-    constraint: エイリアスのキーごとに、`ref` はレコードの `field` の列の値、`custom` は `value` を取る。`metadata` に無いキーはレコードの同じ名前の列の値を取る（列が無ければ持たない）。`ref` の列がレコードに無いときは、無い列ごとに `alias_field_missing` にし、そのレコードは種類と必須のキーを確かめずに使わない
+    constraint: エイリアスのキーごとに、`metadata` に記載した列名の列の値を取る。列名の `.` は入れ子の列をたどる（`meta.summary` は `meta` の中の `summary`）。`metadata` に無いキーと、値が文字列でないキーは、レコードの同じ名前の列の値を取る（列が無ければ持たない）。`metadata` に記載した列がレコードに無いときは、無い列ごとに `alias_field_missing` にし、そのレコードは必須のキーを確かめずに使わない。`alias_type` は行の `alias_type` を取り、レコードからは取らない
     notes: キーは ER 図『エイリアス』の列と `port`。ほかのキーは取らない
   - item: 値の形
     constraint: 文字列のキーは、文字列・数・真偽値を文字列にし、前後の空白を除く。それ以外の値は空として扱う。`aliases`・`avoid`・`related` は、文字列なら 1 件の並びにし、並びなら文字列の要素だけを残す
   - item: 名前の既定
-    constraint: '`name` が空のとき、`records` を持つ行はレコードの `id`、持たない行はファイルのパスの最後の名前から拡張子を除いたものにする'
+    constraint: '`name` が空のとき、行が `body_file` を持ちレコードのその列が空でなければ、その値のパスの最後の名前から拡張子を除いたものにする。それも空のとき、`records` を持つ行はレコードの `id`、持たない行はファイルのパスの最後の名前から拡張子を除いたものにする'
   - item: 種類と必須のキー
-    constraint: '`alias_type` が `term`・`doc`・`command`・`url`・`skill`・`tool`・`path`・`env`・`avoid` に無いレコードは `alias_unknown_type`、種類の必須のキー（ER 図『エイリアス』の補足。`env` は `id`・`name` と、`url`・`port` の 1 つ以上）が空のレコードは `alias_required_empty` にして使わない'
+    constraint: '行の `alias_type` が `term`・`doc`・`command`・`url`・`skill`・`tool`・`path`・`env`・`avoid` に無い行は、レコードを読まず `alias_unknown_type` にする。種類の必須のキー（ER 図『エイリアス』の補足。`env` は `id`・`name` と、`url`・`port` の 1 つ以上）が空のレコードは `alias_required_empty` にして使わない'
     notes: '`url` の URL が http・https かは確かめない（`mount` がリンクにするかを決める）'
   - item: env
     constraint: '`env` のレコードも種類と必須のキーを確かめてずれを返すが、`aliases` には入れない'

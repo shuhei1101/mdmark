@@ -229,29 +229,64 @@ export function isRewrite(options: {
   return same * 2 >= longer;
 }
 
-/** 行の比較の結果を、行番号で引ける形にする。`same` でない行が続くところを 1 つの変えた塊にする */
-function classifyLines(diff: DiffResult): LineMap {
+/** Markdown の行。末尾の改行で出る空の行は数えない */
+const splitSourceLines = (markdown: string): string[] => {
+  const lines = markdown.split("\n");
+  if (lines.at(-1) === "") {
+    lines.pop();
+  }
+  return lines;
+};
+
+/** 空白だけの行を除いた Markdown と、残った行の元の行番号 */
+type ContentSource = {
+  /** 空白だけの行を除いた Markdown */
+  markdown: string;
+  /** 残った行の、上から順の元の行番号 */
+  lineNumbers: number[];
+};
+
+/** 行の並びから空白だけの行を除き、残った行の元の行番号を添える */
+const toContentSource = (texts: string[]): ContentSource => {
+  const lineNumbers = texts.flatMap((text, line) =>
+    isBlank(text) ? [] : [line],
+  );
+  return {
+    markdown: lineNumbers.map((line) => `${texts[line]}\n`).join(""),
+    lineNumbers,
+  };
+};
+
+/** 空白だけの行を除いて比べた結果を、元の行番号で引ける形にする。`same` でない行が続くところを 1 つの変えた塊にする */
+function classifyLines(options: {
+  /** 空白だけの行を除いた前と後の比較の結果 */
+  diff: DiffResult;
+  /** 前と後の元の行の文字 */
+  texts: { before: string[]; after: string[] };
+  /** 比べた行の、前と後の元の行番号 */
+  lineNumbers: { before: number[]; after: number[] };
+}): LineMap {
+  const { diff, texts, lineNumbers } = options;
   const map: LineMap = {
-    texts: { before: [], after: [] },
+    texts,
     deleted: new Set(),
     added: new Set(),
     same: new Map(),
     chunkBefore: new Map(),
     chunkAfter: new Map(),
   };
-  let beforeLine = 0;
-  let afterLine = 0;
+  let beforeIndex = 0;
+  let afterIndex = 0;
   let chunk = -1;
   let inChunk = false;
   for (const block of diff.blocks) {
     for (const line of block.lines) {
-      const text = line.parts.map((part) => part.text).join("");
+      const beforeLine = lineNumbers.before[beforeIndex] ?? -1;
+      const afterLine = lineNumbers.after[afterIndex] ?? -1;
       if (line.kind === "same") {
         map.same.set(beforeLine, afterLine);
-        map.texts.before[beforeLine] = text;
-        map.texts.after[afterLine] = text;
-        beforeLine += 1;
-        afterLine += 1;
+        beforeIndex += 1;
+        afterIndex += 1;
         inChunk = false;
         continue;
       }
@@ -262,13 +297,11 @@ function classifyLines(diff: DiffResult): LineMap {
       if (line.kind === "del") {
         map.deleted.add(beforeLine);
         map.chunkBefore.set(beforeLine, chunk);
-        map.texts.before[beforeLine] = text;
-        beforeLine += 1;
+        beforeIndex += 1;
       } else {
         map.added.add(afterLine);
         map.chunkAfter.set(afterLine, chunk);
-        map.texts.after[afterLine] = text;
-        afterLine += 1;
+        afterIndex += 1;
       }
     }
   }
@@ -285,16 +318,31 @@ export function colorDiffBlocks(options: {
   engine?: DiffEngine;
 }): void {
   const { before, after, segmenter, engine = jsdiffEngine } = options;
+  const texts = {
+    before: splitSourceLines(before.markdown),
+    after: splitSourceLines(after.markdown),
+  };
+  const contents = {
+    before: toContentSource(texts.before),
+    after: toContentSource(texts.after),
+  };
   const diff = computeDiff({
-    before: before.markdown,
-    after: after.markdown,
+    before: contents.before.markdown,
+    after: contents.after.markdown,
     segmenter,
     engine,
   });
   if (diff.counts.del === 0 && diff.counts.add === 0) {
     return;
   }
-  const lines = classifyLines(diff);
+  const lines = classifyLines({
+    diff,
+    texts,
+    lineNumbers: {
+      before: contents.before.lineNumbers,
+      after: contents.after.lineNumbers,
+    },
+  });
   const beforeCount = lines.texts.before.length;
   const afterCount = lines.texts.after.length;
   const beforeRanges = collectBlockRanges({

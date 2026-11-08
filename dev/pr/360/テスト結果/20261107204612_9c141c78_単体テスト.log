@@ -1,0 +1,660 @@
+$ npx vitest run --project unit --maxWorkers=2 tests/unit/migrations tests/unit/src/cli/alias-schema.test.ts tests/unit/src/cli/config.test.ts tests/unit/src/cli/aliases.test.ts tests/unit/src/cli/export.test.ts tests/unit/src/cli/check.test.ts tests/unit/src/knowledge/aliases.test.ts tests/unit/src/cli/migrations.test.ts tests/unit/src/cli/upgrade.test.ts
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-aliases-alias-inject-v0.3.0-schema
+
+ ❯ |unit| tests/unit/src/cli/config.test.ts (21 tests | 1 failed) 6756ms
+   × test_validate_config_when_aliases_invalid 52ms
+ ❯ |unit| tests/unit/src/cli/export.test.ts (20 tests | 1 failed) 9573ms
+   × test_prepare_embeds_when_aliases 12ms
+ ❯ |unit| tests/unit/src/cli/upgrade.test.ts (13 tests | 1 failed) 5020ms
+   × test_run_upgrade_when_script_prints 53ms
+ ❯ |unit| tests/unit/src/cli/migrations.test.ts (23 tests | 2 failed) 4666ms
+   × test_apply_step_when_script_prints 32ms
+   × test_apply_step_when_script_fails_with_stderr 25ms
+ ❯ |unit| tests/unit/src/cli/aliases.test.ts (5 tests | 2 failed) 984ms
+   × test_load_aliases 821ms
+   × test_load_aliases_when_unreadable 27ms
+ ❯ |unit| tests/unit/src/cli/check.test.ts (28 tests | 1 failed) 4964ms
+   × test_collect_check_issues_when_alias_drift 82ms
+ ❯ |unit| tests/unit/src/cli/alias-schema.test.ts (4 tests | 4 failed) 2115ms
+   × test_validate_alias_rows 1794ms
+   × test_validate_alias_rows_when_required_missing 29ms
+   × test_validate_alias_rows_when_alias_type_unknown 28ms
+   × test_validate_alias_rows_when_v020_metadata 263ms
+ ❯ |unit| tests/unit/src/knowledge/aliases.test.ts (12 tests | 11 failed) 766ms
+   × test_build_aliases 36ms
+   × test_build_aliases_when_invalid_rows 23ms
+   × test_build_aliases_when_rows_not_usable 28ms
+   × test_build_aliases_when_values_coerced 141ms
+   × test_build_aliases_when_name_missing 95ms
+   × test_build_aliases_when_fields_missing 113ms
+   × test_build_aliases_when_env_has_no_url_and_port 42ms
+   × test_build_aliases_when_id_same_as_env 37ms
+   × test_read_alias_record 133ms
+   × test_read_alias_record_when_nested_column_missing 49ms
+   × test_check_alias_fields 43ms
+ ❯ |unit| tests/unit/migrations/alias-rows.test.ts (5 tests | 5 failed) 40ms
+   × test_migrate_alias_rows 17ms
+   × test_migrate_alias_rows_when_custom_value 10ms
+   × test_migrate_alias_rows_when_mixed_types 4ms
+   × test_migrate_alias_rows_when_no_records 4ms
+   × test_migrate_alias_rows_when_already_migrated 4ms
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 28 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit| tests/unit/migrations/alias-rows.test.ts > test_migrate_alias_rows
+AssertionError: expected [] to have a length of 1 but got +0
+
+- Expected
++ Received
+
+- 1
++ 0
+
+ ❯ loadMigrateAliasRows tests/unit/migrations/alias-rows.test.ts:24:17
+     22|     found.push(path);
+     23|   }
+     24|   expect(found).toHaveLength(1);
+       |                 ^
+     25|   const module = (await import(
+     26|     /* @vite-ignore */ pathToFileURL(`${ROOT}${found[0]}`).href
+ ❯ tests/unit/migrations/alias-rows.test.ts:46:28
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/28]⎯
+
+ FAIL  |unit| tests/unit/migrations/alias-rows.test.ts > test_migrate_alias_rows_when_custom_value
+AssertionError: expected [] to have a length of 1 but got +0
+
+- Expected
++ Received
+
+- 1
++ 0
+
+ ❯ loadMigrateAliasRows tests/unit/migrations/alias-rows.test.ts:24:17
+     22|     found.push(path);
+     23|   }
+     24|   expect(found).toHaveLength(1);
+       |                 ^
+     25|   const module = (await import(
+     26|     /* @vite-ignore */ pathToFileURL(`${ROOT}${found[0]}`).href
+ ❯ tests/unit/migrations/alias-rows.test.ts:95:28
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/28]⎯
+
+ FAIL  |unit| tests/unit/migrations/alias-rows.test.ts > test_migrate_alias_rows_when_mixed_types
+AssertionError: expected [] to have a length of 1 but got +0
+
+- Expected
++ Received
+
+- 1
++ 0
+
+ ❯ loadMigrateAliasRows tests/unit/migrations/alias-rows.test.ts:24:17
+     22|     found.push(path);
+     23|   }
+     24|   expect(found).toHaveLength(1);
+       |                 ^
+     25|   const module = (await import(
+     26|     /* @vite-ignore */ pathToFileURL(`${ROOT}${found[0]}`).href
+ ❯ tests/unit/migrations/alias-rows.test.ts:123:28
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/28]⎯
+
+ FAIL  |unit| tests/unit/migrations/alias-rows.test.ts > test_migrate_alias_rows_when_no_records
+AssertionError: expected [] to have a length of 1 but got +0
+
+- Expected
++ Received
+
+- 1
++ 0
+
+ ❯ loadMigrateAliasRows tests/unit/migrations/alias-rows.test.ts:24:17
+     22|     found.push(path);
+     23|   }
+     24|   expect(found).toHaveLength(1);
+       |                 ^
+     25|   const module = (await import(
+     26|     /* @vite-ignore */ pathToFileURL(`${ROOT}${found[0]}`).href
+ ❯ tests/unit/migrations/alias-rows.test.ts:150:28
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/28]⎯
+
+ FAIL  |unit| tests/unit/migrations/alias-rows.test.ts > test_migrate_alias_rows_when_already_migrated
+AssertionError: expected [] to have a length of 1 but got +0
+
+- Expected
++ Received
+
+- 1
++ 0
+
+ ❯ loadMigrateAliasRows tests/unit/migrations/alias-rows.test.ts:24:17
+     22|     found.push(path);
+     23|   }
+     24|   expect(found).toHaveLength(1);
+       |                 ^
+     25|   const module = (await import(
+     26|     /* @vite-ignore */ pathToFileURL(`${ROOT}${found[0]}`).href
+ ❯ tests/unit/migrations/alias-rows.test.ts:170:28
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/28]⎯
+
+ FAIL  |unit| tests/unit/src/cli/alias-schema.test.ts > test_validate_alias_rows
+AssertionError: expected [ { …(4) }, { …(4) }, { …(4) } ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   {
++     "file": "mdmark.config.yaml",
++     "kind": "schema",
++     "message": "`aliases[0].metadata` に `alias_type`（引用の種類）がありません。記載してください。",
++     "where": "aliases[0].metadata",
++   },
++   {
++     "file": "mdmark.config.yaml",
++     "kind": "schema",
++     "message": "`aliases[0].metadata.name`（metadata の値）は ref・custom のどれかにしてください。",
++     "where": "aliases[0].metadata.name",
++   },
++   {
++     "file": "mdmark.config.yaml",
++     "kind": "schema",
++     "message": "`aliases[0].metadata.description`（metadata の値）は ref・custom のどれかにしてください。",
++     "where": "aliases[0].metadata.description",
++   },
++ ]
+
+ ❯ tests/unit/src/cli/alias-schema.test.ts:31:25
+     29|   const result = validateAliasRows([VALID_ROW], "mdmark.config.yaml");
+     30|   // 検証
+     31|   expect(result.issues).toEqual([]);
+       |                         ^
+     32|   expect(result.rows).toEqual([VALID_ROW]);
+     33| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/28]⎯
+
+ FAIL  |unit| tests/unit/src/cli/alias-schema.test.ts > test_validate_alias_rows_when_required_missing
+AssertionError: expected [ { …(4) }, { …(4) }, { …(4) } ] to have a length of 1 but got 3
+
+- Expected
++ Received
+
+- 1
++ 3
+
+ ❯ tests/unit/src/cli/alias-schema.test.ts:43:25
+     41|   const result = validateAliasRows([withoutType], "mdmark.config.yaml"…
+     42|   // 検証
+     43|   expect(result.issues).toHaveLength(1);
+       |                         ^
+     44|   expect(result.issues[0]?.kind).toBe("schema");
+     45|   expect(result.issues[0]?.where).toBe("aliases[0]");
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/28]⎯
+
+ FAIL  |unit| tests/unit/src/cli/alias-schema.test.ts > test_validate_alias_rows_when_alias_type_unknown
+AssertionError: expected [ { …(4) }, { …(4) }, { …(4) } ] to have a length of 1 but got 3
+
+- Expected
++ Received
+
+- 1
++ 3
+
+ ❯ tests/unit/src/cli/alias-schema.test.ts:59:25
+     57|   const result = validateAliasRows([row], "mdmark.config.yaml");
+     58|   // 検証
+     59|   expect(result.issues).toHaveLength(1);
+       |                         ^
+     60|   expect(result.issues[0]?.where).toBe("aliases[0].alias_type");
+     61|   expect(result.issues[0]?.message).toContain("term");
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/28]⎯
+
+ FAIL  |unit| tests/unit/src/cli/alias-schema.test.ts > test_validate_alias_rows_when_v020_metadata
+AssertionError: expected 'aliases[0].metadata' to be 'aliases[0].metadata.name' // Object.is equality
+
+Expected: "aliases[0].metadata.name"
+Received: "aliases[0].metadata"
+
+ ❯ tests/unit/src/cli/alias-schema.test.ts:80:35
+     78|   // 検証
+     79|   expect(result.issues).toHaveLength(1);
+     80|   expect(result.issues[0]?.where).toBe("aliases[0].metadata.name");
+       |                                   ^
+     81|   expect(result.issues[0]?.message).toContain("文字列にしてください");
+     82| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/28]⎯
+
+ FAIL  |unit| tests/unit/src/cli/aliases.test.ts > test_load_aliases
+AssertionError: expected [] to have a length of 1 but got +0
+
+- Expected
++ Received
+
+- 1
++ 0
+
+ ❯ tests/unit/src/cli/aliases.test.ts:76:26
+     74|   // 検証
+     75|   expect(result.issues).toEqual([]);
+     76|   expect(result.aliases).toHaveLength(1);
+       |                          ^
+     77|   expect(result.aliases?.[0]).toMatchObject({
+     78|     alias_type: "command",
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/28]⎯
+
+ FAIL  |unit| tests/unit/src/cli/aliases.test.ts > test_load_aliases_when_unreadable
+AssertionError: expected [] to deeply equal [ 'run-test' ]
+
+- Expected
++ Received
+
+- [
+-   "run-test",
+- ]
++ []
+
+ ❯ tests/unit/src/cli/aliases.test.ts:116:52
+    114|   expect(unreadable).toHaveLength(1);
+    115|   expect(unreadable[0]?.file).toBe("aliases/a.yaml");
+    116|   expect(result.aliases?.map((alias) => alias.id)).toEqual(["run-test"…
+       |                                                    ^
+    117| });
+    118|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/28]⎯
+
+ FAIL  |unit| tests/unit/src/cli/check.test.ts > test_collect_check_issues_when_alias_drift
+AssertionError: expected [ 'schema', 'schema', 'schema', …(1) ] to deeply equal [ 'alias_no_files', …(2) ]
+
+- Expected
++ Received
+
+  [
+-   "alias_no_files",
+-   "alias_required_empty",
++   "schema",
++   "schema",
++   "schema",
+    "unknown_mark",
+  ]
+
+ ❯ tests/unit/src/cli/check.test.ts:440:45
+    438|   const issues = await collectCheckIssues(join(dir, "mdmark.config.yam…
+    439|   // 検証
+    440|   expect(issues.map((issue) => issue.kind)).toEqual([
+       |                                             ^
+    441|     "alias_no_files",
+    442|     "alias_required_empty",
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[12/28]⎯
+
+ FAIL  |unit| tests/unit/src/cli/config.test.ts > test_validate_config_when_aliases_invalid
+AssertionError: expected [ { …(4) }, { …(4) } ] to have a length of 1 but got 2
+
+- Expected
++ Received
+
+- 1
++ 2
+
+ ❯ tests/unit/src/cli/config.test.ts:337:18
+    335|   );
+    336|   // 検証
+    337|   expect(issues).toHaveLength(1);
+       |                  ^
+    338|   expect(issues[0]?.kind).toBe("schema");
+    339|   expect(issues[0]?.where).toBe("aliases[1].alias_type");
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[13/28]⎯
+
+ FAIL  |unit| tests/unit/src/cli/export.test.ts > test_prepare_embeds_when_aliases
+AssertionError: expected [] to have a length of 1 but got +0
+
+- Expected
++ Received
+
+- 1
++ 0
+
+ ❯ tests/unit/src/cli/export.test.ts:485:34
+    483|   // 検証
+    484|   // env は埋めず、使えるコマンドだけが入る
+    485|   expect(result.payload.aliases).toHaveLength(1);
+       |                                  ^
+    486|   expect(result.payload.aliases?.[0]).toMatchObject({
+    487|     alias_type: "command",
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[14/28]⎯
+
+ FAIL  |unit| tests/unit/src/cli/migrations.test.ts > test_apply_step_when_script_prints
+AssertionError: expected undefined to deeply equal [ 'a', 'b' ]
+
+- Expected:
+[
+  "a",
+  "b",
+]
+
++ Received:
+undefined
+
+ ❯ tests/unit/src/cli/migrations.test.ts:568:17
+    566|   const lines = await applyStep({ step, version, target });
+    567|   // 検証
+    568|   expect(lines).toEqual(["a", "b"]);
+       |                 ^
+    569| });
+    570|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[15/28]⎯
+
+ FAIL  |unit| tests/unit/src/cli/migrations.test.ts > test_apply_step_when_script_fails_with_stderr
+AssertionError: expected undefined to be '行を分けてください' // Object.is equality
+
+- Expected:
+"行を分けてください"
+
++ Received:
+undefined
+
+ ❯ tests/unit/src/cli/migrations.test.ts:595:59
+    593|   // 検証
+    594|   expect(error).toBeInstanceOf(CliError);
+    595|   expect(String((error as Error).message).split("\n")[1]).toBe(
+       |                                                           ^
+    596|     "行を分けてください",
+    597|   );
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[16/28]⎯
+
+ FAIL  |unit| tests/unit/src/cli/upgrade.test.ts > test_run_upgrade_when_script_prints
+AssertionError: expected -1 to be greater than or equal to 0
+ ❯ tests/unit/src/cli/upgrade.test.ts:485:17
+    483|       stdout[position + 1] === "  除外しました",
+    484|   );
+    485|   expect(index).toBeGreaterThanOrEqual(0);
+       |                 ^
+    486| });
+    487|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[17/28]⎯
+
+ FAIL  |unit| tests/unit/src/knowledge/aliases.test.ts > test_build_aliases
+AssertionError: expected [] to have a length of 2 but got +0
+
+- Expected
++ Received
+
+- 2
++ 0
+
+ ❯ tests/unit/src/knowledge/aliases.test.ts:99:26
+     97|   const result = buildAliases({ rows, sources });
+     98|   // 検証
+     99|   expect(result.aliases).toHaveLength(2);
+       |                          ^
+    100|   expect(result.aliases[0]).toMatchObject({
+    101|     alias_type: "term",
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[18/28]⎯
+
+ FAIL  |unit| tests/unit/src/knowledge/aliases.test.ts > test_build_aliases_when_invalid_rows
+AssertionError: expected [] to deeply equal [ 'ws' ]
+
+- Expected
++ Received
+
+- [
+-   "ws",
+- ]
++ []
+
+ ❯ tests/unit/src/knowledge/aliases.test.ts:169:51
+    167|   const result = buildAliases({ rows, sources });
+    168|   // 検証
+    169|   expect(result.aliases.map((alias) => alias.id)).toEqual(["ws"]);
+       |                                                   ^
+    170|   expect(result.problems.map((problem) => problem.kind)).toEqual([
+    171|     "alias_records_missing",
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[19/28]⎯
+
+ FAIL  |unit| tests/unit/src/knowledge/aliases.test.ts > test_build_aliases_when_rows_not_usable
+AssertionError: expected [] to deeply equal [ 'ws' ]
+
+- Expected
++ Received
+
+- [
+-   "ws",
+- ]
++ []
+
+ ❯ tests/unit/src/knowledge/aliases.test.ts:209:51
+    207|   const result = buildAliases({ rows, sources });
+    208|   // 検証
+    209|   expect(result.aliases.map((alias) => alias.id)).toEqual(["ws"]);
+       |                                                   ^
+    210|   expect(result.problems).toEqual([]);
+    211| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[20/28]⎯
+
+ FAIL  |unit| tests/unit/src/knowledge/aliases.test.ts > test_build_aliases_when_values_coerced
+AssertionError: expected [] to have a length of 1 but got +0
+
+- Expected
++ Received
+
+- 1
++ 0
+
+ ❯ tests/unit/src/knowledge/aliases.test.ts:238:26
+    236|   // 検証
+    237|   expect(result.problems).toEqual([]);
+    238|   expect(result.aliases).toHaveLength(1);
+       |                          ^
+    239|   expect(result.aliases[0]).toMatchObject({
+    240|     id: "42",
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[21/28]⎯
+
+ FAIL  |unit| tests/unit/src/knowledge/aliases.test.ts > test_build_aliases_when_name_missing
+AssertionError: expected [] to deeply equal [ 'guide', 'ws', 'unit-test' ]
+
+- Expected
++ Received
+
+- [
+-   "guide",
+-   "ws",
+-   "unit-test",
+- ]
++ []
+
+ ❯ tests/unit/src/knowledge/aliases.test.ts:273:53
+    271|   // 検証
+    272|   expect(result.problems).toEqual([]);
+    273|   expect(result.aliases.map((alias) => alias.name)).toEqual([
+       |                                                     ^
+    274|     "guide",
+    275|     "ws",
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[22/28]⎯
+
+ FAIL  |unit| tests/unit/src/knowledge/aliases.test.ts > test_build_aliases_when_fields_missing
+AssertionError: expected [] to deeply equal [ 'alias_field_missing', …(1) ]
+
+- Expected
++ Received
+
+- [
+-   "alias_field_missing",
+-   "alias_field_missing",
+- ]
++ []
+
+ ❯ tests/unit/src/knowledge/aliases.test.ts:296:58
+    294|   // 検証
+    295|   expect(result.aliases).toEqual([]);
+    296|   expect(result.problems.map((problem) => problem.kind)).toEqual([
+       |                                                          ^
+    297|     "alias_field_missing",
+    298|     "alias_field_missing",
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[23/28]⎯
+
+ FAIL  |unit| tests/unit/src/knowledge/aliases.test.ts > test_build_aliases_when_env_has_no_url_and_port
+AssertionError: expected [] to have a length of 1 but got +0
+
+- Expected
++ Received
+
+- 1
++ 0
+
+ ❯ tests/unit/src/knowledge/aliases.test.ts:323:27
+    321|   // 検証
+    322|   expect(result.aliases).toEqual([]);
+    323|   expect(result.problems).toHaveLength(1);
+       |                           ^
+    324|   const problem = result.problems[0];
+    325|   expect(problem?.kind).toBe("alias_required_empty");
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[24/28]⎯
+
+ FAIL  |unit| tests/unit/src/knowledge/aliases.test.ts > test_build_aliases_when_id_same_as_env
+AssertionError: expected [] to deeply equal [ 'duplicate_alias_id' ]
+
+- Expected
++ Received
+
+- [
+-   "duplicate_alias_id",
+- ]
++ []
+
+ ❯ tests/unit/src/knowledge/aliases.test.ts:356:58
+    354|   // 検証
+    355|   expect(result.aliases).toEqual([]);
+    356|   expect(result.problems.map((problem) => problem.kind)).toEqual([
+       |                                                          ^
+    357|     "duplicate_alias_id",
+    358|   ]);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[25/28]⎯
+
+ FAIL  |unit| tests/unit/src/knowledge/aliases.test.ts > test_read_alias_record
+AssertionError: expected { aliases: [ 'WS' ], name: 'ws' } to deeply equal { name: 'ワークスペース', …(2) }
+
+- Expected
++ Received
+
+  {
+    "aliases": [
+      "WS",
+    ],
+-   "description": "話し合いの記録を置くフォルダ",
+-   "name": "ワークスペース",
++   "name": "ws",
+  }
+
+ ❯ tests/unit/src/knowledge/aliases.test.ts:375:25
+    373|   const result = readAliasRecord({ record, metadata, fallbackName: "ws…
+    374|   // 検証
+    375|   expect(result.values).toEqual({
+       |                         ^
+    376|     name: "ワークスペース",
+    377|     description: "話し合いの記録を置くフォルダ",
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[26/28]⎯
+
+ FAIL  |unit| tests/unit/src/knowledge/aliases.test.ts > test_read_alias_record_when_nested_column_missing
+AssertionError: expected [] to deeply equal [ { key: 'description', …(1) } ]
+
+- Expected
++ Received
+
+- [
+-   {
+-     "field": "meta.summary",
+-     "key": "description",
+-   },
+- ]
++ []
+
+ ❯ tests/unit/src/knowledge/aliases.test.ts:392:26
+    390|   const result = readAliasRecord({ record, metadata, fallbackName: "ws…
+    391|   // 検証
+    392|   expect(result.missing).toEqual([
+       |                          ^
+    393|     { key: "description", field: "meta.summary" },
+    394|   ]);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[27/28]⎯
+
+ FAIL  |unit| tests/unit/src/knowledge/aliases.test.ts > test_check_alias_fields
+AssertionError: expected [ { …(2) }, { …(2) }, { …(2) }, …(1) ] to deeply equal [ { …(2) }, { …(2) }, { …(2) }, …(1) ]
+
+- Expected
++ Received
+
+  [
+    {
+-     "keys": [
+-       "description",
+-     ],
+-     "kind": "alias_required_empty",
++     "kind": "alias_unknown_type",
++     "value": "",
+    },
+    {
+-     "keys": [
+-       "command",
+-     ],
+-     "kind": "alias_required_empty",
++     "kind": "alias_unknown_type",
++     "value": "",
+    },
+    {
+-     "keys": [
+-       "replacement",
+-     ],
+-     "kind": "alias_required_empty",
++     "kind": "alias_unknown_type",
++     "value": "",
++   },
++   {
++     "kind": "alias_unknown_type",
++     "value": "",
+    },
+-   undefined,
+  ]
+
+ ❯ tests/unit/src/knowledge/aliases.test.ts:413:19
+    411|   ];
+    412|   // 検証
+    413|   expect(results).toEqual([
+       |                   ^
+    414|     { kind: "alias_required_empty", keys: ["description"] },
+    415|     { kind: "alias_required_empty", keys: ["command"] },
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[28/28]⎯
+
+
+ Test Files  9 failed (9)
+      Tests  28 failed | 103 passed (131)
+   Start at  20:45:45
+   Duration  25.87s (tests 86%, import 10%, transform 4%, worker 1%)
+

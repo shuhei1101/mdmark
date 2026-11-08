@@ -1,9 +1,0 @@
-title: Parts/Embed
-stories:
-  - name: Loading
-    parameters:
-      server:
-        id: embed
-    args:
-      name: chart
-      args: a,b

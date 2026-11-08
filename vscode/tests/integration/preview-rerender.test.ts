@@ -4,6 +4,7 @@ import type { AddressInfo } from "node:net";
 import { join } from "node:path";
 import * as vscode from "vscode";
 import {
+  audit,
   closeRepositories,
   createRepo,
   gitUri,
@@ -15,6 +16,7 @@ import {
   lastPanel,
   openDiffView,
   openMarkdown,
+  paramMarkdown,
   type RecordedPanel,
   readFixture,
   recordedPanels,
@@ -226,6 +228,127 @@ suite("プレビューを描き直す", () => {
     assert.ok((await inspect("blockquote")).length > 0);
   });
 
+  // 設定ファイルの labels を config に入れ、操作できる部品のボタンを設定の文言で描き直す
+  test("test_normal_when_param_copy_label_configured", async () => {
+    // 準備
+    await writeFixture("guide.md", await paramMarkdown());
+    await writeFixture("mdmark.config.yaml", "# 設定\n");
+    await openMarkdown("guide.md");
+    await vscode.commands.executeCommand("mdmark.openPreviewToSide");
+    const record = lastPanel();
+    await waitForRendered(record);
+    const before = renders(record).length;
+    // 実行
+    await writeFixture("mdmark.config.yaml", "labels:\n  paramCopy: コピー\n");
+    // 検証
+    await waitFor(() => renders(record).length > before, {
+      message: "再描画されない",
+    });
+    assert.deepStrictEqual(renders(record).at(-1)?.config.labels, {
+      paramCopy: "コピー",
+    });
+    await waitFor(async () =>
+      (await inspect("button.mdmark-param-copy")).some(
+        (item) => item.text === "コピー",
+      ),
+    );
+  });
+
+  // aliases の行が指す YAML を保存すると、作り直したエイリアスで描き直す
+  test("test_normal_when_aliases_yaml_saved", async () => {
+    // 準備
+    await writeFixture(
+      "mdmark.config.yaml",
+      [
+        "aliases:",
+        "  - id: terms",
+        "    paths: [glossary.yaml]",
+        "    alias_type: term",
+        "    records: terms",
+        "",
+      ].join("\n"),
+    );
+    const glossary = (meaning: string) =>
+      [
+        "terms:",
+        "  - id: render",
+        "    name: 描画",
+        "    aliases: [レンダリング]",
+        `    description: ${meaning}`,
+        "",
+      ].join("\n");
+    await writeFixture("glossary.yaml", glossary("前の意味"));
+    await writeFixture("guide.md", "# 案内\n\nレンダリングの段落\n");
+    await openMarkdown("guide.md");
+    await vscode.commands.executeCommand("mdmark.openPreviewToSide");
+    const record = lastPanel();
+    await waitForRendered(record);
+    const before = renders(record).length;
+    // 実行
+    await writeFixture("glossary.yaml", glossary("書き換えた意味"));
+    // 検証
+    await waitFor(
+      () =>
+        renders(record).at(-1)?.aliases?.[0]?.description === "書き換えた意味",
+      { message: "aliases の YAML の保存で再描画されない" },
+    );
+    assert.strictEqual(renders(record).length, before + 1);
+    await waitFor(async () =>
+      (await inspect('[role="tooltip"]')).some((tip) =>
+        tip.text.includes("書き換えた意味"),
+      ),
+    );
+  });
+
+  // 取り込んでいるファイルを保存すると、読み直した取り込む文書で描き直す
+  test("test_normal_when_include_target_saved", async () => {
+    // 準備
+    await writeFixture(
+      "docs/guide.md",
+      "# 案内\n\n<!-- include: 共通/手順.md#実行 -->\n",
+    );
+    await writeFixture("docs/共通/手順.md", "## 実行\n\n前の段落\n");
+    await writeFixture("docs/other.md", "# 別の文書\n");
+    await openMarkdown("docs/guide.md");
+    await vscode.commands.executeCommand("mdmark.openPreviewToSide");
+    const record = lastPanel();
+    await waitForRendered(record);
+    const before = renders(record).length;
+    // 実行: 取り込んでいないファイルを保存する
+    const other = await vscode.workspace.openTextDocument(
+      vscode.Uri.file(join(workspaceDir(), "docs/other.md")),
+    );
+    await other.save();
+    await sleep(700);
+    // 検証
+    assert.strictEqual(renders(record).length, before);
+    // 実行: 取り込んでいるファイルを書き換えて保存する
+    const procedure = await vscode.workspace.openTextDocument(
+      vscode.Uri.file(join(workspaceDir(), "docs/共通/手順.md")),
+    );
+    const edit = new vscode.WorkspaceEdit();
+    edit.replace(
+      procedure.uri,
+      new vscode.Range(2, 0, 2, "前の段落".length),
+      "書き換えた段落",
+    );
+    await vscode.workspace.applyEdit(edit);
+    await procedure.save();
+    // 検証
+    await waitFor(() => renders(record).length === before + 1, {
+      message: "取り込み先の保存で再描画されない",
+    });
+    assert.strictEqual(
+      renders(record).at(-1)?.includes?.["共通/手順.md"],
+      "## 実行\n\n書き換えた段落\n",
+    );
+    await waitFor(async () =>
+      (await inspect(".mdmark-include")).some((item) =>
+        item.text.includes("書き換えた段落"),
+      ),
+    );
+  });
+
   // 設定ファイルが無ければ設定なしで描き、知らせを出さない
   test("test_normal_when_config_missing", async () => {
     // 準備・実行
@@ -386,6 +509,10 @@ suite("プレビューを描き直す", () => {
     );
     const error = record.sent.find((message) => message.type === "configError");
     assert.strictEqual(error?.type === "configError" ? error.line : 0, 4);
+    assert.strictEqual(
+      error?.type === "configError" ? error.path : "",
+      "mdmark.config.yaml",
+    );
     await sleep(500);
     assert.strictEqual(renders(record).length, before);
     await waitFor(
@@ -399,6 +526,7 @@ suite("プレビューを描き直す", () => {
     );
     assert.strictEqual(buttons.length, 1);
     assert.strictEqual((await inspect(".markdown-alert")).length, 0);
+    assert.deepStrictEqual(await audit(), []);
   });
 
   // 読めない設定ファイルを直して保存すると、新しい設定で描き帯を消す

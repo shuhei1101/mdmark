@@ -1,7 +1,7 @@
-title: "版を上げる"
+title: 版を上げる
 entry:
   kind: operation
-  value: '`mdmark upgrade [--plan] [--yes] [--config {設定ファイル}]`（CLI。`npx github:shuhei1101/mdmark#v{目標の版} upgrade` で呼ぶ）'
+  value: '`mdmark upgrade [--plan] [--yes] [--config {設定ファイル} | --settings]`（CLI。`npx github:shuhei1101/mdmark#v{目標の版} upgrade` で呼ぶ）'
 flows:
   - name: 正常系
     summary: 2 つの版の手順を版の順に当て、点検を通して版を書き換える
@@ -33,6 +33,29 @@ flows:
       - 標準出力に `v0.4.0:`・`v0.5.0:` の順で手順の行と、`v0.4.0`・`v0.5.0` の変更履歴の行が出て、`v0.3.0` の変更履歴の行が出ない
       - 標準出力の `写し:` のフォルダに当てる前の設定・索引・文書があり、`.mdmark/.gitignore` の中身が `*`
     test: test_normal
+  - name: 正常系（端末の設定を移行する）
+    summary: '`--settings` で端末の設定に `file: config` の手順を当て、`version` を書き換える'
+    setup:
+      - name: 手元の版が古い端末の設定
+        description: '`version: v0.3.0`・`legacy: 1` を持つコメントつきの端末の設定を一時フォルダに置き、`MDMARK_CONFIG` で指す'
+      - name: Mock
+        description: 正常系と同じテスト用のパッケージ
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant C as mdmark CLI
+        participant F as 端末の設定
+        W->>C: mdmark upgrade --settings
+        C->>F: 端末の設定を読む（version: v0.3.0）
+        C->>F: 写しを取り、v0.4.0 の rename_key を当てる（v0.5.0 の replace_mark は飛ばす）
+        C->>C: 端末の設定の形を点検する
+        C->>F: version を v0.5.0 にする
+        C-->>W: 終了コード 0
+    expected:
+      - 終了コードが 0
+      - 端末の設定の `legacy` が `renamed` になり、コメントが残り、`version` が `v0.5.0`
+      - 端末の設定のフォルダの `.mdmark/backup/{日時}/` に当てる前の端末の設定がある
+    test: test_normal_when_settings
   - name: 正常系（当てる前に示す）
     summary: '`--plan` で版ごとの手順・変更履歴・壊す手順を示し、何も書き換えない'
     setup:
@@ -232,6 +255,30 @@ flows:
       - '標準エラーに `mdmark.config.yaml:build.out: schema:` で始まる行がある'
       - 設定の `legacy`・`build.out`・`version` が当てる前のまま
     test: test_error_when_check_fails
+  - name: 異常系（図の定義のずれ・終了コード 1）
+    summary: 当てた後の点検で図の定義にずれがあると、写しから戻してずれを出す
+    setup:
+      - name: 図の定義にずれを持つ手元の版が古いフォルダ
+        description: 正常系のフォルダの文書の 1 つの 5 行目の `<!-- flow -->` の範囲に、座標の重なるノード `web` と `db` を持つフロー図の定義を書いたもの
+      - name: Mock
+        description: 正常系と同じ
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant C as mdmark CLI
+        participant F as フォルダ
+        W->>C: mdmark upgrade
+        C->>F: 写しを取り、v0.4.0・v0.5.0 の手順を当てる
+        C->>C: 点検（図の定義のずれ）
+        C->>F: 写しから戻す
+        C-->>W: ずれの行・終了コード 1
+    expected:
+      - 終了コードが 1
+      - 標準エラーに、その文書の 5 行目を指す `diagram_node_overlap` の行があり、内容に `web` と `db` を含む
+      - 設定・索引・文書が当てる前と同じ中身で、設定の `version` が `v0.3.0` のまま
+    test: test_error_when_diagram_drift
+    refs:
+      - dev/設計書/シナリオ/単一ユースケース/版を上げる#scenarios[異常シナリオ（当てた後の点検で図の定義にずれがある）]
   - name: 異常系（手元の版が新しい・終了コード 1）
     summary: 手元の版が呼んだ CLI の版より新しいと、呼び直し方を示して終わる
     setup:
@@ -330,6 +377,33 @@ flows:
       - 終了コードが 1
       - 標準エラーに `mdmark.config.yaml` が無いことと `mdmark init` が出る
     test: test_error_when_config_missing
+  - name: 正常系（v0.9.0 までの索引からタグの語彙を外す）
+    summary: 語彙を外す `call` の手順を当て、文書のタグを書き換えて索引の `schema` を `2` にし、点検を通す
+    setup:
+      - name: 語彙を持つ索引のフォルダ
+        description: '正常系のフォルダの索引を、`schema: 1`・最上位の `tags` が `topic:mcp`（`aliases` に `MCP`）・`topic:old`（`deprecated` が `topic:mcp`）、`docs[0].tags` が `[MCP]`、`docs[1].tags` が `[topic:old]` にしたもの'
+      - name: Mock
+        description: 正常系と同じテスト用のパッケージ。`migrations/v0.5.0/` に、作業ツリーの `migrations/next/` の `steps.yaml` と `drop-tag-vocabulary.mjs` を置く
+        notes: '`steps.yaml` の手順が `destructive: true` のため `--yes` を渡す'
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant C as mdmark CLI
+        participant S as スクリプト
+        participant F as フォルダ
+        W->>C: mdmark upgrade --yes
+        C->>F: 設定・索引・文書を写す
+        C->>S: node drop-tag-vocabulary.mjs --config {設定ファイル}
+        S->>F: 索引のタグを書き換え、語彙を外して schema を 2 にする
+        C->>C: mdmark check と同じ点検（ずれ 0 件）
+        C->>F: 設定の version を v0.5.0 にする
+        C-->>W: 終了コード 0
+    expected:
+      - 終了コードが 0
+      - 索引の `schema` が `2` で、最上位に `tags` が無い
+      - '`docs[0].tags` と `docs[1].tags` が `[topic:mcp]`'
+      - 設定の `version` が `v0.5.0`
+    test: test_normal_when_tag_vocabulary_dropped
 lead: 文書を書く人が、設定の手元の版から呼んだ CLI の版までの移行の手順を版の順に設定・索引・文書へ当て、`mdmark check` と同じ点検が通ったら設定の `version` を呼んだ CLI の版にする。当てる前に写しを取り、失敗したら写しから戻す。
 idempotent: true
 side_effects: 設定・索引・文書を書き換え、設定ファイルのあるフォルダの `.mdmark/backup/{日時}/` に写しを置く。`--plan` は何も書き換えない
@@ -354,10 +428,17 @@ request:
   - name: --config
     type: string
     required: false
-    default: なし（今のフォルダから上のフォルダへ順に `mdmark.config.yaml` を探し、最初に見つかったものを使う）
+    default: なし（今のフォルダから上のフォルダへ順に `mdmark.config.yaml` を探し、最初に見つかったものを使う。`config.cascade` によらず、上のフォルダの設定と端末の設定は書き換えない）
     location: argument
     description: 使う設定ファイルのパス
     example: docs/mdmark.config.yaml
+  - name: --settings
+    type: boolean
+    required: false
+    default: 'false'
+    location: argument
+    description: 移行の対象を端末の設定（`MDMARK_CONFIG`、無ければ `${XDG_CONFIG_HOME:-~/.config}/mdmark/settings.yaml`）にする。`--config` と一緒には渡せない
+    notes: '`file: config` の手順と `files` が `[config]` だけの `call` だけを端末の設定へ当て（`call` のスクリプトの `--config` は端末の設定のパス）、`index`・`documents` の手順は飛ばす。点検は端末の設定の形だけを見る'
   - name: 標準入力
     type: string
     required: false
@@ -398,7 +479,7 @@ exceptions:
     notes: 何も書き換えず、写しも取らない。`--yes` で確かめずに当てられることを出す
   - name: 手順の失敗（終了コード 1）
     condition: 手順を当てる途中で、`call` のスクリプトが 0 以外で終わったか、ファイルを書けなかった
-    notes: 写しから戻し、失敗した版・手順の説明・理由を出す
+    notes: 写しから戻し、失敗した版・手順の説明・理由と、`call` のスクリプトが標準エラーへ書いた行を出す
   - name: 点検のずれ（終了コード 1）
     condition: 全ての手順を当てた後の点検でずれが 1 件以上ある
     notes: 写しから戻し、ずれの行を出す
@@ -448,10 +529,10 @@ constraints:
   - item: 文書
     constraint: '`replace_mark` と `files` の `documents` が指す文書は、設定の `build` の対象（`include` に当たり `exclude` に当たらないもの）と索引の文書。同じ文書は 1 回だけ扱う'
   - item: スクリプトの呼び方
-    constraint: '`node {スクリプト} --config {設定ファイルの絶対パス}` を設定ファイルのあるフォルダで流し、終了コード 0 以外を失敗にする。スクリプトの拡張子は `.js` か `.mjs`。待ち時間は制限なし'
+    constraint: '`node {スクリプト} --config {設定ファイルの絶対パス}` を設定ファイルのあるフォルダで流し、終了コード 0 以外を失敗にする。スクリプトが標準出力に書いた行は、当てた手順の行の下に字下げして標準出力へ出し、失敗したときに標準エラーへ書いた行は失敗の理由の後ろに標準エラーへ出す。スクリプトの拡張子は `.js` か `.mjs`。待ち時間は制限なし'
     notes: スクリプトは同じ版の mdmark の開発者が書き、利用者が Ctrl-C で止められる。`npx` が入れたパッケージは `node_modules` の下にあり、Node はそこの `.ts` の型を落とさない（`ERR_UNSUPPORTED_NODE_MODULES_TYPE_STRIPPING`）ため `.ts` は受けない
   - item: 点検
-    constraint: 全ての手順を当てた後に、`mdmark check` と同じ点検（呼んだ CLI の形）を流す。文書の本文の知らない印（`unknown_mark`）は点検しない。ずれが 0 件のときだけ版を書き換える
+    constraint: 全ての手順を当てた後に、`mdmark check` と同じ点検（呼んだ CLI の形）を流す。文書の本文の知らない印（`unknown_mark`）は点検しない。図の定義の点検（`diagram_*`）は流す。ずれが 0 件のときだけ版を書き換える
     decided_by: dev/設計書/インターフェース定義/ライブラリ本体/設定と索引を点検する.ts#
   - item: 版の書き換え
     constraint: 設定の `version` を目標の版にする。無ければ最上位の先頭に足す

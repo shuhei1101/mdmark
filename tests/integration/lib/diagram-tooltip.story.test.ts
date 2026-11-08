@@ -89,3 +89,69 @@ test("test_hint", async () => {
   expect(rects.tipBottom).toBeLessThanOrEqual(rects.ownerTop);
   await expect(pageOverflows(page)).resolves.toBe(false);
 });
+
+// ER 図のテーブルを開いた状態は、論理名と物理名の題・概要・列の説明を出し、横にはみ出さない（Table）
+test("test_table", async () => {
+  // 準備・実行
+  const page = await holder.openStory("parts-diagramtooltip--table");
+  // 検証
+  const tip = page.locator('[role="tooltip"]');
+  await expect(tip.isVisible()).resolves.toBe(true);
+  await expect(
+    tip.locator(".mdmark-term-tip-heading").innerText(),
+  ).resolves.toBe("注文（orders）");
+  await expect(tip.innerText()).resolves.toContain("1 回の注文");
+  await expect(tip.locator("dt").allInnerTexts()).resolves.toEqual([
+    "customer_id",
+    "status",
+    "total",
+  ]);
+  await expect(pageOverflows(page)).resolves.toBe(false);
+});
+
+// 折れ線の点のツールチップを開いた状態は、点の下に系列の名前と `{横の目盛り}: {値}` を出す（Item）
+test("test_item", async () => {
+  // 準備・実行
+  const page = await holder.openStory("parts-diagramtooltip--item");
+  // 検証
+  const tip = page.locator('[role="tooltip"]:not([hidden])');
+  await expect(tip.count()).resolves.toBe(1);
+  const text = await tip.innerText();
+  expect(text).toMatch(/.+\n?.*: \d/);
+  const id = await tip.getAttribute("id");
+  const owner = page.locator(`[aria-describedby="${id}"]`);
+  const [tipBox, ownerBox] = await Promise.all([
+    tip.boundingBox(),
+    owner.boundingBox(),
+  ]);
+  expect(tipBox?.y ?? 0).toBeGreaterThanOrEqual(
+    (ownerBox?.y ?? 0) + (ownerBox?.height ?? 0) - 1,
+  );
+  await expect(pageOverflows(page)).resolves.toBe(false);
+});
+
+// システムの枠のタイトルの印で hint を開いた状態は、印の下に文だけを出す（GroupHint）
+test("test_group_hint", async () => {
+  // 準備・実行
+  const page = await holder.openStory("parts-diagramtooltip--group-hint");
+  // 検証
+  const tip = page.locator('[role="tooltip"]:not([hidden])');
+  await expect(tip.count()).resolves.toBe(1);
+  await expect(tip.locator(".mdmark-term-tip-heading").count()).resolves.toBe(
+    0,
+  );
+  await expect(tip.innerText()).resolves.not.toBe("");
+  const id = await tip.getAttribute("id");
+  const owner = page.locator(
+    `button.mdmark-diagram-group-info[aria-describedby="${id}"]`,
+  );
+  await expect(owner.count()).resolves.toBe(1);
+  const [tipBox, ownerBox] = await Promise.all([
+    tip.boundingBox(),
+    owner.boundingBox(),
+  ]);
+  expect(tipBox?.y ?? 0).toBeGreaterThanOrEqual(
+    (ownerBox?.y ?? 0) + (ownerBox?.height ?? 0) - 1,
+  );
+  await expect(pageOverflows(page)).resolves.toBe(false);
+});

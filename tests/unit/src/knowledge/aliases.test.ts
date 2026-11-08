@@ -15,12 +15,9 @@ const loadAliases = (): Promise<
 const TERMS_ROW = {
   id: "terms",
   paths: ["terms/*.yaml"],
+  alias_type: "term",
   records: "terms",
-  metadata: {
-    alias_type: { type: "custom", value: "term" },
-    name: { type: "ref", field: "term" },
-    description: { type: "ref", field: "meaning" },
-  },
+  metadata: { name: "term", description: "meta.meaning" },
 };
 
 /** `TERMS_ROW` が読むファイル（`aliases` は文字列で書く） */
@@ -33,7 +30,7 @@ const TERMS_SOURCE = {
         id: "ws",
         term: "ワークスペース",
         aliases: "WS",
-        meaning: "話し合いの記録を置くフォルダ",
+        meta: { meaning: "話し合いの記録を置くフォルダ" },
       },
     ],
   },
@@ -43,7 +40,7 @@ const TERMS_SOURCE = {
 const COMMANDS_ROW = {
   id: "commands",
   paths: ["commands/unit-test.yaml"],
-  metadata: { alias_type: { type: "custom", value: "command" } },
+  alias_type: "command",
 };
 
 /** `COMMANDS_ROW` が読むファイル（`name` を持たない） */
@@ -57,8 +54,8 @@ const COMMANDS_SOURCE = {
   },
 };
 
-/** 行の `metadata` を `alias_type` だけ固定の値にした、ファイル 1 つを 1 件にする行 */
-function customRow(
+/** 種類を `alias_type` にした、ファイル 1 つを 1 件にする行 */
+function typedRow(
   id: string,
   aliasType: string,
   extra: Record<string, unknown> = {},
@@ -66,7 +63,7 @@ function customRow(
   return {
     id,
     paths: [`${id}/*.yaml`],
-    metadata: { alias_type: { type: "custom", value: aliasType } },
+    alias_type: aliasType,
     ...extra,
   };
 }
@@ -78,8 +75,8 @@ test("test_build_aliases", async () => {
   const rows = [
     TERMS_ROW,
     COMMANDS_ROW,
-    { ...customRow("off", "term"), enabled: false },
-    customRow("servers", "env"),
+    { ...typedRow("off", "term"), enabled: false },
+    typedRow("servers", "env"),
   ];
   const sources = [
     TERMS_SOURCE,
@@ -128,26 +125,19 @@ test("test_build_aliases_when_invalid_rows", async () => {
   const rows = [
     TERMS_ROW,
     // 1: records のキーがファイルに無い
-    customRow("no-records", "term", { records: "items" }),
+    typedRow("no-records", "term", { records: "items" }),
     // 2: description を取る列 missing_col がレコードに無い
-    {
-      ...customRow("no-column", "term"),
-      metadata: {
-        alias_type: { type: "custom", value: "term" },
-        description: { type: "ref", field: "missing_col" },
-      },
-    },
-    // 3: alias_type を列から取り、値が種類に無い
-    {
-      ...customRow("unknown-type", "term"),
-      metadata: { alias_type: { type: "ref", field: "alias_type" } },
-    },
+    typedRow("no-column", "term", {
+      metadata: { description: "missing_col" },
+    }),
+    // 3: 行の alias_type が種類に無い
+    typedRow("unknown-type", "memo"),
     // 4: command が空
-    customRow("empty-command", "command"),
+    typedRow("empty-command", "command"),
     // 5: 行の id が terms と同じ
-    customRow("terms", "term"),
+    typedRow("terms", "term"),
     // 6: エイリアスの id が terms のレコード ws と同じ
-    customRow("dup-alias", "term"),
+    typedRow("dup-alias", "term"),
   ];
   const sources = [
     TERMS_SOURCE,
@@ -185,6 +175,9 @@ test("test_build_aliases_when_invalid_rows", async () => {
     "duplicate_alias_row_id",
     "duplicate_alias_id",
   ]);
+  const unknownProblem = result.problems[2];
+  expect(unknownProblem?.file).toBe("mdmark.config.yaml");
+  expect(unknownProblem?.where).toBe("aliases[3].alias_type");
   const rowIdProblem = result.problems[4];
   expect(rowIdProblem?.file).toBe("mdmark.config.yaml");
   expect(rowIdProblem?.where).toBe("aliases[5].id");
@@ -195,14 +188,14 @@ test("test_build_aliases_when_invalid_rows", async () => {
   expect(emptyProblem?.message).toContain("記載してください");
 });
 
-// id・paths・metadata.alias_type を持たない行と、オブジェクトでない行をずれにせずに飛ばす（正常系）
+// id・paths・alias_type を持たない行と、オブジェクトでない行をずれにせずに飛ばす（正常系）
 test("test_build_aliases_when_rows_not_usable", async () => {
   // 準備
   const { buildAliases } = await loadAliases();
   const rows = [
     null,
     "terms",
-    { id: "no-metadata", paths: ["a.yaml"] },
+    { id: "no-type", paths: ["a.yaml"] },
     { ...TERMS_ROW, id: "" },
     TERMS_ROW,
   ];
@@ -221,7 +214,7 @@ test("test_build_aliases_when_rows_not_usable", async () => {
 test("test_build_aliases_when_values_coerced", async () => {
   // 準備
   const { buildAliases } = await loadAliases();
-  const rows = [customRow("cmds", "command", { records: "items" })];
+  const rows = [typedRow("cmds", "command", { records: "items" })];
   const sources = [
     {
       rowId: "cmds",
@@ -251,20 +244,23 @@ test("test_build_aliases_when_values_coerced", async () => {
   });
 });
 
-// name が空のとき、records を持つ行はレコードの id、持たない行はファイル名から拡張子を除いたものにする（正常系）
+// name が空のとき、body_file の列のファイル名、records を持つ行はレコードの id、持たない行はファイル名の順で名前にする（正常系）
 test("test_build_aliases_when_name_missing", async () => {
   // 準備
   const { buildAliases } = await loadAliases();
   const rows = [
-    customRow("with-records", "term", { records: "terms" }),
-    customRow("commands", "command"),
+    typedRow("with-records", "term", { records: "terms", body_file: "path" }),
+    typedRow("commands", "command"),
   ];
   const sources = [
     {
       rowId: "with-records",
       path: "with-records/a.yaml",
       data: {
-        terms: [{ id: "ws", description: "話し合いの記録を置くフォルダ" }],
+        terms: [
+          { id: "g", path: "docs/guide.md", description: "使い方の文書" },
+          { id: "ws", description: "話し合いの記録を置くフォルダ" },
+        ],
       },
     },
     // `name` を持たないコマンドのファイル 1 つが 1 件になる
@@ -275,24 +271,20 @@ test("test_build_aliases_when_name_missing", async () => {
   // 検証
   expect(result.problems).toEqual([]);
   expect(result.aliases.map((alias) => alias.name)).toEqual([
+    "guide",
     "ws",
     "unit-test",
   ]);
 });
 
-// ref の列が無いレコードは、無い列ごとにずれにし、種類と必須のキーを確かめない（正常系）
+// metadata に記載した列が無いレコードは、無い列ごとにずれにし、必須のキーを確かめない（正常系）
 test("test_build_aliases_when_fields_missing", async () => {
   // 準備
   const { buildAliases } = await loadAliases();
   const rows = [
-    {
-      ...customRow("cmds", "command"),
-      metadata: {
-        alias_type: { type: "custom", value: "command" },
-        description: { type: "ref", field: "meaning" },
-        command: { type: "ref", field: "cmd" },
-      },
-    },
+    typedRow("cmds", "command", {
+      metadata: { description: "meaning", command: "cmd" },
+    }),
   ];
   const sources = [
     { rowId: "cmds", path: "cmds/a.yaml", data: { id: "a", name: "A" } },
@@ -315,7 +307,7 @@ test("test_build_aliases_when_fields_missing", async () => {
 test("test_build_aliases_when_env_has_no_url_and_port", async () => {
   // 準備
   const { buildAliases } = await loadAliases();
-  const rows = [customRow("servers", "env")];
+  const rows = [typedRow("servers", "env")];
   const sources = [
     { rowId: "servers", path: "servers/a.yaml", data: { id: "a", name: "A" } },
     {
@@ -340,7 +332,7 @@ test("test_build_aliases_when_env_has_no_url_and_port", async () => {
 test("test_build_aliases_when_id_same_as_env", async () => {
   // 準備
   const { buildAliases } = await loadAliases();
-  const rows = [customRow("servers", "env"), customRow("urls", "url")];
+  const rows = [typedRow("servers", "env"), typedRow("urls", "url")];
   const sources = [
     {
       rowId: "servers",
@@ -366,28 +358,41 @@ test("test_build_aliases_when_id_same_as_env", async () => {
   ]);
 });
 
-// ref・custom・同じ名前の列の順で値を取る（正常系）
+// metadata の列名・同じ名前の列の順で値を取る（正常系）
 test("test_read_alias_record", async () => {
   // 準備
   const { readAliasRecord } = await loadAliases();
   const record = {
     term: "ワークスペース",
-    description: "話し合いの記録を置くフォルダ",
+    meta: { summary: "話し合いの記録を置くフォルダ" },
+    aliases: "WS",
     memo: "使わない列",
   };
-  const metadata = {
-    alias_type: { type: "custom", value: "term" },
-    name: { type: "ref", field: "term" },
-  };
+  const metadata = { name: "term", description: "meta.summary" };
   // 実行
   const result = readAliasRecord({ record, metadata, fallbackName: "ws" });
   // 検証
   expect(result.values).toEqual({
-    alias_type: "term",
     name: "ワークスペース",
     description: "話し合いの記録を置くフォルダ",
+    aliases: ["WS"],
   });
   expect(result.missing).toEqual([]);
+});
+
+// 入れ子の列をたどれなければ missing に入れる（正常系）
+test("test_read_alias_record_when_nested_column_missing", async () => {
+  // 準備
+  const { readAliasRecord } = await loadAliases();
+  const record = { name: "ワークスペース", meta: "文字列" };
+  const metadata = { description: "meta.summary" };
+  // 実行
+  const result = readAliasRecord({ record, metadata, fallbackName: "ws" });
+  // 検証
+  expect(result.missing).toEqual([
+    { key: "description", field: "meta.summary" },
+  ]);
+  expect(result.values).not.toHaveProperty("description");
 });
 
 // 種類ごとに必須のキーの空を返す（正常系）
@@ -396,15 +401,12 @@ test("test_check_alias_fields", async () => {
   const { checkAliasFields } = await loadAliases();
   // 実行
   const results = [
-    checkAliasFields({ alias_type: "term", id: "a", name: "A" }),
-    checkAliasFields({ alias_type: "command", id: "b", name: "B" }),
-    checkAliasFields({ alias_type: "avoid", id: "c", name: "C" }),
-    checkAliasFields({ alias_type: "memo", id: "d", name: "D" }),
+    checkAliasFields({ aliasType: "term", values: { id: "a", name: "A" } }),
+    checkAliasFields({ aliasType: "command", values: { id: "b", name: "B" } }),
+    checkAliasFields({ aliasType: "avoid", values: { id: "c", name: "C" } }),
     checkAliasFields({
-      alias_type: "url",
-      id: "e",
-      name: "E",
-      url: "https://example.com/",
+      aliasType: "url",
+      values: { id: "e", name: "E", url: "https://example.com/" },
     }),
   ];
   // 検証
@@ -412,7 +414,6 @@ test("test_check_alias_fields", async () => {
     { kind: "alias_required_empty", keys: ["description"] },
     { kind: "alias_required_empty", keys: ["command"] },
     { kind: "alias_required_empty", keys: ["replacement"] },
-    { kind: "alias_unknown_type", value: "memo" },
     undefined,
   ]);
 });

@@ -26,7 +26,10 @@ type Recorder = {
   attachViewDetached: number;
   attachComments: unknown[];
   attachCommentsDetached: number;
+  reload: number;
+  focus: string[];
   gate?: Promise<void>;
+  commentsGate?: Promise<void>;
 };
 
 /** 代役の部品のモジュールが書き込む控えの置き場（グローバル） */
@@ -55,7 +58,12 @@ const rec = globalThis.__mdmarkPartTest;
 rec.imports.push("comments");
 export async function attachComments(options) {
   rec.attachComments.push(options);
-  return () => { rec.attachCommentsDetached += 1; };
+  await rec.commentsGate;
+  return {
+    detach: () => { rec.attachCommentsDetached += 1; },
+    reload: async () => { rec.reload += 1; },
+    focus: (id) => { rec.focus.push(id); },
+  };
 }
 `;
 
@@ -72,11 +80,13 @@ async function resetParts(): Promise<Recorder> {
     attachViewDetached: 0,
     attachComments: [],
     attachCommentsDetached: 0,
+    reload: 0,
+    focus: [],
   };
   globalThis.__mdmarkPartTest = recorder;
-  const { partModules, partModuleUrls } = await loadPartModules();
+  const { partModules, partModuleLoaders } = await loadPartModules();
   partModules.clear();
-  partModuleUrls.clear();
+  partModuleLoaders.clear();
   return recorder;
 }
 
@@ -91,22 +101,22 @@ function moduleUrl(code: string): string {
 
 /** 部品のモジュールを代役のモジュールに差し替える */
 async function useFakeModule(name: "view" | "comments"): Promise<string> {
-  const { setPartModuleUrl } = await loadPartModules();
+  const { setPartModuleLoader } = await loadPartModules();
   const url = moduleUrl(
     name === "view" ? VIEW_MODULE_CODE : COMMENTS_MODULE_CODE,
   );
-  setPartModuleUrl(name, url);
+  setPartModuleLoader(name, () => import(/* @vite-ignore */ url));
   return url;
 }
 
 /** 読み込みが必ず失敗する URL に差し替える */
 async function useBrokenModule(name: "view" | "comments"): Promise<string> {
-  const { setPartModuleUrl } = await loadPartModules();
+  const { setPartModuleLoader } = await loadPartModules();
   const url = URL.createObjectURL(
     new Blob(["export {};"], { type: "text/javascript" }),
   );
   URL.revokeObjectURL(url);
-  setPartModuleUrl(name, url);
+  setPartModuleLoader(name, () => import(/* @vite-ignore */ url));
   return url;
 }
 
@@ -268,7 +278,7 @@ test("test_attach_parts", async () => {
   await useFakeModule("view");
   const root = createHost(TWO_VIEWS);
   // 実行
-  const detach = attachParts({
+  const { detach } = attachParts({
     root,
     features: { views: true },
     isCurrent: () => true,
@@ -339,7 +349,7 @@ test("test_attach_parts_when_detached_while_loading", async () => {
   await useFakeModule("view");
   const root = createHost(TWO_VIEWS);
   // 実行
-  const detach = attachParts({
+  const { detach } = attachParts({
     root,
     features: { views: true },
     isCurrent: () => true,
@@ -394,7 +404,7 @@ test("test_attach_parts_when_parts_mounted_inside", async () => {
     docId: "panel-setup",
   });
   await mountView(outside, VIEW_OPTIONS);
-  const detach = attachParts({
+  const { detach } = attachParts({
     root,
     features: {},
     isCurrent: () => true,
@@ -405,4 +415,105 @@ test("test_attach_parts_when_parts_mounted_inside", async () => {
   // 検証
   expect(recorder.attachCommentsDetached).toBe(1);
   expect(recorder.drawViewDetached).toBe(1);
+});
+
+/** 部品を開閉する処理を読み込む（`reveal` に渡す関数を比べる） */
+const loadSections = () => import("../../../src/interact/sections.ts");
+
+/** コメントの読み書きの関数 */
+function createStore() {
+  return { load: vi.fn(async () => []), save: vi.fn() };
+}
+
+// reloadComments と focusComment を付けたコメントに任せる（正常系）
+test("test_attach_parts_when_comments_reloaded", async () => {
+  // 準備
+  const { attachParts } = await loadMountParts();
+  const { openEnclosing } = await loadSections();
+  const recorder = await resetParts();
+  await useFakeModule("comments");
+  const root = createHost("<p>文書</p>");
+  const handle = attachParts({
+    root,
+    features: { comments: true },
+    commentStore: createStore(),
+    docId: "panel-setup",
+    isCurrent: () => true,
+    warned: { missingStore: false },
+  });
+  // 実行
+  await handle.reloadComments();
+  handle.focusComment("c1");
+  // 検証
+  expect(recorder.attachComments).toHaveLength(1);
+  expect(
+    (recorder.attachComments[0] as { reveal?: unknown } | undefined)?.reveal,
+  ).toBe(openEnclosing);
+  expect(recorder.reload).toBe(1);
+  expect(recorder.focus).toEqual(["c1"]);
+  handle.detach();
+});
+
+// コメントを付けていないとき・読めないときは load を呼ばずに解決する（正常系）
+test("test_attach_parts_when_comments_reload_disabled", async () => {
+  // 準備
+  const { attachParts } = await loadMountParts();
+  const recorder = await resetParts();
+  await useFakeModule("comments");
+  const spy = vi.spyOn(console, "error").mockImplementation(() => {});
+  const off = attachParts({
+    root: createHost("<p>文書</p>"),
+    features: { comments: false },
+    commentStore: createStore(),
+    docId: "panel-setup",
+    isCurrent: () => true,
+    warned: { missingStore: false },
+  });
+  // 実行・検証: コメントの機能がオフ
+  await expect(off.reloadComments()).resolves.toBeUndefined();
+  expect(recorder.imports).toEqual([]);
+  off.detach();
+  // 準備: 読めないモジュール
+  await resetParts();
+  await useBrokenModule("comments");
+  const broken = attachParts({
+    root: createHost("<p>文書</p>"),
+    features: { comments: true },
+    commentStore: createStore(),
+    docId: "panel-setup",
+    isCurrent: () => true,
+    warned: { missingStore: false },
+  });
+  // 実行・検証
+  await expect(broken.reloadComments()).resolves.toBeUndefined();
+  expect(spy).toHaveBeenCalled();
+  broken.detach();
+});
+
+// 外した後の reloadComments は reload を呼ばずに解決する（正常系）
+test("test_attach_parts_when_comments_reload_after_detach", async () => {
+  // 準備
+  const { attachParts } = await loadMountParts();
+  const recorder = await resetParts();
+  let release: () => void = () => {};
+  recorder.commentsGate = new Promise<void>((resolve) => {
+    release = resolve;
+  });
+  await useFakeModule("comments");
+  const handle = attachParts({
+    root: createHost("<p>文書</p>"),
+    features: { comments: true },
+    commentStore: createStore(),
+    docId: "panel-setup",
+    isCurrent: () => true,
+    warned: { missingStore: false },
+  });
+  await vi.waitFor(() => expect(recorder.attachComments).toHaveLength(1));
+  // 実行: attachComments の解決の前に外し、その後に読み直す
+  handle.detach();
+  release();
+  // 検証
+  await expect(handle.reloadComments()).resolves.toBeUndefined();
+  expect(recorder.reload).toBe(0);
+  expect(recorder.attachCommentsDetached).toBe(1);
 });

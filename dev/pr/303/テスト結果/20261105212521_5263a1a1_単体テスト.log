@@ -1,0 +1,15 @@
+$ npm run test:unit
+
+> test:unit
+> vitest run --project 'unit*'
+
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-syntax-table-reorder-key-tree-html-scripts
+
+
+ Test Files  202 passed (202)
+      Tests  1517 passed (1517)
+   Start at  21:25:27
+   Duration  71.89s (worker 50%, tests 32%, import 16%, transform 2%)
+
+exit=0

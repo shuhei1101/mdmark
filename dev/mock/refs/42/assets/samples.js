@@ -159,6 +159,136 @@ window.mdmarkMockDiagrams = {
       { name: "電話の折り返し", points: [55, 48, 57, 50, 46] },
     ],
   },
+
+  // 判定フローチャート: 開始 1・質問 2・アクション 1・結果 2 を上から下へ置き、質問から出る線に YES・NO のラベルを付ける。システムの枠と層を持たない
+  judgement: {
+    kind: "flow",
+    title: "見た目をどこで変えるかの判定",
+    scope: "描いた文書の見た目を変えたいとき",
+    updated: "2026-11-02",
+    width: 760,
+    height: 600,
+    nodes: [
+      { id: "start", kind: "start", x: 310, y: 16, w: 100, h: 100, name: "見た目を変える" },
+      { id: "q0", kind: "question", x: 220, y: 156, w: 280, h: 136, name: "全ての使う側の既定を変える見た目か" },
+      {
+        id: "q1",
+        kind: "question",
+        x: 220,
+        y: 340,
+        w: 280,
+        h: 136,
+        name: "テーマの CSS 変数で表せるか",
+        hint: "色・余白・角丸・フォントは CSS 変数で変えられる",
+      },
+      { id: "a1", kind: "action", x: 560, y: 188, w: 180, h: 72, name: "既定の変更を Issue で頼む" },
+      { id: "r1", kind: "result", x: 250, y: 524, w: 220, h: 60, name: "CSS 変数を上書きする" },
+      { id: "r2", kind: "result", x: 560, y: 378, w: 180, h: 60, name: "層の外の CSS を足す" },
+    ],
+    wires: [
+      { id: "j-start", line: "flow", points: [[360, 116], [360, 156]] },
+      { id: "j-q0-yes", line: "flow", points: [[500, 224], [560, 224]], label: "YES", labelAt: [530, 224] },
+      { id: "j-q0-no", line: "flow", points: [[360, 292], [360, 340]], label: "NO", labelAt: [360, 316] },
+      { id: "j-q1-yes", line: "flow", points: [[360, 476], [360, 524]], label: "YES", labelAt: [360, 500] },
+      { id: "j-q1-no", line: "flow", points: [[500, 408], [560, 408]], label: "NO", labelAt: [530, 408] },
+    ],
+  },
+
+  // 座標を省いた判定フローチャートを自動で配置した結果: 開始から上から下へ質問を並べ、次の質問へ続く側を下、結果やアクションへ進む側を右へ置く。
+  // 両方が結果のときは NO を下、YES を右へ置く。ノードの大きさは種類ごとに同じ（開始 100×100・質問 280×136・アクション 200×72・結果 200×60）、間は縦 40px・横 120px
+  "judgement-auto": {
+    kind: "flow",
+    title: "問い合わせの返信の判定",
+    scope: "問い合わせを受け取ったとき",
+    updated: "2026-11-04",
+    width: 684,
+    height: 584,
+    nodes: [
+      { id: "start", kind: "start", x: 150, y: 16, w: 100, h: 100, name: "問い合わせを受け取る" },
+      { id: "q1", kind: "question", x: 60, y: 156, w: 280, h: 136, name: "よくある質問で答えられるか" },
+      { id: "a1", kind: "action", x: 460, y: 188, w: 200, h: 72, name: "よくある質問のリンクを添える" },
+      { id: "q2", kind: "question", x: 60, y: 332, w: 280, h: 136, name: "担当者が答えられるか" },
+      { id: "r1", kind: "result", x: 460, y: 370, w: 200, h: 60, name: "返信を送信する" },
+      { id: "r2", kind: "result", x: 100, y: 508, w: 200, h: 60, name: "開発に起票する" },
+    ],
+    wires: [
+      { id: "j-start", line: "flow", points: [[200, 116], [200, 156]] },
+      { id: "j-q1-yes", line: "flow", points: [[340, 224], [460, 224]], label: "YES", labelAt: [400, 224] },
+      { id: "j-q1-no", line: "flow", points: [[200, 292], [200, 332]], label: "NO", labelAt: [200, 312] },
+      { id: "j-a1", line: "flow", points: [[560, 260], [560, 370]] },
+      { id: "j-q2-yes", line: "flow", points: [[340, 400], [460, 400]], label: "YES", labelAt: [400, 400] },
+      { id: "j-q2-no", line: "flow", points: [[200, 468], [200, 508]], label: "NO", labelAt: [200, 488] },
+    ],
+  },
+
+  // リンク先を持つノード: 受け取るは https の URL、分類するは相対パスと入力・処理・出力、記録するはリンク先を持たない
+  linked: {
+    kind: "flow",
+    title: "問い合わせの処理",
+    scope: "受け取りから記録まで",
+    updated: "2026-11-04",
+    width: 708,
+    height: 152,
+    nodes: [
+      { id: "recv", kind: "script", x: 24, y: 40, w: 180, h: 72, name: "問い合わせを受け取る", href: "https://example.com/spec" },
+      {
+        id: "classify",
+        kind: "llm",
+        x: 264,
+        y: 40,
+        w: 180,
+        h: 72,
+        name: "分類する",
+        href: "./other.md",
+        io: { in: "問い合わせの本文", do: "種類を 1 つ選ぶ", out: "種類と確度" },
+      },
+      { id: "store", kind: "data", x: 504, y: 40, w: 180, h: 72, name: "記録する", shape: "db" },
+    ],
+    wires: [
+      { id: "w-recv", line: "flow", points: [[204, 76], [264, 76]] },
+      { id: "w-classify", line: "write", points: [[444, 76], [504, 76]] },
+    ],
+  },
+
+  // 許可しないリンク先を書いたノード: リンクにせず、名前だけを描く（linked と同じ並びでリンク先を持たない）
+  "linked-blocked": {
+    kind: "flow",
+    title: "問い合わせの処理",
+    scope: "受け取りから記録まで",
+    updated: "2026-11-04",
+    width: 708,
+    height: 152,
+    nodes: [
+      { id: "recv", kind: "script", x: 24, y: 40, w: 180, h: 72, name: "問い合わせを受け取る" },
+      { id: "classify", kind: "llm", x: 264, y: 40, w: 180, h: 72, name: "分類する" },
+      { id: "store", kind: "data", x: 504, y: 40, w: 180, h: 72, name: "記録する", shape: "db" },
+    ],
+    wires: [
+      { id: "w-recv", line: "flow", points: [[204, 76], [264, 76]] },
+      { id: "w-classify", line: "write", points: [[444, 76], [504, 76]] },
+    ],
+  },
+
+  // 判定フローチャートの長い文: 質問の文が長いときは菱形を大きくし、文字は菱形に内接する中央の四角（幅と高さの半分）で文節ごとに折り返す
+  "judgement-long": {
+    kind: "flow",
+    title: "表の列の幅と並び順を文書ごとに指定するか、設定で全ての文書にそろえるかの判定（表を持つ文書だけ）",
+    scope: "表を持つ文書",
+    updated: "2026-11-02",
+    width: 900,
+    height: 490,
+    nodes: [
+      { id: "start", kind: "start", x: 354, y: 16, w: 112, h: 112, name: "表の見た目を揃えたい" },
+      { id: "q", kind: "question", x: 230, y: 168, w: 360, h: 176, name: "表の列の幅と並び順を、文書ごとではなく全ての文書で同じにしたいか" },
+      { id: "r", kind: "result", x: 280, y: 400, w: 260, h: 72, name: "設定の features で全ての文書の表に機能を付ける" },
+      { id: "a", kind: "action", x: 640, y: 212, w: 240, h: 88, name: "文書ごとに表のマーカーへ列の幅と並び順の指定を追加する" },
+    ],
+    wires: [
+      { id: "l-start", line: "flow", points: [[410, 128], [410, 168]] },
+      { id: "l-yes", line: "flow", points: [[410, 344], [410, 400]], label: "YES", labelAt: [410, 372] },
+      { id: "l-no", line: "flow", points: [[590, 256], [640, 256]], label: "NO", labelAt: [615, 256] },
+    ],
+  },
 };
 
 // 操作できる部品の見本: スライダー 1 つ（0〜10、既定 5）と、その値で線を引くグラフ

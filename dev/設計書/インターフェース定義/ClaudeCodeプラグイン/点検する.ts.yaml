@@ -97,14 +97,63 @@ flows:
       - '`isError` が立つ'
       - 内容の文に `project_dir` と、プラグインを入れたセッションから呼ぶことが出る
     test: test_error_when_project_dir_missing
-lead: '`mdmark check` と同じ処理で、設定の形・索引と文書のずれ・`build` の対象の有無・知らない印を点検し、ずれの一覧を返す。'
+  - name: 正常系（取り込み先が無い）
+    summary: CLI と同じ `include_target_missing` のずれを返し、説明文で取り込み先も点検すると知らせる
+    setup:
+      - name: 取り込み先の無いマーカーを持つフォルダ
+        description: インターフェース定義『設定と索引を点検する』の正常系（取り込み先が無い）と同じフォルダ
+      - name: Mock
+        description: 正常系と同じ
+    flow: |-
+      sequenceDiagram
+        participant C as Claude Code
+        participant S as MCP サーバー
+        participant F as 作業のフォルダ
+        C->>S: tools/list
+        S-->>C: check の説明文
+        C->>S: check
+        S->>F: 設定・索引・文書・取り込み先を読む
+        S-->>C: issues（include_target_missing × 3）
+    expected:
+      - '`issues` に `include_target_missing` が 3 件あり、同じフォルダで流した `mdmark check` の出力の行と一致する'
+      - '`tools/list` の `check` の説明文に、include の取り込み先を点検することがある'
+      - 設定・索引・文書が変わらない
+    test: test_normal_when_include_targets_missing
+    refs:
+      - dev/設計書/シナリオ/単一ユースケース/ClaudeCodeから点検と書き出しを呼ぶ#scenarios[正常シナリオ（取り込み先が無い）]
+  - name: 正常系（文字列と YAML のキーを渡す）
+    summary: '`text` と `file`・`key` を渡すと、`mdmark check --text`・`--file --key` と同じずれを返す'
+    setup:
+      - name: ずれの無いフォルダ
+        description: 正常系と同じフォルダに、`items[0].body` が 5 行目の `|` で始まるブロックスカラーで、値の 3 行目（ファイルの 8 行目）に `<!-- tabz -->` を持つ `records.yaml` を置いたもの
+      - name: 点検する文字列
+        description: '`records.yaml` の `items[0].body` と同じ Markdown'
+      - name: Mock
+        description: 正常系と同じ
+    flow: |-
+      sequenceDiagram
+        participant C as Claude Code
+        participant S as MCP サーバー
+        participant F as 作業のフォルダ
+        C->>S: check（text）
+        S-->>C: issues（unknown_mark）
+        C->>S: check（file: records.yaml・key: items[0].body）
+        S->>F: YAML を読み、キーの値を取り出す
+        S-->>C: issues（unknown_mark）
+    expected:
+      - '`text` の `issues` が `unknown_mark`（`-`・`3`）の 1 件で、`isError` が立たない'
+      - '`file`・`key` の `issues` が `unknown_mark`（`records.yaml`・`8`）の 1 件で、`isError` が立たない'
+      - 同じフォルダで同じ引数の `mdmark check --text`・`--file --key` の出力の行と一致する
+      - 設定・索引・文書と `records.yaml` が変わっていない
+    test: test_normal_when_text_and_key
+lead: '`mdmark check` と同じ処理で、設定の形・索引と文書のずれ・`build` の対象の有無・知らない印・見つからないファイル・include のマーカーの取り込み先・図の部品の定義を点検し、ずれの一覧を返す。`text` か `file` と `key` を渡したときは、`mdmark check --text`・`--file --key` と同じく、渡した Markdown を描いたときの書き方の警告と図の定義のずれを返す。'
 idempotent: true
 side_effects: なし（設定・索引・文書を書き換えない）
 request:
   - name: config
     type: string
     required: false
-    default: なし（`project_dir` から上へ `mdmark.config.yaml` を探す）
+    default: なし（端末の設定と、`project_dir` から上のフォルダの `mdmark.config.yaml` を重ねる。端末の設定は `mdmark serve` のプロセスの環境変数で決まる）
     location: argument
     description: 使う設定ファイルのパス
   - name: base
@@ -120,6 +169,27 @@ request:
     description: 作業のフォルダの絶対パス。プラグインの PreToolUse のフックが `CLAUDE_PROJECT_DIR` の値を入れる
     constraints: 絶対パスで、そのフォルダがある
     notes: '`tools/list` の `inputSchema` には出さず、サーバーの引数の検査だけが必須にする'
+  - name: text
+    type: string
+    required: false
+    default: なし（設定と索引を点検する）
+    location: argument
+    description: 点検する Markdown の文字列。`mdmark check` の `--text` と同じ
+    constraints: '`base`・`file`・`key` と一緒に渡せない'
+  - name: file
+    type: string
+    required: false
+    default: なし（設定と索引を点検する）
+    location: argument
+    description: Markdown をキーの値に持つ YAML のファイルのパス（`project_dir` からの相対パスか絶対パス）。`mdmark check` の `--file` と同じ
+    constraints: '`key` と一緒に渡す。`base`・`text` と一緒に渡せない'
+  - name: key
+    type: string
+    required: false
+    default: なし
+    location: argument
+    description: '`file` の YAML の中で点検する文字列の値のキーのパス。`mdmark check` の `--key` と同じ'
+    constraints: '`file` と一緒に渡す'
 request_example: |-
   ```json
   {}
@@ -127,12 +197,12 @@ request_example: |-
 response:
   - name: issues[].file
     type: string
-    description: ずれのあるファイル（設定ファイルのあるフォルダからの相対パス）
+    description: ずれのあるファイル（設定ファイルのあるフォルダからの相対パス。`text` のときは `-`、設定ファイルが無いときは `project_dir` からの相対パス）
   - name: issues[].where
     type: string
     description: 行かキーのパス。無いときは空の文字列
   - name: issues[].kind
-    type: "'schema' | 'unknown_color_theme' | 'no_documents' | 'missing_doc' | 'orphan_doc' | 'broken_ref' | 'untyped_related' | 'one_sided_change_together' | 'related_link_overlap' | 'missed_change_together' | 'duplicate_term' | 'avoided_term' | 'duplicate_tag' | 'tag_alias_conflict' | 'broken_tag_replacement' | 'unregistered_tag' | 'deprecated_tag' | 'alias_no_files' | 'alias_unreadable' | 'duplicate_alias_row_id' | 'alias_records_missing' | 'alias_field_missing' | 'alias_unknown_type' | 'alias_required_empty' | 'duplicate_alias_id' | 'unknown_mark'"
+    type: "'schema' | 'unknown_color_theme' | 'no_documents' | 'missing_doc' | 'orphan_doc' | 'broken_ref' | 'untyped_related' | 'one_sided_change_together' | 'related_link_overlap' | 'missed_change_together' | 'duplicate_term' | 'avoided_term' | 'alias_no_files' | 'alias_unreadable' | 'duplicate_alias_row_id' | 'alias_records_missing' | 'alias_field_missing' | 'alias_unknown_type' | 'alias_required_empty' | 'duplicate_alias_id' | 'unknown_mark' | 'missing_file' | 'diagram_invalid' | 'diagram_node_overlap' | 'diagram_node_overflow' | 'diagram_wire_crosses_node' | 'diagram_label_too_long' | 'syntax_warning' | 'unknown_mark_arg'"
     description: ずれの種類。意味は『設定と索引を点検する』の「種類」
   - name: issues[].message
     type: string
@@ -146,7 +216,7 @@ exceptions:
   - name: なし（正常終了）
     condition: 点検できた。ずれの有無を問わない
   - name: ツールのエラー（設定ファイルが無い）
-    condition: '`config` のファイルが無いか、作業のフォルダと上のフォルダに `mdmark.config.yaml` が無い'
+    condition: '`config` のファイルが無いか、作業のフォルダと上のフォルダに `mdmark.config.yaml` が無い（`text`・`file` を渡し、`config` を渡さないときを除く）'
     notes: 探した場所と `mdmark init` で置けることを書く。設定ファイルを YAML として読めないときも同じくエラーにし、読めない行を書く
   - name: ツールのエラー（比べる基準を引けない）
     condition: '`base` を渡し、`mdmark check --base` が比べる基準を引けないときと同じ条件'
@@ -154,6 +224,9 @@ exceptions:
   - name: ツールのエラー（作業のフォルダが無い）
     condition: '`project_dir` が無い、絶対パスでない、またはそのフォルダが無い'
     notes: 内容の文に、`project_dir` が無いか違うことと、プラグインを入れたセッションから呼ぶことを書く
+  - name: ツールのエラー（引数の組が誤り・ファイルを読めない・キーが無い）
+    condition: '`mdmark check` が引数の組の誤り・点検するファイルを読めない・キーが無いで終わるときと同じ条件'
+    notes: '`mdmark check` が標準エラーに出すのと同じ文を書く'
 error_format: 'ツールの結果を `isError: true` にし、内容のテキストに `mdmark check` が標準エラーに出すのと同じ文を書く。'
 constraints:
   - item: CLI との一致

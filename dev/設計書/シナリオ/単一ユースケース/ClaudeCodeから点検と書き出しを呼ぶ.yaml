@@ -1,4 +1,4 @@
-title: "ClaudeCodeから点検と書き出しを呼ぶ"
+title: ClaudeCodeから点検と書き出しを呼ぶ
 scenarios:
   - name: 正常シナリオ
     setup:
@@ -100,6 +100,72 @@ scenarios:
       - 同じフォルダで同じ基準を渡して `mdmark check` を流したときと同じずれが返る
       - 設定・索引・文書が変わっていない
     test: test_normal_when_base_given
+  - name: 正常シナリオ（取り込み先が無い）
+    setup:
+      - name: 取り込み先の無いマーカーを持つフォルダ
+        description: 『設定と索引を点検する』の正常シナリオ（取り込み先が無い）と同じフォルダ
+      - name: Mock
+        description: 差し替える依存は無い。MCP のテストのクライアントからツールを呼ぶ
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant CC as Claude Code
+        participant S as mdmark の MCP サーバー
+        W->>CC: 点検を頼む
+        CC->>S: check（作業のフォルダ）
+        S->>S: mdmark check と同じ処理でずれを集める
+        S-->>CC: ずれの一覧
+        CC-->>W: 取り込み先が無いずれを伝える
+    expected:
+      - check が返すずれの一覧に、`mdmark check` と同じ取り込み先が無いずれが同じ数だけある
+      - ツールの一覧で得た check の説明文に、取り込み先が無いことも点検すると記載されている
+      - 設定・索引・文書が変わっていない
+    test: test_normal_when_include_missing
+  - name: 正常シナリオ（文字列とYAMLのキーを渡す）
+    setup:
+      - name: ずれの無い作業のフォルダ
+        description: 正常シナリオと同じ
+      - name: 書き方の警告を持つ Markdown
+        description: 知らないマーカー `<!-- tabz -->` を 1 つ持つ Markdown の文字列と、同じ文字列を `items[0].body` のキーに持つ YAML のファイル `records.yaml`
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        participant C as Claude Code
+        participant S as MCP サーバー
+        participant F as 作業のフォルダ
+        C->>S: check（Markdown の文字列）
+        S-->>C: 書き方の警告のずれの一覧
+        C->>S: check（records.yaml・items[0].body）
+        S->>F: YAML のファイルを読み、キーの値を取り出す
+        S-->>C: 書き方の警告のずれの一覧
+    expected:
+      - 文字列を渡した `check` が、知らないマーカーのずれを 1 件返す
+      - ファイルとキーを渡した `check` が、`records.yaml` を指す同じ種類のずれを 1 件返す
+      - 同じ引数で `mdmark check` を流したときと同じずれが返る
+      - 設定・索引・文書と `records.yaml` が変わっていない
+    test: test_normal_when_text_and_key
+  - name: 正常シナリオ（設定を重ねる）
+    setup:
+      - name: 重ねる設定を持つ作業のフォルダ
+        description: 『文書をHTMLに書き出す』の正常シナリオ（設定を重ねる）と同じフォルダ。作業のフォルダは `docs/`
+      - name: 端末の設定
+        description: 同じシナリオと同じ `settings.yaml`。常駐サーバーを `MDMARK_CONFIG` でこのファイルを指して起動する
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        participant C as Claude Code
+        participant S as MCP サーバー
+        participant F as 作業のフォルダ
+        C->>S: export_html（文書のパス）
+        S->>F: 端末の設定と、作業のフォルダから上の mdmark.config.yaml を読んで重ねる
+        S->>F: 1 枚の HTML を書く
+        S-->>C: 書き出したパス
+    expected:
+      - '`export_html` が 1 枚の HTML を書き、書き出したパスを返す'
+      - 書き出した HTML が、同じ文書と同じ端末の設定で `mdmark export` を流して書いた HTML と同じ
+    test: test_normal_when_cascaded
 lead: Claude Code が MCP のツール `check`・`export_html`・`build_site` で、`mdmark check`・`export`・`build` と同じ点検・1 文書の書き出し・1 枚へのまとめを呼び、結果を受け取る。
 issue: 11
 primary_actor: Claude Code

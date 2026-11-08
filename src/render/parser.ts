@@ -4,39 +4,68 @@ import type {
   Token,
 } from "markdown-it";
 import MarkdownIt from "markdown-it";
-import type { LibraryEntry } from "../config.ts";
+import type { LibraryEntry, PageSettings } from "../config.ts";
 import type { MdmarkParamDefinition } from "../diagram/definition.ts";
+import type { MdmarkMarkArgs } from "../extensions.ts";
 import type { MdmarkIndex } from "../knowledge/index-shape.ts";
 import type {
   MdmarkGlossaryEntry,
   MdmarkReferences,
 } from "../knowledge/references.ts";
 import { escapeHtml } from "../parts/escape.ts";
+import type { MdmarkIconNode } from "../parts/inline-icon.ts";
 import {
   dropMarks,
   MARK_PATTERN,
   MARK_TOKEN,
   resolveDocumentFeatures,
+  resolvePageSettings,
   takeMarks,
 } from "./marks.ts";
 import { backlinksRule } from "./syntax/backlinks.ts";
 import { buildBadges } from "./syntax/badges.ts";
 import { buildCallouts } from "./syntax/callouts.ts";
+import { buildCardGrid } from "./syntax/card-grid.ts";
+import { buildCards } from "./syntax/cards.ts";
 import { buildCodeBlocks } from "./syntax/code-blocks.ts";
+import { buildCsvTables } from "./syntax/csv.ts";
+import { buildDetailsRanges } from "./syntax/details.ts";
 import { buildDiagrams } from "./syntax/diagrams.ts";
 import { numberFigures } from "./syntax/figures.ts";
+import {
+  buildFootnoteList,
+  collectFootnotes,
+  type FootnoteState,
+  takeFootnoteDefinitions,
+  useFootnotes,
+} from "./syntax/footnotes.ts";
+import { buildGallery } from "./syntax/gallery.ts";
 import { glossaryRule } from "./syntax/glossary.ts";
 import { assignHeadingIds } from "./syntax/headings.ts";
+import { useHighlight } from "./syntax/highlight.ts";
 import { buildEmbeddedHtml } from "./syntax/html.ts";
+import { buildImageFigures, readImages } from "./syntax/images.ts";
+import { expandIncludes } from "./syntax/includes.ts";
+import { buildInlineIcons } from "./syntax/inline-icons.ts";
+import { buildKbds } from "./syntax/kbd.ts";
+import { buildLayoutColumns } from "./syntax/layout-columns.ts";
+import { buildPagebreaks } from "./syntax/pagebreak.ts";
 import { attachRowDetails } from "./syntax/row-details.ts";
 import { wrapSections } from "./syntax/sections.ts";
 import { buildSteps } from "./syntax/steps.ts";
+import { linkTreeExamples } from "./syntax/table-tree.ts";
 import { decorateTables } from "./syntax/tables.ts";
 import { buildTabs } from "./syntax/tabs.ts";
 import { termsRule } from "./syntax/terms.ts";
+import { buildTextColors } from "./syntax/text-color.ts";
 import { buildToc } from "./syntax/toc.ts";
 import { buildFileTrees } from "./syntax/tree.ts";
 import { buildViews } from "./syntax/views.ts";
+import {
+  type CollectedWarning,
+  collectWarningsRule,
+} from "./syntax/warnings.ts";
+import { buildWideRanges } from "./syntax/wide.ts";
 
 /** markdown-it の `env` としてコアルールに渡す値と、コアルールが拾った印 */
 export type RenderEnv = {
@@ -44,10 +73,16 @@ export type RenderEnv = {
   libraries: Record<string, LibraryEntry>;
   /** 設定の `features` */
   defaults: Record<string, boolean>;
+  /** 既定を当てた設定の `labels`（部品の文言） */
+  labels?: { paramCopy: string };
   /** `features` の印の引数を書いた順に並べたもの */
   featureArgs: string[];
   /** `defaults` に `featureArgs` を重ねたもの */
   features: Record<string, boolean>;
+  /** 文書の先頭の page の印を書いた順に並べたもの（`takeMarks` が足す） */
+  pageMarks?: Array<{ raw: string; args: MdmarkMarkArgs }>;
+  /** `pageMarks` を読んだページの設定（`resolvePageSettings` が入れる） */
+  page?: PageSettings;
   /** 見出しの ID と文字 */
   headings: Array<{ level: number; id: string; text: string }>;
   /** 描くごとに作る、mdmark が出した要素の印の値 */
@@ -72,10 +107,18 @@ export type RenderEnv = {
   diagramCount?: number;
   /** 用語のツールチップの数（`id` の通し番号。埋め込んだ HTML と本文で共有する） */
   termTipCount?: number;
+  /** 読んだ脚注の定義と参照（定義の block のルールが作り、機能がオフなら `collectFootnotes` が消す） */
+  mdmarkFootnotes?: FootnoteState | undefined;
   /** ヒントのツールチップの数（`id` の通し番号） */
   hintCount?: number;
   /** ビューの書き方の警告の数（`id` の通し番号） */
   viewCount?: number;
+  /** 取り込む文書の表（`render`・`mount` の `includes`） */
+  includes?: Record<string, string> | undefined;
+  /** 束ねていない名前のアイコンの形の表（`render`・`mount` の `icons`） */
+  icons?: Record<string, MdmarkIconNode> | undefined;
+  /** 描いた書き方の警告（最後のコアルール `collectWarningsRule` が入れる） */
+  warnings?: CollectedWarning[];
 };
 
 /** スキームも `www.` もメールの `@` も持たない自動リンクの文字を見分ける正規表現 */
@@ -240,36 +283,60 @@ export function createParser(): MarkdownItParser {
   const parser = new MarkdownIt(PARSER_OPTIONS);
   // スキームを持たないドメインも拾わせ、後で文字に戻すものを選ぶ
   parser.linkify.set({ fuzzyLink: true });
-  // 印 → 機能の重ね合わせ → 記法（見出し → 用語集の表 → 行の詳細 → ビュー → 表 → タブ → ステップ → 注意書き → ファイルツリー → バッジ → 図の部品 → 埋め込んだ HTML → コードブロックの飾り → 図表の番号 → 用語の下線 → 節 → 目次 → 関連文書の一覧）→ タスクリスト → www の自動リンク → 残った印
+  // 印 → 機能の重ね合わせ → 取り込み → 蛍光ペン（`useHighlight` が取り込みの後に足す）→ 脚注の機能のオン・オフ → 記法（アイコン → 見出し → 用語集の表 → 行の詳細 → ビュー → CSV の表 → 表 → タブ → ステップ → 注意書き → ファイルツリー → バッジ → キー → 本文の文字の色 → 図の部品 → 埋め込んだ HTML → コードブロックの飾り → 画像の属性と種類 → 図表の番号 → ギャラリー → 画像と動画と音声の図 → カード → 段組み → details の範囲 → wide の範囲 → 改ページ → 用語の下線 → 節 → 目次 → 脚注の一覧 → 関連文書の一覧）→ タスクリスト → www の自動リンク → 残った印 → 元の行番号 → 脚注の定義の取り出し
   const rules: Array<[string, (state: StateCore) => void]> = [
     ["mdmark_take_marks", takeMarks],
     ["mdmark_resolve_features", resolveDocumentFeatures],
+    ["mdmark_resolve_page_settings", resolvePageSettings],
+    ["mdmark_expand_includes", expandIncludes],
+    ["mdmark_collect_footnotes", collectFootnotes],
+    // 項目の `icon:` の行内のコードを読むため、行内のアイコンより前に置く
+    ["mdmark_build_card_grid", buildCardGrid],
+    // 見出しの ID と文字から、アイコンにした行内のコードを外すため、見出しの ID より前に置く
+    ["mdmark_build_inline_icons", buildInlineIcons],
     ["mdmark_assign_heading_ids", assignHeadingIds],
     ["mdmark_glossary", glossaryRule],
     ["mdmark_attach_row_details", attachRowDetails],
     ["mdmark_build_views", buildViews],
+    ["mdmark_build_csv_tables", buildCsvTables],
     ["mdmark_decorate_tables", decorateTables],
     ["mdmark_build_tabs", buildTabs],
     ["mdmark_build_steps", buildSteps],
     ["mdmark_build_callouts", buildCallouts],
     ["mdmark_build_file_trees", buildFileTrees],
     ["mdmark_build_badges", buildBadges],
+    ["mdmark_build_kbds", buildKbds],
+    ["mdmark_build_text_colors", buildTextColors],
     ["mdmark_build_diagrams", buildDiagrams],
     ["mdmark_build_embedded_html", buildEmbeddedHtml],
     ["mdmark_build_code_blocks", buildCodeBlocks],
+    ["mdmark_link_tree_examples", linkTreeExamples],
+    ["mdmark_read_images", readImages],
     ["mdmark_number_figures", numberFigures],
+    ["mdmark_build_gallery", buildGallery],
+    ["mdmark_build_image_figures", buildImageFigures],
+    ["mdmark_build_cards", buildCards],
+    ["mdmark_build_layout_columns", buildLayoutColumns],
+    ["mdmark_build_details_ranges", buildDetailsRanges],
+    ["mdmark_build_wide_ranges", buildWideRanges],
+    ["mdmark_build_pagebreaks", buildPagebreaks],
     ["mdmark_terms", termsRule],
     ["mdmark_wrap_sections", wrapSections],
     ["mdmark_build_toc", buildToc],
+    ["mdmark_build_footnote_list", buildFootnoteList],
     ["mdmark_backlinks", backlinksRule],
     ["mdmark_task_list", taskList],
     ["mdmark_revert_fuzzy_links", revertFuzzyLinks],
     ["mdmark_drop_marks", dropMarks],
     ["mdmark_mark_source_lines", markSourceLines],
+    ["mdmark_take_footnote_definitions", takeFootnoteDefinitions],
+    ["mdmark_collect_warnings", collectWarningsRule],
   ];
   for (const [name, rule] of rules) {
     parser.core.ruler.push(name, rule);
   }
+  useFootnotes(parser);
+  useHighlight(parser);
   // 印のトークンは、残っていても何も出さない
   parser.renderer.rules[MARK_TOKEN] = () => "";
   // 取り消し線: markdown-it の `<s>` を GitHub と同じ `<del>` にする

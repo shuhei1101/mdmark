@@ -41,8 +41,10 @@ suite("バージョンを決められない（前回のバージョンが空）"
     await vscode.commands.executeCommand("mdmark.openPreviewToSide");
     const record = lastPanel();
     // 検証
+    // Webview のスクリプトが読み終わる前の inspect は応答が来ないため、空として待ち直す
     await waitFor(
-      async () => (await inspect(".mdmark-preview-notice")).length === 1,
+      async () =>
+        (await inspect(".mdmark-preview-notice").catch(() => [])).length === 1,
       { message: "描けない理由が出ない" },
     );
     const [notice] = await inspect(".mdmark-preview-notice");

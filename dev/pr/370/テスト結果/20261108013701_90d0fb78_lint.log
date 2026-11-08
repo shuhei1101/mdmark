@@ -1,0 +1,10 @@
+$ npx biome check tests/unit/scripts/eslint.test.ts tests/files.yaml
+Checked 1 file in 193ms. No fixes applied.
+
+$ npm run typecheck
+
+> typecheck
+> tsc --noEmit
+
+tests/unit/scripts/eslint.test.ts(5,33): error TS2307: Cannot find module '../../../scripts/eslint.ts' or its corresponding type declarations.
+# 型検査の違反は、実装が無い scripts/eslint.ts の import の 1 件だけ（実装で解消する）

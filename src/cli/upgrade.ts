@@ -1,12 +1,15 @@
 import { readFile, stat, writeFile } from "node:fs/promises";
+import { homedir } from "node:os";
 import { basename, dirname, join, relative, resolve, sep } from "node:path";
 import { isMap, parse, parseDocument } from "yaml";
+import { resolveSettingsPath, validateSettingsKeys } from "../config-files.ts";
 import { restoreBackup, takeBackup } from "./backup.ts";
 import { CHANGELOG_FILE, changelogRows } from "./changelog.ts";
 import { collectCheckIssues } from "./check.ts";
 import { findConfigFile, loadConfig, validateConfig } from "./config.ts";
 import { collectBuildDocuments, readIndexWithDocuments } from "./documents.ts";
 import { CliError, type CliIo } from "./errors.ts";
+import { formatCheckIssue } from "./issues.ts";
 import {
   applyStep,
   loadMigrationVersions,
@@ -200,10 +203,21 @@ async function askValues(options: {
   }
 }
 
+/** 端末の設定を読み直し、`mdmark.config.yaml` のキーと端末の設定だけのキーの形を点検する */
+async function collectSettingsIssues(path: string) {
+  const { raw } = await loadConfig(path);
+  const file = basename(path);
+  return [
+    ...validateConfig(raw, file).issues,
+    ...validateSettingsKeys(raw, file),
+  ];
+}
+
 /** 手元の版から呼んだ CLI の版までの移行の手順を当て、点検が通ったら設定の版を書き換える */
 export async function runUpgrade(
   options: {
     config?: string | undefined;
+    settings?: boolean | undefined;
     plan: boolean;
     yes: boolean;
     packageDir: string;
@@ -213,7 +227,12 @@ export async function runUpgrade(
   io: CliIo,
   ask: Prompter,
 ): Promise<0 | 1> {
-  const configPath = await findConfigFile(io.cwd, options.config);
+  if (options.settings && options.config !== undefined) {
+    throw new CliError("--config と --settings は一緒に渡せません。");
+  }
+  const configPath = options.settings
+    ? resolveSettingsPath({ env: process.env, home: homedir() })
+    : await findConfigFile(io.cwd, options.config);
   const loaded = await loadConfig(configPath);
   const dir = loaded.dir;
   const local = assertVersion(
@@ -234,12 +253,26 @@ export async function runUpgrade(
     io.stdout("手元の版が目標の版と同じです。当てる手順はありません");
     return 0;
   }
-  const versions = await loadMigrationVersions({
+  const loadedVersions = await loadMigrationVersions({
     packageDir: options.packageDir,
     from: local,
     to: target,
   });
-  const migrationTarget = await createTarget({ configPath, raw: loaded.raw });
+  // 端末の設定は設定ファイルの手順（設定ファイルだけを書き換える call を含む）だけを当て、索引と文書の手順は飛ばす
+  const versions = options.settings
+    ? loadedVersions.map((version) => ({
+        ...version,
+        steps: version.steps.filter((step) =>
+          step.op === "call"
+            ? step.files.length > 0 &&
+              step.files.every((file) => file === "config")
+            : "file" in step && step.file === "config",
+        ),
+      }))
+    : loadedVersions;
+  const migrationTarget = options.settings
+    ? { configPath, indexPath: undefined, documents: [], answers: new Map() }
+    : await createTarget({ configPath, raw: loaded.raw });
   await printPlan({
     versions,
     packageDir: options.packageDir,
@@ -270,18 +303,28 @@ export async function runUpgrade(
   try {
     for (const version of versions) {
       for (const step of version.steps) {
-        await applyStep({ step, version, target: migrationTarget });
+        const lines = await applyStep({
+          step,
+          version,
+          target: migrationTarget,
+        });
+        if (lines.length > 0) {
+          io.stdout(`${version.version} の手順「${step.description}」:`);
+          for (const line of lines) {
+            io.stdout(`  ${line}`);
+          }
+        }
       }
     }
-    const issues = await collectCheckIssues(configPath, {
-      unknownMarks: false,
-    });
+    const issues = options.settings
+      ? await collectSettingsIssues(configPath)
+      : await collectCheckIssues(configPath, {
+          unknownMarks: false,
+        });
     if (issues.length > 0) {
       await restoreBackup({ dir, backupDir });
       for (const issue of issues) {
-        const place =
-          issue.where === "" ? issue.file : `${issue.file}:${issue.where}`;
-        io.stderr(`${place}: ${issue.kind}: ${issue.message}`);
+        io.stderr(formatCheckIssue(issue));
       }
       io.stderr(
         `点検のずれが ${issues.length} 件あるため、写しから戻しました。版は書き換えていません。`,

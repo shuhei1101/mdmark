@@ -1,0 +1,11 @@
+$ npx vitest run --project "unit*" tests/unit/scripts/build-plugin.test.ts tests/unit/src/plugin/guide.test.ts
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/docs-guide-writing-style-and-writing-page
+
+
+ Test Files  2 passed (2)
+      Tests  34 passed (34)
+   Start at  02:22:07
+   Duration  1.51s (tests 71%, transform 14%, import 13%, worker 2%)
+
+exit 0

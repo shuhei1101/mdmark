@@ -2,161 +2,85 @@
 import { createRequire as __createRequire } from "node:module";
 const require = __createRequire(import.meta.url);
 
-// src/plugin/session-start.ts
-import { join as join2, resolve as resolve2 } from "node:path";
-
 // src/cli/errors.ts
 var CliError = class extends Error {
 };
 
-// src/plugin/guide.ts
-import { readFile } from "node:fs/promises";
-import { isAbsolute, join, relative, resolve } from "node:path";
-var GUIDE_INDEX_FILE = "index.json";
-var GUIDE_CONTEXT_LEAD = "mdmark \u306E\u4F7F\u3044\u65B9\u96C6\u306E\u7D22\u5F15\u3002\u672C\u6587\u306F MCP \u306E read_guide \u306B\u540D\u524D\u3092\u6E21\u3059\u3068\u8AAD\u3081\u308B\u3002";
-var GUIDE_SCHEMA = 1;
-var ENTRY_KEYS = ["name", "when", "summary", "page"];
-var PAGE_PREFIX = "docs/";
-var PAGE_SUFFIX = ".md";
-function isRecord(value) {
-  return typeof value === "object" && value !== null && !Array.isArray(value);
-}
-function parseGuideIndex(value) {
-  const entries = [];
-  const problems = [];
-  if (!isRecord(value)) {
-    problems.push({ where: "", message: "\u7D22\u5F15\u306F\u30AA\u30D6\u30B8\u30A7\u30AF\u30C8\u306B\u3057\u307E\u3059" });
-    return { entries, problems };
+// src/plugin/port.ts
+import { connect } from "node:net";
+var CONNECT_TIMEOUT_MS = 1e3;
+var PROBE_HOST = "127.0.0.1";
+var isPortListening = (options) => new Promise((resolve) => {
+  const socket = connect({ host: PROBE_HOST, port: options.port });
+  const finish = (listening) => {
+    socket.destroy();
+    resolve(listening);
+  };
+  socket.setTimeout(options.timeoutMs, () => finish(false));
+  socket.once("connect", () => finish(true));
+  socket.once("error", () => finish(false));
+});
+var PORT_ENV = "MDMARK_PORT";
+var DEFAULT_PORT = 8782;
+var INVALID_PORT_MESSAGE = "MDMARK_PORT \u306E\u5024 {value} \u306F\u30DD\u30FC\u30C8\u306B\u4F7F\u3048\u307E\u305B\u3093\u30021\u301C65535 \u306E\u6574\u6570\u3092\u8A2D\u5B9A\u3057\u3066\u304F\u3060\u3055\u3044\u3002";
+var MIN_PORT = 1;
+var MAX_PORT = 65535;
+function readPort(options) {
+  const value = options.env[PORT_ENV];
+  if (value === void 0 || value === "") {
+    return DEFAULT_PORT;
   }
-  for (const key of Object.keys(value)) {
-    if (key !== "schema" && key !== "guides") {
-      problems.push({ where: key, message: `\`${key}\` \u306F\u66F8\u3051\u307E\u305B\u3093` });
-    }
+  const port = Number(value);
+  if (!/^\d+$/.test(value) || port < MIN_PORT || port > MAX_PORT) {
+    throw new CliError(INVALID_PORT_MESSAGE.replace("{value}", value));
   }
-  if (value.schema !== GUIDE_SCHEMA) {
-    problems.push({
-      where: "schema",
-      message: `\`schema\` \u306F ${GUIDE_SCHEMA} \u306B\u3057\u307E\u3059`
-    });
-  }
-  if (!Array.isArray(value.guides)) {
-    problems.push({
-      where: "guides",
-      message: "`guides` \u306F\u884C\u306E\u4E26\u3073\u306B\u3057\u307E\u3059"
-    });
-    return { entries, problems };
-  }
-  const names = /* @__PURE__ */ new Set();
-  value.guides.forEach((item, position) => {
-    const where = `guides[${position}]`;
-    if (!isRecord(item)) {
-      problems.push({ where, message: "\u884C\u306F\u30AA\u30D6\u30B8\u30A7\u30AF\u30C8\u306B\u3057\u307E\u3059" });
-      return;
-    }
-    const before = problems.length;
-    for (const key of Object.keys(item)) {
-      if (!ENTRY_KEYS.includes(key)) {
-        problems.push({
-          where: `${where}.${key}`,
-          message: `\`${key}\` \u306F\u66F8\u3051\u307E\u305B\u3093`
-        });
-      }
-    }
-    for (const key of ENTRY_KEYS) {
-      const field = item[key];
-      if (typeof field !== "string" || field === "") {
-        problems.push({
-          where: `${where}.${key}`,
-          message: `\`${key}\` \u306F\u7A7A\u3067\u306A\u3044\u6587\u5B57\u5217\u306B\u3057\u307E\u3059`
-        });
-      }
-    }
-    const { name, page } = item;
-    if (typeof name === "string" && name !== "") {
-      if (names.has(name)) {
-        problems.push({
-          where: `${where}.name`,
-          message: `\u540D\u524D \`${name}\` \u304C\u91CD\u306A\u3063\u3066\u3044\u307E\u3059`
-        });
-      }
-      names.add(name);
-    }
-    if (typeof page === "string" && page !== "" && !(page.startsWith(PAGE_PREFIX) && page.endsWith(PAGE_SUFFIX))) {
-      problems.push({
-        where: `${where}.page`,
-        message: `\`page\` \u306F \`${PAGE_PREFIX}\` \u3067\u59CB\u307E\u308A \`${PAGE_SUFFIX}\` \u3067\u7D42\u308F\u308B\u30D1\u30B9\u306B\u3057\u307E\u3059`
-      });
-    }
-    if (problems.length === before) {
-      entries.push(item);
-    }
-  });
-  return { entries, problems };
-}
-async function readGuideIndex(guideDir) {
-  const path = join(guideDir, GUIDE_INDEX_FILE);
-  let reason;
-  try {
-    const { entries, problems } = parseGuideIndex(
-      JSON.parse(await readFile(path, "utf8"))
-    );
-    const first = problems[0];
-    if (first === void 0) {
-      return entries;
-    }
-    reason = `${first.where}: ${first.message}`;
-  } catch (error) {
-    reason = error instanceof Error ? error.message.split("\n")[0] ?? error.message : String(error);
-  }
-  throw new CliError(
-    `\u4F7F\u3044\u65B9\u96C6\u306E\u7D22\u5F15 ${path} \u3092\u8AAD\u3081\u307E\u305B\u3093\uFF08${reason}\uFF09\u3002\u30D7\u30E9\u30B0\u30A4\u30F3\u3092\u5165\u308C\u76F4\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
-  );
-}
-function toCell(text) {
-  return text.replaceAll("|", "\\|").replace(/\s*\n\s*/g, " ");
-}
-function formatGuideContext(entries) {
-  return [
-    GUIDE_CONTEXT_LEAD,
-    "| \u540D\u524D | \u8AAD\u3080\u3068\u304D | \u6982\u8981 |",
-    "| --- | --- | --- |",
-    ...entries.map(
-      (entry) => `| ${toCell(entry.name)} | ${toCell(entry.when)} | ${toCell(entry.summary)} |`
-    )
-  ].join("\n");
+  return port;
 }
 
 // src/plugin/session-start.ts
-var GUIDE_DIR = "guide";
-async function runSessionStart(options) {
-  const { moduleDir, stdout, stderr } = options;
-  let additionalContext;
+var NOT_LISTENING_CONTEXT = "mdmark \u306E MCP \u306E\u5E38\u99D0\u30B5\u30FC\u30D0\u30FC\u304C 127.0.0.1:{port} \u3067\u5F85\u3061\u53D7\u3051\u3066\u3044\u306A\u3044\u305F\u3081\u3001mdmark \u306E MCP \u306E\u30C4\u30FC\u30EB\u306F\u4F7F\u3048\u306A\u3044\u3002/mdmark:global-setup \u3067\u8D77\u52D5\u3067\u304D\u308B\u3002";
+var PORT_INVALID_CONTEXT = "MDMARK_PORT \u306E\u5024 {value} \u306F\u30DD\u30FC\u30C8\u3068\u3057\u3066\u4F7F\u3048\u306A\u3044\u305F\u3081\u3001mdmark \u306E MCP \u306E\u30C4\u30FC\u30EB\u306F\u4F7F\u3048\u306A\u3044\u30021\u301C65535 \u306E\u6574\u6570\u3092\u8A2D\u5B9A\u3059\u308B\u3002";
+var writeContext = (stdout, context) => {
+  stdout(
+    JSON.stringify({
+      hookSpecificOutput: {
+        hookEventName: "SessionStart",
+        additionalContext: context
+      }
+    })
+  );
+};
+var runSessionStart = async (options) => {
+  let port;
   try {
-    const entries = await readGuideIndex(
-      join2(resolve2(moduleDir, ".."), GUIDE_DIR)
-    );
-    additionalContext = formatGuideContext(entries);
+    port = readPort({ env: options.env });
   } catch (error) {
     if (error instanceof CliError) {
-      stderr(error.message);
-      return 1;
+      writeContext(
+        options.stdout,
+        PORT_INVALID_CONTEXT.replace("{value}", options.env.MDMARK_PORT ?? "")
+      );
+      return 0;
     }
     throw error;
   }
-  stdout(
-    JSON.stringify({
-      hookSpecificOutput: { hookEventName: "SessionStart", additionalContext }
-    })
+  if (await isPortListening({ port, timeoutMs: CONNECT_TIMEOUT_MS })) {
+    return 0;
+  }
+  writeContext(
+    options.stdout,
+    NOT_LISTENING_CONTEXT.replace("{port}", String(port))
   );
   return 0;
-}
+};
 if (import.meta.main) {
   process.exitCode = await runSessionStart({
-    moduleDir: import.meta.dirname,
-    stdout: (line) => console.log(line),
-    stderr: (line) => console.error(line)
+    env: process.env,
+    stdout: (line) => console.log(line)
   });
 }
 export {
+  NOT_LISTENING_CONTEXT,
+  PORT_INVALID_CONTEXT,
   runSessionStart
 };

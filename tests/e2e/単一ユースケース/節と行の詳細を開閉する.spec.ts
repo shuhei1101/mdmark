@@ -91,8 +91,8 @@ test("test_normal_when_row_detail", async ({ page }) => {
   await expect(page.locator("#doc > p")).toHaveCount(0);
 });
 
-// 知らない開閉の指定は、開いた節として描き、書き方の警告を出す（異常シナリオ（知らない開閉の指定））
-test("test_error_when_unknown_section_value", async ({ page }) => {
+// 知らない開閉の指定は読み飛ばし、書き方の警告を出さずに開いた節として描く（正常シナリオ（知らない開閉の指定））
+test("test_normal_when_unknown_section_value", async ({ page }) => {
   // 準備
   await openPage(page, builtRoot);
   // 実行
@@ -100,10 +100,7 @@ test("test_error_when_unknown_section_value", async ({ page }) => {
     markdown: "## 補足\n<!-- section: hidden -->\n\n補足の段落\n",
   });
   // 検証
-  const warning = page.locator("#doc .mdmark-syntax-warning");
-  await expect(warning).toContainText("hidden");
-  await expect(warning).toContainText("closed");
-  await expect(warning).toContainText("open");
+  await expect(page.locator("#doc .mdmark-syntax-warning")).toHaveCount(0);
   await expect(page.getByText("補足の段落")).toBeVisible();
 });
 
@@ -295,4 +292,72 @@ test("test_normal_when_nested_toggled_with_shift", async ({ page }) => {
     await expect(toggleOf(id)).toHaveAttribute("aria-expanded", "false");
   }
   await expect(toggleOf("概要")).toHaveAttribute("aria-expanded", "true");
+});
+
+// details の範囲を、タイトルを押して開閉する（正常シナリオ（details の範囲））
+test("test_normal_when_details_range", async ({ page }) => {
+  // 準備
+  await openPage(page, builtRoot);
+  // 実行
+  await mountDocument(page, {
+    markdown: [
+      "## 概要",
+      "",
+      "<!-- details: 補足の手順 -->",
+      "",
+      "補足の段落",
+      "",
+      "- 補足の項目",
+      "",
+      "<!-- /details -->",
+      "",
+      "<!-- details: 実行の例 open -->",
+      "",
+      "例の段落",
+      "",
+      "<!-- /details -->",
+      "",
+    ].join("\n"),
+  });
+  // 検証: 描いた直後
+  const summary = page.locator("#doc summary", { hasText: "補足の手順" });
+  await expect(summary).toBeVisible();
+  await expect(page.getByText("補足の段落")).toBeHidden();
+  await expect(page.getByText("補足の項目")).toBeHidden();
+  await expect(page.getByText("例の段落")).toBeVisible();
+  // 実行
+  await summary.click();
+  // 検証
+  await expect(page.getByText("補足の段落")).toBeVisible();
+  await expect(page.getByText("補足の項目")).toBeVisible();
+  expect(
+    await summary.evaluate(
+      (el) => (el.parentElement as HTMLDetailsElement).open,
+    ),
+  ).toBe(true);
+  await expect(
+    page.locator("#doc h1, #doc h2, #doc h3", { hasText: "補足の手順" }),
+  ).toHaveCount(0);
+  await expect(
+    page.locator(".mdmark-side-toc-list a, .mdmark-toc a", {
+      hasText: "補足の手順",
+    }),
+  ).toHaveCount(0);
+  expect(await page.locator("#doc").innerHTML()).not.toContain("<!--");
+});
+
+// 閉じのマーカーが無いときは、警告を置いて折りたたまずに出す（異常シナリオ（details の閉じのマーカーが無い））
+test("test_error_when_details_unclosed", async ({ page }) => {
+  // 準備
+  await openPage(page, builtRoot);
+  // 実行
+  await mountDocument(page, {
+    markdown: "<!-- details: 補足 -->\n\n補足の段落\n",
+  });
+  // 検証
+  await expect(page.locator("#doc .mdmark-syntax-warning")).toContainText(
+    "<!-- /details -->",
+  );
+  await expect(page.getByText("補足の段落")).toBeVisible();
+  await expect(page.locator("#doc details")).toHaveCount(0);
 });

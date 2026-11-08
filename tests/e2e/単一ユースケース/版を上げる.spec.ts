@@ -1,9 +1,10 @@
 import { execFile } from "node:child_process";
 import { existsSync } from "node:fs";
-import { readFile, rm } from "node:fs/promises";
+import { readdir, readFile, rm } from "node:fs/promises";
 import { join, resolve } from "node:path";
 import { promisify } from "node:util";
 import { parse } from "yaml";
+import { migrationsDirOf } from "../../migrations-dir.ts";
 import { test as base, expect, linesOf, runCli, writeFiles } from "../cli.ts";
 import { buildDistRoot, removeDistRoot } from "../dist-page.ts";
 
@@ -60,7 +61,7 @@ const CONFIG_WITHOUT_VERSION = OLD_CONFIG.replace("version: v0.3.0\n", "");
 /** 手元のフォルダに置く索引と文書 */
 const WORK_FILES = {
   "docs/index.yaml": [
-    "schema: 1",
+    "schema: 2",
     "docs:",
     "  - id: a",
     "    path: a.md",
@@ -430,4 +431,204 @@ test("test_normal_when_destructive_with_yes", async ({
   expect(work.a).toBe("# A\n\n<!-- callout -->\n");
   expect(work.b).toBe("# B\n\n<!-- callout -->\n");
   expect(config.version).toBe("v0.5.0");
+});
+
+// 当てた後の点検で図の定義のずれが見つかると、バックアップから戻し、ずれの行を出して終わる（異常シナリオ（当てた後の点検で図の定義にずれがある））
+test("test_error_when_diagram_drift", async ({ package050, tempDir }) => {
+  // 準備
+  await setMigrations(package050, migrationFiles());
+  const dir = await createWork(tempDir);
+  const overlap = {
+    title: "重なり",
+    scope: "点検",
+    updated: "2026-11-03",
+    width: 400,
+    height: 200,
+    nodes: [
+      { id: "web", kind: "script", x: 20, y: 20, w: 100, h: 60, name: "Web" },
+      { id: "db", kind: "data", x: 60, y: 40, w: 100, h: 60, name: "DB" },
+    ],
+    wires: [],
+  };
+  const a = [
+    WORK_FILES["docs/a.md"],
+    "<!-- flow -->",
+    "",
+    "```json",
+    JSON.stringify(overlap),
+    "```",
+    "",
+    "<!-- /flow -->",
+    "",
+  ].join("\n");
+  await writeFiles(dir, { "docs/a.md": a });
+  const index = await readFile(join(dir, "docs", "index.yaml"), "utf8");
+  // 実行
+  const result = await runCli(package050, ["upgrade"], dir);
+  // 検証
+  expect(result.code).not.toBe(0);
+  const flowLine = a.split("\n").indexOf("<!-- flow -->") + 1;
+  const overlapLine = linesOf(result.stderr).find((line) =>
+    line.startsWith(`docs/a.md:${flowLine}: diagram_node_overlap:`),
+  );
+  expect(overlapLine).toContain("web");
+  expect(overlapLine).toContain("db");
+  const work = await readWork(dir);
+  expect(work.config).toBe(OLD_CONFIG);
+  expect(parse(work.config).version).toBe("v0.3.0");
+  expect(work.a).toBe(a);
+  expect(work.b).toBe(WORK_FILES["docs/b.md"]);
+  expect(await readFile(join(dir, "docs", "index.yaml"), "utf8")).toBe(index);
+});
+
+// 上のフォルダにも設定ファイルがあるとき、最も近い設定ファイルだけを書き換える（正常シナリオ（上のフォルダにも設定ファイルがある））
+test("test_normal_when_parent_config_exists", async ({
+  package050,
+  tempDir,
+}) => {
+  // 準備
+  await setMigrations(package050, migrationFiles());
+  const root = await tempDir();
+  const parentConfig = "version: v0.3.0\nfeatures:\n  callout: true\n";
+  await writeFiles(root, { "mdmark.config.yaml": parentConfig });
+  const dir = join(root, "docs");
+  await writeFiles(dir, { "mdmark.config.yaml": OLD_CONFIG, ...WORK_FILES });
+  const settingsDir = await tempDir();
+  const settings = join(settingsDir, "settings.yaml");
+  const settingsText = "config:\n  cascade: true\n";
+  await writeFiles(settingsDir, { "settings.yaml": settingsText });
+  // 実行
+  const result = await runCli(package050, ["upgrade"], dir, "", {
+    MDMARK_CONFIG: settings,
+  });
+  // 検証
+  expect(result.code).toBe(0);
+  const config = parse(await readFile(join(dir, "mdmark.config.yaml"), "utf8"));
+  expect(config.version).toBe("v0.5.0");
+  expect(await readFile(join(root, "mdmark.config.yaml"), "utf8")).toBe(
+    parentConfig,
+  );
+  expect(await readFile(settings, "utf8")).toBe(settingsText);
+});
+
+/** エイリアスの元の行を書き換えるスクリプトを持つリポジトリの移行の手順と全てのスクリプトを、`v0.5.0` の手順として置くパッケージのファイル */
+async function nextMigrationFiles(): Promise<Record<string, string>> {
+  const nextDir = migrationsDirOf("alias-rows.mjs");
+  const scripts: Record<string, string> = {};
+  for (const name of await readdir(nextDir)) {
+    if (name.endsWith(".mjs")) {
+      scripts[`migrations/v0.5.0/${name}`] = await readFile(
+        join(nextDir, name),
+        "utf8",
+      );
+    }
+  }
+  return migrationFiles({
+    stepsV050: await readFile(join(nextDir, "steps.yaml"), "utf8"),
+    extra: scripts,
+  });
+}
+
+/** v0.2.0 の構造のエイリアスの元の行を書き足した、手元の版が古い設定 */
+function configWithAliases(rows: string[]): string {
+  return `${OLD_CONFIG}${["aliases:", ...rows, ""].join("\n")}`;
+}
+
+// v0.2.0 の構造のエイリアスの元の行を、移行の手順で v0.3.0 の構造へ書き換える（正常シナリオ（エイリアスの元の行を新しい構造へ書き換える））
+test("test_normal_when_aliases_rows", async ({ package050, tempDir }) => {
+  // 準備
+  await setMigrations(package050, await nextMigrationFiles());
+  const dir = await createWork(
+    tempDir,
+    configWithAliases([
+      "  - id: terms",
+      "    paths: [aliases/terms.yaml]",
+      "    records: terms",
+      "    metadata:",
+      "      alias_type: { type: custom, value: term }",
+      "      name: { type: ref, field: term }",
+      "      description: { type: ref, field: meaning }",
+      "  - id: commands",
+      "    paths: [aliases/commands/*.yaml]",
+      "    metadata:",
+      "      alias_type: { type: ref, field: alias_type }",
+      "  - id: tests",
+      "    paths: [aliases/tests.yaml]",
+      "    metadata:",
+      "      alias_type: { type: custom, value: command }",
+      "      cwd: { type: custom, value: リポジトリの直下 }",
+    ]),
+  );
+  await writeFiles(dir, {
+    "aliases/terms.yaml": [
+      "terms:",
+      "  - id: ws",
+      "    term: ワークスペース",
+      "    meaning: 話し合いの記録を置くフォルダ",
+      "",
+    ].join("\n"),
+    "aliases/commands/unit-test.yaml":
+      "alias_type: command\nid: unit-test\nname: 単体テスト\ncommand: npm run test:unit\n",
+    "aliases/commands/build.yaml":
+      "alias_type: command\nid: build\nname: ビルド\ncommand: npm run build\n",
+    "aliases/tests.yaml": "id: e2e\nname: E2E\ncommand: npm run test:e2e\n",
+  });
+  // 実行
+  const result = await runCli(package050, ["upgrade", "--yes"], dir);
+  // 検証
+  expect(result.code).toBe(0);
+  const config = parse(
+    await readFile(join(dir, "mdmark.config.yaml"), "utf8"),
+  ) as { version: string; aliases: Record<string, unknown>[] };
+  expect(config.aliases[0]).toMatchObject({
+    alias_type: "term",
+    metadata: { name: "term", description: "meaning" },
+  });
+  expect(config.aliases[1]).toMatchObject({ alias_type: "command" });
+  expect(config.aliases[1]).not.toHaveProperty("metadata");
+  expect(config.aliases[2]).toMatchObject({ alias_type: "command" });
+  expect(config.aliases[2]).not.toHaveProperty("metadata");
+  expect(config.version).toBe("v0.5.0");
+  const lines = linesOf(result.stdout);
+  expect(
+    lines.some(
+      (line) =>
+        line.includes("tests") &&
+        line.includes("cwd") &&
+        line.includes("リポジトリの直下"),
+    ),
+  ).toBe(true);
+});
+
+// 種類が 1 つに決まらないエイリアスの元の行があると、手順が失敗して写しから戻し、行を分ける直し方を出す（異常シナリオ（エイリアスの元の行の種類が 1 つに決まらない））
+test("test_error_when_aliases_row_mixed_types", async ({
+  package050,
+  tempDir,
+}) => {
+  // 準備
+  await setMigrations(package050, await nextMigrationFiles());
+  const config = configWithAliases([
+    "  - id: mixed",
+    "    paths: [aliases/mixed/*.yaml]",
+    "    metadata:",
+    "      alias_type: { type: ref, field: alias_type }",
+  ]);
+  const dir = await createWork(tempDir, config);
+  await writeFiles(dir, {
+    "aliases/mixed/a.yaml":
+      "alias_type: term\nid: ws\nname: ワークスペース\ndescription: 説明\n",
+    "aliases/mixed/b.yaml":
+      "alias_type: command\nid: build\nname: ビルド\ncommand: npm run build\n",
+  });
+  // 実行
+  const result = await runCli(package050, ["upgrade", "--yes"], dir);
+  // 検証
+  expect(result.code).not.toBe(0);
+  expect(result.stderr).toContain("mixed");
+  expect(result.stderr).toContain("term");
+  expect(result.stderr).toContain("command");
+  expect(result.stderr).toContain("行を分け");
+  const work = await readWork(dir);
+  expect(work.config).toBe(config);
+  expect(parse(work.config).version).toBe("v0.3.0");
 });

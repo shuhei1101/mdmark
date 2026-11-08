@@ -6,14 +6,16 @@ const holder = createBrowserHolder();
 beforeAll(holder.launch);
 afterAll(holder.close);
 
-// 帯の幅が 480px 以上のとき、題と本文の右にボタンを横に並べる
+// 帯の幅が 30rem 以上のとき、題と本文の右にボタンを横に並べる
 const WIDE_VIEWPORT = { width: 800, height: 360 };
 
 /** 本文とボタンの位置 */
 async function readLayout(page: Awaited<ReturnType<typeof holder.openStory>>) {
   return page.evaluate(() => {
     const band = document.querySelector(".mdmark-config-band") as HTMLElement;
-    const text = band.querySelector(".mdmark-config-band-text") as HTMLElement;
+    const text = band.querySelector(
+      '[data-slot="alert-description"]',
+    ) as HTMLElement;
     const button = band.querySelector("button") as HTMLElement;
     const code = band.querySelector("p code") as HTMLElement;
     const bandBox = band.getBoundingClientRect();
@@ -43,12 +45,10 @@ test("test_default", async () => {
     "設定ファイルを読み込めません",
   );
   await expect(band.locator("p").innerText()).resolves.toBe(
-    "mdmark.config.yaml の 4 行目を YAML として読めないため、features と libraries を当てずに表示しています。",
+    "mdmark.config.yaml の 4 行目を YAML として読めないため、この設定ファイルを重ねずに表示しています。",
   );
   await expect(band.locator("p code").allInnerTexts()).resolves.toEqual([
     "mdmark.config.yaml",
-    "features",
-    "libraries",
   ]);
   await expect(
     band.locator('button[data-action="openConfig"]').innerText(),
@@ -87,14 +87,14 @@ test("test_default_when_keyboard", async () => {
   expect(result.clicks).toBe(1);
 });
 
-// 列の幅が 480px 未満でパスが長いとき、ボタンが文の下へ回り、パスが帯の中で折り返す（NarrowLongPath）
+// 帯の幅が 30rem 未満でパスが長いとき、ボタンが文の下へ回り、パスが帯の中で折り返す（NarrowLongPath）
 test("test_narrow_long_path", async () => {
   // 準備・実行
   const page = await holder.openStory("vscode-configband--narrow-long-path");
   // 検証
   const band = page.locator(".mdmark-config-band");
   await expect(band.locator("p").innerText()).resolves.toBe(
-    "docs/settings/mdmark/mdmark.config.workspace-shared.yaml の 12 行目を YAML として読めないため、features と libraries を当てずに表示しています。",
+    "docs/settings/mdmark/mdmark.config.workspace-shared.yaml の 12 行目を YAML として読めないため、この設定ファイルを重ねずに表示しています。",
   );
   const layout = await readLayout(page);
   expect(layout.buttonBelow).toBe(true);
@@ -102,13 +102,50 @@ test("test_narrow_long_path", async () => {
   await expect(pageOverflows(page)).resolves.toBe(false);
 });
 
-// 知らせの枠の色の変数で、帯の地と線を変えられる（Default）
+// 端末の設定を読めない行を、ホームを ~ にしたパスで知らせる（SettingsUnreadable）
+test("test_settings_unreadable", async () => {
+  // 準備・実行
+  const page = await holder.openStory("vscode-configband--settings-unreadable");
+  // 検証
+  await expect(page.locator(".mdmark-config-band p").innerText()).resolves.toBe(
+    "~/.config/mdmark/settings.yaml の 3 行目を YAML として読めないため、この設定ファイルを重ねずに表示しています。",
+  );
+});
+
+// 近いフォルダの設定を読めない行を、ワークスペースからのパスで知らせる（NestedConfigUnreadable）
+test("test_nested_config_unreadable", async () => {
+  // 準備・実行
+  const page = await holder.openStory(
+    "vscode-configband--nested-config-unreadable",
+  );
+  // 検証
+  await expect(page.locator(".mdmark-config-band p").innerText()).resolves.toBe(
+    "docs/mdmark.config.yaml の 7 行目を YAML として読めないため、この設定ファイルを重ねずに表示しています。",
+  );
+});
+
+// 端末の設定が形に合わないキーを知らせ、行を出さない（SettingsInvalid）
+test("test_settings_invalid", async () => {
+  // 準備・実行
+  const page = await holder.openStory("vscode-configband--settings-invalid");
+  // 検証
+  const band = page.locator(".mdmark-config-band");
+  await expect(band.locator("p").innerText()).resolves.toBe(
+    "~/.config/mdmark/settings.yaml の features.callout が設定の形に合わないため、この設定ファイルを重ねずに表示しています。",
+  );
+  await expect(band.locator("p code").allInnerTexts()).resolves.toEqual([
+    "~/.config/mdmark/settings.yaml",
+    "features.callout",
+  ]);
+});
+
+// 帯の地と文字はエディタの地と文字、帯と「設定ファイルを開く」の線と警告のアイコンは警告の線の色のトークンで変えられる（Default）
 test("test_default_when_color_overridden", async () => {
   // 準備
   const page = await holder.openStory("vscode-configband--default");
   await page.addStyleTag({
     content:
-      ":root { --mdmark-color-notice-bg: rgb(1, 2, 3); --mdmark-color-notice-border: rgb(4, 5, 6); }",
+      ":root { --background: rgb(1, 2, 3); --warning-border: rgb(4, 5, 6); --foreground: rgb(7, 8, 9); }",
   });
   // 実行
   const colors = await page.evaluate(() => {
@@ -116,17 +153,24 @@ test("test_default_when_color_overridden", async () => {
       document.querySelector(".mdmark-config-band") as Element,
     );
     const button = getComputedStyle(
-      document.querySelector(".mdmark-preview-button") as Element,
+      document.querySelector('[data-action="openConfig"]') as Element,
+    );
+    const icon = getComputedStyle(
+      document.querySelector(".mdmark-config-band svg") as Element,
     );
     return {
+      icon: icon.color,
       background: band.backgroundColor,
+      text: band.color,
       bandBorder: band.borderTopColor,
       buttonBorder: button.borderTopColor,
     };
   });
   // 検証
   expect(colors).toEqual({
+    icon: "rgb(4, 5, 6)",
     background: "rgb(1, 2, 3)",
+    text: "rgb(7, 8, 9)",
     bandBorder: "rgb(4, 5, 6)",
     buttonBorder: "rgb(4, 5, 6)",
   });

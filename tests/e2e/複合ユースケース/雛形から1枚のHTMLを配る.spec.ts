@@ -1,7 +1,9 @@
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import {
+  APP_TS,
   expect,
+  GLOSSARY_DOCUMENT,
   linesOf,
   openStandalone,
   runCli,
@@ -10,9 +12,28 @@ import {
   writeSampleDocs,
 } from "../cli.ts";
 
-// 雛形を置いた後に、文書を書く人が手で書き足す見本の文書群を書く
+// 雛形を置いた後に、文書を書く人が手で書き足す見本の文書群を書く。入口の文書は、用語集の見出しの中とコードの行の範囲を取り込み、束ねていない名前のアイコンを見出しに持つ
 async function writeDocuments(dir: string): Promise<void> {
-  await writeSampleDocs(dir);
+  await writeSampleDocs(dir, {
+    readme: [
+      "# 入口",
+      "",
+      "[使い方](使い方/guide.md) を読む。",
+      "",
+      "印を書く。",
+      "",
+      "## `icon:sailboat` 取り込み",
+      "",
+      "<!-- include: 用語集.md#書き方 -->",
+      "",
+      "<!-- include: src/app.ts#L3-L5 -->",
+      "",
+    ].join("\n"),
+  });
+  await writeFiles(dir, {
+    "用語集.md": `${GLOSSARY_DOCUMENT}\n## 書き方\n\n書き方の段落\n`,
+    "src/app.ts": APP_TS,
+  });
 }
 
 // 雛形を置き、点検し、1 枚にまとめ、読む人が file:// で開いて文書を行き来する（正常シナリオ）
@@ -37,6 +58,16 @@ test("test_normal", async ({ builtRoot, tempDir, page }) => {
     page.locator(".mdmark-bundle-side .mdmark-doc-list a"),
   ).toHaveCount(3);
   await expect(page.locator("article .mdmark-term").first()).toHaveText("印");
+  await expect(
+    page.locator('article h2 .mdmark-inline-icon[data-icon="sailboat"] svg'),
+  ).toHaveCount(1);
+  await expect(page.locator("article .mdmark-include").first()).toContainText(
+    "書き方の段落",
+  );
+  const code = page.locator("article .mdmark-include code.language-ts");
+  await expect(code).toContainText("const v3 = 3;");
+  await expect(code).toContainText("const v5 = 5;");
+  await expect(code).not.toContainText("const v6 = 6;");
   // 文書間のリンクから別の文書へ移る
   await page.locator('article p a[href="#/使い方/guide.md"]').click();
   await expect(page.locator("article.mdmark h1")).toContainText("使い方");

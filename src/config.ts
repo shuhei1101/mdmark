@@ -4,15 +4,38 @@ export type MdmarkConfig = {
   features?: Record<string, boolean>;
   /** 印の名前からモジュールの URL を引く対応表 */
   libraries?: Record<string, string>;
-  /** ツールチップの設定。`placement` は持ち主の上と下のどちらに先に出すか（`top` / `bottom`）。知らない値も受けて `resolveConfig` が `top` にするため、型は `string` */
-  tooltips?: { placement?: string };
+  /** ツールチップの設定。`placement` は本文の用語などのツールチップ、`diagramPlacement` は図・ヒント・グラフの項目のツールチップを、持ち主の上と下のどちらに先に出すか（`top` / `bottom`）。知らない値も受けて `resolveConfig` が既定にするため、型は `string` */
+  tooltips?: { placement?: string; diagramPlacement?: string };
   /** 色分けのライブラリの設定。`url` は highlight.js の `es/` フォルダの URL（末尾 `/`） */
   syntax?: { url?: string };
+  /** 文書が指すファイルの探し方（CLI と VS Code 拡張機能だけが読む） */
+  assets?: { root?: string };
   /** 右側の目次の設定。`mode` は出し方（`hover` / `fixed`）。知らない値も受けて `resolveConfig` が `hover` にするため、型は `string` */
   "side-toc"?: { mode?: string };
   /** 配色のテーマの名前（`COLOR_THEMES` のどれか）。知らない値も受けて `resolveConfig` が `DEFAULT_COLOR_THEME` にするため、型は `string` */
   colorTheme?: string;
+  /** 配色の明暗（`COLOR_SCHEMES` のどれか）。知らない値も受けて `resolveConfig` が `DEFAULT_COLOR_SCHEME` にするため、型は `string` */
+  colorScheme?: string;
+  /** 部品の文言の設定。`paramCopy` は操作できる部品の今の値をコピーするボタンの文言。空文字も受けて `resolveConfig` が `DEFAULT_LABELS.paramCopy` にする */
+  labels?: { paramCopy?: string };
+  /** 範囲のスクリプトの設定。`url` は範囲の `ts`・`js` を変換する @babel/standalone の ES モジュールの URL */
+  "html-scripts"?: { url?: string };
+  /** mermaid の設定。`url` は mermaid の ES モジュールの URL、`theme` はテーマの名前（知らない値も受けて `resolveConfig` が `mdmark` にするため、型は `string`）、`themeVariables` はテーマの変数の上書き */
+  mermaid?: {
+    url?: string;
+    theme?: string;
+    themeVariables?: Record<string, unknown>;
+  };
 };
+
+/** mermaid の図のテーマの名前。`mdmark` は描く先の要素の CSS 変数から作る mdmark の見た目のテーマ、ほかは mermaid のテーマの名前 */
+export type MermaidTheme =
+  | "mdmark"
+  | "default"
+  | "neutral"
+  | "dark"
+  | "forest"
+  | "base";
 
 /** ツールチップを持ち主の上と下のどちらに先に出すか。`top` は上に出し、上に収まらないときだけ下に出す。`bottom` は下に出し、下に収まらず上に収まるときだけ上に出す */
 export type TooltipPlacement = "top" | "bottom";
@@ -26,6 +49,19 @@ export type ColorTheme =
   | "theme-paper"
   | "theme-slate"
   | "theme-contrast";
+
+/** 描いた文書の配色の明暗。`light`・`dark` は描く先の要素の class で祖先の class と OS の設定に勝たせ、`auto` は class を付けずに任せる */
+export type ColorScheme = "light" | "dark" | "auto";
+
+/** 文書の page の印から読んだ、設定より優先する値。書かなかったキーは持たない */
+export type PageSettings = {
+  /** `scheme=` の値 */
+  scheme?: ColorScheme;
+  /** `theme=` の値 */
+  theme?: ColorTheme;
+  /** `toc=` の値 */
+  toc?: SideTocMode;
+};
 
 /** 対応表の行: 印 1 つのモジュールの URL と、図の印か */
 export type LibraryEntry = {
@@ -41,14 +77,26 @@ export type ResolvedConfig = {
   features: Record<string, boolean>;
   /** 既定の対応表に設定の `libraries` を重ねたもの */
   libraries: Record<string, LibraryEntry>;
-  /** 設定の `tooltips.placement` が `bottom` のときだけ `bottom`、それ以外は `top` */
-  tooltips: { placement: TooltipPlacement };
+  /** `placement` は設定の `tooltips.placement` が `bottom` のときだけ `bottom`、それ以外は `top`。`diagramPlacement` は設定の `tooltips.diagramPlacement` が `top` のときだけ `top`、それ以外は `bottom` */
+  tooltips: { placement: TooltipPlacement; diagramPlacement: TooltipPlacement };
   /** 設定の `syntax.url` が文字列ならその値、それ以外は `DEFAULT_SYNTAX_URL` */
   syntax: { url: string };
   /** 設定の `side-toc.mode` が `fixed` のときだけ `fixed`、それ以外は `hover` */
   sideToc: { mode: SideTocMode };
   /** 設定の `colorTheme` が `COLOR_THEMES` にあればその値、それ以外は `DEFAULT_COLOR_THEME` */
   colorTheme: ColorTheme;
+  /** 設定の `colorScheme` が `COLOR_SCHEMES` にあればその値、それ以外は `DEFAULT_COLOR_SCHEME` */
+  colorScheme: ColorScheme;
+  /** 設定の `labels.paramCopy` が空でない文字列ならその値、それ以外は `DEFAULT_LABELS.paramCopy` */
+  labels: { paramCopy: string };
+  /** 範囲のスクリプトの変換のライブラリの URL（既定 `DEFAULT_HTML_SCRIPTS_URL`） */
+  htmlScripts: { url: string };
+  /** mermaid の読み込み先・テーマ・値が文字列のテーマの変数の上書き */
+  mermaid: {
+    url: string;
+    theme: MermaidTheme;
+    themeVariables: Record<string, string>;
+  };
 };
 
 /** mdmark に入れた配色のテーマの名前の並び。`resolveConfig`・CLI の点検と書き出しの警告が照らす */
@@ -62,6 +110,17 @@ export const COLOR_THEMES: readonly ColorTheme[] = [
 /** 設定に `colorTheme` が無いか知らない名前のときのテーマ。配色の値は `src/index.css` の `:root` の既定のまま */
 export const DEFAULT_COLOR_THEME: ColorTheme = "dev-swiss";
 
+/** 配色の明暗の値の並び。`resolveConfig`・page の印の読み取り・CLI の点検が照らす */
+export const COLOR_SCHEMES: readonly ColorScheme[] = ["light", "dark", "auto"];
+
+/** 設定に `colorScheme` が無いか知らない値のときの明暗 */
+export const DEFAULT_COLOR_SCHEME: ColorScheme = "auto";
+
+/** 設定の `labels.paramCopy` が空でない文字列でないときの部品の文言 */
+export const DEFAULT_LABELS: { paramCopy: string } = {
+  paramCopy: "今の値を写す",
+};
+
 /** この版が知っている機能とその既定 */
 export const DEFAULT_FEATURES: Record<string, boolean> = {
   print: true,
@@ -71,6 +130,7 @@ export const DEFAULT_FEATURES: Record<string, boolean> = {
   steps: true,
   tree: true,
   badge: true,
+  footnotes: true,
   code: true,
   syntax: true,
   toc: true,
@@ -79,18 +139,81 @@ export const DEFAULT_FEATURES: Record<string, boolean> = {
   "row-details": true,
   figures: true,
   diagrams: true,
+  "diagram-resize": true,
   glossary: true,
   backlinks: true,
   html: true,
   hints: true,
+  mermaid: true,
   views: true,
   comments: false,
+  "html-scripts": false,
   "side-toc": true,
+  "back-to-top": true,
+  "text-color": true,
+  images: true,
+  gallery: true,
+  lightbox: true,
+  media: true,
+  gif: true,
+  cards: true,
+  icon: true,
+  columns: true,
+  highlight: true,
+  kbd: true,
+  details: true,
+  pagebreak: true,
+  include: true,
+  wide: true,
+  csv: true,
+  "card-grid": true,
 };
 
 /** 設定の `syntax.url` が無いときに読む highlight.js の `es/` フォルダの URL。バージョンを固定する */
 export const DEFAULT_SYNTAX_URL =
   "https://cdn.jsdelivr.net/npm/@highlightjs/cdn-assets@11.12.0/es/";
+
+/** 設定の `html-scripts.url` が無いときに読む @babel/standalone の ES モジュールの URL。バージョンを固定する */
+export const DEFAULT_HTML_SCRIPTS_URL =
+  "https://cdn.jsdelivr.net/npm/@babel/standalone@8.1.1/+esm";
+
+/** 設定の `mermaid.url` が無いときに読む mermaid の ES モジュールの URL。バージョンを固定する */
+export const DEFAULT_MERMAID_URL =
+  "https://cdn.jsdelivr.net/npm/mermaid@12.3.0/dist/mermaid.esm.min.mjs";
+
+/** `MermaidTheme` の値の並び。`resolveConfig` が照らす */
+export const MERMAID_THEMES: readonly MermaidTheme[] = [
+  "mdmark",
+  "default",
+  "neutral",
+  "dark",
+  "forest",
+  "base",
+];
+
+/** 設定の `themeVariables` でも変えさせない mermaid のテーマの変数 */
+const FIXED_MERMAID_VARIABLES = new Set(["useGradient", "dropShadow"]);
+
+/** 設定の `mermaid` に既定を当てる */
+const resolveMermaid = (
+  mermaid: MdmarkConfig["mermaid"],
+): ResolvedConfig["mermaid"] => {
+  const url =
+    typeof mermaid?.url === "string" ? mermaid.url : DEFAULT_MERMAID_URL;
+  const theme =
+    MERMAID_THEMES.find((name) => name === mermaid?.theme) ?? "mdmark";
+  // テーマの変数は、マップのときだけ値が文字列のキーを取り、固定の変数は取らない
+  const given = mermaid?.themeVariables;
+  const themeVariables: Record<string, string> = {};
+  if (given !== null && typeof given === "object" && !Array.isArray(given)) {
+    for (const [key, value] of Object.entries(given)) {
+      if (typeof value === "string" && !FIXED_MERMAID_VARIABLES.has(key)) {
+        themeVariables[key] = value;
+      }
+    }
+  }
+  return { url, theme, themeVariables };
+};
 
 /** 印の名前から `LibraryEntry` を引く既定の対応表 */
 export const DEFAULT_LIBRARIES: Record<string, LibraryEntry> = {};
@@ -132,9 +255,19 @@ export function resolveConfig(options: {
   // 出す場所は、bottom だけを受け、他の値は top にする
   const placement: TooltipPlacement =
     config?.tooltips?.placement === "bottom" ? "bottom" : "top";
+  const diagramPlacement: TooltipPlacement =
+    config?.tooltips?.diagramPlacement === "top" ? "top" : "bottom";
   // 色分けのライブラリの読み込み先は、文字列のときだけ受け、他の値は既定にする
   const url = config?.syntax?.url;
   const syntax = { url: typeof url === "string" ? url : DEFAULT_SYNTAX_URL };
+  // 範囲のスクリプトの変換のライブラリの読み込み先は、文字列のときだけ受け、他の値は既定にする
+  const htmlScriptsUrl = config?.["html-scripts"]?.url;
+  const htmlScripts = {
+    url:
+      typeof htmlScriptsUrl === "string"
+        ? htmlScriptsUrl
+        : DEFAULT_HTML_SCRIPTS_URL,
+  };
   // 右側の目次の出し方は、fixed だけを受け、他の値は hover にする
   const mode: SideTocMode =
     config?.["side-toc"]?.mode === "fixed" ? "fixed" : "hover";
@@ -142,12 +275,44 @@ export function resolveConfig(options: {
   const colorTheme =
     COLOR_THEMES.find((name) => name === config?.colorTheme) ??
     DEFAULT_COLOR_THEME;
+  // 明暗は、COLOR_SCHEMES にある値だけを受け、他の値は既定にする
+  const colorScheme =
+    COLOR_SCHEMES.find((name) => name === config?.colorScheme) ??
+    DEFAULT_COLOR_SCHEME;
+  // 部品の文言は、空でない文字列だけを受け、他の値は既定にする
+  const paramCopy = config?.labels?.paramCopy;
+  const labels = {
+    paramCopy:
+      typeof paramCopy === "string" && paramCopy !== ""
+        ? paramCopy
+        : DEFAULT_LABELS.paramCopy,
+  };
   return {
     features,
     libraries,
-    tooltips: { placement },
+    tooltips: { placement, diagramPlacement },
     syntax,
+    htmlScripts,
+    mermaid: resolveMermaid(config?.mermaid),
     sideToc: { mode },
     colorTheme,
+    colorScheme,
+    labels,
   };
 }
+
+/** 既定を当てた設定に、文書の page の印の値を重ねた設定を返す（渡された設定は書き換えない） */
+export const applyPageSettings = (options: {
+  /** 既定を当てた設定 */
+  config: ResolvedConfig;
+  /** `renderDocument` が返したページの設定 */
+  page: PageSettings;
+}): ResolvedConfig => {
+  const { config, page } = options;
+  return {
+    ...config,
+    colorScheme: page.scheme ?? config.colorScheme,
+    colorTheme: page.theme ?? config.colorTheme,
+    sideToc: { mode: page.toc ?? config.sideToc.mode },
+  };
+};

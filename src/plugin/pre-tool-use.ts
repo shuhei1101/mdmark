@@ -6,12 +6,12 @@ export const TOOL_NAME_PREFIX = "mcp__plugin_mdmark_mdmark__";
 
 /** `project_dir` を入れるツールの名前。`plugin/hooks/hooks.json` の PreToolUse の `matcher` は、この名前に `TOOL_NAME_PREFIX` を付けて `|` でつないだもの */
 export const PROJECT_DIR_TOOLS = [
-  "find_docs",
-  "list_tags",
-  "update_index",
   "check",
   "export_html",
   "build_site",
+  "list_templates",
+  "add_template",
+  "apply_template",
 ];
 
 /** 作業のフォルダを入れるツールの引数の名前 */

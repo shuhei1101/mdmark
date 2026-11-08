@@ -4,6 +4,7 @@ import {
   copyFile,
   cp,
   mkdtemp,
+  readdir,
   readFile,
   rm,
   symlink,
@@ -14,6 +15,7 @@ import { join, resolve } from "node:path";
 import { afterAll, beforeAll, expect, test } from "vitest";
 import { parse } from "yaml";
 import { main as buildMain } from "../../../scripts/build.ts";
+import { migrationsDirOf } from "../../migrations-dir.ts";
 import { type CliResult, linesOf, useTempDirs, writeFiles } from "../cli.ts";
 import { copyPluginInputs, writeRootPackageJson } from "../plugin-inputs.ts";
 
@@ -98,13 +100,18 @@ async function setMigrations(
 /** パッケージの `dist/cli.js` で `upgrade` を流す。終了コードが 0 以外でも例外を投げず、結果を返す */
 function runUpgrade(
   pkg: string,
-  options: { args?: string[]; cwd: string; stdin?: string },
+  options: {
+    args?: string[];
+    cwd: string;
+    stdin?: string;
+    env?: Record<string, string>;
+  },
 ): Promise<CliResult> {
   return new Promise((resolveResult) => {
     const child = execFile(
       process.execPath,
       [join(pkg, "dist", "cli.js"), "upgrade", ...(options.args ?? [])],
-      { cwd: options.cwd },
+      { cwd: options.cwd, env: { ...process.env, ...options.env } },
       (error, stdout, stderr) => {
         const failed = error as { code?: number } | null;
         resolveResult({
@@ -136,7 +143,7 @@ const CONFIG_WITHOUT_VERSION = OLD_CONFIG.replace("version: v0.3.0\n", "");
 /** 手元のフォルダに置く索引と文書 */
 const WORK_FILES = {
   "docs/index.yaml": [
-    "schema: 1",
+    "schema: 2",
     "docs:",
     "  - id: a",
     "    path: a.md",
@@ -270,6 +277,45 @@ test("test_normal", async () => {
   ).toBe("*");
 });
 
+// --settings で端末の設定に file: config の手順を当て、version を書き換える（正常系（端末の設定を移行する））
+test("test_normal_when_settings", async () => {
+  // 準備
+  const pkg = packageOf("v0.5.0");
+  await setMigrations(pkg, migrationFiles());
+  const dir = await createWork();
+  const terminal = await createTempDir();
+  await writeFiles(terminal, {
+    "settings.yaml": "# 端末の設定\nversion: v0.3.0\nlegacy: 1\n",
+  });
+  const settingsPath = join(terminal, "settings.yaml");
+  // 実行
+  const result = await runUpgrade(pkg, {
+    args: ["--settings"],
+    cwd: dir,
+    env: { MDMARK_CONFIG: settingsPath },
+  });
+  // 検証
+  expect(result.code).toBe(0);
+  const after = await readFile(settingsPath, "utf8");
+  expect(after).toContain("# 端末の設定");
+  const settings = parse(after);
+  expect(settings.renamed).toBe(1);
+  expect(settings.legacy).toBeUndefined();
+  expect(settings.version).toBe("v0.5.0");
+  const backup = linesOf(result.stdout).find((line) =>
+    line.startsWith("写し: "),
+  );
+  expect(backup).toBeDefined();
+  expect(
+    await readFile(
+      join(terminal, (backup ?? "").slice("写し: ".length), "settings.yaml"),
+      "utf8",
+    ),
+  ).toContain("legacy: 1");
+  const work = await readWork(dir);
+  expect(work.a).toBe("# A\n\n<!-- note -->\n");
+});
+
 // --plan で版ごとの手順・変更履歴・壊す手順を示し、何も書き換えない（正常系）
 test("test_normal_when_plan", async () => {
   // 準備
@@ -389,6 +435,63 @@ test("test_normal_when_reapplied", async () => {
   // 検証
   expect(result.code).toBe(0);
   expect(await readWork(dir)).toEqual(applied);
+});
+
+// 語彙を外す `call` の手順を当て、文書のタグを書き換えて索引の `schema` を `2` にし、点検を通す（正常系（v0.9.0 までの索引からタグの語彙を外す））
+test("test_normal_when_tag_vocabulary_dropped", async () => {
+  // 準備
+  const pkg = packageOf("v0.5.0");
+  const next = migrationsDirOf("drop-tag-vocabulary.mjs");
+  // `steps.yaml` の手順が流す全てのスクリプトを置く
+  const scripts: Record<string, string> = {};
+  for (const name of await readdir(next)) {
+    if (name.endsWith(".mjs")) {
+      scripts[`migrations/v0.5.0/${name}`] = await readFile(
+        join(next, name),
+        "utf8",
+      );
+    }
+  }
+  await setMigrations(pkg, {
+    "migrations/v0.5.0/steps.yaml": await readFile(
+      join(next, "steps.yaml"),
+      "utf8",
+    ),
+    ...scripts,
+    "docs/はじめに/変更履歴.md": CHANGELOG,
+  });
+  const dir = await createWork();
+  await writeFile(
+    join(dir, "docs", "index.yaml"),
+    [
+      "schema: 1",
+      "docs:",
+      "  - id: a",
+      "    path: a.md",
+      "    title: A",
+      "    tags: [MCP]",
+      "  - id: b",
+      "    path: b.md",
+      "    title: B",
+      "    tags: [topic:old]",
+      "tags:",
+      "  - name: topic:mcp",
+      "    aliases: [MCP]",
+      "  - name: topic:old",
+      "    deprecated: topic:mcp",
+      "",
+    ].join("\n"),
+  );
+  // 実行
+  const result = await runUpgrade(pkg, { args: ["--yes"], cwd: dir });
+  // 検証
+  expect(result.code).toBe(0);
+  const index = parse(await readFile(join(dir, "docs", "index.yaml"), "utf8"));
+  expect(index.schema).toBe(2);
+  expect("tags" in index).toBe(false);
+  expect(index.docs[0].tags).toEqual(["topic:mcp"]);
+  expect(index.docs[1].tags).toEqual(["topic:mcp"]);
+  expect(parse((await readWork(dir)).config).version).toBe("v0.5.0");
 });
 
 // 壊す手順の確かめに y 以外を答えると、何も書き換えずに終わる（異常系）
@@ -554,4 +657,51 @@ test("test_error_when_config_missing", async () => {
   expect(result.code).toBe(1);
   expect(result.stderr).toContain("mdmark.config.yaml");
   expect(result.stderr).toContain("mdmark init");
+});
+
+// 当てた後の点検で図の定義のずれが見つかると、写しから戻して終わる（異常系（図の定義のずれ・終了コード 1））
+test("test_error_when_diagram_drift", async () => {
+  // 準備
+  const pkg = packageOf("v0.5.0");
+  await setMigrations(pkg, migrationFiles());
+  const dir = await createWork();
+  const overlap = {
+    title: "重なり",
+    scope: "点検",
+    updated: "2026-11-03",
+    width: 400,
+    height: 200,
+    nodes: [
+      { id: "web", kind: "script", x: 20, y: 20, w: 100, h: 60, name: "Web" },
+      { id: "db", kind: "data", x: 60, y: 40, w: 100, h: 60, name: "DB" },
+    ],
+    wires: [],
+  };
+  const a = [
+    WORK_FILES["docs/a.md"],
+    "<!-- flow -->",
+    "",
+    "```json",
+    JSON.stringify(overlap),
+    "```",
+    "",
+    "<!-- /flow -->",
+    "",
+  ].join("\n");
+  await writeFiles(dir, { "docs/a.md": a });
+  // 実行
+  const result = await runUpgrade(pkg, { cwd: dir });
+  // 検証
+  expect(a.split("\n").indexOf("<!-- flow -->") + 1).toBe(5);
+  expect(result.code).toBe(1);
+  const overlapLine = linesOf(result.stderr).find((line) =>
+    line.startsWith("docs/a.md:5: diagram_node_overlap:"),
+  );
+  expect(overlapLine).toContain("web");
+  expect(overlapLine).toContain("db");
+  const work = await readWork(dir);
+  expect(work.config).toBe(OLD_CONFIG);
+  expect(parse(work.config).version).toBe("v0.3.0");
+  expect(work.a).toBe(a);
+  expect(work.b).toBe(WORK_FILES["docs/b.md"]);
 });

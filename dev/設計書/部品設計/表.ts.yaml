@@ -118,7 +118,7 @@ states:
       - name: filterValues
         value: '[{"column":1,"text":"存在しない"}]'
   - name: DefaultOverflow
-    description: 既定の種類で幅からはみ出す表。各列にピン止めのボタンが出て、見出し行が上端に留まる
+    description: 既定の種類で幅からはみ出す表。各列にピン止めのボタンが出て、先頭の列を既定で留め、見出し行が上端に留まる
     args:
       - name: features
         value: '["pin"]'
@@ -128,6 +128,8 @@ states:
         value: '[["導入の手順","128","8","0","18","17","23","16","15","16"]]'
       - name: overflow
         value: 'true'
+      - name: pinned
+        value: '1'
   - name: Pinned
     description: 2 列目までピン止めした。留めた最後の列の右に境目の線がある
     args:
@@ -150,6 +152,47 @@ states:
         value: '["用語","意味"]'
       - name: rows
         value: '[["印","HTML コメントで書く目印"]]'
+  - name: NoPin
+    description: '`-pin` ではみ出す表。ピン止めのボタンを出さず、どの列も留めない'
+    args:
+      - name: features
+        value: '[]'
+      - name: columns
+        value: '["文書","行数","表","図","Chrome","Edge","Firefox","Safari","iOS Safari","Android Chrome"]'
+      - name: rows
+        value: '[["導入の手順","128","8","0","18","17","23","16","15","16"]]'
+      - name: overflow
+        value: 'true'
+  - name: PinAndWide
+    description: '`pin=担当 wide=概要`。担当の列までを留め、概要の列を折り返さずに広く取る'
+    args:
+      - name: features
+        value: '["pin"]'
+      - name: columns
+        value: '["ID","担当","概要","状態","期限"]'
+      - name: rows
+        value: '[["#245","表","はみ出す表で先頭の列を既定でピン止めし、pin= と wide= と check= を使えるようにする","未着手","2026-11-21"],["#249","コード","tree を除く全てのコードブロックでインデントによる畳む・開くと縦線を付ける","未着手","2026-11-28"]]'
+      - name: overflow
+        value: 'true'
+      - name: pin
+        value: '1'
+      - name: pinned
+        value: '2'
+      - name: wide
+        value: '[2]'
+  - name: Check
+    description: '`check=必須`。必須の列の `true` を ✓、`false` を空欄で出し、既定の列は文字のまま'
+    args:
+      - name: kind
+        value: data
+      - name: features
+        value: '["sort","pin","filter"]'
+      - name: columns
+        value: '["キー","型","必須","既定"]'
+      - name: rows
+        value: '[["version","string","true","-"],["features","object","false","全てオン"],["libraries","object","false","jsDelivr"],["build","array","true","-"]]'
+      - name: check
+        value: '[2]'
   - name: Plain
     description: plain の種類。機能を付けず、縦の罫線と面を外す
     args:
@@ -216,7 +259,7 @@ states:
       - name: filterValues
         value: '[{"column":1,"text":"描画"}]'
   - name: ColumnsHidden
-    description: '`hide=説明` で説明の列を隠した。帯に `列の表示` のボタン'
+    description: '`hide=説明` で説明の列を隠した。帯にテーブル設定のアイコンだけのボタンと、隠した列の数 `1` のバッジ'
     args:
       - name: kind
         value: data
@@ -229,7 +272,7 @@ states:
       - name: hide
         value: '[1]'
   - name: ColumnsMenuOpen
-    description: 列の表示のメニューを開いた。名前は `disabled` で `先頭の列は隠せません` と「既定に戻す」を出す
+    description: テーブル設定のパネル（題 `表示と並び順`）を開いた。各行に目のアイコンがあり、名前の目のアイコンは `disabled` で、案内に `先頭の列は隠せません` を出す
     args:
       - name: kind
         value: data
@@ -295,7 +338,7 @@ states:
       - name: totals
         value: '[{"column":0,"calc":"count"},{"column":1,"calc":"sum"},{"column":2,"calc":"avg"}]'
   - name: Copied
-    description: コピーした（`コピーしました`、`check` のアイコン）
+    description: コピーした（アイコンを `check` に替え、ツールチップと読み上げの名前を `コピーしました` にする）
     args:
       - name: kind
         value: data
@@ -368,7 +411,7 @@ states:
       - name: totals
         value: '[{"column":1,"calc":"sum"},{"column":2,"calc":"avg"}]'
   - name: TotalsMenuOpen
-    description: 集計のメニュー（`出す集計`）を開いた。`合計`・`平均`・`件数` のチェックボックスに全てチェックが入っている
+    description: 集計のメニュー（`表示する集計`）を開いた。`合計`・`平均`・`件数` のチェックボックスに全てチェックが入っている
     args:
       - name: kind
         value: data
@@ -411,7 +454,7 @@ states:
       - name: openCopy
         value: 'true'
   - name: CopyFallback
-    description: クリップボードに書けず、手でコピーするパネルを出した。`表をコピー` は `コピーできませんでした`
+    description: クリップボードに書けず、手動でコピーするパネルを出した。`表をコピー` のツールチップと読み上げの名前は `コピーできませんでした`
     args:
       - name: kind
         value: data
@@ -531,7 +574,391 @@ states:
         value: open
       - name: title
         value: リリースの一覧
-lead: Markdown の表を囲み、種類と `+機能`・`-機能` で決まった並べ替え・ピン止め・絞り込みのボタンと、絞り込みのドロワーを付ける。見出し行は面の色で分け、表が画面に残っている間はページを縦にスクロールしても画面の上端に留め、集計の行を画面の下端に留める。描く先の要素の幅が狭く最終列が 1 行に収まらないときは、最終列を畳んで行ごとに開閉させる。
+  - name: Highlighted
+    description: '`highlight=金額（円）`。強調した列のセルを blue の面の薄い色にし、見出しのセルの下端に線を付ける'
+    args:
+      - name: kind
+        value: data
+      - name: features
+        value: '["sort","pin","filter"]'
+      - name: columns
+        value: '["案件","状態","金額（円）"]'
+      - name: rows
+        value: '[["見積もりの作成","完了","120000"],["契約書の確認","保留","80000"],["請求書の発行","進行中","45000"],["納品の確認","完了","30000"]]'
+      - name: highlight
+        value: '[{"column":2,"color":"blue"}]'
+  - name: RowColors
+    description: '`row-color=状態:完了=green,保留=yellow`。色を付けた行を面の薄い色にし、行の上下に線を付ける'
+    args:
+      - name: kind
+        value: data
+      - name: features
+        value: '["sort","pin","filter"]'
+      - name: columns
+        value: '["案件","状態","金額（円）"]'
+      - name: rows
+        value: '[["見積もりの作成","完了","120000"],["契約書の確認","保留","80000"],["請求書の発行","進行中","45000"],["納品の確認","完了","30000"]]'
+      - name: rowColors
+        value: '["green","yellow",null,"green"]'
+  - name: RowColorsSorted
+    description: 金額で昇順に並べ替えた後。値で付けた色は行に付いたまま動く
+    args:
+      - name: kind
+        value: data
+      - name: features
+        value: '["sort","pin","filter"]'
+      - name: columns
+        value: '["案件","状態","金額（円）"]'
+      - name: rows
+        value: '[["見積もりの作成","完了","120000"],["契約書の確認","保留","80000"],["請求書の発行","進行中","45000"],["納品の確認","完了","30000"]]'
+      - name: rowColors
+        value: '["green","yellow",null,"green"]'
+      - name: sort
+        value: '{"column":2,"direction":"ascending"}'
+  - name: HighlightAndRowColors
+    description: 列の強調と行の色を重ねた。重なるセルは行の色にする
+    args:
+      - name: kind
+        value: data
+      - name: features
+        value: '["sort","pin","filter"]'
+      - name: columns
+        value: '["案件","状態","金額（円）"]'
+      - name: rows
+        value: '[["見積もりの作成","完了","120000"],["契約書の確認","保留","80000"],["請求書の発行","進行中","45000"],["納品の確認","完了","30000"]]'
+      - name: highlight
+        value: '[{"column":2,"color":"blue"}]'
+      - name: rowColors
+        value: '[null,"red",null,null]'
+  - name: RowColorsDark
+    description: 列の強調と行の色の暗い配色
+    args:
+      - name: kind
+        value: data
+      - name: features
+        value: '["sort","pin","filter"]'
+      - name: columns
+        value: '["案件","状態","金額（円）"]'
+      - name: rows
+        value: '[["見積もりの作成","完了","120000"],["契約書の確認","保留","80000"],["請求書の発行","進行中","45000"],["納品の確認","完了","30000"]]'
+      - name: highlight
+        value: '[{"column":2,"color":"blue"}]'
+      - name: rowColors
+        value: '["green","yellow",null,"green"]'
+    notes:
+      定義: ストーリーは暗い配色で描く
+  - name: Merged
+    description: 多段の見出しと行見出し（`header-rows=2 row-header=1`）。上期・下期は 2 列をまたいで中央に寄せ、地域は東日本と西日本をそれぞれ縦に結合して上に寄せる
+    args:
+      - name: kind
+        value: data
+      - name: features
+        value: '["sort","pin","filter"]'
+      - name: columns
+        value: '["地域","支店","売上（万円）","件数","売上（万円）","件数"]'
+      - name: rows
+        value: '[["東日本","札幌","120","14","135","16"],["東日本","仙台","98","11","102","12"],["東日本","東京","310","40","342","45"],["西日本","大阪","260","31","248","29"],["西日本","福岡","140","17","151","19"]]'
+      - name: headRows
+        value: '[[{"html":"地域","column":0,"rowspan":2},{"html":"支店","column":1,"rowspan":2},{"html":"上期","column":2,"colspan":2},{"html":"下期","column":4,"colspan":2}],[{"html":"売上（万円）","column":2},{"html":"件数","column":3},{"html":"売上（万円）","column":4},{"html":"件数","column":5}]]'
+      - name: rowHeader
+        value: '1'
+      - name: mergeColumns
+        value: '[0]'
+  - name: MergedSorted
+    description: 下期の売上で降順に並べ替えた後。隣り合う同じ地域だけを結合し直す
+    args:
+      - name: kind
+        value: data
+      - name: features
+        value: '["sort","pin","filter"]'
+      - name: columns
+        value: '["地域","支店","売上（万円）","件数","売上（万円）","件数"]'
+      - name: rows
+        value: '[["東日本","札幌","120","14","135","16"],["東日本","仙台","98","11","102","12"],["東日本","東京","310","40","342","45"],["西日本","大阪","260","31","248","29"],["西日本","福岡","140","17","151","19"]]'
+      - name: headRows
+        value: '[[{"html":"地域","column":0,"rowspan":2},{"html":"支店","column":1,"rowspan":2},{"html":"上期","column":2,"colspan":2},{"html":"下期","column":4,"colspan":2}],[{"html":"売上（万円）","column":2},{"html":"件数","column":3},{"html":"売上（万円）","column":4},{"html":"件数","column":5}]]'
+      - name: rowHeader
+        value: '1'
+      - name: mergeColumns
+        value: '[0]'
+      - name: sort
+        value: '{"column":4,"direction":"descending"}'
+  - name: MergedFiltered
+    description: 地域を東日本で絞り込んだ後。表示している 3 行の地域を結合し直す
+    args:
+      - name: kind
+        value: data
+      - name: features
+        value: '["sort","pin","filter"]'
+      - name: columns
+        value: '["地域","支店","売上（万円）","件数","売上（万円）","件数"]'
+      - name: rows
+        value: '[["東日本","札幌","120","14","135","16"],["東日本","仙台","98","11","102","12"],["東日本","東京","310","40","342","45"],["西日本","大阪","260","31","248","29"],["西日本","福岡","140","17","151","19"]]'
+      - name: headRows
+        value: '[[{"html":"地域","column":0,"rowspan":2},{"html":"支店","column":1,"rowspan":2},{"html":"上期","column":2,"colspan":2},{"html":"下期","column":4,"colspan":2}],[{"html":"売上（万円）","column":2},{"html":"件数","column":3},{"html":"売上（万円）","column":4},{"html":"件数","column":5}]]'
+      - name: rowHeader
+        value: '1'
+      - name: mergeColumns
+        value: '[0]'
+      - name: filters
+        value: '[{"column":0,"kind":"select"}]'
+      - name: filterValues
+        value: '[{"column":0,"values":["東日本"]}]'
+  - name: RowHeaderPinned
+    description: '`row-header=2` のはみ出す表。描いた直後に 2 列目まで留め、2 列目のピン止めのボタンが押された状態'
+    args:
+      - name: kind
+        value: data
+      - name: features
+        value: '["sort","pin","filter"]'
+      - name: columns
+        value: '["分類","記法","Chrome","Edge","Firefox","Safari","iOS Safari","Android Chrome","VS Code","書き出した HTML"]'
+      - name: rows
+        value: '[["表","セルの結合","124","124","128","17.4","17.4","124","1.95","対応"],["表","多段の見出し","124","124","128","17.4","17.4","124","1.95","対応"],["表","行見出し","124","124","128","17.4","17.4","124","1.95","対応"],["コード","折りたたみ","124","124","128","17.4","17.4","124","1.95","対応"],["コード","インデントの縦線","124","124","128","17.4","17.4","124","1.95","対応"]]'
+      - name: rowHeader
+        value: '2'
+      - name: mergeColumns
+        value: '[0]'
+      - name: overflow
+        value: 'true'
+      - name: pinned
+        value: '2'
+  - name: MergeInvalid
+    description: 結合する相手の無い `^^`・`<<`。表の前に書き方の警告を置き、セルを書いた文字のまま描く
+    args:
+      - name: kind
+        value: data
+      - name: features
+        value: '["sort","pin","filter"]'
+      - name: columns
+        value: '["地域","支店","売上（万円）"]'
+      - name: rows
+        value: '[["^^","札幌","120"],["<<","仙台","98"],["東日本","東京","310"]]'
+  - name: SettingsOpenReorder
+    description: '`+reorder +columns` の表でテーブル設定のパネルを開いた。各行につまみと目のアイコンがある'
+    args:
+      - name: kind
+        value: data
+      - name: features
+        value: '["sort","pin","filter","columns","reorder"]'
+      - name: columns
+        value: '["名前","型","既定","説明"]'
+      - name: rows
+        value: '[["features.table","bool","true","表の機能のオン・オフ"],["features.html","bool","true","埋め込んだ HTML のオン・オフ"],["build.include","string[]","","まとめる Markdown の glob"]]'
+      - name: openColumns
+        value: 'true'
+  - name: SettingsReorderOnly
+    description: '`+reorder` だけの表でパネルを開いた。題は `並び順` で、目のアイコンを出さない'
+    args:
+      - name: kind
+        value: data
+      - name: features
+        value: '["sort","pin","filter","reorder"]'
+      - name: columns
+        value: '["名前","型","既定","説明"]'
+      - name: rows
+        value: '[["features.table","bool","true","表の機能のオン・オフ"]]'
+      - name: openColumns
+        value: 'true'
+  - name: ReorderDragging
+    description: 説明を名前の上へドラッグしている。説明の行を薄くし、名前の上の境に線を出す
+    args:
+      - name: kind
+        value: data
+      - name: features
+        value: '["sort","pin","filter","columns","reorder"]'
+      - name: columns
+        value: '["名前","型","既定","説明"]'
+      - name: rows
+        value: '[["features.table","bool","true","表の機能のオン・オフ"]]'
+      - name: openColumns
+        value: 'true'
+      - name: dragging
+        value: '{"column":3,"target":0,"side":"before"}'
+  - name: Reordered
+    description: 説明・名前・既定・型の順に並べ替え、説明を隠した。ボタンにバッジ `1`
+    args:
+      - name: kind
+        value: data
+      - name: features
+        value: '["sort","pin","filter","columns","reorder"]'
+      - name: columns
+        value: '["名前","型","既定","説明"]'
+      - name: rows
+        value: '[["features.table","bool","true","表の機能のオン・オフ"],["build.include","string[]","","まとめる Markdown の glob"]]'
+      - name: order
+        value: '[3,0,2,1]'
+      - name: hiddenColumns
+        value: '[3]'
+  - name: ReorderGroups
+    description: 2 段の見出しで名前をピン止めした表のパネル。一覧をピン止めの列・`設定` の範囲・範囲の外の列に分け、名前と備考のつまみを `disabled` にする
+    args:
+      - name: kind
+        value: data
+      - name: features
+        value: '["sort","pin","filter","columns","reorder"]'
+      - name: headRows
+        value: '[[{"text":"名前","rowspan":2},{"text":"設定","colspan":3},{"text":"備考","rowspan":2}],[{"text":"型"},{"text":"既定"},{"text":"必須"}]]'
+      - name: rows
+        value: '[["features.table","bool","true","✓",""]]'
+      - name: pin
+        value: '0'
+      - name: overflow
+        value: 'true'
+      - name: pinned
+        value: '1'
+      - name: openColumns
+        value: 'true'
+  - name: Tree
+    description: '`tree=キー type=型 required=必須 default=既定` の表。表に無い親を薄い斜体で補い、型のバッジとチップ、必須の *、既定を出す'
+    args:
+      - name: kind
+        value: data
+      - name: features
+        value: '["pin","filter"]'
+      - name: columns
+        value: '["キー","型","必須","既定","説明"]'
+      - name: rows
+        value: '[["features.table","bool","✓","true","表の機能のオン・オフ"],["features.html","bool","","","埋め込んだ HTML のオン・オフ"],["aliases[].id","string","","","行の ID"],["aliases[].metadata.alias_type.type","ref | custom","","","値の取り方"]]'
+      - name: tree
+        value: '0'
+      - name: treeType
+        value: '1'
+      - name: treeRequired
+        value: '2'
+      - name: treeDefault
+        value: '3'
+  - name: TreeFolded
+    description: '`aliases[]` を畳んだ。ボタンが ▸ で子孫を隠す'
+    args:
+      - name: kind
+        value: data
+      - name: columns
+        value: '["キー","型","必須","既定","説明"]'
+      - name: rows
+        value: Tree と同じ
+      - name: tree
+        value: '0'
+      - name: collapsedPaths
+        value: '["aliases[]"]'
+  - name: TreeFiltered
+    description: キーの列を `id` で絞り込んだ。`aliases[]` と `aliases[].id` だけを出し、`id` に色を付ける
+    args:
+      - name: kind
+        value: data
+      - name: features
+        value: '["pin","filter","count"]'
+      - name: columns
+        value: '["キー","型","必須","既定","説明"]'
+      - name: rows
+        value: Tree と同じ
+      - name: tree
+        value: '0'
+      - name: filters
+        value: '[{"column":0,"type":"text"}]'
+      - name: treeFilter
+        value: id
+  - name: TreeSelected
+    description: '`features.html` の行を選んだ。同じ親の範囲の縦線を濃くする'
+    args:
+      - name: kind
+        value: data
+      - name: columns
+        value: '["キー","型","必須","既定","説明"]'
+      - name: rows
+        value: Tree と同じ
+      - name: tree
+        value: '0'
+      - name: selectedPath
+        value: features.html
+  - name: TreeExample
+    description: 見本を結んだ表で `aliases[].metadata.alias_type.type` を選んだ。`エイリアス` のタブの同じパスの行に色を付ける
+    args:
+      - name: kind
+        value: data
+      - name: columns
+        value: '["キー","型","必須","既定","説明"]'
+      - name: rows
+        value: Tree と同じ
+      - name: tree
+        value: '0'
+      - name: selectedPath
+        value: aliases[].metadata.alias_type.type
+      - name: example
+        value: '{"heading":"設定の見本","tabs":[{"name":"最小"},{"name":"エイリアス"}],"active":1,"hidden":false}'
+  - name: TreeExampleMissing
+    description: 選んだキーが開いているタブ（`最小`）の見本に無い。見本に色を付けない
+    args:
+      - name: kind
+        value: data
+      - name: columns
+        value: '["キー","型","必須","既定","説明"]'
+      - name: rows
+        value: Tree と同じ
+      - name: tree
+        value: '0'
+      - name: selectedPath
+        value: aliases[].metadata.alias_type.type
+      - name: example
+        value: '{"heading":"設定の見本","tabs":[{"name":"最小"},{"name":"エイリアス"}],"active":0,"hidden":false}'
+  - name: TreeExampleHidden
+    description: 見本を隠した。ボタンの文言が `見本を表示` で `aria-expanded="false"`
+    args:
+      - name: kind
+        value: data
+      - name: columns
+        value: '["キー","型","必須","既定","説明"]'
+      - name: rows
+        value: Tree と同じ
+      - name: tree
+        value: '0'
+      - name: example
+        value: '{"heading":"設定の見本","tabs":[{"name":"最小"},{"name":"エイリアス"}],"active":0,"hidden":true}'
+  - name: CsvTable
+    description: 言語 `csv` のコードブロックから作った表。帯の右端に押していない RAW のボタン（控えめな色のコードのアイコン）
+    args:
+      - name: kind
+        value: data
+      - name: features
+        value: '["sort","pin","filter"]'
+      - name: columns
+        value: '["名前","拠点","金額"]'
+      - name: rows
+        value: '[["北山","東京, 本社","1200"],["南田","大阪","800"]]'
+      - name: rawCsv
+        value: 名前,拠点,金額\n北山,"東京, 本社",1200\n南田,大阪,800
+  - name: CsvRaw
+    description: RAW のボタンを押した。表を隠して書いたとおりの CSV を出し、ボタンは青いアイコンと薄い青の面
+    args:
+      - name: kind
+        value: data
+      - name: features
+        value: '["sort","pin","filter"]'
+      - name: columns
+        value: '["名前","拠点","金額"]'
+      - name: rows
+        value: '[["北山","東京, 本社","1200"],["南田","大阪","800"]]'
+      - name: rawCsv
+        value: 名前,拠点,金額\n北山,"東京, 本社",1200\n南田,大阪,800
+      - name: rawShown
+        value: 'true'
+  - name: ColumnsButtonA
+    description: 帯のボタン。テーブル設定とコピーのボタンがアイコンだけで、テーブル設定に隠した列の数のバッジ
+    args:
+      - name: features
+        value: "'[\"count\",\"columns\",\"copy\"]'"
+      - name: hide
+        value: "'[1]'"
+  - name: FillsWidth
+    description: 列の少ない表を本文の幅いっぱいに広げた。横にスクロールせず、端の影が無い
+    args:
+      - name: kind
+        value: data
+      - name: columns
+        value: "'[\"名前\",\"数量\"]'"
+      - name: rows
+        value: "'[[\"りんご\",\"3\"],[\"みかん\",\"5\"],[\"ぶどう\",\"2\"]]'"
+lead: Markdown の表を囲み、多段の見出し・行見出し・縦に結合したセルを描き、種類と `+機能`・`-機能` で決まった並べ替え・ピン止め・絞り込みのボタンと、絞り込みのドロワーを付ける。見出し行は面の色で分け、表が画面に残っている間はページを縦にスクロールしても画面の上端に留め、集計の行を画面の下端に留める。描く先の要素の幅が狭く最終列が 1 行に収まらないときは、最終列を畳んで行ごとに開閉させる。
 args:
   - name: kind
     type: 列挙
@@ -580,7 +1007,38 @@ args:
     required: false
     default: '0'
     enabled_when: '`overflow` が `true` のとき'
-    description: 左端に留める列の数（0 は留めない）
+    description: 左端に留める列の数（0 は留めない）。`rowHeader` を持つ表で省いたときは `rowHeader` の数。`mount` は描いた直後に `data-pin` の列まで（無ければ行見出しの列まで、行見出しも無ければ 1）にする
+  - name: headRows
+    type: 配列
+    required: false
+    default: '[]'
+    description: 見出しが 2 段以上のときの段ごとのセル（`{ html, column, rowspan, colspan }`）の配列。`columns` は列ごとの名前（その列を最も下で覆う見出しの文字）にする。並べ替え・ピン止め・絞り込みのボタンは、最下段まで届き 1 列だけを覆うセルにだけ置く。`colspan` を持つセルは `scope="colgroup"` で、またぐ列の中央に寄せる
+  - name: rowHeader
+    type: 整数
+    required: false
+    default: '0'
+    description: 本文の各行の先頭からこの数の列のセルを `<th scope="row">` にし、見出しと同じ太さ（600）で左に寄せる
+  - name: mergeColumns
+    type: 配列
+    required: false
+    default: '[]'
+    description: '`^^` で縦に結合する列の位置（`data-merge-columns`）。表示している行の隣り合う同じ値のセルを結合し（左の結合する列の切れ目でも切る）、始まりのセルに `rowspan` と `is-merged`（上寄せ）、続くセルに `hidden` を付ける。並べ替え・絞り込みのたびに結合し直す'
+  - name: pin
+    type: 整数
+    required: false
+    default: なし（`data-pin` を持たない）
+    enabled_when: '`features` に `pin` を含むとき'
+    description: '`pin=` で留める最後の列の位置。囲みの `data-pin` に写す'
+  - name: wide
+    type: 配列
+    required: false
+    default: '[]'
+    description: 広く取る列の位置（`wide=`）。列の `th`・`td` に class `mdmark-wide` を付け、セルを折り返さずに値の長さの幅を取る
+  - name: check
+    type: 配列
+    required: false
+    default: '[]'
+    description: 真偽値を ✓ と空欄で出す列の位置（`check=`）。列の `th`・`td` に class `mdmark-align-center` を付け、文字が `true` のセルを ✓（lucide の `check`）、`false` のセルを空欄にし、どちらも `data-value` に元の文字を持つ。ほかの文字のセルは文字のまま
   - name: openFilter
     type: 整数
     required: false
@@ -596,19 +1054,19 @@ args:
     required: false
     default: '[]'
     enabled_when: '`features` に `columns` を含むとき'
-    description: 既定で隠す列の位置（`data-hide`）。先頭の列（0）は含まない。「既定に戻す」はこの状態に戻す
+    description: 既定で隠す列の位置（`data-hide`）。先頭の列（0）は含まない
   - name: hiddenColumns
     type: 配列
     required: false
     default: '`hide` と同じ'
     enabled_when: '`features` に `columns` を含むとき'
-    description: 今隠している列の位置。この列の見出し・セル・集計のセルに `hidden` を付け、列の表示のメニューのチェックを外す
+    description: 今隠している列の位置。この列の見出し・セル・集計のセルに `hidden` を付け、テーブル設定のその列の目のアイコンを `aria-pressed="true"`・`aria-label="「{列名}」を表示"` にし、ボタンに隠した列の数のバッジを出す
   - name: openColumns
     type: 真偽値
     required: false
     default: 'false'
-    enabled_when: '`features` に `columns` を含むとき'
-    description: 列の表示のメニューを開いているか
+    enabled_when: '`features` に `columns`・`reorder` のどちらかを含むとき'
+    description: テーブル設定のパネルを開いているか
   - name: totals
     type: オブジェクトの配列
     required: false
@@ -621,7 +1079,7 @@ args:
     default: idle
     choices: '`idle`（`表をコピー`）・`copied`（`コピーしました`）・`failed`（`コピーできませんでした`）'
     enabled_when: '`features` に `copy` を含むとき'
-    description: '`表をコピー` のボタンの状態。ボタンの `data-state` と文言・アイコン（`copy`・`check`・`circle-alert`）を切り替える。どの状態でもボタンは文言の後ろに、形式のメニューを開くことを示す `chevron-down` のアイコンを持つ'
+    description: '`表をコピー` のボタンの状態。ボタンの `data-state` と、ツールチップ（`title`）・読み上げの名前・アイコン（`copy`・`check`・`circle-alert`）を切り替える。ボタンは文字を持たずアイコンだけで、形式のメニューを開くことは `aria-expanded` で示す'
   - name: rowIds
     type: 配列
     required: false
@@ -638,12 +1096,12 @@ args:
     type: 配列
     default: '`totals` の全ての計算'
     enabled_when: '`features` に `total` を含むとき'
-    description: 出している集計の行の計算（`sum`・`avg`・`count` のうち）。含まない計算の行に `hidden` を付けて集計のメニューのチェックを外し、`集計` のボタンを隠している見た目（`is-active`）にして、読み上げの名前に `（{隠している数} 件を隠しています）` を加える
+    description: 出している集計の行の計算（`sum`・`avg`・`count` のうち）。含まない計算の行に `hidden` を付けて集計のメニューのチェックを外し、`集計` のボタンを隠している見た目（`is-active`）にして、読み上げの名前に `（{隠している数} 件を非表示にしています）` を加える
   - name: openTotals
     type: 真偽値
     default: 'false'
     enabled_when: '`features` に `total` を含むとき'
-    description: 集計のメニュー（`出す集計`）を開いているか
+    description: 集計のメニュー（`表示する集計`）を開いているか
   - name: openCopy
     type: 真偽値
     default: 'false'
@@ -653,7 +1111,7 @@ args:
     type: オブジェクト
     default: なし（パネルを出さない）
     enabled_when: '`features` に `copy` を含むとき'
-    description: クリップボードに書けなかったときに手でコピーさせるパネルの中身（`{ format, text }`。`format` は `markdown`・`tsv`、`text` はコピーする文字）。渡すと帯の直後に、題 `クリップボードにコピーできませんでした`・案内 `「{形式の名前}」の中身を選択しています。Ctrl+C（Mac は ⌘C）でコピーしてください。`・`text` を入れた読み取り専用の `textarea`・閉じるボタンを持つパネルを出す
+    description: クリップボードに書けなかったときに手動でコピーさせるパネルの中身（`{ format, text }`。`format` は `markdown`・`tsv`、`text` はコピーする文字）。渡すと帯の直後に、題 `クリップボードにコピーできませんでした`・案内 `「{形式の名前}」の中身を選択しています。Ctrl+C（Mac は ⌘C）でコピーしてください。`・`text` を入れた読み取り専用の `textarea`・閉じるボタンを持つパネルを出す
   - name: rowLinkNotice
     type: 列挙
     default: なし（知らせを出さない）
@@ -663,7 +1121,7 @@ args:
   - name: folded
     type: 真偽値
     default: 'false'
-    description: 最終列を畳んでいるか（`mount` が描く先の要素の幅と最終列のセルの折り返しを測って決める）。`true` のとき最終列の見出しとセルを隠し、本文の各行の先頭のセルに最終列を開閉するボタンを置く。列の表示で最終列を隠しているときは畳まない
+    description: 最終列を畳んでいるか（`mount` が描く先の要素の幅と最終列のセルの折り返しを測って決める）。`true` のとき最終列の見出しとセルを隠し、本文の各行の先頭のセルに最終列を開閉するボタンを置く。テーブル設定で最終列を隠しているときは畳まない
   - name: unfoldedRows
     type: 配列
     default: '[]'
@@ -675,28 +1133,104 @@ args:
     default: なし（`表（{本文の行の数} 行）`）
     enabled_when: '`collapse` が `closed`・`open` のとき'
     description: 折り畳みの見出し（`title=` の値）。`summary` の文字にする
+  - name: highlight
+    type: オブジェクトの配列
+    required: false
+    default: '[]'
+    description: 強調する列（`{ column, color }`。`color` は色の名前）。列の `th` と `td` に class `mdmark-col-highlight` と `data-color` を付け、セルを `--mdmark-color-accent-{色}-bg`、見出しのセルの下端の線を `--mdmark-color-accent-{色}-text` にする
+  - name: rowColors
+    type: 配列
+    required: false
+    default: '[]'
+    description: 本文の行ごとの色の名前（色を付けない行は `null`）。行の `tr` に `data-color` を付け、セルを `--mdmark-color-accent-{色}-bg` にし、行の上下に `--mdmark-color-accent-{色}-text` の線を付ける。強調した列と重なるセルは行の色にする。`tr` に付くので、並べ替え・絞り込みの後も行に付いたまま動く
     status: planned
+  - name: order
+    type: 配列
+    required: false
+    default: Markdown に記載した順
+    enabled_when: '`features` に `reorder` を含むとき'
+    description: 今の列の順（元の列の位置の並び）。見出し・本文の行・集計の行のセルと、テーブル設定の一覧をこの順に並べる
+  - name: dragging
+    type: オブジェクト
+    required: false
+    default: なし（ドラッグしていない）
+    enabled_when: '`openColumns` が `true` で `features` に `reorder` を含むとき'
+    description: ドラッグしている列とドロップできる位置（`{ column, target, side }`。`side` は `before`・`after`）。動かす行を薄くし（`is-dragging`）、`target` の行の `side` の境に線を出す（`is-drop-before`・`is-drop-after`）。結合した見出しの範囲の外とピン止めの境の向こうの `target` には線を出さない
+  - name: tree
+    type: 整数
+    required: false
+    default: なし（階層にしない）
+    description: キーの列の位置（`data-tree`）。その列の文字をキーのパスとして階層の行にし、表に無い親の行を補う。渡すと見出しに行の並べ替えのボタンを置かない
+  - name: treeType
+    type: 整数
+    required: false
+    default: なし
+    enabled_when: '`tree` を渡したとき'
+    description: 型の列の位置。セルを値ごとに色の違うバッジ、`a \| b` は値ごとのチップにする
+  - name: treeRequired
+    type: 整数
+    required: false
+    default: なし
+    enabled_when: '`tree` を渡したとき'
+    description: 必須の列の位置。列を出さず、`✓`・`true` の行のキーの後ろに赤い * を出す
+  - name: treeDefault
+    type: 整数
+    required: false
+    default: なし
+    enabled_when: '`tree` を渡したとき'
+    description: 既定の列の位置。空でないセルを薄い等幅で出す
+  - name: collapsedPaths
+    type: 配列
+    required: false
+    default: '[]'
+    enabled_when: '`tree` を渡したとき'
+    description: 畳んだ行のパス。その行の開閉のボタンを `aria-expanded="false"`（▸）にし、子孫の行を `hidden` にする
+  - name: selectedPath
+    type: 文字列
+    required: false
+    default: なし（選ばない）
+    enabled_when: '`tree` を渡したとき'
+    description: 選んだ行のパス。その行を `aria-selected="true"` にし、同じ親を持つ行とその子孫の、その行の階層の縦線を濃くする。見本の開いているタブに同じパスの行があれば色を付ける
+  - name: treeFilter
+    type: 文字列
+    required: false
+    default: なし（絞り込まない）
+    enabled_when: '`tree` を渡し、キーの列を `filters` に含むとき'
+    description: キーの列の絞り込みの単語。末尾の名前が当たった行とその祖先の行を残し、当たった単語に色を付ける。件数は補った行を数えない
+  - name: example
+    type: オブジェクト
+    required: false
+    default: なし（見本を置かない）
+    enabled_when: '`tree` を渡したとき'
+    description: '表の下に置く YAML の見本（`{ heading, tabs: [{ name, lines: [{ text, path? }] }], active, hidden }`）。`active` は開いているタブの位置、`hidden` が `true` のとき見本を隠してボタンを `見本を表示` にする'
+  - name: rawCsv
+    type: 文字列
+    required: false
+    default: なし（CSV の表ではない）
+    description: 言語 `csv` のコードブロックから作った表の、書いたとおりの CSV。渡すと `data-source="csv"` を付け、表の後ろに `<pre class="mdmark-raw" hidden><code class="language-csv">` を置き、帯の右端に RAW のボタンを置く
+  - name: rawShown
+    type: 真偽値
+    required: false
+    default: 'false'
+    enabled_when: '`rawCsv` を渡したとき'
+    description: 元の CSV を出しているか。`true` なら RAW のボタンを `aria-pressed="true"` にし、表を隠して `pre.mdmark-raw` を出す
 events:
   - name: 並べ替える
     when: 列の見出しのボタンを押す
     value: 列の `th` の `aria-sort`
-    description: '`mount` が昇順 → 降順 → 元の並びの順に行を並べ替える'
+    description: '`mount` が降順 → 昇順 → 元の並びの順に行を並べ替える'
   - name: ピン止めする
     when: 列のピン止めのボタンを押す
     value: ボタンの `aria-pressed`
     description: '`mount` が押した列までを左端に留める。押し直すと外す'
   - name: 絞り込む
-    when: 絞り込みのボタンでドロワーを開き、値を選ぶか入れる。「絞り込みを外す」で戻す
+    when: 絞り込みのボタンでドロワーを開き、値を選ぶか入れる。「絞り込みを解除」で戻す
     value: ボタンの `aria-expanded` と、ドロワーの入力欄の値
     description: '`mount` が列ごとの絞り込みを重ねて行に当てる'
   - name: 列の表示を切り替える
-    when: 列の表示のメニューのチェックボックスを入れる・外す
-    value: チェックボックスの `value`（列の位置）と `checked`
+    when: テーブル設定の目のアイコンを押す
+    value: 一覧の行の `data-column`（列の位置）と目のアイコンの `aria-pressed`
     description: '`mount` がその列の見出し・セル・集計のセルの `hidden` を切り替え、最終列を畳むかを決め直す'
-  - name: 既定に戻す
-    when: 列の表示のメニューの「既定に戻す」を押す
-    value: 表の `data-hide`
-    description: '`mount` が `data-hide` の列だけを隠した状態に戻す'
   - name: 表をコピーする
     when: '`表をコピー` のボタンでコピーの形式のメニューを開き、`Markdown の表`・`TSV` のどちらかを押す'
     value: 形式のボタンの `data-format`（`markdown`・`tsv`）と、`表をコピー` のボタンの `data-state`
@@ -721,7 +1255,31 @@ events:
     when: 畳んだ最終列の開閉のボタンを押す（Enter・Space を含む）
     value: ボタンの `aria-expanded`
     description: '`mount` が行の直後の開閉の行の `hidden` を付け外しする。行の詳細を持つ行では、行の詳細の開閉のボタンが最終列と詳細を一緒に開閉する'
+  - name: 列を動かす
+    when: テーブル設定の一覧のつまみをドラッグしてドロップするか、つまみにフォーカスして ↑・↓ キーを押す
+    value: 一覧の行の `data-column` の並び
+    description: '`mount` が同じ範囲と同じピン止めの側の中で列を動かし、見出しと全ての行のセルを並べ直す'
+  - name: 階層を開閉する
+    when: 階層の行の開閉のボタンを押す（Shift を押しながら押す、Enter・Space を含む）
+    value: ボタンの `aria-expanded`
+    description: '`mount` が子孫の行を畳む・子を出す。Shift のときは子孫の開閉も同じにする'
+  - name: 全体のパスをコピーする
+    when: 階層の行のコピーのボタンを押す
+    value: 行の `data-path`
+    description: '`mount` が全体のパスをクリップボードへ写し、結果を 2 秒出す'
+  - name: 階層の行を選ぶ
+    when: 階層の行か、見本の `data-path` の行を押す
+    value: 行の `data-path`
+    description: '`mount` が行を選び（選んだ行をもう一度押すと解く）、縦線と見本の行の色を付け直す'
+  - name: 見本の表示を切り替える
+    when: '`見本を隠す`・`見本を表示` のボタンを押す'
+    value: ボタンの `aria-expanded`
+    description: '`mount` が見本を隠す・出し、ボタンの文言を替える'
 css_properties:
+  - name: --mdmark-color-bg-opaque
+    syntax: <color>
+    default: var(--mdmark-color-bg)
+    description: 本文の行の地、横スクロールの影を隠す覆い、ページのスクロールで留める見出し行とピン止めした列の地、列のメニュー・表のメニュー・コピーの形式のパネル・行の URL の知らせ・絞り込みの引き出しの地の色
   - name: --mdmark-color-table-head
     syntax: <color>
     default: '#f4f4f5（ダーク #1b1b1f）'
@@ -729,7 +1287,7 @@ css_properties:
   - name: --mdmark-color-surface
     syntax: <color>
     default: '#f4f4f5（ダーク #1b1b1f）'
-    description: 見出し行で `--mdmark-color-table-head` を上書きしないときの面の色。本文の行は面で塗らず地の色（`--mdmark-color-bg`）のままにする
+    description: 見出し行で `--mdmark-color-table-head` を上書きしないときの面の色。本文の行は面で塗らず `--mdmark-color-bg-opaque` のままにする
   - name: --mdmark-table-rule-inline
     syntax: <length>
     default: 1px
@@ -742,22 +1300,41 @@ css_properties:
     syntax: <length>
     default: 0px
     description: 見出し行を留める位置の、画面の上端からのずれ。ページの上端に固定したヘッダーを持つ使う側は、その高さを渡す
+  - name: --mdmark-color-accent-blue-bg
+    syntax: <color>
+    default: 値は dev/設計書/デザイン方針.md
+    description: 強調した列のセルと色を付けた行の面の薄い色。ほかの色の名前も `--mdmark-color-accent-{色}-bg` で同じ
+  - name: --mdmark-color-accent-blue-text
+    syntax: <color>
+    default: 値は dev/設計書/デザイン方針.md
+    description: 強調した列の見出しの下端の線と、色を付けた行の上下の線の色。ほかの色の名前も `--mdmark-color-accent-{色}-text` で同じ
 accessibility:
+  - 列の強調と行の色は、見出しの下端の線と行の上下の線でも示し、色だけに頼らない。セルの文字と面の色のコントラストを 4.5:1 以上にする
   - 並べ替えのボタンは列名を読み上げの名前にし、並べた列の `th` は `aria-sort` で向きを示す
   - 絞り込みのボタンは `「{列名}」で絞り込む` を読み上げの名前に持ち、`aria-expanded`・`aria-controls` でドロワーの開閉を示す。絞り込み中は地・線・塗ったアイコンで示し、色だけに頼らない
   - ドロワーは開いたら最初の入力欄へフォーカスを移し、Esc で閉じてボタンへフォーカスを戻す
   - ピン止めのボタンは `「{列名}」の列までピン止め` を読み上げの名前に持ち、`aria-pressed` で状態を示す
+  - 多段の見出しは、複数の列をまたぐセルを `scope="colgroup"`、1 列のセルを `scope="col"` にし、行見出しは `scope="row"` にする。結合で隠したセルも値を持ち、並べ替え・絞り込み・コピー・集計はその値で扱う
+  - 真偽値の ✓ は `role="img"` と `aria-label="はい"`、空欄のセルは読み上げだけの `いいえ` を持ち、見た目の空欄と読み上げを対応させる
   - 表は `tabindex="0"` で、キーボードで横にスクロールできる。留めた見出し行と集計の行は元のセルをずらしたもので複製を作らず、読み上げとフォーカスの順は 1 組のまま
   - 件数は `aria-live="polite"` で書き換えを知らせ、読み上げには `{全ての行の数} 件中 {表示している行の数} 件を表示` を渡す
-  - 列の表示のメニューは絞り込みのドロワーと同じ開閉の作法（`aria-expanded`・`aria-controls`、開いたら最初の入力欄へフォーカス、Esc で閉じてボタンへ戻す）。押せない先頭の列のチェックボックスは、理由をメニューの中に出す
-  - 集計のメニュー（`role="dialog"`・`aria-label="出す集計"`）とコピーの形式のメニュー（`aria-label="コピーの形式"`）も列の表示のメニューと同じ開閉の作法。集計の行を隠しているときは、`集計` のボタンの見た目に加えて読み上げの名前に `（{隠している数} 件を隠しています）` を含める
-  - 集計の行の出し入れ、表のコピーの結果（コピーした形式・書けなかったことと手でコピーできること）は、帯の `role="status"` の要素で読み上げる
+  - テーブル設定のパネルは絞り込みのドロワーと同じ開閉の作法（`aria-expanded`・`aria-controls`、開いたら最初の押せるつまみか目のアイコンへフォーカス、Esc で閉じてボタンへ戻す）。押せない先頭の列の目のアイコンは、理由をパネルの案内に出す
+  - 表をコピーのボタンは `copy` のアイコンだけで、`title` と読み上げの名前を `表をコピー` にする
+  - 集計のメニュー（`role="dialog"`・`aria-label="表示する集計"`）とコピーの形式のメニュー（`aria-label="コピーの形式"`）もテーブル設定のパネルと同じ開閉の作法。集計の行を隠しているときは、`集計` のボタンの見た目に加えて読み上げの名前に `（{隠している数} 件を非表示にしています）` を含める
+  - 集計の行の出し入れ、表のコピーの結果（コピーした形式・書けなかったことと手動でコピーできること）は、帯の `role="status"` の要素で読み上げる
   - コピーできないときのパネルは `role="group"` で題を名前に持ち、出したら `textarea` へフォーカスを移して中身を全て選択する。閉じるボタンは `閉じる` を読み上げの名前に持ち、閉じるとフォーカスを `表をコピー` に戻す
   - 行へのリンクは `「{先頭のセルの文字}」の行へのリンク` を読み上げの名前に持ち、フォーカスしたときは印を出す。指せない端末では印を常に薄く出す。URL をコピーした結果は、描くときに印の横へ置いた `role="status"` の要素で読み上げる
   - 畳んだ最終列の開閉のボタンは `「{先頭のセルの文字}」の{最終列の見出しの文字}` を読み上げの名前に持ち、`aria-expanded`・`aria-controls` で開閉の状態を示す
+  - テーブル設定のボタンはアイコンだけで、`aria-label` とツールチップに `テーブル設定` を持つ。列を隠しているときは、バッジに加えて `aria-label` を `テーブル設定（{隠した列の数} 列を非表示）` にし、色と数だけに頼らない。パネルは絞り込みのドロワーと同じ開閉の作法。つまみはキーボードの ↑・↓ で動かせ、動かせないつまみは `disabled`。案内はつまみの `aria-describedby` で読み上げる
+  - 階層の開閉のボタンは `aria-expanded` と `{パス} を畳む`・`{パス} を開く` の読み上げの名前を持つ。キーの名前は `tabindex="0"` で、フォーカスでも全体のパスのツールチップを出す。選んだ行は `aria-selected` で示し、縦線の濃さだけに頼らない
+  - 見本の表示の切り替えのボタンは `aria-expanded`・`aria-controls` で見本の開閉を示す
+  - RAW のボタンは `aria-label="元の CSV を表示"` と `aria-pressed` を持ち、24px 四方以上。押した状態は青いアイコンと薄い青の面で示す。押すと表と元の CSV が入れ替わるため、状態は色のほかに出ている中身でも分かる
 refs:
   - dev/設計書/インターフェース定義/ライブラリ本体/文書をHTML文字列にする.ts#constraints[表]
   - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[表の操作]
+  - dev/設計書/インターフェース定義/ライブラリ本体/文書をHTML文字列にする.ts#constraints[表の列と行の色]
 status: planned
 notes:
-  HTML: '`<div class="mdmark-table" data-kind="{kind}" data-features="{features}"><table tabindex="0" aria-label="…"><thead><tr><th><span class="mdmark-th"><button class="mdmark-sort" type="button">{列名}</button><span class="mdmark-th-tools"><button class="mdmark-filter" type="button" aria-expanded="false" aria-controls="…"></button><button class="mdmark-pin" type="button" aria-pressed="false"></button></span></span></th></tr></thead><tbody>…<tr class="mdmark-table-empty" hidden><td colspan="…">一致する行がありません</td></tr></tbody></table><div class="mdmark-filter-drawer" role="dialog" hidden>…</div></div>`。`collapse` が `closed`・`open` のときは表を `<details class="mdmark-table-details"><summary>{title}</summary>` に入れる（`open` のときは `details` に `open` を付ける）。ドロワーは `select` が「候補を検索」の欄・チェックボックス・`一致する候補がありません`、`text` が「含む文字」の欄、`date` が「開始日」「終了日」の欄で、どれも題 `「{列名}」で絞り込む` と「絞り込みを外す」を持つ。表の見た目は確認ログの決定（拡張記法のモック・直した表のモック）。モックは `dev/mock/components/table/`。`count`・`columns`・`total`・`copy` の表は `<table>` の前に `<div class="mdmark-table-bar"><p class="mdmark-table-count" aria-live="polite">…</p><div class="mdmark-table-tools"><button class="mdmark-table-tool mdmark-columns-toggle" aria-expanded aria-controls>列の表示</button><button class="mdmark-table-tool mdmark-totals-toggle" aria-expanded aria-controls>集計<span class="mdmark-visually-hidden"></span></button><button class="mdmark-table-tool mdmark-copy" data-state="idle" aria-expanded aria-controls><span class="mdmark-copy-label">表をコピー</span></button></div><span class="mdmark-visually-hidden mdmark-table-status" role="status"></span></div>` を置き、`<table>` の後ろに `<div class="mdmark-columns-menu" role="dialog" hidden>`（`mdmark-columns-title`・`mdmark-columns-options` のチェックボックス・`mdmark-columns-note`・`mdmark-columns-reset`）、`<div class="mdmark-totals-menu mdmark-table-menu" role="dialog" aria-label="出す集計" hidden>`（題と、`value` が計算のチェックボックス）、`<div class="mdmark-copy-menu mdmark-table-menu" role="dialog" aria-label="コピーの形式" hidden>`（`<button class="mdmark-copy-format" data-format="{markdown|tsv}">` が `mdmark-copy-format-name` と `mdmark-copy-format-note` を持つ）を置く。コピーできないときのパネルは帯の直後の `<div class="mdmark-copy-panel" role="group" aria-labelledby>`（`mdmark-copy-panel-title`・`mdmark-copy-panel-close`・`mdmark-copy-panel-note`・`<textarea class="mdmark-copy-panel-text" readonly rows="6">`）。集計の行は計算ごとの `<tfoot><tr class="mdmark-table-total" data-total-kind="{計算}">` で、先頭のセルに `mdmark-total-name`、集計する列のセルが `data-total="{計算}"` と `mdmark-total-value` を持つ。行へのリンクは `<tr id>` の先頭のセルの `<span class="mdmark-row-link-cell">{中身}<a class="mdmark-row-anchor" href="#{ID}"><span class="mdmark-row-link-notice" role="status"></span>` で、強調する行は `data-target` を持ち、知らせの要素はコピーの結果で `data-state` を持つ。畳んだ最終列は、最終列のセルに `mdmark-fold-col`、表の外側に `is-folded` を付け、先頭のセルを `<span class="mdmark-row-head"><button class="mdmark-row-toggle mdmark-fold-toggle" type="button" aria-expanded aria-controls aria-label>{セルの中身}</span>` にし、行の直後に `<tr class="mdmark-row-detail mdmark-fold-detail" hidden><td colspan><div class="mdmark-fold-part"><p class="mdmark-fold-name">{最終列の見出し}</p><div class="mdmark-fold-value">{セルの中身}</div></div></td></tr>` を置く（行の詳細を持つ行は詳細の中身の先頭に `mdmark-fold-part` を置く）。アイコンは全て lucide（`columns-3`・`sigma`・`copy`・`check`・`circle-alert`・`chevron-down`・`x`・`link`）。印刷では帯のボタン・メニュー・パネル・行へのリンクの印と畳んだ最終列の開閉のボタンを出さず、最終列を畳まない。画面の幅が 768px 以下のときは、集計の行のセルの上下の余白を 0.2em に詰め、下端に留めた集計の行が本文の行を覆う高さを減らす'
+  HTML: '`<div class="mdmark-table" data-kind="{kind}" data-features="{features}"><table tabindex="0" aria-label="…"><thead><tr><th><span class="mdmark-th"><button class="mdmark-sort" type="button">{列名}</button><span class="mdmark-th-tools"><button class="mdmark-filter" type="button" aria-expanded="false" aria-controls="…"></button><button class="mdmark-pin" type="button" aria-pressed="false"></button></span></span></th></tr></thead><tbody>…<tr class="mdmark-table-empty" hidden><td colspan="…">一致する行がありません</td></tr></tbody></table><div class="mdmark-filter-drawer" role="dialog" hidden>…</div></div>`。`collapse` が `closed`・`open` のときは表を `<details class="mdmark-table-details"><summary>{title}</summary>` に入れる（`open` のときは `details` に `open` を付ける）。ドロワーは `select` が「候補を検索」の欄・チェックボックス・`一致する候補がありません`、`text` が「キーワード」の欄、`date` が「開始日」「終了日」の欄で、どれも題 `「{列名}」で絞り込む` と「絞り込みを解除」を持つ。表の見た目は確認ログの決定（拡張記法のモック・直した表のモック）。モックは `dev/mock/components/table/`。`count`・`columns`・`reorder`・`total`・`copy` の表は `<table>` の前に `<div class="mdmark-table-bar"><p class="mdmark-table-count" aria-live="polite">…</p><div class="mdmark-table-tools"><button class="mdmark-table-tool mdmark-table-settings-toggle is-icon-only" aria-expanded aria-controls aria-label="テーブル設定（列を隠しているときは「テーブル設定（{隠した列の数} 列を非表示）」）" title="テーブル設定">{アイコン}<span class="mdmark-table-tool-badge" aria-hidden="true">{隠した列の数}</span></button><button class="mdmark-table-tool mdmark-totals-toggle" aria-expanded aria-controls>集計<span class="mdmark-visually-hidden"></span></button><button class="mdmark-table-tool mdmark-copy" data-state="idle" aria-expanded aria-controls><span class="mdmark-copy-label">表をコピー</span></button></div><span class="mdmark-visually-hidden mdmark-table-status" role="status"></span></div>` を置き、`<table>` の後ろに `<div class="mdmark-table-settings" role="dialog" aria-label="テーブル設定" hidden>`（`mdmark-table-settings-title`・`<ul class="mdmark-table-settings-list">` の列ごとの `<li class="mdmark-table-settings-item" data-column="{元の列の位置}" data-name="{列名}">`（`reorder` のとき `<button class="mdmark-table-settings-grip" aria-label="「{列名}」の列を並べ替える" aria-describedby>`、`mdmark-table-settings-name`、`columns` のとき `<button class="mdmark-table-settings-eye" aria-pressed aria-label>`）・ピン止めと結合した見出しの範囲ごとの `<li class="mdmark-table-settings-group">` の見出し・`mdmark-table-settings-note`）、`<div class="mdmark-totals-menu mdmark-table-menu" role="dialog" aria-label="表示する集計" hidden>`（題と、`value` が計算のチェックボックス）、`<div class="mdmark-copy-menu mdmark-table-menu" role="dialog" aria-label="コピーの形式" hidden>`（`<button class="mdmark-copy-format" data-format="{markdown|tsv}">` が `mdmark-copy-format-name` と `mdmark-copy-format-note` を持つ）を置く。コピーできないときのパネルは帯の直後の `<div class="mdmark-copy-panel" role="group" aria-labelledby>`（`mdmark-copy-panel-title`・`mdmark-copy-panel-close`・`mdmark-copy-panel-note`・`<textarea class="mdmark-copy-panel-text" readonly rows="6">`）。集計の行は計算ごとの `<tfoot><tr class="mdmark-table-total" data-total-kind="{計算}">` で、先頭のセルに `mdmark-total-name`、集計する列のセルが `data-total="{計算}"` と `mdmark-total-value` を持つ。行へのリンクは `<tr id>` の先頭のセルの `<span class="mdmark-row-link-cell">{中身}<a class="mdmark-row-anchor" href="#{ID}"><span class="mdmark-row-link-notice" role="status"></span>` で、強調する行は `data-target` を持ち、知らせの要素はコピーの結果で `data-state` を持つ。畳んだ最終列は、最終列のセルに `mdmark-fold-col`、表の外側に `is-folded` を付け、先頭のセルを `<span class="mdmark-row-head"><button class="mdmark-row-toggle mdmark-fold-toggle" type="button" aria-expanded aria-controls aria-label>{セルの中身}</span>` にし、行の直後に `<tr class="mdmark-row-detail mdmark-fold-detail" hidden><td colspan><div class="mdmark-fold-part"><p class="mdmark-fold-name">{最終列の見出し}</p><div class="mdmark-fold-value">{セルの中身}</div></div></td></tr>` を置く（行の詳細を持つ行は詳細の中身の先頭に `mdmark-fold-part` を置く）。真偽値のセルは `<td class="mdmark-align-center" data-value="true"><span class="mdmark-check" role="img" aria-label="はい"><svg class="mdmark-icon">…</svg></span></td>` と `<td class="mdmark-align-center" data-value="false"><span class="mdmark-visually-hidden">いいえ</span></td>`。アイコンは全て lucide（テーブル設定の `settings-2`・つまみの `grip-vertical`・目の `eye`・`eye-off`・開閉の
+    `chevron-down`・`columns-3`・`sigma`・`copy`・`check`・`circle-alert`・`chevron-down`・`x`・`link`）。印刷では帯のボタン・メニュー・パネル・行へのリンクの印と畳んだ最終列の開閉のボタンを出さず、最終列を畳まない。画面の幅が 768px 以下のときは、集計の行のセルの上下の余白を 0.2em に詰め、下端に留めた集計の行が本文の行を覆う高さを減らす'
+  階層の表: '`tree` の表は `<div class="mdmark-table" data-tree>` で、本文の行が `<tr class="mdmark-tree-row" data-path data-parent data-depth aria-selected>`（補った行は `is-virtual`、子を持つ行は `has-children`）。キーのセルは `<td class="mdmark-tree-key"><span class="mdmark-tree-cell">` に、深さの数の `mdmark-tree-guide`（選んだ範囲は `is-active`）・子を持つ行は `<button class="mdmark-tree-toggle" aria-expanded aria-label>`、持たない行は `mdmark-tree-spacer`・`<span class="mdmark-tree-name" tabindex="0">`・`mdmark-tree-array`・`mdmark-tree-required`・`<button class="mdmark-tree-copy" aria-label="全体のパスをコピー">` を並べる。型は `mdmark-type-badge`（`data-type`）か `mdmark-type-chip`、既定は `mdmark-tree-default`、絞り込みで当たった単語は `mark.mdmark-tree-hit`。見本を結んだ表は `<div class="mdmark-tree-bar"><button class="mdmark-tree-example-toggle" aria-expanded aria-controls>`と、`<div class="mdmark-tree-layout">`（隠したとき `is-example-hidden`）の中に表と `<aside class="mdmark-tree-example">` を置き、見本の行は `<span class="mdmark-yaml-line" data-path>`（表で選んだ行と同じパスは `is-linked`）。モックは `dev/mock/components/table/` の `#state-303-*`。印刷では開閉・コピー・見本の表示の切り替えのボタンを出さない'

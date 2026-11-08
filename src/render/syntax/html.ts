@@ -8,6 +8,7 @@ import {
   type MdmarkSequenceDefinition,
   readDefinition,
 } from "../../diagram/definition.ts";
+import type { WarningItem } from "../../extensions.ts";
 import { buildDictionary } from "../../knowledge/dictionary.ts";
 import { renderDiagram, type TermLookup } from "../../parts/diagram.ts";
 import { renderEmbeddedHtml } from "../../parts/embedded-html.ts";
@@ -15,17 +16,17 @@ import { escapeHtml } from "../../parts/escape.ts";
 import { renderHintMarkup } from "../../parts/hint.ts";
 import { markOwn, SLOT_MARKER, splitSlots } from "../../parts/own.ts";
 import { renderParam } from "../../parts/param.ts";
-import { renderSyntaxWarning } from "../../parts/syntax-warning.ts";
 import type { RenderEnv } from "../parser.ts";
 import {
   EMBED_PART_ATTRIBUTE,
   EMBED_PART_TAG,
   sanitizeEmbedded,
 } from "../sanitize.ts";
+import { scopeCss } from "../scope-css.ts";
 import { PARAM_COUNT_META } from "./diagrams.ts";
 import { type SeenTerms, termSegments } from "./terms.ts";
 import { envOf, featureOn, findClose, markOf } from "./tokens.ts";
-import { unclosedWarning, warningBlock } from "./warnings.ts";
+import { unclosedWarning, type WarningMeta, warningBlock } from "./warnings.ts";
 
 /** 埋め込んだ HTML の中の図の部品の `id` の頭（範囲の印の図と通し番号を共有する） */
 const DIAGRAM_ID_PREFIX = "mdmark-diagram";
@@ -42,6 +43,67 @@ export const PART_PATTERN =
 
 /** 中身を持たない要素 */
 const VOID_TAGS = new Set(["img", "br", "hr", "input", "wbr"]);
+
+/** 範囲に置ける、見た目と動きを足すコードブロックの言語 */
+const RANGE_SCRIPT_LANGUAGES = ["css", "ts", "js"] as const;
+
+/** 範囲のスクリプトの言語 */
+type RangeScriptLanguage = (typeof RANGE_SCRIPT_LANGUAGES)[number];
+
+/** `fence` のトークンの言語 */
+function fenceLanguage(token: Token): string {
+  return token.type === "fence"
+    ? (token.info.trim().split(/\s+/)[0] ?? "")
+    : "";
+}
+
+/** 範囲の `css`・`ts`・`js` のコードブロックか */
+function isRangeScriptFence(token: Token): boolean {
+  return (RANGE_SCRIPT_LANGUAGES as readonly string[]).includes(
+    fenceLanguage(token),
+  );
+}
+
+/** `<!-- html -->` の範囲の `fence` を言語ごとに数え、`html`・`css`・スクリプトと読めない組み合わせの警告を返す */
+export function readRangeScripts(tokens: Token[]): {
+  html: Token | undefined;
+  css: string | undefined;
+  script: { lang: "ts" | "js"; code: string } | undefined;
+  warnings: WarningItem[];
+} {
+  const fences = tokens.filter((token) => token.type === "fence");
+  const html = fences.filter(isHtmlFence);
+  const byLang = (lang: RangeScriptLanguage): Token[] =>
+    fences.filter((token) => fenceLanguage(token) === lang);
+  const warnings: WarningItem[] = [];
+  for (const lang of RANGE_SCRIPT_LANGUAGES) {
+    if (byLang(lang).length > 1) {
+      warnings.push({
+        label: lang,
+        message: `\`<!-- html -->\` の範囲に \`${lang}\` のコードブロックが ${byLang(lang).length} つあります。1 つにしてください。スクリプトを動かさずに描いています。`,
+      });
+    }
+  }
+  const [ts] = byLang("ts");
+  const [js] = byLang("js");
+  if (ts && js) {
+    warnings.push({
+      label: "ts",
+      message:
+        "`<!-- html -->` の範囲に `ts` と `js` のコードブロックが両方あります。どちらか 1 つにしてください。スクリプトを動かさずに描いています。",
+    });
+  }
+  const scripted = warnings.length === 0 ? (ts ?? js) : undefined;
+  const [css] = byLang("css");
+  return {
+    html: html.length === 1 ? html[0] : undefined,
+    css: byLang("css").length === 1 ? css?.content : undefined,
+    script: scripted
+      ? { lang: scripted === ts ? "ts" : "js", code: scripted.content }
+      : undefined,
+    warnings,
+  };
+}
 
 /** 範囲の言語 `html` のコードブロックか */
 export function isHtmlFence(token: Token): boolean {
@@ -72,12 +134,19 @@ function takeParts(options: {
   /** この範囲の前にある操作できる部品の数（文書の中の並びで定義を差し込む位置） */
   paramsBefore: number;
   lookup: TermLookup;
-}): { html: string; parts: string[]; params: number } {
+}): {
+  html: string;
+  parts: string[];
+  params: number;
+  warnings: WarningMeta[];
+} {
   const { source, state, paramsBefore, lookup } = options;
   const env = envOf(state);
   const diagrams = featureOn(state, "diagrams");
   const hints = featureOn(state, "hints");
+  const resizable = featureOn(state, "diagram-resize");
   const parts: string[] = [];
+  const warnings: WarningMeta[] = [];
   const definitions: MdmarkParamDefinition[] = [];
   const html = source.replace(
     PART_PATTERN,
@@ -91,17 +160,23 @@ function takeParts(options: {
       const definition = result.definition;
       let part: string;
       if (!result.ok || definition === undefined) {
-        part = markOwn(
-          renderSyntaxWarning(definitionWarning(directive, result.problems)),
-          env.nonce,
-        );
+        const warning = warningBlock(state, {
+          ...definitionWarning(directive, result.problems),
+          kind: "diagram_invalid",
+        });
+        warnings.push(warning.meta?.warning as WarningMeta);
+        part = warning.content;
       } else {
         env.diagramCount = (env.diagramCount ?? 0) + 1;
         const count = env.diagramCount;
         if (directive === "param") {
           const param = definition as MdmarkParamDefinition;
           definitions.push(param);
-          part = renderParam(param, { id: `${PARAM_ID_PREFIX}-${count}` });
+          part = renderParam(param, {
+            id: `${PARAM_ID_PREFIX}-${count}`,
+            copyLabel: env.labels?.paramCopy,
+            resizable,
+          });
         } else {
           part = renderDiagram({
             kind: directive,
@@ -112,6 +187,7 @@ function takeParts(options: {
             id: `${DIAGRAM_ID_PREFIX}-${count}`,
             lookup,
             hints,
+            resizable,
           });
         }
         part = markOwn(part, env.nonce);
@@ -123,7 +199,7 @@ function takeParts(options: {
   // 操作できる部品の定義は、文書の中の並びの位置へ差し込む（`attachParams` が並びで引く）
   env.paramDefinitions ??= [];
   env.paramDefinitions.splice(paramsBefore, 0, ...definitions);
-  return { html, parts, params: definitions.length };
+  return { html, parts, params: definitions.length, warnings };
 }
 
 /** 預けた印の要素を、図の部品の HTML に戻す。戻せなかった印の要素（書いた人が似せて書いたもの）は取り除く */
@@ -247,8 +323,15 @@ function buildHtml(options: {
   state: StateCore;
   source: string;
   paramsBefore: number;
-}): { html: string; params: number } {
-  const { state, source, paramsBefore } = options;
+  scripts?:
+    | {
+        scope: number;
+        css: string | undefined;
+        script: { lang: "ts" | "js"; code: string } | undefined;
+      }
+    | undefined;
+}): { html: string; params: number; warnings: WarningMeta[] } {
+  const { state, source, paramsBefore, scripts } = options;
   const env = envOf(state);
   // 箱の中の `{{語}}` の意味は、本文の用語と同じ辞書から引く
   const dictionary = buildDictionary({
@@ -260,19 +343,43 @@ function buildHtml(options: {
   });
   const lookup: TermLookup = (word) => dictionary.term(word)?.meaning;
   const taken = takeParts({ source, state, paramsBefore, lookup });
-  const sanitized = sanitizeEmbedded(taken.html, termsFilter(state));
+  const sanitized = sanitizeEmbedded(
+    taken.html,
+    termsFilter(state),
+    scripts !== undefined,
+  );
   const hinted = applyHints({
     html: sanitized,
     env,
     hints: featureOn(state, "hints"),
   });
   const body = restoreParts(markOwn(hinted, env.nonce), taken.parts, env.nonce);
-  const [open = "", close = ""] = splitSlots(
+  const [rawOpen = "", close = ""] = splitSlots(
     renderEmbeddedHtml({ html: SLOT_MARKER }),
   );
+  if (!scripts) {
+    return {
+      html: `${markOwn(rawOpen, env.nonce)}${body}${close}`,
+      params: taken.params,
+      warnings: taken.warnings,
+    };
+  }
+  // 範囲の通し番号を根の要素に付け、`css` を根の要素の中に限った `style` を先頭、スクリプトを実行しない `template` を末尾に置く
+  const open = rawOpen.replace(
+    /^<div class="mdmark-html"/,
+    `<div class="mdmark-html" data-html-scope="${scripts.scope}"`,
+  );
+  const style =
+    scripts.css === undefined
+      ? ""
+      : `<style class="mdmark-html-style">${scopeCss({ css: scripts.css, scope: scripts.scope })}</style>`;
+  const template = scripts.script
+    ? `<template class="mdmark-html-script" data-lang="${scripts.script.lang}">${escapeHtml(scripts.script.code)}</template>`
+    : "";
   return {
-    html: `${markOwn(open, env.nonce)}${body}${close}`,
+    html: `${markOwn(open, env.nonce)}${markOwn(style, env.nonce)}${body}${markOwn(template, env.nonce)}${close}`,
     params: taken.params,
+    warnings: taken.warnings,
   };
 }
 
@@ -285,6 +392,9 @@ export function buildEmbeddedHtml(state: StateCore): void {
   const out: Token[] = [];
   // 出力の中の操作できる部品の数: 次の範囲の定義を差し込む位置になる
   let params = 0;
+  const scripting = featureOn(state, "html-scripts");
+  // 範囲のスクリプトを当てる範囲の、文書の中の通し番号
+  let scope = 0;
   for (let index = 0; index < tokens.length; index++) {
     const token = tokens[index];
     const mark = markOf(token);
@@ -298,26 +408,49 @@ export function buildEmbeddedHtml(state: StateCore): void {
     const closeIndex = findClose(tokens, index, mark.name);
     const end = closeIndex < 0 ? tokens.length : closeIndex;
     if (closeIndex < 0) {
-      out.push(warningBlock(state, unclosedWarning(mark)));
+      out.push(warningBlock(state, unclosedWarning(mark), token));
     }
     const fences = tokens.slice(index + 1, end).filter(isHtmlFence);
     const [fence] = fences;
     if (fences.length !== 1 || fence === undefined) {
       // 書き方の警告を置き、範囲の中身はそのまま残す
-      out.push(warningBlock(state, blockCountWarning()), token);
+      out.push(warningBlock(state, blockCountWarning(), token), token);
       continue;
+    }
+    const range = readRangeScripts(tokens.slice(index + 1, end));
+    if (scripting) {
+      for (const item of range.warnings) {
+        out.push(warningBlock(state, { message: item.message }, token));
+      }
     }
     const built = buildHtml({
       state,
       source: fence.content,
       paramsBefore: params,
+      scripts: scripting
+        ? { scope, css: range.css, script: range.script }
+        : undefined,
     });
+    if (scripting) {
+      scope += 1;
+    }
     params += built.params;
     const block = new state.Token("html_block", "", 0);
     block.block = true;
     block.content = built.html;
-    block.meta = { [PARAM_COUNT_META]: built.params };
+    // 埋め込んだ図の部品の警告は、範囲の開きのマーカーの行で集める
+    const line = token.map?.[0];
+    block.meta = {
+      [PARAM_COUNT_META]: built.params,
+      warnings: built.warnings.map((warning) =>
+        line === undefined ? warning : { ...warning, line },
+      ),
+    };
     out.push(block);
+    if (!scripting) {
+      // 範囲のスクリプトの機能がオフのときは、`css`・`ts`・`js` をコードのまま範囲の後ろに残す
+      out.push(...tokens.slice(index + 1, end).filter(isRangeScriptFence));
+    }
     index = end;
   }
   state.tokens = out;

@@ -22,6 +22,18 @@ export type ImportModule = (url: string) => Promise<LibraryModule>;
 /** モジュールが描き終えた印の場所に付ける属性 */
 const DRAWN_ATTRIBUTE = "data-mdmark-drawn";
 
+/** `setEmbeddedLibraries` が入れる、印の名前から外部ライブラリのモジュールを返す関数を引く表。無ければ対応表の URL から読む。ページの中の全ての `mount` に効く */
+export let embeddedLibraries:
+  | Record<string, () => Promise<LibraryModule>>
+  | undefined;
+
+/** 埋めた外部ライブラリを置き換える。`undefined` で対応表の URL から読む形に戻す */
+export function setEmbeddedLibraries(
+  loaders: Record<string, () => Promise<LibraryModule>> | undefined,
+): void {
+  embeddedLibraries = loaders;
+}
+
 /** 既定のモジュールの読み方: 動的 `import()` */
 const importByUrl: ImportModule = (url) => import(/* @vite-ignore */ url);
 
@@ -71,7 +83,17 @@ export async function loadLibraries(options: {
       try {
         let loading = modules.get(name);
         if (!loading) {
-          loading = importModule(url);
+          // 埋めた外部ライブラリがあれば URL を読まない。表に無い名前は埋めていないものとして知らせの枠にする
+          const embedded = embeddedLibraries;
+          const loader =
+            embedded && Object.hasOwn(embedded, name)
+              ? embedded[name]
+              : undefined;
+          loading = embedded
+            ? loader
+              ? loader()
+              : Promise.reject(new Error(`埋めていない: ${name}`))
+            : importModule(url);
           modules.set(name, loading);
         }
         const { draw } = await loading;

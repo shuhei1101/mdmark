@@ -1,3 +1,4 @@
+import type { MdmarkAlias } from "../../src/knowledge/aliases.ts";
 import type { PreviewConfig } from "./config.ts";
 
 /** 配色の設定（`mdmark.preview.theme` の値） */
@@ -12,11 +13,32 @@ export type HostMessage =
       previous?: string;
       config: PreviewConfig;
       theme: PreviewTheme;
+      /** 取り込む文書の表（キーは Markdown のフォルダからのパス） */
+      includes?: Record<string, string>;
+      /** 設定の `aliases` から作ったエイリアス。設定に `aliases` が無いときは持たない */
+      aliases?: MdmarkAlias[];
     }
   | { type: "scrollToLine"; line: number }
-  | { type: "configError"; line: number }
+  | {
+      type: "configError";
+      /** 読めない設定ファイルのパス（表示の形） */
+      path: string;
+      /** YAML として読めない行（1 始まり）。`settingKey` とどちらか一方 */
+      line?: number;
+      /** 設定の形に合わない最初のキー。`line` とどちらか一方 */
+      settingKey?: string;
+    }
   | { type: "configOk" }
-  | { type: "inspect"; id: number; selector: string };
+  /** `theme` の CSS の `link` の `href` を替える */
+  | { type: "theme"; href: string }
+  | {
+      type: "assetsResolved";
+      id: number;
+      /** 書いたパスから Webview の URL を引く表。見つからないパスは `null` */
+      urls: Record<string, string | null>;
+    }
+  | { type: "inspect"; id: number; selector: string; play?: boolean }
+  | { type: "axe"; id: number };
 
 /** 調べた要素 1 つの様子（結合テストが Webview の DOM の期待値を確かめるために返す） */
 export type InspectedElement = {
@@ -34,6 +56,20 @@ export type InspectedElement = {
   top: number;
   /** 高さ（px） */
   height: number;
+  /** `video`・`audio` のときだけ。`play` を受けたときは、`play()` から 1 秒後の値 */
+  currentTime?: number;
+  /** `video`・`audio` のときだけ。要素の `readyState`（4 は再生に足りるデータを読めた） */
+  readyState?: number;
+};
+
+/** 結合テストが受け取る axe-core の違反 1 件 */
+export type AxeViolation = {
+  /** axe-core の規則の ID（`color-contrast` など） */
+  id: string;
+  /** axe-core の影響度 */
+  impact: string | null;
+  /** 違反した要素のセレクタ */
+  targets: string[];
 };
 
 /** 配布物を読めない理由 */
@@ -51,4 +87,7 @@ export type WebviewMessage =
   | { type: "revealLine"; line: number }
   | { type: "reload" }
   | { type: "openConfig" }
-  | { type: "inspected"; id: number; elements: InspectedElement[] };
+  | { type: "resolveAssets"; id: number; paths: string[] }
+  | { type: "openAsset"; path: string }
+  | { type: "inspected"; id: number; elements: InspectedElement[] }
+  | { type: "axed"; id: number; violations: AxeViolation[] };

@@ -26,6 +26,15 @@ function stickyTopOf(table: HTMLElement): number {
   return Number.parseFloat(value) || 0;
 }
 
+/** 表を包む横のスクロールの要素の class（部品『表』の HTML） */
+const SCROLL_CLASS = "mdmark-table-scroll";
+
+/** `view-timeline` を付ける要素。表を包む要素があればそれにする（包む要素は横にスクロールする要素のため、表に付けるとタイムラインがページでなく包む要素のスクロールに従う） */
+function timelineSubject(table: HTMLTableElement): HTMLElement {
+  const parent = table.parentElement;
+  return parent?.classList.contains(SCROLL_CLASS) === true ? parent : table;
+}
+
 /** 表の見出し行・本文・集計の行の、ずらす前の画面の中の位置を測る */
 function measure(table: HTMLTableElement) {
   const body = table.tBodies[0]?.getBoundingClientRect();
@@ -35,7 +44,7 @@ function measure(table: HTMLTableElement) {
   const head = table.tHead.getBoundingClientRect();
   const foot = table.tFoot?.getBoundingClientRect();
   return {
-    tableRect: table.getBoundingClientRect(),
+    tableRect: timelineSubject(table).getBoundingClientRect(),
     head,
     body,
     foot,

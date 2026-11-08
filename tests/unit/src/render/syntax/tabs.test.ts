@@ -1,6 +1,8 @@
 import { expect, test } from "vitest";
 import { type Mark, parseMarkArgs } from "../../../../../src/render/marks.ts";
-import { matches } from "../../../helpers/html.ts";
+import { markOf } from "../../../../../src/render/syntax/tokens.ts";
+import { parseWithRules } from "../../../helpers/core-rules.ts";
+import { findTags, innerHtml, matches } from "../../../helpers/html.ts";
 import { renderDoc } from "../../../helpers/render.ts";
 
 /** タブの処理を読み込む（実装が無い間は各テストが個別に失敗する） */
@@ -88,17 +90,23 @@ test("test_build_tabs_when_group", () => {
   expect(html).not.toContain("mdmark-syntax-warning");
 });
 
-// 読めない指定は警告にしてタブにはする（正常系）
+// 値の無い group= は警告にし、知らないキーと指定は読み飛ばしてタブにする（異常系）
 test("test_build_tabs_when_unreadable_options", () => {
   // 準備
   const markdown = tabsMarkdown("<!-- tabs: group= grop=os fold -->");
   // 実行
-  const { html } = renderDoc(markdown);
+  const { html, warnings } = renderDoc(markdown);
   // 検証
   expect(matches(html, /class="mdmark-syntax-warning"/g)).toHaveLength(1);
-  for (const label of ["group=", "grop=", "fold"]) {
-    expect(html).toContain(`<code>${label}</code>`);
-  }
+  expect(html).toContain("<code>group=</code>");
+  expect(html).not.toContain("<code>grop=</code>");
+  expect(html).not.toContain("<code>fold</code>");
+  const skipped = warnings
+    .filter((warning) => warning.kind === "unknown_mark_arg")
+    .map((warning) => warning.message)
+    .join("\n");
+  expect(skipped).toContain("grop=");
+  expect(skipped).toContain("fold");
   expect(html).toContain('<div class="mdmark-tabs">');
   expect(html).not.toContain("data-group");
   expect(html.indexOf("mdmark-syntax-warning")).toBeLessThan(
@@ -129,7 +137,7 @@ test("test_read_tabs_options_when_none", async () => {
   expect(options.warning).toBeUndefined();
 });
 
-// 読めない指定を 1 つの警告にまとめる（異常系）
+// 値の無い group= を警告にし、知らないキーと指定を読み飛ばす（異常系）
 test("test_read_tabs_options_when_unreadable", async () => {
   // 準備
   const { readTabsOptions } = await loadTabs();
@@ -142,15 +150,26 @@ test("test_read_tabs_options_when_unreadable", async () => {
   );
   expect(options.warning?.mark).toBe("<!-- tabs: group= grop=os fold -->");
   const items = options.warning?.items ?? [];
-  expect(items.map((item) => item.label).sort()).toEqual(
-    ["fold", "grop=", "group="].sort(),
+  expect(items.map((item) => item.label)).toEqual(["group="]);
+  expect(items[0]?.message).toContain("組の名前がありません");
+  expect(items[0]?.message).toContain("組を持たないタブとして描いています");
+  expect(options.skipped.map((skipped) => skipped.arg).sort()).toEqual(
+    ["fold", "grop="].sort(),
   );
-  const message = (label: string): string =>
-    items.find((item) => item.label === label)?.message ?? "";
-  expect(message("group=")).toContain("組の名前がありません");
-  expect(message("group=")).toContain("組を持たないタブとして描いています");
-  expect(message("grop=")).toContain("使えないキーです");
-  expect(message("fold")).toContain("使えない指定です");
+});
+
+// title= の値の空白の後ろの単語を警告にし、読み飛ばさない（異常系）
+test("test_read_tabs_options_when_title_has_space", async () => {
+  // 準備
+  const { readTabsOptions } = await loadTabs();
+  // 実行
+  const options = readTabsOptions(tabsMark("closed title=インストールの 手順"));
+  // 検証
+  expect(options.title).toBe("インストールの");
+  expect((options.warning?.items ?? []).map((item) => item.label)).toEqual([
+    "手順",
+  ]);
+  expect(options.skipped).toEqual([]);
 });
 
 // closed のタブをタブ名の見出しの折り畳みに入れる（正常系）
@@ -195,4 +214,140 @@ test("test_read_tabs_options_when_collapse", async () => {
   expect((conflict.warning?.items ?? []).map((item) => item.label)).toEqual([
     "closed と open",
   ]);
+});
+
+/** 外側のタブで `### macOS`・`### **Windows**` を囲み、`macOS` の中に `#### zsh`・`#### bash` の内側のタブを置いた Markdown（`innerClose` が偽なら内側の閉じを書かない） */
+function nestedTabsMarkdown(innerClose: boolean): string {
+  return [
+    "<!-- tabs -->",
+    "",
+    "### macOS",
+    "",
+    "<!-- tabs -->",
+    "",
+    "#### zsh",
+    "",
+    "zsh の手順",
+    "",
+    "#### bash",
+    "",
+    "bash の手順",
+    "",
+    ...(innerClose ? ["<!-- /tabs -->", ""] : []),
+    "### **Windows**",
+    "",
+    "Windows の手順",
+    "",
+    "<!-- /tabs -->",
+    "",
+  ].join("\n");
+}
+
+/** Markdown の中のタブの印のトークンの位置 */
+function tabsMarkIndexes(markdown: string): number[] {
+  const tokens = parseWithRules(markdown, []);
+  return tokens.flatMap((token, index) =>
+    markOf(token)?.name === "tabs" ? [index] : [],
+  );
+}
+
+// 入れ子のタブを外側の中身の中のタブにする（正常系）
+test("test_build_tabs_when_nested", () => {
+  // 準備
+  const markdown = nestedTabsMarkdown(true);
+  // 実行
+  const { html } = renderDoc(markdown);
+  // 検証
+  expect(matches(html, /class="mdmark-tabs"/g)).toHaveLength(2);
+  expect(matches(html, /class="mdmark-tab-panel"/g)).toHaveLength(4);
+  const macos = innerHtml(html, "mdmark-tab-panel");
+  expect(macos).toContain('<p class="mdmark-tab-title">macOS</p>');
+  expect(macos).toContain('class="mdmark-tabs"');
+  expect(macos).toContain('<p class="mdmark-tab-title">zsh</p>');
+  expect(macos).toContain('<p class="mdmark-tab-title">bash</p>');
+  const windows = html.slice(html.indexOf("<strong>Windows</strong>"));
+  expect(windows).not.toContain("zsh");
+  expect(html).not.toContain("mdmark-syntax-warning");
+  expect(html).not.toContain("<!--");
+});
+
+// 見出しの強調をタブ名の strong に残す（正常系）
+test("test_build_tabs_when_strong_title", () => {
+  // 準備
+  const markdown = [
+    "<!-- tabs -->",
+    "",
+    "### **Windows**",
+    "",
+    "Windows の手順",
+    "",
+    "### macOS",
+    "",
+    "macOS の手順",
+    "",
+    "<!-- /tabs -->",
+    "",
+  ].join("\n");
+  // 実行
+  const { html } = renderDoc(markdown);
+  // 検証
+  expect(html).toContain(
+    '<p class="mdmark-tab-title"><strong>Windows</strong></p>',
+  );
+  expect(html).not.toContain("**");
+});
+
+// 閉じの足りない入れ子は外側の開きに警告を置き、タブにしない（異常系）
+test("test_build_tabs_when_nested_unclosed", () => {
+  // 準備
+  const markdown = nestedTabsMarkdown(false);
+  // 実行
+  const { html } = renderDoc(markdown);
+  // 検証
+  expect(findTags(html, 'class="mdmark-syntax-warning"')).toHaveLength(1);
+  expect(html.indexOf("mdmark-syntax-warning")).toBeLessThan(
+    html.indexOf("<h3"),
+  );
+  expect(html).not.toContain("mdmark-tabs");
+  for (const title of ["macOS", "Windows"]) {
+    expect(matches(html, new RegExp(`<h3[^>]*>.*${title}`, "g"))).toHaveLength(
+      1,
+    );
+  }
+  for (const title of ["zsh", "bash"]) {
+    expect(matches(html, new RegExp(`<h4[^>]*>.*${title}`, "g"))).toHaveLength(
+      1,
+    );
+  }
+  for (const text of ["zsh の手順", "bash の手順", "Windows の手順"]) {
+    expect(html).toContain(text);
+  }
+});
+
+// 入れ子の閉じを飛ばして外側の閉じを返す（正常系）
+test("test_find_tabs_close", async () => {
+  // 準備
+  const { findTabsClose } = await loadTabs();
+  const markdown = nestedTabsMarkdown(true);
+  const tokens = parseWithRules(markdown, []);
+  const marks = tabsMarkIndexes(markdown);
+  // 実行
+  const found = findTabsClose(tokens, marks[0] ?? -1);
+  // 検証
+  expect(marks).toHaveLength(4);
+  expect(found).toEqual({ close: marks[3], nested: true });
+});
+
+// 閉じが足りなければ -1 を返す（異常系）
+test("test_find_tabs_close_when_unclosed", async () => {
+  // 準備
+  const { findTabsClose } = await loadTabs();
+  const markdown = nestedTabsMarkdown(false);
+  const tokens = parseWithRules(markdown, []);
+  const marks = tabsMarkIndexes(markdown);
+  // 実行
+  const found = findTabsClose(tokens, marks[0] ?? -1);
+  // 検証
+  expect(marks).toHaveLength(3);
+  expect(found).toEqual({ close: -1, nested: true });
 });

@@ -1,7 +1,7 @@
 import { existsSync } from "node:fs";
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
-import { expect, test } from "vitest";
+import { afterEach, expect, test, vi } from "vitest";
 import { parse } from "yaml";
 import {
   CLEAN_INDEX,
@@ -441,5 +441,139 @@ test("test_run_upgrade_when_plan_with_ask", async () => {
   );
   // 検証
   expect(code).toBe(0);
+  expect(await fixture.read("mdmark.config.yaml")).toBe(OLD_CONFIG);
+});
+
+// call のスクリプトが標準出力に書いた行を、手順の行に続けて出す（正常系）
+test("test_run_upgrade_when_script_prints", async () => {
+  // 準備
+  const { runUpgrade } = await loadModule();
+  const fixture = await createFixture({
+    stepsV050: [
+      "steps:",
+      "  - op: call",
+      "    description: 設定をスクリプトで直す",
+      "    script: print.mjs",
+      "    files: [config]",
+      "",
+    ].join("\n"),
+    packageFiles: {
+      "migrations/v0.5.0/print.mjs":
+        'process.stdout.write("除外しました\\n");\n',
+    },
+  });
+  const { io, stdout } = createIo(fixture.work);
+  // 実行
+  const code = await runUpgrade(
+    {
+      plan: false,
+      yes: false,
+      packageDir: fixture.packageDir,
+      cliVersion: "v0.5.0",
+      now: NOW,
+    },
+    io,
+    failingAsk,
+  );
+  // 検証
+  expect(code).toBe(0);
+  const index = stdout.findIndex(
+    (line, position) =>
+      line.startsWith("v0.5.0 の手順「") &&
+      stdout[position + 1] === "  除外しました",
+  );
+  expect(index).toBeGreaterThanOrEqual(0);
+});
+
+afterEach(() => {
+  vi.unstubAllEnvs();
+});
+
+// --settings で端末の設定だけを移行する（正常系）
+test("test_run_upgrade_when_settings", async () => {
+  // 準備
+  const { runUpgrade } = await loadModule();
+  const fixture = await createFixture();
+  const terminal = await createTempDir();
+  await writeFiles(terminal, {
+    "settings.yaml": "# 端末の設定\nversion: v0.3.0\nlegacy: 1\n",
+  });
+  const settingsPath = join(terminal, "settings.yaml");
+  vi.stubEnv("MDMARK_CONFIG", settingsPath);
+  const { io } = createIo(fixture.work);
+  // 実行
+  const code = await runUpgrade(
+    {
+      settings: true,
+      plan: false,
+      yes: false,
+      packageDir: fixture.packageDir,
+      cliVersion: "v0.5.0",
+      now: NOW,
+    },
+    io,
+    failingAsk,
+  );
+  // 検証
+  expect(code).toBe(0);
+  const after = await readFile(settingsPath, "utf8");
+  expect(after).toContain("# 端末の設定");
+  const settings = parse(after);
+  expect(settings.renamed).toBe(1);
+  expect(settings.legacy).toBeUndefined();
+  expect(settings.version).toBe("v0.5.0");
+  expect(await fixture.read("docs/a.md")).toContain("<!-- note -->");
+  expect(parse(await fixture.read("mdmark.config.yaml")).version).toBe(
+    "v0.3.0",
+  );
+});
+
+// --settings で files が config だけの call を端末の設定に当てる（正常系）
+test("test_run_upgrade_when_settings_with_config_call", async () => {
+  // 準備
+  const { runUpgrade } = await loadModule();
+  const fixture = await createFixture({
+    stepsV050: [
+      "steps:",
+      "  - op: call",
+      "    description: 設定をスクリプトで直す",
+      "    script: mark.mjs",
+      "    files: [config]",
+      "",
+    ].join("\n"),
+    packageFiles: {
+      "migrations/v0.5.0/mark.mjs": [
+        'import { appendFileSync } from "node:fs";',
+        'const path = process.argv[process.argv.indexOf("--config") + 1];',
+        'appendFileSync(path, "migrated: true\\n");',
+        "",
+      ].join("\n"),
+    },
+  });
+  const terminal = await createTempDir();
+  await writeFiles(terminal, {
+    "settings.yaml": "version: v0.3.0\n",
+  });
+  const settingsPath = join(terminal, "settings.yaml");
+  vi.stubEnv("MDMARK_CONFIG", settingsPath);
+  const { io } = createIo(fixture.work);
+  // 実行
+  const code = await runUpgrade(
+    {
+      settings: true,
+      plan: false,
+      yes: false,
+      packageDir: fixture.packageDir,
+      cliVersion: "v0.5.0",
+      now: NOW,
+    },
+    io,
+    failingAsk,
+  );
+  // 検証
+  expect(code).toBe(0);
+  const settings = parse(await readFile(settingsPath, "utf8"));
+  expect(settings.migrated).toBe(true);
+  expect(settings.version).toBe("v0.5.0");
   expect(await fixture.read("mdmark.config.yaml")).toBe(OLD_CONFIG);
 });

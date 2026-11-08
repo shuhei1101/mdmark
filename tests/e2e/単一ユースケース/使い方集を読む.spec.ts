@@ -1,7 +1,16 @@
+import { existsSync } from "node:fs";
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
+import { parse } from "yaml";
 import { expect, test } from "../cli.ts";
-import { callTool, withMcpClient } from "../plugin.ts";
+import {
+  GUIDE_FILTER,
+  REPO_ROOT,
+  searchDocs,
+  TWO_SEARCHES_TEST_TIMEOUT_MS,
+  withDevDocs,
+} from "../dev-docs.ts";
+import { findFreePort, withMcpClient, withServe } from "../plugin.ts";
 
 // ブラウザを使わないため、1 つのブラウザのプロジェクトだけで流す
 test.skip(
@@ -12,52 +21,70 @@ test.skip(
 /** 索引の行 */
 type Guide = { name: string; page: string };
 
-/** ビルドした `plugin/` の使い方集の索引の行を読む */
-async function readGuides(pluginDir: string): Promise<Guide[]> {
-  const index = JSON.parse(
-    await readFile(join(pluginDir, "guide", "index.json"), "utf8"),
-  );
+// 文書の書き方の使い方集の名前
+const WRITING_GUIDE = "writing";
+
+/** このリポジトリの `guide/index.yaml` の使い方集の索引の行を読む */
+async function readGuides(): Promise<Guide[]> {
+  const index = parse(
+    await readFile(join(REPO_ROOT, "guide", "index.yaml"), "utf8"),
+  ) as { guides: Guide[] };
   return index.guides;
 }
 
-// 索引の名前 2 つの本文が、索引の指すページの本文と一致して返る（正常シナリオ）
-test("test_normal", async ({ builtRoot }) => {
+// instructions の動線に沿って、dev-docs から使い方集の一覧と本文を受け取る（正常シナリオ）
+test("test_normal", async ({ builtRoot, tempDir }) => {
+  test.setTimeout(TWO_SEARCHES_TEST_TIMEOUT_MS);
   // 準備
-  const pluginDir = join(builtRoot, "plugin");
-  const guides = (await readGuides(pluginDir)).slice(0, 2);
+  const guides = await readGuides();
+  const writing = guides.find((guide) => guide.name === WRITING_GUIDE);
   // 実行
-  const result = await withMcpClient({ builtRoot }, (client) =>
-    callTool(client, "read_guide", {
-      names: guides.map((guide) => guide.name),
-    }),
+  const instructions = await withMcpClient({ builtRoot }, async (client) =>
+    client.getInstructions(),
   );
+  const found = await withDevDocs(await tempDir(), async (client) => ({
+    list: await searchDocs(client, { filter: GUIDE_FILTER, fields: ["id"] }),
+    page: await searchDocs(client, {
+      filter: { field: "id", op: "eq", values: [writing?.page ?? ""] },
+      view: "full",
+    }),
+  }));
   // 検証
-  expect(result.isError).toBe(false);
-  expect(result.texts).toHaveLength(2);
-  for (const [position, guide] of guides.entries()) {
-    const lines = (result.texts[position] ?? "").split("\n");
-    expect(lines[0]).toBe(`# ${guide.name}`);
-    const body = await readFile(join(pluginDir, "guide", guide.page), "utf8");
-    expect(lines.slice(2).join("\n")).toBe(body);
+  expect(instructions).toContain("search_docs");
+  expect(instructions).toContain('source: "mdmark"');
+  expect(instructions).toContain("topic:使い方集");
+  expect(instructions).toContain("check");
+  const ids = found.list.map((item) => item.id);
+  for (const guide of guides) {
+    expect(ids).toContain(guide.page);
   }
+  expect(found.page).toHaveLength(1);
+  expect(found.page[0]?.values.body).toBe(
+    await readFile(join(REPO_ROOT, writing?.page ?? ""), "utf8"),
+  );
 });
 
-// 索引に無い名前は本文を返さず、名前と近い名前を添えたエラーを返す（異常シナリオ）
-test("test_error_when_name_unknown", async ({ builtRoot }) => {
+// dev-docs が無いときは instructions の文で見つからないと分かり、dev-docs の端末の設定を作らない（異常シナリオ（dev-docs が無い））
+test("test_error_when_dev_docs_missing", async ({ builtRoot, tempDir }) => {
   // 準備
-  const pluginDir = join(builtRoot, "plugin");
-  const [first] = await readGuides(pluginDir);
-  const name = first?.name ?? "";
-  // 索引の名前の 1 字を変えた名前
-  const unknown = `${name.slice(0, -1)}${name.endsWith("x") ? "y" : "x"}`;
+  const settings = join(await tempDir(), "dev-docs", "settings.yaml");
   // 実行
-  const result = await withMcpClient({ builtRoot }, (client) =>
-    callTool(client, "read_guide", { names: [unknown] }),
+  const result = await withServe(
+    {
+      builtRoot,
+      env: {
+        MDMARK_PORT: String(await findFreePort()),
+        DEV_DOCS_CONFIG: settings,
+      },
+    },
+    (serve) =>
+      withMcpClient({ builtRoot, serverUrl: serve.url }, async (client) => ({
+        instructions: client.getInstructions(),
+        tools: (await client.listTools()).tools.map((tool) => tool.name),
+      })),
   );
   // 検証
-  expect(result.isError).toBe(true);
-  expect(result.texts).toHaveLength(1);
-  expect(result.texts[0]).toContain(unknown);
-  expect(result.texts[0]).toContain(name);
-  expect(result.texts[0]).not.toMatch(/^# /m);
+  expect(result.instructions).toContain("dev-docs が無いので見つかりません");
+  expect(result.tools).not.toContain("read_guide");
+  expect(existsSync(settings)).toBe(false);
 });

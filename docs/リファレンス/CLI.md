@@ -6,10 +6,13 @@
 `{版}` は使う版の `{MAJOR}.{MINOR}.{PATCH}`。
 npm のレジストリには公開しない。
 Node 24 以降で動く。
-`export`・`build`・`check`・`upgrade` は、`--config` で指した設定ファイルか、今のフォルダから上のフォルダへ順に探して最初に見つかった `mdmark.config.yaml` を読む。
+`export`・`build`・`check` は、端末の設定と、`--config` で指した設定ファイルか今のフォルダから上のフォルダの `mdmark.config.yaml` を重ねて読む（[設定を重ねて読む仕組み](../はじめに/コアコンセプト/設定を重ねて読む仕組み.md)）。
+`upgrade` は、`--config` で指した設定ファイルか、今のフォルダから上へ最初に見つかった `mdmark.config.yaml` だけを書き換える。`--settings` を渡すと端末の設定だけを書き換える。
 設定のキーは [設定](./設定.md)。
 
 ## 一覧
+
+<!-- table: data -->
 
 | 名前 | コマンド | 説明 |
 | --- | --- | --- |
@@ -19,6 +22,8 @@ Node 24 以降で動く。
 | [設定と索引を点検する](#設定と索引を点検する) | `mdmark check` | 設定の形・索引と文書のずれ・`build` の対象の有無を点検する |
 | [版を上げる](#版を上げる) | `mdmark upgrade` | 手元の版から呼んだ CLI の版までの移行の手順を版の順に当て、その範囲の変更履歴を出す |
 | [MCP サーバーを起動する](#mcp-サーバーを起動する) | `mdmark serve` | Claude Code のプラグインがつなぐ MCP の常駐サーバーを、127.0.0.1 の HTTP で起動する |
+
+<!-- /table -->
 
 ## 雛形を置く
 
@@ -62,13 +67,27 @@ npx github:shuhei1101/mdmark#v{版} init [{置く先のフォルダ}] [--js]
 
 Markdown を 1 つ、CDN を読まない 1 枚の HTML に書き出す。
 配布物・使う側の CSS・外部ライブラリのモジュール・拡張・画像を埋める。
-開いた HTML は `mount` で文書を描き、開いてから描き終えるまで、ページ自身と `blob:`・`data:` のほかへ要求しない。
+動画・音声は、出力の HTML と同じフォルダの `{出力のファイル名から拡張子を除いた名前}_files/` へコピーし、HTML からそのコピーへの相対パスにする。
+開いた HTML は `mount` で文書を描き、開いてから描き終えるまで、ページ自身・`_files/` の下にコピーした動画と音声と画像の `data:` のほかへ要求しない。
 手順は [文書を書き出す](../使い方/書き出す/文書を書き出す.md)。
 
 標準出力に `書き出した: {出力のパス}` の 1 行を出す。
 警告は、標準エラーに 1 つ 1 行（`警告: {ファイル}: {内容}`）で出す。
-警告の対象は、読めない画像・外部ライブラリのモジュール・拡張・`theme` の CSS と、埋めずに残した絶対 URL の画像。
+警告の対象は、読めない画像・動画・音声・外部ライブラリのモジュール・拡張・`theme` の CSS と、埋めずに残した絶対 URL の画像・動画・音声と、束ねた後も動的 `import()` が残る外部ライブラリ・拡張（埋めたうえで出す）。
 文書間のリンクは書いたままの `href` で残し、警告に出さない。
+
+文書の include のマーカーの取り込み先を、設定ファイルのフォルダ（無ければ文書のフォルダ）の中から読んで埋める。
+そのフォルダの外を指すパスと読めないファイルは埋めず、警告に出す（開いたときは、その場所に書き方の警告が出る）。
+文書が使う、配布物に入っていない名前の Lucide のアイコンの形も埋め、開いたときに jsDelivr を読まない。
+Lucide に無い名前は埋めず、警告に出す。
+
+文書が相対パスで指す画像・動画・音声・動画の `poster` は、文書のフォルダを基準に探し、無ければ設定の [アセットのルート](./設定.md#アセットのルート) を基準に同じ相対パスで探す。
+`src` のクエリとフラグメント（`#only-dark` など）は、書き出す値に残す。
+コピー先の中のパスは、設定ファイルのフォルダ（設定ファイルが無ければ文書のフォルダ）からの相対パスにする。
+そのフォルダの外にあるファイルは `_files/external/{ファイル名}` にし、名前が重なれば `-1`・`-2` を付ける。
+前の書き出しが残した `_files/` の中のファイルは消さない。
+添付のファイル（PDF など）はコピーせず、書いたままのリンクで残す。
+`features` で `images`・`media` をオフにしていても、画像の埋め込みと動画・音声のコピーはする。
 
 設定の `colorTheme` が選べるテーマの名前に無いときは、書き出しを止めず、既定の `dev-swiss` で描く。
 警告は `警告: {設定ファイル}: 不明なテーマ名 {名前} です。既定の dev-swiss で描画します。` で出す。
@@ -99,22 +118,25 @@ npx github:shuhei1101/mdmark#v{版} export {文書} [--out {出力}] [--config {
 | --- | --- | --- | --- |
 | `{文書}` | 必須 | 書き出す Markdown のパス | `docs/使い方/guide.md` |
 | `--out` | 任意 | 書き出す HTML のパス。省くと文書と同じフォルダの、拡張子を `.html` に替えたパス。親のフォルダが無ければ作り、既にあれば上書きする | `--out dist/guide.html` |
-| `--config` | 任意 | 使う設定ファイルのパス。省くと今のフォルダから上のフォルダへ順に `mdmark.config.yaml` を探す | `--config docs/mdmark.config.yaml` |
+| `--config` | 任意 | 使う設定ファイルのパス。渡すとこのファイルと端末の設定だけを重ねる。省くと今のフォルダから上のフォルダへ `mdmark.config.yaml` を探して重ねる | `--config docs/mdmark.config.yaml` |
 
 ### 終了コード
 
 | コード | 意味 |
 | --- | --- |
 | `0` | 書き出した（警告があっても） |
-| `1` | 設定ファイルが無い・読めない・Schema に合わない（空の設定ファイルを含む）。標準エラーに原因と直し方を出す。Schema に合わないときは `mdmark check` で確かめられることも出す |
+| `1` | 設定ファイルが無い・読めない・Schema に合わない（空の設定ファイルを含む。重ねた設定ファイルと端末の設定のどれかでも同じ）。標準エラーに原因と直し方を出す。Schema に合わないときは `mdmark check` で確かめられることも出す |
 | `1` | `{文書}` のファイルが無い・読めない。標準エラーにパスと直し方を出す |
-| `1` | 出力のパスへ書けない。標準エラーに書けなかったパスと直し方を出す。HTML はどこにも書かない |
+| `1` | 出力のパスか、動画・音声のコピー先の `_files/` へ書けない。標準エラーに書けなかったパスと直し方を出す。HTML はどこにも書かない |
 
 ## 複数の文書を 1 枚の HTML にまとめる
 
 設定の `build` で決めた文書を、文書を行き来できる 1 枚の HTML にまとめる。
 参照・被参照・用語のツールチップが効く。
 埋めるものと外へ要求しないことは、[文書を HTML に書き出す](#文書を-html-に書き出す) と同じ。
+画像・動画・音声はそれぞれの文書のフォルダを基準に探す。
+include の取り込み先は文書ごとにその文書のフォルダから数え、`build` の対象外のファイルでも設定ファイルのフォルダの中なら埋める（文書の一覧には出さない）。
+複数の文書が指す同じ画像は 1 回だけ埋め、同じ動画・音声は `{build.out のファイル名から拡張子を除いた名前}_files/` へ 1 回だけコピーする。
 手順は [文書を1枚にまとめる](../使い方/書き出す/文書を1枚にまとめる.md)。
 
 標準出力に `書き出した: {build.out}（文書 {件数} 件）` の 1 行を出す。
@@ -138,7 +160,7 @@ npx github:shuhei1101/mdmark#v{版} build [--config {設定ファイル}]
 
 | 引数 | 必須 / 任意 | 説明 | 例 |
 | --- | --- | --- | --- |
-| `--config` | 任意 | 使う設定ファイルのパス。省くと今のフォルダから上のフォルダへ順に `mdmark.config.yaml` を探す。まとめる文書と書き出す先は、設定の `build` が持つ | `--config docs/mdmark.config.yaml` |
+| `--config` | 任意 | 使う設定ファイルのパス。渡すとこのファイルと端末の設定だけを重ねる。省くと今のフォルダから上のフォルダへ `mdmark.config.yaml` を探して重ねる。まとめる文書と書き出す先は、重ねた設定の `build` が持つ | `--config docs/mdmark.config.yaml` |
 
 ### 終了コード
 
@@ -147,17 +169,17 @@ npx github:shuhei1101/mdmark#v{版} build [--config {設定ファイル}]
 | `0` | `build.out` に書いた（警告があっても） |
 | `1` | 設定ファイルが無い・読めない・Schema に合わない（空の設定ファイルを含む）、または `build` が無い。標準エラーに原因と直し方を出す |
 | `1` | `build.include` に当たり `build.exclude` に当たらない文書が 0 件。標準エラーに、対象が 0 件であることと `build.include` を直すことを出す。HTML は書かない |
-| `1` | `build.out` へ書けない。標準エラーに書けなかったパスと直し方を出す |
+| `1` | `build.out` か、動画・音声のコピー先の `_files/` へ書けない。標準エラーに書けなかったパスと直し方を出す。HTML は書かない |
 
 ## 設定と索引を点検する
 
-設定の形・索引と文書のずれ・`build` の対象の有無・設定の `aliases` のずれ・文書の本文にある知らない印を点検する。
+設定の形・索引と文書のずれ・`build` の対象の有無・設定の `aliases` のずれ・文書の本文にある知らない印・文書が指す見つからないファイル・include のマーカーの取り込み先・図の部品の定義を点検する。
 ずれの一覧を標準出力に出し、設定・索引・文書・エイリアスの YAML は書き換えない。
 手順は [点検する](../使い方/書き出す/点検する.md)。
 
 ずれ 1 つを 1 行（`{ファイル}:{場所}: {種類}: {内容}`。場所が空のときは `{ファイル}: {種類}: {内容}`）で並べ、最後に `ずれ {件数} 件` の行を出す。
 ファイルは設定ファイルのあるフォルダからの相対パス。
-並びは `schema` → `unknown_color_theme` → `no_documents` → `checkIndex` が返した並び → エイリアスのずれ（[`buildAliases`](./API.md#エイリアスを作る) が返した並び。`alias_no_files`・`alias_unreadable` は読んだ行の順にその場所へ置く） → `unknown_mark`。
+並びは `schema` → `unknown_color_theme` → `no_documents` → `checkIndex` が返した並び → エイリアスのずれ（[`buildAliases`](./API.md#エイリアスを作る) が返した並び。`alias_no_files`・`alias_unreadable` は読んだ行の順にその場所へ置く） → `missing_file` → `include_target_missing`・`include_circular` → `unknown_mark` → `diagram_` で始まる種類（いずれも文書のパスの順、同じ文書の中は行の順）。
 内容は、何が合わないかと直し方の日本語の 1 文。
 
 ```text
@@ -172,7 +194,7 @@ mdmark.config.yaml:build: schema: `build.out` がありません。書き出す 
 
 | 種類 | 意味 |
 | --- | --- |
-| `schema` | 設定か索引が Schema に合わない。`build.glossary`・`build.entry` が `build.include` に当たらないもの、`theme`・`extensions` のファイルが無いもの、`extensions` の拡張を読み込めないもの、`aliases` の行が取り込んだ Schema に合わないもの（場所は `aliases[1].metadata.alias_type` の形）を含む |
+| `schema` | 設定か索引が Schema に合わない。`build.glossary`・`build.entry` が `build.include` に当たらないもの、`theme`・`extensions` のファイルと `assets.root` のフォルダが無いもの、`extensions` の拡張を読み込めないもの、`aliases` の行が取り込んだ Schema に合わないもの（場所は `aliases[1].alias_type` の形）を含む |
 | `unknown_color_theme` | 設定の `colorTheme` が選べるテーマの名前に無い。場所は `colorTheme`。内容は `不明なテーマ名 {名前} です。dev-swiss・theme-paper・theme-slate・theme-contrast のいずれかに修正してください。` |
 | `no_documents` | `build.include` に当たり `build.exclude` に当たらない文書が 0 件 |
 | `missing_doc` | 索引にあって、文書が見つからない |
@@ -184,41 +206,50 @@ mdmark.config.yaml:build: schema: `build.out` がありません。書き出す 
 | `missed_change_together` | `--base` を渡したとき、`change_together` の組のうち片方の文書だけが変わっている。場所は空で、ファイルは変わっていない側の文書のパス |
 | `duplicate_term` | 用語の語か別名が、NFKC・英字の小文字化・前後の空白の除去で正規化した後に重なっている |
 | `avoided_term` | 索引の文書の本文に、用語のやめた言い方が出ている |
-| `duplicate_tag` | タグの語彙の `name` が重なっている |
-| `tag_alias_conflict` | タグの語彙の `aliases` が、別のタグの `name` か `aliases` と重なっている |
-| `broken_tag_replacement` | タグの語彙の `deprecated` の振り替え先が、語彙に無い |
-| `unregistered_tag` | 文書のタグが、語彙の `name` にも `aliases` にも無い。近いタグを添える |
-| `deprecated_tag` | 文書のタグが、やめたタグに当たる。振り替え先を添える |
 | `alias_no_files` | `aliases` の行の `paths` に当たるファイルが 0 件。場所は `aliases[1].paths` |
 | `alias_unreadable` | `paths` に当たったファイルを YAML として読めない |
 | `duplicate_alias_row_id` | `aliases` の行の `id` が、前の行と重なっている。重なった後の行は読まない |
 | `alias_records_missing` | 行の `records` のキーの配列が、ファイルに無い |
-| `alias_field_missing` | `metadata` の `ref` が指す列が、レコードに無い |
-| `alias_unknown_type` | `ref` で取った `alias_type` が、9 つの種類に無い |
+| `alias_field_missing` | `metadata` に記載した列が、レコードに無い |
+| `alias_unknown_type` | 行の `alias_type` が、9 つの種類に無い（`buildAliases` に直接渡した行だけ。`mdmark check` は `schema` のずれにする） |
 | `alias_required_empty` | 種類の必須のキーが空。`env` は `url` と `port` が両方空のとき |
 | `duplicate_alias_id` | エイリアスの `id` が、前のエイリアス（`env` を含む）と重なっている |
 | `unknown_mark` | 文書の本文に、記法の印・`features`・`libraries` の対応表・`extensions` の拡張の印・`check.ignore` の名前のどれにも当たらない印がある。場所は印のある行の番号 |
+| `missing_file` | 文書が相対パスで指す画像（動画の `poster` を含む）・動画・音声・添付のカードにするファイルが、文書のフォルダにもアセットのルートにも無い。場所は書いた行の番号。内容は書いたパスと種類（画像・動画・音声・添付）と直し方。コードブロックと行内のコードの中・絶対 URL・`#` で始まるリンクは点検しない |
+| `include_target_missing` | include のマーカーが指すファイル・見出し・行の範囲が無いか、設定ファイルのフォルダ（無ければ文書のフォルダ）の外を指す。場所はマーカーの行の番号。内容は取り込み先と、無いもの（行の範囲はファイルの行の数も）と直し方 |
+| `include_circular` | include の取り込みが循環する。場所はマーカーの行の番号。内容は循環の順（`a.md → b.md → a.md`）と直し方 |
+| `diagram_invalid` | `flow`・`sequence`・`chart`・`param` の印の中の `json` のコードブロックの部品の定義を読めないか、部品の形に合わない。内容は描いたときに出す書き方の警告と同じ文 |
+| `diagram_node_overlap` | フロー図の 2 つの箱が重なっている |
+| `diagram_node_overflow` | フロー図の箱が図の幅・高さの外に出ているか、システムの枠の縁にまたがっている |
+| `diagram_wire_crosses_node` | フロー図の線が、`from`・`to` でない箱を通っている |
+| `diagram_label_too_long` | フロー図の箱の文字が、折り返しても箱に収まらない |
+| `syntax_warning` | `--text`・`--file` で渡した Markdown を描いたときに出る書き方の警告のうち、`unknown_mark`・`diagram_invalid` に当たらないもの。include の取り込み先が無い警告は、取り込み先を読まないため出さない（取り込み先は設定の文書の点検の `include_target_missing`・`include_circular` で確かめる）。内容は書き方の警告の文と同じ。場所は警告の元のマーカーの行 |
+| `unknown_mark_arg` | `--text`・`--file` で渡した Markdown の記法のマーカーに、描くときに警告を出さずに無視する知らない種類・`+機能`・`-機能`・キー・指定の単語がある。1 つにつき 1 件で、内容は無視した指定・そのマーカーで使えるもの・直し方。場所はマーカーの行 |
 
 <!-- /table -->
 
-`missing_doc` から `deprecated_tag` までは、`checkIndex` が返す `kind` と同じ（[点検が返すずれ](./索引.md#点検が返すずれ)）。
+`missing_doc` から `avoided_term` までは、`checkIndex` が返す `kind` と同じ（[点検が返すずれ](./索引.md#点検が返すずれ)）。
 `duplicate_alias_row_id` から `duplicate_alias_id` までは、`buildAliases` が返す `kind` と同じ（[エイリアスを作る](./API.md#エイリアスを作る)）。
-タグのずれは、索引がタグの語彙（`tags`）を記載しているときだけ出る。
+`diagram_` で始まる種類の場所は図の開く印の行の番号で、内容は図の題（無いときは印の名前）・箱の `id`・直し方。
+図の点検はブラウザを使わず、フロー図は配置まで確かめる（座標を省いた判定フローチャートは mdmark が配置した後の座標で確かめる）。埋め込んだ HTML の custom element は点検しない。
 `missed_change_together` は、`--base` を渡したときだけ出る。
 エイリアスのずれは、設定に `aliases` があるときだけ出る。`enabled` が `false` の行は読まない。`env` のレコードも種類と必須のキーを確かめ、ずれがあれば出す。
 
 ### 使い方
 
 ```bash
-npx github:shuhei1101/mdmark#v{版} check [--config {設定ファイル}] [--base {git の ref}]
+npx github:shuhei1101/mdmark#v{版} check [--config {設定ファイル}] [--base {git の ref} | --text {Markdown} | --file {ファイル} --key {YAML のキー}]
 ```
 
 ### 引数
 
 | 引数 | 必須 / 任意 | 説明 | 例 |
 | --- | --- | --- | --- |
-| `--config` | 任意 | 使う設定ファイルのパス。省くと今のフォルダから上のフォルダへ順に `mdmark.config.yaml` を探し、最初に見つかったものを使う | `--config docs/mdmark.config.yaml` |
+| `--config` | 任意 | 使う設定ファイルのパス。渡すとこのファイルと端末の設定だけを重ねる。省くと今のフォルダから上のフォルダへ `mdmark.config.yaml` を探して重ね、重ねた設定ファイルと端末の設定のそれぞれの形を点検する | `--config docs/mdmark.config.yaml` |
 | `--base` | 任意 | 直し忘れの検査に比べる基準の git の ref。渡すと、基準と HEAD の merge-base から作業ツリーまでに変わった文書を比べ、`change_together` の組のうち片方だけが変わった組を `missed_change_together` で出す。省くと直し忘れを検査しない。設定に `index` が無いときは使わない | `--base origin/develop` |
+| `--text` | 任意 | 点検する Markdown の文字列。`-` を渡すと標準入力から読む。渡すと設定と索引を点検せず、描いたときの書き方の警告・描くときに無視するマーカーの知らない引数・知らない印・図の配置のずれだけを、ファイル `-`・文字列の行で出す。設定ファイルが無ければ既定の設定で点検する。`--base`・`--file`・`--key` と一緒に渡せない | `--text -` |
+| `--file` | 任意 | Markdown をキーの値に持つ YAML のファイル。`--key` と一緒に渡し、そのキーの値を `--text` と同じく点検する。場所は YAML のファイルの行（ブロックスカラーは値の中の行をファイルの行に置き換え、それ以外の値はキーの行） | `--file records.yaml` |
+| `--key` | `--file` と一緒に必須 | `--file` の YAML の中の、点検する文字列の値のキー。`.` でキーを、`[位置]` で配列の要素をたどる | `--key items[0].body` |
 
 ### 終了コード
 
@@ -226,7 +257,8 @@ npx github:shuhei1101/mdmark#v{版} check [--config {設定ファイル}] [--bas
 | --- | --- |
 | `0` | ずれが 0 件 |
 | `1` | ずれが 1 件以上ある。全てのずれを出してから終わる |
-| `1` | `--config` のファイルが無い、または今のフォルダと上のフォルダに `mdmark.config.yaml` が無い。標準エラーに、探した場所と `mdmark init` で置けることを出す |
+| `1` | `--config` のファイルが無い、または今のフォルダと上のフォルダに `mdmark.config.yaml` が無い（`--text`・`--file` を渡し、`--config` を渡さないときを除く）。標準エラーに、探した場所と `mdmark init` で置けることを出す |
+| `1` | 一緒に渡せない引数を渡した、`--file` と `--key` の片方だけを渡した、`--file` のファイルが無いか YAML として読めない、`--key` のキーが無いか値が文字列でない。標準エラーに原因と直し方を出し、点検はしない |
 | `1` | 設定ファイルを YAML として読めない。標準エラーに、ファイルと読めない行と直し方を出す |
 | `1` | `--base` を渡し、git が無い・設定ファイルのフォルダが git のリポジトリの中に無い・ref と HEAD の merge-base を引けない。標準エラーに、渡した ref と引けない理由と、ref を直すか履歴を取得する直し方（CI の checkout の `fetch-depth`）を出す。ずれの点検はしない |
 
@@ -263,7 +295,7 @@ v0.5.0:
 ### 使い方
 
 ```bash
-npx github:shuhei1101/mdmark#v{目標の版} upgrade [--plan] [--yes] [--config {設定ファイル}]
+npx github:shuhei1101/mdmark#v{目標の版} upgrade [--plan] [--yes] [--config {設定ファイル} | --settings]
 ```
 
 ### 引数
@@ -272,7 +304,8 @@ npx github:shuhei1101/mdmark#v{目標の版} upgrade [--plan] [--yes] [--config 
 | --- | --- | --- | --- |
 | `--plan` | 任意 | 何も書き換えず、当てる版ごとの手順・変更履歴の行・壊す手順の有無を出す。写しは取らない | `--plan` |
 | `--yes` | 任意 | 壊す手順を、確かめずに当てる。手元の版と、値を聞く手順の問いは飛ばさない | `--yes` |
-| `--config` | 任意 | 使う設定ファイルのパス。省くと今のフォルダから上のフォルダへ順に `mdmark.config.yaml` を探し、最初に見つかったものを使う | `--config docs/mdmark.config.yaml` |
+| `--config` | 任意 | 書き換える設定ファイルのパス。省くと今のフォルダから上のフォルダへ順に `mdmark.config.yaml` を探し、最初に見つかったものを使う。上のフォルダの設定と端末の設定は書き換えない | `--config docs/mdmark.config.yaml` |
+| `--settings` | 任意 | 端末の設定（`MDMARK_CONFIG`、無ければ `${XDG_CONFIG_HOME:-~/.config}/mdmark/settings.yaml`）を書き換える。設定ファイルの手順だけを当て、索引と文書の手順は飛ばす。`--config` と一緒には渡せない | `--settings` |
 
 目標の版は引数で受けず、呼んだ CLI の版にする。
 手元の版は設定の `version` で、無ければ標準エラーに `手元の版（v{MAJOR}.{MINOR}.{PATCH}）を入れてください:` を出して聞く（`--plan` のときも聞く）。
@@ -290,6 +323,8 @@ npx github:shuhei1101/mdmark#v{目標の版} upgrade [--plan] [--yes] [--config 
 
 ### 終了コード
 
+<!-- table: data -->
+
 | コード | 意味 |
 | --- | --- |
 | `0` | 手順を当てて点検が通り、`version` を書き換えた。`--plan` で示した。手元の版が目標の版と同じで当てる手順が無い |
@@ -301,6 +336,9 @@ npx github:shuhei1101/mdmark#v{目標の版} upgrade [--plan] [--yes] [--config 
 | `1` | 問いに答える前に標準入力が終わった。標準エラーに答える問いを出し、何も書き換えない |
 | `1` | 当てる版の `steps.yaml` が読めない・形に合わない、または `call` のスクリプトが無い。標準エラーに版と合わないところと、mdmark を入れ直すことを出す。何も書き換えない |
 | `1` | `--config` のファイルが無い、今のフォルダと上のフォルダに `mdmark.config.yaml` が無い、または YAML として読めない。`mdmark check` と同じ文を標準エラーに出す |
+| `1` | `--config` と `--settings` を一緒に渡した |
+
+<!-- /table -->
 
 ## MCP サーバーを起動する
 

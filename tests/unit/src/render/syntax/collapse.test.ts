@@ -63,3 +63,48 @@ test("test_read_collapse_when_title_alone", async () => {
   expect(empty.title).toBeUndefined();
   expect(empty.items.map((item) => item.label)).toEqual(["title="]);
 });
+
+// title= の値の空白の後ろの単語を titleTail にする（異常系）
+test("test_read_collapse_when_title_has_space", async () => {
+  // 準備
+  const { readCollapse } = await loadCollapse();
+  const text = "open title=入れ 方 fold";
+  // 実行
+  const spec = readCollapse(parseMarkArgs(text), text);
+  // 検証
+  expect(spec.title).toBe("入れ");
+  expect(spec.items).toEqual([]);
+  expect(spec.titleTail).toBe("方");
+  expect(spec.rest).toEqual({ args: ["方", "fold"], keys: {} });
+});
+
+// title= の直後の closed・open・+機能 は titleTail にしない（正常系）
+test("test_read_collapse_when_title_followed_by_known", async () => {
+  // 準備
+  const { readCollapse } = await loadCollapse();
+  const open = "title=一覧 open";
+  const feature = "open title=一覧 +sort";
+  // 実行
+  const openSpec = readCollapse(parseMarkArgs(open), open);
+  const featureSpec = readCollapse(parseMarkArgs(feature), feature);
+  // 検証
+  expect(openSpec.collapse).toBe("open");
+  expect(openSpec.titleTail).toBeUndefined();
+  expect(openSpec.items).toEqual([]);
+  expect(featureSpec.titleTail).toBeUndefined();
+  expect(featureSpec.rest.args).toEqual(["+sort"]);
+});
+
+// title= の直後の単語だけを返す（正常系）
+test("test_title_tail_of", async () => {
+  // 準備
+  const { titleTailOf } = await loadCollapse();
+  // 実行
+  const tails = [
+    "title=My App.ts color=red",
+    "title=app.ts color=red",
+    "lines App.ts",
+  ].map((text) => titleTailOf(text));
+  // 検証
+  expect(tails).toEqual(["App.ts", undefined, undefined]);
+});

@@ -1,5 +1,14 @@
 import { execFile } from "node:child_process";
-import { copyFile, mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
+import {
+  copyFile,
+  mkdir,
+  mkdtemp,
+  readFile,
+  rm,
+  writeFile,
+} from "node:fs/promises";
+import { createServer } from "node:http";
+import type { AddressInfo } from "node:net";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { pathToFileURL } from "node:url";
@@ -58,17 +67,21 @@ export const test = base.extend<CliFixtures, CliWorkerFixtures>({
   },
 });
 
-/** ビルドした `dist/cli.js` を、`cwd` で子プロセスとして流す。標準入力には `stdin`（既定は空）を渡して閉じる。終了コードが 0 以外でも例外を投げず、結果を返す */
+/** 端末の設定を持たないことにする `MDMARK_CONFIG`（無いファイル）。開発者の端末の設定をシナリオに混ぜない */
+export const NO_SETTINGS = join(tmpdir(), "mdmark-e2e-no-settings.yaml");
+
+/** ビルドした `dist/cli.js` を、`cwd` で子プロセスとして流す。標準入力には `stdin`（既定は空）を渡して閉じる。`env` で環境変数を足す（`MDMARK_CONFIG` の既定は `NO_SETTINGS`）。終了コードが 0 以外でも例外を投げず、結果を返す */
 export async function runCli(
   builtRoot: string,
   args: string[],
   cwd: string,
   stdin = "",
+  env: Record<string, string> = {},
 ): Promise<CliResult> {
   const running = execFileAsync(
     process.execPath,
     [join(builtRoot, "dist", "cli.js"), ...args],
-    { cwd },
+    { cwd, env: { ...process.env, MDMARK_CONFIG: NO_SETTINGS, ...env } },
   );
   running.child.stdin?.end(stdin);
   try {
@@ -104,7 +117,7 @@ export async function git(cwd: string, ...args: string[]): Promise<string> {
 
 /** 文書 `a`・`b` が互いを `change_together` で記載した索引の中身 */
 const CHANGE_TOGETHER_INDEX = [
-  "schema: 1",
+  "schema: 2",
   "docs:",
   "  - id: a",
   "    path: a.md",
@@ -210,6 +223,94 @@ export const CHART_SOURCE = `export function draw(slot, args) {
 }
 `;
 
+/** 拡張の代役: `load` の中で同じフォルダの `greet-text.js` を動的 `import()` で読み、印の場所の文字を `greet:` と読んだ文字と引数にする */
+export const GREET_WITH_IMPORT_SOURCE = `export default {
+  name: "greet",
+  directive: "greet",
+  load: async () => {
+    const { TEXT } = await import("./greet-text.js");
+    return {
+      draw(slot, value) {
+        slot.textContent = "greet:" + TEXT + ":" + value.args.join(",");
+      },
+    };
+  },
+};
+`;
+
+/** `GREET_WITH_IMPORT_SOURCE` が動的 `import()` で読むモジュール */
+export const GREET_TEXT_SOURCE = 'export const TEXT = "読んだ";\n';
+
+/** 項目の表をビューの印で囲んだ本文 */
+export const VIEW_SOURCE = [
+  "<!-- view: group=状態 -->",
+  "",
+  "| 題 | 状態 |",
+  "| --- | --- |",
+  "| a | 未着手 |",
+  "| b | 完了 |",
+  "",
+  "<!-- /view -->",
+].join("\n");
+
+/** `blob:` と `data:` のスクリプトを許さない CSP。動的 `import()` で読むスクリプトも、ページ自身のほかは許さない */
+export const STRICT_SCRIPT_CSP = "script-src 'unsafe-inline'";
+
+/** CSP のヘッダーを付けて開いた結果 */
+export type CspOpenedHtml = {
+  /** 開いてから今までの CSP の違反（`securitypolicyviolation`）の、違反したディレクティブと URL */
+  violations: () => Promise<string[]>;
+  /** 開いてから今までの `blob:` の URL への要求 */
+  blobRequests: () => string[];
+  /** 手元のサーバーを閉じる */
+  close: () => Promise<void>;
+};
+
+/** HTML を `STRICT_SCRIPT_CSP` のヘッダーを付けて返す手元のサーバーを起動し、開く */
+export async function openWithCsp(
+  page: Page,
+  htmlFile: string,
+): Promise<CspOpenedHtml> {
+  const html = await readFile(htmlFile);
+  const server = createServer((_request, response) => {
+    response.writeHead(200, {
+      "content-type": "text/html; charset=utf-8",
+      "content-security-policy": STRICT_SCRIPT_CSP,
+    });
+    response.end(html);
+  });
+  await new Promise<void>((resolve) => {
+    server.listen(0, "127.0.0.1", resolve);
+  });
+  const { port } = server.address() as AddressInfo;
+  await page.addInitScript(() => {
+    const store = globalThis as unknown as { __violations: string[] };
+    store.__violations = [];
+    document.addEventListener("securitypolicyviolation", (event) => {
+      store.__violations.push(`${event.violatedDirective} ${event.blockedURI}`);
+    });
+  });
+  const blobs: string[] = [];
+  page.on("request", (request) => {
+    if (request.url().startsWith("blob:")) {
+      blobs.push(request.url());
+    }
+  });
+  await page.goto(`http://127.0.0.1:${port}/`);
+  return {
+    violations: () =>
+      page.evaluate(
+        () =>
+          (globalThis as unknown as { __violations: string[] }).__violations,
+      ),
+    blobRequests: () => blobs,
+    close: () =>
+      new Promise<void>((resolve) => {
+        server.close(() => resolve());
+      }),
+  };
+}
+
 /** 使う側の CSS の見本: 角丸の変数を上書きする */
 export const THEME_SOURCE = ".mdmark { --mdmark-radius: 0px; }\n";
 
@@ -229,7 +330,7 @@ export const GLOSSARY_DOCUMENT = [
 
 /** 文書 3 つ（入口・用語集の表を持つ文書・Chart.js の印と画像を持つ文書）を載せた索引 */
 export const THREE_DOCS_INDEX = [
-  "schema: 1",
+  "schema: 2",
   "docs:",
   "  - id: top",
   "    path: README.md",
@@ -276,3 +377,119 @@ export async function writeSampleDocs(
     "img/a.png": PNG_BYTES,
   });
 }
+
+/** 座標の重なるノード `web` と `db`、システムの枠の右端をまたぐノード `queue`、ノード `cache` の中を通る線 `w1`、名前が長いノード `batch` を持つフロー図の定義 */
+export const BROKEN_FLOW = {
+  title: "配置のずれ",
+  scope: "点検",
+  updated: "2026-11-03",
+  width: 800,
+  height: 400,
+  frame: { title: "システム", x: 20, y: 20, w: 600, h: 360 },
+  nodes: [
+    { id: "web", kind: "script", x: 40, y: 40, w: 100, h: 50, name: "Web" },
+    { id: "db", kind: "data", x: 80, y: 60, w: 100, h: 50, name: "DB" },
+    { id: "cache", kind: "data", x: 300, y: 200, w: 100, h: 50, name: "Cache" },
+    {
+      id: "queue",
+      kind: "script",
+      x: 580,
+      y: 200,
+      w: 100,
+      h: 50,
+      name: "Queue",
+    },
+    {
+      id: "batch",
+      kind: "script",
+      x: 40,
+      y: 300,
+      w: 120,
+      h: 48,
+      name: "あ".repeat(30),
+    },
+  ],
+  wires: [
+    {
+      id: "w1",
+      from: "web",
+      to: "queue",
+      line: "flow",
+      points: [
+        [140, 225],
+        [580, 225],
+      ],
+    },
+  ],
+};
+
+/** ずれの無いフロー図の定義（ノード 2 つと線 1 本） */
+export const CLEAN_FLOW = {
+  title: "整った図",
+  scope: "点検",
+  updated: "2026-11-03",
+  width: 400,
+  height: 200,
+  nodes: [
+    { id: "a", kind: "script", x: 20, y: 20, w: 100, h: 60, name: "A" },
+    { id: "b", kind: "script", x: 220, y: 20, w: 100, h: 60, name: "B" },
+  ],
+  wires: [
+    {
+      id: "w",
+      from: "a",
+      to: "b",
+      line: "flow",
+      points: [
+        [120, 50],
+        [220, 50],
+      ],
+    },
+  ],
+};
+
+/** フロー図の定義を `<!-- flow -->` の範囲の行にする */
+export function flowLines(definition: unknown): string[] {
+  return [
+    "<!-- flow -->",
+    "",
+    "```json",
+    JSON.stringify(definition),
+    "```",
+    "",
+    "<!-- /flow -->",
+  ];
+}
+
+/** 取り込み先の無いマーカーを持つフォルダの文書（`docs/a.md`・`docs/b.md`）と取り込み先 */
+export const INCLUDE_MISSING_FILES: Record<string, string> = {
+  "mdmark.config.yaml": [
+    "build:",
+    '  include: ["docs/*.md"]',
+    "  out: dist/docs.html",
+    "",
+  ].join("\n"),
+  "docs/a.md": [
+    "# A",
+    "",
+    "<!-- include: missing.md -->",
+    "",
+    "<!-- include: 共通/手順.md#実行 -->",
+    "",
+  ].join("\n"),
+  "docs/b.md": [
+    "# B",
+    "<!-- include: 共通/手順.md#無い見出し -->",
+    "",
+    "<!-- include: ../src/app.ts#L8-L10 -->",
+    "",
+  ].join("\n"),
+  "docs/共通/手順.md": "## 実行\n\n実行の段落\n",
+  "src/app.ts": "1\n2\n3\n4\n5\n",
+};
+
+/** 1〜12 行目に `const v{行} = {行};` を持つ `src/app.ts` の本文 */
+export const APP_TS = Array.from(
+  { length: 12 },
+  (_, index) => `const v${index + 1} = ${index + 1};`,
+).join("\n");

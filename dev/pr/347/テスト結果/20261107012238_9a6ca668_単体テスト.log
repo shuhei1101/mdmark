@@ -1,0 +1,334 @@
+$ git worktree add --detach .claude/worktrees/red-9a6ca668 9a6ca668 && cd .claude/worktrees/red-9a6ca668 && npm run test:unit
+# Red: fail は 9a6ca668 の時点で実装（vscode の書き出し・Webview の 255b92e3）が無いことによるものだけ。test_relativize_config_paths は、実装（a8ebb1c6）が先に入っていたため pass
+
+> test:unit
+> vitest run --project 'unit*'
+
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/red-9a6ca668
+
+ ❯ |unit-browser (chromium)| tests/unit/vscode/src/webview/features/preview/panel/panel-screen.browser.test.tsx (14 tests | 3 failed) 3655ms
+   × test_panel_screen_when_config_error 234ms
+   × test_panel_screen_when_extensions 182ms
+   × test_panel_screen_when_theme 302ms
+ ❯ |unit-browser (chromium)| tests/unit/vscode/src/webview/features/preview/panel/boot.browser.test.ts (2 tests | 1 failed) 149ms
+   × test_read_boot 149ms
+ ❯ |unit| tests/unit/vscode/src/webview/features/preview/panel/load-mdmark.test.ts (5 tests | 1 failed) 72ms
+   × test_register_extensions 3ms
+ ❯ |unit| tests/unit/vscode/src/export/html.test.ts (5 tests | 1 failed) 73ms
+   × test_build_export_html_when_theme_and_extensions 3ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 6 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit| tests/unit/vscode/src/export/html.test.ts > test_build_export_html_when_theme_and_extensions
+AssertionError: expected null not to be null
+ ❯ tests/unit/vscode/src/export/html.test.ts:107:21
+    105|   // 検証
+    106|   const style = html.match(/<style>([\s\S]*?)<\/style>/);
+    107|   expect(style).not.toBeNull();
+       |                     ^
+    108|   expect(style?.[1]).not.toMatch(/<\/style/i);
+    109|   expect(html.indexOf(`href="${BUILD_OPTIONS.distCss}"`)).toBeLessThan(
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/6]⎯
+
+ FAIL  |unit| tests/unit/vscode/src/webview/features/preview/panel/load-mdmark.test.ts > test_register_extensions
+TypeError: registerExtensions is not a function
+ ❯ tests/unit/vscode/src/webview/features/preview/panel/load-mdmark.test.ts:87:9
+     85|     .mockImplementation(() => undefined);
+     86|   // 実行
+     87|   await registerExtensions({
+       |         ^
+     88|     mdmark,
+     89|     urls: ["a.js", "b.js", "c.js"],
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/6]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/vscode/src/webview/features/preview/panel/boot.browser.test.ts > test_read_boot
+AssertionError: expected { root: <div …(5)></div>, …(5) } to deeply equal { root: <div …(5)></div>, …(6) }
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/boot.browser.test.ts/test_read_boot.png
+
+- Expected
++ Received
+
+@@ -1,11 +1,8 @@
+  {
+    "configPath": "docs/mdmark.config.yaml",
+    "distJs": "https://cdn.jsdelivr.net/gh/shuhei1101/mdmark@v0.7.0/dist/index.js",
+-   "extensions": [
+-     "web:/w/e.js",
+-   ],
+    "root": <div
+      data-config-path="docs/mdmark.config.yaml"
+      data-dist-js="https://cdn.jsdelivr.net/gh/shuhei1101/mdmark@v0.7.0/dist/index.js"
+      data-extensions="[\"web:/w/e.js\"]"
+      data-test=""
+
+ ❯ tests/unit/vscode/src/webview/features/preview/panel/boot.browser.test.ts:43:17
+     41|   const second = readBoot(other);
+     42|   // 検証
+     43|   expect(first).toEqual({
+       |                 ^
+     44|     root: full,
+     45|     distJs:
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-BDaSc-xm.js?v=1c2b5dd6:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/6]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/vscode/src/webview/features/preview/panel/panel-screen.browser.test.tsx > test_panel_screen_when_config_error
+TestingLibraryElementError: Unable to find an accessible element with the role "button" and name "設定ファイルを開く"
+
+There are no accessible roles. But there might be some inaccessible roles. If you wish to access them, then set the `hidden` option to `true`. Learn more about this here: https://testing-library.com/docs/dom-testing-library/api-queries#byrole
+
+Ignored nodes: comments, script, style
+<body
+  style="margin: 0px;"
+>
+  
+  
+
+
+  <div
+    data-config-path="mdmark.config.yaml"
+    id="mdmark-preview"
+  >
+    <div>
+      <div
+        data-source-line="0"
+        style="height: 100px;"
+      />
+      <div
+        data-source-line="1"
+        style="height: 100px;"
+      />
+      <div
+        data-source-line="2"
+        style="height: 100px;"
+      />
+      <div
+        data-source-line="3"
+        style="height: 100px;"
+      />
+      <div
+        data-source-line="4"
+        style="height: 100px;"
+      />
+      <div
+        data-source-line="5"
+        style="height: 100px;"
+      />
+      <div
+        data-source-line="6"
+        style="height: 100px;"
+      />
+      <div
+        data-source-line="7"
+        style="height: 100px;"
+      />
+      <div
+        data-source-line="8"
+        style="height: 100px;"
+      />
+      <div
+        data-source-line="9"
+        style="height: 100px;"
+      />
+      <div
+        data-source-line="10"
+        style="height: 100px;"
+      />
+      <div
+        data-source-line="11"
+        style="height: 100px;"
+      />
+      <div
+        data-source-line="12"
+        style="height: 100px;"
+      />
+      <div
+        data-source-line="13"
+        style="height: 100px;"
+      />
+      <div
+        data-source-line="14"
+        style="height: 100px;"
+      />
+      <div
+        data-source-line="15"
+        style="height: 100px;"
+      />
+      <div
+        data-source-line="16"
+        style="height: 100px;"
+      />
+      <div
+        data-source-line="17"
+        style="height: 100px;"
+      />
+      <div
+        data-source-line="18"
+        style="height: 100px;"
+      />
+      <div
+        data-source-line="19"
+        style="height: 100px;"
+      />
+      <div
+        data-source-line="20"
+        style="height: 100px;"
+      />
+      <div
+        data-source-line="21"
+        style="height: 100px;"
+      />
+      <div
+        data-source-line="22"
+        style="height: 100px;"
+      />
+      <div
+        data-source-line="23"
+        style="height: 100px;"
+      />
+      <div
+        data-source-line="24"
+        style="height: 100px;"
+      />
+      <div
+        data-source-line="25"
+        style="height: 100px;"
+      />
+      <div
+        data-source-line="26"
+        style="height: 100px;"
+      />
+      <div
+        data-source-line="27"
+        style="height: 100px;"
+      />
+      <div
+        data-source-line="28"
+        style="height: 100px;"
+      />
+      <div
+        data-source-line="29"
+        style="height: 100px;"
+      />
+      <div
+        data-source-line="30"
+        style="height: 100px;"
+      />
+      <div
+        data-source-line="31"
+        style="height: 100px;"
+      />
+      <div
+        data-source-line="32"
+        style="height: 100px;"
+      />
+      <div
+        data-source-line="33"
+        style="height: 100px;"
+      />
+      <div
+        data-source-line="34"
+        style="height: 100px;"
+      />
+      <div
+        data-source-line="35"
+        style="height: 100px;"
+      />
+      <div
+        data-source-line="36"
+        style="height: 100px;"
+      />
+      <div
+        data-source-line="37"
+        style="height: 100px;"
+      />
+      <div
+        data-source-line="38"
+        style="height: 100px;"
+      />
+      <div
+        data-source-line="39"
+        style="height: 100px;"
+      />
+    </div>
+  </div>
+</body>
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/panel-screen.browser.test.tsx/test_panel_screen_when_config_error.png
+
+ ❯ Object.getElementError node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/@testing-library_react.js?v=6220b4df:9197:17
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/@testing-library_react.js?v=6220b4df:9769:40
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/@testing-library_react.js?v=6220b4df:9754:15
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/@testing-library_react.js?v=6220b4df:9785:18
+ ❯ tests/unit/vscode/src/webview/features/preview/panel/panel-screen.browser.test.tsx:288:12
+    286|   };
+    287|   await userEvent.click(
+    288|     screen.getByRole("button", { name: "設定ファイルを開く" }),
+       |            ^
+    289|   );
+    290|   act(() => sendHostMessage({ type: "configOk" }));
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-BDaSc-xm.js?v=1c2b5dd6:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/6]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/vscode/src/webview/features/preview/panel/panel-screen.browser.test.tsx > test_panel_screen_when_extensions
+AssertionError: expected [] to deeply equal [ [ { name: 'b.js' } ] ]
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/panel-screen.browser.test.tsx/test_panel_screen_when_extensions.png
+
+- Expected
++ Received
+
+- [
+-   [
+-     {
+-       "name": "b.js",
+-     },
+-   ],
+- ]
++ []
+
+ ❯ tests/unit/vscode/src/webview/features/preview/panel/panel-screen.browser.test.tsx:337:40
+    335|   await waitReady(api.posted);
+    336|   // 検証
+    337|   expect(registerExtension.mock.calls).toEqual([[{ name: "b.js" }]]);
+       |                                        ^
+    338|   expect(order.indexOf("register:b.js")).toBeLessThan(
+    339|     order.indexOf("post:ready"),
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-BDaSc-xm.js?v=1c2b5dd6:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/6]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/vscode/src/webview/features/preview/panel/panel-screen.browser.test.tsx > test_panel_screen_when_theme
+AssertionError: expected 't.css' to be 't.css?v=1' // Object.is equality
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/panel-screen.browser.test.tsx/test_panel_screen_when_theme.png
+
+Expected: "t.css?v=1"
+Received: "t.css"
+
+ ❯ tests/unit/vscode/src/webview/features/preview/panel/panel-screen.browser.test.tsx:368:37
+    366|   act(() => sendHostMessage({ type: "theme", href: "t.css?v=1" }));
+    367|   // 検証
+    368|   expect(link.getAttribute("href")).toBe("t.css?v=1");
+       |                                     ^
+    369|   expect(record.elements.length).toBe(rendered);
+    370|   expect(postedOf(api.posted, "rendered")).toHaveLength(1);
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-BDaSc-xm.js?v=1c2b5dd6:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/6]⎯
+
+
+ Test Files  4 failed | 234 passed (238)
+      Tests  6 failed | 1643 passed (1649)
+   Start at  01:20:39
+   Duration  98.01s (worker 83%, tests 11%, import 5%, transform 1%)
+

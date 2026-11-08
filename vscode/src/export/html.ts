@@ -26,6 +26,21 @@ export function escapeScriptJson(value: unknown): string {
   return JSON.stringify(value).replaceAll("<", "\\u003c");
 }
 
+/** ES モジュールのコードを、`file:` のページから `import()` で読める `data:` の URL にする */
+export function moduleDataUrl(code: string): string {
+  return `data:text/javascript;charset=utf-8,${encodeURIComponent(code)}`;
+}
+
+/** 束ねた拡張を順に読み、`mount` の前に登録する（読めない拡張は飛ばす） */
+const REGISTER_EXTENSIONS_SCRIPT = `
+for (const url of data.extensions) {
+  try {
+    registerExtension((await import(url)).default);
+  } catch (error) {
+    console.error("拡張を登録できません:", error);
+  }
+}`;
+
 /** 印刷を待つ処理。外部ライブラリの印の場所が無くなり、フォントを読み終えたら 1 回だけ `window.print()` を呼ぶ。待ちの上限を超えたらそのまま呼ぶ */
 const PRINT_SCRIPT = `
 const PRINT_WAIT_MS = ${PRINT_WAIT_MS};
@@ -58,7 +73,7 @@ setTimeout(print, PRINT_WAIT_MS);
 export function buildExportHtml(options: {
   /** 全文 */
   markdown: string;
-  /** 設定（`libraries` は `file:` の URL に直した値） */
+  /** 設定（相対パスの `libraries`・`html-scripts.url` は `data:` の URL にした値） */
   config: PreviewConfig;
   /** Markdown のファイル名 */
   title: string;
@@ -70,11 +85,23 @@ export function buildExportHtml(options: {
   baseHref: string;
   /** 印刷を待つか */
   print: boolean;
+  /** 重ねた設定の `theme` の CSS の中身 */
+  themeCss?: string | undefined;
+  /** 拡張を束ねた ES モジュールのコード（設定の順） */
+  extensions: string[];
 }): string {
   const data = escapeScriptJson({
     markdown: options.markdown,
     config: options.config,
+    // `file:` のページは `file:` のモジュールを読まないため、`data:` の URL にして読む
+    extensions: options.extensions.map(moduleDataUrl),
   });
+  const themeStyle =
+    options.themeCss === undefined
+      ? ""
+      : `<style>${options.themeCss.replace(/<\/(style)/gi, "<\\/$1")}</style>\n`;
+  const register =
+    options.extensions.length === 0 ? "" : REGISTER_EXTENSIONS_SCRIPT;
   return `<!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -83,14 +110,14 @@ export function buildExportHtml(options: {
 <title>${escapeHtml(options.title)}</title>
 <base href="${escapeHtml(options.baseHref)}">
 <link rel="stylesheet" href="${escapeHtml(options.distCss)}">
-</head>
+${themeStyle}</head>
 <body>
 <main></main>
 <script type="application/json" id="mdmark-data">${data}</script>
 <script type="module">
-import { mount } from ${escapeScriptJson(options.distJs)};
+import { mount${options.extensions.length === 0 ? "" : ", registerExtension"} } from ${escapeScriptJson(options.distJs)};
 const main = document.querySelector("main");
-const data = JSON.parse(document.getElementById("mdmark-data").textContent);
+const data = JSON.parse(document.getElementById("mdmark-data").textContent);${register}
 mount(main, { markdown: data.markdown, config: data.config });${options.print ? PRINT_SCRIPT : ""}
 </script>
 </body>

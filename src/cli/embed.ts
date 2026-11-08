@@ -1,21 +1,27 @@
 import { readFile } from "node:fs/promises";
 import { dirname, extname, resolve } from "node:path";
-import { build, type Plugin } from "esbuild";
+import { build, transform } from "esbuild";
+import {
+  BROWSER_TARGETS,
+  cacheFetchText,
+  type FetchText,
+  urlPlugin,
+} from "../bundle-module.ts";
+
+export { cacheFetchText, type FetchText };
+
 import MarkdownIt from "markdown-it";
 import { type MdmarkConfig, resolveConfig } from "../config.ts";
 import { resolveLink } from "../knowledge/paths.ts";
 import { SYNTAX_ATTRIBUTE } from "../parts/code-block.ts";
 import { renderDocument } from "../render/index.ts";
 import { MARK_PATTERN } from "../render/marks.ts";
+import { mediaKindOf } from "../render/syntax/images.ts";
+import { collectRangeScripts } from "../render/used.ts";
+import { findAssetRefs, resolveAssetFile } from "./assets.ts";
+import { ASSET_SCHEME } from "./html.ts";
 
-/** URL を読む関数 */
-export type FetchText = (url: string) => Promise<string>;
-
-/** 束ねたモジュールの target に渡すブラウザの版（対応ブラウザの下限） */
-const BROWSER_TARGETS = ["chrome99", "firefox98", "safari16.4"];
-
-/** esbuild が URL の import を読む名前空間 */
-const URL_NAMESPACE = "http-url";
+export { usesMermaid } from "../render/used.ts";
 
 /** 画像の拡張子から MIME を引く表 */
 const IMAGE_MIME: Readonly<Record<string, string>> = {
@@ -33,32 +39,6 @@ const EXTERNAL_PATTERN = /^(?:[a-z][a-z0-9+.-]*:|\/\/)/i;
 /** `http:`・`https:` の URL か */
 const HTTP_PATTERN = /^https?:\/\//i;
 
-/** `fetch` で URL の本文を読む。読めなければ例外を投げる */
-const fetchByUrl: FetchText = async (url) => {
-  const response = await fetch(url);
-  if (!response.ok) {
-    throw new Error(`${url} は ${response.status} を返しました`);
-  }
-  return response.text();
-};
-
-/** 文書の Markdown から印の名前を拾い、対応表にあるものだけを返す */
-export function usedLibraryMarks(
-  markdowns: string[],
-  libraries: Record<string, string>,
-): Set<string> {
-  const marks = new Set<string>();
-  for (const markdown of markdowns) {
-    for (const match of markdown.matchAll(MARK_PATTERN)) {
-      const [, closing, name] = match;
-      if (closing !== "/" && name && Object.hasOwn(libraries, name)) {
-        marks.add(name);
-      }
-    }
-  }
-  return marks;
-}
-
 /** 色分けの対象の `code` が持つ属性から、言語のモジュール名を読む正規表現 */
 const SYNTAX_LANGUAGE_PATTERN = new RegExp(
   `<code\\b[^>]*\\s${SYNTAX_ATTRIBUTE}="([^"]*)"`,
@@ -69,13 +49,19 @@ const SYNTAX_LANGUAGE_PATTERN = new RegExp(
 export function usedSyntaxLanguages(options: {
   /** 文書の Markdown */
   markdowns: string[];
+  /** 文書ごとの取り込む文書の表（`markdowns` と同じ順） */
+  includes?: Array<Record<string, string>>;
   /** 読んだ設定 */
   config: MdmarkConfig;
 }): string[] {
   const config = resolveConfig({ config: options.config });
   const languages = new Set<string>();
-  for (const markdown of options.markdowns) {
-    const { html } = renderDocument({ markdown, config });
+  for (const [position, markdown] of options.markdowns.entries()) {
+    const { html } = renderDocument({
+      markdown,
+      config,
+      includes: options.includes?.[position],
+    });
     for (const match of html.matchAll(SYNTAX_LANGUAGE_PATTERN)) {
       if (match[1]) {
         languages.add(match[1]);
@@ -85,79 +71,166 @@ export function usedSyntaxLanguages(options: {
   return [...languages].sort();
 }
 
-/** 埋める文書にビューの印があれば、埋める部品のモジュールのコードを入れた表を返す。無ければ空。書き出した HTML はコメントの読み書きの関数を持たないため、コメントの部品は埋めない */
+/** 埋める文書にビューの印があれば `true` を返す。書き出した HTML はコメントの読み書きの関数を持たないため、コメントの部品は束ねない */
 export function usedParts(options: {
   /** 埋める文書の Markdown */
   markdowns: string[];
-  /** `dist/view.js` のコード */
-  view: string;
-}): Partial<Record<"view", string>> {
-  const { markdowns, view } = options;
-  const found = markdowns.some((markdown) =>
+}): boolean {
+  return options.markdowns.some((markdown) =>
     [...markdown.matchAll(MARK_PATTERN)].some(
       ([, closing, name]) => closing !== "/" && name === "view",
     ),
   );
-  return found ? { view } : {};
 }
 
-/** URL の import を `fetchText` で読んで束ねる esbuild のプラグイン。取得したモジュールの中の import は、そのモジュールの URL を基準に解く */
-function urlPlugin(fetchText: FetchText): Plugin {
-  return {
-    name: "http-url",
-    setup(pluginBuild) {
-      pluginBuild.onResolve({ filter: /^https?:\/\// }, (args) => ({
-        path: args.path,
-        namespace: URL_NAMESPACE,
-      }));
-      pluginBuild.onResolve(
-        { filter: /.*/, namespace: URL_NAMESPACE },
-        (args) => ({
-          path: new URL(args.path, args.importer).href,
-          namespace: URL_NAMESPACE,
-        }),
-      );
-      pluginBuild.onLoad(
-        { filter: /.*/, namespace: URL_NAMESPACE },
-        async (args) => ({
-          contents: await fetchText(args.path),
-          loader: "js",
-        }),
-      );
-    },
-  };
+/** 束ねたコードに残った動的 `import()` の呼び出しの並び（`import` と `(` の間の空白を許す） */
+const DYNAMIC_IMPORT_PATTERN = /\bimport\s*\(/;
+
+/** 束ねたコードに動的 `import()` の呼び出しが残るかを返す。変数を渡す `import()` は esbuild が取り込めず、束ねた後も残る */
+export function hasDynamicImport(code: string): boolean {
+  return DYNAMIC_IMPORT_PATTERN.test(code);
 }
 
-/** URL かファイルのモジュールを、import する先も含めて 1 つの ES モジュールのコードに束ねる。届かない・束ねられないときは例外を投げずに理由を返す */
-export async function bundleModule(
-  entry: string,
-  baseDir: string,
-  fetchText: FetchText = fetchByUrl,
-): Promise<{ code: string } | { error: string }> {
-  try {
-    const result = await build({
-      absWorkingDir: baseDir,
-      entryPoints: [HTTP_PATTERN.test(entry) ? entry : resolve(baseDir, entry)],
-      bundle: true,
-      format: "esm",
-      platform: "browser",
-      target: BROWSER_TARGETS,
-      minify: true,
-      write: false,
-      outfile: "bundle.js",
-      plugins: [urlPlugin(fetchText)],
-      logLevel: "silent",
-    });
-    const code = result.outputFiles[0]?.text;
-    if (code === undefined) {
-      return { error: `${entry}: 束ねた結果がありません` };
+/** `prepareEmbeds` が束ねられることを確かめた、起動の処理と 1 つのスクリプトに束ねるモジュールの読み先（URL か絶対パス） */
+export type ViewerEmbeds = {
+  /** 文書に印があり束ねられた外部ライブラリの、印の名前から読み先を引く表 */
+  libraries: Record<string, string>;
+  /** 束ねられた設定の `extensions` の拡張の読み先。設定の順 */
+  extensions: string[];
+  /** 束ねられた色分けの本体の読み先と、言語のモジュール名から読み先を引く表。文書に色分けの対象があり本体を束ねられたときだけ持つ */
+  syntax?: { core: string; languages: Record<string, string> } | undefined;
+  /** 束ねられた mermaid の読み先。文書に mermaid のコードブロックがあり、束ねられたときだけ持つ */
+  mermaid?: string | undefined;
+  /** ビューの部品を束ねるか */
+  view: boolean;
+  /** `compileHtmlScripts` の結果。`source` は範囲のコードの文字、`code` は CommonJS のコード。範囲が無ければ入れない */
+  htmlScripts?: Array<{ source: string; code: string }> | undefined;
+};
+
+/** 文書ごとに `collectRangeScripts` で範囲の `ts`・`js` を集め、esbuild の `transform` で CommonJS に変える。同じコードは 1 回だけ変え、変えられない範囲は警告にする */
+export async function compileHtmlScripts(options: {
+  /** 書き出す文書 */
+  documents: Array<{ path: string; markdown: string }>;
+  /** 設定 */
+  config: MdmarkConfig;
+}): Promise<{
+  scripts: Array<{ source: string; code: string }>;
+  warnings: string[];
+}> {
+  const scripts: Array<{ source: string; code: string }> = [];
+  const warnings: string[] = [];
+  const seen = new Set<string>();
+  for (const { path, markdown } of options.documents) {
+    for (const { lang, source } of collectRangeScripts({
+      markdown,
+      config: options.config,
+    })) {
+      if (seen.has(source)) {
+        continue;
+      }
+      seen.add(source);
+      try {
+        const { code } = await transform(source, {
+          loader: lang,
+          format: "cjs",
+        });
+        scripts.push({ source, code });
+      } catch (error) {
+        const reason = String(
+          error instanceof Error ? error.message : error,
+        ).split("\n")[0];
+        warnings.push(
+          `${path}: 範囲の ${lang} を変換できません（${reason}）。開いたときは書き方の警告になります。`,
+        );
+      }
     }
-    return { code };
-  } catch (error) {
-    const reason =
-      error instanceof Error ? error.message.split("\n")[0] : String(error);
-    return { error: `${entry}: ${reason}` };
   }
+  return { scripts, warnings };
+}
+
+/** 起動の処理・部品・色分けを静的な `import`、外部ライブラリと拡張をリテラルの動的 `import()` を返す関数で取り込み、`startViewer(document, 埋めたモジュール)` を呼ぶ入口のモジュールのソースを返す */
+export function createViewerEntry(options: {
+  /** `dist/viewer.js` の絶対パス */
+  viewer: string;
+  /** `dist/view.js` の絶対パス */
+  view: string;
+  /** 束ねるモジュールの読み先 */
+  embeds: ViewerEmbeds;
+}): string {
+  const { viewer, view, embeds } = options;
+  const literal = (value: string): string => JSON.stringify(value);
+  const lines = [`import { startViewer } from ${literal(viewer)};`];
+  if (embeds.view) {
+    lines.push(`import * as viewPart from ${literal(view)};`);
+  }
+  const languages = Object.entries(embeds.syntax?.languages ?? {});
+  if (embeds.syntax) {
+    lines.push(`import syntaxCore from ${literal(embeds.syntax.core)};`);
+    languages.forEach(([, path], position) => {
+      lines.push(`import syntaxLanguage${position} from ${literal(path)};`);
+    });
+  }
+  if (embeds.mermaid) {
+    // mermaid が中で読む chunk の動的 `import()` も、同じスクリプトに取り込まれる
+    lines.push(`import * as mermaidModule from ${literal(embeds.mermaid)};`);
+  }
+  const lazy = (path: string): string => `() => import(${literal(path)})`;
+  const libraries = Object.entries(embeds.libraries)
+    .map(([name, path]) => `${literal(name)}: ${lazy(path)}`)
+    .join(", ");
+  const extensions = embeds.extensions.map(lazy).join(", ");
+  const syntax = embeds.syntax
+    ? `, syntax: { core: { default: syntaxCore }, languages: { ${languages
+        .map(
+          ([name], position) =>
+            `${literal(name)}: { default: syntaxLanguage${position} }`,
+        )
+        .join(", ")} } }`
+    : "";
+  // 範囲のスクリプトは、範囲のコードの文字を鍵に、CommonJS のコードを包んだ関数で既定のエクスポートを返す
+  const htmlScripts = embeds.htmlScripts?.length
+    ? `, htmlScripts: new Map([${embeds.htmlScripts
+        .map(
+          ({ source, code }) =>
+            `[${literal(source)}, () => { const module = { exports: {} }; (function (module, exports, require) {\n${code}\n})(module, module.exports, (name) => { throw new Error("範囲のスクリプトでは require を使えません: " + name); }); return module.exports.default; }]`,
+        )
+        .join(", ")}])`
+    : "";
+  lines.push(
+    `startViewer(document, { parts: ${embeds.view ? "{ view: viewPart }" : "{}"}${syntax}${embeds.mermaid ? ", mermaid: mermaidModule" : ""}, libraries: { ${libraries} }, extensions: [${extensions}]${htmlScripts} });`,
+  );
+  return `${lines.join("\n")}\n`;
+}
+
+/** `createViewerEntry` のソースを入口に、分割せずに 1 つの ES モジュールのスクリプトに束ね、`</script` を `<\/script` に、`<!--` を `<\x21--` に替えて返す。束ねる失敗は例外のまま投げる */
+export async function bundleViewer(options: {
+  /** `createViewerEntry` のソース */
+  entry: string;
+  /** 設定ファイルのあるフォルダ */
+  baseDir: string;
+  /** URL を読む関数 */
+  fetchText: FetchText;
+}): Promise<string> {
+  const { entry, baseDir, fetchText } = options;
+  const result = await build({
+    absWorkingDir: baseDir,
+    stdin: { contents: entry, resolveDir: baseDir, loader: "js" },
+    bundle: true,
+    format: "esm",
+    platform: "browser",
+    target: BROWSER_TARGETS,
+    minify: true,
+    write: false,
+    outfile: "viewer.js",
+    plugins: [urlPlugin(fetchText)],
+    logLevel: "silent",
+  });
+  const code = result.outputFiles[0]?.text;
+  if (code === undefined) {
+    throw new Error("起動の処理を束ねた結果がありません");
+  }
+  // `script` 要素が途中で閉じない・script data escaped state に入らないように替える（どちらも文字列・正規表現・コメントの中にしか現れない）
+  return code.replace(/<\/(script)/gi, "<\\/$1").replaceAll("<!--", "<\\x21--");
 }
 
 /** Markdown の画像の場所の一覧: その場所を含む行の範囲と、`src` の文字 */
@@ -199,45 +272,78 @@ function imgSources(html: string): string[] {
   ].map((match) => match[1] ?? match[2] ?? "");
 }
 
-/** Markdown の画像の相対パスを、文書のフォルダを基準に読んだ `data:` URL に替える。読めない画像は書いたまま残して警告に、絶対 URL の画像は読まずに残して警告にする */
+/** Markdown の画像の相対パス（画像の属性の `poster=` を含む）を、文書のフォルダか `assetsRoot` で探して読んだ `data:` URL に替える（フラグメントは後ろに残す）。`assets` を渡したときは `mdmark-asset:{キー}` に替え、`data:` URL を `assets` に入れる。動画・音声は替えない。読めない画像は書いたまま残して警告に、絶対 URL の画像は読まずに残して警告にする */
 export async function inlineImages(
   markdown: string,
   docFile: string,
+  options: {
+    /** `assets.root` の絶対パス */
+    assetsRoot?: string | undefined;
+    /** `build` が文書をまたいで共有する、埋めた画像のファイルからキーと `data:` URL を引く表 */
+    assets?: Map<string, { key: string; url: string }>;
+  } = {},
 ): Promise<{ markdown: string; warnings: string[] }> {
-  const lines = markdown.split("\n");
   const warnings: string[] = [];
-  // 同じ `src` は 1 回だけ読む
-  const dataUrls = new Map<string, string | undefined>();
-  for (const { start, end, src } of findImageSources(markdown)) {
-    if (src.startsWith("data:")) {
-      continue;
-    }
-    if (!dataUrls.has(src)) {
-      dataUrls.set(src, await readImage(src, docFile, warnings));
-    }
-    const dataUrl = dataUrls.get(src);
-    if (dataUrl === undefined) {
-      continue;
-    }
-    for (let line = start; line < end; line += 1) {
-      lines[line] = (lines[line] ?? "").replaceAll(src, dataUrl);
+  const warned = new Set<string>();
+  for (const { src } of findImageSources(markdown)) {
+    const media = ["video", "audio"].includes(mediaKindOf(src));
+    if (isAbsoluteSrc(src) && !media && !warned.has(src)) {
+      warned.add(src);
+      warnings.push(
+        `画像 \`${src}\` は絶対 URL のため埋めません。開いたときに外へ要求します。`,
+      );
     }
   }
-  return { markdown: lines.join("\n"), warnings };
+  // 同じ `src` は 1 回だけ読む
+  const urls = new Map<string, string | undefined>();
+  const replacements: Array<{ offset: number; src: string; to: string }> = [];
+  for (const ref of findAssetRefs(markdown)) {
+    if (ref.kind !== "image" && ref.kind !== "poster") {
+      continue;
+    }
+    if (!urls.has(ref.src)) {
+      urls.set(ref.src, await readImage(ref.src, docFile, options, warnings));
+    }
+    const url = urls.get(ref.src);
+    if (url !== undefined && ref.offset >= 0) {
+      replacements.push({
+        offset: ref.offset,
+        src: ref.src,
+        to: `${url}${fragmentOf(ref.src)}`,
+      });
+    }
+  }
+  let result = markdown;
+  for (const { offset, src, to } of replacements.reverse()) {
+    result = `${result.slice(0, offset)}${to}${result.slice(offset + src.length)}`;
+  }
+  return { markdown: result, warnings };
 }
 
-/** 画像 1 つを読んで `data:` URL にする。埋められないときは理由を `warnings` に足して `undefined` を返す */
+/** 埋めない絶対 URL の画像か（`data:` を除く） */
+function isAbsoluteSrc(src: string): boolean {
+  return (
+    !src.startsWith("data:") &&
+    (EXTERNAL_PATTERN.test(src) || src.startsWith("/"))
+  );
+}
+
+/** 書いたパスのフラグメント（`#` から後ろ） */
+function fragmentOf(src: string): string {
+  const at = src.indexOf("#");
+  return at < 0 ? "" : src.slice(at);
+}
+
+/** 画像 1 つを探して読み、`data:` URL（`assets` を渡したときは `mdmark-asset:{キー}`）にする。埋められないときは理由を `warnings` に足して `undefined` を返す */
 async function readImage(
   src: string,
   docFile: string,
+  options: {
+    assetsRoot?: string | undefined;
+    assets?: Map<string, { key: string; url: string }>;
+  },
   warnings: string[],
 ): Promise<string | undefined> {
-  if (EXTERNAL_PATTERN.test(src) || src.startsWith("/")) {
-    warnings.push(
-      `画像 \`${src}\` は絶対 URL のため埋めません。開いたときに外へ要求します。`,
-    );
-    return undefined;
-  }
   const mime = IMAGE_MIME[extname(src.split(/[?#]/)[0] ?? "").toLowerCase()];
   if (mime === undefined) {
     warnings.push(
@@ -245,15 +351,26 @@ async function readImage(
     );
     return undefined;
   }
-  let decoded = src;
-  try {
-    decoded = decodeURI(src);
-  } catch {
-    // 戻せないときは、そのまま読む
+  const file = await resolveAssetFile(src, {
+    docDir: dirname(docFile),
+    assetsRoot: options.assetsRoot,
+  });
+  const shared = file === undefined ? undefined : options.assets?.get(file);
+  if (shared) {
+    return `${ASSET_SCHEME}${shared.key}`;
   }
   try {
-    const bytes = await readFile(resolve(dirname(docFile), decoded));
-    return `data:${mime};base64,${bytes.toString("base64")}`;
+    if (file === undefined) {
+      throw new Error("not found");
+    }
+    const bytes = await readFile(file);
+    const url = `data:${mime};base64,${bytes.toString("base64")}`;
+    if (options.assets === undefined) {
+      return url;
+    }
+    const key = String(options.assets.size + 1);
+    options.assets.set(file, { key, url });
+    return `${ASSET_SCHEME}${key}`;
   } catch {
     warnings.push(
       `画像 \`${src}\` を読めません。パスを直すか画像を置いてください。`,

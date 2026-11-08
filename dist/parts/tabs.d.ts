@@ -2,7 +2,7 @@
 export declare function renderTabs(options: {
     /** タブの id の頭 */
     id: string;
-    /** タブ名 */
+    /** タブ名の行内の HTML（エスケープ済み） */
     titles: string[];
     /** タブごとの中身の HTML（`SLOT_MARKER` を渡せる） */
     panels: string[];

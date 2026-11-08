@@ -9,6 +9,7 @@ const BUILD_OPTIONS = {
   distJs: "https://cdn.jsdelivr.net/gh/x/mdmark@v0.10.0/dist/index.js",
   distCss: "https://cdn.jsdelivr.net/gh/x/mdmark@v0.10.0/dist/index.css",
   baseHref: "file:///ws/docs/",
+  extensions: [] as string[],
 };
 
 // 空・相対パス・絶対パスのそれぞれで書き出す先を決める（正常系）
@@ -26,6 +27,19 @@ test("test_resolve_export_path", async () => {
     "/ws/out/guide.html",
     "/tmp/html/guide.html",
   ]);
+});
+
+// 復号すると元のコードに戻る（正常系）
+test("test_module_data_url", async () => {
+  // 準備
+  const { moduleDataUrl } = await loadHtml();
+  const code = 'export default "a b#%あ";';
+  const prefix = "data:text/javascript;charset=utf-8,";
+  // 実行
+  const url = moduleDataUrl(code);
+  // 検証
+  expect(url.startsWith(prefix)).toBe(true);
+  expect(decodeURIComponent(url.slice(prefix.length))).toBe(code);
 });
 
 // 本文の script の閉じを含んでも `<` を残さず、読み戻すと同じ値（正常系）
@@ -82,4 +96,40 @@ test("test_build_export_html_when_print", async () => {
   expect(html).toContain("window.print()");
   expect(html).toContain("document.fonts.ready");
   expect(html).toContain(String(PRINT_WAIT_MS));
+});
+
+// theme の CSS を配布物の CSS の後に埋め、拡張を mount の前に登録する（正常系）
+test("test_build_export_html_when_theme_and_extensions", async () => {
+  // 準備
+  const { buildExportHtml } = await loadHtml();
+  // 実行
+  const html = buildExportHtml({
+    ...BUILD_OPTIONS,
+    markdown: "# 題",
+    print: false,
+    themeCss: ".a{color:red}</style>",
+    extensions: ["export default {name:'x'}"],
+  });
+  const plain = buildExportHtml({
+    ...BUILD_OPTIONS,
+    markdown: "# 題",
+    print: false,
+  });
+  // 検証
+  const style = html.match(/<style>([\s\S]*?)<\/style>/);
+  expect(style).not.toBeNull();
+  expect(style?.[1]).not.toMatch(/<\/style/i);
+  expect(html.indexOf(`href="${BUILD_OPTIONS.distCss}"`)).toBeLessThan(
+    html.indexOf("<style>"),
+  );
+  const module = html.match(
+    /<script\b[^>]*type="module"[^>]*>([\s\S]*?)<\/script>/,
+  );
+  const code = module?.[1] ?? "";
+  expect(code.indexOf("registerExtension")).toBeGreaterThan(-1);
+  expect(code.lastIndexOf("registerExtension")).toBeLessThan(
+    code.lastIndexOf("mount("),
+  );
+  expect(plain).not.toContain("<style>");
+  expect(plain).not.toContain("registerExtension");
 });

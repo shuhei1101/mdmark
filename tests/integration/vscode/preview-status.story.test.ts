@@ -16,9 +16,8 @@ test("test_loading", async () => {
   await expect(status.locator("h1").innerText()).resolves.toBe(
     "mdmark を読み込んでいます",
   );
-  await expect(
-    status.locator("progress").getAttribute("aria-label"),
-  ).resolves.toBe("読み込み中");
+  const spinner = status.locator('svg[role="img"]');
+  await expect(spinner.getAttribute("aria-label")).resolves.toBe("読み込み中");
   await expect(page.locator("#storybook-root button").count()).resolves.toBe(0);
 });
 
@@ -31,7 +30,9 @@ test("test_loading_when_reduced_motion", async () => {
   const durations = await page.evaluate(
     () =>
       getComputedStyle(
-        document.querySelector(".mdmark-preview-spinner") as Element,
+        document.querySelector(
+          '.mdmark-preview-loading svg[role="img"]',
+        ) as Element,
       ).animationDuration,
   );
   // 検証
@@ -76,13 +77,13 @@ test("test_offline_when_keyboard_focus", async () => {
   expect(focused.outlineWidth).not.toBe("0px");
 });
 
-// 知らせの枠の色の変数で、枠の地と線を変えられる（Offline）
+// 枠の地と文字はエディタの地と文字、線と警告のアイコンは警告の線の色のトークンで変えられる（Offline）
 test("test_offline_when_color_overridden", async () => {
   // 準備
   const page = await holder.openStory("vscode-previewstatus--offline");
   await page.addStyleTag({
     content:
-      ":root { --mdmark-color-notice-bg: rgb(1, 2, 3); --mdmark-color-notice-border: rgb(4, 5, 6); --mdmark-color-notice-text: rgb(7, 8, 9); }",
+      ":root { --background: rgb(1, 2, 3); --warning-border: rgb(4, 5, 6); --foreground: rgb(7, 8, 9); --primary: rgb(10, 11, 12); }",
   });
   // 実行
   const colors = await page.evaluate(() => {
@@ -90,21 +91,26 @@ test("test_offline_when_color_overridden", async () => {
       document.querySelector(".mdmark-preview-notice") as Element,
     );
     const button = getComputedStyle(
-      document.querySelector(".mdmark-preview-button") as Element,
+      document.querySelector('[data-action="reload"]') as Element,
+    );
+    const icon = getComputedStyle(
+      document.querySelector(".mdmark-preview-notice svg") as Element,
     );
     return {
+      icon: icon.color,
       background: notice.backgroundColor,
       text: notice.color,
       noticeBorder: notice.borderTopColor,
-      buttonBorder: button.borderTopColor,
+      buttonBackground: button.backgroundColor,
     };
   });
   // 検証
   expect(colors).toEqual({
+    icon: "rgb(4, 5, 6)",
     background: "rgb(1, 2, 3)",
     text: "rgb(7, 8, 9)",
     noticeBorder: "rgb(4, 5, 6)",
-    buttonBorder: "rgb(4, 5, 6)",
+    buttonBackground: "rgb(10, 11, 12)",
   });
 });
 

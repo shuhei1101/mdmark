@@ -17,7 +17,9 @@ import {
 } from "./tables.ts";
 import { envOf, featureOn, findClose, markOf, ownBlock } from "./tokens.ts";
 import {
+  pushSkippedArgs,
   pushWarning,
+  type SkippedArg,
   type SyntaxWarning,
   unclosedWarning,
 } from "./warnings.ts";
@@ -36,6 +38,8 @@ type ViewReading = {
   viewSpec: ViewSpec;
   /** 読めなかった指定の警告（範囲の前に差し込む） */
   warnings: SyntaxWarning[];
+  /** 読み飛ばした知らないキー */
+  skipped: SkippedArg[];
 };
 
 /** `icons=` の値を `値:アイコンの名前` の組に分け、使えるアイコンだけを対応にする。使えない名前は警告にする */
@@ -97,14 +101,10 @@ function readView(options: {
     }
   }
   const items: WarningItem[] = [];
-  for (const key of Object.keys(keys)) {
-    if (!VIEW_KEYS.includes(key)) {
-      items.push({
-        label: `${key}=`,
-        message: `使えないキーです。使えるキーは ${codes(VIEW_KEYS.map((name) => `${name}=`))} です`,
-      });
-    }
-  }
+  const usable = codes(VIEW_KEYS.map((name) => `${name}=`));
+  const skipped: SkippedArg[] = Object.keys(keys)
+    .filter((key) => !VIEW_KEYS.includes(key))
+    .map((key) => ({ arg: `${key}=`, usable }));
   const requested = keys.default;
   if (requested !== undefined && !VIEW_MODES.includes(requested)) {
     items.push({
@@ -127,11 +127,17 @@ function readView(options: {
       // ビューの表には件数・列の表示の切り替え・集計を付けない
       hide: [],
       totals: [],
+      wide: [],
+      check: [],
       collapse: "none",
       warnings: [],
+      skipped: [],
+      headRows: 1,
+      rowHeader: 0,
     },
     viewSpec: { group, mode, boardDisabled, icons },
     warnings,
+    skipped,
   };
 }
 
@@ -160,6 +166,7 @@ export function buildViews(state: StateCore): void {
     const close = findClose(tokens, open, "view");
     const end = close < 0 ? tokens.length : close;
     const warnings: SyntaxWarning[] = [];
+    let skipped: SkippedArg[] = [];
     if (close < 0) {
       warnings.push(unclosedWarning(mark));
     }
@@ -178,6 +185,7 @@ export function buildViews(state: StateCore): void {
         headers: headersOf(tokens, table),
       });
       warnings.unshift(...reading.warnings);
+      skipped = reading.skipped;
       tableOpen.meta = {
         ...(tableOpen.meta ?? {}),
         tableSpec: reading.tableSpec,
@@ -187,8 +195,15 @@ export function buildViews(state: StateCore): void {
       tokens.splice(open + 1, 0, ownBlock(state, wrapper));
     }
     // 警告は、範囲の前（印の位置）に差し込む。閉じの印が無い警告は、読めない指定の警告の後に並べる
+    const source = tokens[open];
     for (const [offset, warning] of warnings.entries()) {
-      pushWarning(state, open + offset, warning);
+      pushWarning(state, open + offset, warning, source);
     }
+    pushSkippedArgs(
+      state,
+      open + warnings.length,
+      { mark: mark.raw, skipped },
+      source,
+    );
   }
 }

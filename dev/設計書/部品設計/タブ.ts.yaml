@@ -59,12 +59,28 @@ states:
         value: open
       - name: title
         value: 入れ方
+  - name: Nested
+    description: 入れ子のタブ。外側（macOS・Windows）は Windows を選び、その中身に内側のタブ（PowerShell・WSL）を置いて PowerShell を選んだ。内側も外側と同じ見た目で、外側の中身の上と間を空ける
+    args:
+      - name: titles
+        value: '["macOS","Windows"]'
+      - name: selected
+        value: '1'
+    notes:
+      中身: 2 つ目の中身に、`titles` が `["PowerShell","WSL"]`・`selected` が `0` のタブを置く
+  - name: StrongTitle
+    description: 見出しの `**` の強調を持つタブ名。選んでいないタブでも `strong` を `--mdmark-tab-strong-color` と `--mdmark-tab-strong-weight` で強調する
+    args:
+      - name: titles
+        value: '["<strong>案 A</strong> SVG のまま","<strong>案 B</strong> Chart.js"]'
+      - name: selected
+        value: '0'
 lead: '`<!-- tabs -->` の範囲を見出しで区切った中身を、見出しの文字をタブ名にしたタブで切り替えて見せる。`render` は全ての中身を順に出し、`mount` がタブの並びを付ける。URL の `#ID` が選ばれていないタブの中の要素を指すときは、`mount` がそのタブを選んでから要素へ移る。'
 args:
   - name: titles
     type: 配列
     required: true
-    description: タブ名（区切りの見出しの文字）を並んだ順に
+    description: タブ名（区切りの見出しの行内の HTML。`**` の強調は `strong` のまま。リンク（`a`）はタブのボタンでは中身の文字にし、中身のタブ名には残す）を並んだ順に
   - name: selected
     type: 整数
     required: false
@@ -91,7 +107,7 @@ args:
     status: planned
 slots:
   - name: default
-    description: タブごとの中身（区切りの見出しから次の見出しの前までの HTML）
+    description: タブごとの中身（区切りの見出しから次の見出しの前までの HTML）。入れ子のタブの `mdmark-tabs` も置ける
     passes: タブの位置
 events:
   - name: タブを選ぶ
@@ -107,17 +123,25 @@ css_properties:
     syntax: <color>
     default: '#e4e4e7（ダーク #26262b）'
     description: 選んだタブを囲む線と、中身の枠の線の色
-  - name: --mdmark-color-bg
+  - name: --mdmark-color-bg-opaque
     syntax: <color>
-    default: '#ffffff（ダーク #131316）'
+    default: var(--mdmark-color-bg)
     description: 選んだタブと中身の地の色
   - name: --mdmark-color-heading
     syntax: <color>
     default: '#18181b（ダーク #ededef）'
     description: 選んだタブの文字の色
+  - name: --mdmark-tab-strong-weight
+    syntax: <number>
+    default: '700'
+    description: タブ名の `strong` の太さ
+  - name: --mdmark-tab-strong-color
+    syntax: <color>
+    default: var(--mdmark-color-heading)
+    description: タブ名の `strong` の色。選んでいないタブでもこの色にする
 accessibility:
   - WAI-ARIA のタブの作法に従う。並びは `role="tablist"`、タブは `role="tab"` と `aria-selected`・`aria-controls`、中身は `role="tabpanel"` と `aria-labelledby`
-  - 選んだタブだけが `tabindex="0"`、ほかは `-1`。左右の矢印・Home・End で移って選ぶ
+  - 選んだタブだけが `tabindex="0"`、ほかは `-1`。左右の矢印・Home・End で移って選ぶ。入れ子のタブはそれぞれ別の `tablist` で、矢印・Home・End はフォーカスのある並びの中だけで移り、内側を選んでも外側の選択を変えない
   - 選んだタブは線で囲んで中身の地とつなぎ、形と地の色でも示し、色だけに頼らない
 refs:
   - dev/設計書/インターフェース定義/ライブラリ本体/文書をHTML文字列にする.ts#constraints[タブ]

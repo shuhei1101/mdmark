@@ -204,6 +204,66 @@ test("test_mount_when_remounted", async () => {
   expect(el.querySelector(".mdmark-content h1")?.textContent).toBe("B");
 });
 
+// page の印の明暗・テーマ・目次の出し方を設定より優先し、update で決め直す（正常系）
+test("test_mount_when_page_marker", async () => {
+  // 準備
+  const el = createElement();
+  const config = {
+    colorScheme: "dark",
+    colorTheme: "theme-paper",
+    "side-toc": { mode: "hover" },
+  };
+  const markdown = [
+    "<!-- page: scheme=light theme=theme-slate toc=fixed -->",
+    "",
+    "## 導入",
+    "",
+    "段落",
+    "",
+    "## 使い方",
+    "",
+    "段落",
+    "",
+  ].join("\n");
+  // 実行
+  const handle = await mountTracked(el, { markdown, config });
+  const marked = {
+    light: el.classList.contains("mdmark-theme-light"),
+    dark: el.classList.contains("mdmark-theme-dark"),
+    theme: el.getAttribute("data-mdmark-color-theme"),
+    tocMode: el.querySelector(".mdmark-side-toc")?.getAttribute("data-mode"),
+  };
+  handle.update("## 導入\n\n段落\n\n## 使い方\n\n段落\n");
+  // 検証
+  expect(marked).toEqual({
+    light: true,
+    dark: false,
+    theme: "theme-slate",
+    tocMode: "fixed",
+  });
+  expect(el.classList.contains("mdmark-theme-dark")).toBe(true);
+  expect(el.classList.contains("mdmark-theme-light")).toBe(false);
+  expect(el.getAttribute("data-mdmark-color-theme")).toBe("theme-paper");
+  expect(el.querySelector(".mdmark-side-toc")?.getAttribute("data-mode")).toBe(
+    "hover",
+  );
+});
+
+// destroy で mount が付けた明暗の class を外す（正常系）
+test("test_mount_when_color_scheme_destroyed", async () => {
+  // 準備
+  const el = createElement();
+  const handle = await mountTracked(el, {
+    markdown: "段落\n",
+    config: { colorScheme: "dark" },
+  });
+  // 実行
+  handle.destroy();
+  // 検証
+  expect(el.classList.contains("mdmark-theme-dark")).toBe(false);
+  expect(el.classList.contains("mdmark-theme-light")).toBe(false);
+});
+
 // 文書の印で印刷の機能を外すと、印刷の前に折り畳みを開かない（正常系）
 test("test_mount_when_print_disabled_by_mark", async () => {
   // 準備
@@ -334,6 +394,74 @@ test("test_mount_when_extension_definition_invalid", async () => {
   } finally {
     resetExtensions();
   }
+});
+
+/** 手元の mermaid 12.3.0 の ES モジュール（依存の mermaid の dist） */
+const MERMAID_URL = "/node_modules/mermaid/dist/mermaid.esm.min.mjs";
+
+/** mermaid の図を描き終えるまでの待ちの上限（全件を並べて流すと、5MB の mermaid のモジュールの読み込みに 10 秒を超えることがある） */
+const MERMAID_WAIT_MS = 60_000;
+
+/** flowchart の mermaid のコードブロックを 1 つ持つ文書 */
+const MERMAID_MARKDOWN = [
+  "```mermaid",
+  "flowchart LR",
+  "  A --> B",
+  "```",
+  "",
+].join("\n");
+
+// mermaid のコードブロックを図にし、描き直す前と片付けで mermaid の図を外す（正常系）
+test(
+  "test_mount_when_mermaid",
+  async () => {
+    // 準備
+    addStyles();
+    const el = createElement();
+    const disconnect = vi.spyOn(MutationObserver.prototype, "disconnect");
+    const config = { mermaid: { url: MERMAID_URL } };
+    const handle = await mountTracked(el, {
+      markdown: MERMAID_MARKDOWN,
+      config,
+    });
+    await vi.waitFor(
+      () => {
+        expect(
+          el.querySelectorAll('figure.mdmark-diagram[data-diagram="mermaid"]'),
+        ).toHaveLength(1);
+      },
+      { timeout: MERMAID_WAIT_MS },
+    );
+    const beforeUpdate = disconnect.mock.calls.length;
+    // 実行
+    handle.update(MERMAID_MARKDOWN);
+    const afterUpdate = disconnect.mock.calls.length;
+    handle.destroy();
+    // 検証
+    expect(afterUpdate).toBeGreaterThan(beforeUpdate);
+    expect(disconnect.mock.calls.length).toBeGreaterThan(afterUpdate);
+    expect(el.innerHTML).toBe("");
+  },
+  MERMAID_WAIT_MS + 30_000,
+);
+
+// 機能 mermaid をオフにした設定では mermaid を読まない（正常系）
+test("test_mount_when_mermaid_disabled", async () => {
+  // 準備
+  const el = createElement();
+  const config = {
+    features: { mermaid: false },
+    mermaid: { url: `${MERMAID_URL}?disabled` },
+  };
+  // 実行
+  await mountTracked(el, { markdown: MERMAID_MARKDOWN, config });
+  await new Promise((resolve) => setTimeout(resolve, 200));
+  // 検証
+  const requested = performance
+    .getEntriesByType("resource")
+    .filter((entry) => entry.name.includes("mermaid.esm.min.mjs?disabled"));
+  expect(requested).toHaveLength(0);
+  expect(el.querySelector("div.mdmark-code")).not.toBeNull();
 });
 
 // 取り出し元を渡すと見出しの後ろに差分を開くボタンを置き、片付けると取り除く（正常系）
@@ -505,11 +633,12 @@ test("test_mount_when_side_toc", async () => {
     markdown: `# 手引き\n\n## 導入\n\n${TABLE_MARKDOWN}`,
   });
   // 検証
-  expect(el.children).toHaveLength(2);
+  expect(el.children).toHaveLength(3);
   expect(el.children[0]?.matches("div.mdmark-content")).toBe(true);
   expect(
     el.children[1]?.matches('aside.mdmark-side-toc[data-mode="hover"]'),
   ).toBe(true);
+  expect(el.children[2]?.matches("button.mdmark-back-to-top")).toBe(true);
   const content = el.querySelector(".mdmark-content");
   expect(content?.querySelector("th button")).not.toBeNull();
   expect(content?.querySelector(".mdmark-section-toggle")).not.toBeNull();
@@ -548,6 +677,36 @@ test("test_mount_when_side_toc_off", async () => {
   expect(el.querySelector("aside.mdmark-side-toc")).toBeNull();
   expect(el.querySelector("div.mdmark-content")).toBeNull();
   expect(el.querySelector(":scope > h1")).not.toBeNull();
+});
+
+// 先頭へ戻るボタンを描く先の要素の子の末尾に置き、描き直しても 1 つだけ置く（正常系）
+test("test_mount_when_back_to_top", async () => {
+  // 準備
+  const el = createElement();
+  const handle = await mountTracked(el, { markdown: "# 手引き\n\n## 導入\n" });
+  const afterMount = el.lastElementChild;
+  // 実行
+  handle.update("# B");
+  const afterUpdate = el.lastElementChild;
+  const countAfterUpdate = el.querySelectorAll(".mdmark-back-to-top").length;
+  handle.destroy();
+  // 検証
+  expect(afterMount?.matches("button.mdmark-back-to-top[hidden]")).toBe(true);
+  expect(afterUpdate?.matches("button.mdmark-back-to-top[hidden]")).toBe(true);
+  expect(countAfterUpdate).toBe(1);
+  expect(el.querySelector(".mdmark-back-to-top")).toBeNull();
+});
+
+// 機能をオフにすると先頭へ戻るボタンを置かない（正常系）
+test("test_mount_when_back_to_top_off", async () => {
+  // 準備
+  const el = createElement();
+  // 実行
+  await mountTracked(el, {
+    markdown: "<!-- features: -back-to-top -->\n\n# 手引き\n",
+  });
+  // 検証
+  expect(el.querySelector("button.mdmark-back-to-top")).toBeNull();
 });
 
 /** 知らせの枠の処理を読み込む（blocks で本文を取り出せない知らせの枠を期待値にする） */
@@ -718,4 +877,340 @@ test("test_mount_when_diff_blocks_failed", async () => {
   ).toBe(true);
   expect(el.querySelector(".mdmark-diff-block")).toBeNull();
   expect(consoleError.mock.calls.flat()).toContain(error);
+});
+
+/** 差分のブロックの種類ごとに、包んだ段落の文字を上から順に返す */
+function blockParagraphs(
+  el: HTMLElement,
+  kind: "add" | "del",
+): (string | undefined)[] {
+  return [
+    ...el.querySelectorAll(`div.mdmark-diff-block[data-kind="${kind}"]`),
+  ].map((block) => block.querySelector("p")?.textContent ?? undefined);
+}
+
+// 比較元を渡すと、取り出し元なしで変えたブロックを色分けして描く（正常系）
+test("test_mount_when_base_markdown", async () => {
+  // 準備
+  const el = createElement();
+  // 実行: 空行どうしで合わないよう、共通の段落 C を 2 行にする
+  await mountTracked(el, {
+    markdown: "A\n\nB\n\nC1\nC2\n",
+    baseMarkdown: "A\n\nC1\nC2\n\nD\n",
+  });
+  // 検証
+  expect(blockParagraphs(el, "add")).toEqual(["B"]);
+  expect(blockParagraphs(el, "del")).toEqual(["D"]);
+  expect(el.querySelector(".mdmark-diff-toggle")).toBeNull();
+});
+
+// 比較元が本文と同じなら色分けしない（正常系）
+test("test_mount_when_base_markdown_same", async () => {
+  // 準備
+  const el = createElement();
+  // 実行
+  await mountTracked(el, { markdown: "# A\n", baseMarkdown: "# A\n" });
+  // 検証
+  expect(el.querySelector(".mdmark-diff-block")).toBeNull();
+});
+
+// update で比較元を差し替え、省くと前の比較元のまま、null で外す（正常系）
+test("test_mount_when_base_replaced", async () => {
+  // 準備
+  const el = createElement();
+  const handle = await mountTracked(el, {
+    markdown: "A\n",
+    baseMarkdown: "A\n\nB\n",
+  });
+  // 実行・検証: 比較元を差し替える
+  handle.update("A\n\nC\n", { baseMarkdown: "A\n" });
+  expect(blockParagraphs(el, "add")).toEqual(["C"]);
+  // 実行・検証: 省くと前の比較元のまま
+  handle.update("A\n\nD\n");
+  expect(blockParagraphs(el, "add")).toEqual(["D"]);
+  // 実行・検証: null で外す
+  handle.update("A\n\nD\n", { baseMarkdown: null });
+  expect(el.querySelector(".mdmark-diff-block")).toBeNull();
+});
+
+// 比較元と取り出し元を両方渡すと、色分けに比較元を使い、取り出し元は差分を開く UI にだけ使う（正常系）
+test("test_mount_when_base_with_diff_source", async () => {
+  // 準備
+  const calls: string[] = [];
+  const diffSource = {
+    revisions: async (docId: string) => {
+      calls.push(`revisions:${docId}`);
+      return DIFF_REVISIONS;
+    },
+    content: async ({ revisionId }: { revisionId: string }) => {
+      calls.push(`content:${revisionId}`);
+      return "";
+    },
+  };
+  const blocksEl = createElement();
+  const buttonEl = createElement();
+  const options = {
+    markdown: "A\n\nB\n",
+    baseMarkdown: "A\n",
+    docId: "guide",
+    diffSource,
+  };
+  // 実行
+  await mountTracked(blocksEl, { ...options, diffMode: "blocks" });
+  await mountTracked(buttonEl, { ...options, diffMode: "button" });
+  await new Promise((resolve) => setTimeout(resolve, 50));
+  // 検証
+  expect(blockParagraphs(blocksEl, "add")).toEqual(["B"]);
+  expect(blockParagraphs(buttonEl, "add")).toEqual(["B"]);
+  expect(buttonEl.querySelector(".mdmark-diff-toggle")).not.toBeNull();
+  expect(calls).toEqual([]);
+});
+
+// 比較元が文字列でも null でもないと投げる（異常系）
+test("test_mount_when_base_not_string", async () => {
+  // 準備
+  const { mount } = await loadMount();
+  const el = createElement();
+  el.innerHTML = "<p>前の中身</p>";
+  const updated = createElement();
+  const handle = await mountTracked(updated, { markdown: "# A" });
+  // 実行・検証: mount
+  expect(() =>
+    mount(el, { markdown: "# A", baseMarkdown: 1 as unknown as string }),
+  ).toThrow(TypeError);
+  expect(() =>
+    mount(el, { markdown: "# A", baseMarkdown: 1 as unknown as string }),
+  ).toThrow("baseMarkdown");
+  expect(el.innerHTML).toBe("<p>前の中身</p>");
+  // 実行・検証: update
+  expect(() =>
+    handle.update("# B", { baseMarkdown: 1 as unknown as string }),
+  ).toThrow(TypeError);
+  expect(() =>
+    handle.update("# B", { baseMarkdown: 1 as unknown as string }),
+  ).toThrow("baseMarkdown");
+  expect(updated.querySelector("h1")?.textContent).toBe("A");
+});
+
+// 列の表示の知らせが関数でないと投げる（異常系）
+test("test_mount_when_columns_callback_not_function", async () => {
+  // 準備
+  const { mount } = await loadMount();
+  const el = createElement();
+  el.innerHTML = "<p>前の中身</p>";
+  const opts = {
+    markdown: "# A",
+    onColumnsChange: "x" as unknown as MountOptions["onColumnsChange"],
+  };
+  // 実行・検証
+  expect(() => mount(el, opts)).toThrow(TypeError);
+  expect(() => mount(el, opts)).toThrow("onColumnsChange");
+  expect(el.innerHTML).toBe("<p>前の中身</p>");
+});
+
+// 列の表示を切り替えると知らせ、描いたときと update では知らせない（正常系）
+test("test_mount_when_columns_changed", async () => {
+  // 準備
+  const el = createElement();
+  const markdown = [
+    "<!-- table: data +columns hide=説明 -->",
+    "",
+    "| 名前 | 状態 | 説明 |",
+    "| --- | --- | --- |",
+    "| a | 完了 | 一つ目 |",
+    "",
+    "<!-- /table -->",
+    "",
+  ].join("\n");
+  const onColumnsChange = vi.fn();
+  const handle = await mountTracked(el, { markdown, onColumnsChange });
+  // 実行・検証: 描いたときと update では呼ばない
+  handle.update(markdown);
+  expect(onColumnsChange).not.toHaveBeenCalled();
+  // 実行: テーブル設定で `状態` を目のアイコンで隠す
+  el.querySelector<HTMLButtonElement>(
+    "button.mdmark-table-settings-toggle",
+  )?.click();
+  el.querySelectorAll<HTMLButtonElement>(
+    ".mdmark-table-settings button.mdmark-table-settings-eye",
+  )[1]?.click();
+  // 検証
+  expect(onColumnsChange).toHaveBeenCalledTimes(1);
+  expect(onColumnsChange).toHaveBeenCalledWith({
+    tableIndex: 0,
+    hidden: ["状態", "説明"],
+  });
+});
+
+// 読み書きの関数の update・remove が関数でないと投げる（異常系）
+test("test_mount_when_comment_store_edit_invalid", async () => {
+  // 準備
+  const { mount } = await loadMount();
+  const el = createElement();
+  el.innerHTML = "<p>前の中身</p>";
+  const commentStore = {
+    load: async () => [],
+    save: async () => ({
+      id: "c1",
+      quote: "a",
+      prefix: "",
+      suffix: "",
+      body: "b",
+    }),
+    update: 1,
+  } as unknown as MountOptions["commentStore"];
+  // 実行・検証
+  expect(() =>
+    mount(el, { markdown: "# A", docId: "guide", commentStore }),
+  ).toThrow(TypeError);
+  expect(() =>
+    mount(el, { markdown: "# A", docId: "guide", commentStore }),
+  ).toThrow("commentStore");
+  expect(el.innerHTML).toBe("<p>前の中身</p>");
+});
+
+/** 部品のモジュールを読む処理を読み込む */
+const loadPartModules = () => import("../../../src/part-modules.ts");
+
+/** 代役のコメントのモジュールが呼ばれたことを控える場所（グローバル） */
+declare global {
+  var __mdmarkMountCommentsTest:
+    | { reload: number; focus: string[] }
+    | undefined;
+}
+
+// reloadComments・focusComment を今の描画の部品に任せ、destroy の後は呼ばない（正常系）
+test("test_mount_when_comments_delegated", async () => {
+  // 準備
+  const recorder = { reload: 0, focus: [] as string[] };
+  globalThis.__mdmarkMountCommentsTest = recorder;
+  const { partModules, partModuleLoaders, setPartModuleLoader } =
+    await loadPartModules();
+  partModules.clear();
+  const url = URL.createObjectURL(
+    new Blob(
+      [
+        `const rec = globalThis.__mdmarkMountCommentsTest;
+export async function attachComments() {
+  return {
+    detach: () => {},
+    reload: async () => { rec.reload += 1; },
+    focus: (id) => { rec.focus.push(id); },
+  };
+}`,
+      ],
+      { type: "text/javascript" },
+    ),
+  );
+  setPartModuleLoader("comments", () => import(/* @vite-ignore */ url));
+  try {
+    const el = createElement();
+    const handle = await mountTracked(el, {
+      markdown: "本文",
+      config: { features: { comments: true } },
+      docId: "guide",
+      commentStore: { load: async () => [], save: vi.fn() },
+    });
+    // 実行
+    await handle.reloadComments();
+    handle.focusComment("c1");
+    handle.destroy();
+    await handle.reloadComments();
+    handle.focusComment("c1");
+    // 検証
+    expect(recorder.reload).toBe(1);
+    expect(recorder.focus).toEqual(["c1"]);
+  } finally {
+    partModules.clear();
+    partModuleLoaders.clear();
+    URL.revokeObjectURL(url);
+    globalThis.__mdmarkMountCommentsTest = undefined;
+  }
+});
+
+// 文字列・null・undefined は通す（正常系）
+test("test_check_base_markdown", async () => {
+  // 準備
+  const { checkBaseMarkdown } = await loadMount();
+  // 実行・検証
+  for (const value of ["# A", "", null, undefined]) {
+    expect(() => checkBaseMarkdown(value)).not.toThrow();
+  }
+});
+
+// それ以外は投げる（異常系）
+test("test_check_base_markdown_when_invalid", async () => {
+  // 準備
+  const { checkBaseMarkdown } = await loadMount();
+  // 実行・検証
+  for (const value of [1, {}]) {
+    expect(() => checkBaseMarkdown(value)).toThrow(TypeError);
+    expect(() => checkBaseMarkdown(value)).toThrow("baseMarkdown");
+  }
+});
+
+/** 根の要素に `data-ran` を付ける `js` の範囲のコード */
+const RANGE_SCRIPT_CODE =
+  'export default (root) => { root.dataset.ran = "1"; };';
+
+// 描くたびに範囲のスクリプトを動かし、描き直す前と `destroy` で範囲の `destroy` を呼ぶ（正常系）
+test("test_mount_when_range_scripts", async () => {
+  // 準備
+  const { setEmbeddedHtmlScripts } = await import(
+    "../../../src/html-scripts.ts"
+  );
+  let destroyed = 0;
+  setEmbeddedHtmlScripts(
+    new Map([
+      [
+        `${RANGE_SCRIPT_CODE}\n`,
+        () => (root: HTMLElement) => {
+          root.dataset.ran = "1";
+          return () => {
+            destroyed += 1;
+          };
+        },
+      ],
+    ]),
+  );
+  const el = createElement();
+  const markdown = [
+    "<!-- html -->",
+    "",
+    "```html",
+    "<p>範囲</p>",
+    "```",
+    "",
+    "```js",
+    RANGE_SCRIPT_CODE,
+    "```",
+    "",
+    "<!-- /html -->",
+    "",
+  ].join("\n");
+  try {
+    // 実行・検証: 描いた後に動く
+    const handle = await mountTracked(el, {
+      markdown,
+      config: { features: { "html-scripts": true } },
+    });
+    await vi.waitFor(() => {
+      expect(
+        el.querySelector<HTMLElement>("div.mdmark-html")?.dataset.ran,
+      ).toBe("1");
+    });
+    // 実行・検証: 描き直す前に呼ぶ
+    handle.update(markdown);
+    expect(destroyed).toBe(1);
+    await vi.waitFor(() => {
+      expect(
+        el.querySelector<HTMLElement>("div.mdmark-html")?.dataset.ran,
+      ).toBe("1");
+    });
+    // 実行・検証: 片付けで呼ぶ
+    handle.destroy();
+    expect(destroyed).toBe(2);
+  } finally {
+    setEmbeddedHtmlScripts(undefined);
+  }
 });

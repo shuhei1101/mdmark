@@ -247,7 +247,16 @@ args:
     enabled_when: '`alias` の `alias_type` が `command` のとき'
     description: コマンドのコピーのボタンの状態（`mount` が付けた状態）。ボタンの `data-state` と文言・アイコンを切り替え、`copied`・`failed` のときは `role="status"` の要素に `コマンドを{文言}` を入れる。`render` は渡さない
     status: planned
+events:
+  - name: 開く・閉じる
+    when: 語にポインターを乗せるかフォーカスする。外すか Esc を押す。タッチの端末では語をタップする。もう一度タップするか、ツールチップと語の外をタップする
+    value: '`mdmark-term-wrap` の `is-open`'
+    description: '`mount` が 1 つだけ開き、ツールチップの上と中にフォーカスがある間は閉じず、Esc で閉じてフォーカスを語に残す。ツールチップの中のリンクとボタンのタップでは閉じない'
 css_properties:
+  - name: --mdmark-color-bg-opaque
+    syntax: <color>
+    default: var(--mdmark-color-bg)
+    description: ツールチップの地の色
   - name: --mdmark-color-term-underline
     syntax: <color>
     default: var(--mdmark-color-muted)

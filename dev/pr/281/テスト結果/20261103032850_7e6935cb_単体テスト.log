@@ -1,0 +1,90 @@
+$ npm run test:unit
+
+> test:unit
+> vitest run --project 'unit*'
+
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/fix-interact-tooltip-and-drag-ops
+
+ ❯ |unit-browser (chromium)| tests/unit/src/interact/diagram-tips.browser.test.ts (10 tests | 3 failed) 773ms
+   × test_attach_diagram_tips_when_touch_tapped 218ms
+   × test_attach_diagram_tips_when_touch_outside 191ms
+   × test_attach_diagram_tips_when_touch_embedded_hint 153ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/diagram-tips.browser.test.ts > test_attach_diagram_tips_when_touch_tapped
+AssertionError: expected false to be true // Object.is equality
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/diagram-tips.browser.test.ts/test_attach_diagram_tips_when_touch_tapped.png
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- true[39m
+[31m+ false[39m
+
+ ❯ tests/unit/src/interact/diagram-tips.browser.test.ts:324:22
+    322|   vi.advanceTimersByTime(1000);
+    323|   // 検証
+    324|   expect(tip.hidden).toBe(true);
+       |                      ^
+    325| });
+    326|
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=ecfb2ee7:5235:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/diagram-tips.browser.test.ts > test_attach_diagram_tips_when_touch_outside
+AssertionError: expected false to be true // Object.is equality
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/diagram-tips.browser.test.ts/test_attach_diagram_tips_when_touch_outside.png
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- true[39m
+[31m+ false[39m
+
+ ❯ tests/unit/src/interact/diagram-tips.browser.test.ts:347:22
+    345|   outside.dispatchEvent(pointer("pointerdown", "touch"));
+    346|   // 検証
+    347|   expect(tip.hidden).toBe(true);
+       |                      ^
+    348| });
+    349|
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=ecfb2ee7:5235:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/diagram-tips.browser.test.ts > test_attach_diagram_tips_when_touch_embedded_hint
+AssertionError: expected false to be true // Object.is equality
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/diagram-tips.browser.test.ts/test_attach_diagram_tips_when_touch_embedded_hint.png
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- true[39m
+[31m+ false[39m
+
+ ❯ tests/unit/src/interact/diagram-tips.browser.test.ts:372:22
+    370|   vi.advanceTimersByTime(1000);
+    371|   // 検証
+    372|   expect(tip.hidden).toBe(true);
+       |                      ^
+    373|   // 実行
+    374|   tap(mark);
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=ecfb2ee7:5235:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/3]⎯
+
+
+ Test Files  1 failed | 176 passed (177)
+      Tests  3 failed | 1237 passed (1240)
+   Start at  03:27:07
+   Duration  78.18s (worker 71%, tests 17%, import 9%, transform 3%)
+

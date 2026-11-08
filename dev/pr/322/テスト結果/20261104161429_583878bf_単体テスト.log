@@ -1,0 +1,14 @@
+$ npm run test:unit
+
+> test:unit
+> vitest run --project 'unit*'
+
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/fix-side-toc-panel-stacking-and-sticky-top
+
+
+ Test Files  193 passed (193)
+      Tests  1425 passed (1425)
+   Start at  16:12:28
+   Duration  44.42s (worker 49%, tests 33%, import 16%, transform 2%)
+

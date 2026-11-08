@@ -1,7 +1,34 @@
+import { readFile } from "node:fs/promises";
+import { join } from "node:path";
 import { expect, test, vi } from "vitest";
+import { useTempDirs, writeFiles } from "../../helpers/cli.ts";
 
 /** 設定ファイルの処理を読み込む（実装が無い間は各テストが個別に失敗する） */
 const loadModule = () => import("../../../../vscode/src/config.ts");
+
+/** 端末の設定の場所 */
+const SETTINGS = "/s/settings.yaml";
+
+/** メモリのファイルの表から作った `loadConfig` の引数 */
+const loadOptions = (
+  files: Record<string, string>,
+  overrides: { cwd?: string; configPath?: string } = {},
+) => ({
+  cwd: overrides.cwd ?? "/w",
+  configPath: overrides.configPath ?? "",
+  baseDir: "/w",
+  purpose: "preview" as const,
+  env: { MDMARK_CONFIG: SETTINGS },
+  home: "/h",
+  readFile: vi.fn(async (path: string) => {
+    const text = files[path];
+    if (text === undefined) {
+      throw Object.assign(new Error("no such file"), { code: "ENOENT" });
+    }
+    return text;
+  }),
+  isFile: vi.fn(async (path: string) => path in files),
+});
 
 // 相対パスは基準のフォルダから、絶対パスはそのまま（正常系）
 test("test_resolve_config_path", async () => {
@@ -21,40 +48,236 @@ test("test_resolve_config_path", async () => {
   expect(absolute).toBe("/etc/mdmark.yaml");
 });
 
-// features・libraries・side-toc だけを取り出す（正常系）
-test("test_parse_config", async () => {
+// 重ねた設定から mount のキー・theme・extensions を取り出す（正常系）
+test("test_load_config", async () => {
   // 準備
-  const { parseConfig } = await loadModule();
-  const text = [
-    "features: { callout: false }",
-    "libraries: { chart: ./chart.js }",
-    "side-toc: { mode: fixed }",
-    "theme: x",
-    "build: {}",
-  ].join("\n");
+  const { loadConfig: load } = await loadModule();
+  const files = {
+    [SETTINGS]: "features:\n  callout: false\n",
+    "/w/docs/mdmark.config.yaml":
+      "theme: ./t.css\nextensions: [./e.js]\nbuild: { include: ['*.md'], out: a.html }\n",
+  };
   // 実行
-  const result = parseConfig(text);
+  const result = await load(loadOptions(files, { cwd: "/w/docs" }));
   // 検証
-  expect(result).toEqual({
-    kind: "ok",
-    config: {
-      features: { callout: false },
-      libraries: { chart: "./chart.js" },
-      "side-toc": { mode: "fixed" },
-    },
+  expect(result.config).toEqual({ features: { callout: false } });
+  expect(result.theme).toBe("/w/docs/t.css");
+  expect(result.extensions).toEqual(["/w/docs/e.js"]);
+  expect(result.files).toEqual([SETTINGS, "/w/docs/mdmark.config.yaml"]);
+  expect(result.nearest).toBe("/w/docs/mdmark.config.yaml");
+  expect(result.problem).toBeUndefined();
+});
+
+// 設定ファイルが 1 つも無ければ空の設定（正常系）
+test("test_load_config_when_missing", async () => {
+  // 準備
+  const { loadConfig: load } = await loadModule();
+  // 実行
+  const result = await load(loadOptions({}));
+  // 検証
+  expect(result.config).toEqual({});
+  expect(result.extensions).toEqual([]);
+  expect(result.files).toEqual([]);
+  expect(result.nearest).toBeUndefined();
+  expect(result.problem).toBeUndefined();
+});
+
+// assets.root を書いた設定ファイルのフォルダから解決する（正常系）
+test("test_load_config_when_assets_root", async () => {
+  // 準備
+  const { loadConfig: load } = await loadModule();
+  const files = { "/w/mdmark.config.yaml": "assets: { root: ./assets }\n" };
+  // 実行
+  const result = await load(loadOptions(files, { cwd: "/w" }));
+  // 検証
+  expect(result.assetsRoot).toBe("/w/assets");
+  expect("assets" in result.config).toBe(false);
+});
+
+// YAML として読めないファイルを problem にし、残りを重ねる（正常系）
+test("test_load_config_when_unreadable", async () => {
+  // 準備
+  const { loadConfig: load } = await loadModule();
+  const files = {
+    [SETTINGS]: "features:\n  callout: false\n",
+    "/w/mdmark.config.yaml":
+      "features:\n  table: false\nx: 1\nlibraries: [a, b}\n",
+  };
+  // 実行
+  const result = await load(loadOptions(files, { cwd: "/w" }));
+  // 検証
+  expect(result.problem?.path).toBe("/w/mdmark.config.yaml");
+  expect(result.problem?.line).toBe(4);
+  expect(result.config).toEqual({ features: { callout: false } });
+});
+
+// 形の合わないファイルを problem にしてキーを返す（正常系）
+test("test_load_config_when_invalid", async () => {
+  // 準備
+  const { loadConfig: load } = await loadModule();
+  const files = { [SETTINGS]: "features:\n  callout: maybe\n" };
+  // 実行
+  const result = await load(loadOptions(files));
+  // 検証
+  expect(result.problem?.path).toBe(SETTINGS);
+  expect(result.problem?.settingKey).toBe("features.callout");
+  expect(result.problem?.line).toBeUndefined();
+});
+
+// mdmark.configPath のファイルが無ければ上へ探さず端末の設定だけを重ねる（正常系）
+test("test_load_config_when_config_path_missing", async () => {
+  // 準備
+  const { loadConfig: load } = await loadModule();
+  const files = {
+    [SETTINGS]: "features:\n  callout: false\n",
+    "/w/mdmark.config.yaml": "features:\n  table: false\n",
+  };
+  // 実行
+  const result = await load(
+    loadOptions(files, { cwd: "/w", configPath: "missing.yaml" }),
+  );
+  // 検証
+  expect(result.config).toEqual({ features: { callout: false } });
+  expect(result.files).toEqual([SETTINGS]);
+  expect(result.nearest).toBeUndefined();
+});
+
+const createTempDir = useTempDirs();
+
+/** 用語のエイリアスの行 */
+const TERM_ROW = [
+  "aliases:",
+  "  - id: terms",
+  "    paths: [glossary.yaml]",
+  "    alias_type: term",
+  "    records: terms",
+];
+
+/** 名前 `描画`・別名 `レンダリング` の用語 1 件 */
+const GLOSSARY = [
+  "terms:",
+  "  - id: render",
+  "    name: 描画",
+  "    aliases: [レンダリング]",
+  "    description: Markdown を HTML にすること",
+  "",
+].join("\n");
+
+/** 一時フォルダの実のファイルを読む `loadConfig` の引数 */
+const fsOptions = (options: {
+  cwd: string;
+  settings: string;
+  purpose?: "preview" | "export";
+}) => ({
+  cwd: options.cwd,
+  configPath: "",
+  baseDir: options.cwd,
+  purpose: options.purpose ?? ("preview" as const),
+  env: { MDMARK_CONFIG: options.settings },
+  home: options.cwd,
+  readFile: (path: string) => readFile(path, "utf8"),
+  isFile: async (path: string) => {
+    const { isFile } = await loadModule();
+    return isFile(path);
+  },
+});
+
+// プレビューでは重ねた設定の aliases からエイリアスを作り、読んだ YAML を返す（正常系）
+test("test_load_config_when_aliases", async () => {
+  // 準備
+  const { loadConfig: load } = await loadModule();
+  const dir = await createTempDir();
+  await writeFiles(dir, {
+    "mdmark.config.yaml": `${TERM_ROW.join("\n")}\n`,
+    "glossary.yaml": GLOSSARY,
+  });
+  // 実行
+  const result = await load(
+    fsOptions({ cwd: dir, settings: join(dir, "none/settings.yaml") }),
+  );
+  // 検証
+  expect(result.aliases).toHaveLength(1);
+  expect(result.aliases?.[0]).toMatchObject({
+    alias_type: "term",
+    name: "描画",
+    aliases: ["レンダリング"],
+  });
+  expect(result.aliasIssues).toEqual([]);
+  expect(result.aliasFiles).toEqual([join(dir, "glossary.yaml")]);
+});
+
+// mdmark.config.yaml が無いときは端末の設定ファイルを基準にエイリアスを作る（正常系）
+test("test_load_config_when_aliases_without_nearest", async () => {
+  // 準備
+  const { loadConfig: load } = await loadModule();
+  const dir = await createTempDir();
+  await writeFiles(dir, {
+    "settings/settings.yaml": `${TERM_ROW.join("\n")}\n`,
+    "settings/glossary.yaml": GLOSSARY,
+    "docs/guide.md": "# ガイド\n",
+  });
+  // 実行
+  const result = await load(
+    fsOptions({
+      cwd: join(dir, "docs"),
+      settings: join(dir, "settings/settings.yaml"),
+    }),
+  );
+  // 検証
+  expect(result.nearest).toBeUndefined();
+  expect(result.aliases).toHaveLength(1);
+  expect(result.aliasFiles).toEqual([join(dir, "settings/glossary.yaml")]);
+});
+
+// 当たるファイルの無い行はずれにして残りで作る（正常系）
+test("test_load_config_when_aliases_missing_files", async () => {
+  // 準備
+  const { loadConfig: load } = await loadModule();
+  const dir = await createTempDir();
+  await writeFiles(dir, {
+    "mdmark.config.yaml": [
+      ...TERM_ROW,
+      "  - id: missing",
+      "    paths: [missing/*.yaml]",
+      "    alias_type: term",
+      "",
+    ].join("\n"),
+    "glossary.yaml": GLOSSARY,
+  });
+  // 実行
+  const result = await load(
+    fsOptions({ cwd: dir, settings: join(dir, "none/settings.yaml") }),
+  );
+  // 検証
+  expect(result.aliases?.map((alias) => alias.name)).toEqual(["描画"]);
+  expect(result.aliasIssues).toHaveLength(1);
+  expect(result.aliasIssues[0]).toMatchObject({
+    kind: "alias_no_files",
+    where: "aliases[1].paths",
   });
 });
 
-// 文字列の colorTheme だけを取り出す（正常系）
-test("test_parse_config_when_color_theme", async () => {
+// 書き出しのときはエイリアスを作らない（正常系）
+test("test_load_config_when_export", async () => {
   // 準備
-  const { parseConfig } = await loadModule();
+  const { loadConfig: load } = await loadModule();
+  const dir = await createTempDir();
+  await writeFiles(dir, {
+    "mdmark.config.yaml": `${TERM_ROW.join("\n")}\n`,
+    "glossary.yaml": GLOSSARY,
+  });
   // 実行
-  const valid = parseConfig("colorTheme: theme-paper\n");
-  const invalid = parseConfig("colorTheme: [a]\n");
+  const result = await load(
+    fsOptions({
+      cwd: dir,
+      settings: join(dir, "none/settings.yaml"),
+      purpose: "export",
+    }),
+  );
   // 検証
-  expect(valid).toEqual({ kind: "ok", config: { colorTheme: "theme-paper" } });
-  expect(invalid).toEqual({ kind: "ok", config: {} });
+  expect(result.aliases).toBeUndefined();
+  expect(result.aliasIssues).toEqual([]);
+  expect(result.aliasFiles).toEqual([]);
 });
 
 // 空でない mdmark.colorTheme が設定ファイルに勝ち、空なら設定ファイルのまま（正常系）
@@ -80,59 +303,19 @@ test("test_apply_color_theme", async () => {
   expect(config).toEqual(snapshot);
 });
 
-// 最上位がマップでない・空・キーの値がマップでないときは渡さない（正常系）
-test("test_parse_config_when_not_map", async () => {
+// 固定した配色のときだけ設定の明暗を外す（正常系）
+test("test_apply_preview_theme", async () => {
   // 準備
-  const { parseConfig } = await loadModule();
-  const texts = ["", "- a", "features: [a]"];
+  const { applyPreviewTheme } = await loadModule();
+  const config = { colorScheme: "light", colorTheme: "theme-paper" };
+  const snapshot = structuredClone(config);
   // 実行
-  const results = texts.map((text) => parseConfig(text));
+  const fixed = applyPreviewTheme({ config, theme: "dark" });
+  const auto = applyPreviewTheme({ config, theme: "auto" });
   // 検証
-  for (const result of results) {
-    expect(result).toEqual({ kind: "ok", config: {} });
-  }
-});
-
-// YAML として読めなければ読めない行を返す（正常系）
-test("test_parse_config_when_invalid_yaml", async () => {
-  // 準備
-  const { parseConfig } = await loadModule();
-  const text = ["a: 1", "b: 2", "c: 3", "features: {callout: false"].join("\n");
-  // 実行
-  const result = parseConfig(text);
-  // 検証
-  expect(result.kind).toBe("error");
-  if (result.kind === "error") {
-    expect(result.line).toBe(4);
-    expect(result.message).not.toBe("");
-  }
-});
-
-// ファイルが無ければ missing（正常系）
-test("test_load_config_when_missing", async () => {
-  // 準備
-  const { loadConfig: load } = await loadModule();
-  const readFile = vi.fn(async () => {
-    throw Object.assign(new Error("no such file"), { code: "ENOENT" });
-  });
-  // 実行
-  const result = await load({ path: "/ws/mdmark.config.yaml", readFile });
-  // 検証
-  expect(result).toEqual({ kind: "missing" });
-});
-
-// 読んだ中身から取り出す（正常系）
-test("test_load_config", async () => {
-  // 準備
-  const { loadConfig: load } = await loadModule();
-  const readFile = vi.fn(async () => "features: { callout: false }");
-  // 実行
-  const result = await load({ path: "/ws/mdmark.config.yaml", readFile });
-  // 検証
-  expect(result).toEqual({
-    kind: "ok",
-    config: { features: { callout: false } },
-  });
+  expect(fixed).toEqual({ colorTheme: "theme-paper" });
+  expect(auto).toEqual({ colorScheme: "light", colorTheme: "theme-paper" });
+  expect(config).toEqual(snapshot);
 });
 
 // 相対パスだけを設定ファイルのフォルダから直す（正常系）
@@ -171,5 +354,106 @@ test("test_library_origins", async () => {
   // 実行
   const origins = libraryOrigins(libraries);
   // 検証
-  expect(origins).toEqual(["https://cdn.example.com"]);
+  expect(origins).toEqual([
+    "https://cdn.example.com",
+    "https://cdn.jsdelivr.net",
+  ]);
+});
+
+// 相対パスの url だけを設定ファイルのフォルダから直す（正常系）
+test("test_resolve_html_scripts", async () => {
+  // 準備
+  const { resolveHtmlScripts } = await loadModule();
+  const resolve = (htmlScripts: Record<string, unknown>) =>
+    resolveHtmlScripts({
+      htmlScripts,
+      configDir: "/ws/docs",
+      toUrl: (path: string) => `web:${path}`,
+    });
+  // 実行
+  const relative = resolve({ url: "./libs/babel.mjs" });
+  const absolute = resolve({ url: "https://cdn.example.com/babel.mjs" });
+  const number = resolve({ url: 1 });
+  // 検証
+  expect(relative).toEqual({ url: "web:/ws/docs/libs/babel.mjs" });
+  expect(absolute).toEqual({ url: "https://cdn.example.com/babel.mjs" });
+  expect(number).toEqual({ url: 1 });
+});
+
+// html-scripts.url の http・https の origin を足し、それ以外の url では足さない（正常系）
+test("test_library_origins_when_html_scripts", async () => {
+  // 準備
+  const { libraryOrigins } = await loadModule();
+  const libraries = { a: "https://cdn.example.com/a.js" };
+  // 実行
+  const remote = libraryOrigins(libraries, {
+    url: "https://babel.example.com/b.mjs",
+  });
+  const local = libraryOrigins(libraries, { url: "./babel.mjs" });
+  // 検証
+  // mermaid.url を省いたので、ライブラリ本体の既定の mermaid の URL の origin も入る
+  expect(remote).toEqual([
+    "https://cdn.example.com",
+    "https://babel.example.com",
+    "https://cdn.jsdelivr.net",
+  ]);
+  expect(local).toEqual([
+    "https://cdn.example.com",
+    "https://cdn.jsdelivr.net",
+  ]);
+});
+
+// 相対パスの url だけを設定ファイルのフォルダから直し、ほかのキーを残す（正常系）
+test("test_resolve_mermaid", async () => {
+  // 準備
+  const { resolveMermaid } = await loadModule();
+  const resolve = (mermaid: Record<string, unknown>) =>
+    resolveMermaid({
+      mermaid,
+      configDir: "/ws/docs",
+      toUrl: (path: string) => `web:${path}`,
+    });
+  // 実行
+  const relative = resolve({ url: "./libs/mermaid.mjs", theme: "neutral" });
+  const absolute = resolve({ url: "https://cdn.example.com/mermaid.mjs" });
+  const themeOnly = resolve({ theme: "dark" });
+  // 検証
+  expect(relative).toEqual({
+    url: "web:/ws/docs/libs/mermaid.mjs",
+    theme: "neutral",
+  });
+  expect(absolute).toEqual({ url: "https://cdn.example.com/mermaid.mjs" });
+  expect(themeOnly).toEqual({ theme: "dark" });
+});
+
+// mermaid.url の http・https の origin を足し、相対パスでは足さない（正常系）
+test("test_library_origins_when_mermaid", async () => {
+  // 準備
+  const { libraryOrigins } = await loadModule();
+  const htmlScripts = { url: "./babel.mjs" };
+  // 実行
+  const remote = libraryOrigins({}, htmlScripts, {
+    url: "https://mermaid.example.com/m.mjs",
+  });
+  const local = libraryOrigins({}, htmlScripts, { url: "./m.mjs" });
+  // 検証
+  expect(remote).toEqual(["https://mermaid.example.com"]);
+  expect(local).toEqual([]);
+});
+
+// labels を config に入れ、labels がマップでない設定ファイルは重ねない（正常系）
+test("test_load_config_when_labels", async () => {
+  // 準備
+  const { loadConfig: load } = await loadModule();
+  const files = {
+    "/w/mdmark.config.yaml": "labels:\n  paramCopy: コピー\n",
+    "/w/b/mdmark.config.yaml": "labels: コピー\n",
+  };
+  // 実行
+  const map = await load(loadOptions(files, { cwd: "/w" }));
+  const text = await load(loadOptions(files, { cwd: "/w/b" }));
+  // 検証
+  expect(map.config).toEqual({ labels: { paramCopy: "コピー" } });
+  expect(text.config).not.toHaveProperty("labels");
+  expect(text.problem?.settingKey).toBe("labels");
 });

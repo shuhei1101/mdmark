@@ -1,4 +1,4 @@
-title: "コードブロックを飾る"
+title: コードブロックを飾る
 scenarios:
   - name: 正常シナリオ
     setup:
@@ -89,7 +89,7 @@ scenarios:
       - 行が `// [!code ++]` の文字のまま出ている
       - 言語のラベルとコピーボタンが出ていない
     test: test_normal_when_feature_off
-  - name: 異常シナリオ（読めない指定）
+  - name: 正常シナリオ（知らないキー）
     setup:
       - name: mdmark を読むページ
         description: 正常シナリオと同じ
@@ -103,13 +103,13 @@ scenarios:
         participant P as 使う側のページ
         participant M as mdmark
         P->>M: 設定と Markdown を渡して描かせる
-        M->>M: 知らないキー color= がある
-        M-->>P: 書き方の警告と、読めた指定だけを当てたコードブロックを描く
-        P-->>U: 書き方の警告とコードブロックを表示
+        M->>M: 知らないキー color= を読み飛ばす
+        M-->>P: 読めた指定だけを当てたコードブロックを描く
+        P-->>U: コードブロックを表示
     expected:
-      - コードブロックの上に、`color=` が使えないキーであることと使えるキーを書いた書き方の警告がある
+      - コードブロックの上に書き方の警告が無い
       - コードブロックの上に題 `app.ts` が出ている
-    test: test_error_when_unknown_key
+    test: test_normal_when_unknown_key
   - name: 異常シナリオ（コードブロックに無い行の番号）
     setup:
       - name: mdmark を読むページ
@@ -136,7 +136,7 @@ scenarios:
       - name: mdmark を読むページ
         description: 正常シナリオと同じ
       - name: 知らない印を持つ Markdown
-        description: 行末に `// [!code focus]` を付けた行を持つ言語 `ts` のコードブロックの文書
+        description: 行末に `// [!code blink]` を付けた行を持つ言語 `ts` のコードブロックの文書
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
@@ -145,12 +145,12 @@ scenarios:
         participant P as 使う側のページ
         participant M as mdmark
         P->>M: 設定と Markdown を渡して描かせる
-        M->>M: 知らない印 focus がある
+        M->>M: 知らない印 blink がある
         M-->>P: 書き方の警告と、印を当てない行を描く
         P-->>U: 書き方の警告とコードブロックを表示
     expected:
-      - コードブロックの上に、`[!code focus]` が使えない印であることと使える印を書いた書き方の警告がある
-      - 行が `// [!code focus]` の文字のまま出ている
+      - コードブロックの上に、`[!code blink]` が使えない印であることと使える印を書いた書き方の警告がある
+      - 行が `// [!code blink]` の文字のまま出ている
     test: test_error_when_unknown_line_mark
   - name: 異常シナリオ（印の後にコードブロックが無い）
     setup:
@@ -453,6 +453,157 @@ scenarios:
       - 1 つ目のコードブロックの中身が言語 `python` として色分けされている
       - 2 つ目のコードブロックの上の帯の左端に、ラベル `ts` だけが出ている
     test: test_normal_when_language_and_file_name_label_shown
+  - name: 正常シナリオ（focus・error・warning の行）
+    setup:
+      - name: mdmark を読むページ
+        description: 正常シナリオと同じ
+      - name: focus・error・warning のマーカーを持つ Markdown
+        description: 行末に `// [!code focus]` を付けた行、`// [!code error]` を付けた行、`// [!code warning]` を付けた行、マーカーの無い行の 4 行を持つ言語 `ts` のコードブロックの文書
+      - name: クリップボードの権限
+        description: ページにクリップボードへの書き込みを許す
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を渡して描かせる
+        M->>M: 行末のマーカーを読んで行に種類を付け、マーカーを除く
+        M-->>P: 行ごとに分けたコードブロックを描く
+        U->>P: コピーボタンを押す
+        P-->>U: コピーしたことを知らせるボタン
+    expected:
+      - '`[!code focus]` の行はそのままの濃さで、ほかの 3 行が薄く表示されている'
+      - '`[!code error]` の行が誤りの色、`[!code warning]` の行が警告の色の背景で、色以外にも行の種類が読み上げで分かる'
+      - 3 つのマーカーの文字と、マーカーだけを持つ行コメントの頭 `//` が出ていない
+      - クリップボードの中身が 4 行全てを含み、マーカーの文字が入っていない
+    test: test_normal_when_focus_error_warning
+  - name: 正常シナリオ（インデントで畳む・開く）
+    setup:
+      - name: mdmark を読むページ
+        description: 正常シナリオと同じ
+      - name: 入れ子のコードを持つ Markdown
+        description: 3 段の入れ子のキーを持つ言語 `yaml` のコードブロック、閉じ括弧の行で終わる入れ子のオブジェクトを持つ言語 `json` のコードブロック、言語 `tree` のコードブロックを持つ文書
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を渡して描かせる
+        M-->>P: 畳める行に開閉のボタンを付けたコードブロックを描く
+        U->>P: yaml の 1 段目のキーの行にポインターを乗せ、▾ を押す
+        P-->>U: その行より深い行を畳んだコードブロック
+        U->>P: 畳んだ行の末尾の ⋯ を押す
+        P-->>U: 開いたコードブロック
+        U->>P: Shift を押しながら 1 段目のキーの ▾ を押し、もう一度 Shift を押しながら ▸ を押す
+        P-->>U: 入れ子もまとめて畳み、まとめて開いたコードブロック
+        U->>P: json のオブジェクトの行の ▾ を押す
+        P-->>U: 閉じ括弧の行を残して畳んだコードブロック
+    expected:
+      - 描いた直後は全ての行が出ていて、▾ は行番号の右にあり、ポインターを乗せた行にだけ出る
+      - ▾ を押した後、その行より深い行が、次の同じ深さ以下の行の手前まで隠れ、畳んだ行の ▸ が常に出て、行の末尾に行数を持たない ⋯ だけが出る
+      - ⋯ を押すと畳んだ行が開く
+      - Shift を押しながら畳むと、開いたときに内側の行も畳んだまま残らず、全ての入れ子がまとめて開閉する
+      - json のオブジェクトを畳んだ後も、閉じ括弧の行が出ている
+      - 開閉のボタンはキーボードで操作でき、`aria-expanded` で開閉の状態を示す
+      - '`tree` のコードブロックには、インデントの開閉のボタンが付かない'
+    test: test_normal_when_folded_by_indent
+  - name: 正常シナリオ（インデントの縦線）
+    setup:
+      - name: mdmark を読むページ
+        description: 正常シナリオと同じ
+      - name: 入れ子のコードを持つ Markdown
+        description: 3 段の入れ子のキーを持つ言語 `yaml` のコードブロックの文書
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を渡して描かせる
+        M-->>P: インデントのレベルごとに縦線を引いたコードブロックを描く
+        U->>P: 2 段目のブロックの行にポインターを乗せる
+        P-->>U: そのブロックの縦線だけを濃くしたコードブロック
+    expected:
+      - インデントのある行に、インデントの 1 レベルごとに細い縦線が引かれている
+      - ポインターを乗せた行のブロックの縦線だけが濃くなり、ほかのブロックの縦線は薄いまま
+      - コードブロックの文字を全て選んだときの選んだ文字に、縦線の文字が入っていない
+    test: test_normal_when_indent_guides
+  - name: 正常シナリオ（最初から畳む行を指定する）
+    setup:
+      - name: mdmark を読むページ
+        description: 正常シナリオと同じ
+      - name: fold= を持つ Markdown
+        description: '`<!-- code: lines fold=2,6 -->` の後に、2 行目と 6 行目が畳める行の言語 `yaml` のコードブロックを置いた文書'
+      - name: クリップボードの権限
+        description: ページにクリップボードへの書き込みを許す
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を渡して描かせる
+        M-->>P: 2 行目と 6 行目を畳んだコードブロックを描く
+        U->>P: コピーボタンを押す
+        P-->>U: コピーしたことを知らせるボタン
+        U->>P: 2 行目を開き、ページを読み直す
+        P-->>U: 2 行目と 6 行目を畳んだコードブロック
+    expected:
+      - 描いた直後、2 行目と 6 行目の下の深い行が隠れ、2 行目と 6 行目に ▸ と ⋯ が出ている
+      - クリップボードの中身が、畳んだ行を含むコードブロックの全ての行を持つ
+      - 読み直した後、開閉の状態は覚えておらず、`fold=` のとおり 2 行目と 6 行目を畳んだ状態で描かれる
+    test: test_normal_when_fold_option
+  - name: 異常シナリオ（畳めない行の fold=）
+    setup:
+      - name: mdmark を読むページ
+        description: 正常シナリオと同じ
+      - name: 畳めない行を指定した Markdown
+        description: '`<!-- code: fold=1,3,99 -->` の後に、1 行目だけが畳める行の 5 行の言語 `yaml` のコードブロックを置いた文書'
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を渡して描かせる
+        M->>M: 畳めない行とコードブロックに無い行の指定を読み飛ばす
+        M-->>P: 書き方の警告と、1 行目だけを畳んだコードブロックを描く
+        P-->>U: 文書を表示
+    expected:
+      - コードブロックの上に書き方の警告があり、畳めない 3 行目と、コードブロックに無い 99 行目が記載されている
+      - 1 行目は畳んだ状態で描かれている
+      - コードの中身は欠けずに出ている
+    test: test_error_when_fold_line_invalid
+  - name: 正常シナリオ（折り返す）
+    setup:
+      - name: mdmark を読むページ
+        description: 正常シナリオと同じ
+        notes: 画面の幅は 390px
+      - name: 折り返すマーカーを持つ Markdown
+        description: '`<!-- code: lines wrap -->` の直後に、2 行目だけが表示の幅より長い 3 行の言語 `ts` のコードブロックと、マーカーの無い同じコードブロックを置いた文書'
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を渡して描かせる
+        M-->>P: wrap を持つブロックだけを折り返して描く
+        P-->>U: 文書を表示
+    expected:
+      - '`wrap` のブロックの 2 行目が枠の幅で折り返され、ブロックに横スクロールが出ない'
+      - '`wrap` のブロックの行番号が 1〜3 の 3 つで、3 の行番号が 3 行目の頭の高さにある'
+      - マーカーの無いブロックは折り返さず、枠の中で横にスクロールできる
+      - '`wrap` のブロックのコピーボタンでコピーした文字に、折り返しの改行が入っていない'
+    test: test_normal_when_wrap
 lead: '文書を書く人が、コードブロックの直前の `<!-- code: title=題 lines highlight=行 -->` と、コードの行末の行コメントの `[!code ++]`・`[!code --]`・`[!code highlight]` を書くと、mdmark がコードブロックに題・行番号・行の強調と、足した行・消した行・強調の印を付けて描く。言語の指定があれば言語のラベルを出し、読む人はコピーボタンで変更後のコードをコピーする。'
 issue: 25
 primary_actor: 文書を書く人
@@ -466,9 +617,11 @@ preconditions:
 success_guarantee: |-
   コードブロックの上に題が、各行の左に行番号が出て、指定した行と印を付けた行が色と行頭の `+`・`-` で分かれる。印と、印だけを持つ行コメントの頭は画面に出ない。GitHub ではコードブロックの印が見えず、コードの行の印は行コメントとして読める。
 
+  tree を除くコードブロックは、インデントの深い行を畳む・開くことができ、インデントのレベルごとに縦線が引かれる。コピーボタンは畳んだ行も含めてコピーする。
+
   色分けに対応する言語のコードブロックは、題・行番号・行の印を保ったまま中身が言語に応じて色分けされる。色分けのライブラリは、色分けする言語のコードブロックがある文書でだけ、本体と使う言語の分を読む。
 minimal_guarantee: |-
-  読めない指定と知らない印は、その指定だけを当てずに描かれ、上に書き方の警告が出る。コードの中身は欠けずに出る。
+  知っているキーの読めない値、`title=` の値の空白の後ろの語と知らない印は、その指定だけを当てずに描かれ、上に書き方の警告が出る。知らないキー・指定は、警告を出さずに読み飛ばす。コードの中身は欠けずに出る。
 
   色分けのライブラリか言語のモジュールを読めないときは、そのコードブロックを色分けせずに書いたとおりに出す。
 test_file: tests/e2e/単一ユースケース/コードブロックを飾る.spec.ts

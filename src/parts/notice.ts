@@ -23,15 +23,19 @@ const DIFF_NOTICES = {
     title: "変更の履歴を表示できません",
     body: "リビジョンの一覧を取り出せませんでした。時間をおいて、変更を開き直してください。",
   }),
+  icons: () => ({
+    title: "アイコンを表示できません",
+    body: "Lucide のアイコンを読み込めませんでした。アイコンの場所は書いた文字で表示しています。通信を確かめて開き直してください。",
+  }),
   "diff-content": (name: string) => ({
     title: "このリビジョンの本文を表示できません",
     body: `「${escapeHtml(name)}」の本文を取り出せませんでした。別のリビジョンを選んでください。`,
   }),
 };
 
-/** 外部ライブラリか拡張を読めない印の場所、または差分の取り出し元がリビジョンの一覧か本文を返せない場所に置く、知らせの枠の HTML を返す */
+/** 外部ライブラリか拡張を読めない印の場所、差分の取り出し元がリビジョンの一覧か本文を返せない場所、または束ねていないアイコンを読めない文書の先頭に置く、知らせの枠の HTML を返す */
 export function renderNotice(options: {
-  /** 読めなかった印の名前。`diff-content` では取り出せなかったリビジョンの説明（複数なら `「…」と「…」` の中身）。`diff-blocks` では使わない */
+  /** 読めなかった印の名前。`diff-content` では取り出せなかったリビジョンの説明（複数なら `「…」と「…」` の中身）。`diff-blocks`・`icons` では使わない */
   name: string;
   /** 図の印か（既定 `true`）。`diff-revisions`・`diff-content`・`diff-blocks` では使わない */
   figure?: boolean;
@@ -42,13 +46,15 @@ export function renderNotice(options: {
     | "part"
     | "diff-revisions"
     | "diff-content"
-    | "diff-blocks";
+    | "diff-blocks"
+    | "icons";
 }): string {
   const { name, figure = true, source = "library" } = options;
   if (
     source === "diff-revisions" ||
     source === "diff-content" ||
-    source === "diff-blocks"
+    source === "diff-blocks" ||
+    source === "icons"
   ) {
     const { title, body } = DIFF_NOTICES[source](name);
     return `<div class="mdmark-notice" role="status"><strong class="mdmark-notice-title">${title}</strong><p>${body}</p></div>`;

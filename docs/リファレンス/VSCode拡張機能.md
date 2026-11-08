@@ -1,6 +1,6 @@
 # VS Code 拡張機能
 
-コマンド・既定のショートカット・設定の一覧
+VS Code 拡張機能のコマンド・既定のショートカット・設定の一覧
 
 VS Code の拡張機能 mdmark のコマンドと設定。
 コマンドはコマンドパレットで `mdmark:` から探す。
@@ -8,6 +8,8 @@ VS Code の拡張機能 mdmark のコマンドと設定。
 手順は [VS Code で見る](../使い方/VSCodeで見る/README.md)。
 
 ## 一覧
+
+<!-- table: data -->
 
 | 名前 | コマンド | 説明 |
 | --- | --- | --- |
@@ -21,6 +23,8 @@ VS Code の拡張機能 mdmark のコマンドと設定。
 | [PDF に印刷](#pdf-に印刷) | `mdmark.printToPdf` | 書き出し直した HTML をブラウザで開き、印刷のダイアログを出す |
 | [設定](#設定) | `mdmark.*` | 拡張機能の動きを決める VS Code の設定 |
 | [設定ファイルのキー](#設定ファイルのキー) | `mdmark.config.yaml` | 拡張機能が設定ファイルから読むキー |
+
+<!-- /table -->
 
 ## プレビューを横に開く
 
@@ -95,7 +99,7 @@ Markdown のエディタと同じ列のタブに、プレビューを開く。
 
 ## 設定ファイルを開く
 
-`mdmark.configPath` の設定ファイルをエディタで開く。
+最も近い `mdmark.config.yaml` をエディタで開く。設定ファイルを読めない帯から開いたときは、帯に出した読めないファイル（端末の設定を含む）を開く。
 無いときは、雛形を作るかをダイアログで尋ね、`作る` を選んだときだけ作って開く。
 
 ### 使い方
@@ -197,7 +201,7 @@ PDF は、そのダイアログの送信先で「PDF に保存」を選んで作
 ```json
 {
   "mdmark.version": "latest",
-  "mdmark.configPath": "mdmark.config.yaml",
+  "mdmark.configPath": "",
   "mdmark.preview.liveUpdate": true,
   "mdmark.preview.updateDelayMs": 300,
   "mdmark.preview.scrollPreviewWithEditor": true,
@@ -213,12 +217,12 @@ PDF は、そのダイアログの送信先で「PDF に保存」を選んで作
 | 設定 | 型 | 既定 | 許す値 | 説明 | 反映 |
 | --- | --- | --- | --- | --- | --- |
 | `mdmark.version` | 文字列 | `latest` | `latest` か `v{X}.{Y}.{Z}` | `latest` のときは、プレビューを開くときとリロードしたときに GitHub のタグ一覧から `v{X}.{Y}.{Z}` の最新を選ぶ。バージョンを記載するとそのバージョンに固定し、タグ一覧を取らない | プレビューを開き直すかリロードしたとき |
-| `mdmark.configPath` | 文字列 | `mdmark.config.yaml` | 相対パスか絶対パス | `features`・`libraries`・`side-toc`・`colorTheme` を読む YAML のパス。相対パスは Markdown を含むワークスペースのフォルダから（ワークスペースの外の Markdown は Markdown のフォルダから）解決する | 即時 |
+| `mdmark.configPath` | 文字列 | 空 | 空・相対パス・絶対パス | 拡張機能が読む YAML のパス。空のときは Markdown のフォルダから上へ `mdmark.config.yaml` を探して端末の設定と重ねる。値を書いたときは上へ探さず、そのファイルと端末の設定だけを重ねる。相対パスは Markdown を含むワークスペースのフォルダから（ワークスペースの外の Markdown は Markdown のフォルダから）解決する | 即時 |
 | `mdmark.preview.liveUpdate` | 真偽値 | `true` | `true`・`false` | `true` のときは Markdown を打つたびに描き直す。`false` のときは保存したときだけ描き直す | 即時 |
 | `mdmark.preview.updateDelayMs` | 整数 | `300` | 0〜5000 | 最後に打ってから描き直すまでのミリ秒。範囲の外の値は既定の値として扱う | 即時 |
 | `mdmark.preview.scrollPreviewWithEditor` | 真偽値 | `true` | `true`・`false` | エディタをスクロールしたときに、プレビューを同じ箇所まで動かす | 即時 |
 | `mdmark.preview.scrollEditorWithPreview` | 真偽値 | `true` | `true`・`false` | プレビューをスクロールしたときに、エディタを同じ箇所まで動かす | 即時 |
-| `mdmark.preview.theme` | 文字列 | `auto` | `auto`・`light`・`dark` | `auto` は VS Code のテーマの明暗に合わせ、`light`・`dark` はその配色に固定する | 即時 |
+| `mdmark.preview.theme` | 文字列 | `auto` | `auto`・`light`・`dark` | `auto` は設定ファイルの `colorScheme`、無ければ VS Code のテーマの明暗に合わせ、`light`・`dark` はその配色に固定する。文書の先頭の [ページの設定](./記法.md#ページの設定) の `scheme` はこの設定より優先する。書き出す HTML には使わない | 即時 |
 | `mdmark.colorTheme` | 文字列 | 空 | 空・`dev-swiss`・`theme-paper`・`theme-slate`・`theme-contrast` | プレビューと、`mdmark.exportHtml`・`mdmark.openInBrowser`・`mdmark.printToPdf` が書き出す HTML の配色のテーマ。空のときは設定ファイルの `colorTheme` に従い、そこにも無ければ `dev-swiss`。設定画面の表示は「Mdmark: Color Theme」で、空の選択肢は「（設定ファイルに従う）」。明暗は `mdmark.preview.theme` が決める | 即時 |
 | `mdmark.export.outputDir` | 文字列 | 空 | 空・相対パス・絶対パス | `mdmark.exportHtml`・`mdmark.openInBrowser`・`mdmark.printToPdf` が HTML を書くフォルダ。空のときは Markdown と同じフォルダ。相対パスは Markdown を含むワークスペースのフォルダから解決する | 即時 |
 
@@ -235,7 +239,7 @@ PDF は、そのダイアログの送信先で「PDF に保存」を選んで作
 
 ## 設定ファイルのキー
 
-拡張機能が `mdmark.configPath` の設定ファイルから読むキー。
+拡張機能が、端末の設定と上のフォルダの設定ファイルを重ねた設定から読むキー（[設定を重ねて読む仕組み](../はじめに/コアコンセプト/設定を重ねて読む仕組み.md)）。
 キーの意味は [設定](./設定.md)。
 
 ### リクエスト
@@ -250,11 +254,20 @@ colorTheme: theme-slate
 
 | キー | 説明 |
 | --- | --- |
-| `features` | 機能のオン・オフの既定。書いた値をそのまま `mount` の `opts.config.features` に渡す |
-| `libraries` | 外部ライブラリの対応表。`http:`・`https:` の URL はそのまま、相対 URL は設定ファイルのあるフォルダを基準に解決して、`mount` の `opts.config.libraries` に渡す |
+| `features` | 機能のオン・オフの既定。重ねた値を `mount` の `opts.config.features` に渡す |
+| `libraries` | 外部ライブラリの対応表。`http:`・`https:` の URL はそのまま、相対 URL はその値を書いた設定ファイルのフォルダを基準に解決して、`mount` の `opts.config.libraries` に渡す。書き出す HTML には、相対 URL のうち文書にマーカーがあるモジュールを埋める |
+| `html-scripts.url` | 範囲のスクリプトの変換のライブラリ。`http:`・`https:` の URL はそのまま、相対 URL はその値を書いた設定ファイルのフォルダを基準に解決して、`mount` の `opts.config.html-scripts.url` に渡す。書き出す HTML には、文書に `ts`・`js` の範囲があるとき相対 URL のモジュールを埋める |
 | `colorTheme` | 配色のテーマ。`mdmark.colorTheme` が空のときだけ、書いた値をそのまま `mount` の `opts.config.colorTheme` に渡す。空でないときは `mdmark.colorTheme` の値に置き換える |
+| `side-toc` | 右側の目次の出し方。値がマップのときだけ、書いた値をそのまま `mount` の `opts.config["side-toc"]` に渡す |
+| `labels` | 部品の文言。値がマップのときだけ、書いた値をそのまま `mount` の `opts.config.labels` に渡す |
+| `colorScheme` | 配色の明暗。プレビューでは `mdmark.preview.theme` が `auto` のときだけ、書き出す HTML ではいつも、書いた値をそのまま `mount` の `opts.config.colorScheme` に渡す |
+| `assets.root` | アセットのルート。Markdown のフォルダからの相対パスに無い画像・動画・音声を、その値を書いた設定ファイルのフォルダからのこのフォルダで同じ相対パスで探す。`mount` には渡さない |
+| `aliases` | エイリアスの元の行。プレビューでは、行の `paths` の YAML をその値を書いた設定ファイルのフォルダから読んでエイリアスを作り、`mount` の `opts.aliases` に渡す。使えない行・レコードは除き、出力チャネルに `mdmark check` と同じ書式の警告を出す。書き出す HTML には渡さない |
 
-`theme`・`extensions`・`index`・`build` など、ほかのキーは読まない。
+| `theme` | 使う側の CSS。その値を書いた設定ファイルのフォルダから解決し、プレビューでは配布物の CSS の後に読み、書き出す HTML には埋める |
+| `extensions` | 拡張のモジュール。その値を書いた設定ファイルのフォルダから解決し、`mount` の前に登録する。書き出す HTML には 1 つのスクリプトに束ねて埋める |
+
+表に無いキーは `mount` に渡さない。
 最上位がマップでないファイルと空のファイルは、設定なしとして扱う。
 
 ### レスポンス
@@ -263,6 +276,6 @@ colorTheme: theme-slate
 
 ### エラー
 
-YAML として読めないときは、前に読めた設定（無ければ設定なし）で描いたまま、プレビューの文書の先頭に読めない行を知らせる帯を出す。
+重ねた設定ファイルのどれかが YAML として読めない・設定の形に合わないときは、前に使った設定（無ければそのファイルを除いた残りの設定）で描いたまま、プレビューの文書の先頭に読めないファイルと行（またはキー）を知らせる帯を出す。
 読めるようになると、帯は消える。
 キーの中の知らない名前と型の違う値は、mdmark が無視する。

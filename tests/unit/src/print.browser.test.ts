@@ -1,8 +1,10 @@
 import { afterEach, expect, test } from "vitest";
+import { wrapDirective } from "../helpers/diagrams.ts";
 import {
   createRoot as createDocumentRoot,
   removeRoots,
 } from "../helpers/dom.ts";
+import { erText, shopErFolded } from "../helpers/er.ts";
 
 /** 印刷の処理を読み込む（実装が無い間は各テストが個別に失敗する） */
 const loadPrint = () => import("../../../src/print.ts");
@@ -173,5 +175,88 @@ test("test_attach_print_when_tree", async () => {
   window.dispatchEvent(new Event("afterprint"));
   // 検証
   expect(list?.getAttribute("hidden")).toBe("until-found");
+  expect(button?.getAttribute("aria-expanded")).toBe("false");
+});
+
+// 2 行目を畳んだコードブロックと、入れ子の注意書きを閉じた文書
+const FOLDED_MARKDOWN = [
+  "<!-- code: fold=2 -->",
+  "",
+  "```yaml",
+  "a:",
+  "  b:",
+  "    c: 1",
+  "    d: 2",
+  "  e: 3",
+  "```",
+  "",
+  "> [!NOTE]-",
+  "> 外の本文",
+  ">",
+  "> > [!TIP]-",
+  "> > 内の本文",
+  "",
+].join("\n");
+
+// 印刷の前にコードブロックの畳んだ行を開き、後に畳み直す（正常系）
+test("test_attach_print_when_code_folded", async () => {
+  // 準備
+  const { attachInteractions } = await loadInteract();
+  const { root, features } = createDocumentRoot(FOLDED_MARKDOWN);
+  detachers.push(attachInteractions({ root, features, placement: "top" }));
+  await attachTracked(root, () => true);
+  const lines = [...root.querySelectorAll<HTMLElement>(".mdmark-code-line")];
+  const inner = root.querySelector<HTMLDetailsElement>(
+    "details.markdown-alert-note details.markdown-alert-tip",
+  );
+  // 実行
+  window.dispatchEvent(new Event("beforeprint"));
+  // 検証
+  for (const line of lines.slice(2)) {
+    expect(line.hasAttribute("hidden")).toBe(false);
+  }
+  expect(inner?.open).toBe(true);
+  // 実行
+  window.dispatchEvent(new Event("afterprint"));
+  // 検証
+  const toggle = lines[1]?.querySelector<HTMLElement>(".mdmark-code-fold");
+  expect(toggle?.getAttribute("aria-expanded")).toBe("false");
+  expect(lines[2]?.hasAttribute("hidden")).toBe(true);
+  expect(lines[3]?.hasAttribute("hidden")).toBe(true);
+  expect(inner?.open).toBe(false);
+});
+
+// 印刷の前に ER 図の畳んだテーブルを開き、後に畳み直す（正常系）
+test("test_attach_print_when_er_folded", async () => {
+  // 準備
+  const { attachInteractions } = await loadInteract();
+  const { root, features } = createDocumentRoot(
+    wrapDirective("er", erText(shopErFolded())),
+  );
+  detachers.push(attachInteractions({ root, features, placement: "top" }));
+  await attachTracked(root, () => true);
+  const orders = root.querySelector<HTMLElement>(
+    '.mdmark-diagram-er-table[data-node="orders"]',
+  );
+  const rows = [
+    ...(orders?.querySelectorAll<HTMLElement>(".mdmark-diagram-er-column") ??
+      []),
+  ];
+  const others = rows.filter(
+    (row) => row.querySelector('[data-key="pk"], [data-key="fk"]') === null,
+  );
+  const button = orders?.querySelector<HTMLElement>(
+    "button.mdmark-diagram-er-fold",
+  );
+  // 実行
+  window.dispatchEvent(new Event("beforeprint"));
+  // 検証
+  expect(others.length).toBeGreaterThan(0);
+  expect(rows.some((row) => row.hidden)).toBe(false);
+  expect(button?.getAttribute("aria-expanded")).toBe("true");
+  // 実行
+  window.dispatchEvent(new Event("afterprint"));
+  // 検証
+  expect(others.every((row) => row.hidden)).toBe(true);
   expect(button?.getAttribute("aria-expanded")).toBe("false");
 });

@@ -1,13 +1,19 @@
 import { expect, test } from "@playwright/test";
 import type { MdmarkIndex } from "../../../src/index.ts";
+import { flowMarkdown } from "../diagram.ts";
 import {
   buildDistRoot,
   mountDocument,
   openPage,
+  RANGE_COLOR,
+  RANGE_CSS,
+  rangeMarkdown,
   rawAliases,
   removeDistRoot,
+  routeTranspiler,
   sendPrintEvent,
 } from "../dist-page.ts";
+import { colorSvg, routePageFiles } from "../media.ts";
 
 // ビルドした配布物を置いた作業ツリー
 let builtRoot = "";
@@ -121,7 +127,7 @@ test("test_normal_when_syntax_disabled", async ({ page }) => {
 
 // 用語 `ワークスペース`（やめた言い方 `作業場`）を持ち、文書 `api`（題 `API`）の `related` が描く文書 `arch` を指す索引
 const INDEX: MdmarkIndex = {
-  schema: 1,
+  schema: 2,
   docs: [
     { id: "arch", path: "設計/arch.md", title: "アーキテクチャ" },
     { id: "api", path: "api.md", title: "API", related: ["arch"] },
@@ -189,7 +195,7 @@ test("test_normal_when_glossary_disabled", async ({ page }) => {
 test("test_normal_when_backlinks_disabled", async ({ page }) => {
   // 準備
   const index: MdmarkIndex = {
-    schema: 1,
+    schema: 2,
     docs: [
       { id: "arch", path: "設計/arch.md", title: "アーキテクチャ" },
       {
@@ -277,4 +283,225 @@ test("test_normal_when_side_toc_enabled_by_mark", async ({ page }) => {
     "導入",
     "使い方",
   ]);
+});
+
+// 文書のマーカーで外した本文の文字の色・画像の属性・ライトボックス・カードを、普通の Markdown として描く（正常シナリオ（色・画像・カードの機能を外す））
+test("test_normal_when_media_features_disabled", async ({ page }) => {
+  // 準備
+  await openPage(page, builtRoot);
+  await routePageFiles(page, {
+    "chart.png": colorSvg({ width: 600, height: 300, color: "#0f766e" }),
+  });
+  // 実行
+  await mountDocument(page, {
+    markdown: [
+      "<!-- features: -text-color -images -lightbox -cards -->",
+      "",
+      "[決め手の 1 文]{color=blue}",
+      "",
+      "![グラフ](chart.png){width=300}",
+      "",
+      "https://example.com/docs",
+      "",
+    ].join("\n"),
+  });
+  // 検証: 本文の文字に色を付けず、書いたとおりの文字で出す
+  await expect(page.locator("#doc .mdmark-color")).toHaveCount(0);
+  await expect(page.locator("#doc p", { hasText: "決め手の 1 文" })).toHaveText(
+    "[決め手の 1 文]{color=blue}",
+  );
+  // 検証: 画像に幅を当てず、属性を文字で出し、押してもライトボックスを開かない
+  const image = page.locator('#doc img[alt="グラフ"]');
+  await expect(
+    page.locator("#doc p", { has: page.locator('img[alt="グラフ"]') }),
+  ).toHaveText("{width=300}");
+  await expect(image).toHaveJSProperty("naturalWidth", 600);
+  expect((await image.boundingBox())?.width).not.toBeCloseTo(300, 0);
+  await expect(page.locator("#doc figure")).toHaveCount(0);
+  await image.click();
+  await expect(page.locator("#doc dialog.mdmark-lightbox")).toHaveCount(0);
+  // 検証: URL だけの段落をカードにせず、リンクで描く
+  await expect(page.locator("#doc .mdmark-card")).toHaveCount(0);
+  await expect(
+    page.locator('#doc p a[href="https://example.com/docs"]'),
+  ).toHaveText("https://example.com/docs");
+  // 検証: 機能のマーカーを本文に出さない
+  expect(await page.locator("#doc").innerText()).not.toContain("features");
+});
+
+// 文書のマーカーで先頭へ戻るボタンの機能を外すと、末尾までスクロールしてもボタンを置かない（正常シナリオ（先頭へ戻るボタンの機能を外す））
+test("test_normal_when_back_to_top_disabled", async ({ page }) => {
+  // 準備
+  await page.setViewportSize({ width: 1280, height: 800 });
+  const paragraphs = Array.from(
+    { length: 100 },
+    (_, i) => `段落 ${i + 1} は、画面の高さの 3 倍を超えるまで並べる本文。\n`,
+  ).join("\n");
+  await openPage(page, builtRoot);
+  await mountDocument(page, {
+    markdown: `<!-- features: -back-to-top -->\n\n${paragraphs}`,
+  });
+  // 実行: 文書の末尾までスクロールする
+  await page.evaluate(() =>
+    window.scrollTo(0, document.documentElement.scrollHeight),
+  );
+  // 検証
+  await expect(page.locator("#doc p").last()).toBeInViewport();
+  await expect(page.locator("#doc button.mdmark-back-to-top")).toHaveCount(0);
+  expect(await page.locator("#doc").innerText()).not.toContain("features");
+});
+
+// 設定でオンの脚注を、文書のマーカーでその文書だけオフにし、書いた文字のまま描く（正常シナリオ（脚注の機能を外す））
+test("test_normal_when_footnotes_disabled", async ({ page }) => {
+  // 準備
+  await openPage(page, builtRoot);
+  // 実行
+  await mountDocument(page, {
+    markdown:
+      "<!-- features: -footnotes -->\n\n出典がある[^src]。\n\n[^src]: 出典の説明\n",
+  });
+  // 検証
+  const doc = page.locator("#doc");
+  await expect(doc.locator(".mdmark-fn-ref")).toHaveCount(0);
+  await expect(doc.locator("details.mdmark-footnotes")).toHaveCount(0);
+  await expect(doc.locator("p").first()).toHaveText("出典がある[^src]。");
+  expect(await doc.innerHTML()).not.toContain("features:");
+});
+
+// 新しい記法の機能を文書で外すと、書いた文字か普通の Markdown として描く（正常シナリオ（新しい記法の機能を外す））
+test("test_normal_when_new_syntax_disabled", async ({ page }) => {
+  // 準備
+  await openPage(page, builtRoot);
+  // 実行
+  await mountDocument(page, {
+    markdown: [
+      "<!-- features: -icon -columns -highlight -kbd -details -pagebreak -include -wide -csv -->",
+      "",
+      "`icon:check` と `kbd:Ctrl+C` と ==決め手==",
+      "",
+      "<!-- columns -->",
+      "",
+      "左の列",
+      "",
+      "<!-- column -->",
+      "",
+      "右の列",
+      "",
+      "<!-- /columns -->",
+      "",
+      "<!-- details: 補足 -->",
+      "",
+      "補足の中身",
+      "",
+      "<!-- /details -->",
+      "",
+      "<!-- pagebreak -->",
+      "",
+      "<!-- include: part.md -->",
+      "",
+      "<!-- wide -->",
+      "",
+      "広げる中身",
+      "",
+      "<!-- /wide -->",
+      "",
+      "```csv",
+      "a,b",
+      "1,2",
+      "```",
+      "",
+    ].join("\n"),
+    includes: { "part.md": "取り込んだ段落" },
+  });
+  // 検証
+  const doc = page.locator("#doc");
+  await expect(doc.locator("code", { hasText: "icon:check" })).toHaveCount(1);
+  await expect(doc.locator("code", { hasText: "kbd:Ctrl+C" })).toHaveCount(1);
+  await expect(doc).toContainText("==決め手==");
+  for (const text of ["左の列", "右の列", "補足の中身", "広げる中身"]) {
+    await expect(doc.getByText(text)).toBeVisible();
+  }
+  await expect(
+    doc.locator(
+      ".mdmark-layout-columns, details.mdmark-collapsible, .mdmark-wide-range, .mdmark-pagebreak",
+    ),
+  ).toHaveCount(0);
+  await expect(doc).not.toContainText("取り込んだ段落");
+  await expect(doc.locator("code.language-csv")).toHaveCount(1);
+  await expect(doc.locator("table")).toHaveCount(0);
+  expect(await doc.innerHTML()).not.toContain("<!--");
+  await expect(doc.locator(".mdmark-syntax-warning")).toHaveCount(0);
+  await page.emulateMedia({ media: "print" });
+  await sendPrintEvent(page, "beforeprint");
+  const breaks = await page.evaluate(
+    () =>
+      [...document.querySelectorAll("#doc *")].filter(
+        (el) => getComputedStyle(el).breakBefore === "page",
+      ).length,
+  );
+  expect(breaks).toBe(0);
+});
+
+// 設定でオフの html-scripts を、文書のマーカーでその文書だけオンにし、範囲の css と ts を当てる（正常シナリオ（範囲のスクリプトを文書でオンにする））
+test("test_normal_when_range_scripts_enabled_by_document", async ({ page }) => {
+  // 準備
+  await routeTranspiler(page);
+  await openPage(page, builtRoot);
+  const markdown = [
+    "<!-- features: +html-scripts -->",
+    "",
+    rangeMarkdown({
+      css: RANGE_CSS,
+      ts: [
+        "export default (root: HTMLElement): void => {",
+        "  const w = window as unknown as { __mdmarkCalls?: HTMLElement[] };",
+        "  w.__mdmarkCalls = [...(w.__mdmarkCalls ?? []), root];",
+        "};",
+      ].join("\n"),
+    }),
+  ].join("\n");
+  // 実行
+  await mountDocument(page, { markdown });
+  // 検証
+  const scope = page.locator("#doc .mdmark-html");
+  await expect(scope.locator(".box")).toHaveCSS(
+    "background-color",
+    RANGE_COLOR,
+  );
+  await expect
+    .poll(() =>
+      page.evaluate(() => {
+        const calls = Reflect.get(window, "__mdmarkCalls") as
+          | HTMLElement[]
+          | undefined;
+        return (
+          calls?.map((root) => root.classList.contains("mdmark-html")) ?? []
+        );
+      }),
+    )
+    .toEqual([true]);
+  await expect(page.locator("#doc")).not.toContainText("features:");
+});
+
+// 文書の先頭のマーカーで図のリサイズハンドルの機能を外すと、リサイズハンドルを置かず、マーカーを持たない文書には置く（正常シナリオ（図のリサイズハンドルの機能を外す））
+test("test_normal_when_diagram_resize_disabled", async ({ page }) => {
+  // 準備
+  await openPage(page, builtRoot);
+  const flow = await flowMarkdown();
+  // 実行
+  await mountDocument(page, {
+    markdown: `<!-- features: -diagram-resize -->\n\n${flow}`,
+  });
+  // 検証: 右下にリサイズハンドルが無く、右上の拡大・縮小のボタンはある
+  await expect(page.locator("#doc figure.mdmark-diagram")).toHaveCount(1);
+  await expect(page.locator("#doc .mdmark-diagram-resize")).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "拡大" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "縮小" })).toBeVisible();
+  // 検証: 本文にマーカーの文字が出ていない
+  await expect(page.locator("#doc")).not.toContainText("features:");
+  // 実行・検証: マーカーを持たない文書を同じ設定で描くと、リサイズハンドルがある
+  await mountDocument(page, { markdown: flow });
+  await expect(
+    page.getByRole("separator", { name: /の表示の高さ$/ }),
+  ).toHaveCount(1);
 });

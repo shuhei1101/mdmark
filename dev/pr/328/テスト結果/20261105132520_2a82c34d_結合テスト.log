@@ -1,0 +1,1554 @@
+$ npm run test:integration
+
+> test:integration
+> vitest run --project 'integration*'
+
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-notation-flow-layout-lint-wrap-link
+
+1:10:22 PM [vite] (client) warning: 
+/tmp/mdmark-integration-dist-u5yFAF/dist/index.js
+38 |  `):v(o.map(w=>w.text).join(`
+39 |  `))+(o.length>0?`
+40 |  ...ark-code-bar">${k}</div>${x}</div>`}var pE;var hE=e=>import(e);function Jp(e,t,n){console.error(`${e}\u3092\u8AAD\...
+   |                                                                 ^
+41 |  `):(t.textContent??"").replace(/\n$/,"")}function ud(e,t){let n=document.createElement("template");n.innerHTML=Ea({st...
+42 |  `)return;let T=document.createElement("span");return T.className="mdmark-code-break",w.replaceWith(T),T.append(w),T})...
+The above dynamic import cannot be analyzed by Vite.
+See https://vite.dev/guide/features#dynamic-import for supported dynamic import formats. If this is intended to be left as-is, you can use the /* @vite-ignore */ comment inside the import() call to suppress this warning.
+
+  Plugin: vite:import-analysis
+  File: /tmp/mdmark-integration-dist-u5yFAF/dist/index.js
+1:10:22 PM [vite] (client) warning: 
+/tmp/mdmark-integration-dist-u5yFAF/dist/index.js
+42 |  `)return;let T=document.createElement("span");return T.className="mdmark-code-break",w.replaceWith(T),T.append(w),T})...
+43 |  `)}function kh(e){let t=a=>`| ${a.map(s=>s.replace(/[\r\n]+/g," ").replaceAll("|","\\|")).join(" | ")} |`,[n,...r]=e;...
+44 |  ...l.remove()}}}var Cg="data-mdmark-drawn",l1;var d1=e=>import(e);async function Eg(e){let{root:t,libraries:n,isCurre...
+   |                                                                 ^
+45 |  `)?e.slice(0,-1):e;return n===""&&e===""?{lines:[],warnings:t}:{lines:n.split(`
+46 |  `).map((o,a)=>{let s=A1.exec(o);if(s?.index===void 0)return{text:Ud(o)};let i=M1[s[1]??""];return i===void 0?(t.push(...
+The above dynamic import cannot be analyzed by Vite.
+See https://vite.dev/guide/features#dynamic-import for supported dynamic import formats. If this is intended to be left as-is, you can use the /* @vite-ignore */ comment inside the import() call to suppress this warning.
+
+  Plugin: vite:import-analysis
+  File: /tmp/mdmark-integration-dist-u5yFAF/dist/index.js
+1:10:22 PM [vite] (client) warning: 
+/tmp/mdmark-integration-dist-u5yFAF/dist/index.js
+42 |  `)return;let T=document.createElement("span");return T.className="mdmark-code-break",w.replaceWith(T),T.append(w),T})...
+43 |  `)}function kh(e){let t=a=>`| ${a.map(s=>s.replace(/[\r\n]+/g," ").replaceAll("|","\\|")).join(" | ")} |`,[n,...r]=e;...
+44 |  ...ents:["attachComments"]},f1=new Map,Mg=new Map,u1=e=>import(e);function m1(e,t){return e instanceof Error?(e.cause...
+   |                                                                 ^
+45 |  `)?e.slice(0,-1):e;return n===""&&e===""?{lines:[],warnings:t}:{lines:n.split(`
+46 |  `).map((o,a)=>{let s=A1.exec(o);if(s?.index===void 0)return{text:Ud(o)};let i=M1[s[1]??""];return i===void 0?(t.push(...
+The above dynamic import cannot be analyzed by Vite.
+See https://vite.dev/guide/features#dynamic-import for supported dynamic import formats. If this is intended to be left as-is, you can use the /* @vite-ignore */ comment inside the import() call to suppress this warning.
+
+  Plugin: vite:import-analysis
+  File: /tmp/mdmark-integration-dist-u5yFAF/dist/index.js
+1:10:22 PM [vite] (client) warning: 
+/tmp/mdmark-integration-dist-u5yFAF/dist/index.js
+38 |  `):v(o.map(w=>w.text).join(`
+39 |  `))+(o.length>0?`
+40 |  ...ark-code-bar">${k}</div>${x}</div>`}var pE;var hE=e=>import(e);function Jp(e,t,n){console.error(`${e}\u3092\u8AAD\...
+   |                                                                 ^
+41 |  `):(t.textContent??"").replace(/\n$/,"")}function ud(e,t){let n=document.createElement("template");n.innerHTML=Ea({st...
+42 |  `)return;let T=document.createElement("span");return T.className="mdmark-code-break",w.replaceWith(T),T.append(w),T})...
+The above dynamic import cannot be analyzed by Vite.
+See https://vite.dev/guide/features#dynamic-import for supported dynamic import formats. If this is intended to be left as-is, you can use the /* @vite-ignore */ comment inside the import() call to suppress this warning.
+
+  Plugin: vite:import-analysis
+  File: /tmp/mdmark-integration-dist-u5yFAF/dist/index.js?test=1
+1:10:22 PM [vite] (client) warning: 
+/tmp/mdmark-integration-dist-u5yFAF/dist/index.js
+42 |  `)return;let T=document.createElement("span");return T.className="mdmark-code-break",w.replaceWith(T),T.append(w),T})...
+43 |  `)}function kh(e){let t=a=>`| ${a.map(s=>s.replace(/[\r\n]+/g," ").replaceAll("|","\\|")).join(" | ")} |`,[n,...r]=e;...
+44 |  ...l.remove()}}}var Cg="data-mdmark-drawn",l1;var d1=e=>import(e);async function Eg(e){let{root:t,libraries:n,isCurre...
+   |                                                                 ^
+45 |  `)?e.slice(0,-1):e;return n===""&&e===""?{lines:[],warnings:t}:{lines:n.split(`
+46 |  `).map((o,a)=>{let s=A1.exec(o);if(s?.index===void 0)return{text:Ud(o)};let i=M1[s[1]??""];return i===void 0?(t.push(...
+The above dynamic import cannot be analyzed by Vite.
+See https://vite.dev/guide/features#dynamic-import for supported dynamic import formats. If this is intended to be left as-is, you can use the /* @vite-ignore */ comment inside the import() call to suppress this warning.
+
+  Plugin: vite:import-analysis
+  File: /tmp/mdmark-integration-dist-u5yFAF/dist/index.js?test=1
+1:10:22 PM [vite] (client) warning: 
+/tmp/mdmark-integration-dist-u5yFAF/dist/index.js
+42 |  `)return;let T=document.createElement("span");return T.className="mdmark-code-break",w.replaceWith(T),T.append(w),T})...
+43 |  `)}function kh(e){let t=a=>`| ${a.map(s=>s.replace(/[\r\n]+/g," ").replaceAll("|","\\|")).join(" | ")} |`,[n,...r]=e;...
+44 |  ...ents:["attachComments"]},f1=new Map,Mg=new Map,u1=e=>import(e);function m1(e,t){return e instanceof Error?(e.cause...
+   |                                                                 ^
+45 |  `)?e.slice(0,-1):e;return n===""&&e===""?{lines:[],warnings:t}:{lines:n.split(`
+46 |  `).map((o,a)=>{let s=A1.exec(o);if(s?.index===void 0)return{text:Ud(o)};let i=M1[s[1]??""];return i===void 0?(t.push(...
+The above dynamic import cannot be analyzed by Vite.
+See https://vite.dev/guide/features#dynamic-import for supported dynamic import formats. If this is intended to be left as-is, you can use the /* @vite-ignore */ comment inside the import() call to suppress this warning.
+
+  Plugin: vite:import-analysis
+  File: /tmp/mdmark-integration-dist-u5yFAF/dist/index.js?test=1
+1:10:23 PM [vite] (client) warning: 
+/tmp/mdmark-integration-dist-u5yFAF/dist/index.js
+38 |  `):v(o.map(w=>w.text).join(`
+39 |  `))+(o.length>0?`
+40 |  ...ark-code-bar">${k}</div>${x}</div>`}var pE;var hE=e=>import(e);function Jp(e,t,n){console.error(`${e}\u3092\u8AAD\...
+   |                                                                 ^
+41 |  `):(t.textContent??"").replace(/\n$/,"")}function ud(e,t){let n=document.createElement("template");n.innerHTML=Ea({st...
+42 |  `)return;let T=document.createElement("span");return T.className="mdmark-code-break",w.replaceWith(T),T.append(w),T})...
+The above dynamic import cannot be analyzed by Vite.
+See https://vite.dev/guide/features#dynamic-import for supported dynamic import formats. If this is intended to be left as-is, you can use the /* @vite-ignore */ comment inside the import() call to suppress this warning.
+
+  Plugin: vite:import-analysis
+  File: /tmp/mdmark-integration-dist-u5yFAF/dist/index.js?test=2
+1:10:23 PM [vite] (client) warning: 
+/tmp/mdmark-integration-dist-u5yFAF/dist/index.js
+42 |  `)return;let T=document.createElement("span");return T.className="mdmark-code-break",w.replaceWith(T),T.append(w),T})...
+43 |  `)}function kh(e){let t=a=>`| ${a.map(s=>s.replace(/[\r\n]+/g," ").replaceAll("|","\\|")).join(" | ")} |`,[n,...r]=e;...
+44 |  ...l.remove()}}}var Cg="data-mdmark-drawn",l1;var d1=e=>import(e);async function Eg(e){let{root:t,libraries:n,isCurre...
+   |                                                                 ^
+45 |  `)?e.slice(0,-1):e;return n===""&&e===""?{lines:[],warnings:t}:{lines:n.split(`
+46 |  `).map((o,a)=>{let s=A1.exec(o);if(s?.index===void 0)return{text:Ud(o)};let i=M1[s[1]??""];return i===void 0?(t.push(...
+The above dynamic import cannot be analyzed by Vite.
+See https://vite.dev/guide/features#dynamic-import for supported dynamic import formats. If this is intended to be left as-is, you can use the /* @vite-ignore */ comment inside the import() call to suppress this warning.
+
+  Plugin: vite:import-analysis
+  File: /tmp/mdmark-integration-dist-u5yFAF/dist/index.js?test=2
+1:10:23 PM [vite] (client) warning: 
+/tmp/mdmark-integration-dist-u5yFAF/dist/index.js
+42 |  `)return;let T=document.createElement("span");return T.className="mdmark-code-break",w.replaceWith(T),T.append(w),T})...
+43 |  `)}function kh(e){let t=a=>`| ${a.map(s=>s.replace(/[\r\n]+/g," ").replaceAll("|","\\|")).join(" | ")} |`,[n,...r]=e;...
+44 |  ...ents:["attachComments"]},f1=new Map,Mg=new Map,u1=e=>import(e);function m1(e,t){return e instanceof Error?(e.cause...
+   |                                                                 ^
+45 |  `)?e.slice(0,-1):e;return n===""&&e===""?{lines:[],warnings:t}:{lines:n.split(`
+46 |  `).map((o,a)=>{let s=A1.exec(o);if(s?.index===void 0)return{text:Ud(o)};let i=M1[s[1]??""];return i===void 0?(t.push(...
+The above dynamic import cannot be analyzed by Vite.
+See https://vite.dev/guide/features#dynamic-import for supported dynamic import formats. If this is intended to be left as-is, you can use the /* @vite-ignore */ comment inside the import() call to suppress this warning.
+
+  Plugin: vite:import-analysis
+  File: /tmp/mdmark-integration-dist-u5yFAF/dist/index.js?test=2
+1:10:23 PM [vite] (client) warning: 
+/tmp/mdmark-integration-dist-u5yFAF/dist/index.js
+38 |  `):v(o.map(w=>w.text).join(`
+39 |  `))+(o.length>0?`
+40 |  ...ark-code-bar">${k}</div>${x}</div>`}var pE;var hE=e=>import(e);function Jp(e,t,n){console.error(`${e}\u3092\u8AAD\...
+   |                                                                 ^
+41 |  `):(t.textContent??"").replace(/\n$/,"")}function ud(e,t){let n=document.createElement("template");n.innerHTML=Ea({st...
+42 |  `)return;let T=document.createElement("span");return T.className="mdmark-code-break",w.replaceWith(T),T.append(w),T})...
+The above dynamic import cannot be analyzed by Vite.
+See https://vite.dev/guide/features#dynamic-import for supported dynamic import formats. If this is intended to be left as-is, you can use the /* @vite-ignore */ comment inside the import() call to suppress this warning.
+
+  Plugin: vite:import-analysis
+  File: /tmp/mdmark-integration-dist-u5yFAF/dist/index.js?test=3
+1:10:23 PM [vite] (client) warning: 
+/tmp/mdmark-integration-dist-u5yFAF/dist/index.js
+42 |  `)return;let T=document.createElement("span");return T.className="mdmark-code-break",w.replaceWith(T),T.append(w),T})...
+43 |  `)}function kh(e){let t=a=>`| ${a.map(s=>s.replace(/[\r\n]+/g," ").replaceAll("|","\\|")).join(" | ")} |`,[n,...r]=e;...
+44 |  ...l.remove()}}}var Cg="data-mdmark-drawn",l1;var d1=e=>import(e);async function Eg(e){let{root:t,libraries:n,isCurre...
+   |                                                                 ^
+45 |  `)?e.slice(0,-1):e;return n===""&&e===""?{lines:[],warnings:t}:{lines:n.split(`
+46 |  `).map((o,a)=>{let s=A1.exec(o);if(s?.index===void 0)return{text:Ud(o)};let i=M1[s[1]??""];return i===void 0?(t.push(...
+The above dynamic import cannot be analyzed by Vite.
+See https://vite.dev/guide/features#dynamic-import for supported dynamic import formats. If this is intended to be left as-is, you can use the /* @vite-ignore */ comment inside the import() call to suppress this warning.
+
+  Plugin: vite:import-analysis
+  File: /tmp/mdmark-integration-dist-u5yFAF/dist/index.js?test=3
+1:10:23 PM [vite] (client) warning: 
+/tmp/mdmark-integration-dist-u5yFAF/dist/index.js
+42 |  `)return;let T=document.createElement("span");return T.className="mdmark-code-break",w.replaceWith(T),T.append(w),T})...
+43 |  `)}function kh(e){let t=a=>`| ${a.map(s=>s.replace(/[\r\n]+/g," ").replaceAll("|","\\|")).join(" | ")} |`,[n,...r]=e;...
+44 |  ...ents:["attachComments"]},f1=new Map,Mg=new Map,u1=e=>import(e);function m1(e,t){return e instanceof Error?(e.cause...
+   |                                                                 ^
+45 |  `)?e.slice(0,-1):e;return n===""&&e===""?{lines:[],warnings:t}:{lines:n.split(`
+46 |  `).map((o,a)=>{let s=A1.exec(o);if(s?.index===void 0)return{text:Ud(o)};let i=M1[s[1]??""];return i===void 0?(t.push(...
+The above dynamic import cannot be analyzed by Vite.
+See https://vite.dev/guide/features#dynamic-import for supported dynamic import formats. If this is intended to be left as-is, you can use the /* @vite-ignore */ comment inside the import() call to suppress this warning.
+
+  Plugin: vite:import-analysis
+  File: /tmp/mdmark-integration-dist-u5yFAF/dist/index.js?test=3
+1:10:22 PM [vite] (client) warning: 
+/tmp/mdmark-integration-dist-u5yFAF/dist/index.js
+38 |  `):v(o.map(w=>w.text).join(`
+39 |  `))+(o.length>0?`
+40 |  ...ark-code-bar">${k}</div>${x}</div>`}var pE;var hE=e=>import(e);function Jp(e,t,n){console.error(`${e}\u3092\u8AAD\...
+   |                                                                 ^
+41 |  `):(t.textContent??"").replace(/\n$/,"")}function ud(e,t){let n=document.createElement("template");n.innerHTML=Ea({st...
+42 |  `)return;let T=document.createElement("span");return T.className="mdmark-code-break",w.replaceWith(T),T.append(w),T})...
+The above dynamic import cannot be analyzed by Vite.
+See https://vite.dev/guide/features#dynamic-import for supported dynamic import formats. If this is intended to be left as-is, you can use the /* @vite-ignore */ comment inside the import() call to suppress this warning.
+
+  Plugin: vite:import-analysis
+  File: /tmp/mdmark-integration-dist-u5yFAF/dist/index.js?test=4
+1:10:22 PM [vite] (client) warning: 
+/tmp/mdmark-integration-dist-u5yFAF/dist/index.js
+42 |  `)return;let T=document.createElement("span");return T.className="mdmark-code-break",w.replaceWith(T),T.append(w),T})...
+43 |  `)}function kh(e){let t=a=>`| ${a.map(s=>s.replace(/[\r\n]+/g," ").replaceAll("|","\\|")).join(" | ")} |`,[n,...r]=e;...
+44 |  ...l.remove()}}}var Cg="data-mdmark-drawn",l1;var d1=e=>import(e);async function Eg(e){let{root:t,libraries:n,isCurre...
+   |                                                                 ^
+45 |  `)?e.slice(0,-1):e;return n===""&&e===""?{lines:[],warnings:t}:{lines:n.split(`
+46 |  `).map((o,a)=>{let s=A1.exec(o);if(s?.index===void 0)return{text:Ud(o)};let i=M1[s[1]??""];return i===void 0?(t.push(...
+The above dynamic import cannot be analyzed by Vite.
+See https://vite.dev/guide/features#dynamic-import for supported dynamic import formats. If this is intended to be left as-is, you can use the /* @vite-ignore */ comment inside the import() call to suppress this warning.
+
+  Plugin: vite:import-analysis
+  File: /tmp/mdmark-integration-dist-u5yFAF/dist/index.js?test=4
+1:10:22 PM [vite] (client) warning: 
+/tmp/mdmark-integration-dist-u5yFAF/dist/index.js
+42 |  `)return;let T=document.createElement("span");return T.className="mdmark-code-break",w.replaceWith(T),T.append(w),T})...
+43 |  `)}function kh(e){let t=a=>`| ${a.map(s=>s.replace(/[\r\n]+/g," ").replaceAll("|","\\|")).join(" | ")} |`,[n,...r]=e;...
+44 |  ...ents:["attachComments"]},f1=new Map,Mg=new Map,u1=e=>import(e);function m1(e,t){return e instanceof Error?(e.cause...
+   |                                                                 ^
+45 |  `)?e.slice(0,-1):e;return n===""&&e===""?{lines:[],warnings:t}:{lines:n.split(`
+46 |  `).map((o,a)=>{let s=A1.exec(o);if(s?.index===void 0)return{text:Ud(o)};let i=M1[s[1]??""];return i===void 0?(t.push(...
+The above dynamic import cannot be analyzed by Vite.
+See https://vite.dev/guide/features#dynamic-import for supported dynamic import formats. If this is intended to be left as-is, you can use the /* @vite-ignore */ comment inside the import() call to suppress this warning.
+
+  Plugin: vite:import-analysis
+  File: /tmp/mdmark-integration-dist-u5yFAF/dist/index.js?test=4
+1:10:22 PM [vite] (client) warning: 
+/tmp/mdmark-integration-dist-u5yFAF/dist/index.js
+38 |  `):v(o.map(w=>w.text).join(`
+39 |  `))+(o.length>0?`
+40 |  ...ark-code-bar">${k}</div>${x}</div>`}var pE;var hE=e=>import(e);function Jp(e,t,n){console.error(`${e}\u3092\u8AAD\...
+   |                                                                 ^
+41 |  `):(t.textContent??"").replace(/\n$/,"")}function ud(e,t){let n=document.createElement("template");n.innerHTML=Ea({st...
+42 |  `)return;let T=document.createElement("span");return T.className="mdmark-code-break",w.replaceWith(T),T.append(w),T})...
+The above dynamic import cannot be analyzed by Vite.
+See https://vite.dev/guide/features#dynamic-import for supported dynamic import formats. If this is intended to be left as-is, you can use the /* @vite-ignore */ comment inside the import() call to suppress this warning.
+
+  Plugin: vite:import-analysis
+  File: /tmp/mdmark-integration-dist-u5yFAF/dist/index.js?test=5
+1:10:22 PM [vite] (client) warning: 
+/tmp/mdmark-integration-dist-u5yFAF/dist/index.js
+42 |  `)return;let T=document.createElement("span");return T.className="mdmark-code-break",w.replaceWith(T),T.append(w),T})...
+43 |  `)}function kh(e){let t=a=>`| ${a.map(s=>s.replace(/[\r\n]+/g," ").replaceAll("|","\\|")).join(" | ")} |`,[n,...r]=e;...
+44 |  ...l.remove()}}}var Cg="data-mdmark-drawn",l1;var d1=e=>import(e);async function Eg(e){let{root:t,libraries:n,isCurre...
+   |                                                                 ^
+45 |  `)?e.slice(0,-1):e;return n===""&&e===""?{lines:[],warnings:t}:{lines:n.split(`
+46 |  `).map((o,a)=>{let s=A1.exec(o);if(s?.index===void 0)return{text:Ud(o)};let i=M1[s[1]??""];return i===void 0?(t.push(...
+The above dynamic import cannot be analyzed by Vite.
+See https://vite.dev/guide/features#dynamic-import for supported dynamic import formats. If this is intended to be left as-is, you can use the /* @vite-ignore */ comment inside the import() call to suppress this warning.
+
+  Plugin: vite:import-analysis
+  File: /tmp/mdmark-integration-dist-u5yFAF/dist/index.js?test=5
+1:10:22 PM [vite] (client) warning: 
+/tmp/mdmark-integration-dist-u5yFAF/dist/index.js
+42 |  `)return;let T=document.createElement("span");return T.className="mdmark-code-break",w.replaceWith(T),T.append(w),T})...
+43 |  `)}function kh(e){let t=a=>`| ${a.map(s=>s.replace(/[\r\n]+/g," ").replaceAll("|","\\|")).join(" | ")} |`,[n,...r]=e;...
+44 |  ...ents:["attachComments"]},f1=new Map,Mg=new Map,u1=e=>import(e);function m1(e,t){return e instanceof Error?(e.cause...
+   |                                                                 ^
+45 |  `)?e.slice(0,-1):e;return n===""&&e===""?{lines:[],warnings:t}:{lines:n.split(`
+46 |  `).map((o,a)=>{let s=A1.exec(o);if(s?.index===void 0)return{text:Ud(o)};let i=M1[s[1]??""];return i===void 0?(t.push(...
+The above dynamic import cannot be analyzed by Vite.
+See https://vite.dev/guide/features#dynamic-import for supported dynamic import formats. If this is intended to be left as-is, you can use the /* @vite-ignore */ comment inside the import() call to suppress this warning.
+
+  Plugin: vite:import-analysis
+  File: /tmp/mdmark-integration-dist-u5yFAF/dist/index.js?test=5
+1:10:23 PM [vite] (client) warning: 
+/tmp/mdmark-integration-dist-u5yFAF/dist/index.js
+38 |  `):v(o.map(w=>w.text).join(`
+39 |  `))+(o.length>0?`
+40 |  ...ark-code-bar">${k}</div>${x}</div>`}var pE;var hE=e=>import(e);function Jp(e,t,n){console.error(`${e}\u3092\u8AAD\...
+   |                                                                 ^
+41 |  `):(t.textContent??"").replace(/\n$/,"")}function ud(e,t){let n=document.createElement("template");n.innerHTML=Ea({st...
+42 |  `)return;let T=document.createElement("span");return T.className="mdmark-code-break",w.replaceWith(T),T.append(w),T})...
+The above dynamic import cannot be analyzed by Vite.
+See https://vite.dev/guide/features#dynamic-import for supported dynamic import formats. If this is intended to be left as-is, you can use the /* @vite-ignore */ comment inside the import() call to suppress this warning.
+
+  Plugin: vite:import-analysis
+  File: /tmp/mdmark-integration-dist-u5yFAF/dist/index.js?test=6
+1:10:23 PM [vite] (client) warning: 
+/tmp/mdmark-integration-dist-u5yFAF/dist/index.js
+42 |  `)return;let T=document.createElement("span");return T.className="mdmark-code-break",w.replaceWith(T),T.append(w),T})...
+43 |  `)}function kh(e){let t=a=>`| ${a.map(s=>s.replace(/[\r\n]+/g," ").replaceAll("|","\\|")).join(" | ")} |`,[n,...r]=e;...
+44 |  ...l.remove()}}}var Cg="data-mdmark-drawn",l1;var d1=e=>import(e);async function Eg(e){let{root:t,libraries:n,isCurre...
+   |                                                                 ^
+45 |  `)?e.slice(0,-1):e;return n===""&&e===""?{lines:[],warnings:t}:{lines:n.split(`
+46 |  `).map((o,a)=>{let s=A1.exec(o);if(s?.index===void 0)return{text:Ud(o)};let i=M1[s[1]??""];return i===void 0?(t.push(...
+The above dynamic import cannot be analyzed by Vite.
+See https://vite.dev/guide/features#dynamic-import for supported dynamic import formats. If this is intended to be left as-is, you can use the /* @vite-ignore */ comment inside the import() call to suppress this warning.
+
+  Plugin: vite:import-analysis
+  File: /tmp/mdmark-integration-dist-u5yFAF/dist/index.js?test=6
+1:10:23 PM [vite] (client) warning: 
+/tmp/mdmark-integration-dist-u5yFAF/dist/index.js
+42 |  `)return;let T=document.createElement("span");return T.className="mdmark-code-break",w.replaceWith(T),T.append(w),T})...
+43 |  `)}function kh(e){let t=a=>`| ${a.map(s=>s.replace(/[\r\n]+/g," ").replaceAll("|","\\|")).join(" | ")} |`,[n,...r]=e;...
+44 |  ...ents:["attachComments"]},f1=new Map,Mg=new Map,u1=e=>import(e);function m1(e,t){return e instanceof Error?(e.cause...
+   |                                                                 ^
+45 |  `)?e.slice(0,-1):e;return n===""&&e===""?{lines:[],warnings:t}:{lines:n.split(`
+46 |  `).map((o,a)=>{let s=A1.exec(o);if(s?.index===void 0)return{text:Ud(o)};let i=M1[s[1]??""];return i===void 0?(t.push(...
+The above dynamic import cannot be analyzed by Vite.
+See https://vite.dev/guide/features#dynamic-import for supported dynamic import formats. If this is intended to be left as-is, you can use the /* @vite-ignore */ comment inside the import() call to suppress this warning.
+
+  Plugin: vite:import-analysis
+  File: /tmp/mdmark-integration-dist-u5yFAF/dist/index.js?test=6
+1:10:23 PM [vite] (client) warning: 
+/tmp/mdmark-integration-dist-u5yFAF/dist/index.js
+38 |  `):v(o.map(w=>w.text).join(`
+39 |  `))+(o.length>0?`
+40 |  ...ark-code-bar">${k}</div>${x}</div>`}var pE;var hE=e=>import(e);function Jp(e,t,n){console.error(`${e}\u3092\u8AAD\...
+   |                                                                 ^
+41 |  `):(t.textContent??"").replace(/\n$/,"")}function ud(e,t){let n=document.createElement("template");n.innerHTML=Ea({st...
+42 |  `)return;let T=document.createElement("span");return T.className="mdmark-code-break",w.replaceWith(T),T.append(w),T})...
+The above dynamic import cannot be analyzed by Vite.
+See https://vite.dev/guide/features#dynamic-import for supported dynamic import formats. If this is intended to be left as-is, you can use the /* @vite-ignore */ comment inside the import() call to suppress this warning.
+
+  Plugin: vite:import-analysis
+  File: /tmp/mdmark-integration-dist-u5yFAF/dist/index.js?test=7
+1:10:23 PM [vite] (client) warning: 
+/tmp/mdmark-integration-dist-u5yFAF/dist/index.js
+42 |  `)return;let T=document.createElement("span");return T.className="mdmark-code-break",w.replaceWith(T),T.append(w),T})...
+43 |  `)}function kh(e){let t=a=>`| ${a.map(s=>s.replace(/[\r\n]+/g," ").replaceAll("|","\\|")).join(" | ")} |`,[n,...r]=e;...
+44 |  ...l.remove()}}}var Cg="data-mdmark-drawn",l1;var d1=e=>import(e);async function Eg(e){let{root:t,libraries:n,isCurre...
+   |                                                                 ^
+45 |  `)?e.slice(0,-1):e;return n===""&&e===""?{lines:[],warnings:t}:{lines:n.split(`
+46 |  `).map((o,a)=>{let s=A1.exec(o);if(s?.index===void 0)return{text:Ud(o)};let i=M1[s[1]??""];return i===void 0?(t.push(...
+The above dynamic import cannot be analyzed by Vite.
+See https://vite.dev/guide/features#dynamic-import for supported dynamic import formats. If this is intended to be left as-is, you can use the /* @vite-ignore */ comment inside the import() call to suppress this warning.
+
+  Plugin: vite:import-analysis
+  File: /tmp/mdmark-integration-dist-u5yFAF/dist/index.js?test=7
+1:10:23 PM [vite] (client) warning: 
+/tmp/mdmark-integration-dist-u5yFAF/dist/index.js
+42 |  `)return;let T=document.createElement("span");return T.className="mdmark-code-break",w.replaceWith(T),T.append(w),T})...
+43 |  `)}function kh(e){let t=a=>`| ${a.map(s=>s.replace(/[\r\n]+/g," ").replaceAll("|","\\|")).join(" | ")} |`,[n,...r]=e;...
+44 |  ...ents:["attachComments"]},f1=new Map,Mg=new Map,u1=e=>import(e);function m1(e,t){return e instanceof Error?(e.cause...
+   |                                                                 ^
+45 |  `)?e.slice(0,-1):e;return n===""&&e===""?{lines:[],warnings:t}:{lines:n.split(`
+46 |  `).map((o,a)=>{let s=A1.exec(o);if(s?.index===void 0)return{text:Ud(o)};let i=M1[s[1]??""];return i===void 0?(t.push(...
+The above dynamic import cannot be analyzed by Vite.
+See https://vite.dev/guide/features#dynamic-import for supported dynamic import formats. If this is intended to be left as-is, you can use the /* @vite-ignore */ comment inside the import() call to suppress this warning.
+
+  Plugin: vite:import-analysis
+  File: /tmp/mdmark-integration-dist-u5yFAF/dist/index.js?test=7
+1:10:24 PM [vite] (client) warning: 
+/tmp/mdmark-integration-dist-u5yFAF/dist/index.js
+38 |  `):v(o.map(w=>w.text).join(`
+39 |  `))+(o.length>0?`
+40 |  ...ark-code-bar">${k}</div>${x}</div>`}var pE;var hE=e=>import(e);function Jp(e,t,n){console.error(`${e}\u3092\u8AAD\...
+   |                                                                 ^
+41 |  `):(t.textContent??"").replace(/\n$/,"")}function ud(e,t){let n=document.createElement("template");n.innerHTML=Ea({st...
+42 |  `)return;let T=document.createElement("span");return T.className="mdmark-code-break",w.replaceWith(T),T.append(w),T})...
+The above dynamic import cannot be analyzed by Vite.
+See https://vite.dev/guide/features#dynamic-import for supported dynamic import formats. If this is intended to be left as-is, you can use the /* @vite-ignore */ comment inside the import() call to suppress this warning.
+
+  Plugin: vite:import-analysis
+  File: /tmp/mdmark-integration-dist-u5yFAF/dist/index.js?test=8
+1:10:24 PM [vite] (client) warning: 
+/tmp/mdmark-integration-dist-u5yFAF/dist/index.js
+42 |  `)return;let T=document.createElement("span");return T.className="mdmark-code-break",w.replaceWith(T),T.append(w),T})...
+43 |  `)}function kh(e){let t=a=>`| ${a.map(s=>s.replace(/[\r\n]+/g," ").replaceAll("|","\\|")).join(" | ")} |`,[n,...r]=e;...
+44 |  ...l.remove()}}}var Cg="data-mdmark-drawn",l1;var d1=e=>import(e);async function Eg(e){let{root:t,libraries:n,isCurre...
+   |                                                                 ^
+45 |  `)?e.slice(0,-1):e;return n===""&&e===""?{lines:[],warnings:t}:{lines:n.split(`
+46 |  `).map((o,a)=>{let s=A1.exec(o);if(s?.index===void 0)return{text:Ud(o)};let i=M1[s[1]??""];return i===void 0?(t.push(...
+The above dynamic import cannot be analyzed by Vite.
+See https://vite.dev/guide/features#dynamic-import for supported dynamic import formats. If this is intended to be left as-is, you can use the /* @vite-ignore */ comment inside the import() call to suppress this warning.
+
+  Plugin: vite:import-analysis
+  File: /tmp/mdmark-integration-dist-u5yFAF/dist/index.js?test=8
+1:10:24 PM [vite] (client) warning: 
+/tmp/mdmark-integration-dist-u5yFAF/dist/index.js
+42 |  `)return;let T=document.createElement("span");return T.className="mdmark-code-break",w.replaceWith(T),T.append(w),T})...
+43 |  `)}function kh(e){let t=a=>`| ${a.map(s=>s.replace(/[\r\n]+/g," ").replaceAll("|","\\|")).join(" | ")} |`,[n,...r]=e;...
+44 |  ...ents:["attachComments"]},f1=new Map,Mg=new Map,u1=e=>import(e);function m1(e,t){return e instanceof Error?(e.cause...
+   |                                                                 ^
+45 |  `)?e.slice(0,-1):e;return n===""&&e===""?{lines:[],warnings:t}:{lines:n.split(`
+46 |  `).map((o,a)=>{let s=A1.exec(o);if(s?.index===void 0)return{text:Ud(o)};let i=M1[s[1]??""];return i===void 0?(t.push(...
+The above dynamic import cannot be analyzed by Vite.
+See https://vite.dev/guide/features#dynamic-import for supported dynamic import formats. If this is intended to be left as-is, you can use the /* @vite-ignore */ comment inside the import() call to suppress this warning.
+
+  Plugin: vite:import-analysis
+  File: /tmp/mdmark-integration-dist-u5yFAF/dist/index.js?test=8
+1:10:24 PM [vite] (client) warning: 
+/tmp/mdmark-integration-dist-u5yFAF/dist/index.js
+38 |  `):v(o.map(w=>w.text).join(`
+39 |  `))+(o.length>0?`
+40 |  ...ark-code-bar">${k}</div>${x}</div>`}var pE;var hE=e=>import(e);function Jp(e,t,n){console.error(`${e}\u3092\u8AAD\...
+   |                                                                 ^
+41 |  `):(t.textContent??"").replace(/\n$/,"")}function ud(e,t){let n=document.createElement("template");n.innerHTML=Ea({st...
+42 |  `)return;let T=document.createElement("span");return T.className="mdmark-code-break",w.replaceWith(T),T.append(w),T})...
+The above dynamic import cannot be analyzed by Vite.
+See https://vite.dev/guide/features#dynamic-import for supported dynamic import formats. If this is intended to be left as-is, you can use the /* @vite-ignore */ comment inside the import() call to suppress this warning.
+
+  Plugin: vite:import-analysis
+  File: /tmp/mdmark-integration-dist-u5yFAF/dist/index.js?test=9
+1:10:24 PM [vite] (client) warning: 
+/tmp/mdmark-integration-dist-u5yFAF/dist/index.js
+42 |  `)return;let T=document.createElement("span");return T.className="mdmark-code-break",w.replaceWith(T),T.append(w),T})...
+43 |  `)}function kh(e){let t=a=>`| ${a.map(s=>s.replace(/[\r\n]+/g," ").replaceAll("|","\\|")).join(" | ")} |`,[n,...r]=e;...
+44 |  ...l.remove()}}}var Cg="data-mdmark-drawn",l1;var d1=e=>import(e);async function Eg(e){let{root:t,libraries:n,isCurre...
+   |                                                                 ^
+45 |  `)?e.slice(0,-1):e;return n===""&&e===""?{lines:[],warnings:t}:{lines:n.split(`
+46 |  `).map((o,a)=>{let s=A1.exec(o);if(s?.index===void 0)return{text:Ud(o)};let i=M1[s[1]??""];return i===void 0?(t.push(...
+The above dynamic import cannot be analyzed by Vite.
+See https://vite.dev/guide/features#dynamic-import for supported dynamic import formats. If this is intended to be left as-is, you can use the /* @vite-ignore */ comment inside the import() call to suppress this warning.
+
+  Plugin: vite:import-analysis
+  File: /tmp/mdmark-integration-dist-u5yFAF/dist/index.js?test=9
+1:10:24 PM [vite] (client) warning: 
+/tmp/mdmark-integration-dist-u5yFAF/dist/index.js
+42 |  `)return;let T=document.createElement("span");return T.className="mdmark-code-break",w.replaceWith(T),T.append(w),T})...
+43 |  `)}function kh(e){let t=a=>`| ${a.map(s=>s.replace(/[\r\n]+/g," ").replaceAll("|","\\|")).join(" | ")} |`,[n,...r]=e;...
+44 |  ...ents:["attachComments"]},f1=new Map,Mg=new Map,u1=e=>import(e);function m1(e,t){return e instanceof Error?(e.cause...
+   |                                                                 ^
+45 |  `)?e.slice(0,-1):e;return n===""&&e===""?{lines:[],warnings:t}:{lines:n.split(`
+46 |  `).map((o,a)=>{let s=A1.exec(o);if(s?.index===void 0)return{text:Ud(o)};let i=M1[s[1]??""];return i===void 0?(t.push(...
+The above dynamic import cannot be analyzed by Vite.
+See https://vite.dev/guide/features#dynamic-import for supported dynamic import formats. If this is intended to be left as-is, you can use the /* @vite-ignore */ comment inside the import() call to suppress this warning.
+
+  Plugin: vite:import-analysis
+  File: /tmp/mdmark-integration-dist-u5yFAF/dist/index.js?test=9
+1:10:25 PM [vite] (client) warning: 
+/tmp/mdmark-integration-dist-u5yFAF/dist/index.js
+38 |  `):v(o.map(w=>w.text).join(`
+39 |  `))+(o.length>0?`
+40 |  ...ark-code-bar">${k}</div>${x}</div>`}var pE;var hE=e=>import(e);function Jp(e,t,n){console.error(`${e}\u3092\u8AAD\...
+   |                                                                 ^
+41 |  `):(t.textContent??"").replace(/\n$/,"")}function ud(e,t){let n=document.createElement("template");n.innerHTML=Ea({st...
+42 |  `)return;let T=document.createElement("span");return T.className="mdmark-code-break",w.replaceWith(T),T.append(w),T})...
+The above dynamic import cannot be analyzed by Vite.
+See https://vite.dev/guide/features#dynamic-import for supported dynamic import formats. If this is intended to be left as-is, you can use the /* @vite-ignore */ comment inside the import() call to suppress this warning.
+
+  Plugin: vite:import-analysis
+  File: /tmp/mdmark-integration-dist-u5yFAF/dist/index.js?test=10
+1:10:25 PM [vite] (client) warning: 
+/tmp/mdmark-integration-dist-u5yFAF/dist/index.js
+42 |  `)return;let T=document.createElement("span");return T.className="mdmark-code-break",w.replaceWith(T),T.append(w),T})...
+43 |  `)}function kh(e){let t=a=>`| ${a.map(s=>s.replace(/[\r\n]+/g," ").replaceAll("|","\\|")).join(" | ")} |`,[n,...r]=e;...
+44 |  ...l.remove()}}}var Cg="data-mdmark-drawn",l1;var d1=e=>import(e);async function Eg(e){let{root:t,libraries:n,isCurre...
+   |                                                                 ^
+45 |  `)?e.slice(0,-1):e;return n===""&&e===""?{lines:[],warnings:t}:{lines:n.split(`
+46 |  `).map((o,a)=>{let s=A1.exec(o);if(s?.index===void 0)return{text:Ud(o)};let i=M1[s[1]??""];return i===void 0?(t.push(...
+The above dynamic import cannot be analyzed by Vite.
+See https://vite.dev/guide/features#dynamic-import for supported dynamic import formats. If this is intended to be left as-is, you can use the /* @vite-ignore */ comment inside the import() call to suppress this warning.
+
+  Plugin: vite:import-analysis
+  File: /tmp/mdmark-integration-dist-u5yFAF/dist/index.js?test=10
+1:10:25 PM [vite] (client) warning: 
+/tmp/mdmark-integration-dist-u5yFAF/dist/index.js
+42 |  `)return;let T=document.createElement("span");return T.className="mdmark-code-break",w.replaceWith(T),T.append(w),T})...
+43 |  `)}function kh(e){let t=a=>`| ${a.map(s=>s.replace(/[\r\n]+/g," ").replaceAll("|","\\|")).join(" | ")} |`,[n,...r]=e;...
+44 |  ...ents:["attachComments"]},f1=new Map,Mg=new Map,u1=e=>import(e);function m1(e,t){return e instanceof Error?(e.cause...
+   |                                                                 ^
+45 |  `)?e.slice(0,-1):e;return n===""&&e===""?{lines:[],warnings:t}:{lines:n.split(`
+46 |  `).map((o,a)=>{let s=A1.exec(o);if(s?.index===void 0)return{text:Ud(o)};let i=M1[s[1]??""];return i===void 0?(t.push(...
+The above dynamic import cannot be analyzed by Vite.
+See https://vite.dev/guide/features#dynamic-import for supported dynamic import formats. If this is intended to be left as-is, you can use the /* @vite-ignore */ comment inside the import() call to suppress this warning.
+
+  Plugin: vite:import-analysis
+  File: /tmp/mdmark-integration-dist-u5yFAF/dist/index.js?test=10
+1:10:26 PM [vite] (client) warning: 
+/tmp/mdmark-integration-dist-u5yFAF/dist/index.js
+38 |  `):v(o.map(w=>w.text).join(`
+39 |  `))+(o.length>0?`
+40 |  ...ark-code-bar">${k}</div>${x}</div>`}var pE;var hE=e=>import(e);function Jp(e,t,n){console.error(`${e}\u3092\u8AAD\...
+   |                                                                 ^
+41 |  `):(t.textContent??"").replace(/\n$/,"")}function ud(e,t){let n=document.createElement("template");n.innerHTML=Ea({st...
+42 |  `)return;let T=document.createElement("span");return T.className="mdmark-code-break",w.replaceWith(T),T.append(w),T})...
+The above dynamic import cannot be analyzed by Vite.
+See https://vite.dev/guide/features#dynamic-import for supported dynamic import formats. If this is intended to be left as-is, you can use the /* @vite-ignore */ comment inside the import() call to suppress this warning.
+
+  Plugin: vite:import-analysis
+  File: /tmp/mdmark-integration-dist-u5yFAF/dist/index.js?test=11
+1:10:26 PM [vite] (client) warning: 
+/tmp/mdmark-integration-dist-u5yFAF/dist/index.js
+42 |  `)return;let T=document.createElement("span");return T.className="mdmark-code-break",w.replaceWith(T),T.append(w),T})...
+43 |  `)}function kh(e){let t=a=>`| ${a.map(s=>s.replace(/[\r\n]+/g," ").replaceAll("|","\\|")).join(" | ")} |`,[n,...r]=e;...
+44 |  ...l.remove()}}}var Cg="data-mdmark-drawn",l1;var d1=e=>import(e);async function Eg(e){let{root:t,libraries:n,isCurre...
+   |                                                                 ^
+45 |  `)?e.slice(0,-1):e;return n===""&&e===""?{lines:[],warnings:t}:{lines:n.split(`
+46 |  `).map((o,a)=>{let s=A1.exec(o);if(s?.index===void 0)return{text:Ud(o)};let i=M1[s[1]??""];return i===void 0?(t.push(...
+The above dynamic import cannot be analyzed by Vite.
+See https://vite.dev/guide/features#dynamic-import for supported dynamic import formats. If this is intended to be left as-is, you can use the /* @vite-ignore */ comment inside the import() call to suppress this warning.
+
+  Plugin: vite:import-analysis
+  File: /tmp/mdmark-integration-dist-u5yFAF/dist/index.js?test=11
+1:10:26 PM [vite] (client) warning: 
+/tmp/mdmark-integration-dist-u5yFAF/dist/index.js
+42 |  `)return;let T=document.createElement("span");return T.className="mdmark-code-break",w.replaceWith(T),T.append(w),T})...
+43 |  `)}function kh(e){let t=a=>`| ${a.map(s=>s.replace(/[\r\n]+/g," ").replaceAll("|","\\|")).join(" | ")} |`,[n,...r]=e;...
+44 |  ...ents:["attachComments"]},f1=new Map,Mg=new Map,u1=e=>import(e);function m1(e,t){return e instanceof Error?(e.cause...
+   |                                                                 ^
+45 |  `)?e.slice(0,-1):e;return n===""&&e===""?{lines:[],warnings:t}:{lines:n.split(`
+46 |  `).map((o,a)=>{let s=A1.exec(o);if(s?.index===void 0)return{text:Ud(o)};let i=M1[s[1]??""];return i===void 0?(t.push(...
+The above dynamic import cannot be analyzed by Vite.
+See https://vite.dev/guide/features#dynamic-import for supported dynamic import formats. If this is intended to be left as-is, you can use the /* @vite-ignore */ comment inside the import() call to suppress this warning.
+
+  Plugin: vite:import-analysis
+  File: /tmp/mdmark-integration-dist-u5yFAF/dist/index.js?test=11
+
+ Test Files  73 passed (73)
+      Tests  757 passed (757)
+   Start at  13:08:08
+   Duration  655.17s (tests 89%, import 9%, transform 2%)
+
+exit=0
+$ xvfb-run -a npm --prefix vscode run test:integration
+
+> mdmark-vscode@0.1.0 test:integration
+> node scripts/build.ts --tests && node tests/integration/run.ts
+
+- Resolving version...
+✔ Validated version: 1.141.0
+- Found at https://update.code.visualstudio.com/1.141.0/linux-x64/stable?released=true
+✔ Found at https://update.code.visualstudio.com/1.141.0/linux-x64/stable?released=true
+- Downloading (343.79 MB)
+✔ Downloaded VS Code (b224f6bf5a4fcad5fa4c640ed10f179c3b613e48) into /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-notation-flow-layout-lint-wrap-link/vscode/.vscode-test/vscode-linux-x64-1.141.0
+[90m[main 2026-11-05T04:21:08.452Z][0m [node-compile-cache] main: packaged cache inactive (status: disabled, configured: /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-notation-flow-layout-lint-wrap-link/vscode/.vscode-test/vscode-linux-x64-1.141.0/resources/app/node-compile-cache/main, active: none)
+[90m[main 2026-11-05T04:21:08.573Z][0m StorageMainService: creating application shared storage
+[90m[main 2026-11-05T04:21:08.779Z][0m [shared storage] Creating shared storage database at ':memory:' (wasCreated: true)
+[90m[main 2026-11-05T04:21:08.780Z][0m [shared storage] Initializing fallback application storage (path: in-memory)
+[92277:1105/132108.822551:ERROR:gpu/ipc/client/command_buffer_proxy_impl.cc:285] ContextResult::kTransientFailure: Failed to send GpuControl.CreateCommandBuffer.
+[90m[main 2026-11-05T04:21:08.854Z][0m [shared storage] Fallback application storage initialized with 3 items
+[90m[main 2026-11-05T04:21:08.854Z][0m update#setState disabled
+[90m[main 2026-11-05T04:21:08.854Z][0m update#ctor - updates are disabled by the environment
+[RemoteAgentHost] Reconciling: desired=[], current=[]
+[AgentHost:renderer] Acquiring MessagePort to agent host...
+[90m[main 2026-11-05T04:21:09.895Z][0m AgentHostProcessManager: agent host started
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey=undefined conversationKey=undefined modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[AgentHost:renderer] MessagePort acquired, creating client...
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/MmNlZWQwMTUtNDRmNi00ODE4LWI3ZmQtYTcwNTNmNTI3YzJj" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+Started local extension host with pid 92547.
+Started initializing default profile extensions in extensions installation folder. file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-notation-flow-layout-lint-wrap-link/vscode/.vscode-test/extensions
+[AccountPolicyGate] apply: state=inactive, reason=undefined, isRestricted=false
+[RemoteAgentHost] Reconciling: desired=[], current=[]
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/MmNlZWQwMTUtNDRmNi00ODE4LWI3ZmQtYTcwNTNmNTI3YzJj" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/MmNlZWQwMTUtNDRmNi00ODE4LWI3ZmQtYTcwNTNmNTI3YzJj" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/MmNlZWQwMTUtNDRmNi00ODE4LWI3ZmQtYTcwNTNmNTI3YzJj" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+Completed initializing default profile extensions in extensions installation folder. file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-notation-flow-layout-lint-wrap-link/vscode/.vscode-test/extensions
+Loading development extension at /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-notation-flow-layout-lint-wrap-link/vscode
+Extension 'github.copilot-chat' appears in product.json but enables LESS API proposals than the extension wants.
+package.json (LOSES): agentSessionsWorkspace
+agentsWindowConfiguration
+chatDebug
+chatHooks
+envIsConnectionMetered
+extensionsAny
+newSymbolNamesProvider
+interactive
+codeActionAI
+activeComment
+commentReveal
+contribCommentThreadAdditionalMenu
+contribCommentsViewThreadMenus
+contribChatEditorInlineGutterMenu
+documentFiltersExclusive
+embeddings
+findTextInFiles
+findTextInFiles2
+languageModelToolSupportsModel
+findFiles2
+textSearchProvider
+terminalDataWriteEvent
+terminalExecuteCommandEvent
+terminalSelection
+terminalQuickFixProvider
+mappedEditsProvider
+aiRelatedInformation
+aiSettingsSearch
+chatParticipantAdditions
+defaultChatParticipant
+contribSourceControlInputBoxMenu
+authLearnMore
+authIssuers
+testObserver
+aiTextSearchProvider
+chatParticipantPrivate
+chatProvider
+contribDebugCreateConfiguration
+chatReferenceDiagnostic
+textSearchProvider2
+chatReferenceBinaryData
+languageModelSystem
+languageModelCapabilities
+languageModelPricing
+inlineCompletionsAdditions
+chatStatusItem
+chatInputNotification
+taskProblemMatcherStatus
+contribLanguageModelToolSets
+textDocumentChangeReason
+resolvers
+taskExecutionTerminal
+dataChannels
+languageModelThinkingPart
+chatSessionsProvider
+devDeviceId
+contribEditorContentMenu
+chatPromptFiles
+mcpServerDefinitions
+tabInputMultiDiff
+workspaceTrust
+environmentPower
+terminalTitle
+toolInvocationApproveCombination
+chatSessionCustomizationProvider
+product.json (WINS): agentSessionsWorkspace
+agentsWindowConfiguration
+interactive
+terminalDataWriteEvent
+terminalExecuteCommandEvent
+terminalSelection
+terminalQuickFixProvider
+chatParticipantAdditions
+defaultChatParticipant
+embeddings
+chatProvider
+mappedEditsProvider
+aiRelatedInformation
+aiSettingsSearch
+codeActionAI
+findTextInFiles
+findTextInFiles2
+textSearchProvider
+textSearchProvider2
+activeComment
+commentReveal
+contribSourceControlInputBoxMenu
+contribCommentEditorActionsMenu
+contribCommentThreadAdditionalMenu
+contribCommentsViewThreadMenus
+contribChatEditorInlineGutterMenu
+extensionAffinity
+newSymbolNamesProvider
+findFiles2
+chatReferenceDiagnostic
+extensionsAny
+authLearnMore
+testObserver
+aiTextSearchProvider
+documentFiltersExclusive
+chatParticipantPrivate
+contribDebugCreateConfiguration
+inlineCompletionsAdditions
+chatReferenceBinaryData
+languageModelSystem
+languageModelCapabilities
+languageModelThinkingPart
+languageModelToolSupportsModel
+chatStatusItem
+taskProblemMatcherStatus
+contribLanguageModelToolSets
+textDocumentChangeReason
+resolvers
+taskExecutionTerminal
+dataChannels
+chatSessionsProvider
+chatSessionCustomizationProvider
+devDeviceId
+contribEditorContentMenu
+tokenInformation
+toolInvocationApproveCombination
+chatPromptFiles
+mcpServerDefinitions
+tabInputMultiDiff
+workspaceTrust
+chatHooks
+chatDebug
+envIsConnectionMetered
+environmentPower
+terminalTitle
+languageModelPricing
+chatInputNotification
+DELTA: authIssuers
+Proceeding with EXTRA proposals (authIssuers) because extension is in development mode. Still, this EXTENSION WILL BE BROKEN unless product.json is updated.
+Settings Sync: Account status changed from uninitialized to unavailable
+[CloudSandboxApi] No 'github' session with scopes [read:user, user:email, repo, workflow]
+[91m[main 2026-11-05T04:21:14.359Z][0m [AgentHost:stderr] (node:92487) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+(Use `exe --trace-deprecation ...` to show where the warning was created)
+
+[RemoteAgentHostProtocol] Sending initialize: address=local clientId=c9fb9358-837b-427d-99a4-2c31b8fd65d2 requestId=1
+[RemoteAgentHostProtocol] Initialized: address=local clientId=c9fb9358-837b-427d-99a4-2c31b8fd65d2 durationMs=4541
+[AgentHost:renderer] Protocol connection established; clientId=c9fb9358-837b-427d-99a4-2c31b8fd65d2
+Unknown channel: agentHostClientByokLm
+Unknown channel: agentHostClientProxy
+[AccountPolicyGate] apply: state=inactive, reason=undefined, isRestricted=false
+Unknown channel: agentHostClientProxy
+Unknown channel: agentHostClientProxy
+
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+  バージョンを決められない（前回のバージョンが空）
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+(node:92547) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+(Use `exe --trace-deprecation ...` to show where the warning was created)
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/MmNlZWQwMTUtNDRmNi00ODE4LWI3ZmQtYTcwNTNmNTI3YzJj" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_error_when_version_undecidable (4592ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/MmNlZWQwMTUtNDRmNi00ODE4LWI3ZmQtYTcwNTNmNTI3YzJj" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/MmNlZWQwMTUtNDRmNi00ODE4LWI3ZmQtYTcwNTNmNTI3YzJj" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_error_when_version_undecidable_on_export (642ms)
+  コマンドと通知の入口
+    ✔ test_normal_when_command_titles
+    ✔ test_normal_when_editor_title_button
+    ✔ test_normal_when_settings_button
+    ✔ test_normal_when_command_palette_conditions
+  HTML に書き出す
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/MmNlZWQwMTUtNDRmNi00ODE4LWI3ZmQtYTcwNTNmNTI3YzJj" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal (363ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/MmNlZWQwMTUtNDRmNi00ODE4LWI3ZmQtYTcwNTNmNTI3YzJj" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/MmNlZWQwMTUtNDRmNi00ODE4LWI3ZmQtYTcwNTNmNTI3YzJj" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal_when_output_dir (284ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/MmNlZWQwMTUtNDRmNi00ODE4LWI3ZmQtYTcwNTNmNTI3YzJj" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_error_when_output_unwritable (98ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/MmNlZWQwMTUtNDRmNi00ODE4LWI3ZmQtYTcwNTNmNTI3YzJj" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+  ブラウザで開く
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/MmNlZWQwMTUtNDRmNi00ODE4LWI3ZmQtYTcwNTNmNTI3YzJj" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal (371ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/MmNlZWQwMTUtNDRmNi00ODE4LWI3ZmQtYTcwNTNmNTI3YzJj" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_error_when_output_unwritable (83ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/MmNlZWQwMTUtNDRmNi00ODE4LWI3ZmQtYTcwNTNmNTI3YzJj" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal_when_color_theme_selected (316ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/MmNlZWQwMTUtNDRmNi00ODE4LWI3ZmQtYTcwNTNmNTI3YzJj" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+  PDF に印刷
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/MmNlZWQwMTUtNDRmNi00ODE4LWI3ZmQtYTcwNTNmNTI3YzJj" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal (3387ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/MmNlZWQwMTUtNDRmNi00ODE4LWI3ZmQtYTcwNTNmNTI3YzJj" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal_when_wait_limit_reached (881ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/MmNlZWQwMTUtNDRmNi00ODE4LWI3ZmQtYTcwNTNmNTI3YzJj" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/MmNlZWQwMTUtNDRmNi00ODE4LWI3ZmQtYTcwNTNmNTI3YzJj" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal_when_color_theme_selected (457ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/MmNlZWQwMTUtNDRmNi00ODE4LWI3ZmQtYTcwNTNmNTI3YzJj" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_error_when_output_unwritable (264ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/MmNlZWQwMTUtNDRmNi00ODE4LWI3ZmQtYTcwNTNmNTI3YzJj" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+  設定ファイルを開く
+    ✔ test_normal (247ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/MmNlZWQwMTUtNDRmNi00ODE4LWI3ZmQtYTcwNTNmNTI3YzJj" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal_when_template_created (66ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/MmNlZWQwMTUtNDRmNi00ODE4LWI3ZmQtYTcwNTNmNTI3YzJj" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_error_when_template_declined (40ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/MmNlZWQwMTUtNDRmNi00ODE4LWI3ZmQtYTcwNTNmNTI3YzJj" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+  設定を開く
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/MmNlZWQwMTUtNDRmNi00ODE4LWI3ZmQtYTcwNTNmNTI3YzJj" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal (787ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/MmNlZWQwMTUtNDRmNi00ODE4LWI3ZmQtYTcwNTNmNTI3YzJj" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal_when_command_palette
+  差分ビューの変更をプレビューで見る
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/MmNlZWQwMTUtNDRmNi00ODE4LWI3ZmQtYTcwNTNmNTI3YzJj" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/MmNlZWQwMTUtNDRmNi00ODE4LWI3ZmQtYTcwNTNmNTI3YzJj" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal_when_opened_from_diff_view (499ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/MmNlZWQwMTUtNDRmNi00ODE4LWI3ZmQtYTcwNTNmNTI3YzJj" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+Error: spawn git ENOENT
+	at ChildProcess._handle.onexit (node:internal/child_process:287:19)
+	at onErrorNT (node:internal/child_process:525:16)
+	at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+Error: Unexpected SIGPIPE
+	at process.<anonymous> (file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-notation-flow-layout-lint-wrap-link/vscode/.vscode-test/vscode-linux-x64-1.141.0/resources/app/out/bootstrap-fork.js:4:1710)
+	at process.emit (node:events:514:28)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/MmNlZWQwMTUtNDRmNi00ODE4LWI3ZmQtYTcwNTNmNTI3YzJj" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal_when_commit_diff (471ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/MmNlZWQwMTUtNDRmNi00ODE4LWI3ZmQtYTcwNTNmNTI3YzJj" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+Error: spawn git ENOENT
+	at ChildProcess._handle.onexit (node:internal/child_process:287:19)
+	at onErrorNT (node:internal/child_process:525:16)
+	at processTicksAndRejections (node:internal/process/task_queues:90:21)
+	at runNextTicks (node:internal/process/task_queues:69:3)
+	at process.processTimers (node:internal/timers:615:9)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/MmNlZWQwMTUtNDRmNi00ODE4LWI3ZmQtYTcwNTNmNTI3YzJj" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_error_when_version_without_diff (386ms)
+rejected promise not handled within 1 second: Error: spawn git ENOENT
+stack trace: Error: spawn git ENOENT
+	at ChildProcess._handle.onexit (node:internal/child_process:287:19)
+	at onErrorNT (node:internal/child_process:525:16)
+	at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+spawn git ENOENT: Error: spawn git ENOENT
+	at ChildProcess._handle.onexit (node:internal/child_process:287:19)
+	at onErrorNT (node:internal/child_process:525:16)
+	at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+rejected promise not handled within 1 second: Error: spawn git ENOENT
+stack trace: Error: spawn git ENOENT
+	at ChildProcess._handle.onexit (node:internal/child_process:287:19)
+	at onErrorNT (node:internal/child_process:525:16)
+	at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/MmNlZWQwMTUtNDRmNi00ODE4LWI3ZmQtYTcwNTNmNTI3YzJj" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/MmNlZWQwMTUtNDRmNi00ODE4LWI3ZmQtYTcwNTNmNTI3YzJj" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+rejected promise not handled within 1 second: Error: spawn git ENOENT
+stack trace: Error: spawn git ENOENT
+	at ChildProcess._handle.onexit (node:internal/child_process:287:19)
+	at onErrorNT (node:internal/child_process:525:16)
+	at processTicksAndRejections (node:internal/process/task_queues:90:21)
+	at runNextTicks (node:internal/process/task_queues:69:3)
+	at process.processTimers (node:internal/timers:615:9)
+spawn git ENOENT: Error: spawn git ENOENT
+	at ChildProcess._handle.onexit (node:internal/child_process:287:19)
+	at onErrorNT (node:internal/child_process:525:16)
+	at processTicksAndRejections (node:internal/process/task_queues:90:21)
+	at runNextTicks (node:internal/process/task_queues:69:3)
+	at process.processTimers (node:internal/timers:615:9)
+rejected promise not handled within 1 second: Error: spawn git ENOENT
+stack trace: Error: spawn git ENOENT
+	at ChildProcess._handle.onexit (node:internal/child_process:287:19)
+	at onErrorNT (node:internal/child_process:525:16)
+	at processTicksAndRejections (node:internal/process/task_queues:90:21)
+	at runNextTicks (node:internal/process/task_queues:69:3)
+	at process.processTimers (node:internal/timers:615:9)
+rejected promise not handled within 1 second: Error: spawn git ENOENT
+stack trace: Error: spawn git ENOENT
+	at ChildProcess._handle.onexit (node:internal/child_process:287:19)
+	at onErrorNT (node:internal/child_process:525:16)
+	at processTicksAndRejections (node:internal/process/task_queues:90:21)
+	at runNextTicks (node:internal/process/task_queues:69:3)
+	at process.processTimers (node:internal/timers:615:9)
+rejected promise not handled within 1 second: Error: spawn git ENOENT
+stack trace: Error: spawn git ENOENT
+	at ChildProcess._handle.onexit (node:internal/child_process:287:19)
+	at onErrorNT (node:internal/child_process:525:16)
+	at processTicksAndRejections (node:internal/process/task_queues:90:21)
+	at runNextTicks (node:internal/process/task_queues:69:3)
+	at process.processTimers (node:internal/timers:615:9)
+Error: spawn git ENOENT
+	at ChildProcess._handle.onexit (node:internal/child_process:287:19)
+	at onErrorNT (node:internal/child_process:525:16)
+	at processTicksAndRejections (node:internal/process/task_queues:90:21)
+	at runNextTicks (node:internal/process/task_queues:69:3)
+	at process.processTimers (node:internal/timers:615:9)
+    ✔ test_normal_when_diff_modified_side_edited (1353ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/MmNlZWQwMTUtNDRmNi00ODE4LWI3ZmQtYTcwNTNmNTI3YzJj" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+rejected promise not handled within 1 second: Error: spawn git ENOENT
+stack trace: Error: spawn git ENOENT
+	at ChildProcess._handle.onexit (node:internal/child_process:287:19)
+	at onErrorNT (node:internal/child_process:525:16)
+	at processTicksAndRejections (node:internal/process/task_queues:90:21)
+	at runNextTicks (node:internal/process/task_queues:69:3)
+	at process.processTimers (node:internal/timers:615:9)
+spawn git ENOENT: Error: spawn git ENOENT
+	at ChildProcess._handle.onexit (node:internal/child_process:287:19)
+	at onErrorNT (node:internal/child_process:525:16)
+	at processTicksAndRejections (node:internal/process/task_queues:90:21)
+	at runNextTicks (node:internal/process/task_queues:69:3)
+	at process.processTimers (node:internal/timers:615:9)
+rejected promise not handled within 1 second: Error: spawn git ENOENT
+stack trace: Error: spawn git ENOENT
+	at ChildProcess._handle.onexit (node:internal/child_process:287:19)
+	at onErrorNT (node:internal/child_process:525:16)
+	at processTicksAndRejections (node:internal/process/task_queues:90:21)
+	at runNextTicks (node:internal/process/task_queues:69:3)
+	at process.processTimers (node:internal/timers:615:9)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/MmNlZWQwMTUtNDRmNi00ODE4LWI3ZmQtYTcwNTNmNTI3YzJj" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal_when_diff_preview (1516ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/MmNlZWQwMTUtNDRmNi00ODE4LWI3ZmQtYTcwNTNmNTI3YzJj" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+  プレビューのリンクを開く
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/MmNlZWQwMTUtNDRmNi00ODE4LWI3ZmQtYTcwNTNmNTI3YzJj" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal_when_external_link (345ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/MmNlZWQwMTUtNDRmNi00ODE4LWI3ZmQtYTcwNTNmNTI3YzJj" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/MmNlZWQwMTUtNDRmNi00ODE4LWI3ZmQtYTcwNTNmNTI3YzJj" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal_when_markdown_link (307ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/MmNlZWQwMTUtNDRmNi00ODE4LWI3ZmQtYTcwNTNmNTI3YzJj" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/MmNlZWQwMTUtNDRmNi00ODE4LWI3ZmQtYTcwNTNmNTI3YzJj" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal_when_anchor_link (612ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/MmNlZWQwMTUtNDRmNi00ODE4LWI3ZmQtYTcwNTNmNTI3YzJj" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/MmNlZWQwMTUtNDRmNi00ODE4LWI3ZmQtYTcwNTNmNTI3YzJj" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal_when_side_toc_link (767ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/MmNlZWQwMTUtNDRmNi00ODE4LWI3ZmQtYTcwNTNmNTI3YzJj" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/MmNlZWQwMTUtNDRmNi00ODE4LWI3ZmQtYTcwNTNmNTI3YzJj" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_error_when_link_target_missing (1074ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/MmNlZWQwMTUtNDRmNi00ODE4LWI3ZmQtYTcwNTNmNTI3YzJj" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/MmNlZWQwMTUtNDRmNi00ODE4LWI3ZmQtYTcwNTNmNTI3YzJj" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal_when_flow_node_link (1137ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/MmNlZWQwMTUtNDRmNi00ODE4LWI3ZmQtYTcwNTNmNTI3YzJj" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+  プレビューを開く
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/MmNlZWQwMTUtNDRmNi00ODE4LWI3ZmQtYTcwNTNmNTI3YzJj" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+rejected promise not handled within 1 second: spawn git ENOENT {
+  "gitErrorCode": "NotAGitRepository"
+}Error: spawn git ENOENT
+	at ChildProcess._handle.onexit (node:internal/child_process:287:19)
+	at onErrorNT (node:internal/child_process:525:16)
+	at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+stack trace: Error: spawn git ENOENT
+	at ChildProcess.<anonymous> (/mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-notation-flow-layout-lint-wrap-link/vscode/.vscode-test/vscode-linux-x64-1.141.0/resources/app/extensions/git/dist/main.js:22:9865)
+	at ChildProcess.wrapper (node:events:639:12)
+	at ChildProcess.emit (node:events:514:28)
+	at ChildProcess._handle.onexit (node:internal/child_process:293:12)
+	at onErrorNT (node:internal/child_process:525:16)
+	at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+spawn git ENOENT: Error: spawn git ENOENT
+	at ChildProcess.<anonymous> (/mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-notation-flow-layout-lint-wrap-link/vscode/.vscode-test/vscode-linux-x64-1.141.0/resources/app/extensions/git/dist/main.js:22:9865)
+	at ChildProcess.wrapper (node:events:639:12)
+	at ChildProcess.emit (node:events:514:28)
+	at ChildProcess._handle.onexit (node:internal/child_process:293:12)
+	at onErrorNT (node:internal/child_process:525:16)
+	at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+    ✔ test_normal (3583ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/MmNlZWQwMTUtNDRmNi00ODE4LWI3ZmQtYTcwNTNmNTI3YzJj" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/MmNlZWQwMTUtNDRmNi00ODE4LWI3ZmQtYTcwNTNmNTI3YzJj" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal_when_same_column (271ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/MmNlZWQwMTUtNDRmNi00ODE4LWI3ZmQtYTcwNTNmNTI3YzJj" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/MmNlZWQwMTUtNDRmNi00ODE4LWI3ZmQtYTcwNTNmNTI3YzJj" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal_when_already_open (313ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/MmNlZWQwMTUtNDRmNi00ODE4LWI3ZmQtYTcwNTNmNTI3YzJj" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/MmNlZWQwMTUtNDRmNi00ODE4LWI3ZmQtYTcwNTNmNTI3YzJj" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/MmNlZWQwMTUtNDRmNi00ODE4LWI3ZmQtYTcwNTNmNTI3YzJj" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/MmNlZWQwMTUtNDRmNi00ODE4LWI3ZmQtYTcwNTNmNTI3YzJj" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/MmNlZWQwMTUtNDRmNi00ODE4LWI3ZmQtYTcwNTNmNTI3YzJj" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/MmNlZWQwMTUtNDRmNi00ODE4LWI3ZmQtYTcwNTNmNTI3YzJj" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal_when_version_pinned (2271ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/MmNlZWQwMTUtNDRmNi00ODE4LWI3ZmQtYTcwNTNmNTI3YzJj" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/MmNlZWQwMTUtNDRmNi00ODE4LWI3ZmQtYTcwNTNmNTI3YzJj" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/MmNlZWQwMTUtNDRmNi00ODE4LWI3ZmQtYTcwNTNmNTI3YzJj" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/MmNlZWQwMTUtNDRmNi00ODE4LWI3ZmQtYTcwNTNmNTI3YzJj" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/MmNlZWQwMTUtNDRmNi00ODE4LWI3ZmQtYTcwNTNmNTI3YzJj" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/MmNlZWQwMTUtNDRmNi00ODE4LWI3ZmQtYTcwNTNmNTI3YzJj" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal_when_tags_unreachable (4908ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/MmNlZWQwMTUtNDRmNi00ODE4LWI3ZmQtYTcwNTNmNTI3YzJj" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/MmNlZWQwMTUtNDRmNi00ODE4LWI3ZmQtYTcwNTNmNTI3YzJj" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal_when_theme_fixed (545ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/MmNlZWQwMTUtNDRmNi00ODE4LWI3ZmQtYTcwNTNmNTI3YzJj" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/MmNlZWQwMTUtNDRmNi00ODE4LWI3ZmQtYTcwNTNmNTI3YzJj" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal_when_relative_image (398ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/MmNlZWQwMTUtNDRmNi00ODE4LWI3ZmQtYTcwNTNmNTI3YzJj" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/MmNlZWQwMTUtNDRmNi00ODE4LWI3ZmQtYTcwNTNmNTI3YzJj" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_error_when_image_outside_workspace (859ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/MmNlZWQwMTUtNDRmNi00ODE4LWI3ZmQtYTcwNTNmNTI3YzJj" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/MmNlZWQwMTUtNDRmNi00ODE4LWI3ZmQtYTcwNTNmNTI3YzJj" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_error_when_distribution_unreachable (269ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/MmNlZWQwMTUtNDRmNi00ODE4LWI3ZmQtYTcwNTNmNTI3YzJj" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/MmNlZWQwMTUtNDRmNi00ODE4LWI3ZmQtYTcwNTNmNTI3YzJj" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal_when_loading_shown (12227ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/MmNlZWQwMTUtNDRmNi00ODE4LWI3ZmQtYTcwNTNmNTI3YzJj" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/MmNlZWQwMTUtNDRmNi00ODE4LWI3ZmQtYTcwNTNmNTI3YzJj" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_error_when_version_missing (324ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/MmNlZWQwMTUtNDRmNi00ODE4LWI3ZmQtYTcwNTNmNTI3YzJj" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/MmNlZWQwMTUtNDRmNi00ODE4LWI3ZmQtYTcwNTNmNTI3YzJj" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_error_when_not_markdown (535ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/MmNlZWQwMTUtNDRmNi00ODE4LWI3ZmQtYTcwNTNmNTI3YzJj" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/MmNlZWQwMTUtNDRmNi00ODE4LWI3ZmQtYTcwNTNmNTI3YzJj" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+Webview.loadLocalResource - Error using fileReader. requestUri=file:///tmp/mdmark-vscode-l5tNuj/docs/media/intro.mp3, resourceToLoad=file:///tmp/mdmark-vscode-l5tNuj/docs/media/intro.mp3
+    ✔ test_normal_when_relative_media (1552ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/MmNlZWQwMTUtNDRmNi00ODE4LWI3ZmQtYTcwNTNmNTI3YzJj" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/MmNlZWQwMTUtNDRmNi00ODE4LWI3ZmQtYTcwNTNmNTI3YzJj" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_error_when_unsupported_media (383ms)
+  プレビューをリロードする
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/MmNlZWQwMTUtNDRmNi00ODE4LWI3ZmQtYTcwNTNmNTI3YzJj" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/MmNlZWQwMTUtNDRmNi00ODE4LWI3ZmQtYTcwNTNmNTI3YzJj" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal (371ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/MmNlZWQwMTUtNDRmNi00ODE4LWI3ZmQtYTcwNTNmNTI3YzJj" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/MmNlZWQwMTUtNDRmNi00ODE4LWI3ZmQtYTcwNTNmNTI3YzJj" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal_when_from_command (408ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/MmNlZWQwMTUtNDRmNi00ODE4LWI3ZmQtYTcwNTNmNTI3YzJj" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/MmNlZWQwMTUtNDRmNi00ODE4LWI3ZmQtYTcwNTNmNTI3YzJj" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_error_when_no_preview (536ms)
+  プレビューを描き直す
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/MmNlZWQwMTUtNDRmNi00ODE4LWI3ZmQtYTcwNTNmNTI3YzJj" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/MmNlZWQwMTUtNDRmNi00ODE4LWI3ZmQtYTcwNTNmNTI3YzJj" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal (1346ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/MmNlZWQwMTUtNDRmNi00ODE4LWI3ZmQtYTcwNTNmNTI3YzJj" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/MmNlZWQwMTUtNDRmNi00ODE4LWI3ZmQtYTcwNTNmNTI3YzJj" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal_when_live_update_off (1027ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/MmNlZWQwMTUtNDRmNi00ODE4LWI3ZmQtYTcwNTNmNTI3YzJj" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/MmNlZWQwMTUtNDRmNi00ODE4LWI3ZmQtYTcwNTNmNTI3YzJj" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal_when_config_saved (522ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/MmNlZWQwMTUtNDRmNi00ODE4LWI3ZmQtYTcwNTNmNTI3YzJj" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/MmNlZWQwMTUtNDRmNi00ODE4LWI3ZmQtYTcwNTNmNTI3YzJj" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal_when_config_missing (239ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/MmNlZWQwMTUtNDRmNi00ODE4LWI3ZmQtYTcwNTNmNTI3YzJj" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/MmNlZWQwMTUtNDRmNi00ODE4LWI3ZmQtYTcwNTNmNTI3YzJj" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/MmNlZWQwMTUtNDRmNi00ODE4LWI3ZmQtYTcwNTNmNTI3YzJj" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/MmNlZWQwMTUtNDRmNi00ODE4LWI3ZmQtYTcwNTNmNTI3YzJj" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal_when_revealed (839ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/MmNlZWQwMTUtNDRmNi00ODE4LWI3ZmQtYTcwNTNmNTI3YzJj" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/MmNlZWQwMTUtNDRmNi00ODE4LWI3ZmQtYTcwNTNmNTI3YzJj" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/MmNlZWQwMTUtNDRmNi00ODE4LWI3ZmQtYTcwNTNmNTI3YzJj" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal_when_diff_revealed (1630ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/MmNlZWQwMTUtNDRmNi00ODE4LWI3ZmQtYTcwNTNmNTI3YzJj" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/MmNlZWQwMTUtNDRmNi00ODE4LWI3ZmQtYTcwNTNmNTI3YzJj" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal_when_relative_library (403ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/MmNlZWQwMTUtNDRmNi00ODE4LWI3ZmQtYTcwNTNmNTI3YzJj" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/MmNlZWQwMTUtNDRmNi00ODE4LWI3ZmQtYTcwNTNmNTI3YzJj" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_error_when_config_unreadable (890ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/MmNlZWQwMTUtNDRmNi00ODE4LWI3ZmQtYTcwNTNmNTI3YzJj" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/MmNlZWQwMTUtNDRmNi00ODE4LWI3ZmQtYTcwNTNmNTI3YzJj" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal_when_config_fixed (350ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/MmNlZWQwMTUtNDRmNi00ODE4LWI3ZmQtYTcwNTNmNTI3YzJj" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/MmNlZWQwMTUtNDRmNi00ODE4LWI3ZmQtYTcwNTNmNTI3YzJj" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal_when_library_origin_added (574ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/MmNlZWQwMTUtNDRmNi00ODE4LWI3ZmQtYTcwNTNmNTI3YzJj" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/MmNlZWQwMTUtNDRmNi00ODE4LWI3ZmQtYTcwNTNmNTI3YzJj" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal_when_color_theme_changed (595ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/MmNlZWQwMTUtNDRmNi00ODE4LWI3ZmQtYTcwNTNmNTI3YzJj" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+  拡張機能の配布物を作る
+rejected promise not handled within 1 second: spawn git ENOENT {
+  "gitErrorCode": "NotAGitRepository"
+}Error: spawn git ENOENT
+	at ChildProcess._handle.onexit (node:internal/child_process:287:19)
+	at onErrorNT (node:internal/child_process:525:16)
+	at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+stack trace: Error: spawn git ENOENT
+	at ChildProcess.<anonymous> (/mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-notation-flow-layout-lint-wrap-link/vscode/.vscode-test/vscode-linux-x64-1.141.0/resources/app/extensions/git/dist/main.js:22:9865)
+	at ChildProcess.wrapper (node:events:639:12)
+	at ChildProcess.emit (node:events:514:28)
+	at ChildProcess._handle.onexit (node:internal/child_process:293:12)
+	at onErrorNT (node:internal/child_process:525:16)
+	at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+spawn git ENOENT: Error: spawn git ENOENT
+	at ChildProcess.<anonymous> (/mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-notation-flow-layout-lint-wrap-link/vscode/.vscode-test/vscode-linux-x64-1.141.0/resources/app/extensions/git/dist/main.js:22:9865)
+	at ChildProcess.wrapper (node:events:639:12)
+	at ChildProcess.emit (node:events:514:28)
+	at ChildProcess._handle.onexit (node:internal/child_process:293:12)
+	at onErrorNT (node:internal/child_process:525:16)
+	at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+    ✔ test_normal (12901ms)
+    ✔ test_error_when_version_mismatch (284ms)
+  エディタとプレビューのスクロールを合わせる
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/MmNlZWQwMTUtNDRmNi00ODE4LWI3ZmQtYTcwNTNmNTI3YzJj" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal (1446ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/MmNlZWQwMTUtNDRmNi00ODE4LWI3ZmQtYTcwNTNmNTI3YzJj" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/MmNlZWQwMTUtNDRmNi00ODE4LWI3ZmQtYTcwNTNmNTI3YzJj" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal_when_from_preview (1095ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/MmNlZWQwMTUtNDRmNi00ODE4LWI3ZmQtYTcwNTNmNTI3YzJj" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/MmNlZWQwMTUtNDRmNi00ODE4LWI3ZmQtYTcwNTNmNTI3YzJj" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal_when_sync_off (2998ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/MmNlZWQwMTUtNDRmNi00ODE4LWI3ZmQtYTcwNTNmNTI3YzJj" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/MmNlZWQwMTUtNDRmNi00ODE4LWI3ZmQtYTcwNTNmNTI3YzJj" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_error_when_editor_hidden (926ms)
+  66 passing (1m)
+[90m[main 2026-11-05T04:22:45.643Z][0m Extension host with pid 92547 exited with code: 0, signal: unknown.
+Exit code:   0
+- Resolving version...
+✔ Validated version: 1.145.0
+- Found at https://update.code.visualstudio.com/1.145.0/linux-x64/stable?released=true
+✔ Found at https://update.code.visualstudio.com/1.145.0/linux-x64/stable?released=true
+- Downloading (361.25 MB)
+✔ Downloaded VS Code (b224f6bf5a4fcad5fa4c640ed10f179c3b613e48) into /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-notation-flow-layout-lint-wrap-link/vscode/.vscode-test/vscode-linux-x64-1.145.0
+[90m[main 2026-11-05T04:23:26.946Z][0m [node-compile-cache] main: packaged cache enabled (status: enabled, configured: /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-notation-flow-layout-lint-wrap-link/vscode/.vscode-test/vscode-linux-x64-1.145.0/resources/app/node-compile-cache/main, active: /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-notation-flow-layout-lint-wrap-link/vscode/.vscode-test/vscode-linux-x64-1.145.0/resources/app/node-compile-cache/main/v24.22.1-x64-60e4fe36)
+[90m[main 2026-11-05T04:23:27.246Z][0m StorageMainService: creating application shared storage
+[90m[main 2026-11-05T04:23:27.406Z][0m [shared storage] Creating shared storage database at ':memory:' (wasCreated: true)
+[90m[main 2026-11-05T04:23:27.406Z][0m [shared storage] Initializing fallback application storage (path: in-memory)
+[98633:1105/132327.432638:ERROR:gpu/ipc/client/command_buffer_proxy_impl.cc:285] ContextResult::kTransientFailure: Failed to send GpuControl.CreateCommandBuffer.
+[90m[main 2026-11-05T04:23:27.444Z][0m [shared storage] Fallback application storage initialized with 3 items
+[90m[main 2026-11-05T04:23:27.445Z][0m update#setState disabled
+[90m[main 2026-11-05T04:23:27.445Z][0m update#ctor - updates are disabled by the environment
+Via 'product.json#extensionEnabledApiProposals' extension 'ms-vscode.remote-repositories' wants API proposal 'timeline' but that proposal DOES NOT EXIST. Likely, the proposal has been finalized (check 'vscode.d.ts') or was abandoned.
+Via 'product.json#extensionEnabledApiProposals' extension 'github.vscode-pull-request-github' wants API proposal 'agentsWindowActivation' but that proposal DOES NOT EXIST. Likely, the proposal has been finalized (check 'vscode.d.ts') or was abandoned.
+Via 'product.json#extensionEnabledApiProposals' extension 'github.remotehub' wants API proposal 'timeline' but that proposal DOES NOT EXIST. Likely, the proposal has been finalized (check 'vscode.d.ts') or was abandoned.
+[RemoteAgentHost] Reconciling: desired=[], current=[]
+[AgentHost:renderer] Acquiring MessagePort to agent host...
+[90m[main 2026-11-05T04:23:28.447Z][0m AgentHostProcessManager: agent host started
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey=undefined conversationKey=undefined modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[AgentHost:renderer] MessagePort acquired, creating client...
+Started local extension host with pid 98943.
+[AccountPolicyGate] apply: state=inactive, reason=undefined, isRestricted=false
+[RemoteAgentHost] Reconciling: desired=[], current=[]
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey=undefined conversationKey=undefined modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey=undefined conversationKey=undefined modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey=undefined conversationKey=undefined modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+Loading development extension at /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-notation-flow-layout-lint-wrap-link/vscode
+Settings Sync: Account status changed from uninitialized to unavailable
+[CloudSandboxApi] No 'github' session with scopes [read:user, user:email, repo, workflow]
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/ODZkNDYyYjUtNWE3Yy00NjYxLTgyOGMtZDY4YTFhYTIzYzJi" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[91m[main 2026-11-05T04:23:33.795Z][0m [AgentHost:stderr] (node:98882) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+(Use `exe --trace-deprecation ...` to show where the warning was created)
+
+[RemoteAgentHostProtocol] Sending initialize: address=local clientId=796b25a3-8093-433e-a4f6-24ff35002f42 requestId=1
+[RemoteAgentHostProtocol] Initialized: address=local clientId=796b25a3-8093-433e-a4f6-24ff35002f42 durationMs=5357
+[AgentHost:renderer] Protocol connection established; clientId=796b25a3-8093-433e-a4f6-24ff35002f42
+[AccountPolicyGate] apply: state=inactive, reason=undefined, isRestricted=false
+Unknown channel: agentHostClientByokLm
+Unknown channel: agentHostClientProxy
+Unknown channel: agentHostClientProxy
+
+(node:98943) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+(Use `exe --trace-deprecation ...` to show where the warning was created)
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+  バージョンを決められない（前回のバージョンが空）
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/ODZkNDYyYjUtNWE3Yy00NjYxLTgyOGMtZDY4YTFhYTIzYzJi" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+Unknown channel: agentHostClientProxy
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/ODZkNDYyYjUtNWE3Yy00NjYxLTgyOGMtZDY4YTFhYTIzYzJi" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_error_when_version_undecidable (4464ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/ODZkNDYyYjUtNWE3Yy00NjYxLTgyOGMtZDY4YTFhYTIzYzJi" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/ODZkNDYyYjUtNWE3Yy00NjYxLTgyOGMtZDY4YTFhYTIzYzJi" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_error_when_version_undecidable_on_export (525ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/ODZkNDYyYjUtNWE3Yy00NjYxLTgyOGMtZDY4YTFhYTIzYzJi" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+  コマンドと通知の入口
+    ✔ test_normal_when_command_titles
+    ✔ test_normal_when_editor_title_button
+    ✔ test_normal_when_settings_button
+    ✔ test_normal_when_command_palette_conditions
+  HTML に書き出す
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/ODZkNDYyYjUtNWE3Yy00NjYxLTgyOGMtZDY4YTFhYTIzYzJi" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal (304ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/ODZkNDYyYjUtNWE3Yy00NjYxLTgyOGMtZDY4YTFhYTIzYzJi" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal_when_output_dir (288ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/ODZkNDYyYjUtNWE3Yy00NjYxLTgyOGMtZDY4YTFhYTIzYzJi" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_error_when_output_unwritable (96ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/ODZkNDYyYjUtNWE3Yy00NjYxLTgyOGMtZDY4YTFhYTIzYzJi" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+  ブラウザで開く
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/ODZkNDYyYjUtNWE3Yy00NjYxLTgyOGMtZDY4YTFhYTIzYzJi" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal (277ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/ODZkNDYyYjUtNWE3Yy00NjYxLTgyOGMtZDY4YTFhYTIzYzJi" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_error_when_output_unwritable (83ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/ODZkNDYyYjUtNWE3Yy00NjYxLTgyOGMtZDY4YTFhYTIzYzJi" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal_when_color_theme_selected (290ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/ODZkNDYyYjUtNWE3Yy00NjYxLTgyOGMtZDY4YTFhYTIzYzJi" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+  PDF に印刷
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/ODZkNDYyYjUtNWE3Yy00NjYxLTgyOGMtZDY4YTFhYTIzYzJi" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal (3357ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/ODZkNDYyYjUtNWE3Yy00NjYxLTgyOGMtZDY4YTFhYTIzYzJi" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal_when_wait_limit_reached (925ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/ODZkNDYyYjUtNWE3Yy00NjYxLTgyOGMtZDY4YTFhYTIzYzJi" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/ODZkNDYyYjUtNWE3Yy00NjYxLTgyOGMtZDY4YTFhYTIzYzJi" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal_when_color_theme_selected (477ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/ODZkNDYyYjUtNWE3Yy00NjYxLTgyOGMtZDY4YTFhYTIzYzJi" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_error_when_output_unwritable (279ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/ODZkNDYyYjUtNWE3Yy00NjYxLTgyOGMtZDY4YTFhYTIzYzJi" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+  設定ファイルを開く
+    ✔ test_normal (254ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/ODZkNDYyYjUtNWE3Yy00NjYxLTgyOGMtZDY4YTFhYTIzYzJi" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal_when_template_created (86ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/ODZkNDYyYjUtNWE3Yy00NjYxLTgyOGMtZDY4YTFhYTIzYzJi" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_error_when_template_declined (44ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/ODZkNDYyYjUtNWE3Yy00NjYxLTgyOGMtZDY4YTFhYTIzYzJi" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+  設定を開く
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/ODZkNDYyYjUtNWE3Yy00NjYxLTgyOGMtZDY4YTFhYTIzYzJi" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal (822ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/ODZkNDYyYjUtNWE3Yy00NjYxLTgyOGMtZDY4YTFhYTIzYzJi" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal_when_command_palette
+  差分ビューの変更をプレビューで見る
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/ODZkNDYyYjUtNWE3Yy00NjYxLTgyOGMtZDY4YTFhYTIzYzJi" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/ODZkNDYyYjUtNWE3Yy00NjYxLTgyOGMtZDY4YTFhYTIzYzJi" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal_when_opened_from_diff_view (532ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/ODZkNDYyYjUtNWE3Yy00NjYxLTgyOGMtZDY4YTFhYTIzYzJi" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/ODZkNDYyYjUtNWE3Yy00NjYxLTgyOGMtZDY4YTFhYTIzYzJi" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal_when_commit_diff (500ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/ODZkNDYyYjUtNWE3Yy00NjYxLTgyOGMtZDY4YTFhYTIzYzJi" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/ODZkNDYyYjUtNWE3Yy00NjYxLTgyOGMtZDY4YTFhYTIzYzJi" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_error_when_version_without_diff (332ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/ODZkNDYyYjUtNWE3Yy00NjYxLTgyOGMtZDY4YTFhYTIzYzJi" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/ODZkNDYyYjUtNWE3Yy00NjYxLTgyOGMtZDY4YTFhYTIzYzJi" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal_when_diff_modified_side_edited (1255ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/ODZkNDYyYjUtNWE3Yy00NjYxLTgyOGMtZDY4YTFhYTIzYzJi" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/ODZkNDYyYjUtNWE3Yy00NjYxLTgyOGMtZDY4YTFhYTIzYzJi" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal_when_diff_preview (1456ms)
+  プレビューのリンクを開く
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/ODZkNDYyYjUtNWE3Yy00NjYxLTgyOGMtZDY4YTFhYTIzYzJi" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/ODZkNDYyYjUtNWE3Yy00NjYxLTgyOGMtZDY4YTFhYTIzYzJi" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal_when_external_link (364ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/ODZkNDYyYjUtNWE3Yy00NjYxLTgyOGMtZDY4YTFhYTIzYzJi" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/ODZkNDYyYjUtNWE3Yy00NjYxLTgyOGMtZDY4YTFhYTIzYzJi" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal_when_markdown_link (214ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/ODZkNDYyYjUtNWE3Yy00NjYxLTgyOGMtZDY4YTFhYTIzYzJi" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/ODZkNDYyYjUtNWE3Yy00NjYxLTgyOGMtZDY4YTFhYTIzYzJi" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal_when_anchor_link (580ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/ODZkNDYyYjUtNWE3Yy00NjYxLTgyOGMtZDY4YTFhYTIzYzJi" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/ODZkNDYyYjUtNWE3Yy00NjYxLTgyOGMtZDY4YTFhYTIzYzJi" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal_when_side_toc_link (752ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/ODZkNDYyYjUtNWE3Yy00NjYxLTgyOGMtZDY4YTFhYTIzYzJi" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/ODZkNDYyYjUtNWE3Yy00NjYxLTgyOGMtZDY4YTFhYTIzYzJi" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_error_when_link_target_missing (1012ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/ODZkNDYyYjUtNWE3Yy00NjYxLTgyOGMtZDY4YTFhYTIzYzJi" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/ODZkNDYyYjUtNWE3Yy00NjYxLTgyOGMtZDY4YTFhYTIzYzJi" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal_when_flow_node_link (1084ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/ODZkNDYyYjUtNWE3Yy00NjYxLTgyOGMtZDY4YTFhYTIzYzJi" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+  プレビューを開く
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/ODZkNDYyYjUtNWE3Yy00NjYxLTgyOGMtZDY4YTFhYTIzYzJi" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+rejected promise not handled within 1 second: spawn git ENOENT {
+  "gitErrorCode": "NotAGitRepository"
+}Error: spawn git ENOENT
+	at ChildProcess._handle.onexit (node:internal/child_process:316:19)
+	at onErrorNT (node:internal/child_process:554:16)
+	at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+stack trace: Error: spawn git ENOENT
+	at ChildProcess.<anonymous> (/mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-notation-flow-layout-lint-wrap-link/vscode/.vscode-test/vscode-linux-x64-1.145.0/resources/app/extensions/git/dist/main.js:22:9865)
+	at ChildProcess.wrapper (node:events:639:12)
+	at ChildProcess.emit (node:events:514:28)
+	at ChildProcess._handle.onexit (node:internal/child_process:322:12)
+	at onErrorNT (node:internal/child_process:554:16)
+	at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+spawn git ENOENT: Error: spawn git ENOENT
+	at ChildProcess.<anonymous> (/mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-notation-flow-layout-lint-wrap-link/vscode/.vscode-test/vscode-linux-x64-1.145.0/resources/app/extensions/git/dist/main.js:22:9865)
+	at ChildProcess.wrapper (node:events:639:12)
+	at ChildProcess.emit (node:events:514:28)
+	at ChildProcess._handle.onexit (node:internal/child_process:322:12)
+	at onErrorNT (node:internal/child_process:554:16)
+	at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+    ✔ test_normal (3448ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/ODZkNDYyYjUtNWE3Yy00NjYxLTgyOGMtZDY4YTFhYTIzYzJi" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/ODZkNDYyYjUtNWE3Yy00NjYxLTgyOGMtZDY4YTFhYTIzYzJi" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal_when_same_column (163ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/ODZkNDYyYjUtNWE3Yy00NjYxLTgyOGMtZDY4YTFhYTIzYzJi" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/ODZkNDYyYjUtNWE3Yy00NjYxLTgyOGMtZDY4YTFhYTIzYzJi" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal_when_already_open (312ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/ODZkNDYyYjUtNWE3Yy00NjYxLTgyOGMtZDY4YTFhYTIzYzJi" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/ODZkNDYyYjUtNWE3Yy00NjYxLTgyOGMtZDY4YTFhYTIzYzJi" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/ODZkNDYyYjUtNWE3Yy00NjYxLTgyOGMtZDY4YTFhYTIzYzJi" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/ODZkNDYyYjUtNWE3Yy00NjYxLTgyOGMtZDY4YTFhYTIzYzJi" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/ODZkNDYyYjUtNWE3Yy00NjYxLTgyOGMtZDY4YTFhYTIzYzJi" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/ODZkNDYyYjUtNWE3Yy00NjYxLTgyOGMtZDY4YTFhYTIzYzJi" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal_when_version_pinned (3945ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/ODZkNDYyYjUtNWE3Yy00NjYxLTgyOGMtZDY4YTFhYTIzYzJi" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/ODZkNDYyYjUtNWE3Yy00NjYxLTgyOGMtZDY4YTFhYTIzYzJi" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/ODZkNDYyYjUtNWE3Yy00NjYxLTgyOGMtZDY4YTFhYTIzYzJi" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/ODZkNDYyYjUtNWE3Yy00NjYxLTgyOGMtZDY4YTFhYTIzYzJi" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/ODZkNDYyYjUtNWE3Yy00NjYxLTgyOGMtZDY4YTFhYTIzYzJi" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/ODZkNDYyYjUtNWE3Yy00NjYxLTgyOGMtZDY4YTFhYTIzYzJi" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal_when_tags_unreachable (3019ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/ODZkNDYyYjUtNWE3Yy00NjYxLTgyOGMtZDY4YTFhYTIzYzJi" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/ODZkNDYyYjUtNWE3Yy00NjYxLTgyOGMtZDY4YTFhYTIzYzJi" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal_when_theme_fixed (348ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/ODZkNDYyYjUtNWE3Yy00NjYxLTgyOGMtZDY4YTFhYTIzYzJi" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/ODZkNDYyYjUtNWE3Yy00NjYxLTgyOGMtZDY4YTFhYTIzYzJi" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal_when_relative_image (312ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/ODZkNDYyYjUtNWE3Yy00NjYxLTgyOGMtZDY4YTFhYTIzYzJi" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/ODZkNDYyYjUtNWE3Yy00NjYxLTgyOGMtZDY4YTFhYTIzYzJi" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_error_when_image_outside_workspace (812ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/ODZkNDYyYjUtNWE3Yy00NjYxLTgyOGMtZDY4YTFhYTIzYzJi" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_error_when_distribution_unreachable (140ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/ODZkNDYyYjUtNWE3Yy00NjYxLTgyOGMtZDY4YTFhYTIzYzJi" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/ODZkNDYyYjUtNWE3Yy00NjYxLTgyOGMtZDY4YTFhYTIzYzJi" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal_when_loading_shown (12213ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/ODZkNDYyYjUtNWE3Yy00NjYxLTgyOGMtZDY4YTFhYTIzYzJi" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/ODZkNDYyYjUtNWE3Yy00NjYxLTgyOGMtZDY4YTFhYTIzYzJi" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_error_when_version_missing (358ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/ODZkNDYyYjUtNWE3Yy00NjYxLTgyOGMtZDY4YTFhYTIzYzJi" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/ODZkNDYyYjUtNWE3Yy00NjYxLTgyOGMtZDY4YTFhYTIzYzJi" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_error_when_not_markdown (525ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/ODZkNDYyYjUtNWE3Yy00NjYxLTgyOGMtZDY4YTFhYTIzYzJi" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/ODZkNDYyYjUtNWE3Yy00NjYxLTgyOGMtZDY4YTFhYTIzYzJi" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+Webview.loadLocalResource - Error using fileReader. requestUri=file:///tmp/mdmark-vscode-l5tNuj/docs/media/intro.mp3, resourceToLoad=file:///tmp/mdmark-vscode-l5tNuj/docs/media/intro.mp3
+    ✔ test_normal_when_relative_media (1356ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/ODZkNDYyYjUtNWE3Yy00NjYxLTgyOGMtZDY4YTFhYTIzYzJi" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/ODZkNDYyYjUtNWE3Yy00NjYxLTgyOGMtZDY4YTFhYTIzYzJi" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_error_when_unsupported_media (378ms)
+  プレビューをリロードする
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/ODZkNDYyYjUtNWE3Yy00NjYxLTgyOGMtZDY4YTFhYTIzYzJi" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/ODZkNDYyYjUtNWE3Yy00NjYxLTgyOGMtZDY4YTFhYTIzYzJi" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal (290ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/ODZkNDYyYjUtNWE3Yy00NjYxLTgyOGMtZDY4YTFhYTIzYzJi" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/ODZkNDYyYjUtNWE3Yy00NjYxLTgyOGMtZDY4YTFhYTIzYzJi" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal_when_from_command (340ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/ODZkNDYyYjUtNWE3Yy00NjYxLTgyOGMtZDY4YTFhYTIzYzJi" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_error_when_no_preview (529ms)
+  プレビューを描き直す
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/ODZkNDYyYjUtNWE3Yy00NjYxLTgyOGMtZDY4YTFhYTIzYzJi" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/ODZkNDYyYjUtNWE3Yy00NjYxLTgyOGMtZDY4YTFhYTIzYzJi" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal (1344ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/ODZkNDYyYjUtNWE3Yy00NjYxLTgyOGMtZDY4YTFhYTIzYzJi" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/ODZkNDYyYjUtNWE3Yy00NjYxLTgyOGMtZDY4YTFhYTIzYzJi" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal_when_live_update_off (1005ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/ODZkNDYyYjUtNWE3Yy00NjYxLTgyOGMtZDY4YTFhYTIzYzJi" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/ODZkNDYyYjUtNWE3Yy00NjYxLTgyOGMtZDY4YTFhYTIzYzJi" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal_when_config_saved (441ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/ODZkNDYyYjUtNWE3Yy00NjYxLTgyOGMtZDY4YTFhYTIzYzJi" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/ODZkNDYyYjUtNWE3Yy00NjYxLTgyOGMtZDY4YTFhYTIzYzJi" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal_when_config_missing (181ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/ODZkNDYyYjUtNWE3Yy00NjYxLTgyOGMtZDY4YTFhYTIzYzJi" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/ODZkNDYyYjUtNWE3Yy00NjYxLTgyOGMtZDY4YTFhYTIzYzJi" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/ODZkNDYyYjUtNWE3Yy00NjYxLTgyOGMtZDY4YTFhYTIzYzJi" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/ODZkNDYyYjUtNWE3Yy00NjYxLTgyOGMtZDY4YTFhYTIzYzJi" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal_when_revealed (795ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/ODZkNDYyYjUtNWE3Yy00NjYxLTgyOGMtZDY4YTFhYTIzYzJi" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/ODZkNDYyYjUtNWE3Yy00NjYxLTgyOGMtZDY4YTFhYTIzYzJi" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/ODZkNDYyYjUtNWE3Yy00NjYxLTgyOGMtZDY4YTFhYTIzYzJi" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal_when_diff_revealed (1705ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/ODZkNDYyYjUtNWE3Yy00NjYxLTgyOGMtZDY4YTFhYTIzYzJi" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/ODZkNDYyYjUtNWE3Yy00NjYxLTgyOGMtZDY4YTFhYTIzYzJi" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal_when_relative_library (422ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/ODZkNDYyYjUtNWE3Yy00NjYxLTgyOGMtZDY4YTFhYTIzYzJi" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/ODZkNDYyYjUtNWE3Yy00NjYxLTgyOGMtZDY4YTFhYTIzYzJi" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_error_when_config_unreadable (892ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/ODZkNDYyYjUtNWE3Yy00NjYxLTgyOGMtZDY4YTFhYTIzYzJi" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/ODZkNDYyYjUtNWE3Yy00NjYxLTgyOGMtZDY4YTFhYTIzYzJi" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal_when_config_fixed (416ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/ODZkNDYyYjUtNWE3Yy00NjYxLTgyOGMtZDY4YTFhYTIzYzJi" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/ODZkNDYyYjUtNWE3Yy00NjYxLTgyOGMtZDY4YTFhYTIzYzJi" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/ODZkNDYyYjUtNWE3Yy00NjYxLTgyOGMtZDY4YTFhYTIzYzJi" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal_when_library_origin_added (855ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/ODZkNDYyYjUtNWE3Yy00NjYxLTgyOGMtZDY4YTFhYTIzYzJi" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/ODZkNDYyYjUtNWE3Yy00NjYxLTgyOGMtZDY4YTFhYTIzYzJi" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal_when_color_theme_changed (644ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/ODZkNDYyYjUtNWE3Yy00NjYxLTgyOGMtZDY4YTFhYTIzYzJi" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+  拡張機能の配布物を作る
+rejected promise not handled within 1 second: spawn git ENOENT {
+  "gitErrorCode": "NotAGitRepository"
+}Error: spawn git ENOENT
+	at ChildProcess._handle.onexit (node:internal/child_process:316:19)
+	at onErrorNT (node:internal/child_process:554:16)
+	at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+stack trace: Error: spawn git ENOENT
+	at ChildProcess.<anonymous> (/mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-notation-flow-layout-lint-wrap-link/vscode/.vscode-test/vscode-linux-x64-1.145.0/resources/app/extensions/git/dist/main.js:22:9865)
+	at ChildProcess.wrapper (node:events:639:12)
+	at ChildProcess.emit (node:events:514:28)
+	at ChildProcess._handle.onexit (node:internal/child_process:322:12)
+	at onErrorNT (node:internal/child_process:554:16)
+	at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+spawn git ENOENT: Error: spawn git ENOENT
+	at ChildProcess.<anonymous> (/mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-notation-flow-layout-lint-wrap-link/vscode/.vscode-test/vscode-linux-x64-1.145.0/resources/app/extensions/git/dist/main.js:22:9865)
+	at ChildProcess.wrapper (node:events:639:12)
+	at ChildProcess.emit (node:events:514:28)
+	at ChildProcess._handle.onexit (node:internal/child_process:322:12)
+	at onErrorNT (node:internal/child_process:554:16)
+	at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+    ✔ test_normal (12537ms)
+    ✔ test_error_when_version_mismatch (314ms)
+  エディタとプレビューのスクロールを合わせる
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/ODZkNDYyYjUtNWE3Yy00NjYxLTgyOGMtZDY4YTFhYTIzYzJi" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal (1446ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/ODZkNDYyYjUtNWE3Yy00NjYxLTgyOGMtZDY4YTFhYTIzYzJi" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/ODZkNDYyYjUtNWE3Yy00NjYxLTgyOGMtZDY4YTFhYTIzYzJi" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal_when_from_preview (1077ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/ODZkNDYyYjUtNWE3Yy00NjYxLTgyOGMtZDY4YTFhYTIzYzJi" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/ODZkNDYyYjUtNWE3Yy00NjYxLTgyOGMtZDY4YTFhYTIzYzJi" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal_when_sync_off (2911ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/ODZkNDYyYjUtNWE3Yy00NjYxLTgyOGMtZDY4YTFhYTIzYzJi" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/ODZkNDYyYjUtNWE3Yy00NjYxLTgyOGMtZDY4YTFhYTIzYzJi" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_error_when_editor_hidden (910ms)
+  66 passing (1m)
+[90m[main 2026-11-05T04:25:01.571Z][0m Extension host with pid 98943 exited with code: 0, signal: unknown.
+Exit code:   0
+exit=0

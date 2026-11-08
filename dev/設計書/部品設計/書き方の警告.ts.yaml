@@ -3,22 +3,22 @@ implementation: "src/parts/syntax-warning.ts#renderSyntaxWarning"
 story: "Parts/SyntaxWarning"
 test_file: tests/integration/lib/syntax-warning.story.test.ts
 states:
-  - name: UnknownKind
-    description: 表の印に知らない種類を書いた。本文だけを出す
+  - name: ClosedAndOpen
+    description: 表の印に `closed` と `open` を両方書いた。本文だけを出す
     args:
       - name: mark
-        value: '<!-- table: unknown +sort -->'
+        value: '<!-- table: data closed open -->'
       - name: message
-        value: の種類 `unknown` は使えません。使える種類は `data`・`plain` です。既定の種類に `+sort` を当てて描いています。
+        value: の `closed` と `open` は同時に書けません。どちらか 1 つにしてください。`closed` を当てて描いています。
   - name: Items
-    description: 表の印に知らない機能とキーを書いた。本文の後に項目を並べる
+    description: 表の印に、機能を足していない表では使えないキーを書いた。本文の後に項目を並べる
     args:
       - name: mark
-        value: '<!-- table: data +unknown size=2 -->'
+        value: '<!-- table: data hide=備考 total=価格:sum -->'
       - name: message
         value: の読めない指定を当てずに描いています。
       - name: items
-        value: '[{"label":"+unknown","message":"使えない機能です。使える機能は `sort`・`pin`・`filter` です"},{"label":"size=","message":"使えないキーです。使えるキーは `filter=` です"}]'
+        value: '[{"label":"hide=","message":"`+columns` を書いた表でだけ使えます。当てずに描いています"},{"label":"total=","message":"`+total` を書いた表でだけ使えます。当てずに描いています"}]'
   - name: BrokenReference
     description: 切れた図表の参照。印を持たず本文だけを出す
     args:
@@ -75,13 +75,53 @@ states:
         value: '<!-- view: group=状態 icons=完了:rocket -->'
       - name: message
         value: のアイコン `rocket` は使えません。使えるアイコンは `circle`・`circle-dashed`・`circle-dot`・`circle-pause`・`circle-check`・`circle-x`・`inbox`・`archive`・`clock`・`flag`・`star`・`bug`・`eye`・`lock`・`zap`・`ban` です。`完了` の列には既定のアイコンを付けています。
+  - name: IconName
+    description: '`icon:` の名前が Lucide の名前の書き方に合わない'
+    args:
+      - name: mark
+        value: icon:Rocket!
+      - name: message
+        value: 'の `Rocket!` は Lucide のアイコンの名前になりません。名前は英小文字・数字・`-` で書きます（例: `rocket`）。書いた文字のまま表示しています。'
+  - name: IconNotInLucide
+    description: '`icon:` の名前が Lucide に無い'
+    args:
+      - name: mark
+        value: icon:no-such-icon
+      - name: message
+        value: の `no-such-icon` は Lucide に無いアイコンの名前です。https://lucide.dev/icons/ で名前を確かめてください。書いた文字のまま表示しています。
+  - name: ColumnsCount
+    description: columns の範囲の列の数が 2〜3 でない
+    args:
+      - name: mark
+        value: <!-- columns -->
+      - name: message
+        value: の範囲が 4 列です。横に並べられるのは 2〜3 列です。`<!-- column -->` を減らしてください。中身を書いた順に表示しています。
+  - name: IncludeMissing
+    description: include の取り込み先の行の範囲が無い
+    args:
+      - name: mark
+        value: '<!-- include: src/app.ts#L20-L22 -->'
+      - name: message
+        value: の `src/app.ts` は 12 行で、20〜22 行目がありません。行の範囲を修正してください。
+  - name: IncludeCircular
+    description: include の取り込みが循環する
+    args:
+      - name: mark
+        value: '<!-- include: a.md -->'
+      - name: message
+        value: の取り込みが循環しています（`a.md` → `b.md` → `a.md`）。この場所では取り込んでいません。
+  - name: CsvColumns
+    description: CSV の列の数が見出しの行とそろわない
+    args:
+      - name: message
+        value: CSV の 2 行目・3 行目の列の数が、見出しの行の 3 列と違います。見出しの列の数にそろえて表示しています。
 lead: 記法の印や拡張の引数に読めない指定がある箇所に置き、書く人へ読めない指定と直し方を知らせる枠。HTML 文字列を返し、ブラウザと Node で同じ出力になる。
 args:
   - name: mark
     type: 文字列
     required: false
     default: '""'
-    description: '読めない指定を書いた印の文字（`<!-- table: unknown +sort -->` など）。本文の頭の `code` に入れる（HTML として特別な文字はエスケープする）。空なら印を出さない'
+    description: '読めない指定を書いた印の文字（`<!-- table: data closed open -->` など）。本文の頭の `code` に入れる（HTML として特別な文字はエスケープする）。空なら印を出さない'
   - name: message
     type: 文字列
     required: true

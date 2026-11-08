@@ -1,4 +1,4 @@
-title: "ステップ・ファイルツリー・バッジで本文を組む"
+title: ステップ・ファイルツリー・バッジで本文を組む
 scenarios:
   - name: 正常シナリオ
     setup:
@@ -140,11 +140,12 @@ scenarios:
         participant P as 使う側のページ
         participant M as mdmark
         P->>M: 設定と Markdown を渡して描かせる
-        M->>M: closed と open の両方・知らない指定・closed も open も無い title= がある
+        M->>M: closed と open の両方・closed も open も無い title= があり、知らない指定を読み飛ばす
         M-->>P: 書き方の警告と、読めた指定だけを当てた手順を描く
         P-->>U: 書き方の警告と手順を表示
     expected:
-      - 1 つ目の範囲の上に `closed` と `open` を同時に書けないこと、2 つ目の範囲の上に `fold` が使えない指定であること、3 つ目の範囲の上に `title=` は `closed` か `open` と一緒に書くことを書いた書き方の警告がある
+      - 1 つ目の範囲の上に `closed` と `open` を同時に書けないこと、3 つ目の範囲の上に `title=` は `closed` か `open` と一緒に書くことを書いた書き方の警告がある
+      - 2 つ目の範囲の上に書き方の警告が無い（知らない指定 `fold` は読み飛ばす）
       - 1 つ目の手順は `closed` を当てた閉じた折りたたみに入り、2 つ目と 3 つ目の手順は折りたたみに入らずに描かれている
     test: test_error_when_steps_option_invalid
   - name: 正常シナリオ（ファイルツリーに注釈を書く）
@@ -293,6 +294,96 @@ scenarios:
       - ツリーの上に、`open=` の値には `all` か階層の数を書くことを書いた書き方の警告がある
       - ツリーは既定のとおり `app/` だけを開いて描かれている
     test: test_error_when_tree_open_invalid
+  - name: 正常シナリオ（アイコン・キー・ルビ）
+    setup:
+      - name: mdmark を読むページ
+        description: 正常シナリオと同じ
+      - name: アイコン・キー・ルビを持つ Markdown
+        description: 見出し ``## `icon:flag` はじめに``、段落の行内のコード `` `icon:check` ``・`` `kbd:Ctrl+C` ``、文書の HTML の `<ruby>漢字<rt>かんじ</rt></ruby>` を持つ文書
+        notes: '`flag`・`check` は配布物に束ねたアイコンの名前。`kbd:` の `+` の区切り方はインターフェース定義で決める'
+      - name: Mock
+        description: 正常シナリオと同じ。Lucide のアイコンへの要求を数える
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を渡して描かせる
+        M-->>P: アイコン・キー・ルビを描く
+        P-->>U: 文書を表示
+    expected:
+      - 見出しの `はじめに` の前と段落に、`flag`・`check` のアイコンが描かれ、`icon:` の文字は出ていない
+      - アイコンは読み上げの対象から外れ、見出しの読み上げ名が `はじめに` になっている
+      - '`Ctrl+C` が `Ctrl` と `C` のキーの見た目で描かれ、`kbd:` の文字は出ていない'
+      - '`漢字` の上に `かんじ` のルビが描かれている'
+      - Lucide のアイコンへの要求が 0 件
+      - 書き方の警告が出ていない
+    test: test_normal_when_icon_kbd_ruby
+  - name: 正常シナリオ（アイコンとキーの書き方を見せる）
+    setup:
+      - name: mdmark を読むページ
+        description: 正常シナリオと同じ
+      - name: 打ち消したアイコンとキーを持つ Markdown
+        description: 行内のコード `` `icon\:check` `` と `` `kbd\:Ctrl+C` `` を持つ文書
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を渡して描かせる
+        M-->>P: 打ち消しの \ を外した行内のコードを描く
+        P-->>U: 文書を表示
+    expected:
+      - 行内のコードが `icon:check`・`kbd:Ctrl+C` の文字のまま出ていて、アイコンとキーの見た目になっていない
+    test: test_normal_when_icon_kbd_escaped
+  - name: 異常シナリオ（アイコンの名前の書き方が誤っている）
+    setup:
+      - name: mdmark を読むページ
+        description: 正常シナリオと同じ
+      - name: 誤った名前のアイコンを持つ Markdown
+        description: 行内のコード `` `icon:Rocket!` `` と `` `icon:` `` を持つ文書
+        notes: Lucide の名前は英小文字・数字・`-` だけ
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を渡して描かせる
+        M->>M: icon: の後ろが Lucide の名前の書き方に合わない
+        M-->>P: 書き方の警告と、元の行内のコードを描く
+        P-->>U: 書き方の警告と行内のコードを表示
+    expected:
+      - '`icon:Rocket!` の段落の上に、名前が Lucide の名前の書き方に合わないことを書いた書き方の警告がある'
+      - '`icon:Rocket!` が書いたとおりの文字の行内のコードで出ている'
+      - 中身の無い `icon:` は `badge:` と同じく書いたとおりの行内のコードで出て、書き方の警告は出ていない
+      - Lucide のアイコンへの要求が 0 件
+    test: test_error_when_icon_name_invalid
+  - name: 正常シナリオ（ファイルツリーを折り返す）
+    setup:
+      - name: mdmark を読むページ
+        description: 正常シナリオと同じ
+        notes: 画面の幅は 390px
+      - name: 折り返すマーカーを持つファイルツリーの Markdown
+        description: '`<!-- tree: open=all wrap -->` の直後に、表示の幅より長い名前のファイルを入れ子の中に持つ言語 `tree` のコードブロックと、`<!-- tree: open=all -->` の直後の同じコードブロックを置いた文書'
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を渡して描かせる
+        M-->>P: wrap を持つツリーだけを折り返して描く
+        P-->>U: 文書を表示
+    expected:
+      - '`wrap` のツリーの長い名前が項目の中で折り返され、ツリーに横スクロールが出ない'
+      - 折り返した名前の続きが、その項目のアイコンの右の名前の頭に揃い、罫線と入れ子の位置が `wrap` の無いツリーと同じ
+      - '`wrap` の無いツリーは折り返さず、横にスクロールできる'
+    test: test_normal_when_tree_wrap
 lead: 文書を書く人が、`<!-- steps -->` 〜 `<!-- /steps -->` で囲んだ番号付きリスト・言語 `tree` のコードブロック・頭に `badge:` を付けた行内のコードを書くと、mdmark がそれぞれ手順・ファイルツリー・バッジに描く。手順は `closed`・`open` で見出し付きの折りたたみに入れられ、ファイルツリーは `#` の後ろの注釈を列に揃え、読む人がフォルダを開閉して元の罫線のテキストをコピーできる。
 issue: 4
 primary_actor: 文書を書く人
@@ -306,3 +397,5 @@ preconditions:
 success_guarantee: 番号付きリストが番号と線でつないだ手順に、罫線のフォルダ構成が入れ子のツリーに、`badge:` の行内のコードが札になる。GitHub ではリスト・コードブロック・行内のコードとして読める。
 minimal_guarantee: 読めない書き方の部品は、書いたとおりのリスト・コードブロックで描かれ、上に書き方の警告が出る。
 test_file: tests/e2e/単一ユースケース/ステップ・ファイルツリー・バッジで本文を組む.spec.ts
+refs:
+  - dev/設計書/シナリオ/単一ユースケース/名前の色で表・バッジ・本文を強調する#

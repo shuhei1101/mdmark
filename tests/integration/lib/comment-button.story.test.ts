@@ -21,3 +21,14 @@ test("test_default", async () => {
   await expect(button.isVisible()).resolves.toBe(true);
   await expect(pageOverflows(page)).resolves.toBe(false);
 });
+
+// 390px の画面でも、ボタンが描く先の要素の内側に収まり、横スクロールを出さない
+test("test_narrow_viewport", async () => {
+  // 準備・実行
+  const page = await holder.openStory("parts-commentbutton--default", {
+    width: 390,
+    height: 844,
+  });
+  // 検証
+  await expect(pageOverflows(page)).resolves.toBe(false);
+});

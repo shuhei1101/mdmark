@@ -25,11 +25,23 @@
   <!-- コードブロックの帯（言語のラベルとコピーボタン）の規則（#151 で共有するアセット） -->
   <link rel="stylesheet" href="../../refs/151/assets/code-block.css">
   <link rel="stylesheet" href="../../refs/151/assets/code-block-print.css" media="print" data-print-styles>
+  <!-- focus・error・warning の行・畳む・開く・インデントの縦線の規則と印刷の規則（#275 の追加分） -->
+  <link rel="stylesheet" href="../../refs/275/assets/code-block.css">
+  <link rel="stylesheet" href="../../refs/275/assets/code-block-print.css" media="print" data-print-styles>
+  <!-- ファイルツリーの規則（#225 で共有するアセット。使う側の pre への汎用の CSS の場面で使う） -->
+  <link rel="stylesheet" href="../../refs/225/assets/tree.css">
   <!-- 配色の切り替え -->
+  <!-- 折り返しの規則（#328 で共有するアセット）と、使う側の pre への汎用の CSS の見本 -->
+  <link rel="stylesheet" href="../../refs/328/assets/wrap.css">
+  <link rel="stylesheet" href="./style.css">
   <script src="../../refs/16/assets/sample.js" defer></script>
   <!-- モックの「印刷の見え方」の切り替え -->
   <script src="../../refs/65/assets/code-block.js" defer></script>
   <!-- コードブロックの帯（言語のラベルとコピーボタン）の操作 -->
+  <!-- 行のマーカー・畳む・開く・縦線の見本を行に分けて描く（#275。コピーのボタンより先に読む） -->
+  <script src="../../refs/275/assets/code-fold.js" defer></script>
+  <!-- ファイルツリー（罫線の pre をツリーに置き換える。コピーのボタンより先に読む） -->
+  <script src="../../refs/225/assets/tree.js" defer></script>
   <script src="../../refs/151/assets/code-block.js" defer></script>
 </head>
 <body>
@@ -322,6 +334,49 @@ print(f"{len(docs)} 件を描きました", None, True)</code></pre>
         </article>
       </section>
 
+      <!-- 折り返す（#294）: code の印の wrap。長い行を枠の幅で折り返し、行番号は折り返した行の 1 行目にだけ出る。コピーには折り返しの改行が入らない -->
+      <section aria-labelledby="state-wrap">
+        <h2 class="catalog-label" id="state-wrap">折り返す（code: lines wrap）と、印の無いブロック（横スクロール）</h2>
+        <article class="mdmark">
+<figure class="mdmark-code">
+  <figcaption class="mdmark-code-title"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/></svg>app.ts</figcaption>
+  <pre class="mdmark-code-lines mdmark-code-numbered mdmark-code-wrap" tabindex="0" aria-label="コード: app.ts"><code class="language-ts" style="--mdmark-code-digits: 1"><span class="mdmark-code-line" data-line="1"><span class="mdmark-code-text"><span class="hljs-keyword">import</span> { mount } <span class="hljs-keyword">from</span> <span class="hljs-string">&quot;mdmark&quot;</span>;</span></span>
+<span class="mdmark-code-line" data-line="2"><span class="mdmark-code-text"><span class="hljs-keyword">const</span> url = <span class="hljs-string">&quot;https://cdn.jsdelivr.net/gh/shuhei1101/mdmark@v0.10.0/dist/index.js&quot;</span>; <span class="hljs-comment">// 版を固定した URL から配布物を読み、描く先の要素に文書を描く</span></span></span>
+<span class="mdmark-code-line" data-line="3"><span class="mdmark-code-text"><span class="hljs-title function_">mount</span>(<span class="hljs-variable language_">document</span>.<span class="hljs-title function_">querySelector</span>(<span class="hljs-string">&quot;#doc&quot;</span>), markdown);</span></span></code></pre>
+</figure>
+<figure class="mdmark-code">
+  <figcaption class="mdmark-code-title"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/></svg>app.ts</figcaption>
+  <pre class="mdmark-code-lines mdmark-code-numbered" tabindex="0" aria-label="コード: app.ts"><code class="language-ts" style="--mdmark-code-digits: 1"><span class="mdmark-code-line" data-line="1"><span class="mdmark-code-text"><span class="hljs-keyword">import</span> { mount } <span class="hljs-keyword">from</span> <span class="hljs-string">&quot;mdmark&quot;</span>;</span></span>
+<span class="mdmark-code-line" data-line="2"><span class="mdmark-code-text"><span class="hljs-keyword">const</span> url = <span class="hljs-string">&quot;https://cdn.jsdelivr.net/gh/shuhei1101/mdmark@v0.10.0/dist/index.js&quot;</span>; <span class="hljs-comment">// 版を固定した URL から配布物を読み、描く先の要素に文書を描く</span></span></span>
+<span class="mdmark-code-line" data-line="3"><span class="mdmark-code-text"><span class="hljs-title function_">mount</span>(<span class="hljs-variable language_">document</span>.<span class="hljs-title function_">querySelector</span>(<span class="hljs-string">&quot;#doc&quot;</span>), markdown);</span></span></code></pre>
+</figure>
+        </article>
+      </section>
+
+      <!-- 使う側の pre への汎用の CSS（#294）: 使う側が層の外に .md pre { white-space: pre-wrap; overflow-wrap: anywhere } を書いても、印の無いブロックとファイルツリーは折り返さず、JSON の字下げとツリーの罫線・入れ子も崩れない。wrap のブロックは折り返す -->
+      <section aria-labelledby="state-host-pre">
+        <h2 class="catalog-label" id="state-host-pre">使う側の pre への汎用の CSS を当てた文書（印の無いブロックは折り返さない）</h2>
+        <article class="mdmark mock-host-pre">
+<figure class="mdmark-code">
+  <pre class="mdmark-code-lines mdmark-code-numbered" tabindex="0" aria-label="コード"><code class="language-json" style="--mdmark-code-digits: 1"><span class="mdmark-code-line" data-line="1"><span class="mdmark-code-text">{</span></span>
+<span class="mdmark-code-line" data-line="2"><span class="mdmark-code-text">  <span class="hljs-attr">&quot;title&quot;</span>: <span class="hljs-string">&quot;問い合わせの処理&quot;</span>,</span></span>
+<span class="mdmark-code-line" data-line="3"><span class="mdmark-code-text">  <span class="hljs-attr">&quot;nodes&quot;</span>: [</span></span>
+<span class="mdmark-code-line" data-line="4"><span class="mdmark-code-text">    { <span class="hljs-attr">&quot;id&quot;</span>: <span class="hljs-string">&quot;recv&quot;</span>, <span class="hljs-attr">&quot;kind&quot;</span>: <span class="hljs-string">&quot;script&quot;</span>, <span class="hljs-attr">&quot;name&quot;</span>: <span class="hljs-string">&quot;問い合わせを受け取る&quot;</span>, <span class="hljs-attr">&quot;href&quot;</span>: <span class="hljs-string">&quot;https://example.com/spec&quot;</span> }</span></span>
+<span class="mdmark-code-line" data-line="5"><span class="mdmark-code-text">  ]</span></span>
+<span class="mdmark-code-line" data-line="6"><span class="mdmark-code-text">}</span></span></code></pre>
+</figure>
+<pre data-mock-tree data-open="all">very-long-folder-name-for-the-generated-design-documents/
+├── a-file-name-that-is-much-longer-than-the-box-width-on-phones.config.ts # 使う側の pre への CSS でも折り返さない
+└── parts/
+    └── notice.ts</pre>
+<figure class="mdmark-code">
+  <pre class="mdmark-code-lines mdmark-code-wrap" tabindex="0" aria-label="コード"><code class="language-ts" style="--mdmark-code-digits: 1"><span class="mdmark-code-line"><span class="mdmark-code-text"><span class="hljs-keyword">import</span> { mount } <span class="hljs-keyword">from</span> <span class="hljs-string">&quot;mdmark&quot;</span>;</span></span>
+<span class="mdmark-code-line"><span class="mdmark-code-text"><span class="hljs-keyword">const</span> url = <span class="hljs-string">&quot;https://cdn.jsdelivr.net/gh/shuhei1101/mdmark@v0.10.0/dist/index.js&quot;</span>; <span class="hljs-comment">// 版を固定した URL から配布物を読み、描く先の要素に文書を描く</span></span></span>
+<span class="mdmark-code-line"><span class="mdmark-code-text"><span class="hljs-title function_">mount</span>(<span class="hljs-variable language_">document</span>.<span class="hljs-title function_">querySelector</span>(<span class="hljs-string">&quot;#doc&quot;</span>), markdown);</span></span></code></pre>
+</figure>
+        </article>
+      </section>
+
       <!-- 印の書き方を見せる（正常シナリオ）: 行末の // [\!code ++] は \ を外した文字のまま出し、足した行にしない -->
       <section aria-labelledby="state-escaped">
         <h2 class="catalog-label" id="state-escaped">打ち消した印（[\!code ++] を文字のまま出す）</h2>
@@ -483,6 +538,141 @@ npx mdmark build --out dist/stock.html</code></pre>
 <span class="hljs-addition">+  copy: true</span></code></pre>
         </article>
       </section>
+      <!-- #275 [!code focus]: focus の行のほかを薄くする。ポインターを乗せるかフォーカスすると全ての行を戻す -->
+      <section aria-labelledby="state-275-focus">
+        <h2 class="catalog-label" id="state-275-focus">行のマーカー focus（3〜4 行目。ほかの行を薄くし、ポインターを乗せると戻す）</h2>
+        <article class="mdmark">
+<pre tabindex="0" aria-label="コード: ts" data-mock-code275 data-numbered data-marks="3:focus,4:focus"><code class="language-ts">export function mount(element, markdown, options = {}) {
+  const config = withDefaults(options);
+  for (const block of parse(markdown)) {
+    if (block.kind === "table") {
+      attachTable(block, config.features);
+    }
+    element.append(render(block));
+  }
+  return () =&gt; {
+    element.replaceChildren();
+  };
+}</code></pre>
+        </article>
+      </section>
+
+      <!-- #275 [!code error]・[!code warning]: 色の地と左の線に加え、行頭の × と ! で色以外でも見分ける -->
+      <section aria-labelledby="state-275-error-warning">
+        <h2 class="catalog-label" id="state-275-error-warning">行のマーカー error と warning（行頭の × と !）</h2>
+        <article class="mdmark">
+<pre tabindex="0" aria-label="コード: ts" data-mock-code275 data-numbered data-marks="2:warning,5:error"><code class="language-ts">export function mount(element, markdown, options = {}) {
+  const config = withDefaults(options);
+  for (const block of parse(markdown)) {
+    if (block.kind === "table") {
+      attachTable(block, config.features);
+    }
+    element.append(render(block));
+  }
+  return () =&gt; {
+    element.replaceChildren();
+  };
+}</code></pre>
+        </article>
+      </section>
+
+      <!-- #275 インデントによる畳む・開く: 次の行が深い行を畳める行にする。▾ は行番号の右に、ポインターを乗せたときとフォーカスのときだけ出す -->
+      <section aria-labelledby="state-275-fold">
+        <h2 class="catalog-label" id="state-275-fold">畳める行（行番号の右の ▾ はポインターを乗せた行だけに出す。全て開いた状態）</h2>
+        <article class="mdmark">
+<pre tabindex="0" aria-label="コード: ts" data-mock-code275 data-numbered><code class="language-ts">export function mount(element, markdown, options = {}) {
+  const config = withDefaults(options);
+  for (const block of parse(markdown)) {
+    if (block.kind === "table") {
+      attachTable(block, config.features);
+    }
+    element.append(render(block));
+  }
+  return () =&gt; {
+    element.replaceChildren();
+  };
+}</code></pre>
+        </article>
+      </section>
+
+      <!-- #275 畳んだ行: ▸ を常に出し、行の後ろに ⋯ の札を出す。行の数は出さない。閉じ括弧の行は残す。Shift を押しながら押すと入れ子もまとめて畳む・開く -->
+      <section aria-labelledby="state-275-folded">
+        <h2 class="catalog-label" id="state-275-folded">畳んだ行（fold=3。▸ を常に出し、行の後ろに ⋯。閉じ括弧の行は残す）</h2>
+        <article class="mdmark">
+<pre tabindex="0" aria-label="コード: ts" data-mock-code275 data-numbered data-fold="3"><code class="language-ts">export function mount(element, markdown, options = {}) {
+  const config = withDefaults(options);
+  for (const block of parse(markdown)) {
+    if (block.kind === "table") {
+      attachTable(block, config.features);
+    }
+    element.append(render(block));
+  }
+  return () =&gt; {
+    element.replaceChildren();
+  };
+}</code></pre>
+        </article>
+      </section>
+
+      <!-- #275 Shift で入れ子をまとめて畳んだ後、外側だけを開いた状態: 内側の行は畳んだまま残る -->
+      <section aria-labelledby="state-275-fold-nested">
+        <h2 class="catalog-label" id="state-275-fold-nested">入れ子をまとめて畳んだ後に外側だけを開いた（1 行目を Shift を押しながら畳み、1 行目だけを開いた状態）</h2>
+        <article class="mdmark">
+<pre tabindex="0" aria-label="コード: ts" data-mock-code275 data-numbered data-fold="3,4,9"><code class="language-ts">export function mount(element, markdown, options = {}) {
+  const config = withDefaults(options);
+  for (const block of parse(markdown)) {
+    if (block.kind === "table") {
+      attachTable(block, config.features);
+    }
+    element.append(render(block));
+  }
+  return () =&gt; {
+    element.replaceChildren();
+  };
+}</code></pre>
+        </article>
+      </section>
+
+      <!-- #275 行番号の無いコードブロック: 左の余白に畳むボタンの列を取る。縦線はインデントの 1 レベルごと -->
+      <section aria-labelledby="state-275-fold-plain">
+        <h2 class="catalog-label" id="state-275-fold-plain">行番号の無いコードブロック（YAML。左の余白に ▾ を置く）</h2>
+        <article class="mdmark">
+<pre tabindex="0" aria-label="コード: yaml" data-mock-code275 data-fold="6"><code class="language-yaml">version: "0.9"
+features:
+  table: true
+  diagram: true
+libraries:
+  highlight:
+    url: https://cdn.jsdelivr.net/npm/highlight.js
+    version: 11.11.1
+build:
+  - docs/使い方/導入/README.md</code></pre>
+        </article>
+      </section>
+
+      <!-- #275 畳めない行の fold=: 書き方の警告を出し、その行の指定を外して描く -->
+      <section aria-labelledby="state-275-fold-warning">
+        <h2 class="catalog-label" id="state-275-fold-warning">畳めない行の fold=（fold=3,6。異常シナリオ）</h2>
+        <article class="mdmark">
+<div class="mdmark-syntax-warning">
+  <p class="mdmark-syntax-warning-title"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg>書き方の警告</p>
+  <p><code>&lt;!-- code: fold=3,6 --&gt;</code> の 6 行目は畳めません（次の行が 6 行目より深くありません）。6 行目の指定を無視して描いています。</p>
+</div>
+<pre tabindex="0" aria-label="コード: ts" data-mock-code275 data-numbered data-fold="3"><code class="language-ts">export function mount(element, markdown, options = {}) {
+  const config = withDefaults(options);
+  for (const block of parse(markdown)) {
+    if (block.kind === "table") {
+      attachTable(block, config.features);
+    }
+    element.append(render(block));
+  }
+  return () =&gt; {
+    element.replaceChildren();
+  };
+}</code></pre>
+        </article>
+      </section>
+
     </div>
   </main>
 </body>

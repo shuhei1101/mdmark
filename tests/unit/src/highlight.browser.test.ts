@@ -64,13 +64,10 @@ function createImport(failing: Record<string, Error> = {}) {
     if (error) {
       throw error;
     }
-    if (url.endsWith("/core.min.js") || url === "blob:core") {
+    if (url.endsWith("/core.min.js")) {
       return { default: hljs };
     }
-    const name =
-      url === "blob:ts"
-        ? "typescript"
-        : (/\/([a-z]+)\.min\.js$/.exec(url)?.[1] ?? "yaml");
+    const name = /\/([a-z]+)\.min\.js$/.exec(url)?.[1] ?? "yaml";
     return { default: LANGUAGES[name] };
   });
 }
@@ -227,17 +224,17 @@ test("test_highlight_code_blocks_when_cached", async () => {
   expect(coloredCodes(second)).toHaveLength(2);
 });
 
-// 埋めたモジュールの URL があればそこから読み、埋めていない言語は読まない（正常系）
-test("test_highlight_code_blocks_when_module_urls", async () => {
+// 埋めたモジュールがあれば URL を読まずに使い、埋めていない言語は色分けしない（正常系）
+test("test_highlight_code_blocks_when_embedded", async () => {
   // 準備
-  const { highlightCodeBlocks, setSyntaxModuleUrls } = await loadHighlight();
+  const { highlightCodeBlocks, setEmbeddedSyntax } = await loadHighlight();
   const consoleError = vi.spyOn(console, "error").mockImplementation(() => {});
   const root = createRoot();
   const yamlBefore = root.querySelectorAll("code")[1]?.innerHTML;
   const importModule = createImport();
-  setSyntaxModuleUrls({
-    core: "blob:core",
-    languages: { typescript: "blob:ts" },
+  setEmbeddedSyntax({
+    core: { default: core.newInstance() },
+    languages: { typescript: { default: typescript } },
   });
   try {
     // 実行
@@ -249,17 +246,45 @@ test("test_highlight_code_blocks_when_module_urls", async () => {
       importModule,
     });
   } finally {
-    setSyntaxModuleUrls(undefined);
+    setEmbeddedSyntax(undefined);
   }
   // 検証
-  expect(importModule.mock.calls.map(([url]) => url).sort()).toEqual([
-    "blob:core",
-    "blob:ts",
-  ]);
+  expect(importModule).not.toHaveBeenCalled();
   const codes = root.querySelectorAll("code");
   expect(codes[0]?.querySelector('span[class^="hljs-"]')).not.toBeNull();
   expect(codes[1]?.innerHTML).toBe(yamlBefore);
   expect(consoleError).not.toHaveBeenCalled();
+});
+
+// 本体を埋めていなければ何も読まずに色分けせずに残す（正常系）
+test("test_highlight_code_blocks_when_embedded_without_core", async () => {
+  // 準備
+  const { highlightCodeBlocks, setEmbeddedSyntax } = await loadHighlight();
+  const consoleError = vi.spyOn(console, "error").mockImplementation(() => {});
+  const root = createRoot();
+  const before = [...root.querySelectorAll("code")].map(
+    (code) => code.innerHTML,
+  );
+  const importModule = createImport();
+  setEmbeddedSyntax({ languages: {} });
+  try {
+    // 実行
+    await highlightCodeBlocks({
+      root,
+      url: BASE_URL,
+      isCurrent: () => true,
+      modules: new Map(),
+      importModule,
+    });
+  } finally {
+    setEmbeddedSyntax(undefined);
+  }
+  // 検証
+  expect(importModule).not.toHaveBeenCalled();
+  expect(consoleError).not.toHaveBeenCalled();
+  expect(
+    [...root.querySelectorAll("code")].map((code) => code.innerHTML),
+  ).toEqual(before);
 });
 
 // dockerfile と、行の印を持つ diff を色分けする（正常系）

@@ -1,4 +1,4 @@
-title: "節と行の詳細を開閉する"
+title: 節と行の詳細を開閉する
 scenarios:
   - name: 正常シナリオ
     setup:
@@ -69,7 +69,7 @@ scenarios:
       - 開閉を押した後、表の 2 行目の直後に詳細の段落とリストを持つ行があり、ボタンの `aria-expanded` が `true`
       - 表の後に詳細の段落が残っていない
     test: test_normal_when_row_detail
-  - name: 異常シナリオ（知らない開閉の指定）
+  - name: 正常シナリオ（知らない開閉の指定）
     setup:
       - name: mdmark を読むページ
         description: 正常シナリオと同じ
@@ -83,12 +83,13 @@ scenarios:
         participant P as 使う側のページ
         participant M as mdmark
         P->>M: 設定と Markdown を渡して描かせる
-        M-->>P: 書き方の警告と、開いた節を描く
-        P-->>U: 書き方の警告と節を表示
+        M->>M: 知らない開閉の指定を読み飛ばす
+        M-->>P: 開いた節を描く
+        P-->>U: 節を表示
     expected:
-      - 見出しの下に、`hidden` が使えない値であることと `closed`・`open` を書いた書き方の警告がある
+      - 見出しの下に書き方の警告が無い
       - '`補足` の段落が表示されている'
-    test: test_error_when_unknown_section_value
+    test: test_normal_when_unknown_section_value
   - name: 異常シナリオ（行の位置が表に無い）
     setup:
       - name: mdmark を読むページ
@@ -206,6 +207,52 @@ scenarios:
       - Shift を押しながら Enter キーを押した後、`補足`・`注意`・`例` の開閉のボタンの `aria-expanded` が `false`
       - '`概要` の節は開いたまま変わらない'
     test: test_normal_when_nested_toggled_with_shift
+  - name: 正常シナリオ（details の範囲）
+    setup:
+      - name: mdmark を読むページ
+        description: 正常シナリオと同じ
+      - name: details の範囲を持つ Markdown
+        description: '`<!-- details: 補足の手順 -->` 〜 `<!-- /details -->` で段落とリストを囲んだ範囲と、開いた状態を指定した `<!-- details: 実行の例 -->` 〜 `<!-- /details -->` で段落を囲んだ範囲を並べた文書'
+        notes: '`open` の書き方はインターフェース定義で決める'
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を渡して描かせる
+        M-->>P: 1 つ目を閉じ、2 つ目を開いた折りたたみで描く
+        U->>P: 「補足の手順」を押す
+        P-->>U: 補足の手順の中身を表示
+    expected:
+      - 描いた直後、`補足の手順` の見出しだけが表示され、中の段落とリストが表示されていない
+      - 描いた直後、`実行の例` の中の段落が表示されている
+      - '`補足の手順` を押した後、中の段落とリストが表示され、開閉の状態が `aria-expanded` か `details` の `open` に出ている'
+      - 見出しの節の開閉と目次に、details の見出しが出ていない
+      - 本文にマーカーの文字が出ていない
+    test: test_normal_when_details_range
+  - name: 異常シナリオ（details の閉じのマーカーが無い）
+    setup:
+      - name: mdmark を読むページ
+        description: 正常シナリオと同じ
+      - name: 閉じのマーカーの無い Markdown
+        description: '`<!-- details: 補足 -->` の後に段落を持ち、`<!-- /details -->` を持たない文書'
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を渡して描かせる
+        M->>M: details の閉じのマーカーが無い
+        M-->>P: 書き方の警告と、段落を折りたたまずに描く
+        P-->>U: 書き方の警告と段落を表示
+    expected:
+      - マーカーの場所に、閉じのマーカー `<!-- /details -->` が無いことを書いた書き方の警告がある
+      - 段落が折りたたまれずに表示されている
+    test: test_error_when_details_unclosed
 lead: '読む人が、見出し（h1〜h4）の節と、表の行の下に出す行の詳細を開閉し、全ての節や入れ子の節をまとめて開閉する。文書を書く人は見出しの直後の `<!-- section: closed -->` で節を閉じた状態で始め、表の後の `<!-- row-detail: 行の位置 -->` 〜 `<!-- /row-detail -->` で行の詳細を書く。'
 issue: 4
 primary_actor: 文書を読む人
@@ -220,5 +267,5 @@ success_guarantee: |-
   節と行の詳細がマーカーのとおりの開閉で始まり、押すたびに開閉し、開閉の状態がボタンの `aria-expanded` に出る。
 
   すべて展開・すべて折りたたむは文書の全ての節を、Shift を押しながらの開閉はその節と中の入れ子の節を同じ状態にする。
-minimal_guarantee: 読めない印を書いても、節は開いた状態、行の詳細は書いた場所の本文として描かれ、書き方の警告が出る。
+minimal_guarantee: 読めない印を書いても、節は開いた状態、行の詳細は書いた場所の本文として描かれる。行の位置が表に無い行の詳細と、閉じのマーカーが無い details には書き方の警告が出て、節の知らない開閉の指定には警告を出さない。
 test_file: tests/e2e/単一ユースケース/節と行の詳細を開閉する.spec.ts

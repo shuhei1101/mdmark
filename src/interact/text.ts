@@ -9,3 +9,8 @@ export function visibleText(element: Element): string {
   }
   return copy.textContent?.trim() ?? "";
 }
+
+/** 表のセルの値を返す。`data-value` を持てばその値、無ければ `visibleText` の文字 */
+export function cellValue(cell: HTMLTableCellElement): string {
+  return cell.dataset.value ?? visibleText(cell);
+}

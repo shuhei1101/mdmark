@@ -16,7 +16,6 @@ export type MdmarkAliasType = Exclude<(typeof ALIAS_TYPES)[number], "env">;
 
 /** `readAliasRecord` がレコードから取るキー。`port` は `env` の必須の確かめにだけ使う */
 export const ALIAS_KEYS = [
-  "alias_type",
   "id",
   "name",
   "aliases",
@@ -171,39 +170,50 @@ function toList(value: unknown): string[] | undefined {
   return undefined;
 }
 
-/** 1 つのレコードに行の `metadata` を当てて、エイリアスのキーごとの値と、`ref` の列が無いキーを返す */
+/** 列名を `.` で分けてレコードの入れ子の列をたどる。たどれなければ `found` が `false` */
+function readColumn(
+  record: Record<string, unknown>,
+  column: string,
+): { found: boolean; value: unknown } {
+  let current: unknown = record;
+  for (const part of column.split(".")) {
+    if (!isRecord(current) || !Object.hasOwn(current, part)) {
+      return { found: false, value: undefined };
+    }
+    current = current[part];
+  }
+  return { found: true, value: current };
+}
+
+/** 1 つのレコードに行の `metadata` を当てて、エイリアスのキーごとの値と、`metadata` に記載した列が無いキーを返す */
 export function readAliasRecord(options: {
   /** レコード */
   record: Record<string, unknown>;
-  /** 行の `metadata` */
+  /** 行の `metadata`（無い行は空のオブジェクト） */
   metadata: Record<string, unknown>;
+  /** 行の `body_file` */
+  bodyFile?: string;
   /** `name` が無いときの名前 */
   fallbackName: string;
 }): {
   values: AliasValues;
   missing: Array<{ key: string; field: string }>;
 } {
-  const { record, metadata, fallbackName } = options;
+  const { record, metadata, bodyFile, fallbackName } = options;
   const values: AliasValues = {};
   const missing: Array<{ key: string; field: string }> = [];
   for (const key of ALIAS_KEYS) {
-    const rule = metadata[key];
+    const column = metadata[key];
     let raw: unknown;
     let present = false;
-    if (
-      isRecord(rule) &&
-      rule.type === "ref" &&
-      typeof rule.field === "string"
-    ) {
-      if (Object.hasOwn(record, rule.field)) {
-        raw = record[rule.field];
+    if (isFilled(column)) {
+      const read = readColumn(record, column);
+      if (read.found) {
+        raw = read.value;
         present = true;
       } else {
-        missing.push({ key, field: rule.field });
+        missing.push({ key, field: column });
       }
-    } else if (isRecord(rule) && rule.type === "custom") {
-      raw = rule.value;
-      present = true;
     } else if (Object.hasOwn(record, key)) {
       raw = record[key];
       present = true;
@@ -223,31 +233,33 @@ export function readAliasRecord(options: {
       }
     }
   }
-  if (values.name === undefined && fallbackName !== "") {
-    values.name = fallbackName;
+  if (values.name === undefined) {
+    const bodyPath =
+      bodyFile === undefined
+        ? undefined
+        : toText(readColumn(record, bodyFile).value);
+    const name = bodyPath === undefined ? fallbackName : baseName(bodyPath);
+    if (name !== "") {
+      values.name = name;
+    }
   }
   return { values, missing };
 }
 
-/** レコードから取った値の種類と必須のキーを確かめ、ずれを返す。無ければ `undefined` */
-export function checkAliasFields(
-  values: AliasValues,
-):
-  | { kind: "alias_unknown_type"; value: string }
-  | { kind: "alias_required_empty"; keys: string[] }
-  | undefined {
-  const type = values.alias_type;
-  const known = ALIAS_TYPES.find((candidate) => candidate === type);
-  if (known === undefined) {
-    return {
-      kind: "alias_unknown_type",
-      value: typeof type === "string" ? type : "",
-    };
-  }
-  const keys: string[] = ["id", "name", ...ALIAS_REQUIRED_KEYS[known]].filter(
-    (key) => !isFilled(values[key as (typeof ALIAS_KEYS)[number]]),
-  );
-  if (known === "env" && !isFilled(values.url) && !isFilled(values.port)) {
+/** 行の種類の必須のキーが空でないかを確かめ、ずれを返す。無ければ `undefined` */
+export function checkAliasFields(options: {
+  /** 行の `alias_type` */
+  aliasType: (typeof ALIAS_TYPES)[number];
+  /** `readAliasRecord` の `values` */
+  values: AliasValues;
+}): { kind: "alias_required_empty"; keys: string[] } | undefined {
+  const { aliasType, values } = options;
+  const keys: string[] = [
+    "id",
+    "name",
+    ...ALIAS_REQUIRED_KEYS[aliasType],
+  ].filter((key) => !isFilled(values[key as (typeof ALIAS_KEYS)[number]]));
+  if (aliasType === "env" && !isFilled(values.url) && !isFilled(values.port)) {
     keys.push("url");
   }
   return keys.length === 0 ? undefined : { kind: "alias_required_empty", keys };
@@ -303,14 +315,14 @@ export function usableAliases(aliases: readonly unknown[]): MdmarkAlias[] {
   return usable;
 }
 
-/** 検めて残した値から、エイリアス 1 件を作る */
-function toAlias(values: AliasValues): MdmarkAlias {
+/** 検めて残した値と行の種類から、エイリアス 1 件を作る */
+function toAlias(values: AliasValues, aliasType: MdmarkAliasType): MdmarkAlias {
   const text = (key: (typeof ALIAS_KEYS)[number]): string | undefined =>
     typeof values[key] === "string" ? (values[key] as string) : undefined;
   const list = (key: (typeof ALIAS_KEYS)[number]): string[] | undefined =>
     Array.isArray(values[key]) ? (values[key] as string[]) : undefined;
   const alias: MdmarkAlias = {
-    alias_type: values.alias_type as MdmarkAliasType,
+    alias_type: aliasType,
     id: values.id as string,
     name: values.name as string,
     aliases: list("aliases") ?? [],
@@ -372,8 +384,7 @@ export function buildAliases(input: {
       !isRecord(row) ||
       !isFilled(row.id) ||
       !Array.isArray(row.paths) ||
-      !isRecord(row.metadata) ||
-      !Object.hasOwn(row.metadata, "alias_type")
+      typeof row.alias_type !== "string"
     ) {
       return;
     }
@@ -390,16 +401,25 @@ export function buildAliases(input: {
       return;
     }
     rowIds.add(row.id);
-    const metadata = row.metadata;
+    const aliasType = ALIAS_TYPES.find(
+      (candidate) => candidate === row.alias_type,
+    );
+    if (aliasType === undefined) {
+      problems.push({
+        file: configFile,
+        where: `aliases[${rowPosition}].alias_type`,
+        kind: "alias_unknown_type",
+        message: `\`alias_type\` の \`${row.alias_type}\` は種類にありません。\`term\`・\`doc\`・\`command\`・\`url\`・\`skill\`・\`tool\`・\`path\`・\`env\`・\`avoid\` のどれかにしてください。`,
+      });
+      return;
+    }
+    const metadata = isRecord(row.metadata) ? row.metadata : {};
     const recordsKey = isFilled(row.records) ? row.records : undefined;
-    /** `metadata` で `ref` の列を取るキーは列の名前、それ以外はエイリアスのキー */
+    const bodyFile = isFilled(row.body_file) ? row.body_file : undefined;
+    /** `metadata` に列名を記載したキーは列名、それ以外はエイリアスのキー */
     const columnOf = (key: string): string => {
-      const rule = metadata[key];
-      return isRecord(rule) &&
-        rule.type === "ref" &&
-        typeof rule.field === "string"
-        ? rule.field
-        : key;
+      const column = metadata[key];
+      return isFilled(column) ? column : key;
     };
     for (const source of sources.filter((item) => item.rowId === row.id)) {
       let records: Array<{ record: unknown; path: string }>;
@@ -434,6 +454,7 @@ export function buildAliases(input: {
         const { values, missing } = readAliasRecord({
           record,
           metadata,
+          bodyFile,
           fallbackName,
         });
         for (const { key, field } of missing) {
@@ -447,17 +468,8 @@ export function buildAliases(input: {
         if (missing.length > 0) {
           continue;
         }
-        const checked = checkAliasFields(values);
-        if (checked?.kind === "alias_unknown_type") {
-          problems.push({
-            file: source.path,
-            where: joinWhere(path, columnOf("alias_type")),
-            kind: "alias_unknown_type",
-            message: `\`alias_type\` の \`${checked.value}\` は種類にありません。\`term\`・\`doc\`・\`command\`・\`url\`・\`skill\`・\`tool\`・\`path\`・\`env\`・\`avoid\` のどれかにしてください。`,
-          });
-          continue;
-        }
-        if (checked?.kind === "alias_required_empty") {
+        const checked = checkAliasFields({ aliasType, values });
+        if (checked !== undefined) {
           const head =
             path === ""
               ? `\`${source.path}\``
@@ -465,7 +477,7 @@ export function buildAliases(input: {
           for (const key of checked.keys) {
             const column = columnOf(key);
             const sentence =
-              key === "url" && values.alias_type === "env"
+              key === "url" && aliasType === "env"
                 ? `${head} の \`url\` と \`port\` が両方空です。URL かポートを記載してください。`
                 : `${head} の \`${column}\` が空です。${ALIAS_KEY_LABELS[key] ?? key}を記載してください。`;
             problems.push({
@@ -488,8 +500,8 @@ export function buildAliases(input: {
           continue;
         }
         aliasIds.add(id);
-        if (values.alias_type !== "env") {
-          aliases.push(toAlias(values));
+        if (aliasType !== "env") {
+          aliases.push(toAlias(values, aliasType));
         }
       }
     }

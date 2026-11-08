@@ -28,7 +28,7 @@ export type PreviewSettings = {
 /** 設定が無いか型が違うときに使う値。`package.json` の `contributes.configuration` の `default` と同じ値 */
 export const SETTING_DEFAULTS: PreviewSettings = {
   version: "latest",
-  configPath: "mdmark.config.yaml",
+  configPath: "",
   liveUpdate: true,
   updateDelayMs: 300,
   scrollPreviewWithEditor: true,

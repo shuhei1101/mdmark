@@ -552,13 +552,22 @@ async function editYaml(
   }
 }
 
-/** 手順 1 つを当て先へ当てる */
+/** 出力を行に分け、空行を除く */
+function outputLines(output: unknown): string[] {
+  return typeof output === "string"
+    ? output.split(/\r?\n/).filter((line) => line.trim() !== "")
+    : [];
+}
+
+/** 手順 1 つを当て先へ当て、`call` のスクリプトが標準出力に書いた行を返す */
 export async function applyStep(options: {
   step: MigrationStep;
   version: MigrationVersion;
   target: MigrationTarget;
-}): Promise<void> {
+}): Promise<string[]> {
   const { step, version, target } = options;
+  // `call` のスクリプトが失敗したときに標準エラーへ書いた行
+  let stderrLines: string[] = [];
   try {
     switch (step.op) {
       case "replace_mark":
@@ -569,30 +578,31 @@ export async function applyStep(options: {
             await writeFile(path, replaced);
           }
         }
-        return;
+        return [];
       case "call": {
         const script = resolve(version.dir, step.script);
         try {
-          await execFileAsync(
+          const { stdout } = await execFileAsync(
             process.execPath,
             [script, "--config", target.configPath],
             { cwd: dirname(target.configPath) },
           );
+          return outputLines(stdout);
         } catch (error) {
+          stderrLines = isRecord(error) ? outputLines(error.stderr) : [];
           const code =
             isRecord(error) && typeof error.code === "number"
               ? `終了コード ${error.code} で終わりました`
               : reasonOf(error);
           throw new Error(`スクリプト ${step.script} が${code}`);
         }
-        return;
       }
       default: {
         const path =
           step.file === "config" ? target.configPath : target.indexPath;
         // 設定に `index` が無ければ、索引の手順は何もしない
         if (path === undefined) {
-          return;
+          return [];
         }
         await editYaml(path, (doc) => {
           switch (step.op) {
@@ -612,11 +622,15 @@ export async function applyStep(options: {
             }
           }
         });
+        return [];
       }
     }
   } catch (error) {
     throw new CliError(
-      `${version.version} の手順「${step.description}」に失敗しました（${reasonOf(error)}）。`,
+      [
+        `${version.version} の手順「${step.description}」に失敗しました（${reasonOf(error)}）。`,
+        ...stderrLines,
+      ].join("\n"),
     );
   }
 }

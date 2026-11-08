@@ -1,0 +1,60 @@
+$ npm run test:unit
+
+> test:unit
+> vitest run --project 'unit*'
+
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/design-document-side-toc-viewport-edge
+
+ ❯ |unit-browser (chromium)| tests/unit/src/interact/side-toc.browser.test.ts (20 tests | 2 failed) 3300ms
+   × test_attach_side_toc_when_hover_panel_placed 504ms
+   × test_attach_side_toc_when_hover_edge_avoids_minimap 1275ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/side-toc.browser.test.ts > test_attach_side_toc_when_hover_panel_placed
+AssertionError: expected '203px' to be '56px' // Object.is equality
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/side-toc.browser.test.ts/test_attach_side_toc_when_hover_panel_placed.png
+
+Expected: [32m"[7m56[27mpx"[39m
+Received: [31m"[7m203[27mpx"[39m
+
+ ❯ tests/unit/src/interact/side-toc.browser.test.ts:584:63
+    582|   // 実行・検証: 付けた直後
+    583|   expect(panelVariable(aside, "--mdmark-side-toc-panel-top")).toBe(exp…
+    584|   expect(panelVariable(aside, "--mdmark-side-toc-panel-end")).toBe(
+       |                                                               ^
+    585|     expectedEnd(),
+    586|   );
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=cc778d82:5235:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/side-toc.browser.test.ts > test_attach_side_toc_when_hover_edge_avoids_minimap
+AssertionError: expected '-210px' to be '22px' // Object.is equality
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/side-toc.browser.test.ts/test_attach_side_toc_when_hover_edge_avoids_minimap.png
+
+Expected: [32m"[7m22[27mpx"[39m
+Received: [31m"[7m-210[27mpx"[39m
+
+ ❯ tests/unit/src/interact/side-toc.browser.test.ts:742:65
+    740|   track(() => minimap.remove());
+    741|   await vi.waitFor(() => {
+    742|     expect(panelVariable(aside, "--mdmark-side-toc-panel-end")).toBe(
+       |                                                                 ^
+    743|       `${14 + 8}px`,
+    744|     );
+ ❯ checkCallback node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/index.uwTEEBsB-BOVeGxWF.js?v=cc778d82:6080:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed | 192 passed (193)
+      Tests  2 failed | 1424 passed (1426)
+   Start at  21:14:00
+   Duration  60.58s (worker 48%, tests 31%, import 19%, transform 2%)
+

@@ -1,0 +1,475 @@
+$ npm run test:unit
+
+> test:unit
+> vitest run --project 'unit*'
+
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-plugin-setup-skills
+
+ ❯ |unit| tests/unit/src/plugin/setup/status.test.ts (2 tests | 2 failed) 860ms
+   × test_read_terminal_status 576ms
+   × test_read_terminal_status_when_unreadable 283ms
+ ❯ |unit| tests/unit/src/plugin/session-start.test.ts (4 tests | 4 failed) 1330ms
+   × test_run_session_start 587ms
+   × test_run_session_start_when_not_listening 281ms
+   × test_run_session_start_when_port_invalid 454ms
+   × test_run_session_start_when_hooks_json 8ms
+ ❯ |unit| tests/unit/src/plugin/setup/paths.test.ts (4 tests | 4 failed) 1574ms
+   × test_resolve_setup_paths 351ms
+   × test_resolve_setup_paths_when_overridden 450ms
+   × test_read_session_name 381ms
+   × test_read_session_name_when_set 391ms
+ ❯ |unit| tests/unit/src/plugin/setup/server.test.ts (6 tests | 6 failed) 2343ms
+   × test_build_tmux_args 569ms
+   × test_start_server 279ms
+   × test_start_server_when_tmux_missing 457ms
+   × test_start_server_when_timed_out 379ms
+   × test_start_server_when_session_closed 393ms
+   × test_list_tool_names 265ms
+ ❯ |unit| tests/unit/src/plugin/setup/write.test.ts (9 tests | 9 failed) 3384ms
+   × test_parse_set_args 931ms
+   × test_parse_set_args_when_no_equal 435ms
+   × test_write_settings 241ms
+   × test_write_settings_when_invalid 263ms
+   × test_write_settings_when_comment 142ms
+   × test_write_claude_env 158ms
+   × test_write_claude_env_when_same 638ms
+   × test_write_config 366ms
+   × test_write_config_when_settings_key 209ms
+ ❯ |unit| tests/unit/src/plugin/port.test.ts (2 tests | 2 failed) 976ms
+   × test_is_port_listening 488ms
+   × test_is_port_listening_when_closed 487ms
+ ❯ |unit| tests/unit/src/plugin/setup/keys.test.ts (2 tests | 2 failed) 1131ms
+   × test_list_config_keys 643ms
+   × test_list_config_keys_when_config 486ms
+ ❯ |unit| tests/unit/src/plugin/setup/main.test.ts (2 tests | 2 failed) 1364ms
+   × test_run_setup 1080ms
+   × test_run_setup_when_unknown_command 282ms
+ ❯ |unit| tests/unit/src/plugin/mcp.test.ts (2 tests | 1 failed) 15220ms
+   × test_create_mcp_server 15210ms
+ ❯ |unit| tests/unit/src/cli/upgrade.test.ts (13 tests | 1 failed) 18644ms
+   × test_run_upgrade_when_settings 55ms
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 33 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit| tests/unit/src/cli/upgrade.test.ts > test_run_upgrade_when_settings
+AssertionError: expected undefined to be 1 // Object.is equality
+
+- Expected:
+1
+
++ Received:
+undefined
+
+ ❯ tests/unit/src/cli/upgrade.test.ts:481:28
+    479|   expect(after).toContain("# 端末の設定");
+    480|   const settings = parse(after);
+    481|   expect(settings.renamed).toBe(1);
+       |                            ^
+    482|   expect(settings.legacy).toBeUndefined();
+    483|   expect(settings.version).toBe("v0.5.0");
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/33]⎯
+
+ FAIL  |unit| tests/unit/src/plugin/mcp.test.ts > test_create_mcp_server
+AssertionError: expected 'mdmark は Markdown 文書の記法・部品・図を描くライブラリで…' to contain 'mdmark-test'
+
+- Expected
++ Received
+
+- mdmark-test
++ mdmark は Markdown 文書の記法・部品・図を描くライブラリで、この MCP サーバーは mdmark の文書の点検（check）・HTML への書き出し（export_html）・1 枚へのまとめ（build_site）を持つ。
++ mdmark の記法・部品・図の書き方は、使い方集として dev-docs の配信元 mdmark にある。
++ mdmark の文書を書く前に、dev-docs の search_docs で source: "mdmark" の kind が docs の文書をタグ topic:使い方集 で絞って一覧を引き、当てはまるページを view: "full" で読む。作業場所が mdmark のリポジトリの外なら outside_scope: true を付ける。
++ dev-docs が無い、または配信元 mdmark が登録されていないときは、dev-docs が無いので見つかりません。
++ 書いた後は check で点検し、図は使い方集の『描いた図を確かめる』の手順で確かめる。
++ 記法を使わない Markdown の編集とコードの調査には、この MCP サーバーと使い方集は要らない。
+
+ ❯ tests/unit/src/plugin/mcp.test.ts:66:24
+     64|   const instructions = INSTRUCTIONS.replace("{session}", "mdmark-test"…
+     65|   expect(client.getInstructions()).toBe(instructions);
+     66|   expect(instructions).toContain("mdmark-test");
+       |                        ^
+     67|   expect(instructions.length).toBeLessThanOrEqual(4096);
+     68| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/33]⎯
+
+ FAIL  |unit| tests/unit/src/plugin/port.test.ts > test_is_port_listening
+Error: Cannot find module '/src/plugin/port.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-plugin-setup-skills/tests/unit/src/plugin/port.test.ts
+ ❯ tests/unit/src/plugin/port.test.ts:38:31
+     36| test("test_is_port_listening", async () => {
+     37|   // 準備
+     38|   const { isPortListening } = await loadPort();
+       |                               ^
+     39|   const port = await listen();
+     40|   // 実行・検証
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/33]⎯
+
+ FAIL  |unit| tests/unit/src/plugin/port.test.ts > test_is_port_listening_when_closed
+Error: Cannot find module '/src/plugin/port.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-plugin-setup-skills/tests/unit/src/plugin/port.test.ts
+ ❯ tests/unit/src/plugin/port.test.ts:47:31
+     45| test("test_is_port_listening_when_closed", async () => {
+     46|   // 準備
+     47|   const { isPortListening } = await loadPort();
+       |                               ^
+     48|   const port = await closedPort();
+     49|   // 実行・検証
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/33]⎯
+
+ FAIL  |unit| tests/unit/src/plugin/session-start.test.ts > test_run_session_start
+Error: Cannot find module '/src/plugin/session-start.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-plugin-setup-skills/tests/unit/src/plugin/session-start.test.ts
+ ❯ tests/unit/src/plugin/session-start.test.ts:40:31
+     38| test("test_run_session_start", async () => {
+     39|   // 準備
+     40|   const { runSessionStart } = await loadSessionStart();
+       |                               ^
+     41|   const port = await listen();
+     42|   const stdout: string[] = [];
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/33]⎯
+
+ FAIL  |unit| tests/unit/src/plugin/session-start.test.ts > test_run_session_start_when_not_listening
+Error: Cannot find module '/src/plugin/session-start.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-plugin-setup-skills/tests/unit/src/plugin/session-start.test.ts
+ ❯ tests/unit/src/plugin/session-start.test.ts:56:31
+     54| test("test_run_session_start_when_not_listening", async () => {
+     55|   // 準備
+     56|   const { runSessionStart } = await loadSessionStart();
+       |                               ^
+     57|   const port = await closedPort();
+     58|   const stdout: string[] = [];
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/33]⎯
+
+ FAIL  |unit| tests/unit/src/plugin/session-start.test.ts > test_run_session_start_when_port_invalid
+Error: Cannot find module '/src/plugin/session-start.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-plugin-setup-skills/tests/unit/src/plugin/session-start.test.ts
+ ❯ tests/unit/src/plugin/session-start.test.ts:78:31
+     76| test("test_run_session_start_when_port_invalid", async () => {
+     77|   // 準備
+     78|   const { runSessionStart } = await loadSessionStart();
+       |                               ^
+     79|   const stdout: string[] = [];
+     80|   // 実行
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/33]⎯
+
+ FAIL  |unit| tests/unit/src/plugin/session-start.test.ts > test_run_session_start_when_hooks_json
+AssertionError: Target cannot be null or undefined.
+ ❯ tests/unit/src/plugin/session-start.test.ts:98:30
+     96|   const hooks = JSON.parse(await readFile(path, "utf8")).hooks;
+     97|   // 検証
+     98|   expect(hooks.SessionStart).toHaveLength(1);
+       |                              ^
+     99|   const [entry] = hooks.SessionStart;
+    100|   expect(entry).not.toHaveProperty("matcher");
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/33]⎯
+
+ FAIL  |unit| tests/unit/src/plugin/setup/keys.test.ts > test_list_config_keys
+Error: Cannot find module '/src/plugin/setup/keys.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-plugin-setup-skills/tests/unit/src/plugin/setup/keys.test.ts
+ ❯ tests/unit/src/plugin/setup/keys.test.ts:17:30
+     15| test("test_list_config_keys", async () => {
+     16|   // 準備
+     17|   const { listConfigKeys } = await loadKeys();
+       |                              ^
+     18|   // 実行
+     19|   const keys = listConfigKeys({
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/33]⎯
+
+ FAIL  |unit| tests/unit/src/plugin/setup/keys.test.ts > test_list_config_keys_when_config
+Error: Cannot find module '/src/plugin/setup/keys.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-plugin-setup-skills/tests/unit/src/plugin/setup/keys.test.ts
+ ❯ tests/unit/src/plugin/setup/keys.test.ts:40:30
+     38| test("test_list_config_keys_when_config", async () => {
+     39|   // 準備
+     40|   const { listConfigKeys } = await loadKeys();
+       |                              ^
+     41|   // 実行
+     42|   const keys = listConfigKeys({
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/33]⎯
+
+ FAIL  |unit| tests/unit/src/plugin/setup/main.test.ts > test_run_setup
+Error: Cannot find module '/src/plugin/setup/main.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-plugin-setup-skills/tests/unit/src/plugin/setup/main.test.ts
+ ❯ tests/unit/src/plugin/setup/main.test.ts:13:24
+     11| test("test_run_setup", async () => {
+     12|   // 準備
+     13|   const { runSetup } = await loadMain();
+       |                        ^
+     14|   const home = await createTempDir();
+     15|   const stdout: string[] = [];
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/33]⎯
+
+ FAIL  |unit| tests/unit/src/plugin/setup/main.test.ts > test_run_setup_when_unknown_command
+Error: Cannot find module '/src/plugin/setup/main.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-plugin-setup-skills/tests/unit/src/plugin/setup/main.test.ts
+ ❯ tests/unit/src/plugin/setup/main.test.ts:39:24
+     37| test("test_run_setup_when_unknown_command", async () => {
+     38|   // 準備
+     39|   const { runSetup } = await loadMain();
+       |                        ^
+     40|   const stderr: string[] = [];
+     41|   // 実行
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[12/33]⎯
+
+ FAIL  |unit| tests/unit/src/plugin/setup/paths.test.ts > test_resolve_setup_paths
+Error: Cannot find module '/src/plugin/setup/paths.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-plugin-setup-skills/tests/unit/src/plugin/setup/paths.test.ts
+ ❯ tests/unit/src/plugin/setup/paths.test.ts:9:33
+      7| test("test_resolve_setup_paths", async () => {
+      8|   // 準備
+      9|   const { resolveSetupPaths } = await loadPaths();
+       |                                 ^
+     10|   // 実行
+     11|   const paths = resolveSetupPaths({ HOME: "/h" });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[13/33]⎯
+
+ FAIL  |unit| tests/unit/src/plugin/setup/paths.test.ts > test_resolve_setup_paths_when_overridden
+Error: Cannot find module '/src/plugin/setup/paths.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-plugin-setup-skills/tests/unit/src/plugin/setup/paths.test.ts
+ ❯ tests/unit/src/plugin/setup/paths.test.ts:24:33
+     22| test("test_resolve_setup_paths_when_overridden", async () => {
+     23|   // 準備
+     24|   const { resolveSetupPaths } = await loadPaths();
+       |                                 ^
+     25|   // 実行
+     26|   const paths = resolveSetupPaths({
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[14/33]⎯
+
+ FAIL  |unit| tests/unit/src/plugin/setup/paths.test.ts > test_read_session_name
+Error: Cannot find module '/src/plugin/setup/paths.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-plugin-setup-skills/tests/unit/src/plugin/setup/paths.test.ts
+ ❯ tests/unit/src/plugin/setup/paths.test.ts:42:31
+     40| test("test_read_session_name", async () => {
+     41|   // 準備
+     42|   const { readSessionName } = await loadPaths();
+       |                               ^
+     43|   // 実行・検証
+     44|   expect(readSessionName(undefined)).toBe("mdmark-mcp");
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[15/33]⎯
+
+ FAIL  |unit| tests/unit/src/plugin/setup/paths.test.ts > test_read_session_name_when_set
+Error: Cannot find module '/src/plugin/setup/paths.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-plugin-setup-skills/tests/unit/src/plugin/setup/paths.test.ts
+ ❯ tests/unit/src/plugin/setup/paths.test.ts:50:31
+     48| test("test_read_session_name_when_set", async () => {
+     49|   // 準備
+     50|   const { readSessionName } = await loadPaths();
+       |                               ^
+     51|   // 実行・検証
+     52|   expect(readSessionName({ serve: { tmuxSession: "x" } })).toBe("x");
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[16/33]⎯
+
+ FAIL  |unit| tests/unit/src/plugin/setup/server.test.ts > test_build_tmux_args
+Error: Cannot find module '/src/plugin/setup/server.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-plugin-setup-skills/tests/unit/src/plugin/setup/server.test.ts
+ ❯ tests/unit/src/plugin/setup/server.test.ts:85:29
+     83| test("test_build_tmux_args", async () => {
+     84|   // 準備
+     85|   const { buildTmuxArgs } = await loadServer();
+       |                             ^
+     86|   // 実行
+     87|   const args = buildTmuxArgs({
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[17/33]⎯
+
+ FAIL  |unit| tests/unit/src/plugin/setup/server.test.ts > test_start_server
+Error: Cannot find module '/src/plugin/setup/server.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-plugin-setup-skills/tests/unit/src/plugin/setup/server.test.ts
+ ❯ tests/unit/src/plugin/setup/server.test.ts:107:27
+    105| test.skipIf(!hasTmux)("test_start_server", async () => {
+    106|   // 準備
+    107|   const { startServer } = await loadServer();
+       |                           ^
+    108|   const tmuxDir = await createTempDir();
+    109|   const { env } = await createTerminal({
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[18/33]⎯
+
+ FAIL  |unit| tests/unit/src/plugin/setup/server.test.ts > test_start_server_when_tmux_missing
+Error: Cannot find module '/src/plugin/setup/server.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-plugin-setup-skills/tests/unit/src/plugin/setup/server.test.ts
+ ❯ tests/unit/src/plugin/setup/server.test.ts:136:27
+    134| test("test_start_server_when_tmux_missing", async () => {
+    135|   // 準備
+    136|   const { startServer } = await loadServer();
+       |                           ^
+    137|   const { env } = await createTerminal();
+    138|   const { run } = createFakeRun(() => ({ code: 127 }));
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[19/33]⎯
+
+ FAIL  |unit| tests/unit/src/plugin/setup/server.test.ts > test_start_server_when_timed_out
+Error: Cannot find module '/src/plugin/setup/server.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-plugin-setup-skills/tests/unit/src/plugin/setup/server.test.ts
+ ❯ tests/unit/src/plugin/setup/server.test.ts:150:27
+    148| test("test_start_server_when_timed_out", async () => {
+    149|   // 準備
+    150|   const { startServer } = await loadServer();
+       |                           ^
+    151|   const { env } = await createTerminal({ MDMARK_START_TIMEOUT_SEC: "0"…
+    152|   const { run, calls } = createFakeRun(() => ({ code: 0 }));
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[20/33]⎯
+
+ FAIL  |unit| tests/unit/src/plugin/setup/server.test.ts > test_start_server_when_session_closed
+Error: Cannot find module '/src/plugin/setup/server.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-plugin-setup-skills/tests/unit/src/plugin/setup/server.test.ts
+ ❯ tests/unit/src/plugin/setup/server.test.ts:165:27
+    163| test("test_start_server_when_session_closed", async () => {
+    164|   // 準備
+    165|   const { startServer } = await loadServer();
+       |                           ^
+    166|   const { home, env } = await createTerminal();
+    167|   await writeFiles(home, {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[21/33]⎯
+
+ FAIL  |unit| tests/unit/src/plugin/setup/server.test.ts > test_list_tool_names
+Error: Cannot find module '/src/plugin/setup/server.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-plugin-setup-skills/tests/unit/src/plugin/setup/server.test.ts
+ ❯ tests/unit/src/plugin/setup/server.test.ts:184:29
+    182| test("test_list_tool_names", async () => {
+    183|   // 準備
+    184|   const { listToolNames } = await loadServer();
+       |                             ^
+    185|   const { runServe } = await loadHttp();
+    186|   const port = await findFreePort();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[22/33]⎯
+
+ FAIL  |unit| tests/unit/src/plugin/setup/status.test.ts > test_read_terminal_status
+Error: Cannot find module '/src/plugin/setup/status.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-plugin-setup-skills/tests/unit/src/plugin/setup/status.test.ts
+ ❯ tests/unit/src/plugin/setup/status.test.ts:19:34
+     17| test("test_read_terminal_status", async () => {
+     18|   // 準備
+     19|   const { readTerminalStatus } = await loadStatus();
+       |                                  ^
+     20|   const home = await createTempDir();
+     21|   const settingsPath = join(home, "x", "settings.yaml");
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[23/33]⎯
+
+ FAIL  |unit| tests/unit/src/plugin/setup/status.test.ts > test_read_terminal_status_when_unreadable
+Error: Cannot find module '/src/plugin/setup/status.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-plugin-setup-skills/tests/unit/src/plugin/setup/status.test.ts
+ ❯ tests/unit/src/plugin/setup/status.test.ts:43:34
+     41| test("test_read_terminal_status_when_unreadable", async () => {
+     42|   // 準備
+     43|   const { readTerminalStatus } = await loadStatus();
+       |                                  ^
+     44|   const home = await createTempDir();
+     45|   await writeFiles(home, {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[24/33]⎯
+
+ FAIL  |unit| tests/unit/src/plugin/setup/write.test.ts > test_parse_set_args
+Error: Cannot find module '/src/plugin/setup/write.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-plugin-setup-skills/tests/unit/src/plugin/setup/write.test.ts
+ ❯ tests/unit/src/plugin/setup/write.test.ts:35:28
+     33| test("test_parse_set_args", async () => {
+     34|   // 準備
+     35|   const { parseSetArgs } = await loadWrite();
+       |                            ^
+     36|   // 実行
+     37|   const sets = parseSetArgs(["features.table=false", "serve.tmuxSessio…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[25/33]⎯
+
+ FAIL  |unit| tests/unit/src/plugin/setup/write.test.ts > test_parse_set_args_when_no_equal
+Error: Cannot find module '/src/plugin/setup/write.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-plugin-setup-skills/tests/unit/src/plugin/setup/write.test.ts
+ ❯ tests/unit/src/plugin/setup/write.test.ts:48:28
+     46| test("test_parse_set_args_when_no_equal", async () => {
+     47|   // 準備
+     48|   const { parseSetArgs } = await loadWrite();
+       |                            ^
+     49|   // 実行・検証
+     50|   expect(() => parseSetArgs(["features.table"])).toThrow(
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[26/33]⎯
+
+ FAIL  |unit| tests/unit/src/plugin/setup/write.test.ts > test_write_settings
+Error: Cannot find module '/src/plugin/setup/write.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-plugin-setup-skills/tests/unit/src/plugin/setup/write.test.ts
+ ❯ tests/unit/src/plugin/setup/write.test.ts:58:29
+     56| test("test_write_settings", async () => {
+     57|   // 準備
+     58|   const { writeSettings } = await loadWrite();
+       |                             ^
+     59|   const terminal = await createTerminal();
+     60|   // 実行
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[27/33]⎯
+
+ FAIL  |unit| tests/unit/src/plugin/setup/write.test.ts > test_write_settings_when_invalid
+Error: Cannot find module '/src/plugin/setup/write.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-plugin-setup-skills/tests/unit/src/plugin/setup/write.test.ts
+ ❯ tests/unit/src/plugin/setup/write.test.ts:82:29
+     80| test("test_write_settings_when_invalid", async () => {
+     81|   // 準備
+     82|   const { writeSettings } = await loadWrite();
+       |                             ^
+     83|   const terminal = await createTerminal();
+     84|   // 実行
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[28/33]⎯
+
+ FAIL  |unit| tests/unit/src/plugin/setup/write.test.ts > test_write_settings_when_comment
+Error: Cannot find module '/src/plugin/setup/write.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-plugin-setup-skills/tests/unit/src/plugin/setup/write.test.ts
+ ❯ tests/unit/src/plugin/setup/write.test.ts:100:29
+     98| test("test_write_settings_when_comment", async () => {
+     99|   // 準備
+    100|   const { writeSettings } = await loadWrite();
+       |                             ^
+    101|   const terminal = await createTerminal();
+    102|   const before = [
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[29/33]⎯
+
+ FAIL  |unit| tests/unit/src/plugin/setup/write.test.ts > test_write_claude_env
+Error: Cannot find module '/src/plugin/setup/write.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-plugin-setup-skills/tests/unit/src/plugin/setup/write.test.ts
+ ❯ tests/unit/src/plugin/setup/write.test.ts:129:30
+    127| test("test_write_claude_env", async () => {
+    128|   // 準備
+    129|   const { writeClaudeEnv } = await loadWrite();
+       |                              ^
+    130|   const dir = await createTempDir();
+    131|   await writeFiles(dir, {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[30/33]⎯
+
+ FAIL  |unit| tests/unit/src/plugin/setup/write.test.ts > test_write_claude_env_when_same
+Error: Cannot find module '/src/plugin/setup/write.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-plugin-setup-skills/tests/unit/src/plugin/setup/write.test.ts
+ ❯ tests/unit/src/plugin/setup/write.test.ts:147:30
+    145| test("test_write_claude_env_when_same", async () => {
+    146|   // 準備
+    147|   const { writeClaudeEnv } = await loadWrite();
+       |                              ^
+    148|   const dir = await createTempDir();
+    149|   await writeFiles(dir, {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[31/33]⎯
+
+ FAIL  |unit| tests/unit/src/plugin/setup/write.test.ts > test_write_config
+Error: Cannot find module '/src/plugin/setup/write.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-plugin-setup-skills/tests/unit/src/plugin/setup/write.test.ts
+ ❯ tests/unit/src/plugin/setup/write.test.ts:164:27
+    162| test("test_write_config", async () => {
+    163|   // 準備
+    164|   const { writeConfig } = await loadWrite();
+       |                           ^
+    165|   const dir = await createTempDir();
+    166|   // 実行
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[32/33]⎯
+
+ FAIL  |unit| tests/unit/src/plugin/setup/write.test.ts > test_write_config_when_settings_key
+Error: Cannot find module '/src/plugin/setup/write.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-plugin-setup-skills/tests/unit/src/plugin/setup/write.test.ts
+ ❯ tests/unit/src/plugin/setup/write.test.ts:183:27
+    181| test("test_write_config_when_settings_key", async () => {
+    182|   // 準備
+    183|   const { writeConfig } = await loadWrite();
+       |                           ^
+    184|   const dir = await createTempDir();
+    185|   // 実行
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[33/33]⎯
+
+
+ Test Files  10 failed | 236 passed (246)
+      Tests  33 failed | 1649 passed (1682)
+   Start at  14:44:53
+   Duration  85.41s (worker 62%, tests 24%, import 12%, transform 1%)
+

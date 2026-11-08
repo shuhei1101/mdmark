@@ -1,4 +1,5 @@
 import { expect, test } from "vitest";
+import type { TableOptions } from "../../../../src/parts/table.ts";
 import {
   findTag,
   findTags,
@@ -36,7 +37,7 @@ test("test_render_table", async () => {
       '<div class="mdmark-table" data-kind="data" data-features="sort pin filter" data-filter="0:select">',
     ),
   ).toBe(true);
-  expect(html).toContain(SLOT_MARKER);
+  expect(innerHtml(html, 'class="mdmark-table-scroll"')).toContain(SLOT_MARKER);
 });
 
 // 閉じた表は折り畳みに入れる（正常系）
@@ -140,7 +141,7 @@ test("test_render_table_when_all_features", async () => {
   // 検証: 帯
   const bar = innerHtml(html, 'class="mdmark-table-bar"');
   expect(bar).toContain("3 / 3 件");
-  expect(bar).toContain("列の表示");
+  expect(bar).toContain("mdmark-table-settings-toggle");
   expect(bar).toContain("表をコピー");
   // 検証: 隠した説明の列の見出し・セル・集計のセル
   const head = innerHtml(html, "<thead");
@@ -171,7 +172,7 @@ test("test_render_table_when_all_features", async () => {
   }
 });
 
-// 件数と列の表示とコピーの帯を返す（正常系）
+// 件数とテーブル設定とコピーの帯を返す（正常系）
 test("test_render_table_bar", async () => {
   // 準備
   const { renderTableBar } = await loadTable();
@@ -188,24 +189,27 @@ test("test_render_table_bar", async () => {
   expect(findTag(bar, 'aria-live="polite"')).toContain("mdmark-table-count");
   expect(bar).toContain("2 / 3 件");
   expect(bar).toContain("3 件中 2 件を表示");
-  const toggle = findTag(bar, "mdmark-columns-toggle");
+  const toggle = findTag(bar, "mdmark-table-settings-toggle");
   expect(toggle).toContain('aria-expanded="false"');
-  expect(bar).toContain("列の表示");
+  expect(toggle).toContain("is-icon-only");
+  expect(toggle).toContain("is-active");
+  expect(toggle).toContain('title="テーブル設定"');
+  expect(toggle).toContain('aria-label="テーブル設定（1 列を非表示）"');
+  expect(plainText(outerHtml(bar, "mdmark-table-tool-badge"))).toBe("1");
   const copy = findTag(bar, "mdmark-copy");
   expect(copy).toContain('data-state="idle"');
-  expect(outerHtml(bar, "mdmark-copy")).toContain("表をコピー");
-  expect(outerHtml(bar, "mdmark-copy")).toContain("chevron-down");
+  expect(copy).toContain("is-icon-only");
+  expect(copy).toContain('title="表をコピー"');
+  expect(outerHtml(bar, "mdmark-copy")).not.toContain("chevron-down");
   expect(findTag(bar, "mdmark-table-status")).toContain('role="status"');
-  // 検証: 列の表示のメニュー
-  expect(findTag(menus, "mdmark-columns-menu")).toMatch(/\shidden\b/);
-  const checkboxes = findTags(menus, 'type="checkbox"');
-  expect(checkboxes).toHaveLength(3);
-  expect(checkboxes[0]).toMatch(/\schecked\b/);
-  expect(checkboxes[0]).toMatch(/\sdisabled\b/);
-  expect(checkboxes[1]).not.toMatch(/\schecked\b/);
-  expect(checkboxes[2]).toMatch(/\schecked\b/);
+  // 検証: テーブル設定のパネル
+  expect(findTag(menus, 'class="mdmark-table-settings"')).toMatch(/\shidden\b/);
+  const eyes = findTags(menus, "mdmark-table-settings-eye");
+  expect(eyes).toHaveLength(3);
+  expect(eyes[0]).toMatch(/\sdisabled\b/);
+  expect(eyes[1]).not.toMatch(/\sdisabled\b/);
   expect(menus).toContain("先頭の列は隠せません");
-  expect(menus).toContain("既定に戻す");
+  expect(menus).not.toContain("リセット");
   // 検証: コピーの形式のメニュー
   expect(findTag(menus, 'aria-label="コピーの形式"')).toMatch(/\shidden\b/);
   const formats = findTags(menus, "data-format=");
@@ -233,8 +237,8 @@ test("test_render_table_bar_when_copy_failed", async () => {
   expect(findTag(bar, "mdmark-copy")).toContain('data-state="failed"');
   expect(bar).toContain("コピーできませんでした");
   expect(bar).not.toContain("mdmark-table-count");
-  expect(bar).not.toContain("列の表示");
-  expect(menus).not.toContain("mdmark-columns-menu");
+  expect(bar).not.toContain("mdmark-table-settings-toggle");
+  expect(menus).not.toContain("mdmark-table-settings");
 });
 
 // 集計のボタンとメニューを返し、隠している計算の数を読み上げの名前に加える（正常系）
@@ -258,10 +262,10 @@ test("test_render_table_bar_when_totals", async () => {
   expect(toggle).toContain("is-active");
   expect(toggle).toContain('aria-expanded="true"');
   expect(outerHtml(bar, "mdmark-totals-toggle")).toContain(
-    "（2 件を隠しています）",
+    "（2 件を非表示にしています）",
   );
   // 検証: 集計のメニュー
-  const menu = findTag(menus, 'aria-label="出す集計"');
+  const menu = findTag(menus, 'aria-label="表示する集計"');
   expect(menu).not.toMatch(/\shidden\b/);
   const checkboxes = findTags(menus, 'type="checkbox"');
   expect(checkboxes.map((tag) => /value="([^"]*)"/.exec(tag)?.[1])).toEqual([
@@ -452,7 +456,7 @@ test("test_render_table_tools", async () => {
   expect(findTag(drawer, "mdmark-filter-drawer")).toMatch(/\shidden\b/);
   expect(drawer).toContain("候補を検索");
   expect(findTags(drawer, 'type="checkbox"')).toHaveLength(2);
-  expect(drawer).toContain("絞り込みを外す");
+  expect(drawer).toContain("絞り込みを解除");
 });
 
 // 日付のドロワーは開始日と終了日の欄を持つ（正常系）
@@ -680,4 +684,388 @@ test("test_render_copy_panel_when_tree", async () => {
   // 検証
   expect(plainText(html)).toContain("ツリーのテキストを選択しています。");
   expect(innerHtml(html, "<textarea")).toBe("src/\n└── index.ts");
+});
+
+// 強調する列と色を付ける行を属性にする（正常系）
+test("test_render_table_when_colors", async () => {
+  // 準備
+  const { renderTable } = await loadTable();
+  // 実行（部品設計の HighlightAndRowColors）
+  const html = renderTable({
+    kind: "data",
+    features: ["sort", "pin", "filter"],
+    columns: ["案件", "状態", "金額（円）"],
+    rows: [
+      ["見積もりの作成", "完了", "120000"],
+      ["契約書の確認", "保留", "80000"],
+      ["請求書の発行", "進行中", "45000"],
+      ["納品の確認", "完了", "30000"],
+    ],
+    highlight: [{ column: 2, color: "blue" }],
+    rowColors: [null, "red", null, null],
+  });
+  // 検証: 強調する列の見出しと各セル
+  const highlighted = findTags(html, "mdmark-col-highlight");
+  expect(highlighted.filter((tag) => tag.startsWith("<th"))).toHaveLength(1);
+  expect(highlighted.filter((tag) => tag.startsWith("<td"))).toHaveLength(4);
+  for (const tag of highlighted) {
+    expect(tag).toContain('data-color="blue"');
+  }
+  // 検証: 色を付けた行の tr だけが data-color を持つ
+  const body = innerHtml(html, "<tbody");
+  const rows = (body.match(/<tr\b[^>]*>/g) ?? []).filter(
+    (row) => !row.includes("mdmark-table-empty"),
+  );
+  expect(rows.map((row) => /data-color="([a-z]+)"/.exec(row)?.[1])).toEqual([
+    undefined,
+    "red",
+    undefined,
+    undefined,
+  ]);
+});
+
+/** 部品設計『表』の `Merged` の引数 */
+const MERGED: TableOptions = {
+  kind: "data",
+  features: ["sort", "pin", "filter"],
+  columns: ["地域", "支店", "売上（万円）", "件数", "売上（万円）", "件数"],
+  rows: [
+    ["東日本", "札幌", "120", "14", "135", "16"],
+    ["東日本", "仙台", "98", "11", "102", "12"],
+    ["東日本", "東京", "310", "40", "342", "45"],
+    ["西日本", "大阪", "260", "31", "248", "29"],
+    ["西日本", "福岡", "140", "17", "151", "19"],
+  ],
+  headRows: [
+    [
+      { html: "地域", column: 0, rowspan: 2 },
+      { html: "支店", column: 1, rowspan: 2 },
+      { html: "上期", column: 2, colspan: 2 },
+      { html: "下期", column: 4, colspan: 2 },
+    ],
+    [
+      { html: "売上（万円）", column: 2 },
+      { html: "件数", column: 3 },
+      { html: "売上（万円）", column: 4 },
+      { html: "件数", column: 5 },
+    ],
+  ],
+  rowHeader: 1,
+  mergeColumns: [0],
+};
+
+/** 本文の各行の 1 列目の `<th scope="row">` の開始タグと文字 */
+function rowHeadsOf(html: string): Array<{ tag: string; text: string }> {
+  return rowsOf(innerHtml(html, "<tbody"))
+    .filter((row) => row.includes('scope="row"'))
+    .map((row) => {
+      const tag = findTag(row, 'scope="row"');
+      return { tag, text: plainText(innerHtml(row, 'scope="row"')).trim() };
+    });
+}
+
+// 多段の見出しと行見出しと結合したセルを描き、ボタンを最下段に置く（正常系）
+test("test_render_table_when_merged", async () => {
+  // 準備
+  const { renderTable } = await loadTable();
+  // 実行
+  const html = renderTable({ ...MERGED });
+  // 検証: 見出し
+  const headRows = rowsOf(innerHtml(html, "<thead"));
+  expect(headRows).toHaveLength(2);
+  const upper = outerHtml(headRows[0] ?? "", 'colspan="2"');
+  expect(findTag(upper, 'colspan="2"')).toContain('scope="colgroup"');
+  expect(upper).toContain("上期");
+  expect(upper).not.toContain("mdmark-sort");
+  expect(findTags(headRows[1] ?? "", "mdmark-sort").length).toBeGreaterThan(0);
+  // 検証: 行見出しと結合
+  const heads = rowHeadsOf(html);
+  expect(heads).toHaveLength(5);
+  expect(heads[0]?.text).toBe("東日本");
+  expect(heads[0]?.tag).toContain('rowspan="3"');
+  expect(heads[0]?.tag).toContain("is-merged");
+  for (const head of heads.slice(1, 3)) {
+    expect(head.tag).toMatch(/\shidden\b/);
+  }
+});
+
+// 並べ替えた順で隣り合う同じ値だけを結合する（正常系）
+test("test_render_table_when_merged_sorted", async () => {
+  // 準備
+  const { renderTable } = await loadTable();
+  // 実行
+  const html = renderTable({
+    ...MERGED,
+    sort: { column: 4, direction: "descending" },
+  });
+  // 検証: 東京・大阪・福岡・札幌・仙台の順で、地域は 東・西・西・東・東
+  const heads = rowHeadsOf(html);
+  expect(heads.map((head) => head.text)).toEqual([
+    "東日本",
+    "西日本",
+    "西日本",
+    "東日本",
+    "東日本",
+  ]);
+  expect(heads[0]?.tag).not.toContain("rowspan");
+  expect(heads[1]?.tag).toContain('rowspan="2"');
+  expect(heads[2]?.tag).toMatch(/\shidden\b/);
+  expect(heads[3]?.tag).toContain('rowspan="2"');
+  expect(heads[4]?.tag).toMatch(/\shidden\b/);
+  expect(heads.filter((head) => /\shidden\b/.test(head.tag))).toHaveLength(2);
+});
+
+// 留める列と真偽値の列を属性に持たせ、広く取る列と真偽値のセルを描く（正常系）
+test("test_render_table_when_columns_specified", async () => {
+  // 準備
+  const { renderTable } = await loadTable();
+  // 実行（部品設計の PinAndWide と Check）
+  const pinAndWide = renderTable({
+    features: ["pin"],
+    columns: ["ID", "担当", "概要", "状態", "期限"],
+    rows: [
+      [
+        "#245",
+        "表",
+        "はみ出す表で先頭の列を既定でピン止めし、pin= と wide= と check= を使えるようにする",
+        "未着手",
+        "2026-11-21",
+      ],
+      [
+        "#249",
+        "コード",
+        "tree を除く全てのコードブロックでインデントによる畳む・開くと縦線を付ける",
+        "未着手",
+        "2026-11-28",
+      ],
+    ],
+    overflow: true,
+    pin: 1,
+    pinned: 2,
+    wide: [2],
+  });
+  const check = renderTable({
+    kind: "data",
+    features: ["sort", "pin", "filter"],
+    columns: ["キー", "型", "必須", "既定"],
+    rows: [
+      ["version", "string", "true", "-"],
+      ["features", "object", "false", "全てオン"],
+      ["libraries", "object", "false", "jsDelivr"],
+      ["build", "array", "true", "-"],
+    ],
+    check: [2],
+  });
+  // 検証: 留める列と広く取る列
+  expect(findTag(pinAndWide, 'class="mdmark-table')).toContain('data-pin="1"');
+  const wide = findTags(pinAndWide, "mdmark-wide");
+  expect(wide.filter((tag) => tag.startsWith("<th"))).toHaveLength(1);
+  expect(wide.filter((tag) => tag.startsWith("<td"))).toHaveLength(2);
+  for (const row of rowsOf(pinAndWide).filter((tr) => tr.includes("<td"))) {
+    const cells = row.match(/<td\b[^>]*>/g) ?? [];
+    if (cells.length < 5) {
+      continue;
+    }
+    expect(cells[0]).toContain("is-pinned-col");
+    expect(cells[1]).toContain("is-pinned-col");
+    expect(cells[2]).not.toContain("is-pinned-col");
+  }
+  // 検証: 真偽値の列
+  expect(findTag(check, 'class="mdmark-table')).toContain('data-check="2"');
+  const body = innerHtml(check, "<tbody");
+  const checkCells =
+    body.match(/<td\b[^>]*mdmark-align-center[^>]*>[\s\S]*?<\/td>/g) ?? [];
+  expect(checkCells).toHaveLength(4);
+  const [yes = "", no = ""] = checkCells;
+  expect(yes).toContain('data-value="true"');
+  expect(yes).toContain('class="mdmark-check"');
+  expect(no).toContain('data-value="false"');
+  expect(plainText(no)).toBe("いいえ");
+  // 検証: 既定の列は文字のまま
+  const defaults = body.match(/<td\b[^>]*data-label="既定"[^>]*>[^<]*/g) ?? [];
+  expect(defaults.map((cell) => cell.replace(/^<td\b[^>]*>/, ""))).toEqual([
+    "-",
+    "全てオン",
+    "jsDelivr",
+    "-",
+  ]);
+});
+
+// true を ✓、false を読み上げだけのいいえにする（正常系）
+test("test_render_check_cell", async () => {
+  // 準備
+  const { renderCheckCell } = await loadTable();
+  // 実行
+  const yes = renderCheckCell("true");
+  const no = renderCheckCell("false");
+  // 検証
+  const mark = findTag(yes, "mdmark-check");
+  expect(mark).toContain('role="img"');
+  expect(mark).toContain('aria-label="はい"');
+  expect(yes).toContain("<svg");
+  expect(findTag(no, "<span")).toContain('class="mdmark-visually-hidden"');
+  expect(plainText(no)).toBe("いいえ");
+});
+
+// つまみと目のアイコンを持つ一覧を今の列の順で返す（正常系）
+test("test_render_table_settings", async () => {
+  // 準備
+  const { renderTableSettings } = await loadTable();
+  // 実行
+  const html = renderTableSettings({
+    id: "t1",
+    columns: ["名前", "型", "既定", "説明"],
+    order: [3, 0, 2, 1],
+    hidden: [3],
+    features: ["columns", "reorder"],
+    groups: [undefined, undefined, undefined, undefined],
+    pinned: 0,
+  });
+  // 検証
+  expect(plainText(outerHtml(html, "mdmark-table-settings-title"))).toBe(
+    "表示と並び順",
+  );
+  const items = findTags(html, "mdmark-table-settings-item");
+  expect(items.map((tag) => /data-column="(\d+)"/.exec(tag)?.[1])).toEqual([
+    "3",
+    "0",
+    "2",
+    "1",
+  ]);
+  expect(findTags(html, "mdmark-table-settings-grip")).toHaveLength(4);
+  const eyes = findTags(html, "mdmark-table-settings-eye");
+  expect(eyes).toHaveLength(4);
+  expect(eyes[0]).toContain('aria-pressed="true"');
+  expect(eyes[0]).toContain('aria-label="「説明」を表示"');
+  expect(eyes[1]).toMatch(/\sdisabled\b/);
+  expect(eyes[2]).toContain('aria-label="「既定」を隠す"');
+  expect(html).not.toMatch(/<div class="mdmark-table-settings"[^>]*\shidden\b/);
+});
+
+// `reorder` だけのときは題が `並び順` で目のアイコンを置かない（正常系）
+test("test_render_table_settings_when_reorder_only", async () => {
+  // 準備
+  const { renderTableSettings } = await loadTable();
+  // 実行
+  const html = renderTableSettings({
+    id: "t1",
+    columns: ["名前", "型", "既定", "説明"],
+    order: [0, 1, 2, 3],
+    hidden: [],
+    features: ["reorder"],
+    groups: [undefined, undefined, undefined, undefined],
+    pinned: 0,
+  });
+  // 検証
+  expect(plainText(outerHtml(html, "mdmark-table-settings-title"))).toBe(
+    "並び順",
+  );
+  expect(html).not.toContain("mdmark-table-settings-eye");
+  expect(findTags(html, "mdmark-table-settings-grip")).toHaveLength(4);
+});
+
+// ピン止めと結合した見出しの範囲で一覧を分け、動かせないつまみを `disabled` にする（正常系）
+test("test_render_table_settings_when_groups", async () => {
+  // 準備
+  const { renderTableSettings } = await loadTable();
+  // 実行
+  const html = renderTableSettings({
+    id: "t1",
+    columns: ["名前", "型", "既定", "必須", "備考"],
+    order: [0, 1, 2, 3, 4],
+    hidden: [],
+    features: ["reorder"],
+    groups: [undefined, "0:1", "0:1", "0:1", undefined],
+    pinned: 1,
+  });
+  // 検証
+  expect(findTags(html, "mdmark-table-settings-group")).toHaveLength(3);
+  const grips = findTags(html, "mdmark-table-settings-grip");
+  expect(grips).toHaveLength(5);
+  expect(grips.map((tag) => /\sdisabled\b/.test(tag))).toEqual([
+    true,
+    false,
+    false,
+    false,
+    true,
+  ]);
+});
+
+// 深さの数の縦線と、配列の `[]`・必須の * を置く（正常系）
+test("test_render_tree_key_cell", async () => {
+  // 準備
+  const { renderTreeKeyCell } = await loadTable();
+  // 実行
+  const html = renderTreeKeyCell({
+    name: "aliases[]",
+    depth: 1,
+    required: true,
+  });
+  // 検証
+  expect(findTag(html, "<span")).toContain("mdmark-tree-cell");
+  expect(findTags(html, "mdmark-tree-guide")).toHaveLength(1);
+  expect(plainText(outerHtml(html, "mdmark-tree-name"))).toBe("aliases");
+  expect(plainText(outerHtml(html, "mdmark-tree-array"))).toBe("[]");
+  expect(findTags(html, "mdmark-tree-required")).toHaveLength(1);
+  expect(html).not.toContain("mdmark-tree-toggle");
+  expect(html).not.toContain("mdmark-tree-copy");
+});
+
+// 列挙はチップ、それ以外はバッジにする（正常系）
+test("test_render_type_cell", async () => {
+  // 準備
+  const { renderTypeCell } = await loadTable();
+  // 実行
+  const badge = renderTypeCell("bool");
+  const chips = renderTypeCell("ref | custom");
+  const empty = renderTypeCell("");
+  // 検証
+  expect(badge).toBe(
+    '<span class="mdmark-type-badge" data-type="bool">bool</span>',
+  );
+  const chipTags = findTags(chips, "mdmark-type-chip");
+  expect(chipTags).toHaveLength(2);
+  expect(plainText(chips).replace(/\s+/g, "")).toBe("refcustom");
+  expect(empty).toBe("");
+});
+
+// 開閉・コピー・見本のボタンを返す（正常系）
+test("test_render_tree_tools", async () => {
+  // 準備
+  const { renderTreeTools } = await loadTable();
+  // 実行
+  const toggle = renderTreeTools({
+    kind: "toggle",
+    path: "aliases[]",
+    expanded: false,
+  });
+  const copy = renderTreeTools({ kind: "copy" });
+  const example = renderTreeTools({
+    kind: "example",
+    expanded: true,
+    controls: "t-example",
+  });
+  // 検証
+  const toggleTag = findTag(toggle, "<button");
+  expect(toggleTag).toContain('aria-expanded="false"');
+  expect(toggleTag).toContain('aria-label="aliases[] を開く"');
+  expect(findTag(copy, "<button")).toContain('aria-label="全体のパスをコピー"');
+  expect(findTag(example, "<button")).toContain('aria-controls="t-example"');
+  expect(plainText(example).trim()).toBe("見本を隠す");
+});
+
+// 押した状態を `aria-pressed` に入れる（正常系）
+test("test_render_raw_toggle", async () => {
+  // 準備
+  const { renderRawToggle } = await loadTable();
+  // 実行
+  const off = renderRawToggle(false);
+  const on = renderRawToggle(true);
+  // 検証
+  expect(off).toContain(
+    '<button class="mdmark-raw-toggle" type="button" aria-label="元の CSV を表示" aria-pressed="false">',
+  );
+  expect(on).toContain('aria-pressed="true"');
+  expect(off).toContain("<svg");
+  expect(off).toContain("</button>");
 });

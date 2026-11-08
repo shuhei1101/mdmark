@@ -12,6 +12,19 @@ export const NODE_BANNER = [
   'import { createRequire as __createRequire } from "node:module";',
   "const require = __createRequire(import.meta.url);",
 ].join("\n");
+/** 束ねるときに `define` で埋める値: mdmark の版と、束ねる lucide のバージョン（mdmark の `package.json` の `dependencies`。束ねる場所 `root` によらない） */
+export function bundleDefines(version: string): Record<string, string> {
+  const manifest = JSON.parse(
+    readFileSync(join(import.meta.dirname, "..", "package.json"), "utf8"),
+  ) as { dependencies?: Record<string, string> };
+  return {
+    __MDMARK_VERSION__: JSON.stringify(version),
+    __MDMARK_LUCIDE_VERSION__: JSON.stringify(
+      manifest.dependencies?.lucide ?? "",
+    ),
+  };
+}
+
 /** 束ねたパッケージの入力のパスにある、依存の置き場所 */
 export const NODE_MODULES_SEGMENT = "node_modules/";
 /** 束ねたパッケージの配布物の中に取り込まれ、`node_modules` に無いパッケージのライセンスの本文を置くフォルダ */

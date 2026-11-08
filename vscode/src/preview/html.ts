@@ -17,6 +17,9 @@ export function distUrl(options: {
 }
 
 /** インターフェース定義の制約「CSP」のとおりの `Content-Security-Policy` の値を組む */
+/** 束ねていない名前のアイコンを読む jsDelivr の origin */
+const ICONS_ORIGIN = "https://cdn.jsdelivr.net";
+
 export function buildCsp(options: {
   /** この HTML の nonce */
   nonce: string;
@@ -30,11 +33,12 @@ export function buildCsp(options: {
   const { nonce, distOrigin, libraryOrigins, cspSource } = options;
   return [
     "default-src 'none'",
-    `script-src ${[`'nonce-${nonce}'`, distOrigin, ...libraryOrigins, cspSource].join(" ")}`,
+    `script-src ${[...new Set([`'nonce-${nonce}'`, distOrigin, ...libraryOrigins, ICONS_ORIGIN, cspSource])].join(" ")}`,
     `style-src ${distOrigin} ${cspSource} 'unsafe-inline'`,
     `img-src ${cspSource} https: data:`,
+    `media-src ${cspSource} https: data:`,
     `font-src ${distOrigin} ${cspSource}`,
-    `connect-src ${distOrigin}`,
+    `connect-src ${[...new Set([distOrigin, ICONS_ORIGIN])].join(" ")}`,
   ].join("; ");
 }
 
@@ -58,6 +62,10 @@ export function buildPreviewHtml(options: {
   styleUri: string;
   /** `mdmark.configPath` の記載したままの値 */
   configPath: string;
+  /** 重ねた設定の `theme` の `asWebviewUri` */
+  themeHref?: string | undefined;
+  /** 束ねた `extensions` のファイルの `asWebviewUri` */
+  extensions: string[];
   /** テストのときだけ `data-test` を持つ */
   test: boolean;
 }): string {
@@ -68,12 +76,19 @@ export function buildPreviewHtml(options: {
     version === undefined ? "" : `data-version="${escapeHtml(version)}"`,
     distJs === undefined ? 'data-status="versionUndecidable"' : "",
     `data-config-path="${escapeHtml(options.configPath)}"`,
+    options.extensions.length === 0
+      ? ""
+      : `data-extensions="${escapeHtml(JSON.stringify(options.extensions))}"`,
     options.test ? "data-test" : "",
   ].filter((attribute) => attribute !== "");
   const distLink =
     distCss === undefined
       ? ""
       : `<link rel="stylesheet" href="${escapeHtml(distCss)}">\n`;
+  const themeLink =
+    options.themeHref === undefined
+      ? ""
+      : `<link id="mdmark-theme" rel="stylesheet" href="${escapeHtml(options.themeHref)}">\n`;
   return `<!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -81,7 +96,7 @@ export function buildPreviewHtml(options: {
 <meta http-equiv="Content-Security-Policy" content="${escapeHtml(options.csp)}">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <base href="${escapeHtml(options.baseHref)}">
-${distLink}<link rel="stylesheet" href="${escapeHtml(options.styleUri)}">
+${distLink}${themeLink}<link rel="stylesheet" href="${escapeHtml(options.styleUri)}">
 <title>mdmark プレビュー</title>
 </head>
 <body>

@@ -1,0 +1,11 @@
+$ npx vitest run --project 'integration-storybook'
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/design-diagram-frame-nesting
+
+
+ Test Files  41 passed (41)
+      Tests  253 passed (253)
+   Start at  12:26:07
+   Duration  78.27s (tests 80%, import 18%, transform 2%, worker 1%)
+
+exit=0

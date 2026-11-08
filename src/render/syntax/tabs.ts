@@ -3,17 +3,12 @@ import type { WarningItem } from "../../extensions.ts";
 import { SLOT_MARKER } from "../../parts/own.ts";
 import { renderTabs } from "../../parts/tabs.ts";
 import type { Mark } from "../marks.ts";
-import { type CollapseMode, readCollapse } from "./collapse.ts";
+import { type CollapseMode, readCollapse, titleTailItem } from "./collapse.ts";
+import { envOf, featureOn, markOf, tabBoundaryBlock } from "./tokens.ts";
 import {
-  envOf,
-  featureOn,
-  findClose,
-  markOf,
-  tabBoundaryBlock,
-  textOf,
-} from "./tokens.ts";
-import {
+  type SkippedArg,
   type SyntaxWarning,
+  skippedArgBlocks,
   unclosedWarning,
   warningBlock,
 } from "./warnings.ts";
@@ -24,27 +19,27 @@ const GROUP_KEY = "group";
 /** タブの印で読める指定を、書き方の警告の案内に並べる文 */
 const USABLE_ARGS = "`group=名前`・`closed`・`open`・`title=見出し`";
 
-/** タブの印の引数から `group` と折り畳みの指定を読む。値の無い `group=`・読めないキー・`キー=値` の形でない指定は、1 つの書き方の警告にまとめる */
+/** タブの印の引数から `group` と折り畳みの指定を読む。値の無い `group=` は 1 つの書き方の警告にまとめ、知らないキーと `キー=値` の形でない指定は読み飛ばした引数にする */
 export function readTabsOptions(mark: Mark): {
   group?: string;
   collapse: CollapseMode;
   title?: string | undefined;
   warning?: SyntaxWarning;
+  skipped: SkippedArg[];
 } {
   const {
     collapse,
     title,
     items: collapseItems,
+    titleTail,
     rest,
-  } = readCollapse(mark.args);
+  } = readCollapse(mark.args, mark.rest);
   const items: WarningItem[] = [...collapseItems];
+  const skipped: SkippedArg[] = [];
   let group: string | undefined;
   for (const [key, value] of Object.entries(rest.keys)) {
     if (key !== GROUP_KEY) {
-      items.push({
-        label: `${key}=`,
-        message: `使えないキーです。使えるキーは \`${GROUP_KEY}=\`・\`title=\` です`,
-      });
+      skipped.push({ arg: `${key}=`, usable: USABLE_ARGS });
     } else if (value === "") {
       items.push({
         label: `${GROUP_KEY}=`,
@@ -56,18 +51,20 @@ export function readTabsOptions(mark: Mark): {
   }
   // `キー=値` の形でない指定
   for (const arg of rest.args) {
-    items.push({
-      label: arg,
-      message: `使えない指定です。使える指定は ${USABLE_ARGS} です`,
-    });
+    if (arg === titleTail) {
+      items.push(titleTailItem(arg));
+    } else {
+      skipped.push({ arg, usable: USABLE_ARGS });
+    }
   }
   if (items.length === 0) {
-    return { group, collapse, title };
+    return { group, collapse, title, skipped };
   }
   return {
     group,
     collapse,
     title,
+    skipped,
     warning: {
       mark: mark.raw,
       message: "の読めない指定を当てずに描いています。",
@@ -76,13 +73,41 @@ export function readTabsOptions(mark: Mark): {
   };
 }
 
-/** `tabs` がオンなら、`tabs` の範囲を最初に出る見出しの階層で区切り、タブの部品にする。印の引数の `group` は部品へ渡し、読めない指定は警告を差し込む。見出しが無ければ警告を差し込み、中身をそのまま残す */
+/** `openIndex` のタブのマーカーと同じ階層のタブの開きと閉じを数え、対応する閉じの位置（無ければ `-1`）と、範囲に別のタブの開きを持つかを返す */
+export function findTabsClose(
+  tokens: Token[],
+  openIndex: number,
+): { close: number; nested: boolean } {
+  let depth = 0;
+  let nested = false;
+  for (let index = openIndex + 1; index < tokens.length; index++) {
+    const mark = markOf(tokens[index]);
+    if (mark?.name !== "tabs") {
+      continue;
+    }
+    if (!mark.closing) {
+      depth += 1;
+      nested = true;
+    } else if (depth === 0) {
+      return { close: index, nested };
+    } else {
+      depth -= 1;
+    }
+  }
+  return { close: -1, nested };
+}
+
+/** `tabs` がオンなら、`tabs` の範囲を最初に出る見出しの階層で区切り、タブの部品にする。中身の中のタブの範囲も同じ処理でタブにする。印の引数の `group` は部品へ渡し、読めない指定は警告を差し込む。見出しが無ければ警告を差し込み、中身をそのまま残す */
 export function buildTabs(state: StateCore): void {
   if (!featureOn(state, "tabs")) {
     return;
   }
+  state.tokens = buildTabsIn(state, state.tokens);
+}
+
+/** トークンの並びの中のタブの範囲をタブの部品にした並びを返す */
+function buildTabsIn(state: StateCore, tokens: Token[]): Token[] {
   const env = envOf(state);
-  const tokens = state.tokens;
   const out: Token[] = [];
   for (let index = 0; index < tokens.length; index++) {
     const token = tokens[index];
@@ -93,25 +118,40 @@ export function buildTabs(state: StateCore): void {
       }
       continue;
     }
-    const { group, collapse, title, warning } = readTabsOptions(mark);
+    const { group, collapse, title, warning, skipped } = readTabsOptions(mark);
     if (warning) {
-      out.push(warningBlock(state, warning));
+      out.push(warningBlock(state, warning, token));
     }
-    const closeIndex = findClose(tokens, index, "tabs");
-    const end = closeIndex < 0 ? tokens.length : closeIndex;
-    const content = tokens.slice(index + 1, end);
+    out.push(...skippedArgBlocks(state, { mark: mark.raw, skipped }, token));
+    const { close: closeIndex, nested } = findTabsClose(tokens, index);
     if (closeIndex < 0) {
-      out.push(warningBlock(state, unclosedWarning(mark)));
+      out.push(warningBlock(state, unclosedWarning(mark), token));
+      if (nested) {
+        // 閉じの足りない入れ子は、終わりまでのタブのマーカーをどれもタブにせず、見出しと中身をそのまま残す
+        out.push(
+          ...tokens
+            .slice(index + 1)
+            .filter((candidate) => markOf(candidate)?.name !== "tabs"),
+        );
+        break;
+      }
     }
+    const end = closeIndex < 0 ? tokens.length : closeIndex;
+    // 内側のタブを先に部品にしてから、外側を区切る
+    const content = buildTabsIn(state, tokens.slice(index + 1, end));
     const first = content.find(
       (candidate) => candidate.type === "heading_open",
     );
     if (!first) {
       out.push(
-        warningBlock(state, {
-          message:
-            "`<!-- tabs -->` の範囲に、タブ名にする見出しがありません。タブにしたい中身ごとに見出し（`### macOS` など）を書いてください。範囲の中身はそのまま描いています。",
-        }),
+        warningBlock(
+          state,
+          {
+            message:
+              "`<!-- tabs -->` の範囲に、タブ名にする見出しがありません。タブにしたい中身ごとに見出し（`### macOS` など）を書いてください。範囲の中身はそのまま描いています。",
+          },
+          token,
+        ),
         ...content,
       );
       index = end;
@@ -126,9 +166,22 @@ export function buildTabs(state: StateCore): void {
           candidate.tag === first.tag &&
           candidate.level === first.level,
       );
-    const titles = separators.map(({ position }) =>
-      textOf(content[position + 1] as Token),
-    );
+    // タブ名は見出しの行内のトークンを HTML にしたもの（強調を残す）
+    const titles = separators.map(({ position }) => {
+      const inline = content[position + 1];
+      return inline
+        ? state.md.renderer.renderInline(
+            // 見出しのアンカーはタブ名に入れない
+            (inline.children ?? []).filter(
+              (child) =>
+                (child.meta as { role?: string } | null)?.role !==
+                "heading-anchor",
+            ),
+            state.md.options,
+            state.env,
+          )
+        : "";
+    });
     const ids = new Set(
       separators.map(({ candidate }) => candidate.attrGet("id")),
     );
@@ -167,5 +220,5 @@ export function buildTabs(state: StateCore): void {
     );
     index = end;
   }
-  state.tokens = out;
+  return out;
 }

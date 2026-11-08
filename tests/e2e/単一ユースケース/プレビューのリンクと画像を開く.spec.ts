@@ -1,4 +1,7 @@
+import { join } from "node:path";
+import { pathToFileURL } from "node:url";
 import { expect, type Frame, test } from "@playwright/test";
+import { readMediaSamples } from "../media.ts";
 import { useVscodeE2E, type VscodeSession } from "../vscode.ts";
 
 const e2e = useVscodeE2E();
@@ -161,4 +164,234 @@ test("test_error_when_image_outside_workspace", async () => {
     await image.evaluate((element: HTMLImageElement) => element.naturalWidth),
   ).toBe(0);
   await expect(frame.locator("h1")).toContainText("外の画像");
+});
+
+/** Webview から読めるローカルのファイルの URL の頭（デコードした後） */
+const WEBVIEW_RESOURCE =
+  /^https:\/\/file\+\.vscode-resource\.vscode-cdn\.net\//;
+
+/** 音声の再生バーの左端から再生ボタンの中までの距離（px） */
+const PLAY_BUTTON_X = 20;
+
+/** 動画の左下の角から再生バーの再生ボタンの中までの距離（px） */
+const VIDEO_PLAY_BUTTON_INSET = 28;
+
+/** 動画と音声のプレビューを開き、音声と動画の要素が描かれたフレームを返す */
+async function openMediaGuide(session: VscodeSession): Promise<Frame> {
+  await session.openFile("docs/guide.md");
+  await session.openPreviewWithShortcut();
+  const frame = await session.frameWith("video");
+  await expect(frame.locator("audio")).toHaveCount(1);
+  return frame;
+}
+
+/** 音声と動画の再生ボタンを押し、両方の再生位置が進むことを確かめる */
+async function expectPlayed(frame: Frame): Promise<void> {
+  const audio = frame.locator("audio");
+  const video = frame.locator("video");
+  for (const element of [audio, video]) {
+    await expect
+      .poll(() =>
+        element.evaluate((media: HTMLMediaElement) => media.readyState),
+      )
+      .toBeGreaterThanOrEqual(1);
+  }
+  // 音声の再生バーの再生ボタンは左端の中央。動画は、ポインターを乗せると出る再生バーの左端
+  const audioBox = await audio.boundingBox();
+  await audio.click({
+    position: { x: PLAY_BUTTON_X, y: (audioBox?.height ?? 0) / 2 },
+  });
+  await video.hover();
+  const videoBox = await video.boundingBox();
+  await video.click({
+    position: {
+      x: VIDEO_PLAY_BUTTON_INSET,
+      y: (videoBox?.height ?? 0) - VIDEO_PLAY_BUTTON_INSET,
+    },
+  });
+  for (const [name, element] of [
+    ["音声", audio],
+    ["動画", video],
+  ] as const) {
+    await expect
+      .poll(
+        () => element.evaluate((media: HTMLMediaElement) => media.currentTime),
+        { message: `${name}の再生位置が進まない` },
+      )
+      .toBeGreaterThan(0);
+  }
+}
+
+/** 見本の音声（mp3）と動画（mp4） */
+async function mediaFiles(): Promise<{ mp3: Buffer; mp4: Buffer }> {
+  const { mp3, mp4 } = await readMediaSamples();
+  return { mp3, mp4 };
+}
+
+// Markdown からの相対パスの音声と動画を Webview から読める URL にし、再生ボタンで再生位置が進む（正常シナリオ（相対パスの動画・音声））
+test("test_normal_when_relative_media", async () => {
+  // 準備
+  const { mp3, mp4 } = await mediaFiles();
+  const session = await e2e.launch({
+    files: {
+      "docs/guide.md":
+        "# 動画と音声\n\n![音声](media/demo.mp3)\n\n![動画](media/demo.mp4)\n",
+      "docs/media/demo.mp3": mp3,
+      "docs/media/demo.mp4": mp4,
+    },
+  });
+  // 実行
+  const frame = await openMediaGuide(session);
+  // 検証: src が Webview から読める URL
+  for (const [selector, path] of [
+    ["audio", "/docs/media/demo.mp3"],
+    ["video", "/docs/media/demo.mp4"],
+  ] as const) {
+    await expect
+      .poll(async () =>
+        decodeURIComponent(
+          (await frame.locator(selector).getAttribute("src")) ?? "",
+        ),
+      )
+      .toMatch(new RegExp(`${WEBVIEW_RESOURCE.source}.*${path}$`));
+  }
+  // 実行・検証: 再生ボタンを押すと再生位置が進む
+  await expectPlayed(frame);
+});
+
+// 再生できない音声と動画の場所に知らせの枠と「既定のアプリで開く」のリンクを出し、押すと既定のアプリで開く（異常シナリオ（プレビューで再生できない形式））
+test("test_error_when_unsupported_media", async () => {
+  // 準備
+  const session = await e2e.launch({
+    files: {
+      "docs/guide.md":
+        "# 再生できない形式\n\n![声](media/voice.m4a)\n\n![動き](media/clip.webm)\n\n本文の段落。\n",
+      "docs/media/voice.m4a": Buffer.from("m4a"),
+      "docs/media/clip.webm": Buffer.from("webm"),
+    },
+  });
+  await session.openFile("docs/guide.md");
+  // 実行
+  await session.openPreviewWithShortcut();
+  // 検証: 音声と動画の場所に知らせの枠と既定のアプリで開くリンク
+  const frame = await session.frameWith(".mdmark-notice");
+  const notices = frame.locator(".mdmark-notice");
+  await expect(notices).toHaveCount(2);
+  await expect(notices.nth(0)).toContainText(
+    "この音声をプレビューで再生できません",
+  );
+  await expect(notices.nth(1)).toContainText(
+    "この動画をプレビューで再生できません",
+  );
+  const links = frame.locator('a[data-action="openAsset"]');
+  await expect(links).toHaveText(["既定のアプリで開く", "既定のアプリで開く"]);
+  await expect(frame.locator("p", { hasText: "本文の段落。" })).toHaveCount(1);
+  // 実行: 音声のリンクを押す
+  await links.nth(0).click();
+  // 検証: 拡張機能がそのファイルを既定のアプリで開く
+  await expect
+    .poll(() => session.openedUrls())
+    .toEqual([
+      pathToFileURL(join(session.workspaceDir, "docs/media/voice.m4a")).href,
+    ]);
+});
+
+// 文書からの相対パスに無い音声と動画を、設定のアセットのルートで探して Webview から読める URL にし、再生ボタンで再生位置が進む（正常シナリオ（アセットのルートの動画・音声））
+test("test_normal_when_media_in_asset_root", async () => {
+  // 準備
+  const { mp3, mp4 } = await mediaFiles();
+  const session = await e2e.launch({
+    files: {
+      "mdmark.config.yaml": "assets:\n  root: assets\n",
+      "docs/guide.md":
+        "# 動画と音声\n\n![音声](media/intro.mp3)\n\n![動画](media/intro.mp4)\n",
+      "assets/media/intro.mp3": mp3,
+      "assets/media/intro.mp4": mp4,
+    },
+  });
+  // 実行
+  const frame = await openMediaGuide(session);
+  // 検証: src がアセットのルートのファイルの Webview から読める URL
+  for (const [selector, path] of [
+    ["audio", "/assets/media/intro.mp3"],
+    ["video", "/assets/media/intro.mp4"],
+  ] as const) {
+    await expect
+      .poll(async () =>
+        decodeURIComponent(
+          (await frame.locator(selector).getAttribute("src")) ?? "",
+        ),
+      )
+      .toMatch(new RegExp(`${WEBVIEW_RESOURCE.source}.*${path}$`));
+  }
+  // 実行・検証: 再生ボタンを押すと再生位置が進む
+  await expectPlayed(frame);
+});
+
+/** `other.md` を指すノードと外部の URL を指すノードのフロー図を持つ Markdown */
+const FLOW_LINK_GUIDE = [
+  "# 図のリンク",
+  "",
+  "<!-- flow -->",
+  "",
+  "```json",
+  JSON.stringify({
+    title: "リンク",
+    scope: "点検",
+    updated: "2026-11-05",
+    width: 520,
+    height: 152,
+    nodes: [
+      {
+        id: "doc",
+        kind: "script",
+        x: 20,
+        y: 40,
+        w: 200,
+        h: 72,
+        name: "別の文書を開く",
+        href: "./other.md",
+      },
+      {
+        id: "web",
+        kind: "script",
+        x: 300,
+        y: 40,
+        w: 200,
+        h: 72,
+        name: "サイトを開く",
+        href: EXTERNAL_URL,
+      },
+    ],
+    wires: [],
+  }),
+  "```",
+  "",
+  "<!-- /flow -->",
+  "",
+].join("\n");
+
+// フロー図のノードのリンクを、本文のリンクと同じ種類ごとの先で開き、プレビューの文書は変わらない（正常シナリオ（フロー図のノードのリンク））
+test("test_normal_when_flow_node_link", async () => {
+  // 準備
+  const session = await e2e.launch({
+    files: { "docs/flow.md": FLOW_LINK_GUIDE, "docs/other.md": "# 別の文書\n" },
+  });
+  await session.openFile("docs/flow.md");
+  await session.openPreviewWithShortcut();
+  const frame = await session.frameWith("figure.mdmark-diagram");
+  const linkOf = (id: string) =>
+    frame.locator(`[data-node="${id}"] a.mdmark-diagram-node-link`);
+  // 実行・検証: 外部の URL を指すノードを押すと、ブラウザで開く
+  await linkOf("web").click();
+  await expect.poll(() => session.openedUrls()).toEqual([EXTERNAL_URL]);
+  await expect(frame.locator("h1")).toContainText("図のリンク");
+  // 実行・検証: other.md を指すノードを押すと、エディタで開く
+  await linkOf("doc").click();
+  await expect(
+    session.win.getByRole("tab", { name: /^other\.md/ }),
+  ).toHaveCount(1);
+  await session.win.waitForTimeout(1000);
+  expect(await session.openedUrls()).toEqual([EXTERNAL_URL]);
+  await expect(frame.locator("h1")).toContainText("図のリンク");
 });

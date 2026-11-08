@@ -1,6 +1,8 @@
+import { setCodeFoldOpen } from "./interact/code-folds.ts";
+import { setErTableFolded } from "./interact/er-folds.ts";
 import { setFolderOpen } from "./interact/trees.ts";
 
-/** 印刷の前に開いた折り畳み・節・行の詳細・ファイルツリーのフォルダ・タブの中身 */
+/** 印刷の前に開いた折り畳み・節・行の詳細・ファイルツリーのフォルダ・コードブロックの畳んだ行・ER 図の畳んだテーブル・タブの中身 */
 type Expanded = {
   details: HTMLDetailsElement[];
   sections: HTMLElement[];
@@ -8,6 +10,8 @@ type Expanded = {
   panels: HTMLElement[];
   tabs: HTMLElement[];
   folders: Element[];
+  codeFolds: Element[];
+  erTables: HTMLElement[];
 };
 
 /** 何も開いていない状態 */
@@ -19,10 +23,12 @@ function nothingExpanded(): Expanded {
     panels: [],
     tabs: [],
     folders: [],
+    codeFolds: [],
+    erTables: [],
   };
 }
 
-/** 印刷の前に、要素の中の閉じた折り畳み・閉じた節・行の詳細・ファイルツリーの閉じたフォルダを開き、タブの全ての中身を出し、印刷の後に開いたものだけを戻す受け取りを `window` に付け、外す関数を返す */
+/** 印刷の前に、要素の中の閉じた折り畳み・閉じた節・行の詳細・ファイルツリーの閉じたフォルダ・コードブロックの畳んだ行・ER 図の畳んだテーブルを開き、タブの全ての中身を出し、印刷の後に開いたものだけを戻す受け取りを `window` に付け、外す関数を返す */
 export function attachPrint(options: {
   /** 描いた要素 */
   root: HTMLElement;
@@ -31,6 +37,9 @@ export function attachPrint(options: {
 }): () => void {
   const { root, isEnabled } = options;
   let expanded = nothingExpanded();
+  // 畳んだ階層の表の行と、隠した YAML の見本
+  let treeRows: HTMLElement[] = [];
+  let examples: HTMLElement[] = [];
   /** 印刷の前: 閉じたものを全て開き、開いた分を控える */
   const onBeforePrint = (): void => {
     if (!isEnabled()) {
@@ -51,11 +60,31 @@ export function attachPrint(options: {
       ],
       tabs: [...root.querySelectorAll<HTMLElement>(".mdmark-tabs")],
       folders: [
-        ...root.querySelectorAll('.mdmark-tree-toggle[aria-expanded="false"]'),
+        ...root.querySelectorAll(
+          'div.mdmark-tree .mdmark-tree-toggle[aria-expanded="false"]',
+        ),
       ],
+      codeFolds: [
+        ...root.querySelectorAll('.mdmark-code-fold[aria-expanded="false"]'),
+      ],
+      erTables: [
+        ...root.querySelectorAll<HTMLElement>(
+          '.mdmark-diagram-er-fold[aria-expanded="false"]',
+        ),
+      ]
+        .map((button) =>
+          button.closest<HTMLElement>(".mdmark-diagram-er-table"),
+        )
+        .filter((table): table is HTMLElement => table !== null),
     };
     for (const folder of expanded.folders) {
       setFolderOpen(folder, true);
+    }
+    for (const toggle of expanded.codeFolds) {
+      setCodeFoldOpen(toggle, true);
+    }
+    for (const table of expanded.erTables) {
+      setErTableFolded({ table, folded: false });
     }
     for (const details of expanded.details) {
       details.open = true;
@@ -66,6 +95,26 @@ export function attachPrint(options: {
       ...expanded.panels,
     ]) {
       element.removeAttribute("hidden");
+    }
+    treeRows = [
+      ...root.querySelectorAll<HTMLElement>(
+        "tr.mdmark-tree-row[data-tree-folded]",
+      ),
+    ];
+    examples = [
+      ...root.querySelectorAll<HTMLElement>(
+        ".mdmark-tree-layout.is-example-hidden",
+      ),
+    ];
+    for (const row of treeRows) {
+      row.hidden = false;
+    }
+    for (const layout of examples) {
+      layout.classList.remove("is-example-hidden");
+      const aside = layout.querySelector<HTMLElement>(".mdmark-tree-example");
+      if (aside) {
+        aside.hidden = false;
+      }
     }
     // 印刷の CSS がタブの並びを隠し、タブ名を題にして中身を縦に並べる
     for (const tabs of expanded.tabs) {
@@ -89,6 +138,24 @@ export function attachPrint(options: {
     for (const folder of expanded.folders) {
       setFolderOpen(folder, false);
     }
+    for (const toggle of expanded.codeFolds) {
+      setCodeFoldOpen(toggle, false);
+    }
+    for (const table of expanded.erTables) {
+      setErTableFolded({ table, folded: true });
+    }
+    for (const row of treeRows) {
+      row.hidden = true;
+    }
+    for (const layout of examples) {
+      layout.classList.add("is-example-hidden");
+      const aside = layout.querySelector<HTMLElement>(".mdmark-tree-example");
+      if (aside) {
+        aside.hidden = true;
+      }
+    }
+    treeRows = [];
+    examples = [];
     expanded = nothingExpanded();
   };
   window.addEventListener("beforeprint", onBeforePrint);

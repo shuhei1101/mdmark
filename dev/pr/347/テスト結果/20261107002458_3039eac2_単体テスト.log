@@ -1,0 +1,804 @@
+$ npx vitest run --project unit --project unit-browser tests/unit/src/config-files.test.ts tests/unit/vscode/src/config.test.ts tests/unit/vscode/src/extensions-bundle.test.ts tests/unit/vscode/src/preview/html.test.ts tests/unit/src/cli/embed.test.ts tests/unit/vscode/src/webview/features/preview/panel/load-mdmark.test.ts tests/unit/vscode/src/webview/features/preview/panel/boot.browser.test.ts tests/unit/vscode/src/webview/shared/components/config-band.browser.test.tsx tests/unit/vscode/src/webview/features/preview/panel/panel-screen.browser.test.tsx
+# Red: fail は実装（src/config-files.ts・src/bundle-module.ts・vscode/src/extensions-bundle.ts・esbuild-wasm の導入・loadConfig ほか）が無いことによるものだけ
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-config-cascade-global-settings
+
+ ❯ |unit| tests/unit/vscode/src/extensions-bundle.test.ts (2 tests | 2 skipped) 24ms
+ ❯ |unit| tests/unit/vscode/src/preview/html.test.ts (7 tests | 1 failed) 340ms
+   × test_build_preview_html_when_theme_and_extensions 3ms
+ ❯ |unit| tests/unit/vscode/src/webview/features/preview/panel/load-mdmark.test.ts (5 tests | 1 failed) 260ms
+   × test_register_extensions 2ms
+ ❯ |unit| tests/unit/vscode/src/config.test.ts (12 tests | 6 failed) 1117ms
+   × test_load_config 5ms
+   × test_load_config_when_missing 1ms
+   × test_load_config_when_assets_root 1ms
+   × test_load_config_when_unreadable 1ms
+   × test_load_config_when_invalid 1ms
+   × test_load_config_when_config_path_missing 1ms
+ ❯ |unit| tests/unit/src/config-files.test.ts (22 tests | 22 failed) 2245ms
+   × test_load_layered_config 313ms
+   × test_load_layered_config_when_first_only 120ms
+   × test_load_layered_config_when_export_without_settings 159ms
+   × test_load_layered_config_when_settings_missing 31ms
+   × test_load_layered_config_when_unreadable 76ms
+   × test_load_layered_config_when_invalid 104ms
+   × test_load_layered_config_when_folder_has_config_key 57ms
+   × test_load_layered_config_when_explicit_missing 20ms
+   × test_resolve_settings_path 15ms
+   × test_resolve_settings_path_when_xdg 191ms
+   × test_resolve_settings_path_when_no_env 162ms
+   × test_find_config_chain 96ms
+   × test_find_config_chain_when_first_only 119ms
+   × test_find_config_chain_when_none 83ms
+   × test_absolutize_config_paths 53ms
+   × test_merge_configs 193ms
+   × test_display_config_path 102ms
+   × test_display_config_path_when_home 125ms
+   × test_display_config_path_when_outside 121ms
+   × test_validate_settings_keys 93ms
+   × test_validate_settings_keys_when_not_boolean 7ms
+   × test_validate_settings_keys_when_not_map 6ms
+ ❯ |unit-browser (chromium)| tests/unit/vscode/src/webview/features/preview/panel/boot.browser.test.ts (2 tests | 1 failed) 1801ms
+   × test_read_boot 1799ms
+ ❯ |unit-browser (chromium)| tests/unit/vscode/src/webview/features/preview/panel/panel-screen.browser.test.tsx (14 tests | 3 failed) 2687ms
+   × test_panel_screen_when_config_error 171ms
+   × test_panel_screen_when_extensions 133ms
+   × test_panel_screen_when_theme 146ms
+ ❯ |unit| tests/unit/src/cli/embed.test.ts (24 tests | 3 failed) 5207ms
+   × test_bundle_module 11ms
+   × test_bundle_module_when_url 2ms
+   × test_bundle_module_when_unreachable 2ms
+
+⎯⎯⎯⎯⎯⎯ Failed Suites 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit| tests/unit/vscode/src/extensions-bundle.test.ts [ tests/unit/vscode/src/extensions-bundle.test.ts ]
+Error: Cannot find module 'esbuild-wasm/esbuild.wasm'
+Require stack:
+- /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-config-cascade-global-settings/vscode/package.json
+ ❯ tests/unit/vscode/src/extensions-bundle.test.ts:22:13
+     20|   const require = createRequire(resolve(import.meta.dirname, "../../..…
+     21|   await copyFile(
+     22|     require.resolve("esbuild-wasm/esbuild.wasm"),
+       |             ^
+     23|     join(extensionPath, "dist", "esbuild.wasm"),
+     24|   );
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/38]⎯
+
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 37 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit| tests/unit/src/config-files.test.ts > test_load_layered_config
+Error: Cannot find module '/src/config-files.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-config-cascade-global-settings/tests/unit/src/config-files.test.ts
+ ❯ tests/unit/src/config-files.test.ts:38:33
+     36| test("test_load_layered_config", async () => {
+     37|   // 準備
+     38|   const { loadLayeredConfig } = await loadModule();
+       |                                 ^
+     39|   const files = {
+     40|     [SETTINGS]: "config:\n  cascade: true\nfeatures:\n  callout: false…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/38]⎯
+
+ FAIL  |unit| tests/unit/src/config-files.test.ts > test_load_layered_config_when_first_only
+Error: Cannot find module '/src/config-files.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-config-cascade-global-settings/tests/unit/src/config-files.test.ts
+ ❯ tests/unit/src/config-files.test.ts:66:33
+     64| test("test_load_layered_config_when_first_only", async () => {
+     65|   // 準備
+     66|   const { loadLayeredConfig } = await loadModule();
+       |                                 ^
+     67|   const files = {
+     68|     [SETTINGS]: "features:\n  callout: false\n",
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/38]⎯
+
+ FAIL  |unit| tests/unit/src/config-files.test.ts > test_load_layered_config_when_export_without_settings
+Error: Cannot find module '/src/config-files.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-config-cascade-global-settings/tests/unit/src/config-files.test.ts
+ ❯ tests/unit/src/config-files.test.ts:85:33
+     83| test("test_load_layered_config_when_export_without_settings", async ()…
+     84|   // 準備
+     85|   const { loadLayeredConfig } = await loadModule();
+       |                                 ^
+     86|   const files = {
+     87|     [SETTINGS]: "config:\n  applyToExport: false\nfeatures:\n  callout…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/38]⎯
+
+ FAIL  |unit| tests/unit/src/config-files.test.ts > test_load_layered_config_when_settings_missing
+Error: Cannot find module '/src/config-files.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-config-cascade-global-settings/tests/unit/src/config-files.test.ts
+ ❯ tests/unit/src/config-files.test.ts:102:33
+    100| test("test_load_layered_config_when_settings_missing", async () => {
+    101|   // 準備
+    102|   const { loadLayeredConfig } = await loadModule();
+       |                                 ^
+    103|   const files = { "/w/a/mdmark.config.yaml": "features:\n  table: fals…
+    104|   // 実行
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/38]⎯
+
+ FAIL  |unit| tests/unit/src/config-files.test.ts > test_load_layered_config_when_unreadable
+Error: Cannot find module '/src/config-files.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-config-cascade-global-settings/tests/unit/src/config-files.test.ts
+ ❯ tests/unit/src/config-files.test.ts:117:33
+    115| test("test_load_layered_config_when_unreadable", async () => {
+    116|   // 準備
+    117|   const { loadLayeredConfig } = await loadModule();
+       |                                 ^
+    118|   const files = {
+    119|     [SETTINGS]: "features:\n  callout: false\nlibraries: [a, b}\n",
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/38]⎯
+
+ FAIL  |unit| tests/unit/src/config-files.test.ts > test_load_layered_config_when_invalid
+Error: Cannot find module '/src/config-files.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-config-cascade-global-settings/tests/unit/src/config-files.test.ts
+ ❯ tests/unit/src/config-files.test.ts:133:33
+    131| test("test_load_layered_config_when_invalid", async () => {
+    132|   // 準備
+    133|   const { loadLayeredConfig } = await loadModule();
+       |                                 ^
+    134|   const files = {
+    135|     "/w/a/mdmark.config.yaml": "features:\n  callout: maybe\n",
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/38]⎯
+
+ FAIL  |unit| tests/unit/src/config-files.test.ts > test_load_layered_config_when_folder_has_config_key
+Error: Cannot find module '/src/config-files.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-config-cascade-global-settings/tests/unit/src/config-files.test.ts
+ ❯ tests/unit/src/config-files.test.ts:148:33
+    146| test("test_load_layered_config_when_folder_has_config_key", async () =…
+    147|   // 準備
+    148|   const { loadLayeredConfig } = await loadModule();
+       |                                 ^
+    149|   const files = {
+    150|     [SETTINGS]: "features:\n  callout: false\n",
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/38]⎯
+
+ FAIL  |unit| tests/unit/src/config-files.test.ts > test_load_layered_config_when_explicit_missing
+Error: Cannot find module '/src/config-files.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-config-cascade-global-settings/tests/unit/src/config-files.test.ts
+ ❯ tests/unit/src/config-files.test.ts:166:54
+    164| test("test_load_layered_config_when_explicit_missing", async () => {
+    165|   // 準備
+    166|   const { loadLayeredConfig, ConfigNotFoundError } = await loadModule(…
+       |                                                      ^
+    167|   // 実行
+    168|   const result = loadLayeredConfig(
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/38]⎯
+
+ FAIL  |unit| tests/unit/src/config-files.test.ts > test_resolve_settings_path
+Error: Cannot find module '/src/config-files.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-config-cascade-global-settings/tests/unit/src/config-files.test.ts
+ ❯ tests/unit/src/config-files.test.ts:179:35
+    177| test("test_resolve_settings_path", async () => {
+    178|   // 準備
+    179|   const { resolveSettingsPath } = await loadModule();
+       |                                   ^
+    180|   // 実行
+    181|   const path = resolveSettingsPath({
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/38]⎯
+
+ FAIL  |unit| tests/unit/src/config-files.test.ts > test_resolve_settings_path_when_xdg
+Error: Cannot find module '/src/config-files.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-config-cascade-global-settings/tests/unit/src/config-files.test.ts
+ ❯ tests/unit/src/config-files.test.ts:192:35
+    190| test("test_resolve_settings_path_when_xdg", async () => {
+    191|   // 準備
+    192|   const { resolveSettingsPath } = await loadModule();
+       |                                   ^
+    193|   // 実行
+    194|   const path = resolveSettingsPath({ env: { XDG_CONFIG_HOME: "/xdg" },…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/38]⎯
+
+ FAIL  |unit| tests/unit/src/config-files.test.ts > test_resolve_settings_path_when_no_env
+Error: Cannot find module '/src/config-files.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-config-cascade-global-settings/tests/unit/src/config-files.test.ts
+ ❯ tests/unit/src/config-files.test.ts:202:35
+    200| test("test_resolve_settings_path_when_no_env", async () => {
+    201|   // 準備
+    202|   const { resolveSettingsPath } = await loadModule();
+       |                                   ^
+    203|   // 実行
+    204|   const path = resolveSettingsPath({ env: {}, home: "/h" });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[12/38]⎯
+
+ FAIL  |unit| tests/unit/src/config-files.test.ts > test_find_config_chain
+Error: Cannot find module '/src/config-files.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-config-cascade-global-settings/tests/unit/src/config-files.test.ts
+ ❯ tests/unit/src/config-files.test.ts:218:31
+    216| test("test_find_config_chain", async () => {
+    217|   // 準備
+    218|   const { findConfigChain } = await loadModule();
+       |                               ^
+    219|   // 実行
+    220|   const chain = await findConfigChain({ cwd: "/w/a/b", cascade: true, …
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[13/38]⎯
+
+ FAIL  |unit| tests/unit/src/config-files.test.ts > test_find_config_chain_when_first_only
+Error: Cannot find module '/src/config-files.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-config-cascade-global-settings/tests/unit/src/config-files.test.ts
+ ❯ tests/unit/src/config-files.test.ts:228:31
+    226| test("test_find_config_chain_when_first_only", async () => {
+    227|   // 準備
+    228|   const { findConfigChain } = await loadModule();
+       |                               ^
+    229|   // 実行
+    230|   const chain = await findConfigChain({ cwd: "/w/a/b", cascade: false,…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[14/38]⎯
+
+ FAIL  |unit| tests/unit/src/config-files.test.ts > test_find_config_chain_when_none
+Error: Cannot find module '/src/config-files.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-config-cascade-global-settings/tests/unit/src/config-files.test.ts
+ ❯ tests/unit/src/config-files.test.ts:238:31
+    236| test("test_find_config_chain_when_none", async () => {
+    237|   // 準備
+    238|   const { findConfigChain } = await loadModule();
+       |                               ^
+    239|   // 実行
+    240|   const chain = await findConfigChain({
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[15/38]⎯
+
+ FAIL  |unit| tests/unit/src/config-files.test.ts > test_absolutize_config_paths
+Error: Cannot find module '/src/config-files.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-config-cascade-global-settings/tests/unit/src/config-files.test.ts
+ ❯ tests/unit/src/config-files.test.ts:252:37
+    250| test("test_absolutize_config_paths", async () => {
+    251|   // 準備
+    252|   const { absolutizeConfigPaths } = await loadModule();
+       |                                     ^
+    253|   const config = {
+    254|     theme: "./theme.css",
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[16/38]⎯
+
+ FAIL  |unit| tests/unit/src/config-files.test.ts > test_merge_configs
+Error: Cannot find module '/src/config-files.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-config-cascade-global-settings/tests/unit/src/config-files.test.ts
+ ❯ tests/unit/src/config-files.test.ts:270:28
+    268| test("test_merge_configs", async () => {
+    269|   // 準備
+    270|   const { mergeConfigs } = await loadModule();
+       |                            ^
+    271|   // 実行
+    272|   const merged = mergeConfigs([
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[17/38]⎯
+
+ FAIL  |unit| tests/unit/src/config-files.test.ts > test_display_config_path
+Error: Cannot find module '/src/config-files.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-config-cascade-global-settings/tests/unit/src/config-files.test.ts
+ ❯ tests/unit/src/config-files.test.ts:287:33
+    285| test("test_display_config_path", async () => {
+    286|   // 準備
+    287|   const { displayConfigPath } = await loadModule();
+       |                                 ^
+    288|   // 実行
+    289|   const shown = displayConfigPath({
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[18/38]⎯
+
+ FAIL  |unit| tests/unit/src/config-files.test.ts > test_display_config_path_when_home
+Error: Cannot find module '/src/config-files.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-config-cascade-global-settings/tests/unit/src/config-files.test.ts
+ ❯ tests/unit/src/config-files.test.ts:301:33
+    299| test("test_display_config_path_when_home", async () => {
+    300|   // 準備
+    301|   const { displayConfigPath } = await loadModule();
+       |                                 ^
+    302|   // 実行
+    303|   const shown = displayConfigPath({
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[19/38]⎯
+
+ FAIL  |unit| tests/unit/src/config-files.test.ts > test_display_config_path_when_outside
+Error: Cannot find module '/src/config-files.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-config-cascade-global-settings/tests/unit/src/config-files.test.ts
+ ❯ tests/unit/src/config-files.test.ts:315:33
+    313| test("test_display_config_path_when_outside", async () => {
+    314|   // 準備
+    315|   const { displayConfigPath } = await loadModule();
+       |                                 ^
+    316|   // 実行
+    317|   const shown = displayConfigPath({
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[20/38]⎯
+
+ FAIL  |unit| tests/unit/src/config-files.test.ts > test_validate_settings_keys
+Error: Cannot find module '/src/config-files.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-config-cascade-global-settings/tests/unit/src/config-files.test.ts
+ ❯ tests/unit/src/config-files.test.ts:329:36
+    327| test("test_validate_settings_keys", async () => {
+    328|   // 準備
+    329|   const { validateSettingsKeys } = await loadModule();
+       |                                    ^
+    330|   // 実行
+    331|   const issues = validateSettingsKeys(
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[21/38]⎯
+
+ FAIL  |unit| tests/unit/src/config-files.test.ts > test_validate_settings_keys_when_not_boolean
+Error: Cannot find module '/src/config-files.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-config-cascade-global-settings/tests/unit/src/config-files.test.ts
+ ❯ tests/unit/src/config-files.test.ts:342:36
+    340| test("test_validate_settings_keys_when_not_boolean", async () => {
+    341|   // 準備
+    342|   const { validateSettingsKeys } = await loadModule();
+       |                                    ^
+    343|   // 実行
+    344|   const issues = validateSettingsKeys({ config: { cascade: "maybe" } }…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[22/38]⎯
+
+ FAIL  |unit| tests/unit/src/config-files.test.ts > test_validate_settings_keys_when_not_map
+Error: Cannot find module '/src/config-files.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-config-cascade-global-settings/tests/unit/src/config-files.test.ts
+ ❯ tests/unit/src/config-files.test.ts:354:36
+    352| test("test_validate_settings_keys_when_not_map", async () => {
+    353|   // 準備
+    354|   const { validateSettingsKeys } = await loadModule();
+       |                                    ^
+    355|   // 実行
+    356|   const issues = validateSettingsKeys({ config: true }, SETTINGS);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[23/38]⎯
+
+ FAIL  |unit| tests/unit/src/cli/embed.test.ts > test_bundle_module
+Error: Cannot find module '/src/bundle-module.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-config-cascade-global-settings/tests/unit/src/cli/embed.test.ts
+ ❯ tests/unit/src/cli/embed.test.ts:51:28
+     49| test("test_bundle_module", async () => {
+     50|   // 準備
+     51|   const { bundleModule } = await loadBundleModule();
+       |                            ^
+     52|   const { build } = await import("esbuild");
+     53|   const dir = await createTempDir();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[24/38]⎯
+
+ FAIL  |unit| tests/unit/src/cli/embed.test.ts > test_bundle_module_when_url
+Error: Cannot find module '/src/bundle-module.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-config-cascade-global-settings/tests/unit/src/cli/embed.test.ts
+ ❯ tests/unit/src/cli/embed.test.ts:78:28
+     76| test("test_bundle_module_when_url", async () => {
+     77|   // 準備
+     78|   const { bundleModule } = await loadBundleModule();
+       |                            ^
+     79|   const { build } = await import("esbuild");
+     80|   const dir = await createTempDir();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[25/38]⎯
+
+ FAIL  |unit| tests/unit/src/cli/embed.test.ts > test_bundle_module_when_unreachable
+Error: Cannot find module '/src/bundle-module.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-config-cascade-global-settings/tests/unit/src/cli/embed.test.ts
+ ❯ tests/unit/src/cli/embed.test.ts:112:28
+    110| test("test_bundle_module_when_unreachable", async () => {
+    111|   // 準備
+    112|   const { bundleModule } = await loadBundleModule();
+       |                            ^
+    113|   const { build } = await import("esbuild");
+    114|   const dir = await createTempDir();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[26/38]⎯
+
+ FAIL  |unit| tests/unit/vscode/src/config.test.ts > test_load_config
+AssertionError: expected undefined to deeply equal { features: { callout: false } }
+
+- Expected:
+{
+  "features": {
+    "callout": false,
+  },
+}
+
++ Received:
+undefined
+
+ ❯ tests/unit/vscode/src/config.test.ts:60:25
+     58|   const result = await load(loadOptions(files, { cwd: "/w/docs" }));
+     59|   // 検証
+     60|   expect(result.config).toEqual({ features: { callout: false } });
+       |                         ^
+     61|   expect(result.theme).toBe("/w/docs/t.css");
+     62|   expect(result.extensions).toEqual(["/w/docs/e.js"]);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[27/38]⎯
+
+ FAIL  |unit| tests/unit/vscode/src/config.test.ts > test_load_config_when_missing
+AssertionError: expected undefined to deeply equal {}
+
+- Expected:
+{}
+
++ Received:
+undefined
+
+ ❯ tests/unit/vscode/src/config.test.ts:75:25
+     73|   const result = await load(loadOptions({}));
+     74|   // 検証
+     75|   expect(result.config).toEqual({});
+       |                         ^
+     76|   expect(result.extensions).toEqual([]);
+     77|   expect(result.files).toEqual([]);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[28/38]⎯
+
+ FAIL  |unit| tests/unit/vscode/src/config.test.ts > test_load_config_when_assets_root
+AssertionError: expected undefined to be '/w/assets' // Object.is equality
+
+- Expected:
+"/w/assets"
+
++ Received:
+undefined
+
+ ❯ tests/unit/vscode/src/config.test.ts:90:29
+     88|   const result = await load(loadOptions(files, { cwd: "/w" }));
+     89|   // 検証
+     90|   expect(result.assetsRoot).toBe("/w/assets");
+       |                             ^
+     91|   expect("assets" in result.config).toBe(false);
+     92| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[29/38]⎯
+
+ FAIL  |unit| tests/unit/vscode/src/config.test.ts > test_load_config_when_unreadable
+AssertionError: expected undefined to be '/w/mdmark.config.yaml' // Object.is equality
+
+- Expected:
+"/w/mdmark.config.yaml"
+
++ Received:
+undefined
+
+ ❯ tests/unit/vscode/src/config.test.ts:105:32
+    103|   const result = await load(loadOptions(files, { cwd: "/w" }));
+    104|   // 検証
+    105|   expect(result.problem?.path).toBe("/w/mdmark.config.yaml");
+       |                                ^
+    106|   expect(result.problem?.line).toBe(4);
+    107|   expect(result.config).toEqual({ features: { callout: false } });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[30/38]⎯
+
+ FAIL  |unit| tests/unit/vscode/src/config.test.ts > test_load_config_when_invalid
+AssertionError: expected undefined to be '/s/settings.yaml' // Object.is equality
+
+- Expected:
+"/s/settings.yaml"
+
++ Received:
+undefined
+
+ ❯ tests/unit/vscode/src/config.test.ts:118:32
+    116|   const result = await load(loadOptions(files));
+    117|   // 検証
+    118|   expect(result.problem?.path).toBe(SETTINGS);
+       |                                ^
+    119|   expect(result.problem?.settingKey).toBe("features.callout");
+    120|   expect(result.problem?.line).toBeUndefined();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[31/38]⎯
+
+ FAIL  |unit| tests/unit/vscode/src/config.test.ts > test_load_config_when_config_path_missing
+AssertionError: expected undefined to deeply equal { features: { callout: false } }
+
+- Expected:
+{
+  "features": {
+    "callout": false,
+  },
+}
+
++ Received:
+undefined
+
+ ❯ tests/unit/vscode/src/config.test.ts:136:25
+    134|   );
+    135|   // 検証
+    136|   expect(result.config).toEqual({ features: { callout: false } });
+       |                         ^
+    137|   expect(result.files).toEqual([SETTINGS]);
+    138|   expect(result.nearest).toBeUndefined();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[32/38]⎯
+
+ FAIL  |unit| tests/unit/vscode/src/preview/html.test.ts > test_build_preview_html_when_theme_and_extensions
+AssertionError: the given combination of arguments (undefined and string) is invalid for this assertion. You can use an array, a map, an object, a set, a string, or a weakset instead of a string
+ ❯ tests/unit/vscode/src/preview/html.test.ts:169:17
+    167|   // 検証
+    168|   const theme = findTag(html, /<link\b[^>]*id="mdmark-theme"[^>]*>/);
+    169|   expect(theme).toContain('rel="stylesheet"');
+       |                 ^
+    170|   expect(theme).toContain('href="web:/w/t.css"');
+    171|   expect(html.indexOf(distCss)).toBeLessThan(html.indexOf('id="mdmark-…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[33/38]⎯
+
+ FAIL  |unit| tests/unit/vscode/src/webview/features/preview/panel/load-mdmark.test.ts > test_register_extensions
+TypeError: registerExtensions is not a function
+ ❯ tests/unit/vscode/src/webview/features/preview/panel/load-mdmark.test.ts:85:9
+     83|   const consoleError = vi.spyOn(console, "error").mockImplementation((…
+     84|   // 実行
+     85|   await registerExtensions({
+       |         ^
+     86|     mdmark,
+     87|     urls: ["a.js", "b.js", "c.js"],
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[34/38]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/vscode/src/webview/features/preview/panel/boot.browser.test.ts > test_read_boot
+AssertionError: expected { root: <div …(5)></div>, …(5) } to deeply equal { root: <div …(5)></div>, …(6) }
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/boot.browser.test.ts/test_read_boot.png
+
+- Expected
++ Received
+
+@@ -1,11 +1,8 @@
+  {
+    "configPath": "docs/mdmark.config.yaml",
+    "distJs": "https://cdn.jsdelivr.net/gh/shuhei1101/mdmark@v0.7.0/dist/index.js",
+-   "extensions": [
+-     "web:/w/e.js",
+-   ],
+    "root": <div
+      data-config-path="docs/mdmark.config.yaml"
+      data-dist-js="https://cdn.jsdelivr.net/gh/shuhei1101/mdmark@v0.7.0/dist/index.js"
+      data-extensions="[\"web:/w/e.js\"]"
+      data-test=""
+
+ ❯ tests/unit/vscode/src/webview/features/preview/panel/boot.browser.test.ts:43:17
+     41|   const second = readBoot(other);
+     42|   // 検証
+     43|   expect(first).toEqual({
+       |                 ^
+     44|     root: full,
+     45|     distJs:
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=c1177235:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[35/38]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/vscode/src/webview/features/preview/panel/panel-screen.browser.test.tsx > test_panel_screen_when_config_error
+TestingLibraryElementError: Unable to find an accessible element with the role "button" and name "設定ファイルを開く"
+
+There are no accessible roles. But there might be some inaccessible roles. If you wish to access them, then set the `hidden` option to `true`. Learn more about this here: https://testing-library.com/docs/dom-testing-library/api-queries#byrole
+
+Ignored nodes: comments, script, style
+<body
+  style="margin: 0px;"
+>
+  
+  
+
+
+  <div
+    data-config-path="mdmark.config.yaml"
+    id="mdmark-preview"
+  >
+    <div>
+      <div
+        data-source-line="0"
+        style="height: 100px;"
+      />
+      <div
+        data-source-line="1"
+        style="height: 100px;"
+      />
+      <div
+        data-source-line="2"
+        style="height: 100px;"
+      />
+      <div
+        data-source-line="3"
+        style="height: 100px;"
+      />
+      <div
+        data-source-line="4"
+        style="height: 100px;"
+      />
+      <div
+        data-source-line="5"
+        style="height: 100px;"
+      />
+      <div
+        data-source-line="6"
+        style="height: 100px;"
+      />
+      <div
+        data-source-line="7"
+        style="height: 100px;"
+      />
+      <div
+        data-source-line="8"
+        style="height: 100px;"
+      />
+      <div
+        data-source-line="9"
+        style="height: 100px;"
+      />
+      <div
+        data-source-line="10"
+        style="height: 100px;"
+      />
+      <div
+        data-source-line="11"
+        style="height: 100px;"
+      />
+      <div
+        data-source-line="12"
+        style="height: 100px;"
+      />
+      <div
+        data-source-line="13"
+        style="height: 100px;"
+      />
+      <div
+        data-source-line="14"
+        style="height: 100px;"
+      />
+      <div
+        data-source-line="15"
+        style="height: 100px;"
+      />
+      <div
+        data-source-line="16"
+        style="height: 100px;"
+      />
+      <div
+        data-source-line="17"
+        style="height: 100px;"
+      />
+      <div
+        data-source-line="18"
+        style="height: 100px;"
+      />
+      <div
+        data-source-line="19"
+        style="height: 100px;"
+      />
+      <div
+        data-source-line="20"
+        style="height: 100px;"
+      />
+      <div
+        data-source-line="21"
+        style="height: 100px;"
+      />
+      <div
+        data-source-line="22"
+        style="height: 100px;"
+      />
+      <div
+        data-source-line="23"
+        style="height: 100px;"
+      />
+      <div
+        data-source-line="24"
+        style="height: 100px;"
+      />
+      <div
+        data-source-line="25"
+        style="height: 100px;"
+      />
+      <div
+        data-source-line="26"
+        style="height: 100px;"
+      />
+      <div
+        data-source-line="27"
+        style="height: 100px;"
+      />
+      <div
+        data-source-line="28"
+        style="height: 100px;"
+      />
+      <div
+        data-source-line="29"
+        style="height: 100px;"
+      />
+      <div
+        data-source-line="30"
+        style="height: 100px;"
+      />
+      <div
+        data-source-line="31"
+        style="height: 100px;"
+      />
+      <div
+        data-source-line="32"
+        style="height: 100px;"
+      />
+      <div
+        data-source-line="33"
+        style="height: 100px;"
+      />
+      <div
+        data-source-line="34"
+        style="height: 100px;"
+      />
+      <div
+        data-source-line="35"
+        style="height: 100px;"
+      />
+      <div
+        data-source-line="36"
+        style="height: 100px;"
+      />
+      <div
+        data-source-line="37"
+        style="height: 100px;"
+      />
+      <div
+        data-source-line="38"
+        style="height: 100px;"
+      />
+      <div
+        data-source-line="39"
+        style="height: 100px;"
+      />
+    </div>
+  </div>
+</body>
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/panel-screen.browser.test.tsx/test_panel_screen_when_config_error.png
+
+ ❯ Object.getElementError node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/@testing-library_react.js?v=c1177235:9197:17
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/@testing-library_react.js?v=c1177235:9769:40
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/@testing-library_react.js?v=c1177235:9754:15
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/@testing-library_react.js?v=c1177235:9785:18
+ ❯ tests/unit/vscode/src/webview/features/preview/panel/panel-screen.browser.test.tsx:284:12
+    282|   };
+    283|   await userEvent.click(
+    284|     screen.getByRole("button", { name: "設定ファイルを開く" }),
+       |            ^
+    285|   );
+    286|   act(() => sendHostMessage({ type: "configOk" }));
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=c1177235:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[36/38]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/vscode/src/webview/features/preview/panel/panel-screen.browser.test.tsx > test_panel_screen_when_extensions
+AssertionError: expected [] to deeply equal [ [ { name: 'b.js' } ] ]
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/panel-screen.browser.test.tsx/test_panel_screen_when_extensions.png
+
+- Expected
++ Received
+
+- [
+-   [
+-     {
+-       "name": "b.js",
+-     },
+-   ],
+- ]
++ []
+
+ ❯ tests/unit/vscode/src/webview/features/preview/panel/panel-screen.browser.test.tsx:333:40
+    331|   await waitReady(api.posted);
+    332|   // 検証
+    333|   expect(registerExtension.mock.calls).toEqual([[{ name: "b.js" }]]);
+       |                                        ^
+    334|   expect(order.indexOf("register:b.js")).toBeLessThan(order.indexOf("p…
+    335| });
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=c1177235:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[37/38]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/vscode/src/webview/features/preview/panel/panel-screen.browser.test.tsx > test_panel_screen_when_theme
+AssertionError: expected 't.css' to be 't.css?v=1' // Object.is equality
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/panel-screen.browser.test.tsx/test_panel_screen_when_theme.png
+
+Expected: "t.css?v=1"
+Received: "t.css"
+
+ ❯ tests/unit/vscode/src/webview/features/preview/panel/panel-screen.browser.test.tsx:362:37
+    360|   act(() => sendHostMessage({ type: "theme", href: "t.css?v=1" }));
+    361|   // 検証
+    362|   expect(link.getAttribute("href")).toBe("t.css?v=1");
+       |                                     ^
+    363|   expect(record.elements.length).toBe(rendered);
+    364|   expect(postedOf(api.posted, "rendered")).toHaveLength(1);
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=c1177235:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[38/38]⎯
+
+
+ Test Files  8 failed | 1 passed (9)
+      Tests  37 failed | 52 passed | 2 skipped (91)
+   Start at  00:22:06
+   Duration  7.00s (tests 64%, transform 26%, import 5%, worker 4%)
+

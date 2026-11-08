@@ -1,12 +1,12 @@
 import { type ChildProcess, spawn } from "node:child_process";
-import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
+import { readFile } from "node:fs/promises";
 import { connect, createServer } from "node:net";
-import { tmpdir } from "node:os";
 import { join } from "node:path";
 import {
   Client,
   StreamableHTTPClientTransport,
 } from "@modelcontextprotocol/client";
+import { NO_SETTINGS } from "./cli.ts";
 
 /** ツールを呼んだ結果 */
 export type ToolResult = {
@@ -14,18 +14,6 @@ export type ToolResult = {
   isError: boolean;
   /** 内容のテキストを並べたもの */
   texts: string[];
-  /** structuredContent。持たないときは `undefined` */
-  structured: Record<string, unknown> | undefined;
-};
-
-/** フックを子プロセスで流した結果 */
-export type HookResult = {
-  /** 終了コード */
-  code: number;
-  /** 標準出力 */
-  stdout: string;
-  /** 標準エラー */
-  stderr: string;
 };
 
 /** ずれの一覧の 1 件 */
@@ -50,32 +38,12 @@ function expandPluginRoot(
   };
 }
 
-/** `hooks/hooks.json` の SessionStart のコマンドを、`CLAUDE_PLUGIN_ROOT` を `pluginDir` にして子プロセスで流す。終了コードが 0 以外でも例外を投げず、結果を返す */
-export async function runSessionStartHook(
-  pluginDir: string,
-): Promise<HookResult> {
-  const hooks = JSON.parse(
-    await readFile(join(pluginDir, "hooks", "hooks.json"), "utf8"),
-  );
-  const { command, args } = expandPluginRoot(
-    hooks.hooks.SessionStart[0].hooks[0],
-    pluginDir,
-  );
-  const run = launch({
-    command,
-    args,
-    cwd: pluginDir,
-    env: childEnv({ CLAUDE_PLUGIN_ROOT: pluginDir }),
-  });
-  run.child.stdin?.end();
-  const code = await run.exited;
-  return { code, stdout: run.stdout(), stderr: run.stderr() };
-}
-
 /** `mdmark serve` を起動したままの子プロセス */
 export type ServeProcess = {
   /** 待ち受けている URL（`/mcp` まで） */
   url: string;
+  /** 待ち受けているポート */
+  port: number;
   /** 今までの標準出力 */
   stdout: () => string;
   /** 今までの標準エラー */
@@ -130,24 +98,17 @@ type HookContext = {
 };
 
 // 子プロセスの環境から外す、実機の設定が漏れる環境変数
-const LEAKING_ENV = ["CLAUDE_PROJECT_DIR", "MDMARK_PORT"];
+const LEAKING_ENV = ["CLAUDE_PROJECT_DIR", "MDMARK_PORT", "TMUX", "TMUX_PANE"];
 // `mdmark serve` が待ち受けを始めたときに標準出力へ出す URL
 const LISTENING_URL_PATTERN = /http:\/\/127\.0\.0\.1:\d+\/mcp/;
 // 待ち受けるアドレス
 const LISTEN_HOST = "127.0.0.1";
-// 既定のポート
-export const DEFAULT_PORT = 8782;
 // 待ち受けの URL が出たかを確かめる間隔（ミリ秒）
 const POLL_INTERVAL_MS = 20;
 // 空きを確かめたポートを別のプロセスに取られたときの、起動し直す回数の上限
 const MAX_START_ATTEMPTS = 5;
 // ポートが使われているときに `mdmark serve` が標準エラーに出す文に含まれる語
 const PORT_IN_USE_WORD = "別のプロセスが使っています";
-// 既定のポートを使うテストの間で譲り合う、ロックのフォルダ
-const DEFAULT_PORT_LOCK = join(tmpdir(), "mdmark-e2e-default-port.lock");
-// ロックが空くのを確かめる間隔と、待つ上限（ミリ秒）
-const LOCK_POLL_MS = 200;
-const LOCK_TIMEOUT_MS = 240_000;
 // PreToolUse のフックの名前
 const PRE_TOOL_USE = "PreToolUse";
 // プラグインの MCP サーバーのツール名の頭
@@ -162,7 +123,7 @@ function childEnv(overrides: Record<string, string>): Record<string, string> {
   for (const name of LEAKING_ENV) {
     delete env[name];
   }
-  return { ...env, ...overrides };
+  return { ...env, MDMARK_CONFIG: NO_SETTINGS, ...overrides };
 }
 
 /** 空いているポートを 1 つ返す */
@@ -189,44 +150,6 @@ export async function isListening(port: number): Promise<boolean> {
     });
     socket.once("error", () => resolve(false));
   });
-}
-
-/** 既定のポート 8782 を使うテストの間で譲り合うロックを取り、手放す関数を返す。別のワーカーのテストが使っている間は待つ */
-export async function lockDefaultPort(): Promise<() => Promise<void>> {
-  const deadline = Date.now() + LOCK_TIMEOUT_MS;
-  for (;;) {
-    try {
-      await mkdir(DEFAULT_PORT_LOCK);
-      await writeFile(join(DEFAULT_PORT_LOCK, "pid"), String(process.pid));
-      return () => rm(DEFAULT_PORT_LOCK, { recursive: true, force: true });
-    } catch (error) {
-      if ((error as NodeJS.ErrnoException).code !== "EEXIST") {
-        throw error;
-      }
-    }
-    // 持ち主のプロセスが居ないロックは、落ちたテストの残りなので取り直す
-    const owner = Number(
-      await readFile(join(DEFAULT_PORT_LOCK, "pid"), "utf8").catch(() => "0"),
-    );
-    if (owner > 0 && !processExists(owner)) {
-      await rm(DEFAULT_PORT_LOCK, { recursive: true, force: true });
-      continue;
-    }
-    if (Date.now() > deadline) {
-      throw new Error("既定のポートのロックを取れなかった");
-    }
-    await new Promise((resolve) => setTimeout(resolve, LOCK_POLL_MS));
-  }
-}
-
-/** プロセスが動いているか */
-function processExists(pid: number): boolean {
-  try {
-    process.kill(pid, 0);
-    return true;
-  } catch {
-    return false;
-  }
 }
 
 /** コマンドを子プロセスとして起動し、出力を溜める */
@@ -300,6 +223,7 @@ async function startServe(options: {
   });
   const serve: ServeProcess = {
     url,
+    port: Number(new URL(url).port),
     stdout: spawned.stdout,
     stderr: spawned.stderr,
     isRunning: () => isAlive(spawned),
@@ -311,12 +235,39 @@ async function startServe(options: {
   return { serve, spawned };
 }
 
-/** `dist/cli.js serve` を起動して `use` に渡し、終わったら動いていれば止める。`env` に `MDMARK_PORT` を渡さなければ既定のポートで待ち受ける */
+/** `dist/cli.js serve` を、`MDMARK_PORT` に空きポートを渡して起動する。空きを確かめてから起動するまでに別のプロセスにポートを取られたときは、ポートを選び直す */
+async function startServeOnFreePort(options: {
+  builtRoot: string;
+  env: Record<string, string>;
+}): Promise<{ serve: ServeProcess; spawned: Spawned }> {
+  const { builtRoot, env } = options;
+  for (let attempt = 1; ; attempt++) {
+    const port = await findFreePort();
+    try {
+      return await startServe({
+        builtRoot,
+        env: { ...env, MDMARK_PORT: String(port) },
+      });
+    } catch (error) {
+      const taken =
+        error instanceof ServeExitedError &&
+        error.stderr.includes(PORT_IN_USE_WORD);
+      if (!taken || attempt >= MAX_START_ATTEMPTS) {
+        throw error;
+      }
+    }
+  }
+}
+
+/** `dist/cli.js serve` を起動して `use` に渡し、終わったら動いていれば止める。`env` に `MDMARK_PORT` を渡さなければ空きポートを渡して起動する */
 export async function withServe<T>(
   options: { builtRoot: string; env: Record<string, string> },
   use: (serve: ServeProcess) => Promise<T>,
 ): Promise<T> {
-  const { serve, spawned } = await startServe(options);
+  const { serve, spawned } =
+    options.env.MDMARK_PORT === undefined
+      ? await startServeOnFreePort(options)
+      : await startServe(options);
   try {
     return await use(serve);
   } finally {
@@ -358,30 +309,20 @@ export async function readMcpUrl(options: {
 
 /** HTTP でつないだクライアントを `use` に渡し、終わったら閉じる。`serverUrl` を渡すとその URL につなぎ、渡さなければ空きポートで `mdmark serve` を起動してつなぐ。`projectDir` を渡すと、`callTool` が PreToolUse のフック（`builtRoot` の `plugin/`）を通した引数で呼ぶ */
 export async function withMcpClient<T>(
-  options: { builtRoot: string; projectDir?: string; serverUrl?: string },
+  options: {
+    builtRoot: string;
+    projectDir?: string;
+    serverUrl?: string;
+    /** 常駐サーバーに渡す環境変数（`MDMARK_CONFIG` など） */
+    env?: Record<string, string>;
+  },
   use: (client: Client) => Promise<T>,
 ): Promise<T> {
   const { builtRoot, projectDir, serverUrl } = options;
-  // 空きを確かめてから起動するまでに別のプロセスにポートを取られたときは、ポートを選び直す
-  let started: { serve: ServeProcess; spawned: Spawned } | undefined;
-  if (serverUrl === undefined) {
-    for (let attempt = 1; started === undefined; attempt++) {
-      const port = await findFreePort();
-      try {
-        started = await startServe({
-          builtRoot,
-          env: { MDMARK_PORT: String(port) },
-        });
-      } catch (error) {
-        const taken =
-          error instanceof ServeExitedError &&
-          error.stderr.includes(PORT_IN_USE_WORD);
-        if (!taken || attempt >= MAX_START_ATTEMPTS) {
-          throw error;
-        }
-      }
-    }
-  }
+  const started =
+    serverUrl === undefined
+      ? await startServeOnFreePort({ builtRoot, env: options.env ?? {} })
+      : undefined;
   const client = new Client({ name: "e2e", version: "0.0.0" });
   try {
     await client.connect(
@@ -479,7 +420,6 @@ export async function callTool(
   return {
     isError: result.isError === true,
     texts: content.map((item) => item.text),
-    structured: result.structuredContent as Record<string, unknown> | undefined,
   };
 }
 
@@ -493,7 +433,7 @@ export function issueLine(issue: Issue): string {
 /** 設定の `index` が指す索引の中身。`docs` に文書の ID を並べる（パスは `{ID}.md`、題は大文字の ID） */
 export function indexYaml(ids: string[]): string {
   return [
-    "schema: 1",
+    "schema: 2",
     "docs:",
     ...ids.flatMap((id) => [
       `  - id: ${id}`,
@@ -513,8 +453,15 @@ export const CONFIG_WITH_BUILD = [
   "",
 ].join("\n");
 
-/** 設定の中身: 索引だけを持つ */
-export const CONFIG_WITH_INDEX = "index: index.yaml\n";
-
 /** 文書 `a`・`b` の本文 */
 export const DOCUMENTS = { "a.md": "# A\n\n[B](b.md)\n", "b.md": "# B\n" };
+
+/** エラーと、その `cause` をたどって、メッセージとエラーコードを 1 つの文字列にする */
+export function describeError(error: unknown): string {
+  const parts: string[] = [];
+  for (let current = error; current instanceof Error; ) {
+    parts.push(current.message, String((current as { code?: string }).code));
+    current = current.cause;
+  }
+  return parts.join("\n");
+}

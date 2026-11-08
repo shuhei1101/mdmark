@@ -1,0 +1,46 @@
+$ npx vitest run --project 'integration*' --maxWorkers=2 tests/integration/lib/bundle.test.ts tests/integration/lib/check-config.test.ts tests/integration/lib/export.test.ts tests/integration/lib/upgrade.test.ts tests/integration/lib/collect-matches.test.ts
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-aliases-alias-inject-v0.3.0-schema
+
+ ❯ |integration-node| tests/integration/lib/upgrade.test.ts (18 tests | 1 failed) 143222ms
+   × test_normal_when_tag_vocabulary_dropped 2041ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |integration-node| tests/integration/lib/upgrade.test.ts > test_normal_when_tag_vocabulary_dropped
+AssertionError: expected 1 to be +0 // Object.is equality
+
+- Expected
++ Received
+
+- 0
++ 1
+
+ ❯ tests/integration/lib/upgrade.test.ts:479:23
+    477|   const result = await runUpgrade(pkg, { args: ["--yes"], cwd: dir });
+    478|   // 検証
+    479|   expect(result.code).toBe(0);
+       |                       ^
+    480|   const index = parse(await readFile(join(dir, "docs", "index.yaml"), …
+    481|   expect(index.schema).toBe(2);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 4 passed (5)
+      Tests  1 failed | 79 passed (80)
+   Start at  23:06:27
+   Duration  248.15s (tests 94%, import 6%)
+
+
+# upgrade.test.ts の test_normal_when_tag_vocabulary_dropped を直した後に流し直した
+$ npx vitest run --project 'integration*' --maxWorkers=2 tests/integration/lib/upgrade.test.ts
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-aliases-alias-inject-v0.3.0-schema
+
+
+ Test Files  1 passed (1)
+      Tests  18 passed (18)
+   Start at  23:11:17
+   Duration  308.37s (tests 88%, import 12%)
+

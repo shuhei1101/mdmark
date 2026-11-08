@@ -1,7 +1,29 @@
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { expect, test } from "@playwright/test";
-import { expectGuideRendered, guideMarkdown, useVscodeE2E } from "../vscode.ts";
+import {
+  cascadeSettings,
+  expectFeaturesOff,
+  expectUpperApplied,
+  expectUpperNotApplied,
+} from "../cascade.ts";
+import {
+  MERMAID_ENTRY,
+  MERMAID_FLOWCHART,
+  MERMAID_STUB_PATH,
+  MERMAID_SVG,
+  MERMAID_WAIT_MS,
+  mermaidColors,
+} from "../mermaid.ts";
+import {
+  expectGuideRendered,
+  guideMarkdown,
+  replaceAllText,
+  saveEditor,
+  TRANSPILER_PATH,
+  useVscodeE2E,
+} from "../vscode.ts";
+import { openCascadedPreview } from "../vscode-cascade.ts";
 
 const e2e = useVscodeE2E();
 
@@ -12,6 +34,32 @@ function distRequests(): string[] {
     .requests()
     .filter((path) => path !== "/tags");
 }
+
+/** 用語のエイリアスの行を持つ設定ファイル（`extra` の行を `aliases` の後ろに足す） */
+const aliasConfig = (extra: string[] = []) =>
+  [
+    "aliases:",
+    "  - id: terms",
+    "    paths: [glossary.yaml]",
+    "    alias_type: term",
+    "    records: terms",
+    ...extra,
+    "",
+  ].join("\n");
+
+/** 名前 `描画`・別名 `レンダリング` の用語 1 件を持つ YAML */
+const glossary = (meaning: string) =>
+  [
+    "terms:",
+    "  - id: render",
+    "    name: 描画",
+    "    aliases: [レンダリング]",
+    `    description: ${meaning}`,
+    "",
+  ].join("\n");
+
+/** 本文に別名 `レンダリング` を含む Markdown */
+const ALIAS_MARKDOWN = "# 案内\n\nレンダリングの段落\n";
 
 /** 配布物を読めない・バージョンを決められないときの、文書の代わりの表示 */
 function notice(frame: import("@playwright/test").Frame) {
@@ -191,4 +239,322 @@ test("test_error_when_version_undecidable", async () => {
   await expect(notice(frame)).toContainText("バージョンを決められませんでした");
   await expect(frame.getByRole("button", { name: "リロード" })).toBeVisible();
   expect(distRequests()).toEqual([]);
+});
+
+// マーカーの場所に取り込み先の見出しの中を描き、取り込み先の保存で描き直し、無い取り込み先には書き方の警告を出す（正常シナリオ（取り込む文書を描く））
+test("test_normal_when_includes", async () => {
+  // 準備
+  const session = await e2e.launch({
+    files: {
+      "guide.md": [
+        "# 案内",
+        "",
+        "<!-- include: 共通/手順.md#実行 -->",
+        "",
+        "<!-- include: 共通/無い.md -->",
+        "",
+      ].join("\n"),
+      "共通/手順.md": [
+        "# 手順",
+        "",
+        "## 実行",
+        "",
+        "取り込む前の文です。",
+        "",
+        "## 片付け",
+        "",
+        "取り込まない文です。",
+        "",
+      ].join("\n"),
+    },
+  });
+  await session.openFile("guide.md");
+  // 実行
+  await session.openPreviewWithShortcut();
+  // 検証
+  const frame = await session.frameWith("h2");
+  await expect(frame.locator("h2", { hasText: "実行" })).toBeVisible();
+  await expect(frame.getByText("取り込む前の文です。")).toBeVisible();
+  await expect(frame.getByText("取り込まない文です。")).toHaveCount(0);
+  await expect(frame.locator(".mdmark-syntax-warning")).toHaveCount(1);
+  await expect(frame.locator(".mdmark-syntax-warning")).toContainText(
+    "共通/無い.md",
+  );
+  // 実行: 取り込み先を書き換えて保存する
+  await session.openFile("共通/手順.md");
+  await replaceAllText(session, "## 実行\n\n書き換えた後の文です。\n");
+  await saveEditor(session);
+  // 検証
+  const rerendered = await session.frameWith("h2");
+  await expect(rerendered.getByText("書き換えた後の文です。")).toBeVisible();
+  await expect(rerendered.getByText("取り込む前の文です。")).toHaveCount(0);
+});
+
+/** 範囲に html・css・ts を置き、ts が箱を押すと根の要素に class `is-open` を付け外しする文書 */
+const RANGE_SCRIPT_MARKDOWN = [
+  "# 範囲のスクリプト",
+  "",
+  "<!-- html -->",
+  "",
+  "```html",
+  '<div class="box">箱</div>',
+  "```",
+  "",
+  "```css",
+  ".box { background-color: rgb(255, 0, 0); }",
+  "```",
+  "",
+  "```ts",
+  "export default (root: HTMLElement): void => {",
+  '  root.querySelector(".box")?.addEventListener("click", () => {',
+  '    root.classList.toggle("is-open");',
+  "  });",
+  "};",
+  "```",
+  "",
+  "<!-- /html -->",
+  "",
+].join("\n");
+
+// 範囲の ts をページの nonce を付けた script 要素で動かし、CSP を広げずに範囲の css と ts を当てる（正常シナリオ（範囲のスクリプトと CSS））
+test("test_normal_when_range_scripts", async () => {
+  // 準備
+  const stub = e2e.stub();
+  const session = await e2e.launch({
+    files: {
+      "guide.md": RANGE_SCRIPT_MARKDOWN,
+      "mdmark.config.yaml": [
+        "features:",
+        "  html-scripts: true",
+        "html-scripts:",
+        `  url: ${stub.origin}${TRANSPILER_PATH}`,
+        "",
+      ].join("\n"),
+    },
+  });
+  await session.openFile("guide.md");
+  // 実行
+  await session.openPreviewWithShortcut();
+  // 検証: 範囲の css と ts
+  const frame = await session.frameWith('.mdmark-html[data-html-scope="0"]');
+  const scope = frame.locator('.mdmark-html[data-html-scope="0"]');
+  const box = scope.locator(".box");
+  await expect(box).toHaveCSS("background-color", "rgb(255, 0, 0)");
+  await expect.poll(() => stub.requests()).toContain(TRANSPILER_PATH);
+  await expect(async () => {
+    await box.click();
+    await expect(scope).toHaveClass(/\bis-open\b/, { timeout: 500 });
+  }).toPass();
+  await expect(frame.locator(".mdmark-notice")).toHaveCount(0);
+  await expect(frame.locator(".mdmark-syntax-warning")).toHaveCount(0);
+  // 検証: CSP は正常シナリオと同じで、blob:・'unsafe-inline'・'unsafe-eval' を足さない
+  const csp =
+    (await frame
+      .locator('meta[http-equiv="Content-Security-Policy"]')
+      .getAttribute("content")) ?? "";
+  const scriptSrc =
+    csp
+      .split("; ")
+      .find((directive) => directive.startsWith("script-src "))
+      ?.split(" ")
+      .slice(1) ?? [];
+  expect(scriptSrc[0]).toMatch(/^'nonce-[^']+'$/);
+  expect(scriptSrc).toContain(stub.origin);
+  expect(scriptSrc).toContain("https://cdn.jsdelivr.net");
+  for (const word of ["blob:", "'unsafe-inline'", "'unsafe-eval'"]) {
+    expect(scriptSrc).not.toContain(word);
+  }
+  // 残りは配布物の origin（style-src の先頭）と Webview.cspSource（img-src の https: より前）だけ
+  const words = (name: string) =>
+    csp
+      .split("; ")
+      .find((directive) => directive.startsWith(`${name} `))
+      ?.split(" ")
+      .slice(1) ?? [];
+  const imgSrc = words("img-src");
+  const cspSource = imgSrc.slice(0, imgSrc.indexOf("https:"));
+  const expected = new Set([
+    scriptSrc[0],
+    words("style-src")[0],
+    stub.origin,
+    "https://cdn.jsdelivr.net",
+    ...cspSource,
+  ]);
+  expect([...new Set(scriptSrc)].sort()).toEqual([...expected].sort());
+  expect(scriptSrc).toHaveLength(new Set(scriptSrc).size);
+});
+
+// 端末の設定・上のフォルダ・近いフォルダの設定を重ね、上のフォルダの theme と extensions をプレビューに当てる（正常シナリオ（設定を重ねる））
+test("test_normal_when_cascaded", async () => {
+  // 準備・実行
+  const opened = await openCascadedPreview(
+    e2e,
+    cascadeSettings({ cascade: true }),
+  );
+  // 検証
+  await expectFeaturesOff(opened.frame);
+  await expectUpperApplied(opened.frame);
+  await expect(opened.frame.locator(".mdmark-notice")).toHaveCount(0);
+  await expect(opened.frame.locator(".mdmark-config-band")).toHaveCount(0);
+});
+
+// config.cascade が false のとき、近いフォルダの設定と端末の設定だけでプレビューを描く（正常シナリオ（最初の 1 つだけを読む））
+test("test_normal_when_first_only", async () => {
+  // 準備・実行
+  const opened = await openCascadedPreview(
+    e2e,
+    cascadeSettings({ cascade: false }),
+  );
+  // 検証
+  await expectFeaturesOff(opened.frame);
+  await expectUpperNotApplied(opened.frame);
+});
+
+// 端末の設定を YAML として読めないとき、文書を描いたまま帯に出し、帯から端末の設定を開く（異常シナリオ（設定ファイルを読めない））
+test("test_error_when_config_unreadable", async () => {
+  // 準備・実行
+  const opened = await openCascadedPreview(
+    e2e,
+    cascadeSettings({ cascade: true, broken: true }),
+  );
+  // 検証
+  const band = opened.frame.locator(".mdmark-config-band");
+  await expect(band).toHaveCount(1);
+  await expect(band).toContainText("settings.yaml");
+  await expect(band).toContainText("3 行目");
+  await expect(opened.frame.locator(".mdmark h1")).toContainText("ガイド");
+  await band.locator('[data-action="openConfig"]').click();
+  await expect(
+    opened.session.win.locator('.tab.active[aria-label*="settings.yaml"]'),
+  ).toHaveCount(1);
+  expect(await opened.configs()).toEqual(opened.before);
+});
+
+// 設定の aliases から作ったエイリアスに、下線と種類ごとのツールチップが出る（正常シナリオ（設定の aliases のエイリアス））
+test("test_normal_when_aliases", async () => {
+  // 準備
+  const session = await e2e.launch({
+    files: {
+      "mdmark.config.yaml": aliasConfig(),
+      "glossary.yaml": glossary("Markdown を HTML にすること"),
+      "guide.md": ALIAS_MARKDOWN,
+      "plain/mdmark.config.yaml": "# エイリアスを持たない設定\n",
+      "plain/plain.md": "# 素の文書\n\nレンダリングの段落\n",
+    },
+  });
+  await session.openFile("guide.md");
+  // 実行
+  await session.openPreviewWithShortcut();
+  const frame = await session.frameWith(".mdmark-term");
+  const term = frame.locator(".mdmark-term", { hasText: "レンダリング" });
+  await term.hover();
+  // 検証
+  await expect(term).toHaveCount(1);
+  const tip = frame.locator('[role="tooltip"]:visible');
+  await expect(tip).toHaveCount(1);
+  await expect(tip).toContainText("用語");
+  await expect(tip).toContainText("描画");
+  await expect(tip).toContainText("Markdown を HTML にすること");
+  // 実行: aliases を持たない設定の文書を開く
+  await session.openFile("plain/plain.md");
+  await session.openPreviewWithShortcut();
+  // 検証
+  const plain = await session.frameWith('.mdmark h1:has-text("素の文書")');
+  await expect(plain.getByText("レンダリングの段落")).toBeVisible();
+  await expect(plain.locator(".mdmark-term")).toHaveCount(0);
+});
+
+// aliases の行の YAML が無いとき、その行を除いて描き、出力チャネルに警告を書く（異常シナリオ（aliases の YAML が無い））
+test("test_error_when_aliases_missing", async () => {
+  // 準備
+  const session = await e2e.launch({
+    files: {
+      "mdmark.config.yaml": aliasConfig([
+        "  - id: missing",
+        "    paths: [missing/*.yaml]",
+        "    alias_type: term",
+      ]),
+      "glossary.yaml": glossary("Markdown を HTML にすること"),
+      "guide.md": ALIAS_MARKDOWN,
+    },
+  });
+  await session.openFile("guide.md");
+  // 実行
+  await session.openPreviewWithShortcut();
+  // 検証
+  const frame = await session.frameWith(".mdmark-term");
+  await expect(
+    frame.locator(".mdmark-term", { hasText: "レンダリング" }),
+  ).toHaveCount(1);
+  await expect
+    .poll(async () =>
+      (await session.extensionLog()).some((line) =>
+        line.includes("mdmark.config.yaml:aliases[1].paths: alias_no_files:"),
+      ),
+    )
+    .toBe(true);
+  await expect(frame.locator(".mdmark-config-band")).toHaveCount(0);
+});
+
+// mermaid のコードブロックを図の枠に入れて描き、VS Code の配色をダークに切り替えると暗い配色で描き直す（正常シナリオ（mermaid のコードブロック））
+test("test_normal_when_mermaid", async () => {
+  // 準備
+  const stub = e2e.stub();
+  const session = await e2e.launch({
+    files: {
+      "flow.md": MERMAID_FLOWCHART,
+      "mdmark.config.yaml": `mermaid:\n  url: ${stub.origin}${MERMAID_STUB_PATH}${MERMAID_ENTRY}\n`,
+    },
+    userSettings: { "workbench.colorTheme": "Default Light Modern" },
+  });
+  await session.openFile("flow.md");
+  // 実行
+  await session.openPreviewWithShortcut();
+  // 検証: 図の枠に入った mermaid の図
+  const frame = await session.frameWith(MERMAID_SVG);
+  await expect(frame.locator(MERMAID_SVG)).toHaveCount(1, {
+    timeout: MERMAID_WAIT_MS,
+  });
+  await expect(frame.locator(".mdmark-notice")).toHaveCount(0);
+  expect(stub.requests()).toContain(`${MERMAID_STUB_PATH}${MERMAID_ENTRY}`);
+  // 検証: CSP の script-src に mermaid の読み込み先の origin が入り、違反が 0 件
+  const csp =
+    (await frame
+      .locator('meta[http-equiv="Content-Security-Policy"]')
+      .getAttribute("content")) ?? "";
+  const scriptSrc =
+    csp
+      .split("; ")
+      .find((directive) => directive.startsWith("script-src "))
+      ?.split(" ")
+      .slice(1) ?? [];
+  expect(scriptSrc).toContain(stub.origin);
+  for (const word of ["blob:", "'unsafe-inline'", "'unsafe-eval'"]) {
+    expect(scriptSrc).not.toContain(word);
+  }
+  await expect(frame.locator("html")).toHaveAttribute(
+    "data-mdmark-csp-violations",
+    "0",
+  );
+  const light = await mermaidColors(frame, { scope: "#mdmark-preview" });
+  expect(light.fill).toBe(light.surface);
+  // 実行: コマンドパレットでダークのテーマを選ぶ
+  await session.runCommand("Preferences: Color Theme");
+  await session.win.keyboard.type("Dark Modern");
+  await session.win.waitForTimeout(500);
+  await session.win.keyboard.press("Enter");
+  // 検証: 暗い配色の CSS 変数で描き直す
+  await expect
+    .poll(
+      async () => {
+        const dark = await mermaidColors(frame, { scope: "#mdmark-preview" });
+        return dark.fill === dark.surface && dark.surface !== light.surface;
+      },
+      { timeout: MERMAID_WAIT_MS },
+    )
+    .toBe(true);
+  await expect(frame.locator("html")).toHaveAttribute(
+    "data-mdmark-csp-violations",
+    "0",
+  );
 });

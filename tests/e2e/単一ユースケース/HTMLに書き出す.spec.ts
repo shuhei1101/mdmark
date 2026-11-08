@@ -1,8 +1,20 @@
 import { existsSync } from "node:fs";
-import { readdir } from "node:fs/promises";
-import { join } from "node:path";
+import { readdir, readFile, writeFile } from "node:fs/promises";
+import { join, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 import { expect, type Page, test } from "@playwright/test";
+import {
+  CARD_MARKDOWN,
+  CARD_SOURCE,
+  flowMarkdown,
+  HOST_CSS,
+} from "../diagram.ts";
+import {
+  copyMermaidDist,
+  MERMAID_FLOWCHART,
+  MERMAID_SVG,
+  MERMAID_WAIT_MS,
+} from "../mermaid.ts";
 import { guideMarkdown, replaceFirstLine, useVscodeE2E } from "../vscode.ts";
 
 const e2e = useVscodeE2E();
@@ -161,5 +173,174 @@ test("test_normal_when_theme_selected", async ({ browser }) => {
     "background-color",
     "rgb(248, 250, 252)",
   );
+  await page.close();
+});
+
+// 固有の部品の色（固有の CSS が変えた値）
+const HOST_CARD_COLOR = "rgb(0, 0, 255)";
+
+// theme の CSS と extensions の部品を、プレビューと書き出した HTML の両方に当てる（正常シナリオ（theme と extensions を当てる））
+test("test_normal_when_theme_and_extensions", async ({ browser }) => {
+  // 準備
+  const session = await e2e.launch({
+    files: {
+      "mdmark.config.yaml":
+        "theme: theme.css\nextensions: [extensions/card.js]\n",
+      "theme.css": `${HOST_CSS}\n`,
+      "extensions/card.js": CARD_SOURCE,
+      "doc.md": `${CARD_MARKDOWN}\n${await flowMarkdown()}\n本文の段落\n`,
+    },
+  });
+  await session.openFile("doc.md");
+  await session.openPreviewWithShortcut();
+  const frame = await session.frameWith(".host-card");
+  const previewColor = await frame
+    .locator(".host-card")
+    .evaluate((element) => getComputedStyle(element).color);
+  const path = join(session.workspaceDir, "doc.html");
+  // 実行
+  await session.focusEditor();
+  await session.runCommand("mdmark: HTML に書き出す");
+  // 検証
+  await expect
+    .poll(() => session.notifications())
+    .toContain(`HTML を書き出しました: ${path}`);
+  const page = await openExported(browser, path);
+  const card = page.locator(".host-card");
+  await expect(card).toHaveText("固有の題");
+  await expect(card).toHaveCSS("color", HOST_CARD_COLOR);
+  expect(previewColor).toBe(HOST_CARD_COLOR);
+  await page.close();
+});
+
+/** リポジトリの直下 */
+const REPO_ROOT = resolve(import.meta.dirname, "../../..");
+
+/** マーカーの無いライブラリの目印の文字列 */
+const UNUSED_LIBRARY_SIGN = "unused-library-sign-369";
+
+/** `test-lib` のマーカーと、`.box` に書く `ts` の範囲を持つ文書 */
+const LOCAL_LIBRARIES_MARKDOWN = [
+  "# 手元のライブラリ",
+  "",
+  "<!-- test-lib -->",
+  "",
+  "<!-- html -->",
+  "",
+  "```html",
+  '<div class="box">箱</div>',
+  "```",
+  "",
+  "```ts",
+  "export default (root: HTMLElement): void => {",
+  '  const box = root.querySelector<HTMLElement>(".box");',
+  "  if (box) {",
+  '    box.textContent = "ran-ts";',
+  "  }",
+  "};",
+  "```",
+  "",
+  "<!-- /html -->",
+  "",
+].join("\n");
+
+/** 相対パスの `libraries` と `html-scripts.url` を書いた設定と、手元のライブラリ */
+async function localLibraryFiles(): Promise<Record<string, string>> {
+  const babel = await readFile(
+    join(REPO_ROOT, "node_modules", "@babel", "standalone", "babel.min.js"),
+    "utf8",
+  );
+  return {
+    "mdmark.config.yaml": [
+      "libraries:",
+      "  test-lib: ./libs/test-lib.js",
+      "  unused-lib: ./libs/unused.js",
+      "features:",
+      "  html-scripts: true",
+      "html-scripts:",
+      "  url: ./libs/babel.mjs",
+      "",
+    ].join("\n"),
+    "libs/test-lib.js":
+      'import { label } from "./label.js";\nexport function draw(slot) { slot.textContent = label; }\n',
+    "libs/label.js": 'export const label = "drawn-local";\n',
+    "libs/unused.js": `export function draw(slot) { slot.textContent = "${UNUSED_LIBRARY_SIGN}"; }\n`,
+    "libs/babel.mjs": `const module = { exports: {} };\nconst exports = module.exports;\n${babel}\nexport default module.exports;\n`,
+    "docs/guide.md": LOCAL_LIBRARIES_MARKDOWN,
+  };
+}
+
+// 相対パスの外部ライブラリと変換のライブラリを埋めた HTML を Chromium で開き、マーカーと範囲のスクリプトが描かれる（正常シナリオ（相対パスの外部ライブラリを Chromium で読む））
+test("test_normal_when_relative_libraries", async ({ browser }) => {
+  // 準備
+  const session = await e2e.launch({ files: await localLibraryFiles() });
+  await session.openFile("docs/guide.md");
+  const path = join(session.workspaceDir, "docs", "guide.html");
+  // 実行
+  await session.runCommand("mdmark: HTML に書き出す");
+  // 検証
+  await expect
+    .poll(() => session.notifications())
+    .toContain(`HTML を書き出しました: ${path}`);
+  const html = await readFile(path, "utf8");
+  const decoded = [
+    ...html.matchAll(/data:text\/javascript;charset=utf-8,([^"\\]+)/g),
+  ]
+    .map((match) => decodeURIComponent(match[1] ?? ""))
+    .join("\n");
+  expect(decoded).not.toContain(UNUSED_LIBRARY_SIGN);
+  const page = await browser.newPage();
+  const fileRequests: string[] = [];
+  page.on("request", (request) => {
+    if (request.url().startsWith("file:")) {
+      fileRequests.push(request.url());
+    }
+  });
+  await page.goto(pathToFileURL(path).href);
+  await expect(page.locator(".mdmark-embed")).toHaveText("drawn-local");
+  await expect(page.locator(".box")).toHaveText("ran-ts");
+  await expect(page.locator(".mdmark-notice")).toHaveCount(0);
+  expect(
+    fileRequests.filter((url) => url !== pathToFileURL(path).href),
+  ).toEqual([]);
+  await page.close();
+});
+
+// 相対パスの mermaid を埋めた HTML を Chromium で開き、図の枠に入った mermaid の図を描く（正常シナリオ（相対パスの mermaid を読む））
+test("test_normal_when_relative_mermaid", async ({ browser }) => {
+  // 準備
+  const session = await e2e.launch({
+    files: { "docs/flow.md": MERMAID_FLOWCHART },
+    prepare: async (workspaceDir) => {
+      const url = await copyMermaidDist(workspaceDir);
+      await writeFile(
+        join(workspaceDir, "mdmark.config.yaml"),
+        `mermaid:\n  url: ${url}\n`,
+      );
+    },
+  });
+  await session.openFile("docs/flow.md");
+  const path = join(session.workspaceDir, "docs", "flow.html");
+  // 実行
+  await session.runCommand("mdmark: HTML に書き出す");
+  // 検証
+  await expect
+    .poll(() => session.notifications(), { timeout: 120_000 })
+    .toContain(`HTML を書き出しました: ${path}`);
+  const page = await browser.newPage();
+  const fileRequests: string[] = [];
+  page.on("request", (request) => {
+    if (request.url().startsWith("file:")) {
+      fileRequests.push(request.url());
+    }
+  });
+  await page.goto(pathToFileURL(path).href);
+  await expect(page.locator(MERMAID_SVG)).toHaveCount(1, {
+    timeout: MERMAID_WAIT_MS,
+  });
+  await expect(page.locator(".mdmark-notice")).toHaveCount(0);
+  expect(
+    fileRequests.filter((url) => url !== pathToFileURL(path).href),
+  ).toEqual([]);
   await page.close();
 });

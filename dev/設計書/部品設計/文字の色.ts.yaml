@@ -1,0 +1,60 @@
+title: 文字の色
+implementation: src/parts/text-color.ts#renderTextColor
+story: Parts/TextColor
+test_file: tests/integration/lib/text-color.story.test.ts
+states:
+  - name: Blue
+    description: 推奨案の決め手を青で強調する
+    args:
+      - name: color
+        value: blue
+      - name: text
+        value: 版を固定すると、使う側のページの見た目が mdmark の更新で勝手に変わりません。
+  - name: Red
+    description: 見送った案のデメリットを赤で強調する
+    args:
+      - name: color
+        value: red
+      - name: text
+        value: 最新の版を指す URL は、更新のたびに見た目が変わります。
+  - name: WithLink
+    description: 強調した文字の中にリンクを持つ。リンクは下線で見分ける
+    args:
+      - name: color
+        value: green
+      - name: text
+        value: 詳しくは [配布物を読み込む](#) を見てください。
+  - name: Dark
+    description: 暗い配色の文字の色
+    args:
+      - name: color
+        value: orange
+      - name: text
+        value: 気をつける点
+    notes:
+      定義: ストーリーは暗い配色で描く
+lead: 本文の `[文字]{color=色}` を、色のプリセットの文字の色と太字で強調する。色だけで意味を伝えない。
+args:
+  - name: color
+    type: 列挙
+    required: true
+    choices: '`blue`・`red`・`green`・`yellow`・`orange`・`purple`・`gray`'
+    description: '`data-color` に入れる色の名前'
+  - name: text
+    type: 文字列
+    required: true
+    description: 強調する文字（行内の Markdown として描く）
+css_properties:
+  - name: --mdmark-color-accent-blue-text
+    syntax: <color>
+    default: 値は dev/設計書/デザイン方針.md
+    description: 文字の色。ほかの色の名前も `--mdmark-color-accent-{色}-text` で同じ
+accessibility:
+  - '文字の色に加えて太字（`font-weight: 700`）にし、色だけで意味を伝えない'
+  - 文字と地の色のコントラストを 4.5:1 以上にする
+refs:
+  - dev/設計書/インターフェース定義/ライブラリ本体/文書をHTML文字列にする.ts#constraints[本文の文字の色]
+  - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[色のプリセット]
+status: planned
+notes:
+  HTML: '`<span class="mdmark-color" data-color="{color}">{text}</span>`。色と太字は確認ログの決定（案 A）。モックは `dev/mock/components/color-preset/`'

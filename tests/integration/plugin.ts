@@ -7,6 +7,7 @@ import {
   StreamableHTTPClientTransport,
 } from "@modelcontextprotocol/client";
 import { afterEach, inject } from "vitest";
+import { NO_SETTINGS } from "./cli.ts";
 
 /** ツールを呼んだ結果 */
 export type ToolResult = {
@@ -14,8 +15,6 @@ export type ToolResult = {
   isError: boolean;
   /** 内容のテキストを並べたもの */
   texts: string[];
-  /** structuredContent。持たないときは `undefined` */
-  structured: Record<string, unknown> | undefined;
 };
 
 /** 子プロセスを流して終わった結果 */
@@ -68,7 +67,8 @@ type Spawned = {
 };
 
 // 子プロセスの環境から外す、テストを流す Claude Code や実機の設定が漏れる環境変数
-const LEAKING_ENV = ["CLAUDE_PROJECT_DIR", "MDMARK_PORT"];
+// `TMUX`・`TMUX_PANE` があると tmux は `TMUX_TMPDIR` を見ず、テストを流している手元の tmux サーバーにつなぐ
+const LEAKING_ENV = ["CLAUDE_PROJECT_DIR", "MDMARK_PORT", "TMUX", "TMUX_PANE"];
 // `mdmark serve` が待ち受けを始めたときに標準出力へ出す URL
 const LISTENING_URL_PATTERN = /http:\/\/127\.0\.0\.1:\d+\/mcp/;
 // 待ち受けるアドレス
@@ -104,13 +104,13 @@ export async function copyBuiltPackage(destination: string): Promise<void> {
   await symlink(REPO_NODE_MODULES, join(destination, "node_modules"), "dir");
 }
 
-/** 環境変数に `overrides` を重ねた子プロセスの環境。実機の `CLAUDE_PROJECT_DIR`・`MDMARK_PORT` は引き継がない */
+/** 環境変数に `overrides` を重ねた子プロセスの環境。実機の `CLAUDE_PROJECT_DIR`・`MDMARK_PORT` は引き継がず、`MDMARK_CONFIG` は既定で `NO_SETTINGS`（開発者の端末の設定を混ぜない） */
 function childEnv(overrides: Record<string, string>): Record<string, string> {
   const env = { ...(process.env as Record<string, string>) };
   for (const name of LEAKING_ENV) {
     delete env[name];
   }
-  return { ...env, ...overrides };
+  return { ...env, MDMARK_CONFIG: NO_SETTINGS, ...overrides };
 }
 
 /** 空いているポートを 1 つ返す */
@@ -153,7 +153,7 @@ function launch(options: {
 /** `hooks/hooks.json` の `event` のコマンドを、`CLAUDE_PLUGIN_ROOT` を `pluginDir` にして子プロセスで流す。`input` を標準入力に渡す。終了コードが 0 以外でも例外を投げず、結果を返す */
 async function runHook(options: {
   pluginDir: string;
-  event: "SessionStart" | "PreToolUse";
+  event: "PreToolUse" | "SessionStart";
   env: Record<string, string>;
   input: string;
 }): Promise<HookResult> {
@@ -180,13 +180,6 @@ async function runHook(options: {
   return { code, stdout: run.stdout(), stderr: run.stderr() };
 }
 
-/** `hooks/hooks.json` の SessionStart のコマンドを流す */
-export async function runSessionStartHook(
-  pluginDir: string,
-): Promise<HookResult> {
-  return runHook({ pluginDir, event: "SessionStart", env: {}, input: "" });
-}
-
 /** `hooks/hooks.json` の PreToolUse のコマンドを、標準入力に `input` を渡して流す。`env` は子プロセスの環境変数に重ねる（`CLAUDE_PROJECT_DIR` はここで渡したものだけが届く） */
 export async function runPreToolUseHook(options: {
   pluginDir: string;
@@ -194,6 +187,31 @@ export async function runPreToolUseHook(options: {
   input: string;
 }): Promise<HookResult> {
   return runHook({ ...options, event: "PreToolUse" });
+}
+
+/** `hooks/hooks.json` の SessionStart のコマンドを流す。`env` は子プロセスの環境変数に重ねる */
+export async function runSessionStartHook(options: {
+  pluginDir: string;
+  env: Record<string, string>;
+}): Promise<HookResult> {
+  return runHook({ ...options, event: "SessionStart", input: "{}" });
+}
+
+/** ビルドした `plugin/bin/setup.js` を `args` で子プロセスとして流す。`env` は子プロセスの環境変数に重ねる。終了コードが 0 以外でも例外を投げず、結果を返す */
+export async function runSetupScript(options: {
+  args: string[];
+  env: Record<string, string>;
+  pluginDir?: string;
+}): Promise<HookResult> {
+  const pluginDir = options.pluginDir ?? builtPluginDir();
+  const run = launch({
+    command: process.execPath,
+    args: [join(pluginDir, "bin", "setup.js"), ...options.args],
+    cwd: pluginDir,
+    env: childEnv(options.env),
+  });
+  const code = await run.exited;
+  return { code, stdout: run.stdout(), stderr: run.stderr() };
 }
 
 /** テストごとに起動した `mdmark serve` と作った MCP のクライアントを閉じる。起動・接続する関数を返す */
@@ -207,10 +225,11 @@ export function useMcpServers(): {
   runServeToExit: (options: {
     env: Record<string, string>;
   }) => Promise<HookResult>;
-  /** 空いているポートで `mdmark serve` を起動し、HTTP でつなぐ。`projectDir` を渡すと、`callTool` が `project_dir` として入れる（PreToolUse のフックの代わり） */
+  /** 空いているポートで `mdmark serve` を起動し、HTTP でつなぐ。`projectDir` を渡すと、`callTool` が `project_dir` として入れる（PreToolUse のフックの代わり）。`env` は子プロセスの環境変数に重ねる */
   connectHttp: (options?: {
     projectDir?: string;
     packageDir?: string;
+    env?: Record<string, string>;
   }) => Promise<Client>;
   /** 待ち受けている URL に HTTP でつなぐ */
   connectUrl: (url: string) => Promise<Client>;
@@ -291,14 +310,18 @@ export function useMcpServers(): {
   };
 
   const connectHttp = async (
-    options: { projectDir?: string; packageDir?: string } = {},
+    options: {
+      projectDir?: string;
+      packageDir?: string;
+      env?: Record<string, string>;
+    } = {},
   ): Promise<Client> => {
     // 空きを確かめてから起動するまでに別のプロセスにポートを取られたときは、ポートを選び直す
     for (let attempt = 1; ; attempt++) {
       const port = await findFreePort();
       try {
         const serve = await startServe({
-          env: { MDMARK_PORT: String(port) },
+          env: { ...options.env, MDMARK_PORT: String(port) },
           packageDir: options.packageDir,
         });
         const client = await connectUrl(serve.url);
@@ -336,6 +359,5 @@ export async function callTool(
   return {
     isError: result.isError === true,
     texts: content.map((item) => item.text),
-    structured: result.structuredContent as Record<string, unknown> | undefined,
   };
 }

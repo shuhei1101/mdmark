@@ -12,7 +12,7 @@ const loadDictionary = () => import("../../../../src/knowledge/dictionary.ts");
 
 /** 文書 `api`（別名 `公開関数`）だけを持つ索引 */
 const API_INDEX: MdmarkIndex = {
-  schema: 1,
+  schema: 2,
   docs: [{ id: "api", path: "api.md", title: "API", aliases: ["公開関数"] }],
 };
 
@@ -21,7 +21,7 @@ test("test_build_dictionary", async () => {
   // 準備
   const { buildDictionary } = await loadDictionary();
   const index: MdmarkIndex = {
-    schema: 1,
+    schema: 2,
     docs: [
       { id: "g1", path: "g1.md", title: "G1" },
       { id: "g2", path: "g2.md", title: "G2" },
@@ -63,7 +63,7 @@ test("test_build_dictionary_when_notation_differs", async () => {
   // 準備
   const { buildDictionary } = await loadDictionary();
   const index: MdmarkIndex = {
-    schema: 1,
+    schema: 2,
     docs: [{ id: "api", path: "api.md", title: "API", aliases: ["ＡＰＩ"] }],
     terms: [
       { id: "mcp", term: "MCP", meaning: "索引の意味" },
@@ -138,7 +138,7 @@ test("test_build_dictionary_excludes_self", async () => {
 
 /** やめた言い方 `作業場` を 2 つの用語が持ち、`WS` は用語の別名と同じやめた言い方でもある索引 */
 const AVOID_INDEX: MdmarkIndex = {
-  schema: 1,
+  schema: 2,
   docs: [],
   terms: [
     {
@@ -198,7 +198,7 @@ test("test_build_dictionary_avoided_when_glossary_disabled", async () => {
 
 /** 索引の `docs` が `glossary`・`guide` の順で、用語 `フォルダ` が `作業場` をやめた言い方に持つ索引 */
 const AVOID_TABLE_INDEX: MdmarkIndex = {
-  schema: 1,
+  schema: 2,
   docs: [
     { id: "glossary", path: "glossary.md", title: "用語集" },
     { id: "guide", path: "guide.md", title: "ガイド" },
@@ -274,7 +274,7 @@ test("test_build_dictionary_avoided_own_table_first_when_not_in_index", async ()
   // 準備
   const { buildDictionary } = await loadDictionary();
   const index: MdmarkIndex = {
-    schema: 1,
+    schema: 2,
     docs: [{ id: "glossary", path: "glossary.md", title: "用語集" }],
   };
   const references: MdmarkReferences = {
@@ -313,7 +313,7 @@ test("test_build_dictionary_avoided_when_glossary_entry_without_avoid", async ()
   // 準備
   const { buildDictionary } = await loadDictionary();
   const index: MdmarkIndex = {
-    schema: 1,
+    schema: 2,
     docs: [{ id: "glossary", path: "glossary.md", title: "用語集" }],
   };
   const references: MdmarkReferences = {
@@ -362,7 +362,7 @@ test("test_build_dictionary_when_aliases", async () => {
   // 準備
   const { buildDictionary } = await loadDictionary();
   const index: MdmarkIndex = {
-    schema: 1,
+    schema: 2,
     docs: [],
     terms: [{ id: "index-mark", term: "印", meaning: "索引の意味" }],
   };
@@ -410,7 +410,7 @@ test("test_build_dictionary_avoided_from_aliases", async () => {
   // 準備
   const { buildDictionary } = await loadDictionary();
   const index: MdmarkIndex = {
-    schema: 1,
+    schema: 2,
     docs: [],
     terms: [
       {

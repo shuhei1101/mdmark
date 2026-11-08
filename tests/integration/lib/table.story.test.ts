@@ -1,10 +1,13 @@
 import type { Page } from "playwright";
 import { afterAll, beforeAll, expect, test } from "vitest";
 import {
+  contrastRatio,
   countColorPixels,
   createBrowserHolder,
   pageOverflows,
   resolveColor,
+  resolveColorIn,
+  resolveLightColor,
 } from "../story.ts";
 
 const holder = createBrowserHolder();
@@ -26,6 +29,19 @@ function columnTexts(page: Page, column: number): Promise<string[]> {
       ),
     ].map((row) => row.querySelectorAll("td")[index]?.textContent ?? "");
   }, column);
+}
+
+/** 表の本文の最初の行のうち、`position` の計算値が `sticky` のセルの列の位置を返す */
+function pinnedColumns(page: Page): Promise<number[]> {
+  return page.evaluate(() =>
+    [
+      ...(document
+        .querySelector("#storybook-root tbody tr")
+        ?.querySelectorAll("td") ?? []),
+    ].flatMap((cell, index) =>
+      getComputedStyle(cell).position === "sticky" ? [index] : [],
+    ),
+  );
 }
 
 /** 表の本文の行のうち、隠れていない行の数 */
@@ -193,7 +209,7 @@ test("test_filter_select_open", async () => {
   );
   await expect(
     drawer.locator(".mdmark-filter-clear").innerText(),
-  ).resolves.toBe("絞り込みを外す");
+  ).resolves.toBe("絞り込みを解除");
   await expect(
     page.locator(".mdmark-filter[aria-expanded='true']").count(),
   ).resolves.toBe(1);
@@ -273,9 +289,110 @@ test("test_default_overflow", async () => {
     10,
   );
   const scrolls = await page
-    .locator(".mdmark-table table")
+    .locator(".mdmark-table .mdmark-table-scroll")
     .evaluate((el) => el.scrollWidth > el.clientWidth);
   expect(scrolls).toBe(true);
+  // 先頭の列を既定で留める
+  await expect(
+    page.locator("button.mdmark-pin").first().getAttribute("aria-pressed"),
+  ).resolves.toBe("true");
+  await expect(pinnedColumns(page)).resolves.toEqual([0]);
+});
+
+// -pin ではみ出す表は、ピン止めのボタンを出さず、どの列も留めない（NoPin）
+test("test_no_pin", async () => {
+  // 準備・実行
+  const page = await open("no-pin");
+  // 検証
+  await expect(page.locator("button.mdmark-pin").count()).resolves.toBe(0);
+  await expect(pinnedColumns(page)).resolves.toEqual([]);
+  await expect(
+    page
+      .locator(".mdmark-table .mdmark-table-scroll")
+      .evaluate((el) => el.scrollWidth > el.clientWidth),
+  ).resolves.toBe(true);
+});
+
+// pin=担当 wide=概要 は、担当の列までを留め、概要の列を折り返さずに広く取る（PinAndWide）
+test("test_pin_and_wide", async () => {
+  // 準備・実行
+  const page = await open("pin-and-wide");
+  // 検証: 留める列
+  await expect(
+    page.locator(".mdmark-table").getAttribute("data-pin"),
+  ).resolves.toBe("1");
+  await expect(pinnedColumns(page)).resolves.toEqual([0, 1]);
+  // 検証: 概要の列は折り返さず、1 行の高さに収まる
+  const summary = page
+    .locator("#storybook-root tbody tr")
+    .first()
+    .locator("td")
+    .nth(2);
+  await expect(
+    summary.evaluate((el) => getComputedStyle(el).whiteSpace),
+  ).resolves.toBe("nowrap");
+  await expect(
+    summary.evaluate((el) => el.scrollWidth <= el.clientWidth),
+  ).resolves.toBe(true);
+});
+
+// check=必須 は、true を ✓、false を空欄で出し、既定の列は文字のまま（Check）
+test("test_check", async () => {
+  // 準備・実行
+  const page = await open("check");
+  // 検証: 必須の列の ✓ と空欄
+  const cells = await page.evaluate(() =>
+    [
+      ...document.querySelectorAll(
+        "#storybook-root tbody tr:not(.mdmark-table-empty)",
+      ),
+    ].map((row) => {
+      const cell = row.querySelectorAll("td")[2];
+      const mark = cell?.querySelector(".mdmark-check");
+      return {
+        value: cell?.getAttribute("data-value"),
+        label: mark?.getAttribute("aria-label") ?? null,
+        role: mark?.getAttribute("role") ?? null,
+        spoken:
+          cell?.querySelector(".mdmark-visually-hidden")?.textContent ?? null,
+        align: cell ? getComputedStyle(cell).textAlign : "",
+      };
+    }),
+  );
+  expect(cells.map((cell) => cell.value)).toEqual([
+    "true",
+    "false",
+    "false",
+    "true",
+  ]);
+  expect(cells[0]).toMatchObject({
+    label: "はい",
+    role: "img",
+    spoken: null,
+    align: "center",
+  });
+  expect(cells[1]).toMatchObject({
+    label: null,
+    spoken: "いいえ",
+    align: "center",
+  });
+  // 検証: 空欄のセルは見た目に文字が無い（いいえは読み上げだけで、大きさを持たない）
+  const spokenBox = await page
+    .locator("#storybook-root tbody tr")
+    .nth(1)
+    .locator("td .mdmark-visually-hidden")
+    .evaluate((el) => {
+      const rect = el.getBoundingClientRect();
+      return Math.max(rect.width, rect.height);
+    });
+  expect(spokenBox).toBeLessThanOrEqual(1);
+  // 検証: 既定の列は文字のまま
+  await expect(columnTexts(page, 3)).resolves.toEqual([
+    "-",
+    "全てオン",
+    "jsDelivr",
+    "-",
+  ]);
 });
 
 // 2 列目までピン止めすると、留めた最後の列の右に境目の線がある（Pinned）
@@ -468,42 +585,49 @@ test("test_count_filtered", async () => {
   await expect(visibleRows(page)).resolves.toBe(2);
 });
 
-// hide= の列を隠し、帯に列の表示のボタンを出す（ColumnsHidden）
+// hide= の列を隠し、帯にテーブル設定のアイコンだけのボタンと、隠した列の数のバッジを出す（ColumnsHidden）
 test("test_columns_hidden", async () => {
   // 準備・実行
   const page = await open("columns-hidden");
   // 検証
+  const toggle = page.locator(".mdmark-table-settings-toggle");
+  await expect(toggle.getAttribute("aria-label")).resolves.toBe(
+    "テーブル設定（1 列を非表示）",
+  );
   await expect(
-    page.locator(".mdmark-columns-toggle").innerText(),
-  ).resolves.toContain("列の表示");
+    toggle.locator(".mdmark-table-tool-badge").innerText(),
+  ).resolves.toBe("1");
+  await expect(toggle.locator("svg").count()).resolves.toBe(1);
   await expect(
-    page.locator(".mdmark-columns-menu:not([hidden])").count(),
+    page.locator(".mdmark-table-settings:not([hidden])").count(),
   ).resolves.toBe(0);
   const hidden = await hiddenCells(page, 1);
   expect(hidden.every(Boolean)).toBe(true);
   expect((await hiddenCells(page, 0)).some(Boolean)).toBe(false);
 });
 
-// 列の表示のメニューを開くと、先頭の列は外せず理由が出る（ColumnsMenuOpen）
+// テーブル設定のパネルを開くと、各行に目のアイコンがあり、先頭の列は隠せず理由が出る（ColumnsMenuOpen）
 test("test_columns_menu_open", async () => {
   // 準備・実行
   const page = await open("columns-menu-open");
   // 検証
-  const menu = page.locator(".mdmark-columns-menu:not([hidden])");
-  await expect(menu.count()).resolves.toBe(1);
-  const boxes = menu.locator("input[type='checkbox']");
-  await expect(boxes.count()).resolves.toBe(3);
-  await expect(boxes.nth(0).isDisabled()).resolves.toBe(true);
-  await expect(boxes.nth(1).isChecked()).resolves.toBe(true);
-  await expect(boxes.nth(2).isChecked()).resolves.toBe(false);
-  await expect(menu.innerText()).resolves.toContain("先頭の列は隠せません");
-  await expect(menu.innerText()).resolves.toContain("既定に戻す");
+  const panel = page.locator(".mdmark-table-settings:not([hidden])");
+  await expect(panel.count()).resolves.toBe(1);
   await expect(
-    page.locator(".mdmark-columns-toggle").getAttribute("aria-expanded"),
+    panel.locator(".mdmark-table-settings-title").innerText(),
+  ).resolves.toBe("表示と並び順");
+  const eyes = panel.locator(".mdmark-table-settings-eye");
+  await expect(eyes.count()).resolves.toBe(3);
+  await expect(eyes.nth(0).isDisabled()).resolves.toBe(true);
+  await expect(eyes.nth(1).getAttribute("aria-pressed")).resolves.toBe("false");
+  await expect(eyes.nth(2).getAttribute("aria-pressed")).resolves.toBe("true");
+  await expect(panel.innerText()).resolves.toContain("先頭の列は隠せません");
+  await expect(
+    page.locator(".mdmark-table-settings-toggle").getAttribute("aria-expanded"),
   ).resolves.toBe("true");
-  // 最後の列を隠していても、表の右端は外側の枠の 1px だけ（表に重なるメニューは隠して測る）
+  // 最後の列を隠していても、表の右端は外側の枠の 1px だけ（表に重なるパネルは隠して測る）
   await page.addStyleTag({
-    content: ".mdmark-columns-menu { display: none; }",
+    content: ".mdmark-table-settings { display: none; }",
   });
   expect((await hiddenCells(page, 2)).every(Boolean)).toBe(true);
   await expect(
@@ -607,7 +731,9 @@ test("test_all_features", async () => {
   const page = await open("all-features");
   // 検証
   await expect(countText(page)).resolves.toBe("3 / 3 件");
-  await expect(page.locator(".mdmark-columns-toggle").count()).resolves.toBe(1);
+  await expect(
+    page.locator(".mdmark-table-settings-toggle").count(),
+  ).resolves.toBe(1);
   await expect(page.locator(".mdmark-copy").count()).resolves.toBe(1);
   await expect(totalRows(page)).resolves.toEqual([["合計", "", "25"]]);
   expect((await hiddenCells(page, 1)).every(Boolean)).toBe(true);
@@ -633,8 +759,8 @@ test("test_totals_menu_open", async () => {
   // 検証
   const menu = page.locator(".mdmark-totals-menu:not([hidden])");
   await expect(menu.count()).resolves.toBe(1);
-  await expect(menu.getAttribute("aria-label")).resolves.toBe("出す集計");
-  await expect(menu.innerText()).resolves.toContain("出す集計");
+  await expect(menu.getAttribute("aria-label")).resolves.toBe("表示する集計");
+  await expect(menu.innerText()).resolves.toContain("表示する集計");
   const boxes = menu.locator("input[type='checkbox']");
   await expect(boxes.count()).resolves.toBe(3);
   await expect(
@@ -681,7 +807,7 @@ test("test_totals_hidden", async () => {
   ).resolves.toBe(true);
   await expect(
     toggle.locator(".mdmark-visually-hidden").innerText(),
-  ).resolves.toBe("（2 件を隠しています）");
+  ).resolves.toBe("（2 件を非表示にしています）");
 });
 
 // コピーの形式のメニューを開くと、Markdown の表と TSV の 2 つを使いどころと並べて出す（CopyMenuOpen）
@@ -717,7 +843,7 @@ test("test_copy_menu_open", async () => {
   await expect(pageOverflows(page)).resolves.toBe(false);
 });
 
-// クリップボードに書けないときは、手でコピーするパネルを帯の直後に出し、中身を読み取り専用で並べる（CopyFallback）
+// クリップボードに書けないときは、手動でコピーするパネルを帯の直後に出し、中身を読み取り専用で並べる（CopyFallback）
 test("test_copy_fallback", async () => {
   // 準備・実行
   const page = await open("copy-fallback");
@@ -904,4 +1030,768 @@ test("test_sticky_rows", async () => {
   await expect
     .poll(async () => Math.abs((await footBottom()) - viewportHeight))
     .toBeLessThanOrEqual(1);
+});
+
+/** 本文の行ごとの色の名前と、各セルの面の色・文字の色・下の罫線の色・上の線（box-shadow） */
+function rowColors(page: Page) {
+  return page.evaluate(() =>
+    [
+      ...document.querySelectorAll(
+        "#storybook-root tbody tr:not(.mdmark-table-empty):not(.mdmark-row-detail)",
+      ),
+    ].map((row) => ({
+      name: row.querySelector("td")?.textContent ?? "",
+      color: row.getAttribute("data-color"),
+      cells: [...row.querySelectorAll("td")].map((cell) => {
+        const style = getComputedStyle(cell);
+        return {
+          background: style.backgroundColor,
+          text: style.color,
+          bottom: style.borderBottomColor,
+          shadow: style.boxShadow,
+          highlighted: cell.classList.contains("mdmark-col-highlight"),
+        };
+      }),
+    })),
+  );
+}
+
+/** 色のプリセットの面の薄い色と文字の色を、表の中で解決した色にする */
+async function accent(page: Page, color: string) {
+  return {
+    bg: await resolveColorIn(
+      page,
+      ".mdmark",
+      `var(--mdmark-color-accent-${color}-bg)`,
+    ),
+    text: await resolveColorIn(
+      page,
+      ".mdmark",
+      `var(--mdmark-color-accent-${color}-text)`,
+    ),
+  };
+}
+
+// highlight= の列は、セルを面の薄い色にし、見出しのセルの下端に線を付ける（Highlighted）
+test("test_highlighted", async () => {
+  // 準備・実行
+  const page = await open("highlighted");
+  // 検証
+  const blue = await accent(page, "blue");
+  const head = await page.evaluate(() =>
+    [...document.querySelectorAll("#storybook-root thead th")].map((th) => ({
+      highlighted: th.classList.contains("mdmark-col-highlight"),
+      color: th.getAttribute("data-color"),
+      background: getComputedStyle(th).backgroundColor,
+      shadow: getComputedStyle(th).boxShadow,
+    })),
+  );
+  expect(head.map((th) => th.highlighted)).toEqual([false, false, true]);
+  expect(head[2]?.color).toBe("blue");
+  expect(head[2]?.background).toBe(blue.bg);
+  // 見出しの下端の線は、色の文字の色の内側の影
+  expect(head[2]?.shadow).toContain(blue.text);
+  expect(head[2]?.shadow).toContain("inset");
+  const rows = await rowColors(page);
+  for (const row of rows) {
+    expect(row.cells.map((cell) => cell.highlighted)).toEqual([
+      false,
+      false,
+      true,
+    ]);
+    expect(row.cells[2]?.background).toBe(blue.bg);
+    expect(row.cells[0]?.background).not.toBe(blue.bg);
+    expect(
+      contrastRatio(row.cells[2]?.text ?? "", row.cells[2]?.background ?? ""),
+    ).toBeGreaterThanOrEqual(4.5);
+  }
+});
+
+// row-color= の行は、面の薄い色にし、行の上下に線を付ける（RowColors）
+test("test_row_colors", async () => {
+  // 準備・実行
+  const page = await open("row-colors");
+  // 検証
+  const green = await accent(page, "green");
+  const yellow = await accent(page, "yellow");
+  const rows = await rowColors(page);
+  expect(rows.map((row) => row.color)).toEqual([
+    "green",
+    "yellow",
+    null,
+    "green",
+  ]);
+  for (const cell of rows[0]?.cells ?? []) {
+    expect(cell.background).toBe(green.bg);
+    expect(cell.bottom).toBe(green.text);
+    // 先頭の行は上に線を付ける
+    expect(cell.shadow).toContain(green.text);
+    expect(contrastRatio(cell.text, cell.background)).toBeGreaterThanOrEqual(
+      4.5,
+    );
+  }
+  for (const cell of rows[1]?.cells ?? []) {
+    expect(cell.background).toBe(yellow.bg);
+    expect(cell.bottom).toBe(yellow.text);
+    expect(contrastRatio(cell.text, cell.background)).toBeGreaterThanOrEqual(
+      4.5,
+    );
+  }
+  // 色の無い行の後ろの色の行は、上に線を付ける
+  for (const cell of rows[3]?.cells ?? []) {
+    expect(cell.background).toBe(green.bg);
+    expect(cell.shadow).toContain(green.text);
+  }
+  for (const cell of rows[2]?.cells ?? []) {
+    expect(cell.background).not.toBe(green.bg);
+    expect(cell.background).not.toBe(yellow.bg);
+  }
+});
+
+// 並べ替えた後も、値で付けた色は行に付いたまま動く（RowColorsSorted）
+test("test_row_colors_sorted", async () => {
+  // 準備・実行
+  const page = await open("row-colors-sorted");
+  // 検証
+  const rows = await rowColors(page);
+  expect(rows.map((row) => [row.name, row.color])).toEqual([
+    ["納品の確認", "green"],
+    ["請求書の発行", null],
+    ["契約書の確認", "yellow"],
+    ["見積もりの作成", "green"],
+  ]);
+  const green = await accent(page, "green");
+  expect(rows[0]?.cells[0]?.background).toBe(green.bg);
+});
+
+// 列の強調と行の色が重なるセルは、行の色にする（HighlightAndRowColors）
+test("test_highlight_and_row_colors", async () => {
+  // 準備・実行
+  const page = await open("highlight-and-row-colors");
+  // 検証
+  const blue = await accent(page, "blue");
+  const red = await accent(page, "red");
+  const rows = await rowColors(page);
+  expect(rows.map((row) => row.color)).toEqual([null, "red", null, null]);
+  expect(rows[1]?.cells.map((cell) => cell.background)).toEqual([
+    red.bg,
+    red.bg,
+    red.bg,
+  ]);
+  for (const index of [0, 2, 3]) {
+    expect(rows[index]?.cells[2]?.background).toBe(blue.bg);
+  }
+});
+
+// 暗い配色では、暗い配色の色のプリセットで列と行を描く（RowColorsDark）
+test("test_row_colors_dark", async () => {
+  // 準備・実行
+  const page = await open("row-colors-dark");
+  // 検証
+  await expect(
+    page.locator(".mdmark").getAttribute("class"),
+  ).resolves.toContain("mdmark-theme-dark");
+  const green = await accent(page, "green");
+  const blue = await accent(page, "blue");
+  const rows = await rowColors(page);
+  expect(rows[0]?.cells[0]?.background).toBe(green.bg);
+  expect(rows[2]?.cells[2]?.background).toBe(blue.bg);
+  for (const row of rows) {
+    for (const cell of row.cells) {
+      expect(contrastRatio(cell.text, cell.background)).toBeGreaterThanOrEqual(
+        4.5,
+      );
+    }
+  }
+  // 明るい配色の値と違う
+  const light = await resolveLightColor(
+    page,
+    "var(--mdmark-color-accent-green-bg)",
+  );
+  expect(green.bg).not.toBe(light);
+});
+
+/** 表の本文の行の行見出し（`th`）について、文字・隠れているか・`rowspan` を上から並べて返す（隠れた行も含む） */
+function rowHeaders(
+  page: Page,
+): Promise<Array<{ text: string; hidden: boolean; rowSpan: number }>> {
+  return page.evaluate(() =>
+    [
+      ...document.querySelectorAll<HTMLTableRowElement>(
+        "#storybook-root tbody tr:not(.mdmark-table-empty):not(.mdmark-row-detail)",
+      ),
+    ].map((row) => {
+      const cell = row.querySelector<HTMLTableCellElement>("th[scope=row]");
+      return {
+        text: cell?.textContent ?? "",
+        hidden: cell?.hidden === true,
+        rowSpan: cell?.rowSpan ?? 0,
+      };
+    }),
+  );
+}
+
+// 多段の見出しと行見出しは、上期・下期を 2 列にまたいで中央に寄せ、同じ地域を縦に結合して上に寄せる（Merged）
+test("test_merged", async () => {
+  // 準備・実行
+  const page = await open("merged");
+  // 検証: 見出しの 2 行と、2 列をまたぐ見出し
+  await expect(page.locator("#storybook-root thead tr").count()).resolves.toBe(
+    2,
+  );
+  const groups = page.locator("#storybook-root thead th[scope=colgroup]");
+  await expect(groups.allTextContents()).resolves.toEqual(["上期", "下期"]);
+  await expect(
+    groups.evaluateAll((cells) =>
+      cells.map((cell) => [
+        (cell as HTMLTableCellElement).colSpan,
+        getComputedStyle(cell).textAlign,
+      ]),
+    ),
+  ).resolves.toEqual([
+    [2, "center"],
+    [2, "center"],
+  ]);
+  // 検証: 地域の行見出しの縦の結合
+  await expect(rowHeaders(page)).resolves.toEqual([
+    { text: "東日本", hidden: false, rowSpan: 3 },
+    { text: "東日本", hidden: true, rowSpan: 1 },
+    { text: "東日本", hidden: true, rowSpan: 1 },
+    { text: "西日本", hidden: false, rowSpan: 2 },
+    { text: "西日本", hidden: true, rowSpan: 1 },
+  ]);
+  await expect(
+    page
+      .locator("#storybook-root tbody th.is-merged")
+      .first()
+      .evaluate((cell) => getComputedStyle(cell).verticalAlign),
+  ).resolves.toBe("top");
+  await expect(pageOverflows(page)).resolves.toBe(false);
+});
+
+// 降順に並べ替えた後は、隣り合う同じ地域だけを結合し直す（MergedSorted）
+test("test_merged_sorted", async () => {
+  // 準備・実行
+  const page = await open("merged-sorted");
+  // 検証
+  await expect(page.locator("th[aria-sort=descending]").count()).resolves.toBe(
+    1,
+  );
+  await expect(columnTexts(page, 3)).resolves.toEqual([
+    "342",
+    "248",
+    "151",
+    "135",
+    "102",
+  ]);
+  await expect(rowHeaders(page)).resolves.toEqual([
+    { text: "東日本", hidden: false, rowSpan: 1 },
+    { text: "西日本", hidden: false, rowSpan: 2 },
+    { text: "西日本", hidden: true, rowSpan: 1 },
+    { text: "東日本", hidden: false, rowSpan: 2 },
+    { text: "東日本", hidden: true, rowSpan: 1 },
+  ]);
+});
+
+// 東日本で絞り込んだ後は、表示している 3 行の地域を結合し直す（MergedFiltered）
+test("test_merged_filtered", async () => {
+  // 準備・実行
+  const page = await open("merged-filtered");
+  // 検証
+  await expect(visibleRows(page)).resolves.toBe(3);
+  await expect(
+    page.locator("button.mdmark-filter.is-active").count(),
+  ).resolves.toBe(1);
+  const headers = await rowHeaders(page);
+  expect(headers[0]).toEqual({ text: "東日本", hidden: false, rowSpan: 3 });
+  expect(headers.slice(1, 3).every((header) => header.hidden)).toBe(true);
+});
+
+// row-header=2 のはみ出す表は、描いた直後に 2 列目まで留め、2 列目のピン止めのボタンが押された状態（RowHeaderPinned）
+test("test_row_header_pinned", async () => {
+  // 準備・実行
+  const page = await open("row-header-pinned");
+  // 検証
+  await expect(
+    page
+      .locator("#storybook-root thead button.mdmark-pin")
+      .evaluateAll((buttons) =>
+        buttons.map((button) => button.getAttribute("aria-pressed")),
+      ),
+  ).resolves.toEqual([
+    "false",
+    "true",
+    "false",
+    "false",
+    "false",
+    "false",
+    "false",
+    "false",
+    "false",
+    "false",
+  ]);
+  const sticky = await page.evaluate(() =>
+    [
+      ...(document
+        .querySelector("#storybook-root tbody tr")
+        ?.querySelectorAll("th, td") ?? []),
+    ].map((cell) => getComputedStyle(cell).position),
+  );
+  expect(sticky.slice(0, 2)).toEqual(["sticky", "sticky"]);
+  expect(sticky.slice(2).every((position) => position !== "sticky")).toBe(true);
+  // 表は枠より広い
+  await expect(
+    page
+      .locator("#storybook-root .mdmark-table .mdmark-table-scroll")
+      .evaluate((scroller) => scroller.scrollWidth > scroller.clientWidth),
+  ).resolves.toBe(true);
+});
+
+// 結合する相手の無い ^^・<< は、表の前に書き方の警告を置き、セルを書いた文字のまま描く（MergeInvalid）
+test("test_merge_invalid", async () => {
+  // 準備・実行
+  const page = await open("merge-invalid");
+  // 検証
+  const items = page.locator(".mdmark-syntax-warning li");
+  await expect(items.count()).resolves.toBe(2);
+  await expect(items.nth(0).innerText()).resolves.toContain("^^");
+  await expect(items.nth(1).innerText()).resolves.toContain("<<");
+  await expect(columnTexts(page, 0)).resolves.toEqual(["^^", "<<", "東日本"]);
+  await expect(
+    page.locator("#storybook-root tbody .is-merged").count(),
+  ).resolves.toBe(0);
+  const order = await page.evaluate(() => {
+    const warning = document.querySelector(".mdmark-syntax-warning");
+    const table = document.querySelector(".mdmark-table");
+    return warning && table
+      ? warning.compareDocumentPosition(table) &
+          Node.DOCUMENT_POSITION_FOLLOWING
+      : 0;
+  });
+  expect(order).toBeGreaterThan(0);
+});
+
+// CSV の表は、帯の右端に押していない RAW のボタンを置き、元の CSV を隠す（CsvTable）
+test("test_csv_table", async () => {
+  // 準備・実行
+  const page = await open("csv-table");
+  // 検証
+  const button = page.locator(".mdmark-raw-toggle");
+  await expect(button.getAttribute("aria-label")).resolves.toBe(
+    "元の CSV を表示",
+  );
+  await expect(button.getAttribute("aria-pressed")).resolves.toBe("false");
+  const box = await button.boundingBox();
+  const table = await page.locator(".mdmark-table table").boundingBox();
+  expect(box?.width).toBeGreaterThanOrEqual(24);
+  expect((box?.x ?? 0) + (box?.width ?? 0)).toBeCloseTo(
+    (table?.x ?? 0) + (table?.width ?? 0),
+    0,
+  );
+  await expect(
+    page
+      .locator("pre.mdmark-raw")
+      .evaluate((pre) => getComputedStyle(pre).visibility),
+  ).resolves.toBe("hidden");
+});
+
+// RAW のボタンを押した状態は、表を隠して書いたとおりの CSV を出し、ボタンを青の面にする（CsvRaw）
+test("test_csv_raw", async () => {
+  // 準備・実行
+  const page = await open("csv-raw");
+  const plain = await open("csv-table");
+  // 検証
+  const read = (target: Page) =>
+    target.locator(".mdmark-raw-toggle").evaluate((button) => ({
+      pressed: button.getAttribute("aria-pressed"),
+      background: getComputedStyle(button).backgroundColor,
+    }));
+  const pressed = await read(page);
+  expect(pressed.pressed).toBe("true");
+  expect(pressed.background).not.toBe((await read(plain)).background);
+  await expect(
+    page
+      .locator(".mdmark-table table")
+      .evaluate((t) => getComputedStyle(t).visibility),
+  ).resolves.toBe("hidden");
+  await expect(page.locator("pre.mdmark-raw").innerText()).resolves.toContain(
+    '北山,"東京, 本社",1200',
+  );
+});
+
+/** テーブル設定の一覧の項目の列名を、並んだ順に返す */
+function settingsNames(page: Page): Promise<string[]> {
+  return page
+    .locator(".mdmark-table-settings-item")
+    .evaluateAll((items) =>
+      items.map((item) => (item as HTMLElement).dataset.name ?? ""),
+    );
+}
+
+// `+reorder +columns` の表でパネルを開くと、各行につまみと目のアイコンがある（SettingsOpenReorder）
+test("test_settings_open_reorder", async () => {
+  // 準備・実行
+  const page = await open("settings-open-reorder");
+  // 検証
+  const panel = page.locator(".mdmark-table-settings:not([hidden])");
+  await expect(
+    panel.locator(".mdmark-table-settings-title").innerText(),
+  ).resolves.toBe("表示と並び順");
+  await expect(settingsNames(page)).resolves.toEqual([
+    "名前",
+    "型",
+    "既定",
+    "説明",
+  ]);
+  await expect(
+    panel.locator(".mdmark-table-settings-grip").count(),
+  ).resolves.toBe(4);
+  await expect(
+    panel.locator(".mdmark-table-settings-eye").count(),
+  ).resolves.toBe(4);
+  await expect(
+    panel
+      .locator(".mdmark-table-settings-grip")
+      .nth(0)
+      .getAttribute("draggable"),
+  ).resolves.toBe("true");
+  await expect(pageOverflows(page)).resolves.toBe(false);
+});
+
+// `+reorder` だけの表のパネルは題が `並び順` で、目のアイコンを出さない（SettingsReorderOnly）
+test("test_settings_reorder_only", async () => {
+  // 準備・実行
+  const page = await open("settings-reorder-only");
+  // 検証
+  const panel = page.locator(".mdmark-table-settings:not([hidden])");
+  await expect(
+    panel.locator(".mdmark-table-settings-title").innerText(),
+  ).resolves.toBe("並び順");
+  await expect(
+    panel.locator(".mdmark-table-settings-eye").count(),
+  ).resolves.toBe(0);
+  await expect(
+    panel.locator(".mdmark-table-settings-grip").count(),
+  ).resolves.toBe(4);
+});
+
+// 説明を名前の上へドラッグしている間、説明の行を薄くし、名前の上の境に線を出す（ReorderDragging）
+test("test_reorder_dragging", async () => {
+  // 準備・実行
+  const page = await open("reorder-dragging");
+  // 検証
+  const item = (column: number) =>
+    page.locator(`.mdmark-table-settings-item[data-column="${column}"]`);
+  await expect(
+    item(3).evaluate((el) => el.classList.contains("is-dragging")),
+  ).resolves.toBe(true);
+  await expect(
+    item(0).evaluate((el) => el.classList.contains("is-drop-before")),
+  ).resolves.toBe(true);
+  const opacity = await item(3).evaluate((el) =>
+    Number(getComputedStyle(el).opacity),
+  );
+  expect(opacity).toBeLessThan(1);
+  await expect(
+    item(0).evaluate((el) => getComputedStyle(el).boxShadow),
+  ).resolves.toContain("inset");
+  await expect(
+    item(1).evaluate((el) => getComputedStyle(el).boxShadow),
+  ).resolves.toBe("none");
+});
+
+// 説明・名前・既定・型の順に並べ、説明を隠し、ボタンにバッジ `1` を出す（Reordered）
+test("test_reordered", async () => {
+  // 準備・実行
+  const page = await open("reordered");
+  // 検証
+  const order = await page
+    .locator("#storybook-root tbody tr:first-child td")
+    .evaluateAll((cells) =>
+      cells.map((cell) => (cell as HTMLElement).dataset.label),
+    );
+  expect(order).toEqual(["説明", "名前", "既定", "型"]);
+  await expect(settingsNames(page)).resolves.toEqual([
+    "説明",
+    "名前",
+    "既定",
+    "型",
+  ]);
+  expect((await hiddenCells(page, 0)).every(Boolean)).toBe(true);
+  expect((await hiddenCells(page, 1)).some(Boolean)).toBe(false);
+  await expect(
+    page
+      .locator(".mdmark-table-settings-toggle .mdmark-table-tool-badge")
+      .innerText(),
+  ).resolves.toBe("1");
+});
+
+// 2 段の見出しで名前をピン止めした表のパネルを、ピン止めの列・設定の範囲・範囲の外の列に分ける（ReorderGroups）
+test("test_reorder_groups", async () => {
+  // 準備・実行
+  const page = await open("reorder-groups");
+  // 検証
+  await expect(
+    page.locator(".mdmark-table-settings-group").allInnerTexts(),
+  ).resolves.toEqual(["ピン止めの列", "設定", "範囲の外の列"]);
+  const grip = (column: number) =>
+    page.locator(
+      `.mdmark-table-settings-item[data-column="${column}"] .mdmark-table-settings-grip`,
+    );
+  await expect(grip(0).isDisabled()).resolves.toBe(true);
+  await expect(grip(4).isDisabled()).resolves.toBe(true);
+  await expect(grip(1).isDisabled()).resolves.toBe(false);
+  await expect(pinnedColumns(page)).resolves.toEqual([0]);
+});
+
+/** 階層の表の行の `data-path` を、表示しているものだけ上から並べて返す */
+function shownTreePaths(page: Page): Promise<string[]> {
+  return page
+    .locator("#storybook-root tr.mdmark-tree-row")
+    .evaluateAll((rows) =>
+      rows
+        .filter((row) => !(row as HTMLElement).hidden)
+        .map((row) => (row as HTMLElement).dataset.path ?? ""),
+    );
+}
+
+// 表に無い親を薄い斜体で補い、型のバッジとチップ・必須の *・既定を出す（Tree）
+test("test_tree", async () => {
+  // 準備・実行
+  const page = await open("tree");
+  // 検証
+  await expect(shownTreePaths(page)).resolves.toEqual([
+    "features",
+    "features.table",
+    "features.html",
+    "aliases[]",
+    "aliases[].id",
+    "aliases[].metadata",
+    "aliases[].metadata.alias_type",
+    "aliases[].metadata.alias_type.type",
+  ]);
+  const virtual = page.locator(
+    'tr.mdmark-tree-row.is-virtual[data-path="features"] .mdmark-tree-name',
+  );
+  await expect(
+    virtual.evaluate((el) => getComputedStyle(el).fontStyle),
+  ).resolves.toBe("italic");
+  const real = page.locator(
+    'tr.mdmark-tree-row[data-path="features.table"] .mdmark-tree-name',
+  );
+  await expect(
+    real.evaluate((el) => getComputedStyle(el).fontStyle),
+  ).resolves.toBe("normal");
+  await expect(
+    page.locator('.mdmark-type-badge[data-type="bool"]').count(),
+  ).resolves.toBe(2);
+  await expect(page.locator(".mdmark-type-chip").count()).resolves.toBe(2);
+  await expect(page.locator(".mdmark-tree-required").count()).resolves.toBe(1);
+  await expect(page.locator(".mdmark-tree-default").innerText()).resolves.toBe(
+    "true",
+  );
+  await expect(pageOverflows(page)).resolves.toBe(false);
+});
+
+// aliases[] を畳むと、ボタンが閉じた向きになり子孫を隠す（TreeFolded）
+test("test_tree_folded", async () => {
+  // 準備・実行
+  const page = await open("tree-folded");
+  // 検証
+  await expect(shownTreePaths(page)).resolves.toEqual([
+    "features",
+    "features.table",
+    "features.html",
+    "aliases[]",
+  ]);
+  await expect(
+    page
+      .locator('tr[data-path="aliases[]"] button.mdmark-tree-toggle')
+      .getAttribute("aria-expanded"),
+  ).resolves.toBe("false");
+});
+
+// キーの列を id で絞り込むと、aliases[] と aliases[].id だけを出し、id に色を付ける（TreeFiltered）
+test("test_tree_filtered", async () => {
+  // 準備・実行
+  const page = await open("tree-filtered");
+  // 検証
+  await expect(shownTreePaths(page)).resolves.toEqual([
+    "aliases[]",
+    "aliases[].id",
+  ]);
+  const hit = page.locator("mark.mdmark-tree-hit");
+  await expect(hit.innerText()).resolves.toBe("id");
+  const color = await hit.evaluate(
+    (el) => getComputedStyle(el).backgroundColor,
+  );
+  expect(color).not.toBe("rgba(0, 0, 0, 0)");
+});
+
+// features.html の行を選ぶと、同じ親の範囲の縦線を濃くする（TreeSelected）
+test("test_tree_selected", async () => {
+  // 準備・実行
+  const page = await open("tree-selected");
+  // 検証
+  await expect(
+    page.locator('tr[data-path="features.html"]').getAttribute("aria-selected"),
+  ).resolves.toBe("true");
+  const active = await page
+    .locator("tr.mdmark-tree-row")
+    .evaluateAll((rows) =>
+      rows
+        .filter((row) =>
+          row
+            .querySelector(".mdmark-tree-guide")
+            ?.classList.contains("is-active"),
+        )
+        .map((row) => (row as HTMLElement).dataset.path),
+    );
+  expect(active).toEqual(["features.table", "features.html"]);
+  const [activeColor, otherColor] = await page.evaluate(() =>
+    [
+      ".mdmark-tree-guide.is-active",
+      'tr[data-path="aliases[].id"] .mdmark-tree-guide',
+    ].map((selector) => {
+      const guide = document.querySelector(selector);
+      return guide ? getComputedStyle(guide).borderLeftColor : "";
+    }),
+  );
+  expect(activeColor).not.toBe("");
+  expect(activeColor).not.toBe(otherColor);
+});
+
+// 見本を結んだ表で選んだパスの行に、開いているタブの見本で色を付ける（TreeExample）
+test("test_tree_example", async () => {
+  // 準備・実行
+  const page = await open("tree-example");
+  // 検証
+  const linked = page.locator(
+    '.mdmark-tree-example [role="tabpanel"]:not([hidden]) .mdmark-yaml-line.is-linked',
+  );
+  await expect(linked.count()).resolves.toBe(1);
+  await expect(linked.getAttribute("data-path")).resolves.toBe(
+    "aliases[].metadata.alias_type.type",
+  );
+  await expect(
+    page
+      .locator('.mdmark-tree-example [role="tab"][aria-selected="true"]')
+      .innerText(),
+  ).resolves.toContain("エイリアス");
+});
+
+// 選んだキーが開いているタブの見本に無いときは、見本に色を付けない（TreeExampleMissing）
+test("test_tree_example_missing", async () => {
+  // 準備・実行
+  const page = await open("tree-example-missing");
+  // 検証
+  await expect(
+    page.locator(".mdmark-tree-example .mdmark-yaml-line.is-linked").count(),
+  ).resolves.toBe(0);
+  await expect(
+    page
+      .locator('.mdmark-tree-example [role="tab"][aria-selected="true"]')
+      .innerText(),
+  ).resolves.toContain("最小");
+});
+
+// 見本を隠すと、ボタンの文言が `見本を表示` で `aria-expanded="false"`（TreeExampleHidden）
+test("test_tree_example_hidden", async () => {
+  // 準備・実行
+  const page = await open("tree-example-hidden");
+  // 検証
+  const toggle = page.locator("button.mdmark-tree-example-toggle");
+  await expect(toggle.innerText()).resolves.toContain("見本を表示");
+  await expect(toggle.getAttribute("aria-expanded")).resolves.toBe("false");
+  await expect(page.locator(".mdmark-tree-example").isVisible()).resolves.toBe(
+    false,
+  );
+});
+
+/** 帯のボタンの見えている文字（読み上げだけの文字を除く）と、幅・高さ */
+function toolBoxes(page: Page) {
+  return page
+    .locator("#storybook-root .mdmark-table-tools > button")
+    .evaluateAll((buttons) =>
+      buttons.map((button) => {
+        const copy = button.cloneNode(true) as HTMLElement;
+        for (const hidden of copy.querySelectorAll(
+          ".mdmark-visually-hidden, .mdmark-table-tool-badge",
+        )) {
+          hidden.remove();
+        }
+        const rect = button.getBoundingClientRect();
+        return {
+          text: (copy.textContent ?? "").trim(),
+          width: rect.width,
+          height: rect.height,
+          title: button.getAttribute("title"),
+          name: button.getAttribute("aria-label") ?? button.textContent ?? "",
+        };
+      }),
+    );
+}
+
+// 帯は、テーブル設定とコピーのボタンがアイコンだけで、テーブル設定に隠した列の数のバッジを持つ（ColumnsButtonA）
+test("test_columns_button_a", async () => {
+  // 準備・実行
+  const page = await open("columns-button-a");
+  // 検証
+  const tools = await toolBoxes(page);
+  expect(tools).toHaveLength(2);
+  for (const button of tools) {
+    expect(button.text).toBe("");
+    expect(Math.abs(button.width - button.height)).toBeLessThanOrEqual(1);
+  }
+  expect(tools[0]?.title).toBe("テーブル設定");
+  expect(tools[0]?.name).toBe("テーブル設定（1 列を非表示）");
+  await expect(
+    page
+      .locator(".mdmark-table-settings-toggle .mdmark-table-tool-badge")
+      .innerText(),
+  ).resolves.toBe("1");
+  await expect(pageOverflows(page)).resolves.toBe(false);
+});
+
+// 列の少ない表は本文の幅いっぱいに広げ、横にスクロールせず、端の影が無い（FillsWidth）
+test("test_fills_width", async () => {
+  // 準備・実行
+  const page = await open("fills-width");
+  // 検証
+  const sizes = await page
+    .locator("#storybook-root .mdmark-table")
+    .evaluate((wrapper) => {
+      const scroller = wrapper.querySelector<HTMLElement>(
+        ".mdmark-table-scroll",
+      );
+      const table = wrapper.querySelector("table");
+      const lastHead = table?.querySelector("thead th:last-child");
+      return {
+        outer: (() => {
+          const parent = wrapper.parentElement;
+          if (!parent) {
+            return 0;
+          }
+          const style = getComputedStyle(parent);
+          return (
+            parent.clientWidth -
+            Number.parseFloat(style.paddingLeft) -
+            Number.parseFloat(style.paddingRight)
+          );
+        })(),
+        wrapper: wrapper.getBoundingClientRect().width,
+        table: table?.getBoundingClientRect().width ?? 0,
+        tableRight: table?.getBoundingClientRect().right ?? 0,
+        headRight: lastHead?.getBoundingClientRect().right ?? 0,
+        overflow: scroller ? scroller.scrollWidth > scroller.clientWidth : true,
+      };
+    });
+  expect(Math.abs(sizes.wrapper - sizes.outer)).toBeLessThanOrEqual(1);
+  expect(Math.abs(sizes.table - sizes.wrapper)).toBeLessThanOrEqual(1);
+  expect(Math.abs(sizes.headRight - sizes.tableRight)).toBeLessThanOrEqual(1);
+  expect(sizes.overflow).toBe(false);
+  await expect(page.locator("button.mdmark-pin:visible").count()).resolves.toBe(
+    0,
+  );
+  await expect(pageOverflows(page)).resolves.toBe(false);
 });

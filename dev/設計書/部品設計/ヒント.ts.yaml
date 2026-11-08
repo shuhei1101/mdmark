@@ -8,7 +8,7 @@ states:
       - name: placement
         value: block
   - name: BlockOpen
-    description: ブロックの要素の印に乗せて開いた。印の上に文を出す
+    description: ブロックの要素の印に乗せて開いた。印の下に文を出す（`tooltips.diagramPlacement` の既定）
     args:
       - name: placement
         value: block
@@ -52,7 +52,7 @@ slots:
     description: '`data-hint` を持つ書いた人の要素'
 events:
   - name: 開く・閉じる
-    when: ブロックは印、行内は要素にポインターを乗せるかフォーカスする。外すか Esc を押す
+    when: ブロックは印、行内は要素にポインターを乗せるかフォーカスする。外すか Esc を押す。タッチの端末では印か要素をタップする。もう一度タップするか、ツールチップと持ち主の外をタップする
     value: ツールチップの `hidden`
     description: '`mount` が 1 つだけ開き、ツールチップの上では閉じず、Esc で閉じてフォーカスを持ち主に残す'
 uses:
@@ -61,7 +61,7 @@ uses:
 accessibility:
   - ブロックの印は `<button type="button" aria-label="説明">` で、行内の要素は `tabindex="0"` を持ち、どちらも `aria-describedby` でツールチップを指す
   - ブロックの要素の印の外では開かず、ポインターの形は変えない
-  - ホバーとフォーカスの両方で出し、Esc で消え、上に乗っても消えない（WCAG 1.4.13）。印刷では出さない
+  - ホバーとフォーカスの両方で出し、Esc で消え、上に乗っても消えない（WCAG 1.4.13）。タッチの端末では持ち主のタップで開閉を切り替え、ツールチップと持ち主の外のタップで閉じる。印刷では出さない
 status: planned
 introduced:
   pr: 45

@@ -32,7 +32,7 @@ const execFileAsync = promisify(execFile);
 // jsDelivr の GitHub エンドポイントの、版のタグまでの URL
 const CDN_BASE = "https://cdn.jsdelivr.net/gh/shuhei1101/mdmark";
 // ページを返す架空のオリジン
-const PAGE_URL = "https://app.example.test/";
+export const PAGE_URL = "https://app.example.test/";
 // 外部ライブラリの代役のモジュールを返す架空の URL
 export const LIB_URL = "https://libs.example.test/test-lib.js";
 // 拡張の代役のモジュールを返す架空の URL
@@ -96,6 +96,8 @@ export type IndexOptions = {
   references?: MdmarkReferences;
   /** 読み込んだエイリアス */
   aliases?: MdmarkAlias[];
+  /** 取り込む文書の表 */
+  includes?: Record<string, string>;
 };
 
 /** 使えないエイリアス（`env` を含む）を、型の検査を通さずに `aliases` へ渡せる形にする */
@@ -109,6 +111,16 @@ export type CommentStoreSpec = {
   loaded?: MdmarkComment[];
   /** `save` が reject する */
   failSave?: boolean;
+  /** 呼ばれた回ごとに `load` が返すコメント（`loaded` より先に使い、尽きたら最後のものを返す） */
+  loadedByCall?: MdmarkComment[][];
+  /** 2 回目以降の `load` が reject する */
+  failReload?: boolean;
+  /** `update`・`remove` を持たせる */
+  editable?: boolean;
+  /** `update` が reject する */
+  failUpdate?: boolean;
+  /** `remove` が reject する */
+  failRemove?: boolean;
 };
 
 /** コメントの読み書きの関数が受けた呼び出し */
@@ -118,6 +130,16 @@ export type CommentCalls = {
     docId: string;
     comment: { quote: string; prefix: string; suffix: string; body: string };
   }>;
+  update: Array<{ docId: string; id: string; body: string }>;
+  remove: Array<{ docId: string; id: string }>;
+};
+
+/** `mount` の戻り値 */
+type PageHandle = {
+  update: (markdown: string, options?: { baseMarkdown?: unknown }) => void;
+  destroy: () => void;
+  reloadComments: () => Promise<void>;
+  focusComment: (id: string) => void;
 };
 
 type MdmarkWindow = Window & {
@@ -134,8 +156,10 @@ type MdmarkWindow = Window & {
         diffSource?: unknown;
         diffMode?: string;
         commentStore?: unknown;
+        baseMarkdown?: unknown;
+        onColumnsChange?: (event: unknown) => void;
       } & IndexOptions,
-    ) => { update: (markdown: string) => void; destroy: () => void };
+    ) => PageHandle;
     mountView: (
       el: HTMLElement,
       opts: unknown,
@@ -154,7 +178,8 @@ type MdmarkWindow = Window & {
       documents: Record<string, string>;
     }) => MdmarkReferences;
   };
-  handle?: { update: (markdown: string) => void; destroy: () => void };
+  handle?: PageHandle;
+  columnsCalls?: unknown[];
   diffCalls?: { revisions: string[]; content: DiffContentCall[] };
   releaseRevisions?: () => void;
 };
@@ -266,6 +291,41 @@ export async function openPage(
   });
   await page.goto(`${PAGE_URL}${options.hash ?? ""}`);
   await page.waitForFunction(() => "mdmark" in window);
+}
+
+/** jsDelivr の Lucide のアイコンのモジュールの代役（形を 1 つ持つ） */
+export const LUCIDE_MODULE = 'export default [["path",{"d":"M3 12h18"}]];';
+
+/** jsDelivr の Lucide のアイコンへの要求を差し替え、受けた要求の「メソッド URL」を記録する配列を返す。`respond` は名前（`sailboat` など）から応答の状態か、通信の失敗（`"fail"`）を返す */
+export async function routeLucide(
+  page: Page,
+  respond: (name: string) => 200 | 404 | "fail" = () => 200,
+): Promise<string[]> {
+  const requests: string[] = [];
+  await page.route(
+    "https://cdn.jsdelivr.net/npm/lucide@*/**",
+    async (route) => {
+      const request = route.request();
+      requests.push(`${request.method()} ${request.url()}`);
+      const name =
+        new URL(request.url()).pathname
+          .split("/")
+          .pop()
+          ?.replace(/\.mjs$/, "") ?? "";
+      const answer = respond(name);
+      if (answer === "fail") {
+        await route.abort("failed");
+        return;
+      }
+      await route.fulfill({
+        status: answer,
+        body: answer === 200 ? LUCIDE_MODULE : "",
+        contentType: "text/javascript",
+        headers: { "access-control-allow-origin": "*" },
+      });
+    },
+  );
+  return requests;
 }
 
 /** 外部ライブラリの代役のモジュールを返す応答に差し替え、受けた要求の件数を返す関数を返す。status が 404 のときは中身を返さない */
@@ -389,6 +449,14 @@ export async function mountDocument(
     documents?: Record<string, string>;
     /** `installCommentStore` で作った読み書きの関数を `mount` に渡す */
     useCommentStore?: boolean;
+    /** 比較元の Markdown */
+    baseMarkdown?: string | null;
+    /** 受けた引数を `window.columnsCalls` に控える `onColumnsChange` を渡す */
+    recordColumns?: boolean;
+    /** 取り込む文書の表（`opts.includes`） */
+    includes?: Record<string, string>;
+    /** 束ねていない名前のアイコンの形の表（`opts.icons`） */
+    icons?: Record<string, Array<[string, Record<string, string>]>>;
   } & IndexOptions,
 ): Promise<void> {
   await page.evaluate(
@@ -401,12 +469,17 @@ export async function mountDocument(
       references,
       aliases,
       useCommentStore,
+      baseMarkdown,
+      recordColumns,
+      includes,
+      icons,
     }) => {
       const w = window as MdmarkWindow;
       const el = document.querySelector<HTMLElement>("#doc");
       if (!w.mdmark || !el) {
         throw new Error("mdmark か描く先の要素が無い");
       }
+      w.columnsCalls = [];
       const refs =
         references ??
         (index && documents
@@ -420,6 +493,16 @@ export async function mountDocument(
         references: refs,
         aliases,
         commentStore: useCommentStore ? w.commentStore : undefined,
+        ...(baseMarkdown === undefined ? {} : { baseMarkdown }),
+        ...(includes === undefined ? {} : { includes }),
+        ...(icons === undefined ? {} : { icons }),
+        ...(recordColumns
+          ? {
+              onColumnsChange: (event: unknown) => {
+                w.columnsCalls?.push(JSON.parse(JSON.stringify(event)));
+              },
+            }
+          : {}),
       });
     },
     options,
@@ -433,11 +516,20 @@ export async function installCommentStore(
 ): Promise<void> {
   await page.evaluate((storeSpec) => {
     const w = window as MdmarkWindow;
-    const calls: CommentCalls = { load: [], save: [] };
+    const calls: CommentCalls = { load: [], save: [], update: [], remove: [] };
     w.commentCalls = calls;
-    w.commentStore = {
+    const byCall = storeSpec.loadedByCall;
+    const store: Record<string, unknown> = {
       load: (target: { docId: string }) => {
         calls.load.push({ docId: target.docId });
+        if (storeSpec.failReload && calls.load.length > 1) {
+          return Promise.reject(new Error("network"));
+        }
+        if (byCall && byCall.length > 0) {
+          return Promise.resolve(
+            byCall[Math.min(calls.load.length, byCall.length) - 1],
+          );
+        }
         return Promise.resolve(storeSpec.loaded ?? []);
       },
       save: (target: {
@@ -454,6 +546,21 @@ export async function installCommentStore(
         });
       },
     };
+    if (storeSpec.editable) {
+      store.update = (target: { docId: string; id: string; body: string }) => {
+        calls.update.push({ ...target });
+        return storeSpec.failUpdate
+          ? Promise.reject(new Error("network"))
+          : Promise.resolve();
+      };
+      store.remove = (target: { docId: string; id: string }) => {
+        calls.remove.push({ ...target });
+        return storeSpec.failRemove
+          ? Promise.reject(new Error("network"))
+          : Promise.resolve();
+      };
+    }
+    w.commentStore = store;
   }, spec);
 }
 
@@ -561,10 +668,47 @@ export async function selectText(
 export async function updateDocument(
   page: Page,
   markdown: string,
+  options?: { baseMarkdown?: string | null },
 ): Promise<void> {
-  await page.evaluate((next) => {
-    (window as MdmarkWindow).handle?.update(next);
-  }, markdown);
+  await page.evaluate(
+    ({ next, opts }) => {
+      const handle = (window as MdmarkWindow).handle;
+      if (opts === undefined) {
+        handle?.update(next);
+      } else {
+        handle?.update(next, opts);
+      }
+    },
+    { next: markdown, opts: options },
+  );
+}
+
+/** `onColumnsChange` が受けた引数を返す */
+export async function readColumnsCalls(page: Page): Promise<unknown[]> {
+  return page.evaluate(() => (window as MdmarkWindow).columnsCalls ?? []);
+}
+
+/** ページから `reloadComments` を呼ばせ、解決した値か reject の理由のメッセージを返す */
+export async function reloadComments(
+  page: Page,
+): Promise<{ resolved: unknown } | { rejected: string }> {
+  return page.evaluate(async () => {
+    try {
+      const value = await (window as MdmarkWindow).handle?.reloadComments();
+      return { resolved: value ?? null };
+    } catch (error) {
+      return {
+        rejected: error instanceof Error ? error.message : String(error),
+      };
+    }
+  });
+}
+
+/** ページから `focusComment` を呼ばせる */
+export async function focusComment(page: Page, id: string): Promise<void> {
+  await page.evaluate((target) => {
+    (window as MdmarkWindow).handle?.focusComment(target);
+  }, id);
 }
 
 /** ページから、描いた文書を片付けさせる */
@@ -737,4 +881,135 @@ export async function releaseRevisions(page: Page): Promise<void> {
   await page.evaluate(() => {
     (window as MdmarkWindow).releaseRevisions?.();
   });
+}
+
+/** 範囲の `ts`・`js` の変換のライブラリを読む URL（`html-scripts.url` の既定） */
+export const TRANSPILER_URL =
+  "https://cdn.jsdelivr.net/npm/@babel/standalone@8.1.1/+esm";
+
+/** 変換のライブラリ（開発の依存 `@babel/standalone` の UMD）の場所 */
+const TRANSPILER_UMD_PATH = resolve(
+  import.meta.dirname,
+  "../../node_modules/@babel/standalone/babel.min.js",
+);
+
+/** 変換のライブラリへの要求を、`@babel/standalone` を既定のエクスポートを持つ ES モジュールに包んだ手元の応答に差し替え、受けた要求の件数を返す関数を返す。`status` が 404 のときは中身を返さない */
+export async function routeTranspiler(
+  page: Page,
+  status: 200 | 404 = 200,
+): Promise<() => number> {
+  let requests = 0;
+  const body =
+    status === 200
+      ? `const module = { exports: {} };\nconst exports = module.exports;\n${await readFile(TRANSPILER_UMD_PATH, "utf8")}\nexport default module.exports;\n`
+      : "";
+  await page.route(TRANSPILER_URL, (route) => {
+    requests += 1;
+    return route.fulfill({
+      status,
+      body,
+      contentType: "text/javascript",
+      headers: { "access-control-allow-origin": "*" },
+    });
+  });
+  return () => requests;
+}
+
+/** 範囲の `ts`: 型の注釈を持ち、箱を押すと根の要素に class `is-open` を付け外しし、`destroy` で `window.__mdmarkDestroyed` を 1 増やす */
+export const RANGE_TS = [
+  "export default (root: HTMLElement): (() => void) => {",
+  '  const box = root.querySelector<HTMLElement>(".box");',
+  "  const onClick = (): void => {",
+  '    root.classList.toggle("is-open");',
+  "  };",
+  '  box?.addEventListener("click", onClick);',
+  "  return () => {",
+  '    box?.removeEventListener("click", onClick);',
+  "    const w = window as unknown as { __mdmarkDestroyed?: number };",
+  "    w.__mdmarkDestroyed = (w.__mdmarkDestroyed ?? 0) + 1;",
+  "  };",
+  "};",
+].join("\n");
+
+/** 範囲の `css` が箱に付ける背景の色 */
+export const RANGE_COLOR = "rgb(255, 0, 0)";
+
+/** `<!-- html -->` の範囲に、`html`（`html` を省くと class `box` の箱 1 つ）と、`blocks` の言語ごとのコードブロックを置いた Markdown */
+export function rangeMarkdown(
+  blocks: Partial<Record<"css" | "ts" | "js", string>>,
+  html = '<div class="box">箱</div>',
+): string {
+  return [
+    "<!-- html -->",
+    "",
+    "```html",
+    html,
+    "```",
+    "",
+    ...(["css", "ts", "js"] as const).flatMap((lang) =>
+      blocks[lang] === undefined
+        ? []
+        : [`\`\`\`${lang}`, blocks[lang], "```", ""],
+    ),
+    "<!-- /html -->",
+    "",
+  ].join("\n");
+}
+
+/** 箱の背景を `RANGE_COLOR` にする範囲の `css` */
+export const RANGE_CSS = `.box { background-color: ${RANGE_COLOR}; }`;
+
+/** 階層の表の行（キー・型・必須・既定・説明。親の `features`・`aliases[]`・`aliases[].metadata`・`aliases[].metadata.alias_type` の行を持たない） */
+const TREE_ROWS = [
+  "| キー | 型 | 必須 | 既定 | 説明 |",
+  "| --- | --- | --- | --- | --- |",
+  "| features.table | bool | ✓ | true | 表の機能 |",
+  "| features.html | bool |  |  | 埋め込んだ HTML |",
+  "| aliases[].id | string |  |  | 別名の ID |",
+  "| aliases[].metadata.alias_type.type | ref \\| custom |  |  | 別名の種類 |",
+];
+
+/** 表のマーカーに `extra` を加えた、キーの列を階層で描く表の Markdown */
+export function treeMarkdown(extra = ""): string {
+  return [
+    `<!-- table: data tree=キー type=型 required=必須 default=既定${extra} -->`,
+    "",
+    ...TREE_ROWS,
+    "",
+    "<!-- /table -->",
+    "",
+  ].join("\n");
+}
+
+/** 見本を結んだ階層の表と、見出し `設定の見本` の下の `最小`・`エイリアス` のタブを持つ Markdown */
+export const TREE_EXAMPLE_MARKDOWN = [
+  treeMarkdown(" example=設定の見本"),
+  "## 設定の見本",
+  "",
+  "<!-- tabs -->",
+  "",
+  "### 最小",
+  "",
+  "```yaml",
+  "features:",
+  "  table: true",
+  "```",
+  "",
+  "### エイリアス",
+  "",
+  "```yaml",
+  "aliases:",
+  "  - id: terms",
+  "    metadata:",
+  "      alias_type:",
+  "        type: custom",
+  "```",
+  "",
+  "<!-- /tabs -->",
+  "",
+].join("\n");
+
+/** パスの階層の行 */
+export function treeRow(page: Page, path: string) {
+  return page.locator(`#doc tr.mdmark-tree-row[data-path="${path}"]`);
 }

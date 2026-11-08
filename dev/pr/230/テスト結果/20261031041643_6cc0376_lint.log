@@ -1,0 +1,26 @@
+$ (rc=0; npm run lint || rc=1; npm run typecheck || rc=1; npm --prefix vscode run typecheck || rc=1; exit $rc)
+
+> lint
+> biome check .
+
+Checked 554 files in 8s. No fixes applied.
+
+> typecheck
+> tsc --noEmit
+
+
+> mdmark@0.1.0 typecheck
+> tsc --noEmit
+
+exit=0
+
+# 失敗時の挙動の確認（検査の 1 つを失敗させ、残りを最後まで回して 0 以外で終わるか）
+$ (rc=0; false || rc=1; npm run typecheck >/dev/null || rc=1; npm --prefix vscode run typecheck >/dev/null || rc=1; echo "reached-end"; exit $rc)
+reached-end
+exit=1
+$ (rc=0; npm run lint >/dev/null || rc=1; false || rc=1; npm --prefix vscode run typecheck >/dev/null || rc=1; echo "reached-end"; exit $rc)
+reached-end
+exit=1
+$ (rc=0; npm run lint >/dev/null || rc=1; npm run typecheck >/dev/null || rc=1; false || rc=1; echo "reached-end"; exit $rc)
+reached-end
+exit=1

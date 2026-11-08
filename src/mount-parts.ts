@@ -1,8 +1,10 @@
+import type { CommentsController } from "./comments/index.ts";
 import {
   checkCommentOptions,
   type MdmarkCommentStore,
   type MdmarkCommentsHandle,
 } from "./comments/spec.ts";
+import { openEnclosing } from "./interact/sections.ts";
 import { loadPartModule, type PartName } from "./part-modules.ts";
 import { renderNotice } from "./parts/notice.ts";
 import {
@@ -110,13 +112,12 @@ export function mountComments(
       if (destroyed) {
         return handle;
       }
-      const detach = once(
-        await module.attachComments({
-          root: el,
-          store: opts.store,
-          docId: opts.docId,
-        }),
-      );
+      const { detach: detachComments } = await module.attachComments({
+        root: el,
+        store: opts.store,
+        docId: opts.docId,
+      });
+      const detach = once(detachComments);
       // 読み込みを待つ間に片付けたら、付けた印をすぐ外す
       if (destroyed) {
         detach();
@@ -139,7 +140,17 @@ export type PartsWarned = {
   missingStore: boolean;
 };
 
-/** `mount` が描くたびに呼ぶ。ビューの印とコメントの機能があるときだけ部品のモジュールを読んで付け、外す関数を返す */
+/** `attachParts` の戻り値 */
+export type PartsHandle = {
+  /** 付けた部品を外す。読み込みを待っている間に呼ぶと、読めた後に付けない */
+  detach: () => void;
+  /** 付けたコメントの `reload` を呼ぶ。コメントを付けていないときは解決した Promise を返す */
+  reloadComments: () => Promise<void>;
+  /** 付けたコメントの `focus` を呼ぶ。コメントを付けていないときは何もしない */
+  focusComment: (id: string) => void;
+};
+
+/** `mount` が描くたびに呼ぶ。ビューの印とコメントの機能があるときだけ部品のモジュールを読んで付け、外す関数と付けたコメントの操作を返す */
 export function attachParts(options: {
   /** 描いた要素 */
   root: HTMLElement;
@@ -153,10 +164,13 @@ export function attachParts(options: {
   isCurrent: () => boolean;
   /** `mount` ごとに控える、読み書きの関数が無いことを出したか */
   warned: PartsWarned;
-}): () => void {
+}): PartsHandle {
   const { root, features, commentStore, docId, isCurrent, warned } = options;
   const detachers: Array<() => void> = [];
   let detached = false;
+  // 付けたコメントの操作と、それを得るまでの待ち（読めない・外したときは `undefined` で解決する）
+  let comments: CommentsController | undefined;
+  let commentsReady: Promise<CommentsController | undefined> | undefined;
   const active = (): boolean => !detached && isCurrent();
   /** 読めなかった部品を、ページの中で部品と URL ごとに 1 回だけ `console.error` に出す */
   const report = (name: PartName, error: unknown): void => {
@@ -190,36 +204,56 @@ export function attachParts(options: {
         );
       }
     } else {
-      loadPartModule("comments")
+      commentsReady = loadPartModule("comments")
         .then(async ({ module }) => {
           if (!active()) {
-            return;
+            return undefined;
           }
-          const detach = await module.attachComments({
+          const controller = await module.attachComments({
             root,
             store: commentStore,
             docId,
+            reveal: openEnclosing,
+            margin: true,
           });
           // 待つ間に外したら、得た外す関数をすぐ呼ぶ
-          if (active()) {
-            detachers.push(detach);
-          } else {
-            detach();
+          if (!active()) {
+            controller.detach();
+            return undefined;
           }
+          detachers.push(controller.detach);
+          comments = controller;
+          return controller;
         })
-        .catch((error: unknown) => report("comments", error));
+        .catch((error: unknown) => {
+          report("comments", error);
+          return undefined;
+        });
     }
   }
 
-  return () => {
-    detached = true;
-    for (const detach of detachers.splice(0).reverse()) {
-      detach();
-    }
-    // 拡張の `draw` から呼んだ `mountView`・`mountComments` も片付ける
-    for (const el of root.querySelectorAll<HTMLElement>("*")) {
-      mountedViews.get(el)?.destroy();
-      mountedComments.get(el)?.destroy();
-    }
+  return {
+    detach: () => {
+      detached = true;
+      for (const detach of detachers.splice(0).reverse()) {
+        detach();
+      }
+      // 拡張の `draw` から呼んだ `mountView`・`mountComments` も片付ける
+      for (const el of root.querySelectorAll<HTMLElement>("*")) {
+        mountedViews.get(el)?.destroy();
+        mountedComments.get(el)?.destroy();
+      }
+    },
+    reloadComments: async () => {
+      const controller = await commentsReady;
+      if (controller && !detached) {
+        await controller.reload();
+      }
+    },
+    focusComment: (id) => {
+      if (comments && !detached) {
+        comments.focus(id);
+      }
+    },
   };
 }

@@ -25,26 +25,26 @@ async function expectFrame(
   ).resolves.toBe("dashed");
 }
 
-// 表の印に知らない種類を書いたときは、印と本文だけを出す（UnknownKind）
-test("test_unknown_kind", async () => {
+// 表の印に closed と open を両方書いたときは、印と本文だけを出す（ClosedAndOpen）
+test("test_closed_and_open", async () => {
   // 準備・実行
-  const { warning } = await open("unknown-kind");
+  const { warning } = await open("closed-and-open");
   // 検証
   await expectFrame(warning);
   await expect(warning.locator("p code").first().innerText()).resolves.toBe(
-    "<!-- table: unknown +sort -->",
+    "<!-- table: data closed open -->",
   );
   await expect(warning.locator("ul").count()).resolves.toBe(0);
 });
 
-// 知らない機能とキーを書いたときは、本文の後に項目を並べる（Items）
+// 機能を足していない表でだけ使えないキーを書いたときは、本文の後に項目を並べる（Items）
 test("test_items", async () => {
   // 準備・実行
   const { warning } = await open("items");
   // 検証
   await expectFrame(warning);
   const labels = await warning.locator("li > code:first-child").allInnerTexts();
-  expect(labels).toEqual(["+unknown", "size="]);
+  expect(labels).toEqual(["hide=", "total="]);
 });
 
 // 切れた図表の参照は、印を持たず本文だけを出す（BrokenReference）
@@ -160,4 +160,26 @@ test("test_view_unknown_icon", async () => {
   expect(text).toContain("ban");
   expect(text).toContain("既定のアイコンを付けています");
   await expect(pageOverflows(page)).resolves.toBe(false);
+});
+
+// 新しい記法の書き方の警告を、ほかの警告と同じ枠で出す（IconName・IconNotInLucide・ColumnsCount・IncludeMissing・IncludeCircular・CsvColumns）
+test("test_new_syntax_warnings", async () => {
+  for (const [id, words] of [
+    ["icon-name", ["icon:Rocket!", "Rocket!", "rocket"]],
+    ["icon-not-in-lucide", ["icon:no-such-icon", "https://lucide.dev/icons/"]],
+    ["columns-count", ["<!-- columns -->", "4 列", "2〜3"]],
+    ["include-missing", ["src/app.ts", "12 行", "20〜22"]],
+    ["include-circular", ["a.md → b.md → a.md"]],
+    ["csv-columns", ["2 行目", "3 行目", "3 列"]],
+  ] as const) {
+    // 準備・実行
+    const { page, warning } = await open(id);
+    // 検証
+    await expectFrame(warning);
+    const text = await warning.innerText();
+    for (const word of words) {
+      expect(text).toContain(word);
+    }
+    await expect(pageOverflows(page)).resolves.toBe(false);
+  }
 });

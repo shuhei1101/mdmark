@@ -8,6 +8,7 @@ import {
   useTempDirs,
   writeFiles,
 } from "../../helpers/cli.ts";
+import { INQUIRY_TEXT, wrapDirective } from "../../helpers/diagrams.ts";
 import { BASE_TAG, setUpChangeTogetherRepository } from "../../helpers/git.ts";
 
 /** 点検の処理を読み込む（実装が無い間は各テストが個別に失敗する） */
@@ -409,6 +410,40 @@ test("test_collect_check_issues_when_unknown_color_theme", async () => {
   ]);
 });
 
+// 知らない明暗の値を unknown_color_theme の後・no_documents の前に返す（正常系）
+test("test_collect_check_issues_when_unknown_color_scheme", async () => {
+  // 準備
+  const { collectCheckIssues } = await loadCheck();
+  const unknownDir = await createRootDir({
+    configLines: ["colorTheme: sepia", "colorScheme: sepia"],
+  });
+  const knownDir = await createRootDir({
+    configLines: ["colorScheme: dark"],
+  });
+  // 実行
+  const unknownIssues = await collectCheckIssues(
+    join(unknownDir, "mdmark.config.yaml"),
+  );
+  const knownIssues = await collectCheckIssues(
+    join(knownDir, "mdmark.config.yaml"),
+  );
+  // 検証
+  const kinds = unknownIssues.map((issue) => issue.kind);
+  expect(kinds.indexOf("unknown_color_scheme")).toBe(
+    kinds.indexOf("unknown_color_theme") + 1,
+  );
+  const scheme = unknownIssues.find(
+    (issue) => issue.kind === "unknown_color_scheme",
+  );
+  expect(scheme).toMatchObject({ where: "colorScheme" });
+  for (const text of ["sepia", "light", "dark", "auto"]) {
+    expect(scheme?.message).toContain(text);
+  }
+  expect(knownIssues.map((issue) => issue.kind)).not.toContain(
+    "unknown_color_scheme",
+  );
+});
+
 // エイリアスのずれを checkIndex の後・unknown_mark の前に置く（正常系）
 test("test_collect_check_issues_when_alias_drift", async () => {
   // 準備
@@ -418,19 +453,19 @@ test("test_collect_check_issues_when_alias_drift", async () => {
       "aliases:",
       "  - id: missing",
       '    paths: ["missing/*.yaml"]',
-      "    metadata:",
-      "      alias_type: { type: custom, value: term }",
-      "  - id: records",
-      '    paths: ["aliases/*.yaml"]',
-      "    metadata:",
-      "      alias_type: { type: ref, field: alias_type }",
+      "    alias_type: term",
+      "  - id: terms",
+      '    paths: ["aliases/term.yaml"]',
+      "    alias_type: term",
+      "  - id: servers",
+      '    paths: ["aliases/env.yaml"]',
+      "    alias_type: env",
     ],
     aMarkdown: TABZ_MARKDOWN,
     files: {
-      "aliases/term.yaml":
-        "alias_type: term\nid: empty-term\nname: 空の用語\ndescription: ''\n",
+      "aliases/term.yaml": "id: empty-term\nname: 空の用語\ndescription: ''\n",
       "aliases/env.yaml":
-        "alias_type: env\nid: dev-server\nname: 開発サーバー\nurl: http://127.0.0.1:8767/\n",
+        "id: dev-server\nname: 開発サーバー\nurl: http://127.0.0.1:8767/\n",
     },
   });
   // 実行
@@ -545,4 +580,222 @@ test("test_collect_check_issues_when_base_without_index", async () => {
   const withBase = await collectCheckIssues(path, { base: "no-such-ref" });
   // 検証
   expect(withBase).toEqual(withoutBase);
+});
+
+// 見つからないファイルを unknown_mark の前に返し、無い assets.root を schema にする（正常系）
+test("test_collect_check_issues_when_missing_file", async () => {
+  // 準備
+  const { collectCheckIssues } = await loadCheck();
+  const dir = await createTempDir();
+  await writeFiles(dir, {
+    "mdmark.config.yaml": [
+      "assets:",
+      "  root: none",
+      "build:",
+      '  include: ["a.md"]',
+      "  out: dist/docs.html",
+      "",
+    ].join("\n"),
+    "a.md": ["# A", "![図](x.png)", "", "<!-- tabz -->", ""].join("\n"),
+  });
+  // 実行
+  const issues = await collectCheckIssues(join(dir, "mdmark.config.yaml"));
+  // 検証
+  expect(
+    issues.map((issue) => ({ kind: issue.kind, where: issue.where })),
+  ).toEqual([
+    { kind: "schema", where: "assets.root" },
+    { kind: "missing_file", where: "2" },
+    { kind: "unknown_mark", where: "4" },
+  ]);
+});
+
+/** 読めないグラフの定義の印（開きが先頭の行） */
+const BROKEN_CHART = wrapDirective("chart", '{ "type": "nope" }');
+
+/** 見本の `inquiry` の定義に、題を `受付` にして `chat` のノードに重なるノード `extra` を加えた JSON */
+const OVERLAP_FLOW = (() => {
+  const definition = JSON.parse(INQUIRY_TEXT) as {
+    title: string;
+    nodes: Array<Record<string, unknown>>;
+  };
+  definition.title = "受付";
+  definition.nodes.push({
+    id: "extra",
+    kind: "data",
+    x: 1000,
+    y: 230,
+    w: 80,
+    h: 40,
+    name: "追加",
+  });
+  return JSON.stringify(definition, null, 2);
+})();
+
+// 図の点検のずれを最後に返し、upgrade の呼び方でも点検する（正常系）
+test("test_collect_check_issues_when_diagram", async () => {
+  // 準備
+  const { collectCheckIssues } = await loadCheck();
+  const dir = await createTempDir();
+  await writeFiles(dir, {
+    "mdmark.config.yaml": [
+      "build:",
+      '  include: ["docs/*.md"]',
+      "  out: dist/docs.html",
+      "",
+    ].join("\n"),
+    "docs/a.md": [
+      "# A",
+      "",
+      wrapDirective("flow", "{ broken"),
+      "![図](x.png)",
+      "",
+    ].join("\n"),
+  });
+  const path = join(dir, "mdmark.config.yaml");
+  // 実行
+  const checked = await collectCheckIssues(path);
+  const upgraded = await collectCheckIssues(path, { unknownMarks: false });
+  // 検証
+  for (const issues of [checked, upgraded]) {
+    const kinds = issues.map((issue) => issue.kind);
+    expect(kinds.indexOf("missing_file")).toBeGreaterThanOrEqual(0);
+    const diagrams = issues.filter((issue) =>
+      issue.kind.startsWith("diagram_"),
+    );
+    expect(diagrams).toHaveLength(1);
+    expect(diagrams[0]).toMatchObject({
+      file: "docs/a.md",
+      where: "3",
+      kind: "diagram_invalid",
+    });
+    expect(kinds.indexOf("diagram_invalid")).toBeGreaterThan(
+      kinds.lastIndexOf("missing_file"),
+    );
+  }
+});
+
+// 読めない定義と配置のずれを返す（正常系）
+test("test_check_diagrams", async () => {
+  // 準備
+  const { checkDiagrams } = await loadCheck();
+  const chart = BROKEN_CHART.split("\n").slice(0, -1);
+  const markdown = [
+    "# A",
+    "",
+    ...chart,
+    wrapDirective("flow", OVERLAP_FLOW),
+  ].join("\n");
+  const flowLine = markdown.split("\n").indexOf("<!-- flow -->") + 1;
+  // 実行
+  const issues = checkDiagrams([{ path: "a.md", markdown }]);
+  // 検証
+  expect(flowLine).toBe(10);
+  expect(issues).toHaveLength(2);
+  expect(issues[0]).toMatchObject({
+    file: "a.md",
+    where: "3",
+    kind: "diagram_invalid",
+  });
+  expect(issues[1]).toMatchObject({
+    file: "a.md",
+    where: "10",
+    kind: "diagram_node_overlap",
+  });
+  for (const word of ["受付", "chat", "extra"]) {
+    expect(issues[1]?.message).toContain(word);
+  }
+});
+
+// 整った図と図の無い文書はずれを返さない（正常系）
+test("test_check_diagrams_when_clean", async () => {
+  // 準備
+  const { checkDiagrams } = await loadCheck();
+  const documents = [
+    { path: "a.md", markdown: `# A\n\n${wrapDirective("flow", INQUIRY_TEXT)}` },
+    { path: "b.md", markdown: "# B\n\n本文\n" },
+  ];
+  // 実行
+  const issues = checkDiagrams(documents);
+  // 検証
+  expect(issues).toEqual([]);
+});
+
+// 問題を種類ごとのずれにする（正常系）
+test("test_check_includes", async () => {
+  // 準備
+  const { checkIncludes } = await loadCheck();
+  const dir = await createTempDir();
+  await writeFiles(dir, {
+    "mdmark.config.yaml": "",
+    "共通/手順.md": "## 実行\n\nB\n",
+    "app.ts": "1\n2\n3\n",
+    "a.md": "<!-- include: b.md -->\n",
+    "b.md": "<!-- include: a.md -->\n",
+  });
+  const markdown = [
+    "<!-- include: missing.md -->",
+    "",
+    "<!-- include: 共通/手順.md#無い見出し -->",
+    "",
+    "<!-- include: app.ts#L8-L10 -->",
+    "",
+    "<!-- include: a.md -->",
+    "",
+    "<!-- include: 共通/手順.md#実行 -->",
+    "",
+  ].join("\n");
+  // 実行
+  const issues = await checkIncludes({
+    documents: [{ path: "guide.md", markdown }],
+    root: dir,
+  });
+  // 検証
+  // 循環は、循環を閉じるマーカーを書いたファイル（`b.md` の 1 行目）で報告する
+  expect(issues.map((issue) => [issue.kind, issue.file, issue.where])).toEqual([
+    ["include_circular", "b.md", "1"],
+    ["include_target_missing", "guide.md", "1"],
+    ["include_target_missing", "guide.md", "3"],
+    ["include_target_missing", "guide.md", "5"],
+  ]);
+});
+
+// 文字列の書き方の警告を - の行にして出す（正常系）
+test("test_run_check_when_text", async () => {
+  // 準備
+  const { runCheck } = await loadCheck();
+  const { WARNINGS_MARKDOWN } = await import("../../helpers/diagrams.ts");
+  const dir = await createCleanDir();
+  const { io, stdout } = createIo(dir);
+  // 実行
+  const code = await runCheck({ text: WARNINGS_MARKDOWN }, io);
+  // 検証
+  expect(code).toBe(1);
+  expect(stdout.map((line) => line.split(": ")[0])).toEqual([
+    "-:1",
+    "-:20",
+    "-:22",
+    "ずれ 3 件",
+  ]);
+  expect(stdout[0]).toMatch(/^-:1: diagram_invalid: /);
+  expect(stdout[1]).toMatch(/^-:20: unknown_mark: /);
+  expect(stdout[2]).toMatch(/^-:22: syntax_warning: /);
+});
+
+// 一緒に渡せない引数を点検せずに止める（異常系）
+test("test_run_check_when_arguments_conflict", async () => {
+  // 準備
+  const { runCheck } = await loadCheck();
+  const { CliError } = await import("../../../../src/cli/errors.ts");
+  const dir = await createCleanDir();
+  const { io, stdout } = createIo(dir);
+  // 実行
+  const withBase = runCheck({ text: "a", base: "main" }, io);
+  const withoutKey = runCheck({ file: "records.yaml" }, io);
+  // 検証
+  await expect(withBase).rejects.toBeInstanceOf(CliError);
+  await expect(withBase).rejects.toThrow(/--text[\s\S]*--base/);
+  await expect(withoutKey).rejects.toBeInstanceOf(CliError);
+  await expect(withoutKey).rejects.toThrow(/--key/);
+  expect(stdout).toEqual([]);
 });

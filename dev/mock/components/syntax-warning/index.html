@@ -33,27 +33,27 @@
     <div class="catalog">
       <h1 class="catalog-title">書き方の警告</h1>
 
-      <!-- 知らない種類（表） -->
-      <section aria-labelledby="state-unknown-kind">
-        <h2 class="catalog-label" id="state-unknown-kind">知らない種類（表）</h2>
+      <!-- closed と open の同時指定（表） -->
+      <section aria-labelledby="state-closed-open">
+        <h2 class="catalog-label" id="state-closed-open">closed と open の同時指定（表）</h2>
         <article class="mdmark">
 <div class="mdmark-syntax-warning">
   <p class="mdmark-syntax-warning-title"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg>書き方の警告</p>
-  <p><code>&lt;!-- table: unknown +sort --&gt;</code> の種類 <code>unknown</code> は使えません。使える種類は <code>data</code>・<code>plain</code> です。既定の種類に <code>+sort</code> を当てて描いています。</p>
+  <p><code>&lt;!-- table: data closed open --&gt;</code> の <code>closed</code> と <code>open</code> は同時に書けません。どちらか 1 つにしてください。<code>closed</code> を当てて描いています。</p>
 </div>
         </article>
       </section>
 
-      <!-- 知らない機能・キー（表） -->
-      <section aria-labelledby="state-unknown-feature">
-        <h2 class="catalog-label" id="state-unknown-feature">知らない機能・キー（表）</h2>
+      <!-- 機能の無い表のキー（表） -->
+      <section aria-labelledby="state-key-without-feature">
+        <h2 class="catalog-label" id="state-key-without-feature">機能の無い表のキー（表）</h2>
         <article class="mdmark">
 <div class="mdmark-syntax-warning">
   <p class="mdmark-syntax-warning-title"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg>書き方の警告</p>
-  <p><code>&lt;!-- table: data +unknown size=2 --&gt;</code> の読めない指定を当てずに描いています。</p>
+  <p><code>&lt;!-- table: data hide=備考 total=価格:sum --&gt;</code> の読めない指定を当てずに描いています。</p>
   <ul>
-    <li><code>+unknown</code>: 使えない機能です。使える機能は <code>sort</code>・<code>pin</code>・<code>filter</code> です</li>
-    <li><code>size=</code>: 使えないキーです。使えるキーは <code>filter=</code> です</li>
+    <li><code>hide=</code>: <code>+columns</code> を書いた表でだけ使えます。当てずに描いています</li>
+    <li><code>total=</code>: <code>+total</code> を書いた表でだけ使えます。当てずに描いています</li>
   </ul>
 </div>
         </article>
@@ -103,13 +103,13 @@
         </article>
       </section>
 
-      <!-- 知らない開閉の指定 -->
-      <section aria-labelledby="state-section">
-        <h2 class="catalog-label" id="state-section">知らない開閉の指定</h2>
+      <!-- ページの設定の知らない値 -->
+      <section aria-labelledby="state-page-value">
+        <h2 class="catalog-label" id="state-page-value">ページの設定の知らない値</h2>
         <article class="mdmark">
 <div class="mdmark-syntax-warning">
   <p class="mdmark-syntax-warning-title"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg>書き方の警告</p>
-  <p><code>&lt;!-- section: hidden --&gt;</code> の <code>hidden</code> は使えません。使える値は <code>closed</code>・<code>open</code> です。この節は開いた状態で描いています。</p>
+  <p><code>&lt;!-- page: scheme=sepia --&gt;</code> の <code>scheme=sepia</code> は使えません。書けるのは <code>scheme</code>（<code>light</code>・<code>dark</code>・<code>auto</code>）・<code>theme</code>（<code>dev-swiss</code>・<code>theme-paper</code>・<code>theme-slate</code>・<code>theme-contrast</code>）・<code>toc</code>（<code>hover</code>・<code>fixed</code>）です。残りの指定で描いています。</p>
 </div>
         </article>
       </section>

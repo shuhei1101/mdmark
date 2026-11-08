@@ -1,4 +1,12 @@
+import { writeFile } from "node:fs/promises";
+import { join } from "node:path";
 import { expect, type Frame, test } from "@playwright/test";
+import {
+  cascadeSettings,
+  cascadeTheme,
+  greetSource,
+  themeValue,
+} from "../cascade.ts";
 import {
   expectGuideRendered,
   guideMarkdown,
@@ -8,8 +16,32 @@ import {
   useVscodeE2E,
   type VscodeSession,
 } from "../vscode.ts";
+import { openCascadedPreview } from "../vscode-cascade.ts";
 
 const e2e = useVscodeE2E();
+
+/** 用語のエイリアスの行を持つ設定ファイル（`extra` の行を `aliases` の後ろに足す） */
+const aliasConfig = (extra: string[] = []) =>
+  [
+    "aliases:",
+    "  - id: terms",
+    "    paths: [glossary.yaml]",
+    "    alias_type: term",
+    "    records: terms",
+    ...extra,
+    "",
+  ].join("\n");
+
+/** 名前 `描画`・別名 `レンダリング` の用語 1 件を持つ YAML */
+const glossary = (meaning: string) =>
+  [
+    "terms:",
+    "  - id: render",
+    "    name: 描画",
+    "    aliases: [レンダリング]",
+    `    description: ${meaning}`,
+    "",
+  ].join("\n");
 
 /** 設定ファイルの内容: `features` を書いていない */
 const EMPTY_CONFIG = "# mdmark の設定\n";
@@ -323,4 +355,93 @@ test("test_error_when_config_unreadable", async () => {
   await expect(
     session.win.getByRole("tab", { name: /^mdmark\.config\.yaml/ }),
   ).toHaveCount(1);
+});
+
+/** 描いた文書の見えている先頭のスクロールの位置 */
+async function scrollTop(frame: Frame): Promise<number> {
+  return frame.evaluate(() => document.scrollingElement?.scrollTop ?? 0);
+}
+
+// theme の CSS を書き換えて保存すると、リロードせずにプレビューに当たる（正常シナリオ（theme の CSS を書き換える））
+test("test_normal_when_theme_css_saved", async () => {
+  // 準備
+  const opened = await openCascadedPreview(
+    e2e,
+    cascadeSettings({ cascade: true }),
+  );
+  await expect.poll(() => themeValue(opened.frame)).toBe("rgb(1, 2, 3)");
+  const top = await scrollTop(opened.frame);
+  const text = await opened.frame.locator(".mdmark").first().innerText();
+  // 実行
+  await writeFile(
+    join(opened.session.workspaceDir, "theme.css"),
+    cascadeTheme("rgb(4, 5, 6)"),
+  );
+  // 検証
+  await expect.poll(() => themeValue(opened.frame)).toBe("rgb(4, 5, 6)");
+  expect(await opened.frame.locator(".mdmark").first().innerText()).toBe(text);
+  expect(await scrollTop(opened.frame)).toBe(top);
+});
+
+// ワークスペースの外の端末の設定と extensions のモジュールを保存すると、リロードせずにプレビューを描き直す（正常シナリオ（ワークスペースの外の設定を保存する））
+test("test_normal_when_outside_config_saved", async () => {
+  // 準備
+  const opened = await openCascadedPreview(e2e, "config:\n  cascade: true\n");
+  await expect(opened.frame.locator(".mdmark .markdown-alert")).toHaveCount(1);
+  // 実行: 端末の設定に features.callout: false を足して保存する
+  await writeFile(opened.settings, cascadeSettings({ cascade: true }));
+  // 検証
+  const frame = await opened.session.frameWith(".mdmark blockquote");
+  await expect(frame.locator(".mdmark .markdown-alert")).toHaveCount(0);
+  // 実行: extensions のモジュールを書き換えて保存する
+  await writeFile(
+    join(opened.session.workspaceDir, "ext", "greet.js"),
+    greetSource("hello"),
+  );
+  // 検証: 拡張を束ね直して HTML を入れ直すため、フレームを探し直す
+  await expect
+    .poll(async () =>
+      (await opened.session.frameWith(".mdmark [data-mdmark-slot]"))
+        .locator(".mdmark [data-mdmark-slot]")
+        .first()
+        .innerText(),
+    )
+    .toBe("hello:世界");
+});
+
+// aliases の行が指す YAML を保存すると、リロードせずに書き換えた意味のツールチップで描き直す（正常シナリオ（aliases の YAML を書き換える））
+test("test_normal_when_aliases_yaml_saved", async () => {
+  // 準備
+  const session = await e2e.launch({
+    files: {
+      "mdmark.config.yaml": aliasConfig(),
+      "glossary.yaml": glossary("前の意味"),
+      "guide.md": "# 案内\n\nレンダリングの段落\n",
+    },
+  });
+  await session.openFile("guide.md");
+  await session.openPreviewWithShortcut();
+  const frame = await session.frameWith(".mdmark-term");
+  const term = frame.locator(".mdmark-term", { hasText: "レンダリング" });
+  await expect(term).toHaveCount(1);
+  const top = await scrollTop(frame);
+  const text = await frame.locator(".mdmark").first().innerText();
+  // 実行
+  await writeFile(
+    join(session.workspaceDir, "glossary.yaml"),
+    glossary("書き換えた意味"),
+  );
+  // 検証
+  await expect
+    .poll(async () => {
+      await term.hover();
+      return frame.locator('[role="tooltip"]:visible').innerText();
+    })
+    .toContain("書き換えた意味");
+  // ツールチップは本文の中の要素なので、閉じてから本文の文字を比べる
+  await session.win.mouse.move(0, 0);
+  await expect
+    .poll(() => frame.locator(".mdmark").first().innerText())
+    .toBe(text);
+  expect(await scrollTop(frame)).toBe(top);
 });

@@ -1,30 +1,85 @@
-import { isAbsolute, resolve } from "node:path";
-import { parse, YAMLParseError } from "yaml";
+import { stat } from "node:fs/promises";
+import { dirname, isAbsolute, resolve } from "node:path";
+import { loadAliases } from "../../src/cli/aliases.ts";
+import type { CheckIssue } from "../../src/cli/check.ts";
+import {
+  loadLayeredConfig,
+  relativizeConfigPaths,
+  resolveSettingsPath,
+} from "../../src/config-files.ts";
+import type { MdmarkAlias } from "../../src/knowledge/aliases.ts";
 import type { PreviewSettings } from "./settings.ts";
 
-/** `mount` に渡す設定。設定ファイルから取り出した `features`・`libraries`・`side-toc`・`colorTheme` */
+/** `mount` に渡す設定。設定ファイルから取り出した `features`・`libraries`・`html-scripts`・`side-toc`・`labels`・`mermaid`・`colorTheme`・`colorScheme` */
 export type PreviewConfig = {
   /** 記載した値のまま（中の知らない名前と型の違う値は mdmark が無視する） */
   features?: Record<string, unknown>;
   /** 記載した値のまま。URL は呼ぶ側が直す */
   libraries?: Record<string, unknown>;
+  /** 記載した値のまま。`url` は呼ぶ側が直す */
+  "html-scripts"?: Record<string, unknown>;
   /** 記載した値のまま（`mode` の知らない値は mdmark が `hover` で描く） */
   "side-toc"?: Record<string, unknown>;
+  /** 記載した値のまま（中の知らないキーと、空文字・文字列でない値は mdmark が無視して既定の文言で描く） */
+  labels?: Record<string, unknown>;
+  /** 書いた値のまま。`url` は呼ぶ側が直す（`theme` の知らない名前は mdmark が `mdmark` で描く） */
+  mermaid?: Record<string, unknown>;
   /** 書いた値のまま。`mdmark.colorTheme` が空でないときは `applyColorTheme` がその値に置き換える（知らない名前は mdmark が dev-swiss で描く） */
   colorTheme?: string;
+  /** 書いた値のまま。プレビューでは `mdmark.preview.theme` が `light`・`dark` のとき `applyPreviewTheme` が除く（知らない値は mdmark が `auto` で描く） */
+  colorScheme?: string;
 };
 
-/** 設定ファイルの読み取りの結果 */
-export type ConfigLoad =
-  | { kind: "ok"; config: PreviewConfig }
-  | { kind: "missing" }
-  | { kind: "error"; line: number; message: string };
+/** 帯に出す、読めない・形の合わない設定ファイル 1 つ */
+export type ConfigProblem = {
+  /** 設定ファイルの絶対パス */
+  path: string;
+  /** YAML として読めない行（1 始まり）。形に合わないときは無い */
+  line?: number | undefined;
+  /** 設定の形に合わない最初のキー。YAML として読めないときは無い */
+  settingKey?: string | undefined;
+  /** 誤りの文（ログに出す） */
+  message: string;
+};
+
+/** `loadConfig` の戻り値 */
+export type ConfigLoad = {
+  /** 重ねた設定のうち `mount` に渡すキー */
+  config: PreviewConfig;
+  /** 重ねた設定の `theme` の絶対パス */
+  theme?: string | undefined;
+  /** 重ねた設定の `extensions` の絶対パス */
+  extensions: string[];
+  /** 重ねた設定ファイルの絶対パス（端末の設定 → 上 → 近い） */
+  files: string[];
+  /** 最も近い `mdmark.config.yaml`（`mdmark.configPath` を書いたときはそのファイル）の絶対パス */
+  nearest?: string | undefined;
+  /** 重ねた設定の `assets.root` の絶対パス。`mount` には渡さない */
+  assetsRoot?: string | undefined;
+  /** 読めない・形の合わない最初の設定ファイル */
+  problem?: ConfigProblem | undefined;
+  /** プレビューで、重ねた設定の `aliases` から作ったエイリアス。`aliases` が無いときは持たない */
+  aliases?: MdmarkAlias[] | undefined;
+  /** エイリアスを作ったときのずれ */
+  aliasIssues: CheckIssue[];
+  /** `aliases` の行の `paths` に当たった YAML の絶対パス */
+  aliasFiles: string[];
+};
+
+/** ファイルがあるか */
+export async function isFile(path: string): Promise<boolean> {
+  try {
+    return (await stat(path)).isFile();
+  } catch {
+    return false;
+  }
+}
 
 /** テキストのファイルを読む関数。ファイルが無ければ `code` が `ENOENT` の例外を投げる */
 export type ReadTextFile = (path: string) => Promise<string>;
 
-/** `mdmark.openConfig` が「作る」で書く YAML。キーを書かず、書き方をコメントで示す */
-export const CONFIG_TEMPLATE = `# mdmark の設定。VS Code のプレビューは features・libraries・side-toc・colorTheme を読みます
+/** `mdmark.openConfig` が「作成」で書く YAML。キーを書かず、書き方をコメントで示す */
+export const CONFIG_TEMPLATE = `# mdmark の設定。端末の設定（~/.config/mdmark/settings.yaml）に重ねて読みます。端末の設定の config.cascade を true にすると、上のフォルダの mdmark.config.yaml も重ねます
 
 # 機能のオン・オフ（使うときは次の 2 行の # を外す）
 # features:
@@ -40,7 +95,17 @@ export const CONFIG_TEMPLATE = `# mdmark の設定。VS Code のプレビュー�
 
 # 配色のテーマ。dev-swiss・theme-paper・theme-slate・theme-contrast のどれか。VS Code の設定 mdmark.colorTheme が空でないときはそちらが優先（使うときは次の 1 行の # を外す）
 # colorTheme: theme-paper
+
+# 使う側の CSS。相対パスはこのファイルのあるフォルダから（使うときは次の 1 行の # を外す）
+# theme: ./theme.css
+
+# 拡張のモジュール。相対パスはこのファイルのあるフォルダから（使うときは次の 2 行の # を外す）
+# extensions:
+#   - ./extensions/example.js
 `;
+
+/** ライブラリ本体が `html-scripts.url`・`mermaid.url` を省いたときに読む URL の origin */
+const DEFAULT_HTML_SCRIPTS_ORIGIN = "https://cdn.jsdelivr.net";
 
 /** `http:`・`https:` の URL か */
 const HTTP_URL_PATTERN = /^https?:/i;
@@ -61,56 +126,125 @@ export function resolveConfigPath(options: {
   return isAbsolute(configPath) ? configPath : resolve(baseDir, configPath);
 }
 
-/** YAML を読み、最上位がマップのときだけ `features`・`libraries`・`side-toc`・文字列の `colorTheme` を取り出す */
-export function parseConfig(text: string): ConfigLoad {
-  let parsed: unknown;
-  try {
-    parsed = parse(text);
-  } catch (error) {
-    if (error instanceof YAMLParseError) {
-      return {
-        kind: "error",
-        line: error.linePos?.[0].line ?? 1,
-        message: error.message,
-      };
-    }
-    throw error;
+/** 重ねた設定から `mount` に渡すキー（マップの `features`・`libraries`・`html-scripts`・`side-toc`・`labels`・`mermaid` と文字列の `colorTheme`・`colorScheme`）だけを取り出す */
+function pickPreviewConfig(config: Record<string, unknown>): PreviewConfig {
+  const picked: PreviewConfig = {};
+  if (isMap(config.features)) {
+    picked.features = config.features;
   }
-  const config: PreviewConfig = {};
-  if (isMap(parsed)) {
-    if (isMap(parsed.features)) {
-      config.features = parsed.features;
-    }
-    if (isMap(parsed.libraries)) {
-      config.libraries = parsed.libraries;
-    }
-    if (isMap(parsed["side-toc"])) {
-      config["side-toc"] = parsed["side-toc"];
-    }
-    if (typeof parsed.colorTheme === "string") {
-      config.colorTheme = parsed.colorTheme;
-    }
+  if (isMap(config.libraries)) {
+    picked.libraries = config.libraries;
   }
-  return { kind: "ok", config };
+  if (isMap(config["html-scripts"])) {
+    picked["html-scripts"] = config["html-scripts"];
+  }
+  if (isMap(config["side-toc"])) {
+    picked["side-toc"] = config["side-toc"];
+  }
+  if (isMap(config.labels)) {
+    picked.labels = config.labels;
+  }
+  if (isMap(config.mermaid)) {
+    picked.mermaid = config.mermaid;
+  }
+  if (typeof config.colorTheme === "string") {
+    picked.colorTheme = config.colorTheme;
+  }
+  if (typeof config.colorScheme === "string") {
+    picked.colorScheme = config.colorScheme;
+  }
+  return picked;
 }
 
-/** 設定ファイルを読んで設定を取り出す。ファイルが無ければ `missing` */
+/** ライブラリ本体の `loadLayeredConfig` で設定を重ねて読み、`ConfigLoad` にする。設定ファイルが 1 つも無ければ端末の設定だけで返す */
 export async function loadConfig(options: {
-  /** 設定ファイルの絶対パス */
-  path: string;
+  /** Markdown のフォルダ */
+  cwd: string;
+  /** `mdmark.configPath` */
+  configPath: string;
+  /** 設定ファイルの場所を決める基準のフォルダ */
+  baseDir: string;
+  /** プレビューか書き出しか */
+  purpose: "preview" | "export";
+  /** 環境変数 */
+  env: Record<string, string | undefined>;
+  /** ホームのフォルダ */
+  home: string;
   /** 読む関数 */
   readFile: ReadTextFile;
+  /** ファイルがあるかを確かめる関数 */
+  isFile: (path: string) => Promise<boolean>;
 }): Promise<ConfigLoad> {
-  let text: string;
-  try {
-    text = await options.readFile(options.path);
-  } catch (error) {
-    if ((error as NodeJS.ErrnoException).code === "ENOENT") {
-      return { kind: "missing" };
+  let explicit: string | undefined;
+  let isFile = options.isFile;
+  if (options.configPath !== "") {
+    const path = resolveConfigPath(options);
+    if (await options.isFile(path)) {
+      explicit = path;
+    } else {
+      // 書いたファイルが無いときは上へ探さず、端末の設定だけを重ねる
+      isFile = async () => false;
     }
-    throw error;
   }
-  return parseConfig(text);
+  const layered = await loadLayeredConfig({
+    cwd: options.cwd,
+    explicit,
+    purpose: options.purpose,
+    env: options.env,
+    home: options.home,
+    readFile: options.readFile,
+    isFile,
+    explicitName: "mdmark.configPath",
+  });
+  const config = layered.config as Record<string, unknown>;
+  const first = layered.issues[0];
+  const problem: ConfigProblem | undefined = layered.unreadable
+    ? { ...layered.unreadable }
+    : first
+      ? { path: first.file, settingKey: first.where, message: first.message }
+      : undefined;
+  const assets = config.assets;
+  const aliasResult =
+    options.purpose === "preview" && config.aliases !== undefined
+      ? await loadPreviewAliases({
+          layered,
+          settingsPath: resolveSettingsPath(options),
+        })
+      : { aliases: undefined, issues: [], files: [] };
+  return {
+    config: pickPreviewConfig(config),
+    theme: typeof config.theme === "string" ? config.theme : undefined,
+    extensions: Array.isArray(config.extensions)
+      ? config.extensions.filter(
+          (path): path is string => typeof path === "string",
+        )
+      : [],
+    files: layered.files.map((file) => file.path),
+    nearest: layered.nearest,
+    assetsRoot:
+      isMap(assets) && typeof assets.root === "string"
+        ? assets.root
+        : undefined,
+    problem,
+    aliases: aliasResult.aliases,
+    aliasIssues: aliasResult.issues,
+    aliasFiles: aliasResult.files,
+  };
+}
+
+/** 重ねた設定の `aliases` からエイリアスを作る。基準の設定ファイルは最も近い `mdmark.config.yaml`、無ければ端末の設定ファイル */
+async function loadPreviewAliases(options: {
+  layered: Awaited<ReturnType<typeof loadLayeredConfig>>;
+  settingsPath: string;
+}): ReturnType<typeof loadAliases> {
+  const { layered, settingsPath } = options;
+  const path = layered.nearest ?? settingsPath;
+  const dir = dirname(path);
+  return loadAliases({
+    path,
+    dir,
+    config: relativizeConfigPaths({ config: layered.config, dir }),
+  });
 }
 
 /** `http:`・`https:` の URL はそのまま、それ以外の文字列は設定ファイルのフォルダから解決した絶対パスを `toUrl` で URL にして返す。文字列でない値はそのまま渡す */
@@ -133,12 +267,52 @@ export function resolveLibraries(options: {
   );
 }
 
-/** `libraries` の値のうち `http:`・`https:` の URL の origin を、重なりを除いて返す */
+/** `html-scripts.url` が `http:`・`https:` でない文字列なら、設定ファイルのフォルダから解決した絶対パスを `toUrl` で URL にして返す */
+export function resolveHtmlScripts(options: {
+  /** 取り出した `html-scripts` */
+  htmlScripts: Record<string, unknown>;
+  /** 設定ファイルのあるフォルダ */
+  configDir: string;
+  /** 絶対パスを読める URL にする関数 */
+  toUrl: (path: string) => string;
+}): Record<string, unknown> {
+  const { htmlScripts, configDir, toUrl } = options;
+  const { url } = htmlScripts;
+  if (typeof url !== "string" || HTTP_URL_PATTERN.test(url)) {
+    return htmlScripts;
+  }
+  return { ...htmlScripts, url: toUrl(resolve(configDir, url)) };
+}
+
+/** `mermaid.url` が `http:`・`https:` でない文字列なら、設定ファイルのフォルダから解決した絶対パスを `toUrl` で URL にして返す（`resolveHtmlScripts` と同じ直し方） */
+export function resolveMermaid(options: {
+  /** 取り出した `mermaid` */
+  mermaid: Record<string, unknown>;
+  /** 設定ファイルのあるフォルダ */
+  configDir: string;
+  /** 絶対パスを読める URL にする関数 */
+  toUrl: (path: string) => string;
+}): Record<string, unknown> {
+  const { mermaid, configDir, toUrl } = options;
+  return resolveHtmlScripts({ htmlScripts: mermaid, configDir, toUrl });
+}
+
+/** `libraries` の値と `html-scripts.url`・`mermaid.url`（文字列でなければライブラリ本体の既定の URL）のうち `http:`・`https:` の URL の origin を、重なりを除いて返す */
 export function libraryOrigins(
   libraries: Record<string, unknown> | undefined,
+  htmlScripts?: Record<string, unknown>,
+  mermaid?: Record<string, unknown>,
 ): string[] {
   const origins = new Set<string>();
-  for (const value of Object.values(libraries ?? {})) {
+  const urlOrDefault = (setting?: Record<string, unknown>): string =>
+    typeof setting?.url === "string"
+      ? setting.url
+      : DEFAULT_HTML_SCRIPTS_ORIGIN;
+  for (const value of [
+    ...Object.values(libraries ?? {}),
+    urlOrDefault(htmlScripts),
+    urlOrDefault(mermaid),
+  ]) {
     if (typeof value === "string" && HTTP_URL_PATTERN.test(value)) {
       // 読めない URL は CSP に足さない（読み込みは mdmark が知らせの枠にする）
       const origin = URL.canParse(value) ? new URL(value).origin : undefined;
@@ -159,4 +333,19 @@ export function applyColorTheme(options: {
 }): PreviewConfig {
   const { config, colorTheme } = options;
   return colorTheme === "" ? config : { ...config, colorTheme };
+}
+
+/** `mdmark.preview.theme` が `light`・`dark` なら、設定から `colorScheme` を除いた設定を返す。`auto` のときは `config` をそのまま返し、渡された `config` は書き換えない（プレビューだけが通し、書き出しは通さない） */
+export function applyPreviewTheme(options: {
+  /** `applyColorTheme` の後の設定 */
+  config: PreviewConfig;
+  /** `readSettings` の `theme` */
+  theme: PreviewSettings["theme"];
+}): PreviewConfig {
+  const { config, theme } = options;
+  if (theme === "auto") {
+    return config;
+  }
+  const { colorScheme: _colorScheme, ...rest } = config;
+  return rest;
 }

@@ -4,9 +4,11 @@ directory: |-
   ```tree
   src/
   ├── mount.ts            # 公開関数 mount と、描いた要素の控え
-  ├── libraries.ts        # 印の場所に外部ライブラリのモジュールを描かせる loadLibraries
-  ├── highlight.ts        # 色分けのライブラリを読んでコードブロックを色分けする highlightCodeBlocks と、埋めたモジュールの URL の控え
+  ├── libraries.ts        # 印の場所に外部ライブラリのモジュールを描かせる loadLibraries と、埋めたモジュールの控え
+  ├── highlight.ts        # 色分けのライブラリを読んでコードブロックを色分けする highlightCodeBlocks と、埋めたモジュールの控え
   ├── highlight-lines.ts  # 色分けした HTML を行に分ける splitHighlightedLines・highlightLines（DOM を使わない）
+  ├── html-scripts.ts     # 埋め込んだ HTML の範囲の ts・js を変換して動かす runHtmlScripts と、変換のライブラリの読み込み・埋めた関数の控え
+  ├── inline-icons.ts     # 束ねていない名前のアイコンを jsDelivr から読む loadInlineIcons
   └── print.ts            # 印刷の前後で折り畳みを開いて戻す attachPrint
   ```
 diagrams:
@@ -64,6 +66,12 @@ data_models:
       - name: diffMode
         type: DiffMode | undefined
         description: 差分の出し方。`button`（既定）・`open`・`blocks`。`diffSource` を渡さないときは使わない。知らない値は `button` にする
+      - name: baseMarkdown
+        type: string | null | undefined
+        description: 比較元の Markdown。文字列なら、本文の中で比較元から変えたブロックを `diffMode` の `blocks` と同じ色で塗り分ける。`null` は省いたのと同じ
+      - name: onColumnsChange
+        type: '((event: MdmarkColumnsChange) => void) | undefined'
+        description: '`+columns` の表で列の表示を切り替えるたびに呼ぶ関数'
   - name: MountHandle
     title: 描いた要素の操作
     container: src/mount.ts
@@ -71,11 +79,33 @@ data_models:
     summary: '`mount` の戻り値（公開の型）'
     properties:
       - name: update
-        type: '(markdown: string) => void'
-        description: 本文だけを描き直す。設定は `mount` に渡したものを使う。`destroy` の後は何もしない
+        type: '(markdown: string, options?: { baseMarkdown?: string | null }) => void'
+        description: 本文だけを描き直す。設定は `mount` に渡したものを使う。`options.baseMarkdown` で比較元を差し替え（`null` で外し）、省くと前の比較元のまま描く。`destroy` の後は何もしない
+      - name: reloadComments
+        type: () => Promise<void>
+        description: 本文を描き直さずにコメントを読み直し、印を付け直す。コメントを付けていないときと `destroy` の後は `load` を呼ばずに解決する
+      - name: focusComment
+        type: '(id: string) => void'
+        description: その `id` のコメントの印を画面に入れてフォーカスを移し、強調する。印が無い `id` と `destroy` の後は何もしない
       - name: destroy
         type: () => void
         description: 要素の中を空にして class `mdmark` を外し、印刷の受け取りを外す。2 回目以降は何もしない
+  - name: MdmarkColumnsChange
+    title: 列の表示の知らせ
+    container: src/mount.ts
+    usecase: 使う側のページが文書を描く
+    role: DTO
+    summary: '`onColumnsChange` に渡す値（公開の型）'
+    properties:
+      - name: tableIndex
+        type: number
+        description: 本文の中の `+columns` の表の出現順の番号（0 から。削除したブロックの中の表は数えない）
+      - name: hidden
+        type: string[]
+        description: 隠している列の見出しの文字（`textContent` の前後の空白を除いたもの）を表の列の順に並べた新しい配列
+    status: planned
+    introduced:
+      pr: 280
   - name: LibraryModule
     title: 外部ライブラリのモジュール
     container: src/libraries.ts
@@ -85,17 +115,17 @@ data_models:
       - name: draw
         type: '(slot: HTMLElement, args: string[]) => void | Promise<void>'
         description: 印の場所の要素と、印の引数を受けて描く
-  - name: SyntaxModuleUrls
-    title: 埋めた色分けのモジュールの URL
+  - name: EmbeddedSyntax
+    title: 埋めた色分けのモジュール
     container: src/highlight.ts
-    summary: 書き出した HTML の起動の処理が `setSyntaxModuleUrls` で渡す、埋めた色分けのモジュールの `blob:` URL
+    summary: 書き出した HTML の起動の処理が `setEmbeddedSyntax` で渡す、同じスクリプトに束ねた色分けのモジュール
     properties:
       - name: core
-        type: string
-        description: 本体（`core.min.js`）の URL
+        type: '{ default?: unknown } | undefined'
+        description: 本体（`core.min.js`）のモジュール。埋めなかったときは持たない
       - name: languages
-        type: Record<string, string>
-        description: 言語のモジュール名から URL を引く表。埋めなかった言語は持たない
+        type: 'Record<string, { default?: unknown }>'
+        description: 言語のモジュール名からモジュールを引く表。埋めなかった言語は持たない
     status: planned
     introduced:
       pr: 97
@@ -141,14 +171,22 @@ constants:
     container: src/libraries.ts
     summary: モジュールが描き終えた印の場所に付ける属性。読み込み中の破線と高さを外すのに使う
     value: '"data-mdmark-drawn"'
-  - name: syntaxModuleUrls
-    title: 埋めた色分けのモジュールの URL の控え
+  - name: embeddedSyntax
+    title: 埋めた色分けのモジュールの控え
     container: src/highlight.ts
-    summary: '`setSyntaxModuleUrls` が入れる `SyntaxModuleUrls`。無ければ `syntax.url` から読む。モジュールの中の `let` で持ち、ページの中の全ての `mount` に効く'
+    summary: '`setEmbeddedSyntax` が入れる `EmbeddedSyntax`。無ければ `syntax.url` から読む。モジュールの中の `let` で持ち、ページの中の全ての `mount` に効く'
     value: undefined
     status: planned
     introduced:
       pr: 97
+  - name: embeddedLibraries
+    title: 埋めた外部ライブラリの控え
+    container: src/libraries.ts
+    summary: '`setEmbeddedLibraries` が入れる、印の名前から外部ライブラリのモジュールを返す関数を引く表。無ければ対応表の URL から読む。モジュールの中の `let` で持ち、ページの中の全ての `mount` に効く'
+    value: undefined
+    status: planned
+    introduced:
+      pr: 296
   - name: COLOR_THEME_ATTRIBUTE
     title: テーマの属性
     container: src/mount.ts
@@ -160,6 +198,45 @@ constants:
     status: planned
     introduced:
       pr: 181
+  - name: COLOR_SCHEME_CLASSES
+    title: 明暗の class
+    container: src/mount.ts
+    summary: 描く先の要素に付ける明暗の class。`src/index.css` の `mdmark-theme-light`・`mdmark-theme-dark` と同じ名前
+    value: '{ light: "mdmark-theme-light", dark: "mdmark-theme-dark" } as const'
+    refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[明暗の当て方]
+    status: planned
+  - name: embeddedHtmlScripts
+    title: 埋めた範囲の関数
+    container: src/html-scripts.ts
+    summary: 書き出した HTML の起動の処理が入れる、範囲のコードの文字から既定のエクスポートを返す関数を引く表。既定は `undefined`
+    value: undefined
+    status: planned
+    introduced:
+      pr: 303
+  - name: HTML_SCRIPTS_REGISTRY
+    title: 範囲の関数の受け取りの鍵
+    container: src/html-scripts.ts
+    summary: '`script` 要素が包んだ関数を渡す、`window` の鍵の名前。動かす間だけ置き、終えたら削除する'
+    value: '"__mdmarkHtmlScript"'
+    status: planned
+    introduced:
+      pr: 303
+  - name: TRANSPILE_OPTIONS
+    title: 範囲のコードの変換の設定
+    container: src/html-scripts.ts
+    summary: '言語ごとの `transform` の設定。どちらも `sourceType: "module"`・`babelrc: false`・`configFile: false`'
+    value: '{ ts: { filename: "range.ts", presets: ["typescript"], plugins: ["transform-modules-commonjs"] }, js: { filename: "range.js", plugins: ["transform-modules-commonjs"] } }'
+    refs:
+      - dev/設計書/外部ライブラリ/babel-standalone#catalogs[API].entries[transform]
+    status: planned
+    introduced:
+      pr: 303
+  - name: LUCIDE_VERSION
+    title: 束ねた lucide のバージョン
+    container: src/inline-icons.ts
+    value: ビルドと単体テストの `define` で `package.json` の `lucide` のバージョンを埋める
+    summary: 束ねていないアイコンを読む URL のバージョン
 functions:
   - name: mount
     title: 文書を要素に描く
@@ -167,7 +244,7 @@ functions:
     kind: 関数
     scope: public
     summary: 公開関数。要素の中に文書を描き、記法の操作を付け、外部ライブラリと拡張の印を描かせ、印刷の受け取りを付けて `MountHandle` を返す
-    side_effects: '`el` の中身と class を書き換え、`window` に `beforeprint`・`afterprint` の受け取りを付ける。`mounted` に `el` を控える'
+    side_effects: '`el` の中身と class を書き換え、`window` に `beforeprint`・`afterprint` の受け取りを付ける。`mounted` に `el` を控える。`onColumnsChange` を呼ぶ'
     args:
       - name: el
         type: HTMLElement
@@ -187,26 +264,33 @@ functions:
       type: MountHandle
       description: 描き直しと片付けの関数
     process: |-
-      1. `diffSource` か `commentStore` を渡して `docId` が無ければ `TypeError` を投げる。`commentStore` が `load`・`save` の関数を持たなければ `TypeError` を投げる（コメントの引数を検める）。`mounted` に `el` があれば、その `destroy` を呼ぶ。差分の出し方を `normalizeDiffMode(opts.diffMode)` で決める
+      1. `diffSource` か `commentStore` を渡して `docId` が無ければ `TypeError` を投げる。`commentStore` を `checkCommentStore(commentStore, "commentStore")` で確かめる（コメントの読み書きの関数を検める）。`baseMarkdown` を `checkBaseMarkdown` で確かめ、`onColumnsChange` を渡して関数でなければ `onColumnsChange` を含む `TypeError` を投げる。比較元（`baseMarkdown` が文字列ならその値、それ以外は無し）を控える。`mounted` に `el` があれば、その `destroy` を呼ぶ。差分の出し方を `normalizeDiffMode(opts.diffMode)` で決める
       2. 設定に既定を当てる（設定に既定を当てる）
-      3. 描く世代を 0、片付けた印を `false`、操作を外す関数と右側の目次を外す関数を無しにし、右側の目次の状態（`SideTocState`）を `{ open: false, pinned: false }` で作る
+      3. 描く世代を 0、片付けた印を `false`、操作を外す関数・右側の目次を外す関数・先頭へ戻るボタンを外す関数を無しにし、右側の目次の状態（`SideTocState`）を `{ open: false, pinned: false }` で作る
       4. 文書を描く。描くたびに次を行う
-         - 世代を 1 進め、前の操作を外す関数と右側の目次を外す関数があれば呼ぶ
-         - 本文の HTML と機能のオン・オフを得て（文書を描く。`opts` の `index`・`docId`・`references`・`aliases` を渡す）、`el` の中を本文の HTML に置き換え、`el` に `ROOT_CLASS` を付け、`COLOR_THEME_ATTRIBUTE` に既定を当てた設定の `colorTheme` を付ける
+         - 世代を 1 進め、前の操作を外す関数・右側の目次を外す関数・先頭へ戻るボタンを外す関数があれば呼ぶ
+         - 本文の HTML と機能のオン・オフを得て（文書を描く。`opts` の `index`・`docId`・`references`・`aliases` を渡す）、戻りの `page` を既定を当てた設定に重ねてこの描画の設定にする（ページの設定を重ねる）。`el` の中を本文の HTML に置き換え、`el` に `ROOT_CLASS` を付け、`COLOR_THEME_ATTRIBUTE` にこの描画の設定の `colorTheme` を付ける。`COLOR_SCHEME_CLASSES` の 2 つの class を外してから、この描画の設定の `colorScheme` が `light`・`dark` ならその class を付ける
          - 機能のオン・オフを控える
-         - 機能の `side-toc` がオンなら右側の目次を付け（右側の目次を付ける。既定を当てた設定の `sideToc.mode`・機能の `sections`・手順 3 の状態を渡す）、外す関数を控える。以降の記法の操作・外部ライブラリ・色分け・部品・差分に描いた要素として渡すのは、戻りの `content`（本文の列。右側の目次を付けないときは `el`）
-         - 記法の操作を付け（記法の操作を付ける。ツールチップを出す場所は、既定を当てた設定の `tooltips.placement` を渡す）、外す関数を控える
+         - 機能の `side-toc` がオンなら右側の目次を付け（右側の目次を付ける。この描画の設定の `sideToc.mode`・機能の `sections`・手順 3 の状態を渡す。前の描画と `sideToc.mode` が違うときは、渡す前に手順 3 の状態を `{ open: false, pinned: false }` に戻す）、外す関数を控える。以降の記法の操作・外部ライブラリ・色分け・部品・差分に描いた要素として渡すのは、戻りの `content`（本文の列。右側の目次を付けないときは `el`）
+         - 比較元があって本文と違うときは、本文の HTML を `el` に置く前に、本文と比較元の Markdown を同じ引数で描いた `template` の中身を `colorDiffBlocks` に通し、本文の中身を `el` に置く（下の `blocks` の色分けと同じ）
+         - 機能の `comments` がオンで `commentStore` と `docId` を渡し、右側の目次が本文の列に包んでいない（戻りの `content` が `el`）ときは、`el` の子を `div.mdmark-content` に包み、以降の描いた要素をその本文の列にする。外す関数は、包む前の子の並びへ戻す（余白の列を本文の列の右に置くため。インターフェース定義『文書を描く』の制約「余白のマーカー」）
+         - 記法の操作を付け（記法の操作を付ける。ツールチップを出す場所は、既定を当てた設定の `tooltips.placement` と `tooltips.diagramPlacement` を渡す。`onColumnsChange` を渡したときはそれも渡す）、外す関数を控える
          - 印の場所に外部ライブラリと拡張を描かせる（印の場所に外部ライブラリを描かせる）。今の世代と片付けた印を見る `isCurrent` を渡し、戻りの Promise は待たない
          - 色分けの対象を色分けする（色分けの対象を色分けする）。既定を当てた設定の `syntax.url`・同じ `isCurrent`・`mount` ごとに 1 つ作るモジュールの控え（`Map`）を渡し、戻りの Promise は待たない
-         - ビューとコメントの部品を付け（描いた文書に部品を付ける。機能のオン・オフ・`commentStore`・`docId`・`isCurrent` と、`mount` ごとに 1 つ作る `warned` を渡す）、外す関数を控える。前の外す関数は描き直す前に呼ぶ
+         - 機能の `mermaid` がオンなら、前の mermaid の図を外す関数を呼んでから mermaid の図を付ける（mermaid の図を付ける。描いた要素・`el`・この描画の設定・`mount` の通し番号・同じ `isCurrent`・`mount` ごとに 1 つ作る mermaid のモジュールの控え（`Map`）・既定を当てた設定の `tooltips.diagramPlacement` を渡す）。戻りの `ready` は待たず、`detach` を控える。印の場所に外部ライブラリを描かせる処理の後に呼ぶ（読み込み中の枠を印の場所として拾わせない）
+         - 機能の `html-scripts` がオンなら範囲のスクリプトを動かす（範囲のスクリプトを動かす。既定を当てた設定の `htmlScripts.url`・同じ `isCurrent`・`mount` ごとに 1 つ作る読み込みの控えを渡す）。戻りの Promise は待たず、解決した関数を範囲の `destroy` として控え、描き直す前・`destroy`・同じ要素への 2 回目の `mount` で呼ぶ（解決する前に描き直したときは、解決したときに呼ぶ）
+         - ビューとコメントの部品を付け（描いた文書に部品を付ける。機能のオン・オフ・`commentStore`・`docId`・`isCurrent` と、`mount` ごとに 1 つ作る `warned` を渡す）、戻りの `PartsHandle` を控える。前の `PartsHandle` の `detach` は描き直す前に呼ぶ
          - `diffSource` を渡し、差分の出し方が `button` か `open` なら、前の差分を外す関数を呼んでから差分を付け（差分を付ける。`open` には差分の出し方が `open` かを渡す。右側の目次を付けたときは `hideWith` にその要素を渡す。`renderHtml` は、範囲の HTML を `html` のコードブロックに入れ `<!-- html -->` で囲んだ Markdown を、今の設定・`index`・`docId`・`references`・`aliases` で文書を描く処理に通し、得た埋め込んだ HTML の範囲の中身と、置いた要素にその描画の機能のオン・オフと操作できる部品の定義、今の設定の `tooltips.placement` で記法の操作を付ける `attach` を返す関数（`DiffHtmlRenderer`）。文書と同じく図の部品を図の HTML にし、許可の検査とヒントを当て、図の拡大・ツールチップ・操作できる部品も文書と同じく動かす。`html` の機能がオフのときは空の文字と何もしない `attach` を返す）、外す関数を控える
-         - `diffSource` を渡し、差分の出し方が `blocks` で、色分けせずに描いたときは、比べる 2 つの本文を取り出す（`loadDiffPair`。戻りの Promise は待たない）。解決したときに世代が変わっているか片付けていれば何もしない。`pair` で前と後が違えば、後の Markdown をこの手順 4 で描き直す。そのときは本文の HTML を `el` に置く前に、後と前の Markdown を同じ引数で描いた `template` の中身を `colorDiffBlocks` に通し（`segmenter` は `Intl.Segmenter` があれば `ja`・`word` で作る）、後の中身を `el` に置く。色分けして描いたときは取り出し元を呼び直さない。`single` と同じ本文のときは描いたまま残す。`failed` なら本文の列の先頭に `renderNotice({ name: docId, source: "diff-blocks" })` の知らせの枠を置く
+         - `diffSource` を渡し、差分の出し方が `blocks` で、比較元が無く、色分けせずに描いたときは、比べる 2 つの本文を取り出す（`loadDiffPair`。戻りの Promise は待たない）。解決したときに世代が変わっているか片付けていれば何もしない。`pair` で前と後が違えば、後の Markdown をこの手順 4 で描き直す。そのときは本文の HTML を `el` に置く前に、後と前の Markdown を同じ引数で描いた `template` の中身を `colorDiffBlocks` に通し（`segmenter` は `Intl.Segmenter` があれば `ja`・`word` で作る）、後の中身を `el` に置く。色分けして描いたときは取り出し元を呼び直さない。`single` と同じ本文のときは描いたまま残す。`failed` なら本文の列の先頭に `renderNotice({ name: docId, source: "diff-blocks" })` の知らせの枠を置く
+         - 機能の `back-to-top` がオンなら先頭へ戻るボタンを付け（先頭へ戻るボタンを付ける。`el` と、ここまでで決まった本文の列を渡す）、外す関数を控える。描くたびに付け直し、スクロールする場所を `update` の後にも決め直す
       5. 印刷の受け取りを付ける（印刷の前後で折り畳みと記法を開く）。`isEnabled` は控えた機能のオン・オフの `print` を返す
-      6. `update` は、片付けた後なら何もせず、そうでなければ手順 4 で描き直す（右側の目次の状態は保つ。`index`・`docId`・`references`・`aliases` は最初に渡したもののまま）
-      7. `destroy` は、片付けた後なら何もせず、そうでなければ片付けた印を `true` にし、操作・差分・ビューとコメントの部品・右側の目次・印刷の受け取りを外し、`el` の中を空にして `ROOT_CLASS` と `COLOR_THEME_ATTRIBUTE` を外し、`mounted` の `el` が自分なら消す
-      8. `mounted` に `el` と戻り値を控えて返す
+      6. `update` は、片付けた後なら何もしない。`options.baseMarkdown` を渡したときは `checkBaseMarkdown` で確かめ（投げたら描き直さずにそのまま投げる）、比較元を文字列ならその値、`null` なら無しに差し替える。手順 4 で描き直す（右側の目次の状態は保つ。`index`・`docId`・`references`・`aliases` は最初に渡したもののまま）
+      7. `reloadComments` は、片付けた後なら解決した Promise を返し、そうでなければ控えた `PartsHandle` の `reloadComments()` を返す。`focusComment(id)` は、片付けた後なら何もせず、そうでなければ控えた `PartsHandle` の `focusComment(id)` を呼ぶ
+      8. `destroy` は、片付けた後なら何もせず、そうでなければ片付けた印を `true` にし、操作・差分・ビューとコメントの部品・右側の目次・先頭へ戻るボタン・mermaid の図・印刷の受け取りを外し、`el` の中を空にして `ROOT_CLASS`・`COLOR_THEME_ATTRIBUTE`・`COLOR_SCHEME_CLASSES` の class を外し、`mounted` の `el` が自分なら消す
+      9. `mounted` に `el` と戻り値を控えて返す
     callees:
       - dev/設計書/モジュール構成/ライブラリ本体/設定と機能.ts#functions[resolveConfig]
+      - dev/設計書/モジュール構成/ライブラリ本体/設定と機能.ts#functions[applyPageSettings]
       - dev/設計書/モジュール構成/ライブラリ本体/描画.ts#functions[renderDocument]
       - dev/設計書/モジュール構成/ライブラリ本体/操作.ts#functions[attachInteractions]
       - '#functions[loadLibraries]'
@@ -217,8 +301,13 @@ functions:
       - dev/設計書/モジュール構成/ライブラリ本体/差分.ts#functions[colorDiffBlocks]
       - dev/設計書/モジュール構成/ライブラリ本体/部品.ts#functions[renderNotice]
       - dev/設計書/モジュール構成/ライブラリ本体/ビューとコメント.ts#functions[attachParts]
+      - dev/設計書/モジュール構成/ライブラリ本体/ビューとコメント.ts#functions[checkCommentStore]
+      - '#functions[checkBaseMarkdown]'
       - '#functions[highlightCodeBlocks]'
+      - dev/設計書/モジュール構成/ライブラリ本体/mermaid.ts#functions[attachMermaid]
       - dev/設計書/モジュール構成/ライブラリ本体/操作.ts#functions[attachSideToc]
+      - dev/設計書/モジュール構成/ライブラリ本体/操作.ts#functions[attachBackToTop]
+      - dev/設計書/モジュール構成/ライブラリ本体/描く.ts#functions[runHtmlScripts]
     refs:
       - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#
     unit_tests:
@@ -246,6 +335,18 @@ functions:
         condition: '`mount(el, A)` の後に `mount(el, B)`、続けて 1 回目の戻り値の `update("# C")`'
         mock: なし
         expected: '`el` の中の本文の列（`div.mdmark-content`）が 1 つだけで、その中の見出しが文字 `B` の `h1` のまま'
+      - name: test_mount_when_page_marker
+        case: 正常
+        summary: page の印の明暗・テーマ・目次の出し方を設定より優先し、`update` で決め直す
+        condition: '設定が `{ colorScheme: "dark", colorTheme: "theme-paper", "side-toc": { mode: "hover" } }` で、`<!-- page: scheme=light theme=theme-slate toc=fixed -->` と h2 を 2 つ持つ文書を描き、`update` で印を持たない文書にする'
+        mock: なし
+        expected: 描いた直後、`el` が class `mdmark-theme-light` を持ち `mdmark-theme-dark` を持たず、`data-mdmark-color-theme` が `theme-slate`、右側の目次の `data-mode` が `fixed`。`update` の後は class `mdmark-theme-dark`、`data-mdmark-color-theme` が `theme-paper`、右側の目次の `data-mode` が `hover`
+      - name: test_mount_when_color_scheme_destroyed
+        case: 正常
+        summary: '`destroy` で mount が付けた明暗の class を外す'
+        condition: '設定が `{ colorScheme: "dark" }` で描き、`destroy()`'
+        mock: なし
+        expected: '`el` が class `mdmark-theme-dark`・`mdmark-theme-light` を持たない'
       - name: test_mount_when_print_disabled_by_mark
         case: 正常
         summary: 文書の印で印刷の機能を外すと、印刷の前に折り畳みを開かない
@@ -264,6 +365,18 @@ functions:
         condition: 表を描いて絞り込みのドロワーを開いた後、タブの文書に `update`
         mock: '`document.removeEventListener` を数える関数で包む'
         expected: '`pointerdown`・`keydown` が外れ、`role="tablist"` がある'
+      - name: test_mount_when_mermaid
+        case: 正常
+        summary: mermaid のコードブロックを図にし、描き直す前と片付けで mermaid の図を外す
+        condition: '`config.mermaid.url` が手元の mermaid 12.3.0 の flowchart のコードブロックを描き、図ができた後に `update` で同じ本文、続けて `destroy`'
+        mock: '`MutationObserver.prototype.disconnect` を数える関数で包む'
+        expected: '`update` の前に `figure.mdmark-diagram[data-diagram="mermaid"]` が 1 つあり、`update` と `destroy` のたびに `disconnect` が呼ばれる。`destroy` の後に `el` が空'
+      - name: test_mount_when_mermaid_disabled
+        case: 正常
+        summary: 機能 mermaid をオフにした設定では mermaid を読まない
+        condition: '`config.features.mermaid` が `false` で、mermaid のコードブロックを描く'
+        mock: '`performance.getEntriesByType("resource")` で要求を数える'
+        expected: mermaid の URL への要求が 0 件で、`div.mdmark-code` のコードブロックが残る
       - name: test_mount_when_diff_source
         case: 正常
         summary: 取り出し元を渡すと見出しの後ろに差分を開くボタンを置き、片付けると取り除く
@@ -305,7 +418,7 @@ functions:
         summary: 見出しのある文書に右側の目次を置き、記法の操作を本文の列に付ける
         condition: '`# 手引き`・`## 導入`・表を描く。設定は省く'
         mock: なし
-        expected: '`el` の子が `div.mdmark-content` と `aside.mdmark-side-toc[data-mode="hover"]`。表の操作のボタンと節の開閉のボタンが本文の列の中にある'
+        expected: '`el` の子が `div.mdmark-content`・`aside.mdmark-side-toc[data-mode="hover"]`・`button.mdmark-back-to-top`。表の操作のボタンと節の開閉のボタンが本文の列の中にある'
       - name: test_mount_when_side_toc_kept_on_update
         case: 正常
         summary: 描き直しても右側の目次を 1 つだけ置き、ピン止めを保つ
@@ -318,6 +431,24 @@ functions:
         condition: '先頭に `<!-- features: -side-toc -->` を持つ `# 手引き`・`## 導入`'
         mock: なし
         expected: '`aside.mdmark-side-toc` と `div.mdmark-content` が無く、`el` の直下に `h1` がある'
+      - name: test_mount_when_back_to_top
+        case: 正常
+        summary: 先頭へ戻るボタンを描く先の要素の子の末尾に置き、描き直しても 1 つだけ置く
+        condition: 設定を省いて `# 手引き`・`## 導入` を描き、`update("# B")` の後に `destroy`
+        mock: なし
+        expected: 描いた後と `update` の後の `el` の最後の子が `button.mdmark-back-to-top[hidden]` で、`el` の中に 1 つだけある。`destroy` の後は無い
+      - name: test_mount_when_back_to_top_off
+        case: 正常
+        summary: 機能をオフにすると先頭へ戻るボタンを置かない
+        condition: '先頭に `<!-- features: -back-to-top -->` を持つ `# 手引き` を描く'
+        mock: なし
+        expected: '`el` の中に `button.mdmark-back-to-top` が無い'
+      - name: test_mount_when_comments_without_side_toc
+        case: 正常
+        summary: 右側の目次が無くても、コメントの機能では本文を列に包む
+        condition: '`config.features` が `{ comments: true }`、`commentStore`・`docId` を渡し、見出しの無い段落だけを描く。位置関係は、テストの中で高さを持つ `div.mdmark-comment-margin` を `div.mdmark-content` の後ろに置いてから測る'
+        mock: '`setPartModuleUrl` で `comments` を、`attachComments` が受けた `root` を控えるモジュールの URL に差し替える'
+        expected: '`el` の子の先頭が `div.mdmark-content` で、`attachComments` の `root` がその要素。余白の列（`div.mdmark-comment-margin`）を置いた後、余白の列の上端が本文の列の上端と同じで、余白の列の左端が本文の列の右端より右。`destroy` の後に `el` の中が空'
       - name: test_mount_when_aliases_updated
         case: 正常
         summary: update で描き直しても、最初に渡したエイリアスで下線を付ける
@@ -360,6 +491,98 @@ functions:
         condition: '`diffMode: "blocks"`。`content` が拒否する'
         mock: '`console.error` を控える関数で包む'
         expected: '例外を投げず、本文の列の最初の子が `renderNotice({ name: "guide", source: "diff-blocks" })` の知らせの枠で、`mdmark-diff-block` が無い'
+      - name: test_mount_when_base_markdown
+        case: 正常
+        summary: 比較元を渡すと、取り出し元なしで変えたブロックを色分けして描く
+        condition: '`markdown` は段落 `A`・`B`・`C`、`baseMarkdown` は段落 `A`・`C`・`D`。段落 `C` は 2 行（空行どうしで合わないようにする）'
+        mock: なし
+        expected: '`B` の段落が `div.mdmark-diff-block[data-kind="add"]` に、`D` の段落が `div.mdmark-diff-block[data-kind="del"]` に包まれ、`mdmark-diff-toggle` が無い'
+      - name: test_mount_when_base_markdown_same
+        case: 正常
+        summary: 比較元が本文と同じなら色分けしない
+        condition: '`markdown` と `baseMarkdown` が同じ `# A`'
+        mock: なし
+        expected: '`mdmark-diff-block` が無い'
+      - name: test_mount_when_base_replaced
+        case: 正常
+        summary: update で比較元を差し替え、省くと前の比較元のまま、null で外す
+        condition: '段落 `A` を比較元 `A`・`B` で描いた後、`update("A\n\nC", { baseMarkdown: "A" })`、`update("A\n\nD")`、`update("A\n\nD", { baseMarkdown: null })`'
+        mock: なし
+        expected: 1 回目の `update` の後は `C` が `add`、2 回目の後は `D` が `add`、3 回目の後は `mdmark-diff-block` が無い
+      - name: test_mount_when_base_with_diff_source
+        case: 正常
+        summary: 比較元と取り出し元を両方渡すと、色分けに比較元を使い、取り出し元は差分を開く UI にだけ使う
+        condition: '比較元を渡し、`diffMode: "blocks"` で描く要素と、`diffMode: "button"` で描く要素'
+        mock: 取り出し元は呼ばれた引数を控える関数
+        expected: '`blocks` の要素は比較元の色分けがあり、`revisions`・`content` が呼ばれない。`button` の要素は比較元の色分けと `mdmark-diff-toggle` の両方がある'
+      - name: test_mount_when_base_not_string
+        case: 異常
+        summary: 比較元が文字列でも null でもないと投げる
+        condition: '`baseMarkdown: 1` で `mount` する。別の要素で `# A` を描いた後に `update("# B", { baseMarkdown: 1 })`'
+        mock: なし
+        expected: どちらも `baseMarkdown` を含む `TypeError` を投げる。`mount` の要素の中は変わらず、`update` の要素は `A` の見出しのまま
+      - name: test_mount_when_columns_callback_not_function
+        case: 異常
+        summary: 列の表示の知らせが関数でないと投げる
+        condition: '`onColumnsChange: "x"`'
+        mock: なし
+        expected: '`onColumnsChange` を含む `TypeError` を投げ、`el` の中は変わらない'
+      - name: test_mount_when_columns_changed
+        case: 正常
+        summary: 列の表示を切り替えると知らせ、描いたときと update では知らせない
+        condition: '`<!-- table: data +columns hide=説明 -->` の表（列 `名前`・`状態`・`説明`）を描き、`update` で同じ本文を描き直してから、列の表示で `状態` のチェックを外す'
+        mock: '`onColumnsChange` は引数を控える関数'
+        expected: '`update` の後まで呼ばれず、外した後に `{ tableIndex: 0, hidden: ["状態", "説明"] }` で 1 回呼ばれる'
+      - name: test_mount_when_comment_store_edit_invalid
+        case: 異常
+        summary: 読み書きの関数の update・remove が関数でないと投げる
+        condition: '`commentStore` に `update: 1` を持たせる'
+        mock: なし
+        expected: '`commentStore` を含む `TypeError` を投げ、`el` の中は変わらない'
+      - name: test_mount_when_comments_delegated
+        case: 正常
+        summary: reloadComments・focusComment を今の描画の部品に任せ、destroy の後は呼ばない
+        condition: '`comments` をオンにし、`commentStore` と `docId` を渡して描き、`reloadComments()` と `focusComment("c1")` を呼び、`destroy` の後にもう一度ずつ呼ぶ'
+        mock: '`setPartModuleUrl` で `comments` を、`reload`・`focus` の呼び出しを控える `CommentsController` を返すモジュールの URL に差し替える'
+        expected: '`destroy` の前は `reload` が 1 回、`focus` が `c1` で 1 回呼ばれる。`destroy` の後の `reloadComments()` は解決し、どちらも呼ばれない'
+      - name: test_mount_when_range_scripts
+        case: 正常
+        summary: 描くたびに範囲のスクリプトを動かし、描き直す前と `destroy` で範囲の `destroy` を呼ぶ
+        condition: '`features` に `{ "html-scripts": true }`。`js` の範囲（根の要素に `data-ran` を付け、`destroy` で数を増やす）を持つ文書を描き、`update`・`destroy` を呼ぶ'
+        mock: '`setEmbeddedHtmlScripts` で範囲のコードの文字から関数を引く表を入れる（終えたら `undefined`）'
+        expected: 描いた後に根の要素が `data-ran` を持ち、`update` の後に `destroy` の数が 1、`destroy` の後に 2
+  - name: checkBaseMarkdown
+    title: 比較元を検める
+    container: src/mount.ts
+    kind: 関数
+    scope: internal
+    summary: '`mount` の `opts.baseMarkdown` と `update` の `options.baseMarkdown` が、文字列か `null` か `undefined` かを確かめ、違えば `baseMarkdown` を含む `TypeError` を投げる'
+    args:
+      - name: value
+        type: unknown
+        required: true
+        description: 渡された比較元
+    returns:
+      type: 'asserts value is string | null | undefined'
+      description: 合えば何も返さない
+    unit_tests:
+      - name: test_check_base_markdown
+        case: 正常
+        summary: 文字列・null・undefined は通す
+        condition: '`"# A"`・`""`・`null`・`undefined` を渡す'
+        mock: なし
+        expected: どれも投げない
+      - name: test_check_base_markdown_when_invalid
+        case: 異常
+        summary: それ以外は投げる
+        condition: '`1`・`{}` を渡す'
+        mock: なし
+        expected: どちらも `baseMarkdown` を含む `TypeError`
+    refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#exceptions[TypeError（比較元）]
+    status: planned
+    introduced:
+      pr: 280
   - name: loadLibraries
     title: 印の場所に外部ライブラリを描かせる
     container: src/libraries.ts
@@ -367,7 +590,7 @@ functions:
     scope: internal
     is_async: true
     summary: 要素の中の印の場所ごとに、登録した拡張なら引数を検査して `load` で、対応表なら URL でモジュールを読んで `draw` を呼ぶ。引数が合わない場所は書き方の警告に、読めない・描けない・検査が失敗する場所は知らせの枠に替える
-    description: '同じ名前のモジュールは 1 回の呼び出しの中で 1 回だけ読む（2 回目からは同じ Promise を待つ）。拡張は対応表より優先し、`draw` に `parseMarkArgs` の値を渡す（対応表のモジュールには今のまま引数の配列を渡す）。拡張の知らせの枠は `source: "extension"` で、名前は拡張の `name`。書き方の警告は `renderSyntaxWarning` に印の文字・拡張の名前・`validateMarkArgs` の項目を渡す。印の場所が無ければ何も読まない。読み込みと `draw` に時間の上限は置かない'
+    description: '同じ名前のモジュールは 1 回の呼び出しの中で 1 回だけ読む（2 回目からは同じ Promise を待つ）。拡張は対応表より優先し、`draw` に `parseMarkArgs` の値を渡す（対応表のモジュールには今のまま引数の配列を渡す）。拡張の知らせの枠は `source: "extension"` で、名前は拡張の `name`。書き方の警告は `renderSyntaxWarning` に印の文字・拡張の名前・`validateMarkArgs` の項目を渡す。印の場所が無ければ何も読まない。`embeddedLibraries` があるときは、URL を読まずに表の関数でモジュールを読み、表に無い名前は読めないものとして知らせの枠にする（ページの隣のファイルや CDN へ要求しない）。読み込みと `draw` に時間の上限は置かない'
     side_effects: 印の場所の要素の属性を書き換え、失敗した場所を知らせの枠に置き換える。失敗を `console.error` に出す
     args:
       - name: options
@@ -382,7 +605,7 @@ functions:
       2. 拾った要素ごとに並行して次を行う
          - `data-mdmark-slot` の名前で対応表の行を引く。行が無い（文書に生の HTML で書かれた）要素は取り除き、ほかは行わない
          - 行の `url` を `document.baseURI` を基準に解決する
-         - 名前ごとに 1 回だけモジュールを読む（モジュールを読む）
+         - 名前ごとに 1 回だけモジュールを読む。`embeddedLibraries` があるときはその名前の関数を呼び、無い名前は `Error`（埋めていない）で拒否する。無いときは解決した URL で読む（モジュールを読む）
          - `data-mdmark-args` を空白で区切った引数で、モジュールの `draw` を呼んで待つ
          - 待った後に `isCurrent()` が `false` なら何もしない
          - 描けたら、要素から `role` を外し `DRAWN_ATTRIBUTE` を付ける
@@ -461,12 +684,18 @@ functions:
         condition: '`load` が拒否される拡張と、`validate` が拒否される拡張の場所'
         mock: '`console.error` を控える関数で包む'
         expected: どちらも `mdmark-notice` で本文が `表示に使う拡張（…）` で始まり、`console.error` に拡張の名前と元のエラー
+      - name: test_load_libraries_when_embedded
+        case: 正常
+        summary: 埋めた外部ライブラリは URL を読まずに表の関数で読み、表に無い名前は知らせの枠にする
+        condition: '`setEmbeddedLibraries({ "test-lib": 関数 })` の後に、`test-lib` と `other` の印の場所。対応表は両方を持つ。終えたら `setEmbeddedLibraries(undefined)`'
+        mock: '`importModule` を見張る。表の関数は `draw` を持つモジュールを返す'
+        expected: '`importModule` が呼ばれず、`test-lib` の場所が `data-mdmark-drawn` を持ち、`other` の場所が `renderNotice` の HTML に替わる'
   - name: attachPrint
     title: 印刷の前後で折り畳みと記法を開く
     container: src/print.ts
     kind: 関数
     scope: internal
-    summary: '`beforeprint` で要素の中の閉じた `details`・閉じた節・行の詳細・ファイルツリーの閉じたフォルダを開き、タブの全ての中身を出し、`afterprint` で開いたものだけを戻す受け取りを `window` に付け、外す関数を返す'
+    summary: '`beforeprint` で要素の中の閉じた `details`・閉じた節・行の詳細・ファイルツリーの閉じたフォルダ・コードブロックの畳んだ行・列を畳んだ ER 図のテーブル・畳んだ階層の表の行・隠した YAML の見本を開き、タブの全ての中身を出し、`afterprint` で開いたものだけを戻す受け取りを `window` に付け、外す関数を返す'
     side_effects: '`window` に受け取りを付ける。`details` の `open` を書き換える'
     args:
       - name: options
@@ -480,8 +709,10 @@ functions:
       1. `beforeprint` を受けたとき、`isEnabled()` が `true` なら、次を行い、変えたものを控える
          - `open` を持たない `details` を開く
          - `hidden` を持つ `mdmark-section-body`・`mdmark-row-detail`・`div.mdmark-tree` の入れ子の `ul` の `hidden` を外す（ツリーの `ul` は、そのフォルダの `mdmark-tree-toggle` を `aria-expanded="true"` にする）
+         - `aria-expanded="false"` の `mdmark-code-fold` を `setCodeFoldOpen` で開く
+         - `aria-expanded="false"` の `mdmark-diagram-er-fold` のテーブルを `setErTableFolded` で開く（関係の線を結び直す）
          - `role="tabpanel"` の `hidden` を外し、`mdmark-tabs` に `data-printing` を付ける（印刷の CSS がタブの並びを隠し、タブ名の題を出す）
-      2. `afterprint` を受けたとき、控えたものを元に戻し（節とツリーの入れ子の `ul` は `hidden="until-found"`、ツリーの開閉のボタンは `aria-expanded="false"`、行の詳細とタブの中身は `hidden`、`data-printing` を外す）、控えを空にする
+      2. `afterprint` を受けたとき、控えたものを元に戻し（節とツリーの入れ子の `ul` は `hidden="until-found"`、ツリーの開閉のボタンは `aria-expanded="false"`、行の詳細とタブの中身は `hidden`、コードブロックの行は `setCodeFoldOpen` で、ER 図のテーブルは `setErTableFolded` で畳み直す、`data-printing` を外す）、控えを空にする
       3. 外す関数は、2 つの受け取りを `window` から外す
     unit_tests:
       - name: test_attach_print
@@ -514,8 +745,22 @@ functions:
         condition: 操作を付けた、`src/` が閉じたファイルツリー。`isEnabled` は `true`
         mock: なし
         expected: '`beforeprint` の後に `src/` の入れ子の `ul` が `hidden` を持たず `src/` のボタンが `aria-expanded="true"`、`afterprint` の後に `ul` が `hidden="until-found"` を持ちボタンが `aria-expanded="false"`'
+      - name: test_attach_print_when_code_folded
+        case: 正常
+        summary: 印刷の前にコードブロックの畳んだ行を開き、後に畳み直す
+        condition: 操作を付けた、2 行目を畳んだコードブロックと、入れ子の注意書きを閉じた `details`。`isEnabled` は `true`
+        mock: なし
+        expected: '`beforeprint` の後に 3 行目以降が `hidden` を持たず、内側の注意書きの `details` も `open` を持つ。`afterprint` の後に 2 行目のボタンが `aria-expanded="false"` で後ろの行が `hidden`、内側の `details` が `open` を持たない'
+      - name: test_attach_print_when_er_folded
+        case: 正常
+        summary: 印刷の前に ER 図の畳んだテーブルを開き、後に畳み直す
+        condition: 操作を付けた、モックの `shop-er-folded` の ER 図。`isEnabled` は `true`
+        mock: なし（Chromium）
+        expected: '`beforeprint` の後に注文のテーブルの全ての列の行が `hidden` を持たず開閉のボタンが `aria-expanded="true"`、`afterprint` の後に主キーと外部キー以外の列の行が `hidden` を持ちボタンが `aria-expanded="false"`'
     callees:
       - dev/設計書/モジュール構成/ライブラリ本体/操作.ts#functions[setFolderOpen]
+      - dev/設計書/モジュール構成/ライブラリ本体/操作.ts#functions[setCodeFoldOpen]
+      - dev/設計書/モジュール構成/ライブラリ本体/図.ts#functions[setErTableFolded]
   - name: highlightCodeBlocks
     title: 色分けの対象を色分けする
     container: src/highlight.ts
@@ -523,7 +768,7 @@ functions:
     scope: internal
     is_async: true
     summary: 要素の中の `code[data-mdmark-syntax]` が 1 つ以上あれば、色分けのライブラリの本体と使う言語のモジュールを読み、読めた言語の `code` の中身を色分けした HTML に置き換える
-    description: 読む先は、`syntaxModuleUrls` があればその URL（`languages` に無い言語は読まず、`console.error` にも出さない）、無ければ `url` を `document.baseURI` を基準に解決した `{url}core.min.js` と `{url}languages/{モジュール名}.min.js`。読んだモジュールは `modules`（URL → 読み込みの Promise）に控え、同じ `mount` の描き直しでは読み直さない。色分けの HTML は highlight.js が文字をエスケープしてから `span` を付けたもので、sanitize を通さない。待ちに時間の上限は置かない
+    description: 読む先は、`embeddedSyntax` があればそのモジュール（URL を読まない。`core` が無ければ色分けせずに終え、`languages` に無い言語は色分けしない。どちらも `console.error` に出さない）、無ければ `url` を `document.baseURI` を基準に解決した `{url}core.min.js` と `{url}languages/{モジュール名}.min.js`。読んだモジュールは `modules`（URL → 読み込みの Promise）に控え、同じ `mount` の描き直しでは読み直さない。色分けの HTML は highlight.js が文字をエスケープしてから `span` を付けたもので、sanitize を通さない。待ちに時間の上限は置かない
     side_effects: '`code` と `mdmark-code-text` の中身を置き換える。本体に言語を登録する。読めないモジュールを `console.error` に出す'
     args:
       - name: options
@@ -582,12 +827,18 @@ functions:
         condition: '`test_highlight_code_blocks` と同じ要素を 2 つ作り、同じ `modules` で順に呼ぶ'
         mock: '`test_highlight_code_blocks` と同じ'
         expected: '`importModule` が合わせて 3 回で、両方の要素が色分けされる'
-      - name: test_highlight_code_blocks_when_module_urls
+      - name: test_highlight_code_blocks_when_embedded
         case: 正常
-        summary: 埋めたモジュールの URL があればそこから読み、埋めていない言語は読まない
-        condition: '`setSyntaxModuleUrls({ core: "blob:core", languages: { typescript: "blob:ts" } })` の後に `test_highlight_code_blocks` と同じ要素。終えたら `setSyntaxModuleUrls(undefined)`'
-        mock: '`importModule` が `blob:core` に本体、`blob:ts` に typescript を返す。`console.error` を見張る'
-        expected: '`importModule` が `blob:core` と `blob:ts` の 2 回だけ。`typescript` の `code` は色分けし、`yaml` の `code` は前と同じで、`console.error` が呼ばれない'
+        summary: 埋めたモジュールがあれば URL を読まずに使い、埋めていない言語は色分けしない
+        condition: '`setEmbeddedSyntax({ core: 本体, languages: { typescript: 言語 } })`（npm の `highlight.js` の本体と typescript）の後に `test_highlight_code_blocks` と同じ要素。終えたら `setEmbeddedSyntax(undefined)`'
+        mock: '`importModule` と `console.error` を見張る'
+        expected: '`importModule` が呼ばれない。`typescript` の `code` は色分けし、`yaml` の `code` は前と同じで、`console.error` が呼ばれない'
+      - name: test_highlight_code_blocks_when_embedded_without_core
+        case: 正常
+        summary: 本体を埋めていなければ何も読まずに色分けせずに残す
+        condition: '`setEmbeddedSyntax({ languages: {} })` の後に `test_highlight_code_blocks` と同じ要素。終えたら `setEmbeddedSyntax(undefined)`'
+        mock: '`importModule` と `console.error` を見張る'
+        expected: '`importModule` と `console.error` が呼ばれず、両方の `code` の HTML が前と同じ'
       - name: test_highlight_code_blocks_when_dockerfile_and_diff
         case: 正常
         summary: dockerfile と、行の印を持つ diff を色分けする
@@ -600,24 +851,42 @@ functions:
     status: planned
     introduced:
       pr: 97
-  - name: setSyntaxModuleUrls
-    title: 埋めた色分けのモジュールの URL を入れる
+  - name: setEmbeddedSyntax
+    title: 埋めた色分けのモジュールを入れる
     container: src/highlight.ts
     kind: 関数
     scope: internal
-    summary: '`syntaxModuleUrls` を置き換える。`undefined` で `syntax.url` から読む形に戻す'
-    side_effects: '`syntaxModuleUrls` を書き換える'
+    summary: '`embeddedSyntax` を置き換える。`undefined` で `syntax.url` から読む形に戻す'
+    side_effects: '`embeddedSyntax` を書き換える'
     args:
-      - name: urls
-        type: SyntaxModuleUrls | undefined
+      - name: modules
+        type: EmbeddedSyntax | undefined
         required: true
-        description: 埋めたモジュールの URL
+        description: 埋めた色分けのモジュール
     returns:
       type: void
       description: なし
     status: planned
     introduced:
       pr: 97
+  - name: setEmbeddedLibraries
+    title: 埋めた外部ライブラリを入れる
+    container: src/libraries.ts
+    kind: 関数
+    scope: internal
+    summary: '`embeddedLibraries` を置き換える。`undefined` で対応表の URL から読む形に戻す'
+    side_effects: '`embeddedLibraries` を書き換える'
+    args:
+      - name: loaders
+        type: 'Record<string, () => Promise<LibraryModule>> | undefined'
+        required: true
+        description: 印の名前から外部ライブラリのモジュールを返す関数を引く表
+    returns:
+      type: void
+      description: なし
+    status: planned
+    introduced:
+      pr: 296
   - name: highlightLines
     title: 色分けした行を作る
     container: src/highlight-lines.ts
@@ -682,6 +951,218 @@ functions:
     status: planned
     introduced:
       pr: 97
+  - name: runHtmlScripts
+    title: 範囲のスクリプトを動かす
+    container: src/html-scripts.ts
+    kind: 関数
+    scope: internal
+    is_async: true
+    summary: 描いた要素の中の `template.mdmark-html-script` を文書の順に変換して動かし、既定のエクスポートの関数を範囲の根の要素で呼ぶ。範囲が返した `destroy` をまとめて呼ぶ関数を返す
+    description: '`embeddedHtmlScripts` があるときは、範囲のコードの文字で関数を引き、変換も `script` 要素も使わない（表に無い範囲は構文エラーと同じ書き方の警告にする）。無いときは `loadTranspiler` で変換のライブラリを 1 回読み、`TRANSPILE_OPTIONS` で CommonJS に変えて `wrapRangeScript` で包む。`script` 要素は `document.head` に置いてすぐ外し、置いている間だけ `window` の `error` を受け取る。`nonce` は `document.querySelector("script[nonce]")` の `nonce` プロパティ（属性ではなく）を使う。変換・評価・呼び出しの失敗は範囲ごとに書き方の警告（`renderSyntaxWarning`）を範囲の前に置き、範囲の通し番号と元のエラーを `console.error` に出して次の範囲へ進む。変換のライブラリを読めないときは全ての範囲の前に知らせの枠（`renderNotice`、名前 `html-scripts`）を置く。待った後に `isCurrent()` が `false` なら何もしない。`template` は動かした後も残す'
+    side_effects: '`document.head` に `script` 要素を一時的に置き、`window` の `HTML_SCRIPTS_REGISTRY` の鍵に受け取りの関数を置く（終えたら削除する）。変換のライブラリを読む。失敗した範囲の前に警告か知らせの枠を置き、`console.error` に出す'
+    args:
+      - name: options
+        type: '{ root: HTMLElement; url: string; isCurrent: () => boolean; cache: Map<string, Promise<Transpiler>>; importModule?: ImportModule }'
+        required: true
+        description: '`root` は描いた要素、`url` は既定を当てた `htmlScripts.url`、`cache` は `mount` ごとに 1 つ作る読み込みの控え、`importModule` はモジュールを読む関数（既定 `(url) => import(url)`）'
+    returns:
+      type: Promise<() => void>
+      description: 範囲の `destroy` を文書の順に 1 回ずつ呼ぶ関数（例外は `console.error` に出して続ける。2 回目からは何もしない）。範囲が無ければ何もしない関数。拒否しない
+    process: |-
+      1. `root` の中の `div.mdmark-html > template.mdmark-html-script` を拾う。無ければ何もしない関数を返す
+      2. `embeddedHtmlScripts` が無ければ、`loadTranspiler` で変換のライブラリを待つ。読めなければ範囲ごとに知らせの枠を置き、何もしない関数を返す
+         - `[error]` 変換のライブラリを読み込めない（URL と元のエラーを `console.error` に出す）
+      3. 待った後に `isCurrent()` が `false` なら何もしない関数を返す
+      4. 範囲ごとに順に次を行う
+         - 既定のエクスポートを得る。`embeddedHtmlScripts` があればコードの文字で引く。無ければ `transform` で変え、`wrapRangeScript` のコードを `script` 要素で動かし、登録された関数を `module`・`exports`・例外を投げる `require` で呼ぶ
+           - `[error]` 変換が例外を投げるか登録が無い→構文エラーの書き方の警告
+         - 既定のエクスポートが関数でなければ書き方の警告を置く
+         - 関数を根の要素で呼び、関数を返したら `destroy` として控える
+           - `[error]` 評価か呼び出しが例外を投げる→例外を投げた旨の書き方の警告
+      5. 控えた `destroy` を呼ぶ関数を返す
+    callees:
+      - '#functions[loadTranspiler]'
+      - '#functions[wrapRangeScript]'
+      - dev/設計書/モジュール構成/ライブラリ本体/部品.ts#functions[renderNotice]
+      - dev/設計書/モジュール構成/ライブラリ本体/部品.ts#functions[renderSyntaxWarning]
+    unit_tests:
+      - name: test_run_html_scripts
+        case: 正常
+        summary: '`ts` を変換して根の要素で呼び、`destroy` を返す'
+        condition: '`ts` の範囲 1 つ（型の注釈と enum を持ち、根の要素に `data-ran` を付け、`destroy` で `data-destroyed` を付ける）'
+        mock: '`importModule` が手元の @babel/standalone 8.1.1 を返す'
+        expected: 根の要素が `data-ran` を持ち、戻りの関数を呼ぶと `data-destroyed` を持つ。`document.head` に `script` が残らず、`window` に受け取りの鍵が残らない
+      - name: test_run_html_scripts_when_js
+        case: 正常
+        summary: '`js` も `export` の文を変えて動かす'
+        condition: '`export const x = 1; export default (root) => { root.dataset.x = String(x) }` の `js` の範囲'
+        mock: 同上
+        expected: 根の要素の `data-x` が `1`
+      - name: test_run_html_scripts_when_invalid
+        case: 異常
+        summary: 関数でない既定のエクスポート・例外・構文エラーの範囲の前に書き方の警告を置き、次の範囲を動かす
+        condition: 既定のエクスポートが数の範囲・呼ぶと例外を投げる範囲・閉じ括弧の足りない範囲・正しい範囲
+        mock: 同上。`console.error` を見張る
+        expected: 先の 3 つの範囲の前に `mdmark-syntax-warning` が 1 つずつ、最後の範囲の関数が呼ばれ、`console.error` が 3 回
+      - name: test_run_html_scripts_when_transpiler_unavailable
+        case: 異常
+        summary: 変換のライブラリを読めないとき、全ての範囲の前に知らせの枠を置く
+        condition: '`ts` と `js` の範囲 1 つずつ'
+        mock: '`importModule` が拒否する'
+        expected: 2 つの範囲の前に `mdmark-notice` が 1 つずつ、どの関数も呼ばれない。戻りの Promise は解決する
+      - name: test_run_html_scripts_when_embedded
+        case: 正常
+        summary: 埋めた関数の表があるときは、変換のライブラリも `script` 要素も使わない
+        condition: '`setEmbeddedHtmlScripts` で範囲のコードの文字から関数を引く表を入れる（終えたら `undefined`）'
+        mock: '`importModule` と `document.head.append` を見張る'
+        expected: 表の関数が根の要素で呼ばれ、`importModule` と `append` が呼ばれない
+      - name: test_run_html_scripts_when_stale
+        case: 正常
+        summary: 読み終える前に描き直したら動かさない
+        condition: '`isCurrent` が `false` を返す'
+        mock: 同上
+        expected: 関数が呼ばれない
+    status: planned
+    introduced:
+      pr: 303
+  - name: loadTranspiler
+    title: 変換のライブラリを読む
+    container: src/html-scripts.ts
+    kind: 関数
+    scope: internal
+    is_async: true
+    summary: '`url` を `document.baseURI` を基準に解決して `importModule` で読み、既定のエクスポート（無ければモジュール）の `disableScriptTags` を呼んで、`transform` を持つものを返す。同じ `cache` では同じ URL を 1 回だけ読む'
+    args:
+      - name: options
+        type: '{ url: string; cache: Map<string, Promise<Transpiler>>; importModule: ImportModule }'
+        required: true
+        description: '`Transpiler` は `{ transform: (code: string, options: object) => { code: string } }`'
+    returns:
+      type: Promise<Transpiler>
+      description: '`transform` を持たないときは `Error` で拒否する'
+    unit_tests:
+      - name: test_load_transpiler
+        case: 正常
+        summary: 1 回だけ読み、`disableScriptTags` を呼ぶ
+        condition: 同じ `cache` で 2 回呼ぶ
+        mock: '`importModule` が `{ default: { transform, disableScriptTags } }` を返す'
+        expected: '`importModule` と `disableScriptTags` が 1 回ずつ呼ばれ、2 つの戻りが同じ `transform` を持つ'
+      - name: test_load_transpiler_when_no_transform
+        case: 異常
+        summary: '`transform` を持たないモジュールは拒否する'
+        condition: 空のモジュール
+        mock: '`importModule` が `{}` を返す'
+        expected: '`Error` で拒否する'
+    status: planned
+    introduced:
+      pr: 303
+  - name: wrapRangeScript
+    title: 範囲のコードを包む
+    container: src/html-scripts.ts
+    kind: 関数
+    scope: internal
+    summary: CommonJS に変えたコードを `(module, exports, require) => { … }` の関数で包み、`window[HTML_SCRIPTS_REGISTRY](通し番号, 関数)` を呼ぶ `script` 要素の中身の文字を返す
+    description: コードの中の `</script` は `<\/script` に替える。包む関数の後ろに改行を置き、コードの最後の行のコメントで括弧が閉じないようにする
+    args:
+      - name: options
+        type: '{ code: string; index: number }'
+        required: true
+        description: '`code` は CommonJS のコード、`index` は範囲の通し番号'
+    returns:
+      type: string
+      description: '`script` 要素の中身'
+    unit_tests:
+      - name: test_wrap_range_script
+        case: 正常
+        summary: 登録の呼び出しで包み、行のコメントと `</script` で壊れない
+        condition: '`exports.default = () => "</script>" // 末尾`、`index` が 2'
+        mock: なし
+        expected: 戻りを `new Function` なしに評価できる形で、`HTML_SCRIPTS_REGISTRY` の鍵と `2` を含み、`</script` を含まない
+    status: planned
+    introduced:
+      pr: 303
+  - name: setEmbeddedHtmlScripts
+    title: 埋めた範囲の関数を入れる
+    container: src/html-scripts.ts
+    kind: 関数
+    scope: internal
+    summary: '`embeddedHtmlScripts` を置き換える。`undefined` で変換のライブラリを読む形に戻す'
+    side_effects: '`embeddedHtmlScripts` を書き換える'
+    args:
+      - name: scripts
+        type: Map<string, () => unknown> | undefined
+        required: true
+        description: 範囲のコードの文字から、既定のエクスポートを返す関数を引く表
+    returns:
+      type: void
+      description: なし
+    status: planned
+    introduced:
+      pr: 303
+  - name: loadInlineIcons
+    title: 束ねていないアイコンを読む
+    container: src/inline-icons.ts
+    summary: '中が空の `span.mdmark-inline-icon` の名前ごとに、`opts.icons` に無ければ `lucideIconUrl` の URL を 1 回だけ `import()` し、`iconNodeSvg` の svg を同じ名前の全ての場所に入れる。失敗した名前だけ `HEAD` の `fetch` で 404 かを確かめ、404 は行内のコードに戻して書き方の警告を置き、それ以外は行内のコードに戻して文書の先頭に知らせの枠（`source: "icons"`）を 1 つだけ置く'
+    kind: 関数
+    scope: internal
+    args:
+    - name: options
+      type: '{ root: HTMLElement; icons: Record<string, MdmarkIconNode>; isCurrent: () => boolean; importModule?: ImportModule; fetchHead?: (url: string) => Promise<Response> }'
+      required: true
+      description: '`root` は描く先の要素、`icons` は `opts.icons`、`isCurrent` は描いた文書がまだ今のものか（`import()`・`HEAD` の後に偽なら DOM に触れずに戻る）、`importModule` はモジュールを読む関数（既定 `(url) => import(url)`）、`fetchHead` は `HEAD` を送る関数（既定 `(url) => fetch(url, { method: "HEAD" })`）'
+    returns:
+      type: Promise<void>
+      description: 全て入れ終えたら解決する
+    side_effects: jsDelivr のモジュールを `import()` し、失敗した名前だけ `HEAD` を送る。描く先の要素の中を書き換える。404 でなく読めなかった名前の URL を `console.error` に出す
+    callees:
+    - '#functions[lucideIconUrl]'
+    - dev/設計書/モジュール構成/ライブラリ本体/部品.ts#functions[iconNodeSvg]
+    unit_tests:
+    - name: test_load_inline_icons
+      case: 正常
+      condition: '`sailboat` 2 か所と `anchor` 1 か所の空の要素'
+      expected: '`import` が `sailboat.mjs` と `anchor.mjs` の 1 回ずつで、3 か所に svg が入る'
+      mock: '`importModule` と `fetchHead` を渡す'
+      summary: 名前ごとに 1 回だけ読む
+    - name: test_load_inline_icons_when_not_found
+      case: 異常
+      condition: '`no-such-icon` の `import` が失敗し、`HEAD` が 404'
+      expected: その場所が `<code>icon:no-such-icon</code>` になり、段落の前に書き方の警告があり、知らせの枠が無い
+      mock: '`importModule` と `fetchHead` を渡す'
+      summary: 404 は書き方の警告にする
+    - name: test_load_inline_icons_when_offline
+      case: 異常
+      condition: 全ての `import` と `HEAD` が失敗する
+      expected: 全ての場所が行内のコードになり、知らせの枠が 1 つだけある
+      mock: '`importModule` と `fetchHead` を渡す'
+      summary: 読めないときは知らせの枠を 1 つ置く
+    - name: test_load_inline_icons_when_stale
+      case: 正常
+      condition: '`import` と `HEAD` が失敗し、読み込みの間に `isCurrent` が偽になる'
+      expected: 知らせの枠と書き方の警告が無く、空の要素がそのまま残る
+      mock: '`importModule` と `fetchHead` を渡す'
+      summary: 古い描画の結果を書き込まない
+  - name: lucideIconUrl
+    title: アイコンの URL を作る
+    container: src/inline-icons.ts
+    summary: '`https://cdn.jsdelivr.net/npm/lucide@{LUCIDE_VERSION}/dist/esm/icons/{名前}.mjs` を返す'
+    kind: 関数
+    scope: internal
+    args:
+    - name: name
+      type: string
+      required: true
+      description: アイコンの名前
+    returns:
+      type: string
+      description: URL
+    unit_tests:
+    - name: test_lucide_icon_url
+      case: 正常
+      condition: '`sailboat`'
+      expected: '`https://cdn.jsdelivr.net/npm/lucide@{LUCIDE_VERSION}/dist/esm/icons/sailboat.mjs`'
+      mock: なし
+      summary: 束ねたバージョンの URL にする
 notes:
   単体テストの実行場所: このページの関数は DOM を使うため、単体テストを `tests/unit/src/{mount,libraries,highlight,print}.browser.test.ts` に置き（DOM を使わない `highlight-lines.ts` は `tests/unit/src/highlight-lines.test.ts` で `unit` プロジェクト）、Vitest のプロジェクト `unit-browser`（Chromium、`tests/unit/**/*.browser.test.ts`）で流す。`unit` プロジェクトは `*.browser.test.ts` を除く
 test_files:
@@ -691,3 +1172,5 @@ test_files:
   - tests/unit/src/highlight.browser.test.ts
   - tests/unit/src/highlight-lines.test.ts
   - tests/unit/src/print.browser.test.ts
+  - tests/unit/src/html-scripts.browser.test.ts
+  - tests/unit/src/inline-icons.browser.test.ts

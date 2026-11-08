@@ -7,6 +7,7 @@ export type {
 export type { MdmarkConfig } from "./config.ts";
 export type {
   MdmarkChartDefinition,
+  MdmarkErDefinition,
   MdmarkFlowDefinition,
   MdmarkParamDefinition,
   MdmarkSequenceDefinition,
@@ -32,7 +33,6 @@ export type {
   MdmarkIndex,
   MdmarkIndexDocTag,
   MdmarkIndexRelated,
-  MdmarkIndexTag,
   MdmarkRelationType,
 } from "./knowledge/index-shape.ts";
 export type {
@@ -44,9 +44,14 @@ export type {
 export { collectMatches } from "./knowledge/matches.ts";
 export type { MdmarkReferences } from "./knowledge/references.ts";
 export { collectReferences } from "./knowledge/references.ts";
-export type { MountHandle, MountOptions } from "./mount.ts";
+export type {
+  MdmarkColumnsChange,
+  MountHandle,
+  MountOptions,
+} from "./mount.ts";
 export { mount } from "./mount.ts";
 export { mountComments, mountView } from "./mount-parts.ts";
+export type { MdmarkIconNode } from "./parts/inline-icon.ts";
 export { render } from "./render/index.ts";
 export type { StandardSchemaV1 } from "./standard-schema.ts";
 export type { MdmarkViewHandle, MdmarkViewOptions } from "./views/spec.ts";

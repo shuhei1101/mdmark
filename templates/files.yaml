@@ -1,0 +1,51 @@
+# yaml-language-server: $schema=../dev/テンプレート/files.schema.yaml
+files:
+  - path: extensions/example.js
+    id: templates/extensions/example.js
+    description: mdmark init --js が置く、JavaScript と JSDoc で書いた拡張の見本。JavaScript の拡張の雛形を変えるときに読む。
+    tags: [topic:テンプレート, topic:拡張, tool:javascript, tool:jsdoc]
+    related:
+      - to: dev/設計書/インターフェース定義/ライブラリ本体/雛形を置く.ts
+        type: see_also
+  - path: extensions/example.ts
+    description: mdmark init が置く、TypeScript で書いた拡張の見本（マーカーの場所に挨拶を描く）。拡張の雛形を変えるときに読む。
+    tags: [topic:テンプレート, topic:拡張, tool:typescript]
+    related:
+      - to: dev/設計書/インターフェース定義/ライブラリ本体/雛形を置く.ts
+        type: see_also
+  - path: index.yaml
+    description: mdmark init が置く、文書が空の索引の雛形。雛形の索引を変えるときに読む。
+    tags: [topic:テンプレート, topic:索引, tool:yaml]
+    related:
+      - to: dev/設計書/インターフェース定義/ライブラリ本体/雛形を置く.ts
+        type: see_also
+  - path: js/tsconfig.json
+    description: mdmark init --js が置く、JavaScript の拡張を JSDoc の型で検査する tsconfig の雛形。JavaScript の雛形の型の検査を変えるときに読む。
+    tags: [topic:テンプレート, topic:拡張, tool:typescript, tool:jsdoc]
+    related:
+      - to: dev/設計書/インターフェース定義/ライブラリ本体/雛形を置く.ts
+        type: see_also
+  - path: mdmark.config.yaml
+    description: mdmark init が置く設定の雛形（索引・使う側の CSS・拡張・テーマ・書き出す対象）。雛形の設定のキーや既定を変えるときに読む。
+    tags: [topic:テンプレート, topic:設定, tool:yaml]
+    related:
+      - to: dev/設計書/インターフェース定義/ライブラリ本体/雛形を置く.ts
+        type: see_also
+  - path: package.json
+    description: mdmark init が置く、拡張の型の検査とビルドのスクリプトを持つ package.json の雛形。雛形の拡張のビルドを変えるときに読む。
+    tags: [topic:テンプレート, topic:拡張, tool:npm, tool:esbuild]
+    related:
+      - to: dev/設計書/インターフェース定義/ライブラリ本体/雛形を置く.ts
+        type: see_also
+  - path: theme.css
+    description: mdmark init が置く、描いた文書の見た目を CSS 変数で変える使う側の CSS の雛形。雛形のテーマの例を変えるときに読む。
+    tags: [topic:テンプレート, topic:テーマ, tool:css]
+    related:
+      - to: dev/設計書/インターフェース定義/ライブラリ本体/雛形を置く.ts
+        type: see_also
+  - path: tsconfig.json
+    description: mdmark init が置く、TypeScript の拡張を型で検査する tsconfig の雛形。雛形の型の検査の設定を変えるときに読む。
+    tags: [topic:テンプレート, topic:拡張, tool:typescript]
+    related:
+      - to: dev/設計書/インターフェース定義/ライブラリ本体/雛形を置く.ts
+        type: see_also

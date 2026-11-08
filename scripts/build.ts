@@ -10,7 +10,6 @@ import {
 import { join } from "node:path";
 import { promisify } from "node:util";
 import { build, type Metafile } from "esbuild";
-import { GUIDE_CONTEXT_LIMIT } from "../src/plugin/guide.ts";
 import { findBaselineViolations } from "./baseline.ts";
 import {
   buildPlugin,
@@ -19,6 +18,7 @@ import {
 } from "./build-plugin.ts";
 import {
   BROWSER_TARGETS,
+  bundleDefines,
   listBundledPackages,
   NODE_BANNER,
   NODE_TARGET,
@@ -30,16 +30,14 @@ import { checkMigrations } from "./migrations.ts";
 
 // 埋める版が合うべき書式
 const VERSION_PATTERN = /^v\d+\.\d+\.\d+$/;
-// 配布ファイル 1 つの上限（非機能要件の 440KB）
-const MAX_DIST_FILE_BYTES = 440 * 1024;
+// 配布ファイル 1 つの上限（非機能要件の 624KB）
+const MAX_DIST_FILE_BYTES = 624 * 1024;
 // 配布物に束ねた依存のライセンスを書く、`dist/` の中のファイル名
 const LICENSES_FILE = "THIRD_PARTY_LICENSES.txt";
 // サイズを検めない配布ファイル（使う側のページが jsDelivr から読まない出力）
 const UNSIZED_OUTPUTS = ["dist/cli.js", "dist/viewer.js", "dist/viewer.css"];
 // CLI の実行時の依存: 束ねずに `package.json` の `dependencies` から読む
 const CLI_EXTERNALS = ["yaml", "esbuild"];
-// `script` 要素の中のコードに在ってはならない並び
-const SCRIPT_CLOSE_PATTERN = /<\/script/i;
 // 版を渡す引数の名前
 const VERSION_OPTION = "--version";
 // 型定義を書く tsc の設定
@@ -65,15 +63,6 @@ export function resolveVersion(argv: string[], root: string): string {
     );
   }
   return version;
-}
-
-/** コードに `</script` の並び（大文字と小文字を区別しない）があれば、書き出した HTML の `script` 要素が閉じるため例外を投げる */
-export function assertNoScriptClose(code: string, file: string): void {
-  if (SCRIPT_CLOSE_PATTERN.test(code)) {
-    throw new Error(
-      `${file} に </script の並びがあり、書き出した HTML の script 要素が閉じる`,
-    );
-  }
 }
 
 /** 束ねたパッケージと、その中に取り込まれたパッケージの名前・版・ライセンス・ライセンスの本文を、名前の順に `dist/` の `LICENSES_FILE` に書く。複数の `metafile` で同じパッケージは 1 回だけ書く */
@@ -135,7 +124,7 @@ async function buildParts(
     minify: true,
     target: BROWSER_TARGETS,
     plugins: [postcssStubPlugin],
-    define: { __MDMARK_VERSION__: JSON.stringify(version) },
+    define: bundleDefines(version),
     metafile: true,
     logLevel: "silent",
   });
@@ -168,14 +157,10 @@ async function buildViewer(
     minify: true,
     target: BROWSER_TARGETS,
     plugins: [postcssStubPlugin],
-    define: { __MDMARK_VERSION__: JSON.stringify(version) },
+    define: bundleDefines(version),
     metafile: true,
     logLevel: "silent",
   });
-  const viewerJs = join(root, "dist", "viewer.js");
-  if (existsSync(viewerJs)) {
-    assertNoScriptClose(readFileSync(viewerJs, "utf8"), "dist/viewer.js");
-  }
   return Object.fromEntries(
     Object.entries(result.metafile.outputs).map(([path, output]) => [
       path,
@@ -203,7 +188,7 @@ async function buildCli(
     banner: { js: NODE_BANNER },
     external: CLI_EXTERNALS,
     plugins: [postcssStubPlugin],
-    define: { __MDMARK_VERSION__: JSON.stringify(version) },
+    define: bundleDefines(version),
     metafile: true,
     logLevel: "silent",
   });
@@ -234,7 +219,7 @@ export async function buildDist(
     minify: true,
     target: BROWSER_TARGETS,
     plugins: [postcssStubPlugin],
-    define: { __MDMARK_VERSION__: JSON.stringify(version) },
+    define: bundleDefines(version),
     banner: { css: `:root{--mdmark-version:"${version}"}` },
     metafile: true,
     // 失敗の理由は例外として返り、`main` が標準エラーに 1 回だけ出す
@@ -279,14 +264,12 @@ export async function main(
   options: {
     root: string;
     maxBytes: number;
-    guideContextLimit?: number;
   } = {
     root: process.cwd(),
     maxBytes: MAX_DIST_FILE_BYTES,
   },
 ): Promise<0 | 1> {
   const { root, maxBytes } = options;
-  const guideContextLimit = options.guideContextLimit ?? GUIDE_CONTEXT_LIMIT;
   const distDir = join(root, "dist");
   // 失敗したときに前回の配布物が残らないよう、最初に消す
   rmSync(distDir, { recursive: true, force: true });
@@ -315,11 +298,7 @@ export async function main(
         console.error(`${file}:${line}:${column} ${message}`);
       }
       if (tooLarge.length === 0 && violations.length === 0) {
-        const pluginProblems = await buildPlugin({
-          version,
-          root,
-          contextLimit: guideContextLimit,
-        });
+        const pluginProblems = await buildPlugin({ version, root });
         for (const problem of pluginProblems) {
           console.error(problem);
         }

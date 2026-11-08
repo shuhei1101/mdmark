@@ -1,0 +1,33 @@
+$ npm run test:unit
+
+> test:unit
+> vitest run --project 'unit*'
+
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-syntax-icon-columns-highlight-kbd-details-include-wide-csv
+
+ ❯ |unit| tests/unit/scripts/baseline.test.ts (19 tests | 1 failed) 39529ms
+   × test_to_browserslist 34667ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit| tests/unit/scripts/baseline.test.ts > test_to_browserslist
+Error: Test timed out in 30000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/unit/scripts/baseline.test.ts:65:1
+     63|
+     64| // 名前と版の間に空白を入れる（正常系）
+     65| test("test_to_browserslist", async () => {
+       | ^
+     66|   // 準備
+     67|   const { toBrowserslist } = await loadBaseline();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 215 passed (216)
+      Tests  1 failed | 1507 passed (1508)
+   Start at  17:42:32
+   Duration  128.35s (worker 44%, tests 34%, import 20%, transform 2%)
+
+exit=1

@@ -31,18 +31,26 @@ items:
     summary: 本文の用語と文書の別名の下線と、用語の意味・関連文書を出すツールチップ
   - page: 関連文書の一覧.ts.yaml
     summary: 描いた文書の末尾に置く、その文書を参照している文書の一覧
+  - page: 脚注の番号.ts.yaml
+    summary: 本文の参照の場所に置く上付きの番号と、脚注の中身を出すツールチップ
+  - page: 脚注の一覧.ts.yaml
+    summary: 描いた文書の末尾に置く、閉じた脚注の一覧と本文へ戻るリンク
   - page: 文書の一覧.ts.yaml
     summary: まとめた HTML の文書をフォルダごとに並べ、開いている文書を示す一覧
   - page: 図の枠.ts.yaml
     summary: 図の題・右上のボタンの帯・表示する枠・凡例と、拡大・縮小・移動・全画面
   - page: フロー図.ts.yaml
-    summary: システムの枠と 3 つの層に箱と線を置く構成図
+    summary: システムの枠と 3 つの層にノードと線を置く構成図
   - page: シーケンス図.ts.yaml
     summary: 相手を左から右、メッセージを時刻の順に並べる図
   - page: グラフ.ts.yaml
     summary: 系列を色と模様の組で分ける折れ線・棒・円・散布図のグラフ
+  - page: ER図.ts.yaml
+    summary: テーブル・列・関係を定義の座標に置き、多重度の記号で結ぶ ER 図
+  - page: mermaidの図.ts.yaml
+    summary: 図の枠の表示する枠に入れる、mermaid で mdmark の見た目のテーマで描いた SVG
   - page: 図のツールチップ.ts.yaml
-    summary: 図の線の入力の詳細と、箱の入力・処理・出力・ヒントを出すツールチップ
+    summary: 図の線の入力の詳細と、箱の入力・処理・出力・ヒントと、ER 図のテーブルの概要と列の説明を出すツールチップ
   - page: 操作できる部品.ts.yaml
     summary: スライダー・今の値を写すボタン・グラフを組み合わせた部品
   - page: 埋め込んだHTML.ts.yaml
@@ -73,6 +81,8 @@ items:
     summary: 印の下に開き、付いたコメントの本文を並べる枠
   - page: 箇所が見つからないコメントの一覧.ts.yaml
     summary: 付けた箇所が見つからないコメントを文書の末尾に並べる一覧
+  - page: 余白のマーカー.ts.yaml
+    summary: 本文の右の余白の列に、コメントの箇所の行の高さで置くボタン
   - page: コードブロック.ts.yaml
     summary: 題・行番号・行の強調・足した行と消した行を付けたコードブロック
   - page: プレビューの状態の表示.ts.yaml
@@ -81,5 +91,37 @@ items:
     summary: VS Code 拡張機能のプレビューで文書の先頭に置く、設定ファイルを読めない帯と「設定ファイルを開く」
   - page: 右側の目次.ts.yaml
     summary: 描いた文書の右側に置く、h1〜h3 の目次・右端の線・ピン止め・すべて展開とすべて折りたたむ
+  - page: 先頭へ戻るボタン.ts.yaml
+    summary: 描いた文書をスクロールすると右下に出し、押すと文書の先頭へ戻すボタン
   - page: 差分のブロック.ts.yaml
     summary: 描いた文書の追加・変更したブロックと削除したブロックを、面の色と左の余白の + / − で示すブロック
+  - page: 画像の図.ts.yaml
+    summary: 画像 1 つだけの段落の画像を、キャプション・幅・配置・テーマごとの出し分けと拡大のボタンを持つ図にしたもの
+  - page: ギャラリー.ts.yaml
+    summary: 画像を列の数の格子に並べ、置き場所の幅が狭いと列を減らす並び
+  - page: ライトボックス.ts.yaml
+    summary: 画像を全画面で拡大し、前後へ送り、拡大・縮小・移動するダイアログ
+  - page: 動画と音声.ts.yaml
+    summary: 再生バーとキャプションを持つ動画・音声の図
+  - page: GIF.ts.yaml
+    summary: GIF を止める・再生するボタンと、止めたときに重ねる最初のフレーム
+  - page: カード.ts.yaml
+    summary: リンク 1 つだけの段落を、タイトル・ドメイン・URL を出すリンクのカードと添付のカードにしたもの
+  - page: カードの格子.ts.yaml
+    summary: cards の範囲のリストの項目を、アイコン・タイトル・説明のカードにして格子に並べたもの
+  - page: 文字の色.ts.yaml
+    summary: 本文の文字を色のプリセットの文字の色と太字で強調する
+  - page: 再生できない動画・音声の知らせ.ts.yaml
+    summary: VS Code 拡張機能のプレビューで再生できない動画・音声の場所に置く、知らせの枠と「既定のアプリで開く」
+  - page: アイコン.ts.yaml
+    summary: 行内に置く Lucide のアイコン
+  - page: キー.ts.yaml
+    summary: '`+` で区切ったキーの見た目の並び'
+  - page: 蛍光ペン.ts.yaml
+    summary: 文字に色の面を引くマーカー
+  - page: 段組み.ts.yaml
+    summary: 本文を 2〜3 列に横に並べる範囲
+  - page: detailsの範囲.ts.yaml
+    summary: タイトルから開閉する範囲の折りたたみ
+  - page: wideの範囲.ts.yaml
+    summary: 本文の幅を越えて広げ、本文の幅と切り替える範囲

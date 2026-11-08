@@ -1,0 +1,25 @@
+$ npm_config_cache={空の一時フォルダ} npm_config_foreground_scripts=true MDMARK_PORT=18799 npm exec --yes "git+file://{一時のリポジトリ}#v0.0.1" serve
+# 一時のリポジトリ: 作業ブランチの 1fe40e9d を git archive して commit し v0.0.1 を打った（package.json の prepare は lefthook install && npm ci --prefix tools/eslint のまま）
+
+sync hooks: ✔️(pre-commit, pre-push)
+npm warn deprecated eslint@9.39.5: This version is no longer supported. Please see https://eslint.org/version-support for other options.
+
+added 323 packages, and audited 324 packages in 7s
+
+138 packages are looking for funding
+  run `npm fund` for details
+
+9 moderate severity vulnerabilities
+
+To address issues that do not require attention, run:
+  npm audit fix
+
+To address all issues (including breaking changes), run:
+  npm audit fix --force
+
+Run `npm audit` for details.
+npm warn gitignore-fallback No .npmignore file found, using .gitignore for file exclusion. Consider creating a .npmignore file to explicitly control published files.
+MCP サーバーを起動しました: http://127.0.0.1:18799/mcp
+Terminated
+
+# 接続先が出た後、プロセスが残っていることを確かめて止めた

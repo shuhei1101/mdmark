@@ -1,0 +1,305 @@
+$ npm run test:unit
+
+> test:unit
+> vitest run --project 'unit*'
+
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-diagram-flowchart-question-result-kinds
+
+ ❯ |unit| tests/unit/src/parts/diagram.test.ts (16 tests | 3 failed) 102ms
+   × test_render_flow_when_judgement 5ms
+   × test_legend_for_when_judgement 4ms
+   × test_render_diagram_frame_when_zoom_button 1ms
+ ❯ |unit-browser (chromium)| tests/unit/src/interact/zoom.browser.test.ts (4 tests | 1 failed) 300ms
+   × test_attach_zoom_when_percent_base_fit 244ms
+ ❯ |unit-browser (chromium)| tests/unit/src/interact/diagrams.browser.test.ts (10 tests | 5 failed) 1528ms
+   × test_attach_diagrams 369ms
+   × test_attach_diagrams_when_max 182ms
+   × test_attach_diagrams_when_zoom_button 239ms
+   × test_attach_diagrams_when_wheel 163ms
+   × test_attach_diagrams_when_cleaned_up 191ms
+ ❯ |unit| tests/unit/src/diagram/definition.test.ts (11 tests | 4 failed) 25ms
+   × test_read_definition_when_kind_unknown 4ms
+   × test_read_definition_when_judgement 3ms
+   × test_read_definition_when_wire_end_missing 1ms
+   × test_read_definition_when_id_duplicated 1ms
+ ❯ |unit| tests/unit/src/parts/icons.test.ts (2 tests | 1 failed) 997ms
+   × test_icon_svg_when_sanitized 910ms
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 14 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit| tests/unit/src/diagram/definition.test.ts > test_read_definition_when_kind_unknown
+AssertionError: expected '箱「分類」の種類 robot は使えません。使える種類は llm・dm・s…' to be 'ノード「分類」の種類 robot は使えません。使える種類は llm・dm…' // Object.is equality
+
+Expected: "ノード「分類」の種類 robot は使えません。使える種類は llm・dm・script・mcp・data・external・start・question・action・result です"
+Received: "箱「分類」の種類 robot は使えません。使える種類は llm・dm・script・mcp・data・external です"
+
+ ❯ tests/unit/src/diagram/definition.test.ts:86:30
+     84|   // 検証
+     85|   expect(result.ok).toBe(false);
+     86|   expect(result.problems[0]).toBe(
+       |                              ^
+     87|     "ノード「分類」の種類 robot は使えません。使える種類は llm・dm・script・mcp・data・external・st…
+     88|   );
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/14]⎯
+
+ FAIL  |unit| tests/unit/src/diagram/definition.test.ts > test_read_definition_when_judgement
+AssertionError: expected [ …(6) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   "箱「見た目を変える」の種類 start は使えません。使える種類は llm・dm・script・mcp・data・external です",
++   "箱「全ての使う側の既定を変える見た目か」の種類 question は使えません。使える種類は llm・dm・script・mcp・data・external です",
++   "箱「テーマの CSS 変数で表せるか」の種類 question は使えません。使える種類は llm・dm・script・mcp・data・external です",
++   "箱「既定の変更を Issue で頼む」の種類 action は使えません。使える種類は llm・dm・script・mcp・data・external です",
++   "箱「CSS 変数を上書きする」の種類 result は使えません。使える種類は llm・dm・script・mcp・data・external です",
++   "箱「層の外の CSS を追加する」の種類 result は使えません。使える種類は llm・dm・script・mcp・data・external です",
++ ]
+
+ ❯ tests/unit/src/diagram/definition.test.ts:98:27
+     96|   const result = readDefinition("flow", [JUDGEMENT_TEXT]);
+     97|   // 検証
+     98|   expect(result.problems).toEqual([]);
+       |                           ^
+     99|   expect(result.ok).toBe(true);
+    100| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/14]⎯
+
+ FAIL  |unit| tests/unit/src/diagram/definition.test.ts > test_read_definition_when_wire_end_missing
+AssertionError: expected '線 w-mail の端の箱 recieve がありません。箱の id で書…' to be '線 w-mail の端のノード recieve がありません。ノードの i…' // Object.is equality
+
+Expected: "線 w-mail の端のノード recieve がありません。ノードの id で書いてください"
+Received: "線 w-mail の端の箱 recieve がありません。箱の id で書いてください"
+
+ ❯ tests/unit/src/diagram/definition.test.ts:135:30
+    133|   // 検証
+    134|   expect(result.ok).toBe(false);
+    135|   expect(result.problems[0]).toBe(
+       |                              ^
+    136|     "線 w-mail の端のノード recieve がありません。ノードの id で書いてください",
+    137|   );
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/14]⎯
+
+ FAIL  |unit| tests/unit/src/diagram/definition.test.ts > test_read_definition_when_id_duplicated
+AssertionError: expected '箱の id recv が 2 つあります。別の id にしてください' to be 'ノードの id recv が 2 つあります。別の id にしてください' // Object.is equality
+
+Expected: "ノードの id recv が 2 つあります。別の id にしてください"
+Received: "箱の id recv が 2 つあります。別の id にしてください"
+
+ ❯ tests/unit/src/diagram/definition.test.ts:161:30
+    159|   // 検証
+    160|   expect(result.ok).toBe(false);
+    161|   expect(result.problems[0]).toBe(
+       |                              ^
+    162|     "ノードの id recv が 2 つあります。別の id にしてください",
+    163|   );
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/14]⎯
+
+ FAIL  |unit| tests/unit/src/parts/diagram.test.ts > test_render_flow_when_judgement
+TypeError: Cannot read properties of undefined (reading 'tag')
+ ❯ renderNode src/parts/diagram.ts:329:43
+    327|   const { node, box, tips, lookup, found, hints } = options;
+    328|   const kind = KIND_STYLES[node.kind];
+    329|   const tag = renderText(node.tag ?? kind.tag, tips, lookup, found);
+       |                                           ^
+    330|   const name = renderText(node.name, tips, lookup, found);
+    331|   const sub =
+ ❯ renderFlow src/parts/diagram.ts:391:16
+ ❯ tests/unit/src/parts/diagram.test.ts:160:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/14]⎯
+
+ FAIL  |unit| tests/unit/src/parts/diagram.test.ts > test_legend_for_when_judgement
+AssertionError: expected [] to deeply equal [ '開始', '質問', 'アクション', '結果' ]
+
+- Expected
++ Received
+
+- [
+-   "開始",
+-   "質問",
+-   "アクション",
+-   "結果",
+- ]
++ []
+
+ ❯ tests/unit/src/parts/diagram.test.ts:298:59
+    296|   const labels = items.map((item) => item.label);
+    297|   const kinds = ["開始", "質問", "アクション", "結果"];
+    298|   expect(labels.filter((label) => kinds.includes(label))).toEqual(kind…
+       |                                                           ^
+    299|   expect(labels).not.toContain("意思決定モデル");
+    300|   expect(labels).not.toContain("データ（下の角が丸いノード）");
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/14]⎯
+
+ FAIL  |unit| tests/unit/src/parts/diagram.test.ts > test_render_diagram_frame_when_zoom_button
+AssertionError: expected [ '縮小', '拡大', '全画面で開く' ] to deeply equal [ '縮小', '倍率 125%。全体が収まる倍率に戻す', …(2) ]
+
+- Expected
++ Received
+
+  [
+    "縮小",
+-   "倍率 125%。全体が収まる倍率に戻す",
+    "拡大",
+    "全画面で開く",
+  ]
+
+ ❯ tests/unit/src/parts/diagram.test.ts:364:17
+    362|     /aria-label="(?:縮小|倍率 125%。全体が収まる倍率に戻す|拡大|全画面で開く)"/g,
+    363|   ).map((attribute) => attribute.slice('aria-label="'.length, -1));
+    364|   expect(names).toEqual(["縮小", zoomName, "拡大", "全画面で開く"]);
+       |                 ^
+    365|   const zoomButton = outerHtml(html, `aria-label="${zoomName}"`);
+    366|   expect(zoomButton.startsWith("<button")).toBe(true);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/14]⎯
+
+ FAIL  |unit| tests/unit/src/parts/icons.test.ts > test_icon_svg_when_sanitized
+TypeError: Cannot read properties of undefined (reading 'map')
+ ❯ iconSvg src/parts/icons.ts:109:28
+    107| /** lucide のアイコンの形を、24 の格子・`stroke="currentColor"`・`aria-hidden="true"…
+    108| export function iconSvg(name: IconName): string {
+    109|   const body = ICONS[name].map(renderNode).join("");
+       |                            ^
+    110|   return `<svg class="mdmark-diagram-icon" viewBox="0 0 24 24" fill="n…
+    111| }
+ ❯ tests/unit/src/parts/icons.test.ts:85:27
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/14]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/diagrams.browser.test.ts > test_attach_diagrams
+AssertionError: expected '55%' to be '100%' // Object.is equality
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/diagrams.browser.test.ts/test_attach_diagrams.png
+
+Expected: "100%"
+Received: "55%"
+
+ ❯ tests/unit/src/interact/diagrams.browser.test.ts:98:26
+     96|   detachers.push(attachDiagrams({ root, placement: "top" }));
+     97|   // 検証
+     98|   expect(zoomText(root)).toBe("100%");
+       |                          ^
+     99|   expect(button(root, "縮小").disabled).toBe(true);
+    100|   button(root, "拡大").click();
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=0a14292f:5235:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/14]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/diagrams.browser.test.ts > test_attach_diagrams_when_max
+AssertionError: expected '300%' to be '550%' // Object.is equality
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/diagrams.browser.test.ts/test_attach_diagrams_when_max.png
+
+Expected: "550%"
+Received: "300%"
+
+ ❯ tests/unit/src/interact/diagrams.browser.test.ts:118:26
+    116|   }
+    117|   // 検証
+    118|   expect(zoomText(root)).toBe("550%");
+       |                          ^
+    119|   expect(button(root, "拡大").disabled).toBe(true);
+    120| });
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=0a14292f:5235:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/14]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/diagrams.browser.test.ts > test_attach_diagrams_when_zoom_button
+AssertionError: expected '倍率 85%。全体が収まる倍率に戻す' to be '倍率 156%。全体が収まる倍率に戻す' // Object.is equality
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/diagrams.browser.test.ts/test_attach_diagrams_when_zoom_button.png
+
+Expected: "倍率 156%。全体が収まる倍率に戻す"
+Received: "倍率 85%。全体が収まる倍率に戻す"
+
+ ❯ tests/unit/src/interact/diagrams.browser.test.ts:154:55
+    152|   await userEvent.keyboard("{ArrowRight}");
+    153|   expect(viewport.scrollLeft).toBeGreaterThan(0);
+    154|   expect(zoomButton(root).getAttribute("aria-label")).toBe(
+       |                                                       ^
+    155|     "倍率 156%。全体が収まる倍率に戻す",
+    156|   );
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=0a14292f:5235:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/14]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/diagrams.browser.test.ts > test_attach_diagrams_when_wheel
+AssertionError: expected '55%' to be '100%' // Object.is equality
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/diagrams.browser.test.ts/test_attach_diagrams_when_wheel.png
+
+Expected: "100%"
+Received: "55%"
+
+ ❯ tests/unit/src/interact/diagrams.browser.test.ts:187:26
+    185|   viewport.dispatchEvent(event);
+    186|   // 検証
+    187|   expect(zoomText(root)).toBe("100%");
+       |                          ^
+    188|   expect(event.defaultPrevented).toBe(false);
+    189| });
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=0a14292f:5235:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[12/14]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/diagrams.browser.test.ts > test_attach_diagrams_when_cleaned_up
+AssertionError: expected '55%' to be '100%' // Object.is equality
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/diagrams.browser.test.ts/test_attach_diagrams_when_cleaned_up.png
+
+Expected: "100%"
+Received: "55%"
+
+ ❯ tests/unit/src/interact/diagrams.browser.test.ts:243:26
+    241|   // 検証
+    242|   expect(disconnect).toHaveBeenCalledTimes(1);
+    243|   expect(zoomText(root)).toBe("100%");
+       |                          ^
+    244| });
+    245|
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=0a14292f:5235:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[13/14]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/zoom.browser.test.ts > test_attach_zoom_when_percent_base_fit
+AssertionError: expected '55%' to be '100%' // Object.is equality
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/zoom.browser.test.ts/test_attach_zoom_when_percent_base_fit.png
+
+Expected: "100%"
+Received: "55%"
+
+ ❯ tests/unit/src/interact/zoom.browser.test.ts:104:26
+    102|   const { root } = await setUp(undefined, "fit");
+    103|   // 検証: 収まる倍率を 100% で始める
+    104|   expect(zoomText(root)).toBe("100%");
+       |                          ^
+    105|   // 実行
+    106|   button(root, "拡大").click();
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=0a14292f:5235:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[14/14]⎯
+
+
+ Test Files  5 failed | 172 passed (177)
+      Tests  14 failed | 1221 passed (1235)
+   Start at  21:23:43
+   Duration  58.08s (worker 70%, tests 18%, import 8%, transform 3%)
+
+exit=1

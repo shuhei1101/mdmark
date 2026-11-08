@@ -20,9 +20,12 @@ const loadTable = () => import("../../../src/parts/table.ts");
 /** 文書の一覧の処理を読み込む */
 const loadDocList = () => import("../../../src/parts/doc-list.ts");
 
+/** コメントの部品の処理を読み込む */
+const loadComment = () => import("../../../src/parts/comment.ts");
+
 /** VS Code 拡張機能のプレビューの状態の表示の処理を読み込む */
-const loadPreviewStatus = () =>
-  import("../../../vscode/src/webview/parts/preview-status.ts");
+const loadMediaError = () =>
+  import("../../../vscode/src/webview/shared/lib/media-error.ts");
 
 const servers: Server[] = [];
 const createdRoots: string[] = [];
@@ -152,17 +155,19 @@ test("test_render_part_when_doc_list", async () => {
   );
 });
 
-// 拡張機能のプレビューの状態の表示を引数どおりに描く（正常系）
+// 拡張機能の再生できない動画・音声の知らせを引数どおりに描く（正常系）
 test("test_render_part_when_vscode_part", async () => {
   // 準備
   const { renderPart } = await loadRender();
-  const { renderPreviewStatus } = await loadPreviewStatus();
-  const params = new URLSearchParams("state=versionMissing&version=v9.9.9");
+  const { renderMediaError } = await loadMediaError();
+  const params = new URLSearchParams(
+    "kind=video&format=webm&path=media/demo.webm",
+  );
   // 実行
-  const html = renderPart({ component: "preview-status", params });
+  const html = renderPart({ component: "media-error", params });
   // 検証
   expect(html).toBe(
-    `<div class="mdmark">${renderPreviewStatus({ state: "versionMissing", version: "v9.9.9" })}</div>`,
+    `<div class="mdmark">${renderMediaError({ kind: "video", format: "webm", path: "media/demo.webm" })}</div>`,
   );
 });
 
@@ -188,6 +193,43 @@ test("test_render_part_when_code_block_highlighted", async () => {
   expect(texts.map((text) => text.replace(/<[^>]*>/g, "").trim())).toEqual(
     lines.map((line) => line.text),
   );
+});
+
+// コメントの吹き出しを、描く先の要素の内側に収める style を付けて描く（正常系）
+test("test_render_part_when_comment_popover", async () => {
+  // 準備
+  const { renderPart } = await loadRender();
+  const { renderCommentBubble } = await loadComment();
+  const params = new URLSearchParams({
+    quote: "テーマの変数",
+    bodies: JSON.stringify(["本文"]),
+  });
+  // 実行
+  const html = renderPart({ component: "comment-bubble", params });
+  // 検証
+  expect(html).toBe(
+    `<div class="mdmark"><style>.mdmark-comment-add,.mdmark-comment-popover{position:static;max-width:100%}</style>${renderCommentBubble({ quote: "テーマの変数", bodies: ["本文"] })}</div>`,
+  );
+});
+
+// 見本の SVG のファイルを読み、図の枠で包んで描く（正常系）
+test("test_render_part_when_mermaid_diagram", async () => {
+  // 準備
+  const { renderPart } = await loadRender();
+  const params = new URLSearchParams({
+    svg: "flowchart",
+    title: "問い合わせの受付",
+  });
+  const missing = new URLSearchParams({ svg: "missing", title: "x" });
+  // 実行
+  const html = renderPart({ component: "mermaid-diagram", params });
+  const none = renderPart({ component: "mermaid-diagram", params: missing });
+  // 検証
+  expect(html).toContain('data-diagram="mermaid"');
+  expect(html).toMatch(
+    /<figure class="mdmark-diagram"[\s\S]*<svg[\s\S]*<\/figure>/,
+  );
+  expect(none).toBeUndefined();
 });
 
 // 知らない部品は返さない（正常系）

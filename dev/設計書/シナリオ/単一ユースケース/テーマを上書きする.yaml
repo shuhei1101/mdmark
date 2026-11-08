@@ -1,4 +1,4 @@
-title: "テーマを上書きする"
+title: テーマを上書きする
 scenarios:
   - name: 正常シナリオ
     setup:
@@ -205,6 +205,100 @@ scenarios:
     test: test_normal_when_theme_selected
     refs:
       - dev/設計書/シナリオ/単一ユースケース/テーマを選ぶ#scenarios[正常シナリオ]
+  - name: 正常シナリオ（色のプリセットを上書きする）
+    setup:
+      - name: 上書きの CSS を読むページ
+        description: 正常シナリオと同じページで、使う側の CSS が blue の文字の色の CSS 変数を `rgb(0, 0, 128)`、blue の面の色の CSS 変数を `rgb(230, 240, 255)` にする
+        notes: 変数名は `--mdmark-color-accent-blue-text`・`--mdmark-color-accent-blue-bg`（インターフェース定義『文書を描く』の制約「色のプリセット」）
+      - name: 色の名前を書いた Markdown
+        description: 行内のコード `` `badge:blue:参考` `` と、本文の `[決め手の 1 文]{color=blue}` を持つ文書
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        U->>P: ページを開く
+        P->>M: 文書を描かせる
+        M-->>P: 色のプリセットの CSS 変数で色を付けた本文
+        P->>P: 層の外の使う側の CSS が当たる
+        P-->>U: 上書きした色で表示
+    expected:
+      - バッジと本文の `決め手の 1 文` の文字の色の計算値が `rgb(0, 0, 128)`
+      - バッジの面の色の計算値が `rgb(230, 240, 255)`
+    test: test_normal_when_color_preset_overridden
+  - name: 正常シナリオ（地を透明にして周りの面の色を指定する）
+    setup:
+      - name: 周りの面になじませるページ
+        description: body の地を `rgb(240, 240, 240)` にし、mdmark の CSS の後に使う側の CSS を読み、文書を描く HTML
+        notes: 使う側の CSS は `.mdmark` の `--mdmark-color-bg` を `transparent`、`--mdmark-color-bg-opaque` を `rgb(240, 240, 240)` にする。OS の配色はライト、画面の幅は 1280px
+      - name: 表とフロー図を持つ Markdown
+        description: 本文の幅に収まる 3 列 3 行の表と、『図を描く』の正常シナリオと同じフロー図を持つ文書
+      - name: Mock
+        description: jsDelivr を、ビルドした `dist/` を同じパスで返す手元の応答に差し替える
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        U->>P: ページを開く
+        P->>M: 文書を描かせる
+        M-->>P: 層の中の CSS が当たった本文
+        P->>P: 層の外の使う側の CSS が当たる
+        P-->>U: 周りの面になじんだ本文を表示
+        U->>P: フロー図のノードにポインターを乗せる
+        P-->>U: 図のツールチップを表示
+        U->>P: 図の全画面のボタンを押す
+        P-->>U: 全画面の図を表示
+    expected:
+      - 描く先の要素の地の色の計算値が `rgba(0, 0, 0, 0)`
+      - 表の本文の行の高さの真ん中で、表の左右の枠の内側の画素の色が `rgb(240, 240, 240)`（横スクロールしない表の端に影が出ない）
+      - 図のツールチップの地の色の計算値が `rgb(240, 240, 240)`
+      - 全画面の図の地の色の計算値が `rgb(240, 240, 240)`
+    test: test_normal_when_bg_transparent_with_opaque_color
+  - name: 正常シナリオ（使う側の pre への汎用の CSS）
+    setup:
+      - name: 上書きの CSS を読むページ
+        description: mdmark の CSS の後に、使う側の CSS を読み、文書を描く HTML
+        notes: '使う側の CSS は層の外に `pre { white-space: pre-wrap; overflow-wrap: anywhere; }` を持つ。画面の幅は 390px'
+      - name: コードブロックとファイルツリーを持つ Markdown
+        description: '表示の幅より長い行とインデントを持つマーカーの無い言語 `json` のコードブロック、表示の幅より長い名前を持つマーカーの無い言語 `tree` のコードブロック、`<!-- code: wrap -->` の直後の長い行を持つ言語 `ts` のコードブロックの文書'
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: 文書を描かせる
+        M-->>P: 折り返しを記法で決めたコードブロックとファイルツリー
+        P->>P: 層の外の使う側の CSS が当たる
+        P-->>U: マーカーの無いブロックは折り返さずに表示
+    expected:
+      - マーカーの無い `json` のコードブロックの `white-space` の計算値が `pre` で、枠の中で横にスクロールできる
+      - マーカーの無い `tree` のファイルツリーの項目が折り返さず、枠の中で横にスクロールできる
+      - '`json` のインデントとファイルツリーの罫線と入れ子の位置が、使う側の CSS を読まないときと同じ'
+      - '`wrap` の `ts` のコードブロックは折り返す'
+    test: test_normal_when_host_pre_wraps
+  - name: 正常シナリオ（VS Code のプレビューで上書きする）
+    setup:
+      - name: theme を指すワークスペース
+        description: '`mdmark.config.yaml` の `theme` に、`--mdmark-color-link` を上書きする CSS を書いたワークスペースと、リンクを持つ Markdown'
+      - name: Mock
+        description: VSCodeでプレビューを開くの正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant EX as 拡張機能
+        participant PV as プレビュー（Webview）
+        W->>EX: プレビューを横に開く
+        EX->>PV: theme の CSS を読むパネルを開く
+        PV-->>W: theme の CSS を当てた文書
+    expected:
+      - プレビューのリンクの色の計算値が、theme の CSS で上書きした `--mdmark-color-link` の値
+      - 同じ設定で `mdmark export` を流した HTML のリンクの色と同じ
+    test: test_normal_when_vscode_preview
 lead: 使う側が自分の CSS で `--mdmark-` の変数や本文の規則を書き、mdmark が描いた文書の見た目を変える。何も書かなければ既定の見た目（dev-swiss）で描かれる。
 issue: 3
 primary_actor: mdmark を使うアプリの開発者
@@ -214,6 +308,6 @@ stakeholders:
 trigger: 使う側のページが、mdmark の CSS と自分の CSS を読んで文書を描く
 preconditions:
   - ページが版を固定した URL で mdmark の JavaScript と CSS を読んでいる
-success_guarantee: 使う側が mdmark の層の外に書いた CSS は、詳細度によらず mdmark の CSS に勝つ。
+success_guarantee: 使う側が mdmark の層の外に書いた CSS は、詳細度によらず mdmark の CSS に勝つ。ただし、コードブロックとファイルツリーの折り返しは記法の `wrap` で決まり、使う側の要素名だけの `pre` への汎用の CSS で変わらない。
 minimal_guarantee: 使う側が CSS を書かなくても、既定の見た目で文書が描かれる。
 test_file: tests/e2e/単一ユースケース/テーマを上書きする.spec.ts

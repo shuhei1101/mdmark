@@ -1,0 +1,14 @@
+$ MDMARK_PORT=58516 npm run test:unit
+
+> test:unit
+> vitest run --project 'unit*'
+
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/chore-plugin-remove-index-tools
+
+
+ Test Files  158 passed (158)
+      Tests  1129 passed (1129)
+   Start at  18:02:00
+   Duration  58.11s (tests 39%, worker 36%, import 21%, transform 3%)
+

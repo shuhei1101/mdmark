@@ -1,5 +1,5 @@
-title: "lucide"
-kind: "ライブラリ"
+title: lucide
+kind: ライブラリ
 version:
   current: 1.59.0
   latest: 1.59.0
@@ -51,12 +51,24 @@ catalogs:
       - name: plug
         kind: アイコン
         purpose: 図の箱の種類（MCP）
+      - name: table
+        kind: アイコン
+        purpose: ER 図のテーブルの見出し
       - name: database
         kind: アイコン
         purpose: 図の箱の種類（データ）
       - name: globe
         kind: アイコン
         purpose: 図の箱の種類（外部のシステム）
+      - name: circle-question-mark
+        kind: アイコン
+        purpose: 図のノードの種類（判定フローチャートの質問）
+      - name: wrench
+        kind: アイコン
+        purpose: 図のノードの種類（判定フローチャートのアクション）
+      - name: flag
+        kind: アイコン
+        purpose: 図のノードの種類（判定フローチャートの結果）
       - name: server
         kind: アイコン
         purpose: 図のシステムの枠の題
@@ -92,7 +104,10 @@ catalogs:
         purpose: 表のピン止め
       - name: chevrons-up-down
         kind: アイコン
-        purpose: 表の並べ替え（並べていない）
+        purpose: 表の並べ替え（並べていない）・ER 図のテーブルの列を開く
+      - name: chevrons-down-up
+        kind: アイコン
+        purpose: ER 図のテーブルの列を畳む
       - name: arrow-up
         kind: アイコン
         purpose: 表の並べ替え（昇順）
@@ -114,6 +129,52 @@ catalogs:
       - name: menu
         kind: アイコン
         purpose: まとめた HTML の文書の一覧を開くボタン
+      - name: maximize-2
+        kind: アイコン
+        purpose: 画像の拡大のボタンの右上のアイコン
+        status: planned
+        introduced:
+          pr: 263
+      - name: pause
+        kind: アイコン
+        purpose: GIF を止めるボタン
+        status: planned
+        introduced:
+          pr: 263
+      - name: play
+        kind: アイコン
+        purpose: GIF を再生するボタンと、図のノードの種類（判定フローチャートの開始）
+        status: planned
+        introduced:
+          pr: 263
+      - name: file-text
+        kind: アイコン
+        purpose: PDF・文書・テキストの添付のカード（CSS）
+        status: planned
+        introduced:
+          pr: 263
+      - name: file-spreadsheet
+        kind: アイコン
+        purpose: 表の添付のカード（CSS）
+        status: planned
+        introduced:
+          pr: 263
+      - name: file-archive
+        kind: アイコン
+        purpose: アーカイブの添付のカード（CSS）
+        status: planned
+        introduced:
+          pr: 263
+      - name: panel-right-dashed
+        kind: アイコン
+        purpose: 右側の目次のピン止め（押す前）
+        introduced:
+          pr: 320
+      - name: panel-right
+        kind: アイコン
+        purpose: 右側の目次のピン止め（押した後）
+        introduced:
+          pr: 320
 lead: 線で描く 24 の格子の SVG アイコン集。アイコンごとに `path` などの要素の並びを持つ。
 purl: pkg:npm/lucide@1.59.0
 upstream: lucide-icons/lucide
@@ -121,8 +182,9 @@ license: ISC（商用利用可）。Feather 由来のアイコンは MIT（Copyr
 official_url: https://lucide.dev/
 docs_url: https://lucide.dev/icons/
 verification:
-  state: 未確認
-  detail: '`src/parts/icons.ts` が `lucide` から名前付きで import し、esbuild が使うアイコンだけを束ねる。`src/index.css` の記法のアイコンは形を写し、単体テストで一致を確かめる。実装で動かして確かめる'
+  state: 済
+  date: '2026-11-05'
+  detail: 'lucide 1.59.0 の `maximize-2`・`pause`・`play`・`globe`・`file-text`・`file-spreadsheet`・`file-archive`・`file` を名前付きの import で取り出せることを確かめ、`src/parts/icons.ts` から import した部品の HTML（拡大のボタン・GIF のボタン）と、形を写した `src/index.css` のカードのアイコンを Storybook のストーリーで描いて確かめた。`circle-question-mark`・`wrench`・`flag` も lucide 1.59.0 の名前付きの import（`CircleQuestionMark`・`Wrench`・`Flag`）で取り出せることを確かめ、`src/parts/icons.ts` から描いた判定フローチャートのノードを Storybook のストーリー `parts-flowdiagram--judgement` で描いて確かめた。2026-11-05: 束ねていない名前を読む `https://cdn.jsdelivr.net/npm/lucide@1.59.0/dist/esm/icons/{名前}.mjs` が、`rocket` で 200（646 バイト・`access-control-allow-origin: *`・IconNode を `export default` する ES モジュール）、無い名前（`no-such-icon-x`）で 404 を返すことを確かめた（#307 のライブラリ選定）'
 used_in:
   - src/parts/icons.ts
   - src/index.css

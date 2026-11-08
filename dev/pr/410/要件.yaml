@@ -1,0 +1,34 @@
+use_cases:
+  - kind: single
+    scenario: dev/設計書/シナリオ/単一ユースケース/使い方集を読む.yaml
+    impact: run_only
+    detail: dev-docs から使い方集の一覧と本文を受け取る E2E の呼び出しの待ちを変える
+    depends_on: []
+  - kind: composite
+    scenario: dev/設計書/シナリオ/複合ユースケース/ClaudeCodeで使い方集を参照して書き点検する.yaml
+    impact: run_only
+    detail: dev-docs から使い方集を参照する E2E の呼び出しの待ちを変える
+    depends_on: []
+docs:
+  - page: dev/設計書/テスト/テスト実行方法.yaml
+    new: false
+    change: E2E テストの dev-docs の前提の行に、search_docs の呼び出しの時間切れの値と導出の元の値を追加する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-08T12:19:15.085425+00:00'
+scope_out:
+  - item: dev-docs の応答が遅い時間帯がある原因の調査と、dev-docs の側の修正
+    reason: dev-docs は別のリポジトリで、mdmark の E2E の呼び出しの待ちを明示すれば要望を満たす
+    plan: none
+  - item: 結合テストの MCP の呼び出しの時間切れの見直し
+    reason: 報告された fail は E2E の dev-docs の呼び出しだけで、結合テストは dev-docs を起動しない
+    plan: none
+  - item: 'dev-docs が `dev/mock/files.yaml` の #263 のバイナリの素材 4 行を配信から除いている'
+    reason: 配信の除外の不具合で、今回の要望（E2E の呼び出しの時間切れ）に含まれない
+    plan: '#341'
+  - item: '`plugin/files.yaml` の `skills/global-setup/SKILL.md`・`skills/setup/SKILL.md` の行の description がバッククォートで始まり、dev-docs が参照できない'
+    reason: YAML の記載の不具合で、今回の要望（E2E の呼び出しの時間切れ）に含まれない
+    plan: '#413'
+  - item: dev-docs への `search_docs` の所要時間を 1,000 回以上実測し、呼び出しの時間切れ（135 秒）と `test_normal` の待ち（405 秒）を実測の p99.9 + 50% で導き直す
+    reason: 判定フローチャート『タイムアウトの決め方』で実測が 1,000 回に満たず計測の作業を残す分岐に当たる。今回の要望（E2E の fail を止める）は仮の値で満たし、1,000 回の計測は約 8 時間かかる。今回置く値を前提にする後続のため、マージ提案の前に起票する
+    plan: '#414'

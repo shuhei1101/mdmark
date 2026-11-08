@@ -1,8 +1,13 @@
 import type { MdmarkConfig } from "../config.ts";
+import { LUCIDE_VERSION } from "../inline-icons.ts";
 import type { MdmarkAlias } from "../knowledge/aliases.ts";
 import type { MdmarkIndex } from "../knowledge/index-shape.ts";
 import type { MdmarkReferences } from "../knowledge/references.ts";
 import { escapeHtml } from "../parts/escape.ts";
+import type { MdmarkIconNode } from "../parts/inline-icon.ts";
+
+/** `bundle` で埋めた画像を指す `src` の頭 */
+export const ASSET_SCHEME = "mdmark-asset:";
 
 /** 書き出した HTML に JSON で埋め、開いたときに起動の処理が読む中身 */
 export type ExportPayload = {
@@ -14,25 +19,25 @@ export type ExportPayload = {
   index?: MdmarkIndex | undefined;
   /** `collectReferences` の参照の表 */
   references?: MdmarkReferences | undefined;
-  /** 埋める文書。`markdown` は画像を `data:` URL に替えたもの */
+  /** 埋める文書。`markdown` は画像を `data:` URL に替え、動画・音声の `src` をコピーへの相対パスに替えたもの（`bundle` では画像を `mdmark-asset:{キー}` に替える） */
   docs: Array<{
     path: string;
     title: string;
     markdown: string;
     docId?: string | undefined;
+    /** 取り込む文書の表: 文書のフォルダからのパスから、`includes` のキー（設定ファイルのフォルダからのパス）を引く */
+    includes?: Record<string, string> | undefined;
   }>;
+  /** 取り込む文書の本文。キーは設定ファイルのフォルダからのパスで、同じファイルは 1 回だけ持つ */
+  includes?: Record<string, string> | undefined;
+  /** 束ねていない名前のアイコンの形の表 */
+  icons?: Record<string, MdmarkIconNode> | undefined;
   /** 最初に開く文書の `path` */
   entry: string;
-  /** 印の名前から束ねたモジュールのコードを引く表 */
-  modules: Record<string, string>;
-  /** 束ねた拡張のモジュールのコード */
-  extensions: string[];
-  /** 埋めた部品のモジュールのコード。文書にビューの印があるときだけ `view` を持つ（コメントの部品は埋めない）。無ければ空として読む */
-  parts?: Partial<Record<"view", string>>;
-  /** 束ねた色分けのライブラリのコード。`core` は本体、`languages` は言語のモジュール名からコードを引く表。文書に色分けの対象があり本体を束ねられたときだけ持つ */
-  syntax?: { core: string; languages: Record<string, string> } | undefined;
   /** `loadAliases` が作ったエイリアス（`env` を含まない）。設定に `aliases` が無ければ持たない */
   aliases?: MdmarkAlias[] | undefined;
+  /** `bundle` で埋めた画像のキーから `data:` URL を引く表。`document` では持たない */
+  assets?: Record<string, string> | undefined;
 };
 
 /** 書き出しの中身を入れる `script` 要素の `id`（起動の処理が読む） */
@@ -80,7 +85,7 @@ function encodePayload(payload: ExportPayload): string {
   return JSON.stringify(payload).replaceAll("<", "\\u003c");
 }
 
-/** 配布物の CSS・使う側の CSS・書き出しの中身・起動の処理を埋めた 1 枚の HTML を返す */
+/** 配布物の CSS・使う側の CSS・書き出しの中身・束ねたスクリプトを埋めた 1 枚の HTML を返す */
 export function assembleHtml(parts: {
   /** 埋める中身 */
   payload: ExportPayload;
@@ -88,10 +93,10 @@ export function assembleHtml(parts: {
   distCss: string;
   /** 使う側の CSS */
   themeCss?: string | undefined;
-  /** 起動の処理（`dist/viewer.js`） */
-  viewer: string;
+  /** `bundleViewer` が起動の処理と埋めるモジュールを束ねたスクリプト（`</script` と `<!--` の並びは替えてある） */
+  script: string;
 }): string {
-  const { payload, distCss, themeCss, viewer } = parts;
+  const { payload, distCss, themeCss, script } = parts;
   const entry = payload.docs.find((doc) => doc.path === payload.entry);
   const title = escapeHtml(entry?.title ?? payload.entry);
   const body = payload.kind === "bundle" ? BUNDLE_BODY : DOCUMENT_BODY;
@@ -111,8 +116,11 @@ export function assembleHtml(parts: {
     "</head>",
     "<body>",
     body,
+    payload.icons && Object.keys(payload.icons).length > 0
+      ? `<!-- lucide ${LUCIDE_VERSION} - ISC License (c) Lucide Contributors / MIT License (c) 2013-present Cole Bemis -->`
+      : "",
     `<script type="application/json" id="${PAYLOAD_ID}">${encodePayload(payload)}</script>`,
-    `<script type="module">${viewer}</script>`,
+    `<script type="module">${script}</script>`,
     "</body>",
     "</html>",
     "",

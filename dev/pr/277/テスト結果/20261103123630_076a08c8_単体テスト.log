@@ -1,0 +1,241 @@
+$ npm run test:unit
+
+> test:unit
+> vitest run --project 'unit*'
+
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/design-comments-margin-markers
+
+ ❯ |unit-browser (chromium)| tests/unit/src/comments/margin.browser.test.ts (5 tests | 5 failed) 1026ms
+   × test_attach_margin_markers 232ms
+   × test_attach_margin_markers_when_closed 136ms
+   × test_attach_margin_markers_when_no_opener 162ms
+   × test_attach_margin_markers_when_changed 214ms
+   × test_attach_margin_markers_when_detached 283ms
+ ❯ |unit-browser (chromium)| tests/unit/src/mount-view.browser.test.ts (2 tests | 1 failed) 427ms
+   × test_mount_when_comments_without_side_toc 272ms
+ ❯ |unit| tests/unit/src/parts/comment.test.ts (9 tests | 2 failed) 131ms
+   × test_render_comment_marker 3ms
+   × test_render_comment_marker_when_merged_and_closed 0ms
+ ❯ |unit| tests/unit/src/comments/margin.test.ts (3 tests | 3 failed) 8ms
+   × test_layout_markers 7ms
+   × test_layout_markers_when_same_line 0ms
+   × test_layout_markers_when_overlapping 0ms
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 11 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit| tests/unit/src/comments/margin.test.ts > test_layout_markers
+Error: 実装のファイルがありません
+ ❯ loadSource tests/unit/helpers/lazy.ts:7:27
+      5|   const loader = Object.values(loaders)[0];
+      6|   if (loader === undefined) {
+      7|     return Promise.reject(new Error("実装のファイルがありません"));
+       |                           ^
+      8|   }
+      9|   return loader();
+ ❯ loadMargin tests/unit/src/comments/margin.test.ts:6:3
+ ❯ tests/unit/src/comments/margin.test.ts:15:35
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/11]⎯
+
+ FAIL  |unit| tests/unit/src/comments/margin.test.ts > test_layout_markers_when_same_line
+Error: 実装のファイルがありません
+ ❯ loadSource tests/unit/helpers/lazy.ts:7:27
+      5|   const loader = Object.values(loaders)[0];
+      6|   if (loader === undefined) {
+      7|     return Promise.reject(new Error("実装のファイルがありません"));
+       |                           ^
+      8|   }
+      9|   return loader();
+ ❯ loadMargin tests/unit/src/comments/margin.test.ts:6:3
+ ❯ tests/unit/src/comments/margin.test.ts:34:35
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/11]⎯
+
+ FAIL  |unit| tests/unit/src/comments/margin.test.ts > test_layout_markers_when_overlapping
+Error: 実装のファイルがありません
+ ❯ loadSource tests/unit/helpers/lazy.ts:7:27
+      5|   const loader = Object.values(loaders)[0];
+      6|   if (loader === undefined) {
+      7|     return Promise.reject(new Error("実装のファイルがありません"));
+       |                           ^
+      8|   }
+      9|   return loader();
+ ❯ loadMargin tests/unit/src/comments/margin.test.ts:6:3
+ ❯ tests/unit/src/comments/margin.test.ts:51:35
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/11]⎯
+
+ FAIL  |unit| tests/unit/src/parts/comment.test.ts > test_render_comment_marker
+TypeError: renderCommentMarker is not a function
+ ❯ tests/unit/src/parts/comment.test.ts:120:16
+    118|   const { renderCommentMarker } = await loadComment();
+    119|   // 実行
+    120|   const html = renderCommentMarker({ quote: "<b>x</b>" });
+       |                ^
+    121|   // 検証
+    122|   const tag = findTag(html, "mdmark-comment-marker");
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/11]⎯
+
+ FAIL  |unit| tests/unit/src/parts/comment.test.ts > test_render_comment_marker_when_merged_and_closed
+TypeError: renderCommentMarker is not a function
+ ❯ tests/unit/src/parts/comment.test.ts:136:16
+    134|   const { renderCommentMarker } = await loadComment();
+    135|   // 実行
+    136|   const html = renderCommentMarker({
+       |                ^
+    137|     quote: "担当者",
+    138|     count: 2,
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/11]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/mount-view.browser.test.ts > test_mount_when_comments_without_side_toc
+AssertionError: expected false to be true // Object.is equality
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/mount-view.browser.test.ts/test_mount_when_comments_without_side_toc.png
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ tests/unit/src/mount-view.browser.test.ts:139:49
+    137|   // 検証
+    138|   const content = el.firstElementChild as HTMLElement;
+    139|   expect(content.matches("div.mdmark-content")).toBe(true);
+       |                                                 ^
+    140|   expect(record.attached[0]).toBe(content);
+    141|   // 実行
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=7de570ef:5235:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/11]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/comments/margin.browser.test.ts > test_attach_margin_markers
+Error: 実装のファイルがありません
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/margin.browser.test.ts/test_attach_margin_markers.png
+
+ ❯ loadSource tests/unit/helpers/lazy.ts:7:27
+      5|   const loader = Object.values(loaders)[0];
+      6|   if (loader === undefined) {
+      7|     return Promise.reject(new Error("実装のファイルがありません"));
+       |                           ^
+      8|   }
+      9|   return loader();
+ ❯ loadMargin tests/unit/src/comments/margin.browser.test.ts:7:3
+ ❯ attachTracked tests/unit/src/comments/margin.browser.test.ts:44:41
+ ❯ tests/unit/src/comments/margin.browser.test.ts:89:9
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=7de570ef:4125:35
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=7de570ef:5235:26
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=7de570ef:5726:20
+ ❯ runWithCancel node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=7de570ef:5721:10
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=7de570ef:5710:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/11]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/comments/margin.browser.test.ts > test_attach_margin_markers_when_closed
+Error: 実装のファイルがありません
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/margin.browser.test.ts/test_attach_margin_markers_when_closed.png
+
+ ❯ loadSource tests/unit/helpers/lazy.ts:7:27
+      5|   const loader = Object.values(loaders)[0];
+      6|   if (loader === undefined) {
+      7|     return Promise.reject(new Error("実装のファイルがありません"));
+       |                           ^
+      8|   }
+      9|   return loader();
+ ❯ loadMargin tests/unit/src/comments/margin.browser.test.ts:7:3
+ ❯ attachTracked tests/unit/src/comments/margin.browser.test.ts:44:41
+ ❯ tests/unit/src/comments/margin.browser.test.ts:130:9
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=7de570ef:4125:35
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=7de570ef:5235:26
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=7de570ef:5726:20
+ ❯ runWithCancel node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=7de570ef:5721:10
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=7de570ef:5710:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/11]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/comments/margin.browser.test.ts > test_attach_margin_markers_when_no_opener
+Error: 実装のファイルがありません
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/margin.browser.test.ts/test_attach_margin_markers_when_no_opener.png
+
+ ❯ loadSource tests/unit/helpers/lazy.ts:7:27
+      5|   const loader = Object.values(loaders)[0];
+      6|   if (loader === undefined) {
+      7|     return Promise.reject(new Error("実装のファイルがありません"));
+       |                           ^
+      8|   }
+      9|   return loader();
+ ❯ loadMargin tests/unit/src/comments/margin.browser.test.ts:7:3
+ ❯ attachTracked tests/unit/src/comments/margin.browser.test.ts:44:41
+ ❯ tests/unit/src/comments/margin.browser.test.ts:153:9
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=7de570ef:4125:35
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=7de570ef:5235:26
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=7de570ef:5726:20
+ ❯ runWithCancel node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=7de570ef:5721:10
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=7de570ef:5710:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/11]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/comments/margin.browser.test.ts > test_attach_margin_markers_when_changed
+Error: 実装のファイルがありません
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/margin.browser.test.ts/test_attach_margin_markers_when_changed.png
+
+ ❯ loadSource tests/unit/helpers/lazy.ts:7:27
+      5|   const loader = Object.values(loaders)[0];
+      6|   if (loader === undefined) {
+      7|     return Promise.reject(new Error("実装のファイルがありません"));
+       |                           ^
+      8|   }
+      9|   return loader();
+ ❯ loadMargin tests/unit/src/comments/margin.browser.test.ts:7:3
+ ❯ attachTracked tests/unit/src/comments/margin.browser.test.ts:44:41
+ ❯ tests/unit/src/comments/margin.browser.test.ts:166:9
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=7de570ef:4125:35
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=7de570ef:5235:26
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=7de570ef:5726:20
+ ❯ runWithCancel node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=7de570ef:5721:10
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=7de570ef:5710:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/11]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/comments/margin.browser.test.ts > test_attach_margin_markers_when_detached
+Error: 実装のファイルがありません
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/margin.browser.test.ts/test_attach_margin_markers_when_detached.png
+
+ ❯ loadSource tests/unit/helpers/lazy.ts:7:27
+      5|   const loader = Object.values(loaders)[0];
+      6|   if (loader === undefined) {
+      7|     return Promise.reject(new Error("実装のファイルがありません"));
+       |                           ^
+      8|   }
+      9|   return loader();
+ ❯ loadMargin tests/unit/src/comments/margin.browser.test.ts:7:3
+ ❯ attachTracked tests/unit/src/comments/margin.browser.test.ts:44:41
+ ❯ tests/unit/src/comments/margin.browser.test.ts:190:24
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=7de570ef:4125:35
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=7de570ef:5235:26
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=7de570ef:5726:20
+ ❯ runWithCancel node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=7de570ef:5721:10
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DtlaA1_w.js?v=7de570ef:5710:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/11]⎯
+
+
+ Test Files  4 failed | 175 passed (179)
+      Tests  11 failed | 1235 passed (1246)
+   Start at  12:34:38
+   Duration  104.60s (worker 70%, tests 18%, import 9%, transform 4%)
+

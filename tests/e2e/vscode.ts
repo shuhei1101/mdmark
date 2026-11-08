@@ -4,12 +4,13 @@ import {
   cp,
   mkdir,
   mkdtemp,
+  readdir,
   readFile,
   rm,
   symlink,
   writeFile,
 } from "node:fs/promises";
-import { createServer, type Server } from "node:http";
+import { createServer, type Server, type ServerResponse } from "node:http";
 import type { AddressInfo } from "node:net";
 import { tmpdir } from "node:os";
 import { delimiter, dirname, join, resolve } from "node:path";
@@ -23,7 +24,11 @@ import {
 import { buildExtension } from "../../vscode/scripts/build.ts";
 import { createStubServer } from "../../vscode/tests/integration/stub-server.ts";
 import { createBuiltRoot } from "../integration/built-root.ts";
+import { MERMAID_DIST, MERMAID_STUB_PATH } from "./mermaid.ts";
 import { VSCODE_EXECUTABLE_ENV } from "./vscode-binary.ts";
+
+/** 拡張機能の ID（出力チャネルのログのフォルダの名前） */
+const EXTENSION_ID = "ShuheiNishikawa.mdmark-vscode";
 
 // リポジトリの直下と、拡張機能の場所
 const REPO_ROOT = resolve(import.meta.dirname, "../..");
@@ -40,6 +45,8 @@ const EVALUATE_ATTEMPTS = 5;
 const EVALUATE_RETRY_WAIT_MS = 1_000;
 // 複製に含めないもの
 const NOT_COPIED = ["node_modules", ".vscode-test", "out", "dist", "media"];
+// 拡張機能のビルドがライブラリ本体の設定ファイルの処理（`src/`）をまとめるため、複製の隣へリンクする直下の `src/`・`schemas/` と、その依存
+const LINKED_FROM_ROOT = ["src", "schemas", "node_modules"];
 
 /** 代役の配信の状態（`createStubServer` が受ける形） */
 type StubState = Parameters<typeof createStubServer>[0];
@@ -70,6 +77,9 @@ export async function buildExtensionAndDist(): Promise<BuiltExtension> {
     join(extensionDir, "node_modules"),
     "dir",
   );
+  for (const name of LINKED_FROM_ROOT) {
+    await symlink(join(REPO_ROOT, name), join(temp, name), "dir");
+  }
   await buildExtension({ root: extensionDir, tests: false });
   await writeFile(join(temp, "runner.cjs"), NEVER_ENDING_RUNNER);
   const built = await createBuiltRoot();
@@ -110,14 +120,78 @@ export type Stub = {
   close: () => Promise<void>;
 };
 
-/** 配布物とタグ一覧の代役の配信を立てる */
+/** 代役の配信が範囲の `ts`・`js` の変換のライブラリを返す経路。`html-scripts.url` に `{origin}{TRANSPILER_PATH}` を書くと、配布物と同じ origin から読む */
+export const TRANSPILER_PATH = "/babel.mjs";
+
+/** 変換のライブラリ（開発の依存 `@babel/standalone` の UMD）の場所 */
+const TRANSPILER_UMD_PATH = join(
+  REPO_ROOT,
+  "node_modules",
+  "@babel",
+  "standalone",
+  "babel.min.js",
+);
+
+/** `MERMAID_STUB_PATH` の下の要求に、mermaid の dist の `.mjs` を返す（無ければ 404） */
+function respondMermaid(path: string, response: ServerResponse): void {
+  const file = resolve(MERMAID_DIST, path.slice(MERMAID_STUB_PATH.length));
+  if (!file.startsWith(`${MERMAID_DIST}/`) || !file.endsWith(".mjs")) {
+    response.writeHead(404);
+    response.end();
+    return;
+  }
+  readFile(file).then(
+    (body) => {
+      response.writeHead(200, {
+        "Content-Type": "text/javascript; charset=utf-8",
+        "Access-Control-Allow-Origin": "*",
+      });
+      response.end(body);
+    },
+    () => {
+      response.writeHead(404);
+      response.end();
+    },
+  );
+}
+
+/** 配布物とタグ一覧の代役の配信を立てる。`TRANSPILER_PATH` には、変換のライブラリを既定のエクスポートを持つ ES モジュールに包んで返し、`MERMAID_STUB_PATH` の下には mermaid の dist を返す */
 export async function startStub(distRoot: string): Promise<Stub> {
   const state: StubState = {
     tags: ["v0.7.0", "v0.6.0", "vscode-v0.1.0"],
     mode: { tags: "ok", dist: "ok" },
     requests: [],
+    tagRequests: [],
   };
-  const server: Server = createStubServer(state, join(distRoot, "dist"));
+  const inner: Server = createStubServer(state, join(distRoot, "dist"));
+  const server: Server = createServer((request, response) => {
+    const path = request.url?.split("?")[0] ?? "";
+    if (path.startsWith(MERMAID_STUB_PATH)) {
+      state.requests.push(path);
+      respondMermaid(path, response);
+      return;
+    }
+    if (path !== TRANSPILER_PATH) {
+      inner.emit("request", request, response);
+      return;
+    }
+    state.requests.push(TRANSPILER_PATH);
+    readFile(TRANSPILER_UMD_PATH, "utf8").then(
+      (body) => {
+        response.writeHead(200, {
+          "Content-Type": "text/javascript; charset=utf-8",
+          "Access-Control-Allow-Origin": "*",
+        });
+        response.end(
+          `const module = { exports: {} };\nconst exports = module.exports;\n${body}\nexport default module.exports;\n`,
+        );
+      },
+      () => {
+        response.writeHead(404);
+        response.end();
+      },
+    );
+  });
   await new Promise<void>((done) => server.listen(0, "127.0.0.1", done));
   const sockets = new Set<import("node:net").Socket>();
   server.on("connection", (socket) => {
@@ -135,6 +209,7 @@ export async function startStub(distRoot: string): Promise<Stub> {
     requests: () => [...state.requests],
     clear: () => {
       state.requests.length = 0;
+      state.tagRequests.length = 0;
     },
     close: () =>
       new Promise<void>((done) => {
@@ -200,6 +275,8 @@ export type VscodeSession = {
   guideFrame: () => Promise<Frame>;
   /** 通知に出ている文 */
   notifications: () => Promise<string[]>;
+  /** 拡張機能の出力チャネル（`mdmark`）のログの行。ログのファイルがまだ無ければ空 */
+  extensionLog: () => Promise<string[]>;
   /** エディタの見えている先頭の行（1 始まり） */
   editorTopLine: () => Promise<number>;
   /** 終了して一時フォルダを消す */
@@ -222,6 +299,8 @@ export type LaunchOptions = {
   freshState?: boolean;
   /** ファイルを置いた後、VS Code を起動する前に呼ぶ（Git のリポジトリを作るときなど）。引数はワークスペースのフォルダ */
   prepare?: (workspaceDir: string) => Promise<void>;
+  /** VS Code に渡す環境変数に足すもの（`MDMARK_CONFIG` の既定は無いファイル） */
+  env?: Record<string, string>;
 };
 
 /** 拡張機能を入れた VS Code を、手元の代役の配信につないで起動する */
@@ -304,6 +383,9 @@ async function startVscode(
       PATH: `${binDir}${delimiter}${process.env.PATH}`,
       MDMARK_VSCODE_DIST_BASE: `${stub.origin}/mdmark`,
       MDMARK_VSCODE_TAGS_URL: `${stub.origin}/tags`,
+      // 開発者の端末の設定をシナリオに混ぜない
+      MDMARK_CONFIG: join(temp, "no-settings.yaml"),
+      ...options.env,
     },
     timeout: WAIT_TIMEOUT_MS * 2,
   });
@@ -471,6 +553,21 @@ async function startVscode(
           ".notifications-toasts .notification-list-item .notification-list-item-message",
         )
         .allInnerTexts(),
+    extensionLog: async () => {
+      const logsDir = join(userDataDir, "logs");
+      const entries = await readdir(logsDir, { recursive: true }).catch(
+        () => [] as string[],
+      );
+      const files = entries.filter((entry) =>
+        entry.endsWith(join("exthost", EXTENSION_ID, "mdmark.log")),
+      );
+      const texts = await Promise.all(
+        files.map((entry) => readFile(join(logsDir, entry), "utf8")),
+      );
+      return texts.flatMap((text) =>
+        text.split("\n").filter((line) => line !== ""),
+      );
+    },
     editorTopLine: () =>
       win.evaluate(() => {
         const editor = document.querySelector(".monaco-editor");

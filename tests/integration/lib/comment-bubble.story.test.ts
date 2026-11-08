@@ -69,3 +69,29 @@ test("test_escaped_body", async () => {
   await expect(bodies(page)).resolves.toEqual(["ここは <b>太字</b> にしたい"]);
   await expect(page.locator(".mdmark-comment-list b").count()).resolves.toBe(0);
 });
+
+// 390px の画面でも、全ての状態の吹き出しが描く先の要素の内側に収まり、横スクロールを出さない
+test("test_narrow_viewport", async () => {
+  for (const id of [
+    "single",
+    "multiple",
+    "escaped-body",
+    "editable",
+    "remove-only",
+    "editing",
+    "updating",
+    "update-empty",
+    "update-failed",
+    "remove-confirm",
+    "removing",
+    "remove-failed",
+  ]) {
+    // 準備・実行
+    const page = await holder.openStory(`parts-commentbubble--${id}`, {
+      width: 390,
+      height: 844,
+    });
+    // 検証
+    await expect(pageOverflows(page), id).resolves.toBe(false);
+  }
+});

@@ -8,7 +8,15 @@ const loadConfig = () => import("../../../src/config.ts");
 const DEFAULT_SYNTAX_URL =
   "https://cdn.jsdelivr.net/npm/@highlightjs/cdn-assets@11.12.0/es/";
 
-/** この版が知っている機能の既定（`comments` を除いて全てオン） */
+/** mermaid の既定の読み込み先 */
+const DEFAULT_MERMAID_URL =
+  "https://cdn.jsdelivr.net/npm/mermaid@12.3.0/dist/mermaid.esm.min.mjs";
+
+/** 範囲のスクリプトの変換のライブラリの既定の読み込み先 */
+const DEFAULT_HTML_SCRIPTS_URL =
+  "https://cdn.jsdelivr.net/npm/@babel/standalone@8.1.1/+esm";
+
+/** この版が知っている機能の既定（`comments`・`html-scripts` を除いて全てオン） */
 const DEFAULT_FEATURES = {
   print: true,
   table: true,
@@ -17,6 +25,7 @@ const DEFAULT_FEATURES = {
   steps: true,
   tree: true,
   badge: true,
+  footnotes: true,
   code: true,
   syntax: true,
   toc: true,
@@ -25,13 +34,34 @@ const DEFAULT_FEATURES = {
   "row-details": true,
   figures: true,
   diagrams: true,
+  "diagram-resize": true,
   glossary: true,
   backlinks: true,
   html: true,
   hints: true,
+  mermaid: true,
   views: true,
   comments: false,
+  "html-scripts": false,
   "side-toc": true,
+  "back-to-top": true,
+  "text-color": true,
+  images: true,
+  gallery: true,
+  lightbox: true,
+  media: true,
+  gif: true,
+  cards: true,
+  icon: true,
+  columns: true,
+  highlight: true,
+  kbd: true,
+  details: true,
+  pagebreak: true,
+  include: true,
+  wide: true,
+  csv: true,
+  "card-grid": true,
 };
 
 // 設定が無ければ既定を返す（正常系）
@@ -44,11 +74,54 @@ test("test_resolve_config", async () => {
   expect(resolved).toEqual({
     features: DEFAULT_FEATURES,
     libraries: {},
-    tooltips: { placement: "top" },
+    tooltips: { placement: "top", diagramPlacement: "bottom" },
     syntax: { url: DEFAULT_SYNTAX_URL },
+    htmlScripts: { url: DEFAULT_HTML_SCRIPTS_URL },
+    mermaid: { url: DEFAULT_MERMAID_URL, theme: "mdmark", themeVariables: {} },
     sideToc: { mode: "hover" },
     colorTheme: "dev-swiss",
+    colorScheme: "auto",
+    labels: { paramCopy: "今の値を写す" },
   });
+});
+
+// mermaid の url・theme・themeVariables の型の合う値だけを受ける（正常系）
+test("test_resolve_config_when_mermaid_given", async () => {
+  // 準備
+  const { resolveConfig } = await loadConfig();
+  const given = {
+    mermaid: {
+      url: "/vendor/mermaid.mjs",
+      theme: "neutral",
+      themeVariables: {
+        primaryColor: "#e0f2f1",
+        useGradient: "true",
+        dropShadow: "x",
+        fontSize: 14,
+      },
+    },
+  } as unknown as MdmarkConfig;
+  const invalid = {
+    mermaid: { url: 1, theme: "no-such-theme", themeVariables: "x" },
+  } as unknown as MdmarkConfig;
+  // 実行
+  const results = [given, invalid, {}].map((config) =>
+    resolveConfig({ config }),
+  );
+  // 検証
+  expect(results[0]?.mermaid).toEqual({
+    url: "/vendor/mermaid.mjs",
+    theme: "neutral",
+    themeVariables: { primaryColor: "#e0f2f1" },
+  });
+  const fallback = {
+    url: DEFAULT_MERMAID_URL,
+    theme: "mdmark",
+    themeVariables: {},
+  };
+  expect(results[1]?.mermaid).toEqual(fallback);
+  expect(results[2]?.mermaid).toEqual(fallback);
+  expect(results[2]?.features.mermaid).toBe(true);
 });
 
 // 知っている機能の真偽値だけを置き換える（正常系）
@@ -142,6 +215,7 @@ test("test_resolve_config_when_side_toc_mode_given", async () => {
   expect(resolvedUnknown.sideToc.mode).toBe("hover");
   expect(resolvedEmpty.sideToc.mode).toBe("hover");
   expect(resolvedEmpty.features["side-toc"]).toBe(true);
+  expect(resolvedEmpty.features["back-to-top"]).toBe(true);
 });
 
 // COLOR_THEMES の名前だけを受け、他の値と無いときは dev-swiss にする（正常系）
@@ -163,4 +237,114 @@ test("test_resolve_config_when_color_theme_given", async () => {
     "dev-swiss",
     "dev-swiss",
   ]);
+});
+
+// `COLOR_SCHEMES` の値だけを受け、他の値と無いときは `auto` にする（正常系）
+test("test_resolve_config_when_color_scheme_given", async () => {
+  // 準備
+  const { resolveConfig } = await loadConfig();
+  const configs = [
+    { colorScheme: "dark" },
+    { colorScheme: "sepia" },
+    { colorScheme: 1 },
+    {},
+  ] as MdmarkConfig[];
+  // 実行
+  const resolved = configs.map((config) => resolveConfig({ config }));
+  // 検証
+  expect(resolved.map((config) => config.colorScheme)).toEqual([
+    "dark",
+    "auto",
+    "auto",
+    "auto",
+  ]);
+  expect(resolved[3]?.features["card-grid"]).toBe(true);
+});
+// 空でない文字列の `labels.paramCopy` だけを受け、空文字・他の型・無いときは既定にする（正常系）
+test("test_resolve_config_when_labels_given", async () => {
+  // 準備
+  const { resolveConfig } = await loadConfig();
+  const configs = [
+    { labels: { paramCopy: "コピー" } },
+    { labels: { paramCopy: "" } },
+    { labels: { paramCopy: 1 } },
+    { labels: { other: "x" } },
+  ] as unknown as MdmarkConfig[];
+  // 実行
+  const labels = configs.map((config) => resolveConfig({ config }).labels);
+  // 検証
+  expect(labels).toEqual([
+    { paramCopy: "コピー" },
+    { paramCopy: "今の値を写す" },
+    { paramCopy: "今の値を写す" },
+    { paramCopy: "今の値を写す" },
+  ]);
+});
+
+// 文字列の `html-scripts.url` だけを受け、他の型と無いときは既定にする（正常系）
+test("test_resolve_config_when_html_scripts_url_given", async () => {
+  // 準備
+  const { resolveConfig } = await loadConfig();
+  const configs = [
+    { "html-scripts": { url: "/vendor/babel.mjs" } },
+    { "html-scripts": { url: 1 } },
+    {},
+  ] as unknown as MdmarkConfig[];
+  // 実行
+  const resolved = configs.map((config) => resolveConfig({ config }));
+  // 検証
+  expect(resolved.map((config) => config.htmlScripts.url)).toEqual([
+    "/vendor/babel.mjs",
+    DEFAULT_HTML_SCRIPTS_URL,
+    DEFAULT_HTML_SCRIPTS_URL,
+  ]);
+  expect(resolved[2]?.features["html-scripts"]).toBe(false);
+});
+
+// top だけを受け、他の値と無いときは bottom にする（正常系）
+test("test_resolve_config_when_diagram_placement_given", async () => {
+  // 準備
+  const { resolveConfig } = await loadConfig();
+  const top = { tooltips: { diagramPlacement: "top" } } as MdmarkConfig;
+  const unknown = {
+    tooltips: { diagramPlacement: "left" },
+  } as unknown as MdmarkConfig;
+  const bodyOnly: MdmarkConfig = { tooltips: { placement: "bottom" } };
+  // 実行
+  const resolved = [top, unknown, bodyOnly].map((config) =>
+    resolveConfig({ config }),
+  );
+  // 検証
+  expect(resolved.map((config) => config.tooltips.diagramPlacement)).toEqual([
+    "top",
+    "bottom",
+    "bottom",
+  ]);
+  expect(resolved[2]?.tooltips.placement).toBe("bottom");
+});
+
+// マーカーに書いたキーだけを置き換える（正常系）
+test("test_apply_page_settings", async () => {
+  // 準備
+  const { resolveConfig, applyPageSettings } = await loadConfig();
+  const config = resolveConfig({
+    config: {
+      colorScheme: "dark",
+      colorTheme: "theme-paper",
+      "side-toc": { mode: "hover" },
+    },
+  });
+  const before = structuredClone(config);
+  // 実行
+  const applied = applyPageSettings({
+    config,
+    page: { scheme: "light", toc: "fixed" },
+  });
+  const unchanged = applyPageSettings({ config, page: {} });
+  // 検証
+  expect(applied.colorScheme).toBe("light");
+  expect(applied.colorTheme).toBe("theme-paper");
+  expect(applied.sideToc.mode).toBe("fixed");
+  expect(unchanged).toEqual(before);
+  expect(config).toEqual(before);
 });

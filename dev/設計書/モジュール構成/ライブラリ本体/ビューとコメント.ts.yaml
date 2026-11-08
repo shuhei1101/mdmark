@@ -3,7 +3,7 @@ lead: ビューとコメントの部品を `dist/index.js` と別の配布ファ
 directory: |-
   ```tree
   src/
-  ├── part-modules.ts      # 部品のモジュールのファイル名・URL の差し替え・1 回だけ読む loadPartModule（dist/index.js）
+  ├── part-modules.ts      # 部品のモジュールのファイル名・読み込みの差し替え・1 回だけ読む loadPartModule（dist/index.js）
   ├── mount-parts.ts       # 公開関数 mountView・mountComments と、mount が呼ぶ attachParts（dist/index.js）
   ├── views/
   │   ├── spec.ts          # 公開の型 MdmarkViewOptions・MdmarkViewHandle、使えるアイコンと既定の対応、引数の検査（dist/index.js）
@@ -11,10 +11,12 @@ directory: |-
   ├── comments/
   │   ├── spec.ts          # 公開の型 MdmarkComment・MdmarkCommentDraft・MdmarkCommentStore・MdmarkCommentsHandle、引数とコメントの形の検査（dist/index.js）
   │   ├── anchor.ts        # 選んだ範囲から下書きを作る・本文の文字から箇所を探す（dist/comments.js）
+  │   ├── bubble.ts        # 吹き出しのコメントの修正と削除の操作（dist/comments.js）
+  │   ├── margin.ts        # 本文の列の右の余白の列に、箇所の行の高さで余白のマーカーを置く（dist/comments.js）
   │   └── index.ts         # dist/comments.js の入口。attachComments
   └── parts/
       ├── view.ts          # ビューの HTML とアイコンの形（dist/view.js）
-      └── comment.ts       # コメントのボタン・入力欄・印・吹き出し・箇所が見つからないコメントの一覧の HTML（dist/comments.js）
+      └── comment.ts       # コメントのボタン・入力欄・印・吹き出し・箇所が見つからないコメントの一覧・余白のマーカーの HTML（dist/comments.js）
   ```
 diagrams:
   - name: 全体
@@ -32,6 +34,7 @@ diagrams:
         class コメントを付ける
         class 選んだ範囲から下書きを作る
         class コメントの箇所を探す
+        class コメントを修正・削除する
         class 部品のHTML
         ビューを描く公開関数 --> ビューの引数を検める : 同期で検める
         ビューを描く公開関数 --> 部品のモジュールを読む : view
@@ -43,6 +46,8 @@ diagrams:
         部品のモジュールを読む ..> コメントを付ける : dist/comments.js
         コメントを付ける --> コメントの箇所を探す : 読んだコメント
         コメントを付ける --> 選んだ範囲から下書きを作る : 保存するとき
+        コメントを付ける --> コメントを修正・削除する : 吹き出しを開くとき
+        コメントを修正・削除する --> 部品のHTML
         ビューを描く --> 部品のHTML
         印のビューに付ける --> 部品のHTML
         コメントを付ける --> 部品のHTML
@@ -138,6 +143,12 @@ data_models:
       - name: save
         type: '(target: { docId: string; comment: MdmarkCommentDraft }) => Promise<MdmarkComment>'
         description: 下書きを保存し、`id` を付けたコメントを返す
+      - name: update
+        type: '((target: { docId: string; id: string; body: string }) => Promise<void>) | undefined'
+        description: コメントの本文を書き換える。持つときだけ吹き出しに「編集」を出す
+      - name: remove
+        type: '((target: { docId: string; id: string }) => Promise<void>) | undefined'
+        description: コメントを削除する。持つときだけ吹き出しに「削除」を出す
   - name: MdmarkCommentsHandle
     title: コメントの片付け
     container: src/comments/spec.ts
@@ -166,19 +177,58 @@ data_models:
     summary: '`dist/comments.js` が export する関数'
     properties:
       - name: attachComments
-        type: '(options: { root: HTMLElement; store: MdmarkCommentStore; docId: string }) => Promise<() => void>'
+        type: '(options: { root: HTMLElement; store: MdmarkCommentStore; docId: string; reveal?: (element: HTMLElement) => void; margin?: boolean }) => Promise<CommentsController>'
         description: '`mountComments` と `mount` が呼ぶ'
+  - name: CommentsController
+    title: 付けたコメントの操作
+    container: src/comments/index.ts
+    role: モジュールの形
+    summary: '`attachComments` の Promise の値'
+    properties:
+      - name: detach
+        type: () => void
+        description: 印を外して文字を元に戻し、置いた要素と受け取りを外す。2 回目以降は何もしない
+      - name: reload
+        type: () => Promise<void>
+        description: '`load` を呼び直して印を付け直す'
+      - name: focus
+        type: '(id: string) => void'
+        description: その `id` のコメントの印へ移って強調する
+    status: planned
+    introduced:
+      pr: 280
+  - name: PartsHandle
+    title: 描いた文書に付けた部品の操作
+    container: src/mount-parts.ts
+    role: モジュールの形
+    summary: '`attachParts` の戻り値'
+    properties:
+      - name: detach
+        type: () => void
+        description: 付けた部品を外す。読み込みを待っている間に呼ぶと、読めた後に付けない
+      - name: reloadComments
+        type: () => Promise<void>
+        description: 付けたコメントの `reload` を呼ぶ。コメントを付けていないときは解決した Promise を返す
+      - name: focusComment
+        type: '(id: string) => void'
+        description: 付けたコメントの `focus` を呼ぶ。コメントを付けていないときは何もしない
+    status: planned
+    introduced:
+      pr: 280
 constants:
   - name: PART_MODULE_FILES
     title: 部品のモジュールのファイル名
     container: src/part-modules.ts
     summary: 部品の名前から、`dist/index.js` の隣に置く配布ファイルの名前を引く
     value: '{ view: "view.js", comments: "comments.js" }'
-  - name: partModuleUrls
-    title: 部品のモジュールの URL の差し替え
+  - name: partModuleLoaders
+    title: 部品のモジュールの読み込みの差し替え
     container: src/part-modules.ts
-    summary: 書き出した HTML の起動の処理が、埋めたコードの `blob:` URL を入れる。無い名前は `PART_MODULE_FILES` を `import.meta.url` から解決する
-    value: new Map<PartName, string>()
+    summary: 書き出した HTML の起動の処理が、同じスクリプトに束ねた部品のモジュールを返す関数を入れる。無い名前は `PART_MODULE_FILES` を `import.meta.url` から解決して読む
+    value: 'new Map<PartName, () => Promise<Record<string, unknown>>>()'
+    status: planned
+    introduced:
+      pr: 296
   - name: partModules
     title: 読んだ部品のモジュール
     container: src/part-modules.ts
@@ -239,11 +289,31 @@ constants:
     container: src/comments/index.ts
     summary: ボタン・入力欄・吹き出しを画面の端から離す幅
     value: '8'
+  - name: SAME_LINE_PX
+    title: 同じ行とみなす差
+    container: src/comments/margin.ts
+    summary: 箇所の行の上端の差がこの値以下なら、同じ行として 1 つのマーカーにまとめる
+    value: '4'
+  - name: MARKER_GAP_PX
+    title: マーカーの間の幅
+    container: src/comments/margin.ts
+    summary: 上下に並んだマーカーの間に空ける幅
+    value: '4'
+  - name: MAX_OPEN_DEPTH
+    title: 開く処理の上限
+    container: src/comments/margin.ts
+    summary: 閉じた中の箇所へ移るとき、入れ子の閉じた要素を外側から開く処理を繰り返す上限
+    value: '4'
+  - name: CLOSED_LABELS
+    title: 閉じた中の種類の文言
+    container: src/parts/comment.ts
+    summary: 余白のマーカーの読み上げ名に添える、閉じた中の種類ごとの文言
+    value: '{ section: "閉じたセクションの中", tab: "選ばれていないタブの中", row: "閉じた行の詳細の中" }'
   - name: COMMENT_MESSAGES
     title: 入力欄の知らせ
     container: src/parts/comment.ts
-    summary: 部品設計『コメントの入力欄』の `empty`・`failed` の知らせ
-    value: '{ empty: "コメントを書いてから保存してください。", failed: "コメントを保存できませんでした。書いたコメントは残っています。もう一度「コメントを保存」を押してください。" }'
+    summary: 部品設計『コメントの入力欄』の `empty`・`failed` の知らせと、部品設計『コメントの吹き出し』の修正・削除の知らせと削除の確認の文
+    value: '{ empty: "コメントを書いてから保存してください。", failed: "コメントを保存できませんでした。書いたコメントは残っています。もう一度「コメントを保存」を押してください。", updateFailed: "コメントを保存できませんでした。書いたコメントは残っています。もう一度「保存」を押してください。", removeFailed: "コメントを削除できませんでした。もう一度「削除」を押してください。", removeConfirm: "このコメントを削除しますか? 削除すると元に戻せません。" }'
 functions:
   - name: loadPartModule
     title: 部品のモジュールを読む
@@ -267,8 +337,8 @@ functions:
       description: 読んだ URL とモジュール。読めない・形が合わないときは元のエラーで reject し、エラーの `cause` に URL を持たせる
     process: |-
       1. `partModules` に名前があればその Promise を返す
-      2. URL を `partModuleUrls` の値、無ければ `new URL("./" + PART_MODULE_FILES[name], import.meta.url).href` にする
-      3. `importModule(url)` を待ち、`view` は `drawView`・`attachView`、`comments` は `attachComments` が関数かを確かめる。合わなければ `Error`（モジュールが {名前} を export していない）を投げる
+      2. `partModuleLoaders` に名前があれば、URL を `PART_MODULE_FILES[name]` にしてその関数を待つ。無ければ URL を `new URL("./" + PART_MODULE_FILES[name], import.meta.url).href` にして `importModule(url)` を待つ
+      3. 読んだモジュールで、`view` は `drawView`・`attachView`、`comments` は `attachComments` が関数かを確かめる。合わなければ `Error`（モジュールが {名前} を export していない）を投げる
       4. 手順 2〜3 の Promise を `partModules` に控えて返す
     unit_tests:
       - name: test_load_part_module
@@ -277,12 +347,12 @@ functions:
         condition: '`view` を 2 回読む'
         mock: '`importModule` は呼ばれた URL を控え、2 つの関数を持つオブジェクトを返す'
         expected: '`importModule` が 1 回だけ、`view.js` で終わる URL で呼ばれる。2 回とも同じモジュール'
-      - name: test_load_part_module_when_url_replaced
+      - name: test_load_part_module_when_loader
         case: 正常
-        summary: 差し替えた URL から読む
-        condition: '`partModuleUrls` に `comments` → `blob:x` を入れて読む'
-        mock: '`importModule` は URL を控える'
-        expected: '`blob:x` で呼ばれる'
+        summary: 差し替えた関数で読み、URL を読まない
+        condition: '`setPartModuleLoader("view", 関数)` の後に `view` を読む。関数は 2 つの関数を持つオブジェクトを返す'
+        mock: '`importModule` を見張る'
+        expected: '`importModule` が呼ばれず、関数が返したモジュールと `url` の `view.js` を返す'
       - name: test_load_part_module_when_shape_mismatch
         case: 異常
         summary: 関数を export しないモジュールを拒む
@@ -298,10 +368,10 @@ functions:
     refs:
       - dev/設計書/インターフェース定義/ライブラリ本体/ビューを描く.ts#constraints[部品のモジュールの読み込み]
       - dev/設計書/インターフェース定義/ライブラリ本体/コメントを付ける.ts#constraints[部品のモジュールの読み込み]
-  - name: setPartModuleUrl
-    title: 部品のモジュールの URL を差し替える
+  - name: setPartModuleLoader
+    title: 部品のモジュールの読み込みを差し替える
     container: src/part-modules.ts
-    summary: '`partModuleUrls` に部品の名前と URL を入れる。書き出した HTML の起動の処理が呼ぶ'
+    summary: '`partModuleLoaders` に部品の名前とモジュールを返す関数を入れる。書き出した HTML の起動の処理が呼ぶ'
     kind: 関数
     scope: internal
     args:
@@ -309,15 +379,18 @@ functions:
         type: PartName
         required: true
         description: 部品の名前
-      - name: url
-        type: string
+      - name: loader
+        type: '() => Promise<Record<string, unknown>>'
         required: true
-        description: 埋めたコードの `blob:` URL
+        description: 同じスクリプトに束ねた部品のモジュールを返す関数。埋めなかった部品は拒否する関数
     returns:
       type: void
       description: '-'
-    process: 1. `partModuleUrls` に `name` → `url` を入れる
+    process: 1. `partModuleLoaders` に `name` → `loader` を入れる
     unit_tests: []
+    status: planned
+    introduced:
+      pr: 296
   - name: mountView
     title: ビューを描く公開関数
     container: src/mount-parts.ts
@@ -396,7 +469,7 @@ functions:
         condition: '`checkCommentOptions` が投げる（同期）'
     process: |-
       1. `checkCommentOptions(el, opts)` を呼ぶ（投げたらそのまま同期で投げる）
-      2. `loadPartModule("comments")` を待ち、`module.attachComments({ root: el, store, docId })` の外す関数を、2 回目以降は何もしない `destroy` に包んで解決する
+      2. `loadPartModule("comments")` を待ち、`module.attachComments({ root: el, store, docId })` が返した `CommentsController` の `detach` を、2 回目以降は何もしない `destroy` に包んで解決する
       3. 読めないときは `el` を書き換えず、`load` を呼ばずに元のエラーで reject する
     unit_tests:
       - name: test_mount_comments
@@ -431,13 +504,14 @@ functions:
         required: true
         description: 描いた要素・文書で決まった機能・`mount` の `commentStore` と `docId`・描いた文書がまだ今のものか・`mount` ごとに控える、読み書きの関数が無いことを出したか
     returns:
-      type: () => void
-      description: 付けた部品を外す関数。読み込みを待っている間に呼ぶと、読めた後に付けない
+      type: PartsHandle
+      description: 付けた部品を外す関数と、付けたコメントを読み直す・印へ移る関数
     process: |-
       1. `features.views` がオンで `root` に `div.mdmark-view` があれば `loadPartModule("view")` を待ち、`isCurrent()` で外していなければ、`div.mdmark-view` ごとに `attachView` を呼んで外す関数を控える
-      2. `features.comments` がオンで `commentStore` と `docId` があれば `loadPartModule("comments")` を待ち、`isCurrent()` で外していなければ `attachComments({ root, store: commentStore, docId })` を待って外す関数を控える（待つ間に外したら、得た外す関数をすぐ呼ぶ）。`features.comments` がオンで `commentStore` を渡していなければ、モジュールを読まず、コメントの機能に読み書きの関数が要ることを `console.error` に出す（`mount` ごとに 1 回。`mount` が渡す `warned` で控える）
+      2. `features.comments` がオンで `commentStore` と `docId` があれば `loadPartModule("comments")` を待ち、`isCurrent()` で外していなければ `attachComments({ root, store: commentStore, docId, reveal: openEnclosing, margin: true })` を待って `CommentsController` を控える（待つ間に外したら、得た `detach` をすぐ呼ぶ）。この待ちの Promise（読めない・外したときは `undefined` で解決する）も控える。`features.comments` がオンで `commentStore` を渡していなければ、モジュールを読まず、コメントの機能に読み書きの関数が要ることを `console.error` に出す（`mount` ごとに 1 回。`mount` が渡す `warned` で控える）
       3. 読めないときは付けずに、部品の名前（`view` か `comments`）・URL・元のエラーを `console.error` に 1 回出す（ページの中で部品ごとに 1 回）。ビューの印の場所は `render` の表のまま残す
-      4. 外す関数は、外した印を立て、控えた外す関数を逆の順に呼ぶ。続けて `root` の中の要素ごとに、`mountedViews`・`mountedComments` に残っている戻り値の `destroy` を呼ぶ（拡張の `draw` から呼んだ `mountView`・`mountComments` を、`mount` の `update`・`destroy` で片付ける）
+      4. `reloadComments` は、コメントの待ちの Promise を控えていなければ解決した Promise を返す。控えていれば待ち、`CommentsController` を得て外していなければその `reload()` を返し、それ以外は解決する。`focusComment(id)` は、`CommentsController` を控えていて外していなければその `focus(id)` を呼ぶ
+      5. `detach` は、外した印を立て、控えた外す関数を逆の順に呼ぶ。続けて `root` の中の要素ごとに、`mountedViews`・`mountedComments` に残っている戻り値の `destroy` を呼ぶ（拡張の `draw` から呼んだ `mountView`・`mountComments` を、`mount` の `update`・`destroy` で片付ける）
     unit_tests:
       - name: test_attach_parts
         case: 正常
@@ -475,8 +549,27 @@ functions:
         condition: '`root` の中の要素 1 つに `mountView`、別の要素に `mountComments` を呼び、解決してから `attachParts` の外す関数を呼ぶ。`root` の外の要素にも `mountView` を呼ぶ'
         mock: '`importModule` は、呼ばれた回数を控える外す関数を返す `drawView`・`attachComments` を持つモジュールを返す'
         expected: '`root` の中の 2 つの外す関数が 1 回ずつ呼ばれ、`root` の外のビューの外す関数は呼ばれない'
+      - name: test_attach_parts_when_comments_reloaded
+        case: 正常
+        summary: reloadComments と focusComment を付けたコメントに任せる
+        condition: '`comments: true`・`commentStore`・`docId` で呼び、`reloadComments()` と `focusComment("c1")` を呼ぶ'
+        mock: '`importModule` は、引数を控え、`reload`・`focus` の呼び出しを控える `CommentsController` で解決する `attachComments` を持つモジュールを返す'
+        expected: '`attachComments` の引数の `reveal` が `openEnclosing`。`reload` が 1 回呼ばれて `reloadComments()` が解決し、`focus` が `c1` で 1 回呼ばれる'
+      - name: test_attach_parts_when_comments_reload_disabled
+        case: 正常
+        summary: コメントを付けていないとき・読めないときは load を呼ばずに解決する
+        condition: '`comments: false` で呼んだ戻り値と、`importModule` が reject するときの戻り値の `reloadComments()`'
+        mock: '`importModule` は呼ばれたかを控えるか reject する。`console.error` を控える'
+        expected: どちらも解決し、1 つ目は `importModule` が呼ばれない
+      - name: test_attach_parts_when_comments_reload_after_detach
+        case: 正常
+        summary: 外した後の reloadComments は reload を呼ばずに解決する
+        condition: '`attachComments` の解決の前に `detach` を呼び、その後に `reloadComments()`'
+        mock: 合図で解決する `attachComments`
+        expected: '`reloadComments()` が解決し、`reload` は呼ばれず、得た `detach` が 1 回呼ばれる'
     refs:
       - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#exceptions[なし（ビュー・コメントの部品のモジュールを読めない）]
+      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[コメントの読み直し]
   - name: checkViewOptions
     title: ビューの引数を検める
     container: src/views/spec.ts
@@ -534,7 +627,7 @@ functions:
       description: 合えば何も返さない
     process: |-
       1. `el` が `HTMLElement` でなければ投げる（`el`）
-      2. `store` が `load`・`save` の関数を持たなければ投げる（`opts.store`）
+      2. `checkCommentStore(store, "opts.store")` を呼ぶ
       3. `docId` が空でない文字列でなければ投げる（`opts.docId`）
     unit_tests:
       - name: test_check_comment_options_when_invalid
@@ -545,6 +638,46 @@ functions:
         expected: それぞれ `el`・`opts.store`・`opts.docId` を含む `TypeError`
     refs:
       - dev/設計書/インターフェース定義/ライブラリ本体/コメントを付ける.ts#exceptions[TypeError]
+  - name: checkCommentStore
+    title: コメントの読み書きの関数を検める
+    container: src/comments/spec.ts
+    summary: 読み書きの関数が `load`・`save` の関数を持ち、`update`・`remove` を持つなら関数かを確かめ、合わなければ `name` を含む `TypeError` を投げる。`checkCommentOptions` と `mount` の `commentStore` の確かめに使う
+    kind: 関数
+    scope: internal
+    args:
+      - name: store
+        type: unknown
+        required: true
+        description: 読み書きの関数
+      - name: name
+        type: string
+        required: true
+        description: '`TypeError` のメッセージに入れる引数の名前（`opts.store` か `commentStore`）'
+    returns:
+      type: asserts store is MdmarkCommentStore
+      description: 合えば何も返さない
+    process: |-
+      1. `store` が `load`・`save` の関数を持たなければ、`{name} は load と save の関数を持つオブジェクトで渡してください` で投げる
+      2. `update`・`remove` のどちらかを、`undefined` でも関数でもない値で持てば、`{name} の update と remove は関数で渡してください` で投げる
+    unit_tests:
+      - name: test_check_comment_store
+        case: 正常
+        summary: update・remove を持たないか関数で持てば通す
+        condition: '`load`・`save` だけの値と、`update`・`remove` も関数で持つ値'
+        mock: なし
+        expected: どちらも投げない
+      - name: test_check_comment_store_when_invalid
+        case: 異常
+        summary: 合わない関数ごとに名前を含めて投げる
+        condition: '`name` を `commentStore` にし、`save` の無い値・`update: 1` の値・`remove: "x"` の値をそれぞれ渡す'
+        mock: なし
+        expected: どれも `commentStore` を含む `TypeError`
+    refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#exceptions[TypeError（コメント）]
+      - dev/設計書/インターフェース定義/ライブラリ本体/コメントを付ける.ts#exceptions[TypeError]
+    status: planned
+    introduced:
+      pr: 280
   - name: isComment
     title: コメントの形か
     container: src/comments/spec.ts
@@ -868,15 +1001,15 @@ functions:
     kind: 関数
     scope: public
     is_async: true
-    side_effects: '`root` の中の文字を印で包み、ボタン・一覧を置き、`document` と `window` に受け取りを付ける。`store.load`・`store.save` を呼ぶ'
+    side_effects: '`root` の中の文字を印で包み、ボタン・一覧を置き、`document` と `window` に受け取りを付ける。`store.load`・`store.save`・`store.update`・`store.remove` を呼ぶ'
     args:
       - name: options
-        type: '{ root: HTMLElement; store: MdmarkCommentStore; docId: string }'
+        type: '{ root: HTMLElement; store: MdmarkCommentStore; docId: string; reveal?: (element: HTMLElement) => void; margin?: boolean }'
         required: true
-        description: 範囲の要素・読み書きの関数・対象の ID
+        description: 範囲の要素・読み書きの関数・対象の ID・印を囲む閉じた節と行の詳細を開く関数（`mount` は `openEnclosing` を渡す。`mountComments` は渡さない）・余白のマーカーを置くか（`mount` だけが `true` を渡す。既定は `false`）
     returns:
-      type: Promise<() => void>
-      description: 印を外して文字を元に戻し、置いた要素と受け取りを外す関数
+      type: Promise<CommentsController>
+      description: 外す関数と、読み直す・印へ移る関数
     process: |-
       1. `store.load({ docId })` を待つ。reject するか、配列でないか `isComment` でない要素があれば、`load`・`docId`・元のエラーか合わなかった値を `console.error` に出し、コメントを空にする
       2. `commentText(root)` と `locateComments` で箇所を探し、箇所ごとに文字の節を分けて `renderCommentMark` の形の `mark` で包み、付いたコメントを控える。見つからないコメントがあれば `root` の末尾に `renderCommentOrphans` を置く。読み上げの説明 `コメントが付いた箇所` を `document.body` に 1 つ置く
@@ -884,9 +1017,13 @@ functions:
       4. ボタンを押すと、`renderCommentForm` の入力欄を `document.body` に置いて選んだ範囲の下に置き、本文の欄へフォーカスを移し、`CSS.highlights` があれば範囲を `PENDING_HIGHLIGHT` に入れる
       5. 保存のボタンで、本文が空なら `state: empty` の知らせを出す。空でなければ `state: saving` にして `store.save({ docId, comment: draftFromRange(...) })` を待つ。reject するか `isComment` でなければ `save`・`docId`・元のエラーを `console.error` に出して `state: failed` にし、本文を残す。保存できたら入力欄を閉じ、範囲を印で包んで印へフォーカスを移す
       6. キャンセルと Esc で入力欄を閉じる。本文があれば `window.confirm(DISCARD_MESSAGE)` で確かめ、捨てないときは残す。閉じたらボタンへフォーカスを戻す。外側の押下では閉じない
-      7. 印の押下・Enter・Space で `renderCommentBubble` の吹き出しを開いて印の `aria-expanded` を `true` にし、吹き出しへフォーカスを移す。閉じるボタンと Esc で閉じて印へフォーカスを戻し、外側の押下でも閉じる
-      8. `scroll`（捕捉）と `resize` で、開いている枠かボタンを元の箇所に付いていかせる
-      9. 外す関数は、受け取りを外し、置いた要素と `PENDING_HIGHLIGHT` を消し、印を中の文字の節に戻して `normalize` する
+      7. 印の押下・Enter・Space で `renderCommentBubble`（`ids`、`canEdit` は `store.update` が関数か、`canRemove` は `store.remove` が関数か）の吹き出しを開いて印の `aria-expanded` を `true` にし、吹き出しへフォーカスを移す。`canEdit` か `canRemove` なら `attachCommentActions` で修正と削除の操作を付ける。閉じるボタンと Esc で閉じて印へフォーカスを戻し、外側の押下でも閉じる。Esc は、`attachCommentActions` の `cancel()` が真を返したら（入力欄か削除の確認を閉じた・待っている）吹き出しを閉じない
+      8. 修正できたら（`onUpdated`）、控えたコメントと印に付いたコメントの、その `id` の本文を書き換える。削除できたら（`onRemoved`）、控えたコメントと印に付いたコメントからその `id` を除く。その印のコメントが残らなければ、吹き出しを開いていれば閉じ、印を含む `COMMENT_BLOCKS` のブロックを控えてから印を中の文字の節に戻して `normalize` し、吹き出しを開いていたときはそのブロックに `tabindex="-1"` を付けて `focus({ preventScroll: true })` する。残るかを返す
+      9. `scroll`（捕捉）と `resize` で、開いている枠かボタンを元の箇所に付いていかせる
+      10. `reload` は、読み直しの番号を 1 進めて控え、`store.load({ docId })` を待つ。待つ間に外したか番号が進んだら何もせずに解決する。reject したか配列でないか `isComment` でない要素があれば、`load`・`docId`・元のエラーか合わなかった値を `console.error` に出し、元のエラー（合わない値のときは `TypeError`）で reject する（印は残す）。読めたら控えたコメントを置き換え、開いている吹き出しを閉じ（入力欄は残す）、手順 2 のとおり印と一覧を付け直して解決する
+      11. `focus(id)` は、外した後か、その `id` のコメントを持つ印が無ければ何もしない。あれば、全ての印の `data-focused` を外し、最初の印を `reveal` に渡してから `scrollIntoView({ block: "nearest" })` してフォーカスを移し、その `id` を持つ印に `data-focused` を付ける。吹き出しは開かない
+      12. `detach` は、受け取りを外し、置いた要素と `PENDING_HIGHLIGHT` を消し、印を中の文字の節に戻して `normalize` する。2 回目以降は何もしない
+      13. `margin` が `true` で `root` が `div.mdmark-content` のときは、手順 2 の後に `attachMarginMarkers({ content: root })` を呼び、外す関数を手順 12 の `detach` で呼ぶ。印の付け直し（保存・`reload`）と吹き出しの開閉は、`attachMarginMarkers` が `root` の中の変化から拾う
     unit_tests:
       - name: test_attach_comments_when_loaded
         case: 正常
@@ -936,10 +1073,239 @@ functions:
         condition: 印を付けた後に外す関数を呼ぶ
         mock: なし
         expected: '`root` の `innerHTML` が付ける前と同じで、ボタン・一覧・説明が無い'
+      - name: test_attach_comments_when_store_without_edit
+        case: 正常
+        summary: update・remove を持たない読み書きの関数では、吹き出しに編集と削除を出さず、持つ関数のボタンだけを出す
+        condition: '`load`・`save` だけの `store` と、`remove` も持つ `store` で、それぞれ印を押す'
+        mock: '`store` はメモリーで返す'
+        expected: 1 つ目の吹き出しに `mdmark-comment-icon-button` が無い。2 つ目は `aria-label="削除"` のボタンだけがある
+      - name: test_attach_comments_when_removed_last
+        case: 正常
+        summary: 印の最後のコメントを削除すると、印を外して吹き出しを閉じ、印を含んでいたブロックへフォーカスを移す
+        condition: '`導入の手順` に 1 件のコメント。印を押し、「削除」と確認の「削除」を押す'
+        mock: '`remove` は引数を控えて解決する'
+        expected: '`remove` が `{ docId, id }` で 1 回呼ばれる。印と吹き出しが無く、段落が `tabindex="-1"` でフォーカスを持つ'
+      - name: test_attach_comments_when_reloaded
+        case: 正常
+        summary: 読み直すと印を付け直し、開いている吹き出しを閉じる
+        condition: '`load` が 1 回目は `導入の手順`、2 回目は `手順の数` のコメントを返す。印を押して吹き出しを開いてから `reload()`'
+        mock: '`store` はメモリーで返す'
+        expected: '`reload()` が解決した後、`mark` の文字が `手順の数` だけで、吹き出しが無い'
+      - name: test_attach_comments_when_reloaded_with_form
+        case: 正常
+        summary: 読み直しても書いている入力欄は残す
+        condition: 文字を選んで入力欄に本文を書いた後に `reload()`
+        mock: '`store` はメモリーで返す'
+        expected: 入力欄と書いた本文が残る
+      - name: test_attach_comments_when_reload_rejected
+        case: 異常
+        summary: 読み直せないと印を残して元のエラーで reject する
+        condition: 1 件を読んで印を付けた後、2 回目の `load` が reject する
+        mock: '`console.error` を控える'
+        expected: '`reload()` が元のエラーで reject し、印が残る。`console.error` に `load` と `docId`'
+      - name: test_attach_comments_when_reload_superseded
+        case: 正常
+        summary: 次の reload か detach の後に届いた読み直しの結果を描かない
+        condition: 2 回目の `load` を待たせたまま `reload()` をもう 1 回呼び、3 回目を先に返してから 2 回目を返す。別の `root` で、`load` を待たせたまま `detach` を呼んでから返す
+        mock: 合図で返す `load`
+        expected: 1 つ目は 3 回目の結果の印のまま。2 つ目は `reload()` が解決し、印が無い
+      - name: test_attach_comments_when_focused
+        case: 正常
+        summary: 印へ移ってフォーカスと data-focused を付け、次の focus で前の強調を外す
+        condition: '`c1`・`c2` の 2 件を別の段落に付け、`focus("c1")`、`focus("c2")`、`focus("無い")` の順に呼ぶ'
+        mock: '`reveal` は引数を控える関数。`Element.prototype.scrollIntoView` を引数を控える関数に差し替える'
+        expected: '`focus("c1")` の後は `c1` の印にフォーカスと `data-focused` があり、`reveal` がその印で、`scrollIntoView` が `{ block: "nearest" }` で呼ばれる。`focus("c2")` の後は `c1` の印が `data-focused` を持たない。`focus("無い")` の後も `c2` の印が `data-focused` を持つ。吹き出しは開かない'
+      - name: test_attach_comments_when_reloaded_with_margin
+        case: 正常
+        summary: 余白のマーカーを置いたとき、読み直すと付け直した印の数に余白のマーカーを置き直す
+        condition: '`root` が `div.mdmark-content` で `margin: true`。`load` が 1 回目は 1 つ目の段落の 1 件、2 回目は 2 つの段落それぞれの 2 件を返す。`reload()` の後に次のフレームを待つ'
+        mock: '`store` はメモリーで返す'
+        expected: '`reload()` の前は `div.mdmark-comment-margin` の中のマーカーが 1 つ、後は 2 つ'
     refs:
       - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[コメントの操作]
+      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[コメントの修正と削除]
+      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[コメントの読み直し]
+      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[コメントの箇所へ移る]
       - dev/設計書/インターフェース定義/ライブラリ本体/コメントを付ける.ts#
       - dev/設計書/画面設計/文書.ts#
+  - name: attachCommentActions
+    title: コメントを修正・削除する
+    container: src/comments/bubble.ts
+    summary: 開いた吹き出しのコメントごとの「編集」「削除」に、入力欄・削除の確認と `store.update`・`store.remove` の呼び出しを付ける
+    kind: 関数
+    scope: internal
+    side_effects: '吹き出しの中の `li` を書き換え、`store.update`・`store.remove` を呼ぶ'
+    args:
+      - name: options
+        type: '{ bubble: HTMLElement; store: MdmarkCommentStore; docId: string; isActive: () => boolean; onUpdated: (id: string, body: string) => void; onRemoved: (id: string) => boolean }'
+        required: true
+        description: '`renderCommentBubble` で開いた吹き出し・読み書きの関数・対象の ID・付けたコメントがまだ外れていないか・修正できたときと削除できたときに `attachComments` へ知らせる関数（`onRemoved` は同じ印にコメントが残るかを返す）'
+    returns:
+      type: '{ cancel: () => boolean }'
+      description: '開いている入力欄か削除の確認を閉じる関数。閉じたか、修正・削除を待っているなら真、どちらも開いていなければ偽を返す'
+    process: |-
+      1. 吹き出しの押下を受け、押したボタンの `data-action` と `li` の `data-comment-id` で振り分ける。入力欄と削除の確認は吹き出しの中で同時に 1 つだけ開く（開くときは開いている方を閉じる）
+      2. 「編集」は、その `li` を `renderCommentItem` の入力欄（`draft` は今の本文、`state: idle`）に替え、本文の欄へフォーカスを移す
+      3. 入力欄の「保存」は、本文の前後の空白を落として空なら `state: empty` にして本文の欄へフォーカスを移す。空でなければ `state: saving` にして `store.update({ docId, id, body })` を待つ。待つ間に `isActive()` が偽になれば何もしない。reject したら `update`・`docId`・`id`・元のエラーを `console.error` に出し、吹き出しが残っていれば `state: failed` にして本文の欄へフォーカスを移す。解決したら `onUpdated(id, body)` を呼び、吹き出しが残っていれば `li` を書き換えた本文の表示に替えて「編集」へフォーカスを移す
+      4. 入力欄の「キャンセル」と `cancel()` は、`li` を書き換える前の本文の表示に戻して「編集」へフォーカスを移す
+      5. 「削除」は、その `li` を `renderCommentItem` の削除の確認（`state: idle`）に替え、確認の「キャンセル」へフォーカスを移す
+      6. 確認の「削除」は、`state: removing` にして `store.remove({ docId, id })` を待つ。待つ間に `isActive()` が偽になれば何もしない。reject したら `remove`・`docId`・`id`・元のエラーを `console.error` に出し、吹き出しが残っていれば `state: failed` にする（確認は開いたまま）。解決したら `onRemoved(id)` を呼び、真が返って吹き出しが残っていれば `li` を除き、次の `li`（無ければ前の `li`）の最初のボタンへフォーカスを移す
+      7. 確認の「キャンセル」と `cancel()` は、`li` を本文の表示に戻して「削除」へフォーカスを移す
+      8. `cancel()` は、保存か削除を待っている間は何もせずに真を返す
+    unit_tests:
+      - name: test_attach_comment_actions_when_edited
+        case: 正常
+        summary: 編集して保存すると update を呼び、書き換えた本文を出して編集へフォーカスを戻す
+        condition: 2 件の吹き出しで 1 件目の「編集」を押し、本文を `直した本文` にして「保存」を押す
+        mock: '`update` は引数を控えて解決する。`onUpdated` は引数を控える'
+        expected: '押した後に本文の欄にフォーカスがあり今の本文が入っている。保存の後は `update` が `{ docId, id, body: "直した本文" }` で呼ばれ、`onUpdated` が同じ `id` と本文で呼ばれ、1 件目の本文が `直した本文` で、1 件目の「編集」にフォーカスがある'
+      - name: test_attach_comment_actions_when_edit_empty
+        case: 異常
+        summary: 本文を空にして保存すると知らせを出して update を呼ばない
+        condition: 「編集」を押し、本文を空にして「保存」を押す
+        mock: '`update` は呼ばれたかを控える'
+        expected: '`コメントを書いてから保存してください。` が出て、本文の欄が `aria-invalid="true"`。`update` は呼ばれない'
+      - name: test_attach_comment_actions_when_update_rejected
+        case: 異常
+        summary: 修正できないと入力欄と本文を残して知らせる
+        condition: 「編集」を押し、本文を書き換えて「保存」を押す
+        mock: '`update` は reject する。`console.error` を控える'
+        expected: 入力欄と書き換えた本文が残り、`role="alert"` に `コメントを保存できませんでした。書いたコメントは残っています。もう一度「保存」を押してください。`。`console.error` に `update`・`docId`・`id`。`onUpdated` は呼ばれない
+      - name: test_attach_comment_actions_when_edit_cancelled
+        case: 正常
+        summary: キャンセルと cancel() で書き換える前の本文に戻して編集へフォーカスを戻す
+        condition: 「編集」を押して本文を書き換えて「キャンセル」を押す。もう一度「編集」を押して `cancel()` を呼ぶ
+        mock: なし
+        expected: どちらも元の本文が出て「編集」にフォーカスがあり、`cancel()` は `true` を返す。何も開いていないときの `cancel()` は `false`
+      - name: test_attach_comment_actions_when_removed
+        case: 正常
+        summary: 削除を確かめてから remove を呼び、残ったコメントのボタンへフォーカスを移す
+        condition: 2 件の吹き出しで 1 件目の「削除」を押し、確認の「削除」を押す
+        mock: '`remove` は引数を控えて解決する。`onRemoved` は `true` を返す'
+        expected: 「削除」の後に `このコメントを削除しますか? 削除すると元に戻せません。` と確認の「キャンセル」へのフォーカスがあり、`remove` はまだ呼ばれない。確認の「削除」の後は `remove` が `{ docId, id }` で呼ばれ、`li` が 1 つで、その「編集」にフォーカスがある
+      - name: test_attach_comment_actions_when_remove_cancelled
+        case: 正常
+        summary: 確認のキャンセルと cancel() では remove を呼ばずに削除へフォーカスを戻す
+        condition: 「削除」を押して確認の「キャンセル」を押す。もう一度「削除」を押して `cancel()` を呼ぶ
+        mock: '`remove` は呼ばれたかを控える'
+        expected: どちらも確認が無く、その「削除」にフォーカスがある。`remove` は呼ばれない
+      - name: test_attach_comment_actions_when_remove_rejected
+        case: 異常
+        summary: 削除できないと確認を開いたまま知らせる
+        condition: 「削除」と確認の「削除」を押す
+        mock: '`remove` は reject する。`console.error` を控える'
+        expected: 確認とコメントが残り、`role="alert"` に `コメントを削除できませんでした。もう一度「削除」を押してください。`。`console.error` に `remove`・`docId`・`id`。`onRemoved` は呼ばれない
+      - name: test_attach_comment_actions_when_inactive
+        case: 正常
+        summary: 待つ間に外れたら結果を描かない
+        condition: '`update` を待たせたまま `isActive` を偽にしてから解決する'
+        mock: 合図で解決する `update`
+        expected: '`onUpdated` が呼ばれず、入力欄が `saving` のまま'
+    refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[コメントの修正と削除]
+      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#exceptions[なし（コメントを修正・削除できない）]
+      - dev/設計書/部品設計/コメントの吹き出し.ts#
+    status: planned
+    introduced:
+      pr: 280
+  - name: attachMarginMarkers
+    title: 余白のマーカーを付ける
+    container: src/comments/margin.ts
+    summary: 本文の列の右に余白の列を置き、印の行の縦の中ほどに余白のマーカーを置いて、押すと印へ移る操作と置き直しを付け、外す関数を返す
+    kind: 関数
+    scope: internal
+    side_effects: '`content` の直後に余白の列の要素を置き、`content` の親を `ResizeObserver`、`content` の中を `MutationObserver` で見る'
+    args:
+      - name: options
+        type: '{ content: HTMLElement }'
+        required: true
+        description: 本文の列（`div.mdmark-content`）
+    returns:
+      type: () => void
+      description: 余白の列と受け取りを外す関数
+    process: |-
+      1. `renderCommentMarker` を入れる `div.mdmark-comment-margin` を `content` の直後に置く
+      2. 置き直しは、`content` の中の `mark.mdmark-comment-mark` ごとに、祖先のうち `hidden` を持ついちばん外側の要素を探す。無ければ印、あれば `aria-controls` でその要素の ID を指す開くボタンを基準の要素にし、閉じた中の種類（`[role="tabpanel"]` は `tab`・`.mdmark-row-detail` は `row`・それ以外は `section`）を控える。開くボタンが無い印は除く
+      3. 基準の要素の最初の行の矩形（`getClientRects()[0]`）から、余白の列の上端からの上端と高さを測り、`layoutMarkers` で行ごとにまとめた縦の中ほどを得る。まとめた行ごとに、行の最初の印の文字・箇所の数・`aria-expanded="true"` の印を含むか・閉じた中の種類で `renderCommentMarker` を描き、`top` に縦の中ほどを入れて余白の列の中身を置き換える。置き換える前に余白のマーカーにフォーカスがあれば、同じ順番のマーカー（数が減ったときは最後のマーカー）へフォーカスを戻す
+      4. マーカーの押下（Enter・Space を含む）で、行の最初の印について、祖先の `hidden` のいちばん外側の要素の開くボタンを押すことを `MAX_OPEN_DEPTH` 回まで繰り返し、印を `scrollIntoView({ block: "center" })` してから印の `click()` を呼ぶ
+      5. `content` の中の子の増減と、`hidden`・`aria-expanded`・`class` の属性の変化（余白の列の中を除く）と、`content` の親の大きさの変化で、`requestAnimationFrame` で 1 フレームに 1 回にまとめて手順 2〜3 を行う
+      6. 外す関数は、受け取りと予約したフレームを外し、余白の列を取り除く
+    callees:
+      - '#functions[layoutMarkers]'
+      - '#functions[renderCommentMarker]'
+    unit_tests:
+      - name: test_attach_margin_markers
+        case: 正常
+        summary: 印の行の縦の中ほどにマーカーを置き、押すと吹き出しを開く
+        condition: '`div.mdmark-content` の 2 つの段落の文字を印で包み、印の `click` を控える'
+        mock: なし
+        expected: '`content` の直後に `div.mdmark-comment-margin` があり、マーカーが 2 つで、それぞれの `top` が印の行の縦の中ほど。1 つ目を押すと 1 つ目の印の `click` が 1 回呼ばれる'
+      - name: test_attach_margin_markers_when_closed
+        case: 正常
+        summary: 閉じた中の印は開くボタンの行に置き、押すと開いてから印を押す
+        condition: '`hidden` を持つ節の中身の中の印と、`aria-controls` でその中身を指し、押すと `hidden` を外すボタン'
+        mock: なし
+        expected: マーカーが `data-closed="section"` を持ち、`top` がボタンの行の縦の中ほど。押すとボタンが押され、印の `click` が呼ばれる
+      - name: test_attach_margin_markers_when_no_opener
+        case: 正常
+        summary: 開くボタンが無い閉じた中の印にはマーカーを置かない
+        condition: '`hidden` を持ち ID の無い要素の中の印'
+        mock: なし
+        expected: マーカーが無い
+      - name: test_attach_margin_markers_when_changed
+        case: 正常
+        summary: 中の変化で次のフレームに置き直す
+        condition: 付けた後に段落を 1 つ足し、その文字を印で包む
+        mock: なし
+        expected: 次のフレームでマーカーが 1 つ増える。余白の列の中の書き換えでは置き直さない
+      - name: test_attach_margin_markers_when_detached
+        case: 正常
+        summary: 外すと余白の列を取り除く
+        condition: 付けた後に外す関数を呼び、段落を足す
+        mock: なし
+        expected: 余白の列が無く、次のフレームでも置かない
+    refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[余白のマーカー]
+      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[余白のマーカーから移る]
+      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[余白のマーカーの置き直し]
+  - name: layoutMarkers
+    title: マーカーの縦の位置を決める
+    container: src/comments/margin.ts
+    summary: 行の上端と高さの並びから、同じ行をまとめ、重ならないように下げたマーカーの縦の中ほどを返す
+    kind: 関数
+    scope: internal
+    args:
+      - name: options
+        type: '{ lines: Array<{ top: number; height: number }>; markerSize: number }'
+        required: true
+        description: 箇所ごとの行の上端と高さ（px。並びは問わない）と、マーカーの高さ（px）
+    returns:
+      type: 'Array<{ center: number; indexes: number[] }>'
+      description: 上から順のまとめた行ごとの、マーカーの縦の中ほどと、その行に入る `lines` の添え字
+    process: |-
+      1. `lines` を上端の順に並べ、直前のまとまりの最初の行との上端の差が `SAME_LINE_PX` 以下なら同じまとまりに入れる
+      2. まとまりごとに、最初の行の上端 + 高さ / 2 を縦の中ほどにし、直前のマーカーの縦の中ほど + `markerSize` + `MARKER_GAP_PX` より上なら、その値まで下げる
+    unit_tests:
+      - name: test_layout_markers
+        case: 正常
+        summary: 行の縦の中ほどを返す
+        condition: '`lines` が `[{ top: 100, height: 20 }, { top: 0, height: 20 }]`、`markerSize: 24`'
+        mock: なし
+        expected: '`[{ center: 10, indexes: [1] }, { center: 110, indexes: [0] }]`'
+      - name: test_layout_markers_when_same_line
+        case: 正常
+        summary: 上端の差が 4 以下の行を 1 つにまとめる
+        condition: '`lines` が `[{ top: 0, height: 20 }, { top: 3, height: 20 }]`'
+        mock: なし
+        expected: まとまりが 1 つで `indexes` が `[0, 1]`
+      - name: test_layout_markers_when_overlapping
+        case: 正常
+        summary: 上のマーカーと重なると下げる
+        condition: '`lines` が `[{ top: 0, height: 20 }, { top: 20, height: 20 }]`、`markerSize: 24`'
+        mock: なし
+        expected: 2 つ目の `center` が `38`（10 + 24 + 4）
+    refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[余白のマーカー]
   - name: placePopover
     title: 枠を箇所に置く
     container: src/comments/index.ts
@@ -1027,20 +1393,26 @@ functions:
     scope: public
     args:
       - name: props
-        type: '{ text: string; expanded?: boolean }'
+        type: '{ text: string; expanded?: boolean; focused?: boolean }'
         required: true
         description: 部品設計の引数
     returns:
       type: string
       description: '`mark.mdmark-comment-mark` の HTML'
-    process: 1. 文字をエスケープして部品設計の HTML にする
+    process: 1. 文字をエスケープして部品設計の HTML にする。`focused` なら `data-focused` を付ける
     unit_tests:
       - name: test_render_comment_mark
         case: 正常
         summary: 押せる印の属性を持つ
         condition: '`{ text: "手順" }`'
         mock: なし
-        expected: '`tabindex="0"`・`role="button"`・`aria-haspopup="dialog"`・`aria-expanded="false"`'
+        expected: '`tabindex="0"`・`role="button"`・`aria-haspopup="dialog"`・`aria-expanded="false"`。`data-focused` を持たない'
+      - name: test_render_comment_mark_when_focused
+        case: 正常
+        summary: focused なら data-focused を持つ
+        condition: '`{ text: "手順", focused: true }`'
+        mock: なし
+        expected: '`data-focused` を持つ'
     refs:
       - dev/設計書/部品設計/コメントの印.ts#
   - name: renderCommentBubble
@@ -1051,22 +1423,71 @@ functions:
     scope: public
     args:
       - name: props
-        type: '{ quote: string; bodies: string[] }'
+        type: '{ quote: string; bodies: string[]; ids?: string[]; canEdit?: boolean; canRemove?: boolean; editIndex?: number; draft?: string; editState?: CommentFormState; confirmIndex?: number; removeState?: CommentRemoveState; id?: string }'
         required: true
-        description: 部品設計の引数
+        description: 部品設計の引数と、本文の欄の知らせを指す `id` の頭（既定 `mdmark-comment-edit`）
     returns:
       type: string
       description: '`div.mdmark-comment-bubble` の HTML'
-    process: 1. 選んだ文字と本文をエスケープし、本文ごとに `li` を置く
+    process: 1. 選んだ文字をエスケープし、本文ごとに `renderCommentItem` の `li` を置く（`editIndex` の位置は入力欄、`confirmIndex` の位置は削除の確認）
     unit_tests:
       - name: test_render_comment_bubble
         case: 正常
         summary: 本文を文字のまま並べる
         condition: '`bodies` が `["a", "<b>x</b>"]`'
         mock: なし
-        expected: '`li` が 2 つで、2 つ目が `&lt;b&gt;x&lt;/b&gt;`'
+        expected: '`li` が 2 つで、2 つ目が `&lt;b&gt;x&lt;/b&gt;`。`mdmark-comment-icon-button` が無い'
+      - name: test_render_comment_bubble_when_editable
+        case: 正常
+        summary: canEdit・canRemove ならコメントごとにアイコンのボタンと id を持つ
+        condition: '`bodies` が `["a"]`、`ids` が `["c1"]`、`canEdit`・`canRemove` が `true`'
+        mock: なし
+        expected: '`li` が `mdmark-comment-item is-icon-actions` で `data-comment-id="c1"`。`aria-label`・`title` が `編集` の `data-action="edit"` と `削除` の `data-action="remove"` のボタンがこの順'
     refs:
       - dev/設計書/部品設計/コメントの吹き出し.ts#
+  - name: renderCommentItem
+    title: 吹き出しのコメント 1 件の HTML
+    container: src/parts/comment.ts
+    summary: 吹き出しのコメント 1 件の `li` の HTML を、本文の表示・入力欄・削除の確認のどれかで返す。`renderCommentBubble` と `attachCommentActions` が使う
+    kind: 関数
+    scope: public
+    args:
+      - name: props
+        type: '{ body: string; id?: string; canEdit?: boolean; canRemove?: boolean; edit?: { draft: string; state: CommentFormState; fieldId: string }; confirm?: { state: CommentRemoveState } }'
+        required: true
+        description: 本文・コメントの `id`・置くボタン、入力欄の本文の欄の文字と状態と知らせを指す `id`、削除の確認の状態（`CommentRemoveState` は `idle`・`removing`・`failed` の型で、`src/parts/comment.ts` が export する）
+    returns:
+      type: string
+      description: '`li` の HTML'
+    process: |-
+      1. `edit` があれば、本文の欄（`label` の `コメント`、`aria-describedby` で知らせを指す）・知らせ（`role="alert"`、`state` が `empty` なら `COMMENT_MESSAGES.empty`、`failed` なら `COMMENT_MESSAGES.updateFailed`。それ以外は `hidden`）・「キャンセル」「保存」（`saving` なら `disabled` で `保存しています…`）を置く
+      2. `confirm` があれば、本文の下に `COMMENT_MESSAGES.removeConfirm` と「キャンセル」「削除」（`mdmark-comment-button is-danger`。`removing` なら `disabled` で `削除しています…`）を置き、`failed` なら確認の上に `COMMENT_MESSAGES.removeFailed` を `role="alert"` で置く。本文の右上のボタンは置かない
+      3. どちらも無ければ本文を置き、`canEdit`・`canRemove` のどちらかなら `mdmark-comment-item is-icon-actions` にして本文の右上に `pencil`・`trash-2` のアイコンのボタン（`aria-label`・`title` が `編集`・`削除`）を持つ関数の分だけ置く
+      4. `id` があれば `data-comment-id` に入れる。本文と下書きはエスケープする
+    unit_tests:
+      - name: test_render_comment_item_when_editing
+        case: 正常
+        summary: 入力欄の状態ごとに知らせと保存のボタンを変える
+        condition: '`edit` の `state` を `idle`・`saving`・`empty`・`failed` にし、`draft` に `<b>x</b>` を渡す'
+        mock: なし
+        expected: '`textarea` の中身が `&lt;b&gt;x&lt;/b&gt;`。`idle` は知らせが `hidden`、`saving` は保存のボタンが `disabled` で `保存しています…`、`empty`・`failed` は本文の欄が `aria-invalid="true"` でそれぞれの知らせ'
+      - name: test_render_comment_item_when_confirming
+        case: 正常
+        summary: 削除の確認の状態ごとに知らせと削除のボタンを変える
+        condition: '`confirm` の `state` を `idle`・`removing`・`failed` にする'
+        mock: なし
+        expected: どれも `このコメントを削除しますか? 削除すると元に戻せません。` と `is-danger` のボタンがあり、アイコンのボタンが無い。`removing` は削除のボタンが `disabled` で `削除しています…`、`failed` は `role="alert"` に `コメントを削除できませんでした。もう一度「削除」を押してください。`
+      - name: test_render_comment_item_when_remove_only
+        case: 正常
+        summary: canRemove だけなら削除のボタンだけを置く
+        condition: '`canRemove` だけ `true`'
+        mock: なし
+        expected: '`data-action="remove"` のボタンだけがある'
+    refs:
+      - dev/設計書/部品設計/コメントの吹き出し.ts#
+    status: planned
+    introduced:
+      pr: 280
   - name: renderCommentOrphans
     title: 箇所が見つからないコメントの一覧の HTML
     container: src/parts/comment.ts
@@ -1093,6 +1514,36 @@ functions:
         expected: 空の文字
     refs:
       - dev/設計書/部品設計/箇所が見つからないコメントの一覧.ts#
+  - name: renderCommentMarker
+    title: 余白のマーカーの HTML
+    container: src/parts/comment.ts
+    summary: 部品設計『余白のマーカー』の HTML を返す
+    kind: 関数
+    scope: public
+    args:
+      - name: props
+        type: '{ quote: string; count?: number; current?: boolean; closed?: "section" | "tab" | "row" }'
+        required: true
+        description: 部品設計の引数
+    returns:
+      type: string
+      description: '`button.mdmark-comment-marker` の HTML'
+    process: 1. 選んだ文字をエスケープし、`count` が 2 以上なら `{count} 件、` を、`closed` があれば `CLOSED_LABELS` の文言を括弧で添えた読み上げ名を `aria-label` と `title` に入れ、`data-current`・`data-closed` を書き、コメントのアイコン（`aria-hidden`）と、`count` が 2 以上なら数の `span` を置く
+    unit_tests:
+      - name: test_render_comment_marker
+        case: 正常
+        summary: 読み上げ名に選んだ文字をエスケープして入れる
+        condition: '`{ quote: "<b>x</b>" }`'
+        mock: なし
+        expected: '`type="button"`、`aria-label` が `コメント 「&lt;b&gt;x&lt;/b&gt;」`、数の `span` と `data-current`・`data-closed` が無い'
+      - name: test_render_comment_marker_when_merged_and_closed
+        case: 正常
+        summary: 数と閉じた中の種類を出す
+        condition: '`{ quote: "担当者", count: 2, closed: "tab", current: true }`'
+        mock: なし
+        expected: '`aria-label` が `コメント 2 件、「担当者」（選ばれていないタブの中）`、`span` が `2`、`data-closed="tab"`・`data-current` を持つ'
+    refs:
+      - dev/設計書/部品設計/余白のマーカー.ts#
 notes:
   配布ファイルの分け方: '`src/views/index.ts` と `src/comments/index.ts` は別の esbuild の入口で、使う関数（表の部品・表の操作・知らせの枠など）をそれぞれのファイルに束ねる（`dist/index.js` を `import` しない）。`dist/index.js` は `src/part-modules.ts`・`src/mount-parts.ts`・2 つの `spec.ts` だけを持ち、部品の HTML と操作を持たない。部品の CSS は `src/index.css` に入れる'
 test_files:
@@ -1104,5 +1555,8 @@ test_files:
   - tests/unit/src/comments/anchor.test.ts
   - tests/unit/src/comments/anchor.browser.test.ts
   - tests/unit/src/comments/index.browser.test.ts
+  - tests/unit/src/comments/bubble.browser.test.ts
+  - tests/unit/src/comments/margin.test.ts
+  - tests/unit/src/comments/margin.browser.test.ts
   - tests/unit/src/parts/view.test.ts
   - tests/unit/src/parts/comment.test.ts

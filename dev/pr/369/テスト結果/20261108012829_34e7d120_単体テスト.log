@@ -1,0 +1,179 @@
+$ npm run test:unit
+
+> test:unit
+> vitest run --project 'unit*'
+
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/fix-export-embed-relative-libraries
+
+ ❯ |unit-browser (chromium)| tests/unit/vscode/src/webview/main.browser.test.tsx (1 test | 1 failed) 15246ms
+   × test_start_preview_when_no_root 15245ms
+ ❯ |unit-browser (chromium)| tests/unit/src/views/index.browser.test.ts (5 tests | 1 failed) 18344ms
+   × test_draw_view 15240ms
+ ❯ |unit-browser (chromium)| tests/unit/src/viewer/bundle.browser.test.ts (5 tests | 1 failed) 20715ms
+   × test_start_bundle 15252ms
+ ❯ |unit-browser (chromium)| tests/unit/src/viewer/index.browser.test.ts (2 tests | 1 failed) 20712ms
+   × test_start_viewer 15232ms
+ ❯ |unit| tests/unit/src/cli/documents.test.ts (8 tests | 1 failed) 32496ms
+   × test_read_index_with_documents_when_missing 30007ms
+ ❯ |unit| tests/unit/src/cli/build.test.ts (9 tests | 1 failed) 36744ms
+   × test_run_build 30006ms
+ ❯ |unit| tests/unit/src/cli/export.test.ts (20 tests | 1 failed) 41464ms
+   × test_prepare_embeds 34742ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 7 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit| tests/unit/src/cli/build.test.ts > test_run_build
+Error: Test timed out in 30000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/unit/src/cli/build.test.ts:27:1
+     25|
+     26| // 3 つの文書をまとめて build.out に書く（正常系）
+     27| test("test_run_build", async () => {
+       | ^
+     28|   // 準備
+     29|   const { runBuild } = await loadBuild();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/7]⎯
+
+ FAIL  |unit| tests/unit/src/cli/documents.test.ts > test_read_index_with_documents_when_missing
+Error: Test timed out in 30000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/unit/src/cli/documents.test.ts:86:1
+     84|
+     85| // 索引のファイルが無いと CliError（異常系）
+     86| test("test_read_index_with_documents_when_missing", async () => {
+       | ^
+     87|   // 準備
+     88|   const { readIndexWithDocuments } = await loadDocuments();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/7]⎯
+
+ FAIL  |unit| tests/unit/src/cli/export.test.ts > test_prepare_embeds
+Error: Test timed out in 30000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/unit/src/cli/export.test.ts:31:1
+     29|
+     30| // 印のあるモジュールだけを束ね、拡張と theme を読む（正常系）
+     31| test("test_prepare_embeds", async () => {
+       | ^
+     32|   // 準備
+     33|   const { prepareEmbeds } = await loadExport();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/7]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/views/index.browser.test.ts > test_draw_view
+Error: Test timed out in 15000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/index.browser.test.ts/test_draw_view.png
+
+ ❯ task node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=1eec8c96:5128:43
+ ❯ Object.<anonymous> node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=1eec8c96:5145:16
+ ❯ Object.<anonymous> node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=1eec8c96:4935:28
+ ❯ chain node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=1eec8c96:4336:14
+ ❯ tests/unit/src/views/index.browser.test.ts:71:1
+     69|
+     70| // ボードで描き、切り替えで表形式に替える（正常系）
+     71| test("test_draw_view", async () => {
+       | ^
+     72|   // 準備
+     73|   const { drawView } = await loadViews();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/7]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/viewer/bundle.browser.test.ts > test_start_bundle
+Error: Test timed out in 15000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/bundle.browser.test.ts/test_start_bundle.png
+
+ ❯ task node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=1eec8c96:5128:43
+ ❯ Object.<anonymous> node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=1eec8c96:5145:16
+ ❯ Object.<anonymous> node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=1eec8c96:4935:28
+ ❯ chain node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=1eec8c96:4336:14
+ ❯ tests/unit/src/viewer/bundle.browser.test.ts:39:1
+     37|
+     38| // URL が指す文書を描き、一覧で開いている文書を示す（正常系）
+     39| test("test_start_bundle", async () => {
+       | ^
+     40|   // 準備
+     41|   const { startBundle } = await loadBundle();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/7]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/viewer/index.browser.test.ts > test_start_viewer
+Error: Test timed out in 15000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/index.browser.test.ts/test_start_viewer.png
+
+ ❯ task node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=1eec8c96:5128:43
+ ❯ Object.<anonymous> node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=1eec8c96:5145:16
+ ❯ Object.<anonymous> node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=1eec8c96:4935:28
+ ❯ chain node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=1eec8c96:4336:14
+ ❯ tests/unit/src/viewer/index.browser.test.ts:14:1
+     12|
+     13| // document の中身を描く先の要素に描く（正常系）
+     14| test("test_start_viewer", async () => {
+       | ^
+     15|   // 準備
+     16|   const payload = {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/7]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/vscode/src/webview/main.browser.test.tsx > test_start_preview_when_no_root
+Error: Test timed out in 15000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/main.browser.test.tsx/test_start_preview_when_no_root.png
+
+ ❯ task node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=1eec8c96:5128:43
+ ❯ Object.<anonymous> node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=1eec8c96:5145:16
+ ❯ Object.<anonymous> node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=1eec8c96:4935:28
+ ❯ chain node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=1eec8c96:4336:14
+ ❯ tests/unit/vscode/src/webview/main.browser.test.tsx:11:1
+      9|
+     10| // 描く先を包む要素が無いページでは描かない（正常系）
+     11| test("test_start_preview_when_no_root", async () => {
+       | ^
+     12|   // 準備
+     13|   const acquire = vi.fn(() => ({ postMessage: vi.fn() }));
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/7]⎯
+
+
+ Test Files  7 failed | 243 passed (250)
+      Tests  7 failed | 1715 passed (1722)
+   Start at  01:24:35
+   Duration  142.46s (worker 62%, tests 25%, import 12%, transform 1%)
+
+exit=1
+
+# タイムアウトで落ちたファイルを個別に流し直した出力（load average 約 18）
+$ npx vitest run tests/unit/src/cli/build.test.ts tests/unit/src/cli/documents.test.ts tests/unit/src/cli/export.test.ts
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/fix-export-embed-relative-libraries
+
+
+ Test Files  3 passed (3)
+      Tests  37 passed (37)
+   Start at  01:27:22
+   Duration  27.58s (tests 96%, import 2%, transform 2%)
+
+exit=0
+$ npx vitest run --project unit-browser tests/unit/src/viewer/bundle.browser.test.ts tests/unit/src/viewer/index.browser.test.ts tests/unit/src/views/index.browser.test.ts tests/unit/vscode/src/webview/main.browser.test.tsx
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/fix-export-embed-relative-libraries
+
+
+ Test Files  4 passed (4)
+      Tests  13 passed (13)
+   Start at  01:28:07
+   Duration  12.77s (tests 98%, worker 2%)
+
+exit=0

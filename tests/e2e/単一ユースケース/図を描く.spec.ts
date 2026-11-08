@@ -1,13 +1,32 @@
 import { expect, type Locator, type Page, test } from "@playwright/test";
-import { BAR_TEXT, PIE_TEXT, SCATTER_TEXT } from "../chart.ts";
-import { flowMarkdown, sampleBlock, wrapDirective } from "../diagram.ts";
+import {
+  BAR_TEXT,
+  BUBBLE_CHART,
+  COMBO_CHART,
+  DONUT_CHART,
+  manySeriesChart,
+  PIE_TEXT,
+  SCATTER_TEXT,
+  twoSeriesChart,
+} from "../chart.ts";
+import {
+  groupFlowText,
+  JUDGEMENT_AUTO_TEXT,
+  judgementMarkdown,
+  linkedFlowText,
+  routeLinkTargets,
+  sampleBlock,
+  wrapDirective,
+} from "../diagram.ts";
 import {
   buildDistRoot,
   mountDocument,
   openPage,
+  PAGE_URL,
   removeDistRoot,
   routeSyntax,
 } from "../dist-page.ts";
+import { ER_DEFINITION, erMarkdown } from "../er.ts";
 
 // ビルドした配布物を置いた作業ツリー
 let builtRoot = "";
@@ -85,12 +104,12 @@ async function wireStyles(figure: Locator): Promise<Record<string, string>> {
 
 // フロー図の部品の定義から、枠・3 層・題と凡例・線の種類・交差・ループの戻りを持つ図を描き、文書に書いたスクリプトは動かさない（正常シナリオ）
 test("test_normal", async ({ page }) => {
-  // 準備
+  // 準備: システムの枠と LLM の層に hint を持つ見本のフロー図
   const syntaxRequests = await routeSyntax(page);
   await openPage(page, builtRoot);
   // 実行
   await mountDocument(page, {
-    markdown: `${await flowMarkdown()}\n${SCRIPT}`,
+    markdown: `${wrapDirective("flow", await groupFlowText())}\n${SCRIPT}`,
   });
   // 検証
   const figure = page.locator(
@@ -120,7 +139,7 @@ test("test_normal", async ({ page }) => {
   // 外部のシステムの箱が枠の外にある
   const mail = await boxOf(figure.locator('[data-node="mail"]'));
   expect(mail.x + mail.width).toBeLessThanOrEqual(frame.x + 1);
-  // 題名・範囲・更新日と、定義に出る色・形・線・矢じりを全て載せた凡例がある
+  // 題名・範囲・更新日と凡例があり、凡例には図に 2 種類以上あるノードの種類と線の種類だけが載る
   const head = figure.locator(".mdmark-diagram-head");
   await expect(head).toContainText("問い合わせへの自動返信の構成");
   await expect(head).toContainText("範囲: メールを受け取ってから返信するまで");
@@ -128,26 +147,44 @@ test("test_normal", async ({ page }) => {
   const legend = await figure
     .locator('ul[aria-label="凡例"] li')
     .allInnerTexts();
-  for (const label of [
+  const kindsAndLines = [
     "LLM",
     "意思決定モデル",
     "スクリプト",
     "MCP",
     "データ",
     "外部のシステム（枠の外）",
-    "システムの枠",
     "処理の流れ",
     "読む",
     "書く",
     "戻る（ループ）",
-    "線の交差",
-    "入力・処理・出力が出る箱",
-  ]) {
+  ];
+  for (const label of kindsAndLines) {
     expect(
       legend.some((text) => text.includes(label)),
       label,
     ).toBe(true);
   }
+  expect(legend).toHaveLength(kindsAndLines.length);
+  // 凡例に、システムの枠・層の背景・線の交差・ツールチップの印・用語の下線の項目が無い
+  for (const word of ["システムの枠", "層", "交差", "出る", "下線"]) {
+    expect(
+      legend.some((text) => text.includes(word)),
+      word,
+    ).toBe(false);
+  }
+  // システムの枠と LLM の層のタイトルの右にツールチップの印があり、hint を持たない層のタイトルには無い
+  await expect(
+    figure.locator(".mdmark-diagram-frame-title .mdmark-diagram-group-info"),
+  ).toHaveCount(1);
+  const laneMarks = await figure
+    .locator(".mdmark-diagram-lane-label")
+    .evaluateAll((labels) =>
+      labels.map(
+        (label) => label.querySelector(".mdmark-diagram-group-info") !== null,
+      ),
+    );
+  expect(laneMarks).toEqual([true, false, false]);
   // 線の種類が、色と模様（破線の間隔・太さ）の組で分かれている
   const styles = await wireStyles(figure);
   expect(Object.keys(styles).sort()).toEqual(["flow", "loop", "read", "write"]);
@@ -173,6 +210,96 @@ test("test_normal", async ({ page }) => {
   // 図の部品の定義の json のコードブロックは色分けの対象にならず、色分けのライブラリを読まない
   await page.waitForTimeout(SETTLE_MS);
   expect(syntaxRequests()).toEqual([]);
+});
+
+// 判定フローチャートの開始・質問・アクション・結果のノードを互いに異なる形・アイコン・種類の名前で描き、凡例の種類はその 4 つだけ（正常シナリオ（判定フローチャート））
+test("test_normal_when_flowchart", async ({ page }) => {
+  // 準備
+  await openPage(page, builtRoot);
+  // 実行
+  await mountDocument(page, { markdown: await judgementMarkdown() });
+  // 検証
+  await expect(page.locator("#doc .mdmark-syntax-warning")).toHaveCount(0);
+  const figure = page.locator(
+    '#doc figure.mdmark-diagram[data-diagram="flow"]',
+  );
+  await expect(figure).toHaveCount(1);
+  const nodes = await figure
+    .locator(".mdmark-diagram-node")
+    .evaluateAll((elements) =>
+      elements.map((node) => {
+        const box = node.getBoundingClientRect();
+        const name = node
+          .querySelector(".mdmark-diagram-node-name")
+          ?.getBoundingClientRect();
+        return {
+          kind: node.getAttribute("data-kind") ?? "",
+          // 形: 角の丸み・菱形の svg の有無
+          shape: `${getComputedStyle(node).borderTopLeftRadius}|${node.querySelector(":scope > svg polygon") !== null}`,
+          icon:
+            node.querySelector(".mdmark-diagram-node-kind svg")?.innerHTML ??
+            "",
+          tag: (
+            node.querySelector(".mdmark-diagram-node-kind")?.textContent ?? ""
+          ).trim(),
+          inside: name
+            ? name.left >= box.left - 1 && name.right <= box.right + 1
+            : false,
+        };
+      }),
+    );
+  const kinds = ["start", "question", "action", "result"];
+  expect(
+    kinds.map((kind) => nodes.filter((node) => node.kind === kind).length),
+  ).toEqual([1, 2, 1, 2]);
+  // 種類ごとに形・アイコン・種類の名前が 1 つに決まり、4 種類で互いに異なる
+  for (const key of ["shape", "icon", "tag"] as const) {
+    const values = kinds.map((kind) => {
+      const set = new Set(
+        nodes.filter((node) => node.kind === kind).map((node) => node[key]),
+      );
+      expect(set.size, `${kind} の ${key}`).toBe(1);
+      return [...set][0];
+    });
+    expect(new Set(values).size, key).toBe(4);
+  }
+  expect(
+    kinds.map((kind) => nodes.find((node) => node.kind === kind)?.tag),
+  ).toEqual(["開始", "質問", "アクション", "結果"]);
+  // ノードの名前はノードの中に収まる（Firefox は文字ごとに折り返す）
+  expect(nodes.every((node) => node.inside)).toBe(true);
+  // 全ての種類のノードを定義の x・y の位置に描く（質問・開始のノードも左上に重ならない）
+  const definition = JSON.parse(
+    /```json\n([\s\S]*?)\n```/.exec(await judgementMarkdown())?.[1] ?? "{}",
+  ) as { nodes: Array<{ id: string; x: number; y: number }> };
+  const placed = await figure
+    .locator(".mdmark-diagram-node")
+    .evaluateAll((elements) =>
+      elements.map((node) => ({
+        id: node.getAttribute("data-node") ?? "",
+        left: (node as HTMLElement).style.left,
+        top: (node as HTMLElement).style.top,
+      })),
+    );
+  expect(placed).toEqual(
+    definition.nodes.map((node) => ({
+      id: node.id,
+      left: `${node.x}px`,
+      top: `${node.y}px`,
+    })),
+  );
+  const labels = await figure.locator(".mdmark-diagram-label").allInnerTexts();
+  expect([...new Set(labels)].sort()).toEqual(["NO", "YES"]);
+  const legend = await figure
+    .locator('ul[aria-label="凡例"] li')
+    .allInnerTexts();
+  // 線は処理の流れの 1 種類だけなので、線の種類は凡例に出ない
+  expect(legend.map((text) => text.trim())).toEqual([
+    "開始",
+    "質問",
+    "アクション",
+    "結果",
+  ]);
 });
 
 // シーケンス図の相手とメッセージを、定義の順に左から右・上から下へ並べ、ループの戻りと凡例を持つ（正常シナリオ（シーケンス図））
@@ -209,16 +336,74 @@ test("test_normal_when_sequence", async ({ page }) => {
   await expect(
     figure.locator('.mdmark-diagram-label[data-line="loop"]'),
   ).toContainText("1 へ戻る");
-  // 題名・範囲・更新日と凡例がある
+  // 題名・範囲・更新日と凡例があり、凡例には図に 2 種類以上ある相手の種類（外部・スクリプト・MCP）と線の種類（処理の流れ・戻り・ループ）だけが載る
   await expect(figure.locator(".mdmark-diagram-head")).toContainText(
     "保存の呼び出し",
   );
   await expect(figure.locator(".mdmark-diagram-head time")).toHaveText(
     "2026-10-18",
   );
+  const legend = figure.locator('ul[aria-label="凡例"] li');
+  await expect(legend.first()).toBeVisible();
+  await expect(legend).toHaveCount(6);
+  const legendTexts = await legend.allInnerTexts();
+  for (const word of ["交差", "出る", "下線"]) {
+    expect(
+      legendTexts.some((text) => text.includes(word)),
+      word,
+    ).toBe(false);
+  }
+});
+
+// ノードも線も 1 種類ずつのフロー図は、凡例の項目を持たずに描く（正常シナリオ（種類が 1 つずつの図））
+test("test_normal_when_single_kinds", async ({ page }) => {
+  // 準備
+  await openPage(page, builtRoot);
+  const definition = {
+    title: "下書きを確認する順番",
+    scope: "送信の前",
+    updated: "2026-11-04",
+    width: 640,
+    height: 120,
+    nodes: ["宛先", "本文", "添付"].map((name, index) => ({
+      id: `s-${index + 1}`,
+      kind: "script",
+      x: 24 + index * 216,
+      y: 28,
+      w: 160,
+      h: 64,
+      name: `${name}を確認する`,
+    })),
+    wires: [1, 2].map((index) => ({
+      id: `s-w${index}`,
+      from: `s-${index}`,
+      to: `s-${index + 1}`,
+      line: "flow",
+      points: [
+        [24 + (index - 1) * 216 + 160, 60],
+        [24 + index * 216, 60],
+      ],
+    })),
+  };
+  // 実行
+  await mountDocument(page, {
+    markdown: wrapDirective("flow", JSON.stringify(definition)),
+  });
+  // 検証: ノード 3 つと線 2 本のフロー図と題名
+  const figure = page.locator(
+    '#doc figure.mdmark-diagram[data-diagram="flow"]',
+  );
+  await expect(figure).toHaveCount(1);
+  await expect(figure.locator(".mdmark-diagram-node")).toHaveCount(3);
   await expect(
-    figure.locator('ul[aria-label="凡例"] li').first(),
-  ).toBeVisible();
+    figure.locator(".mdmark-diagram-wires > path.mdmark-diagram-wire"),
+  ).toHaveCount(2);
+  await expect(figure.locator(".mdmark-diagram-head")).toContainText(
+    "下書きを確認する順番",
+  );
+  // 検証: 凡例にノードの種類と線の種類の項目が無い
+  await expect(figure.locator('ul[aria-label="凡例"] li')).toHaveCount(0);
+  await expect(figure.locator('ul[aria-label="凡例"]')).toBeHidden();
 });
 
 // グラフの 2 つの系列を、色と線の模様の組で分けて描き、題と系列の名前を載せた凡例を持つ（正常シナリオ（グラフ））
@@ -412,4 +597,471 @@ test("test_normal_when_scatter", async ({ page }) => {
     numbersOf(await svgTexts(figure, 'svg[role=img] text[text-anchor="end"]'))
       .length,
   ).toBeGreaterThan(2);
+});
+
+/** 定義を `<!-- chart -->` の範囲にする */
+function chartRange(definition: Record<string, unknown>): string {
+  return wrapDirective("chart", JSON.stringify(definition, null, 2));
+}
+
+/** 図の中の棒の `rect` の位置と大きさ */
+async function barBoxes(figure: Locator) {
+  return figure
+    .locator("svg[role=img] g[data-series] > .mdmark-diagram-bar")
+    .evaluateAll((rects) =>
+      rects.map((rect) => ({
+        series: rect.parentElement?.getAttribute("data-series"),
+        x: Number(rect.getAttribute("x")),
+        y: Number(rect.getAttribute("y")),
+        width: Number(rect.getAttribute("width")),
+        height: Number(rect.getAttribute("height")),
+      })),
+    );
+}
+
+// 追加した 8 つの種類のグラフを、タイトルと凡例つきで図の枠に描き、積み上げは同じ項目の値を積んだ高さにする（正常シナリオ（追加したグラフの種類））
+test("test_normal_when_more_chart_types", async ({ page }) => {
+  // 準備
+  await openPage(page, builtRoot);
+  const definitions = [
+    twoSeriesChart("area"),
+    twoSeriesChart("stacked-bar"),
+    twoSeriesChart("stacked-area"),
+    twoSeriesChart("horizontal-bar"),
+    DONUT_CHART,
+    twoSeriesChart("radar"),
+    BUBBLE_CHART,
+    COMBO_CHART,
+  ];
+  // 実行
+  await mountDocument(page, {
+    markdown: definitions.map(chartRange).join("\n"),
+  });
+  // 検証: 8 つの図に、タイトルと系列の名前を載せた凡例がある
+  const figures = page.locator(
+    '#doc figure.mdmark-diagram[data-diagram="chart"]',
+  );
+  await expect(figures).toHaveCount(8);
+  for (const [index, definition] of definitions.entries()) {
+    const figure = figures.nth(index);
+    await expect(figure.locator(".mdmark-diagram-title")).toHaveText(
+      String(definition.title),
+    );
+    const names = (
+      (definition.series ?? definition.items) as { name: string }[]
+    ).map(({ name }) => name);
+    const legend = await figure
+      .locator('ul[aria-label="凡例"] li')
+      .allInnerTexts();
+    for (const name of names) {
+      expect(
+        legend.some((text) => text.includes(name)),
+        `${String(definition.type)} の ${name}`,
+      ).toBe(true);
+    }
+    await expect(figure.locator("svg[role=img]")).toBeVisible();
+  }
+  // 検証: 積み上げの棒は、同じ項目の 2 つ目の系列が 1 つ目の上に載り、高さの和が値の和に比例する
+  const stacked = await barBoxes(figures.nth(1));
+  const first = stacked.filter((bar) => bar.series === "1");
+  const second = stacked.filter((bar) => bar.series === "2");
+  expect(first).toHaveLength(3);
+  expect(second).toHaveLength(3);
+  const unit = (first[0]?.height ?? 0) / 3;
+  for (const [index, total] of [7, 6, 8].entries()) {
+    const lower = first[index];
+    const upper = second[index];
+    expect(upper?.x).toBe(lower?.x);
+    expect((upper?.y ?? 0) + (upper?.height ?? 0)).toBeCloseTo(
+      lower?.y ?? 0,
+      1,
+    );
+    expect((lower?.height ?? 0) + (upper?.height ?? 0)).toBeCloseTo(
+      unit * total,
+      1,
+    );
+  }
+  // 検証: 積み上げの面は、上の系列の面の下端が下の系列の面の上端を通る
+  const areas = figures
+    .nth(2)
+    .locator("svg[role=img] .mdmark-diagram-stacked-area");
+  const shapes = await areas.evaluateAll((paths) =>
+    paths.map((path) => path.getAttribute("d") ?? ""),
+  );
+  expect(shapes.length).toBeGreaterThanOrEqual(2);
+  const top = (d: string) => d.split(" L").slice(0, 3).join(" L").slice(1);
+  const bottomReversed = (d: string) =>
+    d.replace(/ Z$/, "").split(" L").slice(3).reverse().join(" L");
+  expect(bottomReversed(shapes[1] ?? "")).toBe(top(shapes[0] ?? ""));
+  // 検証: 組み合わせは、1 つ目の系列を棒、2 つ目の系列を折れ線で同じ軸に描く
+  const combo = figures.nth(7);
+  await expect(
+    combo.locator('svg[role=img] g[data-series="1"] > .mdmark-diagram-bar'),
+  ).toHaveCount(3);
+  await expect(
+    combo.locator('svg[role=img] path.mdmark-diagram-series[data-series="2"]'),
+  ).toHaveCount(1);
+  await expect(page.locator("#doc .mdmark-syntax-warning")).toHaveCount(0);
+});
+
+/** グラフの系列ごとの、線の色・線の模様・点のマーカーの形・塗りの組 */
+async function seriesSignatures(figure: Locator): Promise<string[]> {
+  return figure.locator("svg[role=img] g[data-series]").evaluateAll((groups) =>
+    groups.map((group) => {
+      const n = group.getAttribute("data-series");
+      const path = group
+        .closest("svg")
+        ?.querySelector(`path.mdmark-diagram-series[data-series="${n}"]`);
+      const style = path ? getComputedStyle(path) : undefined;
+      const point = group.querySelector(".mdmark-diagram-point");
+      const bar = group.querySelector(".mdmark-diagram-bar");
+      return [
+        style?.stroke,
+        style?.strokeDasharray,
+        point?.tagName,
+        point?.getAttribute("d")?.match(/[ML]/g)?.length,
+        bar?.getAttribute("fill"),
+      ].join("|");
+    }),
+  );
+}
+
+/** 系列の色と背景の色の、相対輝度のコントラスト比の最小 */
+async function minSeriesContrast(figure: Locator): Promise<number> {
+  return figure.evaluate((element) => {
+    const toRgb = (color: string): number[] => {
+      const canvas = document.createElement("canvas");
+      canvas.width = 1;
+      canvas.height = 1;
+      const context = canvas.getContext("2d");
+      if (!context) return [0, 0, 0];
+      context.fillStyle = color;
+      context.fillRect(0, 0, 1, 1);
+      return [...context.getImageData(0, 0, 1, 1).data].slice(0, 3);
+    };
+    const luminance = (rgb: number[]): number => {
+      const [r = 0, g = 0, b = 0] = rgb.map((value) => {
+        const c = value / 255;
+        return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+      });
+      return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+    };
+    let background = "";
+    for (
+      let node: Element | null = element;
+      node && (background === "" || background === "rgba(0, 0, 0, 0)");
+      node = node.parentElement
+    ) {
+      background = getComputedStyle(node).backgroundColor;
+    }
+    const base = luminance(toRgb(background));
+    const ratios = [
+      ...element.querySelectorAll("svg[role=img] path.mdmark-diagram-series"),
+    ].map((path) => {
+      const value = luminance(toRgb(getComputedStyle(path).stroke));
+      const [light, dark] = value > base ? [value, base] : [base, value];
+      return (light + 0.05) / (dark + 0.05);
+    });
+    return Math.min(...ratios);
+  });
+}
+
+// 6 つの系列を、色・点のマーカー・塗りの模様の組を変えて描き、ライトとダークのどちらでも背景と見分けられる（正常シナリオ（5 つ以上の系列））
+test("test_normal_when_many_series", async ({ page }) => {
+  // 準備
+  await page.emulateMedia({ colorScheme: "light" });
+  await openPage(page, builtRoot);
+  // 実行
+  await mountDocument(page, {
+    markdown: [
+      chartRange(manySeriesChart("line", 6)),
+      chartRange(manySeriesChart("bar", 6)),
+    ].join("\n"),
+  });
+  // 検証: 6 つの系列と凡例の 6 つの名前
+  const figures = page.locator(
+    '#doc figure.mdmark-diagram[data-diagram="chart"]',
+  );
+  await expect(figures).toHaveCount(2);
+  const names = Array.from({ length: 6 }, (_, index) => `窓口${index + 1}`);
+  for (const figure of [figures.nth(0), figures.nth(1)]) {
+    const legend = await figure
+      .locator('ul[aria-label="凡例"] li')
+      .allInnerTexts();
+    expect(legend.map((text) => text.trim())).toEqual(names);
+  }
+  // 検証: 系列ごとの色・点のマーカー・塗りの模様の組が互いに異なる
+  const line = figures.nth(0);
+  await expect(
+    line.locator("svg[role=img] path.mdmark-diagram-series"),
+  ).toHaveCount(6);
+  expect(new Set(await seriesSignatures(line)).size).toBe(6);
+  const bar = figures.nth(1);
+  await expect(
+    bar.locator("svg[role=img] g[data-series] > .mdmark-diagram-bar"),
+  ).toHaveCount(30);
+  expect(new Set(await seriesSignatures(bar)).size).toBe(6);
+  // 検証: ライトとダークのどちらでも、系列の色が背景と見分けられる
+  expect(await minSeriesContrast(line)).toBeGreaterThanOrEqual(3);
+  await page.emulateMedia({ colorScheme: "dark" });
+  expect(await minSeriesContrast(line)).toBeGreaterThanOrEqual(3);
+});
+
+// ER 図の部品の定義から、テーブル・列のマーカー・関係の線と多重度・ラベルを図の枠に描く（正常シナリオ（ER 図））
+test("test_normal_when_er_diagram", async ({ page }) => {
+  // 準備
+  await openPage(page, builtRoot);
+  // 実行
+  await mountDocument(page, { markdown: erMarkdown() });
+  // 検証
+  const figure = page.locator('#doc figure.mdmark-diagram[data-diagram="er"]');
+  await expect(figure).toHaveCount(1);
+  const tables = figure.locator(".mdmark-diagram-er-table");
+  await expect(tables).toHaveCount(3);
+  for (const table of ER_DEFINITION.tables) {
+    const node = figure.locator(
+      `.mdmark-diagram-er-table[data-node="${table.id}"]`,
+    );
+    await expect(node.locator(".mdmark-diagram-er-physical")).toHaveText(
+      table.name,
+    );
+    await expect(node.locator(".mdmark-diagram-er-logical")).toHaveText(
+      table.label,
+    );
+    await expect(node.locator(".mdmark-diagram-er-name")).toHaveText(
+      table.columns.map((column) => column.name),
+    );
+    await expect(node.locator(".mdmark-diagram-er-type")).toHaveText(
+      table.columns.map((column) => column.type),
+    );
+  }
+  const orders = figure.locator('.mdmark-diagram-er-table[data-node="orders"]');
+  await expect(
+    orders.locator('[data-column="id"] abbr[title="主キー"]'),
+  ).toHaveText("PK");
+  await expect(
+    orders.locator('[data-column="customer_id"] abbr[title="外部キー"]'),
+  ).toHaveText("FK");
+  await expect(
+    orders.locator('[data-column="ordered_at"] abbr[title="NOT NULL"]'),
+  ).toHaveText("NN");
+  const relations = figure.locator("g[data-er-relation]");
+  await expect(relations).toHaveCount(2);
+  for (const relation of ER_DEFINITION.relations) {
+    const group = figure.locator(
+      `g[data-er-from="${relation.from}"][data-er-to="${relation.to}"]`,
+    );
+    await expect(group.locator('path[data-line="er"]')).toHaveCount(1);
+    await expect(group.locator(".mdmark-diagram-er-end")).not.toHaveCount(0);
+    await expect(
+      figure.locator(".mdmark-diagram-label", { hasText: relation.label }),
+    ).toBeVisible();
+  }
+  await expect(figure.locator(".mdmark-diagram-title")).toHaveText(
+    ER_DEFINITION.title,
+  );
+  await expect(figure.locator('ul[aria-label="凡例"] li')).toHaveText([
+    /マスター/,
+    /トランザクション/,
+    /主キー/,
+    /外部キー/,
+    /NOT NULL/,
+    /1 つ$/,
+    /1 つ以上/,
+    /0 以上/,
+  ]);
+});
+
+// 読めない ER 図の定義の場所だけを書き方の警告にし、正しい定義の ER 図と段落は描く（異常シナリオ（ER 図の定義を読めない））
+test("test_error_when_er_definition_invalid", async ({ page }) => {
+  // 準備
+  await openPage(page, builtRoot);
+  const broken = {
+    ...ER_DEFINITION,
+    relations: ER_DEFINITION.relations.map((relation) =>
+      relation.label === "注文する"
+        ? { ...relation, to: "payments" }
+        : relation,
+    ),
+  };
+  // 実行
+  await mountDocument(page, {
+    markdown: [erMarkdown(broken), erMarkdown(), "後ろの段落", ""].join("\n"),
+  });
+  // 検証
+  const warning = page.locator("#doc .mdmark-syntax-warning");
+  await expect(warning).toHaveCount(1);
+  await expect(warning).toContainText("ER 図の部品の定義を読めません");
+  await expect(warning).toContainText("payments");
+  await expect(
+    page.locator('#doc figure.mdmark-diagram[data-diagram="er"]'),
+  ).toHaveCount(1);
+  await expect(page.locator("#doc > p")).toHaveText("後ろの段落");
+});
+
+// 座標を省いた判定フローチャートを、開始から上から下へ質問を並べ、YES・NO の先へアクションと結果を配置して描く（正常シナリオ（座標を省いた判定フローチャート））
+test("test_normal_when_flowchart_auto_layout", async ({ page }) => {
+  // 準備
+  await openPage(page, builtRoot);
+  // 実行
+  await mountDocument(page, {
+    markdown: wrapDirective("flow", JUDGEMENT_AUTO_TEXT),
+  });
+  // 検証
+  await expect(page.locator("#doc .mdmark-syntax-warning")).toHaveCount(0);
+  const figure = page.locator(
+    '#doc figure.mdmark-diagram[data-diagram="flow"]',
+  );
+  await expect(figure.locator(".mdmark-diagram-node")).toHaveCount(6);
+  await expect(figure.locator("path.mdmark-diagram-wire")).toHaveCount(6);
+  // 定義の座標で比べる（倍率に左右されない）
+  const layout = await figure.evaluate((element) => {
+    const nodes = [
+      ...element.querySelectorAll<HTMLElement>(".mdmark-diagram-node"),
+    ].map((node) => ({
+      id: node.getAttribute("data-node") ?? "",
+      x: Number.parseFloat(node.style.left),
+      y: Number.parseFloat(node.style.top),
+      w: Number.parseFloat(node.style.width),
+      h: Number.parseFloat(node.style.height),
+    }));
+    const wires = [...element.querySelectorAll("path.mdmark-diagram-wire")].map(
+      (path) =>
+        [
+          ...(path.getAttribute("d") ?? "").matchAll(
+            /[ML]\s*(-?[\d.]+)[ ,](-?[\d.]+)/g,
+          ),
+        ].map(([, x = "0", y = "0"]) => [Number(x), Number(y)]),
+    );
+    const stage = element.querySelector<HTMLElement>(".mdmark-diagram-stage");
+    return {
+      nodes,
+      wires,
+      width: Number.parseFloat(stage?.style.width ?? "0"),
+      height: Number.parseFloat(stage?.style.height ?? "0"),
+    };
+  });
+  const box = (id: string) => {
+    const found = layout.nodes.find((node) => node.id === id);
+    if (found === undefined) {
+      throw new Error(`ノードが無い: ${id}`);
+    }
+    return found;
+  };
+  expect(Math.min(...layout.nodes.map((node) => node.y))).toBe(box("start").y);
+  expect(box("q1").y).toBeGreaterThan(box("start").y);
+  expect(box("q2").y).toBeGreaterThan(box("q1").y);
+  expect(box("a1").x).toBeGreaterThan(box("q1").x + box("q1").w);
+  expect(box("r1").x).toBeGreaterThan(box("q2").x + box("q2").w);
+  expect(box("r2").y).toBeGreaterThan(box("q2").y + box("q2").h);
+  for (const node of layout.nodes) {
+    expect(node.x + node.w, node.id).toBeLessThanOrEqual(layout.width);
+    expect(node.y + node.h, node.id).toBeLessThanOrEqual(layout.height);
+    for (const other of layout.nodes) {
+      if (other.id === node.id) {
+        continue;
+      }
+      const overlaps =
+        node.x < other.x + other.w &&
+        other.x < node.x + node.w &&
+        node.y < other.y + other.h &&
+        other.y < node.y + node.h;
+      expect(overlaps, `${node.id} と ${other.id}`).toBe(false);
+    }
+  }
+  for (const points of layout.wires) {
+    for (const [index, [x = 0, y = 0]] of points.slice(1).entries()) {
+      const [px = 0, py = 0] = points[index] ?? [];
+      expect(px === x || py === y).toBe(true);
+    }
+  }
+  const labels = await figure.locator(".mdmark-diagram-label").allInnerTexts();
+  expect(labels.map((text) => text.trim()).sort()).toEqual([
+    "NO",
+    "NO",
+    "YES",
+    "YES",
+  ]);
+});
+
+/** リンク先を持つノードの図を描いたページを開く */
+async function openLinkedFlow(page: Page): Promise<void> {
+  await openPage(page, builtRoot);
+  await mountDocument(page, {
+    markdown: wrapDirective(
+      "flow",
+      linkedFlowText({ hrefs: ["https://example.com/spec", "./other.md"] }),
+    ),
+  });
+  await expect(page.locator("#doc figure.mdmark-diagram")).toHaveCount(1);
+}
+
+// リンク先を持つノードをリンクにし、押すかフォーカスして Enter でリンク先を開く（正常シナリオ（リンク先を持つノード））
+test("test_normal_when_node_link", async ({ page }) => {
+  // 準備
+  const opened = await routeLinkTargets(page, [
+    "https://example.com/spec",
+    new URL("other.md", PAGE_URL).href,
+  ]);
+  await openLinkedFlow(page);
+  const linkOf = (id: string) =>
+    page.locator(`#doc [data-node="${id}"] a.mdmark-diagram-node-link`);
+  // 検証: 2 つのノードがリンクで、名前の上も押せる形のカーソル。リンク先を持たないノードはリンクでない
+  await expect(linkOf("a")).toHaveCount(1);
+  await expect(linkOf("b")).toHaveCount(1);
+  await expect(linkOf("c")).toHaveCount(0);
+  await expect(
+    page.locator('#doc [data-node="a"] .mdmark-diagram-node-name'),
+  ).toHaveCSS("cursor", "pointer");
+  // 実行・検証: https のノードを押すと、そのリンク先が開く
+  await linkOf("a").click();
+  await page.waitForURL("https://example.com/spec");
+  // 実行・検証: 相対パスのノードを押すと、ページの URL を基準にした other.md が開く
+  await openLinkedFlow(page);
+  await linkOf("b").click();
+  await page.waitForURL(new URL("other.md", PAGE_URL).href);
+  // 実行・検証: キーボードでフォーカスすると枠が見え、Enter で同じリンク先が開く
+  await openLinkedFlow(page);
+  await linkOf("a").focus();
+  await expect(linkOf("a")).toHaveCSS("outline-style", "solid");
+  await page.keyboard.press("Enter");
+  await page.waitForURL("https://example.com/spec");
+  expect(opened()).toEqual([
+    "https://example.com/spec",
+    new URL("other.md", PAGE_URL).href,
+    "https://example.com/spec",
+  ]);
+});
+
+// 許可しないリンク先のノードはリンクにせず、ノードの id とリンク先を書いた書き方の警告を置く（異常シナリオ（ノードのリンク先を許可しない））
+test("test_error_when_node_link_not_allowed", async ({ page }) => {
+  // 準備
+  await openPage(page, builtRoot);
+  const dialogs: string[] = [];
+  page.on("dialog", async (dialog) => {
+    dialogs.push(dialog.message());
+    await dialog.dismiss();
+  });
+  // 実行
+  await mountDocument(page, {
+    markdown: `${wrapDirective(
+      "flow",
+      linkedFlowText({ hrefs: ["javascript:alert(1)", "id:spec#items"] }),
+    )}\n後の段落\n`,
+  });
+  // 検証
+  await expect(page.locator("#doc a.mdmark-diagram-node-link")).toHaveCount(0);
+  await expect(
+    page.locator('#doc [data-node="a"] .mdmark-diagram-node-name'),
+  ).toHaveText("ノード a");
+  const warning = page.locator("#doc .mdmark-syntax-warning");
+  await expect(warning).toHaveCount(1);
+  for (const word of ["a", "javascript:alert(1)", "b", "id:spec#items"]) {
+    await expect(warning).toContainText(word);
+  }
+  await page.locator('#doc [data-node="a"]').click();
+  await page.waitForTimeout(SETTLE_MS);
+  expect(dialogs).toEqual([]);
+  expect(page.url()).toBe(PAGE_URL);
+  await expect(page.locator("#doc p", { hasText: "後の段落" })).toHaveCount(1);
 });

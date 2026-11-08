@@ -1,0 +1,47 @@
+/* #283 の表の追加分: 本文の行の地・wide= の列・check= の ✓。
+   拡張記法の規則（refs/19/assets/syntax.css）の後に読む */
+
+@layer mdmark {
+  .mdmark {
+    /* 表の本文の行: 本文の地にし、見出し行（見出しの色）と区別する。横スクロールの端の影は出さない */
+    :is(.mdmark-table table, > table) {
+      background: var(--mdmark-color-bg);
+    }
+
+    /* ピン止めした列の本文のセル: 本文の行と同じ地 */
+    .mdmark-table td.is-pinned-col,
+    .mdmark-table tbody th.is-pinned-col {
+      background: var(--mdmark-color-bg);
+    }
+
+    /* wide= の列: 折り返さず、値の長さの幅を取る。はみ出した分は表の中で横にスクロールする */
+    .mdmark-table :is(th, td).mdmark-wide {
+      white-space: nowrap;
+    }
+
+    /* check= の列: ✓ と空欄を中央に置く */
+    .mdmark-table :is(th, td).mdmark-align-center {
+      text-align: center;
+
+      .mdmark-th {
+        justify-content: center;
+      }
+    }
+
+    /* 真偽値の ✓: 本文の色の太い線のアイコン */
+    .mdmark-check {
+      display: inline-flex;
+      vertical-align: middle;
+
+      .mdmark-icon {
+        width: 1.1em;
+        height: 1.1em;
+        fill: none;
+        stroke: currentcolor;
+        stroke-width: 3;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
+    }
+  }
+}

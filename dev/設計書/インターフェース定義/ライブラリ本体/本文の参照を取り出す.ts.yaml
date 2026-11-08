@@ -281,7 +281,7 @@ request_example: |-
   ```json
   {
     "index": {
-      "schema": 1,
+      "schema": 2,
       "docs": [
         { "id": "api", "path": "api.md", "title": "API", "description": "公開関数の一覧", "aliases": ["公開関数"] },
         { "id": "guide", "path": "使い方/guide.md", "title": "使い方" }

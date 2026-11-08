@@ -10,7 +10,7 @@ import {
 const e2e = useVscodeE2E();
 
 // 設定画面を mdmark の項目に絞る検索欄の文字
-const EXTENSION_FILTER = "@ext:ShuheiNishikawa.mdmark";
+const EXTENSION_FILTER = "@ext:ShuheiNishikawa.mdmark-vscode";
 
 /** プレビューのパネルがアクティブなときにエディタのタイトルに出る、設定を開く歯車のボタン */
 function gearButton(session: VscodeSession) {

@@ -1,4 +1,4 @@
-title: "設定と索引を点検する"
+title: 設定と索引を点検する
 scenarios:
   - name: 正常シナリオ
     setup:
@@ -141,7 +141,7 @@ scenarios:
       - name: エイリアスを読むフォルダ
         description: 正常シナリオのフォルダに、設定の `aliases` とエイリアスの元の YAML を置いたもの。正しい行 1 つと、誤った行を混ぜる
       - name: 誤った行
-        description: エイリアスのスキーマに合わない行・`paths` に当たるファイルが無い行・YAML として読めないファイルを指す行・`records` の配列が無い行・`ref` の列がレコードに無い行・種類の必須のキーが空の行（`command` の `command` が空）・`alias_type` を `ref` で取り、値が 9 つの種類に無い（`memo`）レコードを持つ行・ほかの行と ID が重なる行・別のレコードとエイリアスの `id` が重なるレコードを持つ行
+        description: 'エイリアスのスキーマに合わない行（`alias_type` が 9 つの種類に無い `memo` の行と、`metadata.name` の値を `{type: ref, field: term}` で記載した行）・`paths` に当たるファイルが無い行・YAML として読めないファイルを指す行・`records` の配列が無い行・`metadata` に記載した列がレコードに無い行・種類の必須のキーが空の行（`command` の `command` が空）・ほかの行と ID が重なる行・別のレコードとエイリアスの `id` が重なるレコードを持つ行'
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
@@ -183,13 +183,185 @@ scenarios:
     test: test_normal_when_unknown_theme
     refs:
       - dev/設計書/シナリオ/単一ユースケース/テーマを選ぶ#scenarios[正常シナリオ（知らないテーマの名前）]
-lead: 文書を書く人が `mdmark check` を流し、設定ファイルと索引の形・索引と文書のずれ・書き出す対象の有無・文書の本文にある知らない印を、ファイル・場所・種類・内容の一覧で受け取る。
+  - name: 正常シナリオ（見つからないファイルがある）
+    setup:
+      - name: 点検する文書
+        description: '`docs/guide.md` が、実在しない `images/missing.png`・`media/missing.mp4`・`media/missing.mp3` と、リンクだけの段落 `[仕様書](files/missing.pdf)` を持ち、`images/logo.png` を相対パスで指す'
+        notes: '`images/logo.png` は `docs/` の下には無く、`assets/images/logo.png` にだけある'
+      - name: 設定
+        description: '`mdmark.config.yaml` のアセットのルートが `assets` を指す'
+      - name: Mock
+        description: なし（実ファイルを使う）
+    flow: |-
+      sequenceDiagram
+        actor U as 文書を書く人
+        participant C as mdmark CLI
+        participant F as ファイル
+        U->>C: mdmark check
+        C->>F: 文書を読み、画像・動画・音声・添付のパスを文書からの相対パスとアセットのルートで確かめる
+        C-->>U: 見つからないファイルのずれの一覧と終了コード 1
+    expected:
+      - 終了コードが 1
+      - ずれの一覧に、`docs/guide.md` の行番号と `images/missing.png`・`media/missing.mp4`・`media/missing.mp3`・`files/missing.pdf` の 4 行が出る
+      - アセットのルートの下にある `images/logo.png` はずれの一覧に出ない
+      - ずれの種類は見つからないファイルを表す種類
+      - 書き出しは行わない
+    test: test_normal_when_files_missing
+  - name: 正常シナリオ（図の定義にずれがある）
+    setup:
+      - name: 図の定義にずれを持つフォルダ
+        description: 正常シナリオのフォルダの文書 1 つに、定義の誤りを持つフロー図の部品の定義 1 つと、配置のずれを持つフロー図の部品の定義 1 つを記載したもの。もう 1 つの文書には、ずれの無いフロー図の部品の定義を記載する
+        notes: 定義の誤りは id の重なった 2 つのノード。配置のずれは、座標の重なる 2 つのノード、枠からはみ出すノード、ほかのノードを横切る線、ノードの幅に収まらない長さのラベルの 4 つ
+      - name: Mock
+        description: 差し替える依存は無い。点検はブラウザを使わない
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant C as mdmark CLI
+        participant M as mdmark の点検の処理
+        W->>C: mdmark check
+        C->>C: 設定・索引・文書を読み、設定の Schema と build の対象を確認する
+        C->>M: checkIndex（索引・文書）
+        M-->>C: 空のずれの一覧
+        C->>C: 文書の図の部品の定義を読み、ノードと線の配置を計算して点検する
+        C-->>W: ファイル・場所・種類・内容の一覧・終了コード 0 以外
+    expected:
+      - 定義の誤りを持つ図の定義の場所を指す行が、定義の誤りの 1 つだけで、内容に重なった id と修正の方法が記載されている
+      - 配置のずれを持つ図の定義の場所を指す行が、ノードの重なり・はみ出し・線の横切り・ラベルの長さの 4 つの種類で 1 つずつあり、内容に対象のノードか線の id と修正の方法が記載されている
+      - ずれの無い図の定義を持つ文書を指す行が無い
+      - 終了コードが 0 以外
+      - 設定・索引・文書が変わっていない
+    test: test_normal_when_diagram_drift
+  - name: 正常シナリオ（取り込み先が無い）
+    setup:
+      - name: 取り込み先の無いマーカーを持つフォルダ
+        description: '正常シナリオのフォルダの 1 つ目の文書に、無いファイルを指す `<!-- include: missing.md -->`、2 つ目の文書に無い見出しを指す include のマーカー、無い行の範囲を指す include のマーカーを書き、正しい取り込み先を指す include のマーカーも 1 つ書いたもの'
+        notes: 行の範囲は 5 行のファイルの 8〜10 行目を指す。ずれの種類の名前はインターフェース定義で決める
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant C as mdmark CLI
+        participant M as mdmark の点検の処理
+        W->>C: mdmark check
+        C->>C: 設定・索引・文書を読み、設定の Schema と build の対象を確認する
+        C->>M: checkIndex（索引・文書）
+        M-->>C: 空のずれの一覧
+        C->>C: 文書の include のマーカーの取り込み先を、文書からの相対パスで確認する
+        C-->>W: ファイル・場所・種類・内容の一覧・終了コード 0 以外
+    expected:
+      - 無いファイル・無い見出し・無い行の範囲を指すマーカーごとに、その文書とマーカーの行を指すずれの行が 1 つずつあり、内容に取り込み先と、無いものと、修正の方法が記載されている
+      - 正しい取り込み先を指すマーカーを指す行が無い
+      - ずれの種類は取り込み先が無いことを表す種類
+      - 終了コードが 0 以外
+      - 設定・索引・文書が変わっていない
+    test: test_normal_when_include_missing
+  - name: 正常シナリオ（座標を省いた図の定義）
+    setup:
+      - name: 座標を省いた図の定義を持つフォルダ
+        description: 正常シナリオのフォルダの文書 1 つに、『図を描く』の正常シナリオ（座標を省いた判定フローチャート）と同じ定義 1 つと、座標を省いた `llm` のノードを持つフロー図の定義 1 つを記載したもの
+      - name: Mock
+        description: 差し替える依存は無い。点検はブラウザを使わない
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant C as mdmark CLI
+        W->>C: mdmark check
+        C->>C: 座標を省いた判定フローチャートの定義に、描くときと同じ自動の配置を当てる
+        C->>C: 配置後の座標で、ノードの重なり・はみ出し・線の横切り・ラベルの長さを点検する
+        C-->>W: ファイル・場所・種類・内容の一覧・終了コード 0 以外
+    expected:
+      - 座標を省いた判定フローチャートの定義を指す行が無い
+      - '`llm` のノードの定義を指す行が定義の誤りの 1 つだけで、内容に座標を省けるのは判定フローチャートのノードだけであることと修正の方法が記載されている'
+      - 終了コードが 0 以外
+      - 設定・索引・文書が変わっていない
+    test: test_normal_when_diagram_auto_layout
+  - name: 正常シナリオ（図のツールチップの位置に誤った値がある）
+    setup:
+      - name: 誤った値を書いたフォルダ
+        description: 正常シナリオと同じフォルダで、`mdmark.config.yaml` の `tooltips.diagramPlacement` に `left` を書く
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant C as mdmark CLI
+        W->>C: mdmark check
+        C->>C: 設定の Schema を確認する
+        C-->>W: tooltips.diagramPlacement を指すずれの行・終了コード 0 以外
+    expected:
+      - '`mdmark.config.yaml` の `tooltips.diagramPlacement` を指す `schema` の行が 1 つだけあり、内容に書ける値 `top`・`bottom` が記載されている'
+      - 終了コードが 0 以外
+      - '`tooltips.diagramPlacement` に `top` か `bottom` を書いた設定と、書かない設定では、このずれの行が出ない'
+      - 設定・索引・文書が変わっていない
+    test: test_normal_when_diagram_placement_invalid
+  - name: 正常シナリオ（グループの項目に誤った値がある）
+    setup:
+      - name: 誤った値を持つ図の文書のフォルダ
+        description: 正常シナリオのフォルダの文書 1 つに、`frame.hint` が数で、`stickyTitles` が文字 `no` のフロー図の部品の定義を記載したもの
+      - name: Mock
+        description: 差し替える依存は無い。点検はブラウザを使わない
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant C as mdmark CLI
+        W->>C: mdmark check
+        C->>C: 文書の図の部品の定義を読み、定義を点検する
+        C-->>W: 定義の誤りの行・終了コード 0 以外
+    expected:
+      - その図の定義の場所を指す定義の誤りの行が 1 つだけあり、内容に `frame.hint` は文字、`stickyTitles` は真偽値で書くことが記載されている
+      - 終了コードが 0 以外
+      - 設定・索引・文書が変わっていない
+    test: test_normal_when_group_options_invalid
+  - name: 正常シナリオ（重ねた設定ファイルにずれがある）
+    setup:
+      - name: 端末の設定
+        description: '`MDMARK_CONFIG` で指す `settings.yaml`。`config.cascade: true` と、真偽値でない `features.callout: maybe` を書く'
+      - name: 重ねる設定を持つフォルダ
+        description: '上のフォルダの `mdmark.config.yaml` に `side-toc.mode: wide` を書き、その下の `docs/` の `mdmark.config.yaml` と索引と文書はずれが無い'
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant C as mdmark CLI
+        W->>C: docs/ で mdmark check
+        C->>C: 端末の設定・上・docs/ の設定ファイルのそれぞれの形を検める
+        C-->>W: ファイルごとの schema のずれ・終了コード 1
+    expected:
+      - 終了コードが 1
+      - ずれの一覧に、端末の設定のパスを指す `features.callout` の `schema` と、上のフォルダの `mdmark.config.yaml` を指す `side-toc.mode` の `schema` が 1 件ずつある
+      - 設定・索引・文書が変わっていない
+    test: test_normal_when_cascaded_config_drift
+  - name: 正常シナリオ（知らない明暗の値がある）
+    setup:
+      - name: 知らない明暗の値を書いたフォルダ
+        description: 正常シナリオと同じフォルダで、`mdmark.config.yaml` の明暗のキーに `sepia` を書く
+        notes: キーの名前とずれの種類はインターフェース定義で決める
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant C as mdmark check
+        W->>C: mdmark check を流す
+        C->>C: 設定の明暗の値を書ける値と照らす
+        C-->>W: 明暗のキーを指すずれの行
+    expected:
+      - '`mdmark.config.yaml` の明暗のキーを指すずれの行が 1 つだけあり、内容に書いた値 `sepia` と書ける値 `light`・`dark`・`auto` が書かれている'
+      - 終了コードが 0 以外
+      - 設定・索引・文書が変わっていない
+    test: test_normal_when_unknown_color_scheme
+    refs:
+      - dev/設計書/シナリオ/単一ユースケース/ページの設定を文書で指定する#scenarios[正常シナリオ（設定で全文書の既定にする）]
+lead: 文書を書く人が `mdmark check` を流し、設定ファイルと索引の形・索引と文書のずれ・書き出す対象の有無・文書の本文にある知らない印・図の部品の定義のずれを、ファイル・場所・種類・内容の一覧で受け取る。
 issue: 9
 primary_actor: 文書を書く人
 trigger: 文書や索引を書き換えた後、書き出す前にずれを確かめる
 preconditions:
   - 文書を書く人の手元に Node 24 以降がある
-success_guarantee: 設定の Schema に合わないところ・索引と文書のずれ（`checkIndex` が返すもの）・`build` の対象が 0 件であること・文書の本文にある知らない印が、ファイル・場所・種類・内容の一覧で出る。比べる基準の git の ref を渡したときは、基準から片方の文書だけが変わった `change_together` の組も、直し忘れとして同じ一覧に出る。ずれが無ければ終了コード 0、あれば 0 以外で終わる。
+success_guarantee: 設定の Schema に合わないところ・索引と文書のずれ（`checkIndex` が返すもの）・`build` の対象が 0 件であること・文書の本文にある知らない印・図の部品の定義の誤りとノードの重なり・はみ出し・線の横切り・ラベルの長さ（座標を省いた判定フローチャートは自動の配置の後の座標で点検する）・include のマーカーの取り込み先が無いことが、ファイル・場所・種類・内容の一覧で出る。比べる基準の git の ref を渡したときは、基準から片方の文書だけが変わった `change_together` の組も、直し忘れとして同じ一覧に出る。ずれが無ければ終了コード 0、あれば 0 以外で終わる。
 minimal_guarantee: 点検は設定・索引・文書を書き換えない。設定ファイルを読めないときは、原因と直し方の 1 文を出して 0 以外で終わる。
 refs:
   - dev/設計書/シナリオ/単一ユースケース/索引と文書のずれを点検する#

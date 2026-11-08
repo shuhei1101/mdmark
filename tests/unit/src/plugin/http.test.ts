@@ -11,15 +11,9 @@ import {
 } from "@modelcontextprotocol/client";
 import type { McpHttpHandler } from "@modelcontextprotocol/server";
 import { afterEach, expect, test, vi } from "vitest";
-import { useTempDirs, writeFiles } from "../../helpers/cli.ts";
 
 /** HTTP の待ち受けを読み込む（実装が無い間は各テストが個別に失敗する） */
 const loadHttp = () => import("../../../../src/plugin/http.ts");
-
-/** CLI の誤りを読み込む */
-const loadErrors = () => import("../../../../src/cli/errors.ts");
-
-const createTempDir = useTempDirs();
 
 const servers: Server[] = [];
 
@@ -71,59 +65,6 @@ function createHandler(): {
   const fetch = vi.fn(async () => new Response("ok", { status: 200 }));
   return { handler: { fetch } as unknown as McpHttpHandler, fetch };
 }
-
-/** 使い方集の索引を持つ、`mdmark serve` を起動したパッケージの直下を作る */
-async function createPackageDir(): Promise<string> {
-  const packageDir = await createTempDir();
-  await writeFiles(packageDir, {
-    "plugin/guide/index.json": JSON.stringify({
-      schema: 1,
-      guides: [
-        {
-          name: "a",
-          when: "a を書くとき",
-          summary: "a の概要",
-          page: "docs/a.md",
-        },
-      ],
-    }),
-    "plugin/guide/docs/a.md": "# ページ A\n",
-  });
-  return packageDir;
-}
-
-// 環境変数が無ければ既定のポート（正常系）
-test("test_read_port", async () => {
-  // 準備
-  const { readPort, DEFAULT_PORT } = await loadHttp();
-  // 実行
-  const port = readPort({ env: {} });
-  // 検証
-  expect(port).toBe(DEFAULT_PORT);
-});
-
-// 環境変数のポートを使う（正常系）
-test("test_read_port_when_overridden", async () => {
-  // 準備
-  const { readPort } = await loadHttp();
-  // 実行
-  const port = readPort({ env: { MDMARK_PORT: "18782" } });
-  // 検証
-  expect(port).toBe(18782);
-});
-
-// 整数でない・範囲の外の値を拒む（異常系）
-test("test_read_port_when_invalid", async () => {
-  // 準備
-  const { readPort } = await loadHttp();
-  const { CliError } = await loadErrors();
-  for (const value of ["abc", "0", "65536", "1.5"]) {
-    // 実行・検証
-    const read = () => readPort({ env: { MDMARK_PORT: value } });
-    expect(read).toThrow(CliError);
-    expect(read).toThrow(value);
-  }
-});
 
 // localhost の /mcp はハンドラーへ渡す（正常系）
 test("test_route_request", async () => {
@@ -235,7 +176,7 @@ test("test_write_response", async () => {
 test("test_run_serve", async () => {
   // 準備
   const { runServe } = await loadHttp();
-  const packageDir = await createPackageDir();
+  const packageDir = process.cwd();
   const port = await findFreePort();
   const controller = new AbortController();
   const stdout: string[] = [];
@@ -259,7 +200,7 @@ test("test_run_serve", async () => {
   controller.abort();
   const code = await serving;
   // 検証
-  expect(tools).toHaveLength(7);
+  expect(tools).toHaveLength(6);
   expect(code).toBe(0);
   await expect(fetch(url)).rejects.toThrow();
 });
@@ -268,7 +209,7 @@ test("test_run_serve", async () => {
 test("test_run_serve_when_port_in_use", async () => {
   // 準備
   const { runServe } = await loadHttp();
-  const packageDir = await createPackageDir();
+  const packageDir = process.cwd();
   const port = await listen((_req, res) => {
     res.end();
   });

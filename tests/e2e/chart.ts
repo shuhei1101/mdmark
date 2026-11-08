@@ -121,3 +121,132 @@ export function sampleHtml(options: { script?: boolean } = {}): string {
     chartElement(BAR_TEXT),
   ].join("\n");
 }
+
+/** 横の軸の目盛り 3 つと、2 つの系列を持つグラフの定義（`type` を指定する） */
+export function twoSeriesChart(type: string): Record<string, unknown> {
+  return {
+    type,
+    title: `${type} のグラフ`,
+    scope: "10 月",
+    updated: "2026-10-31",
+    x: { label: "週", ticks: ["1", "2", "3"] },
+    y: { label: "件" },
+    series: [
+      { name: "メール", points: [3, 5, 2] },
+      { name: "フォーム", points: [4, 1, 6] },
+    ],
+  };
+}
+
+/** 項目 2 つのドーナツのグラフの定義 */
+export const DONUT_CHART: Record<string, unknown> = {
+  type: "donut",
+  title: "返信の種類",
+  scope: "10 月",
+  updated: "2026-10-31",
+  items: [
+    { name: "自動", value: 3 },
+    { name: "担当者", value: 5 },
+  ],
+};
+
+/** 1 つ目の系列を棒、2 つ目の系列を折れ線にした組み合わせのグラフの定義 */
+export const COMBO_CHART: Record<string, unknown> = {
+  type: "combo",
+  title: "件数と解決数",
+  scope: "10 月",
+  updated: "2026-10-31",
+  x: { label: "週", ticks: ["1", "2", "3"] },
+  y: { label: "件" },
+  series: [
+    { name: "件数", as: "bar", points: [3, 5, 2] },
+    { name: "解決数", as: "line", points: [4, 1, 6] },
+  ],
+};
+
+/** 系列 2 つ・点 2 つずつのバブルのグラフの定義 */
+export const BUBBLE_CHART: Record<string, unknown> = {
+  type: "bubble",
+  title: "長さと時間と件数",
+  scope: "10 月",
+  updated: "2026-10-31",
+  x: { label: "字" },
+  y: { label: "分" },
+  size: { label: "件数" },
+  series: [
+    {
+      name: "自動",
+      points: [
+        [1, 2, 3],
+        [2, 3, 4],
+      ],
+    },
+    {
+      name: "担当者",
+      points: [
+        [3, 1, 2],
+        [4, 2, 5],
+      ],
+    },
+  ],
+};
+
+/** `count` 個の系列と、点 5 つずつを持つ `type`（折れ線か棒）のグラフの定義 */
+export function manySeriesChart(
+  type: "line" | "bar",
+  count: number,
+): Record<string, unknown> {
+  return {
+    type,
+    title: `${count} つの系列の${type === "line" ? "折れ線" : "棒"}`,
+    scope: "10 月",
+    updated: "2026-10-31",
+    x: { label: "週", ticks: ["1", "2", "3", "4", "5"] },
+    y: { label: "件" },
+    series: Array.from({ length: count }, (_, index) => ({
+      name: `窓口${index + 1}`,
+      points: [1, 2, 3, 4, 5].map((point) => point + index),
+    })),
+  };
+}
+
+/** 横の目盛り `1月`〜`4月`・系列 2 つの、折れ線か棒のグラフの定義 */
+export function monthlyChart(type: "line" | "bar"): Record<string, unknown> {
+  return {
+    type,
+    title: type === "line" ? "月ごとの返信の件数" : "月ごとの起票の件数",
+    scope: "1 月から 4 月",
+    updated: "2026-11-05",
+    x: { label: "月", ticks: ["1月", "2月", "3月", "4月"] },
+    y: { label: "件" },
+    series: [
+      { name: "自動返信", points: [12, 38, 25, 41] },
+      { name: "担当者", points: [8, 14, 19, 22] },
+    ],
+  };
+}
+
+/** 項目 `A`・`B`・`C`（値 50・30・20）の円のグラフの定義 */
+export const ABC_PIE_CHART: Record<string, unknown> = {
+  type: "pie",
+  title: "返信の種類の割合",
+  scope: "1 月から 4 月",
+  updated: "2026-11-05",
+  items: [
+    { name: "A", value: 50 },
+    { name: "B", value: 30 },
+    { name: "C", value: 20 },
+  ],
+};
+
+/** 『図を描く』の正常シナリオ（追加したグラフの種類）の 8 つのグラフの定義 */
+export const ADDED_CHARTS: Array<Record<string, unknown>> = [
+  twoSeriesChart("area"),
+  twoSeriesChart("stacked-bar"),
+  twoSeriesChart("stacked-area"),
+  twoSeriesChart("horizontal-bar"),
+  DONUT_CHART,
+  twoSeriesChart("radar"),
+  BUBBLE_CHART,
+  COMBO_CHART,
+];

@@ -1,0 +1,579 @@
+$ npm run test:unit
+
+> test:unit
+> vitest run --project 'unit*'
+
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/design-render-ignore-unknown-mark-args
+
+ ❯ |unit| tests/unit/src/render/page.test.ts (2 tests | 2 failed) 4462ms
+   × test_read_page_settings 4460ms
+   × test_read_page_settings_when_unknown 1ms
+ ❯ |unit| tests/unit/src/render/syntax/gallery.test.ts (5 tests | 1 failed) 59ms
+   × test_read_gallery_options_when_unreadable 11ms
+ ❯ |unit| tests/unit/src/render/syntax/tabs.test.ts (15 tests | 3 failed) 72ms
+   × test_build_tabs_when_unreadable_options 14ms
+   × test_read_tabs_options_when_unreadable 3ms
+   × test_read_tabs_options_when_title_has_space 1ms
+ ❯ |unit| tests/unit/src/render/marks.test.ts (13 tests | 1 failed) 13926ms
+   × test_resolve_page_settings_when_unknown 14ms
+ ❯ |unit| tests/unit/src/render/syntax/tree.test.ts (10 tests | 1 failed) 54ms
+   × test_read_tree_options_when_unreadable 6ms
+ ❯ |unit| tests/unit/src/render/syntax/tables.test.ts (29 tests | 2 failed) 125ms
+   × test_read_table_spec_when_unknown 21ms
+   × test_read_table_spec_when_title_has_space 5ms
+ ❯ |unit| tests/unit/src/render/syntax/warnings.test.ts (4 tests | 2 failed) 85ms
+   × test_collect_warnings_rule_when_skipped_args 15ms
+   × test_push_skipped_args 7ms
+ ❯ |unit| tests/unit/src/render/syntax/steps.test.ts (8 tests | 3 failed) 50ms
+   × test_build_steps_when_unreadable_options 6ms
+   × test_read_steps_options_when_unreadable 7ms
+   × test_read_steps_options_when_title_has_space 6ms
+ ❯ |unit| tests/unit/src/render/syntax/code-blocks.test.ts (30 tests | 1 failed) 50ms
+   × test_read_code_spec_when_unknown_key 5ms
+ ❯ |unit| tests/unit/src/render/syntax/sections.test.ts (5 tests | 1 failed) 43ms
+   × test_wrap_sections_when_unknown_value 7ms
+ ❯ |unit| tests/unit/src/render/syntax/views.test.ts (6 tests | 1 failed) 60ms
+   × test_build_views_when_unknown_key 9ms
+ ❯ |unit| tests/unit/src/render/syntax/wide.test.ts (3 tests | 1 failed) 76ms
+   × test_build_wide_ranges_when_unknown_args 12ms
+ ❯ |unit| tests/unit/src/cli/markdown-check.test.ts (9 tests | 1 failed) 18479ms
+   × test_check_markdown_source_when_unknown_mark_args 16ms
+ ❯ |unit| tests/unit/src/render/syntax/collapse.test.ts (6 tests | 2 failed) 15ms
+   × test_read_collapse_when_title_has_space 5ms
+   × test_title_tail_of 0ms
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 22 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit| tests/unit/src/cli/markdown-check.test.ts > test_check_markdown_source_when_unknown_mark_args
+AssertionError: expected [ { where: '1', …(1) }, …(1) ] to deeply equal [ { where: '1', …(1) }, …(2) ]
+
+- Expected
++ Received
+
+  [
+    {
+-     "kind": "unknown_mark_arg",
++     "kind": "syntax_warning",
+      "where": "1",
+    },
+    {
+-     "kind": "unknown_mark_arg",
+-     "where": "1",
+-   },
+-   {
+-     "kind": "unknown_mark_arg",
++     "kind": "syntax_warning",
+      "where": "8",
+    },
+  ]
+
+ ❯ tests/unit/src/cli/markdown-check.test.ts:222:62
+    220|   const issues = await checkMarkdownSource({ cwd, text, importCode });
+    221|   // 検証
+    222|   expect(issues.map(({ where, kind }) => ({ where, kind }))).toEqual([
+       |                                                              ^
+    223|     { where: "1", kind: "unknown_mark_arg" },
+    224|     { where: "1", kind: "unknown_mark_arg" },
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/22]⎯
+
+ FAIL  |unit| tests/unit/src/render/marks.test.ts > test_resolve_page_settings_when_unknown
+AssertionError: expected '<!-- page: scheme=sepia size=wide toc…' not to contain 'size=wide'
+
+Expected: "size=wide"
+Received: "<!-- page: scheme=sepia size=wide toc=fixed -->の scheme=sepia・size=wide は使えません。書けるのは scheme（light・dark・auto）・theme（dev-swiss・theme-paper・theme-slate・theme-contrast）・toc（hover・fixed）です。残りの指定で描いています。"
+
+ ❯ tests/unit/src/render/marks.test.ts:289:33
+    287|   expect(shown).toHaveLength(1);
+    288|   expect(shown[0]?.message).toContain("scheme=sepia");
+    289|   expect(shown[0]?.message).not.toContain("size=wide");
+       |                                 ^
+    290|   const skipped = rendered.warnings.filter(
+    291|     (warning) => warning.kind === "unknown_mark_arg",
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/22]⎯
+
+ FAIL  |unit| tests/unit/src/render/page.test.ts > test_read_page_settings
+AssertionError: expected { …(2) } to deeply equal { …(3) }
+
+- Expected
++ Received
+
+@@ -2,8 +2,7 @@
+    "settings": {
+      "scheme": "dark",
+      "theme": "theme-slate",
+      "toc": "fixed",
+    },
+-   "skipped": [],
+    "unknown": [],
+  }
+
+ ❯ tests/unit/src/render/page.test.ts:19:18
+     17|   );
+     18|   // 検証
+     19|   expect(result).toEqual({
+       |                  ^
+     20|     settings: { scheme: "dark", theme: "theme-slate", toc: "fixed" },
+     21|     unknown: [],
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/22]⎯
+
+ FAIL  |unit| tests/unit/src/render/page.test.ts > test_read_page_settings_when_unknown
+AssertionError: expected { settings: { toc: 'hover' }, …(1) } to deeply equal { settings: { toc: 'hover' }, …(2) }
+
+- Expected
++ Received
+
+  {
+    "settings": {
+      "toc": "hover",
+    },
+-   "skipped": [
+-     "size=",
+-   ],
+    "unknown": [
+      "scheme=sepia",
+      "theme=theme-unknown",
++     "size=wide",
+    ],
+  }
+
+ ❯ tests/unit/src/render/page.test.ts:38:18
+     36|   );
+     37|   // 検証
+     38|   expect(result).toEqual({
+       |                  ^
+     39|     settings: { toc: "hover" },
+     40|     unknown: ["scheme=sepia", "theme=theme-unknown"],
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/22]⎯
+
+ FAIL  |unit| tests/unit/src/render/syntax/code-blocks.test.ts > test_read_code_spec_when_unknown_key
+AssertionError: expected [ 'color=', 'App.ts', 'debug' ] to deeply equal [ 'App.ts' ]
+
+- Expected
++ Received
+
+  [
++   "color=",
+    "App.ts",
++   "debug",
+  ]
+
+ ❯ tests/unit/src/render/syntax/code-blocks.test.ts:43:51
+     41|   // 検証
+     42|   expect(spec.title).toBe("My");
+     43|   expect(spec.warnings.map((item) => item.label)).toEqual(["App.ts"]);
+       |                                                   ^
+     44|   expect(spec.skipped.map((skipped) => skipped.arg).sort()).toEqual(
+     45|     ["color=", "debug"].sort(),
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/22]⎯
+
+ FAIL  |unit| tests/unit/src/render/syntax/collapse.test.ts > test_read_collapse_when_title_has_space
+AssertionError: expected [] to deeply equal [ '方' ]
+
+- Expected
++ Received
+
+- [
+-   "方",
+- ]
++ []
+
+ ❯ tests/unit/src/render/syntax/collapse.test.ts:76:48
+     74|   // 検証
+     75|   expect(spec.title).toBe("入れ");
+     76|   expect(spec.items.map((item) => item.label)).toEqual(["方"]);
+       |                                                ^
+     77|   expect(spec.rest).toEqual({ args: ["fold"], keys: {} });
+     78| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/22]⎯
+
+ FAIL  |unit| tests/unit/src/render/syntax/collapse.test.ts > test_title_tail_of
+TypeError: titleTailOf is not a function
+ ❯ tests/unit/src/render/syntax/collapse.test.ts:89:19
+     87|     "title=app.ts color=red",
+     88|     "lines App.ts",
+     89|   ].map((text) => titleTailOf(text));
+       |                   ^
+     90|   // 検証
+     91|   expect(tails).toEqual(["App.ts", undefined, undefined]);
+ ❯ tests/unit/src/render/syntax/collapse.test.ts:89:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/22]⎯
+
+ FAIL  |unit| tests/unit/src/render/syntax/gallery.test.ts > test_read_gallery_options_when_unreadable
+AssertionError: expected [ 'cols=7', 'wide' ] to deeply equal [ 'cols=7' ]
+
+- Expected
++ Received
+
+  [
+    "cols=7",
++   "wide",
+  ]
+
+ ❯ tests/unit/src/render/syntax/gallery.test.ts:52:51
+     50|   // 検証
+     51|   expect(options.cols).toBe(2);
+     52|   expect(options.items.map((item) => item.label)).toEqual(["cols=7"]);
+       |                                                   ^
+     53|   expect(options.skipped.map((skipped) => skipped.arg)).toEqual(["wide…
+     54| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/22]⎯
+
+ FAIL  |unit| tests/unit/src/render/syntax/sections.test.ts > test_wrap_sections_when_unknown_value
+AssertionError: expected '<h2 class="mdmark-heading" id="a">A<a…' not to contain 'mdmark-syntax-warning'
+
+- Expected
++ Received
+
+- mdmark-syntax-warning
++ <h2 class="mdmark-heading" id="a">A<a class="mdmark-anchor" href="#a" aria-label="「A」へのリンク"></a></h2><div class="mdmark-section-body" id="section-a" data-section="open"><div class="mdmark-syntax-warning" role="note"><p class="mdmark-syntax-warning-title">書き方の警告</p><p><code>&lt;!-- section: hidden --&gt;</code>の <code>hidden</code> は使えません。使える値は <code>closed</code>・<code>open</code> です。この節は開いた状態で描いています。</p></div><p>本文A</p>
++ </div>
+
+ ❯ tests/unit/src/render/syntax/sections.test.ts:70:20
+     68|   // 検証
+     69|   expect(findTag(html, 'id="section-a"')).toContain('data-section="ope…
+     70|   expect(html).not.toContain("mdmark-syntax-warning");
+       |                    ^
+     71|   expect(warnings.map((warning) => warning.kind)).toEqual(["unknown_ma…
+     72|   expect(warnings[0]?.message).toContain("hidden");
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/22]⎯
+
+ FAIL  |unit| tests/unit/src/render/syntax/steps.test.ts > test_build_steps_when_unreadable_options
+AssertionError: expected [ …(2) ] to have a length of 1 but got 2
+
+- Expected
++ Received
+
+- 1
++ 2
+
+ ❯ tests/unit/src/render/syntax/steps.test.ts:110:59
+    108|   const { html } = renderDoc(markdown);
+    109|   // 検証
+    110|   expect(matches(html, /class="mdmark-syntax-warning"/g)).toHaveLength…
+       |                                                           ^
+    111|   expect(html).not.toContain("<code>fold</code>");
+    112|   expect(html).toContain("<code>title=</code>");
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/22]⎯
+
+ FAIL  |unit| tests/unit/src/render/syntax/steps.test.ts > test_read_steps_options_when_unreadable
+AssertionError: expected [ 'closed と open', 'size=', 'fold' ] to deeply equal [ 'closed と open' ]
+
+- Expected
++ Received
+
+  [
+    "closed と open",
++   "size=",
++   "fold",
+  ]
+
+ ❯ tests/unit/src/render/syntax/steps.test.ts:155:68
+    153|   // 検証
+    154|   expect(options.collapse).toBe("closed");
+    155|   expect((options.warning?.items ?? []).map((item) => item.label)).toE…
+       |                                                                    ^
+    156|     "closed と open",
+    157|   ]);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/22]⎯
+
+ FAIL  |unit| tests/unit/src/render/syntax/steps.test.ts > test_read_steps_options_when_title_has_space
+AssertionError: expected undefined to deeply equal []
+
+- Expected:
+[]
+
++ Received:
+undefined
+
+ ❯ tests/unit/src/render/syntax/steps.test.ts:174:27
+    172|     "手順",
+    173|   ]);
+    174|   expect(options.skipped).toEqual([]);
+       |                           ^
+    175| });
+    176|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[12/22]⎯
+
+ FAIL  |unit| tests/unit/src/render/syntax/tables.test.ts > test_read_table_spec_when_unknown
+AssertionError: expected [ '+foo', 'closed と open', …(4) ] to deeply equal [ 'closed と open', 'range', '無い列' ]
+
+- Expected
++ Received
+
+  [
++   "+foo",
+    "closed と open",
+    "range",
++   "size=",
++   "unknown",
+    "無い列",
+  ]
+
+ ❯ tests/unit/src/render/syntax/tables.test.ts:59:25
+     57|   expect(spec.collapse).toBe("closed");
+     58|   const labels = spec.warnings.map((warning) => warning.label);
+     59|   expect(labels.sort()).toEqual(["closed と open", "range", "無い列"].sort…
+       |                         ^
+     60|   expect(spec.skipped.map((skipped) => skipped.arg).sort()).toEqual(
+     61|     ["+foo", "size=", "unknown"].sort(),
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[13/22]⎯
+
+ FAIL  |unit| tests/unit/src/render/syntax/tables.test.ts > test_read_table_spec_when_title_has_space
+AssertionError: expected undefined to deeply equal []
+
+- Expected:
+[]
+
++ Received:
+undefined
+
+ ❯ tests/unit/src/render/syntax/tables.test.ts:75:24
+     73|   expect(spec.title).toBe("リリースの");
+     74|   expect(spec.warnings.map((warning) => warning.label)).toContain("一覧"…
+     75|   expect(spec.skipped).toEqual([]);
+       |                        ^
+     76| });
+     77|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[14/22]⎯
+
+ FAIL  |unit| tests/unit/src/render/syntax/tabs.test.ts > test_build_tabs_when_unreadable_options
+AssertionError: expected '<div class="mdmark-syntax-warning" ro…' not to contain '<code>grop=</code>'
+
+- Expected
++ Received
+
+- <code>grop=</code>
++ <div class="mdmark-syntax-warning" role="note"><p class="mdmark-syntax-warning-title">書き方の警告</p><p><code>&lt;!-- tabs: group= grop=os fold --&gt;</code>の読めない指定を当てずに描いています。</p><ul><li><code>group=</code>: 組の名前がありません。<code>group=os</code> のように名前を書いてください。組を持たないタブとして描いています</li><li><code>grop=</code>: 使えないキーです。使えるキーは <code>group=</code>・<code>title=</code> です</li><li><code>fold</code>: 使えない指定です。使える指定は <code>group=名前</code>・<code>closed</code>・<code>open</code>・<code>title=見出し</code> です</li></ul></div><div class="mdmark-tabs"><div class="mdmark-tab-panel"><p class="mdmark-tab-title">macOS</p><p>macOS の手順</p>
++ </div><div class="mdmark-tab-panel"><p class="mdmark-tab-title">Windows</p><p>Windows の手順</p>
++ </div></div>
+
+ ❯ tests/unit/src/render/syntax/tabs.test.ts:102:20
+    100|   expect(matches(html, /class="mdmark-syntax-warning"/g)).toHaveLength…
+    101|   expect(html).toContain("<code>group=</code>");
+    102|   expect(html).not.toContain("<code>grop=</code>");
+       |                    ^
+    103|   expect(html).not.toContain("<code>fold</code>");
+    104|   const skipped = warnings
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[15/22]⎯
+
+ FAIL  |unit| tests/unit/src/render/syntax/tabs.test.ts > test_read_tabs_options_when_unreadable
+AssertionError: expected [ 'group=', 'grop=', 'fold' ] to deeply equal [ 'group=' ]
+
+- Expected
++ Received
+
+  [
+    "group=",
++   "grop=",
++   "fold",
+  ]
+
+ ❯ tests/unit/src/render/syntax/tabs.test.ts:153:43
+    151|   expect(options.warning?.mark).toBe("<!-- tabs: group= grop=os fold -…
+    152|   const items = options.warning?.items ?? [];
+    153|   expect(items.map((item) => item.label)).toEqual(["group="]);
+       |                                           ^
+    154|   expect(items[0]?.message).toContain("組の名前がありません");
+    155|   expect(items[0]?.message).toContain("組を持たないタブとして描いています");
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[16/22]⎯
+
+ FAIL  |unit| tests/unit/src/render/syntax/tabs.test.ts > test_read_tabs_options_when_title_has_space
+AssertionError: expected undefined to deeply equal []
+
+- Expected:
+[]
+
++ Received:
+undefined
+
+ ❯ tests/unit/src/render/syntax/tabs.test.ts:174:27
+    172|     "手順",
+    173|   ]);
+    174|   expect(options.skipped).toEqual([]);
+       |                           ^
+    175| });
+    176|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[17/22]⎯
+
+ FAIL  |unit| tests/unit/src/render/syntax/tree.test.ts > test_read_tree_options_when_unreadable
+AssertionError: expected [ 'open=deep', 'depth=', 'closed' ] to deeply equal [ 'open=deep' ]
+
+- Expected
++ Received
+
+  [
+    "open=deep",
++   "depth=",
++   "closed",
+  ]
+
+ ❯ tests/unit/src/render/syntax/tree.test.ts:215:43
+    213|   expect(mixed.open).toBeUndefined();
+    214|   const items = mixed.warning?.items ?? [];
+    215|   expect(items.map((item) => item.label)).toEqual(["open=deep"]);
+       |                                           ^
+    216|   expect(items[0]?.message).toContain("all");
+    217|   expect(items[0]?.message).toContain("階層の数");
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[18/22]⎯
+
+ FAIL  |unit| tests/unit/src/render/syntax/views.test.ts > test_build_views_when_unknown_key
+AssertionError: expected '<div class="mdmark-syntax-warning" ro…' not to contain 'mdmark-syntax-warning'
+
+- Expected
++ Received
+
+- mdmark-syntax-warning
++ <div class="mdmark-syntax-warning" role="note"><p class="mdmark-syntax-warning-title">書き方の警告</p><p><code>&lt;!-- view: group=状態 size=2 --&gt;</code>の読めない指定を当てずに描いています。</p><ul><li><code>size=</code>: 使えないキーです。使えるキーは <code>group=</code>・<code>default=</code>・<code>filter=</code>・<code>icons=</code> です</li></ul></div><div class="mdmark-view" data-view="{&quot;group&quot;:1,&quot;mode&quot;:&quot;board&quot;,&quot;boardDisabled&quot;:&quot;&quot;,&quot;icons&quot;:{}}"><div class="mdmark-table" data-kind="data" data-features="sort"><div class="mdmark-table-scroll"><table tabindex="0" aria-label="表">
++ <thead>
++ <tr>
++ <th>題</th>
++ <th>状態</th>
++ <th>担当</th>
++ </tr>
++ </thead>
++ <tbody>
++ <tr>
++ <td data-label="題">配色の変数を洗い出す</td>
++ <td data-label="状態">未着手</td>
++ <td data-label="担当">佐藤</td>
++ </tr>
++ <tr>
++ <td data-label="題">余白の変数を決める</td>
++ <td data-label="状態">進行中</td>
++ <td data-label="担当">鈴木</td>
++ </tr>
++ <tr>
++ <td data-label="題">印刷を直す</td>
++ <td data-label="状態">完了</td>
++ <td data-label="担当">佐藤</td>
++ </tr>
++ </tbody>
++ </table>
++ </div></div></div>
+
+ ❯ tests/unit/src/render/syntax/views.test.ts:104:20
+    102|   const { html, warnings } = renderDoc(markdown);
+    103|   // 検証
+    104|   expect(html).not.toContain("mdmark-syntax-warning");
+       |                    ^
+    105|   expect(readViewSpec(html)).toMatchObject({ mode: "board" });
+    106|   expect(warnings.map((warning) => warning.kind)).toEqual(["unknown_ma…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[19/22]⎯
+
+ FAIL  |unit| tests/unit/src/render/syntax/warnings.test.ts > test_collect_warnings_rule_when_skipped_args
+AssertionError: expected [ { line: 5, kind: 'syntax_warning' } ] to deeply equal [ { line: 5, …(1) } ]
+
+- Expected
++ Received
+
+  [
+    {
+-     "kind": "unknown_mark_arg",
++     "kind": "syntax_warning",
+      "line": 5,
+    },
+  ]
+
+ ❯ tests/unit/src/render/syntax/warnings.test.ts:95:62
+     93|   const { warnings } = renderDoc(markdown);
+     94|   // 検証
+     95|   expect(warnings.map(({ line, kind }) => ({ line, kind }))).toEqual([
+       |                                                              ^
+     96|     { line: 5, kind: "unknown_mark_arg" },
+     97|   ]);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[20/22]⎯
+
+ FAIL  |unit| tests/unit/src/render/syntax/warnings.test.ts > test_push_skipped_args
+AssertionError: expected '<div class="mdmark-table" data-kind="…' not to contain 'mdmark-syntax-warning'
+
+- Expected
++ Received
+
+- mdmark-syntax-warning
++ <div class="mdmark-table" data-kind="data" data-features="sort pin filter"><div class="mdmark-syntax-warning" role="note"><p class="mdmark-syntax-warning-title">書き方の警告</p><p><code>&lt;!-- table: data +foo size=2 --&gt;</code>の読めない指定を当てずに描いています。</p><ul><li><code>+foo</code>: 使えない機能です。使える機能は <code>sort</code>・<code>pin</code>・<code>filter</code>・<code>count</code>・<code>columns</code>・<code>reorder</code>・<code>total</code>・<code>copy</code>・<code>rowlink</code> です</li><li><code>size=</code>: 使えないキーです。使えるキーは <code>filter=</code>・<code>hide=</code>・<code>total=</code>・<code>pin=</code>・<code>wide=</code>・<code>check=</code>・<code>header-rows=</code>・<code>row-header=</code>・<code>tree=</code>・<code>type=</code>・<code>required=</code>・<code>default=</code>・<code>example=</code>・<code>highlight=</code>・<code>row-color=</code>・<code>row-at=</code> です</li></ul></div><div class="mdmark-table-scroll"><table tabindex="0" aria-label="表">
++ <thead>
++ <tr>
++ <th>列</th>
++ <th>値</th>
++ </tr>
++ </thead>
++ <tbody>
++ <tr>
++ <td data-label="列">a</td>
++ <td data-label="値">1</td>
++ </tr>
++ </tbody>
++ </table>
++ </div></div>
+
+ ❯ tests/unit/src/render/syntax/warnings.test.ts:120:20
+    118|   const { html, warnings } = renderDoc(markdown);
+    119|   // 検証
+    120|   expect(html).not.toContain("mdmark-syntax-warning");
+       |                    ^
+    121|   expect(html).not.toContain("+foo");
+    122|   expect(html).not.toContain("size=");
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[21/22]⎯
+
+ FAIL  |unit| tests/unit/src/render/syntax/wide.test.ts > test_build_wide_ranges_when_unknown_args
+AssertionError: expected '<div class="mdmark-syntax-warning" ro…' not to contain 'mdmark-syntax-warning'
+
+- Expected
++ Received
+
+- mdmark-syntax-warning
++ <div class="mdmark-syntax-warning" role="note"><p class="mdmark-syntax-warning-title">書き方の警告</p><p><code>&lt;!-- wide: narrow size=2 --&gt;</code>の <code>narrow</code>・<code>size=</code> は使えない指定です。使える指定は <code>closed</code> です。広げた幅で描いています。</p></div><div class="mdmark-wide-range" data-state="wide"><div class="mdmark-table" data-kind="default" data-features="pin"><div class="mdmark-table-scroll"><table tabindex="0" aria-label="表">
++ <thead>
++ <tr>
++ <th>a</th>
++ <th>b</th>
++ </tr>
++ </thead>
++ <tbody>
++ <tr>
++ <td data-label="a">1</td>
++ <td data-label="b">2</td>
++ </tr>
++ </tbody>
++ </table>
++ </div></div></div>
+
+ ❯ tests/unit/src/render/syntax/wide.test.ts:55:20
+     53|   const { html, warnings } = renderDoc(markdown);
+     54|   // 検証
+     55|   expect(html).not.toContain("mdmark-syntax-warning");
+       |                    ^
+     56|   const ranges = findTags(html, "mdmark-wide-range");
+     57|   expect(ranges).toHaveLength(1);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[22/22]⎯
+
+
+ Test Files  14 failed | 241 passed (255)
+      Tests  22 failed | 1741 passed (1763)
+   Start at  10:05:15
+   Duration  126.38s (worker 58%, tests 24%, import 13%, transform 5%)
+
+exit 1

@@ -138,3 +138,23 @@ test("test_long_quote", async () => {
     }),
   ).resolves.toBe(true);
 });
+
+// 390px の画面でも、全ての状態の入力欄が描く先の要素の内側に収まり、横スクロールを出さない
+test("test_narrow_viewport", async () => {
+  for (const id of [
+    "idle",
+    "typed",
+    "saving",
+    "empty",
+    "failed",
+    "long-quote",
+  ]) {
+    // 準備・実行
+    const page = await holder.openStory(`parts-commentform--${id}`, {
+      width: 390,
+      height: 844,
+    });
+    // 検証
+    await expect(pageOverflows(page), id).resolves.toBe(false);
+  }
+});

@@ -121,3 +121,19 @@ test("test_diff_blocks", async () => {
   );
   await expect(page.locator(".mdmark-notice code").count()).resolves.toBe(0);
 });
+
+// 束ねていないアイコンを読めない知らせの枠は、題が「アイコンを表示できません」になる（Icons）
+test("test_icons", async () => {
+  // 準備・実行
+  const page = await holder.openStory("parts-notice--icons");
+  // 検証
+  await expect(
+    page.locator(".mdmark-notice").getAttribute("role"),
+  ).resolves.toBe("status");
+  await expect(page.locator(".mdmark-notice-title").innerText()).resolves.toBe(
+    "アイコンを表示できません",
+  );
+  await expect(page.locator(".mdmark-notice p").innerText()).resolves.toContain(
+    "Lucide のアイコンを読み込めませんでした",
+  );
+});

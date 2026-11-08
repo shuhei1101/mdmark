@@ -122,6 +122,54 @@
 </ul>
         </article>
       </section>
+      <!-- #275 タイトル（[!TIP] 設定を先に確認する）: 種類の名前の代わりに種類の後ろの文字をタイトルに出す。種類はアイコンと色で示し、読み上げには種類の名前も渡す -->
+      <section aria-labelledby="state-title">
+        <h2 class="catalog-label" id="state-title">タイトル（[!TIP] 設定を先に確認する）</h2>
+        <article class="mdmark">
+<div class="markdown-alert markdown-alert-tip">
+  <p class="markdown-alert-title"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"/><path d="M9 18h6"/><path d="M10 22h4"/></svg><span class="mdmark-visually-hidden">ヒント: </span>設定を先に確認する</p>
+  <p>描く前に <code>mdmark check</code> で設定と索引を点検します。</p>
+</div>
+        </article>
+      </section>
+
+      <!-- #275 タイトルを持つ閉じた注意書き（[!WARNING]- 古いバージョンの設定）: 閉じた状態でもタイトルで中身が分かる -->
+      <section aria-labelledby="state-title-collapsed">
+        <h2 class="catalog-label" id="state-title-collapsed">タイトルを持つ閉じた注意書き（[!WARNING]- 古いバージョンの設定）</h2>
+        <article class="mdmark">
+<details class="markdown-alert markdown-alert-warning">
+  <summary class="markdown-alert-title"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg><span class="mdmark-visually-hidden">警告: </span>古いバージョンの設定<svg class="mdmark-icon mdmark-disclosure" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></summary>
+  <p>0.8 より前の設定は、<code>mdmark upgrade</code> で書き換えてから使います。</p>
+</details>
+        </article>
+      </section>
+
+      <!-- #275 開いた状態の折りたたみ（[!WARNING]+）: 開いた状態で描き、タイトルを押すと閉じる -->
+      <section aria-labelledby="state-plus">
+        <h2 class="catalog-label" id="state-plus">開いた状態の折りたたみ（[!WARNING]+）</h2>
+        <article class="mdmark">
+<details class="markdown-alert markdown-alert-warning" open>
+  <summary class="markdown-alert-title"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>警告<svg class="mdmark-icon mdmark-disclosure" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></summary>
+  <p>開いた状態で描いた注意書きは、タイトルを押すと閉じます。</p>
+</details>
+        </article>
+      </section>
+
+      <!-- #275 入れ子（> > [!NOTE] を注意書きの中に書く）: 内側の注意書きを外側の中身の中に、同じ見た目で置く -->
+      <section aria-labelledby="state-nested-callout">
+        <h2 class="catalog-label" id="state-nested-callout">入れ子の注意書き（警告の中の補足）</h2>
+        <article class="mdmark">
+<div class="markdown-alert markdown-alert-warning">
+  <p class="markdown-alert-title"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg><span class="mdmark-visually-hidden">警告: </span>版を上げる前に</p>
+  <p>設定と索引を書き換えるので、作業ツリーを commit してから実行します。</p>
+<div class="markdown-alert markdown-alert-note">
+  <p class="markdown-alert-title"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>補足</p>
+  <p>失敗したときは、写しから元の内容に戻します。</p>
+</div>
+</div>
+        </article>
+      </section>
+
     </div>
   </main>
 </body>

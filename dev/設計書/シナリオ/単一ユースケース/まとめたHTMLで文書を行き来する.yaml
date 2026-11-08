@@ -1,4 +1,4 @@
-title: "まとめたHTMLで文書を行き来する"
+title: まとめたHTMLで文書を行き来する
 scenarios:
   - name: 正常シナリオ
     setup:
@@ -90,6 +90,70 @@ scenarios:
       - A が出て、文書の一覧で A が開いている文書として示される
       - ページに例外が出ない
     test: test_error_when_url_points_missing_document
+  - name: 正常シナリオ（wide の範囲を持つ文書）
+    setup:
+      - name: まとめた HTML
+        description: 文書 A（`entry`）が `<!-- wide -->` 〜 `<!-- /wide -->` で 8 列の表を囲んだ範囲を持つ、文書 A・B をまとめた HTML
+        notes: 画面の幅は 1280px。設定の `theme` の CSS で `--mdmark-content-width` を `640px` にしている
+      - name: Mock
+        description: 差し替える依存は無い（HTML だけを空のフォルダへ写して file:// で開く）
+    flow: |-
+      sequenceDiagram
+        actor R as 読む人
+        participant P as まとめた HTML
+        R->>P: 開く
+        P-->>R: A と文書の一覧。wide の範囲を本文の列の中で広げる
+        R->>P: 文書の一覧で B を選ぶ
+        P-->>R: B
+    expected:
+      - wide の範囲が本文の段落より広く描かれ、左の文書の一覧の列に重なっていない
+      - 文書の一覧で B を選べ、B が出る
+    test: test_normal_when_wide_range
+  - name: 正常シナリオ（フロー図のノードのリンク）
+    setup:
+      - name: まとめた HTML
+        description: 正常シナリオの B に、C を相対パスで指すリンク先を持つノード 1 つのフロー図を加えてまとめた HTML
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor R as 読む人
+        participant P as まとめた HTML
+        R->>P: 文書の一覧で B を選ぶ
+        P-->>R: B
+        R->>P: B のフロー図の C を指すノードを押す
+        P-->>R: C
+        R->>P: ブラウザの戻る
+        P-->>R: B
+    expected:
+      - ノードを押すと C が出て、URL が C を指す
+      - 戻るで B が出る
+      - 外への要求が 0 件
+    test: test_normal_when_flow_node_link
+  - name: 正常シナリオ（文書ごとのページの設定）
+    setup:
+      - name: まとめた HTML
+        description: '先頭の行に `<!-- page: scheme=dark -->` を持つ文書 A（`entry`）と、マーカーを持たない文書 B をまとめた HTML'
+        notes: 設定ファイルは明暗のキーを持たない。ブラウザの配色はライト
+      - name: Mock
+        description: 差し替える依存は無い（HTML だけを空のフォルダへ写して file:// で開く）
+    flow: |-
+      sequenceDiagram
+        actor R as 読む人
+        participant P as まとめた HTML
+        R->>P: 開く
+        P-->>R: ダークの配色の A
+        R->>P: 文書の一覧で B を選ぶ
+        P-->>R: 明るい配色の B
+        R->>P: ブラウザの戻る
+        P-->>R: ダークの配色の A
+    expected:
+      - 開いたとき、描く先の要素の地の色の計算値がダークの `--mdmark-color-bg` の値
+      - B を選ぶと、地の色の計算値が明るい配色の `--mdmark-color-bg` の値になる
+      - 戻るで A に戻ると、地の色の計算値がダークの `--mdmark-color-bg` の値に戻る
+    test: test_normal_when_page_settings_per_document
+    refs:
+      - dev/設計書/シナリオ/単一ユースケース/ページの設定を文書で指定する#scenarios[正常シナリオ]
 lead: 読む人が `mdmark build` の 1 枚の HTML を file:// で開き、文書の一覧・文書間のリンク・ブラウザの戻ると進むで文書を行き来し、見出しのアンカーと目次で節へ移る。
 issue: 9
 primary_actor: 読む人

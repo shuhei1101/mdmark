@@ -23,12 +23,17 @@ test.afterAll(async () => {
   await removeDistRoot(builtRoot);
 });
 
-/** クリップボードの書き込みを `mode` にして、操作できる部品（範囲 0〜10・既定 5 のスライダー）を描いたページを開く */
-async function openParam(page: Page, mode: "allow" | "deny"): Promise<void> {
+/** クリップボードの書き込みを `mode` にして、操作できる部品（範囲 0〜10・既定 5 のスライダー）を描いたページを開く（`config` は `mount` に渡す設定） */
+async function openParam(
+  page: Page,
+  mode: "allow" | "deny",
+  config?: { labels: { paramCopy: string } },
+): Promise<void> {
   await stubClipboard(page, mode);
   await openPage(page, builtRoot);
   await mountDocument(page, {
     markdown: wrapDirective("param", await sampleBlock("strength")),
+    ...(config ? { config } : {}),
   });
   await expect(page.locator("#doc .mdmark-param")).toHaveCount(1);
 }
@@ -92,4 +97,31 @@ test("test_error_when_clipboard_denied", async ({ page }) => {
   // スライダーとグラフは操作できるまま
   await slider.fill("3");
   expect(await chartLabel(page)).toContain("今の値（3）");
+});
+
+// 設定でボタンの文言を替えると、ボタンの文字と読み上げの名前が設定の文言になり、スライダーで描き直しても変わらない（正常シナリオ（設定でボタンの文言を替えたとき））
+test("test_normal_when_label_configured", async ({ page }) => {
+  // 準備
+  await openParam(page, "allow", { labels: { paramCopy: "コピー" } });
+  const button = page.locator("#doc .mdmark-param button.mdmark-param-copy");
+  await expect(button).toHaveText("コピー");
+  await expect(button).toHaveAccessibleName("コピー");
+  const slider = page.getByRole("slider", { name: "反応の強さ" });
+  // 実行: スライダーを 7 に動かす
+  await slider.fill("7");
+  // 検証: グラフが 7 で描き直され、ボタンの文字と読み上げの名前は「コピー」のまま
+  expect(await chartLabel(page)).toContain("今の値（7）");
+  await expect(button).toHaveText("コピー");
+  await expect(button).toHaveAccessibleName("コピー");
+  // 実行: 「コピー」のボタンを押す
+  await page.getByRole("button", { name: "コピー", exact: true }).click();
+  // 検証: 写したことを知らせ、クリップボードの中身がスライダーの名前と今の値 7 の JSON
+  await expect(
+    page.locator('#doc .mdmark-param [role="status"]'),
+  ).toContainText("クリップボードに写しました");
+  const written = await writtenTexts(page);
+  expect(written).toHaveLength(1);
+  expect(JSON.parse(written[0] ?? "{}")).toEqual({
+    strength: { name: "反応の強さ", value: 7 },
+  });
 });

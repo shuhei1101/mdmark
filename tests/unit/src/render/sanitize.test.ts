@@ -206,6 +206,29 @@ test("test_sanitize_when_own_style", async () => {
   expect(sanitized).toContain("<div>書いた要素</div>");
 });
 
+// 自分が出した図のノードの余白の style を位置と大きさと一緒に残し、負の余白の style は図の部品の宣言として扱わない（正常系）
+test("test_sanitize_when_diagram_node_padding", async () => {
+  // 準備
+  const { sanitize } = await loadSanitize();
+  const own = 'data-mdmark-own="test-nonce"';
+  const question =
+    "left:10px;top:20px;width:280px;height:136px;padding:34px 70px";
+  const start = "left:0px;top:0px;width:56px;height:56px;padding:14.6px";
+  const html = [
+    `<div class="mdmark-diagram-node" ${own} style="${question}">質問</div>`,
+    `<div class="mdmark-diagram-node" ${own} style="${start}">開始</div>`,
+    `<div class="mdmark-diagram-node" ${own} style="left:10px;top:20px;padding:-4px">負の余白</div>`,
+  ].join("");
+  // 実行
+  const sanitized = sanitize(html);
+  // 検証
+  expect(sanitized).toContain(`style="${question}"`);
+  expect(sanitized).toContain(`style="${start}"`);
+  const negative = sanitized.slice(sanitized.indexOf("開始</div>"));
+  expect(negative).not.toContain("left:");
+  expect(negative).not.toContain("top:");
+});
+
 // 自分が出したコードブロックの行番号の桁の数だけを残す（正常系）
 test("test_sanitize_when_code_digits", async () => {
   // 準備
@@ -240,6 +263,55 @@ test("test_sanitize_when_source_line", async () => {
   expect(sanitized).toContain('<td data-source-line="12">');
   expect(sanitized).toContain("<p>c</p>");
   expect(sanitized.match(/data-source-line/g) ?? []).toHaveLength(2);
+});
+
+// 記法の動画を残し、文書に書いた動画を落とす（正常系）
+test("test_sanitize_when_media", async () => {
+  // 準備
+  const { sanitize } = await loadSanitize();
+  const own = 'data-mdmark-own="test-nonce"';
+  const html = [
+    `<figure ${own}><video ${own} src="a.mp4" controls preload="metadata" playsinline aria-label="操作" poster="a.png"></video></figure>`,
+    '<video src="b.mp4"><source src="b.webm"></video>',
+  ].join("");
+  // 実行
+  const sanitized = sanitize(html);
+  // 検証
+  expect(sanitized.match(/<video\b/g) ?? []).toHaveLength(1);
+  const video = /<video\b[^>]*>/.exec(sanitized)?.[0] ?? "";
+  for (const attribute of [
+    'src="a.mp4"',
+    "controls",
+    'preload="metadata"',
+    "playsinline",
+    'aria-label="操作"',
+    'poster="a.png"',
+  ]) {
+    expect(video).toContain(attribute);
+  }
+  expect(sanitized).not.toContain("b.mp4");
+  expect(sanitized).not.toContain("<source");
+});
+
+// 画像の幅とギャラリーの列の数の style だけを残す（正常系）
+test("test_sanitize_when_image_style", async () => {
+  // 準備
+  const { sanitize } = await loadSanitize();
+  const own = 'data-mdmark-own="test-nonce"';
+  const html = [
+    `<figure ${own} style="--mdmark-image-width: 40%">a</figure>`,
+    `<div ${own} style="--mdmark-gallery-cols: 3">b</div>`,
+    `<figure ${own} style="--mdmark-image-width: calc(1px)">c</figure>`,
+    '<p style="--mdmark-image-width: 10px">d</p>',
+  ].join("");
+  // 実行
+  const sanitized = sanitize(html);
+  // 検証
+  expect(sanitized).toMatch(/style="--mdmark-image-width:\s?40%"/);
+  expect(sanitized).toMatch(/style="--mdmark-gallery-cols:\s?3"/);
+  expect(sanitized).not.toContain("calc");
+  expect(sanitized.match(/style=/g) ?? []).toHaveLength(2);
+  expect(sanitized).toContain("<p>d</p>");
 });
 
 /** 埋め込んだ HTML を落とす処理を読み込む（実装が無い間は各テストが個別に失敗する） */
@@ -304,6 +376,21 @@ test("test_sanitize_embedded_when_text", async () => {
   expect(sanitized).toContain("<code>索引</code>");
 });
 
+// keepClasses が真なら、記法の class を除いて書いた人の class を残す（正常系）
+test("test_sanitize_embedded_when_keep_classes", async () => {
+  // 準備
+  const { sanitizeEmbeddedWith } = await loadEmbedded();
+  const html =
+    '<div class="box mdmark-table has-tip" data-mdmark-keep-class="x">箱</div>';
+  const keepText = (text: string) => text;
+  // 実行
+  const kept = sanitizeEmbeddedWith(html, keepText, true);
+  const dropped = sanitizeEmbeddedWith(html, keepText);
+  // 検証
+  expect(kept).toBe('<div class="box" data-mdmark-keep-class>箱</div>');
+  expect(dropped).toBe("<div>箱</div>");
+});
+
 // 許した宣言だけを残す（正常系）
 test("test_filter_embedded_style", async () => {
   // 準備
@@ -335,4 +422,46 @@ test("test_filter_embedded_style_when_tricky", async () => {
   const filtered = filterEmbeddedStyle(style);
   // 検証
   expect(filtered).toBe("padding:4px");
+});
+
+// セルの結合と見出しの範囲は記法が出したセルにだけ残す（正常系）
+test("test_sanitize_when_cell_span", async () => {
+  // 準備
+  const { sanitize } = await loadSanitize();
+  const html = [
+    "<table><thead><tr>",
+    '<th data-mdmark-own="test-nonce" rowspan="2" colspan="2" scope="colgroup">見出し</th>',
+    "</tr></thead><tbody><tr>",
+    '<td rowspan="9" scope="row">本文</td>',
+    "</tr></tbody></table>",
+  ].join("");
+  // 実行
+  const sanitized = sanitize(html);
+  // 検証
+  const own = /<th\b[^>]*>/.exec(sanitized)?.[0] ?? "";
+  expect(own).toContain('rowspan="2"');
+  expect(own).toContain('colspan="2"');
+  expect(own).toContain('scope="colgroup"');
+  const written = /<td\b[^>]*>/.exec(sanitized)?.[0] ?? "";
+  expect(written).not.toContain("rowspan");
+  expect(written).not.toContain("scope");
+});
+
+// 本文のリンクと同じスキームを許す（正常系）
+test("test_is_allowed_url", async () => {
+  // 準備
+  const { isAllowedUrl } = await import("../../../../src/render/sanitize.ts");
+  const urls = [
+    "https://example.com",
+    "mailto:a@example.com",
+    "./other.md",
+    "#top",
+    "javascript:alert(1)",
+    " JavaScript:alert(1)",
+    "id:spec#items",
+  ];
+  // 実行
+  const results = urls.map((url) => isAllowedUrl(url));
+  // 検証
+  expect(results).toEqual([true, true, true, true, false, false, false]);
 });

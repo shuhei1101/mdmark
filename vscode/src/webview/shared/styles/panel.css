@@ -1,0 +1,80 @@
+/* Tailwind の既定の層だけを使う。Preflight は読まず、描いた文書（mdmark の @layer mdmark）の要素の既定を変えない */
+@layer theme, base, components, utilities;
+@import "tailwindcss/theme.css" layer(theme);
+@import "tailwindcss/utilities.css" layer(utilities);
+
+/* トークン: プリミティブは VS Code が html に渡す --vscode-*。セマンティックは shadcn/ui の名前に割り当て、派生は color-mix で作る */
+:root {
+  --background: var(--vscode-editor-background);
+  --foreground: var(--vscode-editor-foreground);
+  --card: var(--vscode-editorWidget-background);
+  --card-foreground: var(--vscode-editor-foreground);
+  --muted-foreground: var(--vscode-descriptionForeground);
+  --primary: var(--vscode-button-background);
+  --primary-foreground: var(--vscode-button-foreground);
+  --primary-hover: var(--vscode-button-hoverBackground);
+  --secondary: var(--vscode-button-secondaryBackground);
+  --secondary-hover: var(--vscode-button-secondaryHoverBackground);
+  --border: var(--vscode-widget-border);
+  --ring: var(--vscode-focusBorder);
+  --radius: 0.375rem;
+  /* 警告の色は線とアイコンだけに使い、文字の地にしない（地と文字はエディタの色） */
+  --warning-border: var(--vscode-inputValidation-warningBorder);
+}
+
+/* Tailwind に自前のトークンだけを割り当て、標準のパレットを外す */
+@theme inline {
+  --color-*: initial;
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary-hover: var(--primary-hover);
+  --color-secondary: var(--secondary);
+  --color-secondary-hover: var(--secondary-hover);
+  --color-border: var(--border);
+  --color-ring: var(--ring);
+  --color-warning-border: var(--warning-border);
+  --radius-md: var(--radius);
+  --radius-lg: calc(var(--radius) + 2px);
+  /* 文書の代わりに出す表示の上の余白（パネルの上から 1/4 の高さ） */
+  --spacing-panel-state: 25dvh;
+  /* 帯の操作を右に並べる幅 */
+  --container-band: 30rem;
+  --font-panel: var(--vscode-font-family);
+  --font-code: ui-monospace, monospace;
+  /* 動きを減らす設定のときの Spinner の回り方 */
+  --animate-spin-slow: spin 6s linear infinite;
+}
+
+/* パネルの部品の下地: 書体は VS Code の UI と同じ */
+@layer base {
+  .mdmark-panel-part {
+    font-family: var(--vscode-font-family);
+    line-height: 1.6;
+    overflow-wrap: anywhere;
+  }
+
+  .mdmark-panel-part *,
+  .mdmark-panel-part *::before,
+  .mdmark-panel-part *::after {
+    box-sizing: border-box;
+  }
+
+  .mdmark-panel-part code {
+    font-family: var(--font-code);
+    font-size: 0.9em;
+  }
+}
+
+/* Alert の格子: アイコンの列と本文の列。帯の広い列では操作の列を足す */
+@utility grid-cols-alert {
+  grid-template-columns: 1rem 1fr;
+}
+
+@utility grid-cols-alert-action {
+  grid-template-columns: 1rem 1fr auto;
+}

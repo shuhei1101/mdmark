@@ -42,7 +42,7 @@ test("test_normal", async () => {
       "",
     ].join("\n"),
     "index.yaml": [
-      "schema: 1",
+      "schema: 2",
       "docs:",
       "  - id: a",
       "    path: a.md",
@@ -78,7 +78,7 @@ test("test_normal_when_drift", async () => {
       "",
     ].join("\n"),
     "index.yaml": [
-      "schema: 1",
+      "schema: 2",
       "docs:",
       "  - id: a",
       "    path: a.md",
@@ -150,4 +150,117 @@ test("test_error_when_project_dir_missing", async () => {
   expect(result.isError).toBe(true);
   expect(result.texts[0]).toContain("project_dir");
   expect(result.texts[0]).toContain("プラグインを入れた");
+});
+
+// text と file・key を渡すと、mdmark check --text・--file --key と同じずれを返す（正常系（文字列と YAML のキーを渡す））
+test("test_normal_when_text_and_key", async () => {
+  // 準備
+  const dir = await createTempDir();
+  const body = "# 見出し\n本文\n<!-- tabz -->\n";
+  const files = {
+    "mdmark.config.yaml": [
+      "index: index.yaml",
+      "build:",
+      '  include: ["*.md"]',
+      "  out: dist/docs.html",
+      "",
+    ].join("\n"),
+    "index.yaml": [
+      "schema: 2",
+      "docs:",
+      "  - id: a",
+      "    path: a.md",
+      "    title: A",
+      "",
+    ].join("\n"),
+    "a.md": "# A\n",
+    "records.yaml": [
+      "title: 記録",
+      "items:",
+      "  - id: a",
+      "    name: 1 つ目",
+      "    body: |",
+      ...body
+        .trimEnd()
+        .split("\n")
+        .map((line) => `      ${line}`),
+      "",
+    ].join("\n"),
+  };
+  await writeFiles(dir, files);
+  const before = await snapshot(dir, Object.keys(files));
+  const client = await connectHttp({ projectDir: dir });
+  // 実行
+  const byText = await callTool(client, "check", { text: body });
+  const byKey = await callTool(client, "check", {
+    file: "records.yaml",
+    key: "items[0].body",
+  });
+  // 検証
+  expect(byText.isError).toBe(false);
+  expect(byKey.isError).toBe(false);
+  const textIssues = JSON.parse(byText.texts[0] ?? "").issues as Issue[];
+  const keyIssues = JSON.parse(byKey.texts[0] ?? "").issues as Issue[];
+  expect(
+    textIssues.map(({ file, where, kind }) => ({ file, where, kind })),
+  ).toEqual([{ file: "-", where: "3", kind: "unknown_mark" }]);
+  expect(
+    keyIssues.map(({ file, where, kind }) => ({ file, where, kind })),
+  ).toEqual([{ file: "records.yaml", where: "8", kind: "unknown_mark" }]);
+  const cliText = await runCli(["check", "--text", body], dir);
+  const cliKey = await runCli(
+    ["check", "--file", "records.yaml", "--key", "items[0].body"],
+    dir,
+  );
+  expect(linesOf(cliText.stdout).slice(0, -1)).toEqual(textIssues.map(toLine));
+  expect(linesOf(cliKey.stdout).slice(0, -1)).toEqual(keyIssues.map(toLine));
+  expect(await snapshot(dir, Object.keys(files))).toEqual(before);
+});
+
+// CLI と同じ include_target_missing のずれを返し、説明文で取り込み先も点検すると知らせる（正常系（取り込み先が無い））
+test("test_normal_when_include_targets_missing", async () => {
+  // 準備
+  const dir = await createTempDir();
+  const files = {
+    "mdmark.config.yaml": [
+      "build:",
+      '  include: ["docs/*.md"]',
+      "  out: dist/docs.html",
+      "",
+    ].join("\n"),
+    "docs/a.md": [
+      "# A",
+      "",
+      "<!-- include: missing.md -->",
+      "",
+      "<!-- include: 共通/手順.md#実行 -->",
+      "",
+    ].join("\n"),
+    "docs/b.md": [
+      "# B",
+      "<!-- include: 共通/手順.md#無い見出し -->",
+      "",
+      "<!-- include: ../src/app.ts#L8-L10 -->",
+      "",
+    ].join("\n"),
+    "docs/共通/手順.md": "## 実行\n\n実行の段落\n",
+    "src/app.ts": "1\n2\n3\n4\n5\n",
+  };
+  await writeFiles(dir, files);
+  const before = await snapshot(dir, Object.keys(files));
+  const client = await connectHttp({ projectDir: dir });
+  // 実行
+  const { tools } = await client.listTools();
+  const result = await callTool(client, "check", {});
+  // 検証
+  const check = tools.find((tool) => tool.name === "check");
+  expect(check?.description).toContain("include のマーカーの取り込み先");
+  expect(result.isError).toBe(false);
+  const issues = JSON.parse(result.texts[0] ?? "").issues as Issue[];
+  expect(
+    issues.filter((issue) => issue.kind === "include_target_missing"),
+  ).toHaveLength(3);
+  const cli = await runCli(["check"], dir);
+  expect(linesOf(cli.stdout).slice(0, -1)).toEqual(issues.map(toLine));
+  expect(await snapshot(dir, Object.keys(files))).toEqual(before);
 });

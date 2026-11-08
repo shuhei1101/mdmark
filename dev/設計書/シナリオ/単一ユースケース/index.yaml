@@ -24,10 +24,22 @@ items:
     summary: 印で囲んだ見出しごとの節をタブに描き、読む人が切り替える
   - page: ステップ・ファイルツリー・バッジで本文を組む.yaml
     summary: 番号付きリスト・罫線のフォルダ構成・`badge:` の行内のコードを、手順・ファイルツリー・バッジに描く
+  - page: 本文を横に並べる.yaml
+    summary: columns のマーカーで区切った本文を横に 2〜3 列で並べ、狭い画面では縦に積む
+  - page: ほかの文書を取り込む.yaml
+    summary: include のマーカーの場所に、ほかの文書の全体・見出しの中・コードの行の範囲を取り込んで描く
+  - page: 図と表を本文の幅より広げる.yaml
+    summary: wide のマーカーで囲んだ図・表・画像を、目次と文書の一覧に重ならない幅まで本文の幅より広げる
   - page: 目次と見出しのアンカーで節へ移る.yaml
     summary: 見出しに GitHub と同じ ID とリンクを付け、印の場所の目次から節へ移る
+  - page: 文書の先頭へ戻る.yaml
+    summary: 一定量スクロールした文書で、画面の右下のボタンを押して描いた文書の先頭へ戻る
+  - page: ページの設定を文書で指定する.yaml
+    summary: 文書の先頭のマーカーと設定で、配色の明暗・テーマ・右側の目次の出し方を文書ごとに指定する
   - page: 節と行の詳細を開閉する.yaml
     summary: 見出しの節と、表の行の下に出す行の詳細を、印のとおりの開閉から開閉する
+  - page: 脚注を見る.yaml
+    summary: '`[^1]` と行内の `^[…]` の脚注を、本文の番号のツールチップと末尾の閉じた一覧で読む'
   - page: 図と表に番号を付けて参照する.yaml
     summary: 印を付けた図と表に通し番号を付け、参照のリンクの文字を番号にする
   - page: 拡張を登録して印を足す.yaml
@@ -44,6 +56,8 @@ items:
     summary: 文書を書く人が `mdmark init` で設定・使う側の CSS・索引・拡張のビルドの雛形を置く
   - page: 設定と索引を点検する.yaml
     summary: 文書を書く人が `mdmark check` で設定と索引の形・索引と文書のずれ・書き出す対象を確かめる
+  - page: 文字列とYAMLのキーの記法を点検する.yaml
+    summary: 文書を書く人が `mdmark check` に Markdown の文字列、またはファイルと YAML のキーを渡し、描いたときの書き方の警告と同じずれを受け取る
   - page: 文書をHTMLに書き出す.yaml
     summary: 文書を書く人が `mdmark export` で 1 文書を、外を読まない 1 枚の HTML に書き出す
   - page: 複数の文書を1枚のHTMLにまとめる.yaml
@@ -54,6 +68,8 @@ items:
     summary: 文書を書く人が `mdmark upgrade` で移行の手順を版の順に当て、点検を通してから設定の版を書き換える
   - page: 図を描く.yaml
     summary: 文書に部品の定義を書き、共通の部品にフロー図・シーケンス図・グラフを図の決まりのとおりに描かせる
+  - page: mermaidの図を描く.yaml
+    summary: 言語 mermaid のコードブロックを、mdmark の見た目のテーマで図の枠に入れて描く
   - page: 図を拡大・縮小・移動する.yaml
     summary: 読む人が図を右上のボタンとキーで拡大・縮小し、ドラッグ・矢印キー・ボタンで動かす
   - page: 図の要素のツールチップを見る.yaml
@@ -70,6 +86,8 @@ items:
     summary: 埋め込んだ HTML の custom element に書いた定義から、図の部品をその場所に図の枠に載せて描く
   - page: 差分の取り出し元を渡す.yaml
     summary: 使う側のページが `DiffSource` を渡して文書を描き、差分を開いたときにリビジョンの一覧と本文を取り出す
+  - page: 比較元のMarkdownを渡して変更を強調する.yaml
+    summary: 使う側のページが比較元の Markdown を文字列で渡し、本文の中で追加・変更・削除したブロックを強調する
   - page: 文書の差分を見る.yaml
     summary: 読む人が 2 つのリビジョンの差分を、消した行は赤・足した行は緑・変わった文字は濃い色で見、リビジョンを選び直す
   - page: 埋め込んだHTMLの差分を切り替える.yaml
@@ -104,23 +122,37 @@ items:
     summary: 使う側の処理が画面を出さずに、本文に出た用語・文書の別名とその参照先を受け取る
   - page: ClaudeCodeにプラグインを入れる.yaml
     summary: 文書を書く人が mdmark のリポジトリをマーケットプレイスとして足し、mdmark のプラグインを Claude Code に入れる
-  - page: セッションの開始で使い方集の索引を受け取る.yaml
-    summary: プラグインの SessionStart のフックが、使い方集の索引だけを Claude Code のコンテキストへ渡す
   - page: 使い方集を読む.yaml
-    summary: Claude Code が索引の名前を `read_guide` に渡し、その名前の使い方集の本文を受け取る
-  - page: 索引から文書を探す.yaml
-    summary: Claude Code が `find_docs` で、索引から題名・別名・概要の語・タグ・関係する文書で文書を引く
-  - page: 索引を書き換える.yaml
-    summary: Claude Code が `update_index` で索引の項目を置き換え・足し・消し、Schema に合わなければ書かない
+    summary: Claude Code が dev-docs の `search_docs` で、mdmark の配信元から使い方集のページを受け取る
   - page: ClaudeCodeから点検と書き出しを呼ぶ.yaml
     summary: Claude Code が `check`・`export_html`・`build_site` で、CLI と同じ点検・書き出し・まとめを呼ぶ
-  - page: タグの語彙を見る.yaml
-    summary: Claude Code が `list_tags` で、索引のタグの語彙を説明と付いている文書の数つきで受け取る
   - page: MCPサーバーを起動・停止する.yaml
     summary: 文書を書く人が `mdmark serve` で MCP の常駐サーバーを起動し、接続先を確かめ、使い終えたら止める
+  - page: GitHubの参照から入れてCLIを起動する.yaml
+    summary: 文書を書く人が `npx github:shuhei1101/mdmark#v{バージョン}` と同じ経路で版のタグから mdmark を入れ、CLI を起動する
   - page: テーマを選ぶ.yaml
     summary: 設定で mdmark に入れたテーマを選び、明暗は今の決め方のままそのテーマの配色で描く
   - page: プレビューから設定を開く.yaml
     summary: プレビューの歯車のボタンかコマンドパレットから VS Code の設定画面を mdmark の項目に絞って開き、変えた設定をプレビューに映す
   - page: 差分ビューの変更をプレビューで見る.yaml
     summary: 文書を書く人が VS Code の差分ビューからプレビューを開き、追加・変更したブロックと削除したブロックを色分けした文書で読む
+  - page: 名前の色で表・バッジ・本文を強調する.yaml
+    summary: 表の列・行、バッジ、本文の一部を色の名前で強調し、テーマとダークに合わせた配色で描く
+  - page: 画像・動画・音声を置く.yaml
+    summary: 画像に幅・寄せ・キャプションを付け、ギャラリー・テーマごとの画像・動画・音声・GIF の停止を置く
+  - page: 画像をライトボックスで拡大する.yaml
+    summary: 読む人が本文の画像を押すかキーで開き、ライトボックスで拡大して前後の画像へ移る
+  - page: リンクと添付のカードを置く.yaml
+    summary: URL・リンク・添付のファイルだけの段落を、外へ要求せずにカードとして描く
+  - page: リンクをカードの格子に並べる.yaml
+    summary: cards のマーカーで囲んだリストの項目を、リンク・説明・アイコンのカードにして格子に並べる
+  - page: 端末にmdmarkをセットアップする.yaml
+    summary: 文書を書く人が Claude Code で global-setup を呼び、端末の設定を作る・移行し、tmux のセッションで常駐サーバーを起動して、つながりとフックを確かめる
+  - page: 文書のフォルダに設定を作る.yaml
+    summary: 文書を書く人が Claude Code で setup を呼び、文書のフォルダの mdmark.config.yaml をキーごとに確認しながら作る・修正する
+  - page: セッションの開始で常駐サーバーの状態を受け取る.yaml
+    summary: セッションの開始で、常駐サーバーが待ち受けていないときだけ SessionStart のフックが起動の仕方を伝え、起動しているときは instructions がセッション名を伝える
+  - page: CSSのテンプレートを登録する.yaml
+    summary: Claude Code が MCP のツールで、作業のフォルダの CSS を名前・説明・タグつきで端末の設定のフォルダのテンプレートに登録する
+  - page: CSSのテンプレートを配置する.yaml
+    summary: Claude Code が MCP のツールで、テンプレートの一覧から CSS を選んで作業のフォルダへ配置し、theme に記載する値を受け取る
