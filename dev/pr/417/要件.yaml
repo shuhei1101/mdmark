@@ -1,0 +1,24 @@
+use_cases:
+  - kind: single
+    scenario: dev/設計書/シナリオ/単一ユースケース/図と表を本文の幅より広げる.yaml
+    impact: run_only
+    detail: 狭い画面で表を wide の範囲の中で横にスクロールさせ、右側の目次と並ぶときに目次へ重ならずに広げるシナリオを設計どおりに通す
+    depends_on: []
+  - kind: single
+    scenario: dev/設計書/シナリオ/単一ユースケース/まとめたHTMLで文書を行き来する.yaml
+    impact: changed
+    detail: wide の範囲を持つ文書のシナリオの準備に、本文の幅を 640px にするテーマを記載し、文書の一覧の列に重ねずに本文の幅より広げるシナリオを通す
+    depends_on: []
+  - kind: composite
+    scenario: dev/設計書/シナリオ/複合ユースケース/ビューで探してコメントを付ける.yaml
+    impact: run_only
+    detail: ビューを切り替えて絞り込んだ後、本文の段落の文字を選んでコメントを付けるシナリオを設計どおりに通す
+    depends_on: []
+scope_out:
+  - item: 表の `wide=` の引数と表の幅の E2E（表を操作する）
+    reason: '本文の wide の範囲のマーカーとは別の機能で、作業 PR #411 が修正済み'
+    plan: '#399'
+  - item: 390px の枠で描く narrow のストーリーが 390px の画面幅で横にスクロールする
+    reason: Storybook のストーリーの枠の不具合で、E2E の fail とは別の事象
+    plan: '#367'
+docs: []

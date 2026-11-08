@@ -264,14 +264,15 @@ test("test_normal_when_wide_range", async ({ builtRoot, tempDir, page }) => {
       '  include: ["A.md", "B.md"]',
       "  entry: A.md",
       "  out: dist/docs.html",
+      "theme: mdmark-theme.css",
       "",
     ].join("\n"),
-    "mdmark-theme.css": "",
+    "mdmark-theme.css": ".mdmark { --mdmark-content-width: 640px; }\n",
     "A.md": `# 文書A\n\n段落\n\n<!-- wide -->\n\n${table}\n\n<!-- /wide -->\n`,
     "B.md": "# 文書B\n\nB の段落\n",
   });
   expect((await runCli(builtRoot, ["build"], dir)).code).toBe(0);
-  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.setViewportSize({ width: 1280, height: 800 });
   // 実行
   await openStandalone(page, {
     tempDir,
