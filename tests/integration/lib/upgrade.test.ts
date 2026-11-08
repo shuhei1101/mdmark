@@ -15,6 +15,7 @@ import { join, resolve } from "node:path";
 import { afterAll, beforeAll, expect, test } from "vitest";
 import { parse } from "yaml";
 import { main as buildMain } from "../../../scripts/build.ts";
+import { migrationsDirOf } from "../../migrations-dir.ts";
 import { type CliResult, linesOf, useTempDirs, writeFiles } from "../cli.ts";
 import { copyPluginInputs, writeRootPackageJson } from "../plugin-inputs.ts";
 
@@ -440,7 +441,7 @@ test("test_normal_when_reapplied", async () => {
 test("test_normal_when_tag_vocabulary_dropped", async () => {
   // 準備
   const pkg = packageOf("v0.5.0");
-  const next = join(REPO_ROOT, "migrations", "next");
+  const next = migrationsDirOf("drop-tag-vocabulary.mjs");
   // `steps.yaml` の手順が実行する全てのスクリプトを配置する
   const scripts: Record<string, string> = {};
   for (const name of await readdir(next)) {

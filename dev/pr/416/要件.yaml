@@ -1,0 +1,27 @@
+use_cases:
+  - kind: single
+    scenario: dev/設計書/シナリオ/単一ユースケース/脚注を見る.yaml
+    impact: run_only
+    detail: 番号にポインターを乗せてツールチップを読む・同じ脚注の 2 つの参照・番号から末尾の一覧へ移る操作を、シナリオの期待値のとおりに動かす
+    depends_on: []
+  - kind: single
+    scenario: dev/設計書/シナリオ/単一ユースケース/文書の先頭へ戻る.yaml
+    impact: run_only
+    detail: キーボードで先頭へ戻るボタンを押した後、文書の先頭へ戻ってフォーカスが文書の先頭に移るようにする
+    depends_on: []
+  - kind: single
+    scenario: dev/設計書/シナリオ/単一ユースケース/複数の文書を1枚のHTMLにまとめる.yaml
+    impact: run_only
+    detail: まとめた HTML で、脚注の一覧から戻った後に本文の番号へフォーカスが戻るようにする
+    depends_on: []
+docs: []
+scope_out:
+  - item: Sprint v0.10.0 の E2E で fail した表の操作のケース
+    reason: 脚注と先頭へ戻るボタンとは別の部品の fail
+    plan: '#411'
+  - item: 再利用できる注釈の記法（脚注のツールチップと末尾の一覧の再利用・拡張）
+    reason: '要望に含まれない。計画で #402 の後ろへ回した'
+    plan: '#304'
+  - item: 'まとめた HTML で side-toc をオフにしたとき、脚注の番号・戻るリンクで URL の # が書き換わる'
+    reason: 要望（E2E 5 件の fail）に含まれず、移る先とフォーカスは変わらない
+    plan: '#419'

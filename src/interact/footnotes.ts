@@ -96,11 +96,13 @@ function clearPlace(ref: HTMLElement): void {
   }
 }
 
-/** `root` の中から、`href` の `#` の後ろの `id` の要素を参照する */
+/** `root` の中から、`href` の最後の `#` の後ろの `id` の要素を参照する。まとめた HTML は同じ文書の中のアンカーを `#/{文書のパス}#{id}` に書き換える */
 function targetOf(root: HTMLElement, link: Element): HTMLElement | null {
   const href = link.getAttribute("href") ?? "";
   return href.startsWith("#")
-    ? root.querySelector<HTMLElement>(`[id="${CSS.escape(href.slice(1))}"]`)
+    ? root.querySelector<HTMLElement>(
+        `[id="${CSS.escape(href.slice(href.lastIndexOf("#") + 1))}"]`,
+      )
     : null;
 }
 

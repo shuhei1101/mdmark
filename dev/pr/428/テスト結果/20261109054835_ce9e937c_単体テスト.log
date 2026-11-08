@@ -1,0 +1,107 @@
+$ npx vitest run --project 'unit*' tests/unit/src/viewer/view-state.browser.test.ts tests/unit/src/viewer/bundle.browser.test.ts
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/fix-viewer-restore-scroll-on-back
+
+5:48:14 AM [vite] Internal server error: Failed to resolve import "../../../../src/viewer/view-state.ts" from "tests/unit/src/viewer/view-state.browser.test.ts". Does the file exist?
+  Plugin: vite:import-analysis
+  File: /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/fix-viewer-restore-scroll-on-back/tests/unit/src/viewer/view-state.browser.test.ts:5:35
+  2  |  import { mount } from "../../../../src/mount.ts";
+  3  |  /** 表示の状態の処理を読み込む（実装が無い間は各テストが個別に失敗する） */
+  4  |  const loadViewState = () => import("../../../../src/viewer/view-state.ts");
+     |                                     ^
+  5  |  // 閉じた表（details）・開いたセクション・group= の無いタブ群・group=os のタブ群を持つ文書
+  6  |  const MARKDOWN = [
+      at TransformPluginContext._formatLog (file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/fix-viewer-restore-scroll-on-back/node_modules/vite/dist/node/chunks/node.js:8861:39)
+      at TransformPluginContext.error (file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/fix-viewer-restore-scroll-on-back/node_modules/vite/dist/node/chunks/node.js:8858:14)
+      at resolveId (file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/fix-viewer-restore-scroll-on-back/node_modules/vite/dist/node/chunks/node.js:26533:18)
+      at async file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/fix-viewer-restore-scroll-on-back/node_modules/vite/dist/node/chunks/node.js:26632:23
+      at async Promise.all (index 2)
+      at async TransformPluginContext.transform (file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/fix-viewer-restore-scroll-on-back/node_modules/vite/dist/node/chunks/node.js:26605:4)
+      at async EnvironmentPluginContainer.transform (file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/fix-viewer-restore-scroll-on-back/node_modules/vite/dist/node/chunks/node.js:8632:14)
+      at async loadAndTransform (file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/fix-viewer-restore-scroll-on-back/node_modules/vite/dist/node/chunks/node.js:20108:26)
+      at async viteTransformMiddleware (file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/fix-viewer-restore-scroll-on-back/node_modules/vite/dist/node/chunks/node.js:20328:20)
+ ❯ |unit-browser (chromium)| tests/unit/src/viewer/view-state.browser.test.ts (0 test)
+ ❯ |unit-browser (chromium)| tests/unit/src/viewer/bundle.browser.test.ts (8 tests | 3 failed) 3459ms
+   × test_start_bundle_when_back_restores_view_state 206ms
+   × test_start_bundle_when_heading_link_keeps_entry_id 109ms
+   × test_start_bundle_when_session_storage_unavailable 184ms
+
+⎯⎯⎯⎯⎯⎯ Failed Suites 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/viewer/view-state.browser.test.ts [ tests/unit/src/viewer/view-state.browser.test.ts ]
+Error: Failed to import test file /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/fix-viewer-restore-scroll-on-back/tests/unit/src/viewer/view-state.browser.test.ts
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=db2de420:5843:5
+ ❯ collectTests node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=db2de420:5819:3
+ ❯ startTests node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=db2de420:6503:17
+
+Caused by: TypeError: Failed to fetch dynamically imported module: http://localhost:63315/mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/fix-viewer-restore-scroll-on-back/tests/unit/src/viewer/view-state.browser.test.ts?import&browserv=1794170893881
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/4]⎯
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/viewer/bundle.browser.test.ts > test_start_bundle_when_back_restores_view_state
+AssertionError: expected 3000 to be less than or equal to 1
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/bundle.browser.test.ts/test_start_bundle_when_back_restores_view_state.png
+
+ ❯ tests/unit/src/viewer/bundle.browser.test.ts:179:43
+    177|     document.querySelector(".mdmark-bundle-main .mdmark h1")?.textCont…
+    178|   ).toContain("文書A");
+    179|   expect(Math.abs(window.scrollY - 3000)).toBeLessThanOrEqual(1);
+       |                                           ^
+    180|   expect(history.scrollRestoration).toBe("manual");
+    181| });
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=db2de420:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/4]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/viewer/bundle.browser.test.ts > test_start_bundle_when_heading_link_keeps_entry_id
+AssertionError: expected undefined to deeply equal Any<String>
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/bundle.browser.test.ts/test_start_bundle_when_heading_link_keeps_entry_id.png
+
+- Expected:
+Any<String>
+
++ Received:
+undefined
+
+ ❯ tests/unit/src/viewer/bundle.browser.test.ts:200:18
+    198|   link.click();
+    199|   // 検証
+    200|   expect(before).toEqual(expect.any(String));
+       |                  ^
+    201|   expect(history.state?.mdmarkEntry).toBe(before);
+    202| });
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=db2de420:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/4]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/viewer/bundle.browser.test.ts > test_start_bundle_when_session_storage_unavailable
+AssertionError: expected "Mock" to be called at least once
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/bundle.browser.test.ts/test_start_bundle_when_session_storage_unavailable.png
+
+ ❯ Proxy.<anonymous> node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/index.uwTEEBsB-Cm3Wu9lp.js?v=db2de420:2701:51
+ ❯ Proxy.<anonymous> node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/index.uwTEEBsB-Cm3Wu9lp.js?v=db2de420:2435:14
+ ❯ tests/unit/src/viewer/bundle.browser.test.ts:225:16
+    223|   ).toContain("文書A");
+    224|   expect(window.scrollY).toBe(0);
+    225|   expect(warn).toHaveBeenCalled();
+       |                ^
+    226| });
+    227|
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=db2de420:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/4]⎯
+
+
+ Test Files  2 failed (2)
+      Tests  3 failed | 5 passed (8)
+   Start at  05:48:12
+   Duration  5.22s (tests 81%, worker 19%)
+

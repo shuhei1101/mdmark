@@ -2,10 +2,30 @@ import { mkdir, mkdtemp, rm, symlink, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { Linter, type SourceCode } from "eslint";
-import { afterEach, expect, test } from "vitest";
+import { afterEach, beforeAll, expect, test } from "vitest";
 
-/** 対応ブラウザの下限を確認するスクリプトを読み込む（実装が無い間は各テストが個別に失敗する） */
-const loadBaseline = () => import("../../../scripts/baseline.ts");
+// 対応ブラウザの下限を確認するスクリプトの読み込みを待つ上限（ミリ秒）。
+// test:unit 全件で、読み込みを負った最初のテストの所要時間の最大は 34.7 秒。
+// 34.7 秒 × 1.5 = 52.1 秒を 10 秒単位で切り上げて 60 秒にした
+const BASELINE_LOAD_TIMEOUT_MS = 60_000;
+
+/** 対応ブラウザの下限を確認するスクリプトを読み込む */
+const importBaseline = () => import("../../../scripts/baseline.ts");
+
+let baseline: Awaited<ReturnType<typeof importBaseline>> | undefined;
+
+// 読み込みの時間を各テストの待ちに含めないよう、ファイルの最初に 1 回だけ読み込む
+beforeAll(async () => {
+  baseline = await importBaseline();
+}, BASELINE_LOAD_TIMEOUT_MS);
+
+/** beforeAll で読み込んだスクリプトを返却する */
+const loadBaseline = async () => {
+  if (baseline === undefined) {
+    throw new Error("scripts/baseline.ts を読み込めていません");
+  }
+  return baseline;
+};
 
 // 位置を確認する API の名前
 const API = "Intl.Segmenter";

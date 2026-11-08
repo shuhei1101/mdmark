@@ -264,14 +264,15 @@ test("test_normal_when_wide_range", async ({ builtRoot, tempDir, page }) => {
       '  include: ["A.md", "B.md"]',
       "  entry: A.md",
       "  out: dist/docs.html",
+      "theme: mdmark-theme.css",
       "",
     ].join("\n"),
-    "mdmark-theme.css": "",
+    "mdmark-theme.css": ".mdmark { --mdmark-content-width: 640px; }\n",
     "A.md": `# 文書A\n\n段落\n\n<!-- wide -->\n\n${table}\n\n<!-- /wide -->\n`,
     "B.md": "# 文書B\n\nB の段落\n",
   });
   expect((await runCli(builtRoot, ["build"], dir)).code).toBe(0);
-  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.setViewportSize({ width: 1280, height: 800 });
   // 実行
   await openStandalone(page, {
     tempDir,
@@ -289,4 +290,204 @@ test("test_normal_when_wide_range", async ({ builtRoot, tempDir, page }) => {
   );
   await page.locator('.mdmark-bundle-side a[data-doc-path="B.md"]').click();
   await expect(page.locator("article.mdmark h1")).toContainText("文書B");
+});
+
+/** 画面の高さの 5 倍より長い文書 A（entry）と B をまとめる: A は中ほどの段落に B へのリンクを持ち、B は末尾に A へのリンクを持つ */
+async function buildLongBundle(
+  builtRoot: string,
+  tempDir: () => Promise<string>,
+): Promise<string> {
+  const paragraphs = (link: { at: number; text: string }) =>
+    Array.from({ length: 200 }, (_, index) =>
+      index === link.at ? `${link.text}\n` : `段落 ${index + 1}\n`,
+    ).join("\n");
+  const dir = await tempDir();
+  await writeFiles(dir, {
+    "mdmark.config.yaml": [
+      "build:",
+      '  include: ["A.md", "B.md"]',
+      "  entry: A.md",
+      "  out: dist/docs.html",
+      "",
+    ].join("\n"),
+    "A.md": `# 文書A\n\n${paragraphs({ at: 99, text: "[B へ](B.md)" })}`,
+    "B.md": `# 文書B\n\n${paragraphs({ at: 199, text: "[A へ](A.md)" })}`,
+  });
+  const result = await runCli(builtRoot, ["build"], dir);
+  expect(result.code).toBe(0);
+  return join(dir, "dist", "docs.html");
+}
+
+// 戻る・進むで、その履歴の項目を離れたときのスクロール位置に戻り、リンクで新しく移ったときは頭から出る（正常シナリオ（戻る・進むで離れたときの位置に戻る））
+test("test_normal_when_back_forward_restore_scroll", async ({
+  builtRoot,
+  tempDir,
+  page,
+}) => {
+  // 準備
+  const htmlFile = await buildLongBundle(builtRoot, tempDir);
+  await page.setViewportSize({ width: 1280, height: 800 });
+  const h1 = page.locator("article.mdmark h1");
+  const scrollY = () => page.evaluate(() => window.scrollY);
+  // 実行・検証
+  await openStandalone(page, { tempDir, htmlFile });
+  await expect(h1).toContainText("文書A");
+  const toB = page.locator('article p a[data-doc-path="B.md"]');
+  await toB.scrollIntoViewIfNeeded();
+  const leftA = await scrollY();
+  await toB.click();
+  await expect(h1).toContainText("文書B");
+  await expect.poll(scrollY).toBe(0);
+  await page.evaluate(() => window.scrollTo(0, 1000));
+  await expect.poll(scrollY).toBe(1000);
+  const leftB = await scrollY();
+  await page.goBack();
+  await expect(h1).toContainText("文書A");
+  await expect
+    .poll(async () => Math.abs((await scrollY()) - leftA))
+    .toBeLessThanOrEqual(1);
+  await expect(toB).toBeInViewport();
+  await page.goForward();
+  await expect(h1).toContainText("文書B");
+  await expect
+    .poll(async () => Math.abs((await scrollY()) - leftB))
+    .toBeLessThanOrEqual(1);
+  const toA = page.locator('article p a[data-doc-path="A.md"]');
+  await toA.scrollIntoViewIfNeeded();
+  await toA.click();
+  await expect(h1).toContainText("文書A");
+  await expect.poll(scrollY).toBe(0);
+  expect(new URL(page.url()).hash).toBe("#/A.md");
+});
+
+// 再読み込みで、再読み込みの前のスクロール位置に戻る（正常シナリオ（再読み込みで離れたときの位置に戻る））
+test("test_normal_when_reload_restore_scroll", async ({
+  builtRoot,
+  tempDir,
+  page,
+}) => {
+  // 準備
+  const htmlFile = await buildLongBundle(builtRoot, tempDir);
+  await page.setViewportSize({ width: 1280, height: 800 });
+  const h1 = page.locator("article.mdmark h1");
+  const scrollY = () => page.evaluate(() => window.scrollY);
+  // 実行・検証
+  await openStandalone(page, { tempDir, htmlFile });
+  await expect(h1).toContainText("文書A");
+  await page.evaluate(() => window.scrollTo(0, 3000));
+  await expect.poll(scrollY).toBe(3000);
+  const before = await scrollY();
+  await page.reload();
+  await expect(h1).toContainText("文書A");
+  await expect
+    .poll(async () => Math.abs((await scrollY()) - before))
+    .toBeLessThanOrEqual(1);
+});
+
+// 戻る・進むで、開いたセクションと選んだタブを戻してから、離れたときの位置に戻る（正常シナリオ（戻る・進むで開閉と選んだタブを戻す））
+test("test_normal_when_back_restore_folds_and_tabs", async ({
+  builtRoot,
+  tempDir,
+  page,
+}) => {
+  // 準備
+  const dir = await tempDir();
+  await writeFiles(dir, {
+    "mdmark.config.yaml": [
+      "build:",
+      '  include: ["A.md", "B.md"]',
+      "  entry: A.md",
+      "  out: dist/docs.html",
+      "",
+    ].join("\n"),
+    "A.md": [
+      "# 文書A",
+      "",
+      "## 導入",
+      "",
+      "<!-- section: closed -->",
+      "",
+      "<!-- tabs -->",
+      "",
+      "### 一つ目",
+      "",
+      "一つ目の中身",
+      "",
+      "### 二つ目",
+      "",
+      ...Array.from({ length: 100 }, (_, index) => `段落 ${index + 1}\n`),
+      "[B へ](B.md)",
+      "",
+      "<!-- /tabs -->",
+      "",
+    ].join("\n"),
+    "B.md": "# 文書B\n\nもう 1 つの文書。\n",
+  });
+  const result = await runCli(builtRoot, ["build"], dir);
+  expect(result.code).toBe(0);
+  await page.setViewportSize({ width: 1280, height: 800 });
+  const h1 = page.locator("article.mdmark h1");
+  const toggle = page.locator("article .mdmark-section-toggle", {
+    hasText: "導入",
+  });
+  const second = page.locator("article .mdmark-tab", { hasText: "二つ目" });
+  const scrollY = () => page.evaluate(() => window.scrollY);
+  // 実行・検証
+  await openStandalone(page, {
+    tempDir,
+    htmlFile: join(dir, "dist", "docs.html"),
+  });
+  await expect(h1).toContainText("文書A");
+  await expect(toggle).toHaveAttribute("aria-expanded", "false");
+  await toggle.click();
+  await second.click();
+  const toB = page.locator('article a[data-doc-path="B.md"]');
+  await toB.scrollIntoViewIfNeeded();
+  const leftA = await scrollY();
+  await toB.click();
+  await expect(h1).toContainText("文書B");
+  await page.goBack();
+  await expect(h1).toContainText("文書A");
+  await expect(toggle).toHaveAttribute("aria-expanded", "true");
+  await expect(page.locator('[id="section-導入"]')).not.toHaveAttribute(
+    "hidden",
+  );
+  await expect(second).toHaveAttribute("aria-selected", "true");
+  await expect
+    .poll(async () => Math.abs((await scrollY()) - leftA))
+    .toBeLessThanOrEqual(1);
+  await expect(toB).toBeInViewport();
+});
+
+// sessionStorage が使えないページでは、戻るで文書の頭から出て、例外を出さない（異常シナリオ（sessionStorage が使えない））
+test("test_error_when_session_storage_unavailable", async ({
+  builtRoot,
+  tempDir,
+  page,
+}) => {
+  // 準備
+  const htmlFile = await buildLongBundle(builtRoot, tempDir);
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await page.addInitScript(() => {
+    Object.defineProperty(window, "sessionStorage", {
+      get() {
+        throw new DOMException("使えない", "SecurityError");
+      },
+    });
+  });
+  const errors: Error[] = [];
+  page.on("pageerror", (error) => errors.push(error));
+  const h1 = page.locator("article.mdmark h1");
+  const scrollY = () => page.evaluate(() => window.scrollY);
+  // 実行・検証
+  await openStandalone(page, { tempDir, htmlFile });
+  await expect(h1).toContainText("文書A");
+  const toB = page.locator('article p a[data-doc-path="B.md"]');
+  await toB.scrollIntoViewIfNeeded();
+  await toB.click();
+  await expect(h1).toContainText("文書B");
+  await page.goBack();
+  await expect(h1).toContainText("文書A");
+  await expect.poll(scrollY).toBe(0);
+  expect(errors).toEqual([]);
 });

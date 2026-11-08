@@ -50,6 +50,12 @@ const PORT_IN_USE_CODE = 3;
 const MAX_START_ATTEMPTS = 5;
 // 1 回の検索で返却する件数の上限
 const SEARCH_LIMIT = 100;
+// `search_docs` の 1 回の呼び出しの時間切れ（ミリ秒）。dev-docs に所要時間の公開仕様が無く、実測が 1,000 回に満たないため、
+// 起動した dev-docs への 30 回の実測の最大 89.4 秒（起動の直後の 1 回目）にその 50% を加えた仮の値
+const SEARCH_TIMEOUT_MS = 135_000;
+
+/** `searchDocs` を 2 回呼ぶテスト 1 件の上限（ミリ秒）。2 回の時間切れの合計 270 秒に、その 50% の余裕を加えた値 */
+export const TWO_SEARCHES_TEST_TIMEOUT_MS = 405_000;
 
 /** dev-docs のクローンの場所。`DEV_DOCS_CLONE` が無ければ、端末の設定の `clone` を使用する */
 async function findClone(): Promise<string> {
@@ -170,16 +176,19 @@ export async function searchDocs(
   client: Client,
   args: Record<string, unknown>,
 ): Promise<DevDocsItem[]> {
-  const result = await client.callTool({
-    name: "search_docs",
-    arguments: {
-      source: DEV_DOCS_SOURCE,
-      cwd: REPO_ROOT,
-      format: "json",
-      limit: SEARCH_LIMIT,
-      ...args,
+  const result = await client.callTool(
+    {
+      name: "search_docs",
+      arguments: {
+        source: DEV_DOCS_SOURCE,
+        cwd: REPO_ROOT,
+        format: "json",
+        limit: SEARCH_LIMIT,
+        ...args,
+      },
     },
-  });
+    { timeout: SEARCH_TIMEOUT_MS },
+  );
   if (result.isError === true) {
     throw new Error(
       `search_docs が失敗した: ${JSON.stringify(result.content)}`,

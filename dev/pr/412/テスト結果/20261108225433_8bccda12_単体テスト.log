@@ -1,0 +1,38 @@
+$ npx vitest run --project 'unit*' tests/unit/src/interact/zoom.browser.test.ts
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/fix-diagram-e2e-regressions
+
+ ❯ |unit-browser (chromium)| tests/unit/src/interact/zoom.browser.test.ts (9 tests | 1 failed) 244ms
+   × test_attach_zoom_when_link_dragstart 154ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/zoom.browser.test.ts > test_attach_zoom_when_link_dragstart
+AssertionError: expected false to be true // Object.is equality
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/zoom.browser.test.ts/test_attach_zoom_when_link_dragstart.png
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- true[39m
+[31m+ false[39m
+
+ ❯ tests/unit/src/interact/zoom.browser.test.ts:223:34
+    221|   link.dispatchEvent(event);
+    222|   // 検証
+    223|   expect(event.defaultPrevented).toBe(true);
+       |                                  ^
+    224| });
+    225|
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=8da3ef48:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 8 passed (9)
+   Start at  22:47:25
+   Duration  60.96s (worker 91%, import 9%)
+

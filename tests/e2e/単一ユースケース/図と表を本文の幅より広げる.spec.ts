@@ -133,15 +133,16 @@ test("test_normal_when_narrow", async ({ page }) => {
   expect(Math.abs(range.width - paragraph.width)).toBeLessThanOrEqual(1);
   const scrollable = await page
     .locator("#doc .mdmark-wide-range table")
-    .evaluate((table) => {
-      const scroller = table.closest(
-        ".mdmark-wide-range, .mdmark-table",
-      ) as HTMLElement;
-      return (
-        table.scrollWidth > table.clientWidth ||
-        scroller.scrollWidth > scroller.clientWidth
-      );
-    });
+    .evaluate((table) =>
+      [
+        table,
+        table.closest(".mdmark-table-scroll"),
+        table.closest(".mdmark-wide-range"),
+      ].some(
+        (element) =>
+          element !== null && element.scrollWidth > element.clientWidth,
+      ),
+    );
   expect(scrollable).toBe(true);
   expect(await noPageScroll(page)).toBe(true);
 });

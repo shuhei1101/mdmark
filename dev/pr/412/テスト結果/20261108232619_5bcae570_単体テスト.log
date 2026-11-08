@@ -1,0 +1,59 @@
+$ npm run test:unit
+
+> test:unit
+> vitest run --project 'unit*'
+
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/fix-diagram-e2e-regressions
+
+ ❯ |unit| tests/unit/src/cli/export.test.ts (23 tests | 1 failed) 36469ms
+   × test_prepare_embeds 31172ms
+ ❯ |unit| tests/unit/scripts/baseline.test.ts (19 tests | 1 failed) 39795ms
+   × test_to_browserslist 35914ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit| tests/unit/scripts/baseline.test.ts > test_to_browserslist
+Error: Test timed out in 30000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/unit/scripts/baseline.test.ts:65:1
+     63|
+     64| // 名前と版の間に空白を入れる（正常系）
+     65| test("test_to_browserslist", async () => {
+       | ^
+     66|   // 準備
+     67|   const { toBrowserslist } = await loadBaseline();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  |unit| tests/unit/src/cli/export.test.ts > test_prepare_embeds
+Error: Test timed out in 30000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/unit/src/cli/export.test.ts:31:1
+     29|
+     30| // 印のあるモジュールだけを束ね、拡張と theme を読む（正常系）
+     31| test("test_prepare_embeds", async () => {
+       | ^
+     32|   // 準備
+     33|   const { prepareEmbeds } = await loadExport();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  2 failed | 257 passed (259)
+      Tests  2 failed | 1819 passed (1821)
+   Start at  23:17:48
+   Duration  170.45s (worker 60%, tests 25%, import 13%, transform 2%)
+
+
+# 上の 2 件は 30 秒の時間切れ。同じ環境の release/v0.10.0（変更なし）でも別の CLI のテスト 3 件が同じく時間切れになるため、負荷による時間切れとして個別に実行し直した
+$ npx vitest run --project 'unit*' tests/unit/scripts/baseline.test.ts tests/unit/src/cli/export.test.ts
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/fix-diagram-e2e-regressions
+
+
+ Test Files  2 passed (2)
+      Tests  42 passed (42)
+   Start at  23:24:15
+   Duration  19.15s (tests 77%, import 21%, transform 2%)
+

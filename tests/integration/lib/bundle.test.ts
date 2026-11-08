@@ -1,6 +1,7 @@
 import { existsSync } from "node:fs";
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
+import type { Page } from "playwright";
 import { expect, test } from "vitest";
 import {
   copyMermaidVendor,
@@ -733,3 +734,251 @@ test("test_normal_when_mermaid_embedded", async () => {
   expect(plainHtml).not.toContain("mermaidModule");
   expect(plainHtml.length).toBeLessThan(html.length - 1_000_000);
 }, 240_000);
+
+/** 段落 200 個を持ち、100 個目の段落に b.md へのリンクを持つ a.md（entry）と、段落 200 個の末尾に a.md へのリンクを持つ b.md をまとめたフォルダを作る */
+async function createLongDir(): Promise<string> {
+  const dir = await createTempDir();
+  const paragraphs = (link: { at: number; text: string }) =>
+    Array.from({ length: 200 }, (_, index) =>
+      index === link.at ? `${link.text}\n` : `段落 ${index + 1}\n`,
+    ).join("\n");
+  await writeFiles(dir, {
+    "mdmark.config.yaml": [
+      "build:",
+      '  include: ["*.md"]',
+      "  entry: a.md",
+      "  out: dist/docs.html",
+      "",
+    ].join("\n"),
+    "a.md": `# A\n\n${paragraphs({ at: 99, text: "[B へ](b.md)" })}`,
+    "b.md": `# B\n\n${paragraphs({ at: 199, text: "[A へ](a.md)" })}`,
+  });
+  return dir;
+}
+
+/** 開いている文書の h1 がその文字を持つまで待つ */
+async function waitForTitle(page: Page, title: string): Promise<void> {
+  await page.waitForFunction(
+    (text) =>
+      document.querySelector("article.mdmark h1")?.textContent?.includes(text),
+    title,
+  );
+}
+
+/** `scrollY` がその値（±1px）になるまで待つ */
+async function waitForScrollY(page: Page, y: number): Promise<void> {
+  await page.waitForFunction(
+    (expected) => Math.abs(window.scrollY - expected) <= 1,
+    y,
+  );
+}
+
+// 文書間のリンクで移ってから戻る・進むと、その履歴の項目を離れたときのスクロール位置で描く（正常系（戻る・進むで離れたときの位置に戻る））
+test("test_normal_when_back_forward_restore_scroll", async () => {
+  // 準備
+  const dir = await createLongDir();
+  // 実行
+  const result = await runCli(["build"], dir);
+  // 検証
+  expect(result.code).toBe(0);
+  const { page, externalRequests } = await browser.openHtml(
+    join(dir, "dist", "docs.html"),
+    { width: 1280, height: 800 },
+  );
+  await waitForTitle(page, "A");
+  await expect(page.evaluate(() => history.scrollRestoration)).resolves.toBe(
+    "manual",
+  );
+  const toB = page.locator('article p a[href="#/b.md"]');
+  await toB.scrollIntoViewIfNeeded();
+  const leftAt = await page.evaluate(() => window.scrollY);
+  await toB.click();
+  await waitForTitle(page, "B");
+  await expect(page.evaluate(() => window.scrollY)).resolves.toBe(0);
+  await page.evaluate(() => window.scrollTo(0, 1000));
+  await page.goBack();
+  await waitForTitle(page, "A");
+  await waitForScrollY(page, leftAt);
+  await expect(toB.isVisible()).resolves.toBe(true);
+  await page.goForward();
+  await waitForTitle(page, "B");
+  await waitForScrollY(page, 1000);
+  const toA = page.locator('article p a[href="#/a.md"]');
+  await toA.scrollIntoViewIfNeeded();
+  await toA.click();
+  await waitForTitle(page, "A");
+  await expect(page.evaluate(() => window.scrollY)).resolves.toBe(0);
+  expect(new URL(page.url()).hash).toMatch(/^#\/a\.md$/);
+  expect(externalRequests()).toEqual([]);
+  await page.close();
+});
+
+// 開いている文書をスクロールして再読み込みすると、再読み込みの前の位置で描く（正常系（再読み込みで離れたときの位置に戻る））
+test("test_normal_when_reload_restore_scroll", async () => {
+  // 準備
+  const dir = await createLongDir();
+  // 実行
+  const result = await runCli(["build"], dir);
+  // 検証
+  expect(result.code).toBe(0);
+  const { page } = await browser.openHtml(join(dir, "dist", "docs.html"), {
+    width: 1280,
+    height: 800,
+  });
+  await waitForTitle(page, "A");
+  await page.evaluate(() => window.scrollTo(0, 3000));
+  await page.reload();
+  await waitForTitle(page, "A");
+  await waitForScrollY(page, 3000);
+  await page.close();
+});
+
+// 開閉と group= の無いタブを変えてから移り、戻ると開閉とタブを戻してから位置を戻す（正常系（戻るで開閉と選んだタブを戻す））
+test("test_normal_when_back_restore_folds_and_tabs", async () => {
+  // 準備
+  const dir = await createTempDir();
+  await writeFiles(dir, {
+    "mdmark.config.yaml": [
+      "build:",
+      '  include: ["*.md"]',
+      "  entry: a.md",
+      "  out: dist/docs.html",
+      "",
+    ].join("\n"),
+    "a.md": [
+      "# A",
+      "",
+      "<!-- table: data closed -->",
+      "",
+      "| 名前 | 値 |",
+      "| --- | --- |",
+      "| りんご | 10 |",
+      "",
+      "<!-- /table -->",
+      "",
+      "```tree",
+      "docs/",
+      "└── a.md",
+      "```",
+      "",
+      "## 導入",
+      "",
+      "<!-- section: closed -->",
+      "",
+      "<!-- tabs -->",
+      "",
+      "### 一つ目",
+      "",
+      "一つ目の中身",
+      "",
+      "### 二つ目",
+      "",
+      ...Array.from({ length: 100 }, (_, index) => `段落 ${index + 1}\n`),
+      "[B へ](b.md)",
+      "",
+      "<!-- /tabs -->",
+      "",
+    ].join("\n"),
+    "b.md": "# B\n\nもう 1 つの文書。\n",
+  });
+  // 実行
+  const result = await runCli(["build"], dir);
+  // 検証
+  expect(result.code).toBe(0);
+  const { page } = await browser.openHtml(join(dir, "dist", "docs.html"), {
+    width: 1280,
+    height: 800,
+  });
+  await waitForTitle(page, "A");
+  await page
+    .locator("article .mdmark-section-toggle", { hasText: "導入" })
+    .click();
+  await page.locator("article details.mdmark-table-details > summary").click();
+  await page.locator("article .mdmark-tree-toggle").first().click();
+  await page.locator("article .mdmark-tab", { hasText: "二つ目" }).click();
+  const toB = page.locator('article a[href="#/b.md"]');
+  await toB.scrollIntoViewIfNeeded();
+  const leftAt = await page.evaluate(() => window.scrollY);
+  await toB.click();
+  await waitForTitle(page, "B");
+  await page.goBack();
+  await waitForTitle(page, "A");
+  await waitForScrollY(page, leftAt);
+  await expect(
+    page.evaluate(() => {
+      const section = document.querySelector(
+        "article .mdmark-section-toggle[aria-controls='section-導入']",
+      );
+      const body = document.querySelector('[id="section-導入"]');
+      return {
+        section: section?.getAttribute("aria-expanded") ?? null,
+        hidden: body?.hasAttribute("hidden") ?? null,
+        table:
+          document
+            .querySelector("article details.mdmark-table-details")
+            ?.hasAttribute("open") ?? null,
+        tree:
+          document
+            .querySelector("article .mdmark-tree-toggle")
+            ?.getAttribute("aria-expanded") ?? null,
+        tab:
+          [...document.querySelectorAll("article .mdmark-tab")]
+            .find((tab) => tab.textContent?.includes("二つ目"))
+            ?.getAttribute("aria-selected") ?? null,
+        stored: Object.keys(localStorage).filter((key) =>
+          key.startsWith("mdmark-tabs:"),
+        ),
+      };
+    }),
+  ).resolves.toEqual({
+    section: "true",
+    hidden: false,
+    table: true,
+    tree: "false",
+    tab: "true",
+    stored: [],
+  });
+  await expect(toB.isVisible()).resolves.toBe(true);
+  await page.close();
+});
+
+// sessionStorage を取り出せないページでは、戻るで文書の頭から描き、例外を出さない（正常系（sessionStorage が使えない））
+test("test_normal_when_session_storage_unavailable", async () => {
+  // 準備
+  const dir = await createLongDir();
+  // 実行
+  const result = await runCli(["build"], dir);
+  // 検証
+  expect(result.code).toBe(0);
+  const { page } = await browser.openHtml(join(dir, "dist", "docs.html"), {
+    width: 1280,
+    height: 800,
+  });
+  await page.addInitScript(() => {
+    Object.defineProperty(window, "sessionStorage", {
+      get() {
+        throw new DOMException("使えない", "SecurityError");
+      },
+    });
+  });
+  const errors: Error[] = [];
+  const warnings: string[] = [];
+  page.on("pageerror", (error) => errors.push(error));
+  page.on("console", (message) => {
+    if (message.type() === "warning") {
+      warnings.push(message.text());
+    }
+  });
+  await page.reload();
+  await waitForTitle(page, "A");
+  const toB = page.locator('article p a[href="#/b.md"]');
+  await toB.scrollIntoViewIfNeeded();
+  await toB.click();
+  await waitForTitle(page, "B");
+  await page.goBack();
+  await waitForTitle(page, "A");
+  await expect(page.evaluate(() => window.scrollY)).resolves.toBe(0);
+  expect(errors).toEqual([]);
+  expect(warnings.some((text) => text.includes("表示の状態"))).toBe(true);
+  await page.close();
+});

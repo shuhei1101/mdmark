@@ -33,6 +33,8 @@ export declare function renderTree(options: {
     open?: string | undefined;
     /** `mount` が付けた状態にするか（既定 `false`） */
     interactive?: boolean;
+    /** 長い項目を折り返すか（既定 `false`） */
+    wrap?: boolean | undefined;
     /** コピーのボタンの状態（既定 `idle`） */
     copyState?: TreeCopyState;
     /** クリップボードに書けなかったときのパネルを出すか（既定 `false`） */
