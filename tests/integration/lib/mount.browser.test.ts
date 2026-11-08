@@ -12181,6 +12181,7 @@ function rangeScriptConfig(name: string) {
 test("test_normal_when_range_scripts", async () => {
   // 準備
   clearRangeMarks();
+  performance.clearResourceTimings();
   const el = createElement();
   const handle = await mountTracked(el, {
     markdown: RANGE_SCRIPT_MARKDOWN,
