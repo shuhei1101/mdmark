@@ -28,6 +28,12 @@ const ZOOM_CLICKS = 2;
 // 横にはみ出すまで拡大するときに、拡大のボタンを押す回数の上限（上限の 300% に届く回数）
 const ZOOM_MAX_CLICKS = 6;
 
+// 縦のドラッグで離す位置を、表示する枠の端から離す量（px）
+const DRAG_EDGE = 8;
+
+// 表示する枠を下限の高さまで低くするときに、リサイズハンドルで ↑ を押す回数
+const RESIZE_UP_PRESSES = 20;
+
 // 文書を縦にスクロールできるようにする、末尾の段落の数
 const TAIL_PARAGRAPHS = 40;
 
@@ -52,6 +58,25 @@ async function openFlow(page: Page, paragraphs = 0): Promise<void> {
 /** 図の表示する枠 */
 function viewportOf(page: Page) {
   return page.locator('#doc [role="group"][aria-roledescription="図"]');
+}
+
+/** 今の位置から右へ `room` px より多く動かせるまで、拡大のボタンを `ZOOM_MAX_CLICKS` 回まで押す */
+async function zoomUntilRightRoom(page: Page, room: number): Promise<void> {
+  const viewport = viewportOf(page);
+  const hasRoom = (): Promise<boolean> =>
+    viewport.evaluate(
+      (element, need) =>
+        element.scrollWidth - element.clientWidth - element.scrollLeft > need,
+      room,
+    );
+  const button = page.getByRole("button", { name: "拡大" });
+  for (let count = 0; count < ZOOM_MAX_CLICKS; count += 1) {
+    if ((await hasRoom()) || (await button.isDisabled())) {
+      break;
+    }
+    await button.click();
+  }
+  expect(await hasRoom()).toBe(true);
 }
 
 /** 拡大のボタンを `ZOOM_CLICKS` 回押して、表示する枠の中央へ動いた拡大した図にする */
@@ -438,7 +463,20 @@ test("test_normal_when_drag_on_linked_node", async ({ page }) => {
     element.scrollLeft = 0;
     element.scrollTop = 0;
   });
+  // 図が横に 100px より多く動かせるまで拡大する
+  await zoomUntilRightRoom(page, 100);
   const name = page.locator('#doc [data-node="a"] .mdmark-diagram-node-name');
+  // 左端へ戻し、名前が表示する枠の縦の真ん中に来るまで縦に動かす
+  await name.evaluate((element) => {
+    const frame = element.closest<HTMLElement>(".mdmark-diagram-viewport");
+    if (!frame) {
+      return;
+    }
+    frame.scrollLeft = 0;
+    const rect = element.getBoundingClientRect();
+    const box = frame.getBoundingClientRect();
+    frame.scrollTop += rect.top + rect.height / 2 - (box.top + box.height / 2);
+  });
   // 検証: 名前の文字の上も押せる形のカーソル
   await expect(name).toHaveCSS("cursor", "pointer");
   const nameBox = await name.boundingBox();
@@ -464,7 +502,12 @@ test("test_normal_when_drag_on_linked_node", async ({ page }) => {
   await viewport.evaluate((element) => {
     element.scrollLeft = 0;
   });
-  await name.click();
+  // 名前はノードの全体を覆うリンクの下にあるため、名前の位置をマウスで押す
+  const again = await name.boundingBox();
+  if (!again) {
+    throw new Error("ノードの名前の範囲を取れない");
+  }
+  await page.mouse.click(again.x + again.width / 2, again.y + again.height / 2);
   await page.waitForURL("https://example.com/spec");
   expect(opened()).toEqual(["https://example.com/spec"]);
 });
@@ -493,17 +536,29 @@ async function emptyPointIn(
   return point;
 }
 
-/** 表示する枠を、押したまま縦に `dy`（上へは負）動かして離す */
+/** 表示する枠を、押したまま縦に `dy`（上へは負）動かして離す。表示する枠の高さを超える量は、枠の中に収まる量ずつ分けて動かす */
 async function dragVertically(
   page: Page,
   viewport: Locator,
   dy: number,
 ): Promise<void> {
-  const from = await emptyPointIn(viewport);
-  await page.mouse.move(from.x, from.y);
-  await page.mouse.down();
-  await page.mouse.move(from.x, from.y + dy, { steps: 8 });
-  await page.mouse.up();
+  let rest = dy;
+  while (Math.abs(rest) > 0.5) {
+    const from = await emptyPointIn(viewport);
+    const box = await rectOf(viewport);
+    // 離す位置が表示する枠の外（画面の外）に出ないだけ動かす
+    const room =
+      rest < 0 ? from.y - box.y - DRAG_EDGE : box.bottom - DRAG_EDGE - from.y;
+    if (room <= 0) {
+      throw new Error("表示する枠の中で縦に動かせる余地が無い");
+    }
+    const step = Math.sign(rest) * Math.min(Math.abs(rest), room);
+    await page.mouse.move(from.x, from.y);
+    await page.mouse.down();
+    await page.mouse.move(from.x, from.y + step, { steps: 8 });
+    await page.mouse.up();
+    rest -= step;
+  }
 }
 
 /** 図の今の倍率（図の本体に掛けた `scale()`） */
@@ -573,6 +628,11 @@ test("test_normal_when_group_titles_stuck", async ({ page }) => {
   const viewport = await openZoomedGroups(page);
   const { frame, process, data } = groupTitles(page);
   const lane = page.locator('#doc .mdmark-diagram-lane[data-kind="mcp"]');
+  // 処理の層を上端の上へ出し切れるよう、リサイズハンドルの ↑ で表示する枠を下限の高さまで低くする
+  await page.locator("#doc").getByRole("separator").focus();
+  for (let count = 0; count < RESIZE_UP_PRESSES; count += 1) {
+    await page.keyboard.press("ArrowUp");
+  }
   const scale = await scaleOf(page);
   // 実行: 図を上へドラッグして、処理の層の途中を見せる
   const top = (await rectOf(viewport)).y;
@@ -594,8 +654,13 @@ test("test_normal_when_group_titles_stuck", async ({ page }) => {
     await expect(title).not.toHaveCSS("background-color", "rgba(0, 0, 0, 0)");
     const front = await title.evaluate((element) => {
       const rect = element.getBoundingClientRect();
+      // 横にスクロールした図では、タイトルの左端が表示する枠の外に出ているため、見えている部分の左端から測る
+      const viewportRect = element
+        .closest(".mdmark-diagram-viewport")
+        ?.getBoundingClientRect();
+      const left = Math.max(rect.left, viewportRect?.left ?? rect.left);
       const hit = document.elementFromPoint(
-        rect.left + Math.min(rect.width / 2, 24),
+        left + Math.min((rect.right - left) / 2, 24),
         rect.top + rect.height / 2,
       );
       return hit !== null && (hit === element || element.contains(hit));
@@ -769,6 +834,8 @@ test("test_normal_when_drag_on_chart_item", async ({ page }) => {
   });
   await zoomIn(page);
   const viewport = viewportOf(page);
+  // 図が横に 120px より多く動かせるまで拡大する
+  await zoomUntilRightRoom(page, 120);
   // 表示する枠の中に見えている点を選ぶ
   const index = await viewport.evaluate((element) => {
     const frame = element.getBoundingClientRect();
@@ -856,10 +923,11 @@ test("test_normal_when_mermaid", async ({ page }) => {
   // 実行
   await mountDocument(page, { markdown: WIDE_MERMAID });
   await expect(svg).toHaveCount(1, { timeout: MERMAID_WAIT_MS });
-  // 検証: 開いたとき、図の全体が表示する枠の中に収まる
+  // 検証: 開いたとき、図を縮めて全体を表示する枠の中に収め、倍率の表示は全体が収まる倍率を 100% にする
   const viewport = viewportOf(page);
   const fit = await zoomPercent(page);
-  expect(fit).toBeLessThan(100);
+  expect(fit).toBe(100);
+  expect(await scaleOf(page)).toBeLessThan(1);
   const sizer = page.locator("#doc .mdmark-diagram-sizer");
   const frameWidth = await viewport.evaluate((element) => element.clientWidth);
   expect(

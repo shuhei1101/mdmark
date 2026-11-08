@@ -1,0 +1,160 @@
+$ npx playwright test "tests/e2e/単一ユースケース/図を拡大・縮小・移動する.spec.ts" "tests/e2e/単一ユースケース/図を描く.spec.ts" "tests/e2e/単一ユースケース/図の要素のツールチップを見る.spec.ts" "tests/e2e/複合ユースケース/固有の部品で図の文書を描いて確かめる.spec.ts" "tests/e2e/複合ユースケース/コードブロックのHTMLでチャートとヒントを読む.spec.ts" --reporter=line
+- Resolving version...
+✔ Validated version: 1.141.0
+✔ Found existing install in /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/fix-diagram-e2e-regressions/vscode/.vscode-test/vscode-linux-x64-1.141.0
+
+Running 98 tests using 4 workers
+
+[1/98] [chromium] › tests/e2e/単一ユースケース/図を拡大・縮小・移動する.spec.ts:90:1 › test_normal
+[2/98] [chromium] › tests/e2e/単一ユースケース/図の要素のツールチップを見る.spec.ts:81:1 › test_normal
+[3/98] [chromium] › tests/e2e/単一ユースケース/図を描く.spec.ts:106:1 › test_normal
+[4/98] [chromium] › tests/e2e/複合ユースケース/コードブロックのHTMLでチャートとヒントを読む.spec.ts:176:1 › test_normal
+[5/98] [chromium] › tests/e2e/単一ユースケース/図を拡大・縮小・移動する.spec.ts:154:1 › test_normal_when_wheel
+[6/98] [chromium] › tests/e2e/単一ユースケース/図を拡大・縮小・移動する.spec.ts:191:1 › test_normal_when_drag
+[7/98] [chromium] › tests/e2e/単一ユースケース/図の要素のツールチップを見る.spec.ts:149:1 › test_normal_when_keyboard
+[8/98] [chromium] › tests/e2e/単一ユースケース/図の要素のツールチップを見る.spec.ts:182:1 › test_normal_when_term
+[9/98] [chromium] › tests/e2e/単一ユースケース/図を拡大・縮小・移動する.spec.ts:241:1 › test_normal_when_keyboard
+[10/98] [chromium] › tests/e2e/単一ユースケース/図の要素のツールチップを見る.spec.ts:211:1 › test_normal_when_data_hint
+[11/98] [chromium] › tests/e2e/単一ユースケース/図を拡大・縮小・移動する.spec.ts:268:1 › test_normal_when_embedded_chart
+[12/98] [chromium] › tests/e2e/単一ユースケース/図を拡大・縮小・移動する.spec.ts:360:1 › test_normal_when_er_diagram
+[13/98] [chromium] › tests/e2e/単一ユースケース/図の要素のツールチップを見る.spec.ts:272:1 › test_normal_when_node_hint
+[14/98] [chromium] › tests/e2e/単一ユースケース/図を拡大・縮小・移動する.spec.ts:418:1 › test_normal_when_er_columns_folded
+[15/98] [chromium] › tests/e2e/単一ユースケース/図を拡大・縮小・移動する.spec.ts:450:1 › test_normal_when_drag_on_linked_node
+[16/98] [chromium] › tests/e2e/単一ユースケース/図の要素のツールチップを見る.spec.ts:297:1 › test_normal_when_hints_off
+[17/98] [chromium] › tests/e2e/単一ユースケース/図を拡大・縮小・移動する.spec.ts:626:1 › test_normal_when_group_titles_stuck
+[18/98] [chromium] › tests/e2e/単一ユースケース/図の要素のツールチップを見る.spec.ts:341:1 › test_normal_when_no_room_below
+[19/98] [chromium] › tests/e2e/単一ユースケース/図の要素のツールチップを見る.spec.ts:356:1 › test_normal_when_diagram_placement_top
+[20/98] [chromium] › tests/e2e/単一ユースケース/図の要素のツールチップを見る.spec.ts:399:1 › test_normal_when_term_width_and_case_differ
+[21/98] [chromium] › tests/e2e/単一ユースケース/図の要素のツールチップを見る.spec.ts:438:3 › タッチの端末 › test_normal_when_touch
+[22/98] [chromium] › tests/e2e/単一ユースケース/図を拡大・縮小・移動する.spec.ts:688:1 › test_normal_when_sticky_titles_off
+[23/98] [chromium] › tests/e2e/単一ユースケース/図を拡大・縮小・移動する.spec.ts:754:1 › test_normal_when_resized
+[24/98] [chromium] › tests/e2e/単一ユースケース/図の要素のツールチップを見る.spec.ts:470:1 › test_normal_when_er_table
+[25/98] [chromium] › tests/e2e/単一ユースケース/図を拡大・縮小・移動する.spec.ts:829:1 › test_normal_when_drag_on_chart_item
+[26/98] [chromium] › tests/e2e/単一ユースケース/図の要素のツールチップを見る.spec.ts:529:1 › test_normal_when_linked_node_has_tip
+[27/98] [chromium] › tests/e2e/単一ユースケース/図を拡大・縮小・移動する.spec.ts:906:1 › test_normal_when_mermaid
+[28/98] [chromium] › tests/e2e/単一ユースケース/図を描く.spec.ts:216:1 › test_normal_when_flowchart
+[29/98] [chromium] › tests/e2e/単一ユースケース/図の要素のツールチップを見る.spec.ts:580:1 › test_normal_when_chart_items
+[30/98] [chromium] › tests/e2e/単一ユースケース/図を描く.spec.ts:306:1 › test_normal_when_sequence
+[31/98] [chromium] › tests/e2e/単一ユースケース/図を描く.spec.ts:359:1 › test_normal_when_single_kinds
+[32/98] [chromium] › tests/e2e/単一ユースケース/図を描く.spec.ts:410:1 › test_normal_when_graph
+[33/98] [chromium] › tests/e2e/単一ユースケース/図を描く.spec.ts:439:1 › test_error_when_definition_invalid
+[34/98] [chromium] › tests/e2e/単一ユースケース/図を描く.spec.ts:492:1 › test_normal_when_bar
+[35/98] [chromium] › tests/e2e/単一ユースケース/図を描く.spec.ts:541:1 › test_normal_when_pie
+[36/98] [chromium] › tests/e2e/単一ユースケース/図を描く.spec.ts:571:1 › test_normal_when_scatter
+[37/98] [chromium] › tests/e2e/単一ユースケース/図を描く.spec.ts:623:1 › test_normal_when_more_chart_types
+[38/98] [chromium] › tests/e2e/複合ユースケース/コードブロックのHTMLでチャートとヒントを読む.spec.ts:230:1 › test_normal_when_exported
+[39/98] [chromium] › tests/e2e/単一ユースケース/図を描く.spec.ts:770:1 › test_normal_when_many_series
+[40/98] [chromium] › tests/e2e/単一ユースケース/図を描く.spec.ts:811:1 › test_normal_when_er_diagram
+[41/98] [chromium] › tests/e2e/単一ユースケース/図を描く.spec.ts:876:1 › test_error_when_er_definition_invalid
+[42/98] [chromium] › tests/e2e/複合ユースケース/固有の部品で図の文書を描いて確かめる.spec.ts:42:1 › test_normal
+[43/98] [chromium] › tests/e2e/単一ユースケース/図を描く.spec.ts:903:1 › test_normal_when_flowchart_auto_layout
+[44/98] [firefox] › tests/e2e/単一ユースケース/図の要素のツールチップを見る.spec.ts:81:1 › test_normal
+[45/98] [chromium] › tests/e2e/単一ユースケース/図を描く.spec.ts:1000:1 › test_normal_when_node_link
+[46/98] [chromium] › tests/e2e/単一ユースケース/図を描く.spec.ts:1037:1 › test_error_when_node_link_not_allowed
+[47/98] [chromium] › tests/e2e/複合ユースケース/コードブロックのHTMLでチャートとヒントを読む.spec.ts:294:1 › test_normal_when_range_scripts
+[48/98] [firefox] › tests/e2e/単一ユースケース/図を拡大・縮小・移動する.spec.ts:90:1 › test_normal
+[49/98] [firefox] › tests/e2e/単一ユースケース/図を描く.spec.ts:106:1 › test_normal
+[50/98] [firefox] › tests/e2e/単一ユースケース/図の要素のツールチップを見る.spec.ts:149:1 › test_normal_when_keyboard
+[51/98] [firefox] › tests/e2e/単一ユースケース/図の要素のツールチップを見る.spec.ts:182:1 › test_normal_when_term
+[52/98] [firefox] › tests/e2e/単一ユースケース/図の要素のツールチップを見る.spec.ts:211:1 › test_normal_when_data_hint
+[53/98] [firefox] › tests/e2e/単一ユースケース/図の要素のツールチップを見る.spec.ts:272:1 › test_normal_when_node_hint
+[54/98] [firefox] › tests/e2e/単一ユースケース/図の要素のツールチップを見る.spec.ts:297:1 › test_normal_when_hints_off
+[55/98] [chromium] › tests/e2e/複合ユースケース/固有の部品で図の文書を描いて確かめる.spec.ts:240:1 › test_normal_when_interactive
+[56/98] [firefox] › tests/e2e/単一ユースケース/図の要素のツールチップを見る.spec.ts:341:1 › test_normal_when_no_room_below
+[57/98] [firefox] › tests/e2e/単一ユースケース/図の要素のツールチップを見る.spec.ts:356:1 › test_normal_when_diagram_placement_top
+[58/98] [firefox] › tests/e2e/単一ユースケース/図の要素のツールチップを見る.spec.ts:399:1 › test_normal_when_term_width_and_case_differ
+[59/98] [chromium] › tests/e2e/複合ユースケース/固有の部品で図の文書を描いて確かめる.spec.ts:274:1 › test_error_when_type_mismatch
+[60/98] [firefox] › tests/e2e/単一ユースケース/図の要素のツールチップを見る.spec.ts:438:3 › タッチの端末 › test_normal_when_touch
+[61/98] [firefox] › tests/e2e/単一ユースケース/図の要素のツールチップを見る.spec.ts:470:1 › test_normal_when_er_table
+[62/98] [chromium] › tests/e2e/複合ユースケース/固有の部品で図の文書を描いて確かめる.spec.ts:348:1 › test_error_when_diagram_drift
+[63/98] [firefox] › tests/e2e/単一ユースケース/図の要素のツールチップを見る.spec.ts:529:1 › test_normal_when_linked_node_has_tip
+[64/98] [firefox] › tests/e2e/単一ユースケース/図の要素のツールチップを見る.spec.ts:580:1 › test_normal_when_chart_items
+[65/98] [firefox] › tests/e2e/複合ユースケース/コードブロックのHTMLでチャートとヒントを読む.spec.ts:176:1 › test_normal
+[66/98] [firefox] › tests/e2e/単一ユースケース/図を拡大・縮小・移動する.spec.ts:154:1 › test_normal_when_wheel
+[67/98] [firefox] › tests/e2e/単一ユースケース/図を拡大・縮小・移動する.spec.ts:191:1 › test_normal_when_drag
+[68/98] [firefox] › tests/e2e/単一ユースケース/図を拡大・縮小・移動する.spec.ts:241:1 › test_normal_when_keyboard
+[69/98] [firefox] › tests/e2e/単一ユースケース/図を拡大・縮小・移動する.spec.ts:268:1 › test_normal_when_embedded_chart
+[70/98] [firefox] › tests/e2e/単一ユースケース/図を拡大・縮小・移動する.spec.ts:360:1 › test_normal_when_er_diagram
+[71/98] [firefox] › tests/e2e/単一ユースケース/図を拡大・縮小・移動する.spec.ts:418:1 › test_normal_when_er_columns_folded
+[72/98] [firefox] › tests/e2e/単一ユースケース/図を拡大・縮小・移動する.spec.ts:450:1 › test_normal_when_drag_on_linked_node
+[73/98] [firefox] › tests/e2e/単一ユースケース/図を拡大・縮小・移動する.spec.ts:626:1 › test_normal_when_group_titles_stuck
+[74/98] [firefox] › tests/e2e/単一ユースケース/図を拡大・縮小・移動する.spec.ts:688:1 › test_normal_when_sticky_titles_off
+[75/98] [firefox] › tests/e2e/単一ユースケース/図を拡大・縮小・移動する.spec.ts:754:1 › test_normal_when_resized
+  1) [firefox] › tests/e2e/単一ユースケース/図を拡大・縮小・移動する.spec.ts:754:1 › test_normal_when_resized ──────────
+
+    Error: expect(received).toBeLessThanOrEqual(expected)
+
+    Expected: <= 2
+    Received:    656.0000152587891
+
+      782 |   // 検証: ドラッグした分だけ高くなり、幅は変わらず、図の全体が収まる高さを超えない
+      783 |   const resized = await heightOf(page);
+    > 784 |   expect(Math.abs(resized - opened - 200)).toBeLessThanOrEqual(2);
+          |                                            ^
+      785 |   expect(
+      786 |     Math.abs((await rectOf(viewportOf(page))).width - width),
+      787 |   ).toBeLessThanOrEqual(1);
+        at /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/fix-diagram-e2e-regressions/tests/e2e/単一ユースケース/図を拡大・縮小・移動する.spec.ts:784:44
+
+    Error Context: test-results/単一ユースケース-図を拡大・縮小・移動する-test-normal-when-resized-firefox/error-context.md
+
+    Error Context: test-results/単一ユースケース-図を拡大・縮小・移動する-test-normal-when-resized-firefox/error-context.md
+
+
+[76/98] [firefox] › tests/e2e/単一ユースケース/図を拡大・縮小・移動する.spec.ts:829:1 › test_normal_when_drag_on_chart_item
+  2) [firefox] › tests/e2e/単一ユースケース/図の要素のツールチップを見る.spec.ts:580:1 › test_normal_when_chart_items ────
+
+    Error: expect(locator).toBeFocused() failed
+
+    Locator:  locator('#doc figure.mdmark-diagram').first().locator('[data-tip-owner^="item:"]').first()
+    Expected: focused
+    Received: inactive
+    Timeout:  30000ms
+
+    Call log:
+      - Expect "toBeFocused" locator('#doc figure.mdmark-diagram').first().locator('[data-tip-owner^="item:"]').first() with timeout 30000ms
+      - waiting for locator('#doc figure.mdmark-diagram').first().locator('[data-tip-owner^="item:"]').first()
+        63 × locator resolved to <circle r="12" cx="56" cy="209.28" tabindex="0" data-tip-owner="item:1" class="mdmark-diagram-item-hit" aria-describedby="mdmark-diagram-1-0-tip-1"></circle>
+           - unexpected value "inactive"
+
+
+      661 |   }
+      662 |   const first = itemOwnersOf(figures.nth(0)).first();
+    > 663 |   await expect(first).toBeFocused();
+          |                       ^
+      664 |   const firstTip = await tipOf(first);
+      665 |   await expect(firstTip).toBeVisible();
+      666 |   await page.keyboard.press("Escape");
+        at /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/fix-diagram-e2e-regressions/tests/e2e/単一ユースケース/図の要素のツールチップを見る.spec.ts:663:23
+
+    Error Context: test-results/単一ユースケース-図の要素のツールチップを見る-test-normal-when-chart-items-firefox/error-context.md
+
+    Error Context: test-results/単一ユースケース-図の要素のツールチップを見る-test-normal-when-chart-items-firefox/error-context.md
+
+
+[77/98] [firefox] › tests/e2e/単一ユースケース/図を描く.spec.ts:216:1 › test_normal_when_flowchart
+[78/98] [firefox] › tests/e2e/単一ユースケース/図を描く.spec.ts:306:1 › test_normal_when_sequence
+[79/98] [firefox] › tests/e2e/単一ユースケース/図を描く.spec.ts:359:1 › test_normal_when_single_kinds
+[80/98] [firefox] › tests/e2e/単一ユースケース/図を描く.spec.ts:410:1 › test_normal_when_graph
+[81/98] [firefox] › tests/e2e/単一ユースケース/図を描く.spec.ts:439:1 › test_error_when_definition_invalid
+[82/98] [firefox] › tests/e2e/単一ユースケース/図を描く.spec.ts:492:1 › test_normal_when_bar
+[83/98] [firefox] › tests/e2e/単一ユースケース/図を描く.spec.ts:541:1 › test_normal_when_pie
+[84/98] [firefox] › tests/e2e/単一ユースケース/図を描く.spec.ts:571:1 › test_normal_when_scatter
+[85/98] [firefox] › tests/e2e/単一ユースケース/図を描く.spec.ts:623:1 › test_normal_when_more_chart_types
+[86/98] [firefox] › tests/e2e/複合ユースケース/固有の部品で図の文書を描いて確かめる.spec.ts:42:1 › test_normal
+[87/98] [firefox] › tests/e2e/単一ユースケース/図を描く.spec.ts:770:1 › test_normal_when_many_series
+[88/98] [firefox] › tests/e2e/単一ユースケース/図を描く.spec.ts:811:1 › test_normal_when_er_diagram
+[89/98] [firefox] › tests/e2e/単一ユースケース/図を描く.spec.ts:876:1 › test_error_when_er_definition_invalid
+[90/98] [firefox] › tests/e2e/単一ユースケース/図を描く.spec.ts:903:1 › test_normal_when_flowchart_auto_layout
+[91/98] [firefox] › tests/e2e/単一ユースケース/図を描く.spec.ts:1000:1 › test_normal_when_node_link
+[92/98] [firefox] › tests/e2e/単一ユースケース/図を描く.spec.ts:1037:1 › test_error_when_node_link_not_allowed
+[93/98] [firefox] › tests/e2e/複合ユースケース/コードブロックのHTMLでチャートとヒントを読む.spec.ts:230:1 › test_normal_when_exported
+[94/98] [firefox] › tests/e2e/複合ユースケース/コードブロックのHTMLでチャートとヒントを読む.spec.ts:294:1 › test_normal_when_range_scripts
+[95/98] [firefox] › tests/e2e/単一ユースケース/図を拡大・縮小・移動する.spec.ts:906:1 › test_normal_when_mermaid
+[96/98] [firefox] › tests/e2e/複合ユースケース/固有の部品で図の文書を描いて確かめる.spec.ts:240:1 › test_normal_when_interactive
+[97/98] [firefox] › tests/e2e/複合ユースケース/固有の部品で図の文書を描いて確かめる.spec.ts:274:1 › test_error_when_type_mismatch
+[98/98] [firefox] › tests/e2e/複合ユースケース/固有の部品で図の文書を描いて確かめる.spec.ts:348:1 › test_error_when_diagram_drift
+  2 failed
+    [firefox] › tests/e2e/単一ユースケース/図の要素のツールチップを見る.spec.ts:580:1 › test_normal_when_chart_items ─────
+    [firefox] › tests/e2e/単一ユースケース/図を拡大・縮小・移動する.spec.ts:754:1 › test_normal_when_resized ───────────
+  96 passed (4.8m)

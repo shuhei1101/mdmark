@@ -129,16 +129,17 @@ test("test_normal", async ({ builtRoot, tempDir, page }) => {
   await expect(wireTip).toBeHidden();
   const info = page.getByRole("button", { name: "「分類」の入力・処理・出力" });
   await info.focus();
-  const ioTip = page
-    .locator('[role="tooltip"]')
-    .filter({ hasText: "返信の種類" });
-  await expect(ioTip.first()).toBeVisible();
+  // 層の hint にも同じ語があるため、印が指すツールチップで探す
+  const ioTip = page.locator(
+    `[role="tooltip"][id="${await info.getAttribute("aria-describedby")}"]`,
+  );
+  await expect(ioTip).toBeVisible();
   await expectBelow({
-    tip: ioTip.first(),
+    tip: ioTip,
     owner: page.locator('#doc [data-node="classify"]'),
   });
   await page.keyboard.press("Escape");
-  await expect(ioTip.first()).toBeHidden();
+  await expect(ioTip).toBeHidden();
   // システムの枠のタイトルの印にフォーカスすると、枠の hint が印の下に出て、Esc で消える
   const frameInfo = figure.locator(
     ".mdmark-diagram-frame-title .mdmark-diagram-group-info",

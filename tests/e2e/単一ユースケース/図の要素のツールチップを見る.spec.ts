@@ -482,6 +482,10 @@ test("test_normal_when_er_table", async ({ page }) => {
   const info = page.getByRole("button", { name: "「顧客」の説明" });
   const tipId = await info.getAttribute("aria-describedby");
   const tip = page.locator(`[role="tooltip"][id="${tipId}"]`);
+  // テーブルの下にツールチップが収まるよう、テーブルの上端を画面の上から 100px の位置までスクロールする
+  await table.evaluate((element) => {
+    window.scrollBy(0, element.getBoundingClientRect().top - 100);
+  });
   // 実行
   await info.hover();
   // 検証
