@@ -1,0 +1,15 @@
+$ npm run test:unit
+
+> test:unit
+> vitest run --project 'unit*'
+
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/test-vscode-collapsed-section-scroll-sync
+
+
+ Test Files  258 passed (258)
+      Tests  1818 passed (1818)
+   Start at  04:10:28
+   Duration  141.70s (worker 67%, tests 22%, import 10%, transform 1%)
+
+exit:0
