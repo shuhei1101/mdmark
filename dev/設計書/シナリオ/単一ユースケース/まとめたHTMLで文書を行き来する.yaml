@@ -94,7 +94,7 @@ scenarios:
     setup:
       - name: まとめた HTML
         description: 文書 A（`entry`）が `<!-- wide -->` 〜 `<!-- /wide -->` で 8 列の表を囲んだ範囲を持つ、文書 A・B をまとめた HTML
-        notes: 画面の幅は 1280px
+        notes: 画面の幅は 1280px。設定の `theme` の CSS で `--mdmark-content-width` を `640px` にしている
       - name: Mock
         description: 差し替える依存は無い（HTML だけを空のフォルダへ写して file:// で開く）
     flow: |-
