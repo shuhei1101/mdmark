@@ -32,6 +32,8 @@
 | インターフェース定義設計 | [f828e525..05587ca2](https://github.com/shuhei1101/mdmark/compare/f828e525...05587ca2) | レビューの指摘の修正 |
 | インターフェース定義設計 | [2a8e6a4e..55ada24b](https://github.com/shuhei1101/mdmark/compare/2a8e6a4e...55ada24b) | レビューの指摘の修正（外す・写し） |
 | インターフェース定義設計 | [56f4a0d0..0d39c874](https://github.com/shuhei1101/mdmark/compare/56f4a0d0...0d39c874) | レビューの指摘の修正（状態と受け取りの外す） |
+| 部品設計 | [600ebd3e..c1a3c48f](https://github.com/shuhei1101/mdmark/compare/600ebd3e...c1a3c48f) | 部品設計と画面設計を同じ commit で確定。インターフェース定義の任意の指摘も含む |
+| 画面設計 | [600ebd3e..c1a3c48f](https://github.com/shuhei1101/mdmark/compare/600ebd3e...c1a3c48f) | - |
 
 ## テスト結果
 

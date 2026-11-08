@@ -50,11 +50,15 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-08T07:24:08.815709+00:00'
   - process: 部品設計
-    status: todo
+    status: done
     note: 部品の表示の文言と、部品設計のファイル名（コメントの印・節・知らせの枠 など）を修正する
+    updated_by: planner
+    updated_at: '2026-11-08T08:10:11.186715+00:00'
   - process: 画面設計
-    status: todo
+    status: done
     note: ボタン・ラベル・通知の文言を修正し、用語集の用語の置き換え先を決める
+    updated_by: planner
+    updated_at: '2026-11-08T08:10:11.186715+00:00'
   - process: モジュール構成設計
     status: skipped
     reason: クラス・関数の構成を変えない。モジュール構成の文の単語とファイル名の修正はドキュメント修正で行う
