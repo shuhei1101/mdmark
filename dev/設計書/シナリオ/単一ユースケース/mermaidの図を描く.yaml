@@ -7,7 +7,7 @@ stakeholders:
 - name: 読者
   interest: ほかのツールで記載した mermaid の図を、mdmark のほかの図と同じ外観と操作で読み込める
 - name: 文書の作成者
-  interest: mermaid のコードブロックを書き直さずに、そのまま図にできる
+  interest: mermaid のコードブロックを修正せずに、そのまま図にできる
 - name: 利用側のアプリの開発者
   interest: mermaid を使用しない文書では、mermaid を読み込む時間と通信が増えない
 trigger: 利用側のページが、言語 `mermaid` のコードブロックを持つ文書を描かせる

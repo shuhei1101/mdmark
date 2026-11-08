@@ -463,10 +463,10 @@ files:
     description: mdmark が描く文書とまとめた HTML の UI を部品ごとに並べ、外観の値の違いを見比べるキャンバス。ui-canvas のモックを探すときに参照する。
     tags: [topic:モック, topic:テーマ]
   - path: pages/vscode-preview/181/gear-editor-title/index.html
-    description: '#181 の画面のモックの案『gear-editor-title』: 案 A。プレビューのエディタのタイトルバーに歯車のボタンを配置し、押すと VS Code の設定画面を mdmark の項目に絞って Markdown の列に開く。設定画面でテーマを変えると、右に残したプレビューがその場で描き直る。画面の外観や振る舞いを決めるときに参照する。'
+    description: '#181 の画面のモックの案『gear-editor-title』: 案 A。プレビューのエディタのタイトルバーに歯車のボタンを配置し、押すと VS Code の設定画面を mdmark の項目に絞って Markdown の列に開く。設定画面でテーマを変えると、右に残したプレビューがその場で再描画される。画面の外観や振る舞いを決めるときに参照する。'
     tags: [topic:モック, tool:vscode]
   - path: pages/vscode-preview/181/gear-in-webview/index.html
-    description: '#181 の画面のモックの案『gear-in-webview』: 案 B。プレビューの中の右上に歯車のボタンを配置し、押すとテーマの一覧と「すべての設定を開く」のメニューを開く。一覧から選ぶとその場で描き直り、「すべての設定を開く」は案 A と同じ設定画面を開く。画面の外観や振る舞いを決めるときに参照する。'
+    description: '#181 の画面のモックの案『gear-in-webview』: 案 B。プレビューの中の右上に歯車のボタンを配置し、押すとテーマの一覧と「すべての設定を開く」のメニューを開く。一覧から選ぶとその場で再描画され、「すべての設定を開く」は案 A と同じ設定画面を開く。画面の外観や振る舞いを決めるときに参照する。'
     tags: [topic:モック, tool:vscode]
   - path: pages/vscode-preview/181/index.md
     description: '#181（見た目のテーマを選べるようにし、プレビューから設定を開けるようにする）の画面のモックの案の一覧。案ごとの違いを見比べるときに参照する。'

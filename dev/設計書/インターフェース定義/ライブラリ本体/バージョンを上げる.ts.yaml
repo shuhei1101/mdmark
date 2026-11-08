@@ -509,7 +509,7 @@ constraints:
     constraint: '`v{MAJOR}.{MINOR}.{PATCH}` の 3 つの数を左から数として比べる'
   - item: 適用するバージョン
     constraint: パッケージの `migrations/` の直下の `v{バージョン}` のフォルダのうち、手元のバージョンより新しく目標のバージョン以下のものをバージョンの昇順に適用する。`migrations/next/` は読み込まない
-    decided_by: dev/設計書/ER図/移行の手順#tables[migrations/{版}/steps.yaml]
+    decided_by: dev/設計書/ER図/移行の手順#tables[migrations/{バージョン}/steps.yaml]
   - item: 手順の検め
     constraint: 適用する全てのバージョンの `steps.yaml` を、質問と書き換えの前に `schemas/mdmark.steps.schema.json` で検める。1 つでも合わなければ何も書き換えない
   - item: 質問の順
@@ -521,7 +521,7 @@ constraints:
     constraint: 手順の失敗か点検のずれで、コピーの全てのファイルを元の場所へ書き込んで戻す。`call` のスクリプトは `files` に挙げたものだけを書き換える
   - item: 再適用
     constraint: '`rename_key` は元のキーがあり新しいキーが無いときだけ名前を変え、他は何もしない。`set_default` はキーが無いときだけ追加する。`map_values` は値が解釈しの表の元の値のときだけ替える。`replace_mark` は `from` を `to` に書き換える（`to` は `from` を含まない）。`call` のスクリプトはもう一度適用しても結果が変わらないように記載する'
-    decided_by: dev/設計書/ER図/移行の手順#tables[migrations/{版}/steps.yaml]
+    decided_by: dev/設計書/ER図/移行の手順#tables[migrations/{バージョン}/steps.yaml]
     notes: コピーから戻せずに止まっても（Ctrl-C など）、次の `upgrade` が同じ手元のバージョンからもう一度適用できる
   - item: YAML の書き換え
     constraint: 設定と索引はコメント・キーの並び・触らないキーの記載方法を残して書き換える

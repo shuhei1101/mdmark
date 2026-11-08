@@ -9021,7 +9021,7 @@ test("test_normal_when_comment_focused", async () => {
 
 // ─── 表のセルの結合・行見出し・入れ子のタブ・コードの行の種類と開閉 ───
 
-/** 見出しが 2 段で、分類の列を `^^` で結合した表（数値は上から `3`・`1`・`4`・`2`） */
+/** 見出しが 2 行で、分類の列を `^^` で結合した表（数値は上から `3`・`1`・`4`・`2`） */
 const MERGED_TABLE_MARKDOWN = [
   "<!-- table: data header-rows=2 filter=分類 +copy -->",
   "",

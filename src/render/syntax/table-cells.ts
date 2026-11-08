@@ -161,7 +161,7 @@ export function headerGroupsOf(options: {
   const bottom = head.length - 1;
   const columns = head[bottom]?.length ?? 0;
   return Array.from({ length: columns }, (_, column) => {
-    // 複数の段が覆うときは最も下の段を選ぶ
+    // 複数の行が覆うときは最も下の行を選ぶ
     for (let row = bottom - 1; row >= 0; row -= 1) {
       const cells = plan.cells[row] ?? [];
       for (const [start, cell] of cells.entries()) {

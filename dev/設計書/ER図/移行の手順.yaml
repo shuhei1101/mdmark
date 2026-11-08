@@ -1,7 +1,7 @@
 title: "ER 図: 移行の手順"
 lead: mdmark の開発者がバージョンごとに記載し、`mdmark upgrade` が利用側の設定・索引・文書へ適用する移行の手順と、配布物のビルドが読み込む手順なしの一覧。どちらもリポジトリの `migrations/` に配置し、バージョンのタグのパッケージに入る。`steps.yaml` の構造は `schemas/mdmark.steps.schema.json`（JSON Schema draft 2020-12）で縛る。
 tables:
-  - name: migrations/{版}/steps.yaml
+  - name: migrations/{バージョン}/steps.yaml
     title: 移行の手順
     datastore: YAML
     summary: 1 つのバージョンで適用する移行の手順の並び。最上位は `steps`（手順の並び、必須）だけを持ち、この表の行は `steps` の要素 1 つ
@@ -9,7 +9,7 @@ tables:
     growth: 設定・索引の構造か文書のマーカーを変えるバージョンごとに 1 ファイル
     retention: 削除しない（古いバージョンの利用者が適用する）
     access: 全件
-    description: '`{バージョン}` は `v{MAJOR}.{MINOR}.{PATCH}`。出していないバージョンの手順は `migrations/next/steps.yaml` に配置し、release で `version.ini` を上げる commit で `migrations/v{版}/` へ移す。バージョンのフォルダが無いバージョンは手順なしとして飛ばす。どの手順も、既に該当した後の状態に適用しても結果が変わらない。'
+    description: '`{バージョン}` は `v{MAJOR}.{MINOR}.{PATCH}`。出していないバージョンの手順は `migrations/next/steps.yaml` に配置し、release で `version.ini` を上げる commit で `migrations/v{バージョン}/` へ移す。バージョンのフォルダが無いバージョンは手順なしとして飛ばす。どの手順も、既に該当した後の状態に適用しても結果が変わらない。'
     columns:
       - name: op
         title: 種類

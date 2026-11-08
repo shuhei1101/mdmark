@@ -267,7 +267,7 @@ functions:
       1. `diffSource` か `commentStore` を指定して `docId` が無ければ `TypeError` を投げる。`commentStore` を `checkCommentStore(commentStore, "commentStore")` で確認する（コメントの読み込みと保存の関数を検める）。`baseMarkdown` を `checkBaseMarkdown` で確認し、`onColumnsChange` を指定して関数でなければ `onColumnsChange` を含む `TypeError` を投げる。比較元（`baseMarkdown` が文字列ならその値、それ以外は無し）を記録する。`mounted` に `el` があれば、その `destroy` を呼ぶ。差分の出し方を `normalizeDiffMode(opts.diffMode)` で決める
       2. 設定に既定を適用する（設定に既定を適用する）
       3. 描く世代を 0、片付けたマーカーを `false`、操作を削除する関数・右側の目次を削除する関数・先頭へ戻るボタンを削除する関数を無しにし、右側の目次の状態（`SideTocState`）を `{ open: false, pinned: false }` で作る
-      4. 文書を描く。描くたびに次を行う
+      4. 文書を描く。描くたびに次の処理をする
          - 世代を 1 進め、前の操作を削除する関数・右側の目次を削除する関数・先頭へ戻るボタンを削除する関数があれば呼ぶ
          - 本文の HTML と機能のオン・オフを得て（文書を描く。`opts` の `index`・`docId`・`references`・`aliases` を指定する）、戻りの `page` を既定を適用した設定に重ねてこの描画の設定にする（ページの設定を重ねる）。`el` の中を本文の HTML に置き換え、`el` に `ROOT_CLASS` を付け、`COLOR_THEME_ATTRIBUTE` にこの描画の設定の `colorTheme` を付ける。`COLOR_SCHEME_CLASSES` の 2 つの class を削除してから、この描画の設定の `colorScheme` が `light`・`dark` ならその class を付ける
          - 機能のオン・オフを記録する
@@ -602,7 +602,7 @@ functions:
       description: 全てのマーカーの場所を描き終えるか通知ブロックに替えたら解決する。失敗しても拒否しない
     process: |-
       1. `root` の中の `[data-mdmark-slot]` の要素を全て取得する
-      2. 取得した要素ごとに並行して次を行う
+      2. 取得した要素ごとに並行して次の処理をする
          - `data-mdmark-slot` の名前で対応表の行を参照する。行が無い（文書に生の HTML で記載された）要素は取り除き、ほかは行わない
          - 行の `url` を `document.baseURI` を基準に解決する
          - 名前ごとに 1 回だけモジュールを読み込む。`embeddedLibraries` があるときはその名前の関数を呼び、無い名前は `Error`（埋めていない）で拒否する。無いときは解決した URL で読み込む（モジュールを読み込む）
@@ -706,7 +706,7 @@ functions:
       type: () => void
       description: 受け取りを解除する関数
     process: |-
-      1. `beforeprint` を受けたとき、`isEnabled()` が `true` なら、次を行い、変えたものを記録する
+      1. `beforeprint` を受けたとき、`isEnabled()` が `true` なら、次の処理をし、変えたものを記録する
          - `open` を持たない `details` を開く
          - `hidden` を持つ `mdmark-section-body`・`mdmark-row-detail`・`div.mdmark-tree` の入れ子の `ul` の `hidden` を削除する（ツリーの `ul` は、そのフォルダの `mdmark-tree-toggle` を `aria-expanded="true"` にする）
          - `aria-expanded="false"` の `mdmark-code-fold` を `setCodeFoldOpen` で開く
@@ -785,7 +785,7 @@ functions:
       3. 取得した `code` の `data-mdmark-syntax` の値を重なりなく並べ、言語ごとに URL を決めて並べて読み込み（`Promise.allSettled`）、読み込めた言語を本体の `registerLanguage` で登録する（登録済みの言語は飛ばす）
          - `[error]` 言語のモジュールを読み込めない（URL と元のエラーを `console.error` に出し、その言語の `code` を色分けせずに残す）
       4. 待った後に `isCurrent()` が `false` なら何もしない
-      5. 登録できた言語の `code` ごとに次を行う
+      5. 登録できた言語の `code` ごとに次の処理をする
          - `mdmark-code-text` を持つときは、各行の `textContent` を色分けした行にし（色分けした行を作る）、各 `mdmark-code-text` の `innerHTML` に入れる
          - 持たないときは、`code` の `textContent` を `highlight`（`ignoreIllegals: true`）に経由した HTML を `code` の `innerHTML` に入れる
     callees:
@@ -973,7 +973,7 @@ functions:
       2. `embeddedHtmlScripts` が無ければ、`loadTranspiler` で変換のライブラリを待つ。読み込めなければ範囲ごとに通知ブロックを配置し、何もしない関数を返却する
          - `[error]` 変換のライブラリを読み込めない（URL と元のエラーを `console.error` に出す）
       3. 待った後に `isCurrent()` が `false` なら何もしない関数を返却する
-      4. 範囲ごとに順に次を行う
+      4. 範囲ごとに順に次の処理をする
          - 既定のエクスポートを得る。`embeddedHtmlScripts` があればコードの文字で参照する。無ければ `transform` で変え、`wrapRangeScript` のコードを `script` 要素で動かし、登録された関数を `module`・`exports`・例外を投げる `require` で呼ぶ
            - `[error]` 変換が例外を投げるか登録が無い→構文エラーの記載の警告
          - 既定のエクスポートが関数でなければ記載の警告を配置する

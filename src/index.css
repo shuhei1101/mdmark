@@ -3174,7 +3174,7 @@
       list-style: none;
       white-space: nowrap;
 
-      /* 入れ子の段: 親のフォルダのアイコンの下から段の線を描いて字下げする */
+      /* 入れ子の階層: 親のフォルダのアイコンの下から階層の線を描いて字下げする */
       ul {
         margin: 0 0 0 calc(var(--mdmark-tree-lead) + 0.5em);
         padding-inline-start: 1em;
@@ -3195,7 +3195,7 @@
       min-height: 1.5rem;
     }
 
-    /* 名前の塊（開閉の山形・アイコン・名前）。フォルダはこの塊が開閉のボタン。注釈を持つ行は、注釈の左端が段によらず一致する幅を取る */
+    /* 名前の塊（開閉の山形・アイコン・名前）。フォルダはこの塊が開閉のボタン。注釈を持つ行は、注釈の左端が階層によらず一致する幅を取る */
     .mdmark-tree-row > :is(.mdmark-tree-toggle, .mdmark-tree-name) {
       display: inline-flex;
       flex: none;
@@ -4754,7 +4754,7 @@
       }
     }
 
-    /* 脚注の一覧: 本文と間を空け、本文より 1 段小さい文字にする。既定で閉じる */
+    /* 脚注の一覧: 本文と間を空け、本文より 1 段階小さい文字にする。既定で閉じる */
     .mdmark-footnotes {
       margin-block-start: calc(var(--mdmark-space) * 2.25);
       font-size: 0.875em;
@@ -9968,7 +9968,7 @@
     font-size: 0.875em;
   }
 
-  /* 階層の深さごとの縦線: 1 段ごとに 1 本。選んだ行の範囲の階層の線だけを濃くする */
+  /* 階層の深さごとの縦線: 1 階層ごとに 1 本。選んだ行の範囲の階層の線だけを濃くする */
   .mdmark-table[data-tree] .mdmark-tree-guide {
     flex: none;
     inline-size: 1rem;

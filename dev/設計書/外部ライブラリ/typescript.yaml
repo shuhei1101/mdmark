@@ -16,7 +16,7 @@ catalogs:
   - name: tsc --noEmit -p vscode
     kind: コマンド
     purpose: 'VS Code 拡張機能と Webview（`jsx: react-jsx`）の型を検査する'
-lead: TypeScript の型検査と変換を行うコンパイラ（`tsc`）。
+lead: TypeScript の型検査と変換をするコンパイラ（`tsc`）。
 purl: pkg:npm/typescript@7.0.2
 dependency_scope: 開発のみ
 adoption: 採用

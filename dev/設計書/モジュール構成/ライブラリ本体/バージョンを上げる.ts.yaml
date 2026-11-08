@@ -76,7 +76,7 @@ data_models:
         type: ("config" | "index" | "documents")[]
         description: '`call` が書き換えうるもの'
     refs:
-      - dev/設計書/ER図/移行の手順#tables[migrations/{版}/steps.yaml]
+      - dev/設計書/ER図/移行の手順#tables[migrations/{バージョン}/steps.yaml]
   - name: MigrationVersion
     title: 適用するバージョン
     container: src/cli/migrations.ts
@@ -938,7 +938,7 @@ functions:
     kind: 関数
     scope: public
     summary: 設定の `aliases` の v0.2.0 の構造の行を、alias-inject v0.3.0 の構造へ書き換える移行の手順のスクリプトの処理
-    description: '`steps.yaml` の `call`（`destructive: true`・`files: [config]`。`description` は ``設定の `aliases` の行を alias-inject v0.3.0 の構造へ書き換える（値を失うのは `metadata` に固定値を記載した行だけ）``）が実行する。スクリプトとして呼ばれると、`--config` の設定ファイルを `yaml` の `parseDocument` で読み込み、この関数を呼ぶ。`problems` があれば書き戻さずに標準エラーへ 1 行ずつ書き込んで 1 で終わり、無ければ `changed` のときだけ `doc.toString({ flowCollectionPadding: false })` で書き込んで戻し、`notices` を標準出力へ 1 行ずつ書き込んで 0 で終わる。行ごとに、`metadata.alias_type` を持つ行だけを書き換える（行の `alias_type` を持つ行と、`metadata.alias_type` を持たない行は触らない）。`{type: custom, value}` は `value` を行の `alias_type` にする。`{type: ref, field}` は、行の `paths` を設定ファイルのフォルダから `node:fs/promises` の `glob` で参照した YAML のレコード（`records` を持つ行はそのキーの配列の要素、持たない行はファイルの値）の `field` の列の値を重ねずに集め（YAML として読み込めないファイルがあれば `problems` に ``aliases[{行}]（{id}）の `{パス}` を YAML として読み込めません。字下げと記載方法を修正してください。`` を追加してその行を書き換えない）、1 つだけならその値を行の `alias_type` にする。0 個なら `problems` に ``aliases[{行}]（{id}）はレコードが無く、種類を決められません。行に `alias_type` を記載してください。`` を追加し、2 個以上なら `problems` に ``aliases[{行}]（{id}）はレコードの `{field}` から種類を 1 つに決められません（{集めた値を `・` で並べた}）。種類ごとに行を分け、行に `alias_type` を記載してください。`` を追加する。`metadata` のほかのキーは、`{type: ref, field}` を `field` の文字列にし、`{type: custom, value}` はキーを除いて `notices` に ``aliases[{行}]（{id}）の `metadata.{キー}` の固定値 `{value}` を除外しました。必要なら YAML の列に記載してください。`` を追加する。`metadata.alias_type` を除き、空になった `metadata` も除く。もう一度適用しても結果が変わらない。単体テストは `migrations/*/alias-rows.mjs` を探して import し、release で `next/` をバージョンのフォルダへ移した後も同じテストで読み込む'
+    description: '`steps.yaml` の `call`（`destructive: true`・`files: [config]`。`description` は ``設定の `aliases` の行を alias-inject v0.3.0 の構造へ書き換える（値を失うのは `metadata` に固定値を記載した行だけ）``）が実行する。スクリプトとして呼ばれると、`--config` の設定ファイルを `yaml` の `parseDocument` で読み込み、この関数を呼ぶ。`problems` があれば設定と索引に書き込まずに標準エラーへ 1 行ずつ書き込んで 1 で終わり、無ければ `changed` のときだけ `doc.toString({ flowCollectionPadding: false })` で書き込んで戻し、`notices` を標準出力へ 1 行ずつ書き込んで 0 で終わる。行ごとに、`metadata.alias_type` を持つ行だけを書き換える（行の `alias_type` を持つ行と、`metadata.alias_type` を持たない行は触らない）。`{type: custom, value}` は `value` を行の `alias_type` にする。`{type: ref, field}` は、行の `paths` を設定ファイルのフォルダから `node:fs/promises` の `glob` で参照した YAML のレコード（`records` を持つ行はそのキーの配列の要素、持たない行はファイルの値）の `field` の列の値を重ねずに集め（YAML として読み込めないファイルがあれば `problems` に ``aliases[{行}]（{id}）の `{パス}` を YAML として読み込めません。字下げと記載方法を修正してください。`` を追加してその行を書き換えない）、1 つだけならその値を行の `alias_type` にする。0 個なら `problems` に ``aliases[{行}]（{id}）はレコードが無く、種類を決められません。行に `alias_type` を記載してください。`` を追加し、2 個以上なら `problems` に ``aliases[{行}]（{id}）はレコードの `{field}` から種類を 1 つに決められません（{集めた値を `・` で並べた}）。種類ごとに行を分け、行に `alias_type` を記載してください。`` を追加する。`metadata` のほかのキーは、`{type: ref, field}` を `field` の文字列にし、`{type: custom, value}` はキーを除いて `notices` に ``aliases[{行}]（{id}）の `metadata.{キー}` の固定値 `{value}` を除外しました。必要なら YAML の列に記載してください。`` を追加する。`metadata.alias_type` を除き、空になった `metadata` も除く。もう一度適用しても結果が変わらない。単体テストは `migrations/*/alias-rows.mjs` を探して import し、release で `next/` をバージョンのフォルダへ移した後も同じテストで読み込む'
     is_async: true
     args:
       - name: options
@@ -998,7 +998,7 @@ functions:
     container: migrations/next/drop-tag-vocabulary.mjs
     usecase: バージョンを上げる
     summary: v0.9.0 までの索引の YAML の文字列から、文書のタグの別名・やめたタグを語彙の `name`・振り替え先に書き換え、最上位の `tags` を削除して `schema` を `2` にした YAML を返却する
-    description: '`yaml` の `parseDocument` で読み込み、コメントとキーの並びを保って `doc.toString({ flowCollectionPadding: false })` で書き込んで戻す。語彙の並びで先のタグを優先し、別名から `name` へ、`deprecated` を持つタグの `name` から振り替え先への表を作る。文書のタグの名前（文字列の要素はその文字列、オブジェクトの要素は `name`）を、別名なら `name` に、その結果がやめたタグなら振り替え先に 1 回だけ書き換える。書き換えで同じ文書に同じ名前が 2 つ以上できたら先の 1 つを残し、どれかが `main: true` なら残す要素を `main: true` のオブジェクトにする。最上位の `tags` を削除し、`schema` が `1` なら `2` にする。変えるものが無ければ `undefined` を返却する（もう一度適用しても結果が変わらない）。ファイルの読み込みと保存は `runDropTagVocabulary` が持つ。`migrations/next/` は release で `migrations/v{版}/` へ移る'
+    description: '`yaml` の `parseDocument` で読み込み、コメントとキーの並びを保って `doc.toString({ flowCollectionPadding: false })` で書き込んで戻す。語彙の並びで先のタグを優先し、別名から `name` へ、`deprecated` を持つタグの `name` から振り替え先への表を作る。文書のタグの名前（文字列の要素はその文字列、オブジェクトの要素は `name`）を、別名なら `name` に、その結果がやめたタグなら振り替え先に 1 回だけ書き換える。書き換えで同じ文書に同じ名前が 2 つ以上できたら先の 1 つを残し、どれかが `main: true` なら残す要素を `main: true` のオブジェクトにする。最上位の `tags` を削除し、`schema` が `1` なら `2` にする。変えるものが無ければ `undefined` を返却する（もう一度適用しても結果が変わらない）。ファイルの読み込みと保存は `runDropTagVocabulary` が持つ。`migrations/next/` は release で `migrations/v{バージョン}/` へ移る'
     scope: internal
     is_async: false
     args:

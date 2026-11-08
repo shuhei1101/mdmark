@@ -1532,7 +1532,7 @@ test("test_attach_tables_when_nested_table_sorted", async () => {
   }
 });
 
-/** 見出しが 2 段で、分類の列を `^^` で結合した表（数値は上から `3`・`1`・`4`・`2`） */
+/** 見出しが 2 行で、分類の列を `^^` で結合した表（数値は上から `3`・`1`・`4`・`2`） */
 const MERGED_TABLE = [
   "<!-- table: data header-rows=2 filter=分類 +copy -->",
   "",

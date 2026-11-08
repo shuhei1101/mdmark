@@ -81,7 +81,7 @@ functions:
     scope: public
     is_async: true
     summary: 前回の `dist/` を削除してから、バージョンを決めて検査し、移行の手順を点検し、`dist/` を書き込んでサイズを検査し、プラグインをビルドし、終了コードを返却する
-    side_effects: 最初に `dist/` を削除してから書き直す。失敗したとき（バージョンの書式の誤り・`version.ini` を読み込めない・esbuild の失敗・上限超過・対応ブラウザの下限に無い API）は `dist/` を残さず、標準エラーに理由を出す
+    side_effects: 最初に `dist/` を削除してからもう一度書き込む。失敗したとき（バージョンの書式の誤り・`version.ini` を読み込めない・esbuild の失敗・上限超過・対応ブラウザの下限に無い API）は `dist/` を残さず、標準エラーに理由を出す
     args:
       - name: argv
         type: string[]

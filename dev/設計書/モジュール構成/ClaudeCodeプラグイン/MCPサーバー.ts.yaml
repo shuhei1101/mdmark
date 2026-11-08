@@ -803,7 +803,7 @@ functions:
     kind: 関数
     container: src/plugin/http.ts
     usecase: MCPサーバーを起動・停止する
-    summary: 組み込みの `Response` を `node:http` の応答へ渡す
+    summary: 組み込みの `Response` を `node:http` の応答へ引き渡す
     scope: internal
     is_async: true
     side_effects: '`res` に記載する'

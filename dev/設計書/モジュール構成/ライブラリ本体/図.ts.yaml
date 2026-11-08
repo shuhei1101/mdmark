@@ -27,7 +27,7 @@ directory: |-
       └── params.ts       # 操作できる部品の値と写す
   ```
 notes:
-  単体テストのファイル: 物理ファイルごとに `tests/unit/src/{同じパス}.test.ts`（`interact/` は `.browser.test.ts`）を配置し、単体テスト作成の段で `test_files` に記載する
+  単体テストのファイル: 物理ファイルごとに `tests/unit/src/{同じパス}.test.ts`（`interact/` は `.browser.test.ts`）を配置し、単体テスト作成の工程で `test_files` に記載する
   他の分類への変更: 記法のコアルールの順では `buildDiagrams` を図表の番号の前に配置し、`fig` のマーカーが図の部品に番号を付けられるようにする。`mount` の `attachInteractions` は `diagrams` がオンなら `attachDiagrams`・`attachParams` を呼ぶ。印刷の前後の `attachPrint`（分類『描く』）は、列を畳んだ ER 図のテーブルを `setErTableFolded` で開き、印刷の後にもう一度畳む。描画の sanitize は `data-mdmark-own` を持つ要素にだけ図の部品の要素と属性（インターフェース定義『文書をHTML文字列にする』の `残す要素・属性`）を許す。svg の描画の属性は `d`・`viewBox`・`width`・`height`・`x`・`y`・`x1`・`y1`・`x2`・`y2`・`cx`・`cy`・`r`・`rx`・`ry`・`points`・`fill`・`stroke`・`stroke-width`・`stroke-dasharray`・`stroke-linecap`・`stroke-linejoin`・`marker-end`・`markerWidth`・`markerHeight`・`refX`・`refY`・`orient`・`transform`。ER 図の列のマーカーの `abbr` の `title` も、図の部品が出した要素だけに許す。記法の CSS のアイコン（`mask-image` の data URL）は lucide の構造に置き換え、構造が lucide@1.59.0 と一致することと、外部ライブラリ『lucide』の一覧のアイコンが使用する要素と属性が全て sanitize の許可にあることを `tests/unit/src/parts/icons.test.ts` で確認する。拡張のマーカーの `definition` は分類『拡張』の `MdmarkMarkArgs` に追加する
 data_models:
   - name: MdmarkFlowDefinition

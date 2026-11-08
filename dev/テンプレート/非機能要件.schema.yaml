@@ -347,7 +347,7 @@ examples:
     source_kind: ユーザー要望
     source: https://github.com/{owner}/{repo}/issues/{番号}#issuecomment-{ID}
     value: Windows の PC と Nintendo Switch
-    rationale: 企画の段で決めた販売先
+    rationale: 企画の工程で決めた販売先
     measurement: 各端末の実機で、タイトル画面から 1 ステージを最後まで遊べるかを確認する
     verification:
       device: Nintendo Switch の実機
@@ -375,4 +375,4 @@ examples:
     external_constraint: 未確定
     source_kind: 未確定
     value: 未確定
-    rationale: オンラインで遊ぶ機能を持つかが企画の段で決まってから決める
+    rationale: オンラインで遊ぶ機能を持つかが企画の工程で決まってから決める

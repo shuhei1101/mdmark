@@ -93,7 +93,7 @@ export const CARD_SOURCE = `// @ts-check
 // 型は、使用するバージョンの dist/ の index.d.ts を ../mdmark/ に配置して読み込む
 
 /**
- * \`<!-- card -->\` の範囲の部品の定義の題を描く拡張
+ * \`<!-- card -->\` の範囲の部品の定義のタイトルを描く拡張
  * @type {import("../mdmark/index.js").MdmarkExtension}
  */
 const extension = {

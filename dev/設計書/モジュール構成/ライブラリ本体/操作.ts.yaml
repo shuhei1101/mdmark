@@ -1756,7 +1756,7 @@ functions:
       - name: test_bottom_head_cells_when_spanning
         case: 正常
         summary: またぐセルしか無い列を undefined にする
-        condition: 1 段だけで、`名前`・`期間`（colSpan 2）
+        condition: 見出しが 1 行だけで、`名前`・`期間`（colSpan 2）
         mock: なし
         expected: '`[{0, 0}, undefined, undefined]`'
     status: planned

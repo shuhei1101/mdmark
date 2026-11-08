@@ -154,7 +154,7 @@ export type TableOptions = {
     active?: number;
     hidden?: boolean;
   };
-  /** 見出しの行ごとのセル。指定すると `columns` の代わりに見出しの行をこの段で描く */
+  /** 見出しの行ごとのセル。指定すると `columns` の代わりに見出しの行をこの行の並びで描く */
   headRows?: TableHeadCell[][];
   /** 本文の各行で `<th scope="row">` にする先頭の列の数（既定 0） */
   rowHeader?: number;
@@ -1201,7 +1201,7 @@ function renderHeadRows(
           const spans = `${rowspan > 1 ? ` rowspan="${rowspan}"` : ""}${colspan > 1 ? ` colspan="${colspan}"` : ""}`;
           const scope = colspan > 1 ? "colgroup" : "col";
           if (column >= 0) {
-            // 列のボタンを持つセルに、段の結合の属性を追加する
+            // 列のボタンを持つセルに、セルの結合の属性を追加する
             return headCell(columns[column] ?? cell.html, column).replace(
               "<th",
               `<th${spans} scope="${scope}"`,

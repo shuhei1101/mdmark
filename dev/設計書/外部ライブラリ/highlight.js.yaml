@@ -5,7 +5,7 @@ version:
   latest: 11.12.0
   checked_on: '2026-10-24'
   source: 既定の対応表の jsDelivr の URL（`https://cdn.jsdelivr.net/npm/@highlightjs/cdn-assets@11.12.0/es/`）
-  pinning: 完全一致。11.12.0 で xml の ReDoS が直っているため 11.12.0 未満にしない。上げるときは色分けの結合テストとスクリーンショットで崩れを確認する
+  pinning: 完全一致。11.12.0 で xml の ReDoS が修正されているため 11.12.0 未満にしない。上げるときは色分けの結合テストとスクリーンショットで崩れを確認する
   support_until: 11.x がサポートの対象（SECURITY.md）。終わりの日は公開されていない
 catalogs:
   - name: API
@@ -79,4 +79,4 @@ docs_url: https://highlightjs.readthedocs.io/
 selection:
   candidates: highlight.js・TanStack Highlight（`@tanstack/highlight` 1.1.0）・Shiki（4.5.0）・refractor（5.0.0）・Lezer を、機能適合・API の使用しやすさと OpenSSF の観点で比べた（[比較表](https://github.com/shuhei1101/mdmark/pull/97#discussion_r4365903825)）。
   decision: jsDelivr・手元の配信・書き出した HTML の 3 か所で同じファイルをそのまま `import()` できるのは、import を持たない highlight.js と TanStack Highlight だけだった。TanStack Highlight は 1.0 から日が浅く、パッチリリースでも色分けの境界が変わると明記しているため、PoC（#98）で全ての成功条件を確認した highlight.js を採る。
-  consequences: 行ごとの `span` への分割は自前で持つ（行をまたぐ `span` を行末で閉じて次の行でもう一度開く）。`shell` は別の言語（Shell Session）を指すため、自前の別名表で `bash` に配置する。`html` は `xml` の別名。CDN 用のパッケージは `.d.ts` を持たないため、型の得方はインターフェース定義・モジュール構成の段で決める。出す class は sanitize の許可に無いため、色分けは `mount` が描いた後に DOM の上で行う
+  consequences: 行ごとの `span` への分割は自前で持つ（行をまたぐ `span` を行末で閉じて次の行でもう一度開く）。`shell` は別の言語（Shell Session）を指すため、自前の別名表で `bash` に配置する。`html` は `xml` の別名。CDN 用のパッケージは `.d.ts` を持たないため、型の得方はインターフェース定義・モジュール構成の工程で決める。出す class は sanitize の許可に無いため、色分けは `mount` が描いた後に DOM の上で行う

@@ -31,7 +31,7 @@ function stepsYaml(lines: string[]): string {
   return ["steps:", ...lines, ""].join("\n");
 }
 
-/** 一時フォルダのパッケージに `migrations/{版}/` のファイルを配置する */
+/** 一時フォルダのパッケージに `migrations/{バージョン}/` のファイルを配置する */
 async function writeMigrations(
   packageDir: string,
   files: Record<string, string>,

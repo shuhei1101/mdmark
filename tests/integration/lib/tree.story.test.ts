@@ -198,7 +198,7 @@ test("test_more", async () => {
   expect(mask).not.toBe(icons["index.ts"]?.mask);
 });
 
-// 5 階層の深い入れ子を全て開き、段ごとに字下げして並べる（Deep）
+// 5 階層の深い入れ子を全て開き、階層ごとに字下げして並べる（Deep）
 test("test_deep", async () => {
   // 準備・実行
   const page = await open("deep");

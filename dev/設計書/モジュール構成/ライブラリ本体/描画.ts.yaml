@@ -1,5 +1,5 @@
 title: ライブラリ本体 / 描画
-lead: Markdown を本文の HTML 文字列にする処理。markdown-it で解析し、トークンの段でマーカーを取得し GitHub Flavored Markdown の不足と画面設計の属性を追加し、sanitize-html で許可していない要素・属性・URL を落とす。DOM に頼らず、ブラウザと Node で同じ文字列を返却する。
+lead: Markdown を本文の HTML 文字列にする処理。markdown-it で解析し、トークンの段階でマーカーを取得し GitHub Flavored Markdown の不足と画面設計の属性を追加し、sanitize-html で許可していない要素・属性・URL を落とす。DOM に頼らず、ブラウザと Node で同じ文字列を返却する。
 directory: |-
   ```tree
   src/render/
@@ -853,7 +853,7 @@ functions:
       description: 書き換えた CSS。`</style` の並びは `<\/style` に替える
     process: |-
       1. 文字列とコメントを飛ばしながら、最上位の規則を `{` と対応する `}` で切り出す
-      2. 規則ごとに次を行う
+      2. 規則ごとに次の処理をする
          - `@media`・`@supports`・`@container`・`@layer` は中身に 1 からをもう一度適用する
          - `@keyframes`・`@font-face` はそのまま残す
          - 他の `@` の規則（`@import` を含む）は落とす

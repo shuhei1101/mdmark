@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "title": "migrations/{版}/steps.yaml",
+  "title": "migrations/{バージョン}/steps.yaml",
   "description": "1 つのバージョンで適用する移行の手順の並び。`mdmark upgrade` が読み込み、配布物のビルドが検める。",
   "type": "object",
   "properties": {

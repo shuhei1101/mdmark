@@ -1417,7 +1417,7 @@ async function firstCells(
     );
 }
 
-// 見出しを 2 段にして横に結合し、行見出しの列を縦に結合し、コピーでは結合したセルの値を埋める（正常シナリオ（多段の見出しと行見出し））
+// 見出しを 2 行にして横に結合し、行見出しの列を縦に結合し、コピーでは結合したセルの値を埋める（正常シナリオ（多段の見出しと行見出し））
 test("test_normal_when_cells_merged", async ({ page }) => {
   // 準備
   await stubClipboard(page, "allow");
@@ -1442,7 +1442,7 @@ test("test_normal_when_cells_merged", async ({ page }) => {
       "",
     ].join("\n"),
   });
-  // 検証: 見出しが 2 段で、1 行目の 2 列目が 2 列にまたがる
+  // 検証: 見出しが 2 行で、1 行目の 2 列目が 2 列にまたがる
   const merged = page.locator("#doc table").nth(0);
   const headRows = merged.locator("thead tr");
   await expect(headRows).toHaveCount(2);

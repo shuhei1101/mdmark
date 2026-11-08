@@ -117,7 +117,7 @@ css_properties:
   - name: --mdmark-color-callout-note
     syntax: <color>
     default: '#1d4ed8（ダーク #7aa2ff）'
-    description: '`note` のタイトル・アイコンの色。枠の面は、この色を `--mdmark-color-bg-opaque` に 7% 混ぜた色、枠の線は 40% 混ぜた色にする（`color-mix`。CSS 変数は持たない。`color-mix()` に対応していないブラウザ向けに、先に面を `--mdmark-color-surface`、線を `--mdmark-color-border` にする宣言を記載し、その後ろに `color-mix()` の宣言を重ねる）。`tip`（#15803d / #4ade80）・`important`（#6d28d9 / #c4a7ff）・`warning`（#b45309 / #fbbf24）・`caution`（#b91c1c / #f87171）も同じ形の `--mdmark-color-callout-{種類}` を持つ'
+    description: '`note` のタイトル・アイコンの色。枠の面は、この色を `--mdmark-color-bg-opaque` に 7% 混ぜた色、枠の線は 40% 混ぜた色にする（`color-mix`。CSS 変数は持たない。`color-mix()` に対応していないブラウザ向けに、先に面を `--mdmark-color-surface`、線を `--mdmark-color-border` にする宣言を記載し、その後ろに `color-mix()` の宣言を重ねる）。`tip`（#15803d / #4ade80）・`important`（#6d28d9 / #c4a7ff）・`warning`（#b45309 / #fbbf24）・`caution`（#b91c1c / #f87171）も同じ命名の `--mdmark-color-callout-{種類}` を持つ'
 accessibility:
   - '種類はタイトルの文言（補足・ヒント・重要・警告・注意）で伝え、色だけに頼らない。タイトルを持つときは、スクリーンリーダー向けの `{種類の名前}: ` をタイトルの頭に配置する'
   - アイコンは CSS で付け、スクリーンリーダーに含めない

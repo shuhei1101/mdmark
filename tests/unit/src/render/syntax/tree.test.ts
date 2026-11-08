@@ -114,7 +114,7 @@ test("test_parse_tree_when_notes", async () => {
   });
 });
 
-// ASCII の罫線を今の罫線と同じ段の数え方で読み込む（正常系）
+// ASCII の罫線を今の罫線と同じ階層の数え方で読み込む（正常系）
 test("test_parse_tree_when_ascii", async () => {
   // 準備
   const { parseTree } = await loadTree();

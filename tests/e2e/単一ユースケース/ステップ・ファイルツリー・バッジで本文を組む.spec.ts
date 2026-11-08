@@ -444,7 +444,7 @@ test("test_normal_when_tree_folders_toggled", async ({ page }) => {
   await expect(nameOf(first, "tree.ts")).toBeVisible();
 });
 
-// ASCII の罫線を今の罫線と同じ段で読み込み、入れ子のツリーにする（正常シナリオ（ASCII の罫線のファイルツリー））
+// ASCII の罫線を今の罫線と同じ階層で読み込み、入れ子のツリーにする（正常シナリオ（ASCII の罫線のファイルツリー））
 test("test_normal_when_tree_ascii", async ({ page }) => {
   // 準備
   await openPage(page, builtRoot);

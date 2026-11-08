@@ -5,7 +5,7 @@ import manifest from "./package.json" with { type: "json" };
 import { clearGitLocalEnv } from "./tests/git-env.ts";
 import { fixturesPlugin } from "./tests/integration/fixtures-plugin.ts";
 
-/** Webview の部品（vscode/）とテストの道具（直下）が同じものを使う依存 */
+/** Webview の部品（vscode/）とテストの道具（直下）が同じものを使用する依存 */
 const WEBVIEW_DEPENDENCIES = [
   "react",
   "react-dom",
@@ -22,7 +22,7 @@ const WEBVIEW_DEPENDENCIES = [
 clearGitLocalEnv();
 
 export default defineConfig({
-  // 束ねていないアイコンを読む URL のバージョン（ビルドと同じく依存の lucide のバージョンを埋める）
+  // バンドルしていないアイコンを読み込む URL のバージョン（ビルドと同じく依存の lucide のバージョンを埋める）
   define: {
     __MDMARK_LUCIDE_VERSION__: JSON.stringify(manifest.dependencies.lucide),
   },
@@ -34,16 +34,16 @@ export default defineConfig({
           environment: "node",
           include: ["tests/unit/**/*.test.ts"],
           exclude: ["tests/unit/**/*.browser.test.ts"],
-          // 全ファイルを並列に流すと、最初の import で CLI のビルドの負荷に重なり 5 秒を超えることがある
+          // 全ファイルを並列に実行すると、最初の import で CLI のビルドの負荷に重なり 5 秒を超えることがある
           testTimeout: 30_000,
         },
       },
       {
-        // DOM を使う単体テストは Chromium の中で流す。MSW の Service Worker を Storybook と同じフォルダから配る
+        // DOM を使用する単体テストは Chromium の中で実行する。MSW の Service Worker を Storybook と同じフォルダから配る
         publicDir: ".storybook/public",
-        // Webview の部品（vscode/）とテストの道具（直下）が同じ React を使う
+        // Webview の部品（vscode/）とテストの道具（直下）が同じ React を使用する
         resolve: { dedupe: WEBVIEW_DEPENDENCIES },
-        // テストの途中で依存を見つけて読み直さないよう、Webview の依存を先に束ねる
+        // テストの途中で依存を見つけて再読み込みしないよう、Webview の依存を先に事前バンドルする
         optimizeDeps: {
           include: [
             ...WEBVIEW_DEPENDENCIES,
@@ -69,7 +69,7 @@ export default defineConfig({
         test: {
           name: "integration-node",
           environment: "node",
-          // CLI を子プロセスで流し、書き出した HTML をブラウザで開くテストを含む
+          // CLI を子プロセスで実行し、書き出した HTML をブラウザで開くテストを含む
           testTimeout: 60_000,
           include: ["tests/integration/**/*.test.ts"],
           exclude: [
@@ -80,14 +80,14 @@ export default defineConfig({
         },
       },
       {
-        // 部品のストーリーを Playwright で開くため、Storybook の開発サーバーを立てる
+        // 部品のストーリーを Playwright で開くため、Storybook の開発サーバーを起動する
         test: {
           name: "integration-storybook",
           environment: "node",
           include: ["tests/integration/**/*.story.test.ts"],
           globalSetup: ["tests/integration/storybook-setup.ts"],
           testTimeout: 60_000,
-          // 各ファイルの beforeAll がストーリーを開いて Vite の依存の束ねを待つ（tests/integration/story.ts の WARM_UP_TIMEOUT_MS）
+          // 各ファイルの beforeAll がストーリーを開いて Vite の依存の事前バンドルを待つ（tests/integration/story.ts の WARM_UP_TIMEOUT_MS）
           hookTimeout: 300_000,
         },
       },

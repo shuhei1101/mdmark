@@ -14,7 +14,7 @@ import {
 
 export type { TreeNode };
 
-/** ツリーの 1 段分の字下げ（`│   `・`|   ` か空白 4 つ） */
+/** ツリーの 1 階層分の字下げ（`│   `・`|   ` か空白 4 つ） */
 const INDENT_UNITS = ["│   ", "|   ", "    "];
 
 /** 罫線の項目の頭（`├── `・`└── `・`|-- `・`` `-- ``） */
@@ -64,13 +64,13 @@ function splitNote(
   return note === "" ? { name } : { name, note: renderNote(note) };
 }
 
-/** 罫線（`├── `・`└── `・`│   ` と ASCII の `|-- `・`` `-- ``・`|   `）と字下げで記載した行を `TreeNode` の入れ子にする。前に空白がある最初の `#` から後ろを注釈にし、`renderNote` で HTML にする。上の行より 2 段以上深い行があれば、その行番号と段の差を返却する */
+/** 罫線（`├── `・`└── `・`│   ` と ASCII の `|-- `・`` `-- ``・`|   `）と字下げで記載した行を `TreeNode` の入れ子にする。前に空白がある最初の `#` から後ろを注釈にし、`renderNote` で HTML にする。上の行より 2 段以上深い行があれば、その行番号と階層の差を返却する */
 export function parseTree(
   source: string,
   renderNote: (markdown: string) => string = escapeHtml,
 ): { nodes: TreeNode[] } | { line: number; depth: number } {
   const nodes: TreeNode[] = [];
-  // 各段の最後の項目（次の行の親になる）
+  // 各階層の最後の項目（次の行の親になる）
   const stack: TreeNode[] = [];
   const lines = source.split("\n").filter((line) => line.trim() !== "");
   let previous = -1;

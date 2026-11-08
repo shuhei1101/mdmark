@@ -593,7 +593,7 @@ exceptions:
     notes: 変更後の文書だけを描いた表示は出さない。Markdown と差分ビューは変えない
 constraints:
   - item: 配布物の URL
-    constraint: '`https://cdn.jsdelivr.net/gh/shuhei1101/mdmark@{版}/dist/index.js` と `.../dist/index.css`。バージョンなしの URL と `@latest` は使用しない'
+    constraint: '`https://cdn.jsdelivr.net/gh/shuhei1101/mdmark@{バージョン}/dist/index.js` と `.../dist/index.css`。バージョンなしの URL と `@latest` は使用しない'
     notes: dev/設計書/外部API/jsDelivr
   - item: バージョンの決め方
     constraint: '`mdmark.version` が `latest` のときは GitHub の `GET /repos/shuhei1101/mdmark/tags?per_page=100` を header `Link` の `rel="next"` が無くなるまで辿って全てのページを読み込み、その名前から `^v\d+\.\d+\.\d+$` に合うものだけを取得し、数で比べて最大を選ぶ（`vscode-` で始まるタグは取得しない）。`latest` でないときは記載したバージョンをそのまま使用し、タグ一覧を取らない。タグ一覧はプレビューを開くときとリロードしたときだけ取り、再描画するたびには取らない'

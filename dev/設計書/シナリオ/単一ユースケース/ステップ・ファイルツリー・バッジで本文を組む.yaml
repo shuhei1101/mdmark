@@ -46,7 +46,7 @@ scenarios:
       - name: mdmark を読み込むページ
         description: 正常シナリオと同じ
       - name: 読み込めない行を持つファイルツリーの Markdown
-        description: 上の行より 2 段深い項目を持つ言語 `tree` のコードブロックの文書
+        description: 上の行より 2 階層深い項目を持つ言語 `tree` のコードブロックの文書
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
@@ -55,7 +55,7 @@ scenarios:
         participant P as 利用側のページ
         participant M as mdmark
         P->>M: 設定と Markdown を指定して描かせる
-        M->>M: 罫線の段を読み込めない行がある
+        M->>M: 罫線の階層を読み込めない行がある
         M-->>P: 記載の警告と、元のコードブロックを描く
         P-->>U: 記載の警告とコードブロックを表示
     expected:
@@ -216,7 +216,7 @@ scenarios:
         participant P as 利用側のページ
         participant M as mdmark
         P->>M: 設定と Markdown を指定して描かせる
-        M->>M: ASCII の罫線を今の罫線と同じ段で読み込む
+        M->>M: ASCII の罫線を今の罫線と同じ階層で読み込む
         M-->>P: 入れ子のツリーを描く
         P-->>U: 文書を表示
     expected:
