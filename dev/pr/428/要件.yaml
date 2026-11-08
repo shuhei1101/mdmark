@@ -23,7 +23,9 @@ docs:
   - page: docs/はじめに/コアコンセプト/1枚にまとめる仕組み.md
     new: false
     change: ブラウザの戻る・進むで移った文書を行き来する行に、離れたときのスクロール位置から表示することを追加する
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-08T20:33:18.383125+00:00'
 scope_out:
   - item: VS Code のプレビューの Webview のスクロール位置の保持
     reason: まとめた HTML とは別の画面で、要望に含まれない
