@@ -43,8 +43,8 @@
   };
 
   // 箱の種類の既定の名前（定義の tag が無いときに種類の行に出す）と、凡例の並び
-  const KIND_TAGS = { llm: "LLM", dm: "意思決定モデル", script: "スクリプト", mcp: "MCP", data: "データ", external: "外部", start: "開始", question: "質問", action: "アクション", result: "結果" };
-  const KIND_LEGEND = { llm: "LLM", dm: "意思決定モデル", script: "スクリプト", mcp: "MCP", data: "データ（下の角が丸い箱）", external: "外部のシステム", start: "開始", question: "質問", action: "アクション", result: "結果" };
+  const KIND_TAGS = { llm: "LLM", dm: "判断（AI）", script: "スクリプト", mcp: "MCP", data: "データ", external: "外部", start: "開始", question: "質問", action: "アクション", result: "結果" };
+  const KIND_LEGEND = { llm: "LLM", dm: "判断（AI）", script: "スクリプト", mcp: "MCP", data: "データ（下の角が丸い箱）", external: "外部のシステム", start: "開始", question: "質問", action: "アクション", result: "結果" };
 
   // 円の直径に対する、内接する正方形の外の余白の割合（(1 - 1/√2) / 2）
   const CIRCLE_INSET = (1 - Math.SQRT1_2) / 2;

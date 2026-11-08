@@ -2,7 +2,7 @@
 // 座標は図の中の px。箱の補足・種類の名前の {{語}} は用語集の語で、本文の用語と同じ破線の下線とツールチップを付ける
 
 window.mdmarkMockGlossary = {
-  意思決定モデル: "選択肢から選ぶ・当てはまるかに答えるだけの、速く安い判断用の AI",
+  分類モデル: "選択肢から選ぶ・当てはまるかに答えるだけの、速く安い判断用の AI",
   よくある質問: "問い合わせの多い質問と、その答えをまとめた表",
 };
 
@@ -17,7 +17,7 @@ window.mdmarkMockDiagrams = {
     height: 560,
     frame: { title: "問い合わせ窓口（自動返信のシステム）", x: 140, y: 20, w: 810, h: 520 },
     lanes: [
-      { label: "LLM・意思決定モデル", kind: "llm", y: 56, h: 124 },
+      { label: "LLM・判断（AI）", kind: "llm", y: 56, h: 124 },
       { label: "処理（MCP・スクリプト）", kind: "mcp", y: 180, h: 140 },
       { label: "データ", kind: "data", y: 320, h: 136 },
     ],
@@ -41,7 +41,7 @@ window.mdmarkMockDiagrams = {
         y: 88,
         w: 140,
         h: 64,
-        tag: "{{意思決定モデル}}",
+        tag: "{{分類モデル}}",
         name: "分類",
         sub: "返信の種類を選ぶ",
         io: { in: "問い合わせの本文", do: "返信の種類（よくある質問で答える・担当者へ回す）から 1 つ選ぶ", out: "返信の種類と、その確からしさ" },
@@ -115,7 +115,7 @@ window.mdmarkMockDiagrams = {
     participants: [
       { id: "mail", kind: "external", tag: "外部", name: "メールサーバー" },
       { id: "recv", kind: "script", name: "受け取り" },
-      { id: "classify", kind: "dm", tag: "{{意思決定モデル}}", name: "分類" },
+      { id: "classify", kind: "dm", tag: "{{分類モデル}}", name: "分類" },
       { id: "draft", kind: "llm", name: "返信の下書き" },
       { id: "mcp", kind: "mcp", name: "窓口の MCP" },
     ],

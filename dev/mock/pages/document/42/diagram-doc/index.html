@@ -60,7 +60,7 @@
     <article class="mdmark">
 <h1 id="問い合わせ窓口の設計メモ">問い合わせ窓口の設計メモ</h1>
 <!-- 図の外の段落の用語: 図のノードの中と同じ用語に、同じ下線とツールチップ -->
-<p>問い合わせのメールを受け取り、<span class="mdmark-term-wrap"><span class="mdmark-term" tabindex="0" aria-describedby="term-tip-1">意思決定モデル</span><span class="mdmark-term-tip" id="term-tip-1" role="tooltip"><span class="mdmark-term-tip-section"><span class="mdmark-term-tip-heading">用語</span><span class="mdmark-term-tip-meaning">選択肢から選ぶ・当てはまるかに回答するだけの、速く安い判断用の AI</span></span></span></span>で返信の種類を分け、LLM が下書きを作成して返却します。</p>
+<p>問い合わせのメールを受け取り、<span class="mdmark-term-wrap"><span class="mdmark-term" tabindex="0" aria-describedby="term-tip-1">分類モデル</span><span class="mdmark-term-tip" id="term-tip-1" role="tooltip"><span class="mdmark-term-tip-section"><span class="mdmark-term-tip-heading">用語</span><span class="mdmark-term-tip-meaning">選択肢から選ぶ・当てはまるかに回答するだけの、速く安い判断用の AI</span></span></span></span>で返信の種類を分け、LLM が下書きを作成して返却します。</p>
 
 <h2 id="構成">構成</h2>
 <!-- フロー図の部品: 枠と 3 層・外部のシステム・線の交差・ループの戻り。[data-mock-diagram]: diagram.js が samples.js の定義から描く -->
@@ -91,7 +91,7 @@
   <table tabindex="0" aria-label="表: 用語">
     <thead><tr><th>用語</th><th>意味</th></tr></thead>
     <tbody>
-      <tr><td data-label="用語">意思決定モデル</td><td data-label="意味">選択肢から選ぶ・当てはまるかに回答するだけの、速く安い判断用の AI</td></tr>
+      <tr><td data-label="用語">分類モデル</td><td data-label="意味">選択肢から選ぶ・当てはまるかに回答するだけの、速く安い判断用の AI</td></tr>
       <tr><td data-label="用語">よくある質問</td><td data-label="意味">問い合わせの多い質問と、その回答をまとめた表</td></tr>
     </tbody>
   </table>
