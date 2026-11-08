@@ -9,7 +9,7 @@ import {
   updateDocument,
 } from "../dist-page.ts";
 
-// ビルドした配布物を置いた作業ツリー
+// ビルドした配布物を配置した作業ツリー
 let builtRoot = "";
 
 // 比較元: 段落 A・B・C。段落 C は空行どうしで合わないよう 2 行にする
@@ -23,7 +23,7 @@ const BASE_MARKDOWN = [
   "",
 ].join("\n");
 
-// 描く Markdown: 段落 A の語を 1 つ書き換え、段落 B を削除し、段落 C の後に段落 D を追加する
+// 描く Markdown: 段落 A の単語を 1 つ書き換え、段落 B を削除し、段落 C の後に段落 D を追加する
 const TARGET_MARKDOWN = [
   "書き換えた段落 A です。",
   "",
@@ -53,7 +53,7 @@ function paragraphTexts(page: Page): Promise<string[]> {
   return page.locator("#doc p").allTextContents();
 }
 
-/** 段落 A・B・D を強調し、段落 C を強調していないことを確かめる */
+/** 段落 A・B・D を強調し、段落 C を強調していないことを確認する */
 async function expectBaseDiff(page: Page): Promise<void> {
   const added = diffBlocks(page, "add");
   await expect(added).toHaveCount(2);
@@ -69,7 +69,7 @@ async function expectBaseDiff(page: Page): Promise<void> {
   ).toBeNull();
 }
 
-// 比較元を渡すと、変えたブロックを本文の中で強調し、差分を開くボタンを出さない（正常シナリオ）
+// 比較元を指定すると、変えたブロックを本文の中で強調し、差分を開くボタンを出さない（正常シナリオ）
 test("test_normal", async ({ page }) => {
   // 準備
   await openPage(page, builtRoot);
@@ -104,7 +104,7 @@ test("test_normal", async ({ page }) => {
   await expect(page.locator("#doc .mdmark-diff-toggle")).toHaveCount(0);
 });
 
-// update の第 2 引数で比較元を差し替え、省くと前の比較元を保ち、null で強調を外す（正常シナリオ（比較元を差し替える））
+// update の第 2 引数で比較元を差し替え、省くと前の比較元を保ち、null で強調を解除する（正常シナリオ（比較元を差し替える））
 test("test_normal_when_base_replaced", async ({ page }) => {
   // 準備
   await openPage(page, builtRoot);
@@ -125,12 +125,12 @@ test("test_normal_when_base_replaced", async ({ page }) => {
   await expect(diffBlocks(page, "add")).toHaveCount(1);
   await expect(diffBlocks(page, "add")).toContainText("足した段落 D です。");
   await expect(diffBlocks(page, "del")).toHaveCount(0);
-  // 実行・検証: null で強調を外す
+  // 実行・検証: null で強調を解除する
   await updateDocument(page, TARGET_MARKDOWN, { baseMarkdown: null });
   await expect(page.locator("#doc .mdmark-diff-block")).toHaveCount(0);
 });
 
-// 比較元を null で描くと強調せず、update で比較元を渡すと強調する（正常シナリオ（比較元を渡さない））
+// 比較元を null で描くと強調せず、update で比較元を指定すると強調する（正常シナリオ（比較元を指定しない））
 test("test_normal_when_base_null", async ({ page }) => {
   // 準備
   await openPage(page, builtRoot);

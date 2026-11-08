@@ -12,14 +12,14 @@ import {
   withServe,
 } from "../plugin.ts";
 
-// ブラウザを使わないため、1 つのブラウザのプロジェクトだけで流す
+// ブラウザを使用しないため、1 つのブラウザのプロジェクトだけで実行する
 test.skip(
   ({ browserName }) => browserName !== "chromium",
   "ブラウザを使わないシナリオなので chromium のプロジェクトだけで流す",
 );
 
-// 今の HEAD のブランチをマーケットプレイスとして足し、プラグインを入れ、起動した常駐サーバーにつながる（正常シナリオ）
-// ブランチは push 済みであること。tester が release ブランチで `dist/` と `plugin/` の生成物を commit して push した後に流す
+// 今の HEAD のブランチをマーケットプレイスとして追加し、プラグインを入れ、起動した常駐サーバーにつながる（正常シナリオ）
+// ブランチは push 済みであること。tester が release ブランチで `dist/` と `plugin/` の生成物を commit して push した後に実行する
 test("test_normal", async ({ builtRoot, tempDir }) => {
   // 実行
   const { installPath } = await installPlugin(await tempDir());

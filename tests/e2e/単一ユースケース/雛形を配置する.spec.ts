@@ -6,7 +6,7 @@ import { validateConfig } from "../../../src/cli/config.ts";
 import { normalizeIndex } from "../../../src/knowledge/index-shape.ts";
 import { expect, linesOf, runCli, test, writeFiles } from "../cli.ts";
 
-// TypeScript の雛形を置く順
+// TypeScript の雛形を配置する順
 const TYPESCRIPT_FILES = [
   "mdmark.config.yaml",
   "theme.css",
@@ -16,7 +16,7 @@ const TYPESCRIPT_FILES = [
   "package.json",
 ];
 
-// 空のフォルダに TypeScript の雛形を置き、置いたファイルの一覧を出す（正常シナリオ）
+// 空のフォルダに TypeScript の雛形を配置し、配置したファイルの一覧を出す（正常シナリオ）
 test("test_normal", async ({ builtRoot, tempDir }) => {
   // 準備
   const dir = await tempDir();
@@ -29,7 +29,7 @@ test("test_normal", async ({ builtRoot, tempDir }) => {
   }
   const config = parse(await readFile(join(dir, "mdmark.config.yaml"), "utf8"));
   expect(validateConfig(config, "mdmark.config.yaml").issues).toEqual([]);
-  // 置いた設定の version は、呼んだ CLI の版
+  // 配置した設定の version は、呼んだ CLI のバージョン
   const builtVersion = (
     await readFile(join(builtRoot, "version.ini"), "utf8")
   ).trim();
@@ -37,11 +37,11 @@ test("test_normal", async ({ builtRoot, tempDir }) => {
   const index = parse(await readFile(join(dir, "index.yaml"), "utf8"));
   expect(normalizeIndex(index).problems).toEqual([]);
   expect(linesOf(result.stdout)).toEqual(
-    TYPESCRIPT_FILES.map((path) => `置いた: ${path}`),
+    TYPESCRIPT_FILES.map((path) => `配置した: ${path}`),
   );
 });
 
-// JavaScript の拡張の雛形と型で点検する tsconfig.json を置き、TypeScript の雛形と package.json は置かない（正常シナリオ（JavaScript の雛形を置く））
+// JavaScript の拡張の雛形と型で点検する tsconfig.json を配置し、TypeScript の雛形と package.json は配置しない（正常シナリオ（JavaScript の雛形を配置する））
 test("test_normal_when_javascript", async ({ builtRoot, tempDir }) => {
   // 準備
   const typescript = await tempDir();
@@ -71,7 +71,7 @@ test("test_normal_when_javascript", async ({ builtRoot, tempDir }) => {
   }
 });
 
-// 既にあるファイルを上書きせず、置かなかったファイルとして一覧に出す（正常シナリオ（既にあるファイルがある））
+// 既にあるファイルを上書きせず、配置しなかったファイルとして一覧に出す（正常シナリオ（既にあるファイルがある））
 test("test_normal_when_file_exists", async ({ builtRoot, tempDir }) => {
   // 準備
   const dir = await tempDir();
@@ -89,6 +89,6 @@ test("test_normal_when_file_exists", async ({ builtRoot, tempDir }) => {
     expect(existsSync(join(dir, path))).toBe(true);
   }
   expect(linesOf(result.stdout)).toContain(
-    "置かなかった（既にある）: mdmark.config.yaml",
+    "配置しなかった（既にある）: mdmark.config.yaml",
   );
 });

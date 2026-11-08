@@ -4,14 +4,14 @@ import { expect, type Frame, type Page } from "@playwright/test";
 
 /** 端末の設定と上のフォルダ・近いフォルダの設定を重ねるシナリオの見本 */
 
-/** `theme.css` が描く先の要素に当てる CSS 変数 */
+/** `theme.css` が描く先の要素に適用する CSS 変数 */
 export const CASCADE_THEME_VARIABLE = "--e2e-cascade-theme";
 
 /** `theme.css` の中身。`value` を描く先の要素の CSS 変数にする */
 export const cascadeTheme = (value: string): string =>
   `.mdmark { ${CASCADE_THEME_VARIABLE}: ${value}; }\n`;
 
-/** 固有の部品のモジュール。`greet` の印の場所に `{prefix}:{引数}` を描く */
+/** 固有の部品のモジュール。`greet` のマーカーの場所に `{prefix}:{引数}` を描く */
 export const greetSource = (prefix = "greet"): string => `export default {
   name: "greet",
   directive: "greet",
@@ -23,7 +23,7 @@ export const greetSource = (prefix = "greet"): string => `export default {
 };
 `;
 
-/** 注意書き・表・固有の部品の印を持つ文書 */
+/** 注意書き・表・固有の部品のマーカーを持つ文書 */
 export const CASCADE_GUIDE = [
   "# ガイド",
   "",
@@ -56,7 +56,7 @@ export const cascadeFolderFiles = (): Record<string, string> => ({
 export const cascadeSettings = (options: {
   cascade: boolean;
   applyToExport?: boolean;
-  /** 3 行目を YAML として読めない行にする */
+  /** 3 行目を YAML として読み込めない行にする */
   broken?: boolean;
 }): string =>
   [
@@ -71,7 +71,7 @@ export const cascadeSettings = (options: {
     "",
   ].join("\n");
 
-/** 端末の設定を `dir/settings.yaml` に書き、そのパスを返す */
+/** 端末の設定を `dir/settings.yaml` に書き込み、そのパスを返却する */
 export async function writeSettings(
   dir: string,
   content: string,
@@ -81,7 +81,7 @@ export async function writeSettings(
   return path;
 }
 
-/** 設定ファイルの中身を並べて読む（書き換わっていないかを比べる） */
+/** 設定ファイルの中身を並べて読み込む（書き換わっていないかを比べる） */
 export async function readConfigs(paths: string[]): Promise<string[]> {
   return Promise.all(paths.map((path) => readFile(path, "utf8")));
 }
@@ -112,7 +112,7 @@ export async function expectFeaturesOff(root: Page | Frame): Promise<void> {
   await expect(article.locator("button.mdmark-sort")).toHaveCount(0);
 }
 
-/** 上のフォルダの `theme.css` と固有の部品が当たっている */
+/** 上のフォルダの `theme.css` と固有の部品が該当している */
 export async function expectUpperApplied(root: Page | Frame): Promise<void> {
   await expect(root.locator(".mdmark [data-mdmark-slot]")).toHaveText([
     "greet:世界",
@@ -120,7 +120,7 @@ export async function expectUpperApplied(root: Page | Frame): Promise<void> {
   await expect.poll(() => themeValue(root)).toBe("rgb(1, 2, 3)");
 }
 
-/** 上のフォルダの `theme.css` と固有の部品が当たっていない */
+/** 上のフォルダの `theme.css` と固有の部品が該当していない */
 export async function expectUpperNotApplied(root: Page | Frame): Promise<void> {
   await expect(root.locator(".mdmark [data-mdmark-slot]")).toHaveCount(0);
   expect(await themeValue(root)).toBe("");

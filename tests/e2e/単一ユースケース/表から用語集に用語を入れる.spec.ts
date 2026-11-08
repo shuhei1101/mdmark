@@ -8,10 +8,10 @@ import {
   removeDistRoot,
 } from "../dist-page.ts";
 
-// ビルドした配布物を置いた作業ツリー
+// ビルドした配布物を配置した作業ツリー
 let builtRoot = "";
 
-// 用語 `印`（別名 `マーク、オン・オフの印`）を入れる用語集の表
+// 用語 `マーカー`（別名 `マーク、オン・オフのマーカー`）を入れる用語集の表
 const GLOSSARY_TABLE = [
   "<!-- glossary: term=用語 aliases=別名 meaning=意味 -->",
   "",
@@ -31,7 +31,7 @@ test.afterAll(async () => {
   await removeDistRoot(builtRoot);
 });
 
-// 用語集の表の用語と別名に下線を引き、表の意味をツールチップに出す。表の中の語には付けない（正常シナリオ）
+// 用語集の表の用語と別名に下線を付け、表の意味をツールチップに出す。表の中の単語には付けない（正常シナリオ）
 test("test_normal", async ({ page }) => {
   // 準備
   const markdown = `${GLOSSARY_TABLE}\n## 一つ目\n\nマークを書く。\n\n## 二つ目\n\nオン・オフの印を書く。\n`;
@@ -40,7 +40,7 @@ test("test_normal", async ({ page }) => {
   await mountDocument(page, { markdown });
   // 検証
   const doc = page.locator("#doc");
-  // 用語集の表が表として描かれ、表の中の語には下線が付かない
+  // 用語集の表が表として描かれ、表の中の単語には下線が付かない
   await expect(doc.locator("table")).toHaveCount(1);
   await expect(doc.locator("table .mdmark-term")).toHaveCount(0);
   // 別名 `マーク` に下線が付き、ポインターを乗せると表の意味が出る
@@ -51,17 +51,17 @@ test("test_normal", async ({ page }) => {
   await expect(sections.nth(0).locator(".mdmark-term-tip")).toContainText(
     "HTML コメントで書く指定",
   );
-  // 別の節の `オン・オフの印` は 1 つの下線で、`オン` だけの下線にならない
+  // 別のセクションの `オン・オフのマーカー` は 1 つの下線で、`オン` だけの下線にならない
   await expect(sections.nth(1).locator(".mdmark-term")).toHaveText([
     "オン・オフの印",
   ]);
-  // 印の文字は本文に出ない
+  // マーカーの文字は本文に出ない
   const html = await doc.innerHTML();
   expect(html).not.toContain("<!--");
   expect(html).not.toContain("glossary:");
 });
 
-// 索引に同じ語があるときは、索引の意味をツールチップに出す（正常シナリオ（索引に同じ語がある））
+// 索引に同じ単語があるときは、索引の意味をツールチップに出す（正常シナリオ（索引に同じ単語がある））
 test("test_normal_when_index_has_same_term", async ({ page }) => {
   // 準備
   const index: MdmarkIndex = {
@@ -82,7 +82,7 @@ test("test_normal_when_index_has_same_term", async ({ page }) => {
   await expect(tip).not.toContainText("HTML コメントで書く指定");
 });
 
-// 印の列名が表に無いときも表と本文を描き、表のあたりに書き方の警告を出す（異常シナリオ（表に無い列名））
+// マーカーの列名が表に無いときも表と本文を描き、表のあたりに記載の警告を出す（異常シナリオ（表に無い列名））
 test("test_error_when_unknown_column", async ({ page }) => {
   // 準備
   const markdown = [
@@ -106,7 +106,7 @@ test("test_error_when_unknown_column", async ({ page }) => {
   const warning = doc.locator(".mdmark-syntax-warning");
   await expect(warning).toHaveCount(1);
   await expect(warning).toContainText("説明");
-  await expect(warning).toContainText("列名を直してください");
+  await expect(warning).toContainText("列名を修正してください");
   await expect(doc.locator(".mdmark-term")).toHaveCount(0);
   await expect(doc.locator("p", { hasText: "印を書く。" })).toBeVisible();
 });
@@ -162,7 +162,7 @@ test("test_normal_when_avoid_column", async ({ page }) => {
   await mountDocument(page, { markdown });
   // 検証
   const doc = page.locator("#doc");
-  // やめた言い方の列を含めて表として描かれ、表の中にはマーカーが付かず、書き方の警告は出ない
+  // やめた言い方の列を含めて表として描かれ、表の中にはマーカーが付かず、記載の警告は出ない
   await expect(doc.locator("table")).toHaveCount(1);
   await expect(doc.locator("table th")).toHaveText([
     "用語",
@@ -183,7 +183,7 @@ test("test_normal_when_avoid_column", async ({ page }) => {
       })
       .locator(".mdmark-term-tip"),
   ).toContainText("作業の置き場所");
-  // 段落の 作業場 に、破線と形で見分けられる波線のマーカーが付く
+  // 段落の 作業場 に、破線と構造で見分けられる波線のマーカーが付く
   const marker = doc.locator("p .mdmark-term-avoided");
   await expect(marker).toHaveText(["作業場"]);
   await expect(marker).toHaveCSS("text-decoration-style", "wavy");
@@ -260,7 +260,7 @@ test("test_normal_when_other_document_avoid_column", async ({ page }) => {
   );
 });
 
-// 索引・エイリアス・表に同じ語があるとき、索引 → エイリアス → 表の順で先の意味をツールチップに出す（正常シナリオ（索引とエイリアスと表に同じ語がある））
+// 索引・エイリアス・表に同じ単語があるとき、索引 → エイリアス → 表の順で先の意味をツールチップに出す（正常シナリオ（索引とエイリアスと表に同じ単語がある））
 test("test_normal_when_aliases_have_same_term", async ({ page }) => {
   // 準備
   const index: MdmarkIndex = {

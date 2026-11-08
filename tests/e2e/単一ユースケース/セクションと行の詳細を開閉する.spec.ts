@@ -6,10 +6,10 @@ import {
   removeDistRoot,
 } from "../dist-page.ts";
 
-// ビルドした配布物を置いた作業ツリー
+// ビルドした配布物を配置した作業ツリー
 let builtRoot = "";
 
-// 3 行の表。行の詳細の印を後ろに足して使う
+// 3 行の表。行の詳細のマーカーを後ろに追加して使用する
 const TABLE = "| 名前 | 数 |\n| --- | --- |\n| a | 1 |\n| b | 2 |\n| c | 3 |\n";
 
 test.beforeAll(async () => {
@@ -20,7 +20,7 @@ test.afterAll(async () => {
   await removeDistRoot(builtRoot);
 });
 
-// 閉じた節を閉じて始め、見出しの開閉のボタンを押すたびに開閉する（正常シナリオ）
+// 閉じたセクションを閉じて始め、見出しの開閉のボタンを押すたびに開閉する（正常シナリオ）
 test("test_normal", async ({ page }) => {
   // 準備
   await openPage(page, builtRoot);
@@ -45,7 +45,7 @@ test("test_normal", async ({ page }) => {
   expect(await page.locator("#doc").innerHTML()).not.toContain("<!--");
 });
 
-// URL の ID が閉じた節の中の見出しを指すと、その節を開いて移る（正常シナリオ（閉じた節の中へ移る））
+// URL の ID が閉じたセクションの中の見出しを指すと、そのセクションを開いて移る（正常シナリオ（閉じたセクションの中へ移る））
 test("test_normal_when_fragment_in_closed_section", async ({ page }) => {
   // 準備
   await page.setViewportSize({ width: 800, height: 300 });
@@ -64,7 +64,7 @@ test("test_normal_when_fragment_in_closed_section", async ({ page }) => {
   await expect(page.locator("#doc h3", { hasText: "注意" })).toBeInViewport();
 });
 
-// 表の後の行の詳細の印で、指定した行に開閉のボタンを置き、押すと行の下に詳細を出す（正常シナリオ（行の詳細））
+// 表の後の行の詳細のマーカーで、指定した行に開閉のボタンを配置し、押すと行の下に詳細を出す（正常シナリオ（行の詳細））
 test("test_normal_when_row_detail", async ({ page }) => {
   // 準備
   await openPage(page, builtRoot);
@@ -91,7 +91,7 @@ test("test_normal_when_row_detail", async ({ page }) => {
   await expect(page.locator("#doc > p")).toHaveCount(0);
 });
 
-// 知らない開閉の指定は読み飛ばし、書き方の警告を出さずに開いた節として描く（正常シナリオ（知らない開閉の指定））
+// 知らない開閉の指定はスキップし、記載の警告を出さずに開いたセクションとして描く（正常シナリオ（知らない開閉の指定））
 test("test_normal_when_unknown_section_value", async ({ page }) => {
   // 準備
   await openPage(page, builtRoot);
@@ -104,7 +104,7 @@ test("test_normal_when_unknown_section_value", async ({ page }) => {
   await expect(page.getByText("補足の段落")).toBeVisible();
 });
 
-// 表に無い行を指す行の詳細は、表の後に本文として描き、書き方の警告を出す（異常シナリオ（行の位置が表に無い））
+// 表に無い行を指す行の詳細は、表の後に本文として描き、記載の警告を出す（異常シナリオ（行の位置が表に無い））
 test("test_error_when_row_out_of_range", async ({ page }) => {
   // 準備
   await openPage(page, builtRoot);
@@ -178,7 +178,7 @@ test("test_normal_when_row_detail_with_collapsed_column", async ({ page }) => {
   await expect(detail.locator(".mdmark-fold-part")).toBeHidden();
 });
 
-// h1 の見出しも節になり、閉じた h1 の節を開閉のボタンで開く（正常シナリオ（H1 の節））
+// h1 の見出しもセクションになり、閉じた h1 のセクションを開閉のボタンで開く（正常シナリオ（H1 のセクション））
 test("test_normal_when_h1_section", async ({ page }) => {
   // 準備
   await openPage(page, builtRoot);
@@ -200,7 +200,7 @@ test("test_normal_when_h1_section", async ({ page }) => {
   await expect(page.locator("#doc")).not.toContainText("section:");
 });
 
-// すべて展開で H1 を含む全ての節を開き、すべて折りたたむで H1 の節を開いたまま H2 以下を閉じる（正常シナリオ（すべて展開・すべて折りたたむ））
+// すべて展開で H1 を含む全てのセクションを開き、すべて折りたたむで H1 のセクションを開いたまま H2 以下を閉じる（正常シナリオ（すべて展開・すべて折りたたむ））
 test("test_normal_when_all_toggled", async ({ page }) => {
   // 準備
   await page.setViewportSize({ width: 1280, height: 800 });
@@ -253,7 +253,7 @@ test("test_normal_when_all_toggled", async ({ page }) => {
   await expect(page.getByText("概要の段落")).toBeHidden();
 });
 
-// Shift を押しながら開閉を押すか Enter を押すと、その節と中の入れ子の節を同じ状態にする（正常シナリオ（Shift で入れ子をまとめて開閉））
+// Shift を押しながら開閉を押すか Enter を押すと、そのセクションと中の入れ子のセクションを同じ状態にする（正常シナリオ（Shift で入れ子をまとめて開閉））
 test("test_normal_when_nested_toggled_with_shift", async ({ page }) => {
   // 準備
   await openPage(page, builtRoot);
@@ -346,7 +346,7 @@ test("test_normal_when_details_range", async ({ page }) => {
   expect(await page.locator("#doc").innerHTML()).not.toContain("<!--");
 });
 
-// 閉じのマーカーが無いときは、警告を置いて折りたたまずに出す（異常シナリオ（details の閉じのマーカーが無い））
+// 閉じのマーカーが無いときは、警告を配置して折りたたまずに出す（異常シナリオ（details の閉じのマーカーが無い））
 test("test_error_when_details_unclosed", async ({ page }) => {
   // 準備
   await openPage(page, builtRoot);

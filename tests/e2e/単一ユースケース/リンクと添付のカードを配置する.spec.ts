@@ -6,7 +6,7 @@ import {
   removeDistRoot,
 } from "../dist-page.ts";
 
-// ビルドした配布物を置いた作業ツリー
+// ビルドした配布物を配置した作業ツリー
 let builtRoot = "";
 
 test.beforeAll(async () => {
@@ -17,7 +17,7 @@ test.afterAll(async () => {
   await removeDistRoot(builtRoot);
 });
 
-/** `example.com` への要求を数え始め、件数を返す関数を返す */
+/** `example.com` への要求を数え始め、件数を返却する関数を返却する */
 function countExampleRequests(page: Page): () => number {
   let requests = 0;
   page.on("request", (request) => {
@@ -55,7 +55,7 @@ test("test_normal", async ({ page }) => {
   await expect(url.locator(".mdmark-card-url")).toHaveText(
     "https://example.com/docs/guide",
   );
-  // 2 つ目: 書いた文字のリンクのカード
+  // 2 つ目: 記載した文字のリンクのカード
   await expect(titled).toHaveAttribute("data-card", "link");
   await expect(titled).toHaveAttribute("href", "https://example.com/design");
   await expect(titled.locator(".mdmark-card-title")).toHaveText("設計の資料");
@@ -76,7 +76,7 @@ test("test_normal", async ({ page }) => {
       element.evaluate((span) => getComputedStyle(span, "::before").maskImage),
     ),
   );
-  // PDF の種類のアイコンは、文書の行を持つファイルの形で、リンクの形と違う
+  // PDF の種類のアイコンは、文書の行を持つファイルの構造で、リンクの構造と違う
   expect(decodeURIComponent(fileIcon ?? "")).toContain("M10 9H8");
   expect(fileIcon).not.toBe(linkIcon);
   // 検証: カードはそれぞれ 1 つのリンクで、Tab で順にフォーカスできる

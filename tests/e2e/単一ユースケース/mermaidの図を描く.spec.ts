@@ -16,10 +16,10 @@ import {
   routeMermaid,
 } from "../mermaid.ts";
 
-// ビルドした配布物を置いた作業ツリー
+// ビルドした配布物を配置した作業ツリー
 let builtRoot = "";
 
-// mermaid を読まないことを確かめるために待つ時間（ミリ秒）
+// mermaid を読み込まないことを確認するために待つ時間（ミリ秒）
 const SETTLE_MS = 500;
 
 // 設定で上書きするノードの塗り（#e0f2f1）
@@ -37,7 +37,7 @@ test.afterAll(async () => {
 const entryCount = (requests: string[]): number =>
   requests.filter((file) => file === MERMAID_ENTRY).length;
 
-// mermaid のコードブロックを、mdmark の見た目のテーマで図の枠に入れて描く（正常シナリオ）
+// mermaid のコードブロックを、mdmark の外観のテーマで図の枠に入れて描く（正常シナリオ）
 test("test_normal", async ({ page }) => {
   // 準備
   await page.emulateMedia({ colorScheme: "light" });
@@ -68,7 +68,7 @@ test("test_normal", async ({ page }) => {
   await expect(doc.locator(":scope > p")).toHaveText(["前の段落", "後の段落"]);
 });
 
-// mermaid のコードブロックが無い文書では mermaid を読まない（正常シナリオ（mermaid のコードブロックが無い））
+// mermaid のコードブロックが無い文書では mermaid を読み込まない（正常シナリオ（mermaid のコードブロックが無い））
 test("test_normal_when_no_mermaid", async ({ page }) => {
   // 準備
   const requests = await routeMermaid(page);
@@ -84,7 +84,7 @@ test("test_normal_when_no_mermaid", async ({ page }) => {
   await expect(page.locator("#doc pre code")).toContainText("const count");
 });
 
-// 暗い配色の CSS 変数で描き、OS の配色を明るいに切り替えると明るい配色で描き直す（正常シナリオ（ダークの配色））
+// 暗い配色の CSS 変数で描き、OS の配色を明るいに切り替えると明るい配色で再描画する（正常シナリオ（ダークの配色））
 test("test_normal_when_dark", async ({ page }) => {
   // 準備
   await page.emulateMedia({ colorScheme: "dark" });
@@ -101,7 +101,7 @@ test("test_normal_when_dark", async ({ page }) => {
   expect(dark.text).toBe(dark.textVar);
   // 実行: OS の配色を明るいにする
   await page.emulateMedia({ colorScheme: "light" });
-  // 検証: 明るい配色で描き直す
+  // 検証: 明るい配色で再描画する
   await expect
     .poll(
       async () => {
@@ -139,7 +139,7 @@ test("test_normal_when_theme_configured", async ({ page }) => {
   expect(colors.stroke).not.toBe(colors.border);
 });
 
-// 文書のマーカーで機能をオフにすると、mermaid を読まずにコードブロックのまま描く（正常シナリオ（機能をオフにする））
+// 文書のマーカーで機能をオフにすると、mermaid を読み込まずにコードブロックのまま描く（正常シナリオ（機能をオフにする））
 test("test_normal_when_disabled", async ({ page }) => {
   // 準備
   const requests = await routeMermaid(page);
@@ -156,7 +156,7 @@ test("test_normal_when_disabled", async ({ page }) => {
   await expect(page.locator("#doc")).not.toContainText("features:");
 });
 
-// mermaid を読めないコードブロックの前に知らせの枠を置き、コードブロックのまま描く（異常シナリオ（mermaid を読めない））
+// mermaid を読み込めないコードブロックの前に通知ブロックを配置し、コードブロックのまま描く（異常シナリオ（mermaid を読み込めない））
 test("test_error_when_mermaid_not_found", async ({ page }) => {
   // 準備
   await routeMermaid(page, 404);
@@ -175,7 +175,7 @@ test("test_error_when_mermaid_not_found", async ({ page }) => {
   await expect(doc.locator(":scope > p")).toHaveText(["前の段落", "後の段落"]);
 });
 
-// 解釈できないソースは書き方の警告とコードブロックにし、解釈できるソースは図にする（異常シナリオ（記法を解釈できない））
+// 解釈できないソースは記載の警告とコードブロックにし、解釈できるソースは図にする（異常シナリオ（記法を解釈できない））
 test("test_error_when_syntax_invalid", async ({ page }) => {
   // 準備
   await routeMermaid(page);

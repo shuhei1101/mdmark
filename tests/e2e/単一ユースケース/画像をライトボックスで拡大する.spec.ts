@@ -7,7 +7,7 @@ import {
 } from "../dist-page.ts";
 import { colorSvg, routePageFiles } from "../media.ts";
 
-// ビルドした配布物を置いた作業ツリー
+// ビルドした配布物を配置した作業ツリー
 let builtRoot = "";
 
 // ライトボックスが画面の端から空ける幅（図の全画面と同じ）
@@ -33,7 +33,7 @@ test.beforeEach(async ({ page }) => {
   });
 });
 
-/** 3 つの画像を本文の段落を挟んで並べた文書を描く。`second` は 2 つ目の画像の書き方 */
+/** 3 つの画像を本文の段落を挟んで並べた文書を描く。`second` は 2 つ目の画像の記載方法 */
 async function mountImages(
   page: Page,
   second = "![画像 b](b.png)",
@@ -68,7 +68,7 @@ async function shownImage(page: Page): Promise<string> {
   return new URL(src ?? "", "https://app.example.test/").pathname.slice(1);
 }
 
-// 画像を押して全画面で拡大し、矢印キーとボタンで前後に送り、Esc で閉じて押した画像とスクロールの位置へ戻る（正常シナリオ）
+// 画像を押して全画面で拡大し、矢印キーとボタンで前後に切り替え、Esc で閉じて押した画像とスクロールの位置へ戻る（正常シナリオ）
 test("test_normal", async ({ page }) => {
   // 準備
   await mountImages(page);
@@ -93,7 +93,7 @@ test("test_normal", async ({ page }) => {
   );
   expect(await shownImage(page)).toBe("b.png");
   await expect(dialog.locator(".mdmark-lightbox-count")).toHaveText("2 / 3");
-  // 検証: 前へ・次へ・閉じるのボタンが読み上げの名前を持つ
+  // 検証: 前へ・次へ・閉じるのボタンがスクリーンリーダー向けの名前を持つ
   for (const [tool, label] of [
     ["prev", "前の画像"],
     ["next", "次の画像"],
@@ -143,7 +143,7 @@ test("test_normal", async ({ page }) => {
   expect(await page.evaluate(() => window.scrollY)).toBe(scrollY);
 });
 
-// Tab で画像にフォーカスし、拡大できることを読み上げで知らせ、Enter で開く（正常シナリオ（キーで開く））
+// Tab で画像にフォーカスし、拡大できることをスクリーンリーダーで通知し、Enter で開く（正常シナリオ（キーで開く））
 test("test_normal_when_opened_by_key", async ({ page }) => {
   // 準備
   await mountImages(page);
@@ -163,7 +163,7 @@ test("test_normal_when_opened_by_key", async ({ page }) => {
   );
 });
 
-// nolightbox の画像は押しても開かず、Tab でフォーカスされず、送りの並びから外す（正常シナリオ（拡大しない画像））
+// nolightbox の画像は押しても開かず、Tab でフォーカスされず、切り替えの並びから除外する（正常シナリオ（拡大しない画像））
 test("test_normal_when_nolightbox", async ({ page }) => {
   // 準備
   await mountImages(page, "![アイコン](b.png){nolightbox}");
@@ -176,7 +176,7 @@ test("test_normal_when_nolightbox", async ({ page }) => {
   expect(
     await icon.evaluate((element) => element.closest("button")),
   ).toBeNull();
-  // 検証: 1 つ目の画像から Tab を押すと、2 つ目の画像を飛ばして 3 つ目の画像にフォーカスが当たる
+  // 検証: 1 つ目の画像から Tab を押すと、2 つ目の画像を飛ばして 3 つ目の画像にフォーカスが該当する
   await page.locator("#doc button.mdmark-image-open").first().focus();
   await page.keyboard.press("Tab");
   await expect(

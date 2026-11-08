@@ -26,7 +26,7 @@ import { expectBelow } from "../tooltip.ts";
 const HOST_CARD_COLOR = "rgb(0, 0, 255)";
 const HOST_LLM_COLOR = "rgb(255, 0, 0)";
 
-/** 雛形（JavaScript）を置き、配布物の型定義を置いたフォルダを作る */
+/** 雛形（JavaScript）を配置し、配布物の型定義を配置したフォルダを作る */
 async function prepare(
   builtRoot: string,
   tempDir: () => Promise<string>,
@@ -38,16 +38,16 @@ async function prepare(
   return dir;
 }
 
-// 雛形に固有の部品と CSS を足して型で点検し、共通の図の部品と固有の部品で文書を描き、読む人が図のツールチップと拡大・縮小・移動で確かめる（正常シナリオ）
+// 雛形に固有の部品と CSS を追加して型で点検し、共通の図の部品と固有の部品で文書を描き、読者が図のツールチップと拡大・縮小・移動で確認する（正常シナリオ）
 test("test_normal", async ({ builtRoot, tempDir, page }) => {
-  // 準備: 雛形を置き、固有の部品を書き足して型で点検する
+  // 準備: 雛形を配置し、固有の部品を追記して型で点検する
   const dir = await prepare(builtRoot, tempDir);
   await writeFiles(dir, { "extensions/card.js": CARD_SOURCE });
   const tsc = await runTsc(dir);
   expect(tsc.stdout).toBe("");
   expect(tsc.code).toBe(0);
   const theme = await readFile(join(dir, "theme.css"), "utf8");
-  // 準備: hint を持つシステムの枠と 3 層の見本の図の文書を書き、索引に載せ、設定の extensions に固有の部品を記載する
+  // 準備: hint を持つシステムの枠と 3 層の見本の図の文書を記載し、索引に記載し、設定の extensions に固有の部品を記載する
   const sample = `${CARD_MARKDOWN}\n${wrapDirective("flow", await groupFlowText())}\n図の外の意思決定モデル。\n`;
   const config = await readFile(join(dir, "mdmark.config.yaml"), "utf8");
   await writeFiles(dir, {
@@ -70,7 +70,7 @@ test("test_normal", async ({ builtRoot, tempDir, page }) => {
   const check = await runCli(builtRoot, ["check"], dir);
   expect(linesOf(check.stdout)).toEqual(["ずれ 0 件"]);
   expect(check.code).toBe(0);
-  // 実行: 固有の部品と CSS を読むページで、見本の図の文書を描く
+  // 実行: 固有の部品と CSS を読み込むページで、見本の図の文書を描く
   await openPage(page, builtRoot, { hostCss: `${theme}\n${HOST_CSS}` });
   await routeCard(
     page,
@@ -78,7 +78,7 @@ test("test_normal", async ({ builtRoot, tempDir, page }) => {
   );
   await registerCard(page);
   await mountDocument(page, { markdown: sample, index: TERM_INDEX });
-  // 検証: フロー図が枠・3 層・題と凡例つきで描かれ、残った交差は line jump になる
+  // 検証: フロー図が枠・3 層・タイトルと凡例つきで描かれ、残った交差は line jump になる
   const figure = page.locator("#doc figure.mdmark-diagram");
   await expect(figure).toHaveCount(1);
   await expect(figure.locator(".mdmark-diagram-lane")).toHaveCount(3);
@@ -107,7 +107,7 @@ test("test_normal", async ({ builtRoot, tempDir, page }) => {
           .length,
     );
   expect(arcs).toBeGreaterThanOrEqual(1);
-  // 固有の部品が、固有の CSS の見た目で描かれる
+  // 固有の部品が、固有の CSS の外観で描かれる
   const card = page.locator("#doc .host-card");
   await expect(card).toHaveText("固有の題");
   await expect(card).toHaveCSS("color", HOST_CARD_COLOR);
@@ -115,13 +115,13 @@ test("test_normal", async ({ builtRoot, tempDir, page }) => {
     "border-top-color",
     HOST_LLM_COLOR,
   );
-  // 矢印のラベル・箱の印・箱の中の用語にフォーカスかポインターでツールチップが出て、Esc で消える
+  // 矢印のラベル・ノードのマーカー・ノードの中の用語にフォーカスかポインターでツールチップが出て、Esc で消える
   const label = page.locator(".mdmark-diagram-label.has-tip", {
     hasText: "メール",
   });
   await label.focus();
   const wireTip = page.locator('[role="tooltip"]', {
-    hasText: "件名・本文・送り主のアドレス",
+    hasText: "件名・本文・送信者のアドレス",
   });
   await expect(wireTip).toBeVisible();
   await expectBelow({ tip: wireTip, owner: label });
@@ -139,7 +139,7 @@ test("test_normal", async ({ builtRoot, tempDir, page }) => {
   });
   await page.keyboard.press("Escape");
   await expect(ioTip.first()).toBeHidden();
-  // システムの枠のタイトルの印にフォーカスすると、枠の hint が印の下に出て、Esc で消える
+  // システムの枠のタイトルのマーカーにフォーカスすると、枠の hint がマーカーの下に出て、Esc で消える
   const frameInfo = figure.locator(
     ".mdmark-diagram-frame-title .mdmark-diagram-group-info",
   );
@@ -235,7 +235,7 @@ test("test_normal", async ({ builtRoot, tempDir, page }) => {
   expect((await viewport.boundingBox())?.height ?? 0).toBeGreaterThan(lowered);
 });
 
-// 雛形に足した操作できる部品の文書を描き、スライダーでグラフが描き直され、今の値を写す（正常シナリオ（操作できる部品を置く））
+// 雛形に追加した操作できる部品の文書を描き、スライダーでグラフが再描画され、今の値を写す（正常シナリオ（操作できる部品を配置する））
 test("test_normal_when_interactive", async ({ builtRoot, tempDir, page }) => {
   // 準備
   const dir = await tempDir();
@@ -255,7 +255,7 @@ test("test_normal_when_interactive", async ({ builtRoot, tempDir, page }) => {
   await expect(
     param.getByRole("button", { name: "今の値を写す" }),
   ).toBeVisible();
-  // スライダーを動かすと、グラフが新しい値で描き直される
+  // スライダーを動かすと、グラフが新しい値で再描画される
   await slider.fill("8");
   await expect(param.locator("svg[role=img]")).toHaveAttribute(
     "aria-label",
@@ -269,9 +269,9 @@ test("test_normal_when_interactive", async ({ builtRoot, tempDir, page }) => {
   });
 });
 
-// 型を誤った固有の部品は 1 回目の点検でファイルと行を出して落ち、手で直すと 2 回目の点検が通り、その後の文書に固有の部品が描かれる（異常シナリオ（足した JavaScript の型が合わない））
+// 型を誤った固有の部品は 1 回目の点検でファイルと行を出して落ち、手で修正すると 2 回目の点検が通り、その後の文書に固有の部品が描かれる（異常シナリオ（追加した JavaScript の型が合わない））
 test("test_error_when_type_mismatch", async ({ builtRoot, tempDir, page }) => {
-  // 準備: 雛形を置き、型を誤った固有の部品を書き足す
+  // 準備: 雛形を配置し、型を誤った固有の部品を追記する
   const dir = await prepare(builtRoot, tempDir);
   const file = join(dir, "extensions", "card.js");
   const broken = CARD_SOURCE.replace(
@@ -288,7 +288,7 @@ test("test_error_when_type_mismatch", async ({ builtRoot, tempDir, page }) => {
       .split("\n")
       .findIndex((text) => text.includes("definition.title.length")) + 1;
   expect(first.stdout).toContain(`extensions/card.js(${line},`);
-  // 実行・検証: 手で直した後の 2 回目の点検は、誤り 0 件で終了コードが 0
+  // 実行・検証: 手で修正した後の 2 回目の点検は、誤り 0 件で終了コードが 0
   await writeFile(file, CARD_SOURCE);
   const second = await runTsc(dir);
   expect(second.stdout).toBe("");
@@ -343,9 +343,9 @@ function driftFlowMarkdown(broken: boolean): string {
   );
 }
 
-// 図の定義のずれを 1 回目の点検で見つけ、修正した後の 2 回目の点検を通し、箱が重ならず名前が収まる図を描く（異常シナリオ（図の定義にずれがある））
+// 図の定義のずれを 1 回目の点検で見つけ、修正した後の 2 回目の点検に合格し、ノードが重ならず名前が収まる図を描く（異常シナリオ（図の定義にずれがある））
 test("test_error_when_diagram_drift", async ({ builtRoot, tempDir, page }) => {
-  // 準備: 雛形を置き、ずれを持つ図の文書を書いて索引に載せる
+  // 準備: 雛形を配置し、ずれを持つ図の文書を記載して索引に記載する
   const dir = await tempDir();
   const init = await runCli(builtRoot, ["init"], dir);
   expect(init.code).toBe(0);
@@ -363,7 +363,7 @@ test("test_error_when_diagram_drift", async ({ builtRoot, tempDir, page }) => {
     ].join("\n"),
   });
   const flowLine = broken.split("\n").indexOf("<!-- flow -->") + 1;
-  // 実行・検証: 1 回目の点検は、箱の重なりとラベルの長さのずれを出して終了コードが 0 以外
+  // 実行・検証: 1 回目の点検は、ノードの重なりとラベルの長さのずれを出して終了コードが 0 以外
   const first = await runCli(builtRoot, ["check"], dir);
   expect(first.code).not.toBe(0);
   const lines = linesOf(first.stdout);
@@ -387,7 +387,7 @@ test("test_error_when_diagram_drift", async ({ builtRoot, tempDir, page }) => {
   // 実行: 修正した文書を描く
   await openPage(page, builtRoot);
   await mountDocument(page, { markdown: fixed });
-  // 検証: 箱が重ならず、名前が箱の中に収まる
+  // 検証: ノードが重ならず、名前がノードの中に収まる
   const nodes = page.locator("#doc .mdmark-diagram-node");
   await expect(nodes).toHaveCount(2);
   const [a, b] = await Promise.all([

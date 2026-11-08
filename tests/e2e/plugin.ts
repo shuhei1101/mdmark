@@ -32,7 +32,7 @@ function expandPluginRoot(
   return {
     command: entry.command === "node" ? process.execPath : entry.command,
     args: (entry.args ?? []).map((arg) =>
-      // biome-ignore lint/suspicious/noTemplateCurlyInString: プラグインの定義に書かれたプレースホルダそのもの
+      // biome-ignore lint/suspicious/noTemplateCurlyInString: プラグインの定義に記載されたプレースホルダそのもの
       arg.replaceAll("${CLAUDE_PLUGIN_ROOT}", pluginDir),
     ),
   };
@@ -50,11 +50,11 @@ export type ServeProcess = {
   stderr: () => string;
   /** 動いているか */
   isRunning: () => boolean;
-  /** SIGINT を送り、終わった終了コードを返す */
+  /** SIGINT を送信し、終わった終了コードを返却する */
   interrupt: () => Promise<number>;
 };
 
-/** `mdmark serve` を流して終わった結果 */
+/** `mdmark serve` を実行して終わった結果 */
 export type ServeExit = {
   /** 終了コード */
   code: number;
@@ -89,26 +89,26 @@ class ServeExitedError extends Error {
   }
 }
 
-/** フックを通すクライアントごとの、フックと作業のフォルダの情報 */
+/** フックを経由するクライアントごとの、フックと作業のフォルダの情報 */
 type HookContext = {
   pluginDir: string;
   projectDir: string;
-  /** フックの標準入力に渡した `tool_input` の記録 */
+  /** フックの標準入力に指定した `tool_input` の記録 */
   inputs: Record<string, unknown>[];
 };
 
-// 子プロセスの環境から外す、実機の設定が漏れる環境変数
+// 子プロセスの環境から除外する、実機の設定が漏れる環境変数
 const LEAKING_ENV = ["CLAUDE_PROJECT_DIR", "MDMARK_PORT", "TMUX", "TMUX_PANE"];
 // `mdmark serve` が待ち受けを始めたときに標準出力へ出す URL
 const LISTENING_URL_PATTERN = /http:\/\/127\.0\.0\.1:\d+\/mcp/;
 // 待ち受けるアドレス
 const LISTEN_HOST = "127.0.0.1";
-// 待ち受けの URL が出たかを確かめる間隔（ミリ秒）
+// 待ち受けの URL が出たかを確認する間隔（ミリ秒）
 const POLL_INTERVAL_MS = 20;
-// 空きを確かめたポートを別のプロセスに取られたときの、起動し直す回数の上限
+// 空きを確認したポートを別のプロセスに取られたときの、もう一度起動する回数の上限
 const MAX_START_ATTEMPTS = 5;
-// ポートが使われているときに `mdmark serve` が標準エラーに出す文に含まれる語
-const PORT_IN_USE_WORD = "別のプロセスが使っています";
+// ポートが使用されているときに `mdmark serve` が標準エラーに出す文に含まれる単語
+const PORT_IN_USE_WORD = "別のプロセスが使用しています";
 // PreToolUse のフックの名前
 const PRE_TOOL_USE = "PreToolUse";
 // プラグインの MCP サーバーのツール名の頭
@@ -126,7 +126,7 @@ function childEnv(overrides: Record<string, string>): Record<string, string> {
   return { ...env, MDMARK_CONFIG: NO_SETTINGS, ...overrides };
 }
 
-/** 空いているポートを 1 つ返す */
+/** 空いているポートを 1 つ返却する */
 export async function findFreePort(): Promise<number> {
   const server = createServer();
   await new Promise<void>((resolve) =>
@@ -188,7 +188,7 @@ async function kill(spawned: Spawned): Promise<void> {
   await spawned.exited;
 }
 
-/** `builtRoot` の `dist/cli.js serve` を、`env`（`MDMARK_PORT` はここで渡したものだけが届く）で起動する */
+/** `builtRoot` の `dist/cli.js serve` を、`env`（`MDMARK_PORT` はここで指定したものだけが届く）で起動する */
 function launchServe(options: {
   builtRoot: string;
   env: Record<string, string>;
@@ -235,7 +235,7 @@ async function startServe(options: {
   return { serve, spawned };
 }
 
-/** `dist/cli.js serve` を、`MDMARK_PORT` に空きポートを渡して起動する。空きを確かめてから起動するまでに別のプロセスにポートを取られたときは、ポートを選び直す */
+/** `dist/cli.js serve` を、`MDMARK_PORT` に空きポートを指定して起動する。空きを確認してから起動するまでに別のプロセスにポートを取られたときは、ポートをもう一度選ぶ */
 async function startServeOnFreePort(options: {
   builtRoot: string;
   env: Record<string, string>;
@@ -259,7 +259,7 @@ async function startServeOnFreePort(options: {
   }
 }
 
-/** `dist/cli.js serve` を起動して `use` に渡し、終わったら動いていれば止める。`env` に `MDMARK_PORT` を渡さなければ空きポートを渡して起動する */
+/** `dist/cli.js serve` を起動して `use` に指定し、終わったら動いていれば止める。`env` に `MDMARK_PORT` を指定しなければ空きポートを指定して起動する */
 export async function withServe<T>(
   options: { builtRoot: string; env: Record<string, string> },
   use: (serve: ServeProcess) => Promise<T>,
@@ -275,7 +275,7 @@ export async function withServe<T>(
   }
 }
 
-/** `dist/cli.js serve` を起動し、終わるまで待つ。終了コードが 0 以外でも例外を投げず、結果を返す */
+/** `dist/cli.js serve` を起動し、終わるまで待つ。終了コードが 0 以外でも例外を投げず、結果を返却する */
 export async function runServeToExit(options: {
   builtRoot: string;
   env: Record<string, string>;
@@ -285,7 +285,7 @@ export async function runServeToExit(options: {
   return { code, stdout: spawned.stdout(), stderr: spawned.stderr() };
 }
 
-/** `.mcp.json` の MCP サーバー `mdmark` の接続先を返す。`${MDMARK_PORT:-既定}` は `env` の値（無ければ既定）に展開する */
+/** `.mcp.json` の MCP サーバー `mdmark` の接続先を返却する。`${MDMARK_PORT:-既定}` は `env` の値（無ければ既定）に展開する */
 export async function readMcpUrl(options: {
   pluginDir: string;
   env: Record<string, string>;
@@ -307,13 +307,13 @@ export async function readMcpUrl(options: {
   };
 }
 
-/** HTTP でつないだクライアントを `use` に渡し、終わったら閉じる。`serverUrl` を渡すとその URL につなぎ、渡さなければ空きポートで `mdmark serve` を起動してつなぐ。`projectDir` を渡すと、`callTool` が PreToolUse のフック（`builtRoot` の `plugin/`）を通した引数で呼ぶ */
+/** HTTP でつないだクライアントを `use` に指定し、終わったら閉じる。`serverUrl` を指定するとその URL につなぎ、指定しなければ空きポートで `mdmark serve` を起動してつなぐ。`projectDir` を指定すると、`callTool` が PreToolUse のフック（`builtRoot` の `plugin/`）を経由した引数で呼ぶ */
 export async function withMcpClient<T>(
   options: {
     builtRoot: string;
     projectDir?: string;
     serverUrl?: string;
-    /** 常駐サーバーに渡す環境変数（`MDMARK_CONFIG` など） */
+    /** 常駐サーバーに指定する環境変数（`MDMARK_CONFIG` など） */
     env?: Record<string, string>;
   },
   use: (client: Client) => Promise<T>,
@@ -346,17 +346,17 @@ export async function withMcpClient<T>(
   }
 }
 
-/** クライアントが PreToolUse のフックに渡した `tool_input` の記録 */
+/** クライアントが PreToolUse のフックに指定した `tool_input` の記録 */
 export function hookInputs(client: Client): Record<string, unknown>[] {
   return hookContexts.get(client)?.inputs ?? [];
 }
 
-/** `hooks/hooks.json` の PreToolUse の `matcher` が `toolName` に当たるか */
+/** `hooks/hooks.json` の PreToolUse の `matcher` が `toolName` に該当するか */
 function matchesHook(matcher: string, toolName: string): boolean {
   return new RegExp(`^(?:${matcher})$`).test(toolName);
 }
 
-/** PreToolUse のフックを通した引数を返す。`matcher` に当たらないツールと、フックが何も返さないときは `args` のまま */
+/** PreToolUse のフックを経由した引数を返却する。`matcher` に該当しないツールと、フックが何も返却しないときは `args` のまま */
 async function applyHook(
   context: HookContext,
   name: string,
@@ -404,7 +404,7 @@ async function applyHook(
   return JSON.parse(run.stdout()).hookSpecificOutput.updatedInput;
 }
 
-/** ツールを呼び、内容のテキストと `isError` を返す。フックを通すクライアントでは、フックが返した引数で呼ぶ */
+/** ツールを呼び、内容のテキストと `isError` を返却する。フックを経由するクライアントでは、フックが返却した引数で呼ぶ */
 export async function callTool(
   client: Client,
   name: string,
@@ -430,7 +430,7 @@ export function issueLine(issue: Issue): string {
   return `${place}: ${issue.kind}: ${issue.message}`;
 }
 
-/** 設定の `index` が指す索引の中身。`docs` に文書の ID を並べる（パスは `{ID}.md`、題は大文字の ID） */
+/** 設定の `index` が指す索引の中身。`docs` に文書の ID を並べる（パスは `{ID}.md`、タイトルは大文字の ID） */
 export function indexYaml(ids: string[]): string {
   return [
     "schema: 2",
@@ -444,7 +444,7 @@ export function indexYaml(ids: string[]): string {
   ].join("\n");
 }
 
-/** 設定の中身: 索引と、文書 2 つに当たる `build` を持つ */
+/** 設定の中身: 索引と、文書 2 つに該当する `build` を持つ */
 export const CONFIG_WITH_BUILD = [
   "index: index.yaml",
   "build:",

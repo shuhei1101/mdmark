@@ -25,13 +25,13 @@ import {
   withMcpClient,
 } from "../plugin.ts";
 
-// ブラウザを使わないため、1 つのブラウザのプロジェクトだけで流す
+// ブラウザを使用しないため、1 つのブラウザのプロジェクトだけで実行する
 test.skip(
   ({ browserName }) => browserName !== "chromium",
   "ブラウザを使わないシナリオなので chromium のプロジェクトだけで流す",
 );
 
-/** ずれの無い作業のフォルダ: 設定・索引と文書 2 つ。索引に 2 つとも載り、`build` が 2 つに当たる */
+/** ずれの無い作業のフォルダ: 設定・索引と文書 2 つ。索引に 2 つとも載り、`build` が 2 つに該当する */
 async function writeCleanProject(dir: string): Promise<void> {
   await writeFiles(dir, {
     "mdmark.config.yaml": CONFIG_WITH_BUILD,
@@ -40,7 +40,7 @@ async function writeCleanProject(dir: string): Promise<void> {
   });
 }
 
-/** 設定・索引・文書のファイルの中身を並べて読む */
+/** 設定・索引・文書のファイルの中身を並べて読み込む */
 async function snapshot(dir: string): Promise<string[]> {
   return Promise.all(
     ["mdmark.config.yaml", "index.yaml", "a.md", "b.md"].map((file) =>
@@ -49,7 +49,7 @@ async function snapshot(dir: string): Promise<string[]> {
   );
 }
 
-// check がずれ 0 件を返し、build_site が 1 枚の HTML を書く（正常シナリオ）
+// check がずれ 0 件を返却し、build_site が 1 枚の HTML を書き込む（正常シナリオ）
 test("test_normal", async ({ builtRoot, tempDir }) => {
   // 準備
   const dir = await tempDir();
@@ -71,14 +71,14 @@ test("test_normal", async ({ builtRoot, tempDir }) => {
   const json = JSON.parse(built.texts[0] ?? "");
   expect(json.out).toBe(join(dir, "dist", "docs.html"));
   expect(json.docs).toBe(2);
-  // 同じフォルダで mdmark build を流して書いた HTML と同じ
+  // 同じフォルダで mdmark build を実行して記載した HTML と同じ
   expect((await runCli(builtRoot, ["build"], cliDir)).code).toBe(0);
   expect(await readFile(json.out, "utf8")).toBe(
     await readFile(join(cliDir, "dist", "docs.html"), "utf8"),
   );
 });
 
-// 文書 1 つを消して索引に残すと、missing_doc を含むずれが mdmark check と同じに返る（正常シナリオ）
+// 文書 1 つを削除して索引に残すと、missing_doc を含むずれが mdmark check と同じに返る（正常シナリオ）
 test("test_normal_when_drift", async ({ builtRoot, tempDir }) => {
   // 準備
   const dir = await tempDir();
@@ -112,7 +112,7 @@ test("test_normal_when_drift", async ({ builtRoot, tempDir }) => {
   ]).toEqual(before);
 });
 
-// export_html が 1 枚の HTML を書き、mdmark export と同じ中身になる（正常シナリオ）
+// export_html が 1 枚の HTML を書き込み、mdmark export と同じ中身になる（正常シナリオ）
 test("test_normal_when_single_document", async ({ builtRoot, tempDir }) => {
   // 準備
   const dir = await tempDir();
@@ -135,7 +135,7 @@ test("test_normal_when_single_document", async ({ builtRoot, tempDir }) => {
   expect((await snapshot(dir)).length).toBe(4);
 });
 
-// 設定ファイルが無いと、無いことと mdmark init で置けることを返す（異常シナリオ）
+// 設定ファイルが無いと、無いことと mdmark init で配置できることを返却する（異常シナリオ）
 test("test_error_when_config_missing", async ({ builtRoot, tempDir }) => {
   // 準備
   const dir = await tempDir();
@@ -150,7 +150,7 @@ test("test_error_when_config_missing", async ({ builtRoot, tempDir }) => {
   expect(result.texts[0]).toContain("mdmark init");
 });
 
-// 基準を渡すと、片方だけが変わった change_together の直し忘れが mdmark check --base と同じに返る（正常シナリオ（比べる基準を渡す））
+// 基準を指定すると、片方だけが変わった change_together の修正漏れが mdmark check --base と同じに返る（正常シナリオ（比べる基準を指定する））
 test("test_normal_when_base_given", async ({ builtRoot, tempDir }) => {
   // 準備
   const { dir, base } = await createChangeTogetherDir(builtRoot, tempDir);
@@ -167,21 +167,21 @@ test("test_normal_when_base_given", async ({ builtRoot, tempDir }) => {
   // 検証
   expect(checked.isError).toBe(false);
   const issues = JSON.parse(checked.texts[0] ?? "").issues as Issue[];
-  // 変わっていない 2 つ目の文書を指す直し忘れの行が 1 件
+  // 変わっていない 2 つ目の文書を指す修正漏れの行が 1 件
   expect(issues).toHaveLength(1);
   expect(issues[0]).toMatchObject({
     file: "b.md",
     where: "",
     kind: "missed_change_together",
   });
-  // 同じフォルダ・同じ基準で mdmark check を流したときと同じずれ
+  // 同じフォルダ・同じ基準で mdmark check を実行したときと同じずれ
   expect(linesOf(cli.stdout).slice(0, -1)).toEqual(issues.map(issueLine));
   expect(
     await Promise.all(files.map((file) => readFile(join(dir, file), "utf8"))),
   ).toEqual(before);
 });
 
-// 文字列と YAML のキーを渡した check が、mdmark check --text・--file --key と同じ書き方の警告のずれを返す（正常シナリオ（文字列とYAMLのキーを渡す））
+// 文字列と YAML のキーを指定した check が、mdmark check --text・--file --key と同じ記載の警告のずれを返却する（正常シナリオ（文字列とYAMLのキーを指定する））
 test("test_normal_when_text_and_key", async ({ builtRoot, tempDir }) => {
   // 準備
   const dir = await tempDir();
@@ -246,7 +246,7 @@ test("test_normal_when_text_and_key", async ({ builtRoot, tempDir }) => {
   ).toEqual(before);
 });
 
-// check が、mdmark check と同じ取り込み先が無いずれを返し、説明文で取り込み先も点検すると知らせる（正常シナリオ（取り込み先が無い））
+// check が、mdmark check と同じ取り込み先が無いずれを返却し、説明文で取り込み先も点検すると通知する（正常シナリオ（取り込み先が無い））
 test("test_normal_when_include_missing", async ({ builtRoot, tempDir }) => {
   // 準備
   const dir = await tempDir();

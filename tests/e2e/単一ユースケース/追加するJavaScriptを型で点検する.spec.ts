@@ -8,7 +8,7 @@ import { listFiles, placeDeclarations, runTsc } from "../diagram.ts";
 const VALID_LINE = 'slot.textContent = `こんにちは、${value.args[0] ?? ""}`;';
 const INVALID_LINE = "slot.textContent = value.args.length;";
 
-/** JavaScript の雛形を置き、配布物の型定義を `mdmark/` に置いたフォルダを作る */
+/** JavaScript の雛形を配置し、配布物の型定義を `mdmark/` に配置したフォルダを作る */
 async function prepare(
   builtRoot: string,
   tempDir: () => Promise<string>,

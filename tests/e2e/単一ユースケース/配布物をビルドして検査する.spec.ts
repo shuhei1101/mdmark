@@ -26,18 +26,18 @@ const NOT_IN_CLONE = [
   ".vitest/",
 ];
 
-// 依存を入れたあとの作業ツリー（最初のテストが作り、後のテストが使う）
+// 依存を入れたあとの作業ツリー（最初のテストが作り、後のテストが使用する）
 let root = "";
 
-// ブラウザを使わないため、1 つのブラウザのプロジェクトだけで流す
+// ブラウザを使用しないため、1 つのブラウザのプロジェクトだけで実行する
 test.skip(
   ({ browserName }) => browserName !== "chromium",
   "ブラウザを使わないシナリオなので chromium のプロジェクトだけで流す",
 );
-// 作業ツリーを使い回すため、定義した順に 1 つずつ流す
+// 作業ツリーを使い回すため、定義した順に 1 つずつ実行する
 test.describe.configure({ mode: "serial" });
 
-/** 作業ツリーの中でコマンドを流し、終了コードと出力を返す */
+/** 作業ツリーの中でコマンドを実行し、終了コードと出力を返却する */
 async function run(
   command: string,
   args: string[],
@@ -58,14 +58,14 @@ async function run(
   }
 }
 
-/** ビルドした dist/index.js を読み込み、公開関数 version() の戻り値を返す */
+/** ビルドした dist/index.js を読み込み、公開関数 version() の戻り値を返却する */
 async function readBuiltVersion(): Promise<string> {
   const url = `${pathToFileURL(join(root, "dist", "index.js")).href}?t=${Date.now()}`;
   const built: { version: () => string } = await import(url);
   return built.version();
 }
 
-/** クローンした直後の作業ツリー（node_modules/ と dist/ が無く、`version.ini` が `v0.0.0` の写し）を一時フォルダに作る */
+/** クローンした直後の作業ツリー（node_modules/ と dist/ が無く、`version.ini` が `v0.0.0` のコピー）を一時フォルダに作る */
 async function createClone(): Promise<string> {
   const { stdout } = await execFileAsync(
     "git",
@@ -89,7 +89,7 @@ async function createClone(): Promise<string> {
   return clone;
 }
 
-/** ビルドした `plugin/.claude-plugin/plugin.json` の `version` を返す */
+/** ビルドした `plugin/.claude-plugin/plugin.json` の `version` を返却する */
 async function readPluginVersion(): Promise<string> {
   const manifest = JSON.parse(
     await readFile(
@@ -106,7 +106,7 @@ test.afterAll(async () => {
   }
 });
 
-// クローン直後から、依存の導入・ブラウザの導入・lint・型検査・ビルド・テストを順に流す（正常シナリオ）
+// クローン直後から、依存の導入・ブラウザの導入・lint・型検査・ビルド・テストを順に実行する（正常シナリオ）
 test("test_normal", async () => {
   // 準備
   root = await createClone();
@@ -139,7 +139,7 @@ test("test_normal", async () => {
   expect((await run("npm", ["test"])).code).toBe(0);
 });
 
-// --version で渡した版を埋めてビルドする（正常シナリオ）
+// --version で指定したバージョンを埋めてビルドする（正常シナリオ）
 test("test_normal_when_version_given", async () => {
   // 実行
   const { code } = await run("npm", [
@@ -155,7 +155,7 @@ test("test_normal_when_version_given", async () => {
   expect(await readPluginVersion()).toBe("v0.0.1");
 });
 
-// 書式に合わない版を渡すと、配布物を書かずに終わる（異常シナリオ）
+// 書式に合わないバージョンを指定すると、配布物を書き込まずに終わる（異常シナリオ）
 test("test_error_when_version_format_invalid", async () => {
   // 実行
   const { code, stderr } = await run("npm", [
@@ -171,8 +171,8 @@ test("test_error_when_version_format_invalid", async () => {
   expect(stderr).toContain("v{MAJOR}.{MINOR}.{PATCH}");
 });
 
-// 上限を超えた配布ファイルがあると、書いた配布物を消して終わる（異常シナリオ）
-// コマンドに上限を差し替える口が無いため、main に maxBytes: 1 を渡す
+// 上限を超えた配布ファイルがあると、書き込んだ配布物を削除して終わる（異常シナリオ）
+// コマンドに上限を差し替えるインターフェースが無いため、main に maxBytes: 1 を指定する
 test("test_error_when_dist_file_too_large", async () => {
   // 準備
   const errors: string[] = [];
@@ -193,8 +193,8 @@ test("test_error_when_dist_file_too_large", async () => {
   expect(errors.join("\n")).toMatch(/index\.js[^\n]*\d/);
 });
 
-// 対応ブラウザの下限に無い API を確かめずに使うと、書いた配布物を消して終わる（異常シナリオ）
-// 後のテストが同じ作業ツリーを使うため、足した行は終わりに元へ戻す
+// 対応ブラウザの下限に無い API を確認せずに使用すると、書き込んだ配布物を削除して終わる（異常シナリオ）
+// 後のテストが同じ作業ツリーを使用するため、追加した行は終わりに元へ戻す
 test("test_error_when_api_missing_in_baseline_browser", async () => {
   // 準備
   const entry = join(root, "src", "index.ts");
@@ -215,10 +215,10 @@ test("test_error_when_api_missing_in_baseline_browser", async () => {
   }
 });
 
-// 最新の版のタグ（シナリオのセットアップの `version.ini` もこの版）
+// 最新のバージョンのタグ（シナリオのセットアップの `version.ini` もこのバージョン）
 const TAG = "v0.3.0";
 
-/** 作業ツリーの中で git を流す（署名なし） */
+/** 作業ツリーの中で git を実行する（署名なし） */
 async function git(args: string[]): Promise<void> {
   await execFileAsync(
     "git",
@@ -235,7 +235,7 @@ async function git(args: string[]): Promise<void> {
   );
 }
 
-/** 作業ツリーを git のリポジトリにして、Schema・移行の手順・`version.ini` を commit して版のタグを打つ。打ってあれば、それらをタグの状態に戻す */
+/** 作業ツリーを git のリポジトリにして、Schema・移行の手順・`version.ini` を commit してバージョンのタグを打つ。打ってあれば、それらをタグの状態に戻す */
 async function resetTaggedWorkTree(): Promise<void> {
   if (!existsSync(join(root, ".git"))) {
     await writeFile(join(root, "version.ini"), `${TAG}\n`);
@@ -256,7 +256,7 @@ async function resetTaggedWorkTree(): Promise<void> {
   await git(["clean", "--quiet", "-fd", "migrations"]);
 }
 
-/** Schema の JSON を読み、`change` で変えて書き戻し、書いた中身を返す */
+/** Schema の JSON を読み込み、`change` で変えて書き込んで戻し、記載した中身を返却する */
 async function changeSchema(
   name: string,
   change: (schema: Record<string, unknown>) => void,
@@ -269,7 +269,7 @@ async function changeSchema(
   return text;
 }
 
-// 設定の Schema に省いてよいキーを足し、手順なしの一覧に今の Schema の SHA-256 の行があれば通す（正常シナリオ（広げるだけのスキーマの変更を一覧に載せる））
+// 設定の Schema に省いてよいキーを追加し、手順なしの一覧に今の Schema の SHA-256 の行があれば合格にする（正常シナリオ（広げるだけのスキーマの変更を一覧に記載する））
 test("test_normal_when_schema_change_listed", async () => {
   // 準備
   await resetTaggedWorkTree();
@@ -295,7 +295,7 @@ test("test_normal_when_schema_change_listed", async () => {
   expect(existsSync(join(root, "dist", "index.css"))).toBe(true);
 });
 
-// 索引の Schema を変えたのに移行の手順も一覧の行も無いと、配布物を書かずに終わる（異常シナリオ（スキーマを変えたのに移行の手順が無い））
+// 索引の Schema を変えたのに移行の手順も一覧の行も無いと、配布物を書き込まずに終わる（異常シナリオ（スキーマを変えたのに移行の手順が無い））
 test("test_error_when_schema_changed_without_steps", async () => {
   // 準備
   await resetTaggedWorkTree();
@@ -313,7 +313,7 @@ test("test_error_when_schema_changed_without_steps", async () => {
   expect(stderr).toContain("no-steps.yaml");
 });
 
-// version.ini を最新の版のタグより新しく上げたのに migrations/next/ が残っていると、移し方を示して終わる（異常シナリオ（release のビルドで出していない版の手順が残る））
+// version.ini を最新のバージョンのタグより新しく上げたのに migrations/next/ が残っていると、移し方を示して終わる（異常シナリオ（release のビルドで出していないバージョンの手順が残る））
 test("test_error_when_next_steps_left_in_release", async () => {
   // 準備
   await resetTaggedWorkTree();

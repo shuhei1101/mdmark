@@ -13,7 +13,7 @@ import {
   SAMPLE_MARKDOWN,
 } from "../dist-page.ts";
 
-// ビルドした配布物を置いた作業ツリー
+// ビルドした配布物を配置した作業ツリー
 let builtRoot = "";
 
 test.beforeAll(async () => {
@@ -29,7 +29,7 @@ test("test_normal", async () => {
   // 準備・実行
   const html = await renderInNode(builtRoot, SAMPLE_MARKDOWN);
   // 検証
-  // 要素名の直後が空白か `>` の開始タグを探す（`p` が `pre` に当たらないように、属性の有無は問わない）
+  // 要素名の直後が空白か `>` の開始タグを探す（`p` が `pre` に該当しないように、属性の有無は問わない）
   for (const element of [
     "h1",
     "p",
@@ -59,7 +59,7 @@ test("test_normal_when_in_browser", async ({ page }) => {
   expect(await page.locator("#doc").innerHTML()).toBe(before);
 });
 
-// 記法を持つ文書を、ページで描くのと同じ本文の HTML 文字列にし、印の文字とスクリプトは含めない（正常シナリオ（記法を持つ文書））
+// 記法を持つ文書を、ページで描くのと同じ本文の HTML 文字列にし、マーカーの文字とスクリプトは含めない（正常シナリオ（記法を持つ文書））
 test("test_normal_when_syntax", async () => {
   // 準備
   const markdown = [
@@ -137,7 +137,7 @@ const REFERENCES: MdmarkReferences = {
   glossary: [],
 };
 
-// 索引・文書の id・参照を渡すと、用語の意味と被参照の一覧を持つ HTML 文字列を返す（正常シナリオ（索引を渡す））
+// 索引・文書の id・参照を指定すると、用語の意味と被参照の一覧を持つ HTML 文字列を返却する（正常シナリオ（索引を指定する））
 test("test_normal_when_index", async () => {
   // 準備・実行
   const html = await renderInNode(builtRoot, "ワークスペースを置く。\n", {
@@ -153,7 +153,7 @@ test("test_normal_when_index", async () => {
   expect(html).not.toContain("<!--");
 });
 
-// 読み込んだエイリアスを渡すと、下線とツールチップ（説明・コマンド・コピーのボタン）を持つ HTML 文字列を返す（正常シナリオ（エイリアスを渡す））
+// 読み込んだエイリアスを指定すると、下線とツールチップ（説明・コマンド・コピーのボタン）を持つ HTML 文字列を返却する（正常シナリオ（エイリアスを指定する））
 test("test_normal_when_aliases", async () => {
   // 準備
   const aliases: MdmarkAlias[] = [
@@ -213,12 +213,12 @@ test("test_normal_when_footnotes", async () => {
   expect(html).not.toContain("[^src]");
 });
 
-/** 正規表現（`g` 付き）に合う文字列を全て返す */
+/** 正規表現（`g` 付き）に合う文字列を全て返却する */
 function matchAll(text: string, pattern: RegExp): string[] {
   return text.match(pattern) ?? [];
 }
 
-// 取り込む文書の表を渡すと、マーカーの場所に見出しの中を描く（正常シナリオ（取り込む文書を渡す））
+// 取り込む文書の表を指定すると、マーカーの場所に見出しの中を描く（正常シナリオ（取り込む文書を指定する））
 test("test_normal_when_includes_given", async () => {
   // 準備
   const markdown = "# 案内\n\n<!-- include: 共通/手順.md#実行 -->\n";

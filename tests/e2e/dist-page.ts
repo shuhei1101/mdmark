@@ -29,35 +29,35 @@ import {
 
 const execFileAsync = promisify(execFile);
 
-// jsDelivr の GitHub エンドポイントの、版のタグまでの URL
+// jsDelivr の GitHub エンドポイントの、バージョンのタグまでの URL
 const CDN_BASE = "https://cdn.jsdelivr.net/gh/shuhei1101/mdmark";
-// ページを返す架空のオリジン
+// ページを返却する架空のオリジン
 export const PAGE_URL = "https://app.example.test/";
-// 外部ライブラリの代役のモジュールを返す架空の URL
+// 外部ライブラリの代役のモジュールを返却する架空の URL
 export const LIB_URL = "https://libs.example.test/test-lib.js";
-// 拡張の代役のモジュールを返す架空の URL
+// 拡張の代役のモジュールを返却する架空の URL
 export const EXTENSION_URL = "https://libs.example.test/greet.js";
 // 色分けのライブラリ（highlight.js）を配る jsDelivr の npm の URL。`syntax.url` の既定と同じ
 export const SYNTAX_URL =
   "https://cdn.jsdelivr.net/npm/@highlightjs/cdn-assets@11.12.0/es/";
-// 色分けのライブラリの `es/` を置いた場所（開発の依存 `@highlightjs/cdn-assets`）
+// 色分けのライブラリの `es/` を配置した場所（開発の依存 `@highlightjs/cdn-assets`）
 export const SYNTAX_ES_ROOT = resolve(
   import.meta.dirname,
   "../../node_modules/@highlightjs/cdn-assets/es",
 );
-// 配布物を埋めてビルドする版
+// 配布物を埋めてビルドするバージョン
 const BUILT_VERSION = "v0.0.1";
 // リポジトリの直下
 const REPO_ROOT = resolve(import.meta.dirname, "../..");
-// 外部ライブラリの代役: `draw` で印の場所の文字を `drawn:` と引数を `,` で結んだものにする
+// 外部ライブラリの代役: `draw` でマーカーの場所の文字を `drawn:` と引数を `,` で結んだものにする
 const TEST_LIB_SOURCE =
   'export function draw(slot, args) { slot.textContent = "drawn:" + args.join(","); }\n';
 
-// 拡張の代役: `draw` で印の場所の文字を `greet:` と引数を `,` で結んだものにする
+// 拡張の代役: `draw` でマーカーの場所の文字を `greet:` と引数を `,` で結んだものにする
 const EXTENSION_SOURCE =
   'export function draw(slot, value) { slot.textContent = "greet:" + value.args.join(","); }\n';
 
-/** 見本の Markdown: 見出し・段落・リスト・表・コードブロック・リンク・折り畳み・機能の印・スクリプト */
+/** 見本の Markdown: 見出し・段落・リスト・表・コードブロック・リンク・折り畳み・機能のマーカー・スクリプト */
 export const SAMPLE_MARKDOWN = [
   "<!-- features: +a -b -->",
   "",
@@ -86,7 +86,7 @@ export const SAMPLE_MARKDOWN = [
 /** 描く先の要素の id */
 export const DOC_SELECTOR = "#doc";
 
-/** 索引を渡して描くときの引数 */
+/** 索引を指定して描くときの引数 */
 export type IndexOptions = {
   /** 索引 */
   index?: MdmarkIndex;
@@ -100,18 +100,18 @@ export type IndexOptions = {
   includes?: Record<string, string>;
 };
 
-/** 使えないエイリアス（`env` を含む）を、型の検査を通さずに `aliases` へ渡せる形にする */
+/** 使用できないエイリアス（`env` を含む）を、型の検査にかけずに `aliases` へ指定できる構造にする */
 export function rawAliases(aliases: unknown[]): MdmarkAlias[] {
   return aliases as MdmarkAlias[];
 }
 
-/** ページの中に作るコメントの読み書きの関数の仕様 */
+/** ページの中に作るコメントの読み込みと保存の関数の仕様 */
 export type CommentStoreSpec = {
-  /** `load` が返すコメント */
+  /** `load` が返却するコメント */
   loaded?: MdmarkComment[];
   /** `save` が reject する */
   failSave?: boolean;
-  /** 呼ばれた回ごとに `load` が返すコメント（`loaded` より先に使い、尽きたら最後のものを返す） */
+  /** 呼ばれた回ごとに `load` が返却するコメント（`loaded` より先に使用し、尽きたら最後のものを返却する） */
   loadedByCall?: MdmarkComment[][];
   /** 2 回目以降の `load` が reject する */
   failReload?: boolean;
@@ -123,7 +123,7 @@ export type CommentStoreSpec = {
   failRemove?: boolean;
 };
 
-/** コメントの読み書きの関数が受けた呼び出し */
+/** コメントの読み込みと保存の関数が受けた呼び出し */
 export type CommentCalls = {
   load: Array<{ docId: string }>;
   save: Array<{
@@ -197,9 +197,9 @@ export type DiffRevisionSpec = {
 
 /** ページの中に作る取り出し元（`DiffSource`）の仕様 */
 export type DiffSourceSpec = {
-  /** `revisions` が返す値。形を壊した値も渡せる */
+  /** `revisions` が返却する値。構造を壊した値も指定できる */
   revisions: unknown;
-  /** リビジョンの `id` から本文を引く表 */
+  /** リビジョンの `id` から本文を参照する表 */
   contents: Record<string, string>;
   /** `revisions` が reject する */
   failRevisions?: boolean;
@@ -209,7 +209,7 @@ export type DiffSourceSpec = {
   pendingRevisions?: boolean;
 };
 
-/** `version`（既定は `v0.0.1`）を埋めてビルドした作業ツリーを作り、その場所を返す。ビルドは入口 `node scripts/build.ts --version {版}` を流し、配布ファイルの上限は既定のままにする */
+/** `version`（既定は `v0.0.1`）を埋めてビルドした作業ツリーを作り、その場所を返却する。ビルドは入口 `node scripts/build.ts --version {バージョン}` を実行し、配布ファイルの上限は既定のままにする */
 export async function buildDistRoot(
   version: string = BUILT_VERSION,
 ): Promise<string> {
@@ -218,11 +218,11 @@ export async function buildDistRoot(
     recursive: true,
   });
   await cp(join(REPO_ROOT, "src"), join(root, "src"), { recursive: true });
-  // CLI が束ねる設定の Schema と取り込んだ alias-inject の Schema
+  // CLI がまとめる設定の Schema と取り込んだ alias-inject の Schema
   await cp(join(REPO_ROOT, "schemas"), join(root, "schemas"), {
     recursive: true,
   });
-  // CLI の `init` が写す雛形の正本
+  // CLI の `init` が写す雛形の原本
   await cp(join(REPO_ROOT, "templates"), join(root, "templates"), {
     recursive: true,
   });
@@ -230,7 +230,7 @@ export async function buildDistRoot(
     await cp(join(REPO_ROOT, name), join(root, name));
   }
   await writeRootPackageJson(root);
-  // プラグインのビルドが読む入力
+  // プラグインのビルドが読み込む入力
   await copyPluginInputs(root);
   await writeFile(join(root, "version.ini"), `${BUILT_VERSION}\n`);
   await symlink(
@@ -247,12 +247,12 @@ export async function buildDistRoot(
   return root;
 }
 
-/** ビルドした作業ツリーを消す */
+/** ビルドした作業ツリーを削除する */
 export async function removeDistRoot(root: string): Promise<void> {
   await rm(root, { recursive: true, force: true });
 }
 
-/** 配布物を読むページの HTML を返す。使う側の CSS は mdmark の CSS の後に置く */
+/** 配布物を読み込むページの HTML を返却する。利用側の CSS は mdmark の CSS の後に配置する */
 function pageHtml(hostCss: string): string {
   return `<!doctype html>
 <html>
@@ -268,7 +268,7 @@ function pageHtml(hostCss: string): string {
 </html>`;
 }
 
-/** ページの HTML と、jsDelivr への要求を、手元の応答に差し替えてページを開き、公開関数が使えるまで待つ */
+/** ページの HTML と、jsDelivr への要求を、手元の応答に差し替えてページを開き、公開関数が使用できるまで待つ */
 export async function openPage(
   page: Page,
   root: string,
@@ -285,7 +285,7 @@ export async function openPage(
     await route.fulfill({
       body: await readFile(join(root, "dist", file)),
       contentType: file.endsWith(".css") ? "text/css" : "text/javascript",
-      // 別のオリジンのページが module を読むため
+      // 別のオリジンのページが module を読み込むため
       headers: { "access-control-allow-origin": "*" },
     });
   });
@@ -293,10 +293,10 @@ export async function openPage(
   await page.waitForFunction(() => "mdmark" in window);
 }
 
-/** jsDelivr の Lucide のアイコンのモジュールの代役（形を 1 つ持つ） */
+/** jsDelivr の Lucide のアイコンのモジュールの代役（構造を 1 つ持つ） */
 export const LUCIDE_MODULE = 'export default [["path",{"d":"M3 12h18"}]];';
 
-/** jsDelivr の Lucide のアイコンへの要求を差し替え、受けた要求の「メソッド URL」を記録する配列を返す。`respond` は名前（`sailboat` など）から応答の状態か、通信の失敗（`"fail"`）を返す */
+/** jsDelivr の Lucide のアイコンへの要求を差し替え、受けた要求の「メソッド URL」を記録する配列を返却する。`respond` は名前（`sailboat` など）から応答の状態か、通信の失敗（`"fail"`）を返却する */
 export async function routeLucide(
   page: Page,
   respond: (name: string) => 200 | 404 | "fail" = () => 200,
@@ -328,7 +328,7 @@ export async function routeLucide(
   return requests;
 }
 
-/** 外部ライブラリの代役のモジュールを返す応答に差し替え、受けた要求の件数を返す関数を返す。status が 404 のときは中身を返さない */
+/** 外部ライブラリの代役のモジュールを返却する応答に差し替え、受けた要求の件数を返却する関数を返却する。status が 404 のときは中身を返却しない */
 export async function routeLibrary(
   page: Page,
   status: 200 | 404,
@@ -346,7 +346,7 @@ export async function routeLibrary(
   return () => requests;
 }
 
-/** 色分けのライブラリの本体と言語のモジュールを、jsDelivr と同じパスの手元の応答に差し替え、受けた要求を `es/` からの相対パス（`core.min.js`・`languages/yaml.min.js`）の名前の順に返す関数を返す。`missing` に挙げた相対パスには 404 を返す */
+/** 色分けのライブラリの本体と言語のモジュールを、jsDelivr と同じパスの手元の応答に差し替え、受けた要求を `es/` からの相対パス（`core.min.js`・`languages/yaml.min.js`）の名前の順に返却する関数を返却する。`missing` に挙げた相対パスには 404 を返却する */
 export async function routeSyntax(
   page: Page,
   options: { missing?: string[] } = {},
@@ -369,7 +369,7 @@ export async function routeSyntax(
   return () => [...requests].sort();
 }
 
-/** 拡張の代役のモジュールを返す応答に差し替え、受けた要求の件数を返す関数を返す。status が 404 のときは中身を返さない。`source` を渡すとその中身を返す */
+/** 拡張の代役のモジュールを返却する応答に差し替え、受けた要求の件数を返却する関数を返却する。status が 404 のときは中身を返却しない。`source` を指定するとその中身を返却する */
 export async function routeExtension(
   page: Page,
   status: 200 | 404,
@@ -388,7 +388,7 @@ export async function routeExtension(
   return () => requests;
 }
 
-/** ページから、`greet` の印の拡張を登録する。`strict` が真なら引数を 1 つだけ、英小文字で許す schema を付ける */
+/** ページから、`greet` のマーカーの拡張を登録する。`strict` が真なら引数を 1 つだけ、英小文字で許す schema を付ける */
 export async function registerGreet(
   page: Page,
   options: { strict?: boolean } = {},
@@ -399,7 +399,7 @@ export async function registerGreet(
       if (!w.mdmark) {
         throw new Error("mdmark が無い");
       }
-      // モジュールの URL は手元の応答が返すため、バンドラーに解決させない
+      // モジュールの URL は手元の応答が返却するため、バンドラーに解決させない
       const importModule = new Function("u", "return import(u)") as (
         u: string,
       ) => Promise<{ draw: (slot: HTMLElement, value: unknown) => void }>;
@@ -440,22 +440,22 @@ export async function registerGreet(
   );
 }
 
-/** ページから、描く先の要素に文書を描かせる（戻り値はページの `window.handle` に控える）。`documents` を渡すと、ページで `collectReferences` を呼んで参照の表を作って渡す */
+/** ページから、描く先の要素に文書を描かせる（戻り値はページの `window.handle` に記録する）。`documents` を指定すると、ページで `collectReferences` を呼んで参照の表を作って指定する */
 export async function mountDocument(
   page: Page,
   options: {
     markdown: string;
     config?: MdmarkConfig;
     documents?: Record<string, string>;
-    /** `installCommentStore` で作った読み書きの関数を `mount` に渡す */
+    /** `installCommentStore` で作った読み込みと保存の関数を `mount` に指定する */
     useCommentStore?: boolean;
     /** 比較元の Markdown */
     baseMarkdown?: string | null;
-    /** 受けた引数を `window.columnsCalls` に控える `onColumnsChange` を渡す */
+    /** 受けた引数を `window.columnsCalls` に記録する `onColumnsChange` を指定する */
     recordColumns?: boolean;
     /** 取り込む文書の表（`opts.includes`） */
     includes?: Record<string, string>;
-    /** 束ねていない名前のアイコンの形の表（`opts.icons`） */
+    /** まとめていない名前のアイコンの形状の表（`opts.icons`） */
     icons?: Record<string, Array<[string, Record<string, string>]>>;
   } & IndexOptions,
 ): Promise<void> {
@@ -509,7 +509,7 @@ export async function mountDocument(
   );
 }
 
-/** ページの中に、仕様どおりのコメントの読み書きの関数を作る。受けた呼び出しは `window.commentCalls` に控える。`save` は渡された下書きに `id` を付けて返す */
+/** ページの中に、仕様どおりのコメントの読み込みと保存の関数を作る。受けた呼び出しは `window.commentCalls` に記録する。`save` は指定された下書きに `id` を付けて返却する */
 export async function installCommentStore(
   page: Page,
   spec: CommentStoreSpec = {},
@@ -564,7 +564,7 @@ export async function installCommentStore(
   }, spec);
 }
 
-/** コメントの読み書きの関数が受けた呼び出しを返す */
+/** コメントの読み込みと保存の関数が受けた呼び出しを返却する */
 export async function readCommentCalls(page: Page): Promise<CommentCalls> {
   return page.evaluate(() => {
     const calls = (window as MdmarkWindow).commentCalls;
@@ -575,7 +575,7 @@ export async function readCommentCalls(page: Page): Promise<CommentCalls> {
   });
 }
 
-/** ページから、`#doc` の中にビューを描かせる。TypeError は同期で投げられるため、`error` に控えて返す */
+/** ページから、`#doc` の中にビューを描かせる。TypeError は同期で投げられるため、`error` に記録して返却する */
 export async function mountViewInPage(
   page: Page,
   options: unknown,
@@ -595,7 +595,7 @@ export async function mountViewInPage(
   }, options);
 }
 
-/** ページから、`tasks` の印の拡張を登録する。拡張の `draw` は、印の範囲の `json` の定義を、`mountView` で印の場所の要素に描いて待つ */
+/** ページから、`tasks` のマーカーの拡張を登録する。拡張の `draw` は、マーカーの範囲の `json` の定義を、`mountView` でマーカーの場所の要素に描いて待つ */
 export async function registerTasks(page: Page): Promise<void> {
   await page.evaluate(() => {
     const w = window as MdmarkWindow;
@@ -633,7 +633,7 @@ export async function mountCommentsInPage(
   }, docId);
 }
 
-/** ページから、`mountView`・`mountComments` が返した片付けの関数を呼ぶ */
+/** ページから、`mountView`・`mountComments` が返却した片付けの関数を呼ぶ */
 export async function destroyHandles(page: Page): Promise<void> {
   await page.evaluate(() => {
     const w = window as MdmarkWindow;
@@ -642,7 +642,7 @@ export async function destroyHandles(page: Page): Promise<void> {
   });
 }
 
-/** セレクターに当たる要素の最初の文字の節の、始まりと終わりの位置の間を選ぶ（選びを外すときは `null`） */
+/** セレクターに該当する要素の最初の文字のセクションの、始まりと終わりの位置の間を選ぶ（選択を解除するときは `null`） */
 export async function selectText(
   page: Page,
   target: { selector: string; start: number; end: number } | null,
@@ -683,12 +683,12 @@ export async function updateDocument(
   );
 }
 
-/** `onColumnsChange` が受けた引数を返す */
+/** `onColumnsChange` が受けた引数を返却する */
 export async function readColumnsCalls(page: Page): Promise<unknown[]> {
   return page.evaluate(() => (window as MdmarkWindow).columnsCalls ?? []);
 }
 
-/** ページから `reloadComments` を呼ばせ、解決した値か reject の理由のメッセージを返す */
+/** ページから `reloadComments` を呼ばせ、解決した値か reject の理由のメッセージを返却する */
 export async function reloadComments(
   page: Page,
 ): Promise<{ resolved: unknown } | { rejected: string }> {
@@ -718,7 +718,7 @@ export async function destroyDocument(page: Page): Promise<void> {
   });
 }
 
-/** ページから、Markdown を HTML 文字列にさせ、描く先の要素に触れずに文字列だけを返す */
+/** ページから、Markdown を HTML 文字列にさせ、描く先の要素に触れずに文字列だけを返却する */
 export async function renderInPage(
   page: Page,
   markdown: string,
@@ -736,7 +736,7 @@ export async function renderInPage(
   );
 }
 
-/** 配布物を Node で読み（DOM を持たない別のプロセス）、Markdown を HTML 文字列にして返す */
+/** 配布物を Node で読み込み（DOM を持たない別のプロセス）、Markdown を HTML 文字列にして返却する */
 export async function renderInNode(
   root: string,
   markdown: string,
@@ -754,7 +754,7 @@ export async function renderInNode(
   return stdout;
 }
 
-/** 配布物を Node で読み（DOM を持たない別のプロセス）、索引と文書の本文から点検のずれの一覧を返す */
+/** 配布物を Node で読み込み（DOM を持たない別のプロセス）、索引と文書の本文から点検のずれの一覧を返却する */
 export async function checkInNode(
   root: string,
   input: {
@@ -772,7 +772,7 @@ export async function checkInNode(
   return JSON.parse(stdout);
 }
 
-/** 配布物を Node で読み（DOM を持たない別のプロセス）、索引と文書の本文から本文の一致と参照先を返す */
+/** 配布物を Node で読み込み（DOM を持たない別のプロセス）、索引と文書の本文から本文の一致と参照先を返却する */
 export async function collectMatchesInNode(
   root: string,
   input: {
@@ -789,7 +789,7 @@ export async function collectMatchesInNode(
   return JSON.parse(stdout);
 }
 
-/** 印刷の前後のイベントを送る */
+/** 印刷の前後のイベントを送信する */
 export async function sendPrintEvent(
   page: Page,
   type: "beforeprint" | "afterprint",
@@ -799,14 +799,14 @@ export async function sendPrintEvent(
   }, type);
 }
 
-/** ページの中に、仕様どおりの取り出し元を作って文書を描かせる。取り出し元が受けた呼び出しは `window.diffCalls` に控える。`docId` を省くと渡さない */
+/** ページの中に、仕様どおりの取り出し元を作って文書を描かせる。取り出し元が受けた呼び出しは `window.diffCalls` に記録する。`docId` を省くと指定しない */
 export async function mountDiffDocument(
   page: Page,
   options: {
     markdown: string;
     docId?: string;
     source: DiffSourceSpec;
-    /** 差分の出し方。省くと渡さない */
+    /** 差分の出し方。省くと指定しない */
     diffMode?: string;
   },
 ): Promise<void> {
@@ -847,7 +847,7 @@ export async function mountDiffDocument(
   }, options);
 }
 
-/** ページの中で、式の文字列が返す取り出し元（`DiffSource`）を渡して文書を描かせる。サンプルの取り出し元のコードをそのまま渡すのに使う */
+/** ページの中で、式の文字列が返却する取り出し元（`DiffSource`）を指定して文書を描かせる。サンプルの取り出し元のコードをそのまま指定するのに使用する */
 export async function mountDiffFactory(
   page: Page,
   options: { markdown: string; docId: string; factory: string },
@@ -863,7 +863,7 @@ export async function mountDiffFactory(
   }, options);
 }
 
-/** ページが記録した、取り出し元の呼び出しを返す */
+/** ページが記録した、取り出し元の呼び出しを返却する */
 export async function readDiffCalls(
   page: Page,
 ): Promise<{ revisions: string[]; content: DiffContentCall[] }> {
@@ -876,14 +876,14 @@ export async function readDiffCalls(
   });
 }
 
-/** ページの取り出し元の `revisions` を返させる（`pendingRevisions` のとき） */
+/** ページの取り出し元の `revisions` を返却させる（`pendingRevisions` のとき） */
 export async function releaseRevisions(page: Page): Promise<void> {
   await page.evaluate(() => {
     (window as MdmarkWindow).releaseRevisions?.();
   });
 }
 
-/** 範囲の `ts`・`js` の変換のライブラリを読む URL（`html-scripts.url` の既定） */
+/** 範囲の `ts`・`js` の変換のライブラリを読み込む URL（`html-scripts.url` の既定） */
 export const TRANSPILER_URL =
   "https://cdn.jsdelivr.net/npm/@babel/standalone@8.1.1/+esm";
 
@@ -893,7 +893,7 @@ const TRANSPILER_UMD_PATH = resolve(
   "../../node_modules/@babel/standalone/babel.min.js",
 );
 
-/** 変換のライブラリへの要求を、`@babel/standalone` を既定のエクスポートを持つ ES モジュールに包んだ手元の応答に差し替え、受けた要求の件数を返す関数を返す。`status` が 404 のときは中身を返さない */
+/** 変換のライブラリへの要求を、`@babel/standalone` を既定のエクスポートを持つ ES モジュールに包んだ手元の応答に差し替え、受けた要求の件数を返却する関数を返却する。`status` が 404 のときは中身を返却しない */
 export async function routeTranspiler(
   page: Page,
   status: 200 | 404 = 200,
@@ -915,7 +915,7 @@ export async function routeTranspiler(
   return () => requests;
 }
 
-/** 範囲の `ts`: 型の注釈を持ち、箱を押すと根の要素に class `is-open` を付け外しし、`destroy` で `window.__mdmarkDestroyed` を 1 増やす */
+/** 範囲の `ts`: 型の注釈を持ち、ノードを押すと根の要素に class `is-open` を付与・解除し、`destroy` で `window.__mdmarkDestroyed` を 1 増やす */
 export const RANGE_TS = [
   "export default (root: HTMLElement): (() => void) => {",
   '  const box = root.querySelector<HTMLElement>(".box");',
@@ -931,10 +931,10 @@ export const RANGE_TS = [
   "};",
 ].join("\n");
 
-/** 範囲の `css` が箱に付ける背景の色 */
+/** 範囲の `css` がノードに付ける背景の色 */
 export const RANGE_COLOR = "rgb(255, 0, 0)";
 
-/** `<!-- html -->` の範囲に、`html`（`html` を省くと class `box` の箱 1 つ）と、`blocks` の言語ごとのコードブロックを置いた Markdown */
+/** `<!-- html -->` の範囲に、`html`（`html` を省くと class `box` のノード 1 つ）と、`blocks` の言語ごとのコードブロックを配置した Markdown */
 export function rangeMarkdown(
   blocks: Partial<Record<"css" | "ts" | "js", string>>,
   html = '<div class="box">箱</div>',
@@ -956,7 +956,7 @@ export function rangeMarkdown(
   ].join("\n");
 }
 
-/** 箱の背景を `RANGE_COLOR` にする範囲の `css` */
+/** ノードの背景を `RANGE_COLOR` にする範囲の `css` */
 export const RANGE_CSS = `.box { background-color: ${RANGE_COLOR}; }`;
 
 /** 階層の表の行（キー・型・必須・既定・説明。親の `features`・`aliases[]`・`aliases[].metadata`・`aliases[].metadata.alias_type` の行を持たない） */

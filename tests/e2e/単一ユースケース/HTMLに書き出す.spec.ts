@@ -121,7 +121,7 @@ test("test_normal_when_open_in_browser", async ({ browser }) => {
   await page.close();
 });
 
-// 書き出し先に書けないとき、理由を通知し、HTML を残さず、ブラウザを開かない（異常シナリオ（書き出せない））
+// 書き出し先に書き込めないとき、理由を通知し、HTML を残さず、ブラウザを開かない（異常シナリオ（書き出せない））
 test("test_error_when_output_unwritable", async () => {
   // 準備
   const session = await e2e.launch({
@@ -179,7 +179,7 @@ test("test_normal_when_theme_selected", async ({ browser }) => {
 // 固有の部品の色（固有の CSS が変えた値）
 const HOST_CARD_COLOR = "rgb(0, 0, 255)";
 
-// theme の CSS と extensions の部品を、プレビューと書き出した HTML の両方に当てる（正常シナリオ（theme と extensions を当てる））
+// theme の CSS と extensions の部品を、プレビューと書き出した HTML の両方に適用する（正常シナリオ（theme と extensions を適用する））
 test("test_normal_when_theme_and_extensions", async ({ browser }) => {
   // 準備
   const session = await e2e.launch({
@@ -219,7 +219,7 @@ const REPO_ROOT = resolve(import.meta.dirname, "../../..");
 /** マーカーの無いライブラリの目印の文字列 */
 const UNUSED_LIBRARY_SIGN = "unused-library-sign-369";
 
-/** `test-lib` のマーカーと、`.box` に書く `ts` の範囲を持つ文書 */
+/** `test-lib` のマーカーと、`.box` に記載する `ts` の範囲を持つ文書 */
 const LOCAL_LIBRARIES_MARKDOWN = [
   "# 手元のライブラリ",
   "",
@@ -244,7 +244,7 @@ const LOCAL_LIBRARIES_MARKDOWN = [
   "",
 ].join("\n");
 
-/** 相対パスの `libraries` と `html-scripts.url` を書いた設定と、手元のライブラリ */
+/** 相対パスの `libraries` と `html-scripts.url` を記載した設定と、手元のライブラリ */
 async function localLibraryFiles(): Promise<Record<string, string>> {
   const babel = await readFile(
     join(REPO_ROOT, "node_modules", "@babel", "standalone", "babel.min.js"),
@@ -270,7 +270,7 @@ async function localLibraryFiles(): Promise<Record<string, string>> {
   };
 }
 
-// 相対パスの外部ライブラリと変換のライブラリを埋めた HTML を Chromium で開き、マーカーと範囲のスクリプトが描かれる（正常シナリオ（相対パスの外部ライブラリを Chromium で読む））
+// 相対パスの外部ライブラリと変換のライブラリを埋めた HTML を Chromium で開き、マーカーと範囲のスクリプトが描かれる（正常シナリオ（相対パスの外部ライブラリを Chromium で読み込む））
 test("test_normal_when_relative_libraries", async ({ browser }) => {
   // 準備
   const session = await e2e.launch({ files: await localLibraryFiles() });
@@ -306,7 +306,7 @@ test("test_normal_when_relative_libraries", async ({ browser }) => {
   await page.close();
 });
 
-// 相対パスの mermaid を埋めた HTML を Chromium で開き、図の枠に入った mermaid の図を描く（正常シナリオ（相対パスの mermaid を読む））
+// 相対パスの mermaid を埋めた HTML を Chromium で開き、図の枠に入った mermaid の図を描く（正常シナリオ（相対パスの mermaid を読み込む））
 test("test_normal_when_relative_mermaid", async ({ browser }) => {
   // 準備
   const session = await e2e.launch({

@@ -4,7 +4,7 @@ import { join } from "node:path";
 import { test as base, expect } from "./cli.ts";
 import { findFreePort } from "./plugin.ts";
 
-/** 一時の端末: 子プロセスに渡す環境変数と、端末の設定・状態の置き場所・settings.json のパス */
+/** 一時の端末: 子プロセスに指定する環境変数と、端末の設定・状態の配置場所・settings.json のパス */
 export type Terminal = {
   env: Record<string, string>;
   settingsPath: string;
@@ -14,10 +14,10 @@ export type Terminal = {
   port: number;
 };
 
-/** 子プロセスを流した結果 */
+/** 子プロセスを実行した結果 */
 export type RunResult = { code: number; stdout: string; stderr: string };
 
-/** `setup.js status` の結果のうち、テストが読む項目 */
+/** `setup.js status` の結果のうち、テストが読み込む項目 */
 export type TerminalStatus = {
   settings: {
     path: string;
@@ -38,24 +38,24 @@ export type StartResult = {
   stop: string;
 };
 
-/** global-setup の Mock が利用者として返す答え */
+/** global-setup の Mock が利用者として返却する回答し */
 export type GlobalSetupAnswers = {
-  /** キーごとに答える値（`--set` の右辺）。無いキーは今の値か既定のまま */
+  /** キーごとに回答する値（`--set` の右辺）。無いキーは今の値か既定のまま */
   values: Record<string, string>;
-  /** 書いてよいかに認めるか */
+  /** 書き込んでよいかに認めるか */
   approveWrite: boolean;
-  /** 古い端末の設定を移行するときに `upgrade --settings` を流すパッケージの直下 */
+  /** 古い端末の設定を移行するときに `upgrade --settings` を実行するパッケージの直下 */
   upgradePackage?: string;
 };
 
-/** global-setup の Mock が最後の報告に使う、手順ごとの結果 */
+/** global-setup の Mock が最後の報告に使用する、手順ごとの結果 */
 export type GlobalSetupReport = {
   status: TerminalStatus;
   /** 移行したときの `upgrade --settings` の結果 */
   upgrade?: RunResult;
   /** 利用者に聞いたキー */
   askedKeys: string[];
-  /** `write-settings` の結果。書くことを断ったときは無い */
+  /** `write-settings` の結果。書き込むことを断ったときは無い */
   written?: { written: string[]; keys: string[] };
   /** `start-server` の結果。終了コードが 0 のときだけ `started` を持つ */
   start: RunResult & { started?: StartResult };
@@ -63,7 +63,7 @@ export type GlobalSetupReport = {
   hook?: RunResult;
 };
 
-/** setup の Mock が最後の報告に使う、手順ごとの結果 */
+/** setup の Mock が最後の報告に使用する、手順ごとの結果 */
 export type FolderSetupReport = {
   askedKeys: string[];
   written?: { written: string[]; keys: string[] };
@@ -71,12 +71,12 @@ export type FolderSetupReport = {
 
 // 手元と別の tmux サーバーを先に起動しておくためのセッション
 const WARMUP_SESSION = "e2e-warmup";
-// 子プロセスの環境から外す変数。`TMUX`・`TMUX_PANE` があると tmux は `TMUX_TMPDIR` を見ず、テストを流している手元の tmux サーバーにつなぐ
+// 子プロセスの環境から除外する変数。`TMUX`・`TMUX_PANE` があると tmux は `TMUX_TMPDIR` を確認せず、テストを実行している手元の tmux サーバーにつなぐ
 const LEAKING_ENV = ["TMUX", "TMUX_PANE", "CLAUDE_PROJECT_DIR", "MDMARK_PORT"];
 // SessionStart のフックの名前
 const SESSION_START = "SessionStart";
 
-/** 手元の環境に `env` を重ね、手元の tmux サーバーと実機の設定につながる変数を外す */
+/** 手元の環境に `env` を重ね、手元の tmux サーバーと実機の設定につながる変数を削除する */
 const isolatedEnv = (env: Record<string, string>): Record<string, string> => {
   const merged: Record<string, string | undefined> = { ...process.env };
   for (const name of LEAKING_ENV) {
@@ -85,7 +85,7 @@ const isolatedEnv = (env: Record<string, string>): Record<string, string> => {
   return { ...(merged as Record<string, string>), ...env };
 };
 
-/** コマンドを流し、終了コードと出力を返す。0 以外でも例外を投げない */
+/** コマンドを実行し、終了コードと出力を返却する。0 以外でも例外を投げない */
 const runFile = (options: {
   command: string;
   args: string[];
@@ -138,7 +138,7 @@ export const createTerminal = async (options: {
   };
 };
 
-/** 一時の端末を使えるようにした `test`。テストが終わると、端末の tmux サーバーのセッションを閉じる */
+/** 一時の端末を使用できるようにした `test`。テストが終わると、端末の tmux サーバーのセッションを閉じる */
 export const test = base.extend<{ terminal: Terminal }>({
   terminal: async ({ builtRoot, tempDir }, use) => {
     const terminal = await createTerminal({ home: await tempDir(), builtRoot });
@@ -149,7 +149,7 @@ export const test = base.extend<{ terminal: Terminal }>({
 
 export { expect };
 
-/** 端末の tmux サーバーで tmux を流す */
+/** 端末の tmux サーバーで tmux を実行する */
 export const runTmux = (terminal: Terminal, args: string[]) =>
   runFile({ command: "tmux", args, env: terminal.env });
 
@@ -196,7 +196,7 @@ export const closeSessions = async (terminal: Terminal): Promise<void> => {
   }
 };
 
-/** プラグインの `bin/setup.js` を流す。`env` は端末の環境変数に重ねる */
+/** プラグインの `bin/setup.js` を実行する。`env` は端末の環境変数に重ねる */
 export const runSetupScript = (options: {
   pluginDir: string;
   terminal: Terminal;
@@ -210,13 +210,13 @@ export const runSetupScript = (options: {
     cwd: options.pluginDir,
   });
 
-/** 終了コードが 0 であることを確かめ、標準出力の JSON を読む */
+/** 終了コードが 0 であることを確認し、標準出力の JSON を読み込む */
 const parseOk = <T>(result: RunResult): T => {
   expect(result.code, result.stderr).toBe(0);
   return JSON.parse(result.stdout) as T;
 };
 
-/** プラグインの `hooks/hooks.json` の SessionStart のコマンドを、Claude Code と同じく `${CLAUDE_PLUGIN_ROOT}` を展開して流す */
+/** プラグインの `hooks/hooks.json` の SessionStart のコマンドを、Claude Code と同じく `${CLAUDE_PLUGIN_ROOT}` を展開して実行する */
 export const runSessionStartHook = async (options: {
   pluginDir: string;
   terminal: Terminal;
@@ -232,7 +232,7 @@ export const runSessionStartHook = async (options: {
   return runFile({
     command: entry.command === "node" ? process.execPath : entry.command,
     args: entry.args.map((arg) =>
-      // biome-ignore lint/suspicious/noTemplateCurlyInString: プラグインの定義に書かれたプレースホルダそのもの
+      // biome-ignore lint/suspicious/noTemplateCurlyInString: プラグインの定義に記載されたプレースホルダそのもの
       arg.replaceAll("${CLAUDE_PLUGIN_ROOT}", pluginDir),
     ),
     env: { ...terminal.env, CLAUDE_PLUGIN_ROOT: pluginDir },
@@ -241,7 +241,7 @@ export const runSessionStartHook = async (options: {
   });
 };
 
-/** キーの一覧を流し、答えのあるキーを `--set` の引数にする */
+/** キーの一覧を実行し、回答のあるキーを `--set` の引数にする */
 const askKeys = (
   keys: Array<{ key: string }>,
   values: Record<string, string>,
@@ -252,7 +252,7 @@ const askKeys = (
     .flatMap((entry) => ["--set", `${entry.key}=${values[entry.key]}`]),
 });
 
-/** global-setup のスキルの手順を、利用者への確認に `answers` を返して流す */
+/** global-setup のスキルの手順を、利用者への確認に `answers` を返却して実行する */
 export const runGlobalSetup = async (options: {
   pluginDir: string;
   terminal: Terminal;
@@ -267,7 +267,7 @@ export const runGlobalSetup = async (options: {
     runSetupScript({ pluginDir, terminal, args, env });
   // 1. 端末の設定のパス・バージョン・セッション名・待ち受けているか
   const status = parseOk<TerminalStatus>(await setup(["status"]));
-  // 2. 古い端末の設定は、当てる手順を示してから移行する
+  // 2. 古い端末の設定は、適用する手順を示してから移行する
   let upgrade: RunResult | undefined;
   const { settings } = status;
   if (settings.exists && settings.version !== settings.target_version) {
@@ -294,7 +294,7 @@ export const runGlobalSetup = async (options: {
     await setup(["keys", "--target", "settings"]),
   );
   const { askedKeys, sets } = askKeys(keys, answers.values);
-  // 4. 書いてよいかを聞き、認めたら書く
+  // 4. 書き込んでよいかを聞き、認めたら書き込む
   const written = answers.approveWrite
     ? parseOk<{ written: string[]; keys: string[] }>(
         await setup(["write-settings", ...sets]),
@@ -306,12 +306,12 @@ export const runGlobalSetup = async (options: {
     return { status, upgrade, askedKeys, written, start };
   }
   start.started = JSON.parse(start.stdout) as StartResult;
-  // 6. フックを流す
+  // 6. フックを実行する
   const hook = await runSessionStartHook({ pluginDir, terminal });
   return { status, upgrade, askedKeys, written, start, hook };
 };
 
-/** setup のスキルの手順を、利用者への確認に答えを返して流す */
+/** setup のスキルの手順を、利用者への確認に回答を返却して実行する */
 export const runFolderSetup = async (options: {
   pluginDir: string;
   terminal: Terminal;
@@ -335,7 +335,7 @@ export const runFolderSetup = async (options: {
   return { askedKeys, written };
 };
 
-/** `mdmark check` を流し、出力のうち `path` を指すずれの行を返す */
+/** `mdmark check` を実行し、出力のうち `path` を指すずれの行を返却する */
 export const checkIssuesOf = async (options: {
   builtRoot: string;
   terminal: Terminal;

@@ -20,7 +20,7 @@ import {
   removeDistRoot,
 } from "../dist-page.ts";
 
-// ビルドした配布物を置いた作業ツリー
+// ビルドした配布物を配置した作業ツリー
 let builtRoot = "";
 
 test.beforeAll(async () => {
@@ -31,7 +31,7 @@ test.afterAll(async () => {
   await removeDistRoot(builtRoot);
 });
 
-// 取り出し元を渡して描き、本文の変更を行と文字で読み、埋め込んだ HTML の変更を描いた結果に切り替えて確かめる（正常シナリオ）
+// 取り出し元を指定して描き、本文の変更を行と文字で読み込み、埋め込んだ HTML の変更を描いた結果に切り替えて確認する（正常シナリオ）
 test("test_normal", async ({ page }) => {
   // 準備
   await openPage(page, builtRoot);
@@ -51,7 +51,7 @@ test("test_normal", async ({ page }) => {
   // 実行: 前に r1、後に r2 を選ぶ
   await beforeSelect(page).selectOption("r1");
   await afterSelect(page).selectOption("r2");
-  // 検証: 消した行が赤と -、足した行が緑と +、同じ行は色なし。変わった語だけが濃い色
+  // 検証: 削除した行が赤と -、追加した行が緑と +、同じ行は色なし。変わった単語だけが濃い色
   await expect(diffLines(page, "del")).toHaveCount(2);
   await expect(diffLines(page, "add")).toHaveCount(2);
   const sameColor = await backgroundOf(diffLines(page, "same").first());
@@ -69,7 +69,7 @@ test("test_normal", async ({ page }) => {
   ).toHaveText("+");
   await expect(page.locator("#doc del.mdmark-diff-word")).toHaveText("差分");
   await expect(page.locator("#doc ins.mdmark-diff-word")).toHaveText("変更");
-  // 実行: 前に r2、後に r3 を選び直し、範囲を描いた結果に切り替える
+  // 実行: 前に r2、後に r3 をもう一度選び、範囲を描いた結果に切り替える
   await afterSelect(page).selectOption("r3");
   await beforeSelect(page).selectOption("r2");
   await expect(range.locator("del.mdmark-diff-word")).toHaveText("120");
@@ -86,7 +86,7 @@ test("test_normal", async ({ page }) => {
   await expect(sides.first()).toBeHidden();
 });
 
-// 本文を取り出せないリビジョンを選ぶと知らせの枠が出て、文書は残り、選び直すと差分が出る（異常シナリオ（本文を取り出せない））
+// 本文を取り出せないリビジョンを選ぶと通知ブロックが出て、文書は残り、もう一度選ぶと差分が出る（異常シナリオ（本文を取り出せない））
 test("test_error_when_content_unavailable", async ({ page }) => {
   // 準備
   await openPage(page, builtRoot);
@@ -107,7 +107,7 @@ test("test_error_when_content_unavailable", async ({ page }) => {
   const notice = page.locator("#doc .mdmark-notice");
   await expect(notice).toBeVisible();
   await expect(page.locator("#doc h1")).toBeVisible();
-  // 実行: r2 を選び直す
+  // 実行: r2 をもう一度選ぶ
   await beforeSelect(page).selectOption("r2");
   // 検証
   await expect(notice).toHaveCount(0);

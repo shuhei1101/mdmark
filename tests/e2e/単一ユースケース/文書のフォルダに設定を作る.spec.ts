@@ -5,7 +5,7 @@ import { parse } from "yaml";
 import { writeFiles } from "../cli.ts";
 import { checkIssuesOf, expect, runFolderSetup, test } from "../setup-skill.ts";
 
-// ブラウザを使わないため、1 つのブラウザのプロジェクトだけで流す
+// ブラウザを使用しないため、1 つのブラウザのプロジェクトだけで実行する
 test.skip(
   ({ browserName }) => browserName !== "chromium",
   "ブラウザを使わないシナリオなので chromium のプロジェクトだけで流す",
@@ -13,7 +13,7 @@ test.skip(
 
 // 文書のフォルダの設定ファイル
 const CONFIG_FILE = "mdmark.config.yaml";
-// 文書のフォルダに置く Markdown
+// 文書のフォルダに配置する Markdown
 const DOCUMENT = { "a.md": "# A\n" };
 // 設定のある文書のフォルダの設定（コメントの行と `features.table: false` を持つ）
 const EXISTING_CONFIG = [
@@ -26,7 +26,7 @@ const EXISTING_CONFIG = [
 /** ビルドした作業ツリーの `plugin/` */
 const pluginOf = (builtRoot: string) => join(builtRoot, "plugin");
 
-// 設定の無い文書のフォルダに、答えた値で mdmark.config.yaml を作る（正常シナリオ）
+// 設定の無い文書のフォルダに、回答した値で mdmark.config.yaml を作る（正常シナリオ）
 test("test_normal", async ({ builtRoot, terminal, tempDir }) => {
   // 準備
   const dir = await tempDir();
@@ -79,7 +79,7 @@ test("test_normal_when_config_exists", async ({
   }
 });
 
-// 書くことを断ると mdmark.config.yaml を作らない（異常シナリオ（書くことを断る））
+// 書き込むことを断ると mdmark.config.yaml を作らない（異常シナリオ（書き込むことを断る））
 test("test_error_when_write_declined", async ({
   builtRoot,
   terminal,

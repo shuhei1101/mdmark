@@ -23,7 +23,7 @@ test.afterEach(async () => {
   library = undefined;
 });
 
-/** 見出し・表・注意書き・流れ図と外部ライブラリの印を持ち、画面の高さを超える長さの Markdown */
+/** 見出し・表・注意書き・流れ図と外部ライブラリのマーカーを持ち、画面の高さを超える長さの Markdown */
 async function sampleMarkdown(): Promise<string> {
   return [
     await guideMarkdown(),
@@ -34,7 +34,7 @@ async function sampleMarkdown(): Promise<string> {
   ].join("\n");
 }
 
-/** 見本のワークスペースのファイル: Markdown と、`features`・`libraries` を書いた設定ファイル */
+/** 見本のワークスペースのファイル: Markdown と、`features`・`libraries` を記載した設定ファイル */
 async function files(): Promise<Record<string, string>> {
   library = await startLibraryServer({ delayMs: 300 });
   return {
@@ -43,7 +43,7 @@ async function files(): Promise<Record<string, string>> {
   };
 }
 
-// プレビューで確かめながら書き、書き出した HTML を開いて印刷のダイアログを出す（正常シナリオ）
+// プレビューで確認しながら記載し、書き出した HTML を開いて印刷のダイアログを出す（正常シナリオ）
 test("test_normal", async ({ browser }) => {
   // 準備
   const session = await e2e.launch({ files: await files() });
@@ -58,7 +58,7 @@ test("test_normal", async ({ browser }) => {
   // 見出しを書き換えると、保存せずにプレビューの見出しが書き換えた文字になる
   await replaceFirstLine(session, "# 書き換えた見出し");
   await expect(frame.locator("h1").first()).toContainText("書き換えた見出し");
-  // エディタを文書の終わりの節まで動かすと、プレビューにその節の見出しが出る
+  // エディタを文書の終わりのセクションまで動かすと、プレビューにそのセクションの見出しが出る
   const lines = (await sampleMarkdown()).split("\n");
   await scrollEditorTo(session, lines.indexOf("## 節 10") + 1);
   const last = frame.locator("h2", { hasText: "節 10" });
@@ -71,7 +71,7 @@ test("test_normal", async ({ browser }) => {
       return top >= -70 && top < viewport;
     })
     .toBe(true);
-  // 書き出し先に HTML が 1 つ書かれ、ブラウザで開く代役にその HTML の URL が渡る
+  // 書き出し先に HTML が 1 つ書き込まれ、ブラウザで開く代役にその HTML の URL が渡る
   const path = join(session.workspaceDir, "guide.html");
   const url = pathToFileURL(path).href;
   await session.runCommand("mdmark: HTML に書き出す");
@@ -90,7 +90,7 @@ test("test_normal", async ({ browser }) => {
   await expect(exported.locator(".markdown-alert")).toHaveCount(1);
   await expect(exported.locator(".mdmark-diagram-frame")).toHaveCount(1);
   await exported.close();
-  // PDF に印刷すると、書き出し直した HTML がブラウザで開き、印刷のダイアログが呼ばれる
+  // PDF に印刷すると、もう一度書き出した HTML がブラウザで開き、印刷のダイアログが呼ばれる
   await session.runCommand("mdmark: PDF に印刷");
   await expect.poll(() => session.openedUrls()).toEqual([url, url]);
   const printed = await browser.newPage();
@@ -101,7 +101,7 @@ test("test_normal", async ({ browser }) => {
   await printed.close();
 });
 
-// 配布物を読めないとき、プレビューに描けない理由を出し、Markdown と設定ファイルを書き換えず、読める状態に戻して描き直すと描かれる（異常シナリオ（配布物を読めない））
+// 配布物を読み込めないとき、プレビューに描けない理由を出し、Markdown と設定ファイルを書き換えず、読み込める状態に戻して再描画すると描かれる（異常シナリオ（配布物を読み込めない））
 test("test_error_when_distribution_unreachable", async () => {
   // 準備
   const original = await files();
@@ -110,7 +110,7 @@ test("test_error_when_distribution_unreachable", async () => {
   await session.openFile("guide.md");
   // 実行
   await session.openPreviewWithShortcut();
-  // 検証: 描けない理由と、描き直す操作が出る
+  // 検証: 描けない理由と、再描画する操作が出る
   const failed = await session.frameWith(".mdmark-preview-notice");
   await expect(failed.locator(".mdmark-preview-notice")).toContainText(
     "プレビューを表示できません",
@@ -122,7 +122,7 @@ test("test_error_when_distribution_unreachable", async () => {
       content,
     );
   }
-  // 配布物を配る状態へ戻して描き直すと描かれる
+  // 配布物を配る状態へ戻して再描画すると描かれる
   e2e.stub().setMode({ tags: "ok", dist: "ok" });
   await failed.getByRole("button", { name: "リロード" }).click();
   const frame = await session.guideFrame();

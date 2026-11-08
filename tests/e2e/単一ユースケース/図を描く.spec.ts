@@ -28,13 +28,13 @@ import {
 } from "../dist-page.ts";
 import { ER_DEFINITION, erMarkdown } from "../er.ts";
 
-// ビルドした配布物を置いた作業ツリー
+// ビルドした配布物を配置した作業ツリー
 let builtRoot = "";
 
-// 読まないことを確かめるために待つ時間（ミリ秒）
+// 読み込まないことを確認するために待つ時間（ミリ秒）
 const SETTLE_MS = 500;
 
-// 動くと `window.__mdmarkScriptRan` を `true` にする、文書に書いた script 要素
+// 動くと `window.__mdmarkScriptRan` を `true` にする、文書に記載した script 要素
 const SCRIPT = "<script>window.__mdmarkScriptRan = true</script>\n";
 
 // シーケンス図の定義: 相手 3 つ・メッセージ 4 つ・ループの戻り 1 本
@@ -86,7 +86,7 @@ async function boxOf(locator: Locator) {
   return box;
 }
 
-/** 線の種類ごとに、見える線の色・破線の間隔・太さを `色|間隔|太さ` にして返す（最初の 1 本） */
+/** 線の種類ごとに、見える線の色・破線の間隔・太さを `色|間隔|太さ` にして返却する（最初の 1 本） */
 async function wireStyles(figure: Locator): Promise<Record<string, string>> {
   return figure
     .locator(".mdmark-diagram-wires > path.mdmark-diagram-wire")
@@ -102,7 +102,7 @@ async function wireStyles(figure: Locator): Promise<Record<string, string>> {
     });
 }
 
-// フロー図の部品の定義から、枠・3 層・題と凡例・線の種類・交差・ループの戻りを持つ図を描き、文書に書いたスクリプトは動かさない（正常シナリオ）
+// フロー図の部品の定義から、枠・3 層・タイトルと凡例・線の種類・交差・ループの戻りを持つ図を描き、文書に記載したスクリプトは動かさない（正常シナリオ）
 test("test_normal", async ({ page }) => {
   // 準備: システムの枠と LLM の層に hint を持つ見本のフロー図
   const syntaxRequests = await routeSyntax(page);
@@ -136,7 +136,7 @@ test("test_normal", async ({ page }) => {
   expect(firstLane.x + firstLane.width).toBeLessThanOrEqual(
     frame.x + frame.width + 1,
   );
-  // 外部のシステムの箱が枠の外にある
+  // 外部のシステムのノードが枠の外にある
   const mail = await boxOf(figure.locator('[data-node="mail"]'));
   expect(mail.x + mail.width).toBeLessThanOrEqual(frame.x + 1);
   // 題名・範囲・更新日と凡例があり、凡例には図に 2 種類以上あるノードの種類と線の種類だけが載る
@@ -155,8 +155,8 @@ test("test_normal", async ({ page }) => {
     "データ",
     "外部のシステム（枠の外）",
     "処理の流れ",
-    "読む",
-    "書く",
+    "読み込む",
+    "書き込む",
     "戻る（ループ）",
   ];
   for (const label of kindsAndLines) {
@@ -166,14 +166,14 @@ test("test_normal", async ({ page }) => {
     ).toBe(true);
   }
   expect(legend).toHaveLength(kindsAndLines.length);
-  // 凡例に、システムの枠・層の背景・線の交差・ツールチップの印・用語の下線の項目が無い
+  // 凡例に、システムの枠・層の背景・線の交差・ツールチップのマーカー・用語の下線の項目が無い
   for (const word of ["システムの枠", "層", "交差", "出る", "下線"]) {
     expect(
       legend.some((text) => text.includes(word)),
       word,
     ).toBe(false);
   }
-  // システムの枠と LLM の層のタイトルの右にツールチップの印があり、hint を持たない層のタイトルには無い
+  // システムの枠と LLM の層のタイトルの右にツールチップのマーカーがあり、hint を持たない層のタイトルには無い
   await expect(
     figure.locator(".mdmark-diagram-frame-title .mdmark-diagram-group-info"),
   ).toHaveCount(1);
@@ -205,14 +205,14 @@ test("test_normal", async ({ page }) => {
   await expect(
     figure.locator('.mdmark-diagram-label[data-line="loop"]'),
   ).toContainText("受け取りへ戻る");
-  // 文書に書いたスクリプトが動いていない
+  // 文書に記載したスクリプトが動いていない
   expect(await page.evaluate(() => "__mdmarkScriptRan" in window)).toBe(false);
-  // 図の部品の定義の json のコードブロックは色分けの対象にならず、色分けのライブラリを読まない
+  // 図の部品の定義の json のコードブロックは色分けの対象にならず、色分けのライブラリを読み込まない
   await page.waitForTimeout(SETTLE_MS);
   expect(syntaxRequests()).toEqual([]);
 });
 
-// 判定フローチャートの開始・質問・アクション・結果のノードを互いに異なる形・アイコン・種類の名前で描き、凡例の種類はその 4 つだけ（正常シナリオ（判定フローチャート））
+// 判定フローチャートの開始・質問・アクション・結果のノードを互いに異なる構造・アイコン・種類の名前で描き、凡例の種類はその 4 つだけ（正常シナリオ（判定フローチャート））
 test("test_normal_when_flowchart", async ({ page }) => {
   // 準備
   await openPage(page, builtRoot);
@@ -234,7 +234,7 @@ test("test_normal_when_flowchart", async ({ page }) => {
           ?.getBoundingClientRect();
         return {
           kind: node.getAttribute("data-kind") ?? "",
-          // 形: 角の丸み・菱形の svg の有無
+          // 構造: 角の丸み・菱形の svg の有無
           shape: `${getComputedStyle(node).borderTopLeftRadius}|${node.querySelector(":scope > svg polygon") !== null}`,
           icon:
             node.querySelector(".mdmark-diagram-node-kind svg")?.innerHTML ??
@@ -252,7 +252,7 @@ test("test_normal_when_flowchart", async ({ page }) => {
   expect(
     kinds.map((kind) => nodes.filter((node) => node.kind === kind).length),
   ).toEqual([1, 2, 1, 2]);
-  // 種類ごとに形・アイコン・種類の名前が 1 つに決まり、4 種類で互いに異なる
+  // 種類ごとに構造・アイコン・種類の名前が 1 つに決まり、4 種類で互いに異なる
   for (const key of ["shape", "icon", "tag"] as const) {
     const values = kinds.map((kind) => {
       const set = new Set(
@@ -406,7 +406,7 @@ test("test_normal_when_single_kinds", async ({ page }) => {
   await expect(figure.locator('ul[aria-label="凡例"]')).toBeHidden();
 });
 
-// グラフの 2 つの系列を、色と線の模様の組で分けて描き、題と系列の名前を載せた凡例を持つ（正常シナリオ（グラフ））
+// グラフの 2 つの系列を、色と線の模様の組で分けて描き、タイトルと系列の名前を記載した凡例を持つ（正常シナリオ（グラフ））
 test("test_normal_when_graph", async ({ page }) => {
   // 準備
   await openPage(page, builtRoot);
@@ -435,7 +435,7 @@ test("test_normal_when_graph", async ({ page }) => {
   ]);
 });
 
-// 読めない定義の場所だけを書き方の警告にし、正しい定義の図と段落は描く（異常シナリオ（定義を読めない））
+// 読み込めない定義の場所だけを記載の警告にし、正しい定義の図と段落は描く（異常シナリオ（定義を読み込めない））
 test("test_error_when_definition_invalid", async ({ page }) => {
   // 準備
   await openPage(page, builtRoot);
@@ -454,7 +454,7 @@ test("test_error_when_definition_invalid", async ({ page }) => {
   const warning = page.locator("#doc .mdmark-syntax-warning");
   await expect(warning).toHaveCount(1);
   await expect(warning).toContainText(
-    "フロー図の部品の定義を JSON として読めません",
+    "フロー図の部品の定義を JSON として読み込めません",
   );
   await expect(warning).toContainText("行目");
   await expect(warning).toContainText("}");
@@ -462,14 +462,14 @@ test("test_error_when_definition_invalid", async ({ page }) => {
   await expect(page.locator("#doc > p")).toHaveText("後ろの段落");
 });
 
-/** svg の文字（`innerText` を持たない）を、現れた順に返す */
+/** svg の文字（`innerText` を持たない）を、現れた順に返却する */
 function svgTexts(figure: Locator, selector: string): Promise<string[]> {
   return figure
     .locator(selector)
     .evaluateAll((texts) => texts.map((text) => text.textContent ?? ""));
 }
 
-/** 数だけの文字を数にして返す */
+/** 数だけの文字を数にして返却する */
 function numbersOf(texts: string[]): number[] {
   return texts.filter((text) => /^-?\d+$/.test(text)).map(Number);
 }
@@ -515,7 +515,7 @@ test("test_normal_when_bar", async ({ page }) => {
     ticks.every((tick, index) => tick === (ticks[0] ?? 0) + step * index),
   ).toBe(true);
   expect(/^[125]0*$/.test(String(step))).toBe(true);
-  // 題名と、系列の名前を載せた凡例がある
+  // 題名と、系列の名前を記載した凡例がある
   await expect(figure.locator(".mdmark-diagram-title")).toHaveText(
     "窓口ごとの問い合わせの件数",
   );
@@ -528,7 +528,7 @@ test("test_normal_when_bar", async ({ page }) => {
       name,
     ).toBe(true);
   }
-  // グラフは role="img" と、題名と系列の値を書いた読み上げの名前を持つ
+  // グラフは role="img" と、題名と系列の値を記載したスクリーンリーダー向けの名前を持つ
   const label = await figure
     .locator("svg[role=img]")
     .getAttribute("aria-label");
@@ -567,11 +567,11 @@ test("test_normal_when_pie", async ({ page }) => {
   }
 });
 
-// 散布図を、横と縦の両方の軸に数値の目盛りを切り、点を値の位置に系列の点の印で置く（正常シナリオ（散布図））
+// 散布図を、横と縦の両方の軸に数値の目盛りを切り、点を値の位置に系列の点のマーカーで配置する（正常シナリオ（散布図））
 test("test_normal_when_scatter", async ({ page }) => {
   // 準備・実行
   const { figure } = await drawChart(page, SCATTER_TEXT);
-  // 検証: 点 6 つが置かれている
+  // 検証: 点 6 つが配置されている
   const points = figure.locator(
     "svg[role=img] g[data-series] .mdmark-diagram-point",
   );
@@ -619,7 +619,7 @@ async function barBoxes(figure: Locator) {
     );
 }
 
-// 追加した 8 つの種類のグラフを、タイトルと凡例つきで図の枠に描き、積み上げは同じ項目の値を積んだ高さにする（正常シナリオ（追加したグラフの種類））
+// 追加した 8 つの種類のグラフを、タイトルと凡例つきで図の枠に描き、積み上げは同じ項目の値を追加した高さにする（正常シナリオ（追加したグラフの種類））
 test("test_normal_when_more_chart_types", async ({ page }) => {
   // 準備
   await openPage(page, builtRoot);
@@ -637,7 +637,7 @@ test("test_normal_when_more_chart_types", async ({ page }) => {
   await mountDocument(page, {
     markdown: definitions.map(chartRange).join("\n"),
   });
-  // 検証: 8 つの図に、タイトルと系列の名前を載せた凡例がある
+  // 検証: 8 つの図に、タイトルと系列の名前を記載した凡例がある
   const figures = page.locator(
     '#doc figure.mdmark-diagram[data-diagram="chart"]',
   );
@@ -704,7 +704,7 @@ test("test_normal_when_more_chart_types", async ({ page }) => {
   await expect(page.locator("#doc .mdmark-syntax-warning")).toHaveCount(0);
 });
 
-/** グラフの系列ごとの、線の色・線の模様・点のマーカーの形・塗りの組 */
+/** グラフの系列ごとの、線の色・線の模様・点のマーカーの構造・塗りの組 */
 async function seriesSignatures(figure: Locator): Promise<string[]> {
   return figure.locator("svg[role=img] g[data-series]").evaluateAll((groups) =>
     groups.map((group) => {
@@ -872,7 +872,7 @@ test("test_normal_when_er_diagram", async ({ page }) => {
   ]);
 });
 
-// 読めない ER 図の定義の場所だけを書き方の警告にし、正しい定義の ER 図と段落は描く（異常シナリオ（ER 図の定義を読めない））
+// 読み込めない ER 図の定義の場所だけを記載の警告にし、正しい定義の ER 図と段落は描く（異常シナリオ（ER 図の定義を読み込めない））
 test("test_error_when_er_definition_invalid", async ({ page }) => {
   // 準備
   await openPage(page, builtRoot);
@@ -1006,7 +1006,7 @@ test("test_normal_when_node_link", async ({ page }) => {
   await openLinkedFlow(page);
   const linkOf = (id: string) =>
     page.locator(`#doc [data-node="${id}"] a.mdmark-diagram-node-link`);
-  // 検証: 2 つのノードがリンクで、名前の上も押せる形のカーソル。リンク先を持たないノードはリンクでない
+  // 検証: 2 つのノードがリンクで、名前の上も押せる構造のカーソル。リンク先を持たないノードはリンクでない
   await expect(linkOf("a")).toHaveCount(1);
   await expect(linkOf("b")).toHaveCount(1);
   await expect(linkOf("c")).toHaveCount(0);
@@ -1033,7 +1033,7 @@ test("test_normal_when_node_link", async ({ page }) => {
   ]);
 });
 
-// 許可しないリンク先のノードはリンクにせず、ノードの id とリンク先を書いた書き方の警告を置く（異常シナリオ（ノードのリンク先を許可しない））
+// 許可しないリンク先のノードはリンクにせず、ノードの id とリンク先を記載した記載の警告を配置する（異常シナリオ（ノードのリンク先を許可しない））
 test("test_error_when_node_link_not_allowed", async ({ page }) => {
   // 準備
   await openPage(page, builtRoot);

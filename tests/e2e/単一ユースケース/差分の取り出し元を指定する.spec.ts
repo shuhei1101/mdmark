@@ -31,12 +31,12 @@ import {
 
 const execFileAsync = promisify(execFile);
 
-// ページを返す架空のオリジン
+// ページを返却する架空のオリジン
 const PAGE_ORIGIN = "https://app.example.test";
-// YAML の取り出し元のサンプルが読む、jsDelivr の `yaml` の URL
+// YAML の取り出し元のサンプルが読み込む、jsDelivr の `yaml` の URL
 const YAML_URL = "https://cdn.jsdelivr.net/npm/yaml@2.9.1/+esm";
 
-// ビルドした配布物を置いた作業ツリー
+// ビルドした配布物を配置した作業ツリー
 let builtRoot = "";
 
 test.beforeAll(async () => {
@@ -47,7 +47,7 @@ test.afterAll(async () => {
   await removeDistRoot(builtRoot);
 });
 
-// 取り出し元を渡して描くと、差分を開いたときに一覧と 2 つの本文を取り出して差分を出す（正常シナリオ）
+// 取り出し元を指定して描くと、差分を開いたときに一覧と 2 つの本文を取り出して差分を出す（正常シナリオ）
 test("test_normal", async ({ page }) => {
   // 準備
   await openPage(page, builtRoot);
@@ -77,11 +77,11 @@ test("test_normal", async ({ page }) => {
   await expect(diffLines(page, "add")).toHaveCount(1);
 });
 
-// 差分を開いた状態で描く指定を渡すと、押される前に一覧と 2 つの本文を取り出して差分を出す（正常シナリオ（開いた状態で描く））
+// 差分を開いた状態で描く指定を指定すると、押される前に一覧と 2 つの本文を取り出して差分を出す（正常シナリオ（開いた状態で描く））
 test("test_normal_when_opened_on_mount", async ({ page }) => {
   // 準備
   await openPage(page, builtRoot);
-  // 実行: 「変更を見る」を押さずに描く
+  // 実行: 「変更表示」を押さずに描く
   await mountDiffDocument(page, {
     markdown: DIFF_PAGE_MARKDOWN,
     docId: DIFF_DOC_ID,
@@ -101,7 +101,7 @@ test("test_normal_when_opened_on_mount", async ({ page }) => {
   await expect(diffLines(page, "add")).toHaveCount(1);
 });
 
-// 取り出し元を渡さずに描くと、差分を開く UI を付けず、文書を今までどおり描く（正常シナリオ（取り出し元を渡さない））
+// 取り出し元を指定せずに描くと、差分を開く UI を付けず、文書を今までどおり描く（正常シナリオ（取り出し元を指定しない））
 test("test_normal_when_no_source", async ({ page }) => {
   // 準備
   await openPage(page, builtRoot);
@@ -115,7 +115,7 @@ test("test_normal_when_no_source", async ({ page }) => {
   await expect(toggleOf(page)).toHaveCount(0);
 });
 
-/** 文書のファイルを 3 回コミットした Git のリポジトリを作り、その場所を返す */
+/** 文書のファイルを 3 回コミットした Git のリポジトリを作り、その場所を返却する */
 async function createGitRepo(): Promise<string> {
   const repo = await mkdtemp(join(tmpdir(), "mdmark-e2e-git-"));
   const git = (...args: string[]) =>
@@ -135,7 +135,7 @@ async function createGitRepo(): Promise<string> {
 
 // Git のサンプルの取り出し元で、直近の 2 つのコミットの差分を出す（正常シナリオ（Git のサンプル））
 test("test_normal_when_git_sample", async ({ page }) => {
-  // 準備: 手元のサーバー（Git を呼んで返す）の代わりに、要求を Git の出力で答える
+  // 準備: 手元のサーバー（Git を呼んで返却する）の代わりに、要求を Git の出力で回答する
   const repo = await createGitRepo();
   try {
     await openPage(page, builtRoot);
@@ -187,7 +187,7 @@ test("test_normal_when_git_sample", async ({ page }) => {
     // 実行
     await toggleOf(page).click();
     await waitForDiff(page);
-    // 検証: 3 つのコミットが新しい順に並び、各項目がコミットの件名と書いた人を持つ
+    // 検証: 3 つのコミットが新しい順に並び、各項目がコミットの件名と記載した人を持つ
     const options = await beforeSelect(page).locator("option").allInnerTexts();
     expect(options).toHaveLength(3);
     expect(options[0]).toContain("r3 の本文（佐藤）");
@@ -209,7 +209,7 @@ test("test_normal_when_git_sample", async ({ page }) => {
 
 // YAML のサンプルの取り出し元で、項目の変更履歴から差分を出す（正常シナリオ（YAML のサンプル））
 test("test_normal_when_yaml_sample", async ({ page }) => {
-  // 準備: 変更履歴の YAML と、サンプルが読む `yaml` のモジュールを手元の応答にする
+  // 準備: 変更履歴の YAML と、サンプルが読み込む `yaml` のモジュールを手元の応答にする
   const yamlText = stringify({
     guide: DIFF_REVISIONS.map((revision) => ({
       ...revision,
@@ -272,7 +272,7 @@ test("test_normal_when_yaml_sample", async ({ page }) => {
   await expect(diffLines(page, "add")).toContainText("150");
 });
 
-// リビジョンが 1 つなら本文を取り出さず、比較対象が無いことを知らせる（正常シナリオ（リビジョンが 1 つ））
+// リビジョンが 1 つなら本文を取り出さず、比較対象が無いことを通知する（正常シナリオ（リビジョンが 1 つ））
 test("test_normal_when_single_revision", async ({ page }) => {
   // 準備
   await openPage(page, builtRoot);
@@ -292,7 +292,7 @@ test("test_normal_when_single_revision", async ({ page }) => {
   await expect(page.locator("#doc .mdmark-content p")).toBeVisible();
 });
 
-// `revisions` を返せないときは、差分の場所に知らせの枠を出し、文書は描いたまま残す（異常シナリオ（一覧を取り出せない））
+// `revisions` を返却できないときは、差分の場所に通知ブロックを出し、文書は描いたまま残す（異常シナリオ（一覧を取り出せない））
 test("test_error_when_revisions_unavailable", async ({ page }) => {
   // 準備
   await openPage(page, builtRoot);
@@ -319,7 +319,7 @@ test("test_error_when_revisions_unavailable", async ({ page }) => {
   );
 });
 
-// `content` を返せないリビジョンを選ぶと知らせの枠が出て、選び直すと差分が出る（異常シナリオ（本文を取り出せない））
+// `content` を返却できないリビジョンを選ぶと通知ブロックが出て、もう一度選ぶと差分が出る（異常シナリオ（本文を取り出せない））
 test("test_error_when_content_unavailable", async ({ page }) => {
   // 準備
   await openPage(page, builtRoot);
@@ -334,14 +334,14 @@ test("test_error_when_content_unavailable", async ({ page }) => {
   });
   await toggleOf(page).click();
   await waitForDiff(page);
-  // 実行: 本文を返せない r1 を前に選ぶ
+  // 実行: 本文を返却できない r1 を前に選ぶ
   await beforeSelect(page).selectOption("r1");
   // 検証
   const notice = page.locator("#doc .mdmark-notice");
   await expect(notice).toBeVisible();
   await expect(notice).toContainText("初版（佐藤）");
   await expect(page.locator("#doc h1")).toBeVisible();
-  // 実行: r2 を選び直す
+  // 実行: r2 をもう一度選ぶ
   await beforeSelect(page).selectOption("r2");
   // 検証
   await expect(notice).toHaveCount(0);

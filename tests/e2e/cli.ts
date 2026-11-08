@@ -20,7 +20,7 @@ export { expect };
 
 const execFileAsync = promisify(execFile);
 
-/** CLI を子プロセスで流した結果 */
+/** CLI を子プロセスで実行した結果 */
 export type CliResult = {
   /** 終了コード */
   code: number;
@@ -30,9 +30,9 @@ export type CliResult = {
   stderr: string;
 };
 
-/** テストごとに使う道具 */
+/** テストごとに使用する道具 */
 type CliFixtures = {
-  /** 一時フォルダを作る関数。テストが終わると作ったフォルダを消す */
+  /** 一時フォルダを作る関数。テストが終わると作ったフォルダを削除する */
   tempDir: () => Promise<string>;
 };
 
@@ -42,10 +42,10 @@ type CliWorkerFixtures = {
   builtRoot: string;
 };
 
-/** ビルドした CLI と一時フォルダを使えるようにした `test` */
+/** ビルドした CLI と一時フォルダを使用できるようにした `test` */
 export const test = base.extend<CliFixtures, CliWorkerFixtures>({
   builtRoot: [
-    // biome-ignore lint/correctness/noEmptyPattern: Playwright の道具は、第 1 引数の分割代入から依存を読む
+    // biome-ignore lint/correctness/noEmptyPattern: Playwright の道具は、第 1 引数の分割代入から依存を読み込む
     async ({}, use) => {
       const root = await buildDistRoot();
       await use(root);
@@ -53,7 +53,7 @@ export const test = base.extend<CliFixtures, CliWorkerFixtures>({
     },
     { scope: "worker" },
   ],
-  // biome-ignore lint/correctness/noEmptyPattern: Playwright の道具は、第 1 引数の分割代入から依存を読む
+  // biome-ignore lint/correctness/noEmptyPattern: Playwright の道具は、第 1 引数の分割代入から依存を読み込む
   tempDir: async ({}, use) => {
     const created: string[] = [];
     await use(async () => {
@@ -70,7 +70,7 @@ export const test = base.extend<CliFixtures, CliWorkerFixtures>({
 /** 端末の設定を持たないことにする `MDMARK_CONFIG`（無いファイル）。開発者の端末の設定をシナリオに混ぜない */
 export const NO_SETTINGS = join(tmpdir(), "mdmark-e2e-no-settings.yaml");
 
-/** ビルドした `dist/cli.js` を、`cwd` で子プロセスとして流す。標準入力には `stdin`（既定は空）を渡して閉じる。`env` で環境変数を足す（`MDMARK_CONFIG` の既定は `NO_SETTINGS`）。終了コードが 0 以外でも例外を投げず、結果を返す */
+/** ビルドした `dist/cli.js` を、`cwd` で子プロセスとして実行する。標準入力には `stdin`（既定は空）を指定して閉じる。`env` で環境変数を追加する（`MDMARK_CONFIG` の既定は `NO_SETTINGS`）。終了コードが 0 以外でも例外を投げず、結果を返却する */
 export async function runCli(
   builtRoot: string,
   args: string[],
@@ -97,7 +97,7 @@ export async function runCli(
   }
 }
 
-/** フォルダの下にファイルを書く（親のフォルダは作る） */
+/** フォルダの下にファイルを書き込む（親のフォルダは作る） */
 export async function writeFiles(
   root: string,
   files: Record<string, string | Uint8Array>,
@@ -109,7 +109,7 @@ export async function writeFiles(
   }
 }
 
-/** フォルダで git を 1 回呼び、標準出力を返す */
+/** フォルダで git を 1 回呼び、標準出力を返却する */
 export async function git(cwd: string, ...args: string[]): Promise<string> {
   const { stdout } = await execFileAsync("git", args, { cwd });
   return stdout;
@@ -137,8 +137,8 @@ const CHANGE_TOGETHER_INDEX = [
 ].join("\n");
 
 /**
- * `mdmark init` の後に、互いを `change_together` で記載した文書 `a`・`b` を書いて全てをコミットした git のフォルダを作る。
- * その後 `a.md` だけを書き換えてコミットし、フォルダと、書き換える前のコミット（比べる基準）を返す
+ * `mdmark init` の後に、互いを `change_together` で記載した文書 `a`・`b` を記載して全てをコミットした git のフォルダを作る。
+ * その後 `a.md` だけを書き換えてコミットし、フォルダと、書き換える前のコミット（比べる基準）を返却する
  */
 export async function createChangeTogetherDir(
   builtRoot: string,
@@ -169,7 +169,7 @@ export function linesOf(text: string): string[] {
   return text.split("\n").filter((line) => line !== "");
 }
 
-/** 書き出した HTML を空のフォルダへ写して file:// で開いた結果 */
+/** 書き出した HTML を空のフォルダへコピーして file:// で開いた結果 */
 export type OpenedHtml = {
   /** 開いてから今までの、ページ自身と `blob:`・`data:` のほかへの要求の URL */
   externalRequests: () => string[];
@@ -177,7 +177,7 @@ export type OpenedHtml = {
   pageErrors: () => string[];
 };
 
-/** 書き出した HTML だけを空のフォルダへ写し、file:// で開く。`hash` があれば URL の `#` に付ける */
+/** 書き出した HTML だけを空のフォルダへコピーし、file:// で開く。`hash` があれば URL の `#` に付ける */
 export async function openStandalone(
   page: Page,
   options: {
@@ -212,7 +212,7 @@ export const PNG_BYTES = Buffer.from(
   "base64",
 );
 
-/** Chart.js の代役のモジュール: 印の場所に `canvas` を描く */
+/** Chart.js の代役のモジュール: マーカーの場所に `canvas` を描く */
 export const CHART_SOURCE = `export function draw(slot, args) {
   const canvas = document.createElement("canvas");
   canvas.width = 80;
@@ -223,7 +223,7 @@ export const CHART_SOURCE = `export function draw(slot, args) {
 }
 `;
 
-/** 拡張の代役: `load` の中で同じフォルダの `greet-text.js` を動的 `import()` で読み、印の場所の文字を `greet:` と読んだ文字と引数にする */
+/** 拡張の代役: `load` の中で同じフォルダの `greet-text.js` を動的 `import()` で読み込み、マーカーの場所の文字を `greet:` と読み込んだ文字と引数にする */
 export const GREET_WITH_IMPORT_SOURCE = `export default {
   name: "greet",
   directive: "greet",
@@ -238,10 +238,10 @@ export const GREET_WITH_IMPORT_SOURCE = `export default {
 };
 `;
 
-/** `GREET_WITH_IMPORT_SOURCE` が動的 `import()` で読むモジュール */
+/** `GREET_WITH_IMPORT_SOURCE` が動的 `import()` で読み込むモジュール */
 export const GREET_TEXT_SOURCE = 'export const TEXT = "読んだ";\n';
 
-/** 項目の表をビューの印で囲んだ本文 */
+/** 項目の表をビューのマーカーで囲んだ本文 */
 export const VIEW_SOURCE = [
   "<!-- view: group=状態 -->",
   "",
@@ -253,7 +253,7 @@ export const VIEW_SOURCE = [
   "<!-- /view -->",
 ].join("\n");
 
-/** `blob:` と `data:` のスクリプトを許さない CSP。動的 `import()` で読むスクリプトも、ページ自身のほかは許さない */
+/** `blob:` と `data:` のスクリプトを許さない CSP。動的 `import()` で読み込むスクリプトも、ページ自身のほかは許さない */
 export const STRICT_SCRIPT_CSP = "script-src 'unsafe-inline'";
 
 /** CSP のヘッダーを付けて開いた結果 */
@@ -266,7 +266,7 @@ export type CspOpenedHtml = {
   close: () => Promise<void>;
 };
 
-/** HTML を `STRICT_SCRIPT_CSP` のヘッダーを付けて返す手元のサーバーを起動し、開く */
+/** HTML を `STRICT_SCRIPT_CSP` のヘッダーを付けて返却する手元のサーバーを起動し、開く */
 export async function openWithCsp(
   page: Page,
   htmlFile: string,
@@ -311,7 +311,7 @@ export async function openWithCsp(
   };
 }
 
-/** 使う側の CSS の見本: 角丸の変数を上書きする */
+/** 利用側の CSS の見本: 角丸の変数を上書きする */
 export const THEME_SOURCE = ".mdmark { --mdmark-radius: 0px; }\n";
 
 /** 用語集の表を持つ文書の中身 */
@@ -328,7 +328,7 @@ export const GLOSSARY_DOCUMENT = [
   "",
 ].join("\n");
 
-/** 文書 3 つ（入口・用語集の表を持つ文書・Chart.js の印と画像を持つ文書）を載せた索引 */
+/** 文書 3 つ（入口・用語集の表を持つ文書・Chart.js のマーカーと画像を持つ文書）を記載した索引 */
 export const THREE_DOCS_INDEX = [
   "schema: 2",
   "docs:",
@@ -344,7 +344,7 @@ export const THREE_DOCS_INDEX = [
   "",
 ].join("\n");
 
-/** 見本の文書群を書く（`mdmark init` の後に、文書を書く人が手で書き足す分）。設定の `build` の行は `buildLines` で決める */
+/** 見本の文書群を記載する（`mdmark init` の後に、文書の作成者が手で追記する分）。設定の `build` の行は `buildLines` で決める */
 export async function writeSampleDocs(
   dir: string,
   options: { buildLines?: string[]; readme?: string } = {},

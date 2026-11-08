@@ -20,7 +20,7 @@ import { openCascadedPreview } from "../vscode-cascade.ts";
 
 const e2e = useVscodeE2E();
 
-/** 用語のエイリアスの行を持つ設定ファイル（`extra` の行を `aliases` の後ろに足す） */
+/** 用語のエイリアスの行を持つ設定ファイル（`extra` の行を `aliases` の後ろに追加する） */
 const aliasConfig = (extra: string[] = []) =>
   [
     "aliases:",
@@ -43,10 +43,10 @@ const glossary = (meaning: string) =>
     "",
   ].join("\n");
 
-/** 設定ファイルの内容: `features` を書いていない */
+/** 設定ファイルの内容: `features` を記載していない */
 const EMPTY_CONFIG = "# mdmark の設定\n";
 
-// 保存しないまま、最後に打ってから待った後に最後の全文だけを描き直す（正常シナリオ）
+// 保存しないまま、最後に打ってから待った後に最後の全文だけを再描画する（正常シナリオ）
 test("test_normal", async () => {
   // 準備
   const session = await e2e.launch({
@@ -56,7 +56,7 @@ test("test_normal", async () => {
   await session.openPreviewWithShortcut();
   const frame = await session.previewFrame();
   await expectGuideRendered(frame);
-  // 見出しの文字が変わるたびに、そのときの文字を控える
+  // 見出しの文字が変わるたびに、そのときの文字を記録する
   await frame.evaluate(() => {
     const target = window as unknown as { __h1: Array<string | undefined> };
     target.__h1 = [];
@@ -83,7 +83,7 @@ test("test_normal", async () => {
   }
 });
 
-// 保存したときだけ描き直す設定では、保存の前は変わらず、保存すると書き換えた文字になる（正常シナリオ（保存したときだけ描き直す））
+// 保存したときだけ再描画する設定では、保存の前は変わらず、保存すると書き換えた文字になる（正常シナリオ（保存したときだけ再描画する））
 test("test_normal_when_live_update_off", async () => {
   // 準備
   const session = await e2e.launch({
@@ -106,7 +106,7 @@ test("test_normal_when_live_update_off", async () => {
   await expect(frame.locator("h1").first()).toContainText("保存した見出し");
 });
 
-// 設定ファイルを保存すると、新しい設定で描き直す（正常シナリオ（設定ファイルを保存する））
+// 設定ファイルを保存すると、新しい設定で再描画する（正常シナリオ（設定ファイルを保存する））
 test("test_normal_when_config_saved", async () => {
   // 準備
   const session = await e2e.launch({
@@ -129,18 +129,18 @@ test("test_normal_when_config_saved", async () => {
   await expect(frame.locator("blockquote")).toHaveCount(1);
 });
 
-// 見出しを多く持つ長い文書の節の数と、1 つの節の行数（見出し 1 行・空行 1 行・6 の段落 × 2 行）
+// 見出しを多く持つ長い文書のセクションの数と、1 つのセクションの行数（見出し 1 行・空行 1 行・6 の段落 × 2 行）
 const REVEAL_SECTIONS = 20;
 const REVEAL_SECTION_LINES = 14;
 const REVEAL_PARAGRAPHS = 6;
-// 見出し A と見出し B の節（1 始まり）。B は A のすぐ次の節で、A を先頭にしたエディタの見えている範囲にある
+// 見出し A と見出し B のセクション（1 始まり）。B は A のすぐ次のセクションで、A を先頭にしたエディタの見えている範囲にある
 const HEADING_A_SECTION = 5;
 const HEADING_B_SECTION = 6;
 
 // エディタの先頭の行が落ち着くのを待つ回数の上限
 const SETTLE_ATTEMPTS = 50;
 
-/** 見出しで区切った 20 の節を持つ長い Markdown */
+/** 見出しで区切った 20 のセクションを持つ長い Markdown */
 function revealDocument(): string {
   return Array.from({ length: REVEAL_SECTIONS }, (_, section) =>
     [
@@ -154,12 +154,12 @@ function revealDocument(): string {
   ).join("\n");
 }
 
-/** `n` 番目の節（1 始まり）の見出しの行（エディタの行番号。1 始まり） */
+/** `n` 番目のセクション（1 始まり）の見出しの行（エディタの行番号。1 始まり） */
 function revealHeadingLine(n: number): number {
   return (n - 1) * REVEAL_SECTION_LINES + 1;
 }
 
-/** プレビューの `n` 番目の節の見出し（元の行番号で選ぶ） */
+/** プレビューの `n` 番目のセクションの見出し（元の行番号で選ぶ） */
 function revealHeading(frame: Frame, n: number) {
   return frame.locator(`h2[data-source-line="${revealHeadingLine(n) - 1}"]`);
 }
@@ -193,7 +193,7 @@ async function firstVisibleHeading(frame: Frame): Promise<string | undefined> {
   );
 }
 
-/** エディタの先頭の行が 300 ms 変わらなくなるまで待ち、その行を返す */
+/** エディタの先頭の行が 300 ms 変わらなくなるまで待ち、その行を返却する */
 async function settledEditorTop(session: VscodeSession): Promise<number> {
   let last = await session.editorTopLine();
   for (let attempt = 0; attempt < SETTLE_ATTEMPTS; attempt += 1) {
@@ -290,7 +290,7 @@ test("test_normal_when_revealed", async () => {
   expect(await session.editorTopLine()).toBe(editorTop);
 });
 
-// 描けないプレビューを「リロード」で描き直し、コマンドパレットの「プレビューをリロード」でも同じになる（正常シナリオ（リロードする））
+// 描けないプレビューを「リロード」で再描画し、コマンドパレットの「プレビューをリロード」でも同じになる（正常シナリオ（リロードする））
 test("test_normal_when_reloaded", async () => {
   // 準備
   const stub = e2e.stub();
@@ -322,7 +322,7 @@ test("test_normal_when_reloaded", async () => {
   await expect(frame.getByRole("button", { name: "リロード" })).toHaveCount(0);
 });
 
-// 設定ファイルを読めないとき、文書は描いたまま、上部の帯と「設定ファイルを開く」で直しに行ける（異常シナリオ（設定ファイルを読めない））
+// 設定ファイルを読み込めないとき、文書は描いたまま、上部の帯と「設定ファイルを開く」で修正しに行ける（異常シナリオ（設定ファイルを読み込めない））
 test("test_error_when_config_unreadable", async () => {
   // 準備
   const session = await e2e.launch({
@@ -336,7 +336,7 @@ test("test_error_when_config_unreadable", async () => {
   const frame = await session.previewFrame();
   await expectGuideRendered(frame);
   await session.openFile("mdmark.config.yaml");
-  // 実行: 読めない設定ファイルを保存し、設定ファイルのタブを閉じる
+  // 実行: 読み込めない設定ファイルを保存し、設定ファイルのタブを閉じる
   await replaceAllText(session, "features: [");
   await saveEditor(session);
   // 検証
@@ -362,7 +362,7 @@ async function scrollTop(frame: Frame): Promise<number> {
   return frame.evaluate(() => document.scrollingElement?.scrollTop ?? 0);
 }
 
-// theme の CSS を書き換えて保存すると、リロードせずにプレビューに当たる（正常シナリオ（theme の CSS を書き換える））
+// theme の CSS を書き換えて保存すると、リロードせずにプレビューに該当する（正常シナリオ（theme の CSS を書き換える））
 test("test_normal_when_theme_css_saved", async () => {
   // 準備
   const opened = await openCascadedPreview(
@@ -383,12 +383,12 @@ test("test_normal_when_theme_css_saved", async () => {
   expect(await scrollTop(opened.frame)).toBe(top);
 });
 
-// ワークスペースの外の端末の設定と extensions のモジュールを保存すると、リロードせずにプレビューを描き直す（正常シナリオ（ワークスペースの外の設定を保存する））
+// ワークスペースの外の端末の設定と extensions のモジュールを保存すると、リロードせずにプレビューを再描画する（正常シナリオ（ワークスペースの外の設定を保存する））
 test("test_normal_when_outside_config_saved", async () => {
   // 準備
   const opened = await openCascadedPreview(e2e, "config:\n  cascade: true\n");
   await expect(opened.frame.locator(".mdmark .markdown-alert")).toHaveCount(1);
-  // 実行: 端末の設定に features.callout: false を足して保存する
+  // 実行: 端末の設定に features.callout: false を追加して保存する
   await writeFile(opened.settings, cascadeSettings({ cascade: true }));
   // 検証
   const frame = await opened.session.frameWith(".mdmark blockquote");
@@ -398,7 +398,7 @@ test("test_normal_when_outside_config_saved", async () => {
     join(opened.session.workspaceDir, "ext", "greet.js"),
     greetSource("hello"),
   );
-  // 検証: 拡張を束ね直して HTML を入れ直すため、フレームを探し直す
+  // 検証: 拡張をもう一度まとめて HTML をもう一度入れるため、フレームをもう一度探す
   await expect
     .poll(async () =>
       (await opened.session.frameWith(".mdmark [data-mdmark-slot]"))
@@ -409,7 +409,7 @@ test("test_normal_when_outside_config_saved", async () => {
     .toBe("hello:世界");
 });
 
-// aliases の行が指す YAML を保存すると、リロードせずに書き換えた意味のツールチップで描き直す（正常シナリオ（aliases の YAML を書き換える））
+// aliases の行が指す YAML を保存すると、リロードせずに書き換えた意味のツールチップで再描画する（正常シナリオ（aliases の YAML を書き換える））
 test("test_normal_when_aliases_yaml_saved", async () => {
   // 準備
   const session = await e2e.launch({

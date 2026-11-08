@@ -8,10 +8,10 @@ import {
   routeExtension,
 } from "../dist-page.ts";
 
-// ビルドした配布物を置いた作業ツリー
+// ビルドした配布物を配置した作業ツリー
 let builtRoot = "";
 
-// 拡張の印を段落の間に持つ文書
+// 拡張のマーカーを段落の間に持つ文書
 const MARK_MARKDOWN = "前の段落\n\n<!-- greet: world -->\n\n後の段落\n";
 
 test.beforeAll(async () => {
@@ -22,7 +22,7 @@ test.afterAll(async () => {
   await removeDistRoot(builtRoot);
 });
 
-// 拡張を登録して文書を描くと、印の場所にモジュールが 1 回だけ読まれて描かれる（正常シナリオ）
+// 拡張を登録して文書を描くと、マーカーの場所にモジュールが 1 回だけ読み込まれて描かれる（正常シナリオ）
 test("test_normal", async ({ page }) => {
   // 準備
   await openPage(page, builtRoot);
@@ -38,7 +38,7 @@ test("test_normal", async ({ page }) => {
   await expect(page.locator("#doc > p")).toHaveText(["前の段落", "後の段落"]);
 });
 
-// 印の無い文書では、拡張のモジュールを読まずに本文を描く（正常シナリオ（印が無い））
+// マーカーの無い文書では、拡張のモジュールを読み込まずに本文を描く（正常シナリオ（マーカーが無い））
 test("test_normal_when_no_mark", async ({ page }) => {
   // 準備
   await openPage(page, builtRoot);
@@ -52,7 +52,7 @@ test("test_normal_when_no_mark", async ({ page }) => {
   await expect(page.locator("#doc > p")).toHaveText("段落だけの文書");
 });
 
-// schema に合わない引数の印の場所に書き方の警告を出し、モジュールを読まない（異常シナリオ（引数が Schema に合わない））
+// schema に合わない引数のマーカーの場所に記載の警告を出し、モジュールを読み込まない（異常シナリオ（引数が Schema に合わない））
 test("test_error_when_args_invalid", async ({ page }) => {
   // 準備
   await openPage(page, builtRoot);
@@ -72,7 +72,7 @@ test("test_error_when_args_invalid", async ({ page }) => {
   await expect(page.locator("#doc > p")).toHaveText(["前の段落", "後の段落"]);
 });
 
-// モジュールを読めない印の場所に知らせの枠を出し、ほかの本文は描く（異常シナリオ（モジュールを読めない））
+// モジュールを読み込めないマーカーの場所に通知ブロックを出し、ほかの本文は描く（異常シナリオ（モジュールを読み込めない））
 test("test_error_when_module_not_found", async ({ page }) => {
   // 準備
   await openPage(page, builtRoot);
@@ -87,7 +87,7 @@ test("test_error_when_module_not_found", async ({ page }) => {
   await expect(page.locator("#doc > p")).toHaveText(["前の段落", "後の段落"]);
 });
 
-// 部品の定義を持つ印の場所に、定義を受けた拡張が題と項目の数を描き、定義の JSON は本文に出さない（正常シナリオ（部品の定義を渡す））
+// 部品の定義を持つマーカーの場所に、定義を受けた拡張がタイトルと項目の数を描き、定義の JSON は本文に出さない（正常シナリオ（部品の定義を指定する））
 test("test_normal_when_definition", async ({ page }) => {
   // 準備
   await openPage(page, builtRoot);

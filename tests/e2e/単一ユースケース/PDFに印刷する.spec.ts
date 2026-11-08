@@ -20,7 +20,7 @@ test.afterEach(async () => {
   library = undefined;
 });
 
-/** 閉じた折り畳みと、外部ライブラリの印を持つ見本の Markdown と、その設定ファイル */
+/** 閉じた折り畳みと、外部ライブラリのマーカーを持つ見本の Markdown と、その設定ファイル */
 async function printFiles(delayMs: number): Promise<Record<string, string>> {
   library = await startLibraryServer({ delayMs });
   return {
@@ -35,7 +35,7 @@ async function printFiles(delayMs: number): Promise<Record<string, string>> {
   };
 }
 
-// 書き出した HTML をブラウザで開くと、描き終えた後に印刷のダイアログが 1 回呼ばれ、閉じた折り畳みが開き、書き出し直すと呼ばれない（正常シナリオ）
+// 書き出した HTML をブラウザで開くと、描き終えた後に印刷のダイアログが 1 回呼ばれ、閉じた折り畳みが開き、もう一度書き出すと呼ばれない（正常シナリオ）
 test("test_normal", async ({ browser }) => {
   // 準備
   const session = await e2e.launch({ files: await printFiles(500) });
@@ -58,7 +58,7 @@ test("test_normal", async ({ browser }) => {
   expect(calls[0]?.drawn).toBe(1);
   expect(calls[0]?.details).toEqual([true]);
   await page.close();
-  // 続けて「ブラウザで開く」で書き出し直すと、印刷の処理は消える
+  // 続けて「ブラウザで開く」でもう一度書き出すと、印刷の処理は消える
   await session.runCommand("mdmark: ブラウザで開く");
   await expect.poll(() => session.openedUrls()).toEqual([url, url]);
   const again = await browser.newPage();
@@ -126,7 +126,7 @@ test("test_normal_when_theme_selected", async ({ browser }) => {
     .poll(async () => (await printCalls(page)).length)
     .toBeGreaterThan(0);
   const link = page.locator('.mdmark a[href^="https://example.com"]');
-  // ダークの画面では theme-slate の暗い配色（印刷にする前に確かめる）
+  // ダークの画面では theme-slate の暗い配色（印刷にする前に確認する）
   await expect(link).toHaveCSS("color", "rgb(125, 211, 252)");
   // 印刷のメディアでは、ブラウザがダークでも theme-slate の明るい配色
   await page.emulateMedia({ colorScheme: "dark", media: "print" });

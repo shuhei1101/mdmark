@@ -15,7 +15,7 @@ import {
 } from "../dist-page.ts";
 import { colorSvg, routePageFiles } from "../media.ts";
 
-// ビルドした配布物を置いた作業ツリー
+// ビルドした配布物を配置した作業ツリー
 let builtRoot = "";
 
 // 閉じた折り畳みを持つ文書の本体
@@ -29,7 +29,7 @@ test.afterAll(async () => {
   await removeDistRoot(builtRoot);
 });
 
-// 設定でオンの機能を、文書の印でその文書だけオフにする（正常シナリオ）
+// 設定でオンの機能を、文書のマーカーでその文書だけオフにする（正常シナリオ）
 test("test_normal", async ({ page }) => {
   // 準備
   await page.emulateMedia({ media: "print" });
@@ -44,7 +44,7 @@ test("test_normal", async ({ page }) => {
   await expect(page.locator("#doc details")).not.toHaveAttribute("open", "");
 });
 
-// 設定でオフにした機能を、文書の印でオンにする（正常シナリオ（設定でオフにした機能を文書でオンにする））
+// 設定でオフにした機能を、文書のマーカーでオンにする（正常シナリオ（設定でオフにした機能を文書でオンにする））
 test("test_normal_when_enabled_by_mark", async ({ page }) => {
   // 準備
   await page.emulateMedia({ media: "print" });
@@ -59,7 +59,7 @@ test("test_normal_when_enabled_by_mark", async ({ page }) => {
   await expect(page.locator("#doc details")).toHaveAttribute("open", "");
 });
 
-// 印の無い文書は、設定のとおりにする（正常シナリオ（印の無い文書））
+// マーカーの無い文書は、設定のとおりにする（正常シナリオ（マーカーの無い文書））
 test("test_normal_when_no_mark", async ({ page }) => {
   // 準備
   await page.emulateMedia({ media: "print" });
@@ -90,7 +90,7 @@ test("test_normal_when_unknown_feature", async ({ page }) => {
   expect(html).not.toContain("unknown");
 });
 
-// 設定で既定のオンの表と注意書きを、文書の印でその文書だけ外し、普通の Markdown として描く（正常シナリオ（記法の機能を外す））
+// 設定で既定のオンの表と注意書きを、文書のマーカーでその文書だけ解除し、普通の Markdown として描く（正常シナリオ（記法の機能を解除する））
 test("test_normal_when_syntax_disabled", async ({ page }) => {
   // 準備
   await openPage(page, builtRoot);
@@ -125,7 +125,7 @@ test("test_normal_when_syntax_disabled", async ({ page }) => {
   await expect(doc).not.toContainText("table:");
 });
 
-// 用語 `ワークスペース`（やめた言い方 `作業場`）を持ち、文書 `api`（題 `API`）の `related` が描く文書 `arch` を指す索引
+// 用語 `ワークスペース`（やめた言い方 `作業場`）を持ち、文書 `api`（タイトル `API`）の `related` が描く文書 `arch` を指す索引
 const INDEX: MdmarkIndex = {
   schema: 2,
   docs: [
@@ -145,7 +145,7 @@ const INDEX: MdmarkIndex = {
 // `api` の本文（`arch` を参照する側）
 const DOCUMENTS = { "設計/arch.md": "", "api.md": "# API\n" };
 
-// 文書の印で用語と被参照の機能を外すと、下線も被参照の一覧も付けず、用語集の表を普通の表として描く（正常シナリオ（用語と被参照の機能を外す））
+// 文書のマーカーで用語と被参照の機能を解除すると、下線も被参照の一覧も付けず、用語集の表を普通の表として描く（正常シナリオ（用語と被参照の機能を解除する））
 test("test_normal_when_glossary_disabled", async ({ page }) => {
   // 準備
   const markdown = [
@@ -191,7 +191,7 @@ test("test_normal_when_glossary_disabled", async ({ page }) => {
   await expect(doc).not.toContainText("glossary:");
 });
 
-// 文書の印で被参照の機能だけを外すと、用語にだけ下線を引き、関連文書を出さない（正常シナリオ（被参照の機能だけを外す））
+// 文書のマーカーで被参照の機能だけを解除すると、用語にだけ下線を付け、関連文書を出さない（正常シナリオ（被参照の機能だけを解除する））
 test("test_normal_when_backlinks_disabled", async ({ page }) => {
   // 準備
   const index: MdmarkIndex = {
@@ -239,10 +239,10 @@ test("test_normal_when_backlinks_disabled", async ({ page }) => {
   await expect(doc.locator("nav.mdmark-backlinks")).toHaveCount(0);
 });
 
-/** 見出しを持つ Markdown の本体（右側の目次を出す・出さない文書の先頭にマーカーを足して使う） */
+/** 見出しを持つ Markdown の本体（右側の目次を出す・出さない文書の先頭にマーカーを追加して使用する） */
 const SIDE_TOC_BODY = "## 導入\n\n導入の段落\n\n## 使い方\n\n使い方の段落\n";
 
-// 文書の印で右側の目次をオフにすると、右側の目次を置かず、見出しのアンカーと節の開閉は残る（正常シナリオ（右側の目次の機能を外す））
+// 文書のマーカーで右側の目次をオフにすると、右側の目次を配置せず、見出しのアンカーとセクションの開閉は残る（正常シナリオ（右側の目次の機能を解除する））
 test("test_normal_when_side_toc_disabled", async ({ page }) => {
   // 準備
   await page.setViewportSize({ width: 1280, height: 800 });
@@ -259,12 +259,12 @@ test("test_normal_when_side_toc_disabled", async ({ page }) => {
   await expect(doc.locator("a.mdmark-anchor")).toHaveCount(2);
   await expect(doc.locator("button.mdmark-section-toggle")).toHaveCount(2);
   await expect(doc).not.toContainText("features");
-  // 実行・検証: 右端にポインターを置いても出ない
+  // 実行・検証: 右端にポインターを配置しても出ない
   await doc.hover({ position: { x: 1200, y: 100 } });
   await expect(doc.locator(".mdmark-side-toc")).toHaveCount(0);
 });
 
-// 設定でオフにした右側の目次を、文書の印でその文書だけオンにする（正常シナリオ（設定でオフにした右側の目次を文書でオンにする））
+// 設定でオフにした右側の目次を、文書のマーカーでその文書だけオンにする（正常シナリオ（設定でオフにした右側の目次を文書でオンにする））
 test("test_normal_when_side_toc_enabled_by_mark", async ({ page }) => {
   // 準備
   await page.setViewportSize({ width: 1280, height: 800 });
@@ -285,7 +285,7 @@ test("test_normal_when_side_toc_enabled_by_mark", async ({ page }) => {
   ]);
 });
 
-// 文書のマーカーで外した本文の文字の色・画像の属性・ライトボックス・カードを、普通の Markdown として描く（正常シナリオ（色・画像・カードの機能を外す））
+// 文書のマーカーで解除した本文の文字の色・画像の属性・ライトボックス・カードを、普通の Markdown として描く（正常シナリオ（色・画像・カードの機能を解除する））
 test("test_normal_when_media_features_disabled", async ({ page }) => {
   // 準備
   await openPage(page, builtRoot);
@@ -305,7 +305,7 @@ test("test_normal_when_media_features_disabled", async ({ page }) => {
       "",
     ].join("\n"),
   });
-  // 検証: 本文の文字に色を付けず、書いたとおりの文字で出す
+  // 検証: 本文の文字に色を付けず、記載したとおりの文字で出す
   await expect(page.locator("#doc .mdmark-color")).toHaveCount(0);
   await expect(page.locator("#doc p", { hasText: "決め手の 1 文" })).toHaveText(
     "[決め手の 1 文]{color=blue}",
@@ -329,7 +329,7 @@ test("test_normal_when_media_features_disabled", async ({ page }) => {
   expect(await page.locator("#doc").innerText()).not.toContain("features");
 });
 
-// 文書のマーカーで先頭へ戻るボタンの機能を外すと、末尾までスクロールしてもボタンを置かない（正常シナリオ（先頭へ戻るボタンの機能を外す））
+// 文書のマーカーで先頭へ戻るボタンの機能を解除すると、末尾までスクロールしてもボタンを配置しない（正常シナリオ（先頭へ戻るボタンの機能を解除する））
 test("test_normal_when_back_to_top_disabled", async ({ page }) => {
   // 準備
   await page.setViewportSize({ width: 1280, height: 800 });
@@ -351,7 +351,7 @@ test("test_normal_when_back_to_top_disabled", async ({ page }) => {
   expect(await page.locator("#doc").innerText()).not.toContain("features");
 });
 
-// 設定でオンの脚注を、文書のマーカーでその文書だけオフにし、書いた文字のまま描く（正常シナリオ（脚注の機能を外す））
+// 設定でオンの脚注を、文書のマーカーでその文書だけオフにし、記載した文字のまま描く（正常シナリオ（脚注の機能を解除する））
 test("test_normal_when_footnotes_disabled", async ({ page }) => {
   // 準備
   await openPage(page, builtRoot);
@@ -368,7 +368,7 @@ test("test_normal_when_footnotes_disabled", async ({ page }) => {
   expect(await doc.innerHTML()).not.toContain("features:");
 });
 
-// 新しい記法の機能を文書で外すと、書いた文字か普通の Markdown として描く（正常シナリオ（新しい記法の機能を外す））
+// 新しい記法の機能を文書で解除すると、記載した文字か普通の Markdown として描く（正常シナリオ（新しい記法の機能を解除する））
 test("test_normal_when_new_syntax_disabled", async ({ page }) => {
   // 準備
   await openPage(page, builtRoot);
@@ -442,7 +442,7 @@ test("test_normal_when_new_syntax_disabled", async ({ page }) => {
   expect(breaks).toBe(0);
 });
 
-// 設定でオフの html-scripts を、文書のマーカーでその文書だけオンにし、範囲の css と ts を当てる（正常シナリオ（範囲のスクリプトを文書でオンにする））
+// 設定でオフの html-scripts を、文書のマーカーでその文書だけオンにし、範囲の css と ts を適用する（正常シナリオ（範囲のスクリプトを文書でオンにする））
 test("test_normal_when_range_scripts_enabled_by_document", async ({ page }) => {
   // 準備
   await routeTranspiler(page);
@@ -483,7 +483,7 @@ test("test_normal_when_range_scripts_enabled_by_document", async ({ page }) => {
   await expect(page.locator("#doc")).not.toContainText("features:");
 });
 
-// 文書の先頭のマーカーで図のリサイズハンドルの機能を外すと、リサイズハンドルを置かず、マーカーを持たない文書には置く（正常シナリオ（図のリサイズハンドルの機能を外す））
+// 文書の先頭のマーカーで図のリサイズハンドルの機能を解除すると、リサイズハンドルを配置せず、マーカーを持たない文書には配置する（正常シナリオ（図のリサイズハンドルの機能を解除する））
 test("test_normal_when_diagram_resize_disabled", async ({ page }) => {
   // 準備
   await openPage(page, builtRoot);

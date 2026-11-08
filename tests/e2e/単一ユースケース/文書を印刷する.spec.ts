@@ -12,10 +12,10 @@ import {
 } from "../dist-page.ts";
 import { colorSvg, readMediaSamples, routePageFiles } from "../media.ts";
 
-// ビルドした配布物を置いた作業ツリー
+// ビルドした配布物を配置した作業ツリー
 let builtRoot = "";
 
-// 閉じた折り畳みとリンクと表を持つ見本の Markdown（リンク 1 つだけの段落はカードにするため、文の中にリンクを置く）
+// 閉じた折り畳みとリンクと表を持つ見本の Markdown（リンク 1 つだけの段落はカードにするため、文の中にリンクを配置する）
 const MARKDOWN = [
   "<details><summary>閉</summary>x</details>",
   "",
@@ -203,7 +203,7 @@ test("test_normal_when_syntax_expanded", async ({ page }) => {
   }
 });
 
-// 用語 `ワークスペース`（やめた言い方 `作業場`）を持ち、文書 `api`（題 `API`）の `related` が描く文書 `arch` を指す索引
+// 用語 `ワークスペース`（やめた言い方 `作業場`）を持ち、文書 `api`（タイトル `API`）の `related` が描く文書 `arch` を指す索引
 const INDEX: MdmarkIndex = {
   schema: 2,
   docs: [
@@ -223,7 +223,7 @@ const INDEX: MdmarkIndex = {
 // `api` の本文（`arch` を参照する側）
 const DOCUMENTS = { "設計/arch.md": "", "api.md": "# API\n" };
 
-// 用語の下線を外してツールチップを出さず、被参照の一覧のリンクの後ろに相対パスを出して印刷する（正常シナリオ（用語と被参照））
+// 用語の下線を削除してツールチップを出さず、被参照の一覧のリンクの後ろに相対パスを出して印刷する（正常シナリオ（用語と被参照））
 test("test_normal_when_glossary_and_backlinks", async ({ page }) => {
   // 準備
   await openPage(page, builtRoot);
@@ -255,7 +255,7 @@ test("test_normal_when_glossary_and_backlinks", async ({ page }) => {
   expect(suffix).toContain("../api.md");
 });
 
-// 印刷すると、表の上のボタンと行へのリンクの印は出さず、件数と集計の行は出し、隠した列は隠したままにする（正常シナリオ（表の機能を印刷に出す））
+// 印刷すると、表の上のボタンと行へのリンクのマーカーは出さず、件数と集計の行は出し、隠した列は隠したままにする（正常シナリオ（表の機能を印刷に出す））
 test("test_normal_when_table_features_printed", async ({ page }) => {
   // 準備
   await openPage(page, builtRoot);
@@ -287,7 +287,7 @@ test("test_normal_when_table_features_printed", async ({ page }) => {
   await expect(doc.locator("tfoot tr")).toBeVisible();
   await expect(doc.locator("tfoot td").nth(0)).toContainText("合計");
   await expect(doc.locator("tfoot td").nth(2)).toContainText("6");
-  // 見出し行は 1 組だけで、画面の上端に留めるずれが当たっていない
+  // 見出し行は 1 組だけで、画面の上端に留めるずれが該当していない
   await expect(doc.locator("thead")).toHaveCount(1);
   for (const cell of await doc.locator("thead th:visible").all()) {
     await expect(cell).toHaveCSS("transform", "none");
@@ -295,7 +295,7 @@ test("test_normal_when_table_features_printed", async ({ page }) => {
   await expect(doc.locator("thead th", { hasText: "説明" })).toBeHidden();
 });
 
-// 印刷すると、コードブロックの題・行番号・行の強調と、足した行・消した行の色と行頭の印を出す（正常シナリオ（コードブロックの題と行を印刷に出す））
+// 印刷すると、コードブロックのタイトル・行番号・行の強調と、追加した行・削除した行の色と行頭のマーカーを出す（正常シナリオ（コードブロックのタイトルと行を印刷に出す））
 test("test_normal_when_code_block_printed", async ({ page }) => {
   // 準備
   await routeSyntax(page);
@@ -312,7 +312,7 @@ test("test_normal_when_code_block_printed", async ({ page }) => {
       "",
     ].join("\n"),
   });
-  // 色分けし終えてから印刷する。画面の色分けの色を控える
+  // 色分けし終えてから印刷する。画面の色分けの色を記録する
   const spans = page.locator("#doc .mdmark-code-text span[class*='hljs-']");
   await expect(spans.first()).toBeVisible();
   const screenColors = await spans.evaluateAll((elements) =>
@@ -414,7 +414,7 @@ test("test_normal_when_collapsed_column_printed", async ({ page }) => {
   }
 });
 
-// 印刷では右側の目次と節のボタンを出さず、閉じた H1 の節を開き、印刷の後は画面の表示に戻る（正常シナリオ（右側の目次と節のボタンを印刷に出さない））
+// 印刷では右側の目次とセクションのボタンを出さず、閉じた H1 のセクションを開き、印刷の後は画面の表示に戻る（正常シナリオ（右側の目次とセクションのボタンを印刷に出さない））
 test("test_normal_when_side_toc_hidden_in_print", async ({ page }) => {
   // 準備
   await page.setViewportSize({ width: 1280, height: 800 });
@@ -457,12 +457,12 @@ test("test_normal_when_theme_selected", async ({ page }) => {
     config: { colorTheme: "theme-slate" },
   });
   const doc = page.locator("#doc");
-  // ダークの画面では theme-slate の暗い配色（印刷にする前に確かめる）
+  // ダークの画面では theme-slate の暗い配色（印刷にする前に確認する）
   await expect(doc.locator("a")).toHaveCSS("color", "rgb(125, 211, 252)");
   // 実行
   await page.emulateMedia({ colorScheme: "dark", media: "print" });
   await sendPrintEvent(page, "beforeprint");
-  // 検証: 既定のテーマに戻らず、theme-slate の明るい配色のリンクの色になり、地の色は外れる
+  // 検証: 既定のテーマに戻らず、theme-slate の明るい配色のリンクの色になり、地の色は削除される
   await expect(doc.locator("a")).toHaveCSS("color", "rgb(29, 78, 216)");
   await expect(doc).toHaveCSS("background-color", "rgba(0, 0, 0, 0)");
 });
@@ -667,7 +667,7 @@ test("test_normal_when_code_folded", async ({ page }) => {
   await expect(page.getByText("内側の本文")).toBeHidden();
 });
 
-// 印刷の前に閉じた脚注の一覧を開き、ツールチップを出さず、印刷の後に閉じ直す（正常シナリオ（脚注の一覧を開いて出す））
+// 印刷の前に閉じた脚注の一覧を開き、ツールチップを出さず、印刷の後にもう一度閉じる（正常シナリオ（脚注の一覧を開いて出す））
 test("test_normal_when_footnotes_printed", async ({ page }) => {
   // 準備
   await openPage(page, builtRoot);

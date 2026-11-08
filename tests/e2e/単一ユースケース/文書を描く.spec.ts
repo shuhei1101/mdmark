@@ -10,7 +10,7 @@ import {
   updateDocument,
 } from "../dist-page.ts";
 
-// ビルドした配布物を置いた作業ツリー
+// ビルドした配布物を配置した作業ツリー
 let builtRoot = "";
 
 test.beforeAll(async () => {
@@ -21,7 +21,7 @@ test.afterAll(async () => {
   await removeDistRoot(builtRoot);
 });
 
-// 要素と Markdown を渡すと、要素の中に本文を描く（正常シナリオ）
+// 要素と Markdown を指定すると、要素の中に本文を描く（正常シナリオ）
 test("test_normal", async ({ page }) => {
   // 準備
   await openPage(page, builtRoot);
@@ -74,7 +74,7 @@ test("test_normal_when_destroyed", async ({ page }) => {
   await expect(page.locator("#doc")).toBeEmpty();
 });
 
-// 未知の印を無視して、前後の段落を描く（正常シナリオ（未知の印がある））
+// 未知のマーカーを無視して、前後の段落を描く（正常シナリオ（未知のマーカーがある））
 test("test_normal_when_unknown_mark", async ({ page }) => {
   // 準備
   await openPage(page, builtRoot);
@@ -90,7 +90,7 @@ test("test_normal_when_unknown_mark", async ({ page }) => {
   expect(html).not.toContain("unknown");
 });
 
-// 文書に書いたスクリプトを落とし、リンクを押しても実行されない（正常シナリオ（文書にスクリプトがある））
+// 文書に記載したスクリプトを落とし、リンクを押しても実行されない（正常シナリオ（文書にスクリプトがある））
 test("test_normal_when_script_in_markdown", async ({ page }) => {
   // 準備
   await openPage(page, builtRoot);
@@ -122,7 +122,7 @@ test("test_normal_when_script_in_markdown", async ({ page }) => {
   await expect(doc.locator("details")).toBeVisible();
 });
 
-// 用語 `ワークスペース` を持ち、文書 `api`（題 `API`）の `related` が描く文書 `arch` を指す索引
+// 用語 `ワークスペース` を持ち、文書 `api`（タイトル `API`）の `related` が描く文書 `arch` を指す索引
 const INDEX: MdmarkIndex = {
   schema: 2,
   docs: [
@@ -141,7 +141,7 @@ const INDEX: MdmarkIndex = {
 // `api` の本文（`arch` を参照する側）
 const DOCUMENTS = { "設計/arch.md": "", "api.md": "# API\n" };
 
-// 索引・文書の id・参照を渡すと用語に下線を引いて被参照の一覧を付け、本文を差し替えても同じ索引で描き直す（正常シナリオ（索引を渡す））
+// 索引・文書の id・参照を指定すると用語に下線を付けて被参照の一覧を付け、本文を差し替えても同じ索引で再描画する（正常シナリオ（索引を指定する））
 test("test_normal_when_index", async ({ page }) => {
   // 準備
   await openPage(page, builtRoot);
@@ -165,7 +165,7 @@ test("test_normal_when_index", async ({ page }) => {
   await expect(doc.locator("nav.mdmark-backlinks a")).toHaveText(["API"]);
 });
 
-// 見出し・段落・表・コードブロックが元の行番号を持ち、見た目は元の行番号が無いときと同じ（正常シナリオ（元の行番号を出す））
+// 見出し・段落・表・コードブロックが元の行番号を持ち、外観は元の行番号が無いときと同じ（正常シナリオ（元の行番号を出す））
 test("test_normal_when_source_lines", async ({ page }) => {
   // 準備
   const markdown = [
@@ -215,7 +215,7 @@ test("test_normal_when_source_lines", async ({ page }) => {
   expect(await snapshot()).toEqual(withAttributes);
 });
 
-// 読み込んだエイリアスを渡して描くと下線とツールチップが付き、本文を差し替えた後も同じエイリアスで描き直す（正常シナリオ（エイリアスを渡す））
+// 読み込んだエイリアスを指定して描くと下線とツールチップが付き、本文を差し替えた後も同じエイリアスで再描画する（正常シナリオ（エイリアスを指定する））
 test("test_normal_when_aliases", async ({ page }) => {
   // 準備
   const aliases: MdmarkAlias[] = [

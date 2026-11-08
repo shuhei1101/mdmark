@@ -7,10 +7,10 @@ import {
   removeDistRoot,
 } from "../dist-page.ts";
 
-// ビルドした配布物を置いた作業ツリー
+// ビルドした配布物を配置した作業ツリー
 let builtRoot = "";
 
-// 3 つの文書を別のフォルダに置く索引（`api` の `related` が `arch`）
+// 3 つの文書を別のフォルダに配置する索引（`api` の `related` が `arch`）
 const INDEX: MdmarkIndex = {
   schema: 2,
   docs: [
@@ -49,7 +49,7 @@ test.afterAll(async () => {
   await removeDistRoot(builtRoot);
 });
 
-// 文書の末尾に、参照している文書の一覧を相対パスのリンクで置き、題を押すとその文書へ移る（正常シナリオ）
+// 文書の末尾に、参照している文書の一覧を相対パスのリンクで配置し、タイトルを押すとその文書へ移る（正常シナリオ）
 test("test_normal", async ({ page }) => {
   // 準備
   await openPage(page, builtRoot);
@@ -67,7 +67,7 @@ test("test_normal", async ({ page }) => {
   await expect(doc.locator("h1")).toContainText("アーキテクチャ");
   const nav = doc.locator("nav.mdmark-backlinks");
   await expect(nav.locator(".mdmark-backlinks-title")).toHaveText("関連文書");
-  // `API` と `使い方` が並び、自分自身は並ばない
+  // `API` と `使用方法` が並び、自分自身は並ばない
   await expect(nav.locator("li a")).toHaveText(["API", "使い方"]);
   const hrefs = await nav
     .locator("li a")
@@ -77,12 +77,12 @@ test("test_normal", async ({ page }) => {
   await expect(doc.locator(".mdmark-content > :last-child")).toHaveClass(
     /mdmark-backlinks/,
   );
-  // 題を押すと、その文書へのリンクが開く
+  // タイトルを押すと、その文書へのリンクが開く
   await nav.locator("li a", { hasText: "API" }).click();
   await expect(page).toHaveURL(/\/api\.md$/);
 });
 
-// どの文書からも参照されていない文書には、一覧を置かずに本文を描く（正常シナリオ（参照されていない文書））
+// どの文書からも参照されていない文書には、一覧を配置せずに本文を描く（正常シナリオ（参照されていない文書））
 test("test_normal_when_not_referenced", async ({ page }) => {
   // 準備
   await openPage(page, builtRoot);
@@ -99,7 +99,7 @@ test("test_normal_when_not_referenced", async ({ page }) => {
   await expect(doc.locator("h1")).toContainText("使い方");
 });
 
-// 文書の別名が本文の語に一致すると、その語のツールチップに関連文書を出す（正常シナリオ（文書の別名））
+// 文書の別名が本文の単語に一致すると、その単語のツールチップに関連文書を出す（正常シナリオ（文書の別名））
 test("test_normal_when_document_alias", async ({ page }) => {
   // 準備
   const index: MdmarkIndex = {
@@ -135,7 +135,7 @@ test("test_normal_when_document_alias", async ({ page }) => {
   // 検証
   const terms = page.locator("#doc p .mdmark-term");
   await expect(terms).toHaveText(["公開関数", "ワークスペース"]);
-  // `公開関数`: ツールチップの「関連文書」に題・リンク・説明が並び、用語の区分は無い
+  // `公開関数`: ツールチップの「関連文書」にタイトル・リンク・説明が並び、用語の区分は無い
   const apiTip = page.locator("#doc p .mdmark-term-tip").nth(0);
   await terms.nth(0).hover();
   await expect(apiTip).toBeVisible();
@@ -145,7 +145,7 @@ test("test_normal_when_document_alias", async ({ page }) => {
   await expect(apiTip.locator(".mdmark-term-tip-heading")).toHaveText([
     "関連文書",
   ]);
-  // `ワークスペース`: 「用語」の意味と「関連文書」の `使い方` がこの順で並ぶ。用語が出る文書の一覧は無い
+  // `ワークスペース`: 「用語」の意味と「関連文書」の `使用方法` がこの順で並ぶ。用語が出る文書の一覧は無い
   const wsTip = page.locator("#doc p .mdmark-term-tip").nth(1);
   await terms.nth(1).hover();
   await expect(wsTip.locator(".mdmark-term-tip-heading")).toHaveText([

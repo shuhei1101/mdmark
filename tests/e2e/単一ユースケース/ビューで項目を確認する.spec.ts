@@ -13,7 +13,7 @@ import {
   viewMarkdown,
 } from "../view-samples.ts";
 
-// ビルドした配布物を置いた作業ツリー
+// ビルドした配布物を配置した作業ツリー
 let builtRoot = "";
 
 test.beforeAll(async () => {
@@ -122,7 +122,7 @@ test("test_normal_when_opened_as_table", async ({ page }) => {
   expect(await columnCounts(page)).toEqual(["2", "2", "1"]);
 });
 
-// views を外した設定では、印の範囲の表を普通の表で描き、切り替えも警告も出さない（正常シナリオ（機能を外す））
+// views を削除した設定では、マーカーの範囲の表を普通の表で描き、切り替えも警告も出さない（正常シナリオ（機能を解除する））
 test("test_normal_when_disabled", async ({ page }) => {
   // 準備
   await openPage(page, builtRoot);
@@ -140,7 +140,7 @@ test("test_normal_when_disabled", async ({ page }) => {
   await expect(page.locator("#doc .mdmark-syntax-warning")).toHaveCount(0);
 });
 
-// group= が表に無い列のときは、書き方の警告を出して表形式で描き、ボード表示を押せなくする（異常シナリオ（知らない列））
+// group= が表に無い列のときは、記載の警告を出して表形式で描き、ボード表示を押せなくする（異常シナリオ（知らない列））
 test("test_error_when_group_column_missing", async ({ page }) => {
   // 準備
   await openPage(page, builtRoot);
@@ -161,7 +161,7 @@ test("test_error_when_group_column_missing", async ({ page }) => {
   );
 });
 
-// 範囲に表が無いときは、書き方の警告を出して範囲の中身をそのまま描く（異常シナリオ（範囲に表が無い））
+// 範囲に表が無いときは、記載の警告を出して範囲の中身をそのまま描く（異常シナリオ（範囲に表が無い））
 test("test_error_when_no_table", async ({ page }) => {
   // 準備
   await openPage(page, builtRoot);

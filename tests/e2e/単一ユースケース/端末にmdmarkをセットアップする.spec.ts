@@ -19,9 +19,9 @@ import {
   type Terminal,
 } from "../setup-skill.ts";
 
-/** 移行の手順を差し替える、`v0.0.1` を埋めてビルドしたパッケージ（使うテストだけが作る） */
+/** 移行の手順を差し替える、`v0.0.1` を埋めてビルドしたパッケージ（使用するテストだけが作る） */
 const test = base.extend<{ upgradePackage: string }>({
-  // biome-ignore lint/correctness/noEmptyPattern: Playwright の道具は、第 1 引数の分割代入から依存を読む
+  // biome-ignore lint/correctness/noEmptyPattern: Playwright の道具は、第 1 引数の分割代入から依存を読み込む
   upgradePackage: async ({}, use) => {
     const root = await buildDistRoot();
     await use(root);
@@ -29,7 +29,7 @@ const test = base.extend<{ upgradePackage: string }>({
   },
 });
 
-// ブラウザを使わないため、1 つのブラウザのプロジェクトだけで流す
+// ブラウザを使用しないため、1 つのブラウザのプロジェクトだけで実行する
 test.skip(
   ({ browserName }) => browserName !== "chromium",
   "ブラウザを使わないシナリオなので chromium のプロジェクトだけで流す",
@@ -37,11 +37,11 @@ test.skip(
 
 // 既定のセッション名
 const SESSION = "mdmark-mcp";
-// 常駐サーバーが返すツールのうち、確かめるもの
+// 常駐サーバーが返却するツールのうち、確認するもの
 const TOOLS = ["export_html", "build_site", "check"];
 // 移行の前の端末の設定（`features.table` が真偽値でない）
 const OLD_SETTINGS = 'version: v0.0.0\nfeatures:\n  table: "off"\n';
-// テスト専用の移行の手順: `features.table` の `off` を `false` に読み替える
+// テスト専用の移行の手順: `features.table` の `off` を `false` として解釈する
 const TEST_STEPS = [
   "steps:",
   "  - op: map_values",
@@ -75,7 +75,7 @@ const readTerminalFiles = async (terminal: Terminal) => ({
     : null,
 });
 
-/** 正常シナリオと同じ答えで global-setup を流し、セットアップ済みの端末にする */
+/** 正常シナリオと同じ回答で global-setup を実行し、セットアップ済みの端末にする */
 const setUpTerminal = async (builtRoot: string, terminal: Terminal) => {
   await startTmuxServer(terminal);
   const report = await runGlobalSetup({
@@ -90,7 +90,7 @@ const setUpTerminal = async (builtRoot: string, terminal: Terminal) => {
 const countSession = async (terminal: Terminal) =>
   (await sessionNames(terminal)).filter((name) => name === SESSION).length;
 
-// 空の端末で端末の設定を作り、settings.json に MDMARK_CONFIG を書き、tmux のセッションで常駐サーバーを起動してフックを確かめる（正常シナリオ）
+// 空の端末で端末の設定を作り、settings.json に MDMARK_CONFIG を書き込み、tmux のセッションで常駐サーバーを起動してフックを確認する（正常シナリオ）
 test("test_normal", async ({ builtRoot, terminal, tempDir }) => {
   // 準備
   await startTmuxServer(terminal);
@@ -138,7 +138,7 @@ test("test_normal", async ({ builtRoot, terminal, tempDir }) => {
   expect(started?.stop).toContain(SESSION);
 });
 
-// セットアップ済みの端末では書き換えず、セッションを作り直さない（正常シナリオ（セットアップ済み））
+// セットアップ済みの端末では書き換えず、セッションを再作成しない（正常シナリオ（セットアップ済み））
 test("test_normal_when_already_set_up", async ({ builtRoot, terminal }) => {
   // 準備
   await setUpTerminal(builtRoot, terminal);
@@ -165,7 +165,7 @@ test("test_normal_when_already_set_up", async ({ builtRoot, terminal }) => {
   expect(started?.session).toBe(SESSION);
 });
 
-// 止まった常駐サーバーを、端末の設定を書き換えずに起動し直す（正常シナリオ（常駐サーバーが止まっている））
+// 止まった常駐サーバーを、端末の設定を書き換えずにもう一度起動する（正常シナリオ（常駐サーバーが止まっている））
 test("test_normal_when_server_stopped", async ({ builtRoot, terminal }) => {
   // 準備
   await setUpTerminal(builtRoot, terminal);
@@ -188,7 +188,7 @@ test("test_normal_when_server_stopped", async ({ builtRoot, terminal }) => {
   expect(report.start.started?.session).toBe(SESSION);
 });
 
-// 古いバージョンの端末の設定に、写しを残して移行の手順を当てる（正常シナリオ（古いバージョンの端末の設定））
+// 古いバージョンの端末の設定に、コピーを残して移行の手順を適用する（正常シナリオ（古いバージョンの端末の設定））
 test("test_normal_when_settings_outdated", async ({
   builtRoot,
   terminal,
@@ -230,14 +230,14 @@ test("test_normal_when_settings_outdated", async ({
   ).toEqual([]);
   // 最後の報告の材料
   const backup = linesOf(report.upgrade?.stdout ?? "").find((line) =>
-    line.startsWith("写し: "),
+    line.startsWith("コピー: "),
   );
   expect(backup).toBeDefined();
   expect(
     await readFile(
       join(
         dirname(terminal.settingsPath),
-        (backup ?? "").slice("写し: ".length),
+        (backup ?? "").slice("コピー: ".length),
         "settings.yaml",
       ),
       "utf8",
@@ -245,7 +245,7 @@ test("test_normal_when_settings_outdated", async ({
   ).toBe(OLD_SETTINGS);
 });
 
-// 書くことを断ると端末の設定と settings.json を書かず、既定のセッション名で常駐サーバーを起動する（異常シナリオ（書くことを断る））
+// 書き込むことを断ると端末の設定と settings.json を書き込まず、既定のセッション名で常駐サーバーを起動する（異常シナリオ（書き込むことを断る））
 test("test_error_when_write_declined", async ({ builtRoot, terminal }) => {
   // 準備
   await startTmuxServer(terminal);
@@ -267,7 +267,7 @@ test("test_error_when_write_declined", async ({ builtRoot, terminal }) => {
   expect(report.start.started?.session).toBe(SESSION);
 });
 
-// tmux が無いと端末の設定だけを書き、端末で mdmark serve を動かすコマンドを返す（異常シナリオ（tmux が無い））
+// tmux が無いと端末の設定だけを書き込み、端末で mdmark serve を動かすコマンドを返却する（異常シナリオ（tmux が無い））
 test("test_error_when_tmux_missing", async ({
   builtRoot,
   terminal,
@@ -299,7 +299,7 @@ test("test_error_when_tmux_missing", async ({
   expect(report.hook).toBeUndefined();
 });
 
-// ポートをほかのプロセスが使っていると、セッションを残さずに修正方法を返す（異常シナリオ（ポートをほかのプロセスが使っている））
+// ポートをほかのプロセスが使用していると、セッションを残さずに修正方法を返却する（異常シナリオ（ポートをほかのプロセスが使用している））
 test("test_error_when_port_in_use", async ({ builtRoot, terminal }) => {
   // 準備
   await startTmuxServer(terminal);

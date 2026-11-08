@@ -6,10 +6,10 @@ import {
   removeDistRoot,
 } from "../dist-page.ts";
 
-// ビルドした配布物を置いた作業ツリー
+// ビルドした配布物を配置した作業ツリー
 let builtRoot = "";
 
-// 種類の文字・枠の class の末尾・題の文字
+// 種類の文字・枠の class の末尾・タイトルの文字
 const KINDS = [
   { kind: "NOTE", suffix: "note", title: "補足" },
   { kind: "TIP", suffix: "tip", title: "ヒント" },
@@ -26,7 +26,7 @@ test.afterAll(async () => {
   await removeDistRoot(builtRoot);
 });
 
-// 5 種の引用を、種類ごとの題・アイコンを持つ注意書きの枠に描く（正常シナリオ）
+// 5 種の引用を、種類ごとのタイトル・アイコンを持つ注意書きの枠に描く（正常シナリオ）
 test("test_normal", async ({ page }) => {
   // 準備
   await openPage(page, builtRoot);
@@ -61,7 +61,7 @@ test("test_normal", async ({ page }) => {
   await expect(page.locator("#doc")).not.toContainText("[!");
 });
 
-// 種類の末尾に `-` を付けた注意書きは、閉じた折り畳みで描き、題を押すと開く（正常シナリオ（閉じた注意書き））
+// 種類の末尾に `-` を付けた注意書きは、閉じた折り畳みで描き、タイトルを押すと開く（正常シナリオ（閉じた注意書き））
 test("test_normal_when_collapsed", async ({ page }) => {
   // 準備
   await openPage(page, builtRoot);
@@ -77,7 +77,7 @@ test("test_normal_when_collapsed", async ({ page }) => {
   await expect(page.getByText("折り畳みの本文")).toBeVisible();
 });
 
-// 知らない種類は NOTE の枠で描き、中身は読める（正常シナリオ（知らない種類））
+// 知らない種類は NOTE の枠で描き、中身は読み込める（正常シナリオ（知らない種類））
 test("test_normal_when_unknown_kind", async ({ page }) => {
   // 準備
   await openPage(page, builtRoot);
@@ -91,7 +91,7 @@ test("test_normal_when_unknown_kind", async ({ page }) => {
   ).toBeVisible();
 });
 
-// 種類の後ろの文字をタイトルにし、読み上げでは種類も分かる（正常シナリオ（タイトルを付けた注意書き））
+// 種類の後ろの文字をタイトルにし、スクリーンリーダーでは種類も分かる（正常シナリオ（タイトルを付けた注意書き））
 test("test_normal_when_titled", async ({ page }) => {
   // 準備
   await openPage(page, builtRoot);
@@ -148,7 +148,7 @@ test("test_normal_when_expanded", async ({ page }) => {
   await expect(page.getByText("開いて描く本文")).toBeHidden();
 });
 
-// 引用の入れ子ごとに種類を読み、WARNING の枠の中に TIP の枠を描く（正常シナリオ（入れ子の注意書き））
+// 引用の入れ子ごとに種類を読み込み、WARNING の枠の中に TIP の枠を描く（正常シナリオ（入れ子の注意書き））
 test("test_normal_when_nested", async ({ page }) => {
   // 準備
   await openPage(page, builtRoot);

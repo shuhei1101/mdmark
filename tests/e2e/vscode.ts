@@ -33,7 +33,7 @@ const EXTENSION_ID = "ShuheiNishikawa.mdmark-vscode";
 // リポジトリの直下と、拡張機能の場所
 const REPO_ROOT = resolve(import.meta.dirname, "../..");
 const EXTENSION_SOURCE = join(REPO_ROOT, "vscode");
-// 拡張機能ホストを Test のモードにして配信元を差し替えるため、終わらないテストの入口を渡す
+// 拡張機能ホストを Test のモードにして配信元を差し替えるため、終わらないテストの入口を指定する
 const NEVER_ENDING_RUNNER = "exports.run = () => new Promise(() => {});\n";
 // 何かを待つ上限（ミリ秒）
 const WAIT_TIMEOUT_MS = 30_000;
@@ -48,7 +48,7 @@ const NOT_COPIED = ["node_modules", ".vscode-test", "out", "dist", "media"];
 // 拡張機能のビルドがライブラリ本体の設定ファイルの処理（`src/`）をまとめるため、複製の隣へリンクする直下の `src/`・`schemas/` と、その依存
 const LINKED_FROM_ROOT = ["src", "schemas", "node_modules"];
 
-/** 代役の配信の状態（`createStubServer` が受ける形） */
+/** 代役の配信の状態（`createStubServer` が受ける構造） */
 type StubState = Parameters<typeof createStubServer>[0];
 
 /** このブランチでビルドした拡張機能と配布物 */
@@ -57,7 +57,7 @@ export type BuiltExtension = {
   extensionDir: string;
   /** 配布物を配る一時フォルダの作業ツリー */
   distRoot: string;
-  /** 一時フォルダを消す */
+  /** 一時フォルダを削除する */
   dispose: () => Promise<void>;
 };
 
@@ -93,7 +93,7 @@ export async function buildExtensionAndDist(): Promise<BuiltExtension> {
   };
 }
 
-/** `globalSetup` が取得した VS Code の実行ファイルの場所を返す */
+/** `globalSetup` が取得した VS Code の実行ファイルの場所を返却する */
 function vscodeExecutable(): string {
   const executable = process.env[VSCODE_EXECUTABLE_ENV];
   if (!executable) {
@@ -120,7 +120,7 @@ export type Stub = {
   close: () => Promise<void>;
 };
 
-/** 代役の配信が範囲の `ts`・`js` の変換のライブラリを返す経路。`html-scripts.url` に `{origin}{TRANSPILER_PATH}` を書くと、配布物と同じ origin から読む */
+/** 代役の配信が範囲の `ts`・`js` の変換のライブラリを返却する経路。`html-scripts.url` に `{origin}{TRANSPILER_PATH}` を記載すると、配布物と同じ origin から読み込む */
 export const TRANSPILER_PATH = "/babel.mjs";
 
 /** 変換のライブラリ（開発の依存 `@babel/standalone` の UMD）の場所 */
@@ -132,7 +132,7 @@ const TRANSPILER_UMD_PATH = join(
   "babel.min.js",
 );
 
-/** `MERMAID_STUB_PATH` の下の要求に、mermaid の dist の `.mjs` を返す（無ければ 404） */
+/** `MERMAID_STUB_PATH` の下の要求に、mermaid の dist の `.mjs` を返却する（無ければ 404） */
 function respondMermaid(path: string, response: ServerResponse): void {
   const file = resolve(MERMAID_DIST, path.slice(MERMAID_STUB_PATH.length));
   if (!file.startsWith(`${MERMAID_DIST}/`) || !file.endsWith(".mjs")) {
@@ -155,7 +155,7 @@ function respondMermaid(path: string, response: ServerResponse): void {
   );
 }
 
-/** 配布物とタグ一覧の代役の配信を立てる。`TRANSPILER_PATH` には、変換のライブラリを既定のエクスポートを持つ ES モジュールに包んで返し、`MERMAID_STUB_PATH` の下には mermaid の dist を返す */
+/** 配布物とタグ一覧の代役の配信を起動する。`TRANSPILER_PATH` には、変換のライブラリを既定のエクスポートを持つ ES モジュールに包んで返却し、`MERMAID_STUB_PATH` の下には mermaid の dist を返却する */
 export async function startStub(distRoot: string): Promise<Stub> {
   const state: StubState = {
     tags: ["v0.7.0", "v0.6.0", "vscode-v0.1.0"],
@@ -221,7 +221,7 @@ export async function startStub(distRoot: string): Promise<Stub> {
   };
 }
 
-/** VS Code の見た目を整える既定のワークスペースの設定 */
+/** VS Code の外観を整える既定のワークスペースの設定 */
 const BASE_SETTINGS = {
   "workbench.startupEditor": "none",
   "workbench.tips.enabled": false,
@@ -243,7 +243,7 @@ const BASE_SETTINGS = {
   "editor.wordBasedSuggestions": "off",
   "editor.acceptSuggestionOnEnter": "off",
   "editor.formatOnType": false,
-  // 見出しの文脈を重ねる表示が先頭の行を隠すと、エディタの先頭の行を読み違える
+  // 見出しの文脈を重ねる表示が先頭の行を隠すと、エディタの先頭の行を読み込み違える
   "editor.stickyScroll.enabled": false,
   // スクロールの途中の位置を読み取らないようにする
   "editor.smoothScrolling": false,
@@ -261,7 +261,7 @@ export type VscodeSession = {
   openedUrls: () => Promise<string[]>;
   /** Quick Open でファイルを開き、エディタに文字を打てる状態にする */
   openFile: (relative: string) => Promise<void>;
-  /** 開いているテキストエディタの文字を打つ場所にフォーカスを置く */
+  /** 開いているテキストエディタの文字を打つ場所にフォーカスを配置する */
   focusEditor: () => Promise<void>;
   /** コマンドパレットでコマンドを選ぶ */
   runCommand: (title: string) => Promise<void>;
@@ -269,9 +269,9 @@ export type VscodeSession = {
   openPreviewWithShortcut: () => Promise<void>;
   /** プレビューの中身のフレーム（開くまで待つ） */
   previewFrame: () => Promise<Frame>;
-  /** `selector` に当たる要素を持つプレビューのフレーム（HTML を入れ直してフレームが替わっても、現れるまで探し直す） */
+  /** `selector` に該当する要素を持つプレビューのフレーム（HTML をもう一度入れてフレームが替わっても、現れるまでもう一度探す） */
   frameWith: (selector: string) => Promise<Frame>;
-  /** 見出し・表・注意書き・流れ図が描かれたプレビューのフレーム（HTML を入れ直してフレームが替わっても、描かれるまで探し直す） */
+  /** 見出し・表・注意書き・流れ図が描かれたプレビューのフレーム（HTML をもう一度入れてフレームが替わっても、描かれるまでもう一度探す） */
   guideFrame: () => Promise<Frame>;
   /** 通知に出ている文 */
   notifications: () => Promise<string[]>;
@@ -279,7 +279,7 @@ export type VscodeSession = {
   extensionLog: () => Promise<string[]>;
   /** エディタの見えている先頭の行（1 始まり） */
   editorTopLine: () => Promise<number>;
-  /** 終了して一時フォルダを消す */
+  /** 終了して一時フォルダを削除する */
   close: () => Promise<void>;
 };
 
@@ -287,19 +287,19 @@ export type VscodeSession = {
 export type LaunchOptions = {
   built: BuiltExtension;
   stub: Stub;
-  /** ワークスペースに置くファイル（相対パス → 中身） */
+  /** ワークスペースに配置するファイル（相対パス → 中身） */
   files: Record<string, string | Buffer>;
-  /** ワークスペースの設定に足すもの */
+  /** ワークスペースの設定に追加するもの */
   settings?: Record<string, unknown>;
   /** ユーザーの設定（ワークスペースの設定より弱い。画面から切り替える設定の初めの値） */
   userSettings?: Record<string, unknown>;
   /** 書き込みを許さないフォルダ（ワークスペースからの相対パス） */
   readOnlyDirs?: string[];
-  /** 設定を足したユーザーデータを使い回さず、前回のバージョンを空にして始める（既定） */
+  /** 設定を追加したユーザーデータを使い回さず、前回のバージョンを空にして始める（既定） */
   freshState?: boolean;
-  /** ファイルを置いた後、VS Code を起動する前に呼ぶ（Git のリポジトリを作るときなど）。引数はワークスペースのフォルダ */
+  /** ファイルを配置した後、VS Code を起動する前に呼ぶ（Git のリポジトリを作るときなど）。引数はワークスペースのフォルダ */
   prepare?: (workspaceDir: string) => Promise<void>;
-  /** VS Code に渡す環境変数に足すもの（`MDMARK_CONFIG` の既定は無いファイル） */
+  /** VS Code に指定する環境変数に追加するもの（`MDMARK_CONFIG` の既定は無いファイル） */
   env?: Record<string, string>;
 };
 
@@ -340,7 +340,7 @@ export async function launchVscode(
     await chmod(path, 0o555);
   }
   await options.prepare?.(workspaceDir);
-  // `http`・`https` の URL は VS Code が `xdg-open` を起こして開くため、渡された URL を記録するだけの代役を `PATH` の先頭に置く
+  // `http`・`https` の URL は VS Code が `xdg-open` を発生させて開くため、指定された URL を記録するだけの代役を `PATH` の先頭に配置する
   await mkdir(binDir, { recursive: true });
   const opener = join(binDir, "xdg-open");
   await writeFile(opener, `#!/bin/sh\necho "$@" >> "${openedLog}"\n`);
@@ -357,7 +357,7 @@ type SessionDirs = {
   openedLog: string;
 };
 
-/** 用意した一時フォルダで VS Code を起動し、操作する道具を返す */
+/** 用意した一時フォルダで VS Code を起動し、操作する道具を返却する */
 async function startVscode(
   options: LaunchOptions,
   dirs: SessionDirs,
@@ -389,7 +389,7 @@ async function startVscode(
     },
     timeout: WAIT_TIMEOUT_MS * 2,
   });
-  // `http`・`https` 以外の URL（`file:` など）を開く操作の代役: 渡された URL を記録するだけにする
+  // `http`・`https` 以外の URL（`file:` など）を開く操作の代役: 指定された URL を記録するだけにする
   // 起動直後は Electron のメインプロセスへの評価が破棄されることがあるため、成功するまで繰り返す
   for (let attempt = 1; ; attempt += 1) {
     try {
@@ -435,7 +435,7 @@ async function startVscode(
   /** コマンドパレットを開いて文字を打ち、先頭の候補を選ぶ */
   const runCommand = async (title: string): Promise<void> => {
     const input = win.locator(".quick-input-box input");
-    // フォーカスが Webview にあると F1 が届かないため、開けなかったらエディタへフォーカスを戻して押し直す
+    // フォーカスが Webview にあると F1 が届かないため、開けなかったらエディタへフォーカスを戻してもう一度押す
     for (let attempt = 0; attempt < PALETTE_OPEN_ATTEMPTS; attempt += 1) {
       await win.keyboard.press("F1");
       const opened = await input
@@ -458,7 +458,7 @@ async function startVscode(
     await win.keyboard.press("Enter");
   };
 
-  /** 開いているテキストエディタの文字を打つ場所にフォーカスを置く */
+  /** 開いているテキストエディタの文字を打つ場所にフォーカスを配置する */
   const focusEditor = async (): Promise<void> => {
     await win
       .locator(".editor-instance .monaco-editor .view-lines")
@@ -598,7 +598,7 @@ async function startVscode(
 /** 見出し・表・注意書き・流れ図を持つ見本の Markdown */
 export async function guideMarkdown(): Promise<string> {
   const sample = await readFile(
-    join(REPO_ROOT, "docs", "使い方", "図を描く", "見本.md"),
+    join(REPO_ROOT, "docs", "使用方法", "図を描く", "見本.md"),
     "utf8",
   );
   const flow = /```json\n([\s\S]*?)\n```/.exec(sample)?.[1];
@@ -655,7 +655,7 @@ export function useVscodeE2E(): {
   let built: BuiltExtension | undefined;
   let stub: Stub | undefined;
   let session: VscodeSession | undefined;
-  // VS Code の画面を操るため、1 つのブラウザのプロジェクトだけで流し、
+  // VS Code の画面を操るため、1 つのブラウザのプロジェクトだけで実行し、
   test.skip(
     ({ browserName }) => browserName !== "chromium",
     "ブラウザのプロジェクトに依らないシナリオなので chromium のプロジェクトだけで流す",
@@ -726,11 +726,11 @@ export async function saveEditor(session: VscodeSession): Promise<void> {
   await session.win.keyboard.press("Control+S");
 }
 
-// 長い文書の節の数と、1 つの節の行数（見出し 1 行・空行 1 行・40 の段落 × 2 行）
+// 長い文書のセクションの数と、1 つのセクションの行数（見出し 1 行・空行 1 行・40 の段落 × 2 行）
 export const SECTIONS = 10;
 export const SECTION_LINES = 82;
 
-/** 見出しで区切った 10 の節を持ち、画面の高さの 3 倍を超える Markdown */
+/** 見出しで区切った 10 のセクションを持ち、画面の高さの 3 倍を超える Markdown */
 export function longDocument(): string {
   return Array.from({ length: SECTIONS }, (_, section) =>
     [
@@ -758,7 +758,7 @@ export type LibraryServer = {
   close: () => Promise<void>;
 };
 
-/** `delayMs` 遅らせてモジュールを返す代役の配信を立てる */
+/** `delayMs` 遅らせてモジュールを返却する代役の配信を起動する */
 export async function startLibraryServer(options: {
   delayMs: number;
 }): Promise<LibraryServer> {
@@ -794,13 +794,13 @@ export async function startLibraryServer(options: {
 
 /** `window.print` の呼び出しの記録 */
 export type PrintCall = {
-  /** 呼ばれた時に描き終えていた外部ライブラリの印の場所の数 */
+  /** 呼ばれた時に描き終えていた外部ライブラリのマーカーの場所の数 */
   drawn: number;
   /** 呼ばれた時の `details` の開閉 */
   details: boolean[];
 };
 
-/** 書き出した HTML のページで、`window.print` を、前後に `beforeprint`・`afterprint` を送って呼び出しを記録する関数に替える（ページを開く前に呼ぶ） */
+/** 書き出した HTML のページで、`window.print` を、前後に `beforeprint`・`afterprint` を送信して呼び出しを記録する関数に替える（ページを開く前に呼ぶ） */
 export async function recordPrint(page: Page): Promise<void> {
   await page.addInitScript(() => {
     const target = window as unknown as { __prints: unknown[] };
@@ -826,7 +826,7 @@ export function printCalls(page: Page): Promise<PrintCall[]> {
   );
 }
 
-/** エディタの先頭の行が 300 ms 変わらなくなるまで待ち、その行を返す */
+/** エディタの先頭の行が 300 ms 変わらなくなるまで待ち、その行を返却する */
 async function settledTop(session: VscodeSession): Promise<number> {
   let last = await session.editorTopLine();
   for (let attempt = 0; attempt < 50; attempt += 1) {
@@ -840,7 +840,7 @@ async function settledTop(session: VscodeSession): Promise<number> {
   throw new Error("エディタのスクロールが止まらない");
 }
 
-/** エディタの先頭の行が `line` 以降になるまで 1 行ずつ下へ動かし、止まった先頭の行を返す */
+/** エディタの先頭の行が `line` 以降になるまで 1 行ずつ下へ動かし、止まった先頭の行を返却する */
 export async function scrollEditorTo(
   session: VscodeSession,
   line: number,
@@ -857,7 +857,7 @@ export async function scrollEditorTo(
   throw new Error(`エディタの先頭が ${line} 行目にならない`);
 }
 
-/** ワークスペースの設定（`.vscode/settings.json`）に `patch` を重ねて書く。VS Code が設定ファイルの変更を読み、設定画面で値を変えたときと同じ変更の知らせが拡張機能に届く */
+/** ワークスペースの設定（`.vscode/settings.json`）に `patch` を重ねて書き込む。VS Code が設定ファイルの変更を読み込み、設定画面で値を変えたときと同じ変更の通知が拡張機能に届く */
 export async function updateWorkspaceSettings(
   session: VscodeSession,
   patch: Record<string, unknown>,

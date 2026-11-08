@@ -19,23 +19,23 @@ export const VIEW_TABLE = [
   ...VIEW_ITEMS.map((item) => `| ${item.題} | ${item.状態} | ${item.担当} |`),
 ].join("\n");
 
-/** ビューの印の引数を指定して、見本の表を囲んだ文書にする。`paragraph` があれば、後ろに段落を足す */
+/** ビューのマーカーの引数を指定して、見本の表を囲んだ文書にする。`paragraph` があれば、後ろに段落を追加する */
 export function viewMarkdown(args: string, paragraph?: string): string {
   const view = `<!-- view: ${args} -->\n\n${VIEW_TABLE}\n\n<!-- /view -->\n`;
   return paragraph === undefined ? view : `${view}\n${paragraph}\n`;
 }
 
-/** ボードの列の見出しの値を、並びの順に返す */
+/** ボードの列の見出しの値を、並びの順に返却する */
 export function columnNames(page: Page): Promise<string[]> {
   return page.locator("#doc .mdmark-view-column-name").allTextContents();
 }
 
-/** ボードの列の見出しの項目の数を、並びの順に返す */
+/** ボードの列の見出しの項目の数を、並びの順に返却する */
 export function columnCounts(page: Page): Promise<string[]> {
   return page.locator("#doc .mdmark-view-column-count").allTextContents();
 }
 
-/** 表形式のビューの隠れていない本文の行の、指定した列（1 から）の文字を上から並べて返す */
+/** 表形式のビューの隠れていない本文の行の、指定した列（1 から）の文字を上から並べて返却する */
 export function tableColumn(page: Page, column: number): Promise<string[]> {
   return page
     .locator(
@@ -44,7 +44,7 @@ export function tableColumn(page: Page, column: number): Promise<string[]> {
     .allTextContents();
 }
 
-/** ビューの切り替えのボタンを返す */
+/** ビューの切り替えのボタンを返却する */
 export function switchButton(page: Page, mode: "board" | "table") {
   return page.locator(`#doc .mdmark-view-switch-item[data-mode="${mode}"]`);
 }

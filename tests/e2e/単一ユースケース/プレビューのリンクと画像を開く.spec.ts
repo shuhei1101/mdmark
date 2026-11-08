@@ -98,7 +98,7 @@ test("test_normal_when_markdown_link", async () => {
   expect(await session.openedUrls()).toEqual([]);
 });
 
-// ページの中へのリンクを押すと、プレビューの中で見出しへ移り、エディタを開き直さず、ブラウザでも開かない（正常シナリオ（ページの中へのリンク））
+// ページの中へのリンクを押すと、プレビューの中で見出しへ移り、エディタをもう一度開かず、ブラウザでも開かない（正常シナリオ（ページの中へのリンク））
 test("test_normal_when_anchor_link", async () => {
   // 準備
   const session = await e2e.launch({
@@ -166,7 +166,7 @@ test("test_error_when_image_outside_workspace", async () => {
   await expect(frame.locator("h1")).toContainText("外の画像");
 });
 
-/** Webview から読めるローカルのファイルの URL の頭（デコードした後） */
+/** Webview から読み込めるローカルのファイルの URL の頭（デコードした後） */
 const WEBVIEW_RESOURCE =
   /^https:\/\/file\+\.vscode-resource\.vscode-cdn\.net\//;
 
@@ -176,7 +176,7 @@ const PLAY_BUTTON_X = 20;
 /** 動画の左下の角から再生バーの再生ボタンの中までの距離（px） */
 const VIDEO_PLAY_BUTTON_INSET = 28;
 
-/** 動画と音声のプレビューを開き、音声と動画の要素が描かれたフレームを返す */
+/** 動画と音声のプレビューを開き、音声と動画の要素が描かれたフレームを返却する */
 async function openMediaGuide(session: VscodeSession): Promise<Frame> {
   await session.openFile("docs/guide.md");
   await session.openPreviewWithShortcut();
@@ -185,7 +185,7 @@ async function openMediaGuide(session: VscodeSession): Promise<Frame> {
   return frame;
 }
 
-/** 音声と動画の再生ボタンを押し、両方の再生位置が進むことを確かめる */
+/** 音声と動画の再生ボタンを押し、両方の再生位置が進むことを確認する */
 async function expectPlayed(frame: Frame): Promise<void> {
   const audio = frame.locator("audio");
   const video = frame.locator("video");
@@ -228,7 +228,7 @@ async function mediaFiles(): Promise<{ mp3: Buffer; mp4: Buffer }> {
   return { mp3, mp4 };
 }
 
-// Markdown からの相対パスの音声と動画を Webview から読める URL にし、再生ボタンで再生位置が進む（正常シナリオ（相対パスの動画・音声））
+// Markdown からの相対パスの音声と動画を Webview から読み込める URL にし、再生ボタンで再生位置が進む（正常シナリオ（相対パスの動画・音声））
 test("test_normal_when_relative_media", async () => {
   // 準備
   const { mp3, mp4 } = await mediaFiles();
@@ -242,7 +242,7 @@ test("test_normal_when_relative_media", async () => {
   });
   // 実行
   const frame = await openMediaGuide(session);
-  // 検証: src が Webview から読める URL
+  // 検証: src が Webview から読み込める URL
   for (const [selector, path] of [
     ["audio", "/docs/media/demo.mp3"],
     ["video", "/docs/media/demo.mp4"],
@@ -259,7 +259,7 @@ test("test_normal_when_relative_media", async () => {
   await expectPlayed(frame);
 });
 
-// 再生できない音声と動画の場所に知らせの枠と「既定のアプリで開く」のリンクを出し、押すと既定のアプリで開く（異常シナリオ（プレビューで再生できない形式））
+// 再生できない音声と動画の場所に通知ブロックと「既定のアプリで開く」のリンクを出し、押すと既定のアプリで開く（異常シナリオ（プレビューで再生できない形式））
 test("test_error_when_unsupported_media", async () => {
   // 準備
   const session = await e2e.launch({
@@ -273,7 +273,7 @@ test("test_error_when_unsupported_media", async () => {
   await session.openFile("docs/guide.md");
   // 実行
   await session.openPreviewWithShortcut();
-  // 検証: 音声と動画の場所に知らせの枠と既定のアプリで開くリンク
+  // 検証: 音声と動画の場所に通知ブロックと既定のアプリで開くリンク
   const frame = await session.frameWith(".mdmark-notice");
   const notices = frame.locator(".mdmark-notice");
   await expect(notices).toHaveCount(2);
@@ -296,7 +296,7 @@ test("test_error_when_unsupported_media", async () => {
     ]);
 });
 
-// 文書からの相対パスに無い音声と動画を、設定のアセットのルートで探して Webview から読める URL にし、再生ボタンで再生位置が進む（正常シナリオ（アセットのルートの動画・音声））
+// 文書からの相対パスに無い音声と動画を、設定のアセットのルートで探して Webview から読み込める URL にし、再生ボタンで再生位置が進む（正常シナリオ（アセットのルートの動画・音声））
 test("test_normal_when_media_in_asset_root", async () => {
   // 準備
   const { mp3, mp4 } = await mediaFiles();
@@ -311,7 +311,7 @@ test("test_normal_when_media_in_asset_root", async () => {
   });
   // 実行
   const frame = await openMediaGuide(session);
-  // 検証: src がアセットのルートのファイルの Webview から読める URL
+  // 検証: src がアセットのルートのファイルの Webview から読み込める URL
   for (const [selector, path] of [
     ["audio", "/assets/media/intro.mp3"],
     ["video", "/assets/media/intro.mp4"],

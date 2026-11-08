@@ -27,7 +27,7 @@ import {
   test,
 } from "../setup-skill.ts";
 
-// ブラウザを使わないため、1 つのブラウザのプロジェクトだけで流す
+// ブラウザを使用しないため、1 つのブラウザのプロジェクトだけで実行する
 test.skip(
   ({ browserName }) => browserName !== "chromium",
   "ブラウザを使わないシナリオなので chromium のプロジェクトだけで流す",
@@ -37,10 +37,10 @@ test.skip(
 const SESSION = "mdmark-mcp";
 // 文書のフォルダの設定ファイル
 const CONFIG_FILE = "mdmark.config.yaml";
-// 文書のフォルダに置く Markdown
+// 文書のフォルダに配置する Markdown
 const DOCUMENT = { "a.md": "# A\n" };
 
-/** フックが `additionalContext` に渡した文。何も出さなければ `null` */
+/** フックが `additionalContext` に指定した文。何も出さなければ `null` */
 const contextOf = (hook: RunResult): string | null => {
   expect(hook.code).toBe(0);
   if (hook.stdout.trim() === "") {
@@ -70,7 +70,7 @@ const checkOverMcp = async (options: {
   return JSON.parse(result.texts[0] ?? "").issues;
 };
 
-/** 正常シナリオと同じ答えで、端末と文書のフォルダをセットアップし、文書のフォルダに索引と使う側の CSS を足してずれを無くす */
+/** 正常シナリオと同じ回答で、端末と文書のフォルダをセットアップし、文書のフォルダに索引と利用側の CSS を追加してずれを無くす */
 const setUpAll = async (options: {
   pluginDir: string;
   terminal: Terminal;
@@ -96,7 +96,7 @@ const setUpAll = async (options: {
 };
 
 // プラグインを入れ、起動していないことを受け取り、global-setup と setup で用意して、MCP のツールで書き出す（正常シナリオ）
-// ブランチは push 済みであること。tester が release ブランチで `dist/` と `plugin/` の生成物を commit して push した後に流す
+// ブランチは push 済みであること。tester が release ブランチで `dist/` と `plugin/` の生成物を commit して push した後に実行する
 test("test_normal", async ({ builtRoot, terminal, tempDir }) => {
   // 準備
   const dir = await tempDir();
@@ -164,8 +164,8 @@ test("test_normal", async ({ builtRoot, terminal, tempDir }) => {
   expect(existsSync(out)).toBe(true);
 });
 
-// セットアップ済みの端末でプラグインを入れ直すと、global-setup がセッションと端末の設定をそのままにする（正常シナリオ（セットアップ済みの端末で入れ直す））
-// ブランチは push 済みであること。tester が release ブランチで `dist/` と `plugin/` の生成物を commit して push した後に流す
+// セットアップ済みの端末でプラグインをもう一度入れると、global-setup がセッションと端末の設定をそのままにする（正常シナリオ（セットアップ済みの端末でもう一度入れる））
+// ブランチは push 済みであること。tester が release ブランチで `dist/` と `plugin/` の生成物を commit して push した後に実行する
 test("test_normal_when_already_set_up", async ({
   builtRoot,
   terminal,
@@ -202,7 +202,7 @@ test("test_normal_when_already_set_up", async ({
   expect(issues).toEqual([]);
 });
 
-// 止まった常駐サーバーをセッションの開始で知り、global-setup で起動し直して、接続し直したクライアントで check を呼ぶ（異常シナリオ（常駐サーバーが止まっている））
+// 止まった常駐サーバーをセッションの開始で知り、global-setup でもう一度起動して、もう一度接続したクライアントで check を呼ぶ（異常シナリオ（常駐サーバーが止まっている））
 test("test_error_when_server_stopped", async ({
   builtRoot,
   terminal,

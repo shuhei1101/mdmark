@@ -12,10 +12,10 @@ const execFileAsync = promisify(execFile);
 // リポジトリの直下
 const REPO_ROOT = resolve(import.meta.dirname, "../../..");
 
-/** 呼んだ CLI の版を `v0.5.0` と `v0.4.0` にしてビルドしたパッケージ（ワーカーごとに 1 回作る） */
+/** 呼んだ CLI のバージョンを `v0.5.0` と `v0.4.0` にしてビルドしたパッケージ（ワーカーごとに 1 回作る） */
 const test = base.extend<object, { package050: string; package040: string }>({
   package050: [
-    // biome-ignore lint/correctness/noEmptyPattern: Playwright の道具は、第 1 引数の分割代入から依存を読む
+    // biome-ignore lint/correctness/noEmptyPattern: Playwright の道具は、第 1 引数の分割代入から依存を読み込む
     async ({}, use) => {
       const root = await buildDistRoot("v0.5.0");
       await use(root);
@@ -24,7 +24,7 @@ const test = base.extend<object, { package050: string; package040: string }>({
     { scope: "worker" },
   ],
   package040: [
-    // biome-ignore lint/correctness/noEmptyPattern: Playwright の道具は、第 1 引数の分割代入から依存を読む
+    // biome-ignore lint/correctness/noEmptyPattern: Playwright の道具は、第 1 引数の分割代入から依存を読み込む
     async ({}, use) => {
       const root = await buildDistRoot("v0.4.0");
       await use(root);
@@ -34,15 +34,15 @@ const test = base.extend<object, { package050: string; package040: string }>({
   ],
 });
 
-// ブラウザを使わないため、1 つのブラウザのプロジェクトだけで流す
+// ブラウザを使用しないため、1 つのブラウザのプロジェクトだけで実行する
 test.skip(
   ({ browserName }) => browserName !== "chromium",
   "ブラウザを使わないシナリオなので chromium のプロジェクトだけで流す",
 );
-// パッケージの移行の手順をテストごとに差し替えるため、定義した順に 1 つずつ流す
+// パッケージの移行の手順をテストごとに差し替えるため、定義した順に 1 つずつ実行する
 test.describe.configure({ mode: "serial" });
 
-/** 手元の版が古い設定（コメントと、点検が拒まない最上位の知らないキー `legacy` を持つ） */
+/** 手元のバージョンが古い設定（コメントと、点検が拒まない最上位の知らないキー `legacy` を持つ） */
 const OLD_CONFIG = [
   "# mdmark の設定",
   "version: v0.3.0",
@@ -54,10 +54,10 @@ const OLD_CONFIG = [
   "",
 ].join("\n");
 
-/** 版を持たない設定（v0.3.0 までの `init` が置いた設定） */
+/** バージョンを持たない設定（v0.3.0 までの `init` が配置した設定） */
 const CONFIG_WITHOUT_VERSION = OLD_CONFIG.replace("version: v0.3.0\n", "");
 
-/** 手元のフォルダに置く索引と文書 */
+/** 手元のフォルダに配置する索引と文書 */
 const WORK_FILES = {
   "docs/index.yaml": [
     "schema: 2",
@@ -85,7 +85,7 @@ const STEPS_V040 = [
   "",
 ].join("\n");
 
-/** v0.5.0 の手順: 文書の印を書き換える（`destructive` を付けるときは先頭に足す） */
+/** v0.5.0 の手順: 文書のマーカーを書き換える（`destructive` を付けるときは先頭に追加する） */
 function stepsV050(destructive = false): string {
   return [
     "steps:",
@@ -143,7 +143,7 @@ async function createWork(
   return dir;
 }
 
-/** 手元のフォルダの設定と文書を読む */
+/** 手元のフォルダの設定と文書を読み込む */
 async function readWork(dir: string): Promise<{
   config: string;
   a: string;
@@ -156,7 +156,7 @@ async function readWork(dir: string): Promise<{
   };
 }
 
-/** 設定・索引・文書が流す前と同じ中身で、写しのフォルダが無いことを確かめる */
+/** 設定・索引・文書が実行する前と同じ中身で、コピーのフォルダが無いことを確認する */
 async function expectUntouched(dir: string, config = OLD_CONFIG) {
   const work = await readWork(dir);
   expect(work.config).toBe(config);
@@ -165,7 +165,7 @@ async function expectUntouched(dir: string, config = OLD_CONFIG) {
   expect(existsSync(join(dir, ".mdmark"))).toBe(false);
 }
 
-// 2 つの版の手順を版の順に当て、点検を通して版を書き換え、変更履歴と写しの場所を出す（正常シナリオ）
+// 2 つのバージョンの手順をバージョンの順に当て、点検に合格してバージョンを書き換え、変更履歴とコピーの場所を出す（正常シナリオ）
 test("test_normal", async ({ package050, tempDir }) => {
   // 準備
   await setMigrations(package050, migrationFiles());
@@ -191,9 +191,9 @@ test("test_normal", async ({ package050, tempDir }) => {
   expect(lines.some((line) => line.startsWith("  v0.4.0 #40 "))).toBe(true);
   expect(lines.some((line) => line.startsWith("  v0.5.0 #45 "))).toBe(true);
   expect(lines.some((line) => line.startsWith("  v0.3.0 "))).toBe(false);
-  const backup = lines.find((line) => line.startsWith("写し: "));
+  const backup = lines.find((line) => line.startsWith("コピー: "));
   expect(backup).toBeDefined();
-  const backupDir = join(dir, (backup ?? "").slice("写し: ".length));
+  const backupDir = join(dir, (backup ?? "").slice("コピー: ".length));
   expect(await readFile(join(backupDir, "mdmark.config.yaml"), "utf8")).toBe(
     OLD_CONFIG,
   );
@@ -219,7 +219,7 @@ test("test_normal", async ({ package050, tempDir }) => {
   }
 });
 
-// --plan で版ごとの手順・変更履歴・壊す手順を示し、何も書き換えない（正常シナリオ（当てる前に示す））
+// --plan でバージョンごとの手順・変更履歴・壊す手順を示し、何も書き換えない（正常シナリオ（適用する前に示す））
 test("test_normal_when_plan", async ({ package050, tempDir }) => {
   // 準備
   await setMigrations(
@@ -243,7 +243,7 @@ test("test_normal_when_plan", async ({ package050, tempDir }) => {
   await expectUntouched(dir);
 });
 
-// 値を利用者に聞く手順では、標準入力の答えでキーを足す（正常シナリオ（値を聞く手順がある））
+// 値を利用者に聞く手順では、標準入力の回答でキーを追加する（正常シナリオ（値を聞く手順がある））
 test("test_normal_when_value_asked", async ({ package040, tempDir }) => {
   // 準備
   await setMigrations(package040, {
@@ -268,7 +268,7 @@ test("test_normal_when_value_asked", async ({ package040, tempDir }) => {
   expect(config.version).toBe("v0.4.0");
 });
 
-// 設定に version が無いと手元の版を聞き、当てた後に version を足す（正常シナリオ（手元の版を持たない設定））
+// 設定に version が無いと手元のバージョンを聞き、適用した後に version を追加する（正常シナリオ（手元のバージョンを持たない設定））
 test("test_normal_when_version_missing", async ({ package050, tempDir }) => {
   // 準備
   await setMigrations(package050, migrationFiles());
@@ -289,7 +289,7 @@ test("test_normal_when_version_missing", async ({ package050, tempDir }) => {
   expect(actual.b).toBe(expected.b);
 });
 
-// 手元の版が目標の版と同じなら、何も書き換えずに終わる（正常シナリオ（手元の版が目標の版と同じ））
+// 手元のバージョンが目標のバージョンと同じなら、何も書き換えずに終わる（正常シナリオ（手元のバージョンが目標のバージョンと同じ））
 test("test_normal_when_up_to_date", async ({ package050, tempDir }) => {
   // 準備
   await setMigrations(package050, migrationFiles());
@@ -300,12 +300,12 @@ test("test_normal_when_up_to_date", async ({ package050, tempDir }) => {
   // 検証
   expect(result.code).toBe(0);
   expect(result.stdout).toContain(
-    "手元の版が目標の版と同じです。当てる手順はありません",
+    "手元のバージョンが目標のバージョンと同じです。適用する手順はありません",
   );
   await expectUntouched(dir, config);
 });
 
-// 壊す手順の確かめを断ると、何も書き換えずに終わる（正常シナリオ（壊す手順を断る））
+// 壊す手順の確認を断ると、何も書き換えずに終わる（正常シナリオ（壊す手順を断る））
 test("test_normal_when_destructive_declined", async ({
   package050,
   tempDir,
@@ -320,13 +320,13 @@ test("test_normal_when_destructive_declined", async ({
   const result = await runCli(package050, ["upgrade"], dir, "n\n");
   // 検証
   expect(result.code).not.toBe(0);
-  expect(result.stderr).toContain("壊す手順を当ててよいですか");
-  expect(result.stderr).toContain("何も当てていません");
+  expect(result.stderr).toContain("壊す手順を適用してよいですか");
+  expect(result.stderr).toContain("何も適用していません");
   expect(result.stderr).toContain("--yes");
   await expectUntouched(dir);
 });
 
-// call のスクリプトが失敗すると、前の版で当てた分も写しから戻す（異常シナリオ（手順の途中で失敗する））
+// call のスクリプトが失敗すると、前のバージョンで適用した分もコピーから戻す（異常シナリオ（手順の途中で失敗する））
 test("test_error_when_step_fails", async ({ package050, tempDir }) => {
   // 準備
   await setMigrations(
@@ -357,7 +357,7 @@ test("test_error_when_step_fails", async ({ package050, tempDir }) => {
   expect(work.b).toBe(WORK_FILES["docs/b.md"]);
 });
 
-// 当てた後の点検でずれがあると、写しから戻してずれを出す（異常シナリオ（当てた後の点検が通らない））
+// 適用した後の点検でずれがあると、コピーから戻してずれを出す（異常シナリオ（適用した後の点検が通らない））
 test("test_error_when_check_fails", async ({ package050, tempDir }) => {
   // 準備
   await setMigrations(
@@ -390,7 +390,7 @@ test("test_error_when_check_fails", async ({ package050, tempDir }) => {
   expect(work.a).toBe(WORK_FILES["docs/a.md"]);
 });
 
-// 手元の版が目標の版より新しいと、手元の版以上の CLI で呼び直すことを示して終わる（異常シナリオ（手元の版が目標の版より新しい））
+// 手元のバージョンが目標のバージョンより新しいと、手元のバージョン以上の CLI でもう一度呼ぶことを示して終わる（異常シナリオ（手元のバージョンが目標のバージョンより新しい））
 test("test_error_when_local_version_newer", async ({ package050, tempDir }) => {
   // 準備
   await setMigrations(package050, migrationFiles());
@@ -408,7 +408,7 @@ test("test_error_when_local_version_newer", async ({ package050, tempDir }) => {
   await expectUntouched(dir, config);
 });
 
-// --yes なら壊す手順を確かめずに当てる（正常シナリオ（壊す手順を --yes で当てる））
+// --yes なら壊す手順を確認せずに適用する（正常シナリオ（壊す手順を --yes で適用する））
 test("test_normal_when_destructive_with_yes", async ({
   package050,
   tempDir,
@@ -423,7 +423,7 @@ test("test_normal_when_destructive_with_yes", async ({
   const result = await runCli(package050, ["upgrade", "--yes"], dir);
   // 検証
   expect(result.code).toBe(0);
-  expect(result.stderr).not.toContain("壊す手順を当ててよいですか");
+  expect(result.stderr).not.toContain("壊す手順を適用してよいですか");
   const work = await readWork(dir);
   const config = parse(work.config);
   expect(config.renamed).toBe(1);
@@ -432,7 +432,7 @@ test("test_normal_when_destructive_with_yes", async ({
   expect(config.version).toBe("v0.5.0");
 });
 
-// 当てた後の点検で図の定義のずれが見つかると、バックアップから戻し、ずれの行を出して終わる（異常シナリオ（当てた後の点検で図の定義にずれがある））
+// 適用した後の点検で図の定義のずれが見つかると、バックアップから戻し、ずれの行を出して終わる（異常シナリオ（適用した後の点検で図の定義にずれがある））
 test("test_error_when_diagram_drift", async ({ package050, tempDir }) => {
   // 準備
   await setMigrations(package050, migrationFiles());
@@ -510,7 +510,7 @@ test("test_normal_when_parent_config_exists", async ({
   expect(await readFile(settings, "utf8")).toBe(settingsText);
 });
 
-/** リポジトリの `migrations/next/` の手順と全てのスクリプトを、`v0.5.0` の手順として置くパッケージのファイル */
+/** リポジトリの `migrations/next/` の手順と全てのスクリプトを、`v0.5.0` の手順として配置するパッケージのファイル */
 async function nextMigrationFiles(): Promise<Record<string, string>> {
   const nextDir = join(REPO_ROOT, "migrations", "next");
   const scripts: Record<string, string> = {};
@@ -528,7 +528,7 @@ async function nextMigrationFiles(): Promise<Record<string, string>> {
   });
 }
 
-/** v0.2.0 の構造のエイリアスの元の行を書き足した、手元の版が古い設定 */
+/** v0.2.0 の構造のエイリアスの元の行を追記した、手元のバージョンが古い設定 */
 function configWithAliases(rows: string[]): string {
   return `${OLD_CONFIG}${["aliases:", ...rows, ""].join("\n")}`;
 }
@@ -599,7 +599,7 @@ test("test_normal_when_aliases_rows", async ({ package050, tempDir }) => {
   ).toBe(true);
 });
 
-// 種類が 1 つに決まらないエイリアスの元の行があると、手順が失敗して写しから戻し、行を分ける直し方を出す（異常シナリオ（エイリアスの元の行の種類が 1 つに決まらない））
+// 種類が 1 つに決まらないエイリアスの元の行があると、手順が失敗してコピーから戻し、行を分ける修正方法を出す（異常シナリオ（エイリアスの元の行の種類が 1 つに決まらない））
 test("test_error_when_aliases_row_mixed_types", async ({
   package050,
   tempDir,

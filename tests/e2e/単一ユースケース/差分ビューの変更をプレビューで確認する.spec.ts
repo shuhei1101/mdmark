@@ -15,7 +15,7 @@ import {
 
 const e2e = useVscodeE2E();
 
-/** 色を当てたブロックが描かれたプレビューのフレーム */
+/** 色を適用したブロックが描かれたプレビューのフレーム */
 const BLOCK_SELECTOR = "div.mdmark-diff-block";
 
 // Source Control の変更から開いた差分ビューの横に、変更後の文書を描いて変更を色分けする（正常シナリオ）
@@ -53,7 +53,7 @@ test("test_normal_when_commit_diff", async () => {
   await expectBlockDiff(frame);
 });
 
-// 変更後の側を書き換えると、同じパネルで描き直し、書き足した段落が追加の色で出る（正常シナリオ（変更後の側を書き換える））
+// 変更後の側を書き換えると、同じパネルで再描画し、追記した段落が追加の色で出る（正常シナリオ（変更後の側を書き換える））
 test("test_normal_when_modified_side_edited", async () => {
   // 準備
   const session = await e2e.launch({
@@ -63,7 +63,7 @@ test("test_normal_when_modified_side_edited", async () => {
   await openWorkingTreeDiff(session);
   await openDiffPreview(session);
   await expectBlockDiff(await session.frameWith(BLOCK_SELECTOR));
-  // 実行: 変更後の側の末尾に段落を 1 つ書き足す
+  // 実行: 変更後の側の末尾に段落を 1 つ追記する
   await focusModifiedSide(session);
   await session.win.keyboard.press("Control+End");
   await session.win.keyboard.type("\n新しい段落です。");
@@ -80,7 +80,7 @@ test("test_normal_when_modified_side_edited", async () => {
   await expectOneDiffPreviewTab(session);
 });
 
-// 差分に対応しないバージョンを読むと、描けない理由と「リロード」を出し、Markdown と差分ビューは書き換えない（異常シナリオ（差分に対応しないバージョン））
+// 差分に対応しないバージョンを読み込むと、描けない理由と「リロード」を出し、Markdown と差分ビューは書き換えない（異常シナリオ（差分に対応しないバージョン））
 test("test_error_when_version_without_diff", async () => {
   // 準備
   const session = await e2e.launch({

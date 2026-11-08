@@ -11,7 +11,7 @@ import {
 } from "../dev-docs.ts";
 import { findFreePort, withMcpClient, withServe } from "../plugin.ts";
 
-// ブラウザを使わないため、1 つのブラウザのプロジェクトだけで流す
+// ブラウザを使用しないため、1 つのブラウザのプロジェクトだけで実行する
 test.skip(
   ({ browserName }) => browserName !== "chromium",
   "ブラウザを使わないシナリオなので chromium のプロジェクトだけで流す",
@@ -20,10 +20,10 @@ test.skip(
 /** 索引の行 */
 type Guide = { name: string; page: string };
 
-// 文書の書き方の使い方集の名前
+// 文書の記載方法のガイドの名前
 const WRITING_GUIDE = "writing";
 
-/** このリポジトリの `guide/index.yaml` の使い方集の索引の行を読む */
+/** このリポジトリの `guide/index.yaml` のガイドの索引の行を読み込む */
 async function readGuides(): Promise<Guide[]> {
   const index = parse(
     await readFile(join(REPO_ROOT, "guide", "index.yaml"), "utf8"),
@@ -31,7 +31,7 @@ async function readGuides(): Promise<Guide[]> {
   return index.guides;
 }
 
-// instructions の動線に沿って、dev-docs から使い方集の一覧と本文を受け取る（正常シナリオ）
+// instructions の動線に沿って、dev-docs からガイドの一覧と本文を受け取る（正常シナリオ）
 test("test_normal", async ({ builtRoot, tempDir }) => {
   // 準備
   const guides = await readGuides();
@@ -50,7 +50,7 @@ test("test_normal", async ({ builtRoot, tempDir }) => {
   // 検証
   expect(instructions).toContain("search_docs");
   expect(instructions).toContain('source: "mdmark"');
-  expect(instructions).toContain("topic:使い方集");
+  expect(instructions).toContain("topic:ガイド");
   expect(instructions).toContain("check");
   const ids = found.list.map((item) => item.id);
   for (const guide of guides) {

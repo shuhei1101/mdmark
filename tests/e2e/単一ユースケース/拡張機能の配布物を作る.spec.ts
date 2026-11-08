@@ -41,7 +41,7 @@ const NOT_IN_CLONE = [
   "vscode/.vscode-test/",
 ];
 
-/** ワークフローの YAML の、このスペックが使う部分 */
+/** ワークフローの YAML の、このスペックが使用する部分 */
 type Workflow = {
   on: { push: { tags: string[] } };
   jobs: {
@@ -49,17 +49,17 @@ type Workflow = {
   };
 };
 
-// 作業ツリーのクローン、`GitHub CLI` の代役を置く場所（最初のテストが作り、後のテストが使う）
+// 作業ツリーのクローン、`GitHub CLI` の代役を配置する場所（最初のテストが作り、後のテストが使用する）
 let clone = "";
 let binDir = "";
 let ghLog = "";
 
-// ブラウザも VS Code も使わないため、1 つのブラウザのプロジェクトだけで流す
+// ブラウザも VS Code も使用しないため、1 つのブラウザのプロジェクトだけで実行する
 test.skip(
   ({ browserName }) => browserName !== "chromium",
   "ブラウザを使わないシナリオなので chromium のプロジェクトだけで流す",
 );
-// クローンを使い回すため、定義した順に 1 つずつ流す
+// クローンを使い回すため、定義した順に 1 つずつ実行する
 test.describe.configure({ mode: "serial" });
 
 /** クローンした直後の作業ツリー（依存と生成物が無い）の複製を一時フォルダに作る */
@@ -98,7 +98,7 @@ async function createGhStub(): Promise<void> {
   await chmod(script, 0o755);
 }
 
-/** ワークフローの `run` の手順を、GitHub Actions と同じ環境変数で順に流し、止まった手順までの結果を返す。`uses` の手順は流さない */
+/** ワークフローの `run` の手順を、GitHub Actions と同じ環境変数で順に実行し、止まった手順までの結果を返却する。`uses` の手順は実行しない */
 async function runWorkflow(tag: string): Promise<{
   code: number;
   stderr: string;
@@ -177,7 +177,7 @@ test("test_normal", async () => {
   const workflow = parse(
     await readFile(join(clone, WORKFLOW), "utf8"),
   ) as Workflow;
-  // 実行: `vscode-v0.1.0` のタグで、ワークフローの手順を順に流す
+  // 実行: `vscode-v0.1.0` のタグで、ワークフローの手順を順に実行する
   const result = await runWorkflow("vscode-v0.1.0");
   // 検証
   expect(result.code, result.stderr).toBe(0);
@@ -191,7 +191,7 @@ test("test_normal", async () => {
   expect(calls).toContain(
     "release upload vscode-v0.1.0 vscode/mdmark-0.1.0.vsix --clobber",
   );
-  // mdmark 本体のタグ `v{版}` では、このワークフローは起きない
+  // mdmark 本体のタグ `v{バージョン}` では、このワークフローは起きない
   const patterns = workflow.on.push.tags.map(
     (glob) => new RegExp(`^${glob.replaceAll("*", ".*")}$`),
   );

@@ -7,10 +7,10 @@ import {
   removeDistRoot,
 } from "../dist-page.ts";
 
-// ビルドした配布物を置いた作業ツリー
+// ビルドした配布物を配置した作業ツリー
 let builtRoot = "";
 
-// 画面より長い文書（目次の印と 3 つの見出し）
+// 画面より長い文書（目次のマーカーと 3 つの見出し）
 const LONG_MARKDOWN = [
   "<!-- toc -->",
   "",
@@ -39,7 +39,7 @@ test.afterAll(async () => {
   await removeDistRoot(builtRoot);
 });
 
-// 見出しに ID とリンクを付け、目次を置き、目次を押すと節へ移る（正常シナリオ）
+// 見出しに ID とリンクを付け、目次を配置し、目次を押すとセクションへ移る（正常シナリオ）
 test("test_normal", async ({ page }) => {
   // 準備
   await page.setViewportSize({ width: 800, height: 400 });
@@ -68,7 +68,7 @@ test("test_normal", async ({ page }) => {
       `#${id}`,
     );
   }
-  // 実行: 目次の「使い方」を押す
+  // 実行: 目次の「使用方法」を押す
   await toc.locator("a", { hasText: "使い方" }).click();
   // 検証
   expect(decodeURIComponent(new URL(page.url()).hash)).toBe("#使い方");
@@ -90,7 +90,7 @@ test("test_normal_when_github_ids", async ({ page }) => {
   expect(ids).toEqual(["hello-world", "使い方", "使い方-1"]);
 });
 
-// URL に節の ID を付けて開くと、描いた後にその見出しへ移る（正常シナリオ（URL に節の ID を付けて開く））
+// URL にセクションの ID を付けて開くと、描いた後にその見出しへ移る（正常シナリオ（URL にセクションの ID を付けて開く））
 test("test_normal_when_opened_with_fragment", async ({ page }) => {
   // 準備
   await page.setViewportSize({ width: 800, height: 400 });
@@ -101,7 +101,7 @@ test("test_normal_when_opened_with_fragment", async ({ page }) => {
   await expect(page.locator('#doc [id="使い方"]')).toBeInViewport();
 });
 
-/** 長い段落の後に、閉じた節の中の 2 つのタブが、それぞれ見出しを持つ Markdown */
+/** 長い段落の後に、閉じたセクションの中の 2 つのタブが、それぞれ見出しを持つ Markdown */
 const FRAGMENT_TAB_MARKDOWN = [
   ...Array.from({ length: 30 }, (_, i) => `前の段落 ${i + 1}\n`),
   "## 導入",
@@ -126,14 +126,14 @@ const FRAGMENT_TAB_MARKDOWN = [
   ...Array.from({ length: 30 }, (_, i) => `後の段落 ${i + 1}\n`),
 ].join("\n");
 
-// URL の ID が選ばれていないタブの中の見出しを指すと、外側の節を開き、そのタブを選んでから見出しへ移り、`#ID` を変えるとタブも切り替わる（正常シナリオ（タブの中の見出しへ移る））
+// URL の ID が選ばれていないタブの中の見出しを指すと、外側のセクションを開き、そのタブを選んでから見出しへ移り、`#ID` を変えるとタブも切り替わる（正常シナリオ（タブの中の見出しへ移る））
 test("test_normal_when_fragment_in_tab", async ({ page }) => {
   // 準備
   await page.setViewportSize({ width: 800, height: 400 });
   await openPage(page, builtRoot, { hash: "#windows-の注意" });
   // 実行
   await mountDocument(page, { markdown: FRAGMENT_TAB_MARKDOWN });
-  // 検証: 節が開き、Windows のタブを選んで、見出しが画面に入っている
+  // 検証: セクションが開き、Windows のタブを選んで、見出しが画面に入っている
   const section = page.locator('#doc button[aria-controls="section-導入"]');
   const mac = page.getByRole("tab", { name: "macOS" });
   const windows = page.getByRole("tab", { name: "Windows" });
@@ -156,7 +156,7 @@ test("test_normal_when_fragment_in_tab", async ({ page }) => {
 /** 画面より長くなる余白の段落 */
 const FILLER = "余白\n\n".repeat(30);
 
-/** 見出しを持つ画面より長い Markdown: `# 手引き`・`## 導入`・`### 前提`・`## 使い方` と、それぞれの段落（`<!-- toc -->` は書かない） */
+/** 見出しを持つ画面より長い Markdown: `# 手引き`・`## 導入`・`### 前提`・`## 使用方法` と、それぞれの段落（`<!-- toc -->` は記載しない） */
 const SIDE_TOC_MARKDOWN = [
   "# 手引き",
   "",
@@ -180,17 +180,17 @@ const SIDE_TOC_MARKDOWN = [
   FILLER,
 ].join("\n");
 
-/** 右側の目次のパネルを引く */
+/** 右側の目次のパネルを取得する */
 function sidePanel(page: Page): Locator {
   return page.locator("#doc aside.mdmark-side-toc .mdmark-side-toc-panel");
 }
 
-/** パネルが出ているか（hover の出し方は透明にして隠すため、不透明度で見る） */
+/** パネルが出ているか（hover の出し方は透明にして隠すため、不透明度で確認する） */
 async function expectPanelShown(page: Page, shown: boolean): Promise<void> {
   await expect(sidePanel(page)).toHaveCSS("opacity", shown ? "1" : "0");
 }
 
-/** 右側の目次の項目を、見出しの ID で引く */
+/** 右側の目次の項目を、見出しの ID で参照する */
 function sideLink(page: Page, id: string): Locator {
   return sidePanel(page).locator(`a[data-heading-id="${id}"]`);
 }
@@ -208,7 +208,7 @@ async function mountSideToc(
   });
 }
 
-// 見出しの無い文書には右側の目次も目次を出すボタンも置かない（正常シナリオ（見出しの無い文書））
+// 見出しの無い文書には右側の目次も目次を出すボタンも配置しない（正常シナリオ（見出しの無い文書））
 test("test_normal_when_no_headings", async ({ page }) => {
   // 準備・実行
   await openPage(page, builtRoot);
@@ -219,14 +219,14 @@ test("test_normal_when_no_headings", async ({ page }) => {
   await expect(page.locator("#doc p")).toHaveText("段落だけの文書");
 });
 
-// 右端にポインターを置くと右側の目次が出て、項目で見出しへ移り、ポインターを本文へ動かすと隠れる（正常シナリオ（右側の目次をホバーで出す））
+// 右端にポインターを配置すると右側の目次が出て、項目で見出しへ移り、ポインターを本文へ動かすと隠れる（正常シナリオ（右側の目次をホバーで出す））
 test("test_normal_when_side_toc_hovered", async ({ page }) => {
   // 準備
   await mountSideToc(page);
   // 検証: 描いた直後
   await expectPanelShown(page, false);
   await expect(page.locator("#doc nav.mdmark-toc")).toHaveCount(0);
-  // 実行: 右端にポインターを置く
+  // 実行: 右端にポインターを配置する
   await page.locator("#doc .mdmark-side-toc-rail").hover();
   // 検証
   await expectPanelShown(page, true);
@@ -247,7 +247,7 @@ test("test_normal_when_side_toc_hovered", async ({ page }) => {
   await expect(sideLink(page, "導入").locator("xpath=../ul/li/a")).toHaveText(
     "前提",
   );
-  // 実行: 「使い方」を押し、ポインターを本文へ動かす
+  // 実行: 「使用方法」を押し、ポインターを本文へ動かす
   await sideLink(page, "使い方").click();
   await expect(page.locator('#doc [id="使い方"]')).toBeInViewport();
   expect(decodeURIComponent(new URL(page.url()).hash)).toBe("#使い方");
@@ -256,7 +256,7 @@ test("test_normal_when_side_toc_hovered", async ({ page }) => {
   await expectPanelShown(page, false);
 });
 
-// ピン止めすると、ポインターを本文へ動かしても右側の目次が出続け、外すと隠れる（正常シナリオ（右側の目次をピン止めする））
+// ピン止めすると、ポインターを本文へ動かしても右側の目次が出続け、削除すると隠れる（正常シナリオ（右側の目次をピン止めする））
 test("test_normal_when_side_toc_pinned", async ({ page }) => {
   // 準備
   await mountSideToc(page);
@@ -277,7 +277,7 @@ test("test_normal_when_side_toc_pinned", async ({ page }) => {
   await expectPanelShown(page, false);
 });
 
-/** 右端の線の上端の近くにポインターを置く（線は画面より高いため、locator の hover だとスクロールしてしまう） */
+/** 右端の線の上端の近くにポインターを配置する（線は画面より高いため、locator の hover だとスクロールしてしまう） */
 async function hoverRailTop(page: Page): Promise<void> {
   const box = await page.locator("#doc .mdmark-side-toc-rail").boundingBox();
   if (box === null) {
@@ -286,7 +286,7 @@ async function hoverRailTop(page: Page): Promise<void> {
   await page.mouse.move(box.x + box.width / 2, Math.max(box.y, 0) + 8);
 }
 
-/** hover で開く目次の枠の上端に期待する位置: 画面の上端から --mdmark-sticky-top と --mdmark-space を足した位置（px） */
+/** hover で開く目次の枠の上端に期待する位置: 画面の上端から --mdmark-sticky-top と --mdmark-space を追加した位置（px） */
 function expectedPanelTop(page: Page): Promise<number> {
   return page.locator("#doc").evaluate((doc) => {
     const probe = document.createElement("span");
@@ -308,12 +308,12 @@ async function panelTop(page: Page): Promise<number> {
   return box.y;
 }
 
-// 文書の途中でも先頭でも、hover で開く目次を画面の上端寄りの同じ位置に出し、上端にはタイトルを置かず 3 つのボタンを並べる（正常シナリオ（文書の途中で右側の目次をホバーで出す））
+// 文書の途中でも先頭でも、hover で開く目次を画面の上端寄りの同じ位置に出し、上端にはタイトルを配置せず 3 つのボタンを並べる（正常シナリオ（文書の途中で右側の目次をホバーで出す））
 test("test_normal_when_side_toc_hovered_after_scroll", async ({ page }) => {
   // 準備
   await mountSideToc(page);
   const expectedTop = await expectedPanelTop(page);
-  // 実行: 「使い方」の節までスクロールし、右端にポインターを置く
+  // 実行: 「使用方法」のセクションまでスクロールし、右端にポインターを配置する
   await page.locator('#doc [id="使い方"]').scrollIntoViewIfNeeded();
   await hoverRailTop(page);
   // 検証: 上端の構成
@@ -335,7 +335,7 @@ test("test_normal_when_side_toc_hovered_after_scroll", async ({ page }) => {
   await expect(head).not.toContainText("目次");
   // 検証: 文書の途中で開いた枠の上端
   expect(await panelTop(page)).toBeCloseTo(expectedTop, 0);
-  // 実行: ポインターを本文へ動かし、文書の先頭まで戻って右端にポインターを置く
+  // 実行: ポインターを本文へ動かし、文書の先頭まで戻って右端にポインターを配置する
   await page.mouse.move(10, 400);
   await expectPanelShown(page, false);
   await page.evaluate(() => window.scrollTo(0, 0));
@@ -345,7 +345,7 @@ test("test_normal_when_side_toc_hovered_after_scroll", async ({ page }) => {
   expect(await panelTop(page)).toBeCloseTo(expectedTop, 0);
 });
 
-// fixed は目次を出すボタンで開閉し、右端にポインターを置いても出ない（正常シナリオ（右側の目次をサイドバーで出す））
+// fixed は目次を出すボタンで開閉し、右端にポインターを配置しても出ない（正常シナリオ（右側の目次をサイドバーで出す））
 test("test_normal_when_side_toc_fixed", async ({ page }) => {
   // 準備
   await mountSideToc(page, { config: { "side-toc": { mode: "fixed" } } });
@@ -355,7 +355,7 @@ test("test_normal_when_side_toc_fixed", async ({ page }) => {
   await expect(toggle).toBeVisible();
   await expect(toggle).toHaveAttribute("aria-expanded", "false");
   await expect(sidePanel(page)).toBeHidden();
-  // 実行・検証: 右端にポインターを置く
+  // 実行・検証: 右端にポインターを配置する
   await page.locator("#doc .mdmark-side-toc").hover();
   await expect(sidePanel(page)).toBeHidden();
   // 実行・検証: 目次を出すボタンを押す
@@ -387,7 +387,7 @@ test("test_normal_when_side_toc_focused", async ({ page }) => {
   }
   expect(await inAside()).toBe(true);
   await expectPanelShown(page, true);
-  // 実行・検証: 「使い方」へ Tab で移り、Enter で押す
+  // 実行・検証: 「使用方法」へ Tab で移り、Enter で押す
   for (let i = 0; i < 20; i += 1) {
     const id = await page.evaluate(() =>
       document.activeElement?.getAttribute("data-heading-id"),
@@ -405,7 +405,7 @@ test("test_normal_when_side_toc_focused", async ({ page }) => {
   await expectPanelShown(page, false);
 });
 
-// スクロールの位置で、今いる節の項目だけをハイライトする（正常シナリオ（今いる節をハイライトする））
+// スクロールの位置で、今いるセクションの項目だけをハイライトする（正常シナリオ（今いるセクションをハイライトする））
 test("test_normal_when_current_section_highlighted", async ({ page }) => {
   // 準備
   await mountSideToc(page, { config: { "side-toc": { mode: "fixed" } } });
@@ -418,17 +418,17 @@ test("test_normal_when_current_section_highlighted", async ({ page }) => {
   // 検証: 描いた直後
   await expect(current).toHaveCount(1);
   await expect(current).toHaveAttribute("data-heading-id", "手引き");
-  // 実行・検証: 「使い方」の節までスクロールする
+  // 実行・検証: 「使用方法」のセクションまでスクロールする
   await scrollTo("使い方");
   await expect(current).toHaveAttribute("data-heading-id", "使い方");
   await expect(current).toHaveCount(1);
-  // 実行・検証: 「前提」の節まで戻る
+  // 実行・検証: 「前提」のセクションまで戻る
   await scrollTo("前提");
   await expect(current).toHaveAttribute("data-heading-id", "前提");
   await expect(current).toHaveCount(1);
 });
 
-// 閉じた節の中の見出しの項目を押すと、節を開いてから見出しへ移る（正常シナリオ（右側の目次から閉じた節の中へ移る））
+// 閉じたセクションの中の見出しの項目を押すと、セクションを開いてから見出しへ移る（正常シナリオ（右側の目次から閉じたセクションの中へ移る））
 test("test_normal_when_side_toc_into_closed_section", async ({ page }) => {
   // 準備
   await mountSideToc(page, {
@@ -456,7 +456,7 @@ test("test_normal_when_side_toc_into_closed_section", async ({ page }) => {
   expect(decodeURIComponent(new URL(page.url()).hash)).toBe("#注意");
 });
 
-// 知らない出し方は hover として描き、右端にポインターを置くと出る（異常シナリオ（知らない出し方））
+// 知らない出し方は hover として描き、右端にポインターを配置すると出る（異常シナリオ（知らない出し方））
 test("test_error_when_unknown_side_toc_mode", async ({ page }) => {
   // 準備・実行
   await mountSideToc(page, { config: { "side-toc": { mode: "left" } } });
@@ -499,7 +499,7 @@ test("test_normal_when_side_toc_in_narrow_width", async ({ page }) => {
   const box = await sidePanel(page).boundingBox();
   expect(box?.x ?? -1).toBeGreaterThanOrEqual(0);
   expect((box?.x ?? 0) + (box?.width ?? 0)).toBeLessThanOrEqual(390);
-  // 実行・検証: 「使い方」を押す
+  // 実行・検証: 「使用方法」を押す
   await sideLink(page, "使い方").click();
   await expect(page.locator('#doc [id="使い方"]')).toBeInViewport();
   // 検証: 目次が閉じ、本文が覆われていない
@@ -515,7 +515,7 @@ test("test_normal_when_side_toc_in_narrow_width", async ({ page }) => {
   ).toBe(false);
 });
 
-// 表と重なる位置で右側の目次を出す文書: `## 導入` と `## 使い方` の間に、集計の行とピン止めした列を持つ 10 列 30 行の表
+// 表と重なる位置で右側の目次を出す文書: `## 導入` と `## 使用方法` の間に、集計の行とピン止めした列を持つ 10 列 30 行の表
 const SIDE_TOC_TABLE_MARKDOWN = [
   "## 導入",
   "",
@@ -544,11 +544,11 @@ const SIDE_TOC_TABLE_MARKDOWN = [
   FILLER,
 ].join("\n");
 
-// 表の見出し行を画面の上端に留めた位置で右端にポインターを置くと、右側の目次が表より手前に出て、項目で見出しへ移る（正常シナリオ（表と重なる位置で右側の目次をホバーで出す））
+// 表の見出し行を画面の上端に留めた位置で右端にポインターを配置すると、右側の目次が表より手前に出て、項目で見出しへ移る（正常シナリオ（表と重なる位置で右側の目次をホバーで出す））
 test("test_normal_when_side_toc_over_table", async ({ page }) => {
   // 準備
   await mountSideToc(page, { markdown: SIDE_TOC_TABLE_MARKDOWN });
-  // 実行: 表の見出し行が画面の上端に留まるまでスクロールし、右端にポインターを置く
+  // 実行: 表の見出し行が画面の上端に留まるまでスクロールし、右端にポインターを配置する
   await page
     .locator("#doc .mdmark-table table")
     .evaluate((table) =>
@@ -596,7 +596,7 @@ test("test_normal_when_side_toc_over_table", async ({ page }) => {
   });
   expect(zIndexes.cells).toBeGreaterThan(0);
   expect(zIndexes.aside).toBeGreaterThan(zIndexes.cellMax);
-  // 実行・検証: 「使い方」を押す
+  // 実行・検証: 「使用方法」を押す
   await sideLink(page, "使い方").click();
   await expect(page.locator('#doc [id="使い方"]')).toBeInViewport();
   expect(decodeURIComponent(new URL(page.url()).hash)).toBe("#使い方");
@@ -651,7 +651,7 @@ test("test_normal_when_side_toc_scrolled_to_end", async ({ page }) => {
         const box = await rail.boundingBox();
         expect((box?.y ?? 0) + (box?.height ?? 0)).toBeLessThanOrEqual(bottom);
       }
-      // 実行・検証: 末尾で右端にポインターを置く
+      // 実行・検証: 末尾で右端にポインターを配置する
       await hoverRailTop(page);
       await expectPanelShown(page, true);
       expect(await panelTop(page)).toBeCloseTo(
@@ -663,11 +663,11 @@ test("test_normal_when_side_toc_scrolled_to_end", async ({ page }) => {
   }
 });
 
-// 描く先の要素が画面より狭いときも、右端の線と目次の枠を見えている枠の右端から同じ距離に置き、ピン止めすると描く先の要素の中に戻す（正常シナリオ（描く先の要素が画面より狭いときも右側の目次を画面の右端に出す））
+// 描く先の要素が画面より狭いときも、右端の線と目次の枠を見えている枠の右端から同じ距離に配置し、ピン止めすると描く先の要素の中に戻す（正常シナリオ（描く先の要素が画面より狭いときも右側の目次を画面の右端に出す））
 test("test_normal_when_side_toc_at_viewport_edge", async ({ page }) => {
   const gaps: number[] = [];
   for (const where of ["page", "box"] as const) {
-    // 準備: 画面 1600x800 で、ページ全体のスクロールは幅 992px の要素を左端から 312px に、スクロールする要素の中は 1200x600 の中の幅 800px を左に寄せて描く
+    // 準備: 画面 1600x800 で、ページ全体のスクロールは幅 992px の要素を左端から 312px に、スクロールする要素の中は 1200x600 の中の幅 800px を左に配置して描く
     await page.setViewportSize({ width: 1600, height: 800 });
     await openPage(page, builtRoot, {
       hostCss:
@@ -706,7 +706,7 @@ test("test_normal_when_side_toc_at_viewport_edge", async ({ page }) => {
             : document.documentElement.clientWidth,
         };
       });
-    /** 右端の線の右端が描く先の要素の右端より右にあることを確かめ、見えている枠の右端までの距離を控える */
+    /** 右端の線の右端が描く先の要素の右端より右にあることを確認し、見えている枠の右端までの距離を記録する */
     const recordGap = async () => {
       await expect
         .poll(async () => {
@@ -720,12 +720,12 @@ test("test_normal_when_side_toc_at_viewport_edge", async ({ page }) => {
     };
     // 検証: 描いた直後
     await recordGap();
-    // 実行・検証: 「使い方」の節までスクロールした後
+    // 実行・検証: 「使用方法」のセクションまでスクロールした後
     await page.evaluate(() => {
       document.getElementById("使い方")?.scrollIntoView();
     });
     await recordGap();
-    // 実行・検証: 画面の右端にポインターを置くと、線と同じ右端に目次の枠を出す
+    // 実行・検証: 画面の右端にポインターを配置すると、線と同じ右端に目次の枠を出す
     await hoverRailTop(page);
     await expectPanelShown(page, true);
     const panelBox = await sidePanel(page).boundingBox();
@@ -753,7 +753,7 @@ test("test_normal_when_side_toc_at_viewport_edge", async ({ page }) => {
     );
     await page.mouse.move(10, 10);
   }
-  // 検証: 2 通りの置き方 × 描いた直後とスクロールした後の 4 つで、見えている枠の右端までの距離が等しい
+  // 検証: 2 通りの配置方法 × 描いた直後とスクロールした後の 4 つで、見えている枠の右端までの距離が等しい
   for (const gap of gaps) {
     expect(Math.abs(gap - (gaps[0] ?? 0))).toBeLessThanOrEqual(1);
   }

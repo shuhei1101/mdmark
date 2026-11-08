@@ -10,7 +10,7 @@ import {
   removeDistRoot,
 } from "../dist-page.ts";
 
-// ビルドした配布物を置いた作業ツリー
+// ビルドした配布物を配置した作業ツリー
 let builtRoot = "";
 
 // 用語 `ワークスペース`（別名 `WS`）と、別名 `公開関数` の文書 `api`、文書 `guide` を持つ索引
@@ -58,7 +58,7 @@ const API_TARGET = {
   description: "公開関数の一覧",
 };
 
-/** 箱の `name` に `{{語}}` を書いた、フロー図の定義の JSON */
+/** ノードの `name` に `{{単語}}` を記載した、フロー図の定義の JSON */
 function flowDefinition(name: string): string[] {
   return [
     "{",
@@ -91,7 +91,7 @@ test.afterAll(async () => {
   await removeDistRoot(builtRoot);
 });
 
-// 本文の用語・文書の別名の一致を、参照先と位置つきで返し、見出し・コード・リンクの文字は一致にしない（正常シナリオ）
+// 本文の用語・文書の別名の一致を、参照先と位置つきで返却し、見出し・コード・リンクの文字は一致にしない（正常シナリオ）
 test("test_normal", async () => {
   // 準備
   const index = structuredClone(INDEX);
@@ -111,7 +111,7 @@ test("test_normal", async () => {
   // 実行
   const matches = await collectMatchesInNode(builtRoot, { index, documents });
   // 検証
-  // 見出し・コード・リンクの文字は一覧に無く、2 つの節の段落の 4 件が本文の頭からの順に並ぶ
+  // 見出し・コード・リンクの文字は一覧に無く、2 つのセクションの段落の 4 件が本文の頭からの順に並ぶ
   const inGuide = matches.byDocument.guide ?? [];
   expect(inGuide.map((match) => [match.kind, match.id, match.text])).toEqual([
     ["term", "ws", "ワークスペース"],
@@ -138,7 +138,7 @@ test("test_normal", async () => {
     expect(cut(guide, match)).toBe(match.text);
   }
   expect(matches.targets).toEqual([WS_TARGET, API_TARGET]);
-  // 渡した索引と本文は書き換わらない
+  // 指定した索引と本文は書き換わらない
   expect(index).toEqual(INDEX);
   expect(documents).toEqual({ "使い方/guide.md": guide });
 });
@@ -162,7 +162,7 @@ test("test_normal_when_same_target_in_documents", async () => {
   expect(matches.targets).toEqual([WS_TARGET]);
 });
 
-// ほかの文書の用語集の表の用語を一致にし、別の語の一部と表の中は一致にしない（正常シナリオ（用語集の表の用語））
+// ほかの文書の用語集の表の用語を一致にし、別の単語の一部と表の中は一致にしない（正常シナリオ（用語集の表の用語））
 test("test_normal_when_glossary_table", async () => {
   // 準備
   const index: MdmarkIndex = {
@@ -188,7 +188,7 @@ test("test_normal_when_glossary_table", async () => {
   // 実行
   const matches = await collectMatchesInNode(builtRoot, { index, documents });
   // 検証
-  // `印刷` の `印` は一致にならず、`印` の 1 件だけが用語集の表の用語として返る
+  // `印刷` の `マーカー` は一致にならず、`マーカー` の 1 件だけが用語集の表の用語として返る
   expect(matches.byDocument.guide).toEqual([
     {
       kind: "glossary",
@@ -201,11 +201,11 @@ test("test_normal_when_glossary_table", async () => {
       end: 1,
     },
   ]);
-  // 表の中の `印` は、表を持つ文書の一致にならない
+  // 表の中の `マーカー` は、表を持つ文書の一致にならない
   expect(matches.byDocument.glossary).toEqual([]);
 });
 
-// 文書の印でオフにした機能の種類の一致を返さない（正常シナリオ（文書の印で機能がオフ））
+// 文書のマーカーでオフにした機能の種類の一致を返却しない（正常シナリオ（文書のマーカーで機能がオフ））
 test("test_normal_when_feature_off", async () => {
   // 準備
   const index: MdmarkIndex = {
@@ -220,7 +220,7 @@ test("test_normal_when_feature_off", async () => {
   // 実行
   const matches = await collectMatchesInNode(builtRoot, { index, documents });
   // 検証
-  // glossary がオフの guide は、用語を返さず文書の別名だけを返す
+  // glossary がオフの guide は、用語を返却せず文書の別名だけを返却する
   expect(matches.byDocument.guide).toEqual([
     { ...API_TARGET, text: "公開関数", line: 3, start: 8, end: 12 },
   ]);
@@ -232,7 +232,7 @@ test("test_normal_when_feature_off", async () => {
   expect(matches.avoided.memo).toEqual([]);
 });
 
-// 本文に出たやめた言い方を、代わりの用語と本文の位置つきで返す（正常シナリオ（やめた言い方が本文に出る））
+// 本文に出たやめた言い方を、代わりの用語と本文の位置つきで返却する（正常シナリオ（やめた言い方が本文に出る））
 test("test_normal_when_avoided_term", async () => {
   // 準備
   const guide = [
@@ -253,7 +253,7 @@ test("test_normal_when_avoided_term", async () => {
     documents: { "使い方/guide.md": guide },
   });
   // 検証
-  // 1 つ目の節の 2 件と 2 つ目の節の 1 件が出現の全てとして本文の頭からの順に並び、見出し・行内のコードの分は無い
+  // 1 つ目のセクションの 2 件と 2 つ目のセクションの 1 件が出現の全てとして本文の頭からの順に並び、見出し・行内のコードの分は無い
   const avoided = matches.avoided.guide ?? [];
   expect(avoided.map((match) => [match.line, match.start, match.end])).toEqual([
     [3, 0, 3],
@@ -272,7 +272,7 @@ test("test_normal_when_avoided_term", async () => {
   expect(matches.targets).toEqual([WS_TARGET]);
 });
 
-// 埋め込んだ HTML の文字と図の部品の {{語}} も照合し、図の部品では用語だけを一致にする（正常シナリオ（埋め込んだ HTML と図の部品の用語））
+// 埋め込んだ HTML の文字と図の部品の {{単語}} も照合し、図の部品では用語だけを一致にする（正常シナリオ（埋め込んだ HTML と図の部品の用語））
 test("test_normal_when_embedded_html_and_diagram", async () => {
   // 準備
   const guide = [
@@ -305,7 +305,7 @@ test("test_normal_when_embedded_html_and_diagram", async () => {
     documents: { "使い方/guide.md": guide },
   });
   // 検証
-  // HTML の段落・`<mdmark-flow>` の箱・`<!-- flow -->` の箱の 3 件が `ws` で、リンクの文字と図の箱の `{{公開関数}}` は無い
+  // HTML の段落・`<mdmark-flow>` のノード・`<!-- flow -->` のノードの 3 件が `ws` で、リンクの文字と図のノードの `{{公開関数}}` は無い
   const inGuide = matches.byDocument.guide ?? [];
   expect(inGuide.map((match) => [match.id, match.text, match.line])).toEqual([
     ["ws", "ワークスペース", 6],
@@ -317,7 +317,7 @@ test("test_normal_when_embedded_html_and_diagram", async () => {
   }
 });
 
-// 全角と半角・大文字と小文字だけが違う語も一致にし、位置は正規化する前の本文を指す（正常シナリオ（全角と半角・大文字と小文字だけが違う語））
+// 全角と半角・大文字と小文字だけが違う単語も一致にし、位置は正規化する前の本文を指す（正常シナリオ（全角と半角・大文字と小文字だけが違う単語））
 test("test_normal_when_width_and_case_differ", async () => {
   // 準備
   const index: MdmarkIndex = {
@@ -360,7 +360,7 @@ test("test_normal_when_width_and_case_differ", async () => {
   expect(matches.targets).toEqual([WS_TARGET]);
 });
 
-// 渡したエイリアスの一致を種類つきで返し、やめた言い方は代わりの用語を持つ一致にして、引数を書き換えない（正常シナリオ（エイリアスを渡す））
+// 指定したエイリアスの一致を種類つきで返却し、やめた言い方は代わりの用語を持つ一致にして、引数を書き換えない（正常シナリオ（エイリアスを指定する））
 test("test_normal_when_aliases", async () => {
   // 準備
   const index: MdmarkIndex = {

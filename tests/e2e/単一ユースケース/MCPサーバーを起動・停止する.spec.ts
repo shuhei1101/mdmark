@@ -8,7 +8,7 @@ import {
   withServe,
 } from "../plugin.ts";
 
-// ブラウザを使わないため、1 つのブラウザのプロジェクトだけで流す
+// ブラウザを使用しないため、1 つのブラウザのプロジェクトだけで実行する
 test.skip(
   ({ browserName }) => browserName !== "chromium",
   "ブラウザを使わないシナリオなので chromium のプロジェクトだけで流す",
@@ -69,7 +69,7 @@ test("test_normal_when_stop", async ({ builtRoot }) => {
   expect(running).toBe(false);
 });
 
-// ポートをほかのプロセスが使っているとき、理由と修正方法を出して終わり、ほかのプロセスはそのまま待ち受ける（異常シナリオ（ポートが使われている））
+// ポートをほかのプロセスが使用しているとき、理由と修正方法を出して終わり、ほかのプロセスはそのまま待ち受ける（異常シナリオ（ポートが使用されている））
 test("test_error_when_port_in_use", async ({ builtRoot }) => {
   // 準備
   const occupant = createServer();
@@ -98,7 +98,7 @@ test("test_error_when_port_in_use", async ({ builtRoot }) => {
   }
 });
 
-// MDMARK_PORT がポートとして使えない値のとき、理由と修正方法を出して終わる（異常シナリオ（MDMARK_PORT が使えない値））
+// MDMARK_PORT がポートとして使用できない値のとき、理由と修正方法を出して終わる（異常シナリオ（MDMARK_PORT が使用できない値））
 test("test_error_when_port_invalid", async ({ builtRoot }) => {
   // 実行
   const result = await runServeToExit({

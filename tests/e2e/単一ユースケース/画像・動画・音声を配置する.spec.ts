@@ -13,12 +13,12 @@ import {
   routePageFiles,
 } from "../media.ts";
 
-// ビルドした配布物を置いた作業ツリー
+// ビルドした配布物を配置した作業ツリー
 let builtRoot = "";
 // 見本の動画・音声・GIF・poster の画像
 let media: MediaSamples;
 
-// 回り込みを確かめる本文の段落
+// 回り込みを確認する本文の段落
 const PARAGRAPH = "画像の右に回り込む本文の段落です。".repeat(20);
 
 // GIF を撮る間隔（GIF のフレームの間隔 100ms より長い）
@@ -48,7 +48,7 @@ test.beforeEach(async ({ page }) => {
   });
 });
 
-/** 動画・音声・GIF・poster の画像を、ページのオリジンの下で返す */
+/** 動画・音声・GIF・poster の画像を、ページのオリジンの下で返却する */
 async function routeMedia(page: Page): Promise<void> {
   await routePageFiles(page, {
     "demo.mp4": { body: media.mp4, contentType: "video/mp4" },
@@ -69,7 +69,7 @@ async function readContent(page: Page) {
   });
 }
 
-/** 要素の箱 */
+/** 要素のノード */
 async function boxOf(page: Page, selector: string) {
   const box = await page.locator(selector).boundingBox();
   if (!box) {
@@ -78,7 +78,7 @@ async function boxOf(page: Page, selector: string) {
   return { ...box, right: box.x + box.width, bottom: box.y + box.height };
 }
 
-/** GIF の範囲を 500ms 空けて 2 枚撮り、画素が同じかを返す */
+/** GIF の範囲を 500ms 空けて 2 枚撮り、画素が同じかを返却する */
 async function gifStill(page: Page): Promise<boolean> {
   const gif = page.locator("#doc .mdmark-gif");
   const first = await gif.screenshot();
@@ -87,7 +87,7 @@ async function gifStill(page: Page): Promise<boolean> {
   return first.equals(second);
 }
 
-/** GIF を描き、画像を読み終えるまで待つ */
+/** GIF を描き、画像を読み込み終えるまで待つ */
 async function mountGif(page: Page): Promise<void> {
   await routeMedia(page);
   await mountDocument(page, { markdown: "![ビルド](anim.gif)\n" });
@@ -97,7 +97,7 @@ async function mountGif(page: Page): Promise<void> {
   await expect(page.locator("#doc button.mdmark-gif-toggle")).toHaveCount(1);
 }
 
-// 画像の後ろの属性の幅と配置を当て、title をキャプションにし、左に置いた画像の右に本文を回り込ませる（正常シナリオ）
+// 画像の後ろの属性の幅と配置を当て、title をキャプションにし、左に配置した画像の右に本文を回り込ませる（正常シナリオ）
 test("test_normal", async ({ page }) => {
   // 準備
   await page.setViewportSize({ width: 1000, height: 900 });
@@ -113,7 +113,7 @@ test("test_normal", async ({ page }) => {
       "",
     ].join("\n"),
   });
-  // 検証: 1 つ目は図に入り、キャプションと幅 300px で中央に置く
+  // 検証: 1 つ目は図に入り、キャプションと幅 300px で中央に配置する
   const chart = page.locator('#doc figure:has(img[alt="グラフ"])');
   await expect(chart.locator("figcaption")).toHaveText("売上の推移");
   await expect(chart.locator('img[alt="グラフ"]')).toBeVisible();
@@ -123,7 +123,7 @@ test("test_normal", async ({ page }) => {
   const leftGap = chartImage.x - content.left;
   const rightGap = content.right - chartImage.right;
   expect(Math.abs(leftGap - rightGap)).toBeLessThanOrEqual(1);
-  // 検証: 2 つ目は本文の列の 40% の幅で左に置き、後ろの段落が右に回り込む
+  // 検証: 2 つ目は本文の列の 40% の幅で左に配置し、後ろの段落が右に回り込む
   const photo = await boxOf(page, '#doc figure:has(img[alt="写真"])');
   expect(photo.width).toBeCloseTo(content.width * 0.4, 0);
   expect(photo.x).toBeCloseTo(content.left, 0);
@@ -164,7 +164,7 @@ test("test_normal_when_gallery", async ({ page }) => {
   // 検証: 3 列 2 行の格子
   const images = page.locator("#doc .mdmark-gallery img");
   await expect(images).toHaveCount(6);
-  /** 格子の画像の箱の左端と上端（重ならない値の数） */
+  /** 格子の画像のノードの左端と上端（重ならない値の数） */
   const grid = () =>
     images.evaluateAll((elements) => {
       const boxes = elements.map((element) => element.getBoundingClientRect());
@@ -224,7 +224,7 @@ test("test_normal_when_theme_images", async ({ page }) => {
   await expect(light).toBeHidden();
 });
 
-// 拡張子で動画と音声を分け、再生バー付きの video と audio を描き、autoplay の動画に muted を当てる（正常シナリオ（動画と音声））
+// 拡張子で動画と音声を分け、再生バー付きの video と audio を描き、autoplay の動画に muted を適用する（正常シナリオ（動画と音声））
 test("test_normal_when_video_and_audio", async ({ page }) => {
   // 準備
   await openPage(page, builtRoot);
@@ -269,7 +269,7 @@ test("test_normal_when_gif_toggled", async ({ page }) => {
   await openPage(page, builtRoot);
   await mountGif(page);
   const toggle = page.locator("#doc button.mdmark-gif-toggle");
-  // 検証: ボタンは Tab でフォーカスでき、読み上げの名前を持つ
+  // 検証: ボタンは Tab でフォーカスでき、スクリーンリーダー向けの名前を持つ
   await expect(toggle).toHaveAttribute("aria-label", "GIF を停止");
   await expect(toggle).toHaveAttribute("aria-pressed", "false");
   let reached = false;
@@ -312,7 +312,7 @@ test("test_normal_when_reduced_motion", async ({ page }) => {
   expect(await gifStill(page)).toBe(true);
 });
 
-// 読めない属性を書き方の警告にし、読めた配置だけを当て、幅は指定しないときと同じにする（異常シナリオ（読めない属性））
+// 読み込めない属性を記載の警告にし、読み込めた配置だけを当て、幅は指定しないときと同じにする（異常シナリオ（読み込めない属性））
 test("test_error_when_attribute_invalid", async ({ page }) => {
   // 準備
   await page.setViewportSize({ width: 1000, height: 900 });
@@ -332,7 +332,7 @@ test("test_error_when_attribute_invalid", async ({ page }) => {
   const warningBox = await boxOf(page, "#doc .mdmark-syntax-warning");
   const image = await boxOf(page, '#doc img[alt="グラフ"]');
   expect(warningBox.bottom).toBeLessThanOrEqual(image.y);
-  // 検証: 中央に置く
+  // 検証: 中央に配置する
   const content = await readContent(page);
   expect(
     Math.abs(image.x - content.left - (content.right - image.right)),

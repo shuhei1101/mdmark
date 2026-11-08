@@ -14,10 +14,10 @@ import {
 } from "../dist-page.ts";
 import { expectBelow } from "../tooltip.ts";
 
-// 範囲の外に置く `html` のコードブロック
+// 範囲の外に配置する `html` のコードブロック
 const OUTSIDE = ["```html", "<p>範囲の外</p>", "```", ""].join("\n");
 
-// 箱の `data-hint` の文
+// ノードの `data-hint` の文
 const BLOCK_HINT = "返信の種類を 1 つ選ぶ";
 
 // 用語 `意思決定モデル` の意味
@@ -123,9 +123,9 @@ async function readChartItem(page: Page): Promise<void> {
   await expect(tip).toBeHidden();
 }
 
-/** `data-hint` の箱の右上の印・図の箱の `hint` の印にツールチップが出て、HTML の中の用語にフォーカスすると意味のツールチップが出る */
+/** `data-hint` のノードの右上のマーカー・図のノードの `hint` のマーカーにツールチップが出て、HTML の中の用語にフォーカスすると意味のツールチップが出る */
 async function readHintsAndTerm(page: Page): Promise<void> {
-  // `data-hint` の箱だけに右上の印があり、ヒントの無い箱には無い
+  // `data-hint` のノードだけに右上のマーカーがあり、ヒントの無いノードには無い
   const block = page.locator(".mdmark-hint-block");
   await expect(block).toHaveCount(1);
   const mark = block.locator(".mdmark-hint-mark");
@@ -135,7 +135,7 @@ async function readHintsAndTerm(page: Page): Promise<void> {
       .locator(".mdmark-html div", { hasText: "ヒントの無い箱" })
       .locator(".mdmark-hint-mark"),
   ).toHaveCount(0);
-  // 印の外ではツールチップが出ず、ポインターの形は変わらない
+  // マーカーの外ではツールチップが出ず、ポインターの形状は変わらない
   const blockTip = page.locator('[role="tooltip"]', { hasText: BLOCK_HINT });
   await block.hover({ position: { x: 8, y: 8 } });
   await page.waitForTimeout(CLOSE_WAIT_MS);
@@ -143,18 +143,18 @@ async function readHintsAndTerm(page: Page): Promise<void> {
   expect(
     await block.evaluate((element) => getComputedStyle(element).cursor),
   ).not.toBe("help");
-  // 印にポインターを乗せるとツールチップが出る
+  // マーカーにポインターを乗せるとツールチップが出る
   await mark.hover();
   await expect(blockTip).toBeVisible();
   await page.mouse.move(0, 0);
   await expect(blockTip).toBeHidden();
-  // 印にフォーカスすると同じツールチップが出て、Esc で消えてフォーカスは印に残る
+  // マーカーにフォーカスすると同じツールチップが出て、Esc で消えてフォーカスはマーカーに残る
   await mark.focus();
   await expect(blockTip).toBeVisible();
   await page.keyboard.press("Escape");
   await expect(blockTip).toBeHidden();
   await expect(mark).toBeFocused();
-  // 図の箱の hint: 名前の上では出ず、右上の印の上で出る
+  // 図のノードの hint: 名前の上では出ず、右上のマーカーの上で出る
   const info = page.getByRole("button", { name: "「窓口の MCP」の説明" });
   const nodeTip = page.locator('[role="tooltip"]', { hasText: NODE_HINT });
   await page.locator('[data-node="mcp"] .mdmark-diagram-node-name').hover();
@@ -163,7 +163,7 @@ async function readHintsAndTerm(page: Page): Promise<void> {
   await info.hover();
   await expect(nodeTip).toBeVisible();
   await page.mouse.move(0, 0);
-  // HTML の中の用語に下線が引かれ、フォーカスすると用語集の意味が出る
+  // HTML の中の用語に下線が付き、フォーカスすると用語集の意味が出る
   const term = page.locator(".mdmark-html p .mdmark-term");
   await expect(term).toHaveText("意思決定モデル");
   await expect(term).toHaveCSS("text-decoration-style", "dashed");
@@ -172,7 +172,7 @@ async function readHintsAndTerm(page: Page): Promise<void> {
   await expect(page.locator(`[id="${tipId}"]`)).toContainText(TERM_MEANING);
 }
 
-// 印を付けた html のコードブロックを描き、チャートの拡大・縮小・移動、ヒントと用語のツールチップを読む（正常シナリオ）
+// マーカーを付けた html のコードブロックを描き、チャートの拡大・縮小・移動、ヒントと用語のツールチップを読み込む（正常シナリオ）
 test("test_normal", async ({ builtRoot, page }) => {
   // 準備
   await openPage(page, builtRoot);
@@ -188,7 +188,7 @@ test("test_normal", async ({ builtRoot, page }) => {
   ].join("\n");
   // 実行
   await mountDocument(page, { markdown, index: TERM_INDEX });
-  // 検証: 印を付けた HTML はその場の HTML、印の無い html のコードブロックはコードのまま
+  // 検証: マーカーを付けた HTML はその場の HTML、マーカーの無い html のコードブロックはコードのまま
   const html = page.locator("#doc .mdmark-html");
   await expect(html).toHaveCount(1);
   await expect(html.locator("h2")).toHaveText("問い合わせの集計");
@@ -226,7 +226,7 @@ test("test_normal", async ({ builtRoot, page }) => {
   await readHintsAndTerm(page);
 });
 
-// 文書を 1 枚の HTML に書き出し、外への要求を止めて file:// で開いても、チャートとヒントと用語を読める（正常シナリオ（書き出した HTML で読む））
+// 文書を 1 枚の HTML に書き出し、外への要求を止めて file:// で開いても、チャートとヒントと用語を読み込める（正常シナリオ（書き出した HTML で読み込む））
 test("test_normal_when_exported", async ({ builtRoot, tempDir, page }) => {
   // 準備
   const dir = await tempDir();
@@ -263,7 +263,7 @@ test("test_normal_when_exported", async ({ builtRoot, tempDir, page }) => {
   expect(opened.pageErrors()).toEqual([]);
 });
 
-/** 見本の HTML に class `box` の箱を足し、範囲の css と ts を加えた範囲と、範囲の外の同じ class の箱の範囲 */
+/** 見本の HTML に class `box` のノードを追加し、範囲の css と ts を加えた範囲と、範囲の外の同じ class のノードの範囲 */
 function rangeScriptsMarkdown(options: { script?: boolean } = {}): string {
   return [
     rangeMarkdown(
@@ -274,7 +274,7 @@ function rangeScriptsMarkdown(options: { script?: boolean } = {}): string {
   ].join("\n");
 }
 
-/** 範囲の箱の色と、押したときの根の要素の class の付け外しを確かめる */
+/** 範囲のノードの色と、押したときの根の要素の class の付与・解除を確認する */
 async function checkRangeBox(page: Page, root: string): Promise<void> {
   const scope = page.locator(`${root} .mdmark-html[data-html-scope="0"]`);
   const box = scope.locator(".box");
@@ -290,7 +290,7 @@ async function checkRangeBox(page: Page, root: string): Promise<void> {
   await expect(scope).not.toHaveClass(/\bis-open\b/);
 }
 
-// 範囲の css と ts を当てた HTML の中でチャートとヒントと用語を読み、書き出した HTML でも同じように効く（正常シナリオ（範囲のスクリプトと CSS））
+// 範囲の css と ts を適用した HTML の中でチャートとヒントと用語を読み込み、書き出した HTML でも同じように有効になる（正常シナリオ（範囲のスクリプトと CSS））
 test("test_normal_when_range_scripts", async ({ builtRoot, tempDir, page }) => {
   // 準備
   await routeTranspiler(page);
@@ -327,7 +327,7 @@ test("test_normal_when_range_scripts", async ({ builtRoot, tempDir, page }) => {
     ["export", "guide.md", "--out", "out/guide.html"],
     dir,
   );
-  // 検証: 外への要求を止めて開いても同じように効く
+  // 検証: 外への要求を止めて開いても同じように有効になる
   expect(exported.code).toBe(0);
   await page.unrouteAll({ behavior: "ignoreErrors" });
   await page.route(/^https?:\/\//, (route) => route.abort());

@@ -22,7 +22,7 @@ async function documentMarkdown(): Promise<string> {
   return `${CARD_MARKDOWN}\n${await flowMarkdown()}\n本文の段落\n`;
 }
 
-// 固有の部品と CSS を読んだページに、固有の部品が描かれ、固有の CSS の色がフロー図と固有の部品に当たる（正常シナリオ）
+// 固有の部品と CSS を読み込んだページに、固有の部品が描かれ、固有の CSS の色がフロー図と固有の部品に該当する（正常シナリオ）
 test("test_normal", async ({ page, builtRoot }) => {
   // 準備
   await openPage(page, builtRoot, { hostCss: HOST_CSS });
@@ -30,7 +30,7 @@ test("test_normal", async ({ page, builtRoot }) => {
   await registerCard(page);
   // 実行
   await mountDocument(page, { markdown: await documentMarkdown() });
-  // 検証: 固有の部品の場所に、定義の題が描かれる
+  // 検証: 固有の部品の場所に、定義のタイトルが描かれる
   const card = page.locator("#doc .host-card");
   await expect(card).toHaveText("固有の題");
   expect(requests()).toBe(1);
@@ -46,7 +46,7 @@ test("test_normal", async ({ page, builtRoot }) => {
   await expect(page.locator("#doc > p")).toHaveText("本文の段落");
 });
 
-// 固有の CSS と部品を指す設定で書き出した HTML を file:// で開くと、固有の部品が描かれ固有の CSS が当たり、外への要求が 0 件（正常シナリオ（書き出す））
+// 固有の CSS と部品を指す設定で書き出した HTML を file:// で開くと、固有の部品が描かれ固有の CSS が該当し、外への要求が 0 件（正常シナリオ（書き出す））
 test("test_normal_when_export", async ({ builtRoot, tempDir, page }) => {
   // 準備
   const dir = await tempDir();
@@ -82,7 +82,7 @@ test("test_normal_when_export", async ({ builtRoot, tempDir, page }) => {
   expect(opened.externalRequests()).toEqual([]);
 });
 
-// 固有の部品を読まないページでは、印を知らない印として取り除き、フロー図の色は既定のまま本文を描く（正常シナリオ（別の場所の文書））
+// 固有の部品を読み込まないページでは、マーカーを知らないマーカーとして取り除き、フロー図の色は既定のまま本文を描く（正常シナリオ（別の場所の文書））
 test("test_normal_when_other_place", async ({ page, builtRoot }) => {
   // 準備
   await page.emulateMedia({ colorScheme: "light" });
@@ -104,7 +104,7 @@ test("test_normal_when_other_place", async ({ page, builtRoot }) => {
 test.describe("VS Code のプレビュー", () => {
   const e2e = useVscodeE2E();
 
-  // 固有の部品と CSS を指す設定で、VS Code のプレビューにも固有の部品が描かれ、固有の CSS が当たる（正常シナリオ（VS Code のプレビューで当てる））
+  // 固有の部品と CSS を指す設定で、VS Code のプレビューにも固有の部品が描かれ、固有の CSS が該当する（正常シナリオ（VS Code のプレビューで適用する））
   test("test_normal_when_vscode_preview", async () => {
     // 準備
     const session = await e2e.launch({

@@ -35,7 +35,7 @@ function distRequests(): string[] {
     .filter((path) => path !== "/tags");
 }
 
-/** 用語のエイリアスの行を持つ設定ファイル（`extra` の行を `aliases` の後ろに足す） */
+/** 用語のエイリアスの行を持つ設定ファイル（`extra` の行を `aliases` の後ろに追加する） */
 const aliasConfig = (extra: string[] = []) =>
   [
     "aliases:",
@@ -61,12 +61,12 @@ const glossary = (meaning: string) =>
 /** 本文に別名 `レンダリング` を含む Markdown */
 const ALIAS_MARKDOWN = "# 案内\n\nレンダリングの段落\n";
 
-/** 配布物を読めない・バージョンを決められないときの、文書の代わりの表示 */
+/** 配布物を読み込めない・バージョンを決められないときの、文書の代わりの表示 */
 function notice(frame: import("@playwright/test").Frame) {
   return frame.locator(".mdmark-preview-notice");
 }
 
-// Shift+Alt+D で、タグ一覧の最新のバージョンの配布物を読んで横の列に描く（正常シナリオ）
+// Shift+Alt+D で、タグ一覧の最新のバージョンの配布物を読み込んで横の列に描く（正常シナリオ）
 test("test_normal", async () => {
   // 準備
   const stub = e2e.stub();
@@ -94,7 +94,7 @@ test("test_normal", async () => {
   expect(requests).toContain("/mdmark@v0.7.0/dist/index.js");
   expect(requests).toContain("/mdmark@v0.7.0/dist/index.css");
   expect(requests.some((path) => path.includes("vscode-v0.1.0"))).toBe(false);
-  // 前回のバージョンとして残ったことを、タグ一覧が応えない状態のリロードで確かめる
+  // 前回のバージョンとして残ったことを、タグ一覧が応えない状態のリロードで確認する
   stub.setMode({ tags: "hang", dist: "ok" });
   stub.clear();
   // フォーカスがプレビューにあるとコマンドパレットが開かないため、エディタへ戻す
@@ -125,7 +125,7 @@ test("test_normal_when_same_column", async () => {
   await expect(group.locator('.tab[aria-label="guide.md"]')).toHaveCount(1);
 });
 
-// 設定でバージョンを固定すると、タグ一覧を取らずにそのバージョンを読む（正常シナリオ（バージョンを固定する））
+// 設定でバージョンを固定すると、タグ一覧を取らずにそのバージョンを読み込む（正常シナリオ（バージョンを固定する））
 test("test_normal_when_version_pinned", async () => {
   // 準備
   const stub = e2e.stub();
@@ -176,7 +176,7 @@ test("test_normal_when_tags_unreachable", async () => {
   await expect(notice(frame)).toHaveCount(0);
 });
 
-// 配布物を読めないとき、オフラインの理由と「リロード」を出し、Markdown と設定ファイルは書き換えない（異常シナリオ（配布物を読めない））
+// 配布物を読み込めないとき、オフラインの理由と「リロード」を出し、Markdown と設定ファイルは書き換えない（異常シナリオ（配布物を読み込めない））
 test("test_error_when_distribution_unreachable", async () => {
   // 準備
   const markdown = await guideMarkdown();
@@ -241,7 +241,7 @@ test("test_error_when_version_undecidable", async () => {
   expect(distRequests()).toEqual([]);
 });
 
-// マーカーの場所に取り込み先の見出しの中を描き、取り込み先の保存で描き直し、無い取り込み先には書き方の警告を出す（正常シナリオ（取り込む文書を描く））
+// マーカーの場所に取り込み先の見出しの中を描き、取り込み先の保存で再描画し、無い取り込み先には記載の警告を出す（正常シナリオ（取り込む文書を描く））
 test("test_normal_when_includes", async () => {
   // 準備
   const session = await e2e.launch({
@@ -290,7 +290,7 @@ test("test_normal_when_includes", async () => {
   await expect(rerendered.getByText("取り込む前の文です。")).toHaveCount(0);
 });
 
-/** 範囲に html・css・ts を置き、ts が箱を押すと根の要素に class `is-open` を付け外しする文書 */
+/** 範囲に html・css・ts を配置し、ts がノードを押すと根の要素に class `is-open` を付与・解除する文書 */
 const RANGE_SCRIPT_MARKDOWN = [
   "# 範囲のスクリプト",
   "",
@@ -316,7 +316,7 @@ const RANGE_SCRIPT_MARKDOWN = [
   "",
 ].join("\n");
 
-// 範囲の ts をページの nonce を付けた script 要素で動かし、CSP を広げずに範囲の css と ts を当てる（正常シナリオ（範囲のスクリプトと CSS））
+// 範囲の ts をページの nonce を付けた script 要素で動かし、CSP を広げずに範囲の css と ts を適用する（正常シナリオ（範囲のスクリプトと CSS））
 test("test_normal_when_range_scripts", async () => {
   // 準備
   const stub = e2e.stub();
@@ -347,7 +347,7 @@ test("test_normal_when_range_scripts", async () => {
   }).toPass();
   await expect(frame.locator(".mdmark-notice")).toHaveCount(0);
   await expect(frame.locator(".mdmark-syntax-warning")).toHaveCount(0);
-  // 検証: CSP は正常シナリオと同じで、blob:・'unsafe-inline'・'unsafe-eval' を足さない
+  // 検証: CSP は正常シナリオと同じで、blob:・'unsafe-inline'・'unsafe-eval' を追加しない
   const csp =
     (await frame
       .locator('meta[http-equiv="Content-Security-Policy"]')
@@ -367,7 +367,7 @@ test("test_normal_when_range_scripts", async () => {
   expect(scriptSrc).toHaveLength(4);
 });
 
-// 端末の設定・上のフォルダ・近いフォルダの設定を重ね、上のフォルダの theme と extensions をプレビューに当てる（正常シナリオ（設定を重ねる））
+// 端末の設定・上のフォルダ・近いフォルダの設定を重ね、上のフォルダの theme と extensions をプレビューに適用する（正常シナリオ（設定を重ねる））
 test("test_normal_when_cascaded", async () => {
   // 準備・実行
   const opened = await openCascadedPreview(
@@ -381,7 +381,7 @@ test("test_normal_when_cascaded", async () => {
   await expect(opened.frame.locator(".mdmark-config-band")).toHaveCount(0);
 });
 
-// config.cascade が false のとき、近いフォルダの設定と端末の設定だけでプレビューを描く（正常シナリオ（最初の 1 つだけを読む））
+// config.cascade が false のとき、近いフォルダの設定と端末の設定だけでプレビューを描く（正常シナリオ（最初の 1 つだけを読み込む））
 test("test_normal_when_first_only", async () => {
   // 準備・実行
   const opened = await openCascadedPreview(
@@ -393,7 +393,7 @@ test("test_normal_when_first_only", async () => {
   await expectUpperNotApplied(opened.frame);
 });
 
-// 端末の設定を YAML として読めないとき、文書を描いたまま帯に出し、帯から端末の設定を開く（異常シナリオ（設定ファイルを読めない））
+// 端末の設定を YAML として読み込めないとき、文書を描いたまま帯に出し、帯から端末の設定を開く（異常シナリオ（設定ファイルを読み込めない））
 test("test_error_when_config_unreadable", async () => {
   // 準備・実行
   const opened = await openCascadedPreview(
@@ -447,7 +447,7 @@ test("test_normal_when_aliases", async () => {
   await expect(plain.locator(".mdmark-term")).toHaveCount(0);
 });
 
-// aliases の行の YAML が無いとき、その行を除いて描き、出力チャネルに警告を書く（異常シナリオ（aliases の YAML が無い））
+// aliases の行の YAML が無いとき、その行を除いて描き、出力チャネルに警告を記録する（異常シナリオ（aliases の YAML が無い））
 test("test_error_when_aliases_missing", async () => {
   // 準備
   const session = await e2e.launch({
@@ -479,7 +479,7 @@ test("test_error_when_aliases_missing", async () => {
   await expect(frame.locator(".mdmark-config-band")).toHaveCount(0);
 });
 
-// mermaid のコードブロックを図の枠に入れて描き、VS Code の配色をダークに切り替えると暗い配色で描き直す（正常シナリオ（mermaid のコードブロック））
+// mermaid のコードブロックを図の枠に入れて描き、VS Code の配色をダークに切り替えると暗い配色で再描画する（正常シナリオ（mermaid のコードブロック））
 test("test_normal_when_mermaid", async () => {
   // 準備
   const stub = e2e.stub();
@@ -526,7 +526,7 @@ test("test_normal_when_mermaid", async () => {
   await session.win.keyboard.type("Dark Modern");
   await session.win.waitForTimeout(500);
   await session.win.keyboard.press("Enter");
-  // 検証: 暗い配色の CSS 変数で描き直す
+  // 検証: 暗い配色の CSS 変数で再描画する
   await expect
     .poll(
       async () => {

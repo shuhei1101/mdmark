@@ -9,10 +9,10 @@ import {
   routeSyntax,
 } from "../dist-page.ts";
 
-// ビルドした配布物を置いた作業ツリー
+// ビルドした配布物を配置した作業ツリー
 let builtRoot = "";
 
-// 読まないことを確かめるために待つ時間（ミリ秒）
+// 読み込まないことを確認するために待つ時間（ミリ秒）
 const SETTLE_MS = 500;
 
 test.beforeAll(async () => {
@@ -85,12 +85,12 @@ test("test_normal", async ({ page }) => {
   // 検証: バッジ
   await expect(page.locator("#doc .mdmark-badge")).toHaveText("v0.1.0");
   await expect(page.locator("#doc")).not.toContainText("badge:");
-  // 言語 tree のコードブロックは色分けの対象にならず、色分けのライブラリを読まない
+  // 言語 tree のコードブロックは色分けの対象にならず、色分けのライブラリを読み込まない
   await page.waitForTimeout(SETTLE_MS);
   expect(syntaxRequests()).toEqual([]);
 });
 
-// 打ち消した `badge\:` は札にせず、書いたとおりの行内のコードで見せる（正常シナリオ（バッジの書き方を見せる））
+// 打ち消した `badge\:` は札にせず、記載したとおりの行内のコードで見せる（正常シナリオ（バッジの記載方法を見せる））
 test("test_normal_when_badge_escaped", async ({ page }) => {
   // 準備
   await openPage(page, builtRoot);
@@ -101,7 +101,7 @@ test("test_normal_when_badge_escaped", async ({ page }) => {
   await expect(page.locator("#doc .mdmark-badge")).toHaveCount(0);
 });
 
-// 読めない行を持つファイルツリーは、元のコードブロックのまま描き、書き方の警告を出す（異常シナリオ（ファイルツリーに読めない行がある））
+// 読み込めない行を持つファイルツリーは、元のコードブロックのまま描き、記載の警告を出す（異常シナリオ（ファイルツリーに読み込めない行がある））
 test("test_error_when_tree_line_invalid", async ({ page }) => {
   // 準備
   await openPage(page, builtRoot);
@@ -118,7 +118,7 @@ test("test_error_when_tree_line_invalid", async ({ page }) => {
   await expect(page.locator("#doc pre code")).toContainText("└── b");
 });
 
-// 番号付きリストの無いステップの範囲は、中身をそのまま描き、書き方の警告を出す（異常シナリオ（番号付きリストの無いステップの範囲））
+// 番号付きリストの無いステップの範囲は、中身をそのまま描き、記載の警告を出す（異常シナリオ（番号付きリストの無いステップの範囲））
 test("test_error_when_steps_without_ordered_list", async ({ page }) => {
   // 準備
   await openPage(page, builtRoot);
@@ -137,7 +137,7 @@ test("test_error_when_steps_without_ordered_list", async ({ page }) => {
   ]);
 });
 
-// 後ろが空か空白だけの `badge:` は札にせず、書いたとおりの行内のコードで出し、警告も出さない（正常シナリオ（中身の無い badge:））
+// 後ろが空か空白だけの `badge:` は札にせず、記載したとおりの行内のコードで出し、警告も出さない（正常シナリオ（中身の無い badge:））
 test("test_normal_when_badge_empty", async ({ page }) => {
   // 準備
   await openPage(page, builtRoot);
@@ -238,7 +238,7 @@ test("test_normal_when_steps_folded", async ({ page }) => {
   expect(markers).toEqual(["counter(mdmark-step)", "counter(mdmark-step)"]);
 });
 
-// closed と open の両方・closed も open も無い title= は書き方の警告を出し、知らない指定は読み飛ばして、読めた指定だけを当てる（異常シナリオ（ステップの読めない指定））
+// closed と open の両方・closed も open も無い title= は記載の警告を出し、知らない指定はスキップして、読み込めた指定だけを適用する（異常シナリオ（ステップの読み込めない指定））
 test("test_error_when_steps_option_invalid", async ({ page }) => {
   // 準備
   await openPage(page, builtRoot);
@@ -264,7 +264,7 @@ test("test_error_when_steps_option_invalid", async ({ page }) => {
   await expect(warnings).toHaveCount(2);
   await expect(warnings.nth(0)).toContainText("closed");
   await expect(warnings.nth(0)).toContainText("open");
-  // 知らない指定 fold は読み飛ばす
+  // 知らない指定 fold はスキップする
   await expect(warnings.nth(0)).not.toContainText("fold");
   await expect(warnings.nth(1)).not.toContainText("fold");
   await expect(warnings.nth(1)).toContainText("title=");
@@ -279,7 +279,7 @@ test("test_error_when_steps_option_invalid", async ({ page }) => {
   await expect(lists.nth(2).locator("xpath=ancestor::details")).toHaveCount(0);
 });
 
-// `#` の後ろの注釈を列に揃え、拡張子ごとのアイコンを付け、`C#/` と `#notes.md` は割らず、`...` を「ほかにもある」の項目にする（正常シナリオ（ファイルツリーに注釈を書く））
+// `#` の後ろの注釈を列に統一し、拡張子ごとのアイコンを付け、`C#/` と `#notes.md` は割らず、`...` を「ほかにもある」の項目にする（正常シナリオ（ファイルツリーに注釈を記載する））
 test("test_normal_when_tree_annotated", async ({ page }) => {
   // 準備
   await openPage(page, builtRoot);
@@ -312,7 +312,7 @@ test("test_normal_when_tree_annotated", async ({ page }) => {
   }
   const notes = tree.locator(".mdmark-tree-note");
   await expect(notes).toHaveCount(3);
-  // 検証: 3 つの注釈の左端が、階層の深さによらず同じ位置に揃う
+  // 検証: 3 つの注釈の左端が、階層の深さによらず同じ位置に一致する
   const lefts = await notes.evaluateAll((elements) =>
     elements.map((element) => Math.round(element.getBoundingClientRect().left)),
   );
@@ -444,7 +444,7 @@ test("test_normal_when_tree_folders_toggled", async ({ page }) => {
   await expect(nameOf(first, "tree.ts")).toBeVisible();
 });
 
-// ASCII の罫線を今の罫線と同じ段で読み、入れ子のツリーにする（正常シナリオ（ASCII の罫線のファイルツリー））
+// ASCII の罫線を今の罫線と同じ段で読み込み、入れ子のツリーにする（正常シナリオ（ASCII の罫線のファイルツリー））
 test("test_normal_when_tree_ascii", async ({ page }) => {
   // 準備
   await openPage(page, builtRoot);
@@ -475,7 +475,7 @@ test("test_normal_when_tree_ascii", async ({ page }) => {
   await expect(page.locator("#doc .mdmark-syntax-warning")).toHaveCount(0);
 });
 
-// コピーボタンで、閉じたフォルダの中の行も含めた元の罫線のテキストをクリップボードへ書き、ボタンと読み上げで知らせる（正常シナリオ（ファイルツリーをコピーする））
+// コピーボタンで、閉じたフォルダの中の行も含めた元の罫線のテキストをクリップボードへ書き込み、ボタンとスクリーンリーダーで通知する（正常シナリオ（ファイルツリーをコピーする））
 test("test_normal_when_tree_copied", async ({ page }) => {
   // 準備
   await stubClipboard(page, "allow");
@@ -494,7 +494,7 @@ test("test_normal_when_tree_copied", async ({ page }) => {
   await expect(tree.locator('[role="status"]')).toContainText("コピーしました");
 });
 
-// クリップボードに書けなければ、元の罫線のテキストを全て選択したパネルを出し、閉じるボタンと Esc で閉じてフォーカスをコピーボタンへ戻す（異常シナリオ（ファイルツリーをクリップボードに書けない））
+// クリップボードに書き込めなければ、元の罫線のテキストを全て選択したパネルを出し、閉じるボタンと Esc で閉じてフォーカスをコピーボタンへ戻す（異常シナリオ（ファイルツリーをクリップボードに書き込めない））
 test("test_error_when_tree_clipboard_denied", async ({ page }) => {
   // 準備
   await stubClipboard(page, "deny");
@@ -539,7 +539,7 @@ test("test_error_when_tree_clipboard_denied", async ({ page }) => {
   await expect(button).toBeFocused();
 });
 
-// 読めない open= は書き方の警告を出し、既定の開き方（ルートだけ開く）でツリーを描く（異常シナリオ（ファイルツリーの読めない open=））
+// 読み込めない open= は記載の警告を出し、既定の開き方（ルートだけ開く）でツリーを描く（異常シナリオ（ファイルツリーの読み込めない open=））
 test("test_error_when_tree_open_invalid", async ({ page }) => {
   // 準備
   await openPage(page, builtRoot);
@@ -602,7 +602,7 @@ function treeLayout(tree: Locator) {
   });
 }
 
-// wrap のツリーだけを、名前の頭に揃えて項目の中で折り返す（正常シナリオ（ファイルツリーを折り返す））
+// wrap のツリーだけを、名前の頭に統一して項目の中で折り返す（正常シナリオ（ファイルツリーを折り返す））
 test("test_normal_when_tree_wrap", async ({ page }) => {
   // 準備
   await page.setViewportSize({ width: 390, height: 844 });
@@ -632,7 +632,7 @@ test("test_normal_when_tree_wrap", async ({ page }) => {
   expect(plain.name).toHaveLength(1);
 });
 
-// 見出しと段落のアイコン・キー・ルビを、スクリプト無しの見た目で描く（正常シナリオ（アイコン・キー・ルビ））
+// 見出しと段落のアイコン・キー・ルビを、スクリプト無しの外観で描く（正常シナリオ（アイコン・キー・ルビ））
 test("test_normal_when_icon_kbd_ruby", async ({ page }) => {
   // 準備
   await openPage(page, builtRoot);
@@ -666,7 +666,7 @@ test("test_normal_when_icon_kbd_ruby", async ({ page }) => {
   await expect(doc.locator(".mdmark-syntax-warning")).toHaveCount(0);
 });
 
-// 頭の : の前に \ を書いた行内のコードは、書いたとおりの文字で出す（正常シナリオ（アイコンとキーの書き方を見せる））
+// 頭の : の前に \ を記載した行内のコードは、記載したとおりの文字で出す（正常シナリオ（アイコンとキーの記載方法を見せる））
 test("test_normal_when_icon_kbd_escaped", async ({ page }) => {
   // 準備
   await openPage(page, builtRoot);
@@ -682,7 +682,7 @@ test("test_normal_when_icon_kbd_escaped", async ({ page }) => {
   ).toHaveCount(0);
 });
 
-// 名前の書き方に合わないアイコンは、警告を置いて書いたとおりの文字で出す（異常シナリオ（アイコンの名前の書き方が誤っている））
+// 名前の記載方法に合わないアイコンは、警告を配置して記載したとおりの文字で出す（異常シナリオ（アイコンの名前の記載方法が誤っている））
 test("test_error_when_icon_name_invalid", async ({ page }) => {
   // 準備
   await openPage(page, builtRoot);

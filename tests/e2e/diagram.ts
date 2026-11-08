@@ -10,15 +10,21 @@ const execFileAsync = promisify(execFile);
 // リポジトリの直下
 const REPO_ROOT = resolve(import.meta.dirname, "../..");
 // 見本の文書（見本のページはこの文書を描く）
-const SAMPLE_PATH = join(REPO_ROOT, "docs", "使い方", "図を描く", "見本.md");
+const SAMPLE_PATH = join(REPO_ROOT, "docs", "使用方法", "図を描く", "見本.md");
 
-// 使い方『図を描く』（判定フローチャートの定義の例を持つ）
-const GUIDE_PATH = join(REPO_ROOT, "docs", "使い方", "図を描く", "図を描く.md");
+// 使用方法『図を描く』（判定フローチャートの定義の例を持つ）
+const GUIDE_PATH = join(
+  REPO_ROOT,
+  "docs",
+  "使用方法",
+  "図を描く",
+  "図を描く.md",
+);
 
-// 固有の部品のモジュールを返す架空の URL
+// 固有の部品のモジュールを返却する架空の URL
 export const CARD_URL = "https://libs.example.test/card.js";
 
-/** 見本の文書の `json` のコードブロックの並び（書いた順）: フロー図・シーケンス図・グラフ・操作できる部品 */
+/** 見本の文書の `json` のコードブロックの並び（記載した順）: フロー図・シーケンス図・グラフ・操作できる部品 */
 const SAMPLE_BLOCKS = ["inquiry", "inquiry-seq", "reply-time", "strength"];
 
 /** 見本の文書の中身 */
@@ -26,7 +32,7 @@ export async function sampleMarkdown(): Promise<string> {
   return readFile(SAMPLE_PATH, "utf8");
 }
 
-/** 見本の文書の `json` のコードブロックの中身を、名前（`inquiry`・`inquiry-seq`・`reply-time`・`strength`）で返す */
+/** 見本の文書の `json` のコードブロックの中身を、名前（`inquiry`・`inquiry-seq`・`reply-time`・`strength`）で返却する */
 export async function sampleBlock(name: string): Promise<string> {
   const blocks = [
     ...(await sampleMarkdown()).matchAll(/```json\n([\s\S]*?)\n```/g),
@@ -38,7 +44,7 @@ export async function sampleBlock(name: string): Promise<string> {
   return text;
 }
 
-/** 部品の印で囲んだ文書にする */
+/** 部品のマーカーで囲んだ文書にする */
 export function wrapDirective(directive: string, json: string): string {
   return [
     `<!-- ${directive} -->`,
@@ -52,24 +58,24 @@ export function wrapDirective(directive: string, json: string): string {
   ].join("\n");
 }
 
-/** 使い方『図を描く』の判定フローチャートの定義を書いた文書 */
+/** 使用方法『図を描く』の判定フローチャートの定義を記載した文書 */
 export async function judgementMarkdown(): Promise<string> {
   const guide = await readFile(GUIDE_PATH, "utf8");
   const text = [...guide.matchAll(/```json\n([\s\S]*?)\n```/g)]
     .map((match) => match[1] ?? "")
     .find((block) => block.includes('"kind": "question"'));
   if (text === undefined) {
-    throw new Error("使い方『図を描く』に判定フローチャートの定義が無い");
+    throw new Error("使用方法『図を描く』に判定フローチャートの定義が無い");
   }
   return wrapDirective("flow", text);
 }
 
-/** 見本のフロー図の部品の定義を書いた文書 */
+/** 見本のフロー図の部品の定義を記載した文書 */
 export async function flowMarkdown(): Promise<string> {
   return wrapDirective("flow", await sampleBlock("inquiry"));
 }
 
-/** 用語 `意思決定モデル` を持つ索引（見本のフロー図の箱の `{{意思決定モデル}}` の意味になる） */
+/** 用語 `意思決定モデル` を持つ索引（見本のフロー図のノードの `{{意思決定モデル}}` の意味になる） */
 export const TERM_INDEX: MdmarkIndex = {
   schema: 2,
   docs: [],
@@ -82,9 +88,9 @@ export const TERM_INDEX: MdmarkIndex = {
   ],
 };
 
-/** 固有の部品の見本: `// @ts-check` と JSDoc で型を付けた JavaScript。受けた定義の題を要素に書く */
+/** 固有の部品の見本: `// @ts-check` と JSDoc で型を付けた JavaScript。受けた定義のタイトルを要素に記載する */
 export const CARD_SOURCE = `// @ts-check
-// 型は、使う版の dist/ の index.d.ts を ../mdmark/ に置いて読む
+// 型は、使用するバージョンの dist/ の index.d.ts を ../mdmark/ に配置して読み込む
 
 /**
  * \`<!-- card -->\` の範囲の部品の定義の題を描く拡張
@@ -105,18 +111,18 @@ const extension = {
 export default extension;
 `;
 
-/** 固有の部品の定義を書いた文書 */
+/** 固有の部品の定義を記載した文書 */
 export const CARD_MARKDOWN = wrapDirective("card", '{"title": "固有の題"}');
 
 /** 固有の CSS: 固有の部品の文字の色と、フロー図の LLM の色を変える */
 export const HOST_CSS =
   ".host-card { color: rgb(0, 0, 255) } .mdmark { --mdmark-color-diagram-llm: rgb(255, 0, 0) }";
 
-/** 固有の部品のモジュール（`export default` の拡張）を、ページが読む形にした代役 */
+/** 固有の部品のモジュール（`export default` の拡張）を、ページが読み込む構造にした代役 */
 const CARD_MODULE_SOURCE =
   'export default { name: "card", directive: "card", load: async () => ({ draw(slot, value) { slot.className = "host-card"; slot.textContent = value.definition.title; } }) };\n';
 
-/** 固有の部品のモジュールを返す応答に差し替える（`source` を省くと代役）。受けた要求の件数を返す関数を返す */
+/** 固有の部品のモジュールを返却する応答に差し替える（`source` を省くと代役）。受けた要求の件数を返却する関数を返却する */
 export async function routeCard(
   page: Page,
   source: string = CARD_MODULE_SOURCE,
@@ -133,7 +139,7 @@ export async function routeCard(
   return () => requests;
 }
 
-/** ページから、固有の部品のモジュールを読んで、その拡張を登録する */
+/** ページから、固有の部品のモジュールを読み込んで、その拡張を登録する */
 export async function registerCard(page: Page): Promise<void> {
   await page.evaluate(async (url) => {
     const w = window as unknown as {
@@ -142,7 +148,7 @@ export async function registerCard(page: Page): Promise<void> {
     if (!w.mdmark) {
       throw new Error("mdmark が無い");
     }
-    // モジュールの URL は手元の応答が返すため、バンドラーに解決させない
+    // モジュールの URL は手元の応答が返却するため、バンドラーに解決させない
     const importModule = new Function("u", "return import(u)") as (
       u: string,
     ) => Promise<{ default: MdmarkExtension }>;
@@ -150,7 +156,7 @@ export async function registerCard(page: Page): Promise<void> {
   }, CARD_URL);
 }
 
-/** クリップボードの書き込みを、書いた文字を `window.__written` に控える関数（`allow`）か、`NotAllowedError` で拒む関数（`deny`）に差し替える。ページを開く前に呼ぶ */
+/** クリップボードの書き込みを、書き込んだ文字を `window.__written` に記録する関数（`allow`）か、`NotAllowedError` で拒む関数（`deny`）に差し替える。ページを開く前に呼ぶ */
 export async function stubClipboard(
   page: Page,
   mode: "allow" | "deny",
@@ -172,14 +178,14 @@ export async function stubClipboard(
   }, mode);
 }
 
-/** `stubClipboard` が控えた、書いた文字の並び */
+/** `stubClipboard` が記録した、書き込んだ文字の並び */
 export async function writtenTexts(page: Page): Promise<string[]> {
   return page.evaluate(
     () => (window as unknown as { __written: string[] }).__written,
   );
 }
 
-/** ビルドした配布物の型定義（`.d.ts`）を、使う側のフォルダの `mdmark/` に置く */
+/** ビルドした配布物の型定義（`.d.ts`）を、利用側のフォルダの `mdmark/` に配置する */
 export async function placeDeclarations(
   builtRoot: string,
   dir: string,
@@ -201,7 +207,7 @@ async function isDirectory(path: string): Promise<boolean> {
   }
 }
 
-/** フォルダの下の全てのファイルの相対パスを、並べて返す */
+/** フォルダの下の全てのファイルの相対パスを、並べて返却する */
 export async function listFiles(dir: string): Promise<string[]> {
   const entries = await readdir(dir, { recursive: true, withFileTypes: true });
   return entries
@@ -210,7 +216,7 @@ export async function listFiles(dir: string): Promise<string[]> {
     .sort();
 }
 
-/** 使う側のフォルダで `tsc --noEmit` を流した結果 */
+/** 利用側のフォルダで `tsc --noEmit` を実行した結果 */
 export type TscResult = {
   /** 終了コード */
   code: number;
@@ -218,7 +224,7 @@ export type TscResult = {
   stdout: string;
 };
 
-/** フォルダで、作業ツリーの `tsc --noEmit` を流す。誤りがあっても例外を投げず、結果を返す */
+/** フォルダで、作業ツリーの `tsc --noEmit` を実行する。誤りがあっても例外を投げず、結果を返却する */
 export async function runTsc(dir: string): Promise<TscResult> {
   try {
     const { stdout } = await execFileAsync(
@@ -260,7 +266,7 @@ export async function zoomPercent(page: Page): Promise<number> {
   return Number.parseInt(text, 10);
 }
 
-/** 座標を省いた判定フローチャートの定義（開始 1・質問 2・アクション 1・結果 2 のノードと 6 本の線。ノードの座標・線の `points`・図の `width`・`height` を書かない） */
+/** 座標を省いた判定フローチャートの定義（開始 1・質問 2・アクション 1・結果 2 のノードと 6 本の線。ノードの座標・線の `points`・図の `width`・`height` を記載しない） */
 export const JUDGEMENT_AUTO_TEXT: string = JSON.stringify({
   title: "問い合わせの返信の判定",
   scope: "問い合わせを受け取ったとき",
@@ -283,7 +289,7 @@ export const JUDGEMENT_AUTO_TEXT: string = JSON.stringify({
   ],
 });
 
-/** リンク先を持つノードのフロー図の定義。`hrefs` はノード `a`・`b` のリンク先で、ノード `c` はリンク先を持たない。`io` を渡すとノード `a` に入力・処理・出力を持たせる */
+/** リンク先を持つノードのフロー図の定義。`hrefs` はノード `a`・`b` のリンク先で、ノード `c` はリンク先を持たない。`io` を指定するとノード `a` に入力・処理・出力を持たせる */
 export function linkedFlowText(options: {
   hrefs: [string, string];
   io?: boolean;
@@ -319,7 +325,7 @@ export function linkedFlowText(options: {
   });
 }
 
-/** ページの中のリンク先への遷移を手元の応答で受け、開いた URL を返す関数を返す（`urls` に当たる要求だけを受ける） */
+/** ページの中のリンク先への遷移を手元の応答で受け、開いた URL を返却する関数を返却する（`urls` に該当する要求だけを受ける） */
 export async function routeLinkTargets(
   page: Page,
   urls: string[],
@@ -343,7 +349,7 @@ export const FRAME_HINT = "メールの受け取りから返信までを受け�
 /** 見本のフロー図の LLM の層の `hint` */
 export const LANE_HINT = "返信の種類を選び、下書きを書く";
 
-/** 見本のフロー図に、システムの枠と LLM の層の `hint` を足した定義の JSON。`stickyTitles` を渡すとその値も書く */
+/** 見本のフロー図に、システムの枠と LLM の層の `hint` を追加した定義の JSON。`stickyTitles` を指定するとその値も記載する */
 export async function groupFlowText(
   options: { stickyTitles?: boolean } = {},
 ): Promise<string> {

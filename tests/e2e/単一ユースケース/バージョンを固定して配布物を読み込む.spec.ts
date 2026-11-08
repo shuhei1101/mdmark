@@ -3,15 +3,15 @@ import { join } from "node:path";
 import { expect, type Page, test } from "@playwright/test";
 import { buildDistRoot, removeDistRoot } from "../dist-page.ts";
 
-// jsDelivr の GitHub エンドポイントの、版のタグまでの URL
+// jsDelivr の GitHub エンドポイントの、バージョンのタグまでの URL
 const CDN_BASE = "https://cdn.jsdelivr.net/gh/shuhei1101/mdmark";
-// ページを返す架空のオリジン
+// ページを返却する架空のオリジン
 const PAGE_URL = "https://app.example.test/";
 
-// ビルドした配布物を置いた作業ツリー
+// ビルドした配布物を配置した作業ツリー
 let builtRoot = "";
 
-/** 配布物を読むページの HTML を返す。ページが読む版は引数で決める */
+/** 配布物を読み込むページの HTML を返却する。ページが読み込むバージョンは引数で決める */
 function pageHtml(tag: string): string {
   return `<!doctype html>
 <html>
@@ -26,7 +26,7 @@ function pageHtml(tag: string): string {
 </html>`;
 }
 
-/** ページの HTML と、jsDelivr への要求を、手元の応答に差し替える。配信のサーバーは立てない */
+/** ページの HTML と、jsDelivr への要求を、手元の応答に差し替える。配信のサーバーは起動しない */
 async function routeAll(
   page: Page,
   tag: string,
@@ -42,7 +42,7 @@ async function routeAll(
       status,
       body,
       contentType: file?.endsWith(".css") ? "text/css" : "text/javascript",
-      // 別のオリジンのページが module を読むため
+      // 別のオリジンのページが module を読み込むため
       headers: { "access-control-allow-origin": "*" },
     });
   });
@@ -57,7 +57,7 @@ test.afterAll(async () => {
   await removeDistRoot(builtRoot);
 });
 
-// 版を固定した URL で配布物を読み、公開関数と CSS 変数が同じ版になる（正常シナリオ）
+// バージョンを固定した URL で配布物を読み込み、公開関数と CSS 変数が同じバージョンになる（正常シナリオ）
 test("test_normal", async ({ page }) => {
   // 準備
   await routeAll(page, "v0.0.1", async (file) => ({
@@ -82,10 +82,10 @@ test("test_normal", async ({ page }) => {
   ).toBe('"v0.0.1"');
 });
 
-// 配布物を読めなくても本文は表示され、読めなかったことがコンソールに出る（異常シナリオ）
+// 配布物を読み込めなくても本文は表示され、読み込めなかったことがコンソールに出る（異常シナリオ）
 test("test_error_when_dist_not_found", async ({ page }) => {
   // 準備
-  // 読めなかった module を、Chromium は error、Firefox は warning でコンソールに出す
+  // 読み込めなかった module を、Chromium は error、Firefox は warning でコンソールに出す
   const errors: string[] = [];
   page.on("console", (message) => {
     if (message.type() === "error" || message.type() === "warning") {

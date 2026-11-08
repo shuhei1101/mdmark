@@ -14,7 +14,7 @@ import {
   removeDistRoot,
 } from "../dist-page.ts";
 
-// ビルドした配布物を置いた作業ツリー
+// ビルドした配布物を配置した作業ツリー
 let builtRoot = "";
 
 // 棒のグラフの棒の数（系列 2 つ × 項目 4 つ）
@@ -28,7 +28,7 @@ test.afterAll(async () => {
   await removeDistRoot(builtRoot);
 });
 
-/** 図の題・凡例の項目・棒の数・読み上げの名前 */
+/** 図のタイトル・凡例の項目・棒の数・スクリーンリーダー向けの名前 */
 async function summaryOf(figure: Locator) {
   return {
     title: await figure.locator(".mdmark-diagram-title").innerText(),
@@ -38,7 +38,7 @@ async function summaryOf(figure: Locator) {
   };
 }
 
-// 埋め込んだ HTML の中の mdmark-chart を、印で描いたときと同じ棒のグラフにして図の枠に載せ、定義の JSON は残さない（正常シナリオ）
+// 埋め込んだ HTML の中の mdmark-chart を、マーカーで描いたときと同じ棒のグラフにして図の枠に記載し、定義の JSON は残さない（正常シナリオ）
 test("test_normal", async ({ page }) => {
   // 準備
   await openPage(page, builtRoot);
@@ -48,7 +48,7 @@ test("test_normal", async ({ page }) => {
   ].join("\n");
   // 実行
   await mountDocument(page, { markdown });
-  // 検証: 同じ定義を印で描いたものと、題・凡例・棒の数・読み上げの名前が同じ
+  // 検証: 同じ定義をマーカーで描いたものと、タイトル・凡例・棒の数・スクリーンリーダー向けの名前が同じ
   const figures = page.locator(
     '#doc figure.mdmark-diagram[data-diagram="chart"]',
   );
@@ -86,7 +86,7 @@ test("test_normal", async ({ page }) => {
   await expect(page.locator("#doc .mdmark-html")).not.toContainText('"series"');
 });
 
-// 読めない定義の場所だけを書き方の警告にし、正しい定義のチャートと HTML の段落は描く（異常シナリオ（定義を読めない））
+// 読み込めない定義の場所だけを記載の警告にし、正しい定義のチャートと HTML の段落は描く（異常シナリオ（定義を読み込めない））
 test("test_error_when_definition_invalid", async ({ page }) => {
   // 準備
   await openPage(page, builtRoot);
@@ -113,7 +113,7 @@ test("test_error_when_definition_invalid", async ({ page }) => {
   await expect(
     page.locator("#doc svg[role=img] .mdmark-diagram-bar"),
   ).toHaveCount(BAR_COUNT);
-  // 書き方の警告の題・本文も p で描かれるため、警告の外の段落だけを取る
+  // 記載の警告のタイトル・本文も p で描かれるため、警告の外の段落だけを取る
   const paragraph = page.locator(
     "#doc .mdmark-html p:not(.mdmark-syntax-warning p)",
   );
@@ -121,7 +121,7 @@ test("test_error_when_definition_invalid", async ({ page }) => {
   await expect(paragraph).toHaveText("後ろの段落");
 });
 
-// 埋め込んだ HTML の中のドーナツと組み合わせのチャートを、`<!-- chart -->` で描いたときと同じグラフにして図の枠に載せる（正常シナリオ（追加したグラフの種類））
+// 埋め込んだ HTML の中のドーナツと組み合わせのチャートを、`<!-- chart -->` で描いたときと同じグラフにして図の枠に記載する（正常シナリオ（追加したグラフの種類））
 test("test_normal_when_more_chart_types", async ({ page }) => {
   // 準備
   await openPage(page, builtRoot);
@@ -162,7 +162,7 @@ test("test_normal_when_more_chart_types", async ({ page }) => {
   await expect(page.locator("#doc .mdmark-syntax-warning")).toHaveCount(0);
 });
 
-/** 図の凡例の文字と、グラフの読み上げの名前 */
+/** 図の凡例の文字と、グラフのスクリーンリーダー向けの名前 */
 async function shapeOf(figure: Locator) {
   return {
     legend: await figure.locator(".mdmark-diagram-legend li").allInnerTexts(),

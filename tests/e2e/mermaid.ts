@@ -10,11 +10,11 @@ export const MERMAID_DIST = resolve(
 // 設定の `mermaid.url` の既定と同じ、jsDelivr の mermaid の dist までの URL
 export const MERMAID_CDN_DIST =
   "https://cdn.jsdelivr.net/npm/mermaid@12.3.0/dist/";
-// 代役の配信が mermaid の dist を返す経路（jsDelivr と同じパス）
+// 代役の配信が mermaid の dist を返却する経路（jsDelivr と同じパス）
 export const MERMAID_STUB_PATH = "/npm/mermaid@12.3.0/dist/";
 // mermaid の本体のファイル名
 export const MERMAID_ENTRY = "mermaid.esm.min.mjs";
-// mermaid の読み込みと描画を待つ上限（5MB の本体と chunk を読む）
+// mermaid の読み込みと描画を待つ上限（5MB の本体と chunk を読み込む）
 export const MERMAID_WAIT_MS = 60_000;
 
 // 描いた mermaid の図の枠
@@ -57,7 +57,7 @@ export const MERMAID_FLOWCHART = [
   "",
 ].join("\n");
 
-/** jsDelivr の mermaid への要求を手元の dist の応答に差し替え、受けた要求の dist からの相対パスを要求の順に返す関数を返す。`status` が 404 のときは本体に 404 を返す */
+/** jsDelivr の mermaid への要求を手元の dist の応答に差し替え、受けた要求の dist からの相対パスを要求の順に返却する関数を返却する。`status` が 404 のときは本体に 404 を返却する */
 export async function routeMermaid(
   page: Page,
   status: 200 | 404 = 200,
@@ -84,7 +84,7 @@ export async function routeMermaid(
   return () => [...requests];
 }
 
-/** `dir` の下の `vendor/mermaid/` に mermaid の本体と chunk をコピーし、設定に記載する相対パスを返す */
+/** `dir` の下の `vendor/mermaid/` に mermaid の本体と chunk をコピーし、設定に記載する相対パスを返却する */
 export async function copyMermaidDist(dir: string): Promise<string> {
   const target = join(dir, "vendor", "mermaid");
   await cp(join(MERMAID_DIST, MERMAID_ENTRY), join(target, MERMAID_ENTRY));
@@ -110,7 +110,7 @@ export type MermaidColors = {
   bodyFont: string;
 };
 
-/** `scope` の中の `index` 番目の mermaid の SVG（flowchart）の色と、描く先の要素で解決した CSS 変数の色を返す */
+/** `scope` の中の `index` 番目の mermaid の SVG（flowchart）の色と、描く先の要素で解決した CSS 変数の色を返却する */
 export async function mermaidColors(
   page: Page | Frame,
   options: { scope: string; index?: number },

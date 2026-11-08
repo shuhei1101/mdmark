@@ -4,7 +4,7 @@ import { parse } from "yaml";
 import { expect, test, writeFiles } from "../cli.ts";
 import { callTool, withMcpClient } from "../plugin.ts";
 
-// ブラウザを使わないため、1 つのブラウザのプロジェクトだけで流す
+// ブラウザを使用しないため、1 つのブラウザのプロジェクトだけで実行する
 test.skip(
   ({ browserName }) => browserName !== "chromium",
   "ブラウザを使わないシナリオなので chromium のプロジェクトだけで流す",
@@ -44,7 +44,7 @@ async function createFixture(tempDir: () => Promise<string>): Promise<{
   };
 }
 
-// add_template で登録し、list_templates が名前・説明・タグを返す（正常シナリオ（登録する））
+// add_template で登録し、list_templates が名前・説明・タグを返却する（正常シナリオ（登録する））
 test("test_normal_when_registering", async ({ builtRoot, tempDir }) => {
   // 準備
   const { env, templatesDir, work } = await createFixture(tempDir);

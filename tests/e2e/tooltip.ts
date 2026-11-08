@@ -6,16 +6,16 @@ const EDGE_TOLERANCE_PX = 1;
 /** ツールチップが持ち主の上にも下にも収まるよう、描く先の要素の上下に余白を取る CSS */
 export const ROOM_CSS = "#doc { padding-block: 300px; }";
 
-/** 持ち主の上端を画面の上端に揃えるまでスクロールできるよう、描く先の要素の上下に高い余白を取る CSS */
+/** 持ち主の上端を画面の上端に合わせるまでスクロールできるよう、描く先の要素の上下に高い余白を取る CSS */
 export const TALL_CSS = "#doc { padding-block: 600px 1500px; }";
 
-/** 文書をページの上端に置くため、本文の余白を消す CSS */
+/** 文書をページの上端に配置するため、本文の余白を削除する CSS */
 export const TOP_EDGE_CSS = "body { margin: 0; }";
 
 /** 画面に対する要素の範囲 */
 type Box = { x: number; y: number; width: number; height: number };
 
-/** 要素の画面に対する範囲を返す。描かれていなければ投げる */
+/** 要素の画面に対する範囲を返却する。描かれていなければ投げる */
 async function boxOf(locator: Locator): Promise<Box> {
   const box = await locator.boundingBox();
   if (!box) {
@@ -24,7 +24,7 @@ async function boxOf(locator: Locator): Promise<Box> {
   return box;
 }
 
-/** ツールチップの下端が持ち主の上端より上にあることを確かめる */
+/** ツールチップの下端が持ち主の上端より上にあることを確認する */
 export async function expectAbove(options: {
   tip: Locator;
   owner: Locator;
@@ -34,7 +34,7 @@ export async function expectAbove(options: {
   expect(tip.y + tip.height).toBeLessThanOrEqual(owner.y + EDGE_TOLERANCE_PX);
 }
 
-/** ツールチップの上端が持ち主の下端より下にあることを確かめる */
+/** ツールチップの上端が持ち主の下端より下にあることを確認する */
 export async function expectBelow(options: {
   tip: Locator;
   owner: Locator;
@@ -46,7 +46,7 @@ export async function expectBelow(options: {
   );
 }
 
-/** ツールチップの全体が画面の中に収まっていることを確かめる */
+/** ツールチップの全体が画面の中に収まっていることを確認する */
 export async function expectInViewport(options: {
   page: Page;
   tip: Locator;
@@ -66,14 +66,14 @@ export async function expectInViewport(options: {
   );
 }
 
-/** 要素の上端が画面の上端に揃うまでページをスクロールする */
+/** 要素の上端が画面の上端に一致するまでページをスクロールする */
 export async function scrollToTop(locator: Locator): Promise<void> {
   await locator.evaluate((element) => {
     window.scrollBy(0, element.getBoundingClientRect().top);
   });
 }
 
-/** 要素の下端が画面の下端に揃うまでページをスクロールする */
+/** 要素の下端が画面の下端に一致するまでページをスクロールする */
 export async function scrollToBottom(locator: Locator): Promise<void> {
   await locator.evaluate((element) => {
     window.scrollBy(

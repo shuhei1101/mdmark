@@ -25,7 +25,7 @@ import {
   removeDistRoot,
 } from "../dist-page.ts";
 
-// ビルドした配布物を置いた作業ツリー
+// ビルドした配布物を配置した作業ツリー
 let builtRoot = "";
 
 test.beforeAll(async () => {
@@ -53,11 +53,11 @@ async function openTwoRevisions(
   await waitForDiff(page);
 }
 
-// 消した行は赤と `-`、足した行は緑と `+`、対の行で変わった語だけが濃い色で出る（正常シナリオ）
+// 削除した行は赤と `-`、追加した行は緑と `+`、対の行で変わった単語だけが濃い色で出る（正常シナリオ）
 test("test_normal", async ({ page }) => {
   // 準備・実行
   await openTwoRevisions(page);
-  // 検証: 行の色と印
+  // 検証: 行の色とマーカー
   const del = diffLines(page, "del");
   const add = diffLines(page, "add");
   const same = diffLines(page, "same").first();
@@ -74,14 +74,14 @@ test("test_normal", async ({ page }) => {
   await expect(del.first().locator(".mdmark-diff-sign")).toHaveText("-");
   await expect(add.first().locator(".mdmark-diff-sign")).toHaveText("+");
   await expect(same.locator(".mdmark-diff-sign")).toHaveText("");
-  // 読み上げの名前
+  // スクリーンリーダー向けの名前
   await expect(del.first().locator(".mdmark-visually-hidden")).toHaveText(
     "削除した行:",
   );
   await expect(add.first().locator(".mdmark-visually-hidden")).toHaveText(
     "追加した行:",
   );
-  // 語を書き換えた行の対で、変わった語だけが濃い色
+  // 単語を書き換えた行の対で、変わった単語だけが濃い色
   const delWord = page.locator("#doc del.mdmark-diff-word");
   const addWord = page.locator("#doc ins.mdmark-diff-word");
   await expect(delWord).toHaveText("差分");
@@ -95,16 +95,16 @@ test("test_normal", async ({ page }) => {
   await expect(page.locator("#doc .mdmark-diff-lines")).toContainText(
     "よくある質問の変更は、担当者が週に 1 回確かめます。",
   );
-  // 画面の右端のミニマップに、消した行・足した行の印が並ぶ
+  // 画面の右端のミニマップに、削除した行・追加した行のマーカーが並ぶ
   const band = page.locator("body > .mdmark-diff-minimap");
   await expect(band).toHaveCount(1);
   await expect(band.locator('[data-kind="del"]').first()).toBeAttached();
   await expect(band.locator('[data-kind="add"]').first()).toBeAttached();
 });
 
-// 描いた結果の上で色分けする指定を渡すと、後のリビジョンを描いたブロックごとに追加と削除の色を当てる（正常シナリオ（描いた結果の上で色分けする））
+// 描いた結果の上で色分けする指定を指定すると、後のリビジョンを描いたブロックごとに追加と削除の色を適用する（正常シナリオ（描いた結果の上で色分けする））
 test("test_normal_when_rendered", async ({ page }) => {
-  // 準備・実行: 開いた状態で描き、描いた結果の上で色分けする指定も渡す
+  // 準備・実行: 開いた状態で描き、描いた結果の上で色分けする指定も指定する
   await openPage(page, builtRoot);
   await mountDiffDocument(page, {
     markdown: BLOCKS_AFTER,
@@ -124,9 +124,9 @@ test("test_normal_when_rendered", async ({ page }) => {
   await expect(page.locator("#doc .mdmark-diff-line")).toHaveCount(0);
 });
 
-// 前のリビジョンを選び直すと、その 2 つの差分に描き直し、後の欄では古いリビジョンを選べない（正常シナリオ（リビジョンを選び直す））
+// 前のリビジョンをもう一度選ぶと、その 2 つの差分に再描画し、後の欄では古いリビジョンを選べない（正常シナリオ（リビジョンをもう一度選ぶ））
 test("test_normal_when_revisions_changed", async ({ page }) => {
-  // 準備: r2 から見出しを 1 つ書き換えた r3 を足した 3 つのリビジョン
+  // 準備: r2 から見出しを 1 つ書き換えた r3 を追加した 3 つのリビジョン
   const contents = {
     ...DIFF_CONTENTS,
     r3: sampleBody({
@@ -162,7 +162,7 @@ test("test_normal_when_revisions_changed", async ({ page }) => {
   expect(await disabledValues(afterSelect(page))).toEqual(["r1"]);
 });
 
-// 選んだ 2 つの本文が同じなら、赤と緑の行を出さずに変更が無いことを知らせる（正常シナリオ（変更が無い））
+// 選んだ 2 つの本文が同じなら、赤と緑の行を出さずに変更が無いことを通知する（正常シナリオ（変更が無い））
 test("test_normal_when_no_change", async ({ page }) => {
   // 準備
   const same = sampleBody({
@@ -193,14 +193,14 @@ test("test_normal_when_no_change", async ({ page }) => {
   await expect(diffLines(page, "add")).toHaveCount(0);
 });
 
-// `Intl.Segmenter` を持たないブラウザでは、対の行を 1 文字ずつ比べて、変わった文字を濃い色にする（正常シナリオ（語の区切りを持たないブラウザ））
+// `Intl.Segmenter` を持たないブラウザでは、対の行を 1 文字ずつ比べて、変わった文字を濃い色にする（正常シナリオ（単語の区切りを持たないブラウザ））
 test("test_normal_when_no_segmenter", async ({ page }) => {
-  // 準備: ページを開く前に `Intl.Segmenter` を消す（対応ブラウザの Firefox 98〜124 の代わり）
+  // 準備: ページを開く前に `Intl.Segmenter` を削除する（対応ブラウザの Firefox 98〜124 の代わり）
   await page.addInitScript(() => {
     Reflect.deleteProperty(Intl, "Segmenter");
   });
   await openTwoRevisions(page);
-  // 検証: 消した行・足した行は正常シナリオと同じで、変わった文字が濃い色
+  // 検証: 削除した行・追加した行は正常シナリオと同じで、変わった文字が濃い色
   await expect(diffLines(page, "del")).toHaveCount(2);
   await expect(diffLines(page, "add")).toHaveCount(2);
   const delWords = await page
@@ -230,7 +230,7 @@ test("test_normal_when_closed", async ({ page }) => {
   await expect(toggleOf(page)).toHaveAttribute("aria-expanded", "false");
 });
 
-// 長い文書の差分を、ミニマップの帯を押す・押したまま動かすで送る（正常シナリオ（長い文書をミニマップで送る））
+// 長い文書の差分を、ミニマップの帯を押す・押したまま動かすで送信する（正常シナリオ（長い文書をミニマップでスクロールする））
 test("test_normal_when_scrolled_by_minimap", async ({ page }) => {
   // 準備: 変えていない行が多く、前半と後半に変えた行がある 2 つのリビジョン
   const body = (changed: boolean): string => {
@@ -278,7 +278,7 @@ test("test_normal_when_scrolled_by_minimap", async ({ page }) => {
           element.getBoundingClientRect().top >= 0 &&
           element.getBoundingClientRect().bottom <= window.innerHeight,
       );
-  // 実行: 帯の後半の印の位置を押す
+  // 実行: 帯の後半のマーカーの位置を押す
   const lastMark = await band
     .locator(".mdmark-diff-minimap-mark")
     .last()

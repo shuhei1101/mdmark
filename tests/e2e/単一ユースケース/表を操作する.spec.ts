@@ -11,10 +11,10 @@ import {
   treeRow,
 } from "../dist-page.ts";
 
-// ビルドした配布物を置いた作業ツリー
+// ビルドした配布物を配置した作業ツリー
 let builtRoot = "";
 
-// 描く先の要素を狭くして、列の多い表が横にはみ出すようにする使う側の CSS
+// 描く先の要素を狭くして、列の多い表が横にはみ出すようにする利用側の CSS
 const NARROW_HOST_CSS = "#doc { width: 480px; }";
 
 test.beforeAll(async () => {
@@ -41,19 +41,19 @@ function wideTable(): string {
   ].join("\n");
 }
 
-/** 隠れていない本文の行の、指定した列（1 から）の文字を上から並べて返す */
+/** 隠れていない本文の行の、指定した列（1 から）の文字を上から並べて返却する */
 function visibleColumn(page: Page, column: number): Promise<string[]> {
   return page
     .locator(`#doc tbody tr:not([hidden]) td:nth-child(${column})`)
     .allTextContents();
 }
 
-/** 見出しの文字で列の `th` を引く */
+/** 見出しの文字で列の `th` を参照する */
 function head(page: Page, name: string) {
   return page.locator("#doc th", { hasText: name });
 }
 
-// 数値の列の見出しを押すたびに、降順・昇順・元の並びで並べ替え、`+機能` を書かない表にはボタン・集計・行へのリンクを付けない（正常シナリオ）
+// 数値の列の見出しを押すたびに、降順・昇順・元の並びで並べ替え、`+機能` を記載しない表にはボタン・集計・行へのリンクを付けない（正常シナリオ）
 test("test_normal", async ({ page }) => {
   // 準備
   await openPage(page, builtRoot);
@@ -76,7 +76,7 @@ test("test_normal", async ({ page }) => {
   const html = await page.locator("#doc").innerHTML();
   expect(html).not.toContain("<!--");
   await expect(page.locator("#doc")).not.toContainText("table:");
-  // `+機能` を書いた表にだけ付くボタン・集計の行・行へのリンクが無い
+  // `+機能` を記載した表にだけ付くボタン・集計の行・行へのリンクが無い
   for (const selector of [
     ".mdmark-table-count",
     ".mdmark-table-settings-toggle",
@@ -88,7 +88,7 @@ test("test_normal", async ({ page }) => {
   }
 });
 
-// 列の値をチェックボックスで選び、候補を検索して絞り込み、絞り込みを外す（正常シナリオ（列の値を選んで絞り込む））
+// 列の値をチェックボックスで選び、候補を検索して絞り込み、絞り込みを解除する（正常シナリオ（列の値を選んで絞り込む））
 test("test_normal_when_filtered_by_values", async ({ page }) => {
   // 準備
   await page.setViewportSize({ width: 375, height: 667 });
@@ -119,14 +119,14 @@ test("test_normal_when_filtered_by_values", async ({ page }) => {
   await drawer.getByLabel("りんご", { exact: true }).check();
   expect(await visibleColumn(page, 1)).toEqual(["りんご"]);
   await expect(status).toHaveText("（絞り込み中）");
-  // 実行・検証: チェックボックスを全て外す
+  // 実行・検証: チェックボックスを全て削除する
   await drawer.getByLabel("りんご", { exact: true }).uncheck();
   expect(await visibleColumn(page, 1)).toEqual([
     "りんご",
     "みかん",
     "りんご飴",
   ]);
-  // 実行・検証: 選び直して絞り込みを外す
+  // 実行・検証: もう一度選んで絞り込みを解除する
   await drawer.getByLabel("りんご", { exact: true }).check();
   await drawer.getByRole("button", { name: "絞り込みを解除" }).click();
   await expect(search).toHaveValue("");
@@ -258,7 +258,7 @@ test("test_normal_when_closed", async ({ page }) => {
   await expect(closedRows.last()).toBeVisible();
 });
 
-// 印で並べ替えを外した表は、並べ替えのボタンが無く、ピン止めのボタンがある（正常シナリオ（機能を外す））
+// マーカーで並べ替えを削除した表は、並べ替えのボタンが無く、ピン止めのボタンがある（正常シナリオ（機能を解除する））
 test("test_normal_when_feature_removed", async ({ page }) => {
   // 準備
   await openPage(page, builtRoot, { hostCss: NARROW_HOST_CSS });
@@ -273,7 +273,7 @@ test("test_normal_when_feature_removed", async ({ page }) => {
   await expect(page.locator("#doc button.mdmark-sort")).toHaveCount(0);
 });
 
-// 知らない種類は読み飛ばして既定の種類にし、書き方の警告を出さずに +sort を当てる（正常シナリオ（知らない種類））
+// 知らない種類はスキップして既定の種類にし、記載の警告を出さずに +sort を適用する（正常シナリオ（知らない種類））
 test("test_normal_when_unknown_kind", async ({ page }) => {
   // 準備
   await openPage(page, builtRoot, { hostCss: NARROW_HOST_CSS });
@@ -290,7 +290,7 @@ test("test_normal_when_unknown_kind", async ({ page }) => {
   await expect(page.locator("#doc > p")).toHaveText("表の後の段落");
 });
 
-// 閉じの印が無いと、印から文書の終わりまでを範囲にして、2 つの表に機能を付ける（異常シナリオ（閉じの印が無い））
+// 閉じのマーカーが無いと、マーカーから文書の終わりまでを範囲にして、2 つの表に機能を付ける（異常シナリオ（閉じのマーカーが無い））
 test("test_error_when_range_end_missing", async ({ page }) => {
   // 準備
   await openPage(page, builtRoot);
@@ -307,7 +307,7 @@ test("test_error_when_range_end_missing", async ({ page }) => {
   await expect(page.locator("#doc button.mdmark-sort")).toHaveCount(2);
 });
 
-// 知らない機能とキーは読み飛ばし、書き方の警告を出さずに data の機能を付ける（正常シナリオ（知らない機能・キー））
+// 知らない機能とキーはスキップし、記載の警告を出さずに data の機能を付ける（正常シナリオ（知らない機能・キー））
 test("test_normal_when_unknown_feature_or_key", async ({ page }) => {
   // 準備
   await openPage(page, builtRoot, { hostCss: NARROW_HOST_CSS });
@@ -323,7 +323,7 @@ test("test_normal_when_unknown_feature_or_key", async ({ page }) => {
   await expect(page.locator("#doc button.mdmark-sort")).toHaveCount(10);
 });
 
-// 知らない絞り込みの種類は当てず、読める列だけに絞り込みのボタンを付ける（異常シナリオ（知らない絞り込みの種類））
+// 知らない絞り込みの種類は当てず、読み込める列だけに絞り込みのボタンを付ける（異常シナリオ（知らない絞り込みの種類））
 test("test_error_when_unknown_filter_kind", async ({ page }) => {
   // 準備
   await openPage(page, builtRoot);
@@ -346,7 +346,7 @@ test("test_error_when_unknown_filter_kind", async ({ page }) => {
   );
 });
 
-/** 名前・説明・更新日の 3 行の表を、印の引数で囲んだ Markdown */
+/** 名前・説明・更新日の 3 行の表を、マーカーの引数で囲んだ Markdown */
 function fruitTable(mark: string): string {
   return [
     `<!-- table: ${mark} -->`,
@@ -395,7 +395,7 @@ function gripOf(panel: ReturnType<Page["locator"]>, name: string) {
   );
 }
 
-/** 出ている集計の行ごとに、セルの文字を空白を除いて左から並べて返す */
+/** 出ている集計の行ごとに、セルの文字を空白を除いて左から並べて返却する */
 async function totalRows(page: Page): Promise<string[][]> {
   return await page
     .locator("#doc tfoot tr:not([hidden])")
@@ -423,7 +423,7 @@ const TOTALS_MARKDOWN = [
   "",
 ].join("\n");
 
-// 表の上の件数が、絞り込みで行が減ると書き換わり、外すと戻る（正常シナリオ（件数を見る））
+// 表の上の件数が、絞り込みで行が減ると書き換わり、削除すると戻る（正常シナリオ（件数を確認する））
 test("test_normal_when_counting_rows", async ({ page }) => {
   // 準備
   await openPage(page, builtRoot);
@@ -438,7 +438,7 @@ test("test_normal_when_counting_rows", async ({ page }) => {
   await filterByText(page, "説明", "描画");
   await expect(count).toContainText("2 / 3 件");
   await expect(count).toContainText("3 件中 2 件を表示");
-  // 実行・検証: 絞り込みを外す
+  // 実行・検証: 絞り込みを解除する
   await page
     .locator("#doc .mdmark-filter-drawer")
     .getByRole("button", { name: "絞り込みを解除" })
@@ -464,7 +464,7 @@ test("test_normal_when_columns_toggled", async ({ page }) => {
     return (copy.textContent ?? "").trim();
   });
   expect(visibleText).toBe("");
-  // 検証: 描いた直後は説明の列だけが隠れ、隠した列の数 1 のバッジと、読み上げの「（1 列を非表示）」がある
+  // 検証: 描いた直後は説明の列だけが隠れ、隠した列の数 1 のバッジと、スクリーンリーダーの「（1 列を非表示）」がある
   await expect(head(page, "説明")).toBeHidden();
   await expect(head(page, "名前")).toBeVisible();
   await expect(head(page, "更新日")).toBeVisible();
@@ -498,7 +498,7 @@ test("test_normal_when_columns_toggled", async ({ page }) => {
   await expect(toggle).toBeFocused();
 });
 
-// 表の印で囲まない表に続けて、列の表示を持つ 3 列の表と、備考を隠した 2 列の表を置いた文書
+// 表のマーカーで囲まない表に続けて、列の表示を持つ 3 列の表と、備考を隠した 2 列の表を配置した文書
 const COLUMNS_NOTIFY_MARKDOWN = [
   "| 項目 | 値 |",
   "| --- | --- |",
@@ -515,7 +515,7 @@ const COLUMNS_NOTIFY_MARKDOWN = [
   "",
 ].join("\n");
 
-// 列の表示を切り替えるたびに、+columns の表の番号と隠している列を onColumnsChange に渡す（正常シナリオ（列の表示の切り替えを受け取る））
+// 列の表示を切り替えるたびに、+columns の表の番号と隠している列を onColumnsChange に指定する（正常シナリオ（列の表示の切り替えを受け取る））
 test("test_normal_when_columns_change_notified", async ({ page }) => {
   // 準備
   await openPage(page, builtRoot);
@@ -558,7 +558,7 @@ test("test_normal_when_columns_change_notified", async ({ page }) => {
   });
 });
 
-// 表の末尾に計算ごとの集計の行を置き、絞り込みで計算し直し、並べ替えても末尾に残す（正常シナリオ（集計の行を読む））
+// 表の末尾に計算ごとの集計の行を配置し、絞り込みでもう一度計算し、並べ替えても末尾に残す（正常シナリオ（集計の行を読み込む））
 test("test_normal_when_totals_shown", async ({ page }) => {
   // 準備
   await openPage(page, builtRoot);
@@ -587,7 +587,7 @@ test("test_normal_when_totals_shown", async ({ page }) => {
   expect(last).toContain("mdmark-table-total");
 });
 
-// コピーのボタンで形式に TSV を選ぶと、表示している行と列を TSV でコピーし、ボタンで知らせる（正常シナリオ（表をコピーする））
+// コピーのボタンで形式に TSV を選ぶと、表示している行と列を TSV でコピーし、ボタンで通知する（正常シナリオ（表をコピーする））
 test("test_normal_when_table_copied", async ({ page }) => {
   // 準備
   await stubClipboard(page, "allow");
@@ -653,7 +653,7 @@ test("test_normal_when_table_copied_as_markdown", async ({ page }) => {
   );
 });
 
-// URL の #ID が指す行へ、閉じた表と閉じた節を開き、絞り込みを外して移り、その行を強調する（正常シナリオ（行へのリンクで行へ移る））
+// URL の #ID が指す行へ、閉じた表と閉じたセクションを開き、絞り込みを解除して移り、その行を強調する（正常シナリオ（行へのリンクで行へ移る））
 test("test_normal_when_row_link_opened", async ({ page }) => {
   // 準備
   await openPage(page, builtRoot, {
@@ -702,7 +702,7 @@ test("test_normal_when_row_link_opened", async ({ page }) => {
   await expect(page.locator('#doc tr[id="みかん"]')).toBeInViewport();
   await expect(targets).toHaveCount(1);
   await expect(targets).toHaveAttribute("id", "みかん");
-  // 実行: 節を開いて表 B を絞り込み、節を閉じ、URL の #ID を もも にする
+  // 実行: セクションを開いて表 B を絞り込み、セクションを閉じ、URL の #ID を もも にする
   const toggle = page.locator('#doc button[aria-controls="section-節"]');
   await toggle.click();
   await filterByText(page, "名前", "ぶどう");
@@ -712,7 +712,7 @@ test("test_normal_when_row_link_opened", async ({ page }) => {
   await page.evaluate(() => {
     location.hash = "#もも";
   });
-  // 検証: 節が開き、表 B の絞り込みが外れて 3 行とも出て、もも の行が見える
+  // 検証: セクションが開き、表 B の絞り込みが削除されて 3 行とも出て、もも の行が見える
   await expect(page.locator('#doc [id="section-節"]')).toBeVisible();
   const second = page.locator("#doc .mdmark-table").nth(1);
   await expect(second.locator("tbody tr:not(.mdmark-table-empty)")).toHaveCount(
@@ -727,7 +727,7 @@ test("test_normal_when_row_link_opened", async ({ page }) => {
   await expect(targets).toHaveAttribute("id", "もも");
 });
 
-// 読めない計算・表に無い列名・先頭の列は指定ごとの警告にして当てず、機能の無い表のキーも当てない（異常シナリオ（読めない集計・隠す列））
+// 読み込めない計算・表に無い列名・先頭の列は指定ごとの警告にして当てず、機能の無い表のキーも適用しない（異常シナリオ（読み込めない集計・隠す列））
 test("test_error_when_unknown_total_or_hidden_column", async ({ page }) => {
   // 準備
   await openPage(page, builtRoot);
@@ -789,7 +789,7 @@ test("test_error_when_unknown_total_or_hidden_column", async ({ page }) => {
   await expect(c.locator("tfoot")).toHaveCount(0);
 });
 
-// クリップボードへの書き込みが拒まれたら、コピーする中身を選択したパネルを出し、閉じるとコピーのボタンへフォーカスを戻す（異常シナリオ（クリップボードに書けない））
+// クリップボードへの書き込みが拒まれたら、コピーする中身を選択したパネルを出し、閉じるとコピーのボタンへフォーカスを戻す（異常シナリオ（クリップボードに書き込めない））
 test("test_error_when_clipboard_denied", async ({ page }) => {
   // 準備
   await stubClipboard(page, "deny");
@@ -803,7 +803,7 @@ test("test_error_when_clipboard_denied", async ({ page }) => {
   await page
     .locator('#doc button.mdmark-copy-format[data-format="tsv"]')
     .click();
-  // 検証: コピーできなかったことと手でコピーできることが、ボタンと読み上げで知らされる
+  // 検証: コピーできなかったことと手でコピーできることが、ボタンとスクリーンリーダーで知らされる
   await expect(button).toContainText("コピーできませんでした");
   await expect(button).toHaveAttribute("data-state", "failed");
   const status = page.locator("#doc .mdmark-table-status");
@@ -849,7 +849,7 @@ function paragraphs(label: string): string[] {
   return Array.from({ length: 40 }, (_, i) => `${label}の段落 ${i + 1}\n`);
 }
 
-/** 長い段落の後に、集計の行を持つ 10 列 60 行の表を置き、表の後に長い段落を置いた Markdown。2 列目の数量は上から 60・59・…・1 */
+/** 長い段落の後に、集計の行を持つ 10 列 60 行の表を配置し、表の後に長い段落を配置した Markdown。2 列目の数量は上から 60・59・…・1 */
 function stickyDocument(): string {
   const headers = [
     "名前",
@@ -883,7 +883,7 @@ async function scrollPageTo(page: Page, top: number): Promise<void> {
   await page.evaluate((y) => window.scrollTo(0, y), top);
 }
 
-/** 見出し行の各セルの上端・集計の行の各セルの下端と、画面の高さを返す */
+/** 見出し行の各セルの上端・集計の行の各セルの下端と、画面の高さを返却する */
 async function stuckEdges(
   page: Page,
 ): Promise<{ head: number[]; foot: number[]; viewport: number }> {
@@ -918,7 +918,7 @@ async function columnMisalignment(page: Page): Promise<number> {
   });
 }
 
-// 見出し行を画面の上端に、集計の行を画面の下端に留め、横にスクロールしても本文の列に揃え、表が外れると一緒に外す（正常シナリオ（見出し行を画面の上端に留める））
+// 見出し行を画面の上端に、集計の行を画面の下端に留め、横にスクロールしても本文の列に統一し、表が削除されると一緒に削除する（正常シナリオ（見出し行を画面の上端に留める））
 test("test_normal_when_header_stuck", async ({ page }) => {
   // 準備
   await openPage(page, builtRoot, { hostCss: NARROW_HOST_CSS });
@@ -955,7 +955,7 @@ test("test_normal_when_header_stuck", async ({ page }) => {
   await table.evaluate((el) => {
     el.scrollLeft = 200;
   });
-  // 検証: 見出し行と集計の行が本文の列に揃い、1・2 列目が左端に見える
+  // 検証: 見出し行と集計の行が本文の列に一致し、1・2 列目が左端に見える
   await expect.poll(() => columnMisalignment(page)).toBeLessThanOrEqual(1);
   const tableLeft = (await table.boundingBox())?.x ?? 0;
   const first = await page.locator("#doc thead th").nth(0).boundingBox();
@@ -984,7 +984,7 @@ test("test_normal_when_header_stuck", async ({ page }) => {
   }
   // 実行: 表の後の段落までページをスクロールする
   await scrollPageTo(page, tableTop + tableHeight + 400);
-  // 検証: 見出し行と集計の行が画面から外れる
+  // 検証: 見出し行と集計の行が画面の外に出る
   await expect
     .poll(async () => {
       const edges = await stuckEdges(page);
@@ -1070,7 +1070,7 @@ test("test_normal_when_last_column_collapsed", async ({ page }) => {
   await expect(detail).toBeHidden();
 });
 
-// 「集計」のメニューでチェックを外した計算の行を出さず、入れ直すと戻す（正常シナリオ（出す集計を選ぶ））
+// 「集計」のメニューでチェックを解除した計算の行を出さず、もう一度入れると戻す（正常シナリオ（出す集計を選ぶ））
 test("test_normal_when_totals_selected", async ({ page }) => {
   // 準備
   await openPage(page, builtRoot);
@@ -1089,7 +1089,7 @@ test("test_normal_when_totals_selected", async ({ page }) => {
   for (const box of await boxes.all()) {
     await expect(box).toBeChecked();
   }
-  // 実行・検証: 平均のチェックを外す
+  // 実行・検証: 平均のチェックを解除する
   await expect(boxes.nth(0)).toBeFocused();
   await page.keyboard.press("Tab");
   await expect(boxes.nth(1)).toBeFocused();
@@ -1106,7 +1106,7 @@ test("test_normal_when_totals_selected", async ({ page }) => {
   await expect(toggle).toBeFocused();
 });
 
-// 数として読めないセルを持つ列は、合計を出さずに警告し、読めない値の無い列の集計は出す（異常シナリオ（数として読めないセルを集計する））
+// 数として読み込めないセルを持つ列は、合計を出さずに警告し、読み込めない値の無い列の集計は出す（異常シナリオ（数として読み込めないセルを集計する））
 test("test_error_when_total_cell_not_number", async ({ page }) => {
   // 準備
   await openPage(page, builtRoot);
@@ -1141,7 +1141,7 @@ test("test_error_when_total_cell_not_number", async ({ page }) => {
   await expect(head(page, "名前")).toHaveAttribute("aria-sort", "descending");
 });
 
-// 行のアンカーを押すと、行の絶対 URL をコピーして知らせ、行へ移ってその行を強調する（正常シナリオ（行の URL をコピーする））
+// 行のアンカーを押すと、行の絶対 URL をコピーして通知し、行へ移ってその行を強調する（正常シナリオ（行の URL をコピーする））
 test("test_normal_when_row_url_copied", async ({ page }) => {
   // 準備
   await stubClipboard(page, "allow");
@@ -1166,7 +1166,7 @@ test("test_normal_when_row_url_copied", async ({ page }) => {
   const href = await anchor.evaluate((el: HTMLAnchorElement) => el.href);
   // 実行
   await anchor.click();
-  // 検証: アンカーの href を絶対 URL にしてコピーし、短く知らせる
+  // 検証: アンカーの href を絶対 URL にしてコピーし、短く通知する
   await expect(notice).toHaveText("リンクをコピーしました");
   await expect(notice).toHaveAttribute("role", "status");
   expect(await writtenTexts(page)).toEqual([href]);
@@ -1176,7 +1176,7 @@ test("test_normal_when_row_url_copied", async ({ page }) => {
   const targets = page.locator("#doc tr[data-target]");
   await expect(targets).toHaveCount(1);
   await expect(targets).toHaveAttribute("id", "みかん");
-  // 検証: しばらくすると知らせが消える
+  // 検証: しばらくすると通知が消える
   await expect(notice).toHaveText("");
 });
 
@@ -1222,7 +1222,7 @@ test("test_normal_when_pinned_by_default", async ({ page }) => {
   expect(
     await offsetInTable(unpinned, unpinned.locator("thead th:nth-child(1)")),
   ).toBeLessThan(-100);
-  // 実行・検証: 1 列目のピン止めのボタンを押すと留めた列が外れる
+  // 実行・検証: 1 列目のピン止めのボタンを押すと留めた列が削除される
   await pins.nth(0).click();
   await expect(pins.nth(0)).toHaveAttribute("aria-pressed", "false");
   expect(await offsetInTable(plain, first)).toBeLessThan(-100);
@@ -1371,7 +1371,7 @@ test("test_normal_when_check_column", async ({ page }) => {
   ]);
 });
 
-// pin= と check= の知らない列名は警告し、読めた指定だけを当てる（異常シナリオ（知らない列名））
+// pin= と check= の知らない列名は警告し、読み込めた指定だけを適用する（異常シナリオ（知らない列名））
 test("test_error_when_unknown_column", async ({ page }) => {
   // 準備
   await openPage(page, builtRoot, { hostCss: NARROW_HOST_CSS });
@@ -1396,7 +1396,7 @@ test("test_error_when_unknown_column", async ({ page }) => {
   );
 });
 
-/** 本文の行（空の行の知らせを除く）の、1 列目のセルの文字・`rowspan`・表示の有無 */
+/** 本文の行（空の行の通知を除く）の、1 列目のセルの文字・`rowspan`・表示の有無 */
 async function firstCells(
   page: Page,
   tableIndex = 0,
@@ -1442,7 +1442,7 @@ test("test_normal_when_cells_merged", async ({ page }) => {
       "",
     ].join("\n"),
   });
-  // 検証: 見出しが 2 段で、1 段目の 2 列目が 2 列にまたがる
+  // 検証: 見出しが 2 段で、1 行目の 2 列目が 2 列にまたがる
   const merged = page.locator("#doc table").nth(0);
   const headRows = merged.locator("thead tr");
   await expect(headRows).toHaveCount(2);
@@ -1470,7 +1470,7 @@ test("test_normal_when_cells_merged", async ({ page }) => {
     { text: "A", rowspan: null, shown: false },
     { text: "A", rowspan: null, shown: false },
   ]);
-  // 検証: 並べ替え・絞り込み・ピン止めのボタンが、見出しの 2 段目の各列にだけある
+  // 検証: 並べ替え・絞り込み・ピン止めのボタンが、見出しの 2 行目の各列にだけある
   await expect(headRows.nth(0).locator("button")).toHaveCount(0);
   for (const selector of [
     "button.mdmark-sort",
@@ -1493,12 +1493,12 @@ test("test_normal_when_cells_merged", async ({ page }) => {
   }
   expect(copied).not.toContain("^^");
   expect(copied).not.toContain("<<");
-  // 検証: マーカーで囲まない表の `^^` と `<<` は書いたとおりの文字
+  // 検証: マーカーで囲まない表の `^^` と `<<` は記載したとおりの文字
   const plain = page.locator("#doc table").nth(1);
   await expect(plain.locator("tbody td")).toHaveText(["^^", "<<"]);
 });
 
-// 並べ替え・絞り込みの後に、隣り合う同じ値のセルだけを結合し直す（正常シナリオ（並べ替えの後に結合し直す））
+// 並べ替え・絞り込みの後に、隣り合う同じ値のセルだけをもう一度結合する（正常シナリオ（並べ替えの後にもう一度結合する））
 test("test_normal_when_merged_after_sort", async ({ page }) => {
   // 準備
   await openPage(page, builtRoot);
@@ -1546,7 +1546,7 @@ test("test_normal_when_merged_after_sort", async ({ page }) => {
   ]);
 });
 
-// 読めない `header-rows=` と、結合する相手の無い `^^`・`<<` を書き方の警告にし、文字のまま出す（異常シナリオ（読めないセルの結合））
+// 読み込めない `header-rows=` と、結合する相手の無い `^^`・`<<` を記載の警告にし、文字のまま出す（異常シナリオ（読み込めないセルの結合））
 test("test_error_when_merge_invalid", async ({ page }) => {
   // 準備
   await openPage(page, builtRoot);
@@ -1699,7 +1699,7 @@ test("test_normal_when_csv", async ({ page }) => {
   );
 });
 
-// 列の数がそろわない行は見出しにそろえ、警告に行番号を書く（異常シナリオ（CSV の列の数がそろわない））
+// 列の数がそろわない行は見出しにそろえ、警告に行番号を記載する（異常シナリオ（CSV の列の数がそろわない））
 test("test_error_when_csv_columns_mismatch", async ({ page }) => {
   // 準備
   await openPage(page, builtRoot);
@@ -1716,7 +1716,7 @@ test("test_error_when_csv_columns_mismatch", async ({ page }) => {
   await expect(rows.nth(1).locator("td")).toHaveText(["1", "2", "3"]);
 });
 
-// RAW のボタンで、表と書いたとおりの CSV を切り替える（正常シナリオ（CSV の表と元の CSV を切り替える））
+// RAW のボタンで、表と記載したとおりの CSV を切り替える（正常シナリオ（CSV の表と元の CSV を切り替える））
 test("test_normal_when_csv_raw_toggled", async ({ page }) => {
   // 準備
   await openPage(page, builtRoot);
@@ -1793,7 +1793,7 @@ const REORDER_MARKDOWN = [
   "",
 ].join("\n");
 
-/** `index` 番目の表の、見出しの最下段のセルの列名を左から並べて返す */
+/** `index` 番目の表の、見出しの最下段のセルの列名を左から並べて返却する */
 async function headNames(page: Page, index = 0): Promise<string[]> {
   const table = page.locator("#doc .mdmark-table").nth(index);
   const row = table.locator("thead tr").last();
@@ -1802,7 +1802,7 @@ async function headNames(page: Page, index = 0): Promise<string[]> {
   );
 }
 
-/** パネルの一覧の項目の列名を並んだ順に返す */
+/** パネルの一覧の項目の列名を並んだ順に返却する */
 async function settingsNames(
   panel: ReturnType<Page["locator"]>,
 ): Promise<string[]> {
@@ -1883,14 +1883,14 @@ test("test_normal_when_columns_reordered", async ({ page }) => {
       .nth(2)
       .locator(".mdmark-table-settings-toggle"),
   ).toHaveCount(0);
-  // 実行・検証: 開き直すと Markdown の順に戻る
+  // 実行・検証: もう一度開くと Markdown の順に戻る
   await page.reload();
   await page.waitForFunction(() => "mdmark" in window);
   await mountDocument(page, { markdown: REORDER_MARKDOWN });
   expect(await headNames(page)).toEqual(["名前", "型", "既定", "説明"]);
 });
 
-/** 2 段の見出しで名前をピン止めし、設定の範囲を持つ表の文書 */
+/** 2 行の見出しで名前をピン止めし、設定の範囲を持つ表の文書 */
 const REORDER_GROUPS_MARKDOWN = [
   "<!-- table: data +reorder +columns header-rows=2 pin=名前 -->",
   "",
@@ -2080,7 +2080,7 @@ test("test_normal_when_tree_folded", async ({ page }) => {
   expect((await writtenTexts(page))[0]).toContain("| aliases[].id |");
 });
 
-// 末尾の名前で照合し、当たった行と親の行を残し、件数は補った行を数えない（正常シナリオ（階層の表を絞り込む））
+// 末尾の名前で照合し、該当した行と親の行を残し、件数は補った行を数えない（正常シナリオ（階層の表を絞り込む））
 test("test_normal_when_tree_filtered", async ({ page }) => {
   // 準備
   await openPage(page, builtRoot);
@@ -2202,7 +2202,7 @@ test("test_normal_when_tree_linked_to_example", async ({ page }) => {
   await expect(toggle).toHaveAttribute("aria-expanded", "false");
 });
 
-// 表に無い列名の tree=・tree= の無い type=・無い見出しの example= の表の上に書き方の警告を置き、読めた指定だけで描く（異常シナリオ（読めない階層の指定））
+// 表に無い列名の tree=・tree= の無い type=・無い見出しの example= の表の上に記載の警告を配置し、読み込めた指定だけで描く（異常シナリオ（読み込めない階層の指定））
 test("test_error_when_tree_options_invalid", async ({ page }) => {
   // 準備
   await openPage(page, builtRoot);
@@ -2308,7 +2308,7 @@ test("test_normal_when_table_fills_width", async ({ page }) => {
     .evaluate((element) => element.getBoundingClientRect().width);
   const tables = page.locator("#doc .mdmark-table");
   await expect(tables).toHaveCount(2);
-  // 検証: 2 列の表の外側の枠が本文の幅で、右端の列の右端が枠の内側に揃い、横にスクロールせず、見出しが折り返さない
+  // 検証: 2 列の表の外側の枠が本文の幅で、右端の列の右端が枠の内側に一致し、横にスクロールせず、見出しが折り返さない
   const narrow = await tableSizes(tables.nth(0));
   expect(Math.abs(narrow.wrapper - body)).toBeLessThanOrEqual(1);
   expect(

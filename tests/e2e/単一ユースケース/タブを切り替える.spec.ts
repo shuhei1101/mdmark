@@ -6,7 +6,7 @@ import {
   removeDistRoot,
 } from "../dist-page.ts";
 
-// ビルドした配布物を置いた作業ツリー
+// ビルドした配布物を配置した作業ツリー
 let builtRoot = "";
 
 // 2 つの見出しを持つタブの範囲
@@ -69,7 +69,7 @@ test("test_normal_when_keyboard", async ({ page }) => {
   await expect(page.getByText("macOS の段落")).toBeHidden();
 });
 
-// 見出しの無い範囲は、中身をそのまま描き、書き方の警告を出す（異常シナリオ（見出しの無い範囲））
+// 見出しの無い範囲は、中身をそのまま描き、記載の警告を出す（異常シナリオ（見出しの無い範囲））
 test("test_error_when_no_heading", async ({ page }) => {
   // 準備
   await openPage(page, builtRoot);
@@ -130,7 +130,7 @@ async function expectBefore(before: Locator, after: Locator): Promise<void> {
   expect(result).toBe(true);
 }
 
-// 同じ組のタブの選択を揃える（正常シナリオ（同じ組のタブの選択を揃える））
+// 同じ組のタブの選択を統一する（正常シナリオ（同じ組のタブの選択を統一する））
 test("test_normal_when_same_group", async ({ page }) => {
   // 準備
   await openPage(page, builtRoot);
@@ -158,7 +158,7 @@ test("test_normal_when_same_group", async ({ page }) => {
   await expect(windows).toBeFocused();
 });
 
-// 読み直したとき、選んだタブで開き、URL の ID を付けて読み直すと、覚えたタブより URL の ID のタブを優先する（正常シナリオ（読み直して選んだタブで開く））
+// 再読み込みしたとき、選んだタブで開き、URL の ID を付けて再読み込みすると、覚えたタブより URL の ID のタブを優先する（正常シナリオ（再読み込みして選んだタブで開く））
 test("test_normal_when_reloaded", async ({ page }) => {
   // 準備
   const markdown = [
@@ -184,14 +184,14 @@ test("test_normal_when_reloaded", async ({ page }) => {
   await mountDocument(page, { markdown });
   await tabGroup(page, 0).getByRole("tab", { name: "Windows" }).click();
   await expectSelected(tabGroup(page, 0), "Windows", ["macOS"]);
-  // 実行: ページを読み直し、同じ Markdown を描かせる
+  // 実行: ページを再読み込みし、同じ Markdown を描かせる
   await page.reload();
   await page.waitForFunction(() => "mdmark" in window);
   await mountDocument(page, { markdown });
   // 検証
   await expectSelected(tabGroup(page, 0), "Windows", ["macOS"]);
   await expectSelected(tabGroup(page, 1), "macOS", ["Windows"]);
-  // 実行: URL の末尾に #macos-の注意 を付けて読み直し、同じ Markdown を描かせる
+  // 実行: URL の末尾に #macos-の注意 を付けて再読み込みし、同じ Markdown を描かせる
   await page.evaluate(() => {
     location.hash = "#macos-の注意";
   });
@@ -203,9 +203,9 @@ test("test_normal_when_reloaded", async ({ page }) => {
   await expect(page.locator('#doc [id="macos-の注意"]')).toBeInViewport();
 });
 
-// localStorage が使えなくても、同じ組のタブを揃えて切り替える（異常シナリオ（選んだタブを覚えられない））
+// localStorage が使用できなくても、同じ組のタブを統一して切り替える（異常シナリオ（選んだタブを覚えられない））
 test("test_error_when_storage_unavailable", async ({ page }) => {
-  // 準備: ページを開く前に、localStorage を読むと例外を投げるようにする
+  // 準備: ページを開く前に、localStorage を読み込むと例外を投げるようにする
   await page.addInitScript(() => {
     Object.defineProperty(window, "localStorage", {
       configurable: true,
@@ -233,7 +233,7 @@ test("test_error_when_storage_unavailable", async ({ page }) => {
   await expect(page.locator("#doc .mdmark-syntax-warning")).toHaveCount(0);
 });
 
-// 値の無い group は、書き方の警告を出して組を持たないタブにする（異常シナリオ（値の無い group））
+// 値の無い group は、記載の警告を出して組を持たないタブにする（異常シナリオ（値の無い group））
 test("test_error_when_empty_group", async ({ page }) => {
   // 準備
   await openPage(page, builtRoot);
@@ -255,7 +255,7 @@ test("test_error_when_empty_group", async ({ page }) => {
   await expectSelected(tabGroup(page, 1), "macOS", ["Windows"]);
 });
 
-// 知らないキーと指定は読み飛ばし、書き方の警告を出さずに読めた指定だけで描く（正常シナリオ（知らないタブの指定））
+// 知らないキーと指定はスキップし、記載の警告を出さずに読み込めた指定だけで描く（正常シナリオ（知らないタブの指定））
 test("test_normal_when_unknown_option", async ({ page }) => {
   // 準備
   await openPage(page, builtRoot);
@@ -303,7 +303,7 @@ test("test_normal_when_folded", async ({ page }) => {
   await expect(page.locator("#doc .mdmark-syntax-warning")).toHaveCount(0);
 });
 
-// closed と open を両方書くと、書き方の警告を出し、closed を当てた閉じた折り畳みにする（異常シナリオ（closed と open を両方書いたタブ））
+// closed と open を両方書くと、記載の警告を出し、closed を適用した閉じた折り畳みにする（異常シナリオ（closed と open を両方書いたタブ））
 test("test_error_when_closed_and_open", async ({ page }) => {
   // 準備
   await openPage(page, builtRoot);
@@ -380,7 +380,7 @@ test("test_normal_when_nested", async ({ page }) => {
   }
 });
 
-// 見出しの太字を保ったタブ名を描き、強調の見た目を CSS 変数で上書きできる（正常シナリオ（太字のタブ名））
+// 見出しの太字を保ったタブ名を描き、強調の外観を CSS 変数で上書きできる（正常シナリオ（太字のタブ名））
 test("test_normal_when_bold_tab_name", async ({ page }) => {
   // 準備
   await openPage(page, builtRoot);
@@ -405,7 +405,7 @@ test("test_normal_when_bold_tab_name", async ({ page }) => {
   await expect(first.locator("strong")).toHaveCSS("color", "rgb(1, 2, 3)");
 });
 
-// 内側の閉じが無い入れ子は、外側の開きに書き方の警告を置き、範囲の中身をタブにせず出す（異常シナリオ（入れ子の閉じが足りない））
+// 内側の閉じが無い入れ子は、外側の開きに記載の警告を配置し、範囲の中身をタブにせず出す（異常シナリオ（入れ子の閉じが足りない））
 test("test_error_when_nested_unclosed", async ({ page }) => {
   // 準備
   await openPage(page, builtRoot);

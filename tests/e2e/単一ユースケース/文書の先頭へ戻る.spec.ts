@@ -11,7 +11,7 @@ import {
 } from "../dist-page.ts";
 import { colorSvg, routePageFiles } from "../media.ts";
 
-// ビルドした配布物を置いた作業ツリー
+// ビルドした配布物を配置した作業ツリー
 let builtRoot = "";
 
 /** 長い Markdown の見出し（`## 導入` から `## 付録` までの 10 個） */
@@ -76,7 +76,7 @@ async function scrollToEnd(page: Page): Promise<void> {
   );
 }
 
-/** 要素の矩形を返す（無ければ例外） */
+/** 要素の矩形を返却する（無ければ例外） */
 async function boxOf(locator: Locator) {
   const box = await locator.boundingBox();
   if (!box) {
@@ -195,7 +195,7 @@ test("test_normal_when_pressed_by_keyboard", async ({ page }) => {
   await page.keyboard.press("Enter");
   // 検証
   await expect(heading(page, "導入")).toBeInViewport();
-  // 実行: 末尾へスクロールし直し、Tab でボタンへ移って Space を押す
+  // 実行: 末尾へもう一度スクロールし、Tab でボタンへ移って Space を押す
   await scrollToEnd(page);
   await expect(button).toBeVisible();
   await tabTo(page, button);
@@ -270,7 +270,7 @@ test("test_normal_when_side_toc_shown", async ({ page }) => {
   await expect(heading(page, "付録")).toBeInViewport();
 });
 
-// 差分を開いたページで、先頭へ戻るボタンがミニマップの帯と重ならず、帯の末尾の近くの印を押せる（正常シナリオ（差分のミニマップと重ならない））
+// 差分を開いたページで、先頭へ戻るボタンがミニマップの帯と重ならず、帯の末尾の近くのマーカーを押せる（正常シナリオ（差分のミニマップと重ならない））
 test("test_normal_when_diff_minimap_shown", async ({ page }) => {
   // 準備: 末尾の近くの段落を書き換えた 2 つのリビジョン
   const changed = LONG_MARKDOWN.replace(
@@ -296,7 +296,7 @@ test("test_normal_when_diff_minimap_shown", async ({ page }) => {
   const button = backToTop(page);
   await expect(button).toBeVisible();
   expect(overlaps(await boxOf(button), await boxOf(band))).toBe(false);
-  // 実行: 帯の末尾の近くの印を押す
+  // 実行: 帯の末尾の近くのマーカーを押す
   await page.evaluate(() => window.scrollTo(0, 0));
   const mark = band.locator(".mdmark-diff-minimap-mark").last();
   const bandBox = await boxOf(band);

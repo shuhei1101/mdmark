@@ -18,7 +18,7 @@ export type MediaSamples = {
   poster: Buffer;
 };
 
-/** 見本の動画・音声・GIF・poster の画像の中身を読む */
+/** 見本の動画・音声・GIF・poster の画像の中身を読み込む */
 export async function readMediaSamples(): Promise<MediaSamples> {
   const [mp4, mp3, gif, poster] = await Promise.all(
     ["demo.mp4", "voice.mp3", "build.gif", "demo-poster.png"].map((name) =>
@@ -33,7 +33,7 @@ export async function readMediaSamples(): Promise<MediaSamples> {
   };
 }
 
-/** 手元の応答で返すファイルの中身と種類 */
+/** 手元の応答で返却するファイルの中身と種類 */
 export type PageFile = { body: string | Buffer; contentType: string };
 
 /** 指定した大きさと色で塗った SVG の画像 */
@@ -80,7 +80,7 @@ export function contrastRatio(first: string, second: string): number {
   return (light + 0.05) / (dark + 0.05);
 }
 
-/** `selector` の要素の中で色の式（`var(--mdmark-...)` など）を解決した computed の色を返す */
+/** `selector` の要素の中で色の式（`var(--mdmark-...)` など）を解決した computed の色を返却する */
 export async function resolveColor(
   page: Page,
   selector: string,
@@ -96,7 +96,7 @@ export async function resolveColor(
   }, expression);
 }
 
-/** 書き出した HTML と隣のコピー先のフォルダだけを空のフォルダへ写し、file:// で開く。コピー先の下への要求は外への要求に数えない */
+/** 書き出した HTML と隣のコピー先のフォルダだけを空のフォルダへコピーし、file:// で開く。コピー先の下への要求は外への要求に数えない */
 export async function openStandaloneWithFiles(
   page: Page,
   options: {

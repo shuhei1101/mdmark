@@ -28,7 +28,7 @@ export function tableHtml(mail: number): string {
   ].join("\n");
 }
 
-/** 見本の文書の本文。`word` の語、`legacy` の行、`phone` の行、表の件数を変える（空行は置かず、行の差を決まった対にする） */
+/** 見本の文書の本文。`word` の単語、`legacy` の行、`phone` の行、表の件数を変える（空行は配置せず、行の差を決まった対にする） */
 export function sampleBody(options: {
   word: string;
   legacy: boolean;
@@ -51,18 +51,18 @@ export function sampleBody(options: {
   ].join("\n");
 }
 
-/** `r1` から `r2` で、語 `差分` を `変更` に書き換え、行を 1 つ足し、別の行を 1 つ消す。`r2` から `r3` で、表のメール欄の件数を 120 から 150 に変える */
+/** `r1` から `r2` で、単語 `差分` を `変更` に書き換え、行を 1 つ追加し、別の行を 1 つ削除する。`r2` から `r3` で、表のメール欄の件数を 120 から 150 に変える */
 export const DIFF_CONTENTS: Record<string, string> = {
   r1: sampleBody({ word: "差分", legacy: true, phone: false, mail: 120 }),
   r2: sampleBody({ word: "変更", legacy: false, phone: true, mail: 120 }),
   r3: sampleBody({ word: "変更", legacy: false, phone: true, mail: 150 }),
 };
 
-/** 差分を載せるページの本文 */
+/** 差分を記載するページの本文 */
 export const DIFF_PAGE_MARKDOWN =
   "# 問い合わせ窓口の週の報告\n\n本文の段落。\n";
 
-/** 描いた結果の上で色分けする見本の文書。ブロックごとに空行で区切り、`word` の語、`legacy` の段落、`phone` の段落を変える */
+/** 描いた結果の上で色分けする見本の文書。ブロックごとに空行で区切り、`word` の単語、`legacy` の段落、`phone` の段落を変える */
 export function blocksBody(options: {
   word: string;
   legacy: boolean;
@@ -86,7 +86,7 @@ export const BLOCKS_BEFORE = blocksBody({
   phone: false,
 });
 
-/** 色分けの後の見本の文書: 段落の語を 1 つ書き換え、表の後ろの段落を 1 つ消し、末尾に段落を 1 つ足す。見出しと表と最後から 2 番目の段落は変えない */
+/** 色分けの後の見本の文書: 段落の単語を 1 つ書き換え、表の後ろの段落を 1 つ削除し、末尾に段落を 1 つ追加する。見出しと表と最後から 2 番目の段落は変えない */
 export const BLOCKS_AFTER = blocksBody({
   word: "変更",
   legacy: false,

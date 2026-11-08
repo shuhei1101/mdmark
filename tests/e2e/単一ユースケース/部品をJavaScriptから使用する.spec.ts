@@ -22,10 +22,10 @@ import {
   VIEW_ITEMS,
 } from "../view-samples.ts";
 
-// ビルドした配布物を置いた作業ツリー
+// ビルドした配布物を配置した作業ツリー
 let builtRoot = "";
 
-// 1 件目の題を `script` を含む文字に替えた項目
+// 1 件目のタイトルを `script` を含む文字に替えた項目
 const ITEMS_WITH_SCRIPT = VIEW_ITEMS.map((item, index) =>
   index === 0 ? { ...item, 題: "<script>alert(1)</script>設計" } : item,
 );
@@ -33,7 +33,7 @@ const ITEMS_WITH_SCRIPT = VIEW_ITEMS.map((item, index) =>
 // コメントを付ける段落の文字
 const PARAGRAPH = "導入の手順を整える。";
 
-// 読む人が入力欄に書く本文
+// 読者が入力欄に記載する本文
 const COMMENT_BODY = "手順の数を <b>3</b> にする";
 
 test.beforeAll(async () => {
@@ -98,7 +98,7 @@ test("test_normal", async ({ page }) => {
   expect(pageErrors).toEqual([]);
 });
 
-// 拡張の draw から mountView を呼び、印の場所にビューを描き、絞り込み、destroy で片付ける（正常シナリオ（拡張のモジュールから描く））
+// 拡張の draw から mountView を呼び、マーカーの場所にビューを描き、絞り込み、destroy で片付ける（正常シナリオ（拡張のモジュールから描く））
 test("test_normal_when_called_from_extension", async ({ page }) => {
   // 準備
   await openPage(page, builtRoot);
@@ -169,7 +169,7 @@ test("test_error_when_arguments_invalid", async ({ page }) => {
   await expect(page.locator("#doc")).toHaveText("前の中身");
 });
 
-// 使う側が書いた要素の選んだ箇所にコメントを付け、片付けの関数で印とボタンを外す（正常シナリオ（コメントを付ける））
+// 利用側が記載した要素の選んだ箇所にコメントを付け、片付けの関数でマーカーとボタンを削除する（正常シナリオ（コメントを付ける））
 test("test_normal_when_comments_attached", async ({ page }) => {
   // 準備
   await openPage(page, builtRoot);
@@ -196,7 +196,7 @@ test("test_normal_when_comments_attached", async ({ page }) => {
   // 実行・検証: 要素の中の文字を選ぶとボタンが出る
   await selectText(page, { selector: "#doc p", start: 0, end: 5 });
   await expect(button).toBeVisible();
-  // 実行: コメントを書いて保存する
+  // 実行: コメントを記載して保存する
   await button.click();
   const form = page.locator(".mdmark-comment-form");
   await form.locator("textarea").fill(COMMENT_BODY);
@@ -215,7 +215,7 @@ test("test_normal_when_comments_attached", async ({ page }) => {
       },
     },
   ]);
-  // 実行: 印からコメントを開く
+  // 実行: マーカーからコメントを開く
   await mark.click();
   // 検証
   const bubble = page.locator(".mdmark-comment-bubble");

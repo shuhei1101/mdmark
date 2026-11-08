@@ -8,7 +8,7 @@ import {
 } from "../dist-page.ts";
 import { contrastRatio, resolveColor } from "../media.ts";
 
-// ビルドした配布物を置いた作業ツリー
+// ビルドした配布物を配置した作業ツリー
 let builtRoot = "";
 
 // 面を持たない要素の背景の色
@@ -98,7 +98,7 @@ async function readInline(page: Page) {
   });
 }
 
-/** 列・行・バッジ・本文の色が色のプリセットの値で、色を付けた文字と面のコントラストが 4.5:1 以上であることを確かめる */
+/** 列・行・バッジ・本文の色が色のプリセットの値で、色を付けた文字と面のコントラストが 4.5:1 以上であることを確認する */
 async function expectColored(page: Page): Promise<void> {
   const [blue, green, yellow, red] = await Promise.all(
     ["blue", "green", "yellow", "red"].map((color) => preset(page, color)),
@@ -249,7 +249,7 @@ test("test_normal_when_row_position", async ({ page }) => {
   await expect(page.locator("#doc .mdmark-syntax-warning")).toHaveCount(0);
 });
 
-// 最初の : の前が色の名前でないバッジは、全てを文言にして色の無いバッジと同じ見た目で描く（正常シナリオ（色の名前でない頭のバッジ））
+// 最初の : の前が色の名前でないバッジは、全てを文言にして色の無いバッジと同じ外観で描く（正常シナリオ（色の名前でない頭のバッジ））
 test("test_normal_when_badge_prefix_not_color", async ({ page }) => {
   // 準備
   await openPage(page, builtRoot);
@@ -271,7 +271,7 @@ test("test_normal_when_badge_prefix_not_color", async ({ page }) => {
   await expect(page.locator("#doc .mdmark-syntax-warning")).toHaveCount(0);
 });
 
-// 知らない色の名前は、表と本文の段落の上に書き方の警告を出し、色を付けずに描く（異常シナリオ（知らない色の名前））
+// 知らない色の名前は、表と本文の段落の上に記載の警告を出し、色を付けずに描く（異常シナリオ（知らない色の名前））
 test("test_error_when_color_unknown", async ({ page }) => {
   // 準備
   await openPage(page, builtRoot);
@@ -380,7 +380,7 @@ test("test_normal_when_highlighter", async ({ page }) => {
   }
 });
 
-// 知らない色の名前は、警告を置いて既定の色の蛍光ペンにする（異常シナリオ（蛍光ペンの知らない色の名前））
+// 知らない色の名前は、警告を配置して既定の色の蛍光ペンにする（異常シナリオ（蛍光ペンの知らない色の名前））
 test("test_error_when_highlighter_color_unknown", async ({ page }) => {
   // 準備
   await openPage(page, builtRoot);

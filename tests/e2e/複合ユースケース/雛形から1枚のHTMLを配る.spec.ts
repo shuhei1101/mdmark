@@ -12,7 +12,7 @@ import {
   writeSampleDocs,
 } from "../cli.ts";
 
-// 雛形を置いた後に、文書を書く人が手で書き足す見本の文書群を書く。入口の文書は、用語集の見出しの中とコードの行の範囲を取り込み、束ねていない名前のアイコンを見出しに持つ
+// 雛形を配置した後に、文書の作成者が手で追記する見本の文書群を記載する。入口の文書は、用語集の見出しの中とコードの行の範囲を取り込み、まとめていない名前のアイコンを見出しに持つ
 async function writeDocuments(dir: string): Promise<void> {
   await writeSampleDocs(dir, {
     readme: [
@@ -36,7 +36,7 @@ async function writeDocuments(dir: string): Promise<void> {
   });
 }
 
-// 雛形を置き、点検し、1 枚にまとめ、読む人が file:// で開いて文書を行き来する（正常シナリオ）
+// 雛形を配置し、点検し、1 枚にまとめ、読者が file:// で開いて文書を行き来する（正常シナリオ）
 test("test_normal", async ({ builtRoot, tempDir, page }) => {
   // 準備
   const dir = await tempDir();
@@ -91,7 +91,7 @@ test("test_normal", async ({ builtRoot, tempDir, page }) => {
   expect(opened.externalRequests()).toEqual([]);
 });
 
-// 雛形を置き、1 文書だけを書き出して file:// で開く（正常シナリオ（1 文書だけを書き出す））
+// 雛形を配置し、1 文書だけを書き出して file:// で開く（正常シナリオ（1 文書だけを書き出す））
 test("test_normal_when_single_document", async ({
   builtRoot,
   tempDir,
@@ -124,7 +124,7 @@ test("test_normal_when_single_document", async ({
   expect(opened.externalRequests()).toEqual([]);
 });
 
-// 点検でずれが見つかると一覧を出し、直した索引で 0 件になり、1 枚にまとめられる（異常シナリオ（点検でずれが見つかる））
+// 点検でずれが見つかると一覧を出し、修正した索引で 0 件になり、1 枚にまとめられる（異常シナリオ（点検でずれが見つかる））
 test("test_error_when_drift", async ({ builtRoot, tempDir }) => {
   // 準備
   const dir = await tempDir();
@@ -142,7 +142,7 @@ test("test_error_when_drift", async ({ builtRoot, tempDir }) => {
       (line) => line.includes("missing_doc") && line.includes("old.md"),
     ),
   ).toBe(true);
-  // ずれを直した索引（消えた文書の行を手で消す）
+  // ずれを修正した索引（消えた文書の行を手で削除する）
   await writeFiles(dir, { "index.yaml": index });
   const second = await runCli(builtRoot, ["check"], dir);
   expect(second.code).toBe(0);

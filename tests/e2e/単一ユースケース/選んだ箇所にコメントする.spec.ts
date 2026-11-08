@@ -12,7 +12,7 @@ import {
   updateDocument,
 } from "../dist-page.ts";
 
-// ビルドした配布物を置いた作業ツリー
+// ビルドした配布物を配置した作業ツリー
 let builtRoot = "";
 
 // 文書の ID
@@ -21,10 +21,10 @@ const DOC_ID = "guide";
 // コメントを付ける段落の文字
 const PARAGRAPH = "描いた文書の見た目はテーマの変数で変える。";
 
-// 読む人が入力欄に書く本文
+// 読者が入力欄に記載する本文
 const COMMENT_BODY = "ここは <b>太字</b> にしたい";
 
-// `テーマの変数` を選ぶ範囲（段落の最初の文字の節の中の位置）
+// `テーマの変数` を選ぶ範囲（段落の最初の文字のセクションの中の位置）
 const SELECTION = { selector: "#doc p", start: 10, end: 16 };
 
 // コメントの機能をオンにした設定
@@ -47,7 +47,7 @@ test.afterAll(async () => {
   await removeDistRoot(builtRoot);
 });
 
-/** ページの `console.error` の出力を控える。引数の `Error` はメッセージにして 1 つの文字にする。戻り値の関数で、これまでに出た文字を返す */
+/** ページの `console.error` の出力を記録する。引数の `Error` はメッセージにして 1 つの文字にする。戻り値の関数で、これまでに出た文字を返却する */
 function collectConsoleErrors(page: Page): () => Promise<string[]> {
   const pending: Array<Promise<string>> = [];
   page.on("console", (message) => {
@@ -68,7 +68,7 @@ function collectConsoleErrors(page: Page): () => Promise<string[]> {
   return () => Promise.all(pending);
 }
 
-/** `テーマの変数` を選び、コメントのボタンを押して入力欄を開き、本文を書く */
+/** `テーマの変数` を選び、コメントのボタンを押して入力欄を開き、本文を記載する */
 async function openFormAndType(page: Page, body: string) {
   await selectText(page, SELECTION);
   await page.locator(".mdmark-comment-add").click();
@@ -78,7 +78,7 @@ async function openFormAndType(page: Page, body: string) {
   return form;
 }
 
-// 文字を選んでコメントを保存し、印から吹き出しを開いて Esc で閉じる（正常シナリオ）
+// 文字を選んでコメントを保存し、マーカーから吹き出しを開いて Esc で閉じる（正常シナリオ）
 test("test_normal", async ({ page }) => {
   // 準備
   await openPage(page, builtRoot);
@@ -93,12 +93,12 @@ test("test_normal", async ({ page }) => {
     .poll(async () => (await readCommentCalls(page)).load)
     .toEqual([{ docId: DOC_ID }]);
   const button = page.locator(".mdmark-comment-add");
-  // 実行・検証: 文字を選ぶとボタンが出て、選びを外すと消える
+  // 実行・検証: 文字を選ぶとボタンが出て、選択を解除すると消える
   await selectText(page, SELECTION);
   await expect(button).toBeVisible();
   await selectText(page, null);
   await expect(button).toBeHidden();
-  // 実行: 選び直してコメントを書いて保存する
+  // 実行: もう一度選んでコメントを記載して保存する
   const form = await openFormAndType(page, COMMENT_BODY);
   await form.getByRole("button", { name: "コメントを保存" }).click();
   // 検証
@@ -128,7 +128,7 @@ test("test_normal", async ({ page }) => {
   await expect(bubble).toBeHidden();
 });
 
-// 保存したコメントを描いた時点で印に付け、印を押して吹き出しを開く（正常シナリオ（保存したコメントを読み込む））
+// 保存したコメントを描いた時点でマーカーに付け、マーカーを押して吹き出しを開く（正常シナリオ（保存したコメントを読み込む））
 test("test_normal_when_loaded", async ({ page }) => {
   // 準備
   await openPage(page, builtRoot);
@@ -156,7 +156,7 @@ test("test_normal_when_loaded", async ({ page }) => {
   ).toHaveCount(0);
 });
 
-// 描き直した後も同じ文字に印を付け直し、文字が無いコメントは末尾の一覧に並べる（正常シナリオ（描き直した後に付き直す））
+// 再描画した後も同じ文字にマーカーをもう一度付け、文字が無いコメントは末尾の一覧に並べる（正常シナリオ（再描画した後にもう一度付く））
 test("test_normal_when_updated", async ({ page }) => {
   // 準備
   await openPage(page, builtRoot);
@@ -169,11 +169,11 @@ test("test_normal_when_updated", async ({ page }) => {
   });
   const mark = page.locator("#doc mark.mdmark-comment-mark");
   await expect(mark).toHaveText("テーマの変数");
-  // 実行: 段落を足して描き直す
+  // 実行: 段落を追加して再描画する
   await updateDocument(page, `別の段落\n\n${PARAGRAPH}\n`);
   // 検証
   await expect(mark).toHaveText("テーマの変数");
-  // 実行: 選んだ文字を書き換えて描き直す
+  // 実行: 選んだ文字を書き換えて再描画する
   await updateDocument(page, "描いた文書の見た目は CSS 変数 で変える。\n");
   // 検証
   const orphans = page.locator("#doc .mdmark-comment-orphans");
@@ -189,7 +189,7 @@ test("test_normal_when_updated", async ({ page }) => {
   ).toContain("mdmark-comment-orphans");
 });
 
-// comments を指定しない設定では、読み書きの関数を渡してもボタンを出さず、読み込みも呼ばない（正常シナリオ（機能を外す））
+// comments を指定しない設定では、読み込みと保存の関数を指定してもボタンを出さず、読み込みも呼ばない（正常シナリオ（機能を解除する））
 test("test_normal_when_disabled", async ({ page }) => {
   // 準備
   await openPage(page, builtRoot);
@@ -207,7 +207,7 @@ test("test_normal_when_disabled", async ({ page }) => {
   expect((await readCommentCalls(page)).load).toEqual([]);
 });
 
-// 保存が失敗したときは、入力欄と本文を残して知らせ、印を付けず、理由を console.error に出す（異常シナリオ（保存できない））
+// 保存が失敗したときは、入力欄と本文を残して通知し、マーカーを付けず、理由を console.error に出す（異常シナリオ（保存できない））
 test("test_error_when_save_failed", async ({ page }) => {
   // 準備
   const errors = collectConsoleErrors(page);
@@ -237,7 +237,7 @@ test("test_error_when_save_failed", async ({ page }) => {
   expect(logged[0]).toContain("network");
 });
 
-// 読み書きの関数を渡さないときは、ボタンを出さず、必要なことを console.error に 1 回だけ出す（異常シナリオ（読み書きの関数が無い））
+// 読み込みと保存の関数を指定しないときは、ボタンを出さず、必要なことを console.error に 1 回だけ出す（異常シナリオ（読み込みと保存の関数が無い））
 test("test_error_when_store_missing", async ({ page }) => {
   // 準備
   const errors = collectConsoleErrors(page);
@@ -258,7 +258,7 @@ test("test_error_when_store_missing", async ({ page }) => {
   expect(logged[0]).toContain("commentStore");
 });
 
-/** 縦の中ほどを比べる相手。選んだ文字の印（`mark`）か、CSS セレクタで指す要素（`selector`） */
+/** 縦の中ほどを比べる相手。選んだ文字のマーカー（`mark`）か、CSS セレクタで指す要素（`selector`） */
 type LineTarget = { mark: string } | { selector: string };
 
 /** 相手の最初の行の縦の中ほどと、選んだ文字の余白のマーカーの縦の中ほどの差（px） */
@@ -291,7 +291,7 @@ async function middleGap(page: Page, quote: string, target: LineTarget) {
   );
 }
 
-/** 選んだ文字の印を包む閉じた要素を `aria-controls` で指す開くボタンの CSS セレクタ */
+/** 選んだ文字のマーカーを包む閉じた要素を `aria-controls` で指す開くボタンの CSS セレクタ */
 async function openerSelector(page: Page, quote: string) {
   const id = await page
     .locator("#doc mark.mdmark-comment-mark", { hasText: quote })
@@ -299,7 +299,7 @@ async function openerSelector(page: Page, quote: string) {
   return `#doc [aria-controls="${id}"]`;
 }
 
-// 余白に置くマーカーと縦の中ほどを比べるときの許容差（px）
+// 余白に配置するマーカーと縦の中ほどを比べるときの許容差（px）
 const MIDDLE_TOLERANCE = 1;
 
 // 画面の高さを超える段落の後に、閉じたセクション・2 つのタブ・`テーマの変数` の段落を並べた文書
@@ -337,7 +337,7 @@ function quoteComment(id: string, quote: string) {
   return { id, quote, prefix: "", suffix: "", body: `${quote}へのコメント` };
 }
 
-// 余白のマーカーを押して印へ移り、幅の変化とタブの切り替えでマーカーを置き直す（正常シナリオ（余白のマーカーから移る））
+// 余白のマーカーを押してマーカーへ移り、幅の変化とタブの切り替えでマーカーをもう一度配置する（正常シナリオ（余白のマーカーから移る））
 test("test_normal_when_jumped_from_margin", async ({ page }) => {
   // 準備
   await openPage(page, builtRoot);
@@ -391,7 +391,7 @@ test("test_normal_when_jumped_from_margin", async ({ page }) => {
     .toBeLessThanOrEqual(MIDDLE_TOLERANCE);
   // 実行: 余白のマーカーを押す
   await themeMarker.click();
-  // 検証: 印が画面に入り、吹き出しが開く
+  // 検証: マーカーが画面に入り、吹き出しが開く
   const bubble = page.locator(".mdmark-comment-bubble");
   await expect(themeMark).toBeInViewport();
   await expect(bubble).toBeVisible();
@@ -410,13 +410,13 @@ test("test_normal_when_jumped_from_margin", async ({ page }) => {
   await page.locator("#doc").evaluate((el) => {
     el.style.width = "360px";
   });
-  // 検証: 折り返し直した印の行の高さへ置き直す
+  // 検証: もう一度折り返したマーカーの行の高さへもう一度配置する
   await expect
     .poll(() => middleGap(page, "テーマの変数", { mark: "テーマの変数" }))
     .toBeLessThanOrEqual(MIDDLE_TOLERANCE);
   // 実行: 閉じたセクションの見出しの行のマーカーを押す
   await closedMarker.click();
-  // 検証: セクションが開き、印まで移って吹き出しが開く
+  // 検証: セクションが開き、マーカーまで移って吹き出しが開く
   const closedMark = page.locator("#doc mark.mdmark-comment-mark", {
     hasText: "閉じた箇所",
   });
@@ -431,7 +431,7 @@ test("test_normal_when_jumped_from_margin", async ({ page }) => {
   await page.keyboard.press("Escape");
   // 実行: 2 つ目のタブに切り替える
   await page.locator(tabOpener).click();
-  // 検証: タブの中の印の行の高さにマーカーが出る
+  // 検証: タブの中のマーカーの行の高さにマーカーが出る
   const shownTabMarker = margin.getByRole("button", {
     name: "コメント 「タブの箇所」",
     exact: true,
@@ -467,12 +467,12 @@ const EDIT_COMMENTS = [
 // 書き換えた本文
 const EDITED_BODY = "書き換えたコメント";
 
-/** 選んだ文字の印 */
+/** 選んだ文字のマーカー */
 function commentMark(page: Page, quote: string) {
   return page.locator("#doc mark.mdmark-comment-mark", { hasText: quote });
 }
 
-/** 修正と削除の段落を描き、2 つの印が付くのを待つ */
+/** 修正と削除の段落を描き、2 つのマーカーが付くのを待つ */
 async function mountEditable(page: Page): Promise<void> {
   await mountDocument(page, {
     markdown: `${EDIT_PARAGRAPH}\n`,
@@ -483,7 +483,7 @@ async function mountEditable(page: Page): Promise<void> {
   await expect(page.locator("#doc mark.mdmark-comment-mark")).toHaveCount(2);
 }
 
-/** 印を押して吹き出しを開き、「編集」から本文を書き換えて保存する */
+/** マーカーを押して吹き出しを開き、「編集」から本文を書き換えて保存する */
 async function editAndSave(page: Page, quote: string) {
   await commentMark(page, quote).click();
   const bubble = page.locator(".mdmark-comment-bubble");
@@ -566,7 +566,7 @@ test("test_normal_when_edited_and_removed", async ({ page }) => {
   expect(await page.evaluate(() => window.scrollY)).toBe(scrollY);
 });
 
-// reloadComments で読み直し、本文を描き直さずに印を付け直す（正常シナリオ（読み直す））
+// reloadComments で再読み込みし、本文を再描画せずにマーカーをもう一度付ける（正常シナリオ（再読み込みする））
 test("test_normal_when_reloaded", async ({ page }) => {
   // 準備
   await openPage(page, builtRoot);
@@ -608,7 +608,7 @@ test("test_normal_when_reloaded", async ({ page }) => {
   await expect(rows).toHaveText(["c", "b", "a"]);
 });
 
-// focusComment で印を画面に入れてフォーカスを移し、強調する（正常シナリオ（コメントの箇所へ移る））
+// focusComment でマーカーを画面に入れてフォーカスを移し、強調する（正常シナリオ（コメントの箇所へ移る））
 test("test_normal_when_focused", async ({ page }) => {
   // 準備
   const errors = collectConsoleErrors(page);
@@ -655,7 +655,7 @@ test("test_normal_when_focused", async ({ page }) => {
   expect(await errors()).toEqual([]);
 });
 
-// update が失敗すると、入力欄と書き換えた本文を残して知らせる（異常シナリオ（修正できない））
+// update が失敗すると、入力欄と書き換えた本文を残して通知する（異常シナリオ（修正できない））
 test("test_error_when_update_failed", async ({ page }) => {
   // 準備
   const errors = collectConsoleErrors(page);
@@ -670,7 +670,7 @@ test("test_error_when_update_failed", async ({ page }) => {
   const { bubble, field } = await editAndSave(page, "テーマの変数");
   // 検証
   await expect(bubble.getByRole("alert")).toHaveText(
-    "コメントを保存できませんでした。書いたコメントは残っています。もう一度「保存」を押してください。",
+    "コメントを保存できませんでした。記載したコメントは残っています。もう一度「保存」を押してください。",
   );
   await expect(field).toHaveValue(EDITED_BODY);
   await bubble.getByRole("button", { name: "キャンセル", exact: true }).click();
@@ -682,7 +682,7 @@ test("test_error_when_update_failed", async ({ page }) => {
   expect(logged[0]).toContain("network");
 });
 
-// remove が失敗すると、印とコメントを残し、削除の確認を開いたまま知らせる（異常シナリオ（削除できない））
+// remove が失敗すると、マーカーとコメントを残し、削除の確認を開いたまま通知する（異常シナリオ（削除できない））
 test("test_error_when_remove_failed", async ({ page }) => {
   // 準備
   const errors = collectConsoleErrors(page);
@@ -712,7 +712,7 @@ test("test_error_when_remove_failed", async ({ page }) => {
   expect(logged[0]).toContain("network");
 });
 
-// 読み直しの load が失敗すると、今の印を残して reloadComments を reject する（異常シナリオ（読み直せない））
+// 再読み込みの load が失敗すると、今のマーカーを残して reloadComments を reject する（異常シナリオ（再読み込みできない））
 test("test_error_when_reload_failed", async ({ page }) => {
   // 準備
   const errors = collectConsoleErrors(page);

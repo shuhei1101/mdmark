@@ -7,10 +7,10 @@ import {
   removeDistRoot,
 } from "../dist-page.ts";
 
-// ビルドした配布物を置いた作業ツリー
+// ビルドした配布物を配置した作業ツリー
 let builtRoot = "";
 
-// 1 つ目の段落に参照、2 つ目の段落に行内の脚注を持ち、定義を本文の途中に置いた文書
+// 1 つ目の段落に参照、2 つ目の段落に行内の脚注を持ち、定義を本文の途中に配置した文書
 const MARKDOWN = [
   "出典がある[^src]。",
   "",
@@ -49,7 +49,7 @@ function footnoteRef(page: Page, n: number): Locator {
   return page.locator("#doc .mdmark-fn-ref").nth(n - 1);
 }
 
-// 参照の場所に番号を置き、ポインターでツールチップを出し、末尾に閉じた脚注の一覧を置く（正常シナリオ）
+// 参照の場所に番号を配置し、ポインターでツールチップを出し、末尾に閉じた脚注の一覧を配置する（正常シナリオ）
 test("test_normal", async ({ page }) => {
   // 準備
   await openPage(page, builtRoot);
@@ -82,7 +82,7 @@ test("test_normal", async ({ page }) => {
   await expect(list.locator(".mdmark-fn-item").first()).toBeHidden();
 });
 
-// Tab で番号へフォーカスを移してツールチップを読み、Esc で消す（正常シナリオ（キーボードで読む））
+// Tab で番号へフォーカスを移してツールチップを読み込み、Esc で削除する（正常シナリオ（キーボードで読み込む））
 test("test_normal_when_keyboard", async ({ page }) => {
   // 準備
   await openPage(page, builtRoot);
@@ -125,7 +125,7 @@ test("test_normal_when_back_from_list", async ({ page }) => {
   await expect(link).toBeInViewport();
 });
 
-// 同じラベルの 2 回の参照に同じ番号を振り、一覧の項目に戻るリンクを 2 つ置く（正常シナリオ（同じ脚注を複数回参照する））
+// 同じラベルの 2 回の参照に同じ番号を振り、一覧の項目に戻るリンクを 2 つ配置する（正常シナリオ（同じ脚注を複数回参照する））
 test("test_normal_when_referenced_twice", async ({ page }) => {
   // 準備
   await openPage(page, builtRoot);
@@ -147,7 +147,7 @@ test("test_normal_when_referenced_twice", async ({ page }) => {
   await expect(list.locator(".mdmark-fn-back")).toHaveCount(2);
 });
 
-// 用語の下線と脚注の番号を形で見分け、それぞれのツールチップを出す（正常シナリオ（用語と脚注が同じ段落に出る））
+// 用語の下線と脚注の番号を構造で見分け、それぞれのツールチップを出す（正常シナリオ（用語と脚注が同じ段落に出る））
 test("test_normal_when_with_terms", async ({ page }) => {
   // 準備
   await openPage(page, builtRoot);
@@ -175,7 +175,7 @@ test("test_normal_when_with_terms", async ({ page }) => {
   await expect(termTip.locator(".mdmark-fn-tip-title")).toHaveCount(0);
 });
 
-// 定義の無い参照は書いた文字のまま出し、番号と一覧を置かない（異常シナリオ（定義の無い参照））
+// 定義の無い参照は記載した文字のまま出し、番号と一覧を配置しない（異常シナリオ（定義の無い参照））
 test("test_error_when_definition_missing", async ({ page }) => {
   // 準備
   await openPage(page, builtRoot);
@@ -219,13 +219,13 @@ test("test_normal_when_jump_to_list", async ({ page }) => {
   await expect(items.nth(0)).toBeInViewport();
 });
 
-// タップで開いたツールチップが、閉じる待ちの後も出たままかを確かめるまでの時間（ミリ秒）
+// タップで開いたツールチップが、閉じる待ちの後も出たままかを確認するまでの時間（ミリ秒）
 const TOUCH_CLOSE_WAIT_MS = 500;
 
 test.describe("タッチの端末", () => {
   test.use({ hasTouch: true });
 
-  // 閉じた番号のタップでツールチップを出し、外のタップで消し、開いた番号のタップで一覧へ移る（正常シナリオ（タッチ））
+  // 閉じた番号のタップでツールチップを出し、外のタップで削除し、開いた番号のタップで一覧へ移る（正常シナリオ（タッチ））
   test("test_normal_when_touch", async ({ page }) => {
     // 準備
     await openPage(page, builtRoot);

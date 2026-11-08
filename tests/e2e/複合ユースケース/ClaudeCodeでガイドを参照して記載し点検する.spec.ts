@@ -18,21 +18,21 @@ import {
   withServe,
 } from "../plugin.ts";
 
-// ブラウザを使わないため、1 つのブラウザのプロジェクトだけで流す
+// ブラウザを使用しないため、1 つのブラウザのプロジェクトだけで実行する
 test.skip(
   ({ browserName }) => browserName !== "chromium",
   "ブラウザを使わないシナリオなので chromium のプロジェクトだけで流す",
 );
 
-// 文書の書き方の使い方集のページ
+// 文書の記載方法のガイドのページ
 const WRITING_PAGE = "docs/使用方法/記載する/文書の記載方法.md";
-// 知らないマーカーを書いた文書
+// 知らないマーカーを記載した文書
 const DOCUMENT_WITH_UNKNOWN_MARK = "# A\n\n<!-- tabz -->\n\n段落\n";
 // マーカーを修正した文書
 const FIXED_DOCUMENT =
   "# A\n\n<!-- tabs -->\n\n### 1\n\n段落\n\n### 2\n\n段落\n\n<!-- /tabs -->\n";
 
-/** 雛形を置いた後の設定・索引に文書 `a` を載せ、知らないマーカーを書いた `a.md` を書いた作業のフォルダを作る */
+/** 雛形を配置した後の設定・索引に文書 `a` を記載し、知らないマーカーを記載した `a.md` を書き込んだ作業のフォルダを作る */
 async function createProject(
   builtRoot: string,
   tempDir: () => Promise<string>,
@@ -46,7 +46,7 @@ async function createProject(
   return dir;
 }
 
-/** このリポジトリの `guide/index.yaml` の使い方集の `page` を並べる */
+/** このリポジトリの `guide/index.yaml` のガイドの `page` を並べる */
 async function readGuidePages(): Promise<string[]> {
   const index = parse(
     await readFile(join(REPO_ROOT, "guide", "index.yaml"), "utf8"),
@@ -59,7 +59,7 @@ function issuesOf(texts: string[]): Issue[] {
   return JSON.parse(texts[0] ?? "").issues;
 }
 
-// dev-docs で使い方集を参照し、書いた文書を check で点検してずれを 0 件にする（正常シナリオ）
+// dev-docs でガイドを参照し、記載した文書を check で点検してずれを 0 件にする（正常シナリオ）
 test("test_normal", async ({ builtRoot, tempDir }) => {
   // 準備
   const dir = await createProject(builtRoot, tempDir);
@@ -86,7 +86,7 @@ test("test_normal", async ({ builtRoot, tempDir }) => {
   }));
   // 検証
   expect(mdmark.instructions).toContain("search_docs");
-  expect(mdmark.instructions).toContain("topic:使い方集");
+  expect(mdmark.instructions).toContain("topic:ガイド");
   expect(mdmark.instructions).toContain("check");
   const ids = found.list.map((item) => item.id);
   for (const page of await readGuidePages()) {
@@ -104,7 +104,7 @@ test("test_normal", async ({ builtRoot, tempDir }) => {
   expect(mdmark.tools).not.toContain("read_guide");
 });
 
-// dev-docs が無くても instructions から見つからないと分かり、書いた後の check でずれを見つける（異常シナリオ（dev-docs が無い））
+// dev-docs が無くても instructions から見つからないと分かり、記載した後の check でずれを見つける（異常シナリオ（dev-docs が無い））
 test("test_error_when_dev_docs_missing", async ({ builtRoot, tempDir }) => {
   // 準備
   const dir = await createProject(builtRoot, tempDir);
