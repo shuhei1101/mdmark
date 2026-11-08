@@ -128,7 +128,11 @@ export const applyViewState = (target: {
   const focused = doc.activeElement;
   applyFolds(view, state.folds);
   applyTabs(view, state.tabs);
-  if (keepFocus && focused instanceof HTMLElement && focused !== doc.activeElement) {
+  if (
+    keepFocus &&
+    focused instanceof HTMLElement &&
+    focused !== doc.activeElement
+  ) {
     focused.focus({ preventScroll: true });
   }
   const scroll = (): void => win.scrollTo(state.x, state.y);
