@@ -1,4 +1,4 @@
-import { afterEach, beforeAll, expect, test } from "vitest";
+import { afterEach, beforeAll, expect, test, vi } from "vitest";
 import {
   addStyles,
   createRoot,
@@ -43,7 +43,69 @@ afterEach(() => {
     detach();
   }
   removeRoots();
+  vi.useRealTimers();
 });
+
+/** 中身にリンクを持つ脚注 1 つの番号を持つ段落と、閉じた一覧の HTML */
+async function footnoteWithLinkHtml(): Promise<string> {
+  const { renderFootnoteRef, renderFootnotes } = await loadFootnotePart();
+  const body = '補足の<a href="#detail">詳しく</a>。';
+  const ref = renderFootnoteRef({ number: 1, bodies: [body] });
+  const list = renderFootnotes({
+    items: [{ number: 1, html: `<p>${body}</p>`, refCount: 1 }],
+  });
+  return `<p>本文${ref}。</p>${list}`;
+}
+
+/** ポインターの種類を指定したポインターのイベント */
+function pointer(type: string, pointerType: string): PointerEvent {
+  return new PointerEvent(type, {
+    pointerType,
+    bubbles: type === "pointerdown" || type === "pointerup",
+  });
+}
+
+/** 取り消せる `click` を送り、既定の動作が止められたかを返す */
+function click(element: HTMLElement): boolean {
+  const event = new MouseEvent("click", { bubbles: true, cancelable: true });
+  element.dispatchEvent(event);
+  return event.defaultPrevented;
+}
+
+/**
+ * 番号のリンクへのタッチのタップを、実際の順序（`pointerenter`・`pointerdown`・`pointerup`・`pointerleave` の後にフォーカスと `click`）で起こし、`click` の既定の動作が止められたかを返す。
+ * `pointerenter`・`pointerleave` は泡立たないため、ブラウザと同じく `sup` とリンクの両方に送る。
+ * `focus()` は既にフォーカスを持つリンクでは `focus` を発火しない
+ */
+function tap(ref: HTMLElement, link: HTMLElement): boolean {
+  ref.dispatchEvent(pointer("pointerenter", "touch"));
+  link.dispatchEvent(pointer("pointerenter", "touch"));
+  link.dispatchEvent(pointer("pointerdown", "touch"));
+  link.dispatchEvent(pointer("pointerup", "touch"));
+  link.dispatchEvent(pointer("pointerleave", "touch"));
+  ref.dispatchEvent(pointer("pointerleave", "touch"));
+  link.focus();
+  return click(link);
+}
+
+/** 番号・リンク・一覧・項目を取り出す */
+function footnoteParts(root: HTMLElement): {
+  ref: HTMLElement;
+  link: HTMLElement;
+  list: HTMLDetailsElement;
+  item: HTMLElement;
+} {
+  const ref = root.querySelector<HTMLElement>(".mdmark-fn-ref");
+  const link = root.querySelector<HTMLElement>(".mdmark-fn-link");
+  const list = root.querySelector<HTMLDetailsElement>(
+    "details.mdmark-footnotes",
+  );
+  const item = root.querySelector<HTMLElement>(".mdmark-fn-item");
+  if (!ref || !link || !list || !item) {
+    throw new Error("脚注の番号と一覧が描かれていない");
+  }
+  return { ref, link, list, item };
+}
 
 // フォーカスで開き Esc で閉じる（正常系）
 test("test_attach_footnotes", async () => {
@@ -149,4 +211,97 @@ test("test_attach_footnotes_when_back_into_closed_section", async () => {
   // 検証
   expect(body?.hidden).toBeFalsy();
   expect(document.activeElement).toBe(link);
+});
+
+// タッチの 1 回目のタップで開いて一覧へ移らず、開いた番号のタップで一覧へ移る（正常系）
+test("test_attach_footnotes_when_touch_tapped", async () => {
+  // 準備
+  vi.useFakeTimers();
+  const { attachFootnotes } = await loadFootnotes();
+  const root = createRootFromHtml(await footnoteHtml());
+  detachers.push(attachFootnotes({ root, placement: "top" }));
+  const { ref, link, list, item } = footnoteParts(root);
+  // 実行
+  const firstPrevented = tap(ref, link);
+  vi.advanceTimersByTime(1000);
+  // 検証
+  expect(ref.classList.contains("is-open")).toBe(true);
+  expect(list.open).toBe(false);
+  expect(firstPrevented).toBe(true);
+  // 実行
+  tap(ref, link);
+  vi.advanceTimersByTime(1000);
+  // 検証
+  expect(ref.classList.contains("is-open")).toBe(false);
+  expect(list.open).toBe(true);
+  expect(document.activeElement).toBe(item);
+});
+
+// タッチで開いた後、外の pointerdown だけで閉じ、ツールチップの中のリンクでは閉じない（正常系）
+test("test_attach_footnotes_when_touch_outside", async () => {
+  // 準備
+  vi.useFakeTimers();
+  const { attachFootnotes } = await loadFootnotes();
+  const root = createRootFromHtml(await footnoteWithLinkHtml());
+  detachers.push(attachFootnotes({ root, placement: "top" }));
+  const { ref, link } = footnoteParts(root);
+  const inner = root.querySelector<HTMLElement>(".mdmark-fn-tip a");
+  const outside = document.createElement("p");
+  document.body.append(outside);
+  detachers.push(() => outside.remove());
+  tap(ref, link);
+  // 実行: ツールチップの中のリンク
+  inner?.dispatchEvent(pointer("pointerdown", "touch"));
+  vi.advanceTimersByTime(1000);
+  // 検証
+  expect(ref.classList.contains("is-open")).toBe(true);
+  // 実行: root の外（pointerleave・focusout は送らない）
+  outside.dispatchEvent(pointer("pointerdown", "touch"));
+  vi.advanceTimersByTime(1000);
+  // 検証: 番号にフォーカスが残ったままでも、ツールチップを出さない
+  expect(ref.classList.contains("is-open")).toBe(false);
+  expect(ref.classList.contains("is-dismissed")).toBe(true);
+  expect(document.activeElement).toBe(link);
+  const tip = ref.querySelector<HTMLElement>(".mdmark-fn-tip");
+  expect(tip && getComputedStyle(tip).display).toBe("none");
+});
+
+// タップで一覧へ移った後も、同じ番号のタップで開き直す（正常系）
+test("test_attach_footnotes_when_touch_reopened", async () => {
+  // 準備
+  vi.useFakeTimers();
+  const { attachFootnotes } = await loadFootnotes();
+  const root = createRootFromHtml(await footnoteHtml());
+  detachers.push(attachFootnotes({ root, placement: "top" }));
+  const { ref, link } = footnoteParts(root);
+  tap(ref, link);
+  tap(ref, link);
+  vi.advanceTimersByTime(1000);
+  // 実行
+  const prevented = tap(ref, link);
+  vi.advanceTimersByTime(1000);
+  // 検証
+  expect(ref.classList.contains("is-dismissed")).toBe(false);
+  expect(ref.classList.contains("is-open")).toBe(true);
+  expect(prevented).toBe(true);
+});
+
+// マウスでは今のまま 1 回のクリックで一覧へ移る（正常系）
+test("test_attach_footnotes_when_mouse_clicked", async () => {
+  // 準備
+  vi.useFakeTimers();
+  const { attachFootnotes } = await loadFootnotes();
+  const root = createRootFromHtml(await footnoteHtml());
+  detachers.push(attachFootnotes({ root, placement: "top" }));
+  const { ref, link, list, item } = footnoteParts(root);
+  // 実行
+  ref.dispatchEvent(pointer("pointerenter", "mouse"));
+  link.dispatchEvent(pointer("pointerenter", "mouse"));
+  link.dispatchEvent(pointer("pointerdown", "mouse"));
+  link.dispatchEvent(pointer("pointerup", "mouse"));
+  click(link);
+  // 検証
+  expect(ref.classList.contains("is-open")).toBe(false);
+  expect(list.open).toBe(true);
+  expect(document.activeElement).toBe(item);
 });
