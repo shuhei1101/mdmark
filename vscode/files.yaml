@@ -162,7 +162,7 @@ files:
     description: モジュール構成『VS Code 拡張機能 / 読むバージョン』のうち「タグ一覧の取得・最新のバージョンの選び方・読むバージョンの決め方」を受け持つ。プレビューが読む mdmark のバージョンの決め方を変えるときに読む。
     tags: [tool:vscode, topic:バージョン]
     related:
-      - to: dev/設計書/モジュール構成/VSCode拡張機能/読むバージョン.ts
+      - to: dev/設計書/モジュール構成/VSCode拡張機能/読み込むバージョン.ts
         type: implements
   - path: src/workspace.ts
     description: モジュール構成『VS Code 拡張機能 / 拡張機能の入口』のうち「相対パスの設定の基準のフォルダ（baseDirOf）」を受け持つ。拡張機能の起動やコマンドの登録を変えるときに読む。
@@ -237,7 +237,7 @@ files:
     description: 拡張機能ホストの中で「プレビューを描き修正する」の振る舞いを確かめる結合テスト。この操作の振る舞いを変えたときに読む。
     tags: [topic:結合テスト, tool:vscode, tool:mocha]
     related:
-      - to: dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを描き直す.ts
+      - to: dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを再描画する.ts
         type: see_also
   - path: tests/integration/release.test.ts
     description: 拡張機能ホストの中で「拡張機能の配布物を作る」の振る舞いを確かめる結合テスト。この操作の振る舞いを変えたときに読む。
@@ -379,7 +379,7 @@ files:
     related:
       - to: dev/設計書/モジュール構成/VSCode拡張機能/Webview.ts
         type: implements
-      - to: dev/設計書/部品設計/設定ファイルを読めない帯.ts
+      - to: dev/設計書/部品設計/設定ファイルを読み込めない帯.ts
         type: implements
   - path: src/webview/shared/components/preview-status.tsx
     description: モジュール構成『VS Code 拡張機能 / Webview』のうち「プレビューの状態の表示の props・プレビューの状態・プレビューの状態の表示」を受け持つ。プレビューのパネルの中の描き方を変えるときに読む。
@@ -453,7 +453,7 @@ files:
     description: 部品設計『設定ファイルを読めない帯』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに読む。
     tags: [topic:ストーリー, tool:storybook, tool:vscode]
     related:
-      - to: dev/設計書/部品設計/設定ファイルを読めない帯.ts
+      - to: dev/設計書/部品設計/設定ファイルを読み込めない帯.ts
         type: implements
   - path: src/webview/shared/components/preview-status.stories.tsx
     description: 部品設計『プレビューの状態の表示』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに読む。

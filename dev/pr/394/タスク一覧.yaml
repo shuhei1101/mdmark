@@ -65,8 +65,10 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-08T06:49:59.531091+00:00'
   - process: ドキュメント修正
-    status: todo
+    status: done
     note: 要件.yaml の docs と、シナリオ・モジュール構成・ER 図・設定・テンプレート・モック・docs/ の単語とファイル名の修正
+    updated_by: planner
+    updated_at: '2026-11-08T09:06:28.619279+00:00'
   - process: 単体テスト作成
     status: todo
     note: 修正した文言を期待値に持つテストの更新と、コメント・テストの名前の修正

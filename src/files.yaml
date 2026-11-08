@@ -10,7 +10,7 @@ files:
     description: モジュール構成『ライブラリ本体 / 設定を重ねて読む』を受け持ち、端末の設定と上のフォルダの設定ファイルを探して重ね、設定の形を検める。設定の読み方を変えるときに読む。
     tags: [topic:設定]
     related:
-      - to: dev/設計書/モジュール構成/ライブラリ本体/設定を重ねて読む.ts
+      - to: dev/設計書/モジュール構成/ライブラリ本体/設定を重ねて読み込む.ts
         type: implements
       - to: dev/設計書/モジュール構成/ライブラリ本体/CLI.ts
         type: implements
@@ -36,7 +36,7 @@ files:
     description: モジュール構成『ライブラリ本体 / 版を上げる』のうち「当てる前のコピーとコピーからの戻し」を受け持つ。mdmark upgrade の移行の流れを変えるときに読む。
     tags: [topic:バージョン, topic:移行, topic:cli]
     related:
-      - to: dev/設計書/モジュール構成/ライブラリ本体/版を上げる.ts
+      - to: dev/設計書/モジュール構成/ライブラリ本体/バージョンを上げる.ts
         type: implements
   - path: cli/build.ts
     description: モジュール構成『ライブラリ本体 / CLI』のうち「mdmark build」を受け持つ。CLI のコマンドの振る舞いを変えるときに読む。
@@ -48,7 +48,7 @@ files:
     description: モジュール構成『ライブラリ本体 / 版を上げる』のうち「変更履歴の表から範囲の行を抽き出す」を受け持つ。mdmark upgrade の移行の流れを変えるときに読む。
     tags: [topic:バージョン, topic:移行, topic:cli]
     related:
-      - to: dev/設計書/モジュール構成/ライブラリ本体/版を上げる.ts
+      - to: dev/設計書/モジュール構成/ライブラリ本体/バージョンを上げる.ts
         type: implements
   - path: cli/check.ts
     description: モジュール構成『ライブラリ本体 / CLI』のうち「mdmark check」を受け持つ。CLI のコマンドの振る舞いを変えるときに読む。
@@ -132,25 +132,25 @@ files:
     description: モジュール構成『ライブラリ本体 / 版を上げる』のうち「移行の手順の読み取り・形の検め・適用」を受け持つ。mdmark upgrade の移行の流れを変えるときに読む。
     tags: [topic:バージョン, topic:移行, topic:cli]
     related:
-      - to: dev/設計書/モジュール構成/ライブラリ本体/版を上げる.ts
+      - to: dev/設計書/モジュール構成/ライブラリ本体/バージョンを上げる.ts
         type: implements
   - path: cli/prompt.ts
     description: モジュール構成『ライブラリ本体 / 版を上げる』のうち「標準入力の 1 行を回答にする質問」を受け持つ。mdmark upgrade の移行の流れを変えるときに読む。
     tags: [topic:バージョン, topic:移行, topic:cli]
     related:
-      - to: dev/設計書/モジュール構成/ライブラリ本体/版を上げる.ts
+      - to: dev/設計書/モジュール構成/ライブラリ本体/バージョンを上げる.ts
         type: implements
   - path: cli/upgrade.ts
     description: モジュール構成『ライブラリ本体 / 版を上げる』のうち「mdmark upgrade」を受け持つ。mdmark upgrade の移行の流れを変えるときに読む。
     tags: [topic:バージョン, topic:移行, topic:cli]
     related:
-      - to: dev/設計書/モジュール構成/ライブラリ本体/版を上げる.ts
+      - to: dev/設計書/モジュール構成/ライブラリ本体/バージョンを上げる.ts
         type: implements
   - path: cli/versions.ts
     description: モジュール構成『ライブラリ本体 / 版を上げる』のうち「バージョンの書式・比較・呼んだ CLI のバージョン」を受け持つ。mdmark upgrade の移行の流れを変えるときに読む。
     tags: [topic:バージョン, topic:移行, topic:cli]
     related:
-      - to: dev/設計書/モジュール構成/ライブラリ本体/版を上げる.ts
+      - to: dev/設計書/モジュール構成/ライブラリ本体/バージョンを上げる.ts
         type: implements
   - path: code-fold-logic.ts
     description: モジュール構成『ライブラリ本体 / 操作』のうち「コードの行のインデントのレベル・畳む行の数・隠す行・縦線の範囲の計算（記法と操作が使う）」を受け持つ。描いた文書での読む人の操作を変えるときに読む。
@@ -617,7 +617,7 @@ files:
     description: 部品設計『コメントの印』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに読む。
     tags: [topic:ストーリー, tool:storybook, topic:部品, topic:コメント]
     related:
-      - to: dev/設計書/部品設計/コメントの印.ts
+      - to: dev/設計書/部品設計/コメントのマーカー.ts
         type: implements
   - path: parts/comment-orphans.stories.ts
     description: 部品設計『箇所が見つからないコメントの一覧』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに読む。
@@ -635,7 +635,7 @@ files:
         type: implements
       - to: dev/設計書/部品設計/コメントの入力欄.ts
         type: implements
-      - to: dev/設計書/部品設計/コメントの印.ts
+      - to: dev/設計書/部品設計/コメントのマーカー.ts
         type: implements
       - to: dev/設計書/部品設計/コメントの吹き出し.ts
         type: implements
@@ -779,7 +779,7 @@ files:
     description: 部品設計『読み込み中の枠』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに読む。
     tags: [topic:ストーリー, tool:storybook, topic:部品, tool:html]
     related:
-      - to: dev/設計書/部品設計/読み込み中の枠.ts
+      - to: dev/設計書/部品設計/読み込み中のブロック.ts
         type: implements
   - path: parts/embed.ts
     description: モジュール構成『ライブラリ本体 / 部品』のうち「読み込み中の枠の renderEmbed」を受け持つ。部品が返す HTML を変えるときに読む。
@@ -787,7 +787,7 @@ files:
     related:
       - to: dev/設計書/モジュール構成/ライブラリ本体/部品.ts
         type: implements
-      - to: dev/設計書/部品設計/読み込み中の枠.ts
+      - to: dev/設計書/部品設計/読み込み中のブロック.ts
         type: implements
   - path: parts/embedded-html.stories.ts
     description: 部品設計『埋め込んだHTML』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに読む。
@@ -1021,7 +1021,7 @@ files:
     description: 部品設計『知らせの枠』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに読む。
     tags: [topic:ストーリー, tool:storybook, topic:部品]
     related:
-      - to: dev/設計書/部品設計/知らせの枠.ts
+      - to: dev/設計書/部品設計/通知ブロック.ts
         type: implements
   - path: parts/mermaid-diagram.stories.ts
     description: 部品設計『mermaid の図』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに読む。
@@ -1043,7 +1043,7 @@ files:
     related:
       - to: dev/設計書/モジュール構成/ライブラリ本体/部品.ts
         type: implements
-      - to: dev/設計書/部品設計/知らせの枠.ts
+      - to: dev/設計書/部品設計/通知ブロック.ts
         type: implements
   - path: parts/own.ts
     description: モジュール構成『ライブラリ本体 / 部品』のうち「mdmark が出した要素のマーカーを付ける markOwn と SLOT_MARKER」を受け持つ。部品が返す HTML を変えるときに読む。
@@ -1097,7 +1097,7 @@ files:
     description: 部品設計『節』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに読む。
     tags: [topic:ストーリー, tool:storybook, topic:部品, topic:セクション]
     related:
-      - to: dev/設計書/部品設計/節.ts
+      - to: dev/設計書/部品設計/セクション.ts
         type: implements
   - path: parts/section.ts
     description: モジュール構成『ライブラリ本体 / 部品』のうち「セクションの renderSection」を受け持つ。部品が返す HTML を変えるときに読む。
@@ -1105,7 +1105,7 @@ files:
     related:
       - to: dev/設計書/モジュール構成/ライブラリ本体/部品.ts
         type: implements
-      - to: dev/設計書/部品設計/節.ts
+      - to: dev/設計書/部品設計/セクション.ts
         type: implements
   - path: parts/sequence-diagram.stories.ts
     description: 部品設計『シーケンス図』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに読む。
@@ -1145,7 +1145,7 @@ files:
     description: 部品設計『書き方の警告』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに読む。
     tags: [topic:ストーリー, tool:storybook, topic:部品]
     related:
-      - to: dev/設計書/部品設計/書き方の警告.ts
+      - to: dev/設計書/部品設計/記載の警告.ts
         type: implements
   - path: parts/syntax-warning.ts
     description: モジュール構成『ライブラリ本体 / 部品』のうち「書き方の警告の renderSyntaxWarning」を受け持つ。部品が返す HTML を変えるときに読む。
@@ -1153,7 +1153,7 @@ files:
     related:
       - to: dev/設計書/モジュール構成/ライブラリ本体/部品.ts
         type: implements
-      - to: dev/設計書/部品設計/書き方の警告.ts
+      - to: dev/設計書/部品設計/記載の警告.ts
         type: implements
   - path: parts/table.stories.ts
     description: 部品設計『表』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに読む。
@@ -1277,7 +1277,7 @@ files:
     description: モジュール構成『ClaudeCodeプラグイン / 使い方集』のうち「使い方集の索引の検査」を受け持つ。使い方集の索引の形を変えるときに読む。
     tags: [topic:使い方集, tool:claude-code]
     related:
-      - to: dev/設計書/モジュール構成/ClaudeCodeプラグイン/使い方集.ts
+      - to: dev/設計書/モジュール構成/ClaudeCodeプラグイン/ガイド.ts
         type: implements
   - path: plugin/http.ts
     description: モジュール構成『ClaudeCodeプラグイン / MCPサーバー』のうち「mdmark serve の HTTP の待ち受け・ポートの読み取り・要求と応答の変換」を受け持つ。MCP のツールの振る舞いを変えるときに読む。

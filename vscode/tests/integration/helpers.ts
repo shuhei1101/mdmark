@@ -444,7 +444,7 @@ export async function tagRequestCount(): Promise<number> {
   return (await stub.requests()).filter((path) => path === "/tags").length;
 }
 
-/** 見本の流れ図の定義（`docs/使い方/図を描く/見本.md` の最初の `json`） */
+/** 見本の流れ図の定義（`docs/使用方法/図を描く/見本.md` の最初の `json`） */
 export async function sampleFlowJson(): Promise<string> {
   const sample = await readFile(
     join(REPO_ROOT, "docs", "使い方", "図を描く", "見本.md"),
@@ -455,7 +455,7 @@ export async function sampleFlowJson(): Promise<string> {
   return match[1];
 }
 
-/** 見本の操作できる部品の範囲（`docs/使い方/図を描く/見本.md` の `<!-- param -->` から `<!-- /param -->` まで）を持つ Markdown */
+/** 見本の操作できる部品の範囲（`docs/使用方法/図を描く/見本.md` の `<!-- param -->` から `<!-- /param -->` まで）を持つ Markdown */
 export async function paramMarkdown(): Promise<string> {
   const sample = await readFile(
     join(REPO_ROOT, "docs", "使い方", "図を描く", "見本.md"),

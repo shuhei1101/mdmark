@@ -16,7 +16,7 @@ files:
     description: 設定『ライブラリ本体』のうち「端末の設定の JSON Schema（mdmark.config.yaml のキーと config.cascade・config.applyToExport）」を受け持つ。端末の設定のキーを変えるときに読む。
     tags: [topic:設定]
     related:
-      - to: dev/設計書/モジュール構成/ライブラリ本体/設定を重ねて読む.ts
+      - to: dev/設計書/モジュール構成/ライブラリ本体/設定を重ねて読み込む.ts
         type: implements
   - path: mdmark.templates.schema.json
     description: ER 図『CSSのテンプレート』の「端末の設定のフォルダの templates/css/templates.yaml の JSON Schema」を受け持つ。テンプレートの索引のキーを変えるときに読む。
@@ -34,5 +34,5 @@ files:
     description: モジュール構成『ライブラリ本体 / 版を上げる』のうち「steps.yaml の JSON Schema」を受け持つ。mdmark upgrade の移行の流れを変えるときに読む。
     tags: [topic:バージョン, topic:移行, topic:cli, topic:ステップ]
     related:
-      - to: dev/設計書/モジュール構成/ライブラリ本体/版を上げる.ts
+      - to: dev/設計書/モジュール構成/ライブラリ本体/バージョンを上げる.ts
         type: implements

@@ -448,39 +448,57 @@ docs:
   - page: README.md
     new: false
     change: NG の単語を対応表の単語に修正する
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-08T09:06:26.478174+00:00'
   - page: CLAUDE.md
     new: false
     change: NG の単語を対応表の単語に修正する
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-08T09:06:26.478174+00:00'
   - page: dev-docs.yaml
     new: false
     change: 配信元の説明の NG の単語を修正する
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-08T09:06:26.478174+00:00'
   - page: docs/リファレンス/用語集.md
     new: false
     change: 用語（印・題・版・箱・知らせの枠 など）の置き換え先を決め、用語の名前と意味を修正する
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-08T09:06:26.478174+00:00'
   - page: dev/設計書/デザイン方針.md
     new: false
     change: NG の単語（箱 など）を修正する
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-08T09:06:26.478174+00:00'
   - page: dev/設計書/アーキテクチャ図/アーキテクチャ図.yaml
     new: false
     change: サブシステムの役割の NG の単語（版 など）を修正する
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-08T09:06:26.478174+00:00'
   - page: dev/設計書/非機能要件/非機能要件.yaml
     new: false
     change: NG の単語を修正する
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-08T09:06:26.478174+00:00'
   - page: dev/設計書/開発コマンド/開発コマンド.yaml
     new: false
     change: NG の単語を修正する
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-08T09:06:26.478174+00:00'
   - page: dev/設計書/テスト/テスト実行方法.yaml
     new: false
     change: NG の単語を修正する。改名した E2E のテストファイルの参照を合わせる
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-08T09:06:26.478174+00:00'
   - page: migrations/no-steps.yaml
     new: false
     change: JSON Schema の説明だけの変更の行を追加する
