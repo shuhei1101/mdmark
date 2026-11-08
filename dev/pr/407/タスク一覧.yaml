@@ -70,10 +70,19 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-08T10:33:49.397835+00:00'
   - process: 単体テスト作成
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-08T11:06:57.740737+00:00'
   - process: 実装
-    status: todo
+    status: skipped
+    reason: 配布物・スクリプト・移行の手順のコードを変えず、テストの参照先だけを変える
+    updated_by: planner
+    updated_at: '2026-11-08T10:46:19.846541+00:00'
   - process: 結合テスト作成
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-08T11:06:57.740737+00:00'
   - process: E2E テスト作成
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-08T11:06:57.740737+00:00'
