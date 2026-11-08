@@ -85,5 +85,7 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-08T10:57:57.512784+00:00'
   - process: E2E テスト作成
-    status: todo
+    status: done
     note: 9 件のケースの期待値と準備を今の出力に合わせ、対象の spec を流して pass を確かめる
+    updated_by: planner
+    updated_at: '2026-11-08T11:17:31.433375+00:00'
