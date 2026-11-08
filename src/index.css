@@ -10198,8 +10198,7 @@
   /* 印刷: 操作のボタンを出さず、畳んだ行と隠した見本を開く */
   @media print {
     .mdmark-table-settings,
-    .mdmark-tree-toggle,
-    .mdmark-tree-copy,
+    .mdmark-table[data-tree] :is(.mdmark-tree-toggle, .mdmark-tree-copy),
     .mdmark-tree-example-toggle {
       display: none;
     }
