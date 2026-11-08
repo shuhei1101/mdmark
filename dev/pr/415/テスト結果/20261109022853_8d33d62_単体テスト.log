@@ -1,0 +1,14 @@
+$ npm run test:unit
+
+> test:unit
+> vitest run --project 'unit*'
+
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/fix-cli-cli-e2e-regressions
+
+
+ Test Files  259 passed (259)
+      Tests  1824 passed (1824)
+   Start at  02:27:23
+   Duration  91.17s (worker 62%, tests 24%, import 13%, transform 1%)
+
