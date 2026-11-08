@@ -224,6 +224,7 @@ mdmark.config.yaml:build: schema: `build.out` がありません。書き出す 
 | `diagram_wire_crosses_node` | フロー図の線が、`from`・`to` でない箱を通っている |
 | `diagram_label_too_long` | フロー図の箱の文字が、折り返しても箱に収まらない |
 | `syntax_warning` | `--text`・`--file` で渡した Markdown を描いたときに出る書き方の警告のうち、`unknown_mark`・`diagram_invalid` に当たらないもの。include の取り込み先が無い警告は、取り込み先を読まないため出さない（取り込み先は設定の文書の点検の `include_target_missing`・`include_circular` で確かめる）。内容は書き方の警告の文と同じ。場所は警告の元のマーカーの行 |
+| `unknown_mark_arg` | `--text`・`--file` で渡した Markdown の記法のマーカーに、描くときに警告を出さずに無視する知らない種類・`+機能`・`-機能`・キー・指定の単語がある。1 つにつき 1 件で、内容は無視した指定・そのマーカーで使えるもの・直し方。場所はマーカーの行 |
 
 <!-- /table -->
 
