@@ -2,13 +2,9 @@ import type { StateCore, Token } from "markdown-it";
 import { foldLinesOf, measureIndents } from "../../code-fold-logic.ts";
 import type { MdmarkMarkArgs, WarningItem } from "../../extensions.ts";
 import { type CodeLine, renderCodeBlock } from "../../parts/code-block.ts";
-import { featureOn, markOf, ownBlock } from "./tokens.ts";
 import { titleTailOf } from "./collapse.ts";
-import {
-  type SkippedArg,
-  skippedArgBlocks,
-  warningBlock,
-} from "./warnings.ts";
+import { featureOn, markOf, ownBlock } from "./tokens.ts";
+import { type SkippedArg, skippedArgBlocks, warningBlock } from "./warnings.ts";
 
 /** コードの行の印の名前から、行の種類を引く */
 const LINE_MARK_KINDS: Readonly<Record<string, NonNullable<CodeLine["kind"]>>> =
@@ -136,7 +132,8 @@ export function readCodeSpec(options: {
       skipped.push({ arg: `${key}=`, usable: CODE_SPEC_LIST });
     }
   }
-  const tail = args.keys.title === undefined ? undefined : titleTailOf(options.text);
+  const tail =
+    args.keys.title === undefined ? undefined : titleTailOf(options.text);
   for (const flag of args.args) {
     if (CODE_FLAGS.includes(flag)) {
       continue;

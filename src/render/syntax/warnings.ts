@@ -5,7 +5,10 @@ import type { Mark } from "../marks.ts";
 import { envOf, ownBlock } from "./tokens.ts";
 
 /** 集める警告の種類。`unknown_mark_arg` は画面に出さず、点検だけが返す */
-export type WarningKind = "diagram_invalid" | "syntax_warning" | "unknown_mark_arg";
+export type WarningKind =
+  | "diagram_invalid"
+  | "syntax_warning"
+  | "unknown_mark_arg";
 
 /** 記法の印の知らない種類・`+機能`・`-機能`・キー・指定の単語 1 つと、その印で使えるもの */
 export type SkippedArg = {

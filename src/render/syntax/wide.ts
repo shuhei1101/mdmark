@@ -3,11 +3,7 @@ import { SLOT_MARKER, splitSlots } from "../../parts/own.ts";
 import { renderWide } from "../../parts/wide.ts";
 import { outermostRanges, pairRanges } from "./blocks.ts";
 import { featureOn, markOf, tabBoundaryBlock } from "./tokens.ts";
-import {
-  skippedArgBlocks,
-  unclosedWarning,
-  warningBlock,
-} from "./warnings.ts";
+import { skippedArgBlocks, unclosedWarning, warningBlock } from "./warnings.ts";
 
 /** `wide` がオンなら、`<!-- wide -->`（`closed` で `narrow`）〜 `<!-- /wide -->` を wide の範囲で囲む。`closed` 以外の引数は読み飛ばした引数にする。範囲の中の wide の印は取り除く */
 export const buildWideRanges = (state: StateCore): void => {

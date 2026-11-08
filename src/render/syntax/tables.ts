@@ -398,7 +398,19 @@ export function readTableSpec(
     } else {
       skipped.push({
         arg: `${key}=`,
-        usable: codes(["filter=", "hide=", "total=", "pin=", "wide=", "check=", "header-rows=", "row-header=", "tree=", ...TREE_KEYS.map((name) => `${name}=`), ...COLOR_KEYS.map((name) => `${name}=`)]),
+        usable: codes([
+          "filter=",
+          "hide=",
+          "total=",
+          "pin=",
+          "wide=",
+          "check=",
+          "header-rows=",
+          "row-header=",
+          "tree=",
+          ...TREE_KEYS.map((name) => `${name}=`),
+          ...COLOR_KEYS.map((name) => `${name}=`),
+        ]),
       });
     }
   }
