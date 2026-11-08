@@ -4,10 +4,8 @@ import { mount } from "../../../../src/mount.ts";
 /** 表示の状態の処理を読み込む（実装が無い間は各テストが個別に失敗する） */
 const loadViewState = () => import("../../../../src/viewer/view-state.ts");
 
-// 閉じた表（details）・開いたセクション・group= の無いタブ群・group=os のタブ群を持つ文書
+// 閉じた表（details）・開いたセクション・group= の無いタブ群・group=os のタブ群を持つ文書（h1 もセクションの開閉を持つため置かない）
 const MARKDOWN = [
-  "# 文書",
-  "",
   "<!-- table: data closed -->",
   "",
   "| 名前 | 値 |",
@@ -45,10 +43,8 @@ const MARKDOWN = [
   ...Array.from({ length: 200 }, (_, index) => `段落 ${index + 1}\n`),
 ].join("\n");
 
-// 畳める行を持つコードブロックの文書
+// 畳める行を持つコードブロックだけの文書
 const CODE_MARKDOWN = [
-  "# 文書",
-  "",
   "```yaml",
   "features:",
   "  table: true",
