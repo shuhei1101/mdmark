@@ -5746,6 +5746,32 @@ flows:
       - 2 つ目のコードブロックの場所に `figure.mdmark-diagram[data-diagram="mermaid"]` がある
       - mermaid が文書に出すエラーの図（`#d{id}` の要素）が文書に残っていない
     test: test_error_when_mermaid_syntax_invalid
+  - name: 正常系（取り込みの枠の中の節を開閉する）
+    summary: 見出しの節の中に置いた取り込みの枠の中で、取り込んだ見出しの節を開閉する
+    setup:
+      - name: 配布物を読んだページ
+        description: 正常系と同じ
+      - name: 見出しの節の中の取り込みを持つ Markdown
+        description: '`## 航海` の後に `<!-- include: 共通/手順.md#実行 -->` と段落を持つ文書。`共通/手順.md` の `## 準備`・段落・`## 実行`・段落を取り込む文書の表として `opts.includes` に渡す'
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: mount(el, { markdown, includes })
+        M->>P: 取り込んだ節を取り込みの枠の中に描き、節の開閉を付ける
+        P->>M: 取り込んだ実行の開閉を押す
+        M->>P: 実行を閉じる
+        P->>M: 航海の開閉を押す
+        M->>P: 航海を閉じる
+    expected:
+      - '`section-航海` の中に `mdmark-include` があり、`mdmark-include` の中に `section-実行` と取り込んだ段落がある。取り込みの後の段落は `section-航海` の中で `mdmark-include` の外'
+      - '`実行` の開閉を押した後、`実行` の中身が `hidden` を持ち、ボタンの `aria-expanded` が `false`。`航海` の中身は `hidden` を持たない'
+      - '`航海` の開閉を押した後、`航海` の中身が `hidden` を持ち、ボタンの `aria-expanded` が `false`'
+    test: test_normal_when_sections_in_include_toggled
+    refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/文書をHTML文字列にする.ts#constraints[節]
 lead: 使う側のページが、要素と Markdown と設定を渡し、要素の中に文書を描く。戻り値で本文の差し替えと片付けができる。
 idempotent: false
 side_effects: '`el` の中身と class を書き換え、記法の操作のイベントを `el` の中に付ける。束ねていない名前の `icon:` があるとき、jsDelivr の Lucide のアイコンのモジュールを名前ごとに `import()` し、読めなかった名前だけ同じ URL へ `HEAD` の `fetch` を送る。`side-toc` がオンで見出しがあるとき、`el` の中を本文の列と右側の目次に分け、見出しの位置を `IntersectionObserver` で見る。出し方が `hover` のときは、右端の線とパネルの位置を決めるため、`window` の `scroll`・`resize` と、`el` に最も近いスクロールする祖先の要素があればその `scroll` を受け取り、`document.body` の子の追加・削除を `MutationObserver` で見る。`back-to-top` がオンのとき、`el` の子に先頭へ戻るボタンを置き、スクロールする場所が画面全体なら `window` の `scroll`、`el` に最も近いスクロールする祖先の要素なら `document` の `scroll`（捕捉の段）と、`window` の `resize` を受け取り、`document.body` と `el` の子の追加・削除を `MutationObserver` で見る。`window` の `beforeprint`・`afterprint`・`hashchange` と、絞り込みのドロワーを開いている間だけ `document` の `pointerdown`・`keydown` を受け取る。図の部品か埋め込んだ HTML があるとき、図の表示する枠と埋め込んだ HTML の大きさを `ResizeObserver` で見、ツールチップを開いている間だけ `document` の `keydown`・`pointerdown` と `window` の `scroll`・`resize` を受け取り、全画面の間だけ `el` の中に `dialog` を置く。リンク先を持つフロー図のノードの上から図を動かしたとき、次の 1 回の `click` まで `window` の `click`（キャプチャの段）を受け取る。`diagram-resize` がオンのとき、リサイズハンドルで変えた図の高さを sessionStorage に書き、描くたびに読み、ダブルクリックで戻すと削除する。操作できる部品の写すボタン・表のコピー・行の URL のコピー・コードブロックのコピー・ファイルツリーのコピーでクリップボードに書く。表があるとき、表の大きさと描く先の要素の幅を `ResizeObserver` で見、`animation-timeline` を持たないブラウザでは `window` と文書の中の `scroll` と `window` の `resize` を受け取る。`data-group` を持つタブがあるとき、localStorage の `mdmark-tabs:{group}` を描くたびに読み、読む人がタブを選ぶと書く。そのとき、ページの中の `el` の外にある同じ `group` のタブ群の選択も書き換える。文書に外部ライブラリか拡張の印があるとき、そのモジュールを読む。色分けの対象のコードブロックがあるとき、`syntax.url` の先の core と、使う言語のモジュールを読む。`mermaid` がオンの文書に mermaid のコードブロックがあるとき、`mermaid.url` の先のモジュールを読み、描く先の配色の明暗の変化を見て描き直す。`html-scripts` がオンの文書に範囲の `ts`・`js` があるとき、`html-scripts.url` の先の変換のライブラリを読み、範囲ごとに `document.head` へ `script` 要素を 1 つ置いてすぐ外し、範囲の関数を呼ぶ。`opts.diffSource` を渡したとき、読む人が差分を開くと（`opts.diffMode` が `open` なら描いた時点、`blocks` なら描くたびに）取り出し元の `revisions`・`content` を呼び、差分の行を出している間だけミニマップの帯を置き、送り先のスクロールの `scroll` と `window` の `resize` を受け取る。文書にビューの印があるとき、ビューの部品のモジュールを読む。`comments` がオンで `opts.commentStore` を渡したとき、コメントの部品のモジュールを読み、`load` を描くたびに 1 回呼び、保存で `save`、読み書きの関数が持つときは吹き出しの修正で `update`・削除で `remove`、`reloadComments` で `load` を呼ぶ。その間は `document` の `selectionchange` を受け取り、コメントのボタン・入力欄・吹き出しを `document.body` に置く。あわせて本文の列の右に余白の列を置き、描く先の要素の大きさを `ResizeObserver`、描く先の要素の中の開閉・切り替えを `MutationObserver` で見る'
