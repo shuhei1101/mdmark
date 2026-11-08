@@ -1,0 +1,10 @@
+$ npx vitest run --project 'integration*' tests/integration/lib/bundle.test.ts
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/fix-viewer-restore-scroll-on-back
+
+
+ Test Files  1 passed (1)
+      Tests  18 passed (18)
+   Start at  06:34:20
+   Duration  131.78s (tests 97%, import 3%)
+
