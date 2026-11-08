@@ -12602,10 +12602,16 @@ test("test_normal_when_page_marker_invalid", async () => {
       const warnings1 = el1.querySelectorAll(".mdmark-syntax-warning");
       expect(warnings1).toHaveLength(1);
       const text1 = warnings1[0]?.textContent ?? "";
+      // 本文の頭は印の文字のため、印の後ろの挙げた指定を見る
+      const listed1 = text1.replace(
+        "<!-- page: scheme=sepia theme=theme-unknown size=wide toc=fixed -->",
+        "",
+      );
+      // 知らないキー size=wide は読み飛ばし、警告に挙げない
+      expect(listed1).not.toContain("size=wide");
       for (const word of [
         "scheme=sepia",
         "theme=theme-unknown",
-        "size=wide",
         "scheme",
         "light",
         "dark",
