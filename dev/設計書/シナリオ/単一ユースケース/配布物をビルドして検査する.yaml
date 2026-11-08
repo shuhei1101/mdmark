@@ -69,7 +69,7 @@ scenarios:
         B-->>D: バージョンの書式が違う旨を出し、終了コード 1
     expected:
       - 終了コードが 1
-      - '`dist/` に配布物が記載されていない'
+      - '`dist/` に配布物が書き込まれていない'
       - 出力に `v{MAJOR}.{MINOR}.{PATCH}` の書式が示される
     test: test_error_when_version_format_invalid
   - name: 異常シナリオ（配布ファイルが上限を超える）
@@ -133,7 +133,7 @@ scenarios:
         B-->>D: 変わった Schema と修正方法を出し、終了コード 1
     expected:
       - 終了コードが 1
-      - '`dist/` に配布物が記載されていない'
+      - '`dist/` に配布物が書き込まれていない'
       - 出力に変わった Schema のファイルと、`migrations/next/steps.yaml` を配置するか `no-steps.yaml` に理由を記載することが出る
     test: test_error_when_schema_changed_without_steps
   - name: 異常シナリオ（release のビルドで出していないバージョンの手順が残る）
@@ -154,7 +154,7 @@ scenarios:
         B-->>D: migrations/next/ を migrations/v0.4.0/ へ移すことを出し、終了コード 1
     expected:
       - 終了コードが 1
-      - '`dist/` に配布物が記載されていない'
+      - '`dist/` に配布物が書き込まれていない'
       - 出力に `migrations/next/` を `migrations/v0.4.0/` へ移し、`no-steps.yaml` の `next` の行を `v0.4.0` にすることが出る
     test: test_error_when_next_steps_left_in_release
   - name: 異常シナリオ（対応ブラウザの下限に無い API を使用する）

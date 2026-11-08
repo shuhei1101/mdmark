@@ -126,7 +126,7 @@ flows:
     expected:
       - 終了コードが 1
       - 標準エラーに `dist/docs_files` と修正方法が出る
-      - ファイル `dist/docs_files` が変わっておらず、`dist/docs.html` が記載されていない
+      - ファイル `dist/docs_files` が変わっておらず、`dist/docs.html` が書き込まれていない
     test: test_error_when_media_copy_unwritable
   - name: 正常系（エイリアスを読み込む）
     summary: 設定の aliases の YAML から作ったエイリアスを埋め、まとめた全ての文書で有効にしる

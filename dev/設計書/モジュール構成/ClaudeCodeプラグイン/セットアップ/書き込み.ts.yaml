@@ -5,7 +5,7 @@ functions:
     title: --set を読み込む
     kind: 関数
     container: src/plugin/setup/write.ts
-    usecase: 端末の設定を記載する
+    usecase: 端末の設定を書き込む
     role: 処理
     summary: '`{キー}={値}` の並びを、ドットのキーと YAML として読み込んだ値の組にする'
     scope: public
@@ -33,15 +33,15 @@ functions:
         mock: なし
         expected: 終了コード 1 の `SetupError`
     refs:
-      - dev/設計書/インターフェース定義/ClaudeCodeプラグイン/端末の設定を記載する.ts#request
+      - dev/設計書/インターフェース定義/ClaudeCodeプラグイン/端末の設定を書き込む.ts#request
     status: planned
     introduced:
       pr: 354
   - name: writeSettings
-    title: 端末の設定を記載する
+    title: 端末の設定を書き込む
     kind: 関数
     container: src/plugin/setup/write.ts
-    usecase: 端末の設定を記載する
+    usecase: 端末の設定を書き込む
     role: 処理
     summary: '`write-settings` の本体。端末の設定を作る・書き換え、既定のパスでなければ `settings.json` の `env` に `MDMARK_CONFIG` を書き込む'
     scope: public
@@ -53,11 +53,11 @@ functions:
         description: 環境変数・プラグインの直下・プラグインのバージョン・`--set` の値
     returns:
       type: 'Promise<{ written: string[]; keys: string[] }>'
-      description: 記載したファイルとキー
+      description: 書き込んだファイルとキー
     process: |-
       1. パスを決め、端末の設定があれば `yaml` の `Document` で読み込む。無ければ `plugin/settings.sample.yaml` を雛形にし、`version` をプラグインのバージョンにする
       2. `--set` の組を `Document.setIn` で当て、`toJS()` を `validateConfig`（`settings: true`）で検める。ずれがあれば `SetupError`（1）で何も書き込まない
-      3. 端末の設定を記載する（親のフォルダが無ければ作る）
+      3. 端末の設定を書き込む（親のフォルダが無ければ作る）
       4. `defaultPath` が偽なら `writeClaudeEnv` で `MDMARK_CONFIG` を書き込む
     side_effects: 端末の設定と `settings.json` を書き込む
     callees:
@@ -68,13 +68,13 @@ functions:
     unit_tests:
       - name: test_write_settings
         case: 正常
-        summary: 雛形から作り env を記載する
+        summary: 雛形から作り env を書き込む
         condition: 一時フォルダの `MDMARK_CONFIG`・`CLAUDE_CONFIG_DIR`、`sets` が `["features.table=false"]`
         mock: なし
         expected: '端末の設定が `version` と `features.table: false` を持ち、`settings.json` の `env.MDMARK_CONFIG` が端末の設定のパス'
       - name: test_write_settings_when_invalid
         case: 異常
-        summary: Schema に合わなければ記載しない
+        summary: Schema に合わなければ書き込まない
         condition: '`sets` が `["config.cascade=yes"]`'
         mock: なし
         expected: 終了コード 1 の `SetupError`、端末の設定と `settings.json` が無い
@@ -85,7 +85,7 @@ functions:
         mock: なし
         expected: 'コメントの行と `features.callout: false` が残り、`version` が変わらない'
     refs:
-      - dev/設計書/インターフェース定義/ClaudeCodeプラグイン/端末の設定を記載する.ts#
+      - dev/設計書/インターフェース定義/ClaudeCodeプラグイン/端末の設定を書き込む.ts#
     status: planned
     introduced:
       pr: 354
@@ -93,7 +93,7 @@ functions:
     title: settings.json の env に書き込む
     kind: 関数
     container: src/plugin/setup/write.ts
-    usecase: 端末の設定を記載する
+    usecase: 端末の設定を書き込む
     role: 処理
     summary: '`settings.json` の `env` の 1 つのキーだけを書き換える'
     scope: public
@@ -105,34 +105,34 @@ functions:
         description: '`settings.json` のパス・キー・値'
     returns:
       type: Promise<boolean>
-      description: 書き換えたか（同じ値なら偽で記載しない）
+      description: 書き換えたか（同じ値なら偽で書き込まない）
     process: |-
       1. `settings.json` を JSON として読み込み（無ければ `{}`）、`env[key]` が同じ値なら偽を返却する
-      2. `env[key]` を記載し、ほかのキーの並びを保って 2 つの空白で字下げした JSON を記載する
+      2. `env[key]` を書き込み、ほかのキーの並びを保って 2 つの空白で字下げした JSON を書き込む
     side_effects: '`settings.json` を書き込む'
     unit_tests:
       - name: test_write_claude_env
         case: 正常
-        summary: ほかのキーを残して env を記載する
+        summary: ほかのキーを残して env を書き込む
         condition: '`{ "model": "x", "env": { "A": "1" } }` の `settings.json`'
         mock: なし
         expected: '`env` が `{ "A": "1", "MDMARK_CONFIG": "/p" }`、`model` が残る'
       - name: test_write_claude_env_when_same
         case: 正常
-        summary: 同じ値なら記載しない
+        summary: 同じ値なら書き込まない
         condition: '`env.MDMARK_CONFIG` が `/p` の `settings.json`'
         mock: なし
         expected: 偽を返却し、ファイルの更新時刻が変わらない
     refs:
-      - dev/設計書/インターフェース定義/ClaudeCodeプラグイン/端末の設定を記載する.ts#constraints[settings.json]
+      - dev/設計書/インターフェース定義/ClaudeCodeプラグイン/端末の設定を書き込む.ts#constraints[settings.json]
     status: planned
     introduced:
       pr: 354
   - name: writeConfig
-    title: 文書のフォルダの設定を記載する
+    title: 文書のフォルダの設定を書き込む
     kind: 関数
     container: src/plugin/setup/write.ts
-    usecase: 文書のフォルダの設定を記載する
+    usecase: 文書のフォルダの設定を書き込む
     role: 処理
     summary: '`write-config` の本体'
     scope: public
@@ -144,12 +144,12 @@ functions:
         description: 環境変数・プラグインの直下・プラグインのバージョン・文書のフォルダ・`--set` の値
     returns:
       type: 'Promise<{ written: string[]; keys: string[] }>'
-      description: 記載したファイルとキー
+      description: 書き込んだファイルとキー
     process: |-
       1. `{dir}/mdmark.config.yaml` があれば `Document` で読み込み、無ければ `mdmark init` と同じ雛形を読み込み `version` をプラグインのバージョンにする
       2. `--set` のキーが端末の設定だけが持つキー（`config.*`・`serve.*`）なら `SetupError`（1）
-      3. 適用した後を `validateConfig` で検め、ずれがあれば `SetupError`（1）で記載しない
-      4. 記載する
+      3. 適用した後を `validateConfig` で検め、ずれがあれば `SetupError`（1）で書き込まない
+      4. 書き込む
     side_effects: '`mdmark.config.yaml` を書き込む'
     callees:
       - '#functions[parseSetArgs]'
@@ -163,12 +163,12 @@ functions:
         expected: '`version` と `features.callout: false` を持つ'
       - name: test_write_config_when_settings_key
         case: 異常
-        summary: 端末の設定だけのキーは記載しない
+        summary: 端末の設定だけのキーは書き込まない
         condition: '`sets` が `["config.cascade=true"]`'
         mock: なし
         expected: 終了コード 1 の `SetupError`、ファイルが無い
     refs:
-      - dev/設計書/インターフェース定義/ClaudeCodeプラグイン/文書のフォルダの設定を記載する.ts#
+      - dev/設計書/インターフェース定義/ClaudeCodeプラグイン/文書のフォルダの設定を書き込む.ts#
     status: planned
     introduced:
       pr: 354

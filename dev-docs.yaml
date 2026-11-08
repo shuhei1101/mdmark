@@ -7,7 +7,7 @@ github:
   repository: shuhei1101/mdmark
 instructions: |-
   mdmark のガイドは、公開ドキュメントの行（kind が docs）のうちタグ topic:ガイド の文書。
-  mdmark で文書を記載するときは、filter に {"and": [{"field": "tags", "op": "eq", "values": ["topic:ガイド"]}, {"field": "kind", "op": "eq", "values": ["docs"]}]} を指定して一覧を検索し、description の「〜ときに読み込む」が作業に該当するページを view: "full" で読み込む。
+  mdmark で文書を記載するときは、filter に {"and": [{"field": "tags", "op": "eq", "values": ["topic:ガイド"]}, {"field": "kind", "op": "eq", "values": ["docs"]}]} を指定して一覧を検索し、description の「〜ときに参照する」が作業に該当するページを view: "full" で読み込む。
   人が読み込む資料を記載するときは、最初に『文書の記載方法』（使用方法/記載する/文書の記載方法.md）を読み込む。
   記法の記載方法を確認するときは『記法』（リファレンス/記法.md）を読み込む。
 documents:

@@ -1,4 +1,4 @@
-title: 端末の設定を記載する
+title: 端末の設定を書き込む
 entry:
   kind: operation
   value: '`node ${CLAUDE_PLUGIN_ROOT}/bin/setup.js write-settings [--set {キー}={値}]...`（スキルが Bash で呼ぶ）'
@@ -17,8 +17,8 @@ flows:
         participant F as 端末の設定と settings.json
         K->>P: write-settings --set features.table=false
         P->>P: Schema で検める
-        P->>F: 雛形に値と version を入れて記載し、env に MDMARK_CONFIG を書き込む
-        P-->>K: 記載したパスとキー・終了コード 0
+        P->>F: 雛形に値と version を入れて書き込み、env に MDMARK_CONFIG を書き込む
+        P-->>K: 書き込んだパスとキー・終了コード 0
     expected:
       - 終了コードが 0
       - '`MDMARK_CONFIG` のパスの端末の設定が `version`（プラグインのバージョン）と `features.table: false` を持つ'
@@ -41,7 +41,7 @@ flows:
         participant F as 端末の設定
         K->>P: write-settings --set serve.tmuxSession=mdmark-test
         P->>F: serve.tmuxSession だけを書き換える
-        P-->>K: 記載したキー・終了コード 0
+        P-->>K: 書き込んだキー・終了コード 0
     expected:
       - '`serve.tmuxSession` が `mdmark-test`'
       - 'コメントの行と `features.callout: false` が残っている'
@@ -58,7 +58,7 @@ flows:
         participant K as スキル（global-setup・setup）
         participant P as setup.js
         K->>P: write-settings
-        P-->>K: 記載したパス・終了コード 0
+        P-->>K: 書き込んだパス・終了コード 0
     expected:
       - '`${XDG_CONFIG_HOME}/mdmark/settings.yaml` がある'
       - '`CLAUDE_CONFIG_DIR` に `settings.json` が無い'
@@ -94,7 +94,7 @@ request:
     required: false
     default: なし（値を変えず、無ければ雛形と `version` だけで作る）
     location: argument
-    description: 記載するキーと値。キーはドットで区切る。値は YAML として読み込む。繰り返して指定できる
+    description: 書き込むキーと値。キーはドットで区切る。値は YAML として読み込む。繰り返して指定できる
     example: features.table=false
   - name: MDMARK_CONFIG
     type: string
@@ -117,13 +117,13 @@ response:
     description: 書き換えたキー
 exceptions:
   - name: なし（正常終了）
-    condition: 記載した。終了コード 0
+    condition: 書き込んだ。終了コード 0
   - name: なし（Schema に合わない値・終了コード 1）
-    condition: 記載した後の端末の設定が `schemas/mdmark.settings.schema.json` に合わない
+    condition: 書き込んだ後の端末の設定が `schemas/mdmark.settings.schema.json` に合わない
     notes: 何も書き込まない
 constraints:
   - item: Schema
-    constraint: 記載する前に、記載した後の端末の設定を `schemas/mdmark.settings.schema.json` で検める
+    constraint: 書き込む前に、書き込んだ後の端末の設定を `schemas/mdmark.settings.schema.json` で検める
     decided_by: dev/設計書/設定/ライブラリ本体#settings[serve.tmuxSession]
   - item: YAML の書き換え
     constraint: コメント・キーの並び・触らないキーの記載方法を残す
@@ -131,7 +131,7 @@ constraints:
   - item: version
     constraint: 端末の設定を新しく作るときだけ `version` をプラグインのバージョンにする。既にある `version` は書き換えない（移行は `mdmark upgrade --settings`）
   - item: settings.json
-    constraint: '`env.MDMARK_CONFIG` だけを書き込み、ほかのキーと書き込み方法を残す。端末の設定が既定のパスなら記載しない'
+    constraint: '`env.MDMARK_CONFIG` だけを書き込み、ほかのキーと記載方法を残す。端末の設定が既定のパスなら書き込まない'
   - item: 出力
     constraint: 結果は標準出力に JSON の 1 行で出す。誤りは標準エラーに理由と修正方法を出す
   - item: 動く Node のバージョン

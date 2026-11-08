@@ -47,7 +47,7 @@ used_in:
   - tests/integration/lib/register-extension.browser.test.ts
 selection:
   candidates: mdmark は拡張の引数の検査に Standard Schema を受け、検査ライブラリを配布物にまとめない（[ライブラリ選定](https://github.com/shuhei1101/mdmark/pull/19#discussion_r4269417402)）。テストで利用側の schema を作るのに valibot 1.5.0 と zod 4.6.7 を動かした
-  decision: '`strictTuple` で引数の数を限ったとき、余る引数も位置を持つ `path` で返却するため、警告の項目の記載し分けを確認できる（zod の `z.tuple` の数の超過は `path` が `args` で止まる）'
+  decision: '`strictTuple` で引数の数を限ったとき、余る引数も位置を持つ `path` で返却するため、警告の項目ごとの記載の違いを確認できる（zod の `z.tuple` の数の超過は `path` が `args` で止まる）'
   consequences: 開発用の依存にだけ入れ、配布物にはまとめない
 install: |-
   ```bash

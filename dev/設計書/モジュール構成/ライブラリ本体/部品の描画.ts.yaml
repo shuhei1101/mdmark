@@ -162,7 +162,7 @@ functions:
     kind: 関数
     scope: internal
     is_async: true
-    summary: Playwright の Chromium で、`dev/mock/components/mermaid-diagram/` の場面と同じソースを `mount` で描き、図の `svg`（暗い配色の場面は印刷用の `svg` も）を `tests/fixtures/mermaid-svg/{名前}.svg` に記載する。mermaid のバージョンを変えたときに `npm run fixtures:mermaid` で実行し、記載したファイルを commit する
+    summary: Playwright の Chromium で、`dev/mock/components/mermaid-diagram/` の場面と同じソースを `mount` で描き、図の `svg`（暗い配色の場面は印刷用の `svg` も）を `tests/fixtures/mermaid-svg/{名前}.svg` に書き込む。mermaid のバージョンを変えたときに `npm run fixtures:mermaid` で実行し、記載したファイルを commit する
     side_effects: '`tests/fixtures/mermaid-svg/` のファイルを書き換える'
     args:
       - name: options

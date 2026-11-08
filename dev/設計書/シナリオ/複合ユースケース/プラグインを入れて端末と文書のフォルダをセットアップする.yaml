@@ -108,6 +108,6 @@ trigger: 文書の作成者が、新しい端末かもう一度入れた端末�
 preconditions:
   - 文書の作成者の手元に Claude Code・git・Node 24 以降・tmux 3.4 以降がある
   - 文書の作成者の手元から GitHub と npm のレジストリへ届く
-success_guarantee: 端末の設定と文書のフォルダの `mdmark.config.yaml` が、文書の作成者が回答した値で記載され、常駐サーバーが tmux のセッションの中で 1 つだけ待ち受ける。次に開いたセッションで、MCP の `instructions` からセッション名が伝わり、MCP のツールがそのセッションの作業のフォルダに対して働く。
-minimal_guarantee: 文書の作成者が記載することを認めなかった値は、端末の設定にも `mdmark.config.yaml` にも記載しない。常駐サーバーが起動していないときも Claude Code のセッションは開け、セッションの開始で起動していないことと `global-setup` で起動できることが伝わる。
+success_guarantee: 端末の設定と文書のフォルダの `mdmark.config.yaml` が、文書の作成者が回答した値で書き込まれ、常駐サーバーが tmux のセッションの中で 1 つだけ待ち受ける。次に開いたセッションで、MCP の `instructions` からセッション名が伝わり、MCP のツールがそのセッションの作業のフォルダに対して働く。
+minimal_guarantee: 文書の作成者が書き込むことを認めなかった値は、端末の設定にも `mdmark.config.yaml` にも書き込まない。常駐サーバーが起動していないときも Claude Code のセッションは開け、セッションの開始で起動していないことと `global-setup` で起動できることが伝わる。
 test_file: tests/e2e/複合ユースケース/プラグインを入れて端末と文書のフォルダをセットアップする.spec.ts

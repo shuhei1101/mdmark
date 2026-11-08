@@ -23,15 +23,15 @@ scenarios:
           C-->>W: キーの既定
           W->>C: 値
         end
-        C-->>W: 記載する内容
-        W->>C: 記載してよい
-        C->>F: 端末の設定を記載し、settings.json の env に MDMARK_CONFIG を書き込む
+        C-->>W: 書き込む内容
+        W->>C: 書き込んでよい
+        C->>F: 端末の設定を書き込み、settings.json の env に MDMARK_CONFIG を書き込む
         C->>T: セッションが無いので、新しいセッションで mdmark serve を起動する
         T->>S: 起動
         C->>S: tools/list
         S-->>C: ツールの一覧
         C->>C: SessionStart のフックを実行する
-        C-->>W: 作ったもの・記載したキー・セッション名・ログの場所・止め方
+        C-->>W: 作ったもの・書き込んだキー・セッション名・ログの場所・止め方
     expected:
       - '`MDMARK_CONFIG` のパスに端末の設定があり、`features.table: false` を持ち、`mdmark check` と同じ点検が端末の設定の構造のずれを返却しない'
       - '`CLAUDE_CONFIG_DIR` の `settings.json` の `env` に、端末の設定のパスの `MDMARK_CONFIG` がある'
@@ -130,14 +130,14 @@ scenarios:
       - 端末の設定にテスト専用の移行の手順が該当し、`version` が今のバージョンになり、`mdmark check` と同じ点検が端末の設定の構造のずれを返却しない
       - 移行する前の端末の設定のコピーが残り、最後の報告にそのパスが出る
     test: test_normal_when_settings_outdated
-  - name: 異常シナリオ（記載することを断る）
+  - name: 異常シナリオ（書き込むことを断る）
     setup:
       - name: 空の端末
         description: 正常シナリオと同じ
       - name: 手元と別の tmux サーバーと空いたポート
         description: 正常シナリオと同じ
       - name: Mock
-        description: 正常シナリオと同じ。記載してよいかには断る回答を返却する
+        description: 正常シナリオと同じ。書き込んでよいかには断る回答を返却する
     flow: |-
       sequenceDiagram
         actor W as 文書の作成者
@@ -148,8 +148,8 @@ scenarios:
           C-->>W: キーの既定
           W->>C: 値
         end
-        C-->>W: 記載する内容
-        W->>C: 記載しない
+        C-->>W: 書き込む内容
+        W->>C: 書き込まない
         C->>T: 新しいセッションで mdmark serve を起動する
         C-->>W: 端末の設定と settings.json を書き込まなかったこと
     expected:
@@ -172,7 +172,7 @@ scenarios:
         actor W as 文書の作成者
         participant C as Claude Code（global-setup）
         W->>C: /mdmark:global-setup
-        C->>C: 端末の設定を記載する
+        C->>C: 端末の設定を書き込む
         C->>C: tmux が見つからない
         C-->>W: 端末で mdmark serve を開いたまま動かすコマンド
     expected:
@@ -217,5 +217,5 @@ preconditions:
   - Claude Code に mdmark のプラグインを入れている
   - 文書の作成者の手元に Node 24 以降と tmux 3.4 以降がある
 success_guarantee: 端末の設定が文書の作成者の回答した値で今のバージョンの記載方法になり、常駐サーバーが端末の設定のセッション名の tmux のセッションの中で 1 つだけ待ち受け、`tools/list` がツールの一覧を返却する。
-minimal_guarantee: 文書の作成者が記載することを認めなかったときは、端末の設定と `settings.json` を書き換えない。ほかのプロセスが待ち受けているポートは、そのプロセスのまま変わらない。
+minimal_guarantee: 文書の作成者が書き込むことを認めなかったときは、端末の設定と `settings.json` を書き換えない。ほかのプロセスが待ち受けているポートは、そのプロセスのまま変わらない。
 test_file: tests/e2e/単一ユースケース/端末にmdmarkをセットアップする.spec.ts

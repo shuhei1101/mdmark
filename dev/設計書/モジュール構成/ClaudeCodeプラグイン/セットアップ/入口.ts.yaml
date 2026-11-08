@@ -54,7 +54,7 @@ functions:
     unit_tests:
       - name: test_run_setup
         case: 正常
-        summary: status の結果を JSON の 1 行で記載する
+        summary: status の結果を JSON の 1 行で標準出力に書き込む
         condition: '`argv` が `["status"]`、一時の端末の環境変数'
         mock: 行を配列に貯める `stdout`、終了コード 1 の `run`（tmux が無い）
         expected: 0 を返却し、`stdout` の 1 行を JSON として読み込むと `tmux.available` が `false`

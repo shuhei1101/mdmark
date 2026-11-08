@@ -183,7 +183,7 @@ scenarios:
         description: 正常シナリオと同じ
       - name: 知らない指定を持つ Markdown
         description: '`<!-- tabs: grop=os -->` で `### macOS`・`### Windows` を囲んだ範囲と、`<!-- tabs: group=os fold -->` で `### macOS`・`### Windows` を囲んだ範囲を並べた文書'
-        notes: 1 つ目は `group` を記載し損じたキー、2 つ目は `キー=値` の構造でない指定
+        notes: 1 つ目は `group` の記載を誤ったキー、2 つ目は `キー=値` の構造でない指定
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-

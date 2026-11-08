@@ -1,5 +1,5 @@
 title: "ER 図: ガイド"
-lead: ガイドにする `docs/` のページの索引。行ごとに名前・読み込むとき・概要と、本文にする `docs/` のページを持つ。
+lead: ガイドにする `docs/` のページの索引。行ごとに名前・参照するとき・概要と、本文にする `docs/` のページを持つ。
 overview: 原本はリポジトリの直下の `guide/index.yaml`（YAML の 1 ファイル）。最上位は `schema`（索引のバージョン。整数で今は `1`、必須）と `guides`（行の並び、必須）の 2 つのキーを持ち、ほかのキーを拒む。本文は別に記載せず、`docs/` の使用方法・リファレンスのページを指す。指したページは `docs/files.yaml` の行にタグ `topic:ガイド` を持ち、Claude Code は dev-docs の配信元 `mdmark` の `docs` の行からタグで絞って参照する。配布物のビルドが索引の構造と指すページの有無を検査し、プラグインには写さない
 tables:
   - name: guides
@@ -20,11 +20,11 @@ tables:
         description: ガイドの名前。索引の中で一意
         example: notation
       - name: when
-        title: 読み込むとき
+        title: 参照するとき
         type: string
         not_null: true
         check: 空でない
-        description: どんな作業のときに読み込むか
+        description: どんな作業のときに参照するか
         example: マーカーと記法を記載するとき
       - name: summary
         title: 概要

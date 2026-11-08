@@ -230,7 +230,7 @@ functions:
     unit_tests:
       - name: test_rewrite_links
         case: 正常
-        summary: 文書間のリンク・見出しのアンカー・含まれないリンクを記載し分ける
+        summary: 文書間のリンク・見出しのアンカー・含まれないリンクを分けて記載する
         condition: '`使い方/guide.md` に `../リファレンス/api.md#mount`・`#描く`・`../下書き/メモ.md`・`https://example.com/` のリンク、まとめた文書は `使い方/guide.md`・`リファレンス/api.md`'
         mock: Chromium の `document`（`.browser.test.ts` で実行する）に作った要素
         expected: '`href` が順に `#/リファレンス/api.md#mount`・`#/使い方/guide.md#描く`・`../下書き/メモ.md`・`https://example.com/`、`data-doc-path` は 1 つ目だけが `リファレンス/api.md`'

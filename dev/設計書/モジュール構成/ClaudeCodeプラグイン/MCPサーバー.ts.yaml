@@ -165,7 +165,7 @@ constants:
     entries:
       - key: export_html
         value: file（必須）・out・config（文字列）
-        description: '`mdmark export` と同じ処理で文書を 1 枚の HTML に書き出し、記載した絶対パス `out` と警告 `warnings` を返却する'
+        description: '`mdmark export` と同じ処理で文書を 1 枚の HTML に書き出し、書き出した絶対パス `out` と警告 `warnings` を返却する'
       - key: build_site
         value: config（文字列）
         description: '`mdmark build` と同じ処理で設定の `build` の文書を 1 枚にまとめ、`out`・文書の数 `docs`・`warnings` を返却する'

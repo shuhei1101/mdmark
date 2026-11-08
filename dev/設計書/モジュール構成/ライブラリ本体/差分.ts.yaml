@@ -462,7 +462,7 @@ functions:
         expected: 帯が 1 本で、削除した後は 2 つ目のマーカーだけを持つ。両方外すと帯が無い
       - name: test_attach_minimap_when_scroll_container
         case: 正常
-        summary: スクロールする枠の中の差分は、枠の右端に配置し枠を送信する
+        summary: スクロールする枠の中の差分は、枠の右端に配置し、枠をスクロールする
         condition: '`overflow-y: auto` で高さを決めた枠の中の差分の行'
         mock: なし
         expected: 帯の右端と高さが枠と同じで、帯を押すと枠の `scrollTop` が変わる

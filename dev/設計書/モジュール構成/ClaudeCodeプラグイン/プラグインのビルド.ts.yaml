@@ -227,7 +227,7 @@ functions:
     container: scripts/build-plugin.ts
     usecase: 配布物をビルドして検査する
     summary: '`PLUGIN_MANIFEST` の `version` を埋めるバージョンにし、他のキーと並びは保つ'
-    description: Claude Code は `version` が変わったときだけプラグインを更新するため、hotfix の `--version` でも `dist/` と同じバージョンを記載する
+    description: Claude Code は `version` が変わったときだけプラグインを更新するため、hotfix の `--version` でも `dist/` と同じバージョンを書き込む
     scope: public
     is_async: true
     side_effects: '`PLUGIN_MANIFEST` を書き換える'

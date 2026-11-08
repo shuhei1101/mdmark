@@ -96,7 +96,7 @@ issue: 4
 primary_actor: 文書の作成者
 stakeholders:
   - name: 読者
-    interest: 「図 2 を参照」の番号から図へ移れ、図を追加し引きしても番号がずれない
+    interest: 「図 2 を参照」の番号から図へ移れ、図を追加・削除しても番号がずれない
 trigger: 利用側のページが、図表の番号のマーカーを持つ文書を描かせる
 preconditions:
   - ページがバージョンを固定した URL で mdmark の JavaScript と CSS を読み込んでいる

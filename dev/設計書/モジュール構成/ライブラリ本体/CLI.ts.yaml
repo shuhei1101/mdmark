@@ -9,9 +9,9 @@ directory: |-
   ├── alias-schema.ts # 設定の aliases の行の JSON Schema での検査
   ├── aliases.ts    # aliases の行の paths の YAML の読み取りとエイリアスの組み立て
   ├── documents.ts  # build の対象の文書・索引と索引の文書の読み取り・文書のタイトル
-  ├── embed.ts      # 外部ライブラリと拡張のまとめ・起動の処理と埋めるモジュールの 1 つのスクリプトへのまとめ・色分けの言語の取得し出し・画像の埋め込み・1 枚に含まれない文書へのリンク
-  ├── assets.ts     # 画像・動画・音声・添付の参照の取得し出し・アセットのルートでの探索・動画と音声のコピー・見つからないファイルの点検
-  ├── includes.ts   # 取り込む文書の表の組み立てと、取り込めない問題の取得し出し
+  ├── embed.ts      # 外部ライブラリと拡張のまとめ・起動の処理と埋めるモジュールの 1 つのスクリプトへのまとめ・色分けの言語の抽出・画像の埋め込み・1 枚に含まれない文書へのリンク
+  ├── assets.ts     # 画像・動画・音声・添付の参照の抽出・アセットのルートでの探索・動画と音声のコピー・見つからないファイルの点検
+  ├── includes.ts   # 取り込む文書の表の組み立てと、取り込めない問題の抽出
   ├── icons.ts      # まとめていない名前のアイコンの形状の取り出し
   ├── html.ts       # 書き出す HTML の組み立て
   ├── init.ts       # mdmark init
@@ -723,7 +723,7 @@ functions:
     introduced:
       pr: 296
   - name: cacheFetchText
-    title: URL を読み込む関数を記録し付きにする
+    title: URL を読み込む関数を記録付きにする
     container: src/bundle-module.ts
     usecase: 共通
     summary: 同じ URL を 1 回だけ読み込む `FetchText` を返却する。`prepareEmbeds` の確認と `bundleViewer` が同じ関数を使用し、同じ URL を 2 回読まない
@@ -739,7 +739,7 @@ functions:
         description: URL を読み込む関数（テストで差し替える）
     returns:
       type: FetchText
-      description: 記録し付きの URL を読み込む関数
+      description: 記録付きの URL を読み込む関数
     unit_tests:
       - name: test_cache_fetch_text
         case: 正常
@@ -1684,7 +1684,7 @@ functions:
     kind: 関数
     container: src/cli/export.ts
     usecase: 文書をHTMLに書き出す
-    summary: '文書 1 つを `kind: document` の中身にして HTML を書き込み、記載したパスと警告を返却する。動画と音声は HTML を書き込む前に `_files/` へコピーする（埋めるものを用意する）'
+    summary: '文書 1 つを `kind: document` の中身にして HTML を書き込み、書き込んだパスと警告を返却する。動画と音声は HTML を書き込む前に `_files/` へコピーする（埋めるものを用意する）'
     description: '`runExport`（CLI）と MCP の `export_html` が同じ処理を呼ぶ。標準出力・標準エラーには書き込まない'
     scope: public
     is_async: true
@@ -1748,7 +1748,7 @@ functions:
     kind: 関数
     container: src/cli/build.ts
     usecase: 複数の文書を1枚のHTMLにまとめる
-    summary: '`build` の対象の文書を `kind: bundle` の中身にして `build.out` に HTML を書き込み、記載したパス・文書の数・警告を返却する。動画と音声は HTML を書き込む前に `_files/` へコピーする（埋めるものを用意する）'
+    summary: '`build` の対象の文書を `kind: bundle` の中身にして `build.out` に HTML を書き込み、書き込んだパス・文書の数・警告を返却する。動画と音声は HTML を書き込む前に `_files/` へコピーする（埋めるものを用意する）'
     description: '`runBuild`（CLI）と MCP の `build_site` が同じ処理を呼ぶ。警告の中身と並びは `runBuild` が標準エラーに出していたものと同じ。標準出力・標準エラーには書き込まない'
     scope: public
     is_async: true

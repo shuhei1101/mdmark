@@ -5,7 +5,7 @@ scenarios:
       - name: 文書のフォルダ
         description: '`mdmark.config.yaml` と索引の無いフォルダに、Markdown を 1 つ配置する'
       - name: Mock
-        description: スキルを読み込むモデルの代わりに、スキルの手順が呼ぶスクリプトを手順の順に実行し、利用者への確認には決めた回答を返却する。`features.callout` だけ `false` を、ほかは既定のままを回答し、記載してよいかには認める回答を返却する
+        description: スキルを読み込むモデルの代わりに、スキルの手順が呼ぶスクリプトを手順の順に実行し、利用者への確認には決めた回答を返却する。`features.callout` だけ `false` を、ほかは既定のままを回答し、書き込んでよいかには認める回答を返却する
     flow: |-
       sequenceDiagram
         actor W as 文書の作成者
@@ -17,14 +17,14 @@ scenarios:
           C-->>W: キーの既定と、端末の設定で重なる値
           W->>C: 値
         end
-        C-->>W: 記載する内容
-        W->>C: 記載してよい
-        C->>F: 雛形に回答した値を入れて記載する
-        C-->>W: 記載したパスと値
+        C-->>W: 書き込む内容
+        W->>C: 書き込んでよい
+        C->>F: 雛形に回答した値を入れて書き込む
+        C-->>W: 書き込んだパスと値
     expected:
       - '文書のフォルダに `mdmark.config.yaml` があり、`features.callout: false` を持つ'
       - '`mdmark check` と同じ点検が設定の構造のずれを返却しない'
-      - 最後の報告に、記載したパスと既定から変えたキーが出る
+      - 最後の報告に、書き込んだパスと既定から変えたキーが出る
     test: test_normal
   - name: 正常シナリオ（設定がある）
     setup:
@@ -44,19 +44,19 @@ scenarios:
           W->>C: 値
         end
         C-->>W: 変えるキー
-        W->>C: 記載してよい
+        W->>C: 書き込んでよい
         C->>F: 変えるキーだけ書き換える
         C-->>W: 変えたキー
     expected:
       - '`mdmark.config.yaml` が `features.callout: false` と `features.table: false` を持つ'
       - '`features.callout` の行のほかの行（コメントの行を含む）が呼ぶ前と同じ'
     test: test_normal_when_config_exists
-  - name: 異常シナリオ（記載することを断る）
+  - name: 異常シナリオ（書き込むことを断る）
     setup:
       - name: 文書のフォルダ
         description: 正常シナリオと同じ
       - name: Mock
-        description: 正常シナリオと同じ。記載してよいかには断る回答を返却する
+        description: 正常シナリオと同じ。書き込んでよいかには断る回答を返却する
     flow: |-
       sequenceDiagram
         actor W as 文書の作成者
@@ -67,12 +67,12 @@ scenarios:
           C-->>W: キーの既定
           W->>C: 値
         end
-        C-->>W: 記載する内容
-        W->>C: 記載しない
-        C-->>W: 記載しなかったこと
+        C-->>W: 書き込む内容
+        W->>C: 書き込まない
+        C-->>W: 書き込まなかったこと
     expected:
       - 文書のフォルダに `mdmark.config.yaml` が無い
-      - 最後の報告に、記載しなかったことが出る
+      - 最後の報告に、書き込まなかったことが出る
     test: test_error_when_write_declined
 lead: 文書の作成者が Claude Code で `setup` を呼び、文書のフォルダの `mdmark.config.yaml` をキーごとに確認しながら作る・修正する。
 issue: 165
@@ -85,5 +85,5 @@ preconditions:
   - Claude Code に mdmark のプラグインを入れている
   - 文書の作成者の手元に Node 24 以降がある
 success_guarantee: 文書のフォルダの `mdmark.config.yaml` が、文書の作成者が回答した値を持ち、設定の構造のずれが無い。
-minimal_guarantee: 文書の作成者が記載することを認めなかったときは、`mdmark.config.yaml` を作らず、書き換えない。
+minimal_guarantee: 文書の作成者が書き込むことを認めなかったときは、`mdmark.config.yaml` を作らず、書き換えない。
 test_file: tests/e2e/単一ユースケース/文書のフォルダに設定を作る.spec.ts

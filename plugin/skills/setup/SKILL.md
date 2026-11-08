@@ -13,6 +13,6 @@ allowed-tools: Bash(node ${CLAUDE_PLUGIN_ROOT}/bin/setup.js *)
 
 1. `setup.js keys --target config --dir {文書のフォルダ}` を実行する
 2. キーを 1 つずつ、今の値・端末の設定で重なる値（`inherited`）・既定と説明を示して、そのままにするか変えるかを利用者に聞く
-3. 変えるキーと値を示し、記載してよいかを利用者に聞く
-4. 認めたら `setup.js write-config --dir {文書のフォルダ} --set {キー}={値} ...` を実行する（`mdmark.config.yaml` が無く変えるキーも無いときは、認めたら `--set` 無しで実行して雛形から作る）。断ったら記載しない
-5. 記載したパスと変えたキーを示す
+3. 変えるキーと値を示し、書き込んでよいかを利用者に聞く
+4. 認めたら `setup.js write-config --dir {文書のフォルダ} --set {キー}={値} ...` を実行する（`mdmark.config.yaml` が無く変えるキーも無いときは、認めたら `--set` 無しで実行して雛形から作る）。断ったら書き込まない
+5. 書き込んだパスと変えたキーを示す

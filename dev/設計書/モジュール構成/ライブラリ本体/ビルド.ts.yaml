@@ -212,7 +212,7 @@ functions:
     kind: 関数
     scope: public
     is_async: true
-    summary: esbuild で `src/index.ts` と `src/index.css` を、バージョンを埋めた `dist/index.js` と `dist/index.css` に、ビューとコメントの部品の `src/views/index.ts` と `src/comments/index.ts` を `dist/view.js` と `dist/comments.js` にまとめ、`emitDeclarations` で型定義を記載する。続けて、書き出した HTML の起動の処理 `src/viewer/index.ts` と `src/viewer/viewer.css` を `dist/viewer.js` と `dist/viewer.css` に、CLI の `src/cli/main.ts` を `dist/cli.js` にまとめ、配布物と CLI にまとめた依存のライセンスを記載する
+    summary: esbuild で `src/index.ts` と `src/index.css` を、バージョンを埋めた `dist/index.js` と `dist/index.css` に、ビューとコメントの部品の `src/views/index.ts` と `src/comments/index.ts` を `dist/view.js` と `dist/comments.js` にまとめ、`emitDeclarations` で型定義を書き込む。続けて、書き出した HTML の起動の処理 `src/viewer/index.ts` と `src/viewer/viewer.css` を `dist/viewer.js` と `dist/viewer.css` に、CLI の `src/cli/main.ts` を `dist/cli.js` にまとめ、配布物と CLI にまとめた依存のライセンスを書き込む
     description: '`format: esm`・`bundle: true`・`minify: true`・`target: BROWSER_TARGETS`・`plugins: [postcssStubPlugin]`・`define` で `__MDMARK_VERSION__` を、`banner.css` で `:root{--mdmark-version:"{バージョン}"}` を埋め、`metafile` を取る。続けて `metafile` を指定してまとめた依存のライセンスを記載する。'
     side_effects: '`dist/` を書き換える'
     args:
@@ -267,9 +267,9 @@ functions:
     container: scripts/build.ts
     kind: 関数
     scope: internal
-    summary: esbuild の `metafile` の入力からまとめたパッケージと、その中に取り込まれたパッケージを取得し、名前の順にパッケージ名・バージョン・ライセンス・ライセンスの本文を `dist/` の `LICENSES_FILE` に記載する
+    summary: esbuild の `metafile` の入力からまとめたパッケージと、その中に取り込まれたパッケージを取得し、名前の順にパッケージ名・バージョン・ライセンス・ライセンスの本文を `dist/` の `LICENSES_FILE` に書き込む
     description: 入力のパスの最後の `node_modules/` の後ろ（`@scope/name` か `name`）をパッケージとし、その `package.json` の `version`・`license` と、直下の `LICENSE*` の本文を読み込む。パッケージの配布物に取り込まれたパッケージは `listEmbeddedPackages` で取得し、`EMBEDDED_LICENSES_DIR` の本文を並べる。複数の `metafile` で同じパッケージは 1 回だけ記載する。まとめたパッケージが無いときも空のファイルを書き込む
-    side_effects: '`dist/` に `LICENSES_FILE` を記載する'
+    side_effects: '`dist/` に `LICENSES_FILE` を書き込む'
     args:
       - name: options
         type: '{ metafiles: Metafile[]; root: string }'
@@ -353,11 +353,11 @@ functions:
     returns:
       type: Promise<void>
       description: 書き込み終えたら解決する
-    side_effects: '`dist/` に `.d.ts` を記載する'
+    side_effects: '`dist/` に `.d.ts` を書き込む'
     unit_tests:
       - name: test_emit_declarations
         case: 正常
-        summary: 公開関数と拡張の型を持つ dist/index.d.ts を記載し、利用側の型検査が通る
+        summary: 公開関数と拡張の型を持つ dist/index.d.ts を書き込み、利用側の型検査が通る
         condition: 作業ツリーの `src/` を一時フォルダに写す
         mock: なし（作業ツリーの `node_modules` を使用する）
         expected: '`dist/index.d.ts` が `version`・`mount`・`render`・`registerExtension`・`MdmarkExtension`・`MdmarkMarkArgs`・`StandardSchemaV1` を export し、それを import したファイルが `--moduleResolution bundler` と `nodenext` の `tsc --noEmit` で型エラー 0 件'

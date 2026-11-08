@@ -1,4 +1,4 @@
-title: 文書のフォルダの設定を記載する
+title: 文書のフォルダの設定を書き込む
 entry:
   kind: operation
   value: '`node ${CLAUDE_PLUGIN_ROOT}/bin/setup.js write-config --dir {文書のフォルダ} [--set {キー}={値}]...`（スキルが Bash で呼ぶ）'
@@ -17,8 +17,8 @@ flows:
         participant F as mdmark.config.yaml
         K->>P: write-config --dir {フォルダ} --set features.callout=false
         P->>P: Schema で検める
-        P->>F: 雛形に値と version を入れて記載する
-        P-->>K: 記載したパスとキー・終了コード 0
+        P->>F: 雛形に値と version を入れて書き込む
+        P-->>K: 書き込んだパスとキー・終了コード 0
     expected:
       - 終了コードが 0
       - '`mdmark.config.yaml` が `version`（プラグインのバージョン）と `features.callout: false` を持ち、ほかのキーは雛形のまま'
@@ -37,7 +37,7 @@ flows:
         participant F as mdmark.config.yaml
         K->>P: write-config --dir {フォルダ} --set features.callout=false
         P->>F: features.callout だけを書き換える
-        P-->>K: 記載したキー・終了コード 0
+        P-->>K: 書き込んだキー・終了コード 0
     expected:
       - '`features.callout: false` と `features.table: false` を持つ'
       - コメントの行が残り、`version` が呼ぶ前と同じ
@@ -77,7 +77,7 @@ request:
     required: false
     default: なし（値を変えず、無ければ雛形と `version` だけで作る）
     location: argument
-    description: 記載するキーと値。端末の設定を記載すると同じ構造
+    description: 書き込むキーと値。端末の設定を書き込むと同じ構造
     example: features.callout=false
 response:
   - name: written[]
@@ -88,9 +88,9 @@ response:
     description: 書き換えたキー
 exceptions:
   - name: なし（正常終了）
-    condition: 記載した。終了コード 0
+    condition: 書き込んだ。終了コード 0
   - name: なし（Schema に合わない値・終了コード 1）
-    condition: 記載した後の設定が `schemas/mdmark.config.schema.json` に合わないか、端末の設定だけが持つキーを記載しようとした
+    condition: 書き込んだ後の設定が `schemas/mdmark.config.schema.json` に合わないか、端末の設定だけが持つキーを書き込もうとした
 constraints:
   - item: 雛形
     constraint: '`mdmark init` が配置する `templates/mdmark.config.yaml` と同じ中身'

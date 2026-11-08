@@ -67,7 +67,7 @@ docs/guide.md を 1 枚の HTML に書き出して
 設定の build の文書を 1 枚の HTML にまとめて
 ```
 
-`export_html` が `mdmark export`、`build_site` が `mdmark build` と同じ処理で HTML を書き込み、記載したパスと警告を返却する。
+`export_html` が `mdmark export`、`build_site` が `mdmark build` と同じ処理で HTML を書き込み、書き込んだパスと警告を返却する。
 同じ文書・設定では、CLI と同じ中身の HTML になる。
 
 ### CSS のテンプレートを使用する

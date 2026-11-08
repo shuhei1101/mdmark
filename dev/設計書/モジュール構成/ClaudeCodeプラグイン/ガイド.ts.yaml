@@ -1,5 +1,5 @@
 title: "ClaudeCodeプラグイン / ガイド"
-lead: ガイドの索引（名前・読み込むとき・概要・本文のページ）の構造を検査する。プラグインのビルドが使用する。
+lead: ガイドの索引（名前・参照するとき・概要・本文のページ）の構造を検査する。プラグインのビルドが使用する。
 directory: |-
   ```tree
   src/plugin/
@@ -18,7 +18,7 @@ data_models:
         description: 名前。索引の中で一意
       - name: when
         type: string
-        description: 読み込むとき（どんな作業のときに読み込むか）
+        description: 参照するとき（どんな作業のときに参照するか）
       - name: summary
         type: string
         description: 1 文の概要

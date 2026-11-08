@@ -1,49 +1,49 @@
 # yaml-language-server: $schema=../dev/テンプレート/files.schema.yaml
 files:
   - path: baseline.ts
-    description: モジュール構成『ライブラリ本体 / ビルド』のうち「利用側のブラウザが読み込む JS を minify せずにまとめ、対応ブラウザの下限に無い API を取得する」を受け持つ。配布物のビルドや検査を変えるときに読み込む。
+    description: モジュール構成『ライブラリ本体 / ビルド』のうち「利用側のブラウザが読み込む JS を minify せずにまとめ、対応ブラウザの下限に無い API を取得する」を受け持つ。配布物のビルドや検査を変えるときに参照する。
     tags: [topic:バンドル, tool:esbuild]
     related:
       - to: dev/設計書/モジュール構成/ライブラリ本体/ビルド.ts
         type: implements
   - path: build-plugin.ts
-    description: モジュール構成『ClaudeCodeプラグイン / プラグインのビルド』のうち「プラグインのビルド」を受け持つ。プラグインの配布物の作り方を変えるときに読み込む。
+    description: モジュール構成『ClaudeCodeプラグイン / プラグインのビルド』のうち「プラグインのビルド」を受け持つ。プラグインの配布物の作り方を変えるときに参照する。
     tags: [topic:プラグイン, tool:claude-code, tool:esbuild, topic:バンドル]
     related:
       - to: dev/設計書/モジュール構成/ClaudeCodeプラグイン/プラグインのビルド.ts
         type: implements
   - path: build.ts
-    description: モジュール構成『ライブラリ本体 / ビルド』のうち「バージョンの決定と検査・esbuild の呼び出し・まとめたライブラリのライセンスの書き出し・サイズの検査」を受け持つ。配布物のビルドや検査を変えるときに読み込む。
+    description: モジュール構成『ライブラリ本体 / ビルド』のうち「バージョンの決定と検査・esbuild の呼び出し・まとめたライブラリのライセンスの書き出し・サイズの検査」を受け持つ。配布物のビルドや検査を変えるときに参照する。
     tags: [topic:バンドル, tool:esbuild]
     related:
       - to: dev/設計書/モジュール構成/ライブラリ本体/ビルド.ts
         type: implements
   - path: bundle.ts
-    description: モジュール構成『ライブラリ本体 / ビルド』のうち「build.ts と build-plugin.ts が使用する Node とブラウザのまとめの target・先頭の行・postcss の差し替え・まとめたパッケージとライセンスの引き方」を受け持つ。配布物のビルドや検査を変えるときに読み込む。
+    description: モジュール構成『ライブラリ本体 / ビルド』のうち「build.ts と build-plugin.ts が使用する Node とブラウザのまとめの target・先頭の行・postcss の差し替え・まとめたパッケージとライセンスの引き方」を受け持つ。配布物のビルドや検査を変えるときに参照する。
     tags: [topic:バンドル, tool:esbuild]
     related:
       - to: dev/設計書/モジュール構成/ライブラリ本体/ビルド.ts
         type: implements
   - path: eslint.ts
-    description: モジュール構成『ライブラリ本体 / 検査』のうち「tools/eslint/ の ESLint が無ければ入れてから起動する」を受け持つ。Webview の ESLint の起動を変えるときに読み込む。
+    description: モジュール構成『ライブラリ本体 / 検査』のうち「tools/eslint/ の ESLint が無ければ入れてから起動する」を受け持つ。Webview の ESLint の起動を変えるときに参照する。
     tags: [tool:eslint, topic:lint]
     related:
       - to: dev/設計書/モジュール構成/ライブラリ本体/検査.ts
         type: implements
   - path: mermaid-fixtures.ts
-    description: モジュール構成『ライブラリ本体 / 部品の描画』のうち「mermaid の見本の SVG を記載する writeMermaidFixtures」を受け持つ。mermaid のバージョンを変えたときや、mermaid の図のストーリーの見本を変えるときに読み込む。
+    description: モジュール構成『ライブラリ本体 / 部品の描画』のうち「mermaid の見本の SVG を記載する writeMermaidFixtures」を受け持つ。mermaid のバージョンを変えたときや、mermaid の図のストーリーの見本を変えるときに参照する。
     tags: [tool:storybook, tool:playwright, topic:図]
     related:
       - to: dev/設計書/モジュール構成/ライブラリ本体/部品の描画.ts
         type: implements
   - path: migrations.ts
-    description: モジュール構成『ライブラリ本体 / ビルド』のうち「スキーマを変えたバージョンに移行の手順があるかの点検」を受け持つ。配布物のビルドや検査を変えるときに読み込む。
+    description: モジュール構成『ライブラリ本体 / ビルド』のうち「スキーマを変えたバージョンに移行の手順があるかの点検」を受け持つ。配布物のビルドや検査を変えるときに参照する。
     tags: [topic:バンドル, tool:esbuild]
     related:
       - to: dev/設計書/モジュール構成/ライブラリ本体/ビルド.ts
         type: implements
   - path: storybook-render.ts
-    description: モジュール構成『ライブラリ本体 / 部品の描画』のうち「描画のインターフェース（部品の HTML と CSS を返却する HTTP サーバー）」を受け持つ。Storybook で部品を確認する仕組みを変えるときに読み込む。
+    description: モジュール構成『ライブラリ本体 / 部品の描画』のうち「描画のインターフェース（部品の HTML と CSS を返却する HTTP サーバー）」を受け持つ。Storybook で部品を確認する仕組みを変えるときに参照する。
     tags: [topic:ストーリー, tool:storybook]
     related:
       - to: dev/設計書/モジュール構成/ライブラリ本体/部品の描画.ts

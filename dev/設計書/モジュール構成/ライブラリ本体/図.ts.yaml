@@ -188,7 +188,7 @@ data_models:
         description: 種類。見出しの札と既定の色を決める
       - name: color
         type: ColorName | undefined
-        description: 色の名前（分類『部品』の `ColorName`。`dist/index.d.ts` は `src/index.ts` から辿れる型を記載するため、`dist/parts/colors.d.ts` の `ColorName` も型の解決に含まれる）。`kind` の既定の色より優先する
+        description: 色の名前（分類『部品』の `ColorName`。`dist/index.d.ts` は `src/index.ts` から辿れる型を書き込むため、`dist/parts/colors.d.ts` の `ColorName` も型の解決に含まれる）。`kind` の既定の色より優先する
       - name: desc
         type: string | undefined
         description: 概要。テーブルのツールチップに出す

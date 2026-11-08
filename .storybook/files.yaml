@@ -1,31 +1,31 @@
 # yaml-language-server: $schema=../dev/テンプレート/files.schema.yaml
 files:
   - path: preview-head.html
-    description: モジュール構成『ライブラリ本体 / 部品の描画』のうち「描画のインターフェースの CSS を読み込む link」を受け持つ。Storybook で部品を確認する仕組みを変えるときに読み込む。
+    description: モジュール構成『ライブラリ本体 / 部品の描画』のうち「描画のインターフェースの CSS を読み込む link」を受け持つ。Storybook で部品を確認する仕組みを変えるときに参照する。
     tags: [topic:ストーリー, tool:storybook, tool:html]
     related:
       - to: dev/設計書/モジュール構成/ライブラリ本体/部品の描画.ts
         type: implements
   - path: main.ts
-    description: モジュール構成『ライブラリ本体 / 部品の描画』のうち「Storybook の設定（@storybook/react-vite・addon-a11y・ストーリーの場所・/render の中継・Tailwind）」を受け持つ。Storybook で部品を確認する仕組みを変えるときに読み込む。
+    description: モジュール構成『ライブラリ本体 / 部品の描画』のうち「Storybook の設定（@storybook/react-vite・addon-a11y・ストーリーの場所・/render の中継・Tailwind）」を受け持つ。Storybook で部品を確認する仕組みを変えるときに参照する。
     tags: [topic:ストーリー, tool:storybook]
     related:
       - to: dev/設計書/モジュール構成/ライブラリ本体/部品の描画.ts
         type: implements
   - path: preview.tsx
-    description: モジュール構成『ライブラリ本体 / 部品の描画』のうち「MSW の読み込み・デコレータ・配色の切り替え・a11y の検査の水準・部品の操作の再付与」を受け持つ。Storybook で部品を確認する仕組みを変えるときに読み込む。
+    description: モジュール構成『ライブラリ本体 / 部品の描画』のうち「MSW の読み込み・デコレータ・配色の切り替え・a11y の検査の水準・部品の操作の再付与」を受け持つ。Storybook で部品を確認する仕組みを変えるときに参照する。
     tags: [topic:ストーリー, tool:storybook, tool:react]
     related:
       - to: dev/設計書/モジュール構成/ライブラリ本体/部品の描画.ts
         type: implements
   - path: server-html.tsx
-    description: モジュール構成『ライブラリ本体 / 部品の描画』のうち「withServerHtml・ServerHtml（描画のインターフェースの HTML をストーリーに出す）」を受け持つ。Storybook で部品を確認する仕組みを変えるときに読み込む。
+    description: モジュール構成『ライブラリ本体 / 部品の描画』のうち「withServerHtml・ServerHtml（描画のインターフェースの HTML をストーリーに出す）」を受け持つ。Storybook で部品を確認する仕組みを変えるときに参照する。
     tags: [topic:ストーリー, tool:storybook, tool:react]
     related:
       - to: dev/設計書/モジュール構成/ライブラリ本体/部品の描画.ts
         type: implements
   - path: vscode-theme.tsx
-    description: モジュール構成『ライブラリ本体 / 部品の描画』のうち「withVsCodeTheme（VS Code の --vscode-* の色をストーリーに適用する）」を受け持つ。Storybook で部品を確認する仕組みを変えるときに読み込む。
+    description: モジュール構成『ライブラリ本体 / 部品の描画』のうち「withVsCodeTheme（VS Code の --vscode-* の色をストーリーに適用する）」を受け持つ。Storybook で部品を確認する仕組みを変えるときに参照する。
     tags: [topic:ストーリー, tool:storybook, tool:vscode]
     related:
       - to: dev/設計書/モジュール構成/ライブラリ本体/部品の描画.ts

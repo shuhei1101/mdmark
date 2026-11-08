@@ -625,7 +625,7 @@ functions:
       description: '`paths` の順の、まとめたコードかまとめられない理由'
     process: |-
       1. 初めて呼んだときだけ、`{extensionPath}/dist/esbuild.wasm` を読み込んで `WebAssembly.compile` し、`initialize({ wasmModule, worker: false })` を呼ぶ（初期化の Promise を使い回す）
-      2. URL を読み込む関数を記録し付きにし（URL を読み込む関数を記録し付きにする）、`paths` の各パスをモジュールを 1 つにまとめる（`build` は esbuild-wasm の `build`）
+      2. URL を読み込む関数を記録付きにし（URL を読み込む関数を記録付きにする）、`paths` の各パスをモジュールを 1 つにまとめる（`build` は esbuild-wasm の `build`）
          - `error` の場合、そのパスと理由を返却し、次のパスへ進む
     unit_tests:
       - name: test_bundle_extensions
