@@ -1585,7 +1585,7 @@
     overflow-wrap: anywhere;
 
     /* ブロック要素: ブラウザ既定の余白を消し、間隔は下の規則で付ける */
-    :where(h1, h2, h3, p, ul, ol, pre, table, blockquote, details, hr) {
+    :where(h1, h2, h3, p, ul, ol, pre, table, blockquote, details, hr, figure) {
       margin: 0;
     }
 
@@ -3070,7 +3070,9 @@
       --mdmark-tree-lead: calc(1em + var(--mdmark-tree-gap));
       display: grid;
       grid-template-columns: minmax(0, 1fr);
-      margin: 0;
+      /* 上の余白は指定せず、前のブロックとの間隔は入れ物の規則に任せる */
+      margin-inline: 0;
+      margin-block-end: 0;
       padding: 0;
       border: 1px solid var(--mdmark-color-border);
       border-radius: var(--mdmark-radius);
@@ -7699,9 +7701,10 @@
 
   /* コードブロックの飾り: 題・行番号・行の強調・コードの行の印。`dev/mock/refs/65/assets/code-block.css` から取る */
   .mdmark {
-    /* 飾ったコードブロックの入れ物: ブラウザ既定の余白を消し、前のブロックとの間隔は本文の規則に任せる */
+    /* 飾ったコードブロックの入れ物: 上の余白は指定せず、前のブロックとの間隔は入れ物の規則に任せる（題を持つときの figure の既定の余白は本文の規則で 0 にする） */
     :where(.mdmark-code) {
-      margin: 0;
+      margin-inline: 0;
+      margin-block-end: 0;
     }
 
     /* 飾ったコードブロックの入れ物: 題と pre を 1 つの枠にまとめる */

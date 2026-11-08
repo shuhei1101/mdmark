@@ -5518,6 +5518,29 @@ flows:
       - 12 列の表の `mdmark-table` の幅が本文の幅と同じで、表の中で横にスクロールでき、各列の幅が列の最小幅以上
       - '`document.documentElement.scrollWidth` が `clientWidth` 以下'
     test: test_normal_when_table_fills_width
+  - name: 正常系（ブロックの間隔）
+    summary: ブロックを 2 つずつ並べて描き、後のブロックがコードブロック・ファイルツリーのときも、ほかのブロックと同じ間を空ける
+    setup:
+      - name: 配布物を読んだページ
+        description: 正常系と同じ。`--mdmark-space` は既定（14px）
+      - name: ブロックの組み合わせを持つ Markdown
+        description: 段落・見出し・表・コードブロック・ファイルツリー・箇条書き・番号付きリスト・引用・注意書き・区切り線・タブ・ステップ・埋め込んだ HTML から、前のブロックと後のブロックを 1 組ずつ選んだ全ての組み合わせの文書。あわせて、見出しの節の中・タブの中・箇条書きの項目・引用・`details`・行の詳細の中で段落に続けてコードブロックとファイルツリーを配置した文書と、題を持つコードブロック・題を持たないコードブロック・ファイルツリーをそれぞれ先頭に配置した文書
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        participant P as 使う側のページ
+        participant M as mdmark
+        P->>M: mount(el, { markdown })
+        M-->>P: ブロック同士の間を本文の間隔で空けて描く
+    expected:
+      - 本文の直下の組で、前のブロックが区切り線でなく後のブロックが見出しと区切り線でないとき、後のブロックの `getBoundingClientRect().top` から前のブロックの `bottom` を引いた値が 14px（差が 1px 以内）
+      - 後のブロックがコードブロック・ファイルツリーの組も 14px で、0px の組が無い
+      - 後のブロックが見出しの組は見出しの上の余白の規則の値、前か後のブロックが区切り線の組は区切り線の余白の規則の値（どちらも差が 1px 以内）
+      - 見出しの節の中とタブの中で、段落の `bottom` からコードブロックとファイルツリーの `top` までが 14px（差が 1px 以内）
+      - 箇条書きの項目・引用・`details`・行の詳細の中で、段落の `bottom` からコードブロックとファイルツリーの `top` までが 7px（差が 1px 以内）
+      - 先頭に配置した題を持つコードブロック（`figure`）・題を持たないコードブロック・ファイルツリーの `top` が、描く先の要素の内側の余白の内側の上端と同じ（差が 1px 以内）
+    test: test_normal_when_block_spacing
   - name: 正常系（脚注のツールチップのタッチ）
     summary: タッチのタップで閉じた番号のツールチップを開き、開いた番号のタップで一覧へ移り、ツールチップと番号の外の `pointerdown` で閉じる
     setup:
@@ -6140,4 +6163,7 @@ constraints:
   - item: 図の高さのリサイズハンドル
     constraint: '`diagram-resize` がオンのとき、文書の中の図の部品（埋め込んだ HTML の中のチャートを含む）の表示する枠の右下に、`role="separator"`・`aria-orientation="horizontal"`・`tabindex="0"`・読み上げの名前 `「{図の題名}」の表示の高さ` と、`aria-valuenow`・`aria-valuemin`・`aria-valuemax`（表示する枠の高さの px）を持つリサイズハンドルを置く。ドラッグした分だけ表示する枠の高さを変え（幅は変えない）、フォーカスの間は `↑` で 32px 低く、`↓` で 32px 高くする。高さは 120px 以上、図の全体が今の倍率で収まる高さ以下にする。高さを変えたら今の倍率と位置は保ち、全体が収まる倍率（下限と倍率のボタンの戻し先）を求め直す。文書の中の図のこの倍率は、高さを変える前は幅だけ、変えた後は幅と変えた高さで決める。ダブルクリックで定義と `--mdmark-diagram-max-height` から決まる高さに戻す。変えた高さを図ごとのキーで sessionStorage に書き、描くときに読んでその高さで開き、戻したらキーを削除する。sessionStorage を使えないときは例外を外へ出さず、高さを保たない。全画面のモーダルの中と印刷では出さない。`update` で付け直し、`destroy` で受け取りを外す'
     notes: '上限は #198 の修正（今の倍率の図の高さ）のまま。図ごとのキーの決め方はモジュール構成設計。1 回の量と下限はモックの値'
+  - item: ブロックの間隔
+    constraint: 本文の直下・節の中身（`.mdmark-section-body`）・タブの中身（`.mdmark-tab-panel`）のブロック同士の縦の間を `--mdmark-space`、リストの項目・引用・`details`・行の詳細（`.mdmark-row-detail > td`）の中のブロック同士の間を `calc(var(--mdmark-space) / 2)` にする。後のブロックがコードブロック（`.mdmark-code`）・ファイルツリー（`.mdmark-tree`）・記法の部品のときも同じ間を空ける。見出しは上の余白に、区切り線は上下の余白に、自分の規則の値を使用する。先頭のブロックの上には間を空けない
+    notes: '#326'
 test_file: tests/integration/lib/mount.browser.test.ts
