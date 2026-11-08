@@ -5,3 +5,15 @@ confirmations:
     approver: shuhei1101
     commit: b68c299c1a8169ba64ec6cb7e31634f87a02533f
     thread: https://github.com/shuhei1101/mdmark/pull/424#discussion_r4507239642
+  - topic: dm の札と凡例を「判断（AI）」にしたモックへの合意
+    decision: モックのとおり「判断（AI）」で表示する（推奨案 A）。レイヤーのタイトルはサンプルで自由、固定の表示名は任せるとの返信を受け、凡例は「判断（AI）」のままにした
+    decided_by: reply
+    approver: shuhei1101
+    commit:
+    thread: https://github.com/shuhei1101/mdmark/pull/424#discussion_r4507311489
+  - topic: 見本の用語「意思決定モデル」の替え先
+    decision: 「分類モデル」にする（推奨案 A）
+    decided_by: thumbs_up
+    approver: shuhei1101
+    commit:
+    thread: https://github.com/shuhei1101/mdmark/pull/424#discussion_r4507311673
