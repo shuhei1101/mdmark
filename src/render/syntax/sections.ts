@@ -54,10 +54,7 @@ export function wrapSections(state: StateCore): void {
     const level = Number(token.tag.slice(1));
     // 境目の中の見出しは、境目の外で開いた節を閉じない
     const base = tabBases[tabBases.length - 1] ?? 0;
-    while (
-      levels.length > base &&
-      (levels[levels.length - 1] ?? 0) >= level
-    ) {
+    while (levels.length > base && (levels[levels.length - 1] ?? 0) >= level) {
       closeBody();
     }
     const inline = tokens[index + 1];

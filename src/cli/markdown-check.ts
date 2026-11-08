@@ -233,9 +233,7 @@ export async function checkMarkdownSource(options: {
   const layout = checkDiagrams(
     document,
     new Set([...Object.keys(config.libraries ?? {}), ...directives]),
-  ).filter(
-    (issue) => issue.kind !== "diagram_invalid",
-  );
+  ).filter((issue) => issue.kind !== "diagram_invalid");
   return [...warnings, ...unknownMarks, ...layout]
     .map((issue, order) => ({ issue, order }))
     .sort(
