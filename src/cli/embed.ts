@@ -1,5 +1,5 @@
 import { readFile } from "node:fs/promises";
-import { dirname, extname, resolve } from "node:path";
+import { dirname, extname } from "node:path";
 import { build, transform } from "esbuild";
 import {
   BROWSER_TARGETS,
