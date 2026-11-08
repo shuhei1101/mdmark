@@ -83,4 +83,6 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-08T13:19:33.839600+00:00'
   - process: E2E テスト作成
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-08T15:25:19.463360+00:00'
