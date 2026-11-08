@@ -305,3 +305,30 @@ test("test_attach_footnotes_when_mouse_clicked", async () => {
   expect(list.open).toBe(true);
   expect(document.activeElement).toBe(item);
 });
+
+// まとめた HTML が `href` に文書のパスを足しても、番号と戻るリンクで移る（正常系）
+test("test_attach_footnotes_when_doc_path_in_href", async () => {
+  // 準備
+  const { attachFootnotes } = await loadFootnotes();
+  const root = createRootFromHtml(await footnoteHtml());
+  detachers.push(attachFootnotes({ root, placement: "top" }));
+  const { link, list, item } = footnoteParts(root);
+  const back = root.querySelector<HTMLElement>(".mdmark-fn-back");
+  if (!back) {
+    throw new Error("戻るリンクが描かれていない");
+  }
+  for (const anchor of [link, back]) {
+    anchor.setAttribute("href", `#/doc.md${anchor.getAttribute("href") ?? ""}`);
+  }
+  // 実行
+  const preventedByRef = click(link);
+  // 検証
+  expect(preventedByRef).toBe(true);
+  expect(list.open).toBe(true);
+  expect(document.activeElement).toBe(item);
+  // 実行
+  const preventedByBack = click(back);
+  // 検証
+  expect(preventedByBack).toBe(true);
+  expect(document.activeElement).toBe(link);
+});

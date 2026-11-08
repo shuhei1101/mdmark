@@ -1,0 +1,16 @@
+use_cases:
+  - kind: single
+    scenario: dev/設計書/シナリオ/単一ユースケース/図を拡大・縮小・移動する.yaml
+    impact: run_only
+    detail: Firefox でも、リサイズハンドルのドラッグで表示する枠の高さをドラッグした量のとおりに変える動作を、シナリオどおりに戻す
+    depends_on: []
+  - kind: single
+    scenario: dev/設計書/シナリオ/単一ユースケース/図の要素のツールチップを見る.yaml
+    impact: run_only
+    detail: Firefox でも、グラフの項目にフォーカスを移して名前と値のツールチップを出す動作を、シナリオどおりに戻す
+    depends_on: []
+scope_out:
+  - item: タッチで図をドラッグして動かす
+    reason: 要望に含まれない（Firefox のマウスのリサイズハンドルのドラッグとグラフの項目のフォーカスだけを修正する）
+    plan: '#357'
+docs: []

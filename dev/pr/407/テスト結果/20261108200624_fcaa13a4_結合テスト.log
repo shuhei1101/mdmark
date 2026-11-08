@@ -1,0 +1,10 @@
+$ npx vitest run --project 'integration*' tests/integration/lib/upgrade.test.ts
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/test-migrations-read-migrations-from-version-dir
+
+
+ Test Files  1 passed (1)
+      Tests  18 passed (18)
+   Start at  19:57:46
+   Duration  337.29s (tests 89%, import 11%)
+

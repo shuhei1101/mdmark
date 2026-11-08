@@ -1,0 +1,7 @@
+scope_out:
+  - item: dev/mock/components/code-block/index.html の異常シナリオが、使用できるマーカー [!code focus] を知らないマーカーの例にしている
+    reason: シナリオ『コードブロックを飾る』・code-blocks.ts とモックの食い違いで、バックマージの競合の解消に含まれない
+    plan: '#431'
+  - item: インターフェース定義『バージョンを上げる』の test_normal_when_tag_vocabulary_dropped の Mock が、migrations/next/ のスクリプトを配置すると記載している
+    reason: '#407 のテストの探し方と設計書の食い違いで、合意した競合の解消案に含まれない'
+    plan: '#432'

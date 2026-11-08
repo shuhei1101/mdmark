@@ -1,0 +1,69 @@
+$ npm run test:unit
+
+> test:unit
+> vitest run --project 'unit*'
+
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/fix-interact-footnote-back-to-top-e2e
+
+ ❯ |unit-browser (chromium)| tests/unit/src/interact/footnotes.browser.test.ts (9 tests | 1 failed) 424ms
+   × test_attach_footnotes_when_doc_path_in_href 338ms
+ ❯ |unit| tests/unit/src/cli/export.test.ts (23 tests | 1 failed) 38669ms
+   × test_prepare_embeds 30472ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/footnotes.browser.test.ts > test_attach_footnotes_when_doc_path_in_href
+AssertionError: expected false to be true // Object.is equality
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/footnotes.browser.test.ts/test_attach_footnotes_when_doc_path_in_href.png
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ tests/unit/src/interact/footnotes.browser.test.ts:326:26
+    324|   const preventedByRef = click(link);
+    325|   // 検証
+    326|   expect(preventedByRef).toBe(true);
+       |                          ^
+    327|   expect(list.open).toBe(true);
+    328|   expect(document.activeElement).toBe(item);
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=6e139161:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  |unit| tests/unit/src/cli/export.test.ts > test_prepare_embeds
+Error: Test timed out in 30000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/unit/src/cli/export.test.ts:31:1
+     29|
+     30| // 印のあるモジュールだけを束ね、拡張と theme を読む（正常系）
+     31| test("test_prepare_embeds", async () => {
+       | ^
+     32|   // 準備
+     33|   const { prepareEmbeds } = await loadExport();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  2 failed | 257 passed (259)
+      Tests  2 failed | 1819 passed (1821)
+   Start at  23:22:03
+   Duration  139.79s (worker 65%, tests 23%, import 11%, transform 1%)
+
+
+# test_prepare_embeds は全件の実行で 30 秒の時間切れ（端末の負荷。load average 15 前後）。実装が無いことによる fail ではないため、単独で実行し直した
+$ npx vitest run --project unit tests/unit/src/cli/export.test.ts -t test_prepare_embeds
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/fix-interact-footnote-back-to-top-e2e
+
+
+ Test Files  1 passed (1)
+      Tests  17 passed | 6 skipped (23)
+   Start at  23:32:29
+   Duration  7.33s (tests 96%, import 2%, transform 2%, worker 1%)
+

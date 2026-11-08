@@ -1,6 +1,8 @@
 import type { TooltipPlacement } from "../config.ts";
 import { ZOOM } from "../diagram/geometry.ts";
 export { ZOOM };
+/** 図の中身を描き直したときに `figure` へ送るイベント（ツールチップを付け直す） */
+export declare const DIAGRAM_REDRAW_EVENT = "mdmark-diagram-redraw";
 /** 図の `id` の頭 `from` を `to` に振り直し、それを指す属性も合わせて直す */
 export declare function renumberIds(scope: HTMLElement, from: string, to: string): void;
 /** 図を全画面のモーダルで開き、開いた全画面を閉じる関数を返す。閉じるボタンか Esc で閉じたら、付けた操作と監視を外して `dialog` を消し、フォーカスを全画面のボタンへ戻す */
@@ -18,4 +20,8 @@ export declare function attachDiagrams(options: {
     root: HTMLElement;
     /** 図のツールチップを先に出す側（`attachDiagramTips` と `openDiagramDialog` へ渡す） */
     placement: TooltipPlacement;
+    /** リサイズハンドルで変えた高さを保つ先（既定は sessionStorage） */
+    storage?: Storage | null;
+    /** 付ける図（省くと `root` の中の全ての図。高さのキーの通し番号は `root` の中の順） */
+    figures?: HTMLElement[];
 }): () => void;

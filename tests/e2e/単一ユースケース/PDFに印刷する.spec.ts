@@ -104,7 +104,7 @@ test("test_normal_when_theme_selected", async ({ browser }) => {
     files: {
       "docs/guide.md": [
         await guideMarkdown(),
-        "[リンク](https://example.com/)",
+        "本文の [リンク](https://example.com/) の文",
         "",
       ].join("\n"),
     },

@@ -1,0 +1,26 @@
+$ node /tmp/measure-410/measure.ts 3 5   # dev-docs を 3 回起動し、起動ごとに使い方集の一覧（fields: ["id"]）と本文（view: "full"）の search_docs を 5 回ずつ呼ぶ。時間切れは 900 秒
+round 0 startup_ms=16577
+round 0 call 0 list_ms=89376 full_ms=50886
+round 0 call 1 list_ms=42463 full_ms=33213
+round 0 call 2 list_ms=27108 full_ms=17715
+round 0 call 3 list_ms=20633 full_ms=19918
+round 0 call 4 list_ms=21007 full_ms=18231
+round 1 startup_ms=8687
+round 1 call 0 list_ms=46739 full_ms=17651
+round 1 call 1 list_ms=16956 full_ms=17075
+round 1 call 2 list_ms=17302 full_ms=23206
+round 1 call 3 list_ms=21238 full_ms=19096
+round 1 call 4 list_ms=18691 full_ms=16723
+round 2 startup_ms=7791
+round 2 call 0 list_ms=55916 full_ms=21574
+round 2 call 1 list_ms=20697 full_ms=25024
+round 2 call 2 list_ms=20348 full_ms=20799
+round 2 call 3 list_ms=23469 full_ms=23472
+round 2 call 4 list_ms=28531 full_ms=45097
+
+real	14m41.557s
+user	1m16.828s
+sys	1m6.796s
+exit=0
+
+# 集計: 30 回の最大 89376 ms（起動の直後の 1 回目の一覧）、中央値 約 21000 ms
