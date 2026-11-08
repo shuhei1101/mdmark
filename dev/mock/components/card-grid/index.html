@@ -17,7 +17,7 @@
   <!-- リンクと添付のカードの規則（#263 で共有するアセット） -->
   <link rel="stylesheet" href="../../refs/263/assets/colors.css">
   <link rel="stylesheet" href="../../refs/263/assets/media.css">
-  <!-- 書き方の警告とアイコンの規則（#307 で共有するアセット） -->
+  <!-- 記載の警告とアイコンの規則（#307 で共有するアセット） -->
   <link rel="stylesheet" href="../../refs/307/assets/notations.css">
   <!-- カードの格子の規則（#352 で共有するアセット） -->
   <link rel="stylesheet" href="../../refs/352/assets/card-grid.css">
@@ -27,7 +27,7 @@
 <body>
   <!-- モック専用の操作列: 配色の切り替え -->
   <div class="mock-bar" data-mock-bar>
-    <!-- [data-scheme-set]: sample.js が押されたボタンの値を html の data-scheme に当てる -->
+    <!-- [data-scheme-set]: sample.js が押されたボタンの値を html の data-scheme に適用する -->
     <div class="mock-bar-group" role="group" aria-label="配色" data-mock-bar>
       <button class="mock-bar-item" type="button" data-scheme-set="light" aria-pressed="false" data-mock-bar>明るい配色</button>
       <button class="mock-bar-item" type="button" data-scheme-set="dark" aria-pressed="false" data-mock-bar>ダーク</button>
@@ -43,22 +43,22 @@
         <h2 class="catalog-label" id="state-wide">広い画面（<code>&lt;!-- cards --&gt;</code> で 4 つの項目のリストを囲む）</h2>
         <article class="mdmark">
 <ul class="mdmark-card-grid">
-  <li><a class="mdmark-card-grid-item" href="#"><svg class="mdmark-card-grid-icon" viewBox="0 0 24 24" aria-hidden="true" data-icon="book"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H19a1 1 0 0 1 1 1v18a1 1 0 0 1-1 1H6.5a1 1 0 0 1 0-5H20"/></svg><span class="mdmark-card-grid-title">使い方</span><p class="mdmark-card-grid-desc">導入と使い方の手順</p></a></li>
-  <li><a class="mdmark-card-grid-item" href="#"><span class="mdmark-card-grid-title">リファレンス</span><p class="mdmark-card-grid-desc">名前から引く一覧</p></a></li>
+  <li><a class="mdmark-card-grid-item" href="#"><svg class="mdmark-card-grid-icon" viewBox="0 0 24 24" aria-hidden="true" data-icon="book"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H19a1 1 0 0 1 1 1v18a1 1 0 0 1-1 1H6.5a1 1 0 0 1 0-5H20"/></svg><span class="mdmark-card-grid-title">使用方法</span><p class="mdmark-card-grid-desc">導入と使用方法の手順</p></a></li>
+  <li><a class="mdmark-card-grid-item" href="#"><span class="mdmark-card-grid-title">リファレンス</span><p class="mdmark-card-grid-desc">名前から参照する一覧</p></a></li>
   <li><a class="mdmark-card-grid-item" href="#"><span class="mdmark-card-grid-title">example.com/docs</span></a></li>
   <li><a class="mdmark-card-grid-item" href="#"><svg class="mdmark-card-grid-icon" viewBox="0 0 24 24" aria-hidden="true" data-icon="rocket"><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"/><path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"/><path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0"/><path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5"/></svg><span class="mdmark-card-grid-title">始める</span></a></li>
 </ul>
         </article>
       </section>
 
-      <!-- 狭い画面: 書いた順に 1 列に積む -->
+      <!-- 狭い画面: 記載した順に 1 列に追加する -->
       <section aria-labelledby="state-narrow">
-        <h2 class="catalog-label" id="state-narrow">狭い画面（1 列に積む）</h2>
+        <h2 class="catalog-label" id="state-narrow">狭い画面（1 列に追加する）</h2>
         <article class="mdmark">
 <div class="demo-narrow-card-grid">
 <ul class="mdmark-card-grid">
-  <li><a class="mdmark-card-grid-item" href="#"><svg class="mdmark-card-grid-icon" viewBox="0 0 24 24" aria-hidden="true" data-icon="book"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H19a1 1 0 0 1 1 1v18a1 1 0 0 1-1 1H6.5a1 1 0 0 1 0-5H20"/></svg><span class="mdmark-card-grid-title">使い方</span><p class="mdmark-card-grid-desc">導入と使い方の手順</p></a></li>
-  <li><a class="mdmark-card-grid-item" href="#"><span class="mdmark-card-grid-title">リファレンス</span><p class="mdmark-card-grid-desc">名前から引く一覧</p></a></li>
+  <li><a class="mdmark-card-grid-item" href="#"><svg class="mdmark-card-grid-icon" viewBox="0 0 24 24" aria-hidden="true" data-icon="book"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H19a1 1 0 0 1 1 1v18a1 1 0 0 1-1 1H6.5a1 1 0 0 1 0-5H20"/></svg><span class="mdmark-card-grid-title">使用方法</span><p class="mdmark-card-grid-desc">導入と使用方法の手順</p></a></li>
+  <li><a class="mdmark-card-grid-item" href="#"><span class="mdmark-card-grid-title">リファレンス</span><p class="mdmark-card-grid-desc">名前から参照する一覧</p></a></li>
   <li><a class="mdmark-card-grid-item" href="#"><span class="mdmark-card-grid-title">example.com/docs</span></a></li>
   <li><a class="mdmark-card-grid-item" href="#"><svg class="mdmark-card-grid-icon" viewBox="0 0 24 24" aria-hidden="true" data-icon="rocket"><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"/><path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"/><path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0"/><path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5"/></svg><span class="mdmark-card-grid-title">始める</span></a></li>
 </ul>
@@ -71,8 +71,8 @@
         <h2 class="catalog-label" id="state-no-link">リンクを持たない項目</h2>
         <article class="mdmark">
 <ul class="mdmark-card-grid">
-  <li><div class="mdmark-card-grid-item"><svg class="mdmark-card-grid-icon" viewBox="0 0 24 24" aria-hidden="true" data-icon="clock"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg><span class="mdmark-card-grid-title">準備中</span><p class="mdmark-card-grid-desc">次の版で追加する</p></div></li>
-  <li><a class="mdmark-card-grid-item" href="#"><svg class="mdmark-card-grid-icon" viewBox="0 0 24 24" aria-hidden="true" data-icon="book"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H19a1 1 0 0 1 1 1v18a1 1 0 0 1-1 1H6.5a1 1 0 0 1 0-5H20"/></svg><span class="mdmark-card-grid-title">使い方</span><p class="mdmark-card-grid-desc">導入と使い方の手順</p></a></li>
+  <li><div class="mdmark-card-grid-item"><svg class="mdmark-card-grid-icon" viewBox="0 0 24 24" aria-hidden="true" data-icon="clock"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg><span class="mdmark-card-grid-title">準備中</span><p class="mdmark-card-grid-desc">次のバージョンで追加する</p></div></li>
+  <li><a class="mdmark-card-grid-item" href="#"><svg class="mdmark-card-grid-icon" viewBox="0 0 24 24" aria-hidden="true" data-icon="book"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H19a1 1 0 0 1 1 1v18a1 1 0 0 1-1 1H6.5a1 1 0 0 1 0-5H20"/></svg><span class="mdmark-card-grid-title">使用方法</span><p class="mdmark-card-grid-desc">導入と使用方法の手順</p></a></li>
 </ul>
         </article>
       </section>
@@ -82,38 +82,38 @@
         <h2 class="catalog-label" id="state-long">長いタイトルと説明</h2>
         <article class="mdmark">
 <ul class="mdmark-card-grid">
-  <li><a class="mdmark-card-grid-item" href="#"><svg class="mdmark-card-grid-icon" viewBox="0 0 24 24" aria-hidden="true" data-icon="book"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H19a1 1 0 0 1 1 1v18a1 1 0 0 1-1 1H6.5a1 1 0 0 1 0-5H20"/></svg><span class="mdmark-card-grid-title">設定を重ねて読む仕組みと優先の順番</span><p class="mdmark-card-grid-desc">端末の設定と、文書のフォルダから上のフォルダの設定ファイルを重ねる順・切り替え・相対パスの基準・優先の順番</p></a></li>
-  <li><a class="mdmark-card-grid-item" href="#"><span class="mdmark-card-grid-title">変更履歴</span><p class="mdmark-card-grid-desc">版ごとの変更の一覧</p></a></li>
+  <li><a class="mdmark-card-grid-item" href="#"><svg class="mdmark-card-grid-icon" viewBox="0 0 24 24" aria-hidden="true" data-icon="book"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H19a1 1 0 0 1 1 1v18a1 1 0 0 1-1 1H6.5a1 1 0 0 1 0-5H20"/></svg><span class="mdmark-card-grid-title">設定を重ねて読み込む仕組みと優先の順番</span><p class="mdmark-card-grid-desc">端末の設定と、文書のフォルダから上のフォルダの設定ファイルを重ねる順・切り替え・相対パスの基準・優先の順番</p></a></li>
+  <li><a class="mdmark-card-grid-item" href="#"><span class="mdmark-card-grid-title">変更履歴</span><p class="mdmark-card-grid-desc">バージョンごとの変更の一覧</p></a></li>
   <li><a class="mdmark-card-grid-item" href="#"><svg class="mdmark-card-grid-icon" viewBox="0 0 24 24" aria-hidden="true" data-icon="rocket"><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"/><path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"/><path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0"/><path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5"/></svg><span class="mdmark-card-grid-title">始める</span></a></li>
 </ul>
         </article>
       </section>
 
-      <!-- 機能を外したとき: 囲んだリストを今のまま描く。URL だけの項目はリンクと添付のカードのまま -->
+      <!-- 機能を解除したとき: 囲んだリストを今のまま描く。URL だけの項目はリンクと添付のカードのまま -->
       <section aria-labelledby="state-off">
-        <h2 class="catalog-label" id="state-off">機能を外したとき（<code>&lt;!-- features: -card-grid --&gt;</code>）</h2>
+        <h2 class="catalog-label" id="state-off">機能を解除したとき（<code>&lt;!-- features: -card-grid --&gt;</code>）</h2>
         <article class="mdmark">
 <ul>
-  <li><code>icon:book</code> <a href="#">使い方</a>
-導入と使い方の手順</li>
-  <li><a href="#">リファレンス</a> 名前から引く一覧</li>
+  <li><code>icon:book</code> <a href="#">使用方法</a>
+導入と使用方法の手順</li>
+  <li><a href="#">リファレンス</a> 名前から参照する一覧</li>
   <li><a class="mdmark-card" href="#"><span class="mdmark-card-icon"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg></span><span class="mdmark-card-title">example.com/docs</span><span class="mdmark-card-meta"><span class="mdmark-card-domain">example.com</span><span class="mdmark-card-url">https://example.com/docs</span></span></a></li>
   <li><code>icon:rocket</code> <a href="#">始める</a></li>
 </ul>
         </article>
       </section>
 
-      <!-- リスト以外の中身: 書き方の警告を出し、書いたとおりに描く -->
+      <!-- リスト以外の中身: 記載の警告を出し、記載したとおりに描く -->
       <section aria-labelledby="state-not-list">
         <h2 class="catalog-label" id="state-not-list">リスト以外の中身を囲んだとき</h2>
         <article class="mdmark">
 <div class="mdmark-syntax-warning">
-  <p class="mdmark-syntax-warning-title"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg>書き方の警告</p>
-  <p><code>&lt;!-- cards --&gt;</code> で囲めるのはリスト 1 つです。中身を書いたとおりに描いています。</p>
+  <p class="mdmark-syntax-warning-title"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg>記載の警告</p>
+  <p><code>&lt;!-- cards --&gt;</code> で囲めるのはリスト 1 つです。中身を記載したとおりに描いています。</p>
 </div>
 <p>入口のページです。</p>
 <ul>
-  <li><a href="#">使い方</a></li>
+  <li><a href="#">使用方法</a></li>
   <li><a href="#">リファレンス</a></li>
 </ul>
         </article>

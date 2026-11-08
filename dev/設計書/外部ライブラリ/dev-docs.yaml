@@ -3,7 +3,7 @@ kind: "CLI"
 version:
   current: d16dd9eb（バージョンのタグが無い。develop の commit）
   checked_on: '2026-11-03'
-  source: 文書を書く人の端末の dev-docs のクローン（端末の設定の `clone`）
+  source: 文書の作成者の端末の dev-docs のクローン（端末の設定の `clone`）
   pinning: 固定しない。mdmark は dev-docs のコードに依存せず、配信元の設定 `dev-docs.yaml` の `$schema` のタグだけを指す
 catalogs:
   - name: コマンド
@@ -11,7 +11,7 @@ catalogs:
     entries:
       - name: dev-docs serve
         kind: コマンド
-        purpose: 端末の設定の配信元を読み、文書の MCP を 127.0.0.1 の Streamable HTTP で待ち受ける
+        purpose: 端末の設定の配信元を読み込み、文書の MCP を 127.0.0.1 の Streamable HTTP で待ち受ける
         params:
           - name: DEV_DOCS_CONFIG
             type: string
@@ -36,7 +36,7 @@ catalogs:
     entries:
       - name: sources[]
         kind: 端末の設定のキー
-        purpose: 配信元の設定ファイル（`dev-docs.yaml`）と、読める・書ける作業場所を登録する
+        purpose: 配信元の設定ファイル（`dev-docs.yaml`）と、読み込める・記載できる作業場所を登録する
         params:
           - name: sources[].id
             type: string
@@ -49,15 +49,15 @@ catalogs:
           - name: sources[].scope.read
             type: string[]
             required: false
-            description: この配信元を読める作業場所の glob
+            description: この配信元を読み込める作業場所の glob
           - name: sources[].outside_read
             type: boolean
             required: false
             default: 'true'
-            description: '`scope` に当たらない作業場所からも、MCP の引数 `outside_scope: true` で作業範囲の外（参考）として読めるか'
+            description: '`scope` に該当しない作業場所からも、MCP の引数 `outside_scope: true` で作業範囲の外（参考）として読み込めるか'
       - name: instructions
         kind: 配信元の設定のキー
-        purpose: '`describe(source)` で返す、その配信元に固有の使い方'
+        purpose: '`describe(source)` で返却する、その配信元に固有の使用方法'
         params:
           - name: instructions
             type: string
@@ -69,7 +69,7 @@ catalogs:
     entries:
       - name: search_docs
         kind: MCP のツール
-        purpose: 配信元の文書を、タグ・種類・名前・本文の語の条件で検索・取得する
+        purpose: 配信元の文書を、タグ・種類・名前・本文の単語の条件で検索・取得する
         params:
           - name: source
             type: string
@@ -78,17 +78,17 @@ catalogs:
           - name: filter
             type: Condition | Group
             required: false
-            description: 'メタデータの条件。`docs` の行の文書をタグで絞るときは `{"and": [{"field": "tags", "op": "eq", "values": ["topic:使い方集"]}, {"field": "kind", "op": "eq", "values": ["docs"]}]}`'
+            description: 'メタデータの条件。`docs` の行の文書をタグで絞るときは `{"and": [{"field": "tags", "op": "eq", "values": ["topic:ガイド"]}, {"field": "kind", "op": "eq", "values": ["docs"]}]}`'
           - name: view
             type: "'ids' | 'summary' | 'full' | 'count'"
             required: false
             default: summary
-            description: '`full` で本文を返す'
+            description: '`full` で本文を返却する'
           - name: outside_scope
             type: boolean
             required: false
             default: 'false'
-            description: '`true` のとき、作業場所が `scope` に当たらない配信元も `outside_read` が真なら読む。`source` に ID を 1 つ渡したときだけ効く'
+            description: '`true` のとき、作業場所が `scope` に該当しない配信元も `outside_read` が真なら読み込む。`source` に ID を 1 つ指定したときだけ有効になる'
         returns:
           - name: '-'
             type: string
@@ -100,10 +100,10 @@ adoption: 採用
 upstream: shuhei1101/dev-docs
 verification:
   state: 未確認
-  detail: mdmark の配信元の `docs` の行をタグ `topic:使い方集` で絞った `search_docs` が使い方集のページを返すことは、E2E の作成のときに確かめる
+  detail: mdmark の配信元の `docs` の行をタグ `topic:ガイド` で絞った `search_docs` がガイドのページを返却することは、E2E の作成のときに確認する
 license: 未確認（リポジトリにライセンスのファイルが無い）。mdmark は dev-docs を配布物に含めない
 official_url: https://github.com/shuhei1101/dev-docs
 docs_url: https://github.com/shuhei1101/dev-docs/blob/develop/docs/リファレンス/文書のMCP.md
 limitations:
   - item: 作業範囲の外の読み取り
-    content: '作業場所が配信元の `scope.read` に当たらないときは、`search_docs` に `source` の ID を 1 つと `outside_scope: true` を渡したときだけ読める。`source` に配列・`*` を渡すと読めない'
+    content: '作業場所が配信元の `scope.read` に該当しないときは、`search_docs` に `source` の ID を 1 つと `outside_scope: true` を指定したときだけ読み込める。`source` に配列・`*` を指定すると読み込めない'

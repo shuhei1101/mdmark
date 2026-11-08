@@ -199,6 +199,6 @@ constraints:
   - item: 計算の量
     constraint: 全ての文書の本文を 1 回ずつ解析する。結果は利用側が持ち、文書を書き換えたときに再作成する
 refs:
-  - dev/設計書/シナリオ/単一ユースケース/被参照を見る#
+  - dev/設計書/シナリオ/単一ユースケース/被参照を確認する#
   - dev/設計書/シナリオ/単一ユースケース/表から用語集に用語を入れる#
 test_file: tests/integration/lib/collect-references.test.ts

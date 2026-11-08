@@ -2,236 +2,236 @@ title: コードブロックを飾る
 scenarios:
   - name: 正常シナリオ
     setup:
-      - name: mdmark を読むページ
-        description: 版を固定した URL で `dist/index.js` と `dist/index.css` を読み、設定を渡して文書を描く HTML
-      - name: コードブロックの印を持つ Markdown
-        description: '`<!-- code: title=app.ts lines highlight=2 -->` の直後に、3 行の言語 `ts` のコードブロックを置いた文書'
+      - name: mdmark を読み込むページ
+        description: バージョンを固定した URL で `dist/index.js` と `dist/index.css` を読み込み、設定を指定して文書を描く HTML
+      - name: コードブロックのマーカーを持つ Markdown
+        description: '`<!-- code: title=app.ts lines highlight=2 -->` の直後に、3 行の言語 `ts` のコードブロックを配置した文書'
       - name: Mock
-        description: jsDelivr を、ビルドした `dist/` を同じパスで返す手元の応答に差し替える
+        description: jsDelivr を、ビルドした `dist/` を同じパスで返却する手元の応答に差し替える
     flow: |-
       sequenceDiagram
         actor U as 利用者
-        participant P as 使う側のページ
+        participant P as 利用側のページ
         participant M as mdmark
-        P->>M: 設定と Markdown を渡して描かせる
-        M-->>P: 題・行番号・行の強調を付けたコードブロックを描く
+        P->>M: 設定と Markdown を指定して描かせる
+        M-->>P: タイトル・行番号・行の強調を付けたコードブロックを描く
         P-->>U: 文書を表示
     expected:
-      - コードブロックの上に題 `app.ts` が出ている
+      - コードブロックの上にタイトル `app.ts` が出ている
       - 3 つの行の左に 1〜3 の行番号が出ている
       - 2 行目だけが強調の背景になっている
       - コードブロックの文字を全て選んだときの選んだ文字に、行番号が入っていない
     test: test_normal
-  - name: 正常シナリオ（コードの行の印）
+  - name: 正常シナリオ（コードの行のマーカー）
     setup:
-      - name: mdmark を読むページ
+      - name: mdmark を読み込むページ
         description: 正常シナリオと同じ
-      - name: コードの行の印を持つ Markdown
-        description: 行末に `// [!code --]` を付けた行、`// [!code ++]` を付けた行、`count += 1; // 数える [!code highlight]` の行、印の無い行の 4 行を持つ言語 `ts` のコードブロックの文書（コードブロックの印は無い）
+      - name: コードの行のマーカーを持つ Markdown
+        description: 行末に `// [!code --]` を付けた行、`// [!code ++]` を付けた行、`count += 1; // 数える [!code highlight]` の行、マーカーの無い行の 4 行を持つ言語 `ts` のコードブロックの文書（コードブロックのマーカーは無い）
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
       sequenceDiagram
         actor U as 利用者
-        participant P as 使う側のページ
+        participant P as 利用側のページ
         participant M as mdmark
-        P->>M: 設定と Markdown を渡して描かせる
-        M->>M: 行末の印を読んで行に種類を付け、印を外す
+        P->>M: 設定と Markdown を指定して描かせる
+        M->>M: 行末のマーカーを読み込んで行に種類を付け、マーカーを削除する
         M-->>P: 行ごとに分けたコードブロックを描く
         P-->>U: 文書を表示
     expected:
-      - '`[!code --]` の行が消した行の色で、行頭に `-` が出ている'
-      - '`[!code ++]` の行が足した行の色で、行頭に `+` が出ている'
+      - '`[!code --]` の行が削除した行の色で、行頭に `-` が出ている'
+      - '`[!code ++]` の行が追加した行の色で、行頭に `+` が出ている'
       - '`[!code highlight]` の行が強調の背景になっている'
-      - 3 つの印の文字が出ていない
-      - 印だけを持っていた 2 つの行の行コメントの頭 `//` が出ておらず、3 行目は `// 数える` が残っている
-      - 印の無い行は書いたとおりに出ている
+      - 3 つのマーカーの文字が出ていない
+      - マーカーだけを持っていた 2 つの行の行コメントの頭 `//` が出ておらず、3 行目は `// 数える` が残っている
+      - マーカーの無い行は記載したとおりに出ている
       - コードブロックの文字を全て選んだときの選んだ文字に、行頭の `+`・`-` が入っていない
     test: test_normal_when_line_marks
-  - name: 正常シナリオ（印の書き方を見せる）
+  - name: 正常シナリオ（マーカーの記載方法を見せる）
     setup:
-      - name: mdmark を読むページ
+      - name: mdmark を読み込むページ
         description: 正常シナリオと同じ
-      - name: 打ち消した印を持つ Markdown
+      - name: 打ち削除したマーカーを持つ Markdown
         description: 行末に `// [\!code ++]` を付けた行を持つ言語 `ts` のコードブロックの文書
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
       sequenceDiagram
         actor U as 利用者
-        participant P as 使う側のページ
+        participant P as 利用側のページ
         participant M as mdmark
-        P->>M: 設定と Markdown を渡して描かせる
-        M-->>P: 打ち消しの \ を外した行を描く
+        P->>M: 設定と Markdown を指定して描かせる
+        M-->>P: 打ち削除しの \ を削除した行を描く
         P-->>U: 文書を表示
     expected:
       - 行が `// [!code ++]` の文字のまま出ている
-      - 行が足した行の色になっておらず、行頭に `+` が出ていない
+      - 行が追加した行の色になっておらず、行頭に `+` が出ていない
     test: test_normal_when_line_mark_escaped
   - name: 正常シナリオ（機能をオフにした文書）
     setup:
-      - name: mdmark を読むページ
+      - name: mdmark を読み込むページ
         description: 正常シナリオと同じ
-      - name: 機能を外した Markdown
-        description: '`<!-- features: -code -->` を書き、正常シナリオのコードブロックの印と、行末に `// [!code ++]` を付けた行を持つコードブロックを持つ文書'
+      - name: 機能を解除した Markdown
+        description: '`<!-- features: -code -->` を記載し、正常シナリオのコードブロックのマーカーと、行末に `// [!code ++]` を付けた行を持つコードブロックを持つ文書'
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
       sequenceDiagram
         actor U as 利用者
-        participant P as 使う側のページ
+        participant P as 利用側のページ
         participant M as mdmark
-        P->>M: 設定と Markdown を渡して描かせる
-        M-->>P: 印を取り除き、コードブロックをそのまま描く
+        P->>M: 設定と Markdown を指定して描かせる
+        M-->>P: マーカーを取り除き、コードブロックをそのまま描く
         P-->>U: 文書を表示
     expected:
-      - 題・行番号・行の強調が出ていない
+      - タイトル・行番号・行の強調が出ていない
       - 行が `// [!code ++]` の文字のまま出ている
       - 言語のラベルとコピーボタンが出ていない
     test: test_normal_when_feature_off
   - name: 正常シナリオ（知らないキー）
     setup:
-      - name: mdmark を読むページ
+      - name: mdmark を読み込むページ
         description: 正常シナリオと同じ
-      - name: 読めない指定を持つ Markdown
-        description: '`<!-- code: title=app.ts color=red -->` の直後に言語 `ts` のコードブロックを置いた文書'
+      - name: 読み込めない指定を持つ Markdown
+        description: '`<!-- code: title=app.ts color=red -->` の直後に言語 `ts` のコードブロックを配置した文書'
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
       sequenceDiagram
         actor U as 利用者
-        participant P as 使う側のページ
+        participant P as 利用側のページ
         participant M as mdmark
-        P->>M: 設定と Markdown を渡して描かせる
-        M->>M: 知らないキー color= を読み飛ばす
-        M-->>P: 読めた指定だけを当てたコードブロックを描く
+        P->>M: 設定と Markdown を指定して描かせる
+        M->>M: 知らないキー color= をスキップする
+        M-->>P: 読み込めた指定だけを適用したコードブロックを描く
         P-->>U: コードブロックを表示
     expected:
-      - コードブロックの上に書き方の警告が無い
-      - コードブロックの上に題 `app.ts` が出ている
+      - コードブロックの上に記載の警告が無い
+      - コードブロックの上にタイトル `app.ts` が出ている
     test: test_normal_when_unknown_key
   - name: 異常シナリオ（コードブロックに無い行の番号）
     setup:
-      - name: mdmark を読むページ
+      - name: mdmark を読み込むページ
         description: 正常シナリオと同じ
       - name: 無い行を強調する Markdown
-        description: '`<!-- code: highlight=2,5 -->` の直後に 3 行の言語 `ts` のコードブロックを置いた文書'
+        description: '`<!-- code: highlight=2,5 -->` の直後に 3 行の言語 `ts` のコードブロックを配置した文書'
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
       sequenceDiagram
         actor U as 利用者
-        participant P as 使う側のページ
+        participant P as 利用側のページ
         participant M as mdmark
-        P->>M: 設定と Markdown を渡して描かせる
+        P->>M: 設定と Markdown を指定して描かせる
         M->>M: 5 行目がコードブロックに無い
-        M-->>P: 書き方の警告と、2 行目を強調したコードブロックを描く
-        P-->>U: 書き方の警告とコードブロックを表示
+        M-->>P: 記載の警告と、2 行目を強調したコードブロックを描く
+        P-->>U: 記載の警告とコードブロックを表示
     expected:
-      - コードブロックの上に、5 行目が無いことと、コードブロックの行の数を書いた書き方の警告がある
+      - コードブロックの上に、5 行目が無いことと、コードブロックの行の数を記載した記載の警告がある
       - 2 行目が強調の背景になっている
     test: test_error_when_highlight_line_missing
-  - name: 異常シナリオ（知らないコードの行の印）
+  - name: 異常シナリオ（知らないコードの行のマーカー）
     setup:
-      - name: mdmark を読むページ
+      - name: mdmark を読み込むページ
         description: 正常シナリオと同じ
-      - name: 知らない印を持つ Markdown
+      - name: 知らないマーカーを持つ Markdown
         description: 行末に `// [!code focus]` を付けた行を持つ言語 `ts` のコードブロックの文書
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
       sequenceDiagram
         actor U as 利用者
-        participant P as 使う側のページ
+        participant P as 利用側のページ
         participant M as mdmark
-        P->>M: 設定と Markdown を渡して描かせる
-        M->>M: 知らない印 focus がある
-        M-->>P: 書き方の警告と、印を当てない行を描く
-        P-->>U: 書き方の警告とコードブロックを表示
+        P->>M: 設定と Markdown を指定して描かせる
+        M->>M: 知らないマーカー focus がある
+        M-->>P: 記載の警告と、マーカーを適用しない行を描く
+        P-->>U: 記載の警告とコードブロックを表示
     expected:
-      - コードブロックの上に、`[!code focus]` が使えない印であることと使える印を書いた書き方の警告がある
+      - コードブロックの上に、`[!code focus]` が使用できないマーカーであることと使用できるマーカーを記載した記載の警告がある
       - 行が `// [!code focus]` の文字のまま出ている
     test: test_error_when_unknown_line_mark
-  - name: 異常シナリオ（印の後にコードブロックが無い）
+  - name: 異常シナリオ（マーカーの後にコードブロックが無い）
     setup:
-      - name: mdmark を読むページ
+      - name: mdmark を読み込むページ
         description: 正常シナリオと同じ
-      - name: コードブロックの無い印を持つ Markdown
-        description: '`<!-- code: title=app.ts -->` の直後に段落を置いた文書'
+      - name: コードブロックの無いマーカーを持つ Markdown
+        description: '`<!-- code: title=app.ts -->` の直後に段落を配置した文書'
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
       sequenceDiagram
         actor U as 利用者
-        participant P as 使う側のページ
+        participant P as 利用側のページ
         participant M as mdmark
-        P->>M: 設定と Markdown を渡して描かせる
-        M->>M: 印の直後にコードブロックが無い
-        M-->>P: 書き方の警告と、段落をそのまま描く
-        P-->>U: 書き方の警告と段落を表示
+        P->>M: 設定と Markdown を指定して描かせる
+        M->>M: マーカーの直後にコードブロックが無い
+        M-->>P: 記載の警告と、段落をそのまま描く
+        P-->>U: 記載の警告と段落を表示
     expected:
-      - 印の場所に、印の直後にコードブロックを置くよう書いた書き方の警告がある
-      - 段落が書いたとおりに出ていて、題が出ていない
+      - マーカーの場所に、マーカーの直後にコードブロックを配置するよう記載した記載の警告がある
+      - 段落が記載したとおりに出ていて、タイトルが出ていない
     test: test_error_when_no_code_block
   - name: 正常シナリオ（言語に応じて色分けする）
     setup:
-      - name: mdmark を読むページ
+      - name: mdmark を読み込むページ
         description: 正常シナリオと同じ
       - name: 色分けする言語のコードブロックを持つ Markdown
-        description: 印を持たない言語 `ts`・`yaml`・`python` のコードブロックを 1 つずつ置いた文書
+        description: マーカーを持たない言語 `ts`・`yaml`・`python` のコードブロックを 1 つずつ配置した文書
       - name: Mock
-        description: jsDelivr を、ビルドした `dist/` と、色分けのライブラリの本体と言語のモジュールを jsDelivr と同じパスで返す手元の応答に差し替える。色分けのライブラリへの要求を数える
+        description: jsDelivr を、ビルドした `dist/` と、色分けのライブラリの本体と言語のモジュールを jsDelivr と同じパスで返却する手元の応答に差し替える。色分けのライブラリへの要求を数える
     flow: |-
       ```mermaid
       sequenceDiagram
         actor U as 利用者
-        participant P as 使う側のページ
+        participant P as 利用側のページ
         participant M as mdmark
         participant X as 色分けのライブラリ
-        P->>M: 設定と Markdown を渡して描かせる
+        P->>M: 設定と Markdown を指定して描かせる
         M-->>P: コードブロックを描く
-        M->>X: 本体と、文書が使う言語のモジュールを要求
+        M->>X: 本体と、文書が使用する言語のモジュールを要求
         X-->>M: モジュール
         M-->>P: コードブロックの中身を色分けする
         P-->>U: 色分けした文書を表示
       ```
     expected:
       - 3 つのコードブロックのキーワード・文字列・コメントなどが、地の文字と違う色で出ている
-      - 3 つのコードブロックの文字が書いたとおりで、コードブロックの文字を全て選んだときの選んだ文字が色分けの前と同じ
+      - 3 つのコードブロックの文字が記載したとおりで、コードブロックの文字を全て選んだときの選んだ文字が色分けの前と同じ
       - 色分けのライブラリへの要求が、本体 1 件と `typescript`・`yaml`・`python` の言語のモジュール 1 件ずつ
     test: test_normal_when_syntax_highlighted
-  - name: 正常シナリオ（題・行番号・コードの行の印と色分けする）
+  - name: 正常シナリオ（タイトル・行番号・コードの行のマーカーと色分けする）
     setup:
-      - name: mdmark を読むページ
+      - name: mdmark を読み込むページ
         description: 正常シナリオと同じ
       - name: 飾りと色分けを両方持つ Markdown
-        description: '`<!-- code: title=app.ts lines highlight=4 -->` の直後に、3 行にまたがるブロックコメント、行末に `// [!code --]` を付けた行、行末に `// [!code ++]` を付けた行を持つ言語 `ts` のコードブロックを置いた文書'
+        description: '`<!-- code: title=app.ts lines highlight=4 -->` の直後に、3 行にまたがるブロックコメント、行末に `// [!code --]` を付けた行、行末に `// [!code ++]` を付けた行を持つ言語 `ts` のコードブロックを配置した文書'
       - name: Mock
         description: 正常シナリオ（言語に応じて色分けする）と同じ
     flow: |-
       ```mermaid
       sequenceDiagram
         actor U as 利用者
-        participant P as 使う側のページ
+        participant P as 利用側のページ
         participant M as mdmark
         participant X as 色分けのライブラリ
-        P->>M: 設定と Markdown を渡して描かせる
-        M-->>P: 題・行番号・行の印を付けたコードブロックを描く
+        P->>M: 設定と Markdown を指定して描かせる
+        M-->>P: タイトル・行番号・行のマーカーを付けたコードブロックを描く
         M->>X: 本体と typescript のモジュールを要求
         X-->>M: モジュール
         M-->>P: 行ごとに中身を色分けする
         P-->>U: 色分けした文書を表示
       ```
     expected:
-      - コードブロックの上に題 `app.ts` が出ていて、各行の左に 1 から始まる行番号が出ている
+      - コードブロックの上にタイトル `app.ts` が出ていて、各行の左に 1 から始まる行番号が出ている
       - ブロックコメントの 3 行が、どの行もコメントの色で出ている
-      - 消した行・足した行がそれぞれの地の色と行頭の `-`・`+` で出ていて、行の中の文字は色分けされている
+      - 削除した行・追加した行がそれぞれの地の色と行頭の `-`・`+` で出ていて、行の中の文字は色分けされている
       - 4 行目が強調の背景になっている
       - コードブロックの文字を全て選んだときの選んだ文字に、行番号と行頭の `+`・`-` が入っていない
     test: test_normal_when_highlighted_with_line_marks
   - name: 正常シナリオ（色分けしない言語）
     setup:
-      - name: mdmark を読むページ
+      - name: mdmark を読み込むページ
         description: 正常シナリオと同じ
       - name: 色分けしないコードブロックを持つ Markdown
         description: 言語の無いコードブロックと、言語 `text` のコードブロックだけを持つ文書
@@ -241,55 +241,55 @@ scenarios:
       ```mermaid
       sequenceDiagram
         actor U as 利用者
-        participant P as 使う側のページ
+        participant P as 利用側のページ
         participant M as mdmark
-        P->>M: 設定と Markdown を渡して描かせる
-        M-->>P: 色分けのライブラリを読まずにコードブロックを描く
+        P->>M: 設定と Markdown を指定して描かせる
+        M-->>P: 色分けのライブラリを読み込まずにコードブロックを描く
         P-->>U: 文書を表示
       ```
     expected:
-      - 2 つのコードブロックの文字が色分けされず、書いたとおりに出ている
+      - 2 つのコードブロックの文字が色分けされず、記載したとおりに出ている
       - 色分けのライブラリへの要求が 0 件
     test: test_normal_when_language_not_highlighted
   - name: 正常シナリオ（色分けの機能をオフにした文書）
     setup:
-      - name: mdmark を読むページ
+      - name: mdmark を読み込むページ
         description: 正常シナリオと同じ
-      - name: 色分けの機能を外した Markdown
-        description: '`<!-- features: -syntax -->` を書き、行末に `// [!code ++]` を付けた行を持つ言語 `ts` のコードブロックを置いた文書'
+      - name: 色分けの機能を解除した Markdown
+        description: '`<!-- features: -syntax -->` を記載し、行末に `// [!code ++]` を付けた行を持つ言語 `ts` のコードブロックを配置した文書'
       - name: Mock
         description: 正常シナリオ（言語に応じて色分けする）と同じ
     flow: |-
       ```mermaid
       sequenceDiagram
         actor U as 利用者
-        participant P as 使う側のページ
+        participant P as 利用側のページ
         participant M as mdmark
-        P->>M: 設定と Markdown を渡して描かせる
-        M-->>P: 色分けのライブラリを読まずに、行の印を付けたコードブロックを描く
+        P->>M: 設定と Markdown を指定して描かせる
+        M-->>P: 色分けのライブラリを読み込まずに、行のマーカーを付けたコードブロックを描く
         P-->>U: 文書を表示
       ```
     expected:
       - コードブロックの文字が色分けされていない
-      - '`[!code ++]` の行が足した行の色で、行頭に `+` が出ている'
+      - '`[!code ++]` の行が追加した行の色で、行頭に `+` が出ている'
       - 色分けのライブラリへの要求が 0 件
     test: test_normal_when_syntax_feature_off
-  - name: 異常シナリオ（色分けのライブラリを読めない）
+  - name: 異常シナリオ（色分けのライブラリを読み込めない）
     setup:
-      - name: mdmark を読むページ
+      - name: mdmark を読み込むページ
         description: 正常シナリオと同じ
       - name: 色分けする言語のコードブロックを持つ Markdown
         description: 正常シナリオ（言語に応じて色分けする）と同じ文書
       - name: Mock
-        description: 色分けのライブラリの本体が 404 を返す。ほかは正常シナリオ（言語に応じて色分けする）と同じ
+        description: 色分けのライブラリの本体が 404 を返却する。ほかは正常シナリオ（言語に応じて色分けする）と同じ
     flow: |-
       ```mermaid
       sequenceDiagram
         actor U as 利用者
-        participant P as 使う側のページ
+        participant P as 利用側のページ
         participant M as mdmark
         participant X as 色分けのライブラリ
-        P->>M: 設定と Markdown を渡して描かせる
+        P->>M: 設定と Markdown を指定して描かせる
         M-->>P: コードブロックを描く
         M->>X: 本体を要求
         X-->>M: 404
@@ -297,26 +297,26 @@ scenarios:
         P-->>U: 文書を表示
       ```
     expected:
-      - 3 つのコードブロックの文字が色分けされず、書いたとおりに欠けずに出ている
-      - 知らせの枠が出ていない
-      - ブラウザのコンソールに、色分けのライブラリを読めなかった旨が出ている
+      - 3 つのコードブロックの文字が色分けされず、記載したとおりに欠けずに出ている
+      - 通知ブロックが出ていない
+      - ブラウザのコンソールに、色分けのライブラリを読み込めなかった旨が出ている
     test: test_error_when_highlighter_not_found
-  - name: 異常シナリオ（言語のモジュールの一部を読めない）
+  - name: 異常シナリオ（言語のモジュールの一部を読み込めない）
     setup:
-      - name: mdmark を読むページ
+      - name: mdmark を読み込むページ
         description: 正常シナリオと同じ
       - name: 色分けする言語のコードブロックを持つ Markdown
         description: 正常シナリオ（言語に応じて色分けする）と同じ文書
       - name: Mock
-        description: '`python` の言語のモジュールだけが 404 を返す。ほかは正常シナリオ（言語に応じて色分けする）と同じ'
+        description: '`python` の言語のモジュールだけが 404 を返却する。ほかは正常シナリオ（言語に応じて色分けする）と同じ'
     flow: |-
       ```mermaid
       sequenceDiagram
         actor U as 利用者
-        participant P as 使う側のページ
+        participant P as 利用側のページ
         participant M as mdmark
         participant X as 色分けのライブラリ
-        P->>M: 設定と Markdown を渡して描かせる
+        P->>M: 設定と Markdown を指定して描かせる
         M-->>P: コードブロックを描く
         M->>X: 本体と 3 つの言語のモジュールを要求
         X-->>M: 本体と typescript・yaml のモジュール、python は 404
@@ -325,38 +325,38 @@ scenarios:
       ```
     expected:
       - '`ts` と `yaml` のコードブロックが色分けされている'
-      - '`python` のコードブロックの文字が色分けされず、書いたとおりに出ている'
-      - ブラウザのコンソールに、`python` の言語のモジュールを読めなかった旨が出ている
+      - '`python` のコードブロックの文字が色分けされず、記載したとおりに出ている'
+      - ブラウザのコンソールに、`python` の言語のモジュールを読み込めなかった旨が出ている
     test: test_error_when_language_module_not_found
   - name: 正常シナリオ（言語のラベルを出す）
     setup:
-      - name: mdmark を読むページ
+      - name: mdmark を読み込むページ
         description: 正常シナリオと同じ
       - name: 言語の指定を持つ Markdown
-        description: 情報文字列が `ts`、`bash title`、空の 3 つのコードブロックを置いた文書
+        description: 情報文字列が `ts`、`bash title`、空の 3 つのコードブロックを配置した文書
       - name: Mock
         description: 正常シナリオ（言語に応じて色分けする）と同じ
     flow: |-
       sequenceDiagram
         actor U as 利用者
-        participant P as 使う側のページ
+        participant P as 利用側のページ
         participant M as mdmark
-        P->>M: 設定と Markdown を渡して描かせる
+        P->>M: 設定と Markdown を指定して描かせる
         M-->>P: 言語の指定があるコードブロックに言語のラベルを付けて描く
         P-->>U: 文書を表示
     expected:
-      - 1 つ目のコードブロックにラベル `ts`、2 つ目にラベル `bash`（情報文字列の最初の語）が、コードの上の帯の左端に出ている
+      - 1 つ目のコードブロックにラベル `ts`、2 つ目にラベル `bash`（情報文字列の最初の単語）が、コードの上の帯の左端に出ている
       - 言語の無い 3 つ目のコードブロックにラベルが無い
       - コードブロックの文字を全て選んだときの選んだ文字に、ラベルが入っていない
-      - 'コードブロックの読み上げの名前は今のまま（`コード: {言語}`）'
+      - 'コードブロックのスクリーンリーダー向けの名前は今のまま（`コード: {言語}`）'
     test: test_normal_when_language_label_shown
   - name: 正常シナリオ（変更後のコードをコピーする）
     setup:
-      - name: mdmark を読むページ
+      - name: mdmark を読み込むページ
         description: 正常シナリオと同じ
         notes: '-'
-      - name: コードの行の印を持つ Markdown
-        description: 行末に `// [!code --]` を付けた `const a = 1;`、行末に `// [!code ++]` を付けた `const a = 2;`、`count += 1; // 数える [!code highlight]`、印の無い `return a;` の 4 行を持つ言語 `ts` のコードブロックと、言語 `tree` のコードブロックを置いた文書
+      - name: コードの行のマーカーを持つ Markdown
+        description: 行末に `// [!code --]` を付けた `const a = 1;`、行末に `// [!code ++]` を付けた `const a = 2;`、`count += 1; // 数える [!code highlight]`、マーカーの無い `return a;` の 4 行を持つ言語 `ts` のコードブロックと、言語 `tree` のコードブロックを配置した文書
         notes: '-'
       - name: クリップボードの権限
         description: ページにクリップボードへの書き込みを許す
@@ -367,35 +367,35 @@ scenarios:
     flow: |-
       sequenceDiagram
         actor U as 利用者
-        participant P as 使う側のページ
+        participant P as 利用側のページ
         participant M as mdmark
-        P->>M: 設定と Markdown を渡して描かせる
+        P->>M: 設定と Markdown を指定して描かせる
         M-->>P: コピーボタンを付けたコードブロックを描く
         U->>P: ts のコードブロックのコピーボタンを押す
-        M->>M: 印と消した行を除いたコードをクリップボードへ書き込む
-        P-->>U: コピーしたことを知らせるボタン
+        M->>M: マーカーと削除した行を除いたコードをクリップボードへ書き込む
+        P-->>U: コピーしたことを通知するボタン
     expected:
-      - クリップボードの中身が `const a = 2;\ncount += 1; // 数える\nreturn a;`（`[!code --]` の行を含めず、印と、印だけを持つ行コメントの頭 `//` とその前の空白を除いたコード）
+      - クリップボードの中身が `const a = 2;\ncount += 1; // 数える\nreturn a;`（`[!code --]` の行を含めず、マーカーと、マーカーだけを持つ行コメントの頭 `//` とその前の空白を除いたコード）
       - クリップボードの中身に、行番号と行頭の `+`・`-` が入っていない
-      - ボタンの文言でコピーしたことが知らされ、読み上げでも知らされる。しばらくするとボタンの文言が元に戻る
+      - ボタンの文言でコピーしたことが知らされ、スクリーンリーダーでも知らされる。しばらくするとボタンの文言が元に戻る
       - コピーボタンはキーボードでフォーカスして押せる
       - ファイルツリーに描いた `tree` のコードブロックには、コードのコピーボタンが付かない（付くのはツリーのコピーボタンだけ）
     test: test_normal_when_code_copied
   - name: 正常シナリオ（Dockerfile と diff を色分けする）
     setup:
-      - name: mdmark を読むページ
+      - name: mdmark を読み込むページ
         description: 正常シナリオと同じ
       - name: Dockerfile と diff のコードブロックを持つ Markdown
-        description: 言語 `dockerfile`・`docker`・`diff`・`patch` のコードブロックを 1 つずつと、行末に `# [!code ++]` を付けた行を持つ言語 `diff` のコードブロックを置いた文書。diff のコードブロックは `+` で始まる行と `-` で始まる行を持つ
+        description: 言語 `dockerfile`・`docker`・`diff`・`patch` のコードブロックを 1 つずつと、行末に `# [!code ++]` を付けた行を持つ言語 `diff` のコードブロックを配置した文書。diff のコードブロックは `+` で始まる行と `-` で始まる行を持つ
       - name: Mock
         description: 正常シナリオ（言語に応じて色分けする）と同じ
     flow: |-
       sequenceDiagram
         actor U as 利用者
-        participant P as 使う側のページ
+        participant P as 利用側のページ
         participant M as mdmark
         participant X as 色分けのライブラリ
-        P->>M: 設定と Markdown を渡して描かせる
+        P->>M: 設定と Markdown を指定して描かせる
         M-->>P: コードブロックを描く
         M->>X: 本体と dockerfile・diff のモジュールを要求
         X-->>M: モジュール
@@ -404,16 +404,16 @@ scenarios:
     expected:
       - '`dockerfile` と `docker` のコードブロックの `FROM`・`RUN` などの命令が、地の文字と違う色で出ている'
       - '`diff` と `patch` のコードブロックの `+` で始まる行と `-` で始まる行が、地の文字とも互いとも違う色で出ている'
-      - '`[!code ++]` を付けた diff の行が足した行の地の色と行頭の `+` で出ていて、行の中の文字は色分けされている'
-      - 色分けのライブラリへの要求が、本体 1 件と `dockerfile`・`diff` の言語のモジュール 1 件ずつ（別名の `docker`・`patch` は同じモジュールを使う）
-      - 各コードブロックのラベルは書いた情報文字列のとおり（`dockerfile`・`docker`・`diff`・`patch`）
+      - '`[!code ++]` を付けた diff の行が追加した行の地の色と行頭の `+` で出ていて、行の中の文字は色分けされている'
+      - 色分けのライブラリへの要求が、本体 1 件と `dockerfile`・`diff` の言語のモジュール 1 件ずつ（別名の `docker`・`patch` は同じモジュールを使用する）
+      - 各コードブロックのラベルは記載した情報文字列のとおり（`dockerfile`・`docker`・`diff`・`patch`）
     test: test_normal_when_dockerfile_and_diff_highlighted
-  - name: 異常シナリオ（クリップボードに書けない）
+  - name: 異常シナリオ（クリップボードに書き込めない）
     setup:
-      - name: mdmark を読むページ
+      - name: mdmark を読み込むページ
         description: 正常シナリオと同じ
       - name: コードブロックを持つ Markdown
-        description: 言語 `ts` のコードブロックを置いた文書
+        description: 言語 `ts` のコードブロックを配置した文書
       - name: クリップボードの権限
         description: ページにクリップボードへの書き込みを許さない
       - name: Mock
@@ -421,31 +421,31 @@ scenarios:
     flow: |-
       sequenceDiagram
         actor U as 利用者
-        participant P as 使う側のページ
+        participant P as 利用側のページ
         participant M as mdmark
-        P->>M: 設定と Markdown を渡して描かせる
+        P->>M: 設定と Markdown を指定して描かせる
         M-->>P: コピーボタンを付けたコードブロックを描く
         U->>P: コピーボタンを押す
         M->>M: クリップボードへの書き込みが拒まれる
-        P-->>U: コピーできなかったことを知らせるボタン
+        P-->>U: コピーできなかったことを通知するボタン
     expected:
-      - ボタンの文言でコピーできなかったことが知らされ、読み上げでも知らされる
+      - ボタンの文言でコピーできなかったことが知らされ、スクリーンリーダーでも知らされる
       - コードブロックの文字はそのまま選んで手でコピーできる
     test: test_error_when_clipboard_denied
   - name: 正常シナリオ（言語とファイル名をラベルに出す）
     setup:
-      - name: mdmark を読むページ
+      - name: mdmark を読み込むページ
         description: 正常シナリオと同じ
       - name: 言語とファイル名を持つ Markdown
-        description: 情報文字列が `python:hoge.py` のコードブロックと、`ts` のコードブロックを置いた文書
+        description: 情報文字列が `python:hoge.py` のコードブロックと、`ts` のコードブロックを配置した文書
       - name: Mock
         description: 正常シナリオ（言語に応じて色分けする）と同じ
     flow: |-
       sequenceDiagram
         actor U as 利用者
-        participant P as 使う側のページ
+        participant P as 利用側のページ
         participant M as mdmark
-        P->>M: 設定と Markdown を渡して描かせる
+        P->>M: 設定と Markdown を指定して描かせる
         M-->>P: 情報文字列の : の前を言語、後ろをファイル名としてラベルに出して描く
         P-->>U: 文書を表示
     expected:
@@ -455,7 +455,7 @@ scenarios:
     test: test_normal_when_language_and_file_name_label_shown
   - name: 正常シナリオ（focus・error・warning の行）
     setup:
-      - name: mdmark を読むページ
+      - name: mdmark を読み込むページ
         description: 正常シナリオと同じ
       - name: focus・error・warning のマーカーを持つ Markdown
         description: 行末に `// [!code focus]` を付けた行、`// [!code error]` を付けた行、`// [!code warning]` を付けた行、マーカーの無い行の 4 行を持つ言語 `ts` のコードブロックの文書
@@ -466,39 +466,39 @@ scenarios:
     flow: |-
       sequenceDiagram
         actor U as 利用者
-        participant P as 使う側のページ
+        participant P as 利用側のページ
         participant M as mdmark
-        P->>M: 設定と Markdown を渡して描かせる
-        M->>M: 行末のマーカーを読んで行に種類を付け、マーカーを除く
+        P->>M: 設定と Markdown を指定して描かせる
+        M->>M: 行末のマーカーを読み込んで行に種類を付け、マーカーを除く
         M-->>P: 行ごとに分けたコードブロックを描く
         U->>P: コピーボタンを押す
-        P-->>U: コピーしたことを知らせるボタン
+        P-->>U: コピーしたことを通知するボタン
     expected:
       - '`[!code focus]` の行はそのままの濃さで、ほかの 3 行が薄く表示されている'
-      - '`[!code error]` の行が誤りの色、`[!code warning]` の行が警告の色の背景で、色以外にも行の種類が読み上げで分かる'
+      - '`[!code error]` の行が誤りの色、`[!code warning]` の行が警告の色の背景で、色以外にも行の種類がスクリーンリーダーで分かる'
       - 3 つのマーカーの文字と、マーカーだけを持つ行コメントの頭 `//` が出ていない
       - クリップボードの中身が 4 行全てを含み、マーカーの文字が入っていない
     test: test_normal_when_focus_error_warning
   - name: 正常シナリオ（インデントで畳む・開く）
     setup:
-      - name: mdmark を読むページ
+      - name: mdmark を読み込むページ
         description: 正常シナリオと同じ
       - name: 入れ子のコードを持つ Markdown
-        description: 3 段の入れ子のキーを持つ言語 `yaml` のコードブロック、閉じ括弧の行で終わる入れ子のオブジェクトを持つ言語 `json` のコードブロック、言語 `tree` のコードブロックを持つ文書
+        description: 3 階層の入れ子のキーを持つ言語 `yaml` のコードブロック、閉じ括弧の行で終わる入れ子のオブジェクトを持つ言語 `json` のコードブロック、言語 `tree` のコードブロックを持つ文書
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
       sequenceDiagram
         actor U as 利用者
-        participant P as 使う側のページ
+        participant P as 利用側のページ
         participant M as mdmark
-        P->>M: 設定と Markdown を渡して描かせる
+        P->>M: 設定と Markdown を指定して描かせる
         M-->>P: 畳める行に開閉のボタンを付けたコードブロックを描く
-        U->>P: yaml の 1 段目のキーの行にポインターを乗せ、▾ を押す
+        U->>P: yaml の 1 行目のキーの行にポインターを乗せ、▾ を押す
         P-->>U: その行より深い行を畳んだコードブロック
         U->>P: 畳んだ行の末尾の ⋯ を押す
         P-->>U: 開いたコードブロック
-        U->>P: Shift を押しながら 1 段目のキーの ▾ を押し、もう一度 Shift を押しながら ▸ を押す
+        U->>P: Shift を押しながら 1 行目のキーの ▾ を押し、もう一度 Shift を押しながら ▸ を押す
         P-->>U: 入れ子もまとめて畳み、まとめて開いたコードブロック
         U->>P: json のオブジェクトの行の ▾ を押す
         P-->>U: 閉じ括弧の行を残して畳んだコードブロック
@@ -513,32 +513,32 @@ scenarios:
     test: test_normal_when_folded_by_indent
   - name: 正常シナリオ（インデントの縦線）
     setup:
-      - name: mdmark を読むページ
+      - name: mdmark を読み込むページ
         description: 正常シナリオと同じ
       - name: 入れ子のコードを持つ Markdown
-        description: 3 段の入れ子のキーを持つ言語 `yaml` のコードブロックの文書
+        description: 3 階層の入れ子のキーを持つ言語 `yaml` のコードブロックの文書
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
       sequenceDiagram
         actor U as 利用者
-        participant P as 使う側のページ
+        participant P as 利用側のページ
         participant M as mdmark
-        P->>M: 設定と Markdown を渡して描かせる
-        M-->>P: インデントのレベルごとに縦線を引いたコードブロックを描く
-        U->>P: 2 段目のブロックの行にポインターを乗せる
+        P->>M: 設定と Markdown を指定して描かせる
+        M-->>P: インデントのレベルごとに縦線を描いたコードブロックを描く
+        U->>P: 2 行目のブロックの行にポインターを乗せる
         P-->>U: そのブロックの縦線だけを濃くしたコードブロック
     expected:
-      - インデントのある行に、インデントの 1 レベルごとに細い縦線が引かれている
+      - インデントのある行に、インデントの 1 レベルごとに細い縦線が参照されている
       - ポインターを乗せた行のブロックの縦線だけが濃くなり、ほかのブロックの縦線は薄いまま
       - コードブロックの文字を全て選んだときの選んだ文字に、縦線の文字が入っていない
     test: test_normal_when_indent_guides
   - name: 正常シナリオ（最初から畳む行を指定する）
     setup:
-      - name: mdmark を読むページ
+      - name: mdmark を読み込むページ
         description: 正常シナリオと同じ
       - name: fold= を持つ Markdown
-        description: '`<!-- code: lines fold=2,6 -->` の後に、2 行目と 6 行目が畳める行の言語 `yaml` のコードブロックを置いた文書'
+        description: '`<!-- code: lines fold=2,6 -->` の後に、2 行目と 6 行目が畳める行の言語 `yaml` のコードブロックを配置した文書'
       - name: クリップボードの権限
         description: ページにクリップボードへの書き込みを許す
       - name: Mock
@@ -546,56 +546,56 @@ scenarios:
     flow: |-
       sequenceDiagram
         actor U as 利用者
-        participant P as 使う側のページ
+        participant P as 利用側のページ
         participant M as mdmark
-        P->>M: 設定と Markdown を渡して描かせる
+        P->>M: 設定と Markdown を指定して描かせる
         M-->>P: 2 行目と 6 行目を畳んだコードブロックを描く
         U->>P: コピーボタンを押す
-        P-->>U: コピーしたことを知らせるボタン
-        U->>P: 2 行目を開き、ページを読み直す
+        P-->>U: コピーしたことを通知するボタン
+        U->>P: 2 行目を開き、ページを再読み込みする
         P-->>U: 2 行目と 6 行目を畳んだコードブロック
     expected:
       - 描いた直後、2 行目と 6 行目の下の深い行が隠れ、2 行目と 6 行目に ▸ と ⋯ が出ている
       - クリップボードの中身が、畳んだ行を含むコードブロックの全ての行を持つ
-      - 読み直した後、開閉の状態は覚えておらず、`fold=` のとおり 2 行目と 6 行目を畳んだ状態で描かれる
+      - 再読み込みした後、開閉の状態は覚えておらず、`fold=` のとおり 2 行目と 6 行目を畳んだ状態で描かれる
     test: test_normal_when_fold_option
   - name: 異常シナリオ（畳めない行の fold=）
     setup:
-      - name: mdmark を読むページ
+      - name: mdmark を読み込むページ
         description: 正常シナリオと同じ
       - name: 畳めない行を指定した Markdown
-        description: '`<!-- code: fold=1,3,99 -->` の後に、1 行目だけが畳める行の 5 行の言語 `yaml` のコードブロックを置いた文書'
+        description: '`<!-- code: fold=1,3,99 -->` の後に、1 行目だけが畳める行の 5 行の言語 `yaml` のコードブロックを配置した文書'
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
       sequenceDiagram
         actor U as 利用者
-        participant P as 使う側のページ
+        participant P as 利用側のページ
         participant M as mdmark
-        P->>M: 設定と Markdown を渡して描かせる
-        M->>M: 畳めない行とコードブロックに無い行の指定を読み飛ばす
-        M-->>P: 書き方の警告と、1 行目だけを畳んだコードブロックを描く
+        P->>M: 設定と Markdown を指定して描かせる
+        M->>M: 畳めない行とコードブロックに無い行の指定をスキップする
+        M-->>P: 記載の警告と、1 行目だけを畳んだコードブロックを描く
         P-->>U: 文書を表示
     expected:
-      - コードブロックの上に書き方の警告があり、畳めない 3 行目と、コードブロックに無い 99 行目が記載されている
+      - コードブロックの上に記載の警告があり、畳めない 3 行目と、コードブロックに無い 99 行目が記載されている
       - 1 行目は畳んだ状態で描かれている
       - コードの中身は欠けずに出ている
     test: test_error_when_fold_line_invalid
   - name: 正常シナリオ（折り返す）
     setup:
-      - name: mdmark を読むページ
+      - name: mdmark を読み込むページ
         description: 正常シナリオと同じ
         notes: 画面の幅は 390px
       - name: 折り返すマーカーを持つ Markdown
-        description: '`<!-- code: lines wrap -->` の直後に、2 行目だけが表示の幅より長い 3 行の言語 `ts` のコードブロックと、マーカーの無い同じコードブロックを置いた文書'
+        description: '`<!-- code: lines wrap -->` の直後に、2 行目だけが表示の幅より長い 3 行の言語 `ts` のコードブロックと、マーカーの無い同じコードブロックを配置した文書'
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
       sequenceDiagram
         actor U as 利用者
-        participant P as 使う側のページ
+        participant P as 利用側のページ
         participant M as mdmark
-        P->>M: 設定と Markdown を渡して描かせる
+        P->>M: 設定と Markdown を指定して描かせる
         M-->>P: wrap を持つブロックだけを折り返して描く
         P-->>U: 文書を表示
     expected:
@@ -604,24 +604,24 @@ scenarios:
       - マーカーの無いブロックは折り返さず、枠の中で横にスクロールできる
       - '`wrap` のブロックのコピーボタンでコピーした文字に、折り返しの改行が入っていない'
     test: test_normal_when_wrap
-lead: '文書を書く人が、コードブロックの直前の `<!-- code: title=題 lines highlight=行 -->` と、コードの行末の行コメントの `[!code ++]`・`[!code --]`・`[!code highlight]` を書くと、mdmark がコードブロックに題・行番号・行の強調と、足した行・消した行・強調の印を付けて描く。言語の指定があれば言語のラベルを出し、読む人はコピーボタンで変更後のコードをコピーする。'
+lead: '文書の作成者が、コードブロックの直前の `<!-- code: title=タイトル lines highlight=行 -->` と、コードの行末の行コメントの `[!code ++]`・`[!code --]`・`[!code highlight]` を記載すると、mdmark がコードブロックにタイトル・行番号・行の強調と、追加した行・削除した行・強調のマーカーを付けて描く。言語の指定があれば言語のラベルを出し、読者はコピーボタンで変更後のコードをコピーする。'
 issue: 25
-primary_actor: 文書を書く人
+primary_actor: 文書の作成者
 stakeholders:
-  - name: 文書を読む人
-    interest: どのファイルのコードか、何行目か、どの行を変えたか・見るべきかが見て取れ、写したコードに行番号と行頭の `+`・`-` が混ざらない
-trigger: 使う側のページが、コードブロックの印かコードの行の印を持つ文書を描かせる
+  - name: 読者
+    interest: どのファイルのコードか、何行目か、どの行を変えたか・確認するべきかが確認して取れ、コピーしたコードに行番号と行頭の `+`・`-` が混ざらない
+trigger: 利用側のページが、コードブロックのマーカーかコードの行のマーカーを持つ文書を描かせる
 preconditions:
-  - ページが版を固定した URL で mdmark の JavaScript と CSS を読んでいる
+  - ページがバージョンを固定した URL で mdmark の JavaScript と CSS を読み込んでいる
   - コードブロックの機能（`code`）がオン（既定）
 success_guarantee: |-
-  コードブロックの上に題が、各行の左に行番号が出て、指定した行と印を付けた行が色と行頭の `+`・`-` で分かれる。印と、印だけを持つ行コメントの頭は画面に出ない。GitHub ではコードブロックの印が見えず、コードの行の印は行コメントとして読める。
+  コードブロックの上にタイトルが、各行の左に行番号が出て、指定した行とマーカーを付けた行が色と行頭の `+`・`-` で分かれる。マーカーと、マーカーだけを持つ行コメントの頭は画面に出ない。GitHub ではコードブロックのマーカーが見えず、コードの行のマーカーは行コメントとして読み込める。
 
-  tree を除くコードブロックは、インデントの深い行を畳む・開くことができ、インデントのレベルごとに縦線が引かれる。コピーボタンは畳んだ行も含めてコピーする。
+  tree を除くコードブロックは、インデントの深い行を畳む・開くことができ、インデントのレベルごとに縦線が参照される。コピーボタンは畳んだ行も含めてコピーする。
 
-  色分けに対応する言語のコードブロックは、題・行番号・行の印を保ったまま中身が言語に応じて色分けされる。色分けのライブラリは、色分けする言語のコードブロックがある文書でだけ、本体と使う言語の分を読む。
+  色分けに対応する言語のコードブロックは、タイトル・行番号・行のマーカーを保ったまま中身が言語に応じて色分けされる。色分けのライブラリは、色分けする言語のコードブロックがある文書でだけ、本体と使用する言語の分を読み込む。
 minimal_guarantee: |-
-  知っているキーの読めない値、`title=` の値の空白の後ろの語と知らない印は、その指定だけを当てずに描かれ、上に書き方の警告が出る。知らないキー・指定は、警告を出さずに読み飛ばす。コードの中身は欠けずに出る。
+  知っているキーの読み込めない値、`title=` の値の空白の後ろの単語と知らないマーカーは、その指定だけを当てずに描かれ、上に記載の警告が出る。知らないキー・指定は、警告を出さずにスキップする。コードの中身は欠けずに出る。
 
-  色分けのライブラリか言語のモジュールを読めないときは、そのコードブロックを色分けせずに書いたとおりに出す。
+  色分けのライブラリか言語のモジュールを読み込めないときは、そのコードブロックを色分けせずに記載したとおりに出す。
 test_file: tests/e2e/単一ユースケース/コードブロックを飾る.spec.ts

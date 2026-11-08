@@ -1,11 +1,11 @@
 summary: "文書の中に mdmark が配置する UI の部品の引数・状態（Storybook のストーリーの元）"
 docs_index: true
 items:
-  - page: 知らせの枠.ts.yaml
+  - page: 通知ブロック.ts.yaml
     summary: 外部ライブラリを読み込めないマーカーの場所に配置する枠
-  - page: 読み込み中の枠.ts.yaml
+  - page: 読み込み中のブロック.ts.yaml
     summary: 外部ライブラリを読み込んでいる間に図の高さを取っておく枠
-  - page: 書き方の警告.ts.yaml
+  - page: 記載の警告.ts.yaml
     summary: 記法のマーカーや拡張の引数に読み込めない指定がある箇所に配置する枠
   - page: 表.ts.yaml
     summary: 種類ごとの並べ替え・ピン止め・絞り込みを付けた表
@@ -21,7 +21,7 @@ items:
     summary: 行内の札
   - page: 目次.ts.yaml
     summary: h2〜h3 を入れ子にした目次
-  - page: 節.ts.yaml
+  - page: セクション.ts.yaml
     summary: 見出しから開閉するセクションと見出しのアンカー
   - page: 行の詳細.ts.yaml
     summary: 表の行の下に開閉して出す詳細
@@ -75,7 +75,7 @@ items:
     summary: 本文の文字を選んだときに出す「コメント」のボタン
   - page: コメントの入力欄.ts.yaml
     summary: 選んだ文字の下に開き、コメントを記載して保存する枠
-  - page: コメントの印.ts.yaml
+  - page: コメントのマーカー.ts.yaml
     summary: コメントが付いた本文の文字を包むマーカー
   - page: コメントの吹き出し.ts.yaml
     summary: マーカーの下に開き、付いたコメントの本文を並べる枠
@@ -87,7 +87,7 @@ items:
     summary: タイトル・行番号・行の強調・追加した行と削除した行を付けたコードブロック
   - page: プレビューの状態の表示.ts.yaml
     summary: VS Code 拡張機能のプレビューで文書の代わりに出す、読み込み中と描けない理由と「リロード」
-  - page: 設定ファイルを読めない帯.ts.yaml
+  - page: 設定ファイルを読み込めない帯.ts.yaml
     summary: VS Code 拡張機能のプレビューで文書の先頭に配置する、設定ファイルを読み込めない帯と「設定ファイルを開く」
   - page: 右側の目次.ts.yaml
     summary: 描いた文書の右側に配置する、h1〜h3 の目次・右端の線・ピン止め・すべて展開とすべて折りたたむ
@@ -111,7 +111,7 @@ items:
     summary: cards の範囲のリストの項目を、アイコン・タイトル・説明のカードにして格子に並べたもの
   - page: 文字の色.ts.yaml
     summary: 本文の文字を色のプリセットの文字の色と太字で強調する
-  - page: 再生できない動画・音声の知らせ.ts.yaml
+  - page: 再生できない動画・音声の通知.ts.yaml
     summary: VS Code 拡張機能のプレビューで再生できない動画・音声の場所に配置する、通知ブロックと「既定のアプリで開く」
   - page: アイコン.ts.yaml
     summary: 行内に配置する Lucide のアイコン

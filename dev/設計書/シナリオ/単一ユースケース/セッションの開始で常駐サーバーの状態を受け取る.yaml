@@ -4,9 +4,9 @@ scenarios:
     setup:
       - name: 起動した常駐サーバー
         description: 手元と別の tmux サーバー（`TMUX_TMPDIR` を空の一時フォルダにする）の、端末の設定のセッション名のセッションで、`MDMARK_PORT` に空いたポートを指定して `mdmark serve` を起動している
-        notes: 手元の常駐サーバーが使う 8782 と手元の tmux のセッションを避ける
+        notes: 手元の常駐サーバーが使用する 8782 と手元の tmux のセッションを回避する
       - name: Mock
-        description: Claude Code の代わりに、プラグインの `hooks/hooks.json` の SessionStart のコマンドを流し、`.mcp.json` の接続先へ HTTP でつなぐ MCP のクライアントを使う。モデルは使わない
+        description: Claude Code の代わりに、プラグインの `hooks/hooks.json` の SessionStart のコマンドを実行し、`.mcp.json` の接続先へ HTTP でつなぐ MCP のクライアントを使用する。モデルは使用しない
     flow: |-
       sequenceDiagram
         participant C as Claude Code
@@ -20,7 +20,7 @@ scenarios:
         S-->>C: instructions
     expected:
       - SessionStart のフックが標準出力に何も出さず、終了コード 0 で終わる
-      - '`initialize` の `instructions` に、端末の設定の tmux のセッション名と、`global-setup` で起動し直せることがある'
+      - '`initialize` の `instructions` に、端末の設定の tmux のセッション名と、`global-setup` でもう一度起動できることがある'
     test: test_normal
   - name: 異常シナリオ（起動していない）
     setup:
@@ -45,11 +45,11 @@ lead: Claude Code のセッションの開始で、mdmark のプラグインが�
 issue: 165
 primary_actor: Claude Code
 stakeholders:
-  - name: 文書を書く人
-    interest: 常駐サーバーが落ちているときに、mdmark のツールが使えない理由と起動の仕方がセッションの中で分かる
+  - name: 文書の作成者
+    interest: 常駐サーバーが落ちているときに、mdmark のツールが使用できない理由と起動の仕方がセッションの中で分かる
   - name: Claude Code
-    interest: mdmark を使わないセッションでも、常駐サーバーが起動しているときは何も入らない
-trigger: 文書を書く人が Claude Code のセッションを開く
+    interest: mdmark を使用しないセッションでも、常駐サーバーが起動しているときは何も入らない
+trigger: 文書の作成者が Claude Code のセッションを開く
 preconditions:
   - Claude Code に mdmark のプラグインを入れている
 success_guarantee: 常駐サーバーが待ち受けているときは SessionStart のフックが何も出さず、`instructions` から tmux のセッション名が分かる。待ち受けていないときは、待ち受けていないことと `global-setup` での起動の仕方が 1 行で伝わる。

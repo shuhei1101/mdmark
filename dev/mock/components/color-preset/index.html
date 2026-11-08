@@ -21,7 +21,7 @@
   <!-- 色のプリセットと、画像・動画・音声・GIF・カードの規則（#263 で共有するアセット） -->
   <link rel="stylesheet" href="../../refs/263/assets/colors.css">
   <link rel="stylesheet" href="../../refs/263/assets/media.css">
-  <!-- 印刷の規則: 紙に出すときだけ当てる。[data-print-styles]: モックの「印刷の見え方」で preview.js が media を all に切り替える -->
+  <!-- 印刷の規則: 紙に出すときだけ適用する。[data-print-styles]: モックの「印刷の見え方」で preview.js が media を all に切り替える -->
   <link rel="stylesheet" href="../../refs/19/assets/syntax-print.css" media="print" data-print-styles>
   <link rel="stylesheet" href="../../refs/263/assets/media-print.css" media="print" data-print-styles>
   <!-- 配色の切り替え -->
@@ -43,7 +43,7 @@
       <button class="mock-bar-item" type="button" data-theme-set="theme-slate" aria-pressed="false">theme-slate</button>
       <button class="mock-bar-item" type="button" data-theme-set="theme-contrast" aria-pressed="false">theme-contrast</button>
     </div>
-    <!-- [data-scheme-set]: sample.js が押されたボタンの値を html の data-scheme に当てる -->
+    <!-- [data-scheme-set]: sample.js が押されたボタンの値を html の data-scheme に適用する -->
     <div class="mock-bar-group" role="group" aria-label="配色">
       <button class="mock-bar-item" type="button" data-scheme-set="light" aria-pressed="false">明るい配色</button>
       <button class="mock-bar-item" type="button" data-scheme-set="dark" aria-pressed="false">ダーク</button>
@@ -83,8 +83,8 @@
       <section aria-labelledby="state-text-a">
         <h2 class="catalog-label" id="state-text-a">本文の文字の色（案 A: 色と太字。推奨）</h2>
         <article class="mdmark">
-<p>配布物の読み込み方は、版を固定した URL を推奨します。<span class="mdmark-color" data-color="blue">版を固定すると、使う側のページの見た目が mdmark の更新で勝手に変わりません。</span>最新の版を指す URL も書けますが、<span class="mdmark-color" data-color="red">更新のたびに表示が変わり、どの版で崩れたかを追えません。</span></p>
-<p>詳しくは <a href="#state-text-a">配布物を読み込む</a> を見てください。</p>
+<p>配布物の読み込み方は、バージョンを固定した URL を推奨します。<span class="mdmark-color" data-color="blue">バージョンを固定すると、利用側のページの外観が mdmark の更新で勝手に変わりません。</span>最新のバージョンを指す URL も記載できますが、<span class="mdmark-color" data-color="red">更新のたびに表示が変わり、どのバージョンで崩れたかを追えません。</span></p>
+<p>詳しくは <a href="#state-text-a">配布物を読み込む</a> を確認してください。</p>
         </article>
       </section>
 
@@ -92,8 +92,8 @@
       <section aria-labelledby="state-text-b">
         <h2 class="catalog-label" id="state-text-b">本文の文字の色（案 B: 色と実線の下線）</h2>
         <article class="mdmark mock-text-b">
-<p>配布物の読み込み方は、版を固定した URL を推奨します。<span class="mdmark-color" data-color="blue">版を固定すると、使う側のページの見た目が mdmark の更新で勝手に変わりません。</span>最新の版を指す URL も書けますが、<span class="mdmark-color" data-color="red">更新のたびに表示が変わり、どの版で崩れたかを追えません。</span></p>
-<p>詳しくは <a href="#state-text-a">配布物を読み込む</a> を見てください。</p>
+<p>配布物の読み込み方は、バージョンを固定した URL を推奨します。<span class="mdmark-color" data-color="blue">バージョンを固定すると、利用側のページの外観が mdmark の更新で勝手に変わりません。</span>最新のバージョンを指す URL も記載できますが、<span class="mdmark-color" data-color="red">更新のたびに表示が変わり、どのバージョンで崩れたかを追えません。</span></p>
+<p>詳しくは <a href="#state-text-a">配布物を読み込む</a> を確認してください。</p>
         </article>
       </section>
 
@@ -101,20 +101,20 @@
       <section aria-labelledby="state-text-c">
         <h2 class="catalog-label" id="state-text-c">本文の文字の色（案 C: 色だけ）</h2>
         <article class="mdmark mock-text-c">
-<p>配布物の読み込み方は、版を固定した URL を推奨します。<span class="mdmark-color" data-color="blue">版を固定すると、使う側のページの見た目が mdmark の更新で勝手に変わりません。</span>最新の版を指す URL も書けますが、<span class="mdmark-color" data-color="red">更新のたびに表示が変わり、どの版で崩れたかを追えません。</span></p>
-<p>詳しくは <a href="#state-text-a">配布物を読み込む</a> を見てください。</p>
+<p>配布物の読み込み方は、バージョンを固定した URL を推奨します。<span class="mdmark-color" data-color="blue">バージョンを固定すると、利用側のページの外観が mdmark の更新で勝手に変わりません。</span>最新のバージョンを指す URL も記載できますが、<span class="mdmark-color" data-color="red">更新のたびに表示が変わり、どのバージョンで崩れたかを追えません。</span></p>
+<p>詳しくは <a href="#state-text-a">配布物を読み込む</a> を確認してください。</p>
         </article>
       </section>
 
-      <!-- 知らない色の名前（異常シナリオ）: 色を付けず、書き方の警告の枠で知らせる -->
+      <!-- 知らない色の名前（異常シナリオ）: 色を付けず、記載の警告の枠で通知する -->
       <section aria-labelledby="state-unknown">
-        <h2 class="catalog-label" id="state-unknown">知らない色の名前を書いた（<code>[決め手の 1 文]{color=pink}</code>。異常シナリオ）</h2>
+        <h2 class="catalog-label" id="state-unknown">知らない色の名前を記載した（<code>[決め手の 1 文]{color=pink}</code>。異常シナリオ）</h2>
         <article class="mdmark">
 <div class="mdmark-syntax-warning">
-  <p class="mdmark-syntax-warning-title"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg>書き方の警告</p>
-  <p>色の名前 <code>pink</code> はありません。<code>blue</code>・<code>red</code>・<code>green</code>・<code>yellow</code>・<code>orange</code>・<code>purple</code>・<code>gray</code> のどれかを書いてください。この文字には色を付けていません。</p>
+  <p class="mdmark-syntax-warning-title"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg>記載の警告</p>
+  <p>色の名前 <code>pink</code> はありません。<code>blue</code>・<code>red</code>・<code>green</code>・<code>yellow</code>・<code>orange</code>・<code>purple</code>・<code>gray</code> のどれかを記載してください。この文字には色を付けていません。</p>
 </div>
-<p>配布物の読み込み方は、版を固定した URL を推奨します。版を固定すると、使う側のページの見た目が mdmark の更新で勝手に変わりません。</p>
+<p>配布物の読み込み方は、バージョンを固定した URL を推奨します。バージョンを固定すると、利用側のページの外観が mdmark の更新で勝手に変わりません。</p>
         </article>
       </section>
     </div>

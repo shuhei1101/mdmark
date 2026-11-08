@@ -7,7 +7,7 @@
   <!-- color-scheme: 明るい配色とダークの両方を持つことをブラウザへ伝える -->
   <meta name="color-scheme" content="light dark">
   <title>revision-picker | mdmark の部品のモック</title>
-  <!-- 本文の規則と知らせの枠の規則（#16 で共有するアセット） -->
+  <!-- 本文の規則と通知ブロックの規則（#16 で共有するアセット） -->
   <link rel="stylesheet" href="../../refs/16/assets/sample.css">
   <!-- 採用スタイル本体の変数の値（差分の色を含む） -->
   <link rel="stylesheet" href="../../assets/style.css">
@@ -24,7 +24,7 @@
 <body>
   <!-- モック専用の操作列: 配色の切り替え -->
   <div class="mock-bar">
-    <!-- [data-scheme-set]: sample.js が押されたボタンの値を html の data-scheme に当てる -->
+    <!-- [data-scheme-set]: sample.js が押されたボタンの値を html の data-scheme に適用する -->
     <div class="mock-bar-group" role="group" aria-label="配色">
       <button class="mock-bar-item" type="button" data-scheme-set="light" aria-pressed="false">明るい配色</button>
       <button class="mock-bar-item" type="button" data-scheme-set="dark" aria-pressed="false">ダーク</button>
@@ -33,20 +33,20 @@
 
   <main class="host">
     <div class="catalog">
-      <h1 class="catalog-title">リビジョンの選択と「変更を見る」</h1>
-      <!-- 文書の右上に置くボタン。押すと差分を開く -->
+      <h1 class="catalog-title">リビジョンの選択と「変更表示」</h1>
+      <!-- 文書の右上に配置するボタン。押すと差分を開く -->
       <section aria-labelledby="toggle-closed">
-        <h2 class="catalog-label" id="toggle-closed">「変更を見る」（閉じている）</h2>
+        <h2 class="catalog-label" id="toggle-closed">「変更表示」（閉じている）</h2>
         <article class="mdmark">
-          <div class="mdmark-diff-bar"><button type="button" class="mdmark-diff-toggle" aria-expanded="false"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M9 10h6"/><path d="M12 13V7"/><path d="M9 17h6"/></svg>変更を見る</button></div>
+          <div class="mdmark-diff-bar"><button type="button" class="mdmark-diff-toggle" aria-expanded="false"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M9 10h6"/><path d="M12 13V7"/><path d="M9 17h6"/></svg>変更表示</button></div>
         </article>
       </section>
 
-      <!-- 開いている間は押された見た目にする。もう一度押すと閉じる -->
+      <!-- 開いている間は押された外観にする。もう一度押すと閉じる -->
       <section aria-labelledby="toggle-open">
-        <h2 class="catalog-label" id="toggle-open">「変更を見る」（開いている）</h2>
+        <h2 class="catalog-label" id="toggle-open">「変更表示」（開いている）</h2>
         <article class="mdmark">
-          <div class="mdmark-diff-bar"><button type="button" class="mdmark-diff-toggle" aria-expanded="true"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M9 10h6"/><path d="M12 13V7"/><path d="M9 17h6"/></svg>変更を見る</button></div>
+          <div class="mdmark-diff-bar"><button type="button" class="mdmark-diff-toggle" aria-expanded="true"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M9 10h6"/><path d="M12 13V7"/><path d="M9 17h6"/></svg>変更表示</button></div>
         </article>
       </section>
 
@@ -77,7 +77,7 @@
         </article>
       </section>
 
-      <!-- 選ぶ欄を残し、差分の場所に知らせの枠を出す。別のリビジョンを選び直すと消える -->
+      <!-- 選ぶ欄を残し、差分の場所に通知ブロックを出す。別のリビジョンをもう一度選ぶと消える -->
       <section aria-labelledby="picker-content-error">
         <h2 class="catalog-label" id="picker-content-error">本文を取り出せない（前に r1 を選んだ）</h2>
         <article class="mdmark">

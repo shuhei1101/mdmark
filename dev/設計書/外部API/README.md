@@ -6,5 +6,5 @@
 
 | ページ | 概要 |
 | --- | --- |
-| [jsDelivr](./jsDelivr.yaml) | GitHub のリポジトリの版のタグが指すファイルの配信 |
+| [jsDelivr](./jsDelivr.yaml) | GitHub のリポジトリのバージョンのタグが指すファイルの配信 |
 | [GitHub](./GitHub.yaml) | リポジトリのタグの一覧の取得 |

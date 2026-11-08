@@ -5,17 +5,17 @@ version:
   latest: 3.0.4
   checked_on: '2026-11-06'
   source: package.json・vscode/package.json
-  pinning: 完全一致。`.storybook/public/mockServiceWorker.js` は 3.0.4 の `npx msw init` が書いたもの
+  pinning: 完全一致。`.storybook/public/mockServiceWorker.js` は 3.0.4 の `npx msw init` が記載したもの
 catalogs:
 - name: API
   version: 3.0.4
   entries:
   - name: http.head
     kind: 関数
-    purpose: jsDelivr の配布物の `HEAD` に答えるハンドラを作る
+    purpose: jsDelivr の配布物の `HEAD` に回答するハンドラを作る
   - name: HttpResponse
     kind: クラス
-    purpose: 状態コードの応答（`new HttpResponse(null, { status })`）と、通信の失敗（`HttpResponse.error()`）を返す
+    purpose: 状態コードの応答（`new HttpResponse(null, { status })`）と、通信の失敗（`HttpResponse.error()`）を返却する
   - name: delay
     kind: 関数
     purpose: 応答を遅らせ、読み込み中の表示を出す
@@ -25,9 +25,9 @@ catalogs:
     description: 'Vitest のブラウザでは `test.extend` のフィクスチャで `start({ quiet: true, onUnhandledFrame: "bypass" })`・`resetHandlers()`・`stop()` する。3.0 で `onUnhandledRequest` は `onUnhandledFrame` になった'
   - name: mswLoader
     kind: 関数
-    purpose: Storybook でストーリーの `parameters.msw.handlers` を当てる（`msw-storybook-addon/csf3`）
-    description: 引数に Service Worker を始めて返す関数を渡す。3.0 で `initialize` は無くなり、`msw-storybook-addon` の既定の export は CSF Next の `addonMsw` になった
-lead: Service Worker で HTTP の要求を横取りし、ハンドラの応答を返すモックのライブラリ。
+    purpose: Storybook でストーリーの `parameters.msw.handlers` を適用する（`msw-storybook-addon/csf3`）
+    description: 引数に Service Worker を始めて返却する関数を指定する。3.0 で `initialize` は無くなり、`msw-storybook-addon` の既定の export は CSF Next の `addonMsw` になった
+lead: Service Worker で HTTP の要求を横取りし、ハンドラの応答を返却するモックのライブラリ。
 purl: pkg:npm/msw@3.0.4
 dependency_scope: 開発のみ
 adoption: 採用

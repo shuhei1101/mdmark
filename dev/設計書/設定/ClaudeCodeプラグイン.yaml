@@ -1,11 +1,11 @@
 title: '設定: Claude Code プラグイン'
-lead: Claude Code プラグインの MCP サーバー（`mdmark serve`）が待ち受けるポート、Claude Code がつなぐ先、スキルが呼ぶスクリプト（`plugin/bin/setup.js`）と SessionStart のフックが読む環境変数の一覧。実装は `src/plugin/http.ts`、つなぐ先は `plugin/.mcp.json`
+lead: Claude Code プラグインの MCP サーバー（`mdmark serve`）が待ち受けるポート、Claude Code がつなぐ先、スキルが呼ぶスクリプト（`plugin/bin/setup.js`）と SessionStart のフックが読み込む環境変数の一覧。実装は `src/plugin/http.ts`、つなぐ先は `plugin/.mcp.json`
 files:
   - file: 環境変数
     manages: '`mdmark serve` が待ち受けるポートと、Claude Code が `.mcp.json` の URL を展開する値'
   - file: plugin/.mcp.json
     manages: Claude Code がつなぐ MCP サーバーの種類と URL
-    notes: プラグインと一緒に配る。使う側は書き換えない
+    notes: プラグインと一緒に配る。利用側は書き換えない
 settings:
   - key: MDMARK_PORT
     title: MCP サーバーのポート
@@ -29,7 +29,7 @@ settings:
     type: '"http"'
     required: true
     description: Claude Code が子プロセスを起動せず、常駐のサーバーへ Streamable HTTP でつなぐ
-    missing: Claude Code が MCP サーバーを読まない
+    missing: Claude Code が MCP サーバーを読み込まない
     reload: restart
     status: planned
     visibility: developer
@@ -41,7 +41,7 @@ settings:
     type: string
     required: true
     description: Claude Code がつなぐ先。ポートは `MDMARK_PORT` を展開し、無ければ 8782
-    missing: Claude Code が MCP サーバーを読まない
+    missing: Claude Code が MCP サーバーを読み込まない
     reload: restart
     allowed: '`http://127.0.0.1:${MDMARK_PORT:-8782}/mcp`'
     refs:
@@ -51,11 +51,11 @@ settings:
     introduced:
       pr: 141
   - key: MDMARK_STATE_DIR
-    title: 状態の置き場所
+    title: 状態の配置場所
     file: 環境変数
     type: string
     default: ${XDG_STATE_HOME:-~/.local/state}/mdmark
-    description: '`setup.js start-server` が常駐サーバーのログ（`serve.log`）を書くフォルダ。tmux のセッションへ `-e` で渡す'
+    description: '`setup.js start-server` が常駐サーバーのログ（`serve.log`）を記載するフォルダ。tmux のセッションへ `-e` で指定する'
     env_var: MDMARK_STATE_DIR
     reload: restart
     status: planned
@@ -69,7 +69,7 @@ settings:
     file: 環境変数
     type: string
     default: ${XDG_CONFIG_HOME:-~/.config}/mdmark/settings.yaml
-    description: '`setup.js` が読み書きする端末の設定のパス。既定と違うパスにしたときは、`global-setup` が `~/.claude/settings.json` の `env` に書く'
+    description: '`setup.js` が読み込みと保存をする端末の設定のパス。既定と違うパスにしたときは、`global-setup` が `~/.claude/settings.json` の `env` に記載する'
     env_var: MDMARK_CONFIG
     reload: restart
     status: planned
@@ -83,7 +83,7 @@ settings:
     file: 環境変数
     type: string
     default: ~/.claude
-    description: '`setup.js write-settings` が `env.MDMARK_CONFIG` を書く `settings.json` のフォルダ'
+    description: '`setup.js write-settings` が `env.MDMARK_CONFIG` を記載する `settings.json` のフォルダ'
     env_var: CLAUDE_CONFIG_DIR
     reload: restart
     status: planned
@@ -97,7 +97,7 @@ settings:
     file: 環境変数
     type: string
     default: npx -y github:shuhei1101/mdmark#v{プラグインのバージョン} serve
-    description: '`setup.js start-server` が tmux のセッションで流すコマンド。テストでこのブランチのビルドした CLI に差し替える'
+    description: '`setup.js start-server` が tmux のセッションで実行するコマンド。テストでこのブランチのビルドした CLI に差し替える'
     env_var: MDMARK_SERVE_COMMAND
     reload: restart
     status: planned

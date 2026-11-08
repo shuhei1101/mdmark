@@ -84,7 +84,7 @@ error_format: 'ツールの結果を `isError: true` にし、内容のテキス
 constraints:
   - item: テンプレートのフォルダと索引
     constraint: '`list_templates` と同じ'
-    decided_by: dev/設計書/インターフェース定義/ClaudeCodeプラグイン/CSSのテンプレートの一覧を返す.ts#constraints[テンプレートのフォルダ]
+    decided_by: dev/設計書/インターフェース定義/ClaudeCodeプラグイン/CSSのテンプレートの一覧を返却する.ts#constraints[テンプレートのフォルダ]
   - item: CSS のファイル名
     constraint: テンプレートのフォルダの CSS は `{name}.css`。索引の `file` にこの名前を記載する
   - item: 書き込みの順

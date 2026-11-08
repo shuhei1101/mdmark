@@ -24,14 +24,14 @@
   <script src="../../refs/16/assets/sample.js" defer></script>
   <!-- 図の定義の見本と、図を描いて操作を付けるスクリプト（#42 で共有するアセット） -->
   <script src="../../refs/42/assets/samples.js" defer></script>
-  <!-- #308 で追加するグループの hint・縦に長い図・種類が 1 つずつの図の定義の見本（diagram.js の前に読む） -->
+  <!-- #308 で追加するグループの hint・縦に長い図・種類が 1 つずつの図の定義の見本（diagram.js の前に読み込む） -->
   <script src="../../refs/308/assets/samples.js" defer></script>
   <script src="../../refs/42/assets/diagram.js" defer></script>
 </head>
 <body>
   <!-- モック専用の操作列: 配色の切り替え -->
   <div class="mock-bar">
-    <!-- [data-scheme-set]: sample.js が押されたボタンの値を html の data-scheme に当てる -->
+    <!-- [data-scheme-set]: sample.js が押されたボタンの値を html の data-scheme に適用する -->
     <div class="mock-bar-group" role="group" aria-label="配色">
       <button class="mock-bar-item" type="button" data-scheme-set="light" aria-pressed="false">明るい配色</button>
       <button class="mock-bar-item" type="button" data-scheme-set="dark" aria-pressed="false">ダーク</button>
@@ -40,7 +40,7 @@
 
   <main class="host">
     <div class="catalog">
-      <h1 class="catalog-title">図の枠（題・凡例・拡大と縮小・移動）</h1>
+      <h1 class="catalog-title">図の枠（タイトル・凡例・拡大と縮小・移動）</h1>
 
       <!-- 開いたとき: 全体が収まる倍率。図の全体が見えている間は移動のボタンを出さない。縮小は押しても変わらないので押せない。拡大と縮小の間の倍率の表示はボタンで、全体が収まる倍率を 100% として出し、押すと開いたときの倍率と位置に戻す -->
       <section aria-labelledby="state-fit">
@@ -60,7 +60,7 @@
         </article>
       </section>
 
-      <!-- 最大の倍率: 拡大のボタンは押せない（隣の倍率の表示で理由が読める） -->
+      <!-- 最大の倍率: 拡大のボタンは押せない（隣の倍率の表示で理由が読み込める） -->
       <section aria-labelledby="state-max">
         <h2 class="catalog-label" id="state-max">最大の倍率（拡大のボタンは押せない）</h2>
         <article class="mdmark">
@@ -76,7 +76,7 @@
         </article>
       </section>
 
-      <!-- 凡例: 図に 2 種類以上あるノードの種類と線の種類だけを載せる。枠・層・交差・ツールチップの印・下線は載せない -->
+      <!-- 凡例: 図に 2 種類以上あるノードの種類と線の種類だけを記載する。枠・層・交差・ツールチップのマーカー・下線は記載しない -->
       <section aria-labelledby="state-legend">
         <h2 class="catalog-label" id="state-legend">凡例（2 種類以上あるノードの種類と線の種類だけ）</h2>
         <article class="mdmark">
@@ -100,19 +100,19 @@
         </article>
       </section>
 
-      <!-- 高さを変えた: 変えた高さで全体が収まる倍率を計算し直す。同じタブの中で読み直しても保つ -->
+      <!-- 高さを変えた: 変えた高さで全体が収まる倍率をもう一度計算する。同じタブの中で再読み込みしても保つ -->
       <section aria-labelledby="state-resized">
-        <h2 class="catalog-label" id="state-resized">高さを変えた（変えた高さで全体が収まる倍率に計算し直す）</h2>
+        <h2 class="catalog-label" id="state-resized">高さを変えた（変えた高さで全体が収まる倍率にもう一度計算する）</h2>
         <article class="mdmark">
           <!-- [data-mock-height]: リサイズハンドルで変えた高さ（モックだけの指定） -->
           <figure data-mock-diagram="tall-flow" data-mock-height="760"></figure>
         </article>
       </section>
 
-      <!-- リサイズハンドルの機能がオフ: 表示枠の右下にハンドルを置かない。全画面のモーダルの中にも置かない -->
+      <!-- リサイズハンドルの機能がオフ: 表示枠の右下にハンドルを配置しない。全画面のモーダルの中にも配置しない -->
       <section aria-labelledby="state-resize-off">
-        <h2 class="catalog-label" id="state-resize-off">リサイズハンドルの機能がオフ（置かない。全画面のモーダルの中も置かない）</h2>
-        <!-- [data-mock-resize="off"]: diagram.js がこの中の図にリサイズハンドルを置かない（機能をオフにした文書に当たる） -->
+        <h2 class="catalog-label" id="state-resize-off">リサイズハンドルの機能がオフ（配置しない。全画面のモーダルの中も配置しない）</h2>
+        <!-- [data-mock-resize="off"]: diagram.js がこの中の図にリサイズハンドルを配置しない（機能をオフにした文書に該当する） -->
         <article class="mdmark" data-mock-resize="off">
           <figure data-mock-diagram="tall-flow"></figure>
         </article>

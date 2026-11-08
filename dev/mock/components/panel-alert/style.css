@@ -5,7 +5,7 @@
   padding-top: 1.5rem;
 }
 
-/* ホバーの見本: :hover と同じ見た目 */
+/* ホバーの見本: :hover と同じ外観 */
 .button.is-hover {
   background: var(--primary-hover);
 }
@@ -14,7 +14,7 @@
   background: var(--secondary);
 }
 
-/* フォーカスの見本: :focus-visible と同じ見た目 */
+/* フォーカスの見本: :focus-visible と同じ外観 */
 .button.is-focus {
   outline: 2px solid var(--ring);
   outline-offset: 2px;

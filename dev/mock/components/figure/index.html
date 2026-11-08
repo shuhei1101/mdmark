@@ -16,7 +16,7 @@
   <link rel="stylesheet" href="../../refs/19/assets/catalog.css">
   <!-- 画像のキャプション・サイズと配置・ライトボックス・ギャラリー・テーマごとの切り替えの規則（#263 で共有するアセット） -->
   <link rel="stylesheet" href="../../refs/263/assets/media.css">
-  <!-- 印刷の規則: 紙に出すときだけ当てる。[data-print-styles]: モックの「印刷の見え方」で preview.js が media を all に切り替える -->
+  <!-- 印刷の規則: 紙に出すときだけ適用する。[data-print-styles]: モックの「印刷の見え方」で preview.js が media を all に切り替える -->
   <link rel="stylesheet" href="../../refs/19/assets/syntax-print.css" media="print" data-print-styles>
   <link rel="stylesheet" href="../../refs/263/assets/media-print.css" media="print" data-print-styles>
   <!-- 配色の切り替え -->
@@ -31,7 +31,7 @@
 <body>
   <!-- モック専用の操作列: 配色と印刷の見え方の切り替え -->
   <div class="mock-bar">
-    <!-- [data-scheme-set]: sample.js が押されたボタンの値を html の data-scheme に当てる -->
+    <!-- [data-scheme-set]: sample.js が押されたボタンの値を html の data-scheme に適用する -->
     <div class="mock-bar-group" role="group" aria-label="配色">
       <button class="mock-bar-item" type="button" data-scheme-set="light" aria-pressed="false">明るい配色</button>
       <button class="mock-bar-item" type="button" data-scheme-set="dark" aria-pressed="false">ダーク</button>
@@ -46,23 +46,23 @@
     <div class="catalog">
       <h1 class="catalog-title">図表の番号</h1>
 
-      <!-- 図（画像の題あり） -->
+      <!-- 図（画像のタイトルあり） -->
       <section aria-labelledby="state-image-title">
-        <h2 class="catalog-label" id="state-image-title">図（画像の題あり）</h2>
+        <h2 class="catalog-label" id="state-image-title">図（画像のタイトルあり）</h2>
         <article class="mdmark">
 <figure class="mdmark-figure" id="fig-arch">
-  <img src="../../pages/document/19/modern/images/arch.svg" alt="使う側のページが mdmark を読み、mdmark が jsDelivr から配られる構成" width="560" height="200">
+  <img src="../../pages/document/19/modern/images/arch.svg" alt="利用側のページが mdmark を読み込み、mdmark が jsDelivr から配られる構成" width="560" height="200">
   <figcaption class="mdmark-figure-caption"><b>図 1</b>全体の構成</figcaption>
 </figure>
         </article>
       </section>
 
-      <!-- 図（画像の題なし） -->
+      <!-- 図（画像のタイトルなし） -->
       <section aria-labelledby="state-image">
-        <h2 class="catalog-label" id="state-image">図（画像の題なし）</h2>
+        <h2 class="catalog-label" id="state-image">図（画像のタイトルなし）</h2>
         <article class="mdmark">
 <figure class="mdmark-figure" id="fig-arch-b">
-  <img src="../../pages/document/19/modern/images/arch.svg" alt="使う側のページが mdmark を読み、mdmark が jsDelivr から配られる構成" width="560" height="200">
+  <img src="../../pages/document/19/modern/images/arch.svg" alt="利用側のページが mdmark を読み込み、mdmark が jsDelivr から配られる構成" width="560" height="200">
   <figcaption class="mdmark-figure-caption"><b>図 1</b></figcaption>
 </figure>
         </article>
@@ -78,7 +78,7 @@
   <table tabindex="0" aria-label="表: 描く処理の段">
     <thead><tr><th><span class="mdmark-th"><span>段</span><span class="mdmark-th-tools"><button class="mdmark-pin" type="button" aria-pressed="false" aria-label="「段」の列までピン止め" title="「段」の列までピン止め" hidden><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17v5"/><path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/></svg></button></span></span></th><th><span class="mdmark-th"><span>受け持つもの</span><span class="mdmark-th-tools"><button class="mdmark-pin" type="button" aria-pressed="false" aria-label="「受け持つもの」の列までピン止め" title="「受け持つもの」の列までピン止め" hidden><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17v5"/><path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/></svg></button></span></span></th></tr></thead>
     <tbody>
-      <tr><td data-label="段">印を読む</td><td data-label="受け持つもの">印の範囲と引数を決める</td></tr>
+      <tr><td data-label="段">マーカーを読み込む</td><td data-label="受け持つもの">マーカーの範囲と引数を決める</td></tr>
       <tr><td data-label="段">HTML にする</td><td data-label="受け持つもの">記法ごとの HTML を出す</td></tr>
     </tbody>
   </table>
@@ -100,10 +100,10 @@
         <h2 class="catalog-label" id="state-broken">切れた参照（異常シナリオ）</h2>
         <article class="mdmark">
 <div class="mdmark-syntax-warning">
-  <p class="mdmark-syntax-warning-title"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg>書き方の警告</p>
-  <p>リンク先の <code>#fig-missing</code> の図表がありません。<code>&lt;!-- fig: missing --&gt;</code> を図か表の直前に書くか、リンク先を直してください。</p>
+  <p class="mdmark-syntax-warning-title"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg>記載の警告</p>
+  <p>リンク先の <code>#fig-missing</code> の図表がありません。<code>&lt;!-- fig: missing --&gt;</code> を図か表の直前に記載するか、リンク先を修正してください。</p>
 </div>
-<p>詳しくは <a href="#fig-missing">図</a> を見てください。</p>
+<p>詳しくは <a href="#fig-missing">図</a> を確認してください。</p>
         </article>
       </section>
 
@@ -116,7 +116,7 @@
   <figcaption class="mdmark-figure-caption"><b>図 1</b></figcaption>
 </figure>
 <div class="mdmark-syntax-warning">
-  <p class="mdmark-syntax-warning-title"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg>書き方の警告</p>
+  <p class="mdmark-syntax-warning-title"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg>記載の警告</p>
   <p><code>&lt;!-- fig: arch --&gt;</code> の ID <code>arch</code> は、前の図表と重なっています。別の ID にしてください。この図には番号だけを付け、ID を付けていません。</p>
 </div>
 <figure class="mdmark-figure">
@@ -162,25 +162,25 @@
         </article>
       </section>
 
-      <!-- 配置 left・right: 本文を回り込む。center: 中央に置く -->
+      <!-- 配置 left・right: 本文を回り込む。center: 中央に配置する -->
       <section aria-labelledby="state-align">
         <h2 class="catalog-label" id="state-align">配置（<code>{width=200 align=left}</code>・<code>align=right</code>・<code>align=center</code>）</h2>
         <article class="mdmark">
 <figure class="mdmark-figure mdmark-image" data-align="left" style="--mdmark-image-width: 200px">
-  <button class="mdmark-image-open" type="button" data-lightbox-open aria-label="画像を拡大: 左に置いた画面"><img src="../../refs/263/assets/media/step-1.svg" alt="左に置いた画面" width="480" height="300"><span class="mdmark-image-open-icon" aria-hidden="true"><svg class="mdmark-icon" viewBox="0 0 24 24"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" x2="14" y1="3" y2="10"/><line x1="3" x2="10" y1="21" y2="14"/></svg></span></button>
-  <figcaption class="mdmark-figure-caption">左に置いた画面</figcaption>
+  <button class="mdmark-image-open" type="button" data-lightbox-open aria-label="画像を拡大: 左に配置した画面"><img src="../../refs/263/assets/media/step-1.svg" alt="左に配置した画面" width="480" height="300"><span class="mdmark-image-open-icon" aria-hidden="true"><svg class="mdmark-icon" viewBox="0 0 24 24"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" x2="14" y1="3" y2="10"/><line x1="3" x2="10" y1="21" y2="14"/></svg></span></button>
+  <figcaption class="mdmark-figure-caption">左に配置した画面</figcaption>
 </figure>
-<p>左に置いた画像の右を本文が回り込みます。プレビューを開くと、Markdown の横に mdmark で描いた文書が出ます。書き換えるたびに描き直し、スクロールの位置もエディタと合わせます。設定ファイルを読めないときは、文書の先頭に帯を出します。</p>
-<h3>右に置いた画像</h3>
+<p>左に配置した画像の右を本文が回り込みます。プレビューを開くと、Markdown の横に mdmark で描いた文書が出ます。書き換えるたびに再描画し、スクロールの位置もエディタと合わせます。設定ファイルを読み込めないときは、文書の先頭に帯を出します。</p>
+<h3>右に配置した画像</h3>
 <figure class="mdmark-figure mdmark-image" data-align="right" style="--mdmark-image-width: 200px">
-  <button class="mdmark-image-open" type="button" data-lightbox-open aria-label="画像を拡大: 右に置いた画面"><img src="../../refs/263/assets/media/step-2.svg" alt="右に置いた画面" width="480" height="300"><span class="mdmark-image-open-icon" aria-hidden="true"><svg class="mdmark-icon" viewBox="0 0 24 24"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" x2="14" y1="3" y2="10"/><line x1="3" x2="10" y1="21" y2="14"/></svg></span></button>
-  <figcaption class="mdmark-figure-caption">右に置いた画面</figcaption>
+  <button class="mdmark-image-open" type="button" data-lightbox-open aria-label="画像を拡大: 右に配置した画面"><img src="../../refs/263/assets/media/step-2.svg" alt="右に配置した画面" width="480" height="300"><span class="mdmark-image-open-icon" aria-hidden="true"><svg class="mdmark-icon" viewBox="0 0 24 24"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" x2="14" y1="3" y2="10"/><line x1="3" x2="10" y1="21" y2="14"/></svg></span></button>
+  <figcaption class="mdmark-figure-caption">右に配置した画面</figcaption>
 </figure>
-<p>右に置いた画像の左を本文が回り込みます。見出しは回り込みの下から始めます。配置を書かない画像は、本文の左端に置き、回り込みません。</p>
-<h3>中央に置いた画像</h3>
+<p>右に配置した画像の左を本文が回り込みます。見出しは回り込みの下から始めます。配置を記載しない画像は、本文の左端に配置し、回り込みません。</p>
+<h3>中央に配置した画像</h3>
 <figure class="mdmark-figure mdmark-image" data-align="center" style="--mdmark-image-width: 240px">
-  <button class="mdmark-image-open" type="button" data-lightbox-open aria-label="画像を拡大: 中央に置いた画面"><img src="../../refs/263/assets/media/step-3.svg" alt="中央に置いた画面" width="480" height="300"><span class="mdmark-image-open-icon" aria-hidden="true"><svg class="mdmark-icon" viewBox="0 0 24 24"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" x2="14" y1="3" y2="10"/><line x1="3" x2="10" y1="21" y2="14"/></svg></span></button>
-  <figcaption class="mdmark-figure-caption">中央に置いた画面</figcaption>
+  <button class="mdmark-image-open" type="button" data-lightbox-open aria-label="画像を拡大: 中央に配置した画面"><img src="../../refs/263/assets/media/step-3.svg" alt="中央に配置した画面" width="480" height="300"><span class="mdmark-image-open-icon" aria-hidden="true"><svg class="mdmark-icon" viewBox="0 0 24 24"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" x2="14" y1="3" y2="10"/><line x1="3" x2="10" y1="21" y2="14"/></svg></span></button>
+  <figcaption class="mdmark-figure-caption">中央に配置した画面</figcaption>
 </figure>
         </article>
       </section>
@@ -207,12 +207,12 @@
       <figcaption class="mdmark-figure-caption">手順 1: 開く</figcaption>
     </figure>
     <figure class="mdmark-figure mdmark-image">
-      <button class="mdmark-image-open" type="button" data-lightbox-open aria-label="画像を拡大: 手順 2: 書く"><img src="../../refs/263/assets/media/step-2.svg" alt="手順 2: 書く" width="480" height="300"><span class="mdmark-image-open-icon" aria-hidden="true"><svg class="mdmark-icon" viewBox="0 0 24 24"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" x2="14" y1="3" y2="10"/><line x1="3" x2="10" y1="21" y2="14"/></svg></span></button>
-      <figcaption class="mdmark-figure-caption">手順 2: 書く</figcaption>
+      <button class="mdmark-image-open" type="button" data-lightbox-open aria-label="画像を拡大: 手順 2: 記載する"><img src="../../refs/263/assets/media/step-2.svg" alt="手順 2: 記載する" width="480" height="300"><span class="mdmark-image-open-icon" aria-hidden="true"><svg class="mdmark-icon" viewBox="0 0 24 24"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" x2="14" y1="3" y2="10"/><line x1="3" x2="10" y1="21" y2="14"/></svg></span></button>
+      <figcaption class="mdmark-figure-caption">手順 2: 記載する</figcaption>
     </figure>
     <figure class="mdmark-figure mdmark-image">
-      <button class="mdmark-image-open" type="button" data-lightbox-open aria-label="画像を拡大: 手順 3: 確かめる"><img src="../../refs/263/assets/media/step-3.svg" alt="手順 3: 確かめる" width="480" height="300"><span class="mdmark-image-open-icon" aria-hidden="true"><svg class="mdmark-icon" viewBox="0 0 24 24"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" x2="14" y1="3" y2="10"/><line x1="3" x2="10" y1="21" y2="14"/></svg></span></button>
-      <figcaption class="mdmark-figure-caption">手順 3: 確かめる</figcaption>
+      <button class="mdmark-image-open" type="button" data-lightbox-open aria-label="画像を拡大: 手順 3: 確認する"><img src="../../refs/263/assets/media/step-3.svg" alt="手順 3: 確認する" width="480" height="300"><span class="mdmark-image-open-icon" aria-hidden="true"><svg class="mdmark-icon" viewBox="0 0 24 24"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" x2="14" y1="3" y2="10"/><line x1="3" x2="10" y1="21" y2="14"/></svg></span></button>
+      <figcaption class="mdmark-figure-caption">手順 3: 確認する</figcaption>
     </figure>
     <figure class="mdmark-figure mdmark-image">
       <button class="mdmark-image-open" type="button" data-lightbox-open aria-label="画像を拡大: 手順 4: 書き出す"><img src="../../refs/263/assets/media/step-4.svg" alt="手順 4: 書き出す" width="480" height="300"><span class="mdmark-image-open-icon" aria-hidden="true"><svg class="mdmark-icon" viewBox="0 0 24 24"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" x2="14" y1="3" y2="10"/><line x1="3" x2="10" y1="21" y2="14"/></svg></span></button>
@@ -263,11 +263,11 @@
 
       <!-- ライトボックスを開いた見本: 上の帯に何枚目かと前後・閉じるのボタン、中央に画像、下にキャプション。上の画像を押すと実際に開く -->
       <section aria-labelledby="state-lightbox">
-        <h2 class="catalog-label" id="state-lightbox">ライトボックスを開いた（上の画像を押すと開き、全体が収まる倍率では ← → で前後へ送り、Esc・閉じる・後ろを押すと閉じる）</h2>
+        <h2 class="catalog-label" id="state-lightbox">ライトボックスを開いた（上の画像を押すと開き、全体が収まる倍率では ← → で前後へ切り替え、Esc・閉じる・後ろを押すと閉じる）</h2>
         <article class="mdmark">
 <div class="mdmark-lightbox is-sample" role="group" aria-label="画像の拡大の見本">
   <div class="mdmark-lightbox-head">
-    <span class="mdmark-lightbox-nav" role="group" aria-label="画像の送り"><button class="mdmark-lightbox-tool" type="button" data-tool="prev" aria-label="前の画像" title="前の画像"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg></button><span class="mdmark-lightbox-count">3 / 15</span><button class="mdmark-lightbox-tool" type="button" data-tool="next" aria-label="次の画像" title="次の画像"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></button></span>
+    <span class="mdmark-lightbox-nav" role="group" aria-label="画像の切り替え"><button class="mdmark-lightbox-tool" type="button" data-tool="prev" aria-label="前の画像" title="前の画像"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg></button><span class="mdmark-lightbox-count">3 / 15</span><button class="mdmark-lightbox-tool" type="button" data-tool="next" aria-label="次の画像" title="次の画像"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></button></span>
     <span class="mdmark-lightbox-tools" role="toolbar" aria-label="画像の拡大の操作">
           <span class="mdmark-lightbox-group" data-group="pan" hidden><button class="mdmark-lightbox-tool" type="button" data-tool="left" aria-label="左へ動かす" title="左へ動かす"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg></button><button class="mdmark-lightbox-tool" type="button" data-tool="up" aria-label="上へ動かす" title="上へ動かす"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m18 15-6-6-6 6"/></svg></button><button class="mdmark-lightbox-tool" type="button" data-tool="down" aria-label="下へ動かす" title="下へ動かす"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button><button class="mdmark-lightbox-tool" type="button" data-tool="right" aria-label="右へ動かす" title="右へ動かす"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></button></span>
           <span class="mdmark-lightbox-group" data-group="zoom"><button class="mdmark-lightbox-tool" type="button" data-tool="out" aria-label="縮小" title="縮小" disabled><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"/></svg></button><button class="mdmark-lightbox-tool mdmark-lightbox-zoom" type="button" data-tool="fit" aria-label="倍率 100%。全体が収まる倍率に戻す" title="全体が収まる倍率に戻す">100%</button><button class="mdmark-lightbox-tool" type="button" data-tool="in" aria-label="拡大" title="拡大"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"/><path d="M12 5v14"/></svg></button></span>
@@ -286,7 +286,7 @@
         <article class="mdmark">
 <div class="mdmark-lightbox is-sample" role="group" aria-label="画像の拡大の見本（拡大した）">
   <div class="mdmark-lightbox-head">
-    <span class="mdmark-lightbox-nav" role="group" aria-label="画像の送り"><button class="mdmark-lightbox-tool" type="button" data-tool="prev" aria-label="前の画像" title="前の画像"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg></button><span class="mdmark-lightbox-count">3 / 15</span><button class="mdmark-lightbox-tool" type="button" data-tool="next" aria-label="次の画像" title="次の画像"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></button></span>
+    <span class="mdmark-lightbox-nav" role="group" aria-label="画像の切り替え"><button class="mdmark-lightbox-tool" type="button" data-tool="prev" aria-label="前の画像" title="前の画像"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg></button><span class="mdmark-lightbox-count">3 / 15</span><button class="mdmark-lightbox-tool" type="button" data-tool="next" aria-label="次の画像" title="次の画像"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></button></span>
     <span class="mdmark-lightbox-tools" role="toolbar" aria-label="画像の拡大の操作">
           <span class="mdmark-lightbox-group" data-group="pan"><button class="mdmark-lightbox-tool" type="button" data-tool="left" aria-label="左へ動かす" title="左へ動かす"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg></button><button class="mdmark-lightbox-tool" type="button" data-tool="up" aria-label="上へ動かす" title="上へ動かす"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m18 15-6-6-6 6"/></svg></button><button class="mdmark-lightbox-tool" type="button" data-tool="down" aria-label="下へ動かす" title="下へ動かす"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button><button class="mdmark-lightbox-tool" type="button" data-tool="right" aria-label="右へ動かす" title="右へ動かす"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></button></span>
           <span class="mdmark-lightbox-group" data-group="zoom"><button class="mdmark-lightbox-tool" type="button" data-tool="out" aria-label="縮小" title="縮小"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"/></svg></button><button class="mdmark-lightbox-tool mdmark-lightbox-zoom" type="button" data-tool="fit" aria-label="倍率 250%。全体が収まる倍率に戻す" title="全体が収まる倍率に戻す">250%</button><button class="mdmark-lightbox-tool" type="button" data-tool="in" aria-label="拡大" title="拡大"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"/><path d="M12 5v14"/></svg></button></span>
@@ -299,13 +299,13 @@
         </article>
       </section>
 
-      <!-- 読めない属性（異常シナリオ）: 読めた属性だけを当て、書き方の警告の枠で知らせる -->
+      <!-- 読み込めない属性（異常シナリオ）: 読み込めた属性だけを当て、記載の警告の枠で通知する -->
       <section aria-labelledby="state-unreadable-attr">
-        <h2 class="catalog-label" id="state-unreadable-attr">読めない属性を書いた（<code>{width=240 align=top}</code>。異常シナリオ）</h2>
+        <h2 class="catalog-label" id="state-unreadable-attr">読み込めない属性を記載した（<code>{width=240 align=top}</code>。異常シナリオ）</h2>
         <article class="mdmark">
 <div class="mdmark-syntax-warning">
-  <p class="mdmark-syntax-warning-title"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg>書き方の警告</p>
-  <p><code>align=top</code> は読めません。配置は <code>left</code>・<code>center</code>・<code>right</code> のどれかを書いてください。ほかの属性（<code>width=240</code>）は当てています。</p>
+  <p class="mdmark-syntax-warning-title"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg>記載の警告</p>
+  <p><code>align=top</code> は読み込めません。配置は <code>left</code>・<code>center</code>・<code>right</code> のどれかを記載してください。ほかの属性（<code>width=240</code>）は適用しています。</p>
 </div>
 <figure class="mdmark-figure mdmark-image" style="--mdmark-image-width: 240px">
   <button class="mdmark-image-open" type="button" data-lightbox-open aria-label="画像を拡大: 手順 1 の画面"><img src="../../refs/263/assets/media/step-1.svg" alt="手順 1 の画面" width="480" height="300"><span class="mdmark-image-open-icon" aria-hidden="true"><svg class="mdmark-icon" viewBox="0 0 24 24"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" x2="14" y1="3" y2="10"/><line x1="3" x2="10" y1="21" y2="14"/></svg></span></button>
@@ -316,11 +316,11 @@
     </div>
   </main>
 
-  <!-- ライトボックス（画像を押したとき）: 図の全画面と同じ閉じ方。.mock-dialog-host: 描いた文書の中に置くための入れ物（モックだけ。箱を作らない） -->
+  <!-- ライトボックス（画像を押したとき）: 図の全画面と同じ閉じ方。.mock-dialog-host: 描いた文書の中に配置するための入れ物（モックだけ。ノードを作らない） -->
   <div class="mdmark mock-dialog-host">
     <dialog class="mdmark-lightbox" closedby="any" aria-label="画像の拡大">
       <div class="mdmark-lightbox-head">
-        <span class="mdmark-lightbox-nav" role="group" aria-label="画像の送り"><button class="mdmark-lightbox-tool" type="button" data-tool="prev" aria-label="前の画像" title="前の画像"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg></button><span class="mdmark-lightbox-count">1 / 1</span><button class="mdmark-lightbox-tool" type="button" data-tool="next" aria-label="次の画像" title="次の画像"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></button></span>
+        <span class="mdmark-lightbox-nav" role="group" aria-label="画像の切り替え"><button class="mdmark-lightbox-tool" type="button" data-tool="prev" aria-label="前の画像" title="前の画像"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg></button><span class="mdmark-lightbox-count">1 / 1</span><button class="mdmark-lightbox-tool" type="button" data-tool="next" aria-label="次の画像" title="次の画像"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></button></span>
         <span class="mdmark-lightbox-tools" role="toolbar" aria-label="画像の拡大の操作">
           <span class="mdmark-lightbox-group" data-group="pan" hidden><button class="mdmark-lightbox-tool" type="button" data-tool="left" aria-label="左へ動かす" title="左へ動かす"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg></button><button class="mdmark-lightbox-tool" type="button" data-tool="up" aria-label="上へ動かす" title="上へ動かす"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m18 15-6-6-6 6"/></svg></button><button class="mdmark-lightbox-tool" type="button" data-tool="down" aria-label="下へ動かす" title="下へ動かす"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button><button class="mdmark-lightbox-tool" type="button" data-tool="right" aria-label="右へ動かす" title="右へ動かす"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></button></span>
           <span class="mdmark-lightbox-group" data-group="zoom"><button class="mdmark-lightbox-tool" type="button" data-tool="out" aria-label="縮小" title="縮小" disabled><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"/></svg></button><button class="mdmark-lightbox-tool mdmark-lightbox-zoom" type="button" data-tool="fit" aria-label="倍率 100%。全体が収まる倍率に戻す" title="全体が収まる倍率に戻す">100%</button><button class="mdmark-lightbox-tool" type="button" data-tool="in" aria-label="拡大" title="拡大"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"/><path d="M12 5v14"/></svg></button></span>

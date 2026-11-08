@@ -21,11 +21,11 @@ catalogs:
     purpose: role と名前で要素を探す（`getByRole`・`findByRole`）
   - name: act
     kind: 関数
-    purpose: 状態の更新と effect を流し終えてから確かめる
+    purpose: 状態の更新と effect を実行し終えてから確認する
   - name: cleanup
     kind: 関数
-    purpose: 描いた木を外す（Vitest は自動で呼ばないため `afterEach` で呼ぶ）
-lead: コンポーネントを利用者が見る role と名前で操作・検査するテストのライブラリ。
+    purpose: 描いた木を削除する（Vitest は自動で呼ばないため `afterEach` で呼ぶ）
+lead: コンポーネントを利用者が確認する role と名前で操作・検査するテストのライブラリ。
 purl: pkg:npm/%40testing-library/react@16.3.3
 dependency_scope: 開発のみ
 adoption: 採用

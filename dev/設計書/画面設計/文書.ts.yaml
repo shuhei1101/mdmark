@@ -122,7 +122,7 @@ elements:
   - name: 外部ライブラリのマーカーの場所
     id: embed
     kind: region
-    component: dev/設計書/部品設計/読み込み中の枠.ts#
+    component: dev/設計書/部品設計/読み込み中のブロック.ts#
     args:
       - name: name
         value: マーカーの名前
@@ -134,7 +134,7 @@ elements:
   - name: 通知ブロック
     id: notice
     kind: label
-    component: dev/設計書/部品設計/知らせの枠.ts#
+    component: dev/設計書/部品設計/通知ブロック.ts#
     args:
       - name: name
         value: マーカーの名前（拡張は拡張の `name`）
@@ -148,7 +148,7 @@ elements:
   - name: 見出しとセクション
     id: section
     kind: heading
-    component: dev/設計書/部品設計/節.ts#
+    component: dev/設計書/部品設計/セクション.ts#
     args:
       - name: level
         value: 見出しの階層（1〜4）
@@ -322,7 +322,7 @@ elements:
   - name: 記載の警告
     id: syntax-warning
     kind: label
-    component: dev/設計書/部品設計/書き方の警告.ts#
+    component: dev/設計書/部品設計/記載の警告.ts#
     args:
       - name: message
         value: 誤りごとの本文（エラーの文言）
@@ -370,7 +370,7 @@ elements:
     visible_when: 文書に用語集の表のマーカーがあるとき（`glossary` がオフのときも表は描く）
     error_message: 'マーカーの誤りは表の前の記載の警告で通知する。`mark` はそのマーカーの文字。表に無い列名: `{mark} の {引数}= の列 {列名} が表にありません。表の列は {列の並び} です。列名を修正してください。この表からは用語を入れずに描いています。` / 必須の指定が無い: `{mark} に {引数}= がありません。{用語の列か意味の列}を {引数}=列名 で指してください。この表からは用語を入れずに描いています。`。文中のマーカー・列名は行内のコードにする'
     refs:
-      - dev/設計書/部品設計/書き方の警告.ts#states[GlossaryColumn]
+      - dev/設計書/部品設計/記載の警告.ts#states[GlossaryColumn]
     status: planned
   - name: 関連文書の一覧
     id: backlinks
@@ -478,7 +478,7 @@ elements:
   - name: mermaid の読み込み中のブロック
     id: mermaid-loading
     kind: label
-    component: dev/設計書/部品設計/読み込み中の枠.ts#
+    component: dev/設計書/部品設計/読み込み中のブロック.ts#
     args:
       - name: name
         value: '`mermaid`'
@@ -491,7 +491,7 @@ elements:
   - name: mermaid の通知ブロック
     id: mermaid-notice
     kind: label
-    component: dev/設計書/部品設計/知らせの枠.ts#
+    component: dev/設計書/部品設計/通知ブロック.ts#
     args:
       - name: name
         value: '`mermaid`'
@@ -685,7 +685,7 @@ elements:
   - name: 差分の通知ブロック
     id: diff-notice
     kind: label
-    component: dev/設計書/部品設計/知らせの枠.ts#
+    component: dev/設計書/部品設計/通知ブロック.ts#
     args:
       - name: name
         value: 取り出せなかったリビジョンの説明（`diff-revisions` のときは文書の `id`）
@@ -775,7 +775,7 @@ elements:
   - name: コメントのマーカー
     id: comment-mark
     kind: button
-    component: dev/設計書/部品設計/コメントの印.ts#
+    component: dev/設計書/部品設計/コメントのマーカー.ts#
     args:
       - name: text
         value: '`load` が返却したコメントの `quote` に一致した本文の文字'
@@ -1141,7 +1141,7 @@ elements:
   - name: 色分けの通知ブロック
     id: diff-blocks-notice
     kind: label
-    component: dev/設計書/部品設計/知らせの枠.ts#
+    component: dev/設計書/部品設計/通知ブロック.ts#
     args:
       - name: name
         value: 文書の `id`
@@ -1431,7 +1431,7 @@ elements:
   - name: 範囲のスクリプトの通知ブロック
     id: html-scripts-notice
     kind: label
-    component: dev/設計書/部品設計/知らせの枠.ts#
+    component: dev/設計書/部品設計/通知ブロック.ts#
     args:
       - name: name
         value: '`html-scripts`'

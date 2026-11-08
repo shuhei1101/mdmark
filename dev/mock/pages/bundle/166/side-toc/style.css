@@ -1,6 +1,6 @@
 /* まとめた HTML の右側の目次のモックだけの規則 */
 
-/* パンくず: モックの階層を遡るリンク列。画面の帯と分けるため、文書の地の上に小さく置く */
+/* パンくず: モックの階層を遡るリンク列。画面の帯と分けるため、文書の地の上に小さく配置する */
 .mock-breadcrumb {
   padding: 8px 16px;
   border-block-end: 1px solid var(--mdmark-color-border);
@@ -15,9 +15,9 @@
   }
 }
 
-/* mdmark の層: まとめた HTML の画面の規則と同じ層に置く */
+/* mdmark の層: まとめた HTML の画面の規則と同じ層に配置する */
 @layer mdmark {
-  /* 狭い幅: 上に留まる文書の一覧の帯の高さを、右側の目次を留める位置として渡す（mdmark build が書き出す HTML の規則） */
+  /* 狭い幅: 上に留まる文書の一覧の帯の高さを、右側の目次を留める位置として指定する（mdmark build が書き出す HTML の規則） */
   @media (width < 60rem) {
     /* 開いている文書 */
     .mdmark-bundle-main .mdmark {

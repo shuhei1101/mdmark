@@ -1,6 +1,6 @@
 // 拡張記法を描いた文書のモックの印刷: 印刷の前後の展開と、モックだけの「印刷の見え方」の切り替え
 
-// sample.js・syntax.js と同じ大域に読むため、宣言をブロックに閉じる
+// sample.js・syntax.js と同じ大域に読み込むため、宣言をブロックに閉じる
 {
   const root = document.documentElement;
   const printStyles = [...document.querySelectorAll("[data-print-styles]")];
@@ -8,7 +8,7 @@
   const schemeButtons = document.querySelectorAll("[data-scheme-set]");
   const { expand, restore } = window.mdmarkMockPrint;
 
-  /** 印刷の見え方を画面に当てているかを返す。 */
+  /** 印刷の見え方を画面に適用しているかを返却する。 */
   const previewing = () => printStyles[0].media === "all";
 
   // 印刷の前後（実装でも持つ処理）: タブの全ての中身と閉じた記法の展開だけを受け持つ

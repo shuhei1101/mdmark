@@ -1,5 +1,5 @@
 # yaml-language-server: $schema=../../dev/テンプレート/files.schema.yaml
 files:
   - path: デザイン方針.md
-    description: mdmark が描く文書の既定の見た目に通すデザインの方向性（採用スタイルと、見た目の決まり）を受け持つ。部品やテーマの見た目を決めるときに読む。
+    description: mdmark が描く文書の既定の外観に経由するデザインの方向性（採用スタイルと、外観の決まり）を受け持つ。部品やテーマの外観を決めるときに読み込む。
     tags: [topic:デザイン, topic:デザインスタイル, topic:テーマ]

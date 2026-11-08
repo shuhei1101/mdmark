@@ -4,10 +4,10 @@
   <meta charset="utf-8">
   <!-- viewport: スマホ幅で等倍に表示する -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>document / current（今の見た目） | mdmark のモック</title>
+  <title>document / current（今の外観） | mdmark のモック</title>
   <!-- 配布物の CSS（ライブラリ本体） -->
   <link rel="stylesheet" href="../../../../../../dist/index.css">
-  <!-- 使う側のページの見た目と、モック専用の操作列 -->
+  <!-- 利用側のページの外観と、モック専用の操作列 -->
   <link rel="stylesheet" href="../../../../refs/257/assets/scene.css">
   <!-- 配布物の mount で本文と詳細パネルに文書を描く -->
   <script type="module" src="../../../../refs/257/assets/scene.js"></script>
@@ -15,13 +15,13 @@
 <body>
   <!-- モック専用の操作列: 同じ番号の案のタブ -->
   <nav class="mock-bar" aria-label="案">
-    <a class="mock-bar-item" href="../a-no-line/index.html">案 A: 図の枠の線を常に外す</a>
-    <a class="mock-bar-item" href="../b-css-property/index.html">案 B: CSS カスタムプロパティで外す</a>
-    <a class="mock-bar-item" href="../current/index.html" aria-current="page">今の見た目</a>
+    <a class="mock-bar-item" href="../a-no-line/index.html">案 A: 図の枠の線を常に削除する</a>
+    <a class="mock-bar-item" href="../b-css-property/index.html">案 B: CSS カスタムプロパティで削除する</a>
+    <a class="mock-bar-item" href="../current/index.html" aria-current="page">今の外観</a>
   </nav>
 
-  <!-- 使う側のページのトップバー（mdmark の外） -->
-  <header class="host-bar">使う側のアプリ</header>
+  <!-- 利用側のページのトップバー（mdmark の外） -->
+  <header class="host-bar">利用側のアプリ</header>
 
   <nav class="crumbs" aria-label="パンくずリスト">
     <a href="../../../index.md">pages</a> / <a href="../../index.md">document</a> / <a href="../index.md">257</a> / current
@@ -31,7 +31,7 @@
     <!-- 本文: 枠を持たない文書の中の図と、操作できる部品の中のグラフ -->
     <div id="doc"></div>
 
-    <!-- 詳細パネル: 使う側の枠を持つ面の中に描いた図 -->
+    <!-- 詳細パネル: 利用側の枠を持つ面の中に描いた図 -->
     <aside class="host-panel" aria-labelledby="panel-title">
       <h2 class="host-panel-title" id="panel-title">詳細パネル</h2>
       <div id="panel-doc"></div>

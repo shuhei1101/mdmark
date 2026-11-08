@@ -74,7 +74,7 @@ elements:
   - name: 設定ファイルを読み込めない帯
     id: preview-config-band
     kind: status
-    component: dev/設計書/部品設計/設定ファイルを読めない帯.ts#
+    component: dev/設計書/部品設計/設定ファイルを読み込めない帯.ts#
     args:
       - name: path
         value: '`configError.path`（読み込めない設定ファイルを、インターフェース定義『設定を重ねて読み込む』の制約「パスの表示」で書き換えたパス）'
@@ -93,7 +93,7 @@ elements:
   - name: 再生できない動画・音声の通知
     id: preview-media-error
     kind: status
-    component: dev/設計書/部品設計/再生できない動画・音声の知らせ.ts#
+    component: dev/設計書/部品設計/再生できない動画・音声の通知.ts#
     args:
       - name: kind
         value: '`error` になった要素が `video` なら `video`、`audio` なら `audio`'
@@ -114,4 +114,4 @@ mock: dev/mock/pages/vscode-preview/342/shadcn/
 lead: VS Code 拡張機能が開くプレビューのパネル（Webview）。mdmark が描いた文書と、拡張機能が追加する状態の表示を同じパネルの中で切り替える。
 refs:
   - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを開く.ts#
-  - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを描き直す.ts#
+  - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを再描画する.ts#

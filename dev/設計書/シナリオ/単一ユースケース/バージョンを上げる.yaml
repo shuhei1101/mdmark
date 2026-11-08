@@ -1,0 +1,335 @@
+title: "バージョンを上げる"
+scenarios:
+  - name: 正常シナリオ
+    setup:
+      - name: 手元のバージョンが古いフォルダ
+        description: '`version: v0.3.0` の設定・索引・文書 2 つを持つフォルダ。設定と索引は v0.3.0 の Schema に合う'
+      - name: Mock
+        description: 呼んだ CLI のバージョンを `v0.5.0` に、移行の手順のフォルダと変更履歴をテスト用のものに差し替える
+        notes: '`v0.4.0` は設定のキーの名前を変える手順、`v0.5.0` は文書のマーカーを書き換える手順を持つ。どちらも壊すマーカーと値を聞く指定を持たない。変更履歴は v0.3.0・v0.4.0・v0.5.0 の行を持つ'
+    flow: |-
+      sequenceDiagram
+        actor W as 文書の作成者
+        participant C as mdmark CLI
+        participant F as フォルダ
+        W->>C: mdmark upgrade
+        C->>F: 設定の version を読み込む
+        C->>C: 手元のバージョン v0.3.0 と目標のバージョン v0.5.0 を比べ、v0.4.0・v0.5.0 の手順を参照する
+        C->>F: 書き換えうるファイルをコピーのフォルダへ写す
+        C->>F: v0.4.0・v0.5.0 の手順をバージョンの順に適用する
+        C->>C: mdmark check と同じ点検を実行する（ずれ 0 件）
+        C->>F: 設定の version を v0.5.0 にする
+        C-->>W: 適用した手順・変更履歴の行・コピーのフォルダの場所・終了コード 0
+    expected:
+      - 設定のキーの名前が v0.4.0 の手順のとおりに変わり、文書のマーカーが v0.5.0 の手順のとおりに書き換わっている
+      - 設定の `version` が `v0.5.0`
+      - 設定ファイルのコメントと、手順が触らないキーの値と並びが残っている
+      - 出力に v0.4.0・v0.5.0 の変更履歴の行が出て、v0.3.0 の行が出ない
+      - 出力にコピーのフォルダの場所が出て、そのフォルダに適用する前の設定・文書がある
+      - 終了コードが 0
+    test: test_normal
+  - name: 正常シナリオ（適用する前に示す）
+    setup:
+      - name: 手元のバージョンが古いフォルダ
+        description: 正常シナリオと同じ
+      - name: Mock
+        description: 正常シナリオと同じ。加えて `v0.5.0` の手順に壊すマーカーを付ける
+    flow: |-
+      sequenceDiagram
+        actor W as 文書の作成者
+        participant C as mdmark CLI
+        participant F as フォルダ
+        W->>C: mdmark upgrade --plan
+        C->>F: 設定の version を読み込む
+        C->>C: v0.4.0・v0.5.0 の手順を参照する
+        C-->>W: バージョンごとの手順・変更履歴の行・壊す手順があること・終了コード 0
+    expected:
+      - 出力に v0.4.0・v0.5.0 の順で手順が出る
+      - 出力に v0.4.0・v0.5.0 の変更履歴の行が出る
+      - 出力に壊す手順を持つバージョンと手順が示される
+      - 設定・索引・文書が変わっておらず、コピーのフォルダが無い
+      - 終了コードが 0
+    test: test_normal_when_plan
+  - name: 正常シナリオ（値を聞く手順がある）
+    setup:
+      - name: 手元のバージョンが古いフォルダ
+        description: 正常シナリオと同じ
+      - name: Mock
+        description: 呼んだ CLI のバージョンを `v0.4.0` に、`v0.4.0` の手順を値を利用者に聞いてキーを追加する手順に差し替える
+        notes: 標準入力に追加するキーの値を指定する
+    flow: |-
+      sequenceDiagram
+        actor W as 文書の作成者
+        participant C as mdmark CLI
+        participant F as フォルダ
+        W->>C: mdmark upgrade
+        C->>C: v0.4.0 の手順を参照する
+        C-->>W: 追加するキーの値を聞く
+        W->>C: 値
+        C->>F: コピーを取り、キーを追加する
+        C->>C: 点検を実行する（ずれ 0 件）
+        C->>F: 設定の version を v0.4.0 にする
+        C-->>W: 適用した手順・変更履歴の行・コピーのフォルダの場所・終了コード 0
+    expected:
+      - 設定に、回答した値でキーが追加されている
+      - 設定の `version` が `v0.4.0`
+      - 終了コードが 0
+    test: test_normal_when_value_asked
+  - name: 正常シナリオ（手元のバージョンを持たない設定）
+    setup:
+      - name: バージョンを持たない設定のフォルダ
+        description: 正常シナリオのフォルダの設定から `version` を削除したもの（v0.3.0 までの `init` が配置した設定）
+      - name: Mock
+        description: 正常シナリオと同じ
+        notes: 標準入力に手元のバージョン `v0.3.0` を指定する
+    flow: |-
+      sequenceDiagram
+        actor W as 文書の作成者
+        participant C as mdmark CLI
+        participant F as フォルダ
+        W->>C: mdmark upgrade
+        C->>F: 設定の version を読み込む（無い）
+        C-->>W: 手元のバージョンを聞く
+        W->>C: v0.3.0
+        C->>F: コピーを取り、v0.4.0・v0.5.0 の手順を適用する
+        C->>C: 点検を実行する（ずれ 0 件）
+        C->>F: 設定に version: v0.5.0 を記載する
+        C-->>W: 適用した手順・変更履歴の行・コピーのフォルダの場所・終了コード 0
+    expected:
+      - 設定の `version` が `v0.5.0`
+      - 変更後の設定・文書が、`version` を除いて正常シナリオと同じ
+      - 終了コードが 0
+    test: test_normal_when_version_missing
+  - name: 正常シナリオ（手元のバージョンが目標のバージョンと同じ）
+    setup:
+      - name: バージョンが一致したフォルダ
+        description: '`version: v0.5.0` の設定を持つフォルダ'
+      - name: Mock
+        description: 呼んだ CLI のバージョンを `v0.5.0` に差し替える
+    flow: |-
+      sequenceDiagram
+        actor W as 文書の作成者
+        participant C as mdmark CLI
+        participant F as フォルダ
+        W->>C: mdmark upgrade
+        C->>F: 設定の version を読み込む
+        C-->>W: 適用する手順が無いこと・終了コード 0
+    expected:
+      - 出力に、手元のバージョンが目標のバージョンと同じで適用する手順が無いことが出る
+      - 設定・索引・文書が変わっておらず、コピーのフォルダが無い
+      - 終了コードが 0
+    test: test_normal_when_up_to_date
+  - name: 正常シナリオ（壊す手順を断る）
+    setup:
+      - name: 手元のバージョンが古いフォルダ
+        description: 正常シナリオと同じ
+      - name: Mock
+        description: 正常シナリオと同じ。加えて `v0.5.0` の手順に壊すマーカーを付ける
+        notes: '`--yes` を付けず、確認に標準入力で断る'
+    flow: |-
+      sequenceDiagram
+        actor W as 文書の作成者
+        participant C as mdmark CLI
+        participant F as フォルダ
+        W->>C: mdmark upgrade
+        C->>C: v0.4.0・v0.5.0 の手順を参照する
+        C-->>W: 壊す手順を示して適用してよいか確認する
+        W->>C: 断る
+        C-->>W: 何も適用しなかったこと・終了コード 0 以外
+    expected:
+      - 設定・索引・文書が変わっておらず、コピーのフォルダが無い
+      - 出力に、何も適用しなかったことと `--yes` で確認せずに適用できることが出る
+      - 終了コードが 0 以外
+    test: test_normal_when_destructive_declined
+  - name: 異常シナリオ（手順の途中で失敗する）
+    setup:
+      - name: 手元のバージョンが古いフォルダ
+        description: 正常シナリオと同じ
+      - name: Mock
+        description: 正常シナリオと同じ。加えて `v0.5.0` の手順を、終了コード 1 で終わるスクリプトの手順に差し替える
+    flow: |-
+      sequenceDiagram
+        actor W as 文書の作成者
+        participant C as mdmark CLI
+        participant F as フォルダ
+        W->>C: mdmark upgrade
+        C->>F: コピーを取る
+        C->>F: v0.4.0 の手順を適用する
+        C->>F: v0.5.0 のスクリプトを実行する（失敗）
+        C->>F: コピーから戻す
+        C-->>W: 失敗したバージョン・手順・理由・終了コード 0 以外
+    expected:
+      - 設定・索引・文書が適用する前と同じ中身に戻っている（v0.4.0 で変えたキーも戻っている）
+      - 設定の `version` が `v0.3.0` のまま
+      - 出力に失敗したバージョン `v0.5.0`・手順・スクリプトの終了コードが出る
+      - 終了コードが 0 以外
+    test: test_error_when_step_fails
+  - name: 異常シナリオ（適用した後の点検が通らない）
+    setup:
+      - name: 手元のバージョンが古いフォルダ
+        description: 正常シナリオと同じ
+      - name: Mock
+        description: 正常シナリオと同じ。加えて `v0.5.0` の手順を、設定の `build.out` を拡張子 `.txt` の値として解釈する手順に差し替える
+    flow: |-
+      sequenceDiagram
+        actor W as 文書の作成者
+        participant C as mdmark CLI
+        participant F as フォルダ
+        W->>C: mdmark upgrade
+        C->>F: コピーを取り、v0.4.0・v0.5.0 の手順を適用する
+        C->>C: 点検を実行する（ずれがある）
+        C->>F: コピーから戻す
+        C-->>W: ずれの一覧・終了コード 0 以外
+    expected:
+      - 設定・索引・文書が適用する前と同じ中身に戻っている
+      - 設定の `version` が `v0.3.0` のまま
+      - 出力に `build.out` を指す `schema` のずれの行が出る
+      - 終了コードが 0 以外
+    test: test_error_when_check_fails
+  - name: 異常シナリオ（手元のバージョンが目標のバージョンより新しい）
+    setup:
+      - name: バージョンが新しいフォルダ
+        description: '`version: v0.6.0` の設定を持つフォルダ'
+      - name: Mock
+        description: 呼んだ CLI のバージョンを `v0.5.0` に差し替える
+    flow: |-
+      sequenceDiagram
+        actor W as 文書の作成者
+        participant C as mdmark CLI
+        participant F as フォルダ
+        W->>C: mdmark upgrade
+        C->>F: 設定の version を読み込む
+        C-->>W: 手元のバージョンが新しいことと、手元のバージョン以上の CLI で呼ぶこと・終了コード 0 以外
+    expected:
+      - 出力に手元のバージョン `v0.6.0` と目標のバージョン `v0.5.0` と、手元のバージョン以上のバージョンの CLI でもう一度呼ぶことが出る
+      - 設定・索引・文書が変わっておらず、コピーのフォルダが無い
+      - 終了コードが 0 以外
+    test: test_error_when_local_version_newer
+  - name: 正常シナリオ（壊す手順を --yes で適用する）
+    setup:
+      - name: 手元のバージョンが古いフォルダ
+        description: 正常シナリオと同じ
+      - name: Mock
+        description: 正常シナリオと同じ。加えて `v0.5.0` の手順に壊すマーカーを付ける
+        notes: '`--yes` を付け、標準入力には何も指定しない'
+    flow: |-
+      sequenceDiagram
+        actor W as 文書の作成者
+        participant C as mdmark CLI
+        participant F as フォルダ
+        W->>C: mdmark upgrade --yes
+        C->>C: v0.4.0・v0.5.0 の手順を参照する
+        C->>F: コピーを取り、確認せずに v0.4.0・v0.5.0 の手順を適用する
+        C->>C: 点検を実行する（ずれ 0 件）
+        C->>F: 設定の version を v0.5.0 にする
+        C-->>W: 適用した手順・変更履歴の行・コピーのフォルダの場所・終了コード 0
+    expected:
+      - 出力に壊す手順の確認が出ない
+      - 壊す手順を含む v0.4.0・v0.5.0 の手順が該当している
+      - 設定の `version` が `v0.5.0`
+      - 終了コードが 0
+    test: test_normal_when_destructive_with_yes
+  - name: 異常シナリオ（適用した後の点検で図の定義にずれがある）
+    setup:
+      - name: 図の定義にずれを持つ手元のバージョンが古いフォルダ
+        description: 正常シナリオのフォルダの文書 1 つに、座標の重なる 2 つのノードを持つフロー図の部品の定義を記載したもの
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor W as 文書の作成者
+        participant C as mdmark CLI
+        participant F as フォルダ
+        W->>C: mdmark upgrade
+        C->>F: バックアップを取り、v0.4.0・v0.5.0 の手順を適用する
+        C->>C: 点検を実行する（図の定義のずれがある）
+        C->>F: バックアップから戻す
+        C-->>W: ずれの一覧・終了コード 0 以外
+    expected:
+      - 設定・索引・文書が適用する前と同じ中身に戻っている
+      - 設定の `version` が `v0.3.0` のまま
+      - 出力に、その文書の図の定義を指すノードの重なりのずれの行が出る
+      - 終了コードが 0 以外
+    test: test_error_when_diagram_drift
+  - name: 正常シナリオ（上のフォルダにも設定ファイルがある）
+    setup:
+      - name: 端末の設定
+        description: '`MDMARK_CONFIG` で指す `settings.yaml`。`config.cascade: true` を記載する'
+      - name: 重ねる設定を持つフォルダ
+        description: 上のフォルダの `mdmark.config.yaml` と、その下の `docs/` の `mdmark.config.yaml` が、どちらも手元のバージョンに目標のバージョンより古いバージョンを記載している
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor W as 文書の作成者
+        participant C as mdmark CLI
+        participant F as 設定ファイル
+        W->>C: docs/ で mdmark upgrade --yes
+        C->>F: docs/ の mdmark.config.yaml の手元のバージョンから手順を適用する
+        C->>F: docs/ の mdmark.config.yaml のバージョンを書き換える
+        C-->>W: 適用した手順と変更履歴・終了コード 0
+    expected:
+      - 終了コードが 0
+      - '`docs/` の `mdmark.config.yaml` の `version` が目標のバージョンになる'
+      - 上のフォルダの `mdmark.config.yaml` と端末の設定は書き換わらない
+    test: test_normal_when_parent_config_exists
+  - name: 正常シナリオ（エイリアスの元の行を新しい構造へ書き換える）
+    setup:
+      - name: v0.2.0 の構造のエイリアスの元の行を持つフォルダ
+        description: '`version: v0.9.0` の設定の `aliases` に、次の 3 行とその YAML を持つフォルダ。`alias_type` を `{type: custom, value: term}`、`name`・`description` を `{type: ref, field}` で取る行 `terms`。`alias_type` を `{type: ref, field: alias_type}` で取り、レコードの `alias_type` が全て `command` の行 `commands`。`cwd` を `{type: custom, value: リポジトリの直下}` で取る `command` の行 `tests`'
+      - name: Mock
+        description: 呼んだ CLI のバージョンを目標のバージョンにし、リポジトリの `migrations/next/` の移行の手順を目標のバージョンの手順として使用する
+        notes: '`--yes` を付ける'
+    flow: |-
+      sequenceDiagram
+        actor W as 文書の作成者
+        participant C as mdmark CLI
+        participant F as フォルダ
+        W->>C: mdmark upgrade --yes
+        C->>F: 書き換えうるファイルをコピーのフォルダへ写す
+        C->>F: aliases の行の paths の YAML を参照し、行を新しい構造へ書き換える
+        C->>C: mdmark check と同じ点検を実行する（ずれ 0 件）
+        C->>F: 設定の version を目標のバージョンにする
+        C-->>W: 適用した手順・除外したキーと値・コピーのフォルダの場所・終了コード 0
+    expected:
+      - '`terms` の行が `alias_type: term` を持ち、`metadata` の `name`・`description` が元の `field` の列名の文字列になっている'
+      - '`commands` の行が `alias_type: command` を持ち、`metadata` が `alias_type` を持たない'
+      - '`tests` の行の `metadata` が `cwd` を持たず、出力に `tests` の行から除外した `cwd` と値 `リポジトリの直下` が出る'
+      - 設定の `aliases` が alias-inject v0.3.0 の Schema に合う
+      - 設定の `version` が目標のバージョン
+      - 終了コードが 0
+    test: test_normal_when_aliases_rows
+  - name: 異常シナリオ（エイリアスの元の行の種類が 1 つに決まらない）
+    setup:
+      - name: 種類を混ぜた行を持つフォルダ
+        description: '`version: v0.9.0` の設定の `aliases` に、`alias_type` を `{type: ref, field: alias_type}` で取り、レコードの `alias_type` に `term` と `command` が混ざる行 `mixed` を持つフォルダ'
+      - name: Mock
+        description: 正常シナリオ（エイリアスの元の行を新しい構造へ書き換える）と同じ
+    flow: |-
+      sequenceDiagram
+        actor W as 文書の作成者
+        participant C as mdmark CLI
+        participant F as フォルダ
+        W->>C: mdmark upgrade --yes
+        C->>F: コピーを取り、手順を適用する（mixed の行を書き換えられず、手順が失敗する）
+        C->>F: コピーから戻す
+        C-->>W: mixed の行を種類ごとの行に分ける修正方法・終了コード 0 以外
+    expected:
+      - 出力に `mixed` の行と、レコードの種類 `term`・`command` ごとに行を分ける修正方法が出る
+      - 設定が適用する前と同じ中身に戻っている
+      - 設定の `version` が `v0.9.0` のまま
+      - 終了コードが 0 以外
+    test: test_error_when_aliases_row_mixed_types
+lead: 文書の作成者が `mdmark upgrade` を実行し、設定の手元のバージョンから目標のバージョンまでの移行の手順をバージョンの順に当て、点検に合格してから設定のバージョンを書き換え、その範囲の変更履歴を受け取る。
+issue: 10
+primary_actor: 文書の作成者
+trigger: 新しいバージョンが出て、文書の作成者がそのバージョンの CLI と配布物を使用したくなった
+preconditions:
+  - 文書の作成者の手元に Node 24 以降がある
+  - 手元に `mdmark.config.yaml` がある
+success_guarantee: 手元のバージョンより新しく目標のバージョン以下のバージョンの移行の手順がバージョンの順に該当し、`mdmark check` と同じ点検が通り、設定の `version` が目標のバージョンになる。適用したバージョンの範囲の変更履歴の行と、コピーのフォルダの場所が出る。
+minimal_guarantee: 手順の途中で失敗したとき・適用した後の点検が通らないときは、書き換えた全てのファイルをコピーから戻し、設定の `version` を変えない。次の `upgrade` は同じ手元のバージョンからもう一度適用できる。
+frequency: バージョンが上がるたびに 1 回
+refs:
+  - dev/設計書/シナリオ/単一ユースケース/設定と索引を点検する#
+test_file: tests/e2e/単一ユースケース/バージョンを上げる.spec.ts

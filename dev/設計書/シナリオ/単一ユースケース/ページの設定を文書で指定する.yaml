@@ -2,31 +2,31 @@ title: ページの設定を文書で指定する
 scenarios:
   - name: 正常シナリオ
     setup:
-      - name: mdmark を読むページ
-        description: 版を固定した URL で `dist/index.js` と `dist/index.css` を読み、ページの設定のキーを持たない設定を渡して文書を描く HTML
+      - name: mdmark を読み込むページ
+        description: バージョンを固定した URL で `dist/index.js` と `dist/index.css` を読み込み、ページの設定のキーを持たない設定を指定して文書を描く HTML
         notes: 'OS の配色はライト（`prefers-color-scheme: light`）'
       - name: ダークを指定した Markdown
         description: '先頭の行に `<!-- page: scheme=dark -->` を持ち、段落とリンクを持つ文書'
       - name: Mock
-        description: jsDelivr を、ビルドした `dist/` を同じパスで返す手元の応答に差し替える
+        description: jsDelivr を、ビルドした `dist/` を同じパスで返却する手元の応答に差し替える
     flow: |-
       sequenceDiagram
         actor U as 利用者
-        participant P as 使う側のページ
+        participant P as 利用側のページ
         participant M as mdmark
-        P->>M: 設定と Markdown を渡して描かせる
-        M->>M: 文書の先頭の page のマーカーを読む
-        M-->>P: ダークの配色を当てた文書
+        P->>M: 設定と Markdown を指定して描かせる
+        M->>M: 文書の先頭の page のマーカーを読み込む
+        M-->>P: ダークの配色を適用した文書
         P-->>U: 文書を表示
     expected:
       - OS の配色がライトでも、描く先の要素の地の色の計算値が既定のテーマ（dev-swiss）の暗い配色の `--mdmark-color-bg` の値
       - 本文にマーカーの文字が出ていない
-      - 書き方の警告が出ていない
+      - 記載の警告が出ていない
     test: test_normal
   - name: 正常シナリオ（設定で全文書の既定にする）
     setup:
-      - name: mdmark を読むページ
-        description: 正常シナリオと同じ。設定の明暗のキーに `dark` を書く
+      - name: mdmark を読み込むページ
+        description: 正常シナリオと同じ。設定の明暗のキーに `dark` を記載する
         notes: キーの名前はインターフェース定義で決める。OS の配色はライトで、描く先の要素の祖先（`body`）にライトを表す class（`mdmark-theme-light`）を付ける
       - name: マーカーを持たない Markdown
         description: page のマーカーを持たず、段落とリンクを持つ文書
@@ -35,11 +35,11 @@ scenarios:
     flow: |-
       sequenceDiagram
         actor U as 利用者
-        participant P as 使う側のページ
+        participant P as 利用側のページ
         participant M as mdmark
-        P->>M: 明暗を書いた設定と Markdown を渡して描かせる
-        M->>M: 文書にマーカーが無いので設定の明暗を使う
-        M-->>P: ダークの配色を当てた文書
+        P->>M: 明暗を記載した設定と Markdown を指定して描かせる
+        M->>M: 文書にマーカーが無いので設定の明暗を使用する
+        M-->>P: ダークの配色を適用した文書
         P-->>U: 文書を表示
     expected:
       - OS の配色と祖先の class がライトでも、描く先の要素の地の色の計算値が dev-swiss の暗い配色の `--mdmark-color-bg` の値
@@ -48,8 +48,8 @@ scenarios:
       - dev/設計書/シナリオ/単一ユースケース/テーマを上書きする#scenarios[正常シナリオ（親の class でライトにする）]
   - name: 正常シナリオ（文書のマーカーが設定に勝つ）
     setup:
-      - name: mdmark を読むページ
-        description: 正常シナリオと同じ。設定の明暗のキーに `dark`、`colorTheme` に `theme-paper`、`side-toc.mode` に `hover` を書く
+      - name: mdmark を読み込むページ
+        description: 正常シナリオと同じ。設定の明暗のキーに `dark`、`colorTheme` に `theme-paper`、`side-toc.mode` に `hover` を記載する
         notes: OS の配色はダーク。画面の大きさは 1280×800px
       - name: ページの設定を指定した Markdown
         description: '先頭の行に `<!-- page: scheme=light theme=theme-slate toc=fixed -->` を持ち、h2 を 3 つと段落を持つ文書'
@@ -58,23 +58,23 @@ scenarios:
     flow: |-
       sequenceDiagram
         actor U as 利用者
-        participant P as 使う側のページ
+        participant P as 利用側のページ
         participant M as mdmark
-        P->>M: ページの設定を書いた設定と Markdown を渡して描かせる
+        P->>M: ページの設定を記載した設定と Markdown を指定して描かせる
         M->>M: 設定に文書のマーカーを重ねる
         M-->>P: theme-slate の明るい配色と、目次を出すボタンで開閉する右側の目次の文書
         P-->>U: 文書を表示
     expected:
       - 描く先の要素の地の色の計算値が theme-slate の明るい配色の `--mdmark-color-bg` の値
-      - 目次を出すボタンがあり `aria-expanded` が `false` で、右端にポインターを置いても右側の目次が表示されていない（`side-toc.mode` の `fixed` と同じ）
+      - 目次を出すボタンがあり `aria-expanded` が `false` で、右端にポインターを配置しても右側の目次が表示されていない（`side-toc.mode` の `fixed` と同じ）
     test: test_normal_when_marker_overrides_config
     refs:
-      - dev/設計書/シナリオ/単一ユースケース/目次と見出しのアンカーで節へ移る#scenarios[正常シナリオ（右側の目次をサイドバーで出す）]
+      - dev/設計書/シナリオ/単一ユースケース/目次と見出しのアンカーでセクションへ移る#scenarios[正常シナリオ（右側の目次をサイドバーで出す）]
       - dev/設計書/シナリオ/単一ユースケース/テーマを選ぶ#scenarios[正常シナリオ]
   - name: 正常シナリオ（OS の設定に合わせる）
     setup:
-      - name: mdmark を読むページ
-        description: 正常シナリオと同じ。設定の明暗のキーに `light` を書く
+      - name: mdmark を読み込むページ
+        description: 正常シナリオと同じ。設定の明暗のキーに `light` を記載する
         notes: OS の配色はライトで、描く先の要素の祖先（`body`）にダークを表す class（`mdmark-theme-dark`）を付ける
       - name: OS に合わせる Markdown
         description: '先頭の行に `<!-- page: scheme=auto -->` を持つ文書'
@@ -83,10 +83,10 @@ scenarios:
     flow: |-
       sequenceDiagram
         actor U as 利用者
-        participant P as 使う側のページ
+        participant P as 利用側のページ
         participant M as mdmark
-        P->>M: 設定と Markdown を渡して描かせる
-        M->>M: 文書のマーカーで設定の明暗を外し、祖先の class → OS の設定の順で決める
+        P->>M: 設定と Markdown を指定して描かせる
+        M->>M: 文書のマーカーで設定の明暗を解除し、祖先の class → OS の設定の順で決める
         M-->>P: 祖先の class の配色の文書
         P-->>U: 文書を表示
     expected:
@@ -103,10 +103,10 @@ scenarios:
     flow: |-
       sequenceDiagram
         actor U as 利用者
-        participant P as 使う側のページ
+        participant P as 利用側のページ
         participant M as mdmark
         P->>M: update でマーカーを持たない本文に差し替える
-        M->>M: 差し替えた本文のマーカーで決め直す
+        M->>M: 差し替えた本文のマーカーでもう一度決める
         M-->>P: 明るい配色の文書
         P-->>U: 文書を表示
     expected:
@@ -124,7 +124,7 @@ scenarios:
         participant B as ブラウザ
         participant M as mdmark
         U->>B: 印刷する
-        B->>M: 印刷のメディアで描き直す
+        B->>M: 印刷のメディアで再描画する
         M-->>U: 明るい配色の印刷
     expected:
       - 印刷のメディアで、描く先の要素の地の色の計算値が dev-swiss の明るい配色の `--mdmark-color-bg` の値
@@ -133,63 +133,63 @@ scenarios:
       - dev/設計書/シナリオ/単一ユースケース/文書を印刷する#
   - name: 異常シナリオ（知らないキーと値）
     setup:
-      - name: mdmark を読むページ
-        description: 正常シナリオと同じ。設定の明暗のキーに `dark` を書く
+      - name: mdmark を読み込むページ
+        description: 正常シナリオと同じ。設定の明暗のキーに `dark` を記載する
         notes: OS の配色はライト。画面の大きさは 1280×800px
-      - name: 知らないキーと値を書いた Markdown
+      - name: 知らないキーと値を記載した Markdown
         description: '先頭の行に `<!-- page: scheme=sepia theme=theme-unknown size=wide toc=fixed -->` を持ち、h2 を 3 つ持つ文書'
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
       sequenceDiagram
         actor U as 利用者
-        participant P as 使う側のページ
+        participant P as 利用側のページ
         participant M as mdmark
-        P->>M: 設定と Markdown を渡して描かせる
-        M->>M: 知らない値を警告にし、知らないキーを読み飛ばして、残りを設定に重ねる
-        M-->>P: 書き方の警告と、設定の明暗と toc を当てた文書
-        P-->>U: 書き方の警告と本文を表示
+        P->>M: 設定と Markdown を指定して描かせる
+        M->>M: 知らない値を警告にし、知らないキーをスキップして、残りを設定に重ねる
+        M-->>P: 記載の警告と、設定の明暗と toc を適用した文書
+        P-->>U: 記載の警告と本文を表示
     expected:
-      - 文書の先頭に、`scheme=sepia`・`theme=theme-unknown` を挙げ、書けるキーと値を書いた書き方の警告が 1 つあり、知らないキー `size=wide` は挙げていない
+      - 文書の先頭に、`scheme=sepia`・`theme=theme-unknown` を挙げ、記載できるキーと値を記載した記載の警告が 1 つあり、知らないキー `size=wide` は挙げていない
       - 描く先の要素の地の色の計算値が、設定の明暗と既定のテーマ（dev-swiss）の暗い配色の `--mdmark-color-bg` の値
-      - 目次を出すボタンがあり `aria-expanded` が `false` で、右端にポインターを置いても右側の目次が表示されていない（`side-toc.mode` の `fixed` と同じ）
+      - 目次を出すボタンがあり `aria-expanded` が `false` で、右端にポインターを配置しても右側の目次が表示されていない（`side-toc.mode` の `fixed` と同じ）
     test: test_error_when_unknown_key_or_value
   - name: 異常シナリオ（文書の先頭に無いマーカー）
     setup:
-      - name: mdmark を読むページ
+      - name: mdmark を読み込むページ
         description: 正常シナリオと同じ
         notes: OS の配色はライト
-      - name: 途中にマーカーを書いた Markdown
-        description: '最初の段落の後に `<!-- page: scheme=dark -->` を書いた文書'
+      - name: 途中にマーカーを記載した Markdown
+        description: '最初の段落の後に `<!-- page: scheme=dark -->` を記載した文書'
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
       sequenceDiagram
         actor U as 利用者
-        participant P as 使う側のページ
+        participant P as 利用側のページ
         participant M as mdmark
-        P->>M: 設定と Markdown を渡して描かせる
-        M->>M: 先頭に無い page のマーカーを使わない
-        M-->>P: マーカーの場所に書き方の警告
-        P-->>U: 書き方の警告と本文を表示
+        P->>M: 設定と Markdown を指定して描かせる
+        M->>M: 先頭に無い page のマーカーを使用しない
+        M-->>P: マーカーの場所に記載の警告
+        P-->>U: 記載の警告と本文を表示
     expected:
-      - マーカーの場所に、page のマーカーは文書の先頭に書くことを書いた書き方の警告がある
+      - マーカーの場所に、page のマーカーは文書の先頭に記載することを記載した記載の警告がある
       - 描く先の要素の地の色の計算値が dev-swiss の明るい配色の `--mdmark-color-bg` の値
     test: test_error_when_not_at_top
-lead: '文書を書く人が文書の先頭の `<!-- page: … -->` と `mdmark.config.yaml` で、配色の明暗・テーマ・右側の目次の出し方を指定し、mdmark がその文書をその設定で描く。'
+lead: '文書の作成者が文書の先頭の `<!-- page: … -->` と `mdmark.config.yaml` で、配色の明暗・テーマ・右側の目次の出し方を指定し、mdmark がその文書をその設定で描く。'
 issue: 161
-primary_actor: 文書を書く人
+primary_actor: 文書の作成者
 stakeholders:
-  - name: 文書を読む人
-    interest: 文書の用途に合わせて書く人が決めた配色と目次の出し方で読める
-  - name: mdmark を使うアプリの開発者
-    interest: マーカーと設定を書かない文書は、今と同じ配色と目次で描かれる
-trigger: 使う側のページが、先頭に page のマーカーを持つ文書か、ページの設定のキーを書いた設定を渡して文書を描かせる
+  - name: 読者
+    interest: 文書の用途に合わせて作成者が決めた配色と目次の出し方で読み込める
+  - name: mdmark を使用するアプリの開発者
+    interest: マーカーと設定を記載しない文書は、今と同じ配色と目次で描かれる
+trigger: 利用側のページが、先頭に page のマーカーを持つ文書か、ページの設定のキーを記載した設定を指定して文書を描かせる
 preconditions:
-  - ページが版を固定した URL で mdmark の JavaScript と CSS を読んでいる
+  - ページがバージョンを固定した URL で mdmark の JavaScript と CSS を読み込んでいる
 success_guarantee: 文書のマーカー → 設定（近いフォルダ → 上のフォルダ → 端末の設定）→ 描く先の祖先の class → OS の設定の順に、先にあるものの値で配色の明暗・テーマ・右側の目次の出し方が決まる。GitHub など mdmark の無い所ではマーカーが見えない。
-minimal_guarantee: 書けるキーの知らない値と、文書の先頭に無いマーカーは書き方の警告にして使わず、知らないキーは警告を出さずに読み飛ばし、残りのキーと設定の値で描く。印刷では、マーカーでダークにした文書も明るい配色で出す。
+minimal_guarantee: 記載できるキーの知らない値と、文書の先頭に無いマーカーは記載の警告にして使用せず、知らないキーは警告を出さずにスキップし、残りのキーと設定の値で描く。印刷では、マーカーでダークにした文書も明るい配色で出す。
 test_file: tests/e2e/単一ユースケース/ページの設定を文書で指定する.spec.ts
 notes:
   文書の先頭: '最初の見出し・段落・表・リスト・コードブロックより前。空の行と、ほかのマーカー（`<!-- features: … -->` など）は前にあってよい'
-  書けるキー: '`scheme`（`light`・`dark`・`auto`。`auto` は設定の明暗だけを外し、描く先の祖先の class → OS の設定の順で決める。VS Code のプレビューでは `mdmark.preview.theme` → VS Code のテーマの順）・`theme`（`colorTheme` と同じ名前）・`toc`（`hover`・`fixed`）。右側の目次と先頭へ戻るボタンのオン・オフは、同じ文書の先頭の `<!-- features: -side-toc -back-to-top -->` で書く'
+  記載できるキー: '`scheme`（`light`・`dark`・`auto`。`auto` は設定の明暗だけを解除し、描く先の祖先の class → OS の設定の順で決める。VS Code のプレビューでは `mdmark.preview.theme` → VS Code のテーマの順）・`theme`（`colorTheme` と同じ名前）・`toc`（`hover`・`fixed`）。右側の目次と先頭へ戻るボタンのオン・オフは、同じ文書の先頭の `<!-- features: -side-toc -back-to-top -->` で記載する'

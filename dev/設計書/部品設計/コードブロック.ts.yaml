@@ -202,7 +202,7 @@ states:
       - name: language
         value: yaml
       - name: lines
-        value: '[{"text":"version: \"0.9\""},{"text":"features:","foldLines":2},{"text":"  table: true","indent":1},{"text":"  diagram: true","indent":1},{"text":"libraries:","foldLines":3},{"text":"  highlight:","indent":1,"foldLines":2,"folded":true},{"text":"    url: https://cdn.jsdelivr.net/npm/highlight.js","indent":2},{"text":"    version: 11.11.1","indent":2},{"text":"build:","foldLines":1},{"text":"  - docs/使い方/導入/README.md","indent":1}]'
+        value: '[{"text":"version: \"0.9\""},{"text":"features:","foldLines":2},{"text":"  table: true","indent":1},{"text":"  diagram: true","indent":1},{"text":"libraries:","foldLines":3},{"text":"  highlight:","indent":1,"foldLines":2,"folded":true},{"text":"    url: https://cdn.jsdelivr.net/npm/highlight.js","indent":2},{"text":"    version: 11.11.1","indent":2},{"text":"build:","foldLines":1},{"text":"  - docs/使用方法/導入/README.md","indent":1}]'
   - name: Wrap
     description: '`wrap` と行番号を持ち、2 行目が枠の幅より長い。長い行は枠の幅で折り返し、行番号は折り返した行の 1 行目にだけ出す。ブロックに横スクロールが出ない（合意したモック `dev/mock/refs/328/assets/wrap.css`）'
     args:

@@ -2,18 +2,18 @@ title: "タブを切り替える"
 scenarios:
   - name: 正常シナリオ
     setup:
-      - name: mdmark を読むページ
-        description: 版を固定した URL で `dist/index.js` と `dist/index.css` を読み、設定を渡して文書を描く HTML
+      - name: mdmark を読み込むページ
+        description: バージョンを固定した URL で `dist/index.js` と `dist/index.css` を読み込み、設定を指定して文書を描く HTML
       - name: タブの範囲を持つ Markdown
         description: '`<!-- tabs -->` 〜 `<!-- /tabs -->` で、`### macOS`・`### Windows` の 2 つの見出しと、それぞれの下の段落を囲んだ文書'
       - name: Mock
-        description: jsDelivr を、ビルドした `dist/` を同じパスで返す手元の応答に差し替える
+        description: jsDelivr を、ビルドした `dist/` を同じパスで返却する手元の応答に差し替える
     flow: |-
       sequenceDiagram
         actor U as 利用者
-        participant P as 使う側のページ
+        participant P as 利用側のページ
         participant M as mdmark
-        P->>M: 設定と Markdown を渡して描かせる
+        P->>M: 設定と Markdown を指定して描かせる
         M-->>P: 見出しをタブ名にしたタブを描く
         P-->>U: 1 つ目のタブの中身を表示
         U->>P: Windows のタブを押す
@@ -25,7 +25,7 @@ scenarios:
     test: test_normal
   - name: 正常シナリオ（キーボードで切り替える）
     setup:
-      - name: mdmark を読むページ
+      - name: mdmark を読み込むページ
         description: 正常シナリオと同じ
       - name: タブの範囲を持つ Markdown
         description: 正常シナリオと同じ文書
@@ -34,9 +34,9 @@ scenarios:
     flow: |-
       sequenceDiagram
         actor U as 利用者
-        participant P as 使う側のページ
+        participant P as 利用側のページ
         participant M as mdmark
-        P->>M: 設定と Markdown を渡して描かせる
+        P->>M: 設定と Markdown を指定して描かせる
         M-->>P: タブを描く
         U->>P: 1 つ目のタブにフォーカスして右矢印キーを押す
         P-->>U: 2 つ目のタブを選んで中身を表示
@@ -46,7 +46,7 @@ scenarios:
     test: test_normal_when_keyboard
   - name: 異常シナリオ（見出しの無い範囲）
     setup:
-      - name: mdmark を読むページ
+      - name: mdmark を読み込むページ
         description: 正常シナリオと同じ
       - name: 見出しの無いタブの範囲を持つ Markdown
         description: '`<!-- tabs -->` 〜 `<!-- /tabs -->` で段落だけを囲んだ文書'
@@ -55,20 +55,20 @@ scenarios:
     flow: |-
       sequenceDiagram
         actor U as 利用者
-        participant P as 使う側のページ
+        participant P as 利用側のページ
         participant M as mdmark
-        P->>M: 設定と Markdown を渡して描かせる
+        P->>M: 設定と Markdown を指定して描かせる
         M->>M: タブ名にする見出しが無い
-        M-->>P: 書き方の警告と、範囲の中身をそのまま描く
-        P-->>U: 書き方の警告と段落を表示
+        M-->>P: 記載の警告と、範囲の中身をそのまま描く
+        P-->>U: 記載の警告と段落を表示
     expected:
-      - 範囲の上に、タブ名にする見出しが無いことを書いた書き方の警告がある
+      - 範囲の上に、タブ名にする見出しが無いことを記載した記載の警告がある
       - 範囲の中の段落が表示されている
       - タブの並び（`role="tablist"`）が無い
     test: test_error_when_no_heading
-  - name: 正常シナリオ（同じ組のタブの選択を揃える）
+  - name: 正常シナリオ（同じ組のタブの選択を統一する）
     setup:
-      - name: mdmark を読むページ
+      - name: mdmark を読み込むページ
         description: 正常シナリオと同じ
       - name: 同じ組のタブを持つ Markdown
         description: '`<!-- tabs: group=os -->` 〜 `<!-- /tabs -->` で `### macOS`・`### Windows` を囲んだ範囲を 2 つと、`<!-- tabs: group=os -->` で `### macOS`・`### Linux` を囲んだ範囲を 1 つ、`group` の無い `<!-- tabs -->` で `### macOS`・`### Windows` を囲んだ範囲を 1 つ並べた文書'
@@ -78,9 +78,9 @@ scenarios:
     flow: |-
       sequenceDiagram
         actor U as 利用者
-        participant P as 使う側のページ
+        participant P as 利用側のページ
         participant M as mdmark
-        P->>M: 設定と Markdown を渡して描かせる
+        P->>M: 設定と Markdown を指定して描かせる
         M-->>P: 4 つのタブ群を描き、どれも 1 つ目のタブを選ぶ
         U->>P: 1 つ目のタブ群の Windows のタブを押す
         P->>M: 押したタブ群を Windows に切り替える
@@ -92,9 +92,9 @@ scenarios:
       - '`group` の無い 4 つ目のタブ群は、`macOS` を選んだまま'
       - フォーカスは押した 1 つ目のタブ群の `Windows` のタブにある
     test: test_normal_when_same_group
-  - name: 正常シナリオ（読み直して選んだタブで開く）
+  - name: 正常シナリオ（再読み込みして選んだタブで開く）
     setup:
-      - name: mdmark を読むページ
+      - name: mdmark を読み込むページ
         description: 正常シナリオと同じ
       - name: 同じ組のタブを持つ Markdown
         description: '`<!-- tabs: group=os -->` で `### macOS`・`### Windows` を囲んだ範囲と、`group` の無い `<!-- tabs -->` で `### macOS`・`### Windows` を囲んだ範囲を並べた文書。`group=os` の `macOS` の中身は `#### macOS の注意` と段落を持つ'
@@ -103,34 +103,34 @@ scenarios:
     flow: |-
       sequenceDiagram
         actor U as 利用者
-        participant P as 使う側のページ
+        participant P as 利用側のページ
         participant M as mdmark
         participant S as localStorage
-        P->>M: 設定と Markdown を渡して描かせる
+        P->>M: 設定と Markdown を指定して描かせる
         M-->>P: タブを描く
         U->>P: group=os のタブ群の Windows のタブを押す
         M->>S: os の組に Windows を残す
-        U->>P: ページを読み直す
-        P->>M: 同じ Markdown を渡して描かせる
-        M->>S: os の組に残したタブ名を読む
+        U->>P: ページを再読み込みする
+        P->>M: 同じ Markdown を指定して描かせる
+        M->>S: os の組に残したタブ名を読み込む
         M-->>P: group=os のタブ群を Windows を選んで描く
         P-->>U: Windows の中身を表示
-        U->>P: URL の末尾に #macos-の注意 を付けて読み直す
-        P->>M: 同じ Markdown を渡して描かせる
+        U->>P: URL の末尾に #macos-の注意 を付けて再読み込みする
+        P->>M: 同じ Markdown を指定して描かせる
         M-->>P: URL の ID を優先して macOS のタブを選び、見出しへ移る
         P-->>U: macOS の中身を表示
     expected:
-      - 読み直した後、`group=os` のタブ群の `Windows` のタブの `aria-selected` が `true` で、`Windows` の段落だけが表示されている
-      - '`group` の無いタブ群は、読み直した後に `macOS` を選んでいる'
-      - '`#macos-の注意` を付けて読み直した後、覚えた `Windows` より URL の ID を優先し、`group=os` のタブ群の `macOS` のタブの `aria-selected` が `true` で、`macOS の注意` の見出しが画面に入っている'
+      - 再読み込みした後、`group=os` のタブ群の `Windows` のタブの `aria-selected` が `true` で、`Windows` の段落だけが表示されている
+      - '`group` の無いタブ群は、再読み込みした後に `macOS` を選んでいる'
+      - '`#macos-の注意` を付けて再読み込みした後、覚えた `Windows` より URL の ID を優先し、`group=os` のタブ群の `macOS` のタブの `aria-selected` が `true` で、`macOS の注意` の見出しが画面に入っている'
     test: test_normal_when_reloaded
   - name: 異常シナリオ（選んだタブを覚えられない）
     setup:
-      - name: mdmark を読むページ
+      - name: mdmark を読み込むページ
         description: 正常シナリオと同じ
-      - name: localStorage が使えないページ
-        description: ページを開く前に、`window.localStorage` を読むと `SecurityError` を投げるように差し替える
-        notes: ブラウザの設定でサイトのデータを拒んだときの状態に当たる
+      - name: localStorage が使用できないページ
+        description: ページを開く前に、`window.localStorage` を読み込むと `SecurityError` を投げるように差し替える
+        notes: ブラウザの設定でサイトのデータを拒んだときの状態に該当する
       - name: 同じ組のタブを持つ Markdown
         description: '`<!-- tabs: group=os -->` で `### macOS`・`### Windows` を囲んだ範囲を 2 つ並べた文書'
       - name: Mock
@@ -138,11 +138,11 @@ scenarios:
     flow: |-
       sequenceDiagram
         actor U as 利用者
-        participant P as 使う側のページ
+        participant P as 利用側のページ
         participant M as mdmark
         participant S as localStorage
-        P->>M: 設定と Markdown を渡して描かせる
-        M->>S: os の組に残したタブ名を読む
+        P->>M: 設定と Markdown を指定して描かせる
+        M->>S: os の組に残したタブ名を読み込む
         S-->>M: 例外
         M-->>P: 1 つ目のタブを選んでタブを描く
         U->>P: 1 つ目のタブ群の Windows のタブを押す
@@ -153,11 +153,11 @@ scenarios:
     expected:
       - 描いた直後、2 つのタブ群とも `macOS` を選んでいる
       - 押した後、2 つのタブ群とも `Windows` のタブの `aria-selected` が `true` で、`Windows` の段落だけが表示されている
-      - 書き方の警告は出ていない
+      - 記載の警告は出ていない
     test: test_error_when_storage_unavailable
   - name: 異常シナリオ（値の無い group）
     setup:
-      - name: mdmark を読むページ
+      - name: mdmark を読み込むページ
         description: 正常シナリオと同じ
       - name: 値の無い group を持つ Markdown
         description: '`<!-- tabs: group= -->` で `### macOS`・`### Windows` を囲んだ範囲と、`<!-- tabs -->` で `### macOS`・`### Windows` を囲んだ範囲を並べた文書'
@@ -166,44 +166,44 @@ scenarios:
     flow: |-
       sequenceDiagram
         actor U as 利用者
-        participant P as 使う側のページ
+        participant P as 利用側のページ
         participant M as mdmark
-        P->>M: 設定と Markdown を渡して描かせる
+        P->>M: 設定と Markdown を指定して描かせる
         M->>M: group の値が無い
-        M-->>P: 書き方の警告と、group を持たないタブを描く
+        M-->>P: 記載の警告と、group を持たないタブを描く
         U->>P: 1 つ目のタブ群の Windows のタブを押す
         P-->>U: 1 つ目のタブ群だけ Windows の中身を表示
     expected:
-      - 1 つ目のタブ群の上に、`group` の値が無いことを書いた書き方の警告がある
+      - 1 つ目のタブ群の上に、`group` の値が無いことを記載した記載の警告がある
       - 1 つ目のタブ群は `Windows` を選び、2 つ目のタブ群は `macOS` を選んだまま
     test: test_error_when_empty_group
   - name: 正常シナリオ（知らないタブの指定）
     setup:
-      - name: mdmark を読むページ
+      - name: mdmark を読み込むページ
         description: 正常シナリオと同じ
       - name: 知らない指定を持つ Markdown
         description: '`<!-- tabs: grop=os -->` で `### macOS`・`### Windows` を囲んだ範囲と、`<!-- tabs: group=os fold -->` で `### macOS`・`### Windows` を囲んだ範囲を並べた文書'
-        notes: 1 つ目は `group` を書き損じたキー、2 つ目は `キー=値` の形でない指定
+        notes: 1 つ目は `group` を記載し損じたキー、2 つ目は `キー=値` の構造でない指定
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
       sequenceDiagram
         actor U as 利用者
-        participant P as 使う側のページ
+        participant P as 利用側のページ
         participant M as mdmark
-        P->>M: 設定と Markdown を渡して描かせる
-        M->>M: 知らないキーと指定を読み飛ばす
-        M-->>P: 読めた指定だけを当てたタブ群を描く
+        P->>M: 設定と Markdown を指定して描かせる
+        M->>M: 知らないキーと指定をスキップする
+        M-->>P: 読み込めた指定だけを適用したタブ群を描く
         U->>P: 1 つ目のタブ群の Windows のタブを押す
         P-->>U: 1 つ目のタブ群だけ Windows の中身を表示
     expected:
-      - どちらのタブ群の上にも書き方の警告が無い
+      - どちらのタブ群の上にも記載の警告が無い
       - どちらのタブ群もタブに描かれている
       - 1 つ目のタブ群は `Windows` を選び、`group` を持つ 2 つ目のタブ群は `macOS` を選んだまま
     test: test_normal_when_unknown_option
   - name: 正常シナリオ（折りたたみに入れたタブ）
     setup:
-      - name: mdmark を読むページ
+      - name: mdmark を読み込むページ
         description: 正常シナリオと同じ
       - name: 折りたたみのタブを持つ Markdown
         description: '`<!-- tabs: closed -->` で `### uv`・`### pip` を囲んだ範囲と、`<!-- tabs: open title=入れ方 -->` で `### macOS`・`### Windows` を囲んだ範囲を並べた文書'
@@ -212,9 +212,9 @@ scenarios:
     flow: |-
       sequenceDiagram
         actor U as 利用者
-        participant P as 使う側のページ
+        participant P as 利用側のページ
         participant M as mdmark
-        P->>M: 設定と Markdown を渡して描かせる
+        P->>M: 設定と Markdown を指定して描かせる
         M-->>P: 1 つ目のタブ群を閉じた折りたたみ、2 つ目を開いた折りたたみに入れて描く
         U->>P: 1 つ目の折りたたみの見出しを押す
         P-->>U: 開いたタブ群
@@ -224,11 +224,11 @@ scenarios:
       - 1 つ目の折りたたみの見出しが `タブ（uv・pip）` で、描いた直後はタブの並びと中身が表示されていない
       - 2 つ目の折りたたみの見出しが `title=` の「入れ方」で、描いた直後から `macOS` の中身が表示されている
       - 1 つ目の見出しを押した後、`uv` のタブが選ばれ、`pip` のタブを押すと `pip` の中身だけが表示される
-      - 書き方の警告は出ていない
+      - 記載の警告は出ていない
     test: test_normal_when_folded
   - name: 異常シナリオ（closed と open を両方書いたタブ）
     setup:
-      - name: mdmark を読むページ
+      - name: mdmark を読み込むページ
         description: 正常シナリオと同じ
       - name: closed と open を両方持つ Markdown
         description: '`<!-- tabs: closed open -->` で `### macOS`・`### Windows` を囲んだ文書'
@@ -237,19 +237,19 @@ scenarios:
     flow: |-
       sequenceDiagram
         actor U as 利用者
-        participant P as 使う側のページ
+        participant P as 利用側のページ
         participant M as mdmark
-        P->>M: 設定と Markdown を渡して描かせる
+        P->>M: 設定と Markdown を指定して描かせる
         M->>M: closed と open が両方ある
-        M-->>P: 書き方の警告と、閉じた折りたたみのタブ群を描く
-        P-->>U: 書き方の警告と閉じたタブ群を表示
+        M-->>P: 記載の警告と、閉じた折りたたみのタブ群を描く
+        P-->>U: 記載の警告と閉じたタブ群を表示
     expected:
-      - 範囲の上に、`closed` と `open` を同時に書けないことを書いた書き方の警告がある
-      - タブ群は `closed` を当てた閉じた折りたたみに入り、見出しが `タブ（macOS・Windows）`
+      - 範囲の上に、`closed` と `open` を同時に記載できないことを記載した記載の警告がある
+      - タブ群は `closed` を適用した閉じた折りたたみに入り、見出しが `タブ（macOS・Windows）`
     test: test_error_when_closed_and_open
   - name: 正常シナリオ（入れ子のタブ）
     setup:
-      - name: mdmark を読むページ
+      - name: mdmark を読み込むページ
         description: 正常シナリオと同じ
       - name: 入れ子のタブを持つ Markdown
         description: '外側の `<!-- tabs -->` 〜 `<!-- /tabs -->` で `### macOS`・`### Windows` を囲み、`### macOS` の下に内側の `<!-- tabs -->` 〜 `<!-- /tabs -->` で `#### zsh`・`#### bash` を囲んだ文書'
@@ -258,9 +258,9 @@ scenarios:
     flow: |-
       sequenceDiagram
         actor U as 利用者
-        participant P as 使う側のページ
+        participant P as 利用側のページ
         participant M as mdmark
-        P->>M: 設定と Markdown を渡して描かせる
+        P->>M: 設定と Markdown を指定して描かせる
         M->>M: タブのマーカーの入れ子を数え、開きと閉じを対応させる
         M-->>P: 外側のタブの中に内側のタブを描く
         U->>P: 内側の bash のタブを押す
@@ -271,11 +271,11 @@ scenarios:
       - 外側のタブが `macOS`・`Windows` の 2 つで、`macOS` の中に `zsh`・`bash` の 2 つのタブがある
       - 内側の `bash` を押した後も、外側の `macOS` の `aria-selected` が `true` のまま
       - 外側の `Windows` を押した後、`Windows` の段落だけが表示されている
-      - 書き方の警告が無く、タブのマーカーの文字が出ていない
+      - 記載の警告が無く、タブのマーカーの文字が出ていない
     test: test_normal_when_nested
   - name: 正常シナリオ（太字のタブ名）
     setup:
-      - name: mdmark を読むページ
+      - name: mdmark を読み込むページ
         description: 正常シナリオと同じ
       - name: 太字の見出しを持つ Markdown
         description: '`<!-- tabs -->` 〜 `<!-- /tabs -->` で `### **案 A**`・`### 案 B` の 2 つの見出しを囲んだ文書'
@@ -284,19 +284,19 @@ scenarios:
     flow: |-
       sequenceDiagram
         actor U as 利用者
-        participant P as 使う側のページ
+        participant P as 利用側のページ
         participant M as mdmark
-        P->>M: 設定と Markdown を渡して描かせる
+        P->>M: 設定と Markdown を指定して描かせる
         M-->>P: 見出しの太字を保ったタブ名のタブを描く
         P-->>U: 文書を表示
     expected:
       - '`案 A` のタブのボタンの中のタブ名が `strong` で強調され、`案 B` のタブ名は強調されていない'
       - タブ名に `**` の文字が出ていない
-      - 強調したタブ名の見た目が、デザイントークンの CSS 変数で上書きできる
+      - 強調したタブ名の外観が、デザイントークンの CSS 変数で上書きできる
     test: test_normal_when_bold_tab_name
   - name: 異常シナリオ（入れ子の閉じが足りない）
     setup:
-      - name: mdmark を読むページ
+      - name: mdmark を読み込むページ
         description: 正常シナリオと同じ
       - name: 閉じの足りない入れ子を持つ Markdown
         description: 正常シナリオ（入れ子のタブ）の文書から、内側の `<!-- /tabs -->` を削除した文書
@@ -305,26 +305,26 @@ scenarios:
     flow: |-
       sequenceDiagram
         actor U as 利用者
-        participant P as 使う側のページ
+        participant P as 利用側のページ
         participant M as mdmark
-        P->>M: 設定と Markdown を渡して描かせる
+        P->>M: 設定と Markdown を指定して描かせる
         M->>M: 入れ子を数え、閉じの無い外側の開きを見つける
-        M-->>P: 書き方の警告と、外側の範囲の中身をタブにせずそのまま描く
+        M-->>P: 記載の警告と、外側の範囲の中身をタブにせずそのまま描く
         P-->>U: 文書を表示
     expected:
-      - 外側のタブの開きの位置に書き方の警告があり、閉じが無いことが記載されている
+      - 外側のタブの開きの位置に記載の警告があり、閉じが無いことが記載されている
       - 外側の範囲の中のタブのマーカーは全てタブにならず、4 つの見出しと中身の段落が全て表示されている
     test: test_error_when_nested_unclosed
-lead: '文書を書く人が `<!-- tabs -->` 〜 `<!-- /tabs -->` で見出しごとの節を囲むと、mdmark が見出しの文字をタブ名にしたタブに描き、読む人がタブを切り替えて 1 つの中身を読む。`<!-- tabs: group=名前 -->` で同じ組にしたタブは選択が揃い、選んだタブ名を覚えて読み直しても同じタブで開く。`closed`・`open` を書いたタブは、見出し付きの折りたたみに入る。'
+lead: '文書の作成者が `<!-- tabs -->` 〜 `<!-- /tabs -->` で見出しごとのセクションを囲むと、mdmark が見出しの文字をタブ名にしたタブに描き、読者がタブを切り替えて 1 つの中身を読み込む。`<!-- tabs: group=名前 -->` で同じ組にしたタブは選択が一致し、選んだタブ名を覚えて再読み込みしても同じタブで開く。`closed`・`open` を記載したタブは、見出し付きの折りたたみに入る。'
 issue: 4
-primary_actor: 文書を読む人
+primary_actor: 読者
 stakeholders:
-  - name: 文書を書く人
-    interest: OS・言語ごとなど並列の内容を見出しで書くだけでタブにでき、GitHub では見出しの節として読める
-trigger: 読む人が、タブの印を持つ文書を描いたページでタブを選ぶ
+  - name: 文書の作成者
+    interest: OS・言語ごとなど並列の内容を見出しで記載するだけでタブにでき、GitHub では見出しのセクションとして読み込める
+trigger: 読者が、タブのマーカーを持つ文書を描いたページでタブを選ぶ
 preconditions:
-  - ページが版を固定した URL で mdmark の JavaScript と CSS を読み、`mount` で文書を描いている
+  - ページがバージョンを固定した URL で mdmark の JavaScript と CSS を読み込み、`mount` で文書を描いている
   - タブの機能（`tabs`）がオン（既定）
-success_guarantee: 範囲の中で最初に出る見出しの階層でタブに区切られ、選んだタブの中身だけが表示される。入れ子のタブは、マーカーの開きと閉じが対応して外側のタブの中に描かれる。`group` を持つタブは、同じページの同じ `group` で同じタブ名を持つタブも同じタブ名に切り替わり、読み直しても選んだタブ名のタブで開く。
-minimal_guarantee: タブにできない範囲は、中身をそのまま描き、範囲の上に書き方の警告が出る。選んだタブを覚えられないときも、揃える動きと切り替えは続く。
+success_guarantee: 範囲の中で最初に出る見出しの階層でタブに区切られ、選んだタブの中身だけが表示される。入れ子のタブは、マーカーの開きと閉じが対応して外側のタブの中に描かれる。`group` を持つタブは、同じページの同じ `group` で同じタブ名を持つタブも同じタブ名に切り替わり、再読み込みしても選んだタブ名のタブで開く。
+minimal_guarantee: タブにできない範囲は、中身をそのまま描き、範囲の上に記載の警告が出る。選んだタブを覚えられないときも、統一する動きと切り替えは続く。
 test_file: tests/e2e/単一ユースケース/タブを切り替える.spec.ts

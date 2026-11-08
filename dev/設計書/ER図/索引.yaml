@@ -1,6 +1,6 @@
 title: "ER 図: 索引"
-lead: 使う側が文書のメタデータと用語を書く YAML の索引。場所は設定の `index` で決め、使う側が読んだオブジェクトを `mount`・`render`・`collectReferences`・`checkIndex` に渡す。形は `schemas/mdmark.index.schema.json`（JSON Schema draft 2020-12）で縛る。
-overview: 'データストアは YAML の 1 ファイル。最上位は `schema`（索引の版。整数で今は `2`、必須）・`docs`（文書の並び、必須）・`terms`（用語の並び、任意）のキーを持ち、ほかのキーは拒む。索引の版を上げる移行は #10 が持つ。v0.9.0 までの版 `1` は最上位にタグの語彙 `tags` を持て、`mdmark upgrade` が語彙を外して版を `2` にする'
+lead: 利用側が文書のメタデータと用語を記載する YAML の索引。場所は設定の `index` で決め、利用側が読み込んだオブジェクトを `mount`・`render`・`collectReferences`・`checkIndex` に指定する。構造は `schemas/mdmark.index.schema.json`（JSON Schema draft 2020-12）で縛る。
+overview: 'データストアは YAML の 1 ファイル。最上位は `schema`（索引のバージョン。整数で今は `2`、必須）・`docs`（文書の並び、必須）・`terms`（用語の並び、任意）のキーを持ち、ほかのキーは拒む。索引のバージョンを上げる移行は #10 が持つ。v0.9.0 までのバージョン `1` は最上位にタグの語彙 `tags` を持て、`mdmark upgrade` が語彙を削除してバージョンを `2` にする'
 er:
   entities:
     - name: 文書
@@ -14,7 +14,7 @@ tables:
   - name: docs
     title: 文書
     datastore: YAML
-    summary: 索引に載せた文書 1 つのメタデータ
+    summary: 索引に記載した文書 1 つのメタデータ
     primary_key: id
     scale: ~1000
     access: 全件
@@ -37,11 +37,11 @@ tables:
         description: 文書のパス。索引のファイルからの相対パス
         example: 設計/arch.md
       - name: title
-        title: 題
+        title: タイトル
         type: string
         not_null: true
         check: 空でない
-        description: 文書の題。関連文書のリンクの文字に出す
+        description: 文書のタイトル。関連文書のリンクの文字に出す
         example: アーキテクチャ
       - name: description
         title: 概要
@@ -52,7 +52,7 @@ tables:
         title: 別名
         type: array
         default: '`[]`'
-        description: 本文での呼び名。本文に出たら、その語のツールチップの関連文書にこの文書を出し、被参照にも数える
+        description: 本文での呼び名。本文に出たら、その単語のツールチップの関連文書にこの文書を出し、被参照にも数える
         example: '[構成図]'
         notes: 要素は空でない文字列
       - name: tags
@@ -68,13 +68,13 @@ tables:
         default: '`[]`'
         foreign_key:
           table: docs.id
-        description: この文書から他の文書への関連。要素は `to`（相手の文書の `id`・必須）・`type`（`requires` / `references` / `replaces` / `part_of` / `change_together`・必須）・`when`（いつ読むかの 1 文・必須・空にできない）・`paths`（関連が当たるファイルの glob の並び・任意）を持ち、他のキーを持たないオブジェクト。件数の上限は置かない。`to` をこの文書からその文書への参照として数える
-        example: '[{to: arch, type: requires, when: 公開関数の前提の構成を確かめるとき}]'
-        notes: 関連は片側だけに記載し、逆向きは保存しない。`change_together` だけは両側に記載する。空でない文字列の要素も `type` と `when` を持たない関連として読め、`checkIndex` が `untyped_related` でオブジェクトへの書き換えを求める。索引に無い `to` は `broken_ref` で知らせる
+        description: この文書から他の文書への関連。要素は `to`（相手の文書の `id`・必須）・`type`（`requires` / `references` / `replaces` / `part_of` / `change_together`・必須）・`when`（いつ読み込むかの 1 文・必須・空にできない）・`paths`（関連が該当するファイルの glob の並び・任意）を持ち、他のキーを持たないオブジェクト。件数の上限は配置しない。`to` をこの文書からその文書への参照として数える
+        example: '[{to: arch, type: requires, when: 公開関数の前提の構成を確認するとき}]'
+        notes: 関連は片側だけに記載し、逆向きは保存しない。`change_together` だけは両側に記載する。空でない文字列の要素も `type` と `when` を持たない関連として読み込め、`checkIndex` が `untyped_related` でオブジェクトへの書き換えを求める。索引に無い `to` は `broken_ref` で通知する
   - name: terms
     title: 用語
     datastore: YAML
-    summary: 索引に載せた用語 1 つ。本文に出たら意味のツールチップを付ける
+    summary: 索引に記載した用語 1 つ。本文に出たら意味のツールチップを付ける
     primary_key: id
     scale: ~1000
     access: 全件
@@ -86,14 +86,14 @@ tables:
         primary_key: true
         unique: true
         check: 空でない
-        description: 用語の ID。索引の `terms` の中で一意。節ごとに最初の 1 回を数える単位
+        description: 用語の ID。索引の `terms` の中で一意。セクションごとに最初の 1 回を数える単位
         example: workspace
       - name: term
         title: 用語
         type: string
         not_null: true
         check: 空でない
-        description: 用語の語
+        description: 用語の単語
         example: ワークスペース
       - name: aliases
         title: 別名
@@ -108,12 +108,12 @@ tables:
         not_null: true
         check: 空でない
         description: 意味。ツールチップの「用語」に出す
-        example: 話し合いの記録を置くフォルダ
+        example: 話し合いの記録を配置するフォルダ
       - name: avoid
         title: やめた言い方
         type: array
         default: '`[]`'
-        description: 使わないことにした言い方。索引の文書の本文に出たら `checkIndex` が `avoided_term` で知らせ、描いた文書では波線のマーカーと「代わりの用語」のツールチップを出す
+        description: 使用しないことにした言い方。索引の文書の本文に出たら `checkIndex` が `avoided_term` で通知し、描いた文書では波線のマーカーと「代わりの用語」のツールチップを出す
         example: '[作業場]'
         notes: 要素は空でない文字列
 refs:

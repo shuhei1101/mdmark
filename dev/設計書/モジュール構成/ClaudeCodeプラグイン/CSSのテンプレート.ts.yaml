@@ -1,5 +1,5 @@
 title: "ClaudeCodeプラグイン / CSSのテンプレート"
-lead: 端末の設定のフォルダの `templates/css/` に置く CSS のテンプレートの索引を読み・検査し・書き、テンプレートを一覧・登録・配置する。MCP の `list_templates`・`add_template`・`apply_template` の処理が呼ぶ。
+lead: 端末の設定のフォルダの `templates/css/` に配置する CSS のテンプレートの索引を読み込み・検査し・記載し、テンプレートを一覧・登録・配置する。MCP の `list_templates`・`add_template`・`apply_template` の処理が呼ぶ。
 directory: |-
   ```tree
   src/plugin/
@@ -15,16 +15,16 @@ diagrams:
       class テンプレートを一覧する
       class テンプレートを登録する
       class テンプレートを配置する
-      class 索引を読む
+      class 索引を読み込む
       class 索引を検査する
-      class 索引を書く
+      class 索引を書き込む
       class テンプレートのフォルダを決める
-      テンプレートを一覧する --> 索引を読む
-      テンプレートを登録する --> 索引を読む
+      テンプレートを一覧する --> 索引を読み込む
+      テンプレートを登録する --> 索引を読み込む
       テンプレートを登録する --> 索引を検査する
-      テンプレートを登録する --> 索引を書く
-      テンプレートを配置する --> 索引を読む
-      索引を読む --> 索引を検査する
+      テンプレートを登録する --> 索引を書き込む
+      テンプレートを配置する --> 索引を読み込む
+      索引を読み込む --> 索引を検査する
       テンプレートを一覧する --> テンプレートのフォルダを決める
       テンプレートを登録する --> テンプレートのフォルダを決める
       テンプレートを配置する --> テンプレートのフォルダを決める
@@ -74,9 +74,9 @@ data_models:
   - name: ListedTemplate
     title: 一覧の行
     container: src/plugin/templates.ts
-    usecase: CSSのテンプレートの一覧を返す
+    usecase: CSSのテンプレートの一覧を返却する
     role: DTO
-    summary: '`list_templates` が返す 1 行'
+    summary: '`list_templates` が返却する 1 行'
     properties:
       - name: name
         type: string
@@ -98,10 +98,10 @@ constants:
     title: テンプレートのフォルダ
     container: src/plugin/templates.ts
     usecase: 共通
-    summary: 端末の設定のファイルのフォルダから見たテンプレートのフォルダ
+    summary: 端末の設定のファイルのフォルダを基準にしたテンプレートのフォルダ
     value: templates/css
     refs:
-      - dev/設計書/インターフェース定義/ClaudeCodeプラグイン/CSSのテンプレートの一覧を返す.ts#constraints[テンプレートのフォルダ]
+      - dev/設計書/インターフェース定義/ClaudeCodeプラグイン/CSSのテンプレートの一覧を返却する.ts#constraints[テンプレートのフォルダ]
     status: planned
     introduced:
       pr: 353
@@ -118,13 +118,13 @@ constants:
     title: 索引のバージョン
     container: src/plugin/templates.ts
     usecase: 共通
-    summary: 書く索引の `schema` の値
+    summary: 記載する索引の `schema` の値
     value: '1'
     status: planned
     introduced:
       pr: 353
   - name: TEMPLATE_NAME_PATTERN
-    title: 名前に使える文字
+    title: 名前に使用できる文字
     container: src/plugin/templates.ts
     usecase: CSSのテンプレートを登録する
     summary: '`add_template` の `name` の正規表現。JSON Schema の `pattern` と同じ'
@@ -141,7 +141,7 @@ functions:
     container: src/plugin/templates.ts
     usecase: 共通
     role: 計算
-    summary: 端末の設定のパスのフォルダの `templates/css` の絶対パスを返す
+    summary: 端末の設定のパスのフォルダの `templates/css` の絶対パスを返却する
     scope: public
     is_async: false
     args:
@@ -154,7 +154,7 @@ functions:
       description: テンプレートのフォルダの絶対パス
     process: |-
       1. `resolveSettingsPath` で端末の設定のパスを決める
-      2. そのフォルダに `TEMPLATES_SUBDIR` を結合して返す
+      2. そのフォルダに `TEMPLATES_SUBDIR` を結合して返却する
     unit_tests:
       - name: test_resolve_templates_dir
         case: 正常
@@ -169,7 +169,7 @@ functions:
         mock: なし
         expected: '`/x/mdmark/templates/css`'
     callees:
-      - dev/設計書/モジュール構成/ライブラリ本体/設定を重ねて読む.ts#functions[resolveSettingsPath]
+      - dev/設計書/モジュール構成/ライブラリ本体/設定を重ねて読み込む.ts#functions[resolveSettingsPath]
     status: planned
     introduced:
       pr: 353
@@ -179,7 +179,7 @@ functions:
     container: src/plugin/templates.ts
     usecase: 共通
     role: 検査
-    summary: 値を `schemas/mdmark.templates.schema.json` で検査し、最初に合わないところを、索引のパス・キーのパス・直し方の 1 文で返す
+    summary: 値を `schemas/mdmark.templates.schema.json` で検査し、最初に合わないところを、索引のパス・キーのパス・修正方法の 1 文で返却する
     scope: public
     is_async: false
     args:
@@ -191,8 +191,8 @@ functions:
       type: string | undefined
       description: 合わないときの 1 文（例「{path} の templates[0].file がありません。…」）。合えば `undefined`
     process: |-
-      1. Ajv（2020-12）で JSON Schema を初めて使うときにコンパイルし、以降は使い回す
-      2. 合わなければ、最初の誤りの場所を `templates[0].file` の形にし、合わない値と、JSON Schema のその項目の `description`（許す値）を書いた文を作る
+      1. Ajv（2020-12）で JSON Schema を初めて使用するときにコンパイルし、以降は使い回す
+      2. 合わなければ、最初の誤りの場所を `templates[0].file` の構造にし、合わない値と、JSON Schema のその項目の `description`（許す値）を記載した文を作る
       3. `name` が重なる行があれば、2 つ目の行を指す文にする
     unit_tests:
       - name: test_validate_templates_index
@@ -204,7 +204,7 @@ functions:
       - name: test_validate_templates_index_when_file_missing
         case: 異常
         summary: 行の `file` が無い
-        condition: 1 行目の `file` を外した値
+        condition: 1 行目の `file` を削除した値
         mock: なし
         expected: 文に索引のパスと `templates[0].file` が入る
       - name: test_validate_templates_index_when_file_has_slash
@@ -225,12 +225,12 @@ functions:
     introduced:
       pr: 353
   - name: readTemplatesIndex
-    title: 索引を読む
+    title: 索引を読み込む
     kind: 関数
     container: src/plugin/templates.ts
     usecase: 共通
     role: 読み取り
-    summary: テンプレートのフォルダの索引を読んで検査し、無ければ空の索引を返す
+    summary: テンプレートのフォルダの索引を読み込んで検査し、無ければ空の索引を返却する
     scope: public
     is_async: true
     args:
@@ -240,27 +240,27 @@ functions:
         description: テンプレートのフォルダの絶対パス
     returns:
       type: Promise<TemplatesIndex>
-      description: '読んだ索引。フォルダか索引が無ければ `{ schema: 1, templates: [] }`。省いた `tags` は空の並び'
+      description: '読み込んだ索引。フォルダか索引が無ければ `{ schema: 1, templates: [] }`。省いた `tags` は空の並び'
     process: |-
-      1. 索引のファイルが無ければ空の索引を返す（フォルダを作らない）
-      2. YAML として読めなければ、索引のパスと行を書いた `CliError` を投げる
+      1. 索引のファイルが無ければ空の索引を返却する（フォルダを作らない）
+      2. YAML として読み込めなければ、索引のパスと行を記載した `CliError` を投げる
       3. `validateTemplatesIndex` の文があれば `CliError` で投げる
     unit_tests:
       - name: test_read_templates_index
         case: 正常
-        summary: 索引を読み、省いた `tags` を空の並びにする
+        summary: 索引を読み込み、省いた `tags` を空の並びにする
         condition: '`tags` を省いた行 1 つの索引'
         mock: なし（一時フォルダ）
         expected: '`templates[0].tags` が `[]`'
       - name: test_read_templates_index_when_missing
         case: 正常
-        summary: フォルダが無ければ空の索引を返し、フォルダを作らない
+        summary: フォルダが無ければ空の索引を返却し、フォルダを作らない
         condition: 無いフォルダ
         mock: なし（一時フォルダ）
         expected: '`templates` が空で、フォルダが無いまま'
       - name: test_read_templates_index_when_unreadable
         case: 異常
-        summary: YAML として読めない索引
+        summary: YAML として読み込めない索引
         condition: 3 行目に閉じていない括弧を持つ索引
         mock: なし（一時フォルダ）
         expected: '`CliError` の文に索引のパスと `3` が入る'
@@ -274,9 +274,9 @@ functions:
     title: テンプレートを一覧する
     kind: 関数
     container: src/plugin/templates.ts
-    usecase: CSSのテンプレートの一覧を返す
+    usecase: CSSのテンプレートの一覧を返却する
     role: 読み取り
-    summary: 索引の行を、CSS の絶対パスを付けて索引の順に返す
+    summary: 索引の行を、CSS の絶対パスを付けて索引の順に返却する
     scope: public
     is_async: true
     args:
@@ -288,29 +288,29 @@ functions:
       type: Promise<ListedTemplate[]>
       description: 一覧の行。`path` は `{dir}/{file}`
     process: |-
-      1. `readTemplatesIndex` で索引を読む
-      2. 行ごとに `name`・`description`・`tags` と、`dir` と `file` を結合した `path` を返す
+      1. `readTemplatesIndex` で索引を読み込む
+      2. 行ごとに `name`・`description`・`tags` と、`dir` と `file` を結合した `path` を返却する
     unit_tests:
       - name: test_list_templates
         case: 正常
-        summary: 索引の順に `path` を付けて返す
+        summary: 索引の順に `path` を付けて返却する
         condition: 2 行の索引
         mock: なし（一時フォルダ）
         expected: 2 行で、`path` が `{dir}/brand.css` と `{dir}/paper.css`
     callees:
       - '#functions[readTemplatesIndex]'
     refs:
-      - dev/設計書/インターフェース定義/ClaudeCodeプラグイン/CSSのテンプレートの一覧を返す.ts#
+      - dev/設計書/インターフェース定義/ClaudeCodeプラグイン/CSSのテンプレートの一覧を返却する.ts#
     status: planned
     introduced:
       pr: 353
   - name: writeTemplatesIndex
-    title: 索引を書く
+    title: 索引を書き込む
     kind: 関数
     container: src/plugin/templates.ts
     usecase: CSSのテンプレートを登録する
     role: 書き込み
-    summary: 索引を同じフォルダの一時ファイルに書いてから rename で置き換える
+    summary: 索引を同じフォルダの一時ファイルに書き込んでから rename で置き換える
     scope: internal
     is_async: true
     side_effects: テンプレートのフォルダの索引を置き換える
@@ -318,21 +318,21 @@ functions:
       - name: options
         type: '{ dir: string; index: TemplatesIndex }'
         required: true
-        description: テンプレートのフォルダと書く索引
+        description: テンプレートのフォルダと記載する索引
     returns:
       type: Promise<void>
-      description: 書けたら解決する。書けなければ書き込みの例外を投げる（一時ファイルは消す）
+      description: 記載できたら解決する。記載できなければ書き込みの例外を投げる（一時ファイルは削除する）
     process: |-
-      1. `{dir}/templates.yaml.{プロセス ID}.{呼び出しごとの乱数}.tmp` に YAML の文字列を書く
+      1. `{dir}/templates.yaml.{プロセス ID}.{呼び出しごとの乱数}.tmp` に YAML の文字列を記載する
       2. `templates.yaml` へ rename する
-      3. 途中で失敗したら一時ファイルを消して例外を投げ直す
+      3. 途中で失敗したら一時ファイルを削除して例外をもう一度投げる
     unit_tests:
       - name: test_write_templates_index
         case: 正常
-        summary: 書いた索引を読み直せ、一時ファイルが残らない
+        summary: 記載した索引を再読み込みでき、一時ファイルが残らない
         condition: 行 1 つの索引
         mock: なし（一時フォルダ）
-        expected: '`readTemplatesIndex` が同じ索引を返し、フォルダに `.tmp` が無い'
+        expected: '`readTemplatesIndex` が同じ索引を返却し、フォルダに `.tmp` が無い'
     status: planned
     introduced:
       pr: 353
@@ -345,7 +345,7 @@ functions:
     summary: CSS をテンプレートのフォルダへ `{name}.css` でコピーし、索引に行を追加するか置き換える
     scope: public
     is_async: true
-    side_effects: テンプレートのフォルダ・CSS・索引を書く
+    side_effects: テンプレートのフォルダ・CSS・索引を書き込む
     args:
       - name: options
         type: '{ dir: string; source: string; name: string; description: string; tags: string[]; overwrite: boolean }'
@@ -355,14 +355,14 @@ functions:
       type: 'Promise<{ name: string; path: string; replaced: boolean }>'
       description: 登録した名前・テンプレートのフォルダの CSS の絶対パス・置き換えたか
     process: |-
-      1. `name` が `TEMPLATE_NAME_PATTERN` に合わないか、`tags` に空の文字列があれば、引数の名前と許す値を書いた `CliError` を投げる（索引を読まず、何も書かない）
-      `source` が無いか拡張子が `.css` でなければ、パスか拡張子を書いた `CliError` を投げる
+      1. `name` が `TEMPLATE_NAME_PATTERN` に合わないか、`tags` に空の文字列があれば、引数の名前と許す値を記載した `CliError` を投げる（索引を読み込まず、何も書き込まない）
+      `source` が無いか拡張子が `.css` でなければ、パスか拡張子を記載した `CliError` を投げる
       2〜6 は、モジュールの中の Promise の連鎖で 1 つずつ順に進める（同じプロセスで重なった登録が、互いの行を上書きしない。プロセスをまたぐ排他は持たない）
-      2. `readTemplatesIndex` で索引を読む。同じ `name` の行があり `overwrite` でなければ、名前と `overwrite` を書いた `CliError` を投げる
-      3. 新しい行（`file` は `{name}.css`）で書く索引を作る。新しい名前は末尾に追加し、置き換える行は元の位置に置く
-      4. `validateTemplatesIndex` の文があれば `CliError` を投げる（何も書かない）
-      5. フォルダを作り、置き換えるときは元の CSS の中身を控えてから、CSS を書く
-      6. `writeTemplatesIndex` で索引を書く。失敗したら、書いた CSS を消す（置き換えたときは控えた中身に戻す）してから例外を投げ直す
+      2. `readTemplatesIndex` で索引を読み込む。同じ `name` の行があり `overwrite` でなければ、名前と `overwrite` を記載した `CliError` を投げる
+      3. 新しい行（`file` は `{name}.css`）で記載する索引を作る。新しい名前は末尾に追加し、置き換える行は元の位置に配置する
+      4. `validateTemplatesIndex` の文があれば `CliError` を投げる（何も書き込まない）
+      5. フォルダを作り、置き換えるときは元の CSS の中身を記録してから、CSS を書き込む
+      6. `writeTemplatesIndex` で索引を書き込む。失敗したら、記載した CSS を削除する（置き換えたときは記録した中身に戻す）してから例外をもう一度投げる
     unit_tests:
       - name: test_add_template
         case: 正常
@@ -408,10 +408,10 @@ functions:
         expected: 索引が `brand` と `paper` の 2 行で、両方の CSS がある
       - name: test_add_template_when_index_write_fails
         case: 異常
-        summary: 索引を書けなければ CSS を戻す
+        summary: 索引を書き込めなければ CSS を戻す
         condition: '`brand` を `overwrite: true` で登録し、`writeTemplatesIndex` の rename を失敗させる'
         mock: '`node:fs/promises` の `rename` を例外を投げる関数に差し替える'
-        expected: 例外が投げ直され、`{dir}/brand.css` と索引が元の中身のまま
+        expected: 例外がもう一度投げれ、`{dir}/brand.css` と索引が元の中身のまま
     callees:
       - '#functions[readTemplatesIndex]'
       - '#functions[validateTemplatesIndex]'
@@ -427,10 +427,10 @@ functions:
     container: src/plugin/templates.ts
     usecase: CSSのテンプレートを配置する
     role: 書き込み
-    summary: テンプレートの CSS を配置先へコピーし、配置したパスと基準の設定ファイルからの `theme` の値を返す
+    summary: テンプレートの CSS を配置先へコピーし、配置したパスと基準の設定ファイルからの `theme` の値を返却する
     scope: public
     is_async: true
-    side_effects: 配置先に CSS を書く
+    side_effects: 配置先に CSS を書き込む
     args:
       - name: options
         type: '{ dir: string; name: string; cwd: string; target: string | undefined; overwrite: boolean }'
@@ -440,10 +440,10 @@ functions:
       type: 'Promise<{ path: string; theme: string | undefined; replaced: boolean }>'
       description: 配置した CSS の絶対パス・`theme` に記載する値・置き換えたか
     process: |-
-      1. `readTemplatesIndex` で索引を読み、`name` の行が無ければ、名前と `list_templates` を書いた `CliError` を投げる
+      1. `readTemplatesIndex` で索引を読み込み、`name` の行が無ければ、名前と `list_templates` を記載した `CliError` を投げる
       2. `findConfigChain`（`cascade: false`）で、`target` があれば `target` から、無ければ `cwd` から上へ最も近い `mdmark.config.yaml` を探す
-      3. 配置先を決める。`target` が無く設定ファイルも無ければ、`dir` を渡すことと `mdmark init` を書いた `CliError` を投げる。`target` のフォルダが無ければ、そのパスを書いた `CliError` を投げる
-      4. コピー元は `{dir}/{行の file}`、コピー先は `{配置先}/{name}.css` にする。コピー元が無ければ、テンプレートの名前とコピー元のパスと、`add_template` で登録し直すか索引の行を削除することを書いた `CliError` を投げる。コピー先があり、中身がコピー元と同じなら書かずに返す。違い `overwrite` でなければ、コピー先のパスと `overwrite` を書いた `CliError` を投げる
+      3. 配置先を決める。`target` が無く設定ファイルも無ければ、`dir` を指定することと `mdmark init` を記載した `CliError` を投げる。`target` のフォルダが無ければ、そのパスを記載した `CliError` を投げる
+      4. コピー元は `{dir}/{行の file}`、コピー先は `{配置先}/{name}.css` にする。コピー元が無ければ、テンプレートの名前とコピー元のパスと、`add_template` でもう一度登録するか索引の行を削除することを記載した `CliError` を投げる。コピー先があり、中身がコピー元と同じなら記載せずに返却する。違い `overwrite` でなければ、コピー先のパスと `overwrite` を記載した `CliError` を投げる
       5. コピー元をコピー先へコピーし、設定ファイルがあれば、そのフォルダから配置した CSS への相対パスを `./` で始めて `theme` にする（設定ファイルは配置先か、その上のフォルダにあるため `../` にならない）
     unit_tests:
       - name: test_apply_template
@@ -460,7 +460,7 @@ functions:
         expected: '`theme` が `./styles/brand.css`'
       - name: test_apply_template_when_target_without_config
         case: 正常
-        summary: '`target` から上に設定ファイルが無ければ、配置して `theme` を返さない'
+        summary: '`target` から上に設定ファイルが無ければ、配置して `theme` を返却しない'
         condition: 上に `mdmark.config.yaml` が無い `target`
         mock: なし（一時フォルダ）
         expected: '`path` が `{target}/brand.css` で、`theme` が `undefined`'
@@ -490,7 +490,7 @@ functions:
         expected: '`CliError` の文に `dir` と `mdmark init`'
       - name: test_apply_template_when_file_differs_from_name
         case: 正常
-        summary: 索引の `file` が名前と違う行は、`file` から読んで `{name}.css` に配置する
+        summary: 索引の `file` が名前と違う行は、`file` から読み込んで `{name}.css` に配置する
         condition: '索引の行が `name: brand`・`file: corporate.css`'
         mock: なし（一時フォルダ）
         expected: '`path` が `{work}/brand.css` で、中身が `corporate.css` と同じ'
@@ -499,13 +499,13 @@ functions:
         summary: '`target` のフォルダが無い'
         condition: '`target` に無いフォルダ'
         mock: なし（一時フォルダ）
-        expected: '`CliError` の文にそのパス、何も書かれていない'
+        expected: '`CliError` の文にそのパス、何も記載されていない'
       - name: test_apply_template_when_css_missing
         case: 異常
         summary: 索引に行があり、テンプレートのフォルダに CSS が無い
         condition: '索引の行が `file: gone.css` で、`gone.css` が無い'
         mock: なし（一時フォルダ）
-        expected: '`CliError` の文に `brand` と `gone.css` のパスと `add_template` が入り、配置先に何も書かれていない'
+        expected: '`CliError` の文に `brand` と `gone.css` のパスと `add_template` が入り、配置先に何も記載されていない'
       - name: test_apply_template_when_name_missing
         case: 異常
         summary: 索引に無い名前
@@ -514,7 +514,7 @@ functions:
         expected: '`CliError` の文に `missing` と `list_templates`'
     callees:
       - '#functions[readTemplatesIndex]'
-      - dev/設計書/モジュール構成/ライブラリ本体/設定を重ねて読む.ts#functions[findConfigChain]
+      - dev/設計書/モジュール構成/ライブラリ本体/設定を重ねて読み込む.ts#functions[findConfigChain]
     refs:
       - dev/設計書/インターフェース定義/ClaudeCodeプラグイン/CSSのテンプレートを配置する.ts#
     status: planned

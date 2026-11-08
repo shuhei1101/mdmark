@@ -1,6 +1,6 @@
 /* テーマ「theme-slate」の配色の値: 青灰: 青みの灰の地と面に、青のリンク。暗い配色は紺の地に青みの白の文字。書体・余白・角丸は採用スタイル本体（dev/mock/assets/style.css）のまま */
 
-/* 明るい配色。印刷でもこの値を使う */
+/* 明るい配色。印刷でもこの値を使用する */
 :root {
   --mdmark-color-bg: #f8fafc;
   --mdmark-color-text: #0f172a;
@@ -54,7 +54,7 @@
   color-scheme: light;
 }
 
-/* 暗い配色。画面のときだけ当てる */
+/* 暗い配色。画面のときだけ適用する */
 @media screen {
   /* ダークを選んだページ */
   :root[data-scheme="dark"] {

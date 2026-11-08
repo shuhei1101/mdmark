@@ -1,13 +1,13 @@
-summary: "使う側が書き mdmark が読むデータの形"
+summary: "利用側が記載し mdmark が読み込むデータの構造"
 docs_index: true
 items:
   - page: 索引.yaml
-    summary: 文書のメタデータと用語を書く YAML の索引
+    summary: 文書のメタデータと用語を記載する YAML の索引
   - page: 移行の手順.yaml
-    summary: 版ごとに当てる移行の手順と、移行の手順が要らないスキーマの変更の一覧
-  - page: 使い方集.yaml
-    summary: Claude Code のプラグインが渡す使い方集の索引
+    summary: バージョンごとに適用する移行の手順と、移行の手順が要らないスキーマの変更の一覧
+  - page: ガイド.yaml
+    summary: Claude Code のプラグインが指定するガイドの索引
   - page: エイリアス.yaml
     summary: 設定の aliases に並べるエイリアスの元の行と、元の行から作るエイリアス
   - page: CSSのテンプレート.yaml
-    summary: 端末の設定のフォルダに置く CSS のテンプレートの索引
+    summary: 端末の設定のフォルダに配置する CSS のテンプレートの索引

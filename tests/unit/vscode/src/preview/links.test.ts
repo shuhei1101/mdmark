@@ -37,5 +37,5 @@ test("test_resolve_link_when_encoded", async () => {
     markdownDir: "/ws/docs",
   });
   // 検証
-  expect(target).toEqual({ kind: "markdown", path: "/ws/docs/使い方.md" });
+  expect(target).toEqual({ kind: "markdown", path: "/ws/docs/使用方法.md" });
 });

@@ -7,7 +7,7 @@
   <!-- color-scheme: 明るい配色とダークの両方を持つことをブラウザへ伝える -->
   <meta name="color-scheme" content="light dark">
   <title>diff-html-switch | mdmark の部品のモック</title>
-  <!-- 本文の規則と知らせの枠の規則（#16 で共有するアセット） -->
+  <!-- 本文の規則と通知ブロックの規則（#16 で共有するアセット） -->
   <link rel="stylesheet" href="../../refs/16/assets/sample.css">
   <!-- 採用スタイル本体の変数の値（差分の色を含む） -->
   <link rel="stylesheet" href="../../assets/style.css">
@@ -24,7 +24,7 @@
 <body>
   <!-- モック専用の操作列: 配色の切り替え -->
   <div class="mock-bar">
-    <!-- [data-scheme-set]: sample.js が押されたボタンの値を html の data-scheme に当てる -->
+    <!-- [data-scheme-set]: sample.js が押されたボタンの値を html の data-scheme に適用する -->
     <div class="mock-bar-group" role="group" aria-label="配色">
       <button class="mock-bar-item" type="button" data-scheme-set="light" aria-pressed="false">明るい配色</button>
       <button class="mock-bar-item" type="button" data-scheme-set="dark" aria-pressed="false">ダーク</button>
@@ -34,7 +34,7 @@
   <main class="host">
     <div class="catalog">
       <h1 class="catalog-title">埋め込んだ HTML の切り替え</h1>
-      <!-- 変えた範囲の見出しに、ソースとプレビューの切り替えを置く -->
+      <!-- 変えた範囲の見出しに、ソースとプレビューの切り替えを配置する -->
       <section aria-labelledby="html-source">
         <h2 class="catalog-label" id="html-source">ソース（既定）</h2>
         <article class="mdmark">
@@ -43,7 +43,7 @@
         </article>
       </section>
 
-      <!-- 幅があれば前と後を横に並べ、狭い幅では縦に積む -->
+      <!-- 幅があれば前と後を横に並べ、狭い幅では縦に並べる -->
       <section aria-labelledby="html-rendered">
         <h2 class="catalog-label" id="html-rendered">プレビュー（前と後を横に並べる）</h2>
         <article class="mdmark">
@@ -61,7 +61,7 @@
         </article>
       </section>
 
-      <!-- r3 で足した範囲。前の側に範囲が無いことを示す -->
+      <!-- r3 で追加した範囲。前の側に範囲が無いことを示す -->
       <section aria-labelledby="html-one-side">
         <h2 class="catalog-label" id="html-one-side">片側にだけある範囲（プレビュー）</h2>
         <article class="mdmark">
@@ -81,7 +81,7 @@
 
       <!-- プレビューでは script 要素とイベントの属性を落とす。ソースでは文字として出す -->
       <section aria-labelledby="html-script">
-        <h2 class="catalog-label" id="html-script">スクリプトを書いた範囲（プレビュー）</h2>
+        <h2 class="catalog-label" id="html-script">スクリプトを記載した範囲（プレビュー）</h2>
         <article class="mdmark">
           <!-- [data-mock-case]: catalog.js が場面の取り出し元から差分の場所を開いて描く -->
           <div class="mdmark-diff" data-mock-case="script" data-mock-view="rendered"></div>

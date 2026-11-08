@@ -21,7 +21,7 @@
   <!-- 色のプリセットと、画像・動画・音声・GIF・カードの規則（#263 で共有するアセット） -->
   <link rel="stylesheet" href="../../refs/263/assets/colors.css">
   <link rel="stylesheet" href="../../refs/263/assets/media.css">
-  <!-- 印刷の規則: 紙に出すときだけ当てる。[data-print-styles]: モックの「印刷の見え方」で preview.js が media を all に切り替える -->
+  <!-- 印刷の規則: 紙に出すときだけ適用する。[data-print-styles]: モックの「印刷の見え方」で preview.js が media を all に切り替える -->
   <link rel="stylesheet" href="../../refs/19/assets/syntax-print.css" media="print" data-print-styles>
   <link rel="stylesheet" href="../../refs/263/assets/media-print.css" media="print" data-print-styles>
   <!-- 配色の切り替え -->
@@ -43,7 +43,7 @@
       <button class="mock-bar-item" type="button" data-theme-set="theme-slate" aria-pressed="false">theme-slate</button>
       <button class="mock-bar-item" type="button" data-theme-set="theme-contrast" aria-pressed="false">theme-contrast</button>
     </div>
-    <!-- [data-scheme-set]: sample.js が押されたボタンの値を html の data-scheme に当てる -->
+    <!-- [data-scheme-set]: sample.js が押されたボタンの値を html の data-scheme に適用する -->
     <div class="mock-bar-group" role="group" aria-label="配色">
       <button class="mock-bar-item" type="button" data-scheme-set="light" aria-pressed="false">明るい配色</button>
       <button class="mock-bar-item" type="button" data-scheme-set="dark" aria-pressed="false">ダーク</button>
@@ -58,7 +58,7 @@
     <div class="catalog">
       <h1 class="catalog-title">リンクのカード・添付のカード</h1>
 
-      <!-- リンクのカード: 段落が URL のリンク 1 つだけの行。書いた文字・ドメイン・URL を出し、外へは要求しない -->
+      <!-- リンクのカード: 段落が URL のリンク 1 つだけの行。記載した文字・ドメイン・URL を出し、外へは要求しない -->
       <section aria-labelledby="state-link">
         <h2 class="catalog-label" id="state-link">リンクのカード（<code>[mdmark のリポジトリ](https://github.com/shuhei1101/mdmark)</code> だけの行）</h2>
         <article class="mdmark">
@@ -71,9 +71,9 @@
         </article>
       </section>
 
-      <!-- URL をそのまま書いた行: 書いた文字が URL なので、タイトルにドメインとパスを出す -->
+      <!-- URL をそのまま記載した行: 記載した文字が URL なので、タイトルにドメインとパスを出す -->
       <section aria-labelledby="state-bare">
-        <h2 class="catalog-label" id="state-bare">URL をそのまま書いた行（<code>&lt;https://...&gt;</code> か自動リンク）</h2>
+        <h2 class="catalog-label" id="state-bare">URL をそのまま記載した行（<code>&lt;https://...&gt;</code> か自動リンク）</h2>
         <article class="mdmark">
 <a class="mdmark-card" href="https://www.jsdelivr.com/package/gh/shuhei1101/mdmark">
   <span class="mdmark-card-icon"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg></span>
@@ -89,7 +89,7 @@
         <article class="mdmark">
 <a class="mdmark-card" href="https://github.com/shuhei1101/mdmark/blob/develop/dev/%E8%A8%AD%E8%A8%88%E6%9B%B8/%E3%82%B7%E3%83%8A%E3%83%AA%E3%82%AA/%E5%8D%98%E4%B8%80%E3%83%A6%E3%83%BC%E3%82%B9%E3%82%B1%E3%83%BC%E3%82%B9/%E6%96%87%E6%9B%B8%E3%82%92%E6%8F%8F%E3%81%8F.yaml">
   <span class="mdmark-card-icon"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg></span>
-  <span class="mdmark-card-title">単一ユースケース「使う側のページが要素と Markdown を渡して文書を描き、本文の差し替えと片付けをする」のシナリオ</span>
+  <span class="mdmark-card-title">単一ユースケース「利用側のページが要素と Markdown を指定して文書を描き、本文の差し替えと片付けをする」のシナリオ</span>
   <span class="mdmark-card-meta"><span class="mdmark-card-domain">github.com</span><span class="mdmark-card-url">https://github.com/shuhei1101/mdmark/blob/develop/dev/%E8%A8%AD%E8%A8%88%E6%9B%B8/%E3%82%B7%E3%83%8A%E3%83%AA%E3%82%AA/%E5%8D%98%E4%B8%80%E3%83%A6%E3%83%BC%E3%82%B9%E3%82%B1%E3%83%BC%E3%82%B9/%E6%96%87%E6%9B%B8%E3%82%92%E6%8F%8F%E3%81%8F.yaml</span></span>
 </a>
         </article>
@@ -99,7 +99,7 @@
       <section aria-labelledby="state-inline">
         <h2 class="catalog-label" id="state-inline">文の途中のリンクとリストの中のリンク（カードにしない）</h2>
         <article class="mdmark">
-<p>使い方は <a href="https://github.com/shuhei1101/mdmark">mdmark のリポジトリ</a> の README にあります。</p>
+<p>使用方法は <a href="https://github.com/shuhei1101/mdmark">mdmark のリポジトリ</a> の README にあります。</p>
 <ul>
   <li><a href="https://github.com/shuhei1101/mdmark/issues">Issue の一覧</a></li>
 </ul>

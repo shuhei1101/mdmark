@@ -1,9 +1,9 @@
 summary: 採用済みの外部ライブラリ / 外部ツールのリファレンス
 items:
   - page: esbuild.yaml
-    summary: TS と CSS を配布物の ES モジュールの JS と CSS に束ねる
+    summary: TS と CSS を配布物の ES モジュールの JS と CSS にまとめる
   - page: esbuild-wasm.yaml
-    summary: VS Code 拡張機能が拡張機能ホストの中で設定の extensions を束ねる
+    summary: VS Code 拡張機能が拡張機能ホストの中で設定の extensions をまとめる
   - page: vitest.yaml
     summary: 単体テスト（Node）と結合テスト（実ブラウザ）のランナー
   - page: playwright.yaml
@@ -19,13 +19,13 @@ items:
   - page: Storybook.yaml
     summary: UI の部品を状態ごとのストーリーとして並べる（react-vite）
   - page: valibot.yaml
-    summary: テストで拡張の引数の Standard Schema を作る（配布物に束ねない）
+    summary: テストで拡張の引数の Standard Schema を作る（配布物にまとめない）
   - page: yaml.yaml
-    summary: CLI が設定と索引の YAML を読む（配布物に束ねない）
+    summary: CLI が設定と索引の YAML を読み込む（配布物にまとめない）
   - page: lucide.yaml
-    summary: 図と記法のアイコンの形
+    summary: 図と記法のアイコンの形状
   - page: diff.yaml
-    summary: 2 つのリビジョンの Markdown を行と語で比べる（jsdiff）
+    summary: 2 つのリビジョンの Markdown を行と単語で比べる（jsdiff）
   - page: vscode.yaml
     summary: VS Code の拡張機能の API（コマンド・設定・エディタ・Webview）
   - page: vsce.yaml
@@ -39,25 +39,25 @@ items:
   - page: ClaudeCode.yaml
     summary: プラグインの導入・PreToolUse のフック・プラグインの MCP サーバーの起動
   - page: eslint.yaml
-    summary: 束ねた JS を構文木にして規則を当てる（対応ブラウザの下限の確かめと、Webview の React の規則）
+    summary: まとめた JS を構文木にして規則を適用する（対応ブラウザの下限の確認と、Webview の React の規則）
   - page: eslint-plugin-compat.yaml
-    summary: 対応ブラウザの下限の版に無い API の使用を報告する
+    summary: 対応ブラウザの下限のバージョンに無い API の使用を報告する
   - page: highlight.js.yaml
-    summary: コードブロックを言語に応じて色分けする（配布物に束ねず jsDelivr から読む）
+    summary: コードブロックを言語に応じて色分けする（配布物にまとめず jsDelivr から読み込む）
   - page: mermaid.yaml
-    summary: 言語 mermaid のコードブロックを図にする（配布物に束ねず jsDelivr から読む）
+    summary: 言語 mermaid のコードブロックを図にする（配布物にまとめず jsDelivr から読み込む）
   - page: babel-standalone.yaml
-    summary: 範囲の TypeScript の型を外して JavaScript にする（配布物に束ねず jsDelivr から読む）
+    summary: 範囲の TypeScript の型を削除して JavaScript にする（配布物にまとめず jsDelivr から読み込む）
   - page: ajv.yaml
-    summary: CLI が設定の aliases を取り込んだ JSON Schema で検証する（配布物に束ねない）
+    summary: CLI が設定の aliases を取り込んだ JSON Schema で検証する（配布物にまとめない）
   - page: dev-docs.yaml
-    summary: 配信元の文書を MCP で検索・参照する（Claude Code が使い方集を参照する先）
+    summary: 配信元の文書を MCP で検索・参照する（Claude Code がガイドを参照する先）
   - page: react.yaml
     summary: VS Code の Webview の画面と hook（React Compiler を含む）
   - page: vite.yaml
-    summary: VS Code の Webview を 1 つの JS と CSS に束ねる
+    summary: VS Code の Webview を 1 つの JS と CSS にまとめる
   - page: tailwindcss.yaml
-    summary: Webview の部品の class とトークン（Preflight を読まない）
+    summary: Webview の部品の class とトークン（Preflight を読み込まない）
   - page: shadcn-ui.yaml
     summary: Webview の部品のソース（Button・Alert・Spinner）
   - page: msw.yaml
@@ -69,4 +69,4 @@ items:
   - page: testing-library.yaml
     summary: Webview のコンポーネントと hook の単体テスト
   - page: tmux.yaml
-    summary: global-setup が常駐サーバーを動かすセッションの確かめ・起動・閉じる操作
+    summary: global-setup が常駐サーバーを動かすセッションの確認・起動・閉じる操作

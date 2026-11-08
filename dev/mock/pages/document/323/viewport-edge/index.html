@@ -4,24 +4,24 @@
   <meta charset="utf-8">
   <!-- viewport: スマホ幅で等倍に表示する -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>document / viewport-edge（右側の目次を画面の右端に置く） | mdmark のモック</title>
+  <title>document / viewport-edge（右側の目次を画面の右端に配置する） | mdmark のモック</title>
   <!-- 配布物の CSS（ライブラリ本体） -->
   <link rel="stylesheet" href="../../../../../../dist/index.css">
   <!-- develop の右側の目次の頭と見出しの線（#320 で共有するアセット） -->
   <link rel="stylesheet" href="../../../../refs/320/assets/proposal.css">
   <!-- この PR の案: 右端の線と目次の枠の横の位置（番号で共有するアセット） -->
   <link rel="stylesheet" href="../../../../refs/323/assets/edge.css">
-  <!-- 使う側のページの見た目と、モック専用の操作列（#287 で共有するアセット） -->
+  <!-- 利用側のページの外観と、モック専用の操作列（#287 で共有するアセット） -->
   <link rel="stylesheet" href="../../../../refs/287/assets/scene.css">
-  <!-- 配布物の mount で長い文書を描き、この PR の案を当てる -->
+  <!-- 配布物の mount で長い文書を描き、この PR の案を適用する -->
   <script type="module" src="../../../../refs/323/assets/scene.js"></script>
 </head>
 <body>
-  <!-- モック専用の操作列: 未確定の論点の案と、差分のミニマップの有無・描く場所の切り替え。[data-scene-axis] [data-scene-value]: scene.js が行き先の URL と今の案の aria-current を当てる -->
+  <!-- モック専用の操作列: 未確定の論点の案と、差分のミニマップの有無・描く場所の切り替え。[data-scene-axis] [data-scene-value]: scene.js が行き先の URL と今の案の aria-current を適用する -->
   <div class="mock-bar">
-    <div class="mock-bar-group" role="group" aria-label="右端の置き方">
-      <span class="mock-bar-label">右端の置き方</span>
-      <a class="mock-bar-item" data-scene-axis="edge" data-scene-value="avoid">A: 右端から 1rem・ミニマップを避ける（推奨）</a>
+    <div class="mock-bar-group" role="group" aria-label="右端の配置方法">
+      <span class="mock-bar-label">右端の配置方法</span>
+      <a class="mock-bar-item" data-scene-axis="edge" data-scene-value="avoid">A: 右端から 1rem・ミニマップを回避する（推奨）</a>
       <a class="mock-bar-item" data-scene-axis="edge" data-scene-value="flush">B: 右端に接する</a>
       <a class="mock-bar-item" data-scene-axis="edge" data-scene-value="current">比較: 描く先の要素の右端（今）</a>
     </div>
@@ -37,8 +37,8 @@
     </div>
   </div>
 
-  <!-- 使う側のページのトップバー（mdmark の外） -->
-  <header class="host-bar">使う側のアプリ</header>
+  <!-- 利用側のページのトップバー（mdmark の外） -->
+  <header class="host-bar">利用側のアプリ</header>
 
   <nav class="crumbs" aria-label="パンくずリスト">
     <a href="../../../index.md">pages</a> / <a href="../../index.md">document</a> / <a href="../index.md">323</a> / viewport-edge

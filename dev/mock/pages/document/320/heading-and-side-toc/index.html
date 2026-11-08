@@ -11,26 +11,26 @@
   <link rel="stylesheet" href="../../../../../../dist/index.css">
   <!-- この PR の案: 見出しの線・区切り線・右側の目次の上端・hover で開く位置（番号で共有するアセット） -->
   <link rel="stylesheet" href="../../../../refs/320/assets/proposal.css">
-  <!-- 使う側のページの見た目と、モック専用の操作列（#287 で共有するアセット） -->
+  <!-- 利用側のページの外観と、モック専用の操作列（#287 で共有するアセット） -->
   <link rel="stylesheet" href="../../../../refs/287/assets/scene.css">
-  <!-- 配布物の mount で長い文書を描き、この PR の案を当てる -->
+  <!-- 配布物の mount で長い文書を描き、この PR の案を適用する -->
   <script type="module" src="../../../../refs/320/assets/scene.js"></script>
 </head>
 <body>
-  <!-- モック専用の操作列: 未確定の論点の案と、配色・目次の出し方・描く場所の切り替え。[data-scene-axis] [data-scene-value]: scene.js が行き先の URL と今の案の aria-current を当てる -->
+  <!-- モック専用の操作列: 未確定の論点の案と、配色・目次の出し方・描く場所の切り替え。[data-scene-axis] [data-scene-value]: scene.js が行き先の URL と今の案の aria-current を適用する -->
   <div class="mock-bar">
     <div class="mock-bar-group" role="group" aria-label="見出しの線の色">
       <span class="mock-bar-label">見出しの線の色</span>
       <a class="mock-bar-item" data-scene-axis="rule" data-scene-value="muted">A: 枠線の色 70%（推奨）</a>
       <a class="mock-bar-item" data-scene-axis="rule" data-scene-value="half">B: 枠線の色 50%</a>
       <a class="mock-bar-item" data-scene-axis="rule" data-scene-value="border">比較: 区切り線と同じ色</a>
-      <a class="mock-bar-item" data-scene-axis="rule" data-scene-value="none">太さ 0 を当てた使う側</a>
+      <a class="mock-bar-item" data-scene-axis="rule" data-scene-value="none">太さ 0 を適用した利用側</a>
     </div>
     <div class="mock-bar-group" role="group" aria-label="ピン止めのアイコン">
       <span class="mock-bar-label">ピン止めのアイコン</span>
       <a class="mock-bar-item" data-scene-axis="icon" data-scene-value="panel">A: 右の列（推奨）</a>
       <a class="mock-bar-item" data-scene-axis="icon" data-scene-value="arrow">B: 右の列と矢印</a>
-      <a class="mock-bar-item" data-scene-axis="icon" data-scene-value="pin">C: ピンと外すピン</a>
+      <a class="mock-bar-item" data-scene-axis="icon" data-scene-value="pin">C: ピンと削除するピン</a>
     </div>
     <div class="mock-bar-group" role="group" aria-label="hover で開く位置">
       <span class="mock-bar-label">hover で開く位置</span>
@@ -55,8 +55,8 @@
     </div>
   </div>
 
-  <!-- 使う側のページのトップバー（mdmark の外） -->
-  <header class="host-bar">使う側のアプリ</header>
+  <!-- 利用側のページのトップバー（mdmark の外） -->
+  <header class="host-bar">利用側のアプリ</header>
 
   <nav class="crumbs" aria-label="パンくずリスト">
     <a href="../../../index.md">pages</a> / <a href="../../index.md">document</a> / <a href="../index.md">320</a> / heading-and-side-toc

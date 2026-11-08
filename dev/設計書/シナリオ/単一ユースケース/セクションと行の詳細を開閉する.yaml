@@ -1,0 +1,271 @@
+title: セクションと行の詳細を開閉する
+scenarios:
+  - name: 正常シナリオ
+    setup:
+      - name: mdmark を読み込むページ
+        description: バージョンを固定した URL で `dist/index.js` と `dist/index.css` を読み込み、設定を指定して文書を描く HTML
+      - name: 閉じたセクションを持つ Markdown
+        description: '`## 概要` と段落、`## 補足` とその直後の `<!-- section: closed -->` と段落を持つ文書'
+      - name: Mock
+        description: jsDelivr を、ビルドした `dist/` を同じパスで返却する手元の応答に差し替える
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 利用側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を指定して描かせる
+        M-->>P: 概要のセクションを開き、補足のセクションを閉じて描く
+        U->>P: 「補足」の見出しの開閉を押す
+        P-->>U: 補足のセクションを開いて表示
+        U->>P: 「概要」の見出しの開閉を押す
+        P-->>U: 概要のセクションを閉じる
+    expected:
+      - 描いた直後、`概要` の段落が表示され、`補足` の段落が表示されていない
+      - '`補足` の開閉を押した後、`補足` の段落が表示され、ボタンの `aria-expanded` が `true`'
+      - '`概要` の開閉を押した後、`概要` の段落が表示されず、ボタンの `aria-expanded` が `false`'
+      - 本文にマーカーの文字が出ていない
+    test: test_normal
+  - name: 正常シナリオ（閉じたセクションの中へ移る）
+    setup:
+      - name: mdmark を読み込むページ
+        description: 正常シナリオと同じ
+        notes: ページの URL の末尾に `#注意` を付けて開く
+      - name: 閉じたセクションの中に見出しを持つ Markdown
+        description: '`## 補足` とその直後の `<!-- section: closed -->`、そのセクションの中の `### 注意` と段落を持つ文書'
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 利用側のページ
+        participant M as mdmark
+        U->>P: #注意 付きの URL を開く
+        P->>M: 設定と Markdown を指定して描かせる
+        M-->>P: 移る先を含む補足のセクションを開いて移る
+        P-->>U: 「注意」の見出しを表示
+    expected:
+      - '`補足` のセクションが開いていて、`注意` の見出しが画面に入っている'
+    test: test_normal_when_fragment_in_closed_section
+  - name: 正常シナリオ（行の詳細）
+    setup:
+      - name: mdmark を読み込むページ
+        description: 正常シナリオと同じ
+      - name: 行の詳細を持つ Markdown
+        description: '3 行の表と、その直後の `<!-- row-detail: 2 -->` 〜 `<!-- /row-detail -->` で囲んだ段落とリストを持つ文書'
+        notes: 行の位置は見出し行を除いて 1 から数える
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 利用側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を指定して描かせる
+        M-->>P: 2 行目に開閉のボタンを付け、詳細を閉じて描く
+        U->>P: 2 行目の開閉を押す
+        P-->>U: 2 行目の下に詳細を表示
+    expected:
+      - 描いた直後、詳細の段落が表示されていない。開閉のボタンは 2 行目にだけある
+      - 開閉を押した後、表の 2 行目の直後に詳細の段落とリストを持つ行があり、ボタンの `aria-expanded` が `true`
+      - 表の後に詳細の段落が残っていない
+    test: test_normal_when_row_detail
+  - name: 正常シナリオ（知らない開閉の指定）
+    setup:
+      - name: mdmark を読み込むページ
+        description: 正常シナリオと同じ
+      - name: 知らない指定を記載した Markdown
+        description: '`## 補足` とその直後の `<!-- section: hidden -->` と段落を持つ文書'
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 利用側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を指定して描かせる
+        M->>M: 知らない開閉の指定をスキップする
+        M-->>P: 開いたセクションを描く
+        P-->>U: セクションを表示
+    expected:
+      - 見出しの下に記載の警告が無い
+      - '`補足` の段落が表示されている'
+    test: test_normal_when_unknown_section_value
+  - name: 異常シナリオ（行の位置が表に無い）
+    setup:
+      - name: mdmark を読み込むページ
+        description: 正常シナリオと同じ
+      - name: 範囲外の行を指す Markdown
+        description: '3 行の表と、その直後の `<!-- row-detail: 5 -->` 〜 `<!-- /row-detail -->` で囲んだ段落を持つ文書'
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 利用側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を指定して描かせる
+        M->>M: 5 行目が表に無い
+        M-->>P: 記載の警告と、表の後に詳細を本文として描く
+        P-->>U: 記載の警告と表と段落を表示
+    expected:
+      - 表の後に、表が 3 行で 5 行目が無いことを記載した記載の警告がある
+      - 表の後に詳細の段落が表示されている
+      - 表の行に開閉のボタンが無い
+    test: test_error_when_row_out_of_range
+  - name: 正常シナリオ（畳んだ最終列と行の詳細）
+    setup:
+      - name: mdmark を読み込むページ
+        description: 正常シナリオと同じ
+        notes: 画面と描く先の要素の幅は 390px
+      - name: 最終列の長い表と行の詳細を持つ Markdown
+        description: '名前・状態・説明の 3 列 3 行の表と、その直後の `<!-- row-detail: 2 -->` 〜 `<!-- /row-detail -->` で囲んだ段落を持つ文書'
+        notes: 最終列の説明は、どの行も 390px の幅で 1 行に収まらない長さ
+      - name: Mock
+        description: 正常シナリオと同じ
+        notes: '-'
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 利用側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を指定して描かせる
+        M-->>P: 最終列を畳み、各行に開閉を 1 つずつ付けた表を描く
+        U->>P: 2 行目の開閉を押す
+        P-->>U: 2 行目の下に最終列の中身と行の詳細を表示
+    expected:
+      - 描いた直後、各行の開閉のボタンは 1 つずつで、2 行目にも 1 つだけ
+      - 2 行目の開閉を押した後、2 行目の直後に、見出し `説明` と 2 行目の説明の中身、その下に行の詳細の段落が表示され、ボタンの `aria-expanded` が `true`
+      - もう一度押すと、最終列の中身と行の詳細が一緒に閉じる
+    test: test_normal_when_row_detail_with_collapsed_column
+  - name: 正常シナリオ（H1 のセクション）
+    setup:
+      - name: mdmark を読み込むページ
+        description: 正常シナリオと同じ
+      - name: H1 のセクションを持つ Markdown
+        description: '`# 手引き` と段落、`# 付録` とその直後の `<!-- section: closed -->` と段落を持つ文書'
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 利用側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を指定して描かせる
+        M-->>P: 手引きのセクションを開き、付録のセクションを閉じて描く
+        U->>P: 「付録」の見出しの開閉を押す
+        P-->>U: 付録のセクションを開いて表示
+    expected:
+      - 描いた直後、`手引き` の段落が表示され、`付録` の段落が表示されていない
+      - '`手引き`・`付録` の見出しに開閉のボタンがある'
+      - '`付録` の開閉を押した後、`付録` の段落が表示され、ボタンの `aria-expanded` が `true`'
+      - 本文にマーカーの文字が出ていない
+    test: test_normal_when_h1_section
+  - name: 正常シナリオ（すべて展開・すべて折りたたむ）
+    setup:
+      - name: mdmark を読み込むページ
+        description: 正常シナリオと同じ
+      - name: 入れ子のセクションを持つ Markdown
+        description: '`# 手引き`、`## 概要` と段落、`## 補足` とその直後の `<!-- section: closed -->`、そのセクションの中の `### 注意` とその直後の `<!-- section: closed -->` と段落を持つ文書'
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 利用側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を指定して描かせる
+        M-->>P: すべて展開・すべて折りたたむのボタンと文書を描く
+        U->>P: すべて展開を押す
+        P-->>U: 全てのセクションを開いて表示
+        U->>P: すべて折りたたむを押す
+        P-->>U: H1 のセクションを開いたまま、H2 以下の全てのセクションを閉じる
+    expected:
+      - 描いた直後、すべて展開のボタンとすべて折りたたむのボタンがあり、どちらも文字を持たずアイコンとスクリーンリーダー向けの名前だけを持つ
+      - すべて展開を押した後、`手引き`・`概要`・`補足`・`注意` の全ての開閉のボタンの `aria-expanded` が `true` で、`注意` の段落が表示されている
+      - すべて折りたたむを押した後、`手引き` の開閉のボタンの `aria-expanded` が `true` のままで、`概要`・`補足`・`注意` の開閉のボタンの `aria-expanded` が `false` で、`概要` の見出しが表示され `概要` の段落が表示されていない
+    test: test_normal_when_all_toggled
+  - name: 正常シナリオ（Shift で入れ子をまとめて開閉）
+    setup:
+      - name: mdmark を読み込むページ
+        description: 正常シナリオと同じ
+      - name: 入れ子の閉じたセクションを持つ Markdown
+        description: '`## 概要` と段落、`## 補足` とその直後の `<!-- section: closed -->`、そのセクションの中の `### 注意` とその直後の `<!-- section: closed -->`、さらにその中の `#### 例` とその直後の `<!-- section: closed -->` と段落を持つ文書'
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 利用側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を指定して描かせる
+        U->>P: Shift を押しながら「補足」の見出しの開閉を押す
+        P-->>U: 補足・注意・例のセクションを開いて表示
+        U->>P: 「補足」の開閉ボタンにフォーカスし、Shift を押しながら Enter キーを押す
+        P-->>U: 補足・注意・例のセクションを閉じる
+    expected:
+      - Shift を押しながら `補足` の開閉を押した後、`補足`・`注意`・`例` の開閉のボタンの `aria-expanded` が `true` で、`例` の段落が表示されている
+      - Shift を押しながら Enter キーを押した後、`補足`・`注意`・`例` の開閉のボタンの `aria-expanded` が `false`
+      - '`概要` のセクションは開いたまま変わらない'
+    test: test_normal_when_nested_toggled_with_shift
+  - name: 正常シナリオ（details の範囲）
+    setup:
+      - name: mdmark を読み込むページ
+        description: 正常シナリオと同じ
+      - name: details の範囲を持つ Markdown
+        description: '`<!-- details: 補足の手順 -->` 〜 `<!-- /details -->` で段落とリストを囲んだ範囲と、開いた状態を指定した `<!-- details: 実行の例 -->` 〜 `<!-- /details -->` で段落を囲んだ範囲を並べた文書'
+        notes: '`open` の記載方法はインターフェース定義で決める'
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 利用側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を指定して描かせる
+        M-->>P: 1 つ目を閉じ、2 つ目を開いた折りたたみで描く
+        U->>P: 「補足の手順」を押す
+        P-->>U: 補足の手順の中身を表示
+    expected:
+      - 描いた直後、`補足の手順` の見出しだけが表示され、中の段落とリストが表示されていない
+      - 描いた直後、`実行の例` の中の段落が表示されている
+      - '`補足の手順` を押した後、中の段落とリストが表示され、開閉の状態が `aria-expanded` か `details` の `open` に出ている'
+      - 見出しのセクションの開閉と目次に、details の見出しが出ていない
+      - 本文にマーカーの文字が出ていない
+    test: test_normal_when_details_range
+  - name: 異常シナリオ（details の閉じのマーカーが無い）
+    setup:
+      - name: mdmark を読み込むページ
+        description: 正常シナリオと同じ
+      - name: 閉じのマーカーの無い Markdown
+        description: '`<!-- details: 補足 -->` の後に段落を持ち、`<!-- /details -->` を持たない文書'
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 利用側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を指定して描かせる
+        M->>M: details の閉じのマーカーが無い
+        M-->>P: 記載の警告と、段落を折りたたまずに描く
+        P-->>U: 記載の警告と段落を表示
+    expected:
+      - マーカーの場所に、閉じのマーカー `<!-- /details -->` が無いことを記載した記載の警告がある
+      - 段落が折りたたまれずに表示されている
+    test: test_error_when_details_unclosed
+lead: '読者が、見出し（h1〜h4）のセクションと、表の行の下に出す行の詳細を開閉し、全てのセクションや入れ子のセクションをまとめて開閉する。文書の作成者は見出しの直後の `<!-- section: closed -->` でセクションを閉じた状態で始め、表の後の `<!-- row-detail: 行の位置 -->` 〜 `<!-- /row-detail -->` で行の詳細を記載する。'
+issue: 4
+primary_actor: 読者
+stakeholders:
+  - name: 文書の作成者
+    interest: スキップしてよいセクションと、行に収まらない詳しい内容を畳んでおけ、GitHub では普通のセクションとして読み込める
+trigger: 読者が、見出しか表の行の開閉のボタンを押す
+preconditions:
+  - ページがバージョンを固定した URL で mdmark の JavaScript と CSS を読み込み、`mount` で文書を描いている
+  - セクションの開閉と行の詳細の機能（`sections`・`row-details`）がオン（既定）
+success_guarantee: |-
+  セクションと行の詳細がマーカーのとおりの開閉で始まり、押すたびに開閉し、開閉の状態がボタンの `aria-expanded` に出る。
+
+  すべて展開・すべて折りたたむは文書の全てのセクションを、Shift を押しながらの開閉はそのセクションと中の入れ子のセクションを同じ状態にする。
+minimal_guarantee: 読み込めないマーカーを記載しても、セクションは開いた状態、行の詳細は記載した場所の本文として描かれる。行の位置が表に無い行の詳細と、閉じのマーカーが無い details には記載の警告が出て、セクションの知らない開閉の指定には警告を出さない。
+test_file: tests/e2e/単一ユースケース/セクションと行の詳細を開閉する.spec.ts

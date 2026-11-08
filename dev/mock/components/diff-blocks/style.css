@@ -16,7 +16,7 @@
   font-size: 20px;
 }
 
-/* 状態の名前（モック専用の見出し）: Webview の外に置く */
+/* 状態の名前（モック専用の見出し）: Webview の外に配置する */
 .catalog-label {
   margin: 0 0 8px;
   color: var(--vsc-tab-text);
@@ -25,7 +25,7 @@
   font-weight: 600;
 }
 
-/* 案の名前（モック専用の見出し）: 見本の上に置く */
+/* 案の名前（モック専用の見出し）: 見本の上に配置する */
 .catalog-case {
   margin: 12px 0 4px;
   color: var(--vsc-tab-text);

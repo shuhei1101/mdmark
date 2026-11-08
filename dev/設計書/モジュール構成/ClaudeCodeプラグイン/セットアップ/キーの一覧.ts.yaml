@@ -5,9 +5,9 @@ functions:
     title: 設定のキーの一覧を作る
     kind: 関数
     container: src/plugin/setup/keys.ts
-    usecase: 設定のキーの一覧を返す
+    usecase: 設定のキーの一覧を返却する
     role: 処理
-    summary: Schema の葉のキーごとに今の値・端末の設定の値・既定・説明を返す
+    summary: Schema の葉のキーごとに今の値・端末の設定の値・既定・説明を返却する
     scope: public
     is_async: false
     args:
@@ -21,7 +21,7 @@ functions:
     process: |-
       1. Schema の `properties` を並びのまま葉まで展開する（`allOf` の `$ref` は先に展開する）。`version` は含めない
       2. `target` が `config` なら、端末の設定だけが持つキー（`config.*`・`serve.*`）を除く
-      3. `additionalProperties` で受けるキーは、今の値にあるものだけを足す
+      3. `additionalProperties` で受けるキーは、今の値にあるものだけを追加する
     unit_tests:
       - name: test_list_config_keys
         case: 正常
@@ -36,7 +36,7 @@ functions:
         mock: なし
         expected: '`features.table` の `inherited` が `false`、`config.cascade` と `serve.tmuxSession` が無い'
     refs:
-      - dev/設計書/インターフェース定義/ClaudeCodeプラグイン/設定のキーの一覧を返す.ts#
+      - dev/設計書/インターフェース定義/ClaudeCodeプラグイン/設定のキーの一覧を返却する.ts#
     status: planned
     introduced:
       pr: 354

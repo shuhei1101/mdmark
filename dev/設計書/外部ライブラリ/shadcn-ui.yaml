@@ -5,7 +5,7 @@ version:
   latest: 4.23.0
   checked_on: '2026-11-06'
   source: vscode/components.json・vscode/package.json
-  pinning: 部品はソースをリポジトリに置き、CLI は版を指定して `npx` で呼ぶ。部品が使う依存は完全一致
+  pinning: 部品はソースをリポジトリに配置し、CLI はバージョンを指定して `npx` で呼ぶ。部品が使用する依存は完全一致
 catalogs:
 - name: コマンド
   version: 4.23.0
@@ -15,7 +15,7 @@ catalogs:
     purpose: '`components.json` の `aliases.ui` に部品のソースを書き出す'
   - name: npx shadcn@4.23.0 info
     kind: コマンド
-    purpose: '`components.json` と tsconfig の別名・Tailwind の CSS の読み取りを確かめる'
+    purpose: '`components.json` と tsconfig の別名・Tailwind の CSS の読み取りを確認する'
 - name: 部品
   version: new-york
   entries:
@@ -27,8 +27,8 @@ catalogs:
     purpose: 状態の表示と帯の枠（`AlertTitle`・`AlertDescription`）
   - name: Spinner
     kind: コンポーネント
-    purpose: 読み込み中の回る印
-lead: React の UI の部品のソースを、CLI でリポジトリへ書き出して持つ部品集。部品は Radix UI と Tailwind で書かれる。
+    purpose: 読み込み中の回るマーカー
+lead: React の UI の部品のソースを、CLI でリポジトリへ書き出して持つ部品集。部品は Radix UI と Tailwind で記載される。
 purl: pkg:npm/shadcn@4.23.0
 dependency_scope: 開発のみ
 adoption: 採用
@@ -39,7 +39,7 @@ used_in:
 verification:
   state: 済
   date: '2026-11-06'
-  detail: '`npx shadcn@4.23.0 info`（vscode/）が `components.json` を読み、style `new-york`・Tailwind v4・CSS `src/webview/shared/styles/panel.css`・別名 `@` を返した（tsconfig の `paths` に `@/*` が無いと別名は `-` になる）'
+  detail: '`npx shadcn@4.23.0 info`（vscode/）が `components.json` を読み込み、style `new-york`・Tailwind v4・CSS `src/webview/shared/styles/panel.css`・別名 `@` を返却した（tsconfig の `paths` に `@/*` が無いと別名は `-` になる）'
 license: MIT（商用利用可）
 official_url: https://ui.shadcn.com/
 docs_url: https://ui.shadcn.com/docs/cli

@@ -1,23 +1,23 @@
 title: ClaudeCodeプラグイン / SessionStartのフック
-lead: プラグインの `hooks/hooks.json` の SessionStart が `node` で起動する処理。常駐サーバーが待ち受けていないときだけ、そのことを 1 行で渡す。
+lead: プラグインの `hooks/hooks.json` の SessionStart が `node` で起動する処理。常駐サーバーが待ち受けていないときだけ、そのことを 1 行で指定する。
 constants:
   - name: NOT_LISTENING_CONTEXT
     title: 待ち受けていないときの文
     container: src/plugin/session-start.ts
     usecase: セッションの開始で常駐サーバーの状態を受け取る
-    summary: '`additionalContext` に渡す 1 行の事実の文'
-    value: mdmark の MCP の常駐サーバーが 127.0.0.1:{port} で待ち受けていないため、mdmark の MCP のツールは使えない。/mdmark:global-setup で起動できる。
+    summary: '`additionalContext` に指定する 1 行の事実の文'
+    value: mdmark の MCP の常駐サーバーが 127.0.0.1:{port} で待ち受けていないため、mdmark の MCP のツールは使用できない。/mdmark:global-setup で起動できる。
     refs:
       - dev/設計書/インターフェース定義/ClaudeCodeプラグイン/常駐サーバーの状態を伝える.ts#constraints[出す文]
     status: planned
     introduced:
       pr: 354
   - name: PORT_INVALID_CONTEXT
-    title: ポートが使えない値のときの文
+    title: ポートが使用できない値のときの文
     container: src/plugin/session-start.ts
     usecase: セッションの開始で常駐サーバーの状態を受け取る
-    summary: '`MDMARK_PORT` が使えない値のときの 1 行'
-    value: MDMARK_PORT の値 {value} はポートとして使えないため、mdmark の MCP のツールは使えない。1〜65535 の整数を設定する。
+    summary: '`MDMARK_PORT` が使用できない値のときの 1 行'
+    value: MDMARK_PORT の値 {value} はポートとして使用できないため、mdmark の MCP のツールは使用できない。1〜65535 の整数を設定する。
     refs:
       - dev/設計書/インターフェース定義/ClaudeCodeプラグイン/常駐サーバーの状態を伝える.ts#constraints[終了コード]
     status: planned
@@ -30,8 +30,8 @@ functions:
     container: src/plugin/session-start.ts
     usecase: セッションの開始で常駐サーバーの状態を受け取る
     role: 入口
-    summary: ポートが待ち受けていなければ、`additionalContext` に 1 行を書く
-    description: 束ねた `plugin/scripts/session-start.js` を入口として実行したときだけ流し、戻り値を終了コードにする（`import.meta.main`）。標準入力は読まない
+    summary: ポートが待ち受けていなければ、`additionalContext` に 1 行を記載する
+    description: まとめた `plugin/scripts/session-start.js` を入口として実行したときだけ実行し、戻り値を終了コードにする（`import.meta.main`）。標準入力は読み込まない
     scope: public
     is_async: true
     args:
@@ -43,35 +43,35 @@ functions:
       type: Promise<0>
       description: 常に 0
     process: |-
-      1. `readPort` でポートを読む。使えない値なら `PORT_INVALID_CONTEXT` を `additionalContext` に書いて 0 を返す
-      2. `isPortListening`（モジュール構成『ポート』の `CONNECT_TIMEOUT_MS`）が真なら何も書かずに 0 を返す
-      3. `{ hookSpecificOutput: { hookEventName: "SessionStart", additionalContext: NOT_LISTENING_CONTEXT（ポートを埋める） } }` を JSON の 1 行で書いて 0 を返す
+      1. `readPort` でポートを読み込む。使用できない値なら `PORT_INVALID_CONTEXT` を `additionalContext` に記載して 0 を返却する
+      2. `isPortListening`（モジュール構成『ポート』の `CONNECT_TIMEOUT_MS`）が真なら何も書き込まずに 0 を返却する
+      3. `{ hookSpecificOutput: { hookEventName: "SessionStart", additionalContext: NOT_LISTENING_CONTEXT（ポートを埋める） } }` を JSON の 1 行で記載して 0 を返却する
     callees:
       - dev/設計書/モジュール構成/ClaudeCodeプラグイン/ポート.ts#functions[readPort]
       - dev/設計書/モジュール構成/ClaudeCodeプラグイン/ポート.ts#functions[isPortListening]
     unit_tests:
       - name: test_run_session_start
         case: 正常
-        summary: 待ち受けていれば何も書かない
+        summary: 待ち受けていれば何も書き込まない
         condition: テストが待ち受けるポートを `MDMARK_PORT` に
         mock: 行を配列に貯める `stdout`
-        expected: 0 を返し、`stdout` が空
+        expected: 0 を返却し、`stdout` が空
       - name: test_run_session_start_when_not_listening
         case: 正常
-        summary: 待ち受けていなければ 1 行を書く
+        summary: 待ち受けていなければ 1 行を記載する
         condition: 待ち受けるプロセスの無いポート
         mock: 行を配列に貯める `stdout`
-        expected: 0 を返し、JSON の `hookEventName` が `SessionStart`、`additionalContext` が改行を含まず、`127.0.0.1:{ポート}` と `/mdmark:global-setup` を含む
+        expected: 0 を返却し、JSON の `hookEventName` が `SessionStart`、`additionalContext` が改行を含まず、`127.0.0.1:{ポート}` と `/mdmark:global-setup` を含む
       - name: test_run_session_start_when_port_invalid
         case: 正常
-        summary: 使えないポートでも 0
+        summary: 使用できないポートでも 0
         condition: '`MDMARK_PORT=abc`'
         mock: 行を配列に貯める `stdout`
-        expected: 0 を返し、`additionalContext` に `abc` を含む
+        expected: 0 を返却し、`additionalContext` に `abc` を含む
       - name: test_run_session_start_when_hooks_json
         case: 正常
         summary: hooks.json の SessionStart の行
-        condition: '`plugin/hooks/hooks.json` を読む'
+        condition: '`plugin/hooks/hooks.json` を読み込む'
         mock: なし
         expected: '`SessionStart` の行が 1 つあり、`matcher` を持たず、コマンドが `node` で引数が `${CLAUDE_PLUGIN_ROOT}/scripts/session-start.js`'
     refs:

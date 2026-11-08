@@ -28,7 +28,7 @@
 <body>
   <!-- モック専用の操作列: 配色の切り替え -->
   <div class="mock-bar">
-    <!-- [data-scheme-set]: sample.js が押されたボタンの値を html の data-scheme に当てる -->
+    <!-- [data-scheme-set]: sample.js が押されたボタンの値を html の data-scheme に適用する -->
     <div class="mock-bar-group" role="group" aria-label="配色">
       <button class="mock-bar-item" type="button" data-scheme-set="light" aria-pressed="false">明るい配色</button>
       <button class="mock-bar-item" type="button" data-scheme-set="dark" aria-pressed="false">ダーク</button>
@@ -45,7 +45,7 @@
 <p>手順は共通の説明のとおりです。</p>
 <div class="mdmark-include">
 <h3>実行</h3>
-<p><code>mdmark build</code> を流すと、<code>dist/docs.html</code> に 1 枚の HTML が書かれます。</p>
+<p><code>mdmark build</code> を実行すると、<code>dist/docs.html</code> に 1 枚の HTML が記載されます。</p>
 </div>
 <p>書き出した後は、file:// で開いて確認します。</p>
         </article>
@@ -59,7 +59,7 @@
 <div class="mdmark-include" data-mark="source">
 <p class="mdmark-include-source">共通/手順.md#実行 から</p>
 <h3>実行</h3>
-<p><code>mdmark build</code> を流すと、<code>dist/docs.html</code> に 1 枚の HTML が書かれます。</p>
+<p><code>mdmark build</code> を実行すると、<code>dist/docs.html</code> に 1 枚の HTML が記載されます。</p>
 </div>
 <p>書き出した後は、file:// で開いて確認します。</p>
         </article>
@@ -82,11 +82,11 @@
         <h2 class="catalog-label" id="state-missing">取り込み先が無い</h2>
         <article class="mdmark">
 <div class="mdmark-syntax-warning">
-  <p class="mdmark-syntax-warning-title"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg>書き方の警告</p>
+  <p class="mdmark-syntax-warning-title"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg>記載の警告</p>
   <p><code>&lt;!-- include: 共通/手順.md#後片付け --&gt;</code> の見出し <code>後片付け</code> が <code>共通/手順.md</code> にありません。</p>
 </div>
 <div class="mdmark-syntax-warning">
-  <p class="mdmark-syntax-warning-title"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg>書き方の警告</p>
+  <p class="mdmark-syntax-warning-title"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg>記載の警告</p>
   <p><code>&lt;!-- include: src/app.ts#L20-L22 --&gt;</code> の行が <code>src/app.ts</code> にありません。<code>src/app.ts</code> は 12 行です。</p>
 </div>
         </article>
@@ -97,7 +97,7 @@
         <h2 class="catalog-label" id="state-circular">取り込みが循環する</h2>
         <article class="mdmark">
 <div class="mdmark-syntax-warning">
-  <p class="mdmark-syntax-warning-title"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg>書き方の警告</p>
+  <p class="mdmark-syntax-warning-title"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg>記載の警告</p>
   <p><code>&lt;!-- include: a.md --&gt;</code> は取り込みが循環するため取り込みません（<code>a.md</code> → <code>b.md</code> → <code>a.md</code>）。</p>
 </div>
         </article>

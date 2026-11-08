@@ -22,7 +22,7 @@
   }
 }
 
-/* 色のセル: そのテーマの地に、種類の形の見本と値を種類の色で置く */
+/* 色のセル: そのテーマの地に、種類の構造の見本と値を種類の色で配置する */
 .kind-color {
   background: var(--cell-bg);
   color: var(--cell-color);
@@ -33,7 +33,7 @@
   }
 }
 
-/* 種類の形の見本: 凡例の見本と同じ形を種類の色の線で引く */
+/* 種類の構造の見本: 凡例の見本と同じ構造を種類の色の線で参照する */
 .kind-color-sample {
   display: inline-block;
   width: 18px;
@@ -63,7 +63,7 @@
   }
 }
 
-/* リンク先を持つノードのホバーとフォーカスの見本: 1 つ目の箱をホバー、2 つ目の箱をフォーカスの見た目で止める */
+/* リンク先を持つノードのホバーとフォーカスの見本: 1 つ目のノードをホバー、2 つ目のノードをフォーカスの外観で止める */
 [data-mock-link-state] {
   .mdmark-diagram-node.has-link[data-node="recv"] {
     background: color-mix(in oklab, var(--node-color) 8%, var(--mdmark-color-bg));

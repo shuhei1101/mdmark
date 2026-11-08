@@ -1,0 +1,10 @@
+summary: mdmark を使用するページへ組み込む手順
+items:
+  - page: 配布物を読み込む.md
+    summary: バージョンを固定した URL で JavaScript と CSS を読み込む
+  - page: 文書を描く.md
+    summary: 配布物を読み込んだページで `mount` を呼び、要素の中に Markdown を描く
+  - page: バージョンを上げる.md
+    summary: '`mdmark upgrade` で移行の手順を適用して、設定・索引・文書を新しいバージョンに合わせる'
+  - page: 差分を表示する.md
+    summary: '`mount` の `diffSource` に取り出し元を指定し、文書の 2 つのリビジョンの差分を出す'

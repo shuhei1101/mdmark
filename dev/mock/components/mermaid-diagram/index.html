@@ -11,7 +11,7 @@
   <link rel="stylesheet" href="../../refs/16/assets/sample.css">
   <!-- 採用スタイル本体の変数の値 -->
   <link rel="stylesheet" href="../../assets/style.css">
-  <!-- 拡張記法の規則（書き方の警告）とカタログの並べ方（#19 で共有するアセット） -->
+  <!-- 拡張記法の規則（記載の警告）とカタログの並べ方（#19 で共有するアセット） -->
   <link rel="stylesheet" href="../../refs/19/assets/syntax.css">
   <link rel="stylesheet" href="../../refs/19/assets/catalog.css">
   <!-- 図の枠の規則（#42 で共有するアセット） -->
@@ -24,9 +24,9 @@
   <script type="module" src="../../refs/382/assets/mermaid.js"></script>
 </head>
 <body>
-  <!-- モック専用の操作列: 配色の切り替え。切り替えると mermaid の図を描き直す -->
+  <!-- モック専用の操作列: 配色の切り替え。切り替えると mermaid の図を再描画する -->
   <div class="mock-bar" data-mock-bar>
-    <!-- [data-scheme-set]: sample.js が押されたボタンの値を html の data-scheme に当てる -->
+    <!-- [data-scheme-set]: sample.js が押されたボタンの値を html の data-scheme に適用する -->
     <div class="mock-bar-group" role="group" aria-label="配色">
       <button class="mock-bar-item" type="button" data-scheme-set="light" aria-pressed="false">明るい配色</button>
       <button class="mock-bar-item" type="button" data-scheme-set="dark" aria-pressed="false">ダーク</button>
@@ -49,7 +49,7 @@ title: 問い合わせの受付
 flowchart LR
   A[問い合わせを受ける] --> B{担当がいるか}
   B -->|いる| C[担当へ回す]
-  B -->|いない| D[一次回答を返す]
+  B -->|いない| D[一次回答を返却する]
   C --> E[(記録)]
   D --> E
 </pre>
@@ -65,11 +65,11 @@ flowchart LR
 title: 文書を描く
 ---
 sequenceDiagram
-  actor U as 読む人
-  participant P as 使う側のページ
+  actor U as 読者
+  participant P as 利用側のページ
   participant M as mdmark
   U->>P: ページを開く
-  P->>M: 設定と Markdown を渡す
+  P->>M: 設定と Markdown を指定する
   Note right of M: mermaid のコードブロックを図にする
   M-->>U: 文書を表示
 </pre>
@@ -86,11 +86,11 @@ sequenceDiagram
 title: 文書を描く
 ---
 sequenceDiagram
-  actor U as 読む人
-  participant P as 使う側のページ
+  actor U as 読者
+  participant P as 利用側のページ
   participant M as mdmark
   U->>P: ページを開く
-  P->>M: 設定と Markdown を渡す
+  P->>M: 設定と Markdown を指定する
   Note right of M: mermaid のコードブロックを図にする
   M-->>U: 文書を表示
 </pre>
@@ -156,30 +156,30 @@ pie title 図の種類の内訳
         </article>
       </section>
 
-      <!-- 読み込み中: mermaid を読み込んでいる間は、コードブロックの場所に既存の読み込み中の枠を配置して図の高さを取っておく -->
+      <!-- 読み込み中: mermaid を読み込んでいる間は、コードブロックの場所に既存の読み込み中のブロックを配置して図の高さを取っておく -->
       <section aria-labelledby="state-loading">
-        <h2 class="catalog-label" id="state-loading">mermaid を読み込んでいる（読み込み中の枠）</h2>
+        <h2 class="catalog-label" id="state-loading">mermaid を読み込んでいる（読み込み中のブロック）</h2>
         <article class="mdmark">
           <div class="mdmark-embed" data-mdmark-slot="mermaid" role="status">図を読み込んでいます</div>
         </article>
       </section>
 
-      <!-- 読み込めない: mermaid を読み込めないときは、コードブロックの前に知らせの枠を配置し、コードブロックのまま残す -->
+      <!-- 読み込めない: mermaid を読み込めないときは、コードブロックの前に通知ブロックを配置し、コードブロックのまま残す -->
       <section aria-labelledby="state-unavailable">
-        <h2 class="catalog-label" id="state-unavailable">mermaid を読み込めない（知らせの枠とコードブロック）</h2>
+        <h2 class="catalog-label" id="state-unavailable">mermaid を読み込めない（通知ブロックとコードブロック）</h2>
         <article class="mdmark">
           <div class="mdmark-notice" role="status">
             <strong class="mdmark-notice-title">この図を表示できません</strong>
-            <p>表示に使うライブラリ（<code>mermaid</code>）を読み込めませんでした。ネットワークにつながっているかを確かめて、ページを読み込み直してください。</p>
+            <p>表示に使用するライブラリ（<code>mermaid</code>）を読み込めませんでした。ネットワークにつながっているかを確認して、ページを再読み込みしてください。</p>
           </div>
 <pre tabindex="0" aria-label="コード: mermaid"><code class="language-mermaid">flowchart LR
   A[問い合わせを受ける] --&gt; B{担当がいるか}</code></pre>
         </article>
       </section>
 
-      <!-- 解釈できない: mermaid が記法を解釈できないときは、書き方の警告とコードブロックにする。mermaid が文書に出すエラーの図は残さない -->
+      <!-- 解釈できない: mermaid が記法を解釈できないときは、記載の警告とコードブロックにする。mermaid が文書に出すエラーの図は残さない -->
       <section aria-labelledby="state-invalid">
-        <h2 class="catalog-label" id="state-invalid">記法を解釈できない（書き方の警告とコードブロック）</h2>
+        <h2 class="catalog-label" id="state-invalid">記法を解釈できない（記載の警告とコードブロック）</h2>
         <article class="mdmark">
 <pre data-mock-mermaid>
 問い合わせを受ける --> 担当へ回す
@@ -187,7 +187,7 @@ pie title 図の種類の内訳
         </article>
       </section>
 
-      <!-- 機能をオフにした: 文書の features のマーカーで mermaid を外した文書は、ほかの言語と同じコードブロックのまま描く -->
+      <!-- 機能をオフにした: 文書の features のマーカーで mermaid を除外した文書は、ほかの言語と同じコードブロックのまま描く -->
       <section aria-labelledby="state-disabled">
         <h2 class="catalog-label" id="state-disabled">機能をオフにした（コードブロックのまま）</h2>
         <article class="mdmark">

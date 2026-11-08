@@ -20,9 +20,9 @@ functions:
       description: インターフェース定義『端末の状態を調べる』のレスポンス
     process: |-
       1. パスを決める
-      2. 端末の設定があれば YAML として読み（読めなければ `SetupError`（1））、`version` とセッション名を取る
+      2. 端末の設定があれば YAML として読み込み（読み込めなければ `SetupError`（1））、`version` とセッション名を取る
       3. `run("tmux", ["-V"])` が失敗すれば `tmux.available` を偽、成功なら `has-session -t ={セッション名}` の終了コードでセッションの有無を取る
-      4. `isPortListening` で待ち受けを確かめる
+      4. `isPortListening` で待ち受けを確認する
     callees:
       - dev/設計書/モジュール構成/ClaudeCodeプラグイン/セットアップ/パス.ts#functions[resolveSetupPaths]
       - dev/設計書/モジュール構成/ClaudeCodeプラグイン/セットアップ/パス.ts#functions[readSessionName]
@@ -32,12 +32,12 @@ functions:
         case: 正常
         summary: 空の端末
         condition: 一時フォルダの `MDMARK_CONFIG`（ファイル無し）・空いたポート
-        mock: '`has-session` に 1 を返す `run`'
+        mock: '`has-session` に 1 を返却する `run`'
         expected: '`settings.exists` が偽、`server.session` が `mdmark-mcp`、`server.session_exists` と `server.listening` が偽'
       - name: test_read_terminal_status_when_unreadable
         case: 異常
-        summary: 読めない端末の設定は SetupError
-        condition: 3 行目が YAML として読めない端末の設定
+        summary: 読み込めない端末の設定は SetupError
+        condition: 3 行目が YAML として読み込めない端末の設定
         mock: なし
         expected: 終了コード 1 の `SetupError` で、メッセージに端末の設定のパスと 3 行目を含む
     refs:
@@ -62,7 +62,7 @@ functions:
     returns:
       type: Promise<boolean>
       description: 終了コードが 0 か
-    process: 1. tmux -V` が成功するかを終了コードで返す
+    process: 1. tmux -V` が成功するかを終了コードで返却する
     unit_tests: []
     refs:
       - dev/設計書/外部ライブラリ/tmux#catalogs
@@ -86,7 +86,7 @@ functions:
     returns:
       type: Promise<boolean>
       description: 終了コードが 0 か
-    process: 1. tmux has-session -t ={セッション名}` が成功するかを終了コードで返す
+    process: 1. tmux has-session -t ={セッション名}` が成功するかを終了コードで返却する
     unit_tests: []
     refs:
       - dev/設計書/外部ライブラリ/tmux#catalogs

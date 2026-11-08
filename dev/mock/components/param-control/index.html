@@ -27,7 +27,7 @@
 <body>
   <!-- モック専用の操作列: 配色の切り替え -->
   <div class="mock-bar">
-    <!-- [data-scheme-set]: sample.js が押されたボタンの値を html の data-scheme に当てる -->
+    <!-- [data-scheme-set]: sample.js が押されたボタンの値を html の data-scheme に適用する -->
     <div class="mock-bar-group" role="group" aria-label="配色">
       <button class="mock-bar-item" type="button" data-scheme-set="light" aria-pressed="false">明るい配色</button>
       <button class="mock-bar-item" type="button" data-scheme-set="dark" aria-pressed="false">ダーク</button>
@@ -38,16 +38,16 @@
     <div class="catalog">
       <h1 class="catalog-title">操作できる部品（スライダー・グラフ・今の値を写すボタン）</h1>
 
-      <!-- 開いたとき: 既定の値。値を変える区画と写すボタンをグラフより上に置く。スライダーは矢印キーでも動く -->
+      <!-- 開いたとき: 既定の値。値を変える区画と写すボタンをグラフより上に配置する。スライダーは矢印キーでも動く -->
       <section aria-labelledby="state-default">
         <h2 class="catalog-label" id="state-default">開いたとき（既定の値 5。スライダーは矢印キーでも動く）</h2>
         <article class="mdmark">
-          <!-- [data-mock-param]: diagram.js が samples.js の同じ名前の定義から部品を描く（実装では文書に書いた部品の定義を mount が読む） -->
+          <!-- [data-mock-param]: diagram.js が samples.js の同じ名前の定義から部品を描く（実装では文書に記載した部品の定義を mount が読み込む） -->
           <div data-mock-param="strength"></div>
         </article>
       </section>
 
-      <!-- 値を変えた: グラフの今の値の線が描き直され、既定の値の線と比べられる -->
+      <!-- 値を変えた: グラフの今の値の線が再描画され、既定の値の線と比べられる -->
       <section aria-labelledby="state-changed">
         <h2 class="catalog-label" id="state-changed">値を変えた（8。グラフが追従する）</h2>
         <article class="mdmark">
@@ -56,16 +56,16 @@
         </article>
       </section>
 
-      <!-- 写した: ボタンの右に写したことを出す（読み上げにも伝える） -->
+      <!-- コピーした: ボタンの右にコピーしたことを出す（スクリーンリーダーにも伝える） -->
       <section aria-labelledby="state-copied">
-        <h2 class="catalog-label" id="state-copied">写した</h2>
+        <h2 class="catalog-label" id="state-copied">コピーした</h2>
         <article class="mdmark">
-          <!-- [data-mock-copy]: 写した・写せなかったの知らせを出したまま見せる（モックだけの指定） -->
+          <!-- [data-mock-copy]: コピーした・写せなかったの通知を出したまま見せる（モックだけの指定） -->
           <div data-mock-param="strength" data-mock-value="8" data-mock-copy="copied"></div>
         </article>
       </section>
 
-      <!-- 写せなかった: クリップボードへ書けないとき。書けなかったことと直し方を出し、写すはずだった JSON を選んで写せる文字で出す。スライダーとグラフは操作できるまま -->
+      <!-- 写せなかった: クリップボードへ書き込めないとき。書き込めなかったことと修正方法を出し、写すはずだった JSON を選んで写せる文字で出す。スライダーとグラフは操作できるまま -->
       <section aria-labelledby="state-failed">
         <h2 class="catalog-label" id="state-failed">写せなかった（選んで写せる JSON を出す）</h2>
         <article class="mdmark">

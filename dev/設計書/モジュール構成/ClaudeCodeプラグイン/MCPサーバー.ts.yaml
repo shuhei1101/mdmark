@@ -1,5 +1,5 @@
 title: "ClaudeCodeプラグイン / MCPサーバー"
-lead: '`mdmark serve` が 127.0.0.1 の Streamable HTTP で待ち受ける MCP の常駐サーバー。`export_html`・`build_site`・`check`・`list_templates`・`add_template`・`apply_template` を登録し、作業のフォルダを引数の `project_dir` で受け、引数を検査してから CLI と同じ処理を呼ぶ。`src/cli/main.ts` は読まない。'
+lead: '`mdmark serve` が 127.0.0.1 の Streamable HTTP で待ち受ける MCP の常駐サーバー。`export_html`・`build_site`・`check`・`list_templates`・`add_template`・`apply_template` を登録し、作業のフォルダを引数の `project_dir` で受け、引数を検査してから CLI と同じ処理を呼ぶ。`src/cli/main.ts` は読み込まない。'
 directory: |-
   ```tree
   src/plugin/
@@ -7,7 +7,7 @@ directory: |-
   ├── http.ts       # mdmark serve の HTTP の待ち受け・ポートの読み取り・要求と応答の変換
   ├── tools.ts      # ツールの定義と処理・ツールの結果への変換
   ├── templates.ts  # CSS のテンプレートの索引・一覧・登録・配置（別の設計書）
-  └── arguments.ts  # ツールの引数の検査・SDK に渡す素通しの検証器
+  └── arguments.ts  # ツールの引数の検査・SDK に指定する素通しの検証器
   ```
 diagrams:
   - name: 全体
@@ -32,7 +32,7 @@ data_models:
     container: src/plugin/tools.ts
     usecase: 共通
     role: DTO
-    summary: ツールの処理が使う、呼び出しの作業のフォルダとサーバーが読む配布物の場所
+    summary: ツールの処理が使用する、呼び出しの作業のフォルダとサーバーが読み込む配布物の場所
     description: '`callTool` が呼び出しごとに作る'
     inherits: ServerRoots
     properties:
@@ -47,20 +47,20 @@ data_models:
     container: src/plugin/tools.ts
     usecase: 共通
     role: DTO
-    summary: ツール 1 つの名前・説明・引数の形・処理
+    summary: ツール 1 つの名前・説明・引数の構造・処理
     properties:
       - name: name
         type: "'export_html' | 'build_site' | 'check' | 'list_templates' | 'add_template' | 'apply_template'"
         description: ツールの名前
       - name: description
         type: string
-        description: ツールの説明。呼ぶ場面と、引数・戻り値を日本語で書く
+        description: ツールの説明。呼ぶ場面と、引数・戻り値を日本語で記載する
       - name: inputSchema
         type: ToolInputSchema
-        description: 引数の形。`tools/list` に JSON Schema として出し、引数を検査するものにも使う
+        description: 引数の構造。`tools/list` に JSON Schema として出し、引数を検査するものにも使用する
       - name: run
         type: '(args: Record<string, unknown>, context: ToolContext) => Promise<ToolOutput>'
-        description: 検査を通った引数で処理し、結果を返す。利用者に見せる誤りは `CliError` を投げる
+        description: 検査を通った引数で処理し、結果を返却する。利用者に見せる誤りは `CliError` を投げる
       - name: annotations
         type: '{ readOnlyHint: boolean } | undefined'
         description: '`tools/list` に出すツールの annotations。何も書き換えない `check` と `list_templates` だけが `{ readOnlyHint: true }` を持つ'
@@ -72,20 +72,20 @@ data_models:
     container: src/plugin/tools.ts
     usecase: 共通
     role: DTO
-    summary: ツールの処理が返す、JSON にする値
+    summary: ツールの処理が返却する、JSON にする値
     properties:
       - name: json
         type: Record<string, unknown>
-        description: JSON の文字列にして 1 つのテキストで返す値（`export_html`・`build_site`・`check`）
+        description: JSON の文字列にして 1 つのテキストで返却する値（`export_html`・`build_site`・`check`）
     status: planned
     introduced:
       pr: 72
   - name: ToolInputSchema
-    title: 引数の形
+    title: 引数の構造
     container: src/plugin/arguments.ts
     usecase: 共通
     role: DTO
-    summary: ツールの引数の JSON Schema（2020-12）のうち、使う範囲だけの型
+    summary: ツールの引数の JSON Schema（2020-12）のうち、使用する範囲だけの型
     description: '最上位は `type: ''object''`・`properties`・`required`・`additionalProperties: false`。各引数は `type`（`string`・`integer`・`boolean`・`array`・`object`・`null` かその並び）・`items`（要素が `string` で、`enum` を持てる）・`enum`・`minItems`・`minLength`・`minimum`・`maximum`・`description`（任意）だけを持つ'
     properties:
       - name: type
@@ -93,7 +93,7 @@ data_models:
         description: 引数はオブジェクト
       - name: properties
         type: Record<string, ArgumentSchema>
-        description: 引数ごとの形
+        description: 引数ごとの構造
       - name: required
         type: string[]
         description: 必須の引数
@@ -104,7 +104,7 @@ data_models:
     introduced:
       pr: 72
   - name: ServerRoots
-    title: サーバーの読む場所
+    title: サーバーの読み込む場所
     container: src/plugin/tools.ts
     usecase: 共通
     role: DTO
@@ -127,20 +127,20 @@ constants:
     introduced:
       pr: 72
   - name: INSTRUCTIONS
-    title: サーバーの使い方の説明
+    title: サーバーの使用方法の説明
     container: src/plugin/mcp.ts
     usecase: 共通
-    summary: MCP の `instructions` に渡す、使う場面と順序の事実の文。`{session}` は tmux のセッション名
+    summary: MCP の `instructions` に指定する、使用する場面と順序の事実の文。`{session}` は tmux のセッション名
     value: |-
-      mdmark は Markdown 文書の記法・部品・図を描くライブラリで、この MCP サーバーは mdmark の文書の点検（check）・HTML への書き出し（export_html）・1 枚へのまとめ（build_site）と、使う側の CSS のテンプレートの一覧（list_templates）・登録（add_template）・配置（apply_template）を持つ。
-      mdmark の記法・部品・図の書き方は、使い方集として dev-docs の配信元 mdmark にある。
-      mdmark の文書を書く前に、dev-docs の search_docs で source: "mdmark" の kind が docs の文書をタグ topic:使い方集 で絞って一覧を引き、当てはまるページを view: "full" で読む。作業場所が mdmark のリポジトリの外なら outside_scope: true を付ける。
+      mdmark は Markdown 文書の記法・部品・図を描くライブラリで、この MCP サーバーは mdmark の文書の点検（check）・HTML への書き出し（export_html）・1 枚へのまとめ（build_site）と、利用側の CSS のテンプレートの一覧（list_templates）・登録（add_template）・配置（apply_template）を持つ。
+      mdmark の記法・部品・図の記載方法は、ガイドとして dev-docs の配信元 mdmark にある。
+      mdmark の文書を記載する前に、dev-docs の search_docs で source: "mdmark" の kind が docs の文書をタグ topic:ガイド で絞って一覧を引き、当てはまるページを view: "full" で読み込む。作業場所が mdmark のリポジトリの外なら outside_scope: true を付ける。
       dev-docs が無い、または配信元 mdmark が登録されていないときは、dev-docs が無いので見つかりません。
-      書いた後は check で点検し、図は使い方集の『描いた図を確かめる』の手順で確かめる。
-      使う側の CSS を探すときは list_templates で一覧を引き、選んだテンプレートを apply_template で配置して、返った theme の値を設定の theme に記載する。作った CSS を使い回すときは add_template で登録する。
-      記法を使わない Markdown の編集とコードの調査には、この MCP サーバーと使い方集は要らない。
+      記載した後は check で点検し、図はガイドの『描いた図を確認する』の手順で確認する。
+      利用側の CSS を探すときは list_templates で一覧を引き、選んだテンプレートを apply_template で配置して、返った theme の値を設定の theme に記載する。作った CSS を使い回すときは add_template で登録する。
+      記法を使用しない Markdown の編集とコードの調査には、この MCP サーバーとガイドは要らない。
 
-      この常駐サーバーは tmux のセッション {session} で動く。止まったときは /mdmark:global-setup で起動し直せる。
+      この常駐サーバーは tmux のセッション {session} で動く。止まったときは /mdmark:global-setup でもう一度起動できる。
     refs:
       - dev/設計書/インターフェース定義/ClaudeCodeプラグイン/MCPサーバーを起動・停止する.ts#constraints[instructions]
     status: planned
@@ -150,8 +150,8 @@ constants:
     title: 素通しの検証器
     container: src/plugin/arguments.ts
     usecase: 共通
-    summary: SDK の `fromJsonSchema` に渡す、どの入力も通す `jsonSchemaValidator`
-    description: 'SDK の検査は英語の文を頭に付けるため、SDK では検査せず、ツールを呼ぶときに引数を検査する。`getValidator` は入力をそのまま `{ valid: true, data }` で返す関数を返す'
+    summary: SDK の `fromJsonSchema` に指定する、どの入力も経由する `jsonSchemaValidator`
+    description: 'SDK の検査は英語の文を頭に付けるため、SDK では検査せず、ツールを呼ぶときに引数を検査する。`getValidator` は入力をそのまま `{ valid: true, data }` で返却する関数を返却する'
     refs:
       - dev/設計書/外部ライブラリ/MCP-SDK#limitations[入力の検査のエラーの文]
     status: planned
@@ -165,22 +165,22 @@ constants:
     entries:
       - key: export_html
         value: file（必須）・out・config（文字列）
-        description: '`mdmark export` と同じ処理で文書を 1 枚の HTML に書き出し、書いた絶対パス `out` と警告 `warnings` を返す'
+        description: '`mdmark export` と同じ処理で文書を 1 枚の HTML に書き出し、記載した絶対パス `out` と警告 `warnings` を返却する'
       - key: build_site
         value: config（文字列）
-        description: '`mdmark build` と同じ処理で設定の `build` の文書を 1 枚にまとめ、`out`・文書の数 `docs`・`warnings` を返す'
+        description: '`mdmark build` と同じ処理で設定の `build` の文書を 1 枚にまとめ、`out`・文書の数 `docs`・`warnings` を返却する'
       - key: check
         value: config・base・text・file・key（文字列）
-        description: '`mdmark check` と同じ点検をし、ずれの一覧 `issues`（file・where・kind・message）を返す。`base` を渡すと `mdmark check --base` と同じ `change_together` の直し忘れも返す。`text` か `file`・`key` を渡すと `mdmark check --text`・`--file --key` と同じく、渡した Markdown を描いたときの書き方の警告を返す（YAML のキーへ記法を書き込んだ後に呼ぶ）。点検は書き換えない。`annotations` は `readOnlyHint: true`'
+        description: '`mdmark check` と同じ点検をし、ずれの一覧 `issues`（file・where・kind・message）を返却する。`base` を指定すると `mdmark check --base` と同じ `change_together` の修正漏れも返却する。`text` か `file`・`key` を指定すると `mdmark check --text`・`--file --key` と同じく、指定した Markdown を描いたときの記載の警告を返却する（YAML のキーへ記法を書き込んだ後に呼ぶ）。点検は書き換えない。`annotations` は `readOnlyHint: true`'
       - key: list_templates
         value: 引数なし
-        description: '端末の設定のフォルダの CSS のテンプレートを、名前・説明・タグ・CSS の絶対パスの一覧 `templates` で返す。`annotations` は `readOnlyHint: true`'
+        description: '端末の設定のフォルダの CSS のテンプレートを、名前・説明・タグ・CSS の絶対パスの一覧 `templates` で返却する。`annotations` は `readOnlyHint: true`'
       - key: add_template
         value: file・name・description（必須）・tags（文字列の配列）・overwrite（真偽値）
-        description: 作業のフォルダの CSS をテンプレートに登録し、`name`・`path`・`replaced` を返す。`name` は `TEMPLATE_NAME_PATTERN` に合う文字列
+        description: 作業のフォルダの CSS をテンプレートに登録し、`name`・`path`・`replaced` を返却する。`name` は `TEMPLATE_NAME_PATTERN` に合う文字列
       - key: apply_template
         value: name（必須）・dir（文字列）・overwrite（真偽値）
-        description: テンプレートの CSS を配置先へコピーし、`path`・`theme`（基準の設定ファイルが無ければ持たない）・`replaced` を返す
+        description: テンプレートの CSS を配置先へコピーし、`path`・`theme`（基準の設定ファイルが無ければ持たない）・`replaced` を返却する
     status: planned
     introduced:
       pr: 72
@@ -230,11 +230,11 @@ constants:
     introduced:
       pr: 141
   - name: PORT_IN_USE_MESSAGE
-    title: ポートが使われているときの文
+    title: ポートが使用されているときの文
     container: src/plugin/http.ts
     usecase: 共通
-    summary: 待ち受けるポートを別のプロセスが使っているときに標準エラーに書く文。`{port}` をポートに置き換える
-    value: ポート {port} は別のプロセスが使っています。mdmark serve が既に起動しているなら、そのまま使えます。別のポートで動かすときは、~/.claude/settings.json の env と mdmark serve を起動する環境の両方に同じ MDMARK_PORT を設定してください。
+    summary: 待ち受けるポートを別のプロセスが使用しているときに標準エラーに書き込む文。`{port}` をポートに置き換える
+    value: ポート {port} は別のプロセスが使用しています。mdmark serve が既に起動しているなら、そのまま使用できます。別のポートで動かすときは、~/.claude/settings.json の env と mdmark serve を起動する環境の両方に同じ MDMARK_PORT を設定してください。
     refs:
       - dev/設計書/インターフェース定義/ClaudeCodeプラグイン/MCPサーバーを起動・停止する.ts#exceptions[なし（ポートが使われている・終了コード 1）]
     status: planned
@@ -247,63 +247,63 @@ functions:
     container: src/plugin/arguments.ts
     usecase: 共通
     role: 検査
-    summary: 引数をツールの引数の形で検査し、最初に合わないところを何が合わないかと直し方の日本語の 1 文で返す
+    summary: 引数をツールの引数の構造で検査し、最初に合わないところを何が合わないかと修正方法の日本語の 1 文で返却する
     scope: public
     is_async: false
     args:
       - name: options
         type: '{ schema: ToolInputSchema; args: unknown }'
         required: true
-        description: 引数の形と渡された引数
+        description: 引数の構造と指定された引数
     returns:
       type: string | undefined
       description: 合わないときの 1 文。合えば `undefined`
     process: |-
-      1. 引数がオブジェクトでなければ「引数はオブジェクトで渡してください。」
-      2. `required` の順に、無い引数があれば「引数 {名前} がありません。{名前} を渡してください。」
-      3. `properties` に無い引数があれば「引数 {名前} は使えません。使える引数は {引数の並び} です。」
-      4. 引数ごとに、型（`string`・`integer`・`boolean`・`array`・`object`・`null`）・要素の型と要素の `enum`・`enum`・`minItems`・`minLength`・`minimum`・`maximum` に合わなければ「引数 {名前} は {合う値の説明} で渡してください。」（説明は「文字列」「文字列の配列」「オブジェクトか null」「{値} か {値}」「1 件以上の配列」「空でない文字列」「真偽値」「{最小} 以上 {最大} 以下の整数」「{値} か {値} の配列」など）
+      1. 引数がオブジェクトでなければ「引数はオブジェクトで指定してください。」
+      2. `required` の順に、無い引数があれば「引数 {名前} がありません。{名前} を指定してください。」
+      3. `properties` に無い引数があれば「引数 {名前} は使用できません。使用できる引数は {引数の並び} です。」
+      4. 引数ごとに、型（`string`・`integer`・`boolean`・`array`・`object`・`null`）・要素の型と要素の `enum`・`enum`・`minItems`・`minLength`・`minimum`・`maximum` に合わなければ「引数 {名前} は {合う値の説明} で指定してください。」（説明は「文字列」「文字列の配列」「オブジェクトか null」「{値} か {値}」「1 件以上の配列」「空でない文字列」「真偽値」「{最小} 以上 {最大} 以下の整数」「{値} か {値} の配列」など）
     unit_tests:
       - name: test_check_arguments
         case: 正常
         summary: 合う引数は undefined
-        condition: '`export_html` の形に `{ file: "a.md", out: "a.html" }`'
+        condition: '`export_html` の構造に `{ file: "a.md", out: "a.html" }`'
         mock: なし
         expected: '`undefined`'
       - name: test_check_arguments_when_required_missing
         case: 正常
         summary: 必須の引数が無い
-        condition: '`export_html` の形に `{}`'
+        condition: '`export_html` の構造に `{}`'
         mock: なし
         expected: '`file` を含む文'
       - name: test_check_arguments_when_unknown_key
         case: 正常
         summary: 知らない引数
-        condition: '`check` の形に `{ path: "a" }`'
+        condition: '`check` の構造に `{ path: "a" }`'
         mock: なし
         expected: '`path` と `config` を含む文'
       - name: test_check_arguments_when_type_mismatch
         case: 正常
         summary: 型の違う引数
-        condition: 'テストの形（`names` が文字列の配列）に `{ names: "notation" }`'
+        condition: 'テストの構造（`names` が文字列の配列）に `{ names: "notation" }`'
         mock: なし
         expected: '`names` と `文字列の配列` を含む文'
       - name: test_check_arguments_when_empty_array
         case: 正常
         summary: 空の配列
-        condition: 'テストの形（`names` が `minItems: 1` の文字列の配列）に `{ names: [] }`'
+        condition: 'テストの構造（`names` が `minItems: 1` の文字列の配列）に `{ names: [] }`'
         mock: なし
         expected: '`names` と `1 件以上` を含む文'
       - name: test_check_arguments_when_enum_mismatch
         case: 正常
         summary: 選べない値
-        condition: 'テストの形（`kind` が `enum: ["doc", "term"]` の文字列）に `kind: "docs"`'
+        condition: 'テストの構造（`kind` が `enum: ["doc", "term"]` の文字列）に `kind: "docs"`'
         mock: なし
         expected: '`kind` と `doc か term` を含む文'
       - name: test_check_arguments_when_null_allowed
         case: 正常
         summary: null を許す引数
-        condition: 'テストの形（`item` が `type: ["object", "null"]`）に `item: null`'
+        condition: 'テストの構造（`item` が `type: ["object", "null"]`）に `item: null`'
         mock: なし
         expected: '`undefined`'
       - name: test_check_arguments_when_not_object
@@ -315,19 +315,19 @@ functions:
       - name: test_check_arguments_when_integer_out_of_range
         case: 正常
         summary: 範囲の外か整数でない数
-        condition: 'テストの形（`limit` が `minimum: 1`・`maximum: 100` の整数）に `limit: 101`、続けて `limit: 1.5`'
+        condition: 'テストの構造（`limit` が `minimum: 1`・`maximum: 100` の整数）に `limit: 101`、続けて `limit: 1.5`'
         mock: なし
         expected: どちらも `limit` と `1 以上 100 以下の整数` を含む文
       - name: test_check_arguments_when_boolean_mismatch
         case: 正常
         summary: 真偽値でない値
-        condition: 'テストの形（`flag` が真偽値）に `flag: "true"`'
+        condition: 'テストの構造（`flag` が真偽値）に `flag: "true"`'
         mock: なし
         expected: '`flag` と `真偽値` を含む文'
       - name: test_check_arguments_when_item_enum_mismatch
         case: 正常
         summary: 配列の要素が選べない値
-        condition: 'テストの形（`fields` が要素の `enum: ["path", "aliases"]` の配列）に `fields: ["body"]`'
+        condition: 'テストの構造（`fields` が要素の `enum: ["path", "aliases"]` の配列）に `fields: ["body"]`'
         mock: なし
         expected: '`fields` と `path か aliases の配列` を含む文'
     refs:
@@ -342,29 +342,29 @@ functions:
     usecase: 共通
     role: アダプター
     summary: 引数を検査してツールの処理を呼び、結果か誤りを MCP のツールの結果にする
-    description: 'どの誤りでもサーバーを止めず、その呼び出しだけを `isError: true` にする。ログは標準エラーへ書く'
+    description: 'どの誤りでもサーバーを止めず、その呼び出しだけを `isError: true` にする。ログは標準エラーへ書き込む'
     scope: public
     is_async: true
     args:
       - name: options
         type: '{ tool: ToolDefinition; args: unknown; roots: ServerRoots; stderr: (line: string) => void }'
         required: true
-        description: 呼ぶツール・渡された引数・サーバーの読む場所・標準エラーへ 1 行書く関数
+        description: 呼ぶツール・指定された引数・サーバーの読み込む場所・標準エラーへ 1 行書く関数
     returns:
       type: Promise<CallToolResult>
       description: '`content` にテキストを並べた MCP のツールの結果。誤りのときは `isError: true` と 1 つのテキスト'
     process: |-
-      1. 引数から `PROJECT_DIR_ARG` を取り出す。文字列でない・絶対パスでない・そのフォルダが無いときは `PROJECT_DIR_ERROR_MESSAGE` を `isError: true` で返す
-      2. `PROJECT_DIR_ARG` を除いた引数を検査し、合わなければその 1 文を `isError: true` で返す（引数を検査する）
+      1. 引数から `PROJECT_DIR_ARG` を取り出す。文字列でない・絶対パスでない・そのフォルダが無いときは `PROJECT_DIR_ERROR_MESSAGE` を `isError: true` で返却する
+      2. `PROJECT_DIR_ARG` を除いた引数を検査し、合わなければその 1 文を `isError: true` で返却する（引数を検査する）
       3. 取り出した `projectDir` と `roots` でツールの前提を作り、ツールの処理を呼び、`json` を JSON の文字列にした 1 つのテキストにする
-      4. `CliError` を捕まえたら、そのメッセージを `isError: true` で返す
-      5. それ以外の例外を捕まえたら、標準エラーに書き、例外のメッセージを `isError: true` で返す
+      4. `CliError` を捕まえたら、そのメッセージを `isError: true` で返却する
+      5. それ以外の例外を捕まえたら、標準エラーに書き込み、例外のメッセージを `isError: true` で返却する
          - `[error]` ツールの処理が想定しない例外で止まった（ツール名・メッセージ・スタック）
     unit_tests:
       - name: test_call_tool
         case: 正常
         summary: json を 1 つのテキストにする
-        condition: '`run` が `{ json: { out: "/a.html" } }` を返すツール'
+        condition: '`run` が `{ json: { out: "/a.html" } }` を返却するツール'
         mock: なし（テストの中で定義したツール）
         expected: 'テキストが 1 つで `JSON.parse` すると `{ out: "/a.html" }`、`isError` が立たない'
       - name: test_call_tool_when_arguments_invalid
@@ -375,26 +375,26 @@ functions:
         expected: '`isError: true`、`run` が呼ばれない'
       - name: test_call_tool_when_cli_error
         case: 正常
-        summary: CliError はその文を返し、ログを書かない
-        condition: '`run` が `CliError("直し方の文")` を投げる'
+        summary: CliError はその文を返却し、ログを書き込まない
+        condition: '`run` が `CliError("修正方法の文")` を投げる'
         mock: 行を配列に貯める `stderr`
-        expected: '`isError: true` でテキストが `直し方の文`、`stderr` が空'
+        expected: '`isError: true` でテキストが `修正方法の文`、`stderr` が空'
       - name: test_call_tool_when_unexpected_error
         case: 正常
-        summary: 想定しない例外は標準エラーに書いて返す
+        summary: 想定しない例外は標準エラーに書き込んで返却する
         condition: '`run` が `Error("boom")` を投げる'
         mock: 行を配列に貯める `stderr`
         expected: '`isError: true` でテキストに `boom`、`stderr` にツール名と `boom` とスタック'
       - name: test_call_tool_when_project_dir
         case: 正常
         summary: project_dir を前提に入れ、引数から除いて処理を呼ぶ
-        condition: 一時フォルダの絶対パスの `project_dir` と `config` を渡す
+        condition: 一時フォルダの絶対パスの `project_dir` と `config` を指定する
         mock: 受け取った引数と前提を記録する `run`
-        expected: '`run` の引数が `{ config }` だけで、前提の `projectDir` が渡した絶対パス'
+        expected: '`run` の引数が `{ config }` だけで、前提の `projectDir` が指定した絶対パス'
       - name: test_call_tool_when_project_dir_missing
         case: 異常
         summary: project_dir が無ければ処理を呼ばない
-        condition: '`project_dir` を渡さない'
+        condition: '`project_dir` を指定しない'
         mock: 呼ばれたかを記録する `run`
         expected: '`isError: true` でテキストが `PROJECT_DIR_ERROR_MESSAGE`、`run` が呼ばれない'
       - name: test_call_tool_when_project_dir_invalid
@@ -416,10 +416,10 @@ functions:
     container: src/plugin/tools.ts
     usecase: 文書をHTMLに書き出す
     role: ツール
-    summary: 作業のフォルダを基準に `mdmark export` と同じ処理で書き出し、絶対パスと警告を返す
+    summary: 作業のフォルダを基準に `mdmark export` と同じ処理で書き出し、絶対パスと警告を返却する
     scope: public
     is_async: true
-    side_effects: 出力のパスに HTML を書く
+    side_effects: 出力のパスに HTML を書き込む
     args:
       - name: args
         type: '{ file: string; out?: string; config?: string }'
@@ -433,8 +433,8 @@ functions:
       type: Promise<ToolOutput>
       description: '`json` が `{ out, warnings }`'
     process: |-
-      1. `cwd` を `projectDir`、`distDir` を `context.distDir` にして書き出す（文書を HTML に書き出して結果を返す）。相対パスの `file`・`out`・`config` は `projectDir` を基準にする
-      2. `out`（絶対パス）と `warnings` を返す
+      1. `cwd` を `projectDir`、`distDir` を `context.distDir` にして書き出す（文書を HTML に書き出して結果を返却する）。相対パスの `file`・`out`・`config` は `projectDir` を基準にする
+      2. `out`（絶対パス）と `warnings` を返却する
     unit_tests:
       - name: test_run_export_html
         case: 正常
@@ -461,10 +461,10 @@ functions:
     container: src/plugin/tools.ts
     usecase: 複数の文書を1枚のHTMLにまとめる
     role: ツール
-    summary: 作業のフォルダを基準に `mdmark build` と同じ処理でまとめ、絶対パス・文書の数・警告を返す
+    summary: 作業のフォルダを基準に `mdmark build` と同じ処理でまとめ、絶対パス・文書の数・警告を返却する
     scope: public
     is_async: true
-    side_effects: '`build.out` に HTML を書く'
+    side_effects: '`build.out` に HTML を書き込む'
     args:
       - name: args
         type: '{ config?: string }'
@@ -478,18 +478,18 @@ functions:
       type: Promise<ToolOutput>
       description: '`json` が `{ out, docs, warnings }`'
     process: |-
-      1. `cwd` を `projectDir`、`distDir` を `context.distDir` にしてまとめる（複数の文書を 1 枚にまとめて結果を返す）。相対パスの `config` と設定の `build.out` は `projectDir` を基準にする
-      2. `out`（絶対パス）・`docs`・`warnings` を返す
+      1. `cwd` を `projectDir`、`distDir` を `context.distDir` にしてまとめる（複数の文書を 1 枚にまとめて結果を返却する）。相対パスの `config` と設定の `build.out` は `projectDir` を基準にする
+      2. `out`（絶対パス）・`docs`・`warnings` を返却する
     unit_tests:
       - name: test_run_build_site
         case: 正常
-        summary: まとめて絶対パスと文書の数を返す
-        condition: '`projectDir` の設定の `build` が文書 2 つに当たる'
+        summary: まとめて絶対パスと文書の数を返却する
+        condition: '`projectDir` の設定の `build` が文書 2 つに該当する'
         mock: なし（一時フォルダ）
         expected: '`json.out` が `build.out` の絶対パス、`json.docs` が 2'
       - name: test_run_build_site_when_cwd_differs
         case: 正常
-        summary: サーバーの cwd が作業のフォルダと違っても、作業のフォルダの設定と build.out で書く
+        summary: サーバーの cwd が作業のフォルダと違っても、作業のフォルダの設定と build.out で記載する
         condition: '`process.cwd()` と別の一時フォルダを `projectDir` にし、設定の `build.out` が相対パス'
         mock: なし（一時フォルダ）
         expected: '`json.out` が `{projectDir}/{build.out}` で、そのファイルがある'
@@ -506,7 +506,7 @@ functions:
     container: src/plugin/tools.ts
     usecase: 設定と索引を点検する
     role: ツール
-    summary: 作業のフォルダから設定ファイルを探し、`mdmark check` と同じずれの一覧を返す
+    summary: 作業のフォルダから設定ファイルを探し、`mdmark check` と同じずれの一覧を返却する
     scope: public
     is_async: true
     args:
@@ -522,35 +522,35 @@ functions:
       type: Promise<ToolOutput>
       description: '`json` が `{ issues }`（`CheckIssue` の並び。ずれがあっても誤りにしない）'
     process: |-
-      1. `text` か `file` を渡したときは、`runCheck` と同じ引数の組を確かめ、`checkMarkdownSource`（`cwd` は `projectDir`）のずれを `issues` で返す（記法を点検する）。以降の手順は行わない
+      1. `text` か `file` を指定したときは、`runCheck` と同じ引数の組を確認し、`checkMarkdownSource`（`cwd` は `projectDir`）のずれを `issues` で返却する（記法を点検する）。以降の手順は行わない
 
-      2. 端末の設定と `projectDir` から上の設定ファイルを、`mdmark check` と同じく重ねて読む（設定を重ねて読む。`cwd` は `projectDir`、`env` は `mdmark serve` のプロセスの `process.env`）
-      3. `base` を渡してずれを集め、`issues` で返す（ずれを集める）。比べる基準を引けない `CliError` は `callTool` がその文のツールのエラーにする
+      2. 端末の設定と `projectDir` から上の設定ファイルを、`mdmark check` と同じく重ねて読み込む（設定を重ねて読み込む。`cwd` は `projectDir`、`env` は `mdmark serve` のプロセスの `process.env`）
+      3. `base` を指定してずれを集め、`issues` で返却する（ずれを集める）。比べる基準を参照できない `CliError` は `callTool` がその文のツールのエラーにする
     unit_tests:
       - name: test_run_check_tool
         case: 正常
-        summary: ずれを一覧で返す
+        summary: ずれを一覧で返却する
         condition: '`projectDir` の索引が無い文書 `old.md` を指す'
         mock: なし（一時フォルダ）
         expected: '`json.issues` に `kind: missing_doc` が 1 件'
       - name: test_run_check_tool_when_base_given
         case: 正常
-        summary: '`base` から片方だけが変わった change_together の組を返す'
+        summary: '`base` から片方だけが変わった change_together の組を返却する'
         condition: '索引の `a`（`a.md`）と `b`（`b.md`）が互いを `change_together` で記載した `projectDir` をコミットしてタグ `base` を付け、`a.md` だけを書き換えてコミットする。`{ base: "base" }`'
         mock: なし（一時フォルダの git のリポジトリ）
         expected: '`json.issues` が `{ file: "b.md", where: "", kind: "missed_change_together" }` の 1 件'
       - name: test_run_check_tool_when_base_unknown
         case: 異常
-        summary: 引けない `base` は `CliError` にする
+        summary: 参照できない `base` は `CliError` にする
         condition: '`test_run_check_tool_when_base_given` と同じリポジトリ、`{ base: "no-such-ref" }`'
         mock: なし（一時フォルダの git のリポジトリ）
         expected: '`CliError` を投げ、メッセージが `mdmark check --base no-such-ref` が標準エラーに出す文と等しい'
       - case: 正常
-        condition: 'インターフェース定義『点検する』の「正常系（文字列と YAML のキーを渡す）」の `projectDir`。`{ text }` と `{ file: "records.yaml", key: "items[0].body" }` の 2 回'
+        condition: 'インターフェース定義『点検する』の「正常系（文字列と YAML のキーを指定する）」の `projectDir`。`{ text }` と `{ file: "records.yaml", key: "items[0].body" }` の 2 回'
         expected: '1 回目の `json.issues` が `{ file: "-", where: "3", kind: "unknown_mark" }`、2 回目が `{ file: "records.yaml", where: "8", kind: "unknown_mark" }` の 1 件'
         mock: なし（一時フォルダ）
         name: test_run_check_tool_when_text_and_key
-        summary: text と file・key で mdmark check と同じずれを返す
+        summary: text と file・key で mdmark check と同じずれを返却する
     callees:
       - dev/設計書/モジュール構成/ライブラリ本体/CLI.ts#functions[findConfigFile]
       - dev/設計書/モジュール構成/ライブラリ本体/CLI.ts#functions[collectCheckIssues]
@@ -561,12 +561,12 @@ functions:
     introduced:
       pr: 72
   - name: runListTemplates
-    title: CSS のテンプレートの一覧を返す（list_templates）
+    title: CSS のテンプレートの一覧を返却する（list_templates）
     kind: 関数
     container: src/plugin/tools.ts
-    usecase: CSSのテンプレートの一覧を返す
+    usecase: CSSのテンプレートの一覧を返却する
     role: ツール
-    summary: '`mdmark serve` のプロセスの環境変数からテンプレートのフォルダを決め、一覧を返す'
+    summary: '`mdmark serve` のプロセスの環境変数からテンプレートのフォルダを決め、一覧を返却する'
     scope: public
     is_async: true
     args:
@@ -579,11 +579,11 @@ functions:
       description: '`json` が `{ templates }`'
     process: |-
       1. `resolveTemplatesDir`（`env` は `process.env`、`home` は `os.homedir()`）でテンプレートのフォルダを決める
-      2. `listTemplates` の結果を `templates` で返す
+      2. `listTemplates` の結果を `templates` で返却する
     unit_tests:
       - name: test_run_list_templates
         case: 正常
-        summary: '`MDMARK_CONFIG` のフォルダのテンプレートを返す'
+        summary: '`MDMARK_CONFIG` のフォルダのテンプレートを返却する'
         condition: '`process.env.MDMARK_CONFIG` に一時フォルダの `settings.yaml`、その `templates/css/` に 1 行の索引'
         mock: '`process.env.MDMARK_CONFIG` をテストの間だけ差し替える'
         expected: '`json.templates` が 1 行'
@@ -591,7 +591,7 @@ functions:
       - dev/設計書/モジュール構成/ClaudeCodeプラグイン/CSSのテンプレート.ts#functions[resolveTemplatesDir]
       - dev/設計書/モジュール構成/ClaudeCodeプラグイン/CSSのテンプレート.ts#functions[listTemplates]
     refs:
-      - dev/設計書/インターフェース定義/ClaudeCodeプラグイン/CSSのテンプレートの一覧を返す.ts#
+      - dev/設計書/インターフェース定義/ClaudeCodeプラグイン/CSSのテンプレートの一覧を返却する.ts#
     status: planned
     introduced:
       pr: 353
@@ -604,7 +604,7 @@ functions:
     summary: '`file` を `projectDir` から解決し、テンプレートに登録する'
     scope: public
     is_async: true
-    side_effects: テンプレートのフォルダに CSS と索引を書く
+    side_effects: テンプレートのフォルダに CSS と索引を書き込む
     args:
       - name: args
         type: '{ file: string; name: string; description: string; tags?: string[]; overwrite?: boolean }'
@@ -644,7 +644,7 @@ functions:
     summary: '`dir` を `projectDir` から解決し、テンプレートを配置する'
     scope: public
     is_async: true
-    side_effects: 配置先に CSS を書く
+    side_effects: 配置先に CSS を書き込む
     args:
       - name: args
         type: '{ name: string; dir?: string; overwrite?: boolean }'
@@ -659,7 +659,7 @@ functions:
       description: '`json` が `{ path, theme, replaced }`（`theme` が `undefined` なら JSON に出ない）'
     process: |-
       1. `resolveTemplatesDir` でテンプレートのフォルダを決める
-      2. `dir` を渡したら `projectDir` から絶対パスにし、`cwd` を `projectDir`、`overwrite` を省いたら `false` にして `applyTemplate` を呼ぶ
+      2. `dir` を指定したら `projectDir` から絶対パスにし、`cwd` を `projectDir`、`overwrite` を省いたら `false` にして `applyTemplate` を呼ぶ
     unit_tests:
       - name: test_run_apply_template
         case: 正常
@@ -689,20 +689,20 @@ functions:
       - name: options
         type: '{ roots: ServerRoots; version: string; sessionName: string; stderr: (line: string) => void }'
         required: true
-        description: サーバーの読む場所・サーバーのバージョン（mdmark のバージョン）・tmux のセッション名・標準エラーへ 1 行書く関数
+        description: サーバーの読み込む場所・サーバーのバージョン（mdmark のバージョン）・tmux のセッション名・標準エラーへ 1 行書く関数
     returns:
       type: McpServer
       description: ツールを登録したサーバー
     process: |-
       1. `{ name: SERVER_NAME, version }` と `{ capabilities: { tools: {} }, instructions: INSTRUCTIONS の {session} をセッション名にしたもの }` で `McpServer` を作る
-      2. `TOOLS` の各ツールを、説明・`fromJsonSchema(inputSchema, ACCEPT_ALL_VALIDATOR)`・`annotations`（持つツールだけ）で登録し、呼び出しごとに `roots` を渡してツールを呼ぶ（ツールを呼ぶ）
+      2. `TOOLS` の各ツールを、説明・`fromJsonSchema(inputSchema, ACCEPT_ALL_VALIDATOR)`・`annotations`（持つツールだけ）で登録し、呼び出しごとに `roots` を指定してツールを呼ぶ（ツールを呼ぶ）
     unit_tests:
       - name: test_create_mcp_server
         case: 正常
         summary: 6 つのツールと instructions と annotations を出す
         condition: 作ったサーバーを `InMemoryTransport` でクライアントとつなぐ
         mock: なし（SDK の `Client`）
-        expected: '`listTools` の名前が `TOOLS` の 6 つと一致し、どのツールの `inputSchema.properties` にも `project_dir` が無く、`check` と `list_templates` だけの `annotations.readOnlyHint` が `true`、`getInstructions()` が `INSTRUCTIONS` の `{session}` を渡したセッション名にしたもので 4,096 文字以下'
+        expected: '`listTools` の名前が `TOOLS` の 6 つと一致し、どのツールの `inputSchema.properties` にも `project_dir` が無く、`check` と `list_templates` だけの `annotations.readOnlyHint` が `true`、`getInstructions()` が `INSTRUCTIONS` の `{session}` を指定したセッション名にしたもので 4,096 文字以下'
       - name: test_create_mcp_server_when_arguments_invalid
         case: 正常
         summary: 合わない引数は SDK でなく日本語の文で返る
@@ -721,27 +721,27 @@ functions:
     kind: 関数
     container: src/plugin/http.ts
     usecase: MCPサーバーを起動・停止する
-    summary: パス・Host・Origin を確かめ、通った要求だけを MCP のハンドラーへ渡す
+    summary: パス・Host・Origin を確認し、通った要求だけを MCP のハンドラーへ指定する
     scope: public
     is_async: true
     args:
       - name: options
         type: '{ request: Request; handler: McpHttpHandler }'
         required: true
-        description: 組み込みの `Request` にした要求と、`createMcpHandler` が返したハンドラー
+        description: 組み込みの `Request` にした要求と、`createMcpHandler` が返却したハンドラー
     returns:
       type: Promise<Response>
-      description: 返す応答
+      description: 返却する応答
     process: |-
-      1. パスが `MCP_PATH` でなければ 404 を返す
-      2. `hostHeaderValidationResponse(request, localhostAllowedHostnames())` か `originValidationResponse(request, localhostAllowedOrigins())` が応答を返せば、それ（403）を返す
-      3. `handler.fetch(request)` の応答を返す
+      1. パスが `MCP_PATH` でなければ 404 を返却する
+      2. `hostHeaderValidationResponse(request, localhostAllowedHostnames())` か `originValidationResponse(request, localhostAllowedOrigins())` が応答を返却すれば、それ（403）を返却する
+      3. `handler.fetch(request)` の応答を返却する
     unit_tests:
       - name: test_route_request
         case: 正常
-        summary: localhost の /mcp はハンドラーへ渡す
+        summary: localhost の /mcp はハンドラーへ指定する
         condition: '`http://127.0.0.1:8782/mcp`、Host が `127.0.0.1:8782`、Origin なし'
-        mock: 呼ばれた要求を記録して 200 を返す `fetch` のハンドラー
+        mock: 呼ばれた要求を記録して 200 を返却する `fetch` のハンドラー
         expected: 200 で、ハンドラーが 1 回呼ばれる
       - name: test_route_request_when_path_unknown
         case: 異常
@@ -799,30 +799,30 @@ functions:
     introduced:
       pr: 141
   - name: writeResponse
-    title: 応答を書く
+    title: 応答を記載する
     kind: 関数
     container: src/plugin/http.ts
     usecase: MCPサーバーを起動・停止する
-    summary: 組み込みの `Response` を `node:http` の応答へ流す
+    summary: 組み込みの `Response` を `node:http` の応答へ実行する
     scope: internal
     is_async: true
-    side_effects: '`res` に書く'
+    side_effects: '`res` に記載する'
     args:
       - name: options
         type: '{ response: Response; res: ServerResponse }'
         required: true
-        description: 返す応答と書き込む先
+        description: 返却する応答と書き込む先
     returns:
       type: Promise<void>
-      description: 本文を流し終えたら解決する
+      description: 本文を実行し終えたら解決する
     process: |-
-      1. ステータスとヘッダーを書く
-      2. 本文があれば読みながら書き、読み終えたら `res` を閉じる（SSE の応答も流しながら書く）
+      1. ステータスとヘッダーを記載する
+      2. 本文があれば読み込みながら記載し、読み込み終えたら `res` を閉じる（SSE の応答も実行しながら記載する）
     unit_tests:
       - name: test_write_response
         case: 正常
-        summary: ステータス・ヘッダー・本文を流す
-        condition: '`new Response("ok", { status: 202, headers: { "x-a": "1" } })` を一時サーバーで返す'
+        summary: ステータス・ヘッダー・本文を実行する
+        condition: '`new Response("ok", { status: 202, headers: { "x-a": "1" } })` を一時サーバーで返却する'
         mock: なし（`node:http` の一時サーバー）
         expected: クライアントが受けたステータスが 202、`x-a` が `1`、本文が `ok`
     status: planned
@@ -837,7 +837,7 @@ functions:
     summary: '`mdmark serve` の本体。`LISTEN_HOST` の `MCP_PATH` で待ち受け、止める合図で閉じる'
     scope: public
     is_async: true
-    side_effects: ポートを待ち受ける。標準出力・標準エラーへ書く
+    side_effects: ポートを待ち受ける。標準出力・標準エラーへ書き込む
     args:
       - name: options
         type: '{ env: NodeJS.ProcessEnv; packageDir: string; version: string; signal: AbortSignal; stdout: (line: string) => void; stderr: (line: string) => void }'
@@ -847,23 +847,23 @@ functions:
       type: Promise<0 | 1>
       description: 終了コード
     process: |-
-      1. ポートを読む（`CliError` は呼び出し元の CLI が終了コード 1 にする）
-      2. `{packageDir}/dist` でサーバーの読む場所を作り、端末の設定（`resolveSettingsPath`）の `serve.tmuxSession`（無ければ `mdmark-mcp`）をセッション名にする。端末の設定を読めなければ既定の名前にする
-      3. `createMcpHandler` に、要求ごとに MCP サーバーを作る関数を渡してハンドラーを作る
-      4. `node:http` のサーバーで、要求ごとに要求を変換し、要求を振り分け、応答を書く
-      5. `LISTEN_HOST` とポートで待ち受ける。`EADDRINUSE` なら `PORT_IN_USE_MESSAGE` を標準エラーに書いて 1 を返す
+      1. ポートを読み込む（`CliError` は呼び出し元の CLI が終了コード 1 にする）
+      2. `{packageDir}/dist` でサーバーの読み込む場所を作り、端末の設定（`resolveSettingsPath`）の `serve.tmuxSession`（無ければ `mdmark-mcp`）をセッション名にする。端末の設定を読み込めなければ既定の名前にする
+      3. `createMcpHandler` に、要求ごとに MCP サーバーを作る関数を指定してハンドラーを作る
+      4. `node:http` のサーバーで、要求ごとに要求を変換し、要求を振り分け、応答を記載する
+      5. `LISTEN_HOST` とポートで待ち受ける。`EADDRINUSE` なら `PORT_IN_USE_MESSAGE` を標準エラーに書き込んで 1 を返却する
       6. 待ち受けたら `MCP サーバーを起動しました: http://{LISTEN_HOST}:{port}{MCP_PATH}` を標準出力に 1 行書く
-      7. `signal` が止める合図になったらサーバーを閉じ、0 を返す
+      7. `signal` が止める合図になったらサーバーを閉じ、0 を返却する
     unit_tests:
       - name: test_run_serve
         case: 正常
-        summary: 待ち受けの URL を書き、tools/list に答え、合図で止まる
+        summary: 待ち受けの URL を記載し、tools/list に回答し、合図で止まる
         condition: '`MDMARK_PORT` に空きポート、`packageDir` にこのリポジトリの直下、`AbortController` の `signal`'
         mock: なし（SDK の `Client` と `StreamableHTTPClientTransport`）
         expected: 標準出力に `http://127.0.0.1:{port}/mcp` を含む 1 行、`listTools` が 6 つ、`abort()` の後に 0 で解決し、同じポートへの接続が拒まれる
       - name: test_run_serve_when_port_in_use
         case: 異常
-        summary: ポートが使われていれば 1 を返す
+        summary: ポートが使用されていれば 1 を返却する
         condition: 先に同じポートを別の `node:http` サーバーで待ち受ける
         mock: なし
         expected: 1 で解決し、標準エラーにポートの番号と `MDMARK_PORT` を含む文

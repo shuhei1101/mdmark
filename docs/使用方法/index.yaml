@@ -1,0 +1,16 @@
+summary: 導入と使用方法の手順
+items:
+  - page: 導入/
+    summary: mdmark を使用するページへ組み込む手順
+  - page: 記載する/
+    summary: Markdown にマーカーと記法を記載して、表・注意書き・タブなどを付ける手順
+  - page: 図を描く/
+    summary: 図・部品を文書に部品の定義で描き、確認し、利用側に固有の部品と CSS を追加する手順
+  - page: カスタマイズ/
+    summary: 外観と機能を利用側で変える手順
+  - page: 書き出す/
+    summary: CLI で Markdown を、CDN を読み込まず 1 枚で完結する HTML に書き出す手順
+  - page: VSCodeで確認する/
+    summary: VS Code の拡張機能で Markdown を mdmark で描いたプレビューを出し、HTML・PDF にする手順
+  - page: ClaudeCodeで使用する/
+    summary: Claude Code に mdmark のガイドへの動線と、書き出し・点検のツールを指定する手順

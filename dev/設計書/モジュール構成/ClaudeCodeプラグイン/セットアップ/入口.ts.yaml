@@ -12,7 +12,7 @@ constants:
         description: 正常
       - key: failed
         value: '1'
-        description: 設定を読めない・Schema に合わない・ポートが使われている
+        description: 設定を読み込めない・Schema に合わない・ポートが使用されている
       - key: tmuxMissing
         value: '2'
         description: tmux が無い
@@ -29,8 +29,8 @@ functions:
     container: src/plugin/setup/main.ts
     usecase: 共通
     role: 入口
-    summary: サブコマンドを振り分け、結果の JSON を標準出力に 1 行書き、終了コードを返す
-    description: 束ねた `plugin/bin/setup.js` を入口として実行したときだけ `process.argv`・`process.env` で呼び、戻り値を終了コードにする（`import.meta.main`）
+    summary: サブコマンドを振り分け、結果の JSON を標準出力に 1 行書き、終了コードを返却する
+    description: まとめた `plugin/bin/setup.js` を入口として実行したときだけ `process.argv`・`process.env` で呼び、戻り値を終了コードにする（`import.meta.main`）
     scope: public
     is_async: true
     args:
@@ -42,9 +42,9 @@ functions:
       type: Promise<0 | 1 | 2 | 3>
       description: '`SETUP_EXIT` の値'
     process: |-
-      1. 先頭の引数でサブコマンドを選び、知らないサブコマンドは使い方を標準エラーに書いて 1 を返す
-      2. 各サブコマンドの関数を呼び、成功なら結果を JSON の 1 行で標準出力に書く
-      3. `SetupError` は理由と修正方法を標準エラーに書き、その終了コードを返す
+      1. 先頭の引数でサブコマンドを選び、知らないサブコマンドは使用方法を標準エラーに書き込んで 1 を返却する
+      2. 各サブコマンドの関数を呼び、成功なら結果を JSON の 1 行で標準出力に書き込む
+      3. `SetupError` は理由と修正方法を標準エラーに書き込み、その終了コードを返却する
     callees:
       - dev/設計書/モジュール構成/ClaudeCodeプラグイン/セットアップ/状態.ts#functions[readTerminalStatus]
       - dev/設計書/モジュール構成/ClaudeCodeプラグイン/セットアップ/キーの一覧.ts#functions[listConfigKeys]
@@ -54,16 +54,16 @@ functions:
     unit_tests:
       - name: test_run_setup
         case: 正常
-        summary: status の結果を JSON の 1 行で書く
+        summary: status の結果を JSON の 1 行で記載する
         condition: '`argv` が `["status"]`、一時の端末の環境変数'
         mock: 行を配列に貯める `stdout`、終了コード 1 の `run`（tmux が無い）
-        expected: 0 を返し、`stdout` の 1 行を JSON として読むと `tmux.available` が `false`
+        expected: 0 を返却し、`stdout` の 1 行を JSON として読み込むと `tmux.available` が `false`
       - name: test_run_setup_when_unknown_command
         case: 異常
         summary: 知らないサブコマンドは 1
         condition: '`argv` が `["foo"]`'
         mock: 行を配列に貯める `stderr`
-        expected: 1 を返し、`stderr` に `status` を含む使い方が出る
+        expected: 1 を返却し、`stderr` に `status` を含む使用方法が出る
     refs:
       - dev/設計書/インターフェース定義/ClaudeCodeプラグイン/端末の状態を調べる.ts#
       - dev/設計書/インターフェース定義/ClaudeCodeプラグイン/常駐サーバーを起動する.ts#

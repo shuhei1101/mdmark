@@ -12,12 +12,12 @@ catalogs:
   entries:
   - name: build
     kind: 関数
-    purpose: '`vite.config.ts` の `root` で Webview を `media/preview.js`・`media/preview.css` に束ねる'
+    purpose: '`vite.config.ts` の `root` で Webview を `media/preview.js`・`media/preview.css` にまとめる'
     description: '`build.lib`（`formats: ["es"]`）・`codeSplitting: false`・`cssCodeSplit: false`・`modulePreload: false` で 1 つの JS と 1 つの CSS にする。`define` で `process.env.NODE_ENV` を `"production"` にする'
   - name: resolve.alias
     kind: 設定
     purpose: '`@` を `src/webview` に向ける'
-lead: ES モジュールを開発サーバーで配り、本番用に束ねるビルドツール。
+lead: ES モジュールを開発サーバーで配り、本番用にまとめるビルドツール。
 purl: pkg:npm/vite@8.3.6
 dependency_scope: 開発のみ
 adoption: 採用
@@ -30,7 +30,7 @@ used_in:
 verification:
   state: 済
   date: '2026-11-06'
-  detail: '`npm run build`（vscode/）で `media/preview.js` と `media/preview.css` の 2 つだけが書かれ、`import()` の分割・`modulepreload` の差し込みが無いことを確かめた'
+  detail: '`npm run build`（vscode/）で `media/preview.js` と `media/preview.css` の 2 つだけが記載され、`import()` の分割・`modulepreload` の差し込みが無いことを確認した'
 license: MIT（商用利用可）
 official_url: https://vite.dev/
 docs_url: https://vite.dev/config/

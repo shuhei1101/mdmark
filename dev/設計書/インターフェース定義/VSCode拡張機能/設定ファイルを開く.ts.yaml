@@ -62,7 +62,7 @@ lead: 拡張機能が読み込む設定ファイルをエディタで開く。�
 idempotent: true
 side_effects: 雛形を作ると回答したときだけ、`mdmark.configPath` の場所に雛形の YAML を記載する。既にあるファイルは書き換えない
 callers:
-  - dev/設計書/シナリオ/単一ユースケース/書いた内容をプレビューに映す#scenarios[異常シナリオ（設定ファイルを読めない）]
+  - dev/設計書/シナリオ/単一ユースケース/記載した内容をプレビューに映す#scenarios[異常シナリオ（設定ファイルを読めない）]
 request:
   - name: uri
     type: vscode.Uri

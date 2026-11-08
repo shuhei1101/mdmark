@@ -6,6 +6,8 @@ NK = f'(?<!{K})'
 
 # 1. 言い回し（先に当てる。長いものから）
 PHRASES = [
+    ('当たりの半径', 'クリックを受ける半径'), ('コピーた・', 'コピーした・'),
+    ('チャートとヒントを読む', 'チャートとヒントを読み取る'), ('文書の差分を読む', '文書の差分を確認する'), ('使い方集を読む', 'ガイドを参照する'), ('使い方を渡す', '使用方法を提供する'),
     ('アクセシブルネーム', 'スクリーンリーダー向けの名前'),
     ('左に寄せて置く', '左に詰めて配置する'), ('右に寄せて置く', '右に詰めて配置する'),
     ('を書き忘れると', 'の記載を忘れると'), ('書き忘れると', '記載を忘れると'), ('見た目の文字', '表示される文字'),
@@ -204,7 +206,7 @@ def conj_naosu(m):
     after = m.string[m.end():m.end() + 1]
     if form == 'し' and (rest == '' and after in '）」・はのをがも' or rest[:1] != '' and rest[:1] in 'はのをがもでにと' or rest.startswith('まで')):
         key = v[-1] + i if i != 'し' or re.search('[ぁ-ん]', v) or len(v) < 2 else v + i
-        for k, noun in [('当て', '再適用'), ('入れ', '再インストール'), ('置き', '再配置'), ('付け', '再付与'), ('振り', '再割り当て'), ('並べ', '並べ替え'),
+        for k, noun in [('送り', '再送信'), ('当て', '再適用'), ('入れ', '再インストール'), ('置き', '再配置'), ('付け', '再付与'), ('振り', '再割り当て'), ('並べ', '並べ替え'),
                         ('選び', '再選択'), ('呼び', '再呼び出し'), ('開き', '再表示'), ('決め', '再決定'), ('閉じ', '再度の閉じ')]:
             if key.endswith(k):
                 return v[:-1] + noun + rest if len(v) > 1 and not v.startswith('読み') else noun + rest
@@ -313,6 +315,14 @@ def build():
     rules = []
     for old, new in PHRASES:
         rules.append((re.compile(re.escape(old)), new, True))
+    # カタカナ + し直す → もう一度 カタカナ する
+    def _kata_naosu(m):
+        form, rest = m.group('form'), m.group('rest')
+        idx = 'さしすせそ'.index(form)
+        if form == 'し' and rest.startswith(('た', 'て')):
+            idx = 5
+        return 'もう一度' + m.group('w') + suru_form(idx, rest)
+    rules.append((re.compile(r'(?P<w>[ァ-ヶー]{2,})し直(?P<form>[さしすせそ])(?P<rest>[ぁ-ん]{0,3})'), _kata_naosu, True))
     # `mount` し直す → もう一度 `mount` する
     def _ascii_naosu(m):
         form, rest = m.group('form'), m.group('rest')

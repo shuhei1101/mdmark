@@ -28,7 +28,7 @@
 <body>
   <!-- モック専用の操作列: 配色の切り替え -->
   <div class="mock-bar">
-    <!-- [data-scheme-set]: sample.js が押されたボタンの値を html の data-scheme に当てる -->
+    <!-- [data-scheme-set]: sample.js が押されたボタンの値を html の data-scheme に適用する -->
     <div class="mock-bar-group" role="group" aria-label="配色">
       <button class="mock-bar-item" type="button" data-scheme-set="light" aria-pressed="false">明るい配色</button>
       <button class="mock-bar-item" type="button" data-scheme-set="dark" aria-pressed="false">ダーク</button>
@@ -74,15 +74,15 @@
       <section aria-labelledby="state-ruby">
         <h2 class="catalog-label" id="state-ruby">ルビ（文書の HTML の ruby）</h2>
         <article class="mdmark">
-<p><ruby>凡例<rt>はんれい</rt></ruby>は図の下に置きます。</p>
+<p><ruby>凡例<rt>はんれい</rt></ruby>は図の下に配置します。</p>
         </article>
       </section>
 
-      <!-- 書き方を見せる（打ち消し） -->
+      <!-- 記載方法を見せる（打ち削除し） -->
       <section aria-labelledby="state-escaped">
-        <h2 class="catalog-label" id="state-escaped">書き方を見せる（打ち消し）</h2>
+        <h2 class="catalog-label" id="state-escaped">記載方法を見せる（打ち削除し）</h2>
         <article class="mdmark">
-<p>キーは <code>kbd:Ctrl+C</code> のように書きます。</p>
+<p>キーは <code>kbd:Ctrl+C</code> のように記載します。</p>
         </article>
       </section>
 

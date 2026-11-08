@@ -8,14 +8,14 @@ scenarios:
         description: HTMLに書き出すの正常シナリオと同じ。既定のブラウザで開く操作は、開いた URL を記録する代役
     flow: |-
       sequenceDiagram
-        actor W as 文書を書く人
+        actor W as 文書の作成者
         participant EX as 拡張機能
         participant BR as 既定のブラウザ
         W->>EX: mdmark: PDF に印刷
-        EX->>EX: 印刷のダイアログを出す HTML を書き出し直す
+        EX->>EX: 印刷のダイアログを出す HTML をもう一度書き出す
         EX->>BR: 書き出した HTML を開く
         BR->>BR: 描き終えたら印刷のダイアログを出す
-        BR-->>W: 印刷のダイアログ（PDF に保存は文書を書く人が選ぶ）
+        BR-->>W: 印刷のダイアログ（PDF に保存は文書の作成者が選ぶ）
     expected:
       - ブラウザで開く代役に、書き出した HTML の URL が渡る
       - 書き出した HTML をブラウザで開くと、文書を描き終えた後に印刷のダイアログが呼ばれる
@@ -31,10 +31,10 @@ scenarios:
         description: 正常シナリオと同じ
     flow: |-
       sequenceDiagram
-        actor W as 文書を書く人
+        actor W as 文書の作成者
         participant EX as 拡張機能
         W->>EX: mdmark: PDF に印刷
-        EX->>EX: 書き出し先に書けない
+        EX->>EX: 書き出し先に記載できない
         EX-->>W: 書き出せない理由の通知
     expected:
       - 通知に、書き出し先のパスと書き込めない理由が出る
@@ -49,7 +49,7 @@ scenarios:
         description: 正常シナリオと同じ
     flow: |-
       sequenceDiagram
-        actor W as 文書を書く人
+        actor W as 文書の作成者
         participant EX as 拡張機能
         participant B as ブラウザ
         W->>EX: PDF に印刷する
@@ -61,13 +61,13 @@ scenarios:
     test: test_normal_when_theme_selected
     refs:
       - dev/設計書/シナリオ/単一ユースケース/文書を印刷する#scenarios[正常シナリオ（テーマを選んだ文書）]
-lead: 文書を書く人が、開いている Markdown をコマンドパレットから印刷する。拡張機能は HTML を書き出して既定のブラウザで開き、ブラウザの印刷のダイアログを出す。PDF はそのダイアログで作る。
+lead: 文書の作成者が、開いている Markdown をコマンドパレットから印刷する。拡張機能は HTML を書き出して既定のブラウザで開き、ブラウザの印刷のダイアログを出す。PDF はそのダイアログで作る。
 issue: 22
-primary_actor: 文書を書く人
+primary_actor: 文書の作成者
 stakeholders:
-  - name: 文書を書く人
-    interest: プレビューと同じ見た目の PDF を、外部のツールを入れずに作れる
-trigger: '文書を書く人がコマンドパレットから「mdmark: PDF に印刷」を選ぶ'
+  - name: 文書の作成者
+    interest: プレビューと同じ外観の PDF を、外部のツールを入れずに作れる
+trigger: '文書の作成者がコマンドパレットから「mdmark: PDF に印刷」を選ぶ'
 preconditions:
   - Markdown のファイルをエディタで開いている
   - 既定のブラウザから jsDelivr に届く

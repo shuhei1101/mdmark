@@ -1,11 +1,11 @@
 title: ClaudeCodeプラグイン / セットアップ / 起動
-lead: '`start-server` の tmux の起動と待ち受けの確かめ。'
+lead: '`start-server` の tmux の起動と待ち受けの確認。'
 function_types:
   - name: RunCommand
     title: 外部のコマンドを実行する
     container: src/plugin/setup/server.ts
     usecase: 常駐サーバーを起動する
-    summary: コマンドと引数を受け、終了コードと標準出力を返す。テストで tmux の呼び出しを差し替える
+    summary: コマンドと引数を受け、終了コードと標準出力を返却する。テストで tmux の呼び出しを差し替える
     args:
       - name: command
         type: string
@@ -34,10 +34,10 @@ constants:
     introduced:
       pr: 354
   - name: POLL_INTERVAL_MS
-    title: 待ち受けを確かめる間隔
+    title: 待ち受けを確認する間隔
     container: src/plugin/setup/server.ts
     usecase: 常駐サーバーを起動する
-    summary: ポートへつなぎ直す間隔
+    summary: ポートへもう一度つなぐ間隔
     value: '1000'
     refs:
       - dev/設計書/インターフェース定義/ClaudeCodeプラグイン/常駐サーバーを起動する.ts#constraints[待ち]
@@ -58,15 +58,15 @@ functions:
       - name: options
         type: '{ session: string; port: number; settingsPath: string; stateDir: string; logPath: string; command: string }'
         required: true
-        description: セッション名・ポート・端末の設定のパス・状態の置き場所・ログ・起動するコマンド
+        description: セッション名・ポート・端末の設定のパス・状態の配置場所・ログ・起動するコマンド
     returns:
       type: string[]
-      description: '`tmux` に渡す引数'
-    process: 1. `["new-session", "-d", "-s", session, "-e", "MDMARK_PORT=…", "-e", "MDMARK_CONFIG=…", "-e", "MDMARK_STATE_DIR=…", "sh", "-c", "{command} 2>&1 | tee -a '{logPath}'"]` を返す。ログのパスは一重引用符で囲み、中の一重引用符は `'\''` にする
+      description: '`tmux` に指定する引数'
+    process: 1. `["new-session", "-d", "-s", session, "-e", "MDMARK_PORT=…", "-e", "MDMARK_CONFIG=…", "-e", "MDMARK_STATE_DIR=…", "sh", "-c", "{command} 2>&1 | tee -a '{logPath}'"]` を返却する。ログのパスは一重引用符で囲み、中の一重引用符は `'\''` にする
     unit_tests:
       - name: test_build_tmux_args
         case: 正常
-        summary: 環境変数を -e で渡し sh -c で包む
+        summary: 環境変数を -e で指定し sh -c で包む
         condition: セッション `s`・ポート 18782・ログ `/l/serve.log`・コマンド `serve`
         mock: なし
         expected: '`-e MDMARK_PORT=18782` を含み、末尾 3 つが `sh`・`-c`・`serve 2>&1 | tee -a ''/l/serve.log''`'
@@ -96,10 +96,10 @@ functions:
     process: |-
       1. `tmux -V` が失敗すれば、端末で動かすコマンドを添えて `SetupError`（2）
       2. セッションがあり待ち受けていれば `already_running`。セッションがあり待ち受けていなければ `kill-session -t ={名前}` して起動へ進み `restarted` にする。起動する前にポートが待ち受けていれば（セッションの外のプロセス）、`MDMARK_PORT` の修正方法を添えて `SetupError`（1）で起動しない
-      3. 状態の置き場所を作り、`buildTmuxArgs` の引数で `run("tmux", …)` する。起動するコマンドは `MDMARK_SERVE_COMMAND`、無ければ `npx -y github:shuhei1101/mdmark#{version} serve`
+      3. 状態の配置場所を作り、`buildTmuxArgs` の引数で `run("tmux", …)` する。起動するコマンドは `MDMARK_SERVE_COMMAND`、無ければ `npx -y github:shuhei1101/mdmark#{version} serve`
       4. `POLL_INTERVAL_MS` ごとに、セッションが閉じていればログの末尾 20 行を添えて `SetupError`（1）、待ち受けていれば次へ。上限（`MDMARK_START_TIMEOUT_SEC`、無ければ `START_TIMEOUT_SEC`）を超えたら `kill-session` してログの末尾を添えて `SetupError`（3）
-      5. `listToolNames` でツールの名前を取り、結果を返す。取れなければ `MDMARK_PORT` の修正方法を添えて `SetupError`（1）
-    side_effects: tmux のセッションを作る・閉じる。状態の置き場所を作る
+      5. `listToolNames` でツールの名前を取り、結果を返却する。取れなければ `MDMARK_PORT` の修正方法を添えて `SetupError`（1）
+    side_effects: tmux のセッションを作る・閉じる。状態の配置場所を作る
     callees:
       - dev/設計書/モジュール構成/ClaudeCodeプラグイン/セットアップ/パス.ts#functions[resolveSetupPaths]
       - dev/設計書/モジュール構成/ClaudeCodeプラグイン/セットアップ/パス.ts#functions[readSessionName]
@@ -116,25 +116,25 @@ functions:
       - name: test_start_server_when_tmux_missing
         case: 異常
         summary: tmux が無ければ 2
-        condition: '`tmux -V` に 127 を返す `run`'
+        condition: '`tmux -V` に 127 を返却する `run`'
         mock: 差し替えた `run`
         expected: 終了コード 2 の `SetupError`、メッセージに `MDMARK_PORT=` と `serve` のコマンド
       - name: test_start_server_when_timed_out
         case: 異常
         summary: 上限を超えたら 3
-        condition: '`MDMARK_START_TIMEOUT_SEC=0`、`has-session` に 0 を返し続ける `run`'
+        condition: '`MDMARK_START_TIMEOUT_SEC=0`、`has-session` に 0 を返却し続ける `run`'
         mock: 差し替えた `run` と、すぐ解決する `sleep`
         expected: 終了コード 3 の `SetupError`、`kill-session` を呼んでいる
       - name: test_start_server_when_port_taken
         case: 異常
         summary: ほかのプロセスがポートを待ち受けていれば起動しない
-        condition: '`node:net` で `MDMARK_PORT` のポートを先に待ち受け、`has-session` に 1 を返す `run`'
+        condition: '`node:net` で `MDMARK_PORT` のポートを先に待ち受け、`has-session` に 1 を返却する `run`'
         mock: 差し替えた `run`
         expected: 終了コード 1 の `SetupError`、メッセージに `MDMARK_PORT`、`new-session` を呼んでいない
       - name: test_start_server_when_session_closed
         case: 異常
         summary: セッションが閉じたら 1
-        condition: '`has-session` が起動の後に 1 を返す `run`、ログに `EADDRINUSE` の行'
+        condition: '`has-session` が起動の後に 1 を返却する `run`、ログに `EADDRINUSE` の行'
         mock: 差し替えた `run`
         expected: 終了コード 1 の `SetupError`、メッセージにログの行と `MDMARK_PORT` の修正方法
     refs:
@@ -148,7 +148,7 @@ functions:
     container: src/plugin/setup/server.ts
     usecase: 常駐サーバーを起動する
     role: 処理
-    summary: 常駐サーバーへ `initialize` と `tools/list` を送り、ツールの名前を返す
+    summary: 常駐サーバーへ `initialize` と `tools/list` を送信し、ツールの名前を返却する
     scope: public
     is_async: true
     args:
@@ -159,7 +159,7 @@ functions:
     returns:
       type: Promise<string[]>
       description: ツールの名前
-    process: 1. MCP-SDK の `Client` と `StreamableHTTPClientTransport` で `http://127.0.0.1:{port}/mcp` につなぎ、`listTools` の名前を返して閉じる
+    process: 1. MCP-SDK の `Client` と `StreamableHTTPClientTransport` で `http://127.0.0.1:{port}/mcp` につなぎ、`listTools` の名前を返却して閉じる
     callees:
       - dev/設計書/外部ライブラリ/MCP-SDK#
     unit_tests:

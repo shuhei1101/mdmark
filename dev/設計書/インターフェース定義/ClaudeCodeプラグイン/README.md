@@ -15,11 +15,11 @@ Claude Code プラグインの MCP のツール・フックと、スキルが呼
 | [作業のフォルダを引数に入れる.ts](./作業のフォルダを引数に入れる.ts.yaml) | 作業のフォルダを使用するツールの引数に、PreToolUse のフックで project_dir を入れる |
 | [常駐サーバーの状態を伝える.ts](./常駐サーバーの状態を伝える.ts.yaml) | SessionStart で常駐サーバーのポートを確認し、待ち受けていないときだけ global-setup での起動の仕方を 1 行で指定する |
 | [端末の状態を調べる.ts](./端末の状態を調べる.ts.yaml) | 端末の設定のパスとバージョン・tmux のセッション名・待ち受けているか・ログの場所を返却する（setup.js status） |
-| [設定のキーの一覧を返す.ts](./設定のキーの一覧を返す.ts.yaml) | 設定の Schema のキーごとに今の値・既定・説明を返却する（setup.js keys） |
-| [端末の設定を書く.ts](./端末の設定を書く.ts.yaml) | 回答した値で端末の設定を作る・書き換え、既定のパスでなければ settings.json の env に MDMARK_CONFIG を記載する（setup.js write-settings） |
+| [設定のキーの一覧を返却する.ts](./設定のキーの一覧を返却する.ts.yaml) | 設定の Schema のキーごとに今の値・既定・説明を返却する（setup.js keys） |
+| [端末の設定を記載する.ts](./端末の設定を記載する.ts.yaml) | 回答した値で端末の設定を作る・書き換え、既定のパスでなければ settings.json の env に MDMARK_CONFIG を記載する（setup.js write-settings） |
 | [常駐サーバーを起動する.ts](./常駐サーバーを起動する.ts.yaml) | tmux のセッションで mdmark serve を起動し、待ち受けと tools/list を確認する（setup.js start-server） |
-| [文書のフォルダの設定を書く.ts](./文書のフォルダの設定を書く.ts.yaml) | 回答した値で文書のフォルダの mdmark.config.yaml を作る・書き換える（setup.js write-config） |
-| [CSSのテンプレートの一覧を返す.ts](./CSSのテンプレートの一覧を返す.ts.yaml) | 端末の設定のフォルダの CSS のテンプレートを、名前・説明・タグ・パスつきで返却する（list_templates） |
+| [文書のフォルダの設定を記載する.ts](./文書のフォルダの設定を記載する.ts.yaml) | 回答した値で文書のフォルダの mdmark.config.yaml を作る・書き換える（setup.js write-config） |
+| [CSSのテンプレートの一覧を返却する.ts](./CSSのテンプレートの一覧を返却する.ts.yaml) | 端末の設定のフォルダの CSS のテンプレートを、名前・説明・タグ・パスつきで返却する（list_templates） |
 | [CSSのテンプレートを登録する.ts](./CSSのテンプレートを登録する.ts.yaml) | 作業のフォルダの CSS をテンプレートにコピーし、名前・説明・タグを索引に記載する（add_template） |
 | [CSSのテンプレートを配置する.ts](./CSSのテンプレートを配置する.ts.yaml) | テンプレートの CSS を配置先へコピーし、theme に記載する値を返却する（apply_template） |
 

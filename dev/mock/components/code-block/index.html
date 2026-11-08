@@ -11,16 +11,16 @@
   <link rel="stylesheet" href="../../refs/16/assets/sample.css">
   <!-- 採用スタイル本体の変数の値（差分の色を含む） -->
   <link rel="stylesheet" href="../../assets/style.css">
-  <!-- 拡張記法の規則（書き方の警告）とカタログの並べ方（番号で共有するアセット） -->
+  <!-- 拡張記法の規則（記載の警告）とカタログの並べ方（番号で共有するアセット） -->
   <link rel="stylesheet" href="../../refs/19/assets/syntax.css">
   <link rel="stylesheet" href="../../refs/19/assets/catalog.css">
-  <!-- コードブロックの題・行番号・行の強調・コードの行の印の規則 -->
+  <!-- コードブロックのタイトル・行番号・行の強調・コードの行のマーカーの規則 -->
   <link rel="stylesheet" href="../../refs/65/assets/code-block.css">
-  <!-- 印刷の規則: 紙に出すときだけ当てる。[data-print-styles]: モックの「印刷の見え方」で code-block.js が media を all に切り替える -->
+  <!-- 印刷の規則: 紙に出すときだけ適用する。[data-print-styles]: モックの「印刷の見え方」で code-block.js が media を all に切り替える -->
   <link rel="stylesheet" href="../../refs/65/assets/code-block-print.css" media="print" data-print-styles>
-  <!-- コードブロックの色分けの規則（hljs-* の class に種類ごとの色を当てる） -->
+  <!-- コードブロックの色分けの規則（hljs-* の class に種類ごとの色を適用する） -->
   <link rel="stylesheet" href="../../refs/97/assets/syntax-highlight.css">
-  <!-- 色分けの印刷の規則: 紙に出すときだけ当てる。「印刷の見え方」で code-block.js が media を all に切り替える -->
+  <!-- 色分けの印刷の規則: 紙に出すときだけ適用する。「印刷の見え方」で code-block.js が media を all に切り替える -->
   <link rel="stylesheet" href="../../refs/97/assets/syntax-highlight-print.css" media="print" data-print-styles>
   <!-- コードブロックの帯（言語のラベルとコピーボタン）の規則（#151 で共有するアセット） -->
   <link rel="stylesheet" href="../../refs/151/assets/code-block.css">
@@ -28,26 +28,26 @@
   <!-- focus・error・warning の行・畳む・開く・インデントの縦線の規則と印刷の規則（#275 の追加分） -->
   <link rel="stylesheet" href="../../refs/275/assets/code-block.css">
   <link rel="stylesheet" href="../../refs/275/assets/code-block-print.css" media="print" data-print-styles>
-  <!-- ファイルツリーの規則（#225 で共有するアセット。使う側の pre への汎用の CSS の場面で使う） -->
+  <!-- ファイルツリーの規則（#225 で共有するアセット。利用側の pre への汎用の CSS の場面で使用する） -->
   <link rel="stylesheet" href="../../refs/225/assets/tree.css">
   <!-- 配色の切り替え -->
-  <!-- 折り返しの規則（#328 で共有するアセット）と、使う側の pre への汎用の CSS の見本 -->
+  <!-- 折り返しの規則（#328 で共有するアセット）と、利用側の pre への汎用の CSS の見本 -->
   <link rel="stylesheet" href="../../refs/328/assets/wrap.css">
   <link rel="stylesheet" href="./style.css">
   <script src="../../refs/16/assets/sample.js" defer></script>
   <!-- モックの「印刷の見え方」の切り替え -->
   <script src="../../refs/65/assets/code-block.js" defer></script>
   <!-- コードブロックの帯（言語のラベルとコピーボタン）の操作 -->
-  <!-- 行のマーカー・畳む・開く・縦線の見本を行に分けて描く（#275。コピーのボタンより先に読む） -->
+  <!-- 行のマーカー・畳む・開く・縦線の見本を行に分けて描く（#275。コピーのボタンより先に読み込む） -->
   <script src="../../refs/275/assets/code-fold.js" defer></script>
-  <!-- ファイルツリー（罫線の pre をツリーに置き換える。コピーのボタンより先に読む） -->
+  <!-- ファイルツリー（罫線の pre をツリーに置き換える。コピーのボタンより先に読み込む） -->
   <script src="../../refs/225/assets/tree.js" defer></script>
   <script src="../../refs/151/assets/code-block.js" defer></script>
 </head>
 <body>
   <!-- モック専用の操作列: 配色と印刷の見え方の切り替え -->
   <div class="mock-bar">
-    <!-- [data-scheme-set]: sample.js が押されたボタンの値を html の data-scheme に当てる -->
+    <!-- [data-scheme-set]: sample.js が押されたボタンの値を html の data-scheme に適用する -->
     <div class="mock-bar-group" role="group" aria-label="配色">
       <button class="mock-bar-item" type="button" data-scheme-set="light" aria-pressed="false">明るい配色</button>
       <button class="mock-bar-item" type="button" data-scheme-set="dark" aria-pressed="false">ダーク</button>
@@ -67,7 +67,7 @@
         <h2 class="catalog-label" id="syntax-kinds">色分けの種類と色（モックだけの凡例）</h2>
         <article class="mdmark">
 <table>
-  <thead><tr><th>種類</th><th>当たるもの</th><th>見え方</th><th>CSS 変数</th></tr></thead>
+  <thead><tr><th>種類</th><th>該当するもの</th><th>見え方</th><th>CSS 変数</th></tr></thead>
   <tbody>
     <tr><td>キーワード</td><td>予約語・デコレーター・<code>document</code> や <code>self</code></td><td><span style="color: var(--mdmark-color-syntax-keyword)">const</span></td><td><code>--mdmark-color-syntax-keyword</code></td></tr>
     <tr><td>文字列</td><td>文字列・正規表現</td><td><span style="color: var(--mdmark-color-syntax-string)">"mdmark"</span></td><td><code>--mdmark-color-syntax-string</code></td></tr>
@@ -80,7 +80,7 @@
         </article>
       </section>
 
-      <!-- 言語に応じて色分けする（正常シナリオ）: 印を持たない ts のコードブロック -->
+      <!-- 言語に応じて色分けする（正常シナリオ）: マーカーを持たない ts のコードブロック -->
       <section aria-labelledby="syntax-ts">
         <h2 class="catalog-label" id="syntax-ts">言語に応じて色分けする（ts）</h2>
         <article class="mdmark">
@@ -88,13 +88,13 @@
 
 <span class="hljs-keyword">const</span> element = <span class="hljs-variable language_">document</span>.<span class="hljs-property">querySelector</span>&lt;<span class="hljs-title class_">HTMLElement</span>&gt;(<span class="hljs-string">&quot;#doc&quot;</span>);
 <span class="hljs-keyword">const</span> response = <span class="hljs-keyword">await</span> <span class="hljs-title function_">fetch</span>(<span class="hljs-string">&quot;/README.md&quot;</span>);
-<span class="hljs-comment">// 描いた文書の要素を返す</span>
+<span class="hljs-comment">// 描いた文書の要素を返却する</span>
 <span class="hljs-keyword">const</span> doc = <span class="hljs-title function_">mount</span>(element, <span class="hljs-keyword">await</span> response.<span class="hljs-title function_">text</span>(), { <span class="hljs-attr">features</span>: { <span class="hljs-attr">syntax</span>: <span class="hljs-literal">true</span> } });
 <span class="hljs-built_in">setTimeout</span>(<span class="hljs-function">() =&gt;</span> doc.<span class="hljs-title function_">focus</span>(), <span class="hljs-number">300</span>);</code></pre>
         </article>
       </section>
 
-      <!-- 言語に応じて色分けする（正常シナリオ）: 印を持たない yaml のコードブロック -->
+      <!-- 言語に応じて色分けする（正常シナリオ）: マーカーを持たない yaml のコードブロック -->
       <section aria-labelledby="syntax-yaml">
         <h2 class="catalog-label" id="syntax-yaml">言語に応じて色分けする（yaml）</h2>
         <article class="mdmark">
@@ -104,11 +104,11 @@
   <span class="hljs-attr">print:</span> <span class="hljs-literal">false</span>
 <span class="hljs-attr">build:</span>
   <span class="hljs-bullet">-</span> <span class="hljs-string">docs/README.md</span>
-  <span class="hljs-bullet">-</span> <span class="hljs-string">docs/使い方/*.md</span></code></pre>
+  <span class="hljs-bullet">-</span> <span class="hljs-string">docs/使用方法/*.md</span></code></pre>
         </article>
       </section>
 
-      <!-- 言語に応じて色分けする（正常シナリオ）: 印を持たない python のコードブロック -->
+      <!-- 言語に応じて色分けする（正常シナリオ）: マーカーを持たない python のコードブロック -->
       <section aria-labelledby="syntax-python">
         <h2 class="catalog-label" id="syntax-python">言語に応じて色分けする（python）</h2>
         <article class="mdmark">
@@ -130,14 +130,14 @@
         </article>
       </section>
 
-      <!-- 題・行番号・コードの行の印と色分けする（正常シナリオ）: code の印 title=app.ts lines highlight=4 と、行末の // [!code --]・// [!code ++]。3 行のブロックコメントは行ごとに閉じた span に分ける -->
+      <!-- タイトル・行番号・コードの行のマーカーと色分けする（正常シナリオ）: code のマーカー title=app.ts lines highlight=4 と、行末の // [!code --]・// [!code ++]。3 行のブロックコメントは行ごとに閉じた span に分ける -->
       <section aria-labelledby="syntax-decorated">
-        <h2 class="catalog-label" id="syntax-decorated">題・行番号・行の強調・コードの行の印と色分けする（title=app.ts lines highlight=4）</h2>
+        <h2 class="catalog-label" id="syntax-decorated">タイトル・行番号・行の強調・コードの行のマーカーと色分けする（title=app.ts lines highlight=4）</h2>
         <article class="mdmark">
 <figure class="mdmark-code">
   <figcaption class="mdmark-code-title"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/></svg>app.ts</figcaption>
   <pre class="mdmark-code-lines mdmark-code-numbered mdmark-code-signs" tabindex="0" aria-label="コード: app.ts"><code class="language-ts" style="--mdmark-code-digits: 1"><span class="mdmark-code-line" data-line="1"><span class="mdmark-code-text"><span class="hljs-comment">/**</span></span></span>
-<span class="mdmark-code-line" data-line="2"><span class="mdmark-code-text"><span class="hljs-comment"> * 文書を描いて、描いた要素を返す。</span></span></span>
+<span class="mdmark-code-line" data-line="2"><span class="mdmark-code-text"><span class="hljs-comment"> * 文書を描いて、描いた要素を返却する。</span></span></span>
 <span class="mdmark-code-line" data-line="3"><span class="mdmark-code-text"><span class="hljs-comment"> */</span></span></span>
 <span class="mdmark-code-line" data-line="4" data-kind="highlight"><span class="mdmark-code-text"><span class="hljs-keyword">export</span> <span class="hljs-keyword">async</span> <span class="hljs-keyword">function</span> <span class="hljs-title function_">draw</span>(<span class="hljs-params"><span class="hljs-attr">element</span>: <span class="hljs-title class_">HTMLElement</span></span>): <span class="hljs-title class_">Promise</span>&lt;<span class="hljs-title class_">HTMLElement</span>&gt; {</span></span>
 <span class="mdmark-code-line" data-line="5" data-kind="del"><span class="mdmark-code-text">  <span class="hljs-title function_">mount</span>(element, markdown);</span></span>
@@ -175,7 +175,7 @@ npx mdmark <span class="hljs-built_in">export</span> docs/README.md --out <span 
 <pre tabindex="0" aria-label="コード: markdown"><code class="language-markdown"><span class="hljs-section">## 描く</span>
 
 <span class="hljs-bullet">-</span> <span class="hljs-strong">**mount**</span> で要素の中に描く
-<span class="hljs-bullet">-</span> 詳しくは [<span class="hljs-string">API</span>](<span class="hljs-link">./API.md</span>) を見る</code></pre>
+<span class="hljs-bullet">-</span> 詳しくは [<span class="hljs-string">API</span>](<span class="hljs-link">./API.md</span>) を確認する</code></pre>
         </article>
       </section>
 
@@ -189,7 +189,7 @@ npx mdmark <span class="hljs-built_in">export</span> docs/README.md --out <span 
         </article>
       </section>
 
-      <!-- 色分けの機能をオフにした文書（正常シナリオ）: features の印で -syntax を書いた文書。コードの行の印は当て、色分けはしない -->
+      <!-- 色分けの機能をオフにした文書（正常シナリオ）: features のマーカーで -syntax を記載した文書。コードの行のマーカーは当て、色分けはしない -->
       <section aria-labelledby="syntax-off">
         <h2 class="catalog-label" id="syntax-off">色分けの機能をオフにした文書（features: -syntax）</h2>
         <article class="mdmark">
@@ -198,23 +198,23 @@ npx mdmark <span class="hljs-built_in">export</span> docs/README.md --out <span 
         </article>
       </section>
 
-      <!-- 色分けのライブラリを読めない（異常シナリオ）: 本体が 404。コードは欠けずに色分けなしで出し、知らせの枠は出さない（コンソールにだけ出す） -->
+      <!-- 色分けのライブラリを読み込めない（異常シナリオ）: 本体が 404。コードは欠けずに色分けなしで出し、通知ブロックは出さない（コンソールにだけ出す） -->
       <section aria-labelledby="syntax-load-failed">
-        <h2 class="catalog-label" id="syntax-load-failed">色分けのライブラリを読めない（異常シナリオ）</h2>
+        <h2 class="catalog-label" id="syntax-load-failed">色分けのライブラリを読み込めない（異常シナリオ）</h2>
         <article class="mdmark">
 <pre tabindex="0" aria-label="コード: ts"><code class="language-ts">import { mount } from "mdmark";
 
 const element = document.querySelector&lt;HTMLElement&gt;("#doc");
 const response = await fetch("/README.md");
-// 描いた文書の要素を返す
+// 描いた文書の要素を返却する
 const doc = mount(element, await response.text(), { features: { syntax: true } });
 setTimeout(() =&gt; doc.focus(), 300);</code></pre>
         </article>
       </section>
 
-      <!-- 言語のモジュールの一部を読めない（異常シナリオ）: python のモジュールだけが 404。読めた yaml だけを色分けする -->
+      <!-- 言語のモジュールの一部を読み込めない（異常シナリオ）: python のモジュールだけが 404。読み込めた yaml だけを色分けする -->
       <section aria-labelledby="syntax-partial">
-        <h2 class="catalog-label" id="syntax-partial">言語のモジュールの一部を読めない（異常シナリオ: python だけ読めない）</h2>
+        <h2 class="catalog-label" id="syntax-partial">言語のモジュールの一部を読み込めない（異常シナリオ: python だけ読み込めない）</h2>
         <article class="mdmark">
 <pre tabindex="0" aria-label="コード: yaml"><code class="language-yaml"><span class="hljs-comment"># 描く機能の既定</span>
 <span class="hljs-attr">features:</span>
@@ -222,7 +222,7 @@ setTimeout(() =&gt; doc.focus(), 300);</code></pre>
   <span class="hljs-attr">print:</span> <span class="hljs-literal">false</span>
 <span class="hljs-attr">build:</span>
   <span class="hljs-bullet">-</span> <span class="hljs-string">docs/README.md</span>
-  <span class="hljs-bullet">-</span> <span class="hljs-string">docs/使い方/*.md</span></code></pre>
+  <span class="hljs-bullet">-</span> <span class="hljs-string">docs/使用方法/*.md</span></code></pre>
 <pre tabindex="0" aria-label="コード: python"><code class="language-python">from pathlib import Path
 
 
@@ -241,9 +241,9 @@ print(f"{len(docs)} 件を描きました", None, True)</code></pre>
         </article>
       </section>
 
-      <!-- 題・行番号・行の強調（正常シナリオ）: code の印 title=app.ts lines highlight=2 の直後の 3 行 -->
+      <!-- タイトル・行番号・行の強調（正常シナリオ）: code のマーカー title=app.ts lines highlight=2 の直後の 3 行 -->
       <section aria-labelledby="state-basic">
-        <h2 class="catalog-label" id="state-basic">題・行番号・行の強調（title=app.ts lines highlight=2）</h2>
+        <h2 class="catalog-label" id="state-basic">タイトル・行番号・行の強調（title=app.ts lines highlight=2）</h2>
         <article class="mdmark">
 <figure class="mdmark-code">
   <figcaption class="mdmark-code-title"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/></svg>app.ts</figcaption>
@@ -254,9 +254,9 @@ print(f"{len(docs)} 件を描きました", None, True)</code></pre>
         </article>
       </section>
 
-      <!-- コードの行の印（正常シナリオ）: 行末の // [!code --]・// [!code ++]・// 数える [!code highlight] と印の無い行。code の印は無い -->
+      <!-- コードの行のマーカー（正常シナリオ）: 行末の // [!code --]・// [!code ++]・// 数える [!code highlight] とマーカーの無い行。code のマーカーは無い -->
       <section aria-labelledby="state-line-marks">
-        <h2 class="catalog-label" id="state-line-marks">コードの行の印（足した行・消した行・強調・印の無い行）</h2>
+        <h2 class="catalog-label" id="state-line-marks">コードの行のマーカー（追加した行・削除した行・強調・マーカーの無い行）</h2>
         <article class="mdmark">
 <pre class="mdmark-code-lines mdmark-code-signs" tabindex="0" aria-label="コード: ts"><code class="language-ts"><span class="mdmark-code-line" data-kind="del"><span class="mdmark-code-text"><span class="hljs-keyword">let</span> count = <span class="hljs-number">0</span>;</span></span>
 <span class="mdmark-code-line" data-kind="add"><span class="mdmark-code-text"><span class="hljs-keyword">let</span> count = <span class="hljs-number">1</span>;</span></span>
@@ -265,7 +265,7 @@ print(f"{len(docs)} 件を描きました", None, True)</code></pre>
         </article>
       </section>
 
-      <!-- 行コメントの頭が # の言語: # [!code ++] の行コメントの頭 # も外す -->
+      <!-- 行コメントの頭が # の言語: # [!code ++] の行コメントの頭 # も削除する -->
       <section aria-labelledby="state-hash-comment">
         <h2 class="catalog-label" id="state-hash-comment">行コメントの頭が # の言語（python）</h2>
         <article class="mdmark">
@@ -275,9 +275,9 @@ print(f"{len(docs)} 件を描きました", None, True)</code></pre>
         </article>
       </section>
 
-      <!-- 全部を組み合わせる（印刷のシナリオと同じ指定）: code の印 title=app.ts lines highlight=1 と、行末の // [!code ++]・// [!code --] -->
+      <!-- 全部を組み合わせる（印刷のシナリオと同じ指定）: code のマーカー title=app.ts lines highlight=1 と、行末の // [!code ++]・// [!code --] -->
       <section aria-labelledby="state-all">
-        <h2 class="catalog-label" id="state-all">題・行番号・行の強調とコードの行の印を組み合わせる</h2>
+        <h2 class="catalog-label" id="state-all">タイトル・行番号・行の強調とコードの行のマーカーを組み合わせる</h2>
         <article class="mdmark">
 <figure class="mdmark-code">
   <figcaption class="mdmark-code-title"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/></svg>app.ts</figcaption>
@@ -288,9 +288,9 @@ print(f"{len(docs)} 件を描きました", None, True)</code></pre>
         </article>
       </section>
 
-      <!-- 題だけ: 行に分けないので今の pre のまま題を載せる -->
+      <!-- タイトルだけ: 行に分けないので今の pre のままタイトルを記載する -->
       <section aria-labelledby="state-title-only">
-        <h2 class="catalog-label" id="state-title-only">題だけ（title=mdmark.config.yaml）</h2>
+        <h2 class="catalog-label" id="state-title-only">タイトルだけ（title=mdmark.config.yaml）</h2>
         <article class="mdmark">
 <figure class="mdmark-code">
   <figcaption class="mdmark-code-title"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/></svg>mdmark.config.yaml</figcaption>
@@ -301,7 +301,7 @@ print(f"{len(docs)} 件を描きました", None, True)</code></pre>
         </article>
       </section>
 
-      <!-- 2 桁の行番号: 行番号の桁を揃えて右寄せにする。highlight=9-10 の範囲 -->
+      <!-- 2 桁の行番号: 行番号の桁を統一して右寄せにする。highlight=9-10 の範囲 -->
       <section aria-labelledby="state-two-digits">
         <h2 class="catalog-label" id="state-two-digits">2 桁の行番号と範囲の強調（lines highlight=9-10）</h2>
         <article class="mdmark">
@@ -323,7 +323,7 @@ print(f"{len(docs)} 件を描きました", None, True)</code></pre>
 
       <!-- 長文: 長い行は枠の中で横スクロールし、行の地は最も長い行の右端まで敷く。印刷の見え方では折り返し、行番号は最初の 1 行にだけ出る -->
       <section aria-labelledby="state-long">
-        <h2 class="catalog-label" id="state-long">長い行と長い題（横スクロール・印刷では折り返す）</h2>
+        <h2 class="catalog-label" id="state-long">長い行と長いタイトル（横スクロール・印刷では折り返す）</h2>
         <article class="mdmark">
 <figure class="mdmark-code">
   <figcaption class="mdmark-code-title"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/></svg>src/render/syntax/a-file-name-that-is-much-longer-than-the-box-width-on-phones.ts</figcaption>
@@ -334,28 +334,28 @@ print(f"{len(docs)} 件を描きました", None, True)</code></pre>
         </article>
       </section>
 
-      <!-- 折り返す（#294）: code の印の wrap。長い行を枠の幅で折り返し、行番号は折り返した行の 1 行目にだけ出る。コピーには折り返しの改行が入らない -->
+      <!-- 折り返す（#294）: code のマーカーの wrap。長い行を枠の幅で折り返し、行番号は折り返した行の 1 行目にだけ出る。コピーには折り返しの改行が入らない -->
       <section aria-labelledby="state-wrap">
-        <h2 class="catalog-label" id="state-wrap">折り返す（code: lines wrap）と、印の無いブロック（横スクロール）</h2>
+        <h2 class="catalog-label" id="state-wrap">折り返す（code: lines wrap）と、マーカーの無いブロック（横スクロール）</h2>
         <article class="mdmark">
 <figure class="mdmark-code">
   <figcaption class="mdmark-code-title"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/></svg>app.ts</figcaption>
   <pre class="mdmark-code-lines mdmark-code-numbered mdmark-code-wrap" tabindex="0" aria-label="コード: app.ts"><code class="language-ts" style="--mdmark-code-digits: 1"><span class="mdmark-code-line" data-line="1"><span class="mdmark-code-text"><span class="hljs-keyword">import</span> { mount } <span class="hljs-keyword">from</span> <span class="hljs-string">&quot;mdmark&quot;</span>;</span></span>
-<span class="mdmark-code-line" data-line="2"><span class="mdmark-code-text"><span class="hljs-keyword">const</span> url = <span class="hljs-string">&quot;https://cdn.jsdelivr.net/gh/shuhei1101/mdmark@v0.10.0/dist/index.js&quot;</span>; <span class="hljs-comment">// 版を固定した URL から配布物を読み、描く先の要素に文書を描く</span></span></span>
+<span class="mdmark-code-line" data-line="2"><span class="mdmark-code-text"><span class="hljs-keyword">const</span> url = <span class="hljs-string">&quot;https://cdn.jsdelivr.net/gh/shuhei1101/mdmark@v0.10.0/dist/index.js&quot;</span>; <span class="hljs-comment">// バージョンを固定した URL から配布物を読み込み、描く先の要素に文書を描く</span></span></span>
 <span class="mdmark-code-line" data-line="3"><span class="mdmark-code-text"><span class="hljs-title function_">mount</span>(<span class="hljs-variable language_">document</span>.<span class="hljs-title function_">querySelector</span>(<span class="hljs-string">&quot;#doc&quot;</span>), markdown);</span></span></code></pre>
 </figure>
 <figure class="mdmark-code">
   <figcaption class="mdmark-code-title"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/></svg>app.ts</figcaption>
   <pre class="mdmark-code-lines mdmark-code-numbered" tabindex="0" aria-label="コード: app.ts"><code class="language-ts" style="--mdmark-code-digits: 1"><span class="mdmark-code-line" data-line="1"><span class="mdmark-code-text"><span class="hljs-keyword">import</span> { mount } <span class="hljs-keyword">from</span> <span class="hljs-string">&quot;mdmark&quot;</span>;</span></span>
-<span class="mdmark-code-line" data-line="2"><span class="mdmark-code-text"><span class="hljs-keyword">const</span> url = <span class="hljs-string">&quot;https://cdn.jsdelivr.net/gh/shuhei1101/mdmark@v0.10.0/dist/index.js&quot;</span>; <span class="hljs-comment">// 版を固定した URL から配布物を読み、描く先の要素に文書を描く</span></span></span>
+<span class="mdmark-code-line" data-line="2"><span class="mdmark-code-text"><span class="hljs-keyword">const</span> url = <span class="hljs-string">&quot;https://cdn.jsdelivr.net/gh/shuhei1101/mdmark@v0.10.0/dist/index.js&quot;</span>; <span class="hljs-comment">// バージョンを固定した URL から配布物を読み込み、描く先の要素に文書を描く</span></span></span>
 <span class="mdmark-code-line" data-line="3"><span class="mdmark-code-text"><span class="hljs-title function_">mount</span>(<span class="hljs-variable language_">document</span>.<span class="hljs-title function_">querySelector</span>(<span class="hljs-string">&quot;#doc&quot;</span>), markdown);</span></span></code></pre>
 </figure>
         </article>
       </section>
 
-      <!-- 使う側の pre への汎用の CSS（#294）: 使う側が層の外に .md pre { white-space: pre-wrap; overflow-wrap: anywhere } を書いても、印の無いブロックとファイルツリーは折り返さず、JSON の字下げとツリーの罫線・入れ子も崩れない。wrap のブロックは折り返す -->
+      <!-- 利用側の pre への汎用の CSS（#294）: 利用側が層の外に .md pre { white-space: pre-wrap; overflow-wrap: anywhere } を記載しても、マーカーの無いブロックとファイルツリーは折り返さず、JSON の字下げとツリーの罫線・入れ子も崩れない。wrap のブロックは折り返す -->
       <section aria-labelledby="state-host-pre">
-        <h2 class="catalog-label" id="state-host-pre">使う側の pre への汎用の CSS を当てた文書（印の無いブロックは折り返さない）</h2>
+        <h2 class="catalog-label" id="state-host-pre">利用側の pre への汎用の CSS を適用した文書（マーカーの無いブロックは折り返さない）</h2>
         <article class="mdmark mock-host-pre">
 <figure class="mdmark-code">
   <pre class="mdmark-code-lines mdmark-code-numbered" tabindex="0" aria-label="コード"><code class="language-json" style="--mdmark-code-digits: 1"><span class="mdmark-code-line" data-line="1"><span class="mdmark-code-text">{</span></span>
@@ -366,26 +366,26 @@ print(f"{len(docs)} 件を描きました", None, True)</code></pre>
 <span class="mdmark-code-line" data-line="6"><span class="mdmark-code-text">}</span></span></code></pre>
 </figure>
 <pre data-mock-tree data-open="all">very-long-folder-name-for-the-generated-design-documents/
-├── a-file-name-that-is-much-longer-than-the-box-width-on-phones.config.ts # 使う側の pre への CSS でも折り返さない
+├── a-file-name-that-is-much-longer-than-the-box-width-on-phones.config.ts # 利用側の pre への CSS でも折り返さない
 └── parts/
     └── notice.ts</pre>
 <figure class="mdmark-code">
   <pre class="mdmark-code-lines mdmark-code-wrap" tabindex="0" aria-label="コード"><code class="language-ts" style="--mdmark-code-digits: 1"><span class="mdmark-code-line"><span class="mdmark-code-text"><span class="hljs-keyword">import</span> { mount } <span class="hljs-keyword">from</span> <span class="hljs-string">&quot;mdmark&quot;</span>;</span></span>
-<span class="mdmark-code-line"><span class="mdmark-code-text"><span class="hljs-keyword">const</span> url = <span class="hljs-string">&quot;https://cdn.jsdelivr.net/gh/shuhei1101/mdmark@v0.10.0/dist/index.js&quot;</span>; <span class="hljs-comment">// 版を固定した URL から配布物を読み、描く先の要素に文書を描く</span></span></span>
+<span class="mdmark-code-line"><span class="mdmark-code-text"><span class="hljs-keyword">const</span> url = <span class="hljs-string">&quot;https://cdn.jsdelivr.net/gh/shuhei1101/mdmark@v0.10.0/dist/index.js&quot;</span>; <span class="hljs-comment">// バージョンを固定した URL から配布物を読み込み、描く先の要素に文書を描く</span></span></span>
 <span class="mdmark-code-line"><span class="mdmark-code-text"><span class="hljs-title function_">mount</span>(<span class="hljs-variable language_">document</span>.<span class="hljs-title function_">querySelector</span>(<span class="hljs-string">&quot;#doc&quot;</span>), markdown);</span></span></code></pre>
 </figure>
         </article>
       </section>
 
-      <!-- 印の書き方を見せる（正常シナリオ）: 行末の // [\!code ++] は \ を外した文字のまま出し、足した行にしない -->
+      <!-- マーカーの記載方法を見せる（正常シナリオ）: 行末の // [\!code ++] は \ を削除した文字のまま出し、追加した行にしない -->
       <section aria-labelledby="state-escaped">
-        <h2 class="catalog-label" id="state-escaped">打ち消した印（[\!code ++] を文字のまま出す）</h2>
+        <h2 class="catalog-label" id="state-escaped">打ち削除したマーカー（[\!code ++] を文字のまま出す）</h2>
         <article class="mdmark">
 <pre tabindex="0" aria-label="コード: ts"><code class="language-ts"><span class="hljs-keyword">let</span> count = <span class="hljs-number">1</span>; <span class="hljs-comment">// [!code ++]</span></code></pre>
         </article>
       </section>
 
-      <!-- 機能をオフにした文書: features の印で -code を書いた文書。code の印は消え、コードの行の印は文字のまま出す -->
+      <!-- 機能をオフにした文書: features のマーカーで -code を記載した文書。code のマーカーは消え、コードの行のマーカーは文字のまま出す -->
       <section aria-labelledby="state-off">
         <h2 class="catalog-label" id="state-off">機能をオフにした文書（features: -code）</h2>
         <article class="mdmark">
@@ -395,7 +395,7 @@ print(f"{len(docs)} 件を描きました", None, True)</code></pre>
         </article>
       </section>
 
-      <!-- 飾りの無いコードブロック: code の印もコードの行の印も無いコードブロックは今の pre のまま -->
+      <!-- 飾りの無いコードブロック: code のマーカーもコードの行のマーカーも無いコードブロックは今の pre のまま -->
       <section aria-labelledby="state-plain">
         <h2 class="catalog-label" id="state-plain">飾りの無いコードブロック（今のまま）</h2>
         <article class="mdmark">
@@ -403,13 +403,13 @@ print(f"{len(docs)} 件を描きました", None, True)</code></pre>
         </article>
       </section>
 
-      <!-- 読めない指定（異常シナリオ）: code の印 title=app.ts color=red。読めた題だけを当てる -->
+      <!-- 読み込めない指定（異常シナリオ）: code のマーカー title=app.ts color=red。読み込めたタイトルだけを適用する -->
       <section aria-labelledby="state-unknown-key">
-        <h2 class="catalog-label" id="state-unknown-key">読めない指定（異常シナリオ）</h2>
+        <h2 class="catalog-label" id="state-unknown-key">読み込めない指定（異常シナリオ）</h2>
         <article class="mdmark">
 <div class="mdmark-syntax-warning">
-  <p class="mdmark-syntax-warning-title"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg>書き方の警告</p>
-  <p><code>&lt;!-- code: title=app.ts color=red --&gt;</code> の <code>color=</code> は使えません。使えるキーは <code>title=</code>・<code>lines</code>・<code>highlight=</code> です。読めた指定だけを当てて描いています。</p>
+  <p class="mdmark-syntax-warning-title"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg>記載の警告</p>
+  <p><code>&lt;!-- code: title=app.ts color=red --&gt;</code> の <code>color=</code> は使用できません。使用できるキーは <code>title=</code>・<code>lines</code>・<code>highlight=</code> です。読み込めた指定だけを適用して描いています。</p>
 </div>
 <figure class="mdmark-code">
   <figcaption class="mdmark-code-title"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/></svg>app.ts</figcaption>
@@ -420,13 +420,13 @@ print(f"{len(docs)} 件を描きました", None, True)</code></pre>
         </article>
       </section>
 
-      <!-- コードブロックに無い行の番号（異常シナリオ）: highlight=2,5 を 3 行のコードブロックに書いた。2 行目だけを強調する -->
+      <!-- コードブロックに無い行の番号（異常シナリオ）: highlight=2,5 を 3 行のコードブロックに記載した。2 行目だけを強調する -->
       <section aria-labelledby="state-missing-line">
         <h2 class="catalog-label" id="state-missing-line">コードブロックに無い行の番号（異常シナリオ）</h2>
         <article class="mdmark">
 <div class="mdmark-syntax-warning">
-  <p class="mdmark-syntax-warning-title"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg>書き方の警告</p>
-  <p><code>&lt;!-- code: highlight=2,5 --&gt;</code> の 5 行目がありません。コードブロックは 3 行です。行の番号を 1〜3 で書いてください。5 行目を除いて強調しています。</p>
+  <p class="mdmark-syntax-warning-title"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg>記載の警告</p>
+  <p><code>&lt;!-- code: highlight=2,5 --&gt;</code> の 5 行目がありません。コードブロックは 3 行です。行の番号を 1〜3 で記載してください。5 行目を除いて強調しています。</p>
 </div>
 <pre class="mdmark-code-lines" tabindex="0" aria-label="コード: ts"><code class="language-ts"><span class="mdmark-code-line"><span class="mdmark-code-text"><span class="hljs-keyword">import</span> { mount } <span class="hljs-keyword">from</span> <span class="hljs-string">&quot;mdmark&quot;</span>;</span></span>
 <span class="mdmark-code-line" data-kind="highlight"><span class="mdmark-code-text"><span class="hljs-keyword">const</span> doc = <span class="hljs-keyword">await</span> <span class="hljs-title function_">fetch</span>(<span class="hljs-string">&quot;/README.md&quot;</span>);</span></span>
@@ -434,33 +434,33 @@ print(f"{len(docs)} 件を描きました", None, True)</code></pre>
         </article>
       </section>
 
-      <!-- 知らないコードの行の印（異常シナリオ）: 行末の // [!code focus] は行に当てず、書いた文字のまま出す -->
+      <!-- 知らないコードの行のマーカー（異常シナリオ）: 行末の // [!code focus] は行に当てず、記載した文字のまま出す -->
       <section aria-labelledby="state-unknown-mark">
-        <h2 class="catalog-label" id="state-unknown-mark">知らないコードの行の印（異常シナリオ）</h2>
+        <h2 class="catalog-label" id="state-unknown-mark">知らないコードの行のマーカー（異常シナリオ）</h2>
         <article class="mdmark">
 <div class="mdmark-syntax-warning">
-  <p class="mdmark-syntax-warning-title"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg>書き方の警告</p>
-  <p>コードの行の印 <code>[!code focus]</code> は使えません。使える印は <code>[!code ++]</code>・<code>[!code --]</code>・<code>[!code highlight]</code> です。この行には当てず、書いた文字のまま描いています。</p>
+  <p class="mdmark-syntax-warning-title"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg>記載の警告</p>
+  <p>コードの行のマーカー <code>[!code focus]</code> は使用できません。使用できるマーカーは <code>[!code ++]</code>・<code>[!code --]</code>・<code>[!code highlight]</code> です。この行には当てず、記載した文字のまま描いています。</p>
 </div>
 <pre tabindex="0" aria-label="コード: ts"><code class="language-ts"><span class="hljs-keyword">const</span> doc = <span class="hljs-keyword">await</span> <span class="hljs-title function_">fetch</span>(<span class="hljs-string">&quot;/README.md&quot;</span>); <span class="hljs-comment">// [!code focus]</span></code></pre>
         </article>
       </section>
 
-      <!-- 印の後にコードブロックが無い（異常シナリオ）: code の印 title=app.ts の直後が段落。段落はそのまま描く -->
+      <!-- マーカーの後にコードブロックが無い（異常シナリオ）: code のマーカー title=app.ts の直後が段落。段落はそのまま描く -->
       <section aria-labelledby="state-no-code-block">
-        <h2 class="catalog-label" id="state-no-code-block">印の後にコードブロックが無い（異常シナリオ）</h2>
+        <h2 class="catalog-label" id="state-no-code-block">マーカーの後にコードブロックが無い（異常シナリオ）</h2>
         <article class="mdmark">
 <div class="mdmark-syntax-warning">
-  <p class="mdmark-syntax-warning-title"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg>書き方の警告</p>
-  <p><code>&lt;!-- code: title=app.ts --&gt;</code> の直後にコードブロックがありません。印の次の行にコードブロックを書いてください。</p>
+  <p class="mdmark-syntax-warning-title"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg>記載の警告</p>
+  <p><code>&lt;!-- code: title=app.ts --&gt;</code> の直後にコードブロックがありません。マーカーの次の行にコードブロックを記載してください。</p>
 </div>
-<p>mount にはコードブロックの題を付けられます。</p>
+<p>mount にはコードブロックのタイトルを付けられます。</p>
         </article>
       </section>
 
-      <!-- 言語のラベルとコピーボタン（題の無いコードブロックにも帯を作り、左端に言語のラベル、右端にコピーボタンを置く） -->
+      <!-- 言語のラベルとコピーボタン（タイトルの無いコードブロックにも帯を作り、左端に言語のラベル、右端にコピーボタンを配置する） -->
       <section aria-labelledby="bar-label">
-        <h2 class="catalog-label" id="bar-label">言語のラベルとコピーボタン（題の無いコードブロックにも帯を作り、左端に言語のラベル、右端にコピーボタンを置く）</h2>
+        <h2 class="catalog-label" id="bar-label">言語のラベルとコピーボタン（タイトルの無いコードブロックにも帯を作り、左端に言語のラベル、右端にコピーボタンを配置する）</h2>
         <article class="mdmark">
 <pre tabindex="0" aria-label="コード: bash"><code class="language-bash">npx mdmark check
 npx mdmark build --out dist/stock.html</code></pre>
@@ -477,9 +477,9 @@ npx mdmark build --out dist/stock.html</code></pre>
         </article>
       </section>
 
-      <!-- 題と言語のラベル（code の印 title=app.ts と言語 ts。左端に言語のラベル、続けて題を置く） -->
+      <!-- タイトルと言語のラベル（code のマーカー title=app.ts と言語 ts。左端に言語のラベル、続けてタイトルを配置する） -->
       <section aria-labelledby="bar-title">
-        <h2 class="catalog-label" id="bar-title">題と言語のラベル（&lt;!-- code: title=app.ts --&gt; と言語 ts。左端に言語のラベル、続けて題を置く）</h2>
+        <h2 class="catalog-label" id="bar-title">タイトルと言語のラベル（&lt;!-- code: title=app.ts --&gt; と言語 ts。左端に言語のラベル、続けてタイトルを配置する）</h2>
         <article class="mdmark">
 <figure class="mdmark-code">
   <figcaption class="mdmark-code-title"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/></svg>app.ts</figcaption>
@@ -489,27 +489,27 @@ npx mdmark build --out dist/stock.html</code></pre>
         </article>
       </section>
 
-      <!-- コピーした（ボタンの中で知らせ、2 秒で元の文言に戻す） -->
+      <!-- コピーした（ボタンの中で通知し、2 秒で元の文言に戻す） -->
       <section aria-labelledby="bar-copied">
-        <h2 class="catalog-label" id="bar-copied">コピーした（ボタンの中で知らせ、2 秒で元の文言に戻す）</h2>
+        <h2 class="catalog-label" id="bar-copied">コピーした（ボタンの中で通知し、2 秒で元の文言に戻す）</h2>
         <article class="mdmark">
 <pre tabindex="0" aria-label="コード: bash" data-mock-copy="copied"><code class="language-bash">npx mdmark check
 npx mdmark build --out dist/stock.html</code></pre>
         </article>
       </section>
 
-      <!-- コピーできなかった（クリップボードに書けない。異常シナリオ。次に押すまで知らせを残す） -->
+      <!-- コピーできなかった（クリップボードに書き込めない。異常シナリオ。次に押すまで通知を残す） -->
       <section aria-labelledby="bar-failed">
-        <h2 class="catalog-label" id="bar-failed">コピーできなかった（クリップボードに書けない。異常シナリオ。次に押すまで知らせを残す）</h2>
+        <h2 class="catalog-label" id="bar-failed">コピーできなかった（クリップボードに書き込めない。異常シナリオ。次に押すまで通知を残す）</h2>
         <article class="mdmark">
 <pre tabindex="0" aria-label="コード: bash" data-mock-copy="failed"><code class="language-bash">npx mdmark check
 npx mdmark build --out dist/stock.html</code></pre>
         </article>
       </section>
 
-      <!-- 言語を書かないコードブロック（ラベルを出さず、コピーボタンだけを置く） -->
+      <!-- 言語を記載しないコードブロック（ラベルを出さず、コピーボタンだけを配置する） -->
       <section aria-labelledby="bar-no-language">
-        <h2 class="catalog-label" id="bar-no-language">言語を書かないコードブロック（ラベルを出さず、コピーボタンだけを置く）</h2>
+        <h2 class="catalog-label" id="bar-no-language">言語を記載しないコードブロック（ラベルを出さず、コピーボタンだけを配置する）</h2>
         <article class="mdmark">
 <pre tabindex="0" aria-label="コード"><code>08:30 第一倉庫 点検済み
 09:10 冷蔵室 点検済み</code></pre>
@@ -528,9 +528,9 @@ npx mdmark build --out dist/stock.html</code></pre>
         </article>
       </section>
 
-      <!-- diff の色分け（足した行と消した行を差分の表示と同じ色で出す） -->
+      <!-- diff の色分け（追加した行と削除した行を差分の表示と同じ色で出す） -->
       <section aria-labelledby="bar-diff">
-        <h2 class="catalog-label" id="bar-diff">diff の色分け（足した行と消した行を差分の表示と同じ色で出す）</h2>
+        <h2 class="catalog-label" id="bar-diff">diff の色分け（追加した行と削除した行を差分の表示と同じ色で出す）</h2>
         <article class="mdmark">
 <pre tabindex="0" aria-label="コード: diff"><code class="language-diff"><span class="hljs-meta">@@ -1,3 +1,3 @@</span>
  features:
@@ -635,7 +635,7 @@ npx mdmark build --out dist/stock.html</code></pre>
 
       <!-- #275 行番号の無いコードブロック: 左の余白に畳むボタンの列を取る。縦線はインデントの 1 レベルごと -->
       <section aria-labelledby="state-275-fold-plain">
-        <h2 class="catalog-label" id="state-275-fold-plain">行番号の無いコードブロック（YAML。左の余白に ▾ を置く）</h2>
+        <h2 class="catalog-label" id="state-275-fold-plain">行番号の無いコードブロック（YAML。左の余白に ▾ を配置する）</h2>
         <article class="mdmark">
 <pre tabindex="0" aria-label="コード: yaml" data-mock-code275 data-fold="6"><code class="language-yaml">version: "0.9"
 features:
@@ -646,16 +646,16 @@ libraries:
     url: https://cdn.jsdelivr.net/npm/highlight.js
     version: 11.11.1
 build:
-  - docs/使い方/導入/README.md</code></pre>
+  - docs/使用方法/導入/README.md</code></pre>
         </article>
       </section>
 
-      <!-- #275 畳めない行の fold=: 書き方の警告を出し、その行の指定を外して描く -->
+      <!-- #275 畳めない行の fold=: 記載の警告を出し、その行の指定を削除して描く -->
       <section aria-labelledby="state-275-fold-warning">
         <h2 class="catalog-label" id="state-275-fold-warning">畳めない行の fold=（fold=3,6。異常シナリオ）</h2>
         <article class="mdmark">
 <div class="mdmark-syntax-warning">
-  <p class="mdmark-syntax-warning-title"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg>書き方の警告</p>
+  <p class="mdmark-syntax-warning-title"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg>記載の警告</p>
   <p><code>&lt;!-- code: fold=3,6 --&gt;</code> の 6 行目は畳めません（次の行が 6 行目より深くありません）。6 行目の指定を無視して描いています。</p>
 </div>
 <pre tabindex="0" aria-label="コード: ts" data-mock-code275 data-numbered data-fold="3"><code class="language-ts">export function mount(element, markdown, options = {}) {

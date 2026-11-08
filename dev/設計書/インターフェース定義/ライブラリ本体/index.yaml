@@ -1,6 +1,6 @@
 summary: ライブラリ本体の公開関数とビルドの操作
 items:
-  - page: 版を返す.ts.yaml
+  - page: バージョンを返却する.ts.yaml
     summary: 利用側のページが、読み込んだ配布物のバージョンを取る
   - page: 配布物をビルドする.ts.yaml
     summary: バージョンを埋めた dist/index.js と dist/index.css をビルドする
@@ -14,7 +14,7 @@ items:
     summary: 索引と全ての文書の本文から、被参照と用語集の表の用語をまとめた参照の表を作る（collectReferences）
   - page: 索引を点検する.ts.yaml
     summary: 索引と文書の本文から、索引と文書のずれの一覧を返却する（checkIndex）
-  - page: 雛形を置く.ts.yaml
+  - page: 雛形を配置する.ts.yaml
     summary: 文書の作成者が、設定・利用側の CSS・索引・拡張の雛形をフォルダに配置する（mdmark init）
   - page: 設定と索引を点検する.ts.yaml
     summary: 文書の作成者が、設定の構造・索引と文書のずれ・build の対象の有無を点検する（mdmark check）
@@ -22,7 +22,7 @@ items:
     summary: 文書の作成者が、Markdown を 1 つ、外へ要求しない 1 枚の HTML に書き出す（mdmark export）
   - page: 複数の文書を1枚のHTMLにまとめる.ts.yaml
     summary: 文書の作成者が、設定の build の文書を行き来できる 1 枚の HTML にまとめる（mdmark build）
-  - page: 版を上げる.ts.yaml
+  - page: バージョンを上げる.ts.yaml
     summary: 文書の作成者が、移行の手順をバージョンの順に適用して設定のバージョンを呼んだ CLI のバージョンにする（mdmark upgrade）
   - page: ビューを描く.ts.yaml
     summary: 利用側のページと拡張のモジュールが、列名と項目の値から要素の中にボード表示と表形式のビューを描く（mountView）
@@ -32,5 +32,5 @@ items:
     summary: 利用側の処理が、索引と文書の本文から、本文に出た用語・文書の別名の一致と参照先を取り出す（collectMatches）
   - page: エイリアスを作る.ts.yaml
     summary: 設定の aliases の行と読み込んだ YAML の中身から、metadata を適用したエイリアスの配列を作る（buildAliases）
-  - page: 設定を重ねて読む.ts.yaml
+  - page: 設定を重ねて読み込む.ts.yaml
     summary: 端末の設定と上のフォルダの mdmark.config.yaml を探して重ね、重ねた設定と重ねた設定ファイルの一覧を返却する（loadLayeredConfig）

@@ -20,7 +20,7 @@
   <link rel="stylesheet" href="../../refs/311/assets/footnote.css">
   <!-- この部品のモックの固有の規則（見本の高さ） -->
   <link rel="stylesheet" href="./style.css">
-  <!-- 印刷の規則: 紙に出すときだけ当てる。[data-print-styles]: モックの「印刷の見え方」で avoided-term.js が media を all に切り替える -->
+  <!-- 印刷の規則: 紙に出すときだけ適用する。[data-print-styles]: モックの「印刷の見え方」で avoided-term.js が media を all に切り替える -->
   <link rel="stylesheet" href="../../refs/27/assets/glossary-print.css" media="print" data-print-styles>
   <link rel="stylesheet" href="../../refs/311/assets/footnote-print.css" media="print" data-print-styles>
   <!-- 配色の切り替え -->
@@ -35,7 +35,7 @@
 <body>
   <!-- モック専用の操作列: 配色と印刷の見え方の切り替え -->
   <div class="mock-bar">
-    <!-- [data-scheme-set]: sample.js が押されたボタンの値を html の data-scheme に当てる -->
+    <!-- [data-scheme-set]: sample.js が押されたボタンの値を html の data-scheme に適用する -->
     <div class="mock-bar-group" role="group" aria-label="配色">
       <button class="mock-bar-item" type="button" data-scheme-set="light" aria-pressed="false">明るい配色</button>
       <button class="mock-bar-item" type="button" data-scheme-set="dark" aria-pressed="false">ダーク</button>
@@ -54,7 +54,7 @@
       <section aria-labelledby="state-default">
         <h2 class="catalog-label" id="state-default">通常（ポインターを乗せるか Tab でフォーカスするとツールチップが開き、Esc で閉じる。番号を押すと閉じた一覧が開いて該当の脚注へ移る）</h2>
         <article class="mdmark">
-<p>描いた文書は使う側の CSS で見た目を変えられます<sup class="mdmark-fn-ref"><a class="mdmark-fn-link" id="d-fnref-1-0" href="#d-fn-1" aria-describedby="d-tip-1-0"><span class="mdmark-visually-hidden">脚注 </span>1</a><span class="mdmark-fn-tip" id="d-tip-1-0" role="tooltip"><span class="mdmark-fn-tip-title">脚注 1</span><span class="mdmark-fn-tip-body">CSS 変数と層の外の CSS で上書きする。</span></span></sup>。</p>
+<p>描いた文書は利用側の CSS で外観を変えられます<sup class="mdmark-fn-ref"><a class="mdmark-fn-link" id="d-fnref-1-0" href="#d-fn-1" aria-describedby="d-tip-1-0"><span class="mdmark-visually-hidden">脚注 </span>1</a><span class="mdmark-fn-tip" id="d-tip-1-0" role="tooltip"><span class="mdmark-fn-tip-title">脚注 1</span><span class="mdmark-fn-tip-body">CSS 変数と層の外の CSS で上書きする。</span></span></sup>。</p>
 <p>まとめた HTML はサーバー無しで配れます<sup class="mdmark-fn-ref"><a class="mdmark-fn-link" id="d-fnref-2-0" href="#d-fn-2" aria-describedby="d-tip-2-0"><span class="mdmark-visually-hidden">脚注 </span>2</a><span class="mdmark-fn-tip" id="d-tip-2-0" role="tooltip"><span class="mdmark-fn-tip-title">脚注 2</span><span class="mdmark-fn-tip-body">file:// で開き、外への要求は 0 件。</span></span></sup>。</p>
 <details class="mdmark-footnotes">
   <summary>脚注（2 件）</summary>
@@ -70,7 +70,7 @@
       <section aria-labelledby="state-open">
         <h2 class="catalog-label" id="state-open">番号のツールチップ（開いた）</h2>
         <article class="mdmark catalog-tip-space">
-<p>描いた文書は使う側の CSS で見た目を変えられます<sup class="mdmark-fn-ref is-open" data-mock-static><a class="mdmark-fn-link" id="o-fnref-1-0" href="#o-fn-1" aria-describedby="o-tip-1-0"><span class="mdmark-visually-hidden">脚注 </span>1</a><span class="mdmark-fn-tip" id="o-tip-1-0" role="tooltip"><span class="mdmark-fn-tip-title">脚注 1</span><span class="mdmark-fn-tip-body">CSS 変数と層の外の CSS で上書きする。</span></span></sup>。</p>
+<p>描いた文書は利用側の CSS で外観を変えられます<sup class="mdmark-fn-ref is-open" data-mock-static><a class="mdmark-fn-link" id="o-fnref-1-0" href="#o-fn-1" aria-describedby="o-tip-1-0"><span class="mdmark-visually-hidden">脚注 </span>1</a><span class="mdmark-fn-tip" id="o-tip-1-0" role="tooltip"><span class="mdmark-fn-tip-title">脚注 1</span><span class="mdmark-fn-tip-body">CSS 変数と層の外の CSS で上書きする。</span></span></sup>。</p>
         </article>
       </section>
 
@@ -78,11 +78,11 @@
       <section aria-labelledby="state-above">
         <h2 class="catalog-label" id="state-above">上に開いた（下に収まらないとき）</h2>
         <article class="mdmark catalog-tip-space-above">
-<p>描いた文書は使う側の CSS で見た目を変えられます<sup class="mdmark-fn-ref is-open is-above" data-mock-static data-mock-side="above"><a class="mdmark-fn-link" id="a-fnref-1-0" href="#a-fn-1" aria-describedby="a-tip-1-0"><span class="mdmark-visually-hidden">脚注 </span>1</a><span class="mdmark-fn-tip" id="a-tip-1-0" role="tooltip"><span class="mdmark-fn-tip-title">脚注 1</span><span class="mdmark-fn-tip-body">CSS 変数と層の外の CSS で上書きする。</span></span></sup>。</p>
+<p>描いた文書は利用側の CSS で外観を変えられます<sup class="mdmark-fn-ref is-open is-above" data-mock-static data-mock-side="above"><a class="mdmark-fn-link" id="a-fnref-1-0" href="#a-fn-1" aria-describedby="a-tip-1-0"><span class="mdmark-visually-hidden">脚注 </span>1</a><span class="mdmark-fn-tip" id="a-tip-1-0" role="tooltip"><span class="mdmark-fn-tip-title">脚注 1</span><span class="mdmark-fn-tip-body">CSS 変数と層の外の CSS で上書きする。</span></span></sup>。</p>
         </article>
       </section>
 
-      <!-- 中身が長い: 定義の段落ごとに積む。高さの上限を超えるとツールチップの中をスクロールする。リンクを持つ中身は用語のツールチップと同じく role="group" と aria-label にし、番号の aria-details で指す（番号の次の Tab で中のリンクへ移る） -->
+      <!-- 中身が長い: 定義の段落ごとに追加する。高さの上限を超えるとツールチップの中をスクロールする。リンクを持つ中身は用語のツールチップと同じく role="group" と aria-label にし、番号の aria-details で指す（番号の次の Tab で中のリンクへ移る） -->
       <section aria-labelledby="state-long">
         <h2 class="catalog-label" id="state-long">中身が長い（定義の 2 段落・行内のコード・リンク。番号の次の Tab で中のリンクへ移る）</h2>
         <article class="mdmark catalog-tip-space-long">
@@ -90,11 +90,11 @@
         </article>
       </section>
 
-      <!-- 用語と並ぶ: 番号は上付きの [1] と印の色、用語は本文の色の破線の下線。ツールチップのタイトルも「脚注 1」と「用語」で分かれる -->
+      <!-- 用語と並ぶ: 番号は上付きの [1] とマーカーの色、用語は本文の色の破線の下線。ツールチップのタイトルも「脚注 1」と「用語」で分かれる -->
       <section aria-labelledby="state-term">
-        <h2 class="catalog-label" id="state-term">用語の下線と同じ段落（番号は上付きの角括弧と印の色、用語は破線の下線で見分ける）</h2>
+        <h2 class="catalog-label" id="state-term">用語の下線と同じ段落（番号は上付きの角括弧とマーカーの色、用語は破線の下線で見分ける）</h2>
         <article class="mdmark catalog-tip-space">
-<p>記録は<span class="mdmark-term-wrap"><span class="mdmark-term" tabindex="0" aria-describedby="tip-t-term">ワークスペース</span><span class="mdmark-term-tip" id="tip-t-term" role="tooltip"><span class="mdmark-term-tip-section"><span class="mdmark-term-tip-heading">用語</span><span class="mdmark-term-tip-meaning">話し合いの記録を置くフォルダ</span></span></span></span>の中に日付ごとに置きます<sup class="mdmark-fn-ref"><a class="mdmark-fn-link" id="t-fnref-1-0" href="#t-fn-1" aria-describedby="t-tip-1-0"><span class="mdmark-visually-hidden">脚注 </span>1</a><span class="mdmark-fn-tip" id="t-tip-1-0" role="tooltip"><span class="mdmark-fn-tip-title">脚注 1</span><span class="mdmark-fn-tip-body">古い記録は 30 日で消える。</span></span></sup>。</p>
+<p>記録は<span class="mdmark-term-wrap"><span class="mdmark-term" tabindex="0" aria-describedby="tip-t-term">ワークスペース</span><span class="mdmark-term-tip" id="tip-t-term" role="tooltip"><span class="mdmark-term-tip-section"><span class="mdmark-term-tip-heading">用語</span><span class="mdmark-term-tip-meaning">話し合いの記録を配置するフォルダ</span></span></span></span>の中に日付ごとに配置します<sup class="mdmark-fn-ref"><a class="mdmark-fn-link" id="t-fnref-1-0" href="#t-fn-1" aria-describedby="t-tip-1-0"><span class="mdmark-visually-hidden">脚注 </span>1</a><span class="mdmark-fn-tip" id="t-tip-1-0" role="tooltip"><span class="mdmark-fn-tip-title">脚注 1</span><span class="mdmark-fn-tip-body">古い記録は 30 日で消える。</span></span></sup>。</p>
 <details class="mdmark-footnotes">
   <summary>脚注（1 件）</summary>
   <ol class="mdmark-footnotes-list">
@@ -108,18 +108,18 @@
       <section aria-labelledby="state-twice">
         <h2 class="catalog-label" id="state-twice">同じ脚注を 2 回参照する（一覧の項目は 1 つで、戻るリンクに a・b を付ける。一覧を開いた）</h2>
         <article class="mdmark">
-<p>表の印は文書のどこにでも置けます<sup class="mdmark-fn-ref"><a class="mdmark-fn-link" id="w-fnref-1-0" href="#w-fn-1" aria-describedby="w-tip-1-0"><span class="mdmark-visually-hidden">脚注 </span>1</a><span class="mdmark-fn-tip" id="w-tip-1-0" role="tooltip"><span class="mdmark-fn-tip-title">脚注 1</span><span class="mdmark-fn-tip-body">閉じの印を書き忘れると、範囲の上に警告が出る。</span></span></sup>。</p>
-<p>タブの印も同じです<sup class="mdmark-fn-ref"><a class="mdmark-fn-link" id="w-fnref-1-1" href="#w-fn-1" aria-describedby="w-tip-1-1"><span class="mdmark-visually-hidden">脚注 </span>1</a><span class="mdmark-fn-tip" id="w-tip-1-1" role="tooltip"><span class="mdmark-fn-tip-title">脚注 1</span><span class="mdmark-fn-tip-body">閉じの印を書き忘れると、範囲の上に警告が出る。</span></span></sup>。</p>
+<p>表のマーカーは文書のどこにでも配置できます<sup class="mdmark-fn-ref"><a class="mdmark-fn-link" id="w-fnref-1-0" href="#w-fn-1" aria-describedby="w-tip-1-0"><span class="mdmark-visually-hidden">脚注 </span>1</a><span class="mdmark-fn-tip" id="w-tip-1-0" role="tooltip"><span class="mdmark-fn-tip-title">脚注 1</span><span class="mdmark-fn-tip-body">閉じのマーカーの記載を忘れると、範囲の上に警告が出る。</span></span></sup>。</p>
+<p>タブのマーカーも同じです<sup class="mdmark-fn-ref"><a class="mdmark-fn-link" id="w-fnref-1-1" href="#w-fn-1" aria-describedby="w-tip-1-1"><span class="mdmark-visually-hidden">脚注 </span>1</a><span class="mdmark-fn-tip" id="w-tip-1-1" role="tooltip"><span class="mdmark-fn-tip-title">脚注 1</span><span class="mdmark-fn-tip-body">閉じのマーカーの記載を忘れると、範囲の上に警告が出る。</span></span></sup>。</p>
 <details class="mdmark-footnotes" open>
   <summary>脚注（1 件）</summary>
   <ol class="mdmark-footnotes-list">
-    <li class="mdmark-fn-item" id="w-fn-1" tabindex="-1">閉じの印を書き忘れると、範囲の上に警告が出る。 <a class="mdmark-fn-back" href="#w-fnref-1-0" aria-label="本文の脚注 1 の 1 つ目の参照へ戻る"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 14-5-5 5-5"/><path d="M20 20v-7a4 4 0 0 0-4-4H4"/></svg>a</a><a class="mdmark-fn-back" href="#w-fnref-1-1" aria-label="本文の脚注 1 の 2 つ目の参照へ戻る"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 14-5-5 5-5"/><path d="M20 20v-7a4 4 0 0 0-4-4H4"/></svg>b</a></li>
+    <li class="mdmark-fn-item" id="w-fn-1" tabindex="-1">閉じのマーカーの記載を忘れると、範囲の上に警告が出る。 <a class="mdmark-fn-back" href="#w-fnref-1-0" aria-label="本文の脚注 1 の 1 つ目の参照へ戻る"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 14-5-5 5-5"/><path d="M20 20v-7a4 4 0 0 0-4-4H4"/></svg>a</a><a class="mdmark-fn-back" href="#w-fnref-1-1" aria-label="本文の脚注 1 の 2 つ目の参照へ戻る"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 14-5-5 5-5"/><path d="M20 20v-7a4 4 0 0 0-4-4H4"/></svg>b</a></li>
   </ol>
 </details>
         </article>
       </section>
 
-      <!-- 関連文書の一覧と並ぶ: 脚注の一覧は本文の直後、関連文書の一覧の前に置く -->
+      <!-- 関連文書の一覧と並ぶ: 脚注の一覧は本文の直後、関連文書の一覧の前に配置する -->
       <section aria-labelledby="state-backlinks">
         <h2 class="catalog-label" id="state-backlinks">末尾の一覧と関連文書の一覧が並ぶ（本文 → 脚注 → 関連文書の順）</h2>
         <article class="mdmark">
@@ -137,24 +137,24 @@
         </article>
       </section>
 
-      <!-- 定義の無い参照: [^missing] を書いた文字のまま出し、一覧を置かない -->
+      <!-- 定義の無い参照: [^missing] を記載した文字のまま出し、一覧を配置しない -->
       <section aria-labelledby="state-missing">
-        <h2 class="catalog-label" id="state-missing">定義の無い参照（書いた文字のまま。番号と一覧を出さない）</h2>
+        <h2 class="catalog-label" id="state-missing">定義の無い参照（記載した文字のまま。番号と一覧を出さない）</h2>
         <article class="mdmark">
-<p>この補足は後で書きます[^missing]。</p>
+<p>この補足は後で記載します[^missing]。</p>
         </article>
       </section>
 
-      <!-- 機能のオフ: 設定か文書の features のマーカーでオフにすると、参照も定義も書いた文字のまま -->
+      <!-- 機能のオフ: 設定か文書の features のマーカーでオフにすると、参照も定義も記載した文字のまま -->
       <section aria-labelledby="state-off">
-        <h2 class="catalog-label" id="state-off">脚注の機能をオフにした文書（書いた文字のまま、定義の行も書いた位置に残る）</h2>
+        <h2 class="catalog-label" id="state-off">脚注の機能をオフにした文書（記載した文字のまま、定義の行も記載した位置に残る）</h2>
         <article class="mdmark">
-<p>描いた文書は使う側の CSS で見た目を変えられます[^css]。</p>
+<p>描いた文書は利用側の CSS で外観を変えられます[^css]。</p>
 <p>[^css]: CSS 変数と層の外の CSS で上書きする。</p>
         </article>
       </section>
 
-      <!-- 表のセルの中: ツールチップは画面に対して置き、横にスクロールする表の枠で切れない -->
+      <!-- 表のセルの中: ツールチップは画面に対して配置し、横にスクロールする表の枠で切れない -->
       <section aria-labelledby="state-table">
         <h2 class="catalog-label" id="state-table">表のセルの中の番号（表の枠で切れない）</h2>
         <article class="mdmark">

@@ -3,7 +3,7 @@ docs_index: true
 items:
   - page: プレビューを開く.ts.yaml
     summary: Markdown の横か同じ列に、読み込むバージョンを決めて mdmark で描くプレビューを開く（mdmark.openPreviewToSide・mdmark.openPreview）
-  - page: プレビューを描き直す.ts.yaml
+  - page: プレビューを再描画する.ts.yaml
     summary: Markdown・設定ファイルの書き換えと背面からの復帰で、最後の内容で再描画する
   - page: プレビューをリロードする.ts.yaml
     summary: 設定ファイルと読み込むバージョンをもう一度決め、配布物を再読み込みして描く（mdmark.refreshPreview）

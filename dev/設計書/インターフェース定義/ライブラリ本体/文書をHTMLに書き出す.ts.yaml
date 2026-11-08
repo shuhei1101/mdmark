@@ -438,7 +438,7 @@ request:
     required: true
     location: argument
     description: 書き出す Markdown のパス
-    example: docs/使い方/guide.md
+    example: docs/使用方法/guide.md
   - name: --out
     type: string
     required: false
@@ -469,11 +469,11 @@ response:
     description: 配布物の CSS・`theme` の CSS・配布物の JavaScript・まとめたモジュールと拡張・画像を替えた文書の Markdown・設定・索引・参照の表を埋めた 1 枚の HTML。起動の処理と埋めるモジュール・拡張をまとめた 1 つのスクリプトを `script` 要素で直接動かす。開くと、読み込み済みのモジュールを外部ライブラリ・部品・色分けの読み込みに指定し、埋めた拡張を `registerExtension` で登録してから `mount` で文書を描く。`blob:` URL と動的 `import()` を使用しない
 response_example: |-
   ```text
-  書き出した: docs/使い方/guide.html
+  書き出した: docs/使用方法/guide.html
   ```
 
   ```text
-  警告: docs/使い方/guide.md: 画像 `img/missing.png` を読み込めません。パスを修正するか画像を配置してください。
+  警告: docs/使用方法/guide.md: 画像 `img/missing.png` を読み込めません。パスを修正するか画像を配置してください。
   ```
 exceptions:
   - name: なし（正常終了）

@@ -1,26 +1,26 @@
-/* 描いた文書のモック: 使う側のページの中に描いた文書と、印刷・知らせの枠・横スクロールの見え方 */
+/* 描いた文書のモック: 利用側のページの中に描いた文書と、印刷・通知ブロック・横スクロールの見え方 */
 
-/* 使う側のページの地の色（mdmark の変数と別。境目の見え方を確かめるための仮の色） */
+/* 利用側のページの地の色（mdmark の変数と別。境目の見え方を確認するための仮の色） */
 :root {
   --host-bg: #eef1f4;
   --host-text: #1f2328;
   --host-border: #d1d9e0;
 }
 
-/* 使う側のページがダークのときの地の色 */
+/* 利用側のページがダークのときの地の色 */
 :root[data-scheme="dark"] {
   --host-bg: #1c2128;
   --host-text: #e6edf3;
   --host-border: #3d444d;
 }
 
-/* ページ全体: 使う側のページの地を敷く */
+/* ページ全体: 利用側のページの地を敷く */
 body {
   background: var(--host-bg);
   color: var(--host-text);
 }
 
-/* 使う側のページのトップバー（mdmark の外） */
+/* 利用側のページのトップバー（mdmark の外） */
 .host-bar {
   padding: 12px 16px;
   border-block-end: 1px solid var(--host-border);
@@ -59,7 +59,7 @@ body {
         var(--mdmark-color-surface);
     }
 
-    /* 表の見出し行・セル: 横スクロールの影が透けるよう、地を透明にする（見出し行の面の色より後に当てる） */
+    /* 表の見出し行・セル: 横スクロールの影が透けるよう、地を透明にする（見出し行の面の色より後に適用する） */
     :is(th, td) {
       background: transparent;
     }

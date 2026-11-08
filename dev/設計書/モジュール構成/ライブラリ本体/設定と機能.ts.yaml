@@ -1,10 +1,10 @@
 title: ライブラリ本体 / 設定と機能
-lead: 使う側が渡す設定に既定を当てる処理と、設定の `features` に文書の `features` の印を重ねて機能のオン・オフを決める処理。どちらも DOM に頼らず、ブラウザと Node で動く。
+lead: 利用側が指定する設定に既定を適用する処理と、設定の `features` に文書の `features` のマーカーを重ねて機能のオン・オフを決める処理。どちらも DOM に頼らず、ブラウザと Node で動く。
 directory: |-
   ```tree
   src/
-  ├── config.ts    # 設定の型・既定・既定を当てる resolveConfig・ページの設定を重ねる applyPageSettings
-  └── features.ts  # 文書の印を重ねる resolveFeatures
+  ├── config.ts    # 設定の型・既定・既定を適用する resolveConfig・ページの設定を重ねる applyPageSettings
+  └── features.ts  # 文書のマーカーを重ねる resolveFeatures
   schemas/
   └── mdmark.config.schema.json  # 設定の JSON Schema
   ```
@@ -14,14 +14,14 @@ data_models:
     container: src/config.ts
     usecase: 共通
     role: DTO
-    summary: 使う側が `opts.config` に渡す設定（公開の型）。他のキーを持っていても読まない
+    summary: 利用側が `opts.config` に指定する設定（公開の型）。他のキーを持っていても読み込まない
     properties:
       - name: features
         type: Record<string, boolean> | undefined
         description: 機能のオン・オフの既定
       - name: libraries
         type: Record<string, string> | undefined
-        description: 印の名前からモジュールの URL を引く対応表
+        description: マーカーの名前からモジュールの URL を参照する対応表
       - name: tooltips
         type: '{ placement?: string; diagramPlacement?: string } | undefined'
         description: ツールチップの設定。`placement` は持ち主の上と下のどちらに先に出すか（`top` / `bottom`）。`diagramPlacement` は図・ヒント・グラフの項目のツールチップを先に出す側。知らない値も受けて `resolveConfig` が `placement` は `top`、`diagramPlacement` は `bottom` にするため、型は `string`
@@ -50,19 +50,19 @@ data_models:
     title: 対応表の行
     container: src/config.ts
     usecase: 共通
-    summary: 印 1 つのモジュールの URL と、図の印か
+    summary: マーカー 1 つのモジュールの URL と、図のマーカーか
     properties:
       - name: url
         type: string
         description: モジュールの URL
       - name: figure
         type: boolean
-        description: 図の印か。知らせの枠の題を分ける。設定の `libraries` で足した行は `true`
+        description: 図のマーカーか。通知ブロックのタイトルを分ける。設定の `libraries` で追加した行は `true`
   - name: ResolvedConfig
-    title: 既定を当てた設定
+    title: 既定を適用した設定
     container: src/config.ts
     usecase: 共通
-    summary: 全てのキーに値を持つ、内部で使う設定
+    summary: 全てのキーに値を持つ、内部で使用する設定
     properties:
       - name: features
         type: Record<string, boolean>
@@ -99,7 +99,7 @@ data_models:
     container: src/config.ts
     usecase: 共通
     summary: mermaid の図のテーマの名前（`"mdmark" | "default" | "neutral" | "dark" | "forest" | "base"`）
-    description: '`mdmark` は描く先の要素の CSS 変数から作る mdmark の見た目のテーマ、ほかは mermaid のテーマの名前'
+    description: '`mdmark` は描く先の要素の CSS 変数から作る mdmark の外観のテーマ、ほかは mermaid のテーマの名前'
     status: planned
     introduced:
       pr: 382
@@ -137,7 +137,7 @@ data_models:
     title: ページの設定
     container: src/config.ts
     usecase: 共通
-    summary: 文書の page のマーカーから読んだ、設定より優先する値。書かなかったキーは持たない
+    summary: 文書の page のマーカーから読み込んだ、設定より優先する値。記載しなかったキーは持たない
     properties:
       - name: scheme
         type: ColorScheme | undefined
@@ -153,24 +153,24 @@ constants:
   - name: DEFAULT_FEATURES
     title: 機能の既定
     container: src/config.ts
-    summary: この版が知っている機能とその既定。機能を作る Issue が行を足す
+    summary: このバージョンが知っている機能とその既定。機能を作る Issue が行を追加する
     value: '{ print: true, table: true, callout: true, tabs: true, steps: true, tree: true, badge: true, footnotes: true, code: true, syntax: true, toc: true, anchors: true, sections: true, "row-details": true, figures: true, diagrams: true, "diagram-resize": true, glossary: true, backlinks: true, html: true, hints: true, mermaid: true, views: true, comments: false, "html-scripts": false, "side-toc": true, "back-to-top": true, "text-color": true, images: true, gallery: true, lightbox: true, media: true, gif: true, cards: true, icon: true, columns: true, highlight: true, kbd: true, details: true, pagebreak: true, include: true, wide: true, csv: true, "card-grid": true }'
     refs:
       - dev/設計書/設定/ライブラリ本体#settings[features.print]
   - name: DEFAULT_LIBRARIES
     title: 既定の対応表
     container: src/config.ts
-    summary: 印の名前から `LibraryEntry` を引く既定の対応表。この Issue では空で、外部ライブラリを使う機能を作る Issue（#6）が版を固定した URL の行を足す
+    summary: マーカーの名前から `LibraryEntry` を参照する既定の対応表。この Issue では空で、外部ライブラリを使用する機能を作る Issue（#6）が版を固定した URL の行を追加する
     value: '{}'
   - name: MARK_NAME_PATTERN
-    title: 印の名前の書式
+    title: マーカーの名前の書式
     container: src/config.ts
-    summary: 印の名前と設定の `libraries` のキーが合うべき書式
+    summary: マーカーの名前と設定の `libraries` のキーが合うべき書式
     value: /^[a-z][a-z0-9-]*$/
   - name: DEFAULT_SYNTAX_URL
     title: 色分けのライブラリの既定の読み込み先
     container: src/config.ts
-    summary: 設定の `syntax.url` が無いときに読む highlight.js の `es/` フォルダの URL。版を固定する
+    summary: 設定の `syntax.url` が無いときに読み込む highlight.js の `es/` フォルダの URL。バージョンを固定する
     value: '"https://cdn.jsdelivr.net/npm/@highlightjs/cdn-assets@11.12.0/es/"'
     refs:
       - dev/設計書/設定/ライブラリ本体#settings[syntax.url]
@@ -196,7 +196,7 @@ constants:
     introduced:
       pr: 181
   - name: COLOR_SCHEMES
-    title: 書ける明暗
+    title: 記載できる明暗
     container: src/config.ts
     summary: 配色の明暗の値の並び。`resolveConfig`・page のマーカーの読み取り・CLI の点検が照らす
     value: '["light", "dark", "auto"] as const'
@@ -222,7 +222,7 @@ constants:
   - name: DEFAULT_MERMAID_URL
     title: mermaid の既定の読み込み先
     container: src/config.ts
-    summary: 設定の `mermaid.url` が無いときに読む mermaid の ES モジュールの URL。版を固定する
+    summary: 設定の `mermaid.url` が無いときに読み込む mermaid の ES モジュールの URL。バージョンを固定する
     value: '"https://cdn.jsdelivr.net/npm/mermaid@12.3.0/dist/mermaid.esm.min.mjs"'
     refs:
       - dev/設計書/設定/ライブラリ本体#settings[mermaid.url]
@@ -243,7 +243,7 @@ constants:
   - name: DEFAULT_HTML_SCRIPTS_URL
     title: 範囲のスクリプトの変換のライブラリの既定の読み込み先
     container: src/config.ts
-    summary: 設定の `html-scripts.url` が無いときに読む @babel/standalone の ES モジュールの URL。版を固定する
+    summary: 設定の `html-scripts.url` が無いときに読み込む @babel/standalone の ES モジュールの URL。バージョンを固定する
     value: '"https://cdn.jsdelivr.net/npm/@babel/standalone@8.1.1/+esm"'
     refs:
       - dev/設計書/設定/ライブラリ本体#settings[html-scripts.url]
@@ -253,24 +253,24 @@ constants:
       pr: 303
 functions:
   - name: resolveConfig
-    title: 設定に既定を当てる
+    title: 設定に既定を適用する
     container: src/config.ts
     kind: 関数
     scope: public
-    summary: 使う側の設定に既定を当て、型の合わない値を落とした `ResolvedConfig` を返す
-    description: '`features` は `DEFAULT_FEATURES` のキーのうち、設定に真偽値があるものだけを置き換える。`libraries` は `MARK_NAME_PATTERN` に合うキーと文字列の値だけを取り、既定にある名前は `url` だけを置き換え、無い名前は `figure: true` で足す。`tooltips.placement` は `bottom` のときだけ `bottom` にし、無い値・他の値は `top` にする。`tooltips.diagramPlacement` は `top` のときだけ `top` にし、無い値・他の値は `bottom` にする。`syntax.url` は文字列のときだけ取り、無い値・他の型は `DEFAULT_SYNTAX_URL` にする。`html-scripts.url` は文字列のときだけ取って `htmlScripts.url` に入れ、無い値・他の型は `DEFAULT_HTML_SCRIPTS_URL` にする。`side-toc.mode` は `fixed` のときだけ `fixed` にし、無い値・他の値は `hover` にする。`colorTheme` は `COLOR_THEMES` にあるときだけ取り、無い値・他の値・文字列でない値は `DEFAULT_COLOR_THEME` にする（例外を投げない）。`colorScheme` は `COLOR_SCHEMES` にあるときだけ取り、無い値・他の値・文字列でない値は `DEFAULT_COLOR_SCHEME` にする。`labels.paramCopy` は空でない文字列のときだけ取り、無い値・空文字・他の型は `DEFAULT_LABELS.paramCopy` にする。`mermaid.url` は文字列のときだけ取り、無い値・他の型は `DEFAULT_MERMAID_URL` にする。`mermaid.theme` は `MERMAID_THEMES` にあるときだけ取り、無い値・他の値は `mdmark` にする。`mermaid.themeVariables` はマップのときだけ、値が文字列のキーを取り、`useGradient`・`dropShadow` は取らない。渡されたオブジェクトは書き換えない'
+    summary: 利用側の設定に既定を当て、型の合わない値を落とした `ResolvedConfig` を返却する
+    description: '`features` は `DEFAULT_FEATURES` のキーのうち、設定に真偽値があるものだけを置き換える。`libraries` は `MARK_NAME_PATTERN` に合うキーと文字列の値だけを取り、既定にある名前は `url` だけを置き換え、無い名前は `figure: true` で追加する。`tooltips.placement` は `bottom` のときだけ `bottom` にし、無い値・他の値は `top` にする。`tooltips.diagramPlacement` は `top` のときだけ `top` にし、無い値・他の値は `bottom` にする。`syntax.url` は文字列のときだけ取り、無い値・他の型は `DEFAULT_SYNTAX_URL` にする。`html-scripts.url` は文字列のときだけ取って `htmlScripts.url` に入れ、無い値・他の型は `DEFAULT_HTML_SCRIPTS_URL` にする。`side-toc.mode` は `fixed` のときだけ `fixed` にし、無い値・他の値は `hover` にする。`colorTheme` は `COLOR_THEMES` にあるときだけ取り、無い値・他の値・文字列でない値は `DEFAULT_COLOR_THEME` にする（例外を投げない）。`colorScheme` は `COLOR_SCHEMES` にあるときだけ取り、無い値・他の値・文字列でない値は `DEFAULT_COLOR_SCHEME` にする。`labels.paramCopy` は空でない文字列のときだけ取り、無い値・空文字・他の型は `DEFAULT_LABELS.paramCopy` にする。`mermaid.url` は文字列のときだけ取り、無い値・他の型は `DEFAULT_MERMAID_URL` にする。`mermaid.theme` は `MERMAID_THEMES` にあるときだけ取り、無い値・他の値は `mdmark` にする。`mermaid.themeVariables` はマップのときだけ、値が文字列のキーを取り、`useGradient`・`dropShadow` は取らない。指定されたオブジェクトは書き換えない'
     args:
       - name: options
         type: '{ config?: MdmarkConfig; defaultLibraries?: Record<string, LibraryEntry> }'
         required: true
-        description: '`config` は使う側の設定、`defaultLibraries` は既定の対応表（既定 `DEFAULT_LIBRARIES`。単体テストで差し替える）'
+        description: '`config` は利用側の設定、`defaultLibraries` は既定の対応表（既定 `DEFAULT_LIBRARIES`。単体テストで差し替える）'
     returns:
       type: ResolvedConfig
-      description: 既定を当てた設定
+      description: 既定を適用した設定
     unit_tests:
       - name: test_resolve_config
         case: 正常
-        summary: 設定が無ければ既定を返す
+        summary: 設定が無ければ既定を返却する
         condition: '`config` が `undefined`'
         mock: なし
         expected: '`{ features: DEFAULT_FEATURES, libraries: {}, tooltips: { placement: "top", diagramPlacement: "bottom" }, syntax: { url: DEFAULT_SYNTAX_URL }, htmlScripts: { url: DEFAULT_HTML_SCRIPTS_URL }, mermaid: { url: DEFAULT_MERMAID_URL, theme: "mdmark", themeVariables: {} }, sideToc: { mode: "hover" }, colorTheme: "dev-swiss", colorScheme: "auto", labels: { paramCopy: "今の値を写す" } }`（`comments`・`html-scripts` を除く全ての機能が `true`）'
@@ -282,7 +282,7 @@ functions:
         expected: '`features` が `DEFAULT_FEATURES` の `print` だけを `false` にした値'
       - name: test_resolve_config_when_libraries_given
         case: 正常
-        summary: 書式に合う名前と文字列の URL だけを足す
+        summary: 書式に合う名前と文字列の URL だけを追加する
         condition: '`{ libraries: { "test-lib": "/fixtures/test-lib.js", "Bad Name": "/x.js", "num": 1 } }`'
         mock: なし
         expected: '`libraries` が `{ "test-lib": { url: "/fixtures/test-lib.js", figure: true } }`'
@@ -351,45 +351,45 @@ functions:
     container: src/config.ts
     kind: 関数
     scope: internal
-    summary: 既定を当てた設定に、文書の page のマーカーの値を重ねた設定を返す
-    description: '`page.scheme` があれば `colorScheme`、`page.theme` があれば `colorTheme`、`page.toc` があれば `sideToc.mode` を置き換える。無いキーは設定の値のまま。渡されたオブジェクトは書き換えない'
+    summary: 既定を適用した設定に、文書の page のマーカーの値を重ねた設定を返却する
+    description: '`page.scheme` があれば `colorScheme`、`page.theme` があれば `colorTheme`、`page.toc` があれば `sideToc.mode` を置き換える。無いキーは設定の値のまま。指定されたオブジェクトは書き換えない'
     args:
       - name: options
         type: '{ config: ResolvedConfig; page: PageSettings }'
         required: true
-        description: 既定を当てた設定と、`renderDocument` が返したページの設定
+        description: 既定を適用した設定と、`renderDocument` が返却したページの設定
     returns:
       type: ResolvedConfig
-      description: '`mount` が描くのに使う設定'
+      description: '`mount` が描くのに使用する設定'
     unit_tests:
       - name: test_apply_page_settings
         case: 正常
-        summary: マーカーに書いたキーだけを置き換える
+        summary: マーカーに記載したキーだけを置き換える
         condition: '`colorScheme: "dark"`・`colorTheme: "theme-paper"`・`sideToc.mode: "hover"` の設定に、`{ scheme: "light", toc: "fixed" }` を重ねる。別に `{}` を重ねる'
         mock: なし
-        expected: 1 つ目は `colorScheme` が `light`・`colorTheme` が `theme-paper`・`sideToc.mode` が `fixed`。2 つ目は設定と同じ値。渡した設定は変わらない
+        expected: 1 つ目は `colorScheme` が `light`・`colorTheme` が `theme-paper`・`sideToc.mode` が `fixed`。2 つ目は設定と同じ値。指定した設定は変わらない
     refs:
       - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[ページの設定のマーカー]
     status: planned
   - name: resolveFeatures
-    title: 文書の印で機能のオン・オフを決める
+    title: 文書のマーカーで機能のオン・オフを決める
     container: src/features.ts
     kind: 関数
     scope: public
-    summary: 設定の `features` に、文書の `features` の印の引数（`+名前`・`-名前`）を書いた順に重ねる
-    description: 既定に無い名前と、`+`・`-` で始まらない引数は無視する。同じ名前が何度も出たら後のものが勝つ。機能を作る Issue は、この戻り値を読んで機能を出すかを決める
+    summary: 設定の `features` に、文書の `features` のマーカーの引数（`+名前`・`-名前`）を記載した順に重ねる
+    description: 既定に無い名前と、`+`・`-` で始まらない引数は無視する。同じ名前が何度も出たら後のものが勝つ。機能を作る Issue は、この戻り値を読み込んで機能を出すかを決める
     args:
       - name: options
         type: '{ defaults: Record<string, boolean>; args: string[] }'
         required: true
-        description: '`defaults` は既定を当てた設定の `features`、`args` は文書の `features` の印の引数を書いた順に並べたもの'
+        description: '`defaults` は既定を適用した設定の `features`、`args` は文書の `features` のマーカーの引数を記載した順に並べたもの'
     returns:
       type: Record<string, boolean>
       description: 決まったオン・オフ（`defaults` は書き換えない）
     unit_tests:
       - name: test_resolve_features
         case: 正常
-        summary: 印が無ければ設定のまま
+        summary: マーカーが無ければ設定のまま
         condition: '`defaults` が `{ print: true }`、`args` が `[]`'
         mock: なし
         expected: '`{ print: true }`'
@@ -412,7 +412,7 @@ functions:
         mock: なし
         expected: '`{ print: true }`'
 notes:
-  設定の Schema: '`schemas/mdmark.config.schema.json`（draft 2020-12）は設定の設計書の `settings` と同じキーと型を持つ。`features` は値が真偽値のオブジェクト、`libraries` はキーが `MARK_NAME_PATTERN`（`propertyNames.pattern`）で値が文字列のオブジェクト。`features.syntax` は真偽値、`syntax` は `url`（文字列）を持つオブジェクト。`side-toc` は `mode`（`hover` / `fixed` の列挙）を持つオブジェクト。`colorTheme` は文字列（知らない名前は Schema で拒まず、`mdmark check` が `unknown_color_theme` で返す）。`colorScheme` も文字列（知らない値は `unknown_color_scheme` で返す）。`labels` は `paramCopy`（`minLength: 1` の文字列）を持つオブジェクト。Schema を変えたら `migrations/no-steps.yaml` に `version: next` の行を置く。他の Issue が足すキーを拒まないよう、最上位は `additionalProperties` を許す'
+  設定の Schema: '`schemas/mdmark.config.schema.json`（draft 2020-12）は設定の設計書の `settings` と同じキーと型を持つ。`features` は値が真偽値のオブジェクト、`libraries` はキーが `MARK_NAME_PATTERN`（`propertyNames.pattern`）で値が文字列のオブジェクト。`features.syntax` は真偽値、`syntax` は `url`（文字列）を持つオブジェクト。`side-toc` は `mode`（`hover` / `fixed` の列挙）を持つオブジェクト。`colorTheme` は文字列（知らない名前は Schema で拒まず、`mdmark check` が `unknown_color_theme` で返却する）。`colorScheme` も文字列（知らない値は `unknown_color_scheme` で返却する）。`labels` は `paramCopy`（`minLength: 1` の文字列）を持つオブジェクト。Schema を変えたら `migrations/no-steps.yaml` に `version: next` の行を配置する。他の Issue が追加するキーを拒まないよう、最上位は `additionalProperties` を許す'
 test_files:
   - tests/unit/src/config.test.ts
   - tests/unit/src/features.test.ts

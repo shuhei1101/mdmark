@@ -1,6 +1,6 @@
 // 描いた文書のモックの印刷: 印刷の前後の折り畳みの開閉と、モックだけの「印刷の見え方」の切り替え
 
-// sample.js と同じ大域に読むため、宣言をブロックに閉じる
+// sample.js と同じ大域に読み込むため、宣言をブロックに閉じる
 {
   const root = document.documentElement;
   const printStyles = document.querySelector("[data-print-styles]");
@@ -16,7 +16,7 @@
     for (const details of closedDetails) details.open = true;
   };
 
-  /** 開いた折り畳みを閉じ直す。 */
+  /** 開いた折り畳みをもう一度閉じる。 */
   const restoreDetails = () => {
     for (const details of closedDetails) details.open = false;
     closedDetails = [];

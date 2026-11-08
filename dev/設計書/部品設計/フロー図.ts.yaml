@@ -106,7 +106,7 @@ css_properties:
     default: 8%
     description: 層の背景に敷くノードの色の濃さ
 uses:
-  - component: dev/設計書/部品設計/書き方の警告.ts#
+  - component: dev/設計書/部品設計/記載の警告.ts#
     how: 定義を読み込めないときに図の代わりに配置する
   - component: dev/設計書/部品設計/用語のツールチップ.ts#
     how: ノードの中の `{{単語}}` の下線と意味
