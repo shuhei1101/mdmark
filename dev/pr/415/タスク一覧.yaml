@@ -75,8 +75,10 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-08T17:01:21.277186+00:00'
   - process: 実装
-    status: todo
+    status: done
     note: 見出しの節の組み立てで取り込みの枠の中の見出しを枠の外へ出さない。mdmark check の図の点検で libraries のマーカーを図の部品として読まない
+    updated_by: planner
+    updated_at: '2026-11-08T17:29:58.275928+00:00'
   - process: 結合テスト作成
     status: todo
     note: h2 の節の中に置いた取り込みを mount で描き、取り込んだ見出しと本文が取り込みの枠の中にあることの結合テスト
