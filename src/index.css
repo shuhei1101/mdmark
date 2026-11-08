@@ -9961,6 +9961,7 @@
     white-space: nowrap;
   }
   .mdmark-table[data-tree] .mdmark-tree-cell {
+    position: relative;
     display: flex;
     align-items: stretch;
     min-block-size: 2rem;
@@ -10060,10 +10061,13 @@
     color: var(--mdmark-color-link);
   }
 
-  /* 全体のパスのツールチップ */
+  /* 全体のパスのツールチップ: キーのセルの下に出し、名前に重ねない */
   .mdmark-table[data-tree] .mdmark-tree-tip {
     position: absolute;
+    inset-block-start: 100%;
+    inset-inline-start: 0;
     z-index: 3;
+    pointer-events: none;
     padding: 0.25rem 0.5rem;
     border: 1px solid var(--mdmark-color-border);
     border-radius: var(--mdmark-radius);
