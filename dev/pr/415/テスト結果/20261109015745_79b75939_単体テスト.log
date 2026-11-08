@@ -1,0 +1,115 @@
+$ npm run test:unit
+
+> test:unit
+> vitest run --project 'unit*'
+
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/fix-cli-cli-e2e-regressions
+
+ ❯ |unit| tests/unit/src/render/syntax/sections.test.ts (7 tests | 2 failed) 87ms
+   × test_wrap_sections_when_in_include 6ms
+   × test_wrap_sections_when_same_level_heading_in_tab 7ms
+ ❯ |unit| tests/unit/src/cli/check.test.ts (31 tests | 2 failed) 17809ms
+   × test_collect_check_issues_when_library_mark 24ms
+   × test_check_diagrams_when_overridden 1ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit| tests/unit/src/cli/check.test.ts > test_collect_check_issues_when_library_mark
+AssertionError: expected [ …(2) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   {
++     "file": "a.md",
++     "kind": "diagram_invalid",
++     "message": "フロー図の部品の定義を読めません。印の範囲に json のコードブロックを 1 つだけ置いてください。この図は描いていません。",
++     "where": "3",
++   },
++   {
++     "file": "a.md",
++     "kind": "diagram_invalid",
++     "message": "グラフの部品の定義を読めません。印の範囲に json のコードブロックを 1 つだけ置いてください。このグラフは描いていません。",
++     "where": "9",
++   },
++ ]
+
+ ❯ tests/unit/src/cli/check.test.ts:762:73
+    760|   // 検証
+    761|   for (const issues of [checked, upgraded]) {
+    762|     expect(issues.filter((issue) => issue.kind.startsWith("diagram_"))…
+       |                                                                         ^
+    763|       [],
+    764|     );
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/4]⎯
+
+ FAIL  |unit| tests/unit/src/cli/check.test.ts > test_check_diagrams_when_overridden
+AssertionError: expected [ { file: 'a.md', where: '3', …(2) } ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   {
++     "file": "a.md",
++     "kind": "diagram_invalid",
++     "message": "グラフの部品の定義を読めません。印の範囲に json のコードブロックを 1 つだけ置いてください。このグラフは描いていません。",
++     "where": "3",
++   },
++ ]
+
+ ❯ tests/unit/src/cli/check.test.ts:779:22
+    777|   const plain = checkDiagrams(documents, new Set());
+    778|   // 検証
+    779|   expect(overridden).toEqual([]);
+       |                      ^
+    780|   expect(plain).toHaveLength(1);
+    781|   expect(plain[0]).toMatchObject({
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/4]⎯
+
+ FAIL  |unit| tests/unit/src/render/syntax/sections.test.ts > test_wrap_sections_when_in_include
+AssertionError: expected '' to contain 'id="section-実行"'
+
+- Expected
++ Received
+
+- id="section-実行"
+
+ ❯ tests/unit/src/render/syntax/sections.test.ts:148:20
+    146|   expect(voyage).toContain('class="mdmark-include"');
+    147|   const included = innerHtml(voyage, 'class="mdmark-include"');
+    148|   expect(included).toContain('id="section-実行"');
+       |                    ^
+    149|   expect(innerHtml(included, 'id="section-実行"')).toContain("実行の段落");
+    150|   expect(voyage).toContain("後の段落");
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/4]⎯
+
+ FAIL  |unit| tests/unit/src/render/syntax/sections.test.ts > test_wrap_sections_when_same_level_heading_in_tab
+AssertionError: expected '<p class="mdmark-tab-title">macOS</p>' to contain 'id="section-手順"'
+
+Expected: "id="section-手順""
+Received: "<p class="mdmark-tab-title">macOS</p>"
+
+ ❯ tests/unit/src/render/syntax/sections.test.ts:183:22
+    181|   expect(intro).toContain('class="mdmark-tabs"');
+    182|   const firstPanel = innerHtml(intro, 'class="mdmark-tab-panel"');
+    183|   expect(firstPanel).toContain('id="section-手順"');
+       |                      ^
+    184|   expect(innerHtml(firstPanel, 'id="section-手順"')).toContain("手順の段落");
+    185|   expect(intro).toContain("後の段落");
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/4]⎯
+
+
+ Test Files  2 failed | 257 passed (259)
+      Tests  4 failed | 1820 passed (1824)
+   Start at  01:55:56
+   Duration  91.87s (worker 63%, tests 23%, import 12%, transform 2%)
+
