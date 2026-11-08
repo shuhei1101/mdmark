@@ -1,0 +1,86 @@
+$ npx vitest run --project 'unit*' tests/unit/src/interact/footnotes.browser.test.ts
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/fix-footnotes-touch-close-footnote-tooltip
+
+ ❯ |unit-browser (chromium)| tests/unit/src/interact/footnotes.browser.test.ts (8 tests | 3 failed) 535ms
+   × test_attach_footnotes_when_touch_tapped 151ms
+   × test_attach_footnotes_when_touch_outside 102ms
+   × test_attach_footnotes_when_touch_reopened 97ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/footnotes.browser.test.ts > test_attach_footnotes_when_touch_tapped
+AssertionError: expected false to be true // Object.is equality
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/footnotes.browser.test.ts/test_attach_footnotes_when_touch_tapped.png
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ tests/unit/src/interact/footnotes.browser.test.ts:228:45
+    226|   vi.advanceTimersByTime(1000);
+    227|   // 検証
+    228|   expect(ref.classList.contains("is-open")).toBe(true);
+       |                                             ^
+    229|   expect(list.open).toBe(false);
+    230|   expect(firstPrevented).toBe(true);
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=cc8d63b3:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/footnotes.browser.test.ts > test_attach_footnotes_when_touch_outside
+AssertionError: expected false to be true // Object.is equality
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/footnotes.browser.test.ts/test_attach_footnotes_when_touch_outside.png
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ tests/unit/src/interact/footnotes.browser.test.ts:257:45
+    255|   vi.advanceTimersByTime(1000);
+    256|   // 検証
+    257|   expect(ref.classList.contains("is-open")).toBe(true);
+       |                                             ^
+    258|   // 実行: root の外（pointerleave・focusout は送らない）
+    259|   outside.dispatchEvent(pointer("pointerdown", "touch"));
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=cc8d63b3:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/footnotes.browser.test.ts > test_attach_footnotes_when_touch_reopened
+AssertionError: expected false to be true // Object.is equality
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/footnotes.browser.test.ts/test_attach_footnotes_when_touch_reopened.png
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ tests/unit/src/interact/footnotes.browser.test.ts:285:45
+    283|   // 検証
+    284|   expect(ref.classList.contains("is-dismissed")).toBe(false);
+    285|   expect(ref.classList.contains("is-open")).toBe(true);
+       |                                             ^
+    286|   expect(prevented).toBe(true);
+    287| });
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=cc8d63b3:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/3]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  3 failed | 5 passed (8)
+   Start at  09:29:12
+   Duration  30.42s (worker 87%, import 11%, tests 2%)
+

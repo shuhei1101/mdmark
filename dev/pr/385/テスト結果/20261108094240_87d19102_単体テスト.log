@@ -1,0 +1,15 @@
+$ npm --prefix vscode ci
+$ npm run test:unit
+
+> test:unit
+> vitest run --project 'unit*'
+
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/fix-footnotes-touch-close-footnote-tooltip
+
+
+ Test Files  255 passed (255)
+      Tests  1757 passed (1757)
+   Start at  09:35:06
+   Duration  119.89s (worker 62%, tests 22%, import 15%, transform 2%)
+
