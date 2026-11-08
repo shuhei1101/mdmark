@@ -35,8 +35,10 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-08T17:50:29.706352+00:00'
   - process: 単一ユースケース設計
-    status: todo
+    status: done
     note: 単一ユースケース『エディタとプレビューのスクロールを合わせる』に、折りたたんだセクションの中を編集するシナリオを追加する
+    updated_by: planner
+    updated_at: '2026-11-08T18:05:10.616257+00:00'
   - process: モック作成
     status: skipped
     reason: 画面の見た目を変えないため対象外（判定フローチャート『モック要否』）
