@@ -50,7 +50,7 @@ flows:
     summary: 端末の設定が既定のパスなら `settings.json` を書き込まない
     setup:
       - name: 既定のパスの端末
-        description: '`MDMARK_CONFIG` を除外し、`XDG_CONFIG_HOME` と `CLAUDE_CONFIG_DIR` を空の一時フォルダにする'
+        description: '`MDMARK_CONFIG` を解除し、`XDG_CONFIG_HOME` と `CLAUDE_CONFIG_DIR` を空の一時フォルダにする'
       - name: Mock
         description: ビルドした `plugin/bin/setup.js` を子プロセスで実行する。差し替える依存は無い
     flow: |-

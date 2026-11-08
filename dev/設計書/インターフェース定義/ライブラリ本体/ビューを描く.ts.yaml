@@ -132,7 +132,7 @@ flows:
         description: 正常系と同じ
       - name: Mock
         description: ビューの部品のモジュールの要求を、配信で 404 に差し替える
-        notes: 部品のモジュールを別の配布ファイルに分けないと決まったら、このフローはモジュール構成設計で除外する
+        notes: 部品のモジュールを別の配布ファイルに分けないと決まったら、このフローはモジュール構成設計で解除する
     flow: |-
       sequenceDiagram
         participant P as 利用側のページ
@@ -216,7 +216,7 @@ request_example: |-
 response:
   - name: (Promise の値).destroy
     type: () => void
-    description: '`el` の中を空にし、ビューの操作と `document` の受け取りを除外する'
+    description: '`el` の中を空にし、ビューの操作と `document` の受け取りを解除する'
     notes: 2 回目以降は何もしない
 response_notes: 戻り値は `Promise<{ destroy }>`。部品のモジュールを読み込み、ビューを描いてから解決する。引数の誤りは Promise を返却せずに同期で TypeError を投げる
 exceptions:

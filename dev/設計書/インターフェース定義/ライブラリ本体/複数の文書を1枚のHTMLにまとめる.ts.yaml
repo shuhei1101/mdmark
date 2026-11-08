@@ -32,10 +32,10 @@ flows:
       - 描き終えるまでと文書を移った後に、ページ自身と画像の `data:` のほかの要求が 0 件
     test: test_normal
   - name: 正常系（1 枚に含まれない文書へのリンクがある）
-    summary: 除外した文書へのリンクを記載したまま残し、警告に出す
+    summary: 解除した文書へのリンクを記載したまま残し、警告に出す
     setup:
-      - name: 除外した文書を指す文書群
-        description: '正常系の文書群に `下書き/メモ.md` を追加し、`exclude: ["下書き/**"]` で除外し、`README.md` からリンクする'
+      - name: 解除した文書を指す文書群
+        description: '正常系の文書群に `下書き/メモ.md` を追加し、`exclude: ["下書き/**"]` で解除し、`README.md` からリンクする'
       - name: Mock
         description: 外部ライブラリは相対パスの手元のモジュール
     flow: |-
@@ -44,7 +44,7 @@ flows:
         participant C as mdmark CLI
         participant H as build.out
         W->>C: mdmark build
-        C->>C: exclude に該当する文書を除外する
+        C->>C: exclude に該当する文書を解除する
         C->>H: 3 つの文書を埋めた HTML を書き込む
         C-->>W: リンクの警告・終了コード 0
     expected:
@@ -154,7 +154,7 @@ flows:
       - 書き出した HTML のソースに `env` のレコードの `dev-server`・`http://127.0.0.1:8767/` が入っていない
     test: test_normal_when_aliases
   - name: 正常系（テーマを選ぶ設定）
-    summary: 設定の `colorTheme` を埋める設定にコピー、まとめた全ての文書を選んだテーマで描く
+    summary: 設定の `colorTheme` を埋める設定にコピーし、まとめた全ての文書を選んだテーマで描く
     setup:
       - name: テーマを選ぶフォルダ
         description: '正常系のフォルダの設定に `colorTheme: theme-slate` を記載したフォルダ'

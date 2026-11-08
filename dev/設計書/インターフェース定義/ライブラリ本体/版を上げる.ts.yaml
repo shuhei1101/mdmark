@@ -24,14 +24,14 @@ flows:
         C->>F: v0.4.0 の rename_key・v0.5.0 の replace_mark を適用する
         C->>C: mdmark check と同じ点検（ずれ 0 件）
         C->>F: 設定の version を v0.5.0 にする
-        C-->>W: 手順・変更履歴・コピーの場所・終了コード 0
+        C-->>W: 手順・変更履歴・コピーしの場所・終了コード 0
     expected:
       - 終了コードが 0
       - 設定の `legacy` が `renamed` になり、値と他のキーの並びとコメントが残っている
       - 文書 2 つの `<!-- note -->` が `<!-- callout -->` になっている
       - 設定の `version` が `v0.5.0`
       - 標準出力に `v0.4.0:`・`v0.5.0:` の順で手順の行と、`v0.4.0`・`v0.5.0` の変更履歴の行が出て、`v0.3.0` の変更履歴の行が出ない
-      - 標準出力の `コピー:` のフォルダに適用する前の設定・索引・文書があり、`.mdmark/.gitignore` の中身が `*`
+      - 標準出力の `コピーし:` のフォルダに適用する前の設定・索引・文書があり、`.mdmark/.gitignore` の中身が `*`
     test: test_normal
   - name: 正常系（端末の設定を移行する）
     summary: '`--settings` で端末の設定に `file: config` の手順を当て、`version` を書き換える'
@@ -47,7 +47,7 @@ flows:
         participant F as 端末の設定
         W->>C: mdmark upgrade --settings
         C->>F: 端末の設定を読み込む（version: v0.3.0）
-        C->>F: コピーを取り、v0.4.0 の rename_key を適用する（v0.5.0 の replace_mark は飛ばす）
+        C->>F: コピーしを取り、v0.4.0 の rename_key を適用する（v0.5.0 の replace_mark は飛ばす）
         C->>C: 端末の設定の構造を点検する
         C->>F: version を v0.5.0 にする
         C-->>W: 終了コード 0
@@ -91,7 +91,7 @@ flows:
         W->>C: mdmark upgrade
         C-->>W: ask の質問（標準エラー）
         W->>C: 設計の文書
-        C->>F: コピーを取り、title を追加する
+        C->>F: コピーしを取り、title を追加する
         C->>C: 点検（ずれ 0 件）
         C->>F: version を v0.4.0 にする
         C-->>W: 終了コード 0
@@ -116,7 +116,7 @@ flows:
         W->>C: mdmark upgrade
         C-->>W: 手元のバージョンの質問（標準エラー）
         W->>C: v0.3.0
-        C->>F: コピーを取り、v0.4.0・v0.5.0 の手順を適用する
+        C->>F: コピーしを取り、v0.4.0・v0.5.0 の手順を適用する
         C->>C: 点検（ずれ 0 件）
         C->>F: 設定の先頭に version: v0.5.0 を追加する
         C-->>W: 終了コード 0
@@ -128,7 +128,7 @@ flows:
   - name: 正常系（手元のバージョンが目標のバージョンと同じ）
     summary: 適用する手順が無ければ何も書き換えずに終わる
     setup:
-      - name: バージョンが統一されたフォルダ
+      - name: バージョンが一致したフォルダ
         description: 正常系のフォルダの `version` を `v0.5.0` にしたもの
       - name: Mock
         description: 正常系と同じ
@@ -158,7 +158,7 @@ flows:
         participant C as mdmark CLI
         participant F as フォルダ
         W->>C: mdmark upgrade --yes
-        C->>F: コピーを取り、確認せずに手順を適用する
+        C->>F: コピーしを取り、確認せずに手順を適用する
         C->>C: 点検（ずれ 0 件）
         C->>F: version を v0.5.0 にする
         C-->>W: 終了コード 0
@@ -171,7 +171,7 @@ flows:
     summary: 手順が既に該当した設定・文書に同じ手順を適用しても中身が変わらない
     setup:
       - name: 手順が該当した後のフォルダ
-        description: 正常系を実行した後のフォルダの `version` だけを `v0.3.0` に戻したもの（コピーから戻せずに止まった状態）
+        description: 正常系を実行した後のフォルダの `version` だけを `v0.3.0` に戻したもの（コピーしから戻せずに止まった状態）
       - name: Mock
         description: 正常系と同じ
     flow: |-
@@ -180,7 +180,7 @@ flows:
         participant C as mdmark CLI
         participant F as フォルダ
         W->>C: mdmark upgrade
-        C->>F: コピーを取り、v0.4.0・v0.5.0 の手順を適用する（どれも何も変えない）
+        C->>F: コピーしを取り、v0.4.0・v0.5.0 の手順を適用する（どれも何も変えない）
         C->>C: 点検（ずれ 0 件）
         C->>F: version を v0.5.0 にする
         C-->>W: 終了コード 0
@@ -210,7 +210,7 @@ flows:
       - 設定・索引・文書が変わっておらず、`.mdmark/` が無い
     test: test_error_when_destructive_declined
   - name: 異常系（手順の失敗・終了コード 1）
-    summary: '`call` のスクリプトが失敗すると、前のバージョンで適用した分もコピーから戻す'
+    summary: '`call` のスクリプトが失敗すると、前のバージョンで適用した分もコピーしから戻す'
     setup:
       - name: 手元のバージョンが古いフォルダ
         description: 正常系と同じ
@@ -223,10 +223,10 @@ flows:
         participant S as スクリプト
         participant F as フォルダ
         W->>C: mdmark upgrade
-        C->>F: コピーを取り、v0.4.0 の rename_key を適用する
+        C->>F: コピーしを取り、v0.4.0 の rename_key を適用する
         C->>S: node {スクリプト} --config {設定ファイル}
         S-->>C: 終了コード 1
-        C->>F: コピーから戻す
+        C->>F: コピーしから戻す
         C-->>W: 失敗したバージョン・手順・理由・終了コード 1
     expected:
       - 終了コードが 1
@@ -234,7 +234,7 @@ flows:
       - 標準エラーに `v0.5.0` と手順の説明とスクリプトの終了コード 1 が出る
     test: test_error_when_step_fails
   - name: 異常系（点検のずれ・終了コード 1）
-    summary: 適用した後の点検でずれがあると、コピーから戻してずれを出す
+    summary: 適用した後の点検でずれがあると、コピーしから戻してずれを出す
     setup:
       - name: 手元のバージョンが古いフォルダ
         description: 正常系と同じ。設定の `build.out` は `dist/docs.html`
@@ -246,9 +246,9 @@ flows:
         participant C as mdmark CLI
         participant F as フォルダ
         W->>C: mdmark upgrade
-        C->>F: コピーを取り、v0.4.0・v0.5.0 の手順を適用する
+        C->>F: コピーしを取り、v0.4.0・v0.5.0 の手順を適用する
         C->>C: 点検（build.out の schema のずれ）
-        C->>F: コピーから戻す
+        C->>F: コピーしから戻す
         C-->>W: ずれの行・終了コード 1
     expected:
       - 終了コードが 1
@@ -256,7 +256,7 @@ flows:
       - 設定の `legacy`・`build.out`・`version` が適用する前のまま
     test: test_error_when_check_fails
   - name: 異常系（図の定義のずれ・終了コード 1）
-    summary: 適用した後の点検で図の定義にずれがあると、コピーから戻してずれを出す
+    summary: 適用した後の点検で図の定義にずれがあると、コピーしから戻してずれを出す
     setup:
       - name: 図の定義にずれを持つ手元のバージョンが古いフォルダ
         description: 正常系のフォルダの文書の 1 つの 5 行目の `<!-- flow -->` の範囲に、座標の重なるノード `web` と `db` を持つフロー図の定義を記載したもの
@@ -268,9 +268,9 @@ flows:
         participant C as mdmark CLI
         participant F as フォルダ
         W->>C: mdmark upgrade
-        C->>F: コピーを取り、v0.4.0・v0.5.0 の手順を適用する
+        C->>F: コピーしを取り、v0.4.0・v0.5.0 の手順を適用する
         C->>C: 点検（図の定義のずれ）
-        C->>F: コピーから戻す
+        C->>F: コピーしから戻す
         C-->>W: ずれの行・終了コード 1
     expected:
       - 終了コードが 1
@@ -377,8 +377,8 @@ flows:
       - 終了コードが 1
       - 標準エラーに `mdmark.config.yaml` が無いことと `mdmark init` が出る
     test: test_error_when_config_missing
-  - name: 正常系（v0.9.0 までの索引からタグの語彙を除外する）
-    summary: 語彙を除外する `call` の手順を当て、文書のタグを書き換えて索引の `schema` を `2` にし、点検に合格させる
+  - name: 正常系（v0.9.0 までの索引からタグの語彙を解除する）
+    summary: 語彙を解除する `call` の手順を当て、文書のタグを書き換えて索引の `schema` を `2` にし、点検に合格させる
     setup:
       - name: 語彙を持つ索引のフォルダ
         description: '正常系のフォルダの索引を、`schema: 1`・最上位の `tags` が `topic:mcp`（`aliases` に `MCP`）・`topic:old`（`deprecated` が `topic:mcp`）、`docs[0].tags` が `[MCP]`、`docs[1].tags` が `[topic:old]` にしたもの'
@@ -394,7 +394,7 @@ flows:
         W->>C: mdmark upgrade --yes
         C->>F: 設定・索引・文書を写す
         C->>S: node drop-tag-vocabulary.mjs --config {設定ファイル}
-        S->>F: 索引のタグを書き換え、語彙を除外して schema を 2 にする
+        S->>F: 索引のタグを書き換え、語彙を解除して schema を 2 にする
         C->>C: mdmark check と同じ点検（ずれ 0 件）
         C->>F: 設定の version を v0.5.0 にする
         C-->>W: 終了コード 0
@@ -404,9 +404,9 @@ flows:
       - '`docs[0].tags` と `docs[1].tags` が `[topic:mcp]`'
       - 設定の `version` が `v0.5.0`
     test: test_normal_when_tag_vocabulary_dropped
-lead: 文書の作成者が、設定の手元のバージョンから呼んだ CLI のバージョンまでの移行の手順をバージョンの順に設定・索引・文書へ当て、`mdmark check` と同じ点検が通ったら設定の `version` を呼んだ CLI のバージョンにする。適用する前にコピーを取り、失敗したらコピーから戻す。
+lead: 文書の作成者が、設定の手元のバージョンから呼んだ CLI のバージョンまでの移行の手順をバージョンの順に設定・索引・文書へ当て、`mdmark check` と同じ点検が通ったら設定の `version` を呼んだ CLI のバージョンにする。適用する前にコピーしを取り、失敗したらコピーしから戻す。
 idempotent: true
-side_effects: 設定・索引・文書を書き換え、設定ファイルのあるフォルダの `.mdmark/backup/{日時}/` にコピーを配置する。`--plan` は何も書き換えない
+side_effects: 設定・索引・文書を書き換え、設定ファイルのあるフォルダの `.mdmark/backup/{日時}/` にコピーしを配置する。`--plan` は何も書き換えない
 exclusivity: 排他しない。同じフォルダで同時に実行しないことを前提にする
 refs:
   - dev/設計書/シナリオ/単一ユースケース/版を上げる#
@@ -449,8 +449,8 @@ request:
 response:
   - name: 標準出力
     type: string
-    description: '`手元のバージョン: {バージョン}`・`目標のバージョン: {バージョン}` の後に、適用するバージョンごとに `{バージョン}:` の行と手順 1 つ 1 行（`  {種類}: {説明}`。壊すマーカーのある手順は種類の後ろに `（壊す手順）`）、`変更履歴:` の行と変更履歴の行 1 つ 1 行（`  {バージョン} {PR} {変更}`）を出す。最後に、適用したときは `コピー: {パス}` と `バージョンを {目標のバージョン} にしました`、`--plan` のときは `--plan のため書き換えていません`、適用する手順が無いときは `手元のバージョンが目標のバージョンと同じです。適用する手順はありません` を出す'
-    notes: コピーのパスは設定ファイルのあるフォルダからの相対パス。手順のないバージョンは行を出さない
+    description: '`手元のバージョン: {バージョン}`・`目標のバージョン: {バージョン}` の後に、適用するバージョンごとに `{バージョン}:` の行と手順 1 つ 1 行（`  {種類}: {説明}`。壊すマーカーのある手順は種類の後ろに `（壊す手順）`）、`変更履歴:` の行と変更履歴の行 1 つ 1 行（`  {バージョン} {PR} {変更}`）を出す。最後に、適用したときは `コピーし: {パス}` と `バージョンを {目標のバージョン} にしました`、`--plan` のときは `--plan のため書き換えていません`、適用する手順が無いときは `手元のバージョンが目標のバージョンと同じです。適用する手順はありません` を出す'
+    notes: コピーしのパスは設定ファイルのあるフォルダからの相対パス。手順のないバージョンは行を出さない
   - name: 標準エラー
     type: string
     description: 質問の文と、誤りの原因と修正方法の 1 文。点検が通らないときは、`mdmark check` と同じ構造のずれの行を出す
@@ -468,7 +468,7 @@ response_example: |-
   変更履歴:
     v0.4.0 #40 バージョンを上げるときに移行の手順を適用する mdmark upgrade を作る
     v0.5.0 #45 注意書きのマーカーの名前を統一する
-  コピー: .mdmark/backup/20261017120000
+  コピーし: .mdmark/backup/20261017120000
   バージョンを v0.5.0 にしました
   ```
 exceptions:
@@ -476,13 +476,13 @@ exceptions:
     condition: 手順を適用して点検が通り、バージョンを書き換えた。`--plan` で示した。手元のバージョンが目標のバージョンと同じ。終了コード 0
   - name: 壊す手順を断った（終了コード 1）
     condition: '`--yes` が無く、壊す手順の確認に `y` 以外を回答した'
-    notes: 何も書き換えず、コピーも取らない。`--yes` で確認せずに適用できることを出す
+    notes: 何も書き換えず、コピーしも取らない。`--yes` で確認せずに適用できることを出す
   - name: 手順の失敗（終了コード 1）
     condition: 手順を適用する途中で、`call` のスクリプトが 0 以外で終わったか、ファイルを書き込めなかった
-    notes: コピーから戻し、失敗したバージョン・手順の説明・理由と、`call` のスクリプトが標準エラーへ書き込んだ行を出す
+    notes: コピーしから戻し、失敗したバージョン・手順の説明・理由と、`call` のスクリプトが標準エラーへ書き込んだ行を出す
   - name: 点検のずれ（終了コード 1）
     condition: 全ての手順を適用した後の点検でずれが 1 件以上ある
-    notes: コピーから戻し、ずれの行を出す
+    notes: コピーしから戻し、ずれの行を出す
   - name: 手元のバージョンが新しい（終了コード 1）
     condition: 手元のバージョンが呼んだ CLI のバージョンより新しい
     notes: 手元のバージョンと目標のバージョンと、`npx github:shuhei1101/mdmark#{手元の版} upgrade` など手元のバージョン以上の CLI でもう一度呼ぶことを出す
@@ -514,15 +514,15 @@ constraints:
     constraint: 適用する全てのバージョンの `steps.yaml` を、質問と書き換えの前に `schemas/mdmark.steps.schema.json` で検める。1 つでも合わなければ何も書き換えない
   - item: 質問の順
     constraint: 手元のバージョン → 値を聞く手順（適用する順。キーが既にある `set_default` は聞かない）→ 壊す手順の確認（`--yes` が無く壊すマーカーの手順が 1 つ以上あるとき 1 回だけ）の順に、全て書き換えの前に聞く。`--plan` では手元のバージョンだけを聞く。確認は `y` だけを承諾とする
-  - item: コピー
+  - item: コピーし
     constraint: 書き換えの前に、設定ファイルと、手順が書き換えうる全てのファイル（`file`・`files` が指すものと、`replace_mark` の対象の文書）を、設定ファイルのあるフォルダの `.mdmark/backup/{yyyymmddHHMMSS}/` へ、そのフォルダからの相対パスを保って写す。`.mdmark/.gitignore`（中身は `*`）が無ければ配置する。適用した後も削除しない
     notes: 日時は利用者の手元の時刻
   - item: 戻し
-    constraint: 手順の失敗か点検のずれで、コピーの全てのファイルを元の場所へ書き込んで戻す。`call` のスクリプトは `files` に挙げたものだけを書き換える
+    constraint: 手順の失敗か点検のずれで、コピーしの全てのファイルを元の場所へ書き込んで戻す。`call` のスクリプトは `files` に挙げたものだけを書き換える
   - item: 再適用
     constraint: '`rename_key` は元のキーがあり新しいキーが無いときだけ名前を変え、他は何もしない。`set_default` はキーが無いときだけ追加する。`map_values` は値が解釈しの表の元の値のときだけ替える。`replace_mark` は `from` を `to` に書き換える（`to` は `from` を含まない）。`call` のスクリプトはもう一度適用しても結果が変わらないように記載する'
     decided_by: dev/設計書/ER図/移行の手順#tables[migrations/{版}/steps.yaml]
-    notes: コピーから戻せずに止まっても（Ctrl-C など）、次の `upgrade` が同じ手元のバージョンからもう一度適用できる
+    notes: コピーしから戻せずに止まっても（Ctrl-C など）、次の `upgrade` が同じ手元のバージョンからもう一度適用できる
   - item: YAML の書き換え
     constraint: 設定と索引はコメント・キーの並び・触らないキーの記載方法を残して書き換える
     decided_by: dev/設計書/外部ライブラリ/yaml#
