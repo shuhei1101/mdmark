@@ -60,10 +60,10 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-08T13:19:33.839600+00:00'
   - process: モジュール構成設計
-    status: skipped
-    reason: 操作のモジュールの関数の分け方は変えない
+    status: done
     updated_by: planner
-    updated_at: '2026-11-08T13:19:33.839600+00:00'
+    updated_at: '2026-11-08T14:04:18.170555+00:00'
+    note: まとめた HTML が書き換えた脚注のリンクの href で移る先を引くように attachFootnotes の説明と単体テストの行を直した
   - process: ドキュメント修正
     status: skipped
     reason: 利用者の操作・用語・API は変わらない
