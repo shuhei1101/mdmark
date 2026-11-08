@@ -34,4 +34,7 @@ scope_out:
   - item: 脚注と先頭へ戻るボタンの E2E の fail
     reason: 図の部品ではない別の事象
     plan: '#402'
+  - item: Firefox の E2E の test_normal_when_resized（リサイズハンドルのドラッグ）と test_normal_when_chart_items（グラフの項目へのフォーカス）の fail
+    reason: '#400 の 8 件に含まれず、release/v0.10.0 でも Firefox だけで fail する別の事象'
+    plan: '#418'
 docs: []
