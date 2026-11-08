@@ -1,0 +1,24 @@
+use_cases:
+  - kind: single
+    scenario: dev/設計書/シナリオ/単一ユースケース/表を操作する.yaml
+    impact: run_only
+    detail: キーの階層の表で、折りたたんだ行と絞り込みで外れた行が隠れる
+    depends_on: []
+  - kind: single
+    scenario: dev/設計書/シナリオ/単一ユースケース/文書を印刷する.yaml
+    impact: run_only
+    detail: キーの階層の表で、画面で折りたたんだ行が隠れ、印刷では開く
+    depends_on: []
+  - kind: single
+    scenario: dev/設計書/シナリオ/単一ユースケース/ステップ・ファイルツリー・バッジで本文を組む.yaml
+    impact: run_only
+    detail: ファイルツリーの項目の行の並びが変わらない
+    depends_on: []
+docs: []
+scope_out:
+  - item: 表のキーの階層の行のクラス名 mdmark-tree-row をファイルツリーと分ける
+    reason: クラス名は公開ドキュメント『表に機能を付ける』とインターフェース定義『文書をHTML文字列にする』に載っており、変えると公開のクラス名の変更になる（#396 の扱いの判断で方向を決めた）
+    plan: none
+  - item: 表の操作の E2E のほかの fail（結合した見出しの絞り込み・並べ替えの順・ピン止め・はみ出しと幅）
+    reason: 原因が別の不具合
+    plan: '#399'

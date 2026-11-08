@@ -1,0 +1,99 @@
+$ npm run test:unit
+
+> test:unit
+> vitest run --project 'unit*'
+
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/fix-table-tree-row-selector-scope
+
+ ❯ |unit| tests/unit/migrations/drop-tag-vocabulary.test.ts (6 tests | 6 failed) 1859ms
+   × test_drop_tag_vocabulary 988ms
+   × test_drop_tag_vocabulary_without_vocabulary 85ms
+   × test_drop_tag_vocabulary_when_reapplied 354ms
+   × test_run_drop_tag_vocabulary 225ms
+   × test_run_drop_tag_vocabulary_without_index 176ms
+   × test_run_drop_tag_vocabulary_without_config 28ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 6 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit| tests/unit/migrations/drop-tag-vocabulary.test.ts > test_drop_tag_vocabulary
+Error: Cannot find module '/migrations/next/drop-tag-vocabulary.mjs' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/fix-table-tree-row-selector-scope/tests/unit/migrations/drop-tag-vocabulary.test.ts
+ ❯ tests/unit/migrations/drop-tag-vocabulary.test.ts:34:33
+     32| test("test_drop_tag_vocabulary", async () => {
+     33|   // 準備
+     34|   const { dropTagVocabulary } = await loadMigration();
+       |                                 ^
+     35|   // 実行
+     36|   const result = dropTagVocabulary(OLD_INDEX);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/6]⎯
+
+ FAIL  |unit| tests/unit/migrations/drop-tag-vocabulary.test.ts > test_drop_tag_vocabulary_without_vocabulary
+Error: Cannot find module '/migrations/next/drop-tag-vocabulary.mjs' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/fix-table-tree-row-selector-scope/tests/unit/migrations/drop-tag-vocabulary.test.ts
+ ❯ tests/unit/migrations/drop-tag-vocabulary.test.ts:53:33
+     51| test("test_drop_tag_vocabulary_without_vocabulary", async () => {
+     52|   // 準備
+     53|   const { dropTagVocabulary } = await loadMigration();
+       |                                 ^
+     54|   const source = [
+     55|     "schema: 1",
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/6]⎯
+
+ FAIL  |unit| tests/unit/migrations/drop-tag-vocabulary.test.ts > test_drop_tag_vocabulary_when_reapplied
+Error: Cannot find module '/migrations/next/drop-tag-vocabulary.mjs' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/fix-table-tree-row-selector-scope/tests/unit/migrations/drop-tag-vocabulary.test.ts
+ ❯ tests/unit/migrations/drop-tag-vocabulary.test.ts:72:33
+     70| test("test_drop_tag_vocabulary_when_reapplied", async () => {
+     71|   // 準備
+     72|   const { dropTagVocabulary } = await loadMigration();
+       |                                 ^
+     73|   const applied = dropTagVocabulary(OLD_INDEX) ?? "";
+     74|   // 実行
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/6]⎯
+
+ FAIL  |unit| tests/unit/migrations/drop-tag-vocabulary.test.ts > test_run_drop_tag_vocabulary
+Error: Cannot find module '/migrations/next/drop-tag-vocabulary.mjs' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/fix-table-tree-row-selector-scope/tests/unit/migrations/drop-tag-vocabulary.test.ts
+ ❯ tests/unit/migrations/drop-tag-vocabulary.test.ts:83:55
+     81| test("test_run_drop_tag_vocabulary", async () => {
+     82|   // 準備
+     83|   const { dropTagVocabulary, runDropTagVocabulary } = await loadMigrat…
+       |                                                       ^
+     84|   const root = await createTempDir();
+     85|   await writeFiles(root, {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/6]⎯
+
+ FAIL  |unit| tests/unit/migrations/drop-tag-vocabulary.test.ts > test_run_drop_tag_vocabulary_without_index
+Error: Cannot find module '/migrations/next/drop-tag-vocabulary.mjs' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/fix-table-tree-row-selector-scope/tests/unit/migrations/drop-tag-vocabulary.test.ts
+ ❯ tests/unit/migrations/drop-tag-vocabulary.test.ts:100:36
+     98| test("test_run_drop_tag_vocabulary_without_index", async () => {
+     99|   // 準備
+    100|   const { runDropTagVocabulary } = await loadMigration();
+       |                                    ^
+    101|   const root = await createTempDir();
+    102|   const config = "build:\n  include: ['**/*.md']\n";
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/6]⎯
+
+ FAIL  |unit| tests/unit/migrations/drop-tag-vocabulary.test.ts > test_run_drop_tag_vocabulary_without_config
+Error: Cannot find module '/migrations/next/drop-tag-vocabulary.mjs' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/fix-table-tree-row-selector-scope/tests/unit/migrations/drop-tag-vocabulary.test.ts
+ ❯ tests/unit/migrations/drop-tag-vocabulary.test.ts:114:36
+    112| test("test_run_drop_tag_vocabulary_without_config", async () => {
+    113|   // 準備
+    114|   const { runDropTagVocabulary } = await loadMigration();
+       |                                    ^
+    115|   // 実行・検証
+    116|   await expect(runDropTagVocabulary([])).rejects.toThrow();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/6]⎯
+
+
+ Test Files  1 failed | 257 passed (258)
+      Tests  6 failed | 1810 passed (1816)
+   Start at  20:26:21
+   Duration  108.53s (worker 67%, tests 20%, import 12%, transform 1%)
+
+exit=1
+
+# 補足: 失敗した tests/unit/migrations/drop-tag-vocabulary.test.ts の 6 件は、release/v0.10.0 で migrations/next を migrations/v0.10.0 へ移したことによるもので、この PR の変更（src/index.css）とは関係しない。#395（作業 PR #407）で扱う

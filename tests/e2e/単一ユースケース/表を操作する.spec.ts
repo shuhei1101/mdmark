@@ -1994,6 +1994,24 @@ test("test_normal_when_tree", async ({ page }) => {
   await expect(leaf.getByRole("tooltip")).toHaveText(
     "aliases[].metadata.alias_type.type",
   );
+  // 検証: 最後の行のツールチップもスクロールの包みの中に収まり、包みに縦のスクロールが出ない
+  await expect(page.locator("#doc tbody tr").last()).toHaveAttribute(
+    "data-path",
+    "aliases[].metadata.alias_type.type",
+  );
+  const fit = await leaf.getByRole("tooltip").evaluate((tip) => {
+    const scroll = tip.closest<HTMLElement>(".mdmark-table-scroll");
+    if (!scroll) {
+      throw new Error("ツールチップがスクロールの包みの中にない");
+    }
+    const a = tip.getBoundingClientRect();
+    const b = scroll.getBoundingClientRect();
+    return {
+      inside: a.top >= b.top && a.bottom <= b.bottom,
+      noVerticalScroll: scroll.scrollHeight === scroll.clientHeight,
+    };
+  });
+  expect(fit).toEqual({ inside: true, noVerticalScroll: true });
   // 実行・検証: ⧉ でコピー
   await leaf.locator("button.mdmark-tree-copy").click();
   await expect(leaf.locator("button.mdmark-tree-copy")).toContainText(
