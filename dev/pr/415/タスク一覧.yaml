@@ -80,8 +80,12 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-08T17:29:58.275928+00:00'
   - process: 結合テスト作成
-    status: todo
+    status: done
     note: h2 の節の中に置いた取り込みを mount で描き、取り込んだ見出しと本文が取り込みの枠の中にあることの結合テスト
+    updated_by: planner
+    updated_at: '2026-11-08T17:46:08.133688+00:00'
   - process: E2E テスト作成
-    status: todo
+    status: done
     note: 上のフォルダの設定のずれの行のパス（インターフェース定義『設定を重ねて読む』の制約「パスの表示」）・端末の設定の読めない行（applyToExport を持つと 4 行目）・文字列の警告の文言の比べ方（&lt; &gt; を消さずに戻して比べる）の 3 件のテストを設計に合わせ、6 件を流して pass を確かめる
+    updated_by: planner
+    updated_at: '2026-11-08T17:46:08.133688+00:00'
