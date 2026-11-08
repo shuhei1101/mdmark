@@ -246,7 +246,7 @@ suite("プレビューを開く", () => {
     }
   });
 
-  // CSP を広げずに、範囲の ts をページの nonce を付けた script 要素で動かす（正常系（範囲のスクリプトと CSS））
+  // mermaid の読み込み先の origin を CSP に入れ、違反を出さずに mermaid の図を描く（正常系（mermaid のコードブロック））
   test("test_normal_when_mermaid", async function () {
     // 5MB の mermaid の読み込みと描画を最大 60 秒待つ
     this.timeout(90000);
@@ -299,6 +299,7 @@ suite("プレビューを開く", () => {
     }
   });
 
+  // CSP を広げずに、範囲の ts をページの nonce を付けた script 要素で動かす（正常系（範囲のスクリプトと CSS））
   test("test_normal_when_range_scripts", async () => {
     // 準備
     const transpiler = await startTranspilerServer();
