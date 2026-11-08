@@ -1,0 +1,15 @@
+$ npm run test:unit
+
+> test:unit
+> vitest run --project 'unit*'
+
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/design-render-ignore-unknown-mark-args
+
+
+ Test Files  255 passed (255)
+      Tests  1766 passed (1766)
+   Start at  10:39:13
+   Duration  105.81s (worker 58%, tests 27%, import 14%, transform 1%)
+
+exit 0
