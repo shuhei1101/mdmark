@@ -219,6 +219,9 @@ test("test_normal_when_jump_to_list", async ({ page }) => {
   await expect(items.nth(0)).toBeInViewport();
 });
 
+// タップで開いたツールチップが、閉じる待ちの後も出たままかを確かめるまでの時間（ミリ秒）
+const TOUCH_CLOSE_WAIT_MS = 500;
+
 test.describe("タッチの端末", () => {
   test.use({ hasTouch: true });
 
@@ -236,6 +239,7 @@ test.describe("タッチの端末", () => {
     const outside = page.locator("#doc p", { hasText: "脚注を含まない段落" });
     // 実行・検証: 閉じた番号のタップでツールチップが出て、一覧は閉じたまま
     await link.tap();
+    await page.waitForTimeout(TOUCH_CLOSE_WAIT_MS);
     await expect(tip).toBeVisible();
     await expect(tip).toContainText("出典の説明");
     await expect(list).not.toHaveAttribute("open", "");
@@ -244,6 +248,7 @@ test.describe("タッチの端末", () => {
     await expect(tip).toBeHidden();
     // 実行・検証: 消えた後の番号のタップでもう一度出る
     await link.tap();
+    await page.waitForTimeout(TOUCH_CLOSE_WAIT_MS);
     await expect(tip).toBeVisible();
     // 実行・検証: 開いた番号のタップで消え、一覧が開いて項目へ移る
     await link.tap();
