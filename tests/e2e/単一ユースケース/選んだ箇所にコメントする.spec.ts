@@ -185,7 +185,12 @@ test("test_normal_when_updated", async ({ page }) => {
   expect(
     await page
       .locator("#doc")
-      .evaluate((doc) => doc.lastElementChild?.className ?? ""),
+      .evaluate(
+        (doc) =>
+          [...doc.children]
+            .filter((child) => !child.classList.contains("mdmark-back-to-top"))
+            .at(-1)?.className ?? "",
+      ),
   ).toContain("mdmark-comment-orphans");
 });
 

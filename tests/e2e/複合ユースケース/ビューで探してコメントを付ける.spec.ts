@@ -77,7 +77,11 @@ test("test_normal", async ({ page, builtRoot }) => {
   await expect
     .poll(async () => (await readCommentCalls(page)).load.length)
     .toBe(1);
-  await selectText(page, { selector: "#doc > p", start: 10, end: 16 });
+  await selectText(page, {
+    selector: "#doc > .mdmark-content > p",
+    start: 10,
+    end: 16,
+  });
   await page.locator(".mdmark-comment-add").click();
   const form = page.locator(".mdmark-comment-form");
   await form.locator("textarea").fill(COMMENT_BODY);

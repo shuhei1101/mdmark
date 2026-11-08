@@ -10,6 +10,8 @@ export declare function renderCallout(options: {
     collapsed?: boolean;
     /** 折り畳みが開いているか */
     open?: boolean;
+    /** タイトルの行内の HTML（エスケープ済み）。渡すと種類の名前は読み上げだけにする */
+    title?: string | undefined;
     /** 本文の HTML（`SLOT_MARKER` を渡せる） */
     body: string;
 }): string;

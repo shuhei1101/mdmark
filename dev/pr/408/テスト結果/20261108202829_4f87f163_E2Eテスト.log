@@ -1,0 +1,131 @@
+$ npx playwright test tests/e2e/単一ユースケース/表を操作する.spec.ts tests/e2e/単一ユースケース/文書を印刷する.spec.ts tests/e2e/単一ユースケース/ステップ・ファイルツリー・バッジで本文を組む.spec.ts -g 'tree|ファイルツリー|file_tree' --reporter=line
+- Resolving version...
+✔ Validated version: 1.141.0
+✔ Found existing install in /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/fix-table-tree-row-selector-scope/vscode/.vscode-test/vscode-linux-x64-1.141.0
+
+Running 48 tests using 4 workers
+
+[1/48] [chromium] › tests/e2e/単一ユースケース/文書を印刷する.spec.ts:754:1 › test_normal_when_tree_folded
+[2/48] [chromium] › tests/e2e/単一ユースケース/表を操作する.spec.ts:1961:1 › test_normal_when_tree
+[3/48] [firefox] › tests/e2e/単一ユースケース/ステップ・ファイルツリー・バッジで本文を組む.spec.ts:27:1 › test_normal
+[4/48] [chromium] › tests/e2e/単一ユースケース/ステップ・ファイルツリー・バッジで本文を組む.spec.ts:27:1 › test_normal
+[5/48] [chromium] › tests/e2e/単一ユースケース/表を操作する.spec.ts:2025:1 › test_normal_when_tree_folded
+[6/48] [chromium] › tests/e2e/単一ユースケース/表を操作する.spec.ts:2084:1 › test_normal_when_tree_filtered
+[7/48] [chromium] › tests/e2e/単一ユースケース/表を操作する.spec.ts:2120:1 › test_normal_when_tree_row_selected
+[8/48] [chromium] › tests/e2e/単一ユースケース/表を操作する.spec.ts:2167:1 › test_normal_when_tree_linked_to_example
+[9/48] [firefox] › tests/e2e/単一ユースケース/文書を印刷する.spec.ts:754:1 › test_normal_when_tree_folded
+[10/48] [chromium] › tests/e2e/単一ユースケース/表を操作する.spec.ts:2206:1 › test_error_when_tree_options_invalid
+[11/48] [firefox] › tests/e2e/単一ユースケース/表を操作する.spec.ts:1961:1 › test_normal_when_tree
+[12/48] [firefox] › tests/e2e/単一ユースケース/ステップ・ファイルツリー・バッジで本文を組む.spec.ts:94:1 › test_normal_when_badge_escaped
+[13/48] [firefox] › tests/e2e/単一ユースケース/ステップ・ファイルツリー・バッジで本文を組む.spec.ts:105:1 › test_error_when_tree_line_invalid
+[14/48] [chromium] › tests/e2e/単一ユースケース/ステップ・ファイルツリー・バッジで本文を組む.spec.ts:94:1 › test_normal_when_badge_escaped
+[15/48] [chromium] › tests/e2e/単一ユースケース/ステップ・ファイルツリー・バッジで本文を組む.spec.ts:105:1 › test_error_when_tree_line_invalid
+[16/48] [firefox] › tests/e2e/単一ユースケース/ステップ・ファイルツリー・バッジで本文を組む.spec.ts:122:1 › test_error_when_steps_without_ordered_list
+[17/48] [chromium] › tests/e2e/単一ユースケース/ステップ・ファイルツリー・バッジで本文を組む.spec.ts:122:1 › test_error_when_steps_without_ordered_list
+[18/48] [chromium] › tests/e2e/単一ユースケース/ステップ・ファイルツリー・バッジで本文を組む.spec.ts:141:1 › test_normal_when_badge_empty
+[19/48] [chromium] › tests/e2e/単一ユースケース/ステップ・ファイルツリー・バッジで本文を組む.spec.ts:193:1 › test_normal_when_steps_folded
+[20/48] [firefox] › tests/e2e/単一ユースケース/ステップ・ファイルツリー・バッジで本文を組む.spec.ts:141:1 › test_normal_when_badge_empty
+[21/48] [chromium] › tests/e2e/単一ユースケース/ステップ・ファイルツリー・バッジで本文を組む.spec.ts:242:1 › test_error_when_steps_option_invalid
+[22/48] [firefox] › tests/e2e/単一ユースケース/ステップ・ファイルツリー・バッジで本文を組む.spec.ts:193:1 › test_normal_when_steps_folded
+[23/48] [chromium] › tests/e2e/単一ユースケース/ステップ・ファイルツリー・バッジで本文を組む.spec.ts:283:1 › test_normal_when_tree_annotated
+[24/48] [chromium] › tests/e2e/単一ユースケース/ステップ・ファイルツリー・バッジで本文を組む.spec.ts:366:1 › test_normal_when_tree_folders_toggled
+[25/48] [firefox] › tests/e2e/単一ユースケース/ステップ・ファイルツリー・バッジで本文を組む.spec.ts:242:1 › test_error_when_steps_option_invalid
+[26/48] [chromium] › tests/e2e/単一ユースケース/ステップ・ファイルツリー・バッジで本文を組む.spec.ts:448:1 › test_normal_when_tree_ascii
+[27/48] [firefox] › tests/e2e/単一ユースケース/ステップ・ファイルツリー・バッジで本文を組む.spec.ts:283:1 › test_normal_when_tree_annotated
+[28/48] [chromium] › tests/e2e/単一ユースケース/ステップ・ファイルツリー・バッジで本文を組む.spec.ts:479:1 › test_normal_when_tree_copied
+[29/48] [chromium] › tests/e2e/単一ユースケース/ステップ・ファイルツリー・バッジで本文を組む.spec.ts:498:1 › test_error_when_tree_clipboard_denied
+[30/48] [firefox] › tests/e2e/単一ユースケース/ステップ・ファイルツリー・バッジで本文を組む.spec.ts:366:1 › test_normal_when_tree_folders_toggled
+[31/48] [chromium] › tests/e2e/単一ユースケース/ステップ・ファイルツリー・バッジで本文を組む.spec.ts:543:1 › test_error_when_tree_open_invalid
+[32/48] [chromium] › tests/e2e/単一ユースケース/ステップ・ファイルツリー・バッジで本文を組む.spec.ts:606:1 › test_normal_when_tree_wrap
+[33/48] [chromium] › tests/e2e/単一ユースケース/ステップ・ファイルツリー・バッジで本文を組む.spec.ts:636:1 › test_normal_when_icon_kbd_ruby
+[34/48] [firefox] › tests/e2e/単一ユースケース/ステップ・ファイルツリー・バッジで本文を組む.spec.ts:448:1 › test_normal_when_tree_ascii
+[35/48] [chromium] › tests/e2e/単一ユースケース/ステップ・ファイルツリー・バッジで本文を組む.spec.ts:670:1 › test_normal_when_icon_kbd_escaped
+[36/48] [chromium] › tests/e2e/単一ユースケース/ステップ・ファイルツリー・バッジで本文を組む.spec.ts:686:1 › test_error_when_icon_name_invalid
+[37/48] [firefox] › tests/e2e/単一ユースケース/ステップ・ファイルツリー・バッジで本文を組む.spec.ts:479:1 › test_normal_when_tree_copied
+[38/48] [firefox] › tests/e2e/単一ユースケース/ステップ・ファイルツリー・バッジで本文を組む.spec.ts:498:1 › test_error_when_tree_clipboard_denied
+[39/48] [firefox] › tests/e2e/単一ユースケース/ステップ・ファイルツリー・バッジで本文を組む.spec.ts:543:1 › test_error_when_tree_open_invalid
+[40/48] [firefox] › tests/e2e/単一ユースケース/ステップ・ファイルツリー・バッジで本文を組む.spec.ts:606:1 › test_normal_when_tree_wrap
+[41/48] [firefox] › tests/e2e/単一ユースケース/ステップ・ファイルツリー・バッジで本文を組む.spec.ts:636:1 › test_normal_when_icon_kbd_ruby
+[42/48] [firefox] › tests/e2e/単一ユースケース/ステップ・ファイルツリー・バッジで本文を組む.spec.ts:670:1 › test_normal_when_icon_kbd_escaped
+[43/48] [firefox] › tests/e2e/単一ユースケース/ステップ・ファイルツリー・バッジで本文を組む.spec.ts:686:1 › test_error_when_icon_name_invalid
+[44/48] [firefox] › tests/e2e/単一ユースケース/表を操作する.spec.ts:2025:1 › test_normal_when_tree_folded
+[45/48] [firefox] › tests/e2e/単一ユースケース/表を操作する.spec.ts:2084:1 › test_normal_when_tree_filtered
+[46/48] [firefox] › tests/e2e/単一ユースケース/表を操作する.spec.ts:2120:1 › test_normal_when_tree_row_selected
+[47/48] [firefox] › tests/e2e/単一ユースケース/表を操作する.spec.ts:2167:1 › test_normal_when_tree_linked_to_example
+[48/48] [firefox] › tests/e2e/単一ユースケース/表を操作する.spec.ts:2206:1 › test_error_when_tree_options_invalid
+  48 passed (2.1m)
+exit=0
+
+$ npx playwright test tests/e2e/単一ユースケース/文書を印刷する.spec.ts tests/e2e/単一ユースケース/ステップ・ファイルツリー・バッジで本文を組む.spec.ts --reporter=line
+- Resolving version...
+✔ Validated version: 1.141.0
+✔ Found existing install in /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/fix-table-tree-row-selector-scope/vscode/.vscode-test/vscode-linux-x64-1.141.0
+
+Running 64 tests using 4 workers
+
+[1/64] [firefox] › tests/e2e/単一ユースケース/ステップ・ファイルツリー・バッジで本文を組む.spec.ts:27:1 › test_normal
+[2/64] [chromium] › tests/e2e/単一ユースケース/ステップ・ファイルツリー・バッジで本文を組む.spec.ts:27:1 › test_normal
+[3/64] [chromium] › tests/e2e/単一ユースケース/文書を印刷する.spec.ts:42:1 › test_normal
+[4/64] [firefox] › tests/e2e/単一ユースケース/文書を印刷する.spec.ts:42:1 › test_normal
+[5/64] [chromium] › tests/e2e/単一ユースケース/ステップ・ファイルツリー・バッジで本文を組む.spec.ts:94:1 › test_normal_when_badge_escaped
+[6/64] [chromium] › tests/e2e/単一ユースケース/ステップ・ファイルツリー・バッジで本文を組む.spec.ts:105:1 › test_error_when_tree_line_invalid
+[7/64] [chromium] › tests/e2e/単一ユースケース/ステップ・ファイルツリー・バッジで本文を組む.spec.ts:122:1 › test_error_when_steps_without_ordered_list
+[8/64] [chromium] › tests/e2e/単一ユースケース/ステップ・ファイルツリー・バッジで本文を組む.spec.ts:141:1 › test_normal_when_badge_empty
+[9/64] [chromium] › tests/e2e/単一ユースケース/ステップ・ファイルツリー・バッジで本文を組む.spec.ts:193:1 › test_normal_when_steps_folded
+[10/64] [chromium] › tests/e2e/単一ユースケース/ステップ・ファイルツリー・バッジで本文を組む.spec.ts:242:1 › test_error_when_steps_option_invalid
+[11/64] [chromium] › tests/e2e/単一ユースケース/ステップ・ファイルツリー・バッジで本文を組む.spec.ts:283:1 › test_normal_when_tree_annotated
+[12/64] [chromium] › tests/e2e/単一ユースケース/ステップ・ファイルツリー・バッジで本文を組む.spec.ts:366:1 › test_normal_when_tree_folders_toggled
+[13/64] [firefox] › tests/e2e/単一ユースケース/ステップ・ファイルツリー・バッジで本文を組む.spec.ts:94:1 › test_normal_when_badge_escaped
+[14/64] [chromium] › tests/e2e/単一ユースケース/ステップ・ファイルツリー・バッジで本文を組む.spec.ts:448:1 › test_normal_when_tree_ascii
+[15/64] [firefox] › tests/e2e/単一ユースケース/ステップ・ファイルツリー・バッジで本文を組む.spec.ts:105:1 › test_error_when_tree_line_invalid
+[16/64] [chromium] › tests/e2e/単一ユースケース/ステップ・ファイルツリー・バッジで本文を組む.spec.ts:479:1 › test_normal_when_tree_copied
+[17/64] [firefox] › tests/e2e/単一ユースケース/ステップ・ファイルツリー・バッジで本文を組む.spec.ts:122:1 › test_error_when_steps_without_ordered_list
+[18/64] [chromium] › tests/e2e/単一ユースケース/ステップ・ファイルツリー・バッジで本文を組む.spec.ts:498:1 › test_error_when_tree_clipboard_denied
+[19/64] [firefox] › tests/e2e/単一ユースケース/ステップ・ファイルツリー・バッジで本文を組む.spec.ts:141:1 › test_normal_when_badge_empty
+[20/64] [chromium] › tests/e2e/単一ユースケース/ステップ・ファイルツリー・バッジで本文を組む.spec.ts:543:1 › test_error_when_tree_open_invalid
+[21/64] [chromium] › tests/e2e/単一ユースケース/ステップ・ファイルツリー・バッジで本文を組む.spec.ts:606:1 › test_normal_when_tree_wrap
+[22/64] [firefox] › tests/e2e/単一ユースケース/ステップ・ファイルツリー・バッジで本文を組む.spec.ts:193:1 › test_normal_when_steps_folded
+[23/64] [chromium] › tests/e2e/単一ユースケース/ステップ・ファイルツリー・バッジで本文を組む.spec.ts:636:1 › test_normal_when_icon_kbd_ruby
+[24/64] [firefox] › tests/e2e/単一ユースケース/ステップ・ファイルツリー・バッジで本文を組む.spec.ts:242:1 › test_error_when_steps_option_invalid
+[25/64] [chromium] › tests/e2e/単一ユースケース/ステップ・ファイルツリー・バッジで本文を組む.spec.ts:670:1 › test_normal_when_icon_kbd_escaped
+[26/64] [firefox] › tests/e2e/単一ユースケース/ステップ・ファイルツリー・バッジで本文を組む.spec.ts:283:1 › test_normal_when_tree_annotated
+[27/64] [firefox] › tests/e2e/単一ユースケース/文書を印刷する.spec.ts:67:1 › test_normal_when_print_finished
+[28/64] [chromium] › tests/e2e/単一ユースケース/ステップ・ファイルツリー・バッジで本文を組む.spec.ts:686:1 › test_error_when_icon_name_invalid
+[29/64] [firefox] › tests/e2e/単一ユースケース/文書を印刷する.spec.ts:86:1 › test_normal_when_syntax_expanded
+[30/64] [chromium] › tests/e2e/単一ユースケース/文書を印刷する.spec.ts:67:1 › test_normal_when_print_finished
+[31/64] [firefox] › tests/e2e/単一ユースケース/ステップ・ファイルツリー・バッジで本文を組む.spec.ts:366:1 › test_normal_when_tree_folders_toggled
+[32/64] [chromium] › tests/e2e/単一ユースケース/文書を印刷する.spec.ts:86:1 › test_normal_when_syntax_expanded
+[33/64] [chromium] › tests/e2e/単一ユースケース/文書を印刷する.spec.ts:227:1 › test_normal_when_glossary_and_backlinks
+[34/64] [firefox] › tests/e2e/単一ユースケース/文書を印刷する.spec.ts:227:1 › test_normal_when_glossary_and_backlinks
+[35/64] [chromium] › tests/e2e/単一ユースケース/文書を印刷する.spec.ts:259:1 › test_normal_when_table_features_printed
+[36/64] [firefox] › tests/e2e/単一ユースケース/ステップ・ファイルツリー・バッジで本文を組む.spec.ts:448:1 › test_normal_when_tree_ascii
+[37/64] [chromium] › tests/e2e/単一ユースケース/文書を印刷する.spec.ts:299:1 › test_normal_when_code_block_printed
+[38/64] [firefox] › tests/e2e/単一ユースケース/文書を印刷する.spec.ts:259:1 › test_normal_when_table_features_printed
+[39/64] [chromium] › tests/e2e/単一ユースケース/文書を印刷する.spec.ts:379:1 › test_normal_when_collapsed_column_printed
+[40/64] [firefox] › tests/e2e/単一ユースケース/文書を印刷する.spec.ts:299:1 › test_normal_when_code_block_printed
+[41/64] [chromium] › tests/e2e/単一ユースケース/文書を印刷する.spec.ts:418:1 › test_normal_when_side_toc_hidden_in_print
+[42/64] [chromium] › tests/e2e/単一ユースケース/文書を印刷する.spec.ts:451:1 › test_normal_when_theme_selected
+[43/64] [firefox] › tests/e2e/単一ユースケース/ステップ・ファイルツリー・バッジで本文を組む.spec.ts:479:1 › test_normal_when_tree_copied
+[44/64] [firefox] › tests/e2e/単一ユースケース/文書を印刷する.spec.ts:379:1 › test_normal_when_collapsed_column_printed
+[45/64] [chromium] › tests/e2e/単一ユースケース/文書を印刷する.spec.ts:478:1 › test_normal_when_colors_and_media_printed
+[46/64] [chromium] › tests/e2e/単一ユースケース/文書を印刷する.spec.ts:588:1 › test_normal_when_back_to_top_hidden_in_print
+[47/64] [firefox] › tests/e2e/単一ユースケース/ステップ・ファイルツリー・バッジで本文を組む.spec.ts:498:1 › test_error_when_tree_clipboard_denied
+[48/64] [chromium] › tests/e2e/単一ユースケース/文書を印刷する.spec.ts:618:1 › test_normal_when_code_folded
+[49/64] [firefox] › tests/e2e/単一ユースケース/文書を印刷する.spec.ts:418:1 › test_normal_when_side_toc_hidden_in_print
+[50/64] [chromium] › tests/e2e/単一ユースケース/文書を印刷する.spec.ts:671:1 › test_normal_when_footnotes_printed
+[51/64] [chromium] › tests/e2e/単一ユースケース/文書を印刷する.spec.ts:699:1 › test_normal_when_pagebreak_details_wide
+[52/64] [firefox] › tests/e2e/単一ユースケース/ステップ・ファイルツリー・バッジで本文を組む.spec.ts:543:1 › test_error_when_tree_open_invalid
+[53/64] [firefox] › tests/e2e/単一ユースケース/文書を印刷する.spec.ts:451:1 › test_normal_when_theme_selected
+[54/64] [chromium] › tests/e2e/単一ユースケース/文書を印刷する.spec.ts:754:1 › test_normal_when_tree_folded
+[55/64] [firefox] › tests/e2e/単一ユースケース/ステップ・ファイルツリー・バッジで本文を組む.spec.ts:606:1 › test_normal_when_tree_wrap
+[56/64] [firefox] › tests/e2e/単一ユースケース/文書を印刷する.spec.ts:478:1 › test_normal_when_colors_and_media_printed
+[57/64] [firefox] › tests/e2e/単一ユースケース/ステップ・ファイルツリー・バッジで本文を組む.spec.ts:636:1 › test_normal_when_icon_kbd_ruby
+[58/64] [firefox] › tests/e2e/単一ユースケース/文書を印刷する.spec.ts:588:1 › test_normal_when_back_to_top_hidden_in_print
+[59/64] [firefox] › tests/e2e/単一ユースケース/ステップ・ファイルツリー・バッジで本文を組む.spec.ts:670:1 › test_normal_when_icon_kbd_escaped
+[60/64] [firefox] › tests/e2e/単一ユースケース/文書を印刷する.spec.ts:618:1 › test_normal_when_code_folded
+[61/64] [firefox] › tests/e2e/単一ユースケース/ステップ・ファイルツリー・バッジで本文を組む.spec.ts:686:1 › test_error_when_icon_name_invalid
+[62/64] [firefox] › tests/e2e/単一ユースケース/文書を印刷する.spec.ts:671:1 › test_normal_when_footnotes_printed
+[63/64] [firefox] › tests/e2e/単一ユースケース/文書を印刷する.spec.ts:699:1 › test_normal_when_pagebreak_details_wide
+[64/64] [firefox] › tests/e2e/単一ユースケース/文書を印刷する.spec.ts:754:1 › test_normal_when_tree_folded
+  64 passed (1.1m)
+exit=0

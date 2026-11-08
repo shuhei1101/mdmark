@@ -1,5 +1,5 @@
 import { existsSync } from "node:fs";
-import { readFile } from "node:fs/promises";
+import { mkdir, readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { parse } from "yaml";
 import { installPlugin, uninstallPlugin } from "../claude-plugin.ts";
@@ -102,10 +102,10 @@ test("test_normal", async ({ builtRoot, terminal, tempDir }) => {
   const dir = await tempDir();
   await writeFiles(dir, DOCUMENT);
   await startTmuxServer(terminal);
+  const configDir = terminal.env.CLAUDE_CONFIG_DIR ?? "";
+  await mkdir(configDir, { recursive: true });
   // 実行
-  const { installPath } = await installPlugin(
-    terminal.env.CLAUDE_CONFIG_DIR ?? "",
-  );
+  const { installPath } = await installPlugin(configDir);
   const firstHook = await runSessionStartHook({
     pluginDir: installPath,
     terminal,
@@ -173,6 +173,7 @@ test("test_normal_when_already_set_up", async ({
 }) => {
   // 準備
   const configDir = terminal.env.CLAUDE_CONFIG_DIR ?? "";
+  await mkdir(configDir, { recursive: true });
   const dir = await tempDir();
   const installed = await installPlugin(configDir);
   await setUpAll({ pluginDir: installed.installPath, terminal, dir });

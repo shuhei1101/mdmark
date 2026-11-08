@@ -482,6 +482,10 @@ test("test_normal_when_er_table", async ({ page }) => {
   const info = page.getByRole("button", { name: "「顧客」の説明" });
   const tipId = await info.getAttribute("aria-describedby");
   const tip = page.locator(`[role="tooltip"][id="${tipId}"]`);
+  // テーブルの下にツールチップが収まるよう、テーブルの上端を画面の上から 100px の位置までスクロールする
+  await table.evaluate((element) => {
+    window.scrollBy(0, element.getBoundingClientRect().top - 100);
+  });
   // 実行
   await info.hover();
   // 検証
@@ -642,9 +646,8 @@ test("test_normal_when_chart_items", async ({ page }) => {
     expect(text, String(index)).toMatch(/\d/);
   }
   // 実行・検証: Tab で折れ線の点にフォーカスし、Esc でツールチップを削除してフォーカスを点に残す
-  await page.locator("#doc").evaluate(() => {
-    (document.activeElement as HTMLElement | null)?.blur();
-  });
+  // 折れ線の図の表示する枠から Tab を始める（Firefox は blur の後も最後にフォーカスした要素から Tab を進め、文書の末尾から先頭へ戻らない）
+  await figures.nth(0).locator('[aria-roledescription="図"]').focus();
   for (let count = 0; count < 40; count += 1) {
     await page.keyboard.press("Tab");
     if (
