@@ -189,3 +189,43 @@ test("test_read_yaml_key_when_missing", async () => {
   await expect(notString).rejects.toBeInstanceOf(CliError);
   await expect(notString).rejects.toThrow(/文字列/);
 });
+
+// 描くときに読み飛ばす印の引数を unknown_mark_arg にする（正常系）
+test("test_check_markdown_source_when_unknown_mark_args", async () => {
+  // 準備
+  const { checkMarkdownSource } = await loadMarkdownCheck();
+  const cwd = await createConfigDir();
+  const text = [
+    "<!-- table: data +unknown widht=説明 -->",
+    "",
+    "| 名前 | 説明 |",
+    "| --- | --- |",
+    "| a | 1 |",
+    "",
+    "<!-- /table -->",
+    "<!-- tabs: grop=os -->",
+    "",
+    "### macOS",
+    "",
+    "本文",
+    "",
+    "### Windows",
+    "",
+    "本文",
+    "",
+    "<!-- /tabs -->",
+    "",
+  ].join("\n");
+  // 実行
+  const issues = await checkMarkdownSource({ cwd, text, importCode });
+  // 検証
+  expect(issues.map(({ where, kind }) => ({ where, kind }))).toEqual([
+    { where: "1", kind: "unknown_mark_arg" },
+    { where: "1", kind: "unknown_mark_arg" },
+    { where: "8", kind: "unknown_mark_arg" },
+  ]);
+  const messages = issues.map((issue) => issue.message).join("\n");
+  expect(messages).toContain("+unknown");
+  expect(messages).toContain("widht=");
+  expect(messages).toContain("grop=");
+});

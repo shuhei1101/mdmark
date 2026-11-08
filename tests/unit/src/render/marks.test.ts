@@ -268,19 +268,30 @@ test("test_resolve_page_settings_when_not_at_top", async () => {
   expect(rendered.html).toContain("mdmark-syntax-warning");
 });
 
-// 知らないキー・値を文書の先頭の警告にまとめる（異常系）
+// 知らない値を文書の先頭の警告にまとめ、知らないキーを読み飛ばす（異常系）
 test("test_resolve_page_settings_when_unknown", async () => {
   // 準備
   const { renderDoc } = await loadRenderHelper();
-  const markdown = ["<!-- page: scheme=sepia toc=fixed -->", "", "段落"].join(
-    "\n",
-  );
+  const markdown = [
+    "<!-- page: scheme=sepia size=wide toc=fixed -->",
+    "",
+    "段落",
+  ].join("\n");
   // 実行
   const rendered = renderDoc(markdown);
   // 検証
   expect(rendered.page).toEqual({ toc: "fixed" });
-  expect(rendered.warnings).toHaveLength(1);
-  expect(rendered.warnings[0]?.message).toContain("scheme=sepia");
+  const shown = rendered.warnings.filter(
+    (warning) => warning.kind === "syntax_warning",
+  );
+  expect(shown).toHaveLength(1);
+  expect(shown[0]?.message).toContain("scheme=sepia");
+  expect(shown[0]?.message).not.toContain("size=wide");
+  const skipped = rendered.warnings.filter(
+    (warning) => warning.kind === "unknown_mark_arg",
+  );
+  expect(skipped).toHaveLength(1);
+  expect(skipped[0]?.message).toContain("size=");
   expect(rendered.html.indexOf("mdmark-syntax-warning")).toBeLessThan(
     rendered.html.indexOf("段落"),
   );

@@ -40,7 +40,7 @@ test("test_read_table_spec", async () => {
   });
 });
 
-// 読めない指定を警告にし、読めた指定を当てる（正常系）
+// 読めない値と組み合わせを警告にし、知らない種類・機能・キーを読み飛ばす（正常系）
 test("test_read_table_spec_when_unknown", async () => {
   // 準備
   const { readTableSpec } = await loadTables();
@@ -56,17 +56,23 @@ test("test_read_table_spec_when_unknown", async () => {
   expect(spec.filters).toEqual([]);
   expect(spec.collapse).toBe("closed");
   const labels = spec.warnings.map((warning) => warning.label);
-  expect(labels).toHaveLength(6);
-  expect(labels).toEqual(
-    expect.arrayContaining([
-      "unknown",
-      "+foo",
-      "size=",
-      "無い列",
-      "range",
-      "closed と open",
-    ]),
+  expect(labels.sort()).toEqual(["closed と open", "range", "無い列"].sort());
+  expect(spec.skipped.map((skipped) => skipped.arg).sort()).toEqual(
+    ["+foo", "size=", "unknown"].sort(),
   );
+});
+
+// title= の値の空白の後ろの単語を警告にし、読み飛ばさない（異常系）
+test("test_read_table_spec_when_title_has_space", async () => {
+  // 準備
+  const { readTableSpec } = await loadTables();
+  const text = "data closed title=リリースの 一覧";
+  // 実行
+  const spec = readTableSpec(parseMarkArgs(text), ["名前"], 3, text);
+  // 検証
+  expect(spec.title).toBe("リリースの");
+  expect(spec.warnings.map((warning) => warning.label)).toContain("一覧");
+  expect(spec.skipped).toEqual([]);
 });
 
 // 5 つの機能と hide=・total= を読む（正常系）

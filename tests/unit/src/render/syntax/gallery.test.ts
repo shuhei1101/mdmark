@@ -49,7 +49,8 @@ test("test_read_gallery_options_when_unreadable", async () => {
   const options = readGalleryOptions(mark);
   // 検証
   expect(options.cols).toBe(2);
-  expect(options.items.map((item) => item.label)).toEqual(["cols=7", "wide"]);
+  expect(options.items.map((item) => item.label)).toEqual(["cols=7"]);
+  expect(options.skipped.map((skipped) => skipped.arg)).toEqual(["wide"]);
 });
 
 // 範囲の画像を格子に並べる（正常系）

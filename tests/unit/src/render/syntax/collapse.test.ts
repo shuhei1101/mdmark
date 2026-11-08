@@ -63,3 +63,30 @@ test("test_read_collapse_when_title_alone", async () => {
   expect(empty.title).toBeUndefined();
   expect(empty.items.map((item) => item.label)).toEqual(["title="]);
 });
+
+// title= の値の空白の後ろの単語を項目にし、rest から除く（異常系）
+test("test_read_collapse_when_title_has_space", async () => {
+  // 準備
+  const { readCollapse } = await loadCollapse();
+  const text = "open title=入れ 方 fold";
+  // 実行
+  const spec = readCollapse(parseMarkArgs(text), text);
+  // 検証
+  expect(spec.title).toBe("入れ");
+  expect(spec.items.map((item) => item.label)).toEqual(["方"]);
+  expect(spec.rest).toEqual({ args: ["fold"], keys: {} });
+});
+
+// title= の直後の単語だけを返す（正常系）
+test("test_title_tail_of", async () => {
+  // 準備
+  const { titleTailOf } = await loadCollapse();
+  // 実行
+  const tails = [
+    "title=My App.ts color=red",
+    "title=app.ts color=red",
+    "lines App.ts",
+  ].map((text) => titleTailOf(text));
+  // 検証
+  expect(tails).toEqual(["App.ts", undefined, undefined]);
+});

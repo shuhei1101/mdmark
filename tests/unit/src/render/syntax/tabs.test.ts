@@ -90,17 +90,23 @@ test("test_build_tabs_when_group", () => {
   expect(html).not.toContain("mdmark-syntax-warning");
 });
 
-// 読めない指定は警告にしてタブにはする（正常系）
+// 値の無い group= は警告にし、知らないキーと指定は読み飛ばしてタブにする（異常系）
 test("test_build_tabs_when_unreadable_options", () => {
   // 準備
   const markdown = tabsMarkdown("<!-- tabs: group= grop=os fold -->");
   // 実行
-  const { html } = renderDoc(markdown);
+  const { html, warnings } = renderDoc(markdown);
   // 検証
   expect(matches(html, /class="mdmark-syntax-warning"/g)).toHaveLength(1);
-  for (const label of ["group=", "grop=", "fold"]) {
-    expect(html).toContain(`<code>${label}</code>`);
-  }
+  expect(html).toContain("<code>group=</code>");
+  expect(html).not.toContain("<code>grop=</code>");
+  expect(html).not.toContain("<code>fold</code>");
+  const skipped = warnings
+    .filter((warning) => warning.kind === "unknown_mark_arg")
+    .map((warning) => warning.message)
+    .join("\n");
+  expect(skipped).toContain("grop=");
+  expect(skipped).toContain("fold");
   expect(html).toContain('<div class="mdmark-tabs">');
   expect(html).not.toContain("data-group");
   expect(html.indexOf("mdmark-syntax-warning")).toBeLessThan(
@@ -131,7 +137,7 @@ test("test_read_tabs_options_when_none", async () => {
   expect(options.warning).toBeUndefined();
 });
 
-// 読めない指定を 1 つの警告にまとめる（異常系）
+// 値の無い group= を警告にし、知らないキーと指定を読み飛ばす（異常系）
 test("test_read_tabs_options_when_unreadable", async () => {
   // 準備
   const { readTabsOptions } = await loadTabs();
@@ -144,15 +150,28 @@ test("test_read_tabs_options_when_unreadable", async () => {
   );
   expect(options.warning?.mark).toBe("<!-- tabs: group= grop=os fold -->");
   const items = options.warning?.items ?? [];
-  expect(items.map((item) => item.label).sort()).toEqual(
-    ["fold", "grop=", "group="].sort(),
+  expect(items.map((item) => item.label)).toEqual(["group="]);
+  expect(items[0]?.message).toContain("組の名前がありません");
+  expect(items[0]?.message).toContain("組を持たないタブとして描いています");
+  expect(options.skipped.map((skipped) => skipped.arg).sort()).toEqual(
+    ["fold", "grop="].sort(),
   );
-  const message = (label: string): string =>
-    items.find((item) => item.label === label)?.message ?? "";
-  expect(message("group=")).toContain("組の名前がありません");
-  expect(message("group=")).toContain("組を持たないタブとして描いています");
-  expect(message("grop=")).toContain("使えないキーです");
-  expect(message("fold")).toContain("使えない指定です");
+});
+
+// title= の値の空白の後ろの単語を警告にし、読み飛ばさない（異常系）
+test("test_read_tabs_options_when_title_has_space", async () => {
+  // 準備
+  const { readTabsOptions } = await loadTabs();
+  // 実行
+  const options = readTabsOptions(
+    tabsMark("closed title=インストールの 手順"),
+  );
+  // 検証
+  expect(options.title).toBe("インストールの");
+  expect((options.warning?.items ?? []).map((item) => item.label)).toEqual([
+    "手順",
+  ]);
+  expect(options.skipped).toEqual([]);
 });
 
 // closed のタブをタブ名の見出しの折り畳みに入れる（正常系）

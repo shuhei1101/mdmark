@@ -19,10 +19,11 @@ test("test_read_page_settings", async () => {
   expect(result).toEqual({
     settings: { scheme: "dark", theme: "theme-slate", toc: "fixed" },
     unknown: [],
+    skipped: [],
   });
 });
 
-// 知らないキー・値を残りと分ける（異常系）
+// 知らない値と知らないキーを分ける（異常系）
 test("test_read_page_settings_when_unknown", async () => {
   // 準備
   const { readPageSettings } = await loadPage();
@@ -36,6 +37,7 @@ test("test_read_page_settings_when_unknown", async () => {
   // 検証
   expect(result).toEqual({
     settings: { toc: "hover" },
-    unknown: ["scheme=sepia", "theme=theme-unknown", "size=wide"],
+    unknown: ["scheme=sepia", "theme=theme-unknown"],
+    skipped: ["size="],
   });
 });
