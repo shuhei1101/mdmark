@@ -2,7 +2,9 @@ docs:
   - page: src/files.yaml
     new: false
     change: '#345 の parts/back-to-top.ts・parts/chart.ts・parts/card-grid.ts・parts/card-grid.stories.ts と #346 の 13 ファイルの行を追加する（description はモジュール構成の受け持ち、related はモジュール構成・部品設計への implements）'
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-08T20:50:49.171720+00:00'
 scope_out:
   - item: src/files.yaml に行が無い render/syntax/card-grid.ts・render/page.ts・plugin/ の 8 ファイルの行の追加
     reason: '子 Issue #345・#346 の範囲（#345 は src/parts/、#346 は本文が挙げる 13 ファイル）の外で、今回の作業 PR がマージされなくても同じ内容で成り立つ横展開の残り'
