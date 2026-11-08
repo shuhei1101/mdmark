@@ -35,8 +35,10 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-08T12:35:58.631655+00:00'
   - process: 単一ユースケース設計
-    status: todo
+    status: done
     note: シナリオ『表を操作する』の 4 つのシナリオの setup のマーカーに filter= を記載する
+    updated_by: planner
+    updated_at: '2026-11-08T12:44:07.046846+00:00'
   - process: モック作成
     status: skipped
     reason: 'モック要否: 見た目を作り手が決める余地が無い'
