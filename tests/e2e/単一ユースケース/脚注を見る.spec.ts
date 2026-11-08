@@ -218,3 +218,39 @@ test("test_normal_when_jump_to_list", async ({ page }) => {
   await expect(items.nth(0)).toBeFocused();
   await expect(items.nth(0)).toBeInViewport();
 });
+
+test.describe("タッチの端末", () => {
+  test.use({ hasTouch: true });
+
+  // 閉じた番号のタップでツールチップを出し、外のタップで消し、開いた番号のタップで一覧へ移る（正常シナリオ（タッチ））
+  test("test_normal_when_touch", async ({ page }) => {
+    // 準備
+    await openPage(page, builtRoot);
+    await mountDocument(page, {
+      markdown: `${MARKDOWN}\n脚注を含まない段落。\n`,
+    });
+    const link = footnoteRef(page, 1).locator(".mdmark-fn-link");
+    const tip = footnoteRef(page, 1).locator(".mdmark-fn-tip");
+    const list = page.locator("#doc details.mdmark-footnotes");
+    const item = list.locator(".mdmark-fn-item").nth(0);
+    const outside = page.locator("#doc p", { hasText: "脚注を含まない段落" });
+    // 実行・検証: 閉じた番号のタップでツールチップが出て、一覧は閉じたまま
+    await link.tap();
+    await expect(tip).toBeVisible();
+    await expect(tip).toContainText("出典の説明");
+    await expect(list).not.toHaveAttribute("open", "");
+    // 実行・検証: ツールチップと番号の外のタップで消える
+    await outside.tap();
+    await expect(tip).toBeHidden();
+    // 実行・検証: 消えた後の番号のタップでもう一度出る
+    await link.tap();
+    await expect(tip).toBeVisible();
+    // 実行・検証: 開いた番号のタップで消え、一覧が開いて項目へ移る
+    await link.tap();
+    await expect(tip).toBeHidden();
+    await expect(list).toHaveAttribute("open", "");
+    await expect(item).toContainText("出典の説明");
+    await expect(item).toBeFocused();
+    await expect(item).toBeInViewport();
+  });
+});
