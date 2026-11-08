@@ -62,3 +62,11 @@
 | ファイル | メソッド | 変更種別 | 結果 | 補足 |
 | --- | --- | --- | --- | --- |
 | `tests/unit/vscode/`（全件実行の中） | 全実行 | 新規・変更 | ✅ | `テスト結果/20261108122342_3b4c16a9_単体テスト.log`（ライブラリ本体と同じ全件実行）<br>`test_panel_screen_when_csp_violation` の Red: `テスト結果/20261108115700_859f4d71_単体テスト.log`（ほかの 3 件は全件を並べたときの 30 秒の時間切れで、単独では通る） |
+
+### 結合
+
+| ファイル | メソッド | 変更種別 | 結果 | 補足 |
+| --- | --- | --- | --- | --- |
+| `vscode/tests/integration/preview-open.test.ts` | `test_normal_when_mermaid` | 新規 | ✅ | `テスト結果/20261108141943_14a0218c_結合テスト.log` |
+| `vscode/tests/integration/export.test.ts` | `test_normal_when_relative_mermaid` | 新規 | ✅ | `テスト結果/20261108141943_14a0218c_結合テスト.log` |
+| `vscode/tests/integration/`（全件） | 全実行 | 実行のみ | ✅ | VS Code 1.141.0・1.145.2 で各 79 テスト pass<br>`テスト結果/20261108141943_14a0218c_結合テスト.log`<br>同じ commit の前の実行では、既存の `test_normal_when_color_scheme`・`test_normal_when_tags_unreachable` がときどき落ちた（`color_scheme` は develop でも 2 回中 1 回落ちる） |
