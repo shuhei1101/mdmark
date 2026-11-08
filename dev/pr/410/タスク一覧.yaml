@@ -65,8 +65,10 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-08T11:50:50.486968+00:00'
   - process: ドキュメント修正
-    status: todo
+    status: done
     note: 設計書『テスト実行方法』の E2E テストの dev-docs の前提に、呼び出しの時間切れの値と導出の元の値を追加する
+    updated_by: planner
+    updated_at: '2026-11-08T12:19:17.798804+00:00'
   - process: 単体テスト作成
     status: skipped
     reason: 実装を変えない

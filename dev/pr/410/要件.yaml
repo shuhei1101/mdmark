@@ -13,7 +13,9 @@ docs:
   - page: dev/設計書/テスト/テスト実行方法.yaml
     new: false
     change: E2E テストの dev-docs の前提の行に、search_docs の呼び出しの時間切れの値と導出の元の値を追加する
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-08T12:19:15.085425+00:00'
 scope_out:
   - item: dev-docs の応答が遅い時間帯がある原因の調査と、dev-docs の側の修正
     reason: dev-docs は別のリポジトリで、mdmark の E2E の呼び出しの待ちを明示すれば要望を満たす
