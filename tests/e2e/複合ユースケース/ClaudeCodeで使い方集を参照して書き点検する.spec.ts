@@ -7,6 +7,7 @@ import {
   GUIDE_FILTER,
   REPO_ROOT,
   searchDocs,
+  TWO_SEARCHES_TEST_TIMEOUT_MS,
   withDevDocs,
 } from "../dev-docs.ts";
 import {
@@ -61,6 +62,7 @@ function issuesOf(texts: string[]): Issue[] {
 
 // dev-docs で使い方集を参照し、書いた文書を check で点検してずれを 0 件にする（正常シナリオ）
 test("test_normal", async ({ builtRoot, tempDir }) => {
+  test.setTimeout(TWO_SEARCHES_TEST_TIMEOUT_MS);
   // 準備
   const dir = await createProject(builtRoot, tempDir);
   // 実行
