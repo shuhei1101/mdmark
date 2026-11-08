@@ -1,0 +1,76 @@
+$ npm run test:unit
+
+> test:unit
+> vitest run --project 'unit*'
+
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-render-mermaid-code-blocks
+
+ ❯ |unit| tests/unit/src/cli/export.test.ts (23 tests | 1 failed) 35275ms
+   × test_prepare_embeds 31030ms
+ ❯ |unit-browser (chromium)| tests/unit/src/mermaid.browser.test.ts (20 tests | 2 failed) 23229ms
+   × test_draw_mermaid_diagram_when_end_in_name 3092ms
+   × test_attach_mermaid_when_small 217ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit| tests/unit/src/cli/export.test.ts > test_prepare_embeds
+Error: Test timed out in 30000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/unit/src/cli/export.test.ts:31:1
+     29|
+     30| // 印のあるモジュールだけを束ね、拡張と theme を読む（正常系）
+     31| test("test_prepare_embeds", async () => {
+       | ^
+     32|   // 準備
+     33|   const { prepareEmbeds } = await loadExport();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/mermaid.browser.test.ts > test_draw_mermaid_diagram_when_end_in_name
+AssertionError: expected true to be false // Object.is equality
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/mermaid.browser.test.ts/test_draw_mermaid_diagram_when_end_in_name.png
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- false[39m
+[31m+ true[39m
+
+ ❯ tests/unit/src/mermaid.browser.test.ts:570:39
+    568|   for (const shape of named) {
+    569|     for (const selector of endRules) {
+    570|       expect(shape.matches(selector)).toBe(false);
+       |                                       ^
+    571|     }
+    572|     expect(getComputedStyle(shape).fill).not.toBe(text);
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=a0c8387d:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/mermaid.browser.test.ts > test_attach_mermaid_when_small
+AssertionError: expected 640 to be less than or equal to 2
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/mermaid.browser.test.ts/test_attach_mermaid_when_small.png
+
+ ❯ tests/unit/src/mermaid.browser.test.ts:603:34
+    601|     sizer.getBoundingClientRect().right;
+    602|   expect(sizer.offsetWidth).toBeLessThan(viewport.clientWidth);
+    603|   expect(Math.abs(left - right)).toBeLessThanOrEqual(2);
+       |                                  ^
+    604| });
+    605|
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=a0c8387d:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/3]⎯
+
+
+ Test Files  2 failed | 256 passed (258)
+      Tests  3 failed | 1795 passed (1798)
+   Start at  11:17:31
+   Duration  113.67s (worker 64%, tests 24%, import 11%, transform 1%)
+
+exit=1
