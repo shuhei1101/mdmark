@@ -22,7 +22,7 @@ const CONFIG_ENV = "MDMARK_CONFIG";
 /** `--set` の 1 つ: キーの区切りと値 */
 export type SetArg = { path: string[]; value: unknown };
 
-/** 記載したファイルとキー */
+/** 書き込んだファイルとキー */
 export type WriteResult = { written: string[]; keys: string[] };
 
 /** `{キー}={値}` の並びを、ドットで区切ったキーと YAML として読み込んだ値の組にする */
@@ -58,7 +58,7 @@ const assertNoIssues = (
 ): void => {
   if (issues.length > 0) {
     throw new SetupError(
-      `${issues.map((issue) => `${issue.where}: ${issue.message}`).join("\n")}\n何も記載していません。`,
+      `${issues.map((issue) => `${issue.where}: ${issue.message}`).join("\n")}\n何も書き込んでいません。`,
     );
   }
 };
@@ -83,7 +83,7 @@ const applySets = async (options: {
   return doc;
 };
 
-/** `settings.json` の `env` の 1 つのキーだけを書き換える。同じ値なら記載せずに偽を返却する */
+/** `settings.json` の `env` の 1 つのキーだけを書き換える。同じ値なら書き込まずに偽を返却する */
 export const writeClaudeEnv = async (options: {
   path: string;
   key: string;
@@ -157,7 +157,7 @@ export const writeConfig = async (options: {
   );
   if (settingsOnly) {
     throw new SetupError(
-      `${settingsOnly.path.join(".")} は端末の設定だけが持つキーです。mdmark.config.yaml には記載できません。`,
+      `${settingsOnly.path.join(".")} は端末の設定だけが持つキーです。mdmark.config.yaml には書き込めません。`,
     );
   }
   const path = join(options.dir, CONFIG_FILE);

@@ -541,7 +541,7 @@ export async function writeHtml(options: {
   }
 }
 
-/** 文書 1 つを `kind: document` の中身にして HTML を書き込み、記載した絶対パス・利用者に見せるパス・警告を返却する。標準出力・標準エラーには書き込まない */
+/** 文書 1 つを `kind: document` の中身にして HTML を書き込み、書き込んだ絶対パス・利用者に見せるパス・警告を返却する。標準出力・標準エラーには書き込まない */
 export async function exportDocument(options: {
   /** 今のフォルダ */
   cwd: string;

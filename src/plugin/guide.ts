@@ -4,7 +4,7 @@ import type { IndexProblem } from "../knowledge/index-shape.ts";
 export type GuideEntry = {
   /** 名前。索引の中で一意 */
   name: string;
-  /** 読み込むとき（どんな作業のときに読み込むか） */
+  /** 参照するとき（どんな作業のときに参照するか） */
   when: string;
   /** 1 文の概要 */
   summary: string;

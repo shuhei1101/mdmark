@@ -65,7 +65,7 @@ export function resolveVersion(argv: string[], root: string): string {
   return version;
 }
 
-/** まとめたパッケージと、その中に取り込まれたパッケージの名前・バージョン・ライセンス・ライセンスの本文を、名前の順に `dist/` の `LICENSES_FILE` に記載する。複数の `metafile` で同じパッケージは 1 回だけ記載する */
+/** まとめたパッケージと、その中に取り込まれたパッケージの名前・バージョン・ライセンス・ライセンスの本文を、名前の順に `dist/` の `LICENSES_FILE` に書き込む。複数の `metafile` で同じパッケージは 1 回だけ記載する */
 export async function writeThirdPartyLicenses(options: {
   /** 配布物と CLI の esbuild の出力 */
   metafiles: Metafile[];
@@ -205,7 +205,7 @@ async function buildCli(
   };
 }
 
-/** esbuild で `src/index.ts` と `src/index.css` を、バージョンを埋めた `dist/` にまとめ、型定義を記載し、配布物と CLI にまとめた依存のライセンスを記載する */
+/** esbuild で `src/index.ts` と `src/index.css` を、バージョンを埋めた `dist/` にまとめ、型定義を書き込み、配布物と CLI にまとめた依存のライセンスを書き込む */
 export async function buildDist(
   version: string,
   root: string,
@@ -276,7 +276,7 @@ export async function main(
   removePluginOutputs(root);
   try {
     const version = resolveVersion(argv, root);
-    // 移行の手順の配置し忘れは、配布物を書き込む前に止める
+    // 移行の手順の配置漏れは、配布物を書き込む前に止める
     const migrationProblems = await checkMigrations({ root, version });
     for (const problem of migrationProblems) {
       console.error(problem);

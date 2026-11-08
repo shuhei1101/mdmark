@@ -207,7 +207,7 @@ function createEntry(target: HTMLElement, page: boolean): Entry {
   // 差分の行の大きさとスクロール先の大きさが変わったらもう一度配置する
   const observer = new ResizeObserver(place);
   observer.observe(page ? document.documentElement : target);
-  // 差分の行の並びを追加し削除しするたびに、観測とマーカーをもう一度配置する
+  // 差分の行の並びを追加・削除するたびに、観測とマーカーをもう一度配置する
   const sync = (): void => {
     observer.disconnect();
     observer.observe(page ? document.documentElement : target);

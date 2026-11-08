@@ -9,7 +9,7 @@ export const NOT_LISTENING_CONTEXT =
 export const PORT_INVALID_CONTEXT =
   "MDMARK_PORT の値 {value} はポートとして使用できないため、mdmark の MCP のツールは使用できない。1〜65535 の整数を設定する。";
 
-/** `additionalContext` を JSON の 1 行で記載する */
+/** `additionalContext` を JSON の 1 行で標準出力に書き込む */
 const writeContext = (
   stdout: (line: string) => void,
   context: string,
@@ -24,7 +24,7 @@ const writeContext = (
   );
 };
 
-/** ポートが待ち受けていなければ、そのことと `/mdmark:global-setup` で起動できることを 1 行で記載する。どの場合も 0 を返却する */
+/** ポートが待ち受けていなければ、そのことと `/mdmark:global-setup` で起動できることを 1 行で標準出力に書き込む。どの場合も 0 を返却する */
 export const runSessionStart = async (options: {
   env: NodeJS.ProcessEnv;
   stdout: (line: string) => void;

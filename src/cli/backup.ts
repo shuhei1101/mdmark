@@ -2,13 +2,13 @@ import { copyFile, mkdir, readdir, stat, writeFile } from "node:fs/promises";
 import { dirname, isAbsolute, join, relative } from "node:path";
 import { CliError } from "./errors.ts";
 
-/** 設定ファイルのあるフォルダからのコピーの配置し場 */
+/** 設定ファイルのあるフォルダからのコピーの配置場所 */
 export const BACKUP_DIR = {
   root: ".mdmark",
   backups: ".mdmark/backup",
 } as const;
 
-/** コピーの配置し場に配置する `.gitignore` のファイル名と中身 */
+/** コピーの配置場所に配置する `.gitignore` のファイル名と中身 */
 const IGNORE_FILE = ".gitignore";
 const IGNORE_CONTENT = "*\n";
 

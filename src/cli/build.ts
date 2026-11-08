@@ -12,7 +12,7 @@ import { CliError, type CliIo } from "./errors.ts";
 import { prepareEmbeds, readDistAssets, writeHtml } from "./export.ts";
 import { assembleHtml } from "./html.ts";
 
-/** `build` の対象の文書を `kind: bundle` の中身にして `build.out` に HTML を書き込み、記載した絶対パス・`build.out` のままのパス・文書の数・警告を返却する。標準出力・標準エラーには書き込まない */
+/** `build` の対象の文書を `kind: bundle` の中身にして `build.out` に HTML を書き込み、書き込んだ絶対パス・`build.out` のままのパス・文書の数・警告を返却する。標準出力・標準エラーには書き込まない */
 export async function buildSite(options: {
   /** 今のフォルダ */
   cwd: string;

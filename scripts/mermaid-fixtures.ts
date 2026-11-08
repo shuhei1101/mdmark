@@ -64,7 +64,7 @@ const bundleDrawer = async (root: string): Promise<string> => {
   return result.outputFiles[0]?.text ?? "";
 };
 
-/** Playwright の Chromium で見本の SVG を描き、`tests/fixtures/mermaid-svg/{名前}.svg` に記載して、記載したファイルのパスを返却する */
+/** Playwright の Chromium で見本の SVG を描き、`tests/fixtures/mermaid-svg/{名前}.svg` に書き込んで、書き込んだファイルのパスを返却する */
 export const writeMermaidFixtures = async (options: {
   root: string;
 }): Promise<string[]> => {
