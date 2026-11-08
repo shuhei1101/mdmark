@@ -4,6 +4,14 @@ import { type MountHandle, mount } from "../mount.ts";
 import { renderDocList } from "../parts/doc-list.ts";
 import { includesOf } from "./includes.ts";
 import { DOC_HASH_PREFIX, resolveRoute, rewriteLinks } from "./route.ts";
+import {
+  applyViewState,
+  captureViewState,
+  ensureEntryId,
+  readViewState,
+  SCROLL_SAVE_INTERVAL_MS,
+  writeViewState,
+} from "./view-state.ts";
 
 /** 横の文書の一覧を出し、パネルを閉じる幅のメディアクエリ（CSS の境と同じ値） */
 export const WIDE_QUERY = "(min-width: 60rem)";
@@ -70,6 +78,22 @@ export function startBundle(
   // 今描いている文書のパスと、その `mount` の戻り値
   let currentPath: string | undefined;
   let handle: MountHandle | undefined;
+  // 今の履歴の項目の ID と、表示の状態の合わせ直しを止める関数
+  win.history.scrollRestoration = "manual";
+  let entryId = ensureEntryId(win);
+  let stopRestore: (() => void) | undefined;
+
+  /** 今の履歴の項目の ID へ、描いている文書の表示の状態を保存する */
+  const saveViewState = (): void => {
+    if (currentPath === undefined) {
+      return;
+    }
+    writeViewState({
+      win,
+      id: entryId,
+      state: captureViewState({ view, path: currentPath }),
+    });
+  };
 
   /** 文書を差し替え、一覧の開いている文書・帯のタイトル・ページのタイトルを合わせる */
   const showDocument = (path: string): void => {
@@ -77,6 +101,8 @@ export function startBundle(
     if (!item) {
       throw new Error(`まとめた文書に無い: ${path}`);
     }
+    stopRestore?.();
+    stopRestore = undefined;
     handle?.destroy();
     handle = mount(view, {
       markdown: restoreAssets(item.markdown, payload.assets),
@@ -104,7 +130,16 @@ export function startBundle(
     doc.title = item.title;
   };
 
-  /** URL の `#` のとおりに文書を出し、見出しを指していればそこへ、文書だけが替わったときは頭へ移す */
+  /** 文書のタイトルの h1 へ、スクリーンリーダーとキーボードの位置を移す */
+  const focusTitle = (preventScroll: boolean): void => {
+    const title = view.querySelector<HTMLElement>("h1");
+    if (title) {
+      title.tabIndex = -1;
+      title.focus({ preventScroll });
+    }
+  };
+
+  /** URL の `#` のとおりに文書を出す。移り先の項目に同じ文書の表示の状態を保存していればそれを戻し、無ければ見出しを指していればそこへ、文書だけが替わったときは頭へ移す */
   const route = (initial: boolean): void => {
     const { path, heading, missing } = resolveRoute(
       win.location.hash,
@@ -113,11 +148,26 @@ export function startBundle(
     );
     // 1 枚に無い文書を指す URL: entry の文書を出し、URL も entry に合わせる（履歴に追加しない）
     if (missing) {
-      win.history.replaceState(null, "", `${DOC_HASH_PREFIX}${payload.entry}`);
+      win.history.replaceState(
+        win.history.state,
+        "",
+        `${DOC_HASH_PREFIX}${payload.entry}`,
+      );
     }
     const switched = path !== currentPath;
     if (switched) {
       showDocument(path);
+    }
+    entryId = ensureEntryId(win);
+    const saved =
+      switched || initial ? readViewState({ win, id: entryId }) : undefined;
+    // 戻る・進む・再読み込みで、表示の状態を保存した項目へ戻った: 開閉・タブ・位置を戻す（開いた直後はフォーカスを移さない）
+    if (saved !== undefined && saved.path === path) {
+      if (!initial) {
+        focusTitle(true);
+      }
+      stopRestore = applyViewState({ view, state: saved, keepFocus: initial });
+      return;
     }
     const target = heading ? doc.getElementById(heading) : null;
     if (target) {
@@ -127,14 +177,39 @@ export function startBundle(
     }
     // 文書を移ったら、スクリーンリーダーとキーボードの位置を文書のタイトルへ移す（開いた直後は移さない）
     if (switched && !initial) {
-      const title = view.querySelector<HTMLElement>("h1");
-      if (title) {
-        title.tabIndex = -1;
-        title.focus({ preventScroll: target !== null });
-      }
+      focusTitle(target !== null);
     }
   };
 
+  // 文書を離れる前に、今の項目へ表示の状態を保存する（戻る・進むでは `popstate` の時点で、移り先の項目はまだ描いていない）
+  win.addEventListener("popstate", saveViewState);
+  win.addEventListener("pagehide", saveViewState);
+  doc.addEventListener(
+    "click",
+    (event) => {
+      const link =
+        event.target instanceof Element ? event.target.closest("a") : null;
+      if (link?.getAttribute("href")?.startsWith(DOC_HASH_PREFIX)) {
+        saveViewState();
+      }
+    },
+    true,
+  );
+  // スクロールしている間は、間引いて保存する
+  let scrollTimer: ReturnType<typeof setTimeout> | undefined;
+  win.addEventListener(
+    "scroll",
+    () => {
+      if (scrollTimer !== undefined) {
+        return;
+      }
+      scrollTimer = setTimeout(() => {
+        scrollTimer = undefined;
+        saveViewState();
+      }, SCROLL_SAVE_INTERVAL_MS);
+    },
+    { passive: true },
+  );
   win.addEventListener("hashchange", () => route(false));
   // 開いている文書の中の見出しへ移るリンク（見出しのアンカー・目次）は、履歴に追加せず今の項目を置き換える（戻るで文書を行き来できる）
   view.addEventListener("click", (event) => {
@@ -153,7 +228,7 @@ export function startBundle(
       !event.defaultPrevented
     ) {
       event.preventDefault();
-      win.history.replaceState(null, "", href);
+      win.history.replaceState(win.history.state, "", href);
       route(false);
     }
   });
