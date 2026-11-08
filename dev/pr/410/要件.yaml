@@ -29,3 +29,6 @@ scope_out:
   - item: '`plugin/files.yaml` の `skills/global-setup/SKILL.md`・`skills/setup/SKILL.md` の行の description がバッククォートで始まり、dev-docs が参照できない'
     reason: YAML の記載の不具合で、今回の要望（E2E の呼び出しの時間切れ）に含まれない
     plan: '#413'
+  - item: dev-docs への `search_docs` の所要時間を 1,000 回以上実測し、呼び出しの時間切れ（135 秒）と `test_normal` の待ち（405 秒）を実測の p99.9 + 50% で導き直す
+    reason: 判定フローチャート『タイムアウトの決め方』で実測が 1,000 回に満たず計測の作業を残す分岐に当たる。今回の要望（E2E の fail を止める）は仮の値で満たし、1,000 回の計測は約 8 時間かかる。今回置く値を前提にする後続のため、マージ提案の前に起票する
+    plan: to_file
