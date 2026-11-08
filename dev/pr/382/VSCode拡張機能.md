@@ -36,6 +36,7 @@
 | モジュール構成設計 | `4b3d231d..0eaf5073` | 設定（`mermaid` の取り出し・mermaid の URL を直す・CSP の配信元）・プレビュー・書き出し（相対パスの `mermaid.url` を埋める） |
 | モジュール構成設計 | `93a46786..cd7f5d71` | `libraryOrigins` の単体テストの期待値（`mermaid` を省いたときの既定の配信元） |
 | インターフェース定義設計 | `72508e4a..6ea5bafe` | 結合テスト作成で直したプレビューを開くの正常系（mermaid のコードブロック）の Mock（既定の jsDelivr の URL は代役に差し替えられないため、手元の配信を指す `mermaid.url` を置く） |
+| インターフェース定義設計 | `c5bfcab3..85469b24` | レビューの指摘の修正（mermaid の正常系の期待値に CSP の違反の件数を戻す・単一 UC『VSCodeでプレビューを開く』の Mock を揃える・Webview がテストのときに `securitypolicyviolation` を数えて `html` の `data-mdmark-csp-violations` に書く） |
 
 ## PoC 結果
 
