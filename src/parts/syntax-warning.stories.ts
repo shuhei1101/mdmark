@@ -8,13 +8,13 @@ export default meta;
 /** ストーリー: 描画の口（`parameters.server.id`）の部品を `args` で描く */
 type Story = StoryObj<Record<string, unknown>>;
 
-export const UnknownKind: Story = {
-  name: "UnknownKind",
+export const ClosedAndOpen: Story = {
+  name: "ClosedAndOpen",
   parameters: { server: { id: "syntax-warning" } },
   args: {
-    mark: "<!-- table: unknown +sort -->",
+    mark: "<!-- table: data closed open -->",
     message:
-      "の種類 `unknown` は使えません。使える種類は `data`・`plain` です。既定の種類に `+sort` を当てて描いています。",
+      "の `closed` と `open` は同時に書けません。どちらか 1 つにしてください。`closed` を当てて描いています。",
   },
 };
 
@@ -22,10 +22,10 @@ export const Items: Story = {
   name: "Items",
   parameters: { server: { id: "syntax-warning" } },
   args: {
-    mark: "<!-- table: data +unknown size=2 -->",
+    mark: "<!-- table: data hide=備考 total=価格:sum -->",
     message: "の読めない指定を当てずに描いています。",
     items:
-      '[{"label":"+unknown","message":"使えない機能です。使える機能は `sort`・`pin`・`filter` です"},{"label":"size=","message":"使えないキーです。使えるキーは `filter=` です"}]',
+      '[{"label":"hide=","message":"`+columns` を書いた表でだけ使えます。当てずに描いています"},{"label":"total=","message":"`+total` を書いた表でだけ使えます。当てずに描いています"}]',
   },
 };
 

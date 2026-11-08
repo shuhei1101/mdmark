@@ -7,7 +7,9 @@ import type { Mark } from "../marks.ts";
 import { imageFigureHtml } from "./images.ts";
 import { featureOn, findClose, markOf, ownBlock } from "./tokens.ts";
 import {
+  type SkippedArg,
   type SyntaxWarning,
+  skippedArgBlocks,
   unclosedWarning,
   warningBlock,
 } from "./warnings.ts";
@@ -21,12 +23,17 @@ export const SUBFIGURE_LETTERS = "abcdefghijklmnopqrstuvwxyz";
 /** `numberFigures` が開きのマーカーに置く図の番号 */
 type GalleryFigure = { id?: string | undefined; number: number };
 
-/** ギャラリーのマーカーの `cols=` を読み、読めない指定を項目にする */
+/** ギャラリーのマーカーで読める指定を、読み飛ばした引数の案内に並べる文 */
+const USABLE_ARGS = "`cols=`";
+
+/** ギャラリーのマーカーの `cols=` を読み、読めない値を項目にし、`cols=` 以外の指定を読み飛ばした引数にする */
 export function readGalleryOptions(mark: Mark): {
   cols: number;
   items: WarningItem[];
+  skipped: SkippedArg[];
 } {
   const items: WarningItem[] = [];
+  const skipped: SkippedArg[] = [];
   let cols: number = GALLERY_COLS.default;
   // 書いた順に項目にするため、引数の文字を空白で区切って読む
   for (const part of (mark.rest ?? "").split(/\s+/).filter(Boolean)) {
@@ -35,15 +42,9 @@ export function readGalleryOptions(mark: Mark): {
     const value = part.slice(equals + 1);
     const count = Number(value);
     if (key === undefined) {
-      items.push({
-        label: part,
-        message: "使えない指定です。使える指定は `cols=` です。",
-      });
+      skipped.push({ arg: part, usable: USABLE_ARGS });
     } else if (key !== "cols") {
-      items.push({
-        label: part,
-        message: "使えないキーです。使えるキーは `cols=` です。",
-      });
+      skipped.push({ arg: `${key}=`, usable: USABLE_ARGS });
     } else if (
       /^\d+$/.test(value) &&
       count >= GALLERY_COLS.min &&
@@ -57,7 +58,7 @@ export function readGalleryOptions(mark: Mark): {
       });
     }
   }
-  return { cols, items };
+  return { cols, items, skipped };
 }
 
 /** 範囲の中の画像のトークンを、現れた順に集める（リンクの中の画像を含む） */
@@ -115,7 +116,7 @@ export function buildGallery(state: StateCore): void {
     const close = findClose(tokens, index, "gallery");
     const end = close < 0 ? tokens.length : close;
     const images = imagesIn(tokens.slice(index + 1, end));
-    const { cols, items } = readGalleryOptions(mark);
+    const { cols, items, skipped } = readGalleryOptions(mark);
     const figure = (token.meta as { figure?: GalleryFigure }).figure;
     for (const warning of galleryWarnings(mark, {
       items,
@@ -124,6 +125,7 @@ export function buildGallery(state: StateCore): void {
     })) {
       out.push(warningBlock(state, warning, token));
     }
+    out.push(...skippedArgBlocks(state, { mark: mark.raw, skipped }, token));
     const [figureHead = "", figureTail = ""] = figure
       ? splitSlots(
           renderFigure({

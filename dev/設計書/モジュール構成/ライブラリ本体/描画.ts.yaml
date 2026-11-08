@@ -113,8 +113,8 @@ data_models:
         type: number
         description: 警告の元になったマーカー（範囲なら開きのマーカー）の元の行番号（1 から）。マーカーを持たない警告は、警告のトークンの後ろで最初に `map` を持つトークンの開始の行（無ければ前で最後に `map` を持つトークンの終わりの行）
       - name: kind
-        type: '"diagram_invalid" | "syntax_warning"'
-        description: 図の部品の定義の警告は `diagram_invalid`、ほかは `syntax_warning`（`render` は知らないマーカーに警告を置かない）
+        type: '"diagram_invalid" | "syntax_warning" | "unknown_mark_arg"'
+        description: 図の部品の定義の警告は `diagram_invalid`、読み飛ばした記法の印の引数（画面には出さない）は `unknown_mark_arg`、ほかは `syntax_warning`（`render` は知らないマーカーに警告を置かない）
       - name: message
         type: string
         description: 警告の本文と項目を、HTML のタグを除いた文字にして空白 1 つでつないだもの（画面で読む文と同じ順）
@@ -571,29 +571,29 @@ functions:
     container: src/render/page.ts
     kind: 関数
     scope: internal
-    summary: page の印の引数（`キー=値` の並び）から、書けるキーと値だけを `PageSettings` にし、知らないキー・値を並べて返す
-    description: '`scheme` は `COLOR_SCHEMES`、`theme` は `COLOR_THEMES`、`toc` は `hover`・`fixed` の値だけを受ける。同じキーが何度も出たら後に書いた値を使う。`=` を持たない引数は知らない引数にする'
+    summary: page の印の引数（`キー=値` の並び）から、書けるキーと値だけを `PageSettings` にし、書けるキーの知らない値と、知らないキー・`=` を持たない引数を分けて返す
+    description: '`scheme` は `COLOR_SCHEMES`、`theme` は `COLOR_THEMES`、`toc` は `hover`・`fixed` の値だけを受ける。同じキーが何度も出たら後に書いた値を使う。`scheme`・`theme`・`toc` の受けない値は `unknown` に、それ以外のキーと `=` を持たない引数は `skipped` に入れる'
     args:
       - name: options
         type: '{ args: string[]; keys: Record<string, string> }'
         required: true
         description: '`parseMarkArgs` が返した印の引数'
     returns:
-      type: '{ settings: PageSettings; unknown: string[] }'
-      description: 読めたページの設定と、知らないキー・値の引数を書いた順に並べたもの
+      type: '{ settings: PageSettings; unknown: string[]; skipped: string[] }'
+      description: 読めたページの設定と、書けるキーの知らない値の引数と、知らないキー・指定の引数（キーは `{キー}=`）を、それぞれ書いた順に並べたもの
     unit_tests:
       - name: test_read_page_settings
         case: 正常
         summary: 書けるキーと値を読む
         condition: '`scheme=dark theme=theme-slate toc=fixed`'
         mock: なし
-        expected: '`settings` が `{ scheme: "dark", theme: "theme-slate", toc: "fixed" }`、`unknown` が空'
+        expected: '`settings` が `{ scheme: "dark", theme: "theme-slate", toc: "fixed" }`、`unknown` と `skipped` が空'
       - name: test_read_page_settings_when_unknown
         case: 異常
-        summary: 知らないキー・値を残りと分ける
+        summary: 知らない値と知らないキーを分ける
         condition: '`scheme=sepia theme=theme-unknown size=wide toc=fixed toc=hover`'
         mock: なし
-        expected: '`settings` が `{ toc: "hover" }`、`unknown` が `["scheme=sepia", "theme=theme-unknown", "size=wide"]`'
+        expected: '`settings` が `{ toc: "hover" }`、`unknown` が `["scheme=sepia", "theme=theme-unknown"]`、`skipped` が `["size="]`'
     refs:
       - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[ページの設定のマーカー]
     status: planned
@@ -602,7 +602,7 @@ functions:
     container: src/render/marks.ts
     kind: 関数
     scope: internal
-    summary: コアルール。`takeMarks` が拾った先頭の page の印を `readPageSettings` で読んで `env.page` に入れ、知らないキー・値があれば文書の先頭に書き方の警告を差し込む
+    summary: コアルール。`takeMarks` が拾った先頭の page の印を `readPageSettings` で読んで `env.page` に入れ、書けるキーの知らない値があれば文書の先頭に書き方の警告を差し込み、`skipped` は `pushSkippedArgs`（使えるのは `scheme=`・`theme=`・`toc=`）で文書の先頭に差し込む
     args:
       - name: state
         type: StateCore
@@ -626,10 +626,10 @@ functions:
         expected: '`page` が `{}`、印の場所に page の印は文書の先頭に書くことを書いた書き方の警告がある'
       - name: test_resolve_page_settings_when_unknown
         case: 異常
-        summary: 知らないキー・値を文書の先頭の警告にまとめる
-        condition: '先頭の行に `<!-- page: scheme=sepia toc=fixed -->`'
+        summary: 知らない値を文書の先頭の警告にまとめ、知らないキーを読み飛ばす
+        condition: '先頭の行に `<!-- page: scheme=sepia size=wide toc=fixed -->`'
         mock: なし
-        expected: '`page` が `{ toc: "fixed" }`、文書の先頭に `scheme=sepia` を挙げた書き方の警告が 1 つ'
+        expected: '`page` が `{ toc: "fixed" }`、文書の先頭に `scheme=sepia` を挙げ `size=wide` を挙げない書き方の警告が 1 つ、`warnings` に `size=` の `unknown_mark_arg` が 1 件'
     refs:
       - dev/設計書/インターフェース定義/ライブラリ本体/文書をHTML文字列にする.ts#constraints[ページの設定のマーカー]
     status: planned

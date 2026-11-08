@@ -57,6 +57,7 @@ export type CheckIssue = {
     | "missing_file"
     | "diagram_invalid"
     | "syntax_warning"
+    | "unknown_mark_arg"
     | FlowLayoutKind
     | "alias_no_files"
     | "alias_unreadable"

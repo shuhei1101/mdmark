@@ -94,6 +94,19 @@ test("test_build_views_when_unknown_icon", () => {
   expect(readViewSpec(html)).toMatchObject({ icons: {} });
 });
 
+// 知らないキーは警告にせず読み飛ばす（正常系）
+test("test_build_views_when_unknown_key", () => {
+  // 準備
+  const markdown = viewMarkdown("group=状態 size=2");
+  // 実行
+  const { html, warnings } = renderDoc(markdown);
+  // 検証
+  expect(html).not.toContain("mdmark-syntax-warning");
+  expect(readViewSpec(html)).toMatchObject({ mode: "board" });
+  expect(warnings.map((warning) => warning.kind)).toEqual(["unknown_mark_arg"]);
+  expect(warnings[0]?.message).toContain("size=");
+});
+
 // views がオフなら囲まずに表だけを描く（正常系）
 test("test_build_views_when_disabled", () => {
   // 準備

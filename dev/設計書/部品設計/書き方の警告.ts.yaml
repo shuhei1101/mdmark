@@ -3,22 +3,22 @@ implementation: "src/parts/syntax-warning.ts#renderSyntaxWarning"
 story: "Parts/SyntaxWarning"
 test_file: tests/integration/lib/syntax-warning.story.test.ts
 states:
-  - name: UnknownKind
-    description: 表の印に知らない種類を書いた。本文だけを出す
+  - name: ClosedAndOpen
+    description: 表の印に `closed` と `open` を両方書いた。本文だけを出す
     args:
       - name: mark
-        value: '<!-- table: unknown +sort -->'
+        value: '<!-- table: data closed open -->'
       - name: message
-        value: の種類 `unknown` は使えません。使える種類は `data`・`plain` です。既定の種類に `+sort` を当てて描いています。
+        value: の `closed` と `open` は同時に書けません。どちらか 1 つにしてください。`closed` を当てて描いています。
   - name: Items
-    description: 表の印に知らない機能とキーを書いた。本文の後に項目を並べる
+    description: 表の印に、機能を足していない表では使えないキーを書いた。本文の後に項目を並べる
     args:
       - name: mark
-        value: '<!-- table: data +unknown size=2 -->'
+        value: '<!-- table: data hide=備考 total=価格:sum -->'
       - name: message
         value: の読めない指定を当てずに描いています。
       - name: items
-        value: '[{"label":"+unknown","message":"使えない機能です。使える機能は `sort`・`pin`・`filter` です"},{"label":"size=","message":"使えないキーです。使えるキーは `filter=` です"}]'
+        value: '[{"label":"hide=","message":"`+columns` を書いた表でだけ使えます。当てずに描いています"},{"label":"total=","message":"`+total` を書いた表でだけ使えます。当てずに描いています"}]'
   - name: BrokenReference
     description: 切れた図表の参照。印を持たず本文だけを出す
     args:
@@ -121,7 +121,7 @@ args:
     type: 文字列
     required: false
     default: '""'
-    description: '読めない指定を書いた印の文字（`<!-- table: unknown +sort -->` など）。本文の頭の `code` に入れる（HTML として特別な文字はエスケープする）。空なら印を出さない'
+    description: '読めない指定を書いた印の文字（`<!-- table: data closed open -->` など）。本文の頭の `code` に入れる（HTML として特別な文字はエスケープする）。空なら印を出さない'
   - name: message
     type: 文字列
     required: true

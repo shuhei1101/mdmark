@@ -2,7 +2,7 @@ import type { StateCore, Token } from "markdown-it";
 import { SLOT_MARKER } from "../../parts/own.ts";
 import { renderSection } from "../../parts/section.ts";
 import { featureOn, markOf, ownBlock, tabBoundaryOf } from "./tokens.ts";
-import { warningBlock } from "./warnings.ts";
+import { skippedArgBlocks } from "./warnings.ts";
 
 /** 見出しの中身の差し込み口 */
 const TITLE_MARKER = "\u0000mdmark-title\u0000";
@@ -61,7 +61,7 @@ export function wrapSections(state: StateCore): void {
       out.push(token);
       continue;
     }
-    // 見出しの直後の `section` の印で開閉を決める。知らない値は警告を差し込んで開く
+    // 見出しの直後の `section` の印で開閉を決める。知らない値は読み飛ばした引数にして開く
     const section = mark?.name === "section" ? mark : undefined;
     const value = section?.args.args[0];
     const known = value === undefined || SECTION_STATES.includes(value);
@@ -79,11 +79,11 @@ export function wrapSections(state: StateCore): void {
     out.push(ownBlock(state, head, token), inline, ownBlock(state, body));
     if (section && !known) {
       out.push(
-        warningBlock(
+        ...skippedArgBlocks(
           state,
           {
             mark: section.raw,
-            message: `の \`${value}\` は使えません。使える値は \`closed\`・\`open\` です。この節は開いた状態で描いています。`,
+            skipped: [{ arg: value ?? "", usable: "`closed`・`open`" }],
           },
           tokens[index + 3],
         ),

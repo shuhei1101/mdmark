@@ -44,3 +44,23 @@ test("test_build_wide_ranges_when_unclosed", () => {
     "&lt;!-- /wide --&gt;",
   );
 });
+
+// closed 以外の引数は警告にせず読み飛ばす（正常系）
+test("test_build_wide_ranges_when_unknown_args", () => {
+  // 準備
+  const markdown = `<!-- wide: narrow size=2 -->\n\n${TABLE}\n<!-- /wide -->\n`;
+  // 実行
+  const { html, warnings } = renderDoc(markdown);
+  // 検証
+  expect(html).not.toContain("mdmark-syntax-warning");
+  const ranges = findTags(html, "mdmark-wide-range");
+  expect(ranges).toHaveLength(1);
+  expect(ranges[0]).toContain('data-state="wide"');
+  expect(warnings.map((warning) => warning.kind)).toEqual([
+    "unknown_mark_arg",
+    "unknown_mark_arg",
+  ]);
+  const messages = warnings.map((warning) => warning.message).join("\n");
+  expect(messages).toContain("narrow");
+  expect(messages).toContain("size=");
+});

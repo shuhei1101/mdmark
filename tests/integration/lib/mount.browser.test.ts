@@ -9804,6 +9804,62 @@ test("test_normal_when_footnote_jump", async () => {
   expect(location.hash).toBe(hash);
 });
 
+/** 番号のリンクをタッチでタップし、`click` の既定の動作が止められたかを返す。`pointerenter`・`pointerleave` は泡立たないため、ブラウザと同じく `sup` とリンクの両方に送る（既にフォーカスを持つリンクでは `focus` は発火しない） */
+function tapFootnote(ref: HTMLElement): boolean {
+  const link = find<HTMLElement>(ref, ".mdmark-fn-link");
+  firePointer(ref, "pointerenter", "touch");
+  firePointer(link, "pointerenter", "touch");
+  firePointer(link, "pointerdown", "touch");
+  firePointer(link, "pointerup", "touch");
+  firePointer(link, "pointerleave", "touch");
+  firePointer(ref, "pointerleave", "touch");
+  link.focus();
+  const click = new MouseEvent("click", { bubbles: true, cancelable: true });
+  link.dispatchEvent(click);
+  return click.defaultPrevented;
+}
+
+// タッチのタップで閉じた番号のツールチップを開き、開いた番号のタップで一覧へ移り、ツールチップと番号の外の pointerdown で閉じる（正常系）
+test("test_normal_when_footnote_touch", async () => {
+  // 準備
+  await userEvent.unhover(document.body);
+  const el = createElement();
+  await mountTracked(el, {
+    markdown: `${FOOTNOTES_MARKDOWN}\n脚注を含まない段落。\n`,
+  });
+  const hash = location.hash;
+  const first = footnoteRef(el, 1);
+  const link = find<HTMLElement>(first, ".mdmark-fn-link");
+  const tip = find<HTMLElement>(first, ".mdmark-fn-tip");
+  const inner = find<HTMLElement>(tip, "a");
+  const list = find<HTMLDetailsElement>(el, "details.mdmark-footnotes");
+  const outside = find<HTMLElement>(el, "p:last-of-type");
+  expect(outside.textContent).toBe("脚注を含まない段落。");
+  // 実行・検証: 閉じた番号への 1 回のタップで開き、一覧へは移らない
+  expect(tapFootnote(first)).toBe(true);
+  expect(first.classList.contains("is-open")).toBe(true);
+  expect(list.open).toBe(false);
+  // ツールチップの中のリンクの pointerdown では閉じない
+  firePointer(inner, "pointerdown", "touch");
+  expect(first.classList.contains("is-open")).toBe(true);
+  // 脚注を含まない段落の pointerdown だけで閉じ、番号にフォーカスが残ってもツールチップを出さない
+  firePointer(outside, "pointerdown", "touch");
+  expect(first.classList.contains("is-open")).toBe(false);
+  expect(document.activeElement).toBe(link);
+  expect(getComputedStyle(tip).display).toBe("none");
+  // 消えた後のタップで開き直す
+  tapFootnote(first);
+  expect(first.classList.contains("is-open")).toBe(true);
+  // 開いた番号のタップで閉じ、一覧を開いて項目へ移る
+  tapFootnote(first);
+  expect(first.classList.contains("is-open")).toBe(false);
+  expect(list.open).toBe(true);
+  expect(document.activeElement).toBe(
+    el.querySelectorAll<HTMLElement>(".mdmark-fn-item")[0],
+  );
+  expect(location.hash).toBe(hash);
+});
+
 // 印刷の前に閉じた脚注の一覧を開き、印刷の後に閉じ直す（正常系）
 test("test_normal_when_footnotes_printed", async () => {
   // 準備
@@ -12546,10 +12602,16 @@ test("test_normal_when_page_marker_invalid", async () => {
       const warnings1 = el1.querySelectorAll(".mdmark-syntax-warning");
       expect(warnings1).toHaveLength(1);
       const text1 = warnings1[0]?.textContent ?? "";
+      // 本文の頭は印の文字のため、印の後ろの挙げた指定を見る
+      const listed1 = text1.replace(
+        "<!-- page: scheme=sepia theme=theme-unknown size=wide toc=fixed -->",
+        "",
+      );
+      // 知らないキー size=wide は読み飛ばし、警告に挙げない
+      expect(listed1).not.toContain("size=wide");
       for (const word of [
         "scheme=sepia",
         "theme=theme-unknown",
-        "size=wide",
         "scheme",
         "light",
         "dark",

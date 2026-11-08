@@ -11,6 +11,8 @@ export type CollapseSpec = {
   title?: string | undefined;
   /** 読めなかった指定 */
   items: WarningItem[];
+  /** `title=` の値の空白の後ろの単語。`closed`・`open` と、`+`・`-` で始まる語は入れない。呼ぶ側が知らない指定として読み飛ばす前にこの単語と比べ、同じなら `titleTailItem` の警告にする */
+  titleTail?: string | undefined;
   /** `closed`・`open`・`title=` を除いた残りの引数 */
   rest: MdmarkMarkArgs;
 };
@@ -21,8 +23,23 @@ const COLLAPSE_ARGS = ["closed", "open"];
 /** 折り畳みの見出しの引数のキー */
 const TITLE_KEY = "title";
 
-/** 表・タブ・ステップの印の引数から `closed`・`open`・`title=` を読む */
-export function readCollapse(args: MdmarkMarkArgs): CollapseSpec {
+/** 印の引数の文字から、`title=値` の直後に空白を挟んで続く `キー=値` でない単語（空白を含む題の続き）を返す */
+export function titleTailOf(text: string): string | undefined {
+  const tail = /(?:^|\s)title=\S*\s+(\S+)/.exec(text)?.[1];
+  return tail === undefined || tail.includes("=") ? undefined : tail;
+}
+
+/** `title=` の値の空白の後ろの単語の警告の項目 */
+export function titleTailItem(word: string): WarningItem {
+  return {
+    label: word,
+    message:
+      "使えない指定です。印の引数は空白で区切るため、`title=` の値に空白は書けません。",
+  };
+}
+
+/** 表・タブ・ステップの印の引数から `closed`・`open`・`title=` を読む。`text` は印の引数の文字で、`title=` の値の空白の後ろの単語を `titleTail` にする */
+export function readCollapse(args: MdmarkMarkArgs, text = ""): CollapseSpec {
   const closed = args.args.includes("closed");
   const open = args.args.includes("open");
   const collapse: CollapseMode = closed ? "closed" : open ? "open" : "none";
@@ -53,10 +70,19 @@ export function readCollapse(args: MdmarkMarkArgs): CollapseSpec {
       title = titleValue;
     }
   }
+  const tail = titleValue === undefined ? undefined : titleTailOf(text);
+  const titleTail =
+    tail === undefined ||
+    COLLAPSE_ARGS.includes(tail) ||
+    tail.startsWith("+") ||
+    tail.startsWith("-")
+      ? undefined
+      : tail;
   return {
     collapse,
     title,
     items,
+    titleTail,
     rest: {
       args: args.args.filter((arg) => !COLLAPSE_ARGS.includes(arg)),
       keys,

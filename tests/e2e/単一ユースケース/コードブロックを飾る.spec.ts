@@ -204,8 +204,8 @@ test("test_normal_when_feature_off", async ({ page }) => {
   await expect(doc.locator("pre").nth(1)).toContainText("// [!code ++]");
 });
 
-// 知らないキーは当てずに警告にし、読めた題を付ける（異常シナリオ（読めない指定））
-test("test_error_when_unknown_key", async ({ page }) => {
+// 知らないキーは読み飛ばし、書き方の警告を出さずに読めた題を付ける（正常シナリオ（知らないキー））
+test("test_normal_when_unknown_key", async ({ page }) => {
   // 準備
   await openPage(page, builtRoot);
   // 実行
@@ -219,24 +219,8 @@ test("test_error_when_unknown_key", async ({ page }) => {
   });
   // 検証
   const doc = page.locator("#doc");
-  const warning = doc.locator(".mdmark-syntax-warning");
-  await expect(warning).toHaveCount(1);
-  await expect(warning).toContainText("書き方の警告");
-  await expect(warning).toContainText("color=");
-  for (const key of ["title=", "lines", "highlight="]) {
-    await expect(warning).toContainText(key);
-  }
+  await expect(doc.locator(".mdmark-syntax-warning")).toHaveCount(0);
   await expect(doc.locator(".mdmark-code-title")).toContainText("app.ts");
-  const order = await doc.evaluate((element) => {
-    const box = element.querySelector(".mdmark-syntax-warning");
-    const code = element.querySelector(".mdmark-code");
-    return box && code
-      ? Boolean(
-          box.compareDocumentPosition(code) & Node.DOCUMENT_POSITION_FOLLOWING,
-        )
-      : false;
-  });
-  expect(order).toBe(true);
 });
 
 // コードブロックに無い行の番号は当てずに警告にし、ある行だけを強調する（異常シナリオ（コードブロックに無い行の番号））

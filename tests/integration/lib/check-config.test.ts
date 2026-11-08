@@ -731,6 +731,55 @@ test("test_normal_when_text_warnings", async () => {
   }
 });
 
+// 描くときに読み飛ばす記法の印の知らない機能・キー・指定を、行を指す unknown_mark_arg のずれにして終了コード 1 で終わる（正常系（文字列の記法の印に知らない引数がある））
+test("test_normal_when_text_unknown_mark_args", async () => {
+  // 準備
+  const dir = await createTempDir();
+  await runCli(["init", dir], dir);
+  const markdown = [
+    "<!-- table: data +unknown widht=説明 -->",
+    "",
+    "| 名前 | 説明 |",
+    "| --- | --- |",
+    "| a | 1 |",
+    "",
+    "<!-- /table -->",
+    "<!-- tabs: grop=os -->",
+    "",
+    "### macOS",
+    "",
+    "本文",
+    "",
+    "### Windows",
+    "",
+    "本文",
+    "",
+    "<!-- /tabs -->",
+    "",
+  ].join("\n");
+  // 実行
+  const result = await runCli(["check", "--text", markdown], dir);
+  // 検証
+  expect(result.code).toBe(1);
+  const lines = linesOf(result.stdout);
+  expect(lines).toHaveLength(4);
+  const first = lines.filter((line) =>
+    line.startsWith("-:1: unknown_mark_arg: "),
+  );
+  expect(first).toHaveLength(2);
+  expect(first.join("\n")).toContain("+unknown");
+  expect(first.join("\n")).toContain("sort");
+  expect(first.join("\n")).toContain("widht=");
+  expect(first.join("\n")).toContain("filter=");
+  const eighth = lines.filter((line) =>
+    line.startsWith("-:8: unknown_mark_arg: "),
+  );
+  expect(eighth).toHaveLength(1);
+  expect(eighth[0]).toContain("grop=");
+  expect(lines.some((line) => line.includes("syntax_warning"))).toBe(false);
+  expect(lines.at(-1)).toBe("ずれ 3 件");
+});
+
 // YAML のキーの値の Markdown を点検し、YAML のファイルの行を指すずれにする（正常系（ファイルと YAML のキー））
 test("test_normal_when_yaml_key", async () => {
   // 準備

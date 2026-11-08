@@ -2,8 +2,9 @@ import type { StateCore, Token } from "markdown-it";
 import { foldLinesOf, measureIndents } from "../../code-fold-logic.ts";
 import type { MdmarkMarkArgs, WarningItem } from "../../extensions.ts";
 import { type CodeLine, renderCodeBlock } from "../../parts/code-block.ts";
+import { titleTailOf } from "./collapse.ts";
 import { featureOn, markOf, ownBlock } from "./tokens.ts";
-import { warningBlock } from "./warnings.ts";
+import { type SkippedArg, skippedArgBlocks, warningBlock } from "./warnings.ts";
 
 /** コードの行の印の名前から、行の種類を引く */
 const LINE_MARK_KINDS: Readonly<Record<string, NonNullable<CodeLine["kind"]>>> =
@@ -107,9 +108,10 @@ function readLineNumbers(options: {
   return numbers;
 }
 
-/** `code` の印の引数を、題・行番号の有無・強調する行・最初から畳む行に読む。知らないキー・指定、読めない `highlight=`・`fold=` の番号、コードブロックの行の数を超える行の番号は、当てずに警告にする */
+/** `code` の印の引数を、題・行番号の有無・強調する行・最初から畳む行に読む。`title=` の値の空白の後ろの単語、読めない `highlight=`・`fold=` の番号、コードブロックの行の数を超える行の番号は、当てずに警告にする。それ以外の知らないキー・指定は読み飛ばした引数にする。`text` は印の引数の文字 */
 export function readCodeSpec(options: {
   args: MdmarkMarkArgs;
+  text: string;
   lineCount: number;
 }): {
   title: string;
@@ -118,25 +120,31 @@ export function readCodeSpec(options: {
   highlights: Set<number>;
   folds: Set<number>;
   warnings: WarningItem[];
+  skipped: SkippedArg[];
 } {
   const { args, lineCount } = options;
   const warnings: WarningItem[] = [];
+  const skipped: SkippedArg[] = [];
   for (const [key, value] of Object.entries(args.keys)) {
     if (key === "wrap") {
       warnings.push({ label: `wrap=${value}`, message: WRAP_VALUE_MESSAGE });
     } else if (!CODE_KEYS.includes(key)) {
-      warnings.push({
-        label: `${key}=`,
-        message: `使えないキーです。使える指定は ${CODE_SPEC_LIST} です。`,
-      });
+      skipped.push({ arg: `${key}=`, usable: CODE_SPEC_LIST });
     }
   }
+  const tail =
+    args.keys.title === undefined ? undefined : titleTailOf(options.text);
   for (const flag of args.args) {
-    if (!CODE_FLAGS.includes(flag)) {
+    if (CODE_FLAGS.includes(flag)) {
+      continue;
+    }
+    if (flag === tail) {
       warnings.push({
         label: flag,
         message: `使えない指定です。使える指定は ${CODE_SPEC_LIST} です。印の引数は空白で区切るため、題に空白は書けません。`,
       });
+    } else {
+      skipped.push({ arg: flag, usable: CODE_SPEC_LIST });
     }
   }
   const title = args.keys.title ?? "";
@@ -165,6 +173,7 @@ export function readCodeSpec(options: {
     highlights,
     folds,
     warnings,
+    skipped,
   };
 }
 
@@ -396,7 +405,11 @@ export function buildCodeBlocks(state: StateCore): void {
       ? readLineMarks(token.content)
       : { lines: plainLines(token.content), warnings: [] };
     const options = code
-      ? readCodeSpec({ args: code.args, lineCount: read.length })
+      ? readCodeSpec({
+          args: code.args,
+          text: code.rest ?? "",
+          lineCount: read.length,
+        })
       : undefined;
     const marked = read.map(
       (line, position): CodeLine =>
@@ -413,6 +426,15 @@ export function buildCodeBlocks(state: StateCore): void {
       message: "の読めない指定を当てずに描いています。",
       items: [...(options?.warnings ?? []), ...foldWarnings],
     });
+    if (code && options) {
+      out.push(
+        ...skippedArgBlocks(
+          state,
+          { mark: code.raw, skipped: options.skipped },
+          tokens[index - 1],
+        ),
+      );
+    }
     // 知らない印は 1 つにつき 1 つの警告にする
     for (const warning of lineWarnings) {
       out.push(warningBlock(state, { message: warning.message }));

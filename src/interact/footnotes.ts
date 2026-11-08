@@ -152,10 +152,46 @@ export function attachFootnotes(options: {
     );
   };
 
+  // タッチで開いた番号。続く `click` では一覧へ移らない
+  let openedByTouch: HTMLElement | null = null;
+
+  /** 番号のリンクの `pointerdown`: タッチで閉じた番号なら `is-dismissed` を外して開き、続く `click` で一覧へ移らないよう控える。開いた番号のタッチとマウス・ペンでは控えを消す */
+  const openByTouch = (ref: HTMLElement, event: PointerEvent): void => {
+    if (
+      !(event.target instanceof Element) ||
+      !event.target.closest(".mdmark-fn-link")
+    ) {
+      return;
+    }
+    if (event.pointerType !== "touch" || ref.classList.contains(OPEN_CLASS)) {
+      openedByTouch = null;
+      return;
+    }
+    ref.classList.remove(DISMISSED_CLASS);
+    open(ref);
+    openedByTouch = ref;
+  };
+
   const listeners = refs.map((ref) => {
-    const handlers: Array<[string, () => void]> = [
-      ["pointerenter", () => open(ref)],
-      ["pointerleave", () => closeLater(ref)],
+    // タッチは `pointerenter`・`pointerleave` で開閉せず、番号のリンクの `pointerdown` で開く
+    const handlers: Array<[string, (event: Event) => void]> = [
+      [
+        "pointerenter",
+        (event) => {
+          if ((event as PointerEvent).pointerType !== "touch") {
+            open(ref);
+          }
+        },
+      ],
+      [
+        "pointerleave",
+        (event) => {
+          if ((event as PointerEvent).pointerType !== "touch") {
+            closeLater(ref);
+          }
+        },
+      ],
+      ["pointerdown", (event) => openByTouch(ref, event as PointerEvent)],
       ["focusin", () => open(ref)],
       ["focusout", () => closeLater(ref)],
     ];
@@ -174,12 +210,18 @@ export function attachFootnotes(options: {
     if (!link || !root.contains(link)) {
       return;
     }
+    const ref = link.closest<HTMLElement>(".mdmark-fn-ref");
+    // タッチで開いた直後の `click`: 開いたまま、一覧へ移らない
+    if (ref !== null && ref === openedByTouch) {
+      openedByTouch = null;
+      event.preventDefault();
+      return;
+    }
     const target = targetOf(root, link);
     if (!target) {
       return;
     }
     event.preventDefault();
-    const ref = link.closest<HTMLElement>(".mdmark-fn-ref");
     // 移った先に重ならないよう、ポインターが番号を離れるまで開き直さない
     if (ref) {
       close(ref);
@@ -198,6 +240,8 @@ export function attachFootnotes(options: {
 
   /** Esc: 開いているツールチップを閉じる。フォーカスは番号に残し、ツールチップの中のリンクにあったときは番号へ戻す */
   const onKeydown = (event: KeyboardEvent): void => {
+    // タップの `click` が発火しなかった後のキー操作では、番号を押したときと同じく一覧へ移る
+    openedByTouch = null;
     if (event.key !== "Escape") {
       return;
     }
@@ -212,6 +256,18 @@ export function attachFootnotes(options: {
       }
       close(ref);
       ref.classList.add(DISMISSED_CLASS);
+    }
+  };
+  /** 開いている番号（番号とツールチップ）の外の `pointerdown`: 閉じて `is-dismissed` を付ける。iOS の Safari はタップした番号に `:hover` を残し、`pointerleave`・`focusout` だけでは閉じず、番号に残る `:hover`・`:focus-within` では CSS がツールチップを出し続けるため。番号の `pointerdown` より先に受けるため、捕捉の段で受ける */
+  const onPointerdown = (event: PointerEvent): void => {
+    if (!(event.target instanceof Node)) {
+      return;
+    }
+    for (const ref of refs) {
+      if (ref.classList.contains(OPEN_CLASS) && !ref.contains(event.target)) {
+        close(ref);
+        ref.classList.add(DISMISSED_CLASS);
+      }
     }
   };
   /** 画面のスクロールと幅の変化: 開いているツールチップを番号に付いて動かす */
@@ -230,6 +286,7 @@ export function attachFootnotes(options: {
   };
   root.addEventListener("click", onClick);
   document.addEventListener("keydown", onKeydown);
+  document.addEventListener("pointerdown", onPointerdown, { capture: true });
   window.addEventListener("scroll", placeOpen, {
     capture: true,
     passive: true,
@@ -240,6 +297,9 @@ export function attachFootnotes(options: {
   return () => {
     root.removeEventListener("click", onClick);
     document.removeEventListener("keydown", onKeydown);
+    document.removeEventListener("pointerdown", onPointerdown, {
+      capture: true,
+    });
     window.removeEventListener("scroll", placeOpen, { capture: true });
     window.removeEventListener("resize", placeOpen);
     window.removeEventListener("beforeprint", closeAll);

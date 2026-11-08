@@ -224,6 +224,7 @@ mdmark.config.yaml:build: schema: `build.out` がありません。書き出す 
 | `diagram_wire_crosses_node` | フロー図の線が、`from`・`to` でない箱を通っている |
 | `diagram_label_too_long` | フロー図の箱の文字が、折り返しても箱に収まらない |
 | `syntax_warning` | `--text`・`--file` で渡した Markdown を描いたときに出る書き方の警告のうち、`unknown_mark`・`diagram_invalid` に当たらないもの。include の取り込み先が無い警告は、取り込み先を読まないため出さない（取り込み先は設定の文書の点検の `include_target_missing`・`include_circular` で確かめる）。内容は書き方の警告の文と同じ。場所は警告の元のマーカーの行 |
+| `unknown_mark_arg` | `--text`・`--file` で渡した Markdown の記法のマーカーに、描くときに警告を出さずに無視する知らない種類・`+機能`・`-機能`・キー・指定の単語がある。1 つにつき 1 件で、内容は無視した指定・そのマーカーで使えるもの・直し方。場所はマーカーの行 |
 
 <!-- /table -->
 
@@ -246,7 +247,7 @@ npx github:shuhei1101/mdmark#v{版} check [--config {設定ファイル}] [--bas
 | --- | --- | --- | --- |
 | `--config` | 任意 | 使う設定ファイルのパス。渡すとこのファイルと端末の設定だけを重ねる。省くと今のフォルダから上のフォルダへ `mdmark.config.yaml` を探して重ね、重ねた設定ファイルと端末の設定のそれぞれの形を点検する | `--config docs/mdmark.config.yaml` |
 | `--base` | 任意 | 直し忘れの検査に比べる基準の git の ref。渡すと、基準と HEAD の merge-base から作業ツリーまでに変わった文書を比べ、`change_together` の組のうち片方だけが変わった組を `missed_change_together` で出す。省くと直し忘れを検査しない。設定に `index` が無いときは使わない | `--base origin/develop` |
-| `--text` | 任意 | 点検する Markdown の文字列。`-` を渡すと標準入力から読む。渡すと設定と索引を点検せず、描いたときの書き方の警告・知らない印・図の配置のずれだけを、ファイル `-`・文字列の行で出す。設定ファイルが無ければ既定の設定で点検する。`--base`・`--file`・`--key` と一緒に渡せない | `--text -` |
+| `--text` | 任意 | 点検する Markdown の文字列。`-` を渡すと標準入力から読む。渡すと設定と索引を点検せず、描いたときの書き方の警告・描くときに無視するマーカーの知らない引数・知らない印・図の配置のずれだけを、ファイル `-`・文字列の行で出す。設定ファイルが無ければ既定の設定で点検する。`--base`・`--file`・`--key` と一緒に渡せない | `--text -` |
 | `--file` | 任意 | Markdown をキーの値に持つ YAML のファイル。`--key` と一緒に渡し、そのキーの値を `--text` と同じく点検する。場所は YAML のファイルの行（ブロックスカラーは値の中の行をファイルの行に置き換え、それ以外の値はキーの行） | `--file records.yaml` |
 | `--key` | `--file` と一緒に必須 | `--file` の YAML の中の、点検する文字列の値のキー。`.` でキーを、`[位置]` で配列の要素をたどる | `--key items[0].body` |
 

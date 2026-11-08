@@ -3,48 +3,54 @@ import type { WarningItem } from "../../extensions.ts";
 import { renderCollapsible } from "../../parts/collapsible.ts";
 import { SLOT_MARKER } from "../../parts/own.ts";
 import type { Mark } from "../marks.ts";
-import { type CollapseMode, readCollapse } from "./collapse.ts";
+import { type CollapseMode, readCollapse, titleTailItem } from "./collapse.ts";
 import { envOf, featureOn, findClose, markOf, ownBlock } from "./tokens.ts";
 import {
+  type SkippedArg,
   type SyntaxWarning,
+  skippedArgBlocks,
   unclosedWarning,
   warningBlock,
 } from "./warnings.ts";
 
-/** ステップの印の引数から折り畳みの指定を読み、読めない指定を 1 つの書き方の警告にまとめる */
+/** ステップの印で読める指定を、読み飛ばした引数の案内に並べる文 */
+const USABLE_ARGS = "`closed`・`open`・`title=見出し`";
+
+/** ステップの印の引数から折り畳みの指定を読み、読めない指定を 1 つの書き方の警告にまとめ、知らないキーと指定を読み飛ばした引数にする */
 export function readStepsOptions(mark: Mark): {
   collapse: CollapseMode;
   title?: string | undefined;
   warning?: SyntaxWarning;
+  skipped: SkippedArg[];
 } {
   const {
     collapse,
     title,
     items: collapseItems,
+    titleTail,
     rest,
-  } = readCollapse(mark.args);
-  const items: WarningItem[] = [...collapseItems];
-  for (const key of Object.keys(rest.keys)) {
-    items.push({
-      label: `${key}=`,
-      message:
-        "使えないキーです。使えるキーは `title=` です。`closed`・`open` と一緒に書きます",
-    });
-  }
-  // `キー=値` の形でない指定
-  for (const arg of rest.args) {
-    items.push({
-      label: arg,
-      message:
-        "使えない指定です。使える指定は `closed`・`open`・`title=見出し` です",
-    });
-  }
+  } = readCollapse(mark.args, mark.rest);
+  const items: WarningItem[] = [
+    ...collapseItems,
+    ...rest.args.filter((arg) => arg === titleTail).map(titleTailItem),
+  ];
+  const skipped: SkippedArg[] = [
+    ...Object.keys(rest.keys).map((key) => ({
+      arg: `${key}=`,
+      usable: USABLE_ARGS,
+    })),
+    // `キー=値` の形でない指定
+    ...rest.args
+      .filter((arg) => arg !== titleTail)
+      .map((arg) => ({ arg, usable: USABLE_ARGS })),
+  ];
   if (items.length === 0) {
-    return { collapse, title };
+    return { collapse, title, skipped };
   }
   return {
     collapse,
     title,
+    skipped,
     warning: {
       mark: mark.raw,
       message: "の読めない指定を当てずに描いています。",
@@ -86,10 +92,11 @@ export function buildSteps(state: StateCore): void {
     if (mark?.name !== "steps" || mark.closing) {
       continue;
     }
-    const { collapse, title, warning } = readStepsOptions(mark);
+    const { collapse, title, warning, skipped } = readStepsOptions(mark);
     if (warning) {
       out.push(warningBlock(state, warning, token));
     }
+    out.push(...skippedArgBlocks(state, { mark: mark.raw, skipped }, token));
     const closeIndex = findClose(tokens, index, "steps");
     const end = closeIndex < 0 ? tokens.length : closeIndex;
     if (closeIndex < 0) {

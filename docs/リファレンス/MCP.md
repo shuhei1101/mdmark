@@ -139,7 +139,7 @@ dev-docs が無い、または配信元 `mdmark` が登録されていないと�
 | --- | --- | --- |
 | `config` | 任意 | 使う設定ファイルのパス |
 | `base` | 任意 | 直し忘れの検査に比べる基準の git の ref。`mdmark check` の `--base` と同じで、渡すと `change_together` の組のうち片方の文書だけが変わった組を `missed_change_together` で返す。省くと直し忘れを検査しない |
-| `text` | 任意 | 点検する Markdown の文字列。`mdmark check` の `--text` と同じで、渡すと設定と索引を点検せず、描いたときの書き方の警告・知らない印・図の配置のずれを返す。`base`・`file`・`key` と一緒に渡せない |
+| `text` | 任意 | 点検する Markdown の文字列。`mdmark check` の `--text` と同じで、渡すと設定と索引を点検せず、描いたときの書き方の警告・描くときに無視するマーカーの知らない引数・知らない印・図の配置のずれを返す。`base`・`file`・`key` と一緒に渡せない |
 | `file` | 任意 | Markdown をキーの値に持つ YAML のファイル（作業のフォルダからの相対パスか絶対パス）。`mdmark check` の `--file` と同じで、`key` と一緒に渡す |
 | `key` | `file` と一緒に必須 | `file` の YAML の中の、点検する文字列の値のキー。`mdmark check` の `--key` と同じ |
 

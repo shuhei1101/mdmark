@@ -114,6 +114,30 @@ scenarios:
       - 終了コードが 0 以外
       - '`records.yaml` が変わっていない'
     test: test_error_when_key_missing
+  - name: 正常シナリオ（知らないキー・機能・指定）
+    setup:
+      - name: 作業のフォルダ
+        description: 正常シナリオと同じ
+      - name: 知らないキー・機能・指定を持つ文字列
+        description: '`<!-- table: data +unknown widht=説明 -->` で囲んだ表と、`<!-- tabs: grop=os -->` で `### macOS`・`### Windows` を囲んだ範囲を持つ Markdown の文字列'
+        notes: 同じ文字列を `render` で描いたときに、書き方の警告は出ない
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor W as 文書を書く人
+        participant C as mdmark CLI
+        participant R as mdmark の描画の処理
+        W->>C: mdmark check（Markdown の文字列）
+        C->>R: 文字列を描くときと同じ読み取りで、書き方の警告と読み飛ばしたキー・機能・指定を集める
+        R-->>C: 空の警告の一覧と、読み飛ばしたキー・機能・指定の一覧
+        C-->>W: 場所・種類・内容の一覧・終了コード 0 以外
+    expected:
+      - ずれの行が 3 つあり、`+unknown`・`widht=` の 2 つが表のマーカーの行を、`grop=` がタブのマーカーの行を指す
+      - 各行の種類が書き方の警告でも知らないマーカーでもない、知らないキー・機能・指定の種類
+      - 各行の内容が、読み飛ばしたキー・機能・指定と、そのマーカーで使えるキー・機能・指定を挙げる
+      - 終了コードが 0 以外
+    test: test_normal_when_unknown_mark_args
 lead: |-
   文書を書く人が `mdmark check` に Markdown の文字列、またはファイルと YAML のキーを渡し、描いたときの書き方の警告と同じ内容をずれの一覧で受け取る。
   YAML のキーの中に Markdown を書き込むツール（dev-docs・MindStella）も、書き込みのたびに同じ点検を呼ぶ。
@@ -129,7 +153,7 @@ stakeholders:
 trigger: Markdown を文字列のまま持つか YAML のキーへ書き込んだ後、記法の誤りを確認する
 preconditions:
   - 文書を書く人の手元に Node 24 以降がある
-success_guarantee: 渡した Markdown を描いたときの書き方の警告と同じ内容が、ファイル・場所・種類・内容の一覧で出る。ずれが無ければ終了コード 0、あれば 0 以外で終わる。
+success_guarantee: 渡した Markdown を描いたときの書き方の警告と同じ内容と、描くときに読み飛ばすマーカーの知らないキー・機能・指定が、ファイル・場所・種類・内容の一覧で出る。ずれが無ければ終了コード 0、あれば 0 以外で終わる。
 minimal_guarantee: 点検はファイルを書き換えない。ファイルやキーを読めないときは、原因と修正の方法の 1 文を出して 0 以外で終わる。
 refs:
   - dev/設計書/シナリオ/単一ユースケース/設定と索引を点検する#
