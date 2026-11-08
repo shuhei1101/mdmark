@@ -37,7 +37,7 @@
 
 | ファイル | メソッド | 変更種別 | 結果 | 補足 |
 | --- | --- | --- | --- | --- |
-| `tests/unit/vscode/src/webview/features/preview/panel/scroll.browser.test.ts` | 全実行 | 変更 | ✅ | 11 テスト pass（`test_collect_anchors_when_closed_section`・`test_top_for_line_when_collapsed` を追加）<br>`テスト結果/20261109041538_a0b71529_単体テスト.log` |
+| `tests/unit/vscode/src/webview/features/preview/panel/scroll.browser.test.ts` | 全実行 | 変更 | ✅ | 12 テスト pass（`test_collect_anchors_when_closed_section`・`test_collect_anchors_when_closed_section_in_diff_block`・`test_top_for_line_when_collapsed` を追加）<br>`テスト結果/20261109065729_467bb5e5_単体テスト.log` |
 | `npm run test:unit` のほかのファイル | 全実行 | 実行のみ | ✅ | 258 ファイル・1818 テスト pass<br>`テスト結果/20261109041538_a0b71529_単体テスト.log` |
 
 lint: 全 pass（Biome の警告 2 件は作業 PR が触っていないファイル）。`テスト結果/20261109041538_a0b71529_lint.log`
