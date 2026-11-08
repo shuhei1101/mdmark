@@ -1,0 +1,10 @@
+scope_out:
+  - item: scripts/ の他の単体テスト（build・build-plugin・eslint・migrations・storybook-render）の最初のテストが負う読み込みの時間
+    reason: 同じく各テストの中で動的 import するが、全件実行で時間切れになった記録が無い。直し方が決まった後、同じ型の箇所として含めるかをレビューで確定する
+    plan: none
+use_cases:
+  - kind: single
+    scenario: dev/設計書/シナリオ/単一ユースケース/配布物をビルドして検査する.yaml
+    impact: none
+    detail: 対応ブラウザの下限の検査の単体テストの待ちだけを直し、開発者が流す検査の手順と結果は変わらない
+    depends_on: []
