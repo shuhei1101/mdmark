@@ -76,7 +76,10 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-08T20:14:20.668031+00:00'
   - process: 結合テスト作成
-    status: todo
+    status: done
+    note: インターフェース定義のフローは足しておらず、新しい結合テストは無い。既存の tests/integration/lib/mount.browser.test.ts を回帰で流した
+    updated_by: planner
+    updated_at: '2026-11-08T20:20:29.250785+00:00'
   - process: E2E テスト作成
     status: skipped
     reason: 既存の E2E のシナリオの記述は変わらず、比較の細部は単体・結合テストで確かめる
