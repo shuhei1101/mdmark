@@ -42,44 +42,44 @@ states:
       - name: width
         value: 50%
   - name: AlignLeft
-    description: '`{width=200 align=left}`。左に置き、右を本文が回り込む'
+    description: '`{width=200 align=left}`。左に配置し、右を本文が回り込む'
     args:
       - name: src
         value: step-1.svg
       - name: alt
-        value: 左に置いた画面
+        value: 左に配置した画面
       - name: caption
-        value: 左に置いた画面
+        value: 左に配置した画面
       - name: width
         value: 200px
       - name: align
         value: left
     notes:
-      定義: ストーリーは図の後ろに段落を 1 つ置く
+      定義: ストーリーは図の後ろに段落を 1 つ配置する
   - name: AlignRight
-    description: '`align=right`。右に置き、左を本文が回り込む'
+    description: '`align=right`。右に配置し、左を本文が回り込む'
     args:
       - name: src
         value: step-2.svg
       - name: alt
-        value: 右に置いた画面
+        value: 右に配置した画面
       - name: caption
-        value: 右に置いた画面
+        value: 右に配置した画面
       - name: width
         value: 200px
       - name: align
         value: right
     notes:
-      定義: ストーリーは図の後ろに段落を 1 つ置く
+      定義: ストーリーは図の後ろに段落を 1 つ配置する
   - name: AlignCenter
-    description: '`align=center`。中央に置き、回り込まない'
+    description: '`align=center`。中央に配置し、回り込まない'
     args:
       - name: src
         value: step-3.svg
       - name: alt
-        value: 中央に置いた画面
+        value: 中央に配置した画面
       - name: caption
-        value: 中央に置いた画面
+        value: 中央に配置した画面
       - name: width
         value: 240px
       - name: align
@@ -140,10 +140,10 @@ states:
       - name: alt
         value: 手順 2 の画面
       - name: caption
-        value: 設定ファイルを読めないときに文書の先頭へ帯を出し、設定ファイルを開くボタンから直せることを示す画面
+        value: 設定ファイルを読み込めないときに文書の先頭へ帯を出し、設定ファイルを開くボタンから修正できることを示す画面
       - name: width
         value: 240px
-lead: 画像 1 つだけの段落の画像を図にし、title のキャプション・幅・配置・テーマごとの出し分けを当てる。押すと拡大する画像は、ボタンで包んで右上に拡大のアイコンを出す。
+lead: 画像 1 つだけの段落の画像を図にし、title のキャプション・幅・配置・テーマごとの出し分けを適用する。押すと拡大する画像は、ボタンで包んで右上に拡大のアイコンを出す。
 args:
   - name: src
     type: 文字列
@@ -152,7 +152,7 @@ args:
   - name: alt
     type: 文字列
     required: true
-    description: 画像の代わりの文字。拡大のボタンの読み上げの名前にも使う
+    description: 画像の代わりの文字。拡大のボタンのアクセシブルネームにも使用する
   - name: caption
     type: 文字列
     required: false
@@ -167,8 +167,8 @@ args:
   - name: align
     type: 列挙
     required: false
-    default: なし（本文の左端に置き、回り込まない）
-    choices: '`left`（左に置き、右を本文が回り込む）・`center`（中央に置く）・`right`（右に置き、左を本文が回り込む）'
+    default: なし（本文の左端に配置し、回り込まない）
+    choices: '`left`（左に配置し、右を本文が回り込む）・`center`（中央に配置する）・`right`（右に配置し、左を本文が回り込む）'
     description: '`figure` の `data-align` に入れる配置'
   - name: lightbox
     type: 真偽値
@@ -191,8 +191,8 @@ args:
     type: 文字列
     required: false
     default: '""'
-    enabled_when: '`id` を渡したとき'
-    description: キャプションの頭に `b` で置くサブ図の番号（`図 2a`）。`caption` が空でも出す
+    enabled_when: '`id` を指定したとき'
+    description: キャプションの頭に `b` で配置するサブ図の番号（`図 2a`）。`caption` が空でも出す
 events:
   - name: 拡大を開く
     when: 拡大のボタンを押す（Enter・Space を含む）
@@ -202,7 +202,7 @@ css_properties:
   - name: --mdmark-image-width
     syntax: <length-percentage>
     default: なし
-    description: 図の幅。`width` の値を `figure` の `style` で渡す。本文の幅を超えない
+    description: 図の幅。`width` の値を `figure` の `style` で指定する。本文の幅を超えない
   - name: --mdmark-color-muted
     syntax: <color>
     default: '#52525b（ダーク #b4b4bc）'
@@ -211,9 +211,9 @@ uses:
   - component: dev/設計書/部品設計/図表の番号.ts#
     how: '`fig` のマーカーの直後の画像は、図表の番号のスロットにこの部品を入れる'
 accessibility:
-  - '拡大のボタンは `画像を拡大: {alt}` を読み上げの名前に持ち、フォーカスの枠を見せる。右上の拡大のアイコンは `aria-hidden`'
-  - 画像の `alt` は文書に書いたまま残し、キャプションは `figcaption` で読み上げる
-  - 'テーマで隠す画像は `display: none` で、読み上げにも含めない'
+  - '拡大のボタンは `画像を拡大: {alt}` をアクセシブルネームに持ち、フォーカスの枠を見せる。右上の拡大のアイコンは `aria-hidden`'
+  - 画像の `alt` は文書に記載したまま残し、キャプションは `figcaption` でスクリーンリーダーに伝える
+  - 'テーマで隠す画像は `display: none` で、スクリーンリーダーにも含めない'
 refs:
   - dev/設計書/インターフェース定義/ライブラリ本体/文書をHTML文字列にする.ts#constraints[画像の属性]
   - dev/設計書/インターフェース定義/ライブラリ本体/文書をHTML文字列にする.ts#constraints[画像の図とキャプション]

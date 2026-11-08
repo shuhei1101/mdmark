@@ -1,5 +1,5 @@
 title: 段組み
-lead: columns の範囲の中身を、同じ高さの位置から等しい幅で横に 2〜3 列に並べる。描く先の要素が狭いときは書いた順に縦に積む。
+lead: columns の範囲の中身を、同じ高さの位置から等しい幅で横に 2〜3 列に並べる。描く先の要素が狭いときは記載した順に縦に並べる。
 implementation: src/parts/layout-columns.ts#renderLayoutColumns
 story: Parts/LayoutColumns
 test_file: tests/integration/lib/layout-columns.story.test.ts
@@ -20,7 +20,7 @@ states:
   - name: columns
     value: '["<p>1 列目</p>","<p>2 列目</p>","<p>3 列目</p>"]'
 - name: Narrow
-  description: 描く先の要素の幅が 390px。縦に積む
+  description: 描く先の要素の幅が 390px。縦に並べる
   args:
   - name: columns
     value: '["<p>左の列の段落</p>","<p>右の列の段落</p>"]'
@@ -32,9 +32,9 @@ css_properties:
   default: 1rem
   description: 列の間隔
 accessibility:
-- 列は書いた順の DOM の並びのまま並べ、読み上げの順を変えない
+- 列は記載した順の DOM の並びのまま並べ、スクリーンリーダーの順を変えない
 refs:
 - dev/設計書/インターフェース定義/ライブラリ本体/文書をHTML文字列にする.ts#constraints[段組み]
 status: planned
 notes:
-  HTML: '`<div class="mdmark-layout-columns" data-count="{列の数}"><div class="mdmark-layout-column">{中身}</div>…</div>`。縦に積む幅はコンテナクエリで決める。モックは `dev/mock/components/columns/`'
+  HTML: '`<div class="mdmark-layout-columns" data-count="{列の数}"><div class="mdmark-layout-column">{中身}</div>…</div>`。縦に並べる幅はコンテナクエリで決める。モックは `dev/mock/components/columns/`'

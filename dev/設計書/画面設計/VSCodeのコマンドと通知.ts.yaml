@@ -4,7 +4,7 @@ elements:
     id: editor-title-open-preview
     kind: button
     position: Markdown のエディタのタイトル
-    description: '`contributes.menus.editor/title` のボタン。アイコンは VS Code の `$(open-preview)`、ポインターを当てるとコマンドの表示名を出す'
+    description: '`contributes.menus.editor/title` のボタン。アイコンは VS Code の `$(open-preview)`、ポインターを合わせるとコマンドの表示名を出す'
     label: 'mdmark: プレビューを横に開く'
     visible_when: '`editorLangId == markdown`'
     action_ref: dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを開く.ts#
@@ -28,8 +28,8 @@ elements:
     id: confirm-create-config
     kind: dialog
     position: VS Code のモーダルのダイアログ
-    description: '設定ファイルが無いときに `mdmark.openConfig` が `showInformationMessage(文, { modal: true, detail }, "作成")` で尋ねる。作らないときは VS Code が足す「キャンセル」を押す'
-    label: '文: `{雛形を作るパス} がありません。雛形を作りますか？`（雛形を作るパスは `mdmark.configPath`、空のときは `mdmark.config.yaml` を、インターフェース定義『設定を重ねて読む』の制約「パスの表示」のパスにしたもの。例 `mdmark.config.yaml がありません。雛形を作りますか？`）、detail: `features・libraries・theme・extensions の書き方をコメントで添えたファイルを作ります。作った直後は、プレビューの見た目は変わりません。`、ボタン: `作成`'
+    description: '設定ファイルが無いときに `mdmark.openConfig` が `showInformationMessage(文, { modal: true, detail }, "作成")` で尋ねる。作らないときは VS Code が追加する「キャンセル」を押す'
+    label: '文: `{雛形を作るパス} がありません。雛形を作りますか？`（雛形を作るパスは `mdmark.configPath`、空のときは `mdmark.config.yaml` を、インターフェース定義『設定を重ねて読み込む』の制約「パスの表示」のパスにしたもの。例 `mdmark.config.yaml がありません。雛形を作りますか？`）、detail: `features・libraries・theme・extensions の記載方法をコメントで添えたファイルを作ります。作った直後は、プレビューの外観は変わりません。`、ボタン: `作成`'
     visible_when: '`mdmark.openConfig` を呼び、設定ファイルが無いとき'
     action_ref: dev/設計書/インターフェース定義/VSCode拡張機能/設定ファイルを開く.ts#
     status: planned
@@ -39,30 +39,30 @@ elements:
     id: config-template
     kind: label
     position: 作った設定ファイルのエディタ
-    description: 「作成」で書く YAML。キーは書かず、書き方をコメントで示す
+    description: 「作成」で記載する YAML。キーは記載せず、記載方法をコメントで示す
     label: |-
       ```yaml
-      # mdmark の設定。端末の設定（~/.config/mdmark/settings.yaml）に重ねて読みます。端末の設定の config.cascade を true にすると、上のフォルダの mdmark.config.yaml も重ねます
+      # mdmark の設定。端末の設定（~/.config/mdmark/settings.yaml）に重ねて読み込みます。端末の設定の config.cascade を true にすると、上のフォルダの mdmark.config.yaml も重ねます
 
-      # 機能のオン・オフ（使うときは次の 2 行の # を外す）
+      # 機能のオン・オフ（使用するときは次の 2 行の # を削除する）
       # features:
       #   callout: false
 
-      # 外部ライブラリのモジュール。相対パスはこのファイルのあるフォルダから（使うときは次の 2 行の # を外す）
+      # 外部ライブラリのモジュール。相対パスはこのファイルのあるフォルダから（使用するときは次の 2 行の # を削除する）
       # libraries:
       #   my-chart: ./libs/my-chart.js
 
-      # 右側の目次の出し方。hover か fixed（使うときは次の 2 行の # を外す）
+      # 右側の目次の出し方。hover か fixed（使用するときは次の 2 行の # を削除する）
       # side-toc:
       #   mode: fixed
 
-      # 配色のテーマ。dev-swiss・theme-paper・theme-slate・theme-contrast のどれか。VS Code の設定 mdmark.colorTheme が空でないときはそちらが優先（使うときは次の 1 行の # を外す）
+      # 配色のテーマ。dev-swiss・theme-paper・theme-slate・theme-contrast のどれか。VS Code の設定 mdmark.colorTheme が空でないときはそちらが優先（使用するときは次の 1 行の # を削除する）
       # colorTheme: theme-paper
 
-      # 使う側の CSS。相対パスはこのファイルのあるフォルダから（使うときは次の 1 行の # を外す）
+      # 利用側の CSS。相対パスはこのファイルのあるフォルダから（使用するときは次の 1 行の # を削除する）
       # theme: ./theme.css
 
-      # 拡張のモジュール。相対パスはこのファイルのあるフォルダから（使うときは次の 2 行の # を外す）
+      # 拡張のモジュール。相対パスはこのファイルのあるフォルダから（使用するときは次の 2 行の # を削除する）
       # extensions:
       #   - ./extensions/example.js
       ```
@@ -90,9 +90,9 @@ elements:
     id: notify-export-failed
     kind: notification
     position: VS Code の通知
-    description: 書き出す先に書けないときに `showErrorMessage` で出す（`mdmark.exportHtml`・`mdmark.openInBrowser`・`mdmark.printToPdf`）。理由は OS が返した誤りの文
-    label: '`HTML を書き出せませんでした: {書き出す先のパス}（{理由}）。設定 mdmark.export.outputDir を書き込めるフォルダに直してください。`'
-    visible_when: 書き出す先に書けないとき
+    description: 書き出す先に書き込めないときに `showErrorMessage` で出す（`mdmark.exportHtml`・`mdmark.openInBrowser`・`mdmark.printToPdf`）。理由は OS が返却した誤りの文
+    label: '`HTML を書き出せませんでした: {書き出す先のパス}（{理由}）。設定 mdmark.export.outputDir を書き込めるフォルダに修正してください。`'
+    visible_when: 書き出す先に書き込めないとき
     status: planned
     introduced:
       pr: 69
@@ -100,9 +100,9 @@ elements:
     id: notify-version-undecidable
     kind: notification
     position: VS Code の通知
-    description: 書き出すときに読む版を決められないときに `showErrorMessage` で出す（`mdmark.exportHtml`・`mdmark.openInBrowser`・`mdmark.printToPdf`）
-    label: '`HTML を書き出せませんでした。読む mdmark のバージョンを決められません。ネットワークにつながっているかを確かめてから、もう一度実行してください。`'
-    visible_when: '`mdmark.version` が `latest` で、タグ一覧を取れず前回の版も無いとき'
+    description: 書き出すときに読み込むバージョンを決められないときに `showErrorMessage` で出す（`mdmark.exportHtml`・`mdmark.openInBrowser`・`mdmark.printToPdf`）
+    label: '`HTML を書き出せませんでした。読み込む mdmark のバージョンを決められません。ネットワークにつながっているかを確認してから、もう一度実行してください。`'
+    visible_when: '`mdmark.version` が `latest` で、タグ一覧を取れず前回のバージョンも無いとき'
     status: planned
     introduced:
       pr: 69
@@ -110,15 +110,15 @@ elements:
     id: editor-title-open-settings
     kind: button
     position: mdmark のプレビューのエディタのタイトル
-    description: '`contributes.menus.editor/title` のボタン。アイコンは VS Code の `$(gear)`、ポインターを当てるとコマンドの表示名を出し、読み上げの名前もコマンドの表示名になる。キーボードで押せる（VS Code のエディタのタイトルのボタンのまま）'
+    description: '`contributes.menus.editor/title` のボタン。アイコンは VS Code の `$(gear)`、ポインターを合わせるとコマンドの表示名を出し、アクセシブルネームもコマンドの表示名になる。キーボードで押せる（VS Code のエディタのタイトルのボタンのまま）'
     label: 'mdmark: 設定を開く'
     visible_when: mdmark のプレビューのパネルがアクティブなとき（`activeWebviewPanelId`）
     action: VS Code の設定画面を mdmark の項目に絞って開く
     action_ref: dev/設計書/インターフェース定義/VSCode拡張機能/設定を開く.ts#
-    reason: 歯車の置き場所は確認ログ「プレビューの歯車のボタンの置き場所と押したときの動き」の決定
+    reason: 歯車の配置場所は確認ログ「プレビューの歯車のボタンの配置場所と押したときの動き」の決定
     status: planned
 screen: vscode/package.json
-lead: VS Code 拡張機能が VS Code の画面に足す入口（エディタのタイトルのボタン・コマンドパレットのコマンド）と、VS Code のダイアログ・通知に出す文言。見た目は VS Code のままで、モックは作らない。
+lead: VS Code 拡張機能が VS Code の画面に追加する入口（エディタのタイトルのボタン・コマンドパレットのコマンド）と、VS Code のダイアログ・通知に出す文言。外観は VS Code のままで、モックは作らない。
 refs:
   - dev/設計書/インターフェース定義/VSCode拡張機能/HTMLに書き出す.ts#
   - dev/設計書/インターフェース定義/VSCode拡張機能/設定ファイルを開く.ts#

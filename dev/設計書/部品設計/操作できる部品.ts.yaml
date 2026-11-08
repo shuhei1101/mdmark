@@ -12,14 +12,14 @@ states:
       - name: value
         value: '8'
   - name: Copied
-    description: 写した。ボタンのそばに写したことを出す
+    description: コピーした。ボタンのそばにコピーしたことを出す
     args:
       - name: value
         value: '8'
       - name: copy
         value: copied
   - name: Failed
-    description: 写せなかった。書けなかったことと、選んで写せる JSON を出す
+    description: 写せなかった。記載できなかったことと、選んで写せる JSON を出す
     args:
       - name: value
         value: '8'
@@ -30,12 +30,12 @@ states:
     args:
       - name: copyLabel
         value: コピー
-lead: スライダー・今の値を写すボタン・グラフを組み合わせた部品。スライダーの値でグラフを描き直し、今の値を JSON にしてクリップボードへ写す。
+lead: スライダー・今の値を写すボタン・グラフを組み合わせた部品。スライダーの値でグラフを再描画し、今の値を JSON にしてクリップボードへ写す。
 args:
   - name: definition
     type: オブジェクト
     required: true
-    description: 操作できる部品の定義（`MdmarkParamDefinition`。`title`・`knob`（`key`・`label`・`min`・`max`・`step`・`value`）・`chart`（グラフの題・軸）・`table`（スライダーの値ごとの点））
+    description: 操作できる部品の定義（`MdmarkParamDefinition`。`title`・`knob`（`key`・`label`・`min`・`max`・`step`・`value`）・`chart`（グラフのタイトル・軸）・`table`（スライダーの値ごとの点））
   - name: value
     type: 数値
     default: 定義の `knob.value`
@@ -43,33 +43,33 @@ args:
   - name: copy
     type: 列挙
     default: none
-    choices: '`none`・`copied`（写した）・`failed`（写せなかった）'
-    description: 写した結果の知らせ。`failed` のときは写すはずだった JSON を選んで写せる `pre` に出す
+    choices: '`none`・`copied`（コピーした）・`failed`（写せなかった）'
+    description: コピーした結果の通知。`failed` のときは写すはずだった JSON を選んで写せる `pre` に出す
   - name: copyLabel
     type: 文字列
     default: 今の値を写す
-    description: 今の値を写すボタンの、アイコンの後ろに描く文言。ボタンの読み上げの名前もこの文言になる。HTML の特殊文字はエスケープして描く
+    description: 今の値を写すボタンの、アイコンの後ろに描く文言。ボタンのアクセシブルネームもこの文言になる。HTML の特殊文字はエスケープして描く
     status: implemented
 events:
   - name: 値を変える
     when: スライダーを動かすか、フォーカスして矢印キーを押す
     value: '`input` の `value`'
-    description: '`mount` が `output` とグラフを描き直す'
+    description: '`mount` が `output` とグラフを再描画する'
   - name: 今の値を写す
     when: 今の値を写すボタンを押す
     value: '`{"{key}": {"name": "{label}", "value": {今の値}}}` の JSON'
-    description: '`mount` がクリップボードへ書き、結果を知らせる'
+    description: '`mount` がクリップボードへ書き込み、結果を通知する'
 uses:
   - component: dev/設計書/部品設計/図の枠.ts#
-    how: 'グラフを題・凡例・右上のボタンつきで置く。中の図の枠は表示する箱の線を引かず（`box-shadow: none`）、操作できる部品の枠で囲む'
+    how: 'グラフをタイトル・凡例・右上のボタンつきで配置する。中の図の枠は表示するノードの線を描かず（`box-shadow: none`）、操作できる部品の枠で囲む'
   - component: dev/設計書/部品設計/グラフ.ts#
     how: 今の値と既定の値の系列を描く
 accessibility:
-  - 部品は `role="group"` で題を `aria-labelledby` で指す
+  - 部品は `role="group"` でタイトルを `aria-labelledby` で指す
   - スライダーは `label` で名前を付け、今の値を `output` に出し、矢印キーでも動かせる
-  - 写した結果は `role="status"` に出し、色とアイコンと文言で伝える
+  - コピーした結果は `role="status"` に出し、色とアイコンと文言で伝える
   - 写せなかった JSON の `pre` は `tabindex="0"` と `aria-label="写す JSON"` を持つ
-  - 写すボタンは `aria-label` を付けず、ボタンの文字（`copyLabel`）を読み上げの名前にする
+  - 写すボタンは `aria-label` を付けず、ボタンの文字（`copyLabel`）をアクセシブルネームにする
 status: planned
 introduced:
   pr: 42

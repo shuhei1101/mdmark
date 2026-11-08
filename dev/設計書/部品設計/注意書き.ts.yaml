@@ -29,7 +29,7 @@ states:
       - name: kind
         value: caution
   - name: Collapsed
-    description: 閉じた注意書き。題だけが出て、題の末尾に開閉の印がある
+    description: 閉じた注意書き。タイトルだけが出て、タイトルの末尾に開閉のマーカーがある
     args:
       - name: kind
         value: warning
@@ -45,7 +45,7 @@ states:
       - name: open
         value: 'true'
   - name: Long
-    description: 本文に複数の段落とコードブロックを持つ（ストーリーの引数 `body` に 2 つの段落とコードブロックの HTML を渡す）
+    description: 本文に複数の段落とコードブロックを持つ（ストーリーの引数 `body` に 2 つの段落とコードブロックの HTML を指定する）
     args:
       - name: kind
         value: note
@@ -75,26 +75,26 @@ states:
       - name: open
         value: 'true'
   - name: Nested
-    description: 入れ子の注意書き（`> > [!NOTE]`）。警告の本文の中に補足の注意書きを同じ見た目で置く
+    description: 入れ子の注意書き（`> > [!NOTE]`）。警告の本文の中に補足の注意書きを同じ外観で配置する
     args:
       - name: kind
         value: warning
       - name: title
-        value: 版を上げる前に
+        value: バージョンを上げる前に
     notes:
-      本文: 1 つの段落の後ろに、`kind` が `note` の注意書きを置く
-lead: 1 行目が `[!NOTE]` などの引用を、種類ごとの題・色・アイコンを持つ枠にする。種類の後ろに書いた文字は題にする。末尾に `-` を付けた種類は題を押して開閉する折り畳みにし、`+` を付けた種類は開いた状態の折り畳みにする。引用を重ねた注意書きは、外側の本文の中に置く。
+      本文: 1 つの段落の後ろに、`kind` が `note` の注意書きを配置する
+lead: 1 行目が `[!NOTE]` などの引用を、種類ごとのタイトル・色・アイコンを持つ枠にする。種類の後ろに記載した文字はタイトルにする。末尾に `-` を付けた種類はタイトルを押して開閉する折り畳みにし、`+` を付けた種類は開いた状態の折り畳みにする。引用を重ねた注意書きは、外側の本文の中に配置する。
 args:
   - name: kind
     type: 列挙
     required: true
-    choices: '`note`（題 `補足`）・`tip`（`ヒント`）・`important`（`重要`）・`warning`（`警告`）・`caution`（`注意`）'
-    description: 注意書きの種類。題・色・アイコンを決める。知らない種類は呼ぶ側が `note` にして渡す
+    choices: '`note`（タイトル `補足`）・`tip`（`ヒント`）・`important`（`重要`）・`warning`（`警告`）・`caution`（`注意`）'
+    description: 注意書きの種類。タイトル・色・アイコンを決める。知らない種類は呼ぶ側が `note` にして指定する
   - name: title
     type: 文字列
     required: false
-    default: なし（種類の名前を題にする）
-    description: '種類の後ろに書いた文字の行内の HTML。渡すと題にし、頭に読み上げだけの `{種類の名前}: ` を置く'
+    default: なし（種類の名前をタイトルにする）
+    description: '種類の後ろに記載した文字の行内の HTML。指定するとタイトルにし、頭にスクリーンリーダー向けの `{種類の名前}: ` を配置する'
   - name: collapsed
     type: 真偽値
     required: false
@@ -108,7 +108,7 @@ args:
     description: 折り畳みを開いた状態で出すか（末尾に `+` を付けたとき）
 slots:
   - name: default
-    description: 注意書きの本文（引用の 2 行目からの Markdown を HTML にしたもの）。入れ子の注意書きも置ける
+    description: 注意書きの本文（引用の 2 行目からの Markdown を HTML にしたもの）。入れ子の注意書きも配置できる
 css_properties:
   - name: --mdmark-color-bg-opaque
     syntax: <color>
@@ -117,13 +117,13 @@ css_properties:
   - name: --mdmark-color-callout-note
     syntax: <color>
     default: '#1d4ed8（ダーク #7aa2ff）'
-    description: '`note` の題・アイコンの色。枠の面は、この色を `--mdmark-color-bg-opaque` に 7% 混ぜた色、枠の線は 40% 混ぜた色にする（`color-mix`。CSS 変数は持たない。`color-mix()` の効かないブラウザ向けに、先に面を `--mdmark-color-surface`、線を `--mdmark-color-border` にする宣言を書き、その後ろに `color-mix()` の宣言を重ねる）。`tip`（#15803d / #4ade80）・`important`（#6d28d9 / #c4a7ff）・`warning`（#b45309 / #fbbf24）・`caution`（#b91c1c / #f87171）も同じ形の `--mdmark-color-callout-{種類}` を持つ'
+    description: '`note` のタイトル・アイコンの色。枠の面は、この色を `--mdmark-color-bg-opaque` に 7% 混ぜた色、枠の線は 40% 混ぜた色にする（`color-mix`。CSS 変数は持たない。`color-mix()` に対応していないブラウザ向けに、先に面を `--mdmark-color-surface`、線を `--mdmark-color-border` にする宣言を記載し、その後ろに `color-mix()` の宣言を重ねる）。`tip`（#15803d / #4ade80）・`important`（#6d28d9 / #c4a7ff）・`warning`（#b45309 / #fbbf24）・`caution`（#b91c1c / #f87171）も同じ形の `--mdmark-color-callout-{種類}` を持つ'
 accessibility:
-  - '種類は題の文言（補足・ヒント・重要・警告・注意）で伝え、色だけに頼らない。タイトルを持つときは、読み上げだけの `{種類の名前}: ` をタイトルの頭に置く'
-  - アイコンは CSS で付け、読み上げに含めない
+  - '種類はタイトルの文言（補足・ヒント・重要・警告・注意）で伝え、色だけに頼らない。タイトルを持つときは、スクリーンリーダー向けの `{種類の名前}: ` をタイトルの頭に配置する'
+  - アイコンは CSS で付け、スクリーンリーダーに含めない
   - 閉じた注意書きは `details` と `summary` で、キーボードで開閉できる
 refs:
   - dev/設計書/インターフェース定義/ライブラリ本体/文書をHTML文字列にする.ts#constraints[注意書き]
 status: planned
 notes:
-  HTML: '`<div class="markdown-alert markdown-alert-{kind}"><p class="markdown-alert-title">{題}</p>{本文}</div>`。`title` を渡すと題を `<span class="mdmark-visually-hidden">{種類の名前}: </span>{title}` にする。`collapsed` のときは `<details class="markdown-alert markdown-alert-{kind}"><summary class="markdown-alert-title">{題}</summary>{本文}</details>`（`open` のときは `details` に `open` を付ける）。題の文言は確認ログの決定（注意書きの題の文言）。モックは `dev/mock/components/callout/`'
+  HTML: '`<div class="markdown-alert markdown-alert-{kind}"><p class="markdown-alert-title">{題}</p>{本文}</div>`。`title` を指定するとタイトルを `<span class="mdmark-visually-hidden">{種類の名前}: </span>{title}` にする。`collapsed` のときは `<details class="markdown-alert markdown-alert-{kind}"><summary class="markdown-alert-title">{題}</summary>{本文}</details>`（`open` のときは `details` に `open` を付ける）。タイトルの文言は確認ログの決定（注意書きのタイトルの文言）。モックは `dev/mock/components/callout/`'

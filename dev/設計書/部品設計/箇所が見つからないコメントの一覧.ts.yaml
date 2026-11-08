@@ -16,18 +16,18 @@ states:
         value: '[]'
       - name: id
         value: story-orphans
-lead: 本文が書き換わり、付けた箇所が見つからないコメントを、文書の末尾に選んだ文字と本文の組で並べる一覧。HTML 文字列を返す。
+lead: 本文が書き換わり、付けた箇所が見つからないコメントを、文書の末尾に選んだ文字と本文の組で並べる一覧。HTML 文字列を返却する。
 args:
   - name: comments
     type: オブジェクトの配列
     required: true
-    description: 箇所が見つからないコメント（`{ quote, body }`）。文字として出し、HTML として解釈しない。空なら何も返さない
+    description: 箇所が見つからないコメント（`{ quote, body }`）。文字として出し、HTML として解釈しない。空なら何も返却しない
   - name: id
     type: 文字列
     required: true
-    description: 題の `id`。一覧の `aria-labelledby` が指す
+    description: タイトルの `id`。一覧の `aria-labelledby` が指す
 accessibility:
-  - '`section` を題の `h2` で `aria-labelledby` し、項目を `ul` で並べる'
+  - '`section` をタイトルの `h2` で `aria-labelledby` し、項目を `ul` で並べる'
 refs:
   - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[コメントの箇所]
 status: planned

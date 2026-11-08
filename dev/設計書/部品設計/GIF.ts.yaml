@@ -63,7 +63,7 @@ css_properties:
     default: '#e4e4e7（ダーク #26262b）'
     description: ボタンの線の色
 accessibility:
-  - ボタンは読み上げの名前を `GIF を停止`（再生中）・`GIF を再生`（停止中）にし、`aria-pressed` で止めているかを示す。アイコンは lucide の `pause`・`play`
+  - ボタンはアクセシブルネームを `GIF を停止`（再生中）・`GIF を再生`（停止中）にし、`aria-pressed` で止めているかを示す。アイコンは lucide の `pause`・`play`
   - '`prefers-reduced-motion: reduce` のときは止めた状態で始める'
   - 止めたときの `canvas` は `aria-hidden` で、`img` の `alt` が名前を持つ
 refs:

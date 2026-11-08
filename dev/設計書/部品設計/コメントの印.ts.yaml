@@ -1,9 +1,9 @@
-title: "コメントの印"
+title: "コメントのマーカー"
 implementation: "src/parts/comment.ts#renderCommentMark"
 story: "Parts/CommentMark"
 states:
   - name: Default
-    description: 段落の中の印
+    description: 段落の中のマーカー
     args:
       - name: text
         value: テーマの変数
@@ -21,7 +21,7 @@ states:
         value: テーマの変数
       - name: focused
         value: 'true'
-lead: コメントが付いた本文の文字を包む印。本文の文字は変えず、押すと付いたコメントの吹き出しを開く。HTML 文字列を返す。
+lead: コメントが付いた本文の文字を包むマーカー。本文の文字は変えず、押すと付いたコメントの吹き出しを開く。HTML 文字列を返却する。
 args:
   - name: text
     type: 文字列
@@ -34,26 +34,26 @@ args:
   - name: focused
     type: 真偽値
     default: 'false'
-    description: '`focusComment` で移った印か。`true` なら `data-focused` を付け、地の色を `--mdmark-color-comment-line` を 22% 混ぜた色に濃くし、2px の `--mdmark-color-comment-line` の線で全周を囲む（線と文字の間は 2px）'
+    description: '`focusComment` で移ったマーカーか。`true` なら `data-focused` を付け、地の色を `--mdmark-color-comment-line` を 22% 混ぜた色に濃くし、2px の `--mdmark-color-comment-line` の線で全周を囲む（線と文字の間は 2px）'
 events:
   - name: 吹き出しを開く
-    when: 印を押すか、フォーカスして Enter・Space を押す
-    value: 印の `aria-expanded`
-    description: '`mount`・`mountComments` が印の下に付いたコメントの吹き出しを開く'
+    when: マーカーを押すか、フォーカスして Enter・Space を押す
+    value: マーカーの `aria-expanded`
+    description: '`mount`・`mountComments` がマーカーの下に付いたコメントの吹き出しを開く'
 css_properties:
   - name: --mdmark-color-comment-bg
     syntax: <color>
     default: '#f2effe（ダーク #25222d）'
-    description: 印の地の色と、入力欄を開いている間の選んだ文字の色
+    description: マーカーの地の色と、入力欄を開いている間の選んだ文字の色
   - name: --mdmark-color-comment-line
     syntax: <color>
     default: '#6d28d9（ダーク #c4a7ff）'
-    description: 印の下線の色
+    description: マーカーの下線の色
 accessibility:
   - '`mark` に `tabindex="0"`・`role="button"`・`aria-haspopup="dialog"`・`aria-expanded` を付ける'
-  - '`aria-describedby` で文書の中に 1 つ置く説明 `コメントが付いた箇所` を指す'
-  - 印は地の色と下線で示し、色だけに頼らない
-  - 強調は全周の線でも示し、地の色だけに頼らない。吹き出しを開いている印（`aria-expanded="true"`）の線より目立たせる
+  - '`aria-describedby` で文書の中に 1 つ配置する説明 `コメントが付いた箇所` を指す'
+  - マーカーは地の色と下線で示し、色だけに頼らない
+  - 強調は全周の線でも示し、地の色だけに頼らない。吹き出しを開いているマーカー（`aria-expanded="true"`）の線より目立たせる
 refs:
   - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[コメントの操作]
   - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[コメントの箇所]
@@ -61,5 +61,5 @@ refs:
 status: planned
 notes:
   HTML: '`<mark class="mdmark-comment-mark" tabindex="0" role="button" aria-haspopup="dialog" aria-expanded="false" aria-describedby="mdmark-comment-hint">{text}</mark>`。モックは `dev/mock/components/comment/`'
-  印刷: 地の色を外し、下線だけを残す
+  印刷: 地の色を削除し、下線だけを残す
 test_file: tests/integration/lib/comment-mark.story.test.ts

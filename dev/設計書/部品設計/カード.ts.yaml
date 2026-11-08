@@ -4,7 +4,7 @@ story: Parts/Card
 test_file: tests/integration/lib/card.story.test.ts
 states:
   - name: Link
-    description: リンクのカード。書いた文字・ドメイン・URL を出す
+    description: リンクのカード。記載した文字・ドメイン・URL を出す
     args:
       - name: kind
         value: link
@@ -13,7 +13,7 @@ states:
       - name: title
         value: mdmark のリポジトリ
   - name: BareUrl
-    description: URL をそのまま書いたリンクのカード。タイトルにスキームを除いた URL を出す
+    description: URL をそのまま記載したリンクのカード。タイトルにスキームを除いた URL を出す
     args:
       - name: kind
         value: link
@@ -29,7 +29,7 @@ states:
       - name: href
         value: https://github.com/shuhei1101/mdmark/blob/develop/dev/%E8%A8%AD%E8%A8%88%E6%9B%B8/%E3%82%B7%E3%83%8A%E3%83%AA%E3%82%AA/%E5%8D%98%E4%B8%80%E3%83%A6%E3%83%BC%E3%82%B9%E3%82%B1%E3%83%BC%E3%82%B9/%E6%96%87%E6%9B%B8%E3%82%92%E6%8F%8F%E3%81%8F.yaml
       - name: title
-        value: 単一ユースケース「使う側のページが要素と Markdown を渡して文書を描き、本文の差し替えと片付けをする」のシナリオ
+        value: 単一ユースケース「利用側のページが要素と Markdown を指定して文書を描き、本文の差し替えと片付けをする」のシナリオ
   - name: FilePdf
     description: PDF の添付のカード。種類のアイコンと `PDF`・ファイル名を出す
     args:
@@ -84,7 +84,7 @@ states:
       - name: title
         value: mdmark のリポジトリ
     notes:
-      定義: 'ストーリーは `emulateMedia({ media: "print" })` で見る'
+      定義: 'ストーリーは `emulateMedia({ media: "print" })` で確認する'
 lead: リンク 1 つだけの段落を、アイコン・タイトル・ドメイン・URL を持つカードにする。ファイルへのリンクは種類のアイコンと拡張子を出す添付のカードにする。外へは要求しない。
 args:
   - name: kind
@@ -95,11 +95,11 @@ args:
   - name: href
     type: 文字列
     required: true
-    description: リンク先。`link` はドメインに URL のホスト、URL に書いた URL を出し、`file` はドメインに拡張子の大文字、URL にファイル名を出す
+    description: リンク先。`link` はドメインに URL のホスト、URL に記載した URL を出し、`file` はドメインに拡張子の大文字、URL にファイル名を出す
   - name: title
     type: 文字列
     required: true
-    description: タイトル（書いた文字。URL をそのまま書いたときはスキームを除いた URL）
+    description: タイトル（記載した文字。URL をそのまま記載したときはスキームを除いた URL）
   - name: fileKind
     type: 列挙
     required: false
@@ -125,7 +125,7 @@ css_properties:
     default: 4px
     description: カードの角丸は、この値の 2 倍にする
 accessibility:
-  - カードは 1 つの `a` で、読み上げはタイトル・ドメイン・URL の順に読む。アイコンは `aria-hidden`
+  - カードは 1 つの `a` で、スクリーンリーダーはタイトル・ドメイン・URL の順に伝達する。アイコンは `aria-hidden`
   - ホバーとフォーカスでは線の色を変え、フォーカスの枠を見せる
   - 長い URL は省略せず折り返し、横スクロールを出さない
 refs:

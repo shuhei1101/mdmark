@@ -17,7 +17,7 @@ states:
       - name: poster
         value: demo-poster.png
   - name: VideoAutoplay
-    description: '`{width=320 autoplay loop}`。`muted` を足し、幅 320px で出す'
+    description: '`{width=320 autoplay loop}`。`muted` を追加し、幅 320px で出す'
     args:
       - name: kind
         value: video
@@ -52,9 +52,9 @@ states:
       - name: src
         value: voice.mp3
       - name: alt
-        value: 読み上げの見本
+        value: スクリーンリーダーの見本
       - name: caption
-        value: 読み上げの見本（3 秒）
+        value: スクリーンリーダーの見本（3 秒）
   - name: VideoPrint
     description: '`poster` を持つ動画の印刷。再生バーを出さず、`poster` の画像とキャプションを出す'
     args:
@@ -69,7 +69,7 @@ states:
       - name: poster
         value: demo-poster.png
     notes:
-      定義: 'ストーリーは `emulateMedia({ media: "print" })` で見る'
+      定義: 'ストーリーは `emulateMedia({ media: "print" })` で確認する'
 lead: 拡張子が動画・音声の画像を、再生バーを持つ `video`・`audio` にして図に入れ、title をキャプションにする。印刷では動画の代わりに `poster` の画像を出す。
 args:
   - name: kind
@@ -101,7 +101,7 @@ args:
     required: false
     default: なし
     enabled_when: '`kind` が `video` のとき'
-    description: 再生前に出す画像の URL。渡したとき、印刷用の `img.mdmark-media-print` も置く
+    description: 再生前に出す画像の URL。指定したとき、印刷用の `img.mdmark-media-print` も配置する
   - name: autoplay
     type: 真偽値
     required: false
@@ -111,7 +111,7 @@ args:
     type: 真偽値
     required: false
     default: 'false'
-    description: 音を消して始めるか
+    description: ミュートにして始めるか
   - name: loop
     type: 真偽値
     required: false
@@ -121,7 +121,7 @@ css_properties:
   - name: --mdmark-image-width
     syntax: <length-percentage>
     default: なし
-    description: 図の幅。`width` の値を `figure` の `style` で渡す
+    description: 図の幅。`width` の値を `figure` の `style` で指定する
   - name: --mdmark-color-muted
     syntax: <color>
     default: '#52525b（ダーク #b4b4bc）'

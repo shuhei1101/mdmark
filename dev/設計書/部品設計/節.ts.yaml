@@ -1,10 +1,10 @@
-title: "節"
+title: "セクション"
 implementation: "src/parts/section.ts#renderSection"
 story: "Parts/Section"
 test_file: tests/integration/lib/section.story.test.ts
 states:
   - name: Open
-    description: 開いた節。見出しを指すとアンカーが出る
+    description: 開いたセクション。見出しを指すとアンカーが出る
     args:
       - name: level
         value: '2'
@@ -13,7 +13,7 @@ states:
       - name: title
         value: 概要
   - name: Closed
-    description: '閉じた節（`section: closed`）。中身が隠れ、開閉の印が閉じた向き'
+    description: '閉じたセクション（`section: closed`）。中身が隠れ、開閉のマーカーが閉じた向き'
     args:
       - name: level
         value: '2'
@@ -24,7 +24,7 @@ states:
       - name: open
         value: 'false'
   - name: Level4
-    description: h4 の節
+    description: h4 のセクション
     args:
       - name: level
         value: '4'
@@ -33,16 +33,16 @@ states:
       - name: title
         value: 細目
   - name: LongTitle
-    description: 見出しが長く折り返す。開閉の印とアンカーが見出しの文字に重ならない
+    description: 見出しが長く折り返す。開閉のマーカーとアンカーが見出しの文字に重ならない
     args:
       - name: level
         value: '2'
       - name: id
         value: long
       - name: title
-        value: とても長い見出しで文書の幅を超えて折り返すときの開閉の印とアンカーの位置を確かめる
+        value: とても長い見出しで文書の幅を超えて折り返すときの開閉のマーカーとアンカーの位置を確認する
   - name: Unmounted
-    description: '`render` が閉じた節を出した状態。開閉のボタンが無く、中身が見えたまま `data-section="closed"` を持つ'
+    description: '`render` が閉じたセクションを出した状態。開閉のボタンが無く、中身が見えたまま `data-section="closed"` を持つ'
     args:
       - name: level
         value: '2'
@@ -55,7 +55,7 @@ states:
       - name: open
         value: 'false'
   - name: Level1
-    description: h1 の節。h2 の節と同じ開閉のボタンとアンカーを持つ
+    description: h1 のセクション。h2 のセクションと同じ開閉のボタンとアンカーを持つ
     args:
       - name: level
         value: '1'
@@ -95,16 +95,16 @@ args:
     description: 見出しに ID へのアンカーを付けるか（`anchors` の機能）
 slots:
   - name: default
-    description: 節の中身の HTML
+    description: セクションの中身の HTML
 events:
   - name: 開閉する
-    when: 開閉のボタンを押す、節の中を指す URL の `#ID` で開く、またはページ内検索が閉じた中身に当たる
+    when: 開閉のボタンを押す、セクションの中を指す URL の `#ID` で開く、またはページ内検索が閉じた中身に該当する
     value: ボタンの `aria-expanded`
-    description: '`mount` が中身の `hidden` を付け外しする'
+    description: '`mount` が中身の `hidden` を付与・解除する'
   - name: 入れ子をまとめて開閉する
     when: Shift を押しながら開閉のボタンを押す（クリック、またはボタンにフォーカスがある間の Shift+Enter・Shift+Space）
     value: ボタンの `aria-expanded`
-    description: '`mount` がその節と中の入れ子の節を全て同じ状態（押す前のその節の反対）にする'
+    description: '`mount` がそのセクションと中の入れ子のセクションを全て同じ状態（押す前のそのセクションの反対）にする'
 css_properties:
   - name: --mdmark-color-heading
     syntax: <color>
@@ -113,16 +113,16 @@ css_properties:
   - name: --mdmark-color-muted
     syntax: <color>
     default: '#52525b（ダーク #b4b4bc）'
-    description: 開閉の印とアンカーの色
+    description: 開閉のマーカーとアンカーの色
 accessibility:
-  - 開閉のボタンは見出しの文字を読み上げの名前にし、`aria-expanded`・`aria-controls` で開閉の状態を示す
+  - 開閉のボタンは見出しの文字をアクセシブルネームにし、`aria-expanded`・`aria-controls` で開閉の状態を示す
   - 閉じた中身は `hidden="until-found"` で、ページ内検索から開ける
-  - アンカーは `「{見出しの文字}」へのリンク` を読み上げの名前に持つ
-  - 開閉のボタンで Shift+Enter・Shift+Space を押すと、Shift を押しながらのクリックと同じく入れ子の節をまとめて開閉する
+  - アンカーは `「{見出しの文字}」へのリンク` をアクセシブルネームに持つ
+  - 開閉のボタンで Shift+Enter・Shift+Space を押すと、Shift を押しながらのクリックと同じく入れ子のセクションをまとめて開閉する
 refs:
   - dev/設計書/インターフェース定義/ライブラリ本体/文書をHTML文字列にする.ts#constraints[節]
   - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[節と行の詳細の開閉]
   - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[入れ子をまとめて開閉]
 status: planned
 notes:
-  HTML: '`<h{level} class="mdmark-heading" id="{id}"><button class="mdmark-section-toggle" type="button" aria-expanded="{open}" aria-controls="section-{id}">{title}</button><a class="mdmark-anchor" href="#{id}" aria-label="「{見出しの文字}」へのリンク"></a></h{level}><div class="mdmark-section-body" id="section-{id}" data-section="{open なら open、そうでなければ closed}">{中身}</div>`。`toggle` が `false` のときは `button` を置かず見出しの文字をそのまま出す。モックは `dev/mock/components/section/`'
+  HTML: '`<h{level} class="mdmark-heading" id="{id}"><button class="mdmark-section-toggle" type="button" aria-expanded="{open}" aria-controls="section-{id}">{title}</button><a class="mdmark-anchor" href="#{id}" aria-label="「{見出しの文字}」へのリンク"></a></h{level}><div class="mdmark-section-body" id="section-{id}" data-section="{open なら open、そうでなければ closed}">{中身}</div>`。`toggle` が `false` のときは `button` を配置せず見出しの文字をそのまま出す。モックは `dev/mock/components/section/`'

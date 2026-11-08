@@ -7,7 +7,7 @@ states:
     notes:
       定義: モックの `inquiry`（`dev/mock/refs/42/assets/samples.js`）
   - name: LongNames
-    description: 長い題とノードの名前。ノードの中で折り返す
+    description: 長いタイトルとノードの名前。ノードの中で折り返す
     notes:
       定義: モックの `long-names`
   - name: Judgement
@@ -15,19 +15,19 @@ states:
     notes:
       定義: モックの `judgement`
   - name: JudgementLong
-    description: 判定フローチャートの長い題と文。ノードの名前は文節ごとに折り返し（Chromium 系。Firefox・Safari では文字ごとに折り返す）、質問の名前は菱形に内接する中央の四角に収める
+    description: 判定フローチャートの長いタイトルと文。ノードの名前は文節ごとに折り返し（Chromium 系。Firefox・Safari では文字ごとに折り返す）、質問の名前は菱形に内接する中央の四角に収める
     notes:
       定義: モックの `judgement-long`
   - name: UnknownKind
-    description: 知らない種類のノード。書き方の警告の使える種類に、追加した 4 種類を含む 10 種類が並ぶ
+    description: 知らない種類のノード。記載の警告の使用できる種類に、追加した 4 種類を含む 10 種類が並ぶ
   - name: Invalid
-    description: 定義を読めない。図の代わりに書き方の警告を出す
+    description: 定義を読み込めない。図の代わりに記載の警告を出す
   - name: JudgementAuto
-    description: 座標を省いた判定フローチャートを配置した結果。開始の下に質問を左の列に並べ、右へ出す線の先を同じ行の右の列に置く
+    description: 座標を省いた判定フローチャートを配置した結果。開始の下に質問を左の列に並べ、右へ出す線の先を同じ行の右の列に配置する
     notes:
       定義: モックの `judgement-auto`
   - name: LinkedNodes
-    description: リンク先を持つノード。名前が本文のリンクと同じ色と下線で、リンク先を持たないノードは今のまま。`io` を持つリンクのノードは右上の印をリンクの上に重ねる
+    description: リンク先を持つノード。名前が本文のリンクと同じ色と下線で、リンク先を持たないノードは今のまま。`io` を持つリンクのノードは右上のマーカーをリンクの上に重ねる
     notes:
       定義: モックの `linked`
   - name: LinkedNodeHoverFocus
@@ -35,23 +35,23 @@ states:
     notes:
       定義: モックの `linked`。モックの「リンク先を持つノードのホバーとフォーカス」の場面
   - name: LinkNotAllowed
-    description: 許さないリンク先（`javascript:`・`id:`）を持つノード。図の前に書き方の警告を置き、ノードはリンクにしない
+    description: 許さないリンク先（`javascript:`・`id:`）を持つノード。図の前に記載の警告を配置し、ノードはリンクにしない
     notes:
       定義: モックの「許可しないリンク先」の場面
   - name: GroupHints
-    description: システムの枠と LLM の層が `hint` を持つ。タイトルの右に箱と同じ情報の印があり、`hint` を持たない層には無い。凡例は 2 種類以上ある箱の種類と線の種類だけ
+    description: システムの枠と LLM の層が `hint` を持つ。タイトルの右にノードと同じ情報のマーカーがあり、`hint` を持たない層には無い。凡例は 2 種類以上あるノードの種類と線の種類だけ
     notes:
       定義: モックの `inquiry-groups`（`dev/mock/refs/308/assets/samples.js`）
   - name: TitlesStuck
     description: 拡大して処理の層の途中を見せた。システムの枠と処理の層のタイトルを表示する枠の上端に、地の色と線の札で留める
     notes:
       定義: モックの `inquiry-groups`
-lead: システムの枠と3 つの層、ノードと線を定義の座標に置く構成図。判定フローチャートは開始・質問・アクション・結果のノードを YES / NO のラベルの線でつなぐ（座標を省いた定義は配置した座標で描く）。リンク先を持つノードは、ノードの全体を覆うリンクにする。線は種類ごとに色と模様の組で描き、横の線が縦の線と交わる点に飛び越えの弧を入れる。
+lead: システムの枠と3 つの層、ノードと線を定義の座標に配置する構成図。判定フローチャートは開始・質問・アクション・結果のノードを YES / NO のラベルの線でつなぐ（座標を省いた定義は配置した座標で描く）。リンク先を持つノードは、ノードの全体を覆うリンクにする。線は種類ごとに色と模様の組で描き、横の線が縦の線と交わる点に飛び越えの弧を入れる。
 args:
   - name: definition
     type: オブジェクト
     required: true
-    description: フロー図の定義（`MdmarkFlowDefinition`。`width`・`height`・`frame`・`lanes`・`nodes`・`wires`）。ノードは `kind`（`llm`・`dm`・`script`・`mcp`・`data`・`external`・`start`・`question`・`action`・`result`）、線は `line`（`flow`・`read`・`write`・`reply`・`loop`）を持つ。ノードはリンク先 `href` を持て、許すリンク先のノードはノードの全体を覆う `a.mdmark-diagram-node-link` を持ち、ノードの要素に class `has-link` が付く。判定フローチャートの 4 つの種類だけの定義は、ノードの `x`・`y`・`w`・`h`、線の `points`、図の `width`・`height` を全て省ける（描く処理が配置してからこの部品に渡す）。`frame` と `lanes` の要素は文字の `hint` を持て、`stickyTitles`（真偽値。既定 `true`）は拡大して動かしたときにグループのタイトルを上端に留めるか
+    description: フロー図の定義（`MdmarkFlowDefinition`。`width`・`height`・`frame`・`lanes`・`nodes`・`wires`）。ノードは `kind`（`llm`・`dm`・`script`・`mcp`・`data`・`external`・`start`・`question`・`action`・`result`）、線は `line`（`flow`・`read`・`write`・`reply`・`loop`）を持つ。ノードはリンク先 `href` を持て、許すリンク先のノードはノードの全体を覆う `a.mdmark-diagram-node-link` を持ち、ノードの要素に class `has-link` が付く。判定フローチャートの 4 つの種類だけの定義は、ノードの `x`・`y`・`w`・`h`、線の `points`、図の `width`・`height` を全て省ける（描く処理が配置してからこの部品に指定する）。`frame` と `lanes` の要素は文字の `hint` を持て、`stickyTitles`（真偽値。既定 `true`）は拡大して動かしたときにグループのタイトルを上端に留めるか
 css_properties:
   - name: --mdmark-color-bg-opaque
     syntax: <color>
@@ -107,16 +107,16 @@ css_properties:
     description: 層の背景に敷くノードの色の濃さ
 uses:
   - component: dev/設計書/部品設計/書き方の警告.ts#
-    how: 定義を読めないときに図の代わりに置く
+    how: 定義を読み込めないときに図の代わりに配置する
   - component: dev/設計書/部品設計/用語のツールチップ.ts#
-    how: ノードの中の `{{語}}` の下線と意味
+    how: ノードの中の `{{単語}}` の下線と意味
 accessibility:
-  - ノードの種類は色だけでなく、ノードの左上のアイコンと種類の名前でも示す。データのノードは下の角を丸くし、判定フローチャートの開始は円・質問は菱形・アクションは角の丸くない四角・結果は両端の丸い形で描く
-  - 判定フローチャートのアイコンは開始 = play・質問 = circle-question-mark・アクション = wrench・結果 = flag。判定フローチャートのノードはアイコンと種類の名前の行を中央に置く
+  - ノードの種類は色だけでなく、ノードの左上のアイコンと種類の名前でも示す。データのノードは下の角を丸くし、判定フローチャートの開始は円・質問は菱形・アクションは角の丸くない四角・結果は両端の丸い形状で描く
+  - 判定フローチャートのアイコンは開始 = play・質問 = circle-question-mark・アクション = wrench・結果 = flag。判定フローチャートのノードはアイコンと種類の名前の行を中央に配置する
   - 線の種類は色と模様（破線の間隔・太さ・矢じり）の組で分ける
-  - ノードと線のラベルの文字は選べ、読み上げに出る。線の svg と質問の菱形の svg は `aria-hidden`
-  - リンク先を持つノードは、色だけでなく名前の下線でも押せることを示す。リンクの読み上げの名前はノードの名前で、フォーカスの枠はノードの外側に出す。右上の印はリンクと別にフォーカスでき、Tab の順はリンク、印
-  - グループのタイトルの印は図のツールチップの持ち主のボタン。留めたタイトルは地の色を持ち、下のノードと線より手前に描く
+  - ノードと線のラベルの文字は選べ、スクリーンリーダーに出る。線の svg と質問の菱形の svg は `aria-hidden`
+  - リンク先を持つノードは、色だけでなく名前の下線でも押せることを示す。リンクのアクセシブルネームはノードの名前で、フォーカスの枠はノードの外側に出す。右上のマーカーはリンクと別にフォーカスでき、Tab の順はリンク、マーカー
+  - グループのタイトルのマーカーは図のツールチップの持ち主のボタン。留めたタイトルは地の色を持ち、下のノードと線より手前に描く
 status: planned
 introduced:
   pr: 42

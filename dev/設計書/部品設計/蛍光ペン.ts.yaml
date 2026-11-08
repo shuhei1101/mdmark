@@ -1,5 +1,5 @@
 title: 蛍光ペン
-lead: '`==文字==` を、文字に色の面を引いた蛍光ペンのマーカーにする。色の名前を渡すとその色の面にする。'
+lead: '`==文字==` を、文字に色の面を敷いた蛍光ペンのマーカーにする。色の名前を指定するとその色の面にする。'
 implementation: src/parts/highlight.ts#renderHighlight
 story: Parts/Highlight
 test_file: tests/integration/lib/highlight.story.test.ts
@@ -28,10 +28,10 @@ states:
   - name: color
     value: green
 - name: Long
-  description: 行をまたぐ長い中身。行ごとに面を引く
+  description: 行をまたぐ長い中身。行ごとに面を敷く
   args:
   - name: html
-    value: とても長い強調の文字で行の幅を超えて次の行へ折り返すときの見え方を確かめる
+    value: とても長い強調の文字で行の幅を超えて次の行へ折り返すときの見え方を確認する
 - name: Dark
   description: 暗い配色
   args:
