@@ -293,12 +293,12 @@ test("test_normal_when_flowchart", async ({ page }) => {
   const legend = await figure
     .locator('ul[aria-label="凡例"] li')
     .allInnerTexts();
+  // 線は処理の流れの 1 種類だけなので、線の種類は凡例に出ない
   expect(legend.map((text) => text.trim())).toEqual([
     "開始",
     "質問",
     "アクション",
     "結果",
-    "処理の流れ",
   ]);
 });
 
