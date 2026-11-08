@@ -2096,7 +2096,7 @@ constraints:
   - item: 目次
     constraint: '`<!-- toc -->` の場所に `<nav class="mdmark-toc" aria-label="目次">` と題 `<p class="mdmark-toc-title">目次</p>` を置き、文書の h2〜h3 を階層どおりに入れ子にした `ul` の、各見出しの `#{ID}` へのリンクを並べる'
   - item: 節
-    constraint: '`sections` がオンのとき、h1〜h4 の見出しに class `mdmark-heading` を付け、見出しの後ろから次の同じか上の階層の見出しの前までを `<div class="mdmark-section-body" id="section-{見出しの ID}" data-section="{open か closed}">` で囲む。見出しの直後の `<!-- section: closed -->` は `closed`、それ以外は `open`。中身は隠さずに出す（開閉は `mount` が付ける）'
+    constraint: '`sections` がオンのとき、h1〜h4 の見出しに class `mdmark-heading` を付け、見出しの後ろから次の同じか上の階層の見出しの前までを `<div class="mdmark-section-body" id="section-{見出しの ID}" data-section="{open か closed}">` で囲む。取り込みの枠（制約「取り込み」）の中の見出しは枠の中だけを囲み、枠の終わりで閉じる。枠の外の見出しの囲みは、枠の中の見出しで閉じず、枠を中に含める。見出しの直後の `<!-- section: closed -->` は `closed`、それ以外は `open`。中身は隠さずに出す（開閉は `mount` が付ける）'
   - item: 行の詳細
     constraint: '表の直後の `<!-- row-detail: {行の位置} -->` 〜 `<!-- /row-detail -->` の中身を、表の行の位置（見出し行を除いて 1 から）の行の直後に `<tr class="mdmark-row-detail" data-row="{行の位置}"><td colspan="{列の数}">…</td></tr>` で入れる。中身は隠さずに出す（開閉は `mount` が付ける）'
   - item: 図と表の番号
