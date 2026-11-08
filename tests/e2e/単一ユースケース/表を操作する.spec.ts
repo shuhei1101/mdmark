@@ -1201,7 +1201,8 @@ test("test_normal_when_pinned_by_default", async ({ page }) => {
   await mountDocument(page, {
     markdown: `${wideTable()}\n<!-- table: -pin -->\n\n${wideTable()}\n<!-- /table -->\n`,
   });
-  const tables = page.locator("#doc table");
+  // 横にスクロールするのは表を包む要素
+  const tables = page.locator("#doc .mdmark-table-scroll");
   await expect(tables).toHaveCount(2);
   const plain = tables.nth(0);
   const unpinned = tables.nth(1);
@@ -1272,7 +1273,8 @@ test("test_normal_when_pin_and_wide", async ({ page }) => {
   await mountDocument(page, {
     markdown: pinAndWideTable("data pin=物理名 wide=説明"),
   });
-  const table = page.locator("#doc table");
+  // 横にスクロールするのは表を包む要素
+  const table = page.locator("#doc .mdmark-table-scroll");
   await table.evaluate((el) => {
     el.scrollLeft = el.scrollWidth;
   });
@@ -1343,9 +1345,9 @@ test("test_normal_when_check_column", async ({ page }) => {
   expect(await required.nth(1).innerText()).not.toMatch(/true|false|✓/);
   // 検証: 既定の列は文字のまま
   expect(await visibleColumn(page, 3)).toEqual(["false", "true", "true"]);
-  // 実行・検証: 並べ替えは true・false の値で動く
+  // 実行・検証: 並べ替えは true・false の値で動く（初めに押すと降順）
   await head(page, "必須").locator("button.mdmark-sort").click();
-  expect(await visibleColumn(page, 1)).toEqual(["b", "a", "c"]);
+  expect(await visibleColumn(page, 1)).toEqual(["a", "c", "b"]);
   await head(page, "必須").locator("button.mdmark-sort").click();
   await head(page, "必須").locator("button.mdmark-sort").click();
   // 実行・検証: 絞り込みの選択肢は true・false で、true に絞ると ✓ の行だけが出る
@@ -1425,7 +1427,7 @@ test("test_normal_when_cells_merged", async ({ page }) => {
   // 実行
   await mountDocument(page, {
     markdown: [
-      "<!-- table: data +copy header-rows=2 row-header=1 -->",
+      "<!-- table: data +copy header-rows=2 row-header=1 filter=分類,件数,時間,メモ -->",
       "",
       "| 区分 | 値 | << | 備考 |",
       "| --- | --- | --- | --- |",
@@ -1504,7 +1506,7 @@ test("test_normal_when_merged_after_sort", async ({ page }) => {
   await openPage(page, builtRoot);
   await mountDocument(page, {
     markdown: [
-      "<!-- table: data -->",
+      "<!-- table: data filter=分類 -->",
       "",
       "| 分類 | 数値 |",
       "| --- | ---: |",
@@ -1553,7 +1555,7 @@ test("test_error_when_merge_invalid", async ({ page }) => {
   // 実行
   await mountDocument(page, {
     markdown: [
-      "<!-- table: data header-rows=5 -->",
+      "<!-- table: data header-rows=5 filter=列B -->",
       "",
       "| << | 列B |",
       "| --- | --- |",
@@ -1578,7 +1580,12 @@ test("test_error_when_merge_invalid", async ({ page }) => {
     table.locator("tbody tr").nth(0).locator("td").nth(1),
   ).toHaveText("^^");
   await expect(table.locator("thead button.mdmark-sort")).toHaveCount(2);
-  await expect(table.locator("thead button.mdmark-filter")).toHaveCount(2);
+  await expect(table.locator("thead button.mdmark-filter")).toHaveCount(1);
+  await expect(
+    table
+      .locator("thead th", { hasText: "列B" })
+      .locator("button.mdmark-filter"),
+  ).toHaveCount(1);
 });
 
 // はみ出す表で、行見出しの列までを描いた直後から左端に留める（正常シナリオ（はみ出す表で行見出しの列までを留める））
@@ -1686,10 +1693,11 @@ test("test_normal_when_csv", async ({ page }) => {
     "（支店）",
   );
   await first.locator("thead th").nth(2).locator(".mdmark-sort").click();
+  // 初めに押すと降順
   await expect(first.locator("tbody tr td:nth-child(3)")).toHaveText([
-    "800",
-    "950",
     "1200",
+    "950",
+    "800",
   ]);
   await expect(tables.nth(1)).toHaveAttribute("data-kind", "default");
   await expect(tables.nth(1).locator(".mdmark-sort")).toHaveCount(0);
@@ -1765,7 +1773,7 @@ test("test_normal_when_csv_raw_toggled", async ({ page }) => {
 
 /** 列の並べ替えを付けた表（`+reorder +columns`）・`+reorder` だけの表・`+reorder` も `+columns` も付けない表の文書 */
 const REORDER_MARKDOWN = [
-  "<!-- table: data +reorder +columns -->",
+  "<!-- table: data +reorder +columns filter=名前:text -->",
   "",
   "| 名前 | 型 | 既定 | 説明 |",
   "| --- | --- | --- | --- |",
@@ -1861,9 +1869,15 @@ test("test_normal_when_columns_reordered", async ({ page }) => {
   await expect(eyeOf(panel, "名前")).toBeDisabled();
   await page.keyboard.press("Escape");
   // 実行・検証: 行を並べ替え、絞り込んでも列の順が変わらない
-  await head(page, "名前").locator("button.mdmark-sort").click();
+  // 文書の 3 つの表がどれも名前の列を持つため、1 つ目の表の見出しを引く
+  const nameHead = table.locator("th", { hasText: "名前" });
+  await nameHead.locator("button.mdmark-sort").click();
   expect(await headNames(page)).toEqual(["名前", "既定", "型"]);
-  await filterByText(page, "名前", "html");
+  await nameHead.locator("button.mdmark-filter").click();
+  await table
+    .locator(".mdmark-filter-drawer")
+    .locator('input[type="text"]')
+    .fill("html");
   expect(await headNames(page)).toEqual(["名前", "既定", "型"]);
   // 検証: ほかの表
   await page
@@ -2288,7 +2302,9 @@ function tableSizes(wrapper: ReturnType<Page["locator"]>) {
       // 端の影: はみ出す表は既定で先頭の列を留め、留めた列の右端に影を出す
       edgeShadows: element.querySelectorAll(".is-pinned-edge").length,
       headLines: heads.map((head) => {
-        const label = head.querySelector(".mdmark-th") ?? head;
+        // 並べ替えのボタンの枠と文字の矩形は上端がずれるため、列名の文字だけで行を数える
+        const label =
+          head.querySelector(".mdmark-sort, .mdmark-th-label") ?? head;
         const range = document.createRange();
         range.selectNodeContents(label);
         return new Set(
