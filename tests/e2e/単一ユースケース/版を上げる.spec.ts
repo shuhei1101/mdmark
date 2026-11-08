@@ -4,7 +4,7 @@ import { readdir, readFile, rm } from "node:fs/promises";
 import { join, resolve } from "node:path";
 import { promisify } from "node:util";
 import { parse } from "yaml";
-import { latestMigrationsDir } from "../../migrations-dir.ts";
+import { migrationsDirOf } from "../../migrations-dir.ts";
 import { test as base, expect, linesOf, runCli, writeFiles } from "../cli.ts";
 import { buildDistRoot, removeDistRoot } from "../dist-page.ts";
 
@@ -511,9 +511,9 @@ test("test_normal_when_parent_config_exists", async ({
   expect(await readFile(settings, "utf8")).toBe(settingsText);
 });
 
-/** 次のリリースで適用するリポジトリの移行の手順と全てのスクリプトを、`v0.5.0` の手順として置くパッケージのファイル */
+/** エイリアスの元の行を書き換えるスクリプトを持つリポジトリの移行の手順と全てのスクリプトを、`v0.5.0` の手順として置くパッケージのファイル */
 async function nextMigrationFiles(): Promise<Record<string, string>> {
-  const nextDir = latestMigrationsDir();
+  const nextDir = migrationsDirOf("alias-rows.mjs");
   const scripts: Record<string, string> = {};
   for (const name of await readdir(nextDir)) {
     if (name.endsWith(".mjs")) {

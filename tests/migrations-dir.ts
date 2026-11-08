@@ -1,28 +1,28 @@
 import { existsSync, readdirSync } from "node:fs";
 import { join, resolve } from "node:path";
-import { compareVersions, VERSION_PATTERN } from "../src/cli/versions.ts";
 
 // リポジトリの移行の手順のフォルダ
 const MIGRATIONS_ROOT = resolve(import.meta.dirname, "../migrations");
 
 /**
- * リポジトリの移行の手順のうち、次のリリースで適用するフォルダを返却する。
- * `root` の下に `next/` が有ればそれを、無ければ `v{バージョン}/` のうちバージョンが最も新しいフォルダを返却する
+ * 移行の手順のスクリプト `script` を持つフォルダ（`next/` か `v{バージョン}/`）を `root` の下から探して返却する。
+ * 持つフォルダが 1 つでなければ例外を投げる
  */
-export const latestMigrationsDir = (root: string = MIGRATIONS_ROOT): string => {
-  const next = join(root, "next");
-  if (existsSync(next)) {
-    return next;
-  }
-  const versions = readdirSync(root, { withFileTypes: true })
-    .filter((entry) => entry.isDirectory() && VERSION_PATTERN.test(entry.name))
-    .map((entry) => entry.name)
-    .sort(compareVersions);
-  const latest = versions.at(-1);
-  if (latest === undefined) {
+export const migrationsDirOf = (
+  script: string,
+  root: string = MIGRATIONS_ROOT,
+): string => {
+  const found = readdirSync(root, { withFileTypes: true })
+    .filter(
+      (entry) =>
+        entry.isDirectory() && existsSync(join(root, entry.name, script)),
+    )
+    .map((entry) => join(root, entry.name));
+  const [dir] = found;
+  if (found.length !== 1 || dir === undefined) {
     throw new Error(
-      `移行の手順のフォルダがありません: ${root} に next/ も v{バージョン}/ もありません`,
+      `${root} の下で ${script} を持つフォルダが 1 つではありません: ${found.length} 件`,
     );
   }
-  return join(root, latest);
+  return dir;
 };

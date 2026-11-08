@@ -3,8 +3,11 @@ import { join } from "node:path";
 import { pathToFileURL } from "node:url";
 import { expect, test } from "vitest";
 import { parse } from "yaml";
-import { latestMigrationsDir } from "../../migrations-dir.ts";
+import { migrationsDirOf } from "../../migrations-dir.ts";
 import { useTempDirs, writeFiles } from "../helpers/cli.ts";
+
+/** 語彙を外す移行のスクリプトのファイル名 */
+const SCRIPT = "drop-tag-vocabulary.mjs";
 
 /** 語彙を外す移行のスクリプトが公開する関数 */
 type DropTagVocabularyModule = {
@@ -12,11 +15,9 @@ type DropTagVocabularyModule = {
   runDropTagVocabulary: (argv: string[]) => Promise<void>;
 };
 
-/** 語彙を外す移行のスクリプトを、次のリリースで適用する移行の手順のフォルダから読み込む（実装が無い間は各テストが個別に失敗する） */
+/** 語彙を外す移行のスクリプトを、それを持つ移行の手順のフォルダから読み込む（実装が無い間は各テストが個別に失敗する） */
 const loadMigration = async (): Promise<DropTagVocabularyModule> =>
-  import(
-    pathToFileURL(join(latestMigrationsDir(), "drop-tag-vocabulary.mjs")).href
-  );
+  import(pathToFileURL(join(migrationsDirOf(SCRIPT), SCRIPT)).href);
 
 const createTempDir = useTempDirs();
 
