@@ -65,8 +65,11 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-08T12:17:02.237971+00:00'
   - process: ドキュメント修正
-    status: todo
+    status: skipped
     note: fail の切り分けで設計書の側が誤っていた箇所だけを直す。無ければ done にする
+    reason: 更新ドキュメントが無いため対象外。切り分けで設計書の側の誤りが見つかったら todo へ戻す
+    updated_by: planner
+    updated_at: '2026-11-08T12:21:09.200864+00:00'
   - process: 単体テスト作成
     status: todo
   - process: 実装
