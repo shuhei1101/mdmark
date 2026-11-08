@@ -1,0 +1,1061 @@
+$ npm run test:unit
+
+> test:unit
+> vitest run --project 'unit*'
+
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/docs-wording-word-choice
+
+ ❯ |unit-browser (chromium)| tests/unit/vscode/src/webview/features/preview/panel/document-view.browser.test.ts (14 tests | 1 failed) 14256ms
+   × test_render_when_not_loaded 218ms
+ ❯ |unit-browser (chromium)| tests/unit/src/libraries.browser.test.ts (12 tests | 2 failed) 15696ms
+   × test_load_libraries 15182ms
+   × test_load_libraries_when_extension_fails 224ms
+ ❯ |unit-browser (chromium)| tests/unit/src/viewer/index.browser.test.ts (2 tests | 1 failed) 16527ms
+   × test_start_viewer 15213ms
+ ❯ |unit-browser (chromium)| tests/unit/vscode/src/webview/shared/components/config-band.browser.test.tsx (3 tests | 3 failed) 16493ms
+   × test_config_band 15196ms
+   × test_config_band_when_clicked 870ms
+   × test_config_band_when_setting_key 426ms
+ ❯ |unit-browser (chromium)| tests/unit/vscode/src/webview/features/preview/panel/panel-screen.browser.test.tsx (15 tests | 3 failed) 23169ms
+   × test_panel_screen_when_rendered 15480ms
+   × test_panel_screen_when_load_failed 270ms
+   × test_panel_screen_when_version_undecidable 305ms
+ ❯ |unit-browser (chromium)| tests/unit/src/comments/index.browser.test.ts (17 tests | 2 failed) 9750ms
+   × test_attach_comments_when_empty_body 1303ms
+   × test_attach_comments_when_discarding 244ms
+ ❯ |unit| tests/unit/src/plugin/setup/server.test.ts (7 tests | 1 failed) 45046ms
+   × test_list_tool_names 30007ms
+ ❯ |unit-browser (chromium)| tests/unit/src/comments/bubble.browser.test.ts (8 tests | 2 failed) 2124ms
+   × test_attach_comment_actions_when_edit_empty 397ms
+   × test_attach_comment_actions_when_update_rejected 1313ms
+ ❯ |unit| tests/unit/src/plugin/http.test.ts (8 tests | 1 failed) 48737ms
+   × test_route_request 30005ms
+ ❯ |unit| tests/unit/src/cli/check.test.ts (29 tests | 1 failed) 48816ms
+   × test_run_check 30005ms
+ ❯ |unit| tests/unit/src/cli/build.test.ts (9 tests | 1 failed) 59931ms
+   × test_run_build 30012ms
+ ❯ |unit-browser (chromium)| tests/unit/src/interact/params.browser.test.ts (2 tests | 2 failed) 2108ms
+   × test_attach_params 1342ms
+   × test_attach_params_when_clipboard_denied 745ms
+ ❯ |unit| tests/unit/src/cli/export.test.ts (23 tests | 1 failed) 64879ms
+   × test_prepare_embeds 30008ms
+ ❯ |unit| tests/unit/src/cli/upgrade.test.ts (15 tests | 2 failed) 20729ms
+   × test_run_upgrade 90ms
+   × test_run_upgrade_when_up_to_date 12ms
+ ❯ |unit| tests/unit/src/cli/main.test.ts (4 tests | 2 failed) 22502ms
+   × test_main 22441ms
+   × test_main_when_upgrade 24ms
+ ❯ |unit| tests/unit/scripts/baseline.test.ts (19 tests | 1 failed) 44045ms
+   × test_to_browserslist 40011ms
+ ❯ |unit| tests/unit/src/parts/diagram.test.ts (29 tests | 1 failed) 117ms
+   × test_legend_for 6ms
+ ❯ |unit| tests/unit/src/diagram/definition.test.ts (22 tests | 4 failed) 2086ms
+   × test_read_definition_when_kind_unknown 6ms
+   × test_read_definition_when_wire_end_missing 1ms
+   × test_read_definition_when_blocks_count 1ms
+   × test_read_definition_when_coordinates_mixed 1ms
+ ❯ |unit| tests/unit/src/parts/param.test.ts (3 tests | 1 failed) 303ms
+   × test_render_param 300ms
+ ❯ |unit| tests/unit/src/cli/init.test.ts (5 tests | 3 failed) 487ms
+   × test_run_init 132ms
+   × test_run_init_when_file_exists 109ms
+   × test_run_init_config_comment_on_cascade 64ms
+ ❯ |unit| tests/unit/src/parts/diff-toggle.test.ts (1 test | 1 failed) 164ms
+   × test_render_diff_toggle 163ms
+ ❯ |unit| tests/unit/src/render/syntax/tables.test.ts (30 tests | 1 failed) 89ms
+   × test_decorate_tables_when_total_unreadable 11ms
+ ❯ |unit| tests/unit/src/render/syntax/views.test.ts (6 tests | 1 failed) 47ms
+   × test_build_views_when_unknown_icon 7ms
+ ❯ |unit| tests/unit/src/render/syntax/html.test.ts (14 tests | 1 failed) 102ms
+   × test_build_embedded_html_when_blocks_count 13ms
+ ❯ |unit| tests/unit/src/render/syntax/diagrams.test.ts (6 tests | 1 failed) 63ms
+   × test_build_diagrams_when_invalid 13ms
+ ❯ |unit| tests/unit/src/render/syntax/tabs.test.ts (15 tests | 1 failed) 78ms
+   × test_read_tabs_options_when_unreadable 7ms
+ ❯ |unit| tests/unit/src/render/syntax/code-blocks.test.ts (33 tests | 1 failed) 79ms
+   × test_read_code_spec_when_wrap 6ms
+ ❯ |unit| tests/unit/src/config.test.ts (14 tests | 2 failed) 38ms
+   × test_resolve_config 26ms
+   × test_resolve_config_when_labels_given 2ms
+ ❯ |unit| tests/unit/src/parts/syntax-warning.test.ts (2 tests | 1 failed) 23ms
+   × test_render_syntax_warning 22ms
+ ❯ |unit| tests/unit/src/parts/notice.test.ts (6 tests | 4 failed) 31ms
+   × test_render_notice 26ms
+   × test_render_notice_when_block 1ms
+   × test_render_notice_when_extension 1ms
+   × test_render_notice_when_part 1ms
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 49 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/libraries.browser.test.ts > test_load_libraries
+Error: Test timed out in 15000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/libraries.browser.test.ts/test_load_libraries.png
+
+ ❯ task node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=d5ed2bc0:5128:43
+ ❯ Object.<anonymous> node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=d5ed2bc0:5145:16
+ ❯ Object.<anonymous> node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=d5ed2bc0:4935:28
+ ❯ chain node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=d5ed2bc0:4336:14
+ ❯ tests/unit/src/libraries.browser.test.ts:67:1
+     65|
+     66| // マーカーの場所ごとに draw を呼び、描けた場所の読み込み中のマーカーを削除する（正常系）
+     67| test("test_load_libraries", async () => {
+       | ^
+     68|   // 準備
+     69|   const { loadLibraries: load } = await loadLibraries();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/49]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/libraries.browser.test.ts > test_load_libraries_when_extension_fails
+AssertionError: expected '表示に使う拡張（greet）を読み込めませんでした。ネットワークにつながっ…' to match /^表示に使用する拡張（/
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/libraries.browser.test.ts/test_load_libraries_when_extension_fails.png
+
+- Expected:
+/^表示に使用する拡張（/
+
++ Received:
+"表示に使う拡張（greet）を読み込めませんでした。ネットワークにつながっているかを確かめて、ページを読み込み直してください。"
+
+ ❯ tests/unit/src/libraries.browser.test.ts:351:52
+    349|   expect(notices).toHaveLength(2);
+    350|   for (const notice of notices) {
+    351|     expect(notice.querySelector("p")?.textContent).toMatch(/^表示に使用する拡張…
+       |                                                    ^
+    352|   }
+    353|   const calls = errorSpy.mock.calls;
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=d5ed2bc0:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/49]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/comments/bubble.browser.test.ts > test_attach_comment_actions_when_edit_empty
+AssertionError: expected 'コメントを書いてから保存してください。' to be 'コメントを記載してから保存してください。' // Object.is equality
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/bubble.browser.test.ts/test_attach_comment_actions_when_edit_empty.png
+
+Expected: "コメントを記載してから保存してください。"
+Received: "コメントを書いてから保存してください。"
+
+ ❯ tests/unit/src/comments/bubble.browser.test.ts:149:53
+    147|   // 検証
+    148|   const first = items(bubble)[0];
+    149|   expect(find(first, '[role="alert"]').textContent).toBe(
+       |                                                     ^
+    150|     "コメントを記載してから保存してください。",
+    151|   );
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=d5ed2bc0:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/49]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/comments/bubble.browser.test.ts > test_attach_comment_actions_when_update_rejected
+AssertionError: expected 'コメントを保存できませんでした。書いたコメントは残っています。もう一度「保…' to be 'コメントを保存できませんでした。記載したコメントは残っています。もう一度「…' // Object.is equality
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/bubble.browser.test.ts/test_attach_comment_actions_when_update_rejected.png
+
+Expected: "コメントを保存できませんでした。記載したコメントは残っています。もう一度「保存」を押してください。"
+Received: "コメントを保存できませんでした。書いたコメントは残っています。もう一度「保存」を押してください。"
+
+ ❯ tests/unit/src/comments/bubble.browser.test.ts:172:7
+    170|       items(bubble)[0]?.querySelector('[role="alert"]:not([hidden])')
+    171|         ?.textContent,
+    172|     ).toBe(
+       |       ^
+    173|       "コメントを保存できませんでした。記載したコメントは残っています。もう一度「保存」を押してください。",
+    174|     ),
+ ❯ checkCallback node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/index.uwTEEBsB-Cm3Wu9lp.js?v=d5ed2bc0:6076:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/49]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/comments/index.browser.test.ts > test_attach_comments_when_empty_body
+AssertionError: expected 'コメントを書いてから保存してください。' to contain 'コメントを記載してから保存してください。'
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/index.browser.test.ts/test_attach_comments_when_empty_body.png
+
+Expected: "コメントを記載してから保存してください。"
+Received: "コメントを書いてから保存してください。"
+
+ ❯ tests/unit/src/comments/index.browser.test.ts:208:63
+    206|   // 検証
+    207|   await vi.waitFor(() =>
+    208|     expect(form.querySelector('[role="alert"]')?.textContent).toContai…
+       |                                                               ^
+    209|       "コメントを記載してから保存してください。",
+    210|     ),
+ ❯ checkCallback node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/index.uwTEEBsB-Cm3Wu9lp.js?v=d5ed2bc0:6076:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/49]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/comments/index.browser.test.ts > test_attach_comments_when_discarding
+AssertionError: expected "Mock" to be called with arguments: [ '記載したコメントを捨てて閉じますか？' ]
+
+Received:
+
+  1st Mock call:
+
+  [
+-   "記載したコメントを捨てて閉じますか？",
++   "書いたコメントを捨てて閉じますか？",
+  ]
+
+
+Number of calls: 1
+
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/index.browser.test.ts/test_attach_comments_when_discarding.png
+
+ ❯ Proxy.<anonymous> node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/index.uwTEEBsB-Cm3Wu9lp.js?v=d5ed2bc0:2718:10
+ ❯ Proxy.<anonymous> node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/index.uwTEEBsB-Cm3Wu9lp.js?v=d5ed2bc0:2435:14
+ ❯ tests/unit/src/comments/index.browser.test.ts:280:19
+    278|     );
+    279|   // 検証
+    280|   expect(confirm).toHaveBeenCalledWith("記載したコメントを捨てて閉じますか？");
+       |                   ^
+    281|   expect(document.querySelector(".mdmark-comment-form")).toBe(form);
+    282| });
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=d5ed2bc0:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/49]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/params.browser.test.ts > test_attach_params
+Error: 今の値を写すボタンが無い
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/params.browser.test.ts/test_attach_params.png
+
+ ❯ copy tests/unit/src/interact/params.browser.test.ts:54:11
+     52|   );
+     53|   if (!copyButton) {
+     54|     throw new Error("今の値を写すボタンが無い");
+       |           ^
+     55|   }
+     56|   copyButton.click();
+ ❯ tests/unit/src/interact/params.browser.test.ts:74:9
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=d5ed2bc0:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/49]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/params.browser.test.ts > test_attach_params_when_clipboard_denied
+Error: 今の値を写すボタンが無い
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/params.browser.test.ts/test_attach_params_when_clipboard_denied.png
+
+ ❯ copy tests/unit/src/interact/params.browser.test.ts:54:11
+     52|   );
+     53|   if (!copyButton) {
+     54|     throw new Error("今の値を写すボタンが無い");
+       |           ^
+     55|   }
+     56|   copyButton.click();
+ ❯ tests/unit/src/interact/params.browser.test.ts:94:9
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=d5ed2bc0:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/49]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/viewer/index.browser.test.ts > test_start_viewer
+Error: Test timed out in 15000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/index.browser.test.ts/test_start_viewer.png
+
+ ❯ task node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=d5ed2bc0:5128:43
+ ❯ Object.<anonymous> node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=d5ed2bc0:5145:16
+ ❯ Object.<anonymous> node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=d5ed2bc0:4935:28
+ ❯ chain node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=d5ed2bc0:4336:14
+ ❯ tests/unit/src/viewer/index.browser.test.ts:14:1
+     12|
+     13| // document の中身を描く先の要素に描く（正常系）
+     14| test("test_start_viewer", async () => {
+       | ^
+     15|   // 準備
+     16|   const payload = {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/49]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/vscode/src/webview/shared/components/config-band.browser.test.tsx > test_config_band
+Error: Test timed out in 15000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/config-band.browser.test.tsx/test_config_band.png
+
+ ❯ task node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=d5ed2bc0:5128:43
+ ❯ Object.<anonymous> node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=d5ed2bc0:5145:16
+ ❯ Object.<anonymous> node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=d5ed2bc0:4935:28
+ ❯ chain node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=d5ed2bc0:4336:14
+ ❯ tests/unit/vscode/src/webview/shared/components/config-band.browser.test.tsx:16:1
+     14|
+     15| // タイトル・パス・行とボタンを出し、パスを文字のまま出す（正常系）
+     16| test("test_config_band", async () => {
+       | ^
+     17|   // 準備
+     18|   const { ConfigBand } = await loadPart();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/49]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/vscode/src/webview/shared/components/config-band.browser.test.tsx > test_config_band_when_clicked
+Error: locator.click: Error: strict mode violation: getByRole('button', { name: '設定ファイルを開く' }) resolved to 2 elements:
+    1) <button type="button" data-slot="button" data-action="openConfig" class="inline-flex h-9 min-w-9 cursor-pointer touch-manipulation items-center justify-center gap-2 rounded-md border px-4 text-sm font-medium whitespace-nowrap focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring border-warning-border bg-background text-foreground hover:bg-secondary">設定ファイルを開く</button> aka getByRole('status').filter({ hasText: '設定ファイルを読み込めませんmdmark.config.' }).getByRole('button')
+    2) <button type="button" data-slot="button" data-action="openConfig" class="inline-flex h-9 min-w-9 cursor-pointer touch-manipulation items-center justify-center gap-2 rounded-md border px-4 text-sm font-medium whitespace-nowrap focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring border-warning-border bg-background text-foreground hover:bg-secondary">設定ファイルを開く</button> aka getByRole('status').filter({ hasText: '設定ファイルを読み込めませんa<b>.yaml の 4' }).getByRole('button')
+
+Call log:
+  - waiting for locator('[data-vitest="true"]').contentFrame().getByRole('button', { name: '設定ファイルを開く' })
+
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/config-band.browser.test.tsx/test_config_band_when_clicked.png
+
+ ❯ tests/unit/vscode/src/webview/shared/components/config-band.browser.test.tsx:52:19
+     50|   );
+     51|   // 実行
+     52|   await userEvent.click(
+       |                   ^
+     53|     screen.getByRole("button", { name: "設定ファイルを開く" }),
+     54|   );
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=d5ed2bc0:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/49]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/vscode/src/webview/shared/components/config-band.browser.test.tsx > test_config_band_when_setting_key
+AssertionError: expected '設定ファイルを読み込めません~/.config/mdmark/settin…' to contain 'が設定の構造に合わないため'
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/config-band.browser.test.tsx/test_config_band_when_setting_key.png
+
+Expected: "が設定の構造に合わないため"
+Received: "設定ファイルを読み込めません~/.config/mdmark/settings.yaml の features.callout が設定の形に合わないため、この設定ファイルを重ねずに表示しています。設定ファイルを開く"
+
+ ❯ tests/unit/vscode/src/webview/shared/components/config-band.browser.test.tsx:77:28
+     75|   );
+     76|   expect(codes).toEqual(["~/.config/mdmark/settings.yaml", "features.c…
+     77|   expect(band.textContent).toContain("が設定の構造に合わないため");
+       |                            ^
+     78|   expect(band.textContent).not.toContain("行目");
+     79| });
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=d5ed2bc0:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[12/49]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/vscode/src/webview/features/preview/panel/document-view.browser.test.ts > test_render_when_not_loaded
+AssertionError: expected [Function] to throw error including 'mdmark の配布物を読み込む前に render を受けた' but got 'mdmark の配布物を読む前に render を受けた'
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/document-view.browser.test.ts/test_render_when_not_loaded.png
+
+Expected: "mdmark の配布物を読み込む前に render を受けた"
+Received: "mdmark の配布物を読む前に render を受けた"
+
+ ❯ Proxy.<anonymous> node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/index.uwTEEBsB-Cm3Wu9lp.js?v=d5ed2bc0:2772:114
+ ❯ Proxy.<anonymous> node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/index.uwTEEBsB-Cm3Wu9lp.js?v=d5ed2bc0:2435:14
+ ❯ tests/unit/vscode/src/webview/features/preview/panel/document-view.browser.test.ts:211:52
+    209|   const { view } = await createView(undefined);
+    210|   // 実行・検証
+    211|   expect(() => view.render(renderMessage("# 本文"))).toThrow(
+       |                                                    ^
+    212|     "mdmark の配布物を読み込む前に render を受けた",
+    213|   );
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=d5ed2bc0:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[13/49]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/vscode/src/webview/features/preview/panel/panel-screen.browser.test.tsx > test_panel_screen_when_rendered
+Error: Test timed out in 15000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/panel-screen.browser.test.tsx/test_panel_screen_when_rendered.png
+
+ ❯ task node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=d5ed2bc0:5128:43
+ ❯ Object.<anonymous> node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=d5ed2bc0:5145:16
+ ❯ Object.<anonymous> node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=d5ed2bc0:4935:28
+ ❯ Object.<anonymous> node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=d5ed2bc0:5394:7
+ ❯ chain node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=d5ed2bc0:4336:14
+ ❯ tests/unit/vscode/src/webview/features/preview/panel/panel-screen.browser.test.tsx:84:1
+     82|
+     83| // 配布物を読み込み終えたら ready を送信し、render で描いて rendered を送信する（正常系）
+     84| test("test_panel_screen_when_rendered", async () => {
+       | ^
+     85|   // 準備
+     86|   const { PanelScreen } = await loadScreen();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[14/49]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/vscode/src/webview/features/preview/panel/panel-screen.browser.test.tsx > test_panel_screen_when_load_failed
+TestingLibraryElementError: Unable to find an accessible element with the role "status"
+
+There are no accessible roles. But there might be some inaccessible roles. If you wish to access them, then set the `hidden` option to `true`. Learn more about this here: https://testing-library.com/docs/dom-testing-library/api-queries#byrole
+
+Ignored nodes: comments, script, style
+<body
+  style="margin: 0px;"
+>
+  
+  
+
+
+  <div
+    data-config-path="mdmark.config.yaml"
+    id="mdmark-preview"
+  />
+</body>
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/panel-screen.browser.test.tsx/test_panel_screen_when_load_failed.png
+
+ ❯ Object.getElementError node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/@testing-library_react.js?v=d5ed2bc0:9197:17
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/@testing-library_react.js?v=d5ed2bc0:9769:40
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/@testing-library_react.js?v=d5ed2bc0:9754:15
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/@testing-library_react.js?v=d5ed2bc0:9785:18
+ ❯ tests/unit/vscode/src/webview/features/preview/panel/panel-screen.browser.test.tsx:165:25
+    163|     ]);
+    164|   });
+    165|   const status = screen.getByRole("status");
+       |                         ^
+    166|   expect(status.textContent).toContain("v0.7.0");
+    167|   expect(status.querySelector('button[data-action="reload"]')).not.toB…
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=d5ed2bc0:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[15/49]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/vscode/src/webview/features/preview/panel/panel-screen.browser.test.tsx > test_panel_screen_when_version_undecidable
+AssertionError: expected 'プレビューを表示できません読む mdmark のバージョンを決められません…' to contain '読み込む mdmark のバージョンを決められませんでした。'
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/panel-screen.browser.test.tsx/test_panel_screen_when_version_undecidable.png
+
+Expected: "読み込む mdmark のバージョンを決められませんでした。"
+Received: "プレビューを表示できません読む mdmark のバージョンを決められませんでした。GitHub から最新のバージョンを取得できず、前回のバージョンも残っていません。ネットワークにつながっているかを確かめてから、リロードしてください。リロード"
+
+ ❯ tests/unit/vscode/src/webview/features/preview/panel/panel-screen.browser.test.tsx:190:50
+    188|   expect(load).not.toHaveBeenCalled();
+    189|   expect(postedOf(api.posted, "ready")).toEqual([]);
+    190|   expect(screen.getByRole("status").textContent).toContain(
+       |                                                  ^
+    191|     "読み込む mdmark のバージョンを決められませんでした。",
+    192|   );
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=d5ed2bc0:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[16/49]⎯
+
+ FAIL  |unit| tests/unit/scripts/baseline.test.ts > test_to_browserslist
+Error: Test timed out in 30000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/unit/scripts/baseline.test.ts:65:1
+     63|
+     64| // 名前とバージョンの間に空白を入れる（正常系）
+     65| test("test_to_browserslist", async () => {
+       | ^
+     66|   // 準備
+     67|   const { toBrowserslist } = await loadBaseline();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[17/49]⎯
+
+ FAIL  |unit| tests/unit/src/config.test.ts > test_resolve_config
+AssertionError: expected { …(10) } to deeply equal { …(10) }
+
+- Expected
++ Received
+
+@@ -49,11 +49,11 @@
+    },
+    "htmlScripts": {
+      "url": "https://cdn.jsdelivr.net/npm/@babel/standalone@8.1.1/+esm",
+    },
+    "labels": {
+-     "paramCopy": "今の値をコピーする",
++     "paramCopy": "今の値を写す",
+    },
+    "libraries": {},
+    "mermaid": {
+      "theme": "mdmark",
+      "themeVariables": {},
+
+ ❯ tests/unit/src/config.test.ts:74:20
+     72|   const resolved = resolveConfig({});
+     73|   // 検証
+     74|   expect(resolved).toEqual({
+       |                    ^
+     75|     features: DEFAULT_FEATURES,
+     76|     libraries: {},
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[18/49]⎯
+
+ FAIL  |unit| tests/unit/src/config.test.ts > test_resolve_config_when_labels_given
+AssertionError: expected [ { paramCopy: 'コピー' }, …(3) ] to deeply equal [ { paramCopy: 'コピー' }, …(3) ]
+
+- Expected
++ Received
+
+  [
+    {
+      "paramCopy": "コピー",
+    },
+    {
+-     "paramCopy": "今の値をコピーする",
++     "paramCopy": "今の値を写す",
+    },
+    {
+-     "paramCopy": "今の値をコピーする",
++     "paramCopy": "今の値を写す",
+    },
+    {
+-     "paramCopy": "今の値をコピーする",
++     "paramCopy": "今の値を写す",
+    },
+  ]
+
+ ❯ tests/unit/src/config.test.ts:276:18
+    274|   const labels = configs.map((config) => resolveConfig({ config }).lab…
+    275|   // 検証
+    276|   expect(labels).toEqual([
+       |                  ^
+    277|     { paramCopy: "コピー" },
+    278|     { paramCopy: "今の値をコピーする" },
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[19/49]⎯
+
+ FAIL  |unit| tests/unit/src/diagram/definition.test.ts > test_read_definition_when_kind_unknown
+AssertionError: expected 'ノード「分類」の種類 robot は使えません。使える種類は llm・dm…' to be 'ノード「分類」の種類 robot は使用できません。使用できる種類は ll…' // Object.is equality
+
+Expected: "ノード「分類」の種類 robot は使用できません。使用できる種類は llm・dm・script・mcp・data・external・start・question・action・result です"
+Received: "ノード「分類」の種類 robot は使えません。使える種類は llm・dm・script・mcp・data・external・start・question・action・result です"
+
+ ❯ tests/unit/src/diagram/definition.test.ts:95:30
+     93|   // 検証
+     94|   expect(result.ok).toBe(false);
+     95|   expect(result.problems[0]).toBe(
+       |                              ^
+     96|     "ノード「分類」の種類 robot は使用できません。使用できる種類は llm・dm・script・mcp・data・externa…
+     97|   );
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[20/49]⎯
+
+ FAIL  |unit| tests/unit/src/diagram/definition.test.ts > test_read_definition_when_wire_end_missing
+AssertionError: expected '線 w-mail の端のノード recieve がありません。ノードの i…' to be '線 w-mail の端のノード recieve がありません。ノードの i…' // Object.is equality
+
+Expected: "線 w-mail の端のノード recieve がありません。ノードの id で記載してください"
+Received: "線 w-mail の端のノード recieve がありません。ノードの id で書いてください"
+
+ ❯ tests/unit/src/diagram/definition.test.ts:144:30
+    142|   // 検証
+    143|   expect(result.ok).toBe(false);
+    144|   expect(result.problems[0]).toBe(
+       |                              ^
+    145|     "線 w-mail の端のノード recieve がありません。ノードの id で記載してください",
+    146|   );
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[21/49]⎯
+
+ FAIL  |unit| tests/unit/src/diagram/definition.test.ts > test_read_definition_when_blocks_count
+AssertionError: expected '印の範囲に json のコードブロックを 1 つだけ置いてください' to contain 'マーカーの範囲に json のコードブロックを 1 つだけ配置してください'
+
+Expected: "マーカーの範囲に json のコードブロックを 1 つだけ配置してください"
+Received: "印の範囲に json のコードブロックを 1 つだけ置いてください"
+
+ ❯ tests/unit/src/diagram/definition.test.ts:185:32
+    183|   for (const result of [none, two]) {
+    184|     expect(result.ok).toBe(false);
+    185|     expect(result.problems[0]).toContain(
+       |                                ^
+    186|       "マーカーの範囲に json のコードブロックを 1 つだけ配置してください",
+    187|     );
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[22/49]⎯
+
+ FAIL  |unit| tests/unit/src/diagram/definition.test.ts > test_read_definition_when_coordinates_mixed
+AssertionError: expected '座標（x・y・w・h・points・width・height）を書いたもの…' to be '座標（x・y・w・h・points・width・height）を記載したも…' // Object.is equality
+
+Expected: "座標（x・y・w・h・points・width・height）を記載したものと省いたものが混ざっています。全て記載するか、全て省いてください"
+Received: "座標（x・y・w・h・points・width・height）を書いたものと省いたものが混ざっています。全て書くか、全て省いてください"
+
+ ❯ tests/unit/src/diagram/definition.test.ts:444:30
+    442|   // 検証
+    443|   expect(result.ok).toBe(false);
+    444|   expect(result.problems[0]).toBe(
+       |                              ^
+    445|     "座標（x・y・w・h・points・width・height）を記載したものと省いたものが混ざっています。全て記載するか、全て省い…
+    446|   );
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[23/49]⎯
+
+ FAIL  |unit| tests/unit/src/cli/build.test.ts > test_run_build
+Error: Test timed out in 30000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/unit/src/cli/build.test.ts:27:1
+     25|
+     26| // 3 つの文書をまとめて build.out に記載する（正常系）
+     27| test("test_run_build", async () => {
+       | ^
+     28|   // 準備
+     29|   const { runBuild } = await loadBuild();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[24/49]⎯
+
+ FAIL  |unit| tests/unit/src/cli/check.test.ts > test_run_check
+Error: Test timed out in 30000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/unit/src/cli/check.test.ts:46:1
+     44|
+     45| // ずれの無いフォルダで 0 件（正常系）
+     46| test("test_run_check", async () => {
+       | ^
+     47|   // 準備
+     48|   const { runCheck } = await loadCheck();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[25/49]⎯
+
+ FAIL  |unit| tests/unit/src/cli/export.test.ts > test_prepare_embeds
+Error: Test timed out in 30000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/unit/src/cli/export.test.ts:31:1
+     29|
+     30| // マーカーのあるモジュールだけをまとめ、拡張と theme を読み込む（正常系）
+     31| test("test_prepare_embeds", async () => {
+       | ^
+     32|   // 準備
+     33|   const { prepareEmbeds } = await loadExport();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[26/49]⎯
+
+ FAIL  |unit| tests/unit/src/cli/init.test.ts > test_run_init
+AssertionError: expected [ '置いた: mdmark.config.yaml', …(5) ] to deeply equal [ '配置した: mdmark.config.yaml', …(5) ]
+
+- Expected
++ Received
+
+  [
+-   "配置した: mdmark.config.yaml",
+-   "配置した: theme.css",
+-   "配置した: index.yaml",
+-   "配置した: extensions/example.ts",
+-   "配置した: tsconfig.json",
+-   "配置した: package.json",
++   "置いた: mdmark.config.yaml",
++   "置いた: theme.css",
++   "置いた: index.yaml",
++   "置いた: extensions/example.ts",
++   "置いた: tsconfig.json",
++   "置いた: package.json",
+  ]
+
+ ❯ tests/unit/src/cli/init.test.ts:40:18
+     38|     expect(existsSync(join(dir, path))).toBe(true);
+     39|   }
+     40|   expect(stdout).toEqual(placed.map((path) => `配置した: ${path}`));
+       |                  ^
+     41| });
+     42|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[27/49]⎯
+
+ FAIL  |unit| tests/unit/src/cli/init.test.ts > test_run_init_when_file_exists
+AssertionError: expected [ …(6) ] to include '配置しなかった（既にある）: mdmark.config.yaml'
+ ❯ tests/unit/src/cli/init.test.ts:79:18
+     77|     "x: 1\n",
+     78|   );
+     79|   expect(stdout).toContain("配置しなかった（既にある）: mdmark.config.yaml");
+       |                  ^
+     80| });
+     81|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[28/49]⎯
+
+ FAIL  |unit| tests/unit/src/cli/init.test.ts > test_run_init_config_comment_on_cascade
+AssertionError: expected [ …(2) ] to deeply equal [ …(2) ]
+
+- Expected
++ Received
+
+  [
+-   "# mdmark の設定。パスと glob は、このファイルのあるフォルダからの相対パスで記載する",
+-   "# 端末の設定（~/.config/mdmark/settings.yaml）に重ねて読み込む。端末の設定の config.cascade を true にすると、上のフォルダの mdmark.config.yaml も重ねる",
++   "# mdmark の設定。パスと glob は、このファイルのあるフォルダからの相対パスで書く",
++   "# 端末の設定（~/.config/mdmark/settings.yaml）に重ねて読む。端末の設定の config.cascade を true にすると、上のフォルダの mdmark.config.yaml も重ねる",
+  ]
+
+ ❯ tests/unit/src/cli/init.test.ts:116:42
+    114|   // 検証
+    115|   const placed = await readFile(join(dir, "mdmark.config.yaml"), "utf8…
+    116|   expect(placed.split("\n").slice(0, 2)).toEqual([
+       |                                          ^
+    117|     "# mdmark の設定。パスと glob は、このファイルのあるフォルダからの相対パスで記載する",
+    118|     "# 端末の設定（~/.config/mdmark/settings.yaml）に重ねて読み込む。端末の設定の config.cas…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[29/49]⎯
+
+ FAIL  |unit| tests/unit/src/cli/main.test.ts > test_main
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ tests/unit/src/cli/main.test.ts:29:59
+     27|   // 検証
+     28|   expect(code).toBe(0);
+     29|   expect(stdout.some((line) => line.startsWith("配置した:"))).toBe(true);
+       |                                                           ^
+     30| });
+     31|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[30/49]⎯
+
+ FAIL  |unit| tests/unit/src/cli/main.test.ts > test_main_when_upgrade
+AssertionError: expected '手元の版: v0.5.0\n目標の版: v0.5.0\n手元の版が目標の版…' to contain '適用する手順はありません'
+
+- Expected
++ Received
+
+- 適用する手順はありません
++ 手元の版: v0.5.0
++ 目標の版: v0.5.0
++ 手元の版が目標の版と同じです。当てる手順はありません
+
+ ❯ tests/unit/src/cli/main.test.ts:73:29
+     71|   // 検証
+     72|   expect(code).toBe(0);
+     73|   expect(stdout.join("\n")).toContain("適用する手順はありません");
+       |                             ^
+     74| });
+     75|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[31/49]⎯
+
+ FAIL  |unit| tests/unit/src/cli/upgrade.test.ts > test_run_upgrade
+AssertionError: expected '版を v0.5.0 にしました' to be 'バージョンを v0.5.0 にしました' // Object.is equality
+
+Expected: "バージョンを v0.5.0 にしました"
+Received: "版を v0.5.0 にしました"
+
+ ❯ tests/unit/src/cli/upgrade.test.ts:168:25
+    166|   expect(await fixture.read("docs/a.md")).toContain("<!-- callout -->"…
+    167|   expect(await fixture.read("docs/b.md")).toContain("<!-- callout -->"…
+    168|   expect(stdout.at(-1)).toBe("バージョンを v0.5.0 にしました");
+       |                         ^
+    169| });
+    170|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[32/49]⎯
+
+ FAIL  |unit| tests/unit/src/cli/upgrade.test.ts > test_run_upgrade_when_up_to_date
+AssertionError: expected '手元の版: v0.5.0\n目標の版: v0.5.0\n手元の版が目標の版…' to contain '適用する手順はありません'
+
+- Expected
++ Received
+
+- 適用する手順はありません
++ 手元の版: v0.5.0
++ 目標の版: v0.5.0
++ 手元の版が目標の版と同じです。当てる手順はありません
+
+ ❯ tests/unit/src/cli/upgrade.test.ts:218:29
+    216|   // 検証
+    217|   expect(code).toBe(0);
+    218|   expect(stdout.join("\n")).toContain("適用する手順はありません");
+       |                             ^
+    219| });
+    220|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[33/49]⎯
+
+ FAIL  |unit| tests/unit/src/parts/diagram.test.ts > test_legend_for
+AssertionError: expected [ 'スクリプト', '外部のシステム', '処理の流れ', '読む' ] to include '読み込む'
+ ❯ tests/unit/src/parts/diagram.test.ts:293:18
+    291|   const labels = items.map((item) => item.label);
+    292|   expect(labels).toContain("処理の流れ");
+    293|   expect(labels).toContain("読み込む");
+       |                  ^
+    294|   expect(
+    295|     labels.filter((label) => /処理の流れ|読み込む|書き込む|返却する|戻る/.test(label)),
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[34/49]⎯
+
+ FAIL  |unit| tests/unit/src/parts/diff-toggle.test.ts > test_render_diff_toggle
+AssertionError: expected '変更を見る' to contain '変更表示'
+
+Expected: "変更表示"
+Received: "変更を見る"
+
+ ❯ tests/unit/src/parts/diff-toggle.test.ts:17:27
+     15|   expect(button).toContain('aria-expanded="true"');
+     16|   expect(button).toContain('aria-controls="p1"');
+     17|   expect(plainText(html)).toContain("変更表示");
+       |                           ^
+     18|   expect(findTag(html, "<svg")).toContain('aria-hidden="true"');
+     19| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[35/49]⎯
+
+ FAIL  |unit| tests/unit/src/parts/notice.test.ts > test_render_notice
+AssertionError: expected '<div class="mdmark-notice" role="stat…' to be '<div class="mdmark-notice" role="stat…' // Object.is equality
+
+Expected: "<div class="mdmark-notice" role="status"><strong class="mdmark-notice-title">この図を表示できません</strong><p>表示に使用するライブラリ（<code>chart</code>）を読み込めませんでした。ネットワークにつながっているかを確認して、ページを再読み込みしてください。</p></div>"
+Received: "<div class="mdmark-notice" role="status"><strong class="mdmark-notice-title">この図を表示できません</strong><p>表示に使うライブラリ（<code>chart</code>）を読み込めませんでした。ネットワークにつながっているかを確かめて、ページを読み込み直してください。</p></div>"
+
+ ❯ tests/unit/src/parts/notice.test.ts:18:16
+     16|   const html = renderNotice({ name: "chart" });
+     17|   // 検証
+     18|   expect(html).toBe(expectedNotice("この図を表示できません", "chart"));
+       |                ^
+     19| });
+     20|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[36/49]⎯
+
+ FAIL  |unit| tests/unit/src/parts/notice.test.ts > test_render_notice_when_block
+AssertionError: expected '<div class="mdmark-notice" role="stat…' to be '<div class="mdmark-notice" role="stat…' // Object.is equality
+
+Expected: "<div class="mdmark-notice" role="status"><strong class="mdmark-notice-title">この箇所を表示できません</strong><p>表示に使用するライブラリ（<code>tabs</code>）を読み込めませんでした。ネットワークにつながっているかを確認して、ページを再読み込みしてください。</p></div>"
+Received: "<div class="mdmark-notice" role="status"><strong class="mdmark-notice-title">この箇所を表示できません</strong><p>表示に使うライブラリ（<code>tabs</code>）を読み込めませんでした。ネットワークにつながっているかを確かめて、ページを読み込み直してください。</p></div>"
+
+ ❯ tests/unit/src/parts/notice.test.ts:28:16
+     26|   const html = renderNotice({ name: "tabs", figure: false });
+     27|   // 検証
+     28|   expect(html).toBe(expectedNotice("この箇所を表示できません", "tabs"));
+       |                ^
+     29| });
+     30|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[37/49]⎯
+
+ FAIL  |unit| tests/unit/src/parts/notice.test.ts > test_render_notice_when_extension
+AssertionError: expected '<div class="mdmark-notice" role="stat…' to contain '<p>表示に使用する拡張（<code>greet</code>）を読み込め…'
+
+Expected: "<p>表示に使用する拡張（<code>greet</code>）を読み込めませんでした。"
+Received: "<div class="mdmark-notice" role="status"><strong class="mdmark-notice-title">この図を表示できません</strong><p>表示に使う拡張（<code>greet</code>）を読み込めませんでした。ネットワークにつながっているかを確かめて、ページを読み込み直してください。</p></div>"
+
+ ❯ tests/unit/src/parts/notice.test.ts:38:16
+     36|   const html = renderNotice({ name: "greet", source: "extension" });
+     37|   // 検証
+     38|   expect(html).toContain(
+       |                ^
+     39|     "<p>表示に使用する拡張（<code>greet</code>）を読み込めませんでした。",
+     40|   );
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[38/49]⎯
+
+ FAIL  |unit| tests/unit/src/parts/notice.test.ts > test_render_notice_when_part
+AssertionError: expected '<div class="mdmark-notice" role="stat…' to contain '<p>表示に使用する部品（<code>view</code>）を読み込めま…'
+
+Expected: "<p>表示に使用する部品（<code>view</code>）を読み込めませんでした。"
+Received: "<div class="mdmark-notice" role="status"><strong class="mdmark-notice-title">この箇所を表示できません</strong><p>表示に使う部品（<code>view</code>）を読み込めませんでした。ネットワークにつながっているかを確かめて、ページを読み込み直してください。</p></div>"
+
+ ❯ tests/unit/src/parts/notice.test.ts:72:16
+     70|     '<strong class="mdmark-notice-title">この箇所を表示できません</strong>',
+     71|   );
+     72|   expect(html).toContain(
+       |                ^
+     73|     "<p>表示に使用する部品（<code>view</code>）を読み込めませんでした。",
+     74|   );
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[39/49]⎯
+
+ FAIL  |unit| tests/unit/src/parts/param.test.ts > test_render_param
+AssertionError: expected '今の値を写す' to be '今の値をコピーする' // Object.is equality
+
+Expected: "今の値をコピーする"
+Received: "今の値を写す"
+
+ ❯ tests/unit/src/parts/param.test.ts:24:59
+     22|   expect(html).toContain("今の値（5）");
+     23|   expect(html).toContain("既定の値（5）");
+     24|   expect(plainText(innerHtml(html, "mdmark-param-copy"))).toBe("今の値をコピ…
+       |                                                           ^
+     25| });
+     26|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[40/49]⎯
+
+ FAIL  |unit| tests/unit/src/parts/syntax-warning.test.ts > test_render_syntax_warning
+AssertionError: expected '<div class="mdmark-syntax-warning" ro…' to contain '記載の警告'
+
+Expected: "記載の警告"
+Received: "<div class="mdmark-syntax-warning" role="note"><p class="mdmark-syntax-warning-title">書き方の警告</p><p><code>&lt;!-- table: data +x --&gt;</code>の読み込めない指定を当てずに描いています。</p><ul><li><code>+x</code>: 使用できない機能です</li></ul></div>"
+
+ ❯ tests/unit/src/parts/syntax-warning.test.ts:22:16
+     20|     html.startsWith('<div class="mdmark-syntax-warning" role="note">'),
+     21|   ).toBe(true);
+     22|   expect(html).toContain("記載の警告");
+       |                ^
+     23|   expect(html).toContain("<code>&lt;!-- table: data +x --&gt;</code>");
+     24|   expect(matches(html, /<li>/g)).toHaveLength(1);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[41/49]⎯
+
+ FAIL  |unit| tests/unit/src/plugin/http.test.ts > test_route_request
+Error: Test timed out in 30000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/unit/src/plugin/http.test.ts:70:1
+     68|
+     69| // localhost の /mcp はハンドラーへ指定する（正常系）
+     70| test("test_route_request", async () => {
+       | ^
+     71|   // 準備
+     72|   const { routeRequest } = await loadHttp();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[42/49]⎯
+
+ FAIL  |unit| tests/unit/src/plugin/setup/server.test.ts > test_list_tool_names
+Error: Test timed out in 30000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/unit/src/plugin/setup/server.test.ts:219:1
+    217|
+    218| // 起動した常駐サーバーのツール（正常系）
+    219| test("test_list_tool_names", async () => {
+       | ^
+    220|   // 準備
+    221|   const { listToolNames } = await loadServer();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[43/49]⎯
+
+ FAIL  |unit| tests/unit/src/render/syntax/code-blocks.test.ts > test_read_code_spec_when_wrap
+AssertionError: expected 'wrap=yes wrap は値を持ちません。wrap=… ではなく wr…' to contain 'wrap と記載して'
+
+Expected: "wrap と記載して"
+Received: "wrap=yes wrap は値を持ちません。wrap=… ではなく wrap と書いてください。折り返さずに描いています"
+
+ ❯ tests/unit/src/render/syntax/code-blocks.test.ts:712:16
+    710|   const text = warningText(valued.warnings);
+    711|   expect(text).toContain("wrap=yes");
+    712|   expect(text).toContain("wrap と記載して");
+       |                ^
+    713| });
+    714|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[44/49]⎯
+
+ FAIL  |unit| tests/unit/src/render/syntax/diagrams.test.ts > test_build_diagrams_when_invalid
+AssertionError: expected '<div class="mdmark-syntax-warning" ro…' to contain 'フロー図の部品の定義を JSON として読み込めません'
+
+- Expected
++ Received
+
+- フロー図の部品の定義を JSON として読み込めません
++ <div class="mdmark-syntax-warning" role="note"><p class="mdmark-syntax-warning-title">書き方の警告</p><p>フロー図の部品の定義を JSON として読めません（47 行目の ] の後に } がありません）。この図は描いていません。</p></div><p>後ろの段落</p>
++
+
+ ❯ tests/unit/src/render/syntax/diagrams.test.ts:72:16
+     70|   // 検証
+     71|   expect(html).toContain("mdmark-syntax-warning");
+     72|   expect(html).toContain("フロー図の部品の定義を JSON として読み込めません");
+       |                ^
+     73|   expect(html).toContain("<p>後ろの段落</p>");
+     74|   expect(html).not.toContain('mdmark-diagram"');
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[45/49]⎯
+
+ FAIL  |unit| tests/unit/src/render/syntax/html.test.ts > test_build_embedded_html_when_blocks_count
+AssertionError: expected '書き方の警告<!-- html --> の範囲に html のコードブロッ…' to contain '<!-- html --> の範囲に html のコードブロックを 1 つ…'
+
+- Expected
++ Received
+
+- <!-- html --> の範囲に html のコードブロックを 1 つだけ配置してください
++ 書き方の警告<!-- html --> の範囲に html のコードブロックを 1 つだけ置いてください。範囲の中身はそのまま描いています。コードブロックの無い範囲
++
+
+ ❯ tests/unit/src/render/syntax/html.test.ts:186:29
+    184|   for (const html of [noneHtml, twoHtml]) {
+    185|     expect(matches(html, /class="mdmark-syntax-warning"/g)).toHaveLeng…
+    186|     expect(plainText(html)).toContain(BLOCK_COUNT_WARNING);
+       |                             ^
+    187|     expect(html).not.toContain("mdmark-html");
+    188|   }
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[46/49]⎯
+
+ FAIL  |unit| tests/unit/src/render/syntax/tables.test.ts > test_decorate_tables_when_total_unreadable
+AssertionError: expected '<div class="mdmark-syntax-warning" ro…' to contain '「数量」の列に数として読み込めない値 <code>約3</code>・<c…'
+
+- Expected
++ Received
+
+- 「数量」の列に数として読み込めない値 <code>約3</code>・<code>-</code> があるため、合計を出していません。数を記載するか、セルを空にしてください。
++ <div class="mdmark-syntax-warning" role="note"><p class="mdmark-syntax-warning-title">書き方の警告</p><p>「数量」の列に数として読めない値 <code>約3</code>・<code>-</code> があるため、合計を出していません。数を書くか、セルを空にしてください。</p></div><div class="mdmark-syntax-warning" role="note"><p class="mdmark-syntax-warning-title">書き方の警告</p><p>「数量」の列に数として読めない値 <code>約3</code>・<code>-</code> があるため、平均を出していません。数を書くか、セルを空にしてください。</p></div><div class="mdmark-table" data-kind="data" data-features="sort pin filter total" data-total="1:sum 1:avg 1:count"><div class="mdmark-table-scroll"><table tabindex="0" aria-label="表">
++ <thead>
++ <tr>
++ <th>名前</th>
++ <th>数量</th>
++ </tr>
++ </thead>
++ <tbody>
++ <tr>
++ <td data-label="名前">a</td>
++ <td data-label="数量">12</td>
++ </tr>
++ <tr>
++ <td data-label="名前">b</td>
++ <td data-label="数量">約3</td>
++ </tr>
++ <tr>
++ <td data-label="名前">c</td>
++ <td data-label="数量"></td>
++ </tr>
++ <tr>
++ <td data-label="名前">d</td>
++ <td data-label="数量">-</td>
++ </tr>
++ </tbody>
++ </table>
++ </div></div>
+
+ ❯ tests/unit/src/render/syntax/tables.test.ts:344:16
+    342|   const message = (calc: string): string =>
+    343|     `「数量」の列に数として読み込めない値 <code>約3</code>・<code>-</code> があるため、${calc}を出…
+    344|   expect(html).toContain(message("合計"));
+       |                ^
+    345|   expect(html).toContain(message("平均"));
+    346|   // 検証: count の警告は無い
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[47/49]⎯
+
+ FAIL  |unit| tests/unit/src/render/syntax/tabs.test.ts > test_read_tabs_options_when_unreadable
+AssertionError: expected 'の読めない指定を当てずに描いています。' to be 'の読み込めない指定を当てずに描いています。' // Object.is equality
+
+Expected: "の読み込めない指定を当てずに描いています。"
+Received: "の読めない指定を当てずに描いています。"
+
+ ❯ tests/unit/src/render/syntax/tabs.test.ts:148:36
+    146|   // 検証
+    147|   expect(options.group).toBeUndefined();
+    148|   expect(options.warning?.message).toBe(
+       |                                    ^
+    149|     "の読み込めない指定を当てずに描いています。",
+    150|   );
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[48/49]⎯
+
+ FAIL  |unit| tests/unit/src/render/syntax/views.test.ts > test_build_views_when_unknown_icon
+AssertionError: expected '書き方の警告<!-- view: group=状態 icons=完了:ro…' to contain 'のアイコン rocket は使用できません'
+
+Expected: "のアイコン rocket は使用できません"
+Received: "書き方の警告<!-- view: group=状態 icons=完了:rocket -->のアイコン rocket は使えません。使えるアイコンは circle・circle-dashed・circle-dot・circle-pause・circle-check・circle-x・inbox・archive・clock・flag・star・bug・eye・lock・zap・ban です。完了 の列には既定のアイコンを付けています。"
+
+ ❯ tests/unit/src/render/syntax/views.test.ts:93:30
+     91|   // 検証
+     92|   const warning = outerHtml(html, "mdmark-syntax-warning");
+     93|   expect(plainText(warning)).toContain("のアイコン rocket は使用できません");
+       |                              ^
+     94|   expect(readViewSpec(html)).toMatchObject({ icons: {} });
+     95| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[49/49]⎯
+
+
+ Test Files  30 failed | 228 passed (258)
+      Tests  49 failed | 1767 passed (1816)
+   Start at  19:46:54
+   Duration  210.05s (worker 64%, tests 24%, import 11%, transform 1%)
+
+rc=1
