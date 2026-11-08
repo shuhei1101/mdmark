@@ -1,0 +1,16 @@
+use_cases:
+  - kind: single
+    scenario: dev/設計書/シナリオ/単一ユースケース/エディタとプレビューのスクロールを合わせる.yaml
+    impact: changed
+    detail: 折りたたんだセクションの中を編集しているとき、プレビューがそのセクションの見出しの辺りへ追従し、セクションを開かないシナリオを追加する
+    depends_on: []
+  - kind: composite
+    scenario: dev/設計書/シナリオ/複合ユースケース/VSCodeで記載しながら確認してPDFにする.yaml
+    impact: run_only
+    detail: 記載しながらプレビューで確認する流れは変わらないが、スクロールの同期を直したときに壊しうる
+    depends_on: []
+docs: []
+scope_out:
+  - item: 折りたたんだセクションの中を編集しているときに、プレビューがセクションを自動で開く振る舞い
+    reason: Issue は見出しの辺りへの追従の確認を求めており、自動で開くことは要望に含まれない
+    plan: none
