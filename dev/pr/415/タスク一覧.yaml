@@ -45,8 +45,10 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-08T13:21:02.168224+00:00'
   - process: インターフェース定義設計
-    status: todo
-    note: 『設定と索引を点検する』の図の点検が、設定の libraries に名前のあるマーカー（chart など）を図の部品として読まないことを制約に書く。取り込みを見出しの節の中に置いたときに、取り込んだ見出しと本文が取り込みの枠の中に残ることを確かめ、無ければ書く
+    status: done
+    note: 『文書をHTML文字列にする』の制約「節」に取り込みの枠の中の見出しの囲み方を、『設定と索引を点検する』の制約「図の定義の点検」に libraries と拡張の directive と同じ名前の印を点検しないことを記載した
+    updated_by: planner
+    updated_at: '2026-11-08T13:37:45.785667+00:00'
   - process: 部品設計
     status: skipped
     reason: 部品の引数・状態を変えない
@@ -58,7 +60,10 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-08T13:21:02.168224+00:00'
   - process: モジュール構成設計
-    status: todo
+    status: done
+    note: 記法の wrapSections の概要と単体テスト test_wrap_sections_when_in_include、CLI の checkDiagrams の引数 overridden と単体テスト test_check_diagrams_when_overridden を追加した
+    updated_by: planner
+    updated_at: '2026-11-08T13:37:45.785667+00:00'
   - process: ドキュメント修正
     status: skipped
     reason: 利用者向けのドキュメントの記述は設計どおりの出力と合っている
