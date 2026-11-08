@@ -3,7 +3,7 @@ import type { WarningItem } from "../../extensions.ts";
 import { SLOT_MARKER } from "../../parts/own.ts";
 import { renderTabs } from "../../parts/tabs.ts";
 import type { Mark } from "../marks.ts";
-import { type CollapseMode, readCollapse } from "./collapse.ts";
+import { type CollapseMode, readCollapse, titleTailItem } from "./collapse.ts";
 import { envOf, featureOn, markOf, tabBoundaryBlock } from "./tokens.ts";
 import {
   type SkippedArg,
@@ -31,6 +31,7 @@ export function readTabsOptions(mark: Mark): {
     collapse,
     title,
     items: collapseItems,
+    titleTail,
     rest,
   } = readCollapse(mark.args, mark.rest);
   const items: WarningItem[] = [...collapseItems];
@@ -50,7 +51,11 @@ export function readTabsOptions(mark: Mark): {
   }
   // `キー=値` の形でない指定
   for (const arg of rest.args) {
-    skipped.push({ arg, usable: USABLE_ARGS });
+    if (arg === titleTail) {
+      items.push(titleTailItem(arg));
+    } else {
+      skipped.push({ arg, usable: USABLE_ARGS });
+    }
   }
   if (items.length === 0) {
     return { group, collapse, title, skipped };

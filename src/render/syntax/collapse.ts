@@ -9,9 +9,11 @@ export type CollapseSpec = {
   collapse: CollapseMode;
   /** 折り畳みの見出し（`title=` の値）。`collapse` が `none` のときと、値の無い `title=` では入れない */
   title?: string | undefined;
-  /** 読めなかった指定（`title=` の値の空白の後ろの単語を含む） */
+  /** 読めなかった指定 */
   items: WarningItem[];
-  /** `closed`・`open`・`title=` と、`title=` の値の空白の後ろの単語を除いた残りの引数 */
+  /** `title=` の値の空白の後ろの単語。`closed`・`open` と、`+`・`-` で始まる語は入れない。呼ぶ側が知らない指定として読み飛ばす前にこの単語と比べ、同じなら `titleTailItem` の警告にする */
+  titleTail?: string | undefined;
+  /** `closed`・`open`・`title=` を除いた残りの引数 */
   rest: MdmarkMarkArgs;
 };
 
@@ -27,7 +29,16 @@ export function titleTailOf(text: string): string | undefined {
   return tail === undefined || tail.includes("=") ? undefined : tail;
 }
 
-/** 表・タブ・ステップの印の引数から `closed`・`open`・`title=` を読む。`text` は印の引数の文字で、`title=` の値の空白の後ろの単語を項目にする */
+/** `title=` の値の空白の後ろの単語の警告の項目 */
+export function titleTailItem(word: string): WarningItem {
+  return {
+    label: word,
+    message:
+      "使えない指定です。印の引数は空白で区切るため、`title=` の値に空白は書けません。",
+  };
+}
+
+/** 表・タブ・ステップの印の引数から `closed`・`open`・`title=` を読む。`text` は印の引数の文字で、`title=` の値の空白の後ろの単語を `titleTail` にする */
 export function readCollapse(args: MdmarkMarkArgs, text = ""): CollapseSpec {
   const closed = args.args.includes("closed");
   const open = args.args.includes("open");
@@ -60,29 +71,20 @@ export function readCollapse(args: MdmarkMarkArgs, text = ""): CollapseSpec {
     }
   }
   const tail = titleValue === undefined ? undefined : titleTailOf(text);
-  if (tail !== undefined) {
-    items.push({
-      label: tail,
-      message:
-        "使えない指定です。印の引数は空白で区切るため、`title=` の値に空白は書けません。",
-    });
-  }
-  let tailTaken = false;
+  const titleTail =
+    tail === undefined ||
+    COLLAPSE_ARGS.includes(tail) ||
+    tail.startsWith("+") ||
+    tail.startsWith("-")
+      ? undefined
+      : tail;
   return {
     collapse,
     title,
     items,
+    titleTail,
     rest: {
-      args: args.args.filter((arg) => {
-        if (COLLAPSE_ARGS.includes(arg)) {
-          return false;
-        }
-        if (arg === tail && !tailTaken) {
-          tailTaken = true;
-          return false;
-        }
-        return true;
-      }),
+      args: args.args.filter((arg) => !COLLAPSE_ARGS.includes(arg)),
       keys,
     },
   };

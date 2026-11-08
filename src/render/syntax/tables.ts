@@ -25,7 +25,7 @@ import {
   type TotalCalc,
 } from "../../table-logic.ts";
 import type { Mark } from "../marks.ts";
-import { readCollapse } from "./collapse.ts";
+import { readCollapse, titleTailItem } from "./collapse.ts";
 import type { CsvTableMeta } from "./csv.ts";
 import { slugBase } from "./headings.ts";
 import {
@@ -299,7 +299,7 @@ export function readTableSpec(
   let kind: TableKind = "default";
   const featureArgs: string[] = [];
   const unknownKinds: string[] = [];
-  const { collapse, title, items, rest } = readCollapse(
+  const { collapse, title, items, titleTail, rest } = readCollapse(
     args ?? { args: [], keys: {} },
     text,
   );
@@ -308,6 +308,8 @@ export function readTableSpec(
       featureArgs.push(arg);
     } else if (WRITABLE_KINDS.includes(arg) && kind === "default") {
       kind = arg as TableKind;
+    } else if (arg === titleTail) {
+      warnings.push(titleTailItem(arg));
     } else {
       unknownKinds.push(arg);
     }

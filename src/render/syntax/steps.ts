@@ -3,7 +3,7 @@ import type { WarningItem } from "../../extensions.ts";
 import { renderCollapsible } from "../../parts/collapsible.ts";
 import { SLOT_MARKER } from "../../parts/own.ts";
 import type { Mark } from "../marks.ts";
-import { type CollapseMode, readCollapse } from "./collapse.ts";
+import { type CollapseMode, readCollapse, titleTailItem } from "./collapse.ts";
 import { envOf, featureOn, findClose, markOf, ownBlock } from "./tokens.ts";
 import {
   type SkippedArg,
@@ -27,16 +27,22 @@ export function readStepsOptions(mark: Mark): {
     collapse,
     title,
     items: collapseItems,
+    titleTail,
     rest,
   } = readCollapse(mark.args, mark.rest);
-  const items: WarningItem[] = [...collapseItems];
+  const items: WarningItem[] = [
+    ...collapseItems,
+    ...rest.args.filter((arg) => arg === titleTail).map(titleTailItem),
+  ];
   const skipped: SkippedArg[] = [
     ...Object.keys(rest.keys).map((key) => ({
       arg: `${key}=`,
       usable: USABLE_ARGS,
     })),
     // `キー=値` の形でない指定
-    ...rest.args.map((arg) => ({ arg, usable: USABLE_ARGS })),
+    ...rest.args
+      .filter((arg) => arg !== titleTail)
+      .map((arg) => ({ arg, usable: USABLE_ARGS })),
   ];
   if (items.length === 0) {
     return { collapse, title, skipped };
