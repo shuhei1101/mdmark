@@ -1,8 +1,9 @@
-/** 箱の種類 */
-export type MdmarkDiagramKind = "llm" | "dm" | "script" | "mcp" | "data" | "external";
+import { type ColorName } from "../parts/colors.ts";
+/** ノードの種類（`start`・`question`・`action`・`result` は判定フローチャートの開始・質問・アクション・結果） */
+export type MdmarkDiagramKind = "llm" | "dm" | "script" | "mcp" | "data" | "external" | "start" | "question" | "action" | "result";
 /** 線の種類 */
 export type MdmarkDiagramLine = "flow" | "read" | "write" | "reply" | "loop";
-/** 箱の入力・処理・出力 */
+/** ノードの入力・処理・出力 */
 export type MdmarkDiagramIo = {
     /** 入力 */
     in: string;
@@ -11,11 +12,11 @@ export type MdmarkDiagramIo = {
     /** 出力 */
     out: string;
 };
-/** フロー図の箱 */
+/** フロー図のノード */
 export type MdmarkDiagramNode = {
     /** 線が端に指す id */
     id: string;
-    /** 箱の種類 */
+    /** ノードの種類 */
     kind: MdmarkDiagramKind;
     /** 左上の x（px） */
     x: number;
@@ -31,18 +32,20 @@ export type MdmarkDiagramNode = {
     tag?: string;
     /** 補足 */
     sub?: string;
-    /** 入力・処理・出力。持つ箱に印を付ける */
+    /** 入力・処理・出力。持つノードに印を付ける */
     io?: MdmarkDiagramIo;
-    /** 箱の右上の印に出す文。`io` と一緒に持つと、入力・処理・出力の後に出す */
+    /** ノードの右上の印に出す文。`io` と一緒に持つと、入力・処理・出力の後に出す */
     hint?: string;
+    /** リンク先。`http`・`https`・`mailto` の URL か相対パス */
+    href?: string;
 };
 /** フロー図の線 */
 export type MdmarkDiagramWire = {
     /** 線の id */
     id: string;
-    /** 元の箱の id */
+    /** 元のノードの id */
     from: string;
-    /** 先の箱の id */
+    /** 先のノードの id */
     to: string;
     /** 線の種類 */
     line: MdmarkDiagramLine;
@@ -67,22 +70,26 @@ export type MdmarkFlowDefinition = {
     width: number;
     /** 図の高さ（px） */
     height: number;
-    /** システムの枠 */
+    /** システムの枠。`hint` はタイトルの右のマーカーに出す文 */
     frame?: {
         title: string;
         x: number;
         y: number;
         w: number;
         h: number;
+        hint?: string;
     };
-    /** 枠の中の層。層の箱の色をうっすら敷く */
+    /** 枠の中の層。層のノードの色をうっすら敷く。`hint` はタイトルの右のマーカーに出す文 */
     lanes?: Array<{
         label: string;
         kind: "llm" | "mcp" | "data";
         y: number;
         h: number;
+        hint?: string;
     }>;
-    /** 箱 */
+    /** 拡大して動かしたときに、見えている枠と層のタイトルを表示する枠の上端に留めるか（省いたとき `true`） */
+    stickyTitles?: boolean;
+    /** ノード */
     nodes: MdmarkDiagramNode[];
     /** 線 */
     wires: MdmarkDiagramWire[];
@@ -116,7 +123,16 @@ export type MdmarkSequenceDefinition = {
     };
 };
 /** グラフの種類 */
-export type MdmarkChartType = "line" | "bar" | "pie" | "scatter";
+export type MdmarkChartType = "line" | "bar" | "pie" | "scatter" | "area" | "stacked-bar" | "stacked-area" | "horizontal-bar" | "donut" | "radar" | "bubble" | "combo";
+/** グラフの系列 */
+export type MdmarkChartSeries = {
+    name: string;
+    points: number[] | Array<[number, number]> | Array<[number, number, number]>;
+    /** `combo` の系列の描き方。省くと `line` */
+    as?: "line" | "bar";
+    /** `combo` の系列が使う縦の軸。省くと `y` */
+    axis?: "y" | "y2";
+};
 /** 縦の軸。`min`・`max`・`step` は 3 つとも書くか 3 つとも省き、省くとデータから切る */
 export type MdmarkChartYAxis = {
     label: string;
@@ -134,24 +150,27 @@ export type MdmarkChartDefinition = {
     scope: string;
     /** 更新日 */
     updated: string;
-    /** 横の軸。`line`・`bar` は `ticks` が必須、`scatter` は数値の軸で `ticks` を持たない。`pie` は持たない */
+    /** 横の軸。`scatter`・`bubble` は数値の軸で `ticks` を持たず、`radar` は `ticks` を軸の名前にする。それ以外は `ticks` が必須（`horizontal-bar` は縦に並ぶ項目）。`pie`・`donut` は持たない */
     x?: {
         label: string;
         ticks?: string[];
     };
-    /** 縦の軸。`pie` は持たない */
+    /** 縦の軸。`pie`・`donut` は持たない */
     y?: MdmarkChartYAxis;
-    /** 系列。`pie` 以外で 1〜4 つ。`line`・`bar` の `points` の数は `x.ticks` と同じ、`scatter` は `[x, y]` の組 */
-    series?: Array<{
-        name: string;
-        points: number[] | Array<[number, number]>;
-    }>;
-    /** `pie` の項目。1〜4 つで、`value` は 0 より大きい */
+    /** `combo` の右の縦の軸 */
+    y2?: MdmarkChartYAxis;
+    /** `bubble` の円の面積が表す値の名前 */
+    size?: {
+        label: string;
+    };
+    /** 系列。`pie`・`donut` 以外で 1〜6 つ。`points` の数は `x.ticks` と同じ、`scatter` は `[x, y]`、`bubble` は `[x, y, size]` の組 */
+    series?: MdmarkChartSeries[];
+    /** `pie`・`donut` の項目。1〜6 つで、`value` は 0 より大きい */
     items?: Array<{
         name: string;
         value: number;
     }>;
-    /** `pie` の凡例の値に付ける単位 */
+    /** `pie`・`donut` の凡例の値と `donut` の中央の合計に付ける単位 */
     unit?: string;
 };
 /** 操作できる部品の定義 */
@@ -186,8 +205,86 @@ export type MdmarkParamDefinition = {
     /** スライダーの値（文字にしたもの）ごとの点。`min` から `max` まで `step` ごとの全ての値を持つ */
     table: Record<string, number[]>;
 };
+/** ER 図のテーブルの種類 */
+export type MdmarkErTableKind = "master" | "transaction";
+/** ER 図の関係の端の多重度 */
+export type MdmarkErCardinality = "1" | "0..1" | "1..n" | "0..n";
+/** ER 図の列 */
+export type MdmarkErColumn = {
+    /** 列の名前 */
+    name: string;
+    /** 型 */
+    type: string;
+    /** 主キーか */
+    pk?: boolean;
+    /** 外部キーか */
+    fk?: boolean;
+    /** NOT NULL か */
+    nn?: boolean;
+    /** 説明。テーブルのツールチップに出す */
+    desc?: string;
+};
+/** ER 図のテーブル */
+export type MdmarkErTable = {
+    /** 関係の `from`・`to` で指す名前 */
+    id: string;
+    /** 物理名 */
+    name: string;
+    /** 論理名 */
+    label: string;
+    /** 種類。見出しの札と既定の色を決める */
+    kind?: MdmarkErTableKind;
+    /** 色の名前。`kind` の既定の色より優先する */
+    color?: ColorName;
+    /** 概要。テーブルのツールチップに出す */
+    desc?: string;
+    /** 左端（px） */
+    x: number;
+    /** 上端（px） */
+    y: number;
+    /** 幅（px） */
+    w: number;
+    /** 主キーと外部キーの列だけを出した状態で開くか */
+    folded?: boolean;
+    /** 列。定義の順に並べる */
+    columns: MdmarkErColumn[];
+};
+/** ER 図の関係 */
+export type MdmarkErRelation = {
+    /** 元のテーブルの `id` */
+    from: string;
+    /** 元のテーブルの列の `name` */
+    fromColumn: string;
+    /** 元の端の多重度 */
+    fromCard: MdmarkErCardinality;
+    /** 先のテーブルの `id` */
+    to: string;
+    /** 先のテーブルの列の `name` */
+    toColumn: string;
+    /** 先の端の多重度 */
+    toCard: MdmarkErCardinality;
+    /** 縦の線の中ほどに出すラベル */
+    label?: string;
+    /** 縦の線の x（px）。省くと両端の中間 */
+    midX?: number;
+};
+/** ER 図の定義 */
+export type MdmarkErDefinition = {
+    /** 題名 */
+    title: string;
+    /** 範囲 */
+    scope: string;
+    /** 更新日 */
+    updated: string;
+    /** 図の幅（px）。高さはテーブルの位置と列の数から求める */
+    width: number;
+    /** テーブル */
+    tables: MdmarkErTable[];
+    /** 関係 */
+    relations: MdmarkErRelation[];
+};
 /** 読めた定義の種類 */
-export type MdmarkDefinition = MdmarkFlowDefinition | MdmarkSequenceDefinition | MdmarkChartDefinition | MdmarkParamDefinition;
+export type MdmarkDefinition = MdmarkFlowDefinition | MdmarkSequenceDefinition | MdmarkChartDefinition | MdmarkParamDefinition | MdmarkErDefinition;
 /** 定義を読んだ結果 */
 export type DefinitionResult = {
     /** 読めたか */
@@ -198,7 +295,7 @@ export type DefinitionResult = {
     problems: string[];
 };
 /** 図の部品の印の名前 */
-export type DiagramDirective = "flow" | "sequence" | "chart" | "param";
+export type DiagramDirective = "flow" | "sequence" | "chart" | "param" | "er";
 /** 図の部品の印の名前と、書き方の警告に出す図の種類の名前・呼び名 */
 export declare const DIAGRAM_DIRECTIVES: Readonly<Record<DiagramDirective, {
     name: string;
@@ -214,8 +311,15 @@ export declare function parseDefinitionJson(text: string): {
     after: string;
     missing: string;
 };
+/** 座標を省けるノードの種類（判定フローチャート） */
+export declare const JUDGEMENT_KINDS: readonly MdmarkDiagramKind[];
 /** 印の範囲の `json` のコードブロックを読み、種類ごとの形を確かめる。読めない箇所は書き方の警告の文にして返す */
 export declare function readDefinition(directive: DiagramDirective, blocks: string[]): DefinitionResult;
+/** フロー図の定義の、本文のリンクと同じ許可に当たらないリンク先を持つノードを定義の順に返す */
+export declare function nodeLinkProblems(definition: MdmarkFlowDefinition): Array<{
+    id: string;
+    href: string;
+}>;
 /** 読めない定義の書き方の警告の本文と項目。読めない箇所が 2 つ以上あるときは、1 つ目を本文に書き、残りを項目に並べる */
 export declare function definitionWarning(directive: DiagramDirective, problems: string[]): {
     message: string;
