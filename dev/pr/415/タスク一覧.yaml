@@ -1,0 +1,78 @@
+tasks:
+  - process: 初期構築
+    status: skipped
+    reason: 既存リポジトリのため対象外
+    updated_by: planner
+    updated_at: '2026-11-08T13:21:02.168224+00:00'
+  - process: リバースエンジニアリング
+    status: skipped
+    reason: 設計書が揃っているため対象外
+    updated_by: planner
+    updated_at: '2026-11-08T13:21:02.168224+00:00'
+  - process: 方針決め
+    status: skipped
+    reason: 方針決めを依頼する Issue ではない
+    updated_by: planner
+    updated_at: '2026-11-08T13:21:02.168224+00:00'
+  - process: PoC 検証
+    status: skipped
+    reason: 未検証の技術機構に依存しない
+    updated_by: planner
+    updated_at: '2026-11-08T13:21:02.168224+00:00'
+  - process: 複合ユースケース設計
+    status: skipped
+    reason: 2 つの複合ユースケースのシナリオは今のままで、実装とテストをシナリオに合わせる
+    updated_by: planner
+    updated_at: '2026-11-08T13:21:02.168224+00:00'
+  - process: デザインスタイル選定
+    status: skipped
+    reason: 画面を変えない
+    updated_by: planner
+    updated_at: '2026-11-08T13:21:02.168224+00:00'
+  - process: 画面一覧・画面遷移
+    status: skipped
+    reason: 画面を変えない
+    updated_by: planner
+    updated_at: '2026-11-08T13:21:02.168224+00:00'
+  - process: 単一ユースケース設計
+    status: skipped
+    reason: 4 つの単一ユースケースのシナリオは今のままで、実装とテストをシナリオに合わせる
+    updated_by: planner
+    updated_at: '2026-11-08T13:21:02.168224+00:00'
+  - process: モック作成
+    status: skipped
+    reason: 画面を変えない
+    updated_by: planner
+    updated_at: '2026-11-08T13:21:02.168224+00:00'
+  - process: インターフェース定義設計
+    status: todo
+    note: 『設定と索引を点検する』の図の点検が、設定の libraries に名前のあるマーカー（chart など）を図の部品として読まないことを制約に書く。取り込みを見出しの節の中に置いたときに、取り込んだ見出しと本文が取り込みの枠の中に残ることを確かめ、無ければ書く
+  - process: 部品設計
+    status: skipped
+    reason: 部品の引数・状態を変えない
+    updated_by: planner
+    updated_at: '2026-11-08T13:21:02.168224+00:00'
+  - process: 画面設計
+    status: skipped
+    reason: 画面を変えない
+    updated_by: planner
+    updated_at: '2026-11-08T13:21:02.168224+00:00'
+  - process: モジュール構成設計
+    status: todo
+  - process: ドキュメント修正
+    status: skipped
+    reason: 利用者向けのドキュメントの記述は設計どおりの出力と合っている
+    updated_by: planner
+    updated_at: '2026-11-08T13:21:02.168224+00:00'
+  - process: 単体テスト作成
+    status: todo
+    note: 点検の図の点検が libraries のマーカーを飛ばすことと、節の組み立てが取り込みの枠の中の見出しを枠の外へ出さないことの単体テスト
+  - process: 実装
+    status: todo
+    note: 見出しの節の組み立てで取り込みの枠の中の見出しを枠の外へ出さない。mdmark check の図の点検で libraries のマーカーを図の部品として読まない
+  - process: 結合テスト作成
+    status: todo
+    note: h2 の節の中に置いた取り込みを mount で描き、取り込んだ見出しと本文が取り込みの枠の中にあることの結合テスト
+  - process: E2E テスト作成
+    status: todo
+    note: 上のフォルダの設定のずれの行のパス（インターフェース定義『設定を重ねて読む』の制約「パスの表示」）・端末の設定の読めない行（applyToExport を持つと 4 行目）・文字列の警告の文言の比べ方（&lt; &gt; を消さずに戻して比べる）の 3 件のテストを設計に合わせ、6 件を流して pass を確かめる

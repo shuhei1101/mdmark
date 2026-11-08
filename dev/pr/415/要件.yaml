@@ -1,0 +1,50 @@
+use_cases:
+  - kind: composite
+    scenario: dev/設計書/シナリオ/複合ユースケース/雛形から1枚のHTMLを配る.yaml
+    impact: run_only
+    detail: 外部ライブラリのグラフの印を持つ見本の文書を雛形の上で点検するとずれ 0 件になり、まとめた HTML で取り込んだ見出しの中身が出る
+    depends_on: []
+  - kind: composite
+    scenario: dev/設計書/シナリオ/複合ユースケース/端末の設定を重ねてプレビューと書き出しをそろえる.yaml
+    impact: run_only
+    detail: 端末の設定を読めないときの書き出しの誤りが、読めない行を正しい行番号で示すことを確かめ直す
+    depends_on: []
+  - kind: single
+    scenario: dev/設計書/シナリオ/単一ユースケース/文書をHTMLに書き出す.yaml
+    impact: run_only
+    detail: 見出しの節の中に置いた取り込みを書き出した HTML で開くと、取り込んだ見出しと本文が取り込みの枠の中に出る
+    depends_on: []
+  - kind: single
+    scenario: dev/設計書/シナリオ/単一ユースケース/設定と索引を点検する.yaml
+    impact: run_only
+    detail: 上のフォルダの設定のずれの行が設計どおりのパスの表示で出ることを確かめ直す。外部ライブラリの印を図の定義のずれにしない
+    depends_on: []
+  - kind: single
+    scenario: dev/設計書/シナリオ/単一ユースケース/文字列とYAMLのキーの記法を点検する.yaml
+    impact: run_only
+    detail: 文字列の書き方の警告の行の内容が、同じ文字列を描いたときの警告の文言と同じであることを確かめ直す
+    depends_on: []
+  - kind: single
+    scenario: dev/設計書/シナリオ/単一ユースケース/ほかの文書を取り込む.yaml
+    impact: run_only
+    detail: 取り込みを見出しの節の中に置いても、取り込んだ中身が取り込みの枠の中に出る
+    depends_on: []
+  - kind: single
+    scenario: dev/設計書/シナリオ/単一ユースケース/節と行の詳細を開閉する.yaml
+    impact: run_only
+    detail: 見出しの節を組み立てる処理を直すため、節の開閉が変わらないことを確かめる
+    depends_on: []
+  - kind: single
+    scenario: dev/設計書/シナリオ/単一ユースケース/複数の文書を1枚のHTMLにまとめる.yaml
+    impact: run_only
+    detail: まとめた HTML でも、取り込んだ見出しと本文が取り込みの枠の中に出る
+    depends_on: []
+  - kind: single
+    scenario: dev/設計書/シナリオ/単一ユースケース/外部ライブラリを使うときだけ読み込む.yaml
+    impact: run_only
+    detail: 点検で外部ライブラリの印を図の部品として読まないように直すため、外部ライブラリの読み込みが変わらないことを確かめる
+    depends_on: []
+scope_out:
+  - item: 上のフォルダの設定ファイルを指すずれの行・誤りの文を、今のフォルダからの相対パス（../mdmark.config.yaml）で出す変更
+    reason: インターフェース定義『設定を重ねて読む』の制約「パスの表示」は、基準のフォルダの外を home を ~ にしたパスか絶対パスで出すと決めており、実装はそのとおり。相対パスにするのは表示の仕様の変更で、E2E の fail の修正に含めない
+    plan: none
