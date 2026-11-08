@@ -3188,8 +3188,8 @@
       }
     }
 
-    /* 項目の行: 名前の塊と注釈を横に並べる */
-    .mdmark-tree-row {
+    /* 項目の行: 名前の塊と注釈を横に並べる。表のキーの階層の tr も同じクラスを持つため、ファイルツリーのリストの中に限る */
+    .mdmark-tree-list .mdmark-tree-row {
       display: flex;
       align-items: center;
       min-height: 1.5rem;
@@ -9961,6 +9961,7 @@
     white-space: nowrap;
   }
   .mdmark-table[data-tree] .mdmark-tree-cell {
+    position: relative;
     display: flex;
     align-items: stretch;
     min-block-size: 2rem;
@@ -10060,10 +10061,13 @@
     color: var(--mdmark-color-link);
   }
 
-  /* 全体のパスのツールチップ */
+  /* 全体のパスのツールチップ: キーのセルの上に出し、名前に重ねず、最後の行でもスクロールの包みの下端で切らない */
   .mdmark-table[data-tree] .mdmark-tree-tip {
     position: absolute;
+    inset-block-end: 100%;
+    inset-inline-start: 0;
     z-index: 3;
+    pointer-events: none;
     padding: 0.25rem 0.5rem;
     border: 1px solid var(--mdmark-color-border);
     border-radius: var(--mdmark-radius);
@@ -10198,8 +10202,7 @@
   /* 印刷: 操作のボタンを出さず、畳んだ行と隠した見本を開く */
   @media print {
     .mdmark-table-settings,
-    .mdmark-tree-toggle,
-    .mdmark-tree-copy,
+    .mdmark-table[data-tree] :is(.mdmark-tree-toggle, .mdmark-tree-copy),
     .mdmark-tree-example-toggle {
       display: none;
     }
