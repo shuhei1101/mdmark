@@ -1,0 +1,18 @@
+docs:
+  - page: docs/リファレンス/index.yaml
+    new: false
+    change: 用語集の行の summary の用語の並びを、用語集の冒頭の並びに統一する
+    status: todo
+  - page: docs/リファレンス/README.md
+    new: false
+    change: index.yaml から再生成し、用語集の行の用語の並びを統一する
+    status: todo
+  - page: docs/files.yaml
+    new: false
+    change: 用語集の行の description の用語の並びを、用語集の冒頭の並びに統一する
+    status: todo
+use_cases: []
+scope_out:
+  - item: 用語集の冒頭の並びと、用語集の本文の一覧の用語の突き合わせ
+    reason: 要望は目次側の 3 か所を冒頭の並びに統一することで、冒頭の並びそのものは変えない
+    plan: none
