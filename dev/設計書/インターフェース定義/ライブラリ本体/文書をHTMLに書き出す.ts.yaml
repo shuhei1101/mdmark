@@ -424,7 +424,7 @@ flows:
         C-->>W: 出力のパス・終了コード 0
     expected:
       - 終了コードが 0 で、書き出した HTML を file:// で開くと外への要求が 0 件で、mermaid のコードブロックの場所に `figure.mdmark-diagram[data-diagram="mermaid"]` がある
-      - 書き出した HTML のスクリプトに動的 `import()` が無い
+      - 書き出した HTML のスクリプトの動的 `import()` の数が、段落だけの文書を書き出した HTML と同じ（mermaid の chunk を動的 `import()` で読まない）
       - 段落だけの文書を書き出した HTML には mermaid が埋められていない
     test: test_normal_when_mermaid_embedded
 lead: 文書を書く人が Markdown を 1 つ、配布物・使う側の CSS・外部ライブラリのモジュール・拡張・画像を埋めた 1 枚の HTML に書き出す。開いた HTML は `mount` で文書を描き、外へ要求しない。

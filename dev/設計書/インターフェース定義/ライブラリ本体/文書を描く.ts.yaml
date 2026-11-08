@@ -5656,7 +5656,7 @@ flows:
       - name: mermaid のコードブロックを持つ Markdown
         description: 正常系（mermaid のコードブロックを描く）と同じ文書を、設定を変えて 2 つの `mount` で描く
       - name: 設定
-        description: '1 つ目は `opts.config.mermaid` に `theme: "neutral"`・`themeVariables: { primaryColor: "#e0f2f1", useGradient: "true" }`。2 つ目は `theme: "no-such-theme"`'
+        description: '1 つ目は `opts.config.mermaid` に `theme: "neutral"`・`themeVariables: { mainBkg: "#e0f2f1", useGradient: "true" }`（neutral はノードの塗りの `mainBkg` を `primaryColor` から作らない）。2 つ目は `theme: "no-such-theme"`'
       - name: Mock
         description: 正常系（mermaid のコードブロックを描く）と同じ
     flow: |-

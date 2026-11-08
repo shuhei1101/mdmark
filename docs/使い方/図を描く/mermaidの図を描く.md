@@ -37,7 +37,7 @@ front matter の `title` が図の枠のタイトルになり、図の中には�
 mermaid:
   theme: neutral
   themeVariables:
-    primaryColor: "#e0f2f1"
+    mainBkg: "#e0f2f1"
 ```
 
 既定のテーマ `mdmark` は、描いた文書の配色（`--mdmark-color-*` の CSS 変数）から図の色を作り、明暗を切り替えると図も描き直す。
