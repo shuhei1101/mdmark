@@ -502,7 +502,7 @@ functions:
         summary: html-scripts.url の http・https の origin を足し、それ以外の url では足さない
         condition: '`libraries` が `{ a: "https://cdn.example.com/a.js" }` で、`htmlScripts` が `{ url: "https://babel.example.com/b.mjs" }` のときと `{ url: "./babel.mjs" }` のとき'
         mock: なし
-        expected: '前者は `["https://cdn.example.com", "https://babel.example.com"]`、後者は `["https://cdn.example.com"]`'
+        expected: '前者は `["https://cdn.example.com", "https://babel.example.com", "https://cdn.jsdelivr.net"]`、後者は `["https://cdn.example.com", "https://cdn.jsdelivr.net"]`（後ろは `mermaid` を省いたときの `mermaid.url` の既定の URL の origin）'
       - name: test_library_origins_when_mermaid
         case: 正常
         summary: mermaid.url の http・https の origin を足し、相対パスでは足さない

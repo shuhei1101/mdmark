@@ -350,9 +350,9 @@ functions:
     side_effects: '`renderQueue` に `initialize` と `render` の組をつなぐ。暗い配色のときは `scope` の明暗の class を同じタスクの中で一時的に明るい配色の class に替えて戻す。mermaid が文書に残すエラーの図を消す'
     args:
       - name: options
-        type: '{ mermaid: MermaidModule; source: string; root: HTMLElement; scope: HTMLElement; config: ResolvedConfig["mermaid"]; id: string; frameId: string }'
+        type: '{ mermaid: MermaidModule; source: string; root: HTMLElement; scope: HTMLElement; config: ResolvedConfig["mermaid"]; id: string; frameId: string; resizable?: boolean }'
         required: true
-        description: '読んだ mermaid・ソース・描いた要素・描く先の要素・設定の `mermaid`・`render` に渡す id（`mdmark-mermaid-{mountId}-{通し番号}`）・図の枠の `id` の頭'
+        description: '読んだ mermaid・ソース・描いた要素・描く先の要素・設定の `mermaid`・`render` に渡す id（`mdmark-mermaid-{mountId}-{通し番号}`。描くたびに新しい値にする。mermaid の `render` は同じ id の要素を文書から消すため）・図の枠の `id` の頭・リサイズハンドルを置くか（既定 `true`。`attachMermaid` は機能 `diagram-resize` を渡す）'
     returns:
       type: 'Promise<{ html: string } | { error: string }>'
       description: '`html` は図の枠の HTML、`error` は mermaid の例外の `message` の 1 行目'

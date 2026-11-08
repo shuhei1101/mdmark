@@ -1856,11 +1856,11 @@ functions:
       pr: 97
   - name: usesMermaid
     title: 文書が mermaid を使うかを見る
-    container: src/cli/embed.ts
+    container: src/render/used.ts
     kind: 関数
     scope: public
     summary: 文書ごとに `render` を設定と一緒に呼び、返った HTML に `data-mdmark-mermaid` があれば `true` を返す
-    description: '`mount` と同じ mermaid の対象（機能 `mermaid` と文書の `<!-- features: -mermaid -->` を含む）を、同じ処理から得るために `render` を通す'
+    description: '`mount` と同じ mermaid の対象（機能 `mermaid` と文書の `<!-- features: -mermaid -->` を含む）を、同じ処理から得るために `render` を通す。VS Code 拡張機能の書き出しも呼ぶため、`collectRangeScripts` と同じく `src/render/used.ts` に置き、`src/cli/embed.ts` から同じ名前で export する'
     args:
       - name: options
         type: '{ markdowns: string[]; config: MdmarkConfig }'
