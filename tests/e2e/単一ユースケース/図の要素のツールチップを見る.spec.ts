@@ -646,9 +646,8 @@ test("test_normal_when_chart_items", async ({ page }) => {
     expect(text, String(index)).toMatch(/\d/);
   }
   // 実行・検証: Tab で折れ線の点にフォーカスし、Esc でツールチップを消してフォーカスを点に残す
-  await page.locator("#doc").evaluate(() => {
-    (document.activeElement as HTMLElement | null)?.blur();
-  });
+  // 折れ線の図の表示する枠から Tab を始める（Firefox は blur の後も最後にフォーカスした要素から Tab を進め、文書の末尾から先頭へ戻らない）
+  await figures.nth(0).locator('[aria-roledescription="図"]').focus();
   for (let count = 0; count < 40; count += 1) {
     await page.keyboard.press("Tab");
     if (
