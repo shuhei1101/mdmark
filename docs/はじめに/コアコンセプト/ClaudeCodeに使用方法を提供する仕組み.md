@@ -2,7 +2,7 @@
 
 ガイドを dev-docs で必要な分だけ参照させ、CLI と同じ処理をツールで呼ぶ流れ
 
-Claude Code のプラグインが、mdmark の使用方法と操作を Claude Code に指定する考え方。
+Claude Code のプラグインが、mdmark の使用方法と操作を Claude Code に提供する考え方。
 入れ方と使用方法は [プラグインを入れる](../../使用方法/ClaudeCodeで使用する/プラグインを入れる.md) と [MCP のツールを使用する](../../使用方法/ClaudeCodeで使用する/MCPのツールを使用する.md)。
 
 ## ガイドを dev-docs で参照する
