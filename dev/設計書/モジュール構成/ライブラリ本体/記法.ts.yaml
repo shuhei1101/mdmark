@@ -1267,7 +1267,7 @@ functions:
     container: src/render/syntax/tabs.ts
     kind: 関数
     scope: internal
-    summary: タブの印の引数から `group` を読み、`closed`・`open`・`title=` を `readCollapse` で読む。`readCollapse` の項目と値の無い `group=` を、画面設計『文書』の「タブの印の読めない指定」の項目にして 1 つの警告にまとめ、`group=`・`title=` 以外のキーと `キー=値` の形でない指定を `skipped` に入れる
+    summary: タブの印の引数から `group` を読み、`closed`・`open`・`title=` を `readCollapse`（`text` に `mark` の `rest` を渡す）で読む。`readCollapse` の項目と値の無い `group=` を、画面設計『文書』の「タブの印の読めない指定」の項目にして 1 つの警告にまとめ、`group=`・`title=` 以外のキーと `キー=値` の形でない指定を `skipped` に入れる
     args:
       - name: mark
         type: Mark
@@ -1301,6 +1301,12 @@ functions:
         condition: '`<!-- tabs: open title=入れ方 group=os -->` と `<!-- tabs: closed open -->` をそれぞれ読む'
         mock: なし
         expected: 1 つ目は `group` が `os`、`collapse` が `open`、`title` が `入れ方` で `warning` が無い。2 つ目は `collapse` が `closed`、`warning.items` の `label` が `closed と open`
+      - name: test_read_tabs_options_when_title_has_space
+        case: 異常
+        summary: title= の値の空白の後ろの単語を警告にし、読み飛ばさない
+        condition: '`<!-- tabs: closed title=インストールの 手順 -->`'
+        mock: なし
+        expected: '`title` が `インストールの`、`warning.items` の `label` が `手順` の 1 つ、`skipped` が空'
     callees:
       - '#functions[readCollapse]'
   - name: readCodeSpec
@@ -1618,7 +1624,7 @@ functions:
     title: ステップの印の指定を読む
     container: src/render/syntax/steps.ts
     summary: ステップの印の引数から折り畳みの指定を読み、読めない指定を 1 つの警告にまとめる
-    description: '`readCollapse` で `closed`・`open`・`title=` を読み、その項目を画面設計『文書』の「ステップの印の読めない指定」の項目にして 1 つの警告にまとめる。残りの引数（`キー=値` と `キー=値` の形でない指定）は `skipped` に入れる'
+    description: '`readCollapse`（`text` に `mark` の `rest` を渡す）で `closed`・`open`・`title=` を読み、その項目を画面設計『文書』の「ステップの印の読めない指定」の項目にして 1 つの警告にまとめる。残りの引数（`キー=値` と `キー=値` の形でない指定）は `skipped` に入れる'
     kind: 関数
     scope: internal
     args:
@@ -1648,6 +1654,12 @@ functions:
         condition: '`<!-- steps: closed open fold size=2 -->`'
         mock: なし
         expected: '`collapse` が `closed`、`warning.items` の `label` が `closed と open` の 1 つ、`skipped` の `arg` が `fold`・`size=`'
+      - name: test_read_steps_options_when_title_has_space
+        case: 異常
+        summary: title= の値の空白の後ろの単語を警告にし、読み飛ばさない
+        condition: '`<!-- steps: open title=準備の 手順 -->`'
+        mock: なし
+        expected: '`title` が `準備の`、`warning.items` の `label` が `手順` の 1 つ、`skipped` が空'
     status: planned
     introduced:
       pr: 225
