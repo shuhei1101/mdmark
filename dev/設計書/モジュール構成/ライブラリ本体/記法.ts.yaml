@@ -496,6 +496,12 @@ functions:
         condition: '`## 航海` の後に、`## 実行`・段落を取り込む `<!-- include: 共通/手順.md#実行 -->`（`expandIncludes` を先に当てる）と、取り込みの後の段落'
         expected: '`section-航海` の中に `mdmark-include` があり、`mdmark-include` の中に `section-実行` と取り込んだ段落がある。取り込みの後の段落は `section-航海` の中で `mdmark-include` の外'
         mock: なし
+      - name: test_wrap_sections_when_same_level_heading_in_tab
+        summary: タブの中身の中の見出しは、タブの外の同じ階層の節を閉じない
+        case: 正常
+        condition: '`## 導入` の後に、`### macOS`・`## 手順`・段落、`### Windows`・段落を `tabs` の印で囲んだ範囲と、範囲の後の段落（`buildTabs` を先に当てる）'
+        mock: なし
+        expected: '`section-導入` の中に `mdmark-tabs` があり、1 つ目の中身の中に `section-手順` とその段落がある。範囲の後の段落は `section-導入` の中'
   - name: readTableSpec
     title: 表の印を読む
     container: src/render/syntax/tables.ts

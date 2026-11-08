@@ -1426,7 +1426,7 @@ functions:
     container: src/cli/check.ts
     usecase: 共通
     summary: '設定を重ねて読み（`purpose: export`）、重ねた設定ファイルのそれぞれと端末の設定（`config.applyToExport` によらず）の形のずれを先に、続けて `mdmark check` と同じ並びのずれを返す。ずれの `file` は設定ファイルのパスを表示の形にしたパス（`base` は今のフォルダ）'
-    description: '並びは設定の `schema`（`validateConfig` のずれ、`theme`・`extensions` の無いファイル、`build.glossary`・`build.entry` がまとめる文書に当たらないもの）→ `unknown_color_theme`（設定の `colorTheme` が `COLOR_THEMES` に無いとき 1 件。`where` は `colorTheme`、`message` は `不明なテーマ名 {名前} です。{COLOR_THEMES を「・」で結んだもの} のいずれかに修正してください。`）→ `unknown_color_scheme`（設定の `colorScheme` が `COLOR_SCHEMES` に無いとき 1 件。`where` は `colorScheme`、`message` は `不明な明暗 {値} です。{COLOR_SCHEMES を「・」で結んだもの} のいずれかに修正してください。`）→ `no_documents` → `checkIndex` の並び → エイリアスのずれ（`loadAliases` の `issues`。設定に `aliases` があるときだけ）→ `missing_file`（`collectCheckDocuments` の文書ごとの `checkMissingFiles`）→ `unknown_mark`（`checkUnknownMarks`）→ 図の点検のずれ（`checkDiagrams`。`unknownMarks` によらず点検する）。知らない印の点検では、`collectCheckDocuments` の文書を、`loadExtensionDirectives` の `directive` を知っている印に入れて点検し、`loadExtensionDirectives` の `schema` のずれは設定の `schema` の並びの最後に置く。索引のずれの `file` は設定ファイルのフォルダからの相対パスに直す。索引を読めないときは索引を指す `schema` のずれにする。`base` があり設定に `index` があるときだけ、ずれを集める前に `changedPathsSince`（`cwd` は設定ファイルのフォルダ、`indexDir` は索引のファイルのフォルダ）で変わったファイルを引き、`checkIndex` の `changedPaths` に渡す。`runCheck` と `runUpgrade` が呼び、`runUpgrade` は `unknownMarks: false` で呼ぶ（拡張を読み込まず、知らない印を点検しない）。設定の `assets.root` のフォルダが無いときは `assets.root` を指す `schema` のずれを設定の `schema` の並びに置き、`missing_file` は文書のフォルダだけで探す'
+    description: '並びは設定の `schema`（`validateConfig` のずれ、`theme`・`extensions` の無いファイル、`build.glossary`・`build.entry` がまとめる文書に当たらないもの）→ `unknown_color_theme`（設定の `colorTheme` が `COLOR_THEMES` に無いとき 1 件。`where` は `colorTheme`、`message` は `不明なテーマ名 {名前} です。{COLOR_THEMES を「・」で結んだもの} のいずれかに修正してください。`）→ `unknown_color_scheme`（設定の `colorScheme` が `COLOR_SCHEMES` に無いとき 1 件。`where` は `colorScheme`、`message` は `不明な明暗 {値} です。{COLOR_SCHEMES を「・」で結んだもの} のいずれかに修正してください。`）→ `no_documents` → `checkIndex` の並び → エイリアスのずれ（`loadAliases` の `issues`。設定に `aliases` があるときだけ）→ `missing_file`（`collectCheckDocuments` の文書ごとの `checkMissingFiles`）→ `unknown_mark`（`checkUnknownMarks`）→ 図の点検のずれ（`checkDiagrams`。`unknownMarks` によらず点検し、`overridden` には設定の `libraries` の名前と `loadExtensionDirectives` の `directive` を合わせて渡す）。知らない印の点検では、`collectCheckDocuments` の文書を、`loadExtensionDirectives` の `directive` を知っている印に入れて点検し、`loadExtensionDirectives` の `schema` のずれは設定の `schema` の並びの最後に置く。索引のずれの `file` は設定ファイルのフォルダからの相対パスに直す。索引を読めないときは索引を指す `schema` のずれにする。`base` があり設定に `index` があるときだけ、ずれを集める前に `changedPathsSince`（`cwd` は設定ファイルのフォルダ、`indexDir` は索引のファイルのフォルダ）で変わったファイルを引き、`checkIndex` の `changedPaths` に渡す。`runCheck` と `runUpgrade` が呼び、`runUpgrade` は `unknownMarks: false` で呼ぶ（知らない印を点検せず、`loadExtensionDirectives` の `schema` のずれを出さない。`directive` は `checkDiagrams` に渡すため読み込む）。設定の `assets.root` のフォルダが無いときは `assets.root` を指す `schema` のずれを設定の `schema` の並びに置き、`missing_file` は文書のフォルダだけで探す'
     kind: 関数
     scope: public
     is_async: true
@@ -1439,7 +1439,7 @@ functions:
         type: '{ unknownMarks?: boolean; base?: string; cwd?: string; explicit?: boolean }'
         required: false
         default: '`{ unknownMarks: true }`'
-        description: '`unknownMarks` が `false` なら、拡張を読み込まず、知らない印を点検しない。`base` があれば、`change_together` の直し忘れを確かめる。`cwd` はずれの `file` の表示の基準（既定は `path` のフォルダ）。`explicit` が `true` のときは上へ探さず、`path` と端末の設定だけを重ねる（`--config`・MCP の `config` を渡したとき）'
+        description: '`unknownMarks` が `false` なら、知らない印を点検せず、拡張の `schema` のずれを出さない（拡張の `directive` は図の点検のために読み込む）。`base` があれば、`change_together` の直し忘れを確かめる。`cwd` はずれの `file` の表示の基準（既定は `path` のフォルダ）。`explicit` が `true` のときは上へ探さず、`path` と端末の設定だけを重ねる（`--config`・MCP の `config` を渡したとき）'
     returns:
       type: Promise<CheckIssue[]>
       description: ずれの並び（無ければ空）
@@ -1462,7 +1462,7 @@ functions:
         expected: '`kind` が `missing_doc`・`unknown_mark` の順で、`unknown_mark` の `file` が `a.md`・`where` が `3`'
       - name: test_collect_check_issues_when_unknown_marks_off
         case: 正常
-        summary: '`unknownMarks: false` では知らない印を返さず、拡張を読み込まない'
+        summary: '`unknownMarks: false` では知らない印も拡張の `schema` のずれも返さない'
         condition: '文書 `a.md` に `<!-- tabz -->`、設定の `extensions` に読み込めない拡張 `broken.js`、`{ unknownMarks: false }`'
         mock: 一時フォルダ
         expected: '`unknown_mark` のずれも `extensions[0]` の `schema` のずれも無い'
@@ -1502,6 +1502,12 @@ functions:
         condition: 索引の無い設定で、`docs/a.md` の 3 行目に読めない `<!-- flow -->` の定義と、見つからない画像。`unknownMarks` が `true` と `false`
         mock: なし
         expected: 'どちらも `missing_file` の後に `{ file: "docs/a.md", where: "3", kind: "diagram_invalid" }` の 1 件がある'
+      - name: test_collect_check_issues_when_library_mark
+        summary: 対応表と拡張と同じ名前の印の範囲を、図の定義のずれにしない
+        case: 正常
+        condition: '設定の `libraries` に `chart`、`extensions` に `directive` が `flow` の拡張。文書 `a.md` に `json` のコードブロックを持たない `<!-- chart: a -->` と `<!-- flow -->`。`unknownMarks` が `true` と `false`'
+        mock: 一時フォルダ
+        expected: どちらも `diagram_*` のずれが無い
     refs:
       - '#functions[validateConfig]'
       - dev/設計書/モジュール構成/ライブラリ本体/索引と用語.ts#functions[checkIndex]
@@ -2405,7 +2411,7 @@ functions:
     scope: public
     is_async: true
     summary: Markdown の文字列か、YAML のファイルのキーの値を、描いたときの書き方の警告・読み飛ばした記法の印の引数・知らない印・図の配置のずれにして返す。`runCheck` と MCP の `runCheckTool` が呼ぶ
-    description: 設定ファイルは `config` か、`cwd` から上へ `CONFIG_FILE` を探して見つかったものを使い、見つからなければ既定の設定で点検する（`config` を渡して無いときだけ `CliError`）。`file` のときは `readYamlKey` で値と行の置き換えを得る。ずれは `collectWarnings` の警告（設定の `features`・`libraries` を当てる。include の取り込み先が無い警告（`includeTarget` を持つもの）は除く）、`checkUnknownMarks`（`loadExtensionDirectives` の `directive` と `check.ignore` を知っている印に入れる）、`checkDiagrams` のうち `diagram_invalid` でないずれ（定義の誤りは `collectWarnings` が返すため）を合わせ、行の順（同じ行は警告・知らない印と読み飛ばした引数・配置のずれの順）に並べる。`collectWarnings` の `unknown_mark_arg` はそのまま `unknown_mark_arg` のずれにする。`file` は `text` のとき `-`、`file` のとき設定ファイルのフォルダ（無ければ `cwd`）からの相対パス。`where` は文字列の行を `file` のとき `readYamlKey` の `lineOf` で YAML のファイルの行に置き換えた番号の文字
+    description: 設定ファイルは `config` か、`cwd` から上へ `CONFIG_FILE` を探して見つかったものを使い、見つからなければ既定の設定で点検する（`config` を渡して無いときだけ `CliError`）。`file` のときは `readYamlKey` で値と行の置き換えを得る。ずれは `collectWarnings` の警告（設定の `features`・`libraries` を当てる。include の取り込み先が無い警告（`includeTarget` を持つもの）は除く）、`checkUnknownMarks`（`loadExtensionDirectives` の `directive` と `check.ignore` を知っている印に入れる）、`checkDiagrams`（`overridden` には設定の `libraries` の名前と `loadExtensionDirectives` の `directive` を合わせて渡す）のうち `diagram_invalid` でないずれ（定義の誤りは `collectWarnings` が返すため）を合わせ、行の順（同じ行は警告・知らない印と読み飛ばした引数・配置のずれの順）に並べる。`collectWarnings` の `unknown_mark_arg` はそのまま `unknown_mark_arg` のずれにする。`file` は `text` のとき `-`、`file` のとき設定ファイルのフォルダ（無ければ `cwd`）からの相対パス。`where` は文字列の行を `file` のとき `readYamlKey` の `lineOf` で YAML のファイルの行に置き換えた番号の文字
     args:
       - name: options
         type: '{ cwd: string; config?: string; text?: string; file?: string; key?: string; importCode: (code: string) => Promise<unknown> }'
