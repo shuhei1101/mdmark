@@ -100,7 +100,7 @@ data_models:
         type: string
         description: キーのパスか行。ファイル全体は空文字
       - name: kind
-        type: "'schema' | 'unknown_color_theme' | 'unknown_color_scheme' | 'no_documents' | MdmarkIndexIssue['kind'] | 'alias_no_files' | 'alias_unreadable' | MdmarkAliasProblem['kind'] | 'missing_file' | 'unknown_mark' | 'diagram_invalid' | 'diagram_node_overlap' | 'diagram_node_overflow' | 'diagram_wire_crosses_node' | 'diagram_label_too_long' | 'syntax_warning'"
+        type: "'schema' | 'unknown_color_theme' | 'unknown_color_scheme' | 'no_documents' | MdmarkIndexIssue['kind'] | 'alias_no_files' | 'alias_unreadable' | MdmarkAliasProblem['kind'] | 'missing_file' | 'unknown_mark' | 'diagram_invalid' | 'diagram_node_overlap' | 'diagram_node_overflow' | 'diagram_wire_crosses_node' | 'diagram_label_too_long' | 'syntax_warning' | 'unknown_mark_arg'"
         description: ずれの種類
       - name: message
         type: string
@@ -2338,8 +2338,8 @@ functions:
     kind: 関数
     scope: public
     is_async: true
-    summary: Markdown の文字列か、YAML のファイルのキーの値を、描いたときの書き方の警告・知らない印・図の配置のずれにして返す。`runCheck` と MCP の `runCheckTool` が呼ぶ
-    description: 設定ファイルは `config` か、`cwd` から上へ `CONFIG_FILE` を探して見つかったものを使い、見つからなければ既定の設定で点検する（`config` を渡して無いときだけ `CliError`）。`file` のときは `readYamlKey` で値と行の置き換えを得る。ずれは `collectWarnings` の警告（設定の `features`・`libraries` を当てる。include の取り込み先が無い警告（`includeTarget` を持つもの）は除く）、`checkUnknownMarks`（`loadExtensionDirectives` の `directive` と `check.ignore` を知っている印に入れる）、`checkDiagrams` のうち `diagram_invalid` でないずれ（定義の誤りは `collectWarnings` が返すため）を合わせ、行の順（同じ行は警告・知らない印・配置のずれの順）に並べる。`file` は `text` のとき `-`、`file` のとき設定ファイルのフォルダ（無ければ `cwd`）からの相対パス。`where` は文字列の行を `file` のとき `readYamlKey` の `lineOf` で YAML のファイルの行に置き換えた番号の文字
+    summary: Markdown の文字列か、YAML のファイルのキーの値を、描いたときの書き方の警告・読み飛ばした記法の印の引数・知らない印・図の配置のずれにして返す。`runCheck` と MCP の `runCheckTool` が呼ぶ
+    description: 設定ファイルは `config` か、`cwd` から上へ `CONFIG_FILE` を探して見つかったものを使い、見つからなければ既定の設定で点検する（`config` を渡して無いときだけ `CliError`）。`file` のときは `readYamlKey` で値と行の置き換えを得る。ずれは `collectWarnings` の警告（設定の `features`・`libraries` を当てる。include の取り込み先が無い警告（`includeTarget` を持つもの）は除く）、`checkUnknownMarks`（`loadExtensionDirectives` の `directive` と `check.ignore` を知っている印に入れる）、`checkDiagrams` のうち `diagram_invalid` でないずれ（定義の誤りは `collectWarnings` が返すため）を合わせ、行の順（同じ行は警告・知らない印と読み飛ばした引数・配置のずれの順）に並べる。`collectWarnings` の `unknown_mark_arg` はそのまま `unknown_mark_arg` のずれにする。`file` は `text` のとき `-`、`file` のとき設定ファイルのフォルダ（無ければ `cwd`）からの相対パス。`where` は文字列の行を `file` のとき `readYamlKey` の `lineOf` で YAML のファイルの行に置き換えた番号の文字
     args:
       - name: options
         type: '{ cwd: string; config?: string; text?: string; file?: string; key?: string; importCode: (code: string) => Promise<unknown> }'
@@ -2391,6 +2391,12 @@ functions:
         expected: ずれが `unknown_mark` の 1 件だけで、`missing.md` の `syntax_warning` が無い
         mock: なし
         summary: 取り込み先が無い警告を出さない
+      - name: test_check_markdown_source_when_unknown_mark_args
+        case: 正常
+        summary: 描くときに読み飛ばす印の引数を unknown_mark_arg にする
+        condition: 「正常系（文字列の記法の印に知らない引数がある）」の文字列を `text` で渡す
+        mock: 一時フォルダ
+        expected: '`kind` がどれも `unknown_mark_arg` の 3 件で、`where` が `1`・`1`・`8`、`syntax_warning` が無い'
     status: planned
     introduced:
       pr: 328
