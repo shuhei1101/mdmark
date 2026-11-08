@@ -11,6 +11,6 @@ use_cases:
     depends_on: []
 scope_out:
   - item: src/cli/embed.ts の import の dirname の削除
-    reason: 'develop では readImage の docDir: dirname(docFile) で使っていて、使用していない import ではない。実装で npx biome check . の警告が出たときだけ削除する'
+    reason: 'readImage の docDir: dirname(docFile) で使用している。Issue 本文の 2:28 の noUnusedImports が指すのは resolve で、resolve はこの PR で削除する'
     plan: none
 docs: []

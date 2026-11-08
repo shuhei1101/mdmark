@@ -75,7 +75,9 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-08T22:08:22.119795+00:00'
   - process: 実装
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-08T22:26:33.889310+00:00'
   - process: 結合テスト作成
     status: skipped
     reason: 挙動を変えないため対象外
