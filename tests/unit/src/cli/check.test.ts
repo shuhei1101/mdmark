@@ -688,7 +688,7 @@ test("test_check_diagrams", async () => {
   ].join("\n");
   const flowLine = markdown.split("\n").indexOf("<!-- flow -->") + 1;
   // 実行
-  const issues = checkDiagrams([{ path: "a.md", markdown }]);
+  const issues = checkDiagrams([{ path: "a.md", markdown }], new Set());
   // 検証
   expect(flowLine).toBe(10);
   expect(issues).toHaveLength(2);
@@ -716,9 +716,73 @@ test("test_check_diagrams_when_clean", async () => {
     { path: "b.md", markdown: "# B\n\n本文\n" },
   ];
   // 実行
-  const issues = checkDiagrams(documents);
+  const issues = checkDiagrams(documents, new Set());
   // 検証
   expect(issues).toEqual([]);
+});
+
+// 対応表と拡張と同じ名前の印の範囲を、図の定義のずれにしない（正常系）
+test("test_collect_check_issues_when_library_mark", async () => {
+  // 準備
+  const { collectCheckIssues } = await loadCheck();
+  const dir = await createTempDir();
+  await writeFiles(dir, {
+    "mdmark.config.yaml": [
+      "libraries:",
+      "  chart: lib/chart.js",
+      "extensions:",
+      "  - extensions/flow.js",
+      "build:",
+      '  include: ["*.md"]',
+      "  out: dist/docs.html",
+      "",
+    ].join("\n"),
+    "lib/chart.js": "export default {};\n",
+    "extensions/flow.js":
+      'export default { name: "flow", directive: "flow", load: async () => ({}) };\n',
+    "a.md": [
+      "# A",
+      "",
+      "<!-- flow -->",
+      "",
+      "本文",
+      "",
+      "<!-- /flow -->",
+      "",
+      "<!-- chart: a -->",
+      "",
+    ].join("\n"),
+  });
+  const path = join(dir, "mdmark.config.yaml");
+  // 実行
+  const checked = await collectCheckIssues(path);
+  const upgraded = await collectCheckIssues(path, { unknownMarks: false });
+  // 検証
+  for (const issues of [checked, upgraded]) {
+    expect(issues.filter((issue) => issue.kind.startsWith("diagram_"))).toEqual(
+      [],
+    );
+  }
+});
+
+// 対応表か拡張と同じ名前の印の範囲は点検しない（正常系）
+test("test_check_diagrams_when_overridden", async () => {
+  // 準備
+  const { checkDiagrams } = await loadCheck();
+  const documents = [
+    { path: "a.md", markdown: "# A\n\n<!-- chart: a -->\n\n本文\n" },
+  ];
+  // 実行
+  const overridden = checkDiagrams(documents, new Set(["chart"]));
+  const plain = checkDiagrams(documents, new Set());
+  // 検証
+  expect(overridden).toEqual([]);
+  expect(plain).toHaveLength(1);
+  expect(plain[0]).toMatchObject({
+    file: "a.md",
+    where: "3",
+    kind: "diagram_invalid",
+  });
 });
 
 // 問題を種類ごとのずれにする（正常系）

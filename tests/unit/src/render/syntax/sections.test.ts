@@ -124,3 +124,63 @@ test("test_wrap_sections_when_in_tab", () => {
   );
   expect(innerHtml(html, 'id="section-導入"')).toContain('class="mdmark-tabs"');
 });
+
+// 取り込みの枠の中の見出しは、枠の外の同じ階層の節を閉じず、枠の終わりで閉じる（正常系）
+test("test_wrap_sections_when_in_include", () => {
+  // 準備
+  const markdown = [
+    "## 航海",
+    "",
+    "<!-- include: 共通/手順.md#実行 -->",
+    "",
+    "後の段落",
+    "",
+  ].join("\n");
+  const includes = {
+    "共通/手順.md": "## 準備\n\n準備の段落\n\n## 実行\n\n実行の段落\n",
+  };
+  // 実行
+  const { html } = renderDoc(markdown, {}, { includes });
+  // 検証
+  const voyage = innerHtml(html, 'id="section-航海"');
+  expect(voyage).toContain('class="mdmark-include"');
+  const included = innerHtml(voyage, 'class="mdmark-include"');
+  expect(included).toContain('id="section-実行"');
+  expect(innerHtml(included, 'id="section-実行"')).toContain("実行の段落");
+  expect(voyage).toContain("後の段落");
+  expect(included).not.toContain("後の段落");
+});
+
+// タブの中身の中の見出しは、タブの外の同じ階層の節を閉じない（正常系）
+test("test_wrap_sections_when_same_level_heading_in_tab", () => {
+  // 準備
+  const markdown = [
+    "## 導入",
+    "",
+    "<!-- tabs -->",
+    "",
+    "### macOS",
+    "",
+    "## 手順",
+    "",
+    "手順の段落",
+    "",
+    "### Windows",
+    "",
+    "Windows の段落",
+    "",
+    "<!-- /tabs -->",
+    "",
+    "後の段落",
+    "",
+  ].join("\n");
+  // 実行
+  const { html } = renderDoc(markdown);
+  // 検証
+  const intro = innerHtml(html, 'id="section-導入"');
+  expect(intro).toContain('class="mdmark-tabs"');
+  const firstPanel = innerHtml(intro, 'class="mdmark-tab-panel"');
+  expect(firstPanel).toContain('id="section-手順"');
+  expect(innerHtml(firstPanel, 'id="section-手順"')).toContain("手順の段落");
+  expect(intro).toContain("後の段落");
+});
