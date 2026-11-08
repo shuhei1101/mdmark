@@ -53,7 +53,7 @@
           // ピン止めのボタンは、列ごとに分かれた最下行の見出しにだけ配置する
           const bottom = r === head.rows - 1 && cell.colspan === 1;
           if (!bottom) return `<th${span}${scope} data-col="${cell.col}"><span class="mdmark-th"><span>${esc(cell.text)}</span></span></th>`;
-          const label = isEach ? `「${esc(cell.text)}」の列をピン止め` : `「${esc(cell.text)}」の列までピン止め`;
+          const label = isEach ? `「${esc(cell.text)}」の列をピン止め` : `「${esc(cell.text)}」までを左端に留める`;
           return `<th${scope} data-col="${cell.col}"><span class="mdmark-th"><span>${esc(cell.text)}</span><span class="mdmark-th-tools"><button class="mdmark-pin" type="button" aria-pressed="false" aria-label="${label}" title="${label}">${svg("pin")}</button></span></span></th>`;
         })
         .join("")}</tr>`,
