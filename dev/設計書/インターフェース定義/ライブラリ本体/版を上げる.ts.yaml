@@ -1,7 +1,7 @@
 title: バージョンを上げる
 entry:
   kind: operation
-  value: '`mdmark upgrade [--plan] [--yes] [--config {設定ファイル} | --settings]`（CLI。`npx github:shuhei1101/mdmark#v{目標の版} upgrade` で呼ぶ）'
+  value: '`mdmark upgrade [--plan] [--yes] [--config {設定ファイル} | --settings]`（CLI。`npx github:shuhei1101/mdmark#v{目標のバージョン} upgrade` で呼ぶ）'
 flows:
   - name: 正常系
     summary: 2 つのバージョンの手順をバージョンの順に当て、点検に合格してバージョンを書き換える
@@ -485,7 +485,7 @@ exceptions:
     notes: コピーから戻し、ずれの行を出す
   - name: 手元のバージョンが新しい（終了コード 1）
     condition: 手元のバージョンが呼んだ CLI のバージョンより新しい
-    notes: 手元のバージョンと目標のバージョンと、`npx github:shuhei1101/mdmark#{手元の版} upgrade` など手元のバージョン以上の CLI でもう一度呼ぶことを出す
+    notes: 手元のバージョンと目標のバージョンと、`npx github:shuhei1101/mdmark#{手元のバージョン} upgrade` など手元のバージョン以上の CLI でもう一度呼ぶことを出す
   - name: 手元のバージョンの書式の誤り（終了コード 1）
     condition: 設定の `version` か、質問への回答が `v{MAJOR}.{MINOR}.{PATCH}` に合わない
     notes: 書式を示す

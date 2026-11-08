@@ -1,7 +1,7 @@
 title: "複数の文書を1枚のHTMLにまとめる"
 entry:
   kind: operation
-  value: '`mdmark build [--config {設定ファイル}]`（CLI。`npx github:shuhei1101/mdmark#v{版} build` で呼ぶ）'
+  value: '`mdmark build [--config {設定ファイル}]`（CLI。`npx github:shuhei1101/mdmark#v{バージョン} build` で呼ぶ）'
 flows:
   - name: 正常系
     summary: 3 つの文書を、文書をまたぐ用語と被参照が有効になる 1 枚にまとめる

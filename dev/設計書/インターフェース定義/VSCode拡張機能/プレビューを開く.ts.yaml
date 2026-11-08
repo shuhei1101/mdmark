@@ -9,7 +9,7 @@ flows:
       - name: 見本のワークスペース
         description: 見出し・表・注意書き・フロー図を持つ `guide.md` を配置したフォルダ。`mdmark.version` は既定の `latest`。`mdmark.lastVersion` は空
       - name: Mock
-        description: '`MDMARK_VSCODE_DIST_BASE` に、このブランチでビルドした配布物を `@{版}/dist/` の構造の URL で配る手元のサーバー。`MDMARK_VSCODE_TAGS_URL` に `v0.7.0`・`v0.10.0`・`v0.6.0`・`vscode-v0.11.0` を返却する代役'
+        description: '`MDMARK_VSCODE_DIST_BASE` に、このブランチでビルドした配布物を `@{バージョン}/dist/` の構造の URL で配る手元のサーバー。`MDMARK_VSCODE_TAGS_URL` に `v0.7.0`・`v0.10.0`・`v0.6.0`・`vscode-v0.11.0` を返却する代役'
     flow: |-
       sequenceDiagram
         participant U as 文書の作成者

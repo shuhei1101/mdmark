@@ -1,7 +1,7 @@
 title: "文書をHTMLに書き出す"
 entry:
   kind: operation
-  value: '`mdmark export {文書} [--out {出力}] [--config {設定ファイル}]`（CLI。`npx github:shuhei1101/mdmark#v{版} export` で呼ぶ）'
+  value: '`mdmark export {文書} [--out {出力}] [--config {設定ファイル}]`（CLI。`npx github:shuhei1101/mdmark#v{バージョン} export` で呼ぶ）'
 flows:
   - name: 正常系
     summary: 設定・索引・外部ライブラリ・拡張・画像を埋めた HTML を書き出す

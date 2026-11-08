@@ -6,6 +6,7 @@ NK = f'(?<!{K})'
 
 # 1. 言い回し（先に当てる。長いものから）
 PHRASES = [
+    ('左に寄せて置く', '左に詰めて配置する'), ('右に寄せて置く', '右に詰めて配置する'),
     ('を書き忘れると', 'の記載を忘れると'), ('書き忘れると', '記載を忘れると'), ('見た目の文字', '表示される文字'),
     ('読み上げず', 'スクリーンリーダーに伝えず'), ('読み上げない', 'スクリーンリーダーに伝えない'), 
     # 用語・主語の呼び名
@@ -193,14 +194,14 @@ def conj_naosu(m):
     for tail, ii, new in [('描', 'き', '再描画'), ('読み込', 'み', '再読み込み'), ('読', 'み', '再読み込み'), ('作', 'り', '再作成')]:
         if v.endswith(tail) and i == ii:
             after = m.string[m.end():m.end() + 1]
-            if form == 'し' and (rest == '' and after in 'はのをがも）」' or rest[:1] != '' and rest[:1] in 'はのをがも'):
+            if form == 'し' and (rest == '' and after in 'はのをがも）」' or rest[:1] != '' and rest[:1] in 'はのをがもでにと' or rest.startswith('まで')):
                 return v[:-len(tail)] + new + rest
             return v[:-len(tail)] + conj_godan_new(new, form, rest, 'さしすせそし')
     idx = 'さしすせそ'.index(form)
     if rest.startswith(('た', 'て')) and form == 'し':
         idx = 5
     after = m.string[m.end():m.end() + 1]
-    if form == 'し' and (rest == '' and after in '）」・はのをがも' or rest[:1] != '' and rest[:1] in 'はのをがも'):
+    if form == 'し' and (rest == '' and after in '）」・はのをがも' or rest[:1] != '' and rest[:1] in 'はのをがもでにと' or rest.startswith('まで')):
         key = v[-1] + i if i != 'し' or re.search('[ぁ-ん]', v) or len(v) < 2 else v + i
         for k, noun in [('当て', '再適用'), ('入れ', '再インストール'), ('置き', '再配置'), ('付け', '再付与'), ('振り', '再割り当て'), ('並べ', '並べ替え'),
                         ('選び', '再選択'), ('呼び', '再呼び出し'), ('開き', '再表示'), ('決め', '再決定'), ('閉じ', '再度の閉じ')]:
@@ -369,7 +370,8 @@ def build_context():
     return out
 
 CONTEXT_RULES = build_context()
-PROTECT = re.compile(r'(?:[^\s\'"`（）、。]*/[^\s\'"`（）、。]*\.(?:md|yaml|yml|ts|html|css|json|js|png|svg))|(?:`[^`\n]*(?:/|\.[a-z]{2,4}\b)[^`\n]*`)|(?:(?<![\w])(?:dev|docs|src|tests|vscode|plugin|scripts|schemas|guide|templates|migrations)/[^\s\'"`）)、。,]+)|(?:#[\w\[\]（）一-鿿ぁ-んァ-ヶー・]+)')
+CLIP_RULE = re.compile(NK + '(?P<stem>書)(?P<form>[かきくけこい])(?P<rest>[ぁ-ん]{0,3})')
+PROTECT = re.compile(r'(?:[^\s\'"`（）、。<>]*/[^\s\'"`（）、。<>]*\.(?:md|yaml|yml|ts|html|css|json|js|png|svg|mp4|mp3|vsix))|(?:(?<![\w])(?:dev|docs|src|tests|vscode|plugin|scripts|schemas|guide|templates|migrations)/[^\s\'"`）)、。,]+)|(?:#[\w\[\]（）一-鿿ぁ-んァ-ヶー・]+)')
 SKIP_KEYS = re.compile(r'^\s*-?\s*(?:callers|decided_by|refs|test|tests|test_file|test_files|path|page|id|kind|ref|source_path|related)\s*:')
 
 def allowed(text, s):
@@ -409,6 +411,9 @@ def reword_segment(t):
 def reword_line(line):
     if SKIP_KEYS.match(line):
         return line
+    if 'クリップボード' in line:
+        hits = hit_positions(line)
+        line = CLIP_RULE.sub(lambda m: m.group(0) if allowed(m.string, m.start('stem')) or m.start('stem') not in hits else conj_godan(m, '書き込'), line)
     for pat, new in CONTEXT_RULES:
         hits = hit_positions(line)
         line = pat.sub(lambda m: m.group(0) if allowed(m.string, m.start('stem')) or m.start('stem') not in hits or m.string[m.end():m.end() + 1] == '先' or m.string[m.end('form'):m.end('form') + 1] == '先' else new(m), line)

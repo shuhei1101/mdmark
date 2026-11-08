@@ -1,7 +1,7 @@
 title: "雛形を配置する"
 entry:
   kind: operation
-  value: '`mdmark init [{配置先のフォルダ}] [--js]`（CLI。`npx github:shuhei1101/mdmark#v{版} init` で呼ぶ）'
+  value: '`mdmark init [{配置先のフォルダ}] [--js]`（CLI。`npx github:shuhei1101/mdmark#v{バージョン} init` で呼ぶ）'
 flows:
   - name: 正常系
     summary: 空のフォルダに TypeScript の雛形を配置する
@@ -67,7 +67,7 @@ flows:
     expected:
       - 終了コードが 0
       - '`mdmark.config.yaml` の中身が変わっていない'
-      - '標準出力に `置かなかった（既にある）: mdmark.config.yaml` と `配置した:` の行が 5 つ出る'
+      - '標準出力に `配置しなかった（既にある）: mdmark.config.yaml` と `配置した:` の行が 5 つ出る'
     test: test_normal_when_file_exists
   - name: 異常系（配置先に記載できない・終了コード 1）
     summary: 配置先のフォルダを作れないと、書き込めないパスを示して終わる

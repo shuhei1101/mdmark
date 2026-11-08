@@ -1,7 +1,7 @@
 title: "設定と索引を点検する"
 entry:
   kind: operation
-  value: '`mdmark check [--config {設定ファイル}] [--base {git の ref} | --text {Markdown} | --file {ファイル} --key {YAML のキー}]`（CLI。`npx github:shuhei1101/mdmark#v{版} check` で呼ぶ）'
+  value: '`mdmark check [--config {設定ファイル}] [--base {git の ref} | --text {Markdown} | --file {ファイル} --key {YAML のキー}]`（CLI。`npx github:shuhei1101/mdmark#v{バージョン} check` で呼ぶ）'
 flows:
   - name: 正常系
     summary: ずれの無いフォルダで 0 件を返却する

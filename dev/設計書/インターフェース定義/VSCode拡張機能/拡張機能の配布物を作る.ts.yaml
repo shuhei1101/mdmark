@@ -43,13 +43,13 @@ flows:
 lead: 拡張機能のタグを受けて、タグと `vscode/package.json` のバージョンを比べ、.vsix を作ってそのタグの GitHub Release に添える。
 idempotent: false
 permissions: 'ワークフローの `GITHUB_TOKEN` に `contents: write`'
-side_effects: タグの GitHub Release を作り（あれば使用する）、`mdmark-{版}.vsix` を添える。Marketplace・Open VSX へは登録しない
+side_effects: タグの GitHub Release を作り（あれば使用する）、`mdmark-{バージョン}.vsix` を添える。Marketplace・Open VSX へは登録しない
 callers:
   - dev/設計書/シナリオ/単一ユースケース/拡張機能の配布物を作る#
 exclusivity: 同じタグのワークフローは `concurrency` で 1 つずつ実行する
 exceptions:
   - name: なし（正常終了）
-    condition: Release に `mdmark-{版}.vsix` を添える
+    condition: Release に `mdmark-{バージョン}.vsix` を添える
   - name: ワークフローの失敗（バージョンが合わない）
     condition: タグの `vscode-v` の後ろと `vscode/package.json` の `version` が違う
     notes: バージョンの比較の工程で終了コード 1 で止め、ログに 2 つのバージョンを出す。.vsix を作らず Release に何も添えない
@@ -57,7 +57,7 @@ constraints:
   - item: 起きるタグ
     constraint: '`on.push.tags` は `vscode-v*` だけ。mdmark の `v*` のタグでは起きない'
   - item: 工程の並び
-    constraint: バージョンの比較（`npm --prefix vscode run release:check -- {タグ}`）→ 依存を入れる（`npm --prefix vscode ci`）→ .vsix を作る（`npm --prefix vscode run package`。`vsce package --no-dependencies --out mdmark-{版}.vsix`）→ Release に添える（`gh release upload`。Release が無ければ `gh release create`）
+    constraint: バージョンの比較（`npm --prefix vscode run release:check -- {タグ}`）→ 依存を入れる（`npm --prefix vscode ci`）→ .vsix を作る（`npm --prefix vscode run package`。`vsce package --no-dependencies --out mdmark-{バージョン}.vsix`）→ Release に添える（`gh release upload`。Release が無ければ `gh release create`）
     notes: 結合テストはバージョンの比較と .vsix を作る工程を手元で実行して確認する。Release に添える工程は GitHub Actions でだけ流れる
   - item: タグの構造
     constraint: '`vscode-v{X}.{Y}.{Z}`。構造に合わないタグはバージョンの比較でバージョンが合わないときと同じく止める'

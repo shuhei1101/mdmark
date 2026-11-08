@@ -153,4 +153,4 @@ refs:
   - dev/設計書/インターフェース定義/ライブラリ本体/拡張を登録する.ts#constraints[引数の検査]
 status: planned
 notes:
-  HTML: '`<div class="mdmark-syntax-warning" role="note"><p class="mdmark-syntax-warning-title">書き方の警告</p><p><code>{mark}</code>{message}</p><ul><li><code>{label}</code>: {message}</li></ul></div>`。呼び名は確認ログの決定（記載方法を誤った箇所に出す枠の呼び名）。モックは `dev/mock/components/syntax-warning/`'
+  HTML: '`<div class="mdmark-syntax-warning" role="note"><p class="mdmark-syntax-warning-title">記載の警告</p><p><code>{mark}</code>{message}</p><ul><li><code>{label}</code>: {message}</li></ul></div>`。呼び名は確認ログの決定（記載方法を誤った箇所に出す枠の呼び名）。モックは `dev/mock/components/syntax-warning/`'

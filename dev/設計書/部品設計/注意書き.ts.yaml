@@ -126,4 +126,4 @@ refs:
   - dev/設計書/インターフェース定義/ライブラリ本体/文書をHTML文字列にする.ts#constraints[注意書き]
 status: planned
 notes:
-  HTML: '`<div class="markdown-alert markdown-alert-{kind}"><p class="markdown-alert-title">{題}</p>{本文}</div>`。`title` を指定するとタイトルを `<span class="mdmark-visually-hidden">{種類の名前}: </span>{title}` にする。`collapsed` のときは `<details class="markdown-alert markdown-alert-{kind}"><summary class="markdown-alert-title">{題}</summary>{本文}</details>`（`open` のときは `details` に `open` を付ける）。タイトルの文言は確認ログの決定（注意書きのタイトルの文言）。モックは `dev/mock/components/callout/`'
+  HTML: '`<div class="markdown-alert markdown-alert-{kind}"><p class="markdown-alert-title">{タイトル}</p>{本文}</div>`。`title` を指定するとタイトルを `<span class="mdmark-visually-hidden">{種類の名前}: </span>{title}` にする。`collapsed` のときは `<details class="markdown-alert markdown-alert-{kind}"><summary class="markdown-alert-title">{タイトル}</summary>{本文}</details>`（`open` のときは `details` に `open` を付ける）。タイトルの文言は確認ログの決定（注意書きのタイトルの文言）。モックは `dev/mock/components/callout/`'
